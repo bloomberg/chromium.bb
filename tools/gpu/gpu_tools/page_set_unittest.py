@@ -4,9 +4,9 @@
 import tempfile
 import unittest
 
-import page_set
+from gpu_tools import page_set
 
-set1="""
+set1 = """
 {"description": "hello",
  "pages": [
    {"url": "http://www.foo.com/"}
@@ -22,6 +22,6 @@ class TestPageSet(unittest.TestCase):
       ps = page_set.PageSet()
       ps.LoadFromFile(f.name)
 
-    self.assertEquals("hello", ps.description)
+    self.assertEquals('hello', ps.description)
     self.assertEquals(1, len(ps.pages))
-    self.assertEquals("http://www.foo.com/", ps.pages[0].url)
+    self.assertEquals('http://www.foo.com/', ps.pages[0].url)

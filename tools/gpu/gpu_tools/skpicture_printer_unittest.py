@@ -2,13 +2,12 @@
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 import os
 import tempfile
 import shutil
 
-import multi_page_benchmark
-import skpicture_printer
+from gpu_tools import multi_page_benchmark
+from gpu_tools import skpicture_printer
 
 class SkPicturePrinterUnitTest(multi_page_benchmark.MultiPageBenchmarkUnitTest):
   def setUp(self):

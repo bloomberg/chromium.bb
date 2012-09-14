@@ -15,10 +15,9 @@ thin(ish) wrapper around adb."""
 sys.path.append(
     os.path.abspath(
         os.path.join(os.path.dirname(__file__),
-                     "../../../build/android")))
+                     '../../../build/android')))
 try:
   from pylib import android_commands as real_android_commands
-  from pylib import cmd_helper as real_cmd_helper
   from pylib import forwarder
   from pylib import valgrind_tools
 except:
@@ -95,8 +94,8 @@ class ADBCommands(object):
       activity: Name of activity (e.g. '.Main' or
         'com.google.android.apps.chrome.Main').
       wait_for_completion: wait for the activity to finish launching (-W flag).
-      action: string (e.g. "android.intent.action.MAIN"). Default is VIEW.
-      category: string (e.g. "android.intent.category.HOME")
+      action: string (e.g. 'android.intent.action.MAIN'). Default is VIEW.
+      category: string (e.g. 'android.intent.category.HOME')
       data: Data string to pass to activity (e.g. 'http://www.example.com/').
       extras: Dict of extras to pass to activity. Values are significant.
       trace_file_name: If used, turns on and saves the trace to this file name.
@@ -122,7 +121,7 @@ def HasForwarder(adb):
   return adb.FileExistsOnDevice(forwarder.Forwarder._FORWARDER_PATH)
 
 def HowToInstallForwarder():
-  return "adb push out/$BUILD_TYPE/forwarder %s" % (
+  return 'adb push out/$BUILD_TYPE/forwarder %s' % (
     forwarder.Forwarder._FORWARDER_PATH)
 
 class Forwarder(object):
@@ -145,13 +144,13 @@ class Forwarder(object):
     #
     # TODO(nduca): Fix build.android.pylib.Forwarder to not need this.
     real_push_if_needed = adb._adb.PushIfNeeded
-    def FakePush(local_path, device_path):
+    def FakePush(_, device_path):
       assert adb.FileExistsOnDevice(device_path)
     try:
       adb._adb.PushIfNeeded = FakePush
       self._forwarder = forwarder.Forwarder(
         adb._adb, port_pairs,
-        tool, "localhost", "unused")
+        tool, 'localhost', 'unused')
     finally:
       adb._adb.PushIfNeeded = real_push_if_needed
     self._device_port = self._forwarder.DevicePortForHostPort(self._host_port)
@@ -159,7 +158,7 @@ class Forwarder(object):
   @property
   def url(self):
     assert self._forwarder
-    return "http://localhost:%i" % self._device_port
+    return 'http://localhost:%i' % self._device_port
 
   def Close(self):
     if self._forwarder:

@@ -7,5 +7,5 @@ import sys
 
 import gpu_tools.scrolling_benchmark
 
-if __name__ == "__main__":
+if __name__ == '__main__':
   sys.exit(gpu_tools.scrolling_benchmark.Main())

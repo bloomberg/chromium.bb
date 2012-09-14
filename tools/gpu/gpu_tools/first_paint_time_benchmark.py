@@ -6,14 +6,13 @@
 # Example: python run_scroll_test.py < data/urls.txt > test_results.csv
 import chrome_remote_control
 
-import multi_page_benchmark
-import util
+from gpu_tools import multi_page_benchmark
 
 
 class FirstPaintTimeBenchmark(multi_page_benchmark.MultiPageBenchmark):
-  def MeasurePage(self, page, tab):
+  def MeasurePage(self, _, tab):
     if tab.browser.is_content_shell:
-      return {"first_paint_secs": "unsupported"}
+      return {'first_paint_secs': 'unsupported'}
 
     tab.runtime.Execute("""
         window.__rafFired = false;
@@ -29,7 +28,7 @@ class FirstPaintTimeBenchmark(multi_page_benchmark.MultiPageBenchmark):
       'window.chrome.loadTimes().startLoadTime')
 
     return {
-        "first_paint_secs": util.RoundTo3DecimalPlaces(first_paint_secs)
+        'first_paint_secs': round(first_paint_secs, 1)
         }
 
 def Main():

@@ -1,15 +1,7 @@
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-import os as real_os
-import sys as real_sys
-import subprocess as real_subprocess
-import urllib2
-import json
-import tab
-
-import browser_finder
-import temporary_http_server
+from chrome_remote_control import temporary_http_server
 
 class Browser(object):
   """A running browser instance that can be controled in a limited way.

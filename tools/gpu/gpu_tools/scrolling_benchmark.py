@@ -3,13 +3,12 @@
 # found in the LICENSE file.
 import os
 
-import multi_page_benchmark
-import util
 import chrome_remote_control
+from gpu_tools import multi_page_benchmark
 
 class DidNotScrollException(multi_page_benchmark.MeasurementFailure):
   def __init__(self):
-    super(DidNotScrollException, self).__init__("Page did not scroll")
+    super(DidNotScrollException, self).__init__('Page did not scroll')
 
 def _CalcScrollResults(rendering_stats):
   num_frames_sent_to_screen = rendering_stats['numFramesSentToScreen']
@@ -22,10 +21,8 @@ def _CalcScrollResults(rendering_stats):
     float(num_frames_sent_to_screen))
 
   return {
-      "mean_frame_time_ms": util.RoundTo3DecimalPlaces(
-          mean_frame_time_seconds * 1000),
-      "dropped_percent": util.RoundTo1DecimalPlace(
-         dropped_percent * 100)
+      'mean_frame_time_ms': round(mean_frame_time_seconds * 1000, 3),
+      'dropped_percent': round(dropped_percent * 100, 1)
       }
 
 class ScrollingBenchmark(multi_page_benchmark.MultiPageBenchmark):
@@ -33,7 +30,8 @@ class ScrollingBenchmark(multi_page_benchmark.MultiPageBenchmark):
     super(ScrollingBenchmark, self).__init__()
     self.use_gpu_bencharking_extension = True
 
-  def ScrollPageFully(self, tab):
+  @staticmethod
+  def ScrollPageFully(tab):
     scroll_js_path = os.path.join(os.path.dirname(__file__), 'scroll.js')
     scroll_js = open(scroll_js_path, 'r').read()
 
@@ -52,7 +50,7 @@ class ScrollingBenchmark(multi_page_benchmark.MultiPageBenchmark):
 
     rendering_stats = tab.runtime.Evaluate('window.__scrollTestResult')
 
-    if not (rendering_stats["numFramesSentToScreen"] > 0):
+    if not (rendering_stats['numFramesSentToScreen'] > 0):
       raise DidNotScrollException()
     return rendering_stats
 
@@ -60,7 +58,7 @@ class ScrollingBenchmark(multi_page_benchmark.MultiPageBenchmark):
     if self.use_gpu_bencharking_extension:
       options.extra_browser_args.append('--enable-gpu-benchmarking')
 
-  def MeasurePage(self, page, tab):
+  def MeasurePage(self, _, tab):
     rendering_stats = self.ScrollPageFully(tab)
     return _CalcScrollResults(rendering_stats)
 

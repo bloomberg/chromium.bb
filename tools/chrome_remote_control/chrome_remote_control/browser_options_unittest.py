@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 import unittest
 
-import browser_options
+from chrome_remote_control import browser_options
 
 class BrowserOptionsTest(unittest.TestCase):
   def testDefaults(self):
@@ -46,7 +46,7 @@ class BrowserOptionsTest(unittest.TestCase):
     options = browser_options.BrowserOptions()
     parser = options.CreateParser()
     parser.add_option('-x', dest='verbosity', action='store_true')
-    options_ret, args = parser.parse_args(['--browser', 'any', '-x'])
+    options_ret, _ = parser.parse_args(['--browser', 'any', '-x'])
     self.assertEquals(options_ret, options)
     self.assertTrue(options.verbosity)
 
@@ -55,6 +55,6 @@ class BrowserOptionsTest(unittest.TestCase):
 
     parser = options.CreateParser()
     parser.add_option('-x', dest='verbosity', action='store_true')
-    options_ret, args = parser.parse_args(['--browser', 'any'])
+    options_ret, _ = parser.parse_args(['--browser', 'any'])
     self.assertEquals(options_ret, options)
     self.assertFalse(options.verbosity)

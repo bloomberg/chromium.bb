@@ -10,7 +10,7 @@ import unittest
 
 import chrome_remote_control
 import chrome_remote_control.browser_options
-import page_set
+from gpu_tools import page_set
 
 class MeasurementFailure(Exception):
   """Exception that can be thrown from MeasurePage to indicate an undisired but
@@ -27,9 +27,9 @@ class MultiPageBenchmark(object):
         def MeasurePage(self, page, tab):
            body_child_count = tab.runtime.Evaluate(
                'document.body.children.length')
-           return {"body_child_count": body_child_count}
+           return {'body_child_count': body_child_count}
 
-     if __name__ == "__main__":
+     if __name__ == '__main__':
          multi_page_benchmark.Main(BodyChildElementBenchmark())
 
   All benchmarks should include a unit test!
@@ -43,13 +43,14 @@ class MultiPageBenchmark(object):
 
         def MeasurePage(self, page, tab):
            body_child_count = tab.runtime.Evaluate(
-              "document.querySelector('%s').children.length")
-           return {"child_count": child_count}
+              'document.querySelector('%s').children.length')
+           return {'child_count': child_count}
   """
 
   def __init__(self):
     self.options = None
     self.page_failures = []
+    self.field_names = None
 
   def AddOptions(self, parser):
     """Override to expose command-line options for this benchmark.
@@ -80,12 +81,12 @@ class MultiPageBenchmark(object):
     Put together:
 
        def MeasurePage(self, page, tab):
-         res = tab.runtime.Evaluate("2+2");
+         res = tab.runtime.Evaluate('2+2')
          if res != 4:
-            raise Exception("Oh, wow.")
-         return {"two_plus_two": res}
+           raise Exception('Oh, wow.')
+         return {'two_plus_two': res}
     """
-    raise Exception('Should never be called')
+    raise NotImplementedError()
 
   def Run(self, results_writer, browser, options, ps):
     """Runs the actual benchmark, starting the browser using outputting results
@@ -113,8 +114,8 @@ class MultiPageBenchmark(object):
       tab.WaitForDocumentReadyStateToBeInteractiveOrBetter()
     except chrome_remote_control.TimeoutException, ex:
       logging.warning('Timed out while loading: %s', page.url)
-      self.page_failures.append({"page": page,
-                                 "exception": ex})
+      self.page_failures.append({'page': page,
+                                 'exception': ex})
       return
 
     # Measure the page.
@@ -122,13 +123,14 @@ class MultiPageBenchmark(object):
       results = self.MeasurePage(page, tab)
     except Exception, ex:
       if isinstance(ex, MeasurementFailure):
-        logging.info("%s failed: %s:", page.url, str(ex))
+        logging.info('%s failed: %s:', page.url, str(ex))
       else:
-        import traceback; traceback.print_exc()
-        logging.warning("%s had unexpected failure: %s:", page.url, str(ex))
+        import traceback
+        traceback.print_exc()
+        logging.warning('%s had unexpected failure: %s:', page.url, str(ex))
 
-      self.page_failures.append({"page": page,
-                                 "exception": ex})
+      self.page_failures.append({'page': page,
+                                 'exception': ex})
       return
 
     # Output.
@@ -153,47 +155,44 @@ class MultiPageBenchmark(object):
 
 
 def Main(benchmark, args=None):
-    """Turns a MultiPageBenchmark into a command-line program.
+  """Turns a MultiPageBenchmark into a command-line program.
 
-    If args is not specified, sys.argv[1:] is used.
-    """
-    options = chrome_remote_control.BrowserOptions()
-    parser = options.CreateParser("%prog [options] <page_set>")
-    benchmark.AddOptions(parser)
-    _, args = parser.parse_args(args)
+  If args is not specified, sys.argv[1:] is used.
+  """
+  options = chrome_remote_control.BrowserOptions()
+  parser = options.CreateParser('%prog [options] <page_set>')
+  benchmark.AddOptions(parser)
+  _, args = parser.parse_args(args)
 
-    if len(args) != 1:
-      parser.print_usage()
-      import page_sets
-      sys.stderr.write("Available pagesets:\n%s\n\n" % ",\n".join(
-          [os.path.relpath(f) for f in page_sets.GetAllPageSetFilenames()]))
-      sys.exit(1)
+  if len(args) != 1:
+    parser.print_usage()
+    import page_sets
+    sys.stderr.write('Available pagesets:\n%s\n\n' % ',\n'.join(
+        [os.path.relpath(f) for f in page_sets.GetAllPageSetFilenames()]))
+    sys.exit(1)
 
-    if not os.path.exists(args[0]):
-      sys.stderr.write("Pageset %s does not exist\n" % args[0])
-      sys.exit(1)
+  if not os.path.exists(args[0]):
+    sys.stderr.write('Pageset %s does not exist\n' % args[0])
+    sys.exit(1)
 
-    ps = page_set.PageSet()
-    ps.LoadFromFile(args[0])
+  ps = page_set.PageSet()
+  ps.LoadFromFile(args[0])
 
-    benchmark.CustomizeBrowserOptions(options)
-    possible_browser = chrome_remote_control.FindBrowser(options)
-    if possible_browser == None:
-      sys.stderr.write(
-        "No browser found.\n" +
-        "Use --browser=list to figure out which are available.\n")
-      sys.exit(1)
+  benchmark.CustomizeBrowserOptions(options)
+  possible_browser = chrome_remote_control.FindBrowser(options)
+  if possible_browser == None:
+    sys.stderr.write(
+      'No browser found.\n' +
+      'Use --browser=list to figure out which are available.\n')
+    sys.exit(1)
 
-    with possible_browser.Create() as browser:
-      res = benchmark.Run(csv.writer(sys.stdout),
-                          browser,
-                          options,
-                          ps)
+  with possible_browser.Create() as browser:
+    benchmark.Run(csv.writer(sys.stdout), browser, options, ps)
 
-    if len(benchmark.page_failures):
-      logging.warning("Failed pages: %s", '\n'.join(
-          [failure["page"].url for failure in benchmark.page_failures]))
-    return len(benchmark.page_failures)
+  if len(benchmark.page_failures):
+    logging.warning('Failed pages: %s', '\n'.join(
+        [failure['page'].url for failure in benchmark.page_failures]))
+  return len(benchmark.page_failures)
 
 
 class MultiPageBenchmarkUnitTest(unittest.TestCase):
@@ -222,7 +221,8 @@ class MultiPageBenchmarkUnitTest(unittest.TestCase):
     """Runs a benchmark against a pageset, returning the rows its outputs."""
     rows = []
     class LocalWriter(object):
-      def writerow(self, row):
+      @staticmethod
+      def writerow(row):
         rows.append(row)
 
     assert chrome_remote_control.browser_options.options_for_unittests

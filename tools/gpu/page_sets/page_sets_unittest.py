@@ -7,11 +7,11 @@ import gpu_tools.page_set
 import page_sets
 
 class PageSetsUnittest(unittest.TestCase):
-  "Verfies that all the pagesets in this directory are syntactically valid."""
+  """Verfies that all the pagesets in this directory are syntactically valid."""
 
-  def testPageSetsParseCorrectly(self):
+  @staticmethod
+  def testPageSetsParseCorrectly():
     filenames = page_sets.GetAllPageSetFilenames()
     for filename in filenames:
       ps = gpu_tools.page_set.PageSet()
       ps.LoadFromFile(filename)
-

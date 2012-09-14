@@ -3,10 +3,11 @@
 # found in the LICENSE file.
 import unittest
 
-import util
+from chrome_remote_control import util
 
 class TestWait(unittest.TestCase):
-  def testNonTimeout(self):
+  @staticmethod
+  def testNonTimeout():
     def test():
       return True
     util.WaitFor(test, 0.1)

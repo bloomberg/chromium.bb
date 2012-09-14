@@ -5,9 +5,9 @@ import os
 def GetAllPageSetFilenames():
   results = []
   start_dir = os.path.dirname(__file__)
-  for (dirpath, dirnames, filenames) in os.walk(start_dir):
+  for dirpath, _, filenames in os.walk(start_dir):
     for f in filenames:
-      if os.path.splitext(f)[1] != ".json":
+      if os.path.splitext(f)[1] != '.json':
         continue
       filename = os.path.join(dirpath, f)
       results.append(filename)

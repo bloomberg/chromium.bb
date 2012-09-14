@@ -13,14 +13,14 @@ import sys
 import gpu_tools
 import chrome_remote_control.run_tests
 
-if __name__ == "__main__":
+if __name__ == '__main__':
   top_level_dir = os.path.abspath(
     os.path.dirname(__file__))
-  start_dir = "gpu_tools"
+  start_dir = 'gpu_tools'
   ret = chrome_remote_control.run_tests.Main(
     sys.argv[1:], start_dir, top_level_dir)
 
-  start_dir = "page_sets"
+  start_dir = 'page_sets'
   ret = chrome_remote_control.run_tests.Main(
     sys.argv[1:], start_dir, top_level_dir)
 

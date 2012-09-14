@@ -2,16 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 import os as os
-import sys as sys
 import subprocess as subprocess
 import shutil
 import tempfile
 
-import browser_backend
-import browser_finder
-import inspector_backend
-import tab
-import util
+from chrome_remote_control import browser_backend
+from chrome_remote_control import util
 
 DEFAULT_PORT = 9273
 
@@ -29,15 +25,15 @@ class DesktopBrowserBackend(browser_backend.BrowserBackend):
 
     self._executable = executable
     if not self._executable:
-      raise Exception("Cannot create browser, no executable found!")
+      raise Exception('Cannot create browser, no executable found!')
 
     self._port = DEFAULT_PORT
     args = [self._executable,
-            "--no-first-run",
-            "--remote-debugging-port=%i" % self._port]
+            '--no-first-run',
+            '--remote-debugging-port=%i' % self._port]
     if not options.dont_override_profile:
       self._tmpdir = tempfile.mkdtemp()
-      args.append("--user-data-dir=%s" % self._tmpdir)
+      args.append('--user-data-dir=%s' % self._tmpdir)
     args.extend(options.extra_browser_args)
     if not options.show_stdout:
       self._devnull = open(os.devnull, 'w')
@@ -83,7 +79,7 @@ class DesktopBrowserBackend(browser_backend.BrowserBackend):
           self._proc = None
         except util.TimeoutException:
           self._proc = None
-          raise Exception("Could not shutdown the browser.")
+          raise Exception('Could not shutdown the browser.')
 
     if self._tmpdir and os.path.exists(self._tmpdir):
       shutil.rmtree(self._tmpdir, ignore_errors=True)
@@ -103,7 +99,7 @@ class DoNothingForwarder(object):
   @property
   def url(self):
     assert self._host_port
-    return "http://localhost:%i" % self._host_port
+    return 'http://localhost:%i' % self._host_port
 
   def Close(self):
     self._host_port = None

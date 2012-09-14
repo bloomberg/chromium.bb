@@ -4,8 +4,8 @@
 import json
 import logging
 import socket
-import time
-import websocket
+
+from chrome_remote_control import websocket
 
 class InspectorException(Exception):
   pass
@@ -15,13 +15,13 @@ class InspectorBackend(object):
     self._backend = backend
     self._descriptor = descriptor
     self._socket = websocket.create_connection(
-        descriptor["webSocketDebuggerUrl"]);
+        descriptor['webSocketDebuggerUrl'])
     self._next_request_id = 0
     self._domain_handlers = {}
 
   def Close(self):
-    for domain, handlers in self._domain_handlers.items():
-      notification_handler, will_close_handler = handlers
+    for _, handlers in self._domain_handlers.items():
+      _, will_close_handler = handlers
       will_close_handler()
     self._domain_handlers = {}
     self._socket.close()
@@ -35,12 +35,12 @@ class InspectorBackend(object):
       return None
 
     res = json.loads(data)
-    logging.debug("got [%s]", data)
-    if "method" not in res:
+    logging.debug('got [%s]', data)
+    if 'method' not in res:
       return
 
-    mname = res["method"]
-    dot_pos = mname.find(".")
+    mname = res['method']
+    dot_pos = mname.find('.')
     domain_name = mname[:dot_pos]
     if domain_name in self._domain_handlers:
       try:
@@ -50,14 +50,15 @@ class InspectorBackend(object):
         traceback.print_exc()
 
   def SendAndIgnoreResponse(self, req):
-    req["id"] = self._next_request_id
+    req['id'] = self._next_request_id
     self._next_request_id += 1
     self._socket.send(json.dumps(req))
 
   def SyncRequest(self, req, timeout=60):
     # TODO(nduca): Listen to the timeout argument
+    # pylint: disable=W0613
     # self._socket.settimeout(timeout)
-    req["id"] = self._next_request_id
+    req['id'] = self._next_request_id
     self._next_request_id += 1
     self._socket.send(json.dumps(req))
 
@@ -65,10 +66,10 @@ class InspectorBackend(object):
       data = self._socket.recv()
 
       res = json.loads(data)
-      logging.debug("got [%s]", data)
-      if "method" in res:
-        mname = res["method"]
-        dot_pos = mname.find(".")
+      logging.debug('got [%s]', data)
+      if 'method' in res:
+        mname = res['method']
+        dot_pos = mname.find('.')
         domain_name = mname[:dot_pos]
         if domain_name in self._domain_handlers:
           try:
@@ -77,11 +78,11 @@ class InspectorBackend(object):
             import traceback
             traceback.print_exc()
         else:
-          logging.debug("Unhandled inspector mesage: %s", data)
+          logging.debug('Unhandled inspector mesage: %s', data)
         continue
 
-      if res["id"] != req["id"]:
-        logging.debug("Dropped reply: %s", json.dumps(res))
+      if res['id'] != req['id']:
+        logging.debug('Dropped reply: %s', json.dumps(res))
         continue
       return res
 
@@ -91,12 +92,12 @@ class InspectorBackend(object):
 
     For example, given inspector_backend:
        def OnConsoleNotification(msg):
-          if msg["method"] == "Console.messageAdded":
-             print msg["params"]["message"]
+          if msg['method'] == 'Console.messageAdded':
+             print msg['params']['message']
           return
        def OnConsoleClose(self):
           pass
-       inspector_backend.RegisterDomain("Console",
+       inspector_backend.RegisterDomain('Console',
                                         OnConsoleNotification, OnConsoleClose)
        """
     assert domain_name not in self._domain_handlers

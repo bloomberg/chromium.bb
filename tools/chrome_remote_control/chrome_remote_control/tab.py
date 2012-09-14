@@ -1,17 +1,12 @@
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-import json
-import websocket
-import socket
-import time
+from chrome_remote_control import tab_console
+from chrome_remote_control import tab_page
+from chrome_remote_control import tab_runtime
+from chrome_remote_control import util
 
-import tab_console
-import tab_page
-import tab_runtime
-import util
-
-DEFAULT_TAB_TIMEOUT=60
+DEFAULT_TAB_TIMEOUT = 60
 
 class Tab(object):
   """Represents a tab in the browser
@@ -19,10 +14,10 @@ class Tab(object):
   The important parts of the Tab object are in the runtime and page objects.
   E.g.:
       # Navigates the tab to a given url.
-      tab.page.Navigate("http://www.google.com/")
+      tab.page.Navigate('http://www.google.com/')
 
       # Evaluates 1+1 in the tab's javascript context.
-      tab.runtime.Evaluate("1+1")
+      tab.runtime.Evaluate('1+1')
   """
   def __init__(self, browser, inspector_backend):
     self._browser = browser
@@ -69,12 +64,13 @@ class Tab(object):
     """Methods for interacting with the page's console objec."""
     return self._console
 
-  def WaitForDocumentReadyStateToBeComplete(self, timeout=60):
+  def WaitForDocumentReadyStateToBeComplete(self, timeout=DEFAULT_TAB_TIMEOUT):
     util.WaitFor(
         lambda: self._runtime.Evaluate('document.readyState') == 'complete',
         timeout)
 
-  def WaitForDocumentReadyStateToBeInteractiveOrBetter(self, timeout=60):
+  def WaitForDocumentReadyStateToBeInteractiveOrBetter(
+      self, timeout=DEFAULT_TAB_TIMEOUT):
     def IsReadyStateInteractiveOrBetter():
       rs = self._runtime.Evaluate('document.readyState')
       return rs == 'complete' or rs == 'interactive'

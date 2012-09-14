@@ -4,22 +4,21 @@
 import fnmatch
 import logging
 import os
-import sys
 import traceback
 import unittest
 
-import browser_options
+from chrome_remote_control import browser_options
 
-def Discover(start_dir, pattern = "test*.py", top_level_dir = None):
+def Discover(start_dir, pattern = 'test*.py', top_level_dir = None):
   if hasattr(unittest.defaultTestLoader, 'discover'):
     return unittest.defaultTestLoader.discover(start_dir,
                                                pattern,
                                                top_level_dir)
 
   modules = []
-  for (dirpath, dirnames, filenames) in os.walk(start_dir):
+  for dirpath, _, filenames in os.walk(start_dir):
     for filename in filenames:
-      if not filename.endswith(".py"):
+      if not filename.endswith('.py'):
         continue
 
       if not fnmatch.fnmatch(filename, pattern):
@@ -27,7 +26,7 @@ def Discover(start_dir, pattern = "test*.py", top_level_dir = None):
 
       if filename.startswith('.') or filename.startswith('_'):
         continue
-      name,ext = os.path.splitext(filename)
+      name, _ = os.path.splitext(filename)
 
       relpath = os.path.relpath(dirpath, top_level_dir)
       fqn = relpath.replace('/', '.') + '.' + name
@@ -36,7 +35,7 @@ def Discover(start_dir, pattern = "test*.py", top_level_dir = None):
       try:
         module = __import__(fqn, fromlist=[True])
       except:
-        print "While importing [%s]\n" % fqn
+        print 'While importing [%s]\n' % fqn
         traceback.print_exc()
         continue
       modules.append(module)
@@ -70,7 +69,7 @@ def FilterSuite(suite, predicate):
   return new_suite
 
 def DiscoverAndRunTests(dir_name, args, top_level_dir):
-  suite = Discover(dir_name, "*_unittest.py", top_level_dir)
+  suite = Discover(dir_name, '*_unittest.py', top_level_dir)
 
   def IsTestSelected(test):
     if len(args) == 0:
@@ -90,16 +89,16 @@ def Main(args, start_dir, top_level_dir):
   default_options = browser_options.BrowserOptions()
   default_options.browser_type = 'any'
 
-  parser = default_options.CreateParser("run_tests [options] [test names]")
+  parser = default_options.CreateParser('run_tests [options] [test names]')
   parser.add_option('--repeat-count', dest='run_test_repeat_count',
                     type='int', default=1,
-                    help="Repeats each a provided number of times.")
+                    help='Repeats each a provided number of times.')
 
   _, args = parser.parse_args(args)
 
-  import browser_finder
+  from chrome_remote_control import browser_finder
   if browser_finder.FindBrowser(default_options) == None:
-    logging.error("No browser found. Cannot run tests.\n")
+    logging.error('No browser found. Cannot run tests.\n')
     return 1
 
   browser_options.options_for_unittests = default_options
@@ -107,7 +106,7 @@ def Main(args, start_dir, top_level_dir):
   num_errors = 0
   try:
     os.chdir(top_level_dir)
-    for i in range(default_options.run_test_repeat_count):
+    for _ in range(default_options.run_test_repeat_count):
       num_errors += DiscoverAndRunTests(start_dir, args, top_level_dir)
   finally:
     os.chdir(olddir)

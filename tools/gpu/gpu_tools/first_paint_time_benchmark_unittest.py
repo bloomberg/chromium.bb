@@ -1,8 +1,8 @@
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-import first_paint_time_benchmark
-import multi_page_benchmark
+from gpu_tools import first_paint_time_benchmark
+from gpu_tools import multi_page_benchmark
 
 class FirstPaintTimeBenchmarkUnitTest(
   multi_page_benchmark.MultiPageBenchmarkUnitTest):
@@ -21,7 +21,7 @@ class FirstPaintTimeBenchmarkUnitTest(
                      header)
     self.assertEqual(1, len(results))
     self.assertTrue('scrollable_page.html' in results[0][0])
-    if results[0][1] == "unsupported":
+    if results[0][1] == 'unsupported':
       # This test can't run on content_shell.
       return
     self.assertTrue(results[0][1] > 0)

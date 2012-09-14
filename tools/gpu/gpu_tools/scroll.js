@@ -82,10 +82,10 @@
 
   GpuBenchmarkingRenderingStats.prototype.get = function() {
     if (!this.initialStats_)
-      throw new Error("Start not called.");
+      throw new Error('Start not called.');
 
     if (!this.finalStats_)
-      throw new Error("Stop was not called.");
+      throw new Error('Stop was not called.');
 
     var stats = this.finalStats_;
     for (var key in stats)
@@ -110,7 +110,7 @@
 
   RafRenderingStats.prototype.start = function() {
     if (this.recording_)
-      throw new Error("Already started.");
+      throw new Error('Already started.');
     this.recording_ = true;
     requestAnimationFrame(this.recordFrameTime_.bind(this));
   }

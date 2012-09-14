@@ -4,9 +4,6 @@
 import json
 import logging
 
-import inspector_backend
-import util
-
 class TabConsole(object):
   def __init__(self, inspector_backend):
     self._inspector_backend = inspector_backend
@@ -19,20 +16,20 @@ class TabConsole(object):
     self._console_enabled = False
 
   def _OnNotification(self, msg):
-    logging.debug("Notification: %s", json.dumps(msg, indent=2))
-    if msg["method"] == "Console.messageAdded":
-      self._last_message = "At %s:%i: %s" % (
-        msg["params"]["message"]["url"],
-        msg["params"]["message"]["line"],
-        msg["params"]["message"]["text"])
+    logging.debug('Notification: %s', json.dumps(msg, indent=2))
+    if msg['method'] == 'Console.messageAdded':
+      self._last_message = 'At %s:%i: %s' % (
+        msg['params']['message']['url'],
+        msg['params']['message']['line'],
+        msg['params']['message']['text'])
       if self._message_output_stream:
         self._message_output_stream.write(
-          "%s\n" % self._last_message)
+          '%s\n' % self._last_message)
 
-    elif msg["method"] == "Console.messageRepeatCountUpdated":
+    elif msg['method'] == 'Console.messageRepeatCountUpdated':
       if self._message_output_stream:
         self._message_output_stream.write(
-          "%s\n" % self._last_message)
+          '%s\n' % self._last_message)
 
   def _OnClose(self):
     pass
@@ -52,10 +49,10 @@ class TabConsole(object):
       return
 
     if enabled:
-      method_name = "enable"
+      method_name = 'enable'
     else:
-      method_name = "disable"
+      method_name = 'disable'
     self._inspector_backend.SyncRequest({
-        "method": "Console.%s" % method_name
+        'method': 'Console.%s' % method_name
         })
-    self.enabled = enabled
+    self._console_enabled = enabled

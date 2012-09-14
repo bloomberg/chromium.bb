@@ -4,10 +4,9 @@
 import urllib2
 import json
 
-import browser_finder
-import inspector_backend
-import tab
-import util
+from chrome_remote_control import inspector_backend
+from chrome_remote_control import tab
+from chrome_remote_control import util
 
 class BrowserGoneException(Exception):
   pass
@@ -17,9 +16,7 @@ class BrowserBackend(object):
   once a remote-debugger port has been established."""
   def __init__(self, is_content_shell):
     self.is_content_shell = is_content_shell
-
-  def __del__(self):
-    self.Close()
+    self._port = None
 
   def _WaitForBrowserToComeUp(self):
     def IsBrowserUp():
@@ -38,10 +35,10 @@ class BrowserBackend(object):
 
   def _ListTabs(self, timeout=None):
     if timeout:
-      req = urllib2.urlopen("http://localhost:%i/json" % self._port,
+      req = urllib2.urlopen('http://localhost:%i/json' % self._port,
                             timeout=timeout)
     else:
-      req = urllib2.urlopen("http://localhost:%i/json" % self._port)
+      req = urllib2.urlopen('http://localhost:%i/json' % self._port)
     data = req.read()
     return json.loads(data)
 
@@ -50,9 +47,14 @@ class BrowserBackend(object):
     return len(self._ListTabs())
 
   def GetNthTabUrl(self, index):
-    return self._ListTabs()[index]["url"]
+    return self._ListTabs()[index]['url']
 
   def ConnectToNthTab(self, index):
     ib = inspector_backend.InspectorBackend(self, self._ListTabs()[index])
     return tab.Tab(self, ib)
 
+  def CreateForwarder(self, host_port):
+    raise NotImplementedError()
+
+  def IsBrowserRunning(self):
+    raise NotImplementedError()

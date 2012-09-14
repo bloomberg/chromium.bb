@@ -2,11 +2,10 @@
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 import os
 import re
 
-import multi_page_benchmark
+from gpu_tools import multi_page_benchmark
 
 _JS = 'chrome.gpuBenchmarking.printToSkPicture("{0}");'
 
@@ -28,7 +27,7 @@ class SkPicturePrinter(multi_page_benchmark.MultiPageBenchmark):
     # Replace win32 path separator char '\' with '\\'.
     js = _JS.format(outpath.replace('\\', '\\\\'))
     tab.runtime.Evaluate(js)
-    return {"output_path": outpath}
+    return {'output_path': outpath}
 
 def Main():
   return multi_page_benchmark.Main(SkPicturePrinter())

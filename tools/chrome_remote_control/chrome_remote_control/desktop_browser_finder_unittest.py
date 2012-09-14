@@ -1,11 +1,11 @@
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-import unittest
-import browser
-import browser_options
-import desktop_browser_finder
 import os as real_os
+import unittest
+
+from chrome_remote_control import browser_options
+from chrome_remote_control import desktop_browser_finder
 
 # This file verifies the logic for finding a browser instance on all platforms
 # at once. It does so by providing stubs for the OS/sys/subprocess primitives
@@ -47,25 +47,24 @@ class StubOS(object):
       return self.display
     if name == 'LOCALAPPDATA':
       return self.local_app_data
-    raise Exception("Unsupported getenv")
+    raise NotImplementedError('Unsupported getenv')
 
 class StubSys(object):
   def __init__(self):
-    self.platform = ""
+    self.platform = ''
 
 class StubSubprocess(object):
   def __init__(self):
     self.call_hook = None
 
   def call(self, *args, **kwargs):
-    if not self.call_hook:
-      raise Exception("Should not be reached.")
+    assert self.call_hook
     return self.call_hook(*args, **kwargs)
 
 class FindTestBase(unittest.TestCase):
   def setUp(self):
     self._options = browser_options.BrowserOptions()
-    self._options.chrome_root = "../../../"
+    self._options.chrome_root = '../../../'
     self._sys_stub = StubSys()
     self._os_stub = StubOS(self._sys_stub)
     self._subprocess_stub = StubSubprocess()
@@ -80,27 +79,27 @@ class FindTestBase(unittest.TestCase):
 
   def DoFindAllTypes(self):
     browsers = self.DoFindAll()
-    return [b.type for b in browsers]
+    return [b.browser_type for b in browsers]
 
-def has_type(array, type):
-  return len([x for x in array if x.type == type]) != 0
+def has_type(array, browser_type):
+  return len([x for x in array if x.browser_type == browser_type]) != 0
 
 class OSXFindTest(FindTestBase):
   def setUp(self):
     super(OSXFindTest, self).setUp()
     self._sys_stub.platform = 'darwin'
-    self._files.append("/Applications/Google Chrome Canary.app/"
-                       "Contents/MacOS/Google Chrome Canary")
-    self._files.append("/Applications/Google Chrome.app/" +
-                       "Contents/MacOS/Google Chrome")
+    self._files.append('/Applications/Google Chrome Canary.app/'
+                       'Contents/MacOS/Google Chrome Canary')
+    self._files.append('/Applications/Google Chrome.app/' +
+                       'Contents/MacOS/Google Chrome')
     self._files.append(
-      "../../../out/Release/Chromium.app/Contents/MacOS/Chromium")
+      '../../../out/Release/Chromium.app/Contents/MacOS/Chromium')
     self._files.append(
-      "../../../out/Debug/Chromium.app/Contents/MacOS/Chromium")
+      '../../../out/Debug/Chromium.app/Contents/MacOS/Chromium')
     self._files.append(
-      "../../../out/Release/Content Shell.app/Contents/MacOS/Content Shell")
+      '../../../out/Release/Content Shell.app/Contents/MacOS/Content Shell')
     self._files.append(
-      "../../../out/Debug/Content Shell.app/Contents/MacOS/Content Shell")
+      '../../../out/Debug/Content Shell.app/Contents/MacOS/Content Shell')
 
   def testFindAll(self):
     types = self.DoFindAllTypes()
@@ -116,18 +115,18 @@ class LinuxFindTest(FindTestBase):
     super(LinuxFindTest, self).setUp()
 
     self._sys_stub.platform = 'linux2'
-    self._files.append("/foo/chrome")
-    self._files.append("../../../out/Release/chrome")
-    self._files.append("../../../out/Debug/chrome")
-    self._files.append("../../../out/Release/content_shell")
-    self._files.append("../../../out/Debug/content_shell")
+    self._files.append('/foo/chrome')
+    self._files.append('../../../out/Release/chrome')
+    self._files.append('../../../out/Debug/chrome')
+    self._files.append('../../../out/Release/content_shell')
+    self._files.append('../../../out/Debug/content_shell')
 
     self._has_google_chrome_on_path = False
     this = self
     def call_hook(*args, **kwargs):
       if this._has_google_chrome_on_path:
         return 0
-      raise OSError("Not found")
+      raise OSError('Not found')
     self._subprocess_stub.call_hook = call_hook
 
   def testFindAllWithExact(self):
@@ -138,24 +137,24 @@ class LinuxFindTest(FindTestBase):
              'content-shell-debug', 'content-shell-release']))
 
   def testFindWithProvidedExecutable(self):
-    self._options.browser_executable = "/foo/chrome"
-    self.assertTrue("exact" in self.DoFindAllTypes())
+    self._options.browser_executable = '/foo/chrome'
+    self.assertTrue('exact' in self.DoFindAllTypes())
 
   def testFindUsingDefaults(self):
     self._has_google_chrome_on_path = True
-    self.assertTrue("release" in self.DoFindAllTypes())
+    self.assertTrue('release' in self.DoFindAllTypes())
 
     del self._files[1]
     self._has_google_chrome_on_path = True
-    self.assertTrue("system" in self.DoFindAllTypes())
+    self.assertTrue('system' in self.DoFindAllTypes())
 
     self._has_google_chrome_on_path = False
     del self._files[1]
-    self.assertEquals(["content-shell-debug", "content-shell-release"],
+    self.assertEquals(['content-shell-debug', 'content-shell-release'],
                       self.DoFindAllTypes())
 
   def testFindUsingRelease(self):
-    self.assertTrue("release" in self.DoFindAllTypes())
+    self.assertTrue('release' in self.DoFindAllTypes())
 
 
 class WinFindTest(FindTestBase):

@@ -3,13 +3,13 @@
 # found in the LICENSE file.
 import logging
 
-import android_browser_finder
-import desktop_browser_finder
+from chrome_remote_control import android_browser_finder
+from chrome_remote_control import desktop_browser_finder
 
 """Finds browsers that can be controlled by chrome_remote_control."""
 
 ALL_BROWSER_TYPES = (
-    desktop_browser_finder.ALL_BROWSER_TYPES + "," +
+    desktop_browser_finder.ALL_BROWSER_TYPES + ',' +
     android_browser_finder.ALL_BROWSER_TYPES)
 
 class BrowserTypeRequiredException(Exception):
@@ -21,13 +21,13 @@ def FindBrowser(options):
   connect to and control the located browser.
   """
   if options.browser_type == 'exact' and options.browser_executable == None:
-    raise Exception("browser_type=exact requires browser_executable be set.")
+    raise Exception('browser_type=exact requires browser_executable be set.')
 
   if options.browser_type != 'exact' and options.browser_executable != None:
-    raise Exception("browser_executable requires browser_executable=exact.")
+    raise Exception('browser_executable requires browser_executable=exact.')
 
   if options.browser_type == None:
-    raise BrowserTypeRequiredException("browser_type must be specified")
+    raise BrowserTypeRequiredException('browser_type must be specified')
 
   browsers = []
   browsers.extend(desktop_browser_finder.FindAllAvailableBrowsers(options))
@@ -36,8 +36,8 @@ def FindBrowser(options):
   if options.browser_type == 'any':
     types = ALL_BROWSER_TYPES.split(',')
     def compare_browsers_on_type_priority(x, y):
-      x_idx = types.index(x.type)
-      y_idx = types.index(y.type)
+      x_idx = types.index(x.browser_type)
+      y_idx = types.index(y.browser_type)
       return x_idx - y_idx
     browsers.sort(compare_browsers_on_type_priority)
     if len(browsers) >= 1:
@@ -45,7 +45,8 @@ def FindBrowser(options):
     else:
       return None
 
-  matching_browsers = [b for b in browsers if b.type == options.browser_type]
+  matching_browsers = [b for b in browsers
+                       if b.browser_type == options.browser_type]
 
   if len(matching_browsers) == 1:
     return matching_browsers[0]
@@ -62,7 +63,7 @@ def GetAllAvailableBrowserTypes(options):
   browsers.extend(desktop_browser_finder.FindAllAvailableBrowsers(options))
   browsers.extend(android_browser_finder.FindAllAvailableBrowsers(options))
 
-  type_list = set([browser.type for browser in browsers])
+  type_list = set([browser.browser_type for browser in browsers])
   type_list = list(type_list)
   type_list.sort()
   return type_list

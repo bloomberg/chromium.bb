@@ -4,18 +4,17 @@
 import logging
 import unittest
 
-import android_browser_finder
-import browser_options
+from chrome_remote_control import android_browser_finder
+from chrome_remote_control import browser_options
 
 # adb not even found
 # android_browser_finder not returning
 
 class PopenStub(object):
-  def __init__(self):
-    self.communicate_result = None
+  def __init__(self, communicate_result):
+    self.communicate_result = communicate_result
+
   def communicate(self):
-    if self.communicate_result == None:
-      raise Exception("Should not be called")
     return self.communicate_result
 
 class SubprocessStub(object):
@@ -26,11 +25,11 @@ class SubprocessStub(object):
     self.PIPE = real_subprocess.PIPE
 
   def Popen(self, *args, **kwargs):
+    assert self.Popen_hook or self.Popen_result
     if self.Popen_hook:
       return self.Popen_hook(*args, **kwargs)
-    if not self.Popen_result:
-      raise Exception("Should not be called")
-    return self.Popen_result
+    else:
+      return self.Popen_result
 
 class ADBCommandsStub(object):
   def __init__(self, module, device):
@@ -82,8 +81,7 @@ class AndroidBrowserFinderTest(unittest.TestCase):
     options = browser_options.BrowserOptions()
 
     subprocess_stub = SubprocessStub()
-    popen_stub = PopenStub()
-    popen_stub.communicate_result = ("", "")
+    popen_stub = PopenStub(('', ''))
     subprocess_stub.Popen_result = popen_stub
 
     adb_commands_module_stub = ADBCommandsModuleStub()
@@ -96,13 +94,12 @@ class AndroidBrowserFinderTest(unittest.TestCase):
     options = browser_options.BrowserOptions()
 
     subprocess_stub = SubprocessStub()
-    popen_stub = PopenStub()
-    popen_stub.communicate_result = (
+    popen_stub = PopenStub((
         """List of devices attached
 ????????????\tno permissions""",
         """* daemon not running. starting it now on port 5037 *
 * daemon started successfully *
-""")
+"""))
     subprocess_stub.Popen_result = popen_stub
 
     adb_commands_module_stub = ADBCommandsModuleStub()
@@ -130,8 +127,7 @@ class AndroidBrowserFinderTest(unittest.TestCase):
     options = browser_options.BrowserOptions()
 
     subprocess_stub = SubprocessStub()
-    popen_stub = PopenStub()
-    popen_stub.communicate_result = ("", "")
+    popen_stub = PopenStub(('', ''))
     subprocess_stub.Popen_result = popen_stub
     adb_commands_module_stub = ADBCommandsModuleStub()
     adb_commands_module_stub.attached_devices = ['015d14fec128220c',
@@ -159,8 +155,7 @@ class AndroidBrowserFinderTest(unittest.TestCase):
     options = browser_options.BrowserOptions()
 
     subprocess_stub = SubprocessStub()
-    popen_stub = PopenStub()
-    popen_stub.communicate_result = ("", "")
+    popen_stub = PopenStub(('', ''))
     subprocess_stub.Popen_result = popen_stub
     adb_commands_module_stub = ADBCommandsModuleStub()
     adb_commands_module_stub.attached_devices = ['015d14fec128220c']

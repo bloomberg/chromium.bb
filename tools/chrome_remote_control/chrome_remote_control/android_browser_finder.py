@@ -2,15 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 import os as real_os
-import sys as real_sys
 import subprocess as real_subprocess
 import logging
 import re
 
-import chrome_remote_control.android_browser_backend as android_browser_backend
+from chrome_remote_control import android_browser_backend
 import chrome_remote_control.adb_commands as real_adb_commands
-import browser
-import possible_browser
+from chrome_remote_control import browser
+from chrome_remote_control import possible_browser
 
 
 """Finds android browsers that can be controlled by chrome_remote_control."""
@@ -43,22 +42,22 @@ CONTENT_SHELL_DEVTOOLS_REMOTE_PORT = (
 
 class PossibleAndroidBrowser(possible_browser.PossibleBrowser):
   """A launchable android browser instance."""
-  def __init__(self, type, options, *args):
+  def __init__(self, browser_type, options, *args):
     super(PossibleAndroidBrowser, self).__init__(
-        type, options)
+        browser_type, options)
     self._args = args
 
   def __repr__(self):
-    return 'PossibleAndroidBrowser(type=%s)' % self.type
+    return 'PossibleAndroidBrowser(browser_type=%s)' % self.browser_type
 
   def Create(self):
     backend = android_browser_backend.AndroidBrowserBackend(
-        self.type, self._options, *self._args)
+        self._options, *self._args)
     return browser.Browser(backend)
 
 def FindAllAvailableBrowsers(options,
-                             subprocess = real_subprocess,
-                             adb_commands = real_adb_commands):
+                             subprocess=real_subprocess,
+                             adb_commands=real_adb_commands):
   """Finds all the desktop browsers available on this machine."""
   if not adb_commands.IsAndroidSupported():
     return []
@@ -70,13 +69,13 @@ def FindAllAvailableBrowsers(options,
                               stdout=subprocess.PIPE,
                               stderr=subprocess.PIPE,
                               stdin=devnull)
-      stdout, stderr = proc.communicate()
-      if re.search(re.escape("????????????\tno permissions"), stdout) != None:
+      stdout, _ = proc.communicate()
+      if re.search(re.escape('????????????\tno permissions'), stdout) != None:
         logging.warning(
-            ("adb devices reported a permissions error. Consider "
-            "restarting adb as root:"))
-        logging.warning("  adb kill-server")
-        logging.warning("  sudo `which adb` devices\n\n")
+            ('adb devices reported a permissions error. Consider '
+            'restarting adb as root:'))
+        logging.warning('  adb kill-server')
+        logging.warning('  sudo `which adb` devices\n\n')
   except OSError:
     logging.info('No adb command found. ' +
                  'Will not try searching for Android browsers.')
@@ -139,13 +138,13 @@ def FindAllAvailableBrowsers(options,
   # See if the "forwarder" is installed -- we need this to host content locally
   # but make it accessible to the device.
   if len(possible_browsers) and not adb_commands.HasForwarder(adb):
-    logging.warn("chrome_remote_control detected an android device. However,")
-    logging.warn("Chrome's port-forwarder app was not installed on the device.")
-    logging.warn("To build:")
-    logging.warn("  make -j16 out/$BUILDTYPE/forwarder")
-    logging.warn("And then install it:")
-    logging.warn("  %s" % adb_commands.HowToInstallForwarder())
-    logging.warn("")
-    logging.warn("")
+    logging.warn('chrome_remote_control detected an android device. However,')
+    logging.warn('Chrome\'s port-forwarder app is not installed on the device.')
+    logging.warn('To build:')
+    logging.warn('  make -j16 out/$BUILDTYPE/forwarder')
+    logging.warn('And then install it:')
+    logging.warn('  %s', adb_commands.HowToInstallForwarder())
+    logging.warn('')
+    logging.warn('')
     return []
   return possible_browsers

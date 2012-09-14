@@ -1,11 +1,10 @@
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-import browser
-import browser_finder
-import browser_options
-import tab
 import unittest
+
+from chrome_remote_control import browser_finder
+from chrome_remote_control import browser_options
 
 class TabTestCase(unittest.TestCase):
   def setUp(self):

@@ -8,5 +8,5 @@ import sys
 
 import gpu_tools.skpicture_printer
 
-if __name__ == "__main__":
+if __name__ == '__main__':
   sys.exit(gpu_tools.skpicture_printer.Main())

@@ -4,13 +4,13 @@
 """A library for chrome-based tests.
 
 """
-from browser_finder import *
-from browser_options import *
-from browser import *
-from tab import *
-from util import *
+from chrome_remote_control.browser_finder import *
+from chrome_remote_control.browser_options import *
+from chrome_remote_control.browser import *
+from chrome_remote_control.tab import *
+from chrome_remote_control.util import *
 
-def CreateBrowser(type):
+def CreateBrowser(browser_type):
   """Shorthand way to create a browser of a given type
 
   However, note that the preferred way to create a browser is:
@@ -21,7 +21,7 @@ def CreateBrowser(type):
 
   as it creates more opportunities for customization and
   error handling."""
-  browser_to_create = FindBrowser(BrowserOptions(type))
+  browser_to_create = FindBrowser(BrowserOptions(browser_type))
   if not browser_to_create:
-    raise Exception("No browser of type %s found" % type)
+    raise Exception('No browser of type %s found' % browser_type)
   return browser_to_create.Create()

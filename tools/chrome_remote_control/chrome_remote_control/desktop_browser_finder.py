@@ -6,9 +6,9 @@ import os as real_os
 import sys as real_sys
 import subprocess as real_subprocess
 
-import browser
-import desktop_browser_backend
-import possible_browser
+from chrome_remote_control import browser
+from chrome_remote_control import desktop_browser_backend
+from chrome_remote_control import possible_browser
 
 """Finds desktop browsers that can be controlled by chrome_remote_control."""
 
@@ -24,13 +24,13 @@ ALL_BROWSER_TYPES = ','.join([
 class PossibleDesktopBrowser(possible_browser.PossibleBrowser):
   """A desktop browser that can be controlled."""
 
-  def __init__(self, type, options, executable, is_content_shell):
-    super(PossibleDesktopBrowser, self).__init__(type, options)
+  def __init__(self, browser_type, options, executable, is_content_shell):
+    super(PossibleDesktopBrowser, self).__init__(browser_type, options)
     self._local_executable = executable
     self._is_content_shell = is_content_shell
 
   def __repr__(self):
-    return 'PossibleDesktopBrowser(type=%s)' % self.type
+    return 'PossibleDesktopBrowser(browser_type=%s)' % self.browser_type
 
   def Create(self):
     backend = desktop_browser_backend.DesktopBrowserBackend(
@@ -79,10 +79,10 @@ def FindAllAvailableBrowsers(options,
     build_dir = 'out'
 
   # Add local builds
-  def AddIfFound(type, type_dir, app_name, content_shell):
+  def AddIfFound(browser_type, type_dir, app_name, content_shell):
     app = os.path.join(chrome_root, build_dir, type_dir, app_name)
     if os.path.exists(app):
-      browsers.append(PossibleDesktopBrowser(type, options,
+      browsers.append(PossibleDesktopBrowser(browser_type, options,
                                              app, content_shell))
   AddIfFound('debug', 'Debug', chromium_app_name, False)
   AddIfFound('content-shell-debug', 'Debug', content_shell_app_name, True)
@@ -134,7 +134,7 @@ def FindAllAvailableBrowsers(options,
 
   if len(browsers) and not has_display:
     logging.warning('Found (%s), but you have a DISPLAY environment set.' %
-                    ','.join([b.type for b in browsers]))
+                    ','.join([b.browser_type for b in browsers]))
     return []
 
   return browsers

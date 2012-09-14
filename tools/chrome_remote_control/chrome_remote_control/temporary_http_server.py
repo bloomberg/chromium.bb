@@ -5,10 +5,7 @@ import os
 import socket
 import subprocess
 import sys
-import urllib2
 import urlparse
-
-import util
 
 class TemporaryHTTPServer(object):
   def __init__(self, browser_backend, path):
@@ -58,17 +55,5 @@ class TemporaryHTTPServer(object):
   def url(self):
     return self._forwarder.url
 
-
   def UrlOf(self, path):
     return urlparse.urljoin(self.url, path)
-
-
-class NullBackend(object):
-  def testBasic(self):
-    options = browser_options.options_for_unittests
-    options.browser_to_use = browser_finder.ALL_BROWSER_TYPES
-    browser_to_create = browser_finder.FindBrowser(options)
-    if not browser_to_create:
-      raise Exception('No browser found, cannot continue test.')
-    with browser_to_create.Create() as b:
-      self.assertEquals(1, b.num_tabs)

@@ -14,7 +14,7 @@ class Page(object):
 class PageSet(object):
   def __init__(self):
     self.pages = []
-    self.description = ""
+    self.description = ''
 
   def LoadFromFile(self, page_set_filename):
     with open(page_set_filename, 'r') as f:
@@ -23,11 +23,11 @@ class PageSet(object):
       self.LoadFromDict(data)
 
   def LoadFromDict(self, data):
-    self.description = data["description"]
-    for p in data["pages"]:
+    self.description = data['description']
+    for p in data['pages']:
       page = Page()
-      for k,v in p.items():
-        if k == "url":
+      for k, v in p.items():
+        if k == 'url':
           if not re.match('(.+)://', v):
             v = 'http://%s' % v
         setattr(page, k, v)

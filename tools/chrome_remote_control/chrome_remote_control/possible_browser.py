@@ -7,12 +7,12 @@ class PossibleBrowser(object):
   Call Create() to launch the browser and begin manipulating it..
   """
 
-  def __init__(self, type, options):
-    self.type = type
+  def __init__(self, browser_type, options):
+    self.browser_type = browser_type
     self._options = options
 
   def __repr__(self):
-    return "PossibleBrowser(type=%s)" % self.type
+    return 'PossibleBrowser(browser_type=%s)' % self.browser_type
 
   def Create(self):
-    raise Exception("Must be implemented in subclass.")
+    raise NotImplementedError()

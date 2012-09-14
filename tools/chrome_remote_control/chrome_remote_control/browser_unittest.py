@@ -2,9 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 import unittest
-import browser
-import browser_finder
-import browser_options
+
+from chrome_remote_control import browser_finder
+from chrome_remote_control import browser_options
 
 class BrowserTest(unittest.TestCase):
   def testBasic(self):
@@ -23,16 +23,14 @@ class BrowserTest(unittest.TestCase):
     # create a chrome.Interval namespace. This tests whether the command line is
     # being set.
     options = browser_options.options_for_unittests
-    testJS = ("window.chrome.gpuBenchmarking !== undefined ||" +
-             "chrome.Interval !== undefined")
 
-    flag1 = "--user-agent=chrome_remote_control"
+    flag1 = '--user-agent=chrome_remote_control'
     options.extra_browser_args.append(flag1)
     try:
       browser_to_create = browser_finder.FindBrowser(options)
       with browser_to_create.Create() as b:
         with b.ConnectToNthTab(0) as t:
-          t.page.Navigate("http://www.google.com/")
+          t.page.Navigate('http://www.google.com/')
           t.WaitForDocumentReadyStateToBeInteractiveOrBetter()
           self.assertEquals(t.runtime.Evaluate('navigator.userAgent'),
                             'chrome_remote_control')

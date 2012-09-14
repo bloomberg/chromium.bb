@@ -3,10 +3,8 @@
 # found in the LICENSE file.
 import json
 import logging
-import urlparse
 
-import inspector_backend
-import util
+from chrome_remote_control import util
 
 class TabPage(object):
   def __init__(self, inspector_backend):
@@ -18,10 +16,10 @@ class TabPage(object):
     self._pending_navigate_url = None
 
   def _OnNotification(self, msg):
-    logging.debug("Notification: %s", json.dumps(msg, indent=2))
-    if msg["method"] == "Page.frameNavigated" and self._pending_navigate_url:
-      url = msg["params"]["frame"]["url"]
-      if not url == "chrome://newtab/":
+    logging.debug('Notification: %s', json.dumps(msg, indent=2))
+    if msg['method'] == 'Page.frameNavigated' and self._pending_navigate_url:
+      url = msg['params']['frame']['url']
+      if not url == 'chrome://newtab/':
         # Marks the navigation as complete and unblocks the navigate call.
         self._pending_navigate_url = None
 
@@ -32,10 +30,10 @@ class TabPage(object):
     """Navigates to url"""
     # Turn on notifications. We need them to get the Page.frameNavigated event.
     request = {
-      "method": "Page.enable"
+      'method': 'Page.enable'
       }
     res = self._inspector_backend.SyncRequest(request, timeout)
-    assert len(res["result"].keys()) == 0
+    assert len(res['result'].keys()) == 0
 
     # Navigate the page. However, there seems to be a bug in chrome devtools
     # protocol where the request id for this event gets held on the browser side
@@ -44,9 +42,9 @@ class TabPage(object):
     # So, instead of waiting for the event to actually complete, wait for the
     # Page.frameNavigated event.
     request = {
-      "method": "Page.navigate",
-      "params": {
-        "url": url,
+      'method': 'Page.navigate',
+      'params': {
+        'url': url,
         }
       }
     res = self._inspector_backend.SendAndIgnoreResponse(request)
@@ -60,8 +58,8 @@ class TabPage(object):
 
     # Turn off notifications.
     request = {
-      "method": "Page.disable"
+      'method': 'Page.disable'
       }
     res = self._inspector_backend.SyncRequest(request, timeout)
-    assert len(res["result"].keys()) == 0
+    assert len(res['result'].keys()) == 0
 
