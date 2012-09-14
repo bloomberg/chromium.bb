@@ -249,6 +249,12 @@ function WallpaperManager(dialogDom) {
   WallpaperManager.prototype.initCategoriesList_ = function() {
     this.categoriesList_ = $('categories-list');
     cr.ui.List.decorate(this.categoriesList_);
+    // cr.ui.list calculates items in view port based on client height and item
+    // height. However, categories list is displayed horizontally. So we should
+    // not calculate visible items here. Sets autoExpands to true to show every
+    // item in the list.
+    // TODO(bshe): Use ul to replace cr.ui.list for category list.
+    this.categoriesList_.autoExpands = true;
 
     var self = this;
     this.categoriesList_.itemConstructor = function(entry) {

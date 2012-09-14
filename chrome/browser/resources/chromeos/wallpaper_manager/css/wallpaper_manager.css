@@ -15,21 +15,20 @@ body {
 }
 
 #categories-list {
-  -webkit-box-flex: 1;
-  -webkit-box-orient: vertical;
+  -webkit-box-orient: horizontal;
   display: -webkit-box;
+  height: 40px;
   outline: none;
+  width: 100%;
 }
 
 #categories-list > li {
-  -webkit-border-start: 6px solid transparent;
   -webkit-box-align: center;
-  -webkit-padding-start: 18px;
   -webkit-user-select: none;
+  border-top: 6px solid transparent;
   color: #777;
   display: -webkit-box;
   height: 22px;
-  margin: 10px 0;
 }
 
 #categories-list > li:hover {
@@ -38,41 +37,33 @@ body {
 }
 
 #categories-list > li[selected] {
-  -webkit-border-start-color: rgb(78, 87, 100);
+  border-top-color: rgb(78, 87, 100);
   color: rgb(70, 78, 90);
   cursor: default;
 }
 
+#categories-list > li > div {
+  line-height: 34px;
+  padding: 0 10px;
+}
+
 .dialog-container {
+  -webkit-box-orient: vertical;
   display: -webkit-box;
   height: 100%;
   overflow: hidden;
 }
 
-.dialog-sidebar {
+.dialog-topbar {
+  -webkit-padding-start: 15px;
   display: -webkit-box;
   overflow: hidden;
-  padding-top: 10px;
-  position: relative;
-  width: 180px;
-}
-
-/* A vertical splitter between the categories list and the thumbnails grid.
- */
-div.sidebar-splitter {
-  cursor: col-resize;
-  margin-left: -3px;
-  margin-right: -3px;
-  position: relative;
-  width: 7px;
-  z-index: 2;
 }
 
 .dialog-main {
   -webkit-box-align: stretch;
   -webkit-box-flex: 1;
   display: -webkit-box;
-  padding: 10px 2px 4px 2px;
 }
 
 #category-container,
@@ -84,7 +75,7 @@ div.sidebar-splitter {
 
 #custom-container {
   margin: 10px;
-  padding: 10px 40px;
+  padding: 10px;
 }
 
 #custom-container > div {
@@ -94,7 +85,6 @@ div.sidebar-splitter {
 .image-picker {
   -webkit-box-flex: 1;
   display: -webkit-box;
-  margin-top: 5px;
   outline: none;
   overflow-y: auto;
 }
@@ -110,7 +100,7 @@ div.sidebar-splitter {
   border: 1px solid rgba(0, 0, 0, 0.15);
   border-radius: 4px;
   height: 80px;
-  margin: 10px;
+  margin: 1px;
   padding: 2px;
   width: 128px;
 }
@@ -141,7 +131,7 @@ div.sidebar-splitter {
   -webkit-box-pack: end;
   display: -webkit-box;
   height: 30px;
-  padding: 10px 15px;
+  padding: 15px;
 }
 
 .bottom-bar > .spacer {
