@@ -34,6 +34,7 @@ class TrayDisplay : public SystemTrayItem,
  private:
   // Overridden from SystemTrayItem.
   virtual views::View* CreateDefaultView(user::LoginStatus status) OVERRIDE;
+  virtual void DestroyDefaultView() OVERRIDE;
 
   // Overridden from aura::DisplayObserver
   virtual void OnDisplayBoundsChanged(const gfx::Display& display) OVERRIDE;

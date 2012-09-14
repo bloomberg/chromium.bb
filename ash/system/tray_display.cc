@@ -138,6 +138,10 @@ views::View* TrayDisplay::CreateDefaultView(user::LoginStatus status) {
   return default_;
 }
 
+void TrayDisplay::DestroyDefaultView() {
+  default_ = NULL;
+}
+
 void TrayDisplay::OnDisplayBoundsChanged(const gfx::Display& display) {
   if (default_)
     default_->Update();
