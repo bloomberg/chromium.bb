@@ -15,7 +15,8 @@ const char* const kNexeArchX86_64 = "x86-64";
 
 namespace plugin {
 const char* GetSandboxISA() {
-#if defined(NACL_ARCH_CPU_X86_64) && (defined(NACL_LINUX) || defined(NACL_OSX))
+#if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64) && \
+    (defined(NACL_LINUX) || defined(NACL_OSX))
   return kNexeArchX86_64;  // 64-bit Linux or Mac.
 #else
   return NaClOsIs64BitWindows() == 1
