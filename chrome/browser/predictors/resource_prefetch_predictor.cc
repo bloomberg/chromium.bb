@@ -733,6 +733,8 @@ void ResourcePrefetchPredictor::LearnUrlNavigation(
             ResourcePrefetchPredictorTables::UrlTableRowSorter());
   if (static_cast<int>(rows.size()) > config_.max_resources_per_entry)
     rows.resize(config_.max_resources_per_entry);
+  if (rows.size() == 0)
+    url_table_cache_.erase(main_frame_url);
 
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
@@ -809,6 +811,9 @@ void ResourcePrefetchPredictor::ReportAccuracyHistograms(
   int prefetch_cached = 0, prefetch_network = 0, prefetch_missed = 0;
   int num_assumed_prefetched = std::min(static_cast<int>(predicted.size()),
                                         max_assumed_prefetched);
+  if (num_assumed_prefetched == 0)
+    return;
+
   for (int i = 0; i < num_assumed_prefetched; ++i) {
     const UrlTableRow& row = predicted[i];
     std::map<GURL, bool>::const_iterator it = actual_resources.find(
@@ -861,9 +866,11 @@ void ResourcePrefetchPredictor::ReportAccuracyHistograms(
 
   // Measure the ratio of total number of resources prefetched from network vs
   // the total number of resources fetched by the page from the network.
-  RPP_PREDICTED_HISTOGRAM_PERCENTAGE(
-      "PrefetchFromNetworkPercentOfTotalFromNetwork",
-      prefetch_network * 100.0 / total_resources_fetched_from_network);
+  if (total_resources_fetched_from_network > 0) {
+    RPP_PREDICTED_HISTOGRAM_PERCENTAGE(
+        "PrefetchFromNetworkPercentOfTotalFromNetwork",
+        prefetch_network * 100.0 / total_resources_fetched_from_network);
+  }
 
 #undef RPP_PREDICTED_HISTOGRAM_PERCENTAGE
 #undef RPP_PREDICTED_HISTOGRAM_COUNTS
