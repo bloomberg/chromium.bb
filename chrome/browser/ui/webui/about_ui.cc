@@ -46,6 +46,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/jstemplate_builder.h"
+#include "chrome/common/metrics/variations/variations_util.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -1113,10 +1114,8 @@ std::string AboutVersionStrings(DictionaryValue* localized_strings,
   }
   ChromeWebUIDataSource::SetFontAndTextDirection(localized_strings);
 
-#if !defined(NDEBUG)
   localized_strings->SetString("variations_name",
       l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_VARIATIONS));
-#endif
 
   std::string data;
   jstemplate_builder::AppendJsonJS(localized_strings, &data);
@@ -1328,8 +1327,8 @@ void VersionDOMHandler::RegisterMessages() {
 
 void VersionDOMHandler::HandleRequestVariationsList(const ListValue* args) {
   scoped_ptr<ListValue> variations_list(new ListValue());
-#if !defined(NDEBUG)
   std::vector<std::string> variations;
+#if !defined(NDEBUG)
   std::string variation_state;
   base::FieldTrialList::StatesToString(&variation_state);
 
@@ -1344,13 +1343,19 @@ void VersionDOMHandler::HandleRequestVariationsList(const ListValue* args) {
   DCHECK_EQ(0U, tokens.size() % 2);
   for (size_t i = 0; i < tokens.size(); i += 2)
     variations.push_back(tokens[i] + ":" + tokens[i + 1]);
+#else
+  // In release mode, display the hashes only.
+  std::vector<string16> selected_groups;
+  chrome_variations::GetFieldTrialSelectedGroupIdsAsStrings(&selected_groups);
+  for (size_t i = 0; i < selected_groups.size(); ++i)
+    variations.push_back(UTF16ToASCII(selected_groups[i]));
+#endif
 
   for (std::vector<std::string>::const_iterator it = variations.begin();
       it != variations.end(); ++it) {
     variations_list->Append(Value::CreateStringValue(*it));
   }
-#endif
-  // In release mode, this will return an empty list to clear the section.
+
   web_ui()->CallJavascriptFunction("returnVariationsList",
                                    *variations_list.release());
 }

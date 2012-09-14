@@ -94,6 +94,17 @@ void GetFieldTrialSelectedGroupIds(
                                                  name_group_ids);
 }
 
+void GetFieldTrialSelectedGroupIdsAsStrings(
+    std::vector<string16>* output) {
+  DCHECK(output->empty());
+  std::vector<SelectedGroupId> name_group_ids;
+  GetFieldTrialSelectedGroupIds(&name_group_ids);
+  for (size_t i = 0; i < name_group_ids.size(); ++i) {
+    output->push_back(UTF8ToUTF16(base::StringPrintf(
+        "%x-%x", name_group_ids[i].name, name_group_ids[i].group)));
+  }
+}
+
 void AssociateGoogleVariationID(const std::string& trial_name,
                                 const std::string& group_name,
                                 chrome_variations::VariationID id) {
@@ -135,13 +146,8 @@ void GenerateVariationChunks(const std::vector<string16>& experiments,
 }
 
 void SetChildProcessLoggingVariationList() {
-  std::vector<SelectedGroupId> name_group_ids;
-  GetFieldTrialSelectedGroupIds(&name_group_ids);
-  std::vector<string16> experiment_strings(name_group_ids.size());
-  for (size_t i = 0; i < name_group_ids.size(); ++i) {
-    experiment_strings[i] = UTF8ToUTF16(base::StringPrintf(
-        "%x-%x", name_group_ids[i].name, name_group_ids[i].group));
-  }
+  std::vector<string16> experiment_strings;
+  GetFieldTrialSelectedGroupIdsAsStrings(&experiment_strings);
   child_process_logging::SetExperimentList(experiment_strings);
 }
 

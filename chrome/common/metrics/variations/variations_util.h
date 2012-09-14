@@ -75,6 +75,13 @@ struct SelectedGroupIdCompare {
 void GetFieldTrialSelectedGroupIds(
     std::vector<SelectedGroupId>* name_group_ids);
 
+// Fills the supplied vector |output| (which must be empty when called) with
+// unique string representations of SelectedGroupIds for each Field Trial that
+// has a chosen group. The strings are formatted as "<TrialName>-<GroupName>",
+// with the names as hex strings. Field Trials for which a group has not been
+// chosen yet are NOT returned in this list.
+void GetFieldTrialSelectedGroupIdsAsStrings(std::vector<string16>* output);
+
 // Associate a chrome_variations::VariationID value with a FieldTrial group. If
 // an id was previously set for |trial_name| and |group_name|, this does
 // nothing. The group is denoted by |trial_name| and |group_name|. This must be
