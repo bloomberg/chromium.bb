@@ -37,6 +37,13 @@ class RootWindowHostLinux : public RootWindowHost,
   virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
 
  private:
+  bool DispatchEventForRootWindow(const base::NativeEvent& event);
+
+  // Dispatches XI2 events. Note that some events targetted for the X root
+  // window are dispatched to the aura root window (e.g. touch events after
+  // calibration).
+  void DispatchXI2Event(const base::NativeEvent& event);
+
   // RootWindowHost Overrides.
   virtual RootWindow* GetRootWindow() OVERRIDE;
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;

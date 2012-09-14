@@ -74,7 +74,7 @@ bool X11DesktopHandler::Dispatch(const base::NativeEvent& event) {
     }
   }
 
-  return false;
+  return true;
 }
 
 void X11DesktopHandler::OnWindowInitialized(aura::Window* window) {
