@@ -172,6 +172,14 @@ _settings = dict(
 
 # uprev -- Uprevs the local ebuilds to build new changes since last stable.
 #          build.  If master then also pushes these changes on success.
+#          Note that we uprev on just about every bot config because it gives us
+#          a more deterministic build system (the tradeoff being that some bots
+#          build from source more frequently than if they never did an uprev).
+#          This way the release/factory/etc... builders will pick up changes
+#          that devs pushed before it runs, but after the correspoding PFQ bot
+#          ran (which is what creates+uploads binpkgs).  The incremental bots
+#          are about the only ones that don't uprev because they mimic the flow
+#          a developer goes through on their own local systems.
   uprev=True,
 
 # overlays -- Select what overlays to look at for revving and prebuilts. This
