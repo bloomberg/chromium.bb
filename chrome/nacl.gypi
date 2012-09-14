@@ -81,6 +81,14 @@
             ['disable_nacl_untrusted==0', {
               'dependencies': [
                 '../ppapi/native_client/native_client.gyp:nacl_irt',
+                # This is not a real build dependency, but just a way to
+                # get a build-time sanity-check to run.  We have it rather
+                # than some other testing-only sort of place because the
+                # CrOS builders only build the chrome and nacl_helper
+                # targets and don't build chromium_builder_tests or any
+                # such target, and those are the only bots we have that
+                # do build for ARM.
+                '../ppapi/native_client/irt_test.gyp:*',
                 '../ppapi/native_client/src/untrusted/pnacl_irt_shim/pnacl_irt_shim.gyp:pnacl_irt_shim',
                 '../ppapi/native_client/native_client.gyp:nacl_ipc_irt',
               ],
