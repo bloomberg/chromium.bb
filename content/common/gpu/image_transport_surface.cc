@@ -222,7 +222,8 @@ void ImageTransportHelper::Resize(gfx::Size size) {
   // decoder so that future calls to MakeCurrent do not early out on the
   // assumption that neither the context or surface have actually changed.
 #if defined(OS_WIN)
-  Decoder()->ReleaseCurrent();
+  if (handle_ != NULL)
+    Decoder()->ReleaseCurrent();
 #endif
 
   surface_->OnResize(size);
@@ -232,8 +233,10 @@ void ImageTransportHelper::Resize(gfx::Size size) {
 #endif
 
 #if defined(OS_WIN)
-  Decoder()->MakeCurrent();
-  SetSwapInterval(Decoder()->GetGLContext());
+  if (handle_ != NULL) {
+    Decoder()->MakeCurrent();
+    SetSwapInterval(Decoder()->GetGLContext());
+  }
 #endif
 }
 
