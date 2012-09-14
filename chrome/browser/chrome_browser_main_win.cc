@@ -157,11 +157,14 @@ ChromeBrowserMainPartsWin::ChromeBrowserMainPartsWin(
     GetMetroSwitches metro_switches_proc = reinterpret_cast<GetMetroSwitches>(
         GetProcAddress(base::win::GetMetroModule(),
                        "GetMetroCommandLineSwitches"));
-    string16 metro_switches = (*metro_switches_proc)();
-    if (!metro_switches.empty()) {
-      CommandLine extra_switches(CommandLine::NO_PROGRAM);
-      extra_switches.ParseFromString(metro_switches);
-      CommandLine::ForCurrentProcess()->AppendArguments(extra_switches, false);
+    if (metro_switches_proc) {
+      string16 metro_switches = (*metro_switches_proc)();
+      if (!metro_switches.empty()) {
+        CommandLine extra_switches(CommandLine::NO_PROGRAM);
+        extra_switches.ParseFromString(metro_switches);
+        CommandLine::ForCurrentProcess()->AppendArguments(extra_switches,
+                                                          false);
+      }
     }
   }
 }
