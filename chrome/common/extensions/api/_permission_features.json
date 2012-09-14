@@ -223,7 +223,7 @@
   },
   "pushMessaging": {
     "channel": "dev",
-    "extension_types": ["platform_app"]
+    "extension_types": ["extension", "platform_app"]
   },
   "rtcPrivate": {
     "channel": "stable",
