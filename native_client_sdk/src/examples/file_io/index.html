@@ -10,90 +10,26 @@
   <meta http-equiv="Expires" content="-1">
   <title><TITLE></title>
   <script type="text/javascript" src="common.js"></script>
-  <script type="text/javascript" >
-    function loadFile() {
-      if (common.naclModule) {
-        var fileName = document.getElementById('file_name').value;
-
-        // Package a message using a simple protocol containing:
-        // instruction file_name_length file_name
-        var msg = "ld " + fileName.length + " " + fileName;
-        common.naclModule.postMessage(msg);
-      }
-    }
-
-    function saveFile() {
-      if (common.naclModule) {
-        var fileName = document.getElementById('file_name').value;
-        var fileText = document.getElementById('file_editor').value;
-
-        // Package a message using a simple protocol containing:
-        // instruction file_name_length file_name file_contents
-        var msg = "sv " + fileName.length + " " + fileName + " " + fileText;
-        common.naclModule.postMessage(msg);
-      }
-    }
-
-    function deleteFile() {
-      if (common.naclModule) {
-        var fileName = document.getElementById('file_name').value;
-
-        // Package a message using a simple protocol containing:
-        // instruction file_name_length file_name
-        var msg = "de " + fileName.length + " " + fileName;
-        common.naclModule.postMessage(msg);
-      }
-    }
-
-    function handleMessage(message_event) {
-      var messageParts = message_event.data.split("|", 3);
-
-      if (messageParts[0] == "ERR") {
-        common.updateStatus(messageParts[1]);
-        document.getElementById('statusField').style.color = "red";
-      }
-      else if(messageParts[0] == "STAT") {
-        common.updateStatus(messageParts[1]);
-      }
-      else if (messageParts[0] == "DISP") {
-        // Display the message in the file edit box
-        document.getElementById('file_editor').value = messageParts[1];
-      }
-      else if (messageParts[0] == "READY") {
-        var statusField = document.getElementById('statusField');
-        common.updateStatus(statusField.innerHTML + ' Ready!');
-      }
-    }
-  </script>
+  <script type="text/javascript" src="example.js"></script>
 </head>
-<body>
+<body data-name="<NAME>" data-tc="<tc>" data-config="<config>" data-width="200"
+    data-height="200" data-custom-load="true">
   <h1><TITLE></h1>
   <h2>Status: <code id="statusField">NO-STATUS</code></h2>
 
-  <textarea id="file_editor"
+  <textarea id="fileEditor"
     cols="40"
     rows="10"
     wrap="hard"
     placeholder="Enter some text to save in a file..."></textarea>
   <br>File Name
-  <input type="text" id="file_name" action="">
-  <button id="save_but" onclick="saveFile()" action="">Save</button>
-  <button id="load_but" onclick="loadFile()" action="">Load</button>
-  <button id="delete_but" onclick="deleteFile()" action="">Delete</button>
+  <input type="text" id="fileName" action="">
+  <button id="saveButton" action="">Save</button>
+  <button id="loadButton" action="">Load</button>
+  <button id="deleteButton" action="">Delete</button>
 
   <!-- The NaCl plugin will be embedded inside the element with id "listener".
       See common.js.-->
-  <div id="listener">
-    <script type="text/javascript">
-      window.webkitStorageInfo.requestQuota(window.PERSISTENT, 1024*1024,
-          function(bytes) {
-            common.updateStatus(
-                'Allocated '+bytes+' bytes of persistant storage.');
-            common.createNaClModule('<NAME>', '<tc>', '<config>', 200, 200);
-            common.attachDefaultListeners();
-          },
-          function(e) { alert('Failed to allocate space') });
-    </script>
-  </div>
+  <div id="listener"></div>
 </body>
 </html>

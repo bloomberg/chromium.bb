@@ -13,6 +13,7 @@
       'LIBS': ['ppapi_cpp', 'ppapi', 'pthread']
     }
   ],
+  'DATA': ['example.js'],
   'DEST': 'examples',
   'NAME': 'mt_input_events',
   'TITLE': 'Multi-threaded Input Events',

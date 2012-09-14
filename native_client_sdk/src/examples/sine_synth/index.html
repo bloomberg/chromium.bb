@@ -10,43 +10,18 @@ found in the LICENSE file.
   <meta http-equiv="Expires" content="-1">
   <title><TITLE></title>
   <script type="text/javascript" src="common.js"></script>
-  <script type="text/javascript" >
-    function moduleDidLoad() {
-      // The module is not hidden by default so we can easily see if the plugin
-      // failed to load.
-      common.hideModule();
-    }
-
-    function toggleSound(flag) {
-      common.naclModule.postMessage('setFrequency:' +
-          document.getElementById('frequency_field').value);
-      if (flag) {
-        common.naclModule.postMessage('playSound');
-      } else {
-        common.naclModule.postMessage('stopSound');
-      }
-    }
-
-    function changeFrequency(freq) {
-      common.naclModule.postMessage('setFrequency:' + freq);
-    }
-
-    function handleMessage(e) {
-      document.getElementById('frequency_field').value = message_event.data;
-    }
-  </script>
+  <script type="text/javascript" src="example.js"></script>
 </head>
-<body onload="common.onload('<NAME>', '<tc>', '<config>')">
+<body data-name="<NAME>" data-tc="<tc>" data-config="<config>">
   <h1><TITLE></h1>
   <h2>Status: <code id="statusField">NO-STATUS</code></h2>
 
   <p>Click the button to start and stop the sine wave playing.</p>
-  <button onclick="toggleSound(true)">Play</button>
-  <button onclick="toggleSound(false)">Stop</button>
+  <button id="playButton">Play</button>
+  <button id="stopButton">Stop</button>
 
   <p>Enter the frequency of the sine wave:</p>
-  <input type="text" size="15" id="frequency_field"
-         value="440" onchange="changeFrequency(this.value)">
+  <input type="text" size="15" id="frequencyField" value="440">
 
   <!-- The NaCl plugin will be embedded inside the element with id "listener".
       See common.js.-->

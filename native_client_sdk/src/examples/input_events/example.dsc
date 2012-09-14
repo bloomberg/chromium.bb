@@ -8,6 +8,7 @@
       'LIBS': ['ppapi_cpp', 'ppapi', 'pthread']
     }
   ],
+  'DATA': ['example.js'],
   'DEST': 'examples',
   'NAME': 'input_events',
   'TITLE': 'Input Events',

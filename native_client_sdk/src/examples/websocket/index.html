@@ -11,50 +11,27 @@ found in the LICENSE file.
   <meta http-equiv="Expires" content="-1">
   <title><TITLE></title>
   <script type="text/javascript" src="common.js"></script>
-  <script type="text/javascript">
-    function moduleDidLoad() {
-      // The module is not hidden by default so we can easily see if the plugin
-      // failed to load.
-      common.hideModule();
-    }
-
-    function doConnect() {
-      // Send a request message. See also websocket.cc for the request format.
-      var url = document.getElementById('url').value;
-      common.naclModule.postMessage('o;' + url);
-    }
-
-    function doSend() {
-      // Send a request message. See also websocket.cc for the request format.
-      var message = document.getElementById('message').value;
-      common.naclModule.postMessage('s;' + message);
-    }
-
-    function doClose() {
-      // Send a request message. See also websocket.cc for the request format.
-      common.naclModule.postMessage('c;');
-    }
-  </script>
+  <script type="text/javascript" src="example.js"></script>
 </head>
-<body onload="common.onload('<NAME>', '<tc>', '<config>')">
+<body data-name="<NAME>" data-tc="<tc>" data-config="<config>">
   <h1><TITLE></h1>
   <h2>Status: <code id="statusField">NO-STATUS</code></h2>
   <div>Set a server URL, then push "Connect" button to establish a connection.
     <br>"Send" button sends text message on the left text area.
     <br>"Close" button closes the connection.
   <div>
-  <form action="#" onsubmit="doConnect(); return false;">
+  <form id="connectForm">
     <input type="text" id="url" style="width: 400px"
       value="ws://html5rocks.websocket.org/echo?encoding=text">
     <input type="submit" value="Connect">
   </form>
 
-  <form action="#" onsubmit="doSend(); return false;">
+  <form id="sendForm">
     <input type="text" id="message" value="hello" style="width: 400px">
     <input type="submit" value="Send">
   </form>
 
-  <input type="button" value="Close" onclick="doClose()">
+  <button id="closeButton">Close</button>
   <div id="listener"></div>
   <div id="log"></div>
 </body>

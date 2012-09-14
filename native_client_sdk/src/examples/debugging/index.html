@@ -9,145 +9,58 @@
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="-1" />
   <title>Logging and Stack Trace</title>
-  <script type="text/javascript">
-    statusText = 'NO-STATUS';
-
-
-    tick = '';
-    boomTime = null;
-    crashed = false;
-    // Handle a message coming from the NaCl module.
-    function handleMessage(message_event) {
-      msg_type = message_event.data.substring(0,4)
-      msg_data = message_event.data.substring(5, message_event.data.length)
-      if (msg_type == 'POP:') {
-        alert(message_event.data);
-        return
-      }
-      if (msg_type == 'LOG:') {
-        document.Logging.log.value += msg_data + '\n';
-        return
-      }
-      if (msg_type == 'TRC:') {
-        crashed = true;
-        updateStatus('Crash Reported')
-        xmlhttp = new XMLHttpRequest();
-        xmlhttp.open('POST',document.nacl_module.src,false);
-        xmlhttp.send(msg_data)
-        document.Logging.trace.value = xmlhttp.responseText + '\n';
-        return
-      }
-    }
-
-    function pageDidLoad() {
-      updateStatus("Page Loaded")
-      heartBeat();
-      updateStatus("Page Submitted")
-    }
-
-    // Indicate success when the NaCl module has loaded.
-    function moduleDidLoad() {
-      updateStatus('LOADED');
-      t=setTimeout('boom()', 4000);
-    }
-    // Set the global status message.  If the element with id 'statusField'
-    // exists, then set its HTML to the status message as well.
-    // opt_message The message test.  If this is null or undefined, then
-    //     attempt to set the element with id 'statusField' to the value of
-    //     |statusText|.
-    function updateStatus(opt_message) {
-      if (opt_message)
-        statusText = opt_message;
-        document.Logging.log.value += opt_message + '\n'
-      var statusField = document.getElementById('statusField');
-      if (statusField) {
-        statusField.innerHTML = statusText;
-      }
-    }
-
-    function boom() {
-      if (!crashed) {
-        updateStatus('Send BOOM');
-        document.nacl_module.postMessage('BOOM');
-        t=setTimeout('boom()', 1000);
-      }
-    }
-
-    function heartBeat() {
-      if (document.nacl_module.lastError) {
-        if (tick != document.nacl_module.lastError) {
-          tick = document.nacl_module.lastError;
-          updateStatus('Missed heartbeat: ' + document.nacl_module.lastError);
-          crashed = true;
-        }
-      }
-      else { t=setTimeout('heartBeat()', 1000); }
-    }
-  </script>
-  <form name="Status">
-    <input type="hidden" name="Data" value="">
-  </form>
+  <script type="text/javascript" src="common.js"></script>
+  <script type="text/javascript" src="example.js"></script>
 </head>
-<body onload="pageDidLoad()">
-<h1>Native Client Debugging Example: Generating a Stack Trace.</h1>
-<h2>How the example works</h2>
-<p>This example shows how to trap an untrusted exception (such as a illegal 
-memory reference in the NEXE).  This debugging technique can only be used
-for development since it requires several command-line switches, and 
-environment variables.  The test works by loading the module and communicating
-with it through PostMessage.  Messages from the module are sent to the Status
-line and/or the Log window in the page. Four seconds after the module is
-loaded, the JavaScript on this page sends a 'BOOM' message to the module that
-causes the module to  dereference an illegal location in memory.</p>
+<body data-name="<NAME>" data-tc="<tc>" data-config="<config>" data-width="100"
+    data-height="100" data-custom-load="true">
+  <h1>Native Client Debugging Example: Generating a Stack Trace.</h1>
+  <h2>How the example works</h2>
+  <p>This example shows how to trap an untrusted exception (such as a illegal
+  memory reference in the NEXE). This debugging technique can only be used
+  for development since it requires several command-line switches, and
+  environment variables. The test works by loading the module and communicating
+  with it through PostMessage. Messages from the module are sent to the Status
+  line and/or the Log window in the page. Four seconds after the module is
+  loaded, the JavaScript on this page sends a 'BOOM' message to the module that
+  causes the module to dereference an illegal location in memory.</p>
 
-<p>If your setup is correct (you launched Chrome with the appropriate
-command-line arguments and environment variables), the Log window bellow should
-show that the crash dump facilities are turn on. When the crash data arrives
-from the module, the data is forwarded to the HTTP server, which drives
-a decoder and sends back a stack trace to the web page.</p>
+  <p>If your setup is correct (you launched Chrome with the appropriate
+  command-line arguments and environment variables), the Log window below
+  should show that the crash dump facilities are turned on. When the crash data
+  arrives from the module, the data is forwarded to the HTTP server, which
+  drives a decoder and sends back a stack trace to the web page.</p>
 
-<p>If setup incorrectly, the NaCl module may or may not load.  If the module 
-loads, it sends a "LOADED" message to the log and crash after four seconds.
-Since the stack trace facilities are not enables, the script will determine that
-the module has crashed by detecting a missed heartbeat which the application
-would normally send. 
-</p> 
+  <p>If setup incorrectly, the NaCl module may or may not load. If the module
+  loads, it sends a "LOADED" message to the log and crash after four seconds.
+  Since the stack trace facilities are not enables, the script will determine
+  that the module has crashed by detecting a missed heartbeat which the
+  application would normally send.
+  </p>
 
-<h2>Running the example</h2>
-In one terminal window, to start the server:
-<ul>
-<li>Set the CHROME_PATH environment variable to the fully qualified path of your
-Chrome executable.</li>
-<li>From the example directory type: <b>make RUN</b></li>
-</ul>
-In another terminal window, to automatically start Chrome with the correct
-environment variables and command-line switches:
-<ul>
-<li>Set the CHROME_PATH environment variable to the fully qualified path of your
-Chrome executable.</li>
-<li>From the example directory type: <b>make TRACE</b></li>
-</ul>
+  <h2>Running the example</h2>
+  In one terminal window, to start the server:
+  <ul>
+    <li>Set the CHROME_PATH environment variable to the fully-qualified path of
+    your Chrome executable.</li>
+    <li>From the example directory type: <b>make RUN</b></li>
+  </ul>
 
-<div id="listener">
-  <script type="text/javascript">
-    var listener = document.getElementById('listener')
-    listener.addEventListener('load', moduleDidLoad, true);
-    listener.addEventListener('message', handleMessage, true);
-  </script>
-  <embed name="nacl_module"
-         id="hello_world"
-         width=100 height=100
-         src="<tc>/<config>/debugging.nmf"
-         type="application/x-nacl" />
-</div>
-<hr>
-<h2>Status: <code id="statusField">NO-STATUS</code></h2>
-  <form name="Logging">
-    <h2>Log</h2>
-    <textarea rows="10" cols="130" name="log" readonly="readonly"></textarea>
-    <br />
-    <h2>Stack Trace</h2>
-    <textarea rows="10" cols="130" name="trace" readonly="readonly"></textarea>
-  </form>
+  In another terminal window, to automatically start Chrome with the correct
+  environment variables and command-line switches:
+  <ul>
+    <li>Set the CHROME_PATH environment variable to the fully qualified path of
+    your Chrome executable.</li>
+    <li>From the example directory type: <b>make TRACE</b></li>
+  </ul>
+
+  <div id="listener"></div>
+  <hr>
+  <h2>Status: <code id="statusField">NO-STATUS</code></h2>
+  <h2>Log</h2>
+  <textarea id="log" rows="10" cols="130" readonly="readonly"></textarea>
+  <br>
+  <h2>Stack Trace</h2>
+  <textarea id="trace" rows="10" cols="130" readonly="readonly"></textarea>
 </body>
 </html>

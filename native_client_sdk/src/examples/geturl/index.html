@@ -10,45 +10,17 @@ found in the LICENSE file.
   <meta http-equiv="Expires" content="-1">
   <title><TITLE></title>
   <script type="text/javascript" src="common.js"></script>
-  <script type="text/javascript">
-    function moduleDidLoad() {
-      // The module is not hidden by default so we can easily see if the plugin
-      // failed to load.
-      common.hideModule();
-    }
-
-    function loadUrl() {
-      common.naclModule.postMessage('getUrl:geturl_success.html');
-    }
-
-    function handleMessage(message_event) {
-      var logElt = document.getElementById('general_output');
-      // Find the first line break.  This separates the URL data from the
-      // result text.  Note that the result text can contain any number of
-      // '\n' characters, so split() won't work here.
-      var url = message_event.data;
-      var result = '';
-      var eol_pos = message_event.data.indexOf("\n");
-      if (eol_pos != -1) {
-        url = message_event.data.substring(0, eol_pos);
-        if (eol_pos < message_event.data.length - 1) {
-          result = message_event.data.substring(eol_pos + 1);
-        }
-      }
-      logElt.textContent += 'FULLY QUALIFIED URL: ' + url + '\n';
-      logElt.textContent += 'RESULT:\n' + result + '\n';
-    }
-  </script>
+  <script type="text/javascript" src="example.js"></script>
 </head>
-<body onload="common.onload('<NAME>', '<tc>', '<config>')">
+<body data-name="<NAME>" data-tc="<tc>" data-config="<config>">
   <h1><TITLE></h1>
   <h2>Status: <code id="statusField">NO-STATUS</code></h2>
   <table border=5 cellpadding=5% summary="A title and a result log">
     <tr>
-      <td valign=top><pre id='general_output' class='notrun'></pre></td>
+      <td valign=top><pre id='generalOutput' class='notrun'></pre></td>
     </tr>
   </table>
-  <input id="button" type="button" value="Get URL" onclick="loadUrl()">
+  <input id="button" type="button" value="Get URL">
   <!-- The NaCl plugin will be embedded inside the element with id "listener".
       See common.js.-->
   <div id="listener"></div>

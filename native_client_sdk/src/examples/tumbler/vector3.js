@@ -9,6 +9,8 @@
 
 // Requires tumbler
 
+var tumbler = tumbler || {};
+
 /**
  * Constructor for the Vector3 object.  This class contains a 3-tuple that
  * represents a vector in 3D space.

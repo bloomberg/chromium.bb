@@ -10,29 +10,14 @@ found in the LICENSE file.
   <meta http-equiv="Expires" content="-1">
   <title><TITLE></title>
   <script type="text/javascript" src="common.js"></script>
-  <script type="text/javascript">
-    function moduleDidLoad() {
-      // The module is not hidden by default so we can easily see if the plugin
-      // failed to load.
-      common.hideModule();
-    }
-
-    function askBall() {
-      var questionEl = document.getElementById('question');
-      var query = questionEl.value;
-      questionEl.value = '';
-      document.getElementById('log').innerHTML += 'You asked:' + query + '<br>';
-      common.naclModule.postMessage('query');
-      return false;
-    }
-  </script>
+  <script type="text/javascript" src="example.js"></script>
 </head>
-<body onload="common.onload('<NAME>', '<tc>', '<config>')">
+<body data-name="<NAME>" data-tc="<tc>" data-config="<config>">
   <h1><TITLE></h1>
   <h2>Status: <code id="statusField">NO-STATUS</code></h2>
   <div>Magic eightball: type a question below, press the button, and get a
       response.</div>
-  <form action="#" onsubmit="return askBall();">
+  <form>
     <input type="text" id="question" value="">
     <input type="submit" value="ASK!">
   </form>

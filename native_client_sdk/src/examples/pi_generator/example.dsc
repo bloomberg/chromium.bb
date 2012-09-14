@@ -12,6 +12,7 @@
       'LIBS': ['ppapi_cpp', 'ppapi', 'pthread']
     }
   ],
+  'DATA': ['example.js'],
   'DEST': 'examples',
   'NAME': 'pi_generator',
   'TITLE': 'Monte Carlo Estimate for Pi',
@@ -21,4 +22,3 @@ estimate pi using the Monte Carlo method while randomly putting 1,000,000,000
 points inside a 2D square that shares two sides with a quarter circle.""",
   'INFO': 'Thread creation, 2D graphics, view change events.'
 }
-

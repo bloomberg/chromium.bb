@@ -10,38 +10,18 @@
   <meta http-equiv="Expires" content="-1">
   <title><TITLE></title>
   <script type="text/javascript" src="common.js"></script>
-  <script type="text/javascript">
-    function moduleDidLoad() {
-      // The module is not hidden by default so we can easily see if the plugin
-      // failed to load.
-      common.hideModule();
-    }
-
-    function fortyTwo() {
-      common.naclModule.postMessage('fortyTwo');
-    }
-
-    function reverseText() {
-      // Grab the text from the text box, pass it into reverseText()
-      var inputBox = document.getElementById('inputBox');
-      common.naclModule.postMessage('reverseText:' + inputBox.value);
-    }
-
-    function handleMessage(message_event) {
-      alert(message_event.data);
-    }
-  </script>
+  <script type="text/javascript" src="example.js"></script>
 </head>
-<body onload="common.onload('<NAME>', '<tc>', '<config>')">
-  <h1>Native Client Simple Module</h1>
+<body data-name="<NAME>" data-tc="<tc>" data-config="<config>">
+  <h1><TITLE></h1>
   <h2>Status: <code id="statusField">NO-STATUS</code></h2>
   <!-- The NaCl plugin will be embedded inside the element with id "listener".
       See common.js.-->
   <div id="listener"></div>
   <textarea id="inputBox" rows="4" cols="50">Hello World</textarea>
   <div>
-    <button onclick="fortyTwo()">Call fortyTwo()</button>
-    <button onclick="reverseText()">Call reverseText()</button>
+    <button id="fortyTwo">Call fortyTwo()</button>
+    <button id="reverseText">Call reverseText()</button>
   <div/>
 </body>
 </html>

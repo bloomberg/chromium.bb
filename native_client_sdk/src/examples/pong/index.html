@@ -10,50 +10,17 @@ found in the LICENSE file.
   <meta http-equiv="Expires" content="-1">
   <title><TITLE></title>
   <script type="text/javascript" src="common.js"></script>
-  <script type="text/javascript" >
-    var paintInterval = null;
-    function pageDidUnload() {
-      clearInterval(paintInterval);
-    }
-
-    function resetScore() {
-      common.naclModule.postMessage("resetScore");
-    }
-
-    // Handle a message coming from the NaCl module.  The message payload is
-    // assumed to contain the current game score.  Update the score text
-    // display with this value.
-    // Note that errors are also sent to this handler.  A message starting
-    // with 'ERROR' is considered an error, all other strings are assumed
-    // to be scores.
-    function handleMessage(message_event) {
-      if (message_event.data.indexOf('ERROR') == 0) {
-        document.getElementById('error_log').innerHTML = message_event.data;
-      } else {
-        document.getElementById('score').innerHTML = message_event.data;
-      }
-    }
-  </script>
+  <script type="text/javascript" src="example.js"></script>
 </head>
-<body onunload="pageDidUnload()">
+<body data-name="<NAME>" data-tc="<tc>" data-config="<config>"
+    data-custom-load="true">
   <h1><TITLE></h1>
   <h2>Status: <code id="statusField">NO-STATUS</code></h2>
   <!-- The NaCl plugin will be embedded inside the element with id "listener".
       See common.js.-->
-  <div id="listener">
-    <script type="text/javascript">
-      window.webkitStorageInfo.requestQuota(window.PERSISTENT, 1024,
-          function(bytes) {
-            common.updateStatus(
-                'Allocated '+bytes+' bytes of persistent storage.');
-            common.createNaClModule('<NAME>', '<tc>', '<config>', 800, 600);
-            common.attachDefaultListeners();
-          },
-          function(e) { alert('Failed to allocate space'); });
-    </script>
-  </div>
+  <div id="listener"></div>
   <p id="score"></p>
-  <button onclick="resetScore()">Reset score</button>
-  <p id="error_log"></p>
+  <button id="resetScore">Reset score</button>
+  <p id="errorLog"></p>
 </body>
 </html>

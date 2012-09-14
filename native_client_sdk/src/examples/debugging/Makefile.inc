@@ -3,7 +3,7 @@
 # access to the file system, untrusted exception handling, etc...
 #
 
-CHROME_ARGS:=--incognito --no-sandbox
+CHROME_ARGS:=--incognito --no-sandbox --enable-nacl
 
 ifneq (,$(wildcard $(CHROME_PATH)))
 export NACL_DANGEROUS_ENABLE_FILE_ACCESS=1

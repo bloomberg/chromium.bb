@@ -10,28 +10,9 @@ found in the LICENSE file.
   <meta http-equiv="Expires" content="-1">
   <title><TITLE></title>
   <script type="text/javascript" src="common.js"></script>
-  <script type="text/javascript">
-    var kMaxArraySize = 20;
-    var messageArray = new Array();
-    
-    function moduleDidLoad() {
-      common.naclModule.style.backgroundColor = 'gray';
-    }
-
-    function handleMessage(message) {
-      // Show last |kMaxArraySize| events in html.
-      messageArray.push(message.data);
-      if (messageArray.length > kMaxArraySize) {
-        messageArray.shift();
-      }
-      var newData = messageArray.join('<BR>');
-      document.getElementById('eventString').innerHTML = newData;
-      // Print event to console.
-      console.log(message.data);
-    }
-  </script>
+  <script type="text/javascript" src="example.js"></script>
 </head>
-<body onload="common.onload('<NAME>', '<tc>', '<config>')">
+<body data-name="<NAME>" data-tc="<tc>" data-config="<config>">
   <h1><TITLE></h1>
   <h2>Status: <code id="statusField">NO-STATUS</code></h2>
 

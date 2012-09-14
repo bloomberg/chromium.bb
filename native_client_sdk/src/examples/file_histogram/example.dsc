@@ -8,6 +8,7 @@
       'LIBS' : ['ppapi_cpp', 'ppapi', 'pthread']
     }
   ],
+  'DATA': ['example.js'],
   'DEST': 'examples',
   'NAME': 'file_histogram',
   'TITLE': 'File Histogram.',

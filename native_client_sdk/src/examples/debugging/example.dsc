@@ -16,7 +16,7 @@
     }
   ],
   'POST': 'include Makefile.inc\n',
-  'DATA': ['Makefile.inc'],
+  'DATA': ['Makefile.inc', 'example.js'],
   'DEST': 'examples',
   'NAME': 'debugging',
   'TITLE': 'Debugging',

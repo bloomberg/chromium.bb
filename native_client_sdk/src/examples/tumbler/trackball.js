@@ -16,6 +16,8 @@
 // Requires tumbler.DragEvent
 // Requires tumbler.Vector3
 
+var tumbler = tumbler || {};
+
 /**
  * Constructor for the Trackball object.  This class maps 2D mouse drag events
  * into 3D rotations by simulating a trackball.  The idea is to simulate

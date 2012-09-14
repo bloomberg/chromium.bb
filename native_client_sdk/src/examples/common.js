@@ -54,6 +54,10 @@ var common = (function () {
     var listenerDiv = document.getElementById('listener');
     listenerDiv.addEventListener('load', moduleDidLoad, true);
     listenerDiv.addEventListener('message', handleMessage, true);
+
+    if (typeof window.attachListeners !== 'undefined') {
+      window.attachListeners();
+    }
   }
 
   /**
@@ -143,17 +147,17 @@ var common = (function () {
   }
 
   /**
-   * Common entrypoint for NaCl module loading. This function should be hooked
-   * up to the document body's onload event, for example:
-   *
-   *   <body onload="common.onload(...)">
+   * Called when the DOM content has loaded; i.e. the page's document is fully
+   * parsed. At this point, we can safely query any elements in the document via
+   * document.querySelector, document.getElementById, etc.
    *
    * @param {string} name The name of the example.
    * @param {string} tool The name of the toolchain, e.g. "glibc", "newlib" etc.
+   * @param {string} config The name of the configuration, e.g. "Release", etc.
    * @param {number} width The width to create the plugin.
    * @param {number} height The height to create the plugin.
    */
-  function pageDidLoad(name, tool, config, width, height) {
+  function domContentLoaded(name, tool, config, width, height) {
     // If the page loads before the Native Client module loads, then set the
     // status message indicating that the module is still loading.  Otherwise,
     // do not change the status message.
@@ -165,8 +169,8 @@ var common = (function () {
       // plug-in graphic, if there is a problem.
       width = typeof width !== 'undefined' ? width : 200;
       height = typeof height !== 'undefined' ? height : 200;
-      createNaClModule(name, tool, config, width, height);
       attachDefaultListeners();
+      createNaClModule(name, tool, config, width, height);
     } else {
       // It's possible that the Native Client module onload event fired
       // before the page's onload event.  In this case, the status message
@@ -202,11 +206,32 @@ var common = (function () {
     /** A reference to the NaCl module, once it is loaded. */
     naclModule: null,
 
-    onload: pageDidLoad,
     attachDefaultListeners: attachDefaultListeners,
+    domContentLoaded: domContentLoaded,
     createNaClModule: createNaClModule,
     hideModule: hideModule,
     updateStatus: updateStatus
   };
 
 }());
+
+// Listen for the DOM content to be loaded. This event is fired when parsing of
+// the page's document has finished.
+document.addEventListener('DOMContentLoaded', function() {
+  var body = document.querySelector('body');
+
+  // The data-* attributes on the body can be referenced via body.dataset.
+  if (body.dataset) {
+    var loadFunction;
+    if (!body.dataset.customLoad) {
+      loadFunction = common.domContentLoaded;
+    } else if (typeof window.domContentLoaded !== 'undefined') {
+      loadFunction = window.domContentLoaded;
+    }
+
+    if (loadFunction) {
+      loadFunction(body.dataset.name, body.dataset.tc, body.dataset.config,
+          body.dataset.width, body.dataset.height);
+    }
+  }
+});

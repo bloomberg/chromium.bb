@@ -11,6 +11,8 @@
 
 // Requires bind
 
+var tumbler = tumbler || {};
+
 /**
  * Constructor for the Dragger.  Register for mousedown events that happen on
  * |opt_target|.  If |opt_target| is null or undefined, then this object

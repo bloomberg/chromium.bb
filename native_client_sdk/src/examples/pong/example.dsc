@@ -14,6 +14,7 @@
       'LIBS': ['ppapi_cpp', 'ppapi', 'pthread']
     }
   ],
+  'DATA': ['example.js'],
   'DEST': 'examples',
   'NAME': 'pong',
   'TITLE': 'Pong',

@@ -12,6 +12,7 @@
       'LIBS': ['ppapi_cpp', 'ppapi', 'pthread']
     }
   ],
+  'DATA': ['example.js'],
   'DEST': 'examples',
   'NAME': 'hello_world_interactive',
   'TITLE': 'Interactive Hello World in C++',

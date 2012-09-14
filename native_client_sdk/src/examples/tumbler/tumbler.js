@@ -13,6 +13,8 @@
 // Requires tumbler.Dragger
 // Requires tumbler.Trackball
 
+var tumbler = tumbler || {};
+
 /**
  * Constructor for the Application class.  Use the run() method to populate
  * the object with controllers and wire up the events.
@@ -43,8 +45,15 @@ tumbler.Application = function() {
 }
 
 /**
+ * Called by common.js when the NaCl module has been loaded.
+ */
+function moduleDidLoad() {
+  tumbler.application = new tumbler.Application();
+  tumbler.application.moduleDidLoad();
+}
+
+/**
  * Called by the module loading function once the module has been loaded.
- * @param {?Element} nativeModule The instance of the native module.
  */
 tumbler.Application.prototype.moduleDidLoad = function() {
   this.module_ = document.getElementById('nacl_module');

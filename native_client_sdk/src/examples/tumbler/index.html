@@ -9,24 +9,15 @@ found in the LICENSE file.
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="-1">
   <title><TITLE></title>
-  <script type="text/javascript">
-    // Provide the tumbler namespace
-    tumbler = {};
-  </script>
   <script type="text/javascript" src="common.js"></script>
   <script type="text/javascript" src="bind.js"></script>
   <script type="text/javascript" src="dragger.js"></script>
   <script type="text/javascript" src="tumbler.js"></script>
   <script type="text/javascript" src="vector3.js"></script>
   <script type="text/javascript" src="trackball.js"></script>
-  <script type="text/javascript">
-    function moduleDidLoad() {
-      tumbler.application = new tumbler.Application();
-      tumbler.application.moduleDidLoad();
-    }
-  </script>
 </head>
-<body onload="common.onload('<NAME>', '<tc>', '<config>', 480, 480)">
+<body data-name="<NAME>" data-tc="<tc>" data-config="<config>" data-width="480"
+    data-height="480">
   <h1><TITLE></h1>
   <h2>Status: <code id="statusField">NO-STATUS</code></h2>
   <p>

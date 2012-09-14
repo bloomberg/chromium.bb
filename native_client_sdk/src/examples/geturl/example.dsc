@@ -8,7 +8,7 @@
       'LIBS': ['ppapi_cpp', 'ppapi', 'pthread']
     }
   ],
-  'DATA': ['geturl_success.html'],
+  'DATA': ['geturl_success.html', 'example.js'],
   'DEST': 'examples',
   'NAME': 'geturl',
   'TITLE': 'Get URL',

@@ -8,7 +8,7 @@
       'LIBS': ['ppapi_cpp', 'ppapi', 'pthread']
     }
   ],
-  'DATA': ['check_browser.js'],
+  'DATA': ['check_browser.js', 'example.js'],
   'DEST': 'examples',
   'NAME': 'load_progress',
   'TITLE': 'Load Progress',
