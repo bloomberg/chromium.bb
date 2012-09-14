@@ -520,7 +520,7 @@
         <structure type="chrome_scaled_image" name="IDR_OOBE_PROGRESS_LINE_LEFT" file="oobe_progress_line_left.png" />
         <structure type="chrome_scaled_image" name="IDR_OOBE_PROGRESS_LINE_RIGHT" file="oobe_progress_line_right.png" />
       </if>
-      <if expr="not pp_ifdef('toolkit_views')">
+      <if expr="not pp_ifdef('toolkit_views') and not is_macosx">
         <structure type="chrome_scaled_image" name="IDR_OTR_ICON" file="otr_icon.png" />
       </if>
       <if expr="pp_ifdef('toolkit_views')">
@@ -530,6 +530,9 @@
         <if expr="pp_ifdef('use_ash')">
           <structure type="chrome_scaled_image" name="IDR_OTR_ICON" file="cros/otr_icon.png" />
         </if>
+      </if>
+      <if expr="is_macosx">
+        <structure type="chrome_scaled_image" name="IDR_OTR_ICON" file="mac/otr_icon.png" />
       </if>
       <if expr="context.startswith('default_')">
         <structure type="chrome_scaled_image" name="IDR_OTR_ICON_FULLSCREEN" file="otr_icon.png" />

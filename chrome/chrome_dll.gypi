@@ -286,7 +286,6 @@
                 'app/theme/menu_hierarchy_arrow.pdf',
                 'app/theme/menu_overflow_down.pdf',
                 'app/theme/menu_overflow_up.pdf',
-                'app/theme/otr_icon.pdf',
                 'browser/mac/install.sh',
                 '<(SHARED_INTERMEDIATE_DIR)/repack/chrome.pak',
                 '<(SHARED_INTERMEDIATE_DIR)/repack/chrome_100_percent.pak',

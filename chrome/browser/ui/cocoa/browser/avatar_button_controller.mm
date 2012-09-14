@@ -132,8 +132,9 @@ const CGFloat kMenuYOffsetAdjust = 1.0;
     [self setView:button];
 
     if (browser_->profile()->IsOffTheRecord()) {
-      [self setImage:[self compositeImageWithShadow:
-          gfx::GetCachedImageWithName(@"otr_icon.pdf")]];
+      ResourceBundle& bundle = ResourceBundle::GetSharedInstance();
+      NSImage* otrIcon = bundle.GetNativeImageNamed(IDR_OTR_ICON).ToNSImage();
+      [self setImage:[self compositeImageWithShadow:otrIcon]];
       [self setButtonEnabled:NO];
     } else {
       [self setButtonEnabled:YES];
