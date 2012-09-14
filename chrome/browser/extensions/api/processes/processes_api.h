@@ -172,7 +172,9 @@ class GetProcessInfoFunction : public AsyncExtensionFunction,
 
   // Member variables to store the function parameters
   std::vector<int> process_ids_;
+#if defined(ENABLE_TASK_MANAGER)
   bool memory_;
+#endif
 
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.processes.getProcessInfo")
 };

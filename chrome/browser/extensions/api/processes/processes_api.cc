@@ -638,7 +638,11 @@ void TerminateFunction::TerminateProcess() {
   Release();
 }
 
-GetProcessInfoFunction::GetProcessInfoFunction() : memory_(false) {
+GetProcessInfoFunction::GetProcessInfoFunction()
+#if defined(ENABLE_TASK_MANAGER)
+  : memory_(false)
+#endif
+    {
 }
 
 GetProcessInfoFunction::~GetProcessInfoFunction() {
