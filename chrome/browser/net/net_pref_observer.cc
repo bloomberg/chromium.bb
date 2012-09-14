@@ -47,7 +47,8 @@ void NetPrefObserver::ApplySettings() {
   predictor_->EnablePredictor(*network_prediction_enabled_);
   if (prerender_manager_)
     prerender_manager_->set_enabled(*network_prediction_enabled_);
-  net::HttpStreamFactory::set_spdy_enabled(!*spdy_disabled_);
+  if (spdy_disabled_.IsManaged())
+    net::HttpStreamFactory::set_spdy_enabled(!*spdy_disabled_);
 }
 
 // static
