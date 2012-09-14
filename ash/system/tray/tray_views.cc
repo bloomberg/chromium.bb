@@ -363,10 +363,21 @@ void TrayPopupTextButton::OnPaintBackground(gfx::Canvas* canvas) {
 }
 
 void TrayPopupTextButton::OnPaintBorder(gfx::Canvas* canvas) {
-  if (hover_)
+  if (hover_) {
     hover_border_->Paint(*this, canvas);
-  else
-    views::TextButton::OnPaintBorder(canvas);
+  } else {
+    // Do not draw button border if it is the left most visible button
+    // in parent view.
+    for (int i = 0; i < parent()->child_count(); ++i) {
+      views::View* child = parent()->child_at(i);
+      if (child->visible()) {
+        if (child != this)
+          views::TextButton::OnPaintBorder(canvas);
+        return;
+      }
+    }
+    NOTREACHED();
+  }
 }
 
 void TrayPopupTextButton::OnPaintFocusBorder(gfx::Canvas* canvas) {
