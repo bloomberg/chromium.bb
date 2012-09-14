@@ -696,9 +696,8 @@ void RenderWidget::PaintRect(const gfx::Rect& rect,
     // the plugin. Unlike the DoDeferredUpdate case, an extra copy is still
     // required.
     base::TimeTicks paint_begin_ticks = base::TimeTicks::Now();
-    canvas->save();
-    float canvas_scale = device_scale_factor_ / dib_scale_factor;
-    canvas->scale(canvas_scale, canvas_scale);
+    SkAutoCanvasRestore auto_restore(canvas, true);
+    canvas->scale(device_scale_factor_, device_scale_factor_);
     optimized_instance->Paint(webkit_glue::ToWebCanvas(canvas),
                               optimized_copy_location, rect);
     canvas->restore();

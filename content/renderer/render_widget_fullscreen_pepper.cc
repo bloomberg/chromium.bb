@@ -15,7 +15,9 @@
 #include "content/renderer/pepper/pepper_platform_context_3d_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
+#include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCanvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSize.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebWidget.h"
@@ -120,6 +122,10 @@ class PepperWidget : public WebWidget {
 #endif
     if (!widget_->plugin())
       return;
+
+    SkAutoCanvasRestore auto_restore(canvas, true);
+    float canvas_scale = widget_->deviceScaleFactor();
+    canvas->scale(canvas_scale, canvas_scale);
 
     WebRect plugin_rect(0, 0, size_.width, size_.height);
     widget_->plugin()->Paint(canvas, plugin_rect, rect);

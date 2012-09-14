@@ -22,6 +22,7 @@
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
+#include "ui/gfx/skia_util.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/gfx_conversion.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
@@ -557,13 +558,11 @@ void PPB_Graphics2D_Impl::Paint(WebKit::WebCanvas* canvas,
   CGContextDrawImage(canvas, bitmap_rect, image);
 #else
   gfx::Rect invalidate_rect = plugin_rect.Intersect(paint_rect);
-  SkRect sk_invalidate_rect = SkRect::MakeXYWH(
-      SkIntToScalar(invalidate_rect.origin().x()),
-      SkIntToScalar(invalidate_rect.origin().y()),
-      SkIntToScalar(invalidate_rect.width()),
-      SkIntToScalar(invalidate_rect.height()));
+  SkRect sk_invalidate_rect = gfx::RectToSkRect(invalidate_rect);
   SkAutoCanvasRestore auto_restore(canvas, true);
   canvas->clipRect(sk_invalidate_rect);
+  gfx::Size pixel_image_size(image_data_->width(), image_data_->height());
+  gfx::Size image_size = pixel_image_size.Scale(scale_);
 
   PluginInstance* plugin_instance = ResourceHelper::GetPluginInstance(this);
   if (!plugin_instance)
@@ -576,11 +575,8 @@ void PPB_Graphics2D_Impl::Paint(WebKit::WebCanvas* canvas,
     // We don't do this for non-full-frame plugins since we specifically want
     // the page background to show through.
     SkAutoCanvasRestore auto_restore(canvas, true);
-    SkRect image_data_rect = SkRect::MakeXYWH(
-        SkIntToScalar(plugin_rect.origin().x()),
-        SkIntToScalar(plugin_rect.origin().y()),
-        SkIntToScalar(image_data_->width()),
-        SkIntToScalar(image_data_->height()));
+    SkRect image_data_rect =
+        gfx::RectToSkRect(gfx::Rect(plugin_rect.origin(), image_size));
     canvas->clipRect(image_data_rect, SkRegion::kDifference_Op);
 
     SkPaint paint;
@@ -606,12 +602,14 @@ void PPB_Graphics2D_Impl::Paint(WebKit::WebCanvas* canvas,
 
   SkPoint origin;
   origin.set(SkIntToScalar(plugin_rect.x()), SkIntToScalar(plugin_rect.y()));
+
+  SkPoint pixel_origin = origin;
   if (scale_ != 1.0f && scale_ > 0.0f) {
     float inverse_scale = 1.0f / scale_;
-    origin.scale(inverse_scale);
+    pixel_origin.scale(inverse_scale);
     canvas->scale(scale_, scale_);
   }
-  canvas->drawBitmap(image, origin.x(), origin.y(), &paint);
+  canvas->drawBitmap(image, pixel_origin.x(), pixel_origin.y(), &paint);
 #endif
 }
 

@@ -1011,8 +1011,11 @@ bool PluginInstance::GetBitmapForOptimizedPluginPaint(
   gfx::Rect relative_paint_bounds(paint_bounds);
   relative_paint_bounds.Offset(-plugin_origin.x(), -plugin_origin.y());
 
-  gfx::Rect plugin_backing_store_rect(
+  gfx::Rect pixel_plugin_backing_store_rect(
       0, 0, image_data->width(), image_data->height());
+  float scale = GetBoundGraphics2D()->GetScale();
+  gfx::Rect plugin_backing_store_rect =
+    pixel_plugin_backing_store_rect.Scale(scale);
 
   gfx::Rect clip_page = PP_ToGfxRect(view_data_.clip_rect);
   gfx::Rect plugin_paint_rect = plugin_backing_store_rect.Intersect(clip_page);
@@ -1032,7 +1035,9 @@ bool PluginInstance::GetBitmapForOptimizedPluginPaint(
   *location = plugin_backing_store_rect;
   clip_page.Offset(plugin_origin);
   *clip = clip_page;
-  *scale_factor = GetBoundGraphics2D()->GetScale();
+  // The plugin scale factor is inverted, e.g. for a device scale factor of 2x
+  // the plugin scale factor is 0.5.
+  *scale_factor = 1.0 / scale;
   return true;
 }
 
