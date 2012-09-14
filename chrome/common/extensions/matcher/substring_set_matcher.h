@@ -11,33 +11,9 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "chrome/common/extensions/matcher/string_pattern.h"
 
 namespace extensions {
-
-// An individual pattern of the SubstringSetMatcher. A pattern consists of
-// a string (interpreted as individual bytes, no character encoding) and an
-// identifier.
-// Each pattern that matches a string emits its ID to the caller of
-// SubstringSetMatcher::Match(). This helps the caller to figure out what
-// patterns matched a string. All patterns registered to a SubstringSetMatcher
-// need to contain unique IDs.
-class SubstringPattern {
- public:
-  typedef int ID;
-
-  SubstringPattern(const std::string& pattern, ID id);
-  ~SubstringPattern();
-  const std::string& pattern() const { return pattern_; }
-  ID id() const { return id_; }
-
-  bool operator<(const SubstringPattern& rhs) const;
-
- private:
-  std::string pattern_;
-  ID id_;
-
-  DISALLOW_COPY_AND_ASSIGN(SubstringPattern);
-};
 
 // Class that store a set of string patterns and can find for a string S,
 // which string patterns occur in S.
@@ -50,22 +26,22 @@ class SubstringSetMatcher {
   // The same pattern cannot be registered twice and each pattern needs to have
   // a unique ID.
   // Ownership of the patterns remains with the caller.
-  void RegisterPatterns(const std::vector<const SubstringPattern*>& patterns);
+  void RegisterPatterns(const std::vector<const StringPattern*>& patterns);
 
   // Unregisters the passed |patterns|.
-  void UnregisterPatterns(const std::vector<const SubstringPattern*>& patterns);
+  void UnregisterPatterns(const std::vector<const StringPattern*>& patterns);
 
   // Analogous to RegisterPatterns and UnregisterPatterns but executes both
   // operations in one step, which is cheaper in the execution.
   void RegisterAndUnregisterPatterns(
-      const std::vector<const SubstringPattern*>& to_register,
-      const std::vector<const SubstringPattern*>& to_unregister);
+      const std::vector<const StringPattern*>& to_register,
+      const std::vector<const StringPattern*>& to_unregister);
 
-  // Matches |text| against all registered SubstringPatterns. Stores the IDs
+  // Matches |text| against all registered StringPatterns. Stores the IDs
   // of matching patterns in |matches|. |matches| is not cleared before adding
   // to it.
   bool Match(const std::string& text,
-             std::set<SubstringPattern::ID>* matches) const;
+             std::set<StringPattern::ID>* matches) const;
 
   // Returns true if this object retains no allocated data. Only for debugging.
   bool IsEmpty() const;
@@ -105,7 +81,7 @@ class SubstringSetMatcher {
    public:
     // Key: label of the edge, value: node index in |tree_| of parent class.
     typedef std::map<char, int> Edges;
-    typedef std::set<SubstringPattern::ID> Matches;
+    typedef std::set<StringPattern::ID> Matches;
 
     AhoCorasickNode();
     ~AhoCorasickNode();
@@ -120,7 +96,7 @@ class SubstringSetMatcher {
     int failure() const { return failure_; }
     void set_failure(int failure) { failure_ = failure; }
 
-    void AddMatch(SubstringPattern::ID id);
+    void AddMatch(StringPattern::ID id);
     void AddMatches(const Matches& matches);
     const Matches& matches() const { return matches_; }
 
@@ -140,12 +116,12 @@ class SubstringSetMatcher {
   // Inserts a path for |pattern->pattern()| into the tree and adds
   // |pattern->id()| to the set of matches. Ownership of |pattern| remains with
   // the caller.
-  void InsertPatternIntoAhoCorasickTree(const SubstringPattern* pattern);
+  void InsertPatternIntoAhoCorasickTree(const StringPattern* pattern);
   void CreateFailureEdges();
 
-  // Set of all registered SubstringPatterns. Used to regenerate the
+  // Set of all registered StringPatterns. Used to regenerate the
   // Aho-Corasick tree in case patterns are registered or unregistered.
-  typedef std::map<SubstringPattern::ID, const SubstringPattern*>
+  typedef std::map<StringPattern::ID, const StringPattern*>
       SubstringPatternSet;
   SubstringPatternSet patterns_;
 

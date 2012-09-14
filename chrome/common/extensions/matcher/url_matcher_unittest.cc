@@ -15,19 +15,19 @@ namespace extensions {
 //
 
 TEST(URLMatcherConditionTest, Constructors) {
-  SubstringPattern pattern("example.com", 1);
+  StringPattern pattern("example.com", 1);
   URLMatcherCondition m1(URLMatcherCondition::HOST_SUFFIX, &pattern);
   EXPECT_EQ(URLMatcherCondition::HOST_SUFFIX, m1.criterion());
-  EXPECT_EQ(&pattern, m1.substring_pattern());
+  EXPECT_EQ(&pattern, m1.string_pattern());
 
   URLMatcherCondition m2;
   m2 = m1;
   EXPECT_EQ(URLMatcherCondition::HOST_SUFFIX, m2.criterion());
-  EXPECT_EQ(&pattern, m2.substring_pattern());
+  EXPECT_EQ(&pattern, m2.string_pattern());
 
   URLMatcherCondition m3(m1);
   EXPECT_EQ(URLMatcherCondition::HOST_SUFFIX, m3.criterion());
-  EXPECT_EQ(&pattern, m3.substring_pattern());
+  EXPECT_EQ(&pattern, m3.string_pattern());
 }
 
 TEST(URLMatcherSchemeFilter, TestMatching) {
@@ -61,7 +61,7 @@ TEST(URLMatcherPortFilter, TestMatching) {
 }
 
 TEST(URLMatcherConditionTest, IsFullURLCondition) {
-  SubstringPattern pattern("example.com", 1);
+  StringPattern pattern("example.com", 1);
   EXPECT_FALSE(URLMatcherCondition(URLMatcherCondition::HOST_SUFFIX,
       &pattern).IsFullURLCondition());
 
@@ -86,30 +86,30 @@ TEST(URLMatcherConditionTest, IsMatch) {
   GURL url1("http://www.example.com/www.foobar.com/index.html");
   GURL url2("http://www.foobar.com/example.com/index.html");
 
-  SubstringPattern pattern("example.com", 1);
+  StringPattern pattern("example.com", 1);
   URLMatcherCondition m1(URLMatcherCondition::HOST_SUFFIX, &pattern);
 
-  std::set<SubstringPattern::ID> matching_substring_patterns;
+  std::set<StringPattern::ID> matching_patterns;
 
   // matches = {0} --> matcher did not indicate that m1 was a match.
-  matching_substring_patterns.insert(0);
-  EXPECT_FALSE(m1.IsMatch(matching_substring_patterns, url1));
+  matching_patterns.insert(0);
+  EXPECT_FALSE(m1.IsMatch(matching_patterns, url1));
 
   // matches = {0, 1} --> matcher did indicate that m1 was a match.
-  matching_substring_patterns.insert(1);
-  EXPECT_TRUE(m1.IsMatch(matching_substring_patterns, url1));
+  matching_patterns.insert(1);
+  EXPECT_TRUE(m1.IsMatch(matching_patterns, url1));
 
   // For m2 we use a HOST_CONTAINS test, which requires a post-validation
   // whether the match reported by the SubstringSetMatcher occurs really
   // in the correct url component.
   URLMatcherCondition m2(URLMatcherCondition::HOST_CONTAINS, &pattern);
-  EXPECT_TRUE(m2.IsMatch(matching_substring_patterns, url1));
-  EXPECT_FALSE(m2.IsMatch(matching_substring_patterns, url2));
+  EXPECT_TRUE(m2.IsMatch(matching_patterns, url1));
+  EXPECT_FALSE(m2.IsMatch(matching_patterns, url2));
 }
 
 TEST(URLMatcherConditionTest, Comparison) {
-  SubstringPattern p1("foobar.com", 1);
-  SubstringPattern p2("foobar.com", 2);
+  StringPattern p1("foobar.com", 1);
+  StringPattern p2("foobar.com", 2);
   // The first component of each test is expected to be < than the second.
   URLMatcherCondition test_smaller[][2] = {
       {URLMatcherCondition(URLMatcherCondition::HOST_PREFIX, &p1),
@@ -148,7 +148,7 @@ TEST(URLMatcherConditionTest, Comparison) {
 namespace {
 
 bool Matches(const URLMatcherCondition& condition, std::string text) {
-  return text.find(condition.substring_pattern()->pattern()) !=
+  return text.find(condition.string_pattern()->pattern()) !=
       std::string::npos;
 }
 
@@ -205,6 +205,8 @@ TEST(URLMatcherConditionFactoryTest, Criteria) {
             factory.CreateURLContainsCondition("foo").criterion());
   EXPECT_EQ(URLMatcherCondition::URL_EQUALS,
             factory.CreateURLEqualsCondition("foo").criterion());
+  EXPECT_EQ(URLMatcherCondition::URL_MATCHES,
+            factory.CreateURLMatchesCondition("foo").criterion());
 }
 
 TEST(URLMatcherConditionFactoryTest, TestSingletonProperty) {
@@ -212,21 +214,30 @@ TEST(URLMatcherConditionFactoryTest, TestSingletonProperty) {
   URLMatcherCondition c1 = factory.CreateHostEqualsCondition("www.google.com");
   URLMatcherCondition c2 = factory.CreateHostEqualsCondition("www.google.com");
   EXPECT_EQ(c1.criterion(), c2.criterion());
-  EXPECT_EQ(c1.substring_pattern(), c2.substring_pattern());
+  EXPECT_EQ(c1.string_pattern(), c2.string_pattern());
   URLMatcherCondition c3 = factory.CreateHostEqualsCondition("www.google.de");
   EXPECT_EQ(c2.criterion(), c3.criterion());
-  EXPECT_NE(c2.substring_pattern(), c3.substring_pattern());
-  EXPECT_NE(c2.substring_pattern()->id(), c3.substring_pattern()->id());
-  EXPECT_NE(c2.substring_pattern()->pattern(),
-            c3.substring_pattern()->pattern());
+  EXPECT_NE(c2.string_pattern(), c3.string_pattern());
+  EXPECT_NE(c2.string_pattern()->id(), c3.string_pattern()->id());
+  EXPECT_NE(c2.string_pattern()->pattern(),
+            c3.string_pattern()->pattern());
+  URLMatcherCondition c4 = factory.CreateURLMatchesCondition("www.google.com");
+  URLMatcherCondition c5 = factory.CreateURLContainsCondition("www.google.com");
+  // Regex patterns and substring patterns do not share IDs.
+  EXPECT_EQ(c5.string_pattern()->pattern(), c4.string_pattern()->pattern());
+  EXPECT_NE(c5.string_pattern(), c4.string_pattern());
+  EXPECT_NE(c5.string_pattern()->id(), c4.string_pattern()->id());
 
-  // Check that all SubstringPattern singletons are freed if we call
+  // Check that all StringPattern singletons are freed if we call
   // ForgetUnusedPatterns.
-  SubstringPattern::ID old_id_1 = c1.substring_pattern()->id();
-  factory.ForgetUnusedPatterns(std::set<SubstringPattern::ID>());
+  StringPattern::ID old_id_1 = c1.string_pattern()->id();
+  StringPattern::ID old_id_4 = c4.string_pattern()->id();
+  factory.ForgetUnusedPatterns(std::set<StringPattern::ID>());
   EXPECT_TRUE(factory.IsEmpty());
-  URLMatcherCondition c4 = factory.CreateHostEqualsCondition("www.google.com");
-  EXPECT_NE(old_id_1, c4.substring_pattern()->id());
+  URLMatcherCondition c6 = factory.CreateHostEqualsCondition("www.google.com");
+  EXPECT_NE(old_id_1, c6.string_pattern()->id());
+  URLMatcherCondition c7 = factory.CreateURLMatchesCondition("www.google.com");
+  EXPECT_NE(old_id_4, c7.string_pattern()->id());
 }
 
 TEST(URLMatcherConditionFactoryTest, TestComponentSearches) {
@@ -374,7 +385,6 @@ TEST(URLMatcherConditionFactoryTest, TestFullSearches) {
   EXPECT_TRUE(Matches(factory.CreateURLContainsCondition(":1234"), url));
 }
 
-
 //
 // URLMatcherConditionSet
 //
@@ -413,13 +423,13 @@ TEST(URLMatcherConditionSetTest, Matching) {
   EXPECT_EQ(1, condition_set->id());
   EXPECT_EQ(2u, condition_set->conditions().size());
 
-  std::set<SubstringPattern::ID> matching_substring_patterns;
-  matching_substring_patterns.insert(m1.substring_pattern()->id());
-  EXPECT_FALSE(condition_set->IsMatch(matching_substring_patterns, url1));
+  std::set<StringPattern::ID> matching_patterns;
+  matching_patterns.insert(m1.string_pattern()->id());
+  EXPECT_FALSE(condition_set->IsMatch(matching_patterns, url1));
 
-  matching_substring_patterns.insert(m2.substring_pattern()->id());
-  EXPECT_TRUE(condition_set->IsMatch(matching_substring_patterns, url1));
-  EXPECT_FALSE(condition_set->IsMatch(matching_substring_patterns, url2));
+  matching_patterns.insert(m2.string_pattern()->id());
+  EXPECT_TRUE(condition_set->IsMatch(matching_patterns, url1));
+  EXPECT_FALSE(condition_set->IsMatch(matching_patterns, url2));
 
   // Test scheme filters.
   scoped_refptr<URLMatcherConditionSet> condition_set2(
@@ -427,13 +437,13 @@ TEST(URLMatcherConditionSetTest, Matching) {
           scoped_ptr<URLMatcherSchemeFilter>(
               new URLMatcherSchemeFilter("https")),
           scoped_ptr<URLMatcherPortFilter>(NULL)));
-  EXPECT_FALSE(condition_set2->IsMatch(matching_substring_patterns, url1));
+  EXPECT_FALSE(condition_set2->IsMatch(matching_patterns, url1));
   scoped_refptr<URLMatcherConditionSet> condition_set3(
       new URLMatcherConditionSet(1, conditions,
           scoped_ptr<URLMatcherSchemeFilter>(
               new URLMatcherSchemeFilter("http")),
           scoped_ptr<URLMatcherPortFilter>(NULL)));
-  EXPECT_TRUE(condition_set3->IsMatch(matching_substring_patterns, url1));
+  EXPECT_TRUE(condition_set3->IsMatch(matching_patterns, url1));
 
   // Test port filters.
   std::vector<URLMatcherPortFilter::Range> ranges;
@@ -442,9 +452,27 @@ TEST(URLMatcherConditionSetTest, Matching) {
   scoped_refptr<URLMatcherConditionSet> condition_set4(
       new URLMatcherConditionSet(1, conditions,
           scoped_ptr<URLMatcherSchemeFilter>(NULL), filter.Pass()));
-  EXPECT_TRUE(condition_set4->IsMatch(matching_substring_patterns, url1));
-  EXPECT_TRUE(condition_set4->IsMatch(matching_substring_patterns, url3));
-  EXPECT_FALSE(condition_set4->IsMatch(matching_substring_patterns, url4));
+  EXPECT_TRUE(condition_set4->IsMatch(matching_patterns, url1));
+  EXPECT_TRUE(condition_set4->IsMatch(matching_patterns, url3));
+  EXPECT_FALSE(condition_set4->IsMatch(matching_patterns, url4));
+
+  // Test regex patterns.
+  matching_patterns.clear();
+  URLMatcherCondition r1 = factory.CreateURLMatchesCondition("/fo?oo");
+  std::set<URLMatcherCondition> regex_conditions;
+  regex_conditions.insert(r1);
+  scoped_refptr<URLMatcherConditionSet> condition_set5(
+      new URLMatcherConditionSet(1, regex_conditions));
+  EXPECT_FALSE(condition_set5->IsMatch(matching_patterns, url1));
+  matching_patterns.insert(r1.string_pattern()->id());
+  EXPECT_TRUE(condition_set5->IsMatch(matching_patterns, url1));
+
+  regex_conditions.insert(m1);
+  scoped_refptr<URLMatcherConditionSet> condition_set6(
+      new URLMatcherConditionSet(1, regex_conditions));
+  EXPECT_FALSE(condition_set6->IsMatch(matching_patterns, url1));
+  matching_patterns.insert(m1.string_pattern()->id());
+  EXPECT_TRUE(condition_set6->IsMatch(matching_patterns, url1));
 }
 
 
@@ -486,9 +514,29 @@ TEST(URLMatcherTest, FullTest) {
 
   // This should be the cached singleton.
   int patternId1 = factory->CreateHostSuffixCondition(
-      "example.com").substring_pattern()->id();
+      "example.com").string_pattern()->id();
 
-  // Removal of last insert.
+  // Third insert.
+  URLMatcherConditionSet::Conditions conditions3;
+  conditions3.insert(factory->CreateHostSuffixCondition("example.com"));
+  conditions3.insert(factory->CreateURLMatchesCondition("x.*[0-9]"));
+
+  const int kConditionSetId3 = 3;
+  URLMatcherConditionSet::Vector insert3;
+  insert3.push_back(make_scoped_refptr(
+      new URLMatcherConditionSet(kConditionSetId3, conditions3)));
+  matcher.AddConditionSets(insert3);
+  EXPECT_EQ(3u, matcher.MatchURL(url1).size());
+  EXPECT_EQ(1u, matcher.MatchURL(url2).size());
+
+  // Removal of third insert.
+  std::vector<URLMatcherConditionSet::ID> remove3;
+  remove3.push_back(kConditionSetId3);
+  matcher.RemoveConditionSets(remove3);
+  EXPECT_EQ(2u, matcher.MatchURL(url1).size());
+  EXPECT_EQ(1u, matcher.MatchURL(url2).size());
+
+  // Removal of second insert.
   std::vector<URLMatcherConditionSet::ID> remove2;
   remove2.push_back(kConditionSetId2);
   matcher.RemoveConditionSets(remove2);
@@ -507,9 +555,10 @@ TEST(URLMatcherTest, FullTest) {
   // The cached singleton in matcher.condition_factory_ should be destroyed to
   // free memory.
   int patternId2 = factory->CreateHostSuffixCondition(
-      "example.com").substring_pattern()->id();
+      "example.com").string_pattern()->id();
   // If patternId1 and patternId2 are different that indicates that
-  // matcher.condition_factory_ does not leak memory.
+  // matcher.condition_factory_ does not leak memory by holding onto
+  // unused patterns.
   EXPECT_NE(patternId1, patternId2);
 }
 

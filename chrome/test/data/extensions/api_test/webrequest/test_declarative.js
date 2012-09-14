@@ -252,6 +252,34 @@ runTests([
     );
   },
 
+  function testRegexFilter() {
+    ignoreUnexpected = true;
+    expect(
+      [
+        { label: "onErrorOccurred",
+          event: "onErrorOccurred",
+          details: {
+            url: getURLHttpSimple(),
+            fromCache: false,
+            error: "net::ERR_BLOCKED_BY_CLIENT"
+          }
+        },
+      ],
+      [ ["onErrorOccurred"] ]);
+    onRequest.addRules(
+      [ {'conditions': [
+           new RequestMatcher({
+             'url': {
+                 'urlMatches': 'simple[A-Z].*a\.html$',
+                 'schemes': ["http"]
+             },
+           })],
+         'actions': [new CancelRequest()]}
+      ],
+      function() {navigateAndWait(getURLHttpSimple());}
+    );
+  },
+
   function testSetRequestHeader() {
     ignoreUnexpected = true;
     expect();  // Used for initialization.

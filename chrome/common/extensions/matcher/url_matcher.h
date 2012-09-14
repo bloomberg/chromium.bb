@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "chrome/common/extensions/matcher/regex_set_matcher.h"
 #include "chrome/common/extensions/matcher/substring_set_matcher.h"
 
 class GURL;
@@ -24,10 +25,12 @@ namespace extensions {
 // This class represents a single URL matching condition, e.g. a match on the
 // host suffix or the containment of a string in the query component of a GURL.
 //
-// The difference from a simple SubstringPattern is that this also supports
+// The difference from a simple StringPattern is that this also supports
 // checking whether the {Host, Path, Query} of a URL contains a string. The
 // reduction of URL matching conditions to StringPatterns conducted by
 // URLMatcherConditionFactory is not capable of expressing that alone.
+//
+// Also supported is matching regular expressions against the URL (URL_MATCHES).
 class URLMatcherCondition {
  public:
   enum Criterion {
@@ -49,19 +52,20 @@ class URLMatcherCondition {
     URL_SUFFIX,
     URL_CONTAINS,
     URL_EQUALS,
+    URL_MATCHES,
   };
 
   URLMatcherCondition();
   ~URLMatcherCondition();
   URLMatcherCondition(Criterion criterion,
-                      const SubstringPattern* substring_pattern);
+                      const StringPattern* substring_pattern);
   URLMatcherCondition(const URLMatcherCondition& rhs);
   URLMatcherCondition& operator=(const URLMatcherCondition& rhs);
   bool operator<(const URLMatcherCondition& rhs) const;
 
   Criterion criterion() const { return criterion_; }
-  const SubstringPattern* substring_pattern() const {
-    return substring_pattern_;
+  const StringPattern* string_pattern() const {
+    return string_pattern_;
   }
 
   // Returns whether this URLMatcherCondition needs to be executed on a
@@ -69,19 +73,22 @@ class URLMatcherCondition {
   // URLMatcherConditionFactory).
   bool IsFullURLCondition() const;
 
+  // Returns whether this URLMatcherCondition is a regular expression to be
+  // handled by a regex matcher instead of a substring matcher.
+  bool IsRegexCondition() const;
+
   // Returns whether this condition is fulfilled according to
-  // |matching_substring_patterns| and |url|.
-  bool IsMatch(
-      const std::set<SubstringPattern::ID>& matching_substring_patterns,
-      const GURL& url) const;
+  // |matching_patterns| and |url|.
+  bool IsMatch(const std::set<StringPattern::ID>& matching_patterns,
+               const GURL& url) const;
 
  private:
-  // |criterion_| and |substring_pattern_| describe together what property a URL
+  // |criterion_| and |string_pattern_| describe together what property a URL
   // needs to fulfill to be considered a match.
   Criterion criterion_;
 
-  // This is the SubstringPattern that is used in a SubstringSetMatcher.
-  const SubstringPattern* substring_pattern_;
+  // This is the StringPattern that is used in a SubstringSetMatcher.
+  const StringPattern* string_pattern_;
 };
 
 // Class to map the problem of finding {host, path, query} {prefixes, suffixes,
@@ -101,7 +108,7 @@ class URLMatcherCondition {
 // of a dictionary in a text" problem, which can be solved very efficiently
 // by the Aho-Corasick algorithm.
 //
-// IMPORTANT: The URLMatcherConditionFactory owns the SubstringPattern
+// IMPORTANT: The URLMatcherConditionFactory owns the StringPattern
 // referenced by created URLMatcherConditions. Therefore, it must outlive
 // all created URLMatcherCondition and the SubstringSetMatcher.
 class URLMatcherConditionFactory {
@@ -146,23 +153,28 @@ class URLMatcherConditionFactory {
   // Canonicalizes a URL for "CreateURL*Condition" searches.
   std::string CanonicalizeURLForFullSearches(const GURL& url);
 
+  // Canonicalizes a URL for "CreateURLMatchesCondition" searches.
+  std::string CanonicalizeURLForRegexSearches(const GURL& url);
+
   URLMatcherCondition CreateURLPrefixCondition(const std::string& prefix);
   URLMatcherCondition CreateURLSuffixCondition(const std::string& suffix);
   URLMatcherCondition CreateURLContainsCondition(const std::string& str);
   URLMatcherCondition CreateURLEqualsCondition(const std::string& str);
 
+  URLMatcherCondition CreateURLMatchesCondition(const std::string& regex);
+
   // Removes all patterns from |pattern_singletons_| that are not listed in
   // |used_patterns|. These patterns are not referenced any more and get
   // freed.
   void ForgetUnusedPatterns(
-      const std::set<SubstringPattern::ID>& used_patterns);
+      const std::set<StringPattern::ID>& used_patterns);
 
   // Returns true if this object retains no allocated data. Only for debugging.
   bool IsEmpty() const;
 
  private:
   // Creates a URLMatcherCondition according to the parameters passed.
-  // The URLMatcherCondition will refer to a SubstringPattern that is
+  // The URLMatcherCondition will refer to a StringPattern that is
   // owned by |pattern_singletons_|.
   URLMatcherCondition CreateCondition(URLMatcherCondition::Criterion criterion,
                                       const std::string& pattern);
@@ -170,19 +182,21 @@ class URLMatcherConditionFactory {
   // Prepends a "." to the hostname if it does not start with one.
   std::string CanonicalizeHostname(const std::string& hostname) const;
 
-  // Counter that ensures that all created SubstringPatterns have unique IDs.
+  // Counter that ensures that all created StringPatterns have unique IDs.
+  // Note that substring patterns and regex patterns will use different IDs.
   int id_counter_;
 
   // This comparison considers only the pattern() value of the
-  // SubstringPatterns.
-  struct SubstringPatternPointerCompare {
-    bool operator()(SubstringPattern* lhs, SubstringPattern* rhs) const;
+  // StringPatterns.
+  struct StringPatternPointerCompare {
+    bool operator()(StringPattern* lhs, StringPattern* rhs) const;
   };
-  // Set to ensure that we generate only one SubstringPattern for each content
-  // of SubstringPattern::pattern().
-  typedef std::set<SubstringPattern*, SubstringPatternPointerCompare>
+  // Set to ensure that we generate only one StringPattern for each content
+  // of StringPattern::pattern().
+  typedef std::set<StringPattern*, StringPatternPointerCompare>
       PatternSingletons;
-  PatternSingletons pattern_singletons_;
+  PatternSingletons substring_pattern_singletons_;
+  PatternSingletons regex_pattern_singletons_;
 
   DISALLOW_COPY_AND_ASSIGN(URLMatcherConditionFactory);
 };
@@ -244,9 +258,8 @@ class URLMatcherConditionSet : public base::RefCounted<URLMatcherConditionSet> {
   ID id() const { return id_; }
   const Conditions& conditions() const { return conditions_; }
 
-  bool IsMatch(
-      const std::set<SubstringPattern::ID>& matching_substring_patterns,
-      const GURL& url) const;
+  bool IsMatch(const std::set<StringPattern::ID>& matching_patterns,
+               const GURL& url) const;
 
  private:
   friend class base::RefCounted<URLMatcherConditionSet>;
@@ -296,6 +309,7 @@ class URLMatcher {
 
  private:
   void UpdateSubstringSetMatcher(bool full_url_conditions);
+  void UpdateRegexSetMatcher();
   void UpdateTriggers();
   void UpdateConditionFactory();
   void UpdateInternalDatastructures();
@@ -309,15 +323,16 @@ class URLMatcher {
       URLMatcherConditionSets;
   URLMatcherConditionSets url_matcher_condition_sets_;
 
-  // Maps a SubstringPattern ID to the URLMatcherConditions that need to
-  // be triggered in case of a SubstringPattern match.
-  std::map<SubstringPattern::ID, std::set<URLMatcherConditionSet::ID> >
+  // Maps a StringPattern ID to the URLMatcherConditions that need to
+  // be triggered in case of a StringPattern match.
+  std::map<StringPattern::ID, std::set<URLMatcherConditionSet::ID> >
       substring_match_triggers_;
 
   SubstringSetMatcher full_url_matcher_;
   SubstringSetMatcher url_component_matcher_;
-  std::set<const SubstringPattern*> registered_full_url_patterns_;
-  std::set<const SubstringPattern*> registered_url_component_patterns_;
+  RegexSetMatcher regex_set_matcher_;
+  std::set<const StringPattern*> registered_full_url_patterns_;
+  std::set<const StringPattern*> registered_url_component_patterns_;
 
   DISALLOW_COPY_AND_ASSIGN(URLMatcher);
 };

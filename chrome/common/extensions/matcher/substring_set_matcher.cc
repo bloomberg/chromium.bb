@@ -12,22 +12,6 @@
 namespace extensions {
 
 //
-// SubstringPattern
-//
-
-SubstringPattern::SubstringPattern(const std::string& pattern,
-                                   SubstringPattern::ID id)
-    : pattern_(pattern), id_(id) {}
-
-SubstringPattern::~SubstringPattern() {}
-
-bool SubstringPattern::operator<(const SubstringPattern& rhs) const {
-  if (id_ < rhs.id_) return true;
-  if (id_ > rhs.id_) return false;
-  return pattern_ < rhs.pattern_;
-}
-
-//
 // SubstringSetMatcher
 //
 
@@ -38,29 +22,29 @@ SubstringSetMatcher::SubstringSetMatcher() {
 SubstringSetMatcher::~SubstringSetMatcher() {}
 
 void SubstringSetMatcher::RegisterPatterns(
-    const std::vector<const SubstringPattern*>& patterns) {
+    const std::vector<const StringPattern*>& patterns) {
   RegisterAndUnregisterPatterns(patterns,
-                                std::vector<const SubstringPattern*>());
+                                std::vector<const StringPattern*>());
 }
 
 void SubstringSetMatcher::UnregisterPatterns(
-    const std::vector<const SubstringPattern*>& patterns) {
-  RegisterAndUnregisterPatterns(std::vector<const SubstringPattern*>(),
+    const std::vector<const StringPattern*>& patterns) {
+  RegisterAndUnregisterPatterns(std::vector<const StringPattern*>(),
                                 patterns);
 }
 
 void SubstringSetMatcher::RegisterAndUnregisterPatterns(
-      const std::vector<const SubstringPattern*>& to_register,
-      const std::vector<const SubstringPattern*>& to_unregister) {
+      const std::vector<const StringPattern*>& to_register,
+      const std::vector<const StringPattern*>& to_unregister) {
   // Register patterns.
-  for (std::vector<const SubstringPattern*>::const_iterator i =
+  for (std::vector<const StringPattern*>::const_iterator i =
       to_register.begin(); i != to_register.end(); ++i) {
     DCHECK(patterns_.find((*i)->id()) == patterns_.end());
     patterns_[(*i)->id()] = *i;
   }
 
   // Unregister patterns
-  for (std::vector<const SubstringPattern*>::const_iterator i =
+  for (std::vector<const StringPattern*>::const_iterator i =
       to_unregister.begin(); i != to_unregister.end(); ++i) {
     patterns_.erase((*i)->id());
   }
@@ -69,7 +53,7 @@ void SubstringSetMatcher::RegisterAndUnregisterPatterns(
 }
 
 bool SubstringSetMatcher::Match(const std::string& text,
-                                std::set<SubstringPattern::ID>* matches) const {
+                                std::set<StringPattern::ID>* matches) const {
   size_t old_number_of_matches = matches->size();
 
   // Handle patterns matching the empty string.
@@ -115,7 +99,7 @@ void SubstringSetMatcher::RebuildAhoCorasickTree() {
 }
 
 void SubstringSetMatcher::InsertPatternIntoAhoCorasickTree(
-    const SubstringPattern* pattern) {
+    const StringPattern* pattern) {
   const std::string& text = pattern->pattern();
   size_t text_length = text.length();
 
@@ -212,7 +196,7 @@ void SubstringSetMatcher::AhoCorasickNode::SetEdge(char c, int node) {
   edges_[c] = node;
 }
 
-void SubstringSetMatcher::AhoCorasickNode::AddMatch(SubstringPattern::ID id) {
+void SubstringSetMatcher::AhoCorasickNode::AddMatch(StringPattern::ID id) {
   matches_.insert(id);
 }
 

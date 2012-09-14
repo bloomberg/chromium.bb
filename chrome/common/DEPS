@@ -26,6 +26,7 @@ include_rules = [
   "+third_party/bzip2",
   "+third_party/mt19937ar",
   "+third_party/npapi",
+  "+third_party/re2",
   "+third_party/sqlite",
   "+third_party/zlib",
 

@@ -10,20 +10,8 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-using extensions::SubstringPattern;
+using extensions::StringPattern;
 using extensions::SubstringSetMatcher;
-
-TEST(SubstringSetMatcherTest, SubstringPattern) {
-  SubstringPattern r1("Test", 2);
-  EXPECT_EQ("Test", r1.pattern());
-  EXPECT_EQ(2, r1.id());
-
-  EXPECT_FALSE(r1 < r1);
-  SubstringPattern r2("Test", 3);
-  EXPECT_TRUE(r1 < r2);
-  SubstringPattern r3("ZZZZ", 2);
-  EXPECT_TRUE(r1 < r3);
-}
 
 namespace {
 void TestOnePattern(const std::string& test_string,
@@ -32,8 +20,8 @@ void TestOnePattern(const std::string& test_string,
   std::string test =
       "TestOnePattern(" + test_string + ", " + pattern + ", " +
       (is_match ? "1" : "0") + ")";
-  std::vector<const SubstringPattern*> patterns;
-  SubstringPattern substring_pattern(pattern, 1);
+  std::vector<const StringPattern*> patterns;
+  StringPattern substring_pattern(pattern, 1);
   patterns.push_back(&substring_pattern);
   SubstringSetMatcher matcher;
   matcher.RegisterPatterns(patterns);
@@ -53,12 +41,12 @@ void TestTwoPatterns(const std::string& test_string,
   std::string test =
       "TestTwoPatterns(" + test_string + ", " + pattern_1 + ", " + pattern_2 +
       ", " + (is_match_1 ? "1" : "0") + ", " + (is_match_2 ? "1" : "0") + ")";
-  SubstringPattern substring_pattern_1(pattern_1, 1);
-  SubstringPattern substring_pattern_2(pattern_2, 2);
+  StringPattern substring_pattern_1(pattern_1, 1);
+  StringPattern substring_pattern_2(pattern_2, 2);
   // In order to make sure that the order in which patterns are registered
   // does not make any difference we try both permutations.
   for (int permutation = 0; permutation < 2; ++permutation) {
-    std::vector<const SubstringPattern*> patterns;
+    std::vector<const StringPattern*> patterns;
     if (permutation == 0) {
       patterns.push_back(&substring_pattern_1);
       patterns.push_back(&substring_pattern_2);
@@ -135,11 +123,11 @@ TEST(SubstringSetMatcherTest, TestMatcher) {
 TEST(SubstringSetMatcherTest, RegisterAndRemove) {
   SubstringSetMatcher matcher;
 
-  SubstringPattern pattern_1("a", 1);
-  SubstringPattern pattern_2("b", 2);
-  SubstringPattern pattern_3("c", 3);
+  StringPattern pattern_1("a", 1);
+  StringPattern pattern_2("b", 2);
+  StringPattern pattern_3("c", 3);
 
-  std::vector<const SubstringPattern*> patterns;
+  std::vector<const StringPattern*> patterns;
   patterns.push_back(&pattern_1);
   matcher.RegisterPatterns(patterns);
 

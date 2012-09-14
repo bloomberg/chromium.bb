@@ -48,6 +48,7 @@ class URLMatcherConditionFactoryMethods {
     factory_methods_[keys::kURLEqualsKey] = &F::CreateURLEqualsCondition;
     factory_methods_[keys::kURLPrefixKey] = &F::CreateURLPrefixCondition;
     factory_methods_[keys::kURLSuffixKey] = &F::CreateURLSuffixCondition;
+    factory_methods_[keys::kURLMatchesKey] = &F::CreateURLMatchesCondition;
   }
 
   // Returns whether a factory method for the specified |pattern_type| (e.g.

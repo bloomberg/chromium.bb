@@ -15,28 +15,36 @@
 namespace extensions {
 
 // This set of classes implement a mapping of URL Component Patterns, such as
-// host_prefix, host_suffix, host_equals, ..., etc., to SubstringPatterns.
+// host_prefix, host_suffix, host_equals, ..., etc., to StringPatterns
+// for use in substring comparisons.
 //
 // The idea of this mapping is to reduce the problem of comparing many
 // URL Component Patterns against one URL to the problem of searching many
 // substrings in one string:
 //
-// ----------------------                    --------------------
-// | URL Query operator | ----translate----> | SubstringPattern |
-// ----------------------                    --------------------
-//                                                    ^
-//                                                    |
-//                                                 compare
-//                                                    |
-//                                                    v
-// ----------------------                    --------------------
-// | URL to compare     |                    |                  |
-// | to all URL Query   | ----translate----> | String           |
-// | operators          |                    |                  |
-// ----------------------                    --------------------
+// ----------------------                    -----------------
+// | URL Query operator | ----translate----> | StringPattern |
+// ----------------------                    -----------------
+//                                                   ^
+//                                                   |
+//                                                compare
+//                                                   |
+//                                                   v
+// ----------------------                    -----------------
+// | URL to compare     |                    |               |
+// | to all URL Query   | ----translate----> | String        |
+// | operators          |                    |               |
+// ----------------------                    -----------------
 //
 // The reason for this problem reduction is that there are efficient algorithms
 // for searching many substrings in one string (see Aho-Corasick algorithm).
+//
+// Additionally, some of the same pieces are reused to implement regular
+// expression comparisons. The FilteredRE2 implementation for matching many
+// regular expressions against one string uses prefiltering, in which a set
+// of substrings (derived from the regexes) are first searched for, to reduce
+// the number of regular expressions to test; the prefiltering step also
+// uses Aho-Corasick.
 //
 // Case 1: {host,path,query}_{prefix,suffix,equals} searches.
 // ==========================================================
@@ -84,7 +92,7 @@ namespace extensions {
 //
 // Similarly for path query parameters ({path, query}_{prefix, suffix, equals}).
 //
-// With this, we can search the SubstringPatterns in the normalized URL.
+// With this, we can search the StringPatterns in the normalized URL.
 //
 //
 // Case 2: url_{prefix,suffix,equals,contains} searches.
@@ -124,7 +132,21 @@ namespace extensions {
 //    followed by gurl.host().find("example.co");
 //
 // [similarly for path_contains and query_contains].
+//
+//
+// Regular expression matching (url_matches searches)
+// ==================================================
+//
+// This class also supports matching regular expressions (RE2 syntax)
+// against full URLs, which are transformed as in case 2.
 
+namespace {
+
+bool IsRegexCriterion(URLMatcherCondition::Criterion criterion) {
+  return criterion == URLMatcherCondition::URL_MATCHES;
+}
+
+}  // namespace
 
 //
 // URLMatcherCondition
@@ -132,34 +154,34 @@ namespace extensions {
 
 URLMatcherCondition::URLMatcherCondition()
     : criterion_(HOST_PREFIX),
-      substring_pattern_(NULL) {}
+      string_pattern_(NULL) {}
 
 URLMatcherCondition::~URLMatcherCondition() {}
 
 URLMatcherCondition::URLMatcherCondition(
     Criterion criterion,
-    const SubstringPattern* substring_pattern)
+    const StringPattern* string_pattern)
     : criterion_(criterion),
-      substring_pattern_(substring_pattern) {}
+      string_pattern_(string_pattern) {}
 
 URLMatcherCondition::URLMatcherCondition(const URLMatcherCondition& rhs)
     : criterion_(rhs.criterion_),
-      substring_pattern_(rhs.substring_pattern_) {}
+      string_pattern_(rhs.string_pattern_) {}
 
 URLMatcherCondition& URLMatcherCondition::operator=(
     const URLMatcherCondition& rhs) {
   criterion_ = rhs.criterion_;
-  substring_pattern_ = rhs.substring_pattern_;
+  string_pattern_ = rhs.string_pattern_;
   return *this;
 }
 
 bool URLMatcherCondition::operator<(const URLMatcherCondition& rhs) const {
   if (criterion_ < rhs.criterion_) return true;
   if (criterion_ > rhs.criterion_) return false;
-  if (substring_pattern_ != NULL && rhs.substring_pattern_ != NULL)
-    return *substring_pattern_ < *rhs.substring_pattern_;
-  if (substring_pattern_ == NULL && rhs.substring_pattern_ != NULL) return true;
-  // Either substring_pattern_ != NULL && rhs.substring_pattern_ == NULL,
+  if (string_pattern_ != NULL && rhs.string_pattern_ != NULL)
+    return *string_pattern_ < *rhs.string_pattern_;
+  if (string_pattern_ == NULL && rhs.string_pattern_ != NULL) return true;
+  // Either string_pattern_ != NULL && rhs.string_pattern_ == NULL,
   // or both are NULL.
   return false;
 }
@@ -183,25 +205,28 @@ bool URLMatcherCondition::IsFullURLCondition() const {
   return false;
 }
 
+bool URLMatcherCondition::IsRegexCondition() const {
+  return IsRegexCriterion(criterion_);
+}
+
 bool URLMatcherCondition::IsMatch(
-    const std::set<SubstringPattern::ID>& matching_substring_patterns,
+    const std::set<StringPattern::ID>& matching_patterns,
     const GURL& url) const {
-  DCHECK(substring_pattern_);
-  if (matching_substring_patterns.find(substring_pattern_->id()) ==
-      matching_substring_patterns.end())
+  DCHECK(string_pattern_);
+  if (!ContainsKey(matching_patterns, string_pattern_->id()))
     return false;
   // The criteria HOST_CONTAINS, PATH_CONTAINS, QUERY_CONTAINS are based on
   // a substring match on the raw URL. In case of a match, we need to verify
   // that the match was found in the correct component of the URL.
   switch (criterion_) {
     case HOST_CONTAINS:
-      return url.host().find(substring_pattern_->pattern()) !=
+      return url.host().find(string_pattern_->pattern()) !=
           std::string::npos;
     case PATH_CONTAINS:
-      return url.path().find(substring_pattern_->pattern()) !=
+      return url.path().find(string_pattern_->pattern()) !=
           std::string::npos;
     case QUERY_CONTAINS:
-      return url.query().find(substring_pattern_->pattern()) !=
+      return url.query().find(string_pattern_->pattern()) !=
           std::string::npos;
     default:
       break;
@@ -224,7 +249,8 @@ const char kEndOfURL[] = {static_cast<char>(-4), 0};
 URLMatcherConditionFactory::URLMatcherConditionFactory() : id_counter_(0) {}
 
 URLMatcherConditionFactory::~URLMatcherConditionFactory() {
-  STLDeleteElements(&pattern_singletons_);
+  STLDeleteElements(&substring_pattern_singletons_);
+  STLDeleteElements(&regex_pattern_singletons_);
 }
 
 std::string URLMatcherConditionFactory::CanonicalizeURLForComponentSearches(
@@ -336,6 +362,23 @@ std::string URLMatcherConditionFactory::CanonicalizeURLForFullSearches(
       kEndOfURL;
 }
 
+std::string URLMatcherConditionFactory::CanonicalizeURLForRegexSearches(
+    const GURL& url) {
+  GURL::Replacements replacements;
+  replacements.ClearPassword();
+  replacements.ClearUsername();
+  replacements.ClearRef();
+  // Clear port if it is implicit from scheme.
+  if (url.has_port()) {
+    const std::string& port = url.scheme();
+    if (url_canon::DefaultPortForScheme(port.c_str(), port.size()) ==
+            url.EffectiveIntPort()) {
+      replacements.ClearPort();
+    }
+  }
+  return url.ReplaceComponents(replacements).spec();
+}
+
 URLMatcherCondition URLMatcherConditionFactory::CreateURLPrefixCondition(
     const std::string& prefix) {
   return CreateCondition(URLMatcherCondition::URL_PREFIX,
@@ -358,35 +401,55 @@ URLMatcherCondition URLMatcherConditionFactory::CreateURLEqualsCondition(
       kBeginningOfURL + str + kEndOfURL);
 }
 
+URLMatcherCondition URLMatcherConditionFactory::CreateURLMatchesCondition(
+    const std::string& regex) {
+  return CreateCondition(URLMatcherCondition::URL_MATCHES, regex);
+}
+
 void URLMatcherConditionFactory::ForgetUnusedPatterns(
-      const std::set<SubstringPattern::ID>& used_patterns) {
-  PatternSingletons::iterator i = pattern_singletons_.begin();
-  while (i != pattern_singletons_.end()) {
+      const std::set<StringPattern::ID>& used_patterns) {
+  PatternSingletons::iterator i = substring_pattern_singletons_.begin();
+  while (i != substring_pattern_singletons_.end()) {
     if (used_patterns.find((*i)->id()) != used_patterns.end()) {
       ++i;
     } else {
       delete *i;
-      pattern_singletons_.erase(i++);
+      substring_pattern_singletons_.erase(i++);
+    }
+  }
+  i = regex_pattern_singletons_.begin();
+  while (i != regex_pattern_singletons_.end()) {
+    if (used_patterns.find((*i)->id()) != used_patterns.end()) {
+      ++i;
+    } else {
+      delete *i;
+      regex_pattern_singletons_.erase(i++);
     }
   }
 }
 
 bool URLMatcherConditionFactory::IsEmpty() const {
-  return pattern_singletons_.empty();
+  return substring_pattern_singletons_.empty() &&
+      regex_pattern_singletons_.empty();
 }
 
 URLMatcherCondition URLMatcherConditionFactory::CreateCondition(
     URLMatcherCondition::Criterion criterion,
     const std::string& pattern) {
-  SubstringPattern search_pattern(pattern, 0);
+  StringPattern search_pattern(pattern, 0);
+  PatternSingletons* pattern_singletons =
+      IsRegexCriterion(criterion) ? &regex_pattern_singletons_
+                                  : &substring_pattern_singletons_;
+
   PatternSingletons::const_iterator iter =
-      pattern_singletons_.find(&search_pattern);
-  if (iter != pattern_singletons_.end()) {
+      pattern_singletons->find(&search_pattern);
+
+  if (iter != pattern_singletons->end()) {
     return URLMatcherCondition(criterion, *iter);
   } else {
-    SubstringPattern* new_pattern =
-        new SubstringPattern(pattern, id_counter_++);
-    pattern_singletons_.insert(new_pattern);
+    StringPattern* new_pattern =
+        new StringPattern(pattern, id_counter_++);
+    pattern_singletons->insert(new_pattern);
     return URLMatcherCondition(criterion, new_pattern);
   }
 }
@@ -399,9 +462,9 @@ std::string URLMatcherConditionFactory::CanonicalizeHostname(
     return "." + hostname;
 }
 
-bool URLMatcherConditionFactory::SubstringPatternPointerCompare::operator()(
-    SubstringPattern* lhs,
-    SubstringPattern* rhs) const {
+bool URLMatcherConditionFactory::StringPatternPointerCompare::operator()(
+    StringPattern* lhs,
+    StringPattern* rhs) const {
   if (lhs == NULL && rhs != NULL) return true;
   if (lhs != NULL && rhs != NULL)
     return lhs->pattern() < rhs->pattern();
@@ -483,11 +546,11 @@ URLMatcherConditionSet::URLMatcherConditionSet(
       port_filter_(port_filter.Pass()) {}
 
 bool URLMatcherConditionSet::IsMatch(
-    const std::set<SubstringPattern::ID>& matching_substring_patterns,
+    const std::set<StringPattern::ID>& matching_patterns,
     const GURL& url) const {
   for (Conditions::const_iterator i = conditions_.begin();
        i != conditions_.end(); ++i) {
-    if (!i->IsMatch(matching_substring_patterns, url))
+    if (!i->IsMatch(matching_patterns, url))
       return false;
   }
   if (scheme_filter_.get() && !scheme_filter_->IsMatch(url))
@@ -496,7 +559,6 @@ bool URLMatcherConditionSet::IsMatch(
     return false;
   return true;
 }
-
 
 //
 // URLMatcher
@@ -533,19 +595,21 @@ void URLMatcher::ClearUnusedConditionSets() {
 }
 
 std::set<URLMatcherConditionSet::ID> URLMatcher::MatchURL(const GURL& url) {
-  // Find all IDs of SubstringPatterns that match |url|.
+  // Find all IDs of StringPatterns that match |url|.
   // See URLMatcherConditionFactory for the canonicalization of URLs and the
   // distinction between full url searches and url component searches.
-  std::set<SubstringPattern::ID> matches;
+  std::set<StringPattern::ID> matches;
   full_url_matcher_.Match(
       condition_factory_.CanonicalizeURLForFullSearches(url), &matches);
   url_component_matcher_.Match(
       condition_factory_.CanonicalizeURLForComponentSearches(url), &matches);
+  regex_set_matcher_.Match(
+      condition_factory_.CanonicalizeURLForRegexSearches(url), &matches);
 
   // Calculate all URLMatcherConditionSets for which all URLMatcherConditions
   // were fulfilled.
   std::set<URLMatcherConditionSet::ID> result;
-  for (std::set<SubstringPattern::ID>::const_iterator i = matches.begin();
+  for (std::set<StringPattern::ID>::const_iterator i = matches.begin();
        i != matches.end(); ++i) {
     // For each URLMatcherConditionSet there is exactly one condition
     // registered in substring_match_triggers_. This means that the following
@@ -580,7 +644,7 @@ void URLMatcher::UpdateSubstringSetMatcher(bool full_url_conditions) {
 
   // Determine which patterns need to be registered when this function
   // terminates.
-  std::set<const SubstringPattern*> new_patterns;
+  std::set<const StringPattern*> new_patterns;
   for (URLMatcherConditionSets::const_iterator condition_set_iter =
       url_matcher_condition_sets_.begin();
       condition_set_iter != url_matcher_condition_sets_.end();
@@ -590,21 +654,22 @@ void URLMatcher::UpdateSubstringSetMatcher(bool full_url_conditions) {
     for (URLMatcherConditionSet::Conditions::const_iterator condition_iter =
          conditions.begin(); condition_iter != conditions.end();
          ++condition_iter) {
-      // If we are called to process Full URL searches, ignore all others,
-      // and vice versa.
-      if (full_url_conditions == condition_iter->IsFullURLCondition())
-        new_patterns.insert(condition_iter->substring_pattern());
+      // If we are called to process Full URL searches, ignore others, and
+      // vice versa. (Regex conditions are updated in UpdateRegexSetMatcher.)
+      if (!condition_iter->IsRegexCondition() &&
+          full_url_conditions == condition_iter->IsFullURLCondition())
+        new_patterns.insert(condition_iter->string_pattern());
     }
   }
 
   // This is the set of patterns that were registered before this function
   // is called.
-  std::set<const SubstringPattern*>& registered_patterns =
+  std::set<const StringPattern*>& registered_patterns =
       full_url_conditions ? registered_full_url_patterns_
                           : registered_url_component_patterns_;
 
   // Add all patterns that are in new_patterns but not in registered_patterns.
-  std::vector<const SubstringPattern*> patterns_to_register;
+  std::vector<const StringPattern*> patterns_to_register;
   std::set_difference(
       new_patterns.begin(), new_patterns.end(),
       registered_patterns.begin(), registered_patterns.end(),
@@ -612,7 +677,7 @@ void URLMatcher::UpdateSubstringSetMatcher(bool full_url_conditions) {
 
   // Remove all patterns that are in registered_patterns but not in
   // new_patterns.
-  std::vector<const SubstringPattern*> patterns_to_unregister;
+  std::vector<const StringPattern*> patterns_to_unregister;
   std::set_difference(
       registered_patterns.begin(), registered_patterns.end(),
       new_patterns.begin(), new_patterns.end(),
@@ -629,9 +694,9 @@ void URLMatcher::UpdateSubstringSetMatcher(bool full_url_conditions) {
   registered_patterns.swap(new_patterns);
 }
 
-void URLMatcher::UpdateTriggers() {
-  // Count substring pattern frequencies.
-  std::map<SubstringPattern::ID, size_t> substring_pattern_frequencies;
+void URLMatcher::UpdateRegexSetMatcher() {
+  std::vector<const StringPattern*> new_patterns;
+
   for (URLMatcherConditionSets::const_iterator condition_set_iter =
       url_matcher_condition_sets_.begin();
       condition_set_iter != url_matcher_condition_sets_.end();
@@ -641,13 +706,36 @@ void URLMatcher::UpdateTriggers() {
     for (URLMatcherConditionSet::Conditions::const_iterator condition_iter =
          conditions.begin(); condition_iter != conditions.end();
          ++condition_iter) {
-      const SubstringPattern* pattern = condition_iter->substring_pattern();
+      if (condition_iter->IsRegexCondition())
+        new_patterns.push_back(condition_iter->string_pattern());
+    }
+  }
+
+  // Start over from scratch. We can't really do better than this, since the
+  // FilteredRE2 backend doesn't support incremental updates.
+  regex_set_matcher_.ClearPatterns();
+  regex_set_matcher_.AddPatterns(new_patterns);
+}
+
+void URLMatcher::UpdateTriggers() {
+  // Count substring pattern frequencies.
+  std::map<StringPattern::ID, size_t> substring_pattern_frequencies;
+  for (URLMatcherConditionSets::const_iterator condition_set_iter =
+      url_matcher_condition_sets_.begin();
+      condition_set_iter != url_matcher_condition_sets_.end();
+      ++condition_set_iter) {
+    const URLMatcherConditionSet::Conditions& conditions =
+        condition_set_iter->second->conditions();
+    for (URLMatcherConditionSet::Conditions::const_iterator condition_iter =
+         conditions.begin(); condition_iter != conditions.end();
+         ++condition_iter) {
+      const StringPattern* pattern = condition_iter->string_pattern();
       substring_pattern_frequencies[pattern->id()]++;
     }
   }
 
   // Update trigger conditions: Determine for each URLMatcherConditionSet which
-  // URLMatcherCondition contains a SubstringPattern that occurs least
+  // URLMatcherCondition contains a StringPattern that occurs least
   // frequently in this URLMatcher. We assume that this condition is very
   // specific and occurs rarely in URLs. If a match occurs for this
   // URLMatcherCondition, we want to test all other URLMatcherCondition in the
@@ -664,12 +752,12 @@ void URLMatcher::UpdateTriggers() {
       continue;
     URLMatcherConditionSet::Conditions::const_iterator condition_iter =
         conditions.begin();
-    SubstringPattern::ID trigger = condition_iter->substring_pattern()->id();
+    StringPattern::ID trigger = condition_iter->string_pattern()->id();
     // We skip the first element in the following loop.
     ++condition_iter;
     for (; condition_iter != conditions.end(); ++condition_iter) {
-      SubstringPattern::ID current_id =
-          condition_iter->substring_pattern()->id();
+      StringPattern::ID current_id =
+          condition_iter->string_pattern()->id();
       if (substring_pattern_frequencies[trigger] >
           substring_pattern_frequencies[current_id]) {
         trigger = current_id;
@@ -680,7 +768,7 @@ void URLMatcher::UpdateTriggers() {
 }
 
 void URLMatcher::UpdateConditionFactory() {
-  std::set<SubstringPattern::ID> used_patterns;
+  std::set<StringPattern::ID> used_patterns;
   for (URLMatcherConditionSets::const_iterator condition_set_iter =
       url_matcher_condition_sets_.begin();
       condition_set_iter != url_matcher_condition_sets_.end();
@@ -690,7 +778,7 @@ void URLMatcher::UpdateConditionFactory() {
     for (URLMatcherConditionSet::Conditions::const_iterator condition_iter =
          conditions.begin(); condition_iter != conditions.end();
          ++condition_iter) {
-      used_patterns.insert(condition_iter->substring_pattern()->id());
+      used_patterns.insert(condition_iter->string_pattern()->id());
     }
   }
   condition_factory_.ForgetUnusedPatterns(used_patterns);
@@ -699,6 +787,7 @@ void URLMatcher::UpdateConditionFactory() {
 void URLMatcher::UpdateInternalDatastructures() {
   UpdateSubstringSetMatcher(false);
   UpdateSubstringSetMatcher(true);
+  UpdateRegexSetMatcher();
   UpdateTriggers();
   UpdateConditionFactory();
 }

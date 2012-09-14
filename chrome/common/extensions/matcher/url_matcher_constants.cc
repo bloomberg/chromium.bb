@@ -25,6 +25,7 @@ const char kQueryPrefixKey[] = "queryPrefix";
 const char kQuerySuffixKey[] = "querySuffix";
 const char kURLContainsKey[] = "urlContains";
 const char kURLEqualsKey[] = "urlEquals";
+const char kURLMatchesKey[] = "urlMatches";
 const char kURLPrefixKey[] = "urlPrefix";
 const char kURLSuffixKey[] = "urlSuffix";
 

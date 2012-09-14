@@ -28,6 +28,7 @@ extern const char kQueryPrefixKey[];
 extern const char kQuerySuffixKey[];
 extern const char kURLContainsKey[];
 extern const char kURLEqualsKey[];
+extern const char kURLMatchesKey[];
 extern const char kURLPrefixKey[];
 extern const char kURLSuffixKey[];
 

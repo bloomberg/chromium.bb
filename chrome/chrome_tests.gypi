@@ -1997,6 +1997,8 @@
         'common/extensions/manifest_tests/extension_manifests_update_unittest.cc',
         'common/extensions/manifest_tests/extension_manifests_validapp_unittest.cc',
         'common/extensions/manifest_tests/extension_manifests_web_unittest.cc',
+        'common/extensions/matcher/regex_set_matcher_unittest.cc',
+        'common/extensions/matcher/string_pattern_unittest.cc',
         'common/extensions/matcher/substring_set_matcher_unittest.cc',
         'common/extensions/matcher/url_matcher_unittest.cc',
         'common/extensions/matcher/url_matcher_factory_unittest.cc',
