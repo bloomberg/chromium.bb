@@ -21,6 +21,7 @@
 #include "ui/base/win/hwnd_subclass.h"
 #include "ui/views/widget/widget_message_filter.h"
 #elif defined(USE_X11)
+#include "ui/base/x/x11_util.h"
 #include "ui/views/widget/x11_desktop_handler.h"
 #include "ui/views/widget/x11_desktop_window_move_client.h"
 #include "ui/views/widget/x11_window_event_filter.h"
@@ -179,6 +180,15 @@ void DesktopNativeWidgetHelperAura::PreInitialize(
       new X11WindowEventFilter(root_window_.get(), activation_client, widget_));
   x11_window_event_filter_->SetUseHostWindowBorders(false);
   root_window_event_filter_->AddFilter(x11_window_event_filter_.get());
+
+  if (params.type == Widget::InitParams::TYPE_MENU) {
+    ::Window window = root_window_->GetAcceleratedWidget();
+    XSetWindowAttributes attributes;
+    memset(&attributes, 0, sizeof(attributes));
+    attributes.override_redirect = True;
+    XChangeWindowAttributes(ui::GetXDisplay(), window, CWOverrideRedirect,
+        &attributes);
+  }
 #endif
 
   root_window_->AddRootWindowObserver(this);
