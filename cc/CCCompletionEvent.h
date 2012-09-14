@@ -5,7 +5,7 @@
 #ifndef CCCompletionEvent_h
 #define CCCompletionEvent_h
 
-#include <wtf/ThreadingPrimitives.h>
+#include "base/synchronization/waitable_event.h"
 
 namespace WebCore {
 
@@ -16,17 +16,16 @@ namespace WebCore {
 class CCCompletionEvent {
 public:
     CCCompletionEvent()
+        : m_event(false /* manual_reset */, false /* initially_signaled */)
     {
 #ifndef NDEBUG
         m_waited = false;
         m_signaled = false;
 #endif
-        m_mutex.lock();
     }
 
     ~CCCompletionEvent()
     {
-        m_mutex.unlock();
         ASSERT(m_waited);
         ASSERT(m_signaled);
     }
@@ -37,22 +36,20 @@ public:
 #ifndef NDEBUG
         m_waited = true;
 #endif
-        m_condition.wait(m_mutex);
+        m_event.Wait();
     }
 
     void signal()
     {
-        MutexLocker lock(m_mutex);
         ASSERT(!m_signaled);
 #ifndef NDEBUG
         m_signaled = true;
 #endif
-        m_condition.signal();
+        m_event.Signal();
     }
 
 private:
-    Mutex m_mutex;
-    ThreadCondition m_condition;
+    base::WaitableEvent m_event;
 #ifndef NDEBUG
     // Used to assert that wait() and signal() are each called exactly once.
     bool m_waited;
