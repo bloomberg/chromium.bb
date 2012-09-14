@@ -19,7 +19,8 @@ BrowserNonClientFrameView* CreateBrowserNonClientFrameView(
     BrowserFrame* frame, BrowserView* browser_view) {
 
 #if defined(USE_AURA)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(views::switches::kWinAura))
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+        views::switches::kDesktopAura))
     return new OpaqueBrowserFrameView(frame, browser_view);
 #endif
 #if defined(USE_ASH)

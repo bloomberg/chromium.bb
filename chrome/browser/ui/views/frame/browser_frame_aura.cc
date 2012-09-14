@@ -194,7 +194,8 @@ NativeBrowserFrame* NativeBrowserFrame::CreateNativeBrowserFrame(
     BrowserFrame* browser_frame,
     BrowserView* browser_view) {
 #if !defined(OS_CHROMEOS)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(views::switches::kWinAura))
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+        views::switches::kDesktopAura))
     return new DesktopBrowserFrameAura(browser_frame, browser_view);
 #endif
   return new BrowserFrameAura(browser_frame, browser_view);

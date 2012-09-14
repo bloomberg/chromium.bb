@@ -11,7 +11,7 @@ namespace views {
 namespace switches {
 
 // Please keep alphabetized.
-VIEWS_EXPORT extern const char kWinAura[];
+VIEWS_EXPORT extern const char kDesktopAura[];
 
 }  // namespace switches
 }  // namespace views

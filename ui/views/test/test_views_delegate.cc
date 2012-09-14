@@ -72,7 +72,7 @@ NativeWidget* TestViewsDelegate::CreateNativeWidget(
     internal::NativeWidgetDelegate* delegate,
     gfx::NativeView parent) {
 #if defined(USE_AURA) && !defined(OS_CHROMEOS)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kWinAura))
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDesktopAura))
     return new DesktopNativeWidgetAura(delegate);
 #endif
   return NULL;

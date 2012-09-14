@@ -8,7 +8,7 @@ namespace views {
 namespace switches {
 
 // Run in desktop mode using the aura framework.
-const char kWinAura[] = "win-aura";
+const char kDesktopAura[] = "desktop-aura";
 
 }  // namespace switches
 }  // namespace views
