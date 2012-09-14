@@ -1,9 +1,10 @@
 {
   "name": "Tab Inspector",
   "description": "Utility for working with the extension tabs api",
-  "version": "0.2",
+  "version": "0.3",
   "permissions": ["tabs"],
   "background": {
+    "persistent": false,
     "scripts": ["background.js"]
   },
   "browser_action": {

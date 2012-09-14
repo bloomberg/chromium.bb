@@ -1,12 +1,15 @@
 {
   "name": "Merge Windows",
-  "version": "1.0.0.0",
+  "version": "1.0.1.0",
   "description": "Merges all of the browser's windows into the current window",
   "icons": {
     "48": "merge_windows_48.png",
     "128": "merge_windows_128.png"
   },
-  "background": { "scripts": ["background.js"] },
+  "background": {
+    "persistent": false,
+    "scripts": ["background.js"]
+  },
   "browser_action": {
     "default_icon": "arrow_in.png",
     "default_title": "Merge Windows"

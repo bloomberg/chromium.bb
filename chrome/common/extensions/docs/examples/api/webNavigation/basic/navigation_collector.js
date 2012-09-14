@@ -65,6 +65,8 @@ function NavigationCollector() {
 
   // Bind handler to extension messages for communication from popup.
   chrome.extension.onRequest.addListener(this.onRequestListener_.bind(this));
+
+  this.loadDataStorage_();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -161,6 +163,46 @@ NavigationCollector.prototype = {
 
 
   /**
+   * Retrieves our saved data from storage.
+   * @private
+   */
+  loadDataStorage_: function() {
+    chrome.storage.local.get({
+      "completed": {},
+      "errored": {},
+    }, function(storage) {
+      this.completed_ = storage.completed;
+      this.errored_ = storage.errored;
+    }.bind(this));
+  },
+
+
+  /**
+   * Persists our state to the storage API.
+   * @private
+   */
+  saveDataStorage_: function() {
+    chrome.storage.local.set({
+      "completed": this.completed_,
+      "errored": this.errored_,
+    });
+  },
+
+
+  /**
+   * Resets our saved state to empty.
+   */
+  resetDataStorage: function() {
+    this.completed_ = {};
+    this.errored_ = {};
+    this.saveDataStorage_();
+    // Load again, in case there is an outstanding storage.get request. This
+    // one will reload the newly-cleared data.
+    this.loadDataStorage_();
+  },
+
+
+  /**
    * Handler for the 'onCreatedNavigationTarget' event. Updates the
    * pending request with a source frame/tab, and notes that it was opened in a
    * new tab.
@@ -248,6 +290,7 @@ NavigationCollector.prototype = {
         transitionType: data.transitionType,
         url: data.url
       });
+      this.saveDataStorage_();
     } else {
       this.prepareDataStorage_(id, data.url);
       this.pending_[id].transitionType = data.transitionType;
@@ -282,6 +325,7 @@ NavigationCollector.prototype = {
         transitionType: data.transitionType,
         url: data.url
       });
+      this.saveDataStorage_();
     } else {
       this.prepareDataStorage_(id, data.url);
       this.pending_[id].transitionType = data.transitionType;
@@ -316,6 +360,7 @@ NavigationCollector.prototype = {
         url: data.url
       });
       delete this.pending_[id];
+      this.saveDataStorage_();
     }
   },
 
@@ -346,6 +391,7 @@ NavigationCollector.prototype = {
         url: data.url
       });
       delete this.pending_[id];
+      this.saveDataStorage_();
     }
   },
 

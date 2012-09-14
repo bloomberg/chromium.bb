@@ -21,3 +21,9 @@ eventList.forEach(function(e) {
       console.error(chrome.i18n.getMessage('inHandlerError'), e);
   });
 });
+
+// Reset the navigation state on startup. We only want to collect data within a
+// session.
+chrome.runtime.onStartup.addListener(function() {
+  nav.resetDataStorage();
+});

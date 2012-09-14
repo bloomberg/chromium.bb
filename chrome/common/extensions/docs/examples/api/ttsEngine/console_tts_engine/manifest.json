@@ -1,9 +1,11 @@
 {
   "name": "Console TTS Engine",
-  "version": "2.0",
+  "manifest_version": 2,
+  "version": "2.1",
   "description": "A \"silent\" TTS engine that prints text to a small window rather than synthesizing speech.",
   "permissions": ["ttsEngine", "tabs"],
   "background": {
+    "persistent": false,
     "scripts": ["console_tts_engine.js"]
   },
   "tts_engine": {
