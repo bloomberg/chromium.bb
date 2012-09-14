@@ -255,6 +255,34 @@ class ChromeosLogin(pyauto.PyUITest):
     self.WaitForHtermText(text='command crosh completed with exit code 0',
         msg='Could not exit crosh.')
 
+  def testCroshPreservedBetweenLogins(self):
+    """Verify user can continue after re-login."""
+    self.testGoodLogin()
+    self.CloseBrowserWindow(0)
+    test_utils.OpenCroshVerification(self)
+
+    # Verify crosh prompt.
+    self.WaitForHtermText(text='crosh> ',
+        msg='Could not find "crosh> " prompt')
+    self.assertTrue(
+        self.GetHtermRowsText(start=0, end=2).endswith('crosh> '),
+        msg='Could not find "crosh> " prompt')
+
+    # Open 2 other tabs.
+    self.AppendTab(self.GetHttpURLForDataPath('title2.html'))
+    self.assertEqual('Title Of Awesomeness', self.GetActiveTabTitle(),
+                     msg='Unable to naviage to title2.html and '
+                         'verify tab title.')
+    self.AppendTab(self.GetHttpURLForDataPath('settings', 'image_page.html'))
+    self.assertEqual('Show an image', self.GetActiveTabTitle(),
+                     msg='Unable to navigate to image_page and '
+                         'verify tab title.')
+    self.Logout()
+    self.testGoodLogin()  # Re-Login with same account.
+
+    # Verify 3 tabs are still open after re-login.
+    self.assertEqual(3, len(self.GetBrowserInfo()['windows'][0]['tabs']))
+
 
 if __name__ == '__main__':
   pyauto_functional.Main()

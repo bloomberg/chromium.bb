@@ -81,6 +81,22 @@ class CroshTest(pyauto.PyUITest):
           tab_index=1, windex=windex,
           msg='Could not exit crosh.')
 
+  def testShell(self):
+    """Test shell can be opened in crosh."""
+    test_utils.OpenCroshVerification(self)
+
+    # Verify crosh prompt.
+    self.WaitForHtermText(text='crosh> ',
+        msg='Could not find "crosh> " prompt')
+    self.assertTrue(
+        self.GetHtermRowsText(start=0, end=2).endswith('crosh> '),
+        msg='Could not find "crosh> " prompt')
+
+    # Run a shell command.
+    self.SendKeysToHterm(r'shell\n')
+    self.WaitForHtermText(text='chronos@localhost',
+        msg='Could not find "chronos@localhost" in shell output.')
+
 
 if __name__ == '__main__':
   pyauto_functional.Main()
