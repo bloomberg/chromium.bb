@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/logging.h"
 #include "base/stl_util.h"
 #include "content/browser/renderer_host/media/media_stream_settings_requester.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
@@ -164,11 +165,16 @@ void MediaStreamDeviceSettings::RequestCaptureDeviceUsage(
     const std::string& label, int render_process_id, int render_view_id,
     const StreamOptions& request_options, const GURL& security_origin) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(requests_.find(label) == requests_.end());
 
   // Create a new request.
-  requests_.insert(std::make_pair(label, new MediaStreamDeviceSettingsRequest(
-      render_process_id, render_view_id, security_origin, request_options)));
+  if (!requests_.insert(std::make_pair(label,
+                                       new MediaStreamDeviceSettingsRequest(
+                                           render_process_id,
+                                           render_view_id,
+                                           security_origin,
+                                           request_options))).second) {
+    NOTREACHED();
+  }
 }
 
 void MediaStreamDeviceSettings::RemovePendingCaptureRequest(
@@ -205,7 +211,11 @@ void MediaStreamDeviceSettings::AvailableDevices(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   SettingsRequests::iterator request_it = requests_.find(label);
-  DCHECK(request_it != requests_.end());
+  if (request_it == requests_.end()) {
+    NOTREACHED();
+    return;
+  }
+
   // Add the answer for the request.
   MediaStreamDeviceSettingsRequest* request = request_it->second;
   DCHECK_EQ(request->devices_full.count(stream_type), static_cast<size_t>(0))
@@ -307,7 +317,12 @@ void MediaStreamDeviceSettings::ProcessNextRequestForView(
 }
 
 void MediaStreamDeviceSettings::PostRequestToUI(const std::string& label) {
-  MediaStreamDeviceSettingsRequest* request = requests_[label];
+  SettingsRequests::iterator request_it = requests_.find(label);
+  if (request_it == requests_.end()) {
+    NOTREACHED();
+    return;
+  }
+  MediaStreamDeviceSettingsRequest* request = request_it->second;
   DCHECK(request != NULL);
 
   request->posted_task = true;
