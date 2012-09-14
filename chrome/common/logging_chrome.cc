@@ -262,9 +262,10 @@ void InitChromeLogging(const CommandLine& command_line,
   IPC::Logging::set_log_function_map(&g_log_function_mapping);
 #endif
   LoggingDestination logging_dest = DetermineLogMode(command_line);
+  LogLockingState log_locking_state = LOCK_LOG_FILE;
   FilePath log_path;
 #if defined(OS_CHROMEOS)
-    FilePath target_path;
+  FilePath target_path;
 #endif
 
   // Don't resolve the log path unless we need to. Otherwise we leave an open
@@ -291,6 +292,8 @@ void InitChromeLogging(const CommandLine& command_line,
     // since that will remove the newly created link instead.
     delete_old_log_file = logging::APPEND_TO_OLD_LOG_FILE;
 #endif
+  } else {
+    log_locking_state = DONT_LOCK_LOG_FILE;
   }
 
   logging::DcheckState dcheck_state =
@@ -300,7 +303,7 @@ void InitChromeLogging(const CommandLine& command_line,
 
   bool success = InitLogging(log_path.value().c_str(),
                              logging_dest,
-                             logging::LOCK_LOG_FILE,
+                             log_locking_state,
                              delete_old_log_file,
                              dcheck_state);
 
