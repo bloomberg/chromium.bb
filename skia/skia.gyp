@@ -242,11 +242,6 @@
 
         # Temporarily ignore fix to antialias coverage, until we can rebaseline
         'SK_USE_LEGACY_AA_COVERAGE',
-
-        # Temporarily use SkPaint to keep a scale factor needed for correct
-        # font rendering in high DPI mode.
-        # See https://codereview.appspot.com/6495089/
-        'SK_SUPPORT_HINTING_SCALE_FACTOR',
       ],
       'sources!': [
         '../third_party/skia/include/core/SkTypes.h',
