@@ -70,7 +70,7 @@ ReportProblemInternal(uint32_t vaddr,
 
 const uint32_t kOneGig = 1U * 1024 * 1024 * 1024;
 
-int validate(const ncfile *ncf, bool use_zero_masks) {
+int validate(const ncfile *ncf) {
   SfiValidator validator(
       16,  // bytes per bundle
       // TODO(cbiffle): maybe check region sizes from ELF headers?
@@ -79,10 +79,6 @@ int validate(const ncfile *ncf, bool use_zero_masks) {
       kOneGig,  // data region size
       nacl_arm_dec::RegisterList(nacl_arm_dec::Register(9)),
       nacl_arm_dec::RegisterList(nacl_arm_dec::kRegisterStack));
-
-  if (use_zero_masks) {
-    validator.change_masks(0, 0);
-  }
 
   NcvalProblemReporter reporter;
 
@@ -107,25 +103,20 @@ int validate(const ncfile *ncf, bool use_zero_masks) {
 }
 
 int main(int argc, const char *argv[]) {
-  bool use_zero_masks = false;
   const char *filename = NULL;
 
   for (int i = 1; i < argc; ++i) {
     string o = argv[i];
-    if (o == "--zero-masks") {
-      use_zero_masks = true;
-    } else {
-      if (filename != NULL) {
-        // trigger error when filename is overwritten
-        filename = NULL;
-        break;
-      }
-      filename = argv[i];
+    if (filename != NULL) {
+      // trigger error when filename is overwritten
+      filename = NULL;
+      break;
     }
+    filename = argv[i];
   }
 
   if (NULL == filename) {
-    fprintf(stderr, "Usage: %s [--zero-masks] <filename>\n", argv[0]);
+    fprintf(stderr, "Usage: %s <filename>\n", argv[0]);
     return 2;
   }
 
@@ -137,7 +128,7 @@ int main(int argc, const char *argv[]) {
 
   // TODO(cbiffle): check OS ABI, ABI version, align mask
 
-  int exit_code = validate(ncf, use_zero_masks);
+  int exit_code = validate(ncf);
   nc_freefile(ncf);
   return exit_code;
 }

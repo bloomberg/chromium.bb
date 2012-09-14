@@ -156,7 +156,7 @@ ProblemRecord& ProblemRecord::operator=(const ProblemRecord& r) {
 }
 
 void ProblemRecord::Init(const ValidatorProblemUserData user_data) {
-  for (size_t i = 0; i < nacl_arm_val::ValidatorProblemUserDataSize; ++i) {
+  for (size_t i = 0; i < nacl_arm_val::kValidatorProblemUserDataSize; ++i) {
     user_data_[i] = user_data[i];
   }
 }

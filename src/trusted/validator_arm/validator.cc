@@ -4,12 +4,14 @@
  * found in the LICENSE file.
  */
 
+#include <inttypes.h>
+
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/validator_arm/model.h"
 #include "native_client/src/trusted/validator_arm/validator.h"
 #include "native_client/src/include/nacl_macros.h"
-
-#include <assert.h>
+#include "native_client/src/include/portability_bits.h"
+#include "native_client/src/shared/platform/nacl_log.h"
 
 using nacl_arm_dec::Instruction;
 using nacl_arm_dec::ClassDecoder;
@@ -55,7 +57,8 @@ void ProblemSink::ReportProblemInternal(uint32_t vaddr,
 
   // Before returning, be sure unused fields in user data are set to zero.
   // This way, we don't need to fill in each ReportProblem... method.
-  for (size_t i = UserDataSize(method); i < ValidatorProblemUserDataSize; ++i) {
+  for (size_t i = UserDataSize(method);
+       i < kValidatorProblemUserDataSize; ++i) {
     user_data[i] = 0;
   };
 }
@@ -65,7 +68,8 @@ void ProblemSink::ReportProblemSafety(
   ValidatorProblemUserData user_data = {
     static_cast<uint32_t>(safety),
   };
-  assert(NACL_ARRAY_SIZE(user_data) <= ValidatorProblemUserDataSize);
+  NACL_COMPILE_TIME_ASSERT(NACL_ARRAY_SIZE(user_data) <=
+                           kValidatorProblemUserDataSize);
   ReportProblemInternal(vaddr, kProblemUnsafe,
                         kReportProblemSafety, user_data);;
 }
@@ -73,7 +77,8 @@ void ProblemSink::ReportProblemSafety(
 void ProblemSink::ReportProblem(uint32_t vaddr, ValidatorProblem problem) {
   ValidatorProblemUserData user_data = {
   };
-  assert(NACL_ARRAY_SIZE(user_data) <= ValidatorProblemUserDataSize);
+  NACL_COMPILE_TIME_ASSERT(NACL_ARRAY_SIZE(user_data) <=
+                           kValidatorProblemUserDataSize);
   ReportProblemInternal(vaddr, problem, kReportProblem, user_data);
 }
 
@@ -82,7 +87,8 @@ void ProblemSink::ReportProblemAddress(
   ValidatorProblemUserData user_data = {
     problem_vaddr
   };
-  assert(NACL_ARRAY_SIZE(user_data) <= ValidatorProblemUserDataSize);
+  NACL_COMPILE_TIME_ASSERT(NACL_ARRAY_SIZE(user_data) <=
+                           kValidatorProblemUserDataSize);
   ReportProblemInternal(vaddr, problem, kReportProblemAddress, user_data);
 }
 
@@ -97,7 +103,8 @@ void ProblemSink::ReportProblemInstructionPair(
     second.addr(),
     second.inst().Bits()
   };
-  assert(NACL_ARRAY_SIZE(user_data) <= ValidatorProblemUserDataSize);
+  NACL_COMPILE_TIME_ASSERT(NACL_ARRAY_SIZE(user_data) <=
+                           kValidatorProblemUserDataSize);
   ReportProblemInternal(vaddr, problem,
                         kReportProblemInstructionPair, user_data);
 }
@@ -108,7 +115,8 @@ void ProblemSink::ReportProblemRegister(
   ValidatorProblemUserData user_data = {
     reg.number()
   };
-  assert(NACL_ARRAY_SIZE(user_data) <= ValidatorProblemUserDataSize);
+  NACL_COMPILE_TIME_ASSERT(NACL_ARRAY_SIZE(user_data) <=
+                           kValidatorProblemUserDataSize);
   ReportProblemInternal(vaddr, problem, kReportProblemRegister, user_data);
 }
 
@@ -125,7 +133,8 @@ void ProblemSink::ReportProblemRegisterInstructionPair(
     second.addr(),
     second.inst().Bits()
   };
-  assert(NACL_ARRAY_SIZE(user_data) <= ValidatorProblemUserDataSize);
+  NACL_COMPILE_TIME_ASSERT(NACL_ARRAY_SIZE(user_data) <=
+                           kValidatorProblemUserDataSize);
   ReportProblemInternal(vaddr, problem,
                         kReportProblemRegisterInstructionPair, user_data);
 }
@@ -136,7 +145,8 @@ void ProblemSink::ReportProblemRegisterList(
   ValidatorProblemUserData user_data = {
     registers.bits()
   };
-  assert(NACL_ARRAY_SIZE(user_data) <= ValidatorProblemUserDataSize);
+  NACL_COMPILE_TIME_ASSERT(NACL_ARRAY_SIZE(user_data) <=
+                           kValidatorProblemUserDataSize);
   ReportProblemInternal(vaddr, problem,
                         kReportProblemRegisterList, user_data);
 }
@@ -154,7 +164,8 @@ void ProblemSink::ReportProblemRegisterListInstructionPair(
     second.addr(),
     second.inst().Bits()
   };
-  assert(NACL_ARRAY_SIZE(user_data) <= ValidatorProblemUserDataSize);
+  NACL_COMPILE_TIME_ASSERT(NACL_ARRAY_SIZE(user_data) <=
+                           kValidatorProblemUserDataSize);
   ReportProblemInternal(vaddr, problem,
                         kReportProblemRegisterListInstructionPair, user_data);
 }
@@ -504,34 +515,48 @@ SfiValidator::SfiValidator(uint32_t bytes_per_bundle,
                            RegisterList read_only_registers,
                            RegisterList data_address_registers)
     : bytes_per_bundle_(bytes_per_bundle),
-      data_address_mask_(~(data_region_bytes - 1)),
-      code_address_mask_(~(code_region_bytes - 1) | (bytes_per_bundle - 1)),
       code_region_bytes_(code_region_bytes),
+      data_region_bytes_(data_region_bytes),
       read_only_registers_(read_only_registers),
       data_address_registers_(data_address_registers),
-      decode_state_() {}
+      decode_state_(),
+      construction_failed_(false) {
+  // Make sure we can construct sane masks with the values.
+  if ((nacl::PopCount(bytes_per_bundle_) != 1) ||
+      (nacl::PopCount(code_region_bytes_) != 1) ||
+      (nacl::PopCount(data_region_bytes_) != 1) ||
+      (bytes_per_bundle_ < 2) ||
+      (code_region_bytes_ < 2) ||
+      (data_region_bytes_ < 2) ||
+      (code_region_bytes_ < bytes_per_bundle_)) {
+    construction_failed_ = true;
+  }
+}
 
 SfiValidator::SfiValidator(const SfiValidator& v)
     : bytes_per_bundle_(v.bytes_per_bundle_),
-      data_address_mask_(v.data_address_mask_),
-      code_address_mask_(v.code_address_mask_),
       code_region_bytes_(v.code_region_bytes_),
+      data_region_bytes_(v.data_region_bytes_),
       read_only_registers_(v.read_only_registers_),
       data_address_registers_(v.data_address_registers_),
-      decode_state_() {}
+      decode_state_(),
+      construction_failed_(v.construction_failed_) {}
 
 SfiValidator& SfiValidator::operator=(const SfiValidator& v) {
   bytes_per_bundle_ = v.bytes_per_bundle_;
-  data_address_mask_ = v.data_address_mask_;
-  code_address_mask_ = v.code_address_mask_;
   code_region_bytes_ = v.code_region_bytes_;
+  data_region_bytes_ = v.data_region_bytes_;
   read_only_registers_.Copy(v.read_only_registers_);
   data_address_registers_.Copy(v.data_address_registers_);
+  construction_failed_ = v.construction_failed_;
   return *this;
 }
 
 bool SfiValidator::validate(const vector<CodeSegment>& segments,
                             ProblemSink* out) {
+  if (ConstructionFailed(out))
+    return false;
+
   uint32_t base = segments[0].begin_addr();
   uint32_t size = segments.back().end_addr() - base;
   AddressSet branches(base, size);
@@ -615,10 +640,15 @@ static inline bool IsOrrImmNotSpecial(Instruction insn, uint32_t* mask) {
 bool SfiValidator::ValidateSegmentPair(const CodeSegment& old_code,
                                        const CodeSegment& new_code,
                                        ProblemSink* out) {
-  assert(old_code.begin_addr() == new_code.begin_addr());
-  assert(old_code.end_addr() == new_code.end_addr());
+  if (ConstructionFailed(out))
+    return false;
 
-  assert(nacl_arm_dec::kArm32InstSize / 8 == 4);
+  if ((old_code.begin_addr() != new_code.begin_addr()) ||
+      (old_code.end_addr() != new_code.end_addr())) {
+    return false;
+  }
+
+  NACL_COMPILE_TIME_ASSERT(nacl_arm_dec::kArm32InstSize / 8 == 4);
   for (uintptr_t va = old_code.begin_addr();
        va != old_code.end_addr();
        va += nacl_arm_dec::kArm32InstSize / 8) {
@@ -655,6 +685,9 @@ bool SfiValidator::CopyCode(const CodeSegment& source_code,
                             CodeSegment& dest_code,
                             NaClCopyInstructionFunc copy_func,
                             ProblemSink* out) {
+  if (ConstructionFailed(out))
+    return false;
+
   vector<CodeSegment> segments;
   segments.push_back(source_code);
   if (!validate(segments, out))
@@ -674,6 +707,14 @@ bool SfiValidator::CopyCode(const CodeSegment& source_code,
   }
 
   return true;
+}
+
+bool SfiValidator::ConstructionFailed(ProblemSink* out) {
+  if (construction_failed_) {
+    uint32_t invalid_addr = ~(uint32_t)0;
+    out->ReportProblem(invalid_addr, kProblemConstructionFailed);
+  }
+  return construction_failed_;
 }
 
 bool SfiValidator::validate_fallthrough(const CodeSegment& segment,
@@ -893,12 +934,12 @@ bool SfiValidator::is_data_address_register(Register r) const {
 }
 
 const Bundle SfiValidator::bundle_for_address(uint32_t address) const {
-  uint32_t base = address - (address % bytes_per_bundle_);
+  uint32_t base = address & ~(bytes_per_bundle_ - 1);
   return Bundle(base, bytes_per_bundle_);
 }
 
 bool SfiValidator::is_bundle_head(uint32_t address) const {
-  return (address % bytes_per_bundle_) == 0;
+  return (address & (bytes_per_bundle_ - 1)) == 0;
 }
 
 // We eagerly compute both safety and defs here, because it turns out to be

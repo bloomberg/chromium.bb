@@ -212,6 +212,8 @@ static const char* ValidatorProblemFormatDirective[kValidatorProblemSize] = {
   // kProblemMisalignedCall - A linking branch instruction is not in
   // the last bundle slot.
   "Call not last instruction in instruction bundle.",
+  // kProblemConstructionFailed.
+  "Construction of the SfiValidator failed because its arguments were invalid.",
 };
 
 // Error message to append to ValidatorProblemFormatDirective text (i.e. $R),
