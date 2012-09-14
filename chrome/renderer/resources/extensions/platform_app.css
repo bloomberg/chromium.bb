@@ -10,7 +10,6 @@
 
 body {
   -webkit-user-select: none;
-  -webkit-widget-region: region(control rectangle);
   cursor: default;
 }
 

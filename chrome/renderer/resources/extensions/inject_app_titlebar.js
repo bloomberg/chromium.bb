@@ -8,12 +8,13 @@ exports.didCreateDocumentElement = function() {
       // TODO(jeremya): switch this to use automatic inlining once grit
       // supports inlining into JS. See http://crbug.com/146319.
       "x-titlebar { height: 24px; width: 100%; " +
-      "position: absolute; left: 0; top: 0; }\n" +
-      "div { padding-top: 24px; }\n" +
+        "position: fixed; left: 0; top: 0; }\n" +
+      "div { margin-top: 24px; position: absolute; top: 0px; width: 100%; " +
+        "-webkit-widget-region: region(control rectangle); }\n" +
       ":-webkit-full-screen * { display: none; }\n" +
       ":-webkit-full-screen-document * { display: none; }\n" +
       "div:-webkit-full-screen, div:-webkit-full-screen-document { " +
-      "padding-top: 0; }\n" +
+        "margin-top: 0; }\n" +
       "button { -webkit-widget-region: region(control rectangle); }\n" +
       "button.close { border: 0; background-color: transparent; " +
       "width: 16px; height: 16px; " +
@@ -39,10 +40,10 @@ exports.didCreateDocumentElement = function() {
       "oG2AFd1AfERUB8CM11WOXQXXAGSROyITDNMGkTGAPdAHSFIENAAOQqGEBxHbYwQDcE2ScY" +
       "XsMViNgMwRYuOGOBIgMo8gLFgUi1aCQ7IZGcNaieF0h2AQCMABwRdsuhtQAAAABJRU5Erk" +
       "Jggg==); }\n"
-  var container = root.appendChild(document.createElement('div'));
-  var titlebar = container.appendChild(document.createElement('x-titlebar'));
+  var titlebar = root.appendChild(document.createElement('x-titlebar'));
   var closeButton = titlebar.appendChild(document.createElement('button'));
-  closeButton.setAttribute('class', 'close');
+  closeButton.className = 'close'
   closeButton.addEventListener('click', function() { window.close(); });
+  var container = root.appendChild(document.createElement('div'));
   container.appendChild(document.createElement('content'));
 }
