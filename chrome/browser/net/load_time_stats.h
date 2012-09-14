@@ -33,6 +33,12 @@ class URLRequestContext;
 
 namespace BASE_HASH_NAMESPACE {
 template <>
+struct hash<const net::URLRequest*> {
+  std::size_t operator()(const net::URLRequest* value) const {
+    return reinterpret_cast<std::size_t>(value);
+  }
+};
+template <>
 struct hash<const net::URLRequestContext*> {
   std::size_t operator()(const net::URLRequestContext* value) const {
     return reinterpret_cast<std::size_t>(value);
@@ -71,6 +77,7 @@ class LoadTimeStats {
 
   void OnRequestWaitStateChange(const net::URLRequest& request,
                                 net::NetworkDelegate::RequestWaitState state);
+  void OnURLRequestDestroyed(const net::URLRequest& request);
   void OnTabEvent(std::pair<int, int> render_view_id, TabEvent event);
   void RegisterURLRequestContext(const net::URLRequestContext* context,
                                  ChromeURLRequestContext::ContextType type);
@@ -82,6 +89,12 @@ class LoadTimeStats {
   // representing that renderer's load statistics.
   typedef std::map<std::pair<int, int>, TabLoadStats*> TabLoadStatsMap;
 
+  class URLRequestStats;
+  typedef base::hash_map<const net::URLRequest*,
+                         URLRequestStats*> RequestStatsMap;
+
+  // Gets RequestStats for a given request.
+  URLRequestStats* GetRequestStats(const net::URLRequest* request);
   // Gets TabLoadStats for a given RenderView.
   TabLoadStats* GetTabLoadStats(std::pair<int, int> render_view_id);
   // Deletes TabLoadStats no longer needed for a render view.
@@ -98,6 +111,7 @@ class LoadTimeStats {
                         bool is_load_done);
 
   TabLoadStatsMap tab_load_stats_;
+  RequestStatsMap request_stats_;
   std::vector<base::Histogram*> histograms_[REQUEST_STATUS_MAX][HISTOGRAM_MAX];
   base::hash_set<const net::URLRequestContext*> main_request_contexts_;
 

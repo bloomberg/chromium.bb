@@ -24,19 +24,6 @@ using content::RenderViewHost;
 using content::ResourceRequestInfo;
 using std::string;
 
-#if defined(COMPILER_GCC)
-
-namespace BASE_HASH_NAMESPACE {
-template <>
-struct hash<const net::URLRequest*> {
-  std::size_t operator()(const net::URLRequest* value) const {
-    return reinterpret_cast<std::size_t>(value);
-  }
-};
-}
-
-#endif
-
 namespace {
 
 bool GetRenderView(const net::URLRequest& request,
@@ -190,6 +177,84 @@ class LoadTimeStats::TabLoadStats {
   RequestMap active_requests_;
 };
 
+class LoadTimeStats::URLRequestStats {
+ public:
+  URLRequestStats()
+      : done_(false),
+        start_time_(GetCurrentTime()),
+        status_(REQUEST_STATUS_ACTIVE) {
+  }
+  void OnStatusChange(RequestStatus new_status) {
+    if (done_)
+      return;
+    DCHECK_GE(status_, 0);
+    DCHECK_GE(new_status, 0);
+    DCHECK_LE(status_, REQUEST_STATUS_ACTIVE);
+    DCHECK_LE(new_status, REQUEST_STATUS_ACTIVE);
+    base::TimeTicks now = GetCurrentTime();
+    base::TimeDelta elapsed = now - start_time_;
+    status_times_[status_] += elapsed;
+    start_time_ = now;
+    status_ = new_status;
+  }
+  void RequestDone() {
+    DCHECK(!done_);
+    // Dummy status change to add last elapsed time.
+    OnStatusChange(REQUEST_STATUS_ACTIVE);
+    done_ = true;
+
+    UMA_HISTOGRAM_TIMES("LoadTimeStats.Request_CacheWait_Time",
+                        status_times_[REQUEST_STATUS_CACHE_WAIT]);
+    UMA_HISTOGRAM_TIMES("LoadTimeStats.Request_NetworkWait_Time",
+                        status_times_[REQUEST_STATUS_NETWORK_WAIT]);
+    UMA_HISTOGRAM_TIMES("LoadTimeStats.Request_Active_Time",
+                        status_times_[REQUEST_STATUS_ACTIVE]);
+
+    base::TimeDelta total_time;
+    for (int status = REQUEST_STATUS_CACHE_WAIT;
+         status <= REQUEST_STATUS_ACTIVE;
+         status++) {
+      total_time += status_times_[status];
+    }
+    if (total_time.InMilliseconds() <= 0)
+      return;
+
+    for (int status = REQUEST_STATUS_CACHE_WAIT;
+         status <= REQUEST_STATUS_ACTIVE;
+         status++) {
+      int64 fraction_percentage = 100 *
+          status_times_[status].InMilliseconds() /
+          total_time.InMilliseconds();
+      DCHECK(fraction_percentage >= 0 && fraction_percentage <= 100);
+      switch (status) {
+        case REQUEST_STATUS_CACHE_WAIT:
+          UMA_HISTOGRAM_PERCENTAGE(
+              "LoadTimeStats.Request_CacheWait_Percentage",
+              fraction_percentage);
+          break;
+        case REQUEST_STATUS_NETWORK_WAIT:
+          UMA_HISTOGRAM_PERCENTAGE(
+              "LoadTimeStats.Request_NetworkWait_Percentage",
+              fraction_percentage);
+          break;
+        case REQUEST_STATUS_ACTIVE:
+          UMA_HISTOGRAM_PERCENTAGE(
+              "LoadTimeStats.Request_Active_Percentage", fraction_percentage);
+          break;
+      }
+    }
+  }
+
+ private:
+  base::TimeTicks GetCurrentTime() {
+    return base::TimeTicks::Now();
+  }
+  bool done_;
+  base::TimeTicks start_time_;
+  RequestStatus status_;
+  base::TimeDelta status_times_[REQUEST_STATUS_MAX];
+};
+
 LoadTimeStatsTabHelper::LoadTimeStatsTabHelper(TabContents* tab)
     : content::WebContentsObserver(tab->web_contents()) {
   is_otr_profile_ = tab->profile()->IsOffTheRecord();
@@ -258,6 +323,17 @@ LoadTimeStats::LoadTimeStats() {
 
 LoadTimeStats::~LoadTimeStats() {
   STLDeleteValues(&tab_load_stats_);
+  STLDeleteValues(&request_stats_);
+}
+
+LoadTimeStats::URLRequestStats* LoadTimeStats::GetRequestStats(
+    const net::URLRequest* request) {
+  RequestStatsMap::const_iterator it = request_stats_.find(request);
+  if (it != request_stats_.end())
+    return it->second;
+  URLRequestStats* new_request_stats = new URLRequestStats();
+  request_stats_[request] = new_request_stats;
+  return new_request_stats;
 }
 
 LoadTimeStats::TabLoadStats* LoadTimeStats::GetTabLoadStats(
@@ -336,9 +412,19 @@ void LoadTimeStats::OnRequestWaitStateChange(
     status_stats->IncrementNumActive();
     DCHECK_GE(status_stats->num_active(), 0);
     stats->active_requests()[&request] = new_status;
+    URLRequestStats* request_stats = GetRequestStats(&request);
+    request_stats->OnStatusChange(new_status);
   } else {
     stats->active_requests().erase(&request);
   }
+}
+
+void LoadTimeStats::OnURLRequestDestroyed(const net::URLRequest& request) {
+  if (request_stats_.count(&request) < 1)
+    return;
+  scoped_ptr<URLRequestStats> request_stats(GetRequestStats(&request));
+  request_stats_.erase(&request);
+  request_stats->RequestDone();
 }
 
 void LoadTimeStats::OnTabEvent(std::pair<int, int> render_view_id,
