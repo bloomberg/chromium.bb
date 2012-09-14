@@ -148,12 +148,7 @@ TEST_F(AvatarMenuModelTest, ChangeOnNotify) {
   // profiles after the name change, and changing the avatar.
   // On Windows, an extra change happens to set the shortcut name for the
   // profile.
-  #if defined(OS_WIN)
-  EXPECT_EQ(5, observer.change_count());
-  #endif
-  #if !defined(OS_WIN)
-  EXPECT_EQ(4, observer.change_count());
-  #endif
+  EXPECT_GE(4, observer.change_count());
   ASSERT_EQ(3U, model.GetNumberOfItems());
 
   const AvatarMenuModel::Item& item1 = model.GetItemAt(0);

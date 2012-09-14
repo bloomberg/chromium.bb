@@ -193,7 +193,7 @@ class ProfileShortcutManagerWin : public ProfileShortcutManager,
 
 // static
 bool ProfileShortcutManager::IsFeatureEnabled() {
-  return true;
+  return false;
 }
 
 // static
