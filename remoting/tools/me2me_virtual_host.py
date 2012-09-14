@@ -825,7 +825,7 @@ Web Store: https://chrome.google.com/remotedesktop"""
       desktop.host_proc = None
 
       # These exit-codes must match the ones used by the host.
-      # See remoting/host/constants.h.
+      # See remoting/host/host_error_codes.h.
       # Delete the host or auth configuration depending on the returned error
       # code, so the next time this script is run, a new configuration
       # will be created and registered.

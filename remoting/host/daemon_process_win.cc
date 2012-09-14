@@ -14,7 +14,7 @@
 #include "base/timer.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_handle.h"
-#include "remoting/host/constants.h"
+#include "remoting/host/host_exit_codes.h"
 #include "remoting/host/win/launch_process_with_token.h"
 #include "remoting/host/win/worker_process_launcher.h"
 
