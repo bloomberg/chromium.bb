@@ -786,6 +786,15 @@ class Segment {
   // and Tracks element to |writer_|.
   bool WriteSegmentHeader();
 
+  // Given a frame with the specified timestamp (nanosecond units) and
+  // keyframe status, determine whether a new cluster should be
+  // created, before writing enqueued frames and the frame itself. The
+  // function returns one of the following values:
+  //  -1 = error: an out-of-order frame was detected
+  //  0 = do not create a new cluster, and write frame to the existing cluster
+  //  1 = create a new cluster, and write frame to that new cluster
+  int TestFrame(uint64 track_num, uint64 timestamp_ns, bool key) const;
+
   // Create a new cluster, using the earlier of the first enqueued
   // frame, or the indicated time. Returns true on success.
   bool MakeNewCluster(uint64 timestamp_ns);
@@ -872,10 +881,6 @@ class Segment {
   // The mode that segment is in. If set to |kLive| the writer must not
   // seek backwards.
   Mode mode_;
-
-  // Flag telling the muxer that a new cluster should be started with the next
-  // frame.
-  bool new_cluster_;
 
   // Flag telling the muxer that a new cue point should be added.
   bool new_cuepoint_;

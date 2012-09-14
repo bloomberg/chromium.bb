@@ -1427,7 +1427,6 @@ Segment::Segment()
       max_cluster_duration_(kDefaultMaxClusterDuration),
       max_cluster_size_(0),
       mode_(kFile),
-      new_cluster_(true),
       new_cuepoint_(false),
       output_cues_(true),
       payload_pos_(0),
@@ -1641,14 +1640,10 @@ bool Segment::AddFrame(const uint8* frame,
   if (!DoNewClusterProcessing(track_number, timestamp, is_key))
     return false;
 
-  // Write any audio frames left.
-  if (WriteFramesAll() < 0)
-    return false;
-
   if (cluster_list_size_ < 1)
     return false;
 
-  Cluster* const cluster = cluster_list_[cluster_list_size_-1];
+  Cluster* const cluster = cluster_list_[cluster_list_size_ - 1];
   if (!cluster)
     return false;
 
@@ -1822,6 +1817,91 @@ bool Segment::WriteSegmentHeader() {
   return true;
 }
 
+// Here we are testing whether to create a new cluster, given a frame
+// having time frame_timestamp_ns.
+//
+int Segment::TestFrame(uint64 track_number,
+                       uint64 frame_timestamp_ns,
+                       bool is_key) const {
+  // If no clusters have been created yet, then create a new cluster
+  // and write this frame immediately, in the new cluster.  This path
+  // should only be followed once, the first time we attempt to write
+  // a frame.
+
+  if (cluster_list_size_ <= 0)
+    return 1;
+
+  // There exists at least one cluster. We must compare the frame to
+  // the last cluster, in order to determine whether the frame is
+  // written to the existing cluster, or that a new cluster should be
+  // created.
+
+  const uint64 timecode_scale = segment_info_.timecode_scale();
+  const uint64 frame_timecode = frame_timestamp_ns / timecode_scale;
+
+  const Cluster* const last_cluster = cluster_list_[cluster_list_size_ - 1];
+  const uint64 last_cluster_timecode = last_cluster->timecode();
+
+  // For completeness we test for the case when the frame's timecode
+  // is less than the cluster's timecode.  Although in principle that
+  // is allowed, this muxer doesn't actually write clusters like that,
+  // so this indicates a bug somewhere in our algorithm.
+
+  if (frame_timecode < last_cluster_timecode)  // should never happen
+    return -1;  // error
+
+  // Handle the case when the frame we are testing has a timestamp
+  // equal to the cluster's timestamp.  This can happen if some
+  // non-video keyframe (that is, a WebVTT cue or audio block) first
+  // creates the initial cluster (at t=0), and then we test a video
+  // keyframe.  We don't want to create a new cluster just yet (see
+  // the predicate below, which specifies the creation of a new
+  // cluster when a video keyframe is detected); instead we want to
+  // force the frame to be written to the existing cluster.
+
+  if (frame_timecode == last_cluster_timecode)
+    return 0;
+
+  // If the frame has a timestamp significantly larger than the last
+  // cluster (in Matroska, cluster-relative timestamps are serialized
+  // using a 16-bit signed integer), then we cannot write this frame
+  // that cluster, and so we must create a new cluster.
+
+  const int64 delta_timecode = frame_timecode - last_cluster_timecode;
+
+  if (delta_timecode > std::numeric_limits<int16>::max())
+    return 1;
+
+  // We decide to create a new cluster when we have a video keyframe.
+  // This will flush queued (audio) frames, and write the keyframe
+  // immediately, in the newly-created cluster.
+
+  if (is_key && tracks_.TrackIsVideo(track_number))
+    return 1;
+
+  // Create a new cluster if we have accumulated too many frames
+  // already, where "too many" is defined as "the total time of frames
+  // in the cluster exceeds a threshold".
+
+  const uint64 delta_ns = delta_timecode * timecode_scale;
+
+  if (max_cluster_duration_ > 0 && delta_ns >= max_cluster_duration_)
+    return 1;
+
+  // This is similar to the case above, with the difference that a new
+  // cluster is created when the size of the current cluster exceeds a
+  // threshold.
+
+  const uint64 cluster_size = last_cluster->payload_size();
+
+  if (max_cluster_size_ > 0 && cluster_size >= max_cluster_size_)
+    return 1;
+
+  // There's no need to create a new cluster, so emit this frame now.
+
+  return 0;
+}
+
 bool Segment::MakeNewCluster(uint64 frame_timestamp_ns) {
   const int32 new_size = cluster_list_size_ + 1;
 
@@ -1900,33 +1980,23 @@ bool Segment::MakeNewCluster(uint64 frame_timestamp_ns) {
 bool Segment::DoNewClusterProcessing(uint64 track_number,
                                      uint64 frame_timestamp_ns,
                                      bool is_key) {
-  // Check to see if the muxer needs to start a new cluster.
-  if (is_key && tracks_.TrackIsVideo(track_number)) {
-    new_cluster_ = true;
-  } else if (cluster_list_size_ > 0) {
-    const Cluster* const cluster = cluster_list_[cluster_list_size_ - 1];
-    if (!cluster)
-      return false;
+  // Based on the characteristics of the current frame and current
+  // cluster, decide whether to create a new cluster.
+  const int result = TestFrame(track_number, frame_timestamp_ns, is_key);
+  if (result < 0)  // error
+    return false;
 
-    const uint64 timecode_scale = segment_info_.timecode_scale();
-    const uint64 cluster_timestamp_ns = cluster->timecode() * timecode_scale;
+  // A non-zero result means create a new cluster.
+  if (result > 0 && !MakeNewCluster(frame_timestamp_ns))
+    return false;
 
-    if (max_cluster_duration_ > 0 &&
-        (frame_timestamp_ns - cluster_timestamp_ns) >= max_cluster_duration_) {
-      new_cluster_ = true;
-    } else if (max_cluster_size_ > 0 && cluster_list_size_ > 0) {
-      if (cluster->payload_size() >= max_cluster_size_) {
-        new_cluster_ = true;
-      }
-    }
-  }
+  // Write queued (audio) frames.
+  const int frame_count = WriteFramesAll();
+  if (frame_count < 0)  // error
+    return false;
 
-  if (new_cluster_) {
-    if (!MakeNewCluster(frame_timestamp_ns))
-      return false;
-    new_cluster_ = false;
-  }
-
+  // Write the current frame to the current cluster (if TestFrame
+  // returns 0) or to a newly created cluster (TestFrame returns 1).
   return true;
 }
 
