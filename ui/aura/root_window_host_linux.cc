@@ -241,10 +241,6 @@ void SelectEventsForRootWindow() {
   XISetMask(mask, XI_TouchUpdate);
   XISetMask(mask, XI_TouchEnd);
 #endif
-  XISetMask(mask, XI_ButtonPress);
-  XISetMask(mask, XI_ButtonRelease);
-  XISetMask(mask, XI_Motion);
-
   evmask.deviceid = XIAllDevices;
   evmask.mask_len = sizeof(mask);
   evmask.mask = mask;
