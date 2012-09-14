@@ -16092,6 +16092,11 @@ Battery full
         Take picture.
       </message>
 
+      <!-- Audio strings -->
+      <message name="IDS_CHROMEOS_AUDIO_CRAS_DEVICE_AUTOMATIC" desc="Audio device name shown to the user when the proper device is automatically used.">
+        Automatic
+      </message>
+
       <!-- Removable device notifications -->
       <message name="IDS_REMOVABLE_DEVICE_DETECTION_TITLE" desc="Text of notification message which is shown when user inserts removable device (SD card, USB key...)">
         Removable device detected
