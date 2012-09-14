@@ -5505,6 +5505,16 @@
    fun:_ZNK7WebCore15NativeImageSkia13resizedBitmapERK7SkIRectiiS3_
 }
 {
+   bug_139664b
+   Memcheck:Uninitialized
+   ...
+   fun:_ZN4skia12_GLOBAL__N_118ConvolveVerticallyILb1EEEvPKsiPKPhiS4_
+   fun:_ZN4skia14BGRAConvolve2DEPKhibRKNS_19ConvolutionFilter1DES4_iPhb
+   fun:_ZN4skia15ImageOperations11ResizeBasicERK8SkBitmapNS0_12ResizeMethodEiiRK7SkIRect
+   fun:_ZN4skia15ImageOperations6ResizeERK8SkBitmapNS0_12ResizeMethodEiiRK7SkIRect
+   fun:_ZNK7WebCore15NativeImageSkia13resizedBitmapERK7SkIRectiiS3_
+}
+{
    bug_139853
    Memcheck:Unaddressable
    fun:_ZN11SkGpuDeviceC1EP9GrContextP9GrTexture
@@ -5983,6 +5993,55 @@
    fun:_ZN3WTF14deleteOwnedPtrIhEEvPT_
    fun:_ZN3WTF6OwnPtrIhED1Ev
    fun:_ZN7WebCore12CCRendererGL20getFramebufferPixelsEPvRKNS_7IntRectE
+}
+{
+   bug_149741a
+   Memcheck:Unaddressable
+   ...
+   fun:_Z11SkSafeUnrefI9SkPathRefEvPT_
+   fun:_ZN12SkAutoTUnrefI9SkPathRefED1Ev
+   fun:_ZN6SkPathD1Ev
+   fun:_ZN11SkClipStack3RecD1Ev
+   fun:_ZN11SkClipStack7restoreEv
+   fun:_ZN8SkCanvas15internalRestoreEv
+   fun:_ZN8SkCanvas7restoreEv
+   fun:_ZN7WebCore19PlatformContextSkia7restoreEv
+}
+{
+   bug_149741b
+   Memcheck:Free
+   ...
+   fun:_Z11SkSafeUnrefI9SkPathRefEvPT_
+   fun:_ZN12SkAutoTUnrefI9SkPathRefED1Ev
+   fun:_ZN6SkPathD1Ev
+   fun:_ZN11SkClipStack3RecD1Ev
+   fun:_ZN11SkClipStack7restoreEv
+   fun:_ZN8SkCanvas15internalRestoreEv
+   fun:_ZN8SkCanvas7restoreEv
+   fun:_ZN7WebCore19PlatformContextSkia7restoreEv
+}
+{
+   bug_149748a
+   Memcheck:Unaddressable
+   ...
+   fun:_*Sk*
+   ...
+   fun:_ZN7WebCore24CanvasRenderingContext2D*
+   fun:_ZN7WebCore34CanvasRenderingContext2DV8InternalL11*CallbackERKN2v89ArgumentsE
+
+   fun:_ZN2v88internalL19HandleApiCallHelperILb0EEEPNS0_11MaybeObjectENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
+   fun:_ZN2v88internalL21Builtin_HandleApiCallENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
+}
+{
+   bug_149748b
+   Memcheck:Unaddressable
+   ...
+   fun:*SkPath*
+   ...
+   fun:_ZN8SkDevice8drawRectERK6SkDrawRK6SkRectRK7SkPaint
+   fun:_ZN8SkCanvas8drawRectERK6SkRectRK7SkPaint
+   fun:_ZN7WebCore15GraphicsContext10strokeRectERKNS_9FloatRectEf
+   fun:_ZNK7WebCore13RenderSVGRect11strokeShapeEPNS_15GraphicsContextE
 }
 
 #-----------------------------------------------------------------------
