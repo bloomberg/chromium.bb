@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/gdata/drive_resource_metadata.h"
+#include "chrome/browser/chromeos/gdata/gdata_test_util.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
 class FilePath;
@@ -24,15 +25,6 @@ class DriveFileSystem;
 typedef std::vector<DriveEntryProto> DriveEntryProtoVector;
 
 namespace test_util {
-
-// Runs a task posted to the blocking pool, including subsequent tasks posted
-// to the UI message loop and the blocking pool.
-//
-// A task is often posted to the blocking pool with PostTaskAndReply(). In
-// that case, a task is posted back to the UI message loop, which can again
-// post a task to the blocking pool. This function processes these tasks
-// repeatedly.
-void RunBlockingPoolTask();
 
 // This is a bitmask of cache states in DriveCacheEntry. Used only in tests.
 enum TestDriveCacheState {
@@ -98,14 +90,6 @@ void CopyResultsFromGetEntryInfoWithFilePathCallback(
 void CopyResultsFromGetEntryInfoPairCallback(
     scoped_ptr<EntryInfoPairResult>* out_result,
     scoped_ptr<EntryInfoPairResult> result);
-
-// Returns the absolute path for a test file stored under
-// chrome/test/data/chromeos.
-FilePath GetTestFilePath(const std::string& relative_path);
-
-// Loads a test JSON file as a base::Value, from a test file stored under
-// chrome/test/data/chromeos.
-scoped_ptr<base::Value> LoadJSONFile(const std::string& relative_path);
 
 // Loads a test json file as root ("/drive") element from a test file stored
 // under chrome/test/data/chromeos.
