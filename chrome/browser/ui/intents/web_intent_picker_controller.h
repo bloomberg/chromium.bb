@@ -122,6 +122,9 @@ class WebIntentPickerController
   friend class WebIntentPickerControllerIncognitoBrowserTest;
   friend class WebIntentsButtonDecorationTest;
 
+  // Forward declaraton of the internal implementation class.
+  class UMAReporter;
+
   // Dispatches intent to a just-installed extension with ID |extension_id|.
   void DispatchToInstalledExtension(const std::string& extension_id);
 
@@ -255,6 +258,9 @@ class WebIntentPickerController
   // The model for the picker. Owned by this controller. It should not be NULL
   // while this controller exists, even if the picker is not shown.
   scoped_ptr<WebIntentPickerModel> picker_model_;
+
+  // UMA reporting manager.
+  scoped_ptr<UMAReporter> uma_reporter_;
 
   // A count of the outstanding asynchronous calls.
   int pending_async_count_;

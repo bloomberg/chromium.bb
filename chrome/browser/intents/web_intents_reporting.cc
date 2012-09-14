@@ -30,6 +30,18 @@ const TypeMapping kTypeMap[] = {
   { "video", TYPE_ID_VIDEO },
 };
 
+// The number of buckets for the histogram of the duration of time spent in a
+// service.
+const int kServiceActiveTimeNumBuckets = 10;
+
+// The lower bound on the tracked duration of time spent in a service.
+// This bound is in seconds.
+const int kServiceActiveDurationMinSeconds = 1;
+
+// The upper bound on the tracked duration of time spent in a service.
+// This bound is in seconds.
+const int kServiceActiveDurationMaxSeconds = 3600;
+
 // Returns the ActionMapping for |action| if one exists, or NULL.
 TypeId ToTypeId(const string16& type) {
   const std::string iana_type = net::GetIANAMediaType(UTF16ToASCII(type));
@@ -106,6 +118,33 @@ void RecordChooseAnotherService(const UMABucket bucket) {
 void RecordCWSExtensionInstalled(const UMABucket bucket) {
   UMA_HISTOGRAM_ENUMERATION("WebIntents.Service.CWSInstall.v0",
       bucket, kMaxActionTypeHistogramValue);
+}
+
+void RecordServiceActiveDuration(
+    webkit_glue::WebIntentReplyType reply_type,
+    const base::TimeDelta& duration) {
+  switch (reply_type) {
+    case webkit_glue::WEB_INTENT_REPLY_SUCCESS:
+      UMA_HISTOGRAM_CUSTOM_TIMES("WebIntents.Service.ActiveDuration.Success",
+          duration,
+          base::TimeDelta::FromSeconds(kServiceActiveDurationMinSeconds),
+          base::TimeDelta::FromSeconds(kServiceActiveDurationMaxSeconds),
+          kServiceActiveTimeNumBuckets);
+      break;
+    case webkit_glue::WEB_INTENT_REPLY_INVALID:
+    case webkit_glue::WEB_INTENT_REPLY_FAILURE:
+    case webkit_glue::WEB_INTENT_PICKER_CANCELLED:
+    case webkit_glue::WEB_INTENT_SERVICE_CONTENTS_CLOSED:
+      UMA_HISTOGRAM_CUSTOM_TIMES("WebIntents.Service.ActiveDuration.Failure",
+          duration,
+          base::TimeDelta::FromSeconds(kServiceActiveDurationMinSeconds),
+          base::TimeDelta::FromSeconds(kServiceActiveDurationMaxSeconds),
+          kServiceActiveTimeNumBuckets);
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
 }
 
 }  // namespace web_intents

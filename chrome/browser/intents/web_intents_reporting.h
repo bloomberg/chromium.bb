@@ -7,6 +7,11 @@
 
 #include "base/string16.h"
 #include "chrome/browser/intents/web_intents_util.h"
+#include "webkit/glue/web_intent_reply_data.h"
+
+namespace base {
+class TimeDelta;
+}
 
 namespace webkit_glue {
 struct WebIntentData;
@@ -125,6 +130,11 @@ void RecordIntentDispatched(const UMABucket bucket);
 void RecordPickerShow(const UMABucket bucket, size_t installed);
 void RecordPickerCancel(const UMABucket bucket);
 void RecordServiceInvoke(const UMABucket bucket);
+// Records the |duration| of time spent in the service. Uses |reply_type| to
+// distinguish between failed and successful service usage.
+void RecordServiceActiveDuration(
+    webkit_glue::WebIntentReplyType reply_type,
+    const base::TimeDelta& duration);
 void RecordChooseAnotherService(const UMABucket bucket);
 void RecordCWSExtensionInstalled(const UMABucket bucket);
 }  // namespace web_intents

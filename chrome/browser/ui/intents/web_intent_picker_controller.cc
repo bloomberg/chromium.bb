@@ -154,12 +154,42 @@ class SourceWindowObserver : content::WebContentsObserver {
 
 }  // namespace
 
+// UMAReporter handles reporting Web Intents events to UMA.
+class WebIntentPickerController::UMAReporter {
+ public:
+
+  // Resets the service active duration timer to "now".
+  void ResetServiceActiveTimer();
+
+  // Records the duration of time spent using the service. Uses |reply_type|
+  // to distinguish between successful and failed service calls.
+  void RecordServiceActiveDuration(webkit_glue::WebIntentReplyType reply_type);
+
+ private:
+
+  // The time when the user began using the service.
+  base::TimeTicks service_start_time_;
+};
+
+void WebIntentPickerController::UMAReporter::ResetServiceActiveTimer() {
+  service_start_time_ = base::TimeTicks::Now();
+}
+
+void WebIntentPickerController::UMAReporter::RecordServiceActiveDuration(
+    webkit_glue::WebIntentReplyType reply_type) {
+  if (!service_start_time_.is_null()) {
+    web_intents::RecordServiceActiveDuration(reply_type,
+        base::TimeTicks::Now() - service_start_time_);
+  }
+}
+
 WebIntentPickerController::WebIntentPickerController(
     TabContents* tab_contents)
     : dialog_state_(kPickerHidden),
       tab_contents_(tab_contents),
       picker_(NULL),
       picker_model_(new WebIntentPickerModel()),
+      uma_reporter_(new UMAReporter()),
       pending_async_count_(0),
       pending_registry_calls_count_(0),
       pending_cws_request_(false),
@@ -303,6 +333,7 @@ void WebIntentPickerController::OnServiceChosen(
     const GURL& url,
     webkit_glue::WebIntentServiceData::Disposition disposition) {
   web_intents::RecordServiceInvoke(uma_bucket_);
+  uma_reporter_->ResetServiceActiveTimer();
   ExtensionService* service = tab_contents_->profile()->GetExtensionService();
   DCHECK(service);
 
@@ -535,6 +566,7 @@ void WebIntentPickerController::OnExtensionInstallFailure(
 void WebIntentPickerController::OnSendReturnMessage(
     webkit_glue::WebIntentReplyType reply_type) {
   ClosePicker();
+  uma_reporter_->RecordServiceActiveDuration(reply_type);
 
   if (service_tab_ &&
       reply_type != webkit_glue::WEB_INTENT_SERVICE_CONTENTS_CLOSED) {
