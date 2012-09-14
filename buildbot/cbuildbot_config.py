@@ -988,21 +988,33 @@ _firmware_release = _release.derive(
   vm_tests=None,
   prebuilts=False,
   upload_hw_test_artifacts=False,
+  trybot_list=False,
   description='Firmware Builds',
 )
 
-# This is an example firmware branch configuration for x86.
-# Modify it to match your firmware branch.
-_firmware_release.add_config('x86-mario-firmware',
-  boards=['x86-mario'],
+_x86_firmware_boards = (
+  'butterfly',
+  'kiev',
+  'link',
+  'lumpy',
+  'parrot',
+  'stout',
+  'stumpy',
+  'x86-mario',
 )
+for board in _x86_firmware_boards:
+  _firmware_release.add_config(board + '-firmware',
+    boards=[board],
+  )
 
-# This is an example firmware branch configuration for arm.
-# Modify it to match your firmware branch.
-_firmware_release.add_config('daisy-firmware',
-  arm,
-  boards=['daisy'],
+_arm_firmware_boards = (
+  'daisy',
 )
+for board in _arm_firmware_boards:
+  _firmware_release.add_config(board + '-firmware',
+    arm,
+    boards=[board],
+  )
 
 # This is an example factory branch configuration for x86.
 # Modify it to match your factory branch.
