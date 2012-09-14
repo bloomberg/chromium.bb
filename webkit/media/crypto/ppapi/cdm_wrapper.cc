@@ -208,13 +208,20 @@ void CdmWrapper::Decrypt(pp::Buffer_Dev encrypted_buffer,
   input_buffer.checksum = encrypted_block_info.checksum;
   input_buffer.checksum_size = encrypted_block_info.checksum_size;
   input_buffer.num_subsamples = encrypted_block_info.num_subsamples;
+
   std::vector<cdm::SubsampleEntry> subsamples;
-  for (uint32_t i = 0; i < encrypted_block_info.num_subsamples; ++i) {
-    subsamples.push_back(cdm::SubsampleEntry(
-        encrypted_block_info.subsamples[i].clear_bytes,
-        encrypted_block_info.subsamples[i].cipher_bytes));
+  if (encrypted_block_info.num_subsamples > 0) {
+    subsamples.reserve(encrypted_block_info.num_subsamples);
+
+    for (uint32_t i = 0; i < encrypted_block_info.num_subsamples; ++i) {
+      subsamples.push_back(cdm::SubsampleEntry(
+          encrypted_block_info.subsamples[i].clear_bytes,
+          encrypted_block_info.subsamples[i].cipher_bytes));
+    }
+
+    input_buffer.subsamples = &subsamples[0];
   }
-  input_buffer.subsamples = &subsamples[0];
+
   input_buffer.timestamp = encrypted_block_info.tracking_info.timestamp;
 
   cdm::OutputBuffer output_buffer;
