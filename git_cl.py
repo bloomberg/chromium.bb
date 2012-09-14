@@ -509,9 +509,11 @@ or verify this branch is set up to track another (via the --track argument to
              stderr=subprocess2.PIPE, error_ok=True)
     self.has_patchset = False
 
-  def GetPatchSetDiff(self, issue):
-    patchset = self.RpcServer().get_issue_properties(
+  def GetMostRecentPatchset(self, issue):
+    return self.RpcServer().get_issue_properties(
         int(issue), False)['patchsets'][-1]
+
+  def GetPatchSetDiff(self, issue, patchset):
     return self.RpcServer().get(
         '/download/issue%s_%s.diff' % (issue, patchset))
 
@@ -1403,16 +1405,19 @@ def CMDpatch(parser, args):
 
   if issue_arg.isdigit():
     # Input is an issue id.  Figure out the URL.
+    cl = Changelist()
     issue = int(issue_arg)
-    patch_data = Changelist().GetPatchSetDiff(issue)
+    patchset = cl.GetMostRecentPatchset(issue)
+    patch_data = cl.GetPatchSetDiff(issue, patchset)
   else:
     # Assume it's a URL to the patch. Default to https.
     issue_url = gclient_utils.UpgradeToHttps(issue_arg)
-    match = re.match(r'.*?/issue(\d+)_\d+.diff', issue_url)
+    match = re.match(r'.*?/issue(\d+)_(\d+).diff', issue_url)
     if not match:
       DieWithError('Must pass an issue ID or full URL for '
           '\'Download raw patch set\'')
     issue = int(match.group(1))
+    patchset = int(match.group(2))
     patch_data = urllib2.urlopen(issue_arg).read()
 
   if options.newbranch:
@@ -1454,6 +1459,7 @@ def CMDpatch(parser, args):
     RunGit(['commit', '-m', 'patch from issue %s' % issue])
     cl = Changelist()
     cl.SetIssue(issue)
+    cl.SetPatchset(patchset)
     print "Committed patch."
   else:
     print "Patch applied to index."
@@ -1587,8 +1593,7 @@ def CMDtry(parser, args):
 
   patchset = cl.GetPatchset()
   if not cl.GetPatchset():
-    properties = cl.RpcServer().get_issue_properties(cl.GetIssue(), False)
-    patchset = properties['patchsets'][-1]
+    patchset = cl.GetMostRecentPatchset(cl.GetIssue())
 
   cl.RpcServer().trigger_try_jobs(
       cl.GetIssue(), patchset, options.name, options.clobber, options.revision,
