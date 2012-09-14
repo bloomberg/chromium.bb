@@ -683,7 +683,7 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
 
   function onCopyProgress(entry, size) {
     task.updateFileCopyProgress(entry, size);
-    if (tast.pendingBytes > 0)
+    if (task.pendingBytes > 0)
       self.sendProgressEvent_('PROGRESS');
   }
 
