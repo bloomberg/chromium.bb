@@ -55,6 +55,8 @@ bool WallpaperStringsFunction::RunImpl() {
              IDS_OPTIONS_WALLPAPER_CENTER_CROPPED_LAYOUT);
   SET_STRING("centerLayout", IDS_OPTIONS_WALLPAPER_CENTER_LAYOUT);
   SET_STRING("stretchLayout", IDS_OPTIONS_WALLPAPER_STRETCH_LAYOUT);
+  SET_STRING("customWallpaperWarning",
+             IDS_WALLPAPER_MANAGER_SHOW_CUSTOM_WALLPAPER_ON_START_WARNING);
 #undef SET_STRING
 
   ChromeURLDataManager::DataSource::SetFontAndTextDirection(dict);
