@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
   var pageState;
   if (location.search) {
     try {
-      pageState = JSON.parse(location.search.substr(1));
+      pageState = JSON.parse(decodeURIComponent(location.search.substr(1)));
     } catch (ignore) {}
   }
   Gallery.openStandalone(decodeURI(location.hash.substr(1)), pageState);
@@ -266,21 +266,22 @@ Gallery.prototype.load = function(urls, selectedUrls) {
   if (this.selectionModel_.selectedIndexes.length == 0)
     this.onSelection_();
 
+  var mosaic = this.mosaicMode_.getMosaic();
   if (selectedUrls.length != 1 ||
       (this.context_.pageState &&
           this.context_.pageState.gallery == 'mosaic')) {
     this.setCurrentMode_(this.mosaicMode_);
-    this.mosaicMode_.init();
+    mosaic.init();
+    mosaic.show();
   } else {
     this.setCurrentMode_(this.slideMode_);
     /* TODO: consider nice blow-up animation for the first image */
     this.slideMode_.enter(null, function() {
-      // Flash the toolbar briefly to show it is there.
-      this.inactivityWatcher_.startActivity();
-      this.inactivityWatcher_.stopActivity(Gallery.FIRST_FADE_TIMEOUT);
-      // Load mosaic tiles in background so that the transition is smooth.
-      this.mosaicMode_.init();
-    }.bind(this));
+        // Flash the toolbar briefly to show it is there.
+        this.inactivityWatcher_.startActivity();
+        this.inactivityWatcher_.stopActivity(Gallery.FIRST_FADE_TIMEOUT);
+      }.bind(this),
+      mosaic.init.bind(mosaic));
   }
 };
 
@@ -392,16 +393,30 @@ Gallery.prototype.toggleMode_ = function(opt_callback, opt_event) {
     if (opt_callback) opt_callback();
   }.bind(this);
 
+  var tileIndex = Math.max(0, this.selectionModel_.selectedIndex);
+
+  var mosaic = this.mosaicMode_.getMosaic();
+  var tileRect = mosaic.getTileRect(tileIndex);
+
   if (this.currentMode_ == this.slideMode_) {
-    this.mosaicMode_.enter();  // This may change the viewport.
-    this.slideMode_.leave(this.mosaicMode_.getSelectedTileRect(),
+    this.setCurrentMode_(this.mosaicMode_);
+    mosaic.transform(
+        tileRect, this.slideMode_.getSelectedImageRect(), true /* instant */);
+    this.slideMode_.leave(tileRect,
         function() {
-          this.setCurrentMode_(this.mosaicMode_);
+          // Animate back to normal position.
+          mosaic.transform();
+          mosaic.show();
           onModeChanged();
         }.bind(this));
   } else {
-    this.slideMode_.enter(this.mosaicMode_.getSelectedTileRect(),
-        this.setCurrentMode_.bind(this, this.slideMode_),
+    this.setCurrentMode_(this.slideMode_);
+    this.slideMode_.enter(tileRect,
+        function() {
+          // Animate to zoomed position.
+          mosaic.transform(tileRect, this.slideMode_.getSelectedImageRect());
+          mosaic.hide();
+        }.bind(this),
         onModeChanged);
   }
 };

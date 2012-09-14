@@ -21,19 +21,14 @@ function MosaicMode(container, dataModel, selectionModel,
 }
 
 /**
+ * @return {Mosaic} The mosaic control.
+ */
+MosaicMode.prototype.getMosaic = function() { return this.mosaic_ };
+
+/**
  * @return {string} Mode name.
  */
 MosaicMode.prototype.getName = function() { return 'mosaic' };
-
-/**
- * Initialize the mosaic.
- */
-MosaicMode.prototype.init = function() { this.mosaic_.init() };
-
-/**
- * Enter the mosaic mode.
- */
-MosaicMode.prototype.enter = function() { this.mosaic_.enter() };
 
 /**
  * Execute an action (this mode has no busy state).
@@ -59,14 +54,6 @@ MosaicMode.prototype.onKeyDown = function(event) {
       return true;
   }
   return this.mosaic_.onKeyDown(event);
-};
-
-/**
- * @return {Rect} Selected tile image rectangle. Used for animated transition
- *   to/from Slide mode.
- */
-MosaicMode.prototype.getSelectedTileRect = function() {
-  return this.mosaic_.getSelectedTileRect();
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -174,18 +161,20 @@ Mosaic.prototype.getSelectedTile = function() {
 };
 
 /**
- * @return {Rect} Selected tile's image rectangle.
+ * @param {number} index Tile index.
+ * @return {Rect} Tile's image rectangle.
  */
-Mosaic.prototype.getSelectedTileRect = function() {
-  var tile = this.getSelectedTile();
+Mosaic.prototype.getTileRect = function(index) {
+  var tile = this.tiles_[index];
   return tile && tile.getImageRect();
 };
 
 /**
- * Called when showing the mosaic after the slide mode.
+ * @param {number} index Tile index.
+ * Scroll the given tile into the viewport.
  */
-Mosaic.prototype.enter = function() {
-  var tile = this.getSelectedTile();
+Mosaic.prototype.scrollIntoView = function(index) {
+  var tile = this.tiles_[index];
   if (tile) tile.scrollIntoView();
 };
 
@@ -401,6 +390,72 @@ Mosaic.prototype.onKeyDown = function(event) {
   return event.defaultPrevented;
 };
 
+/**
+ * @return {boolean} True if the mosaic zoom effect can be applied. It is
+ * too slow if there are to many images.
+ * TODO(kaznacheev): Consider unloading the images that are out of the viewport.
+ */
+Mosaic.prototype.canZoom = function() {
+  return this.layoutModel_.getTileCount() < 100;
+};
+
+/**
+ * Show the mosaic.
+ */
+Mosaic.prototype.show = function() {
+  var duration = ImageView.ZOOM_ANIMATION_DURATION;
+  if (this.canZoom()) {
+    // Fade in in parallel with the zoom effect.
+    this.setAttribute('visible', 'zooming');
+  } else {
+    // Mosaic is not animating but the large image is. Fade in the mosaic
+    // shortly before the large image animation is done.
+    duration -= 100;
+  }
+  setTimeout(function() {
+    // Make the selection visible.
+    // If the mosaic is not animated it will start fading in now.
+    this.setAttribute('visible', 'normal');
+  }.bind(this), duration);
+
+};
+
+/**
+ * Hide the mosaic.
+ */
+Mosaic.prototype.hide = function() {
+  this.removeAttribute('visible');
+};
+
+/**
+ * Apply or reset the zoom transform.
+ *
+ * @param {Rect} tileRect Tile rectangle. Reset the transform if null.
+ * @param {Rect} imageRect Large image rectangle. Reset the transform if null.
+ * @param {boolean} opt_instant True of the transition should be instant.
+ */
+Mosaic.prototype.transform = function(tileRect, imageRect, opt_instant) {
+  if (opt_instant)
+    this.style.webkitTransitionDuration = '0';
+  else
+    this.style.webkitTransitionDuration =
+        ImageView.ZOOM_ANIMATION_DURATION + 'ms';
+
+  if (this.canZoom() && tileRect && imageRect) {
+    var scaleX = imageRect.width / tileRect.width;
+    var scaleY = imageRect.height / tileRect.height;
+    var shiftX = (imageRect.left + imageRect.width / 2) -
+        (tileRect.left + tileRect.width / 2);
+    var shiftY = (imageRect.top + imageRect.height / 2) -
+        (tileRect.top + tileRect.height / 2);
+    this.style.webkitTransform =
+        'translate(' + shiftX * scaleX + 'px, ' + shiftY * scaleY + 'px)' +
+        'scaleX(' + scaleX + ') scaleY(' + scaleY + ')';
+  } else {
+    this.style.webkitTransform = '';
+  }
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
@@ -452,9 +507,16 @@ Mosaic.Layout = function(container) {
 };
 
 /**
- * Blank space at the top and the bottom of the mosaic element.
+ * Blank space at the top of the mosaic element. We do not do that is CSS
+ * because we want the mosaic to occupy the entire parent div which makes
+ * animated transitions easier.
  */
-Mosaic.Layout.PADDING = 50;
+Mosaic.Layout.PADDING_TOP = 50;
+
+/**
+ * Blank space at the bottom of the mosaic element.
+ */
+Mosaic.Layout.PADDING_BOTTOM = 70;
 
 /**
  * Horizontal and vertical spacing between images. Should be kept in sync
@@ -488,7 +550,8 @@ Mosaic.Layout.prototype.add = function(tile, isLast) {
   var layoutQueue = [tile];
   var tilesPerRow = Mosaic.Row.TILES_PER_ROW;
 
-  var layoutHeight = this.container_.clientHeight - Mosaic.Layout.PADDING * 2;
+  var layoutHeight = this.container_.clientHeight -
+      (Mosaic.Layout.PADDING_TOP + Mosaic.Layout.PADDING_BOTTOM);
 
   while (layoutQueue.length) {
     if (!this.newColumn_) {
@@ -507,7 +570,7 @@ Mosaic.Layout.prototype.add = function(tile, isLast) {
       } else {
         var lastColumn = this.columns_[this.columns_.length - 1];
         this.newColumn_.layout(lastColumn ? lastColumn.getRightEdge() : 0,
-            Mosaic.Layout.PADDING);
+            Mosaic.Layout.PADDING_TOP);
         this.columns_.push(this.newColumn_);
       }
       this.newColumn_ = null;

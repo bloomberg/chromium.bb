@@ -106,7 +106,7 @@ body {
   /* Keep in sync with ImageView.ANIMATION_DURATION in image_view.js*/
   -webkit-transition-duration: 180ms;
   -webkit-transition-property: -webkit-transform, opacity;
-  -webkit-transition-timing-function: ease-in-out;
+  -webkit-transition-timing-function: linear;
   pointer-events: none;
   position: absolute;
 }
@@ -121,8 +121,8 @@ body {
 }
 
 @media print {
-  /* Do not print anything but the image. */
-  .gallery > .content > :not(.image-container) {
+  /* Do not print anything but the image content. */
+  .gallery > :not(.content) {
     display: none !important;
   }
 
@@ -1087,8 +1087,13 @@ body {
   display: none;
 }
 
+/* Mosaic view. */
 .mosaic {
-  bottom: 56px;  /* Make space for the toolbar. */
+  /* -webkit-transition-duration is set in Javascript. */
+  -webkit-transition-property: -webkit-transform;
+  -webkit-transition-timing-function: linear;
+
+  bottom: 0;
   left: 0;
   overflow-x: scroll;
   overflow-y: hidden;
@@ -1113,14 +1118,16 @@ body {
   position: absolute;
 }
 
-.gallery:not([mode='mosaic']) .mosaic-tile {
+/* Mosaic tile's opacity is controlled by |visible| attribute which changes
+   separately from .gallery[mode] */
+.mosaic:not([visible]) .mosaic-tile {
   opacity: 0;
 }
 
 /* Animate tile's opacity, except for the selected tile which should show/hide
   instantly (this looks better when zooming to/from the slide mode). */
 .mosaic-tile:not([selected]) {
-  -webkit-transition: opacity 280ms ease-in;
+  -webkit-transition: opacity 350ms linear;
 }
 
 /* Must be in sync with mosaic_mode.js.
@@ -1138,11 +1145,13 @@ body {
   top: 4px;
 }
 
-.mosaic-tile[selected] .img-border {
+/* Selected and hover state are only visible when zoom transition is over. */
+.mosaic[visible='normal'] .mosaic-tile[selected] .img-border {
   outline-color: rgb(51, 153, 255);
 }
 
-.mosaic.hover-visible .mosaic-tile:hover:not([selected]) .img-border {
+.mosaic[visible='normal'].hover-visible
+                          .mosaic-tile:hover:not([selected]) .img-border {
   outline-color: rgb(182, 212, 252);
 }
 

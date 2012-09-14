@@ -47,7 +47,7 @@ function ImageView(container, viewport, metadataCache) {
 }
 
 /**
- * Duration of image editing transitions.
+ * Duration for transition between images.
  */
 ImageView.ANIMATION_DURATION = 180;
 
@@ -56,6 +56,11 @@ ImageView.ANIMATION_DURATION = 180;
  * is done. Times 2 is added as a safe margin.
  */
 ImageView.ANIMATION_WAIT_INTERVAL = ImageView.ANIMATION_DURATION * 2;
+
+/**
+ * Duration of transition when loading the first image or unloading the last.
+ */
+ImageView.ZOOM_ANIMATION_DURATION = 350;
 
 /**
  * If the user flips though images faster than this interval we do not apply
@@ -497,18 +502,20 @@ ImageView.prototype.changeUrl = function(newUrl) {
  * @param {Rect} zoomToRect Target rectangle for zoom-out-effect.
  */
 ImageView.prototype.unload = function(zoomToRect) {
-  if (zoomToRect) {
-    this.setTransform(this.screenImage_, this.createZoomEffect(zoomToRect));
+  if (this.unloadTimer_) {
+    clearTimeout(this.unloadTimer_);
+    this.unloadTimer_ = null;
+  }
+  if (zoomToRect && this.screenImage_) {
+    var effect = this.createZoomEffect(zoomToRect);
+    this.setTransform(this.screenImage_, effect, effect.duration);
+    this.screenImage_.setAttribute('fade', true);
     this.unloadTimer_ = setTimeout(function() {
         this.unloadTimer_ = null;
         this.unload(null /* force unload */);
       }.bind(this),
-      ImageView.ANIMATION_WAIT_INTERVAL + 100);
+     effect.duration + 100 /* error margin */);
     return;
-  }
-  if (this.unloadTimer_) {
-    clearTimeout(this.unloadTimer_);
-    this.unloadTimer_ = null;
   }
   this.container_.textContent = '';
   this.contentCanvas_ = null;
@@ -633,14 +640,15 @@ ImageView.prototype.replace = function(
 
   var newScreenImage = this.screenImage_;
 
-  ImageUtil.setAttribute(newScreenImage, 'fade', true);
+  if (oldScreenImage)
+    ImageUtil.setAttribute(newScreenImage, 'fade', true);
   this.setTransform(newScreenImage, opt_effect);
   this.container_.appendChild(newScreenImage);
 
   setTimeout(function() {
-    ImageUtil.setAttribute(newScreenImage, 'fade', false);
-    this.setTransform(newScreenImage);
+    this.setTransform(newScreenImage, null, opt_effect && opt_effect.duration);
     if (oldScreenImage) {
+      ImageUtil.setAttribute(newScreenImage, 'fade', false);
       ImageUtil.setAttribute(oldScreenImage, 'fade', true);
       if (opt_effect.getReverse)
         this.setTransform(oldScreenImage, opt_effect.getReverse());
@@ -656,9 +664,14 @@ ImageView.prototype.replace = function(
 /**
  * @param {HTMLCanvasElement|HTMLVideoElement} element The element to transform.
  * @param {ImageView.Effect} opt_effect The effect to apply.
+ * @param {number} opt_duration Transition duration.
  */
-ImageView.prototype.setTransform = function(element, opt_effect) {
+ImageView.prototype.setTransform = function(element, opt_effect, opt_duration) {
   if (!opt_effect) opt_effect = new ImageView.Effect.None();
+  if (opt_duration == undefined)
+    element.style.webkitTransitionDuration = '';  // Use CSS-defined default.
+  else
+    element.style.webkitTransitionDuration = opt_duration + 'ms';
   element.style.webkitTransform = opt_effect.transform(element, this.viewport_);
 };
 
@@ -668,7 +681,9 @@ ImageView.prototype.setTransform = function(element, opt_effect) {
  */
 ImageView.prototype.createZoomEffect = function(screenRect) {
   return new ImageView.Effect.Zoom(
-      this.viewport_.screenToDeviceRect(screenRect));
+      this.viewport_.screenToDeviceRect(screenRect),
+      null /* use viewport */,
+      ImageView.ZOOM_ANIMATION_DURATION);
 };
 
 /**
@@ -693,22 +708,17 @@ ImageView.prototype.replaceAndAnimate = function(
   // Display the new canvas, initially transformed.
   var deviceFullRect = this.viewport_.getDeviceClipped();
 
-  //Transform instantly.
-  newScreenImage.style.webkitTransitionDuration = '0ms';
   this.setTransform(newScreenImage, rotate90 ?
       new ImageView.Effect.Rotate(
           oldScale / this.viewport_.getScale(), -rotate90) :
-      new ImageView.Effect.Zoom(deviceCropRect, deviceFullRect));
+      new ImageView.Effect.Zoom(deviceCropRect, deviceFullRect),
+      0 /* Transform instantly*/);
 
   oldScreenImage.parentNode.appendChild(newScreenImage);
   oldScreenImage.parentNode.removeChild(oldScreenImage);
 
-  // Let the layout fire.
-  setTimeout(function() {
-    // Animated back to non-transformed state.
-    newScreenImage.style.webkitTransitionDuration = '';
-    this.setTransform(newScreenImage);
-  }.bind(this), 0);
+  // Let the layout fire, then animate back to non-transformed state.
+  setTimeout(this.setTransform.bind(this, newScreenImage), 0);
 };
 
 /**
@@ -896,11 +906,14 @@ ImageView.Effect.Slide.prototype.transform = function(element) {
  * @param {Rect} deviceTargetRect Target rectangle.
  * @param {Rect} opt_deviceOriginalRect Original rectangle. If omitted,
  *   the full viewport will be used at the time of |transform| call.
+ * @param {number} opt_duration Duration in ms.
  * @constructor
  */
-ImageView.Effect.Zoom = function(deviceTargetRect, opt_deviceOriginalRect) {
+ImageView.Effect.Zoom = function(
+    deviceTargetRect, opt_deviceOriginalRect, opt_duration) {
   this.target_ = deviceTargetRect;
   this.original_ = opt_deviceOriginalRect;
+  this.duration = opt_duration;
 };
 
 /**

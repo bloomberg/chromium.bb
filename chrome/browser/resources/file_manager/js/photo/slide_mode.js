@@ -281,7 +281,7 @@ SlideMode.prototype.enter = function(
  * Leave the mode.
  * @param {Rect} zoomToRect Rectangle for zoom effect.
  * @param {function} callback Called when the image is committed and
- *   the zoom-out animation is done.
+ *   the zoom-out animation has started.
  */
 SlideMode.prototype.leave = function(zoomToRect, callback) {
   if (this.prefetchTimer_) {
@@ -293,7 +293,6 @@ SlideMode.prototype.leave = function(zoomToRect, callback) {
       this.stopEditing_();
       this.stopSlideshow_();
       ImageUtil.setAttribute(this.arrowBox_, 'active', false);
-      this.unloadImage_(zoomToRect);
       this.selectionModel_.removeEventListener(
           'change', this.onSelectionBound_);
       this.dataModel_.removeEventListener('splice', this.onSpliceBound_);
@@ -301,10 +300,8 @@ SlideMode.prototype.leave = function(zoomToRect, callback) {
       this.active_ = false;
       if (this.savedSelection_)
         this.selectionModel_.selectedIndexes = this.savedSelection_;
-      if (zoomToRect)
-        setTimeout(callback, ImageView.ANIMATION_WAIT_INTERVAL);
-      else
-        callback();
+      this.unloadImage_(zoomToRect);
+      callback();
     }.bind(this);
 
   if (this.getItemCount_() == 0) {
@@ -353,6 +350,16 @@ SlideMode.prototype.getItem = function(index) {
  */
 SlideMode.prototype.getSelectedIndex = function() {
   return this.selectionModel_.selectedIndex;
+};
+
+/**
+ * @return {Rect} Screen rectangle of the selected image.
+ */
+SlideMode.prototype.getSelectedImageRect = function() {
+  if (this.getSelectedIndex() < 0)
+    return null;
+  else
+    return this.viewport_.getScreenClipped();
 };
 
 /**

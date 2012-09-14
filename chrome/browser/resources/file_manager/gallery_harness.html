@@ -32,14 +32,24 @@
 
     function initGallery(galleryWindow) {
       galleryWindow.chrome.fileBrowserPrivate.FS_TYPE = window.TEMPORARY;
-      galleryWindow.Gallery.openStandalone(GALLERY_ROOT);
+
+      var path = location.hash ?
+          decodeURIComponent(location.hash.substr(1)) :
+          GALLERY_ROOT;
+
+      var pageState;
+      try {
+        pageState = JSON.parse(decodeURIComponent(location.search.substr(1)));
+      } catch (ignore) {}
+
+      galleryWindow.Gallery.openStandalone(path, pageState);
     }
 
     function loadGallery() {
       var iframe = document.createElement('iframe');
       document.body.appendChild(iframe);
       iframe.onload = function() { initGallery(iframe.contentWindow) };
-      iframe.src = "gallery.html";
+      iframe.src = 'gallery.html';
     }
 
     function importImages(filesystem) {
