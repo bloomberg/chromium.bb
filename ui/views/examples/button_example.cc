@@ -77,6 +77,9 @@ void ButtonExample::ButtonPressed(Button* sender, const ui::Event& event) {
           case TextButton::ICON_ON_RIGHT:
             text_button_->set_icon_placement(TextButton::ICON_ON_LEFT);
             break;
+          case TextButton::ICON_CENTERED:
+            // Do nothing.
+            break;
         }
       }
     } else if (event.IsAltDown()) {

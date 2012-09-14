@@ -328,11 +328,14 @@ class VIEWS_EXPORT TextButton : public TextButtonBase {
   // Meanings are reversed for right-to-left layouts.
   enum IconPlacement {
     ICON_ON_LEFT,
-    ICON_ON_RIGHT
+    ICON_ON_RIGHT,
+    ICON_CENTERED  // Centered is valid only when text is empty.
   };
 
   IconPlacement icon_placement() { return icon_placement_; }
   void set_icon_placement(IconPlacement icon_placement) {
+    // ICON_CENTERED works only when |text_| is empty.
+    DCHECK((icon_placement != ICON_CENTERED) || text_.empty());
     icon_placement_ = icon_placement;
   }
 
