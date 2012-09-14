@@ -10,8 +10,10 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/registry.h"
 #include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_handle.h"
+#include "base/win/win_util.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -45,36 +47,32 @@
 //    Here we need to return AHE_IMMERSIVE or AHE_DESKTOP. That depends on:
 //    a) if run in high-integrity return AHE_DESKTOP
 //    b) if chrome is running return the AHE_ mode of chrome
-//    c) if the current process is inmmersive return AHE_IMMERSIVE
-//    d) if the protocol is file and IExecuteCommandHost::GetUIMode() is not
-//       ECHUIM_DESKTOP then return AHE_IMMERSIVE
-//    e) if none of the above return AHE_DESKTOP
-// 6- If we returned AHE_DESKTOP in step 5 then CommandExecuteImpl::Execute()
-//    is called, here we call GetLaunchMode() which:
-//    a) if chrome is running return the mode of chrome or
-//    b) return IExecuteCommandHost::GetUIMode()
-// 7- If GetLaunchMode() returns
-//    a) ECHUIM_DESKTOP we call LaunchDestopChrome() that calls ::CreateProcess
+//    c) else we return what GetLaunchMode() tells us, which is:
+//       i) if the command line --force-xxx is present return that
+//       ii) if the registry 'launch_mode' exists return that
+//       iii) if IsMachineATablet() is true return AHE_IMMERSIVE
+//       iv) else return AHE_DESKTOP
+// 6- If we returned AHE_IMMERSIVE in step 5 windows might not call us back
+//    and simply activate chrome in metro by itself, however in some cases
+//    it might proceed at step 7.
+//    As far as we know if we return AHE_DESKTOP then step 7 always happens.
+// 7- Windows calls CommandExecuteImpl::Execute()
+//    Here we call GetLaunchMode() which returns the cached answer
+//    computed at step 5c. which can be:
+//    a) ECHUIM_DESKTOP then we call LaunchDestopChrome() that calls
+//       ::CreateProcess and we exit at this point even on failure.
 //    b) else we call one of the IApplicationActivationManager activation
 //       functions depending on the parameters passed in step 4.
+//    c) If the activation returns E_APPLICATION_NOT_REGISTERED, then we fall
+//       back to launching chrome on the desktop via LaunchDestopChrome().
 //
-//  Some examples will help clarify the common cases.
+// Note that if a command line --force-xxx is present we write that launch mode
+// in the registry so next time the logic reaches 5c-ii it will use the same
+// mode again.
 //
-//  I - No chrome running, taskbar icon launch:
-//      a) Scheme is 'file', Verb is 'open'
-//      b) GetValue() returns at e) step : AHE_DESKTOP
-//      c) Execute() calls LaunchDestopChrome()
-//      --> desktop chrome runs
-//  II- No chrome running, tile activation launch:
-//      a) Scheme is 'file', Verb is 'open'
-//      b) GetValue() returns at d) step : AHE_IMMERSIVE
-//      c) Windows does not call us back and just activates chrome
-//      --> metro chrome runs
-//  III- No chrome running, url link click on metro app:
-//      a) Scheme is 'http', Verb is 'open'
-//      b) Getvalue() returns at e) step : AHE_DESKTOP
-//      c) Execute() calls IApplicationActivationManager::ActivateForProtocol
-//      --> metro chrome runs
+// Also note that if we are not the default browser and IsMachineATablet()
+// returns true, launching chrome can go all the way to 7c, which might be
+// a slow way to start chrome.
 //
 CommandExecuteImpl::CommandExecuteImpl()
     : integrity_level_(base::INTEGRITY_UNKNOWN),
@@ -177,21 +175,8 @@ STDMETHODIMP CommandExecuteImpl::GetValue(enum AHE_TYPE* pahe) {
     return S_OK;
   }
 
-  if (IsImmersiveProcess(GetCurrentProcess())) {
-    AtlTrace("Current process is inmmersive, AHE_IMMERSIVE\n");
-    *pahe = AHE_IMMERSIVE;
-    return S_OK;
-  }
-
-  if ((launch_scheme_ == INTERNET_SCHEME_FILE) &&
-      (GetLaunchMode() != ECHUIM_DESKTOP)) {
-    AtlTrace("INTERNET_SCHEME_FILE, mode != ECHUIM_DESKTOP, AHE_IMMERSIVE\n");
-    *pahe = AHE_IMMERSIVE;
-    return S_OK;
-  }
-
-  AtlTrace("Fallback is AHE_DESKTOP\n");
-  *pahe = AHE_DESKTOP;
+  EC_HOST_UI_MODE mode = GetLaunchMode();
+  *pahe = (mode == ECHUIM_DESKTOP) ? AHE_DESKTOP : AHE_IMMERSIVE;
   return S_OK;
 }
 
@@ -399,12 +384,11 @@ HRESULT CommandExecuteImpl::LaunchDesktopChrome() {
 }
 
 EC_HOST_UI_MODE CommandExecuteImpl::GetLaunchMode() {
-  // We are to return chrome's mode if chrome exists else we query our embedder
-  // IServiceProvider and learn the mode from them.
+  // See the header file for an explanation of the mode selection logic.
   static bool launch_mode_determined = false;
   static EC_HOST_UI_MODE launch_mode = ECHUIM_DESKTOP;
 
-  const char* modes[] = { "Desktop", "Inmmersive", "SysLauncher", "??" };
+  const char* modes[] = { "Desktop", "Immersive", "SysLauncher", "??" };
 
   if (launch_mode_determined)
     return launch_mode;
@@ -419,30 +403,49 @@ EC_HOST_UI_MODE CommandExecuteImpl::GetLaunchMode() {
   if (parameters_ == ASCIIToWide(switches::kForceImmersive)) {
     launch_mode = ECHUIM_IMMERSIVE;
     launch_mode_determined = true;
+    parameters_.clear();
   } else if (parameters_ == ASCIIToWide(switches::kForceDesktop)) {
     launch_mode = ECHUIM_DESKTOP;
     launch_mode_determined = true;
+    parameters_.clear();
   }
 
-  if (launch_mode_determined) {
-    parameters_.clear();
-    AtlTrace("Launch mode forced to %s\n", modes[launch_mode]);
+  base::win::RegKey reg_key;
+  LONG key_result = reg_key.Create(HKEY_CURRENT_USER,
+                                   chrome::kMetroRegistryPath,
+                                   KEY_ALL_ACCESS);
+  if (key_result != ERROR_SUCCESS) {
+    AtlTrace("Failed to open HKCU %ls key, error 0x%x\n",
+             chrome::kMetroRegistryPath,
+             key_result);
+    if (!launch_mode_determined) {
+      launch_mode = ECHUIM_DESKTOP;
+      launch_mode_determined = true;
+    }
     return launch_mode;
   }
 
-  CComPtr<IExecuteCommandHost> host;
-  CComQIPtr<IServiceProvider> service_provider = m_spUnkSite;
-  if (service_provider) {
-    service_provider->QueryService(IID_IExecuteCommandHost, &host);
-    if (host) {
-      host->GetUIMode(&launch_mode);
-    } else {
-      AtlTrace("Failed to get IID_IExecuteCommandHost. Assuming desktop\n");
-    }
-  } else {
-      AtlTrace("Failed to get IServiceProvider. Assuming desktop mode\n");
+  if (launch_mode_determined) {
+    AtlTrace("Launch mode forced by cmdline to %s\n", modes[launch_mode]);
+    reg_key.WriteValue(chrome::kLaunchModeValue,
+                       static_cast<DWORD>(launch_mode));
+    return launch_mode;
   }
-  AtlTrace("Launch mode is %s\n", modes[launch_mode]);
+
+  DWORD reg_value;
+  if (reg_key.ReadValueDW(chrome::kLaunchModeValue,
+                          &reg_value) != ERROR_SUCCESS) {
+    launch_mode = base::win::IsMachineATablet() ?
+                      ECHUIM_IMMERSIVE : ECHUIM_DESKTOP;
+    AtlTrace("Launch mode forced by heuristics to %s\n", modes[launch_mode]);
+  } else if (reg_value >= ECHUIM_SYSTEM_LAUNCHER) {
+    AtlTrace("Invalid registry launch mode value %u\n", reg_value);
+    launch_mode = ECHUIM_DESKTOP;
+  } else {
+    AtlTrace("Launch mode forced by registry to %s\n", modes[launch_mode]);
+    launch_mode = static_cast<EC_HOST_UI_MODE>(reg_value);
+  }
+
   launch_mode_determined = true;
   return launch_mode;
 }

@@ -134,6 +134,9 @@ extern const wchar_t kMetroChromeUserDataSubDir[];
 extern const wchar_t kMetroNavigationAndSearchMessage[];
 // Used by Metro Chrome to get information about the current tab.
 extern const wchar_t kMetroGetCurrentTabInfoMessage[];
+// Used by Metro Chrome to store activation state.
+extern const wchar_t kMetroRegistryPath[];
+extern const wchar_t kLaunchModeValue[];
 #endif
 
 }  // namespace chrome
