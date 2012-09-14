@@ -53,6 +53,7 @@ def main(argv):
     # Define default command line arguments.
     cl_args = {'add-rule-patterns': 'True',
                'table_remove': [],
+               'table': [],
                }
 
     # Strip off remaining command line arguments and add.
