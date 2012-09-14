@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_POWER_POWER_STATE_OVERRIDE_H_
 
 #include "base/memory/weak_ptr.h"
+#include "base/timer.h"
 
 namespace chromeos {
 
@@ -18,14 +19,20 @@ class PowerStateOverride {
   ~PowerStateOverride();
 
  private:
-  // The heartbeat to keep re-requesting the power state override;
-  // otherwise the power state will expire.
-  void Heartbeat(uint32 request_id);
+  // Callback from RequestPowerStateOverride which receives our request_id.
+  void SetRequestId(uint32 request_id);
+
+  // Start our heartbeat timer.
+  void StartHeartbeat();
 
   // Actually make a call to power manager; we need this to be able to post a
   // delayed task since we cannot call back into power manager from Heartbeat
   // since the last request has just been completed at that point.
-  void CallRequestPowerStateOverrides(uint32 request_id);
+  void CallRequestPowerStateOverrides();
+
+  uint32 request_id_;
+
+  base::RepeatingTimer<PowerStateOverride> heartbeat_;
 
   base::WeakPtrFactory<PowerStateOverride> weak_ptr_factory_;
 

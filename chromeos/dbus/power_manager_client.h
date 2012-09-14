@@ -170,6 +170,9 @@ class CHROMEOS_EXPORT PowerManagerClient {
       int overrides,
       const PowerStateRequestIdCallback& callback) = 0;
 
+  // Cancels the power state override request specified by request_id.
+  virtual void CancelPowerStateOverrides(uint32 request_id) = 0;
+
   // Tells powerd whether or not we are in a projecting mode.  This is used to
   // adjust idleness thresholds and derived, on this side, from the number of
   // video outputs attached.

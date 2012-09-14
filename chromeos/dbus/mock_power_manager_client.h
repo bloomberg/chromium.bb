@@ -40,6 +40,7 @@ class MockPowerManagerClient : public PowerManagerClient {
                     uint32,
                     int,
                     const PowerStateRequestIdCallback&));
+  MOCK_METHOD1(CancelPowerStateOverrides, void(uint32));
   MOCK_METHOD1(SetIsProjecting, void(bool));
 };
 
