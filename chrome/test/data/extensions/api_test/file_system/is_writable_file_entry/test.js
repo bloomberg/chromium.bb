@@ -4,21 +4,21 @@
 
 chrome.test.runTests([
   function isWritableEntry() {
-    chrome.fileSystem.chooseFile({type: 'saveFile'},
+    chrome.fileSystem.chooseEntry({type: 'saveFile'},
         chrome.test.callbackPass(function(entry) {
       chrome.test.assertEq('writable.txt', entry.name);
       // Test that the file is writable, as we requested a 'saveFile'.
-      chrome.fileSystem.isWritableFileEntry(entry, chrome.test.callbackPass(
+      chrome.fileSystem.isWritableEntry(entry, chrome.test.callbackPass(
           function(isWritable) {
         chrome.test.assertTrue(isWritable);
       }));
     }));
   },
   function isNotWritableEntry() {
-    chrome.fileSystem.chooseFile(chrome.test.callbackPass(function(entry) {
+    chrome.fileSystem.chooseEntry(chrome.test.callbackPass(function(entry) {
       chrome.test.assertEq('writable.txt', entry.name);
       // The file should not be writable, since the default is 'openFile'.
-      chrome.fileSystem.isWritableFileEntry(entry, chrome.test.callbackPass(
+      chrome.fileSystem.isWritableEntry(entry, chrome.test.callbackPass(
           function(isWritable) {
         chrome.test.assertFalse(isWritable);
       }));

@@ -39,14 +39,14 @@ const char kUserCancelled[] = "User cancelled";
 const char kWritableFileError[] = "Invalid file for writing";
 const char kRequiresFileSystemWriteError[] =
     "Operation requires fileSystemWrite permission";
-const char kUnknownChooseFileType[] = "Unknown type";
+const char kUnknownChooseEntryType[] = "Unknown type";
 
 const char kOpenFileOption[] = "openFile";
 const char kOpenWritableFileOption[] ="openWritableFile";
 const char kSaveFileOption[] = "saveFile";
 
 namespace file_system = extensions::api::file_system;
-namespace ChooseFile = file_system::ChooseFile;
+namespace ChooseEntry = file_system::ChooseEntry;
 
 namespace {
 
@@ -281,7 +281,7 @@ void FileSystemEntryFunction::HandleWritableFileError() {
   SendResponse(false);
 }
 
-bool FileSystemGetWritableFileEntryFunction::RunImpl() {
+bool FileSystemGetWritableEntryFunction::RunImpl() {
   std::string filesystem_name;
   std::string filesystem_path;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &filesystem_name));
@@ -298,12 +298,12 @@ bool FileSystemGetWritableFileEntryFunction::RunImpl() {
     return false;
 
   content::BrowserThread::PostTask(content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(&FileSystemGetWritableFileEntryFunction::CheckWritableFile,
+      base::Bind(&FileSystemGetWritableEntryFunction::CheckWritableFile,
           this, path));
   return true;
 }
 
-bool FileSystemIsWritableFileEntryFunction::RunImpl() {
+bool FileSystemIsWritableEntryFunction::RunImpl() {
   std::string filesystem_name;
   std::string filesystem_path;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &filesystem_name));
@@ -327,10 +327,10 @@ bool FileSystemIsWritableFileEntryFunction::RunImpl() {
 
 // Handles showing a dialog to the user to ask for the filename for a file to
 // save or open.
-class FileSystemChooseFileFunction::FilePicker
+class FileSystemChooseEntryFunction::FilePicker
     : public ui::SelectFileDialog::Listener {
  public:
-  FilePicker(FileSystemChooseFileFunction* function,
+  FilePicker(FileSystemChooseEntryFunction* function,
              content::WebContents* web_contents,
              const FilePath& suggested_name,
              const ui::SelectFileDialog::FileTypeInfo& file_type_info,
@@ -348,13 +348,13 @@ class FileSystemChooseFileFunction::FilePicker
       if (g_path_to_be_picked_for_test) {
         content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
             base::Bind(
-                &FileSystemChooseFileFunction::FilePicker::FileSelected,
+                &FileSystemChooseEntryFunction::FilePicker::FileSelected,
                 base::Unretained(this), *g_path_to_be_picked_for_test, 1,
                 static_cast<void*>(NULL)));
       } else {
         content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
             base::Bind(
-                &FileSystemChooseFileFunction::FilePicker::
+                &FileSystemChooseEntryFunction::FilePicker::
                     FileSelectionCanceled,
                 base::Unretained(this), static_cast<void*>(NULL)));
       }
@@ -389,12 +389,12 @@ class FileSystemChooseFileFunction::FilePicker
   EntryType entry_type_;
 
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
-  scoped_refptr<FileSystemChooseFileFunction> function_;
+  scoped_refptr<FileSystemChooseEntryFunction> function_;
 
   DISALLOW_COPY_AND_ASSIGN(FilePicker);
 };
 
-bool FileSystemChooseFileFunction::ShowPicker(
+bool FileSystemChooseEntryFunction::ShowPicker(
     const FilePath& suggested_name,
     const ui::SelectFileDialog::FileTypeInfo& file_type_info,
     ui::SelectFileDialog::Type picker_type,
@@ -418,28 +418,28 @@ bool FileSystemChooseFileFunction::ShowPicker(
 }
 
 // static
-void FileSystemChooseFileFunction::SkipPickerAndAlwaysSelectPathForTest(
+void FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
     FilePath* path) {
   g_skip_picker_for_test = true;
   g_path_to_be_picked_for_test = path;
 }
 
 // static
-void FileSystemChooseFileFunction::SkipPickerAndAlwaysCancelForTest() {
+void FileSystemChooseEntryFunction::SkipPickerAndAlwaysCancelForTest() {
   g_skip_picker_for_test = true;
   g_path_to_be_picked_for_test = NULL;
 }
 
 // static
-void FileSystemChooseFileFunction::StopSkippingPickerForTest() {
+void FileSystemChooseEntryFunction::StopSkippingPickerForTest() {
   g_skip_picker_for_test = false;
 }
 
-void FileSystemChooseFileFunction::FileSelected(const FilePath& path,
+void FileSystemChooseEntryFunction::FileSelected(const FilePath& path,
                                                 EntryType entry_type) {
   if (entry_type == WRITABLE) {
     content::BrowserThread::PostTask(content::BrowserThread::FILE, FROM_HERE,
-        base::Bind(&FileSystemChooseFileFunction::CheckWritableFile,
+        base::Bind(&FileSystemChooseEntryFunction::CheckWritableFile,
             this, path));
     return;
   }
@@ -448,12 +448,12 @@ void FileSystemChooseFileFunction::FileSelected(const FilePath& path,
   RegisterFileSystemAndSendResponse(path, READ_ONLY);
 }
 
-void FileSystemChooseFileFunction::FileSelectionCanceled() {
+void FileSystemChooseEntryFunction::FileSelectionCanceled() {
   error_ = kUserCancelled;
   SendResponse(false);
 }
 
-void FileSystemChooseFileFunction::BuildFileTypeInfo(
+void FileSystemChooseEntryFunction::BuildFileTypeInfo(
     ui::SelectFileDialog::FileTypeInfo* file_type_info,
     const FilePath::StringType& suggested_extension,
     const AcceptOptions* accepts,
@@ -493,7 +493,7 @@ void FileSystemChooseFileFunction::BuildFileTypeInfo(
     file_type_info->include_all_files = true;
 }
 
-void FileSystemChooseFileFunction::BuildSuggestion(
+void FileSystemChooseEntryFunction::BuildSuggestion(
     const std::string *opt_name,
     FilePath* suggested_name,
     FilePath::StringType* suggested_extension) {
@@ -513,8 +513,8 @@ void FileSystemChooseFileFunction::BuildSuggestion(
   }
 }
 
-bool FileSystemChooseFileFunction::RunImpl() {
-  scoped_ptr<ChooseFile::Params> params(ChooseFile::Params::Create(*args_));
+bool FileSystemChooseEntryFunction::RunImpl() {
+  scoped_ptr<ChooseEntry::Params> params(ChooseEntry::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   FilePath suggested_name;
@@ -523,7 +523,7 @@ bool FileSystemChooseFileFunction::RunImpl() {
   ui::SelectFileDialog::Type picker_type =
       ui::SelectFileDialog::SELECT_OPEN_FILE;
 
-  file_system::ChooseFileOptions* options = params->options.get();
+  file_system::ChooseEntryOptions* options = params->options.get();
   if (options) {
     if (options->type.get()) {
       if (*options->type == kOpenWritableFileOption) {
@@ -532,7 +532,7 @@ bool FileSystemChooseFileFunction::RunImpl() {
         entry_type = WRITABLE;
         picker_type = ui::SelectFileDialog::SELECT_SAVEAS_FILE;
       } else if (*options->type != kOpenFileOption) {
-        error_ = kUnknownChooseFileType;
+        error_ = kUnknownChooseEntryType;
         return false;
       }
     }

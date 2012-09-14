@@ -18,7 +18,7 @@ namespace fileSystem {
     DOMString[]? extensions;
   };
 
-  dictionary ChooseFileOptions {
+  dictionary ChooseEntryOptions {
     // Type of the prompt to show. Valid types are 'openFile',
     // 'openWritableFile' or 'saveFile'.
     //
@@ -59,15 +59,15 @@ namespace fileSystem {
 
     // Get a writable FileEntry from another FileEntry. This call will fail if
     // the application does not have the 'write' permission under 'fileSystem'.
-    static void getWritableFileEntry([instanceOf=FileEntry] object fileEntry,
-                                     FileEntryCallback callback);
+    static void getWritableEntry([instanceOf=FileEntry] object fileEntry,
+                                 FileEntryCallback callback);
 
     // Gets whether this FileEntry is writable or not.
-    static void isWritableFileEntry([instanceOf=FileEntry] object fileEntry,
-                                    IsWritableCallback callback);
+    static void isWritableEntry([instanceOf=FileEntry] object fileEntry,
+                                IsWritableCallback callback);
 
     // Ask the user to choose a file.
-    static void chooseFile(optional ChooseFileOptions options,
-                           FileEntryCallback callback);
+    static void chooseEntry(optional ChooseEntryOptions options,
+                            FileEntryCallback callback);
   };
 };

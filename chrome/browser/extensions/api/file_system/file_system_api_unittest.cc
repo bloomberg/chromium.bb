@@ -10,7 +10,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/dialogs/select_file_dialog.h"
 
-using extensions::FileSystemChooseFileFunction;
+using extensions::FileSystemChooseEntryFunction;
 using extensions::api::file_system::AcceptOption;
 
 namespace {
@@ -58,11 +58,11 @@ AcceptOption* BuildAcceptOption(std::string description,
 class FileSystemApiUnitTest : public testing::Test {
 };
 
-TEST_F(FileSystemApiUnitTest, FileSystemChooseFileFunctionFileTypeInfoTest) {
+TEST_F(FileSystemApiUnitTest, FileSystemChooseEntryFunctionFileTypeInfoTest) {
   // AcceptsAllTypes is ignored when no other extensions are available.
   ui::SelectFileDialog::FileTypeInfo file_type_info;
   bool acceptsAllTypes = false;
-  FileSystemChooseFileFunction::BuildFileTypeInfo(&file_type_info,
+  FileSystemChooseEntryFunction::BuildFileTypeInfo(&file_type_info,
       FilePath::StringType(), NULL, &acceptsAllTypes);
   EXPECT_TRUE(file_type_info.include_all_files);
   EXPECT_TRUE(file_type_info.extensions.empty());
@@ -73,7 +73,7 @@ TEST_F(FileSystemApiUnitTest, FileSystemChooseFileFunctionFileTypeInfoTest) {
   options.push_back(linked_ptr<AcceptOption>(
       BuildAcceptOption("", "application/x-chrome-extension", "jso")));
   acceptsAllTypes = false;
-  FileSystemChooseFileFunction::BuildFileTypeInfo(&file_type_info,
+  FileSystemChooseEntryFunction::BuildFileTypeInfo(&file_type_info,
       FilePath::StringType(), &options, &acceptsAllTypes);
   EXPECT_FALSE(file_type_info.include_all_files);
   ASSERT_EQ(file_type_info.extensions.size(), (size_t) 1);
@@ -92,7 +92,7 @@ TEST_F(FileSystemApiUnitTest, FileSystemChooseFileFunctionFileTypeInfoTest) {
   options.push_back(linked_ptr<AcceptOption>(
       BuildAcceptOption("", "", "unrelated")));
   acceptsAllTypes = false;
-  FileSystemChooseFileFunction::BuildFileTypeInfo(&file_type_info,
+  FileSystemChooseEntryFunction::BuildFileTypeInfo(&file_type_info,
       ToStringType(".jso"), &options, &acceptsAllTypes);
   EXPECT_TRUE(file_type_info.include_all_files);
 
@@ -104,7 +104,7 @@ TEST_F(FileSystemApiUnitTest, FileSystemChooseFileFunctionFileTypeInfoTest) {
   options.push_back(linked_ptr<AcceptOption>(
       BuildAcceptOption("", "", "cpp,cc")));
   acceptsAllTypes = false;
-  FileSystemChooseFileFunction::BuildFileTypeInfo(&file_type_info,
+  FileSystemChooseEntryFunction::BuildFileTypeInfo(&file_type_info,
       FilePath::StringType(), &options, &acceptsAllTypes);
   ASSERT_EQ(file_type_info.extensions.size(), options.size());
 
@@ -124,7 +124,7 @@ TEST_F(FileSystemApiUnitTest, FileSystemChooseFileFunctionFileTypeInfoTest) {
   options.push_back(linked_ptr<AcceptOption>(
       BuildAcceptOption("", "image/*", "html")));
   acceptsAllTypes = false;
-  FileSystemChooseFileFunction::BuildFileTypeInfo(&file_type_info,
+  FileSystemChooseEntryFunction::BuildFileTypeInfo(&file_type_info,
       FilePath::StringType(), &options, &acceptsAllTypes);
   ASSERT_EQ(file_type_info.extension_description_overrides.size(), (size_t) 1);
   EXPECT_FALSE(file_type_info.extension_description_overrides[0].empty()) <<
@@ -137,7 +137,7 @@ TEST_F(FileSystemApiUnitTest, FileSystemChooseFileFunctionFileTypeInfoTest) {
   options.push_back(linked_ptr<AcceptOption>(
       BuildAcceptOption("", "image/*,audio/*,video/*", "")));
   acceptsAllTypes = false;
-  FileSystemChooseFileFunction::BuildFileTypeInfo(&file_type_info,
+  FileSystemChooseEntryFunction::BuildFileTypeInfo(&file_type_info,
       FilePath::StringType(), &options, &acceptsAllTypes);
   ASSERT_EQ(file_type_info.extension_description_overrides.size(), (size_t) 1);
   EXPECT_TRUE(file_type_info.extension_description_overrides[0].empty());
@@ -148,19 +148,19 @@ TEST_F(FileSystemApiUnitTest, FileSystemChooseFileFunctionFileTypeInfoTest) {
   options.push_back(linked_ptr<AcceptOption>(
       BuildAcceptOption("File Types 101", "image/jpeg", "")));
   acceptsAllTypes = false;
-  FileSystemChooseFileFunction::BuildFileTypeInfo(&file_type_info,
+  FileSystemChooseEntryFunction::BuildFileTypeInfo(&file_type_info,
       FilePath::StringType(), &options, &acceptsAllTypes);
   EXPECT_EQ(file_type_info.extension_description_overrides[0],
       UTF8ToUTF16("File Types 101"));
 }
 
-TEST_F(FileSystemApiUnitTest, FileSystemChooseFileFunctionSuggestionTest) {
+TEST_F(FileSystemApiUnitTest, FileSystemChooseEntryFunctionSuggestionTest) {
   std::string opt_name;
   FilePath suggested_name;
   FilePath::StringType suggested_extension;
 
   opt_name = std::string("normal_path.txt");
-  FileSystemChooseFileFunction::BuildSuggestion(&opt_name, &suggested_name,
+  FileSystemChooseEntryFunction::BuildSuggestion(&opt_name, &suggested_name,
       &suggested_extension);
   EXPECT_FALSE(suggested_name.IsAbsolute());
   EXPECT_EQ(suggested_name.MaybeAsASCII(), "normal_path.txt");
@@ -168,7 +168,7 @@ TEST_F(FileSystemApiUnitTest, FileSystemChooseFileFunctionSuggestionTest) {
 
   // We should provide just the basename, i.e., "path".
   opt_name = std::string("/a/bad/path");
-  FileSystemChooseFileFunction::BuildSuggestion(&opt_name, &suggested_name,
+  FileSystemChooseEntryFunction::BuildSuggestion(&opt_name, &suggested_name,
       &suggested_extension);
   EXPECT_FALSE(suggested_name.IsAbsolute());
   EXPECT_EQ(suggested_name.MaybeAsASCII(), "path");
@@ -178,7 +178,7 @@ TEST_F(FileSystemApiUnitTest, FileSystemChooseFileFunctionSuggestionTest) {
   // TODO(thorogood): Fix this test on Windows.
   // Filter out absolute paths with no basename.
   opt_name = std::string("/");
-  FileSystemChooseFileFunction::BuildSuggestion(&opt_name, &suggested_name,
+  FileSystemChooseEntryFunction::BuildSuggestion(&opt_name, &suggested_name,
       &suggested_extension);
   EXPECT_FALSE(suggested_name.IsAbsolute());
   EXPECT_TRUE(suggested_name.MaybeAsASCII().empty());

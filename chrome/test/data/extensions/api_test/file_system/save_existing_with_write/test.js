@@ -4,7 +4,7 @@
 
 chrome.test.runTests([
   function saveFile() {
-    chrome.fileSystem.chooseFile({type: 'saveFile'},
+    chrome.fileSystem.chooseEntry({type: 'saveFile'},
         chrome.test.callbackPass(function(entry) {
       checkEntry(entry, 'save_existing.txt', false, true);
     }));

@@ -4,7 +4,7 @@
 
 chrome.test.runTests([
   function saveFile() {
-    chrome.fileSystem.chooseFile({type: 'invalid'}, chrome.test.callbackFail(
+    chrome.fileSystem.chooseEntry({type: 'invalid'}, chrome.test.callbackFail(
         'Unknown type',  function() {}));
   }
 ]);

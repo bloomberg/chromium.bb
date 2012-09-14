@@ -46,32 +46,32 @@ class FileSystemEntryFunction : public AsyncExtensionFunction {
   void HandleWritableFileError();
 };
 
-class FileSystemGetWritableFileEntryFunction : public FileSystemEntryFunction {
+class FileSystemGetWritableEntryFunction : public FileSystemEntryFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("fileSystem.getWritableFileEntry");
+  DECLARE_EXTENSION_FUNCTION_NAME("fileSystem.getWritableEntry");
 
  protected:
-  virtual ~FileSystemGetWritableFileEntryFunction() {}
+  virtual ~FileSystemGetWritableEntryFunction() {}
   virtual bool RunImpl() OVERRIDE;
 };
 
-class FileSystemIsWritableFileEntryFunction : public SyncExtensionFunction {
+class FileSystemIsWritableEntryFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("fileSystem.isWritableFileEntry");
+  DECLARE_EXTENSION_FUNCTION_NAME("fileSystem.isWritableEntry");
 
  protected:
-  virtual ~FileSystemIsWritableFileEntryFunction() {}
+  virtual ~FileSystemIsWritableEntryFunction() {}
   virtual bool RunImpl() OVERRIDE;
 };
 
-class FileSystemChooseFileFunction : public FileSystemEntryFunction {
+class FileSystemChooseEntryFunction : public FileSystemEntryFunction {
  public:
   // Allow picker UI to be skipped in testing.
   static void SkipPickerAndAlwaysSelectPathForTest(FilePath* path);
   static void SkipPickerAndAlwaysCancelForTest();
   static void StopSkippingPickerForTest();
 
-  DECLARE_EXTENSION_FUNCTION_NAME("fileSystem.chooseFile");
+  DECLARE_EXTENSION_FUNCTION_NAME("fileSystem.chooseEntry");
 
   typedef std::vector<linked_ptr<extensions::api::file_system::AcceptOption> >
       AcceptOptions;
@@ -88,7 +88,7 @@ class FileSystemChooseFileFunction : public FileSystemEntryFunction {
  protected:
   class FilePicker;
 
-  virtual ~FileSystemChooseFileFunction() {}
+  virtual ~FileSystemChooseEntryFunction() {}
   virtual bool RunImpl() OVERRIDE;
   bool ShowPicker(const FilePath& suggested_path,
                   const ui::SelectFileDialog::FileTypeInfo& file_type_info,

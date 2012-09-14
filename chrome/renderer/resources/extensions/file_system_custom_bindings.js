@@ -19,7 +19,7 @@ chromeHidden.registerCustomHook('fileSystem', function(bindingsAPI) {
       return [fileSystemName, relativePath, callback];
     });
   }
-  ['getDisplayPath', 'getWritableFileEntry', 'isWritableFileEntry']
+  ['getDisplayPath', 'getWritableEntry', 'isWritableEntry']
       .forEach(bindFileEntryFunction);
 
   function bindFileEntryCallback(functionName) {
@@ -47,5 +47,24 @@ chromeHidden.registerCustomHook('fileSystem', function(bindingsAPI) {
       }
     });
   }
-  ['getWritableFileEntry', 'chooseFile'].forEach(bindFileEntryCallback);
+  ['getWritableEntry', 'chooseEntry'].forEach(bindFileEntryCallback);
+
+  // TODO(benwells): Remove these deprecated versions of the functions.
+  chrome.fileSystem.getWritableFileEntry = function() {
+    console.log("chrome.fileSystem.getWritableFileEntry is deprecated");
+    console.log("Please use chrome.fileSystem.getWritableEntry instead");
+    chrome.fileSystem.getWritableEntry.apply(this, arguments);
+  };
+
+  chrome.fileSystem.isWritableFileEntry = function() {
+    console.log("chrome.fileSystem.isWritableFileEntry is deprecated");
+    console.log("Please use chrome.fileSystem.isWritableEntry instead");
+    chrome.fileSystem.isWritableEntry.apply(this, arguments);
+  };
+
+  chrome.fileSystem.chooseFile = function() {
+    console.log("chrome.fileSystem.chooseFile is deprecated");
+    console.log("Please use chrome.fileSystem.chooseEntry instead");
+    chrome.fileSystem.chooseEntry.apply(this, arguments);
+  };
 });

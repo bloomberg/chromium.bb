@@ -29,7 +29,7 @@ function checkEntry(entry, expectedName, isNew, shouldBeWritable) {
           } else {
             if (shouldBeWritable) {
               // Get a new entry and check the data got to disk.
-              chrome.fileSystem.chooseFile(chrome.test.callbackPass(
+              chrome.fileSystem.chooseEntry(chrome.test.callbackPass(
                   function(readEntry) {
                 readEntry.file(chrome.test.callback(function(readFile) {
                   var readReader = new FileReader();

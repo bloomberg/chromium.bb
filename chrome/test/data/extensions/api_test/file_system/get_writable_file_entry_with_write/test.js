@@ -4,10 +4,10 @@
 
 chrome.test.runTests([
   function getWritableEntry() {
-    chrome.fileSystem.chooseFile(chrome.test.callbackPass(function(entry) {
+    chrome.fileSystem.chooseEntry(chrome.test.callbackPass(function(entry) {
       chrome.test.assertEq('writable.txt', entry.name);
       // Test that we can get the display path of the file.
-      chrome.fileSystem.getWritableFileEntry(entry, chrome.test.callbackPass(
+      chrome.fileSystem.getWritableEntry(entry, chrome.test.callbackPass(
           function(writable) {
         checkEntry(writable, 'writable.txt', false, true);
       }));

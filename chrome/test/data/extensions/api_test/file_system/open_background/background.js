@@ -4,7 +4,7 @@
 
 chrome.test.runTests([
   function openFile() {
-    chrome.fileSystem.chooseFile(chrome.test.callbackFail(
+    chrome.fileSystem.chooseEntry(chrome.test.callbackFail(
         'Invalid calling page', function(entry) {}));
   }
 ]);

@@ -167,7 +167,7 @@ If the file doesn't exist, an error is thrown.
 var chosenFileEntry = null;
 
 chooseFileButton.addEventListener('click', function(e) {
-  chrome.fileSystem.chooseFile({type: 'openFile'}, function(readOnlyEntry) {
+  chrome.fileSystem.chooseEntry({type: 'openFile'}, function(readOnlyEntry) {
  
     readOnlyEntry.file(function(file) {
       var reader = new FileReader();
@@ -189,13 +189,13 @@ chooseFileButton.addEventListener('click', function(e) {
 The two common use-cases
 for writing a file are "Save" and "Save as".
 The following code creates a
-<code>writableFileEntry</code>
+<code>writableEntry</code>
 from the read-only <code>chosenFileEntry</code> and
 writes the selected file to it.
 </p>
 
 <pre>
- chrome.fileSystem.getWritableFileEntry(chosenFileEntry, function(writableFileEntry) {
+ chrome.fileSystem.getWritableEntry(chosenFileEntry, function(writableFileEntry) {
     writableFileEntry.createWriter(function(writer) {
       writer.onerror = errorHandler;
       writer.onwriteend = callback;
@@ -215,7 +215,7 @@ using the <code>writer.write()</code> method.
 </p>
 
 <pre>
-chrome.fileSystem.chooseFile({type: 'saveFile'}, function(writableFileEntry) {
+chrome.fileSystem.chooseEntry({type: 'saveFile'}, function(writableFileEntry) {
     writableFileEntry.createWriter(function(writer) {
       writer.onerror = errorHandler;
       writer.onwriteend = function(e) {
