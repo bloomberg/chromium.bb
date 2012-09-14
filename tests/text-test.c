@@ -178,7 +178,7 @@ handle_surface(struct test_client *client)
 	surface = (struct weston_surface *) resource;
 
 	weston_surface_configure(surface, 100, 100, 200, 200);
-	weston_surface_assign_output(surface);
+	weston_surface_update_transform(surface);
 	weston_surface_set_color(surface, 0.0, 0.0, 0.0, 1.0);
 
 	data->layer = malloc(sizeof *data->layer);

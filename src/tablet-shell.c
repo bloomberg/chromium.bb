@@ -162,7 +162,7 @@ tablet_shell_surface_configure(struct weston_surface *surface,
 			       &surface->layer_link);
 	}
 
-	weston_surface_assign_output(surface);
+	weston_surface_update_transform(surface);
 }
 
 static void

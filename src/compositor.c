@@ -456,8 +456,7 @@ weston_surface_update_transform(struct weston_surface *surface)
 
 	weston_surface_damage_below(surface);
 
-	if (weston_surface_is_mapped(surface))
-		weston_surface_assign_output(surface);
+	weston_surface_assign_output(surface);
 }
 
 WL_EXPORT void
@@ -1026,7 +1025,7 @@ weston_compositor_fade(struct weston_compositor *compositor, float tint)
 		weston_surface_set_color(surface, 0.0, 0.0, 0.0, 0.0);
 		wl_list_insert(&compositor->fade_layer.surface_list,
 			       &surface->layer_link);
-		weston_surface_assign_output(surface);
+		weston_surface_update_transform(surface);
 		compositor->fade.surface = surface;
 		pixman_region32_init(&surface->input);
 	}
@@ -1929,7 +1928,7 @@ pointer_cursor_surface_configure(struct weston_surface *es,
 	if (!weston_surface_is_mapped(es)) {
 		wl_list_insert(&es->compositor->cursor_layer.surface_list,
 			       &es->layer_link);
-		weston_surface_assign_output(es);
+		weston_surface_update_transform(es);
 	}
 }
 
@@ -2416,7 +2415,7 @@ device_map_drag_surface(struct weston_seat *seat)
 		list = &seat->compositor->cursor_layer.surface_list;
 
 	wl_list_insert(list, &seat->drag_surface->layer_link);
-	weston_surface_assign_output(seat->drag_surface);
+	weston_surface_update_transform(seat->drag_surface);
 	empty_region(&seat->drag_surface->input);
 }
 

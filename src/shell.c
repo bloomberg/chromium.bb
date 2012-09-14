@@ -2190,7 +2190,7 @@ lock_surface_configure(struct weston_surface *surface, int32_t sx, int32_t sy)
 	if (!weston_surface_is_mapped(surface)) {
 		wl_list_insert(&shell->lock_layer.surface_list,
 			       &surface->layer_link);
-		weston_surface_assign_output(surface);
+		weston_surface_update_transform(surface);
 		weston_compositor_wake(shell->compositor);
 	}
 }
@@ -2763,7 +2763,7 @@ show_input_panels(struct wl_listener *listener, void *data)
 		ws = surface->surface;
 		wl_list_insert(&shell->input_panel_layer.surface_list,
 			       &ws->layer_link);
-		weston_surface_assign_output(ws);
+		weston_surface_update_transform(ws);
 		weston_surface_damage(ws);
 		weston_slide_run(ws, ws->geometry.height, 0, NULL, NULL);
 	}
@@ -2918,7 +2918,7 @@ map(struct desktop_shell *shell, struct weston_surface *surface,
 	}
 
 	if (surface_type != SHELL_SURFACE_NONE) {
-		weston_surface_assign_output(surface);
+		weston_surface_update_transform(surface);
 		if (surface_type == SHELL_SURFACE_MAXIMIZED)
 			surface->output = shsurf->output;
 	}
@@ -2991,7 +2991,7 @@ configure(struct desktop_shell *shell, struct weston_surface *surface,
 
 	/* XXX: would a fullscreen surface need the same handling? */
 	if (surface->output) {
-		weston_surface_assign_output(surface);
+		weston_surface_update_transform(surface);
 
 		if (surface_type == SHELL_SURFACE_MAXIMIZED)
 			surface->output = shsurf->output;
@@ -3129,7 +3129,7 @@ screensaver_configure(struct weston_surface *surface, int32_t sx, int32_t sy)
 	if (wl_list_empty(&surface->layer_link)) {
 		wl_list_insert(shell->lock_layer.surface_list.prev,
 			       &surface->layer_link);
-		weston_surface_assign_output(surface);
+		weston_surface_update_transform(surface);
 		shell->compositor->idle_time = shell->screensaver.duration;
 		weston_compositor_wake(shell->compositor);
 		shell->compositor->state = WESTON_COMPOSITOR_IDLE;
@@ -3468,7 +3468,6 @@ debug_repaint_binding(struct wl_seat *seat, uint32_t time, uint32_t key,
 		weston_surface_configure(surface, 0, 0, 8192, 8192);
 		wl_list_insert(&compositor->fade_layer.surface_list,
 			       &surface->layer_link);
-		weston_surface_assign_output(surface);
 		pixman_region32_init(&surface->input);
 
 		/* Here's the dirty little trick that makes the
