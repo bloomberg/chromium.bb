@@ -23,7 +23,6 @@ import datetime
 import generate_make
 import optparse
 import os
-import platform
 import subprocess
 import sys
 
@@ -81,11 +80,8 @@ def GetNewlibToolchain(platform, arch):
 
 def GetPNaClToolchain(os_platform, arch):
   tcdir = os.path.join(NACL_DIR, 'toolchain', '.tars')
-  # Refine the toolchain host arch.  For linux, we happen to have
-  # toolchains for 64-bit hosts.  For other OSes, we only have 32-bit binaries.
+  # Always use 32-bit binaries.
   arch = 'x86_32'
-  if os_platform == 'linux' and platform.machine() == 'x86_64':
-    arch = 'x86_64'
   tcname = 'naclsdk_pnacl_%s_%s.tgz' % (os_platform, arch)
   return os.path.join(tcdir, tcname)
 
