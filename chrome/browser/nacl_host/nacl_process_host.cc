@@ -40,6 +40,7 @@
 #include "ipc/ipc_switches.h"
 #include "native_client/src/shared/imc/nacl_imc.h"
 #include "net/base/net_util.h"
+#include "net/base/tcp_listen_socket.h"
 #include "ppapi/proxy/ppapi_messages.h"
 
 #if defined(OS_POSIX)
@@ -634,6 +635,21 @@ bool NaClProcessHost::ReplyToRenderer(
   return true;
 }
 
+// TCP port we chose for NaCl debug stub. It can be any other number.
+static const int kDebugStubPort = 4014;
+
+#if defined(OS_POSIX)
+SocketDescriptor NaClProcessHost::GetDebugStubSocketHandle() {
+  SocketDescriptor s = net::TCPListenSocket::CreateAndBind("127.0.0.1",
+                                                           kDebugStubPort);
+  if (listen(s, 1)) {
+    LOG(ERROR) << "listen() failed on debug stub socket";
+    return net::TCPListenSocket::kInvalidSocket;
+  }
+  return s;
+}
+#endif
+
 bool NaClProcessHost::StartNaClExecution() {
   NaClBrowser* nacl_browser = NaClBrowser::GetInstance();
 
@@ -682,6 +698,16 @@ bool NaClProcessHost::StartNaClExecution() {
   }
   memory_fd.auto_close = true;
   params.handles.push_back(memory_fd);
+#endif
+
+#if defined(OS_POSIX)
+  if (enable_debug_stub_) {
+    SocketDescriptor server_bound_socket = GetDebugStubSocketHandle();
+    if (server_bound_socket != net::TCPListenSocket::kInvalidSocket) {
+      params.debug_stub_server_bound_socket =
+          nacl::FileDescriptor(server_bound_socket, true);
+    }
+  }
 #endif
 
   process_->Send(new NaClProcessMsg_Start(params));

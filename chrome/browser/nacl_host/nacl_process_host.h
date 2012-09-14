@@ -17,6 +17,7 @@
 #include "content/public/browser/browser_child_process_host_delegate.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel_handle.h"
+#include "net/base/tcp_listen_socket.h"
 
 class ChromeRenderMessageFilter;
 class CommandLine;
@@ -90,6 +91,12 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
 #elif defined(OS_LINUX)
   bool LaunchNaClGdb(base::ProcessId pid);
   void OnNaClGdbAttached();
+#endif
+#if defined(OS_POSIX)
+  // Create bound TCP socket in the browser process so that the NaCl GDB debug
+  // stub can use it to accept incoming connections even when the Chrome sandbox
+  // is enabled.
+  SocketDescriptor GetDebugStubSocketHandle();
 #endif
   // Get path to manifest on local disk if possible.
   FilePath GetManifestPath();

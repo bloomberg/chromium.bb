@@ -14,6 +14,7 @@
 
 IPC_STRUCT_TRAITS_BEGIN(nacl::NaClStartParams)
   IPC_STRUCT_TRAITS_MEMBER(handles)
+  IPC_STRUCT_TRAITS_MEMBER(debug_stub_server_bound_socket)
   IPC_STRUCT_TRAITS_MEMBER(validation_cache_enabled)
   IPC_STRUCT_TRAITS_MEMBER(validation_cache_key)
   IPC_STRUCT_TRAITS_MEMBER(version)

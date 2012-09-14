@@ -44,6 +44,7 @@ struct NaClStartParams {
   ~NaClStartParams();
 
   std::vector<FileDescriptor> handles;
+  FileDescriptor debug_stub_server_bound_socket;
 
   bool validation_cache_enabled;
   std::string validation_cache_key;

@@ -260,6 +260,10 @@ void NaClListener::OnMsgStart(const nacl::NaClStartParams& params) {
   args->imc_bootstrap_handle = nacl::ToNativeHandle(handles[0]);
   args->enable_exception_handling = params.enable_exception_handling;
   args->enable_debug_stub = params.enable_debug_stub;
+#if defined(OS_LINUX) || defined(OS_MACOSX)
+  args->debug_stub_server_bound_socket_fd = nacl::ToNativeHandle(
+      params.debug_stub_server_bound_socket);
+#endif
 #if defined(OS_WIN)
   args->broker_duplicate_handle_func = BrokerDuplicateHandle;
   args->attach_debug_exception_handler_func = AttachDebugExceptionHandler;
