@@ -7,6 +7,7 @@
 #include "LayerChromium.h"
 
 #include "CCGeometryTestUtils.h"
+#include "CCKeyframedAnimationCurve.h"
 #include "CCLayerImpl.h"
 #include "CCLayerTreeHost.h"
 #include "CCSingleThreadProxy.h"
@@ -791,6 +792,40 @@ TEST(LayerChromiumLayerTreeHostTest, destroyHostWithNonNullRootLayer)
     OwnPtr<FakeCCLayerTreeHost> layerTreeHost(FakeCCLayerTreeHost::create());
     layerTreeHost->setRootLayer(root);
     layerTreeHost.clear();
+}
+
+static bool addTestAnimation(LayerChromium* layer)
+{
+    OwnPtr<CCKeyframedFloatAnimationCurve> curve(CCKeyframedFloatAnimationCurve::create());
+    curve->addKeyframe(CCFloatKeyframe::create(0, 0.3, nullptr));
+    curve->addKeyframe(CCFloatKeyframe::create(1, 0.7, nullptr));
+    OwnPtr<CCActiveAnimation> animation(CCActiveAnimation::create(curve.release(), 0, 0, CCActiveAnimation::Opacity));
+
+    return layer->addAnimation(animation.release());
+}
+
+TEST(LayerChromiumLayerTreeHostTest, shouldNotAddAnimationWithoutLayerTreeHost)
+{
+    // Currently, WebCore assumes that animations will be started immediately / very soon
+    // if a composited layer's addAnimation() returns true. However, without a layerTreeHost,
+    // layers cannot actually animate yet. So, to prevent violating this WebCore assumption,
+    // the animation should not be accepted if the layer doesn't already have a layerTreeHost.
+
+    WebKit::Platform::current()->compositorSupport()->setAcceleratedAnimationEnabled(true);
+
+    WebCompositorInitializer compositorInitializer(0);
+    RefPtr<LayerChromium> layer = LayerChromium::create();
+
+    // Case 1: without a layerTreeHost, the animation should not be accepted.
+    EXPECT_FALSE(addTestAnimation(layer.get()));
+
+    OwnPtr<FakeCCLayerTreeHost> layerTreeHost(FakeCCLayerTreeHost::create());
+    layerTreeHost->setRootLayer(layer.get());
+    layer->setLayerTreeHost(layerTreeHost.get());
+    assertLayerTreeHostMatchesForSubtree(layer.get(), layerTreeHost.get());
+
+    // Case 2: with a layerTreeHost, the animation should be accepted.
+    EXPECT_TRUE(addTestAnimation(layer.get()));
 }
 
 class MockLayerChromium : public LayerChromium {
