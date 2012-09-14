@@ -4,12 +4,11 @@
 
 #include "chrome/browser/extensions/system/system_api.h"
 
-#include "base/json/json_writer.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/event_router.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/event_router_forwarder.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
 
 #if defined(OS_CHROMEOS)
@@ -48,23 +47,14 @@ const char kOnVolumeChanged[] = "systemPrivate.onVolumeChanged";
 const char kOnScreenUnlocked[] = "systemPrivate.onScreenUnlocked";
 const char kOnWokeUp[] = "systemPrivate.onWokeUp";
 
-// Dispatches an extension event with |args|
+// Dispatches an extension event with |argument|
 void DispatchEvent(const std::string& event_name, base::Value* argument) {
-  Profile* profile = ProfileManager::GetDefaultProfile();
-  if (!profile)
-    return;
-  extensions::EventRouter* extension_event_router =
-      profile->GetExtensionEventRouter();
-  if (!extension_event_router)
-    return;
-
   scoped_ptr<base::ListValue> list_args(new base::ListValue());
   if (argument) {
     list_args->Append(argument);
   }
-  extension_event_router->DispatchEventToRenderers(
-      event_name, list_args.Pass(), NULL, GURL(),
-      extensions::EventFilteringInfo());
+  g_browser_process->extension_event_router_forwarder()->
+      BroadcastEventToRenderers(event_name, list_args.Pass(), GURL());
 }
 
 }  // namespace
