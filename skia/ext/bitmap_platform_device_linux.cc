@@ -83,6 +83,10 @@ void BitmapPlatformDevice::BitmapPlatformDeviceData::LoadConfig() {
 BitmapPlatformDevice* BitmapPlatformDevice::Create(int width, int height,
                                                    bool is_opaque,
                                                    cairo_surface_t* surface) {
+  if (cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS) {
+    cairo_surface_destroy(surface);
+    return NULL;
+  }
   SkBitmap bitmap;
   bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height,
                    cairo_image_surface_get_stride(surface));
@@ -99,10 +103,6 @@ BitmapPlatformDevice* BitmapPlatformDevice::Create(int width, int height,
   // This initializes the bitmap to all zeros.
   cairo_surface_t* surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
                                                         width, height);
-  if (cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS) {
-    cairo_surface_destroy(surface);
-    return NULL;
-  }
 
   BitmapPlatformDevice* device = Create(width, height, is_opaque, surface);
 
