@@ -44,7 +44,11 @@ void LaunchBrowserProcessWithSwitch(const std::string& switch_string) {
   base::LaunchProcess(cmd_line, base::LaunchOptions(), &pid);
   base::EnsureProcessGetsReaped(pid);
 #else
-  base::LaunchProcess(cmd_line, base::LaunchOptions(), NULL);
+  base::LaunchOptions launch_options;
+#if defined(OS_WIN)
+  launch_options.force_breakaway_from_job_ = true;
+#endif  // OS_WIN
+  base::LaunchProcess(cmd_line, launch_options, NULL);
 #endif
 }
 
