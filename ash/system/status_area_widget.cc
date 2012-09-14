@@ -303,8 +303,7 @@ StatusAreaWidget::StatusAreaWidget()
     : status_area_widget_delegate_(new internal::StatusAreaWidgetDelegate),
       system_tray_(NULL),
       web_notification_tray_(NULL),
-      login_status_(user::LOGGED_IN_NONE),
-      should_show_launcher_(false) {
+      login_status_(user::LOGGED_IN_NONE) {
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.delegate = status_area_widget_delegate_;
@@ -341,6 +340,22 @@ void StatusAreaWidget::Shutdown() {
   delete system_tray_;
   web_notification_tray_ = NULL;
   delete web_notification_tray_;
+}
+
+bool StatusAreaWidget::ShouldShowLauncher() const {
+  if ((system_tray_ && system_tray_->HasSystemBubble()) ||
+      (web_notification_tray_ &&
+       web_notification_tray_->IsMessageCenterBubbleVisible()))
+    return true;
+
+  if (!Shell::GetInstance()->shelf()->IsVisible())
+    return false;
+
+  // If the launcher is currently visible, don't hide the launcher if the mouse
+  // is in any of the notification bubbles.
+  return (system_tray_ && system_tray_->IsMouseInNotificationBubble()) ||
+        (web_notification_tray_ &&
+         web_notification_tray_->IsMouseInNotificationBubble());
 }
 
 void StatusAreaWidget::AddSystemTray(ShellDelegate* shell_delegate) {
@@ -401,28 +416,6 @@ void StatusAreaWidget::UpdateAfterLoginStatusChange(
     system_tray_->UpdateAfterLoginStatusChange(login_status);
   if (web_notification_tray_)
     web_notification_tray_->UpdateAfterLoginStatusChange(login_status);
-}
-
-void StatusAreaWidget::UpdateShouldShowLauncher() {
-  // If any bubble is visible, we should show the launcher.
-  bool should_show_launcher =
-      (system_tray_ && system_tray_->HasSystemBubble()) ||
-      (web_notification_tray_ &&
-       web_notification_tray_->IsMessageCenterBubbleVisible());
-  if (!should_show_launcher && Shell::GetInstance()->shelf()->IsVisible()) {
-    // If the launcher is currently visible, don't hide the launcher if
-    // the mouse is in this widget or in any notification bubbles.
-    should_show_launcher =
-        (GetWindowBoundsInScreen().Contains(
-            gfx::Screen::GetCursorScreenPoint())) ||
-        (system_tray_ && system_tray_->IsMouseInNotificationBubble()) ||
-        (web_notification_tray_ &&
-         web_notification_tray_->IsMouseInNotificationBubble());
-  }
-  if (should_show_launcher != should_show_launcher_) {
-    should_show_launcher_ = should_show_launcher;
-    Shell::GetInstance()->shelf()->UpdateAutoHideState();
-  }
 }
 
 }  // namespace internal

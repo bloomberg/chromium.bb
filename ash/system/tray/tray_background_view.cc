@@ -190,13 +190,11 @@ void TrayBackgroundView::Initialize() {
 void TrayBackgroundView::OnMouseEntered(const ui::MouseEvent& event) {
   hover_background_animator_.SetPaintsBackground(true,
       internal::BackgroundAnimator::CHANGE_ANIMATE);
-  UpdateShouldShowLauncher();
 }
 
 void TrayBackgroundView::OnMouseExited(const ui::MouseEvent& event) {
   hover_background_animator_.SetPaintsBackground(false,
       internal::BackgroundAnimator::CHANGE_ANIMATE);
-  UpdateShouldShowLauncher();
 }
 
 void TrayBackgroundView::ChildPreferredSizeChanged(views::View* child) {
@@ -277,10 +275,6 @@ void TrayBackgroundView::SetBorder() {
         on_edge ? kPaddingFromBottomOfScreenVerticalAlignment : 0,
         kPaddingFromOuterEdgeOfLauncherVerticalAlignment));
   }
-}
-
-void TrayBackgroundView::UpdateShouldShowLauncher() {
-  status_area_widget()->UpdateShouldShowLauncher();
 }
 
 }  // namespace internal

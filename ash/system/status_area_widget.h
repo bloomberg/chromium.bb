@@ -56,11 +56,6 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget {
   // notification tray.
   void UpdateAfterLoginStatusChange(user::LoginStatus login_status);
 
-  // Called whenever the launcher auto-hide behavior may need updating.
-  // This sets should_show_launcher_ and calls
-  // ShelfLayoutManager::UpdateAutoHideState() if the state has changed.
-  void UpdateShouldShowLauncher();
-
   internal::StatusAreaWidgetDelegate* status_area_widget_delegate() {
     return status_area_widget_delegate_;
   }
@@ -74,7 +69,10 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget {
 
   user::LoginStatus login_status() const { return login_status_; }
 
-  bool should_show_launcher() const { return should_show_launcher_; }
+  // Returns true if the launcher should be visible. This is used when the
+  // launcher is configured to auto-hide and test if the shelf should force
+  // the launcher to remain visible.
+  bool ShouldShowLauncher() const;
 
  private:
   void AddSystemTray(ShellDelegate* shell_delegate);
@@ -86,7 +84,6 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget {
   SystemTray* system_tray_;
   WebNotificationTray* web_notification_tray_;
   user::LoginStatus login_status_;
-  bool should_show_launcher_;
 
   DISALLOW_COPY_AND_ASSIGN(StatusAreaWidget);
 };

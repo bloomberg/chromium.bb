@@ -319,12 +319,10 @@ void SystemTrayBubble::BubbleViewDestroyed() {
 
 void SystemTrayBubble::OnMouseEnteredView() {
   StopAutoCloseTimer();
-  tray_->UpdateShouldShowLauncher();
 }
 
 void SystemTrayBubble::OnMouseExitedView() {
   RestartAutoCloseTimer();
-  tray_->UpdateShouldShowLauncher();
 }
 
 void SystemTrayBubble::OnClickedOutsideView() {

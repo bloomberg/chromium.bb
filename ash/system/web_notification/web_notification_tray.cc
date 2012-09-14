@@ -4,10 +4,12 @@
 
 #include "ash/system/web_notification/web_notification_tray.h"
 
+#include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/tray_bubble_view.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_views.h"
+#include "ash/wm/shelf_layout_manager.h"
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/stringprintf.h"
@@ -907,11 +909,9 @@ class WebNotificationTray::Bubble : public TrayBubbleView::Host,
   }
 
   virtual void OnMouseEnteredView() OVERRIDE {
-    tray_->UpdateShouldShowLauncher();
   }
 
   virtual void OnMouseExitedView() OVERRIDE {
-    tray_->UpdateShouldShowLauncher();
   }
 
   virtual void OnClickedOutsideView() OVERRIDE {
@@ -1157,7 +1157,7 @@ void WebNotificationTray::ShowMessageCenterBubble() {
   HidePopupBubble();
   message_center_bubble_.reset(new MessageCenterBubble(this));
   status_area_widget()->SetHideSystemNotifications(true);
-  UpdateShouldShowLauncher();
+  Shell::GetInstance()->shelf()->UpdateAutoHideState();
 }
 
 void WebNotificationTray::HideMessageCenterBubble() {
@@ -1168,7 +1168,7 @@ void WebNotificationTray::HideMessageCenterBubble() {
   notification_list_->SetMessageCenterVisible(false);
   UpdateTray();
   status_area_widget()->SetHideSystemNotifications(false);
-  UpdateShouldShowLauncher();
+  Shell::GetInstance()->shelf()->UpdateAutoHideState();
 }
 
 void WebNotificationTray::SetHidePopupBubble(bool hide) {

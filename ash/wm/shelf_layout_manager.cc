@@ -820,7 +820,7 @@ ShelfLayoutManager::AutoHideState ShelfLayoutManager::CalculateAutoHideState(
     return AUTO_HIDE_SHOWN;
 
   if (shell->status_area_widget() &&
-      shell->status_area_widget()->should_show_launcher())
+      shell->status_area_widget()->ShouldShowLauncher())
     return AUTO_HIDE_SHOWN;
 
   if (launcher_ && launcher_->IsShowingMenu())

@@ -31,6 +31,7 @@
 #include "ash/system/tray_update.h"
 #include "ash/system/user/login_status.h"
 #include "ash/system/user/tray_user.h"
+#include "ash/wm/shelf_layout_manager.h"
 #include "base/logging.h"
 #include "base/timer.h"
 #include "base/utf_string_conversions.h"
@@ -268,7 +269,7 @@ void SystemTray::RemoveBubble(SystemTrayBubble* bubble) {
   if (bubble == bubble_.get()) {
     DestroyBubble();
     UpdateNotificationBubble();  // State changed, re-create notifications.
-    UpdateShouldShowLauncher();
+    Shell::GetInstance()->shelf()->UpdateAutoHideState();
   } else if (bubble == notification_bubble_) {
     notification_bubble_.reset();
     status_area_widget()->SetHideWebNotifications(false);
@@ -335,11 +336,6 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
       init_params.arrow_color = kBackgroundColor;
     }
     init_params.arrow_offset = arrow_offset;
-    // |bubble_->InitView()| shows and activates the status tray popup, which
-    // can trigger the shelf to hide (if auto-hide is turned on). So it is
-    // necessary to update the desired launcher visibility before showing the
-    // status bubble.
-    UpdateShouldShowLauncher();
     bubble_->InitView(anchor, init_params, delegate->GetUserLoginStatus());
   }
   // Save height of default view for creating detailed views directly.
@@ -353,7 +349,7 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
 
   UpdateNotificationBubble();  // State changed, re-create notifications.
   status_area_widget()->SetHideWebNotifications(true);
-  UpdateShouldShowLauncher();
+  Shell::GetInstance()->shelf()->UpdateAutoHideState();
 }
 
 void SystemTray::UpdateNotificationBubble() {

@@ -96,9 +96,6 @@ class ASH_EXPORT TrayBackgroundView : public internal::ActionableView,
       bool value,
       internal::BackgroundAnimator::ChangeType change_type);
 
-  // Convenience function to call same function in status_area_widget_.
-  void UpdateShouldShowLauncher();
-
   StatusAreaWidget* status_area_widget() {
     return status_area_widget_;
   }
