@@ -11441,10 +11441,10 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Downloading
       </message>
       <message name="IDS_WALLPAPER_MANAGER_SHOW_CUSTOM_WALLPAPER_ON_START_WARNING" desc="The string displayed to user when set custom wallpaper">
-        Your wallpaper will be shown on the login screens and your desktop background.
+        Your wallpaper will be shown on the login screens and your background.
       </message>
       <message name="IDS_WALLPAPER_MANAGER_NOT_SHOW_CUSTOM_WALLPAPER_ON_START_WARNING" desc="The string displayed to user when set custom wallpaper">
-        Your wallpaper will be displayed on your desktop background only.
+        Your wallpaper will be displayed on your background only.
       </message>
 
 
