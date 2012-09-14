@@ -91,6 +91,7 @@ void ScreenPositionController::SetBounds(aura::Window* window,
     aura::RootWindow* dst_root =
         Shell::GetInstance()->display_controller()->GetRootWindowForDisplayId(
             display.id());
+    DCHECK(dst_root);
     aura::Window* dst_container = NULL;
     if (dst_root != window->GetRootWindow()) {
       int container_id = window->parent()->id();
