@@ -261,28 +261,6 @@ static const char* RegisterName(const nacl_arm_dec::Register& r) {
   return (n < NACL_ARRAY_SIZE(Name)) ? Name[n] : "r?";
 }
 
-// Returns a printable name for each possible condition.
-static const char* ConditionName(nacl_arm_dec::Instruction::Condition c) {
-  static const char* Name[nacl_arm_dec::Instruction::ConditionSize] = {
-    "eq",
-    "ne",
-    "cs",
-    "cc",
-    "mi",
-    "pl",
-    "vs",
-    "vc",
-    "hi",
-    "ls",
-    "ge",
-    "lt",
-    "gt",
-    "le",
-    "al"
-  };
-  return Name[c];
-}
-
 // Advances the buffer count positions, to a maximum of buffer_size
 // elements.  Updates both buffer and buffer_size to point the the new
 // end of buffer.
@@ -358,8 +336,10 @@ static void RenderInstCondPair(nacl_arm_dec::Instruction first_inst,
     RenderAdvance(
         SNPRINTF(*buffer, *buffer_size,
                  " (%s, %s)",
-                 ConditionName(first_inst.GetCondition()),
-                 ConditionName(second_inst.GetCondition())),
+                 nacl_arm_dec::Instruction::ToString(
+                     first_inst.GetCondition()),
+                 nacl_arm_dec::Instruction::ToString(
+                     second_inst.GetCondition())),
         buffer, buffer_size);
   }
 }

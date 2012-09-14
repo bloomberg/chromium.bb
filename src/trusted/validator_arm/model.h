@@ -34,6 +34,7 @@
 
 #include <stdint.h>
 #include <cstddef>
+#include <string>
 #include "native_client/src/include/portability_bits.h"
 
 namespace nacl_arm_dec {
@@ -342,7 +343,13 @@ class Instruction {
   // Defines the size of enumerated type Condition, minus
   // UNCONDITIONAL (assuming one uses GetCondition() to get the
   // condition of an instruction).
-  static const size_t ConditionSize = 15;
+  static const size_t kConditionSize = 15;
+
+  static const char* ToString(Condition cond);
+
+  static Condition Next(Condition cond) {
+    return static_cast<Condition>(static_cast<int>(cond) + 1);
+  }
 
   // Extracts the condition field.  UNCONDITIONAL is converted to AL -- in the
   // event that you need to distinguish, (1) make sure that's really true and

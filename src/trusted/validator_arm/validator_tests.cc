@@ -27,9 +27,9 @@
  * 32-bit integers so the hex encoding matches the docs.
  */
 
-#include <vector>
 #include <string>
 #include <sstream>
+#include <vector>
 
 #include "gtest/gtest.h"
 #include "native_client/src/include/nacl_macros.h"
@@ -310,14 +310,19 @@ class ValidatorTests : public ::testing::Test {
                             uint32_t base_addr,
                             const string &msg);
 
-  SfiValidator _validator;
-
- private:
   // Returns the given instruction, after modifying the instruction condition
   // to the given value.
-  arm_inst ChangeCond(arm_inst inst, Instruction::Condition c) {
+  static arm_inst ChangeCond(arm_inst inst, Instruction::Condition c) {
     return (inst & 0x0fffffff) | (static_cast<arm_inst>(c) << 28);
   }
+
+  // Returns the given instruction, after modifying its S bit (bit 20) to
+  // the given value.
+  static arm_inst SetSBit(arm_inst inst, bool s) {
+    return (inst & 0xffefffff) | (static_cast<arm_inst>(s) << 20);
+  }
+
+  SfiValidator _validator;
 };
 
 
@@ -853,60 +858,113 @@ TEST_F(ValidatorTests, BfcLdrInstMaskWrongPlaceTest) {
                          "Bfc Ldr instruction mask wrong place test");
 }
 
-TEST_F(ValidatorTests, BfcLdrexMaskOkTestDoesPrecede) {
-  // Run test where Bfc is unconditional, and followed by ldrex.
-  // Note: Implicitly tests provably_precedes.
-  static const arm_inst bfc_inst[] = {
-    0xe7df2f1f,  // bfc r2, #30, #2
-    0x01920f9f,  // ldrexeq r0, [r2]
+struct AlwaysDominatesTestInfo {
+  arm_inst inst[2];
+  const char* name[2];
+  bool first_inst_can_set_flags;
+};
+TEST_F(ValidatorTests, AlwaysDominatesTest) {
+  // Test always_dominates, with all conditional combinations of:
+  AlwaysDominatesTestInfo test[2] = {
+    { {
+        // BFC followed by a load/store.
+        0xe7df2f1f,  // bfcCC r2, #30, #2
+        0xe1920f9f,  // ldrexCC r0, [r2]
+      }, { "bfc", "ldrex" }, false },
+    { {
+        // BIC (potentially setting flags) followed by a branch.
+        0xe3cee2fe,  // bic[s]CC lr, lr, #-536870897     ; 0xe000000f
+        0xe12fff1e,  // bxCC lr
+      }, { "bic", "bx" }, true },
   };
-  validation_should_pass(bfc_inst,
-                         NACL_ARRAY_SIZE(bfc_inst),
-                         kDefaultBaseAddr,
-                         "Bfc Ldreq instruction mask ok, "
-                         "tests provably_precedes succeeds");
-}
 
-TEST_F(ValidatorTests, BfcLdrexeqMaskOkTestDoesntPrecede) {
-  // Run test where Bfc, and followed by ldrexeq.
-  // Note: Implicitly tests provably_precedes.
-  static const arm_inst bfc_inst[] = {
-    0x07df2f1f,  // bfceq r2, #30, #2
-    0xe1920f9f,  // ldrex r0, [r2]
-  };
-  validation_should_fail(bfc_inst,
-                         NACL_ARRAY_SIZE(bfc_inst),
-                         kDefaultBaseAddr,
-                         "Bfc Ldrexeq instruction mask ok, "
-                         "tests provably_precedes fails");
-}
+  for (AlwaysDominatesTestInfo* t = &test[0];
+       t != &test[NACL_ARRAY_SIZE(test)];
+       ++t) {
+    for (int s = 0; s < (t->first_inst_can_set_flags ? 2 : 1); ++s) {
+      if (t->first_inst_can_set_flags) {
+        t->inst[0] = SetSBit(t->inst[0], s);
+      }
 
-TEST_F(ValidatorTests, BicMaskTestDoesPrecede) {
-  // Test bic followed by bxeq.
-  // Note: Implicitly tests provably_precedes.
-  static const arm_inst inst[] = {
-    0xe3cee2fe,  // bic lr, lr, #-536870897     ; 0xe000000f
-    0x012fff1e,  // bxeq lr
-  };
-  validation_should_pass(inst,
-                         NACL_ARRAY_SIZE(inst),
-                         kDefaultBaseAddr,
-                         "Bic mask label, then bxeq jump, "
-                         "tests provably_precedes succeeds");
-}
+      Instruction::Condition cond[2];
+      for (cond[0] = Instruction::EQ;
+           cond[0] <= Instruction::AL;
+           cond[0] = Instruction::Next(cond[0])) {
+        for (cond[1] = Instruction::EQ;
+             cond[1] <= Instruction::AL;
+             cond[1] = Instruction::Next(cond[1])) {
+          t->inst[0] = ChangeCond(t->inst[0], cond[0]);
+          t->inst[1] = ChangeCond(t->inst[1], cond[1]);
 
-TEST_F(ValidatorTests, BicMaskTestDoesntPrecede) {
-  // Test biceq followed by bx.
-  // Note: Implicitly tests provably_precedes.
-  static const arm_inst inst[] = {
-    0x03cee2fe,  // biceq lr, lr, #-536870897   ; 0xe000000f
-    0xe12fff1e,  // bx lr
-  };
-  validation_should_fail(inst,
-                         NACL_ARRAY_SIZE(inst),
-                         kDefaultBaseAddr,
-                         "Biceq mask label, then bx jump, "
-                         "tests provably_precedes fails");
+          std::string name0(std::string(t->name[0]) + (s ? "s" : "") +
+                            Instruction::ToString(cond[0]));
+          std::string name1(std::string(t->name[1]) +
+                            Instruction::ToString(cond[1]));
+          ostringstream message;
+          message << name0 <<
+              " (0x" << std::hex << std::setfill('0') << std::setw(8) <<
+              static_cast<uint32_t>(t->inst[0]) <<
+              std::resetiosflags(std::ios_base::showbase) << ") "
+              "with a correct mask, followed by " << name1 <<
+              " (0x" << std::hex << std::setfill('0') << std::setw(8) <<
+              static_cast<uint32_t>(t->inst[1]) <<
+              std::resetiosflags(std::ios_base::showbase) << "): ";
+
+          if (s) {
+            validation_should_fail(t->inst, NACL_ARRAY_SIZE(t->inst),
+                                   kDefaultBaseAddr,
+                                   message.str() + name0 + " sets flags "
+                                   "when it's only supposed to enforce SFI on "
+                                   "the subsequent " + name1 + ", we "
+                                   "could allow this but it makes the "
+                                   "validator's code more complex and it's "
+                                   "harder to reason about back-to-back "
+                                   "conditional instructions with "
+                                   "intervening flag setting (especially with "
+                                   "ARM's partial NZCV flag setting).");
+          } else if (cond[0] == Instruction::AL) {
+            validation_should_pass(t->inst, NACL_ARRAY_SIZE(t->inst),
+                                   kDefaultBaseAddr,
+                                   message.str() + "an unconditional " +
+                                   name0 + " always dominates the "
+                                   "subsequent " + name1 +
+                                   " instruction.");
+          } else if (cond[1] == Instruction::AL) {
+            EXPECT_NE(cond[0], Instruction::AL);
+            validation_should_fail(t->inst, NACL_ARRAY_SIZE(t->inst),
+                                   kDefaultBaseAddr,
+                                   message.str() + name0 + " is "
+                                   "conditional, but the subsequent " +
+                                   name1 + " isn't.");
+          } else if ((cond[1] == cond[0]) ||
+                   (cond[1] == Instruction::EQ && cond[0] == Instruction::LS) ||
+                   (cond[1] == Instruction::CC && cond[0] == Instruction::LS) ||
+                   (cond[1] == Instruction::HI && cond[0] == Instruction::NE) ||
+                   (cond[1] == Instruction::HI && cond[0] == Instruction::CS) ||
+                   (cond[1] == Instruction::GT && cond[0] == Instruction::NE) ||
+                   (cond[1] == Instruction::GT && cond[0] == Instruction::GE) ||
+                   (cond[1] == Instruction::LE && cond[0] == Instruction::EQ) ||
+                   (cond[1] == Instruction::LE && cond[0] == Instruction::LS) ||
+                   (cond[1] == Instruction::LE && cond[0] == Instruction::LT)) {
+            validation_should_pass(t->inst, NACL_ARRAY_SIZE(t->inst),
+                                   kDefaultBaseAddr,
+                                   message.str() + name1 + "'s "
+                                   "condition being true necessarily implies "
+                                   "that " + name0 + "'s condition was "
+                                   "also true.");
+          } else {
+            validation_should_fail(t->inst, NACL_ARRAY_SIZE(t->inst),
+                                   kDefaultBaseAddr,
+                                   message.str() + name1 + "'s condition "
+                                   "being true doesn't necessarily imply "
+                                   "that " + name0 + "'s condition was "
+                                   "also true, err on the side of caution and "
+                                   "disallow.");
+          }
+        }
+      }
+    }
+  }
 }
 
 // TODO(karl): Add pattern rules and test cases for using bfc to update SP.
@@ -925,33 +983,39 @@ TEST_F(ValidatorTests, AddConstToSpTest) {
 }
 
 TEST_F(ValidatorTests, AddConstToSpBicTestDoesFollows) {
-  // Run test where we add a constant to a stack pointer, followed
-  // by a maks.
-  // Note: Implicitly tests provably_follows.
-  static const arm_inst sp_inst[] = {
-    0x028dd00c,  // addeq sp, sp, #12
-    0xe3cdd2ff,  // bic sp, sp, #-268435441     ; 0xf000000f
-  };
-  validation_should_pass(sp_inst,
-                         NACL_ARRAY_SIZE(sp_inst),
-                         kDefaultBaseAddr,
-                         "Add constant (12) to sp, then mask with bic, "
-                         "tests provably_follows succeeds");
+  // Run test where we conditionally add a constant to a stack pointer,
+  // followed by a mask.
+  // Note: Implicitly tests always_postdominates.
+  for (int cond = Instruction::EQ; cond < Instruction::AL; ++cond) {
+    arm_inst inst[] = {
+      0x028dd00c,  // addeq sp, sp, #12
+      0xe3cdd2ff,  // bic sp, sp, #-268435441     ; 0xf000000f
+    };
+    inst[0] = ChangeCond(inst[0], static_cast<Instruction::Condition>(cond));
+    validation_should_pass(inst,
+                           NACL_ARRAY_SIZE(inst),
+                           kDefaultBaseAddr,
+                           "Add constant (12) to sp, then mask with bic, "
+                           "tests always_postdominates succeeds");
+  }
 }
 
 TEST_F(ValidatorTests, AddConstToSpBicTestDoesntFollows) {
   // Run test where we add a constant to a stack pointer, followed
-  // by a maks.
-  // Note: Implicitly tests provably_follows.
-  static const arm_inst sp_inst[] = {
-    0xe28dd00c,  // add sp, sp, #12
-    0x03cdd2ff,  // biceq sp, sp, #-268435441   ; 0xf000000f
-  };
-  validation_should_fail(sp_inst,
-                         NACL_ARRAY_SIZE(sp_inst),
-                         kDefaultBaseAddr,
-                         "Add constant (12) to sp, then mask with bic, "
-                         "tests provably_follows fails");
+  // by a conditional mask.
+  // Note: Implicitly tests always_postdominates.
+  for (int cond = Instruction::EQ; cond < Instruction::AL; ++cond) {
+    arm_inst inst[] = {
+      0xe28dd00c,  // add sp, sp, #12
+      0x03cdd2ff,  // biceq sp, sp, #-268435441   ; 0xf000000f
+    };
+    inst[1] = ChangeCond(inst[1], static_cast<Instruction::Condition>(cond));
+    validation_should_fail(inst,
+                           NACL_ARRAY_SIZE(inst),
+                           kDefaultBaseAddr,
+                           "Add constant (12) to sp, then mask with bic, "
+                           "tests always_postdominates fails");
+  }
 }
 
 TEST_F(ValidatorTests, CheckVectorLoadPcRelative) {

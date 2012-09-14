@@ -118,9 +118,13 @@ class SfiValidator {
   // Note: The order the instructions execute is not important in
   // this array. The context defines which instruction, of the
   // instruction pair being compared, appears first.
+  //
+  // Note: The decoder should prevent UNCONDITIONAL (0b1111) from ever
+  // occurring, but we include entries for it out of paranoia, which also
+  // happens to make the table 16x16, which is easier to index into.
   static const bool
-  condition_implies[nacl_arm_dec::Instruction::ConditionSize]
-                   [nacl_arm_dec::Instruction::ConditionSize];
+  condition_implies[nacl_arm_dec::Instruction::kConditionSize + 1]
+                   [nacl_arm_dec::Instruction::kConditionSize + 1];
 
   // Checks whether the given Register always holds a valid data region address.
   // This implies that the register is safe to use in unguarded stores.
@@ -223,13 +227,15 @@ class DecodedInstruction {
   // We permit the default copy ctor and assignment operator.
   uint32_t addr() const { return vaddr_; }
 
-  // Checks that 'this' precedes 'other' -- meaning that if 'other'
-  // executes, we can guarantee that 'this' is executed as well (where
-  // other immediately follows this).  This is important if 'this'
-  // produces a sandboxed value that 'other' must consume.
+  // 'this' dominates 'other', where 'this' is the instruction
+  // immediately preceding 'other': if 'other' executes, we can guarantee
+  // that 'this' was executed as well.
+
+  // This is important if 'this' produces a sandboxed value that 'other'
+  // must consume.
   //
   // Note: This function is conservative in that if it isn't sure
-  // whether this instruction changes the condition, it assumes that
+  // whether 'this' instruction changes the condition, it assumes that
   // it does. Similarly, if the conditions of the two instructions do
   // not statically infer that the conditional execution is correct,
   // we assume that it is not.
@@ -237,20 +243,23 @@ class DecodedInstruction {
   // Note that this function can't see the bundle size, so this result
   // does not take it into account.  The SfiValidator reasons on this
   // separately.
-  bool provably_precedes(const DecodedInstruction& other) const {
+  bool always_dominates(const DecodedInstruction& other) const {
+    nacl_arm_dec::Instruction::Condition cond1 = inst_.GetCondition();
+    nacl_arm_dec::Instruction::Condition cond2 = other.inst_.GetCondition();
     return !defines(nacl_arm_dec::kConditions) &&
-        SfiValidator::condition_implies
-        [other.inst_.GetCondition()][inst_.GetCondition()];
+         !defines(nacl_arm_dec::kCondsDontCareFlag) &&
+         SfiValidator::condition_implies[cond2][cond1];
   }
 
-  // Checks that 'this' follows 'other' -- meaning that if 'other'
-  // executes, we can guarantee that 'this' is executed as well (where
-  // this immediately follows other). This is important if 'other'
-  // produces an unsafe value that 'this' fixes before it can leak
-  // out.
+  // 'this' post-dominates 'other', where 'other' is the instruction
+  // immediately preceding 'this': if 'other' executes, we can guarantee
+  // that 'this' is executed as well.
+  //
+  // This is important if 'other' produces an unsafe value that 'this'
+  // fixes before it can leak out.
   //
   // Note: This function is conservative in that if it isn't sure
-  // whether the other instruction changes the condition, it assumes
+  // whether the 'other' instruction changes the condition, it assumes
   // that it does. Similarly, if the conditions of the two
   // instructions do not statically infer that the conditional
   // execution is correct, we assume that it is not.
@@ -258,10 +267,12 @@ class DecodedInstruction {
   // Note that this function can't see the bundle size, so this result
   // does not take it into account.  The SfiValidator reasons on this
   // separately.
-  bool provably_follows(const DecodedInstruction& other) const {
+  bool always_postdominates(const DecodedInstruction& other) const {
+    nacl_arm_dec::Instruction::Condition cond1 = other.inst_.GetCondition();
+    nacl_arm_dec::Instruction::Condition cond2 = inst_.GetCondition();
     return !other.defines(nacl_arm_dec::kConditions) &&
-        SfiValidator::condition_implies
-        [other.inst_.GetCondition()][inst_.GetCondition()];
+         !other.defines(nacl_arm_dec::kCondsDontCareFlag) &&
+         SfiValidator::condition_implies[cond1][cond2];
   }
 
   // Checks that the execution of 'this' is conditional on the test result
@@ -583,6 +594,6 @@ class ProblemSink {
   NACL_DISALLOW_COPY_AND_ASSIGN(ProblemSink);
 };
 
-}  // namespace
+}  // namespace nacl_arm_val
 
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_ARM_V2_VALIDATOR_H

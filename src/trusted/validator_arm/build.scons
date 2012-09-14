@@ -162,6 +162,7 @@ env.ComponentLibrary('arm_validator_core',
                       'actual_classes.cc',
                       'baseline_classes.cc',
                       'inst_classes.cc',
+                      'model.cc',
                       'validator.cc',
                       'gen/arm32_decode.cc'])
 
@@ -176,8 +177,8 @@ env.ComponentLibrary('arm_validator_reporters',
 ncval = env.ComponentProgram(
     'arm-ncval-core',
     ['ncval.cc'],
-    LIBS=['arm_validator_core',
-          'arm_validator_reporters',
+    LIBS=['arm_validator_reporters',
+          'arm_validator_core',
           env.NaClTargetArchSuffix('ncfileutils'),
           '${OPTIONAL_COVERAGE_LIBS}'])
 

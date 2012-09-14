@@ -265,7 +265,7 @@ static void check_loadstore_mask(
 
   if (first.defines(second.base_address_register())
       && first.clears_bits(sfi.data_address_mask())
-      && first.provably_precedes(second)) {
+      && first.always_dominates(second)) {
     match_data->match_ = PATTERN_SAFE;
     return;
   }
@@ -326,7 +326,7 @@ static void check_branch_mask(
 
   if (first.defines(second.branch_target_register())
       && first.clears_bits(sfi.code_address_mask())
-      && first.provably_precedes(second)) {
+      && first.always_dominates(second)) {
     match_data->match_ = PATTERN_SAFE;
     return;
   }
@@ -383,7 +383,7 @@ static void check_data_register_update(
 
   if (second.defines_all(data_addr_defs)
       && second.clears_bits(sfi.data_address_mask())
-      && second.provably_follows(first)) {
+      && second.always_postdominates(first)) {
     match_data->match_ = PATTERN_SAFE;
     return;
   }
@@ -469,118 +469,34 @@ static PatternMatch check_pc_writes(const SfiValidator& sfi,
 //    Z - Zero condition code flag.
 //    C - Carry condition code flag.
 //    V - Overflow condition code flag.
-// where:
-//    EQ => Z==1
-//    NE => Z==0
-//    CS => C==1
-//    CC => C==0
-//    MI => N==1
-//    PL => N==0
-//    VS => V==1
-//    VC => V==0
-//    HI => C==1 & Z==0
-//    LS => C==0 | Z==1
-//    GE => N==V
-//    LT => N!=V
-//    GT => Z==0 & N==V
-//    LE => Z==1 & N!=V
-//    AL => Any
 const bool SfiValidator::
-condition_implies[nacl_arm_dec::Instruction::ConditionSize]
-                 [nacl_arm_dec::Instruction::ConditionSize] = {
-  {
-    // EQ => Z==1
-    // EQ,   NE,    CS,    CC,    MI,    PL,    VS,    VC,
-    true, false, false, false, false, false, false, false,
-    // HI,   LS,    GE,    LT,    GT,    LE,   AL
-    false, true, false, false, false, false, true,
-  }, {
-    // NE => Z==0
-    // EQ,   NE,    CS,    CC,    MI,    PL,    VS,    VC,
-    false, true, false, false, false, false, false, false,
-    // HI,    LS,    GE,    LT,    GT,    LE,   AL
-    false, false, false, false, false, false, true,
-  }, {
-    // CS => C==1
-    // EQ,    NE,   CS,    CC,    MI,    PL,    VS,    VC,
-    false, false, true, false, false, false, false, false,
-    // HI,    LS,    GE,    LT,    GT,    LE,   AL
-    false, false, false, false, false, false, true,
-  }, {
-    // CC => C==0
-    // EQ,    NE,    CS,   CC,    MI,    PL,    VS,    VC,
-    false, false, false, true, false, false, false, false,
-    // HI,   LS,    GE,    LT,    GT,    LE,   AL
-    false, true, false, false, false, false, true,
-  }, {
-    // MI => N==1
-    // EQ,    NE,    CS,    CC,   MI,    PL,    VS,    VC,
-    false, false, false, false, true, false, false, false,
-    // HI,   LS,    GE,    LT,    GT,    LE,    AL
-    false, false, false, false, false, false, true,
-  }, {
-    // PL => N==0
-    // EQ,    NE,    CS,    CC,   MI,    PL,    VS,    VC,
-    false, false, false, false, false, true, false, false,
-    // HI,   LS,    GE,    LT,    GT,    LE,    AL
-    false, false, false, false, false, false, true,
-  }, {
-    // VS => V==1
-    // EQ,    NE,    CS,    CC,   MI,     PL,   VS,    VC,
-    false, false, false, false, false, false, true, false,
-    // HI,   LS,    GE,    LT,    GT,    LE,    AL
-    false, false, false, false, false, false, true,
-  }, {
-    // VC => V==0
-    // EQ,    NE,    CS,    CC,    MI,    PL,    VS,   VC,
-    false, false, false, false, false, false, false, true,
-    // HI,   LS,    GE,    LT,    GT,    LE,    AL
-    false, false, false, false, false, false, true,
-  }, {
-    // HI => C==1 & Z==0
-    // EQ,    NE,    CS,    CC,    MI,    PL,    VS,    VC,
-    false, false, false, false, false, false, false, false,
-    // HI,  LS,    GE,    LT,    GT,    LE,    AL
-    true, false, false, false, false, false, true,
-  }, {
-    // LS => C==0 | Z==1
-    // EQ,    NE,    CS,   CC,    MI,    PL,    VS,    VC,
-    false, false, false, false, false, false, false, false,
-    // HI,   LS,    GE,    LT,    GT,    LE,   AL
-    false, true, false, false, false, false, true,
-  }, {
-    // GE => N==V
-    // EQ,    NE,    CS,    CC,    MI,    PL,    VS,    VC,
-    false, false, false, false, false, false, false, false,
-    // HI,   LS,    GE,    LT,    GT,    LE,   AL
-    false, false, true, false, false, false, true,
-  }, {
-    // LT => N!=V
-    // EQ,    NE,    CS,    CC,    MI,    PL,    VS,    VC,
-    false, false, false, false, false, false, false, false,
-    // HI,   LS,     GE,   LT,    GT,    LE,   AL
-    false, false, false, true, false, false, true,
-  }, {
-    // GT => Z==0 & N==V
-    // EQ,   NE,    CS,    CC,    MI,    PL,    VS,    VC,
-    false, true, false, false, false, false, false, false,
-    // HI,    LS,   GE,    LT,   GT,    LE,   AL
-    false, false, true, false, true, false, true,
-  }, {
-    // LE => Z==1 & N!=V
-    // EQ,   NE,    CS,    CC,    MI,    PL,    VS,    VC,
-    true, false, false, false, false, false, false, false,
-    // HI,   LS,    GE,   LT,    GT,   LE,   AL
-    false, true, false, true, false, true, true,
-  }, {
-    // AL => Any
-    // EQ,    NE,    CS,    CC,    MI,    PL,    VS,    VC,
-    false, false, false, false, false, false, false, false,
-    // HI,    LS,    GE,    LT,    GT,    LE,   AL
-    false, false, false, false, false, false, true,
-  },
+condition_implies[nacl_arm_dec::Instruction::kConditionSize + 1]
+                 [nacl_arm_dec::Instruction::kConditionSize + 1] = {
+# if defined(T) || defined(_)
+#   error Macros already defined.
+# endif
+# define T true
+# define _ false
+  //                       EQ NE CS CC MI PL VS VC HI LS GE LT GT LE AL UN
+  /* EQ => Z==1        */ { T, _, _, _, _, _, _, _, _, T, _, _, _, _, T, T },
+  /* NE => Z==0        */ { _, T, _, _, _, _, _, _, _, _, _, _, _, _, T, T },
+  /* CS => C==1        */ { _, _, T, _, _, _, _, _, _, _, _, _, _, _, T, T },
+  /* CC => C==0        */ { _, _, _, T, _, _, _, _, _, T, _, _, _, _, T, T },
+  /* MI => N==1        */ { _, _, _, _, T, _, _, _, _, _, _, _, _, _, T, T },
+  /* PL => N==0        */ { _, _, _, _, _, T, _, _, _, _, _, _, _, _, T, T },
+  /* VS => V==1        */ { _, _, _, _, _, _, T, _, _, _, _, _, _, _, T, T },
+  /* VC => V==0        */ { _, _, _, _, _, _, _, T, _, _, _, _, _, _, T, T },
+  /* HI => C==1 & Z==0 */ { _, T, T, _, _, _, _, _, T, _, _, _, _, _, T, T },
+  /* LS => C==0 | Z==1 */ { _, _, _, _, _, _, _, _, _, T, _, _, _, _, T, T },
+  /* GE => N==V        */ { _, _, _, _, _, _, _, _, _, _, T, _, _, _, T, T },
+  /* LT => N!=V        */ { _, _, _, _, _, _, _, _, _, _, _, T, _, _, T, T },
+  /* GT => Z==0 & N==V */ { _, T, _, _, _, _, _, _, _, _, T, _, T, _, T, T },
+  /* LE => Z==1 & N!=V */ { T, _, _, _, _, _, _, _, _, T, _, T, _, T, T, T },
+  /* AL => Any         */ { _, _, _, _, _, _, _, _, _, _, _, _, _, _, T, T },
+  /* UN => Any         */ { _, _, _, _, _, _, _, _, _, _, _, _, _, _, T, T },
+# undef _
+# undef T
 };
-
 
 SfiValidator::SfiValidator(uint32_t bytes_per_bundle,
                            uint32_t code_region_bytes,
@@ -997,4 +913,4 @@ DecodedInstruction::DecodedInstruction(uint32_t vaddr,
       defs_(decoder.defs(inst_))
 {}
 
-}  // namespace
+}  // namespace nacl_arm_val
