@@ -14,6 +14,10 @@
 #if defined(TOOLKIT_GTK)
 #include <gtk/gtk.h>
 #include "ui/gfx/gtk_util.h"
+#elif defined(OS_IOS)
+#include "base/mac/foundation_util.h"
+#include "base/mac/scoped_cftyperef.h"
+#include "skia/ext/skia_utils_ios.h"
 #elif defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
 #include "skia/ext/skia_utils_mac.h"
@@ -79,7 +83,13 @@ bool IsEmpty(const gfx::Image& image) {
 
 PlatformImage CreatePlatformImage() {
   const SkBitmap bitmap(CreateBitmap(25, 25));
-#if defined(OS_MACOSX)
+#if defined(OS_IOS)
+  base::mac::ScopedCFTypeRef<CGColorSpaceRef> color_space(
+      CGColorSpaceCreateDeviceRGB());
+  UIImage* image = gfx::SkBitmapToUIImageWithColorSpace(bitmap, color_space);
+  base::mac::NSObjectRetain(image);
+  return image;
+#elif defined(OS_MACOSX)
   NSImage* image = gfx::SkBitmapToNSImage(bitmap);
   base::mac::NSObjectRetain(image);
   return image;
@@ -91,7 +101,9 @@ PlatformImage CreatePlatformImage() {
 }
 
 gfx::Image::RepresentationType GetPlatformRepresentationType() {
-#if defined(OS_MACOSX)
+#if defined(OS_IOS)
+  return gfx::Image::kImageRepCocoaTouch;
+#elif defined(OS_MACOSX)
   return gfx::Image::kImageRepCocoa;
 #elif defined(TOOLKIT_GTK)
   return gfx::Image::kImageRepGdk;
@@ -101,7 +113,9 @@ gfx::Image::RepresentationType GetPlatformRepresentationType() {
 }
 
 PlatformImage ToPlatformType(const gfx::Image& image) {
-#if defined(OS_MACOSX)
+#if defined(OS_IOS)
+  return image.ToUIImage();
+#elif defined(OS_MACOSX)
   return image.ToNSImage();
 #elif defined(TOOLKIT_GTK)
   return image.ToGdkPixbuf();
@@ -111,7 +125,9 @@ PlatformImage ToPlatformType(const gfx::Image& image) {
 }
 
 PlatformImage CopyPlatformType(const gfx::Image& image) {
-#if defined(OS_MACOSX)
+#if defined(OS_IOS)
+  return image.CopyUIImage();
+#elif defined(OS_MACOSX)
   return image.CopyNSImage();
 #elif defined(TOOLKIT_GTK)
   return image.CopyGdkPixbuf();

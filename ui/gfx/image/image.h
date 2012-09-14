@@ -52,6 +52,7 @@ class UI_EXPORT Image {
   enum RepresentationType {
     kImageRepGdk,
     kImageRepCocoa,
+    kImageRepCocoaTouch,
     kImageRepCairo,
     kImageRepSkia,
     kImageRepPNG,
@@ -80,6 +81,9 @@ class UI_EXPORT Image {
 #if defined(TOOLKIT_GTK)
   // Does not increase |pixbuf|'s reference count; expects to take ownership.
   explicit Image(GdkPixbuf* pixbuf);
+#elif defined(OS_IOS)
+  // Does not retain |image|; expects to take ownership.
+  explicit Image(UIImage* image);
 #elif defined(OS_MACOSX)
   // Does not retain |image|; expects to take ownership.
   // A single NSImage object can contain multiple bitmaps so there's no reason
@@ -106,6 +110,8 @@ class UI_EXPORT Image {
 #if defined(TOOLKIT_GTK)
   GdkPixbuf* ToGdkPixbuf() const;
   CairoCachedSurface* const ToCairo() const;
+#elif defined(OS_IOS)
+  UIImage* ToUIImage() const;
 #elif defined(OS_MACOSX)
   NSImage* ToNSImage() const;
 #endif
@@ -117,7 +123,7 @@ class UI_EXPORT Image {
   // image is empty.
   ImageSkia AsImageSkia() const;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) && !defined(OS_IOS)
   // Same as ToSkBitmap(), but returns nil if this image is empty.
   NSImage* AsNSImage() const;
 #endif
@@ -133,13 +139,15 @@ class UI_EXPORT Image {
   SkBitmap* CopySkBitmap() const;
 #if defined(TOOLKIT_GTK)
   GdkPixbuf* CopyGdkPixbuf() const;
+#elif defined(OS_IOS)
+  UIImage* CopyUIImage() const;
 #elif defined(OS_MACOSX)
   NSImage* CopyNSImage() const;
 #endif
 
   // DEPRECATED ----------------------------------------------------------------
   // Conversion handlers. These wrap the ToType() variants.
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) && !defined(OS_IOS)
   operator NSImage*() const;
 #endif
   // ---------------------------------------------------------------------------

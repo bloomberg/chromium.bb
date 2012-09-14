@@ -10,6 +10,9 @@
 #if defined(TOOLKIT_GTK)
 #include <gtk/gtk.h>
 #include "ui/gfx/gtk_util.h"
+#elif defined(OS_IOS)
+#include "base/mac/foundation_util.h"
+#include "skia/ext/skia_utils_ios.h"
 #elif defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
 #include "skia/ext/skia_utils_mac.h"
@@ -171,11 +174,15 @@ TEST_F(ImageTest, PNGDecodeToSkiaFailure) {
   gt::CheckColor(bitmap->getColor(10, 10), true);
 }
 
+// TODO(rohitrao): This test needs an iOS implementation of
+// GetPlatformImageColor().
+#if !defined(OS_IOS)
 TEST_F(ImageTest, PNGDecodeToPlatformFailure) {
   std::vector<unsigned char> png(100, 0);
   gfx::Image image(&png.front(), png.size());
   gt::CheckColor(gt::GetPlatformImageColor(gt::ToPlatformType(image)), true);
 }
+#endif
 
 TEST_F(ImageTest, SkiaToPlatform) {
   gfx::Image image(gt::CreateBitmap(25, 25));
@@ -264,7 +271,19 @@ TEST_F(ImageTest, SkiaToCairoCreatesGdk) {
 }
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_IOS)
+TEST_F(ImageTest, SkiaToCocoaTouchCopy) {
+  UIImage* ui_image;
+
+  {
+    gfx::Image image(gt::CreateBitmap(25, 25));
+    ui_image = image.CopyUIImage();
+  }
+
+  EXPECT_TRUE(ui_image);
+  base::mac::NSObjectRelease(ui_image);
+}
+#elif defined(OS_MACOSX)
 TEST_F(ImageTest, SkiaToCocoaCopy) {
   NSImage* ns_image;
 

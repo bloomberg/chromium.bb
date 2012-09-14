@@ -17,18 +17,20 @@ Image* ImageFromPNGEncodedData(const unsigned char* input, size_t input_size) {
   return image;
 }
 
+bool PNGEncodedDataFromImage(const Image& image,
+                             std::vector<unsigned char>* dst) {
+  *dst = *image.ToImagePNG();
+  return !dst->empty();
+}
+
+// The iOS implementations of the JPEG functions are in image_util_ios.mm.
+#if !defined(OS_IOS)
 Image ImageFromJPEGEncodedData(const unsigned char* input, size_t input_size) {
   scoped_ptr<SkBitmap> bitmap(gfx::JPEGCodec::Decode(input, input_size));
   if (bitmap.get())
     return Image(*bitmap);
 
   return Image();
-}
-
-bool PNGEncodedDataFromImage(const Image& image,
-                             std::vector<unsigned char>* dst) {
-  *dst = *image.ToImagePNG();
-  return !dst->empty();
 }
 
 bool JPEGEncodedDataFromImage(const Image& image, int quality,
@@ -46,5 +48,6 @@ bool JPEGEncodedDataFromImage(const Image& image, int quality,
           static_cast<int>(bitmap.rowBytes()), quality,
           dst);
 }
+#endif  // !defined(OS_IOS)
 
 }

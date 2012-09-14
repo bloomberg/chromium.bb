@@ -19,7 +19,7 @@
 #include "ui/compositor/compositor.h"
 #endif  // defined(USE_AURA) && !defined(OS_WIN)
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) && !defined(OS_IOS)
 #include "base/mac/mac_util.h"
 #endif
 
@@ -70,7 +70,10 @@ std::vector<ui::ScaleFactor>& GetSupportedScaleFactorsInternal() {
       new std::vector<ui::ScaleFactor>();
   if (supported_scale_factors->empty()) {
       supported_scale_factors->push_back(ui::SCALE_FACTOR_100P);
-#if defined(OS_MACOSX) && defined(ENABLE_HIDPI)
+// TODO(rohitrao): Set the appropriate scale factors for iOS.  Ideally set
+// either 100P or 200P but not both, since a given device will only ever use one
+// scale factor.
+#if defined(OS_MACOSX) && !defined(OS_IOS) && defined(ENABLE_HIDPI)
       if (base::mac::IsOSLionOrLater())
         supported_scale_factors->push_back(ui::SCALE_FACTOR_200P);
 #elif defined(OS_WIN) && defined(ENABLE_HIDPI)

@@ -14,7 +14,9 @@
 namespace gfx {
 namespace test {
 
-#if defined(OS_MACOSX)
+#if defined(OS_IOS)
+typedef UIImage* PlatformImage;
+#elif defined(OS_MACOSX)
 typedef NSImage* PlatformImage;
 #elif defined(TOOLKIT_GTK)
 typedef GdkPixbuf* PlatformImage;

@@ -183,6 +183,8 @@
         'ext/skia_sandbox_support_win.h',
         'ext/skia_sandbox_support_win.cc',
         'ext/skia_trace_shim.h',
+        'ext/skia_utils_ios.mm',
+        'ext/skia_utils_ios.h',
         'ext/skia_utils_mac.mm',
         'ext/skia_utils_mac.h',
         'ext/skia_utils_win.cc',
@@ -306,6 +308,11 @@
           ],
           'defines': [
             'SK_DEFAULT_FONT_CACHE_LIMIT=(20*1024*1024)',
+          ],
+        }],
+        [ 'OS != "ios"', {
+          'sources/': [
+            ['exclude', '_ios\\.(cc|cpp|mm?)$'],
           ],
         }],
         [ 'OS != "mac"', {
@@ -593,6 +600,7 @@
           'sources/': [
             ['include', 'SkFontHost_mac\\.cpp$',],
             ['include', 'SkStream_mac\\.cpp$',],
+            ['include', 'SkCreateCGImageRef\\.cpp$',],
           ],
         }],
       ],

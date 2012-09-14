@@ -9,9 +9,12 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/size.h"
+
+#if !defined(OS_IOS)
+#include "ui/gfx/codec/png_codec.h"
+#endif
 
 #if defined(TOOLKIT_GTK)
 #include <gdk-pixbuf/gdk-pixbuf.h>
@@ -21,6 +24,9 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/image/cairo_cached_surface.h"
+#elif defined(OS_IOS)
+#include "base/mac/foundation_util.h"
+#include "ui/gfx/image/image_skia_util_ios.h"
 #elif defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
@@ -84,11 +90,18 @@ void PNGFromGdkPixbuf(GdkPixbuf* pixbuf, std::vector<unsigned char>* png) {
 
 #endif // defined(TOOLKIT_GTK)
 
-#if defined(OS_MACOSX)
+#if defined(OS_IOS)
+void PNGFromUIImage(UIImage* nsimage, std::vector<unsigned char>* png);
+UIImage* CreateUIImageFromPNG(const std::vector<unsigned char>& png);
+#elif defined(OS_MACOSX)
 void PNGFromNSImage(NSImage* nsimage, std::vector<unsigned char>* png);
 NSImage* NSImageFromPNG(const std::vector<unsigned char>& png);
 #endif // defined(OS_MACOSX)
 
+#if defined(OS_IOS)
+ImageSkia* ImageSkiaFromPNG(const std::vector<unsigned char>& png);
+void PNGFromImageSkia(const ImageSkia* skia, std::vector<unsigned char>* png);
+#else
 ImageSkia* ImageSkiaFromPNG(const std::vector<unsigned char>& png) {
   SkBitmap bitmap;
   if (!gfx::PNGCodec::Decode(&png.front(), png.size(), &bitmap)) {
@@ -104,12 +117,14 @@ ImageSkia* ImageSkiaFromPNG(const std::vector<unsigned char>& png) {
 void PNGFromImageSkia(const ImageSkia* skia, std::vector<unsigned char>* png) {
   CHECK(gfx::PNGCodec::EncodeBGRASkBitmap(*skia->bitmap(), false, png));
 }
+#endif
 
 class ImageRepPNG;
 class ImageRepSkia;
 class ImageRepGdk;
 class ImageRepCairo;
 class ImageRepCocoa;
+class ImageRepCocoaTouch;
 
 // An ImageRep is the object that holds the backing memory for an Image. Each
 // RepresentationType has an ImageRep subclass that is responsible for freeing
@@ -146,7 +161,12 @@ class ImageRep {
   }
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_IOS)
+  ImageRepCocoaTouch* AsImageRepCocoaTouch() {
+    CHECK_EQ(type_, Image::kImageRepCocoaTouch);
+    return reinterpret_cast<ImageRepCocoaTouch*>(this);
+  }
+#elif defined(OS_MACOSX)
   ImageRepCocoa* AsImageRepCocoa() {
     CHECK_EQ(type_, Image::kImageRepCocoa);
     return reinterpret_cast<ImageRepCocoa*>(this);
@@ -245,7 +265,28 @@ class ImageRepCairo : public ImageRep {
 };
 #endif  // defined(TOOLKIT_GTK)
 
-#if defined(OS_MACOSX)
+#if defined(OS_IOS)
+class ImageRepCocoaTouch : public ImageRep {
+ public:
+  explicit ImageRepCocoaTouch(UIImage* image)
+      : ImageRep(Image::kImageRepCocoaTouch),
+        image_(image) {
+    CHECK(image);
+  }
+
+  virtual ~ImageRepCocoaTouch() {
+    base::mac::NSObjectRelease(image_);
+    image_ = nil;
+  }
+
+  UIImage* image() const { return image_; }
+
+ private:
+  UIImage* image_;
+
+  DISALLOW_COPY_AND_ASSIGN(ImageRepCocoaTouch);
+};
+#elif defined(OS_MACOSX)
 class ImageRepCocoa : public ImageRep {
  public:
   explicit ImageRepCocoa(NSImage* image)
@@ -343,7 +384,15 @@ Image::Image(GdkPixbuf* pixbuf) {
 }
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_IOS)
+Image::Image(UIImage* image)
+    : storage_(new internal::ImageStorage(Image::kImageRepCocoaTouch)) {
+  if (image) {
+    internal::ImageRepCocoaTouch* rep = new internal::ImageRepCocoaTouch(image);
+    AddRepresentation(rep);
+  }
+}
+#elif defined(OS_MACOSX)
 Image::Image(NSImage* image) {
   if (image) {
     storage_ = new internal::ImageStorage(Image::kImageRepCocoa);
@@ -374,6 +423,14 @@ const std::vector<unsigned char>* Image::ToImagePNG() const {
         internal::ImageRepGdk* gdk_rep =
             GetRepresentation(kImageRepGdk, true)->AsImageRepGdk();
         internal::PNGFromGdkPixbuf(gdk_rep->pixbuf(), png_rep->image());
+        break;
+      }
+#elif defined(OS_IOS)
+      case kImageRepCocoaTouch: {
+        internal::ImageRepCocoaTouch* cocoa_touch_rep =
+            GetRepresentation(kImageRepCocoaTouch, true)
+                ->AsImageRepCocoaTouch();
+        internal::PNGFromUIImage(cocoa_touch_rep->image(), png_rep->image());
         break;
       }
 #elif defined(OS_MACOSX)
@@ -422,6 +479,15 @@ const ImageSkia* Image::ToImageSkia() const {
             GetRepresentation(kImageRepGdk, true)->AsImageRepGdk();
         rep = new internal::ImageRepSkia(new ImageSkia(
             internal::ImageSkiaFromGdkPixbuf(native_rep->pixbuf())));
+        break;
+      }
+#elif defined(OS_IOS)
+      case kImageRepCocoaTouch: {
+        internal::ImageRepCocoaTouch* native_rep =
+            GetRepresentation(kImageRepCocoaTouch, true)
+                ->AsImageRepCocoaTouch();
+        rep = new internal::ImageRepSkia(new ImageSkia(
+            ImageSkiaFromUIImage(native_rep->image())));
         break;
       }
 #elif defined(OS_MACOSX)
@@ -483,7 +549,35 @@ CairoCachedSurface* const Image::ToCairo() const {
 }
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_IOS)
+UIImage* Image::ToUIImage() const {
+  internal::ImageRep* rep = GetRepresentation(kImageRepCocoaTouch, false);
+  if (!rep) {
+    switch (DefaultRepresentationType()) {
+      case kImageRepPNG: {
+        internal::ImageRepPNG* png_rep =
+            GetRepresentation(kImageRepPNG, true)->AsImageRepPNG();
+        rep = new internal::ImageRepCocoaTouch(internal::CreateUIImageFromPNG(
+            *png_rep->image()));
+        break;
+      }
+      case kImageRepSkia: {
+        internal::ImageRepSkia* skia_rep =
+            GetRepresentation(kImageRepSkia, true)->AsImageRepSkia();
+        UIImage* image = UIImageFromImageSkia(*skia_rep->image());
+        base::mac::NSObjectRetain(image);
+        rep = new internal::ImageRepCocoaTouch(image);
+        break;
+      }
+      default:
+        NOTREACHED();
+    }
+    CHECK(rep);
+    AddRepresentation(rep);
+  }
+  return rep->AsImageRepCocoaTouch()->image();
+}
+#elif defined(OS_MACOSX)
 NSImage* Image::ToNSImage() const {
   internal::ImageRep* rep = GetRepresentation(kImageRepCocoa, false);
   if (!rep) {
@@ -525,7 +619,7 @@ ImageSkia Image::AsImageSkia() const {
   return IsEmpty() ? ImageSkia() : *ToImageSkia();
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) && !defined(OS_IOS)
 NSImage* Image::AsNSImage() const {
   return IsEmpty() ? nil : ToNSImage();
 }
@@ -547,7 +641,13 @@ GdkPixbuf* Image::CopyGdkPixbuf() const {
 }
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_IOS)
+UIImage* Image::CopyUIImage() const {
+  UIImage* image = ToUIImage();
+  base::mac::NSObjectRetain(image);
+  return image;
+}
+#elif defined(OS_MACOSX)
 NSImage* Image::CopyNSImage() const {
   NSImage* image = ToNSImage();
   base::mac::NSObjectRetain(image);
@@ -555,7 +655,7 @@ NSImage* Image::CopyNSImage() const {
 }
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) && !defined(OS_IOS)
 Image::operator NSImage*() const {
   return ToNSImage();
 }

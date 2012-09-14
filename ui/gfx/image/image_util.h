@@ -21,16 +21,16 @@ namespace gfx {
 UI_EXPORT Image* ImageFromPNGEncodedData(const unsigned char* input,
                                          size_t input_size);
 
+// Fills the |dst| vector with PNG-encoded bytes based on the given Image.
+// Returns true if the Image was encoded successfully.
+UI_EXPORT bool PNGEncodedDataFromImage(const Image& image,
+                                       std::vector<unsigned char>* dst);
+
 // Creates an image from the given JPEG-encoded input.  The caller owns the
 // returned Image.  If there was an error creating the image, returns an
 // IsEmpty() Image.
 UI_EXPORT Image ImageFromJPEGEncodedData(const unsigned char* input,
                                          size_t input_size);
-
-// Fills the |dst| vector with PNG-encoded bytes based on the given Image.
-// Returns true if the Image was encoded successfully.
-UI_EXPORT bool PNGEncodedDataFromImage(const Image& image,
-                                       std::vector<unsigned char>* dst);
 
 // Fills the |dst| vector with JPEG-encoded bytes based on the given Image.
 // |quality| determines the compression level, 0 == lowest, 100 == highest.

@@ -58,6 +58,11 @@
       # are built on iOS.
       'common_sources' : [
         'base/models/tree_node_iterator_unittest.cc',
+        'gfx/image/image_skia_unittest.cc',
+        'gfx/image/image_unittest.cc',
+        'gfx/image/image_unittest_util.cc',
+        'gfx/image/image_unittest_util.h',
+        'gfx/image/image_unittest_util_mac.mm',
         'gfx/insets_unittest.cc',
       ],
       'all_sources': [
@@ -105,11 +110,6 @@
         'gfx/font_list_unittest.cc',
         'gfx/font_unittest.cc',
         'gfx/image/image_mac_unittest.mm',
-        'gfx/image/image_skia_unittest.cc',
-        'gfx/image/image_unittest.cc',
-        'gfx/image/image_unittest_util.cc',
-        'gfx/image/image_unittest_util.h',
-        'gfx/image/image_unittest_util_mac.mm',
         'gfx/image/image_util_unittest.cc',
         'gfx/rect_unittest.cc',
         'gfx/render_text_unittest.cc',
@@ -133,9 +133,12 @@
             'base/ime/ime_unittests.gypi',
           ],
         }, {  # OS=="ios"
-          'sources' : ['<@(_common_sources)'],
-          'dependencies' : [
-            '../testing/gtest.gyp:gtest_main',
+          'sources' : [
+            '<@(_common_sources)',
+            # TODO(rohitrao): Get ui/test/test_suite.cc and
+            # ui/test/run_all_unittests.cc compiling on iOS and remove this
+            # line.
+            '../base/test/run_all_unittests.cc',
           ],
         }],
         ['OS == "win"', {
