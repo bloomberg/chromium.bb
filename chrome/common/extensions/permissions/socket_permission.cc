@@ -67,7 +67,7 @@ bool SocketPermission::FromValue(const base::Value* value) {
   if (!value)
     return false;
 
-  if (!value->GetAsList(&list) && list->GetSize() == 0)
+  if (!value->GetAsList(&list) || list->GetSize() == 0)
     return false;
 
   for (size_t i = 0; i < list->GetSize(); ++i) {

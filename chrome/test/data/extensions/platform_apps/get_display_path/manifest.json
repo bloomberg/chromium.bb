@@ -10,7 +10,9 @@
     }
   },
   "permissions": [
-    "fileSystem"
+    {
+      "fileSystem": []
+    }
   ],
   "app": {
     "background": {

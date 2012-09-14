@@ -27,7 +27,8 @@ namespace fileSystem {
     // success. 'saveFile' will prompt the user to choose an existing file or
     // a new file, and will return a writable FileEntry.
     // Calls to chooseFile with either 'openWritableFile' or 'saveFile' will
-    // fail unless the application has the fileSystemWrite permission.
+    // fail unless the application has the 'write' permission under
+    // 'fileSystem'.
     //
     // The default is 'openFile'.
     DOMString? type;
@@ -56,8 +57,8 @@ namespace fileSystem {
     static void getDisplayPath([instanceOf=FileEntry] object fileEntry,
                                GetDisplayPathCallback callback);
 
-    // Get a writable FileEntry from another FileEntry. This call will fail
-    // if the application does not have the fileSystemWrite permission.
+    // Get a writable FileEntry from another FileEntry. This call will fail if
+    // the application does not have the 'write' permission under 'fileSystem'.
     static void getWritableFileEntry([instanceOf=FileEntry] object fileEntry,
                                      FileEntryCallback callback);
 

@@ -8,6 +8,6 @@
     }
   },
   "permissions": [
-    "fileSystem"
+    {"fileSystem": []}
   ]
 }

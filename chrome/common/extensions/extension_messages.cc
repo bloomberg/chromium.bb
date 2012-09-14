@@ -15,6 +15,7 @@ using extensions::APIPermissionInfo;
 using extensions::APIPermissionMap;
 using extensions::APIPermissionSet;
 using extensions::Extension;
+using extensions::FileSystemPermission;
 using extensions::MediaGalleriesPermission;
 using extensions::PermissionSet;
 using extensions::SocketPermissionData;
@@ -226,6 +227,27 @@ bool ParamTraits<MediaGalleriesPermission::PermissionTypes>::Read(
 void ParamTraits<MediaGalleriesPermission::PermissionTypes>::Log(
     const param_type& p, std::string* l) {
   LogParam(std::string("<MediaGalleriesPermission::PermissionTypes>"), l);
+}
+
+void ParamTraits<FileSystemPermission::PermissionTypes>::Write(
+    Message* m, const param_type& p) {
+  WriteParam(m,
+             std::string(FileSystemPermission::PermissionTypeToString(p)));
+}
+
+bool ParamTraits<FileSystemPermission::PermissionTypes>::Read(
+    const Message* m, PickleIterator* iter, param_type* r) {
+  std::string permission;
+  if (!ReadParam(m, iter, &permission))
+    return false;
+  *r = FileSystemPermission::PermissionStringToType(permission);
+
+  return *r != FileSystemPermission::kNone;
+}
+
+void ParamTraits<FileSystemPermission::PermissionTypes>::Log(
+    const param_type& p, std::string* l) {
+  LogParam(std::string("<FileSystemPermission::PermissionTypes>"), l);
 }
 
 void ParamTraits<ExtensionMsg_Loaded_Params>::Write(Message* m,

@@ -185,6 +185,8 @@
         'common/extensions/permissions/api_permission.h',
         'common/extensions/permissions/api_permission_set.cc',
         'common/extensions/permissions/api_permission_set.h',
+        'common/extensions/permissions/filesystem_permission.h',
+        'common/extensions/permissions/filesystem_permission.cc',
         'common/extensions/permissions/media_galleries_permission.h',
         'common/extensions/permissions/media_galleries_permission.cc',
         'common/extensions/permissions/permission_message.cc',

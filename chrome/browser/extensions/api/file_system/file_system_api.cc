@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/common/extensions/api/file_system.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
+#include "chrome/common/extensions/permissions/filesystem_permission.h"
 #include "grit/generated_resources.h"
 #include "net/base/mime_util.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -225,7 +226,7 @@ bool FileSystemEntryFunction::HasFileSystemWritePermission() {
   if (!extension)
     return false;
 
-  return extension->HasAPIPermission(APIPermission::kFileSystemWrite);
+  return FileSystemPermission::HasWriteAccess(*extension);
 }
 
 void FileSystemEntryFunction::CheckWritableFile(const FilePath& path) {

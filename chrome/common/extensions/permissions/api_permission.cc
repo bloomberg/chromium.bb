@@ -4,6 +4,7 @@
 
 #include "chrome/common/extensions/permissions/api_permission.h"
 
+#include "chrome/common/extensions/permissions/filesystem_permission.h"
 #include "chrome/common/extensions/permissions/media_galleries_permission.h"
 #include "chrome/common/extensions/permissions/permissions_info.h"
 #include "chrome/common/extensions/permissions/socket_permission.h"
@@ -296,13 +297,12 @@ void APIPermissionInfo::RegisterAllPermissions(
     { APIPermission::kVideoCapture, "videoCapture", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_VIDEO_CAPTURE,
       PermissionMessage::kVideoCapture },
-    // "fileSystem" has no permission string because read-only access is only
-    // granted after the user has been shown a file chooser dialog and selected
-    // a file. Selecting the file is considered consent to read it.
-    { APIPermission::kFileSystem, "fileSystem" },
-    { APIPermission::kFileSystemWrite, "fileSystemWrite", kFlagNone,
-      IDS_EXTENSION_PROMPT_WARNING_FILE_SYSTEM_WRITE,
-      PermissionMessage::kFileSystemWrite },
+    // The permission string for "fileSystem" is only shown when "write" is
+    // present. Read-only access is only granted after the user has been shown
+    // a file chooser dialog and selected a file. Selecting the file is
+    // considered consent to read it.
+    { APIPermission::kFileSystem, "fileSystem", kFlagNone, 0,
+      PermissionMessage::kNone, &::CreateAPIPermission<FileSystemPermission> },
     { APIPermission::kMediaGalleries, "mediaGalleries", kFlagNone, 0,
       PermissionMessage::kNone,
       &::CreateAPIPermission<MediaGalleriesPermission> },

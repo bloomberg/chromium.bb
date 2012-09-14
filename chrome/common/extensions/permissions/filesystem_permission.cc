@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/permissions/media_galleries_permission.h"
+#include "chrome/common/extensions/permissions/filesystem_permission.h"
 
 #include <algorithm>
 
@@ -20,74 +20,70 @@
 
 namespace {
 
-const char kAllAutoDetectedString[] = "all-auto-detected";
-const char kReadString[] = "read";
+const char kImplicitReadString[] = "read";
+const char kWriteString[] = "write";
 const char kInvalidString[] = "invalid";
 
 }  // namespace
 
 namespace extensions {
 
-MediaGalleriesPermission::MediaGalleriesPermission(
+FileSystemPermission::FileSystemPermission(
     const APIPermissionInfo* info)
     : APIPermission(info) {
 }
 
-MediaGalleriesPermission::~MediaGalleriesPermission() {
+FileSystemPermission::~FileSystemPermission() {
 }
 
 // static
-bool MediaGalleriesPermission::HasReadAccess(const Extension& extension) {
-  CheckParam read_param(kRead);
+bool FileSystemPermission::HasReadAccess(const Extension& extension) {
+  return extension.HasAPIPermission(extensions::APIPermission::kFileSystem);
+}
+
+// static
+bool FileSystemPermission::HasWriteAccess(const Extension& extension) {
+  CheckParam write_param(kWrite);
   return extension.CheckAPIPermissionWithParam(
-      extensions::APIPermission::kMediaGalleries, &read_param);
+      extensions::APIPermission::kFileSystem, &write_param);
 }
 
 // static
-bool MediaGalleriesPermission::HasAllGalleriesAccess(
-    const Extension& extension) {
-  CheckParam all_param(kAllAutoDetected);
-  return extension.CheckAPIPermissionWithParam(
-      extensions::APIPermission::kMediaGalleries, &all_param);
-}
-
-// static
-MediaGalleriesPermission::PermissionTypes
-MediaGalleriesPermission::PermissionStringToType(const std::string& str) {
-  if (str == kAllAutoDetectedString)
-    return kAllAutoDetected;
-  if (str == kReadString)
-    return kRead;
+FileSystemPermission::PermissionTypes
+FileSystemPermission::PermissionStringToType(const std::string& str) {
+  if (str == kWriteString)
+    return kWrite;
+  if (str == kImplicitReadString)
+    return kImplicitRead;
   return kNone;
 }
 
 // static
-const char* MediaGalleriesPermission::PermissionTypeToString(
-    PermissionTypes type) {
+const char* FileSystemPermission::PermissionTypeToString(PermissionTypes type) {
   switch (type) {
-    case kAllAutoDetected:
-      return kAllAutoDetectedString;
-    case kRead:
-      return kReadString;
+    case kWrite:
+      return kWriteString;
+    case kImplicitRead:
+      return kImplicitReadString;
     default:
       NOTREACHED();
       return kInvalidString;
   }
 }
 
-bool MediaGalleriesPermission::HasMessages() const {
-  CheckParam param(kAllAutoDetected);
+bool FileSystemPermission::HasMessages() const {
+  CheckParam param(kWrite);
   return Check(&param);
 }
 
-PermissionMessages MediaGalleriesPermission::GetMessages() const {
-  CheckParam param(kAllAutoDetected);
+PermissionMessages FileSystemPermission::GetMessages() const {
+  CheckParam param(kWrite);
   if (Check(&param)) {
     PermissionMessages result;
     result.push_back(PermissionMessage(
-        PermissionMessage::kMediaGalleriesAllGalleries,
+        PermissionMessage::kFileSystemWrite,
         l10n_util::GetStringUTF16(
-            IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_ALL_GALLERIES)));
+            IDS_EXTENSION_PROMPT_WARNING_FILE_SYSTEM_WRITE)));
     return result;
   }
   NOTREACHED();
@@ -96,36 +92,41 @@ PermissionMessages MediaGalleriesPermission::GetMessages() const {
   return result;
 }
 
-bool MediaGalleriesPermission::Check(
+bool FileSystemPermission::Check(
     const APIPermission::CheckParam* param) const {
-  const CheckParam* media_galleries_param =
+  const CheckParam* filesystem_param =
       static_cast<const CheckParam*>(param);
-  return ContainsKey(permissions_, media_galleries_param->permission);
+  return ContainsKey(permissions_, filesystem_param->permission);
 }
 
-bool MediaGalleriesPermission::Contains(const APIPermission* rhs) const {
+bool FileSystemPermission::Contains(const APIPermission* rhs) const {
   CHECK_EQ(rhs->info(), info());
-  const MediaGalleriesPermission* perm =
-      static_cast<const MediaGalleriesPermission*>(rhs);
+  const FileSystemPermission* perm =
+      static_cast<const FileSystemPermission*>(rhs);
   return std::includes(permissions_.begin(), permissions_.end(),
                        perm->permissions_.begin(), perm->permissions_.end());
 }
 
-bool MediaGalleriesPermission::Equal(const APIPermission* rhs) const {
+bool FileSystemPermission::Equal(const APIPermission* rhs) const {
   CHECK(rhs->info() == info());
-  const MediaGalleriesPermission* perm =
-      static_cast<const MediaGalleriesPermission*>(rhs);
+  const FileSystemPermission* perm =
+      static_cast<const FileSystemPermission*>(rhs);
   return permissions_ == perm->permissions_;
 }
 
-bool MediaGalleriesPermission::FromValue(const base::Value* value) {
+bool FileSystemPermission::FromValue(const base::Value* value) {
   permissions_.clear();
 
+  // Always configure with the implicit read string. This may also be specified
+  // in the manifest, but is redundant.
+  permissions_.insert(kImplicitRead);
+
+  // The simple "fileSystem" form, without an argument, is allowed.
   if (!value)
-    return false;
+    return true;
 
   const base::ListValue* list = NULL;
-  if (!value->GetAsList(&list) || list->GetSize() == 0)
+  if (!value->GetAsList(&list))
     return false;
 
   for (size_t i = 0; i < list->GetSize(); ++i) {
@@ -133,14 +134,14 @@ bool MediaGalleriesPermission::FromValue(const base::Value* value) {
     if (!list->GetString(i, &str))
       return false;
     PermissionTypes type = PermissionStringToType(str);
-    if (type == kNone)
+    if (type == kNone)  // should never be serialized
       return false;
     permissions_.insert(type);
   }
   return true;
 }
 
-void MediaGalleriesPermission::ToValue(base::Value** value) const {
+void FileSystemPermission::ToValue(base::Value** value) const {
   base::ListValue* list = new ListValue();
 
   for (std::set<PermissionTypes>::const_iterator it = permissions_.begin();
@@ -151,18 +152,18 @@ void MediaGalleriesPermission::ToValue(base::Value** value) const {
   *value = list;
 }
 
-APIPermission* MediaGalleriesPermission::Clone() const {
-  MediaGalleriesPermission* result = new MediaGalleriesPermission(info());
+APIPermission* FileSystemPermission::Clone() const {
+  FileSystemPermission* result = new FileSystemPermission(info());
   result->permissions_ = permissions_;
   return result;
 }
 
-APIPermission* MediaGalleriesPermission::Diff(const APIPermission* rhs) const {
+APIPermission* FileSystemPermission::Diff(const APIPermission* rhs) const {
   CHECK(rhs->info() == info());
-  const MediaGalleriesPermission* perm =
-      static_cast<const MediaGalleriesPermission*>(rhs);
-  scoped_ptr<MediaGalleriesPermission> result(
-      new MediaGalleriesPermission(info()));
+  const FileSystemPermission* perm =
+      static_cast<const FileSystemPermission*>(rhs);
+  scoped_ptr<FileSystemPermission> result(
+      new FileSystemPermission(info()));
   std::set_difference(permissions_.begin(), permissions_.end(),
                       perm->permissions_.begin(), perm->permissions_.end(),
                       std::inserter<std::set<PermissionTypes> >(
@@ -170,12 +171,11 @@ APIPermission* MediaGalleriesPermission::Diff(const APIPermission* rhs) const {
   return result->permissions_.empty() ? NULL : result.release();
 }
 
-APIPermission* MediaGalleriesPermission::Union(const APIPermission* rhs) const {
+APIPermission* FileSystemPermission::Union(const APIPermission* rhs) const {
   CHECK(rhs->info() == info());
-  const MediaGalleriesPermission* perm =
-      static_cast<const MediaGalleriesPermission*>(rhs);
-  scoped_ptr<MediaGalleriesPermission> result(
-      new MediaGalleriesPermission(info()));
+  const FileSystemPermission* perm =
+      static_cast<const FileSystemPermission*>(rhs);
+  scoped_ptr<FileSystemPermission> result(new FileSystemPermission(info()));
   std::set_union(permissions_.begin(), permissions_.end(),
                  perm->permissions_.begin(), perm->permissions_.end(),
                  std::inserter<std::set<PermissionTypes> >(
@@ -183,13 +183,12 @@ APIPermission* MediaGalleriesPermission::Union(const APIPermission* rhs) const {
   return result->permissions_.empty() ? NULL : result.release();
 }
 
-APIPermission* MediaGalleriesPermission::Intersect(
+APIPermission* FileSystemPermission::Intersect(
     const APIPermission* rhs) const {
   CHECK(rhs->info() == info());
-  const MediaGalleriesPermission* perm =
-      static_cast<const MediaGalleriesPermission*>(rhs);
-  scoped_ptr<MediaGalleriesPermission> result(
-      new MediaGalleriesPermission(info()));
+  const FileSystemPermission* perm =
+      static_cast<const FileSystemPermission*>(rhs);
+  scoped_ptr<FileSystemPermission> result(new FileSystemPermission(info()));
   std::set_intersection(permissions_.begin(), permissions_.end(),
                         perm->permissions_.begin(), perm->permissions_.end(),
                         std::inserter<std::set<PermissionTypes> >(
@@ -198,17 +197,17 @@ APIPermission* MediaGalleriesPermission::Intersect(
   return result->permissions_.empty() ? NULL : result.release();
 }
 
-void MediaGalleriesPermission::Write(IPC::Message* m) const {
+void FileSystemPermission::Write(IPC::Message* m) const {
   IPC::WriteParam(m, permissions_);
 }
 
-bool MediaGalleriesPermission::Read(const IPC::Message* m,
+bool FileSystemPermission::Read(const IPC::Message* m,
                                     PickleIterator* iter) {
   return IPC::ReadParam(m, iter, &permissions_);
 }
 
-void MediaGalleriesPermission::Log(std::string* log) const {
+void FileSystemPermission::Log(std::string* log) const {
   IPC::LogParam(permissions_, log);
 }
 
-}  // namespace extensions
+}  // namespace

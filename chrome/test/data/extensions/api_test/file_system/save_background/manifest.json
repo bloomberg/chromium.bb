@@ -9,7 +9,8 @@
   },
   "permissions": [
     "experimental",
-    "fileSystem",
-    "fileSystemWrite"
+    {
+      "fileSystem": ["write"]
+    }
   ]
 }
