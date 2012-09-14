@@ -14471,8 +14471,17 @@ Press any key to continue exploring.
       <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_HIGH_CONTRAST_DESCRIPTION" desc="In the settings tab, the text next to the checkbox for high contrast mode.">
         Enable high contrast mode
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SCREEN_MAGNIFIER_DESCRIPTION" desc="In the settings tab, the text next to the checkbox for screen magnifier.">
+      <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SCREEN_MAGNIFIER_DESCRIPTION" desc="In the settings tab, the text next to the dropdown for screen magnifier.">
         Enable screen magnifier
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SCREEN_MAGNIFIER_OFF" desc="In the settings tab, the option indication the screen magnifier is off.">
+        Off
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SCREEN_MAGNIFIER_FULL" desc="In the settings tab, the option indication the screen magnifier is set to full.">
+        Full
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SCREEN_MAGNIFIER_PARTIAL" desc="In the settings tab, the option indication the screen magnifier is set to partial.">
+        Partial
       </message>
       <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_VIRTUAL_KEYBOARD_DESCRIPTION" desc="In the settings tab, the text next to the checkbox for virtual keyboard.">
         Enable virtual keyboard
