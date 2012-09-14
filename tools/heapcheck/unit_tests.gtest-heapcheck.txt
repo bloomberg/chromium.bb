@@ -37,6 +37,7 @@ HistoryQuickProviderTest.*
 
 # Timing out all over the place. Disabling for now. http://crbug.com/149712
 AppNotificationManagerTest.*
+AppNotificationManagerSyncTest.*
 # Timing out all over the place. Disabling for now. http://crbug.com/149715
 ExtensionWebRequestTest.*
 
