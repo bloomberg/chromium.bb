@@ -9509,8 +9509,8 @@ static const unsigned char _x86_64_decoder_trans_keys[] = {
 	112u, 119u, 120u, 127u, 128u, 135u, 136u, 143u, 
 	144u, 151u, 152u, 159u, 160u, 167u, 168u, 175u, 
 	176u, 183u, 184u, 191u, 192u, 199u, 200u, 207u, 
-	208u, 215u, 216u, 223u, 224u, 231u, 232u, 239u, 
-	240u, 247u, 4u, 5u, 12u, 13u, 20u, 21u, 
+	208u, 215u, 224u, 231u, 232u, 239u, 240u, 247u, 
+	248u, 255u, 4u, 5u, 12u, 13u, 20u, 21u, 
 	28u, 29u, 36u, 37u, 44u, 45u, 52u, 53u, 
 	60u, 61u, 68u, 76u, 84u, 92u, 100u, 108u, 
 	116u, 124u, 132u, 140u, 148u, 156u, 164u, 172u, 
@@ -9520,7 +9520,7 @@ static const unsigned char _x86_64_decoder_trans_keys[] = {
 	88u, 95u, 96u, 103u, 104u, 111u, 112u, 119u, 
 	120u, 127u, 128u, 135u, 136u, 143u, 144u, 151u, 
 	152u, 159u, 160u, 167u, 168u, 175u, 176u, 183u, 
-	184u, 191u, 200u, 207u, 208u, 215u, 216u, 223u, 
+	184u, 191u, 192u, 199u, 200u, 207u, 216u, 223u, 
 	224u, 231u, 232u, 239u, 240u, 247u, 248u, 255u, 
 	4u, 5u, 12u, 13u, 20u, 21u, 28u, 29u, 
 	36u, 37u, 44u, 45u, 68u, 76u, 84u, 92u, 
@@ -9629,7 +9629,7 @@ static const unsigned char _x86_64_decoder_trans_keys[] = {
 	80u, 87u, 88u, 95u, 96u, 103u, 104u, 111u, 
 	112u, 119u, 120u, 127u, 128u, 135u, 136u, 143u, 
 	144u, 151u, 152u, 159u, 160u, 167u, 168u, 175u, 
-	176u, 183u, 184u, 191u, 192u, 199u, 208u, 215u, 
+	176u, 183u, 184u, 191u, 200u, 207u, 208u, 215u, 
 	216u, 223u, 224u, 231u, 232u, 239u, 240u, 247u, 
 	248u, 255u, 4u, 5u, 20u, 21u, 28u, 29u, 
 	36u, 37u, 44u, 45u, 52u, 53u, 60u, 61u, 
@@ -9846,8 +9846,8 @@ static const unsigned char _x86_64_decoder_trans_keys[] = {
 	87u, 88u, 95u, 96u, 103u, 104u, 111u, 112u, 
 	119u, 120u, 127u, 128u, 135u, 136u, 143u, 144u, 
 	151u, 152u, 159u, 160u, 167u, 168u, 175u, 176u, 
-	183u, 184u, 191u, 192u, 199u, 200u, 207u, 208u, 
-	215u, 216u, 223u, 224u, 231u, 240u, 247u, 248u, 
+	183u, 184u, 191u, 192u, 199u, 208u, 215u, 216u, 
+	223u, 224u, 231u, 232u, 239u, 240u, 247u, 248u, 
 	255u, 4u, 5u, 12u, 13u, 20u, 21u, 28u, 
 	29u, 36u, 37u, 44u, 45u, 52u, 53u, 60u, 
 	61u, 68u, 76u, 84u, 92u, 100u, 108u, 116u, 
@@ -9858,8 +9858,8 @@ static const unsigned char _x86_64_decoder_trans_keys[] = {
 	95u, 96u, 103u, 104u, 111u, 112u, 119u, 120u, 
 	127u, 128u, 135u, 136u, 143u, 144u, 151u, 152u, 
 	159u, 160u, 167u, 168u, 175u, 176u, 183u, 184u, 
-	191u, 192u, 199u, 200u, 207u, 208u, 215u, 216u, 
-	223u, 224u, 231u, 232u, 239u, 248u, 255u, 4u, 
+	191u, 192u, 199u, 200u, 207u, 216u, 223u, 224u, 
+	231u, 232u, 239u, 240u, 247u, 248u, 255u, 4u, 
 	5u, 12u, 13u, 20u, 21u, 28u, 29u, 36u, 
 	37u, 44u, 45u, 68u, 76u, 84u, 92u, 100u, 
 	108u, 132u, 140u, 148u, 156u, 164u, 172u, 0u, 
@@ -10838,8 +10838,8 @@ static const unsigned char _x86_64_decoder_trans_keys[] = {
 	87u, 88u, 95u, 96u, 103u, 104u, 111u, 112u, 
 	119u, 120u, 127u, 128u, 135u, 136u, 143u, 144u, 
 	151u, 152u, 159u, 160u, 167u, 168u, 175u, 176u, 
-	183u, 184u, 191u, 192u, 199u, 200u, 207u, 208u, 
-	215u, 216u, 223u, 224u, 231u, 232u, 239u, 248u, 
+	183u, 184u, 191u, 192u, 199u, 200u, 207u, 216u, 
+	223u, 224u, 231u, 232u, 239u, 240u, 247u, 248u, 
 	255u, 192u, 239u, 4u, 5u, 68u, 132u, 0u, 
 	7u, 64u, 71u, 128u, 135u, 192u, 199u, 4u, 
 	5u, 12u, 13u, 20u, 21u, 28u, 29u, 36u, 
@@ -23588,16 +23588,16 @@ static const short _x86_64_decoder_indicies[] = {
 	1835, 1780, 1783, 1786, 1789, 1792, 1795, 1798, 
 	1801, 1804, 1806, 1808, 1810, 1812, 1814, 1816, 
 	1818, 1820, 1822, 1824, 1826, 1828, 1830, 1832, 
-	1834, 1836, 1837, 1838, 1839, 1840, 1841, 1842, 
-	1843, 1845, 1846, 1848, 1849, 1851, 1852, 1854, 
+	1834, 1836, 1837, 1838, 1840, 1841, 1842, 1843, 
+	1839, 1845, 1846, 1848, 1849, 1851, 1852, 1854, 
 	1855, 1857, 1858, 1860, 1861, 1863, 1864, 1866, 
 	1867, 1869, 1871, 1873, 1875, 1877, 1879, 1881, 
 	1883, 1885, 1887, 1889, 1891, 1893, 1895, 1897, 
 	1899, 1844, 1847, 1850, 1853, 1856, 1859, 1862, 
 	1865, 1868, 1870, 1872, 1874, 1876, 1878, 1880, 
 	1882, 1884, 1886, 1888, 1890, 1892, 1894, 1896, 
-	1898, 1901, 1902, 1903, 1904, 1905, 1906, 1907, 
-	1900, 1909, 1910, 1909, 1910, 1909, 1910, 1909, 
+	1898, 1900, 1901, 1903, 1904, 1905, 1906, 1907, 
+	1902, 1909, 1910, 1909, 1910, 1909, 1910, 1909, 
 	1910, 1909, 1910, 1909, 1910, 1912, 1912, 1912, 
 	1912, 1912, 1912, 1914, 1914, 1914, 1914, 1914, 
 	1914, 1908, 1911, 1913, 1915, 34, 1917, 1918, 
@@ -23680,8 +23680,8 @@ static const short _x86_64_decoder_indicies[] = {
 	2345, 2347, 2349, 2351, 2296, 2299, 2302, 2305, 
 	2308, 2311, 2314, 2317, 2320, 2322, 2324, 2326, 
 	2328, 2330, 2332, 2334, 2336, 2338, 2340, 2342, 
-	2344, 2346, 2348, 2350, 2352, 2354, 2355, 2356, 
-	2357, 2358, 2359, 2353, 2361, 2362, 2364, 2365, 
+	2344, 2346, 2348, 2350, 2353, 2354, 2355, 2356, 
+	2357, 2358, 2359, 2352, 2361, 2362, 2364, 2365, 
 	2367, 2368, 2370, 2371, 2373, 2374, 2376, 2377, 
 	2379, 2380, 2382, 2384, 2386, 2388, 2390, 2392, 
 	2394, 2396, 2398, 2400, 2402, 2404, 2406, 2408, 
@@ -23848,8 +23848,8 @@ static const short _x86_64_decoder_indicies[] = {
 	3217, 3219, 3221, 3223, 3225, 3227, 3172, 3175, 
 	3178, 3181, 3184, 3187, 3190, 3193, 3196, 3198, 
 	3200, 3202, 3204, 3206, 3208, 3210, 3212, 3214, 
-	3216, 3218, 3220, 3222, 3224, 3226, 3228, 3229, 
-	3230, 3231, 3232, 3234, 3235, 3233, 3237, 3238, 
+	3216, 3218, 3220, 3222, 3224, 3226, 3228, 3230, 
+	3231, 3232, 3233, 3234, 3235, 3229, 3237, 3238, 
 	3240, 3241, 3243, 3244, 3246, 3247, 3249, 3250, 
 	3252, 3253, 3255, 3256, 3258, 3259, 3261, 3263, 
 	3265, 3267, 3269, 3271, 3273, 3275, 3277, 3279, 
@@ -23857,7 +23857,7 @@ static const short _x86_64_decoder_indicies[] = {
 	3242, 3245, 3248, 3251, 3254, 3257, 3260, 3262, 
 	3264, 3266, 3268, 3270, 3272, 3274, 3276, 3278, 
 	3280, 3282, 3284, 3286, 3288, 3290, 3292, 3293, 
-	3294, 3295, 3296, 3297, 3299, 3298, 1909, 1910, 
+	3295, 3296, 3297, 3298, 3299, 3294, 1909, 1910, 
 	1909, 1910, 1909, 1910, 1909, 1910, 1909, 1910, 
 	1909, 1910, 1912, 1912, 1912, 1912, 1912, 1912, 
 	1914, 1914, 1914, 1914, 1914, 1914, 1908, 1911, 
@@ -24773,8 +24773,8 @@ static const short _x86_64_decoder_indicies[] = {
 	5415, 5360, 5363, 5366, 5369, 5372, 5375, 5378, 
 	5381, 5384, 5386, 5388, 5390, 5392, 5394, 5396, 
 	5398, 5400, 5402, 5404, 5406, 5408, 5410, 5412, 
-	5414, 5416, 5417, 5418, 5419, 5420, 5421, 5423, 
-	5422, 5424, 34, 5426, 5427, 5429, 5431, 5425, 
+	5414, 5416, 5417, 5419, 5420, 5421, 5422, 5423, 
+	5418, 5424, 34, 5426, 5427, 5429, 5431, 5425, 
 	5428, 5430, 5432, 34, 5434, 5435, 5437, 5438, 
 	5440, 5441, 5443, 5444, 5446, 5447, 5449, 5450, 
 	5452, 5453, 5455, 5457, 5459, 5461, 5463, 5465, 
@@ -39883,183 +39883,183 @@ _match:
 	{ SET_OPERANDS_COUNT(5); }
 	break;
 	case 30:
-	{ SET_OPERAND_TYPE(0, OperandSize8bit); }
+	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_8_BIT); }
 	break;
 	case 31:
-	{ SET_OPERAND_TYPE(0, OperandSize16bit); }
+	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_16_BIT); }
 	break;
 	case 32:
-	{ SET_OPERAND_TYPE(0, OperandSize32bit); }
+	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
 	break;
 	case 33:
-	{ SET_OPERAND_TYPE(0, OperandSize64bit); }
+	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
 	break;
 	case 34:
-	{ SET_OPERAND_TYPE(0, OperandSize128bit); }
+	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_128_BIT); }
 	break;
 	case 35:
-	{ SET_OPERAND_TYPE(0, OperandSize256bit); }
+	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_256_BIT); }
 	break;
 	case 36:
-	{ SET_OPERAND_TYPE(0, OperandControlRegister); }
+	{ SET_OPERAND_TYPE(0, OPERAND_CONTROL_REGISTER); }
 	break;
 	case 37:
-	{ SET_OPERAND_TYPE(0, OperandDebugRegister); }
+	{ SET_OPERAND_TYPE(0, OPERAND_DEBUG_REGISTER); }
 	break;
 	case 38:
-	{ SET_OPERAND_TYPE(0, OperandFarPtr); }
+	{ SET_OPERAND_TYPE(0, OPERAND_FAR_PTR); }
 	break;
 	case 39:
-	{ SET_OPERAND_TYPE(0, OperandFloatSize32bit); }
+	{ SET_OPERAND_TYPE(0, OPERAND_FLOAT_SIZE_32_BIT); }
 	break;
 	case 40:
-	{ SET_OPERAND_TYPE(0, OperandFloatSize64bit); }
+	{ SET_OPERAND_TYPE(0, OPERAND_FLOAT_SIZE_64_BIT); }
 	break;
 	case 41:
-	{ SET_OPERAND_TYPE(0, OperandFloatSize80bit); }
+	{ SET_OPERAND_TYPE(0, OPERAND_FLOAT_SIZE_80_BIT); }
 	break;
 	case 42:
-	{ SET_OPERAND_TYPE(0, OperandMMX); }
+	{ SET_OPERAND_TYPE(0, OPERAND_MMX); }
 	break;
 	case 43:
-	{ SET_OPERAND_TYPE(0, OperandSegmentRegister); }
+	{ SET_OPERAND_TYPE(0, OPERAND_SEGMENT_REGISTER); }
 	break;
 	case 44:
-	{ SET_OPERAND_TYPE(0, OperandSelector); }
+	{ SET_OPERAND_TYPE(0, OPERAND_SELECTOR); }
 	break;
 	case 45:
-	{ SET_OPERAND_TYPE(0, OperandST); }
+	{ SET_OPERAND_TYPE(0, OPERAND_ST); }
 	break;
 	case 46:
-	{ SET_OPERAND_TYPE(0, OperandX87Size16bit); }
+	{ SET_OPERAND_TYPE(0, OPERAND_X87_SIZE_16_BIT); }
 	break;
 	case 47:
-	{ SET_OPERAND_TYPE(0, OperandX87Size32bit); }
+	{ SET_OPERAND_TYPE(0, OPERAND_X87_SIZE_32_BIT); }
 	break;
 	case 48:
-	{ SET_OPERAND_TYPE(0, OperandX87Size64bit); }
+	{ SET_OPERAND_TYPE(0, OPERAND_X87_SIZE_64_BIT); }
 	break;
 	case 49:
-	{ SET_OPERAND_TYPE(0, OperandX87BCD); }
+	{ SET_OPERAND_TYPE(0, OPERAND_X87_BCD); }
 	break;
 	case 50:
-	{ SET_OPERAND_TYPE(0, OperandX87ENV); }
+	{ SET_OPERAND_TYPE(0, OPERAND_X87_ENV); }
 	break;
 	case 51:
 	{
-    SET_OPERAND_TYPE(0, OperandX87MMXXMMSTATE);
+    SET_OPERAND_TYPE(0, OPERAND_X87_MMX_MM_STATE);
   }
 	break;
 	case 52:
-	{ SET_OPERAND_TYPE(0, OperandX87STATE); }
+	{ SET_OPERAND_TYPE(0, OPERAND_X87_STATE); }
 	break;
 	case 53:
-	{ SET_OPERAND_TYPE(0, OperandXMM); }
+	{ SET_OPERAND_TYPE(0, OPERAND_XMM); }
 	break;
 	case 54:
-	{ SET_OPERAND_TYPE(0, OperandYMM); }
+	{ SET_OPERAND_TYPE(0, OPERAND_YMM); }
 	break;
 	case 55:
-	{ SET_OPERAND_TYPE(1, OperandSize8bit); }
+	{ SET_OPERAND_TYPE(1, OPERAND_SIZE_8_BIT); }
 	break;
 	case 56:
-	{ SET_OPERAND_TYPE(1, OperandSize16bit); }
+	{ SET_OPERAND_TYPE(1, OPERAND_SIZE_16_BIT); }
 	break;
 	case 57:
-	{ SET_OPERAND_TYPE(1, OperandSize32bit); }
+	{ SET_OPERAND_TYPE(1, OPERAND_SIZE_32_BIT); }
 	break;
 	case 58:
-	{ SET_OPERAND_TYPE(1, OperandSize64bit); }
+	{ SET_OPERAND_TYPE(1, OPERAND_SIZE_64_BIT); }
 	break;
 	case 59:
-	{ SET_OPERAND_TYPE(1, OperandSize128bit); }
+	{ SET_OPERAND_TYPE(1, OPERAND_SIZE_128_BIT); }
 	break;
 	case 60:
-	{ SET_OPERAND_TYPE(1, OperandSize256bit); }
+	{ SET_OPERAND_TYPE(1, OPERAND_SIZE_256_BIT); }
 	break;
 	case 61:
-	{ SET_OPERAND_TYPE(1, OperandControlRegister); }
+	{ SET_OPERAND_TYPE(1, OPERAND_CONTROL_REGISTER); }
 	break;
 	case 62:
-	{ SET_OPERAND_TYPE(1, OperandDebugRegister); }
+	{ SET_OPERAND_TYPE(1, OPERAND_DEBUG_REGISTER); }
 	break;
 	case 63:
-	{ SET_OPERAND_TYPE(1, OperandFarPtr); }
+	{ SET_OPERAND_TYPE(1, OPERAND_FAR_PTR); }
 	break;
 	case 64:
-	{ SET_OPERAND_TYPE(1, OperandFloatSize32bit); }
+	{ SET_OPERAND_TYPE(1, OPERAND_FLOAT_SIZE_32_BIT); }
 	break;
 	case 65:
-	{ SET_OPERAND_TYPE(1, OperandFloatSize64bit); }
+	{ SET_OPERAND_TYPE(1, OPERAND_FLOAT_SIZE_64_BIT); }
 	break;
 	case 66:
-	{ SET_OPERAND_TYPE(1, OperandMMX); }
+	{ SET_OPERAND_TYPE(1, OPERAND_MMX); }
 	break;
 	case 67:
-	{ SET_OPERAND_TYPE(1, OperandSegmentRegister); }
+	{ SET_OPERAND_TYPE(1, OPERAND_SEGMENT_REGISTER); }
 	break;
 	case 68:
-	{ SET_OPERAND_TYPE(1, OperandST); }
+	{ SET_OPERAND_TYPE(1, OPERAND_ST); }
 	break;
 	case 69:
-	{ SET_OPERAND_TYPE(1, OperandXMM); }
+	{ SET_OPERAND_TYPE(1, OPERAND_XMM); }
 	break;
 	case 70:
-	{ SET_OPERAND_TYPE(1, OperandYMM); }
+	{ SET_OPERAND_TYPE(1, OPERAND_YMM); }
 	break;
 	case 71:
-	{ SET_OPERAND_TYPE(2, OperandSize8bit); }
+	{ SET_OPERAND_TYPE(2, OPERAND_SIZE_8_BIT); }
 	break;
 	case 72:
-	{ SET_OPERAND_TYPE(2, OperandSize16bit); }
+	{ SET_OPERAND_TYPE(2, OPERAND_SIZE_16_BIT); }
 	break;
 	case 73:
-	{ SET_OPERAND_TYPE(2, OperandSize32bit); }
+	{ SET_OPERAND_TYPE(2, OPERAND_SIZE_32_BIT); }
 	break;
 	case 74:
-	{ SET_OPERAND_TYPE(2, OperandSize64bit); }
+	{ SET_OPERAND_TYPE(2, OPERAND_SIZE_64_BIT); }
 	break;
 	case 75:
-	{ SET_OPERAND_TYPE(2, OperandSize128bit); }
+	{ SET_OPERAND_TYPE(2, OPERAND_SIZE_128_BIT); }
 	break;
 	case 76:
-	{ SET_OPERAND_TYPE(2, OperandSize256bit); }
+	{ SET_OPERAND_TYPE(2, OPERAND_SIZE_256_BIT); }
 	break;
 	case 77:
-	{ SET_OPERAND_TYPE(2, OperandFloatSize32bit); }
+	{ SET_OPERAND_TYPE(2, OPERAND_FLOAT_SIZE_32_BIT); }
 	break;
 	case 78:
-	{ SET_OPERAND_TYPE(2, OperandFloatSize64bit); }
+	{ SET_OPERAND_TYPE(2, OPERAND_FLOAT_SIZE_64_BIT); }
 	break;
 	case 79:
-	{ SET_OPERAND_TYPE(2, OperandXMM); }
+	{ SET_OPERAND_TYPE(2, OPERAND_XMM); }
 	break;
 	case 80:
-	{ SET_OPERAND_TYPE(2, OperandYMM); }
+	{ SET_OPERAND_TYPE(2, OPERAND_YMM); }
 	break;
 	case 81:
-	{ SET_OPERAND_TYPE(3, OperandSize8bit); }
+	{ SET_OPERAND_TYPE(3, OPERAND_SIZE_8_BIT); }
 	break;
 	case 82:
-	{ SET_OPERAND_TYPE(3, OperandSize128bit); }
+	{ SET_OPERAND_TYPE(3, OPERAND_SIZE_128_BIT); }
 	break;
 	case 83:
-	{ SET_OPERAND_TYPE(3, OperandSize256bit); }
+	{ SET_OPERAND_TYPE(3, OPERAND_SIZE_256_BIT); }
 	break;
 	case 84:
-	{ SET_OPERAND_TYPE(3, OperandFloatSize32bit); }
+	{ SET_OPERAND_TYPE(3, OPERAND_FLOAT_SIZE_32_BIT); }
 	break;
 	case 85:
-	{ SET_OPERAND_TYPE(3, OperandFloatSize64bit); }
+	{ SET_OPERAND_TYPE(3, OPERAND_FLOAT_SIZE_64_BIT); }
 	break;
 	case 86:
-	{ SET_OPERAND_TYPE(3, OperandXMM); }
+	{ SET_OPERAND_TYPE(3, OPERAND_XMM); }
 	break;
 	case 87:
-	{ SET_OPERAND_TYPE(3, OperandYMM); }
+	{ SET_OPERAND_TYPE(3, OPERAND_YMM); }
 	break;
 	case 88:
-	{ SET_OPERAND_TYPE(4, OperandSize2bit); }
+	{ SET_OPERAND_TYPE(4, OPERAND_SIZE_2_BIT); }
 	break;
 	case 89:
 	{ SET_OPERAND_NAME(0, REG_DS_RBX); }
@@ -40176,13 +40176,13 @@ _match:
   }
 	break;
 	case 123:
-	{  SET_OPERAND_TYPE(0, OperandSize64bit); }
+	{  SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
 	break;
 	case 124:
-	{  SET_OPERAND_TYPE(1, OperandSize64bit); }
+	{  SET_OPERAND_TYPE(1, OPERAND_SIZE_64_BIT); }
 	break;
 	case 125:
-	{  SET_OPERAND_TYPE(2, OperandSize64bit); }
+	{  SET_OPERAND_TYPE(2, OPERAND_SIZE_64_BIT); }
 	break;
 	case 126:
 	{

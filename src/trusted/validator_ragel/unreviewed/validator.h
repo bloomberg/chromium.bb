@@ -90,24 +90,50 @@ enum validation_options {
 };
 
 /*
- * If CALL_USER_CALLBACK_ON_EACH_INSTRUCTION option is used then callback
- * is called on each instruction, otherwise only errorneous instructions
- * are inspected via callback.  If callback returns FALSE at least once
- * then ValidateChunkXXX returns false, if callback marks all the error
- * as unimportant by always returning TRUE then ValidateChunkXXX returns
- * TRUE as well.
+ * Callback is invoked by ValidateChunk* for all erroneous instructions
+ * (or for all instructions if CALL_USER_CALLBACK_ON_EACH_INSTRUCTION is set).
+ * It's up to the callback to decide whether this particual place is indeed
+ * a violation. If callback returns FALSE at least once, validation result
+ * becomes FALSE.
+ *
+ * When callback is called for invalid jump tagret,
+ *   instruction_start = instruction_end = jump target
+ *
+ * Minimal user_callback looks like this:
+ *   ...
+ *   if (validation_info & (VALIDATION_ERRORS_MASK | BAD_JUMP_TARGET))
+ *     return FALSE;
+ *   else
+ *     return TRUE;
+ *   ...
  */
 typedef Bool (*validation_callback_func) (const uint8_t *instruction_start,
                                           const uint8_t *instruction_end,
                                           uint32_t validation_info,
                                           void *callback_data);
 
+/*
+ * Returns whether given piece of code is valid.
+ * It is assumed that size % kBundleSize = 0.
+ * For every error/warning, user_callback is called.
+ * Alternatively, if CALL_USER_CALLBACK_ON_EACH_INSTRUCTION flag in options is
+ * set, user_callback is called for every instruction.
+ * If PROCESS_CHUNK_AS_A_CONTIGUOUS_STREAM flag in options is set,
+ * instructions crossing bundle boundaries are not considered erroneous.
+ *
+ * Actually validation result is computed as conjunction of values returned
+ * by all invocations of user_callback, so custom validation logic can be
+ * placed there.
+ */
 Bool ValidateChunkAMD64(const uint8_t *data, size_t size,
                         enum validation_options options,
                         const NaClCPUFeaturesX86 *cpu_features,
                         validation_callback_func user_callback,
                         void *callback_data);
 
+/*
+ * See ValidateChunkAMD64
+ */
 Bool ValidateChunkIA32(const uint8_t *data, size_t size,
                        enum validation_options options,
                        const NaClCPUFeaturesX86 *cpu_features,

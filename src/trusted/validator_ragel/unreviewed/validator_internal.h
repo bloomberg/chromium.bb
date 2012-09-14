@@ -218,13 +218,13 @@ enum operand_kind {
 
 #define SET_OPERAND_NAME(N, S) operand_states |= ((S) << ((N) << 3))
 #define SET_OPERAND_TYPE(N, T) SET_OPERAND_TYPE_ ## T(N)
-#define SET_OPERAND_TYPE_OperandSize8bit(N) \
+#define SET_OPERAND_TYPE_OPERAND_SIZE_8_BIT(N) \
   operand_states |= OperandSandbox8bit << (5 + ((N) << 3))
-#define SET_OPERAND_TYPE_OperandSize16bit(N) \
+#define SET_OPERAND_TYPE_OPERAND_SIZE_16_BIT(N) \
   operand_states |= OperandSandboxUnrestricted << (5 + ((N) << 3))
-#define SET_OPERAND_TYPE_OperandSize32bit(N) \
+#define SET_OPERAND_TYPE_OPERAND_SIZE_32_BIT(N) \
   operand_states |= OperandSandboxRestricted << (5 + ((N) << 3))
-#define SET_OPERAND_TYPE_OperandSize64bit(N) \
+#define SET_OPERAND_TYPE_OPERAND_SIZE_64_BIT(N) \
   operand_states |= OperandSandboxUnrestricted << (5 + ((N) << 3))
 #define CHECK_OPERAND(N, S, T) \
   ((operand_states & (0xff << ((N) << 3))) == ((S | (T << 5)) << ((N) << 3)))

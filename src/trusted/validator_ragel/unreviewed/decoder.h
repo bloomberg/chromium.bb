@@ -13,33 +13,45 @@
 EXTERN_C_BEGIN
 
 enum operand_type {
-  OperandSize2bit,       /* See VPERMIL2Px instruction for description.       */
-  OperandSize8bit,
-  OperandSize16bit,
-  OperandSize32bit,
-  OperandSize64bit,
-  OperandSize128bit,
-  OperandSize256bit,
-  OperandFloatSize16bit, /* OperandFloatSize16bit, OperandFloatSize32bit,     */
-  OperandFloatSize32bit, /* OperandFloatSize64bit, and OperandFloatSize80bit  */
-  OperandFloatSize64bit, /* are used for in-memory operands and XMM:          */
-  OperandFloatSize80bit, /*   X87 registers always have type OperandST.       */
-  OperandX87Size16bit,   /* OperandX87Size16bit, OperandX87Size32bit, and     */
-  OperandX87Size32bit,   /* OperandX87Size64bit are signed integers in memory.*/
-  OperandX87Size64bit,   /* They are used for x87 instructions.               */
-  OperandX87BCD,         /* 10-byte packed BCD value in memory.               */
-  OperandX87ENV,         /* A 14-byte or 28-byte x87 environment.             */
-  OperandX87STATE,       /* A 94-byte or 108-byte x87 state.                  */
-  OperandX87MMXXMMSTATE, /* A 512-byte extended x87/MMX/XMM state.            */
-  OperandST,
-  OperandSelector,        /* Operand is 6bytes/10bytes selector in memory.    */
-  OperandFarPtr,          /* Operand is 6bytes/10bytes far pointer in memory. */
-  OperandSegmentRegister, /* Operand is segment register: %{e,c,s,d,f,g}s.    */
-  OperandControlRegister, /* Operand is control register: %crX.               */
-  OperandDebugRegister,   /* Operand is debug register: %drX.                 */
-  OperandMMX,
-  OperandXMM,
-  OperandYMM
+
+  /*
+   * These are for general-purpose registers, memory access and immediates.
+   * They are not used for XMM, MMX etc.
+  */
+  OPERAND_SIZE_2_BIT, /* See VPERMIL2Px instruction for description. */
+  OPERAND_SIZE_8_BIT,
+  OPERAND_SIZE_16_BIT,
+  OPERAND_SIZE_32_BIT,
+  OPERAND_SIZE_64_BIT,
+  OPERAND_SIZE_128_BIT,
+  OPERAND_SIZE_256_BIT,
+
+  /* OPERAND_FLOAT_SIZE_*_BIT are used for in-memory operands. */
+  OPERAND_FLOAT_SIZE_16_BIT,
+  OPERAND_FLOAT_SIZE_32_BIT,
+  OPERAND_FLOAT_SIZE_64_BIT,
+  OPERAND_FLOAT_SIZE_80_BIT,
+
+  /* OPERAND_X87_SIZE_64_BIT are signed integers in memory.*/
+  OPERAND_X87_SIZE_16_BIT,
+  OPERAND_X87_SIZE_32_BIT,
+  OPERAND_X87_SIZE_64_BIT,
+
+
+  OPERAND_X87_BCD,          /* 10-byte packed BCD value in memory.           */
+  OPERAND_X87_ENV,          /* A 14-byte or 28-byte x87 environment.         */
+  OPERAND_X87_STATE,        /* A 94-byte or 108-byte x87 state.              */
+  OPERAND_X87_MMX_MM_STATE, /* A 512-byte extended x87/MMX/XMM state.        */
+  OPERAND_SELECTOR,         /* Operand is 6/10 bytes selector in memory.     */
+  OPERAND_FAR_PTR,          /* Operand is 6/10 bytes far pointer in memory.  */
+
+  OPERAND_ST,               /* Any X87 register.                             */
+  OPERAND_SEGMENT_REGISTER, /* Operand is segment register: %{e,c,s,d,f,g}s. */
+  OPERAND_CONTROL_REGISTER, /* Operand is control register: %crX.            */
+  OPERAND_DEBUG_REGISTER,   /* Operand is debug register: %drX.              */
+  OPERAND_MMX,
+  OPERAND_XMM,
+  OPERAND_YMM
 };
 
 enum register_name {

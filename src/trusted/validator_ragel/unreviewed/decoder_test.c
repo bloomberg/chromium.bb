@@ -243,9 +243,9 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
         if ((!strcmp(instruction_name, "call")) ||
             (!strcmp(instruction_name, "jmp"))) {
           switch (instruction->operands[i].type) {
-            case OperandSize8bit: show_name_suffix = FALSE; break;
-            case OperandSize16bit: show_name_suffix = 'w'; break;
-            case OperandSize32bit:
+            case OPERAND_SIZE_8_BIT: show_name_suffix = FALSE; break;
+            case OPERAND_SIZE_16_BIT: show_name_suffix = 'w'; break;
+            case OPERAND_SIZE_32_BIT:
               if (((struct DecodeState *)userdata)->ia32_mode) {
                 show_name_suffix = FALSE;
               } else {
@@ -254,30 +254,30 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
                 rexw_counted = TRUE;
               }
               break;
-            case OperandSize2bit:
-            case OperandSize64bit:
-            case OperandSize128bit:
-            case OperandSize256bit:
-            case OperandFloatSize16bit:
-            case OperandFloatSize32bit:
-            case OperandFloatSize64bit:
-            case OperandFloatSize80bit:
-            case OperandX87Size16bit:
-            case OperandX87Size32bit:
-            case OperandX87Size64bit:
-            case OperandX87BCD:
-            case OperandX87ENV:
-            case OperandX87STATE:
-            case OperandX87MMXXMMSTATE:
-            case OperandST:
-            case OperandSelector:
-            case OperandFarPtr:
-            case OperandSegmentRegister:
-            case OperandControlRegister:
-            case OperandDebugRegister:
-            case OperandMMX:
-            case OperandXMM:
-            case OperandYMM:
+            case OPERAND_SIZE_2_BIT:
+            case OPERAND_SIZE_64_BIT:
+            case OPERAND_SIZE_128_BIT:
+            case OPERAND_SIZE_256_BIT:
+            case OPERAND_FLOAT_SIZE_16_BIT:
+            case OPERAND_FLOAT_SIZE_32_BIT:
+            case OPERAND_FLOAT_SIZE_64_BIT:
+            case OPERAND_FLOAT_SIZE_80_BIT:
+            case OPERAND_X87_SIZE_16_BIT:
+            case OPERAND_X87_SIZE_32_BIT:
+            case OPERAND_X87_SIZE_64_BIT:
+            case OPERAND_X87_BCD:
+            case OPERAND_X87_ENV:
+            case OPERAND_X87_STATE:
+            case OPERAND_X87_MMX_MM_STATE:
+            case OPERAND_ST:
+            case OPERAND_SELECTOR:
+            case OPERAND_FAR_PTR:
+            case OPERAND_SEGMENT_REGISTER:
+            case OPERAND_CONTROL_REGISTER:
+            case OPERAND_DEBUG_REGISTER:
+            case OPERAND_MMX:
+            case OPERAND_XMM:
+            case OPERAND_YMM:
               assert(FALSE);
           }
         } else {
@@ -291,40 +291,40 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
                  (instruction->operands[i].name == REG_DS_RSI)) {
         if (show_name_suffix) {
           switch (instruction->operands[i].type) {
-            case OperandSize8bit: show_name_suffix = 'b'; break;
-            case OperandSize16bit: show_name_suffix = 'w'; break;
-            case OperandSize32bit: show_name_suffix = 'l'; break;
-            case OperandSize64bit: show_name_suffix = 'q'; break;
-            case OperandFloatSize32bit: show_name_suffix = 's'; break;
-            case OperandFloatSize64bit: show_name_suffix = 'l'; break;
-            case OperandFloatSize80bit:show_name_suffix = 't'; break;
-            case OperandX87Size32bit: show_name_suffix = 'l'; break;
-            case OperandX87Size64bit: show_name_suffix = 'L'; break;
-            case OperandSize2bit:
-            case OperandX87Size16bit:
-            case OperandX87BCD:
-            case OperandX87ENV:
-            case OperandX87STATE:
-            case OperandX87MMXXMMSTATE:
-            case OperandSize128bit:
-            case OperandSize256bit:
-            case OperandFarPtr:
-            case OperandMMX:
-            case OperandXMM:
-            case OperandYMM:
-            case OperandSelector: show_name_suffix = FALSE; break;
-            case OperandFloatSize16bit:
-            case OperandST:
-            case OperandSegmentRegister:
-            case OperandControlRegister:
-            case OperandDebugRegister:
+            case OPERAND_SIZE_8_BIT: show_name_suffix = 'b'; break;
+            case OPERAND_SIZE_16_BIT: show_name_suffix = 'w'; break;
+            case OPERAND_SIZE_32_BIT: show_name_suffix = 'l'; break;
+            case OPERAND_SIZE_64_BIT: show_name_suffix = 'q'; break;
+            case OPERAND_FLOAT_SIZE_32_BIT: show_name_suffix = 's'; break;
+            case OPERAND_FLOAT_SIZE_64_BIT: show_name_suffix = 'l'; break;
+            case OPERAND_FLOAT_SIZE_80_BIT:show_name_suffix = 't'; break;
+            case OPERAND_X87_SIZE_32_BIT: show_name_suffix = 'l'; break;
+            case OPERAND_X87_SIZE_64_BIT: show_name_suffix = 'L'; break;
+            case OPERAND_SIZE_2_BIT:
+            case OPERAND_X87_SIZE_16_BIT:
+            case OPERAND_X87_BCD:
+            case OPERAND_X87_ENV:
+            case OPERAND_X87_STATE:
+            case OPERAND_X87_MMX_MM_STATE:
+            case OPERAND_SIZE_128_BIT:
+            case OPERAND_SIZE_256_BIT:
+            case OPERAND_FAR_PTR:
+            case OPERAND_MMX:
+            case OPERAND_XMM:
+            case OPERAND_YMM:
+            case OPERAND_SELECTOR: show_name_suffix = FALSE; break;
+            case OPERAND_FLOAT_SIZE_16_BIT:
+            case OPERAND_ST:
+            case OPERAND_SEGMENT_REGISTER:
+            case OPERAND_CONTROL_REGISTER:
+            case OPERAND_DEBUG_REGISTER:
               assert(FALSE);
           }
         }
       } else {
         /* "Empty" rex prefix (0x40) is used to select "sil"/"dil"/"spl"/"bpl".
          */
-        if (instruction->operands[i].type == OperandSize8bit &&
+        if (instruction->operands[i].type == OPERAND_SIZE_8_BIT &&
             instruction->operands[i].name <= REG_R15) {
           empty_rex_prefix_ok = TRUE;
         }
@@ -347,46 +347,46 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
            suffix anyway. */
         if ((i == 1) && (!strcmp(instruction_name, "crc32"))) {
           switch (instruction->operands[i].type) {
-            case OperandSize8bit: show_name_suffix = 'b'; break;
-            case OperandSize16bit: show_name_suffix = 'w'; break;
-            case OperandSize32bit: show_name_suffix = 'l'; break;
-            case OperandSize64bit: show_name_suffix = 'q'; break;
-            case OperandSize2bit:
-            case OperandSize128bit:
-            case OperandSize256bit:
-            case OperandFloatSize16bit:
-            case OperandFloatSize32bit:
-            case OperandFloatSize64bit:
-            case OperandFloatSize80bit:
-            case OperandX87Size16bit:
-            case OperandX87Size32bit:
-            case OperandX87Size64bit:
-            case OperandX87BCD:
-            case OperandX87ENV:
-            case OperandX87STATE:
-            case OperandX87MMXXMMSTATE:
-            case OperandST:
-            case OperandSelector:
-            case OperandFarPtr:
-            case OperandSegmentRegister:
-            case OperandControlRegister:
-            case OperandDebugRegister:
-            case OperandMMX:
-            case OperandXMM:
-            case OperandYMM:
+            case OPERAND_SIZE_8_BIT: show_name_suffix = 'b'; break;
+            case OPERAND_SIZE_16_BIT: show_name_suffix = 'w'; break;
+            case OPERAND_SIZE_32_BIT: show_name_suffix = 'l'; break;
+            case OPERAND_SIZE_64_BIT: show_name_suffix = 'q'; break;
+            case OPERAND_SIZE_2_BIT:
+            case OPERAND_SIZE_128_BIT:
+            case OPERAND_SIZE_256_BIT:
+            case OPERAND_FLOAT_SIZE_16_BIT:
+            case OPERAND_FLOAT_SIZE_32_BIT:
+            case OPERAND_FLOAT_SIZE_64_BIT:
+            case OPERAND_FLOAT_SIZE_80_BIT:
+            case OPERAND_X87_SIZE_16_BIT:
+            case OPERAND_X87_SIZE_32_BIT:
+            case OPERAND_X87_SIZE_64_BIT:
+            case OPERAND_X87_BCD:
+            case OPERAND_X87_ENV:
+            case OPERAND_X87_STATE:
+            case OPERAND_X87_MMX_MM_STATE:
+            case OPERAND_ST:
+            case OPERAND_SELECTOR:
+            case OPERAND_FAR_PTR:
+            case OPERAND_SEGMENT_REGISTER:
+            case OPERAND_CONTROL_REGISTER:
+            case OPERAND_DEBUG_REGISTER:
+            case OPERAND_MMX:
+            case OPERAND_XMM:
+            case OPERAND_YMM:
               assert(FALSE);
           }
         }
       }
       if ((instruction->operands[i].name >= REG_R8) &&
           (instruction->operands[i].name <= REG_R15) &&
-          (instruction->operands[i].type != OperandMMX)) {
+          (instruction->operands[i].type != OPERAND_MMX)) {
         if (!((struct DecodeState *)userdata)->ia32_mode) {
           ++rex_bits;
           /* HACK: objdump mistakenly allows "lock" with "mov %crX,%rXX" only in
              32bit mode.  It's perfectly valid in 64bit mode, too, so instead of
              changing the decoder we fix it here.  */
-          if (instruction->operands[i].type == OperandControlRegister) {
+          if (instruction->operands[i].type == OPERAND_CONTROL_REGISTER) {
             if ((*begin == 0xf0) && !(instruction->prefix.lock)) {
               print_name("lock ");
               if (!(rex_prefix & 0x04)) {
@@ -410,7 +410,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
           ++rex_bits;
         }
       }
-      if ((instruction->operands[i].type == OperandSize64bit) &&
+      if ((instruction->operands[i].type == OPERAND_SIZE_64_BIT) &&
                                                                 !rexw_counted) {
         if (strcmp(instruction_name, "callq") &&
             strcmp(instruction_name, "cmpxchg8b") &&
@@ -550,12 +550,12 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
           rexw_counted = TRUE;
         }
         if ((operands_count == 2) &&
-            ((instruction->operands[1-i].type == OperandControlRegister) ||
-             (instruction->operands[1-i].type == OperandDebugRegister))) {
+            ((instruction->operands[1-i].type == OPERAND_CONTROL_REGISTER) ||
+             (instruction->operands[1-i].type == OPERAND_DEBUG_REGISTER))) {
           --rex_bits;
         }
       }
-      if ((instruction->operands[i].type == OperandSize128bit) &&
+      if ((instruction->operands[i].type == OPERAND_SIZE_128_BIT) &&
                                                                 !rexw_counted) {
         if (!strcmp(instruction_name, "cmpxchg16b")) {
           ++rex_bits;
@@ -567,7 +567,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
   if ((!strcmp(instruction_name, "cvtsi2sd") ||
        !strcmp(instruction_name, "cvtsi2ss")) &&
       instruction->operands[1].name == REG_RM) {
-    if (instruction->operands[1].type == OperandSize32bit) {
+    if (instruction->operands[1].type == OPERAND_SIZE_32_BIT) {
       show_name_suffix = 'l';
     } else {
       show_name_suffix = 'q';
@@ -578,7 +578,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
        !strcmp(instruction_name, "vcvttpd2dq") ||
        !strcmp(instruction_name, "vcvttpd2ps")) &&
       instruction->operands[1].name == REG_RM) {
-    if (instruction->operands[1].type == OperandSize128bit) {
+    if (instruction->operands[1].type == OPERAND_SIZE_128_BIT) {
       show_name_suffix = 'x';
     } else {
       show_name_suffix = 'y';
@@ -587,7 +587,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
   if ((!strcmp(instruction_name, "vcvtsi2sd") ||
        !strcmp(instruction_name, "vcvtsi2ss")) &&
       instruction->operands[2].name == REG_RM) {
-    if (instruction->operands[2].type == OperandSize32bit) {
+    if (instruction->operands[2].type == OPERAND_SIZE_32_BIT) {
       show_name_suffix = 'l';
     } else {
       show_name_suffix = 'q';
@@ -804,7 +804,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
   if (rex_prefix & 0x08) {
     /* rex.W is not shown for relative jumps with rel32 operand, but are
        shown for relative jumps with rel8 operands.  */
-    if ((instruction->operands[0].type == OperandSize32bit) &&
+    if ((instruction->operands[0].type == OPERAND_SIZE_32_BIT) &&
         (!strcmp(instruction_name, "ja") ||
          !strcmp(instruction_name, "jae") ||
          !strcmp(instruction_name, "jb") ||
@@ -889,7 +889,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
   }
   if (!strcmp(instruction_name, "mov")) {
     if ((instruction->operands[1].name == REG_IMM) &&
-       (instruction->operands[1].type == OperandSize64bit)) {
+       (instruction->operands[1].type == OPERAND_SIZE_64_BIT)) {
       print_name("abs");
     }
   }
@@ -987,320 +987,320 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
        objdump insist on 32bit/64 bit.  This is clearly error in objdump so we
        fix it here and not in decoder.  */
     if ((begin[0] >= 0x48) && (begin[0] <= 0x4f) && (begin[1] == 0x8e) &&
-        (instruction->operands[i].type == OperandSize16bit)) {
-      operand_type = OperandSize64bit;
+        (instruction->operands[i].type == OPERAND_SIZE_16_BIT)) {
+      operand_type = OPERAND_SIZE_64_BIT;
     } else if (((begin[0] == 0x8e) ||
        ((begin[0] >= 0x40) && (begin[0] <= 0x4f) && (begin[1] == 0x8e))) &&
-        (instruction->operands[i].type == OperandSize16bit)) {
-      operand_type = OperandSize32bit;
+        (instruction->operands[i].type == OPERAND_SIZE_16_BIT)) {
+      operand_type = OPERAND_SIZE_32_BIT;
     } else {
       operand_type = instruction->operands[i].type;
     }
     switch (instruction->operands[i].name) {
       case REG_RAX: switch (operand_type) {
-        case OperandSize8bit: printf("%%al"); break;
-        case OperandSize16bit: printf("%%ax"); break;
-        case OperandSize32bit: printf("%%eax"); break;
-        case OperandSize64bit: printf("%%rax"); break;
-        case OperandST: printf("%%st(0)"); break;
-        case OperandMMX: printf("%%mm0"); break;
-        case OperandFloatSize32bit:
-        case OperandFloatSize64bit:
-        case OperandSize128bit:
-        case OperandXMM: printf("%%xmm0"); break;
-        case OperandSize256bit:
-        case OperandYMM: printf("%%ymm0"); break;
-        case OperandSegmentRegister: printf("%%es"); break;
-        case OperandControlRegister: printf("%%cr0"); break;
-        case OperandDebugRegister: printf("%%db0"); break;
+        case OPERAND_SIZE_8_BIT: printf("%%al"); break;
+        case OPERAND_SIZE_16_BIT: printf("%%ax"); break;
+        case OPERAND_SIZE_32_BIT: printf("%%eax"); break;
+        case OPERAND_SIZE_64_BIT: printf("%%rax"); break;
+        case OPERAND_ST: printf("%%st(0)"); break;
+        case OPERAND_MMX: printf("%%mm0"); break;
+        case OPERAND_FLOAT_SIZE_32_BIT:
+        case OPERAND_FLOAT_SIZE_64_BIT:
+        case OPERAND_SIZE_128_BIT:
+        case OPERAND_XMM: printf("%%xmm0"); break;
+        case OPERAND_SIZE_256_BIT:
+        case OPERAND_YMM: printf("%%ymm0"); break;
+        case OPERAND_SEGMENT_REGISTER: printf("%%es"); break;
+        case OPERAND_CONTROL_REGISTER: printf("%%cr0"); break;
+        case OPERAND_DEBUG_REGISTER: printf("%%db0"); break;
         default: assert(FALSE);
       }
       break;
       case REG_RCX: switch (operand_type) {
-        case OperandSize8bit: printf("%%cl"); break;
-        case OperandSize16bit: printf("%%cx"); break;
-        case OperandSize32bit: printf("%%ecx"); break;
-        case OperandSize64bit: printf("%%rcx"); break;
-        case OperandST: printf("%%st(1)"); break;
-        case OperandMMX: printf("%%mm1"); break;
-        case OperandFloatSize32bit:
-        case OperandFloatSize64bit:
-        case OperandSize128bit:
-        case OperandXMM: printf("%%xmm1"); break;
-        case OperandSize256bit:
-        case OperandYMM: printf("%%ymm1"); break;
-        case OperandSegmentRegister: printf("%%cs"); break;
-        case OperandControlRegister: printf("%%cr1"); break;
-        case OperandDebugRegister: printf("%%db1"); break;
+        case OPERAND_SIZE_8_BIT: printf("%%cl"); break;
+        case OPERAND_SIZE_16_BIT: printf("%%cx"); break;
+        case OPERAND_SIZE_32_BIT: printf("%%ecx"); break;
+        case OPERAND_SIZE_64_BIT: printf("%%rcx"); break;
+        case OPERAND_ST: printf("%%st(1)"); break;
+        case OPERAND_MMX: printf("%%mm1"); break;
+        case OPERAND_FLOAT_SIZE_32_BIT:
+        case OPERAND_FLOAT_SIZE_64_BIT:
+        case OPERAND_SIZE_128_BIT:
+        case OPERAND_XMM: printf("%%xmm1"); break;
+        case OPERAND_SIZE_256_BIT:
+        case OPERAND_YMM: printf("%%ymm1"); break;
+        case OPERAND_SEGMENT_REGISTER: printf("%%cs"); break;
+        case OPERAND_CONTROL_REGISTER: printf("%%cr1"); break;
+        case OPERAND_DEBUG_REGISTER: printf("%%db1"); break;
         default: assert(FALSE);
       }
       break;
       case REG_RDX: switch (operand_type) {
-        case OperandSize8bit: printf("%%dl"); break;
-        case OperandSize16bit: printf("%%dx"); break;
-        case OperandSize32bit: printf("%%edx"); break;
-        case OperandSize64bit: printf("%%rdx"); break;
-        case OperandST: printf("%%st(2)"); break;
-        case OperandMMX: printf("%%mm2"); break;
-        case OperandFloatSize32bit:
-        case OperandFloatSize64bit:
-        case OperandSize128bit:
-        case OperandXMM: printf("%%xmm2"); break;
-        case OperandSize256bit:
-        case OperandYMM: printf("%%ymm2"); break;
-        case OperandSegmentRegister: printf("%%ss"); break;
-        case OperandControlRegister: printf("%%cr2"); break;
-        case OperandDebugRegister: printf("%%db2"); break;
+        case OPERAND_SIZE_8_BIT: printf("%%dl"); break;
+        case OPERAND_SIZE_16_BIT: printf("%%dx"); break;
+        case OPERAND_SIZE_32_BIT: printf("%%edx"); break;
+        case OPERAND_SIZE_64_BIT: printf("%%rdx"); break;
+        case OPERAND_ST: printf("%%st(2)"); break;
+        case OPERAND_MMX: printf("%%mm2"); break;
+        case OPERAND_FLOAT_SIZE_32_BIT:
+        case OPERAND_FLOAT_SIZE_64_BIT:
+        case OPERAND_SIZE_128_BIT:
+        case OPERAND_XMM: printf("%%xmm2"); break;
+        case OPERAND_SIZE_256_BIT:
+        case OPERAND_YMM: printf("%%ymm2"); break;
+        case OPERAND_SEGMENT_REGISTER: printf("%%ss"); break;
+        case OPERAND_CONTROL_REGISTER: printf("%%cr2"); break;
+        case OPERAND_DEBUG_REGISTER: printf("%%db2"); break;
         default: assert(FALSE);
       }
       break;
       case REG_RBX: switch (operand_type) {
-        case OperandSize8bit: printf("%%bl"); break;
-        case OperandSize16bit: printf("%%bx"); break;
-        case OperandSize32bit: printf("%%ebx"); break;
-        case OperandSize64bit: printf("%%rbx"); break;
-        case OperandST: printf("%%st(3)"); break;
-        case OperandMMX: printf("%%mm3"); break;
-        case OperandFloatSize32bit:
-        case OperandFloatSize64bit:
-        case OperandSize128bit:
-        case OperandXMM: printf("%%xmm3"); break;
-        case OperandSize256bit:
-        case OperandYMM: printf("%%ymm3"); break;
-        case OperandSegmentRegister: printf("%%ds"); break;
-        case OperandControlRegister: printf("%%cr3"); break;
-        case OperandDebugRegister: printf("%%db3"); break;
+        case OPERAND_SIZE_8_BIT: printf("%%bl"); break;
+        case OPERAND_SIZE_16_BIT: printf("%%bx"); break;
+        case OPERAND_SIZE_32_BIT: printf("%%ebx"); break;
+        case OPERAND_SIZE_64_BIT: printf("%%rbx"); break;
+        case OPERAND_ST: printf("%%st(3)"); break;
+        case OPERAND_MMX: printf("%%mm3"); break;
+        case OPERAND_FLOAT_SIZE_32_BIT:
+        case OPERAND_FLOAT_SIZE_64_BIT:
+        case OPERAND_SIZE_128_BIT:
+        case OPERAND_XMM: printf("%%xmm3"); break;
+        case OPERAND_SIZE_256_BIT:
+        case OPERAND_YMM: printf("%%ymm3"); break;
+        case OPERAND_SEGMENT_REGISTER: printf("%%ds"); break;
+        case OPERAND_CONTROL_REGISTER: printf("%%cr3"); break;
+        case OPERAND_DEBUG_REGISTER: printf("%%db3"); break;
         default: assert(FALSE);
       }
       break;
       case REG_RSP: switch (operand_type) {
-        case OperandSize8bit: if (rex_prefix)
+        case OPERAND_SIZE_8_BIT: if (rex_prefix)
             printf("%%spl");
           else
             printf("%%ah");
           break;
-        case OperandSize16bit: printf("%%sp"); break;
-        case OperandSize32bit: printf("%%esp"); break;
-        case OperandSize64bit: printf("%%rsp"); break;
-        case OperandST: printf("%%st(4)"); break;
-        case OperandMMX: printf("%%mm4"); break;
-        case OperandFloatSize32bit:
-        case OperandFloatSize64bit:
-        case OperandSize128bit:
-        case OperandXMM: printf("%%xmm4"); break;
-        case OperandSize256bit:
-        case OperandYMM: printf("%%ymm4"); break;
-        case OperandSegmentRegister: printf("%%fs"); break;
-        case OperandControlRegister: printf("%%cr4"); break;
-        case OperandDebugRegister: printf("%%db4"); break;
+        case OPERAND_SIZE_16_BIT: printf("%%sp"); break;
+        case OPERAND_SIZE_32_BIT: printf("%%esp"); break;
+        case OPERAND_SIZE_64_BIT: printf("%%rsp"); break;
+        case OPERAND_ST: printf("%%st(4)"); break;
+        case OPERAND_MMX: printf("%%mm4"); break;
+        case OPERAND_FLOAT_SIZE_32_BIT:
+        case OPERAND_FLOAT_SIZE_64_BIT:
+        case OPERAND_SIZE_128_BIT:
+        case OPERAND_XMM: printf("%%xmm4"); break;
+        case OPERAND_SIZE_256_BIT:
+        case OPERAND_YMM: printf("%%ymm4"); break;
+        case OPERAND_SEGMENT_REGISTER: printf("%%fs"); break;
+        case OPERAND_CONTROL_REGISTER: printf("%%cr4"); break;
+        case OPERAND_DEBUG_REGISTER: printf("%%db4"); break;
         default: assert(FALSE);
       }
       break;
       case REG_RBP: switch (operand_type) {
-        case OperandSize8bit: if (rex_prefix)
+        case OPERAND_SIZE_8_BIT: if (rex_prefix)
             printf("%%bpl");
           else
             printf("%%ch");
           break;
-        case OperandSize16bit: printf("%%bp"); break;
-        case OperandSize32bit: printf("%%ebp"); break;
-        case OperandSize64bit: printf("%%rbp"); break;
-        case OperandST: printf("%%st(5)"); break;
-        case OperandMMX: printf("%%mm5"); break;
-        case OperandFloatSize32bit:
-        case OperandFloatSize64bit:
-        case OperandSize128bit:
-        case OperandXMM: printf("%%xmm5"); break;
-        case OperandSize256bit:
-        case OperandYMM: printf("%%ymm5"); break;
-        case OperandSegmentRegister: printf("%%gs"); break;
-        case OperandControlRegister: printf("%%cr5"); break;
-        case OperandDebugRegister: printf("%%db5"); break;
+        case OPERAND_SIZE_16_BIT: printf("%%bp"); break;
+        case OPERAND_SIZE_32_BIT: printf("%%ebp"); break;
+        case OPERAND_SIZE_64_BIT: printf("%%rbp"); break;
+        case OPERAND_ST: printf("%%st(5)"); break;
+        case OPERAND_MMX: printf("%%mm5"); break;
+        case OPERAND_FLOAT_SIZE_32_BIT:
+        case OPERAND_FLOAT_SIZE_64_BIT:
+        case OPERAND_SIZE_128_BIT:
+        case OPERAND_XMM: printf("%%xmm5"); break;
+        case OPERAND_SIZE_256_BIT:
+        case OPERAND_YMM: printf("%%ymm5"); break;
+        case OPERAND_SEGMENT_REGISTER: printf("%%gs"); break;
+        case OPERAND_CONTROL_REGISTER: printf("%%cr5"); break;
+        case OPERAND_DEBUG_REGISTER: printf("%%db5"); break;
         default: assert(FALSE);
       }
       break;
       case REG_RSI: switch (operand_type) {
-        case OperandSize8bit: if (rex_prefix)
+        case OPERAND_SIZE_8_BIT: if (rex_prefix)
             printf("%%sil");
           else
             printf("%%dh");
           break;
-        case OperandSize16bit: printf("%%si"); break;
-        case OperandSize32bit: printf("%%esi"); break;
-        case OperandSize64bit: printf("%%rsi"); break;
-        case OperandST: printf("%%st(6)"); break;
-        case OperandMMX: printf("%%mm6"); break;
-        case OperandFloatSize32bit:
-        case OperandFloatSize64bit:
-        case OperandSize128bit:
-        case OperandXMM: printf("%%xmm6"); break;
-        case OperandSize256bit:
-        case OperandYMM: printf("%%ymm6"); break;
-        case OperandControlRegister: printf("%%cr6"); break;
-        case OperandDebugRegister: printf("%%db6"); break;
+        case OPERAND_SIZE_16_BIT: printf("%%si"); break;
+        case OPERAND_SIZE_32_BIT: printf("%%esi"); break;
+        case OPERAND_SIZE_64_BIT: printf("%%rsi"); break;
+        case OPERAND_ST: printf("%%st(6)"); break;
+        case OPERAND_MMX: printf("%%mm6"); break;
+        case OPERAND_FLOAT_SIZE_32_BIT:
+        case OPERAND_FLOAT_SIZE_64_BIT:
+        case OPERAND_SIZE_128_BIT:
+        case OPERAND_XMM: printf("%%xmm6"); break;
+        case OPERAND_SIZE_256_BIT:
+        case OPERAND_YMM: printf("%%ymm6"); break;
+        case OPERAND_CONTROL_REGISTER: printf("%%cr6"); break;
+        case OPERAND_DEBUG_REGISTER: printf("%%db6"); break;
         default: assert(FALSE);
       }
       break;
       case REG_RDI: switch (operand_type) {
-        case OperandSize8bit: if (rex_prefix)
+        case OPERAND_SIZE_8_BIT: if (rex_prefix)
             printf("%%dil");
           else
             printf("%%bh");
           break;
-        case OperandSize16bit: printf("%%di"); break;
-        case OperandSize32bit: printf("%%edi"); break;
-        case OperandSize64bit: printf("%%rdi"); break;
-        case OperandST: printf("%%st(7)"); break;
-        case OperandMMX: printf("%%mm7"); break;
-        case OperandFloatSize32bit:
-        case OperandFloatSize64bit:
-        case OperandSize128bit:
-        case OperandXMM: printf("%%xmm7"); break;
-        case OperandSize256bit:
-        case OperandYMM: printf("%%ymm7"); break;
-        case OperandControlRegister: printf("%%cr7"); break;
-        case OperandDebugRegister: printf("%%db7"); break;
+        case OPERAND_SIZE_16_BIT: printf("%%di"); break;
+        case OPERAND_SIZE_32_BIT: printf("%%edi"); break;
+        case OPERAND_SIZE_64_BIT: printf("%%rdi"); break;
+        case OPERAND_ST: printf("%%st(7)"); break;
+        case OPERAND_MMX: printf("%%mm7"); break;
+        case OPERAND_FLOAT_SIZE_32_BIT:
+        case OPERAND_FLOAT_SIZE_64_BIT:
+        case OPERAND_SIZE_128_BIT:
+        case OPERAND_XMM: printf("%%xmm7"); break;
+        case OPERAND_SIZE_256_BIT:
+        case OPERAND_YMM: printf("%%ymm7"); break;
+        case OPERAND_CONTROL_REGISTER: printf("%%cr7"); break;
+        case OPERAND_DEBUG_REGISTER: printf("%%db7"); break;
         default: assert(FALSE);
       }
       break;
       case REG_R8: switch (operand_type) {
-        case OperandSize8bit: printf("%%r8b"); break;
-        case OperandSize16bit: printf("%%r8w"); break;
-        case OperandSize32bit: printf("%%r8d"); break;
-        case OperandSize64bit: printf("%%r8"); break;
-        case OperandMMX: printf("%%mm0"); break;
-        case OperandFloatSize32bit:
-        case OperandFloatSize64bit:
-        case OperandSize128bit:
-        case OperandXMM: printf("%%xmm8"); break;
-        case OperandSize256bit:
-        case OperandYMM: printf("%%ymm8"); break;
-        case OperandControlRegister: printf("%%cr8"); break;
-        case OperandDebugRegister: printf("%%db8"); break;
+        case OPERAND_SIZE_8_BIT: printf("%%r8b"); break;
+        case OPERAND_SIZE_16_BIT: printf("%%r8w"); break;
+        case OPERAND_SIZE_32_BIT: printf("%%r8d"); break;
+        case OPERAND_SIZE_64_BIT: printf("%%r8"); break;
+        case OPERAND_MMX: printf("%%mm0"); break;
+        case OPERAND_FLOAT_SIZE_32_BIT:
+        case OPERAND_FLOAT_SIZE_64_BIT:
+        case OPERAND_SIZE_128_BIT:
+        case OPERAND_XMM: printf("%%xmm8"); break;
+        case OPERAND_SIZE_256_BIT:
+        case OPERAND_YMM: printf("%%ymm8"); break;
+        case OPERAND_CONTROL_REGISTER: printf("%%cr8"); break;
+        case OPERAND_DEBUG_REGISTER: printf("%%db8"); break;
         default: assert(FALSE);
       }
       break;
       case REG_R9: switch (operand_type) {
-        case OperandSize8bit: printf("%%r9b"); break;
-        case OperandSize16bit: printf("%%r9w"); break;
-        case OperandSize32bit: printf("%%r9d"); break;
-        case OperandSize64bit: printf("%%r9"); break;
-        case OperandMMX: printf("%%mm1"); break;
-        case OperandFloatSize32bit:
-        case OperandFloatSize64bit:
-        case OperandSize128bit:
-        case OperandXMM: printf("%%xmm9"); break;
-        case OperandSize256bit:
-        case OperandYMM: printf("%%ymm9"); break;
-        case OperandControlRegister: printf("%%cr9"); break;
-        case OperandDebugRegister: printf("%%db9"); break;
+        case OPERAND_SIZE_8_BIT: printf("%%r9b"); break;
+        case OPERAND_SIZE_16_BIT: printf("%%r9w"); break;
+        case OPERAND_SIZE_32_BIT: printf("%%r9d"); break;
+        case OPERAND_SIZE_64_BIT: printf("%%r9"); break;
+        case OPERAND_MMX: printf("%%mm1"); break;
+        case OPERAND_FLOAT_SIZE_32_BIT:
+        case OPERAND_FLOAT_SIZE_64_BIT:
+        case OPERAND_SIZE_128_BIT:
+        case OPERAND_XMM: printf("%%xmm9"); break;
+        case OPERAND_SIZE_256_BIT:
+        case OPERAND_YMM: printf("%%ymm9"); break;
+        case OPERAND_CONTROL_REGISTER: printf("%%cr9"); break;
+        case OPERAND_DEBUG_REGISTER: printf("%%db9"); break;
         default: assert(FALSE);
       }
       break;
       case REG_R10: switch (operand_type) {
-        case OperandSize8bit: printf("%%r10b"); break;
-        case OperandSize16bit: printf("%%r10w"); break;
-        case OperandSize32bit: printf("%%r10d"); break;
-        case OperandSize64bit: printf("%%r10"); break;
-        case OperandMMX: printf("%%mm2"); break;
-        case OperandFloatSize32bit:
-        case OperandFloatSize64bit:
-        case OperandSize128bit:
-        case OperandXMM: printf("%%xmm10"); break;
-        case OperandSize256bit:
-        case OperandYMM: printf("%%ymm10"); break;
-        case OperandControlRegister: printf("%%cr10"); break;
-        case OperandDebugRegister: printf("%%db10"); break;
+        case OPERAND_SIZE_8_BIT: printf("%%r10b"); break;
+        case OPERAND_SIZE_16_BIT: printf("%%r10w"); break;
+        case OPERAND_SIZE_32_BIT: printf("%%r10d"); break;
+        case OPERAND_SIZE_64_BIT: printf("%%r10"); break;
+        case OPERAND_MMX: printf("%%mm2"); break;
+        case OPERAND_FLOAT_SIZE_32_BIT:
+        case OPERAND_FLOAT_SIZE_64_BIT:
+        case OPERAND_SIZE_128_BIT:
+        case OPERAND_XMM: printf("%%xmm10"); break;
+        case OPERAND_SIZE_256_BIT:
+        case OPERAND_YMM: printf("%%ymm10"); break;
+        case OPERAND_CONTROL_REGISTER: printf("%%cr10"); break;
+        case OPERAND_DEBUG_REGISTER: printf("%%db10"); break;
         default: assert(FALSE);
       }
       break;
       case REG_R11: switch (operand_type) {
-        case OperandSize8bit: printf("%%r11b"); break;
-        case OperandSize16bit: printf("%%r11w"); break;
-        case OperandSize32bit: printf("%%r11d"); break;
-        case OperandSize64bit: printf("%%r11"); break;
-        case OperandMMX: printf("%%mm3"); break;
-        case OperandFloatSize32bit:
-        case OperandFloatSize64bit:
-        case OperandSize128bit:
-        case OperandXMM: printf("%%xmm11"); break;
-        case OperandSize256bit:
-        case OperandYMM: printf("%%ymm11"); break;
-        case OperandControlRegister: printf("%%cr11"); break;
-        case OperandDebugRegister: printf("%%db11"); break;
+        case OPERAND_SIZE_8_BIT: printf("%%r11b"); break;
+        case OPERAND_SIZE_16_BIT: printf("%%r11w"); break;
+        case OPERAND_SIZE_32_BIT: printf("%%r11d"); break;
+        case OPERAND_SIZE_64_BIT: printf("%%r11"); break;
+        case OPERAND_MMX: printf("%%mm3"); break;
+        case OPERAND_FLOAT_SIZE_32_BIT:
+        case OPERAND_FLOAT_SIZE_64_BIT:
+        case OPERAND_SIZE_128_BIT:
+        case OPERAND_XMM: printf("%%xmm11"); break;
+        case OPERAND_SIZE_256_BIT:
+        case OPERAND_YMM: printf("%%ymm11"); break;
+        case OPERAND_CONTROL_REGISTER: printf("%%cr11"); break;
+        case OPERAND_DEBUG_REGISTER: printf("%%db11"); break;
         default: assert(FALSE);
       }
       break;
       case REG_R12: switch (operand_type) {
-        case OperandSize8bit: printf("%%r12b"); break;
-        case OperandSize16bit: printf("%%r12w"); break;
-        case OperandSize32bit: printf("%%r12d"); break;
-        case OperandSize64bit: printf("%%r12"); break;
-        case OperandMMX: printf("%%mm4"); break;
-        case OperandFloatSize32bit:
-        case OperandFloatSize64bit:
-        case OperandSize128bit:
-        case OperandXMM: printf("%%xmm12"); break;
-        case OperandSize256bit:
-        case OperandYMM: printf("%%ymm12"); break;
-        case OperandControlRegister: printf("%%cr12"); break;
-        case OperandDebugRegister: printf("%%db12"); break;
+        case OPERAND_SIZE_8_BIT: printf("%%r12b"); break;
+        case OPERAND_SIZE_16_BIT: printf("%%r12w"); break;
+        case OPERAND_SIZE_32_BIT: printf("%%r12d"); break;
+        case OPERAND_SIZE_64_BIT: printf("%%r12"); break;
+        case OPERAND_MMX: printf("%%mm4"); break;
+        case OPERAND_FLOAT_SIZE_32_BIT:
+        case OPERAND_FLOAT_SIZE_64_BIT:
+        case OPERAND_SIZE_128_BIT:
+        case OPERAND_XMM: printf("%%xmm12"); break;
+        case OPERAND_SIZE_256_BIT:
+        case OPERAND_YMM: printf("%%ymm12"); break;
+        case OPERAND_CONTROL_REGISTER: printf("%%cr12"); break;
+        case OPERAND_DEBUG_REGISTER: printf("%%db12"); break;
         default: assert(FALSE);
       }
       break;
       case REG_R13: switch (operand_type) {
-        case OperandSize8bit: printf("%%r13b"); break;
-        case OperandSize16bit: printf("%%r13w"); break;
-        case OperandSize32bit: printf("%%r13d"); break;
-        case OperandSize64bit: printf("%%r13"); break;
-        case OperandMMX: printf("%%mm5"); break;
-        case OperandFloatSize32bit:
-        case OperandFloatSize64bit:
-        case OperandSize128bit:
-        case OperandXMM: printf("%%xmm13"); break;
-        case OperandSize256bit:
-        case OperandYMM: printf("%%ymm13"); break;
-        case OperandControlRegister: printf("%%cr13"); break;
-        case OperandDebugRegister: printf("%%db13"); break;
+        case OPERAND_SIZE_8_BIT: printf("%%r13b"); break;
+        case OPERAND_SIZE_16_BIT: printf("%%r13w"); break;
+        case OPERAND_SIZE_32_BIT: printf("%%r13d"); break;
+        case OPERAND_SIZE_64_BIT: printf("%%r13"); break;
+        case OPERAND_MMX: printf("%%mm5"); break;
+        case OPERAND_FLOAT_SIZE_32_BIT:
+        case OPERAND_FLOAT_SIZE_64_BIT:
+        case OPERAND_SIZE_128_BIT:
+        case OPERAND_XMM: printf("%%xmm13"); break;
+        case OPERAND_SIZE_256_BIT:
+        case OPERAND_YMM: printf("%%ymm13"); break;
+        case OPERAND_CONTROL_REGISTER: printf("%%cr13"); break;
+        case OPERAND_DEBUG_REGISTER: printf("%%db13"); break;
         default: assert(FALSE);
       }
       break;
       case REG_R14: switch (operand_type) {
-        case OperandSize8bit: printf("%%r14b"); break;
-        case OperandSize16bit: printf("%%r14w"); break;
-        case OperandSize32bit: printf("%%r14d"); break;
-        case OperandSize64bit: printf("%%r14"); break;
-        case OperandMMX: printf("%%mm6"); break;
-        case OperandFloatSize32bit:
-        case OperandFloatSize64bit:
-        case OperandSize128bit:
-        case OperandXMM: printf("%%xmm14"); break;
-        case OperandSize256bit:
-        case OperandYMM: printf("%%ymm14"); break;
-        case OperandControlRegister: printf("%%cr14"); break;
-        case OperandDebugRegister: printf("%%db14"); break;
+        case OPERAND_SIZE_8_BIT: printf("%%r14b"); break;
+        case OPERAND_SIZE_16_BIT: printf("%%r14w"); break;
+        case OPERAND_SIZE_32_BIT: printf("%%r14d"); break;
+        case OPERAND_SIZE_64_BIT: printf("%%r14"); break;
+        case OPERAND_MMX: printf("%%mm6"); break;
+        case OPERAND_FLOAT_SIZE_32_BIT:
+        case OPERAND_FLOAT_SIZE_64_BIT:
+        case OPERAND_SIZE_128_BIT:
+        case OPERAND_XMM: printf("%%xmm14"); break;
+        case OPERAND_SIZE_256_BIT:
+        case OPERAND_YMM: printf("%%ymm14"); break;
+        case OPERAND_CONTROL_REGISTER: printf("%%cr14"); break;
+        case OPERAND_DEBUG_REGISTER: printf("%%db14"); break;
         default: assert(FALSE);
       }
       break;
       case REG_R15: switch (operand_type) {
-        case OperandSize8bit: printf("%%r15b"); break;
-        case OperandSize16bit: printf("%%r15w"); break;
-        case OperandSize32bit: printf("%%r15d"); break;
-        case OperandSize64bit: printf("%%r15"); break;
-        case OperandMMX: printf("%%mm7"); break;
-        case OperandFloatSize32bit:
-        case OperandFloatSize64bit:
-        case OperandSize128bit:
-        case OperandXMM: printf("%%xmm15"); break;
-        case OperandSize256bit:
-        case OperandYMM: printf("%%ymm15"); break;
-        case OperandControlRegister: printf("%%cr15"); break;
-        case OperandDebugRegister: printf("%%db15"); break;
+        case OPERAND_SIZE_8_BIT: printf("%%r15b"); break;
+        case OPERAND_SIZE_16_BIT: printf("%%r15w"); break;
+        case OPERAND_SIZE_32_BIT: printf("%%r15d"); break;
+        case OPERAND_SIZE_64_BIT: printf("%%r15"); break;
+        case OPERAND_MMX: printf("%%mm7"); break;
+        case OPERAND_FLOAT_SIZE_32_BIT:
+        case OPERAND_FLOAT_SIZE_64_BIT:
+        case OPERAND_SIZE_128_BIT:
+        case OPERAND_XMM: printf("%%xmm15"); break;
+        case OPERAND_SIZE_256_BIT:
+        case OPERAND_YMM: printf("%%ymm15"); break;
+        case OPERAND_CONTROL_REGISTER: printf("%%cr15"); break;
+        case OPERAND_DEBUG_REGISTER: printf("%%db15"); break;
         default: assert(FALSE);
       }
       break;
       case REG_ST:
-        assert(operand_type == OperandST);
+        assert(operand_type == OPERAND_ST);
         printf("%%st");
         break;
       case REG_RM: {
@@ -1495,7 +1495,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
           printf("%%ds:(%%rsi)");
         }
         break;
-      case JMP_TO: if (instruction->operands[0].type == OperandSize16bit)
+      case JMP_TO: if (instruction->operands[0].type == OPERAND_SIZE_16_BIT)
           printf("0x%lx", (long)((end + instruction->rm.offset -
                          (((struct DecodeState *)userdata)->offset)) & 0xffff));
         else

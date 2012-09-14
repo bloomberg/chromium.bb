@@ -174,82 +174,82 @@
   action operands_count_is_4 { SET_OPERANDS_COUNT(4); }
   action operands_count_is_5 { SET_OPERANDS_COUNT(5); }
 
-  action operand0_8bit          { SET_OPERAND_TYPE(0, OperandSize8bit); }
-  action operand0_16bit         { SET_OPERAND_TYPE(0, OperandSize16bit); }
-  action operand0_32bit         { SET_OPERAND_TYPE(0, OperandSize32bit); }
-  action operand0_64bit         { SET_OPERAND_TYPE(0, OperandSize64bit); }
-  action operand0_128bit        { SET_OPERAND_TYPE(0, OperandSize128bit); }
-  action operand0_256bit        { SET_OPERAND_TYPE(0, OperandSize256bit); }
-  action operand0_creg          { SET_OPERAND_TYPE(0, OperandControlRegister); }
-  action operand0_dreg          { SET_OPERAND_TYPE(0, OperandDebugRegister); }
-  action operand0_farptr        { SET_OPERAND_TYPE(0, OperandFarPtr); }
-  action operand0_float32bit    { SET_OPERAND_TYPE(0, OperandFloatSize32bit); }
-  action operand0_float64bit    { SET_OPERAND_TYPE(0, OperandFloatSize64bit); }
-  action operand0_float80bit    { SET_OPERAND_TYPE(0, OperandFloatSize80bit); }
-  action operand0_mmx           { SET_OPERAND_TYPE(0, OperandMMX); }
-  action operand0_segreg        { SET_OPERAND_TYPE(0, OperandSegmentRegister); }
-  action operand0_selector      { SET_OPERAND_TYPE(0, OperandSelector); }
-  action operand0_x87           { SET_OPERAND_TYPE(0, OperandST); }
-  action operand0_x87_16bit     { SET_OPERAND_TYPE(0, OperandX87Size16bit); }
-  action operand0_x87_32bit     { SET_OPERAND_TYPE(0, OperandX87Size32bit); }
-  action operand0_x87_64bit     { SET_OPERAND_TYPE(0, OperandX87Size64bit); }
-  action operand0_x87_bcd       { SET_OPERAND_TYPE(0, OperandX87BCD); }
-  action operand0_x87_env       { SET_OPERAND_TYPE(0, OperandX87ENV); }
+  action operand0_16bit      { SET_OPERAND_TYPE(0, OPERAND_SIZE_16_BIT); }
+  action operand0_8bit       { SET_OPERAND_TYPE(0, OPERAND_SIZE_8_BIT); }
+  action operand0_32bit      { SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+  action operand0_64bit      { SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+  action operand0_128bit     { SET_OPERAND_TYPE(0, OPERAND_SIZE_128_BIT); }
+  action operand0_256bit     { SET_OPERAND_TYPE(0, OPERAND_SIZE_256_BIT); }
+  action operand0_creg       { SET_OPERAND_TYPE(0, OPERAND_CONTROL_REGISTER); }
+  action operand0_dreg       { SET_OPERAND_TYPE(0, OPERAND_DEBUG_REGISTER); }
+  action operand0_farptr     { SET_OPERAND_TYPE(0, OPERAND_FAR_PTR); }
+  action operand0_float32bit { SET_OPERAND_TYPE(0, OPERAND_FLOAT_SIZE_32_BIT); }
+  action operand0_float64bit { SET_OPERAND_TYPE(0, OPERAND_FLOAT_SIZE_64_BIT); }
+  action operand0_float80bit { SET_OPERAND_TYPE(0, OPERAND_FLOAT_SIZE_80_BIT); }
+  action operand0_mmx        { SET_OPERAND_TYPE(0, OPERAND_MMX); }
+  action operand0_segreg     { SET_OPERAND_TYPE(0, OPERAND_SEGMENT_REGISTER); }
+  action operand0_selector   { SET_OPERAND_TYPE(0, OPERAND_SELECTOR); }
+  action operand0_x87        { SET_OPERAND_TYPE(0, OPERAND_ST); }
+  action operand0_x87_16bit  { SET_OPERAND_TYPE(0, OPERAND_X87_SIZE_16_BIT); }
+  action operand0_x87_32bit  { SET_OPERAND_TYPE(0, OPERAND_X87_SIZE_32_BIT); }
+  action operand0_x87_64bit  { SET_OPERAND_TYPE(0, OPERAND_X87_SIZE_64_BIT); }
+  action operand0_x87_bcd    { SET_OPERAND_TYPE(0, OPERAND_X87_BCD); }
+  action operand0_x87_env    { SET_OPERAND_TYPE(0, OPERAND_X87_ENV); }
   action operand0_x87_mmx_xmm_state {
-    SET_OPERAND_TYPE(0, OperandX87MMXXMMSTATE);
+    SET_OPERAND_TYPE(0, OPERAND_X87_MMX_MM_STATE);
   }
-  action operand0_x87_state     { SET_OPERAND_TYPE(0, OperandX87STATE); }
-  action operand0_xmm           { SET_OPERAND_TYPE(0, OperandXMM); }
-  action operand0_ymm           { SET_OPERAND_TYPE(0, OperandYMM); }
+  action operand0_x87_state  { SET_OPERAND_TYPE(0, OPERAND_X87_STATE); }
+  action operand0_xmm        { SET_OPERAND_TYPE(0, OPERAND_XMM); }
+  action operand0_ymm        { SET_OPERAND_TYPE(0, OPERAND_YMM); }
 
-  action operand1_8bit          { SET_OPERAND_TYPE(1, OperandSize8bit); }
-  action operand1_16bit         { SET_OPERAND_TYPE(1, OperandSize16bit); }
-  action operand1_32bit         { SET_OPERAND_TYPE(1, OperandSize32bit); }
-  action operand1_64bit         { SET_OPERAND_TYPE(1, OperandSize64bit); }
-  action operand1_128bit        { SET_OPERAND_TYPE(1, OperandSize128bit); }
-  action operand1_256bit        { SET_OPERAND_TYPE(1, OperandSize256bit); }
-  action operand1_creg          { SET_OPERAND_TYPE(1, OperandControlRegister); }
-  action operand1_dreg          { SET_OPERAND_TYPE(1, OperandDebugRegister); }
-  action operand1_farptr        { SET_OPERAND_TYPE(1, OperandFarPtr); }
-  action operand1_float32bit    { SET_OPERAND_TYPE(1, OperandFloatSize32bit); }
-  action operand1_float64bit    { SET_OPERAND_TYPE(1, OperandFloatSize64bit); }
-  action operand1_mmx           { SET_OPERAND_TYPE(1, OperandMMX); }
-  action operand1_segreg        { SET_OPERAND_TYPE(1, OperandSegmentRegister); }
-  action operand1_x87           { SET_OPERAND_TYPE(1, OperandST); }
-  action operand1_xmm           { SET_OPERAND_TYPE(1, OperandXMM); }
-  action operand1_ymm           { SET_OPERAND_TYPE(1, OperandYMM); }
+  action operand1_8bit       { SET_OPERAND_TYPE(1, OPERAND_SIZE_8_BIT); }
+  action operand1_16bit      { SET_OPERAND_TYPE(1, OPERAND_SIZE_16_BIT); }
+  action operand1_32bit      { SET_OPERAND_TYPE(1, OPERAND_SIZE_32_BIT); }
+  action operand1_64bit      { SET_OPERAND_TYPE(1, OPERAND_SIZE_64_BIT); }
+  action operand1_128bit     { SET_OPERAND_TYPE(1, OPERAND_SIZE_128_BIT); }
+  action operand1_256bit     { SET_OPERAND_TYPE(1, OPERAND_SIZE_256_BIT); }
+  action operand1_creg       { SET_OPERAND_TYPE(1, OPERAND_CONTROL_REGISTER); }
+  action operand1_dreg       { SET_OPERAND_TYPE(1, OPERAND_DEBUG_REGISTER); }
+  action operand1_farptr     { SET_OPERAND_TYPE(1, OPERAND_FAR_PTR); }
+  action operand1_float32bit { SET_OPERAND_TYPE(1, OPERAND_FLOAT_SIZE_32_BIT); }
+  action operand1_float64bit { SET_OPERAND_TYPE(1, OPERAND_FLOAT_SIZE_64_BIT); }
+  action operand1_mmx        { SET_OPERAND_TYPE(1, OPERAND_MMX); }
+  action operand1_segreg     { SET_OPERAND_TYPE(1, OPERAND_SEGMENT_REGISTER); }
+  action operand1_x87        { SET_OPERAND_TYPE(1, OPERAND_ST); }
+  action operand1_xmm        { SET_OPERAND_TYPE(1, OPERAND_XMM); }
+  action operand1_ymm        { SET_OPERAND_TYPE(1, OPERAND_YMM); }
 
-  action operand2_8bit          { SET_OPERAND_TYPE(2, OperandSize8bit); }
-  action operand2_16bit         { SET_OPERAND_TYPE(2, OperandSize16bit); }
-  action operand2_32bit         { SET_OPERAND_TYPE(2, OperandSize32bit); }
-  action operand2_64bit         { SET_OPERAND_TYPE(2, OperandSize64bit); }
-  action operand2_128bit        { SET_OPERAND_TYPE(2, OperandSize128bit); }
-  action operand2_256bit        { SET_OPERAND_TYPE(2, OperandSize256bit); }
-  action operand2_float32bit    { SET_OPERAND_TYPE(2, OperandFloatSize32bit); }
-  action operand2_float64bit    { SET_OPERAND_TYPE(2, OperandFloatSize64bit); }
-  action operand2_xmm           { SET_OPERAND_TYPE(2, OperandXMM); }
-  action operand2_ymm           { SET_OPERAND_TYPE(2, OperandYMM); }
+  action operand2_8bit       { SET_OPERAND_TYPE(2, OPERAND_SIZE_8_BIT); }
+  action operand2_16bit      { SET_OPERAND_TYPE(2, OPERAND_SIZE_16_BIT); }
+  action operand2_32bit      { SET_OPERAND_TYPE(2, OPERAND_SIZE_32_BIT); }
+  action operand2_64bit      { SET_OPERAND_TYPE(2, OPERAND_SIZE_64_BIT); }
+  action operand2_128bit     { SET_OPERAND_TYPE(2, OPERAND_SIZE_128_BIT); }
+  action operand2_256bit     { SET_OPERAND_TYPE(2, OPERAND_SIZE_256_BIT); }
+  action operand2_float32bit { SET_OPERAND_TYPE(2, OPERAND_FLOAT_SIZE_32_BIT); }
+  action operand2_float64bit { SET_OPERAND_TYPE(2, OPERAND_FLOAT_SIZE_64_BIT); }
+  action operand2_xmm        { SET_OPERAND_TYPE(2, OPERAND_XMM); }
+  action operand2_ymm        { SET_OPERAND_TYPE(2, OPERAND_YMM); }
 
-  action operand3_8bit          { SET_OPERAND_TYPE(3, OperandSize8bit); }
-  action operand3_128bit        { SET_OPERAND_TYPE(3, OperandSize128bit); }
-  action operand3_256bit        { SET_OPERAND_TYPE(3, OperandSize256bit); }
-  action operand3_float32bit    { SET_OPERAND_TYPE(3, OperandFloatSize32bit); }
-  action operand3_float64bit    { SET_OPERAND_TYPE(3, OperandFloatSize64bit); }
-  action operand3_xmm           { SET_OPERAND_TYPE(3, OperandXMM); }
-  action operand3_ymm           { SET_OPERAND_TYPE(3, OperandYMM); }
+  action operand3_8bit       { SET_OPERAND_TYPE(3, OPERAND_SIZE_8_BIT); }
+  action operand3_128bit     { SET_OPERAND_TYPE(3, OPERAND_SIZE_128_BIT); }
+  action operand3_256bit     { SET_OPERAND_TYPE(3, OPERAND_SIZE_256_BIT); }
+  action operand3_float32bit { SET_OPERAND_TYPE(3, OPERAND_FLOAT_SIZE_32_BIT); }
+  action operand3_float64bit { SET_OPERAND_TYPE(3, OPERAND_FLOAT_SIZE_64_BIT); }
+  action operand3_xmm        { SET_OPERAND_TYPE(3, OPERAND_XMM); }
+  action operand3_ymm        { SET_OPERAND_TYPE(3, OPERAND_YMM); }
 
-  action operand4_2bit          { SET_OPERAND_TYPE(4, OperandSize2bit); }
+  action operand4_2bit       { SET_OPERAND_TYPE(4, OPERAND_SIZE_2_BIT); }
 
-  action operand0_ds_rbx           { SET_OPERAND_NAME(0, REG_DS_RBX); }
-  action operand0_ds_rsi           { SET_OPERAND_NAME(0, REG_DS_RSI); }
-  action operand0_es_rdi           { SET_OPERAND_NAME(0, REG_ES_RDI); }
-  action operand0_immediate        { SET_OPERAND_NAME(0, REG_IMM); }
-  action operand0_port_dx          { SET_OPERAND_NAME(0, REG_PORT_DX); }
-  action operand0_rax              { SET_OPERAND_NAME(0, REG_RAX); }
-  action operand0_rcx              { SET_OPERAND_NAME(0, REG_RCX); }
-  action operand0_rdx              { SET_OPERAND_NAME(0, REG_RDX); }
-  action operand0_rm               { SET_OPERAND_NAME(0, REG_RM); }
-  action operand0_st               { SET_OPERAND_NAME(0, REG_ST); }
+  action operand0_ds_rbx     { SET_OPERAND_NAME(0, REG_DS_RBX); }
+  action operand0_ds_rsi     { SET_OPERAND_NAME(0, REG_DS_RSI); }
+  action operand0_es_rdi     { SET_OPERAND_NAME(0, REG_ES_RDI); }
+  action operand0_immediate  { SET_OPERAND_NAME(0, REG_IMM); }
+  action operand0_port_dx    { SET_OPERAND_NAME(0, REG_PORT_DX); }
+  action operand0_rax        { SET_OPERAND_NAME(0, REG_RAX); }
+  action operand0_rcx        { SET_OPERAND_NAME(0, REG_RCX); }
+  action operand0_rdx        { SET_OPERAND_NAME(0, REG_RDX); }
+  action operand0_rm         { SET_OPERAND_NAME(0, REG_RM); }
+  action operand0_st         { SET_OPERAND_NAME(0, REG_ST); }
 
   action operand1_ds_rsi           { SET_OPERAND_NAME(1, REG_DS_RSI); }
   action operand1_es_rdi           { SET_OPERAND_NAME(1, REG_ES_RDI); }
@@ -302,9 +302,9 @@
   include operand_actions_common
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
 
-  action operand0_regsize {  SET_OPERAND_TYPE(0, OperandSize32bit); }
-  action operand1_regsize {  SET_OPERAND_TYPE(1, OperandSize32bit); }
-  action operand2_regsize {  SET_OPERAND_TYPE(2, OperandSize32bit); }
+  action operand0_regsize {  SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+  action operand1_regsize {  SET_OPERAND_TYPE(1, OPERAND_SIZE_32_BIT); }
+  action operand2_regsize {  SET_OPERAND_TYPE(2, OPERAND_SIZE_32_BIT); }
 
   action operand0_absolute_disp {
     SET_OPERAND_NAME(0, REG_RM);
@@ -362,9 +362,9 @@
   include operand_actions_common
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
 
-  action operand0_regsize {  SET_OPERAND_TYPE(0, OperandSize64bit); }
-  action operand1_regsize {  SET_OPERAND_TYPE(1, OperandSize64bit); }
-  action operand2_regsize {  SET_OPERAND_TYPE(2, OperandSize64bit); }
+  action operand0_regsize {  SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+  action operand1_regsize {  SET_OPERAND_TYPE(1, OPERAND_SIZE_64_BIT); }
+  action operand2_regsize {  SET_OPERAND_TYPE(2, OPERAND_SIZE_64_BIT); }
 
   action operand0_absolute_disp {
     SET_OPERAND_NAME(0, REG_RM);
