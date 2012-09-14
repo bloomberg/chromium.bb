@@ -684,7 +684,7 @@ bool ChromeMainDelegate::DelaySandboxInitialization(
   return process_type == switches::kNaClLoaderProcess ||
       process_type == switches::kRelauncherProcess;
 }
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) && !defined(OS_ANDROID)
 content::ZygoteForkDelegate* ChromeMainDelegate::ZygoteStarting() {
 #if defined(DISABLE_NACL)
   return NULL;
