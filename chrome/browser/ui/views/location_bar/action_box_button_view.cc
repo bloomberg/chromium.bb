@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/toolbar/action_box_menu_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/action_box_menu.h"
+#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/accessibility/accessible_view_state.h"
@@ -17,12 +18,10 @@
 
 namespace {
 
-// Colors used for button backgrounds.
-const SkColor kNormalBackgroundColor = SkColorSetRGB(255, 255, 255);
+// Colors used for button backgrounds and border.
 const SkColor kHotBackgroundColor = SkColorSetRGB(239, 239, 239);
 const SkColor kPushedBackgroundColor = SkColorSetRGB(207, 207, 207);
 
-const SkColor kNormalBorderColor = SkColorSetRGB(255, 255, 255);
 const SkColor kHotBorderColor = SkColorSetRGB(223, 223, 223);
 const SkColor kPushedBorderColor = SkColorSetRGB(191, 191, 191);
 
@@ -50,7 +49,8 @@ SkColor ActionBoxButtonView::GetBackgroundColor() {
     case BS_HOT:
       return kHotBackgroundColor;
     default:
-      return kNormalBackgroundColor;
+      return LocationBarView::GetColor(ToolbarModel::NONE,
+                                       LocationBarView::BACKGROUND);
   }
 }
 
@@ -61,7 +61,7 @@ SkColor ActionBoxButtonView::GetBorderColor() {
     case BS_HOT:
       return kHotBorderColor;
     default:
-      return kNormalBorderColor;
+      return GetBackgroundColor();
   }
 }
 
