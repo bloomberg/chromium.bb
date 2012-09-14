@@ -23,4 +23,8 @@ srpc_message_untrusted_nexe = env.ComponentProgram(
 node = env.CommandSelLdrTestNacl('srpc_message_untrusted_test.out',
                                  srpc_message_untrusted_nexe,
                                  args=['1048576', '65536', '32'])
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_srpc_message_untrusted_test')
+
+# TODO(ncbray) re-enable on Windows.
+# http://code.google.com/p/nativeclient/issues/detail?id=3022
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_srpc_message_untrusted_test',
+                       is_broken=env.Bit('host_windows'))
