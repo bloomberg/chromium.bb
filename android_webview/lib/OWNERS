@@ -1,0 +1,5 @@
+# Intentionally limiting approvers as this directory hold undesired chrome/
+# layer dependencies.
+set noparent
+joth@chromium.org
+torne@chromium.org
