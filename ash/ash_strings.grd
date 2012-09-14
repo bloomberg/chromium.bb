@@ -220,6 +220,9 @@ Press Ctrl+Alt+Z to cancel.
       <message name="IDS_ASH_STATUS_TRAY_SIGN_OUT" desc="The label used for the button in the status tray to sign out of the system.">
         Sign out
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_GUEST_LABEL" desc="The label used in the system tray's user card to indicate that the current session is a guest session.">
+        Guest
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_EXIT_GUEST" desc="The label used for the button in the status tray to terminate a guest session.">
         Exit guest
       </message>
@@ -273,7 +276,7 @@ Press Ctrl+Alt+Z to cancel.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_TURN_ON_WIFI" desc="The label used for the item to turn on Wi-Fi networks.">
         Turn WiFi on...
-      </message>      
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_ENABLE_MOBILE" desc="The label used for the item to enable cellular networks.">
         Enable mobile data
       </message>
@@ -391,7 +394,7 @@ Press Search or Shift to cancel.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_BATTERY_PERCENT_ONLY" desc="The label in the tray bubble setting row to show the remaining battery power as a percent.">
         <ph name="percentage">$1<ex>56</ex></ph>%
-      </message>      
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_BATTERY_TIME_UNTIL_FULL" desc="The label in the tray dialog to show a time estimate until the battery is fully charged.">
         <ph name="hour">$1<ex>2</ex></ph>h <ph name="minute">$2<ex>53</ex></ph>m until full
       </message>
@@ -400,7 +403,7 @@ Press Search or Shift to cancel.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_BATTERY_TIME_ONLY" desc="The label in the tray bubble settings row to show a time estimate until the battery is empty.">
         <ph name="hour">$1<ex>2</ex></ph>:<ph name="minute">$2<ex>53</ex></ph> left
-      </message>      
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_IP" desc="The label for the IP address of the network:">
         IP Address
       </message>
@@ -435,7 +438,7 @@ Press Search or Shift to cancel.
         This screen intentionally left blank
       </message>
       <message name="IDS_ASH_SECONDARY_MONITOR_SHORTCUT" desc="The shortcut text on the secondary monitors.">
-        Ctrl + 
+        Ctrl +
       </message>
       <message name="IDS_ASH_STATUS_TRAY_PREVIOUS_MENU" desc="The accessible text for header entries for detailed versions of status tray items.">
         Previous menu

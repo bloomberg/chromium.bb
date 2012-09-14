@@ -44,13 +44,7 @@ void BrowserNonClientFrameView::UpdateAvatarInfo() {
   gfx::Image avatar;
   string16 text;
   bool is_gaia_picture = false;
-  if (browser_view_->IsGuestSession()) {
-#if defined(OS_CHROMEOS)
-    avatar = rb.GetImageNamed(IDR_GUEST_ICON);
-#else
-    NOTREACHED();
-#endif
-  } else if (browser_view_->IsOffTheRecord()) {
+  if (browser_view_->IsOffTheRecord()) {
     avatar = rb.GetImageNamed(browser_view_->GetOTRIconResourceID());
   } else if (ManagedMode::IsInManagedMode()) {
     avatar = rb.GetImageNamed(IDR_MANAGED_MODE_AVATAR);

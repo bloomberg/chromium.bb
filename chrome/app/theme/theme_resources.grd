@@ -274,7 +274,6 @@
          <structure type="chrome_scaled_image" name="IDR_GOOGLE_LOGO_LG" file="google_chrome/google_logo_lg.png" />
       </if>
       <if expr="pp_ifdef('chromeos')">
-        <structure type="chrome_scaled_image" name="IDR_GUEST_ICON" file="guest_icon.png" />
         <structure type="chrome_scaled_image" name="IDR_HELP_MENU" file="help_16.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_HISTORY_FAVICON" file="common/favicon_history.png" />
@@ -853,7 +852,7 @@
         <structure type="chrome_scaled_image" name="IDR_USER_IMAGE_INITIALIZING" file="initializing_video.png" />
         <structure type="chrome_scaled_image" name="IDR_USER_IMAGE_NO_VIDEO" file="no_video.png" />
         <structure type="chrome_scaled_image" name="IDR_USER_IMAGE_RECYCLE" file="discard_wide.png" />
-        <structure type="chrome_scaled_image" name="IDR_VOLUME_BUBBLE_DOWN_ICON" file="volume_down_icon.png" />        
+        <structure type="chrome_scaled_image" name="IDR_VOLUME_BUBBLE_DOWN_ICON" file="volume_down_icon.png" />
         <structure type="chrome_scaled_image" name="IDR_VOLUME_BUBBLE_UP_ICON" file="volume_up_icon.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_WARNING" file="alert_small.png" />

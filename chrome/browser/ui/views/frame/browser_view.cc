@@ -468,7 +468,7 @@ bool BrowserView::IsGuestSession() const {
 bool BrowserView::ShouldShowAvatar() const {
   if (!IsBrowserTypeNormal())
     return false;
-  if (IsOffTheRecord())
+  if (IsOffTheRecord() && !IsGuestSession())
     return true;
   if (ManagedMode::IsInManagedMode())
     return true;

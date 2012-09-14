@@ -251,7 +251,8 @@ class UserView : public views::View,
 
 TrayUser::TrayUser()
     : user_(NULL),
-      avatar_(NULL) {
+      avatar_(NULL),
+      label_(NULL) {
 }
 
 TrayUser::~TrayUser() {
@@ -259,9 +260,18 @@ TrayUser::~TrayUser() {
 
 views::View* TrayUser::CreateTrayView(user::LoginStatus status) {
   CHECK(avatar_ == NULL);
-  avatar_ = new tray::RoundedImageView(kTrayRoundedBorderRadius);
+  CHECK(label_ == NULL);
+  if (status == user::LOGGED_IN_GUEST) {
+    label_ = new views::Label;
+    ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+    label_->SetText(bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_GUEST_LABEL));
+    SetupLabelForTray(label_);
+  } else {
+    avatar_ = new tray::RoundedImageView(kTrayRoundedBorderRadius);
+  }
   UpdateAfterLoginStatusChange(status);
-  return avatar_;
+  return avatar_ ? static_cast<views::View*>(avatar_)
+                 : static_cast<views::View*>(label_);
 }
 
 views::View* TrayUser::CreateDefaultView(user::LoginStatus status) {
@@ -279,6 +289,7 @@ views::View* TrayUser::CreateDetailedView(user::LoginStatus status) {
 
 void TrayUser::DestroyTrayView() {
   avatar_ = NULL;
+  label_ = NULL;
 }
 
 void TrayUser::DestroyDefaultView() {
@@ -289,19 +300,43 @@ void TrayUser::DestroyDetailedView() {
 }
 
 void TrayUser::UpdateAfterLoginStatusChange(user::LoginStatus status) {
-  if (status != user::LOGGED_IN_NONE && status != user::LOGGED_IN_KIOSK &&
-      status != user::LOGGED_IN_GUEST) {
-    avatar_->SetImage(
-        ash::Shell::GetInstance()->tray_delegate()->GetUserImage(),
-        gfx::Size(kUserIconSize, kUserIconSize));
-    avatar_->SetVisible(true);
-  } else {
-    avatar_->SetVisible(false);
+  switch (status) {
+    case user::LOGGED_IN_LOCKED:
+    case user::LOGGED_IN_USER:
+    case user::LOGGED_IN_OWNER:
+      avatar_->SetImage(
+          ash::Shell::GetInstance()->tray_delegate()->GetUserImage(),
+          gfx::Size(kUserIconSize, kUserIconSize));
+      avatar_->SetVisible(true);
+      break;
+
+    case user::LOGGED_IN_GUEST:
+      label_->SetVisible(true);
+      break;
+
+    case user::LOGGED_IN_KIOSK:
+    case user::LOGGED_IN_NONE:
+      avatar_->SetVisible(false);
+      break;
   }
 }
 
 void TrayUser::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
-  SetTrayImageItemBorder(avatar_, alignment);
+  if (avatar_) {
+    SetTrayImageItemBorder(avatar_, alignment);
+  } else {
+    if (alignment == SHELF_ALIGNMENT_BOTTOM) {
+      label_->set_border(views::Border::CreateEmptyBorder(
+          0, kTrayLabelItemHorizontalPaddingBottomAlignment,
+          0, kTrayLabelItemHorizontalPaddingBottomAlignment));
+    } else {
+      label_->set_border(views::Border::CreateEmptyBorder(
+          kTrayLabelItemVerticalPaddingVeriticalAlignment,
+          kTrayLabelItemHorizontalPaddingBottomAlignment,
+          kTrayLabelItemVerticalPaddingVeriticalAlignment,
+          kTrayLabelItemHorizontalPaddingBottomAlignment));
+    }
+  }
 }
 
 void TrayUser::OnUserUpdate() {

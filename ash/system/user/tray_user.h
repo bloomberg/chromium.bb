@@ -10,6 +10,7 @@
 
 namespace views {
 class ImageView;
+class Label;
 }
 
 namespace ash {
@@ -43,6 +44,7 @@ class TrayUser : public SystemTrayItem,
 
   tray::UserView* user_;
   tray::RoundedImageView* avatar_;
+  views::Label* label_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayUser);
 };
