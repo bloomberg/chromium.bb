@@ -5953,6 +5953,37 @@
    fun:_ZN20InterstitialPageImpl4ShowEv
    fun:_ZN14captive_portal28MockInterstitialPageDelegateC1EPN7content11WebContentsE
 }
+{
+   bug_149734a
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocEm
+   fun:_ZN3WTF16VectorBufferBaseIN7WebCore9AttributeEE14allocateBufferEm
+   fun:_ZN3WTF12VectorBufferIN7WebCore9AttributeELm4EE14allocateBufferEm
+   fun:_ZN3WTF6VectorIN7WebCore9AttributeELm4EE22reserveInitialCapacityEm
+   fun:_ZN7WebCore20ElementAttributeData13cloneDataFromERKS0_RKNS_7ElementERS3_
+}
+{
+   bug_149734b
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocEm
+   fun:_ZN3WTF16VectorBufferBaseIN7WebCore9AttributeEE14allocateBufferEm
+   fun:_ZN3WTF12VectorBufferIN7WebCore9AttributeELm4EE14allocateBufferEm
+   fun:_ZN3WTF6VectorIN7WebCore9AttributeELm4EE15reserveCapacityEm
+   fun:_ZN3WTF6VectorIN7WebCore9AttributeELm4EE14expandCapacityEm
+   fun:_ZN3WTF6VectorIN7WebCore9AttributeELm4EE14expandCapacityEmPKS2_
+   fun:_ZN3WTF6VectorIN7WebCore9AttributeELm4EE14appendSlowCaseIS2_EEvRKT_
+   fun:_ZN7WebCore20ElementAttributeData12addAttributeERKNS_9AttributeEPNS_7ElementENS_30SynchronizationOfLazyAttributeE
+}
+{
+   bug_149736
+   Memcheck:Free
+   fun:_ZdlPv
+   fun:_ZN3WTF14deleteOwnedPtrIhEEvPT_
+   fun:_ZN3WTF6OwnPtrIhED1Ev
+   fun:_ZN7WebCore12CCRendererGL20getFramebufferPixelsEPvRKNS_7IntRectE
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
