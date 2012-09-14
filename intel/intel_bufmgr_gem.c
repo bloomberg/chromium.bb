@@ -2472,8 +2472,15 @@ drm_intel_bo_gem_export_to_prime(drm_intel_bo *bo, int *prime_fd)
 {
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
 	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
+	int ret;
 
-	return drmPrimeHandleToFD(bufmgr_gem->fd, bo_gem->gem_handle, DRM_CLOEXEC, prime_fd);
+	if (drmPrimeHandleToFD(bufmgr_gem->fd, bo_gem->gem_handle,
+			       DRM_CLOEXEC, prime_fd) != 0)
+		return -errno;
+
+	bo_gem->reusable = false;
+
+	return 0;
 }
 
 static int
