@@ -40,7 +40,7 @@ X11AtomCache::~X11AtomCache() {}
     return atom;
   }
 
-  CHECK(it != cached_atoms_.end());
+  CHECK(it != cached_atoms_.end()) << " Atom " << name << " not found";
   return it->second;
 }
 

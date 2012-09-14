@@ -17,6 +17,7 @@
 #include "ui/base/touch/touch_factory.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/x/valuators.h"
+#include "ui/base/x/x11_atom_cache.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/point.h"
@@ -50,6 +51,21 @@ const int kWheelScrollAmount = 53;
 const int kMinWheelButton = 4;
 const int kMaxWheelButton = 7;
 
+const char* kCMTCachedAtoms[] = {
+  AXIS_LABEL_PROP_REL_HWHEEL,
+  AXIS_LABEL_PROP_REL_WHEEL,
+  AXIS_LABEL_PROP_ABS_START_TIME,
+  AXIS_LABEL_PROP_ABS_DBL_START_TIME,
+  AXIS_LABEL_PROP_ABS_END_TIME,
+  AXIS_LABEL_PROP_ABS_DBL_END_TIME,
+  AXIS_LABEL_PROP_ABS_FLING_X,
+  AXIS_LABEL_PROP_ABS_FLING_Y,
+  AXIS_LABEL_PROP_ABS_DBL_FLING_VX,
+  AXIS_LABEL_PROP_ABS_DBL_FLING_VY,
+  AXIS_LABEL_PROP_ABS_FLING_STATE,
+  NULL
+};
+
 // A class to support the detection of scroll events, using X11 valuators.
 class CMTEventData {
  public:
@@ -79,23 +95,18 @@ class CMTEventData {
       XFreeDeviceList(dev_list);
 
     XIDeviceInfo* info_list = XIQueryDevice(display, XIAllDevices, &count);
-    Atom x_axis = XInternAtom(display, AXIS_LABEL_PROP_REL_HWHEEL, false);
-    Atom y_axis = XInternAtom(display, AXIS_LABEL_PROP_REL_WHEEL, false);
-    Atom start_time =
-        XInternAtom(display, AXIS_LABEL_PROP_ABS_START_TIME, false);
+    Atom x_axis = atom_cache_.GetAtom(AXIS_LABEL_PROP_REL_HWHEEL);
+    Atom y_axis = atom_cache_.GetAtom(AXIS_LABEL_PROP_REL_WHEEL);
+    Atom start_time = atom_cache_.GetAtom(AXIS_LABEL_PROP_ABS_START_TIME);
     Atom start_time_dbl =
-        XInternAtom(display, AXIS_LABEL_PROP_ABS_DBL_START_TIME, false);
-    Atom end_time = XInternAtom(display, AXIS_LABEL_PROP_ABS_END_TIME, false);
-    Atom end_time_dbl =
-        XInternAtom(display, AXIS_LABEL_PROP_ABS_DBL_END_TIME, false);
-    Atom fling_vx = XInternAtom(display, AXIS_LABEL_PROP_ABS_FLING_X, false);
-    Atom fling_vx_dbl =
-        XInternAtom(display, AXIS_LABEL_PROP_ABS_DBL_FLING_VX, false);
-    Atom fling_vy = XInternAtom(display, AXIS_LABEL_PROP_ABS_FLING_Y, false);
-    Atom fling_vy_dbl =
-        XInternAtom(display, AXIS_LABEL_PROP_ABS_DBL_FLING_VY, false);
-    Atom fling_state =
-        XInternAtom(display, AXIS_LABEL_PROP_ABS_FLING_STATE, false);
+        atom_cache_.GetAtom(AXIS_LABEL_PROP_ABS_DBL_START_TIME);
+    Atom end_time = atom_cache_.GetAtom(AXIS_LABEL_PROP_ABS_END_TIME);
+    Atom end_time_dbl = atom_cache_.GetAtom(AXIS_LABEL_PROP_ABS_DBL_END_TIME);
+    Atom fling_vx = atom_cache_.GetAtom(AXIS_LABEL_PROP_ABS_FLING_X);
+    Atom fling_vx_dbl = atom_cache_.GetAtom(AXIS_LABEL_PROP_ABS_DBL_FLING_VX);
+    Atom fling_vy = atom_cache_.GetAtom(AXIS_LABEL_PROP_ABS_FLING_Y);
+    Atom fling_vy_dbl = atom_cache_.GetAtom(AXIS_LABEL_PROP_ABS_DBL_FLING_VY);
+    Atom fling_state = atom_cache_.GetAtom(AXIS_LABEL_PROP_ABS_FLING_STATE);
 
     for (int i = 0; i < count; ++i) {
       XIDeviceInfo* info = info_list + i;
@@ -361,7 +372,9 @@ class CMTEventData {
 
   };
 
-  CMTEventData() : natural_scroll_enabled_(false) {
+  CMTEventData()
+      : natural_scroll_enabled_(false),
+        atom_cache_(ui::GetXDisplay(), kCMTCachedAtoms) {
     UpdateDeviceList(ui::GetXDisplay());
   }
 
@@ -374,6 +387,7 @@ class CMTEventData {
   std::bitset<kMaxDeviceNum> cmt_devices_;
   std::bitset<kMaxDeviceNum> touchpads_;
   std::map<int, Valuators> device_to_valuators_;
+  ui::X11AtomCache atom_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(CMTEventData);
 };
