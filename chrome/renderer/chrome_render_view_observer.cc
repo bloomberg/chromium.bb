@@ -22,6 +22,7 @@
 #include "chrome/renderer/chrome_render_process_observer.h"
 #include "chrome/renderer/content_settings_observer.h"
 #include "chrome/renderer/extensions/dispatcher.h"
+#include "chrome/renderer/extensions/extension_helper.h"
 #include "chrome/renderer/external_host_bindings.h"
 #include "chrome/renderer/frame_sniffer.h"
 #include "chrome/renderer/prerender/prerender_helper.h"
@@ -529,6 +530,15 @@ bool ChromeRenderViewObserver::allowWebComponents(const WebDocument& document,
       return true;
 
     if (extension->HasAPIPermission(APIPermission::kExperimental))
+      return true;
+  } else {
+    // When a packaged app opens a window with a sandboxed resource, the origin
+    // will be unique (i.e. the empty string), so the fact that it is a shell
+    // window must be deduced from the view type instead to enable web
+    // components for HTML titlebars.
+    extensions::ExtensionHelper* helper =
+        extensions::ExtensionHelper::Get(render_view());
+    if (helper->view_type() == chrome::VIEW_TYPE_APP_SHELL)
       return true;
   }
 
