@@ -927,6 +927,11 @@ LRESULT HWNDMessageHandler::OnWndProc(UINT message,
   // Otherwise we handle everything else.
   if (!ProcessWindowMessage(window, message, w_param, l_param, result))
     result = DefWindowProc(window, message, w_param, l_param);
+
+  // DefWindowProc() may have destroyed the window in a nested message loop.
+  if (!::IsWindow(window))
+    return result;
+
   if (delegate_)
     delegate_->PostHandleMSG(message, w_param, l_param);
   if (message == WM_NCDESTROY) {
