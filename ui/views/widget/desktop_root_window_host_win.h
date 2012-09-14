@@ -38,6 +38,8 @@ class DesktopRootWindowHostWin : public DesktopRootWindowHost,
   virtual void ShowWindowWithState(ui::WindowShowState show_state) OVERRIDE;
   virtual bool IsVisible() const OVERRIDE;
   virtual gfx::Rect GetClientAreaBoundsInScreen() const OVERRIDE;
+  virtual InputMethod* CreateInputMethod() OVERRIDE;
+  virtual internal::InputMethodDelegate* GetInputMethodDelegate() OVERRIDE;
 
   // Overridden from aura::RootWindowHost:
   virtual aura::RootWindow* GetRootWindow() OVERRIDE;

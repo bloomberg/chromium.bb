@@ -21,7 +21,7 @@ namespace views {
 // An InputMethod implementation based on Windows IMM32 API.
 class InputMethodWin : public InputMethodBase {
  public:
-  explicit InputMethodWin(internal::InputMethodDelegate* delegate);
+  InputMethodWin(internal::InputMethodDelegate* delegate, HWND hwnd);
   virtual ~InputMethodWin();
 
   // Overridden from InputMethod:
@@ -69,14 +69,14 @@ class InputMethodWin : public InputMethodBase {
   virtual void OnWillChangeFocus(View* focused_before, View* focused) OVERRIDE;
   virtual void OnDidChangeFocus(View* focused_before, View* focused) OVERRIDE;
 
-  // A helper function to return the Widget's native window.
-  HWND hwnd() const { return widget()->GetNativeView(); }
-
   // Asks the client to confirm current composition text.
   void ConfirmCompositionText();
 
   // Enables or disables the IME according to the current text input type.
   void UpdateIMEState();
+
+  // The HWND this InputMethod is bound to.
+  HWND hwnd_;
 
   // Indicates if the current input locale has an IME.
   bool active_;

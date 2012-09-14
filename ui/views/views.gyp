@@ -424,6 +424,8 @@
             }],
             ['OS=="win"', {
               'sources/': [
+                ['include', 'ime/input_method_win.cc'],
+                ['include', 'ime/input_method_win.h'],
                 ['include', 'widget/desktop_root_window_host_win.cc'],
                 ['include', 'widget/desktop_root_window_host_win.h'],
                 ['include', 'widget/desktop_capture_client.cc'],

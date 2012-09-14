@@ -19,6 +19,7 @@ class Rect;
 
 namespace views {
 namespace internal {
+class InputMethodDelegate;
 class NativeWidgetDelegate;
 }
 
@@ -43,6 +44,9 @@ class DesktopRootWindowHost {
   virtual bool IsVisible() const = 0;
 
   virtual gfx::Rect GetClientAreaBoundsInScreen() const = 0;
+
+  virtual InputMethod* CreateInputMethod() = 0;
+  virtual internal::InputMethodDelegate* GetInputMethodDelegate() = 0;
 };
 
 }  // namespace views

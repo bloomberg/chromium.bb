@@ -60,6 +60,19 @@ gfx::Rect DesktopRootWindowHostLinux::GetClientAreaBoundsInScreen() const {
   return gfx::Rect(100, 100);
 }
 
+InputMethod* DesktopRootWindowHostLinux::CreateInputMethod() {
+  // TODO(erg):
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
+internal::InputMethodDelegate*
+    DesktopRootWindowHostLinux::GetInputMethodDelegate() {
+  // TODO(erg):
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopRootWindowHost, public:
 

@@ -117,7 +117,7 @@ bool DesktopNativeWidgetAura::HasCapture() const {
 }
 
 InputMethod* DesktopNativeWidgetAura::CreateInputMethod() {
-  return NULL;
+  return desktop_root_window_host_->CreateInputMethod();
 }
 
 internal::InputMethodDelegate*
@@ -380,7 +380,8 @@ scoped_refptr<ui::Texture> DesktopNativeWidgetAura::CopyTexture() {
 // DesktopNativeWidgetAura, ui::EventHandler implementation:
 
 ui::EventResult DesktopNativeWidgetAura::OnKeyEvent(ui::KeyEvent* event) {
-  return ui::ER_UNHANDLED;
+  return native_widget_delegate_->OnKeyEvent(*event) ? ui::ER_HANDLED :
+      ui::ER_UNHANDLED;
 }
 
 ui::EventResult DesktopNativeWidgetAura::OnMouseEvent(ui::MouseEvent* event) {

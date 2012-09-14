@@ -255,7 +255,7 @@ InputMethod* NativeWidgetWin::CreateInputMethod() {
   if (!command_line->HasSwitch(switches::kEnableViewsTextfield))
     return NULL;
 #endif
-  return new InputMethodWin(GetMessageHandler());
+  return new InputMethodWin(GetMessageHandler(), GetMessageHandler()->hwnd());
 }
 
 internal::InputMethodDelegate* NativeWidgetWin::GetInputMethodDelegate() {

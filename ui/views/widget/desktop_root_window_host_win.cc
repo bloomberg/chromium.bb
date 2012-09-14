@@ -8,6 +8,8 @@
 #include "ui/aura/desktop/desktop_dispatcher_client.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/shared/compound_event_filter.h"
+#include "ui/views/ime/input_method_win.h"
 #include "ui/views/widget/desktop_capture_client.h"
 #include "ui/views/win/hwnd_message_handler.h"
 
@@ -61,6 +63,11 @@ void DesktopRootWindowHostWin::Init(aura::Window* content_window,
   dispatcher_client_.reset(new aura::DesktopDispatcherClient);
   aura::client::SetDispatcherClient(root_window_.get(),
                                     dispatcher_client_.get());
+
+  // CEF sets focus to the window the user clicks down on.
+  // TODO(beng): see if we can't do this some other way. CEF seems a heavy-
+  //             handed way of accomplishing focus.
+  root_window_->SetEventFilter(new aura::shared::CompoundEventFilter);
 }
 
 void DesktopRootWindowHostWin::Close() {
@@ -86,6 +93,15 @@ bool DesktopRootWindowHostWin::IsVisible() const {
 
 gfx::Rect DesktopRootWindowHostWin::GetClientAreaBoundsInScreen() const {
   return message_handler_->GetClientAreaBoundsInScreen();
+}
+
+InputMethod* DesktopRootWindowHostWin::CreateInputMethod() {
+  return new InputMethodWin(message_handler_.get(), message_handler_->hwnd());
+}
+
+internal::InputMethodDelegate*
+    DesktopRootWindowHostWin::GetInputMethodDelegate() {
+  return message_handler_.get();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -262,7 +278,7 @@ gfx::NativeViewAccessible DesktopRootWindowHostWin::GetNativeViewAccessible() {
 }
 
 InputMethod* DesktopRootWindowHostWin::GetInputMethod() {
-  return NULL;
+  return native_widget_delegate_->AsWidget()->GetInputMethodDirect();
 }
 
 void DesktopRootWindowHostWin::HandleAppDeactivated() {
@@ -340,9 +356,15 @@ void DesktopRootWindowHostWin::HandleFrameChanged() {
 }
 
 void DesktopRootWindowHostWin::HandleNativeFocus(HWND last_focused_window) {
+  InputMethod* input_method = GetInputMethod();
+  if (input_method)
+    input_method->OnFocus();
 }
 
 void DesktopRootWindowHostWin::HandleNativeBlur(HWND focused_window) {
+  InputMethod* input_method = GetInputMethod();
+  if (input_method)
+    input_method->OnBlur();
 }
 
 bool DesktopRootWindowHostWin::HandleMouseEvent(const ui::MouseEvent& event) {
@@ -351,24 +373,42 @@ bool DesktopRootWindowHostWin::HandleMouseEvent(const ui::MouseEvent& event) {
 }
 
 bool DesktopRootWindowHostWin::HandleKeyEvent(const ui::KeyEvent& event) {
-  return false;
+  return root_window_host_delegate_->OnHostKeyEvent(
+      const_cast<ui::KeyEvent*>(&event));
 }
 
 bool DesktopRootWindowHostWin::HandleUntranslatedKeyEvent(
     const ui::KeyEvent& event) {
-  return false;
+  InputMethod* input_method = GetInputMethod();
+  if (input_method)
+    input_method->DispatchKeyEvent(event);
+  return !!input_method;
 }
 
 bool DesktopRootWindowHostWin::HandleIMEMessage(UINT message,
                                            WPARAM w_param,
                                            LPARAM l_param,
                                            LRESULT* result) {
-  return false;
+  InputMethod* input_method = GetInputMethod();
+  if (!input_method || input_method->IsMock()) {
+    *result = 0;
+    return false;
+  }
+
+  InputMethodWin* ime_win = static_cast<InputMethodWin*>(input_method);
+  BOOL handled = FALSE;
+  *result = ime_win->OnImeMessages(message, w_param, l_param, &handled);
+  return !!handled;
 }
 
 void DesktopRootWindowHostWin::HandleInputLanguageChange(
     DWORD character_set,
     HKL input_language_id) {
+  InputMethod* input_method = GetInputMethod();
+  if (input_method && !input_method->IsMock()) {
+    static_cast<InputMethodWin*>(input_method)->OnInputLangChange(
+        character_set, input_language_id);
+  }
 }
 
 bool DesktopRootWindowHostWin::HandlePaintAccelerated(

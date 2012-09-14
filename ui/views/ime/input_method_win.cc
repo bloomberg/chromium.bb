@@ -19,8 +19,10 @@ static const size_t kExtraNumberOfChars = 20;
 
 namespace views {
 
-InputMethodWin::InputMethodWin(internal::InputMethodDelegate* delegate)
-    : active_(false),
+InputMethodWin::InputMethodWin(internal::InputMethodDelegate* delegate,
+                               HWND hwnd)
+    : hwnd_(hwnd),
+      active_(false),
       direction_(base::i18n::UNKNOWN_DIRECTION),
       pending_requested_direction_(base::i18n::UNKNOWN_DIRECTION) {
   set_delegate(delegate);
@@ -28,7 +30,7 @@ InputMethodWin::InputMethodWin(internal::InputMethodDelegate* delegate)
 
 InputMethodWin::~InputMethodWin() {
   if (widget())
-    ime_input_.DisableIME(hwnd());
+    ime_input_.DisableIME(hwnd_);
 }
 
 void InputMethodWin::Init(Widget* widget) {
@@ -76,7 +78,7 @@ void InputMethodWin::DispatchKeyEvent(const ui::KeyEvent& key) {
 
 void InputMethodWin::OnTextInputTypeChanged(View* view) {
   if (IsViewFocused(view)) {
-    ime_input_.CancelIME(hwnd());
+    ime_input_.CancelIME(hwnd_);
     UpdateIMEState();
   }
   InputMethodBase::OnTextInputTypeChanged(view);
@@ -86,12 +88,12 @@ void InputMethodWin::OnCaretBoundsChanged(View* view) {
   gfx::Rect rect;
   if (!IsViewFocused(view) || !GetCaretBoundsInWidget(&rect))
     return;
-  ime_input_.UpdateCaretRect(hwnd(), rect);
+  ime_input_.UpdateCaretRect(hwnd_, rect);
 }
 
 void InputMethodWin::CancelComposition(View* view) {
   if (IsViewFocused(view))
-    ime_input_.CancelIME(hwnd());
+    ime_input_.CancelIME(hwnd_);
 }
 
 std::string InputMethodWin::GetInputLocale() {
@@ -160,10 +162,10 @@ LRESULT InputMethodWin::OnImeSetContext(
     UINT message, WPARAM wparam, LPARAM lparam, BOOL* handled) {
   active_ = (wparam == TRUE);
   if (active_)
-    ime_input_.CreateImeWindow(hwnd());
+    ime_input_.CreateImeWindow(hwnd_);
 
   OnInputMethodChanged();
-  return ime_input_.SetImeWindowStyle(hwnd(), message, wparam, lparam, handled);
+  return ime_input_.SetImeWindowStyle(hwnd_, message, wparam, lparam, handled);
 }
 
 LRESULT InputMethodWin::OnImeStartComposition(
@@ -177,8 +179,8 @@ LRESULT InputMethodWin::OnImeStartComposition(
     return 0;
 
   // Reset the composition status and create IME windows.
-  ime_input_.CreateImeWindow(hwnd());
-  ime_input_.ResetComposition(hwnd());
+  ime_input_.CreateImeWindow(hwnd_);
+  ime_input_.ResetComposition(hwnd_);
   return 0;
 }
 
@@ -192,14 +194,14 @@ LRESULT InputMethodWin::OnImeComposition(
     return 0;
 
   // At first, update the position of the IME window.
-  ime_input_.UpdateImeWindow(hwnd());
+  ime_input_.UpdateImeWindow(hwnd_);
 
   // Retrieve the result string and its attributes of the ongoing composition
   // and send it to a renderer process.
   ui::CompositionText composition;
-  if (ime_input_.GetResult(hwnd(), lparam, &composition.text)) {
+  if (ime_input_.GetResult(hwnd_, lparam, &composition.text)) {
     GetTextInputClient()->InsertText(composition.text);
-    ime_input_.ResetComposition(hwnd());
+    ime_input_.ResetComposition(hwnd_);
     // Fall though and try reading the composition string.
     // Japanese IMEs send a message containing both GCS_RESULTSTR and
     // GCS_COMPSTR, which means an ongoing composition has been finished
@@ -207,7 +209,7 @@ LRESULT InputMethodWin::OnImeComposition(
   }
   // Retrieve the composition string and its attributes of the ongoing
   // composition and send it to a renderer process.
-  if (ime_input_.GetComposition(hwnd(), lparam, &composition))
+  if (ime_input_.GetComposition(hwnd_, lparam, &composition))
     GetTextInputClient()->SetCompositionText(composition);
 
   return 0;
@@ -224,8 +226,8 @@ LRESULT InputMethodWin::OnImeEndComposition(
   if (GetTextInputClient()->HasCompositionText())
     GetTextInputClient()->ClearCompositionText();
 
-  ime_input_.ResetComposition(hwnd());
-  ime_input_.DestroyImeWindow(hwnd());
+  ime_input_.ResetComposition(hwnd_);
+  ime_input_.DestroyImeWindow(hwnd_);
   return 0;
 }
 
@@ -403,7 +405,7 @@ LRESULT InputMethodWin::OnReconvertString(RECONVERTSTRING* reconv) {
 
 void InputMethodWin::ConfirmCompositionText() {
   if (!IsTextInputTypeNone()) {
-    ime_input_.CleanupComposition(hwnd());
+    ime_input_.CleanupComposition(hwnd_);
     // Though above line should confirm the client's composition text by sending
     // a result text to us, in case the input method and the client are in
     // inconsistent states, we check the client's composition state again.
@@ -418,10 +420,10 @@ void InputMethodWin::UpdateIMEState() {
   switch (GetTextInputType()) {
     case ui::TEXT_INPUT_TYPE_NONE:
     case ui::TEXT_INPUT_TYPE_PASSWORD:
-      ime_input_.DisableIME(hwnd());
+      ime_input_.DisableIME(hwnd_);
       break;
     default:
-      ime_input_.EnableIME(hwnd());
+      ime_input_.EnableIME(hwnd_);
       break;
   }
 }
