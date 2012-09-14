@@ -105,6 +105,7 @@ function updateIcon() {
 }
 
 function scheduleRequest() {
+  console.log('scheduleRequest');
   var randomness = Math.random() * 2;
   var exponent = Math.pow(2, requestFailureCount);
   var multiplier = Math.max(randomness * exponent, 1);
@@ -117,15 +118,17 @@ function scheduleRequest() {
     }
     requestTimerId = window.setTimeout(onAlarm, delay*60*1000);
   } else {
-    chrome.alarms.create({'delayInMinutes': delay});
+    console.log('Creating alarm');
+    chrome.alarms.create('refresh', {'delayInMinutes': delay});
   }
 }
 
 // ajax stuff
 function startRequest(params) {
-  function doCallback() {
-    if (params && params.scheduleRequest) scheduleRequest();
-  }
+  // Schedule request immediately. We want to be sure to reschedule, even in the
+  // case where the extension process shuts down while this request is
+  // outstanding.
+  if (params && params.scheduleRequest) scheduleRequest();
 
   function stopLoadingAnimation() {
     if (params && params.showLoadingAnimation) loadingAnimation.stop();
@@ -138,13 +141,11 @@ function startRequest(params) {
     function(count) {
       stopLoadingAnimation();
       updateUnreadCount(count);
-      doCallback();
     },
     function() {
       stopLoadingAnimation();
       delete localStorage.unreadCount;
       updateIcon();
-      doCallback();
     }
   );
 }
@@ -269,11 +270,32 @@ function goToInbox() {
 }
 
 function onInit() {
+  console.log('onInit');
   startRequest({scheduleRequest:true, showLoadingAnimation:true});
+  if (!oldChromeVersion) {
+    chrome.alarms.create('watchdog', {periodInMinutes:5});
+  }
 }
 
-function onAlarm() {
-  startRequest({scheduleRequest:true, showLoadingAnimation:false});
+function onAlarm(alarm) {
+  console.log('Got alarm', alarm);
+  if (alarm.name == 'watchdog') {
+    onWatchdog();
+  } else {
+    startRequest({scheduleRequest:true, showLoadingAnimation:false});
+  }
+}
+
+function onWatchdog() {
+  chrome.alarms.get('refresh', function(alarm) {
+    if (alarm) {
+      console.log('Refresh alarm exists. Yay.');
+    } else {
+      console.log('Refresh alarm doesn\'t exist!? ' +
+                  'Refreshing now and rescheduling.');
+      startRequest({scheduleRequest:true, showLoadingAnimation:false});
+    }
+  });
 }
 
 if (oldChromeVersion) {
