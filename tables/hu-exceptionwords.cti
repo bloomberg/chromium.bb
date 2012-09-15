@@ -311,6 +311,8 @@ partword fedezéssz 124-15-145-15-126-16-234-156	For example felfedezésszámba 
 partword város =	For example városzajon, városzajt, városzsivaj words
 always városzt 1236-4-1235-135-156-2345	Városztályába word is an exception the prewious defined general város words related rule
 always részárás 1235-16-234-126-4-1235-4-234	For example részárás beginning words need this exception
+always légzés 123-16-1245-126-16-234	For example légzésszám, légzésszerű, légzészavar words
+partword szavar 234-126-1-1236-1-1235	General exception with handles more szavar style words
 
 #szs related exceptions
 #This exception list containing some words with need using single s and zs braille dots

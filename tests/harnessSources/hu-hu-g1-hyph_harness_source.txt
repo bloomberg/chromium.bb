@@ -1156,6 +1156,15 @@ testmode: hyphenate
 lengésszabály
 
 testmode: hyphenate
+légzésszám
+
+testmode: hyphenate
+légzésszerű
+
+testmode: hyphenate
+légzészavar
+
+testmode: hyphenate
 lépcsősszárnyú
 
 testmode: hyphenate

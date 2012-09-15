@@ -1531,6 +1531,18 @@
           "output": "lengésszabály"
         }, 
         {
+          "input": "⠇⠡⠛⠣⠡⠎⠱⠈⠍", 
+          "output": "légzésszám"
+        }, 
+        {
+          "input": "⠇⠡⠛⠣⠡⠎⠱⠑⠗⠾", 
+          "output": "légzésszerű"
+        }, 
+        {
+          "input": "⠇⠡⠛⠣⠡⠎⠣⠁⠧⠁⠗", 
+          "output": "légzészavar"
+        }, 
+        {
           "input": "⠇⠡⠏⠩⠻⠎⠱⠈⠗⠫⠬", 
           "output": "lépcsősszárnyú"
         }, 
@@ -4725,6 +4737,18 @@
         {
           "input": "lengésszabály", 
           "output": "⠇⠑⠝⠛⠡⠎⠱⠁⠃⠈⠸"
+        }, 
+        {
+          "input": "légzésszám", 
+          "output": "⠇⠡⠛⠣⠡⠎⠱⠈⠍"
+        }, 
+        {
+          "input": "légzésszerű", 
+          "output": "⠇⠡⠛⠣⠡⠎⠱⠑⠗⠾"
+        }, 
+        {
+          "input": "légzészavar", 
+          "output": "⠇⠡⠛⠣⠡⠎⠣⠁⠧⠁⠗"
         }, 
         {
           "input": "lépcsősszárnyú", 

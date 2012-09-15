@@ -1905,6 +1905,21 @@ lengésszabály
 testmode: backtranslate
 lengésszabály
 
+légzésszám
+
+testmode: backtranslate
+légzésszám
+
+légzésszerű
+
+testmode: backtranslate
+légzésszerű
+
+légzészavar
+
+testmode: backtranslate
+légzészavar
+
 lépcsősszárnyú
 
 testmode: backtranslate
