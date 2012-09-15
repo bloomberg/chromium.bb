@@ -56,7 +56,7 @@ FilePath CreateChromeDesktopShortcutIconForProfile(
   if (!app_icon_bitmap.get())
     return FilePath();
 
-  // TODO(hallielaine): Share this chunk of code with
+  // TODO(rlp): Share this chunk of code with
   // avatar_menu_button::DrawTaskBarDecoration.
   const SkBitmap* source_bitmap = NULL;
   SkBitmap squarer_bitmap;

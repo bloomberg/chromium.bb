@@ -133,7 +133,7 @@ int DoUninstallTasks(bool chrome_still_running) {
             dist, ShellUtil::CURRENT_USER, ShellUtil::SHORTCUT_NO_OPTIONS)) {
       VLOG(1) << "Failed to delete desktop shortcut.";
     }
-    // TODO(hallielaine): Cleanup profiles shortcuts.
+    // TODO(rlp): Cleanup profiles shortcuts.
     if (!ShellUtil::RemoveChromeQuickLaunchShortcut(dist,
                                                     ShellUtil::CURRENT_USER)) {
       VLOG(1) << "Failed to delete quick launch shortcut.";

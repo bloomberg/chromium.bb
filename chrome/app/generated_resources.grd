@@ -17663,7 +17663,7 @@ Battery full
       Name:
     </message>
     <message name="IDS_PROFILES_MANAGE_ICON_LABEL" desc="Label above the profile avatar icon chooser.">
-      Choose a picture and a name for your Chrome profile.
+      Choose a picture and name
     </message>
     <message name="IDS_PROFILES_MANAGE_DUPLICATE_NAME_ERROR" desc="error bubble displayed when the user is attempting to rename a profile to a name that is used.">
       Whoops, this name is already in use!
@@ -17695,10 +17695,10 @@ Battery full
 
     <!-- Create Profile Dialog -->
     <message name="IDS_PROFILES_CREATE_TITLE" desc="Title of the create profile dialog">
-      Create profile
+      Create user
     </message>
     <message name="IDS_PROFILES_CREATE_INSTRUCTIONS" desc="Instructions for the create profile dialog">
-      Choose a picture and name for your new Chrome profile.
+      Choose a picture and name
     </message>
     <message name="IDS_PROFILES_CREATE_CONFIRM" desc="Create button confirmation">
       Create 
