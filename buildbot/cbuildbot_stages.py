@@ -107,9 +107,10 @@ class CleanUpStage(bs.BuilderStage):
     shutil.rmtree(archive_root, ignore_errors=True)
 
   def _PerformStage(self):
-    if not self._options.buildbot and self._options.clobber:
+    if (not (self._options.buildbot or self._options.remote_trybot)
+        and self._options.clobber):
       if not commands.ValidateClobber(self._build_root):
-        sys.exit(0)
+        cros_build_lib.Die("--clobber in local mode must be approved.")
 
     # If we can't get a manifest out of it, then it's not usable and must be
     # clobbered.
