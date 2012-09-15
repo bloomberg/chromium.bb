@@ -2104,8 +2104,18 @@ void HistoryBackend::UpdateFaviconMappingsAndFetchImpl(
          icon_types == TOUCH_PRECOMPOSED_ICON ||
          icon_types == (TOUCH_ICON | TOUCH_PRECOMPOSED_ICON));
 
-  if (request->canceled() || !thumbnail_db_.get())
+  if (request->canceled())
     return;
+
+  if (!thumbnail_db_.get()) {
+    // The thumbnail database is not valid. Send response to the UI as it still
+    // expects one.
+    request->ForwardResult(request->handle(),
+                           std::vector<history::FaviconBitmapResult>(),
+                           history::IconURLSizesMap());
+    return;
+  }
+
 
   std::vector<FaviconID> favicon_ids;
 

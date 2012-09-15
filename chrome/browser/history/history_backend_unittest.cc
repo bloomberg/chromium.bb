@@ -92,24 +92,11 @@ class HistoryBackendTestDelegate : public HistoryBackend::Delegate {
   DISALLOW_COPY_AND_ASSIGN(HistoryBackendTestDelegate);
 };
 
-class HistoryBackendCancelableRequest : public CancelableRequestProvider,
-                                       public CancelableRequestConsumerBase {
+class HistoryBackendCancelableRequest
+    : public CancelableRequestProvider,
+      public CancelableRequestConsumerTSimple<int> {
  public:
   HistoryBackendCancelableRequest() {}
-
-  // CancelableRequestConsumerBase overrides:
-  virtual void OnRequestAdded(
-      CancelableRequestProvider* provider,
-      CancelableRequestProvider::Handle handle) OVERRIDE {}
-  virtual void OnRequestRemoved(
-      CancelableRequestProvider* provider,
-      CancelableRequestProvider::Handle handle) OVERRIDE {}
-  virtual void WillExecute(
-      CancelableRequestProvider* provider,
-      CancelableRequestProvider::Handle handle) OVERRIDE {}
-  virtual void DidExecute(
-      CancelableRequestProvider* provider,
-      CancelableRequestProvider::Handle handle) OVERRIDE {}
 
   template<class RequestType>
   CancelableRequestProvider::Handle MockScheduleOfRequest(
@@ -2247,6 +2234,33 @@ TEST_F(HistoryBackendTest, GetFaviconsFromDBExpired) {
 
   EXPECT_EQ(1u, bitmap_results_out.size());
   EXPECT_TRUE(bitmap_results_out[0].expired);
+}
+
+// Check that GetFaviconsForURL() and UpdateFaviconMappingsAndFetch() call back
+// to the UI when there is no valid thumbnail database.
+TEST_F(HistoryBackendTest, GetFaviconsNoDB) {
+  // Make the thumbnail database invalid.
+  backend_->thumbnail_db_.reset();
+
+  HistoryBackendCancelableRequest cancellable_request;
+
+  scoped_refptr<GetFaviconRequest> request1(new GetFaviconRequest(
+      base::Bind(&HistoryBackendTest::OnFaviconResults,
+                 base::Unretained(this))));
+  cancellable_request.MockScheduleOfRequest<GetFaviconRequest>(request1);
+  EXPECT_TRUE(cancellable_request.HasPendingRequests());
+  backend_->UpdateFaviconMappingsAndFetch(request1, GURL(), std::vector<GURL>(),
+      FAVICON, kSmallSize.width(), GetScaleFactors1x2x());
+  EXPECT_FALSE(cancellable_request.HasPendingRequests());
+
+  scoped_refptr<GetFaviconRequest> request2(new GetFaviconRequest(
+      base::Bind(&HistoryBackendTest::OnFaviconResults,
+                 base::Unretained(this))));
+  cancellable_request.MockScheduleOfRequest<GetFaviconRequest>(request2);
+  EXPECT_TRUE(cancellable_request.HasPendingRequests());
+  backend_->GetFaviconsForURL(request2, GURL(), FAVICON, kSmallSize.width(),
+                              GetScaleFactors1x2x());
+  EXPECT_FALSE(cancellable_request.HasPendingRequests());
 }
 
 TEST_F(HistoryBackendTest, CloneFaviconIsRestrictedToSameDomain) {
