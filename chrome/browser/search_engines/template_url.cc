@@ -19,6 +19,7 @@
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/common/url_constants.h"
+#include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -57,6 +58,7 @@ const char kGoogleRLZParameter[] = "google:RLZ";
 // Same as kSearchTermsParameter, with no escaping.
 const char kGoogleSearchFieldtrialParameter[] =
     "google:searchFieldtrialParameter";
+const char kGoogleSuggestAPIKeyParameter[] = "google:suggestAPIKeyParameter";
 const char kGoogleUnescapedSearchTermsParameter[] =
     "google:unescapedSearchTerms";
 const char kGoogleUnescapedSearchTermsParameterFull[] =
@@ -136,7 +138,7 @@ std::string TemplateURLRef::GetURL() const {
     case SEARCH:  return owner_->url();
     case SUGGEST: return owner_->suggestions_url();
     case INSTANT: return owner_->instant_url();
-    default:      NOTREACHED(); return std::string();
+    default:      NOTREACHED(); return std::string();  // NOLINT
   }
 }
 
@@ -462,6 +464,9 @@ bool TemplateURLRef::ParseParameter(size_t start,
     replacements->push_back(Replacement(GOOGLE_RLZ, start));
   } else if (parameter == kGoogleSearchFieldtrialParameter) {
     replacements->push_back(Replacement(GOOGLE_SEARCH_FIELDTRIAL_GROUP, start));
+  } else if (parameter == kGoogleSuggestAPIKeyParameter) {
+    url->insert(start,
+                net::EscapeQueryParamValue(google_apis::GetAPIKey(), false));
   } else if (parameter == kGoogleUnescapedSearchTermsParameter) {
     replacements->push_back(Replacement(GOOGLE_UNESCAPED_SEARCH_TERMS, start));
   } else if (!prepopulated_) {
