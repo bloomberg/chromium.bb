@@ -14,6 +14,7 @@
 
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
@@ -711,20 +712,18 @@ WebKit::WebString WebKitPlatformSupportImpl::signedPublicKeyAndChallengeString(
   return WebKit::WebString("");
 }
 
-static base::ProcessMetrics* CurrentProcessMetrics() {
+static scoped_ptr<base::ProcessMetrics> CurrentProcessMetrics() {
   using base::ProcessMetrics;
 #if defined(OS_MACOSX)
-  static ProcessMetrics* process_metrics =
+  return scoped_ptr<ProcessMetrics>(
       // The default port provider is sufficient to get data for the current
       // process.
       ProcessMetrics::CreateProcessMetrics(base::GetCurrentProcessHandle(),
-                                           NULL);
+                                           NULL));
 #else
-  static ProcessMetrics* process_metrics =
-      ProcessMetrics::CreateProcessMetrics(base::GetCurrentProcessHandle());
+  return scoped_ptr<ProcessMetrics>(
+      ProcessMetrics::CreateProcessMetrics(base::GetCurrentProcessHandle()));
 #endif
-  DCHECK(process_metrics);
-  return process_metrics;
 }
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
