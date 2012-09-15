@@ -84,6 +84,9 @@ class CONTENT_EXPORT DownloadFileImpl : virtual public content::DownloadFile {
   // the DownloadFileManager for its internal record keeping.
   content::DownloadId id_;
 
+  // The default directory for creating the download file.
+  FilePath default_download_directory_;
+
   // Used to trigger progress updates.
   scoped_ptr<base::RepeatingTimer<DownloadFileImpl> > update_timer_;
 

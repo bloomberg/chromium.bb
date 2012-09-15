@@ -1263,7 +1263,8 @@ void SavePackage::GetSaveInfo() {
   DCHECK(download_manager_);
   if (download_manager_->GetDelegate()) {
     download_manager_->GetDelegate()->GetSaveDir(
-        web_contents(), &website_save_dir, &download_save_dir, &skip_dir_check);
+        web_contents()->GetBrowserContext(), &website_save_dir,
+        &download_save_dir, &skip_dir_check);
   }
   std::string mime_type = web_contents()->GetContentsMimeType();
   std::string accept_languages =

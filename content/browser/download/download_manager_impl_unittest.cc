@@ -37,7 +37,11 @@
 #include "testing/gmock_mutant.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::AllOf;
 using ::testing::DoAll;
+using ::testing::Eq;
+using ::testing::Field;
+using ::testing::Pointee;
 using ::testing::Ref;
 using ::testing::Return;
 using ::testing::ReturnRef;
@@ -180,7 +184,8 @@ class MockDownloadManagerDelegate : public content::DownloadManagerDelegate {
   MOCK_METHOD1(RemoveItemFromPersistentStore, void(DownloadItem*));
   MOCK_METHOD2(RemoveItemsFromPersistentStoreBetween, void(
       base::Time remove_begin, base::Time remove_end));
-  MOCK_METHOD4(GetSaveDir, void(WebContents*, FilePath*, FilePath*, bool*));
+  MOCK_METHOD4(GetSaveDir, void(content::BrowserContext*,
+                                FilePath*, FilePath*, bool*));
   MOCK_METHOD5(ChooseSavePath, void(
       WebContents*, const FilePath&, const FilePath::StringType&,
       bool, const content::SavePackagePathPickedCallback&));
@@ -571,6 +576,7 @@ TEST_F(DownloadManagerTest, StartDownload) {
   scoped_ptr<DownloadCreateInfo> info(new DownloadCreateInfo);
   scoped_ptr<content::ByteStreamReader> stream;
   int32 local_id(5);                    // Random value
+  FilePath download_path(FILE_PATH_LITERAL("download/path"));
 
   EXPECT_FALSE(download_manager_->GetActiveDownloadItem(local_id));
 
@@ -580,8 +586,15 @@ TEST_F(DownloadManagerTest, StartDownload) {
       .WillOnce(Return(content::DownloadId(this, local_id)));
   EXPECT_CALL(GetMockDownloadManagerDelegate(), GenerateFileHash())
       .WillOnce(Return(true));
+  EXPECT_CALL(GetMockDownloadManagerDelegate(), GetSaveDir(_,_,_,_))
+      .WillOnce(SetArgPointee<2>(download_path));
+  // The CreateDownloadFile call should specify a DownloadCreateInfo that
+  // includes the result of the GetSaveDir() call.
   EXPECT_CALL(GetMockDownloadFileManager(), MockCreateDownloadFile(
-      info.get(), static_cast<content::ByteStreamReader*>(NULL),
+      AllOf(Eq(info.get()),
+            Pointee(Field(&DownloadCreateInfo::default_download_directory,
+                          download_path))),
+      static_cast<content::ByteStreamReader*>(NULL),
       download_manager_.get(), true, _, _));
 
   download_manager_->StartDownload(info.Pass(), stream.Pass());

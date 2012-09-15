@@ -17,6 +17,7 @@
 
 namespace content {
 
+class BrowserContext;
 class DownloadId;
 class WebContents;
 
@@ -128,7 +129,7 @@ class CONTENT_EXPORT DownloadManagerDelegate {
       base::Time remove_end) {}
 
   // Retrieve the directories to save html pages and downloads to.
-  virtual void GetSaveDir(WebContents* web_contents,
+  virtual void GetSaveDir(BrowserContext* browser_context,
                           FilePath* website_save_dir,
                           FilePath* download_save_dir,
                           bool* skip_dir_check) {}

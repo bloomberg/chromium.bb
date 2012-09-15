@@ -107,6 +107,13 @@ struct CONTENT_EXPORT DownloadCreateInfo {
   // The handle to the URLRequest sourcing this download.
   DownloadRequestHandle request_handle;
 
+  // Default directory to use for this download. The final target path may not
+  // be determined until much later. In the meantime, this directory (if
+  // non-empty) should be used to store teh download file.
+  // TODO(asanka,rdsmith): Get rid of this when we start creating the
+  //                       DownloadFile on the UI thread.
+  FilePath default_download_directory;
+
   // The request's |BoundNetLog|, for "source_dependency" linking with the
   // download item's.
   const net::BoundNetLog request_bound_net_log;

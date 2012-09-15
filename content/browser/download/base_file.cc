@@ -245,15 +245,21 @@ BaseFile::~BaseFile() {
     Cancel();  // Will delete the file.
 }
 
-net::Error BaseFile::Initialize() {
+net::Error BaseFile::Initialize(const FilePath& default_directory) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(!detached_);
 
   if (full_path_.empty()) {
+    FilePath initial_directory(default_directory);
     FilePath temp_file;
-    FilePath download_dir =
-        content::GetContentClient()->browser()->GetDefaultDownloadDirectory();
-    if (!file_util::CreateTemporaryFileInDir(download_dir, &temp_file) &&
+    if (initial_directory.empty()) {
+      initial_directory =
+          content::GetContentClient()->browser()->GetDefaultDownloadDirectory();
+    }
+    // |initial_directory| can still be empty if ContentBrowserClient returned
+    // an empty path for the downloads directory.
+    if ((initial_directory.empty() ||
+         !file_util::CreateTemporaryFileInDir(initial_directory, &temp_file)) &&
         !file_util::CreateTemporaryFile(&temp_file)) {
       return LOG_ERROR("unable to create", net::ERR_FILE_NOT_FOUND);
     }
@@ -557,4 +563,3 @@ int64 BaseFile::CurrentSpeed() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   return CurrentSpeedAtTime(base::TimeTicks::Now());
 }
-

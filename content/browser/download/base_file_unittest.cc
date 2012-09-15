@@ -157,7 +157,7 @@ class BaseFileTest : public testing::Test {
 
   // Helper functions.
   // Create a file.  Returns the complete file path.
-  static FilePath CreateTestFile() {
+  FilePath CreateTestFile() {
     FilePath file_name;
     linked_ptr<net::FileStream> dummy_file_stream;
     BaseFile file(FilePath(),
@@ -169,7 +169,7 @@ class BaseFileTest : public testing::Test {
                   dummy_file_stream,
                   net::BoundNetLog());
 
-    EXPECT_EQ(net::OK, file.Initialize());
+    EXPECT_EQ(net::OK, file.Initialize(temp_dir_.path()));
     file_name = file.full_path();
     EXPECT_NE(FilePath::StringType(), file_name.value());
 
@@ -182,7 +182,7 @@ class BaseFileTest : public testing::Test {
   }
 
   // Create a file with the specified file name.
-  static void CreateFileWithName(const FilePath& file_name) {
+  void CreateFileWithName(const FilePath& file_name) {
     EXPECT_NE(FilePath::StringType(), file_name.value());
     linked_ptr<net::FileStream> dummy_file_stream;
     BaseFile duplicate_file(file_name,
@@ -193,7 +193,7 @@ class BaseFileTest : public testing::Test {
                             "",
                             dummy_file_stream,
                             net::BoundNetLog());
-    EXPECT_EQ(net::OK, duplicate_file.Initialize());
+    EXPECT_EQ(net::OK, duplicate_file.Initialize(temp_dir_.path()));
     // Write something into it.
     duplicate_file.AppendDataToFile(kTestData4, kTestDataLength4);
     // Detach the file so it isn't deleted on destruction of |duplicate_file|.
@@ -253,7 +253,7 @@ TEST_F(BaseFileTest, CreateDestroy) {
 
 // Cancel the download explicitly.
 TEST_F(BaseFileTest, Cancel) {
-  ASSERT_EQ(net::OK, base_file_->Initialize());
+  ASSERT_EQ(net::OK, base_file_->Initialize(temp_dir_.path()));
   EXPECT_TRUE(file_util::PathExists(base_file_->full_path()));
   base_file_->Cancel();
   EXPECT_FALSE(file_util::PathExists(base_file_->full_path()));
@@ -263,7 +263,7 @@ TEST_F(BaseFileTest, Cancel) {
 // Write data to the file and detach it, so it doesn't get deleted
 // automatically when base_file_ is destructed.
 TEST_F(BaseFileTest, WriteAndDetach) {
-  ASSERT_EQ(net::OK, base_file_->Initialize());
+  ASSERT_EQ(net::OK, base_file_->Initialize(temp_dir_.path()));
   ASSERT_EQ(net::OK, AppendDataToFile(kTestData1));
   base_file_->Finish();
   base_file_->Detach();
@@ -280,7 +280,7 @@ TEST_F(BaseFileTest, WriteWithHashAndDetach) {
       base::HexEncode(expected_hash.data(), expected_hash.size());
 
   MakeFileWithHash();
-  ASSERT_EQ(net::OK, base_file_->Initialize());
+  ASSERT_EQ(net::OK, base_file_->Initialize(temp_dir_.path()));
   ASSERT_EQ(net::OK, AppendDataToFile(kTestData1));
   base_file_->Finish();
 
@@ -296,7 +296,7 @@ TEST_F(BaseFileTest, WriteWithHashAndDetach) {
 
 // Rename the file after writing to it, then detach.
 TEST_F(BaseFileTest, WriteThenRenameAndDetach) {
-  ASSERT_EQ(net::OK, base_file_->Initialize());
+  ASSERT_EQ(net::OK, base_file_->Initialize(temp_dir_.path()));
 
   FilePath initial_path(base_file_->full_path());
   EXPECT_TRUE(file_util::PathExists(initial_path));
@@ -316,14 +316,14 @@ TEST_F(BaseFileTest, WriteThenRenameAndDetach) {
 
 // Write data to the file once.
 TEST_F(BaseFileTest, SingleWrite) {
-  ASSERT_EQ(net::OK, base_file_->Initialize());
+  ASSERT_EQ(net::OK, base_file_->Initialize(temp_dir_.path()));
   ASSERT_EQ(net::OK, AppendDataToFile(kTestData1));
   base_file_->Finish();
 }
 
 // Write data to the file multiple times.
 TEST_F(BaseFileTest, MultipleWrites) {
-  ASSERT_EQ(net::OK, base_file_->Initialize());
+  ASSERT_EQ(net::OK, base_file_->Initialize(temp_dir_.path()));
   ASSERT_EQ(net::OK, AppendDataToFile(kTestData1));
   ASSERT_EQ(net::OK, AppendDataToFile(kTestData2));
   ASSERT_EQ(net::OK, AppendDataToFile(kTestData3));
@@ -342,7 +342,7 @@ TEST_F(BaseFileTest, SingleWriteWithHash) {
       base::HexEncode(expected_hash.data(), expected_hash.size());
 
   MakeFileWithHash();
-  ASSERT_EQ(net::OK, base_file_->Initialize());
+  ASSERT_EQ(net::OK, base_file_->Initialize(temp_dir_.path()));
   // Can get partial hash states before Finish() is called.
   EXPECT_STRNE(std::string().c_str(), base_file_->GetHashState().c_str());
   ASSERT_EQ(net::OK, AppendDataToFile(kTestData1));
@@ -367,7 +367,7 @@ TEST_F(BaseFileTest, MultipleWritesWithHash) {
 
   std::string hash;
   MakeFileWithHash();
-  ASSERT_EQ(net::OK, base_file_->Initialize());
+  ASSERT_EQ(net::OK, base_file_->Initialize(temp_dir_.path()));
   ASSERT_EQ(net::OK, AppendDataToFile(kTestData1));
   ASSERT_EQ(net::OK, AppendDataToFile(kTestData2));
   ASSERT_EQ(net::OK, AppendDataToFile(kTestData3));
@@ -394,7 +394,7 @@ TEST_F(BaseFileTest, MultipleWritesInterruptedWithHash) {
       base::HexEncode(expected_hash.data(), expected_hash.size());
 
   MakeFileWithHash();
-  ASSERT_EQ(net::OK, base_file_->Initialize());
+  ASSERT_EQ(net::OK, base_file_->Initialize(temp_dir_.path()));
   // Write some data
   ASSERT_EQ(net::OK, AppendDataToFile(kTestData1));
   ASSERT_EQ(net::OK, AppendDataToFile(kTestData2));
@@ -414,7 +414,7 @@ TEST_F(BaseFileTest, MultipleWritesInterruptedWithHash) {
                        hash_state,
                        second_stream,
                        net::BoundNetLog());
-  ASSERT_EQ(net::OK, second_file.Initialize());
+  ASSERT_EQ(net::OK, second_file.Initialize(temp_dir_.path()));
   std::string data(kTestData3);
   EXPECT_EQ(net::OK, second_file.AppendDataToFile(data.data(), data.size()));
   second_file.Finish();
@@ -428,7 +428,7 @@ TEST_F(BaseFileTest, MultipleWritesInterruptedWithHash) {
 
 // Rename the file after all writes to it.
 TEST_F(BaseFileTest, WriteThenRename) {
-  ASSERT_EQ(net::OK, base_file_->Initialize());
+  ASSERT_EQ(net::OK, base_file_->Initialize(temp_dir_.path()));
 
   FilePath initial_path(base_file_->full_path());
   EXPECT_TRUE(file_util::PathExists(initial_path));
@@ -446,7 +446,7 @@ TEST_F(BaseFileTest, WriteThenRename) {
 
 // Rename the file while the download is still in progress.
 TEST_F(BaseFileTest, RenameWhileInProgress) {
-  ASSERT_EQ(net::OK, base_file_->Initialize());
+  ASSERT_EQ(net::OK, base_file_->Initialize(temp_dir_.path()));
 
   FilePath initial_path(base_file_->full_path());
   EXPECT_TRUE(file_util::PathExists(initial_path));
@@ -467,7 +467,7 @@ TEST_F(BaseFileTest, RenameWhileInProgress) {
 
 // Test that a failed rename reports the correct error.
 TEST_F(BaseFileTest, RenameWithError) {
-  ASSERT_EQ(net::OK, base_file_->Initialize());
+  ASSERT_EQ(net::OK, base_file_->Initialize(temp_dir_.path()));
 
   // TestDir is a subdirectory in |temp_dir_| that we will make read-only so
   // that the rename will fail.
@@ -497,7 +497,7 @@ TEST_F(BaseFileTest, MultipleWritesWithError) {
                                 "",
                                 mock_file_stream_,
                                 net::BoundNetLog()));
-  EXPECT_EQ(net::OK, base_file_->Initialize());
+  EXPECT_EQ(net::OK, base_file_->Initialize(temp_dir_.path()));
   ASSERT_EQ(net::OK, AppendDataToFile(kTestData1));
   ASSERT_EQ(net::OK, AppendDataToFile(kTestData2));
   ForceError(net::ERR_ACCESS_DENIED);
@@ -517,7 +517,7 @@ TEST_F(BaseFileTest, UninitializedFile) {
 // Overwrite base_file_ with another file with the same name and
 // non-zero contents, and make sure the last file to close 'wins'.
 TEST_F(BaseFileTest, DuplicateBaseFile) {
-  EXPECT_EQ(net::OK, base_file_->Initialize());
+  EXPECT_EQ(net::OK, base_file_->Initialize(temp_dir_.path()));
 
   // Create another |BaseFile| referring to the file that |base_file_| owns.
   CreateFileWithName(base_file_->full_path());
@@ -543,7 +543,7 @@ TEST_F(BaseFileTest, AppendToBaseFile) {
                                 file_stream_,
                                 net::BoundNetLog()));
 
-  EXPECT_EQ(net::OK, base_file_->Initialize());
+  EXPECT_EQ(net::OK, base_file_->Initialize(temp_dir_.path()));
 
   const FilePath file_name = base_file_->full_path();
   EXPECT_NE(FilePath::StringType(), file_name.value());
@@ -579,7 +579,7 @@ TEST_F(BaseFileTest, ReadonlyBaseFile) {
 
   expect_in_progress_ = false;
 
-  int init_error = base_file_->Initialize();
+  int init_error = base_file_->Initialize(temp_dir_.path());
   DVLOG(1) << " init_error = " << init_error;
   EXPECT_NE(net::OK, init_error);
 
@@ -604,7 +604,7 @@ TEST_F(BaseFileTest, IsEmptyHash) {
 
 // Test that calculating speed after no writes.
 TEST_F(BaseFileTest, SpeedWithoutWrite) {
-  ASSERT_EQ(net::OK, base_file_->Initialize());
+  ASSERT_EQ(net::OK, base_file_->Initialize(temp_dir_.path()));
   base::TimeTicks current = StartTick() + kElapsedTimeDelta;
   ASSERT_EQ(0, CurrentSpeedAtTime(current));
   base_file_->Finish();
@@ -612,7 +612,7 @@ TEST_F(BaseFileTest, SpeedWithoutWrite) {
 
 // Test that calculating speed after a single write.
 TEST_F(BaseFileTest, SpeedAfterSingleWrite) {
-  ASSERT_EQ(net::OK, base_file_->Initialize());
+  ASSERT_EQ(net::OK, base_file_->Initialize(temp_dir_.path()));
   ASSERT_EQ(net::OK, AppendDataToFile(kTestData1));
   base::TimeTicks current = StartTick() + kElapsedTimeDelta;
   int64 expected_speed = kTestDataLength1 / kElapsedTimeSeconds;
@@ -622,7 +622,7 @@ TEST_F(BaseFileTest, SpeedAfterSingleWrite) {
 
 // Test that calculating speed after a multiple writes.
 TEST_F(BaseFileTest, SpeedAfterMultipleWrite) {
-  ASSERT_EQ(net::OK, base_file_->Initialize());
+  ASSERT_EQ(net::OK, base_file_->Initialize(temp_dir_.path()));
   ASSERT_EQ(net::OK, AppendDataToFile(kTestData1));
   ASSERT_EQ(net::OK, AppendDataToFile(kTestData2));
   ASSERT_EQ(net::OK, AppendDataToFile(kTestData3));
@@ -636,8 +636,27 @@ TEST_F(BaseFileTest, SpeedAfterMultipleWrite) {
 
 // Test that calculating speed after no delay - should not divide by 0.
 TEST_F(BaseFileTest, SpeedAfterNoElapsedTime) {
-  ASSERT_EQ(net::OK, base_file_->Initialize());
+  ASSERT_EQ(net::OK, base_file_->Initialize(temp_dir_.path()));
   ASSERT_EQ(net::OK, AppendDataToFile(kTestData1));
   ASSERT_EQ(0, CurrentSpeedAtTime(StartTick()));
+  base_file_->Finish();
+}
+
+// Test that a temporary file is created in the default download directory.
+TEST_F(BaseFileTest, CreatedInDefaultDirectory) {
+  ASSERT_TRUE(base_file_->full_path().empty());
+  ASSERT_EQ(net::OK, base_file_->Initialize(temp_dir_.path()));
+  EXPECT_FALSE(base_file_->full_path().empty());
+
+  // On Windows, CreateTemporaryFileInDir() will cause a path with short names
+  // to be expanded into a path with long names. Thus temp_dir.path() might not
+  // be a string-wise match to base_file_->full_path().DirName() even though
+  // they are in the same directory.
+  FilePath temp_file;
+  ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir_.path(),
+                                                  &temp_file));
+  ASSERT_FALSE(temp_file.empty());
+  EXPECT_STREQ(temp_file.DirName().value().c_str(),
+               base_file_->full_path().DirName().value().c_str());
   base_file_->Finish();
 }

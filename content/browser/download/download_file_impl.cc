@@ -45,6 +45,7 @@ DownloadFileImpl::DownloadFileImpl(
                 bound_net_log),
           stream_reader_(stream.Pass()),
           id_(info->download_id),
+          default_download_directory_(info->default_download_directory),
           request_handle_(request_handle),
           download_manager_(download_manager),
           bytes_seen_(0),
@@ -60,7 +61,7 @@ DownloadFileImpl::~DownloadFileImpl() {
 
 content::DownloadInterruptReason DownloadFileImpl::Initialize() {
   update_timer_.reset(new base::RepeatingTimer<DownloadFileImpl>());
-  net::Error result = file_.Initialize();
+  net::Error result = file_.Initialize(default_download_directory_);
   if (result != net::OK) {
     return content::ConvertNetErrorToInterruptReason(
         result, content::DOWNLOAD_INTERRUPT_FROM_DISK);

@@ -10,6 +10,10 @@
 
 using content::BrowserThread;
 
+// TODO(asanka): SaveFile should use the target directory of the save package as
+//               the default download directory when initializing |file_|.
+//               Unfortunately, as it is, constructors of SaveFile don't always
+//               have access to the SavePackage at this point.
 SaveFile::SaveFile(const SaveFileCreateInfo* info, bool calculate_hash)
     : file_(FilePath(),
             info->url,
@@ -31,7 +35,7 @@ SaveFile::~SaveFile() {
 }
 
 net::Error SaveFile::Initialize() {
-  return file_.Initialize();
+  return file_.Initialize(FilePath());
 }
 
 net::Error SaveFile::AppendDataToFile(const char* data, size_t data_len) {

@@ -86,7 +86,7 @@ class ChromeDownloadManagerDelegate
   virtual void RemoveItemsFromPersistentStoreBetween(
       base::Time remove_begin,
       base::Time remove_end) OVERRIDE;
-  virtual void GetSaveDir(content::WebContents* web_contents,
+  virtual void GetSaveDir(content::BrowserContext* browser_context,
                           FilePath* website_save_dir,
                           FilePath* download_save_dir,
                           bool* skip_dir_check) OVERRIDE;

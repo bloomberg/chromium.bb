@@ -40,7 +40,11 @@ class CONTENT_EXPORT BaseFile {
   virtual ~BaseFile();
 
   // Returns net::OK on success, or a network error code on failure.
-  net::Error Initialize();
+  // |default_directory| specifies the directory to create the temporary file in
+  // if |full_path()| is empty. If |default_directory| and |full_path()| are
+  // empty, then a temporary file will be created in the default download
+  // location as determined by ContentBrowserClient.
+  net::Error Initialize(const FilePath& default_directory);
 
   // Write a new chunk of data to the file.
   // Returns net::OK on success (all bytes written to the file),

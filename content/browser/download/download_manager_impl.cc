@@ -373,6 +373,13 @@ content::DownloadId DownloadManagerImpl::StartDownload(
   // assigned in CreateDownloadItem.
   DownloadId download_id = info->download_id;
 
+  if (delegate_) {
+    FilePath website_save_directory;      // Unused
+    bool skip_dir_check = false;          // Unused
+    delegate_->GetSaveDir(GetBrowserContext(), &website_save_directory,
+                          &info->default_download_directory, &skip_dir_check);
+  }
+
   DownloadFileManager::CreateDownloadFileCallback callback(
       base::Bind(&DownloadManagerImpl::OnDownloadFileCreated,
                  this, download_id.local()));

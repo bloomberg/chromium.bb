@@ -526,12 +526,11 @@ void ChromeDownloadManagerDelegate::RemoveItemsFromPersistentStoreBetween(
   download_history_->RemoveEntriesBetween(remove_begin, remove_end);
 }
 
-void ChromeDownloadManagerDelegate::GetSaveDir(WebContents* web_contents,
+void ChromeDownloadManagerDelegate::GetSaveDir(BrowserContext* browser_context,
                                                FilePath* website_save_dir,
                                                FilePath* download_save_dir,
                                                bool* skip_dir_check) {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  Profile* profile = Profile::FromBrowserContext(browser_context);
   PrefService* prefs = profile->GetPrefs();
 
   // Check whether the preference has the preferred directory for saving file.
