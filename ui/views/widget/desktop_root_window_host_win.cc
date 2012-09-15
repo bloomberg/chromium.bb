@@ -87,12 +87,75 @@ void DesktopRootWindowHostWin::ShowWindowWithState(
   message_handler_->ShowWindowWithState(show_state);
 }
 
+void DesktopRootWindowHostWin::ShowMaximizedWithBounds(
+    const gfx::Rect& restored_bounds) {
+  message_handler_->ShowMaximizedWithBounds(restored_bounds);
+}
+
 bool DesktopRootWindowHostWin::IsVisible() const {
   return message_handler_->IsVisible();
 }
 
+void DesktopRootWindowHostWin::SetSize(const gfx::Size& size) {
+  message_handler_->SetSize(size);
+}
+
+void DesktopRootWindowHostWin::CenterWindow(const gfx::Size& size) {
+  message_handler_->CenterWindow(size);
+}
+
+void DesktopRootWindowHostWin::GetWindowPlacement(
+    gfx::Rect* bounds,
+    ui::WindowShowState* show_state) const {
+  message_handler_->GetWindowPlacement(bounds, show_state);
+}
+
+gfx::Rect DesktopRootWindowHostWin::GetWindowBoundsInScreen() const {
+  return message_handler_->GetWindowBoundsInScreen();
+}
+
 gfx::Rect DesktopRootWindowHostWin::GetClientAreaBoundsInScreen() const {
   return message_handler_->GetClientAreaBoundsInScreen();
+}
+
+gfx::Rect DesktopRootWindowHostWin::GetRestoredBounds() const {
+  return message_handler_->GetRestoredBounds();
+}
+
+void DesktopRootWindowHostWin::Activate() {
+  message_handler_->Activate();
+}
+
+void DesktopRootWindowHostWin::Deactivate() {
+  message_handler_->Deactivate();
+}
+
+bool DesktopRootWindowHostWin::IsActive() const {
+  return message_handler_->IsActive();
+}
+
+void DesktopRootWindowHostWin::Maximize() {
+  message_handler_->Maximize();
+}
+
+void DesktopRootWindowHostWin::Minimize() {
+  message_handler_->Minimize();
+}
+
+void DesktopRootWindowHostWin::Restore() {
+  message_handler_->Restore();
+}
+
+bool DesktopRootWindowHostWin::IsMaximized() const {
+  return message_handler_->IsMaximized();
+}
+
+bool DesktopRootWindowHostWin::IsMinimized() const {
+  return message_handler_->IsMinimized();
+}
+
+void DesktopRootWindowHostWin::SetAlwaysOnTop(bool always_on_top) {
+  message_handler_->SetAlwaysOnTop(always_on_top);
 }
 
 InputMethod* DesktopRootWindowHostWin::CreateInputMethod() {
@@ -102,6 +165,10 @@ InputMethod* DesktopRootWindowHostWin::CreateInputMethod() {
 internal::InputMethodDelegate*
     DesktopRootWindowHostWin::GetInputMethodDelegate() {
   return message_handler_.get();
+}
+
+void DesktopRootWindowHostWin::SetWindowTitle(const string16& title) {
+  message_handler_->SetTitle(title);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -127,10 +194,12 @@ void DesktopRootWindowHostWin::ToggleFullScreen() {
 }
 
 gfx::Rect DesktopRootWindowHostWin::GetBounds() const {
-  return gfx::Rect(100, 100);
+  // TODO(beng): Should be an ash-only method??
+  return GetWindowBoundsInScreen();
 }
 
 void DesktopRootWindowHostWin::SetBounds(const gfx::Rect& bounds) {
+  message_handler_->SetBounds(bounds);
 }
 
 gfx::Point DesktopRootWindowHostWin::GetLocationOnNativeScreen() const {

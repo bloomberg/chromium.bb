@@ -48,16 +48,99 @@ void DesktopRootWindowHostLinux::ShowWindowWithState(
   NOTIMPLEMENTED();
 }
 
+void DesktopRootWindowHostLinux::ShowMaximizedWithBounds(
+    const gfx::Rect& restored_bounds) {
+  // TODO(erg):
+  NOTIMPLEMENTED();
+}
+
 bool DesktopRootWindowHostLinux::IsVisible() const {
   // TODO(erg):
   NOTIMPLEMENTED();
   return true;
 }
 
+void DesktopRootWindowHostLinux::SetSize(const gfx::Size& size) {
+  // TODO(erg):
+  NOTIMPLEMENTED();
+}
+
+void DesktopRootWindowHostLinux::CenterWindow(const gfx::Size& size) {
+  // TODO(erg):
+  NOTIMPLEMENTED();
+}
+
+void DesktopRootWindowHostLinux::GetWindowPlacement(
+    gfx::Rect* bounds,
+    ui::WindowShowState* show_state) const {
+      // TODO(erg):
+      NOTIMPLEMENTED();
+}
+
+gfx::Rect DesktopRootWindowHostLinux::GetWindowBoundsInScreen() const {
+  // TODO(erg):
+  NOTIMPLEMENTED();
+  return gfx::Rect();
+}
+
 gfx::Rect DesktopRootWindowHostLinux::GetClientAreaBoundsInScreen() const {
   // TODO(erg):
   NOTIMPLEMENTED();
   return gfx::Rect(100, 100);
+}
+
+gfx::Rect DesktopRootWindowHostLinux::GetRestoredBounds() const {
+  // TODO(erg):
+  NOTIMPLEMENTED();
+  return gfx::Rect();
+}
+
+void DesktopRootWindowHostLinux::Activate() {
+  // TODO(erg):
+  NOTIMPLEMENTED();
+}
+
+void DesktopRootWindowHostLinux::Deactivate() {
+  // TODO(erg):
+  NOTIMPLEMENTED();
+}
+
+bool DesktopRootWindowHostLinux::IsActive() const {
+  // TODO(erg):
+  NOTIMPLEMENTED();
+  return true;
+}
+
+void DesktopRootWindowHostLinux::Maximize() {
+  // TODO(erg):
+  NOTIMPLEMENTED();
+}
+
+void DesktopRootWindowHostLinux::Minimize() {
+  // TODO(erg):
+  NOTIMPLEMENTED();
+}
+
+void DesktopRootWindowHostLinux::Restore() {
+  // TODO(erg):
+  NOTIMPLEMENTED();
+}
+
+bool DesktopRootWindowHostLinux::IsMaximized() const {
+  // TODO(erg):
+  NOTIMPLEMENTED();
+  return false;
+}
+
+bool DesktopRootWindowHostLinux::IsMinimized() const {
+  // TODO(erg):
+  NOTIMPLEMENTED();
+  return false;
+}
+
+void DesktopRootWindowHostLinux::SetAlwaysOnTop(bool always_on_top) {
+  // TODO(erg):
+  NOTIMPLEMENTED();
 }
 
 InputMethod* DesktopRootWindowHostLinux::CreateInputMethod() {
@@ -71,6 +154,11 @@ internal::InputMethodDelegate*
   // TODO(erg):
   NOTIMPLEMENTED();
   return NULL;
+}
+
+void DesktopRootWindowHostLinux::SetWindowTitle(const string16& title) {
+  // TODO(erg):
+  NOTIMPLEMENTED();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

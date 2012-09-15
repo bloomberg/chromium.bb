@@ -23,10 +23,29 @@ class DesktopRootWindowHostLinux : public DesktopRootWindowHost {
   virtual void CloseNow() OVERRIDE;
   virtual aura::RootWindowHost* AsRootWindowHost() OVERRIDE;
   virtual void ShowWindowWithState(ui::WindowShowState show_state) OVERRIDE;
+  virtual void ShowMaximizedWithBounds(
+      const gfx::Rect& restored_bounds) OVERRIDE;
   virtual bool IsVisible() const OVERRIDE;
+  virtual void SetSize(const gfx::Size& size) OVERRIDE;
+  virtual void CenterWindow(const gfx::Size& size) OVERRIDE;
+  virtual void GetWindowPlacement(
+      gfx::Rect* bounds,
+      ui::WindowShowState* show_state) const OVERRIDE;
+  virtual gfx::Rect GetWindowBoundsInScreen() const OVERRIDE;
   virtual gfx::Rect GetClientAreaBoundsInScreen() const OVERRIDE;
+  virtual gfx::Rect GetRestoredBounds() const OVERRIDE;
+  virtual void Activate() OVERRIDE;
+  virtual void Deactivate() OVERRIDE;
+  virtual bool IsActive() const OVERRIDE;
+  virtual void Maximize() OVERRIDE;
+  virtual void Minimize() OVERRIDE;
+  virtual void Restore() OVERRIDE;
+  virtual bool IsMaximized() const OVERRIDE;
+  virtual bool IsMinimized() const OVERRIDE;
+  virtual void SetAlwaysOnTop(bool always_on_top) OVERRIDE;
   virtual InputMethod* CreateInputMethod() OVERRIDE;
   virtual internal::InputMethodDelegate* GetInputMethodDelegate() OVERRIDE;
+  virtual void SetWindowTitle(const string16& title) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopRootWindowHostLinux);
 };

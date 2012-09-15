@@ -40,13 +40,33 @@ class DesktopRootWindowHost {
   virtual aura::RootWindowHost* AsRootWindowHost() = 0;
 
   virtual void ShowWindowWithState(ui::WindowShowState show_state) = 0;
+  virtual void ShowMaximizedWithBounds(const gfx::Rect& restored_bounds) = 0;
 
   virtual bool IsVisible() const = 0;
 
+  virtual void SetSize(const gfx::Size& size) = 0;
+  virtual void CenterWindow(const gfx::Size& size) = 0;
+  virtual void GetWindowPlacement(gfx::Rect* bounds,
+                                  ui::WindowShowState* show_state) const = 0;
+  virtual gfx::Rect GetWindowBoundsInScreen() const = 0;
   virtual gfx::Rect GetClientAreaBoundsInScreen() const = 0;
+  virtual gfx::Rect GetRestoredBounds() const = 0;
+
+  virtual void Activate() = 0;
+  virtual void Deactivate() = 0;
+  virtual bool IsActive() const = 0;
+  virtual void Maximize() = 0;
+  virtual void Minimize() = 0;
+  virtual void Restore() = 0;
+  virtual bool IsMaximized() const = 0;
+  virtual bool IsMinimized() const = 0;
+
+  virtual void SetAlwaysOnTop(bool always_on_top) = 0;
 
   virtual InputMethod* CreateInputMethod() = 0;
   virtual internal::InputMethodDelegate* GetInputMethodDelegate() = 0;
+
+  virtual void SetWindowTitle(const string16& title) = 0;
 };
 
 }  // namespace views
