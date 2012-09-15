@@ -13,9 +13,11 @@
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"
@@ -28,6 +30,19 @@ namespace {
 const int kMaxZeroSuggestRelevance = 100;
 }  // namespace
 
+// static
+ZeroSuggestProvider* ZeroSuggestProvider::Create(
+    AutocompleteProviderListener* listener,
+    Profile* profile) {
+  if (profile && !profile->IsOffTheRecord() && profile->GetPrefs()) {
+    std::string url_prefix = profile->GetPrefs()->GetString(
+        prefs::kExperimentalZeroSuggestUrlPrefix);
+    if (!url_prefix.empty())
+      return new ZeroSuggestProvider(listener, profile, url_prefix);
+  }
+  return NULL;
+}
+
 ZeroSuggestProvider::ZeroSuggestProvider(
   AutocompleteProviderListener* listener,
   Profile* profile,
@@ -36,6 +51,12 @@ ZeroSuggestProvider::ZeroSuggestProvider(
           AutocompleteProvider::TYPE_ZERO_SUGGEST),
       url_prefix_(url_prefix),
       template_url_service_(TemplateURLServiceFactory::GetForProfile(profile)) {
+}
+
+// static
+void ZeroSuggestProvider::RegisterUserPrefs(PrefService* user_prefs) {
+  user_prefs->RegisterStringPref(prefs::kExperimentalZeroSuggestUrlPrefix, "",
+                                 PrefService::UNSYNCABLE_PREF);
 }
 
 void ZeroSuggestProvider::Start(const AutocompleteInput& input,

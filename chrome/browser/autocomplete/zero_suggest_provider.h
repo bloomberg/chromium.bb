@@ -26,6 +26,7 @@
 
 class AutocompleteInput;
 class GURL;
+class PrefService;
 class TemplateURLService;
 
 namespace base {
@@ -49,9 +50,12 @@ class URLFetcher;
 class ZeroSuggestProvider : public AutocompleteProvider,
                             public net::URLFetcherDelegate {
  public:
-  ZeroSuggestProvider(AutocompleteProviderListener* listener,
-                      Profile* profile,
-                      const std::string& url_prefix);
+  // Creates and returns an instance of this provider if the feature is enabled.
+  // Returns NULL if not enabled.
+  static ZeroSuggestProvider* Create(AutocompleteProviderListener* listener,
+                                     Profile* profile);
+
+  static void RegisterUserPrefs(PrefService* user_prefs);
 
   // AutocompleteProvider:
   virtual void Start(const AutocompleteInput& input,
@@ -69,6 +73,10 @@ class ZeroSuggestProvider : public AutocompleteProvider,
   void StartZeroSuggest(const GURL& url, const string16& user_text);
 
  private:
+  ZeroSuggestProvider(AutocompleteProviderListener* listener,
+                      Profile* profile,
+                      const std::string& url_prefix);
+
   virtual ~ZeroSuggestProvider();
 
   // Update matches given the user has typed |user_text|.

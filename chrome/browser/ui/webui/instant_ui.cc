@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/instant_ui.h"
 
 #include "base/bind.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/pref_names.h"
@@ -75,36 +76,43 @@ void InstantUIMessageHandler::GetPreferenceValue(const base::ListValue* args) {
   std::string pref_name;
   if (!args->GetString(0, &pref_name)) return;
 
-  double value = 0.0;
+  base::StringValue pref_name_value(pref_name);
+  if (pref_name == prefs::kInstantAnimationScaleFactor) {
+    double value = 0.0;
 #if defined(TOOLKIT_VIEWS)
-  if (pref_name == prefs::kInstantAnimationScaleFactor)
     value = slow_animation_scale_factor_;
 #endif
-
-  base::StringValue arg1(pref_name);
-  base::FundamentalValue arg2(value);
-  web_ui()->CallJavascriptFunction(
-      "instantConfig.getPreferenceValueResult",
-      arg1,
-      arg2);
+    base::FundamentalValue arg(value);
+    web_ui()->CallJavascriptFunction(
+        "instantConfig.getPreferenceValueResult", pref_name_value, arg);
+  } else if (pref_name == prefs::kExperimentalZeroSuggestUrlPrefix) {
+    PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
+    base::StringValue arg(prefs->GetString(pref_name.c_str()));
+    web_ui()->CallJavascriptFunction(
+        "instantConfig.getPreferenceValueResult", pref_name_value, arg);
+  }
 }
 
 void InstantUIMessageHandler::SetPreferenceValue(const base::ListValue* args) {
   std::string pref_name;
   if (!args->GetString(0, &pref_name)) return;
 
-  double value;
-  if (!args->GetDouble(1, &value)) return;
-
-#if defined(TOOLKIT_VIEWS)
   if (pref_name == prefs::kInstantAnimationScaleFactor) {
+    double value;
+    if (!args->GetDouble(1, &value)) return;
+#if defined(TOOLKIT_VIEWS)
     // Clamp to something reasonable.
     value = std::max(0.1, std::min(value, 10.0));
     slow_animation_scale_factor_ = static_cast<int>(value);
-  }
 #else
-  NOTIMPLEMENTED();
+    NOTIMPLEMENTED();
 #endif
+  } else if (pref_name == prefs::kExperimentalZeroSuggestUrlPrefix) {
+    std::string value;
+    if (!args->GetString(1, &value)) return;
+    PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
+    prefs->SetString(pref_name.c_str(), value);
+  }
 }
 
 }  // namespace

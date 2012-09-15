@@ -468,6 +468,10 @@ const char kInstantConfirmDialogShown[] = "instant.confirm_dialog_shown";
 // Boolean pref indicating if instant is enabled.
 const char kInstantEnabled[] = "instant.enabled";
 
+// Prefix URL for the (experimental) ZeroSuggest provider.
+const char kExperimentalZeroSuggestUrlPrefix[] =
+    "instant.experimental_zero_suggest_url_prefix";
+
 // Used to migrate preferences from local state to user preferences to
 // enable multiple profiles.
 // BITMASK with possible values (see browser_prefs.cc for enum):

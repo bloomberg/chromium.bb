@@ -19,8 +19,16 @@ var instantConfig = (function() {
     {
       key: 'instant.animation_scale_factor',
       label: 'Slow down animations by a factor of',
+      type: 'float',
       units: 'no units, range 1 to 10',
       default: 1
+    },
+    {
+      key: 'instant.experimental_zero_suggest_url_prefix',
+      label: 'Prefix URL for the (experimental) ZeroSuggest provider',
+      type: 'string',
+      units: '',
+      default: ''
     }
   ];
 
@@ -52,13 +60,17 @@ var instantConfig = (function() {
       row.appendChild(label);
 
       var input = createElementWithClass('input', 'row-input');
-      input.type = 'number';
-      input.size = 3;
       input.id = field.key;
-      input.min = field.min || 0;
       input.title = "Default Value: " + field.default;
-      if (field.max) input.max = field.max;
-      if (field.step) input.step = field.step;
+      if (field.type == 'float') {
+        input.size = 3;
+        input.type = 'number';
+        input.min = field.min || 0;
+        if (field.max) input.max = field.max;
+        if (field.step) input.step = field.step;
+      } else {
+        input.size = 40;
+      }
       row.appendChild(input);
 
       var units = createElementWithClass('div', 'row-units');
@@ -107,9 +119,7 @@ var instantConfig = (function() {
    * @param {value} value The value to be associated with prefName.
    */
   function setPreferenceValue(prefName, value) {
-    chrome.send(
-        'setPreferenceValue',
-        [prefName, parseFloat(value)]);
+    chrome.send('setPreferenceValue', [prefName, value]);
   }
 
   /**
@@ -131,7 +141,9 @@ var instantConfig = (function() {
   function onSave() {
     for (var i = 0; i < FIELDS.length; i++) {
       var field = FIELDS[i];
-      setPreferenceValue(field.key, $(field.key).value);
+      var value = $(field.key).value;
+      setPreferenceValue(
+          field.key, (field.type == 'float') ? parseFloat(value) : value);
     }
     return false;
   }

@@ -27,7 +27,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -131,11 +130,9 @@ AutocompleteController::AutocompleteController(
   if (provider_types & AutocompleteProvider::TYPE_SHORTCUTS)
     providers_.push_back(new ShortcutsProvider(this, profile));
 
-  CommandLine* cl = CommandLine::ForCurrentProcess();
-  if ((provider_types & AutocompleteProvider::TYPE_ZERO_SUGGEST) &&
-      cl->HasSwitch(switches::kExperimentalZeroSuggestURLPrefix)) {
-    zero_suggest_provider_ = new ZeroSuggestProvider(this, profile,
-        cl->GetSwitchValueASCII(switches::kExperimentalZeroSuggestURLPrefix));
+  // Create ZeroSuggest if it is enabled.
+  zero_suggest_provider_ = ZeroSuggestProvider::Create(this, profile);
+  if (zero_suggest_provider_) {
     providers_.push_back(zero_suggest_provider_);
   }
 
