@@ -13,7 +13,6 @@
 #include "chrome/browser/predictors/autocomplete_action_predictor_table.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_tables.h"
-#include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "sql/connection.h"
@@ -67,8 +66,7 @@ PredictorDatabaseInternal::PredictorDatabaseInternal(Profile* profile)
       autocomplete_table_(new AutocompleteActionPredictorTable()),
       resource_prefetch_tables_(new ResourcePrefetchPredictorTables()) {
   is_resource_prefetch_predictor_enabled_ =
-      prerender::IsSpeculativeResourcePrefetchingLearningEnabled(profile) ||
-      prerender::IsSpeculativeResourcePrefetchingEnabled(profile);
+      ResourcePrefetchPredictor::IsEnabled(profile);
 }
 
 PredictorDatabaseInternal::~PredictorDatabaseInternal() {

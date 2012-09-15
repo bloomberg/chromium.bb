@@ -40,39 +40,6 @@ struct NavigationID {
   base::TimeTicks creation_time;
 };
 
-// Represents the config for the resource prefetch prediction algorithm. It is
-// useful for running experiments.
-struct ResourcePrefetchPredictorConfig {
-  // Initializes the config with default values.
-  ResourcePrefetchPredictorConfig();
-
-  // If a navigation hasn't seen a load complete event in this much time, it
-  // is considered abandoned.
-  int max_navigation_lifetime_seconds;
-  // Size of LRU caches for the URL data.
-  int max_urls_to_track;
-  // The number of times, we should have seen a visit to this URL in history
-  // to start tracking it. This is to ensure we dont bother with oneoff
-  // entries.
-  int min_url_visit_count;
-  // The maximum number of resources to store per entry.
-  int max_resources_per_entry;
-  // The number of consecutive misses after we stop tracking a resource URL.
-  int max_consecutive_misses;
-
-  // The minimum confidence (accuracy of hits) required for a resource to be
-  // prefetched.
-  float min_resource_confidence_to_trigger_prefetch;
-  // The minimum number of times we must have a URL on record to prefetch it.
-  int min_resource_hits_to_trigger_prefetch;
-
-  // Maximum number of prefetches that can be inflight for a single navigation.
-  int max_prefetches_inflight_per_navigation;
-  // Maximum number of prefetches that can be inflight for a host for a single
-  // navigation.
-  int max_prefetches_inflight_per_host_per_navigation;
-};
-
 }  // namespace predictors
 
 #endif  // CHROME_BROWSER_PREDICTORS_RESOURCE_PREFETCH_COMMON_H_

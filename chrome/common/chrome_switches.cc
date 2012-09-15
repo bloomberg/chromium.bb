@@ -1224,9 +1224,6 @@ const char kSpeculativeResourcePrefetchingDisabled[] = "disabled";
 // be prefetched but will not prefetch them.
 const char kSpeculativeResourcePrefetchingLearning[] = "learning";
 
-// Speculative resource prefetching is enabled.
-const char kSpeculativeResourcePrefetchingEnabled[] = "enabled";
-
 // Specifies the maximum SSL/TLS version ("ssl3", "tls1", "tls1.1", or
 // "tls1.2").
 const char kSSLVersionMax[]                 = "ssl-version-max";

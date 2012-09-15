@@ -14,7 +14,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "chrome/browser/history/history_types.h"
-#include "chrome/browser/predictors/resource_prefetcher.h"
 #include "chrome/browser/predictors/resource_prefetch_common.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_tables.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
@@ -36,8 +35,6 @@ class URLRequest;
 
 namespace predictors {
 
-class ResourcePrefetcherManager;
-
 // Contains logic for learning what can be prefetched and for kicking off
 // speculative prefetching.
 // - The class is a profile keyed service owned by the profile.
@@ -55,16 +52,10 @@ class ResourcePrefetcherManager;
 //   PredictorDatabase.
 // * ResourcePrefetchPredictor - Learns about resource requirements per URL in
 //   the UI thread through the ResourcePrefetchPredictorObserver and perisists
-//   it to disk in the DB thread through the ResourcePrefetchPredictorTables. It
-//   initiates resource prefetching using the ResourcePrefetcherManager. Owned
-//   by profile.
-// * ResourcePrefetcherManager - Manages the ResourcePrefetchers that do the
-//   prefetching on the IO thread. The manager is owned by the
-//   ResourcePrefetchPredictor and interfaces between the predictor on the UI
-//   thread and the prefetchers on the IO thread.
-// * ResourcePrefetcher - Lives entirely on the IO thread, owned by the
-//   ResourcePrefetcherManager, and issues net::URLRequest to fetch resources.
+//   it to disk in the DB thread through the ResourcePrefetchPredictorTables.
+//   Owned by profile.
 //
+// TODO(shishir): Implement the prefetching of resources.
 // TODO(shishir): Do speculative prefetching for https resources and/or https
 // main_frame urls.
 class ResourcePrefetchPredictor
@@ -72,6 +63,27 @@ class ResourcePrefetchPredictor
       public content::NotificationObserver,
       public base::SupportsWeakPtr<ResourcePrefetchPredictor> {
  public:
+  // The following config allows us to change the predictor constants and run
+  // field trials with different constants.
+  struct Config {
+    // Initializes the config with default values.
+    Config();
+
+    // If a navigation hasn't seen a load complete event in this much time, it
+    // is considered abandoned.
+    int max_navigation_lifetime_seconds;  // Default 60
+    // Size of LRU caches for the Url data.
+    size_t max_urls_to_track;  // Default 500
+    // The number of times, we should have seen a visit to this Url in history
+    // to start tracking it. This is to ensure we dont bother with oneoff
+    // entries.
+    int min_url_visit_count;  // Default 3
+    // The maximum number of resources to store per entry.
+    int max_resources_per_entry;  // Default 50
+    // The number of consecutive misses after we stop tracking a resource Url.
+    int max_consecutive_misses;  // Default 3
+  };
+
   // Stores the data that we need to get from the URLRequest.
   struct URLRequestSummary {
     URLRequestSummary();
@@ -88,11 +100,11 @@ class ResourcePrefetchPredictor
     GURL redirect_url;  // Empty unless request was redirected to a valid url.
   };
 
-  ResourcePrefetchPredictor(const ResourcePrefetchPredictorConfig& config,
-                            Profile* profile);
+  ResourcePrefetchPredictor(const Config& config, Profile* profile);
   virtual ~ResourcePrefetchPredictor();
 
   // Thread safe.
+  static bool IsEnabled(Profile* profile);
   static bool ShouldRecordRequest(net::URLRequest* request,
                                   ResourceType::Type resource_type);
   static bool ShouldRecordResponse(net::URLRequest* response);
@@ -105,12 +117,6 @@ class ResourcePrefetchPredictor
   void RecordURLRequest(const URLRequestSummary& request);
   void RecordUrlResponse(const URLRequestSummary& response);
   void RecordUrlRedirect(const URLRequestSummary& response);
-
-  // Called by ResourcePrefetcherManager to notify that prefetching has finished
-  // for a navigation. Should take ownership of |requests|.
-  virtual void FinishedPrefetchForNavigation(
-      const NavigationID& navigation_id,
-      ResourcePrefetcher::RequestVector* requests);
 
  private:
   friend class ::PredictorsHandler;
@@ -152,15 +158,11 @@ class ResourcePrefetchPredictor
 
   typedef std::map<NavigationID, std::vector<URLRequestSummary> > NavigationMap;
   typedef std::map<GURL, UrlTableCacheValue> UrlTableCacheMap;
-  typedef std::map<NavigationID, ResourcePrefetcher::RequestVector*> ResultsMap;
 
   // content::NotificationObserver methods OVERRIDE.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
-
-  // ProfileKeyedService methods OVERRIDE.
-  virtual void Shutdown() OVERRIDE;
 
   static bool IsHandledMainPage(net::URLRequest* request);
   static bool IsHandledSubresource(net::URLRequest* response);
@@ -191,9 +193,7 @@ class ResourcePrefetchPredictor
   void OnNavigationComplete(const NavigationID& navigation_id);
   void LearnUrlNavigation(const GURL& main_frame_url,
                           const std::vector<URLRequestSummary>& new_value);
-  void MaybeReportAccuracyStats(const NavigationID& navigation_id);
-  void MaybeReportSimulatedAccuracyStats(
-      const NavigationID& navigation_id) const;
+  void MaybeReportAccuracyStats(const NavigationID& navigation_id) const;
   void ReportAccuracyHistograms(const UrlTableRowVector& predicted,
                                 const std::map<GURL, bool>& actual_resources,
                                 int total_resources_fetched_from_network,
@@ -203,16 +203,13 @@ class ResourcePrefetchPredictor
       scoped_refptr<ResourcePrefetchPredictorTables> tables);
 
   Profile* const profile_;
-  ResourcePrefetchPredictorConfig const config_;
+  Config config_;
   InitializationState initialization_state_;
   scoped_refptr<ResourcePrefetchPredictorTables> tables_;
-  scoped_refptr<ResourcePrefetcherManager> prefetch_manager_;
   content::NotificationRegistrar notification_registrar_;
 
   NavigationMap inflight_navigations_;
   UrlTableCacheMap url_table_cache_;
-  ResultsMap results_map_;
-  STLValueDeleter<ResultsMap> results_map_deleter_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourcePrefetchPredictor);
 };
