@@ -295,10 +295,9 @@ HRESULT UtilGetXUACompatContentValue(const std::wstring& html_string,
 void DisplayVersionMismatchWarning(HWND parent,
                                    const std::string& server_version) {
   // Obtain the current module version.
-  FileVersionInfo* file_version_info =
-      FileVersionInfo::CreateFileVersionInfoForCurrentModule();
-  DCHECK(file_version_info);
-  std::wstring version_string(file_version_info->file_version());
+  scoped_ptr<FileVersionInfo> module_version_info(
+      FileVersionInfo::CreateFileVersionInfoForCurrentModule());
+  string16 version_string(module_version_info->file_version());
   std::wstring wide_server_version;
   if (server_version.empty()) {
     wide_server_version = SimpleResourceLoader::Get(IDS_VERSIONUNKNOWN);
