@@ -114,9 +114,6 @@ BitmapPlatformDevice* BitmapPlatformDevice::Create(CGContextRef context,
                                                    int width,
                                                    int height,
                                                    bool is_opaque) {
-  if (RasterDeviceTooBigToAllocate(width, height))
-    return NULL;
-
   SkBitmap bitmap;
   bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
   if (bitmap.allocPixels() != true)
