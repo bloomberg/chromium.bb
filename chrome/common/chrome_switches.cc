@@ -420,6 +420,9 @@ const char kDisableSyncTypedUrls[]          = "disable-sync-typed-urls";
 // disable translate with the preference.
 const char kDisableTranslate[]              = "disable-translate";
 
+// Disables TLS Channel ID extension.
+const char kDisableTLSChannelID[]           = "disable-tls-channel-id";
+
 // Disables the backend service for web resources.
 const char kDisableWebResources[]           = "disable-web-resources";
 
@@ -596,10 +599,6 @@ const char kEnableNpn[]                     = "enable-npn";
 // Enables NPN with HTTP. It means NPN is enabled but SPDY won't be used.
 // HTTP is still used for all requests.
 const char kEnableNpnHttpOnly[]             = "enable-npn-http";
-
-// Enables TLS Channel ID extension.  (The switch is still called
-// "enable-origin-bound-certs" for backwards compatability.)
-const char kEnableOriginBoundCerts[]        = "enable-origin-bound-certs";
 
 // Enables panels (always on-top docked pop-up windows).
 const char kEnablePanels[]                  = "enable-panels";

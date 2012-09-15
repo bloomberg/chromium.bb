@@ -128,7 +128,6 @@ void ChromeBrowserFieldTrials::SetupFieldTrials(bool proxy_policy_is_set) {
   AutocompleteFieldTrial::Activate();
   DisableNewTabFieldTrialIfNecesssary();
   SetUpSafeBrowsingInterstitialFieldTrial();
-  SetUpChannelIDFieldTrial();
   SetUpInfiniteCacheFieldTrial();
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
   OneClickSigninHelper::InitializeFieldTrial();
@@ -544,25 +543,6 @@ void ChromeBrowserFieldTrials::SetUpSafeBrowsingInterstitialFieldTrial() {
                                                  "V1", 2012, 9, 19, NULL));
   trial->UseOneTimeRandomization();
   trial->AppendGroup("V2", kVersion2Probability);
-}
-
-void ChromeBrowserFieldTrials::SetUpChannelIDFieldTrial() {
-  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  if (channel == chrome::VersionInfo::CHANNEL_CANARY) {
-    net::SSLConfigService::EnableChannelIDTrial();
-  } else if (channel == chrome::VersionInfo::CHANNEL_DEV &&
-             base::FieldTrialList::IsOneTimeRandomizationEnabled()) {
-    const base::FieldTrial::Probability kDivisor = 100;
-    // 10% probability of being in the enabled group.
-    const base::FieldTrial::Probability kEnableProbability = 10;
-    scoped_refptr<base::FieldTrial> trial =
-        base::FieldTrialList::FactoryGetFieldTrial(
-            "ChannelID", kDivisor, "disable", 2012, 11, 5, NULL);
-    trial->UseOneTimeRandomization();
-    int enable_group = trial->AppendGroup("enable", kEnableProbability);
-    if (trial->group() == enable_group)
-      net::SSLConfigService::EnableChannelIDTrial();
-  }
 }
 
 void ChromeBrowserFieldTrials::SetUpInfiniteCacheFieldTrial() {
