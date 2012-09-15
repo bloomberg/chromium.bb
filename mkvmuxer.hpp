@@ -668,6 +668,13 @@ class Segment {
   // |ptr_writer| is NULL.
   bool Init(IMkvWriter* ptr_writer);
 
+  // Adds a generic track to the segment.  Returns the newly-allocated
+  // track object (which is owned by the segment) on success, NULL on
+  // error. |number| is the number to use for the track.  |number|
+  // must be >= 0. If |number| == 0 then the muxer will decide on the
+  // track number.
+  Track* AddTrack(int32 number);
+
   // Adds an audio track to the segment. Returns the number of the track on
   // success, 0 on error. |number| is the number to use for the audio track.
   // |number| must be >= 0. If |number| == 0 then the muxer will decide on

@@ -880,12 +880,22 @@ bool Tracks::AddTrack(Track* track, int32 number) {
   if (number < 0)
     return false;
 
+  // This muxer only supports track numbers in the range [1, 126], in
+  // order to be able (to use Matroska integer representation) to
+  // serialize the block header (of which the track number is a part)
+  // for a frame using exactly 4 bytes.
+
+  if (number > 0x7E)
+    return false;
+
   uint32 track_num = number;
 
-  // Check to make sure a track does not already have |track_num|.
-  for (uint32 i = 0; i < track_entries_size_; ++i) {
-    if (track_entries_[i]->number() == track_num)
-      return false;
+  if (track_num > 0) {
+    // Check to make sure a track does not already have |track_num|.
+    for (uint32 i = 0; i < track_entries_size_; ++i) {
+      if (track_entries_[i]->number() == track_num)
+        return false;
+    }
   }
 
   const uint32 count = track_entries_size_ + 1;
@@ -1582,6 +1592,20 @@ bool Segment::Finalize() {
   }
 
   return true;
+}
+
+Track* Segment::AddTrack(int32 number) {
+  Track* const track = new (std::nothrow) Track;  // NOLINT
+
+  if (!track)
+    return NULL;
+
+  if (!tracks_.AddTrack(track, number)) {
+    delete track;
+    return NULL;
+  }
+
+  return track;
 }
 
 uint64 Segment::AddVideoTrack(int32 width, int32 height, int32 number) {
