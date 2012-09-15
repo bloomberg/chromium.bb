@@ -258,10 +258,10 @@ void ConfigureSpeculativePrefetching() {
 
   FieldTrial::Probability kDisabledProbability = 10;
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  if (channel == chrome::VersionInfo::CHANNEL_STABLE ||
-      channel == chrome::VersionInfo::CHANNEL_BETA) {
+  if (channel == chrome::VersionInfo::CHANNEL_BETA)
+    kDisabledProbability = 95;
+  else if (channel == chrome::VersionInfo::CHANNEL_STABLE)
     kDisabledProbability = 100;
-  }
   scoped_refptr<FieldTrial> speculative_prefetching_learning_trial(
       FieldTrialList::FactoryGetFieldTrial(
           kSpeculativePrefetchingLearningTrialName,
