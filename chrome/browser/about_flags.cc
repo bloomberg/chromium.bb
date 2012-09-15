@@ -343,18 +343,11 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableNaClExceptionHandling)
   },
   {
-    "nacl-gdb",  // FLAGS:RECORD_UMA
-    IDS_FLAGS_NACL_GDB_NAME,
-    IDS_FLAGS_NACL_GDB_DESCRIPTION,
-    kOsWin,
-    SINGLE_VALUE_TYPE(switches::kNaClGdb)
-  },
-  {
-    "nacl-gdb-script",  // FLAGS:RECORD_UMA
-    IDS_FLAGS_NACL_GDB_SCRIPT_NAME,
-    IDS_FLAGS_NACL_GDB_SCRIPT_DESCRIPTION,
+    "enable-nacl-debug",  // FLAGS:RECORD_UMA
+    IDS_FLAGS_ENABLE_NACL_DEBUG_NAME,
+    IDS_FLAGS_ENABLE_NACL_DEBUG_DESCRIPTION,
     kOsAll,
-    SINGLE_VALUE_TYPE(switches::kNaClGdbScript)
+    SINGLE_VALUE_TYPE(switches::kEnableNaClDebug)
   },
   {
     "enable-pnacl",  // FLAGS:RECORD_UMA

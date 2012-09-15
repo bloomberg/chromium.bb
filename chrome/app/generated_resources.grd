@@ -5597,17 +5597,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_NACL_EXCEPTION_HANDLING_DESCRIPTION" desc="Description of the 'Enable Native Client hardware exception handling' lab.">
         Enable support for Native Client hardware exception handling.
       </message>
-      <message name="IDS_FLAGS_NACL_GDB_NAME" desc="Name of the 'Debug Native Client applications at startup' lab">
-        Debug Native Client applications at startup.
+      <message name="IDS_FLAGS_ENABLE_NACL_DEBUG_NAME" desc="Name of the 'NaCl GDB debug stub' lab.">
+        Native Client GDB-based debugging
       </message>
-      <message name="IDS_FLAGS_NACL_GDB_DESCRIPTION" desc="Description of the 'Debug Native Client applications at startup' lab.">
-        Set path to nacl-gdb debugger. It will be attached to NaCl applications at startup.
-      </message>
-      <message name="IDS_FLAGS_NACL_GDB_SCRIPT_NAME" desc="Name of the 'Script executed by Native Client application debugger at startup' lab.">
-        Script to be executed by nacl-gdb at startup.
-      </message>
-      <message name="IDS_FLAGS_NACL_GDB_SCRIPT_DESCRIPTION" desc="Description of the 'Script executed by Native Client application debugger at startup' lab.">
-        Set path to script with gdb commands which will be executed by nacl-gdb at startup.
+      <message name="IDS_FLAGS_ENABLE_NACL_DEBUG_DESCRIPTION" desc="Description of the 'NaCl GDB debug stub' lab.">
+        Enable GDB debug stub. This will stop a Native Client application on startup and wait for nacl-gdb (from the NaCl SDK) to attach to it.
       </message>
       <message name="IDS_FLAGS_ENABLE_PNACL_NAME" desc="Name of the 'Enable Portable Native Client' lab.">
         Portable Native Client.

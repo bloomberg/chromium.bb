@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
@@ -215,6 +216,16 @@ void NaClProcessHost::EarlyStartup() {
   // under us by autoupdate.
   NaClBrowser::GetInstance()->EnsureIrtAvailable();
 #endif
+  CommandLine* cmd = CommandLine::ForCurrentProcess();
+  UMA_HISTOGRAM_BOOLEAN(
+      "NaCl.nacl-gdb",
+      !cmd->GetSwitchValuePath(switches::kNaClGdb).empty());
+  UMA_HISTOGRAM_BOOLEAN(
+      "NaCl.nacl-gdb-script",
+      !cmd->GetSwitchValuePath(switches::kNaClGdbScript).empty());
+  UMA_HISTOGRAM_BOOLEAN(
+      "NaCl.enable-nacl-debug",
+      cmd->HasSwitch(switches::kEnableNaClDebug));
 }
 
 void NaClProcessHost::Launch(
