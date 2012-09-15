@@ -17479,9 +17479,6 @@ Battery full
     <message name="IDS_INTENT_PICKER_GET_MORE_SERVICES" desc="Heading in the Web Intents picker box for a section containing suggested applications from the Chrome Web Store">
       App suggestions from the Chrome Web Store:
     </message>
-    <message name="IDS_INTENT_PICKER_MORE_SUGGESTIONS" desc="Link text providing a Chrome Web Store link to select more apps.">
-      More suggestions
-    </message>
     <message name="IDS_INTENT_PICKER_NO_SERVICES_TITLE" desc="Heading for text explaining that there are neither installed nor suggested services available">
       Uh oh.
     </message>
