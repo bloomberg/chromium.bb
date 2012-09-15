@@ -63,6 +63,7 @@
 #include "chrome/browser/chromeos/extensions/file_browser_handler_api.h"
 #include "chrome/browser/chromeos/extensions/file_browser_private_api.h"
 #include "chrome/browser/chromeos/extensions/info_private_api.h"
+#include "chrome/browser/chromeos/extensions/power/power_api.h"
 #include "chrome/browser/chromeos/extensions/wallpaper_private_api.h"
 #include "chrome/browser/chromeos/media/media_player_extension_api.h"
 #include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
@@ -294,6 +295,10 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<extensions::UpdateMenuItemsFunction>();
 
   RegisterFunction<extensions::InputEventHandled>();
+
+  // Power
+  RegisterFunction<extensions::power::RequestKeepAwakeFunction>();
+  RegisterFunction<extensions::power::ReleaseKeepAwakeFunction>();
 #endif
 
   // Managed mode.

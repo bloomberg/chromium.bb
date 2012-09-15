@@ -30,6 +30,7 @@
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_INFOBARS" file="extensions\api\experimental_infobars.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_INPUT_VIRTUALKEYBOARD" file="extensions\api\experimental_input_virtual_keyboard.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_OFFSCREENTABS" file="extensions\api\experimental_offscreen_tabs.json" type="BINDATA" />
+      <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_POWER" file="extensions\api\experimental_power.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_PROCESSES" file="extensions\api\experimental_processes.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_RECORD" file="extensions\api\experimental_record.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_RLZ" file="extensions\api\experimental_rlz.json" type="BINDATA" />
