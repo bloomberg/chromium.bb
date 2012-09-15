@@ -120,7 +120,9 @@ struct AutocompleteMatch {
                            const AutocompleteMatch& elem2);
 
   // Comparison functions for removing matches with duplicate destinations.
-  // Destinations are compared using |stripped_destination_url|.
+  // Destinations are compared using |stripped_destination_url|.  Pairs of
+  // matches with empty destinations are treated as differing, since empty
+  // destinations are expected for non-navigable matches.
   static bool DestinationSortFunc(const AutocompleteMatch& elem1,
                                   const AutocompleteMatch& elem2);
   static bool DestinationsEqual(const AutocompleteMatch& elem1,
@@ -180,7 +182,7 @@ struct AutocompleteMatch {
   // http.  These two conversions are merely to allow comparisons to
   // remove likely duplicates; these URLs are not used as actual
   // destination URLs.  This method is invoked internally by the
-  // AutocompleteController and does not normally need to be invoked.
+  // AutocompleteResult and does not normally need to be invoked.
   void ComputeStrippedDestinationURL();
 
   // Gets data relevant to whether there should be any special keyword-related
