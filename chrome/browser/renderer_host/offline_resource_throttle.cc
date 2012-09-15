@@ -16,7 +16,6 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/net_errors.h"
@@ -28,7 +27,6 @@
 
 using content::BrowserThread;
 using content::RenderViewHost;
-using content::ResourceContext;
 using content::WebContents;
 
 namespace {
@@ -63,12 +61,12 @@ OfflineResourceThrottle::OfflineResourceThrottle(
     int render_process_id,
     int render_view_id,
     net::URLRequest* request,
-    content::ResourceContext* resource_context)
+    appcache::AppCacheService* appcache_service)
     : render_process_id_(render_process_id),
       render_view_id_(render_view_id),
       request_(request),
-      resource_context_(resource_context) {
-  DCHECK(resource_context);
+      appcache_service_(appcache_service) {
+  DCHECK(appcache_service);
 }
 
 OfflineResourceThrottle::~OfflineResourceThrottle() {
@@ -101,10 +99,9 @@ void OfflineResourceThrottle::WillStartRequest(bool* defer) {
   appcache_completion_callback_.Reset(
       base::Bind(&OfflineResourceThrottle::OnCanHandleOfflineComplete,
                  AsWeakPtr()));
-  ResourceContext::GetAppCacheService(resource_context_)->
-      CanHandleMainResourceOffline(
-          *url, *first_party,
-          appcache_completion_callback_.callback());
+  appcache_service_->CanHandleMainResourceOffline(
+      *url, *first_party,
+      appcache_completion_callback_.callback());
 
   *defer = true;
 }

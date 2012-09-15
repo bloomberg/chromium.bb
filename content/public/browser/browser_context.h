@@ -10,10 +10,6 @@
 #include "base/supports_user_data.h"
 #include "content/common/content_export.h"
 
-namespace appcache {
-class AppCacheService;
-}
-
 namespace fileapi {
 class FileSystemContext;
 }
@@ -26,16 +22,11 @@ namespace quota {
 class SpecialStoragePolicy;
 }
 
-namespace webkit_database {
-class DatabaseTracker;
-}
-
 class FilePath;
 class GURL;
 
 namespace content {
 
-class DOMStorageContext;
 class DownloadManager;
 class DownloadManagerDelegate;
 class GeolocationPermissionContext;
@@ -57,8 +48,6 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
 
   static DownloadManager* GetDownloadManager(BrowserContext* browser_context);
   static IndexedDBContext* GetIndexedDBContext(BrowserContext* browser_context);
-  static appcache::AppCacheService* GetAppCacheService(
-      BrowserContext* browser_context);
   static fileapi::FileSystemContext* GetFileSystemContext(
       BrowserContext* browser_context);
 
@@ -110,6 +99,9 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // calling GetRequestContext().
   virtual net::URLRequestContextGetter* GetRequestContextForRenderProcess(
       int renderer_child_id) = 0;
+
+  virtual net::URLRequestContextGetter* GetRequestContextForStoragePartition(
+      const std::string& partition_id) = 0;
 
   // Returns the default request context for media resources associated with
   // this context.

@@ -15,6 +15,10 @@
 class GURL;
 template <class T> class ScopedVector;
 
+namespace appcache {
+class AppCacheService;
+}
+
 namespace content {
 class ResourceContext;
 class ResourceThrottle;
@@ -51,6 +55,7 @@ class CONTENT_EXPORT ResourceDispatcherHostDelegate {
   virtual void RequestBeginning(
       net::URLRequest* request,
       ResourceContext* resource_context,
+      appcache::AppCacheService* appcache_service,
       ResourceType::Type resource_type,
       int child_id,
       int route_id,

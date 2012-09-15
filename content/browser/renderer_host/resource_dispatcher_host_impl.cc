@@ -957,7 +957,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
   if (request_data.request_body) {
     request->set_upload(
         request_data.request_body->ResolveElementsAndCreateUploadData(
-            GetBlobStorageControllerForResourceContext(resource_context)));
+            filter_->blob_storage_context()->controller()));
   }
 
   bool allow_download = request_data.allow_download &&
@@ -987,15 +987,14 @@ void ResourceDispatcherHostImpl::BeginRequest(
   if (request->url().SchemeIs(chrome::kBlobScheme)) {
     // Hang on to a reference to ensure the blob is not released prior
     // to the job being started.
-    webkit_blob::BlobStorageController* controller =
-        GetBlobStorageControllerForResourceContext(resource_context);
     extra_info->set_requested_blob_data(
-        controller->GetBlobDataFromUrl(request->url()));
+        filter_->blob_storage_context()->controller()->
+            GetBlobDataFromUrl(request->url()));
   }
 
   // Have the appcache associate its extra info with the request.
   appcache::AppCacheInterceptor::SetExtraRequestInfo(
-      request, ResourceContext::GetAppCacheService(resource_context), child_id,
+      request, filter_->appcache_service(), child_id,
       request_data.appcache_host_id, request_data.resource_type);
 
   // Construct the IPC resource handler.
@@ -1039,6 +1038,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
 
     delegate_->RequestBeginning(request,
                                 resource_context,
+                                filter_->appcache_service(),
                                 request_data.resource_type,
                                 child_id,
                                 route_id,

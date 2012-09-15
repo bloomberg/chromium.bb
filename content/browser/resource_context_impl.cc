@@ -31,7 +31,6 @@
 #include "webkit/fileapi/file_system_url_request_job_factory.h"
 
 // Key names on ResourceContext.
-static const char* kAppCacheServiceKeyName = "content_appcache_service_tracker";
 static const char* kBlobStorageContextKeyName = "content_blob_storage_context";
 static const char* kHostZoomMapKeyName = "content_host_zoom_map";
 
@@ -185,11 +184,6 @@ void InitializeRequestContext(
 
 }  // namespace
 
-AppCacheService* ResourceContext::GetAppCacheService(ResourceContext* context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  return UserDataAdapter<ChromeAppCacheService>::Get(
-      context, kAppCacheServiceKeyName);
-}
 
 ResourceContext::ResourceContext() {
   if (ResourceDispatcherHostImpl::Get())
@@ -204,12 +198,6 @@ ResourceContext::~ResourceContext() {
   }
 }
 
-BlobStorageController* GetBlobStorageControllerForResourceContext(
-    ResourceContext* resource_context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  return GetChromeBlobStorageContextForResourceContext(resource_context)->
-      controller();
-}
 ChromeBlobStorageContext* GetChromeBlobStorageContextForResourceContext(
     ResourceContext* resource_context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -228,11 +216,6 @@ void InitializeResourceContext(BrowserContext* browser_context) {
   DCHECK(!resource_context->GetUserData(kHostZoomMapKeyName));
 
   resource_context->SetUserData(
-      kAppCacheServiceKeyName,
-      new UserDataAdapter<ChromeAppCacheService>(
-          static_cast<ChromeAppCacheService*>(
-              BrowserContext::GetAppCacheService(browser_context))));
-  resource_context->SetUserData(
       kBlobStorageContextKeyName,
       new UserDataAdapter<ChromeBlobStorageContext>(
           ChromeBlobStorageContext::GetFor(browser_context)));
@@ -244,6 +227,9 @@ void InitializeResourceContext(BrowserContext* browser_context) {
       new NonOwningZoomData(
           HostZoomMap::GetForBrowserContext(browser_context)));
   resource_context->DetachUserDataThread();
+
+  StoragePartition* storage_partition =
+      BrowserContext::GetDefaultStoragePartition(browser_context);
 
   // Add content's URLRequestContext's hooks.
   // Check first to avoid memory leak in unittests.
@@ -264,9 +250,9 @@ void InitializeResourceContext(BrowserContext* browser_context) {
         base::Bind(
             &InitializeRequestContext,
             make_scoped_refptr(browser_context->GetRequestContext()),
-            BrowserContext::GetAppCacheService(browser_context),
+            storage_partition->GetAppCacheService(),
             make_scoped_refptr(
-                BrowserContext::GetFileSystemContext(browser_context)),
+                storage_partition->GetFileSystemContext()),
             make_scoped_refptr(
                 ChromeBlobStorageContext::GetFor(browser_context))));
     BrowserThread::PostTask(
@@ -274,9 +260,9 @@ void InitializeResourceContext(BrowserContext* browser_context) {
         base::Bind(
             &InitializeRequestContext,
             make_scoped_refptr(browser_context->GetMediaRequestContext()),
-            BrowserContext::GetAppCacheService(browser_context),
+            storage_partition->GetAppCacheService(),
             make_scoped_refptr(
-                BrowserContext::GetFileSystemContext(browser_context)),
+                storage_partition->GetFileSystemContext()),
             make_scoped_refptr(
                 ChromeBlobStorageContext::GetFor(browser_context))));
   }

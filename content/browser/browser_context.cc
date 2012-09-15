@@ -110,13 +110,6 @@ IndexedDBContext* BrowserContext::GetIndexedDBContext(
   return GetDefaultStoragePartition(browser_context)->GetIndexedDBContext();
 }
 
-appcache::AppCacheService* BrowserContext::GetAppCacheService(
-    BrowserContext* browser_context) {
-  // TODO(ajwong): Change this API to require a SiteInstance instead of
-  // using GetDefaultStoragePartition().
-  return GetDefaultStoragePartition(browser_context)->GetAppCacheService();
-}
-
 fileapi::FileSystemContext* BrowserContext::GetFileSystemContext(
     BrowserContext* browser_context) {
   // TODO(ajwong): Change this API to require a SiteInstance instead of

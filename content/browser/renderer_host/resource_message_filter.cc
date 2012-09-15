@@ -5,6 +5,8 @@
 #include "content/browser/renderer_host/resource_message_filter.h"
 
 #include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
+#include "content/browser/appcache/chrome_appcache_service.h"
+#include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_context.h"
 
@@ -14,13 +16,18 @@ ResourceMessageFilter::ResourceMessageFilter(
     int child_id,
     ProcessType process_type,
     ResourceContext* resource_context,
+    ChromeAppCacheService* appcache_service,
+    ChromeBlobStorageContext* blob_storage_context,
     URLRequestContextSelector* url_request_context_selector)
     : child_id_(child_id),
       process_type_(process_type),
       resource_context_(resource_context),
+      appcache_service_(appcache_service),
+      blob_storage_context_(blob_storage_context),
       url_request_context_selector_(url_request_context_selector) {
   DCHECK(resource_context);
   DCHECK(url_request_context_selector);
+  // |appcache_service| and |blob_storage_context| may be NULL in unittests.
 }
 
 ResourceMessageFilter::~ResourceMessageFilter() {

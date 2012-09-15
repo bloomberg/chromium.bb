@@ -13,17 +13,13 @@
 #include "content/public/browser/resource_throttle.h"
 #include "net/base/completion_callback.h"
 
-class ChromeAppCacheService;
-class ResourceDispatcherHost;
-
-namespace content {
-class ResourceContext;
+namespace appcache {
+class AppCacheService;
 }
 
 namespace net {
 class URLRequest;
-}  // namespace net
-
+}
 // Used to show an offline interstitial page when the network is not available.
 class OfflineResourceThrottle
     : public content::ResourceThrottle,
@@ -32,7 +28,7 @@ class OfflineResourceThrottle
   OfflineResourceThrottle(int render_process_id,
                           int render_view_id,
                           net::URLRequest* request,
-                          content::ResourceContext* resource_context);
+                          appcache::AppCacheService* appcache_service);
   virtual ~OfflineResourceThrottle();
 
   // content::ResourceThrottle implementation:
@@ -55,8 +51,8 @@ class OfflineResourceThrottle
   int render_process_id_;
   int render_view_id_;
   net::URLRequest* request_;
-  // Safe to keep a pointer around since ResourceContext outlives all requests.
-  content::ResourceContext* resource_context_;
+  // Safe to keep a pointer around since AppCacheService outlives all requests.
+  appcache::AppCacheService* appcache_service_;
   net::CancelableCompletionCallback appcache_completion_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(OfflineResourceThrottle);

@@ -20,6 +20,7 @@ bool ResourceDispatcherHostDelegate::ShouldBeginRequest(
 void ResourceDispatcherHostDelegate::RequestBeginning(
     net::URLRequest* request,
     ResourceContext* resource_context,
+    appcache::AppCacheService* appcache_service,
     ResourceType::Type resource_type,
     int child_id,
     int route_id,

@@ -7,20 +7,7 @@
 
 #include "content/public/browser/resource_context.h"
 
-class IndexedDBContextImpl;
 class ChromeBlobStorageContext;
-
-namespace fileapi {
-class FileSystemContext;
-}
-
-namespace webkit_blob {
-class BlobStorageController;
-}
-
-namespace webkit_database {
-class DatabaseTracker;
-}
 
 namespace content {
 
@@ -31,10 +18,9 @@ class HostZoomMap;
 // the IO thread. These are only accessed by content so they're not on the
 // public API.
 
-webkit_blob::BlobStorageController* GetBlobStorageControllerForResourceContext(
-    ResourceContext* resource_context);
 ChromeBlobStorageContext* GetChromeBlobStorageContextForResourceContext(
     ResourceContext* resource_context);
+
 HostZoomMap* GetHostZoomMapForResourceContext(ResourceContext* context);
 
 // Initialize the above data on the ResourceContext from a given BrowserContext.

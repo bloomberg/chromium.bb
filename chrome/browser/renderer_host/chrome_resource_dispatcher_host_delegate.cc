@@ -117,6 +117,7 @@ bool ChromeResourceDispatcherHostDelegate::ShouldBeginRequest(
 void ChromeResourceDispatcherHostDelegate::RequestBeginning(
     net::URLRequest* request,
     content::ResourceContext* resource_context,
+    appcache::AppCacheService* appcache_service,
     ResourceType::Type resource_type,
     int child_id,
     int route_id,
@@ -137,7 +138,7 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
     // We check offline first, then check safe browsing so that we still can
     // block unsafe site after we remove offline page.
     throttles->push_back(new OfflineResourceThrottle(
-        child_id, route_id, request, resource_context));
+        child_id, route_id, request, appcache_service));
   }
 #endif
 

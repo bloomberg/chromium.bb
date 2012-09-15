@@ -182,7 +182,7 @@ class ForwardingFilter : public ResourceMessageFilter {
     : ResourceMessageFilter(
         ChildProcessHostImpl::GenerateChildProcessUniqueId(),
         content::PROCESS_TYPE_RENDERER,
-        resource_context,
+        resource_context, NULL, NULL,
         new MockURLRequestContextSelector(
             resource_context->GetRequestContext())),
       dest_(dest) {
@@ -430,6 +430,7 @@ class TestResourceDispatcherHostDelegate
   virtual void RequestBeginning(
       net::URLRequest* request,
       content::ResourceContext* resource_context,
+      appcache::AppCacheService* appcache_service,
       ResourceType::Type resource_type,
       int child_id,
       int route_id,

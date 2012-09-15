@@ -15,6 +15,9 @@ namespace net {
 class URLRequestContext;
 }  // namespace net
 
+class ChromeAppCacheService;
+class ChromeBlobStorageContext;
+
 namespace content {
 class ResourceContext;
 
@@ -42,6 +45,8 @@ class CONTENT_EXPORT ResourceMessageFilter : public BrowserMessageFilter {
       int child_id,
       ProcessType process_type,
       ResourceContext* resource_context,
+      ChromeAppCacheService* appcache_service,
+      ChromeBlobStorageContext* blob_storage_context,
       URLRequestContextSelector* url_request_context_selector);
 
   // BrowserMessageFilter implementation.
@@ -51,6 +56,14 @@ class CONTENT_EXPORT ResourceMessageFilter : public BrowserMessageFilter {
 
   ResourceContext* resource_context() const {
     return resource_context_;
+  }
+
+  ChromeAppCacheService* appcache_service() const {
+    return appcache_service_;
+  }
+
+  ChromeBlobStorageContext* blob_storage_context() const {
+    return blob_storage_context_;
   }
 
   // Returns the net::URLRequestContext for the given request.
@@ -72,6 +85,9 @@ class CONTENT_EXPORT ResourceMessageFilter : public BrowserMessageFilter {
 
   // Owned by ProfileIOData* which is guaranteed to outlive us.
   ResourceContext* resource_context_;
+
+  scoped_refptr<ChromeAppCacheService> appcache_service_;
+  scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
 
   const scoped_ptr<URLRequestContextSelector> url_request_context_selector_;
 

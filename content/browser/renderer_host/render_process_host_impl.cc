@@ -529,6 +529,8 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 
   ResourceMessageFilter* resource_message_filter = new ResourceMessageFilter(
       GetID(), PROCESS_TYPE_RENDERER, resource_context,
+      storage_partition_impl_->GetAppCacheService(),
+      ChromeBlobStorageContext::GetFor(browser_context),
       new RendererURLRequestContextSelector(browser_context, GetID()));
 
   channel_->AddFilter(resource_message_filter);
@@ -540,8 +542,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   channel_->AddFilter(new AudioRendererHost(audio_manager, media_observer));
   channel_->AddFilter(new VideoCaptureHost());
   channel_->AddFilter(new AppCacheDispatcherHost(
-      static_cast<ChromeAppCacheService*>(
-          BrowserContext::GetAppCacheService(browser_context)),
+      storage_partition_impl_->GetAppCacheService(),
       GetID()));
   channel_->AddFilter(new ClipboardMessageFilter());
   channel_->AddFilter(

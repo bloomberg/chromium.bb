@@ -237,6 +237,7 @@ class TestResourceDispatcherHostDelegate
   virtual void RequestBeginning(
       net::URLRequest* request,
       content::ResourceContext* resource_context,
+      appcache::AppCacheService* appcache_service,
       ResourceType::Type resource_type,
       int child_id,
       int route_id,
@@ -245,6 +246,7 @@ class TestResourceDispatcherHostDelegate
     ChromeResourceDispatcherHostDelegate::RequestBeginning(
         request,
         resource_context,
+        appcache_service,
         resource_type,
         child_id,
         route_id,

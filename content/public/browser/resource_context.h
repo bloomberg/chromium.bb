@@ -25,12 +25,13 @@ namespace content {
 // the UI thread. It must be destructed on the IO thread.
 class CONTENT_EXPORT ResourceContext : public base::SupportsUserData {
  public:
-  static appcache::AppCacheService* GetAppCacheService(
-      ResourceContext* resource_context);
-
   ResourceContext();
   virtual ~ResourceContext();
   virtual net::HostResolver* GetHostResolver() = 0;
+
+  // DEPRECATED: This is no longer a valid given isolated apps/sites and
+  // storage partitioning. This getter returns the default context associated
+  // with a BrowsingContext.
   virtual net::URLRequestContext* GetRequestContext() = 0;
 };
 

@@ -9,7 +9,9 @@
 #include "base/scoped_temp_dir.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
+#include "content/public/browser/resource_context.h"
 #include "content/public/test/test_browser_context.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/appcache/appcache_database.h"
 #include "webkit/appcache/appcache_storage_impl.h"
@@ -30,6 +32,31 @@ const FilePath::CharType kTestingAppCacheDirname[] =
 const char kProtectedManifest[] = "http://www.protected.com/cache.manifest";
 const char kNormalManifest[] = "http://www.normal.com/cache.manifest";
 const char kSessionOnlyManifest[] = "http://www.sessiononly.com/cache.manifest";
+
+class MockURLRequestContextGetter : public net::URLRequestContextGetter {
+ public:
+  MockURLRequestContextGetter(
+      net::URLRequestContext* context,
+      base::MessageLoopProxy* message_loop_proxy)
+      : context_(context), message_loop_proxy_(message_loop_proxy) {
+  }
+
+  virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE {
+    return context_;
+  }
+
+  virtual scoped_refptr<base::SingleThreadTaskRunner>
+      GetNetworkTaskRunner() const OVERRIDE {
+    return message_loop_proxy_;
+  }
+
+ protected:
+  virtual ~MockURLRequestContextGetter() {}
+
+ private:
+  net::URLRequestContext* context_;
+  scoped_refptr<base::SingleThreadTaskRunner> message_loop_proxy_;
+};
 
 }  // namespace
 
@@ -79,11 +106,17 @@ ChromeAppCacheServiceTest::CreateAppCacheService(
       new quota::MockSpecialStoragePolicy;
   mock_policy->AddProtected(kProtectedManifestURL.GetOrigin());
   mock_policy->AddSessionOnly(kSessionOnlyManifestURL.GetOrigin());
+  scoped_refptr<MockURLRequestContextGetter> mock_request_context_getter =
+      new MockURLRequestContextGetter(
+          browser_context_.GetResourceContext()->GetRequestContext(),
+          message_loop_.message_loop_proxy());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&ChromeAppCacheService::InitializeOnIOThread,
                  appcache_service.get(), appcache_path,
-                 browser_context_.GetResourceContext(), mock_policy));
+                 browser_context_.GetResourceContext(),
+                 mock_request_context_getter,
+                 mock_policy));
   // Steps needed to initialize the storage of AppCache data.
   message_loop_.RunAllPending();
   if (init_storage) {

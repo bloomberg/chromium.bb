@@ -250,11 +250,19 @@ bool WorkerProcessHost::Init(int render_process_id) {
 }
 
 void WorkerProcessHost::CreateMessageFilters(int render_process_id) {
+  ChromeBlobStorageContext* blob_storage_context =
+      content::GetChromeBlobStorageContextForResourceContext(
+          resource_context_);
+
+  // TODO(michaeln): This is hacky but correct. The request context should be
+  // more directly accessible than digging it out of the appcache service.
   net::URLRequestContext* request_context =
-      resource_context_->GetRequestContext();
+      partition_.appcache_service()->request_context();
 
   ResourceMessageFilter* resource_message_filter = new ResourceMessageFilter(
       process_->GetData().id, content::PROCESS_TYPE_WORKER, resource_context_,
+      partition_.appcache_service(),
+      blob_storage_context,
       new URLRequestContextSelector(request_context));
   process_->GetHost()->AddFilter(resource_message_filter);
 
@@ -264,15 +272,13 @@ void WorkerProcessHost::CreateMessageFilters(int render_process_id) {
                  base::Unretained(WorkerServiceImpl::GetInstance())));
   process_->GetHost()->AddFilter(worker_message_filter_);
   process_->GetHost()->AddFilter(new AppCacheDispatcherHost(
-      static_cast<ChromeAppCacheService*>(
-          ResourceContext::GetAppCacheService(resource_context_)),
+      partition_.appcache_service(),
       process_->GetData().id));
   process_->GetHost()->AddFilter(new FileAPIMessageFilter(
       process_->GetData().id,
       request_context,
       partition_.filesystem_context(),
-      content::GetChromeBlobStorageContextForResourceContext(
-          resource_context_)));
+      blob_storage_context));
   process_->GetHost()->AddFilter(new FileUtilitiesMessageFilter(
       process_->GetData().id));
   process_->GetHost()->AddFilter(new MimeRegistryMessageFilter());

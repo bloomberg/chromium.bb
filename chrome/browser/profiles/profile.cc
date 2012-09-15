@@ -117,6 +117,11 @@ bool Profile::IsGuestSession() {
 #endif
 }
 
+net::URLRequestContextGetter* Profile::GetRequestContextForStoragePartition(
+      const std::string& partition_id) {
+  return GetRequestContextForIsolatedApp(partition_id);
+}
+
 bool Profile::IsSyncAccessible() {
   browser_sync::SyncPrefs prefs(GetPrefs());
   return ProfileSyncService::IsSyncEnabled() && !prefs.IsManaged();
