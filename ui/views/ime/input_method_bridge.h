@@ -66,6 +66,7 @@ class InputMethodBridge : public InputMethodBase,
   virtual void OnInputMethodChanged() OVERRIDE;
   virtual bool ChangeTextDirectionAndLayoutAlignment(
       base::i18n::TextDirection direction) OVERRIDE;
+  virtual void ExtendSelectionAndDelete(size_t before, size_t after) OVERRIDE;
 
   // Overridden from FocusChangeListener.
   virtual void OnWillChangeFocus(View* focused_before, View* focused) OVERRIDE;

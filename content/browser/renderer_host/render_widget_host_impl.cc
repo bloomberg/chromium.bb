@@ -1183,6 +1183,12 @@ void RenderWidgetHostImpl::ImeCancelComposition() {
             std::vector<WebKit::WebCompositionUnderline>(), 0, 0));
 }
 
+void RenderWidgetHostImpl::ExtendSelectionAndDelete(
+    size_t before,
+    size_t after) {
+  Send(new ViewMsg_ExtendSelectionAndDelete(GetRoutingID(), before, after));
+}
+
 gfx::Rect RenderWidgetHostImpl::GetRootWindowResizerRect() const {
   return gfx::Rect();
 }

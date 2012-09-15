@@ -40,6 +40,7 @@ class MockTextInputClient : public TextInputClient {
   MOCK_METHOD0(OnInputMethodChanged, void());
   MOCK_METHOD1(ChangeTextDirectionAndLayoutAlignment,
                bool(base::i18n::TextDirection));
+  MOCK_METHOD2(ExtendSelectionAndDelete, void(size_t, size_t));
 };
 
 class MockStoreACPSink : public ITextStoreACPSink {

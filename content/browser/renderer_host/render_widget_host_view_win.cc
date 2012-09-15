@@ -1233,6 +1233,18 @@ bool RenderWidgetHostViewWin::ChangeTextDirectionAndLayoutAlignment(
   return false;
 }
 
+void RenderWidgetHostViewWin::ExtendSelectionAndDelete(
+    size_t before,
+    size_t after) {
+  if (!base::win::IsTsfAwareRequired()) {
+    NOTREACHED();
+    return;
+  }
+  if (!render_widget_host_)
+    return;
+  render_widget_host_->ExtendSelectionAndDelete(before, after);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewWin, private:
 

@@ -213,6 +213,12 @@ bool InputMethodBridge::ChangeTextDirectionAndLayoutAlignment(
       client->ChangeTextDirectionAndLayoutAlignment(direction) : false;
 }
 
+void InputMethodBridge::ExtendSelectionAndDelete(size_t before, size_t after) {
+  TextInputClient* client = GetTextInputClient();
+  if (client)
+    client->ExtendSelectionAndDelete(before, after);
+}
+
 // Overridden from FocusChangeListener.
 void InputMethodBridge::OnWillChangeFocus(View* focused_before, View* focused) {
   ConfirmCompositionText();

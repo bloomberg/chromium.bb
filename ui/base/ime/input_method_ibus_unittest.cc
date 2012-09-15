@@ -214,6 +214,8 @@ class InputMethodIBusTest : public internal::InputMethodDelegate,
   }
   virtual bool ChangeTextDirectionAndLayoutAlignment(
       base::i18n::TextDirection direction) OVERRIDE { return false; }
+  virtual void ExtendSelectionAndDelete(size_t before,
+                                        size_t after) OVERRIDE { }
 
   bool HasNativeEvent() const {
     base::NativeEvent empty;

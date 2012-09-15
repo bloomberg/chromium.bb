@@ -1170,6 +1170,13 @@ bool RenderWidgetHostViewAura::ChangeTextDirectionAndLayoutAlignment(
   return true;
 }
 
+void RenderWidgetHostViewAura::ExtendSelectionAndDelete(
+    size_t before, size_t after) {
+  // TODO(horo): implement this method if it is required.
+  // http://crbug.com/149155
+  NOTIMPLEMENTED();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewAura, aura::WindowDelegate implementation:
 

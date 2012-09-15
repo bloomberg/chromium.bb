@@ -853,6 +853,14 @@ bool NativeTextfieldViews::ChangeTextDirectionAndLayoutAlignment(
   return false;
 }
 
+void NativeTextfieldViews::ExtendSelectionAndDelete(
+    size_t before,
+    size_t after) {
+  // TODO(horo): implement this method if it is required.
+  // http://crbug.com/149155
+  NOTIMPLEMENTED();
+}
+
 void NativeTextfieldViews::OnCompositionTextConfirmedOrCleared() {
   if (skip_input_method_cancel_composition_)
     return;
