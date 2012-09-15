@@ -18,6 +18,35 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 
+namespace {
+
+// Returns pixel size under maximal scale factor for the icon whose device
+// independent size is |size_in_dip|
+int GetSizeForMaxScaleFactor(int size_in_dip) {
+  std::vector<ui::ScaleFactor> supported_scale_factors =
+      ui::GetSupportedScaleFactors();
+  // Scale factors are in ascending order, so the last one is the one we need.
+  ui::ScaleFactor max_scale_factor = supported_scale_factors.back();
+  float max_scale_factor_scale = ui::GetScaleFactorScale(max_scale_factor);
+
+  return static_cast<int>(size_in_dip * max_scale_factor_scale);
+}
+
+// Returns bitmap for the default icon with size equal to the default icon's
+// pixel size under maximal supported scale factor.
+SkBitmap GetDefaultIconBitmapForMaxScaleFactor(bool is_app) {
+  std::vector<ui::ScaleFactor> supported_scale_factors =
+      ui::GetSupportedScaleFactors();
+  // Scale factors are in ascending order, so the last one is the one we need.
+  ui::ScaleFactor max_scale_factor =
+      supported_scale_factors[supported_scale_factors.size() - 1];
+
+  return extensions::Extension::GetDefaultIcon(is_app).
+      GetRepresentation(max_scale_factor).sk_bitmap();
+}
+
+}  // namespace
+
 // Size of extension icon in top left of dialog.
 static const int kIconSize = 69;
 
@@ -48,20 +77,22 @@ void ExtensionUninstallDialog::ConfirmUninstall(
                                   ExtensionIconSet::MATCH_BIGGER);
   // Load the image asynchronously. The response will be sent to OnImageLoaded.
   tracker_.reset(new ImageLoadingTracker(this));
+  // Load the icon whose pixel size is large enough to be displayed under
+  // maximal supported scale factor. UI code will scale the icon down if needed.
+  int pixel_size = GetSizeForMaxScaleFactor(kIconSize);
   tracker_->LoadImage(extension_, image,
-                      gfx::Size(kIconSize, kIconSize),
+                      gfx::Size(pixel_size, pixel_size),
                       ImageLoadingTracker::DONT_CACHE);
 }
 
 void ExtensionUninstallDialog::SetIcon(const gfx::Image& image) {
   if (image.IsEmpty()) {
-    if (extension_->is_app()) {
-      icon_ = *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-          IDR_APP_DEFAULT_ICON);
-    } else {
-      icon_ = *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-          IDR_EXTENSION_DEFAULT_ICON);
-    }
+    // Let's set default icon bitmap whose size is equal to the default icon's
+    // pixel size under maximal supported scale factor. If the bitmap is larger
+    // than the one we need, it will be scaled down by the ui code.
+    // TODO(tbarzic): We should use IconImage here and load the required bitmap
+    //     lazily.
+    icon_ = GetDefaultIconBitmapForMaxScaleFactor(extension_->is_app());
   } else {
     icon_ = *image.ToImageSkia();
   }

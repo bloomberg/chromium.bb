@@ -95,6 +95,31 @@ namespace {
 // Size of extension icon in top left of dialog.
 const int kIconSize = 69;
 
+// Returns pixel size under maximal scale factor for the icon whose device
+// independent size is |size_in_dip|
+int GetSizeForMaxScaleFactor(int size_in_dip) {
+  std::vector<ui::ScaleFactor> supported_scale_factors =
+      ui::GetSupportedScaleFactors();
+  // Scale factors are in ascending order, so the last one is the one we need.
+  ui::ScaleFactor max_scale_factor = supported_scale_factors.back();
+  float max_scale_factor_scale = ui::GetScaleFactorScale(max_scale_factor);
+
+  return static_cast<int>(size_in_dip * max_scale_factor_scale);
+}
+
+// Returns bitmap for the default icon with size equal to the default icon's
+// pixel size under maximal supported scale factor.
+SkBitmap GetDefaultIconBitmapForMaxScaleFactor(bool is_app) {
+  std::vector<ui::ScaleFactor> supported_scale_factors =
+      ui::GetSupportedScaleFactors();
+  // Scale factors are in ascending order, so the last one is the one we need.
+  ui::ScaleFactor max_scale_factor =
+      supported_scale_factors[supported_scale_factors.size() - 1];
+
+  return Extension::GetDefaultIcon(is_app).
+      GetRepresentation(max_scale_factor).sk_bitmap();
+}
+
 }  // namespace
 
 ExtensionInstallPrompt::Prompt::Prompt(Profile* profile, PromptType type)
@@ -416,8 +441,12 @@ void ExtensionInstallPrompt::SetIcon(const SkBitmap* image) {
     icon_ = *image;
   else
     icon_ = SkBitmap();
-  if (icon_.empty())
-    icon_ = Extension::GetDefaultIcon(extension_->is_app());
+  if (icon_.empty()) {
+    // Let's set default icon bitmap whose size is equal to the default icon's
+    // pixel size under maximal supported scale factor. If the bitmap is larger
+    // than the one we need, it will be scaled down by the ui code.
+    icon_ = GetDefaultIconBitmapForMaxScaleFactor(extension_->is_app());
+  }
 }
 
 void ExtensionInstallPrompt::OnImageLoaded(const gfx::Image& image,
@@ -438,8 +467,13 @@ void ExtensionInstallPrompt::LoadImageIfNeeded() {
   ExtensionResource image =
       extension_->GetIconResource(extension_misc::EXTENSION_ICON_LARGE,
                                   ExtensionIconSet::MATCH_BIGGER);
+  // Load the icon whose pixel size is large enough to be displayed under
+  // maximal supported scale factor. UI code will scale the icon down if needed.
+  // TODO(tbarzic): We should use IconImage here and load the required bitmap
+  //     lazily.
+  int pixel_size = GetSizeForMaxScaleFactor(kIconSize);
   tracker_.LoadImage(extension_, image,
-                     gfx::Size(kIconSize, kIconSize),
+                     gfx::Size(pixel_size, pixel_size),
                      ImageLoadingTracker::DONT_CACHE);
 }
 

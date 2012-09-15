@@ -445,7 +445,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // Returns the default extension/app icon (for extensions or apps that don't
   // have one).
-  static const SkBitmap& GetDefaultIcon(bool is_app);
+  static const gfx::ImageSkia& GetDefaultIcon(bool is_app);
 
   // Returns the base extension url for a given |extension_id|.
   static GURL GetBaseURLFromExtensionId(const std::string& extension_id);
