@@ -99,8 +99,7 @@ private:
     CCSchedulerClient* m_client;
     OwnPtr<CCFrameRateController> m_frameRateController;
     CCSchedulerStateMachine m_stateMachine;
-    bool m_hasMoreResourceUpdates;
-    bool m_updateMoreResourcesPending;
+    bool m_updateResourcesCompletePending;
 };
 
 }

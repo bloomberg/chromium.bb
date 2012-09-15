@@ -54,7 +54,7 @@ public:
     enum Action {
         ACTION_NONE,
         ACTION_BEGIN_FRAME,
-        ACTION_BEGIN_UPDATE_MORE_RESOURCES,
+        ACTION_BEGIN_UPDATE_RESOURCES,
         ACTION_COMMIT,
         ACTION_DRAW_IF_POSSIBLE,
         ACTION_DRAW_FORCED,
@@ -99,15 +99,15 @@ public:
     // Call this only in response to receiving an ACTION_BEGIN_FRAME
     // from nextState. Indicates that all painting is complete and that
     // updating of compositor resources can begin.
-    void beginFrameComplete();
+    void beginFrameComplete(bool hasResourceUpdates);
 
     // Call this only in response to receiving an ACTION_BEGIN_FRAME
     // from nextState if the client rejects the beginFrame message.
     void beginFrameAborted();
 
-    // Call this only in response to receiving an ACTION_UPDATE_MORE_RESOURCES
-    // from nextState. Indicates that the specific update request completed.
-    void beginUpdateMoreResourcesComplete(bool morePending);
+    // Call this only in response to receiving an ACTION_BEGIN_UPDATE_RESOURCES
+    // from nextState. Indicates that all resource updates completed.
+    void updateResourcesComplete();
 
     // Request exclusive access to the textures that back single buffered
     // layers on behalf of the main thread. Upon acqusition,
@@ -151,7 +151,7 @@ protected:
     bool m_needsCommit;
     bool m_needsForcedCommit;
     bool m_mainThreadNeedsLayerTextures;
-    bool m_updateMoreResourcesPending;
+    bool m_updateResourcesCompletePending;
     bool m_insideVSync;
     bool m_visible;
     bool m_canBeginFrame;
