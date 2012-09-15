@@ -157,7 +157,7 @@ ErrorCode SyntheticPolicy(int sysno) {
   // TODO(jorgelo): remove this restriction once crbug.com/141694 is fixed.
 #if defined(__arm__)
   if (sysno > kArmPublicSysnoCeiling)
-    return ENOSYS;
+    return ErrorCode(ENOSYS);
 #endif
 
   // TODO(markus): allow calls to write(). This should start working as soon
