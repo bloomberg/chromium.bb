@@ -41,6 +41,7 @@
 #include <string>
 #include <vector>
 #include <wtf/CurrentTime.h>
+#include <wtf/OwnArrayPtr.h>
 
 using namespace std;
 using WebKit::WebGraphicsContext3D;
@@ -1146,7 +1147,7 @@ void CCRendererGL::getFramebufferPixels(void *pixels, const IntRect& rect)
         ASSERT(m_context->checkFramebufferStatus(GraphicsContext3D::FRAMEBUFFER) == GraphicsContext3D::FRAMEBUFFER_COMPLETE);
     }
 
-    OwnPtr<uint8_t> srcPixels = adoptPtr(new uint8_t[rect.width() * rect.height() * 4]);
+    OwnArrayPtr<uint8_t> srcPixels = adoptArrayPtr(new uint8_t[rect.width() * rect.height() * 4]);
     GLC(m_context, m_context->readPixels(rect.x(), viewportSize().height() - rect.maxY(), rect.width(), rect.height(),
                                      GraphicsContext3D::RGBA, GraphicsContext3D::UNSIGNED_BYTE, srcPixels.get()));
 

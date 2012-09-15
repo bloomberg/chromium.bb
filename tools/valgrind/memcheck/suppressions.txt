@@ -5987,14 +5987,6 @@
    fun:_ZN7WebCore20ElementAttributeData12addAttributeERKNS_9AttributeEPNS_7ElementENS_30SynchronizationOfLazyAttributeE
 }
 {
-   bug_149736
-   Memcheck:Free
-   fun:_ZdlPv
-   fun:_ZN3WTF14deleteOwnedPtrIhEEvPT_
-   fun:_ZN3WTF6OwnPtrIhED1Ev
-   fun:_ZN7WebCore12CCRendererGL20getFramebufferPixelsEPvRKNS_7IntRectE
-}
-{
    bug_149741a
    Memcheck:Unaddressable
    ...
