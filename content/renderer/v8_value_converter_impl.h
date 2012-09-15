@@ -23,13 +23,9 @@ class CONTENT_EXPORT V8ValueConverterImpl : public content::V8ValueConverter {
   V8ValueConverterImpl();
 
   // V8ValueConverter implementation.
-  virtual bool GetUndefinedAllowed() const OVERRIDE;
-  virtual void SetUndefinedAllowed(bool val) OVERRIDE;
-  virtual bool GetDateAllowed() const OVERRIDE;
   virtual void SetDateAllowed(bool val) OVERRIDE;
-  virtual bool GetRegexpAllowed() const OVERRIDE;
-  virtual void SetRegexpAllowed(bool val) OVERRIDE;
-  virtual bool GetStripNullFromObjects() const OVERRIDE;
+  virtual void SetRegExpAllowed(bool val) OVERRIDE;
+  virtual void SetFunctionAllowed(bool val) OVERRIDE;
   virtual void SetStripNullFromObjects(bool val) OVERRIDE;
   virtual v8::Handle<v8::Value> ToV8Value(
       const base::Value* value,
@@ -58,14 +54,14 @@ class CONTENT_EXPORT V8ValueConverterImpl : public content::V8ValueConverter {
   base::Value* FromV8Object(v8::Handle<v8::Object> object,
                             std::set<int>* unique_set) const;
 
-  // If true, we will convert undefined JavaScript values to null.
-  bool undefined_allowed_;
-
   // If true, we will convert Date JavaScript objects to doubles.
   bool date_allowed_;
 
-  // If true, we will convet RegExp JavaScript objects to string.
-  bool regexp_allowed_;
+  // If true, we will convert RegExp JavaScript objects to string.
+  bool reg_exp_allowed_;
+
+  // If true, we will convert Function JavaScript objects to dictionaries.
+  bool function_allowed_;
 
   // If true, undefined and null values are ignored when converting v8 objects
   // into Values.

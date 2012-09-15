@@ -28,31 +28,48 @@ class CONTENT_EXPORT V8ValueConverter {
 
   virtual ~V8ValueConverter() {}
 
-  // Use the following setters to support additional types other than the
-  // default ones.
-  virtual bool GetUndefinedAllowed() const = 0;
-  virtual void SetUndefinedAllowed(bool val) = 0;
-
-  virtual bool GetDateAllowed() const = 0;
+  // If true, Date objects are converted into DoubleValues with the number of
+  // seconds since Unix epoch.
+  //
+  // Otherwise they are converted into DictionaryValues with whatever additional
+  // properties has been set on them.
   virtual void SetDateAllowed(bool val) = 0;
 
-  virtual bool GetRegexpAllowed() const = 0;
-  virtual void SetRegexpAllowed(bool val) = 0;
+  // If true, RegExp objects are converted into StringValues with the regular
+  // expression between / and /, for example "/ab?c/".
+  //
+  // Otherwise they are converted into DictionaryValues with whatever additional
+  // properties has been set on them.
+  virtual void SetRegExpAllowed(bool val) = 0;
 
-  // Gets/sets whether to treat undefined or null in objects as nonexistent.
-  virtual bool GetStripNullFromObjects() const = 0;
+  // If true, Function objects are converted into DictionaryValues with whatever
+  // additional properties has been set on them.
+  //
+  // Otherwise they are treated as unsupported, see FromV8Value.
+  virtual void SetFunctionAllowed(bool val) = 0;
+
+  // If true, null values are stripped from objects. This is often useful when
+  // converting arguments to extension APIs.
   virtual void SetStripNullFromObjects(bool val) = 0;
 
-  // Converts Value to v8::Value. Unsupported types are replaced with null.
-  // If an array or object throws while setting a value, that property or item
-  // is skipped, leaving a hole in the case of arrays.
+  // Converts a base::Value to a v8::Value.
+  //
+  // Unsupported types are replaced with null.  If an array or object throws
+  // while setting a value, that property or item is skipped, leaving a hole in
+  // the case of arrays.
   virtual v8::Handle<v8::Value> ToV8Value(
       const base::Value* value,
       v8::Handle<v8::Context> context) const = 0;
 
-  // Converts v8::Value to Value. Unsupported types are replaced with null.
-  // If an array or object throws while getting a value, that property or item
-  // is replaced with null.
+  // Converts a v8::Value to base::Value.
+  //
+  // Unsupported types (unless explicitly configured) are not converted, so
+  // this method may return NULL -- the exception is when converting arrays,
+  // where unsupported types are converted to Value(TYPE_NULL).
+  //
+  // Likewise, if an object throws while converting a property it will not be
+  // converted, whereas if an array throws while converting an item it will be
+  // converted to Value(TYPE_NULL).
   virtual base::Value* FromV8Value(v8::Handle<v8::Value> value,
                                    v8::Handle<v8::Context> context) const = 0;
 };

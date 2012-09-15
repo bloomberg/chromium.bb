@@ -77,6 +77,7 @@
       {
         "name": "create",
         "type": "function",
+        "allow_functions_in_objects": true,
         "description": "Creates a new context menu item. Note that if an error occurs during creation, you may not find out until the creation callback fires (the details will be in chrome.extension.lastError).",
         "returns": {
           "choices": [
@@ -177,6 +178,7 @@
       {
         "name": "update",
         "type": "function",
+        "allow_functions_in_objects": true,
         "description": "Updates a previously created context menu item.",
         "parameters": [
           {
