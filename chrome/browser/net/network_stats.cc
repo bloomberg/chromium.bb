@@ -84,9 +84,10 @@ static const uint32 kEncodedPayloadStart = kKeyEnd;
 // used by the unit tests.
 static const int32 kPorts[] = {6121, 999999};
 
-// Maximum number of packets that can be sent to the server for packet loss
-// correlation test.
-static const uint32 kMaximumCorrelationPackets = 6;
+// Number of packets that are recorded in a packet-correlation histogram, which
+// shows exactly what sequence of packets were responded to.  We use this to
+// deduce specific packet loss correlation.
+static const uint32 kCorrelatedLossPacketCount = 6;
 
 // Maximum number of packets that can be sent to the server.
 static const uint32 kMaximumSequentialPackets = 21;
@@ -682,18 +683,12 @@ void NetworkStats::DoFinishCallback(int result) {
 void NetworkStats::RecordHistograms(const ProtocolValue& protocol,
                                     const Status& status,
                                     int result) {
-  if (packets_to_send_ != kMaximumSequentialPackets &&
-      packets_to_send_ != kMaximumCorrelationPackets) {
+  if (packets_to_send_ != kMaximumSequentialPackets)
     return;
-  }
 
   std::string load_size_string = base::StringPrintf("%dB", load_size_);
 
-  if (packets_to_send_ == kMaximumCorrelationPackets) {
-    RecordPacketLossSeriesHistograms(
-        protocol, load_size_string, status, result);
-    return;
-  }
+  RecordPacketLossSeriesHistograms(protocol, load_size_string, status, result);
 
   for (uint32 i = 0; i < 3; i++)
     RecordRTTHistograms(protocol, load_size_string, i);
@@ -778,8 +773,7 @@ void NetworkStats::RecordPacketLossSeriesHistograms(
     const std::string& load_size_string,
     const Status& status,
     int result) {
-  DCHECK_EQ(packets_to_send_, kMaximumCorrelationPackets);
-
+  DCHECK_GT(packets_to_send_, kCorrelatedLossPacketCount);
   const char* test_name = TestName();
 
   // Build "NetConnectivity3.Send6.SeriesAcked.<port>.<load_size>" histogram
@@ -789,13 +783,9 @@ void NetworkStats::RecordPacketLossSeriesHistograms(
       test_name,
       kPorts[histogram_port_],
       load_size_string.c_str());
-  // Build "NetConnectivity3.Send6.PacketsSent.<port>.<load_size>" histogram
-  // name. Total number of histograms are 5*2.
-  std::string packets_sent_histogram_name = base::StringPrintf(
-      "NetConnectivity3.%s.Send6.PacketsSent.%d.%s",
-      test_name,
-      kPorts[histogram_port_],
-      load_size_string.c_str());
+
+  uint32 correlated_packet_mask =
+    ((1 << kCorrelatedLossPacketCount) - 1) & packets_received_mask_;
 
   // If we are running without a proxy, we'll generate 2 distinct histograms in
   // each case, one will have the ".NoProxy" suffix.
@@ -805,19 +795,11 @@ void NetworkStats::RecordPacketLossSeriesHistograms(
     base::Histogram* series_acked_histogram = base::LinearHistogram::FactoryGet(
         series_acked_histogram_name,
         1,
-        2 << kMaximumCorrelationPackets,
-        (2 << kMaximumCorrelationPackets) + 1,
+        1 << kCorrelatedLossPacketCount,
+        (1 << kCorrelatedLossPacketCount) + 1,
         base::Histogram::kUmaTargetedHistogramFlag);
-    series_acked_histogram->Add(packets_received_mask_);
+    series_acked_histogram->Add(correlated_packet_mask);
     series_acked_histogram_name.append(".NoProxy");
-
-    base::Histogram* packets_sent_histogram =
-        base::Histogram::FactoryGet(
-            packets_sent_histogram_name,
-            1, kMaximumCorrelationPackets, kMaximumCorrelationPackets + 1,
-            base::Histogram::kUmaTargetedHistogramFlag);
-    packets_sent_histogram->Add(packets_sent_);
-    packets_sent_histogram_name.append(".NoProxy");
   }
 }
 
@@ -1007,18 +989,9 @@ void StartNetworkStatsTest(net::HostResolver* host_resolver,
                            const net::HostPortPair& server_address,
                            NetworkStats::HistogramPortSelector histogram_port,
                            bool has_proxy_server) {
-  int experiment_to_run = base::RandInt(1, 4);
+  int experiment_to_run = base::RandInt(1, 3);
   switch (experiment_to_run) {
     case 1:
-      {
-        NetworkStats* udp_stats_client = new NetworkStats();
-        udp_stats_client->Start(
-            host_resolver, server_address, histogram_port, has_proxy_server,
-            kLargeTestBytesToSend, kMaximumCorrelationPackets,
-            net::CompletionCallback());
-      }
-      break;
-    case 2:
       {
         NetworkStats* udp_stats_client = new NetworkStats();
         udp_stats_client->Start(
@@ -1027,7 +1000,7 @@ void StartNetworkStatsTest(net::HostResolver* host_resolver,
             net::CompletionCallback());
       }
       break;
-    case 3:
+    case 2:
       {
         NetworkStats* udp_stats_client = new NetworkStats();
         udp_stats_client->Start(
@@ -1036,7 +1009,7 @@ void StartNetworkStatsTest(net::HostResolver* host_resolver,
             net::CompletionCallback());
       }
       break;
-    case 4:
+    case 3:
       {
         NetworkStats* udp_stats_client = new NetworkStats();
         udp_stats_client->Start(
