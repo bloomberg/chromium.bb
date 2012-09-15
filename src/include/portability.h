@@ -66,22 +66,6 @@
 #define GG_ULONGLONG(x) x##ULL
 #endif
 
-#if NACL_WINDOWS
-# define LOCALTIME_R(in_time_t_ptr, out_struct_tm_ptr) \
-  (0 == localtime_s(out_struct_tm_ptr, in_time_t_ptr) ? \
-      out_struct_tm_ptr : (struct tm *) 0)  /* NULL requires stdio.h */
-
-struct timezone {
-  int tz_minuteswest;
-  int tz_dsttime;
-};
-
-#else
-
-# define LOCALTIME_R(in_time_t_ptr, out_struct_tm_ptr) \
-  localtime_r(in_time_t_ptr, out_struct_tm_ptr)
-#endif
-
 
 /**
  * Processor architecture detection. This code was derived from
