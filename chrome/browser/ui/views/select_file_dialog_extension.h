@@ -67,7 +67,6 @@ class SelectFileDialogExtension
                               gfx::NativeWindow owning_window,
                               void* params) OVERRIDE;
 
-
  private:
   friend class SelectFileDialogExtensionBrowserTest;
   friend class SelectFileDialogExtensionTest;

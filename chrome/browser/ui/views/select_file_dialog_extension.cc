@@ -336,7 +336,7 @@ void SelectFileDialogExtension::SelectFileImpl(
       type, title, virtual_path, file_types, file_type_index,
       default_extension);
 
-ExtensionDialog* dialog = ExtensionDialog::Show(file_browser_url,
+  ExtensionDialog* dialog = ExtensionDialog::Show(file_browser_url,
       base_window, profile_, tab->web_contents(),
       kFileManagerWidth, kFileManagerHeight,
 #if defined(USE_AURA)

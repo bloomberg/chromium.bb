@@ -356,6 +356,10 @@ GURL GetFileBrowserUrlWithParams(
     arg_value.SetBoolean("includeAllFiles", file_types->include_all_files);
   }
 
+  // Disable showing GDrive unless it's specifically supported.
+  arg_value.SetBoolean("disableGData",
+      !file_types || !file_types->support_gdata);
+
   std::string json_args;
   base::JSONWriter::Write(&arg_value, &json_args);
 

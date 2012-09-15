@@ -2414,8 +2414,9 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.isGDataEnabled = function() {
-    return !('driveEnabled' in this.gdataPreferences_) ||
-           this.gdataPreferences_.driveEnabled;
+    return !this.params_.disableGData &&
+        (!('driveEnabled' in this.gdataPreferences_) ||
+         this.gdataPreferences_.driveEnabled);
   };
 
   FileManager.prototype.isOnReadonlyDirectory = function() {

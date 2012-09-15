@@ -60,15 +60,15 @@ class UI_EXPORT SelectFileDialog
     // Notifies the Listener that many files have been selected. The
     // files are in |files|. |params| is contextual passed to SelectFile.
     virtual void MultiFilesSelected(
-      const std::vector<FilePath>& files, void* params) {}
+        const std::vector<FilePath>& files, void* params) {}
 
     // Similar to MultiFilesSelected() but takes SelectedFileInfo instead of
     // FilePath. Used for passing extra information (ex. display name).
     //
     // If not overridden, calls MultiFilesSelected() with paths from |files|.
     virtual void MultiFilesSelectedWithExtraInfo(
-      const std::vector<ui::SelectedFileInfo>& files,
-      void* params);
+        const std::vector<ui::SelectedFileInfo>& files,
+        void* params);
 
     // Notifies the Listener that the file/folder selection was aborted (via
     // the  user canceling or closing the selection dialog box, for example).
@@ -94,22 +94,29 @@ class UI_EXPORT SelectFileDialog
                                   ui::SelectFilePolicy* policy);
 
   // Holds information about allowed extensions on a file save dialog.
-  // |extensions| is a list of allowed extensions. For example, it might be
-  //   { { "htm", "html" }, { "txt" } }. Only pass more than one extension
-  //   in the inner vector if the extensions are equivalent. Do NOT include
-  //   leading periods.
-  // |extension_description_overrides| overrides the system descriptions of the
-  //   specified extensions. Entries correspond to |extensions|; if left blank
-  //   the system descriptions will be used.
-  // |include_all_files| specifies whether there will be a filter added for all
-  //   files (i.e. *.*).
   struct UI_EXPORT FileTypeInfo {
     FileTypeInfo();
     ~FileTypeInfo();
 
+    // A list of allowed extensions. For example, it might be
+    //
+    //   { { "htm", "html" }, { "txt" } }
+    //
+    // Only pass more than one extension in the inner vector if the extensions
+    // are equivalent. Do NOT include leading periods.
     std::vector<std::vector<FilePath::StringType> > extensions;
+
+    // Overrides the system descriptions of the specified extensions. Entries
+    // correspond to |extensions|; if left blank the system descriptions will
+    // be used.
     std::vector<string16> extension_description_overrides;
+
+    // Specifies whether there will be a filter added for all files (i.e. *.*).
     bool include_all_files;
+
+    // Specifies whether the caller can support files/folders that are on
+    // GDrive.
+    bool support_gdata;
   };
 
   // Selects a File.

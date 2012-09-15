@@ -60,6 +60,7 @@ ui::SelectFileDialog::FileTypeInfo GetUserImageFileTypeInfo() {
   file_type_info.extension_description_overrides[0] =
       l10n_util::GetStringUTF16(IDS_IMAGE_FILES);
 
+  file_type_info.support_gdata = true;
   return file_type_info;
 }
 

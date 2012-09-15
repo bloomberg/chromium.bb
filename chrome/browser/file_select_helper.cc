@@ -245,15 +245,18 @@ void FileSelectHelper::OnListDone(int id, int error) {
   EnumerateDirectoryEnd();
 }
 
-ui::SelectFileDialog::FileTypeInfo*
+scoped_ptr<ui::SelectFileDialog::FileTypeInfo>
 FileSelectHelper::GetFileTypesFromAcceptType(
     const std::vector<string16>& accept_types) {
+  scoped_ptr<ui::SelectFileDialog::FileTypeInfo> base_file_type(
+      new ui::SelectFileDialog::FileTypeInfo());
+  base_file_type->support_gdata = true;
   if (accept_types.empty())
-    return NULL;
+    return base_file_type.Pass();
 
   // Create FileTypeInfo and pre-allocate for the first extension list.
   scoped_ptr<ui::SelectFileDialog::FileTypeInfo> file_type(
-      new ui::SelectFileDialog::FileTypeInfo());
+      new ui::SelectFileDialog::FileTypeInfo(*base_file_type));
   file_type->include_all_files = true;
   file_type->extensions.resize(1);
   std::vector<FilePath::StringType>* extensions = &file_type->extensions.back();
@@ -289,7 +292,7 @@ FileSelectHelper::GetFileTypesFromAcceptType(
 
   // If no valid extension is added, bail out.
   if (valid_type_count == 0)
-    return NULL;
+    return base_file_type.Pass();
 
   // Use a generic description "Custom Files" if either of the following is
   // true:
@@ -307,7 +310,7 @@ FileSelectHelper::GetFileTypesFromAcceptType(
         l10n_util::GetStringUTF16(description_id));
   }
 
-  return file_type.release();
+  return file_type.Pass();
 }
 
 // static
@@ -361,8 +364,7 @@ void FileSelectHelper::RunFileChooser(RenderViewHost* render_view_host,
 
 void FileSelectHelper::RunFileChooserOnFileThread(
     const FileChooserParams& params) {
-  select_file_types_.reset(
-      GetFileTypesFromAcceptType(params.accept_types));
+  select_file_types_ = GetFileTypesFromAcceptType(params.accept_types);
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -412,7 +414,8 @@ void FileSelectHelper::RunFileChooserOnUIThread(
       params.title,
       default_file_name,
       select_file_types_.get(),
-      select_file_types_.get() ? 1 : 0,  // 1-based index.
+      select_file_types_.get() && !select_file_types_->extensions.empty() ?
+          1 : 0,  // 1-based index of default extension to show.
       FILE_PATH_LITERAL(""),
       owning_window,
 #if defined(OS_ANDROID)

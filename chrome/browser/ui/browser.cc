@@ -814,9 +814,11 @@ void Browser::OpenFile() {
 
   // TODO(beng): figure out how to juggle this.
   gfx::NativeWindow parent_window = window_->GetNativeWindow();
+  ui::SelectFileDialog::FileTypeInfo file_types;
+  file_types.support_gdata = true;
   select_file_dialog_->SelectFile(ui::SelectFileDialog::SELECT_OPEN_FILE,
                                   string16(), directory,
-                                  NULL, 0, FILE_PATH_LITERAL(""),
+                                  &file_types, 0, FILE_PATH_LITERAL(""),
                                   parent_window, NULL);
 }
 

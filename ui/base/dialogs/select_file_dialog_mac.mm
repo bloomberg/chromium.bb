@@ -235,7 +235,7 @@ void SelectFileDialogImpl::SelectFileImpl(
       [dialog setAllowedFileTypes:allowed_file_types];
     // else we'll pass it in when we run the open panel
 
-    if (file_types->include_all_files)
+    if (file_types->include_all_files || file_types->extensions.empty())
       [dialog setAllowsOtherFileTypes:YES];
 
     if (file_types->extension_description_overrides.size() > 1) {

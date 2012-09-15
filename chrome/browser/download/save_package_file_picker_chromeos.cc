@@ -45,10 +45,12 @@ SavePackageFilePickerChromeOS::SavePackageFilePickerChromeOS(
   if (g_should_prompt_for_filename) {
     select_file_dialog_ = ui::SelectFileDialog::Create(
         this, new ChromeSelectFilePolicy(web_contents));
+    ui::SelectFileDialog::FileTypeInfo file_types;
+    file_types.support_gdata = true;
     select_file_dialog_->SelectFile(ui::SelectFileDialog::SELECT_SAVEAS_FILE,
                                     string16(),
                                     suggested_path.ReplaceExtension("mhtml"),
-                                    NULL,
+                                    &file_types,
                                     0,
                                     "mhtml",
                                     platform_util::GetTopLevel(

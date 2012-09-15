@@ -126,6 +126,9 @@ std::wstring FormatFilterForExtensions(
 
   DCHECK(file_ext.size() >= ext_desc.size());
 
+  if (file_ext.empty())
+    include_all_files = true;
+
   std::wstring result;
 
   for (size_t i = 0; i < file_ext.size(); ++i) {
@@ -441,11 +444,8 @@ class SelectFileDialogImpl : public ui::SelectFileDialog,
           ui_proxy(MessageLoopForUI::current()->message_loop_proxy()),
           owner(owner),
           params(params) {
-      if (file_types) {
+      if (file_types)
         this->file_types = *file_types;
-      } else {
-        this->file_types.include_all_files = true;
-      }
     }
     SelectFileDialog::Type type;
     std::wstring title;

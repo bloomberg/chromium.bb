@@ -221,8 +221,6 @@ void SelectFileDialogImplGTK::SelectFileImpl(
   file_type_index_ = file_type_index;
   if (file_types)
     file_types_ = *file_types;
-  else
-    file_types_.include_all_files = true;
 
   GtkWidget* dialog = NULL;
   switch (type) {

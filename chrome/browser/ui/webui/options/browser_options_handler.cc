@@ -1075,11 +1075,13 @@ void BrowserOptionsHandler::HandleSelectDownloadLocation(
   PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
   select_folder_dialog_ = ui::SelectFileDialog::Create(
       this, new ChromeSelectFilePolicy(web_ui()->GetWebContents()));
+  ui::SelectFileDialog::FileTypeInfo info;
+  info.support_gdata = true;
   select_folder_dialog_->SelectFile(
       ui::SelectFileDialog::SELECT_FOLDER,
       l10n_util::GetStringUTF16(IDS_OPTIONS_DOWNLOADLOCATION_BROWSE_TITLE),
       pref_service->GetFilePath(prefs::kDownloadDefaultDirectory),
-      NULL, 0, FILE_PATH_LITERAL(""),
+      &info, 0, FILE_PATH_LITERAL(""),
       web_ui()->GetWebContents()->GetView()->GetTopLevelNativeWindow(), NULL);
 }
 
