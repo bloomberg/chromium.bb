@@ -10,7 +10,7 @@
 #include <string>
 
 #include "base/values.h"
-#include "chrome/browser/policy/policy_constants.h"
+#include "chrome/browser/policy/policy_types.h"
 
 namespace policy {
 

@@ -12,7 +12,7 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/api/prefs/pref_change_registrar.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
-#include "chrome/browser/policy/policy_constants.h"
+#include "chrome/browser/policy/policy_types.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/notification_observer.h"

@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "chrome/browser/policy/cloud_policy_service.h"
-#include "chrome/browser/policy/policy_constants.h"
+#include "chrome/browser/policy/policy_types.h"
 #include "chrome/common/pref_names.h"
 
 namespace policy {

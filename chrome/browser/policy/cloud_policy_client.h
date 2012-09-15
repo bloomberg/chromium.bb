@@ -12,7 +12,7 @@
 #include "base/observer_list.h"
 #include "base/time.h"
 #include "chrome/browser/policy/cloud_policy_constants.h"
-#include "chrome/browser/policy/policy_constants.h"
+#include "chrome/browser/policy/policy_types.h"
 
 namespace enterprise_management {
 class DeviceManagementResponse;
