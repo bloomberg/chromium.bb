@@ -186,6 +186,12 @@ cr.define('cr.ui', function() {
 
       this.updateCardWidths_();
 
+      // Mark all cards as hidden for accessibility. The selected card will
+      // be marked visible during selectCard().
+      for (var i = 0; i < cards.length; i++) {
+        this.cards_[i].setAttribute('aria-hidden', true);
+      }
+
       // Jump to the given card index.
       this.selectCard(index);
     },
@@ -350,6 +356,10 @@ cr.define('cr.ui', function() {
       this.cards_ = Array.prototype.concat.call(
           this.cards_.slice(0, index), card, this.cards_.slice(index));
 
+      // Mark the new card as hidden for accessibility. This will be corrected
+      // during selectCard() if this is the selected card.
+      card.setAttribute('aria-hidden', true);
+
       if (this.currentCard_ == -1)
         this.currentCard_ = 0;
       else if (index <= this.currentCard_)
@@ -471,10 +481,13 @@ cr.define('cr.ui', function() {
         isChangingCard = true;
 
       if (isChangingCard) {
-        if (previousCard)
+        if (previousCard) {
           previousCard.classList.remove('selected-card');
+          previousCard.setAttribute('aria-hidden', true);
+        }
         this.currentCard_ = newCardIndex;
         this.currentCardValue.classList.add('selected-card');
+        this.currentCardValue.setAttribute('aria-hidden', false);
       }
 
       var willTransitionHappen = this.transformToCurrentCard_(opt_animate);
