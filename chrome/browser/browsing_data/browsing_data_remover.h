@@ -173,6 +173,7 @@ class BrowsingDataRemover : public content::NotificationObserver,
     STATE_CREATE_MEDIA,
     STATE_DELETE_MAIN,
     STATE_DELETE_MEDIA,
+    STATE_DELETE_EXPERIMENT,
     STATE_DONE
   };
 

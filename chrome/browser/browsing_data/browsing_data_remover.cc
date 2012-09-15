@@ -61,6 +61,7 @@
 #include "net/cookies/cookie_store.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/http_cache.h"
+#include "net/http/infinite_cache.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "webkit/dom_storage/dom_storage_context.h"
@@ -673,7 +674,29 @@ void BrowsingDataRemover::DoClearCache(int rv) {
           cache_ = NULL;
         }
         next_cache_state_ = (next_cache_state_ == STATE_DELETE_MAIN) ?
-                                STATE_CREATE_MEDIA : STATE_DONE;
+                                STATE_CREATE_MEDIA : STATE_DELETE_EXPERIMENT;
+        break;
+      }
+      case STATE_DELETE_EXPERIMENT: {
+        cache_ = NULL;
+        // Get a pointer to the experiment.
+        net::HttpTransactionFactory* factory =
+            main_context_getter_->GetURLRequestContext()->
+                http_transaction_factory();
+        net::InfiniteCache* infinite_cache =
+            factory->GetCache()->infinite_cache();
+
+        if (delete_begin_.is_null()) {
+          rv = infinite_cache->DeleteData(
+              base::Bind(&BrowsingDataRemover::DoClearCache,
+                         base::Unretained(this)));
+        } else {
+          rv = infinite_cache->DeleteDataBetween(
+              delete_begin_, delete_end_,
+              base::Bind(&BrowsingDataRemover::DoClearCache,
+                         base::Unretained(this)));
+        }
+        next_cache_state_ = STATE_DONE;
         break;
       }
       case STATE_DONE: {
