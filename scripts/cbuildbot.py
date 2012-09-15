@@ -60,7 +60,7 @@ _BUILDBOT_REQUIRED_BINARIES = ('pbzip2',)
 # Major is used for tracking heavy API breakage- for example, no longer
 # supporting the --resume option.
 _REEXEC_API_MAJOR = 0
-_REEXEC_API_MINOR = 1
+_REEXEC_API_MINOR = 2
 _REEXEC_API_VERSION = '%i.%i' % (_REEXEC_API_MAJOR, _REEXEC_API_MINOR)
 
 
@@ -250,6 +250,9 @@ class Builder(object):
     # invoked cbuildbot; our timeout will enforce it instead.
     args_to_append = ['--resume', '--timeout', '0', '--notee', '--nocgroups',
                       '--buildroot', os.path.abspath(self.options.buildroot)]
+
+    if minor >= 2:
+      args_to_append += ['--cache-dir', self.options.cache_dir]
 
     if self.options.chrome_root:
       args_to_append += ['--chrome_root',
@@ -674,6 +677,12 @@ def _CheckGerritChromeOption(_option, _opt_str, _value, parser):
   parser.values.gerrit_chrome = True
 
 
+def FindCacheDir(parser, options):
+  if constants.SHARED_CACHE_ENVVAR in os.environ:
+    return commandline.OptionParser.FindCacheDir(parser, options)
+  return None
+
+
 class CustomGroup(optparse.OptionGroup):
   def add_remote_option(self, *args, **kwargs):
     """For arguments that are passed-through to remote trybot."""
@@ -734,7 +743,7 @@ def _CreateParser():
   """Generate and return the parser with all the options."""
   # Parse options
   usage = "usage: %prog [options] buildbot_config"
-  parser = CustomParser(usage=usage)
+  parser = CustomParser(usage=usage, caching=FindCacheDir)
 
   # Main options
   # The remote_pass_through parameter to add_option is implemented by the
@@ -947,7 +956,6 @@ def _CreateParser():
   group.add_option('--notee', action='store_false', dest='tee', default=True,
                     help="Disable logging and internal tee process.  Primarily "
                          "used for debugging cbuildbot itself.")
-  parser.add_option_group(group)
   return parser
 
 
@@ -1034,7 +1042,7 @@ def _FinishParsing(options, args):
 
 
 # pylint: disable=W0613
-def _PostParseCheck(options, args):
+def _PostParseCheck(parser, options, args):
   """Perform some usage validation after we've parsed the arguments
 
   Args:
@@ -1043,9 +1051,24 @@ def _PostParseCheck(options, args):
   if not options.branch:
     options.branch = cros_build_lib.GetChromiteTrackingBranch()
 
-  if options.local_patches and not repository.IsARepoRoot(options.sourceroot):
-    raise Exception('Could not find repo checkout at %s!'
-                    % options.sourceroot)
+  if not repository.IsARepoRoot(options.sourceroot):
+    if options.local_patches:
+      raise Exception('Could not find repo checkout at %s!'
+                      % options.sourceroot)
+
+  # Ensure we have a workable cachedir from this point forward.
+  if options.cache_dir is None:
+    # Note, options.sourceroot is set regardless of the path
+    # actually existing.
+    if os.path.exists(options.sourceroot):
+      options.cache_dir = os.path.join(options.sourceroot, '.cache')
+    elif options.buildroot is not None:
+      options.cache_dir = os.path.join(options.buildroot, '.cache')
+    else:
+      options.cache_dir = parser.FindCacheDir(parser, options)
+    options.cache_dir = os.path.abspath(options.cache_dir)
+
+  osutils.SafeMakedirs(options.cache_dir)
 
   if options.local_patches:
     options.local_patches = _CheckLocalPatches(
@@ -1098,7 +1121,7 @@ def main(argv):
   parser = _CreateParser()
   (options, args) = _ParseCommandLine(parser, argv)
 
-  _PostParseCheck(options, args)
+  _PostParseCheck(parser, options, args)
 
   if cros_build_lib.IsInsideChroot():
     cros_build_lib.Die('Please run cbuildbot from outside the chroot.')
@@ -1227,7 +1250,7 @@ def main(argv):
 
     # TODO(ferringb): update this once https://gerrit.chromium.org/gerrit/25359
     # is landed- it's sensitive to the manifest-versions cache path.
-    options.preserve_paths = set(['manifest-versions',
+    options.preserve_paths = set(['manifest-versions', '.cache',
                                   'manifest-versions-internal'])
     if log_file is not None:
       stack.Add(tee.Tee, log_file)

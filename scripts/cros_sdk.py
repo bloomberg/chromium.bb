@@ -14,6 +14,7 @@ from chromite.lib import cgroups
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import locking
+from chromite.lib import osutils
 from chromite.lib import sudo
 
 cros_build_lib.STRICT_SUDO = True
@@ -23,7 +24,6 @@ DEFAULT_URL = 'https://commondatastorage.googleapis.com/chromiumos-sdk/'
 SDK_SUFFIXES = ['.tbz2', '.tar.xz']
 
 SRC_ROOT = os.path.realpath(constants.SOURCE_ROOT)
-SDK_DIR = os.path.join(SRC_ROOT, 'sdks')
 OVERLAY_DIR = os.path.join(SRC_ROOT, 'src/third_party/chromiumos-overlay')
 SDK_VERSION_FILE = os.path.join(OVERLAY_DIR,
                                 'chromeos/binhost/host/sdk_version.conf')
@@ -82,7 +82,7 @@ def GetArchStageTarballs(tarballArch, version):
     raise SystemExit('Unsupported arch: %s' % (tarballArch,))
 
 
-def FetchRemoteTarballs(urls):
+def FetchRemoteTarballs(storage_dir, urls):
   """Fetches a tarball given by url, and place it in sdk/.
 
   Args:
@@ -119,14 +119,14 @@ def FetchRemoteTarballs(urls):
 
   # pylint: disable=E1101
   tarball_name = os.path.basename(urlparse.urlparse(url).path)
-  tarball_dest = os.path.join(SDK_DIR, tarball_name)
+  tarball_dest = os.path.join(storage_dir, tarball_name)
 
   # Cleanup old tarballs.
-  files_to_delete = [f for f in os.listdir(SDK_DIR) if f != tarball_name]
+  files_to_delete = [f for f in os.listdir(storage_dir) if f != tarball_name]
   if files_to_delete:
     print 'Cleaning up old tarballs: ' + str(files_to_delete)
     for f in files_to_delete:
-      f_path = os.path.join(SDK_DIR, f)
+      f_path = os.path.join(storage_dir, f)
       # Only delete regular files that belong to us.
       if os.path.isfile(f_path) and os.stat(f_path).st_uid == os.getuid():
         os.remove(f_path)
@@ -162,14 +162,16 @@ def FetchRemoteTarballs(urls):
   return tarball_dest
 
 
-def BootstrapChroot(chroot_path, stage_url, replace):
+def BootstrapChroot(chroot_path, cache_dir, stage_url, replace):
   """Builds a new chroot from source"""
   cmd = MAKE_CHROOT + ['--chroot', chroot_path,
-                       '--nousepkg']
+                       '--nousepkg',
+                       '--cache_dir', cache_dir]
 
   stage = None
   if stage_url:
-    stage = FetchRemoteTarballs([stage_url])
+    stage = FetchRemoteTarballs(os.path.join(cache_dir, 'sdks'),
+                                [stage_url])
 
   if stage:
     cmd.extend(['--stage3_path', stage])
@@ -183,10 +185,9 @@ def BootstrapChroot(chroot_path, stage_url, replace):
     raise SystemExit('Running %r failed!' % cmd)
 
 
-def CreateChroot(sdk_url, sdk_version, chroot_path, replace, nousepkg):
+def CreateChroot(sdk_url, cache_dir, sdk_version, chroot_path,
+                 replace, nousepkg):
   """Creates a new chroot from a given SDK"""
-  if not os.path.exists(SDK_DIR):
-    cros_build_lib.RunCommand(['mkdir', '-p', SDK_DIR], print_cmd=False)
 
   # Based on selections, fetch the tarball
   if sdk_url:
@@ -195,7 +196,7 @@ def CreateChroot(sdk_url, sdk_version, chroot_path, replace, nousepkg):
     arch = GetHostArch()
     urls = GetArchStageTarballs(arch, sdk_version)
 
-  sdk = FetchRemoteTarballs(urls)
+  sdk = FetchRemoteTarballs(os.path.join(cache_dir, 'sdks'), urls)
 
   # TODO(zbehan): Unpack and install
   # For now, we simply call make_chroot on the prebuilt chromeos-sdk.
@@ -203,7 +204,8 @@ def CreateChroot(sdk_url, sdk_version, chroot_path, replace, nousepkg):
   # These should all be eliminated/minimised, after which, we can change
   # this to just unpacking the sdk.
   cmd = MAKE_CHROOT + ['--stage3_path', sdk,
-                       '--chroot', chroot_path]
+                       '--chroot', chroot_path,
+                       '--cache_dir', cache_dir]
   if nousepkg:
     cmd.append('--nousepkg')
   if replace:
@@ -233,9 +235,10 @@ def _CreateLockFile(path):
   cros_build_lib.SudoRunCommand(['chmod', '644', path], print_cmd=False)
 
 
-def EnterChroot(chroot_path, chrome_root, chrome_root_mount, additional_args):
+def EnterChroot(chroot_path, cache_dir, chrome_root, chrome_root_mount,
+                additional_args):
   """Enters an existing SDK chroot"""
-  cmd = ENTER_CHROOT + ['--chroot', chroot_path]
+  cmd = ENTER_CHROOT + ['--chroot', chroot_path, '--cache_dir', cache_dir]
   if chrome_root:
     cmd.extend(['--chrome_root', chrome_root])
   if chrome_root_mount:
@@ -268,7 +271,7 @@ Action taken is the following:
 --delete            .. Removes a chroot
 """
   sdk_latest_version = GetLatestVersion()
-  parser = commandline.OptionParser(usage)
+  parser = commandline.OptionParser(usage, caching=True)
   # Actions:
   parser.add_option('--bootstrap',
                     action='store_true', dest='bootstrap', default=False,
@@ -380,6 +383,36 @@ Action taken is the following:
           DeleteChroot(options.chroot)
           return 0
 
+        sdk_cache = os.path.join(options.cache_dir, 'sdks')
+        distfiles_cache = os.path.join(options.cache_dir, 'distfiles')
+
+        for target in (sdk_cache, distfiles_cache):
+          src = os.path.join(SRC_ROOT, os.path.basename(target))
+          if not os.path.exists(src):
+            osutils.SafeMakedirs(target)
+            continue
+
+          lock.write_lock(
+              "Upgrade to %r needed but chroot is locked; please exit "
+              "all instances so this upgrade can finish." % src)
+          if not os.path.exists(src):
+            # Note that while waiting for the write lock, src may've vanished;
+            # it's a rare race during the upgrade process that's a byproduct
+            # of us avoiding taking a write lock to do the src check.  If we
+            # took a write lock for that check, it would effectively limit
+            # all cros_sdk for a chroot to a single instance.
+            osutils.SafeMakedirs(target)
+          elif not os.path.exists(target):
+            # Upgrade occurred, but a reversion, or something whacky
+            # occurred writing to the old location.  Wipe and continue.
+            cros_build_lib.SudoRunCommand(
+                ['mv', '--', src, target], print_cmd=False)
+          else:
+            # Upgrade occurred once already, but either a reversion or
+            # some before/after separate cros_sdk usage is at play.
+            # Wipe and continue.
+            osutils.RmDir(src, sudo=True)
+
         # Print a suggestion for replacement, but not if running just --enter.
         if os.path.exists(options.chroot) and not options.replace and \
             (options.bootstrap or options.download):
@@ -389,12 +422,13 @@ Action taken is the following:
         if not os.path.exists(options.chroot) or options.replace:
           lock.write_lock()
           if options.bootstrap:
-            BootstrapChroot(options.chroot, options.sdk_url,
-                            options.replace)
+            BootstrapChroot(options.chroot, options.cache_dir,
+                            options.sdk_url, options.replace)
           else:
-            CreateChroot(options.sdk_url, sdk_version,
-                         options.chroot, options.replace, options.nousepkg)
+            CreateChroot(options.sdk_url, options.cache_dir,
+                         sdk_version, options.chroot, options.replace,
+                         options.nousepkg)
         if options.enter:
           lock.read_lock()
-          EnterChroot(options.chroot, options.chrome_root,
+          EnterChroot(options.chroot, options.cache_dir, options.chrome_root,
                       options.chrome_root_mount, remaining_arguments)
