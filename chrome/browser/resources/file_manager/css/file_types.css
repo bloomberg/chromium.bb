@@ -5,133 +5,133 @@
 /* Small icons for file types, used in lists and menus. */
 *[file-type-icon] {
   background-image: -webkit-image-set(
-    url('../images/files/file_types/generic.png') 1x,
-    url('../images/files/file_types/2x/generic.png') 2x);
+    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_GENERIC') 1x,
+    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_GENERIC@2x') 2x);
   background-position: center;
   background-repeat: no-repeat;
 }
 
 *[file-type-icon='archive'] {
   background-image: -webkit-image-set(
-    url('../images/files/file_types/archive.png') 1x,
-    url('../images/files/file_types/2x/archive.png') 2x);
+    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_ARCHIVE') 1x,
+    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_ARCHIVE@2x') 2x);
 }
 
 *[file-type-icon='audio'] {
   background-image: -webkit-image-set(
-    url('../images/files/file_types/audio.png') 1x,
-    url('../images/files/file_types/2x/audio.png') 2x);
+    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_AUDIO') 1x,
+    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_AUDIO@2x') 2x);
 }
 
 *[file-type-icon='drive'] {
   background-image: -webkit-image-set(
-    url('../images/files/file_types/drive.png') 1x,
-    url('../images/files/file_types/2x/drive.png') 2x);
+    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_DRIVE') 1x,
+    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_DRIVE@2x') 2x);
 }
 
 *[file-type-icon='excel'] {
   background-image: -webkit-image-set(
-    url('../images/files/file_types/excel.png') 1x,
-    url('../images/files/file_types/2x/excel.png') 2x);
+    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_EXCEL') 1x,
+    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_EXCEL@2x') 2x);
 }
 
 *[file-type-icon='folder'] {
   background-image: -webkit-image-set(
-    url('../images/files/file_types/folder.png') 1x,
-    url('../images/files/file_types/2x/folder.png') 2x);
+    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_FOLDER') 1x,
+    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_FOLDER@2x') 2x);
 }
 
 *[file-type-icon='gdoc'] {
   background-image: -webkit-image-set(
-    url('../images/files/file_types/gdoc.png') 1x,
-    url('../images/files/file_types/2x/gdoc.png') 2x);
+    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_GDOC') 1x,
+    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_GDOC@2x') 2x);
 }
 
 *[file-type-icon='gdraw'] {
   background-image: -webkit-image-set(
-    url('../images/files/file_types/gdraw.png') 1x,
-    url('../images/files/file_types/2x/gdraw.png') 2x);
+    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_GDRAW') 1x,
+    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_GDRAW@2x') 2x);
 }
 
 *[file-type-icon='gsheet'] {
   background-image: -webkit-image-set(
-    url('../images/files/file_types/gsheet.png') 1x,
-    url('../images/files/file_types/2x/gsheet.png') 2x);
+    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_GSHEET') 1x,
+    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_GSHEET@2x') 2x);
 }
 
 *[file-type-icon='gslides'] {
   background-image: -webkit-image-set(
-    url('../images/files/file_types/gslides.png') 1x,
-    url('../images/files/file_types/2x/gslides.png') 2x);
+    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_GSLIDES') 1x,
+    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_GSLIDES@2x') 2x);
 }
 
 *[file-type-icon='gtable'] {
   background-image: -webkit-image-set(
-    url('../images/files/file_types/gtable.png') 1x,
-    url('../images/files/file_types/2x/gtable.png') 2x);
+    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_GTABLE') 1x,
+    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_GTABLE@2x') 2x);
 }
 
 *[file-type-icon='image'] {
   background-image: -webkit-image-set(
-    url('../images/files/file_types/image.png') 1x,
-    url('../images/files/file_types/2x/image.png') 2x);
+    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_IMAGE') 1x,
+    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_IMAGE@2x') 2x);
 }
 
 *[file-type-icon='pdf'] {
   background-image: -webkit-image-set(
-    url('../images/files/file_types/pdf.png') 1x,
-    url('../images/files/file_types/2x/pdf.png') 2x);
+    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_PDF') 1x,
+    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_PDF@2x') 2x);
 }
 
 *[file-type-icon='ppt'] {
   background-image: -webkit-image-set(
-    url('../images/files/file_types/ppt.png') 1x,
-    url('../images/files/file_types/2x/ppt.png') 2x);
+    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_PPT') 1x,
+    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_PPT@2x') 2x);
 }
 
 *[file-type-icon='video'] {
   background-image: -webkit-image-set(
-    url('../images/files/file_types/video.png') 1x,
-    url('../images/files/file_types/2x/video.png') 2x);
+    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_VIDEO') 1x,
+    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_VIDEO@2x') 2x);
 }
 
 *[file-type-icon='word'] {
   background-image: -webkit-image-set(
-    url('../images/files/file_types/word.png') 1x,
-    url('../images/files/file_types/2x/word.png') 2x);
+    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_WORD') 1x,
+    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_WORD@2x') 2x);
 }
 
 /* Large generic thumbnails, used when a file does not have a thumbnail. */
 *[generic-thumbnail] {
   background-image: -webkit-image-set(
-    url('../images/files/thumbnails/generic.png') 1x,
-    url('../images/files/thumbnails/2x/generic.png') 2x);
+    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_LARGE_GENERIC') 1x,
+    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_LARGE_GENERIC@2x') 2x);
   background-position: center center;
   background-repeat: no-repeat;
 }
 
 *[generic-thumbnail='audio'] {
   background-image: -webkit-image-set(
-    url('../images/files/thumbnails/audio.png') 1x,
-    url('../images/files/thumbnails/2x/audio.png') 2x);
+    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_LARGE_AUDIO') 1x,
+    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_LARGE_AUDIO@2x') 2x);
 }
 
 *[generic-thumbnail='folder'] {
   background-image: -webkit-image-set(
-    url('../images/files/thumbnails/folder.png') 1x,
-    url('../images/files/thumbnails/2x/folder.png') 2x);
+    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_LARGE_FOLDER') 1x,
+    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_LARGE_FOLDER@2x') 2x);
 }
 
 *[generic-thumbnail='image'] {
   background-image: -webkit-image-set(
-    url('../images/files/thumbnails/image.png') 1x,
-    url('../images/files/thumbnails/2x/image.png') 2x);
+    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_LARGE_IMAGE') 1x,
+    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_LARGE_IMAGE@2x') 2x);
 }
 
 *[generic-thumbnail='video'] {
   background-image: -webkit-image-set(
-    url('../images/files/thumbnails/video.png') 1x,
-    url('../images/files/thumbnails/2x/video.png') 2x);
+    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_LARGE_VIDEO') 1x,
+    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_LARGE_VIDEO@2x') 2x);
 }
 
 /* Icons for volume types. */

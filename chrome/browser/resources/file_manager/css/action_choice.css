@@ -90,13 +90,15 @@
 
 .choices label[for=import-photos-to-drive] {
   /* TODO(dgozman): change to the right one */
-  background: url(../images/files/file_types/gsheet.png) no-repeat;
+  background:
+    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_GSHEET') no-repeat;
   padding-left: 20px;
 }
 
 .choices label[for=view-files] {
   /* TODO(dgozman): change to the right one */
-  background: url(../images/files/file_types/gdoc.png) no-repeat;
+  background:
+    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_GDOC') no-repeat;
   padding-left: 20px;
 }
 

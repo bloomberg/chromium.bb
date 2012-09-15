@@ -83,6 +83,7 @@
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/ntp/thumbnail_source.h"
+#include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
@@ -1019,6 +1020,15 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
                                                       FaviconSource::FAVICON);
     ChromeURLDataManager::AddDataSource(profile_, favicon_source);
   }
+
+#if !defined(OS_ANDROID)
+  // Same for chrome://theme/ resources.
+  if (extension->HasHostPermission(GURL(chrome::kChromeUIThemeURL))) {
+    ThemeSource* theme_source = new ThemeSource(profile_);
+    ChromeURLDataManager::AddDataSource(profile_, theme_source);
+  }
+#endif
+
   // Same for chrome://thumb/ resources.
   if (extension->HasHostPermission(GURL(chrome::kChromeUIThumbnailURL))) {
     ThumbnailSource* thumbnail_source = new ThumbnailSource(profile_);

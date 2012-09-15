@@ -159,13 +159,13 @@ chrome.fileBrowserPrivate = {
         taskId: 'fake-extension-id|fake-item',
         title: 'External action',
         regexp: /\.(bmp|gif|jpe?g|png|webp|3gp|avi|m4v|mov|mp4|mpeg4?|mpg4?|ogm|ogv|ogx|webm)$/i,
-        iconUrl: 'images/files/file_types/generic.png'
+        iconUrl: 'chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_GENERIC'
       },
       {
         taskId: 'fake-extension-id|upload',
         title: 'Upload video',
         regexp: /\.(3gp|avi|m4v|mov|mp4|mpeg4?|mpg4?|ogm|ogv|ogx|webm)$/i,
-        iconUrl: 'images/files/file_types/video.png'
+        iconUrl: 'chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_VIDEO'
       },
       {
         taskId: extensionId + '|view-in-browser',

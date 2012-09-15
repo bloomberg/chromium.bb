@@ -17,12 +17,13 @@
     "unlimitedStorage",
     "chrome://extension-icon/",
     "chrome://resources/",
+    "chrome://theme/",
     "tabs",
     "clipboardWrite",
     "clipboardRead",
     "https://*.googleusercontent.com/"
   ],
-  "content_security_policy": "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; frame-src 'self' about:; img-src 'self' chrome://resources data: https://docs.google.com https://*.googleusercontent.com chrome://extension-icon; media-src 'self' https://*.googleusercontent.com;",
+  "content_security_policy": "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; frame-src 'self' about:; img-src 'self' chrome://resources chrome://theme data: https://docs.google.com https://*.googleusercontent.com chrome://extension-icon; media-src 'self' https://*.googleusercontent.com;",
   "app": {
     "launch": {
       "container": "panel",

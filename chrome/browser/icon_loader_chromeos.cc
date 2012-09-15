@@ -13,7 +13,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/message_loop.h"
 #include "chrome/browser/icon_loader.h"
-#include "grit/component_extension_resources.h"
+#include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"

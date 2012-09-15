@@ -79,60 +79,6 @@
         <include name="IDR_FILE_MANAGER_ICON_16" file="file_manager/images/icon16.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_ICON_128" file="file_manager/images/icon128.png" type="BINDATA" />
 
-        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_ARCHIVE" file="file_manager/images/files/file_types/archive.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_AUDIO" file="file_manager/images/files/file_types/audio.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_CHART" file="file_manager/images/files/file_types/chart.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_EXCEL" file="file_manager/images/files/file_types/excel.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_FOLDER" file="file_manager/images/files/file_types/folder.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_FORM" file="file_manager/images/files/file_types/form.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_GDOC" file="file_manager/images/files/file_types/gdoc.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_GDRAW" file="file_manager/images/files/file_types/gdraw.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_GENERIC" file="file_manager/images/files/file_types/generic.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_GLINK" file="file_manager/images/files/file_types/glink.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_GSHEET" file="file_manager/images/files/file_types/gsheet.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_GSLIDES" file="file_manager/images/files/file_types/gslides.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_GTABLE" file="file_manager/images/files/file_types/gtable.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_IMAGE" file="file_manager/images/files/file_types/image.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_PDF" file="file_manager/images/files/file_types/pdf.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_PPT" file="file_manager/images/files/file_types/ppt.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_SCRIPT" file="file_manager/images/files/file_types/script.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_SITES" file="file_manager/images/files/file_types/sites.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_VIDEO" file="file_manager/images/files/file_types/video.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_WORD" file="file_manager/images/files/file_types/word.png" type="BINDATA" />
-
-        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_2X_ARCHIVE" file="file_manager/images/files/file_types/2x/archive.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_2X_AUDIO" file="file_manager/images/files/file_types/2x/audio.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_2X_CHART" file="file_manager/images/files/file_types/2x/chart.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_2X_EXCEL" file="file_manager/images/files/file_types/2x/excel.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_2X_FOLDER" file="file_manager/images/files/file_types/2x/folder.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_2X_FORM" file="file_manager/images/files/file_types/2x/form.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_2X_GDOC" file="file_manager/images/files/file_types/2x/gdoc.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_2X_GDRAW" file="file_manager/images/files/file_types/2x/gdraw.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_2X_GENERIC" file="file_manager/images/files/file_types/2x/generic.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_2X_GLINK" file="file_manager/images/files/file_types/2x/glink.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_2X_GSHEET" file="file_manager/images/files/file_types/2x/gsheet.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_2X_GSLIDES" file="file_manager/images/files/file_types/2x/gslides.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_2X_GTABLE" file="file_manager/images/files/file_types/2x/gtable.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_2X_IMAGE" file="file_manager/images/files/file_types/2x/image.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_2X_PDF" file="file_manager/images/files/file_types/2x/pdf.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_2X_PPT" file="file_manager/images/files/file_types/2x/ppt.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_2X_SCRIPT" file="file_manager/images/files/file_types/2x/script.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_2X_SITES" file="file_manager/images/files/file_types/2x/sites.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_2X_VIDEO" file="file_manager/images/files/file_types/2x/video.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_2X_WORD" file="file_manager/images/files/file_types/2x/word.png" type="BINDATA" />
-
-        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_LARGE_AUDIO" file="file_manager/images/files/thumbnails/audio.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_LARGE_FOLDER" file="file_manager/images/files/thumbnails/folder.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_LARGE_GENERIC" file="file_manager/images/files/thumbnails/generic.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_LARGE_IMAGE" file="file_manager/images/files/thumbnails/image.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_LARGE_VIDEO" file="file_manager/images/files/thumbnails/video.png" type="BINDATA" />
-
-        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_LARGE_2X_AUDIO" file="file_manager/images/files/thumbnails/2x/audio.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_LARGE_2X_FOLDER" file="file_manager/images/files/thumbnails/2x/folder.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_LARGE_2X_GENERIC" file="file_manager/images/files/thumbnails/2x/generic.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_LARGE_2X_IMAGE" file="file_manager/images/files/thumbnails/2x/image.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_LARGE_2X_VIDEO" file="file_manager/images/files/thumbnails/2x/video.png" type="BINDATA" />
-
         <!-- Resources used for non-flattened HTML files. -->
         <include name="IDR_FILE_MANAGER_GDRIVE_WELCOME_STYLE" file="file_manager/css/gdrive_welcome.css" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_UI_GDRIVE_WELCOME_BACKGROUND" file="shared/images/clouds.png" type="BINDATA" />
