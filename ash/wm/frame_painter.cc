@@ -37,9 +37,9 @@ namespace {
 // the web content and may need to be built into the shadow layers instead.
 const int kBorderThickness = 0;
 // Space between left edge of window and popup window icon.
-const int kIconOffsetX = 9;
+const int kIconOffsetX = 4;
 // Space between top of window and popup window icon.
-const int kIconOffsetY = 9;
+const int kIconOffsetY = 6;
 // Height and width of window icon.
 const int kIconSize = 16;
 // Space between the title text and the caption buttons.
@@ -49,7 +49,7 @@ const int kTitleIconOffsetX = 4;
 // Space between window edge and title text, when there is no icon.
 const int kTitleNoIconOffsetX = 8;
 // Space between title text and top of window.
-const int kTitleOffsetY = 10;
+const int kTitleOffsetY = 7;
 // Color for the title text.
 const SkColor kTitleTextColor = SkColorSetRGB(40, 40, 40);
 // Size of header/content separator line below the header image.

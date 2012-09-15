@@ -446,7 +446,8 @@ int BrowserNonClientFrameViewAsh::NonClientTopBorderHeight(
 bool BrowserNonClientFrameViewAsh::UseShortHeader() const {
   // Restored browser -> tall header
   // Maximized browser -> short header
-  // Popup&App window -> tall header
+  // App window -> tall header
+  // Popup window -> short header
   // Panel -> short header
   // Dialogs use short header and are handled via CustomFrameViewAsh.
   Browser* browser = browser_view()->browser();
@@ -454,7 +455,7 @@ bool BrowserNonClientFrameViewAsh::UseShortHeader() const {
     case Browser::TYPE_TABBED:
       return frame()->IsMaximized();
     case Browser::TYPE_POPUP:
-      return false;
+      return !browser->is_app();
     case Browser::TYPE_PANEL:
       return true;
     default:
