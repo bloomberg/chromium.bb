@@ -518,22 +518,41 @@ div.root-eject:hover {
     url('../images/files/ui/2x/search_clear_pressed.png') 2x);
 }
 
-button#detail-view {
+button#detail-view:before {
   background-image: -webkit-image-set(
     url('../images/files/ui/view_list_black.png') 1x,
     url('../images/files/ui/2x/view_list_black.png') 2x);
-  background-position: center;
-  background-repeat: no-repeat;
 }
 
-
-button#thumbnail-view {
+button#thumbnail-view:before {
   background-image: -webkit-image-set(
     url('../images/files/ui/view_thumbs_black.png') 1x,
     url('../images/files/ui/2x/view_thumbs_black.png') 2x);
+}
+
+button#detail-view:before,
+button#thumbnail-view:before {
   background-position: center;
   background-repeat: no-repeat;
+  bottom: 0;
+  content: '';
+  left: 0;
+  opacity: 0.5;
+  position: absolute;
+  right: 0;
+  top: 0;
 }
+
+button#detail-view[disabled]:before,
+button#thumbnail-view[disabled]:before {
+  opacity: 0.75;
+}
+
+button#detail-view:hover:before,
+button#thumbnail-view:hover:before {
+  opacity: 1;
+}
+
 
 /* When detail-view is not disabled (thus thumbnail view is disabled), push
    it up a little, to make it's right glowing border visible while focused.*/
@@ -1386,10 +1405,25 @@ body:not([ctrl-pressing]) [visibleif='ctrl'] {
   display: none;
 }
 
-#gdata-settings {
+#gdata-settings:before {
   background-image: url('../images/files/ui/settings.svg');
   background-position: 20px center;
   background-repeat: no-repeat;
+  bottom: 0;
+  content: '';
+  left: 0;
+  opacity: 0.75;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+#gdata-settings:hover:before {
+  opacity: 1;
+}
+
+
+#gdata-settings {
   overflow: hidden;
   text-align: left;
   width: 54px;
