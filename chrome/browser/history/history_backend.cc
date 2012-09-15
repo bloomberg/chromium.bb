@@ -1842,6 +1842,9 @@ void HistoryBackend::MergeFavicon(
     history::IconType icon_type,
     scoped_refptr<base::RefCountedMemory> bitmap_data,
     const gfx::Size& pixel_size) {
+  if (!thumbnail_db_.get() || !db_.get())
+    return;
+
   bool favicon_bitmap_added_or_removed = false;
 
   FaviconID favicon_id =
@@ -2115,7 +2118,6 @@ void HistoryBackend::UpdateFaviconMappingsAndFetchImpl(
                            history::IconURLSizesMap());
     return;
   }
-
 
   std::vector<FaviconID> favicon_ids;
 
