@@ -11057,19 +11057,31 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         Help improve detection of malware by sending additional data to Google about sites on which you see this warning. This data will be handled in accordance with the <ph name="PRIVACY_PAGE_LINK">$1</ph>.
       </message>
       <message name="IDS_SAFE_BROWSING_MALWARE_V2_REPORTING_AGREE" desc="SafeBrowsing Malware v2 Details label next to checkbox">
-        Help detect malware by sending data to Google about sites on which you see this warning. <ph name="PRIVACY_PAGE_LINK">$1</ph>
+        Improve malware detection by sending additional data to Google when I encounter warnings like this. <ph name="PRIVACY_PAGE_LINK">$1</ph>
       </message>
       <message name="IDS_SAFE_BROWSING_PHISHING_TITLE" desc="SafeBrowsing Phishing HTML title">
         Phishing Detected!
       </message>
+      <message name="IDS_SAFE_BROWSING_PHISHING_V2_TITLE" desc="SafeBrowsing Phishing HTML v2 title">
+        Phishing Ahead!
+      </message>
       <message name="IDS_SAFE_BROWSING_PHISHING_HEADLINE" desc="SafeBrowsing Phishing HTML headline">
         Warning: Suspected phishing site!
+      </message>
+      <message name="IDS_SAFE_BROWSING_PHISHING_V2_HEADLINE" desc="SafeBrowsing Phishing HTML v2 headline">
+        Reported Phishing Website Ahead!
       </message>
       <message name="IDS_SAFE_BROWSING_PHISHING_DESCRIPTION1" desc="SafeBrowsing Phishing HTML description, first line">
         The website at <ph name="HOST_NAME">&lt;strong&gt;$1<ex>www.malware.com</ex>&lt;/strong&gt;</ph> has been reported as a “phishing” site.  Phishing sites trick users into disclosing personal or financial information, often by pretending to represent trusted institutions, such as banks.
       </message>
+      <message name="IDS_SAFE_BROWSING_PHISHING_V2_DESCRIPTION1" desc="SafeBrowsing Phishing HTML v2 description, first line">
+        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> has blocked access to <ph name="HOST_NAME">$2<ex>www.malware.com</ex></ph>.  This website has been reported as a phishing website.
+      </message>
       <message name="IDS_SAFE_BROWSING_PHISHING_DESCRIPTION2" desc="SafeBrowsing Phishing HTML description, second line, link to more information.">
         Learn more about phishing scams.
+      </message>
+      <message name="IDS_SAFE_BROWSING_PHISHING_V2_DESCRIPTION2" desc="SafeBrowsing Phishing HTML v2 description, second line, link to more information.">
+        Phishing websites are designed to trick you into disclosing your login, password or other sensitive information by disguising themselves as other websites you may trust.
       </message>
       <message name="IDS_SAFE_BROWSING_PHISHING_DESCRIPTION3" desc="SafeBrowsing Phishing HTML description, last line">
         If you feel you understand the risks, you may <ph name="PROCEED_LINK">$1<ex>proceed anyway</ex></ph>.
@@ -11082,6 +11094,9 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       </message>
       <message name="IDS_SAFE_BROWSING_PHISHING_REPORT_ERROR" desc="SafeBrowsing Phishing, report error link">
         Report an error
+      </message>
+      <message name="IDS_SAFE_BROWSING_PHISHING_V2_REPORT_ERROR" desc="SafeBrowsing Phishing v2, report error link">
+        Report an incorrect warning
       </message>
 
       <message name="IDS_SAFE_BROWSING_MULTI_THREAT_TITLE" desc="SafeBrowsing Multi threat HTML title">
