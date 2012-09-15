@@ -728,9 +728,6 @@ TEST(PermissionsTest, PermissionMessages) {
   // Platform apps.
   skip.insert(APIPermission::kFileSystem);
 
-  // TODO(dharcourt): crbug.com/145022
-  skip.insert(APIPermission::kSocket);
-
   PermissionsInfo* info = PermissionsInfo::GetInstance();
   APIPermissionSet permissions = info->GetAll();
   for (APIPermissionSet::const_iterator i = permissions.begin();
@@ -890,6 +887,20 @@ TEST(PermissionsTest, GetWarningMessages_Serial) {
   EXPECT_TRUE(Contains(warnings,
                        "Use serial devices attached to your computer"));
   ASSERT_EQ(1u, warnings.size());
+}
+
+TEST(PermissionsTest, GetWarningMessages_Socket) {
+   extensions::Feature::ScopedCurrentChannel channel(
+       chrome::VersionInfo::CHANNEL_DEV);
+   scoped_refptr<Extension> extension =
+       LoadManifest("permissions", "socket.json");
+
+   EXPECT_TRUE(extension->is_platform_app());
+   EXPECT_TRUE(extension->HasAPIPermission(APIPermission::kSocket));
+   std::vector<string16> warnings = extension->GetPermissionMessageStrings();
+   EXPECT_TRUE(Contains(warnings,
+                        "Exchange data with other computers"));
+   ASSERT_EQ(1u, warnings.size());
 }
 
 TEST(PermissionsTest, GetWarningMessages_PlatformApppHosts) {

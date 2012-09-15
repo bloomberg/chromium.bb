@@ -1,0 +1,7 @@
+{
+  "name": "Socket permission",
+  "version": "1.0.1",
+  "manifest_version": 2,
+  "permissions": [{"socket": ["tcp-connect"]}],
+  "app": {"background": {"scripts": ["doesnt_exist.js"]}}
+}

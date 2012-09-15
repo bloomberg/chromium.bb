@@ -49,6 +49,7 @@ class PermissionMessage {
     kFileSystemWrite,
     kMediaGalleriesAllGalleries,
     kSerial,
+    kSocket,
     kEnumBoundary
   };
 
