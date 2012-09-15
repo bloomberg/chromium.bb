@@ -8,7 +8,7 @@ import android.app.Activity;
 import android.test.ActivityInstrumentationTestCase2;
 import android.test.suitebuilder.annotation.SmallTest;
 
-import org.chromium.base.test.DisabledTest;
+import org.chromium.base.test.Feature;
 
 /**
  * Example test that just starts the content shell.
@@ -17,7 +17,8 @@ public class ContentShellUrlTest extends ContentShellTestBase {
     // URL used for base tests.
     private static final String URL = "data:text";
 
-    @DisabledTest
+    @SmallTest
+    @Feature({"Main"})
     public void testBaseStartup() throws Exception {
         ContentShellActivity activity = launchContentShellWithUrl(URL);
 
