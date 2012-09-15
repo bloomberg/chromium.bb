@@ -20,6 +20,7 @@
 #include "chrome/browser/mac/keychain_reauthorize.h"
 #import "chrome/browser/mac/keystone_glue.h"
 #include "chrome/browser/metrics/metrics_service.h"
+#include "chrome/browser/system_monitor/removable_device_notifications_mac.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/common/main_function_params.h"
@@ -70,6 +71,9 @@ int DoUninstallTasks(bool chrome_still_running) {
 ChromeBrowserMainPartsMac::ChromeBrowserMainPartsMac(
     const content::MainFunctionParams& parameters)
     : ChromeBrowserMainPartsPosix(parameters) {
+}
+
+ChromeBrowserMainPartsMac::~ChromeBrowserMainPartsMac() {
 }
 
 void ChromeBrowserMainPartsMac::PreEarlyInitialization() {
@@ -173,6 +177,12 @@ void ChromeBrowserMainPartsMac::PreMainMessageLoopStart() {
   // |-application:openFiles:|, since we already handle them directly.
   [[NSUserDefaults standardUserDefaults]
       setObject:@"NO" forKey:@"NSTreatUnknownArgumentsAsOpen"];
+}
+
+void ChromeBrowserMainPartsMac::PreProfileInit() {
+  removable_device_notifications_mac_.reset(
+      new chrome::RemovableDeviceNotificationsMac());
+  ChromeBrowserMainPartsPosix::PreProfileInit();
 }
 
 void ChromeBrowserMainPartsMac::DidEndMainMessageLoop() {

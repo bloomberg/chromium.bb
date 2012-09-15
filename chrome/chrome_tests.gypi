@@ -1669,6 +1669,7 @@
         'browser/system_monitor/media_transfer_protocol_device_observer_chromeos_unittest.cc',
         'browser/system_monitor/removable_device_notifications_chromeos_unittest.cc',
         'browser/system_monitor/removable_device_notifications_linux_unittest.cc',
+        'browser/system_monitor/removable_device_notifications_mac_unittest.mm',
         'browser/system_monitor/removable_device_notifications_window_win_unittest.cc',
         'browser/tab_contents/render_view_context_menu_unittest.cc',
         'browser/tab_contents/thumbnail_generator_unittest.cc',
