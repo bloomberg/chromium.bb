@@ -9,8 +9,8 @@
  * available to the NaCl module.
  */
 
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_kern_rpc.h"
-#include "native_client/src/trusted/service_runtime/nacl_kern_services.h"
+#include "native_client/src/trusted/service_runtime/include/sys/nacl_kernel_service.h"
+#include "native_client/src/trusted/service_runtime/nacl_kernel_service.h"
 
 #include "native_client/src/trusted/reverse_service/reverse_control_rpc.h"
 #include "native_client/src/trusted/simple_service/nacl_simple_service.h"
@@ -19,15 +19,15 @@
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 
-static void NaClKernServiceInitializationCompleteRpc(
+static void NaClKernelServiceInitializationCompleteRpc(
     struct NaClSrpcRpc      *rpc,
     struct NaClSrpcArg      **in_args,
     struct NaClSrpcArg      **out_args,
     struct NaClSrpcClosure  *done_cls) {
-  struct NaClKernService  *service =
-      (struct NaClKernService *) rpc->channel->server_instance_data;
-  struct NaClApp          *nap;
-  NaClSrpcError           rpc_result;
+  struct NaClKernelService  *service =
+      (struct NaClKernelService *) rpc->channel->server_instance_data;
+  struct NaClApp            *nap;
+  NaClSrpcError             rpc_result;
 
   UNREFERENCED_PARAMETER(in_args);
   UNREFERENCED_PARAMETER(out_args);
@@ -36,7 +36,7 @@ static void NaClKernServiceInitializationCompleteRpc(
   (*done_cls->Run)(done_cls);
 
   NaClLog(4,
-          "NaClKernServiceInitializationCompleteRpc: nap 0x%"NACL_PRIxPTR"\n",
+          "NaClKernelServiceInitializationCompleteRpc: nap 0x%"NACL_PRIxPTR"\n",
           (uintptr_t) service->nap);
   nap = service->nap;
   NaClXMutexLock(&nap->mu);
@@ -46,52 +46,52 @@ static void NaClKernServiceInitializationCompleteRpc(
                                            NACL_REVERSE_CONTROL_INIT_DONE);
     if (NACL_SRPC_RESULT_OK != rpc_result) {
       NaClLog(LOG_FATAL,
-              "NaClKernService: InitDone RPC failed: %d\n", rpc_result);
+              "NaClKernelService: InitDone RPC failed: %d\n", rpc_result);
     }
   } else {
-    NaClLog(3, "NaClKernService: no reverse channel, no plugin to talk to.\n");
+    NaClLog(3, "NaClKernelService: no reverse channel, no plugin to talk to.\n");
   }
   NaClXMutexUnlock(&nap->mu);
 }
 
-struct NaClSrpcHandlerDesc const kNaClKernServiceHandlers[] = {
-  { NACL_KERN_SERVICE_INITIALIZATION_COMPLETE,
-    NaClKernServiceInitializationCompleteRpc, },
+struct NaClSrpcHandlerDesc const kNaClKernelServiceHandlers[] = {
+  { NACL_KERNEL_SERVICE_INITIALIZATION_COMPLETE,
+    NaClKernelServiceInitializationCompleteRpc, },
   { (char const *) NULL, (NaClSrpcMethod) NULL, },
 };
 
-int NaClKernServiceCtor(
-    struct NaClKernService      *self,
-    NaClThreadIfFactoryFunction thread_factory_fn,
-    void                        *thread_factory_data,
-    struct NaClApp              *nap) {
+int NaClKernelServiceCtor(
+    struct NaClKernelService      *self,
+    NaClThreadIfFactoryFunction   thread_factory_fn,
+    void                          *thread_factory_data,
+    struct NaClApp                *nap) {
   NaClLog(4,
-          ("NaClKernServiceCtor: self 0x%"NACL_PRIxPTR", nap 0x%"
+          ("NaClKernelServiceCtor: self 0x%"NACL_PRIxPTR", nap 0x%"
            NACL_PRIxPTR"\n"),
           (uintptr_t) self,
           (uintptr_t) nap);
   if (!NaClSimpleServiceCtor(&self->base,
-                             kNaClKernServiceHandlers,
+                             kNaClKernelServiceHandlers,
                              thread_factory_fn,
                              thread_factory_data)) {
     return 0;
   }
   self->nap = nap;
   NACL_VTBL(NaClRefCount, self) =
-      (struct NaClRefCountVtbl *) &kNaClKernServiceVtbl;
+      (struct NaClRefCountVtbl *) &kNaClKernelServiceVtbl;
   return 1;
 }
 
-void NaClKernServiceDtor(struct NaClRefCount *vself) {
-  struct NaClKernService *self = (struct NaClKernService *) vself;
+void NaClKernelServiceDtor(struct NaClRefCount *vself) {
+  struct NaClKernelService *self = (struct NaClKernelService *) vself;
   NACL_VTBL(NaClRefCount, self) =
       (struct NaClRefCountVtbl *) &kNaClSimpleServiceVtbl;
   (*NACL_VTBL(NaClRefCount, self)->Dtor)(vself);
 }
 
-struct NaClSimpleServiceVtbl const kNaClKernServiceVtbl = {
+struct NaClSimpleServiceVtbl const kNaClKernelServiceVtbl = {
   {
-    NaClKernServiceDtor,
+    NaClKernelServiceDtor,
   },
   NaClSimpleServiceConnectionFactory,
   NaClSimpleServiceAcceptConnection,

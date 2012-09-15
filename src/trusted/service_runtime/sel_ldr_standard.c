@@ -36,7 +36,7 @@
 #include "native_client/src/trusted/service_runtime/arch/sel_ldr_arch.h"
 #include "native_client/src/trusted/service_runtime/elf_util.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
-#include "native_client/src/trusted/service_runtime/nacl_kern_services.h"
+#include "native_client/src/trusted/service_runtime/nacl_kernel_service.h"
 #include "native_client/src/trusted/service_runtime/nacl_switch_to_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
 #include "native_client/src/trusted/service_runtime/nacl_text.h"
@@ -450,38 +450,38 @@ int NaClAddrIsValidEntryPt(struct NaClApp *nap,
 
 int NaClAppLaunchServiceThreads(struct NaClApp *nap) {
   struct NaClManifestProxy                    *manifest_proxy = NULL;
-  struct NaClKernService                      *kern_service = NULL;
+  struct NaClKernelService                    *kernel_service = NULL;
   int                                         rv = 0;
   enum NaClReverseChannelInitializationState  init_state;
 
   NaClNameServiceLaunch(nap->name_service);
 
-  kern_service = (struct NaClKernService *) malloc(sizeof *kern_service);
-  if (NULL == kern_service) {
+  kernel_service = (struct NaClKernelService *) malloc(sizeof *kernel_service);
+  if (NULL == kernel_service) {
     NaClLog(LOG_ERROR,
             "NaClAppLaunchServiceThreads: No memory for kern service\n");
     goto done;
   }
 
-  if (!NaClKernServiceCtor(kern_service,
-                           NaClAddrSpSquattingThreadIfFactoryFunction,
-                           (void *) nap,
-                           nap)) {
+  if (!NaClKernelServiceCtor(kernel_service,
+                             NaClAddrSpSquattingThreadIfFactoryFunction,
+                             (void *) nap,
+                             nap)) {
     NaClLog(LOG_ERROR,
             "NaClAppLaunchServiceThreads: KernServiceCtor failed\n");
-    free(kern_service);
-    kern_service = NULL;
+    free(kernel_service);
+    kernel_service = NULL;
     goto done;
   }
 
   if (!NaClSimpleServiceStartServiceThread((struct NaClSimpleService *)
-                                           kern_service)) {
+                                           kernel_service)) {
     NaClLog(LOG_ERROR,
             "NaClAppLaunchServiceThreads: KernService start service failed\n");
     goto done;
   }
   /*
-   * NB: StartServiceThread grabbed another reference to kern_service,
+   * NB: StartServiceThread grabbed another reference to kernel_service,
    * used by the service thread.  Closing the connection capability
    * should cause the service thread to shut down and in turn release
    * that reference.
@@ -526,8 +526,8 @@ int NaClAppLaunchServiceThreads(struct NaClApp *nap) {
     NaClLog(3,
             ("NaClAppLaunchServiceThreads: no reverse channel;"
              " NOT launching manifest proxy.\n"));
-    nap->kern_service = kern_service;
-    kern_service = NULL;
+    nap->kernel_service = kernel_service;
+    kernel_service = NULL;
 
     rv = 1;
     goto done;
@@ -549,7 +549,7 @@ int NaClAppLaunchServiceThreads(struct NaClApp *nap) {
   manifest_proxy = (struct NaClManifestProxy *) malloc(sizeof *manifest_proxy);
   if (NULL == manifest_proxy) {
     NaClLog(LOG_ERROR, "No memory for manifest proxy\n");
-    NaClDescUnref(kern_service->base.bound_and_cap[1]);
+    NaClDescUnref(kernel_service->base.bound_and_cap[1]);
     goto done;
   }
   if (!NaClManifestProxyCtor(manifest_proxy,
@@ -560,7 +560,7 @@ int NaClAppLaunchServiceThreads(struct NaClApp *nap) {
     /* do not leave a non-NULL pointer to a not-fully constructed object */
     free(manifest_proxy);
     manifest_proxy = NULL;
-    NaClDescUnref(kern_service->base.bound_and_cap[1]);
+    NaClDescUnref(kernel_service->base.bound_and_cap[1]);
     goto done;
   }
 
@@ -570,18 +570,18 @@ int NaClAppLaunchServiceThreads(struct NaClApp *nap) {
   if (!NaClSimpleServiceStartServiceThread((struct NaClSimpleService *)
                                            manifest_proxy)) {
     NaClLog(LOG_ERROR, "ManifestProxy start service failed\n");
-    NaClDescUnref(kern_service->base.bound_and_cap[1]);
+    NaClDescUnref(kernel_service->base.bound_and_cap[1]);
     goto done;
   }
 
   NaClXMutexLock(&nap->mu);
   CHECK(NULL == nap->manifest_proxy);
-  CHECK(NULL == nap->kern_service);
+  CHECK(NULL == nap->kernel_service);
 
   nap->manifest_proxy = manifest_proxy;
   manifest_proxy = NULL;
-  nap->kern_service = kern_service;
-  kern_service = NULL;
+  nap->kernel_service = kernel_service;
+  kernel_service = NULL;
   NaClXMutexUnlock(&nap->mu);
   rv = 1;
 
@@ -596,14 +596,14 @@ done:
                       "ManifestNameService", NACL_ABI_O_RDWR,
                       NaClDescRef(nap->manifest_proxy->base.bound_and_cap[1]));
   }
-  if (NULL != nap->kern_service) {
+  if (NULL != nap->kernel_service) {
     NaClLog(3,
             ("NaClAppLaunchServiceThreads: adding kernel service to"
              " name service\n"));
     (*NACL_VTBL(NaClNameService, nap->name_service)->
      CreateDescEntry)(nap->name_service,
                       "KernelService", NACL_ABI_O_RDWR,
-                      NaClDescRef(nap->kern_service->base.bound_and_cap[1]));
+                      NaClDescRef(nap->kernel_service->base.bound_and_cap[1]));
   }
 
   NaClXMutexUnlock(&nap->mu);
@@ -618,7 +618,7 @@ done:
    * variable is set to NULL.
    */
   NaClRefCountSafeUnref((struct NaClRefCount *) manifest_proxy);
-  NaClRefCountSafeUnref((struct NaClRefCount *) kern_service);
+  NaClRefCountSafeUnref((struct NaClRefCount *) kernel_service);
   return rv;
 }
 

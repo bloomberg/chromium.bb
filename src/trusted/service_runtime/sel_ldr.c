@@ -158,7 +158,7 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
   nap->bootstrap_channel = NULL;
   nap->secure_service = NULL;
   nap->manifest_proxy = NULL;
-  nap->kern_service = NULL;
+  nap->kernel_service = NULL;
   nap->resource_phase = NACL_RESOURCE_PHASE_START;
   if (!NaClResourceNaClAppInit(&nap->resources, nap)) {
     goto cleanup_dynamic_load_mutex;

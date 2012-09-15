@@ -13,7 +13,7 @@
 #if 0  /* until toolchain propagation */
 #include <sys/nacl_kern_rpc.h>
 #else
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_kern_rpc.h"
+#include "native_client/src/trusted/service_runtime/include/sys/nacl_kernel_service.h"
 #endif
 #include <sys/nacl_name_service.h>
 
@@ -26,8 +26,8 @@ static int gNaClNameServiceConnCapDesc = -1;
 
 void NaClPluginLowLevelInitializationCompleteInternal(void) {
   int                     nameservice_conn_desc;
-  int                     kern_service_conn_cap_desc = -1;
-  int                     kern_service_desc;
+  int                     kernel_service_conn_cap_desc = -1;
+  int                     kernel_service_desc;
   struct NaClSrpcChannel  srpc_channel;
   int                     status;
 
@@ -63,27 +63,27 @@ void NaClPluginLowLevelInitializationCompleteInternal(void) {
           "KernelService",
           O_RDWR,
           &status,
-          &kern_service_conn_cap_desc)) {
+          &kernel_service_conn_cap_desc)) {
     NaClSrpcDtor(&srpc_channel);
     NaClLog(LOG_FATAL, "Name service lookup RPC for KernelService failed\n");
   }
   NaClSrpcDtor(&srpc_channel);
-  if (-1 == kern_service_conn_cap_desc) {
+  if (-1 == kernel_service_conn_cap_desc) {
     NaClLog(LOG_FATAL, "Name service lookup for KernelService failed, %d\n",
             status);
   }
-  if (-1 == (kern_service_desc = imc_connect(kern_service_conn_cap_desc))) {
-    (void) close(kern_service_conn_cap_desc);
+  if (-1 == (kernel_service_desc = imc_connect(kernel_service_conn_cap_desc))) {
+    (void) close(kernel_service_conn_cap_desc);
     NaClLog(LOG_FATAL, "Connect to KernelService failed\n");
   }
-  (void) close(kern_service_conn_cap_desc);
-  if (!NaClSrpcClientCtor(&srpc_channel, kern_service_desc)) {
-    (void) close(kern_service_desc);
+  (void) close(kernel_service_conn_cap_desc);
+  if (!NaClSrpcClientCtor(&srpc_channel, kernel_service_desc)) {
+    (void) close(kernel_service_desc);
     NaClLog(LOG_FATAL, "SRPC channel ctor to KernelService failed\n");
   }
   if (NACL_SRPC_RESULT_OK != NaClSrpcInvokeBySignature(
           &srpc_channel,
-          NACL_KERN_SERVICE_INITIALIZATION_COMPLETE)) {
+          NACL_KERNEL_SERVICE_INITIALIZATION_COMPLETE)) {
     NaClLog(LOG_FATAL, "KernelService init_done RPC failed!\n");
   }
   NaClSrpcDtor(&srpc_channel);
