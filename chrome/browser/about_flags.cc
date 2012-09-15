@@ -608,25 +608,11 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kDisableSoftwareRasterizer)
   },
   {
-    "enable-shadow-dom",
-    IDS_FLAGS_SHADOW_DOM_NAME,
-    IDS_FLAGS_SHADOW_DOM_DESCRIPTION,
+    "enable-experimental-webkit-features",
+    IDS_FLAGS_EXPERIMENTAL_WEBKIT_FEATURES_NAME,
+    IDS_FLAGS_EXPERIMENTAL_WEBKIT_FEATURES_DESCRIPTION,
     kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableShadowDOM)
-  },
-  {
-    "enable-style-scoped",
-    IDS_FLAGS_STYLE_SCOPED_NAME,
-    IDS_FLAGS_STYLE_SCOPED_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableStyleScoped)
-  },
-  {
-    "enable-css-regions",
-    IDS_FLAGS_CSS_REGIONS_NAME,
-    IDS_FLAGS_CSS_REGIONS_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableCssRegions)
+    SINGLE_VALUE_TYPE(switches::kEnableExperimentalWebKitFeatures)
   },
   {
     "enable-css-shaders",
@@ -634,13 +620,6 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_CSS_SHADERS_DESCRIPTION,
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableCssShaders)
-  },
-  {
-    "enable-css-variables",
-    IDS_FLAGS_CSS_VARIABLES_NAME,
-    IDS_FLAGS_CSS_VARIABLES_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableCssVariables)
   },
   {
     "enable-extension-activity-ui",

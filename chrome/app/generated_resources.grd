@@ -6149,35 +6149,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DISABLE_SOFTWARE_RASTERIZER_DESCRIPTION" desc="Description for the flag to disable using a software renderer.">
         Don't fall back to a 3D software rasterizer when the GPU cannot be used.
       </message>
-      <message name="IDS_FLAGS_SHADOW_DOM_NAME" desc="Name for the flag to enable Shadow DOM.">
-        Enable Shadow DOM.
+      <message name="IDS_FLAGS_EXPERIMENTAL_WEBKIT_FEATURES_NAME" desc="Name for the flag to enable experimental WebKit features.">
+        Enable experimental WebKit features.
       </message>
-      <message name="IDS_FLAGS_SHADOW_DOM_DESCRIPTION" desc="Description for the flag to enable Shadow DOM.">
-        This API allows web applications to use Web Components.
-      </message>
-      <message name="IDS_FLAGS_STYLE_SCOPED_NAME" desc="Name for the flag to enable &lt;style scoped&gt;.">
-        Enable &lt;style scoped&gt;.
-      </message>
-      <message name="IDS_FLAGS_STYLE_SCOPED_DESCRIPTION" desc="Description for the flag to enable &lt;style scoped&gt;.">
-        Honor the 'scoped' attribute in &amp;lt;style&amp;gt; elements.
-      </message>
-      <message name="IDS_FLAGS_CSS_REGIONS_NAME" desc="Name for the flag to enable CSS Regions.">
-        Enable CSS Regions.
-      </message>
-      <message name="IDS_FLAGS_CSS_REGIONS_DESCRIPTION" desc="Description for the flag to enable CSS Regions.">
-        Enable CSS Regions.
+      <message name="IDS_FLAGS_EXPERIMENTAL_WEBKIT_FEATURES_DESCRIPTION" desc="Description for the flag to enable experimental WebKit features.">
+        Enable experimental WebKit features that are in development.
       </message>
       <message name="IDS_FLAGS_CSS_SHADERS_NAME" desc="Name for the flag to enable CSS Shaders.">
         Enable CSS Shaders.
       </message>
       <message name="IDS_FLAGS_CSS_SHADERS_DESCRIPTION" desc="Description for the flag to enable CSS Shaders.">
         Enable filter effects on DOM elements using custom GLSL shaders. More info at https://dvcs.w3.org/hg/FXTF/raw-file/tip/filters/index.html#feCustomElement.
-      </message>
-      <message name="IDS_FLAGS_CSS_VARIABLES_NAME" desc="Name for the flag to enable CSS Variables.">
-        Enable CSS Variables.
-      </message>
-      <message name="IDS_FLAGS_CSS_VARIABLES_DESCRIPTION" desc="Description for the flag to enable CSS Variables.">
-        Enable CSS Variables.
       </message>
       <message name="IDS_FLAGS_APP_INSTALL_HINT_NAME" desc="Name for the flag to show the app install hint on the NTP.">
         NTP App Install Hint

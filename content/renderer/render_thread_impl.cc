@@ -700,13 +700,13 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   WebRuntimeFeatures::enableQuota(true);
 
   WebRuntimeFeatures::enableShadowDOM(
-      command_line.HasSwitch(switches::kEnableShadowDOM));
+      command_line.HasSwitch(switches::kEnableExperimentalWebKitFeatures));
 
   WebRuntimeFeatures::enableStyleScoped(
-      command_line.HasSwitch(switches::kEnableStyleScoped));
+      command_line.HasSwitch(switches::kEnableExperimentalWebKitFeatures));
 
   WebRuntimeFeatures::enableCSSExclusions(
-      command_line.HasSwitch(switches::kEnableCssExclusions));
+      command_line.HasSwitch(switches::kEnableExperimentalWebKitFeatures));
 
   FOR_EACH_OBSERVER(RenderProcessObserver, observers_, WebKitInitialized());
 
