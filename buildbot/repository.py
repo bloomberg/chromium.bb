@@ -177,7 +177,11 @@ class RepoRepository(object):
                       replace .repo/manifest.xml.
       extra_args: Extra args to pass to 'repo init'
     """
-    # Base command.
+    # Wipe local_manifest.xml if it exists- it can interfere w/ things in
+    # bad ways (duplicate projects, etc); we control this repository, thus
+    # we can destroy it.
+    osutils.SafeUnlink(os.path.join(self.directory, 'local_manifest.xml'))
+
     # Force a repo self update first; during reinit, repo doesn't do the
     # update itself, but we could be doing the init on a repo version less
     # then v1.9.4, which didn't have proper support for doing reinit that
@@ -191,7 +195,8 @@ class RepoRepository(object):
       try:
         cros_build_lib.RunCommand(['repo', 'selfupdate'], cwd=self.directory)
       except cros_build_lib.RunCommandError:
-        shutil.rmtree(os.path.join(self.directory, '.repo', 'repo'))
+        osutils.RmDir(os.path.join(self.directory, '.repo', 'repo'),
+                      ignore_missing=True)
       self._repo_update_needed = False
 
     init_cmd = self._INIT_CMD + ['--manifest-url', self.repo_url]
