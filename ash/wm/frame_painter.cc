@@ -378,8 +378,10 @@ void FramePainter::PaintHeader(views::NonClientFrameView* view,
 
   // Separator between the maximize and close buttons.  It overlaps the left
   // edge of the close button.
+  gfx::Rect divider(close_button_->x(), close_button_->y(),
+                    button_separator_->width(), close_button_->height());
   canvas->DrawImageInt(*button_separator_,
-                       close_button_->x(),
+                       view->GetMirroredXForRect(divider),
                        close_button_->y());
 
   // We don't need the extra lightness in the edges when we're at the top edge
