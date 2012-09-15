@@ -61,14 +61,15 @@ void RemoveSharedMemoryFile(const std::string& filename) {
 bool IsCrosPythonProcess() {
 #if defined(OS_CHROMEOS)
   char buf[80];
-  int num_read = readlink("/proc/self/exe", buf, sizeof(buf) - 1);
+  int num_read = readlink(base::kProcSelfExe, buf, sizeof(buf) - 1);
   if (num_read == -1)
     return false;
   buf[num_read] = 0;
   const char kPythonPrefix[] = "/python";
   return !strncmp(strrchr(buf, '/'), kPythonPrefix, sizeof(kPythonPrefix) - 1);
-#endif  // defined(OS_CHROMEOS)
+#else
   return false;
+#endif  // defined(OS_CHROMEOS)
 }
 
 // In many cases it may be not obvious that a test makes a real DNS lookup.

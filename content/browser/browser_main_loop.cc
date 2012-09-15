@@ -81,6 +81,8 @@
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 #include <sys/stat.h>
+
+#include "base/process_util.h"
 #include "content/browser/renderer_host/render_sandbox_host_linux.h"
 #include "content/browser/zygote_host/zygote_host_impl_linux.h"
 #endif
@@ -108,7 +110,7 @@ void SetupSandbox(const CommandLine& parsed_command_line) {
   // In Chromium branded builds, developers can set an environment variable to
   // use the development sandbox. See
   // http://code.google.com/p/chromium/wiki/LinuxSUIDSandboxDevelopment
-  if (stat("/proc/self/exe", &st) == 0 && st.st_uid == getuid())
+  if (stat(base::kProcSelfExe, &st) == 0 && st.st_uid == getuid())
     sandbox_binary = getenv("CHROME_DEVEL_SANDBOX");
 
 #if defined(LINUX_SANDBOX_PATH)

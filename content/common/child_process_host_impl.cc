@@ -98,7 +98,7 @@ FilePath ChildProcessHost::GetChildPath(int flags) {
   // Valgrind executable, which then crashes. However, it's almost safe to
   // assume that the updates won't happen while testing with Valgrind tools.
   if (child_path.empty() && flags & CHILD_ALLOW_SELF && !RunningOnValgrind())
-    child_path = FilePath("/proc/self/exe");
+    child_path = FilePath(base::kProcSelfExe);
 #endif
 
   // On most platforms, the child executable is the same as the current

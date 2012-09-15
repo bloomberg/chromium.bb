@@ -21,6 +21,7 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/process_util.h"
 #include "base/string_util.h"
 // Linux/glibc doesn't natively have setproctitle().
 #include "content/common/set_process_title_linux.h"
@@ -46,7 +47,7 @@ void SetProcessTitleFromCommandLine(const char** main_argv) {
   // use the path it points at for our process title. Note that this is only for
   // display purposes and has no TOCTTOU security implications.
   FilePath target;
-  FilePath self_exe("/proc/self/exe");
+  FilePath self_exe(base::kProcSelfExe);
   if (file_util::ReadSymbolicLink(self_exe, &target)) {
     have_argv0 = true;
     title = target.value();
