@@ -65,6 +65,12 @@ class DefaultTransportFactory
     return NULL;
   }
 
+  virtual scoped_refptr<ui::Texture> CreateOwnedTexture(
+      const gfx::Size& size,
+      unsigned int texture_id) OVERRIDE {
+    return NULL;
+  }
+
   virtual GLHelper* GetGLHelper() OVERRIDE {
     return NULL;
   }
@@ -111,6 +117,49 @@ class ImageTransportClientTexture : public ui::Texture {
   WebKit::WebGraphicsContext3D* host_context_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageTransportClientTexture);
+};
+
+class OwnedTexture : public ui::Texture, ImageTransportFactoryObserver {
+ public:
+  OwnedTexture(WebKit::WebGraphicsContext3D* host_context,
+               const gfx::Size& size,
+               unsigned int texture_id)
+      : ui::Texture(true, size),
+        host_context_(host_context) {
+    ImageTransportFactory::GetInstance()->AddObserver(this);
+    set_texture_id(texture_id);
+  }
+
+  // ui::Texture overrides:
+  virtual WebKit::WebGraphicsContext3D* HostContext3D() OVERRIDE {
+    return host_context_;
+  }
+
+  // ImageTransportFactory overrides:
+  virtual void OnLostResources() OVERRIDE {
+    DeleteTexture();
+  }
+
+ protected:
+  virtual ~OwnedTexture() {
+    ImageTransportFactory::GetInstance()->RemoveObserver(this);
+    DeleteTexture();
+  }
+
+ private:
+  void DeleteTexture() {
+    if (texture_id()) {
+      host_context_->deleteTexture(texture_id());
+      set_texture_id(0);
+    }
+  }
+
+  // A raw pointer. This |ImageTransportClientTexture| will be destroyed
+  // before the |host_context_| via
+  // |ImageTransportFactoryObserver::OnLostContext()| handlers.
+  WebKit::WebGraphicsContext3D* host_context_;
+
+  DISALLOW_COPY_AND_ASSIGN(OwnedTexture);
 };
 
 class GpuProcessTransportFactory;
@@ -238,6 +287,16 @@ class GpuProcessTransportFactory :
     scoped_refptr<ImageTransportClientTexture> image(
         new ImageTransportClientTexture(shared_context_.get(),
                                         size, transport_handle));
+    return image;
+  }
+
+  virtual scoped_refptr<ui::Texture> CreateOwnedTexture(
+      const gfx::Size& size,
+      unsigned int texture_id) OVERRIDE {
+    if (!shared_context_.get())
+        return NULL;
+    scoped_refptr<OwnedTexture> image(
+        new OwnedTexture(shared_context_.get(), size, texture_id));
     return image;
   }
 

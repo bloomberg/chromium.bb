@@ -1316,7 +1316,7 @@ scoped_refptr<ui::Texture> RenderWidgetHostViewAura::CopyTexture() {
     return scoped_refptr<ui::Texture>();
 
   return scoped_refptr<ui::Texture>(
-      factory->CreateTransportClient(container->size(), texture_id));
+      factory->CreateOwnedTexture(container->size(), texture_id));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

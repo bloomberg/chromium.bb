@@ -75,6 +75,12 @@ class ImageTransportFactory {
       const gfx::Size& size,
       uint64 transport_handle) = 0;
 
+  // Variant of CreateTransportClient() that deletes the texture on the GPU when
+  // the returned value is deleted.
+  virtual scoped_refptr<ui::Texture> CreateOwnedTexture(
+      const gfx::Size& size,
+      unsigned int texture_id) = 0;
+
   // Gets a GLHelper instance, associated with the shared context. This
   // GLHelper will get destroyed whenever the shared context is lost
   // (ImageTransportFactoryObserver::OnLostResources is called).
