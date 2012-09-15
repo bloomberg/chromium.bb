@@ -9,7 +9,6 @@ include_rules = [
   # Other libraries.
   "+third_party/iaccessible2",
   "+third_party/isimpledom",
-  "+third_party/smhasher",
   "+third_party/speex",
 
   # DO NOT ADD ANY CHROME INCLUDES HERE!!!

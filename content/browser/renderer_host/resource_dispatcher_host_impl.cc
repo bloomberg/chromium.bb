@@ -34,7 +34,6 @@
 #include "content/browser/renderer_host/async_resource_handler.h"
 #include "content/browser/renderer_host/buffered_resource_handler.h"
 #include "content/browser/renderer_host/cross_site_resource_handler.h"
-#include "content/browser/renderer_host/duplicate_content_resource_handler.h"
 #include "content/browser/renderer_host/redirect_to_file_resource_handler.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -1032,16 +1031,6 @@ void ResourceDispatcherHostImpl::BeginRequest(
   // Insert a buffered event handler before the actual one.
   handler.reset(
       new BufferedResourceHandler(handler.Pass(), this, request));
-
-  // This is an experiment that observes resources and observes how many are
-  // duplicated and how many of those duplicated resources are from the same
-  // and different URLs by storing the hash of the resource and the hash of the
-  // resource with the URL.
-  // TODO(frankwang, gavinp): Clean up this experiment.
-  handler.reset(
-      new DuplicateContentResourceHandler(handler.Pass(),
-                                          request_data.resource_type,
-                                          request));
 
   ScopedVector<ResourceThrottle> throttles;
   if (delegate_) {
