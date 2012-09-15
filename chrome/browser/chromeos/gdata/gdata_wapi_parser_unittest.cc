@@ -53,6 +53,9 @@ class GDataWAPIParserTest : public testing::Test {
   }
 };
 
+// TODO(nhiroki): Make it possible to run these tests on any platforms after
+// moving json files to out of 'chromeos' directory (http://crbug.com/149788).
+#if defined(OS_CHROMEOS)
 // Test document feed parsing.
 TEST_F(GDataWAPIParserTest, DocumentFeedJsonParser) {
   std::string error;
@@ -332,6 +335,7 @@ TEST_F(GDataWAPIParserTest, AccountMetadataFeedParser) {
   EXPECT_EQ(1U, second_app->primary_extensions().size());
   EXPECT_EQ(0U, second_app->secondary_extensions().size());
 }
+#endif  // OS_CHROMEOS
 
 // Test file extension checking in DocumentEntry::HasDocumentExtension().
 TEST_F(GDataWAPIParserTest, DocumentEntryHasDocumentExtension) {

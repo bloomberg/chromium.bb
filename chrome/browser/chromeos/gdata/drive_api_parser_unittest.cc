@@ -23,6 +23,9 @@ using base::ListValue;
 
 namespace gdata {
 
+// TODO(nhiroki): Make it possible to run these tests on any platforms after
+// moving json files to out of 'chromeos' directory (http://crbug.com/149788).
+#if defined(OS_CHROMEOS)
 // Test about resource parsing.
 TEST(DriveAPIParserTest, AboutResourceParser) {
   std::string error;
@@ -258,5 +261,6 @@ TEST(DriveAPIParserTest, ChangeListParser) {
   EXPECT_FALSE(change3.is_deleted());
   EXPECT_EQ(change3.file_id(), change3.file().file_id());
 }
+#endif  // OS_CHROMEOS
 
 }  // namespace gdata
