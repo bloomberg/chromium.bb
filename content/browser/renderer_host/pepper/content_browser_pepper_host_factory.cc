@@ -29,11 +29,8 @@ scoped_ptr<ResourceHost> ContentBrowserPepperHostFactory::CreateResourceHost(
   DCHECK(host == host_->GetPpapiHost());
 
   // Make sure the plugin is giving us a valid instance for this resource.
-  /* TODO(brettw) make this work. The browser should be aware of all valid
-     instances.
   if (!host_->IsValidInstance(instance))
     return scoped_ptr<ResourceHost>();
-  */
 
   // Public interfaces with no permissions required.
   switch (message.type()) {

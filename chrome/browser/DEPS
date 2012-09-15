@@ -13,6 +13,7 @@ include_rules = [
   "+media/base",  # For media switches
   "+policy",  # For generated headers and source
   "+ppapi/c",  # For various types.
+  "+ppapi/host",
   "+ppapi/proxy",
   "+ppapi/shared_impl/api_id.h",
   # Defines some types that are marshalled over IPC.

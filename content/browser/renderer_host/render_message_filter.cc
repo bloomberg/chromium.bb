@@ -363,6 +363,10 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
                                     OnOpenChannelToPlugin)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_OpenChannelToPepperPlugin,
                                     OnOpenChannelToPepperPlugin)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DidCreateOutOfProcessPepperInstance,
+                        OnDidCreateOutOfProcessPepperInstance)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DidDeleteOutOfProcessPepperInstance,
+                        OnDidDeleteOutOfProcessPepperInstance)
     IPC_MESSAGE_HANDLER(ViewHostMsg_OpenChannelToPpapiBroker,
                         OnOpenChannelToPpapiBroker)
     IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_UpdateRect,
@@ -673,6 +677,27 @@ void RenderMessageFilter::OnOpenChannelToPepperPlugin(
   plugin_service_->OpenChannelToPpapiPlugin(
       path, profile_data_directory_, new OpenChannelToPpapiPluginCallback(
           this, resource_context_, reply_msg));
+}
+
+void RenderMessageFilter::OnDidCreateOutOfProcessPepperInstance(
+    int plugin_child_id,
+    int32 pp_instance,
+    int render_view_id) {
+  // It's important that we supply the render process ID ourselves based on the
+  // channel the message arrived on. We use the
+  //   PP_Instance -> (process id, view id)
+  // mapping to decide how to handle messages received from the (untrusted)
+  // plugin, so an exploited renderer must not be able to insert fake mappings
+  // that may allow it access to other render processes.
+  PpapiPluginProcessHost::DidCreateOutOfProcessInstance(
+      plugin_child_id, pp_instance, render_process_id_, render_view_id);
+}
+
+void RenderMessageFilter::OnDidDeleteOutOfProcessPepperInstance(
+    int plugin_child_id,
+    int32 pp_instance) {
+  PpapiPluginProcessHost::DidDeleteOutOfProcessInstance(
+      plugin_child_id, pp_instance);
 }
 
 void RenderMessageFilter::OnOpenChannelToPpapiBroker(int routing_id,

@@ -54,6 +54,7 @@ class AccessTokenStore;
 class BrowserChildProcessHost;
 class BrowserContext;
 class BrowserMainParts;
+class BrowserPpapiHost;
 class BrowserURLHandler;
 class MediaObserver;
 class QuotaPermissionContext;
@@ -433,6 +434,11 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Returns the default filename used in downloads when we have no idea what
   // else we should do with the file.
   virtual std::string GetDefaultDownloadName();
+
+  // Notifification that a pepper plugin has just been spawned. This allows the
+  // embedder to add filters onto the host to implement interfaces.
+  // This is called on the IO thread.
+  virtual void DidCreatePpapiPlugin(BrowserPpapiHost* browser_host) {}
 
   // Returns true if renderer processes can use Pepper TCP/UDP sockets from
   // the given origin.

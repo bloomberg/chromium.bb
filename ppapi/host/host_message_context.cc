@@ -15,7 +15,8 @@ HostMessageContext::HostMessageContext(
 HostMessageContext::~HostMessageContext() {
 }
 
-ppapi::proxy::ResourceMessageReplyParams HostMessageContext::MakeReplyParams() {
+ppapi::proxy::ResourceMessageReplyParams
+HostMessageContext::MakeReplyParams() const {
   return ppapi::proxy::ResourceMessageReplyParams(params.pp_resource(),
                                                   params.sequence());
 }

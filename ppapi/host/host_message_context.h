@@ -21,7 +21,7 @@ struct PPAPI_HOST_EXPORT HostMessageContext {
 
   // Returns a "reply params" struct with the same resource and sequence number
   // as this request.
-  ppapi::proxy::ResourceMessageReplyParams MakeReplyParams();
+  ppapi::proxy::ResourceMessageReplyParams MakeReplyParams() const;
 
   // The original call parameters passed to the resource message call.
   const ppapi::proxy::ResourceMessageCallParams& params;

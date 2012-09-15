@@ -26,7 +26,7 @@ int32_t GetDeviceID(PP_Resource resource,
   EnterResource<PPB_Flash_DeviceID_API> enter(resource, callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->GetDeviceID(id, callback));
+  return enter.SetResult(enter.object()->GetDeviceID(id, enter.callback()));
 }
 
 const PPB_Flash_DeviceID g_ppb_flash_deviceid_thunk = {

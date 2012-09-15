@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_PEPPER_BROWSER_PPAPI_HOST_IMPL_H_
 #define CONTENT_BROWSER_RENDERER_HOST_PEPPER_BROWSER_PPAPI_HOST_IMPL_H_
 
+#include <map>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "content/browser/renderer_host/pepper/content_browser_pepper_host_factory.h"
@@ -35,19 +37,40 @@ class CONTENT_EXPORT BrowserPpapiHostImpl
   // BrowserPpapiHost.
   virtual ppapi::host::PpapiHost* GetPpapiHost() OVERRIDE;
   virtual base::ProcessHandle GetPluginProcessHandle() const OVERRIDE;
+  virtual bool IsValidInstance(PP_Instance instance) const OVERRIDE;
+  virtual bool GetRenderViewIDsForInstance(PP_Instance instance,
+                                           int* render_process_id,
+                                           int* render_view_id) const OVERRIDE;
 
   void set_plugin_process_handle(base::ProcessHandle handle) {
     plugin_process_handle_ = handle;
   }
 
+  // These two functions are notifications that an instance has been created
+  // or destroyed. They allow us to maintain a mapping of PP_Instance to view
+  // IDs in the browser process.
+  void AddInstanceForView(PP_Instance instance,
+                          int render_process_id,
+                          int render_view_id);
+  void DeleteInstanceForView(PP_Instance instance);
+
  private:
   friend class BrowserPpapiHostTest;
 
+  struct RenderViewIDs {
+    int process_id;
+    int view_id;
+  };
+  typedef std::map<PP_Instance, RenderViewIDs> InstanceToViewMap;
+
   virtual ~BrowserPpapiHostImpl();
 
-  ContentBrowserPepperHostFactory host_factory_;
   ppapi::host::PpapiHost ppapi_host_;
   base::ProcessHandle plugin_process_handle_;
+
+  // Tracks all PP_Instances in this plugin and maps them to
+  // RenderProcess/RenderView IDs.
+  InstanceToViewMap instance_to_view_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPpapiHostImpl);
 };

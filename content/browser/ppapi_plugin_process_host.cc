@@ -72,6 +72,7 @@ PpapiPluginProcessHost::~PpapiPluginProcessHost() {
   CancelRequests();
 }
 
+// static
 PpapiPluginProcessHost* PpapiPluginProcessHost::CreatePluginHost(
     const content::PepperPluginInfo& info,
     const FilePath& profile_data_directory,
@@ -85,6 +86,7 @@ PpapiPluginProcessHost* PpapiPluginProcessHost::CreatePluginHost(
   return NULL;
 }
 
+// static
 PpapiPluginProcessHost* PpapiPluginProcessHost::CreateBrokerHost(
     const content::PepperPluginInfo& info) {
   PpapiPluginProcessHost* plugin_host =
@@ -94,6 +96,48 @@ PpapiPluginProcessHost* PpapiPluginProcessHost::CreateBrokerHost(
 
   NOTREACHED();  // Init is not expected to fail.
   return NULL;
+}
+
+// static
+void PpapiPluginProcessHost::DidCreateOutOfProcessInstance(
+    int plugin_process_id,
+    int32 pp_instance,
+    int render_process_id,
+    int render_view_id) {
+  for (PpapiPluginProcessHostIterator iter; !iter.Done(); ++iter) {
+    if (iter->process_.get() &&
+        iter->process_->GetData().id == plugin_process_id) {
+      // Found the plugin.
+      iter->host_impl_->AddInstanceForView(pp_instance,
+                                           render_process_id, render_view_id);
+      return;
+    }
+  }
+  // We'll see this passed with a 0 process ID for the browser tag stuff that
+  // is currently in the process of being removed.
+  //
+  // TODO(brettw) When old browser tag impl is removed
+  // (PepperPluginDelegateImpl::CreateBrowserPluginModule passes a 0 plugin
+  // process ID) this should be converted to a NOTREACHED().
+  DCHECK(plugin_process_id == 0)
+      << "Renderer sent a bad plugin process host ID";
+}
+
+// static
+void PpapiPluginProcessHost::DidDeleteOutOfProcessInstance(
+    int plugin_process_id,
+    int32 pp_instance) {
+  for (PpapiPluginProcessHostIterator iter; !iter.Done(); ++iter) {
+    if (iter->process_.get() &&
+        iter->process_->GetData().id == plugin_process_id) {
+      // Found the plugin.
+      iter->host_impl_->DeleteInstanceForView(pp_instance);
+      return;
+    }
+  }
+  // Note: It's possible that the plugin process has already been deleted by
+  // the time this message is received. For example, it could have crashed.
+  // That's OK, we can just ignore this message.
 }
 
 bool PpapiPluginProcessHost::Send(IPC::Message* message) {
@@ -135,6 +179,8 @@ PpapiPluginProcessHost::PpapiPluginProcessHost(
   process_->GetHost()->AddFilter(filter_.get());
   process_->GetHost()->AddFilter(file_filter_.get());
   process_->GetHost()->AddFilter(host_impl_.get());
+
+  content::GetContentClient()->browser()->DidCreatePpapiPlugin(host_impl_);
 }
 
 PpapiPluginProcessHost::PpapiPluginProcessHost()

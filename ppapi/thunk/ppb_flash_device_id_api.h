@@ -2,7 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/ref_counted.h"
+#include "ppapi/thunk/ppapi_thunk_export.h"
+
 namespace ppapi {
+
+class TrackedCallback;
+
 namespace thunk {
 
 class PPAPI_THUNK_EXPORT PPB_Flash_DeviceID_API {
@@ -10,7 +16,7 @@ class PPAPI_THUNK_EXPORT PPB_Flash_DeviceID_API {
   virtual ~PPB_Flash_DeviceID_API() {}
 
   virtual int32_t GetDeviceID(PP_Var* id,
-                              const PP_CompletionCallback& callback) = 0;
+                              scoped_refptr<TrackedCallback> callback) = 0;
 };
 
 }  // namespace thunk

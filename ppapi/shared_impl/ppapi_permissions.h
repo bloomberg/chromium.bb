@@ -19,7 +19,7 @@ enum Permission {
 
   // Allows ability to bypass user-gesture checks for showing things like
   // file select dialogs.
-  PERMISSION_BYPASS_USER_GESTURE = 1 << 3
+  PERMISSION_BYPASS_USER_GESTURE = 1 << 3,
 
   // NOTE: If you add stuff be sure to update AllPermissions().
 };

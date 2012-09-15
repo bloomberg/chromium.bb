@@ -9,6 +9,7 @@
 #include "ppapi/c/trusted/ppb_image_data_trusted.h"
 #include "ppapi/proxy/connection.h"
 #include "ppapi/proxy/file_chooser_resource.h"
+#include "ppapi/proxy/flash_device_id_resource.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_globals.h"
 #include "ppapi/proxy/plugin_proxy_delegate.h"
@@ -21,7 +22,6 @@
 #include "ppapi/proxy/ppb_file_io_proxy.h"
 #include "ppapi/proxy/ppb_file_ref_proxy.h"
 #include "ppapi/proxy/ppb_file_system_proxy.h"
-#include "ppapi/proxy/ppb_flash_device_id_proxy.h"
 #include "ppapi/proxy/ppb_flash_menu_proxy.h"
 #include "ppapi/proxy/ppb_flash_message_loop_proxy.h"
 #include "ppapi/proxy/ppb_graphics_2d_proxy.h"
@@ -303,7 +303,7 @@ PP_Resource ResourceCreationProxy::CreateFileChooser(
 }
 
 PP_Resource ResourceCreationProxy::CreateFlashDeviceID(PP_Instance instance) {
-  return PPB_Flash_DeviceID_Proxy::CreateProxyResource(instance);
+  return (new FlashDeviceIDResource(GetConnection(), instance))->GetReference();
 }
 
 PP_Resource ResourceCreationProxy::CreateFlashMenu(

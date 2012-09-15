@@ -10,7 +10,7 @@ namespace content {
 MockRendererPpapiHost::MockRendererPpapiHost(RenderView* render_view,
                                              PP_Instance instance)
     : sink_(),
-      ppapi_host_(&sink_, NULL, ppapi::PpapiPermissions()),
+      ppapi_host_(&sink_, ppapi::PpapiPermissions()),
       render_view_(render_view),
       pp_instance_(instance),
       has_user_gesture_(false) {

@@ -65,6 +65,8 @@ const int kDRMIdentifierSize = (256 / 8) * 2;
 // The path to the file containing the DRM ID.
 // It is mirrored from
 //   chrome/browser/chromeos/system/drm_settings.cc
+// TODO(brettw) remove this when we remove the sync Device ID getter in
+// preference for the async one.
 const char kDRMIdentifierFile[] = "Pepper DRM ID.0";
 
 void CreateNetAddressListFromAddressList(
@@ -122,8 +124,7 @@ void PepperMessageFilter::OverrideThreadForMessage(
       message.type() == PpapiHostMsg_PPBTCPServerSocket_Listen::ID ||
       message.type() == PpapiHostMsg_PPBHostResolver_Resolve::ID) {
     *thread = BrowserThread::UI;
-  } else if (message.type() == PepperMsg_GetDeviceID::ID ||
-             message.type() == PpapiHostMsg_PPBFlashDeviceID_Get::ID) {
+  } else if (message.type() == PepperMsg_GetDeviceID::ID) {
     *thread = BrowserThread::FILE;
   }
 }
@@ -181,7 +182,6 @@ bool PepperMessageFilter::OnMessageReceived(const IPC::Message& msg,
     // Flash messages.
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_UpdateActivity, OnUpdateActivity)
     IPC_MESSAGE_HANDLER(PepperMsg_GetDeviceID, OnGetDeviceID)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlashDeviceID_Get, OnGetDeviceIDAsync)
     IPC_MESSAGE_HANDLER(PepperMsg_GetLocalDataRestrictions,
                         OnGetLocalDataRestrictions)
 
@@ -701,6 +701,8 @@ void PepperMessageFilter::OnUpdateActivity() {
 #endif
 }
 
+// TODO(brettw) remove this when we remove the sync Device ID getter in
+// preference for the async one.
 void PepperMessageFilter::OnGetDeviceID(std::string* id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   id->clear();
@@ -733,17 +735,6 @@ void PepperMessageFilter::OnGetDeviceID(std::string* id) {
     return;
   }
   id->assign(id_buf, kDRMIdentifierSize);
-}
-
-void PepperMessageFilter::OnGetDeviceIDAsync(int32_t routing_id,
-                                             PP_Resource resource) {
-  std::string result;
-  OnGetDeviceID(&result);
-  Send(new PpapiMsg_PPBFlashDeviceID_GetReply(ppapi::API_ID_PPB_FLASH_DEVICE_ID,
-                                              routing_id, resource,
-                                              result.empty() ? PP_ERROR_FAILED
-                                                             : PP_OK,
-                                              result));
 }
 
 void PepperMessageFilter::OnGetLocalDataRestrictions(

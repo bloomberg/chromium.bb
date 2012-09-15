@@ -23,11 +23,12 @@ RendererPpapiHostImpl::RendererPpapiHostImpl(
     webkit::ppapi::PluginModule* module,
     ppapi::proxy::HostDispatcher* dispatcher,
     const ppapi::PpapiPermissions& permissions)
-    : module_(module),
-      host_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+    : module_(module) {
   // Hook the PpapiHost up to the dispatcher for out-of-process communication.
   ppapi_host_.reset(
-      new ppapi::host::PpapiHost(dispatcher, &host_factory_, permissions));
+      new ppapi::host::PpapiHost(dispatcher, permissions));
+  ppapi_host_->AddHostFactoryFilter(scoped_ptr<ppapi::host::HostFactory>(
+      new ContentRendererPepperHostFactory(this)));
   dispatcher->AddFilter(ppapi_host_.get());
 }
 
@@ -35,13 +36,13 @@ RendererPpapiHostImpl::RendererPpapiHostImpl(
 RendererPpapiHostImpl::RendererPpapiHostImpl(
     webkit::ppapi::PluginModule* module,
     const ppapi::PpapiPermissions& permissions)
-    : module_(module),
-      host_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+    : module_(module) {
   // Hook the host up to the in-process router.
   in_process_router_.reset(new PepperInProcessRouter(this));
   ppapi_host_.reset(new ppapi::host::PpapiHost(
-      in_process_router_->GetRendererToPluginSender(),
-      &host_factory_, permissions));
+      in_process_router_->GetRendererToPluginSender(), permissions));
+  ppapi_host_->AddHostFactoryFilter(scoped_ptr<ppapi::host::HostFactory>(
+      new ContentRendererPepperHostFactory(this)));
 }
 
 RendererPpapiHostImpl::~RendererPpapiHostImpl() {

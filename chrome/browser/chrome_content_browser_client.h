@@ -198,6 +198,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   virtual void ClearCookies(content::RenderViewHost* rvh) OVERRIDE;
   virtual FilePath GetDefaultDownloadDirectory() OVERRIDE;
   virtual std::string GetDefaultDownloadName() OVERRIDE;
+  virtual void DidCreatePpapiPlugin(
+      content::BrowserPpapiHost* browser_host) OVERRIDE;
   virtual bool AllowPepperSocketAPI(content::BrowserContext* browser_context,
                                     const GURL& url) OVERRIDE;
   virtual bool AllowPepperPrivateFileAPI() OVERRIDE;

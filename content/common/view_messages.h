@@ -1908,6 +1908,28 @@ IPC_SYNC_MESSAGE_CONTROL1_2(ViewHostMsg_OpenChannelToPepperPlugin,
                             IPC::ChannelHandle /* handle to channel */,
                             int /* plugin_child_id */)
 
+// Notification that a native (non-NaCl) plugin has created a new plugin
+// instance. The parameters indicate the plugin process ID that we're creating
+// the instance for, and the routing ID of the render view that the plugin
+// instance is associated with. This allows us to create a mapping in the
+// browser process for what objects a given PP_Instance is associated with.
+//
+// This message must be sync even though it returns no parameters to avoid
+// a race condition with the plugin process. The plugin process sends messages
+// to the browser that assume the browser knows about the instance. We need to
+// sure that the browser actually knows about the instance before we tell the
+// plugin to run.
+IPC_SYNC_MESSAGE_CONTROL3_0(ViewHostMsg_DidCreateOutOfProcessPepperInstance,
+                            int /* plugin_child_id */,
+                            int32 /* pp_instance */,
+                            int /* view_routing_id */)
+
+// Notification that a native (non-NaCl) plugin has destroyed an instance. This
+// is the opposite if the "DidCreate" version above.
+IPC_MESSAGE_CONTROL2(ViewHostMsg_DidDeleteOutOfProcessPepperInstance,
+                     int /* plugin_child_id */,
+                     int32 /* pp_instance */)
+
 // A renderer sends this to the browser process when it wants to
 // create a ppapi broker.  The browser will create the broker process
 // if necessary, and will return a handle to the channel on success.

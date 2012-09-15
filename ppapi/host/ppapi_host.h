@@ -37,12 +37,11 @@ class ResourceHost;
 // corresponding replies.
 class PPAPI_HOST_EXPORT PpapiHost : public IPC::Sender, public IPC::Listener {
  public:
-  // The sender is the channel to the plugin for outgoing messages. The factory
-  // will be used to receive resource creation messages from the plugin. Both
-  // pointers are owned by the caller and must outlive this class.
-  PpapiHost(IPC::Sender* sender,
-            HostFactory* host_factory,
-            const PpapiPermissions& perms);
+  // The sender is the channel to the plugin for outgoing messages.
+  // Normally the creator will add filters for resource creation messages
+  // (AddHostFactoryFilter) and instance messages (AddInstanceMessageFilter)
+  // after construction.
+  PpapiHost(IPC::Sender* sender, const PpapiPermissions& perms);
   virtual ~PpapiHost();
 
   const PpapiPermissions& permissions() const { return permissions_; }
@@ -56,6 +55,10 @@ class PPAPI_HOST_EXPORT PpapiHost : public IPC::Sender, public IPC::Listener {
   // Sends the given reply message to the plugin.
   void SendReply(const proxy::ResourceMessageReplyParams& params,
                  const IPC::Message& msg);
+
+  // Adds the given host factory filter to the host. The PpapiHost will take
+  // ownership of the pointer.
+  void AddHostFactoryFilter(scoped_ptr<HostFactory> filter);
 
   // Adds the given message filter to the host. The PpapiHost will take
   // ownership of the pointer.
@@ -78,10 +81,13 @@ class PPAPI_HOST_EXPORT PpapiHost : public IPC::Sender, public IPC::Listener {
   // Non-owning pointer.
   IPC::Sender* sender_;
 
-  // Non-owning pointer.
-  HostFactory* host_factory_;
-
   PpapiPermissions permissions_;
+
+  // Filters for resource creation messages. Note that since we don't support
+  // deleting these dynamically we don't need to worry about modifications
+  // during iteration. If we add that capability, this should be replaced with
+  // an ObserverList.
+  ScopedVector<HostFactory> host_factory_filters_;
 
   // Filters for instance messages. Note that since we don't support deleting
   // these dynamically we don't need to worry about modifications during

@@ -26,10 +26,8 @@ const size_t kMaxResourcesPerPlugin = 1 << 14;
 }  // namespace
 
 PpapiHost::PpapiHost(IPC::Sender* sender,
-                     HostFactory* host_factory,
                      const PpapiPermissions& perms)
     : sender_(sender),
-      host_factory_(host_factory),
       permissions_(perms) {
 }
 
@@ -73,6 +71,9 @@ void PpapiHost::SendReply(const proxy::ResourceMessageReplyParams& params,
   Send(new PpapiPluginMsg_ResourceReply(params, msg));
 }
 
+void PpapiHost::AddHostFactoryFilter(scoped_ptr<HostFactory> filter) {
+  host_factory_filters_.push_back(filter.release());
+}
 
 void PpapiHost::AddInstanceMessageFilter(
     scoped_ptr<InstanceMessageFilter> filter) {
@@ -121,8 +122,15 @@ void PpapiHost::OnHostMsgResourceCreated(
   if (resources_.size() >= kMaxResourcesPerPlugin)
     return;
 
-  scoped_ptr<ResourceHost> resource_host(
-      host_factory_->CreateResourceHost(this, params, instance, nested_msg));
+  // Run through all filters until one grabs this message.
+  scoped_ptr<ResourceHost> resource_host;
+  DCHECK(!host_factory_filters_.empty());  // Caller forgot to add a factory.
+  for (size_t i = 0; i < host_factory_filters_.size(); i++) {
+    resource_host = host_factory_filters_[i]->CreateResourceHost(
+        this, params, instance, nested_msg).Pass();
+    if (resource_host.get())
+      break;
+  }
   if (!resource_host.get()) {
     NOTREACHED();
     return;

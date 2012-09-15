@@ -102,7 +102,6 @@ class RendererPpapiHostImpl
 
   webkit::ppapi::PluginModule* module_;  // Non-owning pointer.
 
-  ContentRendererPepperHostFactory host_factory_;
   scoped_ptr<ppapi::host::PpapiHost> ppapi_host_;
 
   // Null when running out-of-process.

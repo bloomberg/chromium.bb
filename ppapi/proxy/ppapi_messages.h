@@ -1549,6 +1549,12 @@ IPC_MESSAGE_CONTROL4(PpapiHostMsg_FileChooser_Show,
 IPC_MESSAGE_CONTROL1(PpapiPluginMsg_FileChooser_ShowReply,
                      std::vector<ppapi::PPB_FileRef_CreateInfo> /* files */)
 
+// Flash device ID.
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_FlashDeviceID_Create)
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_FlashDeviceID_GetDeviceID)
+IPC_MESSAGE_CONTROL1(PpapiPluginMsg_FlashDeviceID_GetDeviceIDReply,
+                     std::string /* id */)
+
 // Gamepad.
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_Gamepad_Create)
 
