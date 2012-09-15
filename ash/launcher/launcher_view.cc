@@ -1059,7 +1059,8 @@ void LauncherView::ShowContextMenuForView(views::View* source,
   // code.
   if (launcher_menu_runner_->RunMenuAt(
           source->GetWidget(), NULL, gfx::Rect(point, gfx::Size()),
-          views::MenuItemView::TOPLEFT, 0) == views::MenuRunner::MENU_DELETED)
+          views::MenuItemView::TOPLEFT, views::MenuRunner::CONTEXT_MENU) ==
+      views::MenuRunner::MENU_DELETED)
     return;
 
   Shell::GetInstance()->UpdateShelfVisibility();

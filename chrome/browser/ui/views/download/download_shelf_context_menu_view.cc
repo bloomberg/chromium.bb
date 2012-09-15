@@ -43,5 +43,5 @@ void DownloadShelfContextMenuView::Run(views::Widget* parent_widget,
       NULL,
       rect,
       position,
-      views::MenuRunner::HAS_MNEMONICS));
+      views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU));
 }

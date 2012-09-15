@@ -10,6 +10,7 @@
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_controller_delegate.h"
 #include "ui/views/controls/menu/menu_delegate.h"
+#include "ui/views/widget/widget.h"
 
 #if defined(OS_WIN)
 #include "base/win/win_util.h"
@@ -284,6 +285,10 @@ MenuRunner::RunResult MenuRunner::RunMenuAt(Widget* parent,
     display_change_listener_.reset(
         internal::DisplayChangeListener::Create(parent, this));
   }
+  if ((types & MenuRunner::CONTEXT_MENU) && parent->GetCurrentEvent())
+    anchor = parent->GetCurrentEvent()->IsGestureEvent() ?
+        MenuItemView::BOTTOMCENTER : MenuItemView::TOPLEFT;
+
   return holder_->RunMenuAt(parent, button, bounds, anchor, types);
 }
 

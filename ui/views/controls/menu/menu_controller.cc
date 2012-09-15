@@ -50,6 +50,10 @@ static const int kShowDelay = 400;
 // Amount of time from when the drop exits the menu and the menu is hidden.
 static const int kCloseOnExitTime = 1200;
 
+// If a context menu is invoked by touch, we shift the menu by this offset so
+// that the finger does not obscure the menu.
+static const int kCenteredContextMenuYOffset = -15;
+
 namespace views {
 
 namespace {
@@ -1091,6 +1095,8 @@ void MenuController::UpdateInitialLocation(
     // nicely and menus close prematurely.
     pending_state_.initial_bounds.Inset(0, 1);
   }
+  if (position == MenuItemView::BOTTOMCENTER)
+    pending_state_.initial_bounds.Offset(0, kCenteredContextMenuYOffset);
 
   // Reverse anchor position for RTL languages.
   if (base::i18n::IsRTL()) {

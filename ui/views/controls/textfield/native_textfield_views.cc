@@ -314,7 +314,8 @@ void NativeTextfieldViews::ShowContextMenuForView(View* source,
   UpdateContextMenu();
   if (context_menu_runner_->RunMenuAt(GetWidget(), NULL,
           gfx::Rect(point, gfx::Size()), views::MenuItemView::TOPLEFT,
-          MenuRunner::HAS_MNEMONICS) == MenuRunner::MENU_DELETED)
+          MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU) ==
+      MenuRunner::MENU_DELETED)
     return;
 }
 

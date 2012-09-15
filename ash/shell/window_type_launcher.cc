@@ -373,7 +373,8 @@ void WindowTypeLauncher::ShowContextMenuForView(views::View* source,
   menu_runner_.reset(new MenuRunner(root));
   if (menu_runner_->RunMenuAt(GetWidget(), NULL, gfx::Rect(point, gfx::Size()),
         MenuItemView::TOPLEFT,
-        MenuRunner::HAS_MNEMONICS) == MenuRunner::MENU_DELETED)
+        MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU) ==
+        MenuRunner::MENU_DELETED)
     return;
 }
 #endif  // !defined(OS_MACOSX)

@@ -125,7 +125,7 @@ void BrowserFrameAura::ShowContextMenuForView(views::View* source,
 
     if (menu_runner_->RunMenuAt(source->GetWidget(), NULL,
           gfx::Rect(p, gfx::Size(0,0)), views::MenuItemView::TOPLEFT,
-          views::MenuRunner::HAS_MNEMONICS) ==
+          views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU) ==
         views::MenuRunner::MENU_DELETED)
       return;
   }

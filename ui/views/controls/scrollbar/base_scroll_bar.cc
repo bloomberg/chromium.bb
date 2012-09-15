@@ -266,7 +266,8 @@ void BaseScrollBar::ShowContextMenuForView(View* source, const gfx::Point& p) {
   menu->AppendDelegateMenuItem(ScrollBarContextMenuCommand_ScrollPrev);
   menu->AppendDelegateMenuItem(ScrollBarContextMenuCommand_ScrollNext);
   if (menu_runner_->RunMenuAt(GetWidget(), NULL, gfx::Rect(p, gfx::Size()),
-          MenuItemView::TOPLEFT, MenuRunner::HAS_MNEMONICS) ==
+          MenuItemView::TOPLEFT, MenuRunner::HAS_MNEMONICS |
+          views::MenuRunner::CONTEXT_MENU) ==
       MenuRunner::MENU_DELETED)
     return;
 }
