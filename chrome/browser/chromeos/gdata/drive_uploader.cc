@@ -542,11 +542,11 @@ int64 DriveUploader::UploadFileInfo::SizeRemaining() const {
 
 std::string DriveUploader::UploadFileInfo::DebugString() const {
   return "title=[" + title +
-         "], file_path=[" + file_path.value() +
+         "], file_path=[" + file_path.AsUTF8Unsafe() +
          "], content_type=[" + content_type +
          "], content_length=[" + base::UintToString(content_length) +
          "], file_size=[" + base::UintToString(file_size) +
-         "], drive_path=[" + drive_path.value() +
+         "], drive_path=[" + drive_path.AsUTF8Unsafe() +
          "]";
 }
 

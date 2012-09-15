@@ -438,20 +438,24 @@ class DocumentEntry : public FeedEntry {
 
   // True if document entry is remotely hosted.
   bool is_hosted_document() const {
-    return ClassifyEntryKind(kind_) & KIND_OF_HOSTED_DOCUMENT;
+    return (ClassifyEntryKind(kind_) & KIND_OF_HOSTED_DOCUMENT) > 0;
   }
   // True if document entry hosted by Google Documents.
   bool is_google_document() const {
-    return ClassifyEntryKind(kind_) & KIND_OF_GOOGLE_DOCUMENT;
+    return (ClassifyEntryKind(kind_) & KIND_OF_GOOGLE_DOCUMENT) > 0;
   }
   // True if document entry is hosted by an external application.
   bool is_external_document() const {
-    return ClassifyEntryKind(kind_) & KIND_OF_EXTERNAL_DOCUMENT;
+    return (ClassifyEntryKind(kind_) & KIND_OF_EXTERNAL_DOCUMENT) > 0;
   }
   // True if document entry is a folder (collection).
-  bool is_folder() const { return ClassifyEntryKind(kind_) & KIND_OF_FOLDER; }
+  bool is_folder() const {
+    return (ClassifyEntryKind(kind_) & KIND_OF_FOLDER) > 0;
+  }
   // True if document entry is regular file.
-  bool is_file() const { return ClassifyEntryKind(kind_) & KIND_OF_FILE; }
+  bool is_file() const {
+    return (ClassifyEntryKind(kind_) & KIND_OF_FILE) > 0;
+  }
   // True if document entry can't be mapped to the file system.
   bool is_special() const {
     return !is_file() && !is_folder() && !is_hosted_document();

@@ -418,7 +418,7 @@ bool CreateDirectoryOperation::GetContentData(std::string* upload_content_type,
                           "http://schemas.google.com/docs/2007#folder");
   xml_writer.EndElement();  // Ends "category" element.
 
-  xml_writer.WriteElement("title", directory_name_);
+  xml_writer.WriteElement("title", FilePath(directory_name_).AsUTF8Unsafe());
 
   xml_writer.EndElement();  // Ends "entry" element.
   xml_writer.StopWriting();
@@ -459,7 +459,7 @@ bool CopyDocumentOperation::GetContentData(std::string* upload_content_type,
   xml_writer.AddAttribute("xmlns", "http://www.w3.org/2005/Atom");
 
   xml_writer.WriteElement("id", resource_id_);
-  xml_writer.WriteElement("title", new_name_);
+  xml_writer.WriteElement("title", FilePath(new_name_).AsUTF8Unsafe());
 
   xml_writer.EndElement();  // Ends "entry" element.
   xml_writer.StopWriting();
@@ -505,7 +505,7 @@ bool RenameResourceOperation::GetContentData(std::string* upload_content_type,
   xml_writer.StartElement("entry");
   xml_writer.AddAttribute("xmlns", "http://www.w3.org/2005/Atom");
 
-  xml_writer.WriteElement("title", new_name_);
+  xml_writer.WriteElement("title", FilePath(new_name_).AsUTF8Unsafe());
 
   xml_writer.EndElement();  // Ends "entry" element.
   xml_writer.StopWriting();
