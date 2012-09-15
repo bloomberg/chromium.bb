@@ -3471,9 +3471,9 @@ struct kernel_statfs {
     #define __NR__pread64   __NR_pread64
     #define __NR__pwrite64  __NR_pwrite64
     #define __NR__readahead __NR_readahead
-    #if defined(__ARM_EABI__)
-      /* On ARM, a 64-bit parameter has to be in an even-odd register pair.
-       * Hence these calls ignore their fourth argument (r3) so that their
+    #if defined(__ARM_EABI__) || defined(__mips__)
+      /* On ARM and MIPS, a 64-bit parameter has to be in an even-odd register
+       * pair. Hence these calls ignore their fourth argument (r3) so that their
        * fifth and sixth make such a pair (r4,r5).
        */
       #define LSS_LLARG_PAD 0,
