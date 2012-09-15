@@ -341,11 +341,7 @@ class SvnCheckout(CheckoutBase, SvnMixIn):
                 raise PatchApplicationFailed(
                     p, 'File exist but was about to be overwriten')
               self._check_output_svn(
-                  [
-                    'copy',
-                    os.path.join(self.project_path, p.source_filename),
-                    filepath
-                  ])
+                  ['copy', p.source_filename, p.filename])
             if p.diff_hunks:
               cmd = ['patch', '-p%s' % p.patchlevel, '--forward', '--force']
               stdout += subprocess2.check_output(
