@@ -14,10 +14,13 @@
 // --- in foo_tab_helper.h ---
 // class FooTabHelper : public WebContentsUserData<FooTabHelper> {
 //  public:
-//   explicit FooTabHelper(content::WebContents* contents);
 //   virtual ~FooTabHelper();
+//   // ... more public stuff here ...
+//  private:
+//   explicit FooTabHelper(content::WebContents* contents);
 //   static int kUserDataKey;
-//  // ... more stuff here ...
+//   friend class WebContentsUserData<FooTabHelper>;
+//   // ... more private stuff here ...
 // }
 // --- in foo_tab_helper.cc ---
 // int FooTabHelper::kUserDataKey;

@@ -51,9 +51,7 @@ class TabHelper : public content::WebContentsObserver,
     UPDATE_SHORTCUT   // Update icon for app shortcut.
   };
 
-  explicit TabHelper(content::WebContents* web_contents);
   virtual ~TabHelper();
-  static int kUserDataKey;
 
   void CreateApplicationShortcuts();
   bool CanCreateApplicationShortcuts() const;
@@ -115,6 +113,10 @@ class TabHelper : public content::WebContentsObserver,
   void SetAppIcon(const SkBitmap& app_icon);
 
  private:
+  explicit TabHelper(content::WebContents* web_contents);
+  static int kUserDataKey;
+  friend class WebContentsUserData<TabHelper>;
+
   // content::WebContentsObserver overrides.
   virtual void RenderViewCreated(
       content::RenderViewHost* render_view_host) OVERRIDE;

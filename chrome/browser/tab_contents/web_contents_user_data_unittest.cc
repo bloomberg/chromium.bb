@@ -16,17 +16,21 @@ namespace {
 class WebContentsAttachedClass1
     : public WebContentsUserData<WebContentsAttachedClass1> {
  public:
-  explicit WebContentsAttachedClass1(content::WebContents* contents) {}
   virtual ~WebContentsAttachedClass1() {}
+ private:
+  explicit WebContentsAttachedClass1(content::WebContents* contents) {}
   static int kUserDataKey;
+  friend class WebContentsUserData<WebContentsAttachedClass1>;
 };
 
 class WebContentsAttachedClass2
     : public WebContentsUserData<WebContentsAttachedClass2> {
  public:
-  explicit WebContentsAttachedClass2(content::WebContents* contents) {}
   virtual ~WebContentsAttachedClass2() {}
+ private:
+  explicit WebContentsAttachedClass2(content::WebContents* contents) {}
   static int kUserDataKey;
+  friend class WebContentsUserData<WebContentsAttachedClass2>;
 };
 
 int WebContentsAttachedClass1::kUserDataKey;

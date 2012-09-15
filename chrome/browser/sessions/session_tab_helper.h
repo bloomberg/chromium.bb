@@ -15,9 +15,7 @@
 class SessionTabHelper : public content::WebContentsObserver,
                          public WebContentsUserData<SessionTabHelper> {
  public:
-  explicit SessionTabHelper(content::WebContents* contents);
   virtual ~SessionTabHelper();
-  static int kUserDataKey;
 
   // Returns the identifier used by session restore for this tab.
   const SessionID& session_id() const { return session_id_; }
@@ -32,6 +30,10 @@ class SessionTabHelper : public content::WebContentsObserver,
   virtual void UserAgentOverrideSet(const std::string& user_agent) OVERRIDE;
 
  private:
+  explicit SessionTabHelper(content::WebContents* contents);
+  static int kUserDataKey;
+  friend class WebContentsUserData<SessionTabHelper>;
+
   // Unique identifier of the tab for session restore. This id is only unique
   // within the current session, and is not guaranteed to be unique across
   // sessions.

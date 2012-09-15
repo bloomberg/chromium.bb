@@ -12,9 +12,7 @@
 class MetroPinTabHelper : public content::WebContentsObserver,
                           public WebContentsUserData<MetroPinTabHelper> {
  public:
-  explicit MetroPinTabHelper(content::WebContents* tab_contents);
   virtual ~MetroPinTabHelper();
-  static int kUserDataKey;
 
   bool is_pinned() const { return is_pinned_; }
 
@@ -26,6 +24,10 @@ class MetroPinTabHelper : public content::WebContentsObserver,
       const content::FrameNavigateParams& params) OVERRIDE;
 
  private:
+  explicit MetroPinTabHelper(content::WebContents* tab_contents);
+  static int kUserDataKey;
+  friend class WebContentsUserData<MetroPinTabHelper>;
+
   // Queries the metro driver about the pinned state of the current URL.
   void UpdatePinnedStateForCurrentURL();
 
