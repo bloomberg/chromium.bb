@@ -14,7 +14,7 @@ class Browser;
 class ActionBoxButtonView : public views::MenuButton,
                             public views::MenuButtonListener {
  public:
-  explicit ActionBoxButtonView(Browser* browser);
+  explicit ActionBoxButtonView(Browser* browser, const gfx::Point& menu_offset);
   virtual ~ActionBoxButtonView();
 
   SkColor GetBackgroundColor();
@@ -29,6 +29,8 @@ class ActionBoxButtonView : public views::MenuButton,
                                    const gfx::Point& point) OVERRIDE;
 
   Browser* browser_;
+
+  gfx::Point menu_offset_;
 
   DISALLOW_COPY_AND_ASSIGN(ActionBoxButtonView);
 };

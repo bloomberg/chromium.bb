@@ -34,7 +34,7 @@ class ActionBoxMenu : public views::MenuDelegate,
   void Init();
 
   // Shows the menu relative to the specified button.
-  void RunMenu(views::MenuButton* menu_button);
+  void RunMenu(views::MenuButton* menu_button, gfx::Point menu_offset);
 
  private:
   // Overridden from views::MenuDelegate:

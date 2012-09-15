@@ -40,15 +40,15 @@ void ActionBoxMenu::Init() {
   PopulateMenu();
 }
 
-void ActionBoxMenu::RunMenu(views::MenuButton* menu_button) {
-  gfx::Point screen_location;
-  views::View::ConvertPointToScreen(menu_button, &screen_location);
+void ActionBoxMenu::RunMenu(views::MenuButton* menu_button,
+                            gfx::Point menu_offset) {
+  views::View::ConvertPointToScreen(menu_button, &menu_offset);
   menu_runner_.reset(new views::MenuRunner(root_));
   // Ignore the result since we don't need to handle a deleted menu specially.
   ignore_result(
       menu_runner_->RunMenuAt(menu_button->GetWidget(),
                               menu_button,
-                              gfx::Rect(screen_location, menu_button->size()),
+                              gfx::Rect(menu_offset, menu_button->size()),
                               views::MenuItemView::TOPRIGHT,
                               views::MenuRunner::HAS_MNEMONICS));
 }
