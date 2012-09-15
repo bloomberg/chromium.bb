@@ -104,14 +104,18 @@ NSString* const kFadeOutValueKeyPath = @"fadeOutValue";
       [gHoverMouseOverImage drawInRect:destRect
                               fromRect:imageRect
                              operation:NSCompositeSourceOver
-                              fraction:1.0];
+                              fraction:1.0
+                        respectFlipped:YES
+                                 hints:nil];
       break;
 
     case kHoverStateMouseDown:
       [gHoverMouseDownImage drawInRect:destRect
                               fromRect:imageRect
                              operation:NSCompositeSourceOver
-                              fraction:1.0];
+                              fraction:1.0
+                        respectFlipped:YES
+                                 hints:nil];
       break;
 
     default:
@@ -128,12 +132,16 @@ NSString* const kFadeOutValueKeyPath = @"fadeOutValue";
         [previousImage drawInRect:destRect
                          fromRect:imageRect
                         operation:NSCompositeSourceOver
-                         fraction:1.0 - value];
+                         fraction:1.0 - value
+                   respectFlipped:YES
+                            hints:nil];
       }
       [gHoverNoneImage drawInRect:destRect
                          fromRect:imageRect
                         operation:NSCompositeSourceOver
-                         fraction:value];
+                         fraction:value
+                   respectFlipped:YES
+                            hints:nil];
       break;
     }
   }
