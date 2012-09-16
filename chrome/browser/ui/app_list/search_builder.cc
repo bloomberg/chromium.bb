@@ -41,6 +41,7 @@
 #include "chrome/browser/autocomplete/contact_provider_chromeos.h"
 #include "chrome/browser/chromeos/contacts/contact.pb.h"
 #include "chrome/browser/chromeos/contacts/contact_manager.h"
+#include "chrome/browser/extensions/api/rtc_private/rtc_private_api.h"
 #include "chrome/browser/image_decoder.h"
 #include "chrome/common/chrome_switches.h"
 #endif
@@ -108,7 +109,7 @@ class SearchBuilderResult : public app_list::SearchResult {
   SearchBuilderResult() : profile_(NULL) {}
   virtual ~SearchBuilderResult() {}
 
-  Profile* profile() { return profile_; }
+  Profile* profile() const { return profile_; }
   const AutocompleteMatch& match() const { return match_; }
 
   virtual void Init(Profile* profile, const AutocompleteMatch& match) {
@@ -205,6 +206,18 @@ class ContactResult : public SearchBuilderResult,
       photo_decoder_->set_delegate(NULL);
   }
 
+  // Returns the contact represented by this result, or NULL if the contact
+  // can't be found (e.g. it's been deleted in the meantime).  The returned
+  // object is only valid until the UI message loop continues running.
+  const contacts::Contact* GetContact() const {
+    AutocompleteMatch::AdditionalInfo::const_iterator it =
+        match().additional_info.find(ContactProvider::kMatchContactIdKey);
+    DCHECK(it != match().additional_info.end());
+    return contacts::ContactManager::GetInstance()->GetContactById(
+        profile(), it->second);
+  }
+
+  // Overridden from SearchBuilderResult:
   virtual void Init(Profile* profile, const AutocompleteMatch& match) OVERRIDE {
     SearchBuilderResult::Init(profile, match);
 
@@ -238,13 +251,9 @@ class ContactResult : public SearchBuilderResult,
   }
 
  protected:
+  // Overridden from SearchBuilderResult:
   virtual void UpdateIcon() OVERRIDE {
-    AutocompleteMatch::AdditionalInfo::const_iterator it =
-        match().additional_info.find(ContactProvider::kMatchContactIdKey);
-    DCHECK(it != match().additional_info.end());
-    const contacts::Contact* contact =
-        contacts::ContactManager::GetInstance()->GetContactById(
-            profile(), it->second);
+    const contacts::Contact* contact = GetContact();
     if (contact && contact->has_raw_untrusted_photo()) {
       photo_decoder_ =
           new ImageDecoder(
@@ -344,7 +353,8 @@ void SearchBuilder::OpenResult(const app_list::SearchResult& result,
     }
 #if defined(OS_CHROMEOS)
   } else if (match.type == AutocompleteMatch::CONTACT) {
-    NOTIMPLEMENTED();
+    // Pass 0 for |action_index| to trigger a chat request.
+    InvokeResultAction(result, 0, event_flags);
 #endif
   } else {
     // TODO(xiyuan): What should we do for alternate url case?
@@ -359,6 +369,45 @@ void SearchBuilder::OpenResult(const app_list::SearchResult& result,
 void SearchBuilder::InvokeResultAction(const app_list::SearchResult& result,
                                        int action_index,
                                        int event_flags) {
+  const SearchBuilderResult* builder_result =
+      static_cast<const SearchBuilderResult*>(&result);
+  const AutocompleteMatch& match = builder_result->match();
+
+#if defined(OS_CHROMEOS)
+  if (match.type == AutocompleteMatch::CONTACT) {
+    const contacts::Contact* contact =
+        static_cast<const ContactResult*>(builder_result)->GetContact();
+    if (!contact)
+      return;
+
+    // Cases match the order in which actions were added in
+    // ContactResult::Init().
+    extensions::RtcPrivateEventRouter::LaunchAction launch_action =
+        extensions::RtcPrivateEventRouter::LAUNCH_CHAT;
+    switch (action_index) {
+      case 0:
+        launch_action = extensions::RtcPrivateEventRouter::LAUNCH_CHAT;
+        break;
+      case 1:
+        launch_action = extensions::RtcPrivateEventRouter::LAUNCH_VIDEO;
+        break;
+      case 2:
+        launch_action = extensions::RtcPrivateEventRouter::LAUNCH_VOICE;
+        break;
+      case 3:
+        // TODO(derat): Send email.
+        NOTIMPLEMENTED();
+        break;
+      default:
+        NOTREACHED() << "Unexpected action index " << action_index;
+    }
+
+    extensions::RtcPrivateEventRouter::DispatchLaunchEvent(
+        builder_result->profile(), launch_action, contact);
+    return;
+  }
+#endif
+
   NOTIMPLEMENTED();
 }
 

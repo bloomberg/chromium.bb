@@ -29,7 +29,7 @@ class RtcPrivateEventRouter {
   // event is related to a particilar contact.
   static void DispatchLaunchEvent(Profile* profile,
                                   LaunchAction action,
-                                  contacts::Contact* contact);
+                                  const contacts::Contact* contact);
 };
 
 }  // namespace extensions

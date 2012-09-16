@@ -11,7 +11,6 @@
 #include "base/utf_string_conversions.h"
 #include "base/value_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/contacts/contact_manager.h"
 #include "chrome/browser/chromeos/contacts/contact.pb.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -71,15 +70,15 @@ const char* GetLaunchAction(RtcPrivateEventRouter::LaunchAction action) {
 }
 
 // Creates JSON payload string for contact web intent data.
-void GetContactIntentData(Contact* contact,
+void GetContactIntentData(const Contact& contact,
                           DictionaryValue* dict) {
   // TODO(derat): This might require more name extraction magic than this.
-  dict->SetString(kNameIntentField, contact->full_name());
+  dict->SetString(kNameIntentField, contact.full_name());
 
   ListValue* phone_list = new base::ListValue();
   dict->Set(kPhoneIntentField, phone_list);
-  for (int i = 0; i < contact->phone_numbers_size(); i++) {
-    const Contact_PhoneNumber& phone_number = contact->phone_numbers(i);
+  for (int i = 0; i < contact.phone_numbers_size(); i++) {
+    const Contact_PhoneNumber& phone_number = contact.phone_numbers(i);
     StringValue* value = Value::CreateStringValue(phone_number.number());
     if (phone_number.primary())
       CHECK(phone_list->Insert(0, value));
@@ -89,8 +88,8 @@ void GetContactIntentData(Contact* contact,
 
   ListValue* email_list = new base::ListValue();
   dict->Set(kEmailIntentField, email_list);
-  for (int i = 0; i < contact->email_addresses_size(); i++) {
-    const Contact_EmailAddress& email_address = contact->email_addresses(i);
+  for (int i = 0; i < contact.email_addresses_size(); i++) {
+    const Contact_EmailAddress& email_address = contact.email_addresses(i);
     StringValue* value = Value::CreateStringValue(email_address.address());
     if (email_address.primary())
       CHECK(email_list->Insert(0, value));
@@ -102,7 +101,7 @@ void GetContactIntentData(Contact* contact,
 }  // namespace
 
 void RtcPrivateEventRouter::DispatchLaunchEvent(
-    Profile* profile, LaunchAction action, Contact* contact) {
+    Profile* profile, LaunchAction action, const Contact* contact) {
   if (action == RtcPrivateEventRouter::LAUNCH_ACTIVATE) {
     extensions::ExtensionSystem::Get(profile)->event_router()->
         DispatchEventToRenderers(
@@ -111,9 +110,10 @@ void RtcPrivateEventRouter::DispatchLaunchEvent(
             profile,
             GURL());
   } else {
+    DCHECK(contact);
     extensions::api::rtc_private::LaunchData launch_data;
     launch_data.intent.action = GetLaunchAction(action);
-    GetContactIntentData(contact,
+    GetContactIntentData(*contact,
                          &launch_data.intent.data.additional_properties);
     launch_data.intent.type = kMimeTypeJson;
     extensions::ExtensionSystem::Get(profile)->event_router()->
