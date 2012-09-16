@@ -224,6 +224,8 @@
         'common/instant_types.h',
         'common/json_pref_store.cc',
         'common/json_pref_store.h',
+        'common/json_schema_constants.cc',
+        'common/json_schema_constants.h',
         'common/json_schema_validator.cc',
         'common/json_schema_validator.h',
         'common/jstemplate_builder.cc',

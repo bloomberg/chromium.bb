@@ -16,8 +16,11 @@
 #include "chrome/browser/policy/configuration_policy_provider_test.h"
 #include "chrome/browser/policy/policy_bundle.h"
 #include "chrome/browser/policy/policy_map.h"
+#include "chrome/common/json_schema_constants.h"
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace schema = json_schema_constants;
 
 using base::win::RegKey;
 using namespace policy::registry_constants;
@@ -119,27 +122,27 @@ base::DictionaryValue* BuildSchema(const base::Value& value) {
   base::DictionaryValue* schema = new base::DictionaryValue();
   switch (value.GetType()) {
     case base::Value::TYPE_NULL:
-      schema->SetString(kType, "null");
+      schema->SetString(schema::kType, "null");
       break;
     case base::Value::TYPE_BOOLEAN:
-      schema->SetString(kType, "boolean");
+      schema->SetString(schema::kType, "boolean");
       break;
     case base::Value::TYPE_INTEGER:
-      schema->SetString(kType, "integer");
+      schema->SetString(schema::kType, "integer");
       break;
     case base::Value::TYPE_DOUBLE:
-      schema->SetString(kType, "number");
+      schema->SetString(schema::kType, "number");
       break;
     case base::Value::TYPE_STRING:
-      schema->SetString(kType, "string");
+      schema->SetString(schema::kType, "string");
       break;
 
     case base::Value::TYPE_LIST: {
       // Assumes every list element has the same type.
       const base::ListValue* list = NULL;
       if (value.GetAsList(&list) && !list->empty()) {
-        schema->SetString(kType, "array");
-        schema->Set(kItems, BuildSchema(**list->begin()));
+        schema->SetString(schema::kType, "array");
+        schema->Set(schema::kItems, BuildSchema(**list->begin()));
       }
       break;
     }
@@ -152,8 +155,8 @@ base::DictionaryValue* BuildSchema(const base::Value& value) {
              it.HasNext(); it.Advance()) {
           properties->Set(it.key(), BuildSchema(it.value()));
         }
-        schema->SetString(kType, "object");
-        schema->Set(kProperties, properties);
+        schema->SetString(schema::kType, "object");
+        schema->Set(schema::kProperties, properties);
       }
       break;
     }
@@ -576,16 +579,16 @@ TEST_F(PolicyLoaderWinTest, LoadIntegerEncodedValues) {
 TEST_F(PolicyLoaderWinTest, DefaultPropertySchemaType) {
   // Build a schema for an "object" with a default schema for its properties.
   base::DictionaryValue default_schema;
-  default_schema.SetString(kType, "number");
+  default_schema.SetString(schema::kType, "number");
   base::DictionaryValue integer_schema;
-  integer_schema.SetString(kType, "integer");
+  integer_schema.SetString(schema::kType, "integer");
   base::DictionaryValue properties;
   properties.Set("special-int1", integer_schema.DeepCopy());
   properties.Set("special-int2", integer_schema.DeepCopy());
   base::DictionaryValue schema;
-  schema.SetString(kType, "object");
-  schema.Set(kProperties, properties.DeepCopy());
-  schema.Set(kAdditionalProperties, default_schema.DeepCopy());
+  schema.SetString(schema::kType, "object");
+  schema.Set(schema::kProperties, properties.DeepCopy());
+  schema.Set(schema::kAdditionalProperties, default_schema.DeepCopy());
 
   const string16 kPathSuffix =
       kRegistryMandatorySubKey + ASCIIToUTF16("\\3rdparty\\extensions\\test");

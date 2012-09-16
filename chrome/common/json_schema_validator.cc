@@ -10,7 +10,10 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/values.h"
+#include "chrome/common/json_schema_constants.h"
 #include "ui/base/l10n/l10n_util.h"
+
+namespace schema = json_schema_constants;
 
 namespace {
 
@@ -71,27 +74,27 @@ const char JSONSchemaValidator::kInvalidType[] =
 std::string JSONSchemaValidator::GetJSONSchemaType(Value* value) {
   switch (value->GetType()) {
     case Value::TYPE_NULL:
-      return "null";
+      return schema::kNull;
     case Value::TYPE_BOOLEAN:
-      return "boolean";
+      return schema::kBoolean;
     case Value::TYPE_INTEGER:
-      return "integer";
+      return schema::kInteger;
     case Value::TYPE_DOUBLE: {
       double double_value = 0;
       value->GetAsDouble(&double_value);
       if (std::abs(double_value) <= std::pow(2.0, DBL_MANT_DIG) &&
           double_value == floor(double_value)) {
-        return "integer";
+        return schema::kInteger;
       } else {
-        return "number";
+        return schema::kNumber;
       }
     }
     case Value::TYPE_STRING:
-      return "string";
+      return schema::kString;
     case Value::TYPE_DICTIONARY:
-      return "object";
+      return schema::kObject;
     case Value::TYPE_LIST:
-      return "array";
+      return schema::kArray;
     default:
       NOTREACHED() << "Unexpected value type: " << value->GetType();
       return "";
@@ -131,7 +134,7 @@ JSONSchemaValidator::JSONSchemaValidator(DictionaryValue* schema,
     CHECK(types->GetDictionary(i, &type));
 
     std::string id;
-    CHECK(type->GetString("id", &id));
+    CHECK(type->GetString(schema::kId, &id));
 
     CHECK(types_.find(id) == types_.end());
     types_[id] = type;
@@ -151,7 +154,7 @@ void JSONSchemaValidator::Validate(Value* instance,
                                    const std::string& path) {
   // If this schema defines itself as reference type, save it in this.types.
   std::string id;
-  if (schema->GetString("id", &id)) {
+  if (schema->GetString(schema::kId, &id)) {
     TypeMap::iterator iter = types_.find(id);
     if (iter == types_.end())
       types_[id] = schema;
@@ -162,7 +165,7 @@ void JSONSchemaValidator::Validate(Value* instance,
   // If the schema has a $ref property, the instance must validate against
   // that schema. It must be present in types_ to be referenced.
   std::string ref;
-  if (schema->GetString("$ref", &ref)) {
+  if (schema->GetString(schema::kRef, &ref)) {
     TypeMap::iterator type = types_.find(ref);
     if (type == types_.end()) {
       errors_.push_back(
@@ -176,7 +179,7 @@ void JSONSchemaValidator::Validate(Value* instance,
   // If the schema has a choices property, the instance must validate against at
   // least one of the items in that array.
   ListValue* choices = NULL;
-  if (schema->GetList("choices", &choices)) {
+  if (schema->GetList(schema::kChoices, &choices)) {
     ValidateChoices(instance, choices, path);
     return;
   }
@@ -184,28 +187,28 @@ void JSONSchemaValidator::Validate(Value* instance,
   // If the schema has an enum property, the instance must be one of those
   // values.
   ListValue* enumeration = NULL;
-  if (schema->GetList("enum", &enumeration)) {
+  if (schema->GetList(schema::kEnum, &enumeration)) {
     ValidateEnum(instance, enumeration, path);
     return;
   }
 
   std::string type;
-  schema->GetString("type", &type);
+  schema->GetString(schema::kType, &type);
   CHECK(!type.empty());
-  if (type != "any") {
+  if (type != schema::kAny) {
     if (!ValidateType(instance, type, path))
       return;
 
     // These casts are safe because of checks in ValidateType().
-    if (type == "object")
+    if (type == schema::kObject)
       ValidateObject(static_cast<DictionaryValue*>(instance), schema, path);
-    else if (type == "array")
+    else if (type == schema::kArray)
       ValidateArray(static_cast<ListValue*>(instance), schema, path);
-    else if (type == "string")
+    else if (type == schema::kString)
       ValidateString(static_cast<StringValue*>(instance), schema, path);
-    else if (type == "number" || type == "integer")
+    else if (type == schema::kNumber || type == schema::kInteger)
       ValidateNumber(instance, schema, path);
-    else if (type != "boolean" && type != "null")
+    else if (type != schema::kBoolean && type != schema::kNull)
       NOTREACHED() << "Unexpected type: " << type;
   }
 }
@@ -268,7 +271,7 @@ void JSONSchemaValidator::ValidateObject(DictionaryValue* instance,
                                          DictionaryValue* schema,
                                          const std::string& path) {
   DictionaryValue* properties = NULL;
-  schema->GetDictionary("properties", &properties);
+  schema->GetDictionary(schema::kProperties, &properties);
   if (properties) {
     for (DictionaryValue::key_iterator key = properties->begin_keys();
          key != properties->end_keys(); ++key) {
@@ -283,7 +286,7 @@ void JSONSchemaValidator::ValidateObject(DictionaryValue* instance,
         // Properties are required unless there is an optional field set to
         // 'true'.
         bool is_optional = false;
-        prop_schema->GetBoolean("optional", &is_optional);
+        prop_schema->GetBoolean(schema::kOptional, &is_optional);
         if (!is_optional) {
           errors_.push_back(Error(prop_path, kObjectPropertyIsRequired));
         }
@@ -317,9 +320,9 @@ void JSONSchemaValidator::ValidateArray(ListValue* instance,
                                         const std::string& path) {
   DictionaryValue* single_type = NULL;
   size_t instance_size = instance->GetSize();
-  if (schema->GetDictionary("items", &single_type)) {
+  if (schema->GetDictionary(schema::kItems, &single_type)) {
     int min_items = 0;
-    if (schema->GetInteger("minItems", &min_items)) {
+    if (schema->GetInteger(schema::kMinItems, &min_items)) {
       CHECK(min_items >= 0);
       if (instance_size < static_cast<size_t>(min_items)) {
         errors_.push_back(Error(path, FormatErrorMessage(
@@ -328,7 +331,7 @@ void JSONSchemaValidator::ValidateArray(ListValue* instance,
     }
 
     int max_items = 0;
-    if (schema->GetInteger("maxItems", &max_items)) {
+    if (schema->GetInteger(schema::kMaxItems, &max_items)) {
       CHECK(max_items >= 0);
       if (instance_size > static_cast<size_t>(max_items)) {
         errors_.push_back(Error(path, FormatErrorMessage(
@@ -358,7 +361,7 @@ void JSONSchemaValidator::ValidateTuple(ListValue* instance,
                                         DictionaryValue* schema,
                                         const std::string& path) {
   ListValue* tuple_type = NULL;
-  schema->GetList("items", &tuple_type);
+  schema->GetList(schema::kItems, &tuple_type);
   size_t tuple_size = tuple_type ? tuple_type->GetSize() : 0;
   if (tuple_type) {
     for (size_t i = 0; i < tuple_size; ++i) {
@@ -372,7 +375,7 @@ void JSONSchemaValidator::ValidateTuple(ListValue* instance,
         Validate(item_value, item_schema, item_path);
       } else {
         bool is_optional = false;
-        item_schema->GetBoolean("optional", &is_optional);
+        item_schema->GetBoolean(schema::kOptional, &is_optional);
         if (!is_optional) {
           errors_.push_back(Error(item_path, kArrayItemRequired));
           return;
@@ -409,7 +412,7 @@ void JSONSchemaValidator::ValidateString(StringValue* instance,
   CHECK(instance->GetAsString(&value));
 
   int min_length = 0;
-  if (schema->GetInteger("minLength", &min_length)) {
+  if (schema->GetInteger(schema::kMinLength, &min_length)) {
     CHECK(min_length >= 0);
     if (value.size() < static_cast<size_t>(min_length)) {
       errors_.push_back(Error(path, FormatErrorMessage(
@@ -418,7 +421,7 @@ void JSONSchemaValidator::ValidateString(StringValue* instance,
   }
 
   int max_length = 0;
-  if (schema->GetInteger("maxLength", &max_length)) {
+  if (schema->GetInteger(schema::kMaxLength, &max_length)) {
     CHECK(max_length >= 0);
     if (value.size() > static_cast<size_t>(max_length)) {
       errors_.push_back(Error(path, FormatErrorMessage(
@@ -426,7 +429,7 @@ void JSONSchemaValidator::ValidateString(StringValue* instance,
     }
   }
 
-  CHECK(!schema->HasKey("pattern")) << "Pattern is not supported.";
+  CHECK(!schema->HasKey(schema::kPattern)) << "Pattern is not supported.";
 }
 
 void JSONSchemaValidator::ValidateNumber(Value* instance,
@@ -438,14 +441,14 @@ void JSONSchemaValidator::ValidateNumber(Value* instance,
   // but isnan and isinf aren't defined on Windows.
 
   double minimum = 0;
-  if (schema->GetDouble("minimum", &minimum)) {
+  if (schema->GetDouble(schema::kMinimum, &minimum)) {
     if (value < minimum)
       errors_.push_back(Error(path, FormatErrorMessage(
           kNumberMinimum, base::DoubleToString(minimum))));
   }
 
   double maximum = 0;
-  if (schema->GetDouble("maximum", &maximum)) {
+  if (schema->GetDouble(schema::kMaximum, &maximum)) {
     if (value > maximum)
       errors_.push_back(Error(path, FormatErrorMessage(
           kNumberMaximum, base::DoubleToString(maximum))));
@@ -457,7 +460,7 @@ bool JSONSchemaValidator::ValidateType(Value* instance,
                                        const std::string& path) {
   std::string actual_type = GetJSONSchemaType(instance);
   if (expected_type == actual_type ||
-      (expected_type == "number" && actual_type == "integer")) {
+      (expected_type == schema::kNumber && actual_type == schema::kInteger)) {
     return true;
   } else {
     errors_.push_back(Error(path, FormatErrorMessage(
@@ -470,13 +473,14 @@ bool JSONSchemaValidator::SchemaAllowsAnyAdditionalItems(
     DictionaryValue* schema, DictionaryValue** additional_properties_schema) {
   // If the validator allows additional properties globally, and this schema
   // doesn't override, then we can exit early.
-  schema->GetDictionary("additionalProperties", additional_properties_schema);
+  schema->GetDictionary(schema::kAdditionalProperties,
+                        additional_properties_schema);
 
   if (*additional_properties_schema) {
-    std::string additional_properties_type("any");
+    std::string additional_properties_type(schema::kAny);
     CHECK((*additional_properties_schema)->GetString(
-        "type", &additional_properties_type));
-    return additional_properties_type == "any";
+        schema::kType, &additional_properties_type));
+    return additional_properties_type == schema::kAny;
   } else {
     return default_allow_additional_properties_;
   }

@@ -64,15 +64,6 @@ namespace registry_constants {
   // Registry key within an extension's namespace that contains the policy
   // schema.
   extern const wchar_t kSchema[];
-  // Key in a JSON schema that indicates the expected type.
-  extern const char kType[];
-  // Key in a JSON schema that indicates the expected properties of an object.
-  extern const char kProperties[];
-  // Key in a JSON schema that indicates the default schema for object
-  // properties.
-  extern const char kAdditionalProperties[];
-  // Key in a JSON schema that indicates the expected type of list items.
-  extern const char kItems[];
 }  // namespace registry_constants
 
 }  // namespace policy

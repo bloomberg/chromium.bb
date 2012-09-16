@@ -24,7 +24,10 @@
 #include "base/win/registry.h"
 #include "chrome/browser/policy/policy_bundle.h"
 #include "chrome/browser/policy/policy_map.h"
+#include "chrome/common/json_schema_constants.h"
 #include "policy/policy_constants.h"
+
+namespace schema = json_schema_constants;
 
 using base::win::RegKey;
 using base::win::RegistryKeyIterator;
@@ -39,10 +42,6 @@ namespace registry_constants {
   const wchar_t kMandatory[] = L"policy";
   const wchar_t kRecommended[] = L"recommended";
   const wchar_t kSchema[] = L"schema";
-  const char kType[] = "type";
-  const char kProperties[] = "properties";
-  const char kAdditionalProperties[] = "additionalProperties";
-  const char kItems[] = "items";
 }  // namespace registry_constants
 
 namespace {
@@ -234,19 +233,19 @@ base::Value::Type GetType(const base::DictionaryValue* schema,
     // Correspondent value type.
     base::Value::Type value_type;
   } kSchemaToValueTypeMap[] = {
-    { "array",        base::Value::TYPE_LIST        },
-    { "boolean",      base::Value::TYPE_BOOLEAN     },
-    { "integer",      base::Value::TYPE_INTEGER     },
-    { "null",         base::Value::TYPE_NULL        },
-    { "number",       base::Value::TYPE_DOUBLE      },
-    { "object",       base::Value::TYPE_DICTIONARY  },
-    { "string",       base::Value::TYPE_STRING      },
+    { schema::kArray,        base::Value::TYPE_LIST        },
+    { schema::kBoolean,      base::Value::TYPE_BOOLEAN     },
+    { schema::kInteger,      base::Value::TYPE_INTEGER     },
+    { schema::kNull,         base::Value::TYPE_NULL        },
+    { schema::kNumber,       base::Value::TYPE_DOUBLE      },
+    { schema::kObject,       base::Value::TYPE_DICTIONARY  },
+    { schema::kString,       base::Value::TYPE_STRING      },
   };
 
   if (!schema)
     return default_type;
   std::string type;
-  if (!schema->GetString(kType, &type))
+  if (!schema->GetString(schema::kType, &type))
     return default_type;
   for (size_t i = 0; i < arraysize(kSchemaToValueTypeMap); ++i) {
     if (type == kSchemaToValueTypeMap[i].schema_type)
@@ -277,12 +276,13 @@ const base::DictionaryValue* GetEntry(const base::DictionaryValue* dictionary,
 // |name| is present. Returns NULL if no schema is found.
 const base::DictionaryValue* GetSchemaFor(const base::DictionaryValue* schema,
                                     const std::string& name) {
-  const base::DictionaryValue* properties = GetEntry(schema, kProperties);
+  const base::DictionaryValue* properties =
+      GetEntry(schema, schema::kProperties);
   const base::DictionaryValue* sub_schema = GetEntry(properties, name);
   if (sub_schema)
     return sub_schema;
   // "additionalProperties" can be a boolean, but that case is ignored.
-  return GetEntry(schema, kAdditionalProperties);
+  return GetEntry(schema, schema::kAdditionalProperties);
 }
 
 // Converts string |value| to another |type|, if possible.
@@ -405,7 +405,7 @@ base::ListValue* ReadComponentListValue(HKEY hive,
     return NULL;
 
   // Get the schema for list items.
-  schema = GetEntry(schema, kItems);
+  schema = GetEntry(schema, schema::kItems);
   base::Value::Type type = GetType(schema, base::Value::TYPE_STRING);
   base::ListValue* list = new base::ListValue();
   for (int i = 1; ; ++i) {
