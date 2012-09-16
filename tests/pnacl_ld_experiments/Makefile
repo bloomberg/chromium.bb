@@ -12,7 +12,8 @@
 # make run1.x8632
 
 ROOT=$(shell readlink -f ../../)
-TC_ROOT=$(ROOT)/toolchain/pnacl_linux_x86_64/glibc
+# TODO(robertm): Make the path more configurable.
+TC_ROOT=$(ROOT)/toolchain/pnacl_linux_x86/glibc
 PNACL_CC=$(TC_ROOT)/bin/pnacl-clang -Wall -Werror
 PNACL_LD=$(TC_ROOT)/bin/pnacl-nativeld
 PNACL_AR=$(TC_ROOT)/bin/pnacl-ar
@@ -27,18 +28,18 @@ LOADER_X8664=$(ROOT)/scons-out/opt-linux-x86-64/staging/sel_ldr
 IRT_X8632=$(ROOT)/scons-out/nacl_irt-x86-32/staging/irt.nexe
 IRT_X8664=$(ROOT)/scons-out/nacl_irt-x86-64/staging/irt.nexe
 
-LDSO_X8632=$(ROOT)/toolchain/pnacl_linux_x86_64/lib-x86-32/runnable-ld.so
-LDSO_X8664=$(ROOT)/toolchain/pnacl_linux_x86_64/lib-x86-64/runnable-ld.so
+LDSO_X8632=$(ROOT)/toolchain/pnacl_linux_x86/lib-x86-32/runnable-ld.so
+LDSO_X8664=$(ROOT)/toolchain/pnacl_linux_x86/lib-x86-64/runnable-ld.so
 
-LIBPATH_SHARED_X8632=$(ROOT)/toolchain/pnacl_linux_x86_64/lib-x86-32
-LIBPATH_SHARED_X8664=$(ROOT)/toolchain/pnacl_linux_x86_64/lib-x86-64
+LIBPATH_SHARED_X8632=$(ROOT)/toolchain/pnacl_linux_x86/lib-x86-32
+LIBPATH_SHARED_X8664=$(ROOT)/toolchain/pnacl_linux_x86/lib-x86-64
 
 # These looks like they have arch bias but we are just pulling bitcode
-LIBPATH_NEWLIB=$(ROOT)/toolchain/pnacl_linux_x86_64/newlib/usr/lib
+LIBPATH_NEWLIB=$(ROOT)/toolchain/pnacl_linux_x86/newlib/usr/lib
 LIBPATH_SCONSOUT_X8632=$(ROOT)/scons-out/nacl-x86-32-pnacl-shared-clang/lib
 LIBPATH_SCONSOUT_X8664=$(ROOT)/scons-out/nacl-x86-64-pnacl-shared-clang/lib
 LIBPATH_SHIM=$(ROOT)/scons-out/nacl-x86-64-pnacl-pexe-shared-clang/obj/src/untrusted/pnacl_irt_shim
-PATH_CRT_BITCODE=$(ROOT)/toolchain/pnacl_linux_x86_64/newlib/lib
+PATH_CRT_BITCODE=$(ROOT)/toolchain/pnacl_linux_x86/newlib/lib
 
 COMMON_FLAGS= --pnacl-driver-verbose -save-temps
 RUNNER_DEBUG= # -E LD_DEBUG=all

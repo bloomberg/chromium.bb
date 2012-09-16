@@ -10,7 +10,7 @@ dir=$(pwd)
 cd ../../../..
 topdir=$(pwd)
 # TODO(pnacl-team): We have to not hard-code this.
-tools="$topdir/toolchain/pnacl_linux_x86_64/host/bin"
+tools="$topdir/toolchain/pnacl_linux_x86/host_x86_32/bin"
 cd $dir
 
 ldscript=ld_script_arm_thumb2_untrusted

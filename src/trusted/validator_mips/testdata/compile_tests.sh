@@ -10,7 +10,7 @@ set -eu
 dir=$(pwd)
 cd ../../../..
 topdir=$(pwd)
-tools="$topdir/toolchain/pnacl_linux_x86_64/pkg/binutils/mipsel-pc-nacl/bin"
+tools="$topdir/toolchain/pnacl_linux_x86/host_x86_32/bin/mipsel-pc-nacl/bin"
 cd $dir
 
 readonly MIPSEL_LD="$tools/ld"

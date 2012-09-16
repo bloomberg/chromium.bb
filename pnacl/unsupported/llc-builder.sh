@@ -94,9 +94,9 @@ llc-make() {
 
 llc-install() {
   # This just works on linux and assumes release builds...
-  # TODO(pnacl-team): Make this configurable.
+  # TODO(pnacl-team): Make this path configurable.
   cp ${TC_BUILD_LLVM}/Release+Asserts/bin/llc \
-    toolchain/pnacl_linux_x86_64/pkg/llvm/bin/llc
+    toolchain/pnacl_linux_x86/host_x86_32/bin/llc
 }
 
 

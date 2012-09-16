@@ -6,8 +6,8 @@ set -o nounset
 set -o errexit
 
 # TODO(pnacl-team): We have to not hard-code this.
-readonly EXTRACT=toolchain/pnacl_linux_x86_64/host/bin/llvm-extract
-readonly TRANSLATE=toolchain/pnacl_linux_x86_64/newlib/bin/pnacl-translate
+readonly EXTRACT=toolchain/pnacl_linux_x86/host_x86_32/bin/llvm-extract
+readonly TRANSLATE=toolchain/pnacl_linux_x86/newlib/bin/pnacl-translate
 
 split-pexe() {
   local out=$1

@@ -282,7 +282,7 @@ SetupPnaclTranslatorX8664Opt() {
 }
 
 SetupPnaclTranslatorJITX8632Common() {
- SetupSelLdr x86-32 "" "-S" "${RUNNABLE_LD_X8632} -- --library-path ${NNACL_TC}/x86_64-nacl/lib32 ${NACL_ROOT}/toolchain/pnacl_linux_x86_64_glibc/tools-sb/x8632/nonsrpc/bin/lli.x8632.nexe -asm-verbose=false -march=x86 -mcpu=pentium4 -mtriple=i686-none-nacl-gnu -jit-emit-debug=false -disable-lazy-compilation"
+ SetupSelLdr x86-32 "" "-S" "${RUNNABLE_LD_X8632} -- --library-path ${NNACL_TC}/x86_64-nacl/lib32 ${NACL_ROOT}/toolchain/pnacl_linux_x86/glibc/tools-sb/x8632/nonsrpc/bin/lli.x8632.nexe -asm-verbose=false -march=x86 -mcpu=pentium4 -mtriple=i686-none-nacl-gnu -jit-emit-debug=false -disable-lazy-compilation"
   DO_SIZE=false
   DASHDASH=""
 }
@@ -558,7 +558,7 @@ build-libs-nacl() {
 build-libs-pnacl() {
   pushd "${NACL_ROOT}"
   # TODO(dschuff/jvoung): fix this circular dependency with the toolchain build
-  TOOLCHAIN_LABEL=pnacl_linux_x86_32 pnacl/build.sh sdk newlib
+  TOOLCHAIN_LABEL=pnacl_linux_x86 pnacl/build.sh sdk newlib
   popd
 }
 

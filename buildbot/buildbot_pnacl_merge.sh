@@ -18,7 +18,7 @@ echo "****************** Environment ******************"
 env
 
 RETCODE=0
-TOOLCHAIN_LABEL="pnacl_linux_x86_64"
+TOOLCHAIN_LABEL="pnacl_linux_x86"
 GSBASE="gs://nativeclient-archive2/pnacl/between_bots/llvm"
 
 export PNACL_BUILDBOT=true
