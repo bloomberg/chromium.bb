@@ -93,8 +93,9 @@ DataDeleter::DataDeleter(
   } else if (is_storage_isolated) {
     extension_request_context_ =
         profile->GetRequestContextForIsolatedApp(extension_id);
-    isolated_app_path_ = profile->GetPath().
-        Append(content::kStoragePartitionDirname).AppendASCII(extension_id);
+    isolated_app_path_ =
+        profile->GetPath().Append(
+            content::StoragePartition::GetPartitionPath(extension_id));
   } else {
     extension_request_context_ = profile->GetRequestContext();
   }

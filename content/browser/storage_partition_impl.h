@@ -22,9 +22,11 @@ class StoragePartitionImpl : public StoragePartition {
   // TODO(ajwong): Break the direct dependency on |context|. We only
   // need 3 pieces of info from it.
   static StoragePartitionImpl* Create(BrowserContext* context,
+                                      const std::string& partition_id,
                                       const FilePath& partition_path);
 
   // StoragePartition interface.
+  virtual FilePath GetPath() OVERRIDE;
   virtual quota::QuotaManager* GetQuotaManager() OVERRIDE;
   virtual ChromeAppCacheService* GetAppCacheService() OVERRIDE;
   virtual fileapi::FileSystemContext* GetFileSystemContext() OVERRIDE;

@@ -39,7 +39,6 @@ class StoragePartitionImplMap : public base::SupportsUserData::Data {
   // doesn't need to be aware of this ordering?  Revisit when refactoring
   // ResourceContext and AppCache to respect storage partitions.
   void PostCreateInitialization(StoragePartitionImpl* partition,
-                                const FilePath& partition_path,
                                 net::URLRequestContextGetter* request_context);
 
   BrowserContext* browser_context_;  // Not Owned.

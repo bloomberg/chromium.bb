@@ -5,7 +5,10 @@
 #ifndef CONTENT_PUBLIC_BROWSER_STORAGE_PARTITION_H_
 #define CONTENT_PUBLIC_BROWSER_STORAGE_PARTITION_H_
 
+#include <string>
+
 #include "base/basictypes.h"
+#include "base/file_path.h"
 
 namespace appcache {
 class AppCacheService;
@@ -37,12 +40,21 @@ class DOMStorageContext;
 // the cookies, localStorage, etc., that normal web renderers have access to.
 class StoragePartition {
  public:
+  virtual FilePath GetPath() = 0;
   virtual quota::QuotaManager* GetQuotaManager() = 0;
   virtual appcache::AppCacheService* GetAppCacheService() = 0;
   virtual fileapi::FileSystemContext* GetFileSystemContext() = 0;
   virtual webkit_database::DatabaseTracker* GetDatabaseTracker() = 0;
   virtual DOMStorageContext* GetDOMStorageContext() = 0;
   virtual IndexedDBContext* GetIndexedDBContext() = 0;
+
+  // Returns the relative path from the profile's base directory, to the
+  // directory that holds all the state for storage contexts in |partition_id|.
+  //
+  // TODO(ajwong): Remove this function from the public API once
+  // URLRequestContextGetter's creation is moved into StoragePartition.
+  static CONTENT_EXPORT FilePath GetPartitionPath(
+      const std::string& partition_id);
 
  protected:
   virtual ~StoragePartition() {}

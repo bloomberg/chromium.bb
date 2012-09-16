@@ -12,6 +12,46 @@
 
 namespace content {
 
+namespace {
+
+// These constants are used to create the directory structure under the profile
+// where renderers with a non-default storage partition keep their persistent
+// state. This will contain a set of directories that partially mirror the
+// directory structure of BrowserContext::GetPath().
+//
+// The kStoragePartitionDirname is contains an extensions directory which is
+// further partitioned by extension id, followed by another level of directories
+// for the "default" extension storage partition and one directory for each
+// persistent partition used by an extension's browser tags. Example:
+//
+//   {kStoragePartitionDirname}/extensions/ABCDEF/default
+//   {kStoragePartitionDirname}/extensions/ABCDEF/{hash(guest partition)}
+//
+// The code in GetPartitionPath() constructs these path names.
+const FilePath::CharType kStoragePartitionDirname[] =
+    FILE_PATH_LITERAL("Storage Partitions");
+const FilePath::CharType kExtensionsDirname[] =
+    FILE_PATH_LITERAL("extensions");
+const FilePath::CharType kDefaultPartitionDirname[] =
+    FILE_PATH_LITERAL("default");
+
+}  // namespace
+
+// static
+FilePath StoragePartition::GetPartitionPath(const std::string& partition_id) {
+  if (partition_id.empty()) {
+    // The default profile just sits inside the top-level profile directory.
+    return FilePath();
+  }
+
+  // TODO(ajwong): This should check that we create a valid path name.
+  CHECK(IsStringASCII(partition_id));
+  return FilePath(kStoragePartitionDirname)
+      .Append(kExtensionsDirname)
+      .AppendASCII(partition_id)
+      .Append(kDefaultPartitionDirname);
+}
+
 StoragePartitionImpl::StoragePartitionImpl(
     const FilePath& partition_path,
     quota::QuotaManager* quota_manager,
@@ -47,11 +87,15 @@ StoragePartitionImpl::~StoragePartitionImpl() {
 // need 3 pieces of info from it.
 StoragePartitionImpl* StoragePartitionImpl::Create(
     BrowserContext* context,
-    const FilePath& partition_path) {
+    const std::string& partition_id,
+    const FilePath& profile_path) {
   // Ensure that these methods are called on the UI thread, except for
   // unittests where a UI thread might not have been created.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          !BrowserThread::IsMessageLoopValid(BrowserThread::UI));
+
+  FilePath partition_path =
+      profile_path.Append(GetPartitionPath(partition_id));
 
   // All of the clients have to be created and registered with the
   // QuotaManager prior to the QuotaManger being used. We do them
@@ -97,6 +141,10 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
                                   database_tracker,
                                   dom_storage_context,
                                   indexed_db_context);
+}
+
+FilePath StoragePartitionImpl::GetPath() {
+  return partition_path_;
 }
 
 quota::QuotaManager* StoragePartitionImpl::GetQuotaManager() {

@@ -20,11 +20,6 @@ CONTENT_EXPORT extern const FilePath::CharType kAppCacheDirname[];
 // The name of the directory under BrowserContext::GetPath where Pepper plugin
 // data is put.
 CONTENT_EXPORT extern const FilePath::CharType kPepperDataDirname[];
-// The name of the directory under BrowserContext::GetPath() where renderers
-// with a non-default storage partition keep their persistent state. This will
-// contain a set of directories that partially mirror the directory structure
-// of BrowserContext::GetPath().
-CONTENT_EXPORT extern const FilePath::CharType kStoragePartitionDirname[];
 
 // The MIME type used for the browser plugin.
 CONTENT_EXPORT extern const char kBrowserPluginMimeType[];

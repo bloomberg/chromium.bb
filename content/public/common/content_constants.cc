@@ -9,8 +9,6 @@ const FilePath::CharType kAppCacheDirname[] =
     FILE_PATH_LITERAL("Application Cache");
 const FilePath::CharType kPepperDataDirname[] =
     FILE_PATH_LITERAL("Pepper Data");
-const FilePath::CharType kStoragePartitionDirname[] =
-    FILE_PATH_LITERAL("Storage Partitions");
 
 const char kBrowserPluginMimeType[] = "application/browser-plugin";
 // TODO(fsamuel): Remove this once upstreaming of the new browser plugin is

@@ -31,6 +31,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/resource_context.h"
+#include "content/public/browser/storage_partition.h"
 #include "net/base/server_bound_cert_service.h"
 #include "net/ftp/ftp_network_layer.h"
 #include "net/http/http_cache.h"
@@ -94,7 +95,7 @@ void ProfileImplIOData::Handle::Init(
       const FilePath& media_cache_path,
       int media_cache_max_size,
       const FilePath& extensions_cookie_path,
-      const FilePath& app_path,
+      const FilePath& profile_path,
       const FilePath& infinite_cache_path,
       chrome_browser_net::Predictor* predictor,
       PrefService* local_state,
@@ -120,9 +121,9 @@ void ProfileImplIOData::Handle::Init(
 
   io_data_->lazy_params_.reset(lazy_params);
 
-  // Keep track of isolated app path and cache sizes separately so we can use
-  // them on demand.
-  io_data_->app_path_ = app_path;
+  // Keep track of profile path and cache sizes separately so we can use them
+  // on demand when creating storage isolated URLRequestContextGetters.
+  io_data_->profile_path_ = profile_path;
   io_data_->app_cache_max_size_ = cache_max_size;
   io_data_->app_media_cache_max_size_ = media_cache_max_size;
 
@@ -510,7 +511,10 @@ ProfileImplIOData::InitializeAppRequestContext(
   AppRequestContext* context = new AppRequestContext(load_time_stats());
   context->CopyFrom(main_context);
 
-  FilePath app_path = app_path_.AppendASCII(app_id);
+  using content::StoragePartition;
+  FilePath app_path =
+      profile_path_.Append(StoragePartition::GetPartitionPath(app_id));
+
   FilePath cookie_path = app_path.Append(chrome::kCookieFilename);
   FilePath cache_path = app_path.Append(chrome::kCacheDirname);
 
@@ -583,7 +587,9 @@ ProfileImplIOData::InitializeMediaRequestContext(
   MediaRequestContext* context = new MediaRequestContext(load_time_stats());
   context->CopyFrom(original_context);
 
-  FilePath app_path = app_path_.AppendASCII(app_id);
+  using content::StoragePartition;
+  FilePath app_path =
+      profile_path_.Append(StoragePartition::GetPartitionPath(app_id));
   FilePath cache_path;
   int cache_max_size = app_media_cache_max_size_;
   if (app_id.empty()) {

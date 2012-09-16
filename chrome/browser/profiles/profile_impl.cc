@@ -382,8 +382,6 @@ void ProfileImpl::DoFinalInit(bool is_new_profile) {
   extensions_cookie_path =
       extensions_cookie_path.Append(chrome::kExtensionsCookieFilename);
 
-  FilePath app_path = GetPath().Append(content::kStoragePartitionDirname);
-
   FilePath infinite_cache_path = GetPath();
   infinite_cache_path =
       infinite_cache_path.Append(FILE_PATH_LITERAL("Infinite Cache"));
@@ -407,7 +405,7 @@ void ProfileImpl::DoFinalInit(bool is_new_profile) {
 
   io_data_.Init(cookie_path, server_bound_cert_path, cache_path,
                 cache_max_size, media_cache_path, media_cache_max_size,
-                extensions_cookie_path, app_path, infinite_cache_path,
+                extensions_cookie_path, GetPath(), infinite_cache_path,
                 predictor_,
                 g_browser_process->local_state(),
                 g_browser_process->io_thread(),

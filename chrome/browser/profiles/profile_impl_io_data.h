@@ -44,7 +44,7 @@ class ProfileImplIOData : public ProfileIOData {
               const FilePath& media_cache_path,
               int media_cache_max_size,
               const FilePath& extensions_cookie_path,
-              const FilePath& app_path,
+              const FilePath& profile_path,
               const FilePath& infinite_cache_path,
               chrome_browser_net::Predictor* predictor,
               PrefService* local_state,
@@ -177,7 +177,7 @@ class ProfileImplIOData : public ProfileIOData {
   mutable scoped_ptr<net::URLRequestJobFactory> extensions_job_factory_;
 
   // Parameters needed for isolated apps.
-  FilePath app_path_;
+  FilePath profile_path_;
   int app_cache_max_size_;
   int app_media_cache_max_size_;
 
