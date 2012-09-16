@@ -17,6 +17,11 @@
 
 namespace media {
 
+// Maximum number of concurrent VDA::Decode() operations GVD will maintain.
+// Higher values allow better pipelining in the GPU, but also require more
+// resources.
+enum { kMaxInFlightDecodes = 4 };
+
 GpuVideoDecoder::Factories::~Factories() {}
 
 // Size of shared-memory segments we allocate.  Since we reuse them we let them
@@ -254,6 +259,9 @@ void GpuVideoDecoder::RequestBufferDecode(
     return;
   }
 
+  if (!pending_reset_cb_.is_null())
+    return;
+
   size_t size = buffer->GetDataSize();
   SHMBuffer* shm_buffer = GetSHM(size);
   memcpy(shm_buffer->shm->memory(), buffer->GetData(), size);
@@ -266,6 +274,9 @@ void GpuVideoDecoder::RequestBufferDecode(
 
   vda_loop_proxy_->PostTask(FROM_HERE, base::Bind(
       &VideoDecodeAccelerator::Decode, weak_vda_, bitstream_buffer));
+
+  if (bitstream_buffers_in_decoder_.size() < kMaxInFlightDecodes)
+    EnsureDemuxOrDecode();
 }
 
 void GpuVideoDecoder::RecordBufferData(
@@ -463,10 +474,8 @@ void GpuVideoDecoder::NotifyEndOfBitstreamBuffer(int32 id) {
   }
   bitstream_buffers_in_decoder_.erase(it);
 
-  if (!pending_read_cb_.is_null() && pending_reset_cb_.is_null() &&
-      state_ != kDrainingDecoder &&
-      bitstream_buffers_in_decoder_.empty()) {
-    DCHECK(ready_video_frames_.empty());
+  if (pending_reset_cb_.is_null() && state_ != kDrainingDecoder &&
+      bitstream_buffers_in_decoder_.size() < kMaxInFlightDecodes) {
     EnsureDemuxOrDecode();
   }
 }
