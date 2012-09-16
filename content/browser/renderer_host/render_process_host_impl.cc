@@ -549,9 +549,10 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       new DOMStorageMessageFilter(
           GetID(),
           storage_partition_impl_->GetDOMStorageContext()));
-  channel_->AddFilter(new IndexedDBDispatcherHost(GetID(),
-      static_cast<IndexedDBContextImpl*>(
-          BrowserContext::GetIndexedDBContext(browser_context))));
+  channel_->AddFilter(
+      new IndexedDBDispatcherHost(
+          GetID(),
+          storage_partition_impl_->GetIndexedDBContext()));
   channel_->AddFilter(GeolocationDispatcherHost::New(
       GetID(), browser_context->GetGeolocationPermissionContext()));
   gpu_message_filter_ = new GpuMessageFilter(GetID(), widget_helper_.get());

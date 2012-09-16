@@ -6,6 +6,7 @@
 #include "base/scoped_temp_dir.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/in_process_webkit/indexed_db_context_impl.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/test_browser_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -60,7 +61,8 @@ TEST_F(IndexedDBTest, ClearSessionOnlyDatabases) {
     // With the levelDB backend, these are directories.
     IndexedDBContextImpl* idb_context =
         static_cast<IndexedDBContextImpl*>(
-            BrowserContext::GetIndexedDBContext(&browser_context));
+            BrowserContext::GetDefaultStoragePartition(&browser_context)->
+                GetIndexedDBContext());
 
     // Override the storage policy with our own.
     idb_context->special_storage_policy_ = special_storage_policy;
@@ -103,7 +105,8 @@ TEST_F(IndexedDBTest, SetForceKeepSessionState) {
     // With the levelDB backend, these are directories.
     IndexedDBContextImpl* idb_context =
         static_cast<IndexedDBContextImpl*>(
-            BrowserContext::GetIndexedDBContext(&browser_context));
+            BrowserContext::GetDefaultStoragePartition(&browser_context)->
+                GetIndexedDBContext());
 
     // Override the storage policy with our own.
     idb_context->special_storage_policy_ = special_storage_policy;
@@ -168,7 +171,8 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnDelete) {
 
     IndexedDBContextImpl* idb_context =
         static_cast<IndexedDBContextImpl*>(
-            BrowserContext::GetIndexedDBContext(&browser_context));
+            BrowserContext::GetDefaultStoragePartition(&browser_context)->
+                GetIndexedDBContext());
 
     idb_context->quota_manager_proxy_ = NULL;
     idb_context->set_data_path_for_testing(temp_dir.path());

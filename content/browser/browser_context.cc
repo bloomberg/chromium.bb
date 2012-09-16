@@ -103,13 +103,6 @@ DownloadManager* BrowserContext::GetDownloadManager(
       context, kDownloadManagerKeyName);
 }
 
-IndexedDBContext* BrowserContext::GetIndexedDBContext(
-    BrowserContext* browser_context) {
-  // TODO(ajwong): Change this API to require a SiteInstance instead of
-  // using GetDefaultStoragePartition().
-  return GetDefaultStoragePartition(browser_context)->GetIndexedDBContext();
-}
-
 fileapi::FileSystemContext* BrowserContext::GetFileSystemContext(
     BrowserContext* browser_context) {
   // TODO(ajwong): Change this API to require a SiteInstance instead of
@@ -173,6 +166,8 @@ void BrowserContext::EnsureResourceContextInitialized(BrowserContext* context) {
 void BrowserContext::SaveSessionState(BrowserContext* browser_context) {
   GetDefaultStoragePartition(browser_context)->GetDatabaseTracker()->
       SetForceKeepSessionState();
+  StoragePartition* storage_partition =
+      BrowserContext::GetDefaultStoragePartition(browser_context);
 
   if (BrowserThread::IsMessageLoopValid(BrowserThread::IO)) {
     BrowserThread::PostTask(
@@ -180,18 +175,17 @@ void BrowserContext::SaveSessionState(BrowserContext* browser_context) {
         base::Bind(
             &SaveSessionStateOnIOThread,
             make_scoped_refptr(browser_context->GetRequestContext()),
-            BrowserContext::GetDefaultStoragePartition(browser_context)->
-                GetAppCacheService()));
+            storage_partition->GetAppCacheService()));
   }
 
   DOMStorageContextImpl* dom_storage_context_impl =
       static_cast<DOMStorageContextImpl*>(
-          GetDefaultStoragePartition(browser_context)->GetDOMStorageContext());
+          storage_partition->GetDOMStorageContext());
   dom_storage_context_impl->SetForceKeepSessionState();
 
   if (BrowserThread::IsMessageLoopValid(BrowserThread::WEBKIT_DEPRECATED)) {
     IndexedDBContextImpl* indexed_db = static_cast<IndexedDBContextImpl*>(
-        GetIndexedDBContext(browser_context));
+        storage_partition->GetIndexedDBContext());
     BrowserThread::PostTask(
         BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,
         base::Bind(&SaveSessionStateOnWebkitThread,

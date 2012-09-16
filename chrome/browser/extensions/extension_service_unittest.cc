@@ -3626,8 +3626,9 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
 
   // Create indexed db. Similarly, it is enough to only simulate this by
   // creating the directory on the disk.
-  IndexedDBContext* idb_context = BrowserContext::GetIndexedDBContext(
-      profile_.get());
+  IndexedDBContext* idb_context =
+      BrowserContext::GetDefaultStoragePartition(profile_.get())->
+          GetIndexedDBContext();
   FilePath idb_path = idb_context->GetFilePathForTesting(origin_id);
   EXPECT_TRUE(file_util::CreateDirectory(idb_path));
   EXPECT_TRUE(file_util::DirectoryExists(idb_path));
@@ -3738,8 +3739,9 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
 
   // Create indexed db. Similarly, it is enough to only simulate this by
   // creating the directory on the disk.
-  IndexedDBContext* idb_context = BrowserContext::GetIndexedDBContext(
-      profile_.get());
+  IndexedDBContext* idb_context =
+      BrowserContext::GetDefaultStoragePartition(profile_.get())->
+          GetIndexedDBContext();
   FilePath idb_path = idb_context->GetFilePathForTesting(origin_id);
   EXPECT_TRUE(file_util::CreateDirectory(idb_path));
   EXPECT_TRUE(file_util::DirectoryExists(idb_path));

@@ -74,8 +74,7 @@ class DataDeleter : public base::RefCountedThreadSafe<
 
   // Deletes indexed db files for the extension. May only be called on the
   // webkit thread.
-  void DeleteIndexedDBOnWebkitThread(
-      scoped_refptr<content::IndexedDBContext> indexed_db_context);
+  void DeleteIndexedDBOnWebkitThread();
 
   // Deletes filesystem files for the extension. May only be called on the
   // file thread.
@@ -101,6 +100,8 @@ class DataDeleter : public base::RefCountedThreadSafe<
   string16 origin_id_;
 
   scoped_refptr<fileapi::FileSystemContext> file_system_context_;
+
+  scoped_refptr<content::IndexedDBContext> indexed_db_context_;
 
   // If non-empty, the extension we're deleting is an isolated app, and this
   // is its directory which we should delete.

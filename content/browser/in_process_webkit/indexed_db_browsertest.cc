@@ -194,8 +194,9 @@ class IndexedDBBrowserTestWithVersion0Schema : public IndexedDBBrowserTest {
  public:
   virtual void SetUpOnMainThread() {
     scoped_refptr<IndexedDBContext> context =
-        BrowserContext::GetIndexedDBContext(
-            shell()->web_contents()->GetBrowserContext());
+        BrowserContext::GetDefaultStoragePartition(
+            shell()->web_contents()->GetBrowserContext())->
+                GetIndexedDBContext();
     BrowserThread::PostTask(
         BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,
         base::Bind(

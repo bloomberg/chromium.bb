@@ -24,6 +24,8 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/cookies_tree_model_util.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -188,6 +190,10 @@ void CookiesViewHandler::EnsureCookiesTreeModelCreated() {
   if (!app_context_ && !cookies_tree_model_.get()) {
     Profile* profile = Profile::FromWebUI(web_ui());
     ContainerMap apps_map;
+    content::StoragePartition* storage_partition =
+        content::BrowserContext::GetDefaultStoragePartition(profile);
+    content::IndexedDBContext* indexed_db_context =
+        storage_partition->GetIndexedDBContext();
     apps_map[std::string()] = new LocalDataContainer(
         "Site Data", std::string(),
         new BrowsingDataCookieHelper(profile->GetRequestContext()),
@@ -195,7 +201,7 @@ void CookiesViewHandler::EnsureCookiesTreeModelCreated() {
         new BrowsingDataLocalStorageHelper(profile),
         NULL,
         new BrowsingDataAppCacheHelper(profile),
-        BrowsingDataIndexedDBHelper::Create(profile),
+        BrowsingDataIndexedDBHelper::Create(indexed_db_context),
         BrowsingDataFileSystemHelper::Create(profile),
         BrowsingDataQuotaHelper::Create(profile),
         BrowsingDataServerBoundCertHelper::Create(profile),

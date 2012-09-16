@@ -13,6 +13,7 @@
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/in_process_webkit/indexed_db_context_impl.h"
 #include "content/browser/in_process_webkit/indexed_db_quota_client.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/test/test_browser_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/database/database_util.h"
@@ -49,7 +50,8 @@ class IndexedDBQuotaClientTest : public testing::Test {
         io_thread_(BrowserThread::IO, &message_loop_) {
     browser_context_.reset(new content::TestBrowserContext());
     idb_context_ = static_cast<IndexedDBContextImpl*>(
-        BrowserContext::GetIndexedDBContext(browser_context_.get()));
+        BrowserContext::GetDefaultStoragePartition(browser_context_.get())->
+            GetIndexedDBContext());
     message_loop_.RunAllPending();
     setup_temp_dir();
   }

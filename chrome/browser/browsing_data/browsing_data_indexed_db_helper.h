@@ -19,6 +19,10 @@
 
 class Profile;
 
+namespace content {
+class IndexedDBContext;
+}
+
 // BrowsingDataIndexedDBHelper is an interface for classes dealing with
 // aggregating and deleting browsing data stored in indexed databases.  A
 // client of this class need to call StartFetching from the UI thread to
@@ -42,7 +46,8 @@ class BrowsingDataIndexedDBHelper
 
   // Create a BrowsingDataIndexedDBHelper instance for the indexed databases
   // stored in |profile|'s user data directory.
-  static BrowsingDataIndexedDBHelper* Create(Profile* profile);
+  static BrowsingDataIndexedDBHelper* Create(
+      content::IndexedDBContext* context);
 
   // Starts the fetching process, which will notify its completion via
   // callback.

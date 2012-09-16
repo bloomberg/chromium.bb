@@ -13,13 +13,11 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
-#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/indexed_db_context.h"
 #include "webkit/database/database_util.h"
 #include "webkit/glue/webkit_glue.h"
 
-using content::BrowserContext;
 using content::BrowserThread;
 using content::IndexedDBContext;
 using webkit_database::DatabaseUtil;
@@ -28,7 +26,8 @@ namespace {
 
 class BrowsingDataIndexedDBHelperImpl : public BrowsingDataIndexedDBHelper {
  public:
-  explicit BrowsingDataIndexedDBHelperImpl(Profile* profile);
+  explicit BrowsingDataIndexedDBHelperImpl(
+      IndexedDBContext* indexed_db_context);
 
   virtual void StartFetching(
       const base::Callback<void(const std::list<IndexedDBInfo>&)>&
@@ -68,8 +67,8 @@ class BrowsingDataIndexedDBHelperImpl : public BrowsingDataIndexedDBHelper {
 };
 
 BrowsingDataIndexedDBHelperImpl::BrowsingDataIndexedDBHelperImpl(
-    Profile* profile)
-    : indexed_db_context_(BrowserContext::GetIndexedDBContext(profile)),
+    IndexedDBContext* indexed_db_context)
+    : indexed_db_context_(indexed_db_context),
       is_fetching_(false) {
   DCHECK(indexed_db_context_.get());
 }
@@ -151,8 +150,8 @@ BrowsingDataIndexedDBHelper::IndexedDBInfo::~IndexedDBInfo() {}
 
 // static
 BrowsingDataIndexedDBHelper* BrowsingDataIndexedDBHelper::Create(
-    Profile* profile) {
-  return new BrowsingDataIndexedDBHelperImpl(profile);
+    IndexedDBContext* indexed_db_context) {
+  return new BrowsingDataIndexedDBHelperImpl(indexed_db_context);
 }
 
 CannedBrowsingDataIndexedDBHelper::
