@@ -5,6 +5,8 @@
 #ifndef UI_VIEWS_EXAMPLES_EXAMPLES_WINDOW_H_
 #define UI_VIEWS_EXAMPLES_EXAMPLES_WINDOW_H_
 
+#include "ui/views/views_export.h"
+
 namespace views {
 namespace examples {
 
@@ -14,7 +16,7 @@ enum Operation {
 };
 
 // Shows a window with the views examples in it.
-void ShowExamplesWindow(Operation operation);
+VIEWS_EXPORT void ShowExamplesWindow(Operation operation);
 
 }  // namespace examples
 }  // namespace views
