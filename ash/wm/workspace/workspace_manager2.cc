@@ -20,6 +20,7 @@
 #include "ash/wm/workspace/workspace_layout_manager2.h"
 #include "ash/wm/workspace/workspace2.h"
 #include "base/auto_reset.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/stringprintf.h"
@@ -98,7 +99,8 @@ WorkspaceManager2::WorkspaceManager2(Window* contents_view)
       shelf_(NULL),
       in_move_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(
-          clear_unminimizing_workspace_factory_(this)) {
+          clear_unminimizing_workspace_factory_(this)),
+      app_terminating_(false) {
   // Clobber any existing event filter.
   contents_view->SetEventFilter(NULL);
   // |contents_view| takes ownership of WorkspaceManagerLayoutManager2.
@@ -107,9 +109,11 @@ WorkspaceManager2::WorkspaceManager2(Window* contents_view)
   active_workspace_ = CreateWorkspace(false);
   workspaces_.push_back(active_workspace_);
   active_workspace_->window()->Show();
+  Shell::GetInstance()->AddShellObserver(this);
 }
 
 WorkspaceManager2::~WorkspaceManager2() {
+  Shell::GetInstance()->RemoveShellObserver(this);
   // Release the windows, they'll be destroyed when |contents_view_| is
   // destroyed.
   std::for_each(workspaces_.begin(), workspaces_.end(),
@@ -223,6 +227,10 @@ Window* WorkspaceManager2::GetParentForNewWindow(Window* window) {
   return desktop_workspace()->window();
 }
 
+void WorkspaceManager2::OnAppTerminating() {
+  app_terminating_ = true;
+}
+
 void WorkspaceManager2::UpdateShelfVisibility() {
   if (shelf_)
     shelf_->UpdateVisibilityState();
@@ -284,7 +292,7 @@ void WorkspaceManager2::SetActiveWorkspace(Workspace2* workspace,
     base::TimeDelta delay(GetSystemBackgroundDestroyDuration());
     if (ui::LayerAnimator::slow_animation_mode())
       delay *= ui::LayerAnimator::slow_animation_scale_factor();
-    // Delay an extra 100ms to make sure everything settlts down before
+    // Delay an extra 100ms to make sure everything settles down before
     // destroying the background.
     delay += base::TimeDelta::FromMilliseconds(100);
     destroy_background_timer_.Start(
@@ -314,7 +322,7 @@ void WorkspaceManager2::SetActiveWorkspace(Workspace2* workspace,
     if (last_active == desktop_workspace()) {
       AnimateWorkspaceOut(background, WORKSPACE_ANIMATE_DOWN,
                           WORKSPACE_DESKTOP);
-    } else if (active_workspace_ == desktop_workspace()) {
+    } else if (active_workspace_ == desktop_workspace() && !app_terminating_) {
       AnimateWorkspaceIn(background, WORKSPACE_ANIMATE_UP);
     }
   }

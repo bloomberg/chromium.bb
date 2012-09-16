@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/shell_observer.h"
 #include "ash/wm/workspace/base_workspace_manager.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -45,7 +46,9 @@ class Workspace2;
 // workspace for the desktop.
 // Internally WorkspaceManager2 creates a Window for each Workspace. As windows
 // are maximized and restored they are reparented to the right Window.
-class ASH_EXPORT WorkspaceManager2 : public BaseWorkspaceManager {
+class ASH_EXPORT WorkspaceManager2
+    : public BaseWorkspaceManager,
+      public ash::ShellObserver {
  public:
   explicit WorkspaceManager2(aura::Window* viewport);
   virtual ~WorkspaceManager2();
@@ -59,12 +62,15 @@ class ASH_EXPORT WorkspaceManager2 : public BaseWorkspaceManager {
   // window.
   static bool WillRestoreMaximized(aura::Window* window);
 
-  // BaseWorkspaceManager2 overrides:
+  // BaseWorkspaceManager overrides:
   virtual bool IsInMaximizedMode() const OVERRIDE;
   virtual WorkspaceWindowState GetWindowState() const OVERRIDE;
   virtual void SetShelf(ShelfLayoutManager* shelf) OVERRIDE;
   virtual void SetActiveWorkspaceByWindow(aura::Window* window) OVERRIDE;
   virtual aura::Window* GetParentForNewWindow(aura::Window* window) OVERRIDE;
+
+  // ShellObserver overrides:
+  virtual void OnAppTerminating() OVERRIDE;
 
  private:
   friend class WorkspaceLayoutManager2;
@@ -194,6 +200,12 @@ class ASH_EXPORT WorkspaceManager2 : public BaseWorkspaceManager {
 
   // See comments in SetUnminimizingWorkspace() for details.
   Workspace2* unminimizing_workspace_;
+
+  // Set to true if the app is terminating. If true we don't animate the
+  // background, otherwise it can get stuck in the fading position when chrome
+  // exits (as the last frame we draw before exiting is a frame from the
+  // animation).
+  bool app_terminating_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkspaceManager2);
 };
