@@ -13,7 +13,9 @@ using views::Widget;
 
 typedef InProcessBrowserTest BrowserNonClientFrameViewAshTest;
 
-IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, UseShortHeader) {
+// http://crbug.com/149824
+IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest,
+                       DISABLED_UseShortHeader) {
   // We know we're using Views, so static cast.
   Widget* widget = static_cast<BrowserView*>(browser()->window())->GetWidget();
   // We know we're using Ash, so static cast.
