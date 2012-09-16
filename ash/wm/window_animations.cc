@@ -693,7 +693,9 @@ const int kWorkspaceSwitchTimeMS = 200 + kPauseTimeMS;
 namespace {
 
 // Brightness for the non-active workspace.
-const float kWorkspaceBrightness = -.33f;
+// TODO(sky): ideally this would be -.33f, but it slows down animations by a
+// factor of 2. Figure out why.
+const float kWorkspaceBrightness = 0.0f;
 
 enum WorkspaceScaleType {
   WORKSPACE_SCALE_ABOVE,
