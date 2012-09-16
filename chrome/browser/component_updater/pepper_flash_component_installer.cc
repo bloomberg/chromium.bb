@@ -144,6 +144,10 @@ bool MakePepperFlashPluginInfo(const FilePath& flash_path,
   plugin_info->name = kFlashPluginName;
   plugin_info->permissions = kPepperFlashPermissions;
 
+  // TODO(brettw) bug 147507: remove this logging.
+  LOG(INFO) << "MakePepperFlashPluginInfo permissions = "
+            << plugin_info->permissions;
+
   // The description is like "Shockwave Flash 10.2 r154".
   plugin_info->description = StringPrintf("%s %d.%d r%d",
       kFlashPluginName, ver_nums[0], ver_nums[1], ver_nums[2]);
