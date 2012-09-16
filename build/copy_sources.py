@@ -13,12 +13,6 @@ Copy from a source file or directory to a new file or directory.  This
 supports renaming of the file.
 """
 
-def ErrOut(text):
-  print '\n\n'
-  print ' '.join(sys.argv)
-  print text
-  sys.exit(1)
-
 
 def MakeDir(outdir):
   if outdir and not os.path.exists(outdir):
@@ -35,7 +29,6 @@ def Main(argv):
     return 1
 
   shutil.copy(argv[1], argv[2])
-  print 'From %s to %s\n' % (argv[1], argv[2])
   return 0
 
 if __name__ == '__main__':

@@ -53,7 +53,6 @@ def Main(args):
   stamp_path = os.path.abspath(stamp_path)
   tool_path = os.path.abspath(tool_path)
 
-  options.verbose = True
   if options.verbose:
    print 'Delete: ' + untar_path
   oshelpers.Remove(['-fr', untar_path])

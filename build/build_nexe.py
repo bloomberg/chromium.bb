@@ -110,8 +110,6 @@ class Builder(object):
     self.outdir = options.objdir
 
     # Set the toolchain directories
-    print 'toolpath=' + options.toolpath
-    print 'toolname=' + self.toolname
     self.toolchain = os.path.join(options.toolpath, self.toolname)
     self.toolbin = os.path.join(self.toolchain, tool_subdir, 'bin')
 
@@ -412,7 +410,6 @@ def Main(argv):
     parser.print_help()
     return 1
 
-  print ' '.join(argv)
   if options.source_list:
     source_list_handle = open(options.source_list, 'r')
     source_list = source_list_handle.read().splitlines()
