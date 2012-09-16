@@ -15668,6 +15668,14 @@ Press any key to continue exploring.
                desc="Explanatory message about how to select the previous input method">
         Press ctrl+space to select the previous input method.
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_INPUT_METHOD_EXTENSION_IME"
+               desc="Label for extension IMEs">
+        Extension IMEs
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_INPUT_METHOD_EXTENSION_DESCRIPTION"
+               desc="Description of extension IMEs">
+        Select which extension IMEs will be available in the language menu.
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_TAMIL_PHONETIC"
                desc="The label for a Tamil input method">
         Tamil input method (Phonetic)
