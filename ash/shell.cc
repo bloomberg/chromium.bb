@@ -238,6 +238,9 @@ Shell::~Shell() {
   // TODO(xiyuan): Move it back when app list container is no longer needed.
   app_list_controller_.reset();
 
+
+  // Closing the windows frees the workspace controller.
+  shelf_->set_workspace_controller(NULL);
   // Destroy all child windows including widgets.
   display_controller_->CloseChildWindows();
 

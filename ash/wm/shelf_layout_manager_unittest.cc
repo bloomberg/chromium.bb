@@ -783,5 +783,36 @@ TEST_F(ShelfLayoutManagerTest, WorkAreaChangeWorkspace) {
             widget_two->GetNativeWindow()->bounds().ToString());
 }
 
+// Confirm that the shelf is dimmed only when content is maximized and
+// shelf is not autohidden.
+TEST_F(ShelfLayoutManagerTest, Dimming) {
+  Shell::GetInstance()->shelf()->SetAutoHideBehavior(
+      SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
+  scoped_ptr<aura::Window> w1(CreateTestWindow());
+  w1->Show();
+  wm::ActivateWindow(w1.get());
+
+  // Normal window doesn't dim shelf.
+  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
+  EXPECT_FALSE(Shell::GetInstance()->launcher()->GetDimsShelf());
+
+  // Maximized window does.
+  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
+  EXPECT_TRUE(Shell::GetInstance()->launcher()->GetDimsShelf());
+
+  // Change back to normal stops dimming.
+  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
+  EXPECT_FALSE(Shell::GetInstance()->launcher()->GetDimsShelf());
+
+  // Changing back to maximized dims again.
+  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
+  EXPECT_TRUE(Shell::GetInstance()->launcher()->GetDimsShelf());
+
+  // Changing shelf to autohide stops dimming.
+  Shell::GetInstance()->shelf()->SetAutoHideBehavior(
+      SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  EXPECT_FALSE(Shell::GetInstance()->launcher()->GetDimsShelf());
+}
+
 }  // namespace internal
 }  // namespace ash

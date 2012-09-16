@@ -29,6 +29,8 @@
 namespace {
 // Size of black border at bottom (or side) of launcher.
 const int kNumBlackPixels = 3;
+// Alpha to paint dimming image with.
+const int kDimAlpha = 96;
 }
 
 namespace ash {
@@ -78,6 +80,39 @@ class Launcher::DelegateView : public views::WidgetDelegate,
   DISALLOW_COPY_AND_ASSIGN(DelegateView);
 };
 
+// Class used to slightly dim shelf items when maximized and visible.
+class DimmerView : public views::View, public views::WidgetDelegate {
+ public:
+  DimmerView() {}
+  ~DimmerView() {}
+
+  // views::WidgetDelegateView overrides:
+  virtual views::Widget* GetWidget() OVERRIDE {
+    return View::GetWidget();
+  }
+  virtual const views::Widget* GetWidget() const OVERRIDE {
+    return View::GetWidget();
+  }
+
+  void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE {
+    SkPaint paint;
+    static const gfx::ImageSkia* launcher_background = NULL;
+    if (!launcher_background) {
+      ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+      launcher_background =
+          rb.GetImageNamed(IDR_AURA_LAUNCHER_DIMMING).ToImageSkia();
+    }
+    paint.setAlpha(kDimAlpha);
+    canvas->DrawImageInt(
+        *launcher_background,
+        0, 0, launcher_background->width(), launcher_background->height(),
+        0, 0, width(), height(),
+        false,
+        paint);
+  }
+   DISALLOW_COPY_AND_ASSIGN(DimmerView);
+};
+
 Launcher::DelegateView::DelegateView(Launcher* launcher)
     : launcher_(launcher),
       focus_cycler_(NULL),
@@ -108,9 +143,9 @@ void Launcher::DelegateView::Layout() {
 void Launcher::DelegateView::OnPaintBackground(gfx::Canvas* canvas) {
   if (launcher_->alignment_ == SHELF_ALIGNMENT_BOTTOM) {
     SkPaint paint;
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     static const gfx::ImageSkia* launcher_background = NULL;
     if (!launcher_background) {
+      ResourceBundle& rb = ResourceBundle::GetSharedInstance();
       launcher_background =
           rb.GetImageNamed(IDR_AURA_LAUNCHER_BACKGROUND).ToImageSkia();
     }
@@ -200,6 +235,40 @@ void Launcher::SetPaintsBackground(
   background_animator_.SetPaintsBackground(value, change_type);
 }
 
+void Launcher::SetDimsShelf(bool value) {
+  if (value == (dimmer_.get() != NULL))
+    return;
+
+  if (value) {
+    dimmer_.reset(new views::Widget);
+    views::Widget::InitParams params(
+        views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+    params.transparent = true;
+    params.can_activate = false;
+    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+    params.parent = Shell::GetContainer(
+        window_container_->GetRootWindow(),
+        ash::internal::kShellWindowId_LauncherContainer);
+    params.accept_events = false;
+    dimmer_->Init(params);
+    dimmer_->GetNativeWindow()->SetName("LauncherDimmer");
+    gfx::Size pref =
+        static_cast<views::View*>(launcher_view_)->GetPreferredSize();
+    dimmer_->SetBounds(widget_->GetWindowBoundsInScreen());
+    // The launcher should not take focus when it is initially shown.
+    dimmer_->set_focus_on_creation(false);
+    dimmer_->SetContentsView(new DimmerView);
+    dimmer_->GetNativeView()->SetName("LauncherDimmerView");
+    dimmer_->Show();
+  } else {
+    dimmer_.reset(NULL);
+  }
+}
+
+bool Launcher::GetDimsShelf() const {
+  return dimmer_.get() && dimmer_->IsVisible();
+}
+
 void Launcher::SetStatusSize(const gfx::Size& size) {
   if (status_size_ == size)
     return;
@@ -259,6 +328,12 @@ void Launcher::SetVisible(bool visible) const {
 
 views::View* Launcher::GetAppListButtonView() const {
   return launcher_view_->GetAppListButtonView();
+}
+
+void Launcher::SetWidgetBounds(const gfx::Rect bounds) {
+  widget_->SetBounds(bounds);
+  if (dimmer_.get())
+    dimmer_->SetBounds(bounds);
 }
 
 internal::LauncherView* Launcher::GetLauncherViewForTest() {

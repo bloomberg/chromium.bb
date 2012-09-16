@@ -253,7 +253,7 @@ void ShelfLayoutManager::LayoutShelf() {
   CalculateTargetBounds(state_, &target_bounds);
   if (launcher_widget()) {
     GetLayer(launcher_widget())->SetOpacity(target_bounds.opacity);
-    launcher_widget()->SetBounds(
+    launcher_->SetWidgetBounds(
         ScreenAsh::ConvertRectToScreen(
             launcher_widget()->GetNativeView()->parent(),
             target_bounds.launcher_bounds_in_root));
@@ -514,6 +514,15 @@ void ShelfLayoutManager::SetState(VisibilityState visibility_state) {
   state.visibility_state = visibility_state;
   state.auto_hide_state = CalculateAutoHideState(visibility_state);
   state.is_screen_locked = delegate && delegate->IsScreenLocked();
+
+  // It's possible for SetState() when a window becomes maximized but the state
+  // won't have changed value. Do the dimming check before the early exit.
+  if (launcher_ && workspace_controller_) {
+    launcher_->SetDimsShelf(
+        (state.visibility_state == VISIBLE) &&
+          workspace_controller_->GetWindowState() ==
+              WORKSPACE_WINDOW_STATE_MAXIMIZED);
+  }
 
   if (state_.Equals(state))
     return;  // Nothing changed.
