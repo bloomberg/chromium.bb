@@ -66,6 +66,24 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiGetDisplayPathPrettify) {
 }
 #endif
 
+#if defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
+    FileSystemApiGetDisplayPathPrettifyMac) {
+  // On Mac, "test.localized" will be localized into just "test".
+  FilePath test_path = TempFilePath("test.localized", false);
+  ASSERT_TRUE(file_util::CreateDirectory(test_path));
+
+  FilePath test_file = test_path.AppendASCII("gold.txt");
+  FilePath source = test_root_folder_.AppendASCII("gold.txt");
+  EXPECT_TRUE(file_util::CopyFile(source, test_file));
+
+  FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
+      &test_file);
+  ASSERT_TRUE(RunPlatformAppTest(
+      "api_test/file_system/get_display_path_prettify_mac")) << message_;
+}
+#endif
+
 IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiOpenExistingFileTest) {
   FilePath test_file = TempFilePath("open_existing.txt", true);
   ASSERT_FALSE(test_file.empty());

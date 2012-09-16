@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/platform_util.h"
@@ -29,6 +30,11 @@
 #include "webkit/fileapi/isolated_context.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/dialogs/select_file_dialog.h"
+
+#if defined(OS_MACOSX)
+#include "base/mac/foundation_util.h"
+#include <CoreFoundation/CoreFoundation.h>
+#endif
 
 using fileapi::IsolatedContext;
 
@@ -50,39 +56,78 @@ namespace ChooseEntry = file_system::ChooseEntry;
 
 namespace {
 
-struct RewritePair {
-  int path_key;
-  const char* output;
-};
+#if defined(OS_MACOSX)
+// Retrieves the localized display name for the base name of the given path.
+// If the path is not localized, this will just return the base name.
+std::string GetDisplayBaseName(const FilePath& path) {
+  base::mac::ScopedCFTypeRef<CFURLRef> url(
+      CFURLCreateFromFileSystemRepresentation(
+          NULL,
+          (const UInt8*)path.value().c_str(),
+          path.value().length(),
+          true));
+  if (!url)
+    return path.BaseName().value();
 
-const RewritePair g_rewrite_pairs[] = {
-#if defined(OS_WIN)
-  {base::DIR_PROFILE, "~"},
-#elif defined(OS_POSIX)
-  {base::DIR_HOME, "~"},
-#endif
-};
+  CFStringRef str;
+  if (LSCopyDisplayNameForURL(url, &str) != noErr)
+    return path.BaseName().value();
 
-FilePath PrettifyPath(const FilePath& file_path) {
-#if defined(OS_WIN) || defined(OS_POSIX)
-  for (size_t i = 0; i < arraysize(g_rewrite_pairs); ++i) {
-    FilePath candidate_path;
-    if (!PathService::Get(g_rewrite_pairs[i].path_key, &candidate_path))
-      continue;  // We don't DCHECK this value, as Get will return false even
-                 // if the path_key gives a blank string as a result.
-
-    FilePath output = FilePath::FromUTF8Unsafe(g_rewrite_pairs[i].output);
-    if (candidate_path.AppendRelativePath(file_path, &output)) {
-      // The output path must not be absolute, as it might collide with the
-      // real filesystem.
-      DCHECK(!output.IsAbsolute());
-      return output;
-    }
-  }
-#endif
-
-  return file_path;
+  std::string result(base::SysCFStringRefToUTF8(str));
+  CFRelease(str);
+  return result;
 }
+
+// Prettifies |source_path| for OS X, by localizing every component of the
+// path. Additionally, if the path is inside the user's home directory, then
+// replace the home directory component with "~".
+FilePath PrettifyPath(const FilePath& source_path) {
+  FilePath home_path;
+  PathService::Get(base::DIR_HOME, &home_path);
+  DCHECK(source_path.IsAbsolute());
+
+  // Break down the incoming path into components, and grab the display name
+  // for every component. This will match app bundles, ".localized" folders,
+  // and localized subfolders of the user's home directory.
+  // Don't grab the display name of the first component, i.e., "/", as it'll
+  // show up as the HDD name.
+  std::vector<FilePath::StringType> components;
+  source_path.GetComponents(&components);
+  FilePath display_path = FilePath(components[0]);
+  FilePath actual_path = display_path;
+  for (std::vector<FilePath::StringType>::iterator i = components.begin() + 1;
+       i != components.end(); ++i) {
+    actual_path = actual_path.Append(*i);
+    if (actual_path == home_path) {
+      display_path = FilePath("~");
+      home_path = FilePath();
+      continue;
+    }
+    std::string display = GetDisplayBaseName(actual_path);
+    display_path = display_path.Append(display);
+  }
+  DCHECK_EQ(actual_path.value(), source_path.value());
+  return display_path;
+}
+#else  // defined(OS_MACOSX)
+// Prettifies |source_path|, by replacing the user's home directory with "~"
+// (if applicable).
+FilePath PrettifyPath(const FilePath& source_path) {
+#if defined(OS_WIN) || defined(OS_POSIX)
+#if defined(OS_WIN)
+  int home_key = base::DIR_PROFILE;
+#elif defined(OS_POSIX)
+  int home_key = base::DIR_HOME;
+#endif
+  FilePath home_path;
+  FilePath display_path = FilePath::FromUTF8Unsafe("~");
+  if (PathService::Get(home_key, &home_path)
+      && home_path.AppendRelativePath(source_path, &display_path))
+    return display_path;
+#endif
+  return source_path;
+}
+#endif  // defined(OS_MACOSX)
 
 bool g_skip_picker_for_test = false;
 FilePath* g_path_to_be_picked_for_test;
