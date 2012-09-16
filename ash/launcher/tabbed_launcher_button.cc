@@ -16,6 +16,10 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/insets.h"
 
+namespace {
+const int kIconOffsetY = 7;
+}
+
 namespace ash {
 namespace internal {
 
@@ -88,14 +92,12 @@ void TabbedLauncherButton::IconView::OnPaint(gfx::Canvas* canvas) {
   if ((animation_.get() && animation_->is_animating() &&
       animation_->current_part_index() == 1)) {
     int x = (width() - animating_image_.width()) / 2;
-    int y = (height() - animating_image_.height()) / 2;
     canvas->SaveLayerAlpha(animation_->CurrentValueBetween(255, 0));
-    canvas->DrawImageInt(animating_image_, x, y);
+    canvas->DrawImageInt(animating_image_, x, kIconOffsetY);
     canvas->Restore();
   } else {
     int x = (width() - image_.width()) / 2;
-    int y = (height() - image_.height()) / 2;
-    canvas->DrawImageInt(image_, x, y);
+    canvas->DrawImageInt(image_, x, kIconOffsetY);
   }
 }
 

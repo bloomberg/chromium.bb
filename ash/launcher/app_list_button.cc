@@ -25,7 +25,7 @@ namespace {
 
 const int kAnimationDurationInMs = 600;
 const float kAnimationOpacity[] = { 1.0f, 0.4f, 1.0f };
-
+const int kImageOffsetY = 8;
 }  // namespace
 
 AppListButton::AppListButton(views::ButtonListener* listener,
@@ -46,7 +46,8 @@ AppListButton::AppListButton(views::ButtonListener* listener,
           ToImageSkia());
   SetAccessibleName(l10n_util::GetStringUTF16(IDS_AURA_APP_LIST_TITLE));
   SetSize(gfx::Size(kLauncherPreferredSize, kLauncherPreferredSize));
-  SetImageAlignment(ImageButton::ALIGN_CENTER, ImageButton::ALIGN_MIDDLE);
+  SetImageAlignment(ImageButton::ALIGN_CENTER, ImageButton::ALIGN_TOP);
+  set_border(views::Border::CreateEmptyBorder(kImageOffsetY, 0, 0, 0));
 }
 
 AppListButton::~AppListButton() {

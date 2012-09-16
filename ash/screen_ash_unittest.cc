@@ -31,7 +31,7 @@ TEST_F(ScreenAshTest, Bounds) {
   secondary->Show();
 
   // Maximized bounds
-  EXPECT_EQ("0,0 600x598",
+  EXPECT_EQ("0,0 600x597",
             ScreenAsh::GetMaximizedWindowBoundsInParent(
                 primary->GetNativeView()).ToString());
   EXPECT_EQ("0,0 500x500",

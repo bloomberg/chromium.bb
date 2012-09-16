@@ -150,9 +150,9 @@ TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
   // Maximized area on primary display has 2px (given as
   // kAutoHideSize in shelf_layout_manager.cc) inset at the bottom.
   EXPECT_EQ(root_windows[0], maximized->GetNativeView()->GetRootWindow());
-  EXPECT_EQ("0,0 600x598",
+  EXPECT_EQ("0,0 600x597",
             maximized->GetWindowBoundsInScreen().ToString());
-  EXPECT_EQ("0,0 600x598",
+  EXPECT_EQ("0,0 600x597",
             maximized->GetNativeView()->GetBoundsInRootWindow().ToString());
 
   EXPECT_EQ(root_windows[0], minimized->GetNativeView()->GetRootWindow());

@@ -881,10 +881,10 @@ TEST_F(WorkspaceWindowResizerTest, SnapToEdge) {
   EXPECT_EQ("513,112 320x160", window_->bounds().ToString());
 
   // And the bottom should snap too.
-  resizer->Drag(CalculateDragPoint(*resizer, 0, 600 - 160 - 112 - 2 - 7), 0);
-  EXPECT_EQ("96,438 320x160", window_->bounds().ToString());
-  resizer->Drag(CalculateDragPoint(*resizer, 0, 600 - 160 - 112 - 2 + 15), 0);
-  EXPECT_EQ("96,438 320x160", window_->bounds().ToString());
+  resizer->Drag(CalculateDragPoint(*resizer, 0, 600 - 160 - 112 - 3 - 7), 0);
+  EXPECT_EQ("96,437 320x160", window_->bounds().ToString());
+  resizer->Drag(CalculateDragPoint(*resizer, 0, 600 - 160 - 112 - 3 + 15), 0);
+  EXPECT_EQ("96,437 320x160", window_->bounds().ToString());
   resizer->Drag(CalculateDragPoint(*resizer, 0, 600 - 160 - 112 - 2 + 32), 0);
   EXPECT_EQ("96,470 320x160", window_->bounds().ToString());
   resizer->Drag(CalculateDragPoint(*resizer, 0, 600 - 160 - 112 - 2 + 33), 0);

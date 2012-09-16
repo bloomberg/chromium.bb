@@ -46,7 +46,7 @@ ui::Layer* GetLayer(views::Widget* widget) {
 const int ShelfLayoutManager::kWorkspaceAreaBottomInset = 2;
 
 // static
-const int ShelfLayoutManager::kAutoHideSize = 2;
+const int ShelfLayoutManager::kAutoHideSize = 3;
 
 // ShelfLayoutManager::AutoHideEventFilter -------------------------------------
 
@@ -656,6 +656,9 @@ void ShelfLayoutManager::CalculateTargetBounds(
   } else if (state.visibility_state == AUTO_HIDE &&
              state.auto_hide_state == AUTO_HIDE_HIDDEN) {
     shelf_size = kAutoHideSize;
+    // Keep the launcher to its full height when dragging is in progress.
+    if (gesture_drag_status_ == GESTURE_DRAG_NONE)
+      launcher_size.set_height(kAutoHideSize);
   }
   if (alignment_ == SHELF_ALIGNMENT_BOTTOM) {
     int y = available_bounds.bottom();
@@ -669,7 +672,7 @@ void ShelfLayoutManager::CalculateTargetBounds(
     if (launcher_widget()) {
       target_bounds->launcher_bounds_in_root = gfx::Rect(
           available_bounds.x(),
-          y + (shelf_height - launcher_size.height()) / 2,
+          y,
           available_bounds.width(),
           launcher_size.height());
     }
@@ -809,7 +812,7 @@ void ShelfLayoutManager::UpdateShelfBackground(
 bool ShelfLayoutManager::GetLauncherPaintsBackground() const {
   return gesture_drag_status_ != GESTURE_DRAG_NONE ||
       (!state_.is_screen_locked && window_overlaps_shelf_) ||
-      state_.visibility_state == AUTO_HIDE;
+      (state_.visibility_state == AUTO_HIDE) ;
 }
 
 void ShelfLayoutManager::UpdateAutoHideStateNow() {

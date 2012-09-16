@@ -29,6 +29,7 @@ const int kBarSize = 3;
 const int kBarSpacing = 5;
 const int kIconSize = 32;
 const int kHopSpacing = 2;
+const int kIconPad = 8;
 const int kHopUpMS = 0;
 const int kHopDownMS = 200;
 const int kAttentionThrobDurationMS = 1000;
@@ -287,32 +288,29 @@ void LauncherButton::GetAccessibleState(ui::AccessibleViewState* state) {
 }
 
 void LauncherButton::Layout() {
-  gfx::Rect rect(GetContentsBounds());
-  const gfx::Size& icon_size(icon_view_->GetPreferredSize());
-  gfx::Rect icon_bounds = rect.Center(icon_size);
-
+  const gfx::Rect button_bounds(GetContentsBounds());
   int x_offset = 0, y_offset = 0;
-  if (IsShelfHorizontal()) {
-    y_offset += kBarSize / 2;
+  gfx::Rect icon_bounds;
+
+  if (host_->GetShelfAlignment() == SHELF_ALIGNMENT_BOTTOM) {
+    icon_bounds.SetRect(
+        button_bounds.x(), button_bounds.y() + kIconPad,
+        button_bounds.width(), kIconSize);
     if (ShouldHop(state_))
-      y_offset += kHopSpacing;
+      y_offset -= kHopSpacing;
   } else {
-    x_offset += kBarSize / 2;
-    if (ShouldHop(state_))
+    icon_bounds.SetRect(
+        button_bounds.x() + kIconPad, button_bounds.y(),
+        kIconSize, button_bounds.height());
+    if (!ShouldHop(state_))
       x_offset += kHopSpacing;
-    if (host_->GetShelfAlignment() == SHELF_ALIGNMENT_LEFT)
-      x_offset = -x_offset;
   }
 
-  // Offset to compensate for shadows.
-  gfx::Insets icon_shadow_padding = gfx::ShadowValue::GetMargin(icon_shadows_);
-
-  x_offset -= (icon_shadow_padding.left() - icon_shadow_padding.right()) / 2;
-  y_offset -= (icon_shadow_padding.top() - icon_shadow_padding.bottom()) / 2;
-  icon_bounds.Offset(-x_offset, -y_offset);
-
+  if (host_->GetShelfAlignment() == SHELF_ALIGNMENT_LEFT)
+    x_offset = -x_offset;
+  icon_bounds.Offset(x_offset, y_offset);
   icon_view_->SetBoundsRect(icon_bounds);
-  bar_->SetBoundsRect(rect);
+  bar_->SetBoundsRect(GetContentsBounds());
 }
 
 void LauncherButton::ChildPreferredSizeChanged(views::View* child) {
@@ -336,7 +334,7 @@ void LauncherButton::Init() {
   icon_view_->SetPaintToLayer(true);
   icon_view_->SetFillsBoundsOpaquely(false);
   icon_view_->SetHorizontalAlignment(views::ImageView::CENTER);
-  icon_view_->SetVerticalAlignment(views::ImageView::CENTER);
+  icon_view_->SetVerticalAlignment(views::ImageView::LEADING);
 
   AddChildView(icon_view_);
 }

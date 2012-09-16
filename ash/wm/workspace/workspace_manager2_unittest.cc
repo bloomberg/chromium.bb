@@ -523,7 +523,7 @@ TEST_F(WorkspaceManager2Test, ShelfStateUpdated) {
   // state (tested elsewhere), we abandon the current size and restore
   // rect and set them to the window.
   gfx::Rect restore = *GetRestoreBoundsInScreen(w1.get());
-  EXPECT_EQ("0,0 800x598", w1->bounds().ToString());
+  EXPECT_EQ("0,0 800x597", w1->bounds().ToString());
   EXPECT_EQ("0,1 101x102", restore.ToString());
   ClearRestoreBounds(w1.get());
   w1->SetBounds(restore);
