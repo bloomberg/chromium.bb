@@ -2,10 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var assertEq = chrome.test.assertEq;
-var assertTrue = chrome.test.assertTrue;
-var succeed = chrome.test.succeed;
-
 function test(stage0) {
   var apis = [
     chrome.storage.sync,
@@ -23,15 +19,15 @@ chrome.test.runTests([
       this.get('foo', stage1.bind(this));
     }
     function stage1(settings) {
-      assertEq({}, settings);
+      chrome.test.assertEq({}, settings);
       this.get(['foo', 'bar'], stage2.bind(this));
     }
     function stage2(settings) {
-      assertEq({}, settings);
+      chrome.test.assertEq({}, settings);
       this.get(undefined, stage3.bind(this));
     }
     function stage3(settings) {
-      assertEq({}, settings);
+      chrome.test.assertEq({}, settings);
       this.succeed();
     }
     test(stage0);
@@ -49,21 +45,21 @@ chrome.test.runTests([
       this.get(['foo', 'baz'], stage2.bind(this));
     }
     function stage2(settings) {
-      assertEq({
+      chrome.test.assertEq({
         'foo': 'bar',
         'baz': 'qux'
       }, settings);
       this.get(['nothing', 'baz', 'hello', 'ignore'], stage3.bind(this));
     }
     function stage3(settings) {
-      assertEq({
+      chrome.test.assertEq({
         'baz'  : 'qux',
         'hello': 'world'
       }, settings);
       this.get(null, stage4.bind(this));
     }
     function stage4(settings) {
-      assertEq({
+      chrome.test.assertEq({
         'foo'  : 'bar',
         'baz'  : 'qux',
         'hello': 'world'
@@ -98,7 +94,7 @@ chrome.test.runTests([
       this.get(null, stage3.bind(this));
     }
     function stage3(settings) {
-      assertEq({
+      chrome.test.assertEq({
         'baz'  : 'qux',
         'hello': 'world'
       }, settings);
@@ -108,7 +104,7 @@ chrome.test.runTests([
       this.get(null, stage5.bind(this));
     }
     function stage5(settings) {
-      assertEq({
+      chrome.test.assertEq({
         'hello': 'world'
       }, settings);
       this.remove('hello', stage6.bind(this));
@@ -117,7 +113,7 @@ chrome.test.runTests([
       this.get(null, stage7.bind(this));
     }
     function stage7(settings) {
-      assertEq({}, settings);
+      chrome.test.assertEq({}, settings);
       this.succeed();
     }
     test(stage0);
@@ -141,7 +137,7 @@ chrome.test.runTests([
       this.get(null, stage3.bind(this));
     }
     function stage3(settings) {
-      assertEq({
+      chrome.test.assertEq({
         'foo'  : 'otherBar',
         'baz'  : 'otherQux',
         'hello': 'world'
@@ -156,7 +152,7 @@ chrome.test.runTests([
       this.get(null, stage5.bind(this));
     }
     function stage5(settings) {
-      assertEq({
+      chrome.test.assertEq({
         'foo'  : 'otherBar',
         'baz'  : 'anotherQux',
         'hello': 'otherWorld',
@@ -175,7 +171,7 @@ chrome.test.runTests([
       this.get(null, stage2.bind(this));
     }
     function stage2(settings) {
-      assertEq({}, settings);
+      chrome.test.assertEq({}, settings);
       this.succeed();
     }
     test(stage0);
@@ -196,7 +192,7 @@ chrome.test.runTests([
       this.get(null, stage3.bind(this));
     }
     function stage3(settings) {
-      assertEq({}, settings);
+      chrome.test.assertEq({}, settings);
       this.succeed();
     }
     test(stage0);
@@ -213,21 +209,21 @@ chrome.test.runTests([
       this.get(['foo.bar', 'one'], stage2.bind(this));
     }
     function stage2(settings) {
-      assertEq({
+      chrome.test.assertEq({
         'foo.bar' : 'baz',
         'one'     : {'two': 'three'}
       }, settings);
       this.get('one.two', stage3.bind(this));
     }
     function stage3(settings) {
-      assertEq({}, settings);
+      chrome.test.assertEq({}, settings);
       this.remove(['foo.bar', 'one.two'], stage4.bind(this));
     }
     function stage4() {
       this.get(null, stage5.bind(this));
     }
     function stage5(settings) {
-      assertEq({
+      chrome.test.assertEq({
         'one'     : {'two': 'three'}
       }, settings);
       this.succeed();
@@ -243,14 +239,14 @@ chrome.test.runTests([
       }, stage1.bind(this));
     }
     function stage1(settings) {
-      assertEq({
+      chrome.test.assertEq({
         'foo': 'defaultBar',
         'baz': [1, 2, 3]
       }, settings);
       this.get(null, stage2.bind(this));
     }
     function stage2(settings) {
-      assertEq({}, settings);
+      chrome.test.assertEq({}, settings);
       this.set({'foo': 'bar'}, stage3.bind(this));
     }
     function stage3() {
@@ -260,7 +256,7 @@ chrome.test.runTests([
       }, stage4.bind(this));
     }
     function stage4(settings) {
-      assertEq({
+      chrome.test.assertEq({
         'foo': 'bar',
         'baz': [1, 2, 3]
       }, settings);
@@ -273,7 +269,7 @@ chrome.test.runTests([
       }, stage6.bind(this));
     }
     function stage6(settings) {
-      assertEq({
+      chrome.test.assertEq({
         'foo': 'bar',
         'baz': {}
       }, settings);
@@ -286,7 +282,7 @@ chrome.test.runTests([
       }, stage8.bind(this));
     }
     function stage8(settings) {
-      assertEq({
+      chrome.test.assertEq({
         'foo': 'defaultBar',
         'baz': {}
       }, settings);
@@ -299,66 +295,38 @@ chrome.test.runTests([
   function quota() {
     // Just check that the constants are defined; no need to be forced to
     // update them here as well if/when they change.
-    assertTrue(chrome.storage.sync.QUOTA_BYTES > 0);
-    assertTrue(chrome.storage.sync.QUOTA_BYTES_PER_ITEM > 0);
-    assertTrue(chrome.storage.sync.MAX_ITEMS > 0);
+    chrome.test.assertTrue(chrome.storage.sync.QUOTA_BYTES > 0);
+    chrome.test.assertTrue(chrome.storage.sync.QUOTA_BYTES_PER_ITEM > 0);
+    chrome.test.assertTrue(chrome.storage.sync.MAX_ITEMS > 0);
 
-    assertTrue(chrome.storage.local.QUOTA_BYTES > 0);
-    assertEq('undefined', typeof chrome.storage.local.QUOTA_BYTES_PER_ITEM);
-    assertEq('undefined', typeof chrome.storage.local.MAX_ITEMS);
+    chrome.test.assertTrue(chrome.storage.local.QUOTA_BYTES > 0);
+    chrome.test.assertEq('undefined',
+                         typeof chrome.storage.local.QUOTA_BYTES_PER_ITEM);
+    chrome.test.assertEq('undefined',
+                         typeof chrome.storage.local.MAX_ITEMS);
 
     var area = chrome.storage.sync;
     function stage0() {
       area.getBytesInUse(null, stage1);
     }
     function stage1(bytesInUse) {
-      assertEq(0, bytesInUse);
+      chrome.test.assertEq(0, bytesInUse);
       area.set({ a: 42, b: 43, c: 44 }, stage2);
     }
     function stage2() {
       area.getBytesInUse(null, stage3);
     }
     function stage3(bytesInUse) {
-      assertEq(9, bytesInUse);
+      chrome.test.assertEq(9, bytesInUse);
       area.getBytesInUse('a', stage4);
     }
     function stage4(bytesInUse) {
-      assertEq(3, bytesInUse);
+      chrome.test.assertEq(3, bytesInUse);
       area.getBytesInUse(['a', 'b'], stage5);
     }
     function stage5(bytesInUse) {
-      assertEq(6, bytesInUse);
-      succeed();
-    }
-    area.clear(stage0);
-  },
-
-  function nullsInArgs() {
-    var area = chrome.storage.local;
-    function stage0() {
-      area.get({
-        foo: 'foo',
-        bar: null,
-        baz: undefined
-      }, stage1);
-    }
-    function stage1(values) {
-      assertEq({
-        foo: 'foo',
-        bar: null,
-      }, values);
-      area.set({
-        foo: 'foo',
-        bar: null,
-        baz: undefined
-      }, area.get.bind(area, stage2));
-    }
-    function stage2(values) {
-      assertEq({
-        foo: 'foo',
-        bar: null,
-      }, values);
-      succeed();
+      chrome.test.assertEq(6, bytesInUse);
+      chrome.test.succeed();
     }
     area.clear(stage0);
   },
@@ -398,5 +366,5 @@ chrome.test.runTests([
         }));
       }));
     }));
-  },
+  }
 ]);

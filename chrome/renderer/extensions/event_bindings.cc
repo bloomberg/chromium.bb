@@ -191,8 +191,6 @@ class ExtensionImpl : public ChromeV8Extension {
     base::DictionaryValue* filter_dict = NULL;
     base::Value* filter_value = converter->FromV8Value(args[1]->ToObject(),
         v8::Context::GetCurrent());
-    if (!filter_value)
-      return v8::Integer::New(-1);
     if (!filter_value->GetAsDictionary(&filter_dict)) {
       delete filter_value;
       return v8::Integer::New(-1);

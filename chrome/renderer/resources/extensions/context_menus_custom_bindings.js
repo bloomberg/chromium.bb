@@ -48,14 +48,10 @@ chromeHidden.registerCustomHook('contextMenus', function(bindingsAPI) {
     var args = arguments;
     var id = GetNextContextMenuId();
     args[0].generatedId = id;
-    var optArgs = {
-      customCallback: this.customCallback,
-      // Functions aren't usually serializable, but the browser needs to know
-      // if there's an onclick handler, so convert it to an object.
-      // TODO(kalman): write this custom binding in such a way that we don't.
-      allowFunctionsInObjects: true
-    };
-    sendRequest(this.name, args, this.definition.parameters, optArgs);
+    sendRequest(this.name,
+                args,
+                this.definition.parameters,
+                {customCallback: this.customCallback});
     return chromeHidden.contextMenus.getIdFromCreateProperties(args[0]);
   });
 

@@ -203,6 +203,7 @@ void UserScriptScheduler::ExecuteCodeImpl(
 
       scoped_ptr<content::V8ValueConverter> v8_converter(
           content::V8ValueConverter::create());
+      v8_converter->SetUndefinedAllowed(true);
       v8::Handle<v8::Value> script_value;
       if (params.in_main_world) {
         script_value = child_frame->executeScriptAndReturnValue(source);
@@ -222,10 +223,7 @@ void UserScriptScheduler::ExecuteCodeImpl(
       if (!script_value.IsEmpty()) {
         base::Value* base_val =
             v8_converter->FromV8Value(script_value, context);
-        // Always append an execution result (i.e. no result == null result) so
-        // that |execution_results| lines up with the frames.
-        execution_results.Append(base_val ? base_val :
-                                            base::Value::CreateNullValue());
+        execution_results.Append(base_val);
         script_value.Clear();
       }
     } else {

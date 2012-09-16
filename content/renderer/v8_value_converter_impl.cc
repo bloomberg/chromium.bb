@@ -27,22 +27,38 @@ V8ValueConverter* V8ValueConverter::create() {
 }  // namespace content
 
 V8ValueConverterImpl::V8ValueConverterImpl()
-    : date_allowed_(false),
-      reg_exp_allowed_(false),
-      function_allowed_(false),
+    : undefined_allowed_(false),
+      date_allowed_(false),
+      regexp_allowed_(false),
       strip_null_from_objects_(false) {
+}
+
+bool V8ValueConverterImpl::GetUndefinedAllowed() const {
+  return undefined_allowed_;
+}
+
+void V8ValueConverterImpl::SetUndefinedAllowed(bool val) {
+  undefined_allowed_ = val;
+}
+
+bool V8ValueConverterImpl::GetDateAllowed() const {
+  return date_allowed_;
 }
 
 void V8ValueConverterImpl::SetDateAllowed(bool val) {
   date_allowed_ = val;
 }
 
-void V8ValueConverterImpl::SetRegExpAllowed(bool val) {
-  reg_exp_allowed_ = val;
+bool V8ValueConverterImpl::GetRegexpAllowed() const {
+  return regexp_allowed_;
 }
 
-void V8ValueConverterImpl::SetFunctionAllowed(bool val) {
-  function_allowed_ = val;
+void V8ValueConverterImpl::SetRegexpAllowed(bool val) {
+  regexp_allowed_ = val;
+}
+
+bool V8ValueConverterImpl::GetStripNullFromObjects() const {
+  return strip_null_from_objects_;
 }
 
 void V8ValueConverterImpl::SetStripNullFromObjects(bool val) {
@@ -184,36 +200,22 @@ Value* V8ValueConverterImpl::FromV8ValueImpl(v8::Handle<v8::Value> val,
     return Value::CreateStringValue(std::string(*utf8, utf8.length()));
   }
 
-  if (val->IsUndefined())
-    // JSON.stringify ignores undefined.
-    return NULL;
+  if (undefined_allowed_ && val->IsUndefined())
+    return Value::CreateNullValue();
 
-  if (val->IsDate()) {
-    if (!date_allowed_)
-      // JSON.stringify would convert this to a string, but an object is more
-      // consistent within this class.
-      return FromV8Object(val->ToObject(), unique_set);
+  if (date_allowed_ && val->IsDate()) {
     v8::Date* date = v8::Date::Cast(*val);
     return Value::CreateDoubleValue(date->NumberValue() / 1000.0);
   }
 
-  if (val->IsRegExp()) {
-    if (!reg_exp_allowed_)
-      // JSON.stringify converts to an object.
-      return FromV8Object(val->ToObject(), unique_set);
-    return Value::CreateStringValue(*v8::String::Utf8Value(val->ToString()));
+  if (regexp_allowed_ && val->IsRegExp()) {
+    return Value::CreateStringValue(
+        *v8::String::Utf8Value(val->ToString()));
   }
 
   // v8::Value doesn't have a ToArray() method for some reason.
   if (val->IsArray())
     return FromV8Array(val.As<v8::Array>(), unique_set);
-
-  if (val->IsFunction()) {
-    if (!function_allowed_)
-      // JSON.stringify refuses to convert function(){}.
-      return NULL;
-    return FromV8Object(val->ToObject(), unique_set);
-  }
 
   if (val->IsObject()) {
     BinaryValue* binary_value = FromV8Buffer(val);
@@ -223,9 +225,8 @@ Value* V8ValueConverterImpl::FromV8ValueImpl(v8::Handle<v8::Value> val,
       return FromV8Object(val->ToObject(), unique_set);
     }
   }
-
   LOG(ERROR) << "Unexpected v8 value type encountered.";
-  return NULL;
+  return Value::CreateNullValue();
 }
 
 Value* V8ValueConverterImpl::FromV8Array(v8::Handle<v8::Array> val,
@@ -257,12 +258,9 @@ Value* V8ValueConverterImpl::FromV8Array(v8::Handle<v8::Array> val,
       continue;
 
     Value* child = FromV8ValueImpl(child_v8, unique_set);
-    if (child)
-      result->Append(child);
-    else
-      // JSON.stringify puts null in places where values don't serialize, for
-      // example undefined and functions. Emulate that behavior.
-      result->Append(Value::CreateNullValue());
+    CHECK(child);
+
+    result->Append(child);
   }
   return result;
 }
@@ -337,10 +335,7 @@ Value* V8ValueConverterImpl::FromV8Object(
     }
 
     scoped_ptr<Value> child(FromV8ValueImpl(child_v8, unique_set));
-    if (!child.get())
-      // JSON.stringify skips properties whose values don't serialize, for
-      // example undefined and functions. Emulate that behavior.
-      continue;
+    CHECK(child.get());
 
     // Strip null if asked (and since undefined is turned into null, undefined
     // too). The use case for supporting this is JSON-schema support,
