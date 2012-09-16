@@ -60,9 +60,8 @@ class CONTENT_EXPORT VaapiVideoDecodeAccelerator :
   static void PreSandboxInitialization();
 
 private:
-  // Ensure data has been synced with the output texture and notify
-  // the client it is ready for displaying.
-  void SyncAndNotifyPictureReady(int32 input_id, int32 output_id);
+  // Notify the client that |output_id| is ready for displaying.
+  void NotifyPictureReady(int32 input_id, int32 output_id);
 
   // Notify the client that an error has occurred and decoding cannot continue.
   void NotifyError(Error error);
@@ -202,9 +201,12 @@ private:
   base::Thread decoder_thread_;
   content::VaapiH264Decoder decoder_;
 
-  // Callback passed to the decoder, which it will use to signal readiness
-  // of an output picture to be displayed.
-  void OutputPicCallback(int32 input_id, int32 output_id);
+  int num_frames_at_client_;
+  int num_stream_bufs_at_decoder_;
+
+  // Posted onto ChildThread by the decoder to submit a GPU job to put decoded
+  // picture into output buffer.
+  void Sync(int32 output_id);
 
   DISALLOW_COPY_AND_ASSIGN(VaapiVideoDecodeAccelerator);
 };

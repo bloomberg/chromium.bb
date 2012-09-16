@@ -13,6 +13,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/media/vaapi_video_decode_accelerator.h"
+#include "media/base/bind_to_loop.h"
 #include "media/video/picture.h"
 #include "third_party/libva/va/va.h"
 #include "ui/gl/gl_bindings.h"
@@ -65,7 +66,9 @@ VaapiVideoDecodeAccelerator::VaapiVideoDecodeAccelerator(
       weak_this_(base::AsWeakPtr(this)),
       client_ptr_factory_(client),
       client_(client_ptr_factory_.GetWeakPtr()),
-      decoder_thread_("VaapiDecoderThread") {
+      decoder_thread_("VaapiDecoderThread"),
+      num_frames_at_client_(0),
+      num_stream_bufs_at_decoder_(0) {
   DCHECK(client);
   static bool vaapi_functions_initialized = PostSandboxInitialization();
   RETURN_AND_NOTIFY_ON_FAILURE(vaapi_functions_initialized,
@@ -87,8 +90,10 @@ bool VaapiVideoDecodeAccelerator::Initialize(
 
   bool res = decoder_.Initialize(
       profile, x_display_, glx_context_, make_context_current_,
-      base::Bind(&VaapiVideoDecodeAccelerator::OutputPicCallback,
-                 base::Unretained(this)));
+      media::BindToLoop(message_loop_->message_loop_proxy(), base::Bind(
+          &VaapiVideoDecodeAccelerator::NotifyPictureReady, weak_this_)),
+      media::BindToLoop(message_loop_->message_loop_proxy(), base::Bind(
+          &VaapiVideoDecodeAccelerator::Sync, weak_this_)));
   if (!res) {
     DVLOG(1) << "Failed initializing decoder";
     return false;
@@ -103,9 +108,10 @@ bool VaapiVideoDecodeAccelerator::Initialize(
   return true;
 }
 
-void VaapiVideoDecodeAccelerator::SyncAndNotifyPictureReady(int32 input_id,
-                                                            int32 output_id) {
+void VaapiVideoDecodeAccelerator::Sync(int32 output_id) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
+  TRACE_EVENT1("Video Decoder", "VAVDA::Sync", "output_id", output_id);
+
   // Handle Destroy() arriving while pictures are queued for output.
   if (!client_)
     return;
@@ -114,8 +120,22 @@ void VaapiVideoDecodeAccelerator::SyncAndNotifyPictureReady(int32 input_id,
   RETURN_AND_NOTIFY_ON_FAILURE(decoder_.PutPicToTexture(output_id),
                                "Failed putting picture to texture",
                                PLATFORM_FAILURE, );
+}
 
-  // And notify the client a picture is ready to be displayed.
+void VaapiVideoDecodeAccelerator::NotifyPictureReady(int32 input_id,
+                                                     int32 output_id) {
+  DCHECK_EQ(message_loop_, MessageLoop::current());
+  TRACE_EVENT2("Video Decoder", "VAVDA::NotifyPictureReady",
+               "input_id", input_id, "output_id", output_id);
+
+  // Handle Destroy() arriving while pictures are queued for output.
+  if (!client_)
+    return;
+
+  ++num_frames_at_client_;
+  TRACE_COUNTER1("Video Decoder", "Textures at client", num_frames_at_client_);
+
+  // Notify the client a picture is ready to be displayed.
   DVLOG(4) << "Notifying output picture id " << output_id
            << " for input "<< input_id << " is ready";
   client_->PictureReady(media::Picture(output_id, input_id));
@@ -124,6 +144,8 @@ void VaapiVideoDecodeAccelerator::SyncAndNotifyPictureReady(int32 input_id,
 void VaapiVideoDecodeAccelerator::MapAndQueueNewInputBuffer(
     const media::BitstreamBuffer& bitstream_buffer) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
+  TRACE_EVENT1("Video Decoder", "MapAndQueueNewInputBuffer", "input_id",
+      bitstream_buffer.id());
 
   DVLOG(4) << "Mapping new input buffer id: " << bitstream_buffer.id()
            << " size: " << (int)bitstream_buffer.size();
@@ -140,6 +162,10 @@ void VaapiVideoDecodeAccelerator::MapAndQueueNewInputBuffer(
   input_buffer->shm.reset(shm.release());
   input_buffer->id = bitstream_buffer.id();
   input_buffer->size = bitstream_buffer.size();
+
+  ++num_stream_bufs_at_decoder_;
+  TRACE_COUNTER1("Video Decoder", "Stream buffers at decoder",
+                 num_stream_bufs_at_decoder_);
 
   input_buffers_.push(input_buffer);
   input_ready_.Signal();
@@ -186,6 +212,14 @@ void VaapiVideoDecodeAccelerator::InitialDecodeTask() {
         ReturnCurrInputBuffer_Locked();
         break;
 
+      case VaapiH264Decoder::kNoOutputAvailable:
+        if (state_ == kIdle)  {
+          // No more output buffers in the decoder, try getting more or go to
+          // sleep waiting for them.
+          GetOutputBuffers_Locked();
+          return;
+        }
+        // else fallthrough
       case VaapiH264Decoder::kDecodeError:
         RETURN_AND_NOTIFY_ON_FAILURE(false, "Error in decoding",
                                      PLATFORM_FAILURE, );
@@ -255,6 +289,10 @@ void VaapiVideoDecodeAccelerator::ReturnCurrInputBuffer_Locked() {
   DVLOG(4) << "End of input buffer " << id;
   message_loop_->PostTask(FROM_HERE, base::Bind(
       &Client::NotifyEndOfBitstreamBuffer, client_, id));
+
+  --num_stream_bufs_at_decoder_;
+  TRACE_COUNTER1("Video Decoder", "Stream buffers at decoder",
+                 num_stream_bufs_at_decoder_);
 }
 
 bool VaapiVideoDecodeAccelerator::GetOutputBuffers_Locked() {
@@ -262,11 +300,11 @@ bool VaapiVideoDecodeAccelerator::GetOutputBuffers_Locked() {
   DCHECK_EQ(decoder_thread_.message_loop(), MessageLoop::current());
 
   while (output_buffers_.empty() &&
-         (state_ == kDecoding || state_ == kFlushing)) {
+         (state_ == kDecoding || state_ == kFlushing || state_ == kIdle)) {
     output_ready_.Wait();
   }
 
-  if (state_ != kDecoding && state_ != kFlushing)
+  if (state_ != kDecoding && state_ != kFlushing && state_ != kIdle)
     return false;
 
   while (!output_buffers_.empty()) {
@@ -279,6 +317,7 @@ bool VaapiVideoDecodeAccelerator::GetOutputBuffers_Locked() {
 
 void VaapiVideoDecodeAccelerator::DecodeTask() {
   DCHECK_EQ(decoder_thread_.message_loop(), MessageLoop::current());
+  TRACE_EVENT0("Video Decoder", "VAVDA::DecodeTask");
   base::AutoLock auto_lock(lock_);
 
   // Main decode task.
@@ -359,7 +398,9 @@ void VaapiVideoDecodeAccelerator::Decode(
       break;
 
     default:
-      DVLOG(1) << "Decode request from client in invalid state: " << state_;
+      RETURN_AND_NOTIFY_ON_FAILURE(false,
+          "Decode request from client in invalid state: " << state_,
+          PLATFORM_FAILURE, );
       return;
   }
 }
@@ -391,6 +432,9 @@ void VaapiVideoDecodeAccelerator::ReusePictureBuffer(int32 picture_buffer_id) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   TRACE_EVENT1("Video Decoder", "VAVDA::ReusePictureBuffer", "Picture id",
                picture_buffer_id);
+
+  --num_frames_at_client_;
+  TRACE_COUNTER1("Video Decoder", "Textures at client", num_frames_at_client_);
 
   base::AutoLock auto_lock(lock_);
   output_buffers_.push(picture_buffer_id);
@@ -497,6 +541,7 @@ void VaapiVideoDecodeAccelerator::FinishReset() {
   }
 
   state_ = kIdle;
+  num_stream_bufs_at_decoder_ = 0;
 
   message_loop_->PostTask(FROM_HERE, base::Bind(
       &Client::NotifyResetDone, client_));
@@ -546,18 +591,4 @@ void VaapiVideoDecodeAccelerator::PreSandboxInitialization() {
 // static
 bool VaapiVideoDecodeAccelerator::PostSandboxInitialization() {
   return VaapiH264Decoder::PostSandboxInitialization();
-}
-
-void VaapiVideoDecodeAccelerator::OutputPicCallback(int32 input_id,
-                                                    int32 output_id) {
-  TRACE_EVENT2("Video Decoder", "VAVDA::OutputPicCallback",
-               "Input id", input_id, "Picture id", output_id);
-  DVLOG(4) << "Outputting picture, input id: " << input_id
-           << " output id: " << output_id;
-
-  // Forward the request to the main thread.
-  DCHECK_EQ(decoder_thread_.message_loop(), MessageLoop::current());
-  message_loop_->PostTask(FROM_HERE, base::Bind(
-      &VaapiVideoDecodeAccelerator::SyncAndNotifyPictureReady, weak_this_,
-      input_id, output_id));
 }

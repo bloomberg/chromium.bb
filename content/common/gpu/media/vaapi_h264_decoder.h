@@ -44,11 +44,16 @@ namespace content {
 class VaapiH264Decoder {
  public:
   // Callback invoked on the client when a picture is to be displayed.
-  // Callee has to call PutPicToTexture() for the given picture before
-  // displaying it, to ensure the contents have been synced properly.
   // Arguments: input buffer id, output buffer id (both provided by the client
   // at the time of Decode() and AssignPictureBuffer() calls).
   typedef base::Callback<void(int32, int32)> OutputPicCB;
+
+  // Callback invoked on the client to start a GPU job to put a decoded picture
+  // into a pixmap/texture. Callee has to call PutPicToTexture() for the given
+  // picture.
+  // Argument: output buffer id (provided by the client at the time of
+  // AssignPictureBuffer() call).
+  typedef base::Callback<void(int32)> SyncPicCB;
 
   // Decode result codes.
   enum DecResult {
@@ -76,7 +81,8 @@ class VaapiH264Decoder {
                   Display* x_display,
                   GLXContext glx_context,
                   const base::Callback<bool(void)>& make_context_current,
-                  const OutputPicCB& output_pic_cb) WARN_UNUSED_RESULT;
+                  const OutputPicCB& output_pic_cb,
+                  const SyncPicCB& sync_pic_cb) WARN_UNUSED_RESULT;
   void Destroy();
 
   // Notify the decoder that this output buffer has been consumed and
@@ -311,12 +317,10 @@ class VaapiH264Decoder {
   // has been found, false otherwise.
   bool AssignSurfaceToPoC(int poc);
 
-  // Unassign a surface from |poc| and return a pointer to it, or NULL if there
-  // is no surface associated with given |poc|. Note that this does not make
-  // the surface available for reuse - as this can only happen after client
-  // returns the surface via ReusePictureBuffer() - but only removes its
-  // association with given |poc|.
-  DecodeSurface* UnassignSurfaceFromPoC(int poc);
+  // Mark a surface as unused for decoding, unassigning it from |poc|. If the
+  // corresponding picture is not at client to be displayed,
+  // release the surface.
+  void UnassignSurfaceFromPoC(int poc);
 
   // The id of current input buffer, which will be associated with an
   // output picture if a frame is decoded successfully.
@@ -341,6 +345,12 @@ class VaapiH264Decoder {
 
   // Called by decoder when a picture should be outputted.
   OutputPicCB output_pic_cb_;
+
+  // Called by decoder to post a Sync job on the ChildThread.
+  SyncPicCB sync_pic_cb_;
+
+  // PicOrderCount of the previously outputted frame.
+  int last_output_poc_;
 
   // Has static initialization of pre-sandbox components completed successfully?
   static bool pre_sandbox_init_done_;
