@@ -86,9 +86,9 @@ class BluetoothGetDevicesFunction : public AsyncExtensionFunction {
 
  private:
 #if defined(OS_CHROMEOS)
-  void AddDeviceIfTrueCallback(ListValue* list,
-                               const chromeos::BluetoothDevice* device,
-                               bool shouldAdd);
+  void DispatchDeviceSearchResult(const chromeos::BluetoothDevice& device);
+  void ProvidesServiceCallback(const chromeos::BluetoothDevice* device,
+                               bool providesService);
 
   int callbacks_pending_;
 #endif

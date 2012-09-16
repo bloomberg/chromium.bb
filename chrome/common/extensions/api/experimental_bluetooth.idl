@@ -71,6 +71,11 @@ namespace experimental.bluetooth {
     // Only devices providing a service with a name that matches |name| will be
     // returned.
     DOMString? name;
+
+    // Called for each matching device.  Note that a service discovery request
+    // must be made to each non-matching device before it can be definitively
+    // excluded.  This can take some time.
+    DeviceCallback deviceCallback;
   };
 
   // Options for the getServices function.
@@ -148,12 +153,15 @@ namespace experimental.bluetooth {
     //              there is no adapater available.
     static void getName(NameCallback callback);
 
-    // Get a list of Bluetooth devices.
-    // NOTE: This API is likely to change.  Please see crbug.com/134545
-    // |options|  : Controls which devices are returned.
-    // |callback| : Called with an array of Device objects.
+    // Get a bluetooth devices known to the system.  Known devices are either
+    // currently bonded, or have been bonded in the past.
+    // |options|  : Controls which devices are returned and provides
+    //              |deviceCallback|, which is called for each matching device.
+    // |callback| : Called when the search is completed.
+    //              |options.deviceCallback| will not be called after
+    //              |callback| has been called.
     static void getDevices(GetDevicesOptions options,
-                           DevicesCallback callback);
+                           ResultCallback callback);
 
     // Get a list of services provided by a device.
     static void getServices(GetServicesOptions options,
