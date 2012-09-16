@@ -5,12 +5,15 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_UNHANDLED_KEYBOARD_EVENT_HANDLER_H_
 #define CHROME_BROWSER_UI_VIEWS_UNHANDLED_KEYBOARD_EVENT_HANDLER_H_
 
-#include "content/public/browser/native_web_keyboard_event.h"
-#include "ui/views/view.h"
+#include "base/basictypes.h"
+
+namespace content {
+struct NativeWebKeyboardEvent;
+}
 
 namespace views {
 class FocusManager;
-}  // namespace views
+}
 
 // This class handles unhandled keyboard messages coming back from the renderer
 // process.
