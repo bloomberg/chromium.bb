@@ -13,7 +13,7 @@
 namespace chrome {
 
 // static
-void MediaStorageUtil::GetDeviceInfoFromPathImpl(const FilePath& path,
+bool MediaStorageUtil::GetDeviceInfoFromPathImpl(const FilePath& path,
                                                  std::string* device_id,
                                                  string16* device_name,
                                                  FilePath* relative_path) {
@@ -33,7 +33,7 @@ void MediaStorageUtil::GetDeviceInfoFromPathImpl(const FilePath& path,
       FilePath mount_point(device_info.location);
       mount_point.AppendRelativePath(path, relative_path);
     }
-    return;
+    return true;
   }
 
   if (device_id)
@@ -42,6 +42,7 @@ void MediaStorageUtil::GetDeviceInfoFromPathImpl(const FilePath& path,
     *device_name = path.BaseName().LossyDisplayName();
   if (relative_path)
     *relative_path = FilePath();
+  return true;
 }
 
 }  // namespace chrome

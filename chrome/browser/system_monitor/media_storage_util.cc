@@ -29,7 +29,7 @@ const char kRemovableMassStorageNoDCIMPrefix[] = "nodcim:";
 const char kFixedMassStoragePrefix[] = "path:";
 const char kMtpPtpPrefix[] = "mtp:";
 
-static void (*g_test_get_device_info_from_path_function)(
+static bool (*g_test_get_device_info_from_path_function)(
     const FilePath& path, std::string* device_id, string16* device_name,
     FilePath* relative_path) = NULL;
 
@@ -146,15 +146,17 @@ void MediaStorageUtil::IsDeviceAttached(const std::string& device_id,
 }
 
 // static
-void MediaStorageUtil::GetDeviceInfoFromPath(const FilePath& path,
+bool MediaStorageUtil::GetDeviceInfoFromPath(const FilePath& path,
                                              std::string* device_id,
                                              string16* device_name,
                                              FilePath* relative_path) {
   if (g_test_get_device_info_from_path_function) {
-    g_test_get_device_info_from_path_function(path, device_id, device_name,
-                                              relative_path);
+    return g_test_get_device_info_from_path_function(path, device_id,
+                                                     device_name,
+                                                     relative_path);
   } else {
-    GetDeviceInfoFromPathImpl(path, device_id, device_name, relative_path);
+    return GetDeviceInfoFromPathImpl(path, device_id, device_name,
+                                     relative_path);
   }
 }
 
@@ -186,7 +188,7 @@ MediaStorageUtil::MediaStorageUtil() {}
 
 #if !defined(OS_LINUX) || defined(OS_CHROMEOS)
 // static
-void MediaStorageUtil::GetDeviceInfoFromPathImpl(const FilePath& path,
+bool MediaStorageUtil::GetDeviceInfoFromPathImpl(const FilePath& path,
                                                  std::string* device_id,
                                                  string16* device_name,
                                                  FilePath* relative_path) {
@@ -202,6 +204,7 @@ void MediaStorageUtil::GetDeviceInfoFromPathImpl(const FilePath& path,
     *device_name = path.BaseName().LossyDisplayName();
   if (relative_path)
     *relative_path = FilePath();
+  return true;
 }
 #endif
 

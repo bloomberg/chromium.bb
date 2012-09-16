@@ -47,9 +47,6 @@ class RemovableDeviceNotificationsLinux
   // Must be called for RemovableDeviceNotificationsLinux to work.
   void Init();
 
-  // Use |device_id| to find and return where the device is mounted.
-  FilePath GetDeviceMountPoint(const std::string& device_id) const;
-
   // Finds the device that contains |path| and populates |device_info|.
   // Returns false if unable to find the device.
   bool GetDeviceInfoForPath(

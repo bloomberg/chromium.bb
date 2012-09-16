@@ -155,9 +155,10 @@ void MediaGalleriesPreferences::MaybeAddDefaultGalleries() {
     std::string device_id;
     string16 display_name;
     FilePath relative_path;
-    MediaStorageUtil::GetDeviceInfoFromPath(
-        path, &device_id, &display_name, &relative_path);
-    AddGallery(device_id, display_name, relative_path, false /*user added*/);
+    if (MediaStorageUtil::GetDeviceInfoFromPath(path, &device_id, &display_name,
+                                                &relative_path)) {
+      AddGallery(device_id, display_name, relative_path, false /*user added*/);
+    }
   }
 }
 
@@ -190,8 +191,17 @@ bool MediaGalleriesPreferences::LookUpGalleryByPath(
   std::string device_id;
   string16 device_name;
   FilePath relative_path;
-  MediaStorageUtil::GetDeviceInfoFromPath(path, &device_id, &device_name,
-                                          &relative_path);
+  if (!MediaStorageUtil::GetDeviceInfoFromPath(path, &device_id, &device_name,
+                                               &relative_path)) {
+    if (gallery_info) {
+      gallery_info->pref_id = kInvalidMediaGalleryPrefId;
+      gallery_info->display_name = string16();
+      gallery_info->device_id = std::string();
+      gallery_info->path = FilePath();
+      gallery_info->type = MediaGalleryPrefInfo::kBlackListed;
+    }
+    return false;
+  }
   relative_path = relative_path.NormalizePathSeparators();
   MediaGalleryPrefIdSet galleries_on_device =
       LookUpGalleriesByDeviceId(device_id);

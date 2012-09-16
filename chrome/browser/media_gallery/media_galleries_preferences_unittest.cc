@@ -36,7 +36,7 @@ class MediaStorageUtilTest : public MediaStorageUtil {
         &GetDeviceInfoFromPathTestFunction);
   }
 
-  static void GetDeviceInfoFromPathTestFunction(const FilePath& path,
+  static bool GetDeviceInfoFromPathTestFunction(const FilePath& path,
                                                 std::string* device_id,
                                                 string16* device_name,
                                                 FilePath* relative_path) {
@@ -46,6 +46,7 @@ class MediaStorageUtilTest : public MediaStorageUtil {
       *device_name = path.BaseName().LossyDisplayName();
     if (relative_path)
       *relative_path = FilePath();
+    return true;
   }
 };
 

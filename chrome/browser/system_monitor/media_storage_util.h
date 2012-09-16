@@ -59,7 +59,7 @@ class MediaStorageUtil {
 
   // Given |path|, fill in |device_id|, |device_name|, and |relative_path|
   // (from the root of the device) if they are not NULL.
-  static void GetDeviceInfoFromPath(const FilePath& path,
+  static bool GetDeviceInfoFromPath(const FilePath& path,
                                     std::string* device_id,
                                     string16* device_name,
                                     FilePath* relative_path);
@@ -70,7 +70,7 @@ class MediaStorageUtil {
   static FilePath FindDevicePathById(const std::string& device_id);
 
  protected:
-  typedef void (*GetDeviceInfoFromPathFunction)(const FilePath& path,
+  typedef bool (*GetDeviceInfoFromPathFunction)(const FilePath& path,
                                                 std::string* device_id,
                                                 string16* device_name,
                                                 FilePath* relative_path);
@@ -84,7 +84,7 @@ class MediaStorageUtil {
   MediaStorageUtil();
 
   // Per platform implementation.
-  static void GetDeviceInfoFromPathImpl(const FilePath& path,
+  static bool GetDeviceInfoFromPathImpl(const FilePath& path,
                                         std::string* device_id,
                                         string16* device_name,
                                         FilePath* relative_path);

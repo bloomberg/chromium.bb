@@ -278,41 +278,6 @@ void RemovableDeviceNotificationsLinux::Init() {
       base::Bind(&RemovableDeviceNotificationsLinux::InitOnFileThread, this));
 }
 
-FilePath RemovableDeviceNotificationsLinux::GetDeviceMountPoint(
-    const std::string& device_id) const {
-
-  MediaStorageUtil::Type type;
-  MediaStorageUtil::CrackDeviceId(device_id, &type, NULL);
-  if (type == MediaStorageUtil::MTP_OR_PTP)
-    return FilePath();
-  DCHECK(type == MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM ||
-         type == MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM ||
-         type == MediaStorageUtil::FIXED_MASS_STORAGE);
-
-  FilePath mount_device;
-  for (MountMap::const_iterator it = mount_info_map_.begin();
-       it != mount_info_map_.end();
-       ++it) {
-    if (it->second.device_id == device_id) {
-      mount_device = it->second.mount_device;
-      break;
-    }
-  }
-  if (mount_device.empty())
-    return mount_device;
-
-  const ReferencedMountPoint& referenced_info =
-      mount_priority_map_.find(mount_device)->second;
-  for (ReferencedMountPoint::const_iterator it = referenced_info.begin();
-       it != referenced_info.end();
-       ++it) {
-    if (it->second)
-      return it->first;
-  }
-  // If none of them are default, just return the first.
-  return FilePath(referenced_info.begin()->first);
-}
-
 bool RemovableDeviceNotificationsLinux::GetDeviceInfoForPath(
     const FilePath& path,
     SystemMonitor::RemovableStorageInfo* device_info) const {
