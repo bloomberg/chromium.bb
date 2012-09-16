@@ -67,6 +67,14 @@ int BrowserX11IOErrorHandler(Display* d) {
   return 0;
 }
 
+int X11EmptyErrorHandler(Display* d, XErrorEvent* error) {
+  return 0;
+}
+
+int X11EmptyIOErrorHandler(Display* d) {
+  return 0;
+}
+
 }  // namespace
 
 void RecordBreakpadStatusUMA(MetricsService* metrics) {
@@ -92,4 +100,8 @@ void SetBrowserX11ErrorHandlers() {
   // Set up error handlers to make sure profile gets written if X server
   // goes away.
   ui::SetX11ErrorHandlers(BrowserX11ErrorHandler, BrowserX11IOErrorHandler);
+}
+
+void UnsetBrowserX11ErrorHandlers() {
+  ui::SetX11ErrorHandlers(X11EmptyErrorHandler, X11EmptyIOErrorHandler);
 }

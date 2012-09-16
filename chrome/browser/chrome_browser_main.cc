@@ -1470,6 +1470,14 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
   // Android specific MessageLoop
   NOTREACHED();
 #else
+
+#if defined(USE_X11)
+  // Unset the X11 error handlers. The X11 error handlers log the errors using a
+  // |PostTask()| on the message-loop. But since the message-loop is in the
+  // process of terminating, this can cause errors.
+  UnsetBrowserX11ErrorHandlers();
+#endif
+
   // Start watching for jank during shutdown. It gets disarmed when
   // |shutdown_watcher_| object is destructed.
   shutdown_watcher_->Arm(base::TimeDelta::FromSeconds(300));
