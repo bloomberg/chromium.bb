@@ -507,7 +507,7 @@ void IOThread::Init() {
       globals_->ignore_certificate_errors;
   session_params.http_pipelining_enabled = globals_->http_pipelining_enabled;
   session_params.testing_fixed_http_port = globals_->testing_fixed_http_port;
-  session_params.testing_fixed_https_port = globals_->http_pipelining_enabled;
+  session_params.testing_fixed_https_port = globals_->testing_fixed_https_port;
 
   scoped_refptr<net::HttpNetworkSession> network_session(
       new net::HttpNetworkSession(session_params));
