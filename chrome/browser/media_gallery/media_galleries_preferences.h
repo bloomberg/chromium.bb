@@ -71,12 +71,8 @@ typedef std::set<MediaGalleryPrefId> MediaGalleryPrefIdSet;
 // user profile.
 class MediaGalleriesPreferences : public ProfileKeyedService {
  public:
-
   explicit MediaGalleriesPreferences(Profile* profile);
   virtual ~MediaGalleriesPreferences();
-
-  // Builds |remembered_galleries_| from the persistent store.
-  void InitFromPrefs();
 
   // Lookup a media gallery and fill in information about it and return true.
   // If the media gallery does not already exist, fill in as much of the
@@ -123,6 +119,12 @@ class MediaGalleriesPreferences : public ProfileKeyedService {
  private:
   typedef std::map<std::string /*device id*/, MediaGalleryPrefIdSet>
       DeviceIdPrefIdsMap;
+
+  // Populates the default galleries if this is a fresh profile.
+  void MaybeAddDefaultGalleries();
+
+  // Builds |remembered_galleries_| from the persistent store.
+  void InitFromPrefs();
 
   // The profile that owns |this|.
   Profile* profile_;

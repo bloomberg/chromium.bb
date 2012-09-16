@@ -83,15 +83,17 @@ class MediaGalleriesPreferencesTest : public testing::Test {
     gallery_prefs_.reset(new MediaGalleriesPreferences(profile_.get()));
 
     // Load the default galleries into the expectations.
-    if (gallery_prefs_->known_galleries().size()) {
-      const MediaGalleriesPrefInfoMap& known_galleries =
-          gallery_prefs_->known_galleries();
-      ASSERT_EQ(1U, known_galleries.size());
-      default_galleries_count_ = 1;
-      MediaGalleriesPrefInfoMap::const_iterator it = known_galleries.begin();
-      expected_galleries_[it->first] = it->second;
-      if (it->second.type == MediaGalleryPrefInfo::kAutoDetected)
-        expected_galleries_for_all.insert(it->first);
+    const MediaGalleriesPrefInfoMap& known_galleries =
+        gallery_prefs_->known_galleries();
+    if (known_galleries.size()) {
+      ASSERT_EQ(3U, known_galleries.size());
+      default_galleries_count_ = 3;
+      MediaGalleriesPrefInfoMap::const_iterator it;
+      for (it = known_galleries.begin(); it != known_galleries.end(); ++it) {
+        expected_galleries_[it->first] = it->second;
+        if (it->second.type == MediaGalleryPrefInfo::kAutoDetected)
+          expected_galleries_for_all.insert(it->first);
+      }
     }
 
     std::vector<std::string> all_permissions;

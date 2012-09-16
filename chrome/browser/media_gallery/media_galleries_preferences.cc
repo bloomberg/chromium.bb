@@ -128,24 +128,38 @@ MediaGalleryPrefInfo::~MediaGalleryPrefInfo() {}
 
 MediaGalleriesPreferences::MediaGalleriesPreferences(Profile* profile)
     : profile_(profile) {
-  // Populate the default galleries if this is a fresh profile.
-  MediaGalleryPrefId current_id =
-      profile_->GetPrefs()->GetUint64(prefs::kMediaGalleriesUniqueId);
-  if (current_id == kInvalidMediaGalleryPrefId + 1) {
-    FilePath pictures_path;
-    if (PathService::Get(chrome::DIR_USER_PICTURES, &pictures_path)) {
-      std::string device_id;
-      string16 display_name;
-      FilePath relative_path;
-      MediaStorageUtil::GetDeviceInfoFromPath(pictures_path, &device_id,
-                                              &display_name, &relative_path);
-      AddGallery(device_id, display_name, relative_path, false /*user added*/);
-    }
-  }
+  MaybeAddDefaultGalleries();
   InitFromPrefs();
 }
 
 MediaGalleriesPreferences::~MediaGalleriesPreferences() {}
+
+void MediaGalleriesPreferences::MaybeAddDefaultGalleries() {
+  MediaGalleryPrefId current_id =
+      profile_->GetPrefs()->GetUint64(prefs::kMediaGalleriesUniqueId);
+  if (current_id != kInvalidMediaGalleryPrefId + 1)
+    return;
+
+  // Fresh profile case.
+  const int kDirectoryKeys[] = {
+    DIR_USER_MUSIC,
+    DIR_USER_PICTURES,
+    DIR_USER_VIDEOS,
+  };
+
+  for (size_t i = 0; i < arraysize(kDirectoryKeys); ++i) {
+    FilePath path;
+    if (!PathService::Get(kDirectoryKeys[i], &path))
+      continue;
+
+    std::string device_id;
+    string16 display_name;
+    FilePath relative_path;
+    MediaStorageUtil::GetDeviceInfoFromPath(
+        path, &device_id, &display_name, &relative_path);
+    AddGallery(device_id, display_name, relative_path, false /*user added*/);
+  }
+}
 
 void MediaGalleriesPreferences::InitFromPrefs() {
   known_galleries_.clear();
@@ -163,9 +177,10 @@ void MediaGalleriesPreferences::InitFromPrefs() {
       continue;
 
     MediaGalleryPrefInfo gallery_info;
-    if (PopulateGalleryPrefInfoFromDictionary(*dict, &gallery_info))
+    if (PopulateGalleryPrefInfoFromDictionary(*dict, &gallery_info)) {
       known_galleries_[gallery_info.pref_id] = gallery_info;
       device_map_[gallery_info.device_id].insert(gallery_info.pref_id);
+    }
   }
 }
 
@@ -217,7 +232,7 @@ MediaGalleryPrefIdSet MediaGalleriesPreferences::LookUpGalleriesByDeviceId(
 MediaGalleryPrefId MediaGalleriesPreferences::AddGallery(
     const std::string& device_id, const string16& display_name,
     const FilePath& relative_path, bool user_added) {
-  DCHECK(display_name.length() > 0);
+  DCHECK_GT(display_name.size(), 0U);
   FilePath normalized_relative_path = relative_path.NormalizePathSeparators();
   MediaGalleryPrefIdSet galleries_on_device =
     LookUpGalleriesByDeviceId(device_id);
@@ -396,4 +411,4 @@ MediaGalleriesPreferences::GetExtensionPrefs() const {
   return extension_service->extension_prefs();
 }
 
-} // namespace chrome
+}  // namespace chrome

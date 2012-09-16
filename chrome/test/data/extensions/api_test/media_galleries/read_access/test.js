@@ -9,8 +9,9 @@ var mediaFileSystemsDirectoryErrorCallback = function(err) {
 };
 
 var mediaFileSystemsListCallback = function(results) {
-  // There should be a "Pictures" directory on all desktop platforms.
-  var expectedFileSystems = 1;
+  // There should be "Music", "Pictures", and "Videos" directories on all
+  // desktop platforms.
+  var expectedFileSystems = 3;
   // But not on Android and ChromeOS.
   if (/Android/.test(navigator.userAgent) || /CrOS/.test(navigator.userAgent))
     expectedFileSystems = 0;

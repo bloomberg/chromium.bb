@@ -6,14 +6,13 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "base/stringprintf.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/platform_app_browsertest_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 
 #if defined(OS_LINUX)
-#include <fstream>
-
 #include "base/environment.h"
 #include "base/scoped_temp_dir.h"
 #endif
@@ -41,23 +40,43 @@ class EnsurePictureDirectoryExists {
 #if defined(OS_CHROMEOS) || defined(OS_ANDROID)
     return;
 #elif defined(OS_LINUX)
-    // On Linux, the picture directory probably doesn't exist by default,
-    // so we override the settings to point to a tempdir.
+    // On Linux, the media directories may not exist by default, so override
+    // the settings to point to a temp directory with the media directories.
     ASSERT_TRUE(xdg_dir_.CreateUniqueTempDir());
+    const FilePath xdg_path = xdg_dir_.path();
+    const FilePath music_dir(xdg_path.Append("Megaman"));
+    const FilePath pictures_dir(xdg_path.Append("Pitfall"));
+    const FilePath videos_dir(xdg_path.Append("VVVV"));
+    ASSERT_TRUE(file_util::CreateDirectory(music_dir));
+    ASSERT_TRUE(file_util::CreateDirectory(pictures_dir));
+    ASSERT_TRUE(file_util::CreateDirectory(videos_dir));
 
-    FilePath config_file(xdg_dir_.path().Append("user-dirs.dirs"));
-    std::ofstream file;
-    file.open(config_file.value().c_str());
-    ASSERT_TRUE(file.is_open());
-    file << "XDG_PICTURES_DIR=\"" << xdg_dir_.path().value() << "\"";
-    file.close();
+    const FilePath config_file(xdg_path.Append("user-dirs.dirs"));
+    std::string xdg_user_dir_data = base::StringPrintf(
+        "XDG_MUSIC_DIR=\"%s\"\n"
+        "XDG_PICTURES_DIR=\"%s\"\n"
+        "XDG_VIDEOS_DIR=\"%s\"\n",
+        music_dir.value().c_str(),
+        pictures_dir.value().c_str(),
+        videos_dir.value().c_str());
+    ASSERT_TRUE(file_util::WriteFile(config_file,
+                                     xdg_user_dir_data.c_str(),
+                                     xdg_user_dir_data.size()));
 
     scoped_ptr<base::Environment> env(base::Environment::Create());
-    env->SetVar("XDG_CONFIG_HOME", xdg_dir_.path().value());
+    env->SetVar("XDG_CONFIG_HOME", xdg_path.value());
 #else
-    FilePath pictures_path;
-    ASSERT_TRUE(PathService::Get(chrome::DIR_USER_PICTURES, &pictures_path));
-    ASSERT_TRUE(file_util::DirectoryExists(pictures_path));
+    const int kDirectoryKeys[] = {
+      chrome::DIR_USER_MUSIC,
+      chrome::DIR_USER_PICTURES,
+      chrome::DIR_USER_VIDEOS,
+    };
+
+    for (size_t i = 0; i < arraysize(kDirectoryKeys); ++i) {
+      FilePath path;
+      ASSERT_TRUE(PathService::Get(kDirectoryKeys[i], &path));
+      ASSERT_TRUE(file_util::DirectoryExists(path));
+    }
 #endif
   }
 

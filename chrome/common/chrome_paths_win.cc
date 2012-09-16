@@ -54,7 +54,7 @@ bool GetUserDirectory(int csidl_folder, FilePath* result) {
   // so we don't bother handling it.
   wchar_t path_buf[MAX_PATH];
   path_buf[0] = 0;
-  if (FAILED(SHGetFolderPath(NULL, CSIDL_MYDOCUMENTS, NULL,
+  if (FAILED(SHGetFolderPath(NULL, csidl_folder, NULL,
                              SHGFP_TYPE_CURRENT, path_buf))) {
     return false;
   }
