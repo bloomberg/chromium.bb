@@ -91,6 +91,7 @@ cr.define('ntp', function() {
       }
 
       function onClick(e) {
+        ntp.logTimeToClick('RecentlyClosed');
         chrome.send('recordAppLaunchByURL',
                     [encodeURIComponent(data.url),
                      ntp.APP_LAUNCH.NTP_RECENTLY_CLOSED]);

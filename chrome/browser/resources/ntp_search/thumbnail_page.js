@@ -34,6 +34,7 @@ cr.define('ntp', function() {
       Tile.prototype.initialize.apply(this, arguments);
       this.classList.add('thumbnail');
       this.reset();
+      this.addEventListener('mouseover', this.handleMouseOver_);
     },
 
     /**
@@ -130,6 +131,35 @@ cr.define('ntp', function() {
       var thumbnailUrl = ntp.getThumbnailUrl(dataUrl);
       thumbnailImage.style.backgroundImage = url(thumbnailUrl);
       image.src = thumbnailUrl;
+    },
+
+    /**
+     * Returns true if this is a thumbnail or descendant thereof.  Used to
+     * detect when the mouse has transitioned into this thumbnail from a
+     * strictly non-thumbnail element.
+     * @param {Object} element The element to test.
+     * @return {boolean} True if this is a thumbnail or a descendant thereof.
+     * @private
+     */
+    isInThumbnail_: function(element) {
+      while (element) {
+        if (element == this)
+          return true;
+        element = element.parentNode;
+      }
+      return false;
+    },
+
+    /**
+     * Increment the hover count whenever the mouse enters a thumbnail.
+     * @param {Event} e The mouse over event.
+     * @private
+     */
+    handleMouseOver_: function(e) {
+      if (this.isInThumbnail_(e.target) &&
+          !this.isInThumbnail_(e.relatedTarget)) {
+        ntp.incrementHoveredThumbnailCount();
+      }
     },
   });
 

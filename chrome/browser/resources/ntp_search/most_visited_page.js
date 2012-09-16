@@ -76,6 +76,7 @@ cr.define('ntp', function() {
         this.blacklist_();
         e.preventDefault();
       } else {
+        ntp.logTimeToClickAndHoverCount('MostVisited');
         // Records an app launch from the most visited page (Chrome will decide
         // whether the url is an app). TODO(estade): this only works for clicks;
         // other actions like "open in new tab" from the context menu won't be

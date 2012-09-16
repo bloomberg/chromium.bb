@@ -66,6 +66,9 @@ void NewTabPageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("pageSelected",
       base::Bind(&NewTabPageHandler::HandlePageSelected,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("logTimeToClick",
+      base::Bind(&NewTabPageHandler::HandleLogTimeToClick,
+                 base::Unretained(this)));
 }
 
 void NewTabPageHandler::HandleNotificationPromoClosed(const ListValue* args) {
@@ -124,6 +127,31 @@ void NewTabPageHandler::HandlePageSelected(const ListValue* args) {
         base::FieldTrial::MakeName("NewTabPage.SelectedPageType",
                                    kDefaultAppsTrialName),
         shown_page_type, kHistogramEnumerationMax);
+  }
+}
+
+void NewTabPageHandler::HandleLogTimeToClick(const ListValue* args) {
+  std::string histogram_name;
+  double duration;
+  if (!args->GetString(0, &histogram_name) || !args->GetDouble(1, &duration)) {
+    NOTREACHED();
+    return;
+  }
+
+  base::TimeDelta delta = base::TimeDelta::FromMilliseconds(duration);
+
+  if (histogram_name == "NewTabPage.TimeToClickMostVisited") {
+    UMA_HISTOGRAM_LONG_TIMES("NewTabPage.TimeToClickMostVisited", delta);
+  } else if (histogram_name == "NewTabPage.TimeToClickRecentlyClosed") {
+    UMA_HISTOGRAM_LONG_TIMES("NewTabPage.TimeToClickRecentlyClosed", delta);
+  } else if (histogram_name == "ExtendedNewTabPage.TimeToClickMostVisited") {
+    UMA_HISTOGRAM_LONG_TIMES(
+        "ExtendedNewTabPage.TimeToClickMostVisited", delta);
+  } else if (histogram_name == "ExtendedNewTabPage.TimeToClickRecentlyClosed") {
+    UMA_HISTOGRAM_LONG_TIMES(
+        "ExtendedNewTabPage.TimeToClickRecentlyClosed", delta);
+  } else {
+    NOTREACHED();
   }
 }
 

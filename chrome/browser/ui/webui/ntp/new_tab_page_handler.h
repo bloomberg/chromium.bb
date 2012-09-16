@@ -48,6 +48,9 @@ class NewTabPageHandler : public content::WebUIMessageHandler {
   // Callback for "pageSelected".
   void HandlePageSelected(const ListValue* args);
 
+  // Callback for "logTimeToClick".
+  void HandleLogTimeToClick(const base::ListValue* args);
+
   // Tracks the number of times the user has switches pages (for UMA).
   size_t page_switch_count_;
 

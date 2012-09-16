@@ -100,6 +100,7 @@ cr.define('ntp', function() {
      * @private
      */
     handleClick_: function(e) {
+      ntp.logTimeToClickAndHoverCount('RecentlyClosed');
       var data = this.data;
       chrome.send('recordAppLaunchByURL',
                   [encodeURIComponent(data.url),

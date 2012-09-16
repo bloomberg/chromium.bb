@@ -53,6 +53,13 @@ cr.define('ntp', function() {
   var otherSessionsButton;
 
   /**
+   * The time when all sections are ready.
+   * @type {number|undefined}
+   * @private
+   */
+  var startTime;
+
+  /**
    * The time in milliseconds for most transitions.  This should match what's
    * in new_tab.css.  Unfortunately there's no better way to try to time
    * something to occur until after a transition has completed.
@@ -228,6 +235,8 @@ cr.define('ntp', function() {
 
       cr.dispatchSimpleEvent(document, 'ntpLoaded', true, true);
       document.documentElement.classList.remove('starting-up');
+
+      startTime = Date.now();
     });
 
     preventDefaultOnPoundLinkClicks();  // From shared/js/util.js.
@@ -527,6 +536,16 @@ cr.define('ntp', function() {
   }
 
   /**
+   * Logs the time to click for the specified item.
+   * @param {string} item The item to log the time-to-click.
+   */
+  function logTimeToClick(item) {
+    var timeToClick = Date.now() - startTime;
+    chrome.send('logTimeToClick',
+        ['NewTabPage.TimeToClick' + item, timeToClick]);
+  }
+
+  /**
    * Wrappers to forward the callback to corresponding PageListView member.
    */
   function appAdded() {
@@ -594,6 +613,7 @@ cr.define('ntp', function() {
     getCardSlider: getCardSlider,
     onLoad: onLoad,
     leaveRearrangeMode: leaveRearrangeMode,
+    logTimeToClick: logTimeToClick,
     NtpFollowAction: NtpFollowAction,
     saveAppPageName: saveAppPageName,
     setAppToBeHighlighted: setAppToBeHighlighted,

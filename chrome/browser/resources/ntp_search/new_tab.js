@@ -50,6 +50,20 @@ cr.define('ntp', function() {
   var shouldShowLoginBubble = false;
 
   /**
+   * The total number of thumbnails that were hovered over.
+   * @type {number}
+   * @private
+   */
+  var hoveredThumbnailCount = 0;
+
+  /**
+   * The time when all sections are ready.
+   * @type {number|undefined}
+   * @private
+   */
+  var startTime;
+
+  /**
    * The time in milliseconds for most transitions.  This should match what's
    * in new_tab.css.  Unfortunately there's no better way to try to time
    * something to occur until after a transition has completed.
@@ -723,6 +737,8 @@ cr.define('ntp', function() {
 
       cr.dispatchSimpleEvent(document, 'ntpLoaded', true, true);
       document.documentElement.classList.remove('starting-up');
+
+      startTime = Date.now();
     });
   }
 
@@ -934,6 +950,28 @@ cr.define('ntp', function() {
   }
 
   /**
+   * Increments the parameter used to log the total number of thumbnail hovered
+   * over.
+   */
+  function incrementHoveredThumbnailCount() {
+    hoveredThumbnailCount++;
+  }
+
+  /**
+   * Logs the time to click for the specified item and the total number of
+   * thumbnails hovered over.
+   * @param {string} item The item to log the time-to-click.
+   */
+  function logTimeToClickAndHoverCount(item) {
+    var timeToClick = Date.now() - startTime;
+    chrome.send('logTimeToClick',
+        ['ExtendedNewTabPage.TimeToClick' + item, timeToClick]);
+    chrome.send('metricsHandler:recordInHistogram',
+        ['ExtendedNewTabPage.hoveredThumbnailCount',
+         hoveredThumbnailCount, 40]);
+  }
+
+  /**
    * Wrappers to forward the callback to corresponding NewTabView member.
    */
   function appAdded() {
@@ -987,6 +1025,8 @@ cr.define('ntp', function() {
     getAppsPageIndex: getAppsPageIndex,
     getCardSlider: getCardSlider,
     getThumbnailUrl: getThumbnailUrl,
+    incrementHoveredThumbnailCount: incrementHoveredThumbnailCount,
+    logTimeToClickAndHoverCount: logTimeToClickAndHoverCount,
     onLoad: onLoad,
     NtpFollowAction: NtpFollowAction,
     setAppToBeHighlighted: setAppToBeHighlighted,
