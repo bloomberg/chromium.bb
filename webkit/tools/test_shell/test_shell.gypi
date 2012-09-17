@@ -366,7 +366,6 @@
         '<(DEPTH)/webkit/support/webkit_support.gyp:user_agent',
       ],
       'sources': [
-        '../../glue/bookmarklet_unittest.cc',
         '../../glue/cpp_bound_class_unittest.cc',
         '../../glue/cpp_variant_unittest.cc',
         '../../glue/dom_operations_unittest.cc',
