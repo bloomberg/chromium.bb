@@ -25,14 +25,29 @@ class UserScriptListener::Throttle
     : public ResourceThrottle,
       public base::SupportsWeakPtr<UserScriptListener::Throttle> {
  public:
+  Throttle() : should_defer_(true), did_defer_(false) {
+  }
+
   void Resume() {
-    controller()->Resume();
+    DCHECK(should_defer_);
+    should_defer_ = false;
+    // Only resume the request if |this| has deferred it.
+    if (did_defer_)
+      controller()->Resume();
   }
 
   // ResourceThrottle implementation:
   virtual void WillStartRequest(bool* defer) {
-    *defer = true;
+    // Only defer requests if Resume has not yet been called.
+    if (should_defer_) {
+      *defer = true;
+      did_defer_ = true;
+    }
   }
+
+ private:
+  bool should_defer_;
+  bool did_defer_;
 };
 
 struct UserScriptListener::ProfileData {

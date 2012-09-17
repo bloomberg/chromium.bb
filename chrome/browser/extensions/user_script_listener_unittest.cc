@@ -290,6 +290,36 @@ TEST_F(UserScriptListenerTest, MultiProfile) {
   EXPECT_EQ(kTestData, delegate.data_received());
 }
 
+// Test when the script updated notification occurs before the throttle's
+// WillStartRequest function is called.  This can occur when there are multiple
+// throttles.
+TEST_F(UserScriptListenerTest, ResumeBeforeStart) {
+  LoadTestExtension();
+  MessageLoop::current()->RunAllPending();
+  TestDelegate delegate;
+  TestURLRequestContext context;
+  GURL url(kMatchingUrl);
+  scoped_ptr<TestURLRequest> request(
+      new TestURLRequest(url, &delegate, &context));
+
+  ResourceThrottle* throttle =
+      listener_->CreateResourceThrottle(url, ResourceType::MAIN_FRAME);
+  ASSERT_TRUE(throttle);
+  request->SetUserData(NULL, new ThrottleController(request.get(), throttle));
+
+  ASSERT_FALSE(request->is_pending());
+
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_USER_SCRIPTS_UPDATED,
+      content::Source<Profile>(profile_.get()),
+      content::NotificationService::NoDetails());
+  MessageLoop::current()->RunAllPending();
+
+  bool defer = false;
+  throttle->WillStartRequest(&defer);
+  ASSERT_FALSE(defer);
+}
+
 }  // namespace
 
 }  // namespace extensions
