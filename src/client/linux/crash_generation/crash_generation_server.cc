@@ -81,7 +81,7 @@ GetInodeForProcPath(ino_t* inode_out, const char* path)
   assert(path);
 
   char buf[PATH_MAX];
-  if (!SafeReadLink(path, buf)) {
+  if (!google_breakpad::SafeReadLink(path, buf)) {
     return false;
   }
 

@@ -84,6 +84,7 @@ lib_LIBRARIES += src/client/linux/libbreakpad_client.a
 
 src_client_linux_libbreakpad_client_a_SOURCES = \
 	src/client/linux/crash_generation/crash_generation_client.cc \
+	src/client/linux/crash_generation/crash_generation_server.cc \
 	src/client/linux/handler/exception_handler.cc \
 	src/client/linux/handler/minidump_descriptor.cc \
 	src/client/linux/log/log.cc \
