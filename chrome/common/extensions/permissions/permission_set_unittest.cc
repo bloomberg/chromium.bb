@@ -876,8 +876,6 @@ TEST(PermissionsTest, GetWarningMessages_AudioVideo) {
 }
 
 TEST(PermissionsTest, GetWarningMessages_Serial) {
-  extensions::Feature::ScopedCurrentChannel channel(
-      chrome::VersionInfo::CHANNEL_DEV);
   scoped_refptr<Extension> extension =
       LoadManifest("permissions", "serial.json");
 
