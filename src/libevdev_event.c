@@ -284,9 +284,6 @@ Event_Init(EvdevPtr device)
             }
         }
     }
-
-    /* Synchronize all MT slots with kernel evdev driver */
-    Event_Sync_State(device);
     return Success;
 }
 
@@ -301,11 +298,11 @@ Event_Open(EvdevPtr device)
 {
     /* Select monotonic input event timestamps, if supported by kernel */
     device->info.is_monotonic = (EvdevEnableMonotonic(device) == Success);
-    /* Reset the sync time variables */
-    Event_Get_Time(&device->before_sync_time, device->info.is_monotonic);
-    Event_Get_Time(&device->after_sync_time, device->info.is_monotonic);
     LOG_DEBUG(device, "Using %s input event time stamps\n",
               device->info.is_monotonic ? "monotonic" : "realtime");
+
+    /* Synchronize all MT slots with kernel evdev driver */
+    Event_Sync_State(device);
 }
 
 static void
