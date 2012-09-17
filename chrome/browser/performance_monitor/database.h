@@ -31,6 +31,7 @@ struct TimeRange {
 };
 
 class KeyBuilder;
+class DatabaseTestHelper;
 
 // The class supporting all performance monitor storage. This class wraps
 // multiple leveldb::DB objects. All methods must be called from a background
@@ -152,12 +153,10 @@ class Database {
   }
 
   // Add a metric instance to the database.
-  bool AddMetric(const std::string& activity,
-                 MetricType metric_type,
-                 const std::string& value);
+  bool AddMetric(const std::string& activity, const Metric& metric);
 
-  bool AddMetric(MetricType metric_type, const std::string& value) {
-    return AddMetric(kProcessChromeAggregate, metric_type, value);
+  bool AddMetric(const Metric& metric) {
+    return AddMetric(kProcessChromeAggregate, metric);
   }
 
   // Get the metrics that are active for the given process between |start|
@@ -236,8 +235,7 @@ class Database {
   }
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(PerformanceMonitorDatabaseSetupTest, OpenClose);
-  FRIEND_TEST_ALL_PREFIXES(PerformanceMonitorDatabaseSetupTest, ActiveInterval);
+  friend class DatabaseTestHelper;
 
   typedef std::map<std::string, std::string> RecentMap;
   typedef std::map<std::string, double> MaxValueMap;

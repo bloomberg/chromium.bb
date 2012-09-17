@@ -4,9 +4,9 @@
 
 #include "chrome/browser/performance_monitor/constants.h"
 
-namespace performance_monitor {
+#include "base/time.h"
 
-// TODO(chebert): i18n on all constants.
+namespace performance_monitor {
 
 // The error message displayed when a metric's details are not found.
 const char kMetricNotFoundError[] = "Metric details not found.";
@@ -27,5 +27,17 @@ const char kStateChromeVersion[] = "chrome_version";
 // The prefix to the state of a profile's name, to prevent any possible naming
 // collisions in the database.
 const char kStateProfilePrefix[] = "profile";
+
+// Unit values
+// Memory measurements
+const int64 kBytesPerKilobyte = 1 << 10;
+const int64 kBytesPerMegabyte = kBytesPerKilobyte * (1 << 10);
+const int64 kBytesPerGigabyte = kBytesPerMegabyte * (1 << 10);
+const int64 kBytesPerTerabyte = kBytesPerGigabyte * (1 << 10);
+
+// Time measurements
+const int64 kMicrosecondsPerMonth = base::Time::kMicrosecondsPerDay * 30;
+const int64 kMicrosecondsPerYear = base::Time::kMicrosecondsPerDay * 365;
+
 
 }  // namespace performance_monitor
