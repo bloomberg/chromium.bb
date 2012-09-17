@@ -162,6 +162,9 @@ class DesktopRootWindowHostWin : public DesktopRootWindowHost,
                              WPARAM w_param,
                              LPARAM l_param) OVERRIDE;
 
+  Widget* GetWidget();
+  const Widget* GetWidget() const;
+
   scoped_ptr<aura::RootWindow> root_window_;
   scoped_ptr<HWNDMessageHandler> message_handler_;
   scoped_ptr<DesktopCaptureClient> capture_client_;
