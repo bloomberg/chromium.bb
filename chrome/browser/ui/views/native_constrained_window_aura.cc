@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/constrained_window_views.h"
 
+#include "ui/aura/client/aura_constants.h"
+#include "ui/aura/window.h"
 #include "ui/views/widget/native_widget_aura.h"
 
 class NativeConstrainedWindowAura : public NativeConstrainedWindow,
@@ -13,6 +15,7 @@ class NativeConstrainedWindowAura : public NativeConstrainedWindow,
       NativeConstrainedWindowDelegate* delegate)
       : views::NativeWidgetAura(delegate->AsNativeWidgetDelegate()),
         delegate_(delegate) {
+    GetNativeWindow()->SetProperty(aura::client::kConstrainedWindowKey, true);
   }
 
   virtual ~NativeConstrainedWindowAura() {

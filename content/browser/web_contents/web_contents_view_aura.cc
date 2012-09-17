@@ -16,6 +16,7 @@
 #include "content/public/browser/web_contents_view_delegate.h"
 #include "content/public/browser/web_drag_dest_delegate.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/drag_drop_delegate.h"
 #include "ui/aura/root_window.h"
@@ -489,6 +490,17 @@ void WebContentsViewAura::OnBoundsChanged(const gfx::Rect& old_bounds,
   SizeChangedCommon(new_bounds.size());
   if (delegate_.get())
     delegate_->SizeChanged(new_bounds.size());
+
+  // Constrained web dialogs, need to be kept centered over our content area.
+  for (size_t i = 0; i < window_->children().size(); i++) {
+    if (window_->children()[i]->GetProperty(
+            aura::client::kConstrainedWindowKey)) {
+      gfx::Rect bounds = window_->children()[i]->bounds();
+      bounds.Offset((new_bounds.width() - old_bounds.width()) / 2,
+                    (new_bounds.height() - old_bounds.height()) / 2);
+      window_->children()[i]->SetBounds(bounds);
+    }
+  }
 }
 
 void WebContentsViewAura::OnFocus(aura::Window* old_focused_window) {
