@@ -118,21 +118,23 @@ ASH_EXPORT void AnimateBetweenWorkspaces(aura::Window* old_window,
 // is true, this animation is the result of logging in.
 ASH_EXPORT void AnimateWorkspaceIn(aura::Window* window,
                                    WorkspaceAnimationDirection direction,
-                                   bool initial_animate);
+                                   bool initial_animate,
+                                   base::TimeDelta delta);
 ASH_EXPORT void AnimateWorkspaceOut(aura::Window* window,
                                     WorkspaceAnimationDirection direction,
                                     WorkspaceType type,
-                                    bool initial_animate);
+                                    bool initial_animate,
+                                    base::TimeDelta delta);
 
 // Returns the amount of time before destroying the system background.
 ASH_EXPORT base::TimeDelta GetSystemBackgroundDestroyDuration();
-
-namespace internal {
 
 // Returns the duration of the cross-fade animation based on the |old_bounds|
 // and |new_bounds| of the window.
 ASH_EXPORT base::TimeDelta GetCrossFadeDuration(const gfx::Rect& old_bounds,
                                                 const gfx::Rect& new_bounds);
+
+namespace internal {
 
 // Returns false if the |window| didn't animate.
 ASH_EXPORT bool AnimateOnChildWindowVisibilityChanged(

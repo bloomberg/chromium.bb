@@ -15,6 +15,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time.h"
 #include "base/timer.h"
 #include "ui/base/ui_base_types.h"
 
@@ -207,6 +208,9 @@ class ASH_EXPORT WorkspaceManager2
   // exits (as the last frame we draw before exiting is a frame from the
   // animation).
   bool app_terminating_;
+
+  // If non-empty this is the amount of time animating the desktop in/out.
+  base::TimeDelta switch_duration_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkspaceManager2);
 };

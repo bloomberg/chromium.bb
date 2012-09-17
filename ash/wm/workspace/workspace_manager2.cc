@@ -236,11 +236,11 @@ void WorkspaceManager2::DoInitialAnimation() {
           kShellWindowId_DesktopBackgroundContainer);
       background->Show();
       AnimateWorkspaceOut(background, WORKSPACE_ANIMATE_DOWN,
-                          WORKSPACE_DESKTOP, true);
+                          WORKSPACE_DESKTOP, true, base::TimeDelta());
     }
   }
   AnimateWorkspaceIn(active_workspace_->window(), WORKSPACE_ANIMATE_DOWN,
-                     true);
+                     true, base::TimeDelta());
 }
 
 void WorkspaceManager2::OnAppTerminating() {
@@ -337,9 +337,10 @@ void WorkspaceManager2::SetActiveWorkspace(Workspace2* workspace,
         kShellWindowId_DesktopBackgroundContainer);
     if (last_active == desktop_workspace()) {
       AnimateWorkspaceOut(background, WORKSPACE_ANIMATE_DOWN,
-                          WORKSPACE_DESKTOP, false);
+                          WORKSPACE_DESKTOP, false, switch_duration_);
     } else if (active_workspace_ == desktop_workspace() && !app_terminating_) {
-      AnimateWorkspaceIn(background, WORKSPACE_ANIMATE_UP, false);
+      AnimateWorkspaceIn(background, WORKSPACE_ANIMATE_UP, false,
+                         switch_duration_);
     }
   }
 }
@@ -544,7 +545,10 @@ void WorkspaceManager2::OnWorkspaceWindowShowStateChanged(
     }
     if (is_active && new_workspace) {
       DCHECK(old_layer);
+      switch_duration_ =
+          GetCrossFadeDuration(old_layer->bounds(), child->bounds());
       SetActiveWorkspace(new_workspace, ANIMATE_NONE);
+      switch_duration_ = base::TimeDelta();
       CrossFadeWindowBetweenWorkspaces(
           workspace ? workspace->window() : NULL, new_workspace->window(),
           child, old_layer);

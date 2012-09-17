@@ -319,7 +319,7 @@ void AnimateHideWindow_Fade(aura::Window* window) {
 
 // Builds the transform used when switching workspaces for the specified
 // window.
-ui::Transform BuildWorkspaceSwitchTransform(aura::Window* window) {
+ui::Transform BuildWorkspaceSwitchTransform(aura::Window* window, float scale) {
   // Animations for transitioning workspaces scale all windows. To give the
   // effect of scaling from the center of the screen the windows are translated.
   gfx::Rect bounds = window->bounds();
@@ -327,23 +327,22 @@ ui::Transform BuildWorkspaceSwitchTransform(aura::Window* window) {
 
   float mid_x = static_cast<float>(parent_bounds.width()) / 2.0f;
   float initial_x =
-      (static_cast<float>(bounds.x()) - mid_x) * kWorkspaceScale +
-      mid_x;
+      (static_cast<float>(bounds.x()) - mid_x) * scale + mid_x;
   float mid_y = static_cast<float>(parent_bounds.height()) / 2.0f;
   float initial_y =
-      (static_cast<float>(bounds.y()) - mid_y) * kWorkspaceScale +
-      mid_y;
+      (static_cast<float>(bounds.y()) - mid_y) * scale + mid_y;
 
   ui::Transform transform;
   transform.ConcatTranslate(
       initial_x - static_cast<float>(bounds.x()),
       initial_y - static_cast<float>(bounds.y()));
-  transform.ConcatScale(kWorkspaceScale, kWorkspaceScale);
+  transform.ConcatScale(scale, scale);
   return transform;
 }
 
 void AnimateShowWindow_Workspace(aura::Window* window) {
-  ui::Transform transform(BuildWorkspaceSwitchTransform(window));
+  ui::Transform transform(
+      BuildWorkspaceSwitchTransform(window, kWorkspaceScale));
   // When we call SetOpacity here, if a hide sequence is already running,
   // the default animation preemption strategy fast forwards the hide sequence
   // to completion and notifies the WorkspaceHidingWindowAnimationObserver to
@@ -365,7 +364,8 @@ void AnimateShowWindow_Workspace(aura::Window* window) {
 }
 
 void AnimateHideWindow_Workspace(aura::Window* window) {
-  ui::Transform transform(BuildWorkspaceSwitchTransform(window));
+  ui::Transform transform(
+      BuildWorkspaceSwitchTransform(window, kWorkspaceScale));
   window->layer()->SetOpacity(1.0f);
   window->layer()->SetTransform(ui::Transform());
 
@@ -674,9 +674,6 @@ class CrossFadeObserver : public ui::CompositorObserver,
 
 namespace {
 
-// Duration of cross fades when workspace2 is enabled.
-const int kWorkspaceCrossFadeDurationMs = 200;
-
 // Scales for workspaces above/below current workspace.
 const float kWorkspaceScaleAbove = 1.1f;
 const float kWorkspaceScaleBelow = .9f;
@@ -727,18 +724,17 @@ void ApplyWorkspaceScale(ui::Layer* layer, WorkspaceScaleType type) {
 // should be at the target bounds. |old_layer| the previous layer from |window|.
 // This takes ownership of |old_layer| and deletes when the animation is done.
 // |pause_duration| is the duration to pause at the current bounds before
-// animating.
-void CrossFadeImpl(aura::Window* window,
-                   ui::Layer* old_layer,
-                   ui::Tween::Type tween_type,
-                   base::TimeDelta pause_duration) {
+// animating. Returns the duration of the fade.
+TimeDelta CrossFadeImpl(aura::Window* window,
+                        ui::Layer* old_layer,
+                        ui::Tween::Type tween_type,
+                        base::TimeDelta pause_duration) {
   const gfx::Rect old_bounds(old_layer->bounds());
   const gfx::Rect new_bounds(window->bounds());
   const bool old_on_top = (old_bounds.width() > new_bounds.width());
 
   // Shorten the animation if there's not much visual movement.
-  const TimeDelta duration =
-      internal::GetCrossFadeDuration(old_bounds, new_bounds);
+  const TimeDelta duration = GetCrossFadeDuration(old_bounds, new_bounds);
 
   // Scale up the old layer while translating to new position.
   {
@@ -803,6 +799,7 @@ void CrossFadeImpl(aura::Window* window,
       window->layer()->SetOpacity(1.f);
     }
   }
+  return duration;
 }
 
 // Returns a TimeDelta from |time_ms|. If animations are disabled this returns
@@ -814,11 +811,24 @@ base::TimeDelta AdjustAnimationTime(int time_ms) {
   return base::TimeDelta::FromMilliseconds(time_ms);
 }
 
+// Returns a TimeDelta adjusted for animations. If animations are disabled this
+// returns 0. If animations are not disabled and |time_delta| is non-empty, it
+// is returned. Otherwise |delta_time_ms| is returned.
+base::TimeDelta AdjustAnimationTimeDelta(base::TimeDelta time_delta,
+                                         int delta_time_ms) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          ash::switches::kAshWindowAnimationsDisabled))
+    return base::TimeDelta();
+  return time_delta == base::TimeDelta() ?
+      base::TimeDelta::FromMilliseconds(delta_time_ms) : time_delta;
+}
+
 void AnimateWorkspaceInImpl(aura::Window* window,
                             WorkspaceAnimationDirection direction,
                             uint32 animate_types,
                             int pause_time_ms,
-                            ui::Tween::Type tween_type) {
+                            ui::Tween::Type tween_type,
+                            base::TimeDelta duration) {
   window->layer()->SetOpacity(
       (animate_types & WORKSPACE_ANIMATE_OPACITY) ? 0.0f : 1.0f);
   window->layer()->SetLayerBrightness(
@@ -845,7 +855,7 @@ void AnimateWorkspaceInImpl(aura::Window* window,
     }
 
     settings.SetTweenType(tween_type);
-    settings.SetTransitionDuration(AdjustAnimationTime(kWorkspaceSwitchTimeMS));
+    settings.SetTransitionDuration(duration);
     window->layer()->SetTransform(ui::Transform());
     window->layer()->SetOpacity(1.0f);
     window->layer()->SetLayerBrightness(0.0f);
@@ -855,9 +865,9 @@ void AnimateWorkspaceInImpl(aura::Window* window,
 void AnimateWorkspaceOutImpl(aura::Window* window,
                              WorkspaceAnimationDirection direction,
                              uint32 animate_types,
+                             int pause_time_ms,
                              ui::Tween::Type tween_type,
-                             int duration_ms,
-                             int pause_time_ms) {
+                             TimeDelta duration) {
   window->Show();
   window->layer()->SetTransform(ui::Transform());
   window->layer()->SetLayerBrightness(0.0f);
@@ -878,7 +888,7 @@ void AnimateWorkspaceOutImpl(aura::Window* window,
           -1);
     }
 
-    settings.SetTransitionDuration(AdjustAnimationTime(duration_ms));
+    settings.SetTransitionDuration(duration);
     settings.SetTweenType(tween_type);
     ApplyWorkspaceScale(window->layer(),
                         direction == WORKSPACE_ANIMATE_UP ?
@@ -985,15 +995,16 @@ void CrossFadeWindowBetweenWorkspaces(aura::Window* old_workspace,
     workspace_tween_type = ui::Tween::LINEAR;
   }
 
-  CrossFadeImpl(window, old_layer, tween_type,
-                AdjustAnimationTime(restoring ? 0 : kPauseTimeMS));
+  const TimeDelta duration =
+      CrossFadeImpl(window, old_layer, tween_type,
+                    AdjustAnimationTime(restoring ? 0 : kPauseTimeMS));
 
   if (restoring) {
     typedef aura::Window::Windows Windows;
     if (old_workspace)
       AnimateWorkspaceOutImpl(old_workspace, WORKSPACE_ANIMATE_UP,
                               WORKSPACE_ANIMATE_BRIGHTNESS,
-                              workspace_tween_type, kWorkspaceSwitchTimeMS, 0);
+                              0, workspace_tween_type, duration);
 
     // Ideally we would use AnimateWorkspaceIn() for |new_workspace|, but that
     // results in |window| animating with the workspace scale. We don't want
@@ -1009,11 +1020,12 @@ void CrossFadeWindowBetweenWorkspaces(aura::Window* old_workspace,
       aura::Window* child = *i;
       if (child == window)
         continue;
-      child->SetTransform(ash::internal::BuildWorkspaceSwitchTransform(child));
+      child->SetTransform(ash::internal::BuildWorkspaceSwitchTransform(
+                              child, kWorkspaceScaleBelow));
       child->layer()->SetLayerBrightness(kWorkspaceBrightness);
       ui::ScopedLayerAnimationSettings settings(child->layer()->GetAnimator());
-      settings.SetTransitionDuration(
-          AdjustAnimationTime(kWorkspaceSwitchTimeMS));
+      settings.SetTweenType(ui::Tween::EASE_OUT);
+      settings.SetTransitionDuration(duration);
       child->SetTransform(ui::Transform());
       child->layer()->SetLayerBrightness(0.0f);
     }
@@ -1021,8 +1033,7 @@ void CrossFadeWindowBetweenWorkspaces(aura::Window* old_workspace,
     if (old_workspace) {
       AnimateWorkspaceOutImpl(old_workspace, WORKSPACE_ANIMATE_DOWN,
                               WORKSPACE_ANIMATE_BRIGHTNESS,
-                              workspace_tween_type,
-                              kWorkspaceSwitchTimeMS, 0);
+                              0, workspace_tween_type, duration);
     }
 
     new_workspace->Show();
@@ -1052,8 +1063,9 @@ void AnimateBetweenWorkspaces(aura::Window* old_window,
         new_type == WORKSPACE_DESKTOP ? WORKSPACE_ANIMATE_UP :
             WORKSPACE_ANIMATE_DOWN,
         animate_types,
+        0,
         TweenTypeForWorskpaceOut(old_type),
-        kWorkspaceSwitchTimeMS, 0);
+        AdjustAnimationTime(kWorkspaceSwitchTimeMS));
   }
 
   // Switching from the desktop to a maximized animates down.
@@ -1069,60 +1081,70 @@ void AnimateBetweenWorkspaces(aura::Window* old_window,
           WORKSPACE_ANIMATE_DOWN : WORKSPACE_ANIMATE_UP,
       animate_types,
       0,
-      ui::Tween::EASE_OUT);
+      ui::Tween::EASE_OUT,
+      AdjustAnimationTime(kWorkspaceSwitchTimeMS));
 }
 
 void AnimateWorkspaceIn(aura::Window* window,
                         WorkspaceAnimationDirection direction,
-                        bool initial_animate) {
+                        bool initial_animate,
+                        base::TimeDelta delta) {
   AnimateWorkspaceInImpl(
       window, direction,
       WORKSPACE_ANIMATE_BRIGHTNESS |
           (initial_animate ? WORKSPACE_ANIMATE_OPACITY : 0),
       initial_animate ? kWorkspaceInitialPauseTimeMS : 0,
-      ui::Tween::EASE_OUT);
+      ui::Tween::EASE_OUT,
+      AdjustAnimationTimeDelta(delta, kWorkspaceSwitchTimeMS));
 }
 
 void AnimateWorkspaceOut(aura::Window* window,
                          WorkspaceAnimationDirection direction,
                          WorkspaceType type,
-                         bool initial_animate) {
+                         bool initial_animate,
+                         base::TimeDelta delta) {
   AnimateWorkspaceOutImpl(window, direction, WORKSPACE_ANIMATE_BRIGHTNESS,
+                          initial_animate ? kWorkspaceInitialPauseTimeMS : 0,
                           TweenTypeForWorskpaceOut(type),
-                          kWorkspaceSwitchTimeMS,
-                          initial_animate ? kWorkspaceInitialPauseTimeMS : 0);
+                          AdjustAnimationTimeDelta(delta,
+                                                   kWorkspaceSwitchTimeMS));
 }
 
 base::TimeDelta GetSystemBackgroundDestroyDuration() {
   return base::TimeDelta::FromMilliseconds(
-      std::max(kWorkspaceCrossFadeDurationMs, kWorkspaceSwitchTimeMS));
+      std::max(static_cast<int>(internal::kCrossFadeDurationMaxMs),
+               kWorkspaceSwitchTimeMS));
 }
-
-namespace internal {
 
 TimeDelta GetCrossFadeDuration(const gfx::Rect& old_bounds,
                                const gfx::Rect& new_bounds) {
-  if (WorkspaceController::IsWorkspace2Enabled())
-    return AdjustAnimationTime(kWorkspaceCrossFadeDurationMs);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          ash::switches::kAshWindowAnimationsDisabled))
+    return base::TimeDelta();
 
+  const int min_time_ms = internal::WorkspaceController::IsWorkspace2Enabled() ?
+      kWorkspaceSwitchTimeMS : 0;
   int old_area = old_bounds.width() * old_bounds.height();
   int new_area = new_bounds.width() * new_bounds.height();
   int max_area = std::max(old_area, new_area);
   // Avoid divide by zero.
   if (max_area == 0)
-    return TimeDelta();
+    return TimeDelta::FromMilliseconds(min_time_ms);
 
   int delta_area = std::abs(old_area - new_area);
   // If the area didn't change, the animation is instantaneous.
   if (delta_area == 0)
-    return TimeDelta();
+    return TimeDelta::FromMilliseconds(min_time_ms);
 
   float factor =
       static_cast<float>(delta_area) / static_cast<float>(max_area);
-  const float kRange = kCrossFadeDurationMaxMs - kCrossFadeDurationMinMs;
+  const float kRange = internal::kCrossFadeDurationMaxMs -
+      internal::kCrossFadeDurationMinMs;
   return TimeDelta::FromMilliseconds(
-      Round64(kCrossFadeDurationMinMs + (factor * kRange)));
+      internal::Round64(internal::kCrossFadeDurationMinMs + (factor * kRange)));
 }
+
+namespace internal {
 
 bool AnimateOnChildWindowVisibilityChanged(aura::Window* window, bool visible) {
   if (window->GetProperty(aura::client::kAnimationsDisabledKey) ||
