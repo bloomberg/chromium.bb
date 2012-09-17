@@ -310,7 +310,7 @@ std::string read_file(const char* filename) {
             short_program_name, filename, strerror(errno));
     exit(1);
   }
-  while ((count = read(file, buf, sizeof(buf))) > 0)
+  while ((count = read(file, buf, sizeof buf)) > 0)
     for (char* it = buf; it < buf + count ; ++it)
       if (*it == '\r') {
         /* This may be MacOS EOL, or Windows one.  Assume MacOS for now.  */
@@ -1053,8 +1053,8 @@ void print_vex_opcode(const MarkedInstruction& instruction) {
   static const char* third_byte_check[] = {
     "01xXW", ".", "01xX", "01xX", "01xX", "01xX", ".", "01xX", ".", "01", "01"
   };
-  if (bool third_byte_ok =
-                     NACL_ARRAY_SIZE(third_byte_check) == third_byte.length()) {
+  bool third_byte_ok = NACL_ARRAY_SIZE(third_byte_check) == third_byte.length();
+  if (third_byte_ok) {
     for (size_t set = 0; set < NACL_ARRAY_SIZE(third_byte_check); ++set) {
       if (!strchr(third_byte_check[set], third_byte[set])) {
         third_byte_ok = false;
@@ -1263,10 +1263,10 @@ void print_opcode_recognition(const MarkedInstruction& instruction,
         { 'Y', "es_rdi"           }
       };
       size_t n = 0;
-      while (n < sizeof(operand_types)/sizeof(operand_types[0]) &&
+      while (n < sizeof operand_types/sizeof operand_types[0] &&
              operand_types[n].type != operand->type)
         ++n;
-      if (n == sizeof(operand_types)/sizeof(operand_types[0])) {
+      if (n == sizeof operand_types/sizeof operand_types[0]) {
         if (operand->enabled)
           if (enabled(kParseOperandPositions) ||
               !memory_capable_operand(operand->type) ||
@@ -1543,7 +1543,7 @@ void print_one_size_definition_modrm_memory(
     { " operand_sib_pure_index", true,  false },
     { " operand_sib_base_index", true,  true  }
   };
-  for (size_t mode = 0; mode < sizeof(modes)/sizeof(modes[0]); ++mode) {
+  for (size_t mode = 0; mode < sizeof modes/sizeof modes[0]; ++mode) {
     print_operator_delimiter();
     MarkedInstruction adjusted_instruction = instruction;
     if (mod_reg_is_used(adjusted_instruction))
@@ -1732,12 +1732,12 @@ MarkedInstruction expand_sizes(const MarkedInstruction& instruction,
       { ' ', "sx", NULL, "x87_mmx_xmm_state" }
     };
     size_t n = 0;
-    for (n = 0; n < sizeof(operand_sizes)/sizeof(operand_sizes[0]); ++n)
+    for (n = 0; n < sizeof operand_sizes/sizeof operand_sizes[0]; ++n)
       if ((operand_sizes[n].type == operand->type ||
            operand_sizes[n].type == ' ') &&
            operand_sizes[n].size == operand->size)
         break;
-    if (n != sizeof(operand_sizes)/sizeof(operand_sizes[0])) {
+    if (n != sizeof operand_sizes/sizeof operand_sizes[0]) {
       const char* register_size = operand_sizes[n].register_size;
       const char* memory_size = operand_sizes[n].memory_size;
       bool memory_or_register = operand->type == 'E' ||
@@ -1849,6 +1849,8 @@ void print_one_size_definition(const MarkedInstruction& instruction) {
         modrm_register_only = true;
         modrm_register = true;
         operand_source = operand->type;
+        break;
+      default;
         break;
     }
   if (modrm_memory || modrm_register) {
@@ -2004,6 +2006,7 @@ int main(int argc, char* argv[]) {
   short_program_name = basename(strdup(argv[0]));
 
   current_dir_name = get_current_dir_name();
+  size_t current_dir_name_len = strlen(current_dir_name);
 
   for (;;) {
     int option_index;
@@ -2067,7 +2070,7 @@ int main(int argc, char* argv[]) {
         /* getopt_long already printed an error message.  */
         return 1;
       default:
-        abort();
+        assert(false);
     }
   }
 
@@ -2075,16 +2078,27 @@ int main(int argc, char* argv[]) {
     parse_instructions(argv[i]);
   }
 
-  if (out_file_name && !(out_file = fopen(out_file_name, "w"))) {
-    fprintf(stderr,
-            "%s: can not open '%s' file (%s)\n",
-            short_program_name, out_file_name, strerror(errno));
-    return 1;
-  } else if ((out_file_name || const_file_name) &&
-             (enabled(kInstructionName) ||
-              enabled(kParseOperands))) {
+  if (out_file_name) {
+    out_file = fopen(out_file_name, "w");
+    if (!out_file) {
+      fprintf(stderr,
+              "%s: can not open '%s' file (%s)\n",
+              short_program_name, out_file_name, strerror(errno));
+      return 1;
+    }
+    fprintf(out_file, "/* native_client/%s\n"
+" * THIS FILE IS AUTO-GENERATED. DO NOT EDIT.\n"
+" * Compiled for %s mode.\n"
+" */\n\n", strncmp(current_dir_name, out_file_name, current_dir_name_len) ?
+             out_file_name :
+             out_file_name + current_dir_name_len + 1,
+           ia32_mode ? "ia32" : "x86-64");
+  }
+
+  if ((out_file_name || const_file_name) &&
+      (enabled(kInstructionName) ||
+      enabled(kParseOperands))) {
     size_t const_name_len = 0;
-    size_t current_dir_name_len = strlen(current_dir_name);
     if (out_file_name && !const_file_name) {
       const_name_len = strlen(out_file_name) + 10;
       const_file_name = static_cast<char*>(malloc(const_name_len));
@@ -2095,18 +2109,12 @@ int main(int argc, char* argv[]) {
       }
       strcpy(const_cast<char*>(dot_position), "_consts.c");
     }
-    if (!(const_file = fopen(const_file_name, "w"))) {
+    const_file = fopen(const_file_name, "w");
+    if (!const_file) {
       fprintf(stderr, "%s: can not open '%s' file (%s)\n",
               short_program_name, const_file_name, strerror(errno));
        return 1;
     }
-    fprintf(out_file, "/* native_client/%s\n"
-" * THIS FILE IS AUTO-GENERATED. DO NOT EDIT.\n"
-" * Compiled for %s mode.\n"
-" */\n\n", strncmp(current_dir_name, out_file_name, current_dir_name_len) ?
-             out_file_name :
-             out_file_name + current_dir_name_len + 1,
-           ia32_mode ? "ia32" : "x86-64");
     fprintf(const_file, "/* native_client/%s\n"
 " * THIS FILE IS AUTO-GENERATED. DO NOT EDIT.\n"
 " * Compiled for %s mode.\n"
