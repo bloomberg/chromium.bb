@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
@@ -27,6 +28,9 @@ namespace extensions {
 class Extension;
 class SafeWebstoreResponseParser;
 
+// TODO(asargent) - rename this class to something like
+// WebstoreStandaloneInstaller.
+//
 // Manages inline installs requested by a page (downloads and parses metadata
 // from the webstore, shows the install UI, starts the download once the user
 // confirms).  Clients must implement the WebstoreInlineInstaller::Delegate
@@ -41,21 +45,24 @@ class WebstoreInlineInstaller
       public WebstoreInstaller::Delegate,
       public WebstoreInstallHelper::Delegate {
  public:
-  class Delegate {
-   public:
-    virtual void OnInlineInstallSuccess(int install_id,
-                                        int return_route_id) = 0;
-    virtual void OnInlineInstallFailure(int install_id,
-                                        int return_route_id,
-                                        const std::string& error) = 0;
+  enum VerifiedSiteRequired {
+    REQUIRE_VERIFIED_SITE,
+    DO_NOT_REQUIRE_VERIFIED_SITE
   };
 
+  // A callback for when the install process completes successfully or not. If
+  // there was a failure, |success| will be false and |error| may contain a
+  // developer-readable error message about why it failed.
+  typedef base::Callback<void(bool success, const std::string& error)> Callback;
+
   WebstoreInlineInstaller(content::WebContents* web_contents,
-                          int install_id,
-                          int return_route_id,
                           std::string webstore_item_id,
+                          VerifiedSiteRequired require_verified_site,
                           GURL requestor_url,
-                          Delegate* d);
+                          Callback callback);
+
+  void set_skip_post_install_ui(bool skip) { skip_post_install_ui_ = skip; }
+
   void BeginInstall();
 
  private:
@@ -115,12 +122,12 @@ class WebstoreInlineInstaller
   static bool IsRequestorURLInVerifiedSite(const GURL& requestor_url,
                                            const std::string& verified_site);
 
-  int install_id_;
-  int return_route_id_;
   std::string id_;
+  bool require_verified_site_;
   GURL requestor_url_;
-  Delegate* delegate_;
+  Callback callback_;
   scoped_ptr<ExtensionInstallPrompt> install_ui_;
+  bool skip_post_install_ui_;
 
   // For fetching webstore JSON data.
   scoped_ptr<net::URLFetcher> webstore_data_url_fetcher_;

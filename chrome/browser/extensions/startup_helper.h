@@ -33,6 +33,11 @@ class StartupHelper : public PackExtensionJob::Client {
   // could not be started.
   bool UninstallExtension(const CommandLine& cmd_line, Profile* profile);
 
+  // Handle --install-from-webstore flag from |cmd_line| by downloading
+  // metadata from the webstore for the given id, prompting the user to
+  // confirm, and then downloading the crx and installing it.
+  bool InstallFromWebstore(const CommandLine& cmd_line, Profile* profile);
+
  private:
   scoped_refptr<PackExtensionJob> pack_job_;
   bool pack_job_succeeded_;

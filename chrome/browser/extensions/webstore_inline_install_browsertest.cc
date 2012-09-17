@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/extension_install_dialog.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/startup_helper.h"
 #include "chrome/browser/extensions/webstore_inline_installer.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -17,6 +18,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
@@ -25,10 +28,12 @@
 #include "net/base/mock_host_resolver.h"
 
 using content::WebContents;
+using extensions::Extension;
 
 const char kWebstoreDomain[] = "cws.com";
 const char kAppDomain[] = "app.com";
 const char kNonAppDomain[] = "nonapp.com";
+const char kTestExtensionId[] = "ecglahbcnmdpdciemllbhojghbkagdje";
 
 class WebstoreInlineInstallTest : public InProcessBrowserTest {
  public:
@@ -93,8 +98,7 @@ IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, Install) {
   RunInlineInstallTest("runTest");
 
   const extensions::Extension* extension = browser()->profile()->
-      GetExtensionService()->GetExtensionById(
-          "ecglahbcnmdpdciemllbhojghbkagdje", false);
+      GetExtensionService()->GetExtensionById(kTestExtensionId, false);
   EXPECT_TRUE(extension);
 }
 
@@ -173,4 +177,56 @@ IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallUnpackFailureTest,
       GenerateTestServerUrl(kAppDomain, "install_unpack_failure.html"));
 
   RunInlineInstallTest("runTest");
+}
+
+class CommandLineWebstoreInstall : public WebstoreInlineInstallTest,
+                                   public content::NotificationObserver {
+ public:
+  CommandLineWebstoreInstall() : saw_install_(false) {}
+  virtual ~CommandLineWebstoreInstall() {}
+
+  virtual void SetUpOnMainThread() OVERRIDE {
+    WebstoreInlineInstallTest::SetUpOnMainThread();
+    registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,
+                   content::NotificationService::AllSources());
+    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kInstallFromWebstore, kTestExtensionId);
+  }
+
+  bool saw_install() { return saw_install_; }
+
+ protected:
+  // NotificationObserver interface.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details)  OVERRIDE {
+    ASSERT_EQ(chrome::NOTIFICATION_EXTENSION_INSTALLED, type);
+    const Extension* extension = content::Details<Extension>(details).ptr();
+    ASSERT_TRUE(extension != NULL);
+    EXPECT_EQ(extension->id(), kTestExtensionId);
+    saw_install_ = true;
+  }
+
+  content::NotificationRegistrar registrar_;
+
+  // Have we seen an installation notification for kTestExtensionId ?
+  bool saw_install_;
+};
+
+IN_PROC_BROWSER_TEST_F(CommandLineWebstoreInstall, Accept) {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  command_line->AppendSwitchASCII(
+      switches::kAppsGalleryInstallAutoConfirmForTests, "accept");
+  extensions::StartupHelper helper;
+  EXPECT_TRUE(helper.InstallFromWebstore(*command_line, browser()->profile()));
+  EXPECT_TRUE(saw_install());
+}
+
+IN_PROC_BROWSER_TEST_F(CommandLineWebstoreInstall, Cancel) {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  command_line->AppendSwitchASCII(
+      switches::kAppsGalleryInstallAutoConfirmForTests, "cancel");
+  extensions::StartupHelper helper;
+  EXPECT_FALSE(helper.InstallFromWebstore(*command_line, browser()->profile()));
+  EXPECT_FALSE(saw_install());
 }

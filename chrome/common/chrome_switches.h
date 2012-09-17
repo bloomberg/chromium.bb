@@ -214,6 +214,7 @@ extern const char kIgnoreGpuBlacklist[];
 extern const char kImport[];
 extern const char kImportFromFile[];
 extern const char kIncognito[];
+extern const char kInstallFromWebstore[];
 extern const char kInstantURL[];
 extern const char kKeepAliveForTest[];
 extern const char kKioskMode[];

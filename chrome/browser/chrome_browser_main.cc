@@ -1292,6 +1292,14 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     return chrome::RESULT_CODE_UNINSTALL_EXTENSION_ERROR;
   }
 
+  if (parsed_command_line().HasSwitch(switches::kInstallFromWebstore)) {
+    extensions::StartupHelper helper;
+    if (helper.InstallFromWebstore(parsed_command_line(), profile_))
+      return content::RESULT_CODE_NORMAL_EXIT;
+    return chrome::RESULT_CODE_INSTALL_FROM_WEBSTORE_ERROR;
+  }
+
+
   // Start watching for hangs during startup. We disarm this hang detector when
   // ThreadWatcher takes over or when browser is shutdown or when
   // startup_watcher_ is deleted.

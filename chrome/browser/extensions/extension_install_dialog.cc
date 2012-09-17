@@ -68,9 +68,5 @@ void ShowExtensionInstallDialog(gfx::NativeWindow parent,
     DoAutoConfirm(auto_confirm, delegate);
     return;
   }
-  if (!parent) {
-    delegate->InstallUIAbort(false);
-    return;
-  }
   ShowExtensionInstallDialogImpl(parent, navigator, delegate, prompt);
 }

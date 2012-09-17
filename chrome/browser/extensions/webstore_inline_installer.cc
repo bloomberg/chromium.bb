@@ -147,20 +147,21 @@ class SafeWebstoreResponseParser : public UtilityProcessHostClient {
   scoped_ptr<DictionaryValue> parsed_webstore_data_;
 };
 
-WebstoreInlineInstaller::WebstoreInlineInstaller(WebContents* web_contents,
-                                                 int install_id,
-                                                 int return_route_id,
-                                                 std::string webstore_item_id,
-                                                 GURL requestor_url,
-                                                 Delegate* delegate)
+WebstoreInlineInstaller::WebstoreInlineInstaller(
+    WebContents* web_contents,
+    std::string webstore_item_id,
+    VerifiedSiteRequired require_verified_site,
+    GURL requestor_url,
+    Callback callback)
     : content::WebContentsObserver(web_contents),
-      install_id_(install_id),
-      return_route_id_(return_route_id),
       id_(webstore_item_id),
+      require_verified_site_(require_verified_site == REQUIRE_VERIFIED_SITE),
       requestor_url_(requestor_url),
-      delegate_(delegate),
+      callback_(callback),
+      skip_post_install_ui_(false),
       average_rating_(0.0),
       rating_count_(0) {
+  CHECK(!callback.is_null());
 }
 
 void WebstoreInlineInstaller::BeginInstall() {
@@ -294,21 +295,21 @@ void WebstoreInlineInstaller::OnWebstoreResponseParseSuccess(
     }
   }
 
-  // Verified site is required
-  if (webstore_data->HasKey(kVerifiedSiteKey)) {
+  // Check for a verified site if required.
+  if (require_verified_site_) {
+    if (!webstore_data->HasKey(kVerifiedSiteKey)) {
+      CompleteInstall(kNoVerifiedSiteError);
+      return;
+    }
     std::string verified_site;
     if (!webstore_data->GetString(kVerifiedSiteKey, &verified_site)) {
       CompleteInstall(kInvalidWebstoreResponseError);
       return;
     }
-
     if (!IsRequestorURLInVerifiedSite(requestor_url_, verified_site)) {
       CompleteInstall(kNotFromVerifiedSiteError);
       return;
     }
-  } else {
-    CompleteInstall(kNoVerifiedSiteError);
-    return;
   }
 
   scoped_refptr<WebstoreInstallHelper> helper = new WebstoreInstallHelper(
@@ -365,8 +366,7 @@ void WebstoreInlineInstaller::OnWebstoreParseSuccess(
     return;
   }
 
-  install_ui_.reset(
-      ExtensionInstallUI::CreateInstallPromptWithWebContents(web_contents()));
+  install_ui_.reset(new ExtensionInstallPrompt(NULL, web_contents(), profile));
   install_ui_->ConfirmInlineInstall(this, dummy_extension_, &icon_, prompt);
   // Control flow finishes up in InstallUIProceed or InstallUIAbort.
 }
@@ -393,7 +393,10 @@ void WebstoreInlineInstaller::InstallUIProceed() {
           profile,
           id_,
           scoped_ptr<base::DictionaryValue>(manifest_.get()->DeepCopy())));
-  approval->use_app_installed_bubble = true;
+  if (skip_post_install_ui_)
+    approval->skip_post_install_ui = true;
+  else
+    approval->use_app_installed_bubble = true;
 
   scoped_refptr<WebstoreInstaller> installer = new WebstoreInstaller(
       profile, this, &(web_contents()->GetController()), id_, approval.Pass(),
@@ -406,6 +409,7 @@ void WebstoreInlineInstaller::InstallUIAbort(bool user_initiated) {
 }
 
 void WebstoreInlineInstaller::WebContentsDestroyed(WebContents* web_contents) {
+  callback_.Reset();
   // Abort any in-progress fetches.
   if (webstore_data_url_fetcher_.get()) {
     webstore_data_url_fetcher_.reset();
@@ -425,15 +429,8 @@ void WebstoreInlineInstaller::OnExtensionInstallFailure(
 }
 
 void WebstoreInlineInstaller::CompleteInstall(const std::string& error) {
-  // Only bother responding if there's still a tab contents to send back the
-  // response to.
-  if (web_contents()) {
-    if (error.empty()) {
-      delegate_->OnInlineInstallSuccess(install_id_, return_route_id_);
-    } else {
-      delegate_->OnInlineInstallFailure(install_id_, return_route_id_, error);
-    }
-  }
+  if (!callback_.is_null())
+    callback_.Run(error.empty(), error);
 
   Release(); // Matches the AddRef in BeginInstall.
 }

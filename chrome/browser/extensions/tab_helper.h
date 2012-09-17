@@ -37,7 +37,6 @@ class ScriptExecutor;
 class TabHelper : public content::WebContentsObserver,
                   public ExtensionFunctionDispatcher::Delegate,
                   public ImageLoadingTracker::Observer,
-                  public WebstoreInlineInstaller::Delegate,
                   public AppNotifyChannelSetup::Delegate,
                   public base::SupportsWeakPtr<TabHelper>,
                   public content::NotificationObserver,
@@ -163,12 +162,11 @@ class TabHelper : public content::WebContentsObserver,
                              const std::string& extension_id,
                              int index) OVERRIDE;
 
-  // WebstoreInlineInstaller::Delegate.
-  virtual void OnInlineInstallSuccess(int install_id,
-                                      int return_route_id) OVERRIDE;
-  virtual void OnInlineInstallFailure(int install_id,
-                                      int return_route_id,
-                                      const std::string& error) OVERRIDE;
+  // WebstoreInlineInstaller::Callback.
+  virtual void OnInlineInstallComplete(int install_id,
+                                       int return_route_id,
+                                       bool success,
+                                       const std::string& error);
 
   // AppNotifyChannelSetup::Delegate.
   virtual void AppNotifyChannelSetupComplete(

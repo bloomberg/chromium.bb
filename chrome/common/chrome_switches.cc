@@ -91,6 +91,9 @@ const char kAppsGalleryURL[]                = "apps-gallery-url";
 // The update url used by gallery/webstore extensions.
 const char kAppsGalleryUpdateURL[]          = "apps-gallery-update-url";
 
+// TODO(asargent) - remove this flag and change uses of it to instead use
+// kInstallFromWebstore.
+//
 // Specifies the URL of an application manifest to retrieve. The user will be
 // prompted for consent and the application retrieved/installed if consented.
 const char kAppsInstallFromManifestURL[]    = "apps-install-from-manifest-url";
@@ -792,6 +795,10 @@ const char kImportFromFile[]                = "import-from-file";
 
 // Causes the browser to launch directly in incognito mode.
 const char kIncognito[]                     = "incognito";
+
+// Causes Chrome to attempt to get metadata from the webstore for the
+// app/extension ID given, and then prompt the user to download and install it.
+const char kInstallFromWebstore[]    = "install-from-webstore";
 
 // URL to use for instant. If specified this overrides the url from the
 // TemplateURL.

@@ -4,13 +4,19 @@
 
 #include "chrome/browser/extensions/startup_helper.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/webstore_inline_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension.h"
+#include "content/public/browser/web_contents.h"
+#include "ipc/ipc_message.h"
 
 namespace {
 
@@ -74,6 +80,75 @@ bool StartupHelper::UninstallExtension(const CommandLine& cmd_line,
       switches::kUninstallExtension);
   return ExtensionService::UninstallExtensionHelper(extension_service,
                                                     extension_id);
+}
+
+namespace {
+
+class AppInstallHelper {
+ public:
+  AppInstallHelper();
+  virtual ~AppInstallHelper();
+  bool success() { return success_; }
+  const std::string& error() { return error_; }
+
+  WebstoreInlineInstaller::Callback Callback();
+  void OnAppInstallComplete(bool success, const std::string& error);
+
+ private:
+  // These hold on to the result of the app install when it is complete.
+  bool success_;
+  std::string error_;
+};
+
+AppInstallHelper::AppInstallHelper() : success_(false) {}
+
+AppInstallHelper::~AppInstallHelper() {}
+
+WebstoreInlineInstaller::Callback AppInstallHelper::Callback() {
+  return base::Bind(&AppInstallHelper::OnAppInstallComplete,
+                    base::Unretained(this));
+}
+void AppInstallHelper::OnAppInstallComplete(bool success,
+                                            const std::string& error) {
+  success_ = success;
+  error_= error;
+  MessageLoop::current()->Quit();
+}
+
+}  // namespace
+
+bool StartupHelper::InstallFromWebstore(const CommandLine& cmd_line,
+                                        Profile* profile) {
+  std::string id = cmd_line.GetSwitchValueASCII(switches::kInstallFromWebstore);
+  if (!Extension::IdIsValid(id)) {
+    LOG(ERROR) << "Invalid id for " << switches::kInstallFromWebstore
+               << " : '" << id << "'";
+    return false;
+  }
+
+  // TODO(asargent) - it would be nice not to need a WebContents just to
+  // use the inline installer. (crbug.com/149039)
+  scoped_ptr<content::WebContents> web_contents(
+      content::WebContents::Create(profile, NULL, MSG_ROUTING_NONE, NULL));
+
+  AppInstallHelper helper;
+  WebstoreInlineInstaller::Callback callback =
+      base::Bind(&AppInstallHelper::OnAppInstallComplete,
+                 base::Unretained(&helper));
+  scoped_refptr<WebstoreInlineInstaller> installer(
+      new WebstoreInlineInstaller(
+          web_contents.get(),
+          id,
+          WebstoreInlineInstaller::DO_NOT_REQUIRE_VERIFIED_SITE,
+          GURL(),
+          callback));
+  installer->set_skip_post_install_ui(true);
+  installer->BeginInstall();
+
+  MessageLoop::current()->Run();
+  if (!helper.success())
+    LOG(ERROR) << "InstallFromWebstore failed with error: " << helper.error();
+  return helper.success();
 }
 
 StartupHelper::~StartupHelper() {

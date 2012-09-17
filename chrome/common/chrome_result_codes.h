@@ -72,6 +72,10 @@ enum ResultCode {
   // running browser.
   RESULT_CODE_NORMAL_EXIT_PROCESS_NOTIFIED,
 
+  // Failed to install an item from the webstore when the kInstallFromWebstore
+  // command line flag was present.
+  RESULT_CODE_INSTALL_FROM_WEBSTORE_ERROR,
+
   // Last return code (keep this last).
   RESULT_CODE_CHROME_LAST_CODE,
 };

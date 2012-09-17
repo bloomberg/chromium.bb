@@ -110,9 +110,11 @@ CrxInstaller::CrxInstaller(
     return;
 
   CHECK(profile_->IsSameProfile(approval->profile));
-  client_->install_ui()->SetUseAppInstalledBubble(
-      approval->use_app_installed_bubble);
-  client_->install_ui()->SetSkipPostInstallUI(approval->skip_post_install_ui);
+  if (client_) {
+    client_->install_ui()->SetUseAppInstalledBubble(
+        approval->use_app_installed_bubble);
+    client_->install_ui()->SetSkipPostInstallUI(approval->skip_post_install_ui);
+  }
 
   if (approval->skip_install_dialog) {
     // Mark the extension as approved, but save the expected manifest and ID
@@ -139,8 +141,10 @@ CrxInstaller::~CrxInstaller() {
         base::Bind(&extension_file_util::DeleteFile, source_file_, false));
   }
   // Make sure the UI is deleted on the ui thread.
-  BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, client_);
-  client_ = NULL;
+  if (client_) {
+    BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, client_);
+    client_ = NULL;
+  }
 }
 
 void CrxInstaller::InstallCrx(const FilePath& source_file) {

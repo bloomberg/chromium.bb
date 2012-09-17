@@ -259,13 +259,15 @@ void TabHelper::OnInlineWebstoreInstall(
     int return_route_id,
     const std::string& webstore_item_id,
     const GURL& requestor_url) {
+  WebstoreInlineInstaller::Callback callback =
+      base::Bind(&TabHelper::OnInlineInstallComplete, base::Unretained(this),
+                 install_id, return_route_id);
   scoped_refptr<WebstoreInlineInstaller> installer(new WebstoreInlineInstaller(
       web_contents(),
-      install_id,
-      return_route_id,
       webstore_item_id,
+      WebstoreInlineInstaller::REQUIRE_VERIFIED_SITE,
       requestor_url,
-      this));
+      callback));
   installer->BeginInstall();
 }
 
@@ -415,16 +417,17 @@ WindowController* TabHelper::GetExtensionWindowController() const  {
   return ExtensionTabUtil::GetWindowControllerOfTab(web_contents());
 }
 
-void TabHelper::OnInlineInstallSuccess(int install_id, int return_route_id) {
-  Send(new ExtensionMsg_InlineWebstoreInstallResponse(
-      return_route_id, install_id, true, ""));
-}
-
-void TabHelper::OnInlineInstallFailure(int install_id,
-                                       int return_route_id,
-                                       const std::string& error) {
-  Send(new ExtensionMsg_InlineWebstoreInstallResponse(
-      return_route_id, install_id, false, error));
+void TabHelper::OnInlineInstallComplete(int install_id,
+                                        int return_route_id,
+                                        bool success,
+                                        const std::string& error) {
+  if (success) {
+    Send(new ExtensionMsg_InlineWebstoreInstallResponse(
+        return_route_id, install_id, true, ""));
+  } else {
+    Send(new ExtensionMsg_InlineWebstoreInstallResponse(
+        return_route_id, install_id, false, error));
+  }
 }
 
 WebContents* TabHelper::GetAssociatedWebContents() const {
