@@ -109,16 +109,12 @@ SyncerError DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
   get_updates->mutable_caller_info()->set_notifications_enabled(
       session->context()->notifications_enabled());
 
-  SyncerProtoUtil::SetProtocolVersion(&client_to_server_message);
-  SyncerProtoUtil::AddRequestBirthday(dir, &client_to_server_message);
-  SyncerProtoUtil::AddBagOfChips(dir, &client_to_server_message);
-
   DebugInfo* debug_info = client_to_server_message.mutable_debug_info();
 
   AppendClientDebugInfoIfNeeded(session, debug_info);
 
   SyncerError result = SyncerProtoUtil::PostClientToServerMessage(
-      client_to_server_message,
+      &client_to_server_message,
       &update_response,
       session);
 

@@ -29,6 +29,7 @@
         '../base/base.gyp:base',
         '../build/temp_gyp/googleurl.gyp:googleurl',
         '../crypto/crypto.gyp:crypto',
+        '../google_apis/google_apis.gyp:google_apis',
         '../net/net.gyp:net',
         '../sql/sql.gyp:sql',
         'protocol/sync_proto.gyp:sync_proto',

@@ -101,7 +101,7 @@ SyncerError BuildAndPostCommitsImpl(Syncer* syncer,
     DVLOG(1) << "Sending commit message.";
     TRACE_EVENT_BEGIN0("sync", "PostCommit");
     const SyncerError post_result = SyncerProtoUtil::PostClientToServerMessage(
-        commit_message, &commit_response, session);
+        &commit_message, &commit_response, session);
     TRACE_EVENT_END0("sync", "PostCommit");
 
     if (post_result != SYNCER_OK) {

@@ -499,6 +499,9 @@ message ClientToServerMessage {
   // Per-client state for use by the server. Sent with every message sent to the
   // server.
   optional ChipBag bag_of_chips = 11;
+
+  // Google API key.
+  optional string api_key = 12;
 };
 
 message CommitResponse {

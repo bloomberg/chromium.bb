@@ -6,6 +6,7 @@ include_rules = [
   # to test.
   "+base",
   "+build",
+  "+google_apis",
   "+testing",
 
   # Force subdirectories to explicitly define DEPS.

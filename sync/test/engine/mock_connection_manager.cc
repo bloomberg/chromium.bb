@@ -82,6 +82,8 @@ bool MockConnectionManager::PostBufferToPath(PostBufferParams* params,
   ClientToServerMessage post;
   CHECK(post.ParseFromString(params->buffer_in));
   CHECK(post.has_protocol_version());
+  CHECK(post.has_api_key());
+  CHECK(post.has_bag_of_chips());
   last_request_.CopyFrom(post);
   client_stuck_ = post.sync_problem_detected();
   sync_pb::ClientToServerResponse response;

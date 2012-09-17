@@ -6,6 +6,7 @@
 
 #include "base/format_macros.h"
 #include "base/stringprintf.h"
+#include "google_apis/google_api_keys.h"
 #include "sync/engine/net/server_connection_manager.h"
 #include "sync/engine/syncer.h"
 #include "sync/engine/syncer_types.h"
@@ -346,24 +347,27 @@ SyncProtocolError ConvertLegacyErrorCodeToNewError(
 
 // static
 SyncerError SyncerProtoUtil::PostClientToServerMessage(
-    const ClientToServerMessage& msg,
+    ClientToServerMessage* msg,
     ClientToServerResponse* response,
     SyncSession* session) {
 
   CHECK(response);
-  DCHECK(!msg.get_updates().has_from_timestamp());  // Deprecated.
-  DCHECK(!msg.get_updates().has_requested_types());  // Deprecated.
-  DCHECK(msg.has_store_birthday() || IsVeryFirstGetUpdates(msg))
-      << "Must call AddRequestBirthday to set birthday.";
-  DCHECK(msg.has_bag_of_chips())
-      << "Must call AddBagOfChips to set bag_of_chips.";
+  DCHECK(!msg->get_updates().has_from_timestamp());  // Deprecated.
+  DCHECK(!msg->get_updates().has_requested_types());  // Deprecated.
+
+  // Add must-have fields.
+  SetProtocolVersion(msg);
+  AddRequestBirthday(session->context()->directory(), msg);
+  DCHECK(msg->has_store_birthday() || IsVeryFirstGetUpdates(*msg));
+  AddBagOfChips(session->context()->directory(), msg);
+  msg->set_api_key(google_apis::GetAPIKey());
 
   syncable::Directory* dir = session->context()->directory();
 
-  LogClientToServerMessage(msg);
-  session->context()->traffic_recorder()->RecordClientToServerMessage(msg);
+  LogClientToServerMessage(*msg);
+  session->context()->traffic_recorder()->RecordClientToServerMessage(*msg);
   if (!PostAndProcessHeaders(session->context()->connection_manager(), session,
-                             msg, response)) {
+                             *msg, response)) {
     // There was an error establishing communication with the server.
     // We can not proceed beyond this point.
     const HttpResponse::ServerConnectionCode server_status =

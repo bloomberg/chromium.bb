@@ -43,7 +43,7 @@ class SyncerProtoUtil {
   // Returns true on success.  Also handles store birthday verification: will
   // produce a SyncError if the birthday is incorrect.
   static SyncerError PostClientToServerMessage(
-      const sync_pb::ClientToServerMessage& msg,
+      sync_pb::ClientToServerMessage* msg,
       sync_pb::ClientToServerResponse* response,
       sessions::SyncSession* session);
 
