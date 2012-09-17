@@ -1014,6 +1014,10 @@ void LocationBarViewGtk::UpdateWebIntentsButton() {
                          web_intents_button_view_->IsVisible());
 }
 
+void LocationBarViewGtk::UpdateOpenPDFInReaderPrompt() {
+  // Not implemented on Gtk.
+}
+
 void LocationBarViewGtk::SaveStateToContents(WebContents* contents) {
   location_entry_->SaveStateToTab(contents);
 }

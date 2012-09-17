@@ -534,6 +534,7 @@
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_HTTPS_WARNING" file="common/omnibox_https_warning.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_HTTP_DARK" file="common/omnibox_http_dark.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_HTTP_SELECTED" file="common/omnibox_http_selected.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_PDF_ICON" file="pdf.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SEARCH" file="common/omnibox_search.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SEARCH_DARK" file="common/omnibox_search_dark.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SEARCH_SELECTED" file="common/omnibox_search_selected.png" />

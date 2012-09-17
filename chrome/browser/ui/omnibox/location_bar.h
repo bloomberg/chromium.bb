@@ -70,6 +70,9 @@ class LocationBar {
   // Updates the state of the web intents use-another-service button.
   virtual void UpdateWebIntentsButton() = 0;
 
+  // Updates the state of the button to open a PDF in Adobe Reader.
+  virtual void UpdateOpenPDFInReaderPrompt() = 0;
+
   // Saves the state of the location bar to the specified WebContents, so that
   // it can be restored later. (Done when switching tabs).
   virtual void SaveStateToContents(content::WebContents* contents) = 0;

@@ -41,7 +41,7 @@
 #include "chrome/browser/ui/hung_plugin_tab_helper.h"
 #include "chrome/browser/ui/intents/web_intent_picker_controller.h"
 #include "chrome/browser/ui/metro_pin_tab_helper.h"
-#include "chrome/browser/ui/pdf/pdf_tab_observer.h"
+#include "chrome/browser/ui/pdf/pdf_tab_helper.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/browser/ui/sad_tab_helper.h"
 #include "chrome/browser/ui/search/search.h"
@@ -125,18 +125,10 @@ TabContents::TabContents(WebContents* contents)
     autocomplete_history_manager_->SetExternalDelegate(
         autofill_external_delegate_.get());
   }
-#if defined(ENABLE_AUTOMATION)
-  automation_tab_helper_.reset(new AutomationTabHelper(contents));
-#endif
   blocked_content_tab_helper_.reset(new BlockedContentTabHelper(this));
   bookmark_tab_helper_.reset(new BookmarkTabHelper(this));
-  load_time_stats_tab_helper_.reset(
-      new chrome_browser_net::LoadTimeStatsTabHelper(this));
-#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
-  captive_portal_tab_helper_.reset(
-      new captive_portal::CaptivePortalTabHelper(profile(), web_contents()));
-#endif
   constrained_window_tab_helper_.reset(new ConstrainedWindowTabHelper(this));
+  content_settings_.reset(new TabSpecificContentSettings(contents));
   core_tab_helper_.reset(new CoreTabHelper(contents));
   extensions::TabHelper::CreateForWebContents(contents);
   favicon_tab_helper_.reset(new FaviconTabHelper(contents));
@@ -144,6 +136,8 @@ TabContents::TabContents(WebContents* contents)
   history_tab_helper_.reset(new HistoryTabHelper(contents));
   hung_plugin_tab_helper_.reset(new HungPluginTabHelper(contents));
   infobar_tab_helper_.reset(new InfoBarTabHelper(contents));
+  load_time_stats_tab_helper_.reset(
+      new chrome_browser_net::LoadTimeStatsTabHelper(this));
   MetroPinTabHelper::CreateForWebContents(contents);
   password_manager_delegate_.reset(new PasswordManagerDelegateImpl(this));
   password_manager_.reset(
@@ -158,13 +152,22 @@ TabContents::TabContents(WebContents* contents)
   snapshot_tab_helper_.reset(new SnapshotTabHelper(contents));
   ssl_helper_.reset(new TabContentsSSLHelper(this));
   synced_tab_delegate_.reset(new TabContentsSyncedTabDelegate(this));
-  content_settings_.reset(new TabSpecificContentSettings(contents));
   translate_tab_helper_.reset(new TranslateTabHelper(contents));
   zoom_controller_.reset(new ZoomController(this));
 
+#if defined(ENABLE_AUTOMATION)
+  automation_tab_helper_.reset(new AutomationTabHelper(contents));
+#endif
+
+#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
+  captive_portal_tab_helper_.reset(
+      new captive_portal::CaptivePortalTabHelper(profile(), web_contents()));
+#endif
+
 #if !defined(OS_ANDROID)
-  web_intent_picker_controller_.reset(new WebIntentPickerController(this));
+  PDFTabHelper::CreateForWebContents(contents);
   sad_tab_helper_.reset(new SadTabHelper(contents));
+  web_intent_picker_controller_.reset(new WebIntentPickerController(this));
 #endif
 
   // Create the per-tab observers.
@@ -172,7 +175,6 @@ TabContents::TabContents(WebContents* contents)
       new AlternateErrorPageTabObserver(contents, profile()));
   external_protocol_observer_.reset(new ExternalProtocolObserver(contents));
   navigation_metrics_recorder_.reset(new NavigationMetricsRecorder(contents));
-  pdf_tab_observer_.reset(new PDFTabObserver(this));
   pepper_broker_observer_.reset(new PepperBrokerObserver(contents));
   plugin_observer_.reset(new PluginObserver(this));
   safe_browsing_tab_observer_.reset(
