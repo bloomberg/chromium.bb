@@ -233,6 +233,11 @@ keyboard_handle_key(struct keyboard *keyboard, const struct key *key)
 			if (strlen(keyboard->keyboard->preedit_string) == 0) {
 				input_method_context_delete_surrounding_text(keyboard->keyboard->context,
 									     -1, 1);
+			} else {
+				keyboard->keyboard->preedit_string[strlen(keyboard->keyboard->preedit_string) - 1] = '\0';
+				input_method_context_preedit_string(keyboard->keyboard->context,
+								    keyboard->keyboard->preedit_string,
+								    strlen(keyboard->keyboard->preedit_string));
 			}
 			break;
 		case keytype_enter:
