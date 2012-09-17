@@ -9,6 +9,7 @@
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/shared/compound_event_filter.h"
+#include "ui/base/win/shell.h"
 #include "ui/views/ime/input_method_win.h"
 #include "ui/views/widget/desktop_capture_client.h"
 #include "ui/views/win/hwnd_message_handler.h"
@@ -39,6 +40,8 @@ void DesktopRootWindowHostWin::Init(aura::Window* content_window,
   // TODO(beng): SetInitParams().
   content_window_ = content_window;
   message_handler_->Init(NULL, params.bounds);
+
+  message_handler_->set_remove_standard_frame(!ShouldUseNativeFrame());
 
   aura::RootWindow::CreateParams rw_params(params.bounds);
   rw_params.host = this;
@@ -120,6 +123,12 @@ gfx::Rect DesktopRootWindowHostWin::GetClientAreaBoundsInScreen() const {
 
 gfx::Rect DesktopRootWindowHostWin::GetRestoredBounds() const {
   return message_handler_->GetRestoredBounds();
+}
+
+bool DesktopRootWindowHostWin::ShouldUseNativeFrame() {
+  return false;
+  // TODO(scottmg): Should be:
+  //return ui::win::IsAeroGlassEnabled();
 }
 
 void DesktopRootWindowHostWin::Activate() {

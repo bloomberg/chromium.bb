@@ -95,6 +95,10 @@ gfx::Rect DesktopRootWindowHostLinux::GetRestoredBounds() const {
   return gfx::Rect();
 }
 
+bool DesktopRootWindowHostLinux::ShouldUseNativeFrame() {
+  return false;
+}
+
 void DesktopRootWindowHostLinux::Activate() {
   // TODO(erg):
   NOTIMPLEMENTED();
@@ -161,6 +165,7 @@ void DesktopRootWindowHostLinux::SetWindowTitle(const string16& title) {
   NOTIMPLEMENTED();
 }
 
+>>>>>>> trunk
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopRootWindowHost, public:
 

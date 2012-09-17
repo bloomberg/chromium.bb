@@ -43,7 +43,7 @@ NonClientFrameView* DesktopNativeWidgetAura::CreateNonClientFrameView() {
 }
 
 bool DesktopNativeWidgetAura::ShouldUseNativeFrame() const {
-  return false;
+  return desktop_root_window_host_->ShouldUseNativeFrame();
 }
 
 void DesktopNativeWidgetAura::FrameTypeChanged() {

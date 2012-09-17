@@ -51,6 +51,7 @@ class DesktopRootWindowHost {
   virtual gfx::Rect GetWindowBoundsInScreen() const = 0;
   virtual gfx::Rect GetClientAreaBoundsInScreen() const = 0;
   virtual gfx::Rect GetRestoredBounds() const = 0;
+  virtual bool ShouldUseNativeFrame() = 0;
 
   virtual void Activate() = 0;
   virtual void Deactivate() = 0;
