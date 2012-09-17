@@ -651,6 +651,7 @@ const char kSearchDomainsProperty[] = "SearchDomains";
 // Manager property names.
 const char kDefaultServiceProperty[] = "DefaultService";
 const char kHostNameProperty[] = "HostName";
+const char kIgnoredDNSSearchPathsProperty[] = "IgnoredDNSSearchPaths";
 const char kLinkMonitorTechnologiesProperty[] =
     "LinkMonitorTechnologies";
 const char kPortalCheckIntervalProperty[] = "PortalCheckInterval";
