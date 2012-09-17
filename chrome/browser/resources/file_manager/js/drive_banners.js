@@ -16,9 +16,10 @@ function FileListBannerController(directoryModel, volumeManager, document) {
   this.driveEnabled_ = false;
 
   var board = str('CHROMEOS_RELEASE_BOARD');
-  // It is 'canary' or 'beta' for the other channels.
-  var releaseChannel = str('BROWSER_VERSION_MODIFIER') == '';
-  this.newWelcome_ = board.match(/^(stumpy|lumpy)/i) && releaseChannel;
+  if (board.match(/^(stumpy|lumpy)/i))
+    this.checkPromoAvailable_();
+  else
+    this.newWelcome_ = false;
 
   var handler = this.checkSpaceAndShowBanner_.bind(this);
   this.directoryModel_.addEventListener('scan-completed', handler);
@@ -63,6 +64,8 @@ var GOOGLE_DRIVE_FAQ_URL =
  */
 var GOOGLE_DRIVE_BUY_STORAGE =
     'https://www.google.com/settings/storage';
+
+var GOOGLE_DRIVE_REDEEM = 'https://drive.google.com/redeem';
 
 /**
  * Location of the FAQ about the downloads directory.
@@ -171,19 +174,23 @@ FileListBannerController.prototype.maybeShowBanner_ = function() {
     // The timeout below is required because sometimes another
     // 'rescan-completed' event arrives shortly with non-empty file list.
     var self = this;
-    setTimeout(function() {
+    setTimeout(this.preparePromo_.bind(this, function() {
       var container = self.document_.querySelector('.dialog-container');
       if (self.isOnGData() &&
           container.getAttribute('gdrive-welcome') != 'header')
             self.showBanner_('page', 'GDATA_WELCOME_TEXT_LONG');
-        }, 2000);
+        }, 2000));
   } else if (counter < WELCOME_HEADER_COUNTER_LIMIT) {
     // We do not want to increment the counter when the user navigates
     // between different directories on GDrive, but we increment the counter
     // once anyway to prevent the full page banner from showing.
-     if (!this.previousDirWasOnGData_ || counter == 0)
-       localStorage[WELCOME_HEADER_COUNTER_KEY] = ++counter;
-       this.showBanner_('header', 'GDATA_WELCOME_TEXT_SHORT');
+     if (!this.previousDirWasOnGData_ || counter == 0) {
+       var self = this;
+       this.preparePromo_(function() {
+         localStorage[WELCOME_HEADER_COUNTER_KEY] = ++counter;
+         self.showBanner_('header', 'GDATA_WELCOME_TEXT_SHORT');
+       });
+     }
    } else {
      this.closeBanner_();
    }
@@ -199,6 +206,12 @@ FileListBannerController.prototype.maybeShowBanner_ = function() {
 FileListBannerController.prototype.showLowGDriveSpaceWarning_ =
       function(show, sizeStats) {
   var box = this.document_.querySelector('.gdrive-space-warning');
+
+  // Avoid showing two banners.
+  // TODO(kaznacheev): Unify the low space warning and the promo header.
+  if (show) this.cleanupGDataWelcome_();
+
+  if (box.hidden == !show) return;
 
   // If the warning was dismissed before, this key stores the quota value
   // (as of the moment of dismissal).
@@ -217,12 +230,6 @@ FileListBannerController.prototype.showLowGDriveSpaceWarning_ =
       localStorage[WARNING_DISMISSED_KEY] = 0;
     }
   }
-
-  // Avoid showing two banners.
-  // TODO(kaznacheev): Unify the low space warning and the promo header.
-  if (show) this.cleanupGDataWelcome_();
-
-  if (box.hidden == !show) return;
 
   box.textContent = '';
   if (show) {
@@ -337,16 +344,18 @@ FileListBannerController.prototype.closeBanner_ = function() {
  */
 FileListBannerController.prototype.checkSpaceAndShowBanner_ = function() {
   var self = this;
-  if (this.newWelcome_ && this.isOnGData())
-    chrome.fileBrowserPrivate.getSizeStats(
-        util.makeFilesystemUrl(this.directoryModel_.getCurrentRootPath()),
-    function(result) {
-      if (result.totalSizeKB >= 100 * 1024 * 1024)  // Already >= 100 GB.
-        self.newWelcome_ = false;
-        self.maybeShowBanner_();
-    });
-  else
-    self.maybeShowBanner_();
+  this.preparePromo_(function() {
+    if (this.newWelcome_ && this.isOnGData())
+      chrome.fileBrowserPrivate.getSizeStats(
+          util.makeFilesystemUrl(this.directoryModel_.getCurrentRootPath()),
+      function(result) {
+        if (result.totalSizeKB >= 100 * 1024 * 1024)  // Already >= 100 GB.
+          self.newWelcome_ = false;
+          self.maybeShowBanner_();
+      });
+    else
+      self.maybeShowBanner_();
+  });
 };
 
 /**
@@ -491,5 +500,37 @@ FileListBannerController.prototype.updateGDataUnmountedPanel_ = function() {
   } else {
     node.removeAttribute('gdata');
   }
+};
+
+/**
+ * Detects what type of promo should be shown.
+ * @private
+ */
+FileListBannerController.prototype.checkPromoAvailable_ = function() {
+  var r = new XMLHttpRequest();
+  r.open('HEAD', GOOGLE_DRIVE_REDEEM, true);
+  r.onreadystatechange = function() {
+    if (r.readyState != 4)
+      return;
+    this.newWelcome_ = r.status != 404;
+    if (this.promoCallbacks_) {
+      for (var i = 0; i < this.promoCallbacks_.length; i++)
+        this.promoCallbacks_[i]();
+      this.promoCallbacks_ = undefined;
+    }
+  }.bind(this);
+  r.send();
+};
+
+/**
+ * @param {Function} completeCallback To be called (may be directly) when
+ *                                    this.newWelcome_ get ready.
+ * @private
+ */
+FileListBannerController.prototype.preparePromo_ = function(completeCallback) {
+  if (this.newWelcome_ !== undefined)
+    completeCallback();
+  else
+    (this.promoCallbacks_ = this.promoCallbacks_ || []).push(completeCallback);
 };
 

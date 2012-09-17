@@ -40,7 +40,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
@@ -1888,9 +1887,6 @@ bool FileDialogStringsFunction::RunImpl() {
   if (!provider->GetMachineStatistic(kMachineInfoBoard, &board))
     board = "unknown";
   dict->SetString(kMachineInfoBoard, board);
-
-  dict->SetString("BROWSER_VERSION_MODIFIER",
-                  chrome::VersionInfo::GetVersionStringModifier());
 
   return true;
 }

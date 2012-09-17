@@ -453,7 +453,6 @@ chrome.fileBrowserPrivate = {
       FILE_IS_DIRECTORY: 'Folder',
 
       CHROMEOS_RELEASE_BOARD: 'stumpy',
-      BROWSER_VERSION_MODIFIER: '',
 
       GDATA_DIRECTORY_LABEL: 'Google Drive',
       ENABLE_GDATA: true,
