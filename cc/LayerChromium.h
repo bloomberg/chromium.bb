@@ -134,11 +134,17 @@ public:
 
     void setScrollable(bool);
     bool scrollable() const { return m_scrollable; }
+
     void setShouldScrollOnMainThread(bool);
+    bool shouldScrollOnMainThread() const { return m_shouldScrollOnMainThread; }
+
     void setHaveWheelEventHandlers(bool);
-    const Region& nonFastScrollableRegion() { return m_nonFastScrollableRegion; }
+    bool haveWheelEventHandlers() const { return m_haveWheelEventHandlers; }
+
     void setNonFastScrollableRegion(const Region&);
     void setNonFastScrollableRegionChanged() { m_nonFastScrollableRegionChanged = true; }
+    const Region& nonFastScrollableRegion() const { return m_nonFastScrollableRegion; }
+
     void setLayerScrollClient(WebKit::WebLayerScrollClient* layerScrollClient) { m_layerScrollClient = layerScrollClient; }
 
     void setDrawCheckerboardForMissingTiles(bool);

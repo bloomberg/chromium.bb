@@ -75,12 +75,19 @@ public:
     virtual void setScrollPosition(WebPoint) OVERRIDE;
     virtual WebPoint scrollPosition() const OVERRIDE;
     virtual void setMaxScrollPosition(WebSize) OVERRIDE;
+    virtual WebSize maxScrollPosition() const;
     virtual void setScrollable(bool) OVERRIDE;
+    virtual bool scrollable() const;
     virtual void setHaveWheelEventHandlers(bool) OVERRIDE;
+    virtual bool haveWheelEventHandlers() const;
     virtual void setShouldScrollOnMainThread(bool) OVERRIDE;
+    virtual bool shouldScrollOnMainThread() const;
     virtual void setNonFastScrollableRegion(const WebVector<WebRect>&) OVERRIDE;
+    virtual WebVector<WebRect> nonFastScrollableRegion() const;
     virtual void setIsContainerForFixedPositionLayers(bool) OVERRIDE;
+    virtual bool isContainerForFixedPositionLayers() const;
     virtual void setFixedToContainerLayer(bool) OVERRIDE;
+    virtual bool fixedToContainerLayer() const;
     virtual void setScrollClient(WebLayerScrollClient*) OVERRIDE;
 
     cc::LayerChromium* layer() const;

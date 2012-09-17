@@ -348,9 +348,19 @@ void WebLayerImpl::setMaxScrollPosition(WebSize maxScrollPosition)
     m_layer->setMaxScrollPosition(convert(maxScrollPosition));
 }
 
+WebSize WebLayerImpl::maxScrollPosition() const
+{
+    return convert(m_layer->maxScrollPosition());
+}
+
 void WebLayerImpl::setScrollable(bool scrollable)
 {
     m_layer->setScrollable(scrollable);
+}
+
+bool WebLayerImpl::scrollable() const
+{
+    return m_layer->scrollable();
 }
 
 void WebLayerImpl::setHaveWheelEventHandlers(bool haveWheelEventHandlers)
@@ -358,9 +368,19 @@ void WebLayerImpl::setHaveWheelEventHandlers(bool haveWheelEventHandlers)
     m_layer->setHaveWheelEventHandlers(haveWheelEventHandlers);
 }
 
+bool WebLayerImpl::haveWheelEventHandlers() const
+{
+    return m_layer->haveWheelEventHandlers();
+}
+
 void WebLayerImpl::setShouldScrollOnMainThread(bool shouldScrollOnMainThread)
 {
     m_layer->setShouldScrollOnMainThread(shouldScrollOnMainThread);
+}
+
+bool WebLayerImpl::shouldScrollOnMainThread() const
+{
+    return m_layer->shouldScrollOnMainThread();
 }
 
 void WebLayerImpl::setNonFastScrollableRegion(const WebVector<WebRect>& rects)
@@ -374,14 +394,33 @@ void WebLayerImpl::setNonFastScrollableRegion(const WebVector<WebRect>& rects)
 
 }
 
+WebVector<WebRect> WebLayerImpl::nonFastScrollableRegion() const
+{
+    Vector<WebCore::IntRect> regionRects = m_layer->nonFastScrollableRegion().rects();
+    WebVector<WebRect> result(regionRects.size());
+    for (size_t i = 0; i < regionRects.size(); ++i)
+        result[i] = convert(regionRects[i]);
+    return result;
+}
+
 void WebLayerImpl::setIsContainerForFixedPositionLayers(bool enable)
 {
     m_layer->setIsContainerForFixedPositionLayers(enable);
 }
 
+bool WebLayerImpl::isContainerForFixedPositionLayers() const
+{
+    return m_layer->isContainerForFixedPositionLayers();
+}
+
 void WebLayerImpl::setFixedToContainerLayer(bool enable)
 {
     m_layer->setFixedToContainerLayer(enable);
+}
+
+bool WebLayerImpl::fixedToContainerLayer() const
+{
+    return m_layer->fixedToContainerLayer();
 }
 
 void WebLayerImpl::setScrollClient(WebLayerScrollClient* scrollClient)
