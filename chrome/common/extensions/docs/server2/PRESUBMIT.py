@@ -10,11 +10,22 @@ for more details about the presubmit API built into gcl.
 
 # Run build_server so that files needed by tests are copied to the local
 # third_party directory.
+import os
 import sys
-sys.path.insert(0, '.')
-import build_server
-build_server.main()
-sys.path.pop(0)
+SYS_PATH = sys.path[:]
+try:
+  sys.path.insert(0, '.')
+  sys.path.insert(0, os.path.join(os.getcwd().split(os.sep + 'src')[0],
+                                  'src',
+                                  'chrome',
+                                  'common',
+                                  'extensions',
+                                  'docs',
+                                  'server2'))
+  import build_server
+  build_server.main()
+finally:
+  sys.path = SYS_PATH
 
 WHITELIST = [ r'.+_test.py$' ]
 # The integration tests are selectively run from the PRESUBMIT in
