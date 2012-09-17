@@ -11795,6 +11795,21 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_IMPORTING_ERROR" desc="In the Photo import, importing error message.">
         Cannot import. An error occured.
       </message>
+      <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_CAPTION" desc="In the Photo import, caption inside the dialog.">
+        Select photos to import
+      </message>
+      <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_DELETE_AFTER" desc="In the Photo import, label of checkbox to remove files after import is done.">
+        Delete photos after import
+      </message>
+      <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_NOTHING_PICKED" desc="In the Photo import, message informing about no photo picked.">
+        Nothing selected
+      </message>
+      <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_ONE_PICKED" desc="In the Photo import, message informing about one photo picked.">
+        1 selected
+      </message>
+      <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_MANY_PICKED" desc="In the Photo import, message informing about multiple photos picked.">
+        <ph name="COUNT">$1<ex>42</ex></ph> selected
+      </message>
 
       <message name="IDS_FILE_BROWSER_CONFIRM_OVERWRITE_FILE" desc="Asks the user if they are sure they want to overwrite an existing file with another one.">
         A file named "$1" already exists. Do you want to replace it?

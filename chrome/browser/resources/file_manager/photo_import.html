@@ -54,16 +54,22 @@
     <script src="js/photo/tile_view.js"></script>
     <script src="js/photo/photo_import.js"></script>
   </if>
+  <title>&#xFEFF;</title>
 </head>
 
 <body>
   <div class="photo-import">
     <div class="grid-container">
-      <div class="titlebar">
-        <div class="title"></div>
-        <button class="import"></button>
+      <div class="topbar">
+        <div class="caption"></div>
       </div>
       <grid></grid>
+      <div class="bottombar buttonbar">
+        <input type="checkbox" id="delete-after-checkbox" checked>
+        <label for="delete-after-checkbox"></label>
+        <span class="picked-count"></span>
+        <button class="import action"></button>
+      </div>
     </div>
     <div class="spinner"></div>
   </div>

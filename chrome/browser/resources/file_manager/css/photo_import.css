@@ -4,9 +4,7 @@
 
 .photo-import {
   -webkit-user-select: none;
-  background: black;
   bottom: 0;
-  color: white;
   font-family: Open Sans, Droid Sans Fallback, sans-serif;
   font-size: 84%;
   left: 0;
@@ -27,78 +25,11 @@
   bottom: 0;
   display: -webkit-box;
   left: 0;
+  padding: 20px;
   position: absolute;
   right: 0;
   top: 0;
 }
-
-
-/* The top title bar with buttons */
-
-.titlebar {
-  -webkit-box-align: center;
-  -webkit-box-orient: horizontal;
-  display: -webkit-box;
-  height: 80px;
-}
-
-.title {
-  -webkit-box-flex: 1;
-  font-size: 200%;
-  margin-left: 15px;
-}
-
-button {
-  -webkit-box-align: center;
-  -webkit-box-flex: 0;
-  -webkit-box-orient: horizontal;
-  -webkit-box-pack: end;
-  background-color: transparent;
-  background-position: 5px center;
-  background-repeat: no-repeat;
-  border: none;
-  color: white;
-  cursor: pointer;
-  display: -webkit-box;
-  height: 40px;
-  margin-left: 10px;
-  margin-right: 10px;
-  max-width: 90px;
-  opacity: 0.99;  /* Workaround for http://crosbug.com/21065 */
-  overflow: hidden;
-  padding: 0 10px 0 35px;
-}
-
-button.no-icon {
-  padding: 0 10px 0 10px;
-}
-
-button:hover {
-  background-color: rgba(31, 31, 31, 1);
-  color: white;
-}
-
-button:active {
-  background-color: rgba(240, 240, 240, 1);
-  color: black;
-}
-
-button:disabled {
-  opacity: 0.5;
-  pointer-events: none;
-}
-
-button.import {
-  /* TODO */
-  background-image: url('../images/gallery/icon_crop.png');
-}
-
-button.import[pressed] {
-  /* TODO */
-  background-image: url('../images/gallery/icon_crop_selected.png');
-}
-
-
 
 .spinner {
   background-image: url('../images/common/spinner_white.svg');
@@ -112,10 +43,34 @@ button.import[pressed] {
   width: 22px;
 }
 
+/* The top and bottom bars with buttons */
 
+.topbar,
+.bottombar {
+  -webkit-box-align: center;
+  -webkit-box-orient: horizontal;
+  display: -webkit-box;
+  height: 80px;
+  width: 100%;
+}
 
+.caption {
+  -webkit-box-flex: 1;
+  font-size: 150%;
+  margin-left: 8px;
+}
 
-/* The cr.ui.Grid representing the detailed file list. */
+.bottombar label {
+  -webkit-box-flex: 1;
+  display: block;
+}
+
+button.import {
+  -webkit-margin-end: 20px;
+  min-width: 100px;
+}
+
+/* The cr.ui.Grid representing the files. */
 .photo-import grid {
   -webkit-box-flex: 1;
   overflow-y: auto;
@@ -123,11 +78,12 @@ button.import[pressed] {
 }
 
 .photo-import grid::-webkit-scrollbar {
-  background: black;
+  background: white;
+  width: 6px;
 }
 
 .photo-import grid::-webkit-scrollbar-thumb {
-  background: rgb(31, 31, 31);
+  background: rgb(200, 200, 200);
 }
 
 /* Keep width in sync with PhotoImport.ITEM_WIDTH */
@@ -144,7 +100,7 @@ button.import[pressed] {
 
 .grid-item.group,
 .grid-item.empty {
-  background: black !important;
+  background: white !important;
   outline: none !important;
 }
 
@@ -156,18 +112,24 @@ button.import[pressed] {
   height: 40px;
   left: 2px;
   position: absolute;
-  top: 40px;
+  top: 80px;
   width: 400px;
 }
 
 .grid-frame {
-  background: black;
+  background: white;
   border: none;
   box-sizing: border-box;
   height: 100%;
   padding: 2px;
   position: relative;
   width: 100%;
+}
+
+.grid-frame input[type=checkbox] {
+  bottom: 25px;
+  left: 5px;
+  position: relative;
 }
 
 .img-container {
@@ -183,7 +145,11 @@ button.import[pressed] {
   position: absolute;
 }
 
+.grid-item[lead] img,
 .grid-item[selected] img,
-.grid-item:hover img {
+.grid-item:hover img,
+.grid-item[lead] .img-container[generic-thumbnail],
+.grid-item[selected] .img-container[generic-thumbnail],
+.grid-item:hover .img-container[generic-thumbnail] {
   outline: 2px solid rgb(51, 153, 255);
 }
