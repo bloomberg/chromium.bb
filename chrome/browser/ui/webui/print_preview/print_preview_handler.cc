@@ -103,6 +103,11 @@ enum PrintSettingsBuckets {
   PRINT_SETTINGS_BUCKET_BOUNDARY
 };
 
+enum UiBucketGroups {
+  DESTINATION_SEARCH,
+  UI_BUCKET_GROUP_BOUNDARY
+};
+
 enum PrintDestinationBuckets {
   DESTINATION_SHOWN,
   DESTINATION_CLOSED_CHANGED,
@@ -298,8 +303,8 @@ void PrintPreviewHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("getInitialSettings",
       base::Bind(&PrintPreviewHandler::HandleGetInitialSettings,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("reportDestinationEvent",
-      base::Bind(&PrintPreviewHandler::HandleReportDestinationEvent,
+  web_ui()->RegisterMessageCallback("reportUiEvent",
+      base::Bind(&PrintPreviewHandler::HandleReportUiEvent,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("printWithCloudPrint",
       base::Bind(&PrintPreviewHandler::HandlePrintWithCloudPrint,
@@ -684,16 +689,28 @@ void PrintPreviewHandler::HandleGetInitialSettings(const ListValue* /*args*/) {
   SendCloudPrintEnabled();
 }
 
-void PrintPreviewHandler::HandleReportDestinationEvent(const ListValue* args) {
-  int event_number;
-  bool ret = args->GetInteger(0, &event_number);
-  if (!ret)
+void PrintPreviewHandler::HandleReportUiEvent(const ListValue* args) {
+  int event_group, event_number;
+  if (!args->GetInteger(0, &event_group) || !args->GetInteger(1, &event_number))
     return;
-  enum PrintDestinationBuckets event =
-      static_cast<enum PrintDestinationBuckets>(event_number);
-  if (event >= PRINT_DESTINATION_BUCKET_BOUNDARY)
+
+  enum UiBucketGroups ui_bucket_group =
+      static_cast<enum UiBucketGroups>(event_group);
+  if (ui_bucket_group >= UI_BUCKET_GROUP_BOUNDARY)
     return;
-  ReportPrintDestinationHistogram(event);
+
+  switch (ui_bucket_group) {
+    case DESTINATION_SEARCH: {
+      enum PrintDestinationBuckets event =
+            static_cast<enum PrintDestinationBuckets>(event_number);
+      if (event >= PRINT_DESTINATION_BUCKET_BOUNDARY)
+        return;
+      ReportPrintDestinationHistogram(event);
+      break;
+    }
+    default:
+      break;
+  }
 }
 
 void PrintPreviewHandler::SendInitialSettings(

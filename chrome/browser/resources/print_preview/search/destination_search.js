@@ -118,8 +118,9 @@ cr.define('print_preview', function() {
         this.getElement().classList.remove('transparent');
         var promoEl = this.getChildElement('.cloudprint-promo');
         if (getIsVisible(promoEl)) {
-          this.metrics_.increment(
-              print_preview.Metrics.Bucket.CLOUDPRINT_PROMO_SHOWN);
+          this.metrics_.incrementDestinationSearchBucket(
+              print_preview.Metrics.DestinationSearchBucket.
+                  CLOUDPRINT_PROMO_SHOWN);
         }
         this.reflowLists_();
       } else {
@@ -147,8 +148,9 @@ cr.define('print_preview', function() {
     showCloudPrintPromo: function() {
       setIsVisible(this.getChildElement('.cloudprint-promo'), true);
       if (this.getIsVisible()) {
-        this.metrics_.increment(
-            print_preview.Metrics.Bucket.CLOUDPRINT_PROMO_SHOWN);
+        this.metrics_.incrementDestinationSearchBucket(
+            print_preview.Metrics.DestinationSearchBucket.
+                CLOUDPRINT_PROMO_SHOWN);
       }
       this.reflowLists_();
     },
@@ -371,8 +373,8 @@ cr.define('print_preview', function() {
     onCloseClick_: function() {
       this.setIsVisible(false);
       this.resetSearch_();
-      this.metrics_.increment(
-          print_preview.Metrics.Bucket.DESTINATION_SELECTION_CANCELED);
+      this.metrics_.incrementDestinationSearchBucket(
+          print_preview.Metrics.DestinationSearchBucket.CANCELED);
     },
 
     /**
@@ -385,8 +387,8 @@ cr.define('print_preview', function() {
       this.setIsVisible(false);
       this.resetSearch_();
       this.destinationStore_.selectDestination(evt.destination);
-      this.metrics_.increment(
-          print_preview.Metrics.Bucket.DESTINATION_SELECTED);
+      this.metrics_.incrementDestinationSearchBucket(
+          print_preview.Metrics.DestinationSearchBucket.DESTINATION_SELECTED);
     },
 
     /**
@@ -443,7 +445,8 @@ cr.define('print_preview', function() {
      */
     onSignInActivated_: function() {
       cr.dispatchSimpleEvent(this, DestinationSearch.EventType.SIGN_IN);
-      this.metrics_.increment(print_preview.Metrics.Bucket.SIGNIN_TRIGGERED);
+      this.metrics_.incrementDestinationSearchBucket(
+          print_preview.Metrics.DestinationSearchBucket.SIGNIN_TRIGGERED);
     },
 
     /**

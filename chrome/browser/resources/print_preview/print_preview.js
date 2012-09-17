@@ -656,8 +656,8 @@ cr.define('print_preview', function() {
           !e.metaKey) {
         if (this.destinationSearch_.getIsVisible()) {
           this.destinationSearch_.setIsVisible(false);
-          this.metrics_.increment(
-              print_preview.Metrics.Bucket.DESTINATION_SELECTION_CANCELED);
+          this.metrics_.incrementDestinationSearchBucket(
+              print_preview.Metrics.DestinationSearchBucket.CANCELED);
         } else {
           this.close_();
         }
@@ -709,8 +709,8 @@ cr.define('print_preview', function() {
     onDestinationChangeButtonActivate_: function() {
       this.destinationSearch_.setIsVisible(true);
       this.destinationStore_.startLoadAllCloudDestinations();
-      this.metrics_.increment(
-          print_preview.Metrics.Bucket.DESTINATION_SEARCH_SHOWN);
+      this.metrics_.incrementDestinationSearchBucket(
+          print_preview.Metrics.DestinationSearchBucket.SHOWN);
     },
 
     /**
