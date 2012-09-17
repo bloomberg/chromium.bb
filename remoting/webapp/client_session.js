@@ -385,7 +385,7 @@ remoting.ClientSession.prototype.sendKeyCombination_ = function(keys) {
   for (var i = 0; i < keys.length; i++) {
     this.plugin.injectKeyEvent(keys[i], true);
   }
-  for (var i = arguments.length -1; i >= 0; i--) {
+  for (var i = 0; i < keys.length; i++) {
     this.plugin.injectKeyEvent(keys[i], false);
   }
 }
