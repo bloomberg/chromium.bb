@@ -82,6 +82,8 @@ cr.define('cr.ui', function() {
         this.command_.addEventListener('hiddenChange', this);
         this.command_.addEventListener('checkedChange', this);
       }
+
+      this.updateShortcut_();
     },
 
     /**
@@ -111,6 +113,63 @@ cr.define('cr.ui', function() {
      */
     isSeparator: function() {
       return this.tagName == 'HR';
+    },
+
+    /**
+     * Updates shortcut text according to associated command. If command has
+     * multiple shortcuts, only first one is displayed.
+     */
+    updateShortcut_: function() {
+      this.removeAttribute('shortcutText');
+
+      if (!(this.command_ && this.command_.shortcut))
+        return;
+
+      var shortcuts = this.command_.shortcut.split(/\s+/);
+
+      if (shortcuts.length == 0)
+        return;
+
+      var shortcut = shortcuts[0];
+      var mods = {};
+      var ident = '';
+      shortcut.split('-').forEach(function(part) {
+        var partUc = part.toUpperCase();
+        switch (partUc) {
+          case 'CTRL':
+          case 'ALT':
+          case 'SHIFT':
+          case 'META':
+            mods[partUc] = true;
+            break;
+          default:
+            console.assert(!ident, 'Shortcut has two non-modifier keys');
+            ident = part;
+        }
+      });
+
+      var shortcutText = '';
+
+      // TODO(zvorygin): if more cornercases appear - optimize following
+      // code. Currently 'Enter' keystroke is passed as 'Enter', and 'Space'
+      // is passed as 'U+0020'
+      if (ident == 'U+0020')
+        ident = 'Space';
+
+      ['CTRL', 'ALT', 'SHIFT', 'META'].forEach(function(mod) {
+        if (mods[mod])
+          shortcutText += loadTimeData.getString('SHORTCUT_' + mod) + '+';
+      });
+
+      if (ident.indexOf('U+') != 0) {
+        shortcutText +=
+            loadTimeData.getString('SHORTCUT_' + ident.toUpperCase());
+      } else {
+        shortcutText +=
+            String.fromCharCode(parseInt(ident.substring(2), 16));
+      }
+
+      this.setAttribute('shortcutText', shortcutText);
     },
 
     /**

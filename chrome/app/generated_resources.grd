@@ -11503,6 +11503,26 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_SIZE_PB" desc="Peta bytes.">
         PB
       </message>
+      
+      <message name="IDS_FILE_BROWSER_SHORTCUT_CTRL" desc="[Ctrl] key name to use in shortcuts descriptions. Shouldn't be translated in many languages actually.">
+        Ctrl
+      </message>
+      <message name="IDS_FILE_BROWSER_SHORTCUT_ALT" desc="[Alt] key name to use in shortcuts descriptions. Shouldn't be translated in many languages actually.">
+        Alt
+      </message>
+      <message name="IDS_FILE_BROWSER_SHORTCUT_SHIFT" desc="[Shift] key name to use in shortcuts descriptions. Shouldn't be translated in many languages actually.">
+        Shift
+      </message>
+      <message name="IDS_FILE_BROWSER_SHORTCUT_META" desc="[Meta] key name to use in shortcuts descriptions. Shouldn't be translated in many languages actually.">
+        Meta
+      </message>
+      <message name="IDS_FILE_BROWSER_SHORTCUT_SPACE" desc="[Space] key name to use in shortcuts descriptions. Shouldn't be translated in many languages actually.">
+        Space
+      </message>
+      <message name="IDS_FILE_BROWSER_SHORTCUT_ENTER" desc="[Enter] key name to use in shortcuts descriptions. Shouldn't be translated in many languages actually.">
+        Enter
+      </message>
+      
       <message name="IDS_FILE_BROWSER_TYPE_COLUMN_LABEL" desc="Type column label.">
         Type
       </message>

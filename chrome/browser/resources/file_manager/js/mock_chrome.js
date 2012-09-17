@@ -473,6 +473,13 @@ chrome.fileBrowserPrivate = {
       DATE_COLUMN_LABEL: 'Date modified',
       PREVIEW_COLUMN_LABEL: 'Preview',
 
+      SHORTCUT_CTRL: 'Ctrl',
+      SHORTCUT_ALT: 'Alt',
+      SHORTCUT_SHIFT: 'Shift',
+      SHORTCUT_META: 'Meta',
+      SHORTCUT_SPACE: 'Space',
+      SHORTCUT_ENTER: 'Enter',
+
       ERROR_CREATING_FOLDER: 'Unable to create folder "$1". $2',
       ERROR_INVALID_CHARACTER: 'Invalid character: $1',
       ERROR_RESERVED_NAME: 'This name may not be used as a file of folder name',

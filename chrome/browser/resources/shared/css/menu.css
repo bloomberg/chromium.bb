@@ -82,3 +82,13 @@ menu > [checked] {
 menu > [selected][checked]:active:before {
   content: url('../images/checkbox_white.png');
 }
+
+/* TODO(zvorygin) menu > [shortcutText]:after - this selector is much better,
+ * but it's buggy in current webkit revision, so I have to use [showShortcuts]
+ */
+menu[showShortcuts] > :after {
+  -webkit-padding-start: 30px;
+  color: #999;
+  content: attr(shortcutText);
+  float: right;
+}

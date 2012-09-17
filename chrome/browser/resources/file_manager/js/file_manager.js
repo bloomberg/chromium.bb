@@ -570,6 +570,9 @@ FileManager.prototype = {
     CommandUtil.registerCommand(doc, 'paste',
         Commands.pasteFileCommand, doc, this.fileTransferController_);
 
+    CommandUtil.registerCommand(doc, 'open-with',
+            Commands.openWithCommand, this);
+
     CommandUtil.registerCommand(doc, 'cut', Commands.defaultCommand, doc);
     CommandUtil.registerCommand(doc, 'copy', Commands.defaultCommand, doc);
 
@@ -3670,6 +3673,8 @@ FileManager.prototype = {
 
     var defaultActionSeparator =
         this.dialogDom_.querySelector('#default-action-separator');
+
+    this.openWithCommand_.canExecuteChange();
 
     // TODO(dzvorygin): Here we use this hack, since 'hidden' is standard
     // attribute and we can't use it's setter as usual.
