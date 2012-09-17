@@ -42,6 +42,7 @@
 
 #if defined(USE_AURA)
 #include <X11/Xcursor/Xcursor.h>
+#include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/skia_util.h"
 #endif
@@ -433,12 +434,35 @@ void UnrefCustomXCursor(::Cursor cursor) {
   XCustomCursorCache::GetInstance()->Unref(cursor);
 }
 
-XcursorImage* SkBitmapToXcursorImage(const SkBitmap* bitmap,
+XcursorImage* SkBitmapToXcursorImage(const SkBitmap* cursor_image,
                                      const gfx::Point& hotspot) {
-  DCHECK(bitmap->config() == SkBitmap::kARGB_8888_Config);
+  DCHECK(cursor_image->config() == SkBitmap::kARGB_8888_Config);
+  gfx::Point hotspot_point = hotspot;
+  SkBitmap scaled;
+
+  // X11 seems to have issues with cursors when images get larger than 64
+  // pixels. So rescale the image if necessary.
+  const float kMaxPixel = 64.f;
+  bool needs_scale = false;
+  if (cursor_image->width() > kMaxPixel || cursor_image->height() > kMaxPixel) {
+    float scale = 1.f;
+    if (cursor_image->width() > cursor_image->height())
+      scale = kMaxPixel / cursor_image->width();
+    else
+      scale = kMaxPixel / cursor_image->height();
+
+    scaled = skia::ImageOperations::Resize(*cursor_image,
+        skia::ImageOperations::RESIZE_BETTER,
+        static_cast<int>(cursor_image->width() * scale),
+        static_cast<int>(cursor_image->height() * scale));
+    hotspot_point = hotspot.Scale(scale);
+    needs_scale = true;
+  }
+
+  const SkBitmap* bitmap = needs_scale ? &scaled : cursor_image;
   XcursorImage* image = XcursorImageCreate(bitmap->width(), bitmap->height());
-  image->xhot = hotspot.x();
-  image->yhot = hotspot.y();
+  image->xhot = hotspot_point.x();
+  image->yhot = hotspot_point.y();
 
   if (bitmap->width() && bitmap->height()) {
     bitmap->lockPixels();
