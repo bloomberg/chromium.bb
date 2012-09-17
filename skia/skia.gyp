@@ -242,6 +242,11 @@
 
         # Temporarily ignore fix to antialias coverage, until we can rebaseline
         'SK_USE_LEGACY_AA_COVERAGE',
+
+        # Temporarily use SkPaint to keep a scale factor needed for correct
+        # font rendering in high DPI mode.
+        # See https://codereview.appspot.com/6495089/
+        'SK_SUPPORT_HINTING_SCALE_FACTOR',
       ],
       'sources!': [
         '../third_party/skia/include/core/SkTypes.h',
@@ -567,6 +572,7 @@
           'SK_DEFERRED_CANVAS_USES_GPIPE=1',
           'GR_GL_CUSTOM_SETUP_HEADER="GrGLConfig_chrome.h"',
           'GR_AGGRESSIVE_SHADER_OPTS=1',
+          'SK_SUPPORT_HINTING_SCALE_FACTOR',
         ],
         'conditions': [
           ['OS=="android"', {
