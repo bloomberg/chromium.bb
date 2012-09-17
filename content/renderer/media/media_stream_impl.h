@@ -18,7 +18,6 @@
 #include "content/public/renderer/render_view_observer.h"
 #include "content/renderer/media/media_stream_dispatcher_eventhandler.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastream.h"
-#include "third_party/libjingle/source/talk/base/scoped_ref_ptr.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebUserMediaClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebUserMediaRequest.h"
 #include "webkit/media/media_stream_client.h"
@@ -124,8 +123,7 @@ class CONTENT_EXPORT MediaStreamImpl
   // We keep a list of the label and WebFrame of generated local media streams,
   // so that we can stop them when needed.
   typedef std::map<std::string, WebKit::WebFrame*> LocalNativeStreamMap;
-  typedef talk_base::scoped_refptr<webrtc::LocalMediaStreamInterface>
-      LocalNativeStreamPtr;
+  typedef scoped_refptr<webrtc::LocalMediaStreamInterface> LocalNativeStreamPtr;
 
   scoped_refptr<media::VideoDecoder> CreateLocalVideoDecoder(
       webrtc::MediaStreamInterface* stream,

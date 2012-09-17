@@ -42,8 +42,7 @@ class CONTENT_EXPORT PeerConnectionHandlerBase
 
   // native_peer_connection_ is the native PeerConnection object,
   // it handles the ICE processing and media engine.
-  talk_base::scoped_refptr<webrtc::PeerConnectionInterface>
-      native_peer_connection_;
+  scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection_;
 
   typedef std::map<webrtc::MediaStreamInterface*,
                    WebKit::WebMediaStreamDescriptor> RemoteStreamMap;
