@@ -1047,7 +1047,7 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
       self._ClickElementAndRecordLatency(expand, test_description, 'ExpandAll')
       self.WaitForDomNode(
           '//img[@alt="Expand all"]/parent::*/parent::*/parent::*'
-          '[@style="display: none; "]',
+          '[@style="display: none;"]',
           frame_xpath=self._FRAME_XPATH)
       time.sleep(1)
 
@@ -1060,7 +1060,7 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
       collapse.click()
       self.WaitForDomNode(
           '//img[@alt="Collapse all"]/parent::*/parent::*/parent::*'
-          '[@style="display: none; "]',
+          '[@style="display: none;"]',
           frame_xpath=self._FRAME_XPATH)
       time.sleep(1)
 
