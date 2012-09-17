@@ -550,34 +550,46 @@ IN_PROC_BROWSER_TEST_F(InstantTest, TransitionsBetweenSearchAndURL) {
   SetOmniboxText("query");
   SetOmniboxText("http://monstrous/nightmare");
 
-  // The page should only have been told about the search, not the URL.
+  // The page is told about the search. Though the page isn't told about the
+  // subsequent URL, it invalidates the search, so a blank query is sent in its
+  // place to indicate that the search is "out of date".
   EXPECT_TRUE(UpdateSearchState(instant()->GetPreviewContents()));
   EXPECT_FALSE(instant()->IsCurrent());
   EXPECT_FALSE(instant()->is_showing());
-  EXPECT_EQ(1, onchangecalls_);
-  EXPECT_EQ("query", value_);
+  EXPECT_EQ(2, onchangecalls_);
+  EXPECT_EQ("", value_);
 
   // Type a search. Instant should show.
   SetOmniboxTextAndWaitForInstantToShow("search");
   EXPECT_TRUE(UpdateSearchState(instant()->GetPreviewContents()));
   EXPECT_TRUE(instant()->IsCurrent());
   EXPECT_TRUE(instant()->is_showing());
-  EXPECT_EQ(2, onchangecalls_);
+  EXPECT_EQ(3, onchangecalls_);
+  EXPECT_EQ("search", value_);
 
   // Type another URL. The preview should be hidden.
   SetOmniboxText("http://terrible/terror");
   EXPECT_TRUE(UpdateSearchState(instant()->GetPreviewContents()));
   EXPECT_FALSE(instant()->IsCurrent());
   EXPECT_FALSE(instant()->is_showing());
-  EXPECT_EQ(2, onchangecalls_);
+  EXPECT_EQ(4, onchangecalls_);
+  EXPECT_EQ("", value_);
 
-  // Type the same search as before. The preview should show, but no onchange()
-  // is sent, since the query hasn't changed.
+  // Type the same search as before.
   SetOmniboxTextAndWaitForInstantToShow("search");
   EXPECT_TRUE(UpdateSearchState(instant()->GetPreviewContents()));
   EXPECT_TRUE(instant()->IsCurrent());
   EXPECT_TRUE(instant()->is_showing());
-  EXPECT_EQ(2, onchangecalls_);
+  EXPECT_EQ(5, onchangecalls_);
+  EXPECT_EQ("search", value_);
+
+  // Revert the omnibox.
+  omnibox()->RevertAll();
+  EXPECT_TRUE(UpdateSearchState(instant()->GetPreviewContents()));
+  EXPECT_FALSE(instant()->IsCurrent());
+  EXPECT_FALSE(instant()->is_showing());
+  EXPECT_EQ(6, onchangecalls_);
+  EXPECT_EQ("", value_);
 }
 
 // Test that Instant can't be fooled into committing a URL.

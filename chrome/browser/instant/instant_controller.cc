@@ -298,6 +298,12 @@ void InstantController::Hide() {
     is_showing_ = false;
     delegate_->HideInstant();
   }
+  if (GetPreviewContents() && !last_full_text_.empty()) {
+    // Send a blank query to ask the preview to clear out old results.
+    last_full_text_.clear();
+    last_user_text_.clear();
+    loader_->Update(last_full_text_, true);
+  }
 }
 
 bool InstantController::IsCurrent() const {
@@ -613,7 +619,6 @@ void InstantController::MaybeOnStaleLoader() {
 }
 
 void InstantController::DeleteLoader() {
-  Hide();
   last_full_text_.clear();
   last_user_text_.clear();
   last_verbatim_ = false;
@@ -622,6 +627,7 @@ void InstantController::DeleteLoader() {
   last_match_was_search_ = false;
   last_omnibox_bounds_ = gfx::Rect();
   url_for_history_ = GURL();
+  Hide();
   if (GetPreviewContents())
     AddPreviewUsageForHistogram(mode_, PREVIEW_DELETED);
   loader_.reset();
