@@ -169,13 +169,14 @@ if generate:
           raise UserError('Generated file %s does not have '
                           'header comment block' % source_filename)
 
+      _, _, short_name = target_filename.rpartition('/native_client/')
+
       with open(target_filename, 'w') as target_file:
         target_file.write(
             ('/* native_client/%s\n'
              ' * THIS FILE IS AUTO-GENERATED. DO NOT EDIT.\n'
              ' * Compiled for %s mode.\n'
-             ' */') % (target_filename[::-1].split('/tneilc_evitan/')[0][::-1],
-                       architecture))
+             ' */') % (short_name, architecture))
 
         target_file.write(rest)
 
