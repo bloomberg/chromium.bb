@@ -165,7 +165,6 @@ void DesktopRootWindowHostLinux::SetWindowTitle(const string16& title) {
   NOTIMPLEMENTED();
 }
 
->>>>>>> trunk
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopRootWindowHost, public:
 
