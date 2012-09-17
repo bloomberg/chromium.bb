@@ -359,6 +359,9 @@ class NetworkListDetailedView : public NetworkDetailedView,
     bool needs_relayout = false;
     views::View* highlighted_view = NULL;
 
+    if (service_path_map_.empty())
+      scroll_content()->RemoveAllChildViews(true);
+
     for (size_t i = 0; i < network_list_.size(); ++i) {
       std::map<std::string, HoverHighlightView*>::const_iterator it =
           service_path_map_.find(network_list_[i].service_path);
@@ -426,6 +429,8 @@ class NetworkListDetailedView : public NetworkDetailedView,
   }
 
   void RefreshNetworkScrollWithEmptyNetworkList() {
+    service_path_map_.clear();
+    network_map_.clear();
     scroll_content()->RemoveAllChildViews(true);
     HoverHighlightView* container = new HoverHighlightView(this);
     container->set_fixed_height(kTrayPopupItemHeight);
@@ -444,7 +449,6 @@ class NetworkListDetailedView : public NetworkDetailedView,
       container->AddLabel(ui::ResourceBundle::GetSharedInstance().
           GetLocalizedString(IDS_ASH_STATUS_TRAY_NETWORK_WIFI_DISABLED),
           gfx::Font::NORMAL);
-      AddChildView(container);
     }
 
     scroll_content()->AddChildViewAt(container, 0);
