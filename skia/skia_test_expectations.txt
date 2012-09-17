@@ -48,32 +48,4 @@
 //
 // START OVERRIDES HERE
 
-BUGCR63921 : platform/chromium/virtual/gpu/fast/canvas/canvas-fillPath-shadow.html = TEXT
-
-//Skia roll to r4843
-BUGCR139863 WIN : fast/css/shadow-multiple.html = IMAGE
-BUGCR139863 WIN : fast/multicol/shadow-breaking.html = IMAGE
-BUGCR139863 WIN : fast/repaint/shadow-multiple-vertical.html = IMAGE
-BUGCR139863 WIN : fast/transforms/shadows.html = IMAGE
-BUGCR139863 WIN : fast/text/shadow-translucent-fill.html = IMAGE
-BUGCR139863 WIN : fast/text/stroking-decorations.html = IMAGE
-BUGCR139863 WIN : fast/text/stroking.html = IMAGE
-BUGCR139863 WIN : fast/writing-mode/english-lr-text.html = IMAGE
-BUGCR139863 WIN : ietestcenter/css3/text/textshadow-002.htm = IMAGE
-BUGCR139863 WIN : ietestcenter/css3/text/textshadow-010.htm = IMAGE
-BUGCR139863 WIN : svg/css/text-gradient-shadow.svg = IMAGE
-BUGCR139863 WIN : svg/css/text-shadow-multiple.xhtml = IMAGE
-BUGCR139863 WIN : compositing/shadows/shadow-drawing.html = IMAGE
-//The following two do image comparison in javascript.
-BUGCR139863 WIN : fast/canvas/fillText-shadow.html = TEXT
-BUGCR139863 WIN : platform/chromium/virtual/gpu/fast/canvas/fillText-shadow.html = TEXT
-BUGCR139863 WIN : svg/css/composite-shadow-text.svg = IMAGE
-BUGCR139863 WIN : svg/css/group-with-shadow.svg = IMAGE
-BUGCR139863 WIN : svg/css/shadow-changes.svg = IMAGE
-BUGCR139863 WIN : transitions/svg-text-shadow-transition.html = IMAGE
-BUGCR139863 LINUX : platform/chromium-linux/fast/text/chromium-linux-fontconfig-renderstyle.html = IMAGE
-BUGCR139863 MAC : fast/repaint/shadow-multiple-horizontal.html = IMAGE
-
-BUGWK77550 : platform/chromium/virtual/gpu/canvas/philip/tests/2d.gradient.interpolate.colouralpha.html = TEXT
-
 // END OVERRIDES HERE (this line ensures that the file is newline-terminated)
