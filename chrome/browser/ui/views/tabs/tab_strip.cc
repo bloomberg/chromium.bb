@@ -398,9 +398,14 @@ gfx::ImageSkia NewTabButton::GetBackgroundImage(
   int background_id = 0;
   if (ShouldUseNativeFrame()) {
     background_id = IDR_THEME_TAB_BACKGROUND_V;
+  } else if (tab_strip_->controller()->IsIncognito()) {
+    background_id = IDR_THEME_TAB_BACKGROUND_INCOGNITO;
+#if defined(OS_WIN)
+  } else if (base::win::IsMetroProcess()) {
+    background_id = IDR_THEME_TAB_BACKGROUND_V;
+#endif
   } else {
-    background_id = tab_strip_->controller()->IsIncognito() ?
-        IDR_THEME_TAB_BACKGROUND_INCOGNITO : IDR_THEME_TAB_BACKGROUND;
+    background_id = IDR_THEME_TAB_BACKGROUND;
   }
 
   int alpha = 0;

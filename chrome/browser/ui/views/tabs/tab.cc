@@ -29,6 +29,10 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
 
+#if defined(OS_WIN)
+#include "base/win/metro.h"
+#endif
+
 namespace {
 
 // Padding around the "content" of a tab, occupied by the tab border graphics.
@@ -638,9 +642,14 @@ void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas) {
   int tab_id;
   if (GetWidget() && GetWidget()->GetTopLevelWidget()->ShouldUseNativeFrame()) {
     tab_id = IDR_THEME_TAB_BACKGROUND_V;
+  } else if (data().incognito) {
+    tab_id = IDR_THEME_TAB_BACKGROUND_INCOGNITO;
+#if defined(OS_WIN)
+  } else if (base::win::IsMetroProcess()) {
+    tab_id = IDR_THEME_TAB_BACKGROUND_V;
+#endif
   } else {
-    tab_id = data().incognito ? IDR_THEME_TAB_BACKGROUND_INCOGNITO :
-                                IDR_THEME_TAB_BACKGROUND;
+    tab_id = IDR_THEME_TAB_BACKGROUND;
   }
 
   gfx::ImageSkia* tab_bg = GetThemeProvider()->GetImageSkiaNamed(tab_id);
