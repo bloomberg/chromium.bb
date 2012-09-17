@@ -9,6 +9,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/memory/scoped_nsobject.h"
 #include "base/string16.h"
 #include "chrome/browser/ui/cocoa/location_bar/bubble_decoration.h"
 
@@ -20,6 +21,9 @@ class WebIntentsButtonDecoration : public BubbleDecoration {
  public:
   WebIntentsButtonDecoration(LocationBarViewMac* owner, NSFont* font);
   virtual ~WebIntentsButtonDecoration();
+
+  // Set the background images to be used for the button.
+  void SetButtonImages(NSImage* left, NSImage* center, NSImage* right);
 
   // LocationBarDecoration
   virtual bool AcceptsMousePress() OVERRIDE;
@@ -49,8 +53,10 @@ class WebIntentsButtonDecoration : public BubbleDecoration {
   scoped_nsobject<WebIntentsButtonAnimationState> animation_;
   CGFloat textWidth_;
   scoped_nsobject<NSAttributedString> animatedText_;
-  scoped_nsobject<NSGradient> gradient_;
   bool ranAnimation_;
+  scoped_nsobject<NSImage> leftImage_;
+  scoped_nsobject<NSImage> centerImage_;
+  scoped_nsobject<NSImage> rightImage_;
 
   DISALLOW_COPY_AND_ASSIGN(WebIntentsButtonDecoration);
 };

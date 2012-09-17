@@ -126,6 +126,12 @@ LocationBarViewMac::LocationBarViewMac(
         new ContentSettingDecoration(type, this, profile_));
   }
 
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  web_intents_button_decoration_->SetButtonImages(
+      rb.GetNativeImageNamed(IDR_OMNIBOX_WI_BUBBLE_BACKGROUND_L).ToNSImage(),
+      rb.GetNativeImageNamed(IDR_OMNIBOX_WI_BUBBLE_BACKGROUND_C).ToNSImage(),
+      rb.GetNativeImageNamed(IDR_OMNIBOX_WI_BUBBLE_BACKGROUND_R).ToNSImage());
+
   registrar_.Add(this,
       chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
       content::NotificationService::AllSources());
