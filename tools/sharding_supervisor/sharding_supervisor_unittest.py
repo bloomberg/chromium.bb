@@ -27,8 +27,10 @@ def generate_expected_output(start, end, num_shards):
   stdout = ''
   stderr = ''
   for i in range(start, end):
-    stdout += 'Running shard %d of %d\n' % (i, num_shards)
-  stdout += '\nALL SHARDS PASSED!\nALL TESTS PASSED!\n'
+    stdout += 'Running shard %d of %d%s' % (i, num_shards, os.linesep)
+  stdout += '%sALL SHARDS PASSED!%sALL TESTS PASSED!%s' % (os.linesep,
+                                                           os.linesep,
+                                                           os.linesep)
 
   return (stdout, stderr)
 
@@ -39,8 +41,9 @@ class ShardingSupervisorUnittest(unittest.TestCase):
     expected_shards = NUM_CORES * SHARDS_PER_CORE
     (expected_out, expected_err) = generate_expected_output(
         0, expected_shards, expected_shards)
-    p = subprocess.Popen([SHARDING_SUPERVISOR, '--no-color', DUMMY_TEST],
-                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p = subprocess.Popen([sys.executable, SHARDING_SUPERVISOR, '--no-color',
+                          DUMMY_TEST], stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE)
 
     (out, err) = p.communicate()
     self.assertEqual(expected_out, out)
@@ -52,7 +55,7 @@ class ShardingSupervisorUnittest(unittest.TestCase):
     expected_shards = NUM_CORES * 25
     (expected_out, expected_err) = generate_expected_output(
         0, expected_shards, expected_shards)
-    p = subprocess.Popen([SHARDING_SUPERVISOR, '--no-color',
+    p = subprocess.Popen([sys.executable, SHARDING_SUPERVISOR, '--no-color',
                           '--shards_per_core', '25', DUMMY_TEST],
                          stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
@@ -72,7 +75,7 @@ class ShardingSupervisorUnittest(unittest.TestCase):
       end = begin + NUM_CORES * SHARDS_PER_CORE
       (expected_out, expected_err) = generate_expected_output(
           begin, end, expected_shards)
-      p = subprocess.Popen([SHARDING_SUPERVISOR, '--no-color',
+      p = subprocess.Popen([sys.executable, SHARDING_SUPERVISOR, '--no-color',
                             '--total-slaves', str(total_shards),
                             '--slave-index', str(index),
                             DUMMY_TEST],

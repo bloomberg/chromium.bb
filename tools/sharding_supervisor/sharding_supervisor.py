@@ -24,6 +24,7 @@ import re
 import sys
 import threading
 
+from stdio_buffer import StdioBuffer
 from xml.dom import minidom
 
 # Add tools/ to path
@@ -252,24 +253,24 @@ class ShardRunner(threading.Thread):
         index = self.counter.get_nowait()
       except Queue.Empty:
         break
-      chars = cStringIO.StringIO()
       shard_running = True
       shard = RunShard(
           self.supervisor.test, self.supervisor.total_shards, index,
-          self.supervisor.gtest_args, subprocess.PIPE, subprocess.STDOUT)
+          self.supervisor.gtest_args, subprocess.PIPE, subprocess.PIPE)
+      buffer = StdioBuffer(shard)
+      # Spawn two threads to collect stdio output
+      stdout_collector_thread = buffer.handle_pipe(sys.stdout, shard.stdout)
+      stderr_collector_thread = buffer.handle_pipe(sys.stderr, shard.stderr)
       while shard_running:
-        char = shard.stdout.read(1)
-        if not char and shard.poll() is not None:
+        pipe, line = buffer.readline()
+        if pipe is None and line is None:
           shard_running = False
-        chars.write(char)
-        if char == "\n" or not shard_running:
-          line = chars.getvalue()
-          if not line and not shard_running:
-            break
-          self.ProcessLine(index, line)
-          self.supervisor.LogOutputLine(index, line)
-          chars.close()
-          chars = cStringIO.StringIO()
+        if not line and not shard_running:
+          break
+        self.ProcessLine(index, line)
+        self.supervisor.LogOutputLine(index, line, pipe)
+      stdout_collector_thread.join()
+      stderr_collector_thread.join()
       if self.current_test:
         self.ReportFailure("INCOMPLETE", index, self.current_test)
       self.supervisor.ShardIndexCompleted(index)
@@ -292,7 +293,7 @@ class ShardingSupervisor(object):
     failed_tests: List of statements from shard output indicating a failure.
     failed_shards: List of shards that contained failing tests.
     shards_completed: List of flags indicating which shards have finished.
-    shard_output: Buffer that stores the output from each shard.
+    shard_output: Buffer that stores output from each shard as (stdio, line).
     test_counter: Stores the total number of tests run.
     total_slaves: Total number of slaves running this test.
     slave_index: Current slave to run tests for.
@@ -431,7 +432,7 @@ class ShardingSupervisor(object):
       for shard_index in range(self.num_shards_to_run):
         while True:
           try:
-            line = self.shard_output[shard_index].get(True, self.timeout)
+            pipe, line = self.shard_output[shard_index].get(True, self.timeout)
           except Queue.Empty:
             # Shard timed out, notice failure and move on.
             self.LogShardFailure(shard_index)
@@ -452,7 +453,7 @@ class ShardingSupervisor(object):
       for shard_index in range(self.num_shards_to_run):
         while True:
           try:
-            line = self.shard_output[shard_index].get(False)
+            pipe, line = self.shard_output[shard_index].get(False)
           except Queue.Empty:
             # Shard timed out, notice failure and move on.
             self.LogShardFailure(shard_index)
@@ -462,18 +463,19 @@ class ShardingSupervisor(object):
           sys.stdout.write(line)
       raise
 
-  def LogOutputLine(self, index, line):
+  def LogOutputLine(self, index, line, pipe=sys.stdout):
     """Either prints the shard output line immediately or saves it in the
-    output buffer, depending on the settings. Also optionally adds a  prefix.
+    output buffer, depending on the settings. Also optionally adds a prefix.
+    Adds a (sys.stdout, line) or (sys.stderr, line) tuple in the output queue.
     """
     # Fix up the index.
     array_index = index - (self.num_shards_to_run * self.slave_index)
     if self.prefix:
       line = "%i>%s" % (index, line)
     if self.original_order:
-      sys.stdout.write(line)
+      pipe.write(line)
     else:
-      self.shard_output[array_index].put(line)
+      self.shard_output[array_index].put((pipe, line))
 
   def IncrementTestCount(self):
     """Increments the number of tests run. This is relevant to the
@@ -487,7 +489,7 @@ class ShardingSupervisor(object):
     """
     # Fix up the index.
     array_index = index - (self.num_shards_to_run * self.slave_index)
-    self.shard_output[array_index].put(self.SHARD_COMPLETED)
+    self.shard_output[array_index].put((sys.stdout, self.SHARD_COMPLETED))
 
   def RetryFailedTests(self):
     """Reruns any failed tests serially and prints another summary of the
