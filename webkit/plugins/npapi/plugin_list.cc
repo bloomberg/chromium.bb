@@ -286,7 +286,11 @@ bool PluginList::ParseMimeTypes(
 }
 
 PluginList::PluginList()
-    : loading_state_(LOADING_STATE_NEEDS_REFRESH) {
+    :
+#if defined(OS_WIN)
+      dont_load_new_wmp_(false),
+#endif
+      loading_state_(LOADING_STATE_NEEDS_REFRESH) {
   PlatformInit();
   AddHardcodedPluginGroups(kGroupDefinitions,
                            ARRAYSIZE_UNSAFE(kGroupDefinitions));
