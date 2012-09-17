@@ -8,7 +8,10 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/file_util.h"
 #include "base/message_loop.h"
+#include "base/path_service.h"
+#include "base/scoped_temp_dir.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
@@ -17,6 +20,7 @@
 #include "chrome/browser/policy/policy_builder.h"
 #include "chrome/browser/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "content/public/test/test_browser_thread.h"
@@ -45,6 +49,11 @@ class DeviceSettingsProviderTest: public testing::Test {
         owner_key_util_(new MockOwnerKeyUtil()) {}
 
   virtual void SetUp() OVERRIDE {
+    ASSERT_TRUE(PathService::Get(chrome::DIR_USER_DATA,
+                                 &original_user_data_dir_));
+    ASSERT_TRUE(user_data_dir_.CreateUniqueTempDir());
+    ASSERT_TRUE(PathService::Override(chrome::DIR_USER_DATA,
+                                      user_data_dir_.path()));
     policy_.payload().mutable_metrics_enabled()->set_metrics_enabled(false);
     policy_.Build();
 
@@ -64,6 +73,8 @@ class DeviceSettingsProviderTest: public testing::Test {
 
   virtual void TearDown() OVERRIDE {
     device_settings_service_.Shutdown();
+    ASSERT_TRUE(PathService::Override(chrome::DIR_USER_DATA,
+                                      original_user_data_dir_));
   }
 
   MessageLoop message_loop_;
@@ -82,6 +93,9 @@ class DeviceSettingsProviderTest: public testing::Test {
   policy::DevicePolicyBuilder policy_;
 
   scoped_ptr<DeviceSettingsProvider> provider_;
+
+  ScopedTempDir user_data_dir_;
+  FilePath original_user_data_dir_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DeviceSettingsProviderTest);
@@ -248,6 +262,25 @@ TEST_F(DeviceSettingsProviderTest, PolicyLoadNotification) {
   device_settings_service_.Load();
   device_settings_test_helper_.Flush();
   Mock::VerifyAndClearExpectations(this);
+}
+
+TEST_F(DeviceSettingsProviderTest, StatsReportingMigration) {
+  // Create the legacy consent file.
+  FilePath consent_file =
+      user_data_dir_.path().AppendASCII("Consent To Send Stats");
+  ASSERT_EQ(1, file_util::WriteFile(consent_file, "0", 1));
+
+  // This should trigger migration because the metrics policy isn't in the blob.
+  device_settings_test_helper_.set_policy_blob(std::string());
+  device_settings_test_helper_.Flush();
+  EXPECT_EQ(std::string(), device_settings_test_helper_.policy_blob());
+
+  // Verify that migration has kicked in.
+  const base::Value* saved_value = provider_->Get(kStatsReportingPref);
+  ASSERT_TRUE(saved_value);
+  bool bool_value;
+  EXPECT_TRUE(saved_value->GetAsBoolean(&bool_value));
+  EXPECT_FALSE(bool_value);
 }
 
 } // namespace chromeos
