@@ -16,10 +16,7 @@ RenderbufferManager::RenderbufferManager(
     MemoryTracker* memory_tracker,
     GLint max_renderbuffer_size,
     GLint max_samples)
-    : renderbuffer_memory_tracker_(new MemoryTypeTracker(
-        memory_tracker,
-        "RenderbufferManager",
-        "RenderbufferMemory")),
+    : renderbuffer_memory_tracker_(new MemoryTypeTracker(memory_tracker)),
       max_renderbuffer_size_(max_renderbuffer_size),
       max_samples_(max_samples),
       num_uncleared_renderbuffers_(0),

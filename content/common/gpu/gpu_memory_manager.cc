@@ -149,10 +149,9 @@ void GpuMemoryManager::TrackMemoryAllocatedChange(size_t old_size,
     }
   }
   if (new_size != old_size) {
-    TRACE_COUNTER_ID1("GpuMemoryManager",
-                      "GpuMemoryUsage",
-                      this,
-                      bytes_allocated_current_);
+    TRACE_COUNTER1("gpu",
+                   "GpuMemoryUsage",
+                   bytes_allocated_current_);
   }
 }
 

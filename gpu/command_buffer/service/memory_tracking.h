@@ -32,13 +32,8 @@ class MemoryTracker : public base::RefCounted<MemoryTracker> {
 // MemoryTracker.
 class MemoryTypeTracker {
  public:
-  MemoryTypeTracker(
-    MemoryTracker* memory_tracker,
-    const char* trace_category,
-    const char* trace_name)
+  MemoryTypeTracker(MemoryTracker* memory_tracker)
     : memory_tracker_(memory_tracker),
-      trace_category_(trace_category),
-      trace_name_(trace_name),
       has_updated_mem_represented_(false),
       last_updated_mem_represented_(0) {
   }
@@ -55,12 +50,6 @@ class MemoryTypeTracker {
     }
     has_updated_mem_represented_ = true;
     last_updated_mem_represented_ = mem_represented;
-    if (trace_category_ && trace_name_ && memory_tracker_) {
-      TRACE_COUNTER_ID1(trace_category_,
-                        trace_name_,
-                        memory_tracker_,
-                        last_updated_mem_represented_);
-    }
   }
 
   size_t GetMemRepresented() const {
@@ -69,8 +58,6 @@ class MemoryTypeTracker {
 
  private:
   MemoryTracker* memory_tracker_;
-  const char* trace_category_;
-  const char* trace_name_;
   bool has_updated_mem_represented_;
   size_t last_updated_mem_represented_;
 

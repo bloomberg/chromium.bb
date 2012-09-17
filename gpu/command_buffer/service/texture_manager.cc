@@ -621,10 +621,7 @@ TextureManager::TextureManager(
     FeatureInfo* feature_info,
     GLint max_texture_size,
     GLint max_cube_map_texture_size)
-    : texture_memory_tracker_(new MemoryTypeTracker(
-        memory_tracker,
-        "TextureManager",
-        "TextureMemory")),
+    : texture_memory_tracker_(new MemoryTypeTracker(memory_tracker)),
       feature_info_(feature_info),
       max_texture_size_(max_texture_size),
       max_cube_map_texture_size_(max_cube_map_texture_size),

@@ -80,7 +80,7 @@ int32 TransferBufferManager::RegisterTransferBuffer(
 
   shared_memory_bytes_allocated_ += size;
   TRACE_COUNTER_ID1(
-      "CommandBuffer", "SharedMemory", this, shared_memory_bytes_allocated_);
+      "gpu", "GpuTransferBufferMemory", this, shared_memory_bytes_allocated_);
 
   // If caller requested specific id, first try to use id_request.
   if (id_request != -1) {

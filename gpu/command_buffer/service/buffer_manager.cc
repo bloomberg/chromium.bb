@@ -13,10 +13,7 @@ namespace gpu {
 namespace gles2 {
 
 BufferManager::BufferManager(MemoryTracker* memory_tracker)
-    : buffer_memory_tracker_(new MemoryTypeTracker(
-        memory_tracker,
-        "BufferManager",
-        "BufferMemory")),
+    : buffer_memory_tracker_(new MemoryTypeTracker(memory_tracker)),
       allow_buffers_on_multiple_targets_(false),
       mem_represented_(0),
       buffer_info_count_(0),
