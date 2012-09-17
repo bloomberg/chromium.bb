@@ -112,8 +112,9 @@ void SessionChangeProcessor::Observe(
     }
 
     case chrome::NOTIFICATION_TAB_PARENTED: {
-      SyncedTabDelegate* tab =
-          content::Source<TabContents>(source).ptr()->synced_tab_delegate();
+      TabContents* tab_contents = TabContents::FromWebContents(
+          content::Source<WebContents>(source).ptr());
+      SyncedTabDelegate* tab = tab_contents->synced_tab_delegate();
       if (!tab || tab->profile() != profile_) {
         return;
       }

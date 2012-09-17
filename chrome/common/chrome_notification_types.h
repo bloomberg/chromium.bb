@@ -167,7 +167,7 @@ enum NotificationType {
   NOTIFICATION_TAB_ADDED,
 
   // This notification is sent after a tab has been appended to the tab_strip.
-  // The source is a Source<TabContents> of the tab being added. There
+  // The source is a Source<WebContents> of the tab being added. There
   // are no details.
   NOTIFICATION_TAB_PARENTED,
 

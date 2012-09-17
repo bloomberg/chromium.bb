@@ -604,10 +604,9 @@ void SessionService::Observe(int type,
     }
 
     case chrome::NOTIFICATION_TAB_PARENTED: {
-      TabContents* tab = content::Source<TabContents>(source).ptr();
-      if (tab->profile() != profile())
+      WebContents* web_contents = content::Source<WebContents>(source).ptr();
+      if (web_contents->GetBrowserContext() != profile())
         return;
-      WebContents* web_contents = tab->web_contents();
       SessionTabHelper* session_tab_helper =
           SessionTabHelper::FromWebContents(web_contents);
       SetTabWindow(session_tab_helper->window_id(),

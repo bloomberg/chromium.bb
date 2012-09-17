@@ -86,8 +86,7 @@ void ExtensionTabIdMap::TabObserver::Observe(
       break;
     }
     case chrome::NOTIFICATION_TAB_PARENTED: {
-      TabContents* tab = content::Source<TabContents>(source).ptr();
-      WebContents* web_contents = tab->web_contents();
+      WebContents* web_contents = content::Source<WebContents>(source).ptr();
       SessionTabHelper* session_tab_helper =
           SessionTabHelper::FromWebContents(web_contents);
       if (!session_tab_helper)

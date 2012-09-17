@@ -328,10 +328,9 @@ class MetricsService
   // code other than 200.
   void LogBadResponseCode(int response_code, bool is_xml);
 
-  // Records a window-related notification.
-  void LogWindowChange(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+  // Records a window-related notification. |window_or_tab| is either a pointer
+  // to a WebContents (for a tab) or a Browser (for a window).
+  void LogWindowOrTabChange(int type, uintptr_t window_or_tab);
 
   // Reads, increments and then sets the specified integer preference.
   void IncrementPrefValue(const char* path);
@@ -453,9 +452,9 @@ class MetricsService
   // A number that identifies the how many times the app has been launched.
   int session_id_;
 
-  // Maps NavigationControllers (corresponding to tabs) or Browser
-  // (corresponding to Windows) to a unique integer that we will use to identify
-  // it. |next_window_id_| is used to track which IDs we have used so far.
+  // Maps WebContentses (corresponding to tabs) or Browsers (corresponding to
+  // Windows) to a unique integer that we will use to identify them.
+  // |next_window_id_| is used to track which IDs we have used so far.
   typedef std::map<uintptr_t, int> WindowMap;
   WindowMap window_map_;
   int next_window_id_;

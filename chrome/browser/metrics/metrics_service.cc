@@ -197,6 +197,7 @@
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/browser/web_contents.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
 #include "webkit/plugins/webplugininfo.h"
@@ -679,14 +680,26 @@ void MetricsService::Observe(int type,
       break;
 
     case chrome::NOTIFICATION_BROWSER_OPENED:
-    case chrome::NOTIFICATION_BROWSER_CLOSED:
-      LogWindowChange(type, source, details);
+    case chrome::NOTIFICATION_BROWSER_CLOSED: {
+      Browser* browser = content::Source<Browser>(source).ptr();
+      LogWindowOrTabChange(type, reinterpret_cast<uintptr_t>(browser));
       break;
+    }
 
-    case chrome::NOTIFICATION_TAB_PARENTED:
-    case chrome::NOTIFICATION_TAB_CLOSING:
-      LogWindowChange(type, source, details);
+    case chrome::NOTIFICATION_TAB_PARENTED: {
+      content::WebContents* web_contents =
+          content::Source<content::WebContents>(source).ptr();
+      LogWindowOrTabChange(type, reinterpret_cast<uintptr_t>(web_contents));
       break;
+    }
+
+    case chrome::NOTIFICATION_TAB_CLOSING: {
+      content::NavigationController* controller =
+          content::Source<content::NavigationController>(source).ptr();
+      content::WebContents* web_contents = controller->GetWebContents();
+      LogWindowOrTabChange(type, reinterpret_cast<uintptr_t>(web_contents));
+      break;
+    }
 
     case content::NOTIFICATION_LOAD_STOP:
       LogLoadComplete(type, source, details);
@@ -1518,12 +1531,8 @@ void MetricsService::OnURLFetchComplete(const net::URLFetcher* source) {
   }
 }
 
-void MetricsService::LogWindowChange(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
+void MetricsService::LogWindowOrTabChange(int type, uintptr_t window_or_tab) {
   int controller_id = -1;
-  uintptr_t window_or_tab = source.map_key();
   MetricsLog::WindowEventType window_type;
 
   // Note: since we stop all logging when a single OTR session is active, it is

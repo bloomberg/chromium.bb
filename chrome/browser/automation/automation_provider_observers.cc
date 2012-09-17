@@ -385,8 +385,7 @@ void TabStripNotificationObserver::Observe(
     const content::NotificationDetails& details) {
   DCHECK_EQ(notification_, type);
   if (type == chrome::NOTIFICATION_TAB_PARENTED) {
-    ObserveTab(&content::Source<TabContents>(source)->web_contents()->
-        GetController());
+    ObserveTab(&content::Source<content::WebContents>(source)->GetController());
   } else if (type == content::NOTIFICATION_WEB_CONTENTS_DESTROYED) {
     ObserveTab(&content::Source<content::WebContents>(source)->GetController());
   } else {
@@ -2444,8 +2443,7 @@ void NewTabObserver::Observe(int type,
                              const content::NotificationDetails& details) {
   DCHECK_EQ(chrome::NOTIFICATION_TAB_PARENTED, type);
   NavigationController* controller =
-      &(content::Source<TabContents>(source).ptr()->
-          web_contents()->GetController());
+      &(content::Source<content::WebContents>(source).ptr()->GetController());
   if (automation_) {
     // TODO(phajdan.jr): Clean up this hack. We write the correct return type
     // here, but don't send the message. NavigationNotificationObserver
