@@ -1117,7 +1117,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, TranslateEnabled) {
   EXPECT_EQ(0u, infobar_helper->GetInfoBarCount());
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyTest, URLBlacklist) {
+// http://crbug.com/149935
+IN_PROC_BROWSER_TEST_F(PolicyTest, DISABLED_URLBlacklist) {
   // Checks that URLs can be blacklisted, and that exceptions can be made to
   // the blacklist.
   const GURL kAAA("http://aaa.com/empty.html");
