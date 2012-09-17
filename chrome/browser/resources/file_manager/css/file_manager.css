@@ -692,17 +692,17 @@ button#detail-view:not([disabled]) {
   position: relative;
 }
 
-.thumbnail-frame > .img-container,
-.detail-name .detail-icon,
-.filename-label > * {
+body[type='full-page'] .thumbnail-frame > .img-container,
+body[type='full-page'] .detail-name .detail-icon,
+body[type='full-page'] .filename-label > * {
   cursor: pointer;
 }
 
-grid .filename-label > :hover {
+body[type='full-page'] grid .filename-label > :hover {
   text-decoration: underline;
 }
 
-list .filename-label > :hover,
+body[type='full-page'] list .filename-label > :hover,
 .breadcrumb-path:not(.breadcrumb-last):hover {
   color: rgb(17, 85, 204);
   text-decoration: underline;

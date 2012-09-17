@@ -2736,6 +2736,8 @@ FileManager.prototype = {
       // Don't pay attention to clicks during a rename.
       return;
     }
+    if (this.dialogType_ != FileManager.DialogType.FULL_PAGE)
+      return;
 
     if (event.target.parentElement.classList.contains('filename-label') ||
         event.target.classList.contains('detail-icon') ||
