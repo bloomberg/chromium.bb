@@ -99,10 +99,10 @@ body {
 .image-picker [role=listitem] {
   border: 1px solid rgba(0, 0, 0, 0.15);
   border-radius: 4px;
-  height: 80px;
+  height: 68px;
   margin: 1px;
   padding: 2px;
-  width: 128px;
+  width: 108px;
 }
 
 /* The width and height of img tag need to be set here. Otherwise, an incorrect
@@ -111,8 +111,8 @@ body {
  * screen shot.
  */
 .image-picker img {
-  height: 80px;
-  width: 128px;
+  height: 68px;
+  width: 108px;
 }
 
 .image-picker [selected][lead] {

@@ -216,6 +216,8 @@ namespace extension_misc {
   // stored.
   extern const char kAccessExtensionPath[];
   extern const char kChromeVoxDirectoryName[];
+  // The extension id of the wallpaper manager application.
+  extern const char kWallpaperManagerId[];
 #endif
 
   // What causes an extension to be installed? Used in histograms, so don't

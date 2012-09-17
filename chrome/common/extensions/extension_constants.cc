@@ -135,6 +135,7 @@ const char kAppLaunchHistogram[] = "Extensions.AppLaunch";
 const char kAccessExtensionPath[] =
     "/usr/share/chromeos-assets/accessibility/extensions";
 const char kChromeVoxDirectoryName[] = "access_chromevox";
+const char kWallpaperManagerId[] = "obklkkbkpaoaejdabbfldmcfplpdgolj";
 #endif
 
 const char kAppStateNotInstalled[] = "not_installed";

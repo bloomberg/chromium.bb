@@ -3763,7 +3763,17 @@ bool Extension::IsSyncable() const {
 
 bool Extension::ShouldDisplayInLauncher() const {
   // All apps should be displayed on the NTP except for the Cloud Print App.
-  return is_app() && id() != extension_misc::kCloudPrintAppId;
+  bool should_display_in_launcher = is_app() &&
+                                    id() != extension_misc::kCloudPrintAppId;
+#if defined(OS_CHROMEOS)
+  // Wallpaper manager is a component app which can only be launched via context
+  // menu or set wallpaper button in chrome settings page. We want to hide it
+  // from launcher.
+  return should_display_in_launcher &&
+      id() != extension_misc::kWallpaperManagerId;
+#else
+  return should_display_in_launcher;
+#endif
 }
 
 bool Extension::InstallWarning::operator==(const InstallWarning& other) const {
