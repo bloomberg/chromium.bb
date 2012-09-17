@@ -160,7 +160,7 @@ gfx::Rect WebContentsViewAndroid::GetViewBounds() const {
 
 void WebContentsViewAndroid::ShowContextMenu(
     const ContextMenuParams& params,
-    const content::ContextMenuSourceType& type) {
+    content::ContextMenuSourceType type) {
   if (delegate_.get())
     delegate_->ShowContextMenu(params, type);
 }

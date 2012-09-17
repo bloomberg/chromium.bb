@@ -33,7 +33,7 @@ class RenderViewContextMenuViews : public RenderViewContextMenu {
 
   void RunMenuAt(views::Widget* parent,
                  const gfx::Point& point,
-                 const content::ContextMenuSourceType& type);
+                 content::ContextMenuSourceType type);
 
   void UpdateMenuItemStates();
 

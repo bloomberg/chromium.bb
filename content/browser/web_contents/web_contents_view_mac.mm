@@ -282,7 +282,7 @@ void WebContentsViewMac::TakeFocus(bool reverse) {
 
 void WebContentsViewMac::ShowContextMenu(
     const content::ContextMenuParams& params,
-    const content::ContextMenuSourceType& type) {
+    content::ContextMenuSourceType type) {
   // Allow delegates to handle the context menu operation first.
   if (web_contents_->GetDelegate() &&
       web_contents_->GetDelegate()->HandleContextMenu(params)) {

@@ -265,7 +265,7 @@ gfx::Rect WebContentsViewWin::GetViewBounds() const {
 
 void WebContentsViewWin::ShowContextMenu(
     const content::ContextMenuParams& params,
-    const content::ContextMenuSourceType& type) {
+    content::ContextMenuSourceType type) {
   if (delegate_.get())
     delegate_->ShowContextMenu(params, type);
 }

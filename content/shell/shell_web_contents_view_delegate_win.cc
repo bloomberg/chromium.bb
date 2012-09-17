@@ -70,7 +70,7 @@ ShellWebContentsViewDelegate::~ShellWebContentsViewDelegate() {
 
 void ShellWebContentsViewDelegate::ShowContextMenu(
     const ContextMenuParams& params,
-    const ContextMenuSourceType& type) {
+    ContextMenuSourceType type) {
   params_ = params;
   bool has_link = !params_.unfiltered_link_url.is_empty();
   bool has_selection = !params_.selection_text.empty();

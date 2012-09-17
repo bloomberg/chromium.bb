@@ -42,7 +42,7 @@ ShellWebContentsViewDelegate::~ShellWebContentsViewDelegate() {
 
 void ShellWebContentsViewDelegate::ShowContextMenu(
     const ContextMenuParams& params,
-    const ContextMenuSourceType& type) {
+    ContextMenuSourceType type) {
   GtkWidget* menu = gtk_menu_new();
 
   params_ = params;

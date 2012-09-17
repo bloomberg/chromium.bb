@@ -124,7 +124,7 @@ void ChromeWebContentsViewDelegateViews::RestoreFocus() {
 
 void ChromeWebContentsViewDelegateViews::ShowContextMenu(
     const content::ContextMenuParams& params,
-    const content::ContextMenuSourceType& type) {
+    content::ContextMenuSourceType type) {
   context_menu_.reset(
       RenderViewContextMenuViews::Create(web_contents_, params));
   context_menu_->Init();

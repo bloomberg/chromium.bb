@@ -406,7 +406,7 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   // A context menu should be shown, to be built using the context information
   // provided in the supplied params.
   virtual void ShowContextMenu(const ContextMenuParams& params,
-                               const ContextMenuSourceType& type) {}
+                               ContextMenuSourceType type) {}
 
   // The render view has requested access to media devices listed in
   // |request|, and the client should grant or deny that permission by

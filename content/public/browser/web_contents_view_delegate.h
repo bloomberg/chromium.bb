@@ -45,7 +45,7 @@ class CONTENT_EXPORT WebContentsViewDelegate {
   // Shows a context menu.
   virtual void ShowContextMenu(
       const content::ContextMenuParams& params,
-      const content::ContextMenuSourceType& type) = 0;
+      content::ContextMenuSourceType type) = 0;
 
 #if defined(OS_WIN) || defined(USE_AURA)
   // These methods allow the embedder to intercept WebContentsViewWin's

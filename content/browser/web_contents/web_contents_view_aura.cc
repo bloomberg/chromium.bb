@@ -407,7 +407,7 @@ gfx::Rect WebContentsViewAura::GetViewBounds() const {
 
 void WebContentsViewAura::ShowContextMenu(
     const content::ContextMenuParams& params,
-    const content::ContextMenuSourceType& type) {
+    content::ContextMenuSourceType type) {
   if (delegate_.get())
     delegate_->ShowContextMenu(params, type);
 }

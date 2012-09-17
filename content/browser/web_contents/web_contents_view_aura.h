@@ -73,7 +73,7 @@ class CONTENT_EXPORT WebContentsViewAura
   // Overridden from RenderViewHostDelegateView:
   virtual void ShowContextMenu(
       const content::ContextMenuParams& params,
-      const content::ContextMenuSourceType& type) OVERRIDE;
+      content::ContextMenuSourceType type) OVERRIDE;
   virtual void ShowPopupMenu(const gfx::Rect& bounds,
                              int item_height,
                              double item_font_size,

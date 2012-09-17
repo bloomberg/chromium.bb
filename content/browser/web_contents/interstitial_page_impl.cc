@@ -676,7 +676,7 @@ void InterstitialPageImpl::ShowCreatedFullscreenWidget(int route_id) {
 
 void InterstitialPageImpl::ShowContextMenu(
     const content::ContextMenuParams& params,
-    const content::ContextMenuSourceType& type) {
+    content::ContextMenuSourceType type) {
 }
 
 void InterstitialPageImpl::Disable() {

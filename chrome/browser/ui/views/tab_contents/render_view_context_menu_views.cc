@@ -45,7 +45,7 @@ RenderViewContextMenuViews* RenderViewContextMenuViews::Create(
 void RenderViewContextMenuViews::RunMenuAt(
     views::Widget* parent,
     const gfx::Point& point,
-    const content::ContextMenuSourceType& type) {
+    content::ContextMenuSourceType type) {
   views::MenuItemView::AnchorPosition anchor_position =
       type == content::CONTEXT_MENU_SOURCE_TOUCH ?
           views::MenuItemView::BOTTOMCENTER : views::MenuItemView::TOPLEFT;

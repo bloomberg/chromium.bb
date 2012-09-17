@@ -27,7 +27,7 @@ ChromeWebContentsViewDelegateAndroid::GetDragDestDelegate() {
 
 void ChromeWebContentsViewDelegateAndroid::ShowContextMenu(
     const content::ContextMenuParams& params,
-    const content::ContextMenuSourceType& type) {
+    content::ContextMenuSourceType type) {
   // http://crbug.com/136075
   NOTIMPLEMENTED();
   // Still lacking some code here that depends on

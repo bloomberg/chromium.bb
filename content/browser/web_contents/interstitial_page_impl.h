@@ -114,7 +114,7 @@ class CONTENT_EXPORT InterstitialPageImpl
   virtual void ShowCreatedFullscreenWidget(int route_id) OVERRIDE;
   virtual void ShowContextMenu(
       const content::ContextMenuParams& params,
-      const content::ContextMenuSourceType& type) OVERRIDE;
+      content::ContextMenuSourceType type) OVERRIDE;
 
   // RenderWidgetHostDelegate implementation:
   virtual bool PreHandleKeyboardEvent(
