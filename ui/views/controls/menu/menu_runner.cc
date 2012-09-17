@@ -285,7 +285,7 @@ MenuRunner::RunResult MenuRunner::RunMenuAt(Widget* parent,
     display_change_listener_.reset(
         internal::DisplayChangeListener::Create(parent, this));
   }
-  if ((types & MenuRunner::CONTEXT_MENU) && parent->GetCurrentEvent())
+  if ((types & MenuRunner::CONTEXT_MENU) && parent && parent->GetCurrentEvent())
     anchor = parent->GetCurrentEvent()->IsGestureEvent() ?
         MenuItemView::BOTTOMCENTER : MenuItemView::TOPLEFT;
 
