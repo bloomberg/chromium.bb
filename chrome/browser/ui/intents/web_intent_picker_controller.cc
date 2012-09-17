@@ -63,7 +63,7 @@ namespace {
 const int kMaxHiddenSetupTimeMs = 200;
 
 // Minimum amount of time to show waiting dialog, if it is shown.
-const int kMinThrobberDisplayTimeMs = 2000;
+const int kMinThrobberDisplayTimeMs = 800;
 
 
 // Gets the favicon service for the profile in |tab_contents|.
