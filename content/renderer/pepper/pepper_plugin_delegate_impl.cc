@@ -102,16 +102,18 @@ namespace content {
 
 namespace {
 
+// This class wraps a dispatcher and has the same lifetime. A dispatcher has
+// the same lifetime as a plugin module, which is longer than any particular
+// RenderView or plugin instance.
 class HostDispatcherWrapper
     : public webkit::ppapi::PluginDelegate::OutOfProcessProxy {
  public:
-  HostDispatcherWrapper(RenderViewImpl* rv,
-                        webkit::ppapi::PluginModule* module,
+  HostDispatcherWrapper(webkit::ppapi::PluginModule* module,
                         int plugin_child_id,
                         const ppapi::PpapiPermissions& perms)
-      : render_view_(rv),
-        module_(module),
-        plugin_child_id_(plugin_child_id),
+      : module_(module),
+        /*TODO(brettw) bug 149850 put this back.
+          plugin_child_id_(plugin_child_id),*/
         permissions_(perms) {
   }
   virtual ~HostDispatcherWrapper() {}
@@ -154,30 +156,33 @@ class HostDispatcherWrapper
   virtual void AddInstance(PP_Instance instance) {
     ppapi::proxy::HostDispatcher::SetForInstance(instance, dispatcher_.get());
 
+    /* TODO(brettw) bug 149850 put this back with crash fix.
     render_view_->Send(new ViewHostMsg_DidCreateOutOfProcessPepperInstance(
         plugin_child_id_,
         instance,
         render_view_->routing_id()));
+    */
   }
   virtual void RemoveInstance(PP_Instance instance) {
     ppapi::proxy::HostDispatcher::RemoveForInstance(instance);
 
+    /* TODO(brettw) bug 149850 put this back with crash fix.
     render_view_->Send(new ViewHostMsg_DidDeleteOutOfProcessPepperInstance(
         plugin_child_id_,
         instance));
+    */
   }
 
   ppapi::proxy::HostDispatcher* dispatcher() { return dispatcher_.get(); }
 
  private:
-  RenderViewImpl* render_view_;
-
   webkit::ppapi::PluginModule* module_;
 
   // ID that the browser process uses to idetify the child process for the
   // plugin. This isn't directly useful from our process (the renderer) except
   // in messages to the browser to disambiguate plugins.
-  int plugin_child_id_;
+  // TODO(brettw) bug 149850 put this back with crash fix.
+  //int plugin_child_id_;
 
   ppapi::PpapiPermissions permissions_;
 
@@ -380,8 +385,7 @@ PepperPluginDelegateImpl::CreatePepperPluginModule(
       permissions);
   PepperPluginRegistry::GetInstance()->AddLiveModule(path, module);
   scoped_ptr<HostDispatcherWrapper> dispatcher(
-      new HostDispatcherWrapper(render_view_, module, plugin_child_id,
-                                permissions));
+      new HostDispatcherWrapper(module, plugin_child_id, permissions));
   if (!dispatcher->Init(
           channel_handle,
           webkit::ppapi::PluginModule::GetLocalGetInterfaceFunc(),
@@ -426,7 +430,7 @@ scoped_refptr<webkit::ppapi::PluginModule>
   RenderThreadImpl::current()->browser_plugin_registry()->AddModule(
       guest_process_id, module);
   scoped_ptr<HostDispatcherWrapper> dispatcher(
-      new HostDispatcherWrapper(render_view_, module, 0, permissions));
+      new HostDispatcherWrapper(module, 0, permissions));
   if (!dispatcher->Init(
           channel_handle,
           webkit::ppapi::PluginModule::GetLocalGetInterfaceFunc(),
