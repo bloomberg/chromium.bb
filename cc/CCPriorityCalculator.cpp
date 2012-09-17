@@ -10,22 +10,40 @@ using namespace std;
 
 namespace cc {
 
+static const int uiDrawsToRootSurfacePriority = -1;
+static const int visibleDrawsToRootSurfacePriority = 0;
+static const int renderSurfacesPriority = 1;
+static const int uiDoesNotDrawToRootSurfacePriority = 2;
+static const int visibleDoesNotDrawToRootSurfacePriority = 3;
+
+// The lower digits are how far from being visible the texture is,
+// in pixels.
+static const int notVisibleBasePriority = 1000000;
+static const int notVisibleLimitPriority = 1900000;
+
+// Small animated layers are treated as though they are 512 pixels
+// from being visible.
+static const int smallAnimatedLayerPriority = notVisibleBasePriority + 512;
+
+static const int lingeringBasePriority = 2000000;
+static const int lingeringLimitPriority = 2900000;
+
 // static
 int CCPriorityCalculator::uiPriority(bool drawsToRootSurface)
 {
-    return drawsToRootSurface ? -1 : 2;
+    return drawsToRootSurface ? uiDrawsToRootSurfacePriority : uiDoesNotDrawToRootSurfacePriority;
 }
 
 // static
 int CCPriorityCalculator::visiblePriority(bool drawsToRootSurface)
 {
-    return drawsToRootSurface ? 0 : 3;
+    return drawsToRootSurface ? visibleDrawsToRootSurfacePriority : visibleDoesNotDrawToRootSurfacePriority;
 }
 
 // static
 int CCPriorityCalculator::renderSurfacePriority()
 {
-    return 1;
+    return renderSurfacesPriority;
 }
 
 // static
@@ -34,13 +52,12 @@ int CCPriorityCalculator::lingeringPriority(int previousPriority)
     // FIXME: We should remove this once we have priorities for all
     //        textures (we can't currently calculate distances for
     //        off-screen textures).
-    int lingeringPriority = 1000000;
-    return min(numeric_limits<int>::max() - 1,
-               max(lingeringPriority, previousPriority)) + 1;
+    return min(lingeringLimitPriority,
+               max(lingeringBasePriority, previousPriority + 1));
 }
 
 namespace {
-unsigned manhattanDistance(const IntRect& a, const IntRect& b)
+int manhattanDistance(const IntRect& a, const IntRect& b)
 {
     IntRect c = unionRect(a, b);
     int x = max(0, c.width() - a.width() - b.width() + 1);
@@ -49,24 +66,19 @@ unsigned manhattanDistance(const IntRect& a, const IntRect& b)
 }
 }
 
-int CCPriorityCalculator::priorityFromDistance(const IntRect& visibleRect, const IntRect& textureRect, bool drawsToRootSurface) const
+// static
+int CCPriorityCalculator::priorityFromDistance(const IntRect& visibleRect, const IntRect& textureRect, bool drawsToRootSurface)
 {
-    unsigned distance = manhattanDistance(visibleRect, textureRect);
+    int distance = manhattanDistance(visibleRect, textureRect);
     if (!distance)
         return visiblePriority(drawsToRootSurface);
-    return visiblePriority(false) + distance;
+    return min(notVisibleLimitPriority, notVisibleBasePriority + distance);
 }
 
-int CCPriorityCalculator::priorityFromDistance(unsigned pixels, bool drawsToRootSurface) const
+// static
+int CCPriorityCalculator::smallAnimatedLayerMinPriority()
 {
-    if (!pixels)
-        return visiblePriority(drawsToRootSurface);
-    return visiblePriority(false) + pixels;
-}
-
-int CCPriorityCalculator::priorityFromVisibility(bool visible, bool drawsToRootSurface) const
-{
-    return visible ? visiblePriority(drawsToRootSurface) : lowestPriority();
+    return smallAnimatedLayerPriority;
 }
 
 } // cc

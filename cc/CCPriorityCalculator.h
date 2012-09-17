@@ -17,9 +17,8 @@ public:
     static int visiblePriority(bool drawsToRootSurface);
     static int renderSurfacePriority();
     static int lingeringPriority(int previousPriority);
-    int priorityFromDistance(const IntRect& visibleRect, const IntRect& textureRect, bool drawsToRootSurface) const;
-    int priorityFromDistance(unsigned pixels, bool drawsToRootSurface) const;
-    int priorityFromVisibility(bool visible, bool drawsToRootSurface) const;
+    static int priorityFromDistance(const IntRect& visibleRect, const IntRect& textureRect, bool drawsToRootSurface);
+    static int smallAnimatedLayerMinPriority();
 
     static inline int highestPriority() { return std::numeric_limits<int>::min(); }
     static inline int lowestPriority() { return std::numeric_limits<int>::max(); }

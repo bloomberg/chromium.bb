@@ -108,7 +108,7 @@ private:
     GC3Denum m_format;
     size_t m_bytes;
 
-    size_t m_priority;
+    int m_priority;
     bool m_isAbovePriorityCutoff;
     bool m_isSelfManaged;
 

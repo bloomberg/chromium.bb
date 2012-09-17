@@ -548,8 +548,7 @@ bool isSmallAnimatedLayer(TiledLayerChromium* layer)
 // FIXME: Remove this and make this based on distance once distance can be calculated
 // for offscreen layers. For now, prioritize all small animated layers after 512
 // pixels of pre-painting.
-void setPriorityForTexture(const CCPriorityCalculator& priorityCalc,
-                           const IntRect& visibleRect,
+void setPriorityForTexture(const IntRect& visibleRect,
                            const IntRect& tileRect,
                            bool drawsToRoot,
                            bool isSmallAnimatedLayer,
@@ -557,9 +556,9 @@ void setPriorityForTexture(const CCPriorityCalculator& priorityCalc,
 {
     int priority = CCPriorityCalculator::lowestPriority();
     if (!visibleRect.isEmpty())
-        priority = priorityCalc.priorityFromDistance(visibleRect, tileRect, drawsToRoot);
+        priority = CCPriorityCalculator::priorityFromDistance(visibleRect, tileRect, drawsToRoot);
     if (isSmallAnimatedLayer)
-        priority = CCPriorityCalculator::maxPriority(priority, priorityCalc.priorityFromDistance(512, drawsToRoot));
+        priority = CCPriorityCalculator::maxPriority(priority, CCPriorityCalculator::smallAnimatedLayerMinPriority());
     if (priority != CCPriorityCalculator::lowestPriority())
         texture->setRequestPriority(priority);
 }
@@ -620,7 +619,7 @@ void TiledLayerChromium::setTexturePriorities(const CCPriorityCalculator& priori
                 IntRect tileRect = m_tiler->tileRect(tile);
                 tile->dirtyRect = tileRect;
                 LayerTextureUpdater::Texture* backBuffer = tile->texture();
-                setPriorityForTexture(priorityCalc, visibleContentRect(), tile->dirtyRect, drawsToRoot, smallAnimatedLayer, backBuffer->texture());
+                setPriorityForTexture(visibleContentRect(), tile->dirtyRect, drawsToRoot, smallAnimatedLayer, backBuffer->texture());
                 OwnPtr<CCPrioritizedTexture> frontBuffer = CCPrioritizedTexture::create(backBuffer->texture()->textureManager(),
                                                                                         backBuffer->texture()->size(),
                                                                                         backBuffer->texture()->format());
@@ -638,7 +637,7 @@ void TiledLayerChromium::setTexturePriorities(const CCPriorityCalculator& priori
         if (!tile)
             continue;
         IntRect tileRect = m_tiler->tileRect(tile);
-        setPriorityForTexture(priorityCalc, visibleContentRect(), tileRect, drawsToRoot, smallAnimatedLayer, tile->managedTexture());
+        setPriorityForTexture(visibleContentRect(), tileRect, drawsToRoot, smallAnimatedLayer, tile->managedTexture());
     }
 }
 
