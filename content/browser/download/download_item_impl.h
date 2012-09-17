@@ -121,7 +121,6 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   virtual bool GetOpenWhenComplete() const OVERRIDE;
   virtual bool GetAutoOpened() OVERRIDE;
   virtual bool GetOpened() const OVERRIDE;
-  virtual bool MatchesQuery(const string16& query) const OVERRIDE;
   virtual content::DownloadPersistentStoreInfo
       GetPersistentStoreInfo() const OVERRIDE;
   virtual content::BrowserContext* GetBrowserContext() const OVERRIDE;

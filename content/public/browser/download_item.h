@@ -299,9 +299,6 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
 
   //    Misc State accessors ---------------------------------------------------
 
-  // Returns true if this item matches |query|. |query| must be lower-cased.
-  virtual bool MatchesQuery(const string16& query) const = 0;
-
   virtual DownloadPersistentStoreInfo GetPersistentStoreInfo() const = 0;
   virtual BrowserContext* GetBrowserContext() const = 0;
   virtual WebContents* GetWebContents() const = 0;

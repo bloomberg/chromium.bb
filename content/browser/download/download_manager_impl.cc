@@ -333,22 +333,6 @@ void DownloadManagerImpl::Shutdown() {
   delegate_ = NULL;
 }
 
-void DownloadManagerImpl::SearchDownloads(const string16& query,
-                                          DownloadVector* result) {
-  string16 query_lower(base::i18n::ToLower(query));
-
-  for (DownloadMap::iterator it = downloads_.begin();
-       it != downloads_.end(); ++it) {
-    DownloadItemImpl* download_item = it->second;
-    // TODO(benjhayden): Don't check IsPersisted().
-    if (!download_item->IsTemporary() &&
-        download_item->IsPersisted() &&
-        download_item->MatchesQuery(query_lower)) {
-      result->push_back(download_item);
-    }
-  }
-}
-
 bool DownloadManagerImpl::Init(content::BrowserContext* browser_context) {
   DCHECK(browser_context);
   DCHECK(!shutdown_needed_)  << "DownloadManager already initialized.";

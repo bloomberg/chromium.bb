@@ -108,11 +108,6 @@ class CONTENT_EXPORT DownloadManager
   // clearing |downloads| first.
   virtual void GetAllDownloads(DownloadVector* downloads) = 0;
 
-  // Returns all non-temporary downloads matching |query|. Empty query matches
-  // everything.
-  virtual void SearchDownloads(const string16& query,
-                               DownloadVector* result) = 0;
-
   // Returns true if initialized properly.
   virtual bool Init(BrowserContext* browser_context) = 0;
 

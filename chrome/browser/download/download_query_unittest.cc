@@ -133,10 +133,41 @@ TEST_F(DownloadQueryTest, DownloadQueryLimit) {
   SWITCH3(_index, _col1, _ret1, _col2, _ret2, \
       SWITCH2(_index, _col3, _ret3, _default))
 
+TEST_F(DownloadQueryTest, DownloadQuery_QueryFilter) {
+  FilePath match_filename(FILE_PATH_LITERAL("query"));
+  FilePath fail_filename(FILE_PATH_LITERAL("fail"));
+  GURL fail_url("http://example.com/fail");
+  GURL match_url("http://query.com/query");
+  scoped_ptr<base::Value> query_str(base::Value::CreateStringValue("query"));
+  static const size_t kNumItems = 4;
+  CreateMocks(kNumItems);
+  for (size_t i = 0; i < kNumItems; ++i) {
+    if (i != 0)
+      EXPECT_CALL(mock(i), GetId()).WillOnce(Return(i));
+    EXPECT_CALL(mock(i), GetTargetFilePath())
+      .WillRepeatedly(ReturnRef((i & 1) ? match_filename : fail_filename));
+    EXPECT_CALL(mock(i), GetOriginalUrl())
+      .WillRepeatedly(ReturnRef((i & 2) ? match_url : fail_url));
+    EXPECT_CALL(mock(i), GetBrowserContext()).WillRepeatedly(Return(
+        static_cast<content::BrowserContext*>(NULL)));
+  }
+  query()->AddFilter(DownloadQuery::FILTER_QUERY, *query_str.get());
+  Search();
+  ASSERT_EQ(3U, results()->size());
+  EXPECT_EQ(1, results()->at(0)->GetId());
+  EXPECT_EQ(2, results()->at(1)->GetId());
+  EXPECT_EQ(3, results()->at(2)->GetId());
+
+  // TODO(phajdan.jr): Also test these strings:
+  //   "/\xe4\xbd\xa0\xe5\xa5\xbd\xe4\xbd\xa0\xe5\xa5\xbd",
+  //   L"/\x4f60\x597d\x4f60\x597d",
+  //   "/%E4%BD%A0%E5%A5%BD%E4%BD%A0%E5%A5%BD"
+}
+
 TEST_F(DownloadQueryTest, DownloadQueryAllFilters) {
   // Set up mocks such that only mock(0) matches all filters, and every other
   // mock fails a different filter (or two for GREATER/LESS filters).
-  static const size_t kNumItems = 19;
+  static const size_t kNumItems = 18;
   CreateMocks(kNumItems);
   FilePath refail_filename(FILE_PATH_LITERAL("z"));
   FilePath fail_filename(FILE_PATH_LITERAL("fail"));
@@ -162,7 +193,8 @@ TEST_F(DownloadQueryTest, DownloadQueryAllFilters) {
     EXPECT_CALL(mock(i), GetSafetyState()).WillRepeatedly(Return(SWITCH2(i,
         2, DownloadItem::DANGEROUS,
            DownloadItem::DANGEROUS_BUT_VALIDATED)));
-    EXPECT_CALL(mock(i), GetFullPath()).WillRepeatedly(ReturnRef(SWITCH3(i,
+    EXPECT_CALL(mock(i), GetTargetFilePath())
+      .WillRepeatedly(ReturnRef(SWITCH3(i,
         3, refail_filename,
         4, fail_filename,
            match_filename)));
@@ -172,28 +204,26 @@ TEST_F(DownloadQueryTest, DownloadQueryAllFilters) {
     EXPECT_CALL(mock(i), IsPaused()).WillRepeatedly(Return(SWITCH2(i,
         6, false,
            true)));
-    EXPECT_CALL(mock(i), MatchesQuery(_)).WillRepeatedly(Return(SWITCH2(i,
-        7, false,
-           true)));
     EXPECT_CALL(mock(i), GetStartTime()).WillRepeatedly(Return(SWITCH4(i,
-        8,  base::Time::FromTimeT(1),
-        9,  base::Time::FromTimeT(4),
-        10, base::Time::FromTimeT(3),
-            base::Time::FromTimeT(2))));
+        7, base::Time::FromTimeT(1),
+        8, base::Time::FromTimeT(4),
+        9, base::Time::FromTimeT(3),
+           base::Time::FromTimeT(2))));
     EXPECT_CALL(mock(i), GetTotalBytes()).WillRepeatedly(Return(SWITCH4(i,
-        11, 1,
-        12, 4,
-        13, 3,
+        10, 1,
+        11, 4,
+        12, 3,
             2)));
     EXPECT_CALL(mock(i), GetOriginalUrl()).WillRepeatedly(ReturnRef(SWITCH3(i,
-        14, refail_url,
-        15, fail_url,
+        13, refail_url,
+        14, fail_url,
             match_url)));
+    // 15 is AddFilter(Bind(IdNotEqual, 15))
     EXPECT_CALL(mock(i), GetState()).WillRepeatedly(Return(SWITCH2(i,
-        17, DownloadItem::CANCELLED,
+        16, DownloadItem::CANCELLED,
             DownloadItem::IN_PROGRESS)));
     EXPECT_CALL(mock(i), GetDangerType()).WillRepeatedly(Return(SWITCH2(i,
-        18, content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
+        17, content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
             content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS)));
   }
   for (size_t i = 0; i < kNumItems; ++i) {
@@ -207,23 +237,22 @@ TEST_F(DownloadQueryTest, DownloadQueryAllFilters) {
                         match_filename.value().c_str()); break;
       case 5: AddFilter(DownloadQuery::FILTER_MIME, "text"); break;
       case 6: AddFilter(DownloadQuery::FILTER_PAUSED, true); break;
-      case 7: AddFilter(DownloadQuery::FILTER_QUERY, ""); break;
-      case 8: AddFilter(DownloadQuery::FILTER_STARTED_AFTER, 1000); break;
-      case 9: AddFilter(DownloadQuery::FILTER_STARTED_BEFORE, 4000);
+      case 7: AddFilter(DownloadQuery::FILTER_STARTED_AFTER, 1000); break;
+      case 8: AddFilter(DownloadQuery::FILTER_STARTED_BEFORE, 4000);
               break;
-      case 10: AddFilter(DownloadQuery::FILTER_START_TIME, 2000); break;
-      case 11: AddFilter(DownloadQuery::FILTER_TOTAL_BYTES_GREATER, 1);
+      case 9: AddFilter(DownloadQuery::FILTER_START_TIME, 2000); break;
+      case 10: AddFilter(DownloadQuery::FILTER_TOTAL_BYTES_GREATER, 1);
                break;
-      case 12: AddFilter(DownloadQuery::FILTER_TOTAL_BYTES_LESS, 4);
+      case 11: AddFilter(DownloadQuery::FILTER_TOTAL_BYTES_LESS, 4);
                break;
-      case 13: AddFilter(DownloadQuery::FILTER_TOTAL_BYTES, 2); break;
-      case 14: AddFilter(DownloadQuery::FILTER_URL_REGEX, "example");
+      case 12: AddFilter(DownloadQuery::FILTER_TOTAL_BYTES, 2); break;
+      case 13: AddFilter(DownloadQuery::FILTER_URL_REGEX, "example");
                break;
-      case 15: AddFilter(DownloadQuery::FILTER_URL,
+      case 14: AddFilter(DownloadQuery::FILTER_URL,
                          match_url.spec().c_str()); break;
-      case 16: CHECK(query()->AddFilter(base::Bind(&IdNotEqual, 16))); break;
-      case 17: query()->AddFilter(DownloadItem::IN_PROGRESS); break;
-      case 18: query()->AddFilter(content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
+      case 15: CHECK(query()->AddFilter(base::Bind(&IdNotEqual, 15))); break;
+      case 16: query()->AddFilter(DownloadItem::IN_PROGRESS); break;
+      case 17: query()->AddFilter(content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
         break;
       default: NOTREACHED(); break;
     }
@@ -283,15 +312,15 @@ TEST_F(DownloadQueryTest, DownloadQuerySortDangerAccepted) {
 
 TEST_F(DownloadQueryTest, DownloadQuerySortFilename) {
   CreateMocks(2);
-  FilePath a_filename(FILE_PATH_LITERAL("a"));
-  FilePath b_filename(FILE_PATH_LITERAL("b"));
-  EXPECT_CALL(mock(0), GetFullPath()).WillRepeatedly(ReturnRef(b_filename));
-  EXPECT_CALL(mock(1), GetFullPath()).WillRepeatedly(ReturnRef(a_filename));
+  FilePath a_path(FILE_PATH_LITERAL("a"));
+  FilePath b_path(FILE_PATH_LITERAL("b"));
+  EXPECT_CALL(mock(0), GetTargetFilePath()).WillRepeatedly(ReturnRef(b_path));
+  EXPECT_CALL(mock(1), GetTargetFilePath()).WillRepeatedly(ReturnRef(a_path));
   query()->AddSorter(
       DownloadQuery::SORT_FILENAME, DownloadQuery::ASCENDING);
   Search();
-  EXPECT_EQ(a_filename, results()->at(0)->GetFullPath());
-  EXPECT_EQ(b_filename, results()->at(1)->GetFullPath());
+  EXPECT_EQ(a_path, results()->at(0)->GetTargetFilePath());
+  EXPECT_EQ(b_path, results()->at(1)->GetTargetFilePath());
 }
 
 TEST_F(DownloadQueryTest, DownloadQuerySortMime) {

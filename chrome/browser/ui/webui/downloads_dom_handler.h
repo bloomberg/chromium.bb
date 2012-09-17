@@ -107,10 +107,6 @@ class DownloadsDOMHandler : public content::WebUIMessageHandler,
   // Sends the current list of downloads to the page.
   void SendCurrentDownloads();
 
-  // Fills |downloads| with all the items for both DownloadManagers matching
-  // |search_text_|.
-  void SearchDownloads(content::DownloadManager::DownloadVector* downloads);
-
   // Displays a native prompt asking the user for confirmation after accepting
   // the dangerous download specified by |dangerous|. The function returns
   // immediately, and will invoke DangerPromptAccepted() asynchronously if the

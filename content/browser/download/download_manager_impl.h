@@ -52,8 +52,6 @@ class CONTENT_EXPORT DownloadManagerImpl
   virtual content::DownloadManagerDelegate* GetDelegate() const OVERRIDE;
   virtual void Shutdown() OVERRIDE;
   virtual void GetAllDownloads(DownloadVector* result) OVERRIDE;
-  virtual void SearchDownloads(const string16& query,
-                               DownloadVector* result) OVERRIDE;
   virtual bool Init(content::BrowserContext* browser_context) OVERRIDE;
   virtual content::DownloadId StartDownload(
       scoped_ptr<DownloadCreateInfo> info,

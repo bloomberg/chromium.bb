@@ -25,6 +25,7 @@
 #include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_prefs.h"
+#include "chrome/browser/download/download_query.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/download_util.h"
@@ -60,17 +61,6 @@ namespace {
 // Maximum number of downloads to show. TODO(glen): Remove this and instead
 // stuff the downloads down the pipe slowly.
 static const size_t kMaxDownloads = 150;
-
-// Sorts DownloadItems into descending order by their start time.
-class DownloadItemSorter : public std::binary_function<content::DownloadItem*,
-                                                       content::DownloadItem*,
-                                                       bool> {
- public:
-  bool operator()(const content::DownloadItem* lhs,
-                  const content::DownloadItem* rhs) {
-    return lhs->GetStartTime() > rhs->GetStartTime();
-  }
-};
 
 enum DownloadsDOMEvent {
   DOWNLOADS_DOM_EVENT_GET_DOWNLOADS = 0,
@@ -291,6 +281,20 @@ void DownloadsDOMHandler::OnDownloadUpdated(
     content::DownloadManager* manager,
     content::DownloadItem* download_item) {
   if (IsDownloadDisplayable(*download_item)) {
+    if (!search_text_.empty()) {
+      // Don't CallDownloadUpdated() if download_item doesn't match
+      // search_text_.
+      // TODO(benjhayden): Consider splitting MatchesQuery() out to a function.
+      content::DownloadManager::DownloadVector all_items, filtered_items;
+      all_items.push_back(download_item);
+      DownloadQuery query;
+      scoped_ptr<base::Value> query_text(base::Value::CreateStringValue(
+          search_text_));
+      query.AddFilter(DownloadQuery::FILTER_QUERY, *query_text.get());
+      query.Search(all_items.begin(), all_items.end(), &filtered_items);
+      if (filtered_items.empty())
+        return;
+    }
     base::ListValue results_value;
     results_value.Append(CreateDownloadItemValue(
         download_item,
@@ -379,10 +383,8 @@ void DownloadsDOMHandler::HandlePause(const base::ListValue* args) {
 void DownloadsDOMHandler::HandleRemove(const base::ListValue* args) {
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_REMOVE);
   content::DownloadItem* file = GetDownloadByValue(args);
-  if (file) {
-    DCHECK(file->IsPersisted());
+  if (file)
     file->Remove();
-  }
 }
 
 void DownloadsDOMHandler::HandleCancel(const base::ListValue* args) {
@@ -429,33 +431,32 @@ void DownloadsDOMHandler::ScheduleSendCurrentDownloads() {
 
 void DownloadsDOMHandler::SendCurrentDownloads() {
   update_scheduled_ = false;
-  content::DownloadManager::DownloadVector downloads;
-  SearchDownloads(&downloads);
-  sort(downloads.begin(), downloads.end(), DownloadItemSorter());
+  content::DownloadManager::DownloadVector all_items, filtered_items;
+  if (main_notifier_.GetManager())
+    main_notifier_.GetManager()->GetAllDownloads(&all_items);
+  if (original_notifier_.get() && original_notifier_->GetManager())
+    original_notifier_->GetManager()->GetAllDownloads(&all_items);
+  DownloadQuery query;
+  if (!search_text_.empty()) {
+    scoped_ptr<base::Value> query_text(base::Value::CreateStringValue(
+        search_text_));
+    query.AddFilter(DownloadQuery::FILTER_QUERY, *query_text.get());
+  }
+  query.AddFilter(base::Bind(&IsDownloadDisplayable));
+  query.AddSorter(DownloadQuery::SORT_START_TIME, DownloadQuery::DESCENDING);
+  query.Limit(kMaxDownloads);
+  query.Search(all_items.begin(), all_items.end(), &filtered_items);
   base::ListValue results_value;
   for (content::DownloadManager::DownloadVector::const_iterator
-           iter = downloads.begin();
-       iter != downloads.end(); ++iter) {
-    if (IsDownloadDisplayable(**iter)) {
-      results_value.Append(CreateDownloadItemValue(
-          *iter,
-          (original_notifier_.get() &&
-           main_notifier_.GetManager() &&
-           (main_notifier_.GetManager()->GetDownload((*iter)->GetId()) ==
-            *iter))));
-    }
-    if (results_value.GetSize() == kMaxDownloads)
-      break;
+       iter = filtered_items.begin(); iter != filtered_items.end(); ++iter) {
+    results_value.Append(CreateDownloadItemValue(
+        *iter,
+        (original_notifier_.get() &&
+          main_notifier_.GetManager() &&
+          (main_notifier_.GetManager()->GetDownload((*iter)->GetId()) ==
+          *iter))));
   }
   CallDownloadsList(results_value);
-}
-
-void DownloadsDOMHandler::SearchDownloads(
-    content::DownloadManager::DownloadVector* downloads) {
-  if (main_notifier_.GetManager())
-    main_notifier_.GetManager()->SearchDownloads(search_text_, downloads);
-  if (original_notifier_.get() && original_notifier_->GetManager())
-    original_notifier_->GetManager()->SearchDownloads(search_text_, downloads);
 }
 
 void DownloadsDOMHandler::ShowDangerPrompt(

@@ -30,8 +30,6 @@
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/format_macros.h"
-#include "base/i18n/case_conversion.h"
-#include "base/i18n/string_search.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
@@ -693,39 +691,6 @@ bool DownloadItemImpl::GetAutoOpened() {
 
 bool DownloadItemImpl::GetOpened() const {
   return opened_;
-}
-
-bool DownloadItemImpl::MatchesQuery(const string16& query) const {
-  if (query.empty())
-    return true;
-
-  DCHECK_EQ(query, base::i18n::ToLower(query));
-
-  string16 url_raw(UTF8ToUTF16(GetURL().spec()));
-  if (base::i18n::StringSearchIgnoringCaseAndAccents(
-          query, url_raw, NULL, NULL)) {
-    return true;
-  }
-
-  // TODO(phajdan.jr): write a test case for the following code.
-  // A good test case would be:
-  //   "/\xe4\xbd\xa0\xe5\xa5\xbd\xe4\xbd\xa0\xe5\xa5\xbd",
-  //   L"/\x4f60\x597d\x4f60\x597d",
-  //   "/%E4%BD%A0%E5%A5%BD%E4%BD%A0%E5%A5%BD"
-  std::string languages;
-  languages = content::GetContentClient()->browser()->GetAcceptLangs(
-      GetBrowserContext());
-  string16 url_formatted(net::FormatUrl(GetURL(), languages));
-  if (base::i18n::StringSearchIgnoringCaseAndAccents(
-          query, url_formatted, NULL, NULL)) {
-    return true;
-  }
-
-  // TODO(asanka): Change this to GetTargetFilePath() once DownloadQuery has
-  //               been modified to work with target paths.
-  string16 path(GetFullPath().LossyDisplayName());
-  return base::i18n::StringSearchIgnoringCaseAndAccents(
-      query, path, NULL, NULL);
 }
 
 DownloadPersistentStoreInfo DownloadItemImpl::GetPersistentStoreInfo() const {

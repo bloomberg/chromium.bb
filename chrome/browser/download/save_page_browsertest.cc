@@ -326,7 +326,7 @@ class SavePageBrowserTest : public InProcessBrowserTest {
                             DownloadItem::DownloadState state) {
     // Make sure the relevant download item made it into the history.
     std::vector<DownloadItem*> downloads;
-    GetDownloadManager()->SearchDownloads(string16(), &downloads);
+    GetDownloadManager()->GetAllDownloads(&downloads);
     ASSERT_EQ(1u, downloads.size());
 
     QueryDownloadHistory();
@@ -396,7 +396,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveHTMLOnlyCancel) {
   GURL url = NavigateToMockURL("a");
   DownloadManager* manager(GetDownloadManager());
   std::vector<DownloadItem*> downloads;
-  manager->SearchDownloads(string16(), &downloads);
+  manager->GetAllDownloads(&downloads);
   ASSERT_EQ(0u, downloads.size());
 
   FilePath full_file_name, dir;
@@ -435,7 +435,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, DISABLED_SaveHTMLOnlyTabDestroy) {
   GURL url = NavigateToMockURL("a");
   DownloadManager* manager(GetDownloadManager());
   std::vector<DownloadItem*> downloads;
-  manager->SearchDownloads(string16(), &downloads);
+  manager->GetAllDownloads(&downloads);
   ASSERT_EQ(0u, downloads.size());
 
   FilePath full_file_name, dir;
