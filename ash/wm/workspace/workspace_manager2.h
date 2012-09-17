@@ -68,6 +68,7 @@ class ASH_EXPORT WorkspaceManager2
   virtual void SetShelf(ShelfLayoutManager* shelf) OVERRIDE;
   virtual void SetActiveWorkspaceByWindow(aura::Window* window) OVERRIDE;
   virtual aura::Window* GetParentForNewWindow(aura::Window* window) OVERRIDE;
+  virtual void DoInitialAnimation() OVERRIDE;
 
   // ShellObserver overrides:
   virtual void OnAppTerminating() OVERRIDE;

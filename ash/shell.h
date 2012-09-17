@@ -349,6 +349,9 @@ class ASH_EXPORT Shell : ash::CursorDelegate {
   // Initializes the root window to be used for a secondary display.
   void InitRootWindowForSecondaryDisplay(aura::RootWindow* root);
 
+  // Starts the animation that occurs on first login.
+  void DoInitialWorkspaceAnimation();
+
 #if defined(OS_CHROMEOS)
   chromeos::OutputConfigurator* output_configurator() {
     return output_configurator_.get();

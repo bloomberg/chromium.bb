@@ -227,6 +227,22 @@ Window* WorkspaceManager2::GetParentForNewWindow(Window* window) {
   return desktop_workspace()->window();
 }
 
+void WorkspaceManager2::DoInitialAnimation() {
+  if (active_workspace_->is_maximized()) {
+    RootWindowController* root_controller = GetRootWindowController(
+        contents_view_->GetRootWindow());
+    if (root_controller) {
+      aura::Window* background = root_controller->GetContainer(
+          kShellWindowId_DesktopBackgroundContainer);
+      background->Show();
+      AnimateWorkspaceOut(background, WORKSPACE_ANIMATE_DOWN,
+                          WORKSPACE_DESKTOP, true);
+    }
+  }
+  AnimateWorkspaceIn(active_workspace_->window(), WORKSPACE_ANIMATE_DOWN,
+                     true);
+}
+
 void WorkspaceManager2::OnAppTerminating() {
   app_terminating_ = true;
 }
@@ -321,9 +337,9 @@ void WorkspaceManager2::SetActiveWorkspace(Workspace2* workspace,
         kShellWindowId_DesktopBackgroundContainer);
     if (last_active == desktop_workspace()) {
       AnimateWorkspaceOut(background, WORKSPACE_ANIMATE_DOWN,
-                          WORKSPACE_DESKTOP);
+                          WORKSPACE_DESKTOP, false);
     } else if (active_workspace_ == desktop_workspace() && !app_terminating_) {
-      AnimateWorkspaceIn(background, WORKSPACE_ANIMATE_UP);
+      AnimateWorkspaceIn(background, WORKSPACE_ANIMATE_UP, false);
     }
   }
 }

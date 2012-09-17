@@ -681,6 +681,10 @@ const int kWorkspaceCrossFadeDurationMs = 200;
 const float kWorkspaceScaleAbove = 1.1f;
 const float kWorkspaceScaleBelow = .9f;
 
+// Amount of time to pause before animating anything. Only used during initial
+// animation (when logging in).
+const int kWorkspaceInitialPauseTimeMS = 500;
+
 // TODO: leaving in for now since Nicholas wants to play with this, remove if we
 // leave it at 0.
 const int kPauseTimeMS = 0;
@@ -813,6 +817,7 @@ base::TimeDelta AdjustAnimationTime(int time_ms) {
 void AnimateWorkspaceInImpl(aura::Window* window,
                             WorkspaceAnimationDirection direction,
                             uint32 animate_types,
+                            int pause_time_ms,
                             ui::Tween::Type tween_type) {
   window->layer()->SetOpacity(
       (animate_types & WORKSPACE_ANIMATE_OPACITY) ? 0.0f : 1.0f);
@@ -823,9 +828,22 @@ void AnimateWorkspaceInImpl(aura::Window* window,
   ApplyWorkspaceScale(window->layer(),
                       direction == WORKSPACE_ANIMATE_UP ?
                           WORKSPACE_SCALE_BELOW : WORKSPACE_SCALE_ABOVE);
+  window->layer()->GetAnimator()->StopAnimating();
 
   {
     ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
+
+    if (pause_time_ms > 0) {
+      settings.SetPreemptionStrategy(ui::LayerAnimator::ENQUEUE_NEW_ANIMATION);
+      window->layer()->GetAnimator()->SchedulePauseForProperties(
+          AdjustAnimationTime(pause_time_ms),
+          ui::LayerAnimationElement::TRANSFORM,
+          ui::LayerAnimationElement::OPACITY,
+          ui::LayerAnimationElement::BRIGHTNESS,
+          ui::LayerAnimationElement::VISIBILITY,
+          -1);
+    }
+
     settings.SetTweenType(tween_type);
     settings.SetTransitionDuration(AdjustAnimationTime(kWorkspaceSwitchTimeMS));
     window->layer()->SetTransform(ui::Transform());
@@ -838,9 +856,28 @@ void AnimateWorkspaceOutImpl(aura::Window* window,
                              WorkspaceAnimationDirection direction,
                              uint32 animate_types,
                              ui::Tween::Type tween_type,
-                             int duration_ms) {
+                             int duration_ms,
+                             int pause_time_ms) {
+  window->Show();
+  window->layer()->SetTransform(ui::Transform());
+  window->layer()->SetLayerBrightness(0.0f);
+  window->layer()->SetOpacity(1.0f);
+  window->layer()->GetAnimator()->StopAnimating();
+
   {
     ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
+
+    if (pause_time_ms > 0) {
+      settings.SetPreemptionStrategy(ui::LayerAnimator::ENQUEUE_NEW_ANIMATION);
+      window->layer()->GetAnimator()->SchedulePauseForProperties(
+          AdjustAnimationTime(pause_time_ms),
+          ui::LayerAnimationElement::TRANSFORM,
+          ui::LayerAnimationElement::OPACITY,
+          ui::LayerAnimationElement::BRIGHTNESS,
+          ui::LayerAnimationElement::VISIBILITY,
+          -1);
+    }
+
     settings.SetTransitionDuration(AdjustAnimationTime(duration_ms));
     settings.SetTweenType(tween_type);
     ApplyWorkspaceScale(window->layer(),
@@ -956,7 +993,7 @@ void CrossFadeWindowBetweenWorkspaces(aura::Window* old_workspace,
     if (old_workspace)
       AnimateWorkspaceOutImpl(old_workspace, WORKSPACE_ANIMATE_UP,
                               WORKSPACE_ANIMATE_BRIGHTNESS,
-                              workspace_tween_type, kWorkspaceSwitchTimeMS);
+                              workspace_tween_type, kWorkspaceSwitchTimeMS, 0);
 
     // Ideally we would use AnimateWorkspaceIn() for |new_workspace|, but that
     // results in |window| animating with the workspace scale. We don't want
@@ -985,7 +1022,7 @@ void CrossFadeWindowBetweenWorkspaces(aura::Window* old_workspace,
       AnimateWorkspaceOutImpl(old_workspace, WORKSPACE_ANIMATE_DOWN,
                               WORKSPACE_ANIMATE_BRIGHTNESS,
                               workspace_tween_type,
-                              kWorkspaceSwitchTimeMS);
+                              kWorkspaceSwitchTimeMS, 0);
     }
 
     new_workspace->Show();
@@ -1016,7 +1053,7 @@ void AnimateBetweenWorkspaces(aura::Window* old_window,
             WORKSPACE_ANIMATE_DOWN,
         animate_types,
         TweenTypeForWorskpaceOut(old_type),
-        kWorkspaceSwitchTimeMS);
+        kWorkspaceSwitchTimeMS, 0);
   }
 
   // Switching from the desktop to a maximized animates down.
@@ -1031,21 +1068,29 @@ void AnimateBetweenWorkspaces(aura::Window* old_window,
       old_type == WORKSPACE_DESKTOP ?
           WORKSPACE_ANIMATE_DOWN : WORKSPACE_ANIMATE_UP,
       animate_types,
+      0,
       ui::Tween::EASE_OUT);
 }
 
 void AnimateWorkspaceIn(aura::Window* window,
-                        WorkspaceAnimationDirection direction) {
-  AnimateWorkspaceInImpl(window, direction, WORKSPACE_ANIMATE_BRIGHTNESS,
-                         ui::Tween::EASE_OUT);
+                        WorkspaceAnimationDirection direction,
+                        bool initial_animate) {
+  AnimateWorkspaceInImpl(
+      window, direction,
+      WORKSPACE_ANIMATE_BRIGHTNESS |
+          (initial_animate ? WORKSPACE_ANIMATE_OPACITY : 0),
+      initial_animate ? kWorkspaceInitialPauseTimeMS : 0,
+      ui::Tween::EASE_OUT);
 }
 
 void AnimateWorkspaceOut(aura::Window* window,
                          WorkspaceAnimationDirection direction,
-                         WorkspaceType type) {
+                         WorkspaceType type,
+                         bool initial_animate) {
   AnimateWorkspaceOutImpl(window, direction, WORKSPACE_ANIMATE_BRIGHTNESS,
                           TweenTypeForWorskpaceOut(type),
-                          kWorkspaceSwitchTimeMS);
+                          kWorkspaceSwitchTimeMS,
+                          initial_animate ? kWorkspaceInitialPauseTimeMS : 0);
 }
 
 base::TimeDelta GetSystemBackgroundDestroyDuration() {

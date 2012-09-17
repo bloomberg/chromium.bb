@@ -74,6 +74,10 @@ aura::Window* WorkspaceController::GetParentForNewWindow(aura::Window* window) {
 }
 
 
+void WorkspaceController::DoInitialAnimation() {
+  workspace_manager_->DoInitialAnimation();
+}
+
 void WorkspaceController::OnWindowActivated(aura::Window* window,
                                             aura::Window* old_active) {
   if (!window || window->GetRootWindow() == viewport_->GetRootWindow())

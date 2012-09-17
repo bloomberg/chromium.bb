@@ -37,6 +37,9 @@ class ASH_EXPORT BaseWorkspaceManager {
   // Returns the parent for |window|. This is invoked from StackingController
   // when a new Window is being added.
   virtual aura::Window* GetParentForNewWindow(aura::Window* window) = 0;
+
+  // Starts the animation that occurs on first login.
+  virtual void DoInitialAnimation() = 0;
 };
 
 }  // namespace internal

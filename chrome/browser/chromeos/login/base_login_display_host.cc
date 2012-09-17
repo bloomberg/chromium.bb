@@ -6,6 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/workspace_controller.h"  // temporary until w2 is the default.
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -317,6 +318,7 @@ void BaseLoginDisplayHost::StartAnimation() {
       switches::kDisableLoginAnimations);
 
   const bool do_background_animation =
+      !ash::internal::WorkspaceController::IsWorkspace2Enabled() &&
       kEnableBackgroundAnimation && !disable_animations;
 
   const bool do_browser_transform_animation =
@@ -358,7 +360,9 @@ void BaseLoginDisplayHost::StartAnimation() {
   }
 
   // Browser windows layer opacity and transform animation.
-  if (do_browser_transform_animation || do_browser_opacity_animation) {
+  if (ash::internal::WorkspaceController::IsWorkspace2Enabled()) {
+    ash::Shell::GetInstance()->DoInitialWorkspaceAnimation();
+  } else if (do_browser_transform_animation || do_browser_opacity_animation) {
     ui::Layer* default_container_layer =
         ash::Shell::GetContainer(
             ash::Shell::GetPrimaryRootWindow(),

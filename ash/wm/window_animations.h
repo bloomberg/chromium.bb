@@ -114,12 +114,15 @@ ASH_EXPORT void AnimateBetweenWorkspaces(aura::Window* old_window,
                                          bool is_restoring_maximized_window);
 
 // Animates the workspace visualy in or out. This is used when the workspace is
-// becoming active, and out when the workspace was active.
+// becoming active, and out when the workspace was active. If |initial_animate|
+// is true, this animation is the result of logging in.
 ASH_EXPORT void AnimateWorkspaceIn(aura::Window* window,
-                                   WorkspaceAnimationDirection direction);
+                                   WorkspaceAnimationDirection direction,
+                                   bool initial_animate);
 ASH_EXPORT void AnimateWorkspaceOut(aura::Window* window,
                                     WorkspaceAnimationDirection direction,
-                                    WorkspaceType type);
+                                    WorkspaceType type,
+                                    bool initial_animate);
 
 // Returns the amount of time before destroying the system background.
 ASH_EXPORT base::TimeDelta GetSystemBackgroundDestroyDuration();

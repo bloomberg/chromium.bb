@@ -678,6 +678,11 @@ void Shell::InitRootWindowForSecondaryDisplay(aura::RootWindow* root) {
   active_root_window_ = root;
 }
 
+void Shell::DoInitialWorkspaceAnimation() {
+  return GetPrimaryRootWindowController()->workspace_controller()->
+      DoInitialAnimation();
+}
+
 void Shell::InitRootWindowController(
     internal::RootWindowController* controller) {
   aura::RootWindow* root_window = controller->root_window();

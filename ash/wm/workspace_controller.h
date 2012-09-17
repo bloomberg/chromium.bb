@@ -49,6 +49,9 @@ class ASH_EXPORT WorkspaceController
   // See description in BaseWorkspaceManager::GetParentForNewWindow().
   aura::Window* GetParentForNewWindow(aura::Window* window);
 
+  // Starts the animation that occurs on first login.
+  void DoInitialAnimation();
+
   // aura::client::ActivationChangeObserver overrides:
   virtual void OnWindowActivated(aura::Window* window,
                                  aura::Window* old_active) OVERRIDE;
