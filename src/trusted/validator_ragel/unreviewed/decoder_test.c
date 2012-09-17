@@ -1553,13 +1553,13 @@ int DecodeFile(const char *filename, int repeat_count) {
       int index;
 
       header = (Elf32_Ehdr *) data;
-      CheckBounds(data, data_size, header, sizeof(*header));
+      CheckBounds(data, data_size, header, sizeof *header);
       assert(memcmp(header->e_ident, ELFMAG, strlen(ELFMAG)) == 0);
 
       for (index = 0; index < header->e_shnum; ++index) {
         Elf32_Shdr *section = (Elf32_Shdr *) (data + header->e_shoff +
                                                    header->e_shentsize * index);
-        CheckBounds(data, data_size, section, sizeof(*section));
+        CheckBounds(data, data_size, section, sizeof *section);
 
         if ((section->sh_flags & SHF_EXECINSTR) != 0) {
           struct DecodeState state;
@@ -1597,13 +1597,13 @@ int DecodeFile(const char *filename, int repeat_count) {
       int index;
 
       header = (Elf64_Ehdr *) data;
-      CheckBounds(data, data_size, header, sizeof(*header));
+      CheckBounds(data, data_size, header, sizeof *header);
       assert(memcmp(header->e_ident, ELFMAG, strlen(ELFMAG)) == 0);
 
       for (index = 0; index < header->e_shnum; ++index) {
         Elf64_Shdr *section = (Elf64_Shdr *) (data + header->e_shoff +
                                                    header->e_shentsize * index);
-        CheckBounds(data, data_size, section, sizeof(*section));
+        CheckBounds(data, data_size, section, sizeof *section);
 
         if ((section->sh_flags & SHF_EXECINSTR) != 0) {
           struct DecodeState state;

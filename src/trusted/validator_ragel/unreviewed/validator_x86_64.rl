@@ -470,10 +470,11 @@ Bool ValidateChunkAMD64(const uint8_t *data, size_t size,
   const uint8_t *end_of_bundle;
   int result = TRUE;
 
+  CHECK(sizeof valid_targets_small == sizeof jump_dests_small);
   CHECK(size % kBundleSize == 0);
 
   /* For a very small sequence (one bundle) malloc is too expensive.  */
-  if (size <= sizeof(bitmap_word)) {
+  if (size <= sizeof valid_targets_small) {
     valid_targets_small = 0;
     valid_targets = &valid_targets_small;
     jump_dests_small = 0;
@@ -532,7 +533,7 @@ Bool ValidateChunkAMD64(const uint8_t *data, size_t size,
                                       user_callback, callback_data);
 
   /* We only use malloc for a large code sequences  */
-  if (size > sizeof(bitmap_word)) {
+  if (size > sizeof valid_targets_small) {
     free(jump_dests);
     free(valid_targets);
   }

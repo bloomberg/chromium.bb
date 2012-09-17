@@ -270,9 +270,10 @@ enum operand_kind {
 typedef BITMAP_WORD_NAME bitmap_word;
 
 static INLINE bitmap_word *BitmapAllocate(size_t indexes) {
+  bitmap_word *bitmap;
   size_t byte_count = ((indexes + NACL_HOST_WORDSIZE - 1) / NACL_HOST_WORDSIZE)*
-                      sizeof(bitmap_word);
-  bitmap_word *bitmap = malloc(byte_count);
+                      sizeof *bitmap;
+  bitmap = malloc(byte_count);
   if (bitmap != NULL) {
     memset(bitmap, 0, byte_count);
   }
