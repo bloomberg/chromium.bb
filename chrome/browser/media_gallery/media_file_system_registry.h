@@ -41,23 +41,27 @@ class ExtensionGalleriesHost;
 class MediaGalleriesPreferences;
 class ScopedMediaDeviceMapEntry;
 
+struct MediaFileSystemInfo {
+  string16 name;
+  std::string fsid;
+  FilePath path;
+};
+
+typedef base::Callback<void(const std::vector<MediaFileSystemInfo>&)>
+    MediaFileSystemsCallback;
+
 class MediaFileSystemRegistry
     : public base::SystemMonitor::DevicesChangedObserver {
  public:
-  struct MediaFSInfo {
-    string16 name;
-    std::string fsid;
-    FilePath path;
-  };
-
   // The instance is lazily created per browser process.
   static MediaFileSystemRegistry* GetInstance();
 
-  // Returns the list of media filesystem IDs and paths for a given RVH.
-  // Called on the UI thread.
-  std::vector<MediaFSInfo> GetMediaFileSystemsForExtension(
+  // Passes to |callback| the list of media filesystem IDs and paths for a
+  // given RVH. Called on the UI thread.
+  void GetMediaFileSystemsForExtension(
       const content::RenderViewHost* rvh,
-      const extensions::Extension* extension);
+      const extensions::Extension* extension,
+      const MediaFileSystemsCallback& callback);
 
 #if defined(SUPPORT_MEDIA_FILESYSTEM)
   // Registers and returns the file system id for the mtp or ptp device

@@ -40,11 +40,6 @@
 #include "webkit/fileapi/media/media_device_map_service.h"
 #endif
 
-namespace chrome {
-
-static base::LazyInstance<MediaFileSystemRegistry>::Leaky
-    g_media_file_system_registry = LAZY_INSTANCE_INITIALIZER;
-
 using base::Bind;
 using base::SystemMonitor;
 using content::BrowserThread;
@@ -56,6 +51,11 @@ using fileapi::IsolatedContext;
 #if defined(SUPPORT_MEDIA_FILESYSTEM)
 using fileapi::MediaDeviceMapService;
 #endif
+
+namespace chrome {
+
+static base::LazyInstance<MediaFileSystemRegistry>::Leaky
+    g_media_file_system_registry = LAZY_INSTANCE_INITIALIZER;
 
 namespace {
 
@@ -138,10 +138,11 @@ class ScopedMediaDeviceMapEntry
 };
 #endif
 
-// Refcounted only so it can easily be put in map. All instances are owned
-// by |MediaFileSystemRegistry::extension_hosts_map_|.
+// The main owner of this class is
+// |MediaFileSystemRegistry::extension_hosts_map_|, but a callback may
+// temporarily hold a reference.
 class ExtensionGalleriesHost
-    : public base::RefCounted<ExtensionGalleriesHost>,
+    : public base::RefCountedThreadSafe<ExtensionGalleriesHost>,
       public content::NotificationObserver {
  public:
   // |no_references_callback| is called when the last RenderViewHost reference
@@ -152,80 +153,24 @@ class ExtensionGalleriesHost
         no_references_callback_(no_references_callback) {
   }
 
-  // For each gallery in the list of permitted |galleries|, looks up or creates
-  // a file system id and returns the information needed for the renderer to
-  // create those file system objects.
-  std::vector<MediaFileSystemRegistry::MediaFSInfo> GetMediaFileSystems(
-      const MediaGalleryPrefIdSet& galleries,
-      const MediaGalleriesPrefInfoMap& galleries_info) {
-    std::vector<MediaFileSystemRegistry::MediaFSInfo> result;
+  // For each gallery in the list of permitted |galleries|, checks if the
+  // device is attached and if so looks up or creates a file system id and
+  // passes the information needed for the renderer to create those file
+  // system objects to the |callback|.
+  void GetMediaFileSystems(const MediaGalleryPrefIdSet& galleries,
+                           const MediaGalleriesPrefInfoMap& galleries_info,
+                           const MediaFileSystemsCallback& callback) {
+    // Extract all the device ids so we can make sure they are attached.
+    MediaStorageUtil::DeviceIdSet* device_ids =
+        new MediaStorageUtil::DeviceIdSet;
     for (std::set<MediaGalleryPrefId>::const_iterator id = galleries.begin();
          id != galleries.end();
          ++id) {
-      PrefIdFsInfoMap::const_iterator existing_info = pref_id_map_.find(*id);
-      if (existing_info != pref_id_map_.end()) {
-        result.push_back(existing_info->second);
-        continue;
-      }
-      const MediaGalleryPrefInfo& gallery_info =
-          galleries_info.find(*id)->second;
-      const std::string& device_id = gallery_info.device_id;
-
-      FilePath path = MediaStorageUtil::FindDevicePathById(device_id);
-      // TODO(vandebo) we also need to check that these galleries are attached.
-      // For now, just skip over entries that we couldn't find.
-      if (path.empty())
-        continue;
-      path = path.Append(gallery_info.path);
-
-      std::string fsid;
-      if (MediaStorageUtil::IsMassStorageDevice(device_id)) {
-        fsid = RegisterFileSystemForMassStorage(device_id, path);
-      } else {
-#if defined(SUPPORT_MEDIA_FILESYSTEM)
-        scoped_refptr<ScopedMediaDeviceMapEntry> mtp_device_host;
-        fsid = registry_->RegisterFileSystemForMtpDevice(
-            device_id, path, &mtp_device_host);
-        DCHECK(mtp_device_host.get());
-        media_device_map_references_[*id] = mtp_device_host;
-#else
-        NOTIMPLEMENTED();
-        continue;
-#endif
-      }
-      DCHECK(!fsid.empty());
-
-      MediaFileSystemRegistry::MediaFSInfo new_entry;
-      new_entry.name = gallery_info.display_name;
-      new_entry.path = path;
-      new_entry.fsid = fsid;
-      result.push_back(new_entry);
-      pref_id_map_[*id] = new_entry;
+      device_ids->insert(galleries_info.find(*id)->second.device_id);
     }
-
-    // TODO(vandebo) We need a way of getting notification when permission for
-    // galleries are revoked (http://crbug.com/145855).  For now, invalidate
-    // any fsid we have that we didn't get this time around.
-    if (galleries.size() != pref_id_map_.size()) {
-      MediaGalleryPrefIdSet old_galleries;
-      for (PrefIdFsInfoMap::const_iterator it = pref_id_map_.begin();
-           it != pref_id_map_.end();
-           ++it) {
-        old_galleries.insert(it->first);
-      }
-      MediaGalleryPrefIdSet invalid_galleries;
-      std::set_difference(old_galleries.begin(), old_galleries.end(),
-                          galleries.begin(), galleries.end(),
-                          std::inserter(invalid_galleries,
-                                        invalid_galleries.begin()));
-      for (MediaGalleryPrefIdSet::const_iterator it = invalid_galleries.begin();
-           it != invalid_galleries.end();
-           ++it) {
-        RevokeGalleryByPrefId(*it);
-      }
-    }
-
-    return result;
+    MediaStorageUtil::FilterAttachedDevices(device_ids, base::Bind(
+        &ExtensionGalleriesHost::GetMediaFileSystemsForAttachedDevices, this,
+        base::Owned(device_ids), galleries, galleries_info, callback));
   }
 
   // TODO(kmadhusu): Clean up this code. http://crbug.com/140340.
@@ -301,7 +246,7 @@ class ExtensionGalleriesHost
   }
 
  private:
-  typedef std::map<MediaGalleryPrefId, MediaFileSystemRegistry::MediaFSInfo>
+  typedef std::map<MediaGalleryPrefId, MediaFileSystemInfo>
       PrefIdFsInfoMap;
 #if defined(SUPPORT_MEDIA_FILESYSTEM)
   typedef std::map<MediaGalleryPrefId,
@@ -312,7 +257,7 @@ class ExtensionGalleriesHost
       RenderProcessHostRefCount;
 
   // Private destructor and friend declaration for ref counted implementation.
-  friend class base::RefCounted<ExtensionGalleriesHost>;
+  friend class base::RefCountedThreadSafe<ExtensionGalleriesHost>;
 
   virtual ~ExtensionGalleriesHost() {
     DCHECK(rph_refs_.empty());
@@ -322,6 +267,91 @@ class ExtensionGalleriesHost
     DCHECK(media_device_map_references_.empty());
 #endif
   }
+
+  void GetMediaFileSystemsForAttachedDevices(
+      const MediaStorageUtil::DeviceIdSet* attached_devices,
+      const MediaGalleryPrefIdSet& galleries,
+      const MediaGalleriesPrefInfoMap& galleries_info,
+      const MediaFileSystemsCallback& callback) {
+    std::vector<MediaFileSystemInfo> result;
+    MediaGalleryPrefIdSet new_galleries;
+    for (std::set<MediaGalleryPrefId>::const_iterator pref_id_it =
+             galleries.begin();
+         pref_id_it != galleries.end();
+         ++pref_id_it) {
+      const MediaGalleryPrefInfo& gallery_info =
+          galleries_info.find(*pref_id_it)->second;
+      const std::string& device_id = gallery_info.device_id;
+      if (!ContainsKey(*attached_devices, device_id))
+        continue;
+
+      PrefIdFsInfoMap::const_iterator existing_info =
+          pref_id_map_.find(*pref_id_it);
+      if (existing_info != pref_id_map_.end()) {
+        result.push_back(existing_info->second);
+        new_galleries.insert(*pref_id_it);
+        continue;
+      }
+
+      FilePath path = MediaStorageUtil::FindDevicePathById(device_id);
+      if (path.empty())
+        continue;
+      path = path.Append(gallery_info.path);
+
+      std::string fsid;
+      if (MediaStorageUtil::IsMassStorageDevice(device_id)) {
+        fsid = RegisterFileSystemForMassStorage(device_id, path);
+      } else {
+#if defined(SUPPORT_MEDIA_FILESYSTEM)
+        scoped_refptr<ScopedMediaDeviceMapEntry> mtp_device_host;
+        fsid = registry_->RegisterFileSystemForMtpDevice(
+            device_id, path, &mtp_device_host);
+        DCHECK(mtp_device_host.get());
+        media_device_map_references_[*pref_id_it] = mtp_device_host;
+#else
+        NOTIMPLEMENTED();
+        continue;
+#endif
+      }
+      DCHECK(!fsid.empty());
+
+      MediaFileSystemInfo new_entry;
+      new_entry.name = gallery_info.display_name;
+      new_entry.path = path;
+      new_entry.fsid = fsid;
+      result.push_back(new_entry);
+      new_galleries.insert(*pref_id_it);
+      pref_id_map_[*pref_id_it] = new_entry;
+    }
+
+    RevokeOldGalleries(new_galleries);
+
+    callback.Run(result);
+  }
+
+  void RevokeOldGalleries(const MediaGalleryPrefIdSet& new_galleries) {
+    // TODO(vandebo) We need a way of getting notification when permission for
+    // galleries are revoked (http://crbug.com/145855).  For now, invalidate
+    // any fsid we have that we didn't get this time around.
+    if (new_galleries.size() != pref_id_map_.size()) {
+      MediaGalleryPrefIdSet old_galleries;
+      for (PrefIdFsInfoMap::const_iterator it = pref_id_map_.begin();
+           it != pref_id_map_.end();
+           ++it) {
+        old_galleries.insert(it->first);
+      }
+      MediaGalleryPrefIdSet invalid_galleries;
+      std::set_difference(old_galleries.begin(), old_galleries.end(),
+                          new_galleries.begin(), new_galleries.end(),
+                          std::inserter(invalid_galleries,
+                                        invalid_galleries.begin()));
+      for (MediaGalleryPrefIdSet::const_iterator it = invalid_galleries.begin();
+           it != invalid_galleries.end();
+           ++it) {
+        RevokeGalleryByPrefId(*it);
+      }
+    }
+  };
 
   void OnRendererProcessClosed(const RenderProcessHost* rph) {
     RenderProcessHostRefCount::const_iterator rph_info = rph_refs_.find(rph);
@@ -408,12 +438,10 @@ MediaFileSystemRegistry* MediaFileSystemRegistry::GetInstance() {
   return g_media_file_system_registry.Pointer();
 }
 
-// TODO(vandebo) We need to make this async so that we check that the
-// galleries are attached (requires the file thread).
-std::vector<MediaFileSystemRegistry::MediaFSInfo>
-MediaFileSystemRegistry::GetMediaFileSystemsForExtension(
+void MediaFileSystemRegistry::GetMediaFileSystemsForExtension(
     const content::RenderViewHost* rvh,
-    const extensions::Extension* extension) {
+    const extensions::Extension* extension,
+    const MediaFileSystemsCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   Profile* profile =
@@ -431,8 +459,10 @@ MediaFileSystemRegistry::GetMediaFileSystemsForExtension(
   // If the extension has no galleries and it didn't have any last time, just
   // return the empty list. The second check is needed because of
   // http://crbug.com/145855.
-  if (galleries.empty() && !extension_host)
-    return std::vector<MediaFileSystemRegistry::MediaFSInfo>();
+  if (galleries.empty() && !extension_host) {
+    callback.Run(std::vector<MediaFileSystemInfo>());
+    return;
+  }
 
   if (!extension_host) {
     extension_host = new ExtensionGalleriesHost(
@@ -443,8 +473,8 @@ MediaFileSystemRegistry::GetMediaFileSystemsForExtension(
   }
   extension_host->ReferenceFromRVH(rvh);
 
-  return extension_host->GetMediaFileSystems(galleries,
-                                             preferences->known_galleries());
+  extension_host->GetMediaFileSystems(galleries, preferences->known_galleries(),
+                                      callback);
 }
 
 void MediaFileSystemRegistry::OnRemovableStorageAttached(

@@ -30,7 +30,13 @@
 #include "base/sys_string_conversions.h"
 #endif
 
+using chrome::MediaFileSystemInfo;
+using chrome::MediaFileSystemRegistry;
+using content::ChildProcessSecurityPolicy;
 using content::WebContents;
+
+namespace MediaGalleries = extensions::api::media_galleries;
+namespace GetMediaFileSystems = MediaGalleries::GetMediaFileSystems;
 
 namespace extensions {
 
@@ -54,12 +60,6 @@ bool ApiIsAccessible(std::string* error) {
 
 }  // namespace
 
-using chrome::MediaFileSystemRegistry;
-using content::ChildProcessSecurityPolicy;
-
-namespace MediaGalleries = extensions::api::media_galleries;
-namespace GetMediaFileSystems = MediaGalleries::GetMediaFileSystems;
-
 MediaGalleriesGetMediaFileSystemsFunction::
     ~MediaGalleriesGetMediaFileSystemsFunction() {}
 
@@ -78,14 +78,10 @@ bool MediaGalleriesGetMediaFileSystemsFunction::RunImpl() {
     ShowDialog();
     return true;
   } else if (interactive == "if_needed") {
-    std::vector<MediaFileSystemRegistry::MediaFSInfo> filesystems =
-        MediaFileSystemRegistry::GetInstance()->GetMediaFileSystemsForExtension(
-            render_view_host(), GetExtension());
-    if (filesystems.empty())
-      ShowDialog();
-    else
-      ReturnGalleries(filesystems);
-
+    MediaFileSystemRegistry::GetInstance()->GetMediaFileSystemsForExtension(
+        render_view_host(), GetExtension(), base::Bind(
+            &MediaGalleriesGetMediaFileSystemsFunction::ShowDialogIfNoGalleries,
+            this));
     return true;
   } else if (interactive == "no") {
     GetAndReturnGalleries();
@@ -96,15 +92,22 @@ bool MediaGalleriesGetMediaFileSystemsFunction::RunImpl() {
   return false;
 }
 
+void MediaGalleriesGetMediaFileSystemsFunction::ShowDialogIfNoGalleries(
+    const std::vector<MediaFileSystemInfo>& filesystems) {
+  if (filesystems.empty())
+    ShowDialog();
+  else
+    ReturnGalleries(filesystems);
+}
+
 void MediaGalleriesGetMediaFileSystemsFunction::GetAndReturnGalleries() {
-  std::vector<MediaFileSystemRegistry::MediaFSInfo> filesystems =
-      MediaFileSystemRegistry::GetInstance()->GetMediaFileSystemsForExtension(
-          render_view_host(), GetExtension());
-  ReturnGalleries(filesystems);
+  MediaFileSystemRegistry::GetInstance()->GetMediaFileSystemsForExtension(
+      render_view_host(), GetExtension(), base::Bind(
+          &MediaGalleriesGetMediaFileSystemsFunction::ReturnGalleries, this));
 }
 
 void MediaGalleriesGetMediaFileSystemsFunction::ReturnGalleries(
-    const std::vector<MediaFileSystemRegistry::MediaFSInfo>& filesystems) {
+    const std::vector<MediaFileSystemInfo>& filesystems) {
   const int child_id = render_view_host()->GetProcess()->GetID();
   base::ListValue* list = new base::ListValue();
   for (size_t i = 0; i < filesystems.size(); i++) {

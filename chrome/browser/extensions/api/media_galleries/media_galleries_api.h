@@ -25,14 +25,17 @@ class MediaGalleriesGetMediaFileSystemsFunction
   virtual bool RunImpl() OVERRIDE;
 
  private:
+  // If no galleries are found, show the dialog, otherwise return them.
+  void ShowDialogIfNoGalleries(
+      const std::vector<chrome::MediaFileSystemInfo>& filesystems);
+
   // Grabs galleries from the media file system registry and passes them to
   // |ReturnGalleries|.
   void GetAndReturnGalleries();
 
   // Returns galleries to the caller.
   void ReturnGalleries(
-      const std::vector<chrome::MediaFileSystemRegistry::MediaFSInfo>&
-          filesystems);
+      const std::vector<chrome::MediaFileSystemInfo>& filesystems);
 
   // Shows the configuration dialog to edit gallery preferences.
   void ShowDialog();

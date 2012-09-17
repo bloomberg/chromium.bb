@@ -8,6 +8,7 @@
 #ifndef CHROME_BROWSER_SYSTEM_MONITOR_MEDIA_STORAGE_UTIL_H_
 #define CHROME_BROWSER_SYSTEM_MONITOR_MEDIA_STORAGE_UTIL_H_
 
+#include <set>
 #include <string>
 
 #include "base/basictypes.h"
@@ -29,6 +30,7 @@ class MediaStorageUtil {
     MTP_OR_PTP,
   };
 
+  typedef std::set<std::string /*device id*/> DeviceIdSet;
   typedef base::Callback<void(bool)> BoolCallback;
 
   // Returns a device id given properties of the device. A prefix dependent on
@@ -56,6 +58,10 @@ class MediaStorageUtil {
   // Determines if the device is attached to the computer.
   static void IsDeviceAttached(const std::string& device_id,
                                const BoolCallback& callback);
+
+  // Removes disconnected devices from |devices| and then calls |done|.
+  static void FilterAttachedDevices(DeviceIdSet* devices,
+                                    const base::Closure& done);
 
   // Given |path|, fill in |device_id|, |device_name|, and |relative_path|
   // (from the root of the device) if they are not NULL.

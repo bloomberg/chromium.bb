@@ -64,6 +64,41 @@ FilePath::StringType FindRemovableStorageLocationById(
   return FilePath::StringType();
 }
 
+void FilterAttachedDevicesOnFileThread(MediaStorageUtil::DeviceIdSet* devices) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  MediaStorageUtil::DeviceIdSet missing_devices;
+
+  for (MediaStorageUtil::DeviceIdSet::const_iterator it = devices->begin();
+       it != devices->end();
+       ++it) {
+    MediaStorageUtil::Type type;
+    std::string unique_id;
+    if (!MediaStorageUtil::CrackDeviceId(*it, &type, &unique_id)) {
+      missing_devices.insert(*it);
+      continue;
+    }
+
+    if (type == MediaStorageUtil::FIXED_MASS_STORAGE) {
+      if (!file_util::PathExists(FilePath::FromUTF8Unsafe(unique_id)))
+        missing_devices.insert(*it);
+      continue;
+    }
+
+    DCHECK(type == MediaStorageUtil::MTP_OR_PTP ||
+           type == MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM ||
+           type == MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM);
+    if (!FindRemovableStorageLocationById(*it).empty())
+      missing_devices.insert(*it);
+  }
+
+  for (MediaStorageUtil::DeviceIdSet::const_iterator it =
+           missing_devices.begin();
+       it != missing_devices.end();
+       ++it) {
+    devices->erase(*it);
+  }
+}
+
 }  // namespace
 
 // static
@@ -157,6 +192,20 @@ void MediaStorageUtil::IsDeviceAttached(const std::string& device_id,
 }
 
 // static
+void MediaStorageUtil::FilterAttachedDevices(DeviceIdSet* devices,
+                                             const base::Closure& done) {
+  if (BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
+    FilterAttachedDevicesOnFileThread(devices);
+    done.Run();
+    return;
+  }
+  BrowserThread::PostTaskAndReply(BrowserThread::FILE,
+                                  FROM_HERE,
+                                  base::Bind(&FilterAttachedDevicesOnFileThread,
+                                             devices),
+                                  done);
+}
+
 bool MediaStorageUtil::GetDeviceInfoFromPath(const FilePath& path,
                                              std::string* device_id,
                                              string16* device_name,
