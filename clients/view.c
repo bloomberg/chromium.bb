@@ -220,7 +220,7 @@ view_create(struct display *display,
 	file = g_file_new_for_commandline_arg(filename);
 	basename = g_file_get_basename(file);
 	if(!basename) {
-	        title = "Wayland View";
+		title = g_strdup("Wayland View");
 	} else {
 	        title = g_strdup_printf("Wayland View - %s", basename);
 	        g_free(basename);
@@ -230,12 +230,13 @@ view_create(struct display *display,
                                                         NULL, &error);
 
         if(error) {
-                title = "File not found";
+		title = g_strdup("File not found");
         }
 
 	view->window = window_create(display);
 	view->widget = frame_create(view->window, view);
 	window_set_title(view->window, title);
+	g_free(title);
 	view->display = display;
 
 	window_set_user_data(view->window, view);
