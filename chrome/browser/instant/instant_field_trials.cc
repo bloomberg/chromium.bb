@@ -23,6 +23,9 @@ void SetupInstantFieldTrials() {
       base::FieldTrialList::FactoryGetFieldTrial(
           trial_name, num_buckets, default_group_name,
           2013, 6, 30, NULL));
+  // Give users a consistent experience.
+  if (base::FieldTrialList::IsOneTimeRandomizationEnabled())
+    trial->UseOneTimeRandomization();
 
   // Create field trial groups.
   trial->AppendGroup(control_group_name, group_probability);
