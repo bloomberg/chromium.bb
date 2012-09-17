@@ -48,10 +48,10 @@ chromeHidden.registerCustomHook('contextMenus', function(bindingsAPI) {
     var args = arguments;
     var id = GetNextContextMenuId();
     args[0].generatedId = id;
-    sendRequest(this.name,
-                args,
-                this.definition.parameters,
-                {customCallback: this.customCallback});
+    var optArgs = {
+      customCallback: this.customCallback,
+    };
+    sendRequest(this.name, args, this.definition.parameters, optArgs);
     return chromeHidden.contextMenus.getIdFromCreateProperties(args[0]);
   });
 

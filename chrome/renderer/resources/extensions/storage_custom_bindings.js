@@ -33,7 +33,8 @@ chromeHidden.registerCustomType('storage.StorageArea', function() {
         return sendRequest(
             'storage.' + functionName,
             [namespace].concat(args),
-            extendSchema(funSchema.definition.parameters));
+            extendSchema(funSchema.definition.parameters),
+            {preserveNullInObjects: true});
       };
     }
     var apiFunctions = ['get', 'set', 'remove', 'clear', 'getBytesInUse'];

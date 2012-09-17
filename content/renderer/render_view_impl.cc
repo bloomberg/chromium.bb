@@ -4219,7 +4219,6 @@ WebKit::WebPlugin* RenderViewImpl::CreatePlugin(
         pepper_module.get(), params, pepper_delegate_.AsWeakPtr());
   }
 
-
 #if defined(USE_AURA) && !defined(OS_WIN)
   return NULL;
 #else
@@ -4244,8 +4243,10 @@ void RenderViewImpl::EvaluateScript(const string16& frame_xpath,
       v8::Context::Scope context_scope(context);
       V8ValueConverterImpl converter;
       converter.SetDateAllowed(true);
-      converter.SetRegexpAllowed(true);
-      list.Set(0, converter.FromV8Value(result, context));
+      converter.SetRegExpAllowed(true);
+      base::Value* result_value = converter.FromV8Value(result, context);
+      list.Set(0, result_value ? result_value :
+                                 base::Value::CreateNullValue());
     } else {
       list.Set(0, Value::CreateNullValue());
     }

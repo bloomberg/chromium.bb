@@ -311,9 +311,12 @@
             if (this.handleRequest) {
               retval = this.handleRequest.apply(this, args);
             } else {
+              var optArgs = {
+                customCallback: this.customCallback
+              };
               retval = sendRequest(this.name, args,
                                    this.definition.parameters,
-                                   {customCallback: this.customCallback});
+                                   optArgs);
             }
 
             // Validate return value if defined - only in debug.

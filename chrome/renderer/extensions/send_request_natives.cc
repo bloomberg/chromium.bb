@@ -37,14 +37,16 @@ v8::Handle<v8::Value> SendRequestNatives::StartRequest(
   int request_id = args[2]->Int32Value();
   bool has_callback = args[3]->BooleanValue();
   bool for_io_thread = args[4]->BooleanValue();
+  bool preserve_null_in_objects = args[5]->BooleanValue();
 
   scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
 
-  // Make "undefined" the same as "null" for optional arguments, but for objects
-  // strip nulls (like {foo: null}, and therefore {foo: undefined} as well) to
-  // make it easier for extension APIs to check for optional arguments.
-  converter->SetUndefinedAllowed(true);
-  converter->SetStripNullFromObjects(true);
+  // See http://crbug.com/149880. The context menus APIs relies on this, but
+  // we shouln't really be doing it (e.g. for the sake of the storage API).
+  converter->SetFunctionAllowed(true);
+
+  if (!preserve_null_in_objects)
+    converter->SetStripNullFromObjects(true);
 
   scoped_ptr<Value> value_args(
       converter->FromV8Value(args[1], v8::Context::GetCurrent()));

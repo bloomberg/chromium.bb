@@ -77,7 +77,7 @@ function prepareRequest(args, argSchemas) {
 }
 
 // Send an API request and optionally register a callback.
-// |opt_args| is an object with optional parameters as follows:
+// |optArgs| is an object with optional parameters as follows:
 // - noStringify: true if we should not stringify the request arguments.
 // - customCallback: a callback that should be called instead of the standard
 //   callback.
@@ -85,12 +85,13 @@ function prepareRequest(args, argSchemas) {
 //   StartRequest if missing.
 // - forIOThread: true if this function should be handled on the browser IO
 //   thread.
-function sendRequest(functionName, args, argSchemas, opt_args) {
-  if (!opt_args)
-    opt_args = {};
+// - preserveNullInObjects: true if it is safe for null to be in objects.
+function sendRequest(functionName, args, argSchemas, optArgs) {
+  if (!optArgs)
+    optArgs = {};
   var request = prepareRequest(args, argSchemas);
-  if (opt_args.customCallback) {
-    request.customCallback = opt_args.customCallback;
+  if (optArgs.customCallback) {
+    request.customCallback = optArgs.customCallback;
   }
   // JSON.stringify doesn't support a root object which is undefined.
   if (request.args === undefined)
@@ -99,19 +100,22 @@ function sendRequest(functionName, args, argSchemas, opt_args) {
   // TODO(asargent) - convert all optional native functions to accept raw
   // v8 values instead of expecting JSON strings.
   var doStringify = false;
-  if (opt_args.nativeFunction && !opt_args.noStringify)
+  if (optArgs.nativeFunction && !optArgs.noStringify)
     doStringify = true;
   var requestArgs = doStringify ?
       chromeHidden.JSON.stringify(request.args) : request.args;
-  var nativeFunction = opt_args.nativeFunction || natives.StartRequest;
+  var nativeFunction = optArgs.nativeFunction || natives.StartRequest;
 
   var requestId = natives.GetNextRequestId();
   request.id = requestId;
   requests[requestId] = request;
-  var hasCallback =
-      (request.callback || opt_args.customCallback) ? true : false;
-  return nativeFunction(functionName, requestArgs, requestId, hasCallback,
-                        opt_args.forIOThread);
+  var hasCallback = request.callback || optArgs.customCallback;
+  return nativeFunction(functionName,
+                        requestArgs,
+                        requestId,
+                        hasCallback,
+                        optArgs.forIOThread,
+                        optArgs.preserveNullInObjects);
 }
 
 exports.sendRequest = sendRequest;
