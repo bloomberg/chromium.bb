@@ -50,17 +50,21 @@ p.warning strong {
 
 a, a:link {
   text-decoration: none;
-  color: black;
+  color: #39F;
   font-weight: 600;
 }
 
 a:visited {
-  color: #61C;
+  color: #194c7f;
 }
 
 a:active,
 a:hover {
-  color: #39F;
+  color: #236bb2;
+}
+
+#toc a {
+  color: black;
 }
 
 ol, ul {
@@ -120,7 +124,7 @@ img {
 code,
 pre {
   font-family: monospace;
-  color: #50A9D5;
+  color: #080;
 }
 
 code {
@@ -408,11 +412,6 @@ span.displayModeWarning {
 
 #filtered_apis {
   margin-top: 5px;
-}
-
-/* Specificity hack to override the "a" rule. */
-#filtered_apis * {
-  color: #50A9D5;
 }
 
 #skipto {
