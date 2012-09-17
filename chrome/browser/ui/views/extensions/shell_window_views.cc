@@ -504,6 +504,13 @@ views::View* ShellWindowViews::GetContentsView() {
 
 views::NonClientFrameView* ShellWindowViews::CreateNonClientFrameView(
     views::Widget* widget) {
+#if defined(USE_ASH)
+  if (!frameless_) {
+    ash::CustomFrameViewAsh* frame = new ash::CustomFrameViewAsh();
+    frame->Init(widget);
+    return frame;
+  }
+#endif
   ShellWindowFrameView* frame_view = new ShellWindowFrameView(this);
   frame_view->Init(window_);
   return frame_view;
