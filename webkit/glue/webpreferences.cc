@@ -103,6 +103,7 @@ WebPreferences::WebPreferences()
       should_print_backgrounds(false),
       enable_scroll_animator(false),
       visual_word_movement_enabled(false),
+      css_sticky_position_enabled(false),
       css_regions_enabled(false),
       css_shaders_enabled(false),
       css_variables_enabled(false),
@@ -394,6 +395,7 @@ void WebPreferences::Apply(WebView* web_view) const {
   settings->setEnableScrollAnimator(enable_scroll_animator);
   settings->setVisualWordMovementEnabled(visual_word_movement_enabled);
 
+  settings->setCSSStickyPositionEnabled(css_sticky_position_enabled);
   settings->setExperimentalCSSRegionsEnabled(css_regions_enabled);
   settings->setExperimentalCSSCustomFilterEnabled(css_shaders_enabled);
   settings->setExperimentalCSSVariablesEnabled(css_variables_enabled);

@@ -525,6 +525,8 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
       !command_line.HasSwitch(switches::kDisableAcceleratedVideo);
   prefs.fullscreen_enabled =
       !command_line.HasSwitch(switches::kDisableFullScreen);
+  prefs.css_sticky_position_enabled =
+      command_line.HasSwitch(switches::kEnableExperimentalWebKitFeatures);
   prefs.css_regions_enabled =
       command_line.HasSwitch(switches::kEnableExperimentalWebKitFeatures);
   prefs.css_shaders_enabled =
