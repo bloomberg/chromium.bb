@@ -472,6 +472,10 @@ class ContentMainRunnerImpl : public ContentMainRunner {
   }
 
 #if defined(USE_TCMALLOC)
+static bool GetPropertyThunk(const char* name, size_t* value) {
+  return MallocExtension::instance()->GetNumericProperty(name, value);
+}
+
 static void GetStatsThunk(char* buffer, int buffer_length) {
   MallocExtension::instance()->GetStats(buffer, buffer_length);
 }
@@ -510,6 +514,7 @@ static void ReleaseFreeMemoryThunk() {
     tc_set_new_mode(1);
 
     // On windows, we've already set these thunks up in _heap_init()
+    base::allocator::SetGetPropertyFunction(GetPropertyThunk);
     base::allocator::SetGetStatsFunction(GetStatsThunk);
     base::allocator::SetReleaseFreeMemoryFunction(ReleaseFreeMemoryThunk);
 
