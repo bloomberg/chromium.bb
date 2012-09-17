@@ -182,12 +182,13 @@ void MockDiskMountManager::SetupDefaultReplies() {
 
 void MockDiskMountManager::CreateDiskEntryForMountDevice(
     const DiskMountManager::MountPointInfo& mount_info,
-    const std::string& device_id) {
+    const std::string& device_id,
+    const std::string& device_label) {
   Disk* disk = new DiskMountManager::Disk(std::string(mount_info.source_path),
                                           std::string(mount_info.mount_path),
                                           std::string(),  // system_path
                                           std::string(),  // file_path
-                                          std::string(),  // device_label
+                                          device_label,  // device_label
                                           std::string(),  // drive_label
                                           std::string(),  // vendor_id
                                           std::string(),  // vendor_name

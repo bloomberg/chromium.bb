@@ -11,14 +11,54 @@
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/system_monitor/media_device_notifications_utils.h"
 #include "chrome/browser/system_monitor/media_storage_util.h"
+#include "chrome/browser/system_monitor/removable_device_constants.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace chromeos {
 
 namespace {
+
+// Construct a device name using label or manufacturer (vendor and product) name
+// details.
+string16 GetDeviceName(const disks::DiskMountManager::Disk& disk) {
+  std::string device_name = disk.device_label();
+  if (device_name.empty()) {
+    device_name = disk.vendor_name();
+    const std::string& product_name = disk.product_name();
+    if (!product_name.empty()) {
+      if (!device_name.empty())
+        device_name += chrome::kSpaceDelim;
+      device_name += product_name;
+    }
+  }
+  return UTF8ToUTF16(device_name);
+}
+
+// Construct a device id using uuid or manufacturer (vendor and product) id
+// details.
+std::string MakeDeviceUniqueId(const disks::DiskMountManager::Disk& disk) {
+  std::string uuid = disk.fs_uuid();
+  if (!uuid.empty())
+    return chrome::kFSUniqueIdPrefix + uuid;
+
+  // If one of the vendor or product information is missing, its value in the
+  // string is empty.
+  // Format: VendorModelSerial:VendorInfo:ModelInfo:SerialInfo
+  // TODO(kmadhusu) Extract serial information for the disks and append it to
+  // the device unique id.
+  const std::string& vendor = disk.vendor_id();
+  const std::string& product = disk.product_id();
+  if (vendor.empty() && product.empty())
+    return std::string();
+  return base::StringPrintf("%s%s%s%s%s",
+                            chrome::kVendorModelSerialPrefix,
+                            vendor.c_str(), chrome::kNonSpaceDelim,
+                            product.c_str(), chrome::kNonSpaceDelim);
+}
 
 // Returns true if the requested device is valid, else false. On success, fills
 // in |unique_id| and |device_label|
@@ -30,13 +70,11 @@ bool GetDeviceInfo(const std::string& source_path, std::string* unique_id,
   if (!disk || disk->device_type() == DEVICE_TYPE_UNKNOWN)
     return false;
 
-  *unique_id = disk->fs_uuid();
+  if (unique_id)
+    *unique_id = MakeDeviceUniqueId(*disk);
 
-  // TODO(kmadhusu): If device label is empty, extract vendor and model details
-  // and use them as device_label.
-  *device_label = UTF8ToUTF16(disk->device_label().empty() ?
-                              FilePath(source_path).BaseName().value() :
-                              disk->device_label());
+  if (device_label)
+    *device_label = GetDeviceName(*disk);
   return true;
 }
 
@@ -151,7 +189,9 @@ void RemovableDeviceNotificationsCros::AddMountedPathOnUIThread(
   // Keep track of device uuid, to see how often we receive empty uuid values.
   UMA_HISTOGRAM_BOOLEAN("MediaDeviceNotification.DeviceUUIDAvailable",
                         !unique_id.empty());
-  if (unique_id.empty())
+  UMA_HISTOGRAM_BOOLEAN("MediaDeviceNotification.DeviceNameAvailable",
+                        !device_label.empty());
+  if (unique_id.empty() || device_label.empty())
     return;
 
   chrome::MediaStorageUtil::Type type = has_dcim ?

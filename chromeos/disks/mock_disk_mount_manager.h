@@ -49,13 +49,14 @@ class MockDiskMountManager : public DiskMountManager {
   void SetupDefaultReplies();
 
   // Creates a fake disk entry for the mounted device. This function is
-  // primarily for MediaDeviceNotificationsTest.
+  // primarily for RemovableDeviceNotificationsTest.
   void CreateDiskEntryForMountDevice(
       const DiskMountManager::MountPointInfo& mount_info,
-      const std::string& device_id);
+      const std::string& device_id,
+      const std::string& device_label);
 
   // Removes the fake disk entry associated with the mounted device. This
-  // function is primarily for MediaDeviceNotificationsTest.
+  // function is primarily for RemovableDeviceNotificationsTest.
   void RemoveDiskEntryForMountDevice(
       const DiskMountManager::MountPointInfo& mount_info);
 
