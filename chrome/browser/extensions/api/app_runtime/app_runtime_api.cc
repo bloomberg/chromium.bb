@@ -24,7 +24,6 @@ const char kIntentIdKey[] = "intentId";
 const char kIntentSuccessKey[] = "success";
 const char kIntentDataKey[] = "data";
 const char kOnLaunchedEvent[] = "app.runtime.onLaunched";
-const char kOnRestartedEvent[] = "app.runtime.onRestarted";
 
 const char kCallbackNotFoundError[] =
     "WebIntent callback not found; perhaps already responded to";
@@ -39,14 +38,6 @@ void AppEventRouter::DispatchOnLaunchedEvent(
   scoped_ptr<ListValue> arguments(new ListValue());
   profile->GetExtensionEventRouter()->DispatchEventToExtension(
       extension->id(), kOnLaunchedEvent, arguments.Pass(), NULL, GURL());
-}
-
-// static.
-void AppEventRouter::DispatchOnRestartedEvent(
-    Profile* profile, const Extension* extension) {
-  scoped_ptr<ListValue> arguments(new ListValue());
-  profile->GetExtensionEventRouter()->DispatchEventToExtension(
-      extension->id(), kOnRestartedEvent, arguments.Pass(), NULL, GURL());
 }
 
 // static.

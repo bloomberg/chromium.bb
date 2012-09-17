@@ -30,13 +30,7 @@ namespace app.runtime {
   };
 
   interface Events {
-    // Fired when an app is launched from the launcher or in response to a web
-    // intent.
     static void onLaunched(optional LaunchData launchData);
-
-    // Fired at Chrome startup to apps that were running when Chrome last shut
-    // down.
-    static void onRestarted();
   };
 
   dictionary IntentResponse {

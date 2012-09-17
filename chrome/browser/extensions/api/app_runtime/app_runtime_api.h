@@ -25,8 +25,6 @@ class AppEventRouter {
   // data.
   static void DispatchOnLaunchedEvent(Profile* profile,
                                       const Extension* extension);
-  static void DispatchOnRestartedEvent(Profile* profile,
-                                       const Extension* extension);
 
   // Dispatches the onLaunched event to the given app, providing launch data of
   // the form:

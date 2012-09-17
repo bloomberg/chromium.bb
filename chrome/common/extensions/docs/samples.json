@@ -7,7 +7,6 @@
     "chrome.alarms.getAll": "alarms.html#method-getAll",
     "chrome.alarms.onAlarm": "alarms.html#event-onAlarm",
     "chrome.app.runtime.onLaunched": "app.runtime.html#event-onLaunched",
-    "chrome.app.runtime.onRestarted": "app.runtime.html#event-onRestarted",
     "chrome.app.window.create": "app.window.html#method-create",
     "chrome.app.window.focus": "app.window.html#method-focus",
     "chrome.app.window.maximize": "app.window.html#method-maximize",

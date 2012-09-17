@@ -36,9 +36,6 @@ namespace {
 
 // Additional preferences keys
 
-// Whether this extension was running when chrome last shutdown.
-const char kPrefRunning[] = "running";
-
 // Where an extension was installed from. (see Extension::Location)
 const char kPrefLocation[] = "location";
 
@@ -1098,21 +1095,6 @@ void ExtensionPrefs::SetRegisteredEvents(
     value->Append(new StringValue(*it));
   }
   UpdateExtensionPref(extension_id, kRegisteredEvents, value);
-}
-
-void ExtensionPrefs::SetExtensionRunning(const std::string& extension_id,
-    bool is_running) {
-  Value* value = Value::CreateBooleanValue(is_running);
-  UpdateExtensionPref(extension_id, kPrefRunning, value);
-}
-
-bool ExtensionPrefs::IsExtensionRunning(const std::string& extension_id) {
-  const DictionaryValue* extension = GetExtensionPref(extension_id);
-  if (!extension)
-    return false;
-  bool running = false;
-  extension->GetBoolean(kPrefRunning, &running);
-  return running;
 }
 
 ExtensionOmniboxSuggestion

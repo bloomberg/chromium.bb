@@ -23,8 +23,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/extensions/app_restore_service.h"
-#include "chrome/browser/extensions/app_restore_service_factory.h"
 #include "chrome/browser/extensions/extension_creator.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/pack_extension_job.h"
@@ -595,11 +593,6 @@ bool StartupBrowserCreatorImpl::ProcessStartupURLs(
     VLOG(1) << "Pref: urls";
   else if (pref.type == SessionStartupPref::DEFAULT)
     VLOG(1) << "Pref: default";
-
-  // The only time apps get restored is when the browser process is restarted.
-  if (StartupBrowserCreator::WasRestarted())
-    extensions::AppRestoreServiceFactory::GetForProfile(profile_)->
-        RestoreApps();
 
   if (pref.type == SessionStartupPref::LAST) {
     if (!profile_->DidLastSessionExitCleanly() &&
