@@ -116,8 +116,10 @@ BrowserAccessibility* BrowserAccessibilityManager::GetFromRendererID(
   return GetFromChildID(child_id);
 }
 
-void BrowserAccessibilityManager::GotFocus() {
-  osk_state_ = OSK_DISALLOWED_BECAUSE_TAB_JUST_APPEARED;
+void BrowserAccessibilityManager::GotFocus(bool touch_event_context) {
+  if (!touch_event_context)
+    osk_state_ = OSK_DISALLOWED_BECAUSE_TAB_JUST_APPEARED;
+
   if (!focus_)
     return;
 

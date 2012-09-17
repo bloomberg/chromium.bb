@@ -1503,7 +1503,7 @@ void RenderWidgetHostViewWin::OnSetFocus(HWND window) {
     return;
 
   if (GetBrowserAccessibilityManager())
-    GetBrowserAccessibilityManager()->GotFocus();
+    GetBrowserAccessibilityManager()->GotFocus(pointer_down_context_);
 
   render_widget_host_->GotFocus();
   render_widget_host_->SetActive(true);
@@ -1841,6 +1841,10 @@ LRESULT RenderWidgetHostViewWin::OnMouseEvent(UINT message, WPARAM wparam,
 
   if (message == WM_LBUTTONDOWN && GetBrowserAccessibilityManager())
     GetBrowserAccessibilityManager()->GotMouseDown();
+
+  if (message == WM_LBUTTONUP && ui::IsMouseEventFromTouch(message) &&
+      base::win::IsMetroProcess())
+    pointer_down_context_ = false;
 
   ForwardMouseEventToRenderer(message, wparam, lparam);
   return 0;
@@ -2680,13 +2684,13 @@ LRESULT RenderWidgetHostViewWin::OnPointerMessage(
   lparam = MAKELPARAM(point.x, point.y);
 
   if (message == WM_POINTERDOWN) {
+    pointer_down_context_ = true;
     if (!base::win::IsMetroProcess()) {
       SetFocus();
-      pointer_down_context_ = true;
       received_focus_change_after_pointer_down_ = false;
       MessageLoop::current()->PostDelayedTask(FROM_HERE,
           base::Bind(&RenderWidgetHostViewWin::ResetPointerDownContext,
-                     weak_factory_.GetWeakPtr()),
+                      weak_factory_.GetWeakPtr()),
           base::TimeDelta::FromMilliseconds(kPointerDownContextResetDelay));
     }
   }

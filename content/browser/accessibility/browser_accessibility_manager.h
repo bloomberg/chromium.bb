@@ -94,7 +94,9 @@ class CONTENT_EXPORT BrowserAccessibilityManager {
   // Called to notify the accessibility manager that its associated native
   // view got focused. This implies that it is shown (opposite of WasHidden,
   // below).
-  void GotFocus();
+  // The touch_event_context parameter indicates that we were called in the
+  // context of a touch event.
+  void GotFocus(bool touch_event_context);
 
   // Called to notify the accessibility manager that its associated native
   // view was hidden. When it's no longer hidden, GotFocus will be called.
