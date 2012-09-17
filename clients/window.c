@@ -165,6 +165,8 @@ struct window {
 	window_close_handler_t close_handler;
 	window_fullscreen_handler_t fullscreen_handler;
 
+	struct wl_callback *frame_cb;
+
 	struct frame *frame;
 	struct widget *widget;
 
@@ -992,6 +994,8 @@ window_destroy(struct window *window)
 	if (window->cairo_surface != NULL)
 		cairo_surface_destroy(window->cairo_surface);
 
+	if (window->frame_cb)
+		wl_callback_destroy(window->frame_cb);
 	free(window->title);
 	free(window);
 }
@@ -2003,6 +2007,9 @@ pointer_handle_motion(void *data, struct wl_pointer *pointer,
 	input->sx = sx;
 	input->sy = sy;
 
+	if (!window)
+		return;
+
 	if (!(input->grab && input->grab_button)) {
 		widget = widget_find_widget(window->widget, sx, sy);
 		input_set_focus_widget(input, widget, sx, sy);
@@ -2871,7 +2878,9 @@ frame_callback(void *data, struct wl_callback *callback, uint32_t time)
 {
 	struct window *window = data;
 
+	assert(callback == window->frame_cb);
 	wl_callback_destroy(callback);
+	window->frame_cb = 0;
 	window->redraw_scheduled = 0;
 	if (window->redraw_needed)
 		window_schedule_redraw(window);
@@ -2885,7 +2894,6 @@ static void
 idle_redraw(struct task *task, uint32_t events)
 {
 	struct window *window = container_of(task, struct window, redraw_task);
-	struct wl_callback *callback;
 
 	if (window->resize_needed)
 		idle_resize(window);
@@ -2896,8 +2904,8 @@ idle_redraw(struct task *task, uint32_t events)
 	window->redraw_needed = 0;
 	wl_list_init(&window->redraw_task.link);
 
-	callback = wl_surface_frame(window->surface);
-	wl_callback_add_listener(callback, &listener, window);
+	window->frame_cb = wl_surface_frame(window->surface);
+	wl_callback_add_listener(window->frame_cb, &listener, window);
 }
 
 void
