@@ -1401,7 +1401,7 @@ body[type='full-page'] [visibleif]:not([visibleif~='full-page']) {
   display: none;
 }
 
-body:not([ctrl-pressing]) [visibleif='ctrl'] {
+body:not([ctrl-pressing]) [required_attr='ctrl-pressing'] {
   display: none;
 }
 
