@@ -1372,6 +1372,9 @@ const char kAshWebUIInit[]                  = "ash-webui-init";
 // Disables wallpaper boot animation (except of OOBE case).
 const char kDisableBootAnimation[]          = "disable-boot-animation";
 
+// Disables reset the device to its factory state in design.
+const char kDisableFactoryReset[]           = "disable-factory-reset";
+
 // Disables gdata content provider.
 const char kDisableGData[]                  = "disable-gdata";
 

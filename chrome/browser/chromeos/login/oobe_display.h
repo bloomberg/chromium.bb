@@ -14,6 +14,7 @@ namespace chromeos {
 class EnterpriseEnrollmentScreenActor;
 class EulaScreenActor;
 class NetworkScreenActor;
+class ResetScreenActor;
 class UpdateScreenActor;
 class UserImageScreenActor;
 // TODO(altimofeev): use real actors instead
@@ -39,6 +40,7 @@ class OobeDisplay {
   virtual EulaScreenActor* GetEulaScreenActor() = 0;
   virtual EnterpriseEnrollmentScreenActor*
       GetEnterpriseEnrollmentScreenActor() = 0;
+  virtual ResetScreenActor* GetResetScreenActor() = 0;
   virtual UserImageScreenActor* GetUserImageScreenActor() = 0;
   // TODO(altimofeev): use real actors instead.
   virtual ViewScreenDelegate* GetRegistrationScreenActor() = 0;

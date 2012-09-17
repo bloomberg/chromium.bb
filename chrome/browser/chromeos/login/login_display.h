@@ -60,6 +60,9 @@ class LoginDisplay : public RemoveUserDelegate {
     // Called when the user requests enterprise enrollment.
     virtual void OnStartEnterpriseEnrollment() = 0;
 
+    // Called when the user requests device reset.
+    virtual void OnStartDeviceReset() = 0;
+
    protected:
     virtual ~Delegate();
   };

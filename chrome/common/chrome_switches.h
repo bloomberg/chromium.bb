@@ -370,6 +370,7 @@ extern const char kTabletUI[];
 // Keep switches in alphabetical order.
 extern const char kAshWebUIInit[];
 extern const char kDisableBootAnimation[];
+extern const char kDisableFactoryReset[];
 extern const char kDisableGData[];
 extern const char kDisableHtml5Camera[];
 extern const char kDisableLoginAnimations[];

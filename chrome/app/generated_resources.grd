@@ -6312,6 +6312,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_DISABLE_NEW_OOBE_DESCRIPTION" desc="Description for the flag to disable new design for OOBE / sign in flows.">
           Disables new design for OOBE / sign in flows.
         </message>
+        <message name="IDS_FLAGS_DISABLE_FACTORY_RESET" desc="Name of the experimental option that resets the device to its factory state.">
+          Disable factory reset.
+        </message>
+        <message name="IDS_FLAGS_DISABLE_FACTORY_RESET_DESCRIPTION" desc="Description of the experimental option that resets the device to its factory state.">
+          Disables factory reset shortcut and window on login wizard and options dialog.
+        </message>
         <message name="IDS_FLAGS_DISABLE_BOOT_ANIMATION" desc="Name for the flag to disable wallpaper boot animation (except for OOBE).">
           Disable boot animation.
         </message>
@@ -9964,6 +9970,21 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       <message name="IDS_OPTIONS_SSL_CHECKREVOCATION" desc="The label of the 'Check for server certificate revocation' checkbox">
         Check for server certificate revocation
       </message>
+
+      <if expr="pp_ifdef('chromeos')">
+	<message name="IDS_OPTIONS_FACTORY_RESET" desc="Name of the factory reset option on the chrome settings page">
+	  Factory Reset
+	</message>
+	<message name="IDS_OPTIONS_FACTORY_RESET_DESCRIPTION" desc="Description of the factory reset option on the chrome settings page">
+	  Reset your <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> device to its original factory state.
+	</message>
+	<message name="IDS_OPTIONS_FACTORY_RESET_BUTTON" desc="Name of the button to activate the factory reset option on the chrome settings page">
+	  Reset
+	</message>
+	<message name="IDS_OPTIONS_FACTORY_RESET_WARNING" desc="Warning text in the 'Factory Reset' window">
+	  A restart is required in order to reset your <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> device to its original factory state.
+	</message>
+      </if>
 
       <message name="IDS_OPTIONS_MANAGE_DATA_DESCRIPTION" desc="The title of the 'Manage your data' label.">
         Manage your data
@@ -14133,6 +14154,9 @@ Press any key to continue exploring.
       <message name="IDS_EULA_SCREEN_TITLE" desc="Title of the OOBE EULA screen">
         The small print
       </message>
+      <message name="IDS_RESET_SCREEN_TITLE" desc="Title of the reset screen">
+        Factory reset
+      </message>
       <message name="IDS_UPDATE_SCREEN_TITLE" desc="Title of the OOBE update screen">
         Update
       </message>
@@ -15236,6 +15260,16 @@ Press any key to continue exploring.
       </message>
       <message name="IDS_EULA_TPM_DISABLED" desc="Tooltip text describing why 'System security setting' link is disabled.">
         Trusted Platform Module (TPM) chip is disabled or absent.
+      </message>
+
+      <message name="IDS_RESET_SCREEN_WARNING_MSG" desc="Warning text shown on reset screen above the exclamation icon.">
+        Factory Reset your <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> device
+      </message>
+      <message name="IDS_RESET_SCREEN_WARNING_DETAILS" desc="Warning text shown on reset screen below the exclamation icon.">
+        Your device will be reset into its original factory state. All local files and media will be erased. Would you like to continue?
+      </message>
+      <message name="IDS_RESET_SCREEN_RESET" desc="Reset button text">
+        Reset
       </message>
 
       <message name="IDS_OPTION_DISABLED_BY_POLICY" desc="Tooltip for options managed by enterprise policy">

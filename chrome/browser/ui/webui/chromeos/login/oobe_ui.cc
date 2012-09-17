@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/eula_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_dropdown_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/reset_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/update_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/user_image_screen_handler.h"
@@ -124,6 +125,7 @@ OobeUI::OobeUI(content::WebUI* web_ui)
       update_screen_actor_(NULL),
       network_screen_actor_(NULL),
       eula_screen_actor_(NULL),
+      reset_screen_actor_(NULL),
       signin_screen_handler_(NULL),
       user_image_screen_actor_(NULL) {
   core_handler_ = new CoreOobeHandler(this);
@@ -138,6 +140,10 @@ OobeUI::OobeUI(content::WebUI* web_ui)
   EulaScreenHandler* eula_screen_handler = new EulaScreenHandler();
   eula_screen_actor_ = eula_screen_handler;
   AddScreenHandler(eula_screen_handler);
+
+  ResetScreenHandler* reset_screen_handler = new ResetScreenHandler();
+  reset_screen_actor_ = reset_screen_handler;
+  AddScreenHandler(reset_screen_handler);
 
   UpdateScreenHandler* update_screen_handler = new UpdateScreenHandler();
   update_screen_actor_ = update_screen_handler;
@@ -214,6 +220,10 @@ EulaScreenActor* OobeUI::GetEulaScreenActor() {
 EnterpriseEnrollmentScreenActor* OobeUI::
     GetEnterpriseEnrollmentScreenActor() {
   return enterprise_enrollment_screen_actor_;
+}
+
+ResetScreenActor* OobeUI::GetResetScreenActor() {
+  return reset_screen_actor_;
 }
 
 UserImageScreenActor* OobeUI::GetUserImageScreenActor() {

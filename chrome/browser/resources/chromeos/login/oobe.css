@@ -67,7 +67,8 @@ button:not(.custom-appearance) {
   min-width: 72px !important;
 }
 
-#back-button {
+#back-button,
+#reset-cancel-button {
   -webkit-margin-end: 8px;
 }
 
@@ -112,11 +113,12 @@ html[oobe=new] #inner-container.animation {
 
 /* Screens that have a border and background. */
 html[oobe=new] #oobe.connect #inner-container,
-html[oobe=new] #oobe.eula #inner-container,
-html[oobe=new] #oobe.update #inner-container,
-html[oobe=new] #oobe.gaia-signin #inner-container,
 html[oobe=new] #oobe.enrollment #inner-container,
+html[oobe=new] #oobe.eula #inner-container,
+html[oobe=new] #oobe.gaia-signin #inner-container,
 html[oobe=new] #oobe.oauth-enrollment #inner-container,
+html[oobe=new] #oobe.reset #inner-container,
+html[oobe=new] #oobe.update #inner-container,
 html[oobe=new] #oobe.user-image #inner-container {
   background: -webkit-linear-gradient(rgba(255,255,255,0.99),
                                       rgba(255,255,255,0.95));
@@ -456,6 +458,30 @@ html[oobe=new] #update {
   padding: 70px 17px 69px;    /* Screen has no controls. */
 }
 
+html[oobe=new] #reset {
+  min-height: 423px;
+  padding: 40px 17px 80px;
+  text-align: center;
+  width: 722px;
+}
+
+html[oobe=new] #reset #reset-warning-msg {
+  color: #606060;
+  font-size: 22px;
+  padding: 5px 45px 30px;
+}
+
+html[oobe=new] #reset #reset-warning-details {
+  color: #606060;
+  font-size: 16px;
+  padding: 35px 40px 80px;
+}
+
+html[oobe=new] #reset #reset-controls {
+  -webkit-box-pack: center;
+  bottom: 80px;
+}
+
 html[oobe=new] #gaia-signin {
   height: 609px;
   padding: 70px 17px 69px;    /* Screen has no controls. */
@@ -771,33 +797,36 @@ html[oobe=old] .step-controls {
 }
 
 #oobe.connect #continue-button,
-#oobe.eula #back-button,
 #oobe.eula #accept-button,
-#oobe.signin #signin-button,
-#oobe.user-image #ok-button,
+#oobe.eula #back-button,
 #oobe.oauth-enrollment #oauth-enroll-cancel-button,
-#oobe.oauth-enrollment #oauth-enroll-try-again-button,
+#oobe.oauth-enrollment #oauth-enroll-done-button,
 #oobe.oauth-enrollment #oauth-enroll-explain-button,
-#oobe.oauth-enrollment #oauth-enroll-done-button {
+#oobe.oauth-enrollment #oauth-enroll-try-again-button,
+#oobe.reset #reset-button,
+#oobe.reset #reset-cancel-button,
+#oobe.signin #signin-button,
+#oobe.user-image #ok-button {
   display: block;
 }
 
 #oobe.connect #connect-dot,
-#oobe.eula #eula-dot,
-#oobe.update #update-dot,
-#oobe.signin #signin-dot,
-#oobe.gaia-signin #gaia-signin-dot,
-#oobe.enrollment #signin-dot,
 #oobe.enrollment #gaia-signin-dot,
-#oobe.oauth-enrollment #signin-dot,
+#oobe.enrollment #signin-dot,
+#oobe.eula #eula-dot,
+#oobe.gaia-signin #gaia-signin-dot,
 #oobe.oauth-enrollment #gaia-signin-dot,
+#oobe.oauth-enrollment #signin-dot,
+#oobe.signin #signin-dot,
+#oobe.update #update-dot,
 #oobe.user-image #user-image-dot {
   opacity: 1;
 }
 
 #account-picker-dot,
 #enrollment-dot,
-#oauth-enrollment-dot {
+#oauth-enrollment-dot,
+#reset-dot {
   display: none;
 }
 

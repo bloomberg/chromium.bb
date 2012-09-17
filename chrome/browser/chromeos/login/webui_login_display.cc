@@ -212,6 +212,11 @@ void WebUILoginDisplay::ShowEnterpriseEnrollmentScreen() {
     delegate_->OnStartEnterpriseEnrollment();
 }
 
+void WebUILoginDisplay::ShowResetScreen() {
+  if (delegate_)
+    delegate_->OnStartDeviceReset();
+}
+
 void WebUILoginDisplay::SetWebUIHandler(
     LoginDisplayWebUIHandler* webui_handler) {
   webui_handler_ = webui_handler;

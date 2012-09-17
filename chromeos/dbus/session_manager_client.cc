@@ -127,6 +127,16 @@ class SessionManagerClientImpl : public SessionManagerClient {
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
+  virtual void StartDeviceWipe() OVERRIDE {
+    dbus::MethodCall method_call(login_manager::kSessionManagerInterface,
+                                 login_manager::kSessionManagerStartDeviceWipe);
+    session_manager_proxy_->CallMethod(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&SessionManagerClientImpl::OnDeviceWipe,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
+
   virtual void RequestLockScreen() OVERRIDE {
     SimpleMethodCallToSessionManager(login_manager::kSessionManagerLockScreen);
   }
@@ -238,6 +248,13 @@ class SessionManagerClientImpl : public SessionManagerClient {
     LOG_IF(ERROR, !response)
         << "Failed to call "
         << login_manager::kSessionManagerStopSession;
+  }
+
+  // Called when kSessionManagerStopSession method is complete.
+  void OnDeviceWipe(dbus::Response* response) {
+    LOG_IF(ERROR, !response)
+        << "Failed to call "
+        << login_manager::kSessionManagerStartDeviceWipe;
   }
 
   // Called when kSessionManagerRetrievePolicy or
@@ -354,6 +371,7 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
   virtual void RestartEntd() OVERRIDE {}
   virtual void StartSession(const std::string& user_email) OVERRIDE {}
   virtual void StopSession() OVERRIDE {}
+  virtual void StartDeviceWipe() OVERRIDE {}
   virtual void RequestLockScreen() OVERRIDE {
     screen_locked_ = true;
     FOR_EACH_OBSERVER(Observer, observers_, LockScreen());

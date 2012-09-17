@@ -535,6 +535,9 @@ void SigninScreenHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("toggleEnrollmentScreen",
       base::Bind(&SigninScreenHandler::HandleToggleEnrollmentScreen,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("toggleResetScreen",
+      base::Bind(&SigninScreenHandler::HandleToggleResetScreen,
+                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback("launchHelpApp",
       base::Bind(&SigninScreenHandler::HandleLaunchHelpApp,
                  base::Unretained(this)));
@@ -926,6 +929,16 @@ void SigninScreenHandler::HandleToggleEnrollmentScreen(
     const base::ListValue* args) {
   if (delegate_)
     delegate_->ShowEnterpriseEnrollmentScreen();
+}
+
+void SigninScreenHandler::HandleToggleResetScreen(
+    const base::ListValue* args) {
+  if (delegate_ &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableFactoryReset) &&
+      !g_browser_process->browser_policy_connector()->IsEnterpriseManaged()) {
+    delegate_->ShowResetScreen();
+  }
 }
 
 void SigninScreenHandler::HandleLaunchHelpApp(const base::ListValue* args) {

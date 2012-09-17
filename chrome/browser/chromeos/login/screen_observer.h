@@ -34,6 +34,7 @@ class ScreenObserver {
     REGISTRATION_SKIPPED,
     ENTERPRISE_ENROLLMENT_COMPLETED,
     ENTERPRISE_AUTO_MAGIC_ENROLLMENT_COMPLETED,
+    RESET_CANCELED,
     EXIT_CODES_COUNT  // not a real code, must be the last
   };
 

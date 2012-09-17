@@ -60,6 +60,7 @@ class WebUIScreenLocker : public WebUILoginView,
   virtual void Signout() OVERRIDE;
   virtual void OnUserSelected(const std::string& username) OVERRIDE;
   virtual void OnStartEnterpriseEnrollment() OVERRIDE;
+  virtual void OnStartDeviceReset() OVERRIDE;
 
   // content::NotificationObserver (via WebUILoginView) implementation.
   virtual void Observe(int type,

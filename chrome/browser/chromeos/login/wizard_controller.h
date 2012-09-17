@@ -33,6 +33,7 @@ class LoginDisplayHost;
 class NetworkScreen;
 class OobeDisplay;
 class RegistrationScreen;
+class ResetScreen;
 class UpdateScreen;
 class UserImageScreen;
 class WizardScreen;
@@ -135,6 +136,7 @@ class WizardController : public ScreenObserver {
   RegistrationScreen* GetRegistrationScreen();
   HTMLPageScreen* GetHTMLPageScreen();
   EnterpriseEnrollmentScreen* GetEnterpriseEnrollmentScreen();
+  ResetScreen* GetResetScreen();
 
   // Returns a pointer to the current screen or NULL if there's no such
   // screen.
@@ -153,6 +155,7 @@ class WizardController : public ScreenObserver {
   static const char kEulaScreenName[];
   static const char kHTMLPageScreenName[];
   static const char kEnterpriseEnrollmentScreenName[];
+  static const char kResetScreenName[];
 
  private:
   // Show specific screen.
@@ -163,6 +166,7 @@ class WizardController : public ScreenObserver {
   void ShowRegistrationScreen();
   void ShowHTMLPageScreen();
   void ShowEnterpriseEnrollmentScreen();
+  void ShowResetScreen();
 
   // Shows images login screen.
   void ShowLoginScreen();
@@ -184,6 +188,7 @@ class WizardController : public ScreenObserver {
   void OnRegistrationSkipped();
   void OnEnterpriseEnrollmentDone();
   void OnEnterpriseAutoEnrollmentDone();
+  void OnResetCanceled();
   void OnOOBECompleted();
 
   // Shows update screen and starts update process.
@@ -227,12 +232,16 @@ class WizardController : public ScreenObserver {
   scoped_ptr<UserImageScreen> user_image_screen_;
   scoped_ptr<EulaScreen> eula_screen_;
   scoped_ptr<RegistrationScreen> registration_screen_;
+  scoped_ptr<ResetScreen> reset_screen_;
   scoped_ptr<HTMLPageScreen> html_page_screen_;
   scoped_ptr<EnterpriseEnrollmentScreen>
       enterprise_enrollment_screen_;
 
   // Screen that's currently active.
   WizardScreen* current_screen_;
+
+  // Screen that was active before, or NULL for login screen.
+  WizardScreen* previous_screen_;
 
   std::string username_;
   std::string password_;

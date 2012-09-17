@@ -51,6 +51,7 @@ const char kViewClassName[] = "browser/chromeos/login/WebUILoginView";
 const char kAccelNameCancel[] = "cancel";
 const char kAccelNameEnrollment[] = "enrollment";
 const char kAccelNameVersion[] = "version";
+const char kAccelNameReset[] = "reset";
 
 // Observes IPC messages from the FrameSniffer and notifies JS if error
 // appears.
@@ -130,6 +131,9 @@ WebUILoginView::WebUILoginView()
       kAccelNameEnrollment;
   accel_map_[ui::Accelerator(ui::VKEY_V, ui::EF_ALT_DOWN)] =
       kAccelNameVersion;
+  accel_map_[ui::Accelerator(ui::VKEY_R,
+                             ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)] =
+      kAccelNameReset;
 
   for (AccelMap::iterator i(accel_map_.begin()); i != accel_map_.end(); ++i)
     AddAccelerator(i->first);

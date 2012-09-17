@@ -93,6 +93,9 @@ class SigninScreenHandlerDelegate {
   // Shows Enterprise Enrollment screen.
   virtual void ShowEnterpriseEnrollmentScreen() = 0;
 
+  // Shows Reset screen.
+  virtual void ShowResetScreen() = 0;
+
   // Let the delegate know about the handler it is supposed to be using.
   virtual void SetWebUIHandler(LoginDisplayWebUIHandler* webui_handler) = 0;
 
@@ -207,6 +210,7 @@ class SigninScreenHandler : public BaseScreenHandler,
   void HandleRemoveUser(const base::ListValue* args);
   void HandleShowAddUser(const base::ListValue* args);
   void HandleToggleEnrollmentScreen(const base::ListValue* args);
+  void HandleToggleResetScreen(const base::ListValue* args);
   void HandleLaunchHelpApp(const base::ListValue* args);
   void HandleCreateAccount(const base::ListValue* args);
   void HandleAccountPickerReady(const base::ListValue* args);

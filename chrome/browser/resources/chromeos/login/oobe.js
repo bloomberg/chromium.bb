@@ -69,6 +69,7 @@ cr.define('cr.ui', function() {
     oobe.EulaScreen.register();
     oobe.UpdateScreen.register();
     oobe.OAuthEnrollmentScreen.register();
+    oobe.ResetScreen.register();
     login.AccountPickerScreen.register();
     login.GaiaSigninScreen.register();
     oobe.UserImageScreen.register(/* lazyInit= */ false);

@@ -61,6 +61,7 @@ class DeviceSettingsTestHelper : public SessionManagerClient {
   virtual void RestartEntd() OVERRIDE;
   virtual void StartSession(const std::string& user_email) OVERRIDE;
   virtual void StopSession() OVERRIDE;
+  virtual void StartDeviceWipe() OVERRIDE;
   virtual void RequestLockScreen() OVERRIDE;
   virtual void NotifyLockScreenShown() OVERRIDE;
   virtual void RequestUnlockScreen() OVERRIDE;

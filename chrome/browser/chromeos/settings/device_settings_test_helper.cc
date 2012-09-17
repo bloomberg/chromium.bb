@@ -77,6 +77,8 @@ void DeviceSettingsTestHelper::StartSession(const std::string& user_email) {}
 
 void DeviceSettingsTestHelper::StopSession() {}
 
+void DeviceSettingsTestHelper::StartDeviceWipe() {}
+
 void DeviceSettingsTestHelper::RequestLockScreen() {}
 
 void DeviceSettingsTestHelper::NotifyLockScreenShown() {}

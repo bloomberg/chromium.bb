@@ -54,6 +54,7 @@ class WebUILoginDisplay : public LoginDisplay,
   virtual void OnUserSelected(const std::string& username) OVERRIDE;
   virtual void RemoveUser(const std::string& username) OVERRIDE;
   virtual void ShowEnterpriseEnrollmentScreen() OVERRIDE;
+  virtual void ShowResetScreen() OVERRIDE;
   virtual void SetWebUIHandler(
       LoginDisplayWebUIHandler* webui_handler) OVERRIDE;
   virtual void ShowSigninScreenForCreds(const std::string& username,

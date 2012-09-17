@@ -42,6 +42,7 @@ class OobeUI : public OobeDisplay,
   virtual EulaScreenActor* GetEulaScreenActor() OVERRIDE;
   virtual EnterpriseEnrollmentScreenActor* GetEnterpriseEnrollmentScreenActor()
       OVERRIDE;
+  virtual ResetScreenActor* GetResetScreenActor() OVERRIDE;
   virtual UserImageScreenActor* GetUserImageScreenActor() OVERRIDE;
   virtual ViewScreenDelegate* GetRegistrationScreenActor() OVERRIDE;
   virtual ViewScreenDelegate* GetHTMLPageScreenActor() OVERRIDE;
@@ -72,6 +73,7 @@ class OobeUI : public OobeDisplay,
   NetworkScreenActor* network_screen_actor_;
   EulaScreenActor* eula_screen_actor_;
   EnterpriseEnrollmentScreenActor* enterprise_enrollment_screen_actor_;
+  ResetScreenActor* reset_screen_actor_;
 
   // Reference to SigninScreenHandler that handles sign-in screen requrests and
   // forward calls from native code to JS side.

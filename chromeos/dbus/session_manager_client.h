@@ -62,6 +62,9 @@ class CHROMEOS_EXPORT SessionManagerClient {
   // Stops the current session.
   virtual void StopSession() = 0;
 
+  // Starts the factory reset.
+  virtual void StartDeviceWipe() = 0;
+
   // Locks the screen.
   virtual void RequestLockScreen() = 0;
 

@@ -19,6 +19,7 @@
 /** @const */ var ACCELERATOR_CANCEL = 'cancel';
 /** @const */ var ACCELERATOR_ENROLLMENT = 'enrollment';
 /** @const */ var ACCELERATOR_VERSION = 'version';
+/** @const */ var ACCELERATOR_RESET = 'reset';
 
 /* Help topic identifiers. */
 /** @const */ var HELP_TOPIC_ENTERPRISE_REPORTING = 2535613;
@@ -116,6 +117,12 @@ cr.define('cr.ui.login', function() {
       } else if (name == ACCELERATOR_VERSION) {
         if (this.allowToggleVersion_)
           $('version-labels').hidden = !$('version-labels').hidden;
+      } else if (name == ACCELERATOR_RESET) {
+        var currentStepId = this.screens_[this.currentStep_];
+        if (currentStepId == SCREEN_GAIA_SIGNIN ||
+            currentStepId == SCREEN_ACCOUNT_PICKER) {
+          chrome.send('toggleResetScreen');
+        }
       }
     },
 

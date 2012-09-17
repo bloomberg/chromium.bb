@@ -662,6 +662,7 @@
       <structure type="chrome_scaled_image" name="IDR_PROFILE_EDIT_PRESSED" file="profile_edit_pressed.png" />
       <if expr="pp_ifdef('chromeos')">
         <structure type="chrome_scaled_image" name="IDR_PROFILE_PICTURE_LOADING" file="profile_loading.png" />
+        <structure type="chrome_scaled_image" name="IDR_RESET_WARNING" file="reset_warning.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_PROFILE_SELECTED" file="profile_selected.png" />
       <structure type="chrome_scaled_image" name="IDR_REGISTER_PROTOCOL_HANDLER_LOCATIONBAR_ICON" file="webintents.png" />

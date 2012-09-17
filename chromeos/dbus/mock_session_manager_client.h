@@ -26,6 +26,7 @@ class MockSessionManagerClient : public SessionManagerClient {
   MOCK_METHOD2(RestartJob, void(int, const std::string&));
   MOCK_METHOD1(StartSession, void(const std::string&));
   MOCK_METHOD0(StopSession, void(void));
+  MOCK_METHOD0(StartDeviceWipe, void(void));
   MOCK_METHOD0(RequestLockScreen, void(void));
   MOCK_METHOD0(NotifyLockScreenShown, void(void));
   MOCK_METHOD0(RequestUnlockScreen, void(void));

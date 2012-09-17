@@ -79,6 +79,7 @@ class ExistingUserController : public LoginDisplay::Delegate,
   virtual void LoginAsGuest() OVERRIDE;
   virtual void OnUserSelected(const std::string& username) OVERRIDE;
   virtual void OnStartEnterpriseEnrollment() OVERRIDE;
+  virtual void OnStartDeviceReset() OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -158,6 +159,9 @@ class ExistingUserController : public LoginDisplay::Delegate,
   // easily cancel the enrollment. In that case, |user| is the user name that
   // first logged in.
   void ShowEnrollmentScreen(bool forced, const std::string& user);
+
+  // Shows "reset device" screen.
+  void ShowResetScreen();
 
   // Invoked to complete login. Login might be suspended if auto-enrollment
   // has to be performed, and will resume once auto-enrollment completes.

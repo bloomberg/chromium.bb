@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/login/mock_network_screen.h"
 #include "chrome/browser/chromeos/login/mock_update_screen.h"
 #include "chrome/browser/chromeos/login/network_screen.h"
+#include "chrome/browser/chromeos/login/reset_screen.h"
 #include "chrome/browser/chromeos/login/user_image_screen.h"
 #include "chrome/browser/chromeos/login/view_screen.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -305,9 +306,27 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
   MessageLoop::current()->RunAllPending();
 }
 
+IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowResetScreen) {
+  EXPECT_EQ(WizardController::default_controller()->GetNetworkScreen(),
+            WizardController::default_controller()->current_screen());
+
+  BaseLoginDisplayHost::default_host()->StartSignInScreen();
+  EXPECT_FALSE(ExistingUserController::current_controller() == NULL);
+  ExistingUserController::current_controller()->OnStartDeviceReset();
+
+  ResetScreen* screen =
+      WizardController::default_controller()->GetResetScreen();
+  EXPECT_EQ(screen, WizardController::default_controller()->current_screen());
+
+  // After reset screen is canceled, it returns to sign-in screen.
+  // And this destroys WizardController.
+  OnExit(ScreenObserver::RESET_CANCELED);
+  EXPECT_FALSE(ExistingUserController::current_controller() == NULL);
+}
+
 // TODO(nkostylev): Add test for WebUI accelerators http://crosbug.com/22571
 
-COMPILE_ASSERT(ScreenObserver::EXIT_CODES_COUNT == 13,
+COMPILE_ASSERT(ScreenObserver::EXIT_CODES_COUNT == 14,
                add_tests_for_new_control_flow_you_just_introduced);
 
 }  // namespace chromeos

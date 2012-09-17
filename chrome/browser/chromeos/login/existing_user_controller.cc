@@ -471,6 +471,10 @@ void ExistingUserController::OnStartEnterpriseEnrollment() {
                  weak_factory_.GetWeakPtr()));
 }
 
+void ExistingUserController::OnStartDeviceReset() {
+  ShowResetScreen();
+}
+
 void ExistingUserController::OnEnrollmentOwnershipCheckCompleted(
     DeviceSettingsService::OwnershipStatus status,
     bool current_user_is_owner) {
@@ -502,6 +506,11 @@ void ExistingUserController::ShowEnrollmentScreen(bool is_auto_enrollment,
     params->SetString("user", user);
   }
   host_->StartWizard(WizardController::kEnterpriseEnrollmentScreenName, params);
+  login_display_->OnFadeOut();
+}
+
+void ExistingUserController::ShowResetScreen() {
+  host_->StartWizard(WizardController::kResetScreenName, NULL);
   login_display_->OnFadeOut();
 }
 

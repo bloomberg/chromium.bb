@@ -194,6 +194,10 @@ void WebUIScreenLocker::OnStartEnterpriseEnrollment() {
   NOTREACHED();
 }
 
+void WebUIScreenLocker::OnStartDeviceReset() {
+  NOTREACHED();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // LockWindow::Observer implementation:
 
