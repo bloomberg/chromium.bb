@@ -36,39 +36,34 @@
 #define DUMMY_API_TOKEN "dummytoken"
 
 #if !defined(GOOGLE_API_KEY)
-#define GOOGLE_API_KEY DUMMY_API_TOKEN
+// TODO(joi): This is temporary; switch to DUMMY_API_TOKEN once people
+// have had some time to install API keys per
+// http://chromium.org/developers/how-tos/api-keys
+#define GOOGLE_API_KEY "AIzaSyBHDrl33hwRp4rMQY0ziRbj8K9LPA6vUCY"
 #endif
 
 #if !defined(GOOGLE_CLIENT_ID_MAIN)
-// TODO(joi): Use DUMMY_API_TOKEN here once folks on chromium-dev have
-// had a couple of days to update their include.gypi.
-#define GOOGLE_CLIENT_ID_MAIN "77185425430.apps.googleusercontent.com"
+#define GOOGLE_CLIENT_ID_MAIN DUMMY_API_TOKEN
 #endif
 
 #if !defined(GOOGLE_CLIENT_SECRET_MAIN)
-// TODO(joi): As above.
-#define GOOGLE_CLIENT_SECRET_MAIN "OTJgUOQcT7lO7GsGZq2G4IlT"
+#define GOOGLE_CLIENT_SECRET_MAIN DUMMY_API_TOKEN
 #endif
 
 #if !defined(GOOGLE_CLIENT_ID_CLOUD_PRINT)
-// TODO(joi): As above.
-#define GOOGLE_CLIENT_ID_CLOUD_PRINT "551556820943.apps.googleusercontent.com"
+#define GOOGLE_CLIENT_ID_CLOUD_PRINT DUMMY_API_TOKEN
 #endif
 
 #if !defined(GOOGLE_CLIENT_SECRET_CLOUD_PRINT)
-// TODO(joi): As above.
-#define GOOGLE_CLIENT_SECRET_CLOUD_PRINT "u3/mp8CgLFxh4uiX1855/MHe"
+#define GOOGLE_CLIENT_SECRET_CLOUD_PRINT DUMMY_API_TOKEN
 #endif
 
 #if !defined(GOOGLE_CLIENT_ID_REMOTING)
-// TODO(joi): As above.
-#define GOOGLE_CLIENT_ID_REMOTING \
-  "440925447803-avn2sj1kc099s0r7v62je5s339mu0am1.apps.googleusercontent.com"
+#define GOOGLE_CLIENT_ID_REMOTING DUMMY_API_TOKEN
 #endif
 
 #if !defined(GOOGLE_CLIENT_SECRET_REMOTING)
-// TODO(joi): As above.
-#define GOOGLE_CLIENT_SECRET_REMOTING "Bgur6DFiOMM1h8x-AQpuTQlK"
+#define GOOGLE_CLIENT_SECRET_REMOTING DUMMY_API_TOKEN
 #endif
 
 // These are used as shortcuts for developers and users providing
@@ -76,11 +71,15 @@
 // variables.  If set, they will be used to replace any of the client
 // IDs and secrets above that have not been set (and only those; they
 // will not override already-set values).
+//
+// TODO(joi): This is temporary; make both blank once people have had
+// some time to install API keys per
+// http://chromium.org/developers/how-tos/api-keys
 #if !defined(GOOGLE_DEFAULT_CLIENT_ID)
-#define GOOGLE_DEFAULT_CLIENT_ID ""
+#define GOOGLE_DEFAULT_CLIENT_ID "609716072145.apps.googleusercontent.com"
 #endif
 #if !defined(GOOGLE_DEFAULT_CLIENT_SECRET)
-#define GOOGLE_DEFAULT_CLIENT_SECRET ""
+#define GOOGLE_DEFAULT_CLIENT_SECRET "WF4uG3gJzEH0KLpS7OuFBDux"
 #endif
 
 namespace switches {
