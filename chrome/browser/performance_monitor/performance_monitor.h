@@ -131,9 +131,8 @@ class PerformanceMonitor : public content::NotificationObserver {
   void AddEventOnBackgroundThread(scoped_ptr<Event> event);
 
   // Since Database::AddMetric() is overloaded, base::Bind() does not work and
-  // we need a helper function. Deliberately not const & so that we will
-  // construct a new metric on the background thread.
-  void AddMetricOnBackgroundThread(Metric metric);
+  // we need a helper function.
+  void AddMetricOnBackgroundThread(MetricType type, const std::string& value);
 
   // Notify any listeners that PerformanceMonitor has finished the initializing.
   void NotifyInitialized();

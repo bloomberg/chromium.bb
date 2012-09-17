@@ -5,12 +5,24 @@
 #include "chrome/browser/ui/webui/performance_monitor/performance_monitor_ui_constants.h"
 
 #include "base/logging.h"
-#include "chrome/browser/performance_monitor/constants.h"
 #include "base/time.h"
 
 namespace performance_monitor {
 
 namespace {
+
+// Memory measurements
+const int64 kBytesPerKilobyte = 1 << 10;
+const int64 kBytesPerMegabyte = kBytesPerKilobyte * (1 << 10);
+const int64 kBytesPerGigabyte = kBytesPerMegabyte * (1 << 10);
+const int64 kBytesPerTerabyte = kBytesPerGigabyte * (1 << 10);
+
+// Time measurements - Most of these are imported from base/time.h
+// These units are used for display (and it's related calculations), not for
+// any mathematical analysis. Thus we can estimate for values without an exact
+// conversion.
+const int64 kMicrosecondsPerMonth = base::Time::kMicrosecondsPerDay * 30;
+const int64 kMicrosecondsPerYear = base::Time::kMicrosecondsPerDay * 365;
 
 // Keep this list synced with the enum declared in the .h file.
 const UnitDetails kUnitDetailsList[] = {

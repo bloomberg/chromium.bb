@@ -21,8 +21,9 @@ namespace performance_monitor {
 namespace {
 // Needed because Database::AddMetric is overloaded, so base::Bind doesn't work.
 void AddMetricToDatabaseOnBackgroundThread(Database* database,
-                                           Metric metric) {
-  database->AddMetric(metric);
+                                           MetricType metric,
+                                           std::string value) {
+  database->AddMetric(metric, value);
 }
 
 }  // namespace
@@ -113,11 +114,9 @@ void StartupTimer::InsertElapsedStartupTime() {
       base::Bind(
           &AddMetricToDatabaseOnBackgroundThread,
           base::Unretained(PerformanceMonitor::GetInstance()->database()),
-          Metric(startup_type_ == STARTUP_NORMAL ? METRIC_STARTUP_TIME
-                                                 : METRIC_TEST_STARTUP_TIME,
-                 base::Time::Now(),
-                 static_cast<double>(
-                     elapsed_startup_time_.ToInternalValue()))));
+          startup_type_ == STARTUP_NORMAL ? METRIC_STARTUP_TIME
+                                          : METRIC_TEST_STARTUP_TIME,
+          base::Int64ToString(elapsed_startup_time_.ToInternalValue())));
 }
 
 void StartupTimer::InsertElapsedSessionRestoreTime() {
@@ -130,9 +129,8 @@ void StartupTimer::InsertElapsedSessionRestoreTime() {
         base::Bind(
             &AddMetricToDatabaseOnBackgroundThread,
             base::Unretained(PerformanceMonitor::GetInstance()->database()),
-            Metric(METRIC_SESSION_RESTORE_TIME,
-                   base::Time::Now(),
-                   static_cast<double>(iter->ToInternalValue()))));
+            METRIC_SESSION_RESTORE_TIME,
+            base::Int64ToString(iter->ToInternalValue())));
   }
 }
 

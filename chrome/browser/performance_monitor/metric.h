@@ -32,25 +32,10 @@ METRIC_NUMBER_OF_METRICS
 struct Metric {
  public:
   Metric();
-  Metric(MetricType metric_type,
-         const base::Time& metric_time,
-         const double metric_value);
-  Metric(MetricType metric_type,
-         const std::string& metric_time,
-         const std::string& metric_value);
+  Metric(const base::Time& metric_time, const double metric_value);
+  Metric(const std::string& metric_time, const std::string& metric_value);
   ~Metric();
 
-  // Check the value in the metric to make sure that it is reasonable. Since
-  // some metric-gathering methods will fail and return incorrect values, we
-  // need to try to weed these out as best we can.
-  bool IsValid() const;
-
-  // This converts the double stored in value to a string format. This will
-  // not perform any checking on the validity of the metric, and only makes
-  // sense if the metric IsValid().
-  std::string ValueAsString() const;
-
-  MetricType type;
   base::Time time;
   double value;
 };

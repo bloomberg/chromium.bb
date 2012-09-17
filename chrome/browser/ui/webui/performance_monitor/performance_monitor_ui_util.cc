@@ -20,7 +20,6 @@ double GetConversionFactor(UnitDetails from, UnitDetails to) {
 }
 
 scoped_ptr<Database::MetricVector> AggregateMetric(
-    MetricType type,
     const Database::MetricVector* metrics,
     const base::Time& start,
     const base::TimeDelta& resolution) {
@@ -57,7 +56,7 @@ scoped_ptr<Database::MetricVector> AggregateMetric(
     // at the end of the window.
     integrated += metric_value * (window_end - last_sample_time).InSecondsF();
     double average = integrated / resolution.InSecondsF();
-    results->push_back(Metric(type, window_end, average));
+    results->push_back(Metric(window_end, average));
   }
   return results.Pass();
 }

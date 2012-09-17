@@ -18,8 +18,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
-#include "third_party/leveldatabase/src/include/leveldb/iterator.h"
-#include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 
 namespace performance_monitor {
 namespace {
@@ -50,17 +48,6 @@ double StringToDouble(const std::string& s) {
   if (!base::StringToDouble(s, &value))
     LOG(ERROR) << "Failed to convert " << s << " to double.";
   return value;
-}
-
-// Returns an event from the given JSON string; the scoped_ptr will be NULL if
-// we are unable to properly parse the JSON.
-scoped_ptr<Event> EventFromJSON(const std::string& data) {
-  Value* value = base::JSONReader::Read(data);
-  DictionaryValue* dict = NULL;
-  if (!value || !value->GetAsDictionary(&dict))
-    return scoped_ptr<Event>();
-
-  return Event::FromValue(scoped_ptr<DictionaryValue>(dict));
 }
 
 }  // namespace
@@ -158,7 +145,6 @@ Database::EventVector Database::GetEvents(EventType type,
       key_builder_->CreateEventKey(start, EVENT_UNDEFINED);
   std::string end_key =
       key_builder_->CreateEventKey(end, EVENT_NUMBER_OF_EVENTS);
-  leveldb::WriteBatch invalid_entries;
   scoped_ptr<leveldb::Iterator> it(event_db_->NewIterator(read_options_));
   for (it->Seek(start_key);
        it->Valid() && it->key().ToString() <= end_key;
@@ -169,17 +155,18 @@ Database::EventVector Database::GetEvents(EventType type,
       if (key_type != type)
         continue;
     }
-    scoped_ptr<Event> event = EventFromJSON(it->value().ToString());
-    if (!event.get()) {
-      invalid_entries.Delete(it->key());
-      LOG(ERROR) << "Found invalid event in the database. JSON: '"
-                 <<  it->value().ToString()
-                 << "'. Erasing event from the database.";
+    base::DictionaryValue* dict = NULL;
+    if (!base::JSONReader::Read(
+        it->value().ToString())->GetAsDictionary(&dict)) {
+      LOG(ERROR) << "Unable to convert database event to JSON.";
       continue;
     }
+    scoped_ptr<Event> event =
+        Event::FromValue(scoped_ptr<base::DictionaryValue>(dict));
+    if (!event.get())
+      continue;
     events.push_back(linked_ptr<Event>(event.release()));
   }
-  event_db_->Write(write_options_, &invalid_entries);
   return events;
 }
 
@@ -203,34 +190,28 @@ Database::EventTypeSet Database::GetEventTypes(const base::Time& start,
 }
 
 bool Database::AddMetric(const std::string& activity,
-                         const Metric& metric) {
+                         MetricType metric,
+                         const std::string& value) {
   CHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  if (!metric.IsValid()) {
-    LOG(ERROR) << "Metric to be added is invalid. Type: " << metric.type
-               << ", Time: " << metric.time.ToInternalValue()
-               << ", Value: " << metric.value << ". Ignoring.";
-    return false;
-  }
-
   UpdateActiveInterval();
+  base::Time timestamp = clock_->GetTime();
   std::string recent_key =
-      key_builder_->CreateRecentKey(metric.time, metric.type, activity);
+      key_builder_->CreateRecentKey(timestamp, metric, activity);
   std::string metric_key =
-      key_builder_->CreateMetricKey(metric.time, metric.type, activity);
+      key_builder_->CreateMetricKey(timestamp, metric, activity);
   std::string recent_map_key =
-      key_builder_->CreateRecentMapKey(metric.type, activity);
+      key_builder_->CreateRecentMapKey(metric, activity);
   // Use recent_map_ to quickly find the key that must be removed.
   RecentMap::iterator old_it = recent_map_.find(recent_map_key);
   if (old_it != recent_map_.end())
     recent_db_->Delete(write_options_, old_it->second);
   recent_map_[recent_map_key] = recent_key;
   leveldb::Status recent_status =
-      recent_db_->Put(write_options_, recent_key, metric.ValueAsString());
+      recent_db_->Put(write_options_, recent_key, value);
   leveldb::Status metric_status =
-      metric_db_->Put(write_options_, metric_key, metric.ValueAsString());
+      metric_db_->Put(write_options_, metric_key, value);
 
-  bool max_value_success =
-      UpdateMaxValue(activity, metric.type, metric.ValueAsString());
+  bool max_value_success = UpdateMaxValue(activity, metric, value);
   return recent_status.ok() && metric_status.ok() && max_value_success;
 }
 
@@ -340,9 +321,7 @@ bool Database::GetRecentStatsForActivityAndMetric(const std::string& activity,
   std::string result;
   leveldb::Status status = recent_db_->Get(read_options_, recent_key, &result);
   if (status.ok())
-    *metric = Metric(metric_type,
-                     key_builder_->SplitRecentKey(recent_key).time,
-                     result);
+    *metric = Metric(key_builder_->SplitRecentKey(recent_key).time, result);
   return status.ok();
 }
 
@@ -357,27 +336,15 @@ Database::MetricVector Database::GetStatsForActivityAndMetric(
       key_builder_->CreateMetricKey(start, metric_type, activity);
   std::string end_key =
       key_builder_->CreateMetricKey(end, metric_type, activity);
-  leveldb::WriteBatch invalid_entries;
   scoped_ptr<leveldb::Iterator> it(metric_db_->NewIterator(read_options_));
   for (it->Seek(start_key);
        it->Valid() && it->key().ToString() <= end_key;
        it->Next()) {
     MetricKey split_key =
         key_builder_->SplitMetricKey(it->key().ToString());
-    if (split_key.activity == activity) {
-      Metric metric(metric_type, split_key.time, it->value().ToString());
-      if (!metric.IsValid()) {
-        invalid_entries.Delete(it->key());
-        LOG(ERROR) << "Found bad metric in the database. Type: "
-                   << metric.type << ", Time: " << metric.time.ToInternalValue()
-                   << ", Value: " << metric.value
-                   << ". Erasing metric from database.";
-        continue;
-      }
-      results.push_back(metric);
-    }
+    if (split_key.activity == activity)
+      results.push_back(Metric(split_key.time, it->value().ToString()));
   }
-  metric_db_->Write(write_options_, &invalid_entries);
   return results;
 }
 
@@ -391,7 +358,6 @@ Database::MetricVectorMap Database::GetStatsForMetricByActivity(
       key_builder_->CreateMetricKey(start, metric_type, std::string());
   std::string end_key =
       key_builder_->CreateMetricKey(end, metric_type, std::string());
-  leveldb::WriteBatch invalid_entries;
   scoped_ptr<leveldb::Iterator> it(metric_db_->NewIterator(read_options_));
   for (it->Seek(start_key);
        it->Valid() && it->key().ToString() <= end_key;
@@ -401,18 +367,9 @@ Database::MetricVectorMap Database::GetStatsForMetricByActivity(
       results[split_key.activity] =
           linked_ptr<MetricVector >(new MetricVector());
     }
-    Metric metric(metric_type, split_key.time, it->value().ToString());
-    if (!metric.IsValid()) {
-      invalid_entries.Delete(it->key());
-      LOG(ERROR) << "Found bad metric in the database. Type: "
-                 << metric.type << ", Time: " << metric.time.ToInternalValue()
-                 << ", Value: " << metric.value
-                 << ". Erasing metric from database.";
-      continue;
-    }
-    results[split_key.activity]->push_back(metric);
+    results[split_key.activity]->push_back(
+        Metric(split_key.time, it->value().ToString()));
   }
-  metric_db_->Write(write_options_, &invalid_entries);
   return results;
 }
 
