@@ -56,59 +56,17 @@ class ApplyControlDataUpdatesTest : public SyncerCommandTest {
   DISALLOW_COPY_AND_ASSIGN(ApplyControlDataUpdatesTest);
 };
 
+// Verify that applying a nigori node sets initial sync ended properly,
+// updates the set of encrypted types, and updates the cryptographer.
 TEST_F(ApplyControlDataUpdatesTest, NigoriUpdate) {
   // Storing the cryptographer separately is bad, but for this test we
   // know it's safe.
   Cryptographer* cryptographer;
   ModelTypeSet encrypted_types;
-  encrypted_types.Put(PASSWORDS);
+  encrypted_types.PutAll(SyncEncryptionHandler::SensitiveTypes());
 
-  // We start with initial_sync_ended == false.  This is wrong, since would have
-  // no nigori node if that were the case.  Howerver, it makes it easier to
-  // verify that ApplyControlDataUpdates sets initial_sync_ended correctly.
-  EXPECT_FALSE(directory()->initial_sync_ended_types().Has(NIGORI));
-
-  {
-    syncable::ReadTransaction trans(FROM_HERE, directory());
-    cryptographer = directory()->GetCryptographer(&trans);
-    EXPECT_TRUE(directory()->GetNigoriHandler()->GetEncryptedTypes(&trans)
-        .Equals(encrypted_types));
-  }
-
-  // Nigori node updates should update the Cryptographer.
-  Cryptographer other_cryptographer(cryptographer->encryptor());
-  KeyParams params = {"localhost", "dummy", "foobar"};
-  other_cryptographer.AddKey(params);
-
-  sync_pb::EntitySpecifics specifics;
-  sync_pb::NigoriSpecifics* nigori = specifics.mutable_nigori();
-  other_cryptographer.GetKeys(nigori->mutable_encryption_keybag());
-  nigori->set_encrypt_everything(true);
-  entry_factory_->CreateUnappliedNewItem(
-      ModelTypeToRootTag(NIGORI), specifics, true);
-  EXPECT_FALSE(cryptographer->has_pending_keys());
-
-  ApplyControlDataUpdates(directory());
-
-  EXPECT_FALSE(cryptographer->is_ready());
-  EXPECT_TRUE(cryptographer->has_pending_keys());
-  {
-    syncable::ReadTransaction trans(FROM_HERE, directory());
-    EXPECT_TRUE(directory()->GetNigoriHandler()->GetEncryptedTypes(&trans)
-        .Equals(ModelTypeSet::All()));
-    EXPECT_TRUE(directory()->initial_sync_ended_types().Has(NIGORI));
-  }
-}
-
-TEST_F(ApplyControlDataUpdatesTest, NigoriUpdateForDisabledTypes) {
-  // Storing the cryptographer separately is bad, but for this test we
-  // know it's safe.
-  Cryptographer* cryptographer;
-  ModelTypeSet encrypted_types;
-  encrypted_types.Put(PASSWORDS);
-
-  // We start with initial_sync_ended == false.  This is wrong, since would have
-  // no nigori node if that were the case.  Howerver, it makes it easier to
+  // We start with initial_sync_ended == false.  This is wrong, since we would
+  // have no nigori node if that were the case.  However, it makes it easier to
   // verify that ApplyControlDataUpdates sets initial_sync_ended correctly.
   EXPECT_FALSE(directory()->initial_sync_ended_types().Has(NIGORI));
 
@@ -154,7 +112,7 @@ TEST_F(ApplyControlDataUpdatesTest, EncryptUnsyncedChanges) {
   // know it's safe.
   Cryptographer* cryptographer;
   ModelTypeSet encrypted_types;
-  encrypted_types.Put(PASSWORDS);
+  encrypted_types.PutAll(SyncEncryptionHandler::SensitiveTypes());
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     cryptographer = directory()->GetCryptographer(&trans);
@@ -258,12 +216,16 @@ TEST_F(ApplyControlDataUpdatesTest, EncryptUnsyncedChanges) {
   }
 }
 
+// Create some local unsynced and unencrypted changes. Receive a new nigori
+// node enabling their encryption but also introducing pending keys. Ensure
+// we apply the update properly without encrypting the unsynced changes or
+// breaking.
 TEST_F(ApplyControlDataUpdatesTest, CannotEncryptUnsyncedChanges) {
   // Storing the cryptographer separately is bad, but for this test we
   // know it's safe.
   Cryptographer* cryptographer;
   ModelTypeSet encrypted_types;
-  encrypted_types.Put(PASSWORDS);
+  encrypted_types.PutAll(SyncEncryptionHandler::SensitiveTypes());
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     cryptographer = directory()->GetCryptographer(&trans);
@@ -341,6 +303,568 @@ TEST_F(ApplyControlDataUpdatesTest, CannotEncryptUnsyncedChanges) {
     Syncer::UnsyncedMetaHandles handles;
     GetUnsyncedEntries(&trans, &handles);
     EXPECT_EQ(2*batch_s+1, handles.size());
+  }
+}
+
+// Verify we handle a nigori node conflict by merging encryption keys and
+// types, but preserve the custom passphrase state of the server.
+// Initial sync ended should be set.
+TEST_F(ApplyControlDataUpdatesTest,
+       NigoriConflictPendingKeysServerEncryptEverythingCustom) {
+  Cryptographer* cryptographer;
+  ModelTypeSet encrypted_types(SyncEncryptionHandler::SensitiveTypes());
+  KeyParams other_params = {"localhost", "dummy", "foobar"};
+  KeyParams local_params = {"localhost", "dummy", "local"};
+  {
+    syncable::ReadTransaction trans(FROM_HERE, directory());
+    cryptographer = directory()->GetCryptographer(&trans);
+    EXPECT_TRUE(encrypted_types.Equals(
+            directory()->GetNigoriHandler()->GetEncryptedTypes(&trans)));
+  }
+
+  // Set up a temporary cryptographer to generate new keys with.
+  Cryptographer other_cryptographer(cryptographer->encryptor());
+  other_cryptographer.AddKey(other_params);
+
+  // Create server specifics with pending keys, new encrypted types,
+  // and a custom passphrase (unmigrated).
+  sync_pb::EntitySpecifics server_specifics;
+  sync_pb::NigoriSpecifics* server_nigori = server_specifics.mutable_nigori();
+  other_cryptographer.GetKeys(server_nigori->mutable_encryption_keybag());
+  server_nigori->set_encrypt_everything(true);
+  server_nigori->set_keybag_is_frozen(true);
+  int64 nigori_handle =
+      entry_factory_->CreateUnappliedNewItem(kNigoriTag,
+                                             server_specifics,
+                                             true);
+
+  // Initialize the local cryptographer with the local keys.
+  cryptographer->AddKey(local_params);
+  EXPECT_TRUE(cryptographer->is_ready());
+
+  // Set up a local nigori with the local encryption keys and default encrypted
+  // types.
+  sync_pb::EntitySpecifics local_specifics;
+  sync_pb::NigoriSpecifics* local_nigori = local_specifics.mutable_nigori();
+  cryptographer->GetKeys(local_nigori->mutable_encryption_keybag());
+  local_nigori->set_encrypt_everything(false);
+  local_nigori->set_keybag_is_frozen(true);
+  ASSERT_TRUE(entry_factory_->SetLocalSpecificsForItem(
+          nigori_handle, local_specifics));
+  // Apply the update locally so that UpdateFromEncryptedTypes knows what state
+  // to use.
+  {
+    syncable::ReadTransaction trans(FROM_HERE, directory());
+    cryptographer = directory()->GetCryptographer(&trans);
+    directory()->GetNigoriHandler()->ApplyNigoriUpdate(
+        *local_nigori,
+        &trans);
+  }
+
+  EXPECT_TRUE(entry_factory_->GetIsUnsyncedForItem(nigori_handle));
+  EXPECT_TRUE(entry_factory_->GetIsUnappliedForItem(nigori_handle));
+  ApplyControlDataUpdates(directory());
+  EXPECT_TRUE(entry_factory_->GetIsUnsyncedForItem(nigori_handle));
+  EXPECT_FALSE(entry_factory_->GetIsUnappliedForItem(nigori_handle));
+
+  EXPECT_FALSE(cryptographer->is_ready());
+  EXPECT_TRUE(cryptographer->is_initialized());
+  EXPECT_TRUE(cryptographer->has_pending_keys());
+  EXPECT_TRUE(other_cryptographer.CanDecryptUsingDefaultKey(
+          entry_factory_->GetLocalSpecificsForItem(nigori_handle).
+              nigori().encryption_keybag()));
+  EXPECT_TRUE(entry_factory_->GetLocalSpecificsForItem(nigori_handle).
+      nigori().keybag_is_frozen());
+  EXPECT_TRUE(entry_factory_->GetLocalSpecificsForItem(nigori_handle).
+      nigori().encrypt_everything());
+  {
+    syncable::ReadTransaction trans(FROM_HERE, directory());
+    EXPECT_TRUE(directory()->GetNigoriHandler()->GetEncryptedTypes(&trans)
+        .Equals(ModelTypeSet::All()));
+    EXPECT_TRUE(directory()->initial_sync_ended_types().Has(NIGORI));
+  }
+}
+
+// Verify we handle a nigori node conflict by merging encryption keys and
+// types, but preserve the custom passphrase state of the server.
+// Initial sync ended should be set.
+TEST_F(ApplyControlDataUpdatesTest,
+       NigoriConflictPendingKeysLocalEncryptEverythingCustom) {
+  Cryptographer* cryptographer;
+  ModelTypeSet encrypted_types(SyncEncryptionHandler::SensitiveTypes());
+  KeyParams other_params = {"localhost", "dummy", "foobar"};
+  KeyParams local_params = {"localhost", "dummy", "local"};
+  {
+    syncable::ReadTransaction trans(FROM_HERE, directory());
+    cryptographer = directory()->GetCryptographer(&trans);
+    EXPECT_TRUE(encrypted_types.Equals(
+            directory()->GetNigoriHandler()->GetEncryptedTypes(&trans)));
+  }
+
+  // Set up a temporary cryptographer to generate new keys with.
+  Cryptographer other_cryptographer(cryptographer->encryptor());
+  other_cryptographer.AddKey(other_params);
+
+  // Create server specifics with pending keys, new encrypted types,
+  // and a custom passphrase (unmigrated).
+  sync_pb::EntitySpecifics server_specifics;
+  sync_pb::NigoriSpecifics* server_nigori = server_specifics.mutable_nigori();
+  other_cryptographer.GetKeys(server_nigori->mutable_encryption_keybag());
+  server_nigori->set_encrypt_everything(false);
+  server_nigori->set_keybag_is_frozen(false);
+  int64 nigori_handle =
+      entry_factory_->CreateUnappliedNewItem(kNigoriTag,
+                                             server_specifics,
+                                             true);
+
+  // Initialize the local cryptographer with the local keys.
+  cryptographer->AddKey(local_params);
+  EXPECT_TRUE(cryptographer->is_ready());
+
+  // Set up a local nigori with the local encryption keys and default encrypted
+  // types.
+  sync_pb::EntitySpecifics local_specifics;
+  sync_pb::NigoriSpecifics* local_nigori = local_specifics.mutable_nigori();
+  cryptographer->GetKeys(local_nigori->mutable_encryption_keybag());
+  local_nigori->set_encrypt_everything(true);
+  local_nigori->set_keybag_is_frozen(true);
+  ASSERT_TRUE(entry_factory_->SetLocalSpecificsForItem(
+          nigori_handle, local_specifics));
+  // Apply the update locally so that UpdateFromEncryptedTypes knows what state
+  // to use.
+  {
+    syncable::ReadTransaction trans(FROM_HERE, directory());
+    cryptographer = directory()->GetCryptographer(&trans);
+    directory()->GetNigoriHandler()->ApplyNigoriUpdate(
+        *local_nigori,
+        &trans);
+  }
+
+  EXPECT_TRUE(entry_factory_->GetIsUnsyncedForItem(nigori_handle));
+  EXPECT_TRUE(entry_factory_->GetIsUnappliedForItem(nigori_handle));
+  ApplyControlDataUpdates(directory());
+  EXPECT_TRUE(entry_factory_->GetIsUnsyncedForItem(nigori_handle));
+  EXPECT_FALSE(entry_factory_->GetIsUnappliedForItem(nigori_handle));
+
+  EXPECT_FALSE(cryptographer->is_ready());
+  EXPECT_TRUE(cryptographer->is_initialized());
+  EXPECT_TRUE(cryptographer->has_pending_keys());
+  EXPECT_TRUE(other_cryptographer.CanDecryptUsingDefaultKey(
+          entry_factory_->GetLocalSpecificsForItem(nigori_handle).
+              nigori().encryption_keybag()));
+  EXPECT_FALSE(entry_factory_->GetLocalSpecificsForItem(nigori_handle).
+      nigori().keybag_is_frozen());
+  EXPECT_TRUE(entry_factory_->GetLocalSpecificsForItem(nigori_handle).
+      nigori().encrypt_everything());
+  {
+    syncable::ReadTransaction trans(FROM_HERE, directory());
+    EXPECT_TRUE(directory()->GetNigoriHandler()->GetEncryptedTypes(&trans)
+        .Equals(ModelTypeSet::All()));
+    EXPECT_TRUE(directory()->initial_sync_ended_types().Has(NIGORI));
+  }
+}
+
+// If the conflicting nigori has a subset of the local keys, the conflict
+// resolution should preserve the full local keys. Initial sync ended should be
+// set.
+TEST_F(ApplyControlDataUpdatesTest,
+       NigoriConflictOldKeys) {
+  Cryptographer* cryptographer;
+  ModelTypeSet encrypted_types(SyncEncryptionHandler::SensitiveTypes());
+  KeyParams old_params = {"localhost", "dummy", "old"};
+  KeyParams new_params = {"localhost", "dummy", "new"};
+  {
+    syncable::ReadTransaction trans(FROM_HERE, directory());
+    cryptographer = directory()->GetCryptographer(&trans);
+    EXPECT_TRUE(encrypted_types.Equals(
+            directory()->GetNigoriHandler()->GetEncryptedTypes(&trans)));
+  }
+
+  // Set up the cryptographer with old keys
+  cryptographer->AddKey(old_params);
+
+  // Create server specifics with old keys and new encrypted types.
+  sync_pb::EntitySpecifics server_specifics;
+  sync_pb::NigoriSpecifics* server_nigori = server_specifics.mutable_nigori();
+  cryptographer->GetKeys(server_nigori->mutable_encryption_keybag());
+  server_nigori->set_encrypt_everything(true);
+  int64 nigori_handle =
+      entry_factory_->CreateUnappliedNewItem(kNigoriTag,
+                                             server_specifics,
+                                             true);
+
+  // Add the new keys to the cryptogrpaher
+  cryptographer->AddKey(new_params);
+  EXPECT_TRUE(cryptographer->is_ready());
+
+  // Set up a local nigori with the superset of keys.
+  sync_pb::EntitySpecifics local_specifics;
+  sync_pb::NigoriSpecifics* local_nigori = local_specifics.mutable_nigori();
+  cryptographer->GetKeys(local_nigori->mutable_encryption_keybag());
+  local_nigori->set_encrypt_everything(false);
+  ASSERT_TRUE(entry_factory_->SetLocalSpecificsForItem(
+          nigori_handle, local_specifics));
+  // Apply the update locally so that UpdateFromEncryptedTypes knows what state
+  // to use.
+  {
+    syncable::ReadTransaction trans(FROM_HERE, directory());
+    cryptographer = directory()->GetCryptographer(&trans);
+    directory()->GetNigoriHandler()->ApplyNigoriUpdate(
+        *local_nigori,
+        &trans);
+  }
+
+  EXPECT_TRUE(entry_factory_->GetIsUnsyncedForItem(nigori_handle));
+  EXPECT_TRUE(entry_factory_->GetIsUnappliedForItem(nigori_handle));
+  ApplyControlDataUpdates(directory());
+  EXPECT_TRUE(entry_factory_->GetIsUnsyncedForItem(nigori_handle));
+  EXPECT_FALSE(entry_factory_->GetIsUnappliedForItem(nigori_handle));
+
+  EXPECT_TRUE(cryptographer->is_ready());
+  EXPECT_TRUE(cryptographer->CanDecryptUsingDefaultKey(
+          entry_factory_->GetLocalSpecificsForItem(nigori_handle).
+              nigori().encryption_keybag()));
+  EXPECT_FALSE(entry_factory_->GetLocalSpecificsForItem(nigori_handle).
+      nigori().keybag_is_frozen());
+  EXPECT_TRUE(entry_factory_->GetLocalSpecificsForItem(nigori_handle).
+      nigori().encrypt_everything());
+  {
+    syncable::ReadTransaction trans(FROM_HERE, directory());
+    EXPECT_TRUE(directory()->GetNigoriHandler()->GetEncryptedTypes(&trans)
+        .Equals(ModelTypeSet::All()));
+    EXPECT_TRUE(directory()->initial_sync_ended_types().Has(NIGORI));
+  }
+}
+
+// If both nigoris are migrated, but we also set a custom passphrase locally,
+// the local nigori should be preserved.
+TEST_F(ApplyControlDataUpdatesTest,
+       NigoriConflictBothMigratedLocalCustom) {
+  Cryptographer* cryptographer;
+  ModelTypeSet encrypted_types(SyncEncryptionHandler::SensitiveTypes());
+  KeyParams old_params = {"localhost", "dummy", "old"};
+  KeyParams new_params = {"localhost", "dummy", "new"};
+  {
+    syncable::ReadTransaction trans(FROM_HERE, directory());
+    cryptographer = directory()->GetCryptographer(&trans);
+    EXPECT_TRUE(encrypted_types.Equals(
+            directory()->GetNigoriHandler()->GetEncryptedTypes(&trans)));
+  }
+
+  // Set up the cryptographer with new keys
+  Cryptographer other_cryptographer(cryptographer->encryptor());
+  other_cryptographer.AddKey(old_params);
+
+  // Create server specifics with a migrated keystore passphrase type.
+  sync_pb::EntitySpecifics server_specifics;
+  sync_pb::NigoriSpecifics* server_nigori = server_specifics.mutable_nigori();
+  other_cryptographer.GetKeys(server_nigori->mutable_encryption_keybag());
+  server_nigori->set_encrypt_everything(false);
+  server_nigori->set_keybag_is_frozen(true);
+  server_nigori->set_passphrase_type(
+      sync_pb::NigoriSpecifics::KEYSTORE_PASSPHRASE);
+  server_nigori->mutable_keystore_decryptor_token();
+  int64 nigori_handle =
+      entry_factory_->CreateUnappliedNewItem(kNigoriTag,
+                                             server_specifics,
+                                             true);
+
+  // Add the new keys to the cryptographer.
+  cryptographer->AddKey(old_params);
+  cryptographer->AddKey(new_params);
+  EXPECT_TRUE(cryptographer->is_ready());
+
+  // Set up a local nigori with a migrated custom passphrase type
+  sync_pb::EntitySpecifics local_specifics;
+  sync_pb::NigoriSpecifics* local_nigori = local_specifics.mutable_nigori();
+  cryptographer->GetKeys(local_nigori->mutable_encryption_keybag());
+  local_nigori->set_encrypt_everything(true);
+  local_nigori->set_keybag_is_frozen(true);
+  local_nigori->set_passphrase_type(
+      sync_pb::NigoriSpecifics::CUSTOM_PASSPHRASE);
+  ASSERT_TRUE(entry_factory_->SetLocalSpecificsForItem(
+          nigori_handle, local_specifics));
+  // Apply the update locally so that UpdateFromEncryptedTypes knows what state
+  // to use.
+  {
+    syncable::ReadTransaction trans(FROM_HERE, directory());
+    cryptographer = directory()->GetCryptographer(&trans);
+    directory()->GetNigoriHandler()->ApplyNigoriUpdate(
+        *local_nigori,
+        &trans);
+  }
+
+  EXPECT_TRUE(entry_factory_->GetIsUnsyncedForItem(nigori_handle));
+  EXPECT_TRUE(entry_factory_->GetIsUnappliedForItem(nigori_handle));
+  ApplyControlDataUpdates(directory());
+  EXPECT_TRUE(entry_factory_->GetIsUnsyncedForItem(nigori_handle));
+  EXPECT_FALSE(entry_factory_->GetIsUnappliedForItem(nigori_handle));
+
+  EXPECT_TRUE(cryptographer->is_ready());
+  EXPECT_TRUE(cryptographer->CanDecryptUsingDefaultKey(
+          entry_factory_->GetLocalSpecificsForItem(nigori_handle).
+              nigori().encryption_keybag()));
+  EXPECT_TRUE(entry_factory_->GetLocalSpecificsForItem(nigori_handle).
+      nigori().keybag_is_frozen());
+  EXPECT_TRUE(entry_factory_->GetLocalSpecificsForItem(nigori_handle).
+      nigori().encrypt_everything());
+  EXPECT_EQ(sync_pb::NigoriSpecifics::CUSTOM_PASSPHRASE,
+            entry_factory_->GetLocalSpecificsForItem(nigori_handle).
+                nigori().passphrase_type());
+  {
+    syncable::ReadTransaction trans(FROM_HERE, directory());
+    EXPECT_TRUE(directory()->GetNigoriHandler()->GetEncryptedTypes(&trans)
+        .Equals(ModelTypeSet::All()));
+    EXPECT_TRUE(directory()->initial_sync_ended_types().Has(NIGORI));
+  }
+}
+
+// If both nigoris are migrated, but a custom passphrase with a new key was
+// set remotely, the remote nigori should be preserved.
+TEST_F(ApplyControlDataUpdatesTest,
+       NigoriConflictBothMigratedServerCustom) {
+  Cryptographer* cryptographer;
+  ModelTypeSet encrypted_types(SyncEncryptionHandler::SensitiveTypes());
+  KeyParams old_params = {"localhost", "dummy", "old"};
+  KeyParams new_params = {"localhost", "dummy", "new"};
+  {
+    syncable::ReadTransaction trans(FROM_HERE, directory());
+    cryptographer = directory()->GetCryptographer(&trans);
+    EXPECT_TRUE(encrypted_types.Equals(
+            directory()->GetNigoriHandler()->GetEncryptedTypes(&trans)));
+  }
+
+  // Set up the cryptographer with both new keys and old keys.
+  Cryptographer other_cryptographer(cryptographer->encryptor());
+  other_cryptographer.AddKey(old_params);
+  other_cryptographer.AddKey(new_params);
+
+  // Create server specifics with a migrated custom passphrase type.
+  sync_pb::EntitySpecifics server_specifics;
+  sync_pb::NigoriSpecifics* server_nigori = server_specifics.mutable_nigori();
+  other_cryptographer.GetKeys(server_nigori->mutable_encryption_keybag());
+  server_nigori->set_encrypt_everything(true);
+  server_nigori->set_keybag_is_frozen(true);
+  server_nigori->set_passphrase_type(
+      sync_pb::NigoriSpecifics::CUSTOM_PASSPHRASE);
+  int64 nigori_handle =
+      entry_factory_->CreateUnappliedNewItem(kNigoriTag,
+                                             server_specifics,
+                                             true);
+
+  // Add the old keys to the cryptographer.
+  cryptographer->AddKey(old_params);
+  EXPECT_TRUE(cryptographer->is_ready());
+
+  // Set up a local nigori with a migrated keystore passphrase type
+  sync_pb::EntitySpecifics local_specifics;
+  sync_pb::NigoriSpecifics* local_nigori = local_specifics.mutable_nigori();
+  cryptographer->GetKeys(local_nigori->mutable_encryption_keybag());
+  local_nigori->set_encrypt_everything(false);
+  local_nigori->set_keybag_is_frozen(true);
+  local_nigori->set_passphrase_type(
+      sync_pb::NigoriSpecifics::KEYSTORE_PASSPHRASE);
+  server_nigori->mutable_keystore_decryptor_token();
+  ASSERT_TRUE(entry_factory_->SetLocalSpecificsForItem(
+          nigori_handle, local_specifics));
+  // Apply the update locally so that UpdateFromEncryptedTypes knows what state
+  // to use.
+  {
+    syncable::ReadTransaction trans(FROM_HERE, directory());
+    cryptographer = directory()->GetCryptographer(&trans);
+    directory()->GetNigoriHandler()->ApplyNigoriUpdate(
+        *local_nigori,
+        &trans);
+  }
+
+  EXPECT_TRUE(entry_factory_->GetIsUnsyncedForItem(nigori_handle));
+  EXPECT_TRUE(entry_factory_->GetIsUnappliedForItem(nigori_handle));
+  ApplyControlDataUpdates(directory());
+  EXPECT_TRUE(entry_factory_->GetIsUnsyncedForItem(nigori_handle));
+  EXPECT_FALSE(entry_factory_->GetIsUnappliedForItem(nigori_handle));
+
+  EXPECT_TRUE(cryptographer->is_initialized());
+  EXPECT_TRUE(cryptographer->has_pending_keys());
+  EXPECT_TRUE(other_cryptographer.CanDecryptUsingDefaultKey(
+          entry_factory_->GetLocalSpecificsForItem(nigori_handle).
+              nigori().encryption_keybag()));
+  EXPECT_TRUE(entry_factory_->GetLocalSpecificsForItem(nigori_handle).
+      nigori().keybag_is_frozen());
+  EXPECT_TRUE(entry_factory_->GetLocalSpecificsForItem(nigori_handle).
+      nigori().encrypt_everything());
+  EXPECT_EQ(sync_pb::NigoriSpecifics::CUSTOM_PASSPHRASE,
+            entry_factory_->GetLocalSpecificsForItem(nigori_handle).
+                nigori().passphrase_type());
+  {
+    syncable::ReadTransaction trans(FROM_HERE, directory());
+    EXPECT_TRUE(directory()->GetNigoriHandler()->GetEncryptedTypes(&trans)
+        .Equals(ModelTypeSet::All()));
+    EXPECT_TRUE(directory()->initial_sync_ended_types().Has(NIGORI));
+  }
+}
+
+// If the local nigori is migrated but the server is not, preserve the local
+// nigori.
+TEST_F(ApplyControlDataUpdatesTest,
+       NigoriConflictLocalMigrated) {
+  Cryptographer* cryptographer;
+  ModelTypeSet encrypted_types(SyncEncryptionHandler::SensitiveTypes());
+  KeyParams old_params = {"localhost", "dummy", "old"};
+  KeyParams new_params = {"localhost", "dummy", "new"};
+  {
+    syncable::ReadTransaction trans(FROM_HERE, directory());
+    cryptographer = directory()->GetCryptographer(&trans);
+    EXPECT_TRUE(encrypted_types.Equals(
+            directory()->GetNigoriHandler()->GetEncryptedTypes(&trans)));
+  }
+
+  // Set up the cryptographer with both new keys and old keys.
+  Cryptographer other_cryptographer(cryptographer->encryptor());
+  other_cryptographer.AddKey(old_params);
+
+  // Create server specifics with an unmigrated implicit passphrase type.
+  sync_pb::EntitySpecifics server_specifics;
+  sync_pb::NigoriSpecifics* server_nigori = server_specifics.mutable_nigori();
+  other_cryptographer.GetKeys(server_nigori->mutable_encryption_keybag());
+  server_nigori->set_encrypt_everything(true);
+  server_nigori->set_keybag_is_frozen(false);
+  int64 nigori_handle =
+      entry_factory_->CreateUnappliedNewItem(kNigoriTag,
+                                             server_specifics,
+                                             true);
+
+  // Add the old keys to the cryptographer.
+  cryptographer->AddKey(old_params);
+  cryptographer->AddKey(new_params);
+  EXPECT_TRUE(cryptographer->is_ready());
+
+  // Set up a local nigori with a migrated custom passphrase type
+  sync_pb::EntitySpecifics local_specifics;
+  sync_pb::NigoriSpecifics* local_nigori = local_specifics.mutable_nigori();
+  cryptographer->GetKeys(local_nigori->mutable_encryption_keybag());
+  local_nigori->set_encrypt_everything(true);
+  local_nigori->set_keybag_is_frozen(true);
+  local_nigori->set_passphrase_type(
+      sync_pb::NigoriSpecifics::CUSTOM_PASSPHRASE);
+  ASSERT_TRUE(entry_factory_->SetLocalSpecificsForItem(
+          nigori_handle, local_specifics));
+  // Apply the update locally so that UpdateFromEncryptedTypes knows what state
+  // to use.
+  {
+    syncable::ReadTransaction trans(FROM_HERE, directory());
+    cryptographer = directory()->GetCryptographer(&trans);
+    directory()->GetNigoriHandler()->ApplyNigoriUpdate(
+        *local_nigori,
+        &trans);
+  }
+
+  EXPECT_TRUE(entry_factory_->GetIsUnsyncedForItem(nigori_handle));
+  EXPECT_TRUE(entry_factory_->GetIsUnappliedForItem(nigori_handle));
+  ApplyControlDataUpdates(directory());
+  EXPECT_TRUE(entry_factory_->GetIsUnsyncedForItem(nigori_handle));
+  EXPECT_FALSE(entry_factory_->GetIsUnappliedForItem(nigori_handle));
+
+  EXPECT_TRUE(cryptographer->is_ready());
+  EXPECT_TRUE(cryptographer->CanDecryptUsingDefaultKey(
+          entry_factory_->GetLocalSpecificsForItem(nigori_handle).
+              nigori().encryption_keybag()));
+  EXPECT_TRUE(entry_factory_->GetLocalSpecificsForItem(nigori_handle).
+      nigori().keybag_is_frozen());
+  EXPECT_TRUE(entry_factory_->GetLocalSpecificsForItem(nigori_handle).
+      nigori().encrypt_everything());
+  EXPECT_EQ(sync_pb::NigoriSpecifics::CUSTOM_PASSPHRASE,
+            entry_factory_->GetLocalSpecificsForItem(nigori_handle).
+                nigori().passphrase_type());
+  {
+    syncable::ReadTransaction trans(FROM_HERE, directory());
+    EXPECT_TRUE(directory()->GetNigoriHandler()->GetEncryptedTypes(&trans)
+        .Equals(ModelTypeSet::All()));
+    EXPECT_TRUE(directory()->initial_sync_ended_types().Has(NIGORI));
+  }
+}
+
+// If the server nigori is migrated but the local is not, preserve the server
+// nigori.
+TEST_F(ApplyControlDataUpdatesTest,
+       NigoriConflictServerMigrated) {
+  Cryptographer* cryptographer;
+  ModelTypeSet encrypted_types(SyncEncryptionHandler::SensitiveTypes());
+  KeyParams old_params = {"localhost", "dummy", "old"};
+  KeyParams new_params = {"localhost", "dummy", "new"};
+  {
+    syncable::ReadTransaction trans(FROM_HERE, directory());
+    cryptographer = directory()->GetCryptographer(&trans);
+    EXPECT_TRUE(encrypted_types.Equals(
+            directory()->GetNigoriHandler()->GetEncryptedTypes(&trans)));
+  }
+
+  // Set up the cryptographer with both new keys and old keys.
+  Cryptographer other_cryptographer(cryptographer->encryptor());
+  other_cryptographer.AddKey(old_params);
+
+  // Create server specifics with an migrated keystore passphrase type.
+  sync_pb::EntitySpecifics server_specifics;
+  sync_pb::NigoriSpecifics* server_nigori = server_specifics.mutable_nigori();
+  other_cryptographer.GetKeys(server_nigori->mutable_encryption_keybag());
+  server_nigori->set_encrypt_everything(false);
+  server_nigori->set_keybag_is_frozen(true);
+  server_nigori->set_passphrase_type(
+      sync_pb::NigoriSpecifics::KEYSTORE_PASSPHRASE);
+  server_nigori->mutable_keystore_decryptor_token();
+  int64 nigori_handle =
+      entry_factory_->CreateUnappliedNewItem(kNigoriTag,
+                                             server_specifics,
+                                             true);
+
+  // Add the old keys to the cryptographer.
+  cryptographer->AddKey(old_params);
+  cryptographer->AddKey(new_params);
+  EXPECT_TRUE(cryptographer->is_ready());
+
+  // Set up a local nigori with a migrated custom passphrase type
+  sync_pb::EntitySpecifics local_specifics;
+  sync_pb::NigoriSpecifics* local_nigori = local_specifics.mutable_nigori();
+  cryptographer->GetKeys(local_nigori->mutable_encryption_keybag());
+  local_nigori->set_encrypt_everything(false);
+  local_nigori->set_keybag_is_frozen(false);
+  ASSERT_TRUE(entry_factory_->SetLocalSpecificsForItem(
+          nigori_handle, local_specifics));
+  // Apply the update locally so that UpdateFromEncryptedTypes knows what state
+  // to use.
+  {
+    syncable::ReadTransaction trans(FROM_HERE, directory());
+    cryptographer = directory()->GetCryptographer(&trans);
+    directory()->GetNigoriHandler()->ApplyNigoriUpdate(
+        *local_nigori,
+        &trans);
+  }
+
+  EXPECT_TRUE(entry_factory_->GetIsUnsyncedForItem(nigori_handle));
+  EXPECT_TRUE(entry_factory_->GetIsUnappliedForItem(nigori_handle));
+  ApplyControlDataUpdates(directory());
+  EXPECT_TRUE(entry_factory_->GetIsUnsyncedForItem(nigori_handle));
+  EXPECT_FALSE(entry_factory_->GetIsUnappliedForItem(nigori_handle));
+
+  EXPECT_TRUE(cryptographer->is_ready());
+  // Note: we didn't overwrite the encryption keybag with the local keys. The
+  // sync encryption handler will do that when it detects that the new
+  // keybag is out of date (and update the keystore bootstrap if necessary).
+  EXPECT_FALSE(cryptographer->CanDecryptUsingDefaultKey(
+          entry_factory_->GetLocalSpecificsForItem(nigori_handle).
+              nigori().encryption_keybag()));
+  EXPECT_TRUE(cryptographer->CanDecrypt(
+          entry_factory_->GetLocalSpecificsForItem(nigori_handle).
+              nigori().encryption_keybag()));
+  EXPECT_TRUE(entry_factory_->GetLocalSpecificsForItem(nigori_handle).
+      nigori().keybag_is_frozen());
+  EXPECT_TRUE(entry_factory_->GetLocalSpecificsForItem(nigori_handle).
+      nigori().has_keystore_decryptor_token());
+  EXPECT_EQ(sync_pb::NigoriSpecifics::KEYSTORE_PASSPHRASE,
+            entry_factory_->GetLocalSpecificsForItem(nigori_handle).
+                nigori().passphrase_type());
+  {
+    syncable::ReadTransaction trans(FROM_HERE, directory());
+    EXPECT_TRUE(directory()->initial_sync_ended_types().Has(NIGORI));
   }
 }
 

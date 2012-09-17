@@ -57,6 +57,8 @@ bool ApplyNigoriUpdates(syncable::WriteTransaction* trans,
     return true;
   }
 
+  // We apply the nigori update regardless of whether there's a conflict or
+  // not in order to preserve any new encrypted types or encryption keys.
   const sync_pb::NigoriSpecifics& nigori =
       nigori_node.Get(SERVER_SPECIFICS).nigori();
   trans->directory()->GetNigoriHandler()->ApplyNigoriUpdate(nigori, trans);
@@ -83,45 +85,67 @@ bool ApplyNigoriUpdates(syncable::WriteTransaction* trans,
   if (!nigori_node.Get(IS_UNSYNCED)) {  // Update only.
     UpdateLocalDataFromServerData(trans, &nigori_node);
   } else {  // Conflict.
-    // Create a new set of specifics based on the server specifics (which
-    // preserves their encryption keys).
-    sync_pb::EntitySpecifics specifics = nigori_node.Get(SERVER_SPECIFICS);
-    sync_pb::NigoriSpecifics* server_nigori = specifics.mutable_nigori();
-    // Store the merged set of encrypted types.
-    // (NigoriHandler::ApplyNigoriUpdate(..) will have merged the local types
-    // already).
-    trans->directory()->GetNigoriHandler()->UpdateNigoriFromEncryptedTypes(
-        server_nigori,
-        trans);
-    // The cryptographer has the both the local and remote encryption keys
-    // (added at NigoriHandler::ApplyNigoriUpdate(..) time).
-    // If the cryptographer is ready, then it already merged both sets of keys
-    // and we can store them back in. In that case, the remote key was already
-    // part of the local keybag, so we preserve the local key as the default
-    // (including whether it's an explicit key).
-    // If the cryptographer is not ready, then the user will have to provide
-    // the passphrase to decrypt the pending keys. When they do so, the
-    // SetDecryptionPassphrase code will act based on whether the server
-    // update has an explicit passphrase or not.
-    // - If the server had an explicit passphrase, that explicit passphrase
-    //   will be preserved as the default encryption key.
-    // - If the server did not have an explicit passphrase, we assume the
-    //   local passphrase is the most up to date and preserve the local
-    //   default encryption key marked as an implicit passphrase.
-    // This works fine except for the case where we had locally set an
-    // explicit passphrase. In that case the nigori node will have the default
-    // key based on the local explicit passphassphrase, but will not have it
-    // marked as explicit. To fix this we'd have to track whether we have a
-    // explicit passphrase or not separate from the nigori, which would
-    // introduce even more complexity, so we leave it up to the user to reset
-    // that passphrase as an explicit one via settings. The goal here is to
-    // ensure both sets of encryption keys are preserved.
+    const sync_pb::EntitySpecifics& server_specifics =
+        nigori_node.Get(SERVER_SPECIFICS);
+    const sync_pb::NigoriSpecifics& server_nigori = server_specifics.nigori();
+    const sync_pb::EntitySpecifics& local_specifics =
+        nigori_node.Get(SPECIFICS);
+    const sync_pb::NigoriSpecifics& local_nigori = local_specifics.nigori();
+
+    // We initialize the new nigori with the server state, and will override
+    // it as necessary below.
+    sync_pb::EntitySpecifics new_specifics = nigori_node.Get(SERVER_SPECIFICS);
+    sync_pb::NigoriSpecifics* new_nigori = new_specifics.mutable_nigori();
+
+    // If the cryptographer is not ready, another client set a new encryption
+    // passphrase. If we had migrated locally, we will re-migrate when the
+    // pending keys are provided. If we had set a new custom passphrase locally
+    // the user will have another chance to set a custom passphrase later
+    // (assuming they hadn't set a custom passphrase on the other client).
+    // Therefore, we only attempt to merge the nigori nodes if the cryptographer
+    // is ready.
+    // Note: we only update the encryption keybag if we're sure that we aren't
+    // invalidating the keystore_decryptor_token (i.e. we're either
+    // not migrated or we copying over all local state).
     if (cryptographer->is_ready()) {
-      cryptographer->GetKeys(server_nigori->mutable_encryption_keybag());
-      server_nigori->set_keybag_is_frozen(
-          nigori_node.Get(SPECIFICS).nigori().keybag_is_frozen());
+      if (local_nigori.has_passphrase_type() &&
+          server_nigori.has_passphrase_type()) {
+        // They're both migrated, preserve the local nigori if the passphrase
+        // type is more conservative.
+        if (server_nigori.passphrase_type() ==
+                sync_pb::NigoriSpecifics::KEYSTORE_PASSPHRASE &&
+            local_nigori.passphrase_type() !=
+                sync_pb::NigoriSpecifics::KEYSTORE_PASSPHRASE) {
+          DCHECK(local_nigori.passphrase_type() ==
+                     sync_pb::NigoriSpecifics::FROZEN_IMPLICIT_PASSPHRASE ||
+                 local_nigori.passphrase_type() ==
+                     sync_pb::NigoriSpecifics::CUSTOM_PASSPHRASE);
+          new_nigori->CopyFrom(local_nigori);
+          cryptographer->GetKeys(new_nigori->mutable_encryption_keybag());
+        }
+      } else if (!local_nigori.has_passphrase_type() &&
+                 !server_nigori.has_passphrase_type()) {
+        // Set the explicit passphrase based on the local state. If the server
+        // had set an explict passphrase, we should have pending keys, so
+        // should not reach this code.
+        // Because neither side is migrated, we don't have to worry about the
+        // keystore decryptor token.
+        new_nigori->set_keybag_is_frozen(local_nigori.keybag_is_frozen());
+        cryptographer->GetKeys(new_nigori->mutable_encryption_keybag());
+      } else if (local_nigori.has_passphrase_type()) {
+        // Local is migrated but server is not. Copy over the local migrated
+        // data.
+        new_nigori->CopyFrom(local_nigori);
+        cryptographer->GetKeys(new_nigori->mutable_encryption_keybag());
+      }  // else leave the new nigori with the server state.
     }
-    nigori_node.Put(SPECIFICS, specifics);
+
+    // Always update to the safest set of encrypted types.
+    trans->directory()->GetNigoriHandler()->UpdateNigoriFromEncryptedTypes(
+        new_nigori,
+        trans);
+
+    nigori_node.Put(SPECIFICS, new_specifics);
     DVLOG(1) << "Resolving simple conflict, merging nigori nodes: "
              << nigori_node;
 

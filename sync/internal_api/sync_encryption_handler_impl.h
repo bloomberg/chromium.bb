@@ -116,6 +116,8 @@ class SyncEncryptionHandlerImpl
                            SetImplicitPassAfterMigrationNoKeystoreKey);
   FRIEND_TEST_ALL_PREFIXES(SyncEncryptionHandlerImplTest,
                            MigrateOnEncryptEverythingKeystorePassphrase);
+  FRIEND_TEST_ALL_PREFIXES(SyncEncryptionHandlerImplTest,
+                           ReceiveMigratedNigoriWithOldPassphrase);
 
   // Container for members that require thread safety protection.  All members
   // that can be accessed from more than one thread should be held here and

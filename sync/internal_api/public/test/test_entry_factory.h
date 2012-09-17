@@ -30,9 +30,9 @@ class TestEntryFactory {
       const std::string& parent_id);
 
   // Create a new unapplied update without a parent.
-  void CreateUnappliedNewItem(const std::string& item_id,
-                              const sync_pb::EntitySpecifics& specifics,
-                              bool is_unique);
+  int64 CreateUnappliedNewItem(const std::string& item_id,
+                               const sync_pb::EntitySpecifics& specifics,
+                               bool is_unique);
 
   // Create an unsynced item in the database.  If item_id is a local ID, it will
   // be treated as a create-new.  Otherwise, if it's a server ID, we'll fake the
@@ -55,6 +55,34 @@ class TestEntryFactory {
   // the created item.
   int64 CreateSyncedItem(const std::string& name,
                          ModelType model_type, bool is_folder);
+
+  // Looks up the item referenced by |meta_handle|. If successful, overwrites
+  // the server specifics with |specifics|, sets
+  // IS_UNAPPLIED_UPDATES/IS_UNSYNCED appropriately, and returns true.
+  // Else, return false.
+  bool SetServerSpecificsForItem(int64 meta_handle,
+                                 const sync_pb::EntitySpecifics specifics);
+
+  // Looks up the item referenced by |meta_handle|. If successful, overwrites
+  // the local specifics with |specifics|, sets
+  // IS_UNAPPLIED_UPDATES/IS_UNSYNCED appropriately, and returns true.
+  // Else, return false.
+  bool SetLocalSpecificsForItem(int64 meta_handle,
+                                const sync_pb::EntitySpecifics specifics);
+
+  // Looks up the item referenced by |meta_handle|. If successful, stores
+  // the server specifics into |specifics| and returns true. Else, return false.
+  const sync_pb::EntitySpecifics& GetServerSpecificsForItem(
+      int64 meta_handle) const;
+
+  // Looks up the item referenced by |meta_handle|. If successful, stores
+  // the local specifics into |specifics| and returns true. Else, return false.
+  const sync_pb::EntitySpecifics& GetLocalSpecificsForItem(
+      int64 meta_handle) const;
+
+  // Getters for IS_UNSYNCED and IS_UNAPPLIED_UPDATE bit fields.
+  bool GetIsUnsyncedForItem(int64 meta_handle) const;
+  bool GetIsUnappliedForItem(int64 meta_handle) const;
 
   int64 GetNextRevision();
 

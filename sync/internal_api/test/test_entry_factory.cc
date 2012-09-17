@@ -5,7 +5,9 @@
 #include "sync/internal_api/public/test/test_entry_factory.h"
 
 #include "sync/syncable/directory.h"
+#include "sync/syncable/entry.h"
 #include "sync/syncable/mutable_entry.h"
+#include "sync/syncable/read_transaction.h"
 #include "sync/syncable/syncable_id.h"
 #include "sync/syncable/write_transaction.h"
 #include "sync/test/engine/test_id_factory.h"
@@ -42,10 +44,10 @@ void TestEntryFactory::CreateUnappliedNewItemWithParent(
   entry.Put(syncable::SERVER_SPECIFICS, specifics);
 }
 
-void TestEntryFactory::CreateUnappliedNewItem(
-                            const string& item_id,
-                            const sync_pb::EntitySpecifics& specifics,
-                            bool is_unique) {
+int64 TestEntryFactory::CreateUnappliedNewItem(
+    const string& item_id,
+    const sync_pb::EntitySpecifics& specifics,
+    bool is_unique) {
   WriteTransaction trans(FROM_HERE, UNITTEST, directory_);
   MutableEntry entry(&trans, syncable::CREATE_NEW_UPDATE_ITEM,
       Id::CreateFromServerId(item_id));
@@ -58,6 +60,7 @@ void TestEntryFactory::CreateUnappliedNewItem(
   entry.Put(syncable::SERVER_SPECIFICS, specifics);
   if (is_unique)  // For top-level nodes.
     entry.Put(syncable::UNIQUE_SERVER_TAG, item_id);
+  return entry.Get(syncable::META_HANDLE);
 }
 
 void TestEntryFactory::CreateUnsyncedItem(
@@ -157,6 +160,68 @@ int64 TestEntryFactory::CreateSyncedItem(
   entry.Put(syncable::SERVER_PARENT_ID, parent_id);
 
   return entry.Get(syncable::META_HANDLE);
+}
+
+bool TestEntryFactory::SetServerSpecificsForItem(
+    int64 meta_handle,
+    const sync_pb::EntitySpecifics specifics) {
+  WriteTransaction trans(FROM_HERE, UNITTEST, directory_);
+  MutableEntry entry(&trans, syncable::GET_BY_HANDLE, meta_handle);
+  if (!entry.good()) {
+    return false;
+  }
+  entry.Put(syncable::SERVER_SPECIFICS, specifics);
+  entry.Put(syncable::IS_UNAPPLIED_UPDATE, true);
+  return true;
+}
+
+bool TestEntryFactory::SetLocalSpecificsForItem(
+    int64 meta_handle,
+    const sync_pb::EntitySpecifics specifics) {
+  WriteTransaction trans(FROM_HERE, UNITTEST, directory_);
+  MutableEntry entry(&trans, syncable::GET_BY_HANDLE, meta_handle);
+  if (!entry.good()) {
+    return false;
+  }
+  entry.Put(syncable::SPECIFICS, specifics);
+  entry.Put(syncable::IS_UNSYNCED, true);
+  return true;
+}
+
+const sync_pb::EntitySpecifics& TestEntryFactory::GetServerSpecificsForItem(
+    int64 meta_handle) const {
+  syncable::ReadTransaction trans(FROM_HERE, directory_);
+  syncable::Entry entry(&trans, syncable::GET_BY_HANDLE, meta_handle);
+  DCHECK(entry.good());
+  return entry.Get(syncable::SERVER_SPECIFICS);
+}
+
+const sync_pb::EntitySpecifics& TestEntryFactory::GetLocalSpecificsForItem(
+    int64 meta_handle) const {
+  syncable::ReadTransaction trans(FROM_HERE, directory_);
+  syncable::Entry entry(&trans, syncable::GET_BY_HANDLE, meta_handle);
+  DCHECK(entry.good());
+  return entry.Get(syncable::SPECIFICS);
+}
+
+bool TestEntryFactory::GetIsUnsyncedForItem(int64 meta_handle) const {
+  syncable::ReadTransaction trans(FROM_HERE, directory_);
+  syncable::Entry entry(&trans, syncable::GET_BY_HANDLE, meta_handle);
+  if (!entry.good()) {
+    NOTREACHED();
+    return false;
+  }
+  return entry.Get(syncable::IS_UNSYNCED);
+}
+
+bool TestEntryFactory::GetIsUnappliedForItem(int64 meta_handle) const {
+  syncable::ReadTransaction trans(FROM_HERE, directory_);
+  syncable::Entry entry(&trans, syncable::GET_BY_HANDLE, meta_handle);
+  if (!entry.good()) {
+    NOTREACHED();
+    return false;
+  }
+  return entry.Get(syncable::IS_UNAPPLIED_UPDATE);
 }
 
 int64 TestEntryFactory::GetNextRevision() {

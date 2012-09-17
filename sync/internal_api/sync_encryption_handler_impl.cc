@@ -1104,6 +1104,12 @@ bool SyncEncryptionHandlerImpl::ShouldTriggerMigration(
     } else if (passphrase_type_ == KEYSTORE_PASSPHRASE &&
                encrypt_everything_) {
       return true;
+    } else if (
+        cryptographer.is_ready() &&
+        !cryptographer.CanDecryptUsingDefaultKey(nigori.encryption_keybag())) {
+      // We need to overwrite the keybag. This might involve overwriting the
+      // keystore decryptor too.
+      return true;
     } else {
       return false;
     }
@@ -1148,7 +1154,6 @@ bool SyncEncryptionHandlerImpl::AttemptToMigrateNigoriToKeystore(
     new_encrypt_everything = true;
     migrated_nigori.clear_keystore_decryptor_token();
   } else {
-    DCHECK_EQ(passphrase_type_, IMPLICIT_PASSPHRASE);
     DCHECK(!encrypt_everything_);
     new_passphrase_type = KEYSTORE_PASSPHRASE;
     DVLOG(1) << "Switching to keystore passphrase state.";

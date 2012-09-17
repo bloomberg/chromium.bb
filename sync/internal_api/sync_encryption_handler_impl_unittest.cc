@@ -1603,4 +1603,78 @@ TEST_F(SyncEncryptionHandlerImplTest,
   EXPECT_TRUE(GetCryptographer()->CanDecrypt(keystore_encrypted));
 }
 
+// If we receive a nigori migrated and with a KEYSTORE_PASSPHRASE type, but
+// using an old default key (i.e. old GAIA password), we should overwrite the
+// nigori, updating the keybag and keystore decryptor.
+TEST_F(SyncEncryptionHandlerImplTest,
+       ReceiveMigratedNigoriWithOldPassphrase) {
+  const char kOldKey[] = "old";
+  const char kCurKey[] = "cur";
+  sync_pb::EncryptedData encrypted;
+  KeyParams old_key = {"localhost", "dummy", kOldKey};
+  KeyParams cur_key = {"localhost", "dummy", kCurKey};
+  KeyParams keystore_key = {"localhost", "dummy", kKeystoreKey};
+  GetCryptographer()->AddKey(old_key);
+  GetCryptographer()->AddKey(cur_key);
+
+  Cryptographer other_cryptographer(GetCryptographer()->encryptor());
+  other_cryptographer.AddKey(old_key);
+  EXPECT_TRUE(other_cryptographer.is_ready());
+
+  EXPECT_CALL(*observer(),
+              OnCryptographerStateChanged(_));
+  EXPECT_CALL(*observer(),
+              OnEncryptedTypesChanged(_, false));
+  EXPECT_CALL(*observer(),
+              OnEncryptionComplete());
+  encryption_handler()->Init();
+  EXPECT_TRUE(GetCryptographer()->is_ready());
+  EXPECT_FALSE(encryption_handler()->EncryptEverythingEnabled());
+
+  {
+    EXPECT_CALL(*observer(),
+                OnBootstrapTokenUpdated(_, KEYSTORE_BOOTSTRAP_TOKEN));
+    ReadTransaction trans(FROM_HERE, user_share());
+    encryption_handler()->SetKeystoreKey(kKeystoreKey, trans.GetWrappedTrans());
+  }
+  EXPECT_CALL(*observer(),
+            OnPassphraseTypeChanged(KEYSTORE_PASSPHRASE));
+  PumpLoop();
+  Mock::VerifyAndClearExpectations(observer());
+  EXPECT_TRUE(encryption_handler()->MigratedToKeystore());
+  EXPECT_EQ(encryption_handler()->GetPassphraseType(), KEYSTORE_PASSPHRASE);
+  VerifyMigratedNigori(KEYSTORE_PASSPHRASE, kCurKey);
+
+  // Now build an old keystore passphrase nigori node.
+  EXPECT_CALL(*observer(),
+              OnCryptographerStateChanged(_));
+  {
+    WriteTransaction trans(FROM_HERE, user_share());
+    WriteNode nigori_node(&trans);
+    ASSERT_EQ(nigori_node.InitByTagLookup(kNigoriTag), BaseNode::INIT_OK);
+    sync_pb::NigoriSpecifics nigori;
+    Cryptographer other_cryptographer(GetCryptographer()->encryptor());
+    other_cryptographer.AddKey(old_key);
+    encryption_handler()->GetKeystoreDecryptor(
+        other_cryptographer,
+        kKeystoreKey,
+        nigori.mutable_keystore_decryptor_token());
+    other_cryptographer.GetKeys(nigori.mutable_encryption_keybag());
+    nigori.set_keybag_is_frozen(true);
+    nigori.set_encrypt_everything(false);
+    nigori.set_passphrase_type(sync_pb::NigoriSpecifics::KEYSTORE_PASSPHRASE);
+    nigori.set_keystore_migration_time(1);
+    encryption_handler()->ApplyNigoriUpdate(nigori, trans.GetWrappedTrans());
+    nigori_node.SetNigoriSpecifics(nigori);
+  }
+  PumpLoop();
+
+  // Verify we're still migrated and have proper encryption state.
+  EXPECT_TRUE(encryption_handler()->MigratedToKeystore());
+  EXPECT_TRUE(GetCryptographer()->is_ready());
+  EXPECT_EQ(encryption_handler()->GetPassphraseType(), KEYSTORE_PASSPHRASE);
+  EXPECT_FALSE(encryption_handler()->EncryptEverythingEnabled());
+  VerifyMigratedNigori(KEYSTORE_PASSPHRASE, kCurKey);
+}
+
 }  // namespace syncer
