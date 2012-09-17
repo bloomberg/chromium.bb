@@ -552,6 +552,11 @@ const char kShowCompositedLayerTree[]       = "show-composited-layer-tree";
 // Draws a FPS indicator
 const char kShowFPSCounter[]                = "show-fps-counter";
 
+// Enables accelerated compositing for overflow scroll. Promotes eligible
+// overflow:scroll elements to layers to enable accelerated scrolling for them.
+const char kEnableAcceleratedCompositingForOverflowScroll[] =
+    "enable-accelerated-compositing-for-overflow-scroll";
+
 // Visibly render a border around paint rects in the web page to help debug
 // and study painting behavior.
 const char kShowPaintRects[]                = "show-paint-rects";

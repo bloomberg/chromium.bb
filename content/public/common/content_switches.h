@@ -174,6 +174,7 @@ CONTENT_EXPORT extern const char kServiceProcess[];
 extern const char kShowCompositedLayerBorders[];
 extern const char kShowCompositedLayerTree[];
 extern const char kShowFPSCounter[];
+extern const char kEnableAcceleratedCompositingForOverflowScroll[];
 extern const char kShowPaintRects[];
 CONTENT_EXPORT extern const char kSimulateTouchScreenWithMouse[];
 CONTENT_EXPORT extern const char kSingleProcess[];

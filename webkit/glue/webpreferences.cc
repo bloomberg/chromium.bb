@@ -78,6 +78,7 @@ WebPreferences::WebPreferences()
       show_composited_layer_borders(false),
       show_composited_layer_tree(false),
       show_fps_counter(false),
+      accelerated_compositing_for_overflow_scroll_enabled(false),
       show_paint_rects(false),
       render_vsync_enabled(true),
       asynchronous_spell_checking_enabled(true),
@@ -308,6 +309,10 @@ void WebPreferences::Apply(WebView* web_view) const {
 
   // Display an FPS indicator if requested on the command line.
   settings->setShowFPSCounter(show_fps_counter);
+
+  // Enables accelerated compositing for overflow scroll.
+  settings->setAcceleratedCompositingForOverflowScrollEnabled(
+      accelerated_compositing_for_overflow_scroll_enabled);
 
   // Display the current compositor tree as overlay if requested on
   // the command line
