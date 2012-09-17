@@ -527,9 +527,6 @@ class Plugin : public pp::InstancePrivate {
 
   int64_t time_of_last_progress_event_;
 
-  // Whether we are using IPC-based PPAPI proxy.
-  bool using_ipc_proxy_;
-
   const PPB_NaCl_Private* nacl_interface_;
 };
 

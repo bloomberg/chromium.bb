@@ -18,6 +18,7 @@
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_message.h"
 #include "native_client/src/shared/ppapi_proxy/ppruntime.h"
+#include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/untrusted/irt/irt_ppapi.h"
 #include "ppapi/c/ppp.h"
 #include "ppapi/c/ppp_instance.h"
@@ -221,6 +222,14 @@ void PpapiPluginRegisterThreadCreator(
 }
 
 int IrtInit() {
+  static int initialized = 0;
+  if (initialized) {
+    return 0;
+  }
+  if (!NaClSrpcModuleInit()) {
+    return 1;
+  }
+  initialized = 1;
   return 0;
 }
 
@@ -234,6 +243,15 @@ int PpapiPluginMain() {
   options.message_loop_type = MessageLoop::TYPE_IO;
   io_thread.StartWithOptions(options);
 
+  // Start up the SRPC server on another thread. Otherwise, when it blocks
+  // on an RPC, the PPAPI proxy will hang. Do this before we initialize the
+  // module and start the PPAPI proxy so that the NaCl plugin can continue
+  // loading the app.
+  static struct NaClSrpcHandlerDesc srpc_methods[] = { { NULL, NULL } };
+  if (!NaClSrpcAcceptClientOnThread(srpc_methods)) {
+    return 1;
+  }
+
   int32_t error = ::PPP_InitializeModule(
       0 /* module */,
       &ppapi::proxy::PluginDispatcher::GetBrowserInterface);
@@ -244,6 +262,9 @@ int PpapiPluginMain() {
   PpapiDispatcher ppapi_dispatcher(io_thread.message_loop_proxy());
 
   loop.Run();
+
+  NaClSrpcModuleFini();
+
   return 0;
 }
 
