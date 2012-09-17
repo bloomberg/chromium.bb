@@ -114,6 +114,10 @@ class ResourceCreationProxy : public InterfaceProxy,
       PP_Resource share_context,
       const int32_t* attrib_list) OVERRIDE;
   virtual PP_Resource CreateHostResolverPrivate(PP_Instance instance) OVERRIDE;
+  virtual PP_Resource CreateNetworkMonitor(
+      PP_Instance instance,
+      PPB_NetworkMonitor_Callback callback,
+      void* user_data) OVERRIDE;
   virtual PP_Resource CreateTCPServerSocketPrivate(
       PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateTCPSocketPrivate(PP_Instance instance) OVERRIDE;
@@ -142,10 +146,6 @@ class ResourceCreationProxy : public InterfaceProxy,
   virtual PP_Resource CreateFlashMenu(PP_Instance instance,
                                       const PP_Flash_Menu* menu_data) OVERRIDE;
   virtual PP_Resource CreateFlashMessageLoop(PP_Instance instance) OVERRIDE;
-  virtual PP_Resource CreateNetworkMonitor(
-      PP_Instance instance,
-      PPB_NetworkMonitor_Callback callback,
-      void* user_data) OVERRIDE;
   virtual PP_Resource CreatePrinting(PP_Instance) OVERRIDE;
   virtual PP_Resource CreateScrollbar(PP_Instance instance,
                                       PP_Bool vertical) OVERRIDE;

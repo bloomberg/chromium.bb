@@ -233,6 +233,14 @@ PP_Resource ResourceCreationProxy::CreateHostResolverPrivate(
   return PPB_HostResolver_Private_Proxy::CreateProxyResource(instance);
 }
 
+PP_Resource ResourceCreationProxy::CreateNetworkMonitor(
+    PP_Instance instance,
+    PPB_NetworkMonitor_Callback callback,
+    void* user_data) {
+  return PPB_NetworkMonitor_Private_Proxy::CreateProxyResource(
+      instance, callback, user_data);
+}
+
 PP_Resource ResourceCreationProxy::CreateTCPServerSocketPrivate(
     PP_Instance instance) {
   return PPB_TCPServerSocket_Private_Proxy::CreateProxyResource(instance);
@@ -315,14 +323,6 @@ PP_Resource ResourceCreationProxy::CreateFlashMenu(
 PP_Resource ResourceCreationProxy::CreateFlashMessageLoop(
     PP_Instance instance) {
   return PPB_Flash_MessageLoop_Proxy::CreateProxyResource(instance);
-}
-
-PP_Resource ResourceCreationProxy::CreateNetworkMonitor(
-      PP_Instance instance,
-      PPB_NetworkMonitor_Callback callback,
-      void* user_data) {
-  return PPB_NetworkMonitor_Private_Proxy::CreateProxyResource(
-      instance, callback, user_data);
 }
 
 PP_Resource ResourceCreationProxy::CreatePrinting(PP_Instance instance) {

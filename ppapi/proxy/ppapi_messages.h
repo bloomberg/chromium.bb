@@ -231,13 +231,6 @@ IPC_STRUCT_TRAITS_BEGIN(ppapi::PPB_URLRequestInfo_Data::BodyItem)
   IPC_STRUCT_TRAITS_MEMBER(expected_last_modified_time)
 IPC_STRUCT_TRAITS_END()
 
-#if !defined(OS_NACL) && !defined(NACL_WIN64)
-IPC_STRUCT_TRAITS_BEGIN(ppapi::proxy::PPPVideoCapture_Buffer)
-  IPC_STRUCT_TRAITS_MEMBER(resource)
-  IPC_STRUCT_TRAITS_MEMBER(handle)
-  IPC_STRUCT_TRAITS_MEMBER(size)
-IPC_STRUCT_TRAITS_END()
-
 IPC_STRUCT_TRAITS_BEGIN(ppapi::NetworkInfo)
   IPC_STRUCT_TRAITS_MEMBER(name)
   IPC_STRUCT_TRAITS_MEMBER(type)
@@ -245,6 +238,13 @@ IPC_STRUCT_TRAITS_BEGIN(ppapi::NetworkInfo)
   IPC_STRUCT_TRAITS_MEMBER(addresses)
   IPC_STRUCT_TRAITS_MEMBER(display_name)
   IPC_STRUCT_TRAITS_MEMBER(mtu)
+IPC_STRUCT_TRAITS_END()
+
+#if !defined(OS_NACL) && !defined(NACL_WIN64)
+IPC_STRUCT_TRAITS_BEGIN(ppapi::proxy::PPPVideoCapture_Buffer)
+  IPC_STRUCT_TRAITS_MEMBER(resource)
+  IPC_STRUCT_TRAITS_MEMBER(handle)
+  IPC_STRUCT_TRAITS_MEMBER(size)
 IPC_STRUCT_TRAITS_END()
 
 // TODO(tomfinegan): This is identical to PPPVideoCapture_Buffer, maybe replace
@@ -555,6 +555,11 @@ IPC_MESSAGE_ROUTED2(PpapiMsg_PPPMessaging_HandleMessage,
 IPC_MESSAGE_ROUTED1(PpapiMsg_PPPMouseLock_MouseLockLost,
                     PP_Instance /* instance */)
 
+// PPB_NetworkMonitor_Private.
+IPC_MESSAGE_ROUTED2(PpapiMsg_PPBNetworkMonitor_NetworkList,
+                    uint32 /* plugin_dispatcher_id */,
+                    ppapi::NetworkList /* network_list */)
+
 // PPP_Printing
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiMsg_PPPPrinting_QuerySupportedFormats,
                            PP_Instance /* instance */,
@@ -616,11 +621,6 @@ IPC_MESSAGE_ROUTED3(PpapiMsg_PPPContentDecryptor_DecryptAndDecode,
                     PP_Instance /* instance */,
                     ppapi::proxy::PPPDecryptor_Buffer /* buffer */,
                     std::string /* serialized_block_info */)
-
-// PPB_NetworkMonitor_Private.
-IPC_MESSAGE_ROUTED2(PpapiMsg_PPBNetworkMonitor_NetworkList,
-                    uint32 /* plugin_dispatcher_id */,
-                    ppapi::NetworkList /* network_list */)
 
 // PPB_Talk
 IPC_MESSAGE_ROUTED3(
@@ -1212,13 +1212,13 @@ IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBInstance_DeliverSamples,
                     PP_Instance /* instance */,
                     PP_Resource /* decrypted_samples, PPB_Buffer_Dev */,
                     std::string /* serialized_block_info */)
+#endif  // !defined(OS_NACL) && !defined(NACL_WIN64)
 
 // PPB_NetworkMonitor_Private.
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_PPBNetworkMonitor_Start,
                      uint32 /* plugin_dispatcher_id */)
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_PPBNetworkMonitor_Stop,
                      uint32 /* plugin_dispatcher_id */)
-#endif  // !defined(OS_NACL) && !defined(NACL_WIN64)
 
 // PPB_HostResolver_Private.
 IPC_MESSAGE_CONTROL5(PpapiHostMsg_PPBHostResolver_Resolve,

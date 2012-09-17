@@ -282,8 +282,6 @@
               'thunk/ppb_graphics_3d_trusted_thunk.cc',
               'thunk/ppb_image_data_trusted_thunk.cc',
               'thunk/ppb_layer_compositor_thunk.cc',
-              'thunk/ppb_network_list_private_thunk.cc',
-              'thunk/ppb_network_monitor_private_thunk.cc',
               'thunk/ppb_printing_thunk.cc',
               'thunk/ppb_scrollbar_thunk.cc',
               'thunk/ppb_talk_private_thunk.cc',
@@ -295,16 +293,21 @@
               'thunk/ppb_websocket_thunk.cc',
             ],
           }],
-          # We exclude a few more things for nacl_win64, to avoid pulling in more dependencies.
+          # We exclude a few more things for nacl_win64, to avoid pulling in
+          # more dependencies.
           ['>(nacl_win64_target)==1', {
             'sources!': [
               'shared_impl/ppb_audio_shared.cc',
               'shared_impl/ppb_graphics_3d_shared.cc',
               'shared_impl/ppb_opengles2_shared.cc',
+              'shared_impl/private/ppb_host_resolver_shared.cc',
               'shared_impl/private/ppb_tcp_server_socket_shared.cc',
               'shared_impl/private/tcp_socket_private_impl.cc',
               'shared_impl/private/udp_socket_private_impl.cc',
               'thunk/ppb_graphics_3d_thunk.cc',
+              'thunk/ppb_host_resolver_private_thunk.cc',
+              'thunk/ppb_network_list_private_thunk.cc',
+              'thunk/ppb_network_monitor_private_thunk.cc',
               'thunk/ppb_tcp_server_socket_private_thunk.cc',
               'thunk/ppb_tcp_socket_private_thunk.cc',
               'thunk/ppb_udp_socket_private_thunk.cc',
