@@ -591,6 +591,8 @@ text_entry_delete_text(struct text_entry *entry,
 	if (entry->cursor > index)
 		entry->cursor -= length;
 
+	entry->anchor = entry->cursor;
+
 	entry->text[index] = '\0';
 	strcat(entry->text, entry->text + index + length);
 
