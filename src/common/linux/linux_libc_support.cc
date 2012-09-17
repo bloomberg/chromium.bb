@@ -95,9 +95,8 @@ bool my_strtoui(int* result, const char* s) {
   return true;
 }
 
-// Return the length of the given, non-negative integer when expressed in base
-// 10.
-unsigned my_int_len(intmax_t i) {
+// Return the length of the given unsigned integer when expressed in base 10.
+unsigned my_uint_len(uintmax_t i) {
   if (!i)
     return 1;
 
@@ -110,13 +109,13 @@ unsigned my_int_len(intmax_t i) {
   return len;
 }
 
-// Convert a non-negative integer to a string
+// Convert an unsigned integer to a string
 //   output: (output) the resulting string is written here. This buffer must be
-//     large enough to hold the resulting string. Call |my_int_len| to get the
+//     large enough to hold the resulting string. Call |my_uint_len| to get the
 //     required length.
-//   i: the non-negative integer to serialise.
-//   i_len: the length of the integer in base 10 (see |my_int_len|).
-void my_itos(char* output, intmax_t i, unsigned i_len) {
+//   i: the unsigned integer to serialise.
+//   i_len: the length of the integer in base 10 (see |my_uint_len|).
+void my_uitos(char* output, uintmax_t i, unsigned i_len) {
   for (unsigned index = i_len; index; --index, i /= 10)
     output[index - 1] = '0' + (i % 10);
 }

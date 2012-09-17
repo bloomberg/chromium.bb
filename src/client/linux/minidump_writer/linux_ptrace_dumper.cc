@@ -112,13 +112,13 @@ bool LinuxPtraceDumper::BuildProcPath(char* path, pid_t pid,
   if (node_len == 0)
     return false;
 
-  const unsigned pid_len = my_int_len(pid);
+  const unsigned pid_len = my_uint_len(pid);
   const size_t total_length = 6 + pid_len + 1 + node_len;
   if (total_length >= NAME_MAX)
     return false;
 
   my_memcpy(path, "/proc/", 6);
-  my_itos(path + 6, pid, pid_len);
+  my_uitos(path + 6, pid, pid_len);
   path[6 + pid_len] = '/';
   my_memcpy(path + 6 + pid_len + 1, node, node_len);
   path[total_length] = '\0';

@@ -89,35 +89,41 @@ TEST(LinuxLibcSupportTest, strtoui) {
   ASSERT_EQ(result, 123);
 }
 
-TEST(LinuxLibcSupportTest, int_len) {
-  ASSERT_EQ(my_int_len(0), 1);
-  ASSERT_EQ(my_int_len(2), 1);
-  ASSERT_EQ(my_int_len(5), 1);
-  ASSERT_EQ(my_int_len(9), 1);
-  ASSERT_EQ(my_int_len(10), 2);
-  ASSERT_EQ(my_int_len(99), 2);
-  ASSERT_EQ(my_int_len(100), 3);
-  ASSERT_EQ(my_int_len(101), 3);
-  ASSERT_EQ(my_int_len(1000), 4);
+TEST(LinuxLibcSupportTest, uint_len) {
+  ASSERT_EQ(my_uint_len(0), 1);
+  ASSERT_EQ(my_uint_len(2), 1);
+  ASSERT_EQ(my_uint_len(5), 1);
+  ASSERT_EQ(my_uint_len(9), 1);
+  ASSERT_EQ(my_uint_len(10), 2);
+  ASSERT_EQ(my_uint_len(99), 2);
+  ASSERT_EQ(my_uint_len(100), 3);
+  ASSERT_EQ(my_uint_len(101), 3);
+  ASSERT_EQ(my_uint_len(1000), 4);
+  // 0xFFFFFFFFFFFFFFFF
+  ASSERT_EQ(my_uint_len(18446744073709551615LLU), 20);
 }
 
-TEST(LinuxLibcSupportTest, itos) {
-  char buf[10];
+TEST(LinuxLibcSupportTest, uitos) {
+  char buf[32];
 
-  my_itos(buf, 0, 1);
+  my_uitos(buf, 0, 1);
   ASSERT_EQ(0, memcmp(buf, "0", 1));
 
-  my_itos(buf, 1, 1);
+  my_uitos(buf, 1, 1);
   ASSERT_EQ(0, memcmp(buf, "1", 1));
 
-  my_itos(buf, 10, 2);
+  my_uitos(buf, 10, 2);
   ASSERT_EQ(0, memcmp(buf, "10", 2));
 
-  my_itos(buf, 63, 2);
+  my_uitos(buf, 63, 2);
   ASSERT_EQ(0, memcmp(buf, "63", 2));
 
-  my_itos(buf, 101, 3);
+  my_uitos(buf, 101, 3);
   ASSERT_EQ(0, memcmp(buf, "101", 2));
+
+  // 0xFFFFFFFFFFFFFFFF
+  my_uitos(buf, 18446744073709551615LLU, 20);
+  ASSERT_EQ(0, memcmp(buf, "18446744073709551615", 20));
 }
 
 TEST(LinuxLibcSupportTest, strchr) {
