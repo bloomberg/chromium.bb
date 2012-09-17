@@ -916,6 +916,8 @@
         'browser/instant/instant_loader_delegate.h',
         'browser/instant/instant_unload_handler.cc',
         'browser/instant/instant_unload_handler.h',
+        'browser/intents/api_key.cc',
+        'browser/intents/api_key.h',
         'browser/intents/cws_intents_registry.cc',
         'browser/intents/cws_intents_registry.h',
         'browser/intents/cws_intents_registry_factory.cc',
