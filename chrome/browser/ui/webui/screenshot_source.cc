@@ -6,31 +6,62 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/i18n/time_formatting.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/string16.h"
+#include "base/stringprintf.h"
 #include "base/string_util.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_prefs.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/url_canon.h"
 #include "googleurl/src/url_util.h"
 
-#if defined(OS_CHROMEOS)
+#if defined(USE_ASH)
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#endif
+
+#if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/gdata/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/gdata/drive_file_system_util.h"
 #include "chrome/browser/chromeos/gdata/drive_system_service.h"
+#include "chrome/browser/chromeos/gdata/gdata_util.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #endif
 
-static const char kCurrentScreenshotFilename[] = "current";
+// static
+const char ScreenshotSource::kScreenshotUrlRoot[] = "chrome://screenshots/";
+// static
+const char ScreenshotSource::kScreenshotCurrent[] = "current";
+// static
+const char ScreenshotSource::kScreenshotSaved[] = "saved/";
 #if defined(OS_CHROMEOS)
-static const char kSavedScreenshotsBasePath[] = "saved/";
+// static
+const char ScreenshotSource::kScreenshotPrefix[] = "Screenshot ";
+// static
+const char ScreenshotSource::kScreenshotSuffix[] = ".png";
 #endif
+
+bool ShouldUse24HourClock() {
+#if defined(OS_CHROMEOS)
+  Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
+  if (profile) {
+    return profile->GetPrefs()->GetBoolean(prefs::kUse24HourClock);
+  }
+#endif
+  return base::GetHourClockType() == base::k24HourClock;
+}
 
 ScreenshotSource::ScreenshotSource(
     std::vector<unsigned char>* current_screenshot,
@@ -45,6 +76,70 @@ ScreenshotSource::ScreenshotSource(
 }
 
 ScreenshotSource::~ScreenshotSource() {}
+
+// static
+std::string ScreenshotSource::GetScreenshotBaseFilename() {
+  base::Time::Exploded now;
+  base::Time::Now().LocalExplode(&now);
+
+  // We don't use base/i18n/time_formatting.h here because it doesn't
+  // support our format.  Don't use ICU either to avoid i18n file names
+  // for non-English locales.
+  // TODO(mukai): integrate this logic somewhere time_formatting.h
+  std::string file_name = base::StringPrintf(
+      "Screenshot %d-%02d-%02d at ", now.year, now.month, now.day_of_month);
+
+  if (ShouldUse24HourClock()) {
+    file_name.append(base::StringPrintf(
+        "%02d.%02d.%02d", now.hour, now.minute, now.second));
+  } else {
+    int hour = now.hour;
+    if (hour > 12) {
+      hour -= 12;
+    } else if (hour == 0) {
+      hour = 12;
+    }
+    file_name.append(base::StringPrintf(
+        "%d.%02d.%02d ", hour, now.minute, now.second));
+    file_name.append((now.hour >= 12) ? "PM" : "AM");
+  }
+
+  return file_name;
+}
+
+#if defined(USE_ASH)
+
+// static
+bool ScreenshotSource::AreScreenshotsDisabled() {
+  return g_browser_process->local_state()->GetBoolean(
+      prefs::kDisableScreenshots);
+}
+
+// static
+bool ScreenshotSource::GetScreenshotDirectory(FilePath* directory) {
+  if (ScreenshotSource::AreScreenshotsDisabled())
+    return false;
+
+  bool is_logged_in = true;
+
+#if defined(OS_CHROMEOS)
+  is_logged_in = chromeos::UserManager::Get()->IsUserLoggedIn();
+#endif
+
+  if (is_logged_in) {
+    DownloadPrefs* download_prefs = DownloadPrefs::FromBrowserContext(
+        ash::Shell::GetInstance()->delegate()->GetCurrentBrowserContext());
+    *directory = download_prefs->DownloadPath();
+  } else  {
+    if (!file_util::GetTempDir(directory)) {
+      LOG(ERROR) << "Failed to find temporary directory.";
+      return false;
+    }
+  }
+  return true;
+}
+
+#endif
 
 void ScreenshotSource::StartDataRequest(const std::string& path, bool,
                                         int request_id) {
@@ -75,14 +170,15 @@ void ScreenshotSource::SendScreenshot(const std::string& screenshot_path,
   // image gets reloaded instead of being pulled from the browser cache
   std::string path = screenshot_path.substr(
       0, screenshot_path.find_first_of("?"));
-  if (path == kCurrentScreenshotFilename) {
+  if (path == ScreenshotSource::kScreenshotCurrent) {
     CacheAndSendScreenshot(path, request_id, current_screenshot_);
 #if defined(OS_CHROMEOS)
-  } else if (path.compare(0, strlen(kSavedScreenshotsBasePath),
-                          kSavedScreenshotsBasePath) == 0) {
+  } else if (path.compare(0, strlen(ScreenshotSource::kScreenshotSaved),
+             ScreenshotSource::kScreenshotSaved) == 0) {
     using content::BrowserThread;
 
-    std::string filename = path.substr(strlen(kSavedScreenshotsBasePath));
+    std::string filename =
+                       path.substr(strlen(ScreenshotSource::kScreenshotSaved));
 
     url_canon::RawCanonOutputT<char16> decoded;
     url_util::DecodeURLEscapeSequences(
@@ -91,9 +187,8 @@ void ScreenshotSource::SendScreenshot(const std::string& screenshot_path,
     std::string decoded_filename = UTF16ToASCII(string16(
         decoded.data(), decoded.length()));
 
-    DownloadPrefs* download_prefs = DownloadPrefs::FromBrowserContext(
-        ash::Shell::GetInstance()->delegate()->GetCurrentBrowserContext());
-    FilePath download_path = download_prefs->DownloadPath();
+    FilePath download_path;
+    GetScreenshotDirectory(&download_path);
     if (gdata::util::IsUnderDriveMountPoint(download_path)) {
       gdata::DriveFileSystemInterface* file_system =
           gdata::DriveSystemServiceFactory::GetForProfile(
