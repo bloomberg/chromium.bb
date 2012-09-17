@@ -17620,7 +17620,7 @@ Battery full
     </message>
 	
     <message name="IDS_PDF_INFOBAR_QUESTION_READER_METRO_MODE" desc="Question asked on the info bar when a user views a PDF with an unsupported feature in Windows 8 in metro mode.">
-      Parts of this PDF document could not be displayed. Relaunch Chrome in desktop mode?
+      Parts of this PDF document could not be displayed. Relaunch Chrome on the desktop?
     </message>
 
     <message name="IDS_PDF_INFOBAR_QUESTION_ALWAYS_USE_READER" desc="Question asked on the info bar when a user opens a PDF with Reader and we want to ask them if they always want to use it for viewing PDF files.">
@@ -17923,10 +17923,6 @@ Battery full
              desc="Info Bar message to let user do something about the missing plugin">
       <ph name="PLUGIN_NAME">$1<ex>Quicktime</ex></ph> is required to display some elements on this page.
     </message>
-    <message name="IDS_METRO_SWITCH_TO_DESKTOP_BUTTON"
-             desc="Infobar button to switch from metro to desktop mode">
-      View this page in desktop mode
-    </message>
     <message name="IDS_METRO_SWITCH_WHY_LINK"
              desc="Infobar text for link to help center about metro mode issues">
       Why am I seeing this?
@@ -17940,8 +17936,8 @@ Battery full
       Download complete notification
     </message>
 	<message name="IDS_WIN8_DESKTOP_RESTART"
-             desc="Text for the menu item to restart chrome in desktop. Aplies to Windows 8 only">
-      Relaunch Chrome in desktop mode
+             desc="Text for the menu item to restart chrome in desktop mode. Aplies to Windows 8 only">
+      Relaunch Chrome on the desktop
     </message>
 	<message name="IDS_WIN8_METRO_RESTART"
              desc="Text for the menu item to restart chrome in metro. Aplies to Windows 8 only">
