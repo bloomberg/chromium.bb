@@ -49,6 +49,7 @@ struct view {
 	PopplerDocument *document;
 	int page;
 	int fullscreen;
+	int *view_counter;
 };
 
 static void
@@ -167,6 +168,23 @@ fullscreen_handler(struct window *window, void *data)
 }
 
 static void
+close_handler(struct window *window, void *data)
+{
+	struct view *view = data;
+
+	*view->view_counter -= 1;
+	if (*view->view_counter == 0)
+		display_exit(view->display);
+
+	widget_destroy(view->widget);
+	window_destroy(view->window);
+	if (view->document)
+		g_object_unref(view->document);
+
+	free(view);
+}
+
+static void
 key_handler(struct window *window, struct input *input, uint32_t time,
 	    uint32_t key, uint32_t unicode,
 	    enum wl_keyboard_key_state state, void *data)
@@ -204,7 +222,7 @@ keyboard_focus_handler(struct window *window,
 
 static struct view *
 view_create(struct display *display,
-	    uint32_t key, const char *filename, int fullscreen)
+	    uint32_t key, const char *filename, int fullscreen, int *view_counter)
 {
 	struct view *view;
 	gchar *basename;
@@ -244,6 +262,7 @@ view_create(struct display *display,
 	window_set_keyboard_focus_handler(view->window,
 					  keyboard_focus_handler);
 	window_set_fullscreen_handler(view->window, fullscreen_handler);
+	window_set_close_handler(view->window, close_handler);
 
 	widget_set_button_handler(view->widget, button_handler);
 	widget_set_resize_handler(view->widget, resize_handler);
@@ -255,6 +274,8 @@ view_create(struct display *display,
 	window_set_fullscreen(view->window, view->fullscreen);
 
 	window_schedule_resize(view->window, 500, 400);
+	view->view_counter = view_counter;
+	*view_counter += 1;
 
 	return view;
 }
@@ -270,6 +291,7 @@ main(int argc, char *argv[])
 {
 	struct display *d;
 	int i;
+	int view_counter = 0;
 
 	g_type_init();
 
@@ -283,9 +305,10 @@ main(int argc, char *argv[])
 	}
 
 	for (i = 1; i < argc; i++)
-		view_create (d, i, argv[i], option_fullscreen);
+		view_create (d, i, argv[i], option_fullscreen, &view_counter);
 
-	display_run(d);
+	if (view_counter > 0)
+		display_run(d);
 
 	return 0;
 }
