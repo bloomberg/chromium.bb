@@ -43,6 +43,16 @@ TEST(AcceleratorTableTest, CheckDuplicatedAccelerators) {
 
 #if defined(USE_ASH)
 TEST(AcceleratorTableTest, CheckDuplicatedAcceleratorsAsh) {
+  std::set<AcceleratorMapping, Cmp> allowed_duplicates;
+#if defined(OS_CHROMEOS)
+  AcceleratorMapping exception_entry;
+  // Both Chrome and Ash have a shortcut for F4
+  exception_entry.keycode = ui::VKEY_F4;
+  exception_entry.modifiers = ui::EF_NONE;
+  exception_entry.command_id = 0;  // dummy
+  allowed_duplicates.insert(exception_entry);
+#endif
+
   std::set<AcceleratorMapping, Cmp> acclerators;
   for (size_t i = 0; i < kAcceleratorMapLength; ++i) {
     const AcceleratorMapping& entry = kAcceleratorMap[i];
@@ -56,11 +66,13 @@ TEST(AcceleratorTableTest, CheckDuplicatedAcceleratorsAsh) {
     entry.keycode = ash_entry.keycode;
     entry.modifiers = ash_entry.modifiers;
     entry.command_id = 0;  // dummy
-    EXPECT_TRUE(acclerators.insert(entry).second)
-        << "Duplicated accelerator: " << entry.keycode << ", "
-        << (entry.modifiers & ui::EF_SHIFT_DOWN) << ", "
-        << (entry.modifiers & ui::EF_CONTROL_DOWN) << ", "
-        << (entry.modifiers & ui::EF_ALT_DOWN);
+    if (allowed_duplicates.find(entry) == allowed_duplicates.end()) {
+      EXPECT_TRUE(acclerators.insert(entry).second)
+          << "Duplicated accelerator: " << entry.keycode << ", "
+          << (entry.modifiers & ui::EF_SHIFT_DOWN) << ", "
+          << (entry.modifiers & ui::EF_CONTROL_DOWN) << ", "
+          << (entry.modifiers & ui::EF_ALT_DOWN);
+    }
   }
 }
 #endif  // USE_ASH

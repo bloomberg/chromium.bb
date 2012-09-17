@@ -349,6 +349,10 @@ void ChromeShellDelegate::OpenFeedbackPage() {
 void ChromeShellDelegate::RecordUserMetricsAction(
     ash::UserMetricsAction action) {
   switch (action) {
+    case ash::UMA_ACCEL_MAXIMIZE_RESTORE_F4:
+      content::RecordAction(
+          content::UserMetricsAction("Accel_Maximize_Restore_F4"));
+      break;
     case ash::UMA_ACCEL_PREVWINDOW_TAB:
       content::RecordAction(content::UserMetricsAction("Accel_PrevWindow_Tab"));
       break;

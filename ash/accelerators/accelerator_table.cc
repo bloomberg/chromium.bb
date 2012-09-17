@@ -45,6 +45,7 @@ const AcceleratorData kAcceleratorData[] = {
   { true, ui::VKEY_KBD_BRIGHTNESS_DOWN, ui::EF_NONE, KEYBOARD_BRIGHTNESS_DOWN },
   { true, ui::VKEY_KBD_BRIGHTNESS_UP, ui::EF_NONE, KEYBOARD_BRIGHTNESS_UP },
   { true, ui::VKEY_F4, ui::EF_CONTROL_DOWN, CYCLE_DISPLAY_MODE },
+  { true, ui::VKEY_F4, ui::EF_NONE, TOGGLE_MAXIMIZED },
   { true, ui::VKEY_L, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, LOCK_SCREEN },
   { true, ui::VKEY_POWER, ui::EF_NONE, POWER_PRESSED },
   { false, ui::VKEY_POWER, ui::EF_NONE, POWER_RELEASED },
@@ -121,7 +122,7 @@ const AcceleratorData kAcceleratorData[] = {
   { true, ui::VKEY_OEM_4, ui::EF_ALT_DOWN, WINDOW_SNAP_LEFT },
   { true, ui::VKEY_OEM_6, ui::EF_ALT_DOWN, WINDOW_SNAP_RIGHT },
   { true, ui::VKEY_OEM_MINUS, ui::EF_ALT_DOWN, WINDOW_MINIMIZE },
-  { true, ui::VKEY_OEM_PLUS, ui::EF_ALT_DOWN, WINDOW_MAXIMIZE_RESTORE },
+  { true, ui::VKEY_OEM_PLUS, ui::EF_ALT_DOWN, TOGGLE_MAXIMIZED },
   { true, ui::VKEY_OEM_PLUS, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
     WINDOW_POSITION_CENTER },
   { true, ui::VKEY_F2, ui::EF_CONTROL_DOWN, FOCUS_NEXT_PANE },
@@ -171,6 +172,7 @@ const AcceleratorAction kReservedActions[] = {
   FOCUS_PREVIOUS_PANE,  // Control+F1
   FOCUS_NEXT_PANE,  // Control+F2
   CYCLE_DISPLAY_MODE,  // Control+F4
+  TOGGLE_MAXIMIZED, // F4
   CYCLE_FORWARD_LINEAR,  // F5
   CYCLE_BACKWARD_LINEAR,  // Shift+F5
   TAKE_SCREENSHOT,  // Control+F5

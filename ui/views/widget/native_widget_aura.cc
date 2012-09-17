@@ -237,6 +237,9 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
 
   if (desktop_helper_.get())
     desktop_helper_->PostInitialize();
+
+  window_->SetProperty(aura::client::kCanMaximizeKey,
+                       GetWidget()->widget_delegate()->CanMaximize());
 }
 
 NonClientFrameView* NativeWidgetAura::CreateNonClientFrameView() {

@@ -5,6 +5,7 @@
 #include "ui/aura/test/test_windows.h"
 
 #include "base/string_number_conversions.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/rect.h"
@@ -52,6 +53,7 @@ Window* CreateTestWindowWithDelegateAndType(WindowDelegate* delegate,
   window->SetBounds(bounds);
   window->Show();
   window->SetParent(parent);
+  window->SetProperty(aura::client::kCanMaximizeKey, true);
   return window;
 }
 

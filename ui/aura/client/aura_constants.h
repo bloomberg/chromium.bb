@@ -25,6 +25,9 @@ AURA_EXPORT extern const WindowProperty<bool>* const kAlwaysOnTopKey;
 // of value is an int.
 AURA_EXPORT extern const WindowProperty<bool>* const kAnimationsDisabledKey;
 
+// A property key to store can-maximize flag.
+AURA_EXPORT extern const WindowProperty<bool>* const kCanMaximizeKey;
+
 // A property key to store if a window is a constrained window or not.
 AURA_EXPORT extern const WindowProperty<bool>* const kConstrainedWindowKey;
 

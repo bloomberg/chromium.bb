@@ -61,6 +61,10 @@ bool CanActivateWindow(aura::Window* window) {
   return client && client->CanActivateWindow(window);
 }
 
+bool CanMaximizeWindow(aura::Window* window) {
+  return window->GetProperty(aura::client::kCanMaximizeKey);
+}
+
 bool IsWindowNormal(aura::Window* window) {
   return IsWindowStateNormal(window->GetProperty(aura::client::kShowStateKey));
 }

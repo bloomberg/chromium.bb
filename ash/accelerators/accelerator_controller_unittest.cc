@@ -450,23 +450,23 @@ TEST_F(AcceleratorControllerTest, WindowSnap) {
   {
     gfx::Rect normal_bounds = window->bounds();
 
-    GetController()->PerformAction(WINDOW_MAXIMIZE_RESTORE, dummy);
+    GetController()->PerformAction(TOGGLE_MAXIMIZED, dummy);
     EXPECT_TRUE(wm::IsWindowMaximized(window.get()));
     EXPECT_NE(normal_bounds.ToString(), window->bounds().ToString());
 
-    GetController()->PerformAction(WINDOW_MAXIMIZE_RESTORE, dummy);
+    GetController()->PerformAction(TOGGLE_MAXIMIZED, dummy);
     EXPECT_FALSE(wm::IsWindowMaximized(window.get()));
     EXPECT_EQ(normal_bounds.ToString(), window->bounds().ToString());
 
-    GetController()->PerformAction(WINDOW_MAXIMIZE_RESTORE, dummy);
+    GetController()->PerformAction(TOGGLE_MAXIMIZED, dummy);
     GetController()->PerformAction(WINDOW_SNAP_LEFT, dummy);
     EXPECT_FALSE(wm::IsWindowMaximized(window.get()));
 
-    GetController()->PerformAction(WINDOW_MAXIMIZE_RESTORE, dummy);
+    GetController()->PerformAction(TOGGLE_MAXIMIZED, dummy);
     GetController()->PerformAction(WINDOW_SNAP_RIGHT, dummy);
     EXPECT_FALSE(wm::IsWindowMaximized(window.get()));
 
-    GetController()->PerformAction(WINDOW_MAXIMIZE_RESTORE, dummy);
+    GetController()->PerformAction(TOGGLE_MAXIMIZED, dummy);
     EXPECT_TRUE(wm::IsWindowMaximized(window.get()));
     GetController()->PerformAction(WINDOW_MINIMIZE, dummy);
     EXPECT_FALSE(wm::IsWindowMaximized(window.get()));

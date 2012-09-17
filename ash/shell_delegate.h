@@ -39,6 +39,7 @@ class SystemTrayDelegate;
 class UserWallpaperDelegate;
 
 enum UserMetricsAction {
+  UMA_ACCEL_MAXIMIZE_RESTORE_F4,
   UMA_ACCEL_NEWTAB_T,
   UMA_ACCEL_NEXTWINDOW_F5,
   UMA_ACCEL_NEXTWINDOW_TAB,

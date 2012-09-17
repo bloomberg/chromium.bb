@@ -649,20 +649,25 @@ bool AcceleratorController::PerformAction(int action,
       }
       break;
     }
-    case WINDOW_MAXIMIZE_RESTORE: {
-      aura::Window* window = wm::GetActiveWindow();
-      // Attempt to restore the window that would be cycled through next from
-      // the launcher when there is no active window.
-      if (!window)
-        return HandleCycleWindowMRU(WindowCycleController::FORWARD, false);
-      if (!wm::IsWindowFullscreen(window)) {
-        if (wm::IsWindowMaximized(window))
-          wm::RestoreWindow(window);
-        else
-          wm::MaximizeWindow(window);
-        return true;
+    case TOGGLE_MAXIMIZED: {
+      if (key_code == ui::VKEY_F4 && shell->delegate()) {
+        shell->delegate()->RecordUserMetricsAction(
+            UMA_ACCEL_MAXIMIZE_RESTORE_F4);
       }
-      break;
+      aura::Window* window = wm::GetActiveWindow();
+      if (!window)
+        return true;
+      if (wm::IsWindowFullscreen(window)) {
+        // Chrome also uses VKEY_F4 as a shortcut. Its action is to toggle
+        // fullscreen. We return false below so Chrome will process the
+        // shortcut again and, in case of VKEY_F4, exit fullscreen.
+        return false;
+      }
+      if (wm::IsWindowMaximized(window))
+        wm::RestoreWindow(window);
+      else if (wm::CanMaximizeWindow(window))
+        wm::MaximizeWindow(window);
+      return true;
     }
     case WINDOW_POSITION_CENTER: {
       aura::Window* window = wm::GetActiveWindow();
