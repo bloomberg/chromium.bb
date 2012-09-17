@@ -660,6 +660,14 @@ bool UpdateWindowFunction::RunImpl() {
   if (!GetWindowFromWindowID(this, window_id, &controller))
     return false;
 
+#if defined(OS_WIN)
+  // Silently ignore changes on the window for metro mode.
+  if (base::win::IsMetroProcess()) {
+    SetResult(controller->CreateWindowValue());
+    return true;
+  }
+#endif
+
   ui::WindowShowState show_state = ui::SHOW_STATE_DEFAULT;  // No change.
   std::string state_str;
   if (update_props->HasKey(keys::kShowStateKey)) {
