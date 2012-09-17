@@ -882,7 +882,7 @@ NPError NPN_SetValue(NPP id, NPPVariable variable, void* value) {
       return NPERR_GENERIC_ERROR;
   #if defined(OS_MACOSX)
     case NPPVpluginDrawingModel: {
-      int model = reinterpret_cast<int>(value);
+      intptr_t model = reinterpret_cast<intptr_t>(value);
       if (model == NPDrawingModelCoreGraphics ||
           ((model == NPDrawingModelInvalidatingCoreAnimation ||
             model == NPDrawingModelCoreAnimation) &&
@@ -894,7 +894,7 @@ NPError NPN_SetValue(NPP id, NPPVariable variable, void* value) {
     }
     case NPPVpluginEventModel: {
       // Only the Cocoa event model is supported.
-      int model = reinterpret_cast<int>(value);
+      intptr_t model = reinterpret_cast<intptr_t>(value);
       if (model == NPEventModelCocoa) {
         plugin->set_event_model(static_cast<NPEventModel>(model));
         return NPERR_NO_ERROR;
