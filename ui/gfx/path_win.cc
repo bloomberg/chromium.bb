@@ -2,16 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/path.h"
+#include "ui/gfx/path_win.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "ui/gfx/path.h"
 
 namespace gfx {
 
-HRGN Path::CreateNativeRegion() const {
-  int point_count = getPoints(NULL, 0);
+HRGN CreateHRGNFromSkPath(const SkPath& path) {
+  int point_count = path.getPoints(NULL, 0);
   scoped_array<SkPoint> points(new SkPoint[point_count]);
-  getPoints(points.get(), point_count);
+  path.getPoints(points.get(), point_count);
   scoped_array<POINT> windows_points(new POINT[point_count]);
   for (int i = 0; i < point_count; ++i) {
     windows_points[i].x = SkScalarRound(points[i].fX);
@@ -19,6 +20,13 @@ HRGN Path::CreateNativeRegion() const {
   }
 
   return ::CreatePolygonRgn(windows_points.get(), point_count, ALTERNATE);
+}
+
+// See path_aura.cc for Aura definition of these methods:
+#if !defined(USE_AURA)
+
+NativeRegion Path::CreateNativeRegion() const {
+  return CreateHRGNFromSkPath(*this);
 }
 
 // static
@@ -41,5 +49,7 @@ NativeRegion Path::SubtractRegion(NativeRegion r1, NativeRegion r2) {
   CombineRgn(dest, r1, r2, RGN_DIFF);
   return dest;
 }
+
+#endif
 
 }  // namespace gfx

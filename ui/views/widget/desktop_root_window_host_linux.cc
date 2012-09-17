@@ -95,6 +95,11 @@ gfx::Rect DesktopRootWindowHostLinux::GetRestoredBounds() const {
   return gfx::Rect();
 }
 
+void DesktopRootWindowHostLinux::SetShape(gfx::NativeRegion native_region) {
+  // TODO(erg):
+  NOTIMPLEMENTED();
+}
+
 bool DesktopRootWindowHostLinux::ShouldUseNativeFrame() {
   return false;
 }

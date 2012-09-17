@@ -198,6 +198,7 @@ void DesktopNativeWidgetAura::StackBelow(gfx::NativeView native_view) {
 }
 
 void DesktopNativeWidgetAura::SetShape(gfx::NativeRegion shape) {
+  desktop_root_window_host_->SetShape(shape);
 }
 
 void DesktopNativeWidgetAura::Close() {
@@ -386,10 +387,11 @@ void DesktopNativeWidgetAura::OnWindowTargetVisibilityChanged(bool visible) {
 }
 
 bool DesktopNativeWidgetAura::HasHitTestMask() const {
-  return false;
+  return native_widget_delegate_->HasHitTestMask();
 }
 
 void DesktopNativeWidgetAura::GetHitTestMask(gfx::Path* mask) const {
+  native_widget_delegate_->GetHitTestMask(mask);
 }
 
 scoped_refptr<ui::Texture> DesktopNativeWidgetAura::CopyTexture() {

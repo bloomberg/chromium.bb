@@ -22,6 +22,7 @@
 #include "ui/gfx/icon_util.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/path.h"
+#include "ui/gfx/path_win.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/monitor_win.h"
@@ -1129,13 +1130,8 @@ void HWNDMessageHandler::ResetWindowRegion(bool force) {
   } else {
     gfx::Path window_mask;
     delegate_->GetWindowMask(
-      gfx::Size(window_rect.Width(), window_rect.Height()), &window_mask);
-    // TODO(beng): resolve wrt aura.
-#if defined(USE_AURA)
-    new_region = NULL;
-#else
-    new_region = window_mask.CreateNativeRegion();
-#endif
+        gfx::Size(window_rect.Width(), window_rect.Height()), &window_mask);
+    new_region = gfx::CreateHRGNFromSkPath(window_mask);
   }
 
   if (current_rgn_result == ERROR || !EqualRgn(current_rgn, new_region)) {

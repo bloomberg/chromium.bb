@@ -34,6 +34,7 @@ class DesktopRootWindowHostLinux : public DesktopRootWindowHost {
   virtual gfx::Rect GetWindowBoundsInScreen() const OVERRIDE;
   virtual gfx::Rect GetClientAreaBoundsInScreen() const OVERRIDE;
   virtual gfx::Rect GetRestoredBounds() const OVERRIDE;
+  virtual void SetShape(gfx::NativeRegion native_region) OVERRIDE;
   virtual bool ShouldUseNativeFrame() OVERRIDE;
   virtual void Activate() OVERRIDE;
   virtual void Deactivate() OVERRIDE;

@@ -4,12 +4,16 @@
 
 #include "ui/views/widget/desktop_root_window_host_win.h"
 
+#include "third_party/skia/include/core/SkPath.h"
+#include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/desktop/desktop_activation_client.h"
 #include "ui/aura/desktop/desktop_dispatcher_client.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/shared/compound_event_filter.h"
 #include "ui/base/win/shell.h"
+#include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/path_win.h"
 #include "ui/views/ime/input_method_win.h"
 #include "ui/views/widget/desktop_capture_client.h"
 #include "ui/views/win/hwnd_message_handler.h"
@@ -123,6 +127,12 @@ gfx::Rect DesktopRootWindowHostWin::GetClientAreaBoundsInScreen() const {
 
 gfx::Rect DesktopRootWindowHostWin::GetRestoredBounds() const {
   return message_handler_->GetRestoredBounds();
+}
+
+void DesktopRootWindowHostWin::SetShape(gfx::NativeRegion native_region) {
+  SkPath path;
+  native_region->getBoundaryPath(&path);
+  message_handler_->SetRegion(gfx::CreateHRGNFromSkPath(path));
 }
 
 bool DesktopRootWindowHostWin::ShouldUseNativeFrame() {
@@ -337,6 +347,10 @@ int DesktopRootWindowHostWin::GetNonClientComponent(
 
 void DesktopRootWindowHostWin::GetWindowMask(const gfx::Size& size,
                                              gfx::Path* path) {
+  views::NonClientView* ncv =
+      native_widget_delegate_->AsWidget()->non_client_view();
+  if (ncv)
+    ncv->GetWindowMask(size, path);
 }
 
 bool DesktopRootWindowHostWin::GetClientAreaInsets(gfx::Insets* insets) const {
