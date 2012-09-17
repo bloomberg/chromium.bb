@@ -2915,11 +2915,7 @@ int32_t NaClCommonSysTest_InfoLeak(struct NaClAppThread *natp) {
 
   __asm__ volatile("vldm %0, {d0-d7}" :: "r" (manybytes) :
                    "d0", "d1", "d2", "d3", "d4", "d5", "d6", "d7");
-#if NACL_ANDROID
-  __asm__ volatile("fmxr fpscr, %0" :: "r" (0xdeadbeef) : "vfpcc");
-#else
   __asm__ volatile("vmsr fpscr, %0" :: "r" (0xdeadbeef) : "vfpcc");
-#endif
 
 #endif
 

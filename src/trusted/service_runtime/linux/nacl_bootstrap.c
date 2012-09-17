@@ -21,9 +21,7 @@
 #include <elf.h>
 #include <fcntl.h>
 #include <limits.h>
-#if !NACL_ANDROID
 #include <link.h>
-#endif
 #include <stddef.h>
 #include <stdint.h>
 #include <sys/mman.h>
@@ -34,46 +32,6 @@
 static int my_errno;
 #define SYS_ERRNO my_errno
 #include "third_party/lss/linux_syscall_support.h"
-
-#if NACL_ANDROID
-/* Bionic is currently 32-bit only. */
-#define ElfW(type) Elf32_##type
-
-struct dl_phdr_info {
-  ElfW(Addr) dlpi_addr;
-  const char* dlpi_name;
-  const ElfW(Phdr)* dlpi_phdr;
-  ElfW(Half) dlpi_phnum;
-};
-
-struct link_map
-{
-    uintptr_t l_addr;
-    char * l_name;
-    uintptr_t l_ld;
-    struct link_map * l_next;
-    struct link_map * l_prev;
-};
-
-struct r_debug
-{
-    int32_t r_version;
-    struct link_map * r_map;
-    void (*r_brk)(void);
-    int32_t r_state;
-    uintptr_t r_ldbase;
-};
-
-typedef struct
-{
-  uint32_t a_type;
-  union
-    {
-      uint32_t a_val;
-    } a_un;
-} Elf32_auxv_t;
-
-#endif
 
 #define MAX_PHNUM               12
 
@@ -321,10 +279,6 @@ static ElfW(Addr) load_elf_file(const char *filename,
     fail(filename, "ELF file has unreasonable ",
          "e_phnum", ehdr.e_phnum, NULL, 0);
 
-  /*
-   * On Android /system/bin/linker, which is stadard interpreter,
-   * is statically linked, unlike /lib/ld-linux.so.3.
-   */
   if (ehdr.e_type != ET_DYN)
     fail(filename, "ELF file not ET_DYN!  ",
          "e_type", ehdr.e_type, NULL, 0);
@@ -725,25 +679,4 @@ asm(".pushsection \".text\",\"ax\",%progbits\n"
 int raise(int sig) {
   return sys_kill(sys_getpid(), sig);
 }
-
-#if NACL_ANDROID
-/*
- * .. along with few other functions.
- */
-void abort(void) {
-  sys_kill(sys_getpid(), SIGABRT);
-  while (1) {}
-}
-
-void *memcpy(void *dest, const void *src, size_t n) {
-  size_t i;
-  for (i = 0; i < n; i++)
-    ((uint8_t*) dest)[i] = ((uint8_t*) src)[i];
-  return dest;
-}
-
-void __exidx_start() {}
-void __exidx_end() {}
-
-#endif
 #endif

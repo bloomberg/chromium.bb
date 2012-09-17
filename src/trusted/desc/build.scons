@@ -58,10 +58,6 @@ elif env.Bit('mac'):
   nrd_lib_inputs += [
       'posix/nacl_desc.c',
   ]
-elif env.Bit('android'):
-  nrd_lib_inputs += [
-      'posix/nacl_desc.c',
-  ]
 else:
   nrd_lib_inputs += [
       'linux/nacl_desc_sysv_shm.c',

@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
+ * Copyright 2008 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can
+ * be found in the LICENSE file.
  */
 
 
@@ -22,15 +22,7 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 
-#if NACL_ANDROID
-// We do not have dladrr() on Android.
-extern "C" int dladdr(void *, Dl_info *) {
-  return 0;
-}
-#endif
-
 namespace nacl {
-
 
 // First, try looking a symbol up in the dynamic loader's records.
 static void PathFromSymbol(char* buffer, size_t len, void* sym) {

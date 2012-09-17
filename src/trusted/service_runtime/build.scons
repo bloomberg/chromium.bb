@@ -425,18 +425,11 @@ if env.Bit('linux') and not env.Bit('built_elsewhere'):
       ['linux/nacl_bootstrap_munge_phdr.c'],
       LIBS=['elf'])
 
-  # For Android ELF segment to be patched is number 3, otherwise number 2.
-  # TODO(olonho): we may not need nacl_helper_bootstrap at all for Android,
-  # so this code could be excessive.
-  if env.Bit('android'):
-    segment = '3'
-  else:
-    segment = '2'
   bootstrap_prog = bootstrap_env.Command(
       'nacl_helper_bootstrap',
       [bootstrap_env.File('linux/nacl_bootstrap_munge_phdr.py'),
        bootstrap_munge, bootstrap_raw],
-      '${PYTHON} ${SOURCES} %s ${TARGET}' %(segment)
+      '${PYTHON} ${SOURCES} ${TARGET}'
       )
   bootstrap_out = bootstrap_env.Install('${STAGING_DIR}', bootstrap_prog)
 

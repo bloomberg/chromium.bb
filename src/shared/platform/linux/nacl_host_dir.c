@@ -48,9 +48,6 @@ int getdents(unsigned int fd, struct dirent* dirp, unsigned int count);
 #else
 # include <sys/syscall.h>
 int getdents(unsigned int fd, struct dirent* dirp, unsigned int count) {
-#if NACL_ANDROID
-# define SYS_getdents __NR_getdents
-#endif
   return syscall(SYS_getdents, fd, dirp, count);
 }
 #endif

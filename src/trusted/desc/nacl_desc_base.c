@@ -121,7 +121,7 @@ int (*NaClDescInternalize[NACL_DESC_TYPE_MAX])(
   NaClDescInternalizeNotImplemented,  /* bound sockets cannot be transferred */
   NaClDescInternalizeNotImplemented,  /* connected abstract base class */
   NaClDescImcShmInternalize,
-#if NACL_LINUX && !NACL_ANDROID
+#if NACL_LINUX
   NaClDescSysvShmInternalize,
 #else
   NULL,

@@ -101,13 +101,9 @@ static void ThreadExitHook(struct NaClAppThread *natp) throw() {
 
 static void ProcessExitHook(int ErrCode) throw() {
   g_target->Exit(ErrCode);
-#if !NACL_ANDROID
   try {
-#endif
     NaClDebugStubFini();
-#if !NACL_ANDROID
   } DBG_CATCH_ALL
-#endif
 }
 
 static const struct NaClDebugCallbacks debug_callbacks = {

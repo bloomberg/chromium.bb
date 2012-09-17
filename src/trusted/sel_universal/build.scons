@@ -11,6 +11,7 @@ Import('env')
 if env.Bit('linux') and env.Bit('target_x86'):
   env.Append(LIBS=['dl'])
 
+
 # NOTE: we need Cocoa because of the GetPluginDir() implementation
 #       on mac (nonnacl_util_c)
 env.ComponentProgram('sel_universal',

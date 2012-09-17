@@ -14,10 +14,6 @@
 #include <signal.h>
 #include <pthread.h>
 #include <limits.h>
-
-#if NACL_ANDROID
-# include <sys/mman.h>
-#endif
 /*
  * PTHREAD_STACK_MIN should come from pthread.h as documented, but is
  * actually pulled in by limits.h.
