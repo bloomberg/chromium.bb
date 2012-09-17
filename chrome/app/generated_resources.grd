@@ -11910,6 +11910,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_DELETED_MESSAGE" desc="Message informing about deleting single item.">
         Deleted "<ph name="FILENAME">$1<ex>photo.jpg</ex></ph>"
       </message>
+      <message name="IDS_FILE_BROWSER_UNDO_DELETE" desc="Text on the button to undo the delete operation.">
+        Undo
+      </message>
 
       <message name="IDS_FILE_BROWSER_CANCEL_LABEL" desc="Cancel label.">
         Cancel
