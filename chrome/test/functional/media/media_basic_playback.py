@@ -22,12 +22,13 @@ _TEST_HTML_PATH = os.path.join('media', 'html', 'media_basic_playback.html')
 # have more test videos in the matrix.  Code already written, see patch here:
 # https://chromiumcodereview.appspot.com/9290008/#ps12
 _TEST_VIDEOS = [
-    os.path.join(pyauto.PyUITest.ContentDataDir(), 'media', name)
+    pyauto.PyUITest.GetFileURLForContentDataPath('media', name)
     for name in ['bear.mp4', 'bear.ogv', 'bear.webm', 'bear_silent.mp4',
                  'bear_silent.ogv', 'bear_silent.webm']]
 
 # Expected events for the first iteration and every iteration thereafter.
-_EXPECTED_EVENTS_0 = [('ended', 2), ('playing', 2), ('seeked', 1)]
+_EXPECTED_EVENTS_0 = [('ended', 2), ('playing', 2), ('seeked', 1),
+                      ('suspend', 1)]
 _EXPECTED_EVENTS_n = [('abort', 1), ('emptied', 1)] + _EXPECTED_EVENTS_0
 
 
