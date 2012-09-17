@@ -50,6 +50,7 @@ class TestBrowserContext : public BrowserContext {
   FRIEND_TEST_ALL_PREFIXES(DOMStorageTest, SessionOnly);
   FRIEND_TEST_ALL_PREFIXES(DOMStorageTest, SaveSessionState);
 
+  scoped_refptr<net::URLRequestContextGetter> request_context_;
   scoped_ptr<MockResourceContext> resource_context_;
   ScopedTempDir browser_context_dir_;
   scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;

@@ -43,7 +43,7 @@ class AnyThreadNonTaskRunner : public base::SingleThreadTaskRunner {
 
 class TestContextURLRequestContextGetter : public net::URLRequestContextGetter {
  public:
-  TestContextURLRequestContextGetter(net::URLRequestContext* context)
+  explicit TestContextURLRequestContextGetter(net::URLRequestContext* context)
       : context_(context),
         any_thread_non_task_runner_(new AnyThreadNonTaskRunner) {
   }
@@ -64,7 +64,7 @@ class TestContextURLRequestContextGetter : public net::URLRequestContextGetter {
   scoped_refptr<base::SingleThreadTaskRunner> any_thread_non_task_runner_;
 };
 
-}
+}  // namespace
 
 namespace content {
 
@@ -97,8 +97,11 @@ DownloadManagerDelegate* TestBrowserContext::GetDownloadManagerDelegate() {
 }
 
 net::URLRequestContextGetter* TestBrowserContext::GetRequestContext() {
-  return new TestContextURLRequestContextGetter(
-      GetResourceContext()->GetRequestContext());
+  if (!request_context_.get()) {
+    request_context_ = new TestContextURLRequestContextGetter(
+        GetResourceContext()->GetRequestContext());
+  }
+  return request_context_.get();
 }
 
 net::URLRequestContextGetter*
