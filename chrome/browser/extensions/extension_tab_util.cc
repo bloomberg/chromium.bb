@@ -62,19 +62,17 @@ int ExtensionTabUtil::GetWindowIdOfTab(const WebContents* web_contents) {
 
 DictionaryValue* ExtensionTabUtil::CreateTabValue(
     const WebContents* contents,
+    TabStripModel* tab_strip,
+    int tab_index,
     const Extension* extension) {
-  // Find the tab strip and index of this guy.
-  TabStripModel* tab_strip = NULL;
-  int tab_index;
-  if (ExtensionTabUtil::GetTabStripModel(contents, &tab_strip, &tab_index)) {
-    return ExtensionTabUtil::CreateTabValue(contents,
-                                            tab_strip,
-                                            tab_index,
-                                            extension);
-  }
+  // Only add privacy-sensitive data if the requesting extension has the tabs
+  // permission.
+  bool has_permission = extension && extension->HasAPIPermissionForTab(
+      GetTabId(contents), APIPermission::kTab);
 
-  // Couldn't find it.  This can happen if the tab is being dragged.
-  return ExtensionTabUtil::CreateTabValue(contents, NULL, -1, extension);
+  return CreateTabValue(contents, tab_strip, tab_index,
+                        has_permission ? INCLUDE_PRIVACY_SENSITIVE_FIELDS :
+                            OMIT_PRIVACY_SENSITIVE_FIELDS);
 }
 
 ListValue* ExtensionTabUtil::CreateTabList(
@@ -97,7 +95,10 @@ DictionaryValue* ExtensionTabUtil::CreateTabValue(
     const WebContents* contents,
     TabStripModel* tab_strip,
     int tab_index,
-    const Extension* extension) {
+    IncludePrivacySensitiveFields include_privacy_sensitive_fields) {
+  if (!tab_strip)
+    ExtensionTabUtil::GetTabStripModel(contents, &tab_strip, &tab_index);
+
   DictionaryValue* result = new DictionaryValue();
   bool is_loading = contents->IsLoading();
   result->SetInteger(keys::kIdKey, GetTabId(contents));
@@ -115,24 +116,7 @@ DictionaryValue* ExtensionTabUtil::CreateTabValue(
   result->SetBoolean(keys::kIncognitoKey,
                      contents->GetBrowserContext()->IsOffTheRecord());
 
-  // Only add privacy-sensitive data if the requesting extension has the tabs
-  // permission.
-  bool has_permission = false;
-  if (extension) {
-    if (tab_index >= 0) {
-      has_permission =
-          extension->HasAPIPermissionForTab(
-              tab_index, APIPermission::kTab) ||
-          extension->HasAPIPermissionForTab(
-              tab_index, APIPermission::kWebNavigation);
-    } else {
-      has_permission =
-          extension->HasAPIPermission(APIPermission::kTab) ||
-          extension->HasAPIPermission(APIPermission::kWebNavigation);
-    }
-  }
-
-  if (has_permission) {
+  if (include_privacy_sensitive_fields == INCLUDE_PRIVACY_SENSITIVE_FIELDS) {
     result->SetString(keys::kUrlKey, contents->GetURL().spec());
     result->SetString(keys::kTitleKey, contents->GetTitle());
     if (!is_loading) {
@@ -151,15 +135,6 @@ DictionaryValue* ExtensionTabUtil::CreateTabValue(
     }
   }
 
-  return result;
-}
-
-DictionaryValue* ExtensionTabUtil::CreateTabValueActive(
-    const WebContents* contents,
-    bool active,
-    const extensions::Extension* extension) {
-  DictionaryValue* result = CreateTabValue(contents, extension);
-  result->SetBoolean(keys::kSelectedKey, active);
   return result;
 }
 

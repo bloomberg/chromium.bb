@@ -101,7 +101,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, Basic) {
   ResultCatcher catcher;
   ui_test_utils::NavigateToURL(browser(),
       GURL(extension->GetResourceURL("update.html")));
-  ASSERT_TRUE(catcher.GetNextResult());
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 
   // Test that we received the changes.
   ExtensionAction* action = extension->browser_action();
@@ -117,16 +117,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, Basic) {
   ExtensionService* service = browser()->profile()->GetExtensionService();
   service->toolbar_model()->ExecuteBrowserAction(extension, browser(), NULL);
 
-  // Verify the command worked.
-  WebContents* tab = chrome::GetActiveWebContents(browser());
-  bool result = false;
-  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-      tab->GetRenderViewHost(), L"",
-      L"setInterval(function(){"
-      L"  if(document.body.bgColor == 'red'){"
-      L"    window.domAutomationController.send(true)}}, 100)",
-      &result));
-  ASSERT_TRUE(result);
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DynamicBrowserAction) {

@@ -643,10 +643,12 @@ void MenuManager::ExecuteCommand(Profile* profile,
   // No tab info in a platform app.
   if (!extension || !extension->is_platform_app()) {
     // Note: web_contents are NULL in unit tests :(
-    if (web_contents)
-      args->Append(ExtensionTabUtil::CreateTabValue(web_contents, extension));
-    else
+    if (web_contents) {
+      args->Append(ExtensionTabUtil::CreateTabValue(
+          web_contents, ExtensionTabUtil::INCLUDE_PRIVACY_SENSITIVE_FIELDS));
+    } else {
       args->Append(new DictionaryValue());
+    }
   }
 
   if (item->type() == MenuItem::CHECKBOX ||

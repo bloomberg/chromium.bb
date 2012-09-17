@@ -45,19 +45,33 @@ class ExtensionTabUtil {
   static base::ListValue* CreateTabList(
       const Browser* browser,
       const extensions::Extension* extension);
+
   static base::DictionaryValue* CreateTabValue(
       const content::WebContents* web_contents,
-      const extensions::Extension* extension);
+      const extensions::Extension* extension) {
+    return CreateTabValue(web_contents, NULL, -1, extension);
+  }
   static base::DictionaryValue* CreateTabValue(
       const content::WebContents* web_contents,
       TabStripModel* tab_strip,
       int tab_index,
       const extensions::Extension* extension);
-  // Create a tab value, overriding its kSelectedKey to the provided boolean.
-  static base::DictionaryValue* CreateTabValueActive(
+
+  enum IncludePrivacySensitiveFields {
+    INCLUDE_PRIVACY_SENSITIVE_FIELDS,
+    OMIT_PRIVACY_SENSITIVE_FIELDS
+  };
+  static base::DictionaryValue* CreateTabValue(
       const content::WebContents* web_contents,
-      bool active,
-      const extensions::Extension* extension);
+      IncludePrivacySensitiveFields include_privacy_sensitive_fields) {
+    return CreateTabValue(web_contents, NULL, -1,
+                          include_privacy_sensitive_fields);
+  }
+  static base::DictionaryValue* CreateTabValue(
+      const content::WebContents* web_contents,
+      TabStripModel* tab_strip,
+      int tab_index,
+      IncludePrivacySensitiveFields include_privacy_sensitive_fields);
 
   // Gets the |tab_strip_model| and |tab_index| for the given |web_contents|.
   static bool GetTabStripModel(const content::WebContents* web_contents,

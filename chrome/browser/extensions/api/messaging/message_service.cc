@@ -162,9 +162,7 @@ void MessageService::OpenChannelToExtension(
   std::string tab_json = "null";
   if (source_contents) {
     scoped_ptr<DictionaryValue> tab_value(ExtensionTabUtil::CreateTabValue(
-            source_contents,
-            profile->GetExtensionService()->extensions()->GetByID(
-                source_extension_id)));
+        source_contents, ExtensionTabUtil::INCLUDE_PRIVACY_SENSITIVE_FIELDS));
     base::JSONWriter::Write(tab_value.get(), &tab_json);
   }
 
@@ -196,7 +194,6 @@ void MessageService::OpenChannelToNativeApp(
       content::RenderProcessHost::FromID(source_process_id);
   if (!source)
     return;
-  Profile* profile = Profile::FromBrowserContext(source->GetBrowserContext());
 
   WebContents* source_contents = tab_util::GetWebContentsByID(
       source_process_id, source_routing_id);
@@ -205,9 +202,7 @@ void MessageService::OpenChannelToNativeApp(
   std::string tab_json = "null";
   if (source_contents) {
     scoped_ptr<DictionaryValue> tab_value(ExtensionTabUtil::CreateTabValue(
-            source_contents,
-            profile->GetExtensionService()->extensions()->GetByID(
-                source_extension_id)));
+        source_contents, ExtensionTabUtil::INCLUDE_PRIVACY_SENSITIVE_FIELDS));
     base::JSONWriter::Write(tab_value.get(), &tab_json);
   }
 
@@ -292,9 +287,7 @@ void MessageService::OpenChannelToTab(
   std::string tab_json = "null";
   if (source_contents) {
     scoped_ptr<DictionaryValue> tab_value(ExtensionTabUtil::CreateTabValue(
-            source_contents,
-            profile->GetExtensionService()->extensions()->GetByID(
-                extension_id)));
+        source_contents, ExtensionTabUtil::INCLUDE_PRIVACY_SENSITIVE_FIELDS));
     base::JSONWriter::Write(tab_value.get(), &tab_json);
   }
 

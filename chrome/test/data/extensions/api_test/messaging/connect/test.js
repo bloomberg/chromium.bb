@@ -65,6 +65,9 @@ chrome.test.getConfig(function(config) {
     // Tests that postMessage from the tab and its response works.
     function postMessageFromTab() {
       chrome.extension.onConnect.addListener(function(port) {
+        chrome.test.assertTrue(Boolean(port.sender.tab.url));
+        chrome.test.assertTrue(Boolean(port.sender.tab.title));
+        chrome.test.assertTrue(Boolean(port.sender.tab.id));
         port.onMessage.addListener(function(msg) {
           chrome.test.assertTrue(msg.testPostMessageFromTab);
           port.postMessage({success: true, portName: port.name});

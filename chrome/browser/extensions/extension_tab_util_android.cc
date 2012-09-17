@@ -34,6 +34,8 @@ int ExtensionTabUtil::GetWindowIdOfTab(const WebContents* web_contents) {
 
 DictionaryValue* ExtensionTabUtil::CreateTabValue(
     const WebContents* contents,
+    TabStripModel* tab_strip,
+    int tab_index,
     const extensions::Extension* extension) {
   NOTIMPLEMENTED();
   return NULL;
@@ -50,15 +52,7 @@ DictionaryValue* ExtensionTabUtil::CreateTabValue(
     const WebContents* contents,
     TabStripModel* tab_strip,
     int tab_index,
-    const extensions::Extension* extension) {
-  NOTIMPLEMENTED();
-  return NULL;
-}
-
-DictionaryValue* ExtensionTabUtil::CreateTabValueActive(
-    const WebContents* contents,
-    bool active,
-    const extensions::Extension* extension) {
+    IncludePrivacySensitiveFields include_privacy_sensitive_fields) {
   NOTIMPLEMENTED();
   return NULL;
 }
