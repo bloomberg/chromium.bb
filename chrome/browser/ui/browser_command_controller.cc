@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
+#include "chrome/browser/shell_integration.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
@@ -67,6 +68,74 @@ bool HasInternalURL(const NavigationEntry* entry) {
 
   return false;
 }
+
+#if defined(OS_WIN)
+// Windows 8 specific helper class to manage DefaultBrowserWorker. It does the
+// following asynchronous actions in order:
+// 1- Check that chrome is the default browser
+// 2- If we are the default, restart chrome in metro and exit
+// 3- If not the default browser show the 'select default browser' system dialog
+// 4- When dialog dismisses check again who got made the default
+// 5- If we are the default then restart chrome in metro and exit
+// 6- If we are not the default exit.
+//
+// Note: this class deletes itself.
+class SwichToMetroUIHandler
+    : public ShellIntegration::DefaultWebClientObserver {
+ public:
+  SwichToMetroUIHandler()
+      : ALLOW_THIS_IN_INITIALIZER_LIST(default_browser_worker_(
+            new ShellIntegration::DefaultBrowserWorker(this))),
+        first_check_(true) {
+    default_browser_worker_->StartCheckIsDefault();
+  }
+
+  virtual ~SwichToMetroUIHandler() {
+    default_browser_worker_->ObserverDestroyed();
+  }
+
+ private:
+  virtual void SetDefaultWebClientUIState(
+      ShellIntegration::DefaultWebClientUIState state) OVERRIDE {
+    switch (state) {
+      case ShellIntegration::STATE_PROCESSING:
+        return;
+      case ShellIntegration::STATE_UNKNOWN :
+        break;
+      case ShellIntegration::STATE_IS_DEFAULT:
+        browser::AttemptRestartWithModeSwitch();
+        break;
+      case ShellIntegration::STATE_NOT_DEFAULT:
+        if (first_check_) {
+          default_browser_worker_->StartSetAsDefault();
+          return;
+        }
+        break;
+      default:
+        NOTREACHED();
+    }
+    delete this;
+  }
+
+  virtual void OnSetAsDefaultConcluded(bool success)  OVERRIDE {
+    if (!success) {
+      delete this;
+      return;
+    }
+    first_check_ = false;
+    default_browser_worker_->StartCheckIsDefault();
+  }
+
+  virtual bool IsInteractiveSetDefaultPermitted() OVERRIDE {
+    return true;
+  }
+
+  scoped_refptr<ShellIntegration::DefaultBrowserWorker> default_browser_worker_;
+  bool first_check_;
+
+  DISALLOW_COPY_AND_ASSIGN(SwichToMetroUIHandler);
+};
+#endif  // defined(OS_WIN)
 
 }  // namespace
 
@@ -340,8 +409,10 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
       browser_->SetMetroSnapMode(false);
       break;
     case IDC_WIN8_DESKTOP_RESTART:
-    case IDC_WIN8_METRO_RESTART:
       browser::AttemptRestartWithModeSwitch();
+      break;
+    case IDC_WIN8_METRO_RESTART:
+      new SwichToMetroUIHandler;
       break;
 #endif
 
