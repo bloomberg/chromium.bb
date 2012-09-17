@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/extension_function.h"
 
 class Profile;
+class Version;
 
 namespace extensions {
 class Extension;
@@ -21,7 +22,8 @@ class RuntimeEventRouter {
 
   // Dispatches the onInstalled event to the given extension.
   static void DispatchOnInstalledEvent(Profile* profile,
-                                       const std::string& extension_id);
+                                       const std::string& extension_id,
+                                       const Version& old_version);
 };
 
 class RuntimeGetBackgroundPageFunction : public AsyncExtensionFunction {

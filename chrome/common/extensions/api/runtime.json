@@ -90,7 +90,25 @@
       {
         "name": "onInstalled",
         "type": "function",
-        "description": "Fired when the extension is first installed, and on each update to a new version."
+        "description": "Fired when the extension is first installed, and on each update to a new version.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "details",
+            "properties": {
+              "reason": {
+                "type": "string",
+                "enum": ["install", "update"],
+                "description": "The reason that this event is being dispatched."
+              },
+              "previousVersion": {
+                "type": "string",
+                "optional": true,
+                "description": "Indicates the previous version of the extension, which has just been updated. This is present only if 'reason' is 'update'."
+              }
+            }
+          }
+        ]
       },
       {
         "name": "onSuspend",

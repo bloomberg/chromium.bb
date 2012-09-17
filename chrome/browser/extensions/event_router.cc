@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/values.h"
+#include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/processes/processes_api.h"
 #include "chrome/browser/extensions/api/processes/processes_api_constants.h"
@@ -51,11 +52,14 @@ void NotifyEventListenerRemovedOnIOThread(
 }
 
 void DispatchOnInstalledEvent(
-    Profile* profile, const std::string& extension_id) {
+    Profile* profile,
+    const std::string& extension_id,
+    const Version& old_version) {
   if (!g_browser_process->profile_manager()->IsValidProfile(profile))
     return;
 
-  RuntimeEventRouter::DispatchOnInstalledEvent(profile, extension_id);
+  RuntimeEventRouter::DispatchOnInstalledEvent(profile, extension_id,
+                                               old_version);
 }
 
 }  // namespace
@@ -578,8 +582,18 @@ void EventRouter::Observe(int type,
       // Dispatch the onInstalled event.
       const Extension* extension =
           content::Details<const Extension>(details).ptr();
+
+      // Get the previous version, if this is an upgrade.
+      ExtensionService* service =
+          ExtensionSystem::Get(profile_)->extension_service();
+      const Extension* old = service->GetExtensionById(extension->id(), true);
+      Version old_version;
+      if (old)
+        old_version = *old->version();
+
       MessageLoop::current()->PostTask(FROM_HERE,
-          base::Bind(&DispatchOnInstalledEvent, profile_, extension->id()));
+          base::Bind(&DispatchOnInstalledEvent, profile_, extension->id(),
+                     old_version));
       break;
     }
     default:

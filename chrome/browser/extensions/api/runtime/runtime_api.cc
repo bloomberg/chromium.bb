@@ -24,6 +24,10 @@ const char kOnStartupEvent[] = "runtime.onStartup";
 const char kOnInstalledEvent[] = "runtime.onInstalled";
 const char kNoBackgroundPageError[] = "You do not have a background page.";
 const char kPageLoadError[] = "Background page failed to load.";
+const char kInstallReason[] = "reason";
+const char kInstallReasonUpdate[] = "update";
+const char kInstallReasonInstall[] = "install";
+const char kInstallPreviousVersion[] = "previousVersion";
 
 static void DispatchOnStartupEventImpl(
     Profile* profile,
@@ -57,7 +61,7 @@ static void DispatchOnStartupEventImpl(
     return;
   }
 
-  scoped_ptr<ListValue> event_args(new ListValue());
+  scoped_ptr<base::ListValue> event_args(new ListValue());
   system->event_router()->DispatchEventToExtension(
       extension_id, kOnStartupEvent, event_args.Pass(), NULL, GURL());
 }
@@ -72,7 +76,9 @@ void RuntimeEventRouter::DispatchOnStartupEvent(
 
 // static
 void RuntimeEventRouter::DispatchOnInstalledEvent(
-    Profile* profile, const std::string& extension_id) {
+    Profile* profile,
+    const std::string& extension_id,
+    const Version& old_version) {
   ExtensionSystem* system = ExtensionSystem::Get(profile);
   if (!system)
     return;
@@ -82,10 +88,18 @@ void RuntimeEventRouter::DispatchOnInstalledEvent(
   // chance to register for events. So we register on its behalf. If the
   // extension does not actually have a listener, the event will just be
   // ignored.
-  scoped_ptr<ListValue> event_args(new ListValue());
+  scoped_ptr<base::ListValue> event_args(new ListValue());
+  base::DictionaryValue* info = new base::DictionaryValue();
+  event_args->Append(info);
+  info->SetString(kInstallReason,
+      old_version.IsValid() ? kInstallReasonUpdate : kInstallReasonInstall);
+  if (old_version.IsValid())
+    info->SetString(kInstallPreviousVersion, old_version.GetString());
   system->event_router()->AddLazyEventListener(kOnInstalledEvent, extension_id);
   system->event_router()->DispatchEventToExtension(
       extension_id, kOnInstalledEvent, event_args.Pass(), NULL, GURL());
+  system->event_router()->RemoveLazyEventListener(kOnInstalledEvent,
+                                                  extension_id);
 }
 
 bool RuntimeGetBackgroundPageFunction::RunImpl() {
