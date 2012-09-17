@@ -47,6 +47,9 @@ struct MediaGalleryPrefInfo {
   MediaGalleryPrefInfo();
   ~MediaGalleryPrefInfo();
 
+  // The absolute path of the gallery.
+  FilePath AbsolutePath() const;
+
   // The ID that identifies this gallery in this Profile.
   MediaGalleryPrefId pref_id;
 

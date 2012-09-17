@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/string_number_conversions.h"
+#include "chrome/browser/system_monitor/media_storage_util.h"
 #include "chrome/browser/media_gallery/media_galleries_dialog_controller_mock.h"
 #include "chrome/browser/ui/gtk/extensions/media_galleries_dialog_gtk.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -12,6 +14,19 @@ using ::testing::ReturnRef;
 
 namespace chrome {
 
+namespace {
+
+MediaGalleryPrefInfo MakePrefInfoForTesting(MediaGalleryPrefId id) {
+  MediaGalleryPrefInfo gallery;
+  gallery.pref_id = id;
+  gallery.device_id =
+      MediaStorageUtil::MakeDeviceId(MediaStorageUtil::FIXED_MASS_STORAGE,
+                                     base::Int64ToString(id));
+  return gallery;
+}
+
+}  // namespace
+
 class MediaGalleriesDialogTest : public testing::Test {
 };
 
@@ -21,12 +36,10 @@ TEST_F(MediaGalleriesDialogTest, InitializeCheckboxes) {
   NiceMock<MediaGalleriesDialogControllerMock> controller;
 
   MediaGalleriesDialogController::KnownGalleryPermissions permissions;
-  MediaGalleryPrefInfo gallery1;
-  gallery1.pref_id = 1;
+  MediaGalleryPrefInfo gallery1 = MakePrefInfoForTesting(1);
   permissions[1] =
       MediaGalleriesDialogController::GalleryPermission(gallery1, true);
-  MediaGalleryPrefInfo gallery2;
-  gallery2.pref_id = 2;
+  MediaGalleryPrefInfo gallery2 = MakePrefInfoForTesting(2);
   permissions[2] =
       MediaGalleriesDialogController::GalleryPermission(gallery2, false);
   EXPECT_CALL(controller, permissions()).
@@ -53,8 +66,7 @@ TEST_F(MediaGalleriesDialogTest, ToggleCheckboxes) {
   NiceMock<MediaGalleriesDialogControllerMock> controller;
 
   MediaGalleriesDialogController::KnownGalleryPermissions permissions;
-  MediaGalleryPrefInfo gallery1;
-  gallery1.pref_id = 1;
+  MediaGalleryPrefInfo gallery1 = MakePrefInfoForTesting(1);
   permissions[1] =
       MediaGalleriesDialogController::GalleryPermission(gallery1, true);
   EXPECT_CALL(controller, permissions()).
@@ -87,11 +99,11 @@ TEST_F(MediaGalleriesDialogTest, UpdateAdds) {
 
   EXPECT_TRUE(dialog.checkbox_map_.empty());
 
-  MediaGalleryPrefInfo gallery1;
+  MediaGalleryPrefInfo gallery1 = MakePrefInfoForTesting(1);
   dialog.UpdateGallery(&gallery1, true);
   EXPECT_EQ(1U, dialog.checkbox_map_.size());
 
-  MediaGalleryPrefInfo gallery2;
+  MediaGalleryPrefInfo gallery2 = MakePrefInfoForTesting(2);
   dialog.UpdateGallery(&gallery2, true);
   EXPECT_EQ(2U, dialog.checkbox_map_.size());
 

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/string_number_conversions.h"
+#include "chrome/browser/system_monitor/media_storage_util.h"
 #include "chrome/browser/media_gallery/media_galleries_dialog_controller_mock.h"
 #include "chrome/browser/ui/cocoa/extensions/media_galleries_dialog_cocoa.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -13,6 +15,15 @@ using ::testing::ReturnRef;
 
 namespace chrome {
 
+MediaGalleryPrefInfo MakePrefInfoForTesting(MediaGalleryPrefId pref_id) {
+  MediaGalleryPrefInfo gallery;
+  gallery.pref_id = pref_id;
+  gallery.device_id =
+      MediaStorageUtil::MakeDeviceId(MediaStorageUtil::FIXED_MASS_STORAGE,
+                                     base::Int64ToString(pref_id));
+  return gallery;
+}
+
 class MediaGalleriesDialogTest : public testing::Test {
 };
 
@@ -22,12 +33,10 @@ TEST_F(MediaGalleriesDialogTest, InitializeCheckboxes) {
   NiceMock<MediaGalleriesDialogControllerMock> controller;
 
   MediaGalleriesDialogController::KnownGalleryPermissions permissions;
-  MediaGalleryPrefInfo gallery1;
-  gallery1.device_id = "/a";
+  MediaGalleryPrefInfo gallery1 = MakePrefInfoForTesting(1);
   permissions[1] = MediaGalleriesDialogController::GalleryPermission(
       gallery1, true);
-  MediaGalleryPrefInfo gallery2;
-  gallery2.device_id = "/b";
+  MediaGalleryPrefInfo gallery2 = MakePrefInfoForTesting(2);
   permissions[2] = MediaGalleriesDialogController::GalleryPermission(
       gallery2, false);
   EXPECT_CALL(controller, permissions()).
@@ -55,7 +64,7 @@ TEST_F(MediaGalleriesDialogTest, ToggleCheckboxes) {
   NiceMock<MediaGalleriesDialogControllerMock> controller;
 
   MediaGalleriesDialogController::KnownGalleryPermissions permissions;
-  MediaGalleryPrefInfo gallery;
+  MediaGalleryPrefInfo gallery = MakePrefInfoForTesting(1);
   permissions[1] = MediaGalleriesDialogController::GalleryPermission(
       gallery, true);
   EXPECT_CALL(controller, permissions()).
@@ -94,8 +103,7 @@ TEST_F(MediaGalleriesDialogTest, UpdateAdds) {
   EXPECT_EQ(0U, [dialog->checkboxes_ count]);
   CGFloat old_container_height = NSHeight([dialog->checkbox_container_ frame]);
 
-  MediaGalleryPrefInfo gallery1;
-  gallery1.device_id = "/a";
+  MediaGalleryPrefInfo gallery1 = MakePrefInfoForTesting(1);
   dialog->UpdateGallery(&gallery1, true);
   EXPECT_EQ(1U, [dialog->checkboxes_ count]);
 
@@ -104,8 +112,7 @@ TEST_F(MediaGalleriesDialogTest, UpdateAdds) {
   EXPECT_GT(new_container_height, old_container_height);
   old_container_height = new_container_height;
 
-  MediaGalleryPrefInfo gallery2;
-  gallery2.device_id = "/b";
+  MediaGalleryPrefInfo gallery2 = MakePrefInfoForTesting(2);
   dialog->UpdateGallery(&gallery2, true);
   EXPECT_EQ(2U, [dialog->checkboxes_ count]);
 

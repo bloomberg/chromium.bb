@@ -127,6 +127,11 @@ MediaGalleryPrefInfo::MediaGalleryPrefInfo()
 }
 MediaGalleryPrefInfo::~MediaGalleryPrefInfo() {}
 
+FilePath MediaGalleryPrefInfo::AbsolutePath() const {
+  FilePath base_path = MediaStorageUtil::FindDevicePathById(device_id);
+  return base_path.Append(path);
+}
+
 MediaGalleriesPreferences::MediaGalleriesPreferences(Profile* profile)
     : profile_(profile) {
   MaybeAddDefaultGalleries();

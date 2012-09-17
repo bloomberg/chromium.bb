@@ -293,10 +293,9 @@ class ExtensionGalleriesHost
         continue;
       }
 
-      FilePath path = MediaStorageUtil::FindDevicePathById(device_id);
-      if (path.empty())
+      FilePath path = gallery_info.AbsolutePath();
+      if (!path.IsAbsolute())
         continue;
-      path = path.Append(gallery_info.path);
 
       std::string fsid;
       if (MediaStorageUtil::IsMassStorageDevice(device_id)) {

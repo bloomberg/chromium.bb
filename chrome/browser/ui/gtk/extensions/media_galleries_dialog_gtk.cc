@@ -102,6 +102,8 @@ void MediaGalleriesDialogGtk::UpdateGallery(
   } else {
     widget = gtk_check_button_new_with_label(
         UTF16ToUTF8(gallery->display_name).c_str());
+    gtk_widget_set_tooltip_text(widget,
+        UTF16ToUTF8(gallery->AbsolutePath().LossyDisplayName()).c_str());
     g_signal_connect(widget, "toggled", G_CALLBACK(OnToggledThunk), this);
     gtk_box_pack_start(GTK_BOX(checkbox_container_), widget, FALSE, FALSE, 0);
     gtk_widget_show(widget);

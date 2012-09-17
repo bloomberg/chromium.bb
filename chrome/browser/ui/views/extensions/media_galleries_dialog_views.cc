@@ -131,7 +131,7 @@ bool MediaGalleriesDialogViews::AddOrUpdateGallery(
   views::Checkbox* checkbox = new views::Checkbox(gallery->display_name);
   checkbox->set_border(new MediaGalleriesCheckboxBorder(checkbox));
   checkbox->set_listener(this);
-  checkbox->SetTooltipText(gallery->path.LossyDisplayName());
+  checkbox->SetTooltipText(gallery->AbsolutePath().LossyDisplayName());
   checkbox_container_->AddChildView(checkbox);
   checkbox->SetChecked(permitted);
   checkbox_map_[gallery] = checkbox;

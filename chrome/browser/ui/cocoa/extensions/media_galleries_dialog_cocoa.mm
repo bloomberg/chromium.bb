@@ -166,7 +166,7 @@ void MediaGalleriesDialogCocoa::UpdateGalleryCheckbox(
 
   [checkbox setTitle:base::SysUTF16ToNSString(gallery->display_name)];
   [checkbox setToolTip:
-      base::SysUTF16ToNSString(gallery->path.LossyDisplayName())];
+      base::SysUTF16ToNSString(gallery->AbsolutePath().LossyDisplayName())];
   [checkbox setState:permitted ? NSOnState : NSOffState];
 
   [checkbox sizeToFit];
