@@ -247,6 +247,7 @@ class UI_EXPORT ResourceBundle {
   FRIEND_TEST_ALL_PREFIXES(ResourceBundle, GetRawDataResource);
   FRIEND_TEST_ALL_PREFIXES(ResourceBundle, LoadDataResourceBytes);
   FRIEND_TEST_ALL_PREFIXES(ResourceBundle, LocaleDataPakExists);
+  FRIEND_TEST_ALL_PREFIXES(ResourceBundle, GetImageNamed);
 
   class ResourceBundleImageSource;
   friend class ResourceBundleImageSource;

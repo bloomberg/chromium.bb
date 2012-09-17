@@ -21,7 +21,7 @@ UI_EXPORT extern const char kEnableTouchEvents[];
 UI_EXPORT extern const char kEnableViewsTextfield[];
 UI_EXPORT extern const char kEnableWebkitTextSubpixelPositioning[];
 UI_EXPORT extern const char kForceDeviceScaleFactor[];
-UI_EXPORT extern const char kHighlightMissing2xResources[];
+UI_EXPORT extern const char kHighlightMissingScaledResources[];
 UI_EXPORT extern const char kLang[];
 UI_EXPORT extern const char kLocalePak[];
 UI_EXPORT extern const char kOldCheckboxStyle[];
