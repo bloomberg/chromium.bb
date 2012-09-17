@@ -172,6 +172,10 @@ class MockSessionDescription : public SessionDescriptionInterface {
         sdp_(sdp) {
   }
   virtual ~MockSessionDescription() {}
+  virtual cricket::SessionDescription* description() OVERRIDE {
+    NOTIMPLEMENTED();
+    return NULL;
+  }
   virtual const cricket::SessionDescription* description() const OVERRIDE {
     NOTIMPLEMENTED();
     return NULL;
