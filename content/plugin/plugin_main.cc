@@ -89,41 +89,6 @@ void DestroyIMEForFlash() {
   }
 }
 
-// VirtualAlloc doesn't randomize well, so we use these calls to poke a
-// random-sized hole in the address space and set an event to later remove it.
-void FreeRandomMemoryHole(void *hole) {
-  ::VirtualFree(hole, 0, MEM_RELEASE);
-}
-
-bool CreateRandomMemoryHole() {
-  const uint32_t kRandomValueMax = 8 * 1024;  // Yields a 512mb max hole.
-  const uint32_t kRandomValueDivisor = 8;
-  const uint32_t kMaxWaitSeconds = 18 * 60;  // 18 Minutes in seconds.
-  COMPILE_ASSERT((kMaxWaitSeconds > (kRandomValueMax / kRandomValueDivisor)),
-                 kMaxWaitSeconds_value_too_small);
-
-  uint32_t rand_val;
-  if (rand_s(&rand_val) != S_OK) {
-    DVLOG(ERROR) << "rand_s() failed";
-  }
-
-  rand_val %= kRandomValueMax;
-  // Reserve a (randomly selected) range of address space.
-  if (void* hole = ::VirtualAlloc(NULL, 65536 * (1 + rand_val),
-                                  MEM_RESERVE, PAGE_NOACCESS)) {
-    // Set up an event to remove the memory hole. Base the wait time on the
-    // inverse of the allocation size, meaning a bigger hole gets a shorter
-    // wait (ranging from 1-18 minutes).
-    const uint32_t wait = kMaxWaitSeconds - (rand_val / kRandomValueDivisor);
-    MessageLoop::current()->PostDelayedTask(FROM_HERE,
-        base::Bind(&FreeRandomMemoryHole, hole),
-        base::TimeDelta::FromSeconds(wait));
-    return true;
-  }
-
-  return false;
-}
-
 #endif
 
 // main() routine for running as the plugin process.
@@ -184,11 +149,6 @@ int PluginMain(const content::MainFunctionParams& parameters) {
       // start elevated and it will call DelayedLowerToken(0) when it's ready.
       if (IsPluginBuiltInFlash(parsed_command_line)) {
         DVLOG(1) << "Sandboxing flash";
-
-        // Poke hole in the address space to improve randomization.
-        if (!CreateRandomMemoryHole()) {
-          DVLOG(ERROR) << "Failed to create random memory hole";
-        }
 
         if (!PreloadIMEForFlash())
           DVLOG(1) << "IME preload failed";
