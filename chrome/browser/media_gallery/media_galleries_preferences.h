@@ -41,6 +41,7 @@ struct MediaGalleryPrefInfo {
     kAutoDetected,  // Auto added to the list of galleries.
     kUserAdded,     // Explicitly added by the user.
     kBlackListed,   // Auto added but then removed by the user.
+    kInvalidType,
   };
 
   MediaGalleryPrefInfo();

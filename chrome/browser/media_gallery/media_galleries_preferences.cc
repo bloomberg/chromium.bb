@@ -122,7 +122,8 @@ DictionaryValue* CreateGalleryPrefInfoDictionary(
 }  // namespace
 
 MediaGalleryPrefInfo::MediaGalleryPrefInfo()
-    : pref_id(kInvalidMediaGalleryPrefId) {
+    : pref_id(kInvalidMediaGalleryPrefId),
+      type(kInvalidType) {
 }
 MediaGalleryPrefInfo::~MediaGalleryPrefInfo() {}
 
@@ -198,7 +199,7 @@ bool MediaGalleriesPreferences::LookUpGalleryByPath(
       gallery_info->display_name = string16();
       gallery_info->device_id = std::string();
       gallery_info->path = FilePath();
-      gallery_info->type = MediaGalleryPrefInfo::kBlackListed;
+      gallery_info->type = MediaGalleryPrefInfo::kInvalidType;
     }
     return false;
   }
