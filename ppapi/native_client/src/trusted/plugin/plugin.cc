@@ -569,16 +569,6 @@ bool Plugin::LoadNaClModuleCommon(nacl::DescWrapper* wrapper,
   if (!service_runtime_started) {
     return false;
   }
-
-  // Try to start the Chrome IPC-based proxy.
-  if (nacl_interface_->StartPpapiProxy(pp_instance())) {
-    using_ipc_proxy_ = true;
-    // We need to explicitly schedule this here. It is normally called in
-    // response to starting the SRPC proxy.
-    CHECK(init_done_cb.pp_completion_callback().func != NULL);
-    PLUGIN_PRINTF(("Plugin::LoadNaClModuleCommon, started ipc proxy.\n"));
-    pp::Module::Get()->core()->CallOnMainThread(0, init_done_cb, PP_OK);
-  }
   return true;
 }
 
@@ -601,18 +591,16 @@ bool Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,
 }
 
 bool Plugin::LoadNaClModuleContinuationIntern(ErrorInfo* error_info) {
-  // If we are using the IPC proxy, StartSrpcServices and StartJSObjectProxy
-  // don't makes sense. Return 'true' so that the plugin continues loading.
-  if (using_ipc_proxy_)
-    return true;
-
   if (!main_subprocess_.StartSrpcServices()) {
     error_info->SetReport(ERROR_SRPC_CONNECTION_FAIL,
                           "SRPC connection failure for " +
                           main_subprocess_.description());
     return false;
   }
-  if (!main_subprocess_.StartJSObjectProxy(this, error_info)) {
+  // Try to start the Chrome IPC-based proxy first. If that fails, we
+  // must be using the SRPC proxy.
+  if (!nacl_interface_->StartPpapiProxy(pp_instance()) &&
+      !main_subprocess_.StartJSObjectProxy(this, error_info)) {
     return false;
   }
   PLUGIN_PRINTF(("Plugin::LoadNaClModule (%s)\n",
@@ -838,7 +826,6 @@ Plugin::Plugin(PP_Instance pp_instance)
       ready_time_(0),
       nexe_size_(0),
       time_of_last_progress_event_(0),
-      using_ipc_proxy_(false),
       nacl_interface_(NULL) {
   PLUGIN_PRINTF(("Plugin::Plugin (this=%p, pp_instance=%"
                  NACL_PRId32")\n", static_cast<void*>(this), pp_instance));
