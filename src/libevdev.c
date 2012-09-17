@@ -175,13 +175,6 @@ int EvdevProbe(EvdevPtr device) {
                     Event_To_String(EV_REL, i));
   }
 
-  /*
-   * TODO(djkurtz): Solve the race condition between MT slot initialization
-   *    from absinfo, and incoming/lost input events.
-   *    Specifically, if kernel driver sends MT_SLOT event between absinfo
-   *    probe and when we start listening for input events.
-   */
-
   len = ioctl(fd, EVIOCGBIT(EV_ABS, sizeof(info->abs_bitmask)),
               info->abs_bitmask);
   if (len < 0) {

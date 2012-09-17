@@ -263,13 +263,6 @@ Event_Init(EvdevPtr device)
       return !Success;
     }
 
-    /*
-     * TODO(djkurtz): Solve the race condition between MT slot initialization
-     *    from absinfo, and incoming/lost input events.
-     *    Specifically, if kernel driver sends MT_SLOT event between absinfo
-     *    probe and when we start listening for input events.
-     */
-
     for (i = ABS_X; i <= ABS_MAX; i++) {
         if (TestBit(i, device->info.abs_bitmask)) {
             struct input_absinfo* absinfo = &device->info.absinfo[i];
