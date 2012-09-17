@@ -303,7 +303,8 @@ const char kBluetoothAddDeviceSubPage[] = "bluetooth";
 // Extension sub pages.
 const char kExtensionConfigureCommandsSubPage[] = "configureCommands";
 
-const char kSyncGoogleDashboardURL[] = "https://www.google.com/dashboard/";
+const char kSyncGoogleDashboardURL[] =
+    "https://www.google.com/settings/chrome/sync/";
 
 const char kAutoPasswordGenerationLearnMoreURL[] =
     "https://support.google.com/chrome/?p=ui_generate_password";

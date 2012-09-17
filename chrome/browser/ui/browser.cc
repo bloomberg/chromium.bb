@@ -232,9 +232,6 @@ const char kBrokenPageUrl[] =
     "https://www.google.com/support/chrome/bin/request.py?contact_type="
     "broken_website&format=inproduct&p.page_title=$1&p.page_url=$2";
 
-// The URL for the privacy dashboard.
-const char kPrivacyDashboardUrl[] = "https://www.google.com/dashboard";
-
 // How long we wait before updating the browser chrome while loading a page.
 const int kUIUpdateCoalescingTimeMS = 200;
 
