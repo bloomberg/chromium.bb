@@ -10,6 +10,7 @@ import getpass
 import logging
 import optparse
 import os
+import subprocess
 import sys
 import urllib2
 
@@ -17,6 +18,7 @@ import breakpad  # pylint: disable=W0611
 
 import checkout
 import fix_encoding
+import gclient_utils
 import rietveld
 import scm
 
@@ -109,6 +111,16 @@ def main():
   except checkout.PatchApplicationFailed, e:
     print >> sys.stderr, str(e)
     return 1
+
+  if 'DEPS' in map(os.path.basename, patchset.filenames):
+    gclient_root = gclient_utils.FindGclientRoot(options.root_dir)
+    if gclient_root and scm_type:
+      print(
+          'A DEPS file was updated inside a gclient checkout, running gclient '
+          'sync.')
+      base_rev = 'BASE' if scm_type == 'svn' else 'HEAD'
+      return subprocess.call(
+          ['gclient', 'sync', '--revision', base_rev], cwd=gclient_root)
   return 0
 
 
