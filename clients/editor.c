@@ -214,6 +214,7 @@ static void text_entry_set_preedit(struct text_entry *entry,
 				   int preedit_cursor);
 static void text_entry_delete_text(struct text_entry *entry,
 				   uint32_t index, uint32_t length);
+static void text_entry_delete_selected_text(struct text_entry *entry);
 
 static void
 text_model_commit_string(void *data,
@@ -228,6 +229,7 @@ text_model_commit_string(void *data,
 		index = strlen(text);
 	}
 
+	text_entry_delete_selected_text(entry);
 	text_entry_insert_at_cursor(entry, text);
 
 	widget_schedule_redraw(entry->widget);
@@ -246,6 +248,7 @@ text_model_preedit_string(void *data,
 		index = strlen(text);
 	}
 
+	text_entry_delete_selected_text(entry);
 	text_entry_set_preedit(entry, text, index);
 
 	widget_schedule_redraw(entry->widget);
@@ -594,6 +597,20 @@ text_entry_delete_text(struct text_entry *entry,
 	text_entry_update_layout(entry);
 
 	widget_schedule_redraw(entry->widget);
+}
+
+static void
+text_entry_delete_selected_text(struct text_entry *entry)
+{
+	uint32_t start_index = entry->anchor < entry->cursor ? entry->anchor : entry->cursor;
+	uint32_t end_index = entry->anchor < entry->cursor ? entry->cursor : entry->anchor;
+
+	if (entry->anchor == entry->cursor)
+		return;
+
+	text_entry_delete_text(entry, start_index, end_index - start_index);
+
+	entry->anchor = entry->cursor;
 }
 
 static void
