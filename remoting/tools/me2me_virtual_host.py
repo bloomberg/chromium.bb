@@ -454,34 +454,50 @@ def choose_x_session():
   if XSESSION_COMMAND is not None:
     return XSESSION_COMMAND
 
-  # Use a custom startup file if present
-  startup_file = os.path.expanduser("~/.chrome-remote-desktop-session")
-  if os.path.exists(startup_file):
-    # Use the same logic that a Debian system typically uses with ~/.xsession
-    # (see /etc/X11/Xsession.d/50x11-common_determine-startup), to determine
-    # exactly how to run this file.
-    if os.access(startup_file, os.X_OK):
-      return startup_file
-    else:
-      shell = os.environ.get("SHELL", "sh")
-      return [shell, startup_file]
+  # If the session wrapper script (see below) is given a specific session as an
+  # argument (such as ubuntu-2d on Ubuntu 12.04), the wrapper will run that
+  # session instead of looking for custom .xsession files in the home directory.
+  # So it's necessary to test for these files here.
+  XSESSION_FILES = [
+    "~/.chrome-remote-desktop-session",
+    "~/.xsession",
+    "~/.Xsession" ]
+  for startup_file in XSESSION_FILES:
+    startup_file = os.path.expanduser(startup_file)
+    if os.path.exists(startup_file):
+      # Use the same logic that a Debian system typically uses with ~/.xsession
+      # (see /etc/X11/Xsession.d/50x11-common_determine-startup), to determine
+      # exactly how to run this file.
+      if os.access(startup_file, os.X_OK):
+        return startup_file
+      else:
+        shell = os.environ.get("SHELL", "sh")
+        return [shell, startup_file]
 
-  # Unity-2d would normally be the preferred choice on Ubuntu 12.04.  At the
-  # time of writing, this session does not work properly (missing launcher and
-  # panel), so gnome-session-fallback is used in preference.
-  # "unity-2d-panel" was chosen here simply because it appears in the TryExec
-  # line of the session's .desktop file; other choices might be just as good.
-  for test_file, command in [
-    ("/usr/bin/gnome-session-fallback",
-      ["/etc/X11/Xsession", "gnome-session-fallback"]),
-    ("/etc/gdm/Xsession", "/etc/gdm/Xsession"),
-    ("/usr/bin/unity-2d-panel",
-      ["/etc/X11/Xsession", "/usr/bin/gnome-session --session=ubuntu-2d"]),
-  ]:
-    if os.path.exists(test_file):
-      return command
+  # Choose a session wrapper script to run the session. On some systems,
+  # /etc/X11/Xsession fails to load the user's .profile, so look for an
+  # alternative wrapper that is more likely to match the script that the
+  # system actually uses for console desktop sessions.
+  SESSION_WRAPPERS = [
+    "/usr/sbin/lightdm-session",
+    "/etc/gdm/Xsession",
+    "/etc/X11/Xsession" ]
+  for session_wrapper in SESSION_WRAPPERS:
+    if os.path.exists(session_wrapper):
+      break
+  else:
+    # No session wrapper found.
+    return None
 
-  return None
+  # On Ubuntu 12.04, the default session relies on 3D-accelerated hardware.
+  # Trying to run this with a virtual X display produces weird results on some
+  # systems (for example, upside-down and corrupt displays).  So if the
+  # ubuntu-2d session is available, choose it explicitly.
+  if os.path.exists("/usr/bin/unity-2d-panel"):
+    return [session_wrapper, "/usr/bin/gnome-session --session=ubuntu-2d"]
+
+  # Use the session wrapper by itself, and let the system choose a session.
+  return session_wrapper
 
 
 def locate_executable(exe_name):
