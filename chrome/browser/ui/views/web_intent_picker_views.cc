@@ -756,6 +756,7 @@ class WebIntentPickerViews : public views::ButtonListener,
   virtual ~WebIntentPickerViews();
 
   // views::ButtonListener implementation.
+  // This method is called when the user cancels the picker dialog.
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
 
@@ -917,12 +918,11 @@ WebIntentPickerViews::~WebIntentPickerViews() {
 
 void WebIntentPickerViews::ButtonPressed(views::Button* sender,
                                          const ui::Event& event) {
-  delegate_->OnPickerClosed();
+  delegate_->OnUserCancelledPickerDialog();
 }
 
 void WebIntentPickerViews::WindowClosing() {
   delegate_->OnClosing();
-  delegate_->OnPickerClosed();
 }
 
 void WebIntentPickerViews::DeleteDelegate() {

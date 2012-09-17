@@ -206,6 +206,9 @@ WebIntentPickerController::WebIntentPickerController(
                  content::Source<content::NavigationController>(controller));
   registrar_.Add(this, chrome::NOTIFICATION_TAB_CLOSING,
                  content::Source<content::NavigationController>(controller));
+#if defined(TOOLKIT_VIEWS)
+  cancelled_ = true;
+#endif
 }
 
 WebIntentPickerController::~WebIntentPickerController() {
@@ -238,6 +241,10 @@ void WebIntentPickerController::ShowDialog(bool suppress_defaults) {
   web_intents::RecordIntentDispatched(uma_bucket_);
 
   DCHECK(intents_dispatcher_);
+
+#if defined(TOOLKIT_VIEWS)
+  cancelled_ = true;
+#endif
 
   // Only show a picker once.
   // TODO(gbillock): There's a hole potentially admitting multiple
@@ -336,6 +343,10 @@ void WebIntentPickerController::OnServiceChosen(
   uma_reporter_->ResetServiceActiveTimer();
   ExtensionService* service = tab_contents_->profile()->GetExtensionService();
   DCHECK(service);
+
+#if defined(TOOLKIT_VIEWS)
+  cancelled_ = false;
+#endif
 
   // Set the default here. Activating the intent resets the picker model.
   // TODO(gbillock): we should perhaps couple the model to the dispatcher so
@@ -492,18 +503,13 @@ void WebIntentPickerController::OnSuggestionsLinkClicked(
   chrome::Navigate(&params);
 }
 
-void WebIntentPickerController::OnPickerClosed() {
+void WebIntentPickerController::OnUserCancelledPickerDialog() {
   if (!intents_dispatcher_)
     return;
 
-  if (service_tab_) {
-    intents_dispatcher_->SendReplyMessage(
-        webkit_glue::WEB_INTENT_SERVICE_CONTENTS_CLOSED, string16());
-  } else {
-    intents_dispatcher_->SendReplyMessage(
-        webkit_glue::WEB_INTENT_PICKER_CANCELLED, string16());
-    web_intents::RecordPickerCancel(uma_bucket_);
-  }
+  intents_dispatcher_->SendReplyMessage(
+      webkit_glue::WEB_INTENT_PICKER_CANCELLED, string16());
+  web_intents::RecordPickerCancel(uma_bucket_);
 
   ClosePicker();
 }
@@ -517,6 +523,10 @@ void WebIntentPickerController::OnChooseAnotherService() {
 void WebIntentPickerController::OnClosing() {
   SetDialogState(kPickerHidden);
   picker_ = NULL;
+#if defined(TOOLKIT_VIEWS)
+  if (cancelled_)
+    OnUserCancelledPickerDialog();
+#endif
 }
 
 void WebIntentPickerController::OnExtensionInstallSuccess(

@@ -107,7 +107,7 @@ class WebIntentPickerController
       WindowOpenDisposition disposition) OVERRIDE;
   virtual void OnSuggestionsLinkClicked(
       WindowOpenDisposition disposition) OVERRIDE;
-  virtual void OnPickerClosed() OVERRIDE;
+  virtual void OnUserCancelledPickerDialog() OVERRIDE;
   virtual void OnChooseAnotherService() OVERRIDE;
   virtual void OnClosing() OVERRIDE;
 
@@ -275,6 +275,15 @@ class WebIntentPickerController
   // This bool is not equivalent to picker != NULL in a unit test. In that
   // case, a picker may be non-NULL before it is shown.
   bool picker_shown_;
+
+#if defined(TOOLKIT_VIEWS)
+  // Set to true if user cancelled the picker dialog. Set to false if the picker
+  // dialog is closing for any other reason.
+  // TODO(rouslan): We need to fix DialogDelegate in Views to notify us when the
+  // user closes the picker dialog. This boolean is a mediocre workaround for
+  // lack of that information.
+  bool cancelled_;
+#endif
 
   // Weak pointer to the source WebContents for the intent if the TabContents
   // with which this controller is associated is hosting a web intents window

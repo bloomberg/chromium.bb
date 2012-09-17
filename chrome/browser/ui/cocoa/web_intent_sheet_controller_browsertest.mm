@@ -29,7 +29,7 @@ class MockIntentPickerDelegate : public WebIntentPickerDelegate {
   MOCK_METHOD1(OnExtensionInstallRequested, void(const std::string& id));
   MOCK_METHOD1(OnSuggestionsLinkClicked,
       void(WindowOpenDisposition disposition));
-  MOCK_METHOD0(OnPickerClosed, void());
+  MOCK_METHOD0(OnUserCancelledPickerDialog, void());
   MOCK_METHOD0(OnChooseAnotherService, void());
   MOCK_METHOD0(OnClosing, void());
 };
@@ -67,7 +67,7 @@ void WebIntentSheetControllerBrowserTest::CreatePicker() {
 IN_PROC_BROWSER_TEST_F(WebIntentSheetControllerBrowserTest, CloseWillClose) {
   CreateBubble(chrome::GetActiveTabContents(browser()));
 
-  EXPECT_CALL(delegate_, OnPickerClosed()).Times(0);
+  EXPECT_CALL(delegate_, OnUserCancelledPickerDialog()).Times(0);
   EXPECT_CALL(delegate_, OnClosing());
   picker_->Close();
 
@@ -84,7 +84,7 @@ IN_PROC_BROWSER_TEST_F(WebIntentSheetControllerBrowserTest,
 
   EXPECT_CALL(delegate_, OnServiceChosen(
       url, webkit_glue::WebIntentServiceData::DISPOSITION_WINDOW));
-  EXPECT_CALL(delegate_, OnPickerClosed()).Times(0);
+  EXPECT_CALL(delegate_, OnUserCancelledPickerDialog()).Times(0);
   EXPECT_CALL(delegate_, OnClosing());
 
   picker_->OnServiceChosen(0);
@@ -96,7 +96,7 @@ IN_PROC_BROWSER_TEST_F(WebIntentSheetControllerBrowserTest,
 IN_PROC_BROWSER_TEST_F(WebIntentSheetControllerBrowserTest,
     OnCancelledWillSignalClose) {
   CreatePicker();
-  EXPECT_CALL(delegate_, OnPickerClosed());
+  EXPECT_CALL(delegate_, OnUserCancelledPickerDialog());
   EXPECT_CALL(delegate_, OnClosing());
   picker_->OnCancelled();
 

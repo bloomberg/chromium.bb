@@ -320,7 +320,7 @@ class WebIntentPickerControllerBrowserTest : public InProcessBrowserTest {
   }
 
   void OnCancelled() {
-    controller_->OnPickerClosed();
+    controller_->OnUserCancelledPickerDialog();
   }
 
   void OnExtensionInstallRequested(const std::string& extension_id) {

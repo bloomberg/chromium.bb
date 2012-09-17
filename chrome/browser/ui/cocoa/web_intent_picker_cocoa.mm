@@ -188,7 +188,7 @@ void WebIntentPickerCocoa::OnInlineDisposition(const string16& title,
 void WebIntentPickerCocoa::OnCancelled() {
   DCHECK(delegate_);
   if (!service_invoked)
-    delegate_->OnPickerClosed();
+    delegate_->OnUserCancelledPickerDialog();
   delegate_->OnClosing();
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }

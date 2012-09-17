@@ -47,7 +47,7 @@ class WebIntentPickerDelegate {
   virtual void OnSuggestionsLinkClicked(WindowOpenDisposition disposition) = 0;
 
   // Called when the user cancels out of the dialog.
-  virtual void OnPickerClosed() = 0;
+  virtual void OnUserCancelledPickerDialog() = 0;
 
   // Called when the user wants to pick another service from within inline
   // disposition.
