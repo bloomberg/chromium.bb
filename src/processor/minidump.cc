@@ -714,6 +714,41 @@ u_int32_t MinidumpContext::GetContextCPU() const {
   return context_flags_ & MD_CONTEXT_CPU_MASK;
 }
 
+bool MinidumpContext::GetInstructionPointer(u_int64_t* ip) const {
+  BPLOG_IF(ERROR, !ip) << "MinidumpContext::GetInstructionPointer "
+                          "requires |ip|";
+  assert(ip);
+  *ip = 0;
+
+  if (!valid_) {
+    BPLOG(ERROR) << "Invalid MinidumpContext for GetInstructionPointer";
+    return false;
+  }
+
+  switch (context_flags_ & MD_CONTEXT_CPU_MASK) {
+  case MD_CONTEXT_AMD64:
+    *ip = context_.amd64->rip;
+    break;
+  case MD_CONTEXT_ARM:
+    *ip = context_.arm->iregs[MD_CONTEXT_ARM_REG_PC];
+    break;
+  case MD_CONTEXT_PPC:
+    *ip = context_.ppc->srr0;
+    break;
+  case MD_CONTEXT_SPARC:
+    *ip = context_.ctx_sparc->pc;
+    break;
+  case MD_CONTEXT_X86:
+    *ip = context_.x86->eip;
+    break;
+  default:
+    // This should never happen.
+    BPLOG(ERROR) << "Unknown CPU architecture in GetInstructionPointer";
+    return false;
+  }
+  return true;
+}
+
 
 const MDRawContextX86* MinidumpContext::GetContextX86() const {
   if (GetContextCPU() != MD_CONTEXT_X86) {

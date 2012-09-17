@@ -213,6 +213,7 @@ TEST(Dump, OneThread) {
   stack.Append("stack for thread");
 
   MDRawContextX86 raw_context;
+  const u_int32_t kExpectedEIP = 0x6913f540;
   raw_context.context_flags = MD_CONTEXT_X86_INTEGER | MD_CONTEXT_X86_CONTROL;
   raw_context.edi = 0x3ecba80d;
   raw_context.esi = 0x382583b9;
@@ -221,7 +222,7 @@ TEST(Dump, OneThread) {
   raw_context.ecx = 0x46a6a6a8;
   raw_context.eax = 0x6a5025e2;
   raw_context.ebp = 0xd9fabb4a;
-  raw_context.eip = 0x6913f540;
+  raw_context.eip = kExpectedEIP;
   raw_context.cs = 0xbffe6eda;
   raw_context.eflags = 0xb2ce1e2d;
   raw_context.esp = 0x659caaa4;
@@ -273,6 +274,11 @@ TEST(Dump, OneThread) {
   MinidumpContext *md_context = md_thread->GetContext();
   ASSERT_TRUE(md_context != NULL);
   ASSERT_EQ((u_int32_t) MD_CONTEXT_X86, md_context->GetContextCPU());
+
+  u_int64_t eip;
+  ASSERT_TRUE(md_context->GetInstructionPointer(&eip));
+  EXPECT_EQ(kExpectedEIP, eip);
+
   const MDRawContextX86 *md_raw_context = md_context->GetContextX86();
   ASSERT_TRUE(md_raw_context != NULL);
   ASSERT_EQ((u_int32_t) (MD_CONTEXT_X86_INTEGER | MD_CONTEXT_X86_CONTROL),
@@ -285,7 +291,7 @@ TEST(Dump, OneThread) {
   EXPECT_EQ(0x46a6a6a8U, raw_context.ecx);
   EXPECT_EQ(0x6a5025e2U, raw_context.eax);
   EXPECT_EQ(0xd9fabb4aU, raw_context.ebp);
-  EXPECT_EQ(0x6913f540U, raw_context.eip);
+  EXPECT_EQ(kExpectedEIP, raw_context.eip);
   EXPECT_EQ(0xbffe6edaU, raw_context.cs);
   EXPECT_EQ(0xb2ce1e2dU, raw_context.eflags);
   EXPECT_EQ(0x659caaa4U, raw_context.esp);

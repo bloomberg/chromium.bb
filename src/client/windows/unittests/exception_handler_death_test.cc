@@ -303,17 +303,7 @@ TEST_F(ExceptionHandlerDeathTest, InstructionPointerMemory) {
     ASSERT_TRUE(context);
 
     u_int64_t instruction_pointer;
-    switch (context->GetContextCPU()) {
-    case MD_CONTEXT_X86:
-      instruction_pointer = context->GetContextX86()->eip;
-      break;
-    case MD_CONTEXT_AMD64:
-      instruction_pointer = context->GetContextAMD64()->rip;
-      break;
-    default:
-      FAIL() << "Unknown context CPU: " << context->GetContextCPU();
-      break;
-    }
+    ASSERT_TRUE(context->GetInstructionPointer(&instruction_pointer));
 
     MinidumpMemoryRegion* region =
         memory_list->GetMemoryRegionForAddress(instruction_pointer);
@@ -403,17 +393,7 @@ TEST_F(ExceptionHandlerDeathTest, InstructionPointerMemoryMinBound) {
     ASSERT_TRUE(context);
 
     u_int64_t instruction_pointer;
-    switch (context->GetContextCPU()) {
-    case MD_CONTEXT_X86:
-      instruction_pointer = context->GetContextX86()->eip;
-      break;
-    case MD_CONTEXT_AMD64:
-      instruction_pointer = context->GetContextAMD64()->rip;
-      break;
-    default:
-      FAIL() << "Unknown context CPU: " << context->GetContextCPU();
-      break;
-    }
+    ASSERT_TRUE(context->GetInstructionPointer(&instruction_pointer));
 
     MinidumpMemoryRegion* region =
         memory_list->GetMemoryRegionForAddress(instruction_pointer);
@@ -495,17 +475,7 @@ TEST_F(ExceptionHandlerDeathTest, InstructionPointerMemoryMaxBound) {
     ASSERT_TRUE(context);
 
     u_int64_t instruction_pointer;
-    switch (context->GetContextCPU()) {
-    case MD_CONTEXT_X86:
-      instruction_pointer = context->GetContextX86()->eip;
-      break;
-    case MD_CONTEXT_AMD64:
-      instruction_pointer = context->GetContextAMD64()->rip;
-      break;
-    default:
-      FAIL() << "Unknown context CPU: " << context->GetContextCPU();
-      break;
-    }
+    ASSERT_TRUE(context->GetInstructionPointer(&instruction_pointer));
 
     MinidumpMemoryRegion* region =
         memory_list->GetMemoryRegionForAddress(instruction_pointer);

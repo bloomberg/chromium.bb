@@ -450,20 +450,7 @@ TEST(ExceptionHandlerTest, InstructionPointerMemory) {
   ASSERT_TRUE(context);
 
   u_int64_t instruction_pointer;
-  switch (context->GetContextCPU()) {
-  case MD_CONTEXT_X86:
-    instruction_pointer = context->GetContextX86()->eip;
-    break;
-  case MD_CONTEXT_AMD64:
-    instruction_pointer = context->GetContextAMD64()->rip;
-    break;
-  case MD_CONTEXT_ARM:
-    instruction_pointer = context->GetContextARM()->iregs[15];
-    break;
-  default:
-    FAIL() << "Unknown context CPU: " << context->GetContextCPU();
-    break;
-  }
+  ASSERT_TRUE(context->GetInstructionPointer(&instruction_pointer));
 
   MinidumpMemoryRegion* region =
       memory_list->GetMemoryRegionForAddress(instruction_pointer);
@@ -555,20 +542,7 @@ TEST(ExceptionHandlerTest, InstructionPointerMemoryMinBound) {
   ASSERT_TRUE(context);
 
   u_int64_t instruction_pointer;
-  switch (context->GetContextCPU()) {
-  case MD_CONTEXT_X86:
-    instruction_pointer = context->GetContextX86()->eip;
-    break;
-  case MD_CONTEXT_AMD64:
-    instruction_pointer = context->GetContextAMD64()->rip;
-    break;
-  case MD_CONTEXT_ARM:
-    instruction_pointer = context->GetContextARM()->iregs[15];
-    break;
-  default:
-    FAIL() << "Unknown context CPU: " << context->GetContextCPU();
-    break;
-  }
+  ASSERT_TRUE(context->GetInstructionPointer(&instruction_pointer));
 
   MinidumpMemoryRegion* region =
       memory_list->GetMemoryRegionForAddress(instruction_pointer);
@@ -658,20 +632,7 @@ TEST(ExceptionHandlerTest, InstructionPointerMemoryMaxBound) {
   ASSERT_TRUE(context);
 
   u_int64_t instruction_pointer;
-  switch (context->GetContextCPU()) {
-  case MD_CONTEXT_X86:
-    instruction_pointer = context->GetContextX86()->eip;
-    break;
-  case MD_CONTEXT_AMD64:
-    instruction_pointer = context->GetContextAMD64()->rip;
-    break;
-  case MD_CONTEXT_ARM:
-    instruction_pointer = context->GetContextARM()->iregs[15];
-    break;
-  default:
-    FAIL() << "Unknown context CPU: " << context->GetContextCPU();
-    break;
-  }
+  ASSERT_TRUE(context->GetInstructionPointer(&instruction_pointer));
 
   MinidumpMemoryRegion* region =
       memory_list->GetMemoryRegionForAddress(instruction_pointer);

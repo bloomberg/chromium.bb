@@ -178,6 +178,10 @@ class MinidumpContext : public MinidumpStream {
   // MD_CONTEXT_* bits masked out.  Returns 0 on failure.
   u_int32_t GetContextCPU() const;
 
+  // A convenience method to get the instruction pointer out of the
+  // MDRawContext, since it varies per-CPU architecture.
+  bool GetInstructionPointer(u_int64_t* ip) const;
+
   // Returns raw CPU-specific context data for the named CPU type.  If the
   // context data does not match the CPU type or does not exist, returns
   // NULL.
