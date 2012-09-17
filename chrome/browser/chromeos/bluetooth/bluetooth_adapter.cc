@@ -325,21 +325,23 @@ void BluetoothAdapter::AdapterPropertyChanged(
       DBusThreadManager::Get()->GetBluetoothAdapterClient()->
       GetProperties(object_path_);
 
-  if (property_name == properties->powered.name()) {
-    PoweredChanged(properties->powered.value());
-
-  } else if (property_name == properties->discovering.name()) {
-    DiscoveringChanged(properties->discovering.value());
-
-  } else if (property_name == properties->devices.name()) {
-    DevicesChanged(properties->devices.value());
-
-  } else if (property_name == properties->address.name()) {
+  if (property_name == properties->address.name()) {
     ChangeAdapter(object_path_);
 
-  } else if (property_name == properties->name.name()) {
-    name_ = properties->name.value();
+  } else if (!address_.empty()) {
+    if (property_name == properties->powered.name()) {
+      PoweredChanged(properties->powered.value());
 
+    } else if (property_name == properties->discovering.name()) {
+      DiscoveringChanged(properties->discovering.value());
+
+    } else if (property_name == properties->devices.name()) {
+      DevicesChanged(properties->devices.value());
+
+    } else if (property_name == properties->name.name()) {
+      name_ = properties->name.value();
+
+    }
   }
 }
 

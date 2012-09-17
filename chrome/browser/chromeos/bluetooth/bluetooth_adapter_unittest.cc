@@ -31,15 +31,29 @@ class BluetoothAdapterTest : public testing::Test {
         mock_dbus_thread_manager->mock_bluetooth_manager_client();
     mock_adapter_client_ =
         mock_dbus_thread_manager->mock_bluetooth_adapter_client();
+
+    set_callback_called_ = false;
+    error_callback_called_ = false;
   }
 
   virtual void TearDown() {
     DBusThreadManager::Shutdown();
   }
 
+  void SetCallback() {
+    set_callback_called_ = true;
+  }
+
+  void ErrorCallback() {
+    error_callback_called_ = true;
+  }
+
  protected:
   MockBluetoothManagerClient* mock_manager_client_;
   MockBluetoothAdapterClient* mock_adapter_client_;
+
+  bool set_callback_called_;
+  bool error_callback_called_;
 };
 
 TEST_F(BluetoothAdapterTest, DefaultAdapterNotPresent) {
@@ -440,6 +454,969 @@ TEST_F(BluetoothAdapterTest, DefaultAdapterWithoutAddressRemoved) {
 
   // Adapter should be still no longer present.
   EXPECT_FALSE(adapter->IsPresent());
+}
+
+TEST_F(BluetoothAdapterTest, DefaultAdapterPoweredPropertyInitiallyFalse) {
+  const dbus::ObjectPath adapter_path("/fake/hci0");
+  const std::string adapter_address = "CA:FE:4A:C0:FE:FE";
+
+  // Create the default adapter instance;
+  // BluetoothManagerClient::DefaultAdapter will be called once, passing
+  // a callback to obtain the adapter path.
+  BluetoothManagerClient::AdapterCallback adapter_callback;
+  EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
+      .WillOnce(SaveArg<0>(&adapter_callback));
+
+  scoped_refptr<BluetoothAdapter> adapter = BluetoothAdapter::DefaultAdapter();
+
+  // Call the adapter callback;
+  // BluetoothAdapterClient::GetProperties will be called once to obtain
+  // the property set.
+  MockBluetoothAdapterClient::Properties adapter_properties;
+  adapter_properties.address.ReplaceValue(adapter_address);
+  adapter_properties.powered.ReplaceValue(false);
+
+  EXPECT_CALL(*mock_adapter_client_, GetProperties(adapter_path))
+      .WillRepeatedly(Return(&adapter_properties));
+
+  adapter_callback.Run(adapter_path, true);
+
+  // Adapter should have the correct property value.
+  EXPECT_FALSE(adapter->IsPowered());
+}
+
+TEST_F(BluetoothAdapterTest, DefaultAdapterPoweredPropertyInitiallyTrue) {
+  const dbus::ObjectPath adapter_path("/fake/hci0");
+  const std::string adapter_address = "CA:FE:4A:C0:FE:FE";
+
+  // Create the default adapter instance;
+  // BluetoothManagerClient::DefaultAdapter will be called once, passing
+  // a callback to obtain the adapter path.
+  BluetoothManagerClient::AdapterCallback adapter_callback;
+  EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
+      .WillOnce(SaveArg<0>(&adapter_callback));
+
+  scoped_refptr<BluetoothAdapter> adapter = BluetoothAdapter::DefaultAdapter();
+
+  // Call the adapter callback;
+  // BluetoothAdapterClient::GetProperties will be called once to obtain
+  // the property set.
+  MockBluetoothAdapterClient::Properties adapter_properties;
+  adapter_properties.address.ReplaceValue(adapter_address);
+  adapter_properties.powered.ReplaceValue(true);
+
+  EXPECT_CALL(*mock_adapter_client_, GetProperties(adapter_path))
+      .WillRepeatedly(Return(&adapter_properties));
+
+  // BluetoothAdapter::Observer::AdapterPoweredChanged will be called.
+  MockBluetoothAdapter::Observer adapter_observer;
+  adapter->AddObserver(&adapter_observer);
+
+  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter.get(), true))
+      .Times(1);
+
+  EXPECT_CALL(adapter_observer, AdapterPoweredChanged(adapter.get(), true))
+      .Times(1);
+
+  adapter_callback.Run(adapter_path, true);
+
+  // Adapter should have the correct property value.
+  EXPECT_TRUE(adapter->IsPowered());
+}
+
+TEST_F(BluetoothAdapterTest,
+       DefaultAdapterPoweredPropertyInitiallyTrueWithoutAddress) {
+  const dbus::ObjectPath adapter_path("/fake/hci0");
+  const std::string adapter_address = "CA:FE:4A:C0:FE:FE";
+
+  // Create the default adapter instance;
+  // BluetoothManagerClient::DefaultAdapter will be called once, passing
+  // a callback to obtain the adapter path.
+  BluetoothManagerClient::AdapterCallback adapter_callback;
+  EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
+      .WillOnce(SaveArg<0>(&adapter_callback));
+
+  scoped_refptr<BluetoothAdapter> adapter = BluetoothAdapter::DefaultAdapter();
+
+  // Call the adapter callback;
+  // BluetoothAdapterClient::GetProperties will be called once to obtain
+  // the property set but BluetoothAdapter::Observer::AdapterPoweredChanged
+  // should not yet be called.
+  MockBluetoothAdapterClient::Properties adapter_properties;
+  adapter_properties.powered.ReplaceValue(true);
+
+  MockBluetoothAdapter::Observer adapter_observer;
+  adapter->AddObserver(&adapter_observer);
+
+  EXPECT_CALL(*mock_adapter_client_, GetProperties(adapter_path))
+      .WillRepeatedly(Return(&adapter_properties));
+
+  EXPECT_CALL(adapter_observer, AdapterPoweredChanged(adapter.get(), _))
+      .Times(0);
+
+  adapter_callback.Run(adapter_path, true);
+
+  // Adapter should not yet have the property value.
+  EXPECT_FALSE(adapter->IsPowered());
+
+  // Tell the adapter the address now,
+  // BluetoothAdapter::Observer::AdapterPresentChanged and
+  // BluetoothAdapter::Observer::AdapterPoweredChanged now must be called.
+  adapter_properties.address.ReplaceValue(adapter_address);
+
+  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter.get(), true))
+      .Times(1);
+
+  EXPECT_CALL(adapter_observer, AdapterPoweredChanged(adapter.get(), true))
+      .Times(1);
+
+  static_cast<BluetoothAdapterClient::Observer*>(adapter.get())
+      ->AdapterPropertyChanged(adapter_path,
+                               adapter_properties.address.name());
+
+  // Adapter should have the correct property value.
+  EXPECT_TRUE(adapter->IsPowered());
+}
+
+TEST_F(BluetoothAdapterTest, DefaultAdapterPoweredPropertyChanged) {
+  const dbus::ObjectPath adapter_path("/fake/hci0");
+  const std::string adapter_address = "CA:FE:4A:C0:FE:FE";
+
+  // Create the default adapter instance;
+  // BluetoothManagerClient::DefaultAdapter will be called once, passing
+  // a callback to obtain the adapter path.
+  BluetoothManagerClient::AdapterCallback adapter_callback;
+  EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
+      .WillOnce(SaveArg<0>(&adapter_callback));
+
+  scoped_refptr<BluetoothAdapter> adapter = BluetoothAdapter::DefaultAdapter();
+
+  // Call the adapter callback;
+  // BluetoothAdapterClient::GetProperties will be called once to obtain
+  // the property set.
+  MockBluetoothAdapterClient::Properties adapter_properties;
+  adapter_properties.address.ReplaceValue(adapter_address);
+  adapter_properties.powered.ReplaceValue(false);
+
+  EXPECT_CALL(*mock_adapter_client_, GetProperties(adapter_path))
+      .WillRepeatedly(Return(&adapter_properties));
+
+  adapter_callback.Run(adapter_path, true);
+
+  // Adapter should have the correct property value.
+  EXPECT_FALSE(adapter->IsPowered());
+
+  // Report that the property has been changed;
+  // BluetoothAdapter::Observer::AdapterPoweredChanged will be called.
+  MockBluetoothAdapter::Observer adapter_observer;
+  adapter->AddObserver(&adapter_observer);
+
+  EXPECT_CALL(adapter_observer, AdapterPoweredChanged(adapter.get(), true))
+      .Times(1);
+
+  adapter_properties.powered.ReplaceValue(true);
+  static_cast<BluetoothAdapterClient::Observer*>(adapter.get())
+      ->AdapterPropertyChanged(adapter_path,
+                               adapter_properties.powered.name());
+
+  // Adapter should have the new property values.
+  EXPECT_TRUE(adapter->IsPowered());
+}
+
+TEST_F(BluetoothAdapterTest, DefaultAdapterPoweredPropertyUnchanged) {
+  const dbus::ObjectPath adapter_path("/fake/hci0");
+  const std::string adapter_address = "CA:FE:4A:C0:FE:FE";
+
+  // Create the default adapter instance;
+  // BluetoothManagerClient::DefaultAdapter will be called once, passing
+  // a callback to obtain the adapter path.
+  BluetoothManagerClient::AdapterCallback adapter_callback;
+  EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
+      .WillOnce(SaveArg<0>(&adapter_callback));
+
+  scoped_refptr<BluetoothAdapter> adapter = BluetoothAdapter::DefaultAdapter();
+
+  // Call the adapter callback;
+  // BluetoothAdapterClient::GetProperties will be called once to obtain
+  // the property set.
+  MockBluetoothAdapterClient::Properties adapter_properties;
+  adapter_properties.address.ReplaceValue(adapter_address);
+  adapter_properties.powered.ReplaceValue(true);
+
+  EXPECT_CALL(*mock_adapter_client_, GetProperties(adapter_path))
+      .WillRepeatedly(Return(&adapter_properties));
+
+  adapter_callback.Run(adapter_path, true);
+
+  // Adapter should have the correct property value.
+  EXPECT_TRUE(adapter->IsPowered());
+
+  // Report that the property has been changed, but don't change the value;
+  // BluetoothAdapter::Observer::AdapterPoweredChanged should not be called.
+  MockBluetoothAdapter::Observer adapter_observer;
+  adapter->AddObserver(&adapter_observer);
+
+  EXPECT_CALL(adapter_observer, AdapterPoweredChanged(adapter.get(), _))
+      .Times(0);
+
+  static_cast<BluetoothAdapterClient::Observer*>(adapter.get())
+      ->AdapterPropertyChanged(adapter_path,
+                               adapter_properties.powered.name());
+
+  // Adapter should still have the same property values.
+  EXPECT_TRUE(adapter->IsPowered());
+}
+
+TEST_F(BluetoothAdapterTest,
+       DefaultAdapterPoweredPropertyChangedWithoutAddress) {
+  const dbus::ObjectPath adapter_path("/fake/hci0");
+  const std::string adapter_address = "CA:FE:4A:C0:FE:FE";
+
+  // Create the default adapter instance;
+  // BluetoothManagerClient::DefaultAdapter will be called once, passing
+  // a callback to obtain the adapter path.
+  BluetoothManagerClient::AdapterCallback adapter_callback;
+  EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
+      .WillOnce(SaveArg<0>(&adapter_callback));
+
+  scoped_refptr<BluetoothAdapter> adapter = BluetoothAdapter::DefaultAdapter();
+
+  // Call the adapter callback;
+  // BluetoothAdapterClient::GetProperties will be called once to obtain
+  // the property set but BluetoothAdapter::Observer::AdapterPoweredChanged
+  // should not yet be called.
+  MockBluetoothAdapterClient::Properties adapter_properties;
+
+  MockBluetoothAdapter::Observer adapter_observer;
+  adapter->AddObserver(&adapter_observer);
+
+  EXPECT_CALL(*mock_adapter_client_, GetProperties(adapter_path))
+      .WillRepeatedly(Return(&adapter_properties));
+
+  EXPECT_CALL(adapter_observer, AdapterPoweredChanged(adapter.get(), _))
+      .Times(0);
+
+  adapter_callback.Run(adapter_path, true);
+
+  // Tell the adapter that its powered property changed, the observer
+  // method should still not be called because there is no address for
+  // the adapter so it is not present.
+  adapter_properties.powered.ReplaceValue(true);
+
+  EXPECT_CALL(adapter_observer, AdapterPoweredChanged(adapter.get(), _))
+      .Times(0);
+
+  static_cast<BluetoothAdapterClient::Observer*>(adapter.get())
+      ->AdapterPropertyChanged(adapter_path,
+                               adapter_properties.powered.name());
+
+  // Adapter should not yet have the property value.
+  EXPECT_FALSE(adapter->IsPowered());
+
+  // Tell the adapter the address now,
+  // BluetoothAdapter::Observer::AdapterPresentChanged and
+  // BluetoothAdapter::Observer::AdapterPoweredChanged now must be called.
+  adapter_properties.address.ReplaceValue(adapter_address);
+
+  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter.get(), true))
+      .Times(1);
+
+  EXPECT_CALL(adapter_observer, AdapterPoweredChanged(adapter.get(), true))
+      .Times(1);
+
+  static_cast<BluetoothAdapterClient::Observer*>(adapter.get())
+      ->AdapterPropertyChanged(adapter_path,
+                               adapter_properties.address.name());
+
+  // Adapter should now have the correct property value.
+  EXPECT_TRUE(adapter->IsPowered());
+}
+
+TEST_F(BluetoothAdapterTest, DefaultAdapterPoweredPropertyResetOnReplace) {
+  const dbus::ObjectPath initial_adapter_path("/fake/hci0");
+  const dbus::ObjectPath new_adapter_path("/fake/hci1");
+  const std::string initial_adapter_address = "CA:FE:4A:C0:FE:FE";
+  const std::string new_adapter_address = "BA:C0:11:CO:FE:FE";
+
+  // Create the default adapter instance;
+  // BluetoothManagerClient::DefaultAdapter will be called once, passing
+  // a callback to obtain the adapter path.
+  BluetoothManagerClient::AdapterCallback adapter_callback;
+  EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
+      .WillOnce(SaveArg<0>(&adapter_callback));
+
+  scoped_refptr<BluetoothAdapter> adapter = BluetoothAdapter::DefaultAdapter();
+
+  // Call the adapter callback;
+  // BluetoothAdapterClient::GetProperties will be called once to obtain
+  // the property set.
+  MockBluetoothAdapterClient::Properties initial_adapter_properties;
+  initial_adapter_properties.address.ReplaceValue(initial_adapter_address);
+  initial_adapter_properties.powered.ReplaceValue(true);
+
+  EXPECT_CALL(*mock_adapter_client_, GetProperties(initial_adapter_path))
+      .WillRepeatedly(Return(&initial_adapter_properties));
+
+  adapter_callback.Run(initial_adapter_path, true);
+
+  // Tell the adapter the default adapter changed;
+  // BluetoothAdapterClient::GetProperties will be called once to obtain
+  // the property set.
+  MockBluetoothAdapterClient::Properties new_adapter_properties;
+  new_adapter_properties.address.ReplaceValue(new_adapter_address);
+
+  EXPECT_CALL(*mock_adapter_client_, GetProperties(new_adapter_path))
+      .WillRepeatedly(Return(&new_adapter_properties));
+
+  // BluetoothAdapter::Observer::AdapterPoweredChanged will be called.
+  MockBluetoothAdapter::Observer adapter_observer;
+  adapter->AddObserver(&adapter_observer);
+
+  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter.get(), false))
+      .Times(1);
+  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter.get(), true))
+      .Times(1);
+
+  EXPECT_CALL(adapter_observer, AdapterPoweredChanged(adapter.get(), false))
+      .Times(1);
+
+  static_cast<BluetoothManagerClient::Observer*>(adapter.get())
+      ->DefaultAdapterChanged(new_adapter_path);
+
+  // Adapter should have the new property value.
+  EXPECT_FALSE(adapter->IsPowered());
+}
+
+TEST_F(BluetoothAdapterTest,
+       DefaultAdapterPoweredPropertyResetOnReplaceWhenTrue) {
+  const dbus::ObjectPath initial_adapter_path("/fake/hci0");
+  const dbus::ObjectPath new_adapter_path("/fake/hci1");
+  const std::string initial_adapter_address = "CA:FE:4A:C0:FE:FE";
+  const std::string new_adapter_address = "BA:C0:11:CO:FE:FE";
+
+  // Create the default adapter instance;
+  // BluetoothManagerClient::DefaultAdapter will be called once, passing
+  // a callback to obtain the adapter path.
+  BluetoothManagerClient::AdapterCallback adapter_callback;
+  EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
+      .WillOnce(SaveArg<0>(&adapter_callback));
+
+  scoped_refptr<BluetoothAdapter> adapter = BluetoothAdapter::DefaultAdapter();
+
+  // Call the adapter callback;
+  // BluetoothAdapterClient::GetProperties will be called once to obtain
+  // the property set.
+  MockBluetoothAdapterClient::Properties initial_adapter_properties;
+  initial_adapter_properties.address.ReplaceValue(initial_adapter_address);
+  initial_adapter_properties.powered.ReplaceValue(true);
+
+  EXPECT_CALL(*mock_adapter_client_, GetProperties(initial_adapter_path))
+      .WillRepeatedly(Return(&initial_adapter_properties));
+
+  adapter_callback.Run(initial_adapter_path, true);
+
+  // Tell the adapter the default adapter changed;
+  // BluetoothAdapterClient::GetProperties will be called once to obtain
+  // the property set.
+  MockBluetoothAdapterClient::Properties new_adapter_properties;
+  new_adapter_properties.address.ReplaceValue(new_adapter_address);
+  new_adapter_properties.powered.ReplaceValue(true);
+
+  EXPECT_CALL(*mock_adapter_client_, GetProperties(new_adapter_path))
+      .WillRepeatedly(Return(&new_adapter_properties));
+
+  // BluetoothAdapter::Observer::AdapterPoweredChanged will be called once
+  // to set the value to false for the previous adapter and once to set the
+  // value to true for the new adapter.
+  MockBluetoothAdapter::Observer adapter_observer;
+  adapter->AddObserver(&adapter_observer);
+
+  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter.get(), false))
+      .Times(1);
+  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter.get(), true))
+      .Times(1);
+
+  EXPECT_CALL(adapter_observer, AdapterPoweredChanged(adapter.get(), false))
+      .Times(1);
+  EXPECT_CALL(adapter_observer, AdapterPoweredChanged(adapter.get(), true))
+      .Times(1);
+
+  static_cast<BluetoothManagerClient::Observer*>(adapter.get())
+      ->DefaultAdapterChanged(new_adapter_path);
+
+  // Adapter should have the new property value.
+  EXPECT_TRUE(adapter->IsPowered());
+}
+
+TEST_F(BluetoothAdapterTest, DefaultAdapterPoweredPropertyResetOnRemove) {
+  const dbus::ObjectPath adapter_path("/fake/hci0");
+  const std::string adapter_address = "CA:FE:4A:C0:FE:FE";
+
+  // Create the default adapter instance;
+  // BluetoothManagerClient::DefaultAdapter will be called once, passing
+  // a callback to obtain the adapter path.
+  BluetoothManagerClient::AdapterCallback adapter_callback;
+  EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
+      .WillOnce(SaveArg<0>(&adapter_callback));
+
+  scoped_refptr<BluetoothAdapter> adapter = BluetoothAdapter::DefaultAdapter();
+
+  // Call the adapter callback;
+  // BluetoothAdapterClient::GetProperties will be called once to obtain
+  // the property set.
+  MockBluetoothAdapterClient::Properties adapter_properties;
+  adapter_properties.address.ReplaceValue(adapter_address);
+  adapter_properties.powered.ReplaceValue(true);
+
+  EXPECT_CALL(*mock_adapter_client_, GetProperties(adapter_path))
+      .WillRepeatedly(Return(&adapter_properties));
+
+  adapter_callback.Run(adapter_path, true);
+
+  // Report that the adapter has been removed;
+  // BluetoothAdapter::Observer::AdapterPoweredChanged will be called.
+  MockBluetoothAdapter::Observer adapter_observer;
+  adapter->AddObserver(&adapter_observer);
+
+  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter.get(), false))
+      .Times(1);
+  EXPECT_CALL(adapter_observer, AdapterPoweredChanged(adapter.get(), false))
+      .Times(1);
+
+  static_cast<BluetoothManagerClient::Observer*>(adapter.get())
+      ->AdapterRemoved(adapter_path);
+
+  // Adapter should have the new property value.
+  EXPECT_FALSE(adapter->IsPowered());
+}
+
+TEST_F(BluetoothAdapterTest, DefaultAdapterSetPowered) {
+  const dbus::ObjectPath adapter_path("/fake/hci0");
+  const std::string adapter_address = "CA:FE:4A:C0:FE:FE";
+
+  // Create the default adapter instance;
+  // BluetoothManagerClient::DefaultAdapter will be called once, passing
+  // a callback to obtain the adapter path.
+  BluetoothManagerClient::AdapterCallback adapter_callback;
+  EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
+      .WillOnce(SaveArg<0>(&adapter_callback));
+
+  scoped_refptr<BluetoothAdapter> adapter = BluetoothAdapter::DefaultAdapter();
+
+  // Call the adapter callback;
+  // BluetoothAdapterClient::GetProperties will be called once to obtain
+  // the property set.
+  MockBluetoothAdapterClient::Properties adapter_properties;
+
+  EXPECT_CALL(*mock_adapter_client_, GetProperties(adapter_path))
+      .WillRepeatedly(Return(&adapter_properties));
+
+  adapter_callback.Run(adapter_path, true);
+
+  // Request that the powered property be changed;
+  // MockBluetoothAdapterClient::Set should be called, passing the address
+  // of the powered property and a callback to receive the response.
+  dbus::PropertySet::SetCallback set_callback;
+  EXPECT_CALL(adapter_properties, Set(&adapter_properties.powered, _))
+      .WillOnce(SaveArg<1>(&set_callback));
+
+  adapter->SetPowered(true,
+                      base::Bind(&BluetoothAdapterTest::SetCallback,
+                                 base::Unretained(this)),
+                      base::Bind(&BluetoothAdapterTest::ErrorCallback,
+                                 base::Unretained(this)));
+
+  // Reply to the callback to indicate success, the set callback we provided
+  // should be called but the properties should not be refetched.
+  EXPECT_CALL(*mock_adapter_client_, GetProperties(adapter_path))
+      .Times(0);
+
+  set_callback.Run(true);
+
+  EXPECT_TRUE(set_callback_called_);
+  EXPECT_FALSE(error_callback_called_);
+}
+
+TEST_F(BluetoothAdapterTest, DefaultAdapterSetPoweredError) {
+  const dbus::ObjectPath adapter_path("/fake/hci0");
+  const std::string adapter_address = "CA:FE:4A:C0:FE:FE";
+
+  // Create the default adapter instance;
+  // BluetoothManagerClient::DefaultAdapter will be called once, passing
+  // a callback to obtain the adapter path.
+  BluetoothManagerClient::AdapterCallback adapter_callback;
+  EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
+      .WillOnce(SaveArg<0>(&adapter_callback));
+
+  scoped_refptr<BluetoothAdapter> adapter = BluetoothAdapter::DefaultAdapter();
+
+  // Call the adapter callback;
+  // BluetoothAdapterClient::GetProperties will be called once to obtain
+  // the property set.
+  MockBluetoothAdapterClient::Properties adapter_properties;
+
+  EXPECT_CALL(*mock_adapter_client_, GetProperties(adapter_path))
+      .WillRepeatedly(Return(&adapter_properties));
+
+  adapter_callback.Run(adapter_path, true);
+
+  // Request that the powered property be changed;
+  // MockBluetoothAdapterClient::Set should be called, passing the address
+  // of the powered property and a callback to receive the response.
+  dbus::PropertySet::SetCallback set_callback;
+  EXPECT_CALL(adapter_properties, Set(&adapter_properties.powered, _))
+      .WillOnce(SaveArg<1>(&set_callback));
+
+  adapter->SetPowered(true,
+                      base::Bind(&BluetoothAdapterTest::SetCallback,
+                                 base::Unretained(this)),
+                      base::Bind(&BluetoothAdapterTest::ErrorCallback,
+                                 base::Unretained(this)));
+
+  // Reply to the callback to indicate failure, the error callback we provided
+  // should be called but the properties should not be refetched.
+  EXPECT_CALL(*mock_adapter_client_, GetProperties(adapter_path))
+      .Times(0);
+
+  set_callback.Run(false);
+
+  EXPECT_FALSE(set_callback_called_);
+  EXPECT_TRUE(error_callback_called_);
+}
+
+TEST_F(BluetoothAdapterTest, DefaultAdapterDiscoveringPropertyInitiallyFalse) {
+  const dbus::ObjectPath adapter_path("/fake/hci0");
+  const std::string adapter_address = "CA:FE:4A:C0:FE:FE";
+
+  // Create the default adapter instance;
+  // BluetoothManagerClient::DefaultAdapter will be called once, passing
+  // a callback to obtain the adapter path.
+  BluetoothManagerClient::AdapterCallback adapter_callback;
+  EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
+      .WillOnce(SaveArg<0>(&adapter_callback));
+
+  scoped_refptr<BluetoothAdapter> adapter = BluetoothAdapter::DefaultAdapter();
+
+  // Call the adapter callback;
+  // BluetoothAdapterClient::GetProperties will be called once to obtain
+  // the property set.
+  MockBluetoothAdapterClient::Properties adapter_properties;
+  adapter_properties.address.ReplaceValue(adapter_address);
+  adapter_properties.discovering.ReplaceValue(false);
+
+  EXPECT_CALL(*mock_adapter_client_, GetProperties(adapter_path))
+      .WillRepeatedly(Return(&adapter_properties));
+
+  adapter_callback.Run(adapter_path, true);
+
+  // Adapter should have the correct property value.
+  EXPECT_FALSE(adapter->IsDiscovering());
+}
+
+TEST_F(BluetoothAdapterTest, DefaultAdapterDiscoveringPropertyInitiallyTrue) {
+  const dbus::ObjectPath adapter_path("/fake/hci0");
+  const std::string adapter_address = "CA:FE:4A:C0:FE:FE";
+
+  // Create the default adapter instance;
+  // BluetoothManagerClient::DefaultAdapter will be called once, passing
+  // a callback to obtain the adapter path.
+  BluetoothManagerClient::AdapterCallback adapter_callback;
+  EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
+      .WillOnce(SaveArg<0>(&adapter_callback));
+
+  scoped_refptr<BluetoothAdapter> adapter = BluetoothAdapter::DefaultAdapter();
+
+  // Call the adapter callback;
+  // BluetoothAdapterClient::GetProperties will be called once to obtain
+  // the property set.
+  MockBluetoothAdapterClient::Properties adapter_properties;
+  adapter_properties.address.ReplaceValue(adapter_address);
+  adapter_properties.discovering.ReplaceValue(true);
+
+  EXPECT_CALL(*mock_adapter_client_, GetProperties(adapter_path))
+      .WillRepeatedly(Return(&adapter_properties));
+
+  // BluetoothAdapter::Observer::AdapterDiscoveringChanged will be called.
+  MockBluetoothAdapter::Observer adapter_observer;
+  adapter->AddObserver(&adapter_observer);
+
+  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter.get(), true))
+      .Times(1);
+
+  EXPECT_CALL(adapter_observer, AdapterDiscoveringChanged(adapter.get(), true))
+      .Times(1);
+
+  adapter_callback.Run(adapter_path, true);
+
+  // Adapter should have the correct property value.
+  EXPECT_TRUE(adapter->IsDiscovering());
+}
+
+TEST_F(BluetoothAdapterTest,
+       DefaultAdapterDiscoveringPropertyInitiallyTrueWithoutAddress) {
+  const dbus::ObjectPath adapter_path("/fake/hci0");
+  const std::string adapter_address = "CA:FE:4A:C0:FE:FE";
+
+  // Create the default adapter instance;
+  // BluetoothManagerClient::DefaultAdapter will be called once, passing
+  // a callback to obtain the adapter path.
+  BluetoothManagerClient::AdapterCallback adapter_callback;
+  EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
+      .WillOnce(SaveArg<0>(&adapter_callback));
+
+  scoped_refptr<BluetoothAdapter> adapter = BluetoothAdapter::DefaultAdapter();
+
+  // Call the adapter callback;
+  // BluetoothAdapterClient::GetProperties will be called once to obtain
+  // the property set but BluetoothAdapter::Observer::AdapterDiscoveringChanged
+  // should not yet be called.
+  MockBluetoothAdapterClient::Properties adapter_properties;
+  adapter_properties.discovering.ReplaceValue(true);
+
+  MockBluetoothAdapter::Observer adapter_observer;
+  adapter->AddObserver(&adapter_observer);
+
+  EXPECT_CALL(*mock_adapter_client_, GetProperties(adapter_path))
+      .WillRepeatedly(Return(&adapter_properties));
+
+  EXPECT_CALL(adapter_observer, AdapterDiscoveringChanged(adapter.get(), _))
+      .Times(0);
+
+  adapter_callback.Run(adapter_path, true);
+
+  // Adapter should not yet have the property value.
+  EXPECT_FALSE(adapter->IsDiscovering());
+
+  // Tell the adapter the address now,
+  // BluetoothAdapter::Observer::AdapterPresentChanged and
+  // BluetoothAdapter::Observer::AdapterDiscoveringChanged now must be called.
+  adapter_properties.address.ReplaceValue(adapter_address);
+
+  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter.get(), true))
+      .Times(1);
+
+  EXPECT_CALL(adapter_observer, AdapterDiscoveringChanged(adapter.get(), true))
+      .Times(1);
+
+  static_cast<BluetoothAdapterClient::Observer*>(adapter.get())
+      ->AdapterPropertyChanged(adapter_path,
+                               adapter_properties.address.name());
+
+  // Adapter should have the correct property value.
+  EXPECT_TRUE(adapter->IsDiscovering());
+}
+
+TEST_F(BluetoothAdapterTest, DefaultAdapterDiscoveringPropertyChanged) {
+  const dbus::ObjectPath adapter_path("/fake/hci0");
+  const std::string adapter_address = "CA:FE:4A:C0:FE:FE";
+
+  // Create the default adapter instance;
+  // BluetoothManagerClient::DefaultAdapter will be called once, passing
+  // a callback to obtain the adapter path.
+  BluetoothManagerClient::AdapterCallback adapter_callback;
+  EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
+      .WillOnce(SaveArg<0>(&adapter_callback));
+
+  scoped_refptr<BluetoothAdapter> adapter = BluetoothAdapter::DefaultAdapter();
+
+  // Call the adapter callback;
+  // BluetoothAdapterClient::GetProperties will be called once to obtain
+  // the property set.
+  MockBluetoothAdapterClient::Properties adapter_properties;
+  adapter_properties.address.ReplaceValue(adapter_address);
+  adapter_properties.discovering.ReplaceValue(false);
+
+  EXPECT_CALL(*mock_adapter_client_, GetProperties(adapter_path))
+      .WillRepeatedly(Return(&adapter_properties));
+
+  adapter_callback.Run(adapter_path, true);
+
+  // Adapter should have the correct property value.
+  EXPECT_FALSE(adapter->IsDiscovering());
+
+  // Report that the property has been changed;
+  // BluetoothAdapter::Observer::AdapterDiscoveringChanged will be called.
+  MockBluetoothAdapter::Observer adapter_observer;
+  adapter->AddObserver(&adapter_observer);
+
+  EXPECT_CALL(adapter_observer, AdapterDiscoveringChanged(adapter.get(), true))
+      .Times(1);
+
+  adapter_properties.discovering.ReplaceValue(true);
+  static_cast<BluetoothAdapterClient::Observer*>(adapter.get())
+      ->AdapterPropertyChanged(adapter_path,
+                               adapter_properties.discovering.name());
+
+  // Adapter should have the new property values.
+  EXPECT_TRUE(adapter->IsDiscovering());
+}
+
+TEST_F(BluetoothAdapterTest, DefaultAdapterDiscoveringPropertyUnchanged) {
+  const dbus::ObjectPath adapter_path("/fake/hci0");
+  const std::string adapter_address = "CA:FE:4A:C0:FE:FE";
+
+  // Create the default adapter instance;
+  // BluetoothManagerClient::DefaultAdapter will be called once, passing
+  // a callback to obtain the adapter path.
+  BluetoothManagerClient::AdapterCallback adapter_callback;
+  EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
+      .WillOnce(SaveArg<0>(&adapter_callback));
+
+  scoped_refptr<BluetoothAdapter> adapter = BluetoothAdapter::DefaultAdapter();
+
+  // Call the adapter callback;
+  // BluetoothAdapterClient::GetProperties will be called once to obtain
+  // the property set.
+  MockBluetoothAdapterClient::Properties adapter_properties;
+  adapter_properties.address.ReplaceValue(adapter_address);
+  adapter_properties.discovering.ReplaceValue(true);
+
+  EXPECT_CALL(*mock_adapter_client_, GetProperties(adapter_path))
+      .WillRepeatedly(Return(&adapter_properties));
+
+  adapter_callback.Run(adapter_path, true);
+
+  // Adapter should have the correct property value.
+  EXPECT_TRUE(adapter->IsDiscovering());
+
+  // Report that the property has been changed, but don't change the value;
+  // BluetoothAdapter::Observer::AdapterDiscoveringChanged should not be
+  // called.
+  MockBluetoothAdapter::Observer adapter_observer;
+  adapter->AddObserver(&adapter_observer);
+
+  EXPECT_CALL(adapter_observer, AdapterDiscoveringChanged(adapter.get(), _))
+      .Times(0);
+
+  static_cast<BluetoothAdapterClient::Observer*>(adapter.get())
+      ->AdapterPropertyChanged(adapter_path,
+                               adapter_properties.discovering.name());
+
+  // Adapter should still have the same property values.
+  EXPECT_TRUE(adapter->IsDiscovering());
+}
+
+TEST_F(BluetoothAdapterTest,
+       DefaultAdapterDiscoveringPropertyChangedWithoutAddress) {
+  const dbus::ObjectPath adapter_path("/fake/hci0");
+  const std::string adapter_address = "CA:FE:4A:C0:FE:FE";
+
+  // Create the default adapter instance;
+  // BluetoothManagerClient::DefaultAdapter will be called once, passing
+  // a callback to obtain the adapter path.
+  BluetoothManagerClient::AdapterCallback adapter_callback;
+  EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
+      .WillOnce(SaveArg<0>(&adapter_callback));
+
+  scoped_refptr<BluetoothAdapter> adapter = BluetoothAdapter::DefaultAdapter();
+
+  // Call the adapter callback;
+  // BluetoothAdapterClient::GetProperties will be called once to obtain
+  // the property set but BluetoothAdapter::Observer::AdapterDiscoveringChanged
+  // should not yet be called.
+  MockBluetoothAdapterClient::Properties adapter_properties;
+
+  MockBluetoothAdapter::Observer adapter_observer;
+  adapter->AddObserver(&adapter_observer);
+
+  EXPECT_CALL(*mock_adapter_client_, GetProperties(adapter_path))
+      .WillRepeatedly(Return(&adapter_properties));
+
+  EXPECT_CALL(adapter_observer, AdapterDiscoveringChanged(adapter.get(), _))
+      .Times(0);
+
+  adapter_callback.Run(adapter_path, true);
+
+  // Tell the adapter that its discovering property changed, the observer
+  // method should still not be called because there is no address for
+  // the adapter so it is not present.
+  adapter_properties.discovering.ReplaceValue(true);
+
+  EXPECT_CALL(adapter_observer, AdapterDiscoveringChanged(adapter.get(), _))
+      .Times(0);
+
+  static_cast<BluetoothAdapterClient::Observer*>(adapter.get())
+      ->AdapterPropertyChanged(adapter_path,
+                               adapter_properties.discovering.name());
+
+  // Adapter should not yet have the property value.
+  EXPECT_FALSE(adapter->IsDiscovering());
+
+  // Tell the adapter the address now,
+  // BluetoothAdapter::Observer::AdapterPresentChanged and
+  // BluetoothAdapter::Observer::AdapterDiscoveringChanged now must be called.
+  adapter_properties.address.ReplaceValue(adapter_address);
+
+  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter.get(), true))
+      .Times(1);
+
+  EXPECT_CALL(adapter_observer, AdapterDiscoveringChanged(adapter.get(), true))
+      .Times(1);
+
+  static_cast<BluetoothAdapterClient::Observer*>(adapter.get())
+      ->AdapterPropertyChanged(adapter_path,
+                               adapter_properties.address.name());
+
+  // Adapter should now have the correct property value.
+  EXPECT_TRUE(adapter->IsDiscovering());
+}
+
+TEST_F(BluetoothAdapterTest, DefaultAdapterDiscoveringPropertyResetOnReplace) {
+  const dbus::ObjectPath initial_adapter_path("/fake/hci0");
+  const dbus::ObjectPath new_adapter_path("/fake/hci1");
+  const std::string initial_adapter_address = "CA:FE:4A:C0:FE:FE";
+  const std::string new_adapter_address = "BA:C0:11:CO:FE:FE";
+
+  // Create the default adapter instance;
+  // BluetoothManagerClient::DefaultAdapter will be called once, passing
+  // a callback to obtain the adapter path.
+  BluetoothManagerClient::AdapterCallback adapter_callback;
+  EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
+      .WillOnce(SaveArg<0>(&adapter_callback));
+
+  scoped_refptr<BluetoothAdapter> adapter = BluetoothAdapter::DefaultAdapter();
+
+  // Call the adapter callback;
+  // BluetoothAdapterClient::GetProperties will be called once to obtain
+  // the property set.
+  MockBluetoothAdapterClient::Properties initial_adapter_properties;
+  initial_adapter_properties.address.ReplaceValue(initial_adapter_address);
+  initial_adapter_properties.discovering.ReplaceValue(true);
+
+  EXPECT_CALL(*mock_adapter_client_, GetProperties(initial_adapter_path))
+      .WillRepeatedly(Return(&initial_adapter_properties));
+
+  adapter_callback.Run(initial_adapter_path, true);
+
+  // Tell the adapter the default adapter changed;
+  // BluetoothAdapterClient::GetProperties will be called once to obtain
+  // the property set.
+  MockBluetoothAdapterClient::Properties new_adapter_properties;
+  new_adapter_properties.address.ReplaceValue(new_adapter_address);
+
+  EXPECT_CALL(*mock_adapter_client_, GetProperties(new_adapter_path))
+      .WillRepeatedly(Return(&new_adapter_properties));
+
+  // BluetoothAdapter::Observer::AdapterDiscoveringChanged will be called.
+  MockBluetoothAdapter::Observer adapter_observer;
+  adapter->AddObserver(&adapter_observer);
+
+  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter.get(), false))
+      .Times(1);
+  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter.get(), true))
+      .Times(1);
+
+  EXPECT_CALL(adapter_observer, AdapterDiscoveringChanged(adapter.get(), false))
+      .Times(1);
+
+  static_cast<BluetoothManagerClient::Observer*>(adapter.get())
+      ->DefaultAdapterChanged(new_adapter_path);
+
+  // Adapter should have the new property value.
+  EXPECT_FALSE(adapter->IsDiscovering());
+}
+
+TEST_F(BluetoothAdapterTest,
+       DefaultAdapterDiscoveringPropertyResetOnReplaceWhenTrue) {
+  const dbus::ObjectPath initial_adapter_path("/fake/hci0");
+  const dbus::ObjectPath new_adapter_path("/fake/hci1");
+  const std::string initial_adapter_address = "CA:FE:4A:C0:FE:FE";
+  const std::string new_adapter_address = "BA:C0:11:CO:FE:FE";
+
+  // Create the default adapter instance;
+  // BluetoothManagerClient::DefaultAdapter will be called once, passing
+  // a callback to obtain the adapter path.
+  BluetoothManagerClient::AdapterCallback adapter_callback;
+  EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
+      .WillOnce(SaveArg<0>(&adapter_callback));
+
+  scoped_refptr<BluetoothAdapter> adapter = BluetoothAdapter::DefaultAdapter();
+
+  // Call the adapter callback;
+  // BluetoothAdapterClient::GetProperties will be called once to obtain
+  // the property set.
+  MockBluetoothAdapterClient::Properties initial_adapter_properties;
+  initial_adapter_properties.address.ReplaceValue(initial_adapter_address);
+  initial_adapter_properties.discovering.ReplaceValue(true);
+
+  EXPECT_CALL(*mock_adapter_client_, GetProperties(initial_adapter_path))
+      .WillRepeatedly(Return(&initial_adapter_properties));
+
+  adapter_callback.Run(initial_adapter_path, true);
+
+  // Tell the adapter the default adapter changed;
+  // BluetoothAdapterClient::GetProperties will be called once to obtain
+  // the property set.
+  MockBluetoothAdapterClient::Properties new_adapter_properties;
+  new_adapter_properties.address.ReplaceValue(new_adapter_address);
+  new_adapter_properties.discovering.ReplaceValue(true);
+
+  EXPECT_CALL(*mock_adapter_client_, GetProperties(new_adapter_path))
+      .WillRepeatedly(Return(&new_adapter_properties));
+
+  // BluetoothAdapter::Observer::AdapterDiscoveringChanged will be called once
+  // to set the value to false for the previous adapter and once to set the
+  // value to true for the new adapter.
+  MockBluetoothAdapter::Observer adapter_observer;
+  adapter->AddObserver(&adapter_observer);
+
+  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter.get(), false))
+      .Times(1);
+  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter.get(), true))
+      .Times(1);
+
+  EXPECT_CALL(adapter_observer, AdapterDiscoveringChanged(adapter.get(), false))
+      .Times(1);
+  EXPECT_CALL(adapter_observer, AdapterDiscoveringChanged(adapter.get(), true))
+      .Times(1);
+
+  static_cast<BluetoothManagerClient::Observer*>(adapter.get())
+      ->DefaultAdapterChanged(new_adapter_path);
+
+  // Adapter should have the new property value.
+  EXPECT_TRUE(adapter->IsDiscovering());
+}
+
+TEST_F(BluetoothAdapterTest, DefaultAdapterDiscoveringPropertyResetOnRemove) {
+  const dbus::ObjectPath adapter_path("/fake/hci0");
+  const std::string adapter_address = "CA:FE:4A:C0:FE:FE";
+
+  // Create the default adapter instance;
+  // BluetoothManagerClient::DefaultAdapter will be called once, passing
+  // a callback to obtain the adapter path.
+  BluetoothManagerClient::AdapterCallback adapter_callback;
+  EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
+      .WillOnce(SaveArg<0>(&adapter_callback));
+
+  scoped_refptr<BluetoothAdapter> adapter = BluetoothAdapter::DefaultAdapter();
+
+  // Call the adapter callback;
+  // BluetoothAdapterClient::GetProperties will be called once to obtain
+  // the property set.
+  MockBluetoothAdapterClient::Properties adapter_properties;
+  adapter_properties.address.ReplaceValue(adapter_address);
+  adapter_properties.discovering.ReplaceValue(true);
+
+  EXPECT_CALL(*mock_adapter_client_, GetProperties(adapter_path))
+      .WillRepeatedly(Return(&adapter_properties));
+
+  adapter_callback.Run(adapter_path, true);
+
+  // Report that the adapter has been removed;
+  // BluetoothAdapter::Observer::AdapterDiscoveringChanged will be called.
+  MockBluetoothAdapter::Observer adapter_observer;
+  adapter->AddObserver(&adapter_observer);
+
+  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter.get(), false))
+      .Times(1);
+  EXPECT_CALL(adapter_observer, AdapterDiscoveringChanged(adapter.get(), false))
+      .Times(1);
+
+  static_cast<BluetoothManagerClient::Observer*>(adapter.get())
+      ->AdapterRemoved(adapter_path);
+
+  // Adapter should have the new property value.
+  EXPECT_FALSE(adapter->IsDiscovering());
 }
 
 }  // namespace chromeos
