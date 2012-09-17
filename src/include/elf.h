@@ -32,22 +32,11 @@
 #include "native_client/src/include/elf_auxv.h"
 #include "native_client/src/include/portability.h"
 
-#if !defined(NACL_TARGET_SUBARCH)
-# error "NACL_TARGET_SUBARCH must be defined to be 32 or 64"
-#endif
-#if NACL_TARGET_SUBARCH == 64
-# include "native_client/src/include/elf64.h"
-#endif
 #include "native_client/src/include/elf32.h"
+#include "native_client/src/include/elf64.h"
+
 
 EXTERN_C_BEGIN
-
-
-/* Note: We really should include elf64.h unconditionally. However,
- * The current include file is dependent on <stdint.h> which is
- * not supported on all Windows platforms. Until this problem
- * is fixed, we conditionally include elf64 only if needed.
- */
 
 #define NACL_ELF_CLASS ELFCLASS32
 
