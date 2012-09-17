@@ -5,6 +5,7 @@
 #include "ash/display/display_controller.h"
 #include "ash/display/multi_display_manager.h"
 #include "ash/shell.h"
+#include "ash/system/tray/system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/property_util.h"
@@ -536,6 +537,37 @@ TEST_F(ExtendedDesktopTest, ConvertPoint) {
   p.SetPoint(0, 0);
   aura::Window::ConvertPointToTarget(d1, d2, &p);
   EXPECT_EQ("-10,-610", p.ToString());
+}
+
+TEST_F(ExtendedDesktopTest, OpenSystemTray) {
+  UpdateDisplay("1000x600,600x400");
+  SystemTray* tray = ash::Shell::GetInstance()->system_tray();
+  ASSERT_FALSE(tray->HasSystemBubble());
+
+  // Opens the tray by a dummy click event and makes sure that adding/removing
+  // displays doesn't break anything.
+  aura::test::EventGenerator event_generator(
+      ash::Shell::GetInstance()->GetPrimaryRootWindow(),
+      tray->GetWidget()->GetNativeWindow());
+  event_generator.ClickLeftButton();
+  EXPECT_TRUE(tray->HasSystemBubble());
+
+  UpdateDisplay("100x600");
+  EXPECT_TRUE(tray->HasSystemBubble());
+  UpdateDisplay("100x600,600x400");
+  EXPECT_TRUE(tray->HasSystemBubble());
+
+  // Closes the tray and again makes sure that adding/removing displays doesn't
+  // break anything.
+  event_generator.ClickLeftButton();
+  RunAllPendingInMessageLoop();
+
+  EXPECT_FALSE(tray->HasSystemBubble());
+
+  UpdateDisplay("100x600");
+  EXPECT_FALSE(tray->HasSystemBubble());
+  UpdateDisplay("100x600,600x400");
+  EXPECT_FALSE(tray->HasSystemBubble());
 }
 
 }  // namespace internal
