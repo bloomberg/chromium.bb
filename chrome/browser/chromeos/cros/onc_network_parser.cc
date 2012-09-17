@@ -80,7 +80,7 @@ OncValueSignature ethernet_signature[] = {
 OncValueSignature wifi_signature[] = {
   { onc::wifi::kAutoConnect, PROPERTY_INDEX_AUTO_CONNECT, TYPE_BOOLEAN },
   { onc::wifi::kEAP, PROPERTY_INDEX_EAP, TYPE_DICTIONARY },
-  { onc::wifi::kHiddenSSID, PROPERTY_INDEX_HIDDEN_SSID, TYPE_BOOLEAN },
+  { onc::wifi::kHiddenSSID, PROPERTY_INDEX_WIFI_HIDDEN_SSID, TYPE_BOOLEAN },
   { onc::wifi::kPassphrase, PROPERTY_INDEX_PASSPHRASE, TYPE_STRING },
   { onc::wifi::kSecurity, PROPERTY_INDEX_SECURITY, TYPE_STRING },
   { onc::wifi::kSSID, PROPERTY_INDEX_SSID, TYPE_STRING },
@@ -1567,7 +1567,7 @@ bool OncWifiNetworkParser::ParseWifiValue(OncNetworkParser* parser,
     case PROPERTY_INDEX_AUTO_CONNECT:
       network->set_auto_connect(GetBooleanValue(value));
       return true;
-    case PROPERTY_INDEX_HIDDEN_SSID:
+    case PROPERTY_INDEX_WIFI_HIDDEN_SSID:
       wifi_network->set_hidden_ssid(GetBooleanValue(value));
       return true;
     default:
