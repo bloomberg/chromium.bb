@@ -388,33 +388,64 @@ class TransfersAllNavigationsContentBrowserClient
 enum {
   DEFER_NONE                = 0,
   DEFER_STARTING_REQUEST    = 1 << 0,
-  DEFER_PROCESSING_RESPONSE = 1 << 1,
+  DEFER_PROCESSING_RESPONSE = 1 << 1
 };
 
+// Throttle that tracks the current throttle blocking a request.  Only one
+// can throttle any request at a time.
 class GenericResourceThrottle : public content::ResourceThrottle {
  public:
-  GenericResourceThrottle(int defer_flags) : defer_flags_(defer_flags) {
+  explicit GenericResourceThrottle(int defer_flags)
+      : defer_flags_(defer_flags) {
   }
 
-  virtual void WillStartRequest(bool* defer) {
-    if (defer_flags_ & DEFER_STARTING_REQUEST)
-      *defer = true;
+  virtual ~GenericResourceThrottle() {
+    if (active_throttle_ == this)
+      active_throttle_ = NULL;
   }
 
-  virtual void WillProcessResponse(bool* defer) {
-    if (defer_flags_ & DEFER_PROCESSING_RESPONSE)
+  // content::ResourceThrottle implementation:
+  virtual void WillStartRequest(bool* defer) OVERRIDE {
+    ASSERT_EQ(NULL, active_throttle_);
+    if (defer_flags_ & DEFER_STARTING_REQUEST) {
+      active_throttle_ = this;
       *defer = true;
+    }
+  }
+
+  virtual void WillProcessResponse(bool* defer) OVERRIDE {
+    ASSERT_EQ(NULL, active_throttle_);
+    if (defer_flags_ & DEFER_PROCESSING_RESPONSE) {
+      active_throttle_ = this;
+      *defer = true;
+    }
+  }
+
+  void Resume() {
+    ASSERT_TRUE(this == active_throttle_);
+    active_throttle_ = NULL;
+    controller()->Resume();
+  }
+
+  static GenericResourceThrottle* active_throttle() {
+    return active_throttle_;
   }
 
  private:
   int defer_flags_;  // bit-wise union of DEFER_XXX flags.
+
+  // The currently active throttle, if any.
+  static GenericResourceThrottle* active_throttle_;
 };
+// static
+GenericResourceThrottle* GenericResourceThrottle::active_throttle_ = NULL;
 
 class TestResourceDispatcherHostDelegate
     : public content::ResourceDispatcherHostDelegate {
  public:
   TestResourceDispatcherHostDelegate()
-      : defer_flags_(DEFER_NONE) {
+      : create_two_throttles_(false),
+        defer_flags_(DEFER_NONE) {
   }
 
   void set_url_request_user_data(base::SupportsUserData::Data* user_data) {
@@ -423,6 +454,10 @@ class TestResourceDispatcherHostDelegate
 
   void set_defer_flags(int value) {
     defer_flags_ = value;
+  }
+
+  void set_create_two_throttles(bool create_two_throttles) {
+    create_two_throttles_ = create_two_throttles;
   }
 
   // ResourceDispatcherHostDelegate implementation:
@@ -441,11 +476,15 @@ class TestResourceDispatcherHostDelegate
       request->SetUserData(key, user_data_.release());
     }
 
-    if (defer_flags_ != DEFER_NONE)
+    if (defer_flags_ != DEFER_NONE) {
       throttles->push_back(new GenericResourceThrottle(defer_flags_));
+      if (create_two_throttles_)
+        throttles->push_back(new GenericResourceThrottle(defer_flags_));
+    }
   }
 
  private:
+  bool create_two_throttles_;
   int defer_flags_;
   scoped_ptr<base::SupportsUserData::Data> user_data_;
 };
@@ -843,6 +882,45 @@ TEST_F(ResourceDispatcherHostTest, PausedStartError) {
   MessageLoop::current()->RunAllPending();
 
   EXPECT_EQ(0, host_.pending_requests());
+}
+
+TEST_F(ResourceDispatcherHostTest, ThrottleAndResumeTwice) {
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
+
+  // Arrange to have requests deferred before starting.
+  TestResourceDispatcherHostDelegate delegate;
+  delegate.set_defer_flags(DEFER_STARTING_REQUEST);
+  delegate.set_create_two_throttles(true);
+  host_.SetDelegate(&delegate);
+
+  // Make sure the first throttle blocked the request, and then resume.
+  MakeTestRequest(0, 1, net::URLRequestTestJob::test_url_1());
+  GenericResourceThrottle* first_throttle =
+      GenericResourceThrottle::active_throttle();
+  ASSERT_TRUE(first_throttle);
+  first_throttle->Resume();
+
+  // Make sure the second throttle blocked the request, and then resume.
+  ASSERT_TRUE(GenericResourceThrottle::active_throttle());
+  ASSERT_NE(first_throttle, GenericResourceThrottle::active_throttle());
+  GenericResourceThrottle::active_throttle()->Resume();
+
+  ASSERT_FALSE(GenericResourceThrottle::active_throttle());
+
+  // The request is started asynchronously.
+  MessageLoop::current()->RunAllPending();
+
+  // Flush all the pending requests.
+  while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
+
+  EXPECT_EQ(0, host_.pending_requests());
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(filter_->child_id()));
+
+  // Make sure the request completed successfully.
+  ResourceIPCAccumulator::ClassifiedMessages msgs;
+  accum_.GetClassifiedMessages(&msgs);
+  ASSERT_EQ(1U, msgs.size());
+  CheckSuccessfulRequest(msgs[0], net::URLRequestTestJob::test_data_1());
 }
 
 // The host delegate acts as a second one so we can have some requests
