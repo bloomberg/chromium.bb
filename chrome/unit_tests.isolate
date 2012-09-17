@@ -231,8 +231,6 @@
       'test/data/extensions/manifest_tests/init_invalid_platform_app_3.json',
       'test/data/extensions/manifest_tests/init_invalid_platform_app_4.json',
       'test/data/extensions/manifest_tests/init_invalid_platform_app_5.json',
-      'test/data/extensions/manifest_tests/init_invalid_requirements_1.json',
-      'test/data/extensions/manifest_tests/init_invalid_requirements_2.json',
       'test/data/extensions/manifest_tests/init_invalid_script_files_missing.json',
       'test/data/extensions/manifest_tests/init_invalid_script_invalid.json',
       'test/data/extensions/manifest_tests/init_invalid_script_item_invalid.json',
