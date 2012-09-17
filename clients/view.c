@@ -78,7 +78,6 @@ redraw_handler(struct widget *widget, void *data)
         if(!view->document) {
                 cairo_destroy(cr);
                 cairo_surface_destroy(surface);
-                window_flush(view->window);
                 return;
         }
 
