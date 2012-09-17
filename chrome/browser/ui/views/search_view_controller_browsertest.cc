@@ -176,8 +176,9 @@ IN_PROC_BROWSER_TEST_F(SearchViewControllerTest, MAYBE(StartToNTP)) {
   EXPECT_TRUE(controller_state_is_ntp());
 }
 
+// crbug.com/149939
 IN_PROC_BROWSER_TEST_F(SearchViewControllerTest,
-                       MAYBE(NTPToNativeSuggestions)) {
+                       MAYBE(FLAKY_NTPToNativeSuggestions)) {
   AVOID_TEST_ON_BRANDED_CHROME();
 
   // Initial state.
