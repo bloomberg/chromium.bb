@@ -15,6 +15,22 @@
 #include "google_apis/internal/google_chrome_api_keys.h"
 #endif
 
+// TODO(joi): Can we enable this warning without having it treated as
+// an error? We don't want to fail builds, just warn, but all warnings
+// from the preprocessor are currently treated as errors, at least in
+// Linux builds.
+#if 0
+#if !defined(GOOGLE_API_KEY) && (                      \
+  (!defined(GOOGLE_DEFAULT_CLIENT_ID) &&               \
+   !defined(GOOGLE_DEFAULT_CLIENT_SECRET))             \
+  ||                                                   \
+  (!defined(GOOGLE_CLIENT_ID_MAIN) &&                  \
+   !defined(GOOGLE_CLIENT_SECRET_MAIN)))
+#warning You have not specified API keys; some features may not work.
+#warning See www.chromium.org/developers/how-tos/api-keys for details.
+#endif  // (API keys unset)
+#endif  // 0
+
 // Used to indicate an unset key/id/secret.  This works better with
 // various unit tests than leaving the token empty.
 #define DUMMY_API_TOKEN "dummytoken"
@@ -196,15 +212,18 @@ class APIKeyCache {
                 << " with value " << key_value << " from command-line switch.";
     }
 
-    if (key_value.size() == 0) {
+    if (key_value == DUMMY_API_TOKEN) {
 #if defined(GOOGLE_CHROME_BUILD)
-      // No key should be empty in an official build, except the
-      // default keys themselves, which will have an empty default.
-      CHECK(default_if_unset.size() == 0);
+      // No key should be unset in an official build except the
+      // GOOGLE_DEFAULT_* keys.  The default keys don't trigger this
+      // check as their "unset" value is not DUMMY_API_TOKEN.
+      CHECK(false);
 #endif
-      LOG(INFO) << "Using default value \"" << default_if_unset
-                << "\" for API key " << environment_variable_name;
-      key_value = default_if_unset;
+      if (default_if_unset.size() > 0) {
+        LOG(INFO) << "Using default value \"" << default_if_unset
+                  << "\" for API key " << environment_variable_name;
+        key_value = default_if_unset;
+      }
     }
 
     // This should remain a debug-only log.
