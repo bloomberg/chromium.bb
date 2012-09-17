@@ -125,6 +125,10 @@ TEST(ExceptionHandlerTest, SimpleWithPath) {
   AutoTempDir temp_dir;
   ExceptionHandler handler(
       MinidumpDescriptor(temp_dir.path()), NULL, NULL, NULL, true, -1);
+  EXPECT_EQ(temp_dir.path(), handler.minidump_descriptor().directory());
+  string temp_subdir = temp_dir.path() + "/subdir";
+  handler.set_minidump_descriptor(MinidumpDescriptor(temp_subdir));
+  EXPECT_EQ(temp_subdir, handler.minidump_descriptor().directory());
 }
 
 TEST(ExceptionHandlerTest, SimpleWithFD) {

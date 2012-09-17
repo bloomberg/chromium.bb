@@ -45,6 +45,21 @@ MinidumpDescriptor::MinidumpDescriptor(const MinidumpDescriptor& descriptor)
   assert(descriptor.path_.empty());
 }
 
+MinidumpDescriptor& MinidumpDescriptor::operator=(
+    const MinidumpDescriptor& descriptor) {
+  assert(descriptor.path_.empty());
+
+  fd_ = descriptor.fd_;
+  directory_ = descriptor.directory_;
+  path_.clear();
+  if (c_path_) {
+    // This descriptor already had a path set, so generate a new one.
+    c_path_ = NULL;
+    UpdatePath();
+  }
+  return *this;
+}
+
 void MinidumpDescriptor::UpdatePath() {
   assert(fd_ == -1 && !directory_.empty());
 

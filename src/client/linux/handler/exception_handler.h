@@ -138,6 +138,10 @@ class ExceptionHandler {
     return minidump_descriptor_;
   }
 
+  void set_minidump_descriptor(const MinidumpDescriptor& descriptor) {
+    minidump_descriptor_ = descriptor;
+  }
+
   void set_crash_handler(HandlerCallback callback) {
     crash_handler_ = callback;
   }
