@@ -383,8 +383,6 @@ void SigninScreenHandler::GetLocalizedStrings(
       l10n_util::GetStringUTF16(IDS_SHUTDOWN_BUTTON));
   localized_strings->SetString("addUser",
       l10n_util::GetStringUTF16(IDS_ADD_USER_BUTTON));
-  localized_strings->SetString("browseAsGuest",
-      l10n_util::GetStringUTF16(IDS_GO_INCOGNITO_BUTTON));
   localized_strings->SetString("cancel",
       l10n_util::GetStringUTF16(IDS_CANCEL));
   localized_strings->SetString("signOutUser",
@@ -946,8 +944,9 @@ void SigninScreenHandler::HandleLaunchHelpApp(const base::ListValue* args) {
 void SigninScreenHandler::SendUserList(bool animated) {
   if (!delegate_)
     return;
+  bool show_guest = delegate_->IsShowGuest();
 
-  size_t max_non_owner_users = kMaxUsers - 1;
+  size_t max_non_owner_users = show_guest ? kMaxUsers - 2 : kMaxUsers - 1;
   size_t non_owner_count = 0;
 
   ListValue users_list;
@@ -986,10 +985,23 @@ void SigninScreenHandler::SendUserList(bool animated) {
     }
   }
 
+  if (show_guest) {
+    // Add the Guest to the user list.
+    DictionaryValue* guest_dict = new DictionaryValue();
+    guest_dict->SetString(kKeyUsername, "");
+    guest_dict->SetString(kKeyEmailAddress, "");
+    guest_dict->SetString(kKeyDisplayName,
+                          l10n_util::GetStringUTF16(IDS_GUEST));
+    guest_dict->SetBoolean(kKeyCanRemove, false);
+    guest_dict->SetInteger(kKeyOauthTokenStatus,
+                           User::OAUTH_TOKEN_STATUS_UNKNOWN);
+    users_list.Append(guest_dict);
+  }
+
+  // Call the Javascript callback
   base::FundamentalValue animated_value(animated);
-  base::FundamentalValue guest_value(delegate_->IsShowGuest());
   web_ui()->CallJavascriptFunction("login.AccountPickerScreen.loadUsers",
-                                   users_list, animated_value, guest_value);
+                                   users_list, animated_value);
 }
 
 void SigninScreenHandler::HandleAccountPickerReady(

@@ -136,11 +136,9 @@ cr.define('login', function() {
    * Loads givens users in pod row.
    * @param {array} users Array of user.
    * @param {boolean} animated Whether to use init animation.
-   * @param {boolean} showGuest Whether to show guest session button.
    */
-  AccountPickerScreen.loadUsers = function(users, animated, showGuest) {
+  AccountPickerScreen.loadUsers = function(users, animated) {
     $('pod-row').loadPods(users, animated);
-    $('login-header-bar').showGuestButton = showGuest;
   };
 
   /**

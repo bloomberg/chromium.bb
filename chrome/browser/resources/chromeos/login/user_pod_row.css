@@ -129,9 +129,7 @@ html[oobe=old] .name {
 
 html[oobe=new] .name {
   -webkit-transition: all 170ms ease;
-  /* Matching font-size 14px but since name is visible
-     when pod is not focused increase that a bit. */
-  font-size: 16px;
+  font-size: 18px;
   height: 26px;
   overflow: hidden;
   white-space: nowrap;
@@ -187,6 +185,7 @@ html[oobe=old] .pod input[type='password']:focus {
   outline: none;
 }
 
+.pod .enter-guest-button,
 .pod .signin-button {
   box-sizing: border-box;
   display: inline-block;
@@ -196,10 +195,12 @@ html[oobe=old] .pod input[type='password']:focus {
   padding: 4px 8px;
 }
 
+html[oobe=new] .pod .enter-guest-button,
 html[oobe=new] .pod .signin-button {
   margin: 6px 0;
 }
 
+.pod:not(.focused) .enter-guest-button,
 .pod:not(.focused) .signin-button {
   display: none;
 }

@@ -489,7 +489,8 @@ cr.define('cr.ui.login', function() {
    * @param {string} opt_email An optional email for signin UI.
    */
   DisplayManager.showSigninUI = function(opt_email) {
-    $('login-header-bar').signinUIActive = true;
+    $('add-user-button').hidden = true;
+    $('cancel-add-user-button').hidden = false;
     chrome.send('showAddUser', [opt_email]);
   };
 
@@ -582,7 +583,6 @@ cr.define('cr.ui.login', function() {
    */
   DisplayManager.updateAddUserButtonStatus = function(disable) {
     $('add-user-button').disabled = disable;
-    $('add-user-button').classList.add('button-restricted');
     $('add-user-button').title = disable ?
         localStrings.getString('disabledAddUserTooltip') : '';
   }

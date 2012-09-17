@@ -109,6 +109,8 @@ cr.define('login', function() {
       this.addEventListener('mousedown',
           this.handleMouseDown_.bind(this));
 
+      this.enterButtonElement.addEventListener('click',
+          this.activate.bind(this));
       this.signinButtonElement.addEventListener('click',
           this.activate.bind(this));
 
@@ -132,10 +134,12 @@ cr.define('login', function() {
      * Initializes the pod after its properties set and added to a pod row.
      */
     initialize: function() {
-      this.passwordElement.addEventListener('keydown',
-          this.parentNode.handleKeyDown.bind(this.parentNode));
-      this.passwordElement.addEventListener('keypress',
-          this.handlePasswordKeyPress_.bind(this));
+      if (!this.isGuest) {
+        this.passwordElement.addEventListener('keydown',
+            this.parentNode.handleKeyDown.bind(this.parentNode));
+        this.passwordElement.addEventListener('keypress',
+            this.handlePasswordKeyPress_.bind(this));
+      }
 
       this.imageElement.addEventListener('load',
           this.parentNode.handlePodImageLoad.bind(this.parentNode, this));
@@ -200,6 +204,14 @@ cr.define('login', function() {
      * @type {!HTMLImageElement}
      */
     get capslockHintElement() {
+      return this.enterButtonElement.previousElementSibling;
+    },
+
+    /**
+     * Gets guest enter button.
+     * @type {!HTMLInputElement}
+     */
+    get enterButtonElement() {
       return this.signinButtonElement.previousElementSibling;
     },
 
@@ -229,16 +241,23 @@ cr.define('login', function() {
       this.removeUserButtonElement.hidden = !this.user_.canRemove;
       this.signedInIndicatorElement.hidden = !this.user_.signedIn;
 
-      var needSignin = this.needGaiaSignin;
-      this.passwordElement.hidden = needSignin;
-      this.removeUserButtonElement.setAttribute(
-          'aria-label', localStrings.getStringF('removeButtonAccessibleName',
-                                                this.user_.emailAddress));
-      this.passwordElement.setAttribute('aria-label',
-                                        localStrings.getStringF(
-                                            'passwordFieldAccessibleName',
-                                            this.user_.emailAddress));
-      this.signinButtonElement.hidden = !needSignin;
+      if (this.isGuest) {
+        this.enterButtonElement.hidden = false;
+        this.passwordElement.hidden = true;
+        this.signinButtonElement.hidden = true;
+      } else {
+        var needSignin = this.needGaiaSignin;
+        this.enterButtonElement.hidden = true;
+        this.passwordElement.hidden = needSignin;
+        this.removeUserButtonElement.setAttribute(
+            'aria-label', localStrings.getStringF('removeButtonAccessibleName',
+                                                  this.user_.emailAddress));
+        this.passwordElement.setAttribute('aria-label',
+                                          localStrings.getStringF(
+                                              'passwordFieldAccessibleName',
+                                              this.user_.emailAddress));
+        this.signinButtonElement.hidden = !needSignin;
+      }
     },
 
     /**
@@ -255,7 +274,15 @@ cr.define('login', function() {
     },
 
     /**
-     * Whether Gaia signin is required for this user.
+     * Whether we are a guest pod or not.
+     * @type {boolean}
+     */
+    get isGuest() {
+      return !this.user.username;
+    },
+
+    /**
+     * Whether Gaia signin is required for a non-guest user.
      */
     get needGaiaSignin() {
       // Gaia signin is performed if we are using gaia extenstion for signin,
@@ -270,7 +297,9 @@ cr.define('login', function() {
      * @type {(HTMLButtonElement|HTMLInputElement)}
      */
     get mainInput() {
-      if (!this.signinButtonElement.hidden)
+      if (this.isGuest)
+        return this.enterButtonElement;
+      else if (!this.signinButtonElement.hidden)
         return this.signinButtonElement;
       else
         return this.passwordElement;
@@ -304,18 +333,21 @@ cr.define('login', function() {
      * Updates the image element of the user.
      */
     updateUserImage: function() {
-      this.imageElement.src = 'chrome://userimage/' + this.user.username +
-          '?id=' + new Date().getTime();
+      this.imageElement.src = this.isGuest ?
+          'chrome://theme/IDR_LOGIN_GUEST@' + window.devicePixelRatio + 'x' :
+          'chrome://userimage/' + this.user.username +
+              '?id=' + new Date().getTime();
     },
 
     /**
      * Focuses on input element.
      */
     focusInput: function() {
-      var needSignin = this.needGaiaSignin;
-      this.signinButtonElement.hidden = !needSignin;
-      this.passwordElement.hidden = needSignin;
-
+      if (!this.isGuest) {
+        var needSignin = this.needGaiaSignin;
+        this.signinButtonElement.hidden = !needSignin;
+        this.passwordElement.hidden = needSignin;
+      }
       // Move tabIndex from the whole pod to the main input.
       this.tabIndex = -1;
       this.mainInput.tabIndex = UserPodTabOrder.POD_INPUT;
@@ -327,7 +359,10 @@ cr.define('login', function() {
      * @return {boolean} True if activated successfully.
      */
     activate: function() {
-      if (!this.signinButtonElement.hidden) {
+      if (this.isGuest) {
+        Oobe.disableSigninUI();
+        chrome.send('launchIncognito');
+      } else if (!this.signinButtonElement.hidden) {
         // Switch to Gaia signin.
         if (!this.needGaiaSignin) {
           // Network may go offline in time period between the pod is focused
@@ -464,7 +499,10 @@ cr.define('login', function() {
 
     updateTitles: function() {
       for (var i = 0, pod; pod = this.pods[i]; ++i) {
-        pod.imageElement.title = pod.user.nameTooltip || '';
+        if (pod.isGuest)
+          pod.imageElement.title = '';
+        else
+          pod.imageElement.title = pod.user.nameTooltip || '';
       }
     },
 

@@ -24,9 +24,6 @@ cr.define('login', function() {
   HeaderBar.prototype = {
     __proto__: HTMLDivElement.prototype,
 
-    // Whether guest button should be shown when header bar is in normal mode.
-    showGuest_: false,
-
     /** @inheritDoc */
     decorate: function() {
       $('shutdown-header-bar-item').addEventListener('click',
@@ -38,14 +35,16 @@ cr.define('login', function() {
                     ['login.HeaderBar.handleAddUser',
                      'check']);
       });
-      $('cancel-add-user-button').addEventListener('click',
-          this.handleCancelAddUserClick_);
-      $('guest-user-header-bar-item').addEventListener('click',
-          this.handleGuestClick_);
-      $('guest-user-button').addEventListener('click',
-          this.handleGuestClick_);
-      $('sign-out-user-button').addEventListener('click',
-          this.handleSignoutClick_);
+      $('cancel-add-user-button').addEventListener('click', function(e) {
+        this.hidden = true;
+        $('add-user-button').hidden = false;
+        Oobe.showScreen({id: SCREEN_ACCOUNT_PICKER});
+        Oobe.resetSigninUI(true);
+      });
+      $('sign-out-user-button').addEventListener('click', function(e) {
+        this.disabled = true;
+        chrome.send('signOutUser');
+      });
     },
 
     /**
@@ -71,64 +70,13 @@ cr.define('login', function() {
     },
 
     /**
-     * Cancel add user button click handler.
-     * @private
-     */
-    handleCancelAddUserClick_: function(e) {
-      $('login-header-bar').signinUIActive = false;
-      Oobe.showScreen({id: SCREEN_ACCOUNT_PICKER});
-      Oobe.resetSigninUI(true);
-    },
-
-    /**
-     * Guest button click handler.
-     * @private
-     */
-    handleGuestClick_: function(e) {
-      Oobe.disableSigninUI();
-      chrome.send('launchIncognito');
-      e.stopPropagation();
-    },
-
-    /**
-     * Sign out button click handler.
-     * @private
-     */
-    handleSignoutClick_: function(e) {
-      this.disabled = true;
-      chrome.send('signOutUser');
-      e.stopPropagation();
-    },
-
-    /**
      * Shutdown button click handler.
      * @private
      */
     handleShutdownClick_: function(e) {
       chrome.send('shutdownSystem');
       e.stopPropagation();
-    },
-
-    /**
-     * If true then "Browse as Guest" button is shown.
-     * @type {boolean}
-     */
-    set showGuestButton(value) {
-      this.showGuest_ = value;
-      $('guest-user-header-bar-item').hidden = !value;
-    },
-
-    /**
-     * If true then sign in UI is active and header controls
-     * should change accordingly.
-     * @type {boolean}
-     */
-    set signinUIActive(value) {
-      $('add-user-header-bar-item').hidden = false;
-      $('add-user-button').hidden = value;
-      $('cancel-add-user-button').hidden = !value;
-      $('guest-user-header-bar-item').hidden = value || !this.showGuest_;
-    },
+    }
   };
 
   /**
