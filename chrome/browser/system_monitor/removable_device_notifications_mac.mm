@@ -10,6 +10,9 @@ namespace chrome {
 
 namespace {
 
+static RemovableDeviceNotificationsMac*
+    g_removable_device_notifications_mac = NULL;
+
 void GetDiskInfoAndUpdateOnFileThread(
     const base::WeakPtr<RemovableDeviceNotificationsMac>& notifications,
     base::mac::ScopedCFTypeRef<CFDictionaryRef> dict,
@@ -45,6 +48,9 @@ void GetDiskInfoAndUpdate(
 
 RemovableDeviceNotificationsMac::RemovableDeviceNotificationsMac() {
   session_.reset(DASessionCreate(NULL));
+  DCHECK(!g_removable_device_notifications_mac);
+  g_removable_device_notifications_mac = this;
+
   DASessionScheduleWithRunLoop(
       session_, CFRunLoopGetCurrent(), kCFRunLoopCommonModes);
 
@@ -69,8 +75,18 @@ RemovableDeviceNotificationsMac::RemovableDeviceNotificationsMac() {
 }
 
 RemovableDeviceNotificationsMac::~RemovableDeviceNotificationsMac() {
+  DCHECK_EQ(this, g_removable_device_notifications_mac);
+  g_removable_device_notifications_mac = NULL;
+
   DASessionUnscheduleFromRunLoop(
       session_, CFRunLoopGetCurrent(), kCFRunLoopCommonModes);
+}
+
+// static
+RemovableDeviceNotificationsMac*
+RemovableDeviceNotificationsMac::GetInstance() {
+  DCHECK(g_removable_device_notifications_mac != NULL);
+  return g_removable_device_notifications_mac;
 }
 
 void RemovableDeviceNotificationsMac::UpdateDisk(

@@ -15,6 +15,9 @@
 
 namespace chrome {
 
+class RemovableDeviceNotificationsMac;
+typedef RemovableDeviceNotificationsMac RemovableDeviceNotifications;
+
 // This class posts notifications to base::SystemMonitor when a new disk
 // is attached, removed, or changed.
 class RemovableDeviceNotificationsMac :
@@ -26,8 +29,11 @@ class RemovableDeviceNotificationsMac :
     UPDATE_DEVICE_REMOVED,
   };
 
+  // Should only be called by browser start up code.  Use GetInstance() instead.
   RemovableDeviceNotificationsMac();
   virtual ~RemovableDeviceNotificationsMac();
+
+  static RemovableDeviceNotificationsMac* GetInstance();
 
   void UpdateDisk(const DiskInfoMac& info, UpdateType update_type);
 

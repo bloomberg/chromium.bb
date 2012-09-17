@@ -35,6 +35,9 @@ typedef void (*GetDeviceInfoFunc)(const FilePath& device_path,
 
 namespace chrome {
 
+class RemovableDeviceNotificationsLinux;
+typedef RemovableDeviceNotificationsLinux RemovableDeviceNotifications;
+
 class RemovableDeviceNotificationsLinux
     : public base::RefCountedThreadSafe<RemovableDeviceNotificationsLinux,
           content::BrowserThread::DeleteOnFileThread> {

@@ -83,12 +83,6 @@ class MediaStorageUtil {
   // All methods are static, this class should not be instantiated.
   MediaStorageUtil();
 
-  // Per platform implementation.
-  static bool GetDeviceInfoFromPathImpl(const FilePath& path,
-                                        std::string* device_id,
-                                        string16* device_name,
-                                        FilePath* relative_path);
-
   DISALLOW_COPY_AND_ASSIGN(MediaStorageUtil);
 };
 

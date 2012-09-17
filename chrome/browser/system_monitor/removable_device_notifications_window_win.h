@@ -18,6 +18,9 @@ typedef LRESULT (*VolumeNameFunc)(LPCWSTR drive,
                                   unsigned int volume_name_len);
 namespace chrome {
 
+class RemovableDeviceNotificationsWindowWin;
+typedef RemovableDeviceNotificationsWindowWin RemovableDeviceNotifications;
+
 class RemovableDeviceNotificationsWindowWin
     : public base::RefCountedThreadSafe<RemovableDeviceNotificationsWindowWin> {
  public:

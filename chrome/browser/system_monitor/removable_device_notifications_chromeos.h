@@ -24,6 +24,9 @@
 
 namespace chromeos {
 
+class RemovableDeviceNotificationsCros;
+typedef RemovableDeviceNotificationsCros RemovableDeviceNotifications;
+
 class RemovableDeviceNotificationsCros
     : public base::RefCountedThreadSafe<RemovableDeviceNotificationsCros>,
       public disks::DiskMountManager::Observer {

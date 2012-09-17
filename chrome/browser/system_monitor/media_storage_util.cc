@@ -14,6 +14,17 @@
 #include "base/system_monitor/system_monitor.h"
 #include "content/public/browser/browser_thread.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/system_monitor/media_transfer_protocol_device_observer_chromeos.h"
+#include "chrome/browser/system_monitor/removable_device_notifications_chromeos.h"
+#elif defined(OS_LINUX)
+#include "chrome/browser/system_monitor/removable_device_notifications_linux.h"
+#elif defined(OS_MACOSX)
+#include "chrome/browser/system_monitor/removable_device_notifications_mac.h"
+#elif defined(OS_WIN)
+#include "chrome/browser/system_monitor/removable_device_notifications_window_win.h"
+#endif
+
 using base::SystemMonitor;
 using content::BrowserThread;
 
@@ -150,14 +161,51 @@ bool MediaStorageUtil::GetDeviceInfoFromPath(const FilePath& path,
                                              std::string* device_id,
                                              string16* device_name,
                                              FilePath* relative_path) {
+  if (!path.IsAbsolute())
+    return false;
+
   if (g_test_get_device_info_from_path_function) {
     return g_test_get_device_info_from_path_function(path, device_id,
                                                      device_name,
                                                      relative_path);
-  } else {
-    return GetDeviceInfoFromPathImpl(path, device_id, device_name,
-                                     relative_path);
   }
+
+  bool found_device = false;
+  base::SystemMonitor::RemovableStorageInfo device_info;
+#if (defined(OS_LINUX) || defined(OS_MACOSX)) && !defined(OS_CHROMEOS)
+  RemovableDeviceNotifications* notifier =
+      RemovableDeviceNotifications::GetInstance();
+  found_device = notifier->GetDeviceInfoForPath(path, &device_info);
+#endif
+
+#if 0 && defined(OS_CHROMEOS)
+  if (!found_device) {
+    MediaTransferProtocolDeviceObserver* mtp_manager =
+        MediaTransferProtocolDeviceObserver::GetInstance();
+    found_device = mtp_manager->GetStorageInfoForPath(path, &device_info);
+  }
+#endif
+
+  if (found_device && IsRemovableDevice(device_info.device_id)) {
+    if (device_id)
+      *device_id = device_info.device_id;
+    if (device_name)
+      *device_name = device_info.name;
+    if (relative_path) {
+      *relative_path = FilePath();
+      FilePath mount_point(device_info.location);
+      mount_point.AppendRelativePath(path, relative_path);
+    }
+    return true;
+  }
+
+  if (device_id)
+    *device_id = MakeDeviceId(FIXED_MASS_STORAGE, path.AsUTF8Unsafe());
+  if (device_name)
+    *device_name = path.BaseName().LossyDisplayName();
+  if (relative_path)
+    *relative_path = FilePath();
+  return true;
 }
 
 // static
@@ -185,27 +233,5 @@ void MediaStorageUtil::SetGetDeviceInfoFromPathFunctionForTesting(
 }
 
 MediaStorageUtil::MediaStorageUtil() {}
-
-#if !defined(OS_LINUX) || defined(OS_CHROMEOS)
-// static
-bool MediaStorageUtil::GetDeviceInfoFromPathImpl(const FilePath& path,
-                                                 std::string* device_id,
-                                                 string16* device_name,
-                                                 FilePath* relative_path) {
-  // TODO(vandebo) This needs to be implemented per platform.  Below is no
-  // worse than what the code already does.
-  // * Find mount point parent (determines relative file path)
-  // * Search System monitor, just in case.
-  // * If it's a removable device, generate device id, else use device root
-  //   path as id
-  if (device_id)
-    *device_id = MakeDeviceId(FIXED_MASS_STORAGE, path.AsUTF8Unsafe());
-  if (device_name)
-    *device_name = path.BaseName().LossyDisplayName();
-  if (relative_path)
-    *relative_path = FilePath();
-  return true;
-}
-#endif
 
 }  // namespace chrome
