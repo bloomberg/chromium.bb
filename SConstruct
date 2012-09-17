@@ -2639,7 +2639,6 @@ irt_variant_tests = [
     'tests/blob_library_loading/nacl.scons',
     'tests/bundle_size/nacl.scons',
     'tests/callingconv/nacl.scons',
-    'tests/callingconv_ppapi/nacl.scons',
     'tests/callingconv_case_by_case/nacl.scons',
     'tests/clock/nacl.scons',
     'tests/common/nacl.scons',
