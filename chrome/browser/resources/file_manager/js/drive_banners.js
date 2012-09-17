@@ -392,7 +392,7 @@ FileListBannerController.prototype.onDirectoryChanged_ = function(event) {
 
   this.updateGDataUnmountedPanel_();
   if (this.isOnGData())
-      this.unmountedPanel_.classList.remove('retry-enabled');
+    this.unmountedPanel_.classList.remove('retry-enabled');
 };
 
 /**
@@ -496,6 +496,8 @@ FileListBannerController.prototype.updateGDataUnmountedPanel_ = function() {
     }
     if (status == VolumeManager.GDataStatus.ERROR)
       this.unmountedPanel_.classList.add('retry-enabled');
+    else
+      this.unmountedPanel_.classList.remove('retry-enabled');
     node.setAttribute('gdata', status);
   } else {
     node.removeAttribute('gdata');
