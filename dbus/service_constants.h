@@ -645,6 +645,9 @@ const char kTransmitByteCountProperty[] = "TransmitByteCount";
 const char kLinkMonitorResponseTimeProperty[] = "LinkMonitorResponseTime";
 const char kSupportedCarriersProperty[] = "Cellular.SupportedCarriers";
 
+// IPConfig property names.
+const char kSearchDomainsProperty[] = "SearchDomains";
+
 // Manager property names.
 const char kDefaultServiceProperty[] = "DefaultService";
 const char kHostNameProperty[] = "HostName";
