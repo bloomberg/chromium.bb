@@ -1177,6 +1177,11 @@
 0xde70e21d95b52c83	PDF_UseReaderInfoBarCancel
 0xc35f4595bbf2a0fa	PDF_UseReaderInfoBarOK
 0xb7334d4097ba87ef	PDF_UseReaderInfoBarShown
+0xbf1053adc4e5cd87	PPAPI.BrokerInfobarClickedAllow
+0x146afa4664512557	PPAPI.BrokerInfobarClickedDeny
+0xcd9ed785cbf9424b	PPAPI.BrokerInfobarDisplayed
+0x002f8a6579713ab1	PPAPI.BrokerSettingAllow
+0x957b8f35c259d30a	PPAPI.BrokerSettingDeny
 0xee3677bcca83ece9	PageDown
 0xac722301695b9315	PageLoad
 0x9b869c510c75c582	PageUp
