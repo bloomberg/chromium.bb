@@ -628,7 +628,8 @@ class SavePageAsMHTMLBrowserTest : public SavePageBrowserTest {
 SavePageAsMHTMLBrowserTest::~SavePageAsMHTMLBrowserTest() {
 }
 
-IN_PROC_BROWSER_TEST_F(SavePageAsMHTMLBrowserTest, SavePageAsMHTML) {
+// http://crbug.com/149135
+IN_PROC_BROWSER_TEST_F(SavePageAsMHTMLBrowserTest, DISABLED_SavePageAsMHTML) {
   static const int64 kFileSizeMin = 2758;
   GURL url = NavigateToMockURL("b");
   FilePath download_dir = DownloadPrefs::FromDownloadManager(
