@@ -17,7 +17,7 @@ class TextureUploader;
 
 class CCTextureUpdateControllerClient {
 public:
-    virtual void updateTexturesCompleted() = 0;
+    virtual void readyToFinalizeTextureUpdates() = 0;
 
 protected:
     virtual ~CCTextureUpdateControllerClient() { }
@@ -35,7 +35,8 @@ public:
 
     virtual ~CCTextureUpdateController();
 
-    void updateMoreTextures(double monotonicTimeLimit);
+    void performMoreUpdates(double monotonicTimeLimit);
+    void finalize();
 
     // CCTimerClient implementation.
     virtual void onTimerFired() OVERRIDE;

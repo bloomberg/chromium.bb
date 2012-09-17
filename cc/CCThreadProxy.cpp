@@ -593,9 +593,8 @@ void CCThreadProxy::beginFrameCompleteOnImplThread(CCCompletionEvent* completion
         setNeedsCommitOnImplThread();
     }
 
-    bool hasResourceUpdates = queue->hasMoreUpdates();
-    if (hasResourceUpdates)
-        m_currentTextureUpdateControllerOnImplThread = CCTextureUpdateController::create(this, CCProxy::implThread(), queue, m_layerTreeHostImpl->resourceProvider(), m_layerTreeHostImpl->renderer()->textureCopier(), m_layerTreeHostImpl->renderer()->textureUploader());
+    bool hasResourceUpdates = !!queue->fullUploadSize();
+    m_currentTextureUpdateControllerOnImplThread = CCTextureUpdateController::create(this, CCProxy::implThread(), queue, m_layerTreeHostImpl->resourceProvider(), m_layerTreeHostImpl->renderer()->textureCopier(), m_layerTreeHostImpl->renderer()->textureUploader());
     m_commitCompletionEventOnImplThread = completion;
 
     m_schedulerOnImplThread->beginFrameComplete(hasResourceUpdates);
@@ -615,7 +614,8 @@ void CCThreadProxy::scheduledActionUpdateMoreResources(double monotonicTimeLimit
 {
     TRACE_EVENT0("cc", "CCThreadProxy::scheduledActionUpdateMoreResources");
     ASSERT(m_currentTextureUpdateControllerOnImplThread);
-    m_currentTextureUpdateControllerOnImplThread->updateMoreTextures(monotonicTimeLimit);
+    m_currentTextureUpdateControllerOnImplThread->performMoreUpdates(
+        monotonicTimeLimit);
 }
 
 void CCThreadProxy::scheduledActionCommit()
@@ -623,7 +623,10 @@ void CCThreadProxy::scheduledActionCommit()
     TRACE_EVENT0("cc", "CCThreadProxy::scheduledActionCommit");
     ASSERT(isImplThread());
     ASSERT(m_commitCompletionEventOnImplThread);
+    ASSERT(m_currentTextureUpdateControllerOnImplThread);
 
+    // Complete all remaining texture updates.
+    m_currentTextureUpdateControllerOnImplThread->finalize();
     m_currentTextureUpdateControllerOnImplThread.clear();
 
     m_layerTreeHostImpl->beginCommit();
@@ -761,7 +764,7 @@ CCScheduledActionDrawAndSwapResult CCThreadProxy::scheduledActionDrawAndSwapForc
     return scheduledActionDrawAndSwapInternal(true);
 }
 
-void CCThreadProxy::updateTexturesCompleted()
+void CCThreadProxy::readyToFinalizeTextureUpdates()
 {
     ASSERT(isImplThread());
     m_schedulerOnImplThread->updateResourcesComplete();

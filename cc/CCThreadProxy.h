@@ -72,7 +72,7 @@ public:
     virtual void scheduledActionAcquireLayerTexturesForMainThread() OVERRIDE;
 
     // CCTextureUpdateControllerClient implementation
-    virtual void updateTexturesCompleted() OVERRIDE;
+    virtual void readyToFinalizeTextureUpdates() OVERRIDE;
 
 private:
     explicit CCThreadProxy(CCLayerTreeHost*);

@@ -521,13 +521,13 @@ TEST_F(CCTextureUpdateControllerTest, TripleUpdateFinalUpdateAllPartial)
 class FakeCCTextureUpdateControllerClient : public cc::CCTextureUpdateControllerClient {
 public:
     FakeCCTextureUpdateControllerClient() { reset(); }
-    void reset() { m_completedCalled = false; }
-    bool completedCalled() const { return m_completedCalled; }
+    void reset() { m_readyToFinalizeCalled = false; }
+    bool readyToFinalizeCalled() const { return m_readyToFinalizeCalled; }
 
-    virtual void updateTexturesCompleted() OVERRIDE { m_completedCalled = true; }
+    virtual void readyToFinalizeTextureUpdates() OVERRIDE { m_readyToFinalizeCalled = true; }
 
 protected:
-    bool m_completedCalled;
+    bool m_readyToFinalizeCalled;
 };
 
 class FakeCCTextureUpdateController : public cc::CCTextureUpdateController {
@@ -579,7 +579,7 @@ TEST_F(CCTextureUpdateControllerTest, UpdateMoreTextures)
     controller->setUpdateMoreTexturesTime(0.1);
     controller->setUpdateMoreTexturesSize(1);
     // Not enough time for any updates.
-    controller->updateMoreTextures(0.09);
+    controller->performMoreUpdates(0.09);
     EXPECT_FALSE(thread.hasPendingTask());
     EXPECT_EQ(0, m_numBeginUploads);
     EXPECT_EQ(0, m_numEndUploads);
@@ -588,7 +588,7 @@ TEST_F(CCTextureUpdateControllerTest, UpdateMoreTextures)
     controller->setUpdateMoreTexturesTime(0.1);
     controller->setUpdateMoreTexturesSize(1);
     // Only enough time for 1 update.
-    controller->updateMoreTextures(0.12);
+    controller->performMoreUpdates(0.12);
     runPendingTask(&thread, controller.get());
     EXPECT_FALSE(thread.hasPendingTask());
     EXPECT_EQ(1, m_numBeginUploads);
@@ -599,11 +599,11 @@ TEST_F(CCTextureUpdateControllerTest, UpdateMoreTextures)
     controller->setUpdateMoreTexturesTime(0.1);
     controller->setUpdateMoreTexturesSize(1);
     // Enough time for 2 updates.
-    controller->updateMoreTextures(0.22);
+    controller->performMoreUpdates(0.22);
     runPendingTask(&thread, controller.get());
     runPendingTask(&thread, controller.get());
     EXPECT_FALSE(thread.hasPendingTask());
-    EXPECT_TRUE(client.completedCalled());
+    EXPECT_TRUE(client.readyToFinalizeCalled());
     EXPECT_EQ(3, m_numBeginUploads);
     EXPECT_EQ(3, m_numEndUploads);
     EXPECT_EQ(3, m_numTotalUploads);
@@ -625,11 +625,11 @@ TEST_F(CCTextureUpdateControllerTest, NoMoreUpdates)
     controller->setUpdateMoreTexturesTime(0.1);
     controller->setUpdateMoreTexturesSize(1);
     // Enough time for 3 updates but only 2 necessary.
-    controller->updateMoreTextures(0.31);
+    controller->performMoreUpdates(0.31);
     runPendingTask(&thread, controller.get());
     runPendingTask(&thread, controller.get());
     EXPECT_FALSE(thread.hasPendingTask());
-    EXPECT_TRUE(client.completedCalled());
+    EXPECT_TRUE(client.readyToFinalizeCalled());
     EXPECT_EQ(2, m_numBeginUploads);
     EXPECT_EQ(2, m_numEndUploads);
     EXPECT_EQ(2, m_numTotalUploads);
@@ -638,11 +638,11 @@ TEST_F(CCTextureUpdateControllerTest, NoMoreUpdates)
     controller->setUpdateMoreTexturesTime(0.1);
     controller->setUpdateMoreTexturesSize(1);
     // Enough time for updates but no more updates left.
-    controller->updateMoreTextures(0.31);
-    // 0-delay task used to call updateTexturesCompleted().
+    controller->performMoreUpdates(0.31);
+    // 0-delay task used to call readyToFinalizeTextureUpdates().
     runPendingTask(&thread, controller.get());
     EXPECT_FALSE(thread.hasPendingTask());
-    EXPECT_TRUE(client.completedCalled());
+    EXPECT_TRUE(client.readyToFinalizeCalled());
     EXPECT_EQ(2, m_numBeginUploads);
     EXPECT_EQ(2, m_numEndUploads);
     EXPECT_EQ(2, m_numTotalUploads);
@@ -665,18 +665,18 @@ TEST_F(CCTextureUpdateControllerTest, UpdatesCompleteInFiniteTime)
     controller->setUpdateMoreTexturesSize(1);
 
     for (int i = 0; i < 100; i++) {
-        if (client.completedCalled())
+        if (client.readyToFinalizeCalled())
             break;
 
         // Not enough time for any updates.
-        controller->updateMoreTextures(0.4);
+        controller->performMoreUpdates(0.4);
 
         if (thread.hasPendingTask())
             runPendingTask(&thread, controller.get());
     }
 
     EXPECT_FALSE(thread.hasPendingTask());
-    EXPECT_TRUE(client.completedCalled());
+    EXPECT_TRUE(client.readyToFinalizeCalled());
     EXPECT_EQ(2, m_numBeginUploads);
     EXPECT_EQ(2, m_numEndUploads);
     EXPECT_EQ(2, m_numTotalUploads);

@@ -19,6 +19,9 @@ static const size_t textureUpdatesPerTick = 12;
 // Measured in seconds.
 static const double textureUpdateTickRate = 0.004;
 
+// Measured in seconds.
+static const double uploaderBusyTickRate = 0.001;
+
 // Flush interval when performing texture uploads.
 static const int textureUploadFlushPeriod = 4;
 
@@ -108,7 +111,8 @@ CCTextureUpdateController::~CCTextureUpdateController()
 {
 }
 
-void CCTextureUpdateController::updateMoreTextures(double monotonicTimeLimit)
+void CCTextureUpdateController::performMoreUpdates(
+    double monotonicTimeLimit)
 {
     ASSERT(monotonicTimeLimit >= m_monotonicTimeLimit);
     m_monotonicTimeLimit = monotonicTimeLimit;
@@ -122,7 +126,7 @@ void CCTextureUpdateController::updateMoreTextures(double monotonicTimeLimit)
     // amount of time.
     if (m_firstUpdateAttempt) {
         // Post a 0-delay task when no updates were left. When it runs,
-        // updateTexturesCompleted() will be called.
+        // readyToFinalizeTextureUpdates() will be called.
         if (!updateMoreTexturesIfEnoughTimeRemaining())
             m_timer->startOneShot(0);
 
@@ -131,10 +135,17 @@ void CCTextureUpdateController::updateMoreTextures(double monotonicTimeLimit)
         updateMoreTexturesNow();
 }
 
+void CCTextureUpdateController::finalize()
+{
+    while (m_queue->hasMoreUpdates())
+        updateTextures(m_resourceProvider, m_copier, m_uploader, m_queue.get(),
+                       updateMoreTexturesSize());
+}
+
 void CCTextureUpdateController::onTimerFired()
 {
     if (!updateMoreTexturesIfEnoughTimeRemaining())
-        m_client->updateTexturesCompleted();
+        m_client->readyToFinalizeTextureUpdates();
 }
 
 double CCTextureUpdateController::monotonicTimeNow() const
@@ -154,7 +165,15 @@ size_t CCTextureUpdateController::updateMoreTexturesSize() const
 
 bool CCTextureUpdateController::updateMoreTexturesIfEnoughTimeRemaining()
 {
-    if (!m_queue->hasMoreUpdates())
+    // Uploader might be busy when we're too aggressive in our upload time
+    // estimate. We use a different timeout here to prevent unnecessary
+    // amounts of idle time.
+    if (m_uploader->isBusy()) {
+        m_timer->startOneShot(uploaderBusyTickRate);
+        return true;
+    }
+
+    if (!m_queue->fullUploadSize())
         return false;
 
     bool hasTimeRemaining = monotonicTimeNow() < m_monotonicTimeLimit - updateMoreTexturesTime();
@@ -166,8 +185,30 @@ bool CCTextureUpdateController::updateMoreTexturesIfEnoughTimeRemaining()
 
 void CCTextureUpdateController::updateMoreTexturesNow()
 {
-    m_timer->startOneShot(updateMoreTexturesTime());
-    updateTextures(m_resourceProvider, m_copier, m_uploader, m_queue.get(), updateMoreTexturesSize());
+    size_t uploads = std::min(
+        m_queue->fullUploadSize(), updateMoreTexturesSize());
+    m_timer->startOneShot(
+        updateMoreTexturesTime() / updateMoreTexturesSize() * uploads);
+
+    if (!uploads)
+        return;
+
+    m_uploader->beginUploads();
+
+    size_t uploadCount = 0;
+    while (uploads--) {
+        m_uploader->uploadTexture(
+            m_resourceProvider, m_queue->takeFirstFullUpload());
+        uploadCount++;
+        if (!(uploadCount % textureUploadFlushPeriod))
+            m_resourceProvider->shallowFlushIfSupported();
+    }
+
+    // Make sure there are no dangling partial uploads without a flush.
+    if (uploadCount % textureUploadFlushPeriod)
+        m_resourceProvider->shallowFlushIfSupported();
+
+    m_uploader->endUploads();
 }
 
 }
