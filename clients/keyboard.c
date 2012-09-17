@@ -47,7 +47,11 @@ enum key_type {
 	keytype_space,
 	keytype_switch,
 	keytype_symbols,
-	keytype_tab
+	keytype_tab,
+	keytype_arrow_up,
+	keytype_arrow_left,
+	keytype_arrow_right,
+	keytype_arrow_down
 };
 
 struct key {
@@ -96,9 +100,13 @@ static const struct key keys[] = {
 	{ keytype_default, ".", ".", 1},
 	{ keytype_switch, "ABC", "abc", 1},
 
-	{ keytype_symbols, "?123", "?123", 2},
-	{ keytype_space, "", "", 8},
-	{ keytype_symbols, "?123", "?123", 2}
+	{ keytype_symbols, "?123", "?123", 1},
+	{ keytype_space, "", "", 6},
+	{ keytype_arrow_up, "/\\", "/\\", 1},
+	{ keytype_arrow_left, "<", "<", 1},
+	{ keytype_arrow_right, ">", ">", 1},
+	{ keytype_arrow_down, "\\/", "\\/", 1},
+	{ keytype_symbols, "?123", "?123", 1}
 };
 
 static const unsigned int columns = 12;
@@ -254,6 +262,22 @@ keyboard_handle_key(struct keyboard *keyboard, const struct key *key)
 		case keytype_tab:
 			input_method_context_key(keyboard->keyboard->context,
 						 XKB_KEY_Tab, WL_KEYBOARD_KEY_STATE_PRESSED);
+			break;
+		case keytype_arrow_up:
+			input_method_context_key(keyboard->keyboard->context,
+						 XKB_KEY_Up, WL_KEYBOARD_KEY_STATE_PRESSED);
+			break;
+		case keytype_arrow_left:
+			input_method_context_key(keyboard->keyboard->context,
+						 XKB_KEY_Left, WL_KEYBOARD_KEY_STATE_PRESSED);
+			break;
+		case keytype_arrow_right:
+			input_method_context_key(keyboard->keyboard->context,
+						 XKB_KEY_Right, WL_KEYBOARD_KEY_STATE_PRESSED);
+			break;
+		case keytype_arrow_down:
+			input_method_context_key(keyboard->keyboard->context,
+						 XKB_KEY_Down, WL_KEYBOARD_KEY_STATE_PRESSED);
 			break;
 	}
 }

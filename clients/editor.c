@@ -288,13 +288,12 @@ text_model_key(void *data,
                uint32_t key,
                uint32_t state)
 {
+	struct text_entry *entry = data;
 	const char *state_label;
-	const char *key_label;
+	const char *key_label = "released";
 
 	if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
 		state_label = "pressed";
-	} else {
-		state_label = "released";
 	}
 
 	switch (key) {
@@ -303,6 +302,20 @@ text_model_key(void *data,
 			break;
 		case XKB_KEY_KP_Enter:
 			key_label = "Enter";
+			break;
+		case XKB_KEY_Left:
+			if (entry->cursor > 0) {
+				entry->cursor--;
+				entry->anchor = entry->cursor;
+				widget_schedule_redraw(entry->widget);
+			}
+			break;
+		case XKB_KEY_Right:
+			if (entry->cursor < strlen(entry->text)) {
+				entry->cursor++;
+				entry->anchor = entry->cursor;
+				widget_schedule_redraw(entry->widget);
+			}
 			break;
 		default:
 			key_label = "Unknown";
