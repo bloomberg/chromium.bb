@@ -34,8 +34,8 @@ void DesktopNativeWidgetAura::InitNativeWidget(
   window_->Init(params.layer_type);
   window_->Show();
 
-  desktop_root_window_host_.reset(
-      DesktopRootWindowHost::Create(native_widget_delegate_, params.bounds));
+  desktop_root_window_host_ =
+      DesktopRootWindowHost::Create(native_widget_delegate_, params.bounds);
   desktop_root_window_host_->Init(window_, params);
 }
 

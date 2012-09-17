@@ -136,7 +136,8 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
  private:
-  scoped_ptr<DesktopRootWindowHost> desktop_root_window_host_;
+  // Ownership passed to RootWindow on Init.
+  DesktopRootWindowHost* desktop_root_window_host_;
   aura::Window* window_;
   Widget::InitParams::Ownership ownership_;
   internal::NativeWidgetDelegate* native_widget_delegate_;
