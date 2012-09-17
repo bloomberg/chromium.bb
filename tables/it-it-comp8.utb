@@ -4,7 +4,7 @@
 
 #  This file is part of liblouis.
 #
-#  liblouis is free software: you can redistribute it and/or modify it
+# liblouis is free software: you can redistribute it and/or modify it
 #  under the terms of the GNU Lesser General Public License as
 #  published by the Free Software Foundation, either version 3 of the
 #  License, or (at your option) any later version.
@@ -367,8 +367,10 @@ sign  \x2591  78    #Light shade
 sign  \x2592  3678    #Medium shade
 sign  \x2593  235678    #Dark shade
 sign  \x25A0  1234567   #Black square
+sign  \x25AA  35   #indented bullet
 sign  \x25B6  267   #Black right-pointing triangle
 sign  \x25CF  35    #Black circle
+sign  \x25E6  35    #Black circle
 
 #--- Unicode Greek
 sign	\x0374	3456	#GREEK UPPER NUMERAL SIGN Dexia keraia
@@ -622,3 +624,5 @@ letter	\xFB4A	1256	#HEBREW LETTER TAV WITH DAGESH
 
 #---- Special Signs
 sign \xFEFF 0   #Zero width no-break Space
+include braille-patterns.cti
+
