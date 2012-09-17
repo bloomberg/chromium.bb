@@ -4,10 +4,12 @@
 
 #include "chrome/browser/extensions/api/app_window/app_window_api.h"
 
+#include "base/command_line.h"
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/app_window.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -26,12 +28,15 @@ const char kInvalidWindowId[] =
 };
 
 const char kNoneFrameOption[] = "none";
+const char kHtmlFrameOption[] = "experimental-html";
 
 bool AppWindowCreateFunction::RunImpl() {
   scoped_ptr<Create::Params> params(Create::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   GURL url = GetExtension()->GetResourceURL(params->url);
+
+  bool inject_html_titlebar = false;
 
   // TODO(jeremya): figure out a way to pass the opening WebContents through to
   // ShellWindow::Create so we can set the opener at create time rather than
@@ -76,6 +81,19 @@ bool AppWindowCreateFunction::RunImpl() {
       create_params.restore_position = false;
     }
 
+    if (options->frame.get()) {
+      if (*options->frame == kHtmlFrameOption &&
+          CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kEnableExperimentalExtensionApis)) {
+        create_params.frame = ShellWindow::CreateParams::FRAME_NONE;
+        inject_html_titlebar = true;
+      } else if (*options->frame == kNoneFrameOption) {
+        create_params.frame = ShellWindow::CreateParams::FRAME_NONE;
+      } else {
+        create_params.frame = ShellWindow::CreateParams::FRAME_CHROME;
+      }
+    }
+
     gfx::Size& minimum_size = create_params.minimum_size;
     if (options->min_width.get())
       minimum_size.set_width(*options->min_width);
@@ -112,7 +130,11 @@ bool AppWindowCreateFunction::RunImpl() {
   content::WebContents* created_contents = shell_window->web_contents();
   int view_id = created_contents->GetRenderViewHost()->GetRoutingID();
 
-  SetResult(base::Value::CreateIntegerValue(view_id));
+  base::DictionaryValue* result = new base::DictionaryValue;
+  result->Set("viewId", base::Value::CreateIntegerValue(view_id));
+  result->Set("injectTitlebar",
+      base::Value::CreateBooleanValue(inject_html_titlebar));
+  SetResult(result);
   return true;
 }
 

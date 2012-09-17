@@ -12,11 +12,10 @@ var GetView = appWindowNatives.GetView;
 
 chromeHidden.registerCustomHook('app.window', function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
-  apiFunctions.setCustomCallback('create', function(name, request, viewId) {
+  apiFunctions.setCustomCallback('create', function(name, request, result) {
     var view = null;
-    if (viewId) {
-      var shouldShowFrame = !request.args[1] || request.args[1].frame != 'none';
-      view = GetView(viewId, !!shouldShowFrame);
+    if (result.viewId) {
+      view = GetView(result.viewId, result.injectTitlebar);
     }
     if (request.callback) {
       request.callback(view.chrome.app.window.current());

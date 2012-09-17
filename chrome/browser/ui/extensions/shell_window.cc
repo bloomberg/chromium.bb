@@ -65,7 +65,7 @@ void SuspendRenderViewHost(RenderViewHost* rvh) {
 }  // namespace
 
 ShellWindow::CreateParams::CreateParams()
-  : frame(ShellWindow::CreateParams::FRAME_NONE),
+  : frame(ShellWindow::CreateParams::FRAME_CHROME),
     bounds(-1, -1, kDefaultWidth, kDefaultHeight),
     restore_position(true), restore_size(true) {
 }
@@ -107,13 +107,6 @@ void ShellWindow::Init(const GURL& url,
   web_contents_->GetRenderViewHost()->SyncRendererPrefs();
 
   native_window_.reset(NativeShellWindow::Create(this, params));
-  // Interpretation of the bounds passed to NativeShellWindow::Create varies
-  // between the different implementations, SetBounds behaves more consistent
-  // so call that one here too. A fix for http://crbug.com/130184 should make
-  // this no longer needed.
-  if (params.bounds.x() >= 0 && params.bounds.y() >= 0) {
-    native_window_->SetBounds(params.bounds);
-  }
 
   if (!params.window_key.empty()) {
     window_key_ = params.window_key;

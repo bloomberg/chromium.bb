@@ -86,16 +86,16 @@
 
 @end
 
-@interface ShellNSWindow : ChromeEventProcessingWindow
-
-- (void)drawCustomFrameRect:(NSRect)rect forView:(NSView*)view;
-
-@end
-
 // This is really a method on NSGrayFrame, so it should only be called on the
 // view passed into -[NSWindow drawCustomFrameRect:forView:].
 @interface NSView (PrivateMethods)
 - (CGFloat)roundedCornerRadius;
+@end
+
+@interface ShellNSWindow : ChromeEventProcessingWindow
+
+- (void)drawCustomFrameRect:(NSRect)rect forView:(NSView*)view;
+
 @end
 
 @implementation ShellNSWindow
@@ -115,6 +115,14 @@
   [[NSColor whiteColor] set];
   NSRectFill(rect);
 }
+
+@end
+
+@interface ShellFramelessNSWindow : ShellNSWindow
+
+@end
+
+@implementation ShellFramelessNSWindow
 
 + (NSRect)frameRectForContentRect:(NSRect)contentRect
                         styleMask:(NSUInteger)mask {
@@ -175,11 +183,20 @@ ShellWindowCocoa::ShellWindowCocoa(ShellWindow* shell_window,
   NSUInteger style_mask = NSTitledWindowMask | NSClosableWindowMask |
                           NSMiniaturizableWindowMask | NSResizableWindowMask |
                           NSTexturedBackgroundWindowMask;
-  scoped_nsobject<NSWindow> window([[ShellNSWindow alloc]
-      initWithContentRect:cocoa_bounds
-                styleMask:style_mask
-                  backing:NSBackingStoreBuffered
-                    defer:NO]);
+  scoped_nsobject<NSWindow> window;
+  if (has_frame_) {
+    window.reset([[ShellNSWindow alloc]
+        initWithContentRect:cocoa_bounds
+                  styleMask:style_mask
+                    backing:NSBackingStoreBuffered
+                      defer:NO]);
+  } else {
+    window.reset([[ShellFramelessNSWindow alloc]
+        initWithContentRect:cocoa_bounds
+                  styleMask:style_mask
+                    backing:NSBackingStoreBuffered
+                      defer:NO]);
+  }
   [window setTitle:base::SysUTF8ToNSString(extension()->name())];
   gfx::Size min_size = params.minimum_size;
   if (min_size.width() || min_size.height()) {
