@@ -317,9 +317,7 @@ cr.define('login', function() {
           // Show 'Cancel' button to allow user to return to the main screen
           // (e.g. this makes sense when connection is back).
           Oobe.getInstance().headerHidden = false;
-          $('add-user-header-bar-item').hidden = false;
-          $('add-user-button').hidden = true;
-          $('cancel-add-user-button').hidden = false;
+          $('login-header-bar').signinUIActive = true;
           // Do nothing, since offline version is reloaded after an error comes.
         } else {
           Oobe.showSigninUI();
