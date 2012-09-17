@@ -80,7 +80,7 @@
 .dropdown-container {
   background: #f7f7f7;
   border: 1px solid rgb(124, 145, 191);
-  max-height: 300px;
+  max-height: 234px;
   overflow-x: hidden;
   overflow-y: auto;
   padding-bottom: 2px;

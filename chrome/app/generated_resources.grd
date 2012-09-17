@@ -14207,7 +14207,7 @@ Press any key to continue exploring.
       <message name="IDS_BROWSE_WITHOUT_SIGNING_IN_BUTTON">
         Skip sign-in and browse as Guest
       </message>
-      <message name="IDS_GO_INCOGNITO_BUTTON">
+      <message name="IDS_GO_INCOGNITO_BUTTON" desc="Text shown on Chrome OS login screen button that launches guest session. Should be short.">
         Browse as Guest
       </message>
       <message name="IDS_CREATE_ACCOUNT_HTML" desc="Text shown on side of Google sign-in UI.">
