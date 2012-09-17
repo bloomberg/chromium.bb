@@ -62,6 +62,8 @@ class DesktopRootWindowHost {
   virtual bool IsMaximized() const = 0;
   virtual bool IsMinimized() const = 0;
 
+  virtual bool HasCapture() const = 0;
+
   virtual void SetAlwaysOnTop(bool always_on_top) = 0;
 
   virtual InputMethod* CreateInputMethod() = 0;

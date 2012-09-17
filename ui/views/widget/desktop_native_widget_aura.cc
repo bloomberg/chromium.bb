@@ -4,6 +4,7 @@
 
 #include "ui/views/widget/desktop_native_widget_aura.h"
 
+#include "ui/aura/root_window.h"
 #include "ui/aura/root_window_host.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
@@ -107,13 +108,23 @@ void DesktopNativeWidgetAura::SendNativeAccessibilityEvent(
 }
 
 void DesktopNativeWidgetAura::SetCapture() {
+  window_->SetCapture();
+  // aura::Window doesn't implicitly update capture on the RootWindowHost, so
+  // we have to do that manually.
+  if (!desktop_root_window_host_->HasCapture())
+    window_->GetRootWindow()->SetNativeCapture();
 }
 
 void DesktopNativeWidgetAura::ReleaseCapture() {
+  window_->ReleaseCapture();
+  // aura::Window doesn't implicitly update capture on the RootWindowHost, so
+  // we have to do that manually.
+  if (desktop_root_window_host_->HasCapture())
+    window_->GetRootWindow()->ReleaseNativeCapture();
 }
 
 bool DesktopNativeWidgetAura::HasCapture() const {
-  return false;
+  return window_->HasCapture() && desktop_root_window_host_->HasCapture();
 }
 
 InputMethod* DesktopNativeWidgetAura::CreateInputMethod() {

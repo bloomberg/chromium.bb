@@ -142,6 +142,12 @@ bool DesktopRootWindowHostLinux::IsMinimized() const {
   return false;
 }
 
+bool DesktopRootWindowHostLinux::HasCapture() const {
+  // TODO(erg):
+  NOTIMPLEMENTED();
+  return false;
+}
+
 void DesktopRootWindowHostLinux::SetAlwaysOnTop(bool always_on_top) {
   // TODO(erg):
   NOTIMPLEMENTED();

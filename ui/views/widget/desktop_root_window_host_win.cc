@@ -163,6 +163,10 @@ bool DesktopRootWindowHostWin::IsMinimized() const {
   return message_handler_->IsMinimized();
 }
 
+bool DesktopRootWindowHostWin::HasCapture() const {
+  return message_handler_->HasCapture();
+}
+
 void DesktopRootWindowHostWin::SetAlwaysOnTop(bool always_on_top) {
   message_handler_->SetAlwaysOnTop(always_on_top);
 }
@@ -216,9 +220,11 @@ gfx::Point DesktopRootWindowHostWin::GetLocationOnNativeScreen() const {
 }
 
 void DesktopRootWindowHostWin::SetCapture() {
+  message_handler_->SetCapture();
 }
 
 void DesktopRootWindowHostWin::ReleaseCapture() {
+  message_handler_->ReleaseCapture();
 }
 
 void DesktopRootWindowHostWin::SetCursor(gfx::NativeCursor cursor) {
