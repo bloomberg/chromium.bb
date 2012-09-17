@@ -11,8 +11,8 @@
 #include "base/file_path.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/chromeos/gdata/drive_api_parser.h"
 #include "content/public/browser/browser_thread.h"
+#include "chrome/browser/google_apis/drive_api_parser.h"
 
 using content::BrowserThread;
 

@@ -7,8 +7,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/gdata/drive_resource_metadata.h"
-#include "chrome/browser/chromeos/gdata/gdata_test_util.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
+#include "chrome/browser/google_apis/gdata_test_util.h"
 
 class FilePath;
 

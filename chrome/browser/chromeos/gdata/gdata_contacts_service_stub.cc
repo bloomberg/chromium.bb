@@ -8,7 +8,7 @@
 
 #include "chrome/browser/chromeos/contacts/contact.pb.h"
 #include "chrome/browser/chromeos/contacts/contact_test_util.h"
-#include "chrome/browser/chromeos/gdata/gdata_util.h"
+#include "chrome/browser/google_apis/gdata_util.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;

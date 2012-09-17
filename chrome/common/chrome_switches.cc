@@ -510,6 +510,9 @@ const char kEnableDevToolsExperiments[]     = "enable-devtools-experiments";
 // Enables experimental discovery slots in New Tab page.
 const char kEnableDiscoveryInNewTabPage[]   = "enable-discovery-ntp";
 
+// Enables Drive v2 API instead of Google Documents List API.
+const char kEnableDriveV2Api[]              = "enable-drive-v2-api";
+
 // Enables extensions to be easily installed from sites other than the web
 // store. Without this flag, they can still be installed, but must be manually
 // dragged onto chrome://extensions/.
@@ -1390,9 +1393,6 @@ const char kEnableTouchpadThreeFingerClick[]
 
 // Skips OAuth part of ChromeOS login process.
 const char kSkipOAuthLogin[]                = "skip-oauth-login";
-
-// Enables Drive v2 API instead of Google Documents List API.
-const char kEnableDriveV2Api[]              = "enable-drive-v2-api";
 
 // Use level db for drive metadata storage.
 const char kUseLevelDBForGData[]            = "use-leveldb-for-gdata";

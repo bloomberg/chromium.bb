@@ -10,7 +10,7 @@
 #include <string>
 
 #include "base/memory/scoped_vector.h"
-#include "chrome/browser/chromeos/gdata/gdata_wapi_parser.h"
+#include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "googleurl/src/gurl.h"
 
 class FilePath;

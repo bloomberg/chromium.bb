@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/gdata/gdata_test_util.h"
+#include "chrome/browser/google_apis/gdata_test_util.h"
 
 #include "base/file_util.h"
 #include "base/json/json_file_value_serializer.h"

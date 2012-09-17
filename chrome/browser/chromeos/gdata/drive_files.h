@@ -15,7 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
 #include "chrome/browser/chromeos/gdata/drive.pb.h"
-#include "chrome/browser/chromeos/gdata/gdata_wapi_parser.h"
+#include "chrome/browser/google_apis/gdata_wapi_parser.h"
 
 namespace gdata {
 

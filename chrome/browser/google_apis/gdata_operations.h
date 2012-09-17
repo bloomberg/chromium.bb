@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_GDATA_GDATA_OPERATIONS_H_
-#define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_OPERATIONS_H_
+#ifndef CHROME_BROWSER_GOOGLE_APIS_GDATA_OPERATIONS_H_
+#define CHROME_BROWSER_GOOGLE_APIS_GDATA_OPERATIONS_H_
 
 #include <string>
 #include <vector>
 
-#include "chrome/browser/chromeos/gdata/drive_upload_mode.h"
+#include "chrome/browser/google_apis/drive_upload_mode.h"
 #include "chrome/browser/google_apis/operations_base.h"
 #include "net/base/io_buffer.h"
 
@@ -547,4 +547,4 @@ class GetContactPhotoOperation : public UrlFetchOperationBase {
 
 }  // namespace gdata
 
-#endif  // CHROME_BROWSER_CHROMEOS_GDATA_GDATA_OPERATIONS_H_
+#endif  // CHROME_BROWSER_GOOGLE_APIS_GDATA_OPERATIONS_H_

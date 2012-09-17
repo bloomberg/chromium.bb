@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/gdata/operation_runner.h"
+#include "chrome/browser/google_apis/operation_runner.h"
 
 #include "base/bind.h"
-#include "chrome/browser/chromeos/gdata/auth_service.h"
+#include "chrome/browser/google_apis/auth_service.h"
 #include "chrome/browser/google_apis/operations_base.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"

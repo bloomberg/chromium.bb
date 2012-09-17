@@ -12,8 +12,8 @@
 
 #include "base/file_path.h"
 #include "chrome/browser/chromeos/gdata/drive_file_formats.h"
-#include "chrome/browser/chromeos/gdata/gdata_wapi_parser.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
+#include "chrome/browser/google_apis/gdata_wapi_parser.h"
 
 namespace gdata {
 

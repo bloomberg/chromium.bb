@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_API_PARSER_H_
-#define CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_API_PARSER_H_
+#ifndef CHROME_BROWSER_GOOGLE_APIS_DRIVE_API_PARSER_H_
+#define CHROME_BROWSER_GOOGLE_APIS_DRIVE_API_PARSER_H_
 
 #include <string>
 
@@ -16,7 +16,7 @@
 #include "googleurl/src/gurl.h"
 // TODO(kochi): Eliminate this dependency once dependency to EntryKind is gone.
 // http://crbug.com/142293
-#include "chrome/browser/chromeos/gdata/gdata_wapi_parser.h"
+#include "chrome/browser/google_apis/gdata_wapi_parser.h"
 
 namespace base {
 class Value;
@@ -589,4 +589,4 @@ class ChangeList {
 
 }  // namespace gdata
 
-#endif  // CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_API_PARSER_H_
+#endif  // CHROME_BROWSER_GOOGLE_APIS_DRIVE_API_PARSER_H_

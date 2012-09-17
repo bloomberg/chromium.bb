@@ -6,8 +6,8 @@
 
 #include "base/json/json_file_value_serializer.h"
 #include "chrome/browser/chromeos/gdata/drive.pb.h"
-#include "chrome/browser/chromeos/gdata/drive_api_parser.h"
 #include "chrome/browser/chromeos/gdata/drive_file_system.h"
+#include "chrome/browser/google_apis/drive_api_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gdata {

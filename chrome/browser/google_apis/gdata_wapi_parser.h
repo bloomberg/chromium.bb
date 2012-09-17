@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_GDATA_GDATA_WAPI_PARSER_H_
-#define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_WAPI_PARSER_H_
+#ifndef CHROME_BROWSER_GOOGLE_APIS_GDATA_WAPI_PARSER_H_
+#define CHROME_BROWSER_GOOGLE_APIS_GDATA_WAPI_PARSER_H_
 
 #include <string>
 #include <utility>
@@ -14,7 +14,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/string_piece.h"
 #include "base/time.h"
-#include "chrome/browser/chromeos/gdata/drive_entry_kinds.h"
+#include "chrome/browser/google_apis/drive_entry_kinds.h"
 #include "googleurl/src/gurl.h"
 
 class FilePath;
@@ -725,4 +725,4 @@ class AccountMetadataFeed {
 
 }  // namespace gdata
 
-#endif  // CHROME_BROWSER_CHROMEOS_GDATA_GDATA_WAPI_PARSER_H_
+#endif  // CHROME_BROWSER_GOOGLE_APIS_GDATA_WAPI_PARSER_H_

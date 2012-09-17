@@ -5,13 +5,29 @@ include_rules = [
 
   # Temporarily needed, see http://crbug.com/146989
   "!chrome/browser/browser_process.h",
+  "!chrome/browser/chromeos/login/user_manager.h",
+  "!chrome/browser/prefs/pref_service.h",
+  "!chrome/browser/profiles/profile.h",
+  "!chrome/browser/signin/token_service_factory.h",
+  "!chrome/browser/signin/token_service.h",
+  "!chrome/common/chrome_notification_types.h",
+  "!chrome/common/chrome_paths.h",
+  "!chrome/common/chrome_switches.h",
   "!chrome/common/net/url_util.h",
+  "!chrome/common/pref_names.h",
   "!content/public/browser/browser_thread.h",
+  "!content/public/browser/notification_details.h",
+  "!content/public/browser/notification_observer.h",
+  "!content/public/browser/notification_registrar.h",
+  "!content/public/browser/notification_source.h",
+  "!content/public/browser/notification_types.h",
 ]
 
 specific_include_rules = {
   ".*_[a-z]+test\.cc": [
     # Temporarily needed, see http://crbug.com/146989
+    "!chrome/browser/chromeos/system/timezone_settings.h",
+    "!chrome/test/base/testing_profile.h",
     "!content/public/test/test_browser_thread.h",
   ],
 }
