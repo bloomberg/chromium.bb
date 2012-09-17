@@ -684,7 +684,7 @@ check_test_exe = env.ComponentProgram('nacl_check_test',
 node = env.CommandTest(
     'check_test.out',
     command=[check_test_exe, '-C'])
-env.AddNodeToTestSuite(node, ['small_tests'])
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_check_test')
 
 
 ABORT_EXIT = '17'  # magic, see nacl_check_test.c
@@ -694,7 +694,7 @@ node = env.CommandTest(
     'check_test_death.out',
     command=[check_test_exe, '-c'],
     exit_status=ABORT_EXIT)  # abort()
-env.AddNodeToTestSuite(node, ['small_tests'])
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_check_test_death')
 
 
 if env.Bit('debug'):
@@ -706,33 +706,39 @@ else:
   node = env.CommandTest(
       'dcheck_test_death.out',
       command=[check_test_exe, '-d'])  # no abort()
-env.AddNodeToTestSuite(node, ['small_tests'])
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_dcheck_test_death')
 
 
 node = env.CommandTest(
     'check_test_always_death.out',
     command=[check_test_exe, '-s', '0', '-C'])  # no abort
-env.AddNodeToTestSuite(node, ['small_tests'])
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_check_test_always_death')
 
 
 node = env.CommandTest(
-    'check_test_always_death.out',
+    'check_test_always_death_abort.out',
     command=[check_test_exe, '-s', '0', '-c'],
     exit_status=ABORT_EXIT)  # abort
-env.AddNodeToTestSuite(node, ['small_tests'])
+env.AddNodeToTestSuite(
+    node,
+    ['small_tests'],
+    'run_check_test_always_death_abort')
 
 
 node = env.CommandTest(
     'dcheck_test_never_death.out',
     command=[check_test_exe, '-s', '0', '-d'])  # no abort
-env.AddNodeToTestSuite(node, ['small_tests'])
+env.AddNodeToTestSuite(node, ['small_tests'], 'dcheck_test_never_death')
 
 
 node = env.CommandTest(
     'dcheck_test_always_death.out',
     command=[check_test_exe, '-s', '1', '-d'],
     exit_status=ABORT_EXIT)  # abort()
-env.AddNodeToTestSuite(node, ['small_tests'])
+env.AddNodeToTestSuite(
+    node,
+    ['small_tests'],
+    'run_dcheck_test_always_death')
 
 
 # Mac does not support thread local storage via "__thread" so do not run this
@@ -900,7 +906,7 @@ if env.Bit('target_x86'):
       'nullptr.out',
       env.File(arch_testdata_dir + '/nullptr.nexe'),
       exit_status='untrusted_segfault')
-  env.AddNodeToTestSuite(node, ['medium_tests'])
+  env.AddNodeToTestSuite(node, ['medium_tests'], 'run_nullptr_test')
 
   if env.Bit('build_x86_32'):
     skip = NOT_AVAIL_X86_32

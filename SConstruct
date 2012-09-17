@@ -727,9 +727,6 @@ if ARGUMENTS.get('disable_tests', '') != '':
 
 
 def ShouldSkipTest(env, node_name):
-  if node_name is None:
-    return True
-
   if env.Bit('skip_trusted_tests') and env['NACL_BUILD_FAMILY'] == 'TRUSTED':
     return True
 
@@ -770,7 +767,7 @@ def ShouldSkipTest(env, node_name):
 pre_base_env.AddMethod(ShouldSkipTest)
 
 
-def AddNodeToTestSuite(env, node, suite_name, node_name=None, is_broken=False,
+def AddNodeToTestSuite(env, node, suite_name, node_name, is_broken=False,
                        is_flaky=False):
   global BROKEN_TEST_COUNT
 
@@ -778,23 +775,20 @@ def AddNodeToTestSuite(env, node, suite_name, node_name=None, is_broken=False,
   if not node:
     return
 
+  assert node_name is not None
+
   ValidateTestSuiteNames(suite_name, node_name)
 
   AlwaysBuild(node)
 
-  if node_name:
-    display_name = node_name
-  else:
-    display_name = '<no name>'
-
   if is_broken or is_flaky and env.Bit('disable_flaky_tests'):
     # Only print if --verbose is specified
     if not GetOption('brief_comstr'):
-      print '*** BROKEN ', display_name
+      print '*** BROKEN ', node_name
     BROKEN_TEST_COUNT += 1
     env.Alias('broken_tests', node)
   elif env.ShouldSkipTest(node_name):
-    print '*** SKIPPING ', env.GetPlatformString(), ':', display_name
+    print '*** SKIPPING ', env.GetPlatformString(), ':', node_name
     env.Alias('broken_tests', node)
   else:
     env.Alias('all_tests', node)
@@ -1721,6 +1715,7 @@ def AutoDepsCommand(env, name, command, extra_deps=[], posix_path=False,
   In the second case, the file is automatically declared as a
   dependency of this command.
   """
+  command = list(command)
   deps = []
   for index, arg in enumerate(command):
     if not isinstance(arg, str):

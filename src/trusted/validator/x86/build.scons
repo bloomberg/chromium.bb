@@ -46,7 +46,7 @@ nacl_cpuid = test_env.ComponentProgram(
 node = test_env.CommandTest(
     'nacl_cpuid_test.out',
     [nacl_cpuid])
-test_env.AddNodeToTestSuite(node, ['large_tests'])
+test_env.AddNodeToTestSuite(node, ['large_tests'], 'run_nacl_cpuid_test')
 
 #---------- UNIT TESTS ---------------------------------
 

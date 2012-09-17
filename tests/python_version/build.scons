@@ -12,4 +12,4 @@ node = env.CommandTest(
     direct_emulation=False,
     )
 
-env.AddNodeToTestSuite(node, ['medium_tests'])
+env.AddNodeToTestSuite(node, ['medium_tests'], 'run_python_version_test')

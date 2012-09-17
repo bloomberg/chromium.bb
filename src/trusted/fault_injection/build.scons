@@ -25,4 +25,4 @@ nacl_fi_test_exe = env.ComponentProgram('nacl_fi_test',
 node = env.CommandTest(
     'nacl_fi_test.out',
     command=[nacl_fi_test_exe])
-env.AddNodeToTestSuite(node, ['small_tests'])
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_nacl_fi_test')

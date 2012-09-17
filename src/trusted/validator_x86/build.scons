@@ -109,9 +109,9 @@ if test_env.Bit('target_x86_32'):
     node = test_env.CommandTest(
         'ncdecode_tests.out',
         [ncdecode_tests],
-        )
+    )
 
-    test_env.AddNodeToTestSuite(node, STANDARD_TESTS)
+    test_env.AddNodeToTestSuite(node, STANDARD_TESTS, 'run_nc_decode_tests')
 
 # ======================================================================
 # Build command line decoder.
