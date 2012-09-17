@@ -240,29 +240,25 @@ def UnzipFilenameToDir(filename, dir):
     filename = os.path.join(cwd, filename)
   zf = zipfile.ZipFile(filename)
   # Make base.
-  try:
-    if not os.path.isdir(dir):
-      os.mkdir(dir)
-    os.chdir(dir)
-    # Extract files.
-    for info in zf.infolist():
-      name = info.filename
-      if name.endswith('/'):  # dir
-        if not os.path.isdir(name):
-          os.makedirs(name)
-      else:  # file
-        dir = os.path.dirname(name)
-        if not os.path.isdir(dir):
-          os.makedirs(dir)
-        out = open(name, 'wb')
-        out.write(zf.read(name))
-        out.close()
-      # Set permissions. Permission info in external_attr is shifted 16 bits.
-      os.chmod(name, info.external_attr >> 16L)
-    os.chdir(cwd)
-  except Exception, e:
-    print >>sys.stderr, e
-    sys.exit(1)
+  if not os.path.isdir(dir):
+    os.mkdir(dir)
+  os.chdir(dir)
+  # Extract files.
+  for info in zf.infolist():
+    name = info.filename
+    if name.endswith('/'):  # dir
+      if not os.path.isdir(name):
+        os.makedirs(name)
+    else:  # file
+      dir = os.path.dirname(name)
+      if not os.path.isdir(dir):
+        os.makedirs(dir)
+      out = open(name, 'wb')
+      out.write(zf.read(name))
+      out.close()
+    # Set permissions. Permission info in external_attr is shifted 16 bits.
+    os.chmod(name, info.external_attr >> 16L)
+  os.chdir(cwd)
 
 
 def FetchRevision(context, rev, filename, quit_event=None, progress_event=None):
@@ -476,12 +472,18 @@ def Bisect(platform,
       up_fetch.Start()
 
     # Run test on the pivot revision.
-    (status, stdout, stderr) = RunRevision(context,
-                                           rev,
-                                           zipfile,
-                                           profile,
-                                           num_runs,
-                                           try_args)
+    status = None
+    stdout = None
+    stderr = None
+    try:
+      (status, stdout, stderr) = RunRevision(context,
+                                             rev,
+                                             zipfile,
+                                             profile,
+                                             num_runs,
+                                             try_args)
+    except Exception, e:
+      print >>sys.stderr, e
     os.unlink(zipfile)
     zipfile = None
 
