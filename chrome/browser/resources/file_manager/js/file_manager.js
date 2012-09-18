@@ -2740,8 +2740,7 @@ FileManager.prototype = {
       return;
 
     if (event.target.parentElement.classList.contains('filename-label') ||
-        event.target.classList.contains('detail-icon') ||
-        event.target.classList.contains('img-container')) {
+        event.target.classList.contains('detail-icon')) {
       this.onDetailDoubleClickOrTap_(event);
       event.stopPropagation();
       event.preventDefault();
