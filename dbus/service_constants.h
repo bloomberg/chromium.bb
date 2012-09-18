@@ -638,6 +638,7 @@ const char kUnknownString[] = "UNKNOWN";
 namespace shill {
 // Function names.
 const char kRefreshFunction[] = "Refresh";
+const char kSetCarrierFunction[] = "SetCarrier";
 
 // Device property names.
 const char kReceiveByteCountProperty[] = "ReceiveByteCount";
