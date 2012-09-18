@@ -113,6 +113,20 @@ body.uber-frame section > h3 {
   -webkit-margin-start: -18px;
 }
 
+@media(pointer:coarse) {
+  /* TODO(kevers):  Remove the extra padding once the following bug is fixed:
+   * https://bugs.webkit.org/show_bug.cgi?id=95204
+   * In the interim, the added padding makes it less likely that a touch will
+   * span the boundary of the navigation bar, which results in poor touch
+   * adjustments. */
+  body.uber-frame section {
+    -webkit-padding-start: 28px;
+  }
+  body.uber-frame section > h3 {
+    -webkit-margin-start: -28px;
+  }
+}
+
 body.uber-frame section > div:only-of-type {
   -webkit-box-flex: 1;
 }
