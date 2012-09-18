@@ -116,7 +116,8 @@ class scoped_ptr_nacl_refcount {
   scoped_ptr_nacl_refcount& operator=(scoped_ptr_nacl_refcount const& other) {
     if (this != &other) {  // exclude self-assignment, which should be no-op
       if (NULL != ptr_) {
-        deref_(reinterpret_cast<NaClRefCount*>(ptr_));
+        DtorProc deref;
+        deref(reinterpret_cast<NaClRefCount*>(ptr_));
       }
       ptr_ = NaClRefCountRef(other.ptr_);
     }
@@ -125,7 +126,8 @@ class scoped_ptr_nacl_refcount {
 
   ~scoped_ptr_nacl_refcount() {
     if (NULL != ptr_) {
-      deref_(reinterpret_cast<NaClRefCount*>(ptr_));
+      DtorProc deref;
+      deref(reinterpret_cast<NaClRefCount*>(ptr_));
     }
   }
 
@@ -133,7 +135,8 @@ class scoped_ptr_nacl_refcount {
 
   void reset(nacl::scoped_ptr_malloc<RC>* p = NULL, int ctor_fn_result = 0) {
     if (NULL != ptr_) {
-      deref_(reinterpret_cast<NaClRefCount*>(ptr_));
+      DtorProc deref;
+      deref(reinterpret_cast<NaClRefCount*>(ptr_));
       ptr_ = NULL;
     }
     if (0 != ctor_fn_result) {
@@ -179,12 +182,7 @@ class scoped_ptr_nacl_refcount {
 
  private:
   RC* ptr_;
-
-  static DtorProc const deref_;
 };
-
-template<typename RC, typename DP>
-DP const scoped_ptr_nacl_refcount<RC, DP>::deref_ = DP();
 
 template<typename RC, typename DP>
 void swap(scoped_ptr_nacl_refcount<RC, DP>& a,
