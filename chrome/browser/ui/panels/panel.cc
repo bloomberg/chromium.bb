@@ -38,10 +38,6 @@
 using content::RenderViewHost;
 using content::UserMetricsAction;
 
-namespace extensions {
-class Extension;
-}
-
 namespace panel_internal {
 
 class PanelExtensionWindowController : public extensions::WindowController {
@@ -192,6 +188,8 @@ void Panel::Initialize(Profile* profile, const GURL& url,
 
   // Prevent the browser process from shutting down while this window is open.
   browser::StartKeepAlive();
+
+  UpdateAppIcon();
 }
 
 void Panel::InitCommandState() {
@@ -784,4 +782,37 @@ void Panel::LoadingStateChanged(bool is_loading) {
 
 void Panel::WebContentsFocused(content::WebContents* contents) {
   native_panel_->PanelWebContentsFocused(contents);
+}
+
+const extensions::Extension* Panel::GetExtension() const {
+  ExtensionService* extension_service =
+      extensions::ExtensionSystem::Get(profile())->extension_service();
+  if (!extension_service || !extension_service->is_ready())
+    return NULL;
+  return extension_service->GetExtensionById(extension_id(), false);
+}
+
+void Panel::UpdateAppIcon() {
+  const extensions::Extension* extension = GetExtension();
+  if (!extension)
+    return;
+
+  app_icon_loader_.reset(new ImageLoadingTracker(this));
+  app_icon_loader_->LoadImage(
+      extension,
+      extension->GetIconResource(extension_misc::EXTENSION_ICON_SMALLISH,
+                                 ExtensionIconSet::MATCH_BIGGER),
+      gfx::Size(extension_misc::EXTENSION_ICON_SMALLISH,
+                extension_misc::EXTENSION_ICON_SMALLISH),
+      ImageLoadingTracker::CACHE);
+}
+
+void Panel::OnImageLoaded(const gfx::Image& image,
+                          const std::string& extension_id,
+                          int index) {
+  if (!image.IsEmpty()) {
+    app_icon_ = image;
+    native_panel_->UpdatePanelTitleBar();
+  }
+  app_icon_loader_.reset();
 }
