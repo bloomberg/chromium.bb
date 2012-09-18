@@ -20,7 +20,7 @@ class GuestModeOptionsBrowserTest : public options::OptionsBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(GuestModeOptionsBrowserTest, LoadOptionsByURL) {
+IN_PROC_BROWSER_TEST_F(GuestModeOptionsBrowserTest, FLAKY_LoadOptionsByURL) {
   NavigateToSettings();
   VerifyTitle();
   VerifyNavbar();
