@@ -307,15 +307,14 @@ void DisplayController::OnDisplayRemoved(const gfx::Display& display) {
 
 aura::RootWindow* DisplayController::AddRootWindowForDisplay(
     const gfx::Display& display) {
-  static bool force_constrain_pointer_to_root =
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshConstrainPointerToRoot);
-
   aura::RootWindow* root = aura::Env::GetInstance()->display_manager()->
       CreateRootWindowForDisplay(display);
   root_windows_[display.id()] = root;
 
 #if defined(OS_CHROMEOS)
+  static bool force_constrain_pointer_to_root =
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshConstrainPointerToRoot);
   if (base::chromeos::IsRunningOnChromeOS() || force_constrain_pointer_to_root)
     root->ConfineCursorToWindow();
 #endif

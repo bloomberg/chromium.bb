@@ -369,11 +369,11 @@ void SearchBuilder::OpenResult(const app_list::SearchResult& result,
 void SearchBuilder::InvokeResultAction(const app_list::SearchResult& result,
                                        int action_index,
                                        int event_flags) {
+#if defined(OS_CHROMEOS)
   const SearchBuilderResult* builder_result =
       static_cast<const SearchBuilderResult*>(&result);
   const AutocompleteMatch& match = builder_result->match();
 
-#if defined(OS_CHROMEOS)
   if (match.type == AutocompleteMatch::CONTACT) {
     const contacts::Contact* contact =
         static_cast<const ContactResult*>(builder_result)->GetContact();
