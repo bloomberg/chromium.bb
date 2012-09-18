@@ -180,6 +180,12 @@ void UsbDevice::IsochronousTransfer(const TransferDirection direction,
     const unsigned int timeout, const UsbTransferCallback& callback) {
   CheckDevice();
 
+  const uint64 total_length = packets * packet_length;
+  if (total_length > length) {
+    callback.Run(USB_TRANSFER_LENGTH_SHORT);
+    return;
+  }
+
   struct libusb_transfer* const transfer = libusb_alloc_transfer(packets);
   const uint8 new_endpoint = ConvertTransferDirection(direction) | endpoint;
   libusb_fill_iso_transfer(transfer, handle_, new_endpoint,

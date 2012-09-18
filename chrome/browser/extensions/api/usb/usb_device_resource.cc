@@ -42,6 +42,7 @@ static const char* kErrorCancelled = "Transfer was cancelled";
 static const char* kErrorStalled = "Transfer stalled";
 static const char* kErrorDisconnect = "Device disconnected";
 static const char* kErrorOverflow = "Inbound transfer overflow";
+static const char* kErrorTransferLength = "Transfer length is insufficient";
 
 static bool ConvertDirection(const string& input,
                              UsbDevice::TransferDirection* output) {
@@ -143,6 +144,8 @@ static const char* ConvertTransferStatusToErrorString(
       return kErrorDisconnect;
     case USB_TRANSFER_OVERFLOW:
       return kErrorOverflow;
+    case USB_TRANSFER_LENGTH_SHORT:
+      return kErrorTransferLength;
   }
 
   NOTREACHED();

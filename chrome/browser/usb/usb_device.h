@@ -34,6 +34,7 @@ enum UsbTransferStatus {
   USB_TRANSFER_STALLED,
   USB_TRANSFER_DISCONNECT,
   USB_TRANSFER_OVERFLOW,
+  USB_TRANSFER_LENGTH_SHORT,
 };
 
 typedef base::Callback<void(UsbTransferStatus)> UsbTransferCallback;
