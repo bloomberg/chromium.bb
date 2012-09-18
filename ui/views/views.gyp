@@ -733,7 +733,7 @@
         '..',
       ],
       'defines': [
-        'VIEWS_EXAMPLES_IMPLEMENTATION',
+        'VIEWS_EXAMPLES_WITH_CONTENT_IMPLEMENTATION',
       ],
       'sources': [
         'examples/bubble_example.cc',
@@ -782,7 +782,7 @@
         'examples/throbber_example.h',
         'examples/tree_view_example.cc',
         'examples/tree_view_example.h',
-        'examples/views_examples_export.h',
+        'examples/views_examples_with_content_export.h',
         'examples/webview_example.cc',
         'examples/webview_example.h',
         'examples/widget_example.cc',

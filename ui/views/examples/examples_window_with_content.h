@@ -5,7 +5,7 @@
 #ifndef UI_VIEWS_EXAMPLES_EXAMPLES_WINDOW_WITH_CONTENT_H_
 #define UI_VIEWS_EXAMPLES_EXAMPLES_WINDOW_WITH_CONTENT_H_
 
-#include "ui/views/examples/views_examples_export.h"
+#include "ui/views/examples/views_examples_with_content_export.h"
 
 namespace content {
 class BrowserContext;
@@ -20,7 +20,7 @@ enum Operation {
 };
 
 // Shows a window with the views examples in it.
-VIEWS_EXAMPLES_EXPORT void ShowExamplesWindowWithContent(
+VIEWS_EXAMPLES_WITH_CONTENT_EXPORT void ShowExamplesWindowWithContent(
     Operation operation,
     content::BrowserContext* browser_context);
 
