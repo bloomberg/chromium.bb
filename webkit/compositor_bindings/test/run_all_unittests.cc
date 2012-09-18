@@ -2,23 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <base/test/test_suite.h>
+#include "base/message_loop.h"
+#include "base/test/test_suite.h"
+#include "cc/test/test_webkit_platform.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/Platform.h"
 #include <gmock/gmock.h>
-
-#if defined(USE_LIBCC_FOR_COMPOSITOR)
-#include <webkit/support/webkit_support.h>
-#endif
 
 int main(int argc, char** argv) {
   ::testing::InitGoogleMock(&argc, argv);
   TestSuite testSuite(argc, argv);
-#if defined(USE_LIBCC_FOR_COMPOSITOR)
-  webkit_support::SetUpTestEnvironmentForUnitTests();
-#endif
+  cc::TestWebKitPlatform platform;
+  MessageLoop message_loop;
+  WebKit::Platform::initialize(&platform);
   int result = testSuite.Run();
-#if defined(USE_LIBCC_FOR_COMPOSITOR)
-  webkit_support::TearDownTestEnvironment();
-#endif
 
   return result;
 }

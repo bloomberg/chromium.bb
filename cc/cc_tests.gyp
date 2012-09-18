@@ -131,6 +131,8 @@
           ],
           'sources': [
             '<@(cc_tests_support_files)',
+            'test/test_webkit_platform.cc',
+            'test/test_webkit_platform.h',
           ],
         },
       ],

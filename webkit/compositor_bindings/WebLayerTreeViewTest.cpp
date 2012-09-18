@@ -102,6 +102,7 @@ public:
     CancelableTaskWrapper(PassOwnPtr<WebThread::Task> task)
         : m_task(task)
     {
+        turnOffVerifier();
     }
 
     void cancel()

@@ -8,6 +8,7 @@ skip_child_includes = [
 include_rules = [
   # For bridge/c/c_utility.h in npruntime_util.cc
   "+bridge",
+  "+cc",
   "+grit",  # For generated headers
   "+skia",
   "+third_party/angle",

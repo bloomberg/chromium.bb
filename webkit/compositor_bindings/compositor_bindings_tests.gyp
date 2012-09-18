@@ -39,7 +39,7 @@
         'test/run_all_unittests.cc',
       ],
       'conditions': [
-        ['use_libcc_for_compositor==1 and component!="shared_library"', {
+        ['use_libcc_for_compositor==1', {
           'defines': [
             'USE_LIBCC_FOR_COMPOSITOR',
           ],
@@ -47,9 +47,7 @@
             '../../cc/cc.gyp:cc',
             '../../cc/cc_tests.gyp:cc_test_support',
             '../../skia/skia.gyp:skia',
-            '../../third_party/WebKit/Source/Platform/Platform.gyp/Platform.gyp:webkit_platform',
             '../../third_party/WebKit/Source/WTF/WTF.gyp/WTF.gyp:wtf',
-            '../../webkit/support/webkit_support.gyp:webkit_support',
             'compositor_bindings.gyp:webkit_compositor_bindings',
           ],
           'include_dirs': [
@@ -58,6 +56,7 @@
             '<(DEPTH)/cc',
             '<(DEPTH)/cc/stubs',
             '<(DEPTH)/cc/test',
+            '../../third_party/WebKit/Source/Platform/chromium'
           ],
           'sources': [
             '<@(webkit_compositor_bindings_tests_sources)',
