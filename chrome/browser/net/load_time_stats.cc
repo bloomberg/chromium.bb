@@ -11,7 +11,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -255,9 +254,12 @@ class LoadTimeStats::URLRequestStats {
   base::TimeDelta status_times_[REQUEST_STATUS_MAX];
 };
 
-LoadTimeStatsTabHelper::LoadTimeStatsTabHelper(TabContents* tab)
-    : content::WebContentsObserver(tab->web_contents()) {
-  is_otr_profile_ = tab->profile()->IsOffTheRecord();
+int LoadTimeStatsTabHelper::kUserDataKey;
+
+LoadTimeStatsTabHelper::LoadTimeStatsTabHelper(
+    content::WebContents* web_contents)
+    : content::WebContentsObserver(web_contents) {
+  is_otr_profile_ = web_contents->GetBrowserContext()->IsOffTheRecord();
 }
 
 LoadTimeStatsTabHelper::~LoadTimeStatsTabHelper() {

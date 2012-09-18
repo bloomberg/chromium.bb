@@ -128,6 +128,7 @@ TabContents::TabContents(WebContents* contents)
   }
   blocked_content_tab_helper_.reset(new BlockedContentTabHelper(this));
   bookmark_tab_helper_.reset(new BookmarkTabHelper(this));
+  chrome_browser_net::LoadTimeStatsTabHelper::CreateForWebContents(contents);
   constrained_window_tab_helper_.reset(new ConstrainedWindowTabHelper(this));
   content_settings_.reset(new TabSpecificContentSettings(contents));
   core_tab_helper_.reset(new CoreTabHelper(contents));
@@ -137,8 +138,6 @@ TabContents::TabContents(WebContents* contents)
   history_tab_helper_.reset(new HistoryTabHelper(contents));
   hung_plugin_tab_helper_.reset(new HungPluginTabHelper(contents));
   infobar_tab_helper_.reset(new InfoBarTabHelper(contents));
-  load_time_stats_tab_helper_.reset(
-      new chrome_browser_net::LoadTimeStatsTabHelper(this));
   MetroPinTabHelper::CreateForWebContents(contents);
   password_manager_delegate_.reset(new PasswordManagerDelegateImpl(this));
   password_manager_.reset(

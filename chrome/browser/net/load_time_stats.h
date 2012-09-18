@@ -15,10 +15,9 @@
 #include "base/message_loop.h"
 #include "base/time.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
+#include "chrome/browser/tab_contents/web_contents_user_data.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "net/base/network_delegate.h"
-
-class TabContents;
 
 namespace base {
 class Histogram;
@@ -118,12 +117,12 @@ class LoadTimeStats {
   DISALLOW_COPY_AND_ASSIGN(LoadTimeStats);
 };
 
-// A WebContentsObserver watching all tabs, notifying LoadTimeStats
-// whenever the spinner starts or stops for a given tab, and when a renderer
-// is no longer used.
-class LoadTimeStatsTabHelper : public content::WebContentsObserver {
+// A WebContentsObserver watching a tab, notifying LoadTimeStats whenever the
+// spinner starts or stops for it, and whenever a renderer is no longer used.
+class LoadTimeStatsTabHelper
+    : public content::WebContentsObserver,
+      public WebContentsUserData<LoadTimeStatsTabHelper> {
  public:
-  explicit LoadTimeStatsTabHelper(TabContents* tab);
   virtual ~LoadTimeStatsTabHelper();
 
   // content::WebContentsObserver implementation
@@ -137,10 +136,14 @@ class LoadTimeStatsTabHelper : public content::WebContentsObserver {
       content::RenderViewHost* render_view_host) OVERRIDE;
 
  private:
+  explicit LoadTimeStatsTabHelper(content::WebContents* web_contents);
+  static int kUserDataKey;
+  friend class WebContentsUserData<LoadTimeStatsTabHelper>;
+
   // Calls into LoadTimeStats to notify that a reportable event has occurred
   // for the tab being observed.
   void NotifyLoadTimeStats(LoadTimeStats::TabEvent event,
-                        content::RenderViewHost* render_view_host);
+                           content::RenderViewHost* render_view_host);
 
   bool is_otr_profile_;
 
