@@ -72,10 +72,6 @@ class ZoomController;
 class OneClickSigninHelper;
 #endif
 
-namespace android_webview {
-class AwBrowserDependencyFactoryImpl;
-}
-
 namespace browser_sync {
 class SyncedTabDelegate;
 }
@@ -141,7 +137,6 @@ class TabContents : public content::WebContentsObserver {
     // more code to construct instances. Explicitly befriend those who currently
     // do so.
 
-    friend class android_webview::AwBrowserDependencyFactoryImpl;
     friend class BasePanelBrowserTest;
     friend class Browser;
     friend class BrowserCommandsTabContentsCreator;
