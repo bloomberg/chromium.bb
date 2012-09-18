@@ -417,94 +417,6 @@
    fun:NetTestSuite::Initialize
 }
 {
-   bug_46571_a
-   Heapcheck:Leak
-   fun:WTF::fastMalloc
-   fun:WebCore::StringImpl::createUninitialized
-   fun:WebCore::String::createUninitialized
-   fun:WebCore::StringTraits::fromV8String
-   fun:WebCore::v8StringToWebCoreString
-   fun:WebCore::v8StringToWebCoreString
-   fun:WebCore::v8ValueToWebCoreString
-   fun:WebCore::toWebCoreString
-   fun:WebCore::ScriptValue::getString
-   fun:WebKit::WebFrameImpl::loadJavaScriptURL
-   fun:WebKit::WebFrameImpl::loadRequest
-   fun:TestShell::Navigate
-}
-{
-   bug_46571_b
-   Heapcheck:Leak
-   fun:WebCore::makeExternalString
-   fun:WebCore::v8ExternalString
-   fun:WebCore::V8Proxy::evaluate
-   fun:WebCore::ScriptController::evaluate
-   fun:WebCore::ScriptController::executeScript
-   fun:WebCore::ScriptController::executeScript
-   fun:WebKit::WebFrameImpl::loadJavaScriptURL
-   fun:WebKit::WebFrameImpl::loadRequest
-   fun:TestShell::Navigate
-}
-{
-   bug_46571_c
-   Heapcheck:Leak
-   fun:WebCore::makeExternalString
-   fun:WebCore::v8ExternalString
-   fun:WebCore::v8String
-   fun:WebCore::ScriptController::bindToWindowObject
-   fun:WebKit::WebFrameImpl::bindToWindowObject
-   fun:CppBoundClass::BindToJavascript
-   fun:TestShell::BindJSObjectsToWindow
-   fun:TestWebViewDelegate::didClearWindowObject
-   fun:WebKit::FrameLoaderClientImpl::dispatchDidClearWindowObjectInWorld
-   fun:WebCore::FrameLoader::dispatchDidClearWindowObjectInWorld
-   fun:WebCore::V8DOMWindowShell::initContextIfNeeded
-   fun:WebCore::V8Proxy::mainWorldContext
-   fun:WebCore::V8Proxy::mainWorldContext
-   fun:WebCore::ScriptController::bindToWindowObject
-   fun:WebKit::WebFrameImpl::bindToWindowObject
-   fun:CppBoundClass::BindToJavascript
-   fun:AccessibilityController::BindToJavascript
-   fun:TestShell::BindJSObjectsToWindow
-}
-{
-   bug_46571_d
-   Heapcheck:Leak
-   fun:WebCore::makeExternalString
-   fun:WebCore::v8ExternalString
-   fun:WebCore::v8String
-   fun:WebCore::ScriptController::bindToWindowObject
-   fun:WebKit::WebFrameImpl::bindToWindowObject
-   fun:CppBoundClass::BindToJavascript
-   fun:AccessibilityController::BindToJavascript
-   fun:TestShell::BindJSObjectsToWindow
-   fun:TestWebViewDelegate::didClearWindowObject
-   fun:WebKit::FrameLoaderClientImpl::dispatchDidClearWindowObjectInWorld
-   fun:WebCore::FrameLoader::dispatchDidClearWindowObjectInWorld
-   fun:WebCore::V8DOMWindowShell::initContextIfNeeded
-   fun:WebCore::V8Proxy::mainWorldContext
-   fun:WebCore::V8Proxy::mainWorldContext
-   fun:WebCore::ScriptController::bindToWindowObject
-   fun:WebKit::WebFrameImpl::bindToWindowObject
-   fun:CppBoundClass::BindToJavascript
-   fun:AccessibilityController::BindToJavascript
-   fun:TestShell::BindJSObjectsToWindow
-}
-# "*~TestShell" means "~TestShell" and "TestShell::~TestShell".
-{
-   bug_46571_e
-   Heapcheck:Leak
-   fun:WebCore::makeExternalString
-   fun:WebCore::v8ExternalString
-   fun:WebCore::V8Proxy::evaluate
-   fun:WebCore::ScriptController::collectGarbage
-   fun:WebKit::WebFrameImpl::collectGarbage
-   fun:TestShell::CallJSGC
-   fun:*~TestShell
-   fun:::MainWindowDestroyed
-   fun:g_closure_invoke
-}
-{
    bug_46678_a
    Heapcheck:Leak
    fun:__gnu_cxx::new_allocator::allocate
@@ -1603,4 +1515,18 @@
    ...
    fun:ASCIIToUTF16
    fun:PluginPrefsTest_UnifiedPepperFlashState_Test::TestBody
+}
+{
+   bug_150648
+   Heapcheck:Leak
+   fun:WTF::fastMalloc
+   fun:WTF::StringImpl::createUninitialized
+   fun:WTF::StringImpl::create
+   fun:WebKit::WebString::assign
+   fun:WebKit::WebString::WebString
+   fun:webkit_glue::CppBoundClass::BindToJavascript
+   fun:::TestWebFrameClient::didClearWindowObject
+   fun:WebKit::FrameLoaderClientImpl::dispatchDidClearWindowObjectInWorld
+   fun:WebCore::FrameLoader::dispatchDidClearWindowObjectInWorld
+   fun:WebCore::V8DOMWindowShell::initializeIfNeeded
 }
