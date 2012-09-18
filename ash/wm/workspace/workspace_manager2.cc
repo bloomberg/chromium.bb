@@ -510,6 +510,8 @@ void WorkspaceManager2::OnWorkspaceWindowShowStateChanged(
     Window* child,
     ui::WindowShowState last_show_state,
     ui::Layer* old_layer) {
+  // |child| better still be in |workspace| else things have gone wrong.
+  DCHECK_EQ(workspace, child->GetProperty(kWorkspaceKey));
   if (wm::IsWindowMinimized(child)) {
     if (workspace->ShouldMoveToPending())
       MoveWorkspaceToPendingOrDelete(workspace, NULL, ANIMATE_NEW);
@@ -544,14 +546,20 @@ void WorkspaceManager2::OnWorkspaceWindowShowStateChanged(
       ReparentWindow(child, new_workspace->window(), NULL);
     }
     if (is_active && new_workspace) {
-      DCHECK(old_layer);
-      switch_duration_ =
-          GetCrossFadeDuration(old_layer->bounds(), child->bounds());
-      SetActiveWorkspace(new_workspace, ANIMATE_NONE);
-      switch_duration_ = base::TimeDelta();
-      CrossFadeWindowBetweenWorkspaces(
-          workspace ? workspace->window() : NULL, new_workspace->window(),
-          child, old_layer);
+      // |old_layer| may be NULL if as part of processing
+      // WorkspaceLayoutManager2::OnWindowPropertyChanged() the window is made
+      // active.
+      if (old_layer) {
+        switch_duration_ =
+            GetCrossFadeDuration(old_layer->bounds(), child->bounds());
+        SetActiveWorkspace(new_workspace, ANIMATE_NONE);
+        switch_duration_ = base::TimeDelta();
+        CrossFadeWindowBetweenWorkspaces(
+            workspace ? workspace->window() : NULL, new_workspace->window(),
+            child, old_layer);
+      } else {
+        SetActiveWorkspace(new_workspace, ANIMATE_NONE);
+      }
     } else {
       if (last_show_state == ui::SHOW_STATE_MINIMIZED)
         SetUnminimizingWorkspace(new_workspace ? new_workspace : workspace);

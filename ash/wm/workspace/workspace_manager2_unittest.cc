@@ -12,6 +12,7 @@
 #include "ash/wm/activation_controller.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/shelf_layout_manager.h"
+#include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/workspace2.h"
 #include "ash/wm/workspace_controller_test_helper.h"
@@ -20,6 +21,8 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
+#include "ui/aura/test/test_window_delegate.h"
+#include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/layer.h"
@@ -952,6 +955,63 @@ TEST_F(WorkspaceManager2Test, FocusOnFullscreenInSeparateWorkspace) {
   EXPECT_TRUE(w2->IsVisible());
   EXPECT_TRUE(wm::IsActiveWindow(w2.get()));
   EXPECT_FALSE(w1->IsVisible());
+}
+
+namespace {
+
+// WindowDelegate used by DontCrashOnChangeAndActivate.
+class DontCrashOnChangeAndActivateDelegate
+    : public aura::test::TestWindowDelegate {
+ public:
+  DontCrashOnChangeAndActivateDelegate() : window_(NULL) {}
+
+  void set_window(aura::Window* window) { window_ = window; }
+
+  // WindowDelegate overrides:
+  virtual void OnBoundsChanged(const gfx::Rect& old_bounds,
+                               const gfx::Rect& new_bounds) OVERRIDE {
+    if (window_) {
+      wm::ActivateWindow(window_);
+      window_ = NULL;
+    }
+  }
+
+ private:
+  aura::Window* window_;
+
+  DISALLOW_COPY_AND_ASSIGN(DontCrashOnChangeAndActivateDelegate);
+};
+
+}  // namespace
+
+// Exercises possible crash in W2. Here's the sequence:
+// . minimize a maximized window.
+// . remove the window (which happens when switching displays).
+// . add the window back.
+// . show the window and during the bounds change activate it.
+TEST_F(WorkspaceManager2Test, DontCrashOnChangeAndActivate) {
+  // Force the shelf
+  ShelfLayoutManager* shelf = Shell::GetInstance()->shelf();
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
+
+  DontCrashOnChangeAndActivateDelegate delegate;
+  scoped_ptr<Window> w1(
+      CreateTestWindowWithDelegate(&delegate, 1000, gfx::Rect(10, 11, 250, 251),
+                                   NULL));
+  w1->Show();
+  wm::ActivateWindow(w1.get());
+  wm::MaximizeWindow(w1.get());
+  wm::MinimizeWindow(w1.get());
+
+  w1->parent()->RemoveChild(w1.get());
+
+  // Do this so that when we Show() the window a resize occurs and we make the
+  // window active.
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+
+  w1->SetParent(NULL);
+  delegate.set_window(w1.get());
+  w1->Show();
 }
 
 }  // namespace internal
