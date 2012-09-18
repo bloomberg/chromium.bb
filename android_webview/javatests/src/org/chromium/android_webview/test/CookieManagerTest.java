@@ -14,7 +14,8 @@ import org.chromium.base.test.Feature;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.Criteria;
 import org.chromium.content.browser.test.CriteriaHelper;
-import org.chromium.content.browser.test.TestContentViewClient.OnEvaluateJavaScriptResultHelper;
+import org.chromium.content.browser.test.
+        TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper;
 
 import java.util.ArrayList;
 import java.util.Arrays;

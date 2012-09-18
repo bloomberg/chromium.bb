@@ -4,10 +4,10 @@
 
 package org.chromium.android_webview.test;
 
-import org.chromium.content.browser.test.TestContentViewClient.OnPageStartedHelper;
-import org.chromium.content.browser.test.TestContentViewClient.OnPageFinishedHelper;
-import org.chromium.content.browser.test.TestContentViewClient.OnReceivedErrorHelper;
-import org.chromium.content.browser.test.TestContentViewClient.OnEvaluateJavaScriptResultHelper;
+import org.chromium.content.browser.test.TestCallbackHelperContainer.OnPageStartedHelper;
+import org.chromium.content.browser.test.TestCallbackHelperContainer.OnPageFinishedHelper;
+import org.chromium.content.browser.test.TestCallbackHelperContainer.OnReceivedErrorHelper;
+import org.chromium.content.browser.test.TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper;
 
 class TestAwContentsClient extends NullContentsClient {
     private OnPageStartedHelper mOnPageStartedHelper;

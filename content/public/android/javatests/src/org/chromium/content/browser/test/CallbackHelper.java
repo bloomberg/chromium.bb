@@ -11,6 +11,8 @@ import java.util.concurrent.TimeoutException;
  * A helper class for listening to callbacks.
  */
 public class CallbackHelper {
+    protected static int WAIT_TIMEOUT_SECONDS = 5;
+
     private final Object mLock = new Object();
     protected int mCallCount = 0;
 
@@ -73,7 +75,7 @@ public class CallbackHelper {
     public void waitForCallback(int currentCallCount, int numberOfCallsToWaitFor)
             throws InterruptedException, TimeoutException {
         waitForCallback(currentCallCount, numberOfCallsToWaitFor,
-                TestContentViewClient.WAIT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+                WAIT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
     }
 
     public void waitForCallback(int currentCallCount)
