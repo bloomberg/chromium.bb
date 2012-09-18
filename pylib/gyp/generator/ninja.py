@@ -1421,19 +1421,17 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
               '$cflags_pch_cc -c $in -o $out'),
       depfile='$out.d')
   else:
-    # TODO(scottmg): Requires fork of ninja for dependency and linking
-    # support: https://github.com/sgraham/ninja
     # Template for compile commands mostly shared between compiling files
     # and generating PCH. In the case of PCH, the "output" is specified by /Fp
     # rather than /Fo (for object files), but we still need to specify an /Fo
     # when compiling PCH.
-    cc_template = ('ninja-deplist-helper -r . -q -f cl -o $out.dl -e $arch '
-                   '--command '
+    cc_template = ('ninja -t msvc -r . -o $out -e $arch '
+                   '-- '
                    '$cc /nologo /showIncludes /FC '
                    '@$out.rsp '
                    '$cflags_pch_c /c $in %(outspec)s /Fd$pdbname ')
-    cxx_template = ('ninja-deplist-helper -r . -q -f cl -o $out.dl -e $arch '
-                    '--command '
+    cxx_template = ('ninja -t msvc -r . -o $out -e $arch '
+                    '-- '
                     '$cxx /nologo /showIncludes /FC '
                     '@$out.rsp '
                     '$cflags_pch_cc /c $in %(outspec)s $pchobj /Fd$pdbname ')
@@ -1441,28 +1439,28 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
       'cc',
       description='CC $out',
       command=cc_template % {'outspec': '/Fo$out'},
-      depfile='$out.dl',
+      depfile='$out.d',
       rspfile='$out.rsp',
       rspfile_content='$defines $includes $cflags $cflags_c')
     master_ninja.rule(
       'cc_pch',
       description='CC PCH $out',
       command=cc_template % {'outspec': '/Fp$out /Fo$out.obj'},
-      depfile='$out.dl',
+      depfile='$out.d',
       rspfile='$out.rsp',
       rspfile_content='$defines $includes $cflags $cflags_c')
     master_ninja.rule(
       'cxx',
       description='CXX $out',
       command=cxx_template % {'outspec': '/Fo$out'},
-      depfile='$out.dl',
+      depfile='$out.d',
       rspfile='$out.rsp',
       rspfile_content='$defines $includes $cflags $cflags_cc')
     master_ninja.rule(
       'cxx_pch',
       description='CXX PCH $out',
       command=cxx_template % {'outspec': '/Fp$out /Fo$out.obj'},
-      depfile='$out.dl',
+      depfile='$out.d',
       rspfile='$out.rsp',
       rspfile_content='$defines $includes $cflags $cflags_cc')
     master_ninja.rule(

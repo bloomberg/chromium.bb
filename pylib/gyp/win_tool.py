@@ -179,16 +179,6 @@ class WinTool(object):
         print line
     return popen.returncode
 
-  def ExecClWrapper(self, arch, depname, *args):
-    """Runs cl.exe and filters output through ninja-deplist-helper to get
-    dependendency information which is stored in |depname|."""
-    env = self._GetEnv(arch)
-    args = ' '.join(args) + \
-        '| ninja-deplist-helper -r . -q -f cl -o ' + depname + '"'
-    popen = subprocess.Popen(args, shell=True, env=env)
-    popen.wait()
-    return popen.returncode
-
   def ExecActionWrapper(self, arch, rspfile, *dir):
     """Runs an action command line from a response file using the environment
     for |arch|. If |dir| is supplied, use that as the working directory."""
