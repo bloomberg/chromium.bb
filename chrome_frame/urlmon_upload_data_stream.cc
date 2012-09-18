@@ -11,7 +11,7 @@ void UrlmonUploadDataStream::Initialize(net::UploadData* upload_data) {
   upload_data_ = upload_data;
   request_body_stream_.reset(
       new net::UploadDataStream(upload_data));
-  const int result = request_body_stream_->Init();
+  const int result = request_body_stream_->InitSync();
   DCHECK_EQ(net::OK, result);
 }
 
@@ -70,7 +70,7 @@ STDMETHODIMP UrlmonUploadDataStream::Seek(LARGE_INTEGER move, DWORD origin,
   if (origin == STREAM_SEEK_SET && move.QuadPart == 0) {
     if (request_body_stream_->position() != 0) {
       request_body_stream_.reset(new net::UploadDataStream(upload_data_));
-      const int result = request_body_stream_->Init();
+      const int result = request_body_stream_->InitSync();
       DCHECK_EQ(net::OK, result);
     }
     if (new_pos) {
