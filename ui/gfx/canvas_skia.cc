@@ -131,7 +131,7 @@ void UpdateRenderText(const gfx::Rect& rect,
                       int flags,
                       SkColor color,
                       gfx::RenderText* render_text) {
-  render_text->SetFontList(gfx::FontList(font));
+  render_text->SetFont(font);
   render_text->SetText(text);
   render_text->SetCursorEnabled(false);
 

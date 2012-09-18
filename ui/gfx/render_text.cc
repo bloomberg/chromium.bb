@@ -416,6 +416,10 @@ void RenderText::SetFontList(const FontList& font_list) {
   ResetLayout();
 }
 
+void RenderText::SetFont(const Font& font) {
+  SetFontList(FontList(font));
+}
+
 void RenderText::SetFontSize(int size) {
   font_list_ = font_list_.DeriveFontListWithSize(size);
   cached_bounds_and_offset_valid_ = false;

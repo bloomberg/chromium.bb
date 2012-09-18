@@ -81,7 +81,7 @@ NativeTextfieldViews::NativeTextfieldViews(Textfield* parent)
   GetRenderText()->SetFontList(gfx::FontList(l10n_util::GetStringUTF8(
       IDS_UI_FONT_FAMILY_CROS)));
 #else
-  GetRenderText()->SetFontList(gfx::FontList(textfield_->font()));
+  GetRenderText()->SetFont(textfield_->font());
 #endif
   // Set the default text style.
   gfx::StyleRange default_style;
@@ -435,7 +435,7 @@ void NativeTextfieldViews::UpdateFont() {
   // only changes the font size, not the font family names.
   GetRenderText()->SetFontSize(textfield_->font().GetFontSize());
 #else
-  GetRenderText()->SetFontList(gfx::FontList(textfield_->font()));
+  GetRenderText()->SetFont(textfield_->font());
 #endif
   OnCaretBoundsChanged();
 }

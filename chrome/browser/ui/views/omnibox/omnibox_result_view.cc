@@ -396,8 +396,7 @@ int OmniboxResultView::DrawString(
 
       render_texts.push_back(gfx::RenderText::CreateInstance());
       current_data->render_text = render_texts.back();
-      current_data->render_text->SetFontList(
-          gfx::FontList(*current_data->font));
+      current_data->render_text->SetFont(*current_data->font);
       current_data->render_text->SetText(current_data->text);
 
       gfx::StyleRange style_range;
@@ -532,7 +531,7 @@ void OmniboxResultView::Elide(Runs* runs, int remaining_width) const {
             (on_first_classification ||
              (prior_classification->font == &normal_font_))) {
           j->font = &normal_font_;
-          j->render_text->SetFontList(gfx::FontList(*j->font));
+          j->render_text->SetFont(*j->font);
         }
 
         j->render_text->SetText(elided_text);

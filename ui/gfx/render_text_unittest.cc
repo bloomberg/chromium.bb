@@ -1002,7 +1002,7 @@ TEST_F(RenderTextTest, StringSizeSanity) {
 TEST_F(RenderTextTest, StringSizeEmptyString) {
   const Font font;
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
-  render_text->SetFontList(FontList(font));
+  render_text->SetFont(font);
 
   render_text->SetText(string16());
   EXPECT_EQ(font.GetHeight(), render_text->GetStringSize().height());
@@ -1012,6 +1012,13 @@ TEST_F(RenderTextTest, StringSizeEmptyString) {
   EXPECT_EQ(font.GetHeight(), render_text->GetStringSize().height());
 }
 #endif  // !defined(OS_MACOSX)
+
+TEST_F(RenderTextTest, SetFont) {
+  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  render_text->SetFont(Font("Arial", 12));
+  EXPECT_EQ("Arial", render_text->GetFont().GetFontName());
+  EXPECT_EQ(12, render_text->GetFont().GetFontSize());
+}
 
 TEST_F(RenderTextTest, StringSizeBoldWidth) {
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
@@ -1056,14 +1063,14 @@ TEST_F(RenderTextTest, StringSizeHeight) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {
     scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
-    render_text->SetFontList(FontList(default_font));
+    render_text->SetFont(default_font);
     render_text->SetText(cases[i].text);
 
     const int height1 = render_text->GetStringSize().height();
     EXPECT_GT(height1, 0);
 
     // Check that setting the larger font increases the height.
-    render_text->SetFontList(FontList(larger_font));
+    render_text->SetFont(larger_font);
     const int height2 = render_text->GetStringSize().height();
     EXPECT_GT(height2, height1);
   }
