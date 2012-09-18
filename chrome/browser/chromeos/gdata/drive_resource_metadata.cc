@@ -229,6 +229,9 @@ void DriveResourceMetadata::InitializeRootEntry(const std::string& root_id) {
 }
 
 void DriveResourceMetadata::ClearRoot() {
+  if (!root_.get())
+    return;
+
   // Note that children have a reference to root_,
   // so we need to delete them here.
   root_->RemoveChildren();
@@ -716,7 +719,11 @@ void DriveResourceMetadata::InitResourceMap(
     }
   }
 
-  DCHECK(root_.get());
+  if (!root_.get()) {
+    // TODO(achuith): Initialize |root_| before return.
+    callback.Run(DRIVE_FILE_ERROR_FAILED);
+    return;
+  }
   DCHECK_EQ(resource_map.size(), resource_map_.size());
   DCHECK_EQ(resource_map.size(), serialized_resources->size());
 
