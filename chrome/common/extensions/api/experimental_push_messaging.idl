@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-[nodoc] namespace experimental.pushMessaging{
+namespace experimental.pushMessaging{
+
   dictionary Message {
     // The subchannel the message was sent on.
     long subchannelId;
@@ -19,9 +20,10 @@
   callback ChannelIdCallback = void (ChannelIdResult channelId);
 
   interface Functions {
-    // Retrieves the channel ID associated with this extension. Typically, an
-    // extension will want to send this value to its application server so the
-    // server can use it to trigger push messages back to the extension.
+    // Retrieves the channel ID associated with this app or extension.
+    // Typically an app or extension will want to send this value
+    // to its application server so the server can use it
+    // to trigger push messages back to the app or extension.
     static void getChannelId(ChannelIdCallback callback);
   };
 
