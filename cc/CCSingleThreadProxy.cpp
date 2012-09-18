@@ -187,14 +187,7 @@ void CCSingleThreadProxy::doCommit(CCTextureUpdateQueue& queue)
 
         m_layerTreeHost->beginCommitOnImplThread(m_layerTreeHostImpl.get());
 
-        // CCTextureUpdateController::updateTextures is non-blocking and will
-        // return without updating any textures if the uploader is busy. This
-        // shouldn't be a problem here as the throttled uploader isn't used in
-        // single thread mode. For correctness, loop until no more updates are
-        // pending.
-        CCResourceProvider* resourceProvider = m_layerTreeHostImpl->resourceProvider();
-        while (queue.hasMoreUpdates())
-            CCTextureUpdateController::updateTextures(resourceProvider, resourceProvider->textureUploader(), &queue, maxPartialTextureUpdates());
+        CCTextureUpdateController::updateTextures(m_layerTreeHostImpl->resourceProvider(), m_layerTreeHostImpl->resourceProvider()->textureUploader(), &queue);
 
         m_layerTreeHost->finishCommitOnImplThread(m_layerTreeHostImpl.get());
 

@@ -96,10 +96,10 @@ public:
         DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
         textureManager->clearAllMemory(resourceProvider);
     }
-    void updateTextures(int count = 500)
+    void updateTextures()
     {
         DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
-        CCTextureUpdateController::updateTextures(m_resourceProvider.get(), &m_uploader, &m_queue, count);
+        CCTextureUpdateController::updateTextures(m_resourceProvider.get(), &m_uploader, &m_queue);
     }
     void layerPushPropertiesTo(FakeTiledLayerChromium* layer, FakeCCTiledLayerImpl* layerImpl)
     {
@@ -803,12 +803,10 @@ TEST_F(TiledLayerChromiumTest, partialUpdates)
     ccLayerTreeHost->updateLayers(m_queue, std::numeric_limits<size_t>::max());
     {
         ScopedFakeCCTiledLayerImpl layerImpl(1);
-        updateTextures(4);
-        EXPECT_EQ(4, layer->fakeLayerTextureUpdater()->updateCount());
-        EXPECT_TRUE(m_queue.hasMoreUpdates());
-        layer->fakeLayerTextureUpdater()->clearUpdateCount();
-        updateTextures(4);
-        EXPECT_EQ(2, layer->fakeLayerTextureUpdater()->updateCount());
+        EXPECT_EQ(6, m_queue.fullUploadSize());
+        EXPECT_EQ(0, m_queue.partialUploadSize());
+        updateTextures();
+        EXPECT_EQ(6, layer->fakeLayerTextureUpdater()->updateCount());
         EXPECT_FALSE(m_queue.hasMoreUpdates());
         layer->fakeLayerTextureUpdater()->clearUpdateCount();
         layerPushPropertiesTo(layer.get(), layerImpl.get());
@@ -820,12 +818,10 @@ TEST_F(TiledLayerChromiumTest, partialUpdates)
     ccLayerTreeHost->updateLayers(m_queue, std::numeric_limits<size_t>::max());
     {
         ScopedFakeCCTiledLayerImpl layerImpl(1);
-        updateTextures(4);
-        EXPECT_EQ(3, layer->fakeLayerTextureUpdater()->updateCount());
-        EXPECT_TRUE(m_queue.hasMoreUpdates());
-        layer->fakeLayerTextureUpdater()->clearUpdateCount();
-        updateTextures(4);
-        EXPECT_EQ(3, layer->fakeLayerTextureUpdater()->updateCount());
+        EXPECT_EQ(3, m_queue.fullUploadSize());
+        EXPECT_EQ(3, m_queue.partialUploadSize());
+        updateTextures();
+        EXPECT_EQ(6, layer->fakeLayerTextureUpdater()->updateCount());
         EXPECT_FALSE(m_queue.hasMoreUpdates());
         layer->fakeLayerTextureUpdater()->clearUpdateCount();
         layerPushPropertiesTo(layer.get(), layerImpl.get());
@@ -837,12 +833,10 @@ TEST_F(TiledLayerChromiumTest, partialUpdates)
     {
         ScopedFakeCCTiledLayerImpl layerImpl(1);
         ccLayerTreeHost->updateLayers(m_queue, std::numeric_limits<size_t>::max());
-        updateTextures(4);
-        EXPECT_EQ(2, layer->fakeLayerTextureUpdater()->updateCount());
-        EXPECT_TRUE(m_queue.hasMoreUpdates());
-        layer->fakeLayerTextureUpdater()->clearUpdateCount();
-        updateTextures(4);
-        EXPECT_EQ(4, layer->fakeLayerTextureUpdater()->updateCount());
+        EXPECT_EQ(2, m_queue.fullUploadSize());
+        EXPECT_EQ(4, m_queue.partialUploadSize());
+        updateTextures();
+        EXPECT_EQ(6, layer->fakeLayerTextureUpdater()->updateCount());
         EXPECT_FALSE(m_queue.hasMoreUpdates());
         layer->fakeLayerTextureUpdater()->clearUpdateCount();
         layerPushPropertiesTo(layer.get(), layerImpl.get());
@@ -862,12 +856,10 @@ TEST_F(TiledLayerChromiumTest, partialUpdates)
     {
         ScopedFakeCCTiledLayerImpl layerImpl(1);
         ccLayerTreeHost->updateLayers(m_queue, std::numeric_limits<size_t>::max());
-        updateTextures(4);
-        EXPECT_EQ(4, layer->fakeLayerTextureUpdater()->updateCount());
-        EXPECT_TRUE(m_queue.hasMoreUpdates());
-        layer->fakeLayerTextureUpdater()->clearUpdateCount();
-        updateTextures(4);
-        EXPECT_EQ(2, layer->fakeLayerTextureUpdater()->updateCount());
+        EXPECT_EQ(6, m_queue.fullUploadSize());
+        EXPECT_EQ(0, m_queue.partialUploadSize());
+        updateTextures();
+        EXPECT_EQ(6, layer->fakeLayerTextureUpdater()->updateCount());
         EXPECT_FALSE(m_queue.hasMoreUpdates());
         layer->fakeLayerTextureUpdater()->clearUpdateCount();
         layerPushPropertiesTo(layer.get(), layerImpl.get());
@@ -879,7 +871,9 @@ TEST_F(TiledLayerChromiumTest, partialUpdates)
     {
         ScopedFakeCCTiledLayerImpl layerImpl(1);
         ccLayerTreeHost->updateLayers(m_queue, std::numeric_limits<size_t>::max());
-        updateTextures(4);
+        EXPECT_EQ(0, m_queue.fullUploadSize());
+        EXPECT_EQ(4, m_queue.partialUploadSize());
+        updateTextures();
         EXPECT_EQ(4, layer->fakeLayerTextureUpdater()->updateCount());
         EXPECT_FALSE(m_queue.hasMoreUpdates());
         layer->fakeLayerTextureUpdater()->clearUpdateCount();
@@ -1350,7 +1344,7 @@ TEST_F(TiledLayerChromiumTest, dontAllocateContentsWhenTargetSurfaceCantBeAlloca
     child2->invalidateContentRect(child2Rect);
     ccLayerTreeHost->updateLayers(m_queue, std::numeric_limits<size_t>::max());
     {
-        updateTextures(1000);
+        updateTextures();
         EXPECT_EQ(6, root->fakeLayerTextureUpdater()->updateCount());
         EXPECT_EQ(3, child->fakeLayerTextureUpdater()->updateCount());
         EXPECT_EQ(3, child2->fakeLayerTextureUpdater()->updateCount());
@@ -1384,7 +1378,7 @@ TEST_F(TiledLayerChromiumTest, dontAllocateContentsWhenTargetSurfaceCantBeAlloca
     child2->invalidateContentRect(child2Rect);
     ccLayerTreeHost->updateLayers(m_queue, (3 * 2 + 3 * 1) * (100 * 100) * 4);
     {
-        updateTextures(1000);
+        updateTextures();
         EXPECT_EQ(6, root->fakeLayerTextureUpdater()->updateCount());
         EXPECT_EQ(0, child->fakeLayerTextureUpdater()->updateCount());
         EXPECT_EQ(0, child2->fakeLayerTextureUpdater()->updateCount());
@@ -1419,7 +1413,7 @@ TEST_F(TiledLayerChromiumTest, dontAllocateContentsWhenTargetSurfaceCantBeAlloca
     child2->invalidateContentRect(child2Rect);
     ccLayerTreeHost->updateLayers(m_queue, (3 * 1) * (100 * 100) * 4);
     {
-        updateTextures(1000);
+        updateTextures();
         EXPECT_EQ(0, root->fakeLayerTextureUpdater()->updateCount());
         EXPECT_EQ(0, child->fakeLayerTextureUpdater()->updateCount());
         EXPECT_EQ(0, child2->fakeLayerTextureUpdater()->updateCount());

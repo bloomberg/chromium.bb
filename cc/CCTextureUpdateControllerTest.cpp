@@ -243,10 +243,9 @@ TEST_F(CCTextureUpdateControllerTest, ZeroUploads)
 {
     appendFullUploadsToUpdateQueue(0);
     appendPartialUploadsToUpdateQueue(0);
-    CCTextureUpdateController::updateTextures(m_resourceProvider.get(), &m_uploader, m_queue.get(), m_totalUploadCountExpected);
+    DebugScopedSetImplThread implThread;
+    CCTextureUpdateController::updateTextures(m_resourceProvider.get(), &m_uploader, m_queue.get());
 
-    EXPECT_EQ(0, m_numBeginUploads);
-    EXPECT_EQ(0, m_numEndUploads);
     EXPECT_EQ(0, m_numPreviousFlushes);
     EXPECT_EQ(0, m_numPreviousUploads);
 }
@@ -258,10 +257,8 @@ TEST_F(CCTextureUpdateControllerTest, OneFullUpload)
     appendFullUploadsToUpdateQueue(1);
     appendPartialUploadsToUpdateQueue(0);
     DebugScopedSetImplThread implThread;
-    CCTextureUpdateController::updateTextures(m_resourceProvider.get(), &m_uploader, m_queue.get(), m_totalUploadCountExpected);
+    CCTextureUpdateController::updateTextures(m_resourceProvider.get(), &m_uploader, m_queue.get());
 
-    EXPECT_EQ(1, m_numBeginUploads);
-    EXPECT_EQ(1, m_numEndUploads);
     EXPECT_EQ(1, m_numPreviousFlushes);
     EXPECT_EQ(1, m_numPreviousUploads);
 }
@@ -271,10 +268,8 @@ TEST_F(CCTextureUpdateControllerTest, OnePartialUpload)
     appendFullUploadsToUpdateQueue(0);
     appendPartialUploadsToUpdateQueue(1);
     DebugScopedSetImplThread implThread;
-    CCTextureUpdateController::updateTextures(m_resourceProvider.get(), &m_uploader, m_queue.get(), m_totalUploadCountExpected);
+    CCTextureUpdateController::updateTextures(m_resourceProvider.get(), &m_uploader, m_queue.get());
 
-    EXPECT_EQ(1, m_numBeginUploads);
-    EXPECT_EQ(1, m_numEndUploads);
     EXPECT_EQ(1, m_numPreviousFlushes);
     EXPECT_EQ(1, m_numPreviousUploads);
 }
@@ -284,237 +279,51 @@ TEST_F(CCTextureUpdateControllerTest, OneFullOnePartialUpload)
     appendFullUploadsToUpdateQueue(1);
     appendPartialUploadsToUpdateQueue(1);
     DebugScopedSetImplThread implThread;
-    CCTextureUpdateController::updateTextures(m_resourceProvider.get(), &m_uploader, m_queue.get(), m_totalUploadCountExpected);
+    CCTextureUpdateController::updateTextures(m_resourceProvider.get(), &m_uploader, m_queue.get());
 
-    // We expect the full uploads to be followed by a flush
-    // before the partial uploads begin.
-    EXPECT_EQ(1, m_numBeginUploads);
-    EXPECT_EQ(1, m_numEndUploads);
-    EXPECT_EQ(2, m_numPreviousFlushes);
+    EXPECT_EQ(1, m_numPreviousFlushes);
     EXPECT_EQ(2, m_numPreviousUploads);
 }
 
 
-// NO REMAINDER TESTS
 // This class of tests upload a number of textures that is a multiple of the flush period.
 const int fullUploadFlushMultipler = 7;
-const int fullNoRemainderCount = fullUploadFlushMultipler * kFlushPeriodFull;
+const int fullCount = fullUploadFlushMultipler * kFlushPeriodFull;
 
 const int partialUploadFlushMultipler = 11;
-const int partialNoRemainderCount = partialUploadFlushMultipler * kFlushPeriodPartial;
+const int partialCount = partialUploadFlushMultipler * kFlushPeriodPartial;
 
-TEST_F(CCTextureUpdateControllerTest, ManyFullUploadsNoRemainder)
+TEST_F(CCTextureUpdateControllerTest, ManyFullUploads)
 {
-    appendFullUploadsToUpdateQueue(fullNoRemainderCount);
+    appendFullUploadsToUpdateQueue(fullCount);
     appendPartialUploadsToUpdateQueue(0);
     DebugScopedSetImplThread implThread;
-    CCTextureUpdateController::updateTextures(m_resourceProvider.get(), &m_uploader, m_queue.get(), m_totalUploadCountExpected);
+    CCTextureUpdateController::updateTextures(m_resourceProvider.get(), &m_uploader, m_queue.get());
 
-    EXPECT_EQ(1, m_numBeginUploads);
-    EXPECT_EQ(1, m_numEndUploads);
     EXPECT_EQ(fullUploadFlushMultipler, m_numPreviousFlushes);
-    EXPECT_EQ(fullNoRemainderCount, m_numPreviousUploads);
+    EXPECT_EQ(fullCount, m_numPreviousUploads);
 }
 
-TEST_F(CCTextureUpdateControllerTest, ManyPartialUploadsNoRemainder)
+TEST_F(CCTextureUpdateControllerTest, ManyPartialUploads)
 {
     appendFullUploadsToUpdateQueue(0);
-    appendPartialUploadsToUpdateQueue(partialNoRemainderCount);
+    appendPartialUploadsToUpdateQueue(partialCount);
     DebugScopedSetImplThread implThread;
-    CCTextureUpdateController::updateTextures(m_resourceProvider.get(), &m_uploader, m_queue.get(), m_totalUploadCountExpected);
+    CCTextureUpdateController::updateTextures(m_resourceProvider.get(), &m_uploader, m_queue.get());
 
-    EXPECT_EQ(1, m_numBeginUploads);
-    EXPECT_EQ(1, m_numEndUploads);
     EXPECT_EQ(partialUploadFlushMultipler, m_numPreviousFlushes);
-    EXPECT_EQ(partialNoRemainderCount, m_numPreviousUploads);
+    EXPECT_EQ(partialCount, m_numPreviousUploads);
 }
 
-TEST_F(CCTextureUpdateControllerTest, ManyFullManyPartialUploadsNoRemainder)
+TEST_F(CCTextureUpdateControllerTest, ManyFullManyPartialUploads)
 {
-    appendFullUploadsToUpdateQueue(fullNoRemainderCount);
-    appendPartialUploadsToUpdateQueue(partialNoRemainderCount);
+    appendFullUploadsToUpdateQueue(fullCount);
+    appendPartialUploadsToUpdateQueue(partialCount);
     DebugScopedSetImplThread implThread;
-    CCTextureUpdateController::updateTextures(m_resourceProvider.get(), &m_uploader, m_queue.get(), m_totalUploadCountExpected);
+    CCTextureUpdateController::updateTextures(m_resourceProvider.get(), &m_uploader, m_queue.get());
 
-    EXPECT_EQ(1, m_numBeginUploads);
-    EXPECT_EQ(1, m_numEndUploads);
     EXPECT_EQ(fullUploadFlushMultipler + partialUploadFlushMultipler, m_numPreviousFlushes);
-    EXPECT_EQ(fullNoRemainderCount + partialNoRemainderCount, m_numPreviousUploads);
-}
-
-
-// MIN/MAX REMAINDER TESTS
-// This class of tests mix and match uploading 1 more and 1 less texture
-// than a multiple of the flush period.
-
-const int fullMinRemainderCount = fullNoRemainderCount + 1;
-const int fullMaxRemainderCount = fullNoRemainderCount - 1;
-const int partialMinRemainderCount = partialNoRemainderCount + 1;
-const int partialMaxRemainderCount = partialNoRemainderCount - 1;
-
-TEST_F(CCTextureUpdateControllerTest, ManyFullAndPartialMinRemainder)
-{
-    appendFullUploadsToUpdateQueue(fullMinRemainderCount);
-    appendPartialUploadsToUpdateQueue(partialMinRemainderCount);
-    DebugScopedSetImplThread implThread;
-    CCTextureUpdateController::updateTextures(m_resourceProvider.get(), &m_uploader, m_queue.get(), m_totalUploadCountExpected);
-
-    EXPECT_EQ(1, m_numBeginUploads);
-    EXPECT_EQ(1, m_numEndUploads);
-    EXPECT_EQ(fullUploadFlushMultipler + partialUploadFlushMultipler + 2, m_numPreviousFlushes);
-    EXPECT_EQ(fullMinRemainderCount + partialMinRemainderCount, m_numPreviousUploads);
-}
-
-TEST_F(CCTextureUpdateControllerTest, ManyFullAndPartialUploadsMaxRemainder)
-{
-    appendFullUploadsToUpdateQueue(fullMaxRemainderCount);
-    appendPartialUploadsToUpdateQueue(partialMaxRemainderCount);
-    DebugScopedSetImplThread implThread;
-    CCTextureUpdateController::updateTextures(m_resourceProvider.get(), &m_uploader, m_queue.get(), m_totalUploadCountExpected);
-
-    EXPECT_EQ(1, m_numBeginUploads);
-    EXPECT_EQ(1, m_numEndUploads);
-    EXPECT_EQ(fullUploadFlushMultipler + partialUploadFlushMultipler, m_numPreviousFlushes);
-    EXPECT_EQ(fullMaxRemainderCount + partialMaxRemainderCount, m_numPreviousUploads);
-}
-
-TEST_F(CCTextureUpdateControllerTest, ManyFullMinRemainderManyPartialMaxRemainder)
-{
-    appendFullUploadsToUpdateQueue(fullMinRemainderCount);
-    appendPartialUploadsToUpdateQueue(partialMaxRemainderCount);
-    DebugScopedSetImplThread implThread;
-    CCTextureUpdateController::updateTextures(m_resourceProvider.get(), &m_uploader, m_queue.get(), m_totalUploadCountExpected);
-
-    EXPECT_EQ(1, m_numBeginUploads);
-    EXPECT_EQ(1, m_numEndUploads);
-    EXPECT_EQ((fullUploadFlushMultipler+1) + partialUploadFlushMultipler, m_numPreviousFlushes);
-    EXPECT_EQ(fullMinRemainderCount + partialMaxRemainderCount, m_numPreviousUploads);
-}
-
-TEST_F(CCTextureUpdateControllerTest, ManyFullMaxRemainderManyPartialMinRemainder)
-{
-    appendFullUploadsToUpdateQueue(fullMaxRemainderCount);
-    appendPartialUploadsToUpdateQueue(partialMinRemainderCount);
-    DebugScopedSetImplThread implThread;
-    CCTextureUpdateController::updateTextures(m_resourceProvider.get(), &m_uploader, m_queue.get(), m_totalUploadCountExpected);
-
-    EXPECT_EQ(1, m_numBeginUploads);
-    EXPECT_EQ(1, m_numEndUploads);
-    EXPECT_EQ(fullUploadFlushMultipler + (partialUploadFlushMultipler+1), m_numPreviousFlushes);
-    EXPECT_EQ(fullMaxRemainderCount + partialMinRemainderCount, m_numPreviousUploads);
-}
-
-
-// MULTIPLE UPDATE TESTS
-// These tests attempt to upload too many textures at once, requiring
-// multiple calls to update().
-
-int expectedFlushes(int uploads, int flushPeriod)
-{
-    return (uploads + flushPeriod - 1) / flushPeriod;
-}
-
-TEST_F(CCTextureUpdateControllerTest, TripleUpdateFinalUpdateFullAndPartial)
-{
-    const int kMaxUploadsPerUpdate = 40;
-    const int kFullUploads = 100;
-    const int kPartialUploads = 20;
-
-    int expectedPreviousFlushes = 0;
-    int expectedPreviousUploads = 0;
-
-    setMaxUploadCountPerUpdate(kMaxUploadsPerUpdate);
-    appendFullUploadsToUpdateQueue(kFullUploads);
-    appendPartialUploadsToUpdateQueue(kPartialUploads);
-
-    // First update (40 full)
-    DebugScopedSetImplThread implThread;
-    CCTextureUpdateController::updateTextures(m_resourceProvider.get(), &m_uploader, m_queue.get(), kMaxUploadsPerUpdate);
-
-    EXPECT_EQ(1, m_numBeginUploads);
-    EXPECT_EQ(1, m_numEndUploads);
-
-    expectedPreviousFlushes = expectedFlushes(kMaxUploadsPerUpdate, kFlushPeriodFull);
-    EXPECT_EQ(expectedPreviousFlushes, m_numPreviousFlushes);
-
-    expectedPreviousUploads = kMaxUploadsPerUpdate;
-    EXPECT_EQ(expectedPreviousUploads, m_numPreviousUploads);
-
-    // Second update (40 full)
-    CCTextureUpdateController::updateTextures(m_resourceProvider.get(), &m_uploader, m_queue.get(), kMaxUploadsPerUpdate);
-
-    EXPECT_EQ(2, m_numBeginUploads);
-    EXPECT_EQ(2, m_numEndUploads);
-
-    expectedPreviousFlushes = expectedFlushes(kMaxUploadsPerUpdate, kFlushPeriodFull);
-    EXPECT_EQ(expectedPreviousFlushes, m_numPreviousFlushes);
-
-    expectedPreviousUploads = kMaxUploadsPerUpdate;
-    EXPECT_EQ(expectedPreviousUploads, m_numPreviousUploads);
-
-    // Third update (20 full, 20 partial)
-    CCTextureUpdateController::updateTextures(m_resourceProvider.get(), &m_uploader, m_queue.get(), kMaxUploadsPerUpdate);
-
-    EXPECT_EQ(3, m_numBeginUploads);
-    EXPECT_EQ(3, m_numEndUploads);
-
-    expectedPreviousFlushes = expectedFlushes(kFullUploads-kMaxUploadsPerUpdate*2, kFlushPeriodFull) +
-                              expectedFlushes(kPartialUploads, kFlushPeriodPartial);
-    EXPECT_EQ(expectedPreviousFlushes, m_numPreviousFlushes);
-
-    expectedPreviousUploads = (kFullUploads-kMaxUploadsPerUpdate*2)+kPartialUploads;
-    EXPECT_EQ(expectedPreviousUploads, m_numPreviousUploads);
-
-    // Final sanity checks
-    EXPECT_EQ(kFullUploads + kPartialUploads, m_numTotalUploads);
-}
-
-TEST_F(CCTextureUpdateControllerTest, TripleUpdateFinalUpdateAllPartial)
-{
-    const int kMaxUploadsPerUpdate = 40;
-    const int kFullUploads = 70;
-    const int kPartialUploads = 30;
-
-    int expectedPreviousFlushes = 0;
-    int expectedPreviousUploads = 0;
-
-    setMaxUploadCountPerUpdate(kMaxUploadsPerUpdate);
-    appendFullUploadsToUpdateQueue(kFullUploads);
-    appendPartialUploadsToUpdateQueue(kPartialUploads);
-
-    // First update (40 full)
-    DebugScopedSetImplThread implThread;
-    CCTextureUpdateController::updateTextures(m_resourceProvider.get(), &m_uploader, m_queue.get(), kMaxUploadsPerUpdate);
-
-    EXPECT_EQ(1, m_numBeginUploads);
-    EXPECT_EQ(1, m_numEndUploads);
-
-    expectedPreviousFlushes = expectedFlushes(kMaxUploadsPerUpdate, kFlushPeriodFull);
-    EXPECT_EQ(expectedPreviousFlushes, m_numPreviousFlushes);
-
-    expectedPreviousUploads = kMaxUploadsPerUpdate;
-    EXPECT_EQ(expectedPreviousUploads, m_numPreviousUploads);
-
-    // Second update (30 full, optionally 10 partial)
-    CCTextureUpdateController::updateTextures(m_resourceProvider.get(), &m_uploader, m_queue.get(), kMaxUploadsPerUpdate);
-
-    EXPECT_EQ(2, m_numBeginUploads);
-    EXPECT_EQ(2, m_numEndUploads);
-    EXPECT_LE(m_numPreviousUploads, kMaxUploadsPerUpdate);
-    // Be lenient on the exact number of flushes here, as the number of flushes
-    // will depend on whether some partial uploads were performed.
-    // onFlush(), onUpload(), and onEndUpload() will do basic flush checks for us anyway.
-
-    // Third update (30 partial OR 20 partial if 10 partial uploaded in second update)
-    CCTextureUpdateController::updateTextures(m_resourceProvider.get(), &m_uploader, m_queue.get(), kMaxUploadsPerUpdate);
-
-    EXPECT_EQ(3, m_numBeginUploads);
-    EXPECT_EQ(3, m_numEndUploads);
-    EXPECT_LE(m_numPreviousUploads, kMaxUploadsPerUpdate);
-    // Be lenient on the exact number of flushes here as well.
-
-    // Final sanity checks
-    EXPECT_EQ(kFullUploads + kPartialUploads, m_numTotalUploads);
+    EXPECT_EQ(fullCount + partialCount, m_numPreviousUploads);
 }
 
 class FakeCCTextureUpdateControllerClient : public cc::CCTextureUpdateControllerClient {
