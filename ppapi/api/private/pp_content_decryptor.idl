@@ -76,7 +76,7 @@ struct PP_DecryptSubsampleDescription {
  * The <code>PP_EncryptedBlockInfo</code> struct contains all the information
  * needed to decrypt an encrypted block.
  */
-[assert_size(256)]
+[assert_size(240)]
 struct PP_EncryptedBlockInfo {
   /**
    * Information needed by the client to track the block to be decrypted.
@@ -105,12 +105,6 @@ struct PP_EncryptedBlockInfo {
    */
   uint8_t[16] iv;
   uint32_t iv_size;
-
-  /**
-   * Checksum of the block to be decrypted.
-   */
-  uint8_t[12] checksum;
-  uint32_t checksum_size;
 
   /**
    * Subsample information of the block to be decrypted.

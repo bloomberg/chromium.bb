@@ -359,13 +359,11 @@ bool MakeEncryptedBlockInfo(
   block_info->data_offset = decrypt_config.data_offset();
 
   if (!CopyStringToArray(decrypt_config.key_id(), block_info->key_id) ||
-      !CopyStringToArray(decrypt_config.iv(), block_info->iv) ||
-      !CopyStringToArray(decrypt_config.checksum(), block_info->checksum))
+      !CopyStringToArray(decrypt_config.iv(), block_info->iv))
     return false;
 
   block_info->key_id_size = decrypt_config.key_id().size();
   block_info->iv_size = decrypt_config.iv().size();
-  block_info->checksum_size = decrypt_config.checksum().size();
 
   if (decrypt_config.subsamples().size() > arraysize(block_info->subsamples))
     return false;

@@ -31,8 +31,6 @@ static scoped_refptr<media::DecoderBuffer> CopyDecoderBufferFrom(
                   input_buffer.key_id_size),
       std::string(reinterpret_cast<const char*>(input_buffer.iv),
                   input_buffer.iv_size),
-      std::string(reinterpret_cast<const char*>(input_buffer.checksum),
-                  input_buffer.checksum_size),
       input_buffer.data_offset,
       subsamples));
 

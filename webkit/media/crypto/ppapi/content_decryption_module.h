@@ -97,8 +97,6 @@ struct InputBuffer {
         key_id_size(0),
         iv(NULL),
         iv_size(0),
-        checksum(NULL),
-        checksum_size(0),
         subsamples(NULL),
         num_subsamples(0),
         timestamp(0) {}
@@ -113,9 +111,6 @@ struct InputBuffer {
 
   const uint8_t* iv;  // Initialization vector.
   uint32_t iv_size;  // Size (in bytes) of |iv|.
-
-  const uint8_t* checksum;
-  uint32_t checksum_size;  // Size (in bytes) of the |checksum|.
 
   const struct SubsampleEntry* subsamples;
   uint32_t num_subsamples;  // Number of subsamples in |subsamples|.

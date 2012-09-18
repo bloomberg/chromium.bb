@@ -205,8 +205,6 @@ void CdmWrapper::Decrypt(pp::Buffer_Dev encrypted_buffer,
   input_buffer.key_id_size = encrypted_block_info.key_id_size;
   input_buffer.iv = encrypted_block_info.iv;
   input_buffer.iv_size = encrypted_block_info.iv_size;
-  input_buffer.checksum = encrypted_block_info.checksum;
-  input_buffer.checksum_size = encrypted_block_info.checksum_size;
   input_buffer.num_subsamples = encrypted_block_info.num_subsamples;
 
   std::vector<cdm::SubsampleEntry> subsamples;

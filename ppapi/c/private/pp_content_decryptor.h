@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/pp_content_decryptor.idl modified Fri Aug 24 16:06:47 2012. */
+/* From private/pp_content_decryptor.idl modified Mon Sep 17 09:50:39 2012. */
 
 #ifndef PPAPI_C_PRIVATE_PP_CONTENT_DECRYPTOR_H_
 #define PPAPI_C_PRIVATE_PP_CONTENT_DECRYPTOR_H_
@@ -114,17 +114,12 @@ struct PP_EncryptedBlockInfo {
   uint8_t iv[16];
   uint32_t iv_size;
   /**
-   * Checksum of the block to be decrypted.
-   */
-  uint8_t checksum[12];
-  uint32_t checksum_size;
-  /**
    * Subsample information of the block to be decrypted.
    */
   struct PP_DecryptSubsampleDescription subsamples[16];
   uint32_t num_subsamples;
 };
-PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_EncryptedBlockInfo, 256);
+PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_EncryptedBlockInfo, 240);
 /**
  * @}
  */
