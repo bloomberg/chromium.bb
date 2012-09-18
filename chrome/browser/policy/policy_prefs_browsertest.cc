@@ -21,25 +21,34 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test_utils.h"
 #include "googleurl/src/gurl.h"
 #include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#if defined(OS_MACOSX)
-#include "base/base_paths.h"
-#include "base/mac/foundation_util.h"
-#include "base/path_service.h"
-#include "chrome/common/chrome_constants.h"
-#endif
 
 using testing::Return;
 
 namespace policy {
 
 namespace {
+
+const char* kSettingsPages[] = {
+  "chrome://settings-frame",
+  "chrome://settings-frame/searchEngines",
+  "chrome://settings-frame/passwords",
+  "chrome://settings-frame/autofill",
+  "chrome://settings-frame/content",
+  "chrome://settings-frame/homePageOverlay",
+  "chrome://settings-frame/languages",
+#if defined(OS_CHROMEOS)
+  "chrome://settings-frame/accounts",
+#endif
+};
 
 // Contains the testing details for a single policy, loaded from
 // chrome/test/data/policy/policy_test_cases.json.
@@ -109,62 +118,58 @@ class PolicyTestCase {
   DISALLOW_COPY_AND_ASSIGN(PolicyTestCase);
 };
 
-}  // namespace
+// Parses all the test cases and makes then available in a map.
+class TestCases {
+ public:
+  typedef std::map<std::string, PolicyTestCase*> TestCaseMap;
+  typedef TestCaseMap::const_iterator iterator;
 
-class PolicyPrefsTest : public InProcessBrowserTest {
- protected:
-  PolicyPrefsTest() {}
-  virtual ~PolicyPrefsTest() {}
-
-  // Loads policy_test_cases.json and builds a map of test cases.
-  static void SetUpTestCase() {
-#if defined(OS_MACOSX)
-    // Ugly hack to work around http://crbug.com/63183, since this uses the
-    // PathService from GetTestFilePath() above before BrowserTestBase() and
-    // InProcessBrowserTest() are invoked. Those ctors include similar hacks.
-    base::mac::SetOverrideAmIBundled(true);
-    FilePath chrome_path;
-    CHECK(PathService::Get(base::FILE_EXE, &chrome_path));
-    FilePath fixed_chrome_path =
-        chrome_path.DirName().Append(chrome::kBrowserProcessExecutablePath);
-    CHECK(PathService::Override(base::FILE_EXE, fixed_chrome_path));
-#endif
+  TestCases() {
+    test_cases_ = new std::map<std::string, PolicyTestCase*>();
 
     FilePath path = ui_test_utils::GetTestFilePath(
         FilePath(FILE_PATH_LITERAL("policy")),
         FilePath(FILE_PATH_LITERAL("policy_test_cases.json")));
     std::string json;
-    ASSERT_TRUE(file_util::ReadFileToString(path, &json));
+    if (!file_util::ReadFileToString(path, &json)) {
+      ADD_FAILURE();
+      return;
+    }
     int error_code = -1;
     std::string error_string;
-    scoped_ptr<base::Value> value(base::JSONReader::ReadAndReturnError(
-        json, base::JSON_ALLOW_TRAILING_COMMAS, &error_code, &error_string));
-    ASSERT_TRUE(value.get())
-        << "Error parsing policy_test_cases.json: " << error_string;
     base::DictionaryValue* dict = NULL;
-    ASSERT_TRUE(value->GetAsDictionary(&dict));
-    policy_test_cases_ = new std::map<std::string, PolicyTestCase*>();
+    scoped_ptr<base::Value> value(base::JSONReader::ReadAndReturnError(
+        json, base::JSON_PARSE_RFC, &error_code, &error_string));
+    if (!value.get() || !value->GetAsDictionary(&dict)) {
+      ADD_FAILURE() << "Error parsing policy_test_cases.json: " << error_string;
+      return;
+    }
     const PolicyDefinitionList* list = GetChromePolicyDefinitionList();
     for (const PolicyDefinitionList::Entry* policy = list->begin;
          policy != list->end; ++policy) {
       PolicyTestCase* test_case = GetTestCase(dict, policy->name);
       if (test_case)
-        (*policy_test_cases_)[policy->name] = test_case;
+        (*test_cases_)[policy->name] = test_case;
     }
-
-#if defined(OS_MACOSX)
-    // Restore |chrome_path| so that the fix in InProcessBrowserTest() works.
-    CHECK(PathService::Override(base::FILE_EXE, chrome_path));
-#endif
   }
 
-  static void TearDownTestCase() {
-    STLDeleteValues(policy_test_cases_);
-    delete policy_test_cases_;
+  ~TestCases() {
+    STLDeleteValues(test_cases_);
+    delete test_cases_;
   }
 
-  static PolicyTestCase* GetTestCase(const base::DictionaryValue* tests,
-                                     const std::string& name) {
+  const PolicyTestCase* Get(const std::string& name) {
+    iterator it = test_cases_->find(name);
+    return it == end() ? NULL : it->second;
+  }
+
+  const TestCaseMap& map() const { return *test_cases_; }
+  iterator begin() const { return test_cases_->begin(); }
+  iterator end() const { return test_cases_->end(); }
+
+ private:
+  PolicyTestCase* GetTestCase(const base::DictionaryValue* tests,
+                              const std::string& name) {
     const base::DictionaryValue* dict = NULL;
     if (!tests->GetDictionary(name, &dict))
       return NULL;
@@ -202,67 +207,163 @@ class PolicyPrefsTest : public InProcessBrowserTest {
     return test_case;
   }
 
+  TestCaseMap* test_cases_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestCases);
+};
+
+bool IsBannerVisible(Browser* browser) {
+  content::WebContents* contents = chrome::GetActiveWebContents(browser);
+  bool result = false;
+  EXPECT_TRUE(content::ExecuteJavaScriptAndExtractBool(
+      contents->GetRenderViewHost(),
+      std::wstring(),
+      L"var visible = false;"
+      L"var banners = document.querySelectorAll('.page-banner');"
+      L"for (var i = 0; i < banners.length; i++) {"
+      L"  if (banners[i].parentElement.id == 'templates')"
+      L"    continue;"
+      L"  if (window.getComputedStyle(banners[i]).display != 'none')"
+      L"    visible = true;"
+      L"}"
+      L"domAutomationController.send(visible);",
+      &result));
+  return result;
+}
+
+}  // namespace
+
+// A class of tests parameterized by a settings page URL.
+class PolicyPrefsSettingsBannerTest
+    : public InProcessBrowserTest,
+      public testing::WithParamInterface<const char*> {};
+
+// Base class for tests that change policies.
+class PolicyBaseTest : public InProcessBrowserTest {
+ protected:
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     EXPECT_CALL(provider_, IsInitializationComplete())
         .WillRepeatedly(Return(true));
     BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
   }
 
-  static std::map<std::string, PolicyTestCase*>* policy_test_cases_;
+  TestCases test_cases_;
   MockConfigurationPolicyProvider provider_;
 };
 
-std::map<std::string, PolicyTestCase*>* PolicyPrefsTest::policy_test_cases_ = 0;
+// A class of tests that change policy and don't need parameters.
+class PolicyPrefsBannerTest : public PolicyBaseTest {};
 
-IN_PROC_BROWSER_TEST_F(PolicyPrefsTest, AllPoliciesHaveATestCase) {
+// A class of tests that change policy and are parameterized with a policy
+// definition.
+class PolicyPrefsTest
+    : public PolicyBaseTest,
+      public testing::WithParamInterface<PolicyDefinitionList::Entry> {};
+
+TEST(PolicyPrefsTest, AllPoliciesHaveATestCase) {
   // Verifies that all known policies have a test case in the JSON file.
   // This test fails when a policy is added to
   // chrome/app/policy/policy_templates.json but a test case is not added to
   // chrome/test/data/policy/policy_test_cases.json.
+  TestCases test_cases;
   const PolicyDefinitionList* list = GetChromePolicyDefinitionList();
   for (const PolicyDefinitionList::Entry* policy = list->begin;
        policy != list->end; ++policy) {
-    EXPECT_TRUE(ContainsKey(*policy_test_cases_, policy->name))
+    EXPECT_TRUE(ContainsKey(test_cases.map(), policy->name))
         << "Missing policy test case for: " << policy->name;
   }
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyPrefsTest, PolicyToPrefsMapping) {
+IN_PROC_BROWSER_TEST_P(PolicyPrefsSettingsBannerTest, NoPoliciesNoBanner) {
+  // Verifies that the banner isn't shown in the settings UI when no policies
+  // are set.
+  ui_test_utils::NavigateToURL(browser(), GURL(GetParam()));
+  EXPECT_FALSE(IsBannerVisible(browser()));
+}
+
+INSTANTIATE_TEST_CASE_P(PolicyPrefsSettingsBannerTestInstance,
+                        PolicyPrefsSettingsBannerTest,
+                        testing::ValuesIn(kSettingsPages));
+
+IN_PROC_BROWSER_TEST_F(PolicyPrefsBannerTest, TogglePolicyTogglesBanner) {
+  // Verifies that the banner appears and disappears as policies are added and
+  // removed.
+  // |test_case| is just a particular policy that should trigger the banner
+  // on the main settings page.
+  const PolicyTestCase* test_case = test_cases_.Get("ShowHomeButton");
+  ASSERT_TRUE(test_case);
+  // No banner by default.
+  ui_test_utils::NavigateToURL(browser(), GURL(kSettingsPages[0]));
+  EXPECT_FALSE(IsBannerVisible(browser()));
+  // Adding a policy makes the banner show up.
+  provider_.UpdateChromePolicy(test_case->test_policy());
+  EXPECT_TRUE(IsBannerVisible(browser()));
+  // And removing it makes the banner go away.
+  const PolicyMap kNoPolicies;
+  provider_.UpdateChromePolicy(kNoPolicies);
+  EXPECT_FALSE(IsBannerVisible(browser()));
+  // Do it again, just in case.
+  provider_.UpdateChromePolicy(test_case->test_policy());
+  EXPECT_TRUE(IsBannerVisible(browser()));
+  provider_.UpdateChromePolicy(kNoPolicies);
+  EXPECT_FALSE(IsBannerVisible(browser()));
+}
+
+IN_PROC_BROWSER_TEST_P(PolicyPrefsTest, PolicyToPrefsMapping) {
   // Verifies that policies make their corresponding preferences become managed,
   // and that the user can't override that setting.
-  const PolicyMap kNoPolicies;
-  PrefService* profile_prefs = browser()->profile()->GetPrefs();
-  PrefService* local_state = g_browser_process->local_state();
-  std::map<std::string, PolicyTestCase*>::iterator it;
-  for (it = policy_test_cases_->begin();
-       it != policy_test_cases_->end(); ++it) {
-    PolicyTestCase* test_case = it->second;
-    if (!test_case->IsSupported() || test_case->pref().empty())
-      continue;
-    LOG(INFO) << "Testing policy: " << test_case->name();
-    // Clear policies.
-    provider_.UpdateChromePolicy(kNoPolicies);
+  const PolicyTestCase* test_case = test_cases_.Get(GetParam().name);
+  ASSERT_TRUE(test_case);
+  if (!test_case->IsSupported() || test_case->pref().empty())
+    return;
+  LOG(INFO) << "Testing policy: " << test_case->name();
 
-    PrefService* prefs =
-        test_case->is_local_state() ? local_state : profile_prefs;
-    // The preference must have been registered.
-    const PrefService::Preference* pref =
-        prefs->FindPreference(test_case->pref_name());
-    ASSERT_TRUE(pref);
-    prefs->ClearPref(test_case->pref_name());
+  PrefService* prefs = test_case->is_local_state() ?
+      g_browser_process->local_state() : browser()->profile()->GetPrefs();
+  // The preference must have been registered.
+  const PrefService::Preference* pref =
+      prefs->FindPreference(test_case->pref_name());
+  ASSERT_TRUE(pref);
+  prefs->ClearPref(test_case->pref_name());
 
-    // Verify that setting the policy overrides the pref.
-    EXPECT_TRUE(pref->IsDefaultValue());
-    EXPECT_TRUE(pref->IsUserModifiable());
-    EXPECT_FALSE(pref->IsUserControlled());
-    EXPECT_FALSE(pref->IsManaged());
+  // Verify that setting the policy overrides the pref.
+  EXPECT_TRUE(pref->IsDefaultValue());
+  EXPECT_TRUE(pref->IsUserModifiable());
+  EXPECT_FALSE(pref->IsUserControlled());
+  EXPECT_FALSE(pref->IsManaged());
 
+  provider_.UpdateChromePolicy(test_case->test_policy());
+  EXPECT_FALSE(pref->IsDefaultValue());
+  EXPECT_FALSE(pref->IsUserModifiable());
+  EXPECT_FALSE(pref->IsUserControlled());
+  EXPECT_TRUE(pref->IsManaged());
+}
+
+IN_PROC_BROWSER_TEST_P(PolicyPrefsTest, CheckAllPoliciesThatShowTheBanner) {
+  // Verifies that the banner appears for each policy that affects a control
+  // in the settings UI.
+  const PolicyTestCase* test_case = test_cases_.Get(GetParam().name);
+  ASSERT_TRUE(test_case);
+  if (!test_case->IsSupported() || test_case->settings_pages().empty())
+    return;
+  LOG(INFO) << "Testing policy: " << test_case->name();
+
+  const std::vector<GURL>& pages = test_case->settings_pages();
+  for (size_t i = 0; i < pages.size(); ++i) {
+    ui_test_utils::NavigateToURL(browser(), pages[i]);
+    EXPECT_FALSE(IsBannerVisible(browser()));
     provider_.UpdateChromePolicy(test_case->test_policy());
-    EXPECT_FALSE(pref->IsDefaultValue());
-    EXPECT_FALSE(pref->IsUserModifiable());
-    EXPECT_FALSE(pref->IsUserControlled());
-    EXPECT_TRUE(pref->IsManaged());
+    EXPECT_TRUE(IsBannerVisible(browser()));
+    const PolicyMap kNoPolicies;
+    provider_.UpdateChromePolicy(kNoPolicies);
+    EXPECT_FALSE(IsBannerVisible(browser()));
   }
 }
+
+INSTANTIATE_TEST_CASE_P(
+    PolicyPrefsTestInstance,
+    PolicyPrefsTest,
+    testing::ValuesIn(GetChromePolicyDefinitionList()->begin,
+                      GetChromePolicyDefinitionList()->end));
 
 }  // namespace policy

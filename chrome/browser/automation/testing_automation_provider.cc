@@ -158,7 +158,6 @@
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
 #include "chrome/browser/policy/policy_service.h"
-#include "policy/policy_constants.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -1765,8 +1764,6 @@ void TestingAutomationProvider::BuildJSONHandlerMaps() {
       &TestingAutomationProvider::OpenProfileWindow;
   handler_map_["GetProcessInfo"] =
       &TestingAutomationProvider::GetProcessInfo;
-  handler_map_["GetPolicyDefinitionList"] =
-      &TestingAutomationProvider::GetPolicyDefinitionList;
   handler_map_["RefreshPolicies"] =
       &TestingAutomationProvider::RefreshPolicies;
   handler_map_["InstallExtension"] =
@@ -5324,45 +5321,6 @@ void TestingAutomationProvider::WaitForTabToBeRestored(
   }
   NavigationController& controller = web_contents->GetController();
   new NavigationControllerRestoredObserver(this, &controller, reply_message);
-}
-
-void TestingAutomationProvider::GetPolicyDefinitionList(
-    DictionaryValue* args,
-    IPC::Message* reply_message) {
-  AutomationJSONReply reply(this, reply_message);
-
-#if !defined(ENABLE_CONFIGURATION_POLICY)
-  reply.SendError("Configuration Policy disabled");
-#else
-  DictionaryValue response;
-
-  const policy::PolicyDefinitionList* list =
-      policy::GetChromePolicyDefinitionList();
-  // Value::Type to python type.
-  std::map<Value::Type, std::string> types;
-  types[Value::TYPE_BOOLEAN] = "bool";
-  types[Value::TYPE_DICTIONARY] = "dict";
-  types[Value::TYPE_INTEGER] = "int";
-  types[Value::TYPE_LIST] = "list";
-  types[Value::TYPE_STRING] = "str";
-
-  const policy::PolicyDefinitionList::Entry* entry;
-  for (entry = list->begin; entry != list->end; ++entry) {
-    if (types.find(entry->value_type) == types.end()) {
-      std::string error("Unrecognized policy type for policy ");
-      reply.SendError(error + entry->name);
-      return;
-    }
-    Value* type = Value::CreateStringValue(types[entry->value_type]);
-    Value* device_policy = Value::CreateBooleanValue(entry->device_policy);
-    ListValue* definition = new ListValue;
-    definition->Append(type);
-    definition->Append(device_policy);
-    response.Set(entry->name, definition);
-  }
-
-  reply.SendSuccess(&response);
-#endif
 }
 
 void TestingAutomationProvider::RefreshPolicies(
