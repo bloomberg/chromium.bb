@@ -177,7 +177,7 @@ void DesktopNativeWidgetHelperAura::PreInitialize(
 
 #if defined(USE_X11)
   x11_window_event_filter_.reset(
-      new X11WindowEventFilter(root_window_.get(), activation_client, widget_));
+      new X11WindowEventFilter(root_window_.get(), activation_client));
   x11_window_event_filter_->SetUseHostWindowBorders(false);
   root_window_event_filter_->AddFilter(x11_window_event_filter_.get());
 

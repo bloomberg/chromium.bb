@@ -352,8 +352,7 @@ gfx::NativeCursor DesktopNativeWidgetAura::GetCursor(const gfx::Point& point) {
 
 int DesktopNativeWidgetAura::GetNonClientComponent(
     const gfx::Point& point) const {
-  // TODO(beng): seems like this shouldn't be necessary here, right?
-  return HTCLIENT;
+  return native_widget_delegate_->GetNonClientComponent(point);
 }
 
 bool DesktopNativeWidgetAura::ShouldDescendIntoChildForEventHandling(

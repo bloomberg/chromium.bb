@@ -29,8 +29,7 @@ class VIEWS_EXPORT X11WindowEventFilter : public aura::EventFilter {
  public:
   explicit X11WindowEventFilter(
       aura::RootWindow* root_window,
-      aura::DesktopActivationClient* activation_client,
-      NativeWidgetAura* widget);
+      aura::DesktopActivationClient* activation_client);
   virtual ~X11WindowEventFilter();
 
   // Changes whether borders are shown on this |root_window|.
@@ -54,7 +53,6 @@ class VIEWS_EXPORT X11WindowEventFilter : public aura::EventFilter {
   bool DispatchHostWindowDragMovement(int hittest,
                                       const gfx::Point& screen_location);
 
-  NativeWidgetAura* widget_;
   aura::DesktopActivationClient* activation_client_;
 
   // The display and the native X window hosting the root window.

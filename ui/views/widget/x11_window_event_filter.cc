@@ -59,10 +59,8 @@ namespace views {
 
 X11WindowEventFilter::X11WindowEventFilter(
     aura::RootWindow* root_window,
-    aura::DesktopActivationClient* activation_client,
-    NativeWidgetAura* widget)
-    : widget_(widget),
-      activation_client_(activation_client),
+    aura::DesktopActivationClient* activation_client)
+    : activation_client_(activation_client),
       xdisplay_(base::MessagePumpAuraX11::GetDefaultXDisplay()),
       xwindow_(root_window->GetAcceleratedWidget()),
       x_root_window_(DefaultRootWindow(xdisplay_)),
