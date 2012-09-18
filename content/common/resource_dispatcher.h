@@ -89,6 +89,7 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
     base::TimeTicks request_start;
     base::TimeTicks response_start;
     base::TimeTicks completion_time;
+    linked_ptr<base::SharedMemory> buffer;
   };
   typedef base::hash_map<int, PendingRequestInfo> PendingRequestList;
 
@@ -112,11 +113,16 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
       int request_id,
       const GURL& new_url,
       const ResourceResponseHead& response_head);
+  void OnSetDataBuffer(
+      const IPC::Message& message,
+      int request_id,
+      base::SharedMemoryHandle shm_handle,
+      int shm_size);
   void OnReceivedData(
       const IPC::Message& message,
       int request_id,
-      base::SharedMemoryHandle data,
-      int data_len,
+      int data_offset,
+      int data_length,
       int encoded_data_length);
   void OnDownloadedData(
       const IPC::Message& message,

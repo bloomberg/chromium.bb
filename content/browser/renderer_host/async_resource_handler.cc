@@ -7,13 +7,16 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/debug/alias.h"
 #include "base/hash_tables.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/shared_memory.h"
+#include "base/string_number_conversions.h"
 #include "content/browser/debugger/devtools_netlog_observer.h"
 #include "content/browser/host_zoom_map_impl.h"
+#include "content/browser/renderer_host/resource_buffer.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
 #include "content/browser/renderer_host/resource_message_filter.h"
 #include "content/browser/renderer_host/resource_request_info_impl.h"
@@ -33,20 +36,27 @@ using base::TimeTicks;
 namespace content {
 namespace {
 
-// When reading, we don't know if we are going to get EOF (0 bytes read), so
-// we typically have a buffer that we allocated but did not use.  We keep
-// this buffer around for the next read as a small optimization.
-SharedIOBuffer* g_spare_read_buffer = NULL;
+static int kBufferSize = 1024 * 512;
+static int kMinAllocationSize = 1024 * 4;
+static int kMaxAllocationSize = 1024 * 32;
 
-// The initial size of the shared memory buffer. (32 kilobytes).
-const int kInitialReadBufSize = 32768;
+void GetNumericArg(const std::string& name, int* result) {
+  const std::string& value =
+      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(name);
+  if (!value.empty())
+    base::StringToInt(value, result);
+}
 
-// The maximum size of the shared memory buffer. (512 kilobytes).
-const int kMaxReadBufSize = 524288;
+void InitializeResourceBufferConstants() {
+  static bool did_init = false;
+  if (did_init)
+    return;
+  did_init = true;
 
-// Maximum number of pending data messages sent to the renderer at any
-// given time for a given request.
-const int kMaxPendingDataMessages = 20;
+  GetNumericArg("resource-buffer-size", &kBufferSize);
+  GetNumericArg("resource-buffer-min-allocation-size", &kMinAllocationSize);
+  GetNumericArg("resource-buffer-max-allocation-size", &kMaxAllocationSize);
+}
 
 int CalcUsedPercentage(int bytes_read, int buffer_size) {
   double ratio = static_cast<double>(bytes_read) / buffer_size;
@@ -55,36 +65,15 @@ int CalcUsedPercentage(int bytes_read, int buffer_size) {
 
 }  // namespace
 
-// Our version of IOBuffer that uses shared memory.
-class SharedIOBuffer : public net::IOBuffer {
+class DependentIOBuffer : public net::WrappedIOBuffer {
  public:
-  explicit SharedIOBuffer(int buffer_size)
-      : net::IOBuffer(),
-        ok_(false),
-        buffer_size_(buffer_size) {}
-
-  bool Init() {
-    if (shared_memory_.CreateAndMapAnonymous(buffer_size_)) {
-      data_ = reinterpret_cast<char*>(shared_memory_.memory());
-      DCHECK(data_);
-      ok_ = true;
-    }
-    return ok_;
+  DependentIOBuffer(ResourceBuffer* backing, char* memory)
+      : net::WrappedIOBuffer(memory),
+        backing_(backing) {
   }
-
-  base::SharedMemory* shared_memory() { return &shared_memory_; }
-  bool ok() { return ok_; }
-  int buffer_size() { return buffer_size_; }
-
  private:
-  ~SharedIOBuffer() {
-    DCHECK(g_spare_read_buffer != this);
-    data_ = NULL;
-  }
-
-  base::SharedMemory shared_memory_;
-  bool ok_;
-  int buffer_size_;
+  ~DependentIOBuffer() {}
+  scoped_refptr<ResourceBuffer> backing_;
 };
 
 AsyncResourceHandler::AsyncResourceHandler(
@@ -96,14 +85,17 @@ AsyncResourceHandler::AsyncResourceHandler(
       routing_id_(routing_id),
       request_(request),
       rdh_(rdh),
-      next_buffer_size_(kInitialReadBufSize),
       pending_data_count_(0),
+      allocation_size_(0),
       did_defer_(false),
-      sent_received_response_msg_(false) {
+      sent_received_response_msg_(false),
+      sent_first_data_msg_(false) {
   // Set a back-pointer from ResourceRequestInfoImpl to |this|, so that the
   // ResourceDispatcherHostImpl can send us IPC messages.
   // TODO(darin): Implement an IPC message filter instead?
   ResourceRequestInfoImpl::ForRequest(request_)->set_async_handler(this);
+
+  InitializeResourceBufferConstants();
 }
 
 AsyncResourceHandler::~AsyncResourceHandler() {
@@ -126,7 +118,10 @@ void AsyncResourceHandler::OnFollowRedirect(
 }
 
 void AsyncResourceHandler::OnDataReceivedACK() {
-  if (pending_data_count_-- == kMaxPendingDataMessages)
+  --pending_data_count_;
+
+  buffer_->RecycleLeastRecentlyAllocated();
+  if (buffer_->CanAllocate())
     ResumeIfDeferred();
 }
 
@@ -212,29 +207,19 @@ bool AsyncResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
                                       int* buf_size, int min_size) {
   DCHECK_EQ(-1, min_size);
 
-  if (g_spare_read_buffer) {
-    DCHECK(!read_buffer_);
-    read_buffer_.swap(&g_spare_read_buffer);
-    DCHECK(read_buffer_->data());
+  if (!EnsureResourceBufferIsInitialized())
+    return false;
 
-    *buf = read_buffer_.get();
-    *buf_size = read_buffer_->buffer_size();
-  } else {
-    read_buffer_ = new SharedIOBuffer(next_buffer_size_);
-    if (!read_buffer_->Init()) {
-      DLOG(ERROR) << "Couldn't allocate shared io buffer";
-      read_buffer_ = NULL;
-      return false;
-    }
-    DCHECK(read_buffer_->data());
-    *buf = read_buffer_.get();
-    *buf_size = next_buffer_size_;
+  DCHECK(buffer_->CanAllocate());
+  char* memory = buffer_->Allocate(&allocation_size_);
+  CHECK(memory);
 
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "Net.AsyncResourceHandler_SharedIOBuffer_Alloc",
-        next_buffer_size_, kInitialReadBufSize, kMaxReadBufSize, 16);
-  }
+  *buf = new DependentIOBuffer(buffer_, memory);
+  *buf_size = allocation_size_;
 
+  UMA_HISTOGRAM_CUSTOM_COUNTS(
+      "Net.AsyncResourceHandler_SharedIOBuffer_Alloc",
+      *buf_size, 0, kMaxAllocationSize, 100);
   return true;
 }
 
@@ -242,44 +227,44 @@ bool AsyncResourceHandler::OnReadCompleted(int request_id, int bytes_read,
                                            bool* defer) {
   if (!bytes_read)
     return true;
-  DCHECK(read_buffer_.get());
+
+  buffer_->ShrinkLastAllocation(bytes_read);
 
   UMA_HISTOGRAM_CUSTOM_COUNTS(
       "Net.AsyncResourceHandler_SharedIOBuffer_Used",
-      bytes_read, 0, kMaxReadBufSize, 100);
+      bytes_read, 0, kMaxAllocationSize, 100);
   UMA_HISTOGRAM_PERCENTAGE(
       "Net.AsyncResourceHandler_SharedIOBuffer_UsedPercentage",
-      CalcUsedPercentage(bytes_read, read_buffer_->buffer_size()));
+      CalcUsedPercentage(bytes_read, allocation_size_));
 
-  if (read_buffer_->buffer_size() == bytes_read) {
-    // The network layer has saturated our buffer. Next time, we should give it
-    // a bigger buffer for it to fill, to minimize the number of round trips we
-    // do with the renderer process.
-    next_buffer_size_ = std::min(next_buffer_size_ * 2, kMaxReadBufSize);
+  if (!sent_first_data_msg_) {
+    base::SharedMemoryHandle handle;
+    int size;
+    if (!buffer_->ShareToProcess(filter_->peer_handle(), &handle, &size))
+      return false;
+    filter_->Send(
+        new ResourceMsg_SetDataBuffer(routing_id_, request_id, handle, size));
+    sent_first_data_msg_ = true;
   }
 
-  WillSendData(defer);
-
-  base::SharedMemoryHandle handle;
-  if (!read_buffer_->shared_memory()->GiveToProcess(
-          filter_->peer_handle(), &handle)) {
-    // We wrongfully incremented the pending data count. Fake an ACK message
-    // to fix this. We can't move this call above the WillSendData because
-    // it's killing our read_buffer_, and we don't want that when we pause
-    // the request.
-    OnDataReceivedACK();
-
-    // We just unmapped the memory.
-    read_buffer_ = NULL;
-    return false;
-  }
-  // We just unmapped the memory.
-  read_buffer_ = NULL;
-
+  int data_offset = buffer_->GetLastAllocationOffset();
   int encoded_data_length =
       DevToolsNetLogObserver::GetAndResetEncodedDataLength(request_);
-  filter_->Send(new ResourceMsg_DataReceived(
-      routing_id_, request_id, handle, bytes_read, encoded_data_length));
+
+  filter_->Send(
+      new ResourceMsg_DataReceived(routing_id_, request_id, data_offset,
+                                   bytes_read, encoded_data_length));
+  ++pending_data_count_;
+  UMA_HISTOGRAM_CUSTOM_COUNTS(
+      "Net.AsyncResourceHandler_PendingDataCount",
+      pending_data_count_, 0, 100, 100);
+
+  if (!buffer_->CanAllocate()) {
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "Net.AsyncResourceHandler_PendingDataCount_WhenFull",
+        pending_data_count_, 0, 100, 100);
+    *defer = did_defer_ = true;
+  }
 
   return true;
 }
@@ -336,41 +321,17 @@ bool AsyncResourceHandler::OnResponseCompleted(
                                                 was_ignored_by_handler,
                                                 security_info,
                                                 completion_time));
-
-  // If we still have a read buffer, then see about caching it for later...
-  // Note that we have to make sure the buffer is not still being used, so we
-  // have to perform an explicit check on the status code.
-  if (g_spare_read_buffer ||
-      net::URLRequestStatus::SUCCESS != status.status()) {
-    read_buffer_ = NULL;
-  } else if (read_buffer_.get()) {
-    DCHECK(read_buffer_->data());
-    read_buffer_.swap(&g_spare_read_buffer);
-  }
   return true;
 }
 
-// static
-void AsyncResourceHandler::GlobalCleanup() {
-  if (g_spare_read_buffer) {
-    // Avoid the CHECK in SharedIOBuffer::~SharedIOBuffer().
-    SharedIOBuffer* tmp = g_spare_read_buffer;
-    g_spare_read_buffer = NULL;
-    tmp->Release();
-  }
-}
+bool AsyncResourceHandler::EnsureResourceBufferIsInitialized() {
+  if (buffer_ && buffer_->IsInitialized())
+    return true;
 
-void AsyncResourceHandler::WillSendData(bool* defer) {
-  if (++pending_data_count_ >= kMaxPendingDataMessages) {
-    // We reached the max number of data messages that can be sent to
-    // the renderer for a given request. Pause the request and wait for
-    // the renderer to start processing them before resuming it.
-    *defer = did_defer_ = true;
-  }
-
-  UMA_HISTOGRAM_CUSTOM_COUNTS(
-      "Net.AsyncResourceHandler_PendingDataCount",
-      pending_data_count_, 0, kMaxPendingDataMessages, kMaxPendingDataMessages);
+  buffer_ = new ResourceBuffer();
+  return buffer_->Initialize(kBufferSize,
+                             kMinAllocationSize,
+                             kMaxAllocationSize);
 }
 
 void AsyncResourceHandler::ResumeIfDeferred() {

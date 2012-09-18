@@ -666,6 +666,8 @@
     'browser/renderer_host/render_widget_host_view_mac.mm',
     'browser/renderer_host/render_widget_host_view_win.cc',
     'browser/renderer_host/render_widget_host_view_win.h',
+    'browser/renderer_host/resource_buffer.cc',
+    'browser/renderer_host/resource_buffer.h',
     'browser/renderer_host/resource_dispatcher_host_impl.cc',
     'browser/renderer_host/resource_dispatcher_host_impl.h',
     'browser/renderer_host/resource_handler.cc',

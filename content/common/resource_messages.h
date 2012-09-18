@@ -156,12 +156,26 @@ IPC_MESSAGE_ROUTED3(ResourceMsg_ReceivedRedirect,
                     GURL /* new_url */,
                     content::ResourceResponseHead)
 
-// Sent when some data from a resource request is ready. The handle should
-// already be mapped into the process that receives this message.
+// Sent to set the shared memory buffer to be used to transmit response data to
+// the renderer.  Subsequent DataReceived messages refer to byte ranges in the
+// shared memory buffer.  The shared memory buffer should be retained by the
+// renderer until the resource request completes.
+//
+// NOTE: The shared memory handle should already be mapped into the process
+// that receives this message.
+//
+IPC_MESSAGE_ROUTED3(ResourceMsg_SetDataBuffer,
+                    int /* request_id */,
+                    base::SharedMemoryHandle /* shm_handle */,
+                    int /* shm_size */)
+
+// Sent when some data from a resource request is ready.  The data offset and
+// length specify a byte range into the shared memory buffer provided by the
+// SetDataBuffer message.
 IPC_MESSAGE_ROUTED4(ResourceMsg_DataReceived,
                     int /* request_id */,
-                    base::SharedMemoryHandle /* data */,
-                    int /* data_len */,
+                    int /* data_offset */,
+                    int /* data_length */,
                     int /* encoded_data_length */)
 
 // Sent when some data from a resource request has been downloaded to

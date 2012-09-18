@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/shared_memory.h"
 #include "base/string_util.h"
 #include "content/common/inter_process_time_ticks_converter.h"
@@ -324,27 +325,43 @@ void ResourceDispatcher::OnReceivedCachedMetadata(
     request_info->peer->OnReceivedCachedMetadata(&data.front(), data.size());
 }
 
-void ResourceDispatcher::OnReceivedData(const IPC::Message& message,
-                                        int request_id,
-                                        base::SharedMemoryHandle shm_handle,
-                                        int data_len,
-                                        int encoded_data_length) {
-  // Acknowledge the reception of this data.
-  message_sender()->Send(
-      new ResourceHostMsg_DataReceived_ACK(message.routing_id(), request_id));
-
-  const bool shm_valid = base::SharedMemory::IsHandleValid(shm_handle);
-  DCHECK((shm_valid && data_len > 0) || (!shm_valid && !data_len));
-  base::SharedMemory shared_mem(shm_handle, true);  // read only
-
+void ResourceDispatcher::OnSetDataBuffer(const IPC::Message& message,
+                                         int request_id,
+                                         base::SharedMemoryHandle shm_handle,
+                                         int shm_size) {
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   if (!request_info)
     return;
 
-  if (data_len > 0 && shared_mem.Map(data_len)) {
-    const char* data = static_cast<char*>(shared_mem.memory());
-    request_info->peer->OnReceivedData(data, data_len, encoded_data_length);
+  bool shm_valid = base::SharedMemory::IsHandleValid(shm_handle);
+  DCHECK((shm_valid && shm_size > 0) || (!shm_valid && !shm_size));
+
+  request_info->buffer.reset(
+      new base::SharedMemory(shm_handle, true));  // read only
+  request_info->buffer->Map(shm_size);
+}
+
+void ResourceDispatcher::OnReceivedData(const IPC::Message& message,
+                                        int request_id,
+                                        int data_offset,
+                                        int data_length,
+                                        int encoded_data_length) {
+  PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
+  if (request_info && data_length > 0) {
+    base::TimeTicks time_start = base::TimeTicks::Now();
+
+    request_info->peer->OnReceivedData(
+        static_cast<char*>(request_info->buffer->memory()) + data_offset,
+        data_length,
+        encoded_data_length);
+
+    UMA_HISTOGRAM_TIMES("ResourceDispatcher.OnReceivedDataTime",
+                        base::TimeTicks::Now() - time_start);
   }
+
+  // Acknowledge the reception of this data.
+  message_sender()->Send(
+      new ResourceHostMsg_DataReceived_ACK(message.routing_id(), request_id));
 }
 
 void ResourceDispatcher::OnDownloadedData(const IPC::Message& message,
@@ -414,6 +431,7 @@ void ResourceDispatcher::OnRequestComplete(
   if (!request_info)
     return;
   request_info->completion_time = base::TimeTicks::Now();
+  request_info->buffer.reset();
 
   ResourceLoaderBridge::Peer* peer = request_info->peer;
 
@@ -519,6 +537,7 @@ void ResourceDispatcher::DispatchMessage(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ResourceMsg_ReceivedCachedMetadata,
                         OnReceivedCachedMetadata)
     IPC_MESSAGE_HANDLER(ResourceMsg_ReceivedRedirect, OnReceivedRedirect)
+    IPC_MESSAGE_HANDLER(ResourceMsg_SetDataBuffer, OnSetDataBuffer)
     IPC_MESSAGE_HANDLER(ResourceMsg_DataReceived, OnReceivedData)
     IPC_MESSAGE_HANDLER(ResourceMsg_DataDownloaded, OnDownloadedData)
     IPC_MESSAGE_HANDLER(ResourceMsg_RequestComplete, OnRequestComplete)
@@ -628,6 +647,7 @@ bool ResourceDispatcher::IsResourceDispatcherMessage(
     case ResourceMsg_ReceivedResponse::ID:
     case ResourceMsg_ReceivedCachedMetadata::ID:
     case ResourceMsg_ReceivedRedirect::ID:
+    case ResourceMsg_SetDataBuffer::ID:
     case ResourceMsg_DataReceived::ID:
     case ResourceMsg_DataDownloaded::ID:
     case ResourceMsg_RequestComplete::ID:
@@ -650,14 +670,15 @@ void ResourceDispatcher::ReleaseResourcesInDataMessage(
     return;
   }
 
-  // If the message contains a shared memory handle, we should close the
-  // handle or there will be a memory leak.
-  if (message.type() == ResourceMsg_DataReceived::ID) {
+  // If the message contains a shared memory handle, we should close the handle
+  // or there will be a memory leak.
+  if (message.type() == ResourceMsg_SetDataBuffer::ID) {
     base::SharedMemoryHandle shm_handle;
     if (IPC::ParamTraits<base::SharedMemoryHandle>::Read(&message,
                                                          &iter,
                                                          &shm_handle)) {
-      base::SharedMemory::CloseHandle(shm_handle);
+      if (base::SharedMemory::IsHandleValid(shm_handle))
+        base::SharedMemory::CloseHandle(shm_handle);
     }
   }
 }

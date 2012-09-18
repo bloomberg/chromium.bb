@@ -15,6 +15,7 @@ class URLRequest;
 }
 
 namespace content {
+class ResourceBuffer;
 class ResourceDispatcherHostImpl;
 class ResourceMessageFilter;
 class SharedIOBuffer;
@@ -61,36 +62,26 @@ class AsyncResourceHandler : public ResourceHandler {
   virtual void OnDataDownloaded(int request_id,
                                 int bytes_downloaded) OVERRIDE;
 
-  static void GlobalCleanup();
-
  private:
-  // Returns true if it's ok to send the data. If there are already too many
-  // data messages pending, it defers the request and returns false. In this
-  // case the caller should not send the data.
-  void WillSendData(bool* defer);
-
+  bool EnsureResourceBufferIsInitialized();
   void ResumeIfDeferred();
 
-  scoped_refptr<SharedIOBuffer> read_buffer_;
+  scoped_refptr<ResourceBuffer> buffer_;
   scoped_refptr<ResourceMessageFilter> filter_;
   int routing_id_;
   net::URLRequest* request_;
   ResourceDispatcherHostImpl* rdh_;
 
-  // |next_buffer_size_| is the size of the buffer to be allocated on the next
-  // OnWillRead() call.  We exponentially grow the size of the buffer allocated
-  // when our owner fills our buffers. On the first OnWillRead() call, we
-  // allocate a buffer of 32k and double it in OnReadCompleted() if the buffer
-  // was filled, up to a maximum size of 512k.
-  int next_buffer_size_;
-
   // Number of messages we've sent to the renderer that we haven't gotten an
   // ACK for. This allows us to avoid having too many messages in flight.
   int pending_data_count_;
 
+  int allocation_size_;
+
   bool did_defer_;
 
   bool sent_received_response_msg_;
+  bool sent_first_data_msg_;
 
   DISALLOW_COPY_AND_ASSIGN(AsyncResourceHandler);
 };
