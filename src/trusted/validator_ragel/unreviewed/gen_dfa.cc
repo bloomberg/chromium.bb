@@ -156,6 +156,43 @@ class Instruction {
     bool write;
     bool implicit;
   };
+
+  const std::string& get_name(void) const {
+    return name;
+  }
+  Instruction with_name(const std::string& name) const {
+    Instruction result = *this;
+    result.name = name;
+    return result;
+  }
+  const std::vector<Operand>& get_operands(void) const {
+    return operands;
+  }
+  Instruction with_operands(const std::vector<Operand>& operands) const {
+    Instruction result = *this;
+    result.operands = operands;
+    return result;
+  }
+  const std::vector<std::string>& get_opcodes(void) const {
+    return opcodes;
+  }
+  Instruction with_opcodes(const std::vector<std::string>& opcodes) const {
+    Instruction result = *this;
+    result.opcodes = opcodes;
+    return result;
+  }
+  const std::set<std::string>& get_flags(void) const {
+    return flags;
+  }
+  Instruction with_flags(const std::set<std::string>& flags) const {
+    Instruction result = *this;
+    result.flags = flags;
+    return result;
+  }
+  bool has_flag(const std::string& flag) const {
+    return flags.find(flag) != flags.end();
+  }
+
  protected:
   std::string name;
   std::vector<Operand> operands;
@@ -249,43 +286,6 @@ class Instruction {
   }
 
   friend void parse_instructions(const char*);
-
- public:
-  const std::string& get_name(void) const {
-    return name;
-  }
-  Instruction with_name(const std::string& name) const {
-    Instruction result = *this;
-    result.name = name;
-    return result;
-  }
-  const std::vector<Operand>& get_operands(void) const {
-    return operands;
-  }
-  Instruction with_operands(const std::vector<Operand>& operands) const {
-    Instruction result = *this;
-    result.operands = operands;
-    return result;
-  }
-  const std::vector<std::string>& get_opcodes(void) const {
-    return opcodes;
-  }
-  Instruction with_opcodes(const std::vector<std::string>& opcodes) const {
-    Instruction result = *this;
-    result.opcodes = opcodes;
-    return result;
-  }
-  const std::set<std::string>& get_flags(void) const {
-    return flags;
-  }
-  Instruction with_flags(const std::set<std::string>& flags) const {
-    Instruction result = *this;
-    result.flags = flags;
-    return result;
-  }
-  bool has_flag(const std::string& flag) const {
-    return flags.find(flag) != flags.end();
-  }
 };
 std::vector<Instruction> instructions;
 
@@ -604,6 +604,9 @@ void print_name_actions(void) {
 
 class MarkedInstruction : public Instruction {
  public:
+  /* Describes REX.B, REX.X, REX.R, and REX.W bits in REX/VEX instruction prefix
+     (see AMD/Intel documentation for details for when these bits can/should be
+     allowed and when they are correct/incorrect).  */
   struct RexType {
     bool b : 1;
     bool x : 1;
@@ -611,14 +614,7 @@ class MarkedInstruction : public Instruction {
     bool w : 1;
     RexType(bool b_, bool x_, bool r_, bool w_) : b(b_), x(x_), r(r_), w(w_) { }
   };
- private:
-  std::multiset<std::string> required_prefixes;
-  std::multiset<std::string> optional_prefixes;
-  RexType rex;
-  bool opcode_in_modrm : 1;
-  bool opcode_in_imm : 1;
-  bool fwait : 1;
- public:
+
   explicit MarkedInstruction(const Instruction& instruction_) :
       Instruction(instruction_),
       required_prefixes(),
@@ -838,6 +834,14 @@ class MarkedInstruction : public Instruction {
   bool get_fwait(void) const {
     return fwait;
   }
+
+ private:
+  std::multiset<std::string> required_prefixes;
+  std::multiset<std::string> optional_prefixes;
+  RexType rex;
+  bool opcode_in_modrm : 1;
+  bool opcode_in_imm : 1;
+  bool fwait : 1;
 };
 
 /* mod_reg_is_used returns true if the instruction includes operands which is
@@ -1850,7 +1854,7 @@ void print_one_size_definition(const MarkedInstruction& instruction) {
         modrm_register = true;
         operand_source = operand->type;
         break;
-      default;
+      default:
         break;
     }
   if (modrm_memory || modrm_register) {
