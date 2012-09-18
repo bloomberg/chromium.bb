@@ -291,6 +291,10 @@ tc-test-bot() {
   echo "@@@BUILD_STEP compile_toolchain@@@"
   ${PNACL_BUILD} clean
   HOST_ARCH=x86_32 ${PNACL_BUILD} all
+  # Make 64-bit versions of the build tools such as fpcmp (used for llvm
+  # test suite and for some reason it matters that they match the build machine)
+  ${PNACL_BUILD} llvm-configure
+  PNACL_MAKE_OPTS=BUILD_DIRS_ONLY=1 ${PNACL_BUILD} llvm-make
 
   # run the torture tests. the "trybot" phases take care of prerequisites
   # for both test sets

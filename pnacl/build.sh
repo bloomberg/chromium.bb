@@ -67,7 +67,8 @@ readonly NNACL_BASE="${TOOLCHAIN_ROOT}/${SCONS_BUILD_PLATFORM}_x86"
 readonly NNACL_NEWLIB_ROOT="${NNACL_BASE}_newlib"
 readonly NNACL_GLIBC_ROOT="${NNACL_BASE}"
 
-readonly MAKE_OPTS="-j${PNACL_CONCURRENCY} VERBOSE=1"
+readonly PNACL_MAKE_OPTS="${PNACL_MAKE_OPTS:-}"
+readonly MAKE_OPTS="-j${PNACL_CONCURRENCY} VERBOSE=1 ${PNACL_MAKE_OPTS}"
 
 readonly NONEXISTENT_PATH="/going/down/the/longest/road/to/nowhere"
 
