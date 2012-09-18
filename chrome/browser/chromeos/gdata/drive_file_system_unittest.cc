@@ -1225,7 +1225,7 @@ TEST_F(DriveFileSystemTest, TransferFileFromLocalToRemote_RegularFile) {
   scoped_ptr<DocumentEntry> document_entry(
       DocumentEntry::ExtractAndParse(*value));
 
-  EXPECT_CALL(*mock_uploader_, UploadNewFile(_, _, _, _, _, _, _, _))
+  EXPECT_CALL(*mock_uploader_, UploadNewFile(_, _, _, _, _, _, _, _, _))
       .WillOnce(MockUploadNewFile());
 
   // Transfer the local file to Drive.
@@ -2364,7 +2364,8 @@ TEST_F(DriveFileSystemTest, UpdateFileByResourceId_PersistentFile) {
       dirty_cache_file_path,
       "audio/mpeg",
       kDummyCacheContent.size(),  // The size after modification must be used.
-      _))  // callback
+      _,   // Completion callback.
+      _))  // Ready callback.
       .WillOnce(MockUploadExistingFile(
           DRIVE_FILE_OK,
           FilePath::FromUTF8Unsafe("drive/File1"),

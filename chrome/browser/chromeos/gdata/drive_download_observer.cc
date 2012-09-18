@@ -436,7 +436,7 @@ void DriveDownloadObserver::UploadDownloadItem(DownloadItem* download) {
 
   // Initialize uploading userdata.
   download->SetUserData(&kUploadingKey,
-                            new UploadingUserData(drive_uploader_));
+                        new UploadingUserData(drive_uploader_));
 
   // Create UploaderParams structure for the download item.
   CreateUploaderParams(download);
@@ -446,8 +446,9 @@ void DriveDownloadObserver::UpdateUpload(DownloadItem* download) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   UploadingUserData* upload_data = GetUploadingUserData(download);
-  if (!upload_data) {
-    DVLOG(1) << "No UploadingUserData for download " << download->GetId();
+  if (!upload_data || upload_data->upload_id() == -1) {
+    DVLOG(1) << "No UploadingUserData for download: " << download->GetId()
+             << " or Uploader is not ready yet.";
     return;
   }
 
@@ -491,6 +492,11 @@ void DriveDownloadObserver::CreateUploaderParams(DownloadItem* download) {
 
   uploader_params->completion_callback =
       base::Bind(&DriveDownloadObserver::OnUploadComplete,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 download->GetId());
+
+  uploader_params->ready_callback =
+      base::Bind(&DriveDownloadObserver::OnUploaderReady,
                  weak_ptr_factory_.GetWeakPtr(),
                  download->GetId());
 
@@ -599,28 +605,48 @@ void DriveDownloadObserver::StartUpload(
 
   // Start upload and save the upload id for future reference.
   if (upload_data->is_overwrite()) {
-    const int upload_id =
-        drive_uploader_->StreamExistingFile(
-            uploader_params->upload_location,
-            uploader_params->drive_path,
-            uploader_params->file_path,
-            uploader_params->content_type,
-            uploader_params->content_length,
-            uploader_params->file_size,
-            uploader_params->completion_callback);
-    upload_data->set_upload_id(upload_id);
+    drive_uploader_->StreamExistingFile(
+        uploader_params->upload_location,
+        uploader_params->drive_path,
+        uploader_params->file_path,
+        uploader_params->content_type,
+        uploader_params->content_length,
+        uploader_params->file_size,
+        uploader_params->completion_callback,
+        uploader_params->ready_callback);
   } else {
-    const int upload_id =
-        drive_uploader_->UploadNewFile(uploader_params->upload_location,
-                                       uploader_params->drive_path,
-                                       uploader_params->file_path,
-                                       uploader_params->title,
-                                       uploader_params->content_type,
-                                       uploader_params->content_length,
-                                       uploader_params->file_size,
-                                       uploader_params->completion_callback);
-    upload_data->set_upload_id(upload_id);
+    drive_uploader_->UploadNewFile(uploader_params->upload_location,
+                                   uploader_params->drive_path,
+                                   uploader_params->file_path,
+                                   uploader_params->title,
+                                   uploader_params->content_type,
+                                   uploader_params->content_length,
+                                   uploader_params->file_size,
+                                   uploader_params->completion_callback,
+                                   uploader_params->ready_callback);
   }
+}
+
+void DriveDownloadObserver::OnUploaderReady(int32 download_id,
+                                            int32 upload_id) {
+  // Look up the DownloadItem for the |download_id|.
+  DownloadMap::iterator iter = pending_downloads_.find(download_id);
+  if (iter == pending_downloads_.end()) {
+    DVLOG(1) << "Pending download not found" << download_id;
+    return;
+  }
+  DVLOG(1) << "Uploader for download id: " << download_id
+           << "ready with the upload id: " << upload_id;
+  DownloadItem* download_item = iter->second;
+
+  UploadingUserData* upload_data = GetUploadingUserData(download_item);
+  DCHECK(upload_data);
+
+  // Let's start uploading just when the uploader gets ready.
+  drive_uploader_->UpdateUpload(upload_id, download_item);
+
+  // Store upload id in the uploading data structure.
+  upload_data->set_upload_id(upload_id);
 }
 
 void DriveDownloadObserver::OnUploadComplete(

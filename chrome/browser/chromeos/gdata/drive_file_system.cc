@@ -819,7 +819,8 @@ void DriveFileSystem::StartFileUploadOnUIThreadAfterGetEntryInfo(
                            file_size,
                            base::Bind(&DriveFileSystem::OnTransferCompleted,
                                       ui_weak_ptr_,
-                                      params.callback));
+                                      params.callback),
+                           UploaderReadyCallback());
 }
 
 void DriveFileSystem::OnTransferCompleted(
@@ -2071,7 +2072,8 @@ void DriveFileSystem::OnGetFileSizeCompleteForUpdateFile(
       *file_size,
       base::Bind(&DriveFileSystem::OnUpdatedFileUploaded,
                  ui_weak_ptr_,
-                 callback));
+                 callback),
+      UploaderReadyCallback());
 }
 
 void DriveFileSystem::OnUpdatedFileUploaded(

@@ -16,7 +16,7 @@ class MockDriveUploader : public DriveUploaderInterface {
   MockDriveUploader();
   virtual ~MockDriveUploader();
 
-  MOCK_METHOD8(UploadNewFile,
+  MOCK_METHOD9(UploadNewFile,
                int(const GURL& upload_location,
                    const FilePath& gdata_file_path,
                    const FilePath& local_file_path,
@@ -24,22 +24,25 @@ class MockDriveUploader : public DriveUploaderInterface {
                    const std::string& content_type,
                    int64 content_length,
                    int64 file_size,
-                   const UploadCompletionCallback& callback));
-  MOCK_METHOD7(StreamExistingFile,
+                   const UploadCompletionCallback& completion_callback,
+                   const UploaderReadyCallback& ready_callback));
+  MOCK_METHOD8(StreamExistingFile,
                int(const GURL& upload_location,
                    const FilePath& gdata_file_path,
                    const FilePath& local_file_path,
                    const std::string& content_type,
                    int64 content_length,
                    int64 file_size,
-                   const UploadCompletionCallback& callback));
-  MOCK_METHOD6(UploadExistingFile,
+                   const UploadCompletionCallback& completion_callback,
+                   const UploaderReadyCallback& ready_callback));
+  MOCK_METHOD7(UploadExistingFile,
                int(const GURL& upload_location,
                    const FilePath& gdata_file_path,
                    const FilePath& local_file_path,
                    const std::string& content_type,
                    int64 file_size,
-                   const UploadCompletionCallback& callback));
+                   const UploadCompletionCallback& completion_callback,
+                   const UploaderReadyCallback& ready_callback));
   MOCK_METHOD2(UpdateUpload, void(int upload_id,
                                   content::DownloadItem* download));
   MOCK_CONST_METHOD1(GetUploadedBytes, int64(int upload_id));

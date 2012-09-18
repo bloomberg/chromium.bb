@@ -108,6 +108,9 @@ class DriveDownloadObserver : public content::DownloadManager::Observer,
     FilePath drive_path;
     bool all_bytes_present; // Whether all bytes of this file are present.
 
+    // Callback to be invoked once the uploader is ready to upload.
+    UploaderReadyCallback ready_callback;
+
     // Callback to be invoked once the upload has completed.
     UploadCompletionCallback completion_callback;
   };
@@ -162,6 +165,22 @@ class DriveDownloadObserver : public content::DownloadManager::Observer,
   // Starts the upload.
   void StartUpload(int32 download_id,
                    scoped_ptr<UploaderParams> upload_params);
+
+  // Callback invoked by DriveUploader when all the asynchronous callbacks
+  // are finished and the uploader is ready to start uploading.
+  //
+  // Used to save upload_id to the content::DownloadItem structure which
+  // is required by the UpdateUpload() method.
+  //
+  // Note, that it may happen that the file will be downloaded to the local
+  // storage before the Uploader gets ready. Therefore, all of the UpdateUpload
+  // invocations will be ignored (since upload_id is not set yet).
+  //
+  // We have to update the upload from OnUploadReady() to be sure that the last
+  // chunk is uploaded to GDrive.
+  //
+  // See: http://crbug.com/145831
+  void OnUploaderReady(int32 download_id, int32 upload_id);
 
   // Callback invoked by DriveUploader when the upload associated with
   // |download_id| has completed. |error| indicated whether the
