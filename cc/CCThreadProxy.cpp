@@ -351,6 +351,16 @@ void CCThreadProxy::postAnimationEventsToMainThreadOnImplThread(PassOwnPtr<CCAni
     m_mainThreadProxy->postTask(createCCThreadTask(this, &CCThreadProxy::setAnimationEvents, events, wallClockTime));
 }
 
+void CCThreadProxy::releaseContentsTexturesOnImplThread()
+{
+    ASSERT(isImplThread());
+    m_layerTreeHost->reduceContentsTexturesMemoryOnImplThread(0, m_layerTreeHostImpl->resourceProvider());
+    // Make sure that we get a new commit before drawing again.
+    m_resetContentsTexturesPurgedAfterCommitOnImplThread = false;
+    // The texture upload queue may reference textures that were just purged, so clear it.
+    m_currentTextureUpdateControllerOnImplThread.clear();
+}
+
 void CCThreadProxy::setNeedsRedraw()
 {
     ASSERT(isMainThread());
@@ -453,8 +463,8 @@ void CCThreadProxy::scheduledActionBeginFrame()
     m_pendingBeginFrameRequest = adoptPtr(new BeginFrameAndCommitState());
     m_pendingBeginFrameRequest->monotonicFrameBeginTime = monotonicallyIncreasingTime();
     m_pendingBeginFrameRequest->scrollInfo = m_layerTreeHostImpl->processScrollDeltas();
-    m_pendingBeginFrameRequest->contentsTexturesWereDeleted = m_layerTreeHostImpl->contentsTexturesPurged();
     m_pendingBeginFrameRequest->memoryAllocationLimitBytes = m_layerTreeHostImpl->memoryAllocationLimitBytes();
+    m_layerTreeHost->getEvictedContentTexturesBackings(m_pendingBeginFrameRequest->evictedContentsTexturesBackings);
 
     m_mainThreadProxy->postTask(createCCThreadTask(this, &CCThreadProxy::beginFrame));
 
@@ -525,8 +535,7 @@ void CCThreadProxy::beginFrame()
         return;
     }
 
-    if (request->contentsTexturesWereDeleted)
-        m_layerTreeHost->unlinkAllContentTextures();
+    m_layerTreeHost->unlinkEvictedContentTexturesBackings(request->evictedContentsTexturesBackings);
 
     OwnPtr<CCTextureUpdateQueue> queue = adoptPtr(new CCTextureUpdateQueue);
     m_layerTreeHost->updateLayers(*(queue.get()), request->memoryAllocationLimitBytes);
@@ -556,7 +565,7 @@ void CCThreadProxy::beginFrame()
         DebugScopedSetMainThreadBlocked mainThreadBlocked;
 
         CCCompletionEvent completion;
-        CCProxy::implThread()->postTask(createCCThreadTask(this, &CCThreadProxy::beginFrameCompleteOnImplThread, &completion, queue.release(), request->contentsTexturesWereDeleted));
+        CCProxy::implThread()->postTask(createCCThreadTask(this, &CCThreadProxy::beginFrameCompleteOnImplThread, &completion, queue.release()));
         completion.wait();
     }
 
@@ -564,7 +573,7 @@ void CCThreadProxy::beginFrame()
     m_layerTreeHost->didBeginFrame();
 }
 
-void CCThreadProxy::beginFrameCompleteOnImplThread(CCCompletionEvent* completion, PassOwnPtr<CCTextureUpdateQueue> queue, bool contentsTexturesWereDeleted)
+void CCThreadProxy::beginFrameCompleteOnImplThread(CCCompletionEvent* completion, PassOwnPtr<CCTextureUpdateQueue> queue)
 {
     TRACE_EVENT0("cc", "CCThreadProxy::beginFrameCompleteOnImplThread");
     ASSERT(!m_commitCompletionEventOnImplThread);
@@ -578,19 +587,20 @@ void CCThreadProxy::beginFrameCompleteOnImplThread(CCCompletionEvent* completion
         return;
     }
 
-    if (contentsTexturesWereDeleted) {
-        ASSERT(m_layerTreeHostImpl->contentsTexturesPurged());
-        // We unlinked all textures on the main thread, delete them now.
-        m_layerTreeHost->deleteUnlinkedTextures();
-        // Mark that we can start drawing again when this commit is complete.
-        m_resetContentsTexturesPurgedAfterCommitOnImplThread = true;
-    } else if (m_layerTreeHostImpl->contentsTexturesPurged()) {
-        // We purged the content textures on the impl thread between the time we
-        // posted the beginFrame task and now, meaning we have a bunch of
-        // uploads that are now invalid. Clear the uploads (they all go to
-        // content textures), and kick another commit to fill them again.
+    // If we unlinked evicted textures on the main thread, delete them now.
+    if (m_layerTreeHost->deleteEvictedContentTexturesBackings()) {
+
+        // Deleting the evicted textures' backings resulted in some textures in the
+        // layer tree being invalidated (unliked from their backings). The upload queue
+        // may contain references to these textures, so clear the queue and kick off
+        // another commit to fill them again.
         queue->clearUploads();
         setNeedsCommitOnImplThread();
+    } else {
+        // The layer tree does not reference evicted textures, so mark that we
+        // can draw this tree once this commit is complete.
+        if (m_layerTreeHostImpl->contentsTexturesPurged())
+            m_resetContentsTexturesPurgedAfterCommitOnImplThread = true;
     }
 
     bool hasResourceUpdates = !!queue->fullUploadSize();
@@ -882,8 +892,7 @@ void CCThreadProxy::layerTreeHostClosedOnImplThread(CCCompletionEvent* completio
 {
     TRACE_EVENT0("cc", "CCThreadProxy::layerTreeHostClosedOnImplThread");
     ASSERT(isImplThread());
-    if (!m_layerTreeHostImpl->contentsTexturesPurged())
-        m_layerTreeHost->deleteContentsTexturesOnImplThread(m_layerTreeHostImpl->resourceProvider());
+    m_layerTreeHost->deleteContentsTexturesOnImplThread(m_layerTreeHostImpl->resourceProvider());
     m_inputHandlerOnImplThread.clear();
     m_layerTreeHostImpl.clear();
     m_schedulerOnImplThread.clear();
@@ -905,8 +914,7 @@ void CCThreadProxy::recreateContextOnImplThread(CCCompletionEvent* completion, C
 {
     TRACE_EVENT0("cc", "CCThreadProxy::recreateContextOnImplThread");
     ASSERT(isImplThread());
-    if (!m_layerTreeHostImpl->contentsTexturesPurged())
-        m_layerTreeHost->deleteContentsTexturesOnImplThread(m_layerTreeHostImpl->resourceProvider());
+    m_layerTreeHost->deleteContentsTexturesOnImplThread(m_layerTreeHostImpl->resourceProvider());
     *recreateSucceeded = m_layerTreeHostImpl->initializeRenderer(adoptPtr(contextPtr), textureUploader);
     if (*recreateSucceeded) {
         *capabilities = m_layerTreeHostImpl->rendererCapabilities();

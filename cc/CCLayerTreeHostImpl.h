@@ -40,6 +40,7 @@ public:
     virtual void setNeedsRedrawOnImplThread() = 0;
     virtual void setNeedsCommitOnImplThread() = 0;
     virtual void postAnimationEventsToMainThreadOnImplThread(PassOwnPtr<CCAnimationEventsVector>, double wallClockTime) = 0;
+    virtual void releaseContentsTexturesOnImplThread() = 0;
 };
 
 // CCLayerTreeHostImpl owns the CCLayerImpl tree as well as associated rendering state
@@ -137,6 +138,7 @@ public:
     void setSourceFrameNumber(int frameNumber) { m_sourceFrameNumber = frameNumber; }
 
     bool contentsTexturesPurged() const { return m_contentsTexturesPurged; }
+    void setContentsTexturesPurged();
     void resetContentsTexturesPurged();
     size_t memoryAllocationLimitBytes() const { return m_memoryAllocationLimitBytes; }
 
