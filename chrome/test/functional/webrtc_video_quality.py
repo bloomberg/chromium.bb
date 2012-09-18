@@ -107,7 +107,7 @@ class WebrtcVideoQualityTest(webrtc_test_base.WebrtcTestBase):
 
     # The hang-up will automatically propagate to the second tab.
     self.HangUp(from_tab_with_index=0)
-    self.VerifyHungUp(tab_index=1)
+    self.WaitUntilHangUpVerified(tab_index=1)
 
     self.Disconnect(tab_index=0)
     self.Disconnect(tab_index=1)

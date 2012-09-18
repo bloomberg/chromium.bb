@@ -110,10 +110,6 @@ class WebrtcTestBase(pyauto.PyUITest):
     self.assertEquals('ok-disconnected', self.ExecuteJavascript(
         'disconnect()', tab_index=tab_index))
 
-  def VerifyHungUp(self, tab_index):
-    self.assertEquals('no', self.ExecuteJavascript(
-        'isCallActive()', tab_index=tab_index))
-
   def BinPathForPlatform(self, path):
     """Form a platform specific path to a binary.
 
