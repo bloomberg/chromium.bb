@@ -8,7 +8,7 @@
 
 cr.define('login', function() {
   // Screens that should have offline message overlay.
-  /** @const */ var MANAGED_SCREENS = ['gaia-signin'];
+  /** @const */ var MANAGED_SCREENS = [SCREEN_GAIA_SIGNIN];
 
   // Network state constants.
   var NET_STATE = {
@@ -243,21 +243,22 @@ cr.define('login', function() {
       var isTimeout = false;
       var isShown = !offlineMessage.classList.contains('hidden') &&
           !offlineMessage.classList.contains('faded');
-      var currentScreenReloaded = false;
+      var isGaiaSignin = (currentScreen.id == SCREEN_GAIA_SIGNIN);
+      var gaiaSigninReloaded = false;
 
       // Reload frame if network is changed.
       if (reason == ERROR_REASONS.NETWORK_CHANGED) {
-        if (state == NET_STATE.ONLINE && !currentScreenReloaded) {
+        if (state == NET_STATE.ONLINE && isGaiaSignin && !gaiaSigninReloaded) {
           currentScreen.doReload();
-          currentScreenReloaded = true;
+          gaiaSigninReloaded = true;
         }
       }
 
       if (reason == ERROR_REASONS.PROXY_CONFIG_CHANGED && shouldOverlay &&
-          !currentScreenReloaded) {
+          isGaiaSignin && !gaiaSigninReloaded) {
         // Schedules a immediate retry.
         currentScreen.doReload();
-        currentScreenReloaded = true;
+        gaiaSigninReloaded = true;
         console.log('Retry page load since proxy settings has been changed');
       }
 
@@ -370,14 +371,14 @@ cr.define('login', function() {
             Oobe.getInstance().updateInnerContainerSize_(currentScreen);
 
           // Forces a reload for Gaia screen on hiding error message.
-          if (currentScreen.id == 'gaia-signin' && !currentScreenReloaded) {
+          if (isGaiaSignin && !gaiaSigninReloaded) {
             currentScreen.doReload();
-            currentScreenReloaded = true;
+            gaiaSigninReloaded = true;
           }
-        } else if (currentScreen.id == 'gaia-signin' && currentScreen.loading) {
-          if (!currentScreenReloaded) {
+        } else if (isGaiaSignin && currentScreen.loading) {
+          if (!gaiaSigninReloaded) {
             currentScreen.doReload();
-            currentScreenReloaded = true;
+            gaiaSigninReloaded = true;
           }
         }
       }
