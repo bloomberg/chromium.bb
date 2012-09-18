@@ -40,8 +40,6 @@ LookaheadFilterInterpreter::LookaheadFilterInterpreter(
   InitName();
 }
 
-LookaheadFilterInterpreter::~LookaheadFilterInterpreter() {}
-
 Gesture* LookaheadFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
                                                    stime_t* timeout) {
   // Push back into queue

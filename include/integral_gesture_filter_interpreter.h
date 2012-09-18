@@ -23,7 +23,7 @@ class IntegralGestureFilterInterpreter : public FilterInterpreter {
  public:
   // Takes ownership of |next|:
   explicit IntegralGestureFilterInterpreter(Interpreter* next, Tracer* tracer);
-  virtual ~IntegralGestureFilterInterpreter();
+  virtual ~IntegralGestureFilterInterpreter() {}
 
  private:
   virtual Gesture* SyncInterpretImpl(HardwareState* hwstate,

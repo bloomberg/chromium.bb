@@ -28,8 +28,6 @@ LoggingFilterInterpreter::LoggingFilterInterpreter(PropRegistry* prop_reg,
     prop_reg->set_activity_log(&log_);
 }
 
-LoggingFilterInterpreter::~LoggingFilterInterpreter() {}
-
 void LoggingFilterInterpreter::IntWasWritten(IntProperty* prop) {
   if (prop == &logging_notify_)
     Dump("/var/log/touchpad_activity_log.txt");

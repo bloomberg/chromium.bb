@@ -23,8 +23,6 @@ IntegralGestureFilterInterpreter::IntegralGestureFilterInterpreter(
   InitName();
 }
 
-IntegralGestureFilterInterpreter::~IntegralGestureFilterInterpreter() {}
-
 Gesture* IntegralGestureFilterInterpreter::SyncInterpretImpl(
     HardwareState* hwstate, stime_t* timeout) {
   if (hwstate->finger_cnt == 0 && hwstate->touch_cnt == 0)

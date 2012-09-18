@@ -27,7 +27,7 @@ class LoggingFilterInterpreter : public FilterInterpreter,
   // Takes ownership of |next|:
   LoggingFilterInterpreter(PropRegistry* prop_reg, Interpreter* next,
                            Tracer* tracer);
-  virtual ~LoggingFilterInterpreter();
+  virtual ~LoggingFilterInterpreter() {}
 
   virtual void IntWasWritten(IntProperty* prop);
 

@@ -36,7 +36,7 @@ class LookaheadFilterInterpreter : public FilterInterpreter {
  public:
   LookaheadFilterInterpreter(PropRegistry* prop_reg, Interpreter* next,
                              Tracer* tracer);
-  virtual ~LookaheadFilterInterpreter();
+  virtual ~LookaheadFilterInterpreter() {}
 
  protected:
   virtual Gesture* SyncInterpretImpl(HardwareState* hwstate,
