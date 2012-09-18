@@ -26,13 +26,10 @@ PowerStateOverride::PowerStateOverride()
   // request id_ = 0 will create a new override request.
   CallRequestPowerStateOverrides();
 
-  // Start the heartbeat delayed, since we've just sent a request, we may not
-  // have received our request_id back yet.
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&PowerStateOverride::StartHeartbeat,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::TimeDelta::FromSeconds(kHeartbeatTimeInSecs));
+  heartbeat_.Start(FROM_HERE,
+                   base::TimeDelta::FromSeconds(kHeartbeatTimeInSecs),
+                   weak_ptr_factory_.GetWeakPtr(),
+                   &PowerStateOverride::CallRequestPowerStateOverrides);
 }
 
 PowerStateOverride::~PowerStateOverride() {
@@ -42,13 +39,6 @@ PowerStateOverride::~PowerStateOverride() {
       DBusThreadManager::Get()->GetPowerManagerClient();
   if (power_manager)
     power_manager->CancelPowerStateOverrides(request_id_);
-}
-
-void PowerStateOverride::StartHeartbeat() {
-  heartbeat_.Start(FROM_HERE,
-                   base::TimeDelta::FromSeconds(kHeartbeatTimeInSecs),
-                   weak_ptr_factory_.GetWeakPtr(),
-                   &PowerStateOverride::CallRequestPowerStateOverrides);
 }
 
 void PowerStateOverride::SetRequestId(uint32 request_id) {

@@ -22,9 +22,6 @@ class PowerStateOverride {
   // Callback from RequestPowerStateOverride which receives our request_id.
   void SetRequestId(uint32 request_id);
 
-  // Start our heartbeat timer.
-  void StartHeartbeat();
-
   // Actually make a call to power manager; we need this to be able to post a
   // delayed task since we cannot call back into power manager from Heartbeat
   // since the last request has just been completed at that point.

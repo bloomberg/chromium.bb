@@ -539,7 +539,8 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
       : discharging_(true),
         battery_percentage_(40),
         brightness_(50.0),
-        pause_count_(2) {
+        pause_count_(2),
+        next_request_id_(1) {
   }
 
   virtual ~PowerManagerClientStubImpl() {}
@@ -622,7 +623,14 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
       uint32 request_id,
       uint32 duration,
       int overrides,
-      const PowerStateRequestIdCallback& callback) OVERRIDE {}
+      const PowerStateRequestIdCallback& callback) OVERRIDE {
+    // Mimic the behavior of power manager w.r.t. the request_id.
+    if (request_id == 0) {
+      callback.Run(next_request_id_++);
+    } else {
+      callback.Run(request_id);
+    }
+  }
   virtual void CancelPowerStateOverrides(uint32 request_id) OVERRIDE {}
   virtual void SetIsProjecting(bool is_projecting) OVERRIDE {}
 
@@ -672,6 +680,7 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
   ObserverList<Observer> observers_;
   base::RepeatingTimer<PowerManagerClientStubImpl> timer_;
   PowerSupplyStatus status_;
+  uint32 next_request_id_;
 };
 
 PowerManagerClient::PowerManagerClient() {
