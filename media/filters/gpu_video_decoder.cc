@@ -133,8 +133,9 @@ void GpuVideoDecoder::Initialize(const scoped_refptr<DemuxerStream>& stream,
   // TODO(scherkus): this check should go in Pipeline prior to creating
   // decoder objects.
   const VideoDecoderConfig& config = stream->video_decoder_config();
-  if (!config.IsValidConfig()) {
-    DLOG(ERROR) << "Invalid video stream - " << config.AsHumanReadableString();
+  if (!config.IsValidConfig() || config.is_encrypted()) {
+    DLOG(ERROR) << "Unsupported video stream - "
+                << config.AsHumanReadableString();
     status_cb.Run(PIPELINE_ERROR_DECODE);
     return;
   }

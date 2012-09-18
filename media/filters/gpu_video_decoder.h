@@ -5,10 +5,10 @@
 #ifndef MEDIA_FILTERS_GPU_VIDEO_DECODER_H_
 #define MEDIA_FILTERS_GPU_VIDEO_DECODER_H_
 
-#include <deque>
 #include <list>
 #include <map>
 #include <utility>
+#include <vector>
 
 #include "media/base/pipeline_status.h"
 #include "media/base/demuxer_stream.h"
