@@ -112,6 +112,8 @@ void RemovableDeviceNotificationsMac::UpdateDisk(
       disk_info_map_.erase(it);
   } else {
     disk_info_map_[info.bsd_name()] = info;
+    MediaStorageUtil::RecordDeviceInfoHistogram(true, info.device_id(),
+                                                info.display_name());
     if (ShouldPostNotificationForDisk(info)) {
       base::SystemMonitor::Get()->ProcessRemovableStorageAttached(
           info.device_id(), info.display_name(), info.mount_point().value());

@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/system_monitor/system_monitor.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -33,6 +34,19 @@ namespace chrome {
 namespace {
 
 typedef std::vector<SystemMonitor::RemovableStorageInfo> RemovableStorageInfo;
+
+// MediaDeviceNotification.DeviceInfo histogram values.
+enum DeviceInfoHistogramBuckets {
+  MASS_STORAGE_DEVICE_NAME_AND_UUID_AVAILABLE,
+  MASS_STORAGE_DEVICE_UUID_MISSING,
+  MASS_STORAGE_DEVICE_NAME_MISSING,
+  MASS_STORAGE_DEVICE_NAME_AND_UUID_MISSING,
+  MTP_STORAGE_DEVICE_NAME_AND_UUID_AVAILABLE,
+  MTP_STORAGE_DEVICE_UUID_MISSING,
+  MTP_STORAGE_DEVICE_NAME_MISSING,
+  MTP_STORAGE_DEVICE_NAME_AND_UUID_MISSING,
+  DEVICE_INFO_BUCKET_BOUNDARY
+};
 
 // Prefix constants for different device id spaces.
 const char kRemovableMassStorageWithDCIMPrefix[] = "dcim:";
@@ -273,6 +287,29 @@ FilePath MediaStorageUtil::FindDevicePathById(const std::string& device_id) {
          type == REMOVABLE_MASS_STORAGE_WITH_DCIM ||
          type == REMOVABLE_MASS_STORAGE_NO_DCIM);
   return FilePath(FindRemovableStorageLocationById(device_id));
+}
+
+// static
+void MediaStorageUtil::RecordDeviceInfoHistogram(bool mass_storage,
+                                                 const std::string& device_uuid,
+                                                 const string16& device_name) {
+  unsigned int event_number = 0;
+  if (!mass_storage)
+    event_number = 4;
+
+  if (device_name.empty())
+    event_number += 2;
+
+  if (device_uuid.empty())
+    event_number += 1;
+  enum DeviceInfoHistogramBuckets event =
+      static_cast<enum DeviceInfoHistogramBuckets>(event_number);
+  if (event >= DEVICE_INFO_BUCKET_BOUNDARY) {
+    NOTREACHED();
+    return;
+  }
+  UMA_HISTOGRAM_ENUMERATION("MediaDeviceNotifications.DeviceInfo", event,
+                            DEVICE_INFO_BUCKET_BOUNDARY);
 }
 
 // static

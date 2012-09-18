@@ -4,7 +4,6 @@
 
 #include "chrome/browser/system_monitor/media_transfer_protocol_device_observer_chromeos.h"
 
-#include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
@@ -12,8 +11,8 @@
 #include "base/system_monitor/system_monitor.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/mtp/media_transfer_protocol_manager.h"
-#include "chrome/browser/system_monitor/removable_device_constants.h"
 #include "chrome/browser/system_monitor/media_storage_util.h"
+#include "chrome/browser/system_monitor/removable_device_constants.h"
 #include "chromeos/dbus/mtp_storage_info.pb.h"
 
 namespace chromeos {
@@ -152,11 +151,7 @@ void MediaTransferProtocolDeviceObserverCros::StorageChanged(
 
     // Keep track of device id and device name to see how often we receive
     // empty values.
-    UMA_HISTOGRAM_BOOLEAN("MediaDeviceNotification.MTPDeviceUUIDAvailable",
-                          !device_id.empty());
-    UMA_HISTOGRAM_BOOLEAN("MediaDeviceNotification.MTPDeviceNameAvailable",
-                          !device_name.empty());
-
+    MediaStorageUtil::RecordDeviceInfoHistogram(false, device_id, device_name);
     if (device_id.empty() || device_name.empty())
       return;
 

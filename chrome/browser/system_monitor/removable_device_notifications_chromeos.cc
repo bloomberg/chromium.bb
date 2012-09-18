@@ -8,7 +8,6 @@
 
 #include "base/file_path.h"
 #include "base/logging.h"
-#include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
@@ -80,6 +79,7 @@ bool GetDeviceInfo(const std::string& source_path, std::string* unique_id,
 
 }  // namespace
 
+using chrome::MediaStorageUtil;
 using content::BrowserThread;
 
 RemovableDeviceNotificationsCros::RemovableDeviceNotificationsCros() {
@@ -186,20 +186,17 @@ void RemovableDeviceNotificationsCros::AddMountedPathOnUIThread(
   if (!GetDeviceInfo(mount_info.source_path, &unique_id, &device_label))
     return;
 
-  // Keep track of device uuid, to see how often we receive empty uuid values.
-  UMA_HISTOGRAM_BOOLEAN("MediaDeviceNotification.DeviceUUIDAvailable",
-                        !unique_id.empty());
-  UMA_HISTOGRAM_BOOLEAN("MediaDeviceNotification.DeviceNameAvailable",
-                        !device_label.empty());
+  // Keep track of device uuid and label, to see how often we receive empty
+  // values.
+  MediaStorageUtil::RecordDeviceInfoHistogram(true, unique_id, device_label);
   if (unique_id.empty() || device_label.empty())
     return;
 
-  chrome::MediaStorageUtil::Type type = has_dcim ?
-      chrome::MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM :
-      chrome::MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM;
+  MediaStorageUtil::Type type = has_dcim ?
+      MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM :
+      MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM;
 
-  std::string device_id = chrome::MediaStorageUtil::MakeDeviceId(type,
-                                                                 unique_id);
+  std::string device_id = MediaStorageUtil::MakeDeviceId(type, unique_id);
   mount_map_.insert(std::make_pair(mount_info.mount_path, device_id));
   base::SystemMonitor::Get()->ProcessRemovableStorageAttached(
       device_id,

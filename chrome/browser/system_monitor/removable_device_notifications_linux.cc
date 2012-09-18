@@ -435,12 +435,8 @@ void RemovableDeviceNotificationsLinux::AddNewMount(
   bool removable;
   get_device_info_func_(mount_device, &unique_id, &name, &removable);
 
-
-  // Keep track of device uuid, to see how often we receive empty values.
-  UMA_HISTOGRAM_BOOLEAN("MediaDeviceNotification.DeviceUUIDAvailable",
-                        !unique_id.empty());
-  UMA_HISTOGRAM_BOOLEAN("MediaDeviceNotification.DeviceNameAvailable",
-                        !name.empty());
+  // Keep track of device info details to see how often we get invalid values.
+  MediaStorageUtil::RecordDeviceInfoHistogram(true, unique_id, name);
   if (unique_id.empty() || name.empty())
     return;
 

@@ -75,6 +75,13 @@ class MediaStorageUtil {
   // the device is connected.
   static FilePath FindDevicePathById(const std::string& device_id);
 
+  // Record device information histogram for the given |device_uuid| and
+  // |device_name|. |mass_storage| indicates whether the current device is a
+  // mass storage device, as defined by IsMassStorageDevice().
+  static void RecordDeviceInfoHistogram(bool mass_storage,
+                                        const std::string& device_uuid,
+                                        const string16& device_name);
+
  protected:
   typedef bool (*GetDeviceInfoFromPathFunction)(const FilePath& path,
                                                 std::string* device_id,

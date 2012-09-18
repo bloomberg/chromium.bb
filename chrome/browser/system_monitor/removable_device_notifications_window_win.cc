@@ -156,6 +156,7 @@ RemovableDeviceNotificationsWindowWin::ProcessRemovableDeviceAttachedOnUIThread(
     const FilePath& path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  // TODO(kmadhusu) Record device info histogram.
   SystemMonitor::Get()->ProcessRemovableStorageAttached(id,
                                                         device_name,
                                                         path.value());
