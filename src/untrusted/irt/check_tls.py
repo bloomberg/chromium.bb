@@ -11,7 +11,12 @@ import sys
 import re
 
 def Main(args):
-  assert(len(args) == 3)
+  nargs = len(args)
+  outfile = None
+  if nargs == 4:
+    outfile = args[3]
+  else:
+    assert(nargs == 3)
   arch = args[0]
   objdump = args[1]
   obj_file = args[2]
@@ -22,7 +27,7 @@ def Main(args):
     regex = re.compile(register + r'(?!:0x4\b)')
   elif arch == 'x86-64':
     # Nothing to check.
-    return
+    regex = None
   elif arch.startswith('arm'):
     if arch == 'arm-gcc':
       objdump_flags = ['-d']
@@ -39,20 +44,26 @@ def Main(args):
     print 'Unknown architecture: %s' % arch
     sys.exit(1)
 
-  proc = subprocess.Popen(objdump_args,
-                          stdout=subprocess.PIPE,
-                          bufsize=-1)
-  for line in proc.stdout:
-    if regex.search(line):
-      print '%s use found: %s' % (register, line)
-      print 'This looks like an %s direct TLS use.' % arch
-      print 'Such uses are disallowed by the IRT context constraints.'
-      print 'These never happen if -mtls-use-call is used in the compilation.'
-      print 'Check that all libraries used in the IRT were compiled that way.'
+  if regex is not None:
+    proc = subprocess.Popen(objdump_args,
+                            stdout=subprocess.PIPE,
+                            bufsize=-1)
+    for line in proc.stdout:
+      if regex.search(line):
+        print '%s use found: %s' % (register, line)
+        print 'This looks like an %s direct TLS use.' % arch
+        print 'Such uses are disallowed by the IRT context constraints.'
+        print 'These never happen if -mtls-use-call is used in the compilation.'
+        print 'Check that all libraries used in the IRT were compiled that way.'
+        sys.exit(1)
+    if proc.wait() != 0:
+      print 'Command failed: %s' % objdump_args
       sys.exit(1)
-  if proc.wait() != 0:
-    print 'Command failed: %s' % objdump_args
-    sys.exit(1)
+
+  if outfile is not None:
+    outf = open(outfile, 'w')
+    outf.write('TLS in %s OK\n' % obj_file)
+    outf.close()
 
 
 if __name__ == '__main__':

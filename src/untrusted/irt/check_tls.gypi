@@ -40,7 +40,7 @@
           'inputs': [
             '<(PRODUCT_DIR)/<(check_tls_nexe)',
           ],
-          'outputs': ['<(_target_name).out'],
+          'outputs': ['<(PRODUCT_DIR)/<(_target_name).out'],
           'message': 'Sanity-checking TLS usage in <(check_tls_nexe)',
           'conditions': [
             ['target_arch=="arm"', {
@@ -79,7 +79,8 @@
           ],
           'action': ['>(python_exe)',
                      '<(DEPTH)/native_client/src/untrusted/irt/check_tls.py',
-                     '<(check_tls_arch)', '<(nacl_objdump)', '<@(_inputs)'],
+                     '<(check_tls_arch)', '<(nacl_objdump)',
+                     '<@(_inputs)', '<@(_outputs)'],
         },
       ],
     },
