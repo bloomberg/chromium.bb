@@ -53,6 +53,7 @@
     'mac_untranslated_xibs': [
       'app/nibs/AboutIPC.xib',
       'app/nibs/BookmarkBarFolderWindow.xib',
+      'app/nibs/ExtensionInstalledBubbleBundle.xib',
       'app/nibs/FindBar.xib',
       'app/nibs/GlobalErrorBubble.xib',
       'app/nibs/HungRendererDialog.xib',
