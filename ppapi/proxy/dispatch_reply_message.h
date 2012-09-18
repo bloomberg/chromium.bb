@@ -34,9 +34,9 @@ inline void DispatchResourceReply(ObjT* obj, Method method,
 }
 
 template<class ObjT, class Method, class A, class B>
-inline int32_t DispatchResourceReply(ObjT* obj, Method method,
-                                     const ResourceMessageReplyParams& params,
-                                     const Tuple2<A, B>& arg) {
+inline void DispatchResourceReply(ObjT* obj, Method method,
+                                  const ResourceMessageReplyParams& params,
+                                  const Tuple2<A, B>& arg) {
   return (obj->*method)(params, arg.a, arg.b);
 }
 
