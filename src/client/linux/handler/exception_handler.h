@@ -193,6 +193,13 @@ class ExceptionHandler {
                       size_t mapping_size,
                       size_t file_offset);
 
+  // Register a block of memory of length bytes starting at address ptr
+  // to be copied to the minidump when a crash happens.
+  void RegisterAppMemory(void* ptr, size_t length);
+
+  // Unregister a block of memory that was registered with RegisterAppMemory.
+  void UnregisterAppMemory(void* ptr);
+
   // Force signal handling for the specified signal.
   bool SimulateSignalDelivery(int sig);
  private:
@@ -238,6 +245,10 @@ class ExceptionHandler {
   // Callers can add extra info about mappings for cases where the
   // dumper code cannot extract enough information from /proc/<pid>/maps.
   MappingList mapping_list_;
+
+  // Callers can request additional memory regions to be included in
+  // the dump.
+  AppMemoryList app_memory_list_;
 };
 
 }  // namespace google_breakpad

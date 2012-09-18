@@ -76,6 +76,7 @@
 
 namespace {
 
+using google_breakpad::AppMemoryList;
 using google_breakpad::ExceptionHandler;
 using google_breakpad::LineReader;
 using google_breakpad::LinuxDumper;
@@ -381,6 +382,7 @@ class MinidumpWriter {
                  int minidump_fd,
                  const ExceptionHandler::CrashContext* context,
                  const MappingList& mappings,
+                 const AppMemoryList& appmem,
                  LinuxDumper* dumper)
       : fd_(minidump_fd),
         path_(minidump_path),
@@ -393,7 +395,8 @@ class MinidumpWriter {
 #endif
         dumper_(dumper),
         memory_blocks_(dumper_->allocator()),
-        mapping_list_(mappings) {
+        mapping_list_(mappings),
+        app_memory_list_(appmem) {
     // Assert there should be either a valid fd or a valid path, not both.
     assert(fd_ != -1 || minidump_path);
     assert(fd_ == -1 || !minidump_path);
@@ -479,6 +482,9 @@ class MinidumpWriter {
     if (!WriteMappings(&dirent))
       return false;
     dir.CopyIndex(dir_index++, &dirent);
+
+    if (!WriteAppMemory())
+      return false;
 
     if (!WriteMemoryListStream(&dirent))
       return false;
@@ -776,6 +782,30 @@ class MinidumpWriter {
       }
 
       list.CopyIndexAfterObject(i, &thread, sizeof(thread));
+    }
+
+    return true;
+  }
+
+  // Write application-provided memory regions.
+  bool WriteAppMemory() {
+    for (AppMemoryList::const_iterator iter = app_memory_list_.begin();
+         iter != app_memory_list_.end();
+         ++iter) {
+      uint8_t* data_copy =
+        reinterpret_cast<uint8_t*>(dumper_->allocator()->Alloc(iter->length));
+      dumper_->CopyFromProcess(data_copy, GetCrashThread(), iter->ptr,
+                               iter->length);
+
+      UntypedMDRVA memory(&minidump_writer_);
+      if (!memory.Allocate(iter->length)) {
+        return false;
+      }
+      memory.Copy(data_copy, iter->length);
+      MDMemoryDescriptor desc;
+      desc.start_of_memory_range = reinterpret_cast<uintptr_t>(iter->ptr);
+      desc.memory = memory.location();
+      memory_blocks_.push_back(desc);
     }
 
     return true;
@@ -1361,6 +1391,9 @@ class MinidumpWriter {
   wasteful_vector<MDMemoryDescriptor> memory_blocks_;
   // Additional information about some mappings provided by the caller.
   const MappingList& mapping_list_;
+  // Additional memory regions to be included in the dump,
+  // provided by the caller.
+  const AppMemoryList& app_memory_list_;
 };
 
 
@@ -1368,7 +1401,8 @@ bool WriteMinidumpImpl(const char* minidump_path,
                        int minidump_fd,
                        pid_t crashing_process,
                        const void* blob, size_t blob_size,
-                       const MappingList& mappings) {
+                       const MappingList& mappings,
+                       const AppMemoryList& appmem) {
   if (blob_size != sizeof(ExceptionHandler::CrashContext))
     return false;
   const ExceptionHandler::CrashContext* context =
@@ -1378,7 +1412,8 @@ bool WriteMinidumpImpl(const char* minidump_path,
       reinterpret_cast<uintptr_t>(context->siginfo.si_addr));
   dumper.set_crash_signal(context->siginfo.si_signo);
   dumper.set_crash_thread(context->tid);
-  MinidumpWriter writer(minidump_path, minidump_fd, context, mappings, &dumper);
+  MinidumpWriter writer(minidump_path, minidump_fd, context, mappings,
+                        appmem, &dumper);
   if (!writer.Init())
     return false;
   return writer.Dump();
@@ -1391,33 +1426,36 @@ namespace google_breakpad {
 bool WriteMinidump(const char* minidump_path, pid_t crashing_process,
                    const void* blob, size_t blob_size) {
   return WriteMinidumpImpl(minidump_path, -1, crashing_process, blob, blob_size,
-                           MappingList());
+                           MappingList(), AppMemoryList());
 }
 
 bool WriteMinidump(int minidump_fd, pid_t crashing_process,
                    const void* blob, size_t blob_size) {
   return WriteMinidumpImpl(NULL, minidump_fd, crashing_process, blob, blob_size,
-                           MappingList());
+                           MappingList(), AppMemoryList());
 }
 
 bool WriteMinidump(const char* minidump_path, pid_t crashing_process,
                    const void* blob, size_t blob_size,
-                   const MappingList& mappings) {
+                   const MappingList& mappings,
+                   const AppMemoryList& appmem) {
   return WriteMinidumpImpl(minidump_path, -1, crashing_process, blob, blob_size,
-                           mappings);
+                           mappings, appmem);
 }
 
 bool WriteMinidump(int minidump_fd, pid_t crashing_process,
                    const void* blob, size_t blob_size,
-                   const MappingList& mappings) {
+                   const MappingList& mappings,
+                   const AppMemoryList& appmem) {
   return WriteMinidumpImpl(NULL, minidump_fd, crashing_process, blob, blob_size,
-                           mappings);
+                           mappings, appmem);
 }
 
 bool WriteMinidump(const char* filename,
                    const MappingList& mappings,
+                   const AppMemoryList& appmem,
                    LinuxDumper* dumper) {
-  MinidumpWriter writer(filename, -1, NULL, mappings, dumper);
+  MinidumpWriter writer(filename, -1, NULL, mappings, appmem, dumper);
   if (!writer.Init())
     return false;
   return writer.Dump();

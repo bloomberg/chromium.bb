@@ -374,4 +374,103 @@ TEST_F(ExceptionHandlerTest, WriteMinidumpTest) {
   //TODO(ted): more comprehensive tests...
 }
 
+// Test that an additional memory region can be included in the minidump.
+TEST_F(ExceptionHandlerTest, AdditionalMemory) {
+  SYSTEM_INFO si;
+  GetSystemInfo(&si);
+  const u_int32_t kMemorySize = si.dwPageSize;
+
+  // Get some heap memory.
+  u_int8_t* memory = new u_int8_t[kMemorySize];
+  const uintptr_t kMemoryAddress = reinterpret_cast<uintptr_t>(memory);
+  ASSERT_TRUE(memory);
+
+  // Stick some data into the memory so the contents can be verified.
+  for (u_int32_t i = 0; i < kMemorySize; ++i) {
+    memory[i] = i % 255;
+  }
+
+  ExceptionHandler handler(temp_path_,
+                           NULL,
+                           DumpCallback,
+                           NULL,
+                           ExceptionHandler::HANDLER_ALL);
+
+  // Add the memory region to the list of memory to be included.
+  handler.RegisterAppMemory(memory, kMemorySize);
+  ASSERT_TRUE(handler.WriteMinidump());
+  ASSERT_FALSE(dump_file.empty());
+
+  string minidump_filename;
+  ASSERT_TRUE(WindowsStringUtils::safe_wcstombs(dump_file,
+                                                &minidump_filename));
+
+  // Read the minidump. Ensure that the memory region is present
+  Minidump minidump(minidump_filename);
+  ASSERT_TRUE(minidump.Read());
+
+  MinidumpMemoryList* dump_memory_list = minidump.GetMemoryList();
+  ASSERT_TRUE(dump_memory_list);
+  const MinidumpMemoryRegion* region =
+    dump_memory_list->GetMemoryRegionForAddress(kMemoryAddress);
+  ASSERT_TRUE(region);
+
+  EXPECT_EQ(kMemoryAddress, region->GetBase());
+  EXPECT_EQ(kMemorySize, region->GetSize());
+
+  // Verify memory contents.
+  EXPECT_EQ(0, memcmp(region->GetMemory(), memory, kMemorySize));
+
+  delete[] memory;
+}
+
+// Test that a memory region that was previously registered
+// can be unregistered.
+TEST_F(ExceptionHandlerTest, AdditionalMemoryRemove) {
+  SYSTEM_INFO si;
+  GetSystemInfo(&si);
+  const u_int32_t kMemorySize = si.dwPageSize;
+
+  // Get some heap memory.
+  u_int8_t* memory = new u_int8_t[kMemorySize];
+  const uintptr_t kMemoryAddress = reinterpret_cast<uintptr_t>(memory);
+  ASSERT_TRUE(memory);
+
+  // Stick some data into the memory so the contents can be verified.
+  for (u_int32_t i = 0; i < kMemorySize; ++i) {
+    memory[i] = i % 255;
+  }
+
+  ExceptionHandler handler(temp_path_,
+                           NULL,
+                           DumpCallback,
+                           NULL,
+                           ExceptionHandler::HANDLER_ALL);
+
+  // Add the memory region to the list of memory to be included.
+  handler.RegisterAppMemory(memory, kMemorySize);
+
+  // ...and then remove it
+  handler.UnregisterAppMemory(memory);
+
+  ASSERT_TRUE(handler.WriteMinidump());
+  ASSERT_FALSE(dump_file.empty());
+
+  string minidump_filename;
+  ASSERT_TRUE(WindowsStringUtils::safe_wcstombs(dump_file,
+                                                &minidump_filename));
+
+  // Read the minidump. Ensure that the memory region is not present.
+  Minidump minidump(minidump_filename);
+  ASSERT_TRUE(minidump.Read());
+
+  MinidumpMemoryList* dump_memory_list = minidump.GetMemoryList();
+  ASSERT_TRUE(dump_memory_list);
+  const MinidumpMemoryRegion* region =
+    dump_memory_list->GetMemoryRegionForAddress(kMemoryAddress);
+  EXPECT_FALSE(region);
+
+  delete[] memory;
+}
+
 }  // namespace

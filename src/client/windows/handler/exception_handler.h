@@ -65,6 +65,7 @@
 // Disable exception handler warnings.
 #pragma warning( disable : 4530 )
 
+#include <list>
 #include <string>
 #include <vector>
 
@@ -77,6 +78,22 @@ namespace google_breakpad {
 
 using std::vector;
 using std::wstring;
+
+// These entries store a list of memory regions that the client wants included
+// in the minidump.
+struct AppMemory {
+  ULONG64 ptr;
+  ULONG length;
+
+  bool operator==(const struct AppMemory& other) const {
+    return ptr == other.ptr;
+  }
+
+  bool operator==(const void* other) const {
+    return ptr == reinterpret_cast<ULONG64>(other);
+  }
+};
+typedef std::list<AppMemory> AppMemoryList;
 
 class ExceptionHandler {
  public:
@@ -218,6 +235,11 @@ class ExceptionHandler {
 
   // Returns whether out-of-process dump generation is used or not.
   bool IsOutOfProcess() const { return crash_generation_client_.get() != NULL; }
+
+  // Calling RegisterAppMemory(p, len) causes len bytes starting
+  // at address p to be copied to the minidump when a crash happens.
+  void RegisterAppMemory(void* ptr, size_t length);
+  void UnregisterAppMemory(void* ptr);
 
  private:
   friend class AutoExceptionHandler;
@@ -403,6 +425,10 @@ class ExceptionHandler {
   // EXCEPTION_SINGLE_STEP exceptions.  Leave this false (the default)
   // to not interfere with debuggers.
   bool handle_debug_exceptions_;
+
+  // Callers can request additional memory regions to be included in
+  // the dump.
+  AppMemoryList app_memory_info_;
 
   // A stack of ExceptionHandler objects that have installed unhandled
   // exception filters.  This vector is used by HandleException to determine
