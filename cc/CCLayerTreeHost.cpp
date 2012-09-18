@@ -99,7 +99,11 @@ CCLayerTreeHost::~CCLayerTreeHost()
     numLayerTreeInstances--;
     RateLimiterMap::iterator it = m_rateLimiters.begin();
     if (it != m_rateLimiters.end())
+#if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
+        it->value->stop();
+#else
         it->second->stop();
+#endif
 }
 
 void CCLayerTreeHost::setSurfaceReady()
@@ -685,7 +689,11 @@ void CCLayerTreeHost::startRateLimiter(WebKit::WebGraphicsContext3D* context)
     ASSERT(context);
     RateLimiterMap::iterator it = m_rateLimiters.find(context);
     if (it != m_rateLimiters.end())
+#if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
+        it->value->start();
+#else
         it->second->start();
+#endif
     else {
         RefPtr<RateLimiter> rateLimiter = RateLimiter::create(context, this);
         m_rateLimiters.set(context, rateLimiter);
@@ -697,7 +705,11 @@ void CCLayerTreeHost::stopRateLimiter(WebKit::WebGraphicsContext3D* context)
 {
     RateLimiterMap::iterator it = m_rateLimiters.find(context);
     if (it != m_rateLimiters.end()) {
+#if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
+        it->value->stop();
+#else
         it->second->stop();
+#endif
         m_rateLimiters.remove(it);
     }
 }

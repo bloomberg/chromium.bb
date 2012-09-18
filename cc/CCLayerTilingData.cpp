@@ -132,8 +132,13 @@ void CCLayerTilingData::setBounds(const IntSize& size)
     contentRectToTileIndices(IntRect(IntPoint(), size), left, top, right, bottom);
     Vector<TileMapKey> invalidTileKeys;
     for (TileMap::const_iterator it = m_tiles.begin(); it != m_tiles.end(); ++it) {
+#if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
+        if (it->key.first > right || it->key.second > bottom)
+            invalidTileKeys.append(it->key);
+#else
         if (it->first.first > right || it->first.second > bottom)
             invalidTileKeys.append(it->first);
+#endif
     }
     for (size_t i = 0; i < invalidTileKeys.size(); ++i)
         m_tiles.remove(invalidTileKeys[i]);

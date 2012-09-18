@@ -98,15 +98,27 @@ void CCDirectRenderer::decideRenderPassAllocationsForFrame(const CCRenderPassLis
     Vector<CCRenderPass::Id> passesToDelete;
     HashMap<CCRenderPass::Id, OwnPtr<CachedTexture> >::const_iterator passIterator;
     for (passIterator = m_renderPassTextures.begin(); passIterator != m_renderPassTextures.end(); ++passIterator) {
+#if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
+        const CCRenderPass* renderPassInFrame = renderPassesInFrame.get(passIterator->key);
+#else
         const CCRenderPass* renderPassInFrame = renderPassesInFrame.get(passIterator->first);
+#endif
         if (!renderPassInFrame) {
+#if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
+            passesToDelete.append(passIterator->key);
+#else
             passesToDelete.append(passIterator->first);
+#endif
             continue;
         }
 
         const IntSize& requiredSize = renderPassTextureSize(renderPassInFrame);
         GC3Denum requiredFormat = renderPassTextureFormat(renderPassInFrame);
+#if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
+        CachedTexture* texture = passIterator->value.get();
+#else
         CachedTexture* texture = passIterator->second.get();
+#endif
         ASSERT(texture);
 
         if (texture->id() && (texture->size() != requiredSize || texture->format() != requiredFormat))
