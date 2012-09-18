@@ -34,6 +34,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -43,6 +44,8 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/theme_resources.h"
@@ -519,7 +522,9 @@ void ChromeLauncherController::CreateNewTab() {
     return;
   }
 
-  chrome::NewTab(last_browser);
+  if (!IsActiveBrowserShowingNTP(last_browser))
+    chrome::NewTab(last_browser);
+
   aura::Window* window = last_browser->window()->GetNativeWindow();
   window->Show();
   ash::wm::ActivateWindow(window);
@@ -945,3 +950,16 @@ void ChromeLauncherController::StopLoadingAnimation() {
   observed_sync_service_->RemoveObserver(this);
   observed_sync_service_ = NULL;
 }
+
+bool ChromeLauncherController::IsActiveBrowserShowingNTP(Browser* browser) {
+  content::WebContents* current_tab = chrome::GetActiveWebContents(browser);
+  if (current_tab) {
+    content::NavigationEntry* active_entry =
+        current_tab->GetController().GetActiveEntry();
+    if (active_entry &&
+        active_entry->GetURL() == GURL(chrome::kChromeUINewTabURL))
+      return true;
+  }
+  return false;
+}
+

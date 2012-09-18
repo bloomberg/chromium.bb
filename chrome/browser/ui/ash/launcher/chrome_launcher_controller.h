@@ -33,6 +33,7 @@ namespace aura {
 class Window;
 }
 
+class Browser;
 class BrowserLauncherItemControllerTest;
 class LauncherItemController;
 class PrefService;
@@ -323,6 +324,8 @@ class ChromeLauncherController
 
   void StartLoadingAnimation();
   void StopLoadingAnimation();
+
+  bool IsActiveBrowserShowingNTP(Browser* browser);
 
   static ChromeLauncherController* instance_;
 
