@@ -224,9 +224,13 @@ class IPC_EXPORT Message : public Pickle {
   bool dont_log() const { return dont_log_; }
 #endif
 
-  // Called at various points between send and receive to track message.
-  void TraceMessageStep() {
-    TRACE_EVENT_ASYNC_STEP0("ipc", "IPC", header()->flags, "step");
+  // Called to trace when message is sent.
+  void TraceMessageBegin() {
+    TRACE_EVENT_FLOW_BEGIN0("ipc", "IPC", header()->flags);
+  }
+  // Called to trace when message is received.
+  void TraceMessageEnd() {
+    TRACE_EVENT_FLOW_END0("ipc", "IPC", header()->flags);
   }
 
  protected:

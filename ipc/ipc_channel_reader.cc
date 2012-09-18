@@ -4,6 +4,9 @@
 
 #include "ipc/ipc_channel_reader.h"
 
+#include "ipc/ipc_logging.h"
+#include "ipc/ipc_message_macros.h"
+
 namespace IPC {
 namespace internal {
 
@@ -69,7 +72,17 @@ bool ChannelReader::DispatchInputData(const char* input_data,
       if (!WillDispatchInputMessage(&m))
         return false;
 
-      m.TraceMessageStep();
+#ifdef IPC_MESSAGE_LOG_ENABLED
+      Logging* logger = Logging::GetInstance();
+      std::string name;
+      logger->GetMessageText(m.type(), &name, &m, NULL);
+      TRACE_EVENT1("ipc", "ChannelReader::DispatchInputData", "name", name);
+#else
+      TRACE_EVENT2("ipc", "ChannelReader::DispatchInputData",
+                   "class", IPC_MESSAGE_ID_CLASS(m.type()),
+                   "line", IPC_MESSAGE_ID_LINE(m.type()));
+#endif
+      m.TraceMessageEnd();
       if (IsHelloMessage(m))
         HandleHelloMessage(m);
       else

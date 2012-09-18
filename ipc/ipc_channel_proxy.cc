@@ -351,7 +351,6 @@ void ChannelProxy::Close() {
 
 bool ChannelProxy::Send(Message* message) {
   DCHECK(did_init_);
-  message->TraceMessageStep();
   if (outgoing_message_filter())
     message = outgoing_message_filter()->Rewrite(message);
 
