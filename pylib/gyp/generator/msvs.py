@@ -1669,7 +1669,7 @@ def _CreateProjectObjects(target_list, target_dicts, options, msvs_version):
     build_file = gyp.common.BuildFile(qualified_target)
     # Create object for this project.
     obj = MSVSNew.MSVSProject(
-        _FixPath(proj_path),
+        proj_path,
         name=spec['target_name'],
         guid=guid,
         spec=spec,
