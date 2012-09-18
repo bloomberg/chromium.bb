@@ -807,7 +807,7 @@ TEST_F(WebDataServiceTest, WebIntentsRemoveDefaultByServiceURL) {
   wds_->AddDefaultWebIntentService(s0);
 
   DefaultWebIntentService s1;
-  s1.action = ASCIIToUTF16("share");
+  s1.action = ASCIIToUTF16("share2");
   s1.type = ASCIIToUTF16("type");
   s1.user_date = 1;
   s1.suppression = 4;

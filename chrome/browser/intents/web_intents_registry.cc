@@ -289,12 +289,15 @@ void WebIntentsRegistry::OnWebIntentsDefaultsResultReceived(
     // Found a match. If it is better than default_service, use it.
     // Currently the metric is that if the new value is user-set,
     // prefer it. If the new value has a more specific pattern, prefer it.
+    // If the new value has a more recent date, prefer it.
     if (default_service.user_date <= 0 && iter->user_date >= 0) {
       default_service = *iter;
     } else if (default_service.url_pattern.match_all_urls() &&
              !iter->url_pattern.match_all_urls()) {
       default_service = *iter;
     } else if (iter->url_pattern < default_service.url_pattern) {
+      default_service = *iter;
+    } else if (default_service.user_date < iter->user_date) {
       default_service = *iter;
     }
   }

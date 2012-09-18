@@ -332,7 +332,7 @@ TEST_F(WebIntentsTableTest, RemoveDefaultServicesForServiceURL) {
 
   std::vector<DefaultWebIntentService> defaults;
   ASSERT_TRUE(IntentsTable()->GetAllDefaultServices(&defaults));
-  ASSERT_EQ(3U, defaults.size());
+  ASSERT_EQ(2U, defaults.size());
 
   ASSERT_TRUE(IntentsTable()->RemoveServiceDefaults(test_service_url));
 
@@ -340,6 +340,29 @@ TEST_F(WebIntentsTableTest, RemoveDefaultServicesForServiceURL) {
   ASSERT_TRUE(IntentsTable()->GetAllDefaultServices(&defaults));
   ASSERT_EQ(1U, defaults.size());
   EXPECT_EQ(test_service_url_2.spec(), defaults[0].service_url);
+}
+
+TEST_F(WebIntentsTableTest, OverwriteDefaults) {
+  DefaultWebIntentService default_service;
+  default_service.action = test_action;
+  default_service.type = mime_image;
+  default_service.user_date = 1;
+  default_service.suppression = 4;
+  default_service.service_url = "service_url";
+  ASSERT_TRUE(IntentsTable()->SetDefaultService(default_service));
+
+  default_service.user_date = 2;
+  default_service.service_url = "service_url2";
+  ASSERT_TRUE(IntentsTable()->SetDefaultService(default_service));
+
+  default_service.user_date = 3;
+  default_service.service_url = "service_url3";
+  ASSERT_TRUE(IntentsTable()->SetDefaultService(default_service));
+
+  std::vector<DefaultWebIntentService> defaults;
+  ASSERT_TRUE(IntentsTable()->GetAllDefaultServices(&defaults));
+  ASSERT_EQ(1U, defaults.size());
+  EXPECT_EQ("service_url3", defaults[0].service_url);
 }
 
 } // namespace

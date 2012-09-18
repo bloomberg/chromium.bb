@@ -300,14 +300,16 @@ bool WebIntentsTable::SetDefaultService(
     const DefaultWebIntentService& default_service) {
   sql::Statement s(db_->GetUniqueStatement(
       "INSERT OR REPLACE INTO web_intents_defaults "
-      "(action, type, url_pattern, user_date, suppression, service_url) "
-      "VALUES (?, ?, ?, ?, ?, ?)"));
+      "(action, type, url_pattern, user_date, suppression,"
+      " service_url, scheme) "
+      "VALUES (?, ?, ?, ?, ?, ?, ?)"));
   s.BindString16(0, default_service.action);
   s.BindString16(1, default_service.type);
   s.BindString(2, default_service.url_pattern.GetAsString());
   s.BindInt(3, default_service.user_date);
   s.BindInt64(4, default_service.suppression);
   s.BindString(5, default_service.service_url);
+  s.BindString16(6, default_service.scheme);
 
   return s.Run();
 }

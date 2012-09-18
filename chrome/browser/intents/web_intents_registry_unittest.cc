@@ -596,6 +596,19 @@ TEST_F(WebIntentsRegistryTest, TestGetDefaults) {
   EXPECT_EQ(1, consumer.service_.user_date);
   EXPECT_EQ(4, consumer.service_.suppression);
 
+  // Can get for wildcard.
+  consumer.service_ = DefaultWebIntentService();
+  registry_.GetDefaultIntentService(
+      ASCIIToUTF16("share"),
+      ASCIIToUTF16("text/*"),
+      GURL("http://www.google.com/"),
+      base::Bind(&DefaultServiceConsumer::Accept,
+                 base::Unretained(&consumer)));
+  consumer.WaitForData();
+  EXPECT_EQ("service_url", consumer.service_.service_url);
+  EXPECT_EQ(1, consumer.service_.user_date);
+  EXPECT_EQ(4, consumer.service_.suppression);
+
   // Test that no action match means we don't retrieve any
   // default entries.
   consumer.service_ = DefaultWebIntentService();
