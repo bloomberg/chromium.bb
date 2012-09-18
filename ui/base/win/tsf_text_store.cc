@@ -260,7 +260,12 @@ STDMETHODIMP TsfTextStore::GetTextExt(TsViewCookie view_cookie,
     return TS_E_INVALIDPOS;
   }
 
-  gfx::Rect result;
+  // According to a behavior of notepad.exe and wordpad.exe, top left corner of
+  // rect indicates a first character's one, and bottom right corner of rect
+  // indicates a last character's one.
+  // We use RECT instead of gfx::Rect since left position may be bigger than
+  // right position when composition has multiple lines.
+  RECT result;
   gfx::Rect tmp_rect;
   const uint32 start_pos = acp_start - committed_size_;
   const uint32 end_pos = acp_end - committed_size_;
@@ -273,34 +278,50 @@ STDMETHODIMP TsfTextStore::GetTextExt(TsViewCookie view_cookie,
     // equal values of |acp_start| and |acp_end|. So we handle this condition.
     if (start_pos == 0) {
       if (text_input_client_->GetCompositionCharacterBounds(0, &tmp_rect)) {
-        result = tmp_rect;
-        result.set_width(0);
+        tmp_rect.set_width(0);
+        result = tmp_rect.ToRECT();
       } else if (string_buffer_.size() == committed_size_) {
-        result = text_input_client_->GetCaretBounds();
+        result = text_input_client_->GetCaretBounds().ToRECT();
       } else {
         return TS_E_NOLAYOUT;
       }
     } else if (text_input_client_->GetCompositionCharacterBounds(start_pos - 1,
                                                                  &tmp_rect)) {
-      result.set_x(tmp_rect.right());
-      result.set_y(tmp_rect.y());
-      result.set_width(0);
-      result.set_height(tmp_rect.height());
+      result.left = tmp_rect.right();
+      result.right = tmp_rect.right();
+      result.top = tmp_rect.y();
+      result.bottom = tmp_rect.bottom();
     } else {
       return TS_E_NOLAYOUT;
     }
   } else {
-    if (!text_input_client_->GetCompositionCharacterBounds(start_pos, &result))
-      return TS_E_NOLAYOUT;
-
-    for (uint32 i = start_pos + 1; i < end_pos; ++i) {
-      if (!text_input_client_->GetCompositionCharacterBounds(i, &tmp_rect))
+    if (text_input_client_->GetCompositionCharacterBounds(start_pos,
+                                                          &tmp_rect)) {
+      result.left = tmp_rect.x();
+      result.top = tmp_rect.y();
+      result.right = tmp_rect.right();
+      result.bottom = tmp_rect.bottom();
+      if (text_input_client_->GetCompositionCharacterBounds(end_pos - 1,
+                                                            &tmp_rect)) {
+        result.right = tmp_rect.right();
+        result.bottom = tmp_rect.bottom();
+      } else {
+        // We may not be able to get the last character bounds, so we use the
+        // first character bounds instead of returning TS_E_NOLAYOUT.
+      }
+    } else {
+      // Hack for PPAPI flash. PPAPI flash does not support GetCaretBounds, so
+      // it's better to return previous caret rectangle instead.
+      // TODO(nona, kinaba): Remove this hack.
+      if (start_pos == 0) {
+        result = text_input_client_->GetCaretBounds().ToRECT();
+      } else {
         return TS_E_NOLAYOUT;
-      result = result.Union(tmp_rect);
+      }
     }
   }
 
-  *rect =  result.ToRECT();
+  *rect =  result;
   *clipped = FALSE;
   return S_OK;
 }
@@ -351,7 +372,7 @@ STDMETHODIMP TsfTextStore::InsertTextAtSelection(DWORD flags,
     if (acp_start)
       *acp_start = start_pos;
     if (acp_end) {
-      *acp_end = new_end_pos;
+      *acp_end = end_pos;
     }
     return S_OK;
   }

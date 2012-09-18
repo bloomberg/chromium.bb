@@ -850,17 +850,22 @@ class InsertTextAtSelectionTestCallback : public TsfTextStoreTestCallback {
   }
 
   HRESULT ReadLockGranted(DWORD flags) {
-    SetInternalState(L"abcedfg", 0, 0, 0);
+    const wchar_t kBuffer[] = L"0123456789";
 
-    wchar_t buffer[] = L"0123456789";
-    InsertTextAtSelectionQueryOnlyTest(buffer, 10, 0, 10);
+    SetInternalState(L"abcedfg", 0, 0, 0);
+    InsertTextAtSelectionQueryOnlyTest(kBuffer, 10, 0, 0);
     GetSelectionTest(0, 0);
-    InsertTextAtSelectionQueryOnlyTest(buffer, 0, 0, 0);
+    InsertTextAtSelectionQueryOnlyTest(kBuffer, 0, 0, 0);
+
+    SetInternalState(L"abcedfg", 0, 2, 5);
+    InsertTextAtSelectionQueryOnlyTest(kBuffer, 10, 2, 5);
+    GetSelectionTest(2, 5);
+    InsertTextAtSelectionQueryOnlyTest(kBuffer, 0, 2, 5);
 
     LONG start, end;
     TS_TEXTCHANGE change;
     EXPECT_EQ(TS_E_NOLOCK,
-              text_store_->InsertTextAtSelection(0, buffer, 10,
+              text_store_->InsertTextAtSelection(0, kBuffer, 10,
                                                  &start, &end, &change));
     return S_OK;
   }
@@ -868,33 +873,33 @@ class InsertTextAtSelectionTestCallback : public TsfTextStoreTestCallback {
   HRESULT ReadWriteLockGranted(DWORD flags) {
     SetInternalState(L"abcedfg", 0, 0, 0);
 
-    const wchar_t buffer[] = L"0123456789";
-    InsertTextAtSelectionQueryOnlyTest(buffer, 10, 0, 10);
+    const wchar_t kBuffer[] = L"0123456789";
+    InsertTextAtSelectionQueryOnlyTest(kBuffer, 10, 0, 0);
     GetSelectionTest(0, 0);
-    InsertTextAtSelectionQueryOnlyTest(buffer, 0, 0, 0);
+    InsertTextAtSelectionQueryOnlyTest(kBuffer, 0, 0, 0);
 
     SetInternalState(L"", 0, 0, 0);
-    InsertTextAtSelectionTest(buffer, 10, 0, 10, 0, 0, 10);
+    InsertTextAtSelectionTest(kBuffer, 10, 0, 10, 0, 0, 10);
     GetSelectionTest(0, 10);
     GetTextTest(0, -1, L"0123456789", 10);
 
     SetInternalState(L"abcedfg", 0, 0, 0);
-    InsertTextAtSelectionTest(buffer, 10, 0, 10, 0, 0, 10);
+    InsertTextAtSelectionTest(kBuffer, 10, 0, 10, 0, 0, 10);
     GetSelectionTest(0, 10);
     GetTextTest(0, -1, L"0123456789abcedfg", 17);
 
     SetInternalState(L"abcedfg", 0, 0, 3);
-    InsertTextAtSelectionTest(buffer, 0, 0, 0, 0, 3, 0);
+    InsertTextAtSelectionTest(kBuffer, 0, 0, 0, 0, 3, 0);
     GetSelectionTest(0, 0);
     GetTextTest(0, -1, L"edfg", 4);
 
     SetInternalState(L"abcedfg", 0, 3, 7);
-    InsertTextAtSelectionTest(buffer, 10, 3, 13, 3, 7, 13);
+    InsertTextAtSelectionTest(kBuffer, 10, 3, 13, 3, 7, 13);
     GetSelectionTest(3, 13);
     GetTextTest(0, -1, L"abc0123456789", 13);
 
     SetInternalState(L"abcedfg", 0, 7, 7);
-    InsertTextAtSelectionTest(buffer, 10, 7, 17, 7, 7, 17);
+    InsertTextAtSelectionTest(kBuffer, 10, 7, 17, 7, 7, 17);
     GetSelectionTest(7, 17);
     GetTextTest(0, -1, L"abcedfg0123456789", 17);
 
@@ -1055,11 +1060,12 @@ class GetTextExtTestCallback : public TsfTextStoreTestCallback {
  public:
   explicit GetTextExtTestCallback(TsfTextStore* text_store)
       : TsfTextStoreTestCallback(text_store),
-        charactor_bounds_error_flag_(false) {
+        layout_prepared_character_num_(0) {
   }
 
   HRESULT LockGranted(DWORD flags) {
-    SetInternalState(L"0123456789012345", 0, 0, 0);
+    SetInternalState(L"0123456789012", 0, 0, 0);
+    layout_prepared_character_num_ = 13;
 
     TsViewCookie view_cookie;
     EXPECT_EQ(S_OK, text_store_->GetActiveView(&view_cookie));
@@ -1071,22 +1077,37 @@ class GetTextExtTestCallback : public TsfTextStoreTestCallback {
     GetTextExtTest(view_cookie, 10, 10, 110, 12, 110, 20);
     GetTextExtTest(view_cookie, 11, 11, 20, 112, 20, 120);
     GetTextExtTest(view_cookie, 11, 12, 21, 112, 30, 120);
-    GetTextExtTest(view_cookie, 9, 12, 11, 12, 110, 120);
-    GetTextExtTest(view_cookie, 9, 13, 11, 12, 110, 120);
-    GetTextExtNoLayoutTest(view_cookie, 9, 14);
+    GetTextExtTest(view_cookie, 9, 12, 101, 12, 30, 120);
+    GetTextExtTest(view_cookie, 9, 13, 101, 12, 40, 120);
+    GetTextExtTest(view_cookie, 0, 13, 11, 12, 40, 120);
+    GetTextExtTest(view_cookie, 13, 13, 40, 112, 40, 120);
 
-    charactor_bounds_error_flag_ = true;
+    layout_prepared_character_num_ = 12;
+    GetTextExtNoLayoutTest(view_cookie, 13, 13);
+
+    layout_prepared_character_num_ = 0;
     GetTextExtNoLayoutTest(view_cookie, 0, 0);
 
     SetInternalState(L"", 0, 0, 0);
     GetTextExtTest(view_cookie, 0, 0, 1, 2, 4, 6);
+
+    // Last character is not availabe due to timing issue of async API.
+    // In this case, we will get first character bounds instead of whole text
+    // bounds.
+    SetInternalState(L"abc", 0, 0, 3);
+    layout_prepared_character_num_ = 2;
+    GetTextExtTest(view_cookie, 0, 0, 11, 12, 11, 20);
+
+    // TODO(nona, kinaba): Remove following test case after PPAPI supporting
+    // GetCompositionCharacterBounds.
+    SetInternalState(L"a", 0, 0, 1);
+    layout_prepared_character_num_ = 0;
+    GetTextExtTest(view_cookie, 0, 1, 1, 2, 4, 6);
     return S_OK;
   }
 
   bool GetCompositionCharacterBounds(uint32 index, gfx::Rect* rect) {
-    if (charactor_bounds_error_flag_)
-      return false;
-    if (index >= 13)
+    if (index >= layout_prepared_character_num_)
       return false;
     rect->set_x((index % 10) * 10 + 11);
     rect->set_y((index / 10) * 100 + 12);
@@ -1100,7 +1121,7 @@ class GetTextExtTestCallback : public TsfTextStoreTestCallback {
   }
 
  private:
-  bool charactor_bounds_error_flag_;
+  uint32 layout_prepared_character_num_;
 };
 
 TEST_F(TsfTextStoreTest, GetTextExtTest) {
