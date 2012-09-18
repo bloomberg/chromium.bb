@@ -25,8 +25,8 @@ class NetflixTestHelper():
   TITLE_HOMEPAGE = 'http://movies.netflix.com/WiHome'
   SIGNOUT_PAGE = 'https://account.netflix.com/Logout'
   # 30 Rock.
-  VIDEO_URL = 'http://movies.netflix.com/WiPlayer?' + \
-              'movieid=70136124&trkid=2361637&t=30+Rock'
+  VIDEO_URL = 'https://movies.netflix.com/WiPlayer?movieid=70136124'
+  ALT_VIDEO_URL = 'https://movies.netflix.com/WiPlayer?movieid=70133713'
   _pyauto = None
 
   def __init__(self, pyauto):
@@ -74,7 +74,7 @@ class NetflixTestHelper():
     return int(self._pyauto.ExecuteJavascript(js, tab_index=tab_index,
                                               windex=windex))
 
-  def _HandleInfobars(self):
+  def _HandleInfobars(self, err_msg):
     """Manage infobars that come up during the test."""
     def _HandleNetflixInfobar():
       tab_info = self._pyauto.GetBrowserInfo()['windows'][0]['tabs'][0]
@@ -91,7 +91,7 @@ class NetflixTestHelper():
          index = index + 1
       return False
     self._pyauto.assertTrue(self._pyauto.WaitUntil(_HandleNetflixInfobar),
-                            msg='Netflix infobar did not show up')
+                            msg=err_msg)
  
   def CurrentPlaybackTime(self):
     """Returns the current playback time in seconds."""
@@ -115,7 +115,7 @@ class NetflixTestHelper():
         expect_retval=self.TITLE_HOMEPAGE),
         msg='Login to Netflix failed.')
     self._pyauto.NavigateToURL(self.VIDEO_URL)
-    self._pyauto._HandleInfobars()
+    self._pyauto._HandleInfobars(err_msg='Netflix infobar did not show up')
 
   def CheckNetflixPlaying(self, expected_result, error_msg):
     """Check if Netflix is playing the video or not.
@@ -169,12 +169,24 @@ class NetflixTest(pyauto.PyUITest, NetflixTestHelper):
   def testPlayerLoadsAndPlays(self):
     """Test that Netflix player loads and plays the title."""
     self.LoginAndStartPlaying()
+    self._HandleInfobars(err_msg='Netflix plugin access infobar did not show up')
     self.CheckNetflixPlaying(self.IS_PLAYING,
                               'Player did not start playing the title.')
+
+  def testMultiplePlayback(self):
+    """Test that playing two titles, Netflix returns multiple play error."""
+    self.LoginAndStartPlaying()
+    self._HandleInfobars(err_msg='Netflix plugin access infobar did not show up')
+    self.CheckNetflixPlaying(self.IS_PLAYING,
+                              'Player did not start playing the title.')
+    self.AppendTab(self.ALT_VIDEO_URL)
+    self.assertTrue('Multiple Play Error' in self.GetTabContents(),
+                    msg='Multiple Play Error is not found on the page.')
 
   def testPlaying(self):
     """Test that title playing progresses."""
     self.LoginAndStartPlaying()
+    self._HandleInfobars(err_msg='Netflix plugin access infobar did not show up')
     self.CheckNetflixPlaying(self.IS_PLAYING,
                               'Player did not start playing the title.')
     title_length =  self.ExecuteJavascript("""
@@ -225,7 +237,7 @@ class NetflixGuestModeTest(pyauto.PyUITest, NetflixTestHelper):
     return False
 
   def tearDown(self):
-    self.SignOut()
+    self.AppendTab(self.SIGNOUT_PAGE)
     self.Logout()
     pyauto.PyUITest.tearDown(self)
 
@@ -235,7 +247,8 @@ class NetflixGuestModeTest(pyauto.PyUITest, NetflixTestHelper):
     self.CheckNetflixPlaying(
         self.IS_GUEST_MODE_ERROR,
         'Netflix player did not return a Guest mode error.')
-    self.assertTrue('Guest Mode Unsupported' in self.GetTabContents(),
+    # crosbug.com/p/14009
+    self.assertTrue('Netflix Video Player Unavailable' in self.GetTabContents(),
                     msg='Guest Mode error is not found on the page.')
     
 
