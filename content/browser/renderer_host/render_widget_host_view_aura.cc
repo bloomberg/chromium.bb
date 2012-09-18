@@ -37,6 +37,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
+#include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/events/event.h"
 #include "ui/base/gestures/gesture_recognizer.h"
 #include "ui/base/hit_test.h"
@@ -527,6 +528,23 @@ void RenderWidgetHostViewAura::SetTooltipText(const string16& tooltip_text) {
   aura::RootWindow* root_window = window_->GetRootWindow();
   if (aura::client::GetTooltipClient(root_window))
     aura::client::GetTooltipClient(root_window)->UpdateTooltip(window_);
+}
+
+void RenderWidgetHostViewAura::SelectionChanged(const string16& text,
+                                                size_t offset,
+                                                const ui::Range& range) {
+  RenderWidgetHostViewBase::SelectionChanged(text, offset, range);
+
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
+  if (text.empty() || range.is_empty())
+    return;
+
+  // Set the BUFFER_SELECTION to the ui::Clipboard.
+  ui::ScopedClipboardWriter clipboard_writer(
+      ui::Clipboard::GetForCurrentThread(),
+      ui::Clipboard::BUFFER_SELECTION);
+  clipboard_writer.WriteText(text);
+#endif  // defined(USE_X11) && !defined(OS_CHROMEOS)
 }
 
 void RenderWidgetHostViewAura::SelectionBoundsChanged(

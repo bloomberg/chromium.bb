@@ -96,6 +96,9 @@ class RenderWidgetHostViewAura
                               int error_code) OVERRIDE;
   virtual void Destroy() OVERRIDE;
   virtual void SetTooltipText(const string16& tooltip_text) OVERRIDE;
+  virtual void SelectionChanged(const string16& text,
+                                size_t offset,
+                                const ui::Range& range) OVERRIDE;
   virtual void SelectionBoundsChanged(
       const gfx::Rect& start_rect,
       WebKit::WebTextDirection start_direction,

@@ -178,7 +178,7 @@ class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
     switch (buffer) {
       case BUFFER_STANDARD:
         return true;
-#if defined(USE_X11) && !defined(USE_AURA)
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
       case BUFFER_SELECTION:
         return true;
 #endif
