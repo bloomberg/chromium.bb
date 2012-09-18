@@ -27,6 +27,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 #include "webkit/glue/cpp_binding_example.h"
 #include "webkit/glue/webkit_glue.h"
+#include "webkit/user_agent/user_agent.h"
+#include "webkit/user_agent/user_agent_util.h"
 
 using WebKit::WebFrame;
 using WebKit::WebView;
@@ -93,6 +95,8 @@ class CppBoundClassTest : public testing::Test, public WebKit::WebFrameClient {
     webview_->settings()->setJavaScriptEnabled(true);
     webview_->initializeMainFrame(&webframe_client_);
     webframe_client_.set_fallback_method_enabled(useFallback());
+    webkit_glue::SetUserAgent(webkit_glue::BuildUserAgentFromProduct(
+        "TestShell/0.0.0.0"), false);
 
     WebKit::WebURLRequest urlRequest;
     urlRequest.initialize();
