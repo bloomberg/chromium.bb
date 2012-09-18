@@ -268,20 +268,42 @@
       <if expr="pp_ifdef('chromeos')">
         <structure type="chrome_scaled_image" name="IDR_FILES_APP_ICON" file="files_app_icon.png" />
       </if>
-      <structure type="chrome_scaled_image" name="IDR_FINDINPAGE_NEXT" file="find_next.png" />
-      <structure type="chrome_scaled_image" name="IDR_FINDINPAGE_NEXT_H" file="find_next_hover.png" />
-      <structure type="chrome_scaled_image" name="IDR_FINDINPAGE_NEXT_P" file="find_next_disabled.png" />
-      <structure type="chrome_scaled_image" name="IDR_FINDINPAGE_PREV" file="find_prev.png" />
-      <structure type="chrome_scaled_image" name="IDR_FINDINPAGE_PREV_H" file="find_prev_hover.png" />
-      <structure type="chrome_scaled_image" name="IDR_FINDINPAGE_PREV_P" file="find_prev_disabled.png" />
-      <structure type="chrome_scaled_image" name="IDR_FIND_BOX_BACKGROUND" file="find_box_bg.png" />
-      <structure type="chrome_scaled_image" name="IDR_FIND_BOX_BACKGROUND_LEFT" file="find_box_bg_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_FIND_DIALOG_LEFT" file="find_dialog_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_FIND_DIALOG_MIDDLE" file="find_dialog_middle.png" />
-      <structure type="chrome_scaled_image" name="IDR_FIND_DIALOG_RIGHT" file="find_dialog_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_FIND_DLG_LEFT_BACKGROUND" file="find_dlg_left_bg.png" />
-      <structure type="chrome_scaled_image" name="IDR_FIND_DLG_MIDDLE_BACKGROUND" file="find_dlg_middle_bg.png" />
-      <structure type="chrome_scaled_image" name="IDR_FIND_DLG_RIGHT_BACKGROUND" file="find_dlg_right_bg.png" />
+      <if expr="not pp_ifdef('chromeos')">
+        <structure type="chrome_scaled_image" name="IDR_FINDINPAGE_NEXT" file="common/find_next.png" />
+        <structure type="chrome_scaled_image" name="IDR_FINDINPAGE_NEXT_D" file="common/find_next_disabled.png" />
+        <structure type="chrome_scaled_image" name="IDR_FINDINPAGE_NEXT_H" file="common/find_next_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_FINDINPAGE_NEXT_P" file="common/find_next.png" />
+        <structure type="chrome_scaled_image" name="IDR_FINDINPAGE_PREV" file="common/find_prev.png" />
+        <structure type="chrome_scaled_image" name="IDR_FINDINPAGE_PREV_D" file="common/find_prev_disabled.png" />
+        <structure type="chrome_scaled_image" name="IDR_FINDINPAGE_PREV_H" file="common/find_prev_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_FINDINPAGE_PREV_P" file="common/find_prev.png" />
+        <structure type="chrome_scaled_image" name="IDR_FIND_BOX_BACKGROUND" file="common/find_box_bg.png" />
+        <structure type="chrome_scaled_image" name="IDR_FIND_BOX_BACKGROUND_LEFT" file="common/find_box_bg_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_FIND_DIALOG_LEFT" file="common/find_dialog_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_FIND_DIALOG_MIDDLE" file="common/find_dialog_middle.png" />
+        <structure type="chrome_scaled_image" name="IDR_FIND_DIALOG_RIGHT" file="common/find_dialog_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_FIND_DLG_LEFT_BACKGROUND" file="common/find_dlg_left_bg.png" />
+        <structure type="chrome_scaled_image" name="IDR_FIND_DLG_MIDDLE_BACKGROUND" file="common/find_dlg_middle_bg.png" />
+        <structure type="chrome_scaled_image" name="IDR_FIND_DLG_RIGHT_BACKGROUND" file="common/find_dlg_right_bg.png" />
+      </if>
+      <if expr="pp_ifdef('chromeos')">
+        <structure type="chrome_scaled_image" name="IDR_FINDINPAGE_NEXT" file="cros/find_next.png" />
+        <structure type="chrome_scaled_image" name="IDR_FINDINPAGE_NEXT_D" file="cros/find_next_disabled.png" />
+        <structure type="chrome_scaled_image" name="IDR_FINDINPAGE_NEXT_H" file="cros/find_next_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_FINDINPAGE_NEXT_P" file="cros/find_next_pressed.png" />
+        <structure type="chrome_scaled_image" name="IDR_FINDINPAGE_PREV" file="cros/find_prev.png" />
+        <structure type="chrome_scaled_image" name="IDR_FINDINPAGE_PREV_D" file="cros/find_prev_disabled.png" />
+        <structure type="chrome_scaled_image" name="IDR_FINDINPAGE_PREV_H" file="cros/find_prev_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_FINDINPAGE_PREV_P" file="cros/find_prev_pressed.png" />
+        <structure type="chrome_scaled_image" name="IDR_FIND_BOX_BACKGROUND" file="cros/find_box_bg.png" />
+        <structure type="chrome_scaled_image" name="IDR_FIND_BOX_BACKGROUND_LEFT" file="cros/find_box_bg_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_FIND_DIALOG_LEFT" file="cros/find_dialog_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_FIND_DIALOG_MIDDLE" file="cros/find_dialog_middle.png" />
+        <structure type="chrome_scaled_image" name="IDR_FIND_DIALOG_RIGHT" file="cros/find_dialog_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_FIND_DLG_LEFT_BACKGROUND" file="cros/find_dlg_left_bg.png" />
+        <structure type="chrome_scaled_image" name="IDR_FIND_DLG_MIDDLE_BACKGROUND" file="cros/find_dlg_middle_bg.png" />
+        <structure type="chrome_scaled_image" name="IDR_FIND_DLG_RIGHT_BACKGROUND" file="cros/find_dlg_right_bg.png" />
+      </if>
       <structure type="chrome_scaled_image" name="IDR_FLAGS_FAVICON" file="common/favicon_flags.png" />
       <if expr="not pp_ifdef('toolkit_views')">
         <structure type="chrome_scaled_image" name="IDR_FORWARD" file="forward.png" />
