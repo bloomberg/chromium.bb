@@ -309,6 +309,14 @@ int CountPlugins() {
   return count;
 }
 
+void FlushBlacklistPolicy() {
+  // Updates of the URLBlacklist are done on IO, after building the blacklist
+  // on FILE, which is initiated from IO.
+  content::RunAllPendingInMessageLoop(BrowserThread::IO);
+  content::RunAllPendingInMessageLoop(BrowserThread::FILE);
+  content::RunAllPendingInMessageLoop(BrowserThread::IO);
+}
+
 }  // namespace
 
 class PolicyTest : public InProcessBrowserTest {
@@ -1117,8 +1125,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, TranslateEnabled) {
   EXPECT_EQ(0u, infobar_helper->GetInfoBarCount());
 }
 
-// http://crbug.com/149935
-IN_PROC_BROWSER_TEST_F(PolicyTest, DISABLED_URLBlacklist) {
+IN_PROC_BROWSER_TEST_F(PolicyTest, URLBlacklist) {
   // Checks that URLs can be blacklisted, and that exceptions can be made to
   // the blacklist.
   const GURL kAAA("http://aaa.com/empty.html");
@@ -1150,6 +1157,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DISABLED_URLBlacklist) {
   policies.Set(key::kURLBlacklist, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, blacklist.DeepCopy());
   provider_.UpdateChromePolicy(policies);
+  FlushBlacklistPolicy();
   // All bbb.com URLs are blocked.
   CheckCanOpenURL(browser(), kAAA);
   for (size_t i = 1; i < arraysize(kURLS); ++i)
@@ -1162,6 +1170,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DISABLED_URLBlacklist) {
   policies.Set(key::kURLWhitelist, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, whitelist.DeepCopy());
   provider_.UpdateChromePolicy(policies);
+  FlushBlacklistPolicy();
   CheckCanOpenURL(browser(), kAAA);
   CheckURLIsBlocked(browser(), kBBB);
   CheckCanOpenURL(browser(), kSUB_BBB);
