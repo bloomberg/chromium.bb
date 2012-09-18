@@ -2786,9 +2786,10 @@ FileManager.prototype = {
     if (this.dialogType_ != FileManager.DialogType.FULL_PAGE)
       return;
 
-    this.document_.title = this.getCurrentDirectory().replace(
-        new RegExp('^' + RootDirectory.GDATA),
-        str('GDATA_DIRECTORY_LABEL'));
+    var path = this.getCurrentDirectory();
+    var rootPath = PathUtil.getRootPath(path);
+    this.document_.title = PathUtil.getRootLabel(rootPath) +
+                           path.substring(rootPath.length);
   },
 
   /**
