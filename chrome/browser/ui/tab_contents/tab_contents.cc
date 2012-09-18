@@ -165,6 +165,8 @@ TabContents::TabContents(WebContents* contents)
 #endif
 
 #if !defined(OS_ANDROID)
+  if (OmniboxSearchHint::IsEnabled(profile()))
+    OmniboxSearchHint::CreateForWebContents(contents);
   PDFTabHelper::CreateForWebContents(contents);
   sad_tab_helper_.reset(new SadTabHelper(contents));
   web_intent_picker_controller_.reset(new WebIntentPickerController(this));
@@ -178,11 +180,6 @@ TabContents::TabContents(WebContents* contents)
       new safe_browsing::SafeBrowsingTabObserver(this));
     webnavigation_observer_.reset(
         new extensions::WebNavigationTabObserver(contents));
-
-#if !defined(OS_ANDROID)
-  if (OmniboxSearchHint::IsEnabled(profile()))
-    omnibox_search_hint_.reset(new OmniboxSearchHint(this));
-#endif
 
 #if defined(ENABLE_PRINTING)
   print_view_manager_.reset(new printing::PrintViewManager(this));

@@ -9,20 +9,24 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "chrome/browser/tab_contents/web_contents_user_data.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
 class Profile;
-class TabContents;
+
+namespace content {
+class WebContents;
+}
 
 // This class is responsible for showing an info-bar that tells the user she
 // can type her search query directly in the omnibox.
 // It is displayed when the user visits a known search engine URL and has not
 // searched from the omnibox before, or has not previously dismissed a similar
 // info-bar.
-class OmniboxSearchHint : public content::NotificationObserver {
+class OmniboxSearchHint : public content::NotificationObserver,
+                          public WebContentsUserData<OmniboxSearchHint> {
  public:
-  explicit OmniboxSearchHint(TabContents* tab);
   virtual ~OmniboxSearchHint();
 
   // content::NotificationObserver method:
@@ -34,8 +38,6 @@ class OmniboxSearchHint : public content::NotificationObserver {
   // queries can be typed directly in there.
   void ShowEnteringQuery();
 
-  TabContents* tab() { return tab_; }
-
   // Disables the hint infobar permanently, so that it does not show ever again.
   void DisableHint();
 
@@ -44,12 +46,16 @@ class OmniboxSearchHint : public content::NotificationObserver {
   static bool IsEnabled(Profile* profile);
 
  private:
+  explicit OmniboxSearchHint(content::WebContents* web_contents);
+  static int kUserDataKey;
+  friend class WebContentsUserData<OmniboxSearchHint>;
+
   void ShowInfoBar();
 
   content::NotificationRegistrar notification_registrar_;
 
-  // The tab we are associated with.
-  TabContents* tab_;
+  // The contents we are associated with.
+  content::WebContents* web_contents_;
 
   // A map containing the URLs of the search engine for which we want to
   // trigger the hint.
