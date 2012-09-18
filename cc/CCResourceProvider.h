@@ -11,6 +11,7 @@
 #include "IntSize.h"
 #include "SkBitmap.h"
 #include "SkCanvas.h"
+#include "TextureCopier.h"
 #include <wtf/Deque.h>
 #include <wtf/HashMap.h>
 #include <wtf/OwnPtr.h>
@@ -25,8 +26,12 @@ class WebGraphicsContext3D;
 
 namespace cc {
 
+enum TextureUploaderOption { ThrottledUploader, UnthrottledUploader };
+
 class IntRect;
 class LayerTextureSubImage;
+class TextureCopier;
+class TextureUploader;
 
 // Thread-safety notes: this class is not thread-safe and can only be called
 // from the thread it was created on (in practice, the compositor thread).
@@ -56,11 +61,13 @@ public:
         unsigned syncPoint;
     };
 
-    static PassOwnPtr<CCResourceProvider> create(CCGraphicsContext*);
+    static PassOwnPtr<CCResourceProvider> create(CCGraphicsContext*, TextureUploaderOption);
 
     virtual ~CCResourceProvider();
 
     WebKit::WebGraphicsContext3D* graphicsContext3D();
+    TextureUploader* textureUploader() const { return m_textureUploader.get(); }
+    TextureCopier* textureCopier() const { return m_textureCopier.get(); }
     int maxTextureSize() const { return m_maxTextureSize; }
     unsigned numResources() const { return m_resources.size(); }
 
@@ -257,7 +264,7 @@ private:
     typedef HashMap<int, Child> ChildMap;
 
     explicit CCResourceProvider(CCGraphicsContext*);
-    bool initialize();
+    bool initialize(TextureUploaderOption);
 
     const Resource* lockForRead(ResourceId);
     void unlockForRead(ResourceId);
@@ -281,6 +288,8 @@ private:
     bool m_useTextureUsageHint;
     bool m_useShallowFlush;
     OwnPtr<LayerTextureSubImage> m_texSubImage;
+    OwnPtr<TextureUploader> m_textureUploader;
+    OwnPtr<AcceleratedTextureCopier> m_textureCopier;
     int m_maxTextureSize;
 };
 

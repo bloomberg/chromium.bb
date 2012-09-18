@@ -56,7 +56,7 @@ public:
         , m_occlusion(0)
     {
         DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
-        m_resourceProvider = CCResourceProvider::create(m_context.get());
+        m_resourceProvider = CCResourceProvider::create(m_context.get(), UnthrottledUploader);
     }
 
     virtual ~TiledLayerChromiumTest()
@@ -99,7 +99,7 @@ public:
     void updateTextures(int count = 500)
     {
         DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
-        CCTextureUpdateController::updateTextures(m_resourceProvider.get(), &m_copier, &m_uploader, &m_queue, count);
+        CCTextureUpdateController::updateTextures(m_resourceProvider.get(), &m_uploader, &m_queue, count);
     }
     void layerPushPropertiesTo(FakeTiledLayerChromium* layer, FakeCCTiledLayerImpl* layerImpl)
     {
@@ -153,7 +153,6 @@ public:
     OwnPtr<CCResourceProvider> m_resourceProvider;
     CCTextureUpdateQueue m_queue;
     CCRenderingStats m_stats;
-    FakeTextureCopier m_copier;
     FakeTextureUploader m_uploader;
     CCPriorityCalculator m_priorityCalculator;
     OwnPtr<CCPrioritizedTextureManager> m_textureManager;

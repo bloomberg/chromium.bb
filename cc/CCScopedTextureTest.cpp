@@ -23,7 +23,7 @@ TEST(CCScopedTextureTest, NewScopedTexture)
 {
     OwnPtr<CCGraphicsContext> context(createFakeCCGraphicsContext());
     DebugScopedSetImplThread implThread;
-    OwnPtr<CCResourceProvider> resourceProvider(CCResourceProvider::create(context.get()));
+    OwnPtr<CCResourceProvider> resourceProvider(CCResourceProvider::create(context.get(), UnthrottledUploader));
     OwnPtr<CCScopedTexture> texture = CCScopedTexture::create(resourceProvider.get());
 
     // New scoped textures do not hold a texture yet.
@@ -38,7 +38,7 @@ TEST(CCScopedTextureTest, CreateScopedTexture)
 {
     OwnPtr<CCGraphicsContext> context(createFakeCCGraphicsContext());
     DebugScopedSetImplThread implThread;
-    OwnPtr<CCResourceProvider> resourceProvider(CCResourceProvider::create(context.get()));
+    OwnPtr<CCResourceProvider> resourceProvider(CCResourceProvider::create(context.get(), UnthrottledUploader));
     OwnPtr<CCScopedTexture> texture = CCScopedTexture::create(resourceProvider.get());
     texture->allocate(CCRenderer::ImplPool, IntSize(30, 30), GraphicsContext3D::RGBA, CCResourceProvider::TextureUsageAny);
 
@@ -55,7 +55,7 @@ TEST(CCScopedTextureTest, ScopedTextureIsDeleted)
 {
     OwnPtr<CCGraphicsContext> context(createFakeCCGraphicsContext());
     DebugScopedSetImplThread implThread;
-    OwnPtr<CCResourceProvider> resourceProvider(CCResourceProvider::create(context.get()));
+    OwnPtr<CCResourceProvider> resourceProvider(CCResourceProvider::create(context.get(), UnthrottledUploader));
 
     {
         OwnPtr<CCScopedTexture> texture = CCScopedTexture::create(resourceProvider.get());
@@ -83,7 +83,7 @@ TEST(CCScopedTextureTest, LeakScopedTexture)
 {
     OwnPtr<CCGraphicsContext> context(createFakeCCGraphicsContext());
     DebugScopedSetImplThread implThread;
-    OwnPtr<CCResourceProvider> resourceProvider(CCResourceProvider::create(context.get()));
+    OwnPtr<CCResourceProvider> resourceProvider(CCResourceProvider::create(context.get(), UnthrottledUploader));
 
     {
         OwnPtr<CCScopedTexture> texture = CCScopedTexture::create(resourceProvider.get());

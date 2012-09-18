@@ -127,11 +127,6 @@ protected:
     cc::IntSize m_forcedContentBounds;
 };
 
-class FakeTextureCopier : public cc::TextureCopier {
-public:
-    virtual void copyTexture(Parameters) OVERRIDE { }
-    virtual void flush() OVERRIDE { }
-};
 
 class FakeTextureUploader : public cc::TextureUploader {
 public:

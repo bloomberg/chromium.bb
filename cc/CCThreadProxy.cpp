@@ -594,7 +594,7 @@ void CCThreadProxy::beginFrameCompleteOnImplThread(CCCompletionEvent* completion
     }
 
     bool hasResourceUpdates = !!queue->fullUploadSize();
-    m_currentTextureUpdateControllerOnImplThread = CCTextureUpdateController::create(this, CCProxy::implThread(), queue, m_layerTreeHostImpl->resourceProvider(), m_layerTreeHostImpl->renderer()->textureCopier(), m_layerTreeHostImpl->renderer()->textureUploader());
+    m_currentTextureUpdateControllerOnImplThread = CCTextureUpdateController::create(this, CCProxy::implThread(), queue, m_layerTreeHostImpl->resourceProvider(), m_layerTreeHostImpl->resourceProvider()->textureUploader());
     m_commitCompletionEventOnImplThread = completion;
 
     m_schedulerOnImplThread->beginFrameComplete(hasResourceUpdates);

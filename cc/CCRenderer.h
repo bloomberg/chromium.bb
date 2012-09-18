@@ -15,10 +15,6 @@
 namespace cc {
 
 class CCScopedTexture;
-class TextureCopier;
-class TextureUploader;
-
-enum TextureUploaderOption { ThrottledUploader, UnthrottledUploader };
 
 class CCRendererClient {
 public:
@@ -68,9 +64,6 @@ public:
     virtual bool swapBuffers() = 0;
 
     virtual void getFramebufferPixels(void *pixels, const IntRect&) = 0;
-
-    virtual TextureCopier* textureCopier() const = 0;
-    virtual TextureUploader* textureUploader() const = 0;
 
     virtual bool isContextLost() { return false; }
 

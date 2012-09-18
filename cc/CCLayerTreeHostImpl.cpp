@@ -687,10 +687,10 @@ bool CCLayerTreeHostImpl::initializeRenderer(PassOwnPtr<CCGraphicsContext> conte
     }
 
     OwnPtr<CCGraphicsContext> contextRef(context);
-    OwnPtr<CCResourceProvider> resourceProvider = CCResourceProvider::create(contextRef.get());
+    OwnPtr<CCResourceProvider> resourceProvider = CCResourceProvider::create(contextRef.get(), textureUploader);
     OwnPtr<CCRendererGL> renderer;
     if (resourceProvider.get())
-        renderer = CCRendererGL::create(this, resourceProvider.get(), textureUploader);
+        renderer = CCRendererGL::create(this, resourceProvider.get());
 
     // Since we now have a new context/renderer, we cannot continue to use the old
     // resources (i.e. renderSurfaces and texture IDs).

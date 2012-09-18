@@ -34,7 +34,7 @@ size_t CCTextureUpdateController::maxPartialTextureUpdates()
     return textureUpdatesPerTick;
 }
 
-void CCTextureUpdateController::updateTextures(CCResourceProvider* resourceProvider, TextureCopier* copier, TextureUploader* uploader, CCTextureUpdateQueue* queue, size_t count)
+void CCTextureUpdateController::updateTextures(CCResourceProvider* resourceProvider, TextureUploader* uploader, CCTextureUpdateQueue* queue, size_t count)
 {
     if (queue->fullUploadSize() || queue->partialUploadSize()) {
         if (uploader->isBusy())
@@ -82,6 +82,7 @@ void CCTextureUpdateController::updateTextures(CCResourceProvider* resourceProvi
         uploader->endUploads();
     }
 
+    TextureCopier* copier = resourceProvider->textureCopier();
     size_t copyCount = 0;
     while (queue->copySize()) {
         copier->copyTexture(queue->takeFirstCopy());
@@ -95,12 +96,11 @@ void CCTextureUpdateController::updateTextures(CCResourceProvider* resourceProvi
         copier->flush();
 }
 
-CCTextureUpdateController::CCTextureUpdateController(CCTextureUpdateControllerClient* client, CCThread* thread, PassOwnPtr<CCTextureUpdateQueue> queue, CCResourceProvider* resourceProvider, TextureCopier* copier, TextureUploader* uploader)
+CCTextureUpdateController::CCTextureUpdateController(CCTextureUpdateControllerClient* client, CCThread* thread, PassOwnPtr<CCTextureUpdateQueue> queue, CCResourceProvider* resourceProvider, TextureUploader* uploader)
     : m_client(client)
     , m_timer(adoptPtr(new CCTimer(thread, this)))
     , m_queue(queue)
     , m_resourceProvider(resourceProvider)
-    , m_copier(copier)
     , m_uploader(uploader)
     , m_monotonicTimeLimit(0)
     , m_firstUpdateAttempt(true)
@@ -138,7 +138,7 @@ void CCTextureUpdateController::performMoreUpdates(
 void CCTextureUpdateController::finalize()
 {
     while (m_queue->hasMoreUpdates())
-        updateTextures(m_resourceProvider, m_copier, m_uploader, m_queue.get(),
+        updateTextures(m_resourceProvider, m_uploader, m_queue.get(),
                        updateMoreTexturesSize());
 }
 

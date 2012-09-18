@@ -9,6 +9,8 @@
 #undef LOG
 #endif
 
+#include <limits.h>
+
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "CCProxy.h"
@@ -16,7 +18,8 @@
 #include "Extensions3DChromium.h"
 #include "IntRect.h"
 #include "LayerTextureSubImage.h"
-#include <limits.h>
+#include "ThrottledTextureUploader.h"
+#include "UnthrottledTextureUploader.h"
 #include <public/WebGraphicsContext3D.h>
 #include <wtf/HashSet.h>
 
@@ -46,16 +49,21 @@ static bool isTextureFormatSupportedForStorage(GC3Denum format)
     return (format == GraphicsContext3D::RGBA || format == Extensions3D::BGRA_EXT);
 }
 
-PassOwnPtr<CCResourceProvider> CCResourceProvider::create(CCGraphicsContext* context)
+PassOwnPtr<CCResourceProvider> CCResourceProvider::create(CCGraphicsContext* context, TextureUploaderOption option)
 {
     OwnPtr<CCResourceProvider> resourceProvider(adoptPtr(new CCResourceProvider(context)));
-    if (!resourceProvider->initialize())
+    if (!resourceProvider->initialize(option))
         return nullptr;
     return resourceProvider.release();
 }
 
 CCResourceProvider::~CCResourceProvider()
 {
+    WebGraphicsContext3D* context3d = m_context->context3D();
+    if (!context3d || !context3d->makeContextCurrent())
+        return;
+    m_textureUploader.clear();
+    m_textureCopier.clear();
 }
 
 WebGraphicsContext3D* CCResourceProvider::graphicsContext3D()
@@ -336,12 +344,13 @@ CCResourceProvider::CCResourceProvider(CCGraphicsContext* context)
 {
 }
 
-bool CCResourceProvider::initialize()
+bool CCResourceProvider::initialize(TextureUploaderOption textureUploaderOption)
 {
     ASSERT(CCProxy::isImplThread());
     WebGraphicsContext3D* context3d = m_context->context3D();
     if (!context3d) {
         m_maxTextureSize = INT_MAX;
+        m_textureUploader = UnthrottledTextureUploader::create();
 
         // FIXME: Implement this path for software compositing.
         return false;
@@ -353,6 +362,7 @@ bool CCResourceProvider::initialize()
     std::vector<std::string> extensions;
     base::SplitString(extensionsString, ' ', &extensions);
     bool useMapSub = false;
+    bool useBindUniform = false;
     for (size_t i = 0; i < extensions.size(); ++i) {
         if (extensions[i] == "GL_EXT_texture_storage")
             m_useTextureStorageExt = true;
@@ -362,9 +372,17 @@ bool CCResourceProvider::initialize()
             useMapSub = true;
         else if (extensions[i] == "GL_CHROMIUM_shallow_flush")
             m_useShallowFlush = true;
+        else if (extensions[i] == "GL_CHROMIUM_bind_uniform_location")
+            useBindUniform = true;
     }
 
     m_texSubImage = adoptPtr(new LayerTextureSubImage(useMapSub));
+    m_textureCopier = AcceleratedTextureCopier::create(context3d, useBindUniform);
+
+    if (textureUploaderOption == ThrottledUploader)
+        m_textureUploader = ThrottledTextureUploader::create(context3d);
+    else
+        m_textureUploader = UnthrottledTextureUploader::create();
     GLC(context3d, context3d->getIntegerv(GraphicsContext3D::MAX_TEXTURE_SIZE, &m_maxTextureSize));
     return true;
 }

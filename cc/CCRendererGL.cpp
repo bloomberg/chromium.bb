@@ -26,9 +26,7 @@
 #include "PlatformColor.h"
 #include "SkBitmap.h"
 #include "SkColor.h"
-#include "ThrottledTextureUploader.h"
 #include "TraceEvent.h"
-#include "UnthrottledTextureUploader.h"
 #ifdef LOG
 #undef LOG
 #endif
@@ -64,9 +62,9 @@ bool needsIOSurfaceReadbackWorkaround()
 
 } // anonymous namespace
 
-PassOwnPtr<CCRendererGL> CCRendererGL::create(CCRendererClient* client, CCResourceProvider* resourceProvider, TextureUploaderOption textureUploaderSetting)
+PassOwnPtr<CCRendererGL> CCRendererGL::create(CCRendererClient* client, CCResourceProvider* resourceProvider)
 {
-    OwnPtr<CCRendererGL> renderer(adoptPtr(new CCRendererGL(client, resourceProvider, textureUploaderSetting)));
+    OwnPtr<CCRendererGL> renderer(adoptPtr(new CCRendererGL(client, resourceProvider)));
     if (!renderer->initialize())
         return nullptr;
 
@@ -74,8 +72,7 @@ PassOwnPtr<CCRendererGL> CCRendererGL::create(CCRendererClient* client, CCResour
 }
 
 CCRendererGL::CCRendererGL(CCRendererClient* client,
-                                             CCResourceProvider* resourceProvider,
-                                             TextureUploaderOption textureUploaderSetting)
+                           CCResourceProvider* resourceProvider)
     : CCDirectRenderer(client, resourceProvider)
     , m_offscreenFramebufferId(0)
     , m_sharedGeometryQuad(FloatRect(-0.5f, -0.5f, 1.0f, 1.0f))
@@ -84,7 +81,6 @@ CCRendererGL::CCRendererGL(CCRendererClient* client,
     , m_isFramebufferDiscarded(false)
     , m_isUsingBindUniform(false)
     , m_visible(true)
-    , m_textureUploaderSetting(textureUploaderSetting)
 {
     ASSERT(m_context);
 }
@@ -1273,12 +1269,6 @@ bool CCRendererGL::initializeSharedObjects()
 
     GLC(m_context, m_context->flush());
 
-    m_textureCopier = AcceleratedTextureCopier::create(m_context, m_isUsingBindUniform);
-    if (m_textureUploaderSetting == ThrottledUploader)
-        m_textureUploader = ThrottledTextureUploader::create(m_context);
-    else
-        m_textureUploader = UnthrottledTextureUploader::create();
-
     return true;
 }
 
@@ -1513,9 +1503,6 @@ void CCRendererGL::cleanupSharedObjects()
 
     if (m_offscreenFramebufferId)
         GLC(m_context, m_context->deleteFramebuffer(m_offscreenFramebufferId));
-
-    m_textureCopier.clear();
-    m_textureUploader.clear();
 
     releaseRenderPassTextures();
 }

@@ -12,7 +12,6 @@
 
 namespace cc {
 
-class TextureCopier;
 class TextureUploader;
 
 class CCTextureUpdateControllerClient {
@@ -26,12 +25,12 @@ protected:
 class CCTextureUpdateController : public CCTimerClient {
     WTF_MAKE_NONCOPYABLE(CCTextureUpdateController);
 public:
-    static PassOwnPtr<CCTextureUpdateController> create(CCTextureUpdateControllerClient* client, CCThread* thread, PassOwnPtr<CCTextureUpdateQueue> queue, CCResourceProvider* resourceProvider, TextureCopier* copier, TextureUploader* uploader)
+    static PassOwnPtr<CCTextureUpdateController> create(CCTextureUpdateControllerClient* client, CCThread* thread, PassOwnPtr<CCTextureUpdateQueue> queue, CCResourceProvider* resourceProvider, TextureUploader* uploader)
     {
-        return adoptPtr(new CCTextureUpdateController(client, thread, queue, resourceProvider, copier, uploader));
+        return adoptPtr(new CCTextureUpdateController(client, thread, queue, resourceProvider, uploader));
     }
     static size_t maxPartialTextureUpdates();
-    static void updateTextures(CCResourceProvider*, TextureCopier*, TextureUploader*, CCTextureUpdateQueue*, size_t count);
+    static void updateTextures(CCResourceProvider*, TextureUploader*, CCTextureUpdateQueue*, size_t count);
 
     virtual ~CCTextureUpdateController();
 
@@ -47,7 +46,7 @@ public:
     virtual size_t updateMoreTexturesSize() const;
 
 protected:
-    CCTextureUpdateController(CCTextureUpdateControllerClient*, CCThread*, PassOwnPtr<CCTextureUpdateQueue>, CCResourceProvider*, TextureCopier*, TextureUploader*);
+    CCTextureUpdateController(CCTextureUpdateControllerClient*, CCThread*, PassOwnPtr<CCTextureUpdateQueue>, CCResourceProvider*, TextureUploader*);
 
     // This returns true when there were textures left to update.
     bool updateMoreTexturesIfEnoughTimeRemaining();
@@ -58,7 +57,6 @@ protected:
     OwnPtr<CCTextureUpdateQueue> m_queue;
     bool m_contentsTexturesPurged;
     CCResourceProvider* m_resourceProvider;
-    TextureCopier* m_copier;
     TextureUploader* m_uploader;
     double m_monotonicTimeLimit;
     bool m_firstUpdateAttempt;

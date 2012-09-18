@@ -271,7 +271,7 @@ public:
     CCResourceProviderTest()
         : m_sharedData(ContextSharedData::create())
         , m_context(FakeWebCompositorOutputSurface::create(ResourceProviderContext::create(m_sharedData.get())))
-        , m_resourceProvider(CCResourceProvider::create(m_context.get()))
+        , m_resourceProvider(CCResourceProvider::create(m_context.get(), UnthrottledUploader))
     {
         m_resourceProvider->setDefaultResourceType(GetParam());
     }
@@ -417,7 +417,7 @@ TEST_P(CCResourceProviderTest, TransferResources)
         return;
 
     OwnPtr<CCGraphicsContext> childContext(FakeWebCompositorOutputSurface::create(ResourceProviderContext::create(m_sharedData.get())));
-    OwnPtr<CCResourceProvider> childResourceProvider(CCResourceProvider::create(childContext.get()));
+    OwnPtr<CCResourceProvider> childResourceProvider(CCResourceProvider::create(childContext.get(), UnthrottledUploader));
 
     IntSize size(1, 1);
     WGC3Denum format = GraphicsContext3D::RGBA;

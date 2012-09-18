@@ -3897,7 +3897,7 @@ public:
     virtual void setMemoryAllocationLimitBytes(size_t) OVERRIDE { }
 
 protected:
-    CCTestRenderer(CCResourceProvider* resourceProvider) : CCRendererGL(this, resourceProvider, UnthrottledUploader) { }
+    CCTestRenderer(CCResourceProvider* resourceProvider) : CCRendererGL(this, resourceProvider) { }
 
 private:
     CCLayerTreeSettings m_settings;
@@ -4183,7 +4183,7 @@ TEST_F(CCLayerTreeHostImplTest, testRemoveRenderPasses)
 {
     OwnPtr<CCGraphicsContext> context(createContext());
     ASSERT_TRUE(context->context3D());
-    OwnPtr<CCResourceProvider> resourceProvider(CCResourceProvider::create(context.get()));
+    OwnPtr<CCResourceProvider> resourceProvider(CCResourceProvider::create(context.get(), UnthrottledUploader));
 
     OwnPtr<CCTestRenderer> renderer(CCTestRenderer::create(resourceProvider.get()));
 

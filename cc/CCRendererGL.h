@@ -20,7 +20,6 @@
 #include "CCTileDrawQuad.h"
 #include "CCYUVVideoDrawQuad.h"
 #include "Extensions3DChromium.h"
-#include "TextureCopier.h"
 #include <wtf/PassOwnPtr.h>
 
 namespace WebKit {
@@ -40,7 +39,7 @@ class CCRendererGL : public CCDirectRenderer,
                      public WebKit::WebGraphicsContext3D::WebGraphicsContextLostCallback {
     WTF_MAKE_NONCOPYABLE(CCRendererGL);
 public:
-    static PassOwnPtr<CCRendererGL> create(CCRendererClient*, CCResourceProvider*, TextureUploaderOption);
+    static PassOwnPtr<CCRendererGL> create(CCRendererClient*, CCResourceProvider*);
 
     virtual ~CCRendererGL();
 
@@ -66,15 +65,12 @@ public:
     virtual void getFramebufferPixels(void *pixels, const IntRect&) OVERRIDE;
     bool getFramebufferTexture(CCScopedTexture*, const IntRect& deviceRect);
 
-    virtual TextureCopier* textureCopier() const OVERRIDE { return m_textureCopier.get(); }
-    virtual TextureUploader* textureUploader() const OVERRIDE { return m_textureUploader.get(); }
-
     virtual bool isContextLost() OVERRIDE;
 
     virtual void setVisible(bool) OVERRIDE;
 
 protected:
-    CCRendererGL(CCRendererClient*, CCResourceProvider*, TextureUploaderOption);
+    CCRendererGL(CCRendererClient*, CCResourceProvider*);
 
     bool isFramebufferDiscarded() const { return m_isFramebufferDiscarded; }
     bool initialize();
@@ -210,9 +206,6 @@ private:
 
     OwnPtr<SolidColorProgram> m_solidColorProgram;
 
-    OwnPtr<AcceleratedTextureCopier> m_textureCopier;
-    OwnPtr<TextureUploader> m_textureUploader;
-
     WebKit::WebGraphicsContext3D* m_context;
 
     IntRect m_swapBufferRect;
@@ -220,7 +213,6 @@ private:
     bool m_isFramebufferDiscarded;
     bool m_isUsingBindUniform;
     bool m_visible;
-    TextureUploaderOption m_textureUploaderSetting;
 
     OwnPtr<CCResourceProvider::ScopedWriteLockGL> m_currentFramebufferLock;
 };
