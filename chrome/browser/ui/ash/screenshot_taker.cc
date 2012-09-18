@@ -17,6 +17,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/stringprintf.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -117,7 +118,7 @@ bool GetScreenshotDirectory(FilePath* directory) {
 
 void SaveScreenshot(const FilePath& screenshot_path,
                     scoped_refptr<base::RefCountedBytes> png_data) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
   DCHECK(!screenshot_path.empty());
   if (static_cast<size_t>(file_util::WriteFile(
           screenshot_path,
@@ -150,17 +151,15 @@ void PostSaveScreenshotTask(const FilePath& screenshot_path,
           base::Bind(&SaveScreenshotToDrive, png_data));
     }
   } else {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::FILE, FROM_HERE,
-        base::Bind(&SaveScreenshot, screenshot_path, png_data));
+    content::BrowserThread::GetBlockingPool()->PostTask(
+        FROM_HERE, base::Bind(&SaveScreenshot, screenshot_path, png_data));
   }
 }
 #else
 void PostSaveScreenshotTask(const FilePath& screenshot_path,
                             scoped_refptr<base::RefCountedBytes> png_data) {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(&SaveScreenshot, screenshot_path, png_data));
+  content::BrowserThread::GetBlockingPool()->PostTask(
+      FROM_HERE, base::Bind(&SaveScreenshot, screenshot_path, png_data));
 }
 #endif
 
