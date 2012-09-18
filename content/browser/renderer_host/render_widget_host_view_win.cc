@@ -330,6 +330,12 @@ WebKit::WebGestureEvent CreateWebGestureEvent(HWND hwnd,
       gesture_event.data.tap.height =
           gesture.details().bounding_box().height();
       break;
+    case ui::ET_GESTURE_TAP_DOWN:
+      gesture_event.data.tapDown.width =
+          gesture.details().bounding_box().width();
+      gesture_event.data.tapDown.height =
+          gesture.details().bounding_box().height();
+      break;
     case ui::ET_GESTURE_SCROLL_UPDATE:
       gesture_event.data.scrollUpdate.deltaX = gesture.details().scroll_x();
       gesture_event.data.scrollUpdate.deltaY = gesture.details().scroll_y();

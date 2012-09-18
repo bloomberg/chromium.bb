@@ -354,6 +354,10 @@ WebKit::WebGestureEvent MakeWebGestureEventFromAuraEvent(
       break;
     case ui::ET_GESTURE_TAP_DOWN:
       gesture_event.type = WebKit::WebInputEvent::GestureTapDown;
+      gesture_event.data.tapDown.width =
+          event->details().bounding_box().width();
+      gesture_event.data.tapDown.height =
+          event->details().bounding_box().height();
       break;
     case ui::ET_GESTURE_TAP_CANCEL:
       gesture_event.type = WebKit::WebInputEvent::GestureTapCancel;
