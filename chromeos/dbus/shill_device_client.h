@@ -102,7 +102,7 @@ class CHROMEOS_EXPORT ShillDeviceClient {
       const dbus::ObjectPath& device_path,
       const std::string& method) = 0;
 
-  // Calls RequirePin method.
+  // Calls the RequirePin method.
   // |callback| is called after the method call finishes.
   virtual void RequirePin(const dbus::ObjectPath& device_path,
                           const std::string& pin,
@@ -110,14 +110,14 @@ class CHROMEOS_EXPORT ShillDeviceClient {
                           const base::Closure& callback,
                           const ErrorCallback& error_callback) = 0;
 
-  // Calls EnterPin method.
+  // Calls the EnterPin method.
   // |callback| is called after the method call finishes.
   virtual void EnterPin(const dbus::ObjectPath& device_path,
                         const std::string& pin,
                         const base::Closure& callback,
                         const ErrorCallback& error_callback) = 0;
 
-  // Calls UnblockPin method.
+  // Calls the UnblockPin method.
   // |callback| is called after the method call finishes.
   virtual void UnblockPin(const dbus::ObjectPath& device_path,
                           const std::string& puk,
@@ -125,7 +125,7 @@ class CHROMEOS_EXPORT ShillDeviceClient {
                           const base::Closure& callback,
                           const ErrorCallback& error_callback) = 0;
 
-  // Calls ChangePin method.
+  // Calls the ChangePin method.
   // |callback| is called after the method call finishes.
   virtual void ChangePin(const dbus::ObjectPath& device_path,
                          const std::string& old_pin,
@@ -133,7 +133,7 @@ class CHROMEOS_EXPORT ShillDeviceClient {
                          const base::Closure& callback,
                          const ErrorCallback& error_callback) = 0;
 
-  // Calls Register method.
+  // Calls the Register method.
   // |callback| is called after the method call finishes.
   virtual void Register(const dbus::ObjectPath& device_path,
                         const std::string& network_id,

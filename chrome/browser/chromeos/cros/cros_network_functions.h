@@ -302,6 +302,11 @@ std::string CrosPrefixLengthToNetmask(int32 prefix_length);
 // e.g. a |netmask| of 255.255.255.0 is converted to a prefixlen of 24
 int32 CrosNetmaskToPrefixLength(const std::string& netmask);
 
+// Changes the active cellular carrier.
+void CrosSetCarrier(const std::string& device_path,
+                    const std::string& carrier,
+                    const NetworkOperationCallback& callback);
+
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_CROS_CROS_NETWORK_FUNCTIONS_H_

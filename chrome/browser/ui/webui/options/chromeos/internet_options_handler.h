@@ -106,6 +106,7 @@ class InternetOptionsHandler
   void DisableWimaxCallback(const base::ListValue* args);
   void BuyDataPlanCallback(const base::ListValue* args);
   void SetApnCallback(const base::ListValue* args);
+  void SetCarrierCallback(const base::ListValue* args);
   void SetSimCardLockCallback(const base::ListValue* args);
   void ChangePinCallback(const base::ListValue* args);
   void ShareNetworkCallback(const base::ListValue* args);
@@ -156,10 +157,19 @@ class InternetOptionsHandler
   void FillNetworkInfo(base::DictionaryValue* dictionary);
   // Refreshes the display of network information.
   void RefreshNetworkData();
+  // Updates the carrier change status.
+  void UpdateCarrier(bool success);
   // Adds observers for wireless networks, if any, so that we can dynamically
   // display the correct icon for that network's signal strength and, in the
   // case of cellular networks, network technology and roaming status.
   void MonitorNetworks();
+
+  // Callback for SetCarrier to notify once it's complete.
+  void CarrierStatusCallback(
+      const std::string& path,
+      chromeos::NetworkMethodErrorType error,
+      const std::string& error_message);
+
 
   // Convenience pointer to netwrok library (will not change).
   chromeos::NetworkLibrary* cros_;

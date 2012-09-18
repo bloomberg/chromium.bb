@@ -195,6 +195,7 @@ class NetworkLibraryImplBase : public NetworkLibrary {
   // virtual RequestCellularScan implemented in derived classes.
   // virtual RequestCellularRegister implemented in derived classes.
   // virtual SetCellularDataRoamingAllowed implemented in derived classes.
+  // virtual SetCarrier implemented in derived classes.
   // virtual IsCellularAlwaysInRoaming implemented in derived classes.
   // virtual RequestNetworkScan implemented in derived classes.
   // virtual GetWifiAccessPoints implemented in derived classes.

@@ -431,6 +431,18 @@ void NetworkLibraryImplCros::SetCellularDataRoamingAllowed(bool new_value) {
                                value);
 }
 
+void NetworkLibraryImplCros::SetCarrier(
+    const std::string& service_path,
+    const std::string& carrier,
+    const NetworkOperationCallback& completed) {
+  const NetworkDevice* cellular = FindCellularDevice();
+  if (!cellular) {
+    NOTREACHED() << "Calling SetCarrier method w/o cellular device.";
+    return;
+  }
+  CrosSetCarrier(cellular->device_path(), carrier, completed);
+}
+
 bool NetworkLibraryImplCros::IsCellularAlwaysInRoaming() {
   const NetworkDevice* cellular = FindCellularDevice();
   if (!cellular) {

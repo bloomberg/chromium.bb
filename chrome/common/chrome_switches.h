@@ -369,6 +369,7 @@ extern const char kTabletUI[];
 #if defined(OS_CHROMEOS)
 // Keep switches in alphabetical order.
 extern const char kAshWebUIInit[];
+extern const char kEnableCarrierSwitching[];
 extern const char kDisableBootAnimation[];
 extern const char kDisableFactoryReset[];
 extern const char kDisableGData[];

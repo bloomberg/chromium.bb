@@ -56,6 +56,9 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
   virtual void RequestCellularScan() OVERRIDE;
   virtual void RequestCellularRegister(const std::string& network_id) OVERRIDE;
   virtual void SetCellularDataRoamingAllowed(bool new_value) OVERRIDE;
+  virtual void SetCarrier(const std::string& service_path,
+                          const std::string& carrier,
+                          const NetworkOperationCallback& completed) OVERRIDE;
   virtual bool IsCellularAlwaysInRoaming() OVERRIDE;
   virtual void RequestNetworkScan() OVERRIDE;
   virtual bool GetWifiAccessPoints(WifiAccessPointVector* result) OVERRIDE;

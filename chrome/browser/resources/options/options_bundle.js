@@ -16,7 +16,6 @@
 <if expr="pp_ifdef('chromeos')">
   <include src="../chromeos/user_images_grid.js"></include>
   <include src="../shared/js/chromeos/ui_account_tweaks.js"></include>
-  <include src="chromeos/cellular_plan_element.js"></include>
   <include src="chromeos/change_picture_options.js"></include>
   <include src="chromeos/internet_detail_ip_address_field.js"></include>
   <include src="chromeos/internet_detail.js"></include>

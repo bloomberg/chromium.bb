@@ -108,6 +108,8 @@ const char kRefreshNetworkDataFunction[] =
     "options.network.NetworkList.refreshNetworkData";
 const char kShowDetailedInfoFunction[] =
     "options.internet.DetailsInternetPage.showDetailedInfo";
+const char kUpdateCarrierFunction[] =
+    "options.internet.DetailsInternetPage.updateCarrier";
 const char kUpdateCellularPlansFunction[] =
     "options.internet.DetailsInternetPage.updateCellularPlans";
 const char kUpdateSecurityTabFunction[] =
@@ -127,6 +129,7 @@ const char kRefreshCellularPlanMessage[] = "refreshCellularPlan";
 const char kRefreshNetworksMessage[] = "refreshNetworks";
 const char kSetApnMessage[] = "setApn";
 const char kSetAutoConnectMessage[] = "setAutoConnect";
+const char kSetCarrierMessage[] = "setCarrier";
 const char kSetIPConfigMessage[] = "setIPConfig";
 const char kSetPreferNetworkMessage[] = "setPreferNetwork";
 const char kSetServerHostname[] = "setServerHostname";
@@ -143,6 +146,7 @@ const char kTagAirplaneMode[] = "airplaneMode";
 const char kTagApn[] = "apn";
 const char kTagAutoConnect[] = "autoConnect";
 const char kTagBssid[] = "bssid";
+const char kTagCarrierSelectFlag[] = "showCarrierSelect";
 const char kTagCarrierUrl[] = "carrierUrl";
 const char kTagCellularAvailable[] = "cellularAvailable";
 const char kTagCellularBusy[] = "cellularBusy";
@@ -204,6 +208,7 @@ const char kTagRestrictedPool[] = "restrictedPool";
 const char kTagRoamingState[] = "roamingState";
 const char kTagServerHostname[] = "serverHostname";
 const char kTagService_name[] = "service_name";
+const char kTagServices[] = "services";
 const char kTagServiceName[] = "serviceName";
 const char kTagServicePath[] = "servicePath";
 const char kTagShared[] = "shared";
@@ -714,19 +719,6 @@ void InternetOptionsHandler::GetLocalizedValues(
     { "lockSimCard", IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_LOCK_SIM_CARD },
     { "changePinButton",
       IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_CHANGE_PIN_BUTTON },
-
-    // Plan Tab.
-
-    { "planName", IDS_OPTIONS_SETTINGS_INTERNET_CELL_PLAN_NAME },
-    { "planLoading", IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_LOADING_PLAN },
-    { "noPlansFound", IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NO_PLANS_FOUND },
-    { "purchaseMore", IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PURCHASE_MORE },
-    { "dataRemaining", IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_DATA_REMAINING },
-    { "planExpires", IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_EXPIRES },
-    { "showPlanNotifications",
-      IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SHOW_MOBILE_NOTIFICATION },
-    { "autoconnectCellular",
-      IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_AUTO_CONNECT }
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
@@ -790,6 +782,9 @@ void InternetOptionsHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(kSetApnMessage,
       base::Bind(&InternetOptionsHandler::SetApnCallback,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(kSetCarrierMessage,
+      base::Bind(&InternetOptionsHandler::SetCarrierCallback,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(kSetSimCardLockMessage,
       base::Bind(&InternetOptionsHandler::SetSimCardLockCallback,
@@ -903,6 +898,35 @@ void InternetOptionsHandler::SetApnCallback(const ListValue* args) {
   }
 }
 
+void InternetOptionsHandler::CarrierStatusCallback(
+    const std::string& service_path,
+    chromeos::NetworkMethodErrorType error,
+    const std::string& error_message) {
+  UpdateCarrier(error == chromeos::NETWORK_METHOD_ERROR_NONE);
+}
+
+
+void InternetOptionsHandler::SetCarrierCallback(const ListValue* args) {
+  std::string service_path;
+  std::string carrier;
+  if (args->GetSize() != 2 ||
+      !args->GetString(0, &service_path) ||
+      !args->GetString(1, &carrier)) {
+    NOTREACHED();
+    return;
+  }
+
+  chromeos::NetworkLibrary* cros_net =
+      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+  if (cros_net) {
+    cros_net->SetCarrier(
+        service_path,
+        carrier,
+        base::Bind(&InternetOptionsHandler::CarrierStatusCallback,
+                   weak_factory_.GetWeakPtr()));
+  }
+}
+
 void InternetOptionsHandler::SetSimCardLockCallback(const ListValue* args) {
   bool require_pin_new_value;
   if (!args->GetBoolean(0, &require_pin_new_value)) {
@@ -936,6 +960,11 @@ void InternetOptionsHandler::RefreshNetworkData() {
   FillNetworkInfo(&dictionary);
   web_ui()->CallJavascriptFunction(
       kRefreshNetworkDataFunction, dictionary);
+}
+
+void InternetOptionsHandler::UpdateCarrier(bool success) {
+  web_ui()->CallJavascriptFunction(kUpdateCarrierFunction,
+                                   *(Value::CreateBooleanValue(success)));
 }
 
 void InternetOptionsHandler::OnNetworkManagerChanged(
@@ -1352,8 +1381,14 @@ DictionaryValue* InternetOptionsHandler::CreateDictionaryFromCellularApn(
 void InternetOptionsHandler::PopulateCellularDetails(
     const chromeos::CellularNetwork* cellular,
     DictionaryValue* dictionary) {
+  dictionary->SetBoolean(kTagCarrierSelectFlag,
+                         CommandLine::ForCurrentProcess()->HasSwitch(
+                             switches::kEnableCarrierSwitching));
   // Cellular network / connection settings.
-  dictionary->SetString(kTagServiceName, cellular->name());
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableCarrierSwitching)) {
+    dictionary->SetString(kTagServiceName, cellular->name());
+  }
   dictionary->SetString(kTagNetworkTechnology,
                         cellular->GetNetworkTechnologyString());
   dictionary->SetString(kTagOperatorName, cellular->operator_name());
@@ -1419,6 +1454,10 @@ void InternetOptionsHandler::PopulateCellularDetails(
     }
     SetValueDictionary(dictionary, kTagProviderApnList, apn_list_value,
                        cellular_property_ui_data);
+
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableCarrierSwitching))
+      dictionary->Set(kTagServices, device->supported_carriers());
   }
 
   SetActivationButtonVisibility(cellular,

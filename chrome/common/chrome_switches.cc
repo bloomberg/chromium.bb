@@ -1369,6 +1369,9 @@ const char kTabletUI[]                      = "tablet-ui";
 // Possible values: parallel|postpone. Default: parallel.
 const char kAshWebUIInit[]                  = "ash-webui-init";
 
+// Enables switching between different cellular carriers from the UI.
+const char kEnableCarrierSwitching[]        = "enable-carrier-switching";
+
 // Disables wallpaper boot animation (except of OOBE case).
 const char kDisableBootAnimation[]          = "disable-boot-animation";
 

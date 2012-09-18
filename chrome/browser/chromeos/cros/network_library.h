@@ -130,6 +130,9 @@ class NetworkDevice {
   }
   bool data_roaming_allowed() const { return data_roaming_allowed_; }
   bool support_network_scan() const { return support_network_scan_; }
+  base::ListValue* supported_carriers() const {
+    return supported_carriers_.get();
+  }
   enum TechnologyFamily technology_family() const { return technology_family_; }
   const CellularApnList& provider_apn_list() const {
     return provider_apn_list_;
@@ -176,6 +179,9 @@ class NetworkDevice {
     technology_family_ = technology_family;
   }
   void set_carrier(const std::string& carrier) { carrier_ = carrier; }
+  void set_supported_carriers(const base::ListValue& supported_carriers) {
+    supported_carriers_.reset(supported_carriers.DeepCopy());
+  }
   void set_home_provider_code(const std::string& home_provider_code) {
     home_provider_code_ = home_provider_code;
   }
@@ -239,6 +245,7 @@ class NetworkDevice {
   // Cellular specific device info.
   TechnologyFamily technology_family_;
   std::string carrier_;
+  scoped_ptr<base::ListValue> supported_carriers_;
   std::string home_provider_code_;
   std::string home_provider_country_;
   std::string home_provider_id_;
@@ -1544,6 +1551,12 @@ class NetworkLibrary {
 
   // Change data roaming restriction for current cellular device.
   virtual void SetCellularDataRoamingAllowed(bool new_value) = 0;
+
+  // Changes the active cellular carrier to the one provided, calls the closure
+  // once the transition is complete.
+  virtual void SetCarrier(const std::string& service_path,
+                          const std::string& carrier,
+                          const NetworkOperationCallback& completed) = 0;
 
   // Return true if GSM SIM card can work only with enabled roaming.
   virtual bool IsCellularAlwaysInRoaming() = 0;

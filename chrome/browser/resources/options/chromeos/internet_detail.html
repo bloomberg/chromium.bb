@@ -32,13 +32,6 @@
         <span class="active-tab-label"
             i18n-content="wimaxConnTabLabel"></span>
       </span>
-      <span id="cellular-plan-nav-tab" class="tab cellular-details cdma-only"
-          tab-contents="cellular-plan-tab">
-        <span class="tab-label"
-            i18n-content="cellularPlanTabLabel"></span>
-        <span class="active-tab-label"
-            i18n-content="cellularPlanTabLabel"></span>
-      </span>
       <span id="cellular-conn-nav-tab" class="tab cellular-details"
           tab-contents="cellular-conn-tab">
         <span class="tab-label"
@@ -229,37 +222,15 @@
         </table>
       </section>
     </div>
-    <div id="cellular-plan-tab"
-        class="subpages-tab-contents cellular-details cdma-only">
-      <section>
-        <div>
-          <table id="details-plan-table" class="option-control-table">
-            <tr class="plan-loading-info">
-              <td i18n-content="planLoading" class="option-value"></td>
-            </tr>
-            <tr class="no-plan-info">
-              <td i18n-content="noPlansFound" class="option-value"></td>
-            </tr>
-          </table>
-        </div>
-        <div id="plan-list"></div>
-      </section>
-      <section class="plan-details-info">
-        <div class="checkbox">
-          <label>
-            <input id="show-plan-notifications" type="checkbox"
-                   pref="settings.internet.mobile.show_plan_notifications">
-            <span i18n-content="showPlanNotifications"></span>
-          </label>
-        </div>
-      </section>
-    </div>
     <div id="cellular-conn-tab" class="subpages-tab-contents cellular-details">
       <section id="cellular-network-options">
         <table class="option-control-table">
           <tr>
             <td class="option-name" i18n-content="serviceName"></td>
-            <td id="service-name" class="option-value"></td>
+            <td id="service-name" class="option-value">
+              <select id="select-service">
+              </select>
+            </td>
           </tr>
           <tr>
             <td class="option-name" i18n-content="networkTechnology"></td>

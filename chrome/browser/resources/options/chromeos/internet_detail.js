@@ -75,7 +75,6 @@ cr.define('options.internet', function() {
      */
     initializePage: function() {
       OptionsPage.prototype.initializePage.call(this);
-      options.internet.CellularPlanElement.decorate($('plan-list'));
       var params = parseQueryParams(window.location);
       this.initializePageContents_(params);
       this.showNetworkDetails_(params);
@@ -94,6 +93,7 @@ cr.define('options.internet', function() {
       chrome.send('networkCommand',
           [networkType, servicePath, 'options']);
     },
+
 
     /**
      * Initializes the contents of the page.
@@ -346,22 +346,6 @@ cr.define('options.internet', function() {
       updateHidden('#details-internet-page .wifi-network-setting',
                    this.showStaticIPConfig);
 
-      // Cell plan related.
-      $('plan-list').hidden = this.cellplanloading;
-      updateHidden('#details-internet-page .no-plan-info',
-                   !this.cellular || this.cellplanloading || this.hascellplan);
-      updateHidden('#details-internet-page .plan-loading-info',
-                   !this.cellular || this.nocellplan || this.hascellplan);
-      updateHidden('#details-internet-page .plan-details-info',
-                   !this.cellular || this.nocellplan || this.cellplanloading);
-      updateHidden('#details-internet-page .gsm-only',
-                   !this.cellular || !this.gsm);
-      updateHidden('#details-internet-page .cdma-only',
-                   !this.cellular || this.gsm);
-      updateHidden('#details-internet-page .apn-list-view',
-                   !this.cellular || !this.gsm);
-      updateHidden('#details-internet-page .apn-details-view', true);
-
       // Wifi - Password and shared.
       updateHidden('#details-internet-page #password-details',
                    !this.wireless || !this.password);
@@ -470,6 +454,45 @@ cr.define('options.internet', function() {
   };
 
   /**
+   * Enables or Disables all buttons that provide operations on the cellular
+   * network.
+   */
+  DetailsInternetPage.changeCellularButtonsState = function(disable) {
+    var buttonsToDisableList =
+        new Array('details-internet-login',
+                  'details-internet-disconnect',
+                  'activate-details',
+                  'buyplan-details',
+                  'view-account-details');
+
+    for (var i = 0; i < buttonsToDisableList.length; ++i) {
+      button = $(buttonsToDisableList[i]);
+      if (!button.hidden)
+        button.disabled = disable;
+    }
+  };
+
+  /**
+   * Shows a spinner while the carrier is changed.
+   */
+  DetailsInternetPage.showCarrierChangeSpinner = function() {
+    // Disable any buttons that allow us to operate on cellular networks.
+    DetailsInternetPage.changeCellularButtonsState(true);
+  };
+
+  /**
+   * Changes the network carrier.
+   */
+  DetailsInternetPage.handleCarrierChanged = function() {
+    var serviceSelector = $('select-service');
+    var carrier = serviceSelector[serviceSelector.selectedIndex].textContent;
+    DetailsInternetPage.showCarrierChangeSpinner();
+    var data = $('connection-state').data;
+    chrome.send('setCarrier', [data.servicePath, carrier]);
+  };
+
+
+  /**
    * Performs minimal initialization of the InternetDetails dialog in
    * preparation for showing proxy-setttings.
    */
@@ -498,33 +521,14 @@ cr.define('options.internet', function() {
     detailsPage.visible = true;
   };
 
-  DetailsInternetPage.updateCellularPlans = function(data) {
-    var detailsPage = DetailsInternetPage.getInstance();
-    detailsPage.cellplanloading = false;
-    if (data.plans && data.plans.length) {
-      detailsPage.nocellplan = false;
-      detailsPage.hascellplan = true;
-      $('plan-list').load(data.plans);
-    } else {
-      detailsPage.nocellplan = true;
-      detailsPage.hascellplan = false;
-    }
-
-    detailsPage.hasactiveplan = !data.needsPlan;
-    detailsPage.activated = data.activated;
-    if (!data.activated)
-      $('details-internet-login').hidden = true;
-
-    $('buyplan-details').hidden = !data.showBuyButton;
-    $('activate-details').hidden = !data.showActivateButton;
-    $('view-account-details').hidden = !data.showViewAccountButton;
+  DetailsInternetPage.updateCarrier = function(carrier) {
+    DetailsInternetPage.changeCellularButtonsState(false);
   };
 
   DetailsInternetPage.updateSecurityTab = function(requirePin) {
     $('sim-card-lock-enabled').checked = requirePin;
     $('change-pin').hidden = !requirePin;
   };
-
 
   DetailsInternetPage.loginFromDetails = function() {
     var data = $('connection-state').data;
@@ -863,16 +867,24 @@ cr.define('options.internet', function() {
       signalStrength = signalStrength.replace('$1', data.strength);
       $('wimax-signal-strength').textContent = signalStrength;
     } else if (data.type == Constants.TYPE_CELLULAR) {
-      if (!data.gsm)
-        OptionsPage.showTab($('cellular-plan-nav-tab'));
-      else
-        OptionsPage.showTab($('cellular-conn-nav-tab'));
+      OptionsPage.showTab($('cellular-conn-nav-tab'));
       detailsPage.ethernet = false;
       detailsPage.wireless = false;
       detailsPage.wimax = false;
       detailsPage.vpn = false;
       detailsPage.cellular = true;
-      $('service-name').textContent = data.serviceName;
+      if (data.showCarrierSelect) {
+        var serviceSelector = $('select-service');
+        serviceSelector.onchange = DetailsInternetPage.handleCarrierChanged;
+        for (var i = 0; i < data.services.length; ++i) {
+          var option = document.createElement('option');
+          option.textContent = data.services[i];
+          serviceSelector.add(option);
+        }
+      } else {
+        $('service-name').textContent = data.serviceName;
+      }
+
       $('network-technology').textContent = data.networkTechnology;
       $('activation-state').textContent = data.activationState;
       $('roaming-state').textContent = data.roamingState;
@@ -946,16 +958,6 @@ cr.define('options.internet', function() {
       $('activate-details').hidden = !data.showActivateButton;
       if (data.showActivateButton) {
         $('details-internet-login').hidden = true;
-      }
-
-      detailsPage.hascellplan = false;
-      if (data.connected) {
-        detailsPage.nocellplan = false;
-        detailsPage.cellplanloading = true;
-        chrome.send('refreshCellularPlan', [data.servicePath]);
-      } else {
-        detailsPage.nocellplan = true;
-        detailsPage.cellplanloading = false;
       }
     } else if (data.type == Constants.TYPE_VPN) {
       OptionsPage.showTab($('vpn-nav-tab'));
