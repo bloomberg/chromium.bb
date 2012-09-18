@@ -232,7 +232,7 @@ def load_manifest(content):
             if not isinstance(subsubvalue, bool):
               raise ConfigError('Expected bool, got %r' % subsubvalue)
           else:
-            raise ConfigError('Unknown key %s' % subsubkey)
+            raise ConfigError('Unknown subsubkey %s' % subsubkey)
         if bool('sha-1' in subvalue) and bool('link' in subvalue):
           raise ConfigError(
               'Did not expect both \'sha-1\' and \'link\', got: %r' % subvalue)
@@ -259,7 +259,7 @@ def load_manifest(content):
             (get_flavor(), value))
 
     else:
-      raise ConfigError('Unknown key %s' % subkey)
+      raise ConfigError('Unknown key %s' % key)
 
   return data
 
