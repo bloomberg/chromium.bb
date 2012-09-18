@@ -153,6 +153,28 @@ struct NaClSimpleRevServiceVtbl {
       struct NaClSimpleRevConnection *conn);
 };
 
+int NaClSimpleRevServiceConnectAndSpawnHandler(
+    struct NaClSimpleRevService *self,
+    void                        *instance_data);
+
+int NaClSimpleRevServiceConnectAndSpawnHandlerCb(
+    struct NaClSimpleRevService *self,
+    void                        (*exit_cb)(void *instance_data,
+                                           int  server_loop_ret),
+    void                        *instance_data);
+
+int NaClSimpleRevServiceConnectionFactory(
+    struct NaClSimpleRevService     *self,
+    struct NaClDesc                 *conn,
+    void                            (*exit_cb)(void *instance_data,
+                                               int  server_loop_ret),
+    void                            *instance_data,
+    struct NaClSimpleRevConnection  **out);
+
+void NaClSimpleRevServiceRpcHandler(
+    struct NaClSimpleRevService     *self,
+    struct NaClSimpleRevConnection  *conn);
+
 extern struct NaClSimpleRevServiceVtbl const kNaClSimpleRevServiceVtbl;
 
 struct NaClSimpleRevConnection {

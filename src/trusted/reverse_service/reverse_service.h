@@ -14,16 +14,14 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/include/nacl_string.h"
-#include "native_client/src/trusted/reverse_service/manifest_rpc.h"
-#include "native_client/src/trusted/reverse_service/reverse_control_rpc.h"
-#include "native_client/src/trusted/reverse_service/reverse_socket.h"
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_name_service.h"
+
 #include "native_client/src/shared/platform/refcount_base.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
+#include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
+#include "native_client/src/trusted/reverse_service/reverse_service_c.h"
+#include "native_client/src/trusted/service_runtime/include/sys/nacl_name_service.h"
 
 namespace nacl {
-
-class DescWrapper;
 
 class ReverseInterface : public RefCountBase {
  public:
@@ -86,7 +84,7 @@ class ReverseInterface : public RefCountBase {
 
 class ReverseService : public RefCountBase {
  public:
-  ReverseService(nacl::DescWrapper* conn_cap, ReverseInterface* rif);
+  ReverseService(DescWrapper* conn_cap, ReverseInterface* rif);
 
   // covariant impl of Ref()
   ReverseService* Ref() {  // down_cast
@@ -123,17 +121,8 @@ class ReverseService : public RefCountBase {
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(ReverseService);
 
-  // We cannot just have the object here, since MSVC generates warning
-  // C4355 that 'this' is used in base member initializer list.  Meh.
-  // It's a fair warning: 'this' isn't fully constructed yet.
-  scoped_ptr<ReverseSocket> service_socket_;
+  NaClReverseService* service_;
   ReverseInterface* reverse_interface_;
-
-  static NaClSrpcHandlerDesc const handlers[];
-
-  NaClMutex mu_;
-  NaClCondVar cv_;
-  uint32_t thread_count_;
 };
 
 }  // namespace nacl

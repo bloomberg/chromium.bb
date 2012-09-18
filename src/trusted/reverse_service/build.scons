@@ -6,8 +6,8 @@
 Import('env')
 
 reverse_service_inputs = [
-    'reverse_socket.cc',
-    'reverse_service.cc',
+    'reverse_service_c.c',
+    'reverse_service.cc'
 ]
 
 env.DualLibrary('reverse_service', reverse_service_inputs)

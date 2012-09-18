@@ -13,10 +13,9 @@
     'target_conditions': [
       ['target_base=="reverse_service"', {
         'sources': [
-          'reverse_socket.h',
+          'reverse_service_c.h',
           'reverse_service.h',
-
-          'reverse_socket.cc',
+          'reverse_service_c.c',
           'reverse_service.cc',
         ],
         'xcode_settings': {
