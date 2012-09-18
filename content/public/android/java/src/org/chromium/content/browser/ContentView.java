@@ -20,6 +20,7 @@ import android.webkit.DownloadListener;
 import android.widget.FrameLayout;
 
 import org.chromium.content.browser.ContentViewCore;
+import org.chromium.ui.gfx.NativeWindow;
 
 /**
  * The containing view for {@link ContentViewCore} that exists in the Android UI hierarchy and
@@ -96,12 +97,14 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
      * @param context The Context the view is running in, through which it can
      *                access the current theme, resources, etc.
      * @param nativeWebContents A pointer to the native web contents.
+     * @param nativeWindow An instance of the NativeWindow.
      * @param personality One of {@link #PERSONALITY_CHROME} or {@link #PERSONALITY_VIEW}.
      * @return A ContentView instance.
      */
-    public static ContentView newInstance(Context context, int nativeWebContents, int personality) {
-        return newInstance(context, nativeWebContents, null, android.R.attr.webViewStyle,
-                personality);
+    public static ContentView newInstance(Context context, int nativeWebContents,
+            NativeWindow nativeWindow, int personality) {
+        return newInstance(context, nativeWebContents, nativeWindow, null,
+                android.R.attr.webViewStyle, personality);
     }
 
     /**
@@ -109,14 +112,16 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
      * @param context The Context the view is running in, through which it can
      *                access the current theme, resources, etc.
      * @param nativeWebContents A pointer to the native web contents.
+     * @param nativeWindow An instance of the NativeWindow.
      * @param attrs The attributes of the XML tag that is inflating the view.
      * @return A ContentView instance.
      */
     public static ContentView newInstance(Context context, int nativeWebContents,
-            AttributeSet attrs) {
+            NativeWindow nativeWindow, AttributeSet attrs) {
         // TODO(klobag): use the WebViewStyle as the default style for now. It enables scrollbar.
         // When ContentView is moved to framework, we can define its own style in the res.
-        return newInstance(context, nativeWebContents, attrs, android.R.attr.webViewStyle);
+        return newInstance(context, nativeWebContents, nativeWindow, attrs,
+                android.R.attr.webViewStyle);
     }
 
     /**
@@ -124,31 +129,34 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
      * @param context The Context the view is running in, through which it can
      *                access the current theme, resources, etc.
      * @param nativeWebContents A pointer to the native web contents.
+     * @param nativeWindow An instance of the NativeWindow.
      * @param attrs The attributes of the XML tag that is inflating the view.
      * @param defStyle The default style to apply to this view.
      * @return A ContentView instance.
      */
     public static ContentView newInstance(Context context, int nativeWebContents,
-            AttributeSet attrs, int defStyle) {
-        return newInstance(context, nativeWebContents, attrs, defStyle, PERSONALITY_VIEW);
+            NativeWindow nativeWindow, AttributeSet attrs, int defStyle) {
+        return newInstance(context, nativeWebContents, nativeWindow, attrs, defStyle,
+                PERSONALITY_VIEW);
     }
 
     private static ContentView newInstance(Context context, int nativeWebContents,
-            AttributeSet attrs, int defStyle, int personality) {
+            NativeWindow nativeWindow, AttributeSet attrs, int defStyle, int personality) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
-            return new ContentView(context, nativeWebContents, attrs, defStyle, personality);
-        } else {
-            return new JellyBeanContentView(context, nativeWebContents, attrs, defStyle,
+            return new ContentView(context, nativeWebContents, nativeWindow, attrs, defStyle,
                     personality);
+        } else {
+            return new JellyBeanContentView(context, nativeWebContents, nativeWindow, attrs,
+                    defStyle, personality);
         }
     }
 
-    protected ContentView(Context context, int nativeWebContents, AttributeSet attrs, int defStyle,
-            int personality) {
+    protected ContentView(Context context, int nativeWebContents, NativeWindow nativeWindow,
+            AttributeSet attrs, int defStyle, int personality) {
         super(context, attrs, defStyle);
 
         mContentViewCore = new ContentViewCore(context, personality);
-        mContentViewCore.initialize(this, this, true, nativeWebContents, false);
+        mContentViewCore.initialize(this, this, true, nativeWebContents, nativeWindow, false);
     }
 
     /**

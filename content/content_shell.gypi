@@ -603,6 +603,7 @@
             '../base/base.gyp:base_java',
             '../media/media.gyp:media_java',
             '../net/net.gyp:net_java',
+            '../ui/ui.gyp:ui_java',
           ],
           'actions': [
             {

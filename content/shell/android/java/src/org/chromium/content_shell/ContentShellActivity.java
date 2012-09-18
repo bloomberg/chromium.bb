@@ -15,6 +15,7 @@ import org.chromium.content.app.AppResource;
 import org.chromium.content.app.LibraryLoader;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.common.CommandLine;
+import org.chromium.ui.gfx.NativeWindow;
 
 /**
  * Activity for managing the Content Shell.
@@ -42,6 +43,7 @@ public class ContentShellActivity extends Activity {
 
         setContentView(R.layout.content_shell_activity);
         mShellManager = (ShellManager) findViewById(R.id.shell_container);
+        mShellManager.setWindow(new NativeWindow(this));
 
         String startupUrl = getUrlFromIntent(getIntent());
         if (!TextUtils.isEmpty(startupUrl)) {

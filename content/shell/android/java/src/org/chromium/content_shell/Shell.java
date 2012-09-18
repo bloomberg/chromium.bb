@@ -23,6 +23,7 @@ import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.LoadUrlParams;
+import org.chromium.ui.gfx.NativeWindow;
 
 /**
  * Container for the various UI components that make up a shell window.
@@ -48,6 +49,7 @@ public class Shell extends LinearLayout {
     private ClipDrawable mProgressDrawable;
 
     private View mSurfaceView;
+    private NativeWindow mWindow;
 
     /**
      * Constructor for inflating via XML.
@@ -65,6 +67,13 @@ public class Shell extends LinearLayout {
                 new FrameLayout.LayoutParams(
                         FrameLayout.LayoutParams.MATCH_PARENT,
                         FrameLayout.LayoutParams.MATCH_PARENT));
+    }
+
+    /**
+     * @param window The owning window for this shell.
+     */
+    public void setWindow(NativeWindow window) {
+        mWindow = window;
     }
 
     @Override
@@ -173,7 +182,7 @@ public class Shell extends LinearLayout {
     @CalledByNative
     private void initFromNativeTabContents(int nativeTabContents) {
         mContentView = ContentView.newInstance(
-                getContext(), nativeTabContents, ContentView.PERSONALITY_CHROME);
+                getContext(), nativeTabContents, mWindow, ContentView.PERSONALITY_CHROME);
         if (mContentView.getUrl() != null) mUrlTextView.setText(mContentView.getUrl());
         ((FrameLayout) findViewById(R.id.contentview_holder)).addView(mContentView,
                 new FrameLayout.LayoutParams(

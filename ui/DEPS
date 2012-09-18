@@ -4,6 +4,7 @@ include_rules = [
   "+grit/native_theme_resources.h",
   "+grit/ui_resources.h",
   "+grit/ui_strings.h",
+  "+jni",
   "+net",
   "+skia",
   "+third_party/mozilla",

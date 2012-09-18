@@ -10,17 +10,16 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/app_modal_dialogs/javascript_app_modal_dialog.h"
-#include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/javascript_message_type.h"
 #include "jni/JavascriptAppModalDialog_jni.h"
+#include "ui/gfx/android/window_android.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF16ToJavaString;
 using base::android::ScopedJavaLocalRef;
 using content::BrowserThread;
-using content::ContentViewCore;
 
 // static
 NativeAppModalDialog* NativeAppModalDialog::CreateNativeJavaScriptPrompt(

@@ -35,6 +35,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/android/WebInputEventFactory.h"
 #include "ui/gfx/android/java_bitmap.h"
+#include "ui/gfx/android/window_android.h"
 #include "webkit/glue/webmenuitem.h"
 #include "webkit/user_agent/user_agent_util.h"
 
@@ -79,11 +80,13 @@ ContentViewCore* ContentViewCore::GetNativeContentViewCore(JNIEnv* env,
 ContentViewCoreImpl::ContentViewCoreImpl(JNIEnv* env, jobject obj,
                                          bool hardware_accelerated,
                                          bool take_ownership_of_web_contents,
-                                         WebContents* web_contents)
+                                         WebContents* web_contents,
+                                         ui::WindowAndroid* window_android)
     : java_ref_(env, obj),
       web_contents_(static_cast<WebContentsImpl*>(web_contents)),
       owns_web_contents_(take_ownership_of_web_contents),
-      tab_crashed_(false) {
+      tab_crashed_(false),
+      window_android_(window_android) {
   DCHECK(web_contents) <<
       "A ContentViewCoreImpl should be created with a valid WebContents.";
 
@@ -539,6 +542,10 @@ void ContentViewCoreImpl::LoadUrl(
   tab_crashed_ = false;
 }
 
+ui::WindowAndroid* ContentViewCoreImpl::GetWindowAndroid() {
+  return window_android_;
+}
+
 // ----------------------------------------------------------------------------
 // Native JNI methods
 // ----------------------------------------------------------------------------
@@ -547,10 +554,12 @@ void ContentViewCoreImpl::LoadUrl(
 jint Init(JNIEnv* env, jobject obj,
           jboolean hardware_accelerated,
           jboolean take_ownership_of_web_contents,
-          jint native_web_contents) {
+          jint native_web_contents,
+          jint native_window) {
   ContentViewCoreImpl* view = new ContentViewCoreImpl(
       env, obj, hardware_accelerated, take_ownership_of_web_contents,
-      reinterpret_cast<WebContents*>(native_web_contents));
+      reinterpret_cast<WebContents*>(native_web_contents),
+      reinterpret_cast<ui::WindowAndroid*>(native_window));
   return reinterpret_cast<jint>(view);
 }
 

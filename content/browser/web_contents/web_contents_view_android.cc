@@ -79,7 +79,7 @@ gfx::NativeView WebContentsViewAndroid::GetContentNativeView() const {
 }
 
 gfx::NativeWindow WebContentsViewAndroid::GetTopLevelNativeWindow() const {
-  return content_view_core_;
+  return content_view_core_->GetWindowAndroid();
 }
 
 void WebContentsViewAndroid::GetContainerBounds(gfx::Rect* out) const {

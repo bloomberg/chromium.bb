@@ -110,6 +110,9 @@ struct ANativeWindow;
 namespace content {
 class ContentViewCore;
 }
+namespace ui {
+class WindowAndroid;
+}
 #endif
 class SkBitmap;
 
@@ -146,7 +149,7 @@ typedef GdkEvent* NativeEvent;
 #elif defined(OS_ANDROID)
 typedef void* NativeCursor;
 typedef content::ContentViewCore* NativeView;
-typedef content::ContentViewCore* NativeWindow;
+typedef ui::WindowAndroid* NativeWindow;
 typedef void* NativeRegion;
 typedef jobject NativeEvent;
 #endif

@@ -17,7 +17,7 @@ import android.widget.TextView;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.content.app.AppResource;
-import org.chromium.content.browser.ContentViewCore;
+import org.chromium.ui.gfx.NativeWindow;
 
 public class JavascriptAppModalDialog {
     private String mTitle;
@@ -60,10 +60,9 @@ public class JavascriptAppModalDialog {
     }
 
     @CalledByNative
-    void showJavascriptAppModalDialog(ContentViewCore contentViewCore, int nativeDialogPointer) {
-        assert contentViewCore != null;
-
-        Context context = contentViewCore.getContext();
+    void showJavascriptAppModalDialog(NativeWindow window, int nativeDialogPointer) {
+        assert window != null;
+        Context context = window.getActivity();
 
         // Cache the native dialog pointer so that we can use it to return the
         // response.

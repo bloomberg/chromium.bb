@@ -5,9 +5,14 @@
 #ifndef CONTENT_PUBLIC_BROWSER_ANDROID_CONTENT_VIEW_CORE_H_
 #define CONTENT_PUBLIC_BROWSER_ANDROID_CONTENT_VIEW_CORE_H_
 
+#include "base/android/scoped_java_ref.h"
 #include <jni.h>
 
 class GURL;
+
+namespace ui {
+class WindowAndroid;
+}
 
 namespace content {
 
@@ -49,6 +54,7 @@ class ContentViewCore {
 
   virtual base::android::ScopedJavaLocalRef<jobject> GetJavaObject() = 0;
 
+  virtual ui::WindowAndroid* GetWindowAndroid() = 0;
  protected:
   virtual ~ContentViewCore() {};
 };

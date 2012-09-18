@@ -24,6 +24,7 @@
 #include "content/public/common/content_switches.h"
 #include "media/base/android/media_jni_registrar.h"
 #include "net/android/net_jni_registrar.h"
+#include "ui/android/ui_jni_registrar.h"
 #include "jni/LibraryLoader_jni.h"
 #include "ui/gfx/android/gfx_jni_registrar.h"
 
@@ -64,6 +65,9 @@ static jboolean LibraryLoadedOnMainThread(JNIEnv* env, jclass clazz,
     return JNI_FALSE;
 
   if (!net::android::RegisterJni(env))
+    return JNI_FALSE;
+
+  if (!ui::RegisterJni(env))
     return JNI_FALSE;
 
   if (!content::android::RegisterCommonJni(env))

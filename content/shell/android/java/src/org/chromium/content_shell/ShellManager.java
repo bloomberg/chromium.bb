@@ -14,6 +14,7 @@ import android.widget.FrameLayout;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.ui.gfx.NativeWindow;
 
 /**
  * Container and generator of ShellViews.
@@ -21,6 +22,7 @@ import org.chromium.base.JNINamespace;
 @JNINamespace("content")
 public class ShellManager extends FrameLayout {
 
+    private NativeWindow mWindow;
     private Shell mActiveShell;
 
     private String mStartupUrl = ContentShellActivity.DEFAULT_SHELL_URL;
@@ -56,6 +58,13 @@ public class ShellManager extends FrameLayout {
     }
 
     /**
+     * @param window The window used to generate all shells.
+     */
+    public void setWindow(NativeWindow window) {
+        mWindow = window;
+    }
+
+    /**
      * Sets the startup URL for new shell windows.
      */
     public void setStartupUrl(String url) {
@@ -84,6 +93,7 @@ public class ShellManager extends FrameLayout {
                 (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         Shell shellView = (Shell) inflater.inflate(R.layout.shell_view, null);
         shellView.setSurfaceView(mSurfaceView);
+        shellView.setWindow(mWindow);
 
         removeAllViews();
         if (mActiveShell != null && mActiveShell.getContentView() != null) {

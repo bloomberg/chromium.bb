@@ -409,6 +409,12 @@ void FileSelectHelper::RunFileChooserOnUIThread(
   gfx::NativeWindow owning_window =
       platform_util::GetTopLevel(render_view_host_->GetView()->GetNativeView());
 
+#if defined(OS_ANDROID)
+  // Android needs the original MIME types and an additional capture value.
+  std::vector<string16> accept_types(params.accept_types);
+  accept_types.push_back(params.capture);
+#endif
+
   select_file_dialog_->SelectFile(
       dialog_type_,
       params.title,
@@ -419,7 +425,7 @@ void FileSelectHelper::RunFileChooserOnUIThread(
       FILE_PATH_LITERAL(""),
       owning_window,
 #if defined(OS_ANDROID)
-      const_cast<content::FileChooserParams*>(&params));
+      &accept_types);
 #else
       NULL);
 #endif

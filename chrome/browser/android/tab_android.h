@@ -52,9 +52,6 @@ class TabAndroid {
       const content::ContextMenuParams& params,
       const base::Callback<void(int)>& callback) = 0;
 
-  virtual void ShowSelectFileDialog(
-      const base::android::ScopedJavaLocalRef<jobject>& select_file) = 0;
-
   // --------------------------------------------------------------------------
   // Public methods that call to Java via JNI
   // --------------------------------------------------------------------------

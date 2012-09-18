@@ -4,6 +4,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/platform_util.h"
+#include "content/public/browser/android/content_view_core.h"
 
 namespace platform_util {
 
@@ -23,7 +24,7 @@ void OpenExternal(const GURL& url) {
 
 gfx::NativeWindow GetTopLevel(gfx::NativeView view) {
   NOTIMPLEMENTED();
-  return view;
+  return view->GetWindowAndroid();
 }
 
 gfx::NativeView GetParent(gfx::NativeView view) {

@@ -24,6 +24,10 @@
 
 struct WebMenuItem;
 
+namespace ui {
+class WindowAndroid;
+}
+
 namespace content {
 class ContentViewClient;
 class RenderWidgetHostViewAndroid;
@@ -36,7 +40,8 @@ class ContentViewCoreImpl : public ContentViewCore,
                       jobject obj,
                       bool hardware_accelerated,
                       bool take_ownership_of_web_contents,
-                      WebContents* web_contents);
+                      WebContents* web_contents,
+                      ui::WindowAndroid* window_android);
 
   // ContentViewCore overrides
   virtual void Destroy(JNIEnv* env, jobject obj) OVERRIDE;
@@ -172,6 +177,7 @@ class ContentViewCoreImpl : public ContentViewCore,
   WebContents* web_contents() const { return web_contents_; }
 
   virtual void LoadUrl(NavigationController::LoadURLParams& params) OVERRIDE;
+  virtual ui::WindowAndroid* GetWindowAndroid() OVERRIDE;
 
  private:
   // NotificationObserver implementation.
@@ -217,6 +223,9 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   // Whether the renderer backing this ContentViewCore has crashed.
   bool tab_crashed_;
+
+  // The owning window that has a hold of main application activity.
+  ui::WindowAndroid* window_android_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentViewCoreImpl);
 };

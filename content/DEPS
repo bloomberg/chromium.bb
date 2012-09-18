@@ -46,6 +46,7 @@ include_rules = [
   "+third_party/WebKit/Source/Platform/chromium",
   "+third_party/WebKit/Source/WebKit/chromium",
 
+  "+ui/android",
   # Aura is analogous to Win32 or a Gtk, so it is allowed.
   "+ui/aura",
   "+ui/base",

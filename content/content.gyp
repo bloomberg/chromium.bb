@@ -282,12 +282,14 @@
           'dependencies': [
             '../base/base.gyp:base',
             '../net/net.gyp:net',
+            '../ui/ui.gyp:ui_java',
             'common_aidl',
             'content_common',
           ],
           'export_dependent_settings': [
             '../base/base.gyp:base',
             '../net/net.gyp:net',
+            '../ui/ui.gyp:ui_java',
           ],
           'variables': {
             'package_name': 'content',

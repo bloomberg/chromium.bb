@@ -35,6 +35,7 @@ import org.chromium.content.browser.TouchPoint;
 import org.chromium.content.browser.ZoomManager;
 import org.chromium.content.common.CleanupReference;
 import org.chromium.content.common.TraceEvent;
+import org.chromium.ui.gfx.NativeWindow;
 
 /**
  * Provides a Java-side 'wrapper' around a WebContent (native) instance.
@@ -311,6 +312,7 @@ public class ContentViewCore implements MotionEventDelegate {
      * @param takeOwnershipOfWebContents Whether this object will take ownership of
      *                                   nativeWebContents over on its native side.
      * @param nativeWebContents A pointer to the native web contents.
+     * @param nativeWindow An instance of the NativeWindow.
      * @param isAccessFromFileURLsGrantedByDefault Default WebSettings configuration.
      */
     // Perform important post-construction set up of the ContentViewCore.
@@ -321,11 +323,11 @@ public class ContentViewCore implements MotionEventDelegate {
     // We supply the nativeWebContents pointer here rather than in the constructor to allow us
     // to set the private browsing mode at a later point for the WebView implementation.
     public void initialize(ViewGroup containerView, InternalAccessDelegate internalDispatcher,
-            boolean takeOwnershipOfWebContents, int nativeWebContents,
+            boolean takeOwnershipOfWebContents, int nativeWebContents, NativeWindow nativeWindow,
             boolean isAccessFromFileURLsGrantedByDefault) {
         mContainerView = containerView;
         mNativeContentViewCore = nativeInit(mHardwareAccelerated, takeOwnershipOfWebContents,
-                nativeWebContents);
+                nativeWebContents, nativeWindow.getNativePointer());
         mCleanupReference = new CleanupReference(
                 this, new DestroyRunnable(mNativeContentViewCore));
         mContentSettings = new ContentSettings(
@@ -1327,7 +1329,7 @@ public class ContentViewCore implements MotionEventDelegate {
     // The following methods are implemented at native side.
 
     private native int nativeInit(boolean hardwareAccelerated, boolean takeOwnershipOfWebContents,
-            int webContentsPtr);
+            int webContentsPtr, int windowAndroidPtr);
 
     private static native void nativeDestroy(int nativeContentViewCore);
 

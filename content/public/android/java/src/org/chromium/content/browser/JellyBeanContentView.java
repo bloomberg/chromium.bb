@@ -10,13 +10,15 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.view.accessibility.AccessibilityNodeInfo;
 
+import org.chromium.ui.gfx.NativeWindow;
+
 /**
  * A version of {@link ContentView} that supports JellyBean features.
  */
 class JellyBeanContentView extends ContentView {
-    JellyBeanContentView(Context context, int nativeWebContents, AttributeSet attrs, int defStyle,
-            int personality) {
-        super(context, nativeWebContents, attrs, defStyle, personality);
+    JellyBeanContentView(Context context, int nativeWebContents, NativeWindow nativeWindow,
+            AttributeSet attrs, int defStyle, int personality) {
+        super(context, nativeWebContents, nativeWindow, attrs, defStyle, personality);
     }
 
     @Override

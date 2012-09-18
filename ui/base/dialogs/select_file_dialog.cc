@@ -20,6 +20,8 @@
 #include "ui/base/dialogs/select_file_dialog_mac.h"
 #elif defined(TOOLKIT_GTK)
 #include "ui/base/dialogs/gtk/select_file_dialog_impl.h"
+#elif defined(OS_ANDROID)
+#include "ui/base/dialogs/select_file_dialog_android.h"
 #endif
 
 namespace {
@@ -84,8 +86,7 @@ SelectFileDialog* SelectFileDialog::Create(Listener* listener,
 #elif defined(TOOLKIT_GTK)
   return CreateLinuxSelectFileDialog(listener, policy);
 #elif defined(OS_ANDROID)
-  // see crbug.com/116131 to track implemenation of SelectFileDialog
-  NOTIMPLEMENTED();
+  return CreateAndroidSelectFileDialog(listener, policy);
 #endif
 
   return NULL;
