@@ -22,6 +22,8 @@ import gclient_utils
 import rietveld
 import scm
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 
 def main():
   parser = optparse.OptionParser(description=sys.modules[__name__].__doc__)
@@ -119,8 +121,11 @@ def main():
           'A DEPS file was updated inside a gclient checkout, running gclient '
           'sync.')
       base_rev = 'BASE' if scm_type == 'svn' else 'HEAD'
+      gclient_path = os.path.join(BASE_DIR, 'gclient')
+      if sys.platform == 'win32':
+        gclient_path += '.bat'
       return subprocess.call(
-          ['gclient', 'sync', '--revision', base_rev], cwd=gclient_root)
+          [gclient_path, 'sync', '--revision', base_rev], cwd=gclient_root)
   return 0
 
 
