@@ -41,7 +41,9 @@ class ContentSettingImageView : public LocationBarDecorationView,
  public:
   ContentSettingImageView(ContentSettingsType content_type,
                           const int background_images[],
-                          LocationBarView* parent);
+                          LocationBarView* parent,
+                          const gfx::Font& font,
+                          SkColor font_color);
   virtual ~ContentSettingImageView();
 
   virtual void Update(TabContents* tab_contents) OVERRIDE;

@@ -17,7 +17,10 @@ class WebIntentsButtonView : public LocationBarDecorationView {
  public:
   // |parent| and |background_images| passed to superclass. They are a weak ptr
   // to owning class and the background images for the button background.
-  WebIntentsButtonView(LocationBarView* parent, const int background_images[]);
+  WebIntentsButtonView(LocationBarView* parent,
+                       const int background_images[],
+                       const gfx::Font& font,
+                       SkColor font_color);
   virtual ~WebIntentsButtonView() {}
 
   virtual void Update(TabContents* tab_contents) OVERRIDE;

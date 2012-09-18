@@ -12,7 +12,6 @@
 #include "third_party/skia/include/core/SkShader.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/animation/tween.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/border.h"
@@ -22,15 +21,18 @@ namespace {
 // Animation parameters.
 const int kFrameRateHz = 60;
 // Margins for animated box (pixels).
-const int kTextMargin = 4;
+const int kTextMargin = 5;
 const int kIconLeftMargin = 4;
-
 }
 
 LocationBarDecorationView::LocationBarDecorationView(
     LocationBarView* parent,
-    const int background_images[])
+    const int background_images[],
+    const gfx::Font& font,
+    SkColor font_color)
     : parent_(parent),
+      font_(font),
+      font_color_(font_color),
       pause_animation_(false),
       pause_animation_state_(0.0),
       text_size_(0),
@@ -106,8 +108,7 @@ void LocationBarDecorationView::StartLabelAnimation(string16 animated_text,
     // Initialize animated string. It will be cleared when animation is
     // completed.
     animated_text_ = animated_text;
-    text_size_ = ui::ResourceBundle::GetSharedInstance().GetFont(
-        ui::ResourceBundle::MediumFont).GetStringWidth(animated_text);
+    text_size_ = font_.GetStringWidth(animated_text);
     text_size_ += 2 * kTextMargin + kIconLeftMargin;
     slide_animator_->Show();
   }
@@ -171,9 +172,7 @@ void LocationBarDecorationView::OnPaint(gfx::Canvas* canvas) {
     views::ImageView::OnPaint(canvas);
 
     // Paint text to the right of the icon.
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    canvas->DrawStringInt(animated_text_,
-        rb.GetFont(ui::ResourceBundle::MediumFont), SK_ColorBLACK,
+    canvas->DrawStringInt(animated_text_, font_, font_color_,
         GetImageBounds().right() + kTextMargin, 0,
         width() - GetImageBounds().width(), height(),
         gfx::Canvas::TEXT_ALIGN_LEFT | gfx::Canvas::TEXT_VALIGN_MIDDLE);

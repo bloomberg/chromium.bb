@@ -12,6 +12,7 @@
 #include "chrome/common/content_settings_types.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/events/event.h"
+#include "ui/gfx/font.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/painter.h"
 
@@ -41,7 +42,9 @@ class LocationBarDecorationView : public views::ImageView,
   // |background_images| is the array of images used to draw
   // the label animation background (if any).
   LocationBarDecorationView(LocationBarView* parent,
-                            const int background_images[]);
+                            const int background_images[],
+                            const gfx::Font& font,
+                            SkColor font_color);
   virtual ~LocationBarDecorationView();
 
   // Update the decoration from the shown TabContents.
@@ -80,6 +83,7 @@ class LocationBarDecorationView : public views::ImageView,
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+
   virtual void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE;
 
   // Notify the possibly-running animation that it was clicked.
@@ -90,6 +94,8 @@ class LocationBarDecorationView : public views::ImageView,
 
   scoped_ptr<ui::SlideAnimation> slide_animator_;
   string16 animated_text_;
+  gfx::Font font_;
+  SkColor font_color_;
   bool pause_animation_;
   double pause_animation_state_;
   int text_size_;

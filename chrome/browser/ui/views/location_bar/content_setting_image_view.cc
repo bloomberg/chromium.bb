@@ -40,14 +40,14 @@ const double kAnimatingFraction = kOpenTimeMs * 1.0 / kMoveTimeMs;
 ContentSettingImageView::ContentSettingImageView(
     ContentSettingsType content_type,
     const int background_images[],
-    LocationBarView* parent)
-    : LocationBarDecorationView(parent, background_images),
+    LocationBarView* parent,
+    const gfx::Font& font,
+    SkColor font_color)
+    : LocationBarDecorationView(parent, background_images, font, font_color),
       content_setting_image_model_(
           ContentSettingImageModel::CreateContentSettingImageModel(
               content_type)),
       bubble_widget_(NULL) {
-  SetHorizontalAlignment(ImageView::LEADING);
-  TouchableLocationBarView::Init(this);
 }
 
 ContentSettingImageView::~ContentSettingImageView() {
@@ -95,7 +95,7 @@ void ContentSettingImageView::Update(TabContents* tab_contents) {
 }
 
 int ContentSettingImageView::GetTextAnimationSize(double state,
-                                                   int text_size) {
+                                                  int text_size) {
   if (state >= 1.0) {
     // Animaton is over, clear the variables.
     return 0;

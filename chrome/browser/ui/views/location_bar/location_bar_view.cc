@@ -159,7 +159,6 @@ static const int kSelectedKeywordBackgroundImages[] = {
   IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_R,
 };
 
-// TODO(gbillock): replace these with web-intents images when available.
 static const int kWIBubbleBackgroundImages[] = {
   IDR_OMNIBOX_WI_BUBBLE_BACKGROUND_L,
   IDR_OMNIBOX_WI_BUBBLE_BACKGROUND_C,
@@ -292,7 +291,8 @@ void LocationBarView::Init(views::View* popup_parent_view) {
   for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
     ContentSettingImageView* content_blocked_view =
         new ContentSettingImageView(static_cast<ContentSettingsType>(i),
-                                    kCSBubbleBackgroundImages, this);
+                                    kCSBubbleBackgroundImages, this,
+                                    font_, GetColor(ToolbarModel::NONE, TEXT));
     content_setting_views_.push_back(content_blocked_view);
     AddChildView(content_blocked_view);
     content_blocked_view->SetVisible(false);
@@ -302,7 +302,8 @@ void LocationBarView::Init(views::View* popup_parent_view) {
   AddChildView(zoom_view_);
 
   web_intents_button_view_ =
-      new WebIntentsButtonView(this, kWIBubbleBackgroundImages);
+      new WebIntentsButtonView(this, kWIBubbleBackgroundImages,
+                               font_, GetColor(ToolbarModel::NONE, TEXT));
   AddChildView(web_intents_button_view_);
 
   open_pdf_in_reader_view_ = new OpenPDFInReaderView(this);
@@ -738,6 +739,10 @@ void LocationBarView::Layout() {
     if ((*i)->visible())
       entry_width -= ((*i)->GetPreferredSize().width() + GetItemPadding());
   }
+  if (web_intents_button_view_->visible()) {
+    entry_width -= web_intents_button_view_->GetPreferredSize().width() +
+        GetItemPadding();
+  }
   // The gap between the edit and whatever is to its right is shortened.
   entry_width += kEditInternalSpace;
 
@@ -848,13 +853,14 @@ void LocationBarView::Layout() {
     }
   }
 
-  // Now the web intents button
+  // Now the web intents button.
   if (web_intents_button_view_->visible()) {
     offset += web_intents_button_view_->GetBuiltInHorizontalPadding();
     int width = web_intents_button_view_->GetPreferredSize().width();
     offset -= width;
     web_intents_button_view_->SetBounds(
-        offset, location_y, width, location_height);
+        offset, location_y + kBubbleVerticalPadding, width,
+        web_intents_button_view_->GetPreferredSize().height());
     offset -= GetItemPadding() -
               web_intents_button_view_->GetBuiltInHorizontalPadding();
   }
