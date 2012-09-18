@@ -102,7 +102,6 @@ const char* kIntVersionTests[] = {
 //  "intversion-close-in-upgradeneeded.html", // crbug.com/150961
   "intversion-delete-in-upgradeneeded.html",
 //  "intversion-gated-on-delete.html", // behaves slightly differently in DRT
-  "intversion-invalid-setversion-has-no-side-effects.html",
   "intversion-long-queue.html",
   "intversion-omit-parameter.html",
   "intversion-open-with-version.html",
