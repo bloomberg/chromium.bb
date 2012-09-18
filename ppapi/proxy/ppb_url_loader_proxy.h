@@ -54,9 +54,6 @@ class PPB_URLLoader_Proxy : public InterfaceProxy {
   static const ApiID kApiID = API_ID_PPB_URL_LOADER;
 
  private:
-  // Data associated with callbacks for ReadResponseBody.
-  struct ReadCallbackInfo;
-
   // Plugin->renderer message handlers.
   void OnMsgCreate(PP_Instance instance,
                    HostResource* result);
@@ -74,14 +71,12 @@ class PPB_URLLoader_Proxy : public InterfaceProxy {
   // Renderer->plugin message handlers.
   void OnMsgUpdateProgress(
       const PPBURLLoader_UpdateProgress_Params& params);
-  void OnMsgReadResponseBodyAck(const HostResource& host_resource,
-                                int32_t result,
-                                const std::string& data);
+  void OnMsgReadResponseBodyAck(const IPC::Message& message);
   void OnMsgCallbackComplete(const HostResource& host_resource, int32_t result);
 
-  // Handles callbacks for read complete messages. Takes ownership of the info
-  // pointer.
-  void OnReadCallback(int32_t result, ReadCallbackInfo* info);
+  // Handles callbacks for read complete messages. Takes ownership of the
+  // message pointer.
+  void OnReadCallback(int32_t result, IPC::Message* message);
 
   // Handles callback for everything but reads.
   void OnCallback(int32_t result, const HostResource& resource);

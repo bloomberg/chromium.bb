@@ -585,10 +585,14 @@ IPC_MESSAGE_ROUTED2(PpapiMsg_PPPTextInput_RequestSurroundingText,
 
 // PPB_URLLoader
 // (Messages from browser to plugin to notify it of changes in state.)
-IPC_MESSAGE_ROUTED3(PpapiMsg_PPBURLLoader_ReadResponseBody_Ack,
-                    ppapi::HostResource /* loader */,
-                    int32 /* result */,
-                    std::string /* data */)
+//
+// NOTE: The ReadResponseBody_Ack message is a custom generated message
+// with the following fields appended:
+//   ppapi::HostResource
+//   response data (array of bytes stored via WriteData)
+//   int result
+//
+IPC_MESSAGE_ROUTED0(PpapiMsg_PPBURLLoader_ReadResponseBody_Ack)
 IPC_MESSAGE_ROUTED2(PpapiMsg_PPBURLLoader_CallbackComplete,
                     ppapi::HostResource /* loader */,
                     int32_t /* result */)
