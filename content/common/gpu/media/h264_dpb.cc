@@ -30,7 +30,7 @@ void H264DPB::RemoveByPOC(int poc) {
 void H264DPB::RemoveUnused() {
   for (Pictures::iterator it = pics_.begin(); it != pics_.end(); ) {
     if ((*it)->outputted && !(*it)->ref)
-      pics_.erase(it++);
+      it = pics_.erase(it);
     else
       ++it;
   }
