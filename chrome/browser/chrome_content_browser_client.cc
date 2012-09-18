@@ -63,7 +63,7 @@
 #include "chrome/browser/spellchecker/spellcheck_message_filter.h"
 #include "chrome/browser/ssl/ssl_add_cert_handler.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
-#include "chrome/browser/tab_contents/tab_contents_ssl_helper.h"
+#include "chrome/browser/ssl/ssl_tab_helper.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/toolkit_extra_parts.h"
 #include "chrome/browser/ui/tab_contents/chrome_web_contents_view_delegate.h"
@@ -1177,15 +1177,15 @@ void ChromeContentBrowserClient::SelectClientCertificate(
     }
   }
 
-  TabContents* tab_contents = TabContents::FromWebContents(tab);
-  if (!tab_contents) {
-    // If there is no TabContents for the given WebContents then we can't
+  SSLTabHelper* ssl_tab_helper = SSLTabHelper::FromWebContents(tab);
+  if (!ssl_tab_helper) {
+    // If there is no SSLTabHelper for the given WebContents then we can't
     // show the user a dialog to select a client certificate. So we simply
     // proceed with no client certificate.
     callback.Run(NULL);
     return;
   }
-  tab_contents->ssl_helper()->ShowClientCertificateRequestDialog(
+  ssl_tab_helper->ShowClientCertificateRequestDialog(
       network_session, cert_request_info, callback);
 }
 

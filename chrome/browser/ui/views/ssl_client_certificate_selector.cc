@@ -282,12 +282,13 @@ void SSLClientCertificateSelector::CreateViewCertButton() {
 namespace chrome {
 
 void ShowSSLClientCertificateSelector(
-    TabContents* tab_contents,
+    content::WebContents* contents,
     const net::HttpNetworkSession* network_session,
     net::SSLCertRequestInfo* cert_request_info,
     const base::Callback<void(net::X509Certificate*)>& callback) {
-  DVLOG(1) << __FUNCTION__ << " " << tab_contents;
+  DVLOG(1) << __FUNCTION__ << " " << contents;
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  TabContents* tab_contents = TabContents::FromWebContents(contents);
   (new SSLClientCertificateSelector(
        tab_contents, network_session, cert_request_info, callback))->Init();
 }

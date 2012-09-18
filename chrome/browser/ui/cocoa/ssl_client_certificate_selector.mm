@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ssl_client_certificate_selector.h"
+#include "chrome/browser/ssl/ssl_client_certificate_selector.h"
 
 #import <SecurityInterface/SFChooseIdentityPanel.h>
 
@@ -134,17 +134,18 @@ class NotificationProxy : public SSLClientAuthObserver {
 namespace chrome {
 
 void ShowSSLClientCertificateSelector(
-    TabContents* tabContents,
+    content::WebContents* contents,
     const net::HttpNetworkSession* network_session,
     net::SSLCertRequestInfo* cert_request_info,
     const base::Callback<void(net::X509Certificate*)>& callback) {
+  TabContents* tab_contents = TabContents::FromWebContents(contents);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   SSLClientCertificateSelectorCocoa* selector =
       [[[SSLClientCertificateSelectorCocoa alloc]
           initWithObserver:network_session
            certRequestInfo:cert_request_info
                   callback:callback] autorelease];
-  [selector displayDialog:tabContents];
+  [selector displayDialog:tab_contents];
 }
 
 }  // namespace chrome

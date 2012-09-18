@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SSL_CLIENT_CERTIFICATE_SELECTOR_H_
-#define CHROME_BROWSER_SSL_CLIENT_CERTIFICATE_SELECTOR_H_
+#ifndef CHROME_BROWSER_SSL_SSL_CLIENT_CERTIFICATE_SELECTOR_H_
+#define CHROME_BROWSER_SSL_SSL_CLIENT_CERTIFICATE_SELECTOR_H_
 
 #include "base/callback_forward.h"
 
-class TabContents;
+namespace content {
+class WebContents;
+}
 
 namespace net {
 class HttpNetworkSession;
@@ -23,11 +25,11 @@ namespace chrome {
 // when the dialog closes in call cases; if the user cancels the dialog, we call
 // with a NULL certificate.
 void ShowSSLClientCertificateSelector(
-    TabContents* tab_contents,
+    content::WebContents* contents,
     const net::HttpNetworkSession* network_session,
     net::SSLCertRequestInfo* cert_request_info,
     const base::Callback<void(net::X509Certificate*)>& callback);
 
 }  // namespace chrome
 
-#endif  // CHROME_BROWSER_SSL_CLIENT_CERTIFICATE_SELECTOR_H_
+#endif  // CHROME_BROWSER_SSL_SSL_CLIENT_CERTIFICATE_SELECTOR_H_

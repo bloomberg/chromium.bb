@@ -28,8 +28,8 @@
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_tab_observer.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
+#include "chrome/browser/ssl/ssl_tab_helper.h"
 #include "chrome/browser/tab_contents/navigation_metrics_recorder.h"
-#include "chrome/browser/tab_contents/tab_contents_ssl_helper.h"
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/alternate_error_tab_observer.h"
@@ -151,7 +151,7 @@ TabContents::TabContents(WebContents* contents)
   search_tab_helper_.reset(
       new chrome::search::SearchTabHelper(this, is_search_enabled));
   SnapshotTabHelper::CreateForWebContents(contents);
-  ssl_helper_.reset(new TabContentsSSLHelper(this));
+  SSLTabHelper::CreateForWebContents(contents);
   synced_tab_delegate_.reset(new TabContentsSyncedTabDelegate(this));
   translate_tab_helper_.reset(new TranslateTabHelper(contents));
   zoom_controller_.reset(new ZoomController(this));

@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TAB_CONTENTS_TAB_CONTENTS_SSL_HELPER_H_
-#define CHROME_BROWSER_TAB_CONTENTS_TAB_CONTENTS_SSL_HELPER_H_
+#ifndef CHROME_BROWSER_SSL_SSL_TAB_HELPER_H_
+#define CHROME_BROWSER_SSL_SSL_TAB_HELPER_H_
 
 #include <map>
 
 #include "base/callback_forward.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/tab_contents/web_contents_user_data.h"
 
 class SSLAddCertHandler;
-class TabContents;
 
 namespace net {
 class HttpNetworkSession;
@@ -20,10 +20,9 @@ class SSLCertRequestInfo;
 class X509Certificate;
 }
 
-class TabContentsSSLHelper {
+class SSLTabHelper : public WebContentsUserData<SSLTabHelper> {
  public:
-  explicit TabContentsSSLHelper(TabContents* tab_contents);
-  virtual ~TabContentsSSLHelper();
+  virtual ~SSLTabHelper();
 
   // Called when |handler| encounters an error in verifying a received client
   // certificate. Note that, because CAs often will not send us intermediate
@@ -59,14 +58,18 @@ class TabContentsSSLHelper {
       const base::Callback<void(net::X509Certificate*)>& callback);
 
  private:
-  TabContents* tab_contents_;
+  explicit SSLTabHelper(content::WebContents* contents);
+  static int kUserDataKey;
+  friend class WebContentsUserData<SSLTabHelper>;
+
+  content::WebContents* web_contents_;
 
   class SSLAddCertData;
   std::map<int, linked_ptr<SSLAddCertData> > request_id_to_add_cert_data_;
 
   SSLAddCertData* GetAddCertData(SSLAddCertHandler* handler);
 
-  DISALLOW_COPY_AND_ASSIGN(TabContentsSSLHelper);
+  DISALLOW_COPY_AND_ASSIGN(SSLTabHelper);
 };
 
-#endif  // CHROME_BROWSER_TAB_CONTENTS_TAB_CONTENTS_SSL_HELPER_H_
+#endif  // CHROME_BROWSER_SSL_SSL_TAB_HELPER_H_
