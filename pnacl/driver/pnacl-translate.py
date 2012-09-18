@@ -214,7 +214,8 @@ TranslatorPatterns = [
   ( '--noirt',         "env.set('USE_IRT', '0')\n"
                        "env.append('LD_FLAGS', '--noirt')"),
   ( '--noirtshim',     "env.set('USE_IRT_SHIM', '0')"),
-
+  ( '--cc-rewrite',    "env.set('USE_IRT_SHIM', '0')\n"
+                       "env.append('LLC_FLAGS_EXTRA', '--nacl-cc-rewrite')"),
   ( '--newlib-shared-experiment',  "env.set('NEWLIB_SHARED_EXPERIMENT', '1')"),
 
   # Toggle the use of ELF-stubs / bitcode metadata, which represent real .so

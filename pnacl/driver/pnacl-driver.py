@@ -143,6 +143,9 @@ EXTRA_ENV = {
     '-l:crt1.bc ' +
     '-l:crti.bc -l:crtdummy.bc -l:crtbegin.bc ${ld_inputs} ${STDLIBS}',
 
+  'TRANSLATE_FLAGS' : '',
+
+
   'STDLIBS'   : '${DEFAULTLIBS ? '
                 '${LIBSTDCPP} ${LIBPTHREAD} ${LIBNACL} ${LIBC} ${PNACL_ABI}}',
   'LIBSTDCPP' : '${IS_CXX ? -lstdc++ -lm }',
@@ -162,6 +165,12 @@ EXTRA_ENV = {
 
 def AddLDFlag(*args):
   env.append('LD_FLAGS', *args)
+
+def AddTranslatorFlag(*args):
+  # pass translator args to ld in case we go all the way to .nexe
+  env.append('LD_FLAGS', *['-Wt,' + a for a in args])
+  # pass translator args to translator in case we go to .o
+  env.append('TRANSLATE_FLAGS', *args)
 
 def AddCCFlag(*args):
   env.append('CC_FLAGS', *args)
@@ -228,7 +237,8 @@ GCCPatterns = [
   ( '-rdynamic', "env.append('LD_FLAGS', '-export-dynamic')"),
 
   # Flags to pass to pnacl-translate
-  ( '(-Wt,.*)',        AddLDFlag),
+  ( '-Wt,(.*)',               AddTranslatorFlag),
+  ( ('-Xtranslator','(.*)'),  AddTranslatorFlag),
 
   # We don't care about -fPIC, but pnacl-ld and pnacl-translate do.
   ( '-fPIC',           "env.set('PIC', '1')"),
@@ -561,7 +571,7 @@ def RunTranslate(infile, output, mode):
               'bitcode linking. This is supposed to wait until '
               'translation. Use --pnacl-allow-translate to override.',
               pathtools.touser(infile))
-  args = [mode, infile, '-o', output]
+  args = env.get('TRANSLATE_FLAGS') + [mode, infile, '-o', output]
   if env.getbool('PIC'):
     args += ['-fPIC']
   RunDriver('translate', args)
@@ -658,6 +668,8 @@ BASIC OPTIONS:
   -f<feature>           Enable <feature>.
   -Wl,<arg>             Pass <arg> to the linker.
   -Xlinker <arg>        Pass <arg> to the linker.
+  -Wt,<arg>             Pass <arg> to the translator.
+  -Xtranslator <arg>    Pass <arg> to the translator.
   -Wp,<arg>             Pass <arg> to the preprocessor.
   -Xpreprocessor,<arg>  Pass <arg> to the preprocessor.
   -x <language>         Treat subsequent input files as having type <language>.
