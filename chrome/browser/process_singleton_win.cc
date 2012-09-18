@@ -5,6 +5,7 @@
 #include "chrome/browser/process_singleton.h"
 
 #include <shellapi.h>
+#include <shobjidl.h>
 
 #include "base/base_paths.h"
 #include "base/command_line.h"
@@ -14,10 +15,15 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/metro.h"
+#include "base/win/scoped_com_initializer.h"
+#include "base/win/scoped_comptr.h"
 #include "base/win/scoped_handle.h"
+#include "base/win/windows_version.h"
 #include "base/win/wrapped_window_proc.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/installer/util/browser_distribution.h"
+#include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/wmi.h"
 #include "content/public/common/result_codes.h"
 #include "grit/chromium_strings.h"
@@ -118,6 +124,39 @@ bool ParseCommandLine(const COPYDATASTRUCT* cds,
     return true;
   }
   return false;
+}
+
+bool ActivateMetroChrome() {
+  FilePath chrome_exe;
+  if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
+    NOTREACHED() << "Failed to get chrome exe path";
+    return false;
+  }
+  string16 app_id = ShellUtil::GetBrowserModelId(
+      BrowserDistribution::GetDistribution(), chrome_exe.value());
+  if (app_id.empty()) {
+    NOTREACHED() << "Failed to get chrome app user model id.";
+    return false;
+  }
+
+  base::win::ScopedComPtr<IApplicationActivationManager> activation_manager;
+  HRESULT hr = activation_manager.CreateInstance(
+      CLSID_ApplicationActivationManager);
+  if (!activation_manager) {
+    NOTREACHED() << "Failed to cocreate activation manager. Error: " << hr;
+    return false;
+  }
+
+  unsigned long pid = 0;
+  hr = activation_manager->ActivateApplication(app_id.c_str(),
+                                               L"open",
+                                               AO_NONE,
+                                               &pid);
+  if (FAILED(hr)) {
+    NOTREACHED() << "Failed to activate metro chrome. Error: " << hr;
+    return false;
+  }
+  return true;
 }
 
 }  // namespace
@@ -309,6 +348,15 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcess() {
     if (!result) {
       remote_window_ = NULL;
       return PROCESS_NONE;
+    }
+
+    base::win::ScopedHandle process_handle;
+    if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
+        base::OpenProcessHandleWithAccess(
+            process_id, PROCESS_QUERY_INFORMATION,
+            process_handle.Receive())) {
+      if (base::win::IsProcessImmersive(process_handle.Get()))
+        ActivateMetroChrome();
     }
     return PROCESS_NOTIFIED;
   }
