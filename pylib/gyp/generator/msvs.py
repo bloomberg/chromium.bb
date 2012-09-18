@@ -18,6 +18,7 @@ import gyp.MSVSSettings as MSVSSettings
 import gyp.MSVSToolFile as MSVSToolFile
 import gyp.MSVSUserFile as MSVSUserFile
 import gyp.MSVSVersion as MSVSVersion
+from gyp.common import GypError
 
 
 # Regular expression for validating Visual Studio GUIDs.  If the GUID
@@ -1779,6 +1780,25 @@ def _ShardTargets(target_list, target_dicts):
     new_target_dicts[t]['dependencies'] = new_dependencies
 
   return (new_target_list, new_target_dicts)
+
+
+def PerformBuild(data, configurations, params):
+  options = params['options']
+  msvs_version = params['msvs_version']
+  devenv = os.path.join(msvs_version.path, 'Common7', 'IDE', 'devenv.com')
+
+  for build_file, build_file_dict in data.iteritems():
+    (build_file_root, build_file_ext) = os.path.splitext(build_file)
+    if build_file_ext != '.gyp':
+      continue
+    sln_path = build_file_root + options.suffix + '.sln'
+    if options.generator_output:
+      sln_path = os.path.join(options.generator_output, sln_path)
+
+  for config in configurations:
+    arguments = [devenv, sln_path, '/Build', config]
+    print 'Building [%s]: %s' % (config, arguments)
+    rtn = subprocess.check_call(arguments)
 
 
 def GenerateOutput(target_list, target_dicts, data, params):

@@ -314,6 +314,8 @@ def gyp_main(args):
   parser.add_option('--toplevel-dir', dest='toplevel_dir', action='store',
                     default=None, metavar='DIR', type='path',
                     help='directory to use as the root of the source tree')
+  parser.add_option('--build', dest='configs', action='append',
+                    help='configuration for build after project generation')
   # --no-circular-check disables the check for circular relationships between
   # .gyp files.  These relationships should not exist, but they've only been
   # observed to be harmful with the Xcode generator.  Chromium's .gyp files
@@ -495,6 +497,13 @@ def gyp_main(args):
     # need to have dependencies defined before dependents reference them should
     # generate targets in the order specified in flat_list.
     generator.GenerateOutput(flat_list, targets, data, params)
+
+    if options.configs:
+      valid_configs = targets[flat_list[0]]['configurations'].keys()
+      for conf in options.configs:
+        if conf not in valid_configs:
+          raise GypError('Invalid config specified via --build: %s' % conf)
+      generator.PerformBuild(data, options.configs, params)
 
   # Done
   return 0

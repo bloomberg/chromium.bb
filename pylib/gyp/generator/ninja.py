@@ -1722,6 +1722,15 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     master_ninja.default(generator_flags.get('default_target', 'all'))
 
 
+def PerformBuild(data, configurations, params):
+  options = params['options']
+  for config in configurations:
+    builddir = os.path.join(options.toplevel_dir, 'out', config)
+    arguments = ['ninja', '-C', builddir]
+    print 'Building [%s]: %s' % (config, arguments)
+    subprocess.check_call(arguments)
+
+
 def GenerateOutput(target_list, target_dicts, data, params):
   if params['options'].generator_output:
     raise NotImplementedError, "--generator_output not implemented for ninja"

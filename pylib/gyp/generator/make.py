@@ -24,6 +24,7 @@
 import os
 import re
 import sys
+import subprocess
 import gyp
 import gyp.common
 import gyp.system_test
@@ -1934,6 +1935,17 @@ def RunSystemTests(flavor):
 
   return { 'ARFLAGS.target': arflags_target,
            'ARFLAGS.host': arflags_host }
+
+
+def PerformBuild(data, configurations, params):
+  options = params['options']
+  for config in configurations:
+    arguments = ['make']
+    if options.toplevel_dir and options.toplevel_dir != '.':
+      arguments += '-C', options.toplevel_dir
+    arguments.append('BUILDTYPE=' + config)
+    print 'Building [%s]: %s' % (config, arguments)
+    subprocess.check_call(arguments)
 
 
 def GenerateOutput(target_list, target_dicts, data, params):
