@@ -5,6 +5,7 @@
 #include "ui/views/border.h"
 
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/painter.h"
 
@@ -22,15 +23,21 @@ class SidedSolidBorder : public Border {
   virtual void GetInsets(gfx::Insets* insets) const OVERRIDE;
 
  private:
-  int top_, left_, bottom_, right_;
+  const int top_;
+  const int left_;
+  const int bottom_;
+  const int right_;
   SkColor color_;
   gfx::Insets insets_;
 
   DISALLOW_COPY_AND_ASSIGN(SidedSolidBorder);
 };
 
-SidedSolidBorder::SidedSolidBorder(int top, int left, int bottom, int right,
-    SkColor color)
+SidedSolidBorder::SidedSolidBorder(int top,
+                                   int left,
+                                   int bottom,
+                                   int right,
+                                   SkColor color)
     : top_(top),
       left_(left),
       bottom_(bottom),
@@ -97,14 +104,11 @@ class BorderPainter : public Border {
     DCHECK(painter);
   }
 
-  virtual ~BorderPainter() {
-    delete painter_;
-    painter_ = NULL;
-  }
+  virtual ~BorderPainter() {}
 
   // Overridden from Border:
   virtual void Paint(const View& view, gfx::Canvas* canvas) const OVERRIDE {
-    Painter::PaintPainterAt(canvas, painter_, view.GetLocalBounds());
+    Painter::PaintPainterAt(canvas, painter_.get(), view.GetLocalBounds());
   }
 
   virtual void GetInsets(gfx::Insets* insets) const OVERRIDE {
@@ -113,12 +117,12 @@ class BorderPainter : public Border {
   }
 
  private:
-  Painter* painter_;
+  scoped_ptr<Painter> painter_;
 
   DISALLOW_COPY_AND_ASSIGN(BorderPainter);
 };
 
-} // namespace
+}  // namespace
 
 Border::Border() {
 }
@@ -137,13 +141,15 @@ Border* Border::CreateEmptyBorder(int top, int left, int bottom, int right) {
 }
 
 // static
-Border* Border::CreateSolidSidedBorder(int top, int left,
-    int bottom, int right,
-    SkColor color) {
+Border* Border::CreateSolidSidedBorder(int top,
+                                       int left,
+                                       int bottom,
+                                       int right,
+                                       SkColor color) {
   return new SidedSolidBorder(top, left, bottom, right, color);
 }
 
-//static
+// static
 Border* Border::CreateBorderPainter(Painter* painter) {
   return new BorderPainter(painter);
 }
