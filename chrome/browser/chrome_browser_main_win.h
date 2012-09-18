@@ -33,7 +33,6 @@ class ChromeBrowserMainPartsWin : public ChromeBrowserMainParts {
   virtual void ToolkitInitialized() OVERRIDE;
   virtual void PreMainMessageLoopStart() OVERRIDE;
   virtual void PostMainMessageLoopStart() OVERRIDE;
-  virtual void PreMainMessageLoopRun() OVERRIDE;
 
   // ChromeBrowserMainParts overrides.
   virtual void ShowMissingLocaleMessageBox() OVERRIDE;

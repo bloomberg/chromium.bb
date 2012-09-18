@@ -221,7 +221,7 @@ bool MediaStorageUtil::GetDeviceInfoFromPath(const FilePath& path,
 
   bool found_device = false;
   base::SystemMonitor::RemovableStorageInfo device_info;
-#if !defined(OS_CHROMEOS)
+#if (defined(OS_LINUX) || defined(OS_MACOSX)) && !defined(OS_CHROMEOS)
   RemovableDeviceNotifications* notifier =
       RemovableDeviceNotifications::GetInstance();
   found_device = notifier->GetDeviceInfoForPath(path, &device_info);
@@ -247,12 +247,6 @@ bool MediaStorageUtil::GetDeviceInfoFromPath(const FilePath& path,
     }
     return true;
   }
-
-  // On Posix systems, there's one root so any absolute path could be valid.
-#if !defined(OS_POSIX)
-  if (!found_device)
-    return false;
-#endif
 
   if (device_id)
     *device_id = MakeDeviceId(FIXED_MASS_STORAGE, path.AsUTF8Unsafe());
