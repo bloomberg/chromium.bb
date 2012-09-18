@@ -12,10 +12,10 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/message_bundle.h"
-#include "chrome/browser/intents/api_key.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/net/url_util.h"
+#include "google_apis/google_api_keys.h"
 #include "net/base/load_flags.h"
 #include "net/base/mime_util.h"
 #include "net/url_request/url_fetcher.h"
@@ -233,10 +233,8 @@ GURL CWSIntentsRegistry::BuildQueryURL(const string16& action,
                                                     "0");
   request = chrome_common_net::AppendQueryParameter(request, "num_results",
                                                     kMaxSuggestions);
-  if (web_intents::kApiKey[0]) {
-    request = chrome_common_net::AppendQueryParameter(request, "key",
-                                                       web_intents::kApiKey);
-  }
+  request = chrome_common_net::AppendQueryParameter(request, "key",
+                                                    google_apis::GetAPIKey());
 
   return request;
 }
