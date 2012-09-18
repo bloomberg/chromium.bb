@@ -100,9 +100,10 @@ string16 PepperBrokerInfoBarDelegate::GetMessageText() const {
   DCHECK(success);
   scoped_ptr<webkit::npapi::PluginGroup> plugin_group(
       plugin_service->GetPluginList()->GetPluginGroup(plugin));
-  return l10n_util::GetStringFUTF16(IDS_PPAPI_BROKER_INFOBAR_QUESTION,
+  return l10n_util::GetStringFUTF16(IDS_PEPPER_BROKER_MESSAGE,
                                     plugin_group->GetGroupName(),
-                                    net::FormatUrl(url_, languages_));
+                                    net::FormatUrl(url_.GetOrigin(),
+                                                   languages_));
 }
 
 int PepperBrokerInfoBarDelegate::GetButtons() const {
@@ -113,9 +114,9 @@ string16 PepperBrokerInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   switch (button) {
     case BUTTON_OK:
-      return l10n_util::GetStringUTF16(IDS_PPAPI_BROKER_ALLOW_BUTTON);
+      return l10n_util::GetStringUTF16(IDS_PEPPER_BROKER_ALLOW_BUTTON);
     case BUTTON_CANCEL:
-      return l10n_util::GetStringUTF16(IDS_PPAPI_BROKER_DENY_BUTTON);
+      return l10n_util::GetStringUTF16(IDS_PEPPER_BROKER_DENY_BUTTON);
     default:
       NOTREACHED();
       return string16();

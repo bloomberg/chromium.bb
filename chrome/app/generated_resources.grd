@@ -6538,12 +6538,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <!-- Pepper Broker Info bar -->
       <if expr="pp_ifdef('android')">
         <message name="IDS_PEPPER_BROKER_MESSAGE" desc="Mobile: Message shown when a pepper plugin wants to launch its broker. This message is followed by a 'Learn more' link.">
-          The <ph name="PEPPER_PLUGIN_NAME">$1<ex>Shockwave Flash</ex></ph> plugin on <ph name="PEPPER_PLUGIN_DOMAIN">$2<ex>example.com</ex></ph> wants to access your mobile device."
+          <ph name="PEPPER_PLUGIN_NAME">$1<ex>Shockwave Flash</ex></ph> on <ph name="PEPPER_PLUGIN_DOMAIN">$2<ex>example.com</ex></ph> wants to access your mobile device."
         </message>
       </if>
       <if expr="not pp_ifdef('android')">
         <message name="IDS_PEPPER_BROKER_MESSAGE" desc="Message shown when a pepper plugin wants to launch its broker. This message is followed by a 'Learn more' link.">
-          The <ph name="PEPPER_PLUGIN_NAME">$1<ex>Shockwave Flash</ex></ph> plugin on <ph name="PEPPER_PLUGIN_DOMAIN">$2<ex>example.com</ex></ph> wants to access your computer."
+          <ph name="PEPPER_PLUGIN_NAME">$1<ex>Shockwave Flash</ex></ph> on <ph name="PEPPER_PLUGIN_DOMAIN">$2<ex>example.com</ex></ph> wants to access your computer."
         </message>
       </if>
       <message name="IDS_PEPPER_BROKER_ALLOW_BUTTON" desc="Text for the allow button on the pepper broker launch prompt">
@@ -13735,17 +13735,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
     </message>
     <message name="IDS_REGISTER_PROTOCOL_HANDLER_TOOLTIP" desc="Location bar icon tooltip text when a page wants to use registerProtocolHandler.">
       This page wants to install a service handler.
-    </message>
-
-    <!-- PPAPI broker -->
-    <message name="IDS_PPAPI_BROKER_INFOBAR_QUESTION" desc="Question asked on the infobar when a site wan">
-      <ph name="plugin">$1<ex>Flash</ex></ph> on <ph name="site">$2<ex>google.com</ex></ph> wants to access your computer.
-    </message>
-    <message name="IDS_PPAPI_BROKER_ALLOW_BUTTON" desc="A button in the PPAPI broker infobar for allowing access to the PPAPI broker for a given site.">
-      Allow
-    </message>
-    <message name="IDS_PPAPI_BROKER_DENY_BUTTON" desc="A button in the PPAPI broker infobar for allowing access to the PPAPI broker for a given site.">
-      Deny
     </message>
 
     <!-- ProcessSingleton -->
