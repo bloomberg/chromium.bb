@@ -62,7 +62,6 @@
       'special_tabs',
       'sync.SyncTest',
       'test_pyauto',
-      'themes',
 
       # ==================================================
       # Disabled tests that need to be investigated/fixed.

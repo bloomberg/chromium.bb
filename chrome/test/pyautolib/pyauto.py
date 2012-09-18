@@ -3188,21 +3188,6 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     return self._GetResultFromJSONRequest(cmd_dict)['passwords']
 
-  def ResetToDefaultTheme(self, windex=0):
-    """Reset to default theme.
-
-    Args:
-      windex: Index of the window to reset; defaults to 0.
-
-    Raises:
-      pyauto_errors.JSONInterfaceError if the automation call returns an error.
-    """
-    cmd_dict = {
-      'command': 'ResetToDefaultTheme',
-      'windex': windex,
-    }
-    self._GetResultFromJSONRequest(cmd_dict, windex=None)
-
   def SetTheme(self, crx_file_path, windex=0):
     """Installs the given theme synchronously.
 
@@ -3220,64 +3205,6 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       pyauto_errors.JSONInterfaceError if the automation call returns an error.
     """
     return self.InstallExtension(crx_file_path, True, windex)
-
-  def WaitUntilDownloadedThemeSet(self, theme_name):
-    """Waits until the theme has been set.
-
-    This should not be called after SetTheme(). It only needs to be called after
-    downloading a theme file (which will automatically set the theme).
-
-    Uses WaitUntil so timeout is capped by automation timeout.
-
-    Args:
-      theme_name: The name that the theme will have once it is installed.
-    """
-    def _ReturnThemeSet(name):
-      theme_info = self.GetThemeInfo()
-      return theme_info and theme_info['name'] == name
-    return self.WaitUntil(_ReturnThemeSet, args=[theme_name])
-
-  def ClearTheme(self):
-    """Clear the theme.  Resets to default.
-
-    Has no effect when the theme is already the default one.
-    This is a blocking call.
-
-    Raises:
-      pyauto_errors.JSONInterfaceError if the automation call returns an error.
-    """
-    cmd_dict = {
-      'command': 'ClearTheme',
-    }
-    self._GetResultFromJSONRequest(cmd_dict)
-
-  def GetThemeInfo(self, windex=0):
-    """Get info about theme.
-
-    This includes info about the theme name, its colors, images, etc.
-
-    Returns:
-      a dictionary containing info about the theme.
-      empty dictionary if no theme has been applied (default theme).
-    SAMPLE:
-    { u'colors': { u'frame': [71, 105, 91],
-                   u'ntp_link': [36, 70, 0],
-                   u'ntp_section': [207, 221, 192],
-                   u'ntp_text': [20, 40, 0],
-                   u'toolbar': [207, 221, 192]},
-      u'images': { u'theme_frame': u'images/theme_frame_camo.png',
-                   u'theme_ntp_background': u'images/theme_ntp_background.png',
-                   u'theme_toolbar': u'images/theme_toolbar_camo.png'},
-      u'name': u'camo theme',
-      u'tints': {u'buttons': [0.33000000000000002, 0.5, 0.46999999999999997]}}
-
-    Raises:
-      pyauto_errors.JSONInterfaceError if the automation call returns an error.
-    """
-    cmd_dict = {
-      'command': 'GetThemeInfo',
-    }
-    return self._GetResultFromJSONRequest(cmd_dict, windex=windex)
 
   def GetActiveNotifications(self):
     """Gets a list of the currently active/shown HTML5 notifications.

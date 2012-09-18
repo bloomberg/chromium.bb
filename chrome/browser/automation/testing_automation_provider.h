@@ -271,10 +271,6 @@ class TestingAutomationProvider : public AutomationProvider,
   // Uses the JSON interface for input/output.
   void CloseBrowserWindow(base::DictionaryValue* args,
                           IPC::Message* reply_message);
-  // Reset to the default theme.
-  // Uses the JSON interface for input/output.
-  void ResetToDefaultTheme(base::DictionaryValue* args,
-                           IPC::Message* reply_message);
 
   // Get info about multi-profile users.
   // Uses the JSON interface for input/output.
@@ -515,12 +511,6 @@ class TestingAutomationProvider : public AutomationProvider,
   void GetSavedPasswords(Browser* browser,
                          base::DictionaryValue* args,
                          IPC::Message* reply_message);
-
-  // Get info about theme.
-  // Uses the JSON interface for input/output.
-  void GetThemeInfo(Browser* browser,
-                    base::DictionaryValue* args,
-                    IPC::Message* reply_message);
 
   // Install the given unpacked/packed extension.
   // Uses the JSON interface for input/output.

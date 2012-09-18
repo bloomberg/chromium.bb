@@ -87,8 +87,6 @@
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/themes/theme_service.h"
-#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
 #include "chrome/browser/ui/app_modal_dialogs/javascript_app_modal_dialog.h"
@@ -1957,13 +1955,6 @@ void TestingAutomationProvider::BuildJSONHandlerMaps() {
   browser_handler_map_["GetSavedPasswords"] =
       &TestingAutomationProvider::GetSavedPasswords;
 
-  handler_map_["ResetToDefaultTheme"] =
-      &TestingAutomationProvider::ResetToDefaultTheme;
-
-  // SetTheme() implemented using InstallExtension().
-  browser_handler_map_["GetThemeInfo"] =
-      &TestingAutomationProvider::GetThemeInfo;
-
   browser_handler_map_["FindInPage"] = &TestingAutomationProvider::FindInPage;
 
   browser_handler_map_["GetAllNotifications"] =
@@ -3689,23 +3680,6 @@ void TestingAutomationProvider::IsFindInPageVisible(
   DictionaryValue dict;
   dict.SetBoolean("is_visible", visible);
   reply.SendSuccess(&dict);
-}
-
-// Sample json input: { "command": "GetThemeInfo" }
-// Refer GetThemeInfo() in chrome/test/pyautolib/pyauto.py for sample output.
-void TestingAutomationProvider::GetThemeInfo(
-    Browser* browser,
-    DictionaryValue* args,
-    IPC::Message* reply_message) {
-  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
-  const Extension* theme = ThemeServiceFactory::GetThemeForProfile(profile());
-  if (theme) {
-    return_value->SetString("name", theme->name());
-    return_value->Set("images", theme->GetThemeImages()->DeepCopy());
-    return_value->Set("colors", theme->GetThemeColors()->DeepCopy());
-    return_value->Set("tints", theme->GetThemeTints()->DeepCopy());
-  }
-  AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
 }
 
 void TestingAutomationProvider::InstallExtension(
@@ -6241,20 +6215,6 @@ void TestingAutomationProvider::ActivateTabJSON(
   }
   chrome::ActivateTabAt(browser, chrome::GetIndexOfTab(browser, web_contents),
                         true);
-  reply.SendSuccess(NULL);
-}
-
-void TestingAutomationProvider::ResetToDefaultTheme(
-    base::DictionaryValue* args,
-    IPC::Message* reply_message) {
-  AutomationJSONReply reply(this, reply_message);
-  Browser* browser;
-  std::string error_msg;
-  if (!GetBrowserFromJSONArgs(args, &browser, &error_msg)) {
-    reply.SendError(error_msg);
-    return;
-  }
-  ThemeServiceFactory::GetForProfile(browser->profile())->UseDefaultTheme();
   reply.SendSuccess(NULL);
 }
 
