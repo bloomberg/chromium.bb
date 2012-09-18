@@ -30,7 +30,7 @@ VectorPlatformDeviceSkia::VectorPlatformDeviceSkia(
 VectorPlatformDeviceSkia::~VectorPlatformDeviceSkia() {
 }
 
-bool VectorPlatformDeviceSkia::IsNativeFontRenderingAllowed() {
+bool VectorPlatformDeviceSkia::SupportsPlatformPaint() {
   return false;
 }
 

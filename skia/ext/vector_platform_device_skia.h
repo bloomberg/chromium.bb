@@ -27,7 +27,7 @@ class VectorPlatformDeviceSkia : public SkPDFDevice, public PlatformDevice {
   virtual ~VectorPlatformDeviceSkia();
 
   // PlatformDevice methods.
-  virtual bool IsNativeFontRenderingAllowed() OVERRIDE;
+  virtual bool SupportsPlatformPaint() OVERRIDE;
 
   virtual PlatformSurface BeginPlatformPaint() OVERRIDE;
   virtual void EndPlatformPaint() OVERRIDE;

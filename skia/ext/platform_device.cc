@@ -72,7 +72,7 @@ bool IsPreviewMetafile(const SkCanvas& canvas) {
 }
 #endif
 
-bool PlatformDevice::IsNativeFontRenderingAllowed() {
+bool PlatformDevice::SupportsPlatformPaint() {
   return true;
 }
 

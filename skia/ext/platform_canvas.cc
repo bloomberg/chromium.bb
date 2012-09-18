@@ -48,10 +48,8 @@ SkDevice* GetTopDevice(const SkCanvas& canvas) {
 }
 
 bool SupportsPlatformPaint(const SkCanvas* canvas) {
-  // TODO(alokp): Rename IsNativeFontRenderingAllowed after removing these
-  // calls from WebKit.
   PlatformDevice* platform_device = GetPlatformDevice(GetTopDevice(*canvas));
-  return platform_device && platform_device->IsNativeFontRenderingAllowed();
+  return platform_device && platform_device->SupportsPlatformPaint();
 }
 
 PlatformSurface BeginPlatformPaint(SkCanvas* canvas) {
