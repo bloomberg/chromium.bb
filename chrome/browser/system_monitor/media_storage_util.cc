@@ -101,7 +101,7 @@ void FilterAttachedDevicesOnFileThread(MediaStorageUtil::DeviceIdSet* devices) {
     DCHECK(type == MediaStorageUtil::MTP_OR_PTP ||
            type == MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM ||
            type == MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM);
-    if (!FindRemovableStorageLocationById(*it).empty())
+    if (FindRemovableStorageLocationById(*it).empty())
       missing_devices.insert(*it);
   }
 
@@ -235,16 +235,16 @@ bool MediaStorageUtil::GetDeviceInfoFromPath(const FilePath& path,
 
   bool found_device = false;
   base::SystemMonitor::RemovableStorageInfo device_info;
-#if (defined(OS_LINUX) || defined(OS_MACOSX)) && !defined(OS_CHROMEOS)
+#if (defined(OS_LINUX) || defined(OS_MACOSX))
   RemovableDeviceNotifications* notifier =
       RemovableDeviceNotifications::GetInstance();
   found_device = notifier->GetDeviceInfoForPath(path, &device_info);
 #endif
 
-#if 0 && defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
   if (!found_device) {
-    MediaTransferProtocolDeviceObserver* mtp_manager =
-        MediaTransferProtocolDeviceObserver::GetInstance();
+    chromeos::mtp::MediaTransferProtocolDeviceObserverCros* mtp_manager =
+        chromeos::mtp::MediaTransferProtocolDeviceObserverCros::GetInstance();
     found_device = mtp_manager->GetStorageInfoForPath(path, &device_info);
   }
 #endif

@@ -9,7 +9,10 @@
 #include <string>
 
 #include "base/string16.h"
+#include "base/system_monitor/system_monitor.h"
 #include "chrome/browser/chromeos/mtp/media_transfer_protocol_manager.h"
+
+class FilePath;
 
 namespace chromeos {
 namespace mtp {
@@ -26,8 +29,17 @@ typedef void (*GetStorageInfoFunc)(const std::string& storage_name,
 class MediaTransferProtocolDeviceObserverCros
     : public MediaTransferProtocolManager::Observer {
  public:
+  // Should only be called by browser start up code. Use GetInstance() instead.
   MediaTransferProtocolDeviceObserverCros();
   virtual ~MediaTransferProtocolDeviceObserverCros();
+
+  static MediaTransferProtocolDeviceObserverCros* GetInstance();
+
+  // Finds the storage that contains |path| and populates |storage_info|.
+  // Returns false if unable to find the storage.
+  bool GetStorageInfoForPath(
+      const FilePath& path,
+      base::SystemMonitor::RemovableStorageInfo* storage_info) const;
 
  protected:
   // Only used in unit tests.
@@ -40,14 +52,15 @@ class MediaTransferProtocolDeviceObserverCros
                               const std::string& storage_name) OVERRIDE;
 
  private:
-  // Mapping of storage name and device id.
-  typedef std::map<std::string, std::string> StorageNameToIdMap;
+  // Mapping of storage location and mtp storage info object.
+  typedef std::map<std::string, base::SystemMonitor::RemovableStorageInfo>
+      StorageLocationToInfoMap;
 
   // Enumerate existing mtp storage devices.
   void EnumerateStorages();
 
   // Map of all attached mtp devices.
-  StorageNameToIdMap storage_map_;
+  StorageLocationToInfoMap storage_map_;
 
   // Function handler to get storage information. This is useful to set a mock
   // handler for unit testing.

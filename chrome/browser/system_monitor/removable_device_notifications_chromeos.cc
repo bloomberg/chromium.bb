@@ -19,6 +19,8 @@
 
 namespace chromeos {
 
+using base::SystemMonitor;
+
 namespace {
 
 // Construct a device name using label or manufacturer (vendor and product) name
@@ -59,6 +61,9 @@ std::string MakeDeviceUniqueId(const disks::DiskMountManager::Disk& disk) {
                             product.c_str(), chrome::kNonSpaceDelim);
 }
 
+static RemovableDeviceNotificationsCros*
+    g_removable_device_notifications_chromeos = NULL;
+
 // Returns true if the requested device is valid, else false. On success, fills
 // in |unique_id| and |device_label|
 bool GetDeviceInfo(const std::string& source_path, std::string* unique_id,
@@ -84,15 +89,25 @@ using content::BrowserThread;
 
 RemovableDeviceNotificationsCros::RemovableDeviceNotificationsCros() {
   DCHECK(disks::DiskMountManager::GetInstance());
+  DCHECK(!g_removable_device_notifications_chromeos);
+  g_removable_device_notifications_chromeos = this;
   disks::DiskMountManager::GetInstance()->AddObserver(this);
   CheckExistingMountPointsOnUIThread();
 }
 
 RemovableDeviceNotificationsCros::~RemovableDeviceNotificationsCros() {
+  DCHECK_EQ(this, g_removable_device_notifications_chromeos);
+  g_removable_device_notifications_chromeos = NULL;
   disks::DiskMountManager* manager = disks::DiskMountManager::GetInstance();
   if (manager) {
     manager->RemoveObserver(this);
   }
+}
+
+// static
+RemovableDeviceNotificationsCros*
+RemovableDeviceNotificationsCros::GetInstance() {
+  return g_removable_device_notifications_chromeos;
 }
 
 void RemovableDeviceNotificationsCros::CheckExistingMountPointsOnUIThread() {
@@ -152,11 +167,33 @@ void RemovableDeviceNotificationsCros::MountCompleted(
       MountMap::iterator it = mount_map_.find(mount_info.mount_path);
       if (it == mount_map_.end())
         return;
-      base::SystemMonitor::Get()->ProcessRemovableStorageDetached(it->second);
+      SystemMonitor::Get()->ProcessRemovableStorageDetached(
+          it->second.device_id);
       mount_map_.erase(it);
       break;
     }
   }
+}
+
+bool RemovableDeviceNotificationsCros::GetDeviceInfoForPath(
+    const FilePath& path,
+    SystemMonitor::RemovableStorageInfo* device_info) const {
+  if (!path.IsAbsolute())
+    return false;
+
+  FilePath current = path;
+  while (!ContainsKey(mount_map_, current.value()) &&
+         current != current.DirName()) {
+    current = current.DirName();
+  }
+
+  MountMap::const_iterator info_it = mount_map_.find(current.value());
+  if (info_it == mount_map_.end())
+    return false;
+
+  if (device_info)
+    *device_info = info_it->second;
+  return true;
 }
 
 void RemovableDeviceNotificationsCros::CheckMountedPathOnFileThread(
@@ -176,7 +213,9 @@ void RemovableDeviceNotificationsCros::AddMountedPathOnUIThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (ContainsKey(mount_map_, mount_info.mount_path)) {
-    NOTREACHED();
+    // CheckExistingMountPointsOnUIThread() added the mount point information
+    // in the map before the device attached handler is called. Therefore, an
+    // entry for the device already exists in the map.
     return;
   }
 
@@ -196,9 +235,12 @@ void RemovableDeviceNotificationsCros::AddMountedPathOnUIThread(
       MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM :
       MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM;
 
-  std::string device_id = MediaStorageUtil::MakeDeviceId(type, unique_id);
-  mount_map_.insert(std::make_pair(mount_info.mount_path, device_id));
-  base::SystemMonitor::Get()->ProcessRemovableStorageAttached(
+  std::string device_id = chrome::MediaStorageUtil::MakeDeviceId(type,
+                                                                 unique_id);
+  SystemMonitor::RemovableStorageInfo info(device_id, device_label,
+                                           mount_info.mount_path);
+  mount_map_.insert(std::make_pair(mount_info.mount_path, info));
+  SystemMonitor::Get()->ProcessRemovableStorageAttached(
       device_id,
       device_label,
       mount_info.mount_path);

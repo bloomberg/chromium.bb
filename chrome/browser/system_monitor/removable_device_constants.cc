@@ -10,6 +10,8 @@ const char kFSUniqueIdPrefix[] = "UUID:";
 const char kVendorModelSerialPrefix[] = "VendorModelSerial:";
 
 #if defined(OS_CHROMEOS)
+const char kLeftParen[] = "(";
+const char kRightParen[] = ")";
 const char kVendorModelVolumeStoragePrefix[] = "VendorModelVolumeStorage:";
 #endif
 

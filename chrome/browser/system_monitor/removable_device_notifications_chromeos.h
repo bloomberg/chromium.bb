@@ -23,15 +23,27 @@
 #include "chromeos/disks/disk_mount_manager.h"
 
 namespace chromeos {
-
+// TODO(kmadhusu) This forward declaration is ugly. Fix it.
 class RemovableDeviceNotificationsCros;
-typedef RemovableDeviceNotificationsCros RemovableDeviceNotifications;
+}  // namespace chromeos
+
+namespace chrome {
+
+typedef class chromeos::RemovableDeviceNotificationsCros
+    RemovableDeviceNotifications;
+
+}  // namespace chrome
+
+namespace chromeos {
 
 class RemovableDeviceNotificationsCros
     : public base::RefCountedThreadSafe<RemovableDeviceNotificationsCros>,
       public disks::DiskMountManager::Observer {
  public:
+  // Should only be called by browser start up code. Use GetInstance() instead.
   RemovableDeviceNotificationsCros();
+
+  static RemovableDeviceNotificationsCros* GetInstance();
 
   virtual void DiskChanged(disks::DiskMountManagerEventType event,
                            const disks::DiskMountManager::Disk* disk) OVERRIDE;
@@ -42,11 +54,18 @@ class RemovableDeviceNotificationsCros
       MountError error_code,
       const disks::DiskMountManager::MountPointInfo& mount_info) OVERRIDE;
 
+  // Finds the device that contains |path| and populates |device_info|.
+  // Returns false if unable to find the device.
+  bool GetDeviceInfoForPath(
+      const FilePath& path,
+      base::SystemMonitor::RemovableStorageInfo* device_info) const;
+
  private:
   friend class base::RefCountedThreadSafe<RemovableDeviceNotificationsCros>;
 
-  // Mapping of mount points to mount device IDs.
-  typedef std::map<std::string, std::string> MountMap;
+  // Mapping of mount path to removable mass storage info.
+  typedef std::map<std::string, base::SystemMonitor::RemovableStorageInfo>
+      MountMap;
 
   // Private to avoid code deleting the object.
   virtual ~RemovableDeviceNotificationsCros();
