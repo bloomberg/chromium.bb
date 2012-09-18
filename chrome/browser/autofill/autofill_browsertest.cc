@@ -1349,7 +1349,8 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, ProfileWithEmailInOtherFieldNotSaved) {
 // This test verifies when a profile is selected from the Autofill dictionary
 // that consists of thousands of profiles, the form does not hang after being
 // submitted.
-IN_PROC_BROWSER_TEST_F(AutofillTest, FormFillLatencyAfterSubmit) {
+// crbug.com/150084
+IN_PROC_BROWSER_TEST_F(AutofillTest, FLAKY_FormFillLatencyAfterSubmit) {
   ASSERT_TRUE(test_server()->Start());
 
   std::vector<std::string> cities;
