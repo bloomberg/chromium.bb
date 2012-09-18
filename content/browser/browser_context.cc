@@ -4,6 +4,7 @@
 
 #include "content/public/browser/browser_context.h"
 
+#if !defined(OS_IOS)
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "webkit/database/database_tracker.h"
 #include "content/browser/dom_storage/dom_storage_context_impl.h"
@@ -24,16 +25,19 @@
 #include "net/cookies/cookie_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#endif // !OS_IOS
 
 using base::UserDataAdapter;
 
-// Key names on BrowserContext.
-static const char* kDownloadManagerKeyName = "download_manager";
-static const char* kStorageParitionMapKeyName = "content_storage_partition_map";
-
 namespace content {
 
+// Only ~BrowserContext() is needed on iOS.
+#if !defined(OS_IOS)
 namespace {
+
+// Key names on BrowserContext.
+const char* kDownloadManagerKeyName = "download_manager";
+const char* kStorageParitionMapKeyName = "content_storage_partition_map";
 
 StoragePartition* GetStoragePartitionByPartitionId(
     BrowserContext* browser_context,
@@ -199,10 +203,13 @@ void BrowserContext::PurgeMemory(BrowserContext* browser_context) {
   ForEachStoragePartition(browser_context,
                           base::Bind(&PurgeDOMStorageContextInPartition));
 }
+#endif  // !OS_IOS
 
 BrowserContext::~BrowserContext() {
+#if !defined(OS_IOS)
   if (GetUserData(kDownloadManagerKeyName))
     GetDownloadManager(this)->Shutdown();
+#endif
 }
 
 }  // namespace content

@@ -850,6 +850,7 @@
         ['include', '_ios\\.(cc|mm)$'],
         ['include', '^public/browser/notification_registrar\\.cc$'],
         ['include', '^public/browser/speech_recognition_'],
+        ['include', '^browser/browser_context\\.cc$'],
         ['include', '^browser/notification_service_impl\\.cc$'],
         # Pull in all but one file from speech.
         ['include', '^browser/speech/'],
