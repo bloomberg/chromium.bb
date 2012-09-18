@@ -32,7 +32,8 @@ def symbolize_addr2line(line):
     addr = match.group(4)
     if not pipes.has_key(binary):
       pipes[binary] = subprocess.Popen(["addr2line", "-f", "-e", binary],
-                         stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+                         stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                         stderr=open(os.devnull, 'w'))
     p = pipes[binary]
     try:
       print >>p.stdin, addr
