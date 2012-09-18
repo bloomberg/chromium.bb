@@ -96,7 +96,9 @@
 }
 
 .choices label[for=view-files] {
-  background: url(../images/icon16.png) no-repeat;
+  background: -webkit-image-set(
+    url('../images/icon16.png') 1x,
+    url('../images/icon32.png') 2x) no-repeat;
   padding-left: 20px;
 }
 
