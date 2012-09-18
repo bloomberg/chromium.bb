@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/file_path.h"
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
 #include "base/threading/thread.h"
@@ -20,6 +21,7 @@
 #include "googleurl/src/gurl.h"
 #include "grit/net_resources.h"
 #include "net/base/net_module.h"
+#include "net/base/net_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_ANDROID)
@@ -45,7 +47,11 @@ static GURL GetStartupURL() {
   if (args.empty())
     return GURL("http://www.google.com/");
 
-  return GURL(args[0]);
+  GURL url(args[0]);
+  if (url.is_valid() && url.has_scheme())
+    return url;
+
+  return net::FilePathToFileURL(FilePath(args[0]));
 }
 
 base::StringPiece PlatformResourceProvider(int key) {
