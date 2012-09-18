@@ -133,6 +133,7 @@ RootWindow::RootWindow(const CreateParams& params)
       mouse_moved_handler_(NULL),
       mouse_event_dispatch_target_(NULL),
       event_dispatch_target_(NULL),
+      focus_manager_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           gesture_recognizer_(ui::GestureRecognizer::Create(this))),
       synthesize_mouse_move_(false),

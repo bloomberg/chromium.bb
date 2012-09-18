@@ -27,6 +27,8 @@
 #include "base/message_pump_aurax11.h"
 #endif
 
+extern int ViewerProcessMain();
+
 namespace {
 
 // Trivial WindowDelegate implementation that draws a colored background.
@@ -118,18 +120,7 @@ class DemoStackingClient : public aura::client::StackingClient {
   DISALLOW_COPY_AND_ASSIGN(DemoStackingClient);
 };
 
-}  // namespace
-
-int main(int argc, char** argv) {
-  CommandLine::Init(argc, argv);
-
-  // The exit manager is in charge of calling the dtors of singleton objects.
-  base::AtExitManager exit_manager;
-
-  ui::RegisterPathProvider();
-  icu_util::Initialize();
-  ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
-
+int DemoMain() {
   // Create the message-loop here before creating the root window.
   MessageLoop message_loop(MessageLoop::TYPE_UI);
   ui::CompositorTestSupport::Initialize();
@@ -170,4 +161,28 @@ int main(int argc, char** argv) {
   ui::CompositorTestSupport::Terminate();
 
   return 0;
+}
+
+int RunMain() {
+  // TODO(scottmg): Something not crappy.
+  if (CommandLine::ForCurrentProcess()->HasSwitch("viewer")) {
+    return ViewerProcessMain();
+  } else {
+    return DemoMain();
+  }
+}
+
+}  // namespace
+
+int main(int argc, char** argv) {
+  CommandLine::Init(argc, argv);
+
+  // The exit manager is in charge of calling the dtors of singleton objects.
+  base::AtExitManager exit_manager;
+
+  ui::RegisterPathProvider();
+  icu_util::Initialize();
+  ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
+
+  return RunMain();
 }

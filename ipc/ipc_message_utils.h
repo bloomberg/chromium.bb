@@ -106,6 +106,7 @@ enum IPCMessageStart {
   BrowserPluginMsgStart,
   HyphenatorMsgStart,
   AndroidWebViewMsgStart,
+  ViewerMsgStart,
   LastIPCMsgStart      // Must come last.
 };
 

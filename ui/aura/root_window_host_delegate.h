@@ -5,6 +5,8 @@
 #ifndef UI_AURA_ROOT_WINDOW_HOST_DELEGATE_H_
 #define UI_AURA_ROOT_WINDOW_HOST_DELEGATE_H_
 
+#include "ui/aura/aura_export.h"
+
 namespace gfx {
 class Point;
 class Size;
