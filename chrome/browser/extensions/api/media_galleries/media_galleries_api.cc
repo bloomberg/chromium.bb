@@ -6,10 +6,12 @@
 
 #include "chrome/browser/extensions/api/media_galleries/media_galleries_api.h"
 
+#include <set>
 #include <string>
 #include <vector>
 
 #include "base/platform_file.h"
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/media_gallery/media_file_system_registry.h"
@@ -109,15 +111,26 @@ void MediaGalleriesGetMediaFileSystemsFunction::GetAndReturnGalleries() {
 void MediaGalleriesGetMediaFileSystemsFunction::ReturnGalleries(
     const std::vector<MediaFileSystemInfo>& filesystems) {
   const int child_id = render_view_host()->GetProcess()->GetID();
+  std::set<std::string> file_system_names;
   base::ListValue* list = new base::ListValue();
   for (size_t i = 0; i < filesystems.size(); i++) {
-    base::DictionaryValue* dict_value = new base::DictionaryValue();
-    dict_value->SetWithoutPathExpansion(
+    base::DictionaryValue* file_system_dict_value = new base::DictionaryValue();
+
+    // Send the file system id so the renderer can create a valid FileSystem
+    // object.
+    file_system_dict_value->SetWithoutPathExpansion(
         "fsid", Value::CreateStringValue(filesystems[i].fsid));
-    // The directory name is not exposed to the js layer.
-    dict_value->SetWithoutPathExpansion(
+
+    // The name must be unique according to the HTML5 File System API spec.
+    if (ContainsKey(file_system_names, filesystems[i].name)) {
+      NOTREACHED() << "Duplicate file system name: " << filesystems[i].name;
+      continue;
+    }
+    file_system_names.insert(filesystems[i].name);
+    file_system_dict_value->SetWithoutPathExpansion(
         "name", Value::CreateStringValue(filesystems[i].name));
-    list->Append(dict_value);
+
+    list->Append(file_system_dict_value);
 
     if (!filesystems[i].path.empty() &&
         MediaGalleriesPermission::HasReadAccess(*GetExtension())) {

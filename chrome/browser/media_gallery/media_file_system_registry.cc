@@ -12,10 +12,13 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/file_path.h"
+#include "base/json/json_writer.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
+#include "base/string_util.h"
 #include "base/system_monitor/system_monitor.h"
 #include "base/utf_string_conversions.h"
+#include "base/values.h"
 #include "chrome/browser/media_gallery/media_galleries_preferences.h"
 #include "chrome/browser/media_gallery/media_galleries_preferences_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -82,7 +85,41 @@ std::string RegisterFileSystemForMassStorage(std::string device_id,
   return fsid;
 }
 
+// Make a JSON string out of |name| and |id|. The |id| makes the combined name
+// unique. The JSON string should not contain any slashes.
+std::string MakeJSONFileSystemName(const string16& name,
+                                   const MediaGalleryPrefId& id) {
+  string16 sanitized_name;
+  string16 separators =
+#if defined(FILE_PATH_USES_WIN_SEPARATORS)
+      FilePath::kSeparators
+#else
+      ASCIIToUTF16(FilePath::kSeparators)
+#endif
+      ;  // NOLINT
+  ReplaceChars(name, separators.c_str(), ASCIIToUTF16("_"), &sanitized_name);
+
+  base::DictionaryValue dict_value;
+  dict_value.SetWithoutPathExpansion(
+      "name", Value::CreateStringValue(sanitized_name));
+  dict_value.SetWithoutPathExpansion("id", Value::CreateIntegerValue(id));
+
+  std::string json_string;
+  base::JSONWriter::Write(&dict_value, &json_string);
+  return json_string;
+}
+
 }  // namespace
+
+MediaFileSystemInfo::MediaFileSystemInfo(const std::string& fs_name,
+                                         const FilePath& fs_path,
+                                         const std::string& filesystem_id)
+    : name(fs_name),
+      path(fs_path),
+      fsid(filesystem_id) {
+}
+
+MediaFileSystemInfo::MediaFileSystemInfo() {}
 
 #if defined(SUPPORT_MEDIA_FILESYSTEM)
 // Class to manage MediaDeviceDelegateImpl object for the attached media
@@ -279,17 +316,18 @@ class ExtensionGalleriesHost
              galleries.begin();
          pref_id_it != galleries.end();
          ++pref_id_it) {
+      const MediaGalleryPrefId& pref_id = *pref_id_it;
       const MediaGalleryPrefInfo& gallery_info =
-          galleries_info.find(*pref_id_it)->second;
+          galleries_info.find(pref_id)->second;
       const std::string& device_id = gallery_info.device_id;
       if (!ContainsKey(*attached_devices, device_id))
         continue;
 
       PrefIdFsInfoMap::const_iterator existing_info =
-          pref_id_map_.find(*pref_id_it);
+          pref_id_map_.find(pref_id);
       if (existing_info != pref_id_map_.end()) {
         result.push_back(existing_info->second);
-        new_galleries.insert(*pref_id_it);
+        new_galleries.insert(pref_id);
         continue;
       }
 
@@ -306,7 +344,7 @@ class ExtensionGalleriesHost
         fsid = registry_->RegisterFileSystemForMtpDevice(
             device_id, path, &mtp_device_host);
         DCHECK(mtp_device_host.get());
-        media_device_map_references_[*pref_id_it] = mtp_device_host;
+        media_device_map_references_[pref_id] = mtp_device_host;
 #else
         NOTIMPLEMENTED();
         continue;
@@ -314,13 +352,13 @@ class ExtensionGalleriesHost
       }
       DCHECK(!fsid.empty());
 
-      MediaFileSystemInfo new_entry;
-      new_entry.name = gallery_info.display_name;
-      new_entry.path = path;
-      new_entry.fsid = fsid;
+      MediaFileSystemInfo new_entry(
+          MakeJSONFileSystemName(gallery_info.display_name, pref_id),
+          path,
+          fsid);
       result.push_back(new_entry);
-      new_galleries.insert(*pref_id_it);
-      pref_id_map_[*pref_id_it] = new_entry;
+      new_galleries.insert(pref_id);
+      pref_id_map_[pref_id] = new_entry;
     }
 
     RevokeOldGalleries(new_galleries);

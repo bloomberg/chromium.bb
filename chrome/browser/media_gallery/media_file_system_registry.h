@@ -42,9 +42,14 @@ class MediaGalleriesPreferences;
 class ScopedMediaDeviceMapEntry;
 
 struct MediaFileSystemInfo {
-  string16 name;
-  std::string fsid;
+  MediaFileSystemInfo(const std::string& fs_name,
+                      const FilePath& fs_path,
+                      const std::string& filesystem_id);
+  MediaFileSystemInfo();
+
+  std::string name;  // JSON string, must not contain slashes.
   FilePath path;
+  std::string fsid;
 };
 
 typedef base::Callback<void(const std::vector<MediaFileSystemInfo>&)>
