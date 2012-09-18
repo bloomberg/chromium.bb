@@ -168,9 +168,6 @@ const char kDisableLogging[]                = "disable-logging";
 // Prevent plugins from running.
 const char kDisablePlugins[]                = "disable-plugins";
 
-// Disable the JavaScript Pointer Lock API.
-const char kDisablePointerLock[]            = "disable-pointer-lock";
-
 // Disables remote web font support. SVG font should always work whether this
 // option is specified or not.
 const char kDisableRemoteFonts[]            = "disable-remote-fonts";
@@ -278,9 +275,6 @@ const char kEnableFixedLayout[]             = "enable-fixed-layout";
 
 // Enable the JavaScript Full Screen API.
 const char kDisableFullScreen[]             = "disable-fullscreen";
-
-// Enable the JavaScript Pointer Lock API.
-const char kEnablePointerLock[]             = "enable-pointer-lock";
 
 // Enable Text Service Framework(TSF) for text inputting instead of IMM32. This
 // flag is ignored on Metro environment.

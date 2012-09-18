@@ -348,11 +348,6 @@ const char kDisableIPv6[]                   = "disable-ipv6";
 // attempt to use the existing connection.
 const char kDisableIPPooling[]              = "disable-ip-pooling";
 
-// Disables Mouse Lock being permitted when the browser is not currently
-// in tab fullscreen.
-const char kDisableNonFullscreenMouseLock[] =
-    "disable-non-fullscreen-mouse-lock";
-
 // Disables the menu on the NTP for accessing sessions from other devices.
 const char kDisableNTPOtherSessionsMenu[]   = "disable-ntp-other-sessions-menu";
 

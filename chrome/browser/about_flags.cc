@@ -141,14 +141,6 @@ const Experiment::Choice kTouchOptimizedUIChoices[] = {
     switches::kTouchOptimizedUIDisabled }
 };
 
-const Experiment::Choice kPointerLockUIChoices[] = {
-  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
-  { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
-    switches::kEnablePointerLock, ""},
-  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
-    switches::kDisablePointerLock, ""}
-};
-
 const Experiment::Choice kAsyncDnsChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
@@ -548,13 +540,6 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableEncryptedMedia)
   },
-  {
-    "enable-pointer-lock",
-    IDS_FLAGS_ENABLE_POINTER_LOCK_NAME,
-    IDS_FLAGS_ENABLE_POINTER_LOCK_DESCRIPTION,
-    kOsAll,
-    MULTI_VALUE_TYPE(kPointerLockUIChoices)
-  },
 #if defined(USE_ASH)
   {
     "aura-google-dialog-frames",
@@ -870,13 +855,6 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_FRAMELESS_DIALOG_DESCRIPTION,
     kOsWin | kOsCrOS,
     SINGLE_VALUE_TYPE(switches::kEnableFramelessConstrainedDialogs),
-  },
-  {
-    "disable-non-fullscreen-mouse-lock",
-    IDS_FLAGS_DISABLE_NON_FULLSCREEN_MOUSE_LOCK_NAME,
-    IDS_FLAGS_DISABLE_NON_FULLSCREEN_MOUSE_LOCK_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kDisableNonFullscreenMouseLock),
   },
 #if defined(OS_CHROMEOS)
   {

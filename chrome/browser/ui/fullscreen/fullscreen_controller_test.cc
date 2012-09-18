@@ -19,10 +19,6 @@ using content::WebContents;
 const char FullscreenControllerTest::kFullscreenMouseLockHTML[] =
     "files/fullscreen_mouselock/fullscreen_mouselock.html";
 
-void FullscreenControllerTest::SetUpCommandLine(CommandLine* command_line) {
-  command_line->AppendSwitch(switches::kEnablePointerLock);
-}
-
 void FullscreenControllerTest::RequestToLockMouse(
     bool user_gesture,
     bool last_unlocked_by_target) {

@@ -187,11 +187,6 @@ class TestInterstitialPage : public content::InterstitialPageDelegate {
 
 class BrowserTest : public ExtensionBrowserTest {
  protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) {
-    ExtensionBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnablePointerLock);
-  }
-
   // In RTL locales wrap the page title with RTL embedding characters so that it
   // matches the value returned by GetWindowTitle().
   string16 LocaleWindowCaptionFromPageTitle(const string16& expected_title) {

@@ -658,8 +658,7 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   WebKit::WebRuntimeFeatures::enableFullScreenAPI(
       !command_line.HasSwitch(switches::kDisableFullScreen));
 
-  WebKit::WebRuntimeFeatures::enablePointerLock(
-      !command_line.HasSwitch(switches::kDisablePointerLock));
+  WebKit::WebRuntimeFeatures::enablePointerLock(true);
 
   WebKit::WebRuntimeFeatures::enableEncryptedMedia(
       command_line.HasSwitch(switches::kEnableEncryptedMedia));
