@@ -23,15 +23,12 @@ class DrawDelegateImpl : public DrawDelegate {
       const SurfaceUpdatedCallback& callback) OVERRIDE;
   virtual void SetBounds(const gfx::Size& size) OVERRIDE;
 
-  void SetDrawSurface(gfx::GLSurfaceHandle handle) { handle_ = handle; }
   void OnSurfaceUpdated(uint64 texture, RenderWidgetHostView* view,
                         const SurfacePresentedCallback& present_callback);
   gfx::Size GetBounds() { return size_; }
-  gfx::GLSurfaceHandle GetDrawSurface() { return handle_; }
 
  protected:
   SurfaceUpdatedCallback draw_callback_;
-  gfx::GLSurfaceHandle handle_;
   gfx::Size size_;
 
   DISALLOW_COPY_AND_ASSIGN(DrawDelegateImpl);

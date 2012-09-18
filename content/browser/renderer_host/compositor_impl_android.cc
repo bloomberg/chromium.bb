@@ -4,10 +4,13 @@
 
 #include "content/browser/renderer_host/compositor_impl_android.h"
 
+#include <android/native_window_jni.h>
+
 #include "base/bind.h"
 #include "base/logging.h"
-#include "content/browser/android/graphics_context.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
+#include "content/browser/gpu/gpu_surface_tracker.h"
+#include "content/browser/renderer_host/image_transport_factory_android.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
@@ -16,6 +19,8 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebCompositorOutputSurface.h"
 
 namespace {
+
+static bool g_initialized = false;
 
 // Adapts a pure WebGraphicsContext3D into a WebCompositorOutputSurface.
 class WebGraphicsContextToOutputSurfaceAdapter :
@@ -70,10 +75,18 @@ Compositor* Compositor::Create() {
 
 // static
 void Compositor::Initialize() {
+  g_initialized = true;
   WebKit::Platform::current()->compositorSupport()->initialize(NULL);
 }
 
-CompositorImpl::CompositorImpl() {
+// static
+bool CompositorImpl::IsInitialized() {
+  return g_initialized;
+}
+
+CompositorImpl::CompositorImpl()
+    : window_(NULL),
+      surface_id_(0) {
   root_layer_.reset(
       WebKit::Platform::current()->compositorSupport()->createLayer());
 }
@@ -84,7 +97,9 @@ CompositorImpl::~CompositorImpl() {
 void CompositorImpl::OnSurfaceUpdated(
     const SurfacePresentedCallback& callback) {
   host_->composite();
-  uint32 sync_point = context_->InsertSyncPoint();
+  // TODO(sievers): Let RWHV do this
+  uint32 sync_point =
+      ImageTransportFactoryAndroid::GetInstance()->InsertSyncPoint();
   callback.Run(sync_point);
 }
 
@@ -94,8 +109,24 @@ void CompositorImpl::SetRootLayer(WebKit::WebLayer* root_layer) {
 }
 
 void CompositorImpl::SetWindowSurface(ANativeWindow* window) {
+  GpuSurfaceTracker* tracker = GpuSurfaceTracker::Get();
+
+  if (window_) {
+    tracker->RemoveSurface(surface_id_);
+    ANativeWindow_release(window_);
+    window_ = NULL;
+    surface_id_ = 0;
+    size_ = gfx::Size();
+  }
+
   if (window) {
-    context_.reset(GraphicsContext::CreateForUI(window));
+    window_ = window;
+    ANativeWindow_acquire(window);
+    surface_id_ = tracker->AddSurfaceForNativeWidget(window);
+    tracker->SetSurfaceHandle(
+        surface_id_,
+        gfx::GLSurfaceHandle(gfx::kDummyPluginWindow, false));
+
     WebKit::WebLayerTreeView::Settings settings;
     settings.refreshRate = 60.0;
     WebKit::WebCompositorSupport* compositor_support =
@@ -104,9 +135,6 @@ void CompositorImpl::SetWindowSurface(ANativeWindow* window) {
         compositor_support->createLayerTreeView(this, *root_layer_, settings));
     host_->setVisible(true);
     host_->setSurfaceReady();
-  } else {
-    context_.reset(NULL);
-    size_ = gfx::Size();
   }
 }
 
@@ -130,9 +158,6 @@ void CompositorImpl::applyScrollAndScale(const WebKit::WebSize& scrollDelta,
 }
 
 WebKit::WebCompositorOutputSurface* CompositorImpl::createOutputSurface() {
-  if (!context_.get())
-    return NULL;
-
   WebKit::WebGraphicsContext3D::Attributes attrs;
   attrs.shareResources = true;
   GpuChannelHostFactory* factory = BrowserGpuChannelHostFactory::instance();
@@ -140,7 +165,7 @@ WebKit::WebCompositorOutputSurface* CompositorImpl::createOutputSurface() {
   base::WeakPtr<WebGraphicsContext3DSwapBuffersClient> swap_client;
   scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(
       new WebGraphicsContext3DCommandBufferImpl(
-          context_->GetSurfaceID(),
+          surface_id_,
           url,
           factory,
           swap_client));

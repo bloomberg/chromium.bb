@@ -27,6 +27,8 @@ class CompositorImpl : public Compositor,
   CompositorImpl();
   virtual ~CompositorImpl();
 
+  static bool IsInitialized();
+
   // Compositor implementation.
   virtual void SetRootLayer(WebKit::WebLayer* root) OVERRIDE;
   virtual void SetWindowSurface(ANativeWindow* window) OVERRIDE;
@@ -50,9 +52,10 @@ class CompositorImpl : public Compositor,
   scoped_ptr<WebKit::WebLayer> root_layer_;
   scoped_ptr<WebKit::WebLayerTreeView> host_;
 
-  scoped_ptr<GraphicsContext> context_;
-
   gfx::Size size_;
+
+  ANativeWindow* window_;
+  int surface_id_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorImpl);
 };

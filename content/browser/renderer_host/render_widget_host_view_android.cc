@@ -11,6 +11,8 @@
 #include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/android/draw_delegate_impl.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
+#include "content/browser/renderer_host/compositor_impl_android.h"
+#include "content/browser/renderer_host/image_transport_factory_android.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/android/device_info.h"
 #include "content/common/gpu/gpu_messages.h"
@@ -40,6 +42,10 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
 }
 
 RenderWidgetHostViewAndroid::~RenderWidgetHostViewAndroid() {
+  if (!shared_surface_.is_null()) {
+    ImageTransportFactoryAndroid::GetInstance()->DestroySharedSurfaceHandle(
+        shared_surface_);
+  }
 }
 
 void RenderWidgetHostViewAndroid::InitAsChild(gfx::NativeView parent_view) {
@@ -314,10 +320,14 @@ void RenderWidgetHostViewAndroid::StartContentIntent(
 }
 
 gfx::GLSurfaceHandle RenderWidgetHostViewAndroid::GetCompositingSurface() {
-  gfx::GLSurfaceHandle handle =
-      DrawDelegateImpl::GetInstance()->GetDrawSurface();
-  if (!handle.is_null())
-    return handle;
+  if (CompositorImpl::IsInitialized()) {
+    // The app uses the browser-side compositor.
+    if (shared_surface_.is_null())
+      shared_surface_ =
+          ImageTransportFactoryAndroid::GetInstance()->
+              CreateSharedSurfaceHandle();
+    return shared_surface_;
+  }
 
   // On Android, we cannot generate a window handle that can be passed to the
   // GPU process through the native side. Instead, we send the surface handle

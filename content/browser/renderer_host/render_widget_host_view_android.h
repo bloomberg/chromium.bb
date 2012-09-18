@@ -136,6 +136,10 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
   // The texture layer for this view when using browser-side compositing.
   scoped_ptr<WebKit::WebExternalTextureLayer> texture_layer_;
 
+  // The handle for the transport surface (between renderer and browser-side
+  // compositor) for this view.
+  gfx::GLSurfaceHandle shared_surface_;
+
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAndroid);
 };
 
