@@ -7,6 +7,7 @@
 #include <queue>
 #include <string>
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/time.h"
@@ -531,11 +532,16 @@ bool SyncEncryptionHandlerImpl::SetKeystoreKey(
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!keystore_key_.empty() || key.empty())
     return false;
-  keystore_key_ = key;
+  // Base64 encode so we can persist the keystore key directly via preferences.
+  if (!base::Base64Encode(key, &keystore_key_)) {
+    LOG(ERROR) << "Failed to base64 encode keystore key.";
+    keystore_key_ = "";
+    return false;
+  }
 
   DVLOG(1) << "Keystore bootstrap token updated.";
   FOR_EACH_OBSERVER(SyncEncryptionHandler::Observer, observers_,
-                    OnBootstrapTokenUpdated(key,
+                    OnBootstrapTokenUpdated(keystore_key_,
                                             KEYSTORE_BOOTSTRAP_TOKEN));
 
   Cryptographer* cryptographer = &UnlockVaultMutable(trans)->cryptographer;
