@@ -396,10 +396,7 @@ CrashGenerationServer::ClientEvent(short revents)
   }
 
   if (dump_callback_) {
-    ClientInfo info;
-
-    info.crash_server_ = this;
-    info.pid_ = crashing_pid;
+    ClientInfo info(crashing_pid, this);
 
     dump_callback_(dump_context_, &info, &minidump_filename);
   }

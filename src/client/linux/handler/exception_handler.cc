@@ -529,7 +529,7 @@ bool ExceptionHandler::WriteMinidump() {
     static_cast<void>(ftruncate(minidump_descriptor_.fd(), 0));
   }
 
-  // Allow ourselves to be dumped.
+  // Allow this process to be dumped.
   sys_prctl(PR_SET_DUMPABLE, 1);
 
   CrashContext context;
@@ -542,6 +542,22 @@ bool ExceptionHandler::WriteMinidump() {
          sizeof(context.float_state));
 #endif
   context.tid = sys_gettid();
+
+  // Add an exception stream to the minidump for better reporting.
+  memset(&context.siginfo, 0, sizeof(context.siginfo));
+  context.siginfo.si_signo = MD_EXCEPTION_CODE_LIN_DUMP_REQUESTED;
+#if defined(__i386__)
+  context.siginfo.si_addr =
+      reinterpret_cast<void*>(context.context.uc_mcontext.gregs[REG_EIP]);
+#elif defined(__x86_64__)
+  context.siginfo.si_addr =
+      reinterpret_cast<void*>(context.context.uc_mcontext.gregs[REG_RIP]);
+#elif defined(__arm__)
+  context.siginfo.si_addr =
+      reinterpret_cast<void*>(context.context.uc_mcontext.arm_pc);
+#else
+#error "This code has not been ported to your platform yet."
+#endif
 
   return GenerateDump(&context);
 }
@@ -584,6 +600,23 @@ void ExceptionHandler::UnregisterAppMemory(void* ptr) {
   if (iter != app_memory_list_.end()) {
     app_memory_list_.erase(iter);
   }
+}
+
+// static
+bool ExceptionHandler::WriteMinidumpForChild(pid_t child,
+                                             pid_t child_blamed_thread,
+                                             const string& dump_path,
+                                             MinidumpCallback callback,
+                                             void* callback_context) {
+  // This function is not run in a compromised context.
+  MinidumpDescriptor descriptor(dump_path);
+  descriptor.UpdatePath();
+  if (!google_breakpad::WriteMinidump(descriptor.path(),
+                                      child,
+                                      child_blamed_thread))
+      return false;
+
+  return callback ? callback(descriptor, callback_context, true) : true;
 }
 
 }  // namespace google_breakpad

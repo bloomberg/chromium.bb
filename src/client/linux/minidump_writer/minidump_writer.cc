@@ -686,6 +686,7 @@ class MinidumpWriter {
       // signal handler with the alternative stack, which would be deeply
       // unhelpful.
       if (static_cast<pid_t>(thread.thread_id) == GetCrashThread() &&
+          ucontext_ &&
           !dumper_->IsPostMortem()) {
         const void* stack;
         size_t stack_len;
@@ -776,8 +777,13 @@ class MinidumpWriter {
         PopSeccompStackFrame(cpu.get(), thread, stack_copy);
         thread.thread_context = cpu.location();
         if (dumper_->threads()[i] == GetCrashThread()) {
-          assert(dumper_->IsPostMortem());
           crashing_thread_context_ = cpu.location();
+          if (!dumper_->IsPostMortem()) {
+            // This is the crashing thread of a live process, but
+            // no context was provided, so set the crash address
+            // while the instruction pointer is already here.
+            dumper_->set_crash_address(GetInstructionPointer(info));
+          }
         }
       }
 
@@ -1092,6 +1098,10 @@ class MinidumpWriter {
   uintptr_t GetInstructionPointer() {
     return ucontext_->uc_mcontext.gregs[REG_EIP];
   }
+
+  uintptr_t GetInstructionPointer(const ThreadInfo& info) {
+    return info.regs.eip;
+  }
 #elif defined(__x86_64)
   uintptr_t GetStackPointer() {
     return ucontext_->uc_mcontext.gregs[REG_RSP];
@@ -1100,6 +1110,10 @@ class MinidumpWriter {
   uintptr_t GetInstructionPointer() {
     return ucontext_->uc_mcontext.gregs[REG_RIP];
   }
+
+  uintptr_t GetInstructionPointer(const ThreadInfo& info) {
+    return info.regs.rip;
+  }
 #elif defined(__ARM_EABI__)
   uintptr_t GetStackPointer() {
     return ucontext_->uc_mcontext.arm_sp;
@@ -1107,6 +1121,10 @@ class MinidumpWriter {
 
   uintptr_t GetInstructionPointer() {
     return ucontext_->uc_mcontext.arm_pc;
+  }
+
+  uintptr_t GetInstructionPointer(const ThreadInfo& info) {
+    return info.regs.uregs[15];
   }
 #else
 #error "This code has not been ported to your platform yet."
@@ -1433,6 +1451,19 @@ bool WriteMinidump(int minidump_fd, pid_t crashing_process,
                    const void* blob, size_t blob_size) {
   return WriteMinidumpImpl(NULL, minidump_fd, crashing_process, blob, blob_size,
                            MappingList(), AppMemoryList());
+}
+
+bool WriteMinidump(const char* minidump_path, pid_t process,
+                   pid_t process_blamed_thread) {
+  LinuxPtraceDumper dumper(process);
+  // MinidumpWriter will set crash address
+  dumper.set_crash_signal(MD_EXCEPTION_CODE_LIN_DUMP_REQUESTED);
+  dumper.set_crash_thread(process_blamed_thread);
+  MinidumpWriter writer(minidump_path, -1, NULL, MappingList(),
+                        AppMemoryList(), &dumper);
+  if (!writer.Init())
+    return false;
+  return writer.Dump();
 }
 
 bool WriteMinidump(const char* minidump_path, pid_t crashing_process,

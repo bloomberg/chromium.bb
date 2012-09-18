@@ -83,6 +83,14 @@ bool WriteMinidump(const char* minidump_path, pid_t crashing_process,
 bool WriteMinidump(int minidump_fd, pid_t crashing_process,
                    const void* blob, size_t blob_size);
 
+// Alternate form of WriteMinidump() that works with processes that
+// are not expected to have crashed.  If |process_blamed_thread| is
+// meaningful, it will be the one from which a crash signature is
+// extracted.  It is not expected that this function will be called
+// from a compromised context, but it is safe to do so.
+bool WriteMinidump(const char* minidump_path, pid_t process,
+                   pid_t process_blamed_thread);
+
 // These overloads also allow passing a list of known mappings and
 // a list of additional memory regions to be included in the minidump.
 bool WriteMinidump(const char* minidump_path, pid_t crashing_process,

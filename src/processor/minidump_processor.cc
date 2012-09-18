@@ -939,6 +939,9 @@ string MinidumpProcessor::GetCrashReason(Minidump *dump, u_int64_t *address) {
         case MD_EXCEPTION_CODE_LIN_SIGSYS:
           reason = "SIGSYS";
           break;
+      case MD_EXCEPTION_CODE_LIN_DUMP_REQUESTED:
+          reason = "DUMP_REQUESTED";
+          break;
         default:
           BPLOG(INFO) << "Unknown exception reason " << reason;
           break;

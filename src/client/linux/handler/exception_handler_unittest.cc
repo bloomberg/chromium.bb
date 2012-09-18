@@ -895,6 +895,25 @@ TEST(ExceptionHandlerTest, ExternalDumper) {
   unlink(templ.c_str());
 }
 
+TEST(ExceptionHandlerTest, WriteMinidumpExceptionStream) {
+  AutoTempDir temp_dir;
+  ExceptionHandler handler(MinidumpDescriptor(temp_dir.path()), NULL, NULL,
+                           NULL, false, -1);
+  ASSERT_TRUE(handler.WriteMinidump());
+
+  string minidump_path = handler.minidump_descriptor().path();
+
+  // Read the minidump and check the exception stream.
+  Minidump minidump(minidump_path);
+  ASSERT_TRUE(minidump.Read());
+  MinidumpException* exception = minidump.GetException();
+  ASSERT_TRUE(exception);
+  const MDRawExceptionStream* raw = exception->exception();
+  ASSERT_TRUE(raw);
+  EXPECT_EQ(MD_EXCEPTION_CODE_LIN_DUMP_REQUESTED,
+            raw->exception_record.exception_code);
+}
+
 TEST(ExceptionHandlerTest, GenerateMultipleDumpsWithFD) {
   AutoTempDir temp_dir;
   std::string path;
@@ -1020,4 +1039,51 @@ TEST(ExceptionHandlerTest, AdditionalMemoryRemove) {
   EXPECT_FALSE(region);
 
   delete[] memory;
+}
+
+static bool SimpleCallback(const MinidumpDescriptor& descriptor,
+                           void* context,
+                           bool succeeded) {
+  string* filename = reinterpret_cast<string*>(context);
+  *filename = descriptor.path();
+  return true;
+}
+
+TEST(ExceptionHandlerTest, WriteMinidumpForChild) {
+  int fds[2];
+  ASSERT_NE(-1, pipe(fds));
+
+  const pid_t child = fork();
+  if (child == 0) {
+    close(fds[1]);
+    char b;
+    HANDLE_EINTR(read(fds[0], &b, sizeof(b)));
+    close(fds[0]);
+    syscall(__NR_exit);
+  }
+  close(fds[0]);
+
+  AutoTempDir temp_dir;
+  string minidump_filename;
+  ASSERT_TRUE(
+    ExceptionHandler::WriteMinidumpForChild(child, child,
+                                            temp_dir.path(), SimpleCallback,
+                                            (void*)&minidump_filename));
+
+  Minidump minidump(minidump_filename);
+  ASSERT_TRUE(minidump.Read());
+  // Check that the crashing thread is the main thread of |child|
+  MinidumpException* exception = minidump.GetException();
+  ASSERT_TRUE(exception);
+  u_int32_t thread_id;
+  ASSERT_TRUE(exception->GetThreadID(&thread_id));
+  EXPECT_EQ(child, thread_id);
+
+  const MDRawExceptionStream* raw = exception->exception();
+  ASSERT_TRUE(raw);
+  EXPECT_EQ(MD_EXCEPTION_CODE_LIN_DUMP_REQUESTED,
+            raw->exception_record.exception_code);
+
+  close(fds[1]);
+  unlink(minidump_filename.c_str());
 }
