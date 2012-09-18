@@ -2,8 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(pedrosimonetti): document how to generate the data pseudo-automatically.
-!/^chrome:\/\/./.test(location.href) && (function() {
+// If you set this variable to true, then compile and run Chrome, all messages
+// sent with chrome.send() will be intercepted and their callback data will be
+// recorded. You can later see the recorded data by executing chrome.mock()
+// on Web Developer Tools' console.
+var recordMockData = false;
+
+(recordMockData || !/^chrome:\/\/./.test(location.href)) && (function() {
 
   var __chrome__ = chrome;
   var shouldRegisterData = !!window.chrome && !!window.chrome.send;
@@ -12,11 +17,12 @@
 
   // Only messages registered in the callback map will be intercepted.
   var callbackMap = {
-    'metricsHandler:logEventTime': NO_CALLBACK,
-    'metricsHandler:recordInHistogram': NO_CALLBACK,
     'getApps': 'ntp.getAppsCallback',
+    'getForeignSessions': 'ntp.setForeignSessions',
+    'getMostVisited': 'ntp.setMostVisitedPages',
     'getRecentlyClosedTabs': 'ntp.setRecentlyClosedTabs',
-    'getMostVisited': 'ntp.setMostVisitedPages'
+    'metricsHandler:logEventTime': NO_CALLBACK,
+    'metricsHandler:recordInHistogram': NO_CALLBACK
   };
 
   // TODO(pedrosimonetti): include automatically in the recorded data
@@ -176,7 +182,7 @@
           __chrome__.send(message);
         }
       }
-    },
+    }
   };
 
   //----------------------------------------------------------------------------

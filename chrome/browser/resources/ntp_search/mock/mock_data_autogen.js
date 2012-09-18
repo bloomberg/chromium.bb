@@ -42,40 +42,97 @@ chrome.mock && chrome.mock({
       'showLauncher': false
     }
   ],
-  'getRecentlyClosedTabs': [
+  'getForeignSessions': [
     [
       {
-        'sessionId': 2,
-        'tabs': [
+        'collapsed': false,
+        'deviceType': 'phone',
+        'modifiedTime': '22 mins ago',
+        'name': 'Nexus S',
+        'tag': 'session_sync_some_id',
+        'windows': [
           {
-            'direction': 'ltr',
-            'timestamp': 0,
-            'title': 'YouTube - Broadcast Yourself.',
-            'type': 'tab',
-            'url': 'http://youtube.com/'
-          },
-          {
-            'direction': 'ltr',
-            'timestamp': 0,
-            'title': 'CNN.com - Breaking News, U.S., World, Weather, ' +
-                'Entertainment & Video News',
-            'type': 'tab',
-            'url': 'http://cnn.com/'
+            'sessionId': 1,
+            'tabs': [
+              {
+                'direction': 'ltr',
+                'sessionId': 73,
+                'timestamp': 12991804155036000,
+                'title': 'Welcome To RateBeer Mobile - The best place for ' +
+                    'wireless beer',
+                'type': 'tab',
+                'url': 'http://www.ratebeer.com/m/default.asp?app=2'
+              }
+            ],
+            'timestamp': 12991804155036000,
+            'type': 'window',
+            'userVisibleTimestamp': '22 mins ago'
           }
-        ],
-        'timestamp': 1343253129.824551,
-        'type': 'window'
+        ]
       },
       {
-        'direction': 'ltr',
-        'sessionId': 1,
-        'timestamp': 1343253127.485749,
-        'title': 'Electronics, Cars, Fashion, Collectibles, Coupons and ' +
-            'More Online Shopping | eBay',
-        'type': 'tab',
-        'url': 'http://ebay.com/'
+        'collapsed': false,
+        'deviceType': 'linux',
+        'modifiedTime': '24 mins ago',
+        'name': 'Ubuntu 10.04.3 LTS',
+        'tag': 'session_sync_some_id',
+        'windows': [
+          {
+            'sessionId': 1,
+            'tabs': [
+              {
+                'direction': 'ltr',
+                'sessionId': 54,
+                'timestamp': 12991803969030000,
+                'title': 'San Francisco Restaurants, Dentists, Bars, Beauty ' +
+                    'Salons, Doctors',
+                'type': 'tab',
+                'url': 'http://www.yelp.com/'
+              },
+              {
+                'direction': 'ltr',
+                'sessionId': 58,
+                'timestamp': 12991803983228000,
+                'title': 'Google Maps',
+                'type': 'tab',
+                'url': 'https://maps.google.com/maps'
+              },
+              {
+                'direction': 'ltr',
+                'sessionId': 62,
+                'timestamp': 12991804063895000,
+                'title': 'CNN.com - Breaking News, U.S., World, Weather, ' +
+                    'Entertainment & Video News',
+                'type': 'tab',
+                'url': 'http://www.cnn.com/'
+              }
+            ],
+            'timestamp': 12991804063895000,
+            'type': 'window',
+            'userVisibleTimestamp': '24 mins ago'
+          },
+          {
+            'sessionId': 44,
+            'tabs': [
+              {
+                'direction': 'ltr',
+                'sessionId': 45,
+                'timestamp': 12991804520499000,
+                'title': 'new_tab.js - Code Search',
+                'type': 'tab',
+                'url': 'https://cs.corp.google.com/#chrome/src/chrome/browser' +
+                    '/resources/ntp4/new_tab.js&q=setForeignSessions%20' +
+                    'package:%5Echrome$&type=cs&l=539'
+              }
+            ],
+            'timestamp': 12991804520499000,
+            'type': 'window',
+            'userVisibleTimestamp': '16 mins ago'
+          }
+        ]
       }
-    ]
+    ],
+    true
   ],
   'getMostVisited': [
     [
@@ -140,6 +197,41 @@ chrome.mock && chrome.mock({
     ],
     false
   ],
+  'getRecentlyClosedTabs': [
+    [
+      {
+        'sessionId': 2,
+        'tabs': [
+          {
+            'direction': 'ltr',
+            'timestamp': 0,
+            'title': 'YouTube - Broadcast Yourself.',
+            'type': 'tab',
+            'url': 'http://youtube.com/'
+          },
+          {
+            'direction': 'ltr',
+            'timestamp': 0,
+            'title': 'CNN.com - Breaking News, U.S., World, Weather, ' +
+                'Entertainment & Video News',
+            'type': 'tab',
+            'url': 'http://cnn.com/'
+          }
+        ],
+        'timestamp': 1343253129.824551,
+        'type': 'window'
+      },
+      {
+        'direction': 'ltr',
+        'sessionId': 1,
+        'timestamp': 1343253127.485749,
+        'title': 'Electronics, Cars, Fashion, Collectibles, Coupons and ' +
+            'More Online Shopping | eBay',
+        'type': 'tab',
+        'url': 'http://ebay.com/'
+      }
+    ]
+  ],
   '__loadTimeData__': {
     'anim': true,
     'appDefaultPageName': 'Apps',
@@ -163,7 +255,7 @@ chrome.mock && chrome.mock({
     'fontsize': '75%',
     'hasattribution': false,
     'isSwipeTrackingFromScrollEventsEnabled': false,
-    'isUserSignedIn': false,
+    'isUserSignedIn': true,
     'learnMore': 'Learn more',
     'learn_more': 'Learn more',
     'login_status_advanced': '',
