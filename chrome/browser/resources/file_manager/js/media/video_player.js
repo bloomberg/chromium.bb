@@ -27,7 +27,14 @@ function FullWindowVideoControls(
       function() { chrome.fileBrowserPrivate.toggleFullscreen() },
       videoContainer);
 
-  window.addEventListener('unload', this.savePosition.bind(this));
+  window.addEventListener('unload', function() {
+    this.savePosition();
+    // Workaround for crbug.com/149957. The document is not going to be GC-ed
+    // until the last Files app window closes, but we want the media pipeline
+    // to deinitialize ASAP.
+    this.getMedia().src = '';
+    this.getMedia().load();
+  }.bind(this));
 
   this.updateStyle();
   window.addEventListener('resize', this.updateStyle.bind(this));
