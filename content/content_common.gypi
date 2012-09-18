@@ -11,7 +11,6 @@
     '../skia/skia.gyp:skia',
     '../third_party/icu/icu.gyp:icuuc',
     '../ui/ui.gyp:ui',
-    '../webkit/support/webkit_support.gyp:forms',
     '../webkit/support/webkit_support.gyp:user_agent',
   ],
   'include_dirs': [
@@ -381,6 +380,7 @@
         # implementation, and re-include what is used.
         ['exclude', '\\.(cc|mm)$'],
         ['include', '_ios\\.(cc|mm)$'],
+        ['include', '^public/common/content_client\\.cc$'],
         ['include', '^public/common/content_constants\\.cc$'],
         ['include', '^public/common/content_switches\\.cc$'],
         ['include', '^public/common/frame_navigate_params\\.cc$'],
@@ -407,6 +407,7 @@
         '../webkit/support/webkit_support.gyp:blob',
         '../webkit/support/webkit_support.gyp:database',
         '../webkit/support/webkit_support.gyp:fileapi',
+        '../webkit/support/webkit_support.gyp:forms',
         '../webkit/support/webkit_support.gyp:webkit_base',
       ],
     }],

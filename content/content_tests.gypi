@@ -14,10 +14,6 @@
         'content_browser',
         'content_common',
         '../net/net.gyp:net_test_support',
-        '../ppapi/ppapi_internal.gyp:ppapi_host',
-        '../ppapi/ppapi_internal.gyp:ppapi_proxy',
-        '../ppapi/ppapi_internal.gyp:ppapi_shared',
-        '../ppapi/ppapi_internal.gyp:ppapi_unittest_shared',
         '../skia/skia.gyp:skia',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
@@ -151,10 +147,13 @@
             ['include', '^public/test/content_test_suite_base\\.cc$'],
             ['include', '^public/test/mock_notification_observer\\.cc$'],
             ['include', '^public/test/mock_resource_context\\.cc$'],
-            ['include', '^public/test/test_browser_thread\\.cc$'],
             ['include', '^public/test/test_content_client_initializer\\.cc$'],
             ['include', '^public/test/test_notification_tracker\\.cc$'],
             ['include', '^public/test/test_utils\\.cc$'],
+            ['include', '^public/test/unittest_test_suite\\.cc$'],
+            ['include', '^test/content_test_suite\\.cc$'],
+            ['include', '^test/test_content_browser_client\\.cc$'],
+            ['include', '^test/test_content_client\\.cc$'],
           ],
         }, {  # OS != "ios"
           'dependencies': [
@@ -240,7 +239,6 @@
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../ui/ui.gyp:ui',
-        '../webkit/support/webkit_support.gyp:forms',
         '../webkit/support/webkit_support.gyp:user_agent',
       ],
       'include_dirs': [
@@ -465,9 +463,7 @@
             # implementation, and re-include what is used.
             ['exclude', '\\.(cc|mm)$'],
             ['include', '_ios\\.(cc|mm)$'],
-            ['include', '^browser/browser_thread_unittest\\.cc$'],
             ['include', '^browser/notification_service_impl_unittest\\.cc$'],
-            ['include', '^browser/speech/.*_unittest\\.cc$'],
             ['include', '^test/run_all_unittests\\.cc$'],
           ],
         }, {  # OS != "ios"
@@ -491,6 +487,7 @@
             '../webkit/support/webkit_support.gyp:database',
             '../webkit/support/webkit_support.gyp:dom_storage',
             '../webkit/support/webkit_support.gyp:fileapi',
+            '../webkit/support/webkit_support.gyp:forms',
             '../webkit/support/webkit_support.gyp:glue',
             '../webkit/support/webkit_support.gyp:quota',
             '../webkit/support/webkit_support.gyp:webkit_base',

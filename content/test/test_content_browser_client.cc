@@ -10,8 +10,6 @@
 #include "base/logging.h"
 #include "content/test/test_web_contents_view.h"
 #include "googleurl/src/gurl.h"
-#include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/base/clipboard/clipboard.h"
 
 namespace content {
 
@@ -24,9 +22,13 @@ TestContentBrowserClient::~TestContentBrowserClient() {
 WebContentsView* TestContentBrowserClient::OverrideCreateWebContentsView(
     WebContents* web_contents,
     RenderViewHostDelegateView** render_view_host_delegate_view) {
+#if defined(OS_IOS)
+  return NULL;
+#else
   TestWebContentsView* rv = new TestWebContentsView;
   *render_view_host_delegate_view = rv;
   return rv;
+#endif
 }
 
 FilePath TestContentBrowserClient::GetDefaultDownloadDirectory() {

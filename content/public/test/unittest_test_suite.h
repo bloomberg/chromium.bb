@@ -30,8 +30,10 @@ class UnitTestTestSuite {
  private:
   scoped_ptr<base::TestSuite> test_suite_;
 
+#if !defined(OS_IOS)
   class UnitTestWebKitPlatformSupport;
   scoped_ptr<UnitTestWebKitPlatformSupport> webkit_platform_support_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(UnitTestTestSuite);
 };

@@ -13,6 +13,7 @@
 
 namespace content {
 
+#if !defined(OS_IOS)
 // A stubbed out WebKit platform support impl.
 class UnitTestTestSuite::UnitTestWebKitPlatformSupport
     : public WebKit::WebKitPlatformSupport {
@@ -37,16 +38,21 @@ class UnitTestTestSuite::UnitTestWebKitPlatformSupport
  private:
   webkit::WebCompositorSupportImpl compositor_support_;
 };
+#endif  // !OS_IOS
 
 UnitTestTestSuite::UnitTestTestSuite(base::TestSuite* test_suite)
     : test_suite_(test_suite) {
   DCHECK(test_suite);
+#if !defined(OS_IOS)
   webkit_platform_support_.reset(new UnitTestWebKitPlatformSupport);
   WebKit::initialize(webkit_platform_support_.get());
+#endif
 }
 
 UnitTestTestSuite::~UnitTestTestSuite() {
+#if !defined(OS_IOS)
   WebKit::shutdown();
+#endif
 }
 
 int UnitTestTestSuite::Run() {

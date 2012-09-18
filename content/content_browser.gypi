@@ -845,16 +845,13 @@
       'sources/': [
         # iOS only needs a small portion of content; exclude all the
         # implementation, and re-include what is used.
-        ['exclude', '\\.cc$'],
-        ['exclude', '\\.mm$'],
+        ['exclude', '\\.(cc|mm)$'],
         ['include', '_ios\\.(cc|mm)$'],
+        ['include', '^public/browser/content_browser_client\\.cc$'],
         ['include', '^public/browser/notification_registrar\\.cc$'],
         ['include', '^public/browser/speech_recognition_'],
         ['include', '^browser/browser_context\\.cc$'],
         ['include', '^browser/notification_service_impl\\.cc$'],
-        # Pull in all but one file from speech.
-        ['include', '^browser/speech/'],
-        ['exclude', '^browser/speech/input_tag_speech_dispatcher_host\\.cc$$'],
       ],
     }, {  # OS!="ios"
       'dependencies': [

@@ -7,8 +7,11 @@
 #include "base/logging.h"
 #include "base/string_piece.h"
 #include "ui/gfx/image/image.h"
-#include "webkit/plugins/ppapi/host_globals.h"
 #include "webkit/user_agent/user_agent.h"
+
+#if !defined(OS_IOS)
+#include "webkit/plugins/ppapi/host_globals.h"
+#endif
 
 namespace content {
 
@@ -35,7 +38,11 @@ const std::string& GetUserAgent(const GURL& url) {
 }
 
 webkit::ppapi::HostGlobals* GetHostGlobals() {
+#if defined(OS_IOS)
+  return NULL;
+#else
   return webkit::ppapi::HostGlobals::Get();
+#endif
 }
 
 ContentClient::ContentClient()
