@@ -529,7 +529,6 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
 
   // Ensure any field trials specified on the command line are initialized.
   // Also stop the metrics service so that we don't pollute UMA.
-#ifndef NDEBUG
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kForceFieldTrials)) {
     std::string persistent = command_line->GetSwitchValueASCII(
@@ -538,7 +537,6 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
     CHECK(ret) << "Invalid --" << switches::kForceFieldTrials <<
                   " list specified.";
   }
-#endif  // NDEBUG
 
   chrome_variations::VariationsService* variations_service =
       browser_process_->variations_service();
@@ -581,11 +579,9 @@ bool ChromeBrowserMainParts::IsMetricsReportingEnabled() {
     return true;
 
   bool enabled = false;
-#ifndef NDEBUG
   // The debug build doesn't send UMA logs when FieldTrials are forced.
   if (command_line->HasSwitch(switches::kForceFieldTrials))
     return false;
-#endif  // #ifndef NDEBUG
 
 #if defined(GOOGLE_CHROME_BUILD)
 #if defined(OS_CHROMEOS)
