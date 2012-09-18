@@ -19,9 +19,11 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_paths.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/test/test_utils.h"
 #include "ui/base/dialogs/select_file_dialog.h"
 #include "ui/base/dialogs/selected_file_info.h"
@@ -112,8 +114,8 @@ class SelectFileDialogExtensionBrowserTest : public ExtensionBrowserTest {
   // Creates a file system mount point for a directory.
   void AddMountPoint(const FilePath& path) {
     fileapi::ExternalFileSystemMountPointProvider* provider =
-        BrowserContext::GetFileSystemContext(browser()->profile())->
-            external_provider();
+        BrowserContext::GetDefaultStoragePartition(browser()->profile())->
+            GetFileSystemContext()->external_provider();
     provider->AddLocalMountPoint(path);
   }
 

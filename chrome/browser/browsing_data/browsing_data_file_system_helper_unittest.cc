@@ -12,6 +12,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browsing_data/browsing_data_file_system_helper.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/test/test_browser_thread.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_types.h"
@@ -69,7 +70,10 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
             BrowserThread::FILE_USER_BLOCKING, &message_loop_),
         io_thread_(BrowserThread::IO, &message_loop_) {
     profile_.reset(new TestingProfile());
-    helper_ = BrowsingDataFileSystemHelper::Create(profile_.get());
+
+    helper_ = BrowsingDataFileSystemHelper::Create(
+        BrowserContext::GetDefaultStoragePartition(profile_.get())->
+            GetFileSystemContext());
     message_loop_.RunAllPending();
     canned_helper_ = new CannedBrowsingDataFileSystemHelper(profile_.get());
   }
@@ -148,8 +152,8 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
   // Sets up kOrigin1 with a temporary file system, kOrigin2 with a persistent
   // file system, and kOrigin3 with both.
   virtual void PopulateTestFileSystemData() {
-    sandbox_ = BrowserContext::GetFileSystemContext(profile_.get())->
-        sandbox_provider();
+    sandbox_ = BrowserContext::GetDefaultStoragePartition(profile_.get())->
+        GetFileSystemContext()->sandbox_provider();
 
     CreateDirectoryForOriginAndType(kOrigin1, kTemporary);
     CreateDirectoryForOriginAndType(kOrigin2, kPersistent);

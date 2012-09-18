@@ -12,25 +12,28 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
-#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_quota_util.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
 
-using content::BrowserContext;
 using content::BrowserThread;
+
+namespace fileapi {
+class FileSystemContext;
+}
 
 namespace {
 
 // An implementation of the BrowsingDataFileSystemHelper interface that pulls
-// data from a given |profile| and returns a list of FileSystemInfo items to a
-// client.
+// data from a given |filesystem_context| and returns a list of FileSystemInfo
+// items to a client.
 class BrowsingDataFileSystemHelperImpl : public BrowsingDataFileSystemHelper {
  public:
   // BrowsingDataFileSystemHelper implementation
-  explicit BrowsingDataFileSystemHelperImpl(Profile* profile);
+  explicit BrowsingDataFileSystemHelperImpl(
+      fileapi::FileSystemContext* filesystem_context);
   virtual void StartFetching(const base::Callback<
       void(const std::list<FileSystemInfo>&)>& callback) OVERRIDE;
   virtual void DeleteFileSystemOrigin(const GURL& origin) OVERRIDE;
@@ -77,8 +80,8 @@ class BrowsingDataFileSystemHelperImpl : public BrowsingDataFileSystemHelper {
 };
 
 BrowsingDataFileSystemHelperImpl::BrowsingDataFileSystemHelperImpl(
-    Profile* profile)
-    : filesystem_context_(BrowserContext::GetFileSystemContext(profile)),
+    fileapi::FileSystemContext* filesystem_context)
+    : filesystem_context_(filesystem_context),
       is_fetching_(false) {
   DCHECK(filesystem_context_);
 }
@@ -184,8 +187,8 @@ BrowsingDataFileSystemHelper::FileSystemInfo::~FileSystemInfo() {}
 
 // static
 BrowsingDataFileSystemHelper* BrowsingDataFileSystemHelper::Create(
-    Profile* profile) {
-  return new BrowsingDataFileSystemHelperImpl(profile);
+    fileapi::FileSystemContext* filesystem_context) {
+  return new BrowsingDataFileSystemHelperImpl(filesystem_context);
 }
 
 CannedBrowsingDataFileSystemHelper::CannedBrowsingDataFileSystemHelper(

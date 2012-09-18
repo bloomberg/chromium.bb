@@ -18,6 +18,10 @@
 #include "googleurl/src/gurl.h"
 #include "webkit/fileapi/file_system_types.h"
 
+namespace fileapi {
+class FileSystemContext;
+}
+
 class Profile;
 
 // Defines an interface for classes that deal with aggregating and deleting
@@ -70,7 +74,8 @@ class BrowsingDataFileSystemHelper
   //
   // The BrowsingDataFileSystemHelper will not change the profile itself, but
   // can modify data it contains (by removing file systems).
-  static BrowsingDataFileSystemHelper* Create(Profile* profile);
+  static BrowsingDataFileSystemHelper* Create(
+      fileapi::FileSystemContext* file_system_context);
 
   // Starts the process of fetching file system data, which will call |callback|
   // upon completion, passing it a constant list of FileSystemInfo objects.

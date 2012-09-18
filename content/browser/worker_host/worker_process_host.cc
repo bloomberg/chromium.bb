@@ -46,6 +46,7 @@
 #include "ipc/ipc_switches.h"
 #include "net/base/mime_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "ui/base/ui_base_switches.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
@@ -70,18 +71,23 @@ class URLRequestContextSelector
     : public ResourceMessageFilter::URLRequestContextSelector {
  public:
   explicit URLRequestContextSelector(
-      net::URLRequestContext* url_request_context)
-      : url_request_context_(url_request_context) {
+      net::URLRequestContextGetter* url_request_context,
+      net::URLRequestContextGetter* media_url_request_context)
+      : url_request_context_(url_request_context),
+        media_url_request_context_(media_url_request_context) {
   }
   virtual ~URLRequestContextSelector() {}
 
   virtual net::URLRequestContext* GetRequestContext(
       ResourceType::Type resource_type) {
-    return url_request_context_;
+    if (resource_type == ResourceType::MEDIA)
+      return media_url_request_context_->GetURLRequestContext();
+    return url_request_context_->GetURLRequestContext();
   }
 
  private:
-  net::URLRequestContext* url_request_context_;
+  net::URLRequestContextGetter* url_request_context_;
+  net::URLRequestContextGetter* media_url_request_context_;
 };
 
 }  // namespace
@@ -254,16 +260,17 @@ void WorkerProcessHost::CreateMessageFilters(int render_process_id) {
       content::GetChromeBlobStorageContextForResourceContext(
           resource_context_);
 
-  // TODO(michaeln): This is hacky but correct. The request context should be
-  // more directly accessible than digging it out of the appcache service.
-  net::URLRequestContext* request_context =
-      partition_.appcache_service()->request_context();
+  net::URLRequestContextGetter* url_request_context =
+      partition_.url_request_context();
+  net::URLRequestContextGetter* media_url_request_context =
+      partition_.url_request_context();
 
   ResourceMessageFilter* resource_message_filter = new ResourceMessageFilter(
       process_->GetData().id, content::PROCESS_TYPE_WORKER, resource_context_,
       partition_.appcache_service(),
       blob_storage_context,
-      new URLRequestContextSelector(request_context));
+      new URLRequestContextSelector(url_request_context,
+                                    media_url_request_context));
   process_->GetHost()->AddFilter(resource_message_filter);
 
   worker_message_filter_ = new WorkerMessageFilter(
@@ -276,7 +283,7 @@ void WorkerProcessHost::CreateMessageFilters(int render_process_id) {
       process_->GetData().id));
   process_->GetHost()->AddFilter(new FileAPIMessageFilter(
       process_->GetData().id,
-      request_context,
+      url_request_context,
       partition_.filesystem_context(),
       blob_storage_context));
   process_->GetHost()->AddFilter(new FileUtilitiesMessageFilter(
@@ -286,8 +293,11 @@ void WorkerProcessHost::CreateMessageFilters(int render_process_id) {
       new DatabaseMessageFilter(partition_.database_tracker()));
 
   SocketStreamDispatcherHost* socket_stream_dispatcher_host =
-      new SocketStreamDispatcherHost(render_process_id,
-          new URLRequestContextSelector(request_context), resource_context_);
+      new SocketStreamDispatcherHost(
+          render_process_id,
+          new URLRequestContextSelector(url_request_context,
+                                        media_url_request_context),
+          resource_context_);
   process_->GetHost()->AddFilter(socket_stream_dispatcher_host);
   process_->GetHost()->AddFilter(
       new content::WorkerDevToolsMessageFilter(process_->GetData().id));

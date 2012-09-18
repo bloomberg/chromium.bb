@@ -93,15 +93,14 @@ DataDeleter::DataDeleter(
     extension_request_context_ = profile->GetRequestContextForExtensions();
   } else if (is_storage_isolated) {
     extension_request_context_ =
-        profile->GetRequestContextForIsolatedApp(extension_id);
+        profile->GetRequestContextForStoragePartition(extension_id);
     isolated_app_path_ =
         profile->GetPath().Append(
             content::StoragePartition::GetPartitionPath(extension_id));
   } else {
     extension_request_context_ = profile->GetRequestContext();
   }
-
-  file_system_context_ = BrowserContext::GetFileSystemContext(profile);
+  file_system_context_ = storage_partition->GetFileSystemContext();
   indexed_db_context_ = storage_partition->GetIndexedDBContext();
 
   storage_origin_ = storage_origin;

@@ -354,7 +354,7 @@ RenderProcessHostImpl::RenderProcessHostImpl(
   // requests them.
   // This is for the filesystem sandbox.
   ChildProcessSecurityPolicyImpl::GetInstance()->GrantPermissionsForFile(
-      GetID(), browser_context->GetPath().Append(
+      GetID(), storage_partition_impl->GetPath().Append(
           fileapi::SandboxMountPointProvider::kNewFileSystemDirectory),
       base::PLATFORM_FILE_OPEN |
       base::PLATFORM_FILE_CREATE |
@@ -371,14 +371,14 @@ RenderProcessHostImpl::RenderProcessHostImpl(
   // This is so that we can read and move stuff out of the old filesystem
   // sandbox.
   ChildProcessSecurityPolicyImpl::GetInstance()->GrantPermissionsForFile(
-      GetID(), browser_context->GetPath().Append(
+      GetID(), storage_partition_impl_->GetPath().Append(
           fileapi::SandboxMountPointProvider::kOldFileSystemDirectory),
       base::PLATFORM_FILE_READ | base::PLATFORM_FILE_WRITE |
       base::PLATFORM_FILE_WRITE_ATTRIBUTES | base::PLATFORM_FILE_ENUMERATE);
   // This is so that we can rename the old sandbox out of the way so that we
   // know we've taken care of it.
   ChildProcessSecurityPolicyImpl::GetInstance()->GrantPermissionsForFile(
-      GetID(), browser_context->GetPath().Append(
+      GetID(), storage_partition_impl_->GetPath().Append(
           fileapi::SandboxMountPointProvider::kRenamedOldFileSystemDirectory),
       base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_CREATE_ALWAYS |
       base::PLATFORM_FILE_WRITE);
@@ -562,22 +562,24 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 #endif
   channel_->AddFilter(
       GetContentClient()->browser()->AllowPepperPrivateFileAPI() ?
-      new PepperUnsafeFileMessageFilter(GetID(), browser_context->GetPath()) :
-      new PepperFileMessageFilter(GetID()));
+          new PepperUnsafeFileMessageFilter(
+              GetID(),
+              storage_partition_impl_->GetPath()) :
+          new PepperFileMessageFilter(GetID()));
   channel_->AddFilter(new PepperMessageFilter(PepperMessageFilter::RENDERER,
                                               GetID(), browser_context));
 #if defined(ENABLE_INPUT_SPEECH)
   channel_->AddFilter(new speech::InputTagSpeechDispatcherHost(
-      GetID(), browser_context->GetRequestContext(),
+      GetID(), storage_partition_impl_->GetURLRequestContext(),
       browser_context->GetSpeechRecognitionPreferences()));
   channel_->AddFilter(new speech::SpeechRecognitionDispatcherHost(
-      GetID(), browser_context->GetRequestContext(),
+      GetID(), storage_partition_impl_->GetURLRequestContext(),
       browser_context->GetSpeechRecognitionPreferences()));
 #endif
   channel_->AddFilter(new FileAPIMessageFilter(
       GetID(),
-      browser_context->GetRequestContext(),
-      BrowserContext::GetFileSystemContext(browser_context),
+      storage_partition_impl_->GetURLRequestContext(),
+      storage_partition_impl_->GetFileSystemContext(),
       ChromeBlobStorageContext::GetFor(browser_context)));
   channel_->AddFilter(new OrientationMessageFilter());
   channel_->AddFilter(new FileUtilitiesMessageFilter(GetID()));
@@ -601,6 +603,8 @@ void RenderProcessHostImpl::CreateMessageFilters() {
           GetID(),
           resource_context,
           WorkerStoragePartition(
+              storage_partition_impl_->GetURLRequestContext(),
+              storage_partition_impl_->GetMediaURLRequestContext(),
               storage_partition_impl_->GetAppCacheService(),
               storage_partition_impl_->GetFileSystemContext(),
               storage_partition_impl_->GetDatabaseTracker(),

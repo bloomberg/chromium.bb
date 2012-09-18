@@ -18,6 +18,10 @@ namespace fileapi {
 class FileSystemContext;
 }
 
+namespace net {
+class URLRequestContextGetter;
+}
+
 namespace quota {
 class QuotaManager;
 }
@@ -41,6 +45,8 @@ class DOMStorageContext;
 class StoragePartition {
  public:
   virtual FilePath GetPath() = 0;
+  virtual net::URLRequestContextGetter* GetURLRequestContext() = 0;
+  virtual net::URLRequestContextGetter* GetMediaURLRequestContext() = 0;
   virtual quota::QuotaManager* GetQuotaManager() = 0;
   virtual appcache::AppCacheService* GetAppCacheService() = 0;
   virtual fileapi::FileSystemContext* GetFileSystemContext() = 0;

@@ -680,7 +680,7 @@ net::URLRequestContextGetter* ProfileImpl::GetRequestContextForRenderProcess(
     const extensions::Extension* installed_app = extension_service->
         GetInstalledAppForRenderer(renderer_child_id);
     if (installed_app && installed_app->is_storage_isolated())
-      return GetRequestContextForIsolatedApp(installed_app->id());
+      return GetRequestContextForStoragePartition(installed_app->id());
   }
 
   content::RenderProcessHost* rph = content::RenderProcessHost::FromID(
@@ -692,7 +692,7 @@ net::URLRequestContextGetter* ProfileImpl::GetRequestContextForRenderProcess(
     // non-persistent context using the RPH's id.
     std::string id("guest-");
     id.append(base::IntToString(renderer_child_id));
-    return GetRequestContextForIsolatedApp(id);
+    return GetRequestContextForStoragePartition(id);
   }
 
   return GetRequestContext();
@@ -730,6 +730,12 @@ ProfileImpl::GetMediaRequestContextForRenderProcess(
   return io_data_.GetMediaRequestContextGetter();
 }
 
+net::URLRequestContextGetter*
+ProfileImpl::GetMediaRequestContextForStoragePartition(
+    const std::string& partition_id) {
+  return io_data_.GetIsolatedMediaRequestContextGetter(partition_id);
+}
+
 content::ResourceContext* ProfileImpl::GetResourceContext() {
   return io_data_.GetResourceContext();
 }
@@ -738,9 +744,9 @@ net::URLRequestContextGetter* ProfileImpl::GetRequestContextForExtensions() {
   return io_data_.GetExtensionsRequestContextGetter();
 }
 
-net::URLRequestContextGetter* ProfileImpl::GetRequestContextForIsolatedApp(
-    const std::string& app_id) {
-  return io_data_.GetIsolatedAppRequestContextGetter(app_id);
+net::URLRequestContextGetter* ProfileImpl::GetRequestContextForStoragePartition(
+    const std::string& partition_id) {
+  return io_data_.GetIsolatedAppRequestContextGetter(partition_id);
 }
 
 net::SSLConfigService* ProfileImpl::GetSSLConfigService() {

@@ -30,6 +30,10 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+namespace fileapi {
+class FileSystemContext;
+}
+
 namespace options {
 
 CookiesViewHandler::CookiesViewHandler()
@@ -194,6 +198,8 @@ void CookiesViewHandler::EnsureCookiesTreeModelCreated() {
         content::BrowserContext::GetDefaultStoragePartition(profile);
     content::IndexedDBContext* indexed_db_context =
         storage_partition->GetIndexedDBContext();
+    fileapi::FileSystemContext* file_system_context =
+        storage_partition->GetFileSystemContext();
     apps_map[std::string()] = new LocalDataContainer(
         "Site Data", std::string(),
         new BrowsingDataCookieHelper(profile->GetRequestContext()),
@@ -202,7 +208,7 @@ void CookiesViewHandler::EnsureCookiesTreeModelCreated() {
         NULL,
         new BrowsingDataAppCacheHelper(profile),
         BrowsingDataIndexedDBHelper::Create(indexed_db_context),
-        BrowsingDataFileSystemHelper::Create(profile),
+        BrowsingDataFileSystemHelper::Create(file_system_context),
         BrowsingDataQuotaHelper::Create(profile),
         BrowsingDataServerBoundCertHelper::Create(profile),
         BrowsingDataFlashLSOHelper::Create(profile));
@@ -223,7 +229,7 @@ void CookiesViewHandler::EnsureCookiesTreeModelCreated() {
            it != extensions->end(); ++it) {
         if ((*it)->is_storage_isolated()) {
           net::URLRequestContextGetter* context_getter =
-              profile->GetRequestContextForIsolatedApp((*it)->id());
+              profile->GetRequestContextForStoragePartition((*it)->id());
           // TODO(nasko): When new types of storage are isolated, add the
           // appropriate browsing data helper objects to the constructor.
           // For now, just cookies are isolated, so other parameters are NULL.

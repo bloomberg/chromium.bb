@@ -10,7 +10,9 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/disks/mock_disk_mount_manager.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/storage_partition.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
 
@@ -186,8 +188,8 @@ class ExtensionFileBrowserPrivateApiTest : public ExtensionApiTest {
 
   void AddTmpMountPoint() {
     fileapi::ExternalFileSystemMountPointProvider* provider =
-        BrowserContext::GetFileSystemContext(browser()->profile())->
-            external_provider();
+        BrowserContext::GetDefaultStoragePartition(browser()->profile())->
+            GetFileSystemContext()->external_provider();
     provider->AddLocalMountPoint(test_mount_point_);
   }
 

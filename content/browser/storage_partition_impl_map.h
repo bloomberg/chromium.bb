@@ -38,8 +38,7 @@ class StoragePartitionImplMap : public base::SupportsUserData::Data {
   // TODO(ajwong): Is there a way to make it so that Get()'s implementation
   // doesn't need to be aware of this ordering?  Revisit when refactoring
   // ResourceContext and AppCache to respect storage partitions.
-  void PostCreateInitialization(StoragePartitionImpl* partition,
-                                net::URLRequestContextGetter* request_context);
+  void PostCreateInitialization(StoragePartitionImpl* partition);
 
   BrowserContext* browser_context_;  // Not Owned.
   std::map<std::string, StoragePartitionImpl*> partitions_;

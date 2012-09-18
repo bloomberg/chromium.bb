@@ -24,6 +24,7 @@
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/storage_partition.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
 
@@ -140,7 +141,8 @@ void DriveSystemService::AddDriveMountPoint() {
 
   const FilePath mount_point = gdata::util::GetDriveMountPointPath();
   fileapi::ExternalFileSystemMountPointProvider* provider =
-      BrowserContext::GetFileSystemContext(profile_)->external_provider();
+      BrowserContext::GetDefaultStoragePartition(profile_)->
+          GetFileSystemContext()->external_provider();
   if (provider && !provider->HasMountPoint(mount_point)) {
     provider->AddRemoteMountPoint(
         mount_point,
@@ -156,7 +158,8 @@ void DriveSystemService::RemoveDriveMountPoint() {
 
   const FilePath mount_point = gdata::util::GetDriveMountPointPath();
   fileapi::ExternalFileSystemMountPointProvider* provider =
-      BrowserContext::GetFileSystemContext(profile_)->external_provider();
+      BrowserContext::GetDefaultStoragePartition(profile_)->
+          GetFileSystemContext()->external_provider();
   if (provider && provider->HasMountPoint(mount_point))
     provider->RemoveMountPoint(mount_point);
 }

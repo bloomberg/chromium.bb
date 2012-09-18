@@ -14,6 +14,10 @@ namespace fileapi {
 class FileSystemContext;
 }  // namespace fileapi
 
+namespace net {
+class URLRequestContextGetter;
+}
+
 namespace webkit_database {
 class DatabaseTracker;
 }  // namespace webkit_database
@@ -32,10 +36,13 @@ class DatabaseTracker;
 // it which makes it look awkward as a struct.
 class WorkerStoragePartition {
  public:
-  WorkerStoragePartition(ChromeAppCacheService* appcache_service,
-                         fileapi::FileSystemContext* filesystem_context,
-                         webkit_database::DatabaseTracker* database_tracker,
-                         IndexedDBContextImpl* indexed_db_context);
+  WorkerStoragePartition(
+      net::URLRequestContextGetter* url_request_context,
+      net::URLRequestContextGetter* media_url_request_context,
+      ChromeAppCacheService* appcache_service,
+      fileapi::FileSystemContext* filesystem_context,
+      webkit_database::DatabaseTracker* database_tracker,
+      IndexedDBContextImpl* indexed_db_context);
   ~WorkerStoragePartition();
 
   // Declaring so these don't get inlined which has the unfortunate effect of
@@ -45,6 +52,14 @@ class WorkerStoragePartition {
   const WorkerStoragePartition& operator=(const WorkerStoragePartition& rhs);
 
   bool Equals(const WorkerStoragePartition& other) const;
+
+  net::URLRequestContextGetter* url_request_context() const {
+    return url_request_context_.get();
+  }
+
+  net::URLRequestContextGetter* media_url_request_context() const {
+    return media_url_request_context_.get();
+  }
 
   ChromeAppCacheService* appcache_service() const {
     return appcache_service_.get();
@@ -65,6 +80,8 @@ class WorkerStoragePartition {
  private:
   void Copy(const WorkerStoragePartition& other);
 
+  scoped_refptr<net::URLRequestContextGetter> url_request_context_;
+  scoped_refptr<net::URLRequestContextGetter> media_url_request_context_;
   scoped_refptr<ChromeAppCacheService> appcache_service_;
   scoped_refptr<fileapi::FileSystemContext> filesystem_context_;
   scoped_refptr<webkit_database::DatabaseTracker> database_tracker_;

@@ -41,6 +41,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
@@ -304,7 +305,8 @@ bool ConvertFileToFileSystemUrl(
 bool ConvertFileToRelativeFileSystemPath(
     Profile* profile, const FilePath& full_file_path, FilePath* virtual_path) {
   fileapi::ExternalFileSystemMountPointProvider* provider =
-      BrowserContext::GetFileSystemContext(profile)->external_provider();
+      BrowserContext::GetDefaultStoragePartition(profile)->
+          GetFileSystemContext()->external_provider();
   if (!provider)
     return false;
 
@@ -587,7 +589,8 @@ bool ExecuteDefaultHandler(Profile* profile, const FilePath& path) {
     // If File Browser has not been open yet then it did not request access
     // to the file system. Do it now.
     fileapi::ExternalFileSystemMountPointProvider* external_provider =
-        BrowserContext::GetFileSystemContext(profile)->external_provider();
+        BrowserContext::GetDefaultStoragePartition(
+            profile)->GetFileSystemContext()->external_provider();
     if (!external_provider)
       return false;
     external_provider->GrantFullAccessToExtension(source_url.host());

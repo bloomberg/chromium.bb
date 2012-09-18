@@ -32,7 +32,8 @@ void ChromeAppCacheService::InitializeOnIOThread(
   resource_context_ = resource_context;
 
   // The |request_context_getter| can be NULL in some unit tests.
-  // TODO(awong): TestProfile is difficult to work with. The
+  //
+  // TODO(ajwong): TestProfile is difficult to work with. The
   // SafeBrowsing tests require that GetRequestContext return NULL
   // so we can't depend on having a non-NULL value here. See crbug/149783.
   if (request_context_getter)

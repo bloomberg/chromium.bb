@@ -237,17 +237,13 @@ class Profile : public content::BrowserContext {
   // Returns the main request context.
   virtual net::URLRequestContextGetter* GetRequestContext() = 0;
 
-  virtual net::URLRequestContextGetter* GetRequestContextForStoragePartition(
-      const std::string& partition_id) OVERRIDE;
-
   // Returns the request context used for extension-related requests.  This
   // is only used for a separate cookie store currently.
   virtual net::URLRequestContextGetter* GetRequestContextForExtensions() = 0;
 
-  // Returns the request context used within an installed app that has
-  // requested isolated storage.
-  virtual net::URLRequestContextGetter* GetRequestContextForIsolatedApp(
-      const std::string& app_id) = 0;
+  // Returns the request context used within |partition_id|.
+  virtual net::URLRequestContextGetter* GetRequestContextForStoragePartition(
+      const std::string& partition_id) = 0;
 
   // Returns the SSLConfigService for this profile.
   virtual net::SSLConfigService* GetSSLConfigService() = 0;

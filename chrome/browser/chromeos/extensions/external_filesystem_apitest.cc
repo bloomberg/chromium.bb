@@ -25,8 +25,10 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "webkit/fileapi/file_system_context.h"
@@ -165,8 +167,8 @@ class FileSystemExtensionApiTest : public ExtensionApiTest {
   // Adds a local mount point at at mount point /tmp.
   void AddTmpMountPoint() {
     fileapi::ExternalFileSystemMountPointProvider* provider =
-        BrowserContext::GetFileSystemContext(browser()->profile())->
-            external_provider();
+        BrowserContext::GetDefaultStoragePartition(
+            browser()->profile())->GetFileSystemContext()->external_provider();
     provider->AddLocalMountPoint(test_mount_point_);
   }
 

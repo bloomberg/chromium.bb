@@ -103,13 +103,6 @@ DownloadManager* BrowserContext::GetDownloadManager(
       context, kDownloadManagerKeyName);
 }
 
-fileapi::FileSystemContext* BrowserContext::GetFileSystemContext(
-    BrowserContext* browser_context) {
-  // TODO(ajwong): Change this API to require a SiteInstance instead of
-  // using GetDefaultStoragePartition().
-  return GetDefaultStoragePartition(browser_context)->GetFileSystemContext();
-}
-
 StoragePartition* BrowserContext::GetStoragePartition(
     BrowserContext* browser_context,
     SiteInstance* site_instance) {

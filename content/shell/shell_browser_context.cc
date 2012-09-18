@@ -125,6 +125,12 @@ net::URLRequestContextGetter*
 }
 
 net::URLRequestContextGetter*
+    ShellBrowserContext::GetMediaRequestContextForStoragePartition(
+        const std::string& partition_id) {
+  return GetRequestContext();
+}
+
+net::URLRequestContextGetter*
     ShellBrowserContext::GetRequestContextForStoragePartition(
         const std::string& partition_id)  {
   return NULL;

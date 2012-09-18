@@ -38,6 +38,9 @@ class TestBrowserContext : public BrowserContext {
   virtual net::URLRequestContextGetter* GetMediaRequestContext() OVERRIDE;
   virtual net::URLRequestContextGetter* GetMediaRequestContextForRenderProcess(
       int renderer_child_id) OVERRIDE;
+  virtual net::URLRequestContextGetter*
+      GetMediaRequestContextForStoragePartition(
+          const std::string& partition_id) OVERRIDE;
   virtual ResourceContext* GetResourceContext() OVERRIDE;
   virtual GeolocationPermissionContext*
       GetGeolocationPermissionContext() OVERRIDE;

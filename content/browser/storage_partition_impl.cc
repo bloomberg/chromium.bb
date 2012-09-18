@@ -7,6 +7,7 @@
 #include "content/browser/fileapi/browser_file_system_helper.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "webkit/database/database_tracker.h"
 #include "webkit/quota/quota_manager.h"
 
@@ -147,6 +148,15 @@ FilePath StoragePartitionImpl::GetPath() {
   return partition_path_;
 }
 
+net::URLRequestContextGetter* StoragePartitionImpl::GetURLRequestContext() {
+  return url_request_context_;
+}
+
+net::URLRequestContextGetter*
+StoragePartitionImpl::GetMediaURLRequestContext() {
+  return media_url_request_context_;
+}
+
 quota::QuotaManager* StoragePartitionImpl::GetQuotaManager() {
   return quota_manager_;
 }
@@ -169,6 +179,16 @@ DOMStorageContextImpl* StoragePartitionImpl::GetDOMStorageContext() {
 
 IndexedDBContextImpl* StoragePartitionImpl::GetIndexedDBContext() {
   return indexed_db_context_;
+}
+
+void StoragePartitionImpl::SetURLRequestContext(
+    net::URLRequestContextGetter* url_request_context) {
+  url_request_context_ = url_request_context;
+}
+
+void StoragePartitionImpl::SetMediaURLRequestContext(
+    net::URLRequestContextGetter* media_url_request_context) {
+  media_url_request_context_ = media_url_request_context;
 }
 
 }  // namespace content

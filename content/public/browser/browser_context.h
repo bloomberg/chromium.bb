@@ -10,10 +10,6 @@
 #include "base/supports_user_data.h"
 #include "content/common/content_export.h"
 
-namespace fileapi {
-class FileSystemContext;
-}
-
 namespace net {
 class URLRequestContextGetter;
 }
@@ -47,8 +43,6 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
       StoragePartitionCallback;
 
   static DownloadManager* GetDownloadManager(BrowserContext* browser_context);
-  static fileapi::FileSystemContext* GetFileSystemContext(
-      BrowserContext* browser_context);
 
   static content::StoragePartition* GetStoragePartition(
       BrowserContext* browser_context, SiteInstance* site_instance);
@@ -111,6 +105,9 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // context and renderer process.
   virtual net::URLRequestContextGetter* GetMediaRequestContextForRenderProcess(
       int renderer_child_id) = 0;
+  virtual net::URLRequestContextGetter*
+      GetMediaRequestContextForStoragePartition(
+          const std::string& partition_id) = 0;
 
   // Returns the resource context.
   virtual ResourceContext* GetResourceContext() = 0;

@@ -35,6 +35,7 @@
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_persistent_store_info.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/test/download_test_observer.h"
@@ -680,7 +681,8 @@ class HTML5FileWriter {
       events_listener_(events_listener),
       blob_data_(new webkit_blob::BlobData()),
       payload_(payload),
-      fs_(BrowserContext::GetFileSystemContext(profile_)) {
+      fs_(BrowserContext::GetDefaultStoragePartition(profile_)->
+          GetFileSystemContext()) {
     CHECK(profile_);
     CHECK(events_listener_);
     CHECK(fs_);

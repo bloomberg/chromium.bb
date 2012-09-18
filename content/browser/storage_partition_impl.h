@@ -23,10 +23,12 @@ class StoragePartitionImpl : public StoragePartition {
   // need 3 pieces of info from it.
   static StoragePartitionImpl* Create(BrowserContext* context,
                                       const std::string& partition_id,
-                                      const FilePath& partition_path);
+                                      const FilePath& profile_path);
 
   // StoragePartition interface.
   virtual FilePath GetPath() OVERRIDE;
+  virtual net::URLRequestContextGetter* GetURLRequestContext() OVERRIDE;
+  virtual net::URLRequestContextGetter* GetMediaURLRequestContext() OVERRIDE;
   virtual quota::QuotaManager* GetQuotaManager() OVERRIDE;
   virtual ChromeAppCacheService* GetAppCacheService() OVERRIDE;
   virtual fileapi::FileSystemContext* GetFileSystemContext() OVERRIDE;
@@ -35,15 +37,36 @@ class StoragePartitionImpl : public StoragePartition {
   virtual IndexedDBContextImpl* GetIndexedDBContext() OVERRIDE;
 
  private:
-  StoragePartitionImpl(const FilePath& partition_path,
-                       quota::QuotaManager* quota_manager,
-                       ChromeAppCacheService* appcache_service,
-                       fileapi::FileSystemContext* filesystem_context,
-                       webkit_database::DatabaseTracker* database_tracker,
-                       DOMStorageContextImpl* dom_storage_context,
-                       IndexedDBContextImpl* indexed_db_context);
+  friend class StoragePartitionImplMap;
+
+  StoragePartitionImpl(
+      const FilePath& partition_path,
+      quota::QuotaManager* quota_manager,
+      ChromeAppCacheService* appcache_service,
+      fileapi::FileSystemContext* filesystem_context,
+      webkit_database::DatabaseTracker* database_tracker,
+      DOMStorageContextImpl* dom_storage_context,
+      IndexedDBContextImpl* indexed_db_context);
+
+  // Used by StoragePartitionImplMap.
+  //
+  // TODO(ajwong): These should be taken in the constructor and in Create() but
+  // because the URLRequestContextGetter still lives in Profile with a tangled
+  // initialization, if we try to retrieve the URLRequestContextGetter()
+  // before the default StoragePartition is created, we end up reentering the
+  // construction and double-initializing.  For now, we retain the legacy
+  // behavior while allowing StoragePartitionImpl to expose these accessors by
+  // letting StoragePartitionImplMap call these two private settings at the
+  // appropriate time.  These should move back into the constructor once
+  // URLRequestContextGetter's lifetime is sorted out. We should also move the
+  // PostCreateInitialization() out of StoragePartitionImplMap.
+  void SetURLRequestContext(net::URLRequestContextGetter* url_request_context);
+  void SetMediaURLRequestContext(
+      net::URLRequestContextGetter* media_url_request_context);
 
   FilePath partition_path_;
+  scoped_refptr<net::URLRequestContextGetter> url_request_context_;
+  scoped_refptr<net::URLRequestContextGetter> media_url_request_context_;
   scoped_refptr<quota::QuotaManager> quota_manager_;
   scoped_refptr<ChromeAppCacheService> appcache_service_;
   scoped_refptr<fileapi::FileSystemContext> filesystem_context_;

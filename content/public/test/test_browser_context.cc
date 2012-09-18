@@ -126,6 +126,12 @@ TestBrowserContext::GetMediaRequestContextForRenderProcess(
   return NULL;
 }
 
+net::URLRequestContextGetter*
+TestBrowserContext::GetMediaRequestContextForStoragePartition(
+    const std::string& partition_id) {
+  return NULL;
+}
+
 ResourceContext* TestBrowserContext::GetResourceContext() {
   if (!resource_context_.get())
     resource_context_.reset(new MockResourceContext());

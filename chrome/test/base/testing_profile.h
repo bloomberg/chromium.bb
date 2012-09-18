@@ -245,8 +245,11 @@ class TestingProfile : public Profile {
       int renderer_child_id) OVERRIDE;
   virtual net::URLRequestContextGetter*
       GetRequestContextForExtensions() OVERRIDE;
-  virtual net::URLRequestContextGetter* GetRequestContextForIsolatedApp(
-      const std::string& app_id) OVERRIDE;
+  virtual net::URLRequestContextGetter*
+      GetMediaRequestContextForStoragePartition(
+          const std::string& partition_id) OVERRIDE;
+  virtual net::URLRequestContextGetter* GetRequestContextForStoragePartition(
+      const std::string& partition_id) OVERRIDE;
   virtual net::SSLConfigService* GetSSLConfigService() OVERRIDE;
   virtual HostContentSettingsMap* GetHostContentSettingsMap() OVERRIDE;
   virtual std::wstring GetName();

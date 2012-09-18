@@ -616,7 +616,7 @@ net::URLRequestContextGetter* TestingProfile::GetRequestContextForRenderProcess(
     const extensions::Extension* installed_app = extension_service->
         GetInstalledAppForRenderer(renderer_child_id);
     if (installed_app != NULL && installed_app->is_storage_isolated())
-      return GetRequestContextForIsolatedApp(installed_app->id());
+      return GetRequestContextForStoragePartition(installed_app->id());
   }
 
   content::RenderProcessHost* rph = content::RenderProcessHost::FromID(
@@ -628,7 +628,7 @@ net::URLRequestContextGetter* TestingProfile::GetRequestContextForRenderProcess(
     // non-persistent context using the RPH's id.
     std::string id("guest-");
     id.append(base::IntToString(renderer_child_id));
-    return GetRequestContextForIsolatedApp(id);
+    return GetRequestContextForStoragePartition(id);
   }
 
   return GetRequestContext();
@@ -659,6 +659,12 @@ TestingProfile::GetMediaRequestContextForRenderProcess(
   return NULL;
 }
 
+net::URLRequestContextGetter*
+TestingProfile::GetMediaRequestContextForStoragePartition(
+    const std::string& partition_id) {
+  return NULL;
+}
+
 net::URLRequestContextGetter* TestingProfile::GetRequestContextForExtensions() {
   if (!extensions_request_context_)
     extensions_request_context_ = new TestExtensionURLRequestContextGetter();
@@ -669,9 +675,10 @@ net::SSLConfigService* TestingProfile::GetSSLConfigService() {
   return NULL;
 }
 
-net::URLRequestContextGetter* TestingProfile::GetRequestContextForIsolatedApp(
-    const std::string& app_id) {
-  // We don't test isolated app storage here yet, so returning the same dummy
+net::URLRequestContextGetter*
+TestingProfile::GetRequestContextForStoragePartition(
+    const std::string& partition_id) {
+  // We don't test storage partitions here yet, so returning the same dummy
   // context is sufficient for now.
   return GetRequestContext();
 }

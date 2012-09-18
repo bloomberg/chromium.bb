@@ -32,6 +32,7 @@
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/escape.h"
 #include "webkit/chromeos/fileapi/cros_mount_point_provider.h"
@@ -752,9 +753,10 @@ bool ExtensionTaskExecutor::ExecuteAndNotify(
 
   done_ = done;
 
-  // Get local file system instance on file thread.
   scoped_refptr<fileapi::FileSystemContext> file_system_context =
-      BrowserContext::GetFileSystemContext(profile());
+      BrowserContext::GetDefaultStoragePartition(profile())->
+      GetFileSystemContext();
+
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(

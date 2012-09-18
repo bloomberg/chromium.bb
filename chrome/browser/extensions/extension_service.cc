@@ -121,6 +121,7 @@
 #include "chrome/browser/chromeos/extensions/media_player_event_router.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
+#include "content/public/browser/storage_partition.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
 #endif
@@ -1107,10 +1108,12 @@ void ExtensionService::NotifyExtensionUnloaded(
       profile_, extension->GetChromeURLOverrides());
 
 #if defined(OS_CHROMEOS)
-    // Revoke external file access to
-  if (BrowserContext::GetFileSystemContext(profile_) &&
-      BrowserContext::GetFileSystemContext(profile_)->external_provider()) {
-    BrowserContext::GetFileSystemContext(profile_)->external_provider()->
+  // Revoke external file access to third party extensions.
+  fileapi::FileSystemContext* filesystem_context =
+      BrowserContext::GetDefaultStoragePartition(profile_)->
+          GetFileSystemContext();
+  if (filesystem_context && filesystem_context->external_provider()) {
+    filesystem_context->external_provider()->
         RevokeAccessForExtension(extension->id());
   }
 

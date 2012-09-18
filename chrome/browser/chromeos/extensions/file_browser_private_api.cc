@@ -49,6 +49,7 @@
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/storage_partition.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "grit/platform_locale_settings.h"
@@ -175,7 +176,8 @@ void AddDriveMountPoint(
     const std::string& extension_id,
     content::RenderViewHost* render_view_host) {
   fileapi::ExternalFileSystemMountPointProvider* provider =
-      BrowserContext::GetFileSystemContext(profile)->external_provider();
+      BrowserContext::GetDefaultStoragePartition(profile)->
+      GetFileSystemContext()->external_provider();
   if (!provider)
     return;
 
@@ -453,7 +455,8 @@ bool RequestLocalFileSystemFunction::RunImpl() {
     return false;
 
   scoped_refptr<fileapi::FileSystemContext> file_system_context =
-      BrowserContext::GetFileSystemContext(profile_);
+      BrowserContext::GetDefaultStoragePartition(profile_)->
+          GetFileSystemContext();
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(
@@ -515,7 +518,8 @@ bool FileWatchBrowserFunctionBase::RunImpl() {
 
   GURL file_watch_url(url);
   scoped_refptr<fileapi::FileSystemContext> file_system_context =
-      BrowserContext::GetFileSystemContext(profile_);
+      BrowserContext::GetDefaultStoragePartition(profile_)->
+          GetFileSystemContext();
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(
@@ -971,7 +975,8 @@ void FileBrowserFunction::GetLocalPathsOnFileThreadAndRunCallbackOnUIThread(
     const UrlList& file_urls,
     GetLocalPathsCallback callback) {
   scoped_refptr<fileapi::FileSystemContext> file_system_context =
-      BrowserContext::GetFileSystemContext(profile_);
+      BrowserContext::GetDefaultStoragePartition(profile())->
+          GetFileSystemContext();
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(
@@ -2503,9 +2508,10 @@ bool SearchDriveFunction::RunImpl() {
   if (!args_->GetString(1, &next_feed_))
     return false;
 
-  BrowserContext::GetFileSystemContext(profile())->OpenFileSystem(
-      source_url_.GetOrigin(), fileapi::kFileSystemTypeExternal, false,
-      base::Bind(&SearchDriveFunction::OnFileSystemOpened, this));
+  BrowserContext::GetDefaultStoragePartition(profile())->
+      GetFileSystemContext()->OpenFileSystem(
+          source_url_.GetOrigin(), fileapi::kFileSystemTypeExternal, false,
+          base::Bind(&SearchDriveFunction::OnFileSystemOpened, this));
   return true;
 }
 
