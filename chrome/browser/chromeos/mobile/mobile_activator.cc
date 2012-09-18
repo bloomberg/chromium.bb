@@ -460,13 +460,10 @@ bool MobileActivator::ConnectToNetwork(CellularNetwork* network, int delay) {
       state_ != PLAN_ACTIVATION_RECONNECTING &&
       state_ != PLAN_ACTIVATION_RECONNECTING_PAYMENT &&
       state_ != PLAN_ACTIVATION_RECONNECTING_OTASP) return false;
-  if (network)
-    LOG(INFO) << "Connecting to: " << network->service_path();
   connection_retry_count_++;
   connection_start_time_ = base::Time::Now();
-  if (!network || state_ == PLAN_ACTIVATION_RECONNECTING_OTASP) {
-    LOG(WARNING) << "Delaying reconnect to "
-                 << (network ? network->service_path().c_str() : "no service");
+  if (!network) {
+    LOG(WARNING) << "Connect failed, will try again in a little bit.";
     // If we coudn't connect during reconnection phase, try to reconnect
     // with a delay (and try to reconnect if needed).
     BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE,
@@ -474,6 +471,7 @@ bool MobileActivator::ConnectToNetwork(CellularNetwork* network, int delay) {
         base::TimeDelta::FromMilliseconds(delay));
     return false;
   }
+  LOG(INFO) << "Connecting to: " << network->service_path();
   CrosLibrary::Get()->GetNetworkLibrary()->
       ConnectToCellularNetwork(network);
   return true;
