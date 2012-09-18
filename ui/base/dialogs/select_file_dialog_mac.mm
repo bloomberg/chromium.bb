@@ -227,6 +227,14 @@ void SelectFileDialogImpl::SelectFileImpl(
           base::mac::ScopedCFTypeRef<CFStringRef> uti(
               CreateUTIFromExtension(ext_list[j]));
           [file_type_set addObject:base::mac::CFToNSCast(uti.get())];
+
+          // Always allow the extension itself, in case the UTI doesn't map
+          // back to the original extension correctly. This occurs with dynamic
+          // UTIs on 10.7 and 10.8.
+          // See http://crbug.com/148840, http://openradar.me/12316273
+          base::mac::ScopedCFTypeRef<CFStringRef> ext_cf(
+              base::SysUTF8ToCFStringRef(ext_list[j]));
+          [file_type_set addObject:base::mac::CFToNSCast(ext_cf.get())];
         }
       }
       allowed_file_types = [file_type_set allObjects];

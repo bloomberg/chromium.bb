@@ -192,16 +192,16 @@ bool GetFileTypesFromAcceptOption(
     string16* description) {
   std::set<FilePath::StringType> extension_set;
   int description_id = 0;
-  bool valid_type = false;
 
   if (accept_option.mime_types.get()) {
     std::vector<std::string>* list = accept_option.mime_types.get();
+    bool valid_type = false;
     for (std::vector<std::string>::const_iterator iter = list->begin();
          iter != list->end(); ++iter) {
       std::vector<FilePath::StringType> inner;
       std::string accept_type = *iter;
       StringToLowerASCII(&accept_type);
-      net::GetExtensionsForMimeType(*iter, &inner);
+      net::GetExtensionsForMimeType(accept_type, &inner);
       if (inner.empty())
         continue;
 
