@@ -23,7 +23,7 @@ DUMMY_TOKEN = 'dummytoken'
 
 def _GetTokenFromOfficialFile(token_name):
   """Parses the token from the official file if it exists, else returns None."""
-  official_path = os.path.join(sys.path[0],
+  official_path = os.path.join(os.path.dirname(__file__),
                                'internal/google_chrome_api_keys.h')
   if not os.path.isfile(official_path):
     return None

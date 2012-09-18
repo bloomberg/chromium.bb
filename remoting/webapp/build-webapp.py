@@ -23,6 +23,14 @@ import sys
 import time
 import zipfile
 
+# Update the module path, assuming that this script is in src/remoting/webapp,
+# and that the google_api_keys module is in src/google_apis. Note that
+# sys.path[0] refers to the directory containing this script.
+if __name__ == '__main__':
+  sys.path.append(
+      os.path.abspath(os.path.join(sys.path[0], '../../google_apis')))
+import google_api_keys
+
 def findAndReplace(filepath, findString, replaceString):
   """Does a search and replace on the contents of a file."""
   oldFilename = os.path.basename(filepath) + '.old'
@@ -184,16 +192,11 @@ def buildWebApp(buildtype, version, mimetype, destination, zip_path, plugin,
                  oauth2RedirectUrlJson)
 
   # Set the correct API keys.
-  if (buildtype == 'Official'):
-    apiClientId = ('440925447803-avn2sj1kc099s0r7v62je5s339mu0am1.' +
-        'apps.googleusercontent.com')
-    apiClientSecret = 'Bgur6DFiOMM1h8x-AQpuTQlK'
-    oauth2UseOfficialClientId = 'true';
-  else:
-    apiClientId = ('440925447803-2pi3v45bff6tp1rde2f7q6lgbor3o5uj.' +
-        'apps.googleusercontent.com')
-    apiClientSecret = 'W2ieEsG-R1gIA4MMurGrgMc_'
-    oauth2UseOfficialClientId = 'false';
+  apiClientId = google_api_keys.GetClientID('REMOTING')
+  apiClientSecret = google_api_keys.GetClientSecret('REMOTING')
+  # TODO(jamiewalch): Get rid of the useOfficialClientId hack (crbug.com/150042)
+  oauth2UseOfficialClientId = 'true';
+
   findAndReplace(os.path.join(destination, 'plugin_settings.js'),
                  "'API_CLIENT_ID'",
                  "'" + apiClientId + "'")
