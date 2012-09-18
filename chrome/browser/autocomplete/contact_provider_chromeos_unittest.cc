@@ -91,10 +91,8 @@ class ContactProviderTest : public testing::Test {
     for (size_t i = 0; i < matches.size(); ++i) {
       const contacts::Contact* contact = contact_manager_->GetContactById(
           profile_, GetContactIdFromMatch(matches[i]));
-      if (contact)
-        contacts.push_back(contact);
-      else
-        LOG(ERROR) << "Unable to find contact for match " << i;
+      DCHECK(contact) << "Unable to find contact for match " << i;
+      contacts.push_back(contact);
     }
     return contacts;
   }
@@ -109,12 +107,9 @@ class ContactProviderTest : public testing::Test {
     const ACMatches& matches = contact_provider_->matches();
     for (size_t i = 0; i < matches.size(); ++i) {
       std::string id = GetContactIdFromMatch(matches[i]);
-      if (id.empty()) {
-        LOG(ERROR) << "Match " << i << " lacks contact ID";
-      } else {
-        contact_id_classifications[id] = AutocompleteMatch::
-            ClassificationsToString(matches[i].contents_class);
-      }
+      DCHECK(!id.empty()) << "Match " << i << " lacks contact ID";
+      contact_id_classifications[id] = AutocompleteMatch::
+          ClassificationsToString(matches[i].contents_class);
     }
 
     std::string result;
