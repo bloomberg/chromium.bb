@@ -207,6 +207,12 @@ void ChromeBrowserMainPartsWin::PostMainMessageLoopStart() {
   }
 }
 
+void ChromeBrowserMainPartsWin::PreMainMessageLoopRun() {
+  ChromeBrowserMainParts::PreMainMessageLoopRun();
+
+  removable_device_notifications_window_->Init();
+}
+
 // static
 void ChromeBrowserMainPartsWin::PrepareRestartOnCrashEnviroment(
     const CommandLine& parsed_command_line) {
