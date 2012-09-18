@@ -204,7 +204,12 @@ class InstantController : public InstantLoaderDelegate {
   // Note: If the command-line switch kInstantURL is set, this method uses its
   // value for |instant_url| and returns true without examining |template_url|.
   bool GetInstantURL(const TemplateURL* template_url,
+                     const GURL& tab_url,
                      std::string* instant_url) const;
+
+  // Copies hash state from |tab_url| to |instant_url| when |tab_url| is
+  // navigated to the default search engine.
+  void MaybeSetRefFromURL(const GURL& tab_url, std::string* instant_url) const;
 
   // Returns true if the preview is no longer relevant, say because the last
   // Update() was for a URL and not a search query, or the user switched tabs.

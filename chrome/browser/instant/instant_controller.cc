@@ -182,7 +182,8 @@ bool InstantController::Update(const AutocompleteMatch& match,
   // If the match's TemplateURL is valid, it's a search query; use it. If it's
   // not valid, it's likely a URL; in EXTENDED mode, try using the default
   // search engine's TemplateURL instead.
-  if (GetInstantURL(match.GetTemplateURL(profile), &instant_url)) {
+  const GURL& tab_url = active_tab->web_contents()->GetURL();
+  if (GetInstantURL(match.GetTemplateURL(profile), tab_url, &instant_url)) {
     ResetLoader(instant_url, active_tab);
   } else if (mode_ != EXTENDED || !CreateDefaultLoader()) {
     Hide();
@@ -595,8 +596,9 @@ bool InstantController::CreateDefaultLoader() {
   const TemplateURL* template_url =
       TemplateURLServiceFactory::GetForProfile(active_tab->profile())->
                                  GetDefaultSearchProvider();
+  const GURL& tab_url = active_tab->web_contents()->GetURL();
   std::string instant_url;
-  if (!GetInstantURL(template_url, &instant_url))
+  if (!GetInstantURL(template_url, tab_url, &instant_url))
     return false;
 
   ResetLoader(instant_url, active_tab);
@@ -669,10 +671,12 @@ void InstantController::SendBoundsToPage() {
 }
 
 bool InstantController::GetInstantURL(const TemplateURL* template_url,
+                                      const GURL& tab_url,
                                       std::string* instant_url) const {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kInstantURL)) {
     *instant_url = command_line->GetSwitchValueASCII(switches::kInstantURL);
+    MaybeSetRefFromURL(tab_url, instant_url);
     return true;
   }
 
@@ -717,7 +721,29 @@ bool InstantController::GetInstantURL(const TemplateURL* template_url,
       iter->second > kMaxInstantSupportFailures)
     return false;
 
+  MaybeSetRefFromURL(tab_url, instant_url);
   return true;
+}
+
+void InstantController::MaybeSetRefFromURL(const GURL& tab_url,
+                                           std::string* instant_url) const {
+  if (mode_ == EXTENDED) {
+    GURL url_obj(*instant_url);
+    if (!url_obj.is_valid())
+      return;
+
+    // Copy hash state so that search modes persist for query refinements.
+    if (tab_url.has_ref() &&
+        tab_url.host() == url_obj.host() &&
+        tab_url.path() == url_obj.path()) {
+      const std::string new_ref = tab_url.ref();
+      GURL::Replacements hash;
+      hash.SetRefStr(new_ref);
+      url_obj = url_obj.ReplaceComponents(hash);
+      DCHECK(url_obj.is_valid());
+      *instant_url = url_obj.spec();
+    }
+  }
 }
 
 bool InstantController::IsOutOfDate() const {
