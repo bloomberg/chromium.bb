@@ -31,9 +31,11 @@ def main():
       '-v', '--verbose', action='count', default=0,
       help='Prints debugging infos')
   parser.add_option(
-      '-e',
-      '--email',
-      help='IGNORED: Kept for compatibility.')
+      '-e', '--email', default='',
+      help='Email address to access rietveld.  If not specified, anonymous '
+           'access will be used.')
+  parser.add_option(
+      '-w', '--password', default=None, help='Password for email addressed.')
   parser.add_option(
       '-i', '--issue', type='int', help='Rietveld issue number')
   parser.add_option(
@@ -61,7 +63,7 @@ def main():
   if not options.server:
     parser.error('Require a valid server')
 
-  obj = rietveld.Rietveld(options.server, '', None)
+  obj = rietveld.Rietveld(options.server, options.email, options.password)
   try:
     properties = obj.get_issue_properties(options.issue, False)
   except rietveld.upload.ClientLoginError, e:
