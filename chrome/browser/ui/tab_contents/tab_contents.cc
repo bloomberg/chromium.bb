@@ -149,7 +149,7 @@ TabContents::TabContents(WebContents* contents)
       chrome::search::IsInstantExtendedAPIEnabled(profile());
   search_tab_helper_.reset(
       new chrome::search::SearchTabHelper(this, is_search_enabled));
-  snapshot_tab_helper_.reset(new SnapshotTabHelper(contents));
+  SnapshotTabHelper::CreateForWebContents(contents);
   ssl_helper_.reset(new TabContentsSSLHelper(this));
   synced_tab_delegate_.reset(new TabContentsSyncedTabDelegate(this));
   translate_tab_helper_.reset(new TranslateTabHelper(contents));

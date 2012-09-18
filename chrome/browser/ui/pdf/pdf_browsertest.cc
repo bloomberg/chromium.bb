@@ -83,12 +83,12 @@ class PDFBrowserTest : public InProcessBrowserTest,
   bool VerifySnapshot(const std::string& expected_filename) {
     snapshot_different_ = true;
     expected_filename_ = expected_filename;
-    TabContents* tab_contents =  chrome::GetActiveTabContents(browser());
-    tab_contents->snapshot_tab_helper()->CaptureSnapshot();
+    WebContents* web_contents =  chrome::GetActiveWebContents(browser());
+    SnapshotTabHelper::FromWebContents(web_contents)->CaptureSnapshot();
     ui_test_utils::RegisterAndWait(
         this,
         chrome::NOTIFICATION_TAB_SNAPSHOT_TAKEN,
-        content::Source<WebContents>(tab_contents->web_contents()));
+        content::Source<WebContents>(web_contents));
     if (snapshot_different_) {
       LOG(INFO) << "Rendering didn't match, see result " <<
           snapshot_filename_.value().c_str();

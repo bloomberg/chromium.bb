@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/snapshot_tab_helper.h"
 
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/notification_service.h"
@@ -12,8 +11,10 @@
 
 using content::WebContents;
 
-SnapshotTabHelper::SnapshotTabHelper(WebContents* tab)
-    : content::WebContentsObserver(tab) {
+int SnapshotTabHelper::kUserDataKey;
+
+SnapshotTabHelper::SnapshotTabHelper(WebContents* web_contents)
+    : content::WebContentsObserver(web_contents) {
 }
 
 SnapshotTabHelper::~SnapshotTabHelper() {

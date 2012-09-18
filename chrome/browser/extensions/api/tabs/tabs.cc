@@ -1713,8 +1713,7 @@ void CaptureVisibleTabFunction::CopyFromBackingStoreComplete(
                  chrome::NOTIFICATION_TAB_SNAPSHOT_TAKEN,
                  content::Source<WebContents>(web_contents));
   AddRef();  // Balanced in CaptureVisibleTabFunction::Observe().
-  TabContents::FromWebContents(web_contents)->snapshot_tab_helper()->
-      CaptureSnapshot();
+  SnapshotTabHelper::FromWebContents(web_contents)->CaptureSnapshot();
 }
 
 // If a backing store was not available in CaptureVisibleTabFunction::RunImpl,
