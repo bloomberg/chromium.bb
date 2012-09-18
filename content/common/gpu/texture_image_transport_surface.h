@@ -110,6 +110,10 @@ class TextureImageTransportSurface :
   gfx::GLSurfaceHandle handle_;
   GpuCommandBufferStub* parent_stub_;
 
+  // The offscreeb surface used to make the context current. However note that
+  // the actual rendering is always redirected to an FBO.
+  scoped_refptr<GLSurface> surface_;
+
   DISALLOW_COPY_AND_ASSIGN(TextureImageTransportSurface);
 };
 

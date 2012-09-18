@@ -88,6 +88,10 @@ bool TextureImageTransportSurface::Initialize() {
         texture.info, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   }
 
+  surface_ = gfx::GLSurface::CreateOffscreenGLSurface(false, gfx::Size(1, 1));
+  if (!surface_.get())
+    return false;
+
   if (!helper_->Initialize())
     return false;
 
@@ -104,6 +108,11 @@ void TextureImageTransportSurface::Destroy() {
     ReleaseParentStub();
   }
 
+  if (surface_.get()) {
+    surface_->Destroy();
+    surface_ = NULL;
+  }
+
   helper_->Destroy();
 }
 
@@ -112,7 +121,7 @@ bool TextureImageTransportSurface::Resize(const gfx::Size&) {
 }
 
 bool TextureImageTransportSurface::IsOffscreen() {
-  return parent_stub_ ? parent_stub_->surface()->IsOffscreen() : true;
+  return true;
 }
 
 bool TextureImageTransportSurface::OnMakeCurrent(gfx::GLContext* context) {
@@ -193,11 +202,11 @@ void* TextureImageTransportSurface::GetShareHandle() {
 }
 
 void* TextureImageTransportSurface::GetDisplay() {
-  return parent_stub_ ? parent_stub_->surface()->GetDisplay() : NULL;
+  return surface_.get() ? surface_->GetDisplay() : NULL;
 }
 
 void* TextureImageTransportSurface::GetConfig() {
-  return parent_stub_ ? parent_stub_->surface()->GetConfig() : NULL;
+  return surface_.get() ? surface_->GetConfig() : NULL;
 }
 
 void TextureImageTransportSurface::OnResize(gfx::Size size) {
@@ -335,11 +344,11 @@ gfx::Size TextureImageTransportSurface::GetSize() {
 }
 
 void* TextureImageTransportSurface::GetHandle() {
-  return parent_stub_ ? parent_stub_->surface()->GetHandle() : NULL;
+  return surface_.get() ? surface_->GetHandle() : NULL;
 }
 
 unsigned TextureImageTransportSurface::GetFormat() {
-  return parent_stub_ ? parent_stub_->surface()->GetFormat() : 0;
+  return surface_ ? surface_->GetFormat() : 0;
 }
 
 void TextureImageTransportSurface::OnSetFrontSurfaceIsProtected(
