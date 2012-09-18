@@ -132,7 +132,11 @@ if __name__ == '__main__':
   print('')
   print('The extension documentation can be found at:')
   print('')
-  print('  http://localhost:%s' % opts.port)
+  print('  http://localhost:%s/extensions/' % opts.port)
+  print('')
+  print('The apps documentation can be found at:')
+  print('')
+  print('  http://localhost:%s/apps/' % opts.port)
   print('')
 
   RequestHandler.local_path = opts.directory
