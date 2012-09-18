@@ -34,7 +34,12 @@ TEST(PluginInstallerTest, SecurityStatus) {
   PluginInstaller installer("claybrick-writer",
                             ASCIIToUTF16("ClayBrick Writer"),
                             true, GURL(), GURL(), ASCIIToUTF16("ClayBrick"));
+
+#if defined(OS_LINUX)
   EXPECT_EQ(kRequiresAuthorization, GetSecurityStatus(&installer, "1.2.3"));
+#else
+  EXPECT_EQ(kUpToDate, GetSecurityStatus(&installer, "1.2.3"));
+#endif
 
   installer.AddVersion(Version("9.4.1"), kRequiresAuthorization);
   installer.AddVersion(Version("10"), kOutOfDate);
