@@ -68,7 +68,10 @@ class PrintPreviewHandlerTest : public BrowserWithTestWindowTest {
         printing::PrintPreviewTabController::GetInstance();
     ASSERT_TRUE(controller);
 
-    initiator_tab->print_view_manager()->PrintPreviewNow();
+    printing::PrintViewManager* print_view_manager =
+        printing::PrintViewManager::FromWebContents(
+            initiator_tab->web_contents());
+    print_view_manager->PrintPreviewNow();
     preview_tab_ = controller->GetOrCreatePreviewTab(initiator_tab);
     ASSERT_TRUE(preview_tab_);
 

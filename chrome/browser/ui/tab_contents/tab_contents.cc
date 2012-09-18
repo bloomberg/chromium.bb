@@ -182,8 +182,8 @@ TabContents::TabContents(WebContents* contents)
         new extensions::WebNavigationTabObserver(contents));
 
 #if defined(ENABLE_PRINTING)
-  print_view_manager_.reset(new printing::PrintViewManager(this));
-  print_preview_.reset(new printing::PrintPreviewMessageHandler(contents));
+  printing::PrintPreviewMessageHandler::CreateForWebContents(contents);
+  printing::PrintViewManager::CreateForWebContents(contents);
 #endif
 
   // Start the in-browser thumbnailing if the feature is enabled.

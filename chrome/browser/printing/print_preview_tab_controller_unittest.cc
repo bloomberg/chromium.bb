@@ -59,7 +59,8 @@ TEST_F(PrintPreviewTabControllerUnitTest, MAYBE_GetOrCreatePreviewTab) {
   ASSERT_TRUE(tab_controller);
 
   // Get the preview tab for initiator tab.
-  initiator_tab->print_view_manager()->PrintPreviewNow();
+  printing::PrintViewManager::FromWebContents(initiator_tab->web_contents())->
+      PrintPreviewNow();
   TabContents* preview_tab =
       tab_controller->GetOrCreatePreviewTab(initiator_tab);
 
@@ -100,7 +101,8 @@ TEST_F(PrintPreviewTabControllerUnitTest, MAYBE_MultiplePreviewTabs) {
   ASSERT_TRUE(tab_controller);
 
   // Create preview tab for |tab_contents_1|
-  tab_contents_1->print_view_manager()->PrintPreviewNow();
+  printing::PrintViewManager::FromWebContents(tab_contents_1->web_contents())->
+      PrintPreviewNow();
   TabContents* preview_tab_1 =
       tab_controller->GetOrCreatePreviewTab(tab_contents_1);
 
@@ -108,7 +110,8 @@ TEST_F(PrintPreviewTabControllerUnitTest, MAYBE_MultiplePreviewTabs) {
   EXPECT_EQ(2, browser()->tab_count());
 
   // Create preview tab for |tab_contents_2|
-  tab_contents_2->print_view_manager()->PrintPreviewNow();
+  printing::PrintViewManager::FromWebContents(tab_contents_2->web_contents())->
+      PrintPreviewNow();
   TabContents* preview_tab_2 =
       tab_controller->GetOrCreatePreviewTab(tab_contents_2);
 
@@ -151,7 +154,8 @@ TEST_F(PrintPreviewTabControllerUnitTest, MAYBE_ClearInitiatorTabDetails) {
   ASSERT_TRUE(tab_controller);
 
   // Get the preview tab for initiator tab.
-  initiator_tab->print_view_manager()->PrintPreviewNow();
+  printing::PrintViewManager::FromWebContents(initiator_tab->web_contents())->
+      PrintPreviewNow();
   TabContents* preview_tab =
       tab_controller->GetOrCreatePreviewTab(initiator_tab);
 

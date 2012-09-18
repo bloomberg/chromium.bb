@@ -681,13 +681,14 @@ void ShareCurrentPage(Browser* browser) {
 }
 
 void Print(Browser* browser) {
+  printing::PrintViewManager* print_view_manager =
+      printing::PrintViewManager::FromWebContents(
+          GetActiveWebContents(browser));
   if (browser->profile()->GetPrefs()->GetBoolean(
-      prefs::kPrintPreviewDisabled)) {
-    GetActiveTabContents(browser)->print_view_manager()->PrintNow();
-  } else {
-    GetActiveTabContents(browser)->print_view_manager()->
-        PrintPreviewNow();
-  }
+      prefs::kPrintPreviewDisabled))
+    print_view_manager->PrintNow();
+  else
+    print_view_manager->PrintPreviewNow();
 }
 
 bool CanPrint(const Browser* browser) {
@@ -701,8 +702,10 @@ bool CanPrint(const Browser* browser) {
 }
 
 void AdvancedPrint(Browser* browser) {
-  GetActiveTabContents(browser)->print_view_manager()->
-      AdvancedPrintNow();
+  printing::PrintViewManager* print_view_manager =
+      printing::PrintViewManager::FromWebContents(
+          GetActiveWebContents(browser));
+  print_view_manager->AdvancedPrintNow();
 }
 
 bool CanAdvancedPrint(const Browser* browser) {
@@ -713,7 +716,10 @@ bool CanAdvancedPrint(const Browser* browser) {
 }
 
 void PrintToDestination(Browser* browser) {
-  GetActiveTabContents(browser)->print_view_manager()->PrintToDestination();
+  printing::PrintViewManager* print_view_manager =
+      printing::PrintViewManager::FromWebContents(
+          GetActiveWebContents(browser));
+  print_view_manager->PrintToDestination();
 }
 
 void EmailPageLocation(Browser* browser) {

@@ -100,11 +100,6 @@ class PrerenderContents;
 class PrerenderTabHelper;
 }
 
-namespace printing {
-class PrintViewManager;
-class PrintPreviewMessageHandler;
-}
-
 namespace safe_browsing {
 class SafeBrowsingTabObserver;
 }
@@ -242,10 +237,6 @@ class TabContents : public content::WebContentsObserver {
     return prerender_tab_helper_.get();
   }
 
-  printing::PrintViewManager* print_view_manager() {
-    return print_view_manager_.get();
-  }
-
   SadTabHelper* sad_tab_helper() { return sad_tab_helper_.get(); }
 
   SearchEngineTabHelper* search_engine_tab_helper() {
@@ -327,9 +318,6 @@ class TabContents : public content::WebContentsObserver {
   scoped_ptr<PrefsTabHelper> prefs_tab_helper_;
   scoped_ptr<prerender::PrerenderTabHelper> prerender_tab_helper_;
 
-  // Handles print job for this contents.
-  scoped_ptr<printing::PrintViewManager> print_view_manager_;
-
   scoped_ptr<SadTabHelper> sad_tab_helper_;
   scoped_ptr<SearchEngineTabHelper> search_engine_tab_helper_;
   scoped_ptr<chrome::search::SearchTabHelper> search_tab_helper_;
@@ -359,7 +347,6 @@ class TabContents : public content::WebContentsObserver {
 #endif
   scoped_ptr<PepperBrokerObserver> pepper_broker_observer_;
   scoped_ptr<PluginObserver> plugin_observer_;
-  scoped_ptr<printing::PrintPreviewMessageHandler> print_preview_;
   scoped_ptr<safe_browsing::SafeBrowsingTabObserver>
       safe_browsing_tab_observer_;
 

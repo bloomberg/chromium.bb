@@ -1710,14 +1710,14 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
     case IDC_PRINT:
       if (params_.media_type == WebContextMenuData::MediaTypeNone) {
-        TabContents* tab_contents =
-            TabContents::FromWebContents(source_web_contents_);
-        if (!tab_contents)
+        printing::PrintViewManager* print_view_manager =
+            printing::PrintViewManager::FromWebContents(source_web_contents_);
+        if (!print_view_manager)
           break;
         if (profile_->GetPrefs()->GetBoolean(prefs::kPrintPreviewDisabled)) {
-          tab_contents->print_view_manager()->PrintNow();
+          print_view_manager->PrintNow();
         } else {
-          tab_contents->print_view_manager()->PrintPreviewNow();
+          print_view_manager->PrintPreviewNow();
         }
       } else {
         rvh->Send(new PrintMsg_PrintNodeUnderContextMenu(rvh->GetRoutingID()));

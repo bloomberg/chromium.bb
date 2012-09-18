@@ -8,12 +8,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/string16.h"
 #include "chrome/browser/api/prefs/pref_member.h"
+#include "chrome/browser/tab_contents/web_contents_user_data.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "printing/printed_pages_source.h"
 
-class TabContents;
 struct PrintHostMsg_DidPrintPage_Params;
 
 namespace content {
@@ -28,14 +28,12 @@ class PrintJob;
 class PrintJobWorkerOwner;
 class PrintViewManagerObserver;
 
-// Manages the print commands in relation to a TabContents.
-// TabContents delegates a few printing related commands to this
-// instance.
+// Manages the print commands for a WebContents.
 class PrintViewManager : public content::NotificationObserver,
                          public PrintedPagesSource,
-                         public content::WebContentsObserver {
+                         public content::WebContentsObserver,
+                         public WebContentsUserData<PrintViewManager> {
  public:
-  explicit PrintViewManager(TabContents* tab);
   virtual ~PrintViewManager();
 
   // Prints the current document immediately. Since the rendering is
@@ -101,6 +99,10 @@ class PrintViewManager : public content::NotificationObserver,
   virtual void StopNavigation() OVERRIDE;
 
  private:
+  explicit PrintViewManager(content::WebContents* web_contents);
+  static int kUserDataKey;
+  friend class WebContentsUserData<PrintViewManager>;
+
   enum PrintPreviewState {
     NOT_PREVIEWING,
     USER_INITIATED_PREVIEW,
@@ -172,9 +174,6 @@ class PrintViewManager : public content::NotificationObserver,
   // Release the PrinterQuery associated with our |cookie_|.
   void ReleasePrinterQuery();
 
-  // TabContents we're associated with.
-  TabContents* tab_;
-
   content::NotificationRegistrar registrar_;
 
   // Manages the low-level talk to the printer.
@@ -212,7 +211,7 @@ class PrintViewManager : public content::NotificationObserver,
   // Whether printing is enabled.
   BooleanPrefMember printing_enabled_;
 
-  // Whether our tab content is in blocked state.
+  // Whether our content is in blocked state.
   bool tab_content_blocked_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintViewManager);

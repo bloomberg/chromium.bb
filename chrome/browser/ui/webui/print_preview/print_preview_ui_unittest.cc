@@ -63,7 +63,10 @@ TEST_F(PrintPreviewUIUnitTest, PrintPreviewData) {
       printing::PrintPreviewTabController::GetInstance();
   ASSERT_TRUE(controller);
 
-  initiator_tab->print_view_manager()->PrintPreviewNow();
+  printing::PrintViewManager* print_view_manager =
+      printing::PrintViewManager::FromWebContents(
+          initiator_tab->web_contents());
+  print_view_manager->PrintPreviewNow();
   TabContents* preview_tab = controller->GetOrCreatePreviewTab(initiator_tab);
 
   EXPECT_NE(initiator_tab, preview_tab);
@@ -114,7 +117,10 @@ TEST_F(PrintPreviewUIUnitTest, PrintPreviewDraftPages) {
       printing::PrintPreviewTabController::GetInstance();
   ASSERT_TRUE(controller);
 
-  initiator_tab->print_view_manager()->PrintPreviewNow();
+  printing::PrintViewManager* print_view_manager =
+      printing::PrintViewManager::FromWebContents(
+          initiator_tab->web_contents());
+  print_view_manager->PrintPreviewNow();
   TabContents* preview_tab = controller->GetOrCreatePreviewTab(initiator_tab);
 
   EXPECT_NE(initiator_tab, preview_tab);
@@ -172,7 +178,10 @@ TEST_F(PrintPreviewUIUnitTest, GetCurrentPrintPreviewStatus) {
       printing::PrintPreviewTabController::GetInstance();
   ASSERT_TRUE(controller);
 
-  initiator_tab->print_view_manager()->PrintPreviewNow();
+  printing::PrintViewManager* print_view_manager =
+      printing::PrintViewManager::FromWebContents(
+          initiator_tab->web_contents());
+  print_view_manager->PrintPreviewNow();
   TabContents* preview_tab = controller->GetOrCreatePreviewTab(initiator_tab);
 
   EXPECT_NE(initiator_tab, preview_tab);
@@ -235,7 +244,10 @@ TEST_F(PrintPreviewUIUnitTest, InitiatorTabGetsFocusOnPrintPreviewTabClose) {
       printing::PrintPreviewTabController::GetInstance();
   ASSERT_TRUE(controller);
 
-  initiator_tab->print_view_manager()->PrintPreviewNow();
+  printing::PrintViewManager* print_view_manager =
+      printing::PrintViewManager::FromWebContents(
+          initiator_tab->web_contents());
+  print_view_manager->PrintPreviewNow();
   TabContents* preview_tab = controller->GetOrCreatePreviewTab(initiator_tab);
 
   EXPECT_NE(initiator_tab, preview_tab);

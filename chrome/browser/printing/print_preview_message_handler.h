@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PRINTING_PRINT_PREVIEW_MESSAGE_HANDLER_H_
 
 #include "base/compiler_specific.h"
+#include "chrome/browser/tab_contents/web_contents_user_data.h"
 #include "content/public/browser/web_contents_observer.h"
 
 class PrintPreviewUI;
@@ -22,23 +23,23 @@ namespace printing {
 
 struct PageSizeMargins;
 
-// TabContents offloads print preview message handling to
-// PrintPreviewMessageHandler. This object has the same life time as the
-// TabContents that owns it.
-class PrintPreviewMessageHandler : public content::WebContentsObserver {
+// Manages the print preview handling for a WebContents.
+class PrintPreviewMessageHandler
+    : public content::WebContentsObserver,
+      public WebContentsUserData<PrintPreviewMessageHandler> {
  public:
-  explicit PrintPreviewMessageHandler(content::WebContents* web_contents);
   virtual ~PrintPreviewMessageHandler();
 
   // content::WebContentsObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
  private:
+  explicit PrintPreviewMessageHandler(content::WebContents* web_contents);
+  static int kUserDataKey;
+  friend class WebContentsUserData<PrintPreviewMessageHandler>;
+
   // Gets the print preview tab associated with the WebContents being observed.
   TabContents* GetPrintPreviewTab();
-
-  // Helper function to return the TabContents for web_contents().
-  TabContents* tab_contents();
 
   // Gets the PrintPreviewUI associated with the WebContents being observed.
   PrintPreviewUI* GetPrintPreviewUI();

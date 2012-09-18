@@ -342,7 +342,8 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
 }
 
 - (void)handlesPrintScriptCommand:(NSScriptCommand*)command {
-  bool initiateStatus = tabContents_->print_view_manager()->PrintNow();
+  bool initiateStatus = printing::PrintViewManager::FromWebContents(
+      tabContents_->web_contents())->PrintNow();
   if (initiateStatus == false) {
     AppleScript::SetError(AppleScript::errInitiatePrinting);
   }

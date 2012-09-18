@@ -28,6 +28,8 @@
 using content::BrowserThread;
 using content::WebContents;
 
+int printing::PrintPreviewMessageHandler::kUserDataKey;
+
 namespace {
 
 void StopWorker(int document_cookie) {
@@ -79,11 +81,8 @@ TabContents* PrintPreviewMessageHandler::GetPrintPreviewTab() {
   if (!tab_controller)
     return NULL;
 
-  return tab_controller->GetPrintPreviewForTab(tab_contents());
-}
-
-TabContents* PrintPreviewMessageHandler::tab_contents() {
-  return TabContents::FromWebContents(web_contents());
+  return tab_controller->GetPrintPreviewForTab(
+      TabContents::FromWebContents(web_contents()));
 }
 
 PrintPreviewUI* PrintPreviewMessageHandler::GetPrintPreviewUI() {
@@ -96,10 +95,12 @@ PrintPreviewUI* PrintPreviewMessageHandler::GetPrintPreviewUI() {
 
 void PrintPreviewMessageHandler::OnRequestPrintPreview(
     bool source_is_modifiable, bool webnode_only) {
-  TabContents* tab = tab_contents();
-  if (webnode_only)
-    tab->print_view_manager()->PrintPreviewForWebNode();
-  PrintPreviewTabController::PrintPreview(tab);
+  if (webnode_only) {
+    printing::PrintViewManager::FromWebContents(web_contents())->
+        PrintPreviewForWebNode();
+  }
+  PrintPreviewTabController::PrintPreview(
+      TabContents::FromWebContents(web_contents()));
   PrintPreviewUI::SetSourceIsModifiable(GetPrintPreviewTab(),
                                         source_is_modifiable);
 }

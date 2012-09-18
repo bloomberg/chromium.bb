@@ -58,7 +58,7 @@ void BlockedContentTabHelper::SendNotification(TabContents* contents,
                                                bool blocked_state) {
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_CONTENT_BLOCKED_STATE_CHANGED,
-      content::Source<TabContents>(contents),
+      content::Source<content::WebContents>(contents->web_contents()),
       content::Details<const bool>(&blocked_state));
 }
 

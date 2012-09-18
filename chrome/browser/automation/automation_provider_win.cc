@@ -259,8 +259,9 @@ void AutomationProvider::PrintAsync(int tab_handle) {
   if (!web_contents)
     return;
 
-  TabContents* tab_contents = TabContents::FromWebContents(web_contents);
-  tab_contents->print_view_manager()->PrintNow();
+  printing::PrintViewManager* print_view_manager =
+      printing::PrintViewManager::FromWebContents(web_contents);
+  print_view_manager->PrintNow();
 }
 
 ExternalTabContainer* AutomationProvider::GetExternalTabForHandle(int handle) {

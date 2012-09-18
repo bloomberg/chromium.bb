@@ -474,8 +474,12 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
     // finished. Then the tab closes and PrintPreviewDone() gets called. Here,
     // since we are hiding the tab, and not closing it, we need to make this
     // call.
-    if (initiator_tab)
-      initiator_tab->print_view_manager()->PrintPreviewDone();
+    if (initiator_tab) {
+      printing::PrintViewManager* print_view_manager =
+          printing::PrintViewManager::FromWebContents(
+              initiator_tab->web_contents());
+      print_view_manager->PrintPreviewDone();
+    }
   }
 }
 
@@ -630,9 +634,11 @@ void PrintPreviewHandler::HandleShowSystemDialog(const ListValue* /*args*/) {
   if (!initiator_tab)
     return;
 
-  printing::PrintViewManager* manager = initiator_tab->print_view_manager();
-  manager->set_observer(this);
-  manager->PrintForSystemDialogNow();
+  printing::PrintViewManager* print_view_manager =
+      printing::PrintViewManager::FromWebContents(
+          initiator_tab->web_contents());
+  print_view_manager->set_observer(this);
+  print_view_manager->PrintForSystemDialogNow();
 
   // Cancel the pending preview request if exists.
   PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
@@ -798,8 +804,10 @@ void PrintPreviewHandler::SendCloudPrintJob(const DictionaryValue& settings,
   print_preview_ui->GetPrintPreviewDataForIndex(
       printing::COMPLETE_PREVIEW_DOCUMENT_INDEX, &data);
   if (data.get() && data->size() > 0U && data->front()) {
-    string16 print_job_title_utf16 =
-        preview_tab_contents()->print_view_manager()->RenderSourceName();
+    printing::PrintViewManager* print_view_manager =
+        printing::PrintViewManager::FromWebContents(
+            preview_tab_contents()->web_contents());
+    string16 print_job_title_utf16 = print_view_manager->RenderSourceName();
     std::string print_job_title = UTF16ToUTF8(print_job_title_utf16);
     std::string printer_id;
     settings.GetString(printing::kSettingCloudPrintId, &printer_id);
@@ -898,7 +906,10 @@ void PrintPreviewHandler::OnTabDestroyed() {
   if (!initiator_tab)
     return;
 
-  initiator_tab->print_view_manager()->set_observer(NULL);
+  printing::PrintViewManager* print_view_manager =
+      printing::PrintViewManager::FromWebContents(
+          initiator_tab->web_contents());
+  print_view_manager->set_observer(NULL);
 }
 
 void PrintPreviewHandler::OnPrintPreviewFailed() {

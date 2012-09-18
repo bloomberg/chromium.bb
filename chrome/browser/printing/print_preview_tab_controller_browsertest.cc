@@ -66,7 +66,10 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
   ASSERT_TRUE(tab_controller);
 
   // Get the preview tab for initiator tab.
-  initiator_tab->print_view_manager()->PrintPreviewNow();
+  printing::PrintViewManager* print_view_manager =
+      printing::PrintViewManager::FromWebContents(
+          initiator_tab->web_contents());
+  print_view_manager->PrintPreviewNow();
   TabContents* preview_tab =
     tab_controller->GetOrCreatePreviewTab(initiator_tab);
 
@@ -83,7 +86,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
   ASSERT_TRUE(observer.tab_destroyed());
 
   // Get the print preview tab for initiator tab.
-  initiator_tab->print_view_manager()->PrintPreviewNow();
+  print_view_manager->PrintPreviewNow();
   TabContents* new_preview_tab =
      tab_controller->GetOrCreatePreviewTab(initiator_tab);
 
@@ -108,7 +111,10 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
   ASSERT_TRUE(tab_controller);
 
   // Get the preview tab for initiator tab.
-  initiator_tab->print_view_manager()->PrintPreviewNow();
+  printing::PrintViewManager* print_view_manager =
+      printing::PrintViewManager::FromWebContents(
+          initiator_tab->web_contents());
+  print_view_manager->PrintPreviewNow();
   TabContents* preview_tab =
     tab_controller->GetOrCreatePreviewTab(initiator_tab);
 
@@ -128,7 +134,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
   ASSERT_TRUE(tab_destroyed_observer.tab_destroyed());
 
   // Get the print preview tab for initiator tab.
-  initiator_tab->print_view_manager()->PrintPreviewNow();
+  print_view_manager->PrintPreviewNow();
   TabContents* new_preview_tab =
      tab_controller->GetOrCreatePreviewTab(initiator_tab);
 

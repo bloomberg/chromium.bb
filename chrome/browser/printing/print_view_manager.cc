@@ -45,6 +45,8 @@
 using base::TimeDelta;
 using content::BrowserThread;
 
+int printing::PrintViewManager::kUserDataKey;
+
 namespace {
 
 // Keeps track of pending scripted print preview closures.
@@ -61,9 +63,8 @@ const int kMaxRasterSizeInPixels = 16*1024*1024;
 
 namespace printing {
 
-PrintViewManager::PrintViewManager(TabContents* tab)
-    : content::WebContentsObserver(tab->web_contents()),
-      tab_(tab),
+PrintViewManager::PrintViewManager(content::WebContents* web_contents)
+    : content::WebContentsObserver(web_contents),
       number_pages_(0),
       printing_succeeded_(false),
       inside_inner_message_loop_(false),
@@ -76,9 +77,11 @@ PrintViewManager::PrintViewManager(TabContents* tab)
   expecting_first_page_ = true;
 #endif
   registrar_.Add(this, chrome::NOTIFICATION_CONTENT_BLOCKED_STATE_CHANGED,
-                 content::Source<TabContents>(tab));
+                 content::Source<content::WebContents>(web_contents));
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
   printing_enabled_.Init(prefs::kPrintingEnabled,
-                         tab->profile()->GetPrefs(),
+                         profile->GetPrefs(),
                          this);
 }
 
@@ -101,7 +104,8 @@ bool PrintViewManager::AdvancedPrintNow() {
       PrintPreviewTabController::GetInstance();
   if (!tab_controller)
     return false;
-  TabContents* print_preview_tab = tab_controller->GetPrintPreviewForTab(tab_);
+  TabContents* print_preview_tab = tab_controller->GetPrintPreviewForTab(
+      TabContents::FromWebContents(web_contents()));
   if (print_preview_tab) {
     // Preview tab exist for current tab or current tab is preview tab.
     if (!print_preview_tab->web_contents()->GetWebUI())
@@ -294,13 +298,14 @@ void PrintViewManager::OnPrintingFailed(int cookie) {
   }
 
   chrome::ShowPrintErrorDialog(
-      tab_->web_contents()->GetView()->GetTopLevelNativeWindow());
+      web_contents()->GetView()->GetTopLevelNativeWindow());
 
   ReleasePrinterQuery();
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PRINT_JOB_RELEASED,
-      content::Source<TabContents>(tab_),
+      content::Source<TabContents>(
+          TabContents::FromWebContents(web_contents())),
       content::NotificationService::NoDetails());
 }
 
@@ -340,9 +345,10 @@ void PrintViewManager::OnScriptedPrintPreview(bool source_is_modifiable,
   map[rph] = callback;
   scripted_print_preview_rph_ = rph;
 
-  tab_controller->PrintPreview(tab_);
+  TabContents* tab_contents = TabContents::FromWebContents(web_contents());
+  tab_controller->PrintPreview(tab_contents);
   PrintPreviewUI::SetSourceIsModifiable(
-      tab_controller->GetPrintPreviewForTab(tab_),
+      tab_controller->GetPrintPreviewForTab(tab_contents),
       source_is_modifiable);
 }
 
@@ -405,7 +411,8 @@ void PrintViewManager::OnNotifyPrintJobEvent(
 
       content::NotificationService::current()->Notify(
           chrome::NOTIFICATION_PRINT_JOB_RELEASED,
-          content::Source<TabContents>(tab_),
+          content::Source<TabContents>(
+              TabContents::FromWebContents(web_contents())),
           content::NotificationService::NoDetails());
       break;
     }
@@ -435,7 +442,8 @@ void PrintViewManager::OnNotifyPrintJobEvent(
 
       content::NotificationService::current()->Notify(
           chrome::NOTIFICATION_PRINT_JOB_RELEASED,
-          content::Source<TabContents>(tab_),
+          content::Source<TabContents>(
+              TabContents::FromWebContents(web_contents())),
           content::NotificationService::NoDetails());
       break;
     }

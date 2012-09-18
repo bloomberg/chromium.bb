@@ -229,8 +229,10 @@ void PrintPreviewTabController::PrintPreview(TabContents* tab) {
   PrintPreviewTabController* tab_controller = GetInstance();
   if (!tab_controller)
     return;
-  if (!tab_controller->GetOrCreatePreviewTab(tab))
-    tab->print_view_manager()->PrintPreviewDone();
+  if (!tab_controller->GetOrCreatePreviewTab(tab)) {
+    printing::PrintViewManager::FromWebContents(tab->web_contents())->
+        PrintPreviewDone();
+  }
 }
 
 TabContents* PrintPreviewTabController::GetOrCreatePreviewTab(
@@ -452,7 +454,8 @@ void PrintPreviewTabController::SetInitiatorTabURLAndTitle(
         preview_tab->web_contents()->GetWebUI()->GetController());
     print_preview_ui->SetInitiatorTabURLAndTitle(
         initiator_tab->web_contents()->GetURL().spec(),
-        initiator_tab->print_view_manager()->RenderSourceName());
+        printing::PrintViewManager::FromWebContents(
+            initiator_tab->web_contents())->RenderSourceName());
   }
 }
 
@@ -501,7 +504,8 @@ void PrintPreviewTabController::RemoveInitiatorTab(TabContents* initiator_tab) {
   preview_tab_map_[preview_tab] = NULL;
   RemoveObservers(initiator_tab);
 
-  initiator_tab->print_view_manager()->PrintPreviewDone();
+  printing::PrintViewManager::FromWebContents(initiator_tab->web_contents())->
+      PrintPreviewDone();
 
   // Initiator tab is closed. Close the print preview tab too.
   PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
@@ -515,7 +519,8 @@ void PrintPreviewTabController::RemovePreviewTab(TabContents* preview_tab) {
   TabContents* initiator_tab = GetInitiatorTab(preview_tab);
   if (initiator_tab) {
     RemoveObservers(initiator_tab);
-    initiator_tab->print_view_manager()->PrintPreviewDone();
+    printing::PrintViewManager::FromWebContents(initiator_tab->web_contents())->
+        PrintPreviewDone();
   }
 
   // Print preview WebContents is destroyed. Notify |PrintPreviewUI| to abort
