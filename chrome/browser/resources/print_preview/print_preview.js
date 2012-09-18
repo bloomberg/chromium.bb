@@ -649,9 +649,6 @@ cr.define('print_preview', function() {
      */
     onKeyDown_: function(e) {
       // Escape key closes the dialog.
-      // <if expr="not pp_ifdef('toolkit_views')">
-      // On the toolkit_views environment, ESC key is handled by C++-side
-      // instead of JS-side.
       if (e.keyCode == 27 && !e.shiftKey && !e.ctrlKey && !e.altKey &&
           !e.metaKey) {
         if (this.destinationSearch_.getIsVisible()) {
@@ -659,12 +656,18 @@ cr.define('print_preview', function() {
           this.metrics_.incrementDestinationSearchBucket(
               print_preview.Metrics.DestinationSearchBucket.CANCELED);
         } else {
+          // <if expr="pp_ifdef('toolkit_views')">
+          // On the toolkit_views environment, ESC key is handled by C++-side
+          // instead of JS-side.
+          return;
+          // </if>
+          // <if expr="not pp_ifdef('toolkit_views')">
           this.close_();
+          // </if>
         }
         e.preventDefault();
         return;
       }
-      // </if>
 
       // Ctrl + Shift + p / Mac equivalent.
       if (e.keyCode == 80) {
