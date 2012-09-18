@@ -285,6 +285,7 @@ void SyncSetupHandler::GetStaticLocalizedValues(
 
   static OptionsStringResource resources[] = {
     { "syncSetupConfigureTitle", IDS_SYNC_SETUP_CONFIGURE_TITLE },
+    { "syncSetupSpinnerTitle", IDS_SYNC_SETUP_SPINNER_TITLE },
     { "syncSetupTimeoutTitle", IDS_SYNC_SETUP_TIME_OUT_TITLE },
     { "syncSetupTimeoutContent", IDS_SYNC_SETUP_TIME_OUT_CONTENT },
     { "cannotBeBlank", IDS_SYNC_CANNOT_BE_BLANK },
@@ -590,8 +591,6 @@ bool SyncSetupHandler::PrepareSyncSetup() {
   return true;
 }
 
-// TODO(kochi): Handle error conditions (timeout, other failures).
-// http://crbug.com/128692
 void SyncSetupHandler::DisplaySpinner() {
   configuring_sync_ = true;
   StringValue page("spinner");

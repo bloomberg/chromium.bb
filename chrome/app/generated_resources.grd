@@ -12783,6 +12783,11 @@ Some features may be unavailable.  Please check that the profile exists and you 
         OK, sync everything
       </message>
 
+      <!-- Spinner dialog for waiting sync backend to start up -->
+      <message name="IDS_SYNC_SETUP_SPINNER_TITLE" desc="The title of the sync setup dialog showing spinner.">
+        Please wait...
+      </message>
+
       <!-- Notify network connection goes time out -->
       <message name="IDS_SYNC_SETUP_TIME_OUT_TITLE" desc="The title of the 'Timeout' page for sync settings.">
         Failed to start up the sync backend
