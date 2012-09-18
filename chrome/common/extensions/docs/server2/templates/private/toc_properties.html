@@ -1,8 +1,0 @@
-<a href="#{{?prefix}}{{prefix}}-{{/}}properties">Properties</a>
-<ol>
-  {{#@}}
-  <li><a href="#property-{{?prefix}}{{prefix}}-{{/}}{{name}}">{{name}}</a></li>
-  {{?functions}}<ol><li>{{+partials.toc_functions prefix:name}}</li></ol>{{/}}
-  {{?events}}<ol><li>{{+partials.toc_events prefix:name}}</li></ol>{{/}}
-  {{/}}
-</ol>
