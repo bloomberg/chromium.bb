@@ -11765,7 +11765,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
 
       <message name="IDS_FILE_BROWSER_ACTION_CHOICE_PHOTOS_DRIVE" desc="In the action choice dialog, label of action to import photos to Drive.">
-        Backup photos to Google Drive
+        Import photos to Google Drive
       </message>
       <message name="IDS_FILE_BROWSER_ACTION_CHOICE_VIEW_FILES" desc="In the action choice dialog, label of action to view all files.">
         View all files

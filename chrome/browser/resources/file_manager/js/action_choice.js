@@ -103,21 +103,41 @@ ActionChoice.prototype.initDom_ = function() {
  */
 ActionChoice.prototype.loadSource_ = function(source) {
   var onTraversed = function(results) {
-    this.previews_.removeAttribute('loading');
-    var mediaFiles = results.filter(FileType.isImageOrVideo);
+    var videos = results.filter(FileType.isVideo);
+    var videoLabel = this.dom_.querySelector('label[for=watch-single-video]');
+    if (videos.length == 1) {
+      var name = videos[0].name;
+      var extPos = name.lastIndexOf('.');
+      // TODO(dgozman): use GetFileNameFromFullName once it is moved to
+      // appropriate place.
+      if (extPos != -1)
+        name = name.substring(0, extPos);
+      videoLabel.textContent = loadTimeData.getStringF(
+          'ACTION_CHOICE_WATCH_SINGLE_VIDEO', name);
+      this.singleVideo_ = videos[0];
+    } else {
+      videoLabel.parentNode.style.display = 'none';
+    }
 
+    var mediaFiles = results.filter(FileType.isImageOrVideo);
+    if (mediaFiles.length == 0) {
+      this.dom_.querySelector('#import-photos-to-drive').parentNode.
+          style.display = 'none';
+    }
+
+    var previews = results;
     if (mediaFiles.length < ActionChoice.PREVIEW_COUNT) {
       this.counter_.textContent = loadTimeData.getStringF(
           'ACTION_CHOICE_COUNTER_NO_MEDIA', results.length);
     } else {
       this.counter_.textContent = loadTimeData.getStringF(
           'ACTION_CHOICE_COUNTER', results.length, mediaFiles.length);
-      results = mediaFiles;
+      previews = mediaFiles;
     }
-
-    var count = Math.min(results.length, ActionChoice.PREVIEW_COUNT);
+    this.previews_.removeAttribute('loading');
+    var count = Math.min(previews.length, ActionChoice.PREVIEW_COUNT);
     for (var index = 0; index < count; index++) {
-      this.renderPreview_(results[index]);
+      this.renderPreview_(previews[index]);
     }
   }.bind(this);
 
@@ -125,6 +145,7 @@ ActionChoice.prototype.loadSource_ = function(source) {
     this.sourceEntry_ = entry;
     // TODO(dgozman): add icon.
     this.title_.textContent = entry.name;
+    this.document_.querySelector('title').textContent = entry.name;
     util.traverseTree(entry, onTraversed, 0 /* infinite depth */);
   }.bind(this);
 
@@ -185,6 +206,9 @@ ActionChoice.prototype.onOk_ = function() {
     var url = chrome.extension.getURL('main.html') +
         '#' + this.sourceEntry_.fullPath;
     chrome.windows.create({url: url, type: 'popup'});
+  } else if (this.document_.querySelector('#watch-single-video').checked) {
+    chrome.fileBrowserPrivate.viewFiles([this.singleVideo_.toURL()], 'watch',
+        function(success) {});
   }
   this.close_();
 };
