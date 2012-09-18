@@ -5,7 +5,9 @@
 
 import pyauto_functional
 import pyauto
-
+import re
+from pyauto_errors import AutomationCommandTimeout
+from pyauto_errors import JSONInterfaceError
 
 class ChromeosProxy(pyauto.PyUITest):
   """Tests for ChromeOS proxy.
@@ -34,10 +36,10 @@ class ChromeosProxy(pyauto.PyUITest):
 
   def setUp(self):
     pyauto.PyUITest.setUp(self)
-    self.SetProxySettingsOnChromeOS('type', self.PROXY_TYPE_DIRECT)
+    self.ResetProxySettingsOnChromeOS()
 
   def tearDown(self):
-    self.SetProxySettingsOnChromeOS('type', self.PROXY_TYPE_DIRECT)
+    self.ResetProxySettingsOnChromeOS()
     pyauto.PyUITest.tearDown(self)
 
   def _BasicSetManualProxyFieldTest(self, proxy_type, proxy_url,
@@ -50,42 +52,49 @@ class ChromeosProxy(pyauto.PyUITest):
       proxy_port: The port number.  May be left blank to imply using the default
                   port.  The default ports are defined by self.DEFAULT_PORTS.
     """
-    field = ChromeosProxy.MANUAL_PROXY_FIELDS[proxy_type]
-    self.SetProxySettingsOnChromeOS(field['url'], proxy_url)
-    if proxy_port is not None:
-      self.SetProxySettingsOnChromeOS(field['port'], proxy_port)
+    if proxy_type == 'socks':
+      url_path = proxy_type
+    else:
+      url_path = proxy_type + 'url'
+    port_path = proxy_type + 'port'
+    proxy_dict = {
+      'url_path': url_path,
+      'port_path': port_path,
+      'proxy_url': proxy_url,
+      'proxy_port': proxy_port,
+    }
+
+    self.SetProxySettingOnChromeOS(proxy_dict)
     result = self.GetProxySettingsOnChromeOS()
 
     self.assertEqual(result['type'], self.PROXY_TYPE_MANUAL, 'Proxy type '
                      'should be Manual but instead we got %s.' %
                      self.GetProxyTypeName(result['type']))
-
-    self.assertTrue(field['url'] in result,
+    self.assertTrue(url_path in result,
                     'No %s url entry was saved' % proxy_type)
-    self.assertEqual(result[field['url']], proxy_url,
+    self.assertEqual(result[url_path], proxy_url,
                      'Saved proxy url %s does not match user set url %s.' %
-                     (result[field['url']], proxy_url))
+                     (result[url_path], proxy_url))
     # Verify the port. If proxy_port is empty, we verify the
     # default port is used
     if proxy_port is None:
       self.assertEqual(ChromeosProxy.DEFAULT_PORTS[proxy_type],
-                       result[field['port']],
+                       result[port_path],
                        'Proxy port %d was used instead of default port %d.' %
-                       (result[field['port']],
+                       (result[port_path],
                         ChromeosProxy.DEFAULT_PORTS[proxy_type]))
     else:
-      self.assertEqual(proxy_port, result[field['port']],
+      self.assertEqual(proxy_port, result[port_path],
                        'Proxy port %d was used instead of user set port %d.' %
-                       (result[field['port']], proxy_port))
+                       (result[port_path], proxy_port))
 
     # Verify that all other proxy fields are not set.
     for key, val in self.MANUAL_PROXY_FIELDS.iteritems():
       if proxy_type != key:
-        self.assertFalse(val['url'] in result, 'Only %s url should have '
+        self.assertFalse(result.get(val['url']), 'Only %s url should have '
                          'been set. %s url should have been left blank.' %
                          (proxy_type, key))
-
-        self.assertFalse(val['port'] in result, 'Only %s port should have '
+        self.assertFalse(result.get(val['port']), 'Only %s port should have '
                          'been set. %s port should have been left blank.' %
                          (proxy_type, key))
 
@@ -156,6 +165,13 @@ class ChromeosProxy(pyauto.PyUITest):
   def testSetHTTPProxySettings(self):
     """Set the http proxy and verify it saves."""
     self._BasicSetManualProxyFieldTest('http', '192.168.1.1', 3128)
+
+  def testSetHTTPProxySettingsAndNavigate(self):
+    """Set an invalid httpurl and verify that we cant navigate."""
+    invalid_url='10.10'
+    self._BasicSetManualProxyFieldTest('http', invalid_url, 3128)
+    self.assertRaises(AutomationCommandTimeout,
+                      lambda: self.NavigateToURL('http://www.google.com'))
 
   def testSetHTTPProxySettingsByDomain(self):
     """Set the http proxy by domain name and verify it saves."""

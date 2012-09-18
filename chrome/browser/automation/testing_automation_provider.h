@@ -1496,13 +1496,17 @@ class TestingAutomationProvider : public AutomationProvider,
   void ToggleNetworkDevice(base::DictionaryValue* args,
                            IPC::Message* reply_message);
 
-  void GetProxySettings(Browser* browser,
-                        base::DictionaryValue* args,
+  void GetProxySettings(base::DictionaryValue* args,
                         IPC::Message* reply_message);
 
-  void SetProxySettings(Browser* browser,
-                        base::DictionaryValue* args,
+  void SetProxySettings(base::DictionaryValue* args,
                         IPC::Message* reply_message);
+
+  void SetSharedProxies(base::DictionaryValue* args,
+                        IPC::Message* reply_message);
+
+  void RefreshInternetDetails(base::DictionaryValue* args,
+                              IPC::Message* reply_message);
 
   void ConnectToCellularNetwork(base::DictionaryValue* args,
                             IPC::Message* reply_message);

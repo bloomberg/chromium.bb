@@ -45,6 +45,11 @@ Browser* GetBrowserAt(int index);
 // |BrowserList|. If any of these indices are invalid, NULL will be returned.
 content::WebContents* GetWebContentsAt(int browser_index, int tab_index);
 
+#if defined(OS_CHROMEOS)
+// Returns the appropriate profile depending on signed in state of user.
+Profile* GetCurrentProfileOnChromeOS(std::string* error_message);
+#endif
+
 // Returns the browser that contains the given tab, or NULL if none exists.
 Browser* GetBrowserForTab(content::WebContents* tab);
 

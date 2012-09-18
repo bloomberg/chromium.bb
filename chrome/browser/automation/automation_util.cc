@@ -6,6 +6,8 @@
 
 #include <string>
 
+#include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
@@ -39,9 +41,24 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/existing_user_controller.h"
+#include "chrome/browser/chromeos/login/login_display.h"
+#include "chrome/browser/chromeos/login/login_display_host.h"
+#include "chrome/browser/chromeos/login/webui_login_display.h"
+#include "chrome/browser/chromeos/login/webui_login_display_host.h"
+#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#endif
+
 using content::BrowserThread;
 using content::RenderViewHost;
 using content::WebContents;
+
+#if defined(OS_CHROMEOS)
+using chromeos::ExistingUserController;
+using chromeos::User;
+using chromeos::UserManager;
+#endif
 
 namespace {
 
@@ -149,6 +166,42 @@ WebContents* GetWebContentsAt(int browser_index, int tab_index) {
     return NULL;
   return chrome::GetWebContentsAt(browser, tab_index);
 }
+
+#if defined(OS_CHROMEOS)
+Profile* GetCurrentProfileOnChromeOS(std::string* error_message) {
+  const UserManager* user_manager = UserManager::Get();
+  if (!user_manager) {
+    *error_message = "No user manager.";
+    return NULL;
+  }
+  if (!user_manager->IsUserLoggedIn()) {
+    ExistingUserController* controller =
+        ExistingUserController::current_controller();
+    if (!controller) {
+      *error_message = "Cannot get controller though user is not logged in.";
+      return NULL;
+    }
+    chromeos::WebUILoginDisplayHost* webui_login_display_host =
+        static_cast<chromeos::WebUILoginDisplayHost*>(
+            controller->login_display_host());
+    content::WebUI* web_ui = webui_login_display_host->GetOobeUI()->web_ui();
+    if (!web_ui) {
+      *error_message = "Unable to get webui from login display host.";
+      return NULL;
+    }
+    return Profile::FromWebUI(web_ui);
+  } else {
+    ash::Shell* shell = ash::Shell::GetInstance();
+    if (!shell || !shell->delegate()) {
+      *error_message = "Unable to get shell delegate.";
+      return NULL;
+    }
+    return Profile::FromBrowserContext(
+        shell->delegate()->GetCurrentBrowserContext());
+  }
+  return NULL;
+}
+#endif  // defined(OS_CHROMEOS)
 
 Browser* GetBrowserForTab(WebContents* tab) {
   BrowserList::const_iterator browser_iter = BrowserList::begin();

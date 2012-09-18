@@ -9,6 +9,7 @@
       'common/automation_constants.h',
       'common/pref_names.cc',
       'common/pref_names.h',
+      'browser/chromeos/cros/network_constants.h',
       'test/automation/browser_proxy.cc',
       'test/automation/browser_proxy.h',
       'test/automation/tab_proxy.cc',
@@ -4479,6 +4480,24 @@
           ],
           'actions': [
             {
+              'variables' : {
+                'swig_args': [ '-I..',
+                               '-python',
+                               '-c++',
+                               '-threads',
+                               '-outdir',
+                               '<(PRODUCT_DIR)',
+                               '-o',
+                               '<(INTERMEDIATE_DIR)/pyautolib_wrap.cc',
+                ],
+                'conditions': [
+                  ['chromeos==1', {
+                    'swig_args': [
+                      '-DOS_CHROMEOS',
+                    ]
+                  }],
+                ],
+              },
               'action_name': 'pyautolib_swig',
               'inputs': [
                 'test/pyautolib/argc_argv.i',
@@ -4491,14 +4510,7 @@
               ],
               'action': [ 'python',
                           '../tools/swig/swig.py',
-                          '-I..',
-                          '-python',
-                          '-c++',
-                          '-threads',
-                          '-outdir',
-                          '<(PRODUCT_DIR)',
-                          '-o',
-                          '<(INTERMEDIATE_DIR)/pyautolib_wrap.cc',
+                          '<@(swig_args)',
                           'test/pyautolib/pyautolib.i',
               ],
               'message': 'Generating swig wrappers for pyautolib.',

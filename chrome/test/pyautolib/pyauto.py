@@ -99,7 +99,6 @@ _REMOTE_PROXY = None
 _OPTIONS = None
 _BROWSER_PID = None
 
-
 class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
   """Base class for UI Test Cases in Python.
 
@@ -4922,7 +4921,8 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
                   u'name': u'',
                   u'service_path':
                   u'/profile/default/ethernet_abcd',
-                  u'status': u'Connected'}},
+                  u'status': u'Connected'}
+              u'network_type': pyautolib.TYPE_ETHERNET },
         u'ip_address': u'11.22.33.44',
         u'remembered_wifi':
             { u'/service/wifi_abcd_1234_managed_none':
@@ -4933,6 +4933,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
                   u'name': u'WifiNetworkName1',
                   u'status': u'Unknown',
                   u'strength': 0},
+              u'network_type': pyautolib.TYPE_WIFI
             },
         u'wifi_available': True,
         u'wifi_enabled': True,
@@ -4951,7 +4952,8 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
                     u'ip_address': u'',
                     u'name': u'WifiNetworkName2',
                     u'status': u'Idle',
-                    u'strength': 79}}}
+                    u'strength': 79}
+              u'network_type': pyautolib.TYPE_WIFI }}
 
 
     Raises:
@@ -5087,11 +5089,11 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
                self.PROXY_TYPE_PAC: 'Automatic proxy configuration' }
     return values[proxy_type]
 
-  def GetProxySettingsOnChromeOS(self, windex=0):
+  def GetProxySettingsOnChromeOS(self):
     """Get current proxy settings on Chrome OS.
 
     Returns:
-      A dictionary. See SetProxySettings() below
+      A dictionary. See SetProxySetting() below
       for the full list of possible dictionary keys.
 
       Samples:
@@ -5114,14 +5116,130 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       pyauto_errors.JSONInterfaceError if the automation call returns an error.
     """
     cmd_dict = { 'command': 'GetProxySettings' }
-    return self._GetResultFromJSONRequest(cmd_dict, windex=windex)
+    return self._GetResultFromJSONRequest(cmd_dict, windex=None)
 
-  def SetProxySettingsOnChromeOS(self, key, value, windex=0):
-    """Set a proxy setting on Chrome OS.
+  def _FindNamedNetwork(self, network_dict, name):
+    """Finds a network by name.
+
+    Args:
+      network_dict: network settings as returned by GetNetworkInfo.
+      name: name of network we want to set proxy settings on.
+
+    Returns:
+      A dictionary with service_path and network_type of the
+      named network, when given a dictionary with all system
+      network information as returned by GetNetworkInfo.
+
+      See GetNetworkInfo for a description of the input dictionary.
+
+      Samples:
+      { u'network_type': 'wifi_networks',
+        u'service_path': '/service/700'}
+    """
+    for (key, value) in network_dict.iteritems():
+      if isinstance(value, dict):
+        if 'name' in value:
+          if value['name'] == name:
+            network_info = {'service_path': key}
+            return network_info
+        else:
+          # if key is a dict but it doesnt have a 'name' entry, go deeper
+          network_info = self._FindNamedNetwork(value, name)
+          # if only service path set, set type from networking dictionary
+          if network_info != None and 'network_type' not in network_info:
+            network_info['network_type'] = value['network_type']
+          return network_info
+    return None
+
+  def _GetNamedNetworkInfo(self, network_name):
+    """Gets settings needed to enable shared proxies for the named network.
+
+    Args:
+      network_name: name of network we want to set proxy settings on.
+
+    Returns:
+      A dictionary with network_type and service_path.
+      Samples:
+      { u'network_type': '1',
+        u'service_path': '/service/0'}
+
+    Raises:
+      AutomationCommandFail if network name isn't found.
+    """
+    net = self.GetNetworkInfo()
+    if network_name == 'NAME_UNKNOWN':
+      if net.get('ethernet_available'):
+        service_path = net.get('connected_ethernet')
+        network_type = str(pyautolib.TYPE_ETHERNET)
+      elif net.get('wifi_available'):
+        service_path = net.get('connected_wifi')
+        network_type = str(pyautolib.TYPE_WIFI)
+      elif net.get('cellular_available'):
+        service_path = net.get('connected_cellular')
+        network_type = str(pyautolib.TYPE_CELLULAR)
+      else:
+        raise AutomationCommandFail('No network available.')
+    else:
+      named_network_info = self._FindNamedNetwork(net, network_name)
+      if named_network_info == None:
+        raise AutomationCommandFail('%s not found.' % network_name)
+      service_path = named_network_info['service_path']
+      network_type = named_network_info['network_type']
+
+    if not network_type:
+      raise AutomationCommandFail('network type not found.')
+    if not service_path:
+      raise AutomationCommandFail('service path not found.')
+    network_info = {'network type': network_type, 'service path': service_path}
+    return network_info
+
+  def SetProxySettingOnChromeOS(self, proxy_dict):
+    """Public wrapper around _SetProxySettingOnChromeOSCore, performs
+       state setup and error checking.
+
+    Args:
+      proxy_dict: dictionary of proxy settings, valid entries of which are
+      what one would supply _SetProxySettingOnChromeOSCore
+
+    Raises:
+      AutomationCommandFail if a necessary dictionary entries aren't found.
+    """
+    url_path = proxy_dict.get('url_path')
+    proxy_url = proxy_dict.get('proxy_url')
+    port_path = proxy_dict.get('port_path')
+    proxy_port = proxy_dict.get('proxy_port')
+
+    if proxy_url is not None:
+      if url_path is None:
+        raise AutomationCommandFail('url_path needed to set proxy_url.')
+        return
+      self.SetSharedProxies(True)
+      self.RefreshInternetDetails()
+      self._SetProxySettingOnChromeOSCore('type', self.PROXY_TYPE_MANUAL)
+      self._SetProxySettingOnChromeOSCore(url_path, proxy_url)
+
+    if proxy_port is not None:
+      if port_path is None:
+        raise AutomationCommandFail('port_path needed to set proxy_port.')
+        return
+      self._SetProxySettingOnChromeOSCore(port_path, proxy_port)
+
+  def ResetProxySettingsOnChromeOS(self):
+    """Public wrapper around proxysettings teardown functions."""
+    self.SetSharedProxies(False)
+    self.RefreshInternetDetails()
+    self._SetProxySettingOnChromeOSCore('type', self.PROXY_TYPE_DIRECT)
+
+  def _SetProxySettingOnChromeOSCore(self, key, value):
+    """Set a proxy setting.
 
     Owner must be logged in for these to persist.
     If user is not logged in or is logged in as non-owner or guest,
     proxy settings do not persist across browser restarts or login/logout.
+
+    Args:
+      key: string describing type of proxy preference.
+      value: value of proxy preference.
 
     Valid settings are:
       'type': int - Type of proxy. Should be one of:
@@ -5150,15 +5268,19 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
 
     Examples:
       # Sets direct internet connection, no proxy.
-      self.SetProxySettings('type', self.PROXY_TYPE_DIRECT)
+      self.SetProxySettingOnChromeOS('type', self.PROXY_TYPE_DIRECT)
 
       # Sets manual proxy configuration, same proxy for all protocols.
-      self.SetProxySettings('singlehttp', '24.27.78.152')
-      self.SetProxySettings('singlehttpport', 1728)
-      self.SetProxySettings('ignorelist', ['www.example.com', 'example2.com'])
+      self.SetProxySettingOnChromeOS('singlehttp', '24.27.78.152')
+      self.SetProxySettingOnChromeOS('singlehttpport', 1728)
+      self.SetProxySettingOnChromeOS('ignorelist',
+                                     ['www.example.com', 'example2.com'])
 
       # Sets automatic proxy configuration with the specified PAC url.
-      self.SetProxySettings('pacurl', 'http://example.com/config.pac')
+      self.SetProxySettingOnChromeOS('pacurl', 'http://example.com/config.pac')
+
+      # Sets httpproxy with specified url
+      self.SetProxySettingOnChromeOS('httpurl', 10.10.10)
 
     Raises:
       pyauto_errors.JSONInterfaceError if the automation call returns an error.
@@ -5168,7 +5290,38 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
         'key': key,
         'value': value,
     }
-    return self._GetResultFromJSONRequest(cmd_dict, windex=windex)
+    return self._GetResultFromJSONRequest(cmd_dict, windex=None)
+
+  def SetSharedProxies(self, value):
+    """Allows shared proxies on the named network.
+
+    Args:
+      value: True/False to set and clear respectively.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+        'command': 'SetSharedProxies',
+        'value': value,
+    }
+    return self._GetResultFromJSONRequest(cmd_dict, windex=None)
+
+  def RefreshInternetDetails(self, network_name='NAME_UNKNOWN'):
+    """Updates network information
+
+    Args:
+      network_name: name of the network we want to refresh settings for.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    network_info = self._GetNamedNetworkInfo(network_name)
+    cmd_dict = {
+        'command': 'RefreshInternetDetails',
+        'service path': network_info.get('service path'),
+    }
+    return self._GetResultFromJSONRequest(cmd_dict, None)
 
   def ForgetAllRememberedNetworks(self):
     """Forgets all networks that the device has marked as remembered."""

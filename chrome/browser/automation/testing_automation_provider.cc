@@ -1875,7 +1875,19 @@ void TestingAutomationProvider::BuildJSONHandlerMaps() {
   handler_map_["SetMute"] = &TestingAutomationProvider::SetMute;
 
   handler_map_["OpenCrosh"] = &TestingAutomationProvider::OpenCrosh;
+  handler_map_["SetProxySettings"] =
+      &TestingAutomationProvider::SetProxySettings;
+  handler_map_["GetProxySettings"] =
+      &TestingAutomationProvider::GetProxySettings;
+  handler_map_["SetSharedProxies"] =
+      &TestingAutomationProvider::SetSharedProxies;
+  handler_map_["RefreshInternetDetails"] =
+      &TestingAutomationProvider::RefreshInternetDetails;
 
+  browser_handler_map_["CaptureProfilePhoto"] =
+      &TestingAutomationProvider::CaptureProfilePhoto;
+  browser_handler_map_["GetTimeInfo"] =
+      &TestingAutomationProvider::GetTimeInfo;
 #endif  // defined(OS_CHROMEOS)
 
   browser_handler_map_["DisablePlugin"] =
@@ -2014,17 +2026,6 @@ void TestingAutomationProvider::BuildJSONHandlerMaps() {
       &TestingAutomationProvider::AcceptCurrentFullscreenOrMouseLockRequest;
   browser_handler_map_["DenyCurrentFullscreenOrMouseLockRequest"] =
       &TestingAutomationProvider::DenyCurrentFullscreenOrMouseLockRequest;
-
-#if defined(OS_CHROMEOS)
-  browser_handler_map_["CaptureProfilePhoto"] =
-      &TestingAutomationProvider::CaptureProfilePhoto;
-  browser_handler_map_["GetTimeInfo"] =
-      &TestingAutomationProvider::GetTimeInfo;
-  browser_handler_map_["GetProxySettings"] =
-      &TestingAutomationProvider::GetProxySettings;
-  browser_handler_map_["SetProxySettings"] =
-      &TestingAutomationProvider::SetProxySettings;
-#endif  // defined(OS_CHROMEOS)
 }
 
 scoped_ptr<DictionaryValue> TestingAutomationProvider::ParseJSONRequestCommand(

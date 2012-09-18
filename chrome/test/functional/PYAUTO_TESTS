@@ -623,7 +623,7 @@
       'chromeos_oobe',
 
       # crosbug.com/32583
-      '-chromeos_login.ChromeosLogin.testCachedCredentials',
+      '-chromeos_login.ChromeosLoginCachedCredentialsUserPod.testCachedCredentialsUserPod',
     ],
   },
 

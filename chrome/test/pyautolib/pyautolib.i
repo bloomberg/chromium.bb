@@ -38,12 +38,20 @@
 %ignore net::MapNetErrorToCertStatus(int);
 %include "net/base/cert_status_flags.h"
 
+#if defined(OS_CHROMEOS)
+%include "chrome/browser/chromeos/cros/network_constants.h"
+%{
+#include "chrome/browser/chromeos/cros/network_constants.h"
+%}
+#endif
+
 %{
 #include "chrome/common/automation_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/pyautolib/pyautolib.h"
+#include "content/public/common/security_style.h"
 #include "net/test/test_server.h"
 %}
 
