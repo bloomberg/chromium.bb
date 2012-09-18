@@ -190,6 +190,8 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   void InitJNI(JNIEnv* env, jobject obj);
 
+  void InitWebContents(content::WebContents* web_contents);
+
   RenderWidgetHostViewAndroid* GetRenderWidgetHostViewAndroid();
 
   int GetTouchPadding();

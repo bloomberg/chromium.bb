@@ -18,6 +18,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "content/browser/web_contents/navigation_controller_impl.h"
+#include "content/browser/web_contents/web_contents_view_android.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/interstitial_page.h"
@@ -103,6 +104,8 @@ ContentViewCoreImpl::ContentViewCoreImpl(JNIEnv* env, jobject obj,
   std::string spoofed_ua =
       webkit_glue::BuildUserAgentFromOSAndProduct(kLinuxInfoStr, product);
   web_contents->SetUserAgentOverride(spoofed_ua);
+
+  InitWebContents(web_contents);
 }
 
 ContentViewCoreImpl::~ContentViewCoreImpl() {
@@ -117,6 +120,16 @@ ContentViewCoreImpl::~ContentViewCoreImpl() {
 
 void ContentViewCoreImpl::Destroy(JNIEnv* env, jobject obj) {
   delete this;
+}
+
+void ContentViewCoreImpl::InitWebContents(WebContents* web_contents) {
+  web_contents_ = static_cast<WebContentsImpl*>(web_contents);
+  notification_registrar_.Add(this,
+      NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
+      Source<NavigationController>(&web_contents_->GetController()));
+
+  static_cast<WebContentsViewAndroid*>(web_contents_->GetView())->
+      SetContentViewCore(this);
 }
 
 void ContentViewCoreImpl::Observe(int type,

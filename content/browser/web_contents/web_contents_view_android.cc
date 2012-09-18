@@ -28,6 +28,7 @@ WebContentsViewAndroid::WebContentsViewAndroid(
     WebContentsImpl* web_contents,
     WebContentsViewDelegate* delegate)
     : web_contents_(web_contents),
+      content_view_core_(NULL),
       delegate_(delegate) {
 }
 
