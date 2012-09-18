@@ -114,6 +114,7 @@ TabContents::TabContents(WebContents* contents)
   // helpers may rely on that.
   SessionTabHelper::CreateForWebContents(contents);
 
+  AlternateErrorPageTabObserver::CreateForWebContents(contents);
   autocomplete_history_manager_.reset(new AutocompleteHistoryManager(contents));
   autofill_delegate_.reset(new TabAutofillManagerDelegate(this));
   autofill_manager_ = new AutofillManager(autofill_delegate_.get(), this);
@@ -170,9 +171,6 @@ TabContents::TabContents(WebContents* contents)
   web_intent_picker_controller_.reset(new WebIntentPickerController(this));
 #endif
 
-  // Create the per-tab observers.
-  alternate_error_page_tab_observer_.reset(
-      new AlternateErrorPageTabObserver(contents, profile()));
   external_protocol_observer_.reset(new ExternalProtocolObserver(contents));
   navigation_metrics_recorder_.reset(new NavigationMetricsRecorder(contents));
   pepper_broker_observer_.reset(new PepperBrokerObserver(contents));

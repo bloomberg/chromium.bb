@@ -7,6 +7,7 @@
 
 #include "chrome/browser/api/prefs/pref_change_registrar.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/tab_contents/web_contents_user_data.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -14,16 +15,20 @@
 class Profile;
 
 // Per-tab class to implement alternate error page functionality.
-class AlternateErrorPageTabObserver : public content::WebContentsObserver,
-                                      public content::NotificationObserver {
+class AlternateErrorPageTabObserver
+    : public content::WebContentsObserver,
+      public content::NotificationObserver,
+      public WebContentsUserData<AlternateErrorPageTabObserver> {
  public:
-  AlternateErrorPageTabObserver(content::WebContents* web_contents,
-                                Profile* profile);
   virtual ~AlternateErrorPageTabObserver();
 
   static void RegisterUserPrefs(PrefService* prefs);
 
  private:
+  explicit AlternateErrorPageTabObserver(content::WebContents* web_contents);
+  static int kUserDataKey;
+  friend class WebContentsUserData<AlternateErrorPageTabObserver>;
+
   // content::WebContentsObserver overrides:
   virtual void RenderViewCreated(
       content::RenderViewHost* render_view_host) OVERRIDE;

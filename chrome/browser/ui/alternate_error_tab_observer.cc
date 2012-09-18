@@ -16,11 +16,12 @@
 using content::RenderViewHost;
 using content::WebContents;
 
+int AlternateErrorPageTabObserver::kUserDataKey;
+
 AlternateErrorPageTabObserver::AlternateErrorPageTabObserver(
-    WebContents* web_contents,
-    Profile* profile)
+    WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      profile_(profile) {
+      profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())) {
   PrefService* prefs = profile_->GetPrefs();
   if (prefs) {
     pref_change_registrar_.Init(prefs);
@@ -51,9 +52,10 @@ void AlternateErrorPageTabObserver::RenderViewCreated(
 ////////////////////////////////////////////////////////////////////////////////
 // content::NotificationObserver overrides
 
-void AlternateErrorPageTabObserver::Observe(int type,
-                            const content::NotificationSource& source,
-                            const content::NotificationDetails& details) {
+void AlternateErrorPageTabObserver::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_PREF_CHANGED) {
     DCHECK_EQ(profile_->GetPrefs(), content::Source<PrefService>(source).ptr());
     DCHECK_EQ(std::string(prefs::kAlternateErrorPagesEnabled),

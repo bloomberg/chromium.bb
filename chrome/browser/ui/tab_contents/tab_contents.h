@@ -11,7 +11,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/web_contents_observer.h"
 
-class AlternateErrorPageTabObserver;
 class AutocompleteHistoryManager;
 class AutofillExternalDelegate;
 class AutofillManager;
@@ -368,7 +367,6 @@ class TabContents : public content::WebContentsObserver {
   // (These provide no API for callers; objects that need to exist 1:1 with tabs
   // and silently do their thing live here.)
 
-  scoped_ptr<AlternateErrorPageTabObserver> alternate_error_page_tab_observer_;
   scoped_ptr<extensions::WebNavigationTabObserver> webnavigation_observer_;
   scoped_ptr<ExternalProtocolObserver> external_protocol_observer_;
   scoped_ptr<NavigationMetricsRecorder> navigation_metrics_recorder_;
