@@ -1,0 +1,23 @@
+<div>
+  <a name="type-{{name}}"></a>
+  <h4>{{name}}</h4>
+  <div>
+    <dt>{{+partials.type_name}}</dt>
+    {{?description}}<dd>
+      {{{description}}}
+    </dd>{{/description}}
+    {{?properties}}
+    <dd><dl>{{#properties}}{{^additional_properties}}{{+partials.property}}{{/}}{{/}}</dl></dd>
+    {{/properties}}
+    {{?functions}}
+    <a name={{type.name}}-methods></a>
+    <dd><h3>Methods of {{type.name}}</h3>
+      <dd><dl>{{#functions}}{{+partials.function api:api prefix:type.name}}{{/}}</dl></dd>
+    {{/functions}}
+    {{?events}}
+    <a name={{type.name}}-events></a>
+    <dd><h3>Events of {{type.name}}</h3>
+      <dd><dl>{{#events}}{{+partials.event api:api prefix:type.name}}{{/}}</dl></dd>
+    {{/events}}
+  </div>
+</div>

@@ -1,0 +1,43 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+#gc-pagecontent {
+  margin: 0;
+}
+
+#index table {
+  margin: 0 0 0 1px;
+  border-color: #36C;
+  border-spacing: 0;
+  clear: right;
+  border-collapse: collapse;
+  line-height: 125%;
+}
+
+#index table.columns td {
+  padding: 0 1em 0 0;
+}
+
+#index table.columns td p {
+  margin: 1em 0 0 0;
+  padding: 0;
+}
+
+#index td {
+  padding: 6px 12px;
+  border 1px solid #36C;
+  background-color: white;
+  text-align: left;
+  vertical-align: top;
+}
+
+#index td ul, #index td ol {
+  margin: 0 0 1em 15px;
+  padding: 0;
+}
+
+#howDoIStart {
+  width: 330px;
+}

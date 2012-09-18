@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    {{+partials.header_head}}
+    <link href="{{static}}/css/index.css" rel="stylesheet" type="text/css">
+    <title>Google Chrome Extensions</title>
+  </head>
+  <body>
+    {{+partials.header_body title:extensions_title}}
+    <div id="gc-container">
+      <div id="gc-pagecontent">
+        <table id="index">
+          <tr>
+            <td>
+              <h3>What are extensions?</h3>
+              <p>
+                Extensions are small software programs that
+                can modify and enhance the functionality of the Chrome browser.
+                You write them using web technologies such as
+                HTML, JavaScript, and CSS.
+                You can also use the extension system to build
+                <a href="apps.html">packaged apps</a>,
+                a downloadable kind of
+                <a href="http://code.google.com/chrome/apps/index.html">installable web app</a>.
+              </p>
+              <p>
+                <img src="{{static}}/images/index/gmail-small.png" width="91" height="35" align="right" style="margin-top:0px; margin-left:0.5em" alt="A screenshot of an extension's icon in the browser bar">
+                From a user's point of view,
+                extensions and packaged apps are very different
+                because they present very different user interfaces.
+                Extensions have little to no user interface.
+                For example, the image to the right shows the icon
+                that provides the UI for the
+                <a href="samples.html#gmail">Gmail extension</a>.
+              </p>
+              <p>
+                <img src="{{static}}/images/index/html5app.png" width="200" height="160" align="right" style="margin-top:0px; margin-left:0.5em" alt="A screenshot of a packaged app that implements a jigsaw puzzle">
+                Packaged apps, on the other hand,
+                look and feel like regular web apps,
+                with a big-screen design
+                and rich UI.
+                The image to the right shows a jigsaw puzzle game
+                implemented by a packaged app.
+              </p>
+              <p>
+                Both extensions and packaged apps bundle all their files
+                into a single file that the user downloads and installs.
+                This bundling means that, unlike ordinary web apps,
+                extensions and packaged apps don't need to depend
+                on content from the web.
+              </p>
+              <p>
+                You can distribute your extension or packaged app
+                by using the
+                <a href="https://chrome.google.com/webstore/developer/dashboard">Chrome Developer Dashboard</a>
+                to publish to the
+                <a href="http://chrome.google.com/webstore">Chrome Web Store</a>.
+                For more information, see the
+                <a href="http://code.google.com/chrome/webstore">store developer documentation</a>.
+              </p>
+            </td>
+            <td id="howDoIStart">
+              <h3>How do I start?</h3>
+              <p></p>
+              <ol>
+                <li>
+                  Follow the <a href="getstarted.html">Getting Started tutorial</a>
+                  <!-- PENDING: once we have one for packaged apps, change to
+                    "for _extensions_ or _packaged_apps_" -->
+                </li>
+                <li>
+                  Read the
+                  <a href="overview.html">Overview</a>
+                </li>
+                <li>
+                  Keep up-to-date by reading the
+                  <a href="http://blog.chromium.org/">Chromium blog</a>
+                </li>
+                <li>
+                  Subscribe to the
+                  <a href="http://groups.google.com/a/chromium.org/group/chromium-extensions">chromium-extensions group</a>
+                </li>
+              </ol>
+              <p></p>
+              <h3>Featured videos</h3>
+              <p>
+                <a href="http://www.youtube.com/view_play_list?p=CA101D6A85FE9D4B">Technical videos</a> <br>
+                <a href="http://www.youtube.com/view_play_list?p=38DF05697DE372B1">Developer snapshots</a> (below)
+              </p>
+              <p>
+                <iframe title="YouTube video player" width="300" height="199" src="http://www.youtube.com/embed/wRDPTnY3yO8?rel=0" frameborder="0" allowfullscreen=""></iframe>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </body>
+  {{+partials.extensions_footer}}
+</html>

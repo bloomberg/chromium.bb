@@ -1,0 +1,56 @@
+<div id="gc-footer">
+  <div class="text">
+    <p>
+      Except as otherwise <a href="http://code.google.com/policies.html#restrictions">noted</a>,
+      the content of this page is licensed under the <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">Creative Commons
+      Attribution 3.0 License</a>, and code samples are licensed under the
+      <a rel="license" href="http://code.google.com/google_bsd_license.html">BSD License</a>.
+    </p>
+    <p>
+      ©2012 Google
+    </p>
+    <script src="{{static}}/js/branch.js" type="text/javascript"></script>
+    <script src="{{static}}/js/sidebar.js" type="text/javascript"></script>
+    <script src="{{static}}/js/prettify.js" type="text/javascript"></script>
+    <script>
+      (function() {
+        // Auto syntax highlight all pre tags.
+        var preElements = document.getElementsByTagName('pre');
+        for (var i = 0; i < preElements.length; i++)
+          preElements[i].classList.add('prettyprint');
+        prettyPrint();
+      })();
+    </script>
+    <script src="https://www.google-analytics.com/urchin.js" type="text/javascript"></script>
+    <script src="https://www.google-analytics.com/ga.js" type="text/javascript"></script>
+    <script type="text/javascript">
+      // chrome doc tracking
+      try {
+        var engdocs = _gat._getTracker("YT-10763712-2");
+        engdocs._trackPageview();
+      } catch(err) {}
+      // code.google.com site-wide tracking
+      try {
+        _uacct="UA-18071-1";
+        _uanchor=1;
+        _uff=0;
+        urchinTracker();
+      }
+      catch(e) {/* urchinTracker not available. */}
+    </script>
+    <script src="http://www.google.com/jsapi" type="text/javascript"></script>
+    <script type="text/javascript">
+      google.load('search', '1',
+          {language : 'en', style : google.loader.themes.V2_DEFAULT});
+      google.setOnLoadCallback(function() {
+        var customSearchOptions = {};
+        var customSearchControl = new google.search.CustomSearchControl(
+          '002967670403910741006:61_cvzfqtno', customSearchOptions);
+        customSearchControl.setResultSetSize(
+            google.search.Search.FILTERED_CSE_RESULTSET);
+        customSearchControl.draw('cse');
+      }, true);
+    </script>
+    <script type="text/javascript">google.load("elements", "1", {packages: "transliteration"});</script>
+  </div>
+</div>

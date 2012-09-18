@@ -1,0 +1,109 @@
+<p id="classSummary">
+The <code>chrome.experimental.speechInput</code> module provides
+one-shot speech recognition to Chrome extensions.
+This module is still experimental. For information on how to use experimental
+APIs, see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
+</p>
+
+<h2 id="manifest">Manifest</h2>
+<p>You must declare the "experimental" permission in the <a
+  href="manifest.html">extension manifest</a> to use the speech input
+API.
+For example:</p>
+<pre>{
+  "name": "My extension",
+  ...
+  <b>"permissions": [
+    "experimental"
+  ]</b>,
+  ...
+}</pre>
+
+<h2 id="howToStart">How to start speech recognition</h2>
+<p>To start recognizing speech an extension must call the <code>start()</code>
+method. If provided, your callback will be called once recording has
+successfully started. In case of error <code>chrome.extension.lastError</code>
+will be set.</p>
+
+<p>This API provides exclusive access to the default recording device to the
+first extension requesting it. Consequently, any calls to <code>start()</code>
+when the device is being used by another extension or web page will fail and set
+<code>chrome.extension.lastError</code>. The message <code>requestDenied</code>
+will be set if another extension in the same profile is making use of the API.
+Otherwise <code>noRecordingDeviceFound</code>, <code>recordingDeviceInUse</code>
+or <code>unableToStart</code> will be set depending on the situation.</p>
+
+<p>To check whether recording is currently active, call the
+<code>isRecording()</code> method. Please note that it only checks for audio
+recording within Chrome.</p>
+
+
+<h2 id="howToGetResults">How to get speech recognition results</h2>
+<p>Listen to the <code>onResult</code> event to receive speech recognition
+results.</p>
+
+<pre>
+var callback = function(result) { ... };
+
+chrome.experimental.speechInput.onResult.addListener(callback);
+</pre>
+
+<p>The <code>result</code> object contains an array of
+<a href="#type-SpeechInputResultHypothesis">SpeechInputResultHypothesis</a>
+sorted by decreasing likelihood.</p>
+
+<p>Recording automatically stops when results are received. It is safe to call
+<code>start()</code> again from the results callback.</p>
+
+<p>To handle errors during speech recognition listen for the
+<code>onError</code> event.</p>
+
+<pre>
+var callback = function(error) { ... };
+
+chrome.experimental.speechInput.onError.addListener(callback);
+</pre>
+
+</p>Recording will automatically stop in case of error.
+It is safe to call <code>start()</code> again from the error callback.</p>
+
+
+<h2 id="howToStop">How to stop recording</h2>
+<p>To stop speech recognition call the <code>stop()</code> method. If provided,
+the callback function will be called once recording has successfully stopped.
+In case of error <code>chrome.extension.lastError</code> will be set.
+</p>
+
+
+<h2 id="otherFeatures">Other features</h2>
+<ul><li>
+<code>onSoundStart</code> - Event generated when start of sound is detected
+(from previously being silent).
+</li><li>
+<code>onSoundEnd</code> - Event generated when end of sound is detected (a
+continued period of silence).
+</li></ul>
+
+
+<h2 id="examples">Examples</h2>
+<p>The following example illustrates how to show a JavaScript alert with the
+most likely recognition result.</p>
+<pre>
+function checkStart() {
+  if (chrome.extension.lastError) {
+    alert("Couldn't start speech input: " + chrome.extension.lastError.message);
+  }
+}
+
+function recognitionFailed(error) {
+  alert("Speech input failed: " + error.code);
+}
+
+function recognitionSucceeded(result) {
+  alert("Recognized '" + result.hypotheses[0].utterance + "' with confidence " + result.hypotheses[0].confidence);
+}
+
+chrome.experimental.speechInput.onError.addListener(recognitionFailed);
+chrome.experimental.speechInput.onResult.addListener(recognitionSucceeded);
+chrome.experimental.speechInput.start({ "language": "en" }, checkStart);
+</pre>

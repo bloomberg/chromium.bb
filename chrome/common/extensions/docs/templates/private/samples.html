@@ -1,0 +1,40 @@
+{{- sidenav: the sidenav bar for either apps or extensions -}}
+{{- filter_list: the list of APIs that show up in the filter box -}}
+{{- samples_list: the list of samples shown on the page -}}
+{{- footer: the footer for either apps or extensions -}}
+<!DOCTYPE html>
+<html>
+  <head>
+    {{+partials.header_head}}
+    <link href="{{static}}/css/samples.css" rel="stylesheet" type="text/css">
+    <title>Sample {{title}} - Google Chrome {{title}}</title>
+  </head>
+  <body>
+    {{+partials.header_body}}
+    <div id="gc-container">
+      {{+sidenav}}
+      <div id="gc-pagecontent">
+        <h1 class="page_title">Sample {{title}}</h1>
+        <div id="controls">
+          <table class="controlbox">
+            <tr>
+              <td class="label">Filter by keyword:</td>
+              <td><input autofocus type="search" id="search_input" placeholder="Type to search"></td>
+            </tr>
+            <tr>
+              <td class="label">Filter by API:</td>
+              <td>
+                <div id="api_filter_items">
+                  {{#filter_list}}{{+partials.filter_item}}{{/}}
+                </div>
+              </td>
+            </tr>
+          </table>
+        </div>
+        {{#samples_list}}{{+partials.sample_item}}{{/}}
+      </div>
+    </div>
+  </body>
+  {{+footer}}
+  <script src="{{static}}/js/samples.js" type="text/javascript"></script>
+</html>

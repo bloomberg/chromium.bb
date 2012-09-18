@@ -1,0 +1,45 @@
+<p id="classSummary">
+Use the <code>chrome.tabs</code> module
+to interact with the browser's tab system.
+You can use this module to
+create, modify, and rearrange tabs in the browser.
+</p>
+
+<img src="{{static}}/images/tabs.png"
+     width="323" height="50" alt="Two tabs in a window" />
+
+<h2 id="manifest">Manifest</h2>
+<p>
+Almost all <code>chrome.tabs</code> methods require you to
+declare the "tabs" permission
+in the <a href="manifest.html">extension manifest</a>.
+For example:
+</p>
+
+<pre>{
+  "name": "My extension",
+  ...
+  <b>"permissions": [
+    "tabs"
+  ]</b>,
+  ...
+}</pre>
+
+<p>
+Three methods (<a href="#method-create"><code>create</code></a>,
+<a href="#method-update"><code>update</code></a> and
+<a href="#method-remove"><code>remove</code></a>) and one event
+(<a href="#event-onRemoved"><code>onRemoved</code></a>) don't require the "tabs"
+permission.
+</p>
+
+
+<h2 id="examples"> Examples </h2>
+
+<p>
+You can find simple examples of using the tabs module in the
+<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/tabs/">examples/api/tabs</a>
+directory.
+For other examples and for help in viewing the source code, see
+<a href="samples.html">Samples</a>.
+</p>

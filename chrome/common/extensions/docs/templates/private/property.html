@@ -1,0 +1,12 @@
+<dt>
+  <span class="variable">{{name}}</span>
+  <span class="property">
+    (
+      {{?optional}}<span class="optional">optional</span>{{/}}
+      <span id="typeTemplate">{{+partials.variable_type}}</span>
+    )
+  </span>
+</dt>
+{{?description}}<dd>
+  {{{description}}}
+</dd>{{/description}}

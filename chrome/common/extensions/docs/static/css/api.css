@@ -1,0 +1,53 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+.type_name,
+.variable,
+.property {
+  font-style: italic;
+}
+
+#gc-pagecontent table {
+  border-collapse: collapse;
+}
+
+#gc-pagecontent th {
+  text-align: left;
+  padding: 6px 12px;
+}
+
+#gc-pagecontent td {
+  padding: 6px 12px;
+  border: 1px solid #36C;
+  vertical-align: top;
+}
+
+.api_reference div.summary {
+  border: 1px solid #93B4D9;
+  font-family: "Courier New", courier, monospace;
+  padding: 0.5em 0.5em 0.5em 2em;
+  text-indent: -1.5em;
+  background-color: #CADEF4;
+  margin-top: 1em;
+}
+
+/* This style is used because types with functions prefix the function with the
+ * type name, using a lowercase first letter.
+ */
+.api_reference div.lower:first-letter {
+  text-transform: lowercase;
+}
+
+.api_reference div.description {
+  margin-left: 2em;
+}
+
+div.summary .subdued {
+  color: #7594B8;
+}
+
+.optional {
+  color: #7D7D7D;
+}

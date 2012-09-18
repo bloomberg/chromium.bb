@@ -1,0 +1,48 @@
+<p>
+The infobars API allows you to add a
+horizontal panel just above a tab's contents,
+as the following screenshot shows.
+</p>
+
+<p>
+<img src="{{static}}/images/infobar.png"
+  width="566" height="150"
+  alt="An infobar asking whether the user wants to translate the current page" />
+</p>
+
+<p>
+Use an infobar to tell the reader
+something about a particular page.
+When the user leaves the page for which the infobar is displayed,
+Google Chrome automatically closes the infobar.
+</p>
+
+<p>
+You implement the content of your
+infobar using HTML. Because infobars are ordinary pages inside an extension,
+they can
+<a href="overview.html#pageComm">communicate with other extension pages</a>.
+</p>
+
+
+<h2 id="manifest">Manifest</h2>
+
+<p>
+The infobars API is currently
+experimental, so you must declare the "experimental"
+permission to use it. Also, you should specify
+a 16x16-pixel icon for display next to your infobar.
+For example:
+</p>
+
+<pre>{
+  "name": "Andy's infobar extension",
+  "version": "1.0",
+  <b>"permissions": ["experimental"],</b>
+  <b>"icons": {</b>
+    <b>"16": "16.png"</b>
+  <b>},</b>
+  "background": {
+    "scripts": ["background.js"]
+  }
+}</pre>

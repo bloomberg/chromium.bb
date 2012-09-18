@@ -1,0 +1,42 @@
+{{?branchInfo.showWarning}}
+<div id="branchWarning" class="displayModeWarning">
+  <span>WARNING: this is the {{branchInfo.current}} documentation. It may not work with the stable release of Chrome.</span>
+  <select id="branchChooser">
+    <option value="">Choose a different version...</option>
+    {{#branchInfo.channels}}
+    <option value="{{path}}">{{name}}</option>
+    {{/}}
+  </select>
+</div>
+{{/}}
+<a id="top"></a>
+<div id="header">
+  <span id="logo">
+    <a href="http://code.google.com/"><img src="{{static}}/images/chrome_logo.gif" alt="Google Code Labs"></a>
+  </span>
+  <span id="cse"></span>
+</div>
+<a id="gc-topnav-anchor"></a>
+<div id="gc-topnav">
+  <h1>Google Chrome {{title}}</h1>
+  <ul id="home" class="gc-topnav-tabs">
+    <li id="home_link">
+      <a href="index.html" title="Google Chrome {{title}} home page"><div>Home</div></a>
+    </li>
+    <li id="docs_link">
+      <a href="docs.html" title="Official Google Chrome {{title}} documentation"><div>Docs</div></a>
+    </li>
+    <li id="faq_link">
+      <a href="faq.html" title="Answers to frequently asked questions about Google Chrome {{title}}"><div>FAQ</div></a>
+    </li>
+    <li id="samples_link">
+      <a href="samples.html" title="Sample {{title}} (with source code)"><div>Samples</div></a>
+    </li>
+    <li id="group_link">
+      <a href="http://groups.google.com/a/chromium.org/group/chromium-extensions" title="Google Chrome {{title}} developer forum"><div>Group</div></a>
+    </li>
+    <li id="so_link">
+      <a href="http://stackoverflow.com/questions/tagged/google-chrome-extension" title="[google-chrome-extension] tag on Stack Overflow"><div>Questions?</div></a>
+    </li>
+  </ul>
+</div>

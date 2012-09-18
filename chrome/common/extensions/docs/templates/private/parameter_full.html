@@ -1,0 +1,12 @@
+<div>
+  {{+partials.property}}
+  {{?properties}}
+  <dd>
+    <dl>
+      {{#properties}}
+        {{^additional_properties}}{{+partials.property}}{{/}}
+      {{/}}
+    </dl>
+  </dd>
+  {{/properties}}
+</div>

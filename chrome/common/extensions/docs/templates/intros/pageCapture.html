@@ -1,0 +1,30 @@
+<p>
+The pageCapture API allows you to save a tab as MHTML.
+</p>
+
+<p>
+MHTML is a <a href="http://tools.ietf.org/html/rfc2557">standard format</a>
+supported by most browsers. It encapsulates in a single file a page and all
+its resources (CSS files, images..).
+</p>
+
+<p>
+Note that for security reasons a MHTML file can only be loaded from the file
+system and that it can only be loaded in the main frame.
+</p>
+
+<h2 id="manifest">Manifest</h2>
+
+
+<p>You must declare the "pageCapture" permission
+in the <a href="manifest.html">extension manifest</a>
+to use the history API.
+For example:</p>
+<pre>{
+  "name": "My extension",
+  ...
+  <b>"permissions": [
+    "pageCapture"
+  ]</b>,
+  ...
+}</pre>

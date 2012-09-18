@@ -1,0 +1,84 @@
+<h1>Hosting</h1>
+
+<p>
+This page tells you how to host <code>.crx</code> files
+on your own server.
+If you distribute your extension, app, or theme solely through the
+<a href="http://chrome.google.com/webstore">Chrome Web Store</a>,
+you don't need this page.
+Instead, consult the
+<a href="http://www.google.com/support/chrome_webstore/">store help</a> and
+<a href="http://code.google.com/chrome/webstore/index.html">developer documentation</a>.
+</p>
+
+<p>
+By convention, extensions,
+installable web apps, and themes are served&mdash;whether
+by the Chrome Web Store or by a custom server&mdash;as
+<code>.crx</code> files.
+When you upload a ZIP file with the
+<a href="https://chrome.google.com/webstore/developer/dashboard">Chrome Developer Dashboard</a>,
+the dashboard creates the <code>.crx</code> file for you.
+</p>
+
+<p>
+If you aren't publishing using the dashboard,
+you need to create the <code>.crx</code> file yourself,
+as described in <a href="packaging.html">Packaging</a>.
+You can also specify
+<a href="autoupdate.html">autoupdate</a> information to ensure that
+your users will have the latest copy of the <code>.crx</code> file.
+</p>
+
+<p>
+A server that hosts <code>.crx</code> files
+must use appropriate HTTP headers,
+so that users can install the file
+by clicking a link to it.
+</p>
+
+<p>
+Google Chrome considers a file to be installable
+if <b>either</b> of the following is true:
+</p>
+
+<ul>
+  <li>
+    The file has the content type
+    <code>application/x-chrome-extension</code>
+  </li>
+  <li>
+    The file suffix is <code>.crx</code>
+    and <b>both</b> of the following are true:
+    <ul>
+      <li>
+        The file <b>is not</b> served with
+        the HTTP header <code>X-Content-Type-Options: nosniff</code>
+      </li>
+      <li>
+        The file <b>is</b> served
+        with one of the following content types:
+        <ul>
+          <li> empty string </li>
+          <li> "text/plain" </li>
+          <li> "application/octet-stream" </li>
+          <li> "unknown/unknown" </li>
+          <li> "application/unknown" </li>
+          <li> "*/*" </li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ul>
+
+<p>
+The most common reason for failing to recognize an installable file
+is that the server sends the header
+<code>X-Content-Type-Options: no sniff</code>.
+The second most common reason
+is that the server sends an unknown content type&mdash;one
+that isn't in the previous list.
+To fix an HTTP header issue,
+either change the configuration of the server
+or try hosting the <code>.crx</code> file at another server.
+</p>

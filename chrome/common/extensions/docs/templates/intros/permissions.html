@@ -1,0 +1,173 @@
+<p id="classSummary">
+  Use the <code>chrome.permissions</code> module to implement
+  optional permissions. You can request optional permissions during your
+  extension's regular application flow rather than at install time, so users
+  understand why the permissions are needed and use only those that are
+  necessary.
+</p>
+
+<p>
+  For general information about permissions and details about each permission,
+  see the <a href="manifest.html#permissions">permissions</a> section of the
+  manifest documentation.
+</p>
+
+<h2 id="howto"> Implementing optional permissions </h2>
+
+<h3 id="types">
+  Step 1: Decide which permissions are optional and required
+</h3>
+<p>
+  Extensions should generally require permissions when they are needed for the
+  extension's basic functionality and employ optional permissions for optional
+  features.
+</p>
+
+<p>
+  Advantages of optional permissions:
+  <ul>
+    <li>
+      Users run with less permissions since they enable only what is needed.
+    </li>
+    <li>
+      The extension can help explain why it needs particular permissions by
+      requesting them when the user enables the relevant feature.
+    </li>
+    <li>
+      Chrome can avoid disabling extensions that upgrade if they add permissions
+      as optional rather than required.
+    </li>
+  </ul>
+</p>
+
+<p>
+  Advantages of required permissions:
+  <ul>
+    <li>
+      The extension can prompt the user once to accept all permissions.
+    </li>
+    <li>
+      They simplify extension development by guaranteeing which permissions are
+      present.
+    </li>
+  </ul>
+</p>
+
+
+<h3 id="manifest"> Step 2: Declare optional permissions in the manifest </h3>
+<p>
+  Declare optional permissions in your <a href="manifest.html">extension
+  manifest</a> with the <code>optional_permissions</code> key, using the
+  same format as the <a href="manifest.html#permissions">permissions</a>
+  field:
+
+<pre>{
+  "name": "My extension",
+  ...
+  <b>"optional_permissions": [ "tabs", "http://www.google.com/" ],</b>
+  ...
+}</pre>
+</p>
+
+<p>
+You can specify any of the following as optional permissions:
+<ul>
+  <li><i>host permissions</i></li>
+  <li>appNotifications</li>
+  <li>background</li>
+  <li>bookmarks</li>
+  <li>clipboardRead</li>
+  <li>clipboardWrite</li>
+  <li>contentSettings</li>
+  <li>contextMenus</li>
+  <li>cookies</li>
+  <li>debugger</li>
+  <li>history</li>
+  <li>idle</li>
+  <li>management</li>
+  <li>notifications</li>
+  <li>pageCapture</li>
+  <li>tabs</li>
+  <li>topSites</li>
+  <li>webNavigation</li>
+  <li>webRequest</li>
+  <li>webRequestBlocking</li>
+</ul>
+</p>
+
+<h3 id="request"> Step 3: Request optional permissions </h3>
+<p>
+  Request the permissions from within a user gesture using
+  <code>permissions.request()</code>:
+<pre>
+document.querySelector('#my-button').addEventListener('click', function(event) {
+  // Permissions must be requested from inside a user gesture, like a button's
+  // click handler.
+  chrome.permissions.request({
+    permissions: ['tabs'],
+    origins: ['http://www.google.com/']
+  }, function(granted) {
+    // The callback argument will be true if the user granted the permissions.
+    if (granted) {
+      doSomething();
+    } else {
+      doSomethingElse();
+    }
+  });
+});
+</pre>
+</p>
+
+<p>
+  Chrome prompts the user if adding the permissions results in different
+  <a href="permission_warnings.html">warning messages</a> than the user has
+  already seen and accepted. For example, the previous code might result in
+  a prompt like this:
+</p>
+
+<p style="text-align: center">
+  <img src="{{static}}/images/perms-optional.png"
+       alt="example permission confirmation prompt"
+       width="416" height="234">
+</p>
+
+<h3 id="contains"> Step 4: Check the extension's current permissions </h3>
+<p>
+  To check whether your extension has a specific permission or set of
+  permissions, use <code>permission.contains()</code>:
+</p>
+
+<pre>
+chrome.permissions.contains({
+  permissions: ['tabs'],
+  origins: ['http://www.google.com/']
+}, function(result) {
+  if (result) {
+    // The extension has the permissions.
+  } else {
+    // The extension doesn't have the permissions.
+  }
+});
+</pre>
+
+<h3 id="remove"> Step 5: Remove the permissions </h3>
+<p>
+  You should remove permissions when you no longer need them.
+  After a permission has been removed, calling
+  <code>permissions.request()</code> usually adds the permission back without
+  prompting the user.
+</p>
+
+<pre>
+chrome.permissions.remove({
+  permissions: ['tabs'],
+  origins: ['http://www.google.com/']
+}, function(removed) {
+  if (removed) {
+    // The permissions have been removed.
+  } else {
+    // The permissions have not been removed (e.g., you tried to remove
+    // required permissions).
+  }
+});
+</pre>

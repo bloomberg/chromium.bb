@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    {{+partials.header_head}}
+    <title>{{article.title}} - Google Chrome</title>
+  </head>
+  <body>
+    {{+partials.header_body title:extensions_title}}
+    <div id="gc-container">
+      {{+partials.extensions_sidenav}}
+      <div id="gc-pagecontent">
+        <h1 class="page_title">{{article.title}}</h1>
+        {{?article.toc}}
+        {{+partials.table_of_contents toc_items:article.toc
+                                      has_toc:true
+                                      title:extensions_title}}
+        {{/article.toc}}
+{{- This may contain <pre> tags so it is not indented -}}
+{{+article.intro is_apps:false}}
+      </div>
+    </div>
+  </body>
+  {{+partials.extensions_footer}}
+</html>

@@ -1,0 +1,24 @@
+<div class="sample" tags="{{#api_calls}}{{name}} {{/}}">
+  <a name="{{id}}"></a>
+  <img class="icon" src="{{icon}}">
+  <h2><a href="{{download_url}}">{{name}}</a></h2>
+  {{?description}}
+  {{description}}
+  {{/description}}
+  <div>
+    <span class="label">Calls:</span>
+    <ul>
+      {{#api_calls}}
+      <li><code><a href="{{link}}">{{name}}</a></code></li>
+      {{/}}
+    </ul>
+  </div>
+  <div>
+    <span class="label">Source Files:</span>
+    <ul>
+      {{#files}}
+      <li><code><a href="{{url}}/{{@}}">{{@}}</a></code></li>
+      {{/}}
+    </ul>
+  </div>
+</div>
