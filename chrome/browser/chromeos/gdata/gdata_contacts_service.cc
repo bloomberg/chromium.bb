@@ -23,7 +23,6 @@
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "chrome/browser/google_apis/gdata_operations.h"
 #include "chrome/browser/google_apis/gdata_util.h"
-#include "chrome/browser/google_apis/operation_registry.h"
 #include "chrome/browser/google_apis/operation_runner.h"
 #include "content/public/browser/browser_thread.h"
 

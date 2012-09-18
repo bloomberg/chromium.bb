@@ -113,7 +113,7 @@ void FileBrowserEventRouter::ShutdownOnUIThread() {
       DriveSystemServiceFactory::FindForProfile(profile_);
   if (system_service) {
     system_service->file_system()->RemoveObserver(this);
-    system_service->drive_service()->operation_registry()->RemoveObserver(this);
+    system_service->drive_service()->RemoveObserver(this);
   }
 
   chromeos::NetworkLibrary* network_library =
@@ -143,7 +143,7 @@ void FileBrowserEventRouter::ObserveFileSystemEvents() {
     NOTREACHED();
     return;
   }
-  system_service->drive_service()->operation_registry()->AddObserver(this);
+  system_service->drive_service()->AddObserver(this);
   system_service->file_system()->AddObserver(this);
 
   chromeos::NetworkLibrary* network_library =
@@ -412,7 +412,7 @@ void FileBrowserEventRouter::Observe(
 }
 
 void FileBrowserEventRouter::OnProgressUpdate(
-    const std::vector<gdata::OperationRegistry::ProgressStatus>& list) {
+    const gdata::OperationProgressStatusList& list) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   scoped_ptr<ListValue> event_list(

@@ -120,8 +120,7 @@ void GetFileSystemOnUIThread(DriveFileSystemInterface** file_system) {
 void CancelDriveDownloadOnUIThread(const FilePath& drive_file_path) {
   DriveSystemService* system_service = GetSystemService();
   if (system_service)
-    system_service->drive_service()->operation_registry()->CancelForFilePath(
-        drive_file_path);
+    system_service->drive_service()->CancelForFilePath(drive_file_path);
 }
 
 // DriveURLRequesetJob is the gateway between network-level drive://...

@@ -27,7 +27,8 @@ class OperationRunner;
 // Details of API call are abstracted in each operation class and this class
 // works as a thin wrapper for the API.
 class GDataWapiService : public DriveServiceInterface,
-                         public AuthService::Observer {
+                         public AuthService::Observer,
+                         public OperationRegistry::Observer {
  public:
   // Instance is usually created by DriveSystemServiceFactory and owned by
   // DriveFileSystem.
@@ -40,9 +41,10 @@ class GDataWapiService : public DriveServiceInterface,
   virtual void Initialize(Profile* profile) OVERRIDE;
   virtual void AddObserver(DriveServiceObserver* observer) OVERRIDE;
   virtual void RemoveObserver(DriveServiceObserver* observer) OVERRIDE;
-  virtual OperationRegistry* operation_registry() const OVERRIDE;
   virtual bool CanStartOperation() const OVERRIDE;
   virtual void CancelAll() OVERRIDE;
+  virtual bool CancelForFilePath(const FilePath& file_path) OVERRIDE;
+  virtual OperationProgressStatusList GetProgressStatusList() const OVERRIDE;
   virtual void Authenticate(const AuthStatusCallback& callback) OVERRIDE;
   virtual bool HasAccessToken() const OVERRIDE;
   virtual bool HasRefreshToken() const OVERRIDE;
@@ -97,8 +99,15 @@ class GDataWapiService : public DriveServiceInterface,
                             const GetDataCallback& callback) OVERRIDE;
 
  private:
+  OperationRegistry* operation_registry() const;
+
   // AuthService::Observer override.
   virtual void OnOAuth2RefreshTokenChanged() OVERRIDE;
+
+  // DriveServiceObserver Overrides
+  virtual void OnProgressUpdate(
+      const OperationProgressStatusList& list) OVERRIDE;
+  virtual void OnAuthenticationFailed() OVERRIDE;
 
   Profile* profile_;
   scoped_ptr<OperationRunner> runner_;

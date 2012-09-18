@@ -45,7 +45,13 @@ enum DocumentExportFormat {
 class DriveServiceObserver {
  public:
   // Triggered when the service gets ready to perform operations.
-  virtual void OnReadyToPerformOperations() = 0;
+  virtual void OnReadyToPerformOperations() {}
+
+  // Called when an operation started, made some progress, or finished.
+  virtual void OnProgressUpdate(const OperationProgressStatusList& list) {}
+
+  // Called when GData authentication failed.
+  virtual void OnAuthenticationFailed() {}
 
  protected:
   virtual ~DriveServiceObserver() {}
@@ -74,14 +80,18 @@ class DriveServiceInterface {
   // Removes an observer.
   virtual void RemoveObserver(DriveServiceObserver* observer) = 0;
 
-  // Retrieves the operation registry.
-  virtual OperationRegistry* operation_registry() const = 0;
-
   // True if ready to start operations.
   virtual bool CanStartOperation() const = 0;
 
   // Cancels all in-flight operations.
   virtual void CancelAll() = 0;
+
+  // Cancels ongoing operation for a given virtual |file_path|. Returns true if
+  // the operation was found and canceled.
+  virtual bool CancelForFilePath(const FilePath& file_path) = 0;
+
+  // Obtains the list of currently active operations.
+  virtual OperationProgressStatusList GetProgressStatusList() const = 0;
 
   // Authentication service:
 

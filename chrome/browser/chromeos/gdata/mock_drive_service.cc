@@ -18,10 +18,13 @@
 
 using ::testing::_;
 using ::testing::Invoke;
+using ::testing::Return;
 
 namespace gdata {
 
 MockDriveService::MockDriveService() {
+  ON_CALL(*this, GetProgressStatusList())
+      .WillByDefault(Return(OperationProgressStatusList()));
   ON_CALL(*this, Authenticate(_))
       .WillByDefault(Invoke(this, &MockDriveService::AuthenticateStub));
   ON_CALL(*this, GetDocuments(_, _, _, _, _))

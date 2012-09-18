@@ -18,7 +18,6 @@
 #include "chrome/browser/chromeos/gdata/drive_system_service.h"
 #include "chrome/browser/google_apis/auth_service.h"
 #include "chrome/browser/google_apis/gdata_util.h"
-#include "chrome/browser/google_apis/operation_registry.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/url_constants.h"
@@ -405,25 +404,22 @@ void DriveInternalsWebUIHandler::OnPeriodicUpdate(const base::ListValue* args) {
 
 void DriveInternalsWebUIHandler::UpdateInFlightOperations(
     const gdata::DriveServiceInterface* drive_service) {
-  std::vector<gdata::OperationRegistry::ProgressStatus>
-      progress_status_list = drive_service->operation_registry()->
-      GetProgressStatusList();
+  gdata::OperationProgressStatusList
+      progress_status_list = drive_service->GetProgressStatusList();
 
   base::ListValue in_flight_operations;
   for (size_t i = 0; i < progress_status_list.size(); ++i) {
-    const gdata::OperationRegistry::ProgressStatus status =
-        progress_status_list[i];
+    const gdata::OperationProgressStatus& status = progress_status_list[i];
 
     base::DictionaryValue* dict = new DictionaryValue;
     dict->SetInteger("operation_id", status.operation_id);
     dict->SetString(
         "operation_type",
-        gdata::OperationRegistry::OperationTypeToString(status.operation_type));
+        gdata::OperationTypeToString(status.operation_type));
     dict->SetString("file_path", status.file_path.AsUTF8Unsafe());
     dict->SetString(
         "transfer_state",
-        gdata::OperationRegistry::OperationTransferStateToString(
-            status.transfer_state));
+        gdata::OperationTransferStateToString(status.transfer_state));
     dict->SetString(
         "start_time",
         gdata::util::FormatTimeAsStringLocaltime(status.start_time));
