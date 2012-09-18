@@ -2,43 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/file_path.h"
-#include "base/file_util.h"
 #include "base/message_loop.h"
-#include "base/path_service.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "googleurl/src/gurl.h"
-#include "grit/theme_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/skia_util.h"
-#include "webkit/glue/image_decoder.h"
 
 namespace {
-
-bool ImagesAreEqual(const gfx::Image& i1, const gfx::Image& i2) {
-  return gfx::BitmapsAreEqual(*i1.ToSkBitmap(), *i2.ToSkBitmap());
-}
-
-gfx::Image LoadIcon(const std::string& filename) {
-  FilePath path;
-  PathService::Get(chrome::DIR_TEST_DATA, &path);
-  path = path.AppendASCII("extensions").AppendASCII(filename);
-
-  std::string file_contents;
-  file_util::ReadFileToString(path, &file_contents);
-  const unsigned char* data =
-      reinterpret_cast<const unsigned char*>(file_contents.data());
-
-  SkBitmap bitmap;
-  webkit_glue::ImageDecoder decoder;
-  bitmap = decoder.Decode(data, file_contents.length());
-
-  return gfx::Image(bitmap);
-}
 
 class ExtensionActionTest : public testing::Test {
  public:
@@ -61,29 +30,6 @@ TEST_F(ExtensionActionTest, Title) {
   ASSERT_EQ("baz", action.GetTitle(1));
   action.ClearAllValuesForTab(100);
   ASSERT_EQ("baz", action.GetTitle(100));
-}
-
-TEST_F(ExtensionActionTest, Icon) {
-  gfx::Image puzzle_piece =
-      ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-          IDR_EXTENSIONS_FAVICON);
-  gfx::Image icon1 = LoadIcon("icon1.png");
-  gfx::Image icon2 = LoadIcon("icon2.png");
-  ASSERT_TRUE(ImagesAreEqual(puzzle_piece, action.GetIcon(1)));
-
-  action.set_default_icon_path("the_default.png");
-  ASSERT_TRUE(ImagesAreEqual(puzzle_piece, action.GetIcon(1)))
-      << "Still returns the puzzle piece because the image isn't loaded yet.";
-  action.CacheIcon(icon2);
-  ASSERT_TRUE(ImagesAreEqual(icon2, action.GetIcon(1)));
-
-  action.SetIcon(ExtensionAction::kDefaultTabId, icon1);
-  ASSERT_TRUE(ImagesAreEqual(icon1, action.GetIcon(100)))
-      << "SetIcon(kDefaultTabId) overrides the default_icon_path.";
-
-  action.SetIcon(100, icon2);
-  ASSERT_TRUE(ImagesAreEqual(icon1, action.GetIcon(1)));
-  ASSERT_TRUE(ImagesAreEqual(icon2, action.GetIcon(100)));
 }
 
 TEST_F(ExtensionActionTest, Visibility) {

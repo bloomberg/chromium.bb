@@ -5,9 +5,11 @@
 #ifndef CHROME_BROWSER_UI_COCOA_LOCATION_BAR_PAGE_ACTION_DECORATION_H_
 #define CHROME_BROWSER_UI_COCOA_LOCATION_BAR_PAGE_ACTION_DECORATION_H_
 
-#include "chrome/browser/extensions/image_loading_tracker.h"
+#include "chrome/browser/extensions/extension_action_icon_factory.h"
 #import "chrome/browser/ui/cocoa/location_bar/image_decoration.h"
 #include "chrome/common/extensions/extension_action.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 
 @class ExtensionActionContextMenu;
@@ -22,7 +24,7 @@ class WebContents;
 // Action and notify the extension when the icon is clicked.
 
 class PageActionDecoration : public ImageDecoration,
-                             public ImageLoadingTracker::Observer,
+                             public ExtensionActionIconFactory::Observer,
                              public content::NotificationObserver,
                              public ExtensionAction::IconAnimation::Observer {
  public:
@@ -36,10 +38,8 @@ class PageActionDecoration : public ImageDecoration,
   void set_preview_enabled(bool enabled) { preview_enabled_ = enabled; }
   bool preview_enabled() const { return preview_enabled_; }
 
-  // Overridden from |ImageLoadingTracker::Observer|.
-  virtual void OnImageLoaded(const gfx::Image& image,
-                             const std::string& extension_id,
-                             int index) OVERRIDE;
+  // Overridden from |ExtensionActionIconFactory::Observer|.
+  virtual void OnIconUpdated() OVERRIDE;
 
   // Called to notify the Page Action that it should determine whether
   // to be visible or hidden. |contents| is the WebContents that is
@@ -87,9 +87,12 @@ class PageActionDecoration : public ImageDecoration,
   // profile.
   ExtensionAction* page_action_;
 
-  // The object that is waiting for the image loading to complete
-  // asynchronously.
-  ImageLoadingTracker tracker_;
+
+  // The object that will be used to get the page action icon for us.
+  // It may load the icon asynchronously (in which case the initial icon
+  // returned by the factory will be transparent), so we have to observe it for
+  // updates to the icon.
+  scoped_ptr<ExtensionActionIconFactory> icon_factory_;
 
   // The tab id we are currently showing the icon for.
   int current_tab_id_;

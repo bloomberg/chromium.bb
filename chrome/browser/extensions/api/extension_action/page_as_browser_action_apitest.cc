@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"
+#include "chrome/browser/extensions/extension_action_icon_factory.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -93,8 +94,12 @@ IN_PROC_BROWSER_TEST_F(PageAsBrowserActionApiTest, Basic) {
     ASSERT_TRUE(catcher.GetNextResult());
   }
 
+  // We should not be creating icons asynchronously, so we don't need an
+  // observer.
+  ExtensionActionIconFactory icon_factory(extension, action, NULL);
+
   // Test that we received the changes.
-  EXPECT_FALSE(action->GetIcon(tab_id).IsEmpty());
+  EXPECT_FALSE(icon_factory.GetIcon(tab_id).IsEmpty());
 }
 
 // Test that calling chrome.pageAction.setPopup() can enable a popup.

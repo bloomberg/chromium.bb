@@ -13,6 +13,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/test/test_browser_thread.h"
 #include "grit/theme_resources.h"
+#include "skia/ext/image_operations.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia_source.h"
@@ -33,6 +34,15 @@ SkBitmap CreateBlankBitmapForScale(int size_dip, ui::ScaleFactor scale_factor) {
   bitmap.allocPixels();
   bitmap.eraseColor(SkColorSetARGB(0, 0, 0, 0));
   return bitmap;
+}
+
+SkBitmap EnsureBitmapSize(const SkBitmap& original, int size) {
+  if (original.width() == size && original.height() == size)
+    return original;
+
+  SkBitmap resized = skia::ImageOperations::Resize(
+      original, skia::ImageOperations::RESIZE_LANCZOS3, size, size);
+  return resized;
 }
 
 // Used to test behaviour including images defined by an image skia source.
@@ -291,11 +301,12 @@ TEST_F(ExtensionIconImageTest, FallbackToSmallerWhenNoBigger) {
 
   representation = image.image_skia().GetRepresentation(ui::SCALE_FACTOR_200P);
 
-  // We should have loaded the biggest smaller resource. In this case the
-  // loaded resource should not be resized.
+  // We should have loaded the biggest smaller resource resized to the actual
+  // size.
   EXPECT_EQ(ui::SCALE_FACTOR_200P, representation.scale_factor());
-  EXPECT_EQ(48, representation.pixel_width());
-  EXPECT_TRUE(gfx::BitmapsAreEqual(representation.sk_bitmap(), bitmap_48));
+  EXPECT_EQ(64, representation.pixel_width());
+  EXPECT_TRUE(gfx::BitmapsAreEqual(representation.sk_bitmap(),
+                                   EnsureBitmapSize(bitmap_48, 64)));
 }
 
 // There is no resource with exact size, but there is a smaller and a bigger
@@ -325,10 +336,11 @@ TEST_F(ExtensionIconImageTest, FallbackToSmaller) {
 
   representation = image.image_skia().GetRepresentation(ui::SCALE_FACTOR_100P);
 
-  // We should have loaded smaller (not resized) resource.
+  // We should have loaded smaller (resized) resource.
   EXPECT_EQ(ui::SCALE_FACTOR_100P, representation.scale_factor());
-  EXPECT_EQ(16, representation.pixel_width());
-  EXPECT_TRUE(gfx::BitmapsAreEqual(representation.sk_bitmap(), bitmap_16));
+  EXPECT_EQ(17, representation.pixel_width());
+  EXPECT_TRUE(gfx::BitmapsAreEqual(representation.sk_bitmap(),
+                                   EnsureBitmapSize(bitmap_16, 17)));
 }
 
 // If resource set is empty, |GetRepresentation| should synchronously return

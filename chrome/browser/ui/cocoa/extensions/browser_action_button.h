@@ -13,7 +13,7 @@
 
 class Browser;
 class ExtensionAction;
-class ExtensionImageTrackerBridge;
+class ExtensionActionIconFactoryBridge;
 
 namespace extensions {
 class Extension;
@@ -28,7 +28,7 @@ extern NSString* const kBrowserActionButtonDragEndNotification;
  @private
   // Bridge to proxy Chrome notifications to the Obj-C class as well as load the
   // extension's icon.
-  scoped_ptr<ExtensionImageTrackerBridge> imageLoadingBridge_;
+  scoped_ptr<ExtensionActionIconFactoryBridge> iconFactoryBridge_;
 
   // Used to move the button and query whether a button is currently animating.
   scoped_nsobject<NSViewAnimation> moveAnimation_;

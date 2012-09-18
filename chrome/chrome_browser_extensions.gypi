@@ -373,6 +373,8 @@
         'browser/extensions/event_router.h',
         'browser/extensions/event_router_forwarder.cc',
         'browser/extensions/event_router_forwarder.h',
+        'browser/extensions/extension_action_icon_factory.cc',
+        'browser/extensions/extension_action_icon_factory.h',
         'browser/extensions/extension_context_menu_model.cc',
         'browser/extensions/extension_context_menu_model.h',
         'browser/extensions/extension_creator.cc',

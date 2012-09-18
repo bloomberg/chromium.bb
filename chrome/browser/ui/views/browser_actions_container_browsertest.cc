@@ -10,6 +10,8 @@
 #include "chrome/browser/ui/views/browser_actions_container.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension_action.h"
+#include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "content/public/test/test_utils.h"
 
@@ -272,10 +274,13 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, TestCrash57536) {
 
   gfx::Size size(Extension::kBrowserActionIconMaxSize,
                  Extension::kBrowserActionIconMaxSize);
-  extension->SetCachedImage(
-      extension->GetResource(extension->browser_action()->default_icon_path()),
-      bitmap,
-      size);
+  const ExtensionIconSet* default_icon =
+      extension->browser_action()->default_icon();
+  const std::string path =
+      default_icon->Get(extension_misc::EXTENSION_ICON_ACTION,
+                        ExtensionIconSet::MATCH_EXACTLY);
+
+  extension->SetCachedImage(extension->GetResource(path), bitmap, size);
 
   LOG(INFO) << "Disabling extension\n" << std::flush;
   DisableExtension(extension->id());

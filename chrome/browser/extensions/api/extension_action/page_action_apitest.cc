@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/browser_event_router.h"
+#include "chrome/browser/extensions/extension_action_icon_factory.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -71,10 +72,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PageAction) {
     ASSERT_TRUE(catcher.GetNextResult());
   }
 
+  // We should not be creating icons asynchronously, so we don't need an
+  // observer.
+  ExtensionActionIconFactory icon_factory(extension, action, NULL);
+
   // Test that we received the changes.
   tab_id = SessionTabHelper::FromWebContents(
       chrome::GetActiveWebContents(browser()))->session_id().id();
-  EXPECT_FALSE(action->GetIcon(tab_id).IsEmpty());
+  EXPECT_FALSE(icon_factory.GetIcon(tab_id).IsEmpty());
 }
 
 // Test that calling chrome.pageAction.setPopup() can enable a popup.

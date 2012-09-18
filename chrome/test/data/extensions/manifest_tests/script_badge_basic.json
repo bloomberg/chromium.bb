@@ -5,6 +5,7 @@
   "description": "Check that a simple script_badge section parses",
   "icons": {
     "16": "icon16.png",
+    "32": "icon32.png",
     "19": "icon19.png",
     "48": "icon48.png"
   },

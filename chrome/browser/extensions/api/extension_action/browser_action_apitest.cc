@@ -9,6 +9,7 @@
 #endif
 
 #include "chrome/browser/extensions/browser_action_test_util.h"
+#include "chrome/browser/extensions/extension_action_icon_factory.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -131,17 +132,21 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DynamicBrowserAction) {
   gfx::test::SetSupportedScaleFactorsTo1xAnd2x();
 #endif
 
+  // We should not be creating icons asynchronously, so we don't need an
+  // observer.
+  ExtensionActionIconFactory icon_factory(extension,
+                                          extension->browser_action(),
+                                          NULL);
   // Test that there is a browser action in the toolbar.
   ASSERT_EQ(1, GetBrowserActionsBar().NumberOfBrowserActions());
   EXPECT_TRUE(GetBrowserActionsBar().HasIcon(0));
 
-  gfx::Image action_icon = extension->browser_action()->GetIcon(0);
+  gfx::Image action_icon = icon_factory.GetIcon(0);
   uint32_t action_icon_last_id = action_icon.ToSkBitmap()->getGenerationID();
 
   // Let's check that |GetIcon| doesn't always return bitmap with new id.
   ASSERT_EQ(action_icon_last_id,
-            extension->browser_action()->GetIcon(0).ToSkBitmap()->
-            getGenerationID());
+            icon_factory.GetIcon(0).ToSkBitmap()->getGenerationID());
 
   uint32_t action_icon_current_id = 0;
 
@@ -151,7 +156,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DynamicBrowserAction) {
   GetBrowserActionsBar().Press(0);
   ASSERT_TRUE(catcher.GetNextResult());
 
-  action_icon = extension->browser_action()->GetIcon(0);
+  action_icon = icon_factory.GetIcon(0);
 
   action_icon_current_id = action_icon.ToSkBitmap()->getGenerationID();
   EXPECT_GT(action_icon_current_id, action_icon_last_id);
@@ -169,7 +174,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DynamicBrowserAction) {
   GetBrowserActionsBar().Press(0);
   ASSERT_TRUE(catcher.GetNextResult());
 
-  action_icon = extension->browser_action()->GetIcon(0);
+  action_icon = icon_factory.GetIcon(0);
 
   action_icon_current_id = action_icon.ToSkBitmap()->getGenerationID();
   EXPECT_GT(action_icon_current_id, action_icon_last_id);
@@ -188,7 +193,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DynamicBrowserAction) {
   GetBrowserActionsBar().Press(0);
   ASSERT_TRUE(catcher.GetNextResult());
 
-  action_icon = extension->browser_action()->GetIcon(0);
+  action_icon = icon_factory.GetIcon(0);
 
   action_icon_current_id = action_icon.ToSkBitmap()->getGenerationID();
   EXPECT_GT(action_icon_current_id, action_icon_last_id);
@@ -206,7 +211,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DynamicBrowserAction) {
   GetBrowserActionsBar().Press(0);
   ASSERT_TRUE(catcher.GetNextResult());
 
-  action_icon = extension->browser_action()->GetIcon(0);
+  action_icon = icon_factory.GetIcon(0);
 
   action_icon_current_id = action_icon.ToSkBitmap()->getGenerationID();
   EXPECT_GT(action_icon_current_id, action_icon_last_id);
@@ -225,7 +230,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DynamicBrowserAction) {
   GetBrowserActionsBar().Press(0);
   ASSERT_TRUE(catcher.GetNextResult());
 
-  action_icon = extension->browser_action()->GetIcon(0);
+  action_icon = icon_factory.GetIcon(0);
 
   action_icon_current_id = action_icon.ToSkBitmap()->getGenerationID();
   EXPECT_GT(action_icon_current_id, action_icon_last_id);
@@ -244,7 +249,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DynamicBrowserAction) {
   GetBrowserActionsBar().Press(0);
   ASSERT_TRUE(catcher.GetNextResult());
 
-  action_icon = extension->browser_action()->GetIcon(0);
+  action_icon = icon_factory.GetIcon(0);
 
   action_icon_current_id = action_icon.ToSkBitmap()->getGenerationID();
   EXPECT_GT(action_icon_current_id, action_icon_last_id);
@@ -263,7 +268,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DynamicBrowserAction) {
   GetBrowserActionsBar().Press(0);
   ASSERT_TRUE(catcher.GetNextResult());
 
-  action_icon = extension->browser_action()->GetIcon(0);
+  action_icon = icon_factory.GetIcon(0);
 
   const gfx::ImageSkia* action_icon_skia = action_icon.ToImageSkia();
 

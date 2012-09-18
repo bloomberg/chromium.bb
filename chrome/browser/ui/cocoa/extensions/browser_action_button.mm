@@ -9,7 +9,7 @@
 
 #include "base/logging.h"
 #include "base/sys_string_conversions.h"
-#include "chrome/browser/extensions/image_loading_tracker.h"
+#include "chrome/browser/extensions/extension_action_icon_factory.h"
 #include "chrome/browser/ui/cocoa/extensions/extension_action_context_menu.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
@@ -40,35 +40,24 @@ const CGFloat kAnimationDuration = 0.2;
 
 // A helper class to bridge the asynchronous Skia bitmap loading mechanism to
 // the extension's button.
-class ExtensionImageTrackerBridge : public content::NotificationObserver,
-                                    public ImageLoadingTracker::Observer {
+class ExtensionActionIconFactoryBridge
+    : public content::NotificationObserver,
+      public ExtensionActionIconFactory::Observer {
  public:
-  ExtensionImageTrackerBridge(BrowserActionButton* owner,
-                              const Extension* extension)
+  ExtensionActionIconFactoryBridge(BrowserActionButton* owner,
+                                   const Extension* extension)
       : owner_(owner),
-        tracker_(this),
+        icon_factory_(extension, extension->browser_action(), this),
         browser_action_(extension->browser_action()) {
-    // The Browser Action API does not allow the default icon path to be
-    // changed at runtime, so we can load this now and cache it.
-    std::string path = extension->browser_action()->default_icon_path();
-    if (!path.empty()) {
-      tracker_.LoadImage(extension, extension->GetResource(path),
-                         gfx::Size(Extension::kBrowserActionIconMaxSize,
-                                   Extension::kBrowserActionIconMaxSize),
-                         ImageLoadingTracker::DONT_CACHE);
-    }
     registrar_.Add(
         this, chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
         content::Source<ExtensionAction>(browser_action_));
   }
 
-  ~ExtensionImageTrackerBridge() {}
+  virtual ~ExtensionActionIconFactoryBridge() {}
 
   // ImageLoadingTracker::Observer implementation.
-  void OnImageLoaded(const gfx::Image& image,
-                     const std::string& extension_id,
-                     int index) OVERRIDE {
-    browser_action_->CacheIcon(image);
+  void OnIconUpdated() OVERRIDE {
     [owner_ updateState];
   }
 
@@ -82,12 +71,19 @@ class ExtensionImageTrackerBridge : public content::NotificationObserver,
       NOTREACHED();
   }
 
+  gfx::Image GetIcon(int tabId) {
+    return icon_factory_.GetIcon(tabId);
+  }
+
  private:
   // Weak. Owns us.
   BrowserActionButton* owner_;
 
-  // Loads the button's icons for us on the file thread.
-  ImageLoadingTracker tracker_;
+  // The object that will be used to get the browser action icon for us.
+  // It may load the icon asynchronously (in which case the initial icon
+  // returned by the factory will be transparent), so we have to observe it for
+  // updates to the icon.
+  ExtensionActionIconFactory icon_factory_;
 
   // The browser action whose images we're loading.
   ExtensionAction* const browser_action_;
@@ -95,7 +91,7 @@ class ExtensionImageTrackerBridge : public content::NotificationObserver,
   // Used for registering to receive notifications and automatic clean up.
   content::NotificationRegistrar registrar_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionImageTrackerBridge);
+  DISALLOW_COPY_AND_ASSIGN(ExtensionActionIconFactoryBridge);
 };
 
 @interface BrowserActionCell (Internals)
@@ -151,7 +147,8 @@ class ExtensionImageTrackerBridge : public content::NotificationObserver,
 
     tabId_ = tabId;
     extension_ = extension;
-    imageLoadingBridge_.reset(new ExtensionImageTrackerBridge(self, extension));
+    iconFactoryBridge_.reset(
+        new ExtensionActionIconFactoryBridge(self, extension));
 
     moveAnimation_.reset([[NSViewAnimation alloc] init]);
     [moveAnimation_ gtm_setDuration:kAnimationDuration
@@ -250,7 +247,8 @@ class ExtensionImageTrackerBridge : public content::NotificationObserver,
     [self setToolTip:base::SysUTF8ToNSString(tooltip)];
   }
 
-  gfx::Image image = extension_->browser_action()->GetIcon(tabId_);
+  gfx::Image image = iconFactoryBridge_->GetIcon(tabId_);
+
   if (!image.IsEmpty())
     [self setImage:image.ToNSImage()];
 

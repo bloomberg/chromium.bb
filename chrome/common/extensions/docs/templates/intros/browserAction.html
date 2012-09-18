@@ -44,9 +44,30 @@ like this:
   "name": "My extension",
   ...
   <b>"browser_action": {
-    "default_icon": "images/icon19.png", <em>// optional</em>
+    "default_icon": {                    <em>// optional</em>
+      "19": "images/icon19.png",           <em>// optional</em>
+      "38": "images/icon38.png"            <em>// optional</em>
+    },
     "default_title": "Google Mail",      <em>// optional; shown in tooltip</em>
     "default_popup": "popup.html"        <em>// optional</em>
+  }</b>,
+  ...
+}</pre>
+
+<p>
+If you only provide one of the 19px or 38px icon size, the extension system will
+scale the icon you provide to the pixel density of the user's display, which
+can lose detail or make it look fuzzy. The old syntax for registering the
+default icon is still supported:
+</p>
+
+<pre>{
+  "name": "My extension",
+  ...
+  <b>"browser_action": {
+    ...
+    "default_icon": "images/icon19.png"  <em>// optional</em>
+    <em>// equivalent to "default_icon": { "19": "images/icon19.png" }</em>
   }</b>,
   ...
 }</pre>
@@ -62,9 +83,9 @@ and a <a href="#popups">popup</a>.
 
 <h3 id="icon">Icon</h3>
 
-<p>Browser action icons can be up to 19 pixels wide and high.
-  Larger icons are resized to fit, but for best results,
-  use a 19-pixel square icon.</p>
+<p>Browser action icons can be up to 19 dips (device-independent pixels)
+  wide and high. Larger icons are resized to fit, but for best results,
+  use a 19-dip square icon.</p>
 
 <p>You can set the icon in two ways:
   using a static image or using the
@@ -80,10 +101,18 @@ and a <a href="#popups">popup</a>.
   </p>
 
 <p>To set the icon,
-use the <b>default_icon</b> field of <b>browser_action</b>
-in the <a href="#manifest">manifest</a>,
-or call the <a href="#method-setIcon">setIcon()</a> method.
+  use the <b>default_icon</b> field of <b>browser_action</b>
+  in the <a href="#manifest">manifest</a>,
+  or call the <a href="#method-setIcon">setIcon()</a> method.
+  </p>
 
+<p>To properly display icon when screen pixel density (ratio
+  <code>size_in_pixel / size_in_dip</code>) is different than 1,
+  the icon can be defined as set of images with different sizes.
+  The actual image to display will be selected from the set to
+  best fit the pixel size of 19 dip icon.
+  At the moment, the icon set can contain images with pixel sizes 19 and 38.
+  </p>
 
 <h3 id="tooltip">Tooltip</h3>
 

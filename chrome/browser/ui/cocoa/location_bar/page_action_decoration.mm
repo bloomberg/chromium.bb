@@ -49,7 +49,6 @@ PageActionDecoration::PageActionDecoration(
     : owner_(NULL),
       browser_(browser),
       page_action_(page_action),
-      tracker_(this),
       current_tab_id_(-1),
       preview_enabled_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(scoped_icon_animation_observer_(
@@ -60,13 +59,8 @@ PageActionDecoration::PageActionDecoration(
       GetExtensionById(page_action->extension_id(), false);
   DCHECK(extension);
 
-  std::string path = page_action_->default_icon_path();
-  if (!path.empty()) {
-    tracker_.LoadImage(extension, extension->GetResource(path),
-                       gfx::Size(Extension::kPageActionIconMaxSize,
-                                 Extension::kPageActionIconMaxSize),
-                       ImageLoadingTracker::DONT_CACHE);
-  }
+  icon_factory_.reset(
+      new ExtensionActionIconFactory(extension, page_action, this));
 
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
       content::Source<Profile>(browser_->profile()));
@@ -135,11 +129,7 @@ bool PageActionDecoration::ActivatePageAction(NSRect frame) {
   return true;
 }
 
-void PageActionDecoration::OnImageLoaded(const gfx::Image& image,
-                                         const std::string& extension_id,
-                                         int index) {
-  page_action_->CacheIcon(image);
-
+void PageActionDecoration::OnIconUpdated() {
   // If we have no owner, that means this class is still being constructed.
   TabContents* tab_contents = owner_ ? owner_->GetTabContents() : NULL;
   if (tab_contents) {
@@ -161,7 +151,7 @@ void PageActionDecoration::UpdateVisibility(WebContents* contents,
     SetToolTip(page_action_->GetTitle(current_tab_id_));
 
     // Set the image.
-    gfx::Image icon = page_action_->GetIcon(current_tab_id_);
+    gfx::Image icon = icon_factory_->GetIcon(current_tab_id_);
     if (!icon.IsEmpty()) {
       SetImage(icon.ToNSImage());
     } else if (!GetImage()) {

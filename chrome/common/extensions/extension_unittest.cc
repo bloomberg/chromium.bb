@@ -229,7 +229,9 @@ TEST(ExtensionTest, LoadPageActionHelper) {
 
   // No title, so fall back to name.
   ASSERT_EQ(name, action->GetTitle(1));
-  ASSERT_EQ(img1, action->default_icon_path());
+  ASSERT_EQ(img1,
+            action->default_icon()->Get(extension_misc::EXTENSION_ICON_ACTION,
+                                        ExtensionIconSet::MATCH_EXACTLY));
 
   // Same test with explicitly set type.
   action = LoadAction("page_action_type.json");
@@ -256,7 +258,7 @@ TEST(ExtensionTest, LoadPageActionHelper) {
   action = LoadAction("page_action_new_format.json");
   ASSERT_TRUE(action.get());
   ASSERT_EQ(kTitle, action->GetTitle(1));
-  ASSERT_FALSE(action->default_icon_path().empty());
+  ASSERT_TRUE(action->default_icon());
 
   // Invalid title should give an error even with a valid name.
   LoadActionAndExpectError("page_action_invalid_title.json",

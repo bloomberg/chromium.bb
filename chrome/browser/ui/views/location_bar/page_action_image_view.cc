@@ -7,6 +7,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/api/commands/command_service_factory.h"
+#include "chrome/browser/extensions/extension_action_icon_factory.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -43,7 +44,6 @@ PageActionImageView::PageActionImageView(LocationBarView* owner,
     : owner_(owner),
       page_action_(page_action),
       browser_(browser),
-      ALLOW_THIS_IN_INITIALIZER_LIST(tracker_(this)),
       current_tab_id_(-1),
       preview_enabled_(false),
       popup_(NULL),
@@ -55,13 +55,8 @@ PageActionImageView::PageActionImageView(LocationBarView* owner,
       GetExtensionById(page_action->extension_id(), false);
   DCHECK(extension);
 
-  std::string path = page_action_->default_icon_path();
-  if (!path.empty()) {
-    tracker_.LoadImage(extension, extension->GetResource(path),
-                       gfx::Size(Extension::kPageActionIconMaxSize,
-                                 Extension::kPageActionIconMaxSize),
-                       ImageLoadingTracker::DONT_CACHE);
-  }
+  icon_factory_.reset(
+      new ExtensionActionIconFactory(extension, page_action, this));
 
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  content::Source<Profile>(
@@ -188,17 +183,6 @@ bool PageActionImageView::OnKeyPressed(const ui::KeyEvent& event) {
   return false;
 }
 
-void PageActionImageView::OnImageLoaded(const gfx::Image& image,
-                                        const std::string& extension_id,
-                                        int index) {
-  page_action_->CacheIcon(image);
-
-  // During object construction owner_ will be NULL.
-  TabContents* tab_contents = owner_ ? owner_->GetTabContents() : NULL;
-  if (tab_contents)
-    UpdateVisibility(tab_contents->web_contents(), current_url_);
-}
-
 void PageActionImageView::ShowContextMenuForView(View* source,
                                                  const gfx::Point& point) {
   const Extension* extension = owner_->profile()->GetExtensionService()->
@@ -251,7 +235,7 @@ void PageActionImageView::UpdateVisibility(WebContents* contents,
   SetTooltipText(UTF8ToUTF16(tooltip_));
 
   // Set the image.
-  gfx::Image icon = page_action_->GetIcon(current_tab_id_);
+  gfx::Image icon = icon_factory_->GetIcon(current_tab_id_);
   if (!icon.IsEmpty())
     SetImage(*icon.ToImageSkia());
 
@@ -274,14 +258,18 @@ void PageActionImageView::Observe(int type,
   DCHECK_EQ(chrome::NOTIFICATION_EXTENSION_UNLOADED, type);
   const Extension* unloaded_extension =
       content::Details<extensions::UnloadedExtensionInfo>(details)->extension;
-  if (page_action_ == unloaded_extension ->page_action())
+  if (page_action_ == unloaded_extension->page_action())
     owner_->UpdatePageActions();
 }
 
-void PageActionImageView::OnIconChanged() {
+void PageActionImageView::OnIconUpdated() {
   TabContents* tab_contents = owner_->GetTabContents();
   if (tab_contents)
     UpdateVisibility(tab_contents->web_contents(), current_url_);
+}
+
+void PageActionImageView::OnIconChanged() {
+  OnIconUpdated();
 }
 
 void PageActionImageView::ShowPopupWithURL(

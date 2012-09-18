@@ -9,8 +9,8 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/extensions/extension_action_icon_factory.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
-#include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "ui/views/context_menu_controller.h"
@@ -30,11 +30,11 @@ class MenuRunner;
 // PageActionImageView is used by the LocationBarView to display the icon for a
 // given PageAction and notify the extension when the icon is clicked.
 class PageActionImageView : public views::ImageView,
-                            public ImageLoadingTracker::Observer,
                             public ExtensionContextMenuModel::PopupDelegate,
                             public views::WidgetObserver,
                             public views::ContextMenuController,
                             public content::NotificationObserver,
+                            public ExtensionActionIconFactory::Observer,
                             public ExtensionAction::IconAnimation::Observer {
  public:
   PageActionImageView(LocationBarView* owner,
@@ -56,11 +56,6 @@ class PageActionImageView : public views::ImageView,
   virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
 
-  // Overridden from ImageLoadingTracker:
-  virtual void OnImageLoaded(const gfx::Image& image,
-                             const std::string& extension_id,
-                             int index) OVERRIDE;
-
   // Overridden from ExtensionContextMenuModel::Delegate
   virtual void InspectPopup(ExtensionAction* action) OVERRIDE;
 
@@ -75,6 +70,9 @@ class PageActionImageView : public views::ImageView,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // Overriden from ExtensionActionIconFactory::Observer.
+  virtual void OnIconUpdated() OVERRIDE;
 
   // Overridden from ui::AcceleratorTarget:
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
@@ -109,9 +107,11 @@ class PageActionImageView : public views::ImageView,
   // The corresponding browser.
   Browser* browser_;
 
-  // The object that is waiting for the image loading to complete
-  // asynchronously.
-  ImageLoadingTracker tracker_;
+  // The object that will be used to get the page action icon for us.
+  // It may load the icon asynchronously (in which case the initial icon
+  // returned by the factory will be transparent), so we have to observe it for
+  // updates to the icon.
+  scoped_ptr<ExtensionActionIconFactory> icon_factory_;
 
   // The tab id we are currently showing the icon for.
   int current_tab_id_;

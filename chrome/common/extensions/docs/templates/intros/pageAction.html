@@ -43,9 +43,30 @@ like this:
   "name": "My extension",
   ...
   <b>"page_action": {
-    "default_icon": "icons/foo.png", <em>// optional</em>
-    "default_title": "Do action",    <em>// optional; shown in tooltip</em>
-    "default_popup": "popup.html"    <em>// optional</em>
+    "default_icon": {                    <em>// optional</em>
+      "19": "images/icon19.png",           <em>// optional</em>
+      "38": "images/icon38.png"            <em>// optional</em>
+    },
+    "default_title": "Google Mail",      <em>// optional; shown in tooltip</em>
+    "default_popup": "popup.html"        <em>// optional</em>
+  }</b>,
+  ...
+}</pre>
+
+<p>
+If you only provide one of the 19px or 38px icon size, the extension system will
+scale the icon you provide to the pixel density of the user's display, which
+can lose detail or make it look fuzzy. The old syntax for registering the
+default icon is still supported:
+</p>
+
+<pre>{
+  "name": "My extension",
+  ...
+  <b>"page_action": {
+    ...
+    "default_icon": "images/icon19.png"  <em>// optional</em>
+    <em>// equivalent to "default_icon": { "19": "images/icon19.png" }</em>
   }</b>,
   ...
 }</pre>

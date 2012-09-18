@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "chrome/common/badge_util.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "googleurl/src/gurl.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
@@ -253,9 +254,26 @@ scoped_ptr<ExtensionAction> ExtensionAction::CopyForTest() const {
   copy->badge_text_color_ = badge_text_color_;
   copy->appearance_ = appearance_;
   copy->icon_animation_ = icon_animation_;
-  copy->default_icon_path_ = default_icon_path_;
   copy->id_ = id_;
+
+  if (default_icon_.get())
+    copy->default_icon_.reset(new ExtensionIconSet(*default_icon_));
+
   return copy.Pass();
+}
+
+// static
+int ExtensionAction::GetIconSizeForType(ExtensionAction::Type type) {
+  switch (type) {
+    case ExtensionAction::TYPE_BROWSER:
+    case ExtensionAction::TYPE_PAGE:
+      return extension_misc::EXTENSION_ICON_ACTION;
+    case ExtensionAction::TYPE_SCRIPT_BADGE:
+      return extension_misc::EXTENSION_ICON_BITTY;
+    default:
+      NOTREACHED();
+      return 0;
+  }
 }
 
 void ExtensionAction::SetPopupUrl(int tab_id, const GURL& url) {
@@ -275,27 +293,14 @@ GURL ExtensionAction::GetPopupUrl(int tab_id) const {
   return GetValue(&popup_url_, tab_id);
 }
 
-void ExtensionAction::CacheIcon(const gfx::Image& icon) {
-  if (!icon.IsEmpty())
-    cached_icon_.reset(new gfx::ImageSkia(*icon.ToImageSkia()));
-}
-
 void ExtensionAction::SetIcon(int tab_id, const gfx::Image& image) {
   SetValue(&icon_, tab_id, image.AsImageSkia());
 }
 
-gfx::Image ExtensionAction::GetIcon(int tab_id) const {
-  // Check if a specific icon is set for this tab.
-  gfx::ImageSkia icon = GetExplicitlySetIcon(tab_id);
-  if (icon.isNull()) {
-    if (cached_icon_.get()) {
-      icon = *cached_icon_;
-    } else {
-      icon = *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-          IDR_EXTENSIONS_FAVICON);
-    }
-  }
-
+gfx::Image ExtensionAction::ApplyAttentionAndAnimation(
+    const gfx::ImageSkia& original_icon,
+    int tab_id) const {
+  gfx::ImageSkia icon = original_icon;
   if (GetValue(&appearance_, tab_id) == WANTS_ATTENTION)
     icon = gfx::ImageSkia(new GetAttentionImageSource(icon), icon.size());
 
@@ -343,7 +348,7 @@ void ExtensionAction::PaintBadge(gfx::Canvas* canvas,
       GetBadgeText(tab_id),
       GetBadgeTextColor(tab_id),
       GetBadgeBackgroundColor(tab_id),
-      GetValue(&icon_, tab_id).size().width());
+      GetIconWidth(tab_id));
 }
 
 gfx::ImageSkia ExtensionAction::GetIconWithBadge(
@@ -360,6 +365,23 @@ gfx::ImageSkia ExtensionAction::GetIconWithBadge(
                                    GetBadgeTextColor(tab_id),
                                    GetBadgeBackgroundColor(tab_id)),
      icon.size());
+}
+
+// Determines which icon would be returned by |GetIcon|, and returns its width.
+int ExtensionAction::GetIconWidth(int tab_id) const {
+  // If icon has been set, return its width.
+  gfx::ImageSkia icon = GetValue(&icon_, tab_id);
+  if (!icon.isNull())
+    return icon.width();
+  // If there is a default icon, the icon width will be set depending on our
+  // action type.
+  if (default_icon_.get())
+    return GetIconSizeForType(action_type());
+
+  // If no icon has been set and there is no default icon, we need favicon
+  // width.
+  return ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+          IDR_EXTENSIONS_FAVICON).ToImageSkia()->width();
 }
 
 // static

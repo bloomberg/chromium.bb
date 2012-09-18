@@ -7,9 +7,10 @@
 
 #include <string>
 
+#include "chrome/browser/extensions/extension_action_icon_factory.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
-#include "chrome/browser/extensions/image_loading_tracker.h"
 #include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
@@ -107,8 +108,8 @@ class BrowserActionView : public views::View {
 class BrowserActionButton : public views::MenuButton,
                             public views::ButtonListener,
                             public views::ContextMenuController,
-                            public ImageLoadingTracker::Observer,
-                            public content::NotificationObserver {
+                            public content::NotificationObserver,
+                            public ExtensionActionIconFactory::Observer {
  public:
   BrowserActionButton(const extensions::Extension* extension,
                       Browser* browser_,
@@ -139,15 +140,13 @@ class BrowserActionButton : public views::MenuButton,
   virtual void ShowContextMenuForView(View* source,
                                       const gfx::Point& point) OVERRIDE;
 
-  // Overridden from ImageLoadingTracker.
-  virtual void OnImageLoaded(const gfx::Image& image,
-                             const std::string& extension_id,
-                             int index) OVERRIDE;
-
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // Overriden from ExtensionActionIconFactory::Observer.
+  virtual void OnIconUpdated() OVERRIDE;
 
   // MenuButton behavior overrides.  These methods all default to TextButton
   // behavior unless this button is a popup.  In that case, it uses MenuButton
@@ -172,6 +171,9 @@ class BrowserActionButton : public views::MenuButton,
   // the built-in views enabled/SetEnabled because disabled views do not
   // receive drag events.
   bool IsEnabled(int tab_id) const;
+
+  // Returns icon factory for the button.
+  ExtensionActionIconFactory& icon_factory() { return icon_factory_; }
 
   // Returns button icon so it can be accessed during tests.
   gfx::ImageSkia GetIconForTest();
@@ -202,13 +204,11 @@ class BrowserActionButton : public views::MenuButton,
   // The extension associated with the browser action we're displaying.
   const extensions::Extension* extension_;
 
-  // The object that is waiting for the image loading to complete
-  // asynchronously.
-  ImageLoadingTracker tracker_;
-
-  // The default icon for our browser action. This might be non-empty if the
-  // browser action had a value for default_icon in the manifest.
-  SkBitmap default_icon_;
+  // The object that will be used to get the browser action icon for us.
+  // It may load the icon asynchronously (in which case the initial icon
+  // returned by the factory will be transparent), so we have to observe it for
+  // updates to the icon.
+  ExtensionActionIconFactory icon_factory_;
 
   // Delegate that usually represents a container for BrowserActionView.
   BrowserActionView::Delegate* delegate_;

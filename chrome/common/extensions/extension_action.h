@@ -12,8 +12,10 @@
 #include "base/basictypes.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "chrome/common/extensions/extension_icon_set.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/animation/linear_animation.h"
 
@@ -123,6 +125,11 @@ class ExtensionAction {
   // It doesn't make sense to copy of an ExtensionAction except in tests.
   scoped_ptr<ExtensionAction> CopyForTest() const;
 
+  // Given the extension action type, returns the size the extension action icon
+  // should have. The icon should be square, so only one dimension is
+  // returned.
+  static int GetIconSizeForType(Type type);
+
   // extension id
   const std::string& extension_id() const { return extension_id_; }
 
@@ -158,33 +165,28 @@ class ExtensionAction {
   // Icons are a bit different because the default value can be set to either a
   // bitmap or a path. However, conceptually, there is only one default icon.
   // Setting the default icon using a path clears the bitmap and vice-versa.
-
-  // Since ExtensionAction, living in common/, can't interact with the browser
-  // to load images, the UI code needs to load the icon. Load the image there
-  // using an ImageLoadingTracker and call CacheIcon(image) with the result.
-  //
-  // If an image is cached redundantly, the first load will be used.
-  void CacheIcon(const gfx::Image& icon);
+  // To retrieve the icon for the extension action, use
+  // ExtensionActionIconFactory.
 
   // Set this action's icon bitmap on a specific tab.
   void SetIcon(int tab_id, const gfx::Image& image);
 
-  // Get the icon for a tab, or the default if no icon was set for this tab,
-  // retrieving icons that have been specified by path from the previous
-  // arguments to CacheIcon().  If the default icon isn't found in the cache,
-  // returns the puzzle piece icon.
-  gfx::Image GetIcon(int tab_id) const;
+  // Applies the attention and animation image transformations registered for
+  // the tab on the provided icon.
+  gfx::Image ApplyAttentionAndAnimation(const gfx::ImageSkia& icon,
+                                        int tab_id) const;
 
   // Gets the icon that has been set using |SetIcon| for the tab.
   gfx::ImageSkia GetExplicitlySetIcon(int tab_id) const;
 
   // Non-tab-specific icon path. This is used to support the default_icon key of
   // page and browser actions.
-  void set_default_icon_path(const std::string& path) {
-    default_icon_path_ = path;
+  void set_default_icon(scoped_ptr<ExtensionIconSet> icon_set) {
+     default_icon_ = icon_set.Pass();
   }
-  const std::string& default_icon_path() const {
-    return default_icon_path_;
+
+  const ExtensionIconSet* default_icon() const {
+    return default_icon_.get();
   }
 
   // Set this action's badge text on a specific tab.
@@ -252,6 +254,11 @@ class ExtensionAction {
   gfx::ImageSkia ApplyIconAnimation(int tab_id,
                                     const gfx::ImageSkia& orig) const;
 
+  // Returns width of the current icon for tab_id.
+  // TODO(tbarzic): The icon selection is done in ExtensionActionIconFactory.
+  // We should probably move this there too.
+  int GetIconWidth(int tab_id) const;
+
   // Paints badge with specified parameters to |canvas|.
   static void DoPaintBadge(gfx::Canvas* canvas,
                            const gfx::Rect& bounds,
@@ -306,14 +313,13 @@ class ExtensionAction {
   // NULLs to prevent the map from growing without bound.
   mutable std::map<int, base::WeakPtr<IconAnimation> > icon_animation_;
 
-  std::string default_icon_path_;
+  // ExtensionIconSet containing paths to bitmaps from which default icon's
+  // image representations will be selected.
+  scoped_ptr<const ExtensionIconSet> default_icon_;
 
   // The id for the ExtensionAction, for example: "RssPageAction". This is
   // needed for compat with an older version of the page actions API.
   std::string id_;
-
-  // Saves the arguments from CacheIcon() calls.
-  scoped_ptr<gfx::ImageSkia> cached_icon_;
 
   // True if the ExtensionAction's settings have changed from what was
   // specified in the manifest.

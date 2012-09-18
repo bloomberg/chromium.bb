@@ -1790,7 +1790,6 @@ LocationBarViewGtk::PageActionViewGtk::PageActionViewGtk(
     ExtensionAction* page_action)
     : owner_(NULL),
       page_action_(page_action),
-      tracker_(this),
       current_tab_id_(-1),
       window_(NULL),
       accel_group_(NULL),
@@ -1821,13 +1820,8 @@ LocationBarViewGtk::PageActionViewGtk::PageActionViewGtk(
                                               false);
   DCHECK(extension);
 
-  std::string path = page_action_->default_icon_path();
-  if (!path.empty()) {
-    tracker_.LoadImage(extension, extension->GetResource(path),
-                       gfx::Size(Extension::kPageActionIconMaxSize,
-                                 Extension::kPageActionIconMaxSize),
-                       ImageLoadingTracker::DONT_CACHE);
-  }
+  icon_factory_.reset(
+      new ExtensionActionIconFactory(extension, page_action, this));
 
   // We set the owner last of all so that we can determine whether we are in
   // the process of initializing this class or not.
@@ -1860,7 +1854,7 @@ void LocationBarViewGtk::PageActionViewGtk::UpdateVisibility(
         page_action_->GetTitle(current_tab_id_).c_str());
 
     // Set the image.
-    gfx::Image icon = page_action_->GetIcon(current_tab_id_);
+    gfx::Image icon = icon_factory_->GetIcon(current_tab_id_);
     if (!icon.IsEmpty()) {
       GdkPixbuf* pixbuf = icon.ToGdkPixbuf();
       DCHECK(pixbuf);
@@ -1882,12 +1876,7 @@ void LocationBarViewGtk::PageActionViewGtk::UpdateVisibility(
   }
 }
 
-void LocationBarViewGtk::PageActionViewGtk::OnImageLoaded(
-    const gfx::Image& image,
-    const std::string& extension_id,
-    int index) {
-  page_action_->CacheIcon(image);
-
+void LocationBarViewGtk::PageActionViewGtk::OnIconUpdated() {
   // If we have no owner, that means this class is still being constructed.
   TabContents* tab_contents = owner_ ? owner_->GetTabContents() : NULL;
   if (tab_contents)

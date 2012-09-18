@@ -35,6 +35,27 @@ using extensions::Extension;
 
 namespace errors = extension_manifest_errors;
 
+namespace {
+
+bool ValidateExtensionIconSet(const ExtensionIconSet* icon_set,
+                              const Extension* extension,
+                              int error_message_id,
+                              std::string* error) {
+  for (ExtensionIconSet::IconMap::const_iterator iter = icon_set->map().begin();
+       iter != icon_set->map().end();
+       ++iter) {
+    const FilePath path = extension->GetResource(iter->second).GetFilePath();
+    if (!extension_file_util::ValidateFilePath(path)) {
+      *error = l10n_util::GetStringFUTF8(error_message_id,
+                                         UTF8ToUTF16(iter->second));
+      return false;
+    }
+  }
+  return true;
+}
+
+}  // namespace
+
 namespace extension_file_util {
 
 // Validates locale info. Doesn't check if messages.json files are valid.
@@ -320,36 +341,18 @@ bool ValidateExtension(const Extension* extension,
     }
   }
 
-  // Validate icon location and icon file size for page actions.
-  ExtensionAction* page_action = extension->page_action();
-  if (page_action) {
-    std::string path = page_action->default_icon_path();
-    if (!path.empty()) {
-      const FilePath file_path = extension->GetResource(path).GetFilePath();
-      if (!ValidateFilePath(file_path)) {
-        *error =
-            l10n_util::GetStringFUTF8(
-                IDS_EXTENSION_LOAD_ICON_FOR_PAGE_ACTION_FAILED,
-                UTF8ToUTF16(path));
-        return false;
-      }
-    }
+  const ExtensionAction* action = extension->page_action();
+  if (action && action->default_icon() &&
+      !ValidateExtensionIconSet(action->default_icon(), extension,
+          IDS_EXTENSION_LOAD_ICON_FOR_PAGE_ACTION_FAILED, error)) {
+    return false;
   }
 
-  // Validate icon location and icon file size for browser actions.
-  ExtensionAction* browser_action = extension->browser_action();
-  if (browser_action) {
-    std::string path = browser_action->default_icon_path();
-    if (!path.empty()) {
-      const FilePath file_path = extension->GetResource(path).GetFilePath();
-      if (!ValidateFilePath(file_path)) {
-        *error =
-            l10n_util::GetStringFUTF8(
-                IDS_EXTENSION_LOAD_ICON_FOR_BROWSER_ACTION_FAILED,
-                UTF8ToUTF16(path));
-        return false;
-      }
-    }
+  action = extension->browser_action();
+  if (action && action->default_icon() &&
+      !ValidateExtensionIconSet(action->default_icon(), extension,
+          IDS_EXTENSION_LOAD_ICON_FOR_BROWSER_ACTION_FAILED, error)) {
+    return false;
   }
 
   // Validate that background scripts exist.

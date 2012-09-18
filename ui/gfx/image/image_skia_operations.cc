@@ -131,15 +131,14 @@ class TransparentImageSource : public gfx::ImageSkiaSource {
   virtual ImageSkiaRep GetImageForScale(ui::ScaleFactor scale_factor) OVERRIDE {
     ImageSkiaRep image_rep = image_.GetRepresentation(scale_factor);
     SkBitmap alpha;
-    const float scale = ui::GetScaleFactorScale(image_rep.scale_factor());
     alpha.setConfig(SkBitmap::kARGB_8888_Config,
-                    static_cast<int>(image_.size().width() * scale),
-                    static_cast<int>(image_.size().height() * scale));
+                    image_rep.pixel_width(),
+                    image_rep.pixel_height());
     alpha.allocPixels();
     alpha.eraseColor(SkColorSetARGB(alpha_ * 255, 0, 0, 0));
-    return ImageSkiaRep(SkBitmapOperations::CreateMaskedBitmap(
-        image_rep.sk_bitmap(), alpha),
-                        image_rep.scale_factor());
+    return ImageSkiaRep(
+        SkBitmapOperations::CreateMaskedBitmap(image_rep.sk_bitmap(), alpha),
+        image_rep.scale_factor());
   }
 
   ImageSkia image_;

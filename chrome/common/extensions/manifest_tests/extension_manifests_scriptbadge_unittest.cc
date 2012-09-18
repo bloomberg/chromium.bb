@@ -2,27 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
-
 #include "chrome/common/extensions/extension_action.h"
+#include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_switch_utils.h"
-#include "grit/theme_resources.h"
+#include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/image/image.h"
-#include "ui/gfx/skia_util.h"
 
 namespace errors = extension_manifest_errors;
 namespace switch_utils = extensions::switch_utils;
 using extensions::Extension;
 
 namespace {
-
-bool ImagesAreEqual(const gfx::Image& i1, const gfx::Image& i2) {
-  return gfx::BitmapsAreEqual(*i1.ToSkBitmap(), *i2.ToSkBitmap());
-}
 
 std::vector<Extension::InstallWarning> StripMissingFlagWarning(
     const std::vector<Extension::InstallWarning>& install_warnings) {
@@ -42,15 +35,24 @@ TEST_F(ExtensionManifestTest, ScriptBadgeBasic) {
   EXPECT_THAT(StripMissingFlagWarning(extension->install_warnings()),
               testing::ElementsAre(/*empty*/));
 
+  const ExtensionIconSet* default_icon =
+      extension->script_badge()->default_icon();
+  // Default icon set should not be NULL.
+  ASSERT_TRUE(default_icon);
+
+  // Verify that correct icon paths are registered in default_icon.
+  EXPECT_EQ(2u, default_icon->map().size());
+  EXPECT_EQ("icon16.png",
+            default_icon->Get(extension_misc::EXTENSION_ICON_BITTY,
+                              ExtensionIconSet::MATCH_EXACTLY));
+  EXPECT_EQ("icon32.png",
+            default_icon->Get(2 * extension_misc::EXTENSION_ICON_BITTY,
+                              ExtensionIconSet::MATCH_EXACTLY));
+
   EXPECT_EQ("my extension", extension->script_badge()->GetTitle(
       ExtensionAction::kDefaultTabId));
   EXPECT_TRUE(extension->script_badge()->HasPopup(
       ExtensionAction::kDefaultTabId));
-  EXPECT_TRUE(ImagesAreEqual(
-      ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-          IDR_EXTENSIONS_FAVICON),
-      extension->script_badge()->GetIcon(ExtensionAction::kDefaultTabId)));
-  EXPECT_EQ("icon16.png", extension->script_badge()->default_icon_path());
 }
 
 TEST_F(ExtensionManifestTest, ScriptBadgeExplicitTitleAndIconsIgnored) {
@@ -67,13 +69,18 @@ TEST_F(ExtensionManifestTest, ScriptBadgeExplicitTitleAndIconsIgnored) {
                   Extension::InstallWarning(
                       Extension::InstallWarning::FORMAT_TEXT,
                       errors::kScriptBadgeIconIgnored)));
+
+  const ExtensionIconSet* default_icon =
+      extension->script_badge()->default_icon();
+  ASSERT_TRUE(default_icon);
+
+  EXPECT_EQ(1u, default_icon->map().size());
+  EXPECT_EQ("icon16.png",
+            default_icon->Get(extension_misc::EXTENSION_ICON_BITTY,
+                              ExtensionIconSet::MATCH_EXACTLY));
+
   EXPECT_EQ("my extension", extension->script_badge()->GetTitle(
       ExtensionAction::kDefaultTabId));
-  EXPECT_TRUE(ImagesAreEqual(
-      ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-          IDR_EXTENSIONS_FAVICON),
-      extension->script_badge()->GetIcon(ExtensionAction::kDefaultTabId)));
-  EXPECT_EQ("icon16.png", extension->script_badge()->default_icon_path());
 }
 
 TEST_F(ExtensionManifestTest, ScriptBadgeIconFallsBackToPuzzlePiece) {
@@ -84,12 +91,9 @@ TEST_F(ExtensionManifestTest, ScriptBadgeIconFallsBackToPuzzlePiece) {
   EXPECT_THAT(extension->install_warnings(),
               testing::ElementsAre(/*empty*/));
 
-  EXPECT_EQ("", extension->script_badge()->default_icon_path())
+  EXPECT_FALSE(extension->script_badge()->default_icon())
       << "Should not fall back to the 64px icon.";
-  EXPECT_FALSE(extension->script_badge()->GetIcon(
-      ExtensionAction::kDefaultTabId).IsEmpty())
-      << "Should set the puzzle piece as the default, but there's no way "
-      << "to assert in a unittest what the image looks like.";
+  EXPECT_EQ(NULL, extension->script_badge()->default_icon());
 }
 
 }  // namespace

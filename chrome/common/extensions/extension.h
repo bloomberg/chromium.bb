@@ -629,8 +629,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     return !omnibox_keyword().empty() ||
            browser_action() ||
            (page_action() &&
-               (page_action_command() ||
-                !page_action()->default_icon_path().empty()));
+               (page_action_command() || page_action()->default_icon()));
   }
   const FileBrowserHandlerList* file_browser_handlers() const {
     return file_browser_handlers_.get();

@@ -17,8 +17,8 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/api/prefs/pref_member.h"
+#include "chrome/browser/extensions/extension_action_icon_factory.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
-#include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
@@ -227,7 +227,7 @@ class LocationBarViewGtk : public OmniboxEditController,
 
  private:
   class PageActionViewGtk :
-       public ImageLoadingTracker::Observer,
+       public ExtensionActionIconFactory::Observer,
        public content::NotificationObserver,
        public ExtensionContextMenuModel::PopupDelegate,
        public ExtensionAction::IconAnimation::Observer {
@@ -250,10 +250,8 @@ class LocationBarViewGtk : public OmniboxEditController,
     // is the current page URL.
     void UpdateVisibility(content::WebContents* contents, const GURL& url);
 
-    // A callback from ImageLoadingTracker for when the image has loaded.
-    virtual void OnImageLoaded(const gfx::Image& image,
-                               const std::string& extension_id,
-                               int index) OVERRIDE;
+    // Overriden from ExtensionActionIconFactory::Observer.
+    virtual void OnIconUpdated() OVERRIDE;
 
     // Simulate left mouse click on the page action button.
     void TestActivatePageAction();
@@ -297,9 +295,11 @@ class LocationBarViewGtk : public OmniboxEditController,
     // us, it resides in the extension of this particular profile.
     ExtensionAction* page_action_;
 
-    // The object that is waiting for the image loading to complete
-    // asynchronously.
-    ImageLoadingTracker tracker_;
+    // The object that will be used to get the extension action icon for us.
+    // It may load the icon asynchronously (in which case the initial icon
+    // returned by the factory will be transparent), so we have to observe it
+    // for updates to the icon.
+    scoped_ptr<ExtensionActionIconFactory> icon_factory_;
 
     // The widgets for this page action.
     ui::OwnedWidgetGtk event_box_;

@@ -62,7 +62,7 @@ gfx::ImageSkia BrowserActionView::GetIconWithBadge() {
 
   const ExtensionAction* action = button_->extension()->browser_action();
   gfx::Size spacing(0, ToolbarView::kVertSpacing);
-  gfx::ImageSkia icon = *action->GetIcon(tab_id).ToImageSkia();
+  gfx::ImageSkia icon = *button_->icon_factory().GetIcon(tab_id).ToImageSkia();
   if (!button_->IsEnabled(tab_id))
     icon = gfx::ImageSkiaOperations::CreateTransparentImage(icon, .25);
   return action->GetIconWithBadge(icon, tab_id, spacing);
@@ -111,7 +111,8 @@ BrowserActionButton::BrowserActionButton(const Extension* extension,
       browser_(browser),
       browser_action_(extension->browser_action()),
       extension_(extension),
-      ALLOW_THIS_IN_INITIALIZER_LIST(tracker_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          icon_factory_(extension, extension->browser_action(), this)),
       delegate_(delegate),
       context_menu_(NULL),
       called_registered_extension_command_(false) {
@@ -145,21 +146,6 @@ void BrowserActionButton::Destroy() {
 
 void BrowserActionButton::ViewHierarchyChanged(
     bool is_add, View* parent, View* child) {
-  if (is_add && child == this) {
-    // The Browser Action API does not allow the default icon path to be
-    // changed at runtime, so we can load this now and cache it.
-    std::string relative_path = browser_action_->default_icon_path();
-    if (!relative_path.empty()) {
-      // LoadImage is not guaranteed to be synchronous, so we might see the
-      // callback OnImageLoaded execute immediately. It (through UpdateState)
-      // expects parent() to return the owner for this button, so this
-      // function is as early as we can start this request.
-      tracker_.LoadImage(extension_, extension_->GetResource(relative_path),
-                         gfx::Size(Extension::kBrowserActionIconMaxSize,
-                                   Extension::kBrowserActionIconMaxSize),
-                         ImageLoadingTracker::DONT_CACHE);
-    }
-  }
 
   if (is_add && !called_registered_extension_command_ && GetFocusManager()) {
     MaybeRegisterExtensionCommand();
@@ -214,16 +200,6 @@ void BrowserActionButton::ShowContextMenuForView(View* source,
   context_menu_ = NULL;
 }
 
-void BrowserActionButton::OnImageLoaded(const gfx::Image& image,
-                                        const std::string& extension_id,
-                                        int index) {
-  browser_action_->CacheIcon(image);
-
-  // Call back to UpdateState() because a more specific icon might have been set
-  // while the load was outstanding.
-  UpdateState();
-}
-
 void BrowserActionButton::UpdateState() {
   int tab_id = delegate_->GetCurrentTabId();
   if (tab_id < 0)
@@ -239,7 +215,7 @@ void BrowserActionButton::UpdateState() {
              views::CustomButton::BS_NORMAL);
   }
 
-  gfx::ImageSkia icon = *browser_action()->GetIcon(tab_id).ToImageSkia();
+  gfx::ImageSkia icon = *icon_factory_.GetIcon(tab_id).ToImageSkia();
 
   if (!icon.isNull()) {
     if (!browser_action()->GetIsVisible(tab_id))
@@ -306,6 +282,10 @@ void BrowserActionButton::Observe(int type,
       NOTREACHED();
       break;
   }
+}
+
+void BrowserActionButton::OnIconUpdated() {
+  UpdateState();
 }
 
 bool BrowserActionButton::Activate() {
