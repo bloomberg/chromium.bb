@@ -15,11 +15,12 @@ static const char kClearKeyCdmVersion[] = "0.1.0.0";
 
 static scoped_refptr<media::DecoderBuffer> CopyDecoderBufferFrom(
     const cdm::InputBuffer& input_buffer) {
+  // TODO(tomfinegan): Get rid of this copy.
   scoped_refptr<media::DecoderBuffer> output_buffer =
       media::DecoderBuffer::CopyFrom(input_buffer.data, input_buffer.data_size);
 
   std::vector<media::SubsampleEntry> subsamples;
-  for (uint32_t i = 0; i < input_buffer.num_subsamples; ++i) {
+  for (int32_t i = 0; i < input_buffer.num_subsamples; ++i) {
     media::SubsampleEntry subsample;
     subsample.clear_bytes = input_buffer.subsamples[i].clear_bytes;
     subsample.cypher_bytes = input_buffer.subsamples[i].cipher_bytes;
@@ -61,8 +62,8 @@ static Type* AllocateAndCopy(const Type* data, int size) {
   return copy;
 }
 
-cdm::ContentDecryptionModule* CreateCdmInstance() {
-  return new webkit_media::ClearKeyCdm();
+cdm::ContentDecryptionModule* CreateCdmInstance(cdm::Allocator* allocator) {
+  return new webkit_media::ClearKeyCdm(allocator);
 }
 
 void DestroyCdmInstance(cdm::ContentDecryptionModule* instance) {
@@ -122,7 +123,10 @@ void ClearKeyCdm::Client::NeedKey(const std::string& key_system,
   NOTREACHED();
 }
 
-ClearKeyCdm::ClearKeyCdm() : decryptor_(&client_) {}
+ClearKeyCdm::ClearKeyCdm(cdm::Allocator* allocator)
+    : decryptor_(&client_), allocator_(allocator) {
+  DCHECK(allocator_);
+}
 
 ClearKeyCdm::~ClearKeyCdm() {}
 
@@ -138,15 +142,20 @@ cdm::Status ClearKeyCdm::GenerateKeyRequest(const uint8_t* init_data,
     return cdm::kError;
 
   DCHECK(key_request);
-  key_request->session_id = AllocateAndCopy(client_.session_id().data(),
-                                            client_.session_id().size());
-  key_request->session_id_size = client_.session_id().size();
-  key_request->message = AllocateAndCopy(client_.key_message(),
-                                             client_.key_message_length());
-  key_request->message_size = client_.key_message_length();
-  key_request->default_url = AllocateAndCopy(client_.default_url().data(),
-                                             client_.default_url().size());
-  key_request->default_url_size = client_.default_url().size();
+  key_request->set_session_id(client_.session_id().data(),
+                              client_.session_id().size());
+
+  // TODO(tomfinegan): Get rid of this copy.
+  key_request->set_message(allocator_->Allocate(client_.key_message_length()));
+
+  DCHECK(key_request->message());
+  DCHECK_EQ(key_request->message()->size(), client_.key_message_length());
+  memcpy(reinterpret_cast<void*>(key_request->message()->buffer()),
+         reinterpret_cast<const void*>(client_.key_message()),
+         client_.key_message_length());
+
+  key_request->set_default_url(client_.default_url().data(),
+                               client_.default_url().size());
   return cdm::kSuccess;
 }
 
@@ -208,9 +217,13 @@ cdm::Status ClearKeyCdm::Decrypt(
 
   DCHECK(buffer);
   int data_size = buffer->GetDataSize();
-  decrypted_buffer->data = AllocateAndCopy(buffer->GetData(), data_size);
-  decrypted_buffer->data_size = data_size;
-  decrypted_buffer->timestamp = buffer->GetTimestamp().InMicroseconds();
+
+  decrypted_buffer->set_buffer(allocator_->Allocate(data_size));
+  memcpy(reinterpret_cast<void*>(decrypted_buffer->buffer()->buffer()),
+         buffer->GetData(),
+         data_size);
+
+  decrypted_buffer->set_timestamp(buffer->GetTimestamp().InMicroseconds());
   return cdm::kSuccess;
 }
 

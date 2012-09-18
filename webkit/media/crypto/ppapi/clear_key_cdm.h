@@ -24,13 +24,14 @@ namespace webkit_media {
 // Clear key implementation of the cdm::ContentDecryptionModule interface.
 class ClearKeyCdm : public cdm::ContentDecryptionModule {
  public:
-  ClearKeyCdm();
+  explicit ClearKeyCdm(cdm::Allocator* allocator);
   virtual ~ClearKeyCdm();
 
   // ContentDecryptionModule implementation.
-  virtual cdm::Status GenerateKeyRequest(const uint8_t* init_data,
-                                         int init_data_size,
-                                         cdm::KeyMessage* key_request) OVERRIDE;
+  virtual cdm::Status GenerateKeyRequest(
+    const uint8_t* init_data,
+    int init_data_size,
+    cdm::KeyMessage* key_request) OVERRIDE;
   virtual cdm::Status AddKey(const char* session_id,
                              int session_id_size,
                              const uint8_t* key,
@@ -98,9 +99,12 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule {
 
   Client client_;
   media::AesDecryptor decryptor_;
+
   // Protects the |client_| from being accessed by the |decryptor_|
   // simultaneously.
   base::Lock client_lock_;
+
+  cdm::Allocator* const allocator_;
 };
 
 }  // namespace webkit_media

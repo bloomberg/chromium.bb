@@ -17,11 +17,16 @@ typedef __int64 int64_t;
 #include "webkit/media/crypto/ppapi/cdm_export.h"
 
 namespace cdm {
+class Allocator;
+class Buffer;
 class ContentDecryptionModule;
+class KeyMessage;
+class OutputBuffer;
 }
 
 extern "C" {
-CDM_EXPORT cdm::ContentDecryptionModule* CreateCdmInstance();
+CDM_EXPORT cdm::ContentDecryptionModule* CreateCdmInstance(
+    cdm::Allocator* allocator);
 CDM_EXPORT void DestroyCdmInstance(cdm::ContentDecryptionModule* instance);
 CDM_EXPORT const char* GetCdmVersion();
 }
@@ -33,27 +38,6 @@ enum Status {
   kNeedMoreData,  // Decoder needs more data to produce a decoded frame/sample.
   kNoKey,  // The required decryption key is not available.
   kError
-};
-
-// Represents a key message sent by the CDM. It does not own any pointers in
-// this struct.
-// TODO(xhwang): Use int32_t instead of uint32_t for sizes here and below and
-// update checks to include <0.
-struct KeyMessage {
-  KeyMessage()
-      : session_id(NULL),
-        session_id_size(0),
-        message(NULL),
-        message_size(0),
-        default_url(NULL),
-        default_url_size(0) {}
-
-  char* session_id;
-  uint32_t session_id_size;
-  uint8_t* message;
-  uint32_t message_size;
-  char* default_url;
-  uint32_t default_url_size;
 };
 
 // An input buffer can be split into several continuous subsamples.
@@ -79,11 +63,11 @@ struct KeyMessage {
 //
 // TODO(xhwang): Add checks to make sure these structs have fixed layout.
 struct SubsampleEntry {
-  SubsampleEntry(uint32_t clear_bytes, uint32_t cipher_bytes)
+  SubsampleEntry(int32_t clear_bytes, int32_t cipher_bytes)
       : clear_bytes(clear_bytes), cipher_bytes(cipher_bytes) {}
 
-  uint32_t clear_bytes;
-  uint32_t cipher_bytes;
+  int32_t clear_bytes;
+  int32_t cipher_bytes;
 };
 
 // Represents an input buffer to be decrypted (and possibly decoded). It does
@@ -102,31 +86,18 @@ struct InputBuffer {
         timestamp(0) {}
 
   const uint8_t* data;  // Pointer to the beginning of the input data.
-  uint32_t data_size;  // Size (in bytes) of |data|.
+  int32_t data_size;  // Size (in bytes) of |data|.
 
-  uint32_t data_offset;  // Number of bytes to be discarded before decryption.
+  int32_t data_offset;  // Number of bytes to be discarded before decryption.
 
   const uint8_t* key_id;  // Key ID to identify the decryption key.
-  uint32_t key_id_size;  // Size (in bytes) of |key_id|.
+  int32_t key_id_size;  // Size (in bytes) of |key_id|.
 
   const uint8_t* iv;  // Initialization vector.
-  uint32_t iv_size;  // Size (in bytes) of |iv|.
+  int32_t iv_size;  // Size (in bytes) of |iv|.
 
   const struct SubsampleEntry* subsamples;
-  uint32_t num_subsamples;  // Number of subsamples in |subsamples|.
-
-  int64_t timestamp;  // Presentation timestamp in microseconds.
-};
-
-// Represents an output decrypted buffer. It does not own |data|.
-struct OutputBuffer {
-  OutputBuffer()
-      : data(NULL),
-        data_size(0),
-        timestamp(0) {}
-
-  const uint8_t* data;  // Pointer to the beginning of the output data.
-  uint32_t data_size;  // Size (in bytes) of |data|.
+  int32_t num_subsamples;  // Number of subsamples in |subsamples|.
 
   int64_t timestamp;  // Presentation timestamp in microseconds.
 };
@@ -301,6 +272,72 @@ class ContentDecryptionModule {
   virtual void StopVideoDecoder() = 0;
 
   virtual ~ContentDecryptionModule() {}
+};
+
+// Represents a buffer created by Allocator implementations.
+class Buffer {
+ public:
+  // Destroys the buffer in the same context as it was created.
+  virtual void Destroy() = 0;
+
+  virtual uint8_t* buffer() = 0;
+  virtual int32_t size() const = 0;
+
+ protected:
+  Buffer() {}
+  virtual ~Buffer() {}
+
+ private:
+  Buffer(const Buffer&);
+  void operator=(const Buffer&);
+};
+
+// Interface class that hides cross object memory allocation details from CDMs.
+class Allocator {
+ public:
+  // Returns a Buffer* containing non-zero members upon success, or NULL on
+  // failure. The caller owns the Buffer* until it is passed back to the CDM
+  // wrapper.
+  virtual Buffer* Allocate(int32_t size) = 0;
+
+ protected:
+  Allocator() {}
+  virtual ~Allocator() {}
+};
+
+// Represents a key message sent by the CDM.
+class KeyMessage {
+ public:
+  virtual void set_session_id(const char* session_id, int32_t length) = 0;
+  virtual const char* session_id() const = 0;
+  virtual int32_t session_id_length() const = 0;
+
+  virtual void set_message(Buffer* message) = 0;
+  virtual Buffer* message() const = 0;
+
+  virtual void set_default_url(const char* default_url, int32_t length) = 0;
+  virtual const char* default_url() const = 0;
+  virtual int32_t default_url_length() const = 0;
+
+ protected:
+  KeyMessage() {}
+  virtual ~KeyMessage() {}
+};
+
+// Represents an output decrypted buffer.
+class OutputBuffer {
+ public:
+  virtual void set_buffer(Buffer* buffer) = 0;
+  virtual Buffer* buffer() const = 0;
+
+  // TODO(tomfinegan): Figure out if timestamp is really needed. If it is not,
+  // we can just pass Buffer*s around.
+  virtual void set_timestamp(int64_t timestamp) = 0;
+  virtual int64_t timestamp() const = 0;
+
+ protected:
+  OutputBuffer() {}
+  virtual ~OutputBuffer() {}
 };
 
 }  // namespace cdm

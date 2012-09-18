@@ -106,6 +106,8 @@
       ],
       'sources': [
         'crypto/ppapi/cdm_wrapper.cc',
+        'crypto/ppapi/content_decryption_module.h',
+        'crypto/ppapi/linked_ptr.h',
       ],
       'conditions': [
         ['os_posix==1 and OS!="mac"', {
