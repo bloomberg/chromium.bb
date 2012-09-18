@@ -472,6 +472,17 @@ syncer::InvalidatorState ProfileSyncService::GetInvalidatorState() const {
   return invalidator_registrar_.GetInvalidatorState();
 }
 
+void ProfileSyncService::EmitInvalidationForTest(
+    const invalidation::ObjectId& id,
+    const std::string& payload) {
+  syncer::ObjectIdSet notify_ids;
+  notify_ids.insert(id);
+
+  const syncer::ObjectIdStateMap& id_state_map =
+      ObjectIdSetToStateMap(notify_ids, payload);
+  OnIncomingInvalidation(id_state_map, syncer::REMOTE_INVALIDATION);
+}
+
 void ProfileSyncService::Shutdown() {
   ShutdownImpl(false);
 }

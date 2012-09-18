@@ -10,6 +10,8 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -18,6 +20,10 @@
 using ::testing::_;
 using ::testing::SaveArg;
 using ::testing::StrictMock;
+
+// TODO(dcheng): This is hardcoded for now since the svn export is not done yet.
+// Once it's done, use ipc::invalidation::ObjectSource::CHROME_PUSH_MESSAGING.
+const int kSourceId = 1030;
 
 namespace extensions {
 
@@ -60,6 +66,33 @@ IN_PROC_BROWSER_TEST_F(PushMessagingApiTest, EventDispatch) {
 
   GetEventRouter()->TriggerMessageForTest(extension->id(), 1, "payload");
 
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
+// Test that a push introduced into the sync code makes it to the extension
+// that we install.
+IN_PROC_BROWSER_TEST_F(PushMessagingApiTest, ReceivesPush) {
+  ResultCatcher catcher;
+  catcher.RestrictToProfile(browser()->profile());
+  ExtensionTestMessageListener ready("ready", true);
+
+  const extensions::Extension* extension =
+    LoadExtension(test_data_dir_.AppendASCII("push_messaging"));
+  ASSERT_TRUE(extension);
+  GURL page_url = extension->GetResourceURL("event_dispatch.html");
+  ui_test_utils::NavigateToURL(browser(), page_url);
+  EXPECT_TRUE(ready.WaitUntilSatisfied());
+
+  ProfileSyncService* pss = ProfileSyncServiceFactory::GetForProfile(
+      browser()->profile());
+  ASSERT_TRUE(pss);
+
+  // Construct a sync id for the object "U/<extension-id>/1".
+  std::string id = "U/" + extension->id() + "/1";
+
+  invalidation::ObjectId object_id(kSourceId, id);
+
+  pss->EmitInvalidationForTest(object_id, "payload");
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 

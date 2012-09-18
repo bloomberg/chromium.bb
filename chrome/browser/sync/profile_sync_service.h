@@ -575,6 +575,11 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // ProfileKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
+  // Simulate an incoming notification for the given id and payload.
+  void EmitInvalidationForTest(
+      const invalidation::ObjectId& id,
+      const std::string& payload);
+
  protected:
   // Used by test classes that derive from ProfileSyncService.
   virtual browser_sync::SyncBackendHost* GetBackendForTest();
