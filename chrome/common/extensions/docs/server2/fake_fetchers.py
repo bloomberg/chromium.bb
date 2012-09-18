@@ -32,7 +32,8 @@ class _FakeFetcher(object):
 
 class FakeOmahaProxy(_FakeFetcher):
   def fetch(self, url):
-    return self._ReadFile(os.path.join('test_data',
+    return self._ReadFile(os.path.join('server2',
+                                       'test_data',
                                        'branch_utility',
                                        'first.json'))
 
@@ -42,9 +43,7 @@ class FakeSubversionServer(_FakeFetcher):
     self._base_pattern = re.compile(r'.*chrome/common/extensions/(.*)')
 
   def fetch(self, url):
-    path = os.path.join(os.pardir,
-                        os.pardir,
-                        self._base_pattern.match(url).group(1))
+    path = os.path.join(os.pardir, self._base_pattern.match(url).group(1))
     if self._IsDir(path):
       html = ['<html>Revision 000000']
       try:
@@ -70,9 +69,7 @@ class FakeViewvcServer(_FakeFetcher):
     self._base_pattern = re.compile(r'.*chrome/common/extensions/(.*)')
 
   def fetch(self, url):
-    path = os.path.join(os.pardir,
-                        os.pardir,
-                        self._base_pattern.match(url).group(1))
+    path = os.path.join(os.pardir, self._base_pattern.match(url).group(1))
     if self._IsDir(path):
       html = ['<html><td>Directory revision:</td><td><a>%s</a></td>' %
               self._Stat(path)]
@@ -97,18 +94,21 @@ class FakeGithubStat(_FakeFetcher):
 class FakeGithubZip(_FakeFetcher):
   def fetch(self, url):
     try:
-      return self._ReadFile(os.path.join('test_data',
+      return self._ReadFile(os.path.join('server2',
+                                         'test_data',
                                          'github_file_system',
                                          'apps_samples.zip'),
                             mode='rb')
     except IOError:
       return None
 
-def ConfigureFakeFetchers(base_path):
+def ConfigureFakeFetchers(docs):
+  '''Configure the fake fetcher paths relative to the docs directory.
+  '''
   appengine_wrappers.ConfigureFakeUrlFetch({
-    url_constants.OMAHA_PROXY_URL: FakeOmahaProxy(base_path),
-    '%s/.*' % url_constants.SVN_URL: FakeSubversionServer(base_path),
-    '%s/.*' % url_constants.VIEWVC_URL: FakeViewvcServer(base_path),
-    '%s/commits/.*' % url_constants.GITHUB_URL: FakeGithubStat(base_path),
-    '%s/zipball' % url_constants.GITHUB_URL: FakeGithubZip(base_path)
+    url_constants.OMAHA_PROXY_URL: FakeOmahaProxy(docs),
+    '%s/.*' % url_constants.SVN_URL: FakeSubversionServer(docs),
+    '%s/.*' % url_constants.VIEWVC_URL: FakeViewvcServer(docs),
+    '%s/commits/.*' % url_constants.GITHUB_URL: FakeGithubStat(docs),
+    '%s/zipball' % url_constants.GITHUB_URL: FakeGithubZip(docs)
   })

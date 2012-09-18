@@ -1,74 +1,12 @@
+--------
 Overview
 
 This is a Google App Engine server which serves the documentation for Chrome
 apps and extensions. At time of this writing, the primary URL is:
 http://developer.chrome.com/.
 
-Documentation for Chrome apps and extensions is partly generated from API
-definitions (for the reference material), and partly hand-written.
 
-All documentation sources are checked into source control, just like any other
-Chrome source code. The server consumes these sources and generates the
-documentation web pages dynamically.
-
-The goals of this system are:
-
-* Docs are generated from API definitions; it isn't possible to add or modify
-  APIs without creating stub reference documentation at the same time.
-
-* Docs are editable by anyone with Chrome commit access. This encourages
-  developers to do their part to keep doc up to date, and allows part-time
-  contributors to help too.
-
-* Docs go live automatically and immediately, upon check-in. There's no separate
-  push process for docs.
-
-* Docs are branched automatically with Chrome's source code; the docs for each
-  Chrome release are kept with the corresponding source code.
-
-* Users can always find the current doc for any Chrome release channel (i.e.,
-  /trunk/extensions/, /beta/apps/, etc.). These URLs are updated automatically
-  with Chrome's release process.
-
-
-Editing Docs
-
-  1. Edit files.
-
-     - If you are not updating the static HTML for a docs page, you will most
-       likely not have to do anything. The docs server will automatically pick
-       up changes to the JSON or IDL schemas.
-
-     - Otherwise, they will be in
-       chrome/common/extensions/docs/server2/templates/. See the
-       "Overview of ./templates Directory" section for more information.
-
-     - Files in templates directory use the Handlebar template language. It is
-       extremely simple, essentially: write HTML.
-       See third_party/handlebar/README.md.
-
-  2. Run './preview.py'
-
-  3. Check your work at http://localhost:8000/(apps|extensions)/<doc_name>
-
-  4. Send a CL and commit files as with any other Chrome change. The live
-     server will update within 5-10 minutes.
-
-
-Overview of ./templates Directory
-
-The ./templates directory has four subdirectories.
-
-    - intros -> The static content that appears before the API reference on API
-                 pages.
-
-    - articles -> The static content that appears on non-API pages.
-
-    - public -> The top level templates for all pages.
-
-    - private -> Helper templates used in rendering the docs.
-
-
+---------------------
 Developing the Server
 
 You shouldn't need app engine locally to develop the server, preview.py should
@@ -83,11 +21,13 @@ be sufficient. If for some reason you want to test against the app engine SDK:
   3. View docs at http://localhost:8080/(apps|extensions)/<doc_name>
 
 
+--------------------
 Deploying the Server
 
 You will need to have access to the http://chrome-apps-doc.appspot.com app.
-Contact aa@chromium.org, erikkay@chromium.org, mihaip@chromium.org, or
-miket@chromium.org to obtain access.
+Contact aa@chromium.org, erikkay@chromium.org, mihaip@chromium.org,
+miket@chromium.org, kalman@chromium.org, or ernestd@chromium.org to obtain
+access.
 
 Once you have access:
 

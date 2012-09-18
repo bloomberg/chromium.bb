@@ -12,16 +12,16 @@ import os
 import re
 
 EXTENSIONS_PATH = os.path.join('chrome', 'common', 'extensions')
-SERVER2_PATH = os.path.join(EXTENSIONS_PATH, 'docs', 'server2')
+DOCS_PATH = os.path.join(EXTENSIONS_PATH, 'docs')
+SERVER2_PATH = os.path.join(DOCS_PATH, 'server2')
 API_PATH = os.path.join(EXTENSIONS_PATH, 'api')
-TEMPLATES_PATH = os.path.join(SERVER2_PATH, 'templates')
+TEMPLATES_PATH = os.path.join(DOCS_PATH, 'templates')
 PRIVATE_TEMPLATES_PATH = os.path.join(TEMPLATES_PATH, 'private')
 PUBLIC_TEMPLATES_PATH = os.path.join(TEMPLATES_PATH, 'public')
 INTROS_PATH = os.path.join(TEMPLATES_PATH, 'intros')
 ARTICLES_PATH = os.path.join(TEMPLATES_PATH, 'articles')
 
 LOCAL_PUBLIC_TEMPLATES_PATH = os.path.join('docs',
-                                           'server2',
                                            'templates',
                                            'public')
 

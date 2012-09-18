@@ -18,7 +18,7 @@ import url_constants
 
 class GithubFileSystemTest(unittest.TestCase):
   def setUp(self):
-    ConfigureFakeFetchers(sys.path[0])
+    ConfigureFakeFetchers(os.path.join(sys.path[0], os.pardir))
     self._base_path = os.path.join(sys.path[0],
                                    'test_data',
                                    'github_file_system')

@@ -9,11 +9,12 @@ import unittest
 import PRESUBMIT
 
 EXTENSIONS_PATH = os.path.join('chrome', 'common', 'extensions')
-SERVER2_PATH = os.path.join(EXTENSIONS_PATH, 'docs', 'server2')
-PUBLIC_PATH = os.path.join(SERVER2_PATH, 'templates', 'public')
-PRIVATE_PATH = os.path.join(SERVER2_PATH, 'templates', 'private')
-INTROS_PATH = os.path.join(SERVER2_PATH, 'templates', 'intros')
-ARTICLES_PATH = os.path.join(SERVER2_PATH, 'templates', 'articles')
+DOCS_PATH = os.path.join(EXTENSIONS_PATH, 'docs')
+SERVER2_PATH = os.path.join(DOCS_PATH, 'server2')
+PUBLIC_PATH = os.path.join(DOCS_PATH, 'templates', 'public')
+PRIVATE_PATH = os.path.join(DOCS_PATH, 'templates', 'private')
+INTROS_PATH = os.path.join(DOCS_PATH, 'templates', 'intros')
+ARTICLES_PATH = os.path.join(DOCS_PATH, 'templates', 'articles')
 
 class PRESUBMITTest(unittest.TestCase):
   def testCreateIntegrationTestArgs(self):

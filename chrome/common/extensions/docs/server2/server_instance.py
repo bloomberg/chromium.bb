@@ -9,7 +9,7 @@ import os
 from file_system import FileNotFoundError
 import compiled_file_system as compiled_fs
 
-STATIC_DIR_PREFIX = 'docs/server2'
+STATIC_DIR_PREFIX = 'docs'
 DOCS_PATH = 'docs'
 
 class ServerInstance(object):

@@ -53,11 +53,10 @@ GITHUB_FILE_SYSTEM = GithubFileSystem(
 GITHUB_COMPILED_FILE_SYSTEM = CompiledFileSystem.Factory(GITHUB_FILE_SYSTEM,
                                                          GITHUB_MEMCACHE)
 
-STATIC_DIR_PREFIX = 'docs/server2'
 EXTENSIONS_PATH = 'chrome/common/extensions'
 DOCS_PATH = 'docs'
 API_PATH = 'api'
-TEMPLATE_PATH = DOCS_PATH + '/server2/templates'
+TEMPLATE_PATH = DOCS_PATH + '/templates'
 INTRO_PATH = TEMPLATE_PATH + '/intros'
 ARTICLE_PATH = TEMPLATE_PATH + '/articles'
 PUBLIC_TEMPLATE_PATH = TEMPLATE_PATH + '/public'

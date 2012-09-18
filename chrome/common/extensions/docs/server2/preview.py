@@ -103,7 +103,7 @@ if __name__ == '__main__':
           'docs.')
     exit()
 
-  ConfigureFakeFetchers(os.path.join(opts.directory, 'docs', 'server2'))
+  ConfigureFakeFetchers(os.path.join(opts.directory, 'docs'))
   from handler import Handler
 
   if opts.render:

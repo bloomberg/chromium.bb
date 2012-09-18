@@ -20,7 +20,7 @@ BASE_PATH = None
 EXPLICIT_TEST_FILES = None
 
 from fake_fetchers import ConfigureFakeFetchers
-ConfigureFakeFetchers(sys.path[0])
+ConfigureFakeFetchers(os.path.join(sys.path[0], os.pardir))
 
 # Import Handler later because it immediately makes a request to github. We need
 # the fake urlfetch to be in place first.
@@ -63,11 +63,7 @@ class IntegrationTest(unittest.TestCase):
             (lang, e))
 
   def _RunPublicTemplatesTest(self):
-    base_path = os.path.join(BASE_PATH,
-                             'docs',
-                             'server2',
-                             'templates',
-                             'public')
+    base_path = os.path.join(BASE_PATH, 'docs', 'templates', 'public')
     if EXPLICIT_TEST_FILES is None:
       test_files = []
       for path, dirs, files in os.walk(base_path):
