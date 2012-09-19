@@ -257,10 +257,10 @@ void UsageTracker::GetGlobalUsage(const GlobalUsageCallback& callback) {
 }
 
 void UsageTracker::GetHostUsage(
-    const std::string& host, const HostUsageCallback& callback) {
+    const std::string& host, const UsageCallback& callback) {
   if (client_tracker_map_.size() == 0) {
     // No clients registered.
-    callback.Run(host, type_, 0);
+    callback.Run(0);
     return;
   }
   if (host_usage_callbacks_.Add(host, callback)) {
@@ -272,7 +272,7 @@ void UsageTracker::GetHostUsage(
          ++iter) {
       iter->second->GetHostUsage(host,
           base::Bind(&UsageTracker::DidGetClientHostUsage,
-                     weak_factory_.GetWeakPtr()));
+                     weak_factory_.GetWeakPtr(), host, type_));
     }
   }
 }
@@ -339,7 +339,7 @@ void UsageTracker::DidGetClientHostUsage(const std::string& host,
       info.usage = 0;
     // All the clients have returned their usage data.  Dispatches the
     // pending callbacks.
-    host_usage_callbacks_.Run(host, host, type, info.usage);
+    host_usage_callbacks_.Run(host, info.usage);
     outstanding_host_usage_.erase(host);
   }
 }
@@ -381,11 +381,11 @@ void ClientUsageTracker::GetGlobalUsage(const GlobalUsageCallback& callback) {
 }
 
 void ClientUsageTracker::GetHostUsage(
-    const std::string& host, const HostUsageCallback& callback) {
+    const std::string& host, const UsageCallback& callback) {
   HostSet::const_iterator found = cached_hosts_.find(host);
   if (found != cached_hosts_.end()) {
     // TODO(kinuko): Drop host_usage_map_ cache periodically.
-    callback.Run(host, type_, GetCachedHostUsage(host));
+    callback.Run(GetCachedHostUsage(host));
     return;
   }
   if (!host_usage_callbacks_.Add(host, callback) || global_usage_task_)
@@ -469,7 +469,7 @@ void ClientUsageTracker::GatherGlobalUsageComplete() {
 
   for (HostUsageCallbackMap::iterator iter = host_usage_callbacks_.Begin();
        iter != host_usage_callbacks_.End(); ++iter) {
-    iter->second.Run(iter->first, type_, GetCachedHostUsage(iter->first));
+    iter->second.Run(GetCachedHostUsage(iter->first));
   }
   host_usage_callbacks_.Clear();
 }
@@ -477,7 +477,7 @@ void ClientUsageTracker::GatherGlobalUsageComplete() {
 void ClientUsageTracker::GatherHostUsageComplete(const std::string& host) {
   DCHECK(host_usage_tasks_.find(host) != host_usage_tasks_.end());
   host_usage_tasks_.erase(host);
-  host_usage_callbacks_.Run(host, host, type_, GetCachedHostUsage(host));
+  host_usage_callbacks_.Run(host, GetCachedHostUsage(host));
 }
 
 int64 ClientUsageTracker::GetCachedHostUsage(const std::string& host) const {
@@ -516,9 +516,7 @@ void ClientUsageTracker::OnSpecialStoragePolicyChanged() {
   global_unlimited_usage_is_valid_ = false;
 }
 
-void ClientUsageTracker::NoopHostUsageCallback(
-    const std::string& host,  StorageType type, int64 usage) {
-}
+void ClientUsageTracker::NoopHostUsageCallback(int64 usage) {}
 
 bool ClientUsageTracker::IsStorageUnlimited(const GURL& origin) const {
   if (type_ == kStorageTypeSyncable)

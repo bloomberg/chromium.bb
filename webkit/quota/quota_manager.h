@@ -179,7 +179,7 @@ class QuotaManager : public QuotaTaskObserver,
                               const HostQuotaCallback& callback);
   void GetGlobalUsage(StorageType type, const GlobalUsageCallback& callback);
   void GetHostUsage(const std::string& host, StorageType type,
-                    const HostUsageCallback& callback);
+                    const UsageCallback& callback);
 
   void GetStatistics(std::map<std::string, std::string>* statistics);
 

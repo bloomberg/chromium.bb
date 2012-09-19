@@ -48,9 +48,7 @@ typedef base::Callback<void(QuotaStatusCode status,
                             int64 quota)> QuotaCallback;
 // TODO(kinuko,nhiroki): HostUsageCallback could be probably replaced with
 // simple Callback<void(int64)> callback by binding host and type with Bind.
-typedef base::Callback<void(const std::string& host,
-                            StorageType type,
-                            int64 host_usage)> HostUsageCallback;
+typedef base::Callback<void(int64 usage)> UsageCallback;
 typedef base::Callback<void(QuotaStatusCode status,
                             const std::string& host,
                             StorageType type,
@@ -203,34 +201,8 @@ class CallbackQueueMap2
   }
 };
 
-template <typename CallbackType3, typename KEY,
-          typename ARG1, typename ARG2, typename ARG3>
-class CallbackQueueMap3
-    : public CallbackQueueMapBase<CallbackType3,
-                                  CallbackQueue3<CallbackType3,
-                                                 ARG1, ARG2, ARG3>,
-                                  KEY> {
- public:
-  typedef typename CallbackQueueMapBase<
-      CallbackType3,
-      CallbackQueue3<CallbackType3, ARG1, ARG2, ARG3>,
-      KEY>::iterator iterator;
-  typedef CallbackQueue3<CallbackType3, ARG1, ARG2, ARG3> Queue;
-
-  // Runs the callbacks added for the given |key| and clears the key
-  // from the map.
-  void Run(const KEY& key, ARG1 arg1, ARG2 arg2, ARG3 arg3) {
-    if (!this->HasCallbacks(key))
-      return;
-    Queue& queue = this->callback_map_[key];
-    queue.Run(arg1, arg2, arg3);
-    this->callback_map_.erase(key);
-  }
-};
-
-typedef CallbackQueueMap3<HostUsageCallback, std::string,
-                          const std::string&,
-                          StorageType, int64> HostUsageCallbackMap;
+typedef CallbackQueueMap1<UsageCallback, std::string, int64>
+    HostUsageCallbackMap;
 
 }  // namespace quota
 

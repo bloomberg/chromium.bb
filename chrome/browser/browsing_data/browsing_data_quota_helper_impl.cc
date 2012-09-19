@@ -125,7 +125,7 @@ void BrowsingDataQuotaHelperImpl::GetHostUsage(const std::string& host,
   quota_manager_->GetHostUsage(
       host, type,
       base::Bind(&BrowsingDataQuotaHelperImpl::GotHostUsage,
-                 weak_factory_.GetWeakPtr()));
+                 weak_factory_.GetWeakPtr(), host, type));
 }
 
 void BrowsingDataQuotaHelperImpl::GotHostUsage(const std::string& host,

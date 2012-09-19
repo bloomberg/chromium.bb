@@ -159,7 +159,7 @@ class QuotaManagerTest : public testing::Test {
     quota_manager_->GetHostUsage(
         host, type,
         base::Bind(&QuotaManagerTest::DidGetHostUsage,
-                   weak_factory_.GetWeakPtr()));
+                   weak_factory_.GetWeakPtr(), host, type));
   }
 
   void RunAdditionalUsageAndQuotaTask(const GURL& origin, StorageType type) {

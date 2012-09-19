@@ -354,10 +354,10 @@ class QuotaManager::UsageAndQuotaDispatcherTask : public QuotaTask {
     return base::Bind(&UsageAndQuotaDispatcherTask::DidGetGlobalUsage,
                       weak_factory_.GetWeakPtr());
   }
-  HostUsageCallback NewWaitableHostUsageCallback() {
+  UsageCallback NewWaitableHostUsageCallback() {
     ++waiting_callbacks_;
     return base::Bind(&UsageAndQuotaDispatcherTask::DidGetHostUsage,
-                      weak_factory_.GetWeakPtr());
+                      weak_factory_.GetWeakPtr(), host(), type());
   }
   HostQuotaCallback NewWaitableHostQuotaCallback() {
     ++waiting_callbacks_;
@@ -1079,7 +1079,7 @@ void QuotaManager::GetGlobalUsage(StorageType type,
 
 void QuotaManager::GetHostUsage(const std::string& host,
                                 StorageType type,
-                                const HostUsageCallback& callback) {
+                                const UsageCallback& callback) {
   LazyInitialize();
   GetUsageTracker(type)->GetHostUsage(host, callback);
 }
