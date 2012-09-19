@@ -36,6 +36,47 @@ namespace cc {
 
 bool CCLayerTreeHost::s_needsFilterContext = false;
 
+CCLayerTreeSettings::CCLayerTreeSettings()
+    : acceleratePainting(false)
+    , showFPSCounter(false)
+    , showPlatformLayerTree(false)
+    , showPaintRects(false)
+    , showPropertyChangedRects(false)
+    , showSurfaceDamageRects(false)
+    , showScreenSpaceRects(false)
+    , showReplicaScreenSpaceRects(false)
+    , showOccludingRects(false)
+    , renderVSyncEnabled(true)
+    , refreshRate(0)
+    , maxPartialTextureUpdates(std::numeric_limits<size_t>::max())
+    , defaultTileSize(IntSize(256, 256))
+    , maxUntiledLayerSize(IntSize(512, 512))
+    , minimumOcclusionTrackingSize(IntSize(160, 160))
+{
+}
+
+CCLayerTreeSettings::~CCLayerTreeSettings()
+{
+}
+
+RendererCapabilities::RendererCapabilities()
+    : bestTextureFormat(0)
+    , contextHasCachedFrontBuffer(false)
+    , usingPartialSwap(false)
+    , usingAcceleratedPainting(false)
+    , usingSetVisibility(false)
+    , usingSwapCompleteCallback(false)
+    , usingGpuMemoryManager(false)
+    , usingDiscardFramebuffer(false)
+    , usingEglImage(false)
+    , maxTextureSize(0)
+{
+}
+
+RendererCapabilities::~RendererCapabilities()
+{
+}
+
 bool CCLayerTreeHost::anyLayerTreeHostInstanceExists()
 {
     return numLayerTreeInstances > 0;

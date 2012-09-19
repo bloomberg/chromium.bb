@@ -381,6 +381,11 @@ void CCVideoLayerImpl::dumpLayerProperties(std::string* str, int indent) const
     CCLayerImpl::dumpLayerProperties(str, indent);
 }
 
+const char* CCVideoLayerImpl::layerTypeAsString() const
+{
+    return "VideoLayer";
+}
+
 }
 
 #endif // USE(ACCELERATED_COMPOSITING)

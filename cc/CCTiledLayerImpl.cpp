@@ -214,6 +214,11 @@ void CCTiledLayerImpl::didLoseContext()
     m_tiler->reset();
 }
 
+const char* CCTiledLayerImpl::layerTypeAsString() const
+{
+    return "ContentLayer";
+}
+
 } // namespace cc
 
 #endif // USE(ACCELERATED_COMPOSITING)

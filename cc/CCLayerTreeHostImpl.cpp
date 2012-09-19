@@ -89,6 +89,14 @@ private:
     RefPtr<CCDelayBasedTimeSource> m_timeSource;
 };
 
+CCLayerTreeHostImpl::FrameData::FrameData()
+{
+}
+
+CCLayerTreeHostImpl::FrameData::~FrameData()
+{
+}
+
 PassOwnPtr<CCLayerTreeHostImpl> CCLayerTreeHostImpl::create(const CCLayerTreeSettings& settings, CCLayerTreeHostImplClient* client)
 {
     return adoptPtr(new CCLayerTreeHostImpl(settings, client));
@@ -585,6 +593,16 @@ bool CCLayerTreeHostImpl::swapBuffers()
 
     m_fpsCounter->markEndOfFrame();
     return m_renderer->swapBuffers();
+}
+
+const IntSize& CCLayerTreeHostImpl::deviceViewportSize() const
+{
+    return m_deviceViewportSize;
+}
+
+const CCLayerTreeSettings& CCLayerTreeHostImpl::settings() const
+{
+    return m_settings;
 }
 
 void CCLayerTreeHostImpl::didLoseContext()

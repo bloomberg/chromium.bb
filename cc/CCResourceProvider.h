@@ -57,6 +57,9 @@ public:
     };
     typedef Vector<TransferableResource> TransferableResourceArray;
     struct TransferableResourceList {
+        TransferableResourceList();
+        ~TransferableResourceList();
+
         TransferableResourceArray resources;
         unsigned syncPoint;
     };
@@ -208,42 +211,10 @@ public:
 
 private:
     struct Resource {
-        Resource()
-            : glId(0)
-            , pixels(0)
-            , pool(0)
-            , lockForReadCount(0)
-            , lockedForWrite(false)
-            , external(false)
-            , exported(false)
-            , size()
-            , format(0)
-            , type(static_cast<ResourceType>(0))
-        { }
-        Resource(unsigned textureId, int pool, const IntSize& size, GC3Denum format)
-            : glId(textureId)
-            , pixels(0)
-            , pool(pool)
-            , lockForReadCount(0)
-            , lockedForWrite(false)
-            , external(false)
-            , exported(false)
-            , size(size)
-            , format(format)
-            , type(GLTexture)
-        { }
-        Resource(uint8_t* pixels, int pool, const IntSize& size, GC3Denum format)
-            : glId(0)
-            , pixels(pixels)
-            , pool(pool)
-            , lockForReadCount(0)
-            , lockedForWrite(false)
-            , external(false)
-            , exported(false)
-            , size(size)
-            , format(format)
-            , type(Bitmap)
-        { }
+        Resource();
+        Resource(unsigned textureId, int pool, const IntSize& size, GC3Denum format);
+        Resource(uint8_t* pixels, int pool, const IntSize& size, GC3Denum format);
+
         unsigned glId;
         uint8_t* pixels;
         int pool;
@@ -257,6 +228,9 @@ private:
     };
     typedef HashMap<ResourceId, Resource> ResourceMap;
     struct Child {
+        Child();
+        ~Child();
+
         int pool;
         ResourceIdMap childToParentMap;
         ResourceIdMap parentToChildMap;

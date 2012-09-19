@@ -313,6 +313,11 @@ void CCLayerImpl::noteLayerPropertyChangedForDescendants()
         m_children[i]->noteLayerPropertyChangedForSubtree();
 }
 
+const char* CCLayerImpl::layerTypeAsString() const
+{
+    return "LayerChromium";
+}
+
 void CCLayerImpl::resetAllChangeTrackingForSubtree()
 {
     m_layerPropertyChanged = false;
@@ -333,9 +338,29 @@ void CCLayerImpl::resetAllChangeTrackingForSubtree()
         m_children[i]->resetAllChangeTrackingForSubtree();
 }
 
+bool CCLayerImpl::layerIsAlwaysDamaged() const
+{
+    return false;
+}
+
+int CCLayerImpl::id() const
+{
+     return m_layerId;
+}
+
+float CCLayerImpl::opacity() const
+{
+     return m_opacity;
+}
+
 void CCLayerImpl::setOpacityFromAnimation(float opacity)
 {
     setOpacity(opacity);
+}
+
+const WebKit::WebTransformationMatrix& CCLayerImpl::transform() const
+{
+     return m_transform;
 }
 
 void CCLayerImpl::setTransformFromAnimation(const WebTransformationMatrix& transform)

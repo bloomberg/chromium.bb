@@ -45,7 +45,7 @@ protected:
 
 private:
 
-    virtual const char* layerTypeAsString() const OVERRIDE { return "ContentLayer"; }
+    virtual const char* layerTypeAsString() const OVERRIDE;
 
     DrawableTile* tileAt(int, int) const;
     DrawableTile* createTile(int, int);

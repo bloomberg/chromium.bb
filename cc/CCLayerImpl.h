@@ -43,11 +43,11 @@ public:
     virtual ~CCLayerImpl();
 
     // CCLayerAnimationControllerClient implementation.
-    virtual int id() const OVERRIDE { return m_layerId; }
+    virtual int id() const OVERRIDE;
     virtual void setOpacityFromAnimation(float) OVERRIDE;
-    virtual float opacity() const OVERRIDE { return m_opacity; }
+    virtual float opacity() const OVERRIDE;
     virtual void setTransformFromAnimation(const WebKit::WebTransformationMatrix&) OVERRIDE;
-    virtual const WebKit::WebTransformationMatrix& transform() const OVERRIDE { return m_transform; }
+    virtual const WebKit::WebTransformationMatrix& transform() const OVERRIDE;
 
     // Tree structure.
     CCLayerImpl* parent() const { return m_parent; }
@@ -232,7 +232,7 @@ public:
 
     void resetAllChangeTrackingForSubtree();
 
-    virtual bool layerIsAlwaysDamaged() const { return false; }
+    virtual bool layerIsAlwaysDamaged() const;
 
     CCLayerAnimationController* layerAnimationController() { return m_layerAnimationController.get(); }
 
@@ -269,7 +269,7 @@ private:
     // Note carefully this does not affect the current layer.
     void noteLayerPropertyChangedForDescendants();
 
-    virtual const char* layerTypeAsString() const { return "LayerChromium"; }
+    virtual const char* layerTypeAsString() const;
 
     void dumpLayer(std::string*, int indent) const;
 

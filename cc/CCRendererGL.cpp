@@ -150,6 +150,11 @@ CCRendererGL::~CCRendererGL()
     cleanupSharedObjects();
 }
 
+const RendererCapabilities& CCRendererGL::capabilities() const
+{
+    return m_capabilities;
+}
+
 WebGraphicsContext3D* CCRendererGL::context()
 {
     return m_context;

@@ -107,6 +107,12 @@ void CCIOSurfaceLayerImpl::setIOSurfaceProperties(unsigned ioSurfaceId, const In
     m_ioSurfaceId = ioSurfaceId;
     m_ioSurfaceSize = size;
 }
+
+const char* CCIOSurfaceLayerImpl::layerTypeAsString() const
+{
+    return "IOSurfaceLayer";
+}
+
 }
 
 #endif // USE(ACCELERATED_COMPOSITING)

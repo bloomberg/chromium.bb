@@ -43,6 +43,9 @@ public:
 };
 
 struct CCScrollAndScaleSet {
+    CCScrollAndScaleSet();
+    ~CCScrollAndScaleSet();
+
     Vector<CCLayerTreeHostCommon::ScrollUpdateInfo> scrolls;
     float pageScaleDelta;
 };

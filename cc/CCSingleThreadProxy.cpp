@@ -227,6 +227,11 @@ void CCSingleThreadProxy::didAddAnimation()
 {
 }
 
+size_t CCSingleThreadProxy::maxPartialTextureUpdates() const
+{
+    return std::numeric_limits<size_t>::max();
+}
+
 void CCSingleThreadProxy::stop()
 {
     TRACE_EVENT0("cc", "CCSingleThreadProxy::stop");
@@ -240,6 +245,16 @@ void CCSingleThreadProxy::stop()
         m_layerTreeHostImpl.clear();
     }
     m_layerTreeHost = 0;
+}
+
+void CCSingleThreadProxy::setNeedsRedrawOnImplThread()
+{
+    m_layerTreeHost->scheduleComposite();
+}
+
+void CCSingleThreadProxy::setNeedsCommitOnImplThread()
+{
+    m_layerTreeHost->scheduleComposite();
 }
 
 void CCSingleThreadProxy::postAnimationEventsToMainThreadOnImplThread(PassOwnPtr<CCAnimationEventsVector> events, double wallClockTime)
@@ -271,6 +286,11 @@ void CCSingleThreadProxy::forceSerializeOnSwapBuffers()
         if (m_rendererInitialized)
             m_layerTreeHostImpl->renderer()->doNoOp();
     }
+}
+
+void CCSingleThreadProxy::onSwapBuffersCompleteOnImplThread()
+{
+    ASSERT_NOT_REACHED();
 }
 
 bool CCSingleThreadProxy::commitAndComposite()

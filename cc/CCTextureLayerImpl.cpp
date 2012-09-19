@@ -74,6 +74,11 @@ void CCTextureLayerImpl::didLoseContext()
     m_externalTextureResource = 0;
 }
 
+const char* CCTextureLayerImpl::layerTypeAsString() const
+{
+    return "TextureLayer";
+}
+
 }
 
 #endif // USE(ACCELERATED_COMPOSITING)

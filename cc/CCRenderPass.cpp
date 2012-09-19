@@ -33,6 +33,10 @@ CCRenderPass::CCRenderPass(Id id, IntRect outputRect, const WebKit::WebTransform
     ASSERT(id.index >= 0);
 }
 
+CCRenderPass::~CCRenderPass()
+{
+}
+
 PassOwnPtr<CCRenderPass> CCRenderPass::copy(Id newId) const
 {
     ASSERT(newId != m_id);

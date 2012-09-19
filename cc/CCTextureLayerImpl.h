@@ -34,7 +34,7 @@ public:
 private:
     explicit CCTextureLayerImpl(int);
 
-    virtual const char* layerTypeAsString() const OVERRIDE { return "TextureLayer"; }
+    virtual const char* layerTypeAsString() const OVERRIDE;
 
     unsigned m_textureId;
     CCResourceProvider::ResourceId m_externalTextureResource;

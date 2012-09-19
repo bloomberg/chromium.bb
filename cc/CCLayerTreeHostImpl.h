@@ -65,6 +65,9 @@ public:
     virtual void scheduleAnimation() OVERRIDE;
 
     struct FrameData : public CCRenderPassSink {
+        FrameData();
+        ~FrameData();
+
         Vector<IntRect> occludingScreenSpaceRects;
         CCRenderPassList renderPasses;
         CCRenderPassIdHashMap renderPassesById;
@@ -90,8 +93,8 @@ public:
     void didDrawAllLayers(const FrameData&);
 
     // CCRendererClient implementation
-    virtual const IntSize& deviceViewportSize() const OVERRIDE { return m_deviceViewportSize; }
-    virtual const CCLayerTreeSettings& settings() const OVERRIDE { return m_settings; }
+    virtual const IntSize& deviceViewportSize() const OVERRIDE;
+    virtual const CCLayerTreeSettings& settings() const OVERRIDE;
     virtual void didLoseContext() OVERRIDE;
     virtual void onSwapBuffersComplete() OVERRIDE;
     virtual void setFullRootLayerDamage() OVERRIDE;

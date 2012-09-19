@@ -22,6 +22,14 @@ using WebKit::WebTransformationMatrix;
 
 namespace cc {
 
+CCScrollAndScaleSet::CCScrollAndScaleSet()
+{
+}
+
+CCScrollAndScaleSet::~CCScrollAndScaleSet()
+{
+}
+
 IntRect CCLayerTreeHostCommon::calculateVisibleRect(const IntRect& targetSurfaceRect, const IntRect& layerBoundRect, const WebTransformationMatrix& transform)
 {
     // Is this layer fully contained within the target surface?

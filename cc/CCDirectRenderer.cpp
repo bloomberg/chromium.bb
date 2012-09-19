@@ -48,6 +48,19 @@ static WebTransformationMatrix windowMatrix(int x, int y, int width, int height)
 }
 
 namespace cc {
+
+CCDirectRenderer::DrawingFrame::DrawingFrame()
+    : rootRenderPass(0)
+    , currentRenderPass(0)
+    , currentTexture(0)
+    , flippedY(false)
+{
+}
+
+CCDirectRenderer::DrawingFrame::~DrawingFrame()
+{
+}
+
 //
 // static
 FloatRect CCDirectRenderer::quadVertexRect()
@@ -87,6 +100,16 @@ IntRect CCDirectRenderer::moveScissorToWindowSpace(const DrawingFrame& frame, Fl
     else
         scissorRectInCanvasSpace.setY(scissorRectInCanvasSpace.y() - framebufferOutputRect.y());
     return scissorRectInCanvasSpace;
+}
+
+CCDirectRenderer::CCDirectRenderer(CCRendererClient* client, CCResourceProvider* resourceProvider)
+    : CCRenderer(client)
+    , m_resourceProvider(resourceProvider)
+{
+}
+
+CCDirectRenderer::~CCDirectRenderer()
+{
 }
 
 void CCDirectRenderer::decideRenderPassAllocationsForFrame(const CCRenderPassList& renderPassesInDrawOrder)

@@ -62,6 +62,25 @@ static bool edgeEdgeTest(const FloatPoint& a, const FloatPoint& b, const FloatPo
     return true;
 }
 
+CCLayerSorter::GraphNode::GraphNode(CCLayerImpl* cclayer)
+    : layer(cclayer)
+    , incomingEdgeWeight(0)
+{
+}
+
+CCLayerSorter::GraphNode::~GraphNode()
+{
+}
+
+CCLayerSorter::CCLayerSorter()
+    : m_zRange(0)
+{
+}
+
+CCLayerSorter::~CCLayerSorter()
+{
+}
+
 // Checks whether layer "a" draws on top of layer "b". The weight value returned is an indication of
 // the maximum z-depth difference between the layers or zero if the layers are found to be intesecting
 // (some features are in front and some are behind).
@@ -130,6 +149,10 @@ CCLayerSorter::ABCompareResult CCLayerSorter::checkOverlap(LayerShape* a, LayerS
         return ABeforeB;
 
     return BBeforeA;
+}
+
+CCLayerSorter::LayerShape::LayerShape()
+{
 }
 
 CCLayerSorter::LayerShape::LayerShape(float width, float height, const WebTransformationMatrix& drawTransform)

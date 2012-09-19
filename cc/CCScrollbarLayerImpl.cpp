@@ -41,6 +41,10 @@ CCScrollbarLayerImpl::CCScrollbarLayerImpl(int id)
 {
 }
 
+CCScrollbarLayerImpl::~CCScrollbarLayerImpl()
+{
+}
+
 void CCScrollbarLayerImpl::setScrollbarGeometry(PassOwnPtr<CCScrollbarGeometryFixedThumb> geometry)
 {
     m_geometry = geometry;
@@ -191,5 +195,11 @@ bool CCScrollbarLayerImpl::CCScrollbar::isCustomScrollbar() const
     return m_owner->m_isCustomScrollbar;
 }
 
+const char* CCScrollbarLayerImpl::layerTypeAsString() const
+{
+    return "ScrollbarLayer";
 }
+
+}
+
 #endif // USE(ACCELERATED_COMPOSITING)

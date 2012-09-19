@@ -62,7 +62,7 @@ private:
     CCVideoLayerImpl(int, WebKit::WebVideoFrameProvider*);
 
     static IntSize computeVisibleSize(const WebKit::WebVideoFrame&, unsigned plane);
-    virtual const char* layerTypeAsString() const OVERRIDE { return "VideoLayer"; }
+    virtual const char* layerTypeAsString() const OVERRIDE;
 
     void willDrawInternal(CCResourceProvider*);
     bool allocatePlaneData(CCResourceProvider*);

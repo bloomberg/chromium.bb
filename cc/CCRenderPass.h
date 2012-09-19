@@ -40,6 +40,8 @@ typedef Vector<OwnPtr<CCSharedQuadState> > CCSharedQuadStateList;
 class CCRenderPass {
     WTF_MAKE_NONCOPYABLE(CCRenderPass);
 public:
+    ~CCRenderPass();
+
     struct Id {
         int layerId;
         int index;

@@ -23,7 +23,7 @@ public:
 
     virtual ~CCScrollbarAnimationController();
 
-    virtual bool animate(double monotonicTime) { return false; }
+    virtual bool animate(double monotonicTime);
     void didPinchGestureBegin();
     void didPinchGestureUpdate();
     void didPinchGestureEnd();

@@ -49,6 +49,64 @@ static bool isTextureFormatSupportedForStorage(GC3Denum format)
     return (format == GraphicsContext3D::RGBA || format == Extensions3D::BGRA_EXT);
 }
 
+CCResourceProvider::TransferableResourceList::TransferableResourceList()
+{
+}
+
+CCResourceProvider::TransferableResourceList::~TransferableResourceList()
+{
+}
+
+CCResourceProvider::Resource::Resource()
+    : glId(0)
+    , pixels(0)
+    , pool(0)
+    , lockForReadCount(0)
+    , lockedForWrite(false)
+    , external(false)
+    , exported(false)
+    , size()
+    , format(0)
+    , type(static_cast<ResourceType>(0))
+{
+}
+
+CCResourceProvider::Resource::Resource(unsigned textureId, int pool, const IntSize& size, GC3Denum format)
+    : glId(textureId)
+    , pixels(0)
+    , pool(pool)
+    , lockForReadCount(0)
+    , lockedForWrite(false)
+    , external(false)
+    , exported(false)
+    , size(size)
+    , format(format)
+    , type(GLTexture)
+{
+}
+
+CCResourceProvider::Resource::Resource(uint8_t* pixels, int pool, const IntSize& size, GC3Denum format)
+    : glId(0)
+    , pixels(pixels)
+    , pool(pool)
+    , lockForReadCount(0)
+    , lockedForWrite(false)
+    , external(false)
+    , exported(false)
+    , size(size)
+    , format(format)
+    , type(Bitmap)
+{
+}
+
+CCResourceProvider::Child::Child()
+{
+}
+
+CCResourceProvider::Child::~Child()
+{
+}
+
 PassOwnPtr<CCResourceProvider> CCResourceProvider::create(CCGraphicsContext* context, TextureUploaderOption option)
 {
     OwnPtr<CCResourceProvider> resourceProvider(adoptPtr(new CCResourceProvider(context)));

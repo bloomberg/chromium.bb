@@ -19,7 +19,7 @@ class CCResourceProvider;
 class CCDirectRenderer : public CCRenderer {
     WTF_MAKE_NONCOPYABLE(CCDirectRenderer);
 public:
-    virtual ~CCDirectRenderer() { }
+    virtual ~CCDirectRenderer();
 
     CCResourceProvider* resourceProvider() const { return m_resourceProvider; }
 
@@ -28,13 +28,12 @@ public:
     virtual void drawFrame(const CCRenderPassList& renderPassesInDrawOrder, const CCRenderPassIdHashMap& renderPassesById) OVERRIDE;
 
 protected:
-    CCDirectRenderer(CCRendererClient* client, CCResourceProvider* resourceProvider)
-        : CCRenderer(client)
-        , m_resourceProvider(resourceProvider)
-    {
-    }
+    CCDirectRenderer(CCRendererClient* client, CCResourceProvider* resourceProvider);
 
     struct DrawingFrame {
+        DrawingFrame();
+        ~DrawingFrame();
+
         const CCRenderPassIdHashMap* renderPassesById;
         const CCRenderPass* rootRenderPass;
         const CCRenderPass* currentRenderPass;
@@ -46,13 +45,6 @@ protected:
         WebKit::WebTransformationMatrix windowMatrix;
         bool flippedY;
         FloatRect scissorRectInRenderPassSpace;
-
-        DrawingFrame()
-            : rootRenderPass(0)
-            , currentRenderPass(0)
-            , currentTexture(0)
-            , flippedY(false)
-        { }
     };
 
     class CachedTexture : public CCScopedTexture {

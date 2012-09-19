@@ -95,6 +95,7 @@
       'CCRenderSurface.h',
       'CCRenderSurfaceFilters.cpp',
       'CCRenderSurfaceFilters.h',
+      'CCRenderer.cpp',
       'CCRenderer.h',
       'CCRendererGL.cpp',
       'CCRendererGL.h',

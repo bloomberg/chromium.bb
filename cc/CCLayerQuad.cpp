@@ -37,6 +37,14 @@ CCLayerQuad::CCLayerQuad(const FloatQuad& quad)
     m_bottom.scale(sign);
 }
 
+CCLayerQuad::CCLayerQuad(const Edge& left, const Edge& top, const Edge& right, const Edge& bottom)
+    : m_left(left)
+    , m_top(top)
+    , m_right(right)
+    , m_bottom(bottom)
+{
+}
+
 FloatQuad CCLayerQuad::floatQuad() const
 {
     return FloatQuad(m_left.intersect(m_top),

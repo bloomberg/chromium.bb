@@ -40,6 +40,11 @@ CCScrollbarAnimationController::~CCScrollbarAnimationController()
 {
 }
 
+bool CCScrollbarAnimationController::animate(double)
+{
+    return false;
+}
+
 void CCScrollbarAnimationController::didPinchGestureBegin()
 {
     didPinchGestureBeginAtTime(monotonicallyIncreasingTime());

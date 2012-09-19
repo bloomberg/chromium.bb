@@ -35,23 +35,8 @@ class Region;
 struct CCScrollAndScaleSet;
 
 struct CCLayerTreeSettings {
-    CCLayerTreeSettings()
-            : acceleratePainting(false)
-            , showFPSCounter(false)
-            , showPlatformLayerTree(false)
-            , showPaintRects(false)
-            , showPropertyChangedRects(false)
-            , showSurfaceDamageRects(false)
-            , showScreenSpaceRects(false)
-            , showReplicaScreenSpaceRects(false)
-            , showOccludingRects(false)
-            , renderVSyncEnabled(true)
-            , refreshRate(0)
-            , maxPartialTextureUpdates(std::numeric_limits<size_t>::max())
-            , defaultTileSize(IntSize(256, 256))
-            , maxUntiledLayerSize(IntSize(512, 512))
-            , minimumOcclusionTrackingSize(IntSize(160, 160))
-    { }
+    CCLayerTreeSettings();
+    ~CCLayerTreeSettings();
 
     bool acceleratePainting;
     bool showFPSCounter;
@@ -75,17 +60,8 @@ struct CCLayerTreeSettings {
 
 // Provides information on an Impl's rendering capabilities back to the CCLayerTreeHost
 struct RendererCapabilities {
-    RendererCapabilities()
-        : bestTextureFormat(0)
-        , contextHasCachedFrontBuffer(false)
-        , usingPartialSwap(false)
-        , usingAcceleratedPainting(false)
-        , usingSetVisibility(false)
-        , usingSwapCompleteCallback(false)
-        , usingGpuMemoryManager(false)
-        , usingDiscardFramebuffer(false)
-        , usingEglImage(false)
-        , maxTextureSize(0) { }
+    RendererCapabilities();
+    ~RendererCapabilities();
 
     GC3Denum bestTextureFormat;
     bool contextHasCachedFrontBuffer;

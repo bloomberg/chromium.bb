@@ -43,7 +43,7 @@ public:
 
     virtual ~CCRendererGL();
 
-    virtual const RendererCapabilities& capabilities() const OVERRIDE { return m_capabilities; }
+    virtual const RendererCapabilities& capabilities() const OVERRIDE;
 
     WebKit::WebGraphicsContext3D* context();
 

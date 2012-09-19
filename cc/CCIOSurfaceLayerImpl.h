@@ -30,7 +30,7 @@ public:
 private:
     explicit CCIOSurfaceLayerImpl(int);
 
-    virtual const char* layerTypeAsString() const OVERRIDE { return "IOSurfaceLayer"; }
+    virtual const char* layerTypeAsString() const OVERRIDE;
 
     unsigned m_ioSurfaceId;
     IntSize m_ioSurfaceSize;

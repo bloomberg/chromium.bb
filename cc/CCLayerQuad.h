@@ -75,13 +75,7 @@ public:
         float m_z;
     };
 
-    CCLayerQuad(const Edge& left, const Edge& top, const Edge& right, const Edge& bottom)
-        : m_left(left)
-        , m_top(top)
-        , m_right(right)
-        , m_bottom(bottom)
-    {
-    }
+    CCLayerQuad(const Edge& left, const Edge& top, const Edge& right, const Edge& bottom);
     CCLayerQuad(const FloatQuad&);
 
     Edge left() const { return m_left; }

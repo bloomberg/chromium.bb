@@ -22,7 +22,8 @@ namespace cc {
 class CCLayerSorter {
     WTF_MAKE_NONCOPYABLE(CCLayerSorter);
 public:
-    CCLayerSorter() : m_zRange(0) { }
+    CCLayerSorter();
+    ~CCLayerSorter();
 
     typedef Vector<CCLayerImpl*> LayerList;
 
@@ -30,7 +31,7 @@ public:
 
     // Holds various useful properties derived from a layer's 3D outline.
     struct LayerShape {
-        LayerShape() { }
+        LayerShape();
         LayerShape(float width, float height, const WebKit::WebTransformationMatrix& drawTransform);
 
         float layerZFromProjectedPoint(const FloatPoint&) const;
@@ -53,7 +54,8 @@ private:
     struct GraphEdge;
 
     struct GraphNode {
-        explicit GraphNode(CCLayerImpl* cclayer) : layer(cclayer), incomingEdgeWeight(0) { }
+        explicit GraphNode(CCLayerImpl* cclayer);
+        ~GraphNode();
 
         CCLayerImpl* layer;
         LayerShape shape;
