@@ -59,6 +59,7 @@
 #include "chrome/browser/performance_monitor/performance_monitor.h"
 #include "chrome/browser/performance_monitor/startup_timer.h"
 #include "chrome/browser/plugin_prefs.h"
+#include "chrome/browser/policy/policy_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -161,6 +162,10 @@
 #include "chrome/browser/mac/keystone_glue.h"
 #endif
 
+#if defined(ENABLE_CONFIGURATION_POLICY)
+#include "policy/policy_constants.h"
+#endif
+
 #if defined(ENABLE_RLZ)
 #include "chrome/browser/rlz/rlz.h"
 #endif
@@ -201,12 +206,23 @@ void AddFirstRunNewTabs(StartupBrowserCreator* browser_creator,
   }
 }
 
-void InitializeNetworkOptions(const CommandLine& parsed_command_line) {
+void InitializeNetworkOptions(const CommandLine& parsed_command_line,
+                              policy::PolicyService* policy_service) {
   if (parsed_command_line.HasSwitch(switches::kEnableFileCookies)) {
     // Enable cookie storage for file:// URLs.  Must do this before the first
     // Profile (and therefore the first CookieMonster) is created.
     net::CookieMonster::EnableFileScheme();
   }
+
+#if defined(ENABLE_CONFIGURATION_POLICY)
+  bool has_spdy_policy = policy_service->GetPolicies(
+      policy::POLICY_DOMAIN_CHROME,
+      std::string()).Get(policy::key::kDisableSpdy) != NULL;
+  // If "spdy.disabled" preference is controlled via policy, then skip use-spdy
+  // command line flags.
+  if (has_spdy_policy)
+    return;
+#endif  // ENABLE_CONFIGURATION_POLICY
 
   if (parsed_command_line.HasSwitch(switches::kEnableIPPooling))
     net::SpdySessionPool::enable_ip_pooling(true);
@@ -835,7 +851,8 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
       chrome::VersionInfo::GetVersionStringModifier());
 #endif
 
-  InitializeNetworkOptions(parsed_command_line());
+  InitializeNetworkOptions(parsed_command_line(),
+                           browser_process_->policy_service());
 
   // Initialize tracking synchronizer system.
   tracking_synchronizer_ = new chrome_browser_metrics::TrackingSynchronizer();
