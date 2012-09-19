@@ -14,7 +14,6 @@
 .*
 
 # Ignore all directories than contain these names
-scons-out/
 toolchain/
 
 # Ignore these particular directories (relative to src directory)
@@ -28,5 +27,4 @@ toolchain/
 /debugger/NativeClientVSX/
 /debugger/nacl-gdb_server/x64/
 /experimental/webgtt/tests/nacltest/*.cc
-/site_scons/
 /staging/
