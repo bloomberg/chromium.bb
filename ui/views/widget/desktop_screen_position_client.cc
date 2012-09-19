@@ -53,6 +53,8 @@ void DesktopScreenPositionClient::SetBounds(
     return;
   }
 #endif  // !defined(OS_WIN)
+  root->SetHostBounds(bounds);
+  window->SetBounds(gfx::Rect(bounds.size()));
 }
 
 }  // namespace views
