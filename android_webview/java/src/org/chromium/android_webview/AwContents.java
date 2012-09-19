@@ -4,14 +4,24 @@
 
 package org.chromium.android_webview;
 
-import android.view.ViewGroup;
+import android.os.AsyncTask;
 import android.os.Message;
+import android.text.TextUtils;
+import android.util.Log;
+import android.view.ViewGroup;
+import android.webkit.ValueCallback;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.base.ThreadUtils;
 import org.chromium.content.browser.ContentViewCore;
+import org.chromium.content.browser.NavigationHistory;
 import org.chromium.content.common.CleanupReference;
 import org.chromium.ui.gfx.NativeWindow;
+
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 /**
  * Exposes the native AwContents class, and together these classes wrap the ContentViewCore
@@ -23,6 +33,9 @@ import org.chromium.ui.gfx.NativeWindow;
  */
 @JNINamespace("android_webview")
 public class AwContents {
+    private static final String TAG = AwContents.class.getSimpleName();
+
+    private static final String WEB_ARCHIVE_EXTENSION = ".mht";
 
     private int mNativeAwContents;
     private ContentViewCore mContentViewCore;
@@ -102,7 +115,37 @@ public class AwContents {
     //--------------------------------------------------------------------------------------------
 
     public void documentHasImages(Message message) {
-      nativeDocumentHasImages(mNativeAwContents, message);
+        nativeDocumentHasImages(mNativeAwContents, message);
+    }
+
+    public void saveWebArchive(
+            final String basename, boolean autoname, final ValueCallback<String> callback) {
+        if (!autoname) {
+            saveWebArchiveInternal(basename, callback);
+            return;
+        }
+        // If auto-generating the file name, handle the name generation on a background thread
+        // as it will require I/O access for checking whether previous files existed.
+        new AsyncTask<Void, Void, String>() {
+            @Override
+            protected String doInBackground(Void... params) {
+                return generateArchiveAutoNamePath(getOriginalUrl(), basename);
+            }
+
+            @Override
+            protected void onPostExecute(String result) {
+                saveWebArchiveInternal(result, callback);
+            }
+        }.execute();
+    }
+
+    public String getOriginalUrl() {
+        NavigationHistory history = mContentViewCore.getNavigationHistory();
+        int currentIndex = history.getCurrentEntryIndex();
+        if (currentIndex >= 0 && currentIndex < history.getEntryCount()) {
+            return history.getEntryAtIndex(currentIndex).getOriginalUrl();
+        }
+        return null;
     }
 
     //--------------------------------------------------------------------------------------------
@@ -115,9 +158,68 @@ public class AwContents {
         message.sendToTarget();
     }
 
+    /** Callback for generateMHTML. */
+    @CalledByNative
+    private static void generateMHTMLCallback(
+            String path, long size, ValueCallback<String> callback) {
+        if (callback == null) return;
+        callback.onReceiveValue(size < 0 ? null : path);
+    }
+
     @CalledByNative
     private void onReceivedHttpAuthRequest(AwHttpAuthHandler handler, String host, String realm) {
         mContentsClient.onReceivedHttpAuthRequest(handler, host, realm);
+    }
+
+    // -------------------------------------------------------------------------------------------
+    // Helper methods
+    // -------------------------------------------------------------------------------------------
+
+    private void saveWebArchiveInternal(String path, final ValueCallback<String> callback) {
+        if (path == null) {
+            ThreadUtils.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    callback.onReceiveValue(null);
+                }
+            });
+        } else {
+            nativeGenerateMHTML(mNativeAwContents, path, callback);
+        }
+    }
+
+    /**
+     * Try to generate a pathname for saving an MHTML archive. This roughly follows WebView's
+     * autoname logic.
+     */
+    private static String generateArchiveAutoNamePath(String originalUrl, String baseName) {
+        String name = null;
+        if (originalUrl != null && !originalUrl.isEmpty()) {
+            try {
+                String path = new URL(originalUrl).getPath();
+                int lastSlash = path.lastIndexOf('/');
+                if (lastSlash > 0) {
+                    name = path.substring(lastSlash + 1);
+                } else {
+                    name = path;
+                }
+            } catch (MalformedURLException e) {
+                // If it fails parsing the URL, we'll just rely on the default name below.
+            }
+        }
+
+        if (TextUtils.isEmpty(name)) name = "index";
+
+        String testName = baseName + name + WEB_ARCHIVE_EXTENSION;
+        if (!new File(testName).exists()) return testName;
+
+        for (int i = 1; i < 100; i++) {
+            testName = baseName + name + "-" + i + WEB_ARCHIVE_EXTENSION;
+            if (!new File(testName).exists()) return testName;
+        }
+
+        Log.e(TAG, "Unable to auto generate archive name for path: " + baseName);
+        return null;
     }
 
     //--------------------------------------------------------------------------------------------
@@ -131,6 +233,8 @@ public class AwContents {
     private native int nativeGetWebContents(int nativeAwContents);
 
     private native void nativeDocumentHasImages(int nativeAwContents, Message message);
+    private native void nativeGenerateMHTML(
+            int nativeAwContents, String path, ValueCallback<String> callback);
 
     private native void nativeSetIoThreadClient(int nativeAwContents,
             AwContentsIoThreadClient ioThreadClient);

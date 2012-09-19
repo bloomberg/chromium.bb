@@ -102,10 +102,31 @@ void DocumentHasImagesCallback(ScopedJavaGlobalRef<jobject>* message,
 }  // namespace
 
 void AwContents::DocumentHasImages(JNIEnv* env, jobject obj, jobject message) {
+  ScopedJavaGlobalRef<jobject>* j_message = new ScopedJavaGlobalRef<jobject>();
+  j_message->Reset(env, message);
   render_view_host_ext_->DocumentHasImages(
-      base::Bind(&DocumentHasImagesCallback,
-                 base::Owned(new ScopedJavaGlobalRef<jobject>(
-                    ScopedJavaLocalRef<jobject>(env, message)))));
+      base::Bind(&DocumentHasImagesCallback, base::Owned(j_message)));
+}
+
+namespace {
+void GenerateMHTMLCallback(ScopedJavaGlobalRef<jobject>* callback,
+                           const FilePath& path, int64 size) {
+  JNIEnv* env = AttachCurrentThread();
+  // Android files are UTF8, so the path conversion below is safe.
+  Java_AwContents_generateMHTMLCallback(
+      env,
+      base::android::ConvertUTF8ToJavaString(env, path.AsUTF8Unsafe()).obj(),
+      size, callback->obj());
+}
+}  // namespace
+
+void AwContents::GenerateMHTML(JNIEnv* env, jobject obj,
+                               jstring jpath, jobject callback) {
+  ScopedJavaGlobalRef<jobject>* j_callback = new ScopedJavaGlobalRef<jobject>();
+  j_callback->Reset(env, callback);
+  contents_container_->GetWebContents()->GenerateMHTML(
+      FilePath(base::android::ConvertJavaStringToUTF8(env, jpath)),
+      base::Bind(&GenerateMHTMLCallback, base::Owned(j_callback)));
 }
 
 void AwContents::onReceivedHttpAuthRequest(
