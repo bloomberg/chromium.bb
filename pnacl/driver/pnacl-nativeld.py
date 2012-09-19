@@ -260,17 +260,17 @@ def MakeSelUniversalScriptForLD(ld_flags,
   # Need to include the linker script file as a linker resource for glibc.
   files_to_map = list(files)
 
+  use_default = env.getbool('USE_DEFAULT_CMD_LINE')
   # Create a mapping for each input file and add it to the command line.
   for f in files_to_map:
     basename = pathtools.basename(f)
     # If we are using the dummy shim, map it with the filename of the real
     # shim, so the baked-in commandline will work
-    if basename == 'libpnacl_irt_shim_dummy.a':
+    if basename == 'libpnacl_irt_shim_dummy.a' and use_default:
        basename = 'libpnacl_irt_shim.a'
     script.append('reverse_service_add_manifest_mapping files/%s %s' %
                   (basename, f))
 
-  use_default = env.getbool('USE_DEFAULT_CMD_LINE')
   if use_default:
     # We don't have the bitcode file here anymore, so we assume that
     # pnacl-translate passed along the relevant information via commandline.
