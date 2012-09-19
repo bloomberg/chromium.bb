@@ -258,16 +258,20 @@ void ContentViewCoreImpl::LoadUrl(
 
 ScopedJavaLocalRef<jstring> ContentViewCoreImpl::GetURL(
     JNIEnv* env, jobject) const {
-  return ConvertUTF8ToJavaString(env, web_contents()->GetURL().spec());
+  return ConvertUTF8ToJavaString(env, GetWebContents()->GetURL().spec());
 }
 
 ScopedJavaLocalRef<jstring> ContentViewCoreImpl::GetTitle(
     JNIEnv* env, jobject obj) const {
-  return ConvertUTF16ToJavaString(env, web_contents()->GetTitle());
+  return ConvertUTF16ToJavaString(env, GetWebContents()->GetTitle());
 }
 
 jboolean ContentViewCoreImpl::IsIncognito(JNIEnv* env, jobject obj) {
-  return web_contents()->GetBrowserContext()->IsOffTheRecord();
+  return GetWebContents()->GetBrowserContext()->IsOffTheRecord();
+}
+
+WebContents* ContentViewCoreImpl::GetWebContents() const {
+  return web_contents_;
 }
 
 jboolean ContentViewCoreImpl::TouchEvent(JNIEnv* env,
@@ -538,7 +542,7 @@ int ContentViewCoreImpl::GetNativeImeAdapter(JNIEnv* env, jobject obj) {
 
 void ContentViewCoreImpl::LoadUrl(
     NavigationController::LoadURLParams& params) {
-  web_contents()->GetController().LoadURLWithParams(params);
+  GetWebContents()->GetController().LoadURLWithParams(params);
   tab_crashed_ = false;
 }
 

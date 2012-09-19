@@ -1353,8 +1353,7 @@ public class ContentViewCore implements MotionEventDelegate {
     // Returns true if the native side crashed so that java side can draw a sad tab.
     private native boolean nativeCrashed(int nativeContentViewCoreImpl);
 
-    private native boolean nativeTouchEvent(int nativeContentViewCoreImpl,
-            long timeMs, int action,
+    private native boolean nativeTouchEvent(int nativeContentViewCoreImpl, long timeMs, int action,
             TouchPoint[] pts);
 
     private native void nativeScrollBegin(int nativeContentViewCoreImpl, long timeMs, int x, int y);
@@ -1388,7 +1387,7 @@ public class ContentViewCore implements MotionEventDelegate {
             int anchorX, int anchorY, float deltaScale);
 
     private native void nativeSelectBetweenCoordinates(
-            int nativeContentViewCore, int x1, int y1, int x2, int y2);
+            int nativeContentViewCoreImpl, int x1, int y1, int x2, int y2);
 
     private native boolean nativeCanGoBack(int nativeContentViewCoreImpl);
 
@@ -1416,7 +1415,7 @@ public class ContentViewCore implements MotionEventDelegate {
 
     private native int nativeEvaluateJavaScript(String script);
 
-    private native int nativeGetNativeImeAdapter(int nativeContentViewCore);
+    private native int nativeGetNativeImeAdapter(int nativeContentViewCoreImpl);
 
     private native void nativeAddJavascriptInterface(int nativeContentViewCoreImpl, Object object,
                                                      String name, boolean requireAnnotation);

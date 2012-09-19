@@ -331,7 +331,7 @@ static jint Init(JNIEnv* env, jobject obj, jint nativeContentViewCore,
                  jboolean is_master_mode) {
   WebContents* web_contents =
       reinterpret_cast<ContentViewCoreImpl*>(nativeContentViewCore)
-          ->web_contents();
+          ->GetWebContents();
   ContentSettings* content_settings =
       new ContentSettings(env, obj, web_contents, is_master_mode);
   return reinterpret_cast<jint>(content_settings);

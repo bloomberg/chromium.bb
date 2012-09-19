@@ -8,21 +8,16 @@
 #include "base/android/scoped_java_ref.h"
 #include <jni.h>
 
-class GURL;
-
 namespace ui {
 class WindowAndroid;
 }
 
 namespace content {
-
 class WebContents;
 
 // Native side of the ContentViewCore.java, which is the primary way of
 // communicating with the native Chromium code on Android.  This is a
 // public interface used by native code outside of the content module.
-//
-// TODO(jrg): this is a shell.  Upstream the rest.
 //
 // TODO(jrg): downstream, this class derives from
 // base::SupportsWeakPtr<ContentViewCore>.  Issues raised in
@@ -35,30 +30,18 @@ class WebContents;
 class ContentViewCore {
  public:
   virtual void Destroy(JNIEnv* env, jobject obj) = 0;
+  virtual content::WebContents* GetWebContents() const = 0;
+  virtual base::android::ScopedJavaLocalRef<jobject> GetJavaObject() = 0;
+  virtual ui::WindowAndroid* GetWindowAndroid() = 0;
 
-  static ContentViewCore* Create(JNIEnv* env, jobject obj,
-                                 WebContents* web_contents);
+  static ContentViewCore* Create(
+      JNIEnv* env, jobject obj, WebContents* web_contents);
   static ContentViewCore* GetNativeContentViewCore(JNIEnv* env, jobject obj);
 
-  // --------------------------------------------------------------------------
-  // Methods called from Java via JNI
-  // --------------------------------------------------------------------------
-
-  virtual int GetNativeImeAdapter(JNIEnv* env, jobject obj) = 0;
-  virtual void SelectBetweenCoordinates(JNIEnv* env, jobject obj,
-                                        jint x1, jint y1, jint x2, jint y2) = 0;
-
-  // --------------------------------------------------------------------------
-  // Methods called from native code
-  // --------------------------------------------------------------------------
-
-  virtual base::android::ScopedJavaLocalRef<jobject> GetJavaObject() = 0;
-
-  virtual ui::WindowAndroid* GetWindowAndroid() = 0;
  protected:
   virtual ~ContentViewCore() {};
 };
 
 };  // namespace content
 
-#endif  // CONTENT_PUBLIC_BROWSER_CONTENT_VIEW_CORE_H_
+#endif  // CONTENT_PUBLIC_BROWSER_ANDROID_CONTENT_VIEW_CORE_H_

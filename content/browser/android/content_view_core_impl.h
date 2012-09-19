@@ -43,8 +43,11 @@ class ContentViewCoreImpl : public ContentViewCore,
                       WebContents* web_contents,
                       ui::WindowAndroid* window_android);
 
-  // ContentViewCore overrides
+  // ContentViewCore implementation.
   virtual void Destroy(JNIEnv* env, jobject obj) OVERRIDE;
+  virtual base::android::ScopedJavaLocalRef<jobject> GetJavaObject() OVERRIDE;
+  virtual WebContents* GetWebContents() const OVERRIDE;
+  virtual ui::WindowAndroid* GetWindowAndroid() OVERRIDE;
 
   // --------------------------------------------------------------------------
   // Methods called from Java via JNI
@@ -108,9 +111,9 @@ class ContentViewCoreImpl : public ContentViewCore,
                jint x,
                jint y,
                jfloat delta);
-  virtual void SelectBetweenCoordinates(JNIEnv* env, jobject obj,
+  void SelectBetweenCoordinates(JNIEnv* env, jobject obj,
                                         jint x1, jint y1,
-                                        jint x2, jint y2) OVERRIDE;
+                                        jint x2, jint y2);
   jboolean CanGoBack(JNIEnv* env, jobject obj);
   jboolean CanGoForward(JNIEnv* env, jobject obj);
   jboolean CanGoToOffset(JNIEnv* env, jobject obj, jint offset);
@@ -123,8 +126,7 @@ class ContentViewCoreImpl : public ContentViewCore,
   void ClearHistory(JNIEnv* env, jobject obj);
   void SetClient(JNIEnv* env, jobject obj, jobject jclient);
   jint EvaluateJavaScript(JNIEnv* env, jobject obj, jstring script);
-  virtual int GetNativeImeAdapter(JNIEnv* env, jobject obj) OVERRIDE;
-  virtual base::android::ScopedJavaLocalRef<jobject> GetJavaObject() OVERRIDE;
+  int GetNativeImeAdapter(JNIEnv* env, jobject obj);
   void AddJavascriptInterface(JNIEnv* env,
                               jobject obj,
                               jobject object,
@@ -174,10 +176,7 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   gfx::Rect GetBounds() const;
 
-  WebContents* web_contents() const { return web_contents_; }
-
-  virtual void LoadUrl(NavigationController::LoadURLParams& params) OVERRIDE;
-  virtual ui::WindowAndroid* GetWindowAndroid() OVERRIDE;
+  void LoadUrl(NavigationController::LoadURLParams& params);
 
  private:
   // NotificationObserver implementation.
