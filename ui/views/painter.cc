@@ -5,6 +5,7 @@
 #include "ui/views/painter.h"
 
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -26,8 +27,8 @@ class GradientPainter : public Painter {
                   size_t count)
       : horizontal_(horizontal),
         count_(count) {
-    pos_ = new SkScalar[count_];
-    colors_ = new SkColor[count_];
+    pos_.reset(new SkScalar[count_]);
+    colors_.reset(new SkColor[count_]);
 
     for (size_t i = 0; i < count_; ++i) {
       pos_[i] = pos[i];
@@ -35,10 +36,7 @@ class GradientPainter : public Painter {
     }
   }
 
-  virtual ~GradientPainter() {
-    delete[] pos_;
-    delete[] colors_;
-  }
+  virtual ~GradientPainter() {}
 
   // Overridden from Painter:
   virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) OVERRIDE {
@@ -50,8 +48,8 @@ class GradientPainter : public Painter {
     else
       p[1].iset(0, size.height());
 
-    SkShader* s = SkGradientShader::CreateLinear(p, colors_, pos_, count_,
-        SkShader::kClamp_TileMode, NULL);
+    SkShader* s = SkGradientShader::CreateLinear(p, colors_.get(), pos_.get(),
+        count_, SkShader::kClamp_TileMode, NULL);
     paint.setStyle(SkPaint::kFill_Style);
     paint.setShader(s);
     // Need to unref shader, otherwise never deleted.
@@ -66,9 +64,9 @@ class GradientPainter : public Painter {
   // If |horizontal_| is true then the gradiant is painted horizontally.
   bool horizontal_;
   // The gradient colors.
-  SkColor* colors_;
+  scoped_array<SkColor> colors_;
   // The relative positions of the corresponding gradient colors.
-  SkScalar* pos_;
+  scoped_array<SkScalar> pos_;
   // The number of elements in |colors_| and |pos_|.
   size_t count_;
 
