@@ -433,9 +433,8 @@ bool InterceptionManager::PatchNtdll(bool hot_patch_needed) {
                      PAGE_EXECUTE_READ, &old_protection);
 
   ResultCode ret = child_->TransferVariable("g_originals", g_originals,
-                                           sizeof(g_originals));
-
-  return SBOX_ALL_OK == ret ? true : false;
+                                            sizeof(g_originals));
+  return (SBOX_ALL_OK == ret);
 }
 
 bool InterceptionManager::PatchClientFunctions(DllInterceptionData* thunks,

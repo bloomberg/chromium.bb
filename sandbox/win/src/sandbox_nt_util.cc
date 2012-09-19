@@ -13,7 +13,7 @@ namespace sandbox {
 // This is the list of all imported symbols from ntdll.dll.
 SANDBOX_INTERCEPT NtExports g_nt = { NULL };
 
-}
+}  // namespace
 
 namespace {
 
@@ -166,7 +166,7 @@ bool InitHeap() {
       g_nt.RtlDestroyHeap(heap);
     }
   }
-  return (g_heap) ? true : false;
+  return (g_heap != NULL);
 }
 
 // Physically reads or writes from memory to verify that (at this time), it is

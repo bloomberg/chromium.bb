@@ -80,9 +80,7 @@ bool SetupNtdllImports(TargetProcess *child) {
   for (size_t i = 0; i < sizeof(g_nt)/sizeof(void*); i++)
     DCHECK(reinterpret_cast<char**>(&g_nt)[i]);
 #endif
-  ResultCode ret = child->TransferVariable("g_nt", &g_nt, sizeof(g_nt));
-
-  return SBOX_ALL_OK == ret ? true : false;
+  return (SBOX_ALL_OK == child->TransferVariable("g_nt", &g_nt, sizeof(g_nt)));
 }
 
 #undef INIT_GLOBAL_NT

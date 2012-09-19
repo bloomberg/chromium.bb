@@ -20,13 +20,13 @@ EvalResult PolicyProcessor::GetAction() const {
 // true if the opcode should be skipped or not and also can set keep_skipping
 // to false to signal that the current instruction should be skipped but not
 // the next after the current one.
-bool SkipOpcode(PolicyOpcode& opcode, MatchContext* context,
+bool SkipOpcode(const PolicyOpcode& opcode, MatchContext* context,
                 bool* keep_skipping) {
   if (opcode.IsAction()) {
     uint32 options = context->options;
     context->Clear();
     *keep_skipping = false;
-    return (kPolUseOREval == options)? false : true;
+    return (kPolUseOREval != options);
   }
   *keep_skipping = true;
   return true;

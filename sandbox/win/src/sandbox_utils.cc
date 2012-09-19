@@ -26,10 +26,8 @@ bool GetModuleHandleHelper(DWORD flags, const wchar_t* module_name,
   GetModuleHandleExFunction get_module_handle_ex = reinterpret_cast<
       GetModuleHandleExFunction>(::GetProcAddress(kernel32_base,
                                                   "GetModuleHandleExW"));
-  if (get_module_handle_ex) {
-    BOOL ret = get_module_handle_ex(flags, module_name, module);
-    return (ret ? true : false);
-  }
+  if (get_module_handle_ex)
+    return (get_module_handle_ex(flags, module_name, module) != FALSE);
 
   if (!flags) {
     *module = ::LoadLibrary(module_name);
