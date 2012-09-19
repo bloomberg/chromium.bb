@@ -69,10 +69,6 @@ namespace browser_sync {
 class SyncedTabDelegate;
 }
 
-namespace captive_portal {
-class CaptivePortalTabHelper;
-}
-
 namespace chromeos {
 class SimpleWebViewDialog;
 class WebUILoginView;
@@ -188,12 +184,6 @@ class TabContents : public content::WebContentsObserver {
     return blocked_content_tab_helper_.get();
   }
 
-#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
-  captive_portal::CaptivePortalTabHelper* captive_portal_tab_helper() {
-    return captive_portal_tab_helper_.get();
-  }
-#endif
-
   ConstrainedWindowTabHelper* constrained_window_tab_helper() {
     return constrained_window_tab_helper_.get();
   }
@@ -270,9 +260,6 @@ class TabContents : public content::WebContentsObserver {
   scoped_ptr<AutofillExternalDelegate> autofill_external_delegate_;
   scoped_ptr<AutomationTabHelper> automation_tab_helper_;
   scoped_ptr<BlockedContentTabHelper> blocked_content_tab_helper_;
-#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
-  scoped_ptr<captive_portal::CaptivePortalTabHelper> captive_portal_tab_helper_;
-#endif
   scoped_ptr<ConstrainedWindowTabHelper> constrained_window_tab_helper_;
   scoped_ptr<CoreTabHelper> core_tab_helper_;
   scoped_ptr<FaviconTabHelper> favicon_tab_helper_;

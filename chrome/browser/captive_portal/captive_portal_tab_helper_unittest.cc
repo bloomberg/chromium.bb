@@ -65,7 +65,7 @@ class MockCaptivePortalTabReloader : public CaptivePortalTabReloader {
 class CaptivePortalTabHelperTest : public TabContentsTestHarness {
  public:
   CaptivePortalTabHelperTest()
-      : tab_helper_(NULL, NULL),
+      : tab_helper_(NULL),
         mock_reloader_(new testing::StrictMock<MockCaptivePortalTabReloader>),
         ui_thread_(content::BrowserThread::UI, &message_loop_) {
     tab_helper_.SetTabReloaderForTest(mock_reloader_);

@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/captive_portal/captive_portal_service.h"
+#include "chrome/browser/tab_contents/web_contents_user_data.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -51,12 +52,12 @@ class CaptivePortalTabReloader;
 //
 // For the design doc, see:
 // https://docs.google.com/document/d/1k-gP2sswzYNvryu9NcgN7q5XrsMlUdlUdoW9WRaEmfM/edit
-class CaptivePortalTabHelper : public content::WebContentsObserver,
-                               public content::NotificationObserver,
-                               public base::NonThreadSafe {
+class CaptivePortalTabHelper
+    : public content::WebContentsObserver,
+      public content::NotificationObserver,
+      public base::NonThreadSafe,
+      public WebContentsUserData<CaptivePortalTabHelper> {
  public:
-  CaptivePortalTabHelper(Profile* profile,
-                         content::WebContents* web_contents);
   virtual ~CaptivePortalTabHelper();
 
   // content::WebContentsObserver:
@@ -102,6 +103,10 @@ class CaptivePortalTabHelper : public content::WebContentsObserver,
   friend class CaptivePortalBrowserTest;
   friend class CaptivePortalTabHelperTest;
 
+  friend class WebContentsUserData<CaptivePortalTabHelper>;
+  static int kUserDataKey;
+  explicit CaptivePortalTabHelper(content::WebContents* web_contents);
+
   // Called by Observe in response to the corresponding event.
   void OnRedirect(int child_id,
                   ResourceType::Type resource_type,
@@ -128,11 +133,11 @@ class CaptivePortalTabHelper : public content::WebContentsObserver,
   // Opens a login tab if the profile's active window doesn't have one already.
   void OpenLoginTab();
 
+  Profile* profile_;
+
   // Neither of these will ever be NULL.
   scoped_ptr<CaptivePortalTabReloader> tab_reloader_;
   scoped_ptr<CaptivePortalLoginDetector> login_detector_;
-
-  Profile* profile_;
 
   // If a provisional load has failed, and the tab is loading an error page, the
   // error code associated with the error page we're loading.

@@ -1123,9 +1123,10 @@ void ChromeContentBrowserClient::AllowCertificateError(
   }
 
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
-  TabContents* tab_contents = TabContents::FromWebContents(tab);
-  if (tab_contents)
-    tab_contents->captive_portal_tab_helper()->OnSSLCertError(ssl_info);
+  captive_portal::CaptivePortalTabHelper* captive_portal_tab_helper =
+      captive_portal::CaptivePortalTabHelper::FromWebContents(tab);
+  if (captive_portal_tab_helper)
+    captive_portal_tab_helper->OnSSLCertError(ssl_info);
 #endif
 
   // Otherwise, display an SSL blocking page.

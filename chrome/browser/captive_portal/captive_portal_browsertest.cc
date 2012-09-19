@@ -485,7 +485,8 @@ int NumLoadingTabs() {
 }
 
 bool IsLoginTab(TabContents* tab_contents) {
-  return tab_contents->captive_portal_tab_helper()->IsLoginTab();
+  return CaptivePortalTabHelper::FromWebContents(
+      tab_contents->web_contents())->IsLoginTab();
 }
 
 // Tracks how many times each tab has been navigated since the Observer was
@@ -1539,7 +1540,8 @@ void CaptivePortalBrowserTest::SetSlowSSLLoadTime(
 
 CaptivePortalTabReloader* CaptivePortalBrowserTest::GetTabReloader(
     TabContents* tab_contents) const {
-  return tab_contents->captive_portal_tab_helper()->GetTabReloaderForTest();
+  return CaptivePortalTabHelper::FromWebContents(
+      tab_contents->web_contents())->GetTabReloaderForTest();
 }
 
 // Make sure there's no test for a captive portal on HTTP timeouts.  This will

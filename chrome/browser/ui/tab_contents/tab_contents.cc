@@ -156,8 +156,7 @@ TabContents::TabContents(WebContents* contents)
 #endif
 
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
-  captive_portal_tab_helper_.reset(
-      new captive_portal::CaptivePortalTabHelper(profile(), web_contents()));
+  captive_portal::CaptivePortalTabHelper::CreateForWebContents(contents);
 #endif
 
 #if !defined(OS_ANDROID)
