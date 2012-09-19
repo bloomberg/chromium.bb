@@ -417,6 +417,7 @@
       <structure type="chrome_scaled_image" name="IDR_INPUT_GOOD" file="input_good.png" />
       <structure type="chrome_scaled_image" name="IDR_KEYWORD_SEARCH_MAGNIFIER" file="keyword_search_magnifier.png" />
       <structure type="chrome_scaled_image" name="IDR_KILLED_TAB" file="killtab.png" />
+      <structure type="chrome_scaled_image" name="IDR_LOCATION_BAR_HTTP" file="common/location_bar_http.png" />
       <if expr="not pp_ifdef('toolkit_views')">
         <structure type="chrome_scaled_image" name="IDR_LOCATIONBG_C" file="omnibox_c.png" />
         <structure type="chrome_scaled_image" name="IDR_LOCATIONBG_L" file="omnibox_l.png" />

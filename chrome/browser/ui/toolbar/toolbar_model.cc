@@ -153,7 +153,7 @@ ToolbarModel::SecurityLevel ToolbarModel::GetSecurityLevel() const {
 
 int ToolbarModel::GetIcon() const {
   static int icon_ids[NUM_SECURITY_LEVELS] = {
-    IDR_OMNIBOX_HTTP,
+    IDR_LOCATION_BAR_HTTP,
     IDR_OMNIBOX_HTTPS_VALID,
     IDR_OMNIBOX_HTTPS_VALID,
     IDR_OMNIBOX_HTTPS_WARNING,
