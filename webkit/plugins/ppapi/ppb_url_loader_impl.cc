@@ -434,9 +434,15 @@ void PPB_URLLoader_Impl::RunCallback(int32_t result) {
     return;
   }
 
-  // If |user_buffer_| was set as part of registering the callback, ensure
-  // it got cleared since the callback is now free to delete it.
+  // If |user_buffer_| was set as part of registering a callback, the paths
+  // which trigger that callack must have cleared it since the callback is now
+  // free to delete it.
   DCHECK(!user_buffer_);
+
+  // As a second line of defense, clear the |user_buffer_| in case the
+  // callbacks get called in an unexpected order.
+  user_buffer_ = NULL;
+  user_buffer_size_ = 0;
   TrackedCallback::ClearAndRun(&pending_callback_, result);
 }
 
