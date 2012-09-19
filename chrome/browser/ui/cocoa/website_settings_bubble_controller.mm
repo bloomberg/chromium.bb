@@ -75,6 +75,9 @@ const CGFloat kPermissionsTabSpacing = 12;
 // Extra spacing after a headline on the Permissions tab.
 const CGFloat kPermissionsHeadlineSpacing = 2;
 
+// The amount of horizontal space between a permission label and the popup.
+const CGFloat kPermissionPopUpXSpacing = 3;
+
 // The extra space to the left of the first tab in the tab strip.
 const CGFloat kTabStripXPadding = kFramePadding - 1;
 
@@ -232,7 +235,7 @@ NSColor* IdentityVerifiedTextColor() {
 }
 
 // Overrides the default cell height to take up the full height of the
-// segmented control. Otherwise, cliks on the lower part of a tab will be
+// segmented control. Otherwise, clicks on the lower part of a tab will be
 // ignored.
 - (NSSize)cellSizeForBounds:(NSRect)aRect {
   return NSMakeSize([super cellSizeForBounds:aRect].width, NSHeight(aRect));
@@ -774,13 +777,9 @@ NSColor* IdentityVerifiedTextColor() {
   NSRect frame = NSMakeRect(point.x, point.y, 1, 1);
   scoped_nsobject<NSPopUpButton> button(
       [[NSPopUpButton alloc] initWithFrame:frame pullsDown:NO]);
-
   [button setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-  [button setButtonType:NSMomentaryPushInButton];
-  [button setBezelStyle:NSRoundRectBezelStyle];
-  [button setShowsBorderOnlyWhileMouseInside:YES];
-  [[button cell] setHighlightsBy:NSCellLightsByGray];
-
+  [button setBordered:NO];
+  [[button cell] setControlSize:NSSmallControlSize];
   [button setTag:permissionInfo.type];
   [button setAction:@selector(permissionValueChanged:)];
   [button setTarget:self];
@@ -816,6 +815,22 @@ NSColor* IdentityVerifiedTextColor() {
   [[button cell] setUsesItemFromMenu:NO];
   [[button cell] setMenuItem:titleItem.get()];
   [button sizeToFit];
+
+  // Determine the size of the title, and size the control accordingly.
+  // Using |sizeToFit| results in way too much extra space after the text.
+  NSDictionary* textAttributes =
+      [NSDictionary dictionaryWithObject:[button font]
+                                  forKey:NSFontAttributeName];
+  NSSize titleSize = [[button title] sizeWithAttributes:textAttributes];
+
+  // Adjust the button frame to have a titleRect that exactly fits the title.
+  NSRect buttonFrame = [button frame];
+  NSRect titleRect = [[button cell] titleRectForBounds:buttonFrame];
+  buttonFrame.size.width =
+      titleSize.width + NSWidth(buttonFrame) - NSWidth(titleRect);
+  [button setFrame:buttonFrame];
+  DCHECK_EQ(NSWidth([[button cell] titleRectForBounds:buttonFrame]),
+            titleSize.width);
 
   [view addSubview:button.get()];
   return button.get();
@@ -864,11 +879,7 @@ NSColor* IdentityVerifiedTextColor() {
                                 bold:NO
                               toView:view
                              atPoint:point];
-
-  // Shrink the label to fit the text width.
-  NSSize requiredSize = [[label cell] cellSizeForBounds:[label frame]];
-  [label setFrameSize:requiredSize];
-
+  [label sizeToFit];
   NSPoint popUpPosition = NSMakePoint(NSMaxX([label frame]), point.y);
   NSPopUpButton* button = [self addPopUpButtonForPermission:permissionInfo
                                                      toView:view
@@ -876,7 +887,10 @@ NSColor* IdentityVerifiedTextColor() {
 
   // Adjust the vertical position of the button so that its title text is
   // aligned with the label. Assumes that the text is the same size in both.
+  // Also adjust the horizontal position to remove excess space due to the
+  // invisible bezel.
   NSRect titleRect = [[button cell] titleRectForBounds:[button bounds]];
+  popUpPosition.x -= titleRect.origin.x - kPermissionPopUpXSpacing;
   popUpPosition.y -= titleRect.origin.y;
   [button setFrameOrigin:popUpPosition];
 
