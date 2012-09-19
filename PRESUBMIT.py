@@ -607,6 +607,8 @@ def GetPreferredTrySlaves(project, change):
     return ['win_rel']
   if all(re.search('(^|[/_])android[/_.]', f) for f in files):
     return ['android_dbg']
+  if all(re.search('^native_client_sdk', f) for f in files):
+    return ['linux_nacl_sdk', 'win_nacl_sdk', 'mac_nacl_sdk']
 
   trybots = ['win_rel', 'linux_rel', 'mac_rel', 'linux_clang:compile',
              'linux_chromeos', 'android_dbg', 'linux_asan', 'mac_asan']

@@ -33,3 +33,7 @@ def CheckChangeOnUpload(input_api, output_api):
 
 def CheckChangeOnCommit(input_api, output_api):
   return CommonChecks(input_api, output_api)
+
+
+def GetPreferredTrySlaves(project, change):
+  return ['linux_nacl_sdk', 'win_nacl_sdk', 'mac_nacl_sdk']
