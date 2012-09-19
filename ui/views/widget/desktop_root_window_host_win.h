@@ -51,8 +51,8 @@ class DesktopRootWindowHostWin : public DesktopRootWindowHost,
   virtual gfx::Rect GetWindowBoundsInScreen() const OVERRIDE;
   virtual gfx::Rect GetClientAreaBoundsInScreen() const OVERRIDE;
   virtual gfx::Rect GetRestoredBounds() const OVERRIDE;
+  virtual gfx::Rect GetWorkAreaBoundsInScreen() const OVERRIDE;
   virtual void SetShape(gfx::NativeRegion native_region) OVERRIDE;
-  virtual bool ShouldUseNativeFrame() OVERRIDE;
   virtual void Activate() OVERRIDE;
   virtual void Deactivate() OVERRIDE;
   virtual bool IsActive() const OVERRIDE;
@@ -66,6 +66,13 @@ class DesktopRootWindowHostWin : public DesktopRootWindowHost,
   virtual InputMethod* CreateInputMethod() OVERRIDE;
   virtual internal::InputMethodDelegate* GetInputMethodDelegate() OVERRIDE;
   virtual void SetWindowTitle(const string16& title) OVERRIDE;
+  virtual Widget::MoveLoopResult RunMoveLoop(
+      const gfx::Point& drag_offset) OVERRIDE;
+  virtual void EndMoveLoop() OVERRIDE;
+  virtual void SetVisibilityChangedAnimationsEnabled(bool value) OVERRIDE;
+  virtual bool ShouldUseNativeFrame() OVERRIDE;
+  virtual void FrameTypeChanged() OVERRIDE;
+  virtual NonClientFrameView* CreateNonClientFrameView() OVERRIDE;
 
   // Overridden from aura::RootWindowHost:
   virtual aura::RootWindow* GetRootWindow() OVERRIDE;

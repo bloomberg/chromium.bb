@@ -266,13 +266,15 @@ gfx::Rect DesktopRootWindowHostLinux::GetRestoredBounds() const {
   return gfx::Rect();
 }
 
+gfx::Rect DesktopRootWindowHostLinux::GetWorkAreaBoundsInScreen() const {
+  // TODO(erg):
+  NOTIMPLEMENTED();
+  return gfx::Rect();
+}
+
 void DesktopRootWindowHostLinux::SetShape(gfx::NativeRegion native_region) {
   // TODO(erg):
   NOTIMPLEMENTED();
-}
-
-bool DesktopRootWindowHostLinux::ShouldUseNativeFrame() {
-  return false;
 }
 
 void DesktopRootWindowHostLinux::Activate() {
@@ -345,6 +347,35 @@ internal::InputMethodDelegate*
 void DesktopRootWindowHostLinux::SetWindowTitle(const string16& title) {
   // TODO(erg):
   NOTIMPLEMENTED();
+}
+
+Widget::MoveLoopResult DesktopRootWindowHostLinux::RunMoveLoop(
+    const gfx::Point& drag_offset) {
+  // TODO(erg):
+  NOTIMPLEMENTED();
+  return Widget::MOVE_LOOP_CANCELED;
+}
+
+void DesktopRootWindowHostLinux::EndMoveLoop() {
+  // TODO(erg):
+  NOTIMPLEMENTED();
+}
+
+void DesktopRootWindowHostLinux::SetVisibilityChangedAnimationsEnabled(
+    bool value) {
+  // TODO(erg):
+  NOTIMPLEMENTED();
+}
+
+bool DesktopRootWindowHostLinux::ShouldUseNativeFrame() {
+  return false;
+}
+
+void DesktopRootWindowHostLinux::FrameTypeChanged() {
+}
+
+NonClientFrameView* DesktopRootWindowHostLinux::CreateNonClientFrameView() {
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

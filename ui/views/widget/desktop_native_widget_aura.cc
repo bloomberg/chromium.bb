@@ -40,7 +40,7 @@ void DesktopNativeWidgetAura::InitNativeWidget(
 }
 
 NonClientFrameView* DesktopNativeWidgetAura::CreateNonClientFrameView() {
-  return NULL;
+  return desktop_root_window_host_->CreateNonClientFrameView();
 }
 
 bool DesktopNativeWidgetAura::ShouldUseNativeFrame() const {
@@ -48,6 +48,7 @@ bool DesktopNativeWidgetAura::ShouldUseNativeFrame() const {
 }
 
 void DesktopNativeWidgetAura::FrameTypeChanged() {
+  desktop_root_window_host_->FrameTypeChanged();
 }
 
 Widget* DesktopNativeWidgetAura::GetWidget() {
@@ -309,7 +310,7 @@ void DesktopNativeWidgetAura::FocusNativeView(gfx::NativeView native_view) {
 }
 
 gfx::Rect DesktopNativeWidgetAura::GetWorkAreaBoundsInScreen() const {
-  return gfx::Rect(100, 100);
+  return desktop_root_window_host_->GetWorkAreaBoundsInScreen();
 }
 
 void DesktopNativeWidgetAura::SetInactiveRenderingDisabled(bool value) {
@@ -317,14 +318,16 @@ void DesktopNativeWidgetAura::SetInactiveRenderingDisabled(bool value) {
 
 Widget::MoveLoopResult DesktopNativeWidgetAura::RunMoveLoop(
       const gfx::Point& drag_offset) {
-  return Widget::MOVE_LOOP_CANCELED;
+  return desktop_root_window_host_->RunMoveLoop(drag_offset);
 }
 
 void DesktopNativeWidgetAura::EndMoveLoop() {
+  desktop_root_window_host_->EndMoveLoop();
 }
 
 void DesktopNativeWidgetAura::SetVisibilityChangedAnimationsEnabled(
     bool value) {
+  desktop_root_window_host_->SetVisibilityChangedAnimationsEnabled(value);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -343,6 +346,7 @@ void DesktopNativeWidgetAura::OnBoundsChanged(const gfx::Rect& old_bounds,
 }
 
 void DesktopNativeWidgetAura::OnFocus(aura::Window* old_focused_window) {
+  // This space intentionally left blank.
 }
 
 void DesktopNativeWidgetAura::OnBlur() {
@@ -368,6 +372,7 @@ bool DesktopNativeWidgetAura::CanFocus() {
 }
 
 void DesktopNativeWidgetAura::OnCaptureLost() {
+  native_widget_delegate_->OnMouseCaptureLost();
 }
 
 void DesktopNativeWidgetAura::OnPaint(gfx::Canvas* canvas) {
@@ -431,12 +436,12 @@ ui::EventResult DesktopNativeWidgetAura::OnMouseEvent(ui::MouseEvent* event) {
 }
 
 ui::TouchStatus DesktopNativeWidgetAura::OnTouchEvent(ui::TouchEvent* event) {
-  return ui::TOUCH_STATUS_UNKNOWN;
+  return native_widget_delegate_->OnTouchEvent(*event);
 }
 
 ui::EventResult DesktopNativeWidgetAura::OnGestureEvent(
     ui::GestureEvent* event) {
-  return ui::ER_UNHANDLED;
+  return native_widget_delegate_->OnGestureEvent(*event);
 }
 
 }  // namespace views

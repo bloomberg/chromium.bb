@@ -52,9 +52,9 @@ class DesktopRootWindowHost {
   virtual gfx::Rect GetClientAreaBoundsInScreen() const = 0;
   virtual gfx::Rect GetRestoredBounds() const = 0;
 
-  virtual void SetShape(gfx::NativeRegion native_region) = 0;
+  virtual gfx::Rect GetWorkAreaBoundsInScreen() const = 0;
 
-  virtual bool ShouldUseNativeFrame() = 0;
+  virtual void SetShape(gfx::NativeRegion native_region) = 0;
 
   virtual void Activate() = 0;
   virtual void Deactivate() = 0;
@@ -73,6 +73,15 @@ class DesktopRootWindowHost {
   virtual internal::InputMethodDelegate* GetInputMethodDelegate() = 0;
 
   virtual void SetWindowTitle(const string16& title) = 0;
+
+  virtual Widget::MoveLoopResult RunMoveLoop(const gfx::Point& drag_offset) = 0;
+  virtual void EndMoveLoop() = 0;
+
+  virtual void SetVisibilityChangedAnimationsEnabled(bool value) = 0;
+
+  virtual bool ShouldUseNativeFrame() = 0;
+  virtual void FrameTypeChanged() = 0;
+  virtual NonClientFrameView* CreateNonClientFrameView() = 0;
 };
 
 }  // namespace views

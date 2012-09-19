@@ -21,6 +21,7 @@
 #include "ui/views/widget/desktop_screen_position_client.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/win/hwnd_message_handler.h"
+#include "ui/views/window/native_frame_view.h"
 
 namespace views {
 
@@ -141,16 +142,19 @@ gfx::Rect DesktopRootWindowHostWin::GetRestoredBounds() const {
   return message_handler_->GetRestoredBounds();
 }
 
+gfx::Rect DesktopRootWindowHostWin::GetWorkAreaBoundsInScreen() const {
+  MONITORINFO monitor_info;
+  monitor_info.cbSize = sizeof(monitor_info);
+  GetMonitorInfo(MonitorFromWindow(message_handler_->hwnd(),
+                                   MONITOR_DEFAULTTONEAREST),
+                 &monitor_info);
+  return gfx::Rect(monitor_info.rcWork);
+}
+
 void DesktopRootWindowHostWin::SetShape(gfx::NativeRegion native_region) {
   SkPath path;
   native_region->getBoundaryPath(&path);
   message_handler_->SetRegion(gfx::CreateHRGNFromSkPath(path));
-}
-
-bool DesktopRootWindowHostWin::ShouldUseNativeFrame() {
-  return false;
-  // TODO(scottmg): Should be:
-  //return ui::win::IsAeroGlassEnabled();
 }
 
 void DesktopRootWindowHostWin::Activate() {
@@ -204,6 +208,36 @@ internal::InputMethodDelegate*
 
 void DesktopRootWindowHostWin::SetWindowTitle(const string16& title) {
   message_handler_->SetTitle(title);
+}
+
+Widget::MoveLoopResult DesktopRootWindowHostWin::RunMoveLoop(
+    const gfx::Point& drag_offset) {
+  return message_handler_->RunMoveLoop(drag_offset) ?
+      Widget::MOVE_LOOP_SUCCESSFUL : Widget::MOVE_LOOP_CANCELED;
+}
+
+void DesktopRootWindowHostWin::EndMoveLoop() {
+  message_handler_->EndMoveLoop();
+}
+
+void DesktopRootWindowHostWin::SetVisibilityChangedAnimationsEnabled(
+    bool value) {
+  message_handler_->SetVisibilityChangedAnimationsEnabled(value);
+}
+
+bool DesktopRootWindowHostWin::ShouldUseNativeFrame() {
+  return false;
+  // TODO(beng): allow BFW customizations.
+  // return ui::win::IsAeroGlassEnabled();
+}
+
+void DesktopRootWindowHostWin::FrameTypeChanged() {
+  message_handler_->FrameTypeChanged();
+}
+
+NonClientFrameView* DesktopRootWindowHostWin::CreateNonClientFrameView() {
+  return GetWidget()->ShouldUseNativeFrame() ?
+      new NativeFrameView(GetWidget()) : NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
