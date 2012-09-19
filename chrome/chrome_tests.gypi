@@ -2724,6 +2724,7 @@
         'browser/browsing_data/browsing_data_local_storage_helper_browsertest.cc',
         'browser/browsing_data/browsing_data_remover_browsertest.cc',
         'browser/captive_portal/captive_portal_browsertest.cc',
+        'browser/chrome_content_browser_client_browsertest.cc',
         'browser/chrome_main_browsertest.cc',
         'browser/chrome_plugin_browsertest.cc',
         'browser/chrome_switches_browsertest.cc',
