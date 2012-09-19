@@ -164,6 +164,15 @@ struct NaClReverseInterfaceVtbl {
       size_t                        message_bytes);
 
   /*
+   * Create new service runtime process and return socket address.
+   * Returns 0 if successful or negative ABI error value otherwise
+   * (see service_runtime/include/sys/errno.h).
+   */
+  int                           (*CreateProcess)(
+      struct NaClReverseInterface  *self,
+      struct NaClDesc              **out_sock_addr);
+
+  /*
    * Quota checking for files that were sent to the untrusted module.
    * TODO(sehr): remove the stub interface once the plugin provides one.
    */
@@ -215,6 +224,10 @@ void NaClReverseInterfaceDoPostMessage(
     struct NaClReverseInterface   *self,
     char const                    *message,
     size_t                        message_bytes);
+
+int NaClReverseInterfaceCreateProcess(
+    struct NaClReverseInterface   *self,
+    struct NaClDesc               **out_sock_addr);
 
 int64_t NaClReverseInterfaceRequestQuotaForWrite(
     struct NaClReverseInterface   *self,

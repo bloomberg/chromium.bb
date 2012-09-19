@@ -208,6 +208,30 @@ static void NaClReverseServicePostMessageRpc(
   (*done_cls->Run)(done_cls);
 }
 
+static void NaClReverseServiceCreateProcessRpc(
+    struct NaClSrpcRpc      *rpc,
+    struct NaClSrpcArg      **in_args,
+    struct NaClSrpcArg      **out_args,
+    struct NaClSrpcClosure  *done_cls) {
+  struct NaClReverseService *nrsp =
+    (struct NaClReverseService *) rpc->channel->server_instance_data;
+  struct NaClDesc           *sock_addr;
+  int                       status;
+  UNREFERENCED_PARAMETER(in_args);
+
+  NaClLog(4, "Entered CreateProcess: 0x%08"NACL_PRIxPTR"\n",
+          (uintptr_t) nrsp);
+  status = (*NACL_VTBL(NaClReverseInterface, nrsp->iface)->
+            CreateProcess)(nrsp->iface, &sock_addr);
+  out_args[0]->u.ival = status;
+  out_args[1]->u.hval = (0 == status)
+      ? sock_addr
+      : (struct NaClDesc *) NaClDescInvalidMake();
+  NaClLog(4, "Leaving CreateProcess\n");
+  rpc->result = NACL_SRPC_RESULT_OK;
+  (*done_cls->Run)(done_cls);
+}
+
 /*
  * Manifest name service, internal APIs.
  *
@@ -472,6 +496,7 @@ struct NaClSrpcHandlerDesc const kNaClReverseServiceHandlers[] = {
   { NACL_REVERSE_CONTROL_INIT_DONE, NaClReverseServiceModuleInitDoneRpc, },
   { NACL_REVERSE_CONTROL_REPORT_STATUS, NaClReverseServiceModuleExitRpc, },
   { NACL_REVERSE_CONTROL_POST_MESSAGE, NaClReverseServicePostMessageRpc, },
+  { NACL_REVERSE_CONTROL_CREATE_PROCESS, NaClReverseServiceCreateProcessRpc, },
   { NACL_MANIFEST_LIST, NaClReverseServiceManifestListRpc, },
   { NACL_MANIFEST_LOOKUP, NaClReverseServiceManifestLookupRpc, },
   { NACL_MANIFEST_UNREF, NaClReverseServiceManifestUnrefRpc, },
@@ -682,6 +707,16 @@ void NaClReverseInterfaceDoPostMessage(
           (uintptr_t) self, message, message_bytes);
 }
 
+int NaClReverseInterfaceCreateProcess(
+    struct NaClReverseInterface   *self,
+    struct NaClDesc               **out_sock_addr) {
+  NaClLog(3,
+          ("NaClReverseInterfaceCreateProcess(0x%08"NACL_PRIxPTR
+           ", 0x%08"NACL_PRIxPTR")\n"),
+          (uintptr_t) self, (uintptr_t) out_sock_addr);
+  return 0;
+}
+
 int64_t NaClReverseInterfaceRequestQuotaForWrite(
     struct NaClReverseInterface   *self,
     char const                    *file_id,
@@ -706,5 +741,6 @@ struct NaClReverseInterfaceVtbl const kNaClReverseInterfaceVtbl = {
   NaClReverseInterfaceReportCrash,
   NaClReverseInterfaceReportExitStatus,
   NaClReverseInterfaceDoPostMessage,
+  NaClReverseInterfaceCreateProcess,
   NaClReverseInterfaceRequestQuotaForWrite,
 };

@@ -186,6 +186,7 @@ static NaClReverseInterfaceVtbl const kReverseInterfaceWrapperVtbl = {
   ReportCrash,
   ReportExitStatus,
   DoPostMessage,
+  NaClReverseInterfaceCreateProcess,
   RequestQuotaForWrite,
 };
 
