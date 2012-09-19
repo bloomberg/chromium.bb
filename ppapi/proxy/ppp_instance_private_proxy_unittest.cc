@@ -66,6 +66,24 @@ PPP_Instance_Private ppp_instance_private_mock = {
   &GetInstanceObject
 };
 
+// We need to pass in a |PPP_Class_Deprecated| to
+// |PPB_Var_Deprecated->CreateObject| for a mock |Deallocate| method.
+void Deallocate(void* object) {
+}
+
+const PPP_Class_Deprecated ppp_class_deprecated_mock = {
+    NULL, // HasProperty
+    NULL, // HasMethod
+    NULL, // GetProperty
+    NULL, // GetAllPropertyNames
+    NULL, // SetProperty
+    NULL, // RemoveProperty
+    NULL, // Call
+    NULL, // Construct
+    &Deallocate
+};
+
+
 // We need to mock PPP_Instance, so that we can create and destroy the pretend
 // instance that PPP_Instance_Private uses.
 PP_Bool DidCreate(PP_Instance /*instance*/, uint32_t /*argc*/,
@@ -73,7 +91,9 @@ PP_Bool DidCreate(PP_Instance /*instance*/, uint32_t /*argc*/,
   // Create an object var. This should exercise the typical path for creating
   // instance objects.
   instance_obj =
-      plugin_var_deprecated_if()->CreateObject(kInstance, NULL, NULL);
+      plugin_var_deprecated_if()->CreateObject(kInstance,
+                                               &ppp_class_deprecated_mock,
+                                               NULL);
   return PP_TRUE;
 }
 
@@ -110,8 +130,6 @@ const PPB_Var_Deprecated ppb_var_deprecated_mock = {
   &CreateObject
 };
 
-}  // namespace
-
 class PPP_Instance_Private_ProxyTest : public TwoWayTest {
  public:
    PPP_Instance_Private_ProxyTest()
@@ -125,7 +143,17 @@ class PPP_Instance_Private_ProxyTest : public TwoWayTest {
   }
 };
 
+}  // namespace
+
+// TODO(raymes): This #ifdef is only here because we check the state of the
+// plugin globals on the main thread, rather than the plugin thread which causes
+// the thread checker to fail. Once ENABLE_PEPPER_THREADING is the default,
+// this will be safe to do anyway, so we can remove this.
+#ifdef ENABLE_PEPPER_THREADING
 TEST_F(PPP_Instance_Private_ProxyTest, PPPInstancePrivate) {
+#else
+TEST_F(PPP_Instance_Private_ProxyTest, DISABLED_PPPInstancePrivate) {
+#endif
   // This test controls its own instance; we can't use the one that
   // PluginProxyTestHarness provides.
   ASSERT_NE(kInstance, pp_instance());

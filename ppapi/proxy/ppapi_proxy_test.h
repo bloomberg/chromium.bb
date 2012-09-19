@@ -83,14 +83,14 @@ class PluginProxyTestHarness : public ProxyTestHarnessBase {
 
   PluginDispatcher* plugin_dispatcher() { return plugin_dispatcher_.get(); }
   PluginResourceTracker& resource_tracker() {
-    return *plugin_globals_.plugin_resource_tracker();
+    return *plugin_globals_->plugin_resource_tracker();
   }
   PluginVarTracker& var_tracker() {
-    return *plugin_globals_.plugin_var_tracker();
+    return *plugin_globals_->plugin_var_tracker();
   }
 
   // ProxyTestHarnessBase implementation.
-  virtual PpapiGlobals* GetGlobals() { return &plugin_globals_; }
+  virtual PpapiGlobals* GetGlobals();
   virtual Dispatcher* GetDispatcher();
   virtual void SetUpHarness();
   virtual void SetUpHarnessWithChannel(const IPC::ChannelHandle& channel_handle,
@@ -111,6 +111,10 @@ class PluginProxyTestHarness : public ProxyTestHarnessBase {
       shutdown_event_ = shutdown_event;
     }
 
+    void set_browser_sender(IPC::Sender* browser_sender) {
+      browser_sender_ = browser_sender;
+    }
+
     // ProxyChannel::Delegate implementation.
     virtual base::MessageLoopProxy* GetIPCMessageLoop() OVERRIDE;
     virtual base::WaitableEvent* GetShutdownEvent() OVERRIDE;
@@ -124,7 +128,7 @@ class PluginProxyTestHarness : public ProxyTestHarnessBase {
     virtual uint32 Register(PluginDispatcher* plugin_dispatcher) OVERRIDE;
     virtual void Unregister(uint32 plugin_dispatcher_id) OVERRIDE;
 
-    // PluginPepperDelegate implementation.
+    // PluginProxyDelegate implementation.
     virtual bool SendToBrowser(IPC::Message* msg) OVERRIDE;
     virtual IPC::Sender* GetBrowserSender() OVERRIDE;
     virtual std::string GetUILanguage() OVERRIDE;
@@ -135,12 +139,13 @@ class PluginProxyTestHarness : public ProxyTestHarnessBase {
     base::MessageLoopProxy* ipc_message_loop_;  // Weak
     base::WaitableEvent* shutdown_event_;  // Weak
     std::set<PP_Instance> instance_id_set_;
+    IPC::Sender* browser_sender_;
 
     DISALLOW_COPY_AND_ASSIGN(PluginDelegateMock);
   };
 
  private:
-  PluginGlobals plugin_globals_;
+  scoped_ptr<PluginGlobals> plugin_globals_;
 
   scoped_ptr<PluginDispatcher> plugin_dispatcher_;
   PluginDelegateMock plugin_delegate_mock_;
@@ -165,14 +170,14 @@ class HostProxyTestHarness : public ProxyTestHarnessBase {
 
   HostDispatcher* host_dispatcher() { return host_dispatcher_.get(); }
   ResourceTracker& resource_tracker() {
-    return *host_globals_.GetResourceTracker();
+    return *host_globals_->GetResourceTracker();
   }
   VarTracker& var_tracker() {
-    return *host_globals_.GetVarTracker();
+    return *host_globals_->GetVarTracker();
   }
 
   // ProxyTestBase implementation.
-  virtual PpapiGlobals* GetGlobals() { return &host_globals_; }
+  virtual PpapiGlobals* GetGlobals();
   virtual Dispatcher* GetDispatcher();
   virtual void SetUpHarness();
   virtual void SetUpHarnessWithChannel(const IPC::ChannelHandle& channel_handle,
@@ -211,7 +216,7 @@ class HostProxyTestHarness : public ProxyTestHarnessBase {
  private:
   class MockSyncMessageStatusReceiver;
 
-  ppapi::TestGlobals host_globals_;
+  scoped_ptr<ppapi::TestGlobals> host_globals_;
   scoped_ptr<HostDispatcher> host_dispatcher_;
   DelegateMock delegate_mock_;
 
@@ -249,6 +254,12 @@ class TwoWayTest : public testing::Test {
   // testing::Test implementation.
   virtual void SetUp();
   virtual void TearDown();
+
+ protected:
+  // Post a task to the thread where the remote harness lives. This
+  // is typically used to test the state of the var tracker on the plugin
+  // thread. This runs the task synchronously for convenience.
+  void PostTaskOnRemoteHarness(const base::Closure& task);
 
  private:
   TwoWayTestMode test_mode_;
