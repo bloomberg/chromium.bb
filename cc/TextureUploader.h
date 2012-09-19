@@ -20,6 +20,9 @@ public:
     virtual ~TextureUploader() { }
 
     virtual bool isBusy() = 0;
+
+    // Returns our throughput on the GPU process
+    virtual double estimatedTexturesPerSecond() = 0;
     virtual void beginUploads() = 0;
     virtual void endUploads() = 0;
     virtual void uploadTexture(CCResourceProvider*, Parameters) = 0;

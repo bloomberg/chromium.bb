@@ -20,6 +20,7 @@ public:
     virtual ~UnthrottledTextureUploader() { }
 
     virtual bool isBusy() OVERRIDE { return false; }
+    virtual double estimatedTexturesPerSecond() { return std::numeric_limits<double>::max(); }
     virtual void beginUploads() OVERRIDE { }
     virtual void endUploads() OVERRIDE { }
     virtual void uploadTexture(CCResourceProvider* resourceProvider, Parameters upload) OVERRIDE { upload.texture->updateRect(resourceProvider, upload.sourceRect, upload.destOffset); }

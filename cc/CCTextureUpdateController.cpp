@@ -9,12 +9,14 @@
 #include "GraphicsContext3D.h"
 #include "TextureCopier.h"
 #include "TextureUploader.h"
+#include "TraceEvent.h"
+#include <limits>
 #include <wtf/CurrentTime.h>
 
 namespace {
 
-// Number of textures to update with each call to updateMoreTexturesIfEnoughTimeRemaining().
-static const size_t textureUpdatesPerTick = 12;
+// Number of partial updates we allow.
+static const size_t maxPartialTextureUpdatesMax = 12;
 
 // Measured in seconds.
 static const double textureUpdateTickRate = 0.004;
@@ -31,7 +33,14 @@ namespace cc {
 
 size_t CCTextureUpdateController::maxPartialTextureUpdates()
 {
-    return textureUpdatesPerTick;
+    return maxPartialTextureUpdatesMax;
+}
+
+size_t CCTextureUpdateController::maxFullUpdatesPerTick(TextureUploader* uploader)
+{
+    double texturesPerSecond = uploader->estimatedTexturesPerSecond();
+    size_t texturesPerTick = floor(textureUpdateTickRate * texturesPerSecond);
+    return texturesPerTick ? texturesPerTick : 1;
 }
 
 void CCTextureUpdateController::updateTextures(CCResourceProvider* resourceProvider, TextureUploader* uploader, CCTextureUpdateQueue* queue)
@@ -78,6 +87,7 @@ CCTextureUpdateController::CCTextureUpdateController(CCTextureUpdateControllerCl
     , m_resourceProvider(resourceProvider)
     , m_uploader(uploader)
     , m_monotonicTimeLimit(0)
+    , m_textureUpdatesPerTick(maxFullUpdatesPerTick(uploader))
     , m_firstUpdateAttempt(true)
 {
 }
@@ -133,7 +143,7 @@ double CCTextureUpdateController::updateMoreTexturesTime() const
 
 size_t CCTextureUpdateController::updateMoreTexturesSize() const
 {
-    return textureUpdatesPerTick;
+    return m_textureUpdatesPerTick;
 }
 
 bool CCTextureUpdateController::updateMoreTexturesIfEnoughTimeRemaining()
@@ -166,22 +176,16 @@ void CCTextureUpdateController::updateMoreTexturesNow()
     if (!uploads)
         return;
 
-    m_uploader->beginUploads();
-
     size_t uploadCount = 0;
-    while (uploads--) {
-        m_uploader->uploadTexture(
-            m_resourceProvider, m_queue->takeFirstFullUpload());
-        uploadCount++;
-        if (!(uploadCount % textureUploadFlushPeriod))
+    m_uploader->beginUploads();
+    while (m_queue->fullUploadSize() && uploadCount < uploads) {
+        if (!(uploadCount % textureUploadFlushPeriod) && uploadCount)
             m_resourceProvider->shallowFlushIfSupported();
+        m_uploader->uploadTexture(m_resourceProvider, m_queue->takeFirstFullUpload());
+        uploadCount++;
     }
-
-    // Make sure there are no dangling partial uploads without a flush.
-    if (uploadCount % textureUploadFlushPeriod)
-        m_resourceProvider->shallowFlushIfSupported();
-
     m_uploader->endUploads();
+    m_resourceProvider->shallowFlushIfSupported();
 }
 
 }

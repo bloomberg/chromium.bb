@@ -7,6 +7,7 @@
 
 #include "TextureUploader.h"
 
+#include <deque>
 #include <wtf/Deque.h>
 
 namespace WebKit {
@@ -29,6 +30,7 @@ public:
     virtual ~ThrottledTextureUploader();
 
     virtual bool isBusy() OVERRIDE;
+    virtual double estimatedTexturesPerSecond() OVERRIDE;
     virtual void beginUploads() OVERRIDE;
     virtual void endUploads() OVERRIDE;
     virtual void uploadTexture(CCResourceProvider*, Parameters) OVERRIDE;
@@ -41,15 +43,20 @@ private:
         virtual ~Query();
 
         void begin();
-        void end();
+        void end(double texturesUploaded);
         bool isPending();
         void wait();
+        unsigned value();
+        double texturesUploaded();
 
     private:
         explicit Query(WebKit::WebGraphicsContext3D*);
 
         WebKit::WebGraphicsContext3D* m_context;
         unsigned m_queryId;
+        unsigned m_value;
+        bool m_hasValue;
+        double m_texturesUploaded;
     };
 
     ThrottledTextureUploader(WebKit::WebGraphicsContext3D*);
@@ -61,6 +68,8 @@ private:
     size_t m_maxPendingQueries;
     Deque<OwnPtr<Query> > m_pendingQueries;
     Deque<OwnPtr<Query> > m_availableQueries;
+    std::deque<double> m_texturesPerSecondHistory;
+    double m_texturesUploaded;
 };
 
 }

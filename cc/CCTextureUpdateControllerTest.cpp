@@ -115,6 +115,8 @@ public:
 
     void onBeginUploads()
     {
+        EXPECT_EQ(0, m_numDanglingUploads) << "Last upload wasn't followed by a flush.";
+
         m_numPreviousFlushes = 0;
         m_numPreviousUploads = 0;
         m_numBeginUploads++;
@@ -136,8 +138,6 @@ public:
 
     void onEndUploads()
     {
-        EXPECT_EQ(0, m_numDanglingUploads) << "Last upload wasn't followed by a flush.";
-
         // Note: The m_numTotalUploads != m_fullUploadCountExpected comparison
         // allows for the quota not to be hit in the case where we are trasitioning
         // from full uploads to partial uploads.
@@ -261,6 +261,7 @@ TEST_F(CCTextureUpdateControllerTest, OneFullUpload)
 
     EXPECT_EQ(1, m_numPreviousFlushes);
     EXPECT_EQ(1, m_numPreviousUploads);
+    EXPECT_EQ(0, m_numDanglingUploads) << "Last upload wasn't followed by a flush.";
 }
 
 TEST_F(CCTextureUpdateControllerTest, OnePartialUpload)
@@ -272,6 +273,7 @@ TEST_F(CCTextureUpdateControllerTest, OnePartialUpload)
 
     EXPECT_EQ(1, m_numPreviousFlushes);
     EXPECT_EQ(1, m_numPreviousUploads);
+    EXPECT_EQ(0, m_numDanglingUploads) << "Last upload wasn't followed by a flush.";
 }
 
 TEST_F(CCTextureUpdateControllerTest, OneFullOnePartialUpload)
@@ -283,6 +285,7 @@ TEST_F(CCTextureUpdateControllerTest, OneFullOnePartialUpload)
 
     EXPECT_EQ(1, m_numPreviousFlushes);
     EXPECT_EQ(2, m_numPreviousUploads);
+    EXPECT_EQ(0, m_numDanglingUploads) << "Last upload wasn't followed by a flush.";
 }
 
 
@@ -302,6 +305,7 @@ TEST_F(CCTextureUpdateControllerTest, ManyFullUploads)
 
     EXPECT_EQ(fullUploadFlushMultipler, m_numPreviousFlushes);
     EXPECT_EQ(fullCount, m_numPreviousUploads);
+    EXPECT_EQ(0, m_numDanglingUploads) << "Last upload wasn't followed by a flush.";
 }
 
 TEST_F(CCTextureUpdateControllerTest, ManyPartialUploads)
@@ -313,6 +317,7 @@ TEST_F(CCTextureUpdateControllerTest, ManyPartialUploads)
 
     EXPECT_EQ(partialUploadFlushMultipler, m_numPreviousFlushes);
     EXPECT_EQ(partialCount, m_numPreviousUploads);
+    EXPECT_EQ(0, m_numDanglingUploads) << "Last upload wasn't followed by a flush.";
 }
 
 TEST_F(CCTextureUpdateControllerTest, ManyFullManyPartialUploads)
@@ -324,6 +329,7 @@ TEST_F(CCTextureUpdateControllerTest, ManyFullManyPartialUploads)
 
     EXPECT_EQ(fullUploadFlushMultipler + partialUploadFlushMultipler, m_numPreviousFlushes);
     EXPECT_EQ(fullCount + partialCount, m_numPreviousUploads);
+    EXPECT_EQ(0, m_numDanglingUploads) << "Last upload wasn't followed by a flush.";
 }
 
 class FakeCCTextureUpdateControllerClient : public cc::CCTextureUpdateControllerClient {

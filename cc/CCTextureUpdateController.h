@@ -48,6 +48,8 @@ public:
 protected:
     CCTextureUpdateController(CCTextureUpdateControllerClient*, CCThread*, PassOwnPtr<CCTextureUpdateQueue>, CCResourceProvider*, TextureUploader*);
 
+    static size_t maxFullUpdatesPerTick(TextureUploader*);
+
     // This returns true when there were textures left to update.
     bool updateMoreTexturesIfEnoughTimeRemaining();
     void updateMoreTexturesNow();
@@ -59,6 +61,7 @@ protected:
     CCResourceProvider* m_resourceProvider;
     TextureUploader* m_uploader;
     double m_monotonicTimeLimit;
+    size_t m_textureUpdatesPerTick;
     bool m_firstUpdateAttempt;
 };
 
