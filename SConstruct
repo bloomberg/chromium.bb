@@ -2227,14 +2227,17 @@ def SetupLinuxEnvArm(env):
     if not platform.machine().startswith('arm'):
       env.Replace(EMULATOR=jail + '/run_under_qemu_arm')
   else:
-    if not which('arm-linux-gnueabi-g++-4.5'):
-      print ("\nERRROR: arm trusted TC is not installed - try running:\n"
-             "tools/llvm/trusted-toolchain-creator2.sh help")
+    if which('arm-linux-gnueabi-g++'):
+      arm_suffix = ''
+    elif which('arm-linux-gnueabi-g++-4.5'):
+      arm_suffix = '-4.5'
+    else:
+      print 'ERROR: arm trusted TC is not installed'
       sys.exit(-1)
 
-    env.Replace(CC='arm-linux-gnueabi-gcc-4.5',
-                CXX='arm-linux-gnueabi-g++-4.5',
-                LD='arm-linux-gnueabi-ld-4.5',
+    env.Replace(CC='arm-linux-gnueabi-gcc' + arm_suffix,
+                CXX='arm-linux-gnueabi-g++' + arm_suffix,
+                LD='arm-linux-gnueabi-ld' + arm_suffix,
                 EMULATOR=jail + '/run_under_qemu_arm',
                 ASFLAGS=[],
                 LIBPATH=['${LIB_DIR}',
