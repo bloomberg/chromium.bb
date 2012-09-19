@@ -285,7 +285,7 @@ TEST_F(TsfTextStoreTest, GetStatusTest) {
   TS_STATUS status;
   EXPECT_EQ(S_OK, text_store_->GetStatus(&status));
   EXPECT_EQ(0, status.dwDynamicFlags);
-  EXPECT_EQ(TS_SS_NOHIDDENTEXT, status.dwStaticFlags);
+  EXPECT_EQ(TS_SS_TRANSITORY | TS_SS_NOHIDDENTEXT, status.dwStaticFlags);
 }
 
 

@@ -189,8 +189,8 @@ STDMETHODIMP TsfTextStore::GetStatus(TS_STATUS* status) {
     return E_INVALIDARG;
 
   status->dwDynamicFlags = 0;
-  // We don't support hidden text.
-  status->dwStaticFlags = TS_SS_NOHIDDENTEXT;
+  // We use transitory contexts and we don't support hidden text.
+  status->dwStaticFlags = TS_SS_TRANSITORY | TS_SS_NOHIDDENTEXT;
 
   return S_OK;
 }
