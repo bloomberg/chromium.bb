@@ -1173,8 +1173,8 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
         installer_state->FindProduct(BrowserDistribution::CHROME_BROWSER);
     DCHECK(chrome_install);
     if (chrome_install) {
-      installer::DeleteChromeRegistrationKeys(chrome_install->distribution(),
-          HKEY_LOCAL_MACHINE, suffix, installer_state->target_path(), &tmp);
+      installer::DeleteChromeRegistrationKeys(*installer_state,
+          chrome_install->distribution(), HKEY_LOCAL_MACHINE, suffix, &tmp);
     }
     *exit_code = tmp;
   } else if (cmd_line.HasSwitch(installer::switches::kOnOsUpgrade)) {
