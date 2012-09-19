@@ -13,6 +13,8 @@ import corpus_utils
 # Sha1s of known non-validating NEXEs in the corpus.
 BAD_NEXES = set([
     '1c2b051cb60367cf103128c9cd76769ffa1cf356',
+    '903d3e5f29b909db162f2679363685144f61e3cc',
+    'fac308d79f5c2d3a7f1f27112cfe19bf8431acfa',
 ])
 
 
