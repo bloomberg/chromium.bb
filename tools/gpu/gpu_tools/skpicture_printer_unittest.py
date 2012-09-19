@@ -6,7 +6,7 @@ import os
 import tempfile
 import shutil
 
-from gpu_tools import multi_page_benchmark_unittest_base
+from chrome_remote_control import multi_page_benchmark_unittest_base
 from gpu_tools import skpicture_printer
 
 class SkPicturePrinterUnitTest(

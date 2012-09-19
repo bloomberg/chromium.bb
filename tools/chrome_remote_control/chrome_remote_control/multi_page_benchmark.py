@@ -7,10 +7,11 @@ import os
 import sys
 import traceback
 
-import chrome_remote_control
-import chrome_remote_control.browser_options
-from gpu_tools import page_runner
-from gpu_tools import page_set
+from chrome_remote_control import browser_finder
+from chrome_remote_control import browser_options
+from chrome_remote_control import page_runner
+from chrome_remote_control import page_set
+from chrome_remote_control import util
 
 class MeasurementFailure(Exception):
   """Exception that can be thrown from MeasurePage to indicate an undesired but
@@ -115,7 +116,7 @@ class MultiPageBenchmark(object):
       except MeasurementFailure, ex:
         logging.info('%s: %s', ex, page.url)
         raise
-      except chrome_remote_control.TimeoutException, ex:
+      except util.TimeoutException, ex:
         logging.warning('Timed out while running %s', page.url)
         raise
       except Exception, ex:
@@ -150,7 +151,7 @@ def Main(benchmark, args=None):
 
   If args is not specified, sys.argv[1:] is used.
   """
-  options = chrome_remote_control.BrowserOptions()
+  options = browser_options.BrowserOptions()
   parser = options.CreateParser('%prog [options] <page_set>')
   benchmark.AddOptions(parser)
   _, args = parser.parse_args(args)
@@ -169,7 +170,7 @@ def Main(benchmark, args=None):
   ps = page_set.PageSet.FromFile(args[0])
 
   benchmark.CustomizeBrowserOptions(options)
-  possible_browser = chrome_remote_control.FindBrowser(options)
+  possible_browser = browser_finder.FindBrowser(options)
   if possible_browser == None:
     sys.stderr.write(
       'No browser found.\n' +

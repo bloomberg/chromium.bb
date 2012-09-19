@@ -3,8 +3,8 @@
 # found in the LICENSE file.
 import os
 
-import chrome_remote_control
-from gpu_tools import multi_page_benchmark
+from chrome_remote_control import multi_page_benchmark
+from chrome_remote_control import util
 
 class DidNotScrollException(multi_page_benchmark.MeasurementFailure):
   def __init__(self):
@@ -28,7 +28,7 @@ def CalcScrollResults(rendering_stats):
 class ScrollingBenchmark(multi_page_benchmark.MultiPageBenchmark):
   def __init__(self):
     super(ScrollingBenchmark, self).__init__()
-    self.use_gpu_bencharking_extension = True
+    self.use_gpu_benchmarking_extension = True
 
   @staticmethod
   def ScrollPageFully(tab):
@@ -45,8 +45,7 @@ class ScrollingBenchmark(multi_page_benchmark.MultiPageBenchmark):
     """)
 
     # Poll for scroll benchmark completion.
-    chrome_remote_control.WaitFor(
-        lambda: tab.runtime.Evaluate('window.__scrollTestResult'), 60)
+    util.WaitFor(lambda: tab.runtime.Evaluate('window.__scrollTestResult'), 60)
 
     rendering_stats = tab.runtime.Evaluate('window.__scrollTestResult')
 
@@ -55,7 +54,7 @@ class ScrollingBenchmark(multi_page_benchmark.MultiPageBenchmark):
     return rendering_stats
 
   def CustomizeBrowserOptions(self, options):
-    if self.use_gpu_bencharking_extension:
+    if self.use_gpu_benchmarking_extension:
       options.extra_browser_args.append('--enable-gpu-benchmarking')
 
   def MeasurePage(self, _, tab):

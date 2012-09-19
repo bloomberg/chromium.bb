@@ -4,8 +4,9 @@
 import os
 import unittest
 
-import chrome_remote_control.browser_options
-from gpu_tools import page_set
+from chrome_remote_control import browser_finder
+from chrome_remote_control import browser_options
+from chrome_remote_control import page_set
 
 class MultiPageBenchmarkUnitTestBase(unittest.TestCase):
   """unittest.TestCase-derived class to help in the construction of unit tests
@@ -35,9 +36,9 @@ class MultiPageBenchmarkUnitTestBase(unittest.TestCase):
       def writerow(row):
         rows.append(row)
 
-    assert chrome_remote_control.browser_options.options_for_unittests
+    assert browser_options.options_for_unittests
     options = (
-      chrome_remote_control.browser_options.options_for_unittests.Copy())
+      browser_options.options_for_unittests.Copy())
     temp_parser = options.CreateParser()
     benchmark.AddOptions(temp_parser)
     defaults = temp_parser.get_default_values()
@@ -48,7 +49,7 @@ class MultiPageBenchmarkUnitTestBase(unittest.TestCase):
 
     benchmark.CustomizeBrowserOptions(options)
     self.CustomizeOptionsForTest(options)
-    possible_browser = chrome_remote_control.FindBrowser(options)
+    possible_browser = browser_finder.FindBrowser(options)
     with possible_browser.Create() as browser:
       benchmark.Run(LocalWriter(), browser, options, ps)
     return rows

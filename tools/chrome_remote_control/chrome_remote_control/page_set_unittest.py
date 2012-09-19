@@ -4,7 +4,7 @@
 import tempfile
 import unittest
 
-from gpu_tools import page_set
+from chrome_remote_control import page_set
 
 simple_set = """
 {"description": "hello",

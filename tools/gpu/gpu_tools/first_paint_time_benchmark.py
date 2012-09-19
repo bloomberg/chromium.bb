@@ -4,9 +4,8 @@
 
 # The test takes a list of URLs through stdin and prints results in CSV format.
 # Example: python run_scroll_test.py < data/urls.txt > test_results.csv
-import chrome_remote_control
-
-from gpu_tools import multi_page_benchmark
+from chrome_remote_control import multi_page_benchmark
+from chrome_remote_control import util
 
 class FirstPaintTimeBenchmark(multi_page_benchmark.MultiPageBenchmark):
   def MeasurePage(self, _, tab):
@@ -19,8 +18,7 @@ class FirstPaintTimeBenchmark(multi_page_benchmark.MultiPageBenchmark):
             window.__rafFired  = true;
         });
     """)
-    chrome_remote_control.WaitFor(
-        lambda: tab.runtime.Evaluate('window.__rafFired'), 60)
+    util.WaitFor(lambda: tab.runtime.Evaluate('window.__rafFired'), 60)
 
     first_paint_secs = tab.runtime.Evaluate(
       'window.chrome.loadTimes().firstPaintTime - ' +

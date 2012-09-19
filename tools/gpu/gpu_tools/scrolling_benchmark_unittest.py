@@ -1,7 +1,7 @@
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-from gpu_tools import multi_page_benchmark_unittest_base
+from chrome_remote_control import multi_page_benchmark_unittest_base
 from gpu_tools import scrolling_benchmark
 
 class ScrollingBenchmarkUnitTest(
@@ -26,7 +26,7 @@ class ScrollingBenchmarkUnitTest(
     ps = self.CreatePageSetFromFileInUnittestDataDir('scrollable_page.html')
 
     benchmark = scrolling_benchmark.ScrollingBenchmark()
-    benchmark.use_gpu_bencharking_extension = False
+    benchmark.use_gpu_benchmarking_extension = False
 
     rows = self.RunBenchmark(benchmark, ps)
 
@@ -41,9 +41,9 @@ class ScrollingBenchmarkUnitTest(
 
   def testCalcResultsFromRAFRenderStats(self):
     rendering_stats = {'droppedFrameCount': 5,
-               'totalTimeInSeconds': 1,
-               'numAnimationFrames': 10,
-               'numFramesSentToScreen': 10}
+                       'totalTimeInSeconds': 1,
+                       'numAnimationFrames': 10,
+                       'numFramesSentToScreen': 10}
     res = scrolling_benchmark.CalcScrollResults(rendering_stats)
     self.assertEquals(50, res['dropped_percent'])
     self.assertAlmostEquals(100, res['mean_frame_time_ms'], 2)
