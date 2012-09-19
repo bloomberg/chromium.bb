@@ -14,7 +14,7 @@
 
 void *gs_segment_read_only_test(void *unused_thread_arg) {
   uint32_t value;
-  __asm__("movl %%gs:0, %0" : "=r"(value));
+  __asm__ volatile("movl %%gs:0, %0" : "=r"(value));
   fprintf(stderr, "** intended_exit_status=untrusted_sigsegv_or_equivalent\n");
   /*
    * Check that the %gs segment is read-only by attempting to write to
@@ -28,7 +28,7 @@ void *gs_segment_read_only_test(void *unused_thread_arg) {
    * validation disabled.
    * See http://code.google.com/p/nativeclient/issues/detail?id=2250
    */
-  __asm__("movl %0, %%gs:0\n" : : "r"(value));
+  __asm__ volatile("movl %0, %%gs:0\n" : : "r"(value));
   /* Should not reach here. */
   _exit(1);
 }

@@ -5,12 +5,9 @@
 
 Import('env')
 
-# This test is specific to the x86-32 sandbox.
-if not env.Bit('build_x86_32'):
+# This test is specific to the x86-32 sandbox, and is not portable.
+if not env.Bit('build_x86_32') or not env.AllowInlineAssembly():
   Return()
-
-if env.Bit('bitcode'):
-  env.Append(CCFLAGS=['-allow-asm'])
 
 test_prog = env.ComponentProgram(
     'gs_segment_read_only_test', ['gs_segment_test.c'],
@@ -24,4 +21,5 @@ for subtest in ('gs_segment_read_only_test',
       test_prog, [subtest], declares_exit_status=True,
       # R-DFA rejects unaligned access to %gs at validation stage
       sel_ldr_flags=(['-c'] if env.Bit('validator_ragel') else None))
-  env.AddNodeToTestSuite(node, ['small_tests'], 'run_%s' % subtest)
+  env.AddNodeToTestSuite(node, ['small_tests', 'nonpexe_tests'],
+                         'run_%s' % subtest)
