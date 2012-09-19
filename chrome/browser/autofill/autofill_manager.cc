@@ -20,6 +20,8 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/api/infobars/infobar_service.h"
+#include "chrome/browser/api/prefs/pref_service_base.h"
+#include "chrome/browser/api/sync/profile_sync_service_base.h"
 #include "chrome/browser/autofill/autocomplete_history_manager.h"
 #include "chrome/browser/autofill/autofill_cc_infobar_delegate.h"
 #include "chrome/browser/autofill/autofill_external_delegate.h"
@@ -36,10 +38,6 @@
 #include "chrome/browser/autofill/phone_number.h"
 #include "chrome/browser/autofill/phone_number_i18n.h"
 #include "chrome/browser/autofill/select_control_handler.h"
-#include "chrome/browser/api/prefs/pref_service_base.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/autofill_messages.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -193,7 +191,7 @@ AutofillManager::AutofillManager(autofill::AutofillManagerDelegate* delegate,
       external_delegate_(NULL) {
   // |personal_data_| is NULL when using test-enabled WebContents.
   personal_data_ = PersonalDataManagerFactory::GetForProfile(
-      tab_contents_->profile()->GetOriginalProfile());
+      delegate->GetOriginalProfile());
   RegisterWithSyncService();
   registrar_.Init(manager_delegate_->GetPrefs());
   registrar_.Add(prefs::kPasswordGenerationEnabled, this);
@@ -231,10 +229,9 @@ void AutofillManager::RegisterUserPrefs(PrefServiceBase* prefs) {
 }
 
 void AutofillManager::RegisterWithSyncService() {
-  ProfileSyncService* temp_sync_service =
-      ProfileSyncServiceFactory::GetForProfile(tab_contents_->profile());
-  if (temp_sync_service)
-    temp_sync_service->AddObserver(this);
+  ProfileSyncServiceBase* service = manager_delegate_->GetProfileSyncService();
+  if (service)
+    service->AddObserver(this);
 }
 
 void AutofillManager::SendPasswordGenerationStateToRenderer(
@@ -250,8 +247,7 @@ void AutofillManager::SendPasswordGenerationStateToRenderer(
 void AutofillManager::UpdatePasswordGenerationState(
     content::RenderViewHost* host,
     bool new_renderer) {
-  ProfileSyncService* service = ProfileSyncServiceFactory::GetForProfile(
-      tab_contents_->profile());
+  ProfileSyncServiceBase* service = manager_delegate_->GetProfileSyncService();
 
   bool password_sync_enabled = false;
   if (service) {
@@ -290,13 +286,10 @@ void AutofillManager::Observe(
     DCHECK(prefs::kPasswordGenerationEnabled == *pref);
   UpdatePasswordGenerationState(web_contents()->GetRenderViewHost(), false);
   } else if (type == chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED) {
-    if (ProfileSyncServiceFactory::HasProfileSyncService(
-          tab_contents_->profile())) {
-      ProfileSyncService* service = ProfileSyncServiceFactory::GetForProfile(
-          tab_contents_->profile());
-      if (service->HasObserver(this))
-        service->RemoveObserver(this);
-    }
+    ProfileSyncServiceBase* service =
+        manager_delegate_->GetProfileSyncService();
+    if (service != NULL && service->HasObserver(this))
+      service->RemoveObserver(this);
   } else {
     NOTREACHED();
   }
@@ -896,7 +889,7 @@ AutofillManager::AutofillManager(autofill::AutofillManagerDelegate* delegate,
       manager_delegate_(delegate),
       tab_contents_(tab_contents),
       personal_data_(personal_data),
-      download_manager_(tab_contents->profile(), this),
+      download_manager_(delegate->GetBrowserContext(), this),
       disable_download_manager_requests_(true),
       metric_logger_(new AutofillMetrics),
       has_logged_autofill_enabled_(false),

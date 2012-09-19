@@ -25,6 +25,8 @@ struct PasswordForm;
 
 class InfoBarService;
 class PrefServiceBase;
+class Profile;
+class ProfileSyncServiceBase;
 
 namespace autofill {
 
@@ -40,18 +42,25 @@ class AutofillManagerDelegate {
  public:
   virtual ~AutofillManagerDelegate() {}
 
-  // Gets the BrowserContext the AutofillManager is in.
+  // Gets the BrowserContext associated with the delegate.
   virtual content::BrowserContext* GetBrowserContext() const = 0;
 
-  // Gets the BrowserContext the AutofillManager is in, or if in an
+  // Gets the BrowserContext associated with the delegate, or if in an
   // incognito mode, the associated (original) BrowserContext.
   virtual content::BrowserContext* GetOriginalBrowserContext() const = 0;
+
+  // TODO(joi): Remove, this is temporary.
+  virtual Profile* GetOriginalProfile() const = 0;
 
   // Gets the infobar service associated with the delegate.
   virtual InfoBarService* GetInfoBarService() = 0;
 
   // Gets the preferences associated with the delegate.
   virtual PrefServiceBase* GetPrefs() = 0;
+
+  // Gets the profile sync service associated with the delegate.  Will
+  // be NULL if sync is not enabled.
+  virtual ProfileSyncServiceBase* GetProfileSyncService() = 0;
 
   // Returns true if saving passwords is currently enabled for the
   // delegate.

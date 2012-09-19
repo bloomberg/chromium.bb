@@ -1,0 +1,47 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_API_SYNC_PROFILE_SYNC_SERVICE_BASE_H_
+#define CHROME_BROWSER_API_SYNC_PROFILE_SYNC_SERVICE_BASE_H_
+
+#include "chrome/browser/api/sync/profile_sync_service_observer.h"
+#include "sync/internal_api/public/base/model_type.h"
+
+namespace content {
+class BrowserContext;
+}
+
+// API for ProfileSyncService.
+class ProfileSyncServiceBase {
+ public:
+  // Retrieve the sync service to use in the given context.
+  // Returns NULL if sync is not enabled for the context.
+  static ProfileSyncServiceBase* ForContext(content::BrowserContext* context);
+
+  typedef ProfileSyncServiceObserver Observer;
+
+  virtual ~ProfileSyncServiceBase() {}
+
+  // Whether sync is enabled by user or not.
+  virtual bool HasSyncSetupCompleted() const = 0;
+
+  // Returns whether processing changes is allowed.  Check this before doing
+  // any model-modifying operations.
+  virtual bool ShouldPushChanges() = 0;
+
+  // Get the set of currently enabled data types (as chosen or
+  // configured by the user).  See class comment on ProfileSyncService
+  // for more on what it means for a datatype to be Preferred.
+  virtual syncer::ModelTypeSet GetPreferredDataTypes() const = 0;
+
+  // Adds/removes an observer. ProfileSyncServiceBase does not take
+  // ownership of the observer.
+  virtual void AddObserver(Observer* observer) = 0;
+  virtual void RemoveObserver(Observer* observer) = 0;
+
+  // Returns true if |observer| has already been added as an observer.
+  virtual bool HasObserver(Observer* observer) const = 0;
+};
+
+#endif  // CHROME_BROWSER_API_SYNC_PROFILE_SYNC_SERVICE_BASE_H_

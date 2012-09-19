@@ -12,6 +12,7 @@
 #include "chrome/browser/autofill/autofill_cc_infobar_delegate.h"
 #include "chrome/browser/autofill/autofill_common_test.h"
 #include "chrome/browser/autofill/autofill_manager.h"
+#include "chrome/browser/autofill/autofill_manager_delegate.h"
 #include "chrome/browser/autofill/autofill_metrics.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
@@ -173,10 +174,10 @@ class TestFormStructure : public FormStructure {
 
 class TestAutofillManager : public AutofillManager {
  public:
-  TestAutofillManager(TabContents* tab_contents,
+  TestAutofillManager(autofill::AutofillManagerDelegate* manager_delegate,
+                      TabContents* tab_contents,
                       TestPersonalDataManager* personal_manager)
-      : AutofillManager(&autofill_delegate_, tab_contents, personal_manager),
-        autofill_delegate_(tab_contents),
+      : AutofillManager(manager_delegate, tab_contents, personal_manager),
         autofill_enabled_(true),
         did_finish_async_form_submit_(false),
         message_loop_is_running_(false) {
@@ -247,8 +248,6 @@ class TestAutofillManager : public AutofillManager {
   // AutofillManager is ref counted.
   virtual ~TestAutofillManager() {}
 
-  TabAutofillManagerDelegate autofill_delegate_;
-
   bool autofill_enabled_;
   bool did_finish_async_form_submit_;
   bool message_loop_is_running_;
@@ -274,6 +273,7 @@ class AutofillMetricsTest : public TabContentsTestHarness {
   content::TestBrowserThread file_thread_;
 
   scoped_refptr<TestAutofillManager> autofill_manager_;
+  scoped_ptr<TabAutofillManagerDelegate> manager_delegate_;
   TestPersonalDataManager personal_data_;
 
  private:
@@ -299,7 +299,9 @@ void AutofillMetricsTest::SetUp() {
       profile, NULL);
 
   TabContentsTestHarness::SetUp();
-  autofill_manager_ = new TestAutofillManager(tab_contents(),
+  manager_delegate_.reset(new TabAutofillManagerDelegate(tab_contents()));
+  autofill_manager_ = new TestAutofillManager(manager_delegate_.get(),
+                                              tab_contents(),
                                               &personal_data_);
 
   file_thread_.Start();

@@ -10,6 +10,8 @@
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -33,12 +35,20 @@ TabAutofillManagerDelegate::GetOriginalBrowserContext() const {
   return tab_->profile()->GetOriginalProfile();
 }
 
+Profile* TabAutofillManagerDelegate::GetOriginalProfile() const {
+  return tab_->profile()->GetOriginalProfile();
+}
+
 InfoBarService* TabAutofillManagerDelegate::GetInfoBarService() {
   return tab_->infobar_tab_helper();
 }
 
 PrefServiceBase* TabAutofillManagerDelegate::GetPrefs() {
   return tab_->profile()->GetPrefs();
+}
+
+ProfileSyncServiceBase* TabAutofillManagerDelegate::GetProfileSyncService() {
+  return ProfileSyncServiceFactory::GetForProfile(tab_->profile());
 }
 
 bool TabAutofillManagerDelegate::IsSavingPasswordsEnabled() const {

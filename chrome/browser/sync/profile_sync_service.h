@@ -18,6 +18,8 @@
 #include "base/string16.h"
 #include "base/time.h"
 #include "base/timer.h"
+#include "chrome/browser/api/sync/profile_sync_service_base.h"
+#include "chrome/browser/api/sync/profile_sync_service_observer.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/sync/backend_unrecoverable_error_handler.h"
 #include "chrome/browser/sync/failed_datatypes_handler.h"
@@ -27,7 +29,6 @@
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/invalidation_frontend.h"
 #include "chrome/browser/sync/invalidations/invalidator_storage.h"
-#include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chrome/browser/sync/sync_prefs.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -149,7 +150,8 @@ class EncryptedData;
 //   tell the sync engine that setup is completed and it can begin downloading
 //   data from the sync server.
 //
-class ProfileSyncService : public browser_sync::SyncFrontend,
+class ProfileSyncService : public ProfileSyncServiceBase,
+                           public browser_sync::SyncFrontend,
                            public browser_sync::SyncPrefObserver,
                            public browser_sync::DataTypeManagerObserver,
                            public syncer::UnrecoverableErrorHandler,
@@ -157,7 +159,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
                            public ProfileKeyedService,
                            public InvalidationFrontend {
  public:
-  typedef ProfileSyncServiceObserver Observer;
   typedef browser_sync::SyncBackendHost::Status Status;
 
   enum SyncEventCodes  {
@@ -221,6 +222,16 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // class is constructed.
   void Initialize();
 
+  virtual void SetSyncSetupCompleted();
+
+  // ProfileSyncServiceBase implementation.
+  virtual bool HasSyncSetupCompleted() const OVERRIDE;
+  virtual bool ShouldPushChanges() OVERRIDE;
+  virtual syncer::ModelTypeSet GetPreferredDataTypes() const OVERRIDE;
+  virtual void AddObserver(Observer* observer) OVERRIDE;
+  virtual void RemoveObserver(Observer* observer) OVERRIDE;
+  virtual bool HasObserver(Observer* observer) const OVERRIDE;
+
   void RegisterAuthNotifications();
 
   // Returns true if sync is enabled/not suppressed and the user is logged in.
@@ -253,10 +264,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   // Disables sync for user. Use ShowLoginDialog to enable.
   virtual void DisableForUser();
-
-  // Whether sync is enabled by user or not.
-  virtual bool HasSyncSetupCompleted() const;
-  virtual void SetSyncSetupCompleted();
 
   // syncer::InvalidationHandler implementation (via SyncFrontend).
   virtual void OnInvalidatorStateChange(
@@ -370,14 +377,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // The profile we are syncing for.
   Profile* profile() const { return profile_; }
 
-  // Adds/removes an observer. ProfileSyncService does not take ownership of
-  // the observer.
-  virtual void AddObserver(Observer* observer);
-  virtual void RemoveObserver(Observer* observer);
-
-  // Returns true if |observer| has already been added as an observer.
-  bool HasObserver(Observer* observer) const;
-
   // Returns a weak pointer to the service's JsController.
   // Overrideable for testing purposes.
   virtual base::WeakPtr<syncer::JsController> GetJsController();
@@ -468,11 +467,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   virtual void ChangePreferredDataTypes(
       syncer::ModelTypeSet preferred_types);
 
-  // Get the set of currently enabled data types (as chosen or configured by
-  // the user).  See class comment for more on what it means for a datatype
-  // to be Preferred.
-  virtual syncer::ModelTypeSet GetPreferredDataTypes() const;
-
   // Gets the set of all data types that could be allowed (the set that
   // should be advertised to the user).  These will typically only change
   // via a command-line option.  See class comment for more on what it means
@@ -526,10 +520,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   // Returns true if the syncer is waiting for new datatypes to be encrypted.
   virtual bool encryption_pending() const;
-
-  // Returns whether processing changes is allowed.  Check this before doing
-  // any model-modifying operations.
-  bool ShouldPushChanges();
 
   const GURL& sync_service_url() const { return sync_service_url_; }
   bool auto_start_enabled() const { return auto_start_enabled_; }

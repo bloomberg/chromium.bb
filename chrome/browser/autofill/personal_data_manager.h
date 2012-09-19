@@ -13,14 +13,12 @@
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "base/string16.h"
+#include "chrome/browser/api/sync/profile_sync_service_observer.h"
+#include "chrome/browser/api/webdata/web_data_service_consumer.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/autofill/field_types.h"
-#include "chrome/browser/api/webdata/autofill_web_data_service.h"
-#include "chrome/browser/api/webdata/web_data_service_consumer.h"
-
 #include "chrome/browser/profiles/profile_keyed_service.h"
-#include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 

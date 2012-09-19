@@ -19,8 +19,10 @@ class TabAutofillManagerDelegate : public autofill::AutofillManagerDelegate {
 
   virtual content::BrowserContext* GetBrowserContext() const OVERRIDE;
   virtual content::BrowserContext* GetOriginalBrowserContext() const OVERRIDE;
+  virtual Profile* GetOriginalProfile() const OVERRIDE;
   virtual InfoBarService* GetInfoBarService() OVERRIDE;
   virtual PrefServiceBase* GetPrefs() OVERRIDE;
+  virtual ProfileSyncServiceBase* GetProfileSyncService() OVERRIDE;
   virtual bool IsSavingPasswordsEnabled() const OVERRIDE;
   virtual void ShowAutofillSettings() OVERRIDE;
   virtual void ShowPasswordGenerationBubble(

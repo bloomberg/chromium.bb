@@ -63,11 +63,11 @@ class MockAutofillExternalDelegate : public TestAutofillExternalDelegate {
 
 class MockAutofillManager : public AutofillManager {
  public:
-  explicit MockAutofillManager(TabContents* tab_contents)
+  explicit MockAutofillManager(autofill::AutofillManagerDelegate* delegate,
+                               TabContents* tab_contents)
       // Force to use the constructor designated for unit test, but we don't
       // really need personal_data in this test so we pass a NULL pointer.
-      : AutofillManager(&delegate_, tab_contents, NULL),
-        delegate_(tab_contents) {
+      : AutofillManager(delegate, tab_contents, NULL) {
   }
 
   MOCK_METHOD4(OnFillAutofillFormData,
@@ -78,9 +78,6 @@ class MockAutofillManager : public AutofillManager {
 
  protected:
   virtual ~MockAutofillManager() {}
-
- private:
-  TabAutofillManagerDelegate delegate_;
 };
 
 }  // namespace
@@ -93,7 +90,9 @@ class AutofillExternalDelegateUnitTest : public TabContentsTestHarness {
 
   virtual void SetUp() OVERRIDE {
     TabContentsTestHarness::SetUp();
-    autofill_manager_ = new MockAutofillManager(tab_contents());
+    manager_delegate_.reset(new TabAutofillManagerDelegate(tab_contents()));
+    autofill_manager_ = new MockAutofillManager(manager_delegate_.get(),
+                                                tab_contents());
     external_delegate_.reset(new MockAutofillExternalDelegate(
         tab_contents(),
         autofill_manager_));
@@ -116,6 +115,7 @@ class AutofillExternalDelegateUnitTest : public TabContentsTestHarness {
     external_delegate_->OnQuery(query_id, form, field, bounds, false);
   }
 
+  scoped_ptr<TabAutofillManagerDelegate> manager_delegate_;
   scoped_refptr<MockAutofillManager> autofill_manager_;
   scoped_ptr<MockAutofillExternalDelegate> external_delegate_;
 

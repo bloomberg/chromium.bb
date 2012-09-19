@@ -10,6 +10,9 @@
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/api/prefs/pref_service_base.h"
+#include "chrome/browser/api/sync/profile_sync_service_base.h"
+#include "chrome/browser/api/webdata/autofill_web_data_service.h"
 #include "chrome/browser/autofill/autofill-inl.h"
 #include "chrome/browser/autofill/autofill_field.h"
 #include "chrome/browser/autofill/autofill_metrics.h"
@@ -19,12 +22,9 @@
 #include "chrome/browser/autofill/phone_number.h"
 #include "chrome/browser/autofill/phone_number_i18n.h"
 #include "chrome/browser/autofill/select_control_handler.h"
-#include "chrome/browser/api/prefs/pref_service_base.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_source.h"
 
@@ -166,9 +166,8 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
     // As all Autofill data is ready, the Autocomplete data is ready as well.
     // If sync is not set, cull older entries of the autocomplete. Otherwise,
     // the entries will be culled when sync is connected.
-    ProfileSyncService* sync_service =
-        ProfileSyncServiceFactory::GetInstance()->GetForProfile(
-            static_cast<Profile*>(browser_context_));
+    ProfileSyncServiceBase* sync_service =
+        ProfileSyncServiceBase::ForContext(browser_context_);
     if (sync_service && (!sync_service->HasSyncSetupCompleted() ||
                          !PrefServiceBase::ForContext(
                              browser_context_)->GetBoolean(
@@ -208,9 +207,8 @@ void PersonalDataManager::OnStateChanged() {
     return;
   }
 
-  ProfileSyncService* sync_service =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(
-          static_cast<Profile*>(browser_context_));
+  ProfileSyncServiceBase* sync_service =
+      ProfileSyncServiceBase::ForContext(browser_context_);
   if (!sync_service)
     return;
 
@@ -924,9 +922,8 @@ void PersonalDataManager::EmptyMigrationTrash() {
     return;
   }
 
-  ProfileSyncService* sync_service =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(
-          static_cast<Profile*>(browser_context_));
+  ProfileSyncServiceBase* sync_service =
+      ProfileSyncServiceBase::ForContext(browser_context_);
   if (!sync_service)
     return;
 
