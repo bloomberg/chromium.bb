@@ -139,15 +139,19 @@ PlatformImage CopyPlatformType(const gfx::Image& image) {
 #if defined(OS_MACOSX)
 // Defined in image_unittest_util_mac.mm.
 #elif defined(TOOLKIT_GTK)
-SkColor GetPlatformImageColor(PlatformImage image) {
+SkColor GetPlatformImageColor(PlatformImage image, int x, int y) {
+  int n_channels = gdk_pixbuf_get_n_channels(image);
+  int rowstride = gdk_pixbuf_get_rowstride(image);
   guchar* gdk_pixels = gdk_pixbuf_get_pixels(image);
-  guchar alpha = gdk_pixbuf_get_has_alpha(image) ? gdk_pixels[3] : 255;
-  return SkColorSetARGB(alpha, gdk_pixels[0], gdk_pixels[1], gdk_pixels[2]);
+
+  guchar* pixel = gdk_pixels + (y * rowstride) + (x * n_channels);
+  guchar alpha = gdk_pixbuf_get_has_alpha(image) ? pixel[3] : 255;
+  return SkColorSetARGB(alpha, pixel[0], pixel[1], pixel[2]);
 }
 #else
-SkColor GetPlatformImageColor(PlatformImage image) {
+SkColor GetPlatformImageColor(PlatformImage image, int x, int y) {
   SkAutoLockPixels auto_lock(image);
-  return image.getColor(10, 10);
+  return image.getColor(x, y);
 }
 #endif
 

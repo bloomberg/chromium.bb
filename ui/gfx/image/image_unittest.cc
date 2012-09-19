@@ -180,7 +180,8 @@ TEST_F(ImageTest, PNGDecodeToSkiaFailure) {
 TEST_F(ImageTest, PNGDecodeToPlatformFailure) {
   std::vector<unsigned char> png(100, 0);
   gfx::Image image(&png.front(), png.size());
-  gt::CheckColor(gt::GetPlatformImageColor(gt::ToPlatformType(image)), true);
+  gt::CheckColor(gt::GetPlatformImageColor(gt::ToPlatformType(image), 10, 10),
+                 true);
 }
 #endif
 

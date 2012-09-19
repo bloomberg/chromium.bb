@@ -10,9 +10,9 @@
 namespace gfx {
 namespace test {
 
-SkColor GetPlatformImageColor(PlatformImage image) {
+  SkColor GetPlatformImageColor(PlatformImage image, int x, int y) {
   [image lockFocus];
-  NSColor* color = NSReadPixel(NSMakePoint(10, 10));
+  NSColor* color = NSReadPixel(NSMakePoint(x, y));
   [image unlockFocus];
   return NSDeviceColorToSkColor(color);
 }
