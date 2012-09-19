@@ -472,6 +472,10 @@ const char kInstantEnabled[] = "instant.enabled";
 const char kExperimentalZeroSuggestUrlPrefix[] =
     "instant.experimental_zero_suggest_url_prefix";
 
+// Boolean pref indicating if instant search provider logo should be shown.
+const char kInstantShowSearchProviderLogo[] =
+    "instant.show_search_provider_logo";
+
 // Used to migrate preferences from local state to user preferences to
 // enable multiple profiles.
 // BITMASK with possible values (see browser_prefs.cc for enum):

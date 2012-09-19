@@ -475,8 +475,7 @@ void SearchViewController::CreateViews(State state) {
           Profile::FromBrowserContext(browser_context_))->
               GetDefaultSearchProvider();
 
-#if defined(GOOGLE_CHROME_BUILD)
-  if (default_provider &&
+  if (default_provider && InstantUI::ShouldShowSearchProviderLogo() &&
       (TemplateURLPrepopulateData::GetEngineType(default_provider->url()) ==
        SEARCH_ENGINE_GOOGLE)) {
     default_provider_logo_.reset(new views::ImageView());
@@ -486,7 +485,6 @@ void SearchViewController::CreateViews(State state) {
     default_provider_logo_->SetPaintToLayer(true);
     default_provider_logo_->SetFillsBoundsOpaquely(false);
   }
-#endif
 
   if (!default_provider_logo_.get()) {
     default_provider_name_.reset(new views::Label(

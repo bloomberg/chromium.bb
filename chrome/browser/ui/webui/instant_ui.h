@@ -17,6 +17,9 @@ class InstantUI : public content::WebUIController {
   // Returns a scale factor to slow down Instant animations.
   static int GetSlowAnimationScaleFactor();
 
+  // Returns true if search provider logo should be shown.
+  static bool ShouldShowSearchProviderLogo();
+
  private:
   DISALLOW_COPY_AND_ASSIGN(InstantUI);
 };

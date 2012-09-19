@@ -177,6 +177,7 @@ extern const char kInstantAnimationScaleFactor[];
 extern const char kInstantConfirmDialogShown[];
 extern const char kInstantEnabled[];
 extern const char kExperimentalZeroSuggestUrlPrefix[];
+extern const char kInstantShowSearchProviderLogo[];
 extern const char kMultipleProfilePrefMigration[];
 extern const char kNetworkPredictionEnabled[];
 extern const char kDefaultAppsInstallState[];

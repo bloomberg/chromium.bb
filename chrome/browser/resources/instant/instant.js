@@ -18,17 +18,27 @@ var instantConfig = (function() {
   var FIELDS = [
     {
       key: 'instant.animation_scale_factor',
-      label: 'Slow down animations by a factor of',
-      type: 'float',
-      units: 'no units, range 1 to 10',
-      default: 1
+      label: 'Slow down animations by a factor of ',
+      type: 'number',
+      units: 'no units, range 1 to 20',
+      size: 3,
+      default: 1,
+      min: 1,
+      max: 20
     },
     {
       key: 'instant.experimental_zero_suggest_url_prefix',
       label: 'Prefix URL for the (experimental) ZeroSuggest provider',
       type: 'string',
+      size: 40,
       units: '',
       default: ''
+    },
+    {
+      key: 'instant.show_search_provider_logo',
+      label: 'Show search provider logo',
+      type: 'checkbox',
+      default: false
     }
   ];
 
@@ -60,17 +70,13 @@ var instantConfig = (function() {
       row.appendChild(label);
 
       var input = createElementWithClass('input', 'row-input');
+      input.type = field.type;
       input.id = field.key;
       input.title = "Default Value: " + field.default;
-      if (field.type == 'float') {
-        input.size = 3;
-        input.type = 'number';
-        input.min = field.min || 0;
-        if (field.max) input.max = field.max;
-        if (field.step) input.step = field.step;
-      } else {
-        input.size = 40;
-      }
+      if (field.size) input.size = field.size;
+      input.min = field.min || 0;
+      if (field.max) input.max = field.max;
+      if (field.step) input.step = field.step;
       row.appendChild(input);
 
       var units = createElementWithClass('div', 'row-units');
@@ -89,7 +95,7 @@ var instantConfig = (function() {
     for (var i = 0; i < FIELDS.length; i++) {
       var field = FIELDS[i];
       $(field.key).onchange = (function(key) {
-        setPreferenceValue(key, $(key).value);
+        setPreferenceValue(key);
       }).bind(null, field.key);
     }
   }
@@ -110,16 +116,27 @@ var instantConfig = (function() {
    * @param {value} value The current value associated with prefName.
    */
   function getPreferenceValueResult(prefName, value) {
-    $(prefName).value = value;
+    if ($(prefName).type == 'checkbox')
+      $(prefName).checked = value;
+    else
+      $(prefName).value = value;
   }
 
   /**
-   * Set a preference setting's value.
+   * Set a preference setting's value stored in the element with prefName.
    * @param {string} prefName The name of the preference value being set.
-   * @param {value} value The value to be associated with prefName.
    */
-  function setPreferenceValue(prefName, value) {
-    chrome.send('setPreferenceValue', [prefName, value]);
+  function setPreferenceValue(prefName) {
+    var value;
+    if ($(prefName).type == 'checkbox')
+      value = $(prefName).checked;
+    else if ($(prefName).type == 'number')
+      value = parseFloat($(prefName).value);
+    else
+      value = $(prefName).value;
+    chrome.send(
+        'setPreferenceValue',
+        [prefName, value]);
   }
 
   /**
@@ -129,8 +146,11 @@ var instantConfig = (function() {
   function onReset() {
     for (var i = 0; i < FIELDS.length; i++) {
       var field = FIELDS[i];
-      $(field.key).value = field.default;
-      setPreferenceValue(field.key, field.default);
+      if ($(field.key).type == 'checkbox')
+        $(field.key).checked = field.default;
+      else
+        $(field.key).value = field.default;
+      setPreferenceValue(field.key);
     }
     return false;
   }
@@ -141,9 +161,7 @@ var instantConfig = (function() {
   function onSave() {
     for (var i = 0; i < FIELDS.length; i++) {
       var field = FIELDS[i];
-      var value = $(field.key).value;
-      setPreferenceValue(
-          field.key, (field.type == 'float') ? parseFloat(value) : value);
+      setPreferenceValue(field.key);
     }
     return false;
   }
