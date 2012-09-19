@@ -122,7 +122,7 @@ size_t GetCandidateIndexWithBestScore(
 
   // 2. Integer multiples are built using nearest neighbor sampling.
   // 3. Else, use Lancosz scaling:
-  //    b) If available, from the next bigger variant.
+  //    a) If available, from the next bigger variant.
   int candidate_index = -1;
   int min_area = INT_MAX;
   for (size_t i = 0; i < candidate_sizes.size(); ++i) {
@@ -135,7 +135,7 @@ size_t GetCandidateIndexWithBestScore(
     }
   }
   *score = 0.1f;
-  //    c) Else, from the biggest smaller variant.
+  //    b) Else, from the biggest smaller variant.
   if (candidate_index == -1) {
     *score = 0;
     candidate_index = BiggestCandidate(candidate_sizes);
