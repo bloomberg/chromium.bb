@@ -49,6 +49,7 @@ class AwContents {
   jint GetWebContents(JNIEnv* env, jobject obj);
   void Destroy(JNIEnv* env, jobject obj);
   void DocumentHasImages(JNIEnv* env, jobject obj, jobject message);
+  void SetIoThreadClient(JNIEnv* env, jobject obj, jobject client);
 
  private:
   JavaObjectWeakGlobalRef java_ref_;

@@ -8,12 +8,14 @@
 #include "android_webview/native/aw_browser_dependency_factory.h"
 #include "android_webview/native/aw_contents_container.h"
 #include "android_webview/native/aw_web_contents_delegate.h"
+#include "android_webview/native/aw_contents_io_thread_client.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/supports_user_data.h"
 #include "content/public/browser/android/content_view_core.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/AwContents_jni.h"
 
@@ -22,6 +24,7 @@ using base::android::ConvertUTF8ToJavaString;
 using base::android::ConvertUTF16ToJavaString;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
+using content::BrowserThread;
 using content::ContentViewCore;
 using content::WebContents;
 
@@ -115,6 +118,13 @@ void AwContents::onReceivedHttpAuthRequest(
   Java_AwContents_onReceivedHttpAuthRequest(env, java_ref_.get(env).obj(),
                                             handler.obj(), jhost.obj(),
                                             jrealm.obj());
+}
+
+void AwContents::SetIoThreadClient(JNIEnv* env, jobject obj, jobject client) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  content::WebContents* web_contents = contents_container_->GetWebContents();
+  AwContentsIoThreadClient::Associate(
+      web_contents, ScopedJavaLocalRef<jobject>(env, client));
 }
 
 static jint Init(JNIEnv* env,

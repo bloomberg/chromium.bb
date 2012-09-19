@@ -26,6 +26,7 @@ public class AwContents {
     private int mNativeAwContents;
     private ContentViewCore mContentViewCore;
     private AwContentsClient mContentsClient;
+    private AwContentsIoThreadClient mIoThreadClient;
 
     private static final class DestroyRunnable implements Runnable {
         private int mNativeAwContents;
@@ -70,6 +71,11 @@ public class AwContents {
 
     public ContentViewCore getContentViewCore() {
         return mContentViewCore;
+    }
+
+    public void setIoThreadClient(AwContentsIoThreadClient ioThreadClient) {
+        mIoThreadClient = ioThreadClient;
+        nativeSetIoThreadClient(mNativeAwContents, mIoThreadClient);
     }
 
     public void destroy() {
@@ -122,4 +128,7 @@ public class AwContents {
     private native int nativeGetWebContents(int nativeAwContents);
 
     private native void nativeDocumentHasImages(int nativeAwContents, Message message);
+
+    private native void nativeSetIoThreadClient(int nativeAwContents,
+            AwContentsIoThreadClient ioThreadClient);
 }

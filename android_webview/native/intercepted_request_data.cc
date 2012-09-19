@@ -12,8 +12,8 @@ using std::string;
 using base::android::ScopedJavaLocalRef;
 
 InterceptedRequestData::InterceptedRequestData(
-    JNIEnv* env, base::android::JavaRef<jobject> obj) {
-  java_object_.Reset(env, obj.obj());
+    const base::android::JavaRef<jobject>& obj)
+  : java_object_(obj) {
 }
 
 InterceptedRequestData::~InterceptedRequestData() {

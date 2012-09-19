@@ -10,10 +10,11 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/memory/ref_counted.h"
 
+// This class represents the Java-side data that is to be used to complete a
+// particular URLRequest.
 class InterceptedRequestData {
  public:
-  InterceptedRequestData(JNIEnv* env,
-                         base::android::JavaRef<jobject> obj);
+  InterceptedRequestData(const base::android::JavaRef<jobject>& obj);
   ~InterceptedRequestData();
 
   base::android::ScopedJavaLocalRef<jobject> GetInputStream(JNIEnv* env) const;

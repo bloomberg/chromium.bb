@@ -6,6 +6,7 @@
 
 #include "android_webview/native/android_web_view_util.h"
 #include "android_webview/native/aw_contents.h"
+#include "android_webview/native/aw_contents_io_thread_client.h"
 #include "android_webview/native/aw_http_auth_handler.h"
 #include "android_webview/native/cookie_manager.h"
 #include "base/android/jni_android.h"
@@ -17,6 +18,7 @@ namespace android_webview {
 static base::android::RegistrationMethod kWebViewRegisteredMethods[] = {
   { "AndroidWebViewUtil", RegisterAndroidWebViewUtil },
   { "AwContents", RegisterAwContents },
+  { "AwContentsIoThreadClient", RegisterAwContentsIoThreadClient},
   { "AwHttpAuthHandler", RegisterAwHttpAuthHandler },
   { "CookieManager", RegisterCookieManager },
 };
