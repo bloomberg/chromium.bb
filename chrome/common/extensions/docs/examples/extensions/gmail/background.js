@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Identifier used to debug the possibility of multiple instances of the
-// extension making requests on behalf of a single user.
-var instanceId = 'gmc' + parseInt(Date.now() * Math.random(), 10);
 var animationFrames = 36;
 var animationSpeed = 10; // ms
 var canvas = document.getElementById('canvas');
@@ -12,7 +9,6 @@ var loggedInImage = document.getElementById('logged_in');
 var canvasContext = canvas.getContext('2d');
 var pollIntervalMin = 5;  // 5 minutes
 var pollIntervalMax = 60;  // 1 hour
-var requestFailureCount = 0;  // used for exponential backoff
 var requestTimeout = 1000 * 2;  // 2 seconds
 var rotation = 0;
 var loadingAnimation = new LoadingAnimation();
@@ -30,10 +26,18 @@ function getGmailUrl() {
   return url;
 }
 
+// Identifier used to debug the possibility of multiple instances of the
+// extension making requests on behalf of a single user.
+function getInstanceId() {
+  if (!localStorage.hasOwnProperty("instanceId"))
+    localStorage.instanceId = 'gmc' + parseInt(Date.now() * Math.random(), 10);
+  return localStorage.instanceId;
+}
+
 function getFeedUrl() {
   // "zx" is a Gmail query parameter that is expected to contain a random
   // string and may be ignored/stripped.
-  return getGmailUrl() + "feed/atom?zx=" + encodeURIComponent(instanceId);
+  return getGmailUrl() + "feed/atom?zx=" + encodeURIComponent(getInstanceId());
 }
 
 function isGmailUrl(url) {
@@ -107,9 +111,10 @@ function updateIcon() {
 function scheduleRequest() {
   console.log('scheduleRequest');
   var randomness = Math.random() * 2;
-  var exponent = Math.pow(2, requestFailureCount);
+  var exponent = Math.pow(2, localStorage.requestFailureCount || 0);
   var multiplier = Math.max(randomness * exponent, 1);
   var delay = Math.min(multiplier * pollIntervalMin, pollIntervalMax);
+  delay = Math.round(delay);
   console.log('Scheduling for: ' + delay);
 
   if (oldChromeVersion) {
@@ -119,7 +124,9 @@ function scheduleRequest() {
     requestTimerId = window.setTimeout(onAlarm, delay*60*1000);
   } else {
     console.log('Creating alarm');
-    chrome.alarms.create('refresh', {'delayInMinutes': delay});
+    // Use a repeating alarm so that it fires again if there was a problem
+    // setting the next alarm.
+    chrome.alarms.create('refresh', {periodInMinutes: delay});
   }
 }
 
@@ -157,7 +164,7 @@ function getInboxCount(onSuccess, onError) {
   }, requestTimeout);
 
   function handleSuccess(count) {
-    requestFailureCount = 0;
+    localStorage.requestFailureCount = 0;
     window.clearTimeout(abortTimerId);
     if (onSuccess)
       onSuccess(count);
@@ -165,7 +172,7 @@ function getInboxCount(onSuccess, onError) {
 
   var invokedErrorCallback = false;
   function handleError() {
-    ++requestFailureCount;
+    ++localStorage.requestFailureCount;
     window.clearTimeout(abortTimerId);
     if (onError && !invokedErrorCallback)
       onError();
@@ -271,8 +278,11 @@ function goToInbox() {
 
 function onInit() {
   console.log('onInit');
+  localStorage.requestFailureCount = 0;  // used for exponential backoff
   startRequest({scheduleRequest:true, showLoadingAnimation:true});
   if (!oldChromeVersion) {
+    // TODO(mpcomplete): We should be able to remove this now, but leaving it
+    // for a little while just to be sure the refresh alarm is working nicely.
     chrome.alarms.create('watchdog', {periodInMinutes:5});
   }
 }

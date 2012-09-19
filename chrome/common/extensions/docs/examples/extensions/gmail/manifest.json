@@ -19,6 +19,6 @@
     "webNavigation",
     "*://*.google.com/"
    ],
-  "version": "4.3.4",
+  "version": "4.3.5",
   "manifest_version": 2
 }
