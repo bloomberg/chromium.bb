@@ -994,17 +994,6 @@ void LocationBarView::OnPaint(gfx::Canvas* canvas) {
   if (show_focus_rect && HasFocus()) {
     gfx::Rect r = location_entry_view_->bounds();
 
-    if (is_search_ntp) {
-      r.Inset(0, 0, 1, 0);
-      // To draw focus border with system highlight color, specifically call
-      // |DrawDashedRect|, because default |DrawFocusRect| draws a dashed rect
-      // with gray color.
-      canvas->DrawDashedRect(r,
-          ui::NativeTheme::instance()->GetSystemColor(
-              ui::NativeTheme::kColorId_FocusedBorderColor));
-      return;
-    }
-
     // TODO(jamescook): Is this still needed?
 #if defined(OS_WIN)
     r.Inset(-1,  -1);
