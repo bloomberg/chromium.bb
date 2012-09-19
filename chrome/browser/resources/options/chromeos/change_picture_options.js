@@ -240,11 +240,12 @@ cr.define('options', function() {
 
     /**
      * Appends default images to the image grid. Should only be called once.
-     * @param {Array.<{url: string, author: string, website: string}>} images
-     *   An array of default images data, including URL, author and website.
+     * @param {Array.<{url: string, author: string, website: string}>}
+     *   imagesData An array of default images data, including URL, author and
+     *   website.
      * @private
      */
-    setDefaultImages_: function(images) {
+    setDefaultImages_: function(imagesData) {
       var imageGrid = $('user-image-grid');
       for (var i = 0, data; data = imagesData[i]; i++) {
         imageGrid.addItem(data.url);
@@ -486,8 +487,9 @@ cr.define('options', function() {
 
     /**
      * Appends default images to the image grid. Should only be called once.
-     * @param {Array.<{url: string, author: string, website: string}>} images
-     *   An array of default images data, including URL, author and website.
+     * @param {Array.<{url: string, author: string, website: string}>}
+     *   imagesData An array of default images data, including URL, author and
+     *   website.
      * @private
      */
     setDefaultImages_: function(imagesData) {

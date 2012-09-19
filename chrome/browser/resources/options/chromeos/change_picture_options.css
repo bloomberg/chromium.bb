@@ -183,6 +183,10 @@ html[dir=rtl] #flip-photo {
   display: block;
 }
 
+[camera=old] #user-image-attribution {
+  display: none;
+}
+
 #user-image-attribution {
   -webkit-padding-start: 34px;
   line-height: 26px;
