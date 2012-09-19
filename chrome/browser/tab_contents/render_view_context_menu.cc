@@ -25,6 +25,7 @@
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/download_util.h"
+#include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/google/google_util.h"
@@ -674,6 +675,8 @@ void RenderViewContextMenu::AppendPlatformAppItems() {
   if (platform_app->location() == Extension::LOAD) {
     menu_model_.AddItemWithStringId(IDC_RELOAD, IDS_CONTENT_CONTEXT_RELOAD);
     AppendDeveloperItems();
+    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_INSPECTBACKGROUNDPAGE,
+                                    IDS_CONTENT_CONTEXT_INSPECTBACKGROUNDPAGE);
   }
 }
 
@@ -1164,6 +1167,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       return source_web_contents_->GetController().CanViewSource();
 
     case IDC_CONTENT_CONTEXT_INSPECTELEMENT:
+    case IDC_CONTENT_CONTEXT_INSPECTBACKGROUNDPAGE:
       return IsDevCommandEnabled(id);
 
     case IDC_CONTENT_CONTEXT_VIEWPAGEINFO:
@@ -1733,6 +1737,16 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       Inspect(params_.x, params_.y);
       break;
 
+    case IDC_CONTENT_CONTEXT_INSPECTBACKGROUNDPAGE: {
+      const Extension* platform_app = GetExtension();
+      DCHECK(platform_app);
+      DCHECK(platform_app->is_platform_app());
+
+      extensions::ExtensionSystem::Get(profile_)->extension_service()->
+          InspectBackgroundPage(platform_app);
+      break;
+    }
+
     case IDC_CONTENT_CONTEXT_VIEWPAGEINFO: {
       NavigationController* controller = &source_web_contents_->GetController();
       NavigationEntry* nav_entry = controller->GetActiveEntry();
@@ -1957,7 +1971,8 @@ void RenderViewContextMenu::MenuClosed(ui::SimpleMenuModel* source) {
 }
 
 bool RenderViewContextMenu::IsDevCommandEnabled(int id) const {
-  if (id == IDC_CONTENT_CONTEXT_INSPECTELEMENT) {
+  if (id == IDC_CONTENT_CONTEXT_INSPECTELEMENT ||
+      id == IDC_CONTENT_CONTEXT_INSPECTBACKGROUNDPAGE) {
     const CommandLine* command_line = CommandLine::ForCurrentProcess();
     if (!profile_->GetPrefs()->GetBoolean(prefs::kWebKitJavascriptEnabled) ||
         command_line->HasSwitch(switches::kDisableJavaScript))

@@ -618,6 +618,10 @@ class ExtensionService
   static void RecordPermissionMessagesHistogram(
       const extensions::Extension* e, const char* histogram);
 
+  // Open a dev tools window for the background page for the given extension,
+  // starting the background page first if necesary.
+  void InspectBackgroundPage(const extensions::Extension* extension);
+
 #if defined(UNIT_TEST)
   void TrackTerminatedExtensionForTest(const extensions::Extension* extension) {
     TrackTerminatedExtension(extension);
@@ -725,6 +729,9 @@ class ExtensionService
   void QueueRestoreAppWindow(const extensions::Extension* extension);
   // Launches the platform app associated with |extension_host|.
   static void LaunchApplication(extensions::ExtensionHost* extension_host);
+
+  // Helper to inspect an ExtensionHost after it has been loaded.
+  void InspectExtensionHost(extensions::ExtensionHost* host);
 
   // The normal profile associated with this ExtensionService.
   Profile* profile_;

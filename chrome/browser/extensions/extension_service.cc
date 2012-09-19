@@ -30,6 +30,7 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_plugin_service_filter.h"
+#include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/extensions/api/cookies/cookies_api.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
 #include "chrome/browser/extensions/api/extension_action/extension_actions_api.h"
@@ -2520,6 +2521,25 @@ void ExtensionService::SetBackgroundPageReady(const Extension* extension) {
       content::NotificationService::NoDetails());
 }
 
+void ExtensionService::InspectBackgroundPage(const Extension* extension) {
+  DCHECK(extension);
+
+  ExtensionProcessManager* pm = profile_->GetExtensionProcessManager();
+  extensions::LazyBackgroundTaskQueue* queue =
+      extensions::ExtensionSystem::Get(profile_)->lazy_background_task_queue();
+
+  extensions::ExtensionHost* host =
+      pm->GetBackgroundHostForExtension(extension->id());
+  if (host) {
+    InspectExtensionHost(host);
+  } else {
+    queue->AddPendingTask(
+        profile_, extension->id(),
+        base::Bind(&ExtensionService::InspectExtensionHost,
+                    base::Unretained(this)));
+  }
+}
+
 bool ExtensionService::IsBeingUpgraded(const Extension* extension) const {
   ExtensionRuntimeDataMap::const_iterator it =
       extension_runtime_data_.find(extension->id());
@@ -2644,4 +2664,10 @@ void ExtensionService::LaunchApplication(
                                 extension_host->extension(),
                                 NULL, FilePath());
 #endif
+}
+
+void ExtensionService::InspectExtensionHost(
+    extensions::ExtensionHost* host) {
+  if (host)
+    DevToolsWindow::OpenDevToolsWindow(host->render_view_host());
 }

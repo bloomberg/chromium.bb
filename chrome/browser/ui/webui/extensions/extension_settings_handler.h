@@ -179,9 +179,6 @@ class ExtensionSettingsHandler
   // needed.
   ExtensionUninstallDialog* GetExtensionUninstallDialog();
 
-  // Helper to inspect an ExtensionHost after it has been loaded.
-  void InspectExtensionHost(extensions::ExtensionHost* host);
-
   // Callback for RequirementsChecker.
   void OnRequirementsChecked(std::string extension_id,
                              std::vector<std::string> requirement_errors);

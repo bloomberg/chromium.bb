@@ -568,25 +568,12 @@ void ExtensionSettingsHandler::HandleInspectMessage(const ListValue* args) {
         extension_service_->extensions()->GetByID(extension_id);
     DCHECK(extension);
 
-    Profile* profile = extension_service_->profile();
+    ExtensionService* service = extension_service_;
     if (incognito)
-      profile = profile->GetOffTheRecordProfile();
+      service = extensions::ExtensionSystem::Get(extension_service_->
+          profile()->GetOffTheRecordProfile())->extension_service();
 
-    ExtensionProcessManager* pm = profile->GetExtensionProcessManager();
-    extensions::LazyBackgroundTaskQueue* queue =
-        extensions::ExtensionSystem::Get(profile)->lazy_background_task_queue();
-
-    extensions::ExtensionHost* host =
-        pm->GetBackgroundHostForExtension(extension->id());
-    if (host) {
-      InspectExtensionHost(host);
-    } else {
-      queue->AddPendingTask(
-          profile, extension->id(),
-          base::Bind(&ExtensionSettingsHandler::InspectExtensionHost,
-                     base::Unretained(this)));
-    }
-
+    service->InspectBackgroundPage(extension);
     return;
   }
 
@@ -925,12 +912,6 @@ ExtensionSettingsHandler::GetExtensionUninstallDialog() {
 #else
   return NULL;
 #endif  // !defined(OS_ANDROID)
-}
-
-void ExtensionSettingsHandler::InspectExtensionHost(
-    extensions::ExtensionHost* host) {
-  if (host)
-    DevToolsWindow::OpenDevToolsWindow(host->render_view_host());
 }
 
 void ExtensionSettingsHandler::OnRequirementsChecked(
