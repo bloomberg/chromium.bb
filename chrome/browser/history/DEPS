@@ -4,7 +4,6 @@ include_rules = [
   # add to the list of exceptions!
   "-chrome/browser",
   "+chrome/browser/api",
-  "+chrome/browser/common",
   "+chrome/browser/history",
 
   # TODO(erikwright): Bring this list to zero.
@@ -35,6 +34,7 @@ include_rules = [
   "!chrome/browser/profiles/profile_manager.h",
   "!chrome/browser/profiles/refcounted_profile_keyed_service.h",
   "!chrome/browser/profiles/refcounted_profile_keyed_service_factory.h",
+  "!chrome/browser/search_engines/template_url_id.h",
   "!chrome/browser/ui/profile_error_dialog.h",
   "!chrome/browser/ui/webui/ntp/most_visited_handler.h",
   "!chrome/browser/ui/webui/ntp/new_tab_ui.h",

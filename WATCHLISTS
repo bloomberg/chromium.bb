@@ -68,11 +68,10 @@
       'filepath': 'chrome/browser/chromeos/',
     },
     'browser_components': {
-      'filepath': 'chrome/browser/autofill/' \
-                  '|chrome/browser/bookmarks/' \
-                  '|chrome/browser/common/' \
-                  '|chrome/browser/favicon/' \
-                  '|chrome/browser/history/'
+      'filepath': 'chrome/browser/autofill/|'\
+        'chrome/browser/history/|'\
+        'chrome/browser/bookmarks/|'\
+        'chrome/browser/favicon/',
     },
     'browser_compositor': {
       'filepath': 'ui/compositor/'

@@ -5,7 +5,6 @@ include_rules = [
   "-chrome/browser",
   "+chrome/browser/api",
   "+chrome/browser/bookmarks",
-  "+chrome/browser/common",
 
   # TODO(kaiwang): Bring this list to zero.
   # Do not add to the list of temporarily-allowed dependencies below,

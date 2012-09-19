@@ -8,7 +8,7 @@
 #include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/common/url_database/url_database.h"
+#include "chrome/browser/history/url_database.h"
 #include "sql/connection.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

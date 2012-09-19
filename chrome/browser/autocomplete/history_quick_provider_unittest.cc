@@ -15,10 +15,10 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
 #include "chrome/browser/autocomplete/autocomplete_result.h"
-#include "chrome/browser/common/url_database/url_database.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/in_memory_url_index.h"
+#include "chrome/browser/history/url_database.h"
 #include "chrome/browser/history/url_index_private_data.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
@@ -498,3 +498,4 @@ TEST_F(HQPOrderingTest, TEAMatch) {
   RunTest(ASCIIToUTF16("tea"), expected_urls, true,
           ASCIIToUTF16("www.teamliquid.net"));
 }
+

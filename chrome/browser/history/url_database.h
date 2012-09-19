@@ -2,22 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_COMMON_URL_DATABASE_URL_DATABASE_H_
-#define CHROME_BROWSER_COMMON_URL_DATABASE_URL_DATABASE_H_
+#ifndef CHROME_BROWSER_HISTORY_URL_DATABASE_H_
+#define CHROME_BROWSER_HISTORY_URL_DATABASE_H_
 
 #include "base/basictypes.h"
-#include "chrome/browser/common/url_database/template_url_id.h"
-#include "chrome/browser/common/url_database/url_database_types.h"
+#include "chrome/browser/history/history_types.h"
+#include "chrome/browser/search_engines/template_url_id.h"
 #include "sql/statement.h"
 
 class GURL;
-class IconMapping;
 
 namespace sql {
 class Connection;
 }
 
 namespace history {
+
+class VisitDatabase;  // For friend statement.
 
 // Encapsulates an SQL database that holds URL info.  This is a subset of the
 // full history data.  We split this class' functionality out from the larger
@@ -130,7 +131,7 @@ class URLDatabase {
     URLEnumerator();
 
     // Retreives the next url. Returns false if no more urls are available
-    bool GetNextURL(URLRow* r);
+    bool GetNextURL(history::URLRow* r);
 
    private:
     DISALLOW_COPY_AND_ASSIGN(URLEnumerator);
@@ -186,7 +187,7 @@ class URLDatabase {
                                int min_visits,
                                int min_typed,
                                bool allow_base,
-                               URLRow* info);
+                               history::URLRow* info);
 
   // Keyword Search Terms ------------------------------------------------------
 
@@ -221,7 +222,7 @@ class URLDatabase {
 
   // Migration -----------------------------------------------------------------
 
-  // Due to a bug we were setting the favicon of about:blank. This forces
+  // Do to a bug we were setting the favicon of about:blank. This forces
   // about:blank to have no icon or title. Returns true on success, false if
   // the favicon couldn't be updated.
   bool MigrateFromVersion11ToVersion12();
@@ -232,7 +233,9 @@ class URLDatabase {
       IconMappingEnumerator* enumerator);
 
  protected:
-  // See URL_DATABASE_ROW_FIELDS below.
+  friend class VisitDatabase;
+
+  // See HISTORY_URL_ROW_FIELDS below.
   static const char kURLRowFields[];
 
   // The number of fiends in kURLRowFields. If callers need additional
@@ -289,8 +292,6 @@ class URLDatabase {
   DISALLOW_COPY_AND_ASSIGN(URLDatabase);
 };
 
-}  // namespace history
-
 // The fields and order expected by FillURLRow(). ID is guaranteed to be first
 // so that DISTINCT can be prepended to get distinct URLs.
 //
@@ -298,8 +299,10 @@ class URLDatabase {
 // the macro if you want to put this in the middle of an otherwise constant
 // string, it will save time doing string appends. If you have to build a SQL
 // string dynamically anyway, use the constant, it will save space.
-#define URL_DATABASE_ROW_FIELDS \
+#define HISTORY_URL_ROW_FIELDS \
     " urls.id, urls.url, urls.title, urls.visit_count, urls.typed_count, " \
     "urls.last_visit_time, urls.hidden "
 
-#endif  // CHROME_BROWSER_COMMON_URL_DATABASE_URL_DATABASE_H_
+}  // history
+
+#endif  // CHROME_BROWSER_HISTORY_URL_DATABASE_H_
