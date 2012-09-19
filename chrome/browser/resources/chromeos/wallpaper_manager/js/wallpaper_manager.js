@@ -96,7 +96,7 @@ function WallpaperManager(dialogDom) {
         this.parseManifest_(xhr.responseText);
       } else {
         this.manifest_ = {};
-        this.butterBar_.showError_('Failed to download manifest.');
+        this.butterBar_.showError_(str('connectionFailed'));
       }
     }
 
@@ -206,8 +206,7 @@ function WallpaperManager(dialogDom) {
                                              selectedItem.layout,
                                              wallpaperURL);
       } else {
-        // Displays the error text in butter bar.
-        self.butterBar_.showError_(self.wallpaperRequest_.statusText);
+        self.butterBar_.showError_(str('downloadFailed'));
       }
       self.wallpaperRequest_ = null;
     });

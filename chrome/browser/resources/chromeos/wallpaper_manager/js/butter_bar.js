@@ -216,7 +216,7 @@ ButterBar.prototype.showProgress_ = function() {
   var options = {progress: this.percentComplete_, actions: {},
                  timeout: 0};
 
-  var progressString = 'Downloading';
+  var progressString = loadTimeData.getString('downloadingLabel');
 
   if (this.isVisible_()) {
     this.update_(progressString, options);
@@ -248,7 +248,7 @@ ButterBar.prototype.onDownloadStart_ = function(e) {
  * @param {Event} e An abort ProgressEvent from XMLHttpRequest.
  */
 ButterBar.prototype.onDownloadAbort_ = function(e) {
-   this.show('Downloading aborted', {timeout: 1000});
+   this.show(loadTimeData.getString('downloadCanceled'), {timeout: 1000});
    this.xhr_ = null;
 };
 
@@ -268,7 +268,7 @@ ButterBar.prototype.onDownloadComplete_ = function(e) {
  * @param {Event} e An error ProgressEvent from XMLHttpRequest.
  */
 ButterBar.prototype.onDownloadError_ = function(e) {
-  this.showError_('An error occured while downloading wallpaper');
+  this.showError_(loadTimeData.getString('downloadFailed'));
   this.xhr_ = null;
 };
 
