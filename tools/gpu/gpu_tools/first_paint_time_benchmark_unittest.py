@@ -2,10 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from gpu_tools import first_paint_time_benchmark
-from gpu_tools import multi_page_benchmark
+from gpu_tools import multi_page_benchmark_unittest_base
 
 class FirstPaintTimeBenchmarkUnitTest(
-  multi_page_benchmark.MultiPageBenchmarkUnitTest):
+  multi_page_benchmark_unittest_base.MultiPageBenchmarkUnitTestBase):
 
   def testFirstPaintTimeMeasurement(self):
     ps = self.CreatePageSetFromFileInUnittestDataDir('scrollable_page.html')

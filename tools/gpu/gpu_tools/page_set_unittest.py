@@ -6,7 +6,7 @@ import unittest
 
 from gpu_tools import page_set
 
-set1 = """
+simple_set = """
 {"description": "hello",
  "pages": [
    {"url": "http://www.foo.com/"}
@@ -15,12 +15,11 @@ set1 = """
 """
 
 class TestPageSet(unittest.TestCase):
-  def testSet1(self):
+  def testSimpleSet(self):
     with tempfile.NamedTemporaryFile() as f:
-      f.write(set1)
+      f.write(simple_set)
       f.flush()
-      ps = page_set.PageSet()
-      ps.LoadFromFile(f.name)
+      ps = page_set.PageSet.FromFile(f.name)
 
     self.assertEquals('hello', ps.description)
     self.assertEquals(1, len(ps.pages))

@@ -8,7 +8,6 @@ import chrome_remote_control
 
 from gpu_tools import multi_page_benchmark
 
-
 class FirstPaintTimeBenchmark(multi_page_benchmark.MultiPageBenchmark):
   def MeasurePage(self, _, tab):
     if tab.browser.is_content_shell:

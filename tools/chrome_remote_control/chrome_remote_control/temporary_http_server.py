@@ -52,6 +52,10 @@ class TemporaryHTTPServer(object):
       self._devnull = None
 
   @property
+  def path(self):
+    return self._path
+
+  @property
   def url(self):
     return self._forwarder.url
 

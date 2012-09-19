@@ -6,10 +6,12 @@ import os
 import tempfile
 import shutil
 
-from gpu_tools import multi_page_benchmark
+from gpu_tools import multi_page_benchmark_unittest_base
 from gpu_tools import skpicture_printer
 
-class SkPicturePrinterUnitTest(multi_page_benchmark.MultiPageBenchmarkUnitTest):
+class SkPicturePrinterUnitTest(
+  multi_page_benchmark_unittest_base.MultiPageBenchmarkUnitTestBase):
+
   def setUp(self):
     super(SkPicturePrinterUnitTest, self).setUp()
     self._outdir = tempfile.mkdtemp()

@@ -4,7 +4,7 @@
 from chrome_remote_control import temporary_http_server
 
 class Browser(object):
-  """A running browser instance that can be controled in a limited way.
+  """A running browser instance that can be controlled in a limited way.
 
   To create a browser instance, use browser_finder.FindBrowser.
 
@@ -36,7 +36,7 @@ class Browser(object):
     return self._backend.GetNthTabUrl(index)
 
   def ConnectToNthTab(self, index):
-    return self._backend.ConnectToNthTab(index)
+    return self._backend.ConnectToNthTab(self, index)
 
   def Close(self):
     self._backend.Close()

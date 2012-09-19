@@ -5,15 +5,14 @@ import csv
 import logging
 import os
 import sys
-import time
-import unittest
+import traceback
 
 import chrome_remote_control
 import chrome_remote_control.browser_options
 from gpu_tools import page_set
 
 class MeasurementFailure(Exception):
-  """Exception that can be thrown from MeasurePage to indicate an undisired but
+  """Exception that can be thrown from MeasurePage to indicate an undesired but
   designed-for problem."""
   pass
 
@@ -56,7 +55,7 @@ class MultiPageBenchmark(object):
     """Override to expose command-line options for this benchmark.
 
     The provided parser is an optparse.OptionParser instance and accepts all
-    normal results. The parsed options are availble in MeasurePage as
+    normal results. The parsed options are available in MeasurePage as
     self.options."""
     pass
 
@@ -97,56 +96,47 @@ class MultiPageBenchmark(object):
     self.options = options
     self.field_names = None
 
+    page_runner = page_set.PageRunner(ps)
     with browser.ConnectToNthTab(0) as tab:
       for page in ps.pages:
-        self._RunPage(results_writer, page, tab)
+        self._RunPage(results_writer, page_runner, page, tab)
+    page_runner.Close()
+
     self.options = None
     self.field_names = None
 
-  def _RunPage(self, results_writer, page, tab):
-    # Load the page.
+  def _RunPage(self, results_writer, page_runner, page, tab):
+    logging.debug('Running test on %s' % page.url)
     try:
-      logging.debug('Loading %s...', page.url)
-      tab.page.Navigate(page.url)
-
-      # TODO(dtu): Detect HTTP redirects.
-      time.sleep(2)  # Wait for unpredictable redirects.
-      tab.WaitForDocumentReadyStateToBeInteractiveOrBetter()
-    except chrome_remote_control.TimeoutException, ex:
-      logging.warning('Timed out while loading: %s', page.url)
-      self.page_failures.append({'page': page,
-                                 'exception': ex})
-      return
-
-    # Measure the page.
-    try:
-      results = self.MeasurePage(page, tab)
+      try:
+        page_runner.PreparePage(page, tab)
+        results = self.MeasurePage(page, tab)
+      except MeasurementFailure, ex:
+        logging.info('%s: %s', ex, page.url)
+        raise
+      except chrome_remote_control.TimeoutException, ex:
+        logging.warning('Timed out while running %s', page.url)
+        raise
+      except Exception, ex:
+        logging.error('Unexpected failure while running %s: %s',
+                        page.url, traceback.format_exc())
+        raise
+      finally:
+        page_runner.CleanUpPage()
     except Exception, ex:
-      if isinstance(ex, MeasurementFailure):
-        logging.info('%s failed: %s:', page.url, str(ex))
-      else:
-        import traceback
-        traceback.print_exc()
-        logging.warning('%s had unexpected failure: %s:', page.url, str(ex))
-
-      self.page_failures.append({'page': page,
-                                 'exception': ex})
+      self.page_failures.append({'page': page, 'exception': ex,
+                                 'trace': traceback.format_exc()})
       return
 
-    # Output.
     assert 'url' not in results
 
     if not self.field_names:
-      self.field_names = list(results.keys())
+      self.field_names = results.keys()
       self.field_names.sort()
-      self.field_names.insert(0, 'url')
-      results_writer.writerow(self.field_names)
+      results_writer.writerow(['url'] + self.field_names)
 
-    row = []
-    row.append(page.url)
+    row = [page.url]
     for name in self.field_names:
-      if name == 'url':
-        continue
       # If this assertion pops, your MeasurePage is returning inconsistent
       # results! You must return the same dict keys every time!
       assert name in results
@@ -175,8 +165,7 @@ def Main(benchmark, args=None):
     sys.stderr.write('Pageset %s does not exist\n' % args[0])
     sys.exit(1)
 
-  ps = page_set.PageSet()
-  ps.LoadFromFile(args[0])
+  ps = page_set.PageSet.FromFile(args[0])
 
   benchmark.CustomizeBrowserOptions(options)
   possible_browser = chrome_remote_control.FindBrowser(options)
@@ -193,55 +182,3 @@ def Main(benchmark, args=None):
     logging.warning('Failed pages: %s', '\n'.join(
         [failure['page'].url for failure in benchmark.page_failures]))
   return len(benchmark.page_failures)
-
-
-class MultiPageBenchmarkUnitTest(unittest.TestCase):
-  """unittest.TestCase-derived class to help in the construction of unit tests
-  for a benchmark."""
-
-  @property
-  def unittest_data_dir(self):
-    return os.path.relpath(os.path.join(os.path.dirname(__file__),
-                                        '..', 'unittest_data'))
-
-  def CreatePageSetFromFileInUnittestDataDir(self, test_filename):
-    path = os.path.join(self.unittest_data_dir, test_filename)
-    self.assertTrue(os.path.exists(path))
-    page = page_set.Page(test_filename)
-
-    ps = page_set.PageSet()
-    ps.pages.append(page)
-    return ps
-
-  def CustomizeOptionsForTest(self, options):
-    """Override to customize default options."""
-    pass
-
-  def RunBenchmark(self, benchmark, ps):
-    """Runs a benchmark against a pageset, returning the rows its outputs."""
-    rows = []
-    class LocalWriter(object):
-      @staticmethod
-      def writerow(row):
-        rows.append(row)
-
-    assert chrome_remote_control.browser_options.options_for_unittests
-    options = (
-      chrome_remote_control.browser_options.options_for_unittests.Copy())
-    temp_parser = options.CreateParser()
-    benchmark.AddOptions(temp_parser)
-    defaults = temp_parser.get_default_values()
-    for k, v in defaults.__dict__.items():
-      if hasattr(options, k):
-        continue
-      setattr(options, k, v)
-
-    benchmark.CustomizeBrowserOptions(options)
-    self.CustomizeOptionsForTest(options)
-    possible_browser = chrome_remote_control.FindBrowser(options)
-    with possible_browser.Create() as browser:
-      with browser.CreateTemporaryHTTPServer(self.unittest_data_dir) as server:
-        for page in ps.pages:
-          page.url = '%s/%s' % (server.url, page.url)
-        benchmark.Run(LocalWriter(), browser, options, ps)
-    return rows

@@ -11,3 +11,6 @@ class TabTest(tab_test_case.TabTestCase):
   def testNavigateAndWaitToForInteractiveState(self):
     self._tab.page.Navigate('http://www.google.com')
     self._tab.WaitForDocumentReadyStateToBeInteractiveOrBetter()
+
+  def testTabBrowserIsRightBrowser(self):
+    self.assertEqual(self._tab.browser, self._browser)

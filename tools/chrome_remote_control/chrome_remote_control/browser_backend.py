@@ -54,9 +54,9 @@ class BrowserBackend(object):
   def GetNthTabUrl(self, index):
     return self._ListTabs()[index]['url']
 
-  def ConnectToNthTab(self, index):
+  def ConnectToNthTab(self, browser, index):
     ib = inspector_backend.InspectorBackend(self, self._ListTabs()[index])
-    return tab.Tab(self, ib)
+    return tab.Tab(browser, ib)
 
   def CreateForwarder(self, host_port):
     raise NotImplementedError()

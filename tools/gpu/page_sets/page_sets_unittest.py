@@ -13,5 +13,4 @@ class PageSetsUnittest(unittest.TestCase):
   def testPageSetsParseCorrectly():
     filenames = page_sets.GetAllPageSetFilenames()
     for filename in filenames:
-      ps = gpu_tools.page_set.PageSet()
-      ps.LoadFromFile(filename)
+      ps = gpu_tools.page_set.PageSet.FromFile(filename)

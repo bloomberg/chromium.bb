@@ -133,7 +133,7 @@ class Forwarder(object):
 
     self._host_port = host_port
 
-    # Currently, Forarder requires that ../out/Debug/forwarder exists,
+    # Currently, Forwarder requires that ../out/Debug/forwarder exists,
     # in case it needs to push it to the device. However, to get to here,
     # android_browser_finder has ensured that device HasForwarder, above.
     #

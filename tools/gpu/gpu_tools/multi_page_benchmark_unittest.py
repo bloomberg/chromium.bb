@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from gpu_tools import multi_page_benchmark
+from gpu_tools import multi_page_benchmark_unittest_base
 
 class BenchThatFails(multi_page_benchmark.MultiPageBenchmark):
   def MeasurePage(self, page, tab):
@@ -15,7 +16,9 @@ class BenchThatHasDefaults(multi_page_benchmark.MultiPageBenchmark):
     assert self.options.x == 3
     return {}
 
-class MultiPageBenchmarkTest(multi_page_benchmark.MultiPageBenchmarkUnitTest):
+class MultiPageBenchmarkUnitTest(
+  multi_page_benchmark_unittest_base.MultiPageBenchmarkUnitTestBase):
+
   def testFailure(self):
     ps = self.CreatePageSetFromFileInUnittestDataDir('non_scrollable_page.html')
     benchmark = BenchThatFails()
