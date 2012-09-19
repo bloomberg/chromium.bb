@@ -388,9 +388,10 @@ void FramePainter::PaintHeader(views::NonClientFrameView* view,
   // of the screen or maximized. We have the maximized check as during
   // animations the bounds may not be at 0, but the border shouldn't be drawn.
   //
-  // TODO(oshima): This will not work under multi-display, need to add method
-  // like GetWindowBoundsInDisplay().
-  if (frame_->GetWindowBoundsInScreen().y() == 0 || frame_->IsMaximized())
+  // TODO(sky): this isn't quite right. What we really want is a method that
+  // returns bounds ignoring transforms on certain windows (such as workspaces)
+  // and is relative to the root.
+  if (frame_->GetNativeWindow()->bounds().y() == 0 || frame_->IsMaximized())
     return;
 
   // Draw the top corners and edge.
@@ -577,6 +578,18 @@ void FramePainter::OnWindowDestroying(aura::Window* destroying) {
     SchedulePaintForSoloWindow();
 }
 
+void FramePainter::OnWindowBoundsChanged(aura::Window* window,
+                                         const gfx::Rect& old_bounds,
+                                         const gfx::Rect& new_bounds) {
+  // TODO(sky): this isn't quite right. What we really want is a method that
+  // returns bounds ignoring transforms on certain windows (such as workspaces).
+  if (!frame_->IsMaximized() &&
+      ((old_bounds.y() == 0 && new_bounds.y() != 0) ||
+       (old_bounds.y() != 0 && new_bounds.y() == 0))) {
+    SchedulePaintForHeader();
+  }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // ui::AnimationDelegate overrides:
 
@@ -703,6 +716,14 @@ void FramePainter::SchedulePaintForSoloWindow() {
     if (IsVisibleNormalWindow(painter->window_))
       painter->frame_->non_client_view()->SchedulePaint();
   }
+}
+
+void FramePainter::SchedulePaintForHeader() {
+  int top_left_height = top_left_corner_->height();
+  int top_right_height = top_right_corner_->height();
+  frame_->non_client_view()->SchedulePaintInRect(
+      gfx::Rect(0, 0, frame_->non_client_view()->width(),
+                std::max(top_left_height, top_right_height)));
 }
 
 }  // namespace ash

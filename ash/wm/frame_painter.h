@@ -119,6 +119,9 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
   virtual void OnWindowVisibilityChanged(aura::Window* window,
                                          bool visible) OVERRIDE;
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
+  virtual void OnWindowBoundsChanged(aura::Window* window,
+                                     const gfx::Rect& old_bounds,
+                                     const gfx::Rect& new_bounds) OVERRIDE;
 
   // Overridden from ui::AnimationDelegate
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
@@ -154,6 +157,10 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
   // when another window is hidden or destroyed to force the transparency of
   // the now-solo window to update.
   static void SchedulePaintForSoloWindow();
+
+  // Schedules a paint for the header. Used when transitioning from no header to
+  // a header (or other way around).
+  void SchedulePaintForHeader();
 
   static std::set<FramePainter*>* instances_;
 
