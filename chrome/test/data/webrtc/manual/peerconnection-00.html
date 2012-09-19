@@ -1,0 +1,98 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+  <title>WebRTC PeerConnection Manual Test</title>
+  <script type="text/javascript" src="../test_functions.js"></script>
+  <script type="text/javascript" src="../message_handling.js"></script>
+  <script type="text/javascript" src="../getusermedia.js"></script>
+  <script type="text/javascript" src="../jsep00_call.js"></script>
+  <script type="text/javascript" src="peerconnection.js"></script>
+  <meta charset="utf-8">
+</head>
+<body>
+  <table border="0">
+    <tr>
+      <td>
+        Media hints: <input type="text" id="media-hints" size="20" value="{ }"/>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        Audio<input type="checkbox" id="audio" checked />
+        Video<input type="checkbox" id="video" checked />
+        <button id="re-request" onclick="getUserMediaFromHere();">
+            Request</button>
+      </td>
+      <td>
+        <p><small>Note: If you have granted media access for the callee, they
+            will automatically respond with their local stream when they are
+            called.</small>
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td><h2>Local Preview</h2></td>
+      <td><h2>Remote Video</h2></td>
+    </tr>
+    <tr>
+      <td><video width="320" height="240" id="local-view"
+          autoplay="autoplay"></video></td>
+      <td><video width="320" height="240" id="remote-view"
+          autoplay="autoplay"></video></td>
+      <td><canvas id="frame-buffer" style="visibility:hidden"></canvas></td>
+    </tr>
+  </table>
+  <table border="0">
+    <tr>
+      <td>Server [<a href="" onclick="showServerHelp()">?</a>]:</td>
+      <td><input type="text" id="server" size="20"
+          value="http://localhost:8888" /></td>
+      <td valign="top">
+        <button id="connect" onclick="connectFromHere();">
+            Connect</button>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">
+        <button id="call" onclick="callFromHere();">
+            Call</button>
+      </td>
+      <td valign="top">
+        <button id="send-local-stream" onclick="sendLocalStreamFromHere();">
+            Send Local Stream</button>
+      </td>
+      <td valign="top">
+        <button id="hangup" onclick="hangUpFromHere();">Hang up</button>
+      </td>
+      <td valign="top">
+        <button id="toggle-remote" onclick="toggleRemoteFromHere();">
+            Toggle Remote Stream</button>
+      </td>
+      <td valign="top">
+        <button id="toggle-local" onclick="toggleLocalFromHere();">
+            Toggle Local Stream</button>
+      </td>
+      <td valign="top">
+        <button id="stop-local" onclick="stopLocalFromHere();">
+            Stop Local Stream</button>
+      </td>
+    </tr>
+  </table>
+
+  <table border="0" width="100%">
+    <colgroup>
+      <col style="width: 50%;">
+      <col style="width: 50%;">
+    </colgroup>
+    <tr>
+      <td><h1>Messages</h1></td>
+      <td><h1>Debug</h1></td>
+    </tr>
+    <tr>
+      <td valign="top"><pre id="messages"></pre></td>
+      <td valign="top"><pre id="debug"></pre></td>
+    </tr>
+  </table>
+
+</body>
+</html>

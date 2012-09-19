@@ -126,14 +126,14 @@ class WebrtcVideoQualityTest(webrtc_test_base.WebrtcTestBase):
     """
     ref_file = os.environ['PYAUTO_REFERENCE_FILE']
     self._StartVideoQualityTest(test_page='webrtc_video_quality_test.html',
-                                helper_page='webrtc_jsep_test.html',
+                                helper_page='webrtc_jsep00_test.html',
                                 reference_yuv=ref_file, width=640,
                                 height=480, barcode_height=32)
 
 
   def _StartVideoQualityTest(self, reference_yuv,
                              test_page='webrtc_video_quality_test.html',
-                             helper_page='webrtc_jsep_test.html',
+                             helper_page='webrtc_jsep00_test.html',
                              width=640, height=480, barcode_height=32):
     """Captures video output into a canvas and sends it to a server.
 

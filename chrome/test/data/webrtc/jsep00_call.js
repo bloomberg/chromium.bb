@@ -57,7 +57,6 @@ function createPeerConnection(stun_server) {
 }
 
 function setupCall(peerConnection) {
-  peerConnection.addStream(gLocalStream);
   var offer = peerConnection.createOffer({has_audio:true,has_video:true});
   peerConnection.setLocalDescription(webkitPeerConnection00.SDP_OFFER, offer);
   peerConnection.startIce();
@@ -66,7 +65,6 @@ function setupCall(peerConnection) {
 }
 
 function answerCall(peerConnection, message) {
-  peerConnection.addStream(gLocalStream);
   handleMessage(peerConnection,message);
   peerConnection.startIce();
 }
@@ -92,7 +90,7 @@ function addStreamCallback_(event) {
   // This means the call has been set up.
   // This only mean that we have received a valid SDP message with an offer or
   // an answer, it does not mean that audio and video works.
-  returnToTest('ok-call-established');
+  returnToTest('ok-got-remote-stream');
 }
 
 /** @private */

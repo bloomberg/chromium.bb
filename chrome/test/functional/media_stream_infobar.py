@@ -66,11 +66,11 @@ class MediaStreamInfobarTest(webrtc_test_base.WebrtcTestBase):
 
   def _TestGetUserMedia(self, with_action):
     """Runs getUserMedia in the test page and returns the result."""
-    url = self.GetFileURLForDataPath('webrtc', 'webrtc_jsep_test.html')
+    url = self.GetFileURLForDataPath('webrtc', 'webrtc_jsep00_test.html')
     self.NavigateToURL(url)
 
     self.assertEquals('ok-requested', self.ExecuteJavascript(
-        'getUserMedia(true, true)'))
+        'getUserMedia(true, true, {})'))
 
     self.WaitForInfobarCount(1)
     self.PerformActionOnInfobar(with_action, infobar_index=0)

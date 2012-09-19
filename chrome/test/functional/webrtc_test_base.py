@@ -33,7 +33,7 @@ class WebrtcTestBase(pyauto.PyUITest):
       A string as specified by the getUserMedia javascript function.
     """
     self.assertEquals('ok-requested', self.ExecuteJavascript(
-        'getUserMedia(true, true)', tab_index=tab_index))
+        'getUserMedia(true, true, {})', tab_index=tab_index))
 
     self.WaitForInfobarCount(1, tab_index=tab_index)
     self.PerformActionOnInfobar(action, infobar_index=0, tab_index=tab_index)
@@ -84,8 +84,12 @@ class WebrtcTestBase(pyauto.PyUITest):
     self.AssertNoFailures(tab_index)
 
   def EstablishCall(self, from_tab_with_index):
-    self.assertEquals('ok-call-established', self.ExecuteJavascript(
+    self.assertEquals('ok-got-remote-stream', self.ExecuteJavascript(
         'call()', tab_index=from_tab_with_index))
+    self.AssertNoFailures(from_tab_with_index)
+
+    self.assertEquals('ok-local-stream-sent', self.ExecuteJavascript(
+        'sendLocalStreamOverPeerConnection()', tab_index=from_tab_with_index))
     self.AssertNoFailures(from_tab_with_index)
 
     # Double-check the call reached the other side.

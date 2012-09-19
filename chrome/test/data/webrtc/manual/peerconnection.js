@@ -10,43 +10,34 @@
 function getUserMediaFromHere() {
   var audio = document.getElementById('audio').checked;
   var video = document.getElementById('video').checked;
+  var hints = document.getElementById('media-hints').value;
 
   try {
-    getUserMedia(video, audio);
+    getUserMedia(video, audio, hints);
   } catch (exception) {
     print_('getUserMedia says: ' + exception);
   }
 }
 
 function connectFromHere() {
-  if (obtainGetUserMediaResult() != 'ok-got-stream') {
-    print_('<b>Grant media access first.</b>')
-    return;
-  }
-
   var server = document.getElementById('server').value;
-  connect(server, 'whatever');  // Name doesn't matter
-
-  disable_('connect');
-  enable_('call');
+  // Generate a random name to distinguish us from other tabs:
+  var name = 'peer_' + Math.floor(Math.random() * 10000);
+  debug('Our name from now on will be ' + name);
+  connect(server, name);
 }
 
 function callFromHere() {
   call();
-  disable_('connect');
-  disable_('call');
-  enable_('hangup');
-  enable_('toggle-remote');
-  enable_('toggle-local');
+}
+
+function sendLocalStreamFromHere() {
+  sendLocalStreamOverPeerConnection();
 }
 
 function hangUpFromHere() {
   hangUp();
-  disable_('connect');
-  enable_('call');
-  disable_('hangup');
-  disable_('toggle-remote');
-  disable_('toggle-local');
+  acceptIncomingCallsAgain();
 }
 
 function toggleRemoteFromHere() {
@@ -71,26 +62,15 @@ function showServerHelp() {
 
 window.onload = function() {
   replaceReturnCallback(print_);
-  checkErrorsPeriodically_();
-  getUserMedia(true, true);
+  replaceDebugCallback(debug_);
 }
 
 window.onunload = function() {
-  if (disabled_('connect'))
+  if (!isDisconnected())
     disconnect();
 }
 
 // Internals.
-
-/** @private */
-function enable_(element) {
-  document.getElementById(element).disabled = false;
-}
-
-/** @private */
-function disable_(element) {
-  document.getElementById(element).disabled = true;
-}
 
 /** @private */
 function disabled_(element) {
@@ -103,13 +83,12 @@ function print_(message) {
   if (message == 'ok-no-errors')
     return;
 
-  debug(message);
-  document.getElementById('debug').innerHTML += message + '<br>';
+  console.log(message);
+  document.getElementById('messages').innerHTML += message + '<br>';
 }
 
 /** @private */
-function checkErrorsPeriodically_() {
-  setInterval(function() {
-    getAnyTestFailures();
-  }, 100);
+function debug_(message) {
+  console.log(message);
+  document.getElementById('debug').innerHTML += message + '<br>';
 }

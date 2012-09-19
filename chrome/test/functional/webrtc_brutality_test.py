@@ -20,7 +20,7 @@ class WebrtcBrutalityTest(webrtc_test_base.WebrtcTestBase):
     The test will make repeated getUserMedia requests with refreshes between
     them. Sometimes it will click past the bar and then refresh.
     """
-    url = self.GetFileURLForDataPath('webrtc', 'webrtc_jsep_test.html')
+    url = self.GetFileURLForDataPath('webrtc', 'webrtc_jsep00_test.html')
     self.NavigateToURL(url)
 
     for i in range(1, 100):
@@ -35,7 +35,7 @@ class WebrtcBrutalityTest(webrtc_test_base.WebrtcTestBase):
 
     The test will alternate unanswered requests with requests that get answered.
     """
-    url = self.GetFileURLForDataPath('webrtc', 'webrtc_jsep_test.html')
+    url = self.GetFileURLForDataPath('webrtc', 'webrtc_jsep00_test.html')
     self.NavigateToURL(url)
 
     for i in range(1, 100):
@@ -46,7 +46,7 @@ class WebrtcBrutalityTest(webrtc_test_base.WebrtcTestBase):
 
   def testSuccessfulGetUserMediaAndThenReload(self):
     """Waits for WebRTC to respond, and immediately reloads the tab."""
-    url = self.GetFileURLForDataPath('webrtc', 'webrtc_jsep_test.html')
+    url = self.GetFileURLForDataPath('webrtc', 'webrtc_jsep00_test.html')
     self.NavigateToURL(url)
 
     self.GetUserMedia(tab_index=0, action='allow')
@@ -54,7 +54,7 @@ class WebrtcBrutalityTest(webrtc_test_base.WebrtcTestBase):
 
   def testClosingTabAfterGetUserMedia(self):
     """Tests closing the tab right after a getUserMedia call."""
-    url = self.GetFileURLForDataPath('webrtc', 'webrtc_jsep_test.html')
+    url = self.GetFileURLForDataPath('webrtc', 'webrtc_jsep00_test.html')
     self.NavigateToURL(url)
 
     self._GetUserMediaWithoutTakingAction(tab_index=0)
@@ -62,7 +62,7 @@ class WebrtcBrutalityTest(webrtc_test_base.WebrtcTestBase):
 
   def testSuccessfulGetUserMediaAndThenClose(self):
     """Waits for WebRTC to respond, and closes the tab."""
-    url = self.GetFileURLForDataPath('webrtc', 'webrtc_jsep_test.html')
+    url = self.GetFileURLForDataPath('webrtc', 'webrtc_jsep00_test.html')
     self.NavigateToURL(url)
 
     self.GetUserMedia(tab_index=0, action='allow')

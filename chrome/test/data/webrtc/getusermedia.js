@@ -22,19 +22,32 @@ var gLocalStream = null;
 var gRequestWebcamAndMicrophoneResult = 'not-called-yet';
 
 /**
+ * The media hints to use when connecting the local stream with a peer
+ * connection.
+ * @private
+ */
+var gMediaHints = {};
+
+/**
  * This function asks permission to use the webcam and mic from the browser. It
  * will return ok-requested to PyAuto. This does not mean the request was
  * approved though. The test will then have to click past the dialog that
  * appears in Chrome, which will run either the OK or failed callback as a
  * a result. To see which callback was called, use obtainGetUserMediaResult().
+ *
+ * @param requestVideo, requestAudio: whether to request video/audio.
+ * @param mediaHints The media hints to use when we add streams to a peer
+ *     connection later. The contents of this parameter depends on the WebRTC
+ *     version. This should be javascript code that we eval().
  */
-function getUserMedia(requestVideo, requestAudio) {
+function getUserMedia(requestVideo, requestAudio, mediaHints) {
   if (!navigator.webkitGetUserMedia) {
     returnToTest('Browser does not support WebRTC.');
     return;
   }
+  gMediaHints = eval(mediaHints);
 
-  debug('Requesting webcam and microphone.');
+  debug('Requesting: video ' + requestVideo + ', audio ' + requestAudio);
   navigator.webkitGetUserMedia({video: requestVideo, audio: requestAudio},
                                getUserMediaOkCallback_,
                                getUserMediaFailedCallback_);
@@ -57,9 +70,35 @@ function obtainGetUserMediaResult() {
  */
 function stopLocalStream() {
   if (gLocalStream == null)
-    failTest('No local stream yet.');
+    failTest('Tried to stop local stream, but media access is not granted.');
 
   gLocalStream.stop();
+  returnToTest('ok-stopped');
+}
+
+// Functions callable from other JavaScript modules.
+
+/**
+ * Returns the media hints as passed into getUserMedia.
+ */
+function getCurrentMediaHints() {
+  return gMediaHints;
+}
+
+/**
+ * Adds the current local media stream to a peer connection.
+ */
+function addLocalStreamToPeerConnection(peerConnection) {
+  if (gLocalStream == null)
+    failTest('Tried to add local stream to peer connection,'
+        + ' but there is no stream yet.');
+  try {
+    peerConnection.addStream(gLocalStream, gMediaHints);
+  } catch (exception) {
+    failTest('Failed to add stream with hints ' + gMediaHints + ': '
+        + exception);
+  }
+  debug('Added local stream.');
 }
 
 // Internals.
