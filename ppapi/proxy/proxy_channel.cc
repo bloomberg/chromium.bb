@@ -50,6 +50,9 @@ int ProxyChannel::TakeRendererFD() {
 IPC::PlatformFileForTransit ProxyChannel::ShareHandleWithRemote(
       base::PlatformFile handle,
       bool should_close_source) {
+  // Channel could be closed if the plugin crashes.
+  if (!channel_.get())
+    return IPC::InvalidPlatformFileForTransit();
   return delegate_->ShareHandleWithRemote(handle, *channel_,
                                           should_close_source);
 }
