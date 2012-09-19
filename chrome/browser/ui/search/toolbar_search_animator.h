@@ -11,8 +11,11 @@
 #include "chrome/browser/ui/search/search_types.h"
 #include "ui/base/animation/animation_delegate.h"
 
-class TabContents;
 class ToolbarModel;
+
+namespace content {
+class WebContents;
+}
 
 namespace ui {
 class MultiAnimation;
@@ -53,7 +56,7 @@ class ToolbarSearchAnimator : public SearchModelObserver,
   // closing or detached, to jump to the end state of the animation.
   // This allows a reactivated tab to show the end state of the animation,
   // rather than the transient state.
-  void FinishAnimation(TabContents* tab_contents);
+  void FinishAnimation(content::WebContents* web_contents);
 
   // Add and remove observers.
   void AddObserver(ToolbarSearchAnimatorObserver* observer);
@@ -81,9 +84,9 @@ class ToolbarSearchAnimator : public SearchModelObserver,
   // ToolbarSearchAnimatorObserver::OnToolbarBackgroundAnimatorCanceled or
   // ToolbarSearchAnimatorObserver::OnToolbarSeparatorAnimatorCanceled
   // respectively.
-  // Pass in |tab_contents| if animation is canceled because of deactivating or
+  // Pass in |web_contents| if animation is canceled because of deactivating or
   // detaching or closing a tab.
-  void Reset(TabContents* tab_contents);
+  void Reset(content::WebContents* web_contents);
 
   // Weak.  Owned by Browser.  Non-NULL.
   SearchModel* search_model_;

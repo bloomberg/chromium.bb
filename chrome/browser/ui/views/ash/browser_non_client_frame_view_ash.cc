@@ -411,7 +411,7 @@ void BrowserNonClientFrameViewAsh::OnToolbarBackgroundAnimatorProgressed() {
 }
 
 void BrowserNonClientFrameViewAsh::OnToolbarBackgroundAnimatorCanceled(
-    TabContents* tab_contents) {
+    content::WebContents* web_contents) {
   // Fade in of toolbar background has been canceled, repaint the toolbar
   // background.
   browser_view()->toolbar()->SchedulePaint();

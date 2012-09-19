@@ -6,13 +6,13 @@
 #define CHROME_BROWSER_UI_SEARCH_SEARCH_TAB_HELPER_H_
 
 #include "base/basictypes.h"
+#include "chrome/browser/tab_contents/web_contents_user_data.h"
 #include "chrome/browser/ui/search/search_model.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 
 class OmniboxEditModel;
-class TabContents;
 
 namespace content {
 class RenderViewHost;
@@ -26,9 +26,9 @@ namespace search {
 // Per-tab search "helper".  Acts as the owner and controller of the tab's
 // search UI model.
 class SearchTabHelper : public content::WebContentsObserver,
-                        public content::NotificationObserver {
+                        public content::NotificationObserver,
+                        public WebContentsUserData<SearchTabHelper> {
  public:
-  SearchTabHelper(TabContents* contents, bool is_search_enabled);
   virtual ~SearchTabHelper();
 
   SearchModel* model() {
@@ -59,6 +59,10 @@ class SearchTabHelper : public content::WebContentsObserver,
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
+  explicit SearchTabHelper(content::WebContents* web_contents);
+  static int kUserDataKey;
+  friend class WebContentsUserData<SearchTabHelper>;
+
   // Enum of the load states for the NTP.
   //
   // Once the user loads the NTP the |ntp_load_state_| changes to
@@ -94,7 +98,7 @@ class SearchTabHelper : public content::WebContentsObserver,
   void UpdateModelBasedOnURL(const GURL& url, NTPLoadState state, bool animate);
 
   // Returns the web contents associated with the tab that owns this helper.
-  content::WebContents* web_contents();
+  const content::WebContents* web_contents() const;
 
   // Returns the current RenderWidgetHost of the |web_contents()|.
   content::RenderWidgetHost* GetRenderWidgetHost();

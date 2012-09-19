@@ -74,12 +74,6 @@ namespace captive_portal {
 class CaptivePortalTabHelper;
 }
 
-namespace chrome {
-namespace search {
-class SearchTabHelper;
-}
-}
-
 namespace chromeos {
 class SimpleWebViewDialog;
 class WebUILoginView;
@@ -228,10 +222,6 @@ class TabContents : public content::WebContentsObserver {
     return search_engine_tab_helper_.get();
   }
 
-  chrome::search::SearchTabHelper* search_tab_helper() {
-    return search_tab_helper_.get();
-  }
-
   browser_sync::SyncedTabDelegate* synced_tab_delegate() {
     return synced_tab_delegate_.get();
   }
@@ -304,7 +294,6 @@ class TabContents : public content::WebContentsObserver {
 
   scoped_ptr<SadTabHelper> sad_tab_helper_;
   scoped_ptr<SearchEngineTabHelper> search_engine_tab_helper_;
-  scoped_ptr<chrome::search::SearchTabHelper> search_tab_helper_;
   scoped_ptr<browser_sync::SyncedTabDelegate> synced_tab_delegate_;
 
   // The TabSpecificContentSettings object is used to query the blocked content

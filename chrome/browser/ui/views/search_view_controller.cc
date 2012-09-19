@@ -601,7 +601,9 @@ void SearchViewController::MaybeHideOverlay() {
 }
 
 chrome::search::SearchModel* SearchViewController::search_model() {
-  return tab_contents_ ? tab_contents_->search_tab_helper()->model() : NULL;
+  return tab_contents_ ? chrome::search::SearchTabHelper::FromWebContents(
+                             tab_contents_->web_contents())->model()
+                       : NULL;
 }
 
 content::WebContents* SearchViewController::web_contents() {

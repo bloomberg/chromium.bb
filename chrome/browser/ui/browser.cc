@@ -1045,7 +1045,7 @@ void Browser::TabDetachedAt(TabContents* contents, int index) {
 
 void Browser::TabDeactivated(TabContents* contents) {
   fullscreen_controller_->OnTabDeactivated(contents);
-  search_delegate_->OnTabDeactivated(contents);
+  search_delegate_->OnTabDeactivated(contents->web_contents());
 
   // Save what the user's currently typing, so it can be restored when we
   // switch back to this tab.
@@ -1914,7 +1914,7 @@ void Browser::UpdateToolbar(bool should_restore_state) {
 
 void Browser::UpdateSearchState(TabContents* contents) {
   if (chrome::search::IsInstantExtendedAPIEnabled(profile_))
-    search_delegate_->OnTabActivated(contents);
+    search_delegate_->OnTabActivated(contents->web_contents());
 }
 
 void Browser::ScheduleUIUpdate(const WebContents* source,
@@ -2129,7 +2129,7 @@ void Browser::TabDetachedAtImpl(TabContents* contents, int index,
   }
 
   // Stop observing search model changes for this tab.
-  search_delegate_->OnTabDetached(contents);
+  search_delegate_->OnTabDetached(contents->web_contents());
 
   registrar_.Remove(this, content::NOTIFICATION_INTERSTITIAL_ATTACHED,
                     content::Source<WebContents>(contents->web_contents()));

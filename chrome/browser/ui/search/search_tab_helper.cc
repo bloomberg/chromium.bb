@@ -5,7 +5,8 @@
 #include "chrome/browser/ui/search/search_tab_helper.h"
 
 #include "chrome/browser/google/google_util.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/search/search.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
@@ -15,6 +16,8 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 
+int chrome::search::SearchTabHelper::kUserDataKey;
+
 namespace {
 
 bool IsNTP(const GURL& url) {
@@ -22,28 +25,32 @@ bool IsNTP(const GURL& url) {
          url.host() == chrome::kChromeUINewTabHost;
 }
 
+bool IsSearchEnabled(content::WebContents* web_contents) {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  return chrome::search::IsInstantExtendedAPIEnabled(profile);
+}
+
 }  // namespace
 
 namespace chrome {
 namespace search {
 
-SearchTabHelper::SearchTabHelper(
-    TabContents* contents,
-    bool is_search_enabled)
-    : WebContentsObserver(contents->web_contents()),
-      is_search_enabled_(is_search_enabled),
+SearchTabHelper::SearchTabHelper(content::WebContents* web_contents)
+    : WebContentsObserver(web_contents),
+      is_search_enabled_(IsSearchEnabled(web_contents)),
       is_initial_navigation_commit_(true),
-      model_(contents),
+      model_(web_contents),
       ntp_load_state_(DEFAULT),
       main_frame_id_(0) {
-  if (!is_search_enabled)
+  if (!is_search_enabled_)
     return;
 
   registrar_.Add(
       this,
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::Source<content::NavigationController>(
-          &contents->web_contents()->GetController()));
+          &web_contents->GetController()));
 }
 
 SearchTabHelper::~SearchTabHelper() {
@@ -157,8 +164,8 @@ void SearchTabHelper::UpdateModelBasedOnURL(const GURL& url,
   model_.SetMode(Mode(type, animate));
 }
 
-content::WebContents* SearchTabHelper::web_contents() {
-  return model_.tab_contents()->web_contents();
+const content::WebContents* SearchTabHelper::web_contents() const {
+  return model_.web_contents();
 }
 
 content::RenderWidgetHost* SearchTabHelper::GetRenderWidgetHost() {

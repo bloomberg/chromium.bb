@@ -109,7 +109,7 @@ class BrowserTabStripController
   // chrome::search::ToolbarSearchAnimatorObserver implementation:
   virtual void OnToolbarBackgroundAnimatorProgressed() OVERRIDE;
   virtual void OnToolbarBackgroundAnimatorCanceled(
-      TabContents* tab_contents) OVERRIDE;
+      content::WebContents* web_contents) OVERRIDE;
   virtual void OnToolbarSeparatorChanged() OVERRIDE {}
 
   // content::NotificationObserver implementation:
@@ -140,7 +140,7 @@ class BrowserTabStripController
   class TabContextMenuContents;
 
   // Invokes tabstrip_->SetTabData.
-  void SetTabDataAt(TabContents* contents, int model_index);
+  void SetTabDataAt(content::WebContents* web_contents, int model_index);
 
   void StartHighlightTabsForCommand(
       TabStripModel::ContextMenuCommand command_id,

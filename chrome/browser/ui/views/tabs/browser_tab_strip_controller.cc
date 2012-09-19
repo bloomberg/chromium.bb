@@ -417,14 +417,14 @@ void BrowserTabStripController::TabChangedAt(TabContents* contents,
     return;
   }
 
-  SetTabDataAt(contents, model_index);
+  SetTabDataAt(contents->web_contents(), model_index);
 }
 
 void BrowserTabStripController::TabReplacedAt(TabStripModel* tab_strip_model,
                                               TabContents* old_contents,
                                               TabContents* new_contents,
                                               int model_index) {
-  SetTabDataAt(new_contents, model_index);
+  SetTabDataAt(new_contents->web_contents(), model_index);
 }
 
 void BrowserTabStripController::TabPinnedStateChanged(
@@ -433,16 +433,14 @@ void BrowserTabStripController::TabPinnedStateChanged(
   // Currently none of the renderers render pinned state differently.
 }
 
-void BrowserTabStripController::TabMiniStateChanged(
-    TabContents* contents,
-    int model_index) {
-  SetTabDataAt(contents, model_index);
+void BrowserTabStripController::TabMiniStateChanged(TabContents* contents,
+                                                    int model_index) {
+  SetTabDataAt(contents->web_contents(), model_index);
 }
 
-void BrowserTabStripController::TabBlockedStateChanged(
-    TabContents* contents,
-    int model_index) {
-  SetTabDataAt(contents, model_index);
+void BrowserTabStripController::TabBlockedStateChanged(TabContents* contents,
+                                                       int model_index) {
+  SetTabDataAt(contents->web_contents(), model_index);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -455,7 +453,7 @@ void BrowserTabStripController::ModeChanged(
   // repainting of tab's background.
   int active_index = GetActiveIndex();
   DCHECK_NE(active_index, -1);
-  SetTabDataAt(chrome::GetTabContentsAt(browser_, active_index), active_index);
+  SetTabDataAt(chrome::GetWebContentsAt(browser_, active_index), active_index);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -467,11 +465,11 @@ void BrowserTabStripController::OnToolbarBackgroundAnimatorProgressed() {
   // background.
   int active_index = GetActiveIndex();
   DCHECK_NE(active_index, -1);
-  SetTabDataAt(chrome::GetTabContentsAt(browser_, active_index), active_index);
+  SetTabDataAt(chrome::GetWebContentsAt(browser_, active_index), active_index);
 }
 
 void BrowserTabStripController::OnToolbarBackgroundAnimatorCanceled(
-    TabContents* tab_contents) {
+    content::WebContents* web_contents) {
   // Fade in of tab background has been canceled, which can happen in 2
   // scenarios:
   // 1) a deactivated or detached or closing tab, whose |tab_contents| is the
@@ -481,12 +479,12 @@ void BrowserTabStripController::OnToolbarBackgroundAnimatorCanceled(
   // If we proceed, set tab data so that
   // |TabRendererData::gradient_background_opacity| will be reset.
   // Repainting of tab's background will be triggered in the process.
-  int index = tab_contents ? model_->GetIndexOfTabContents(tab_contents) :
+  int index = web_contents ? model_->GetIndexOfWebContents(web_contents) :
                              GetActiveIndex();
   if (index == -1)
     return;
-  SetTabDataAt(tab_contents ? tab_contents :
-      chrome::GetTabContentsAt(browser_, index), index);
+  SetTabDataAt(web_contents ? web_contents :
+      chrome::GetWebContentsAt(browser_, index), index);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -534,12 +532,10 @@ void BrowserTabStripController::SetTabRendererDataFromModel(
       toolbar_search_animator().GetGradientOpacity();
 }
 
-void BrowserTabStripController::SetTabDataAt(
-    TabContents* contents,
-    int model_index) {
+void BrowserTabStripController::SetTabDataAt(content::WebContents* web_contents,
+                                             int model_index) {
   TabRendererData data;
-  SetTabRendererDataFromModel(contents->web_contents(), model_index, &data,
-                              EXISTING_TAB);
+  SetTabRendererDataFromModel(web_contents, model_index, &data, EXISTING_TAB);
   tabstrip_->SetTabData(model_index, data);
 }
 

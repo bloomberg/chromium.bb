@@ -1152,8 +1152,9 @@ bool OmniboxEditModel::CreatedKeywordSearchByInsertingSpaceInMiddle(
 
 void OmniboxEditModel::NotifySearchTabHelper() {
   if (controller_->GetTabContents()) {
-    controller_->GetTabContents()->search_tab_helper()->
-        OmniboxEditModelChanged(user_input_in_progress_, !in_revert_);
+    chrome::search::SearchTabHelper::FromWebContents(
+        controller_->GetTabContents()->web_contents())->
+            OmniboxEditModelChanged(user_input_in_progress_, !in_revert_);
   }
 }
 

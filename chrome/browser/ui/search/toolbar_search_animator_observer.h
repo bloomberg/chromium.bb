@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_UI_SEARCH_TOOLBAR_SEARCH_ANIMATOR_OBSERVER_H_
 #define CHROME_BROWSER_UI_SEARCH_TOOLBAR_SEARCH_ANIMATOR_OBSERVER_H_
 
-class TabContents;
+namespace content {
+class WebContents;
+}
 
 namespace chrome {
 namespace search {
@@ -20,11 +22,11 @@ class ToolbarSearchAnimatorObserver {
   // Called when toolbar gradient background animation is canceled and jumps to
   // the end state.
   // If animation is canceled because the active tab is deactivated or detached
-  // or closing, |tab_contents| contains the tab's contents.
-  // Otherwise, if animation is canceled because of mode change, |tab_contents|
+  // or closing, |web_contents| contains the tab's contents.
+  // Otherwise, if animation is canceled because of mode change, |web_contents|
   // is NULL.
   virtual void OnToolbarBackgroundAnimatorCanceled(
-      TabContents* tab_contents) = 0;
+      content::WebContents* web_contents) = 0;
 
   // Called when toolbar separator visibility has changed.
   virtual void OnToolbarSeparatorChanged() = 0;

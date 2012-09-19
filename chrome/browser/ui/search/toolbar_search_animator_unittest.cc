@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/browser/ui/search/toolbar_search_animator_observer.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -47,7 +46,7 @@ class ToolbarSearchAnimatorTestObserver : public ToolbarSearchAnimatorObserver {
   }
 
   virtual void OnToolbarBackgroundAnimatorCanceled(
-      TabContents* tab_contents) OVERRIDE {
+      content::WebContents* web_contents) OVERRIDE {
     got_canceled_ = true;
     if (!cancel_halfway_)
       QuitMessageLoopIfDone();
@@ -113,8 +112,9 @@ class ToolbarSearchAnimatorTest : public BrowserWithTestWindowTest {
   }
 
   void SetMode(const Mode::Type mode, bool animate) {
-    TabContents* contents = chrome::GetTabContentsAt(browser(), 0);
-    contents->search_tab_helper()->model()->SetMode(Mode(mode, animate));
+    content::WebContents* web_contents = chrome::GetWebContentsAt(browser(), 0);
+    chrome::search::SearchTabHelper::FromWebContents(web_contents)->model()->
+        SetMode(Mode(mode, animate));
   }
 
   void RunMessageLoop(bool cancel_halfway) {

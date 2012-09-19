@@ -10,8 +10,11 @@
 #include "chrome/browser/ui/search/search_model_observer.h"
 #include "chrome/browser/ui/search/toolbar_search_animator.h"
 
-class TabContents;
 class ToolbarModel;
+
+namespace content {
+class WebContents;
+}
 
 namespace chrome {
 namespace search {
@@ -35,15 +38,15 @@ class SearchDelegate : public SearchModelObserver {
 
   // When the active tab is changed, the model state of this new active tab is
   // propagated to the browser.
-  void OnTabActivated(TabContents* contents);
+  void OnTabActivated(content::WebContents* web_contents);
 
   // When a tab is deactivated, this class no longer observes changes to the
   // tab's model.
-  void OnTabDeactivated(TabContents* contents);
+  void OnTabDeactivated(content::WebContents* web_contents);
 
   // When a tab is detached, this class no longer observes changes to the
   // tab's model.
-  void OnTabDetached(TabContents* contents);
+  void OnTabDetached(content::WebContents* web_contents);
 
   ToolbarSearchAnimator& toolbar_search_animator() {
     return toolbar_search_animator_;
@@ -51,7 +54,7 @@ class SearchDelegate : public SearchModelObserver {
 
  private:
   // Stop observing tab.
-  void StopObserveringTab(TabContents* contents);
+  void StopObservingTab(content::WebContents* web_contents);
 
   // Weak.  The Browser class owns this.  The active |tab_model_| state is
   // propagated to the |browser_model_|.

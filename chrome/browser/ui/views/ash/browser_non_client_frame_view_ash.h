@@ -70,7 +70,7 @@ class BrowserNonClientFrameViewAsh
   // Overridden from chrome::search::ToolbarSearchAnimatorObserver:
   virtual void OnToolbarBackgroundAnimatorProgressed() OVERRIDE;
   virtual void OnToolbarBackgroundAnimatorCanceled(
-      TabContents* tab_contents) OVERRIDE;
+      content::WebContents* web_contents) OVERRIDE;
   virtual void OnToolbarSeparatorChanged() OVERRIDE;
 
  private:

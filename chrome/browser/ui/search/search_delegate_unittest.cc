@@ -8,7 +8,6 @@
 #include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 
@@ -32,22 +31,24 @@ TEST_F(SearchDelegateTest, SearchModel) {
 
   // Propagate change from tab's search model to browser's search model.
   AddTab(browser(), GURL("http://foo/0"));
-  TabContents* contents = chrome::GetTabContentsAt(browser(), 0);
-  contents->search_tab_helper()->model()->SetMode(Mode(Mode::MODE_NTP, false));
+  content::WebContents* web_contents = chrome::GetWebContentsAt(browser(), 0);
+  chrome::search::SearchTabHelper::FromWebContents(web_contents)->model()->
+      SetMode(Mode(Mode::MODE_NTP, false));
   EXPECT_TRUE(browser()->search_model()->mode().is_ntp());
 
   // Add second tab, make it active, and make sure its mode changes
   // propagate to the browser's search model.
   AddTab(browser(), GURL("http://foo/1"));
   chrome::ActivateTabAt(browser(), 1, true);
-  contents = chrome::GetTabContentsAt(browser(), 1);
-  contents->search_tab_helper()->model()->SetMode(
-      Mode(Mode::MODE_SEARCH_RESULTS, false));
+  web_contents = chrome::GetWebContentsAt(browser(), 1);
+  chrome::search::SearchTabHelper::FromWebContents(web_contents)->model()->
+      SetMode(Mode(Mode::MODE_SEARCH_RESULTS, false));
   EXPECT_TRUE(browser()->search_model()->mode().is_search());
 
   // The first tab is not active so changes should not propagate.
-  contents = chrome::GetTabContentsAt(browser(), 0);
-  contents->search_tab_helper()->model()->SetMode(Mode(Mode::MODE_NTP, false));
+  web_contents = chrome::GetWebContentsAt(browser(), 0);
+  chrome::search::SearchTabHelper::FromWebContents(web_contents)->model()->
+      SetMode(Mode(Mode::MODE_NTP, false));
   EXPECT_TRUE(browser()->search_model()->mode().is_search());
 }
 

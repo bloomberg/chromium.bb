@@ -4,25 +4,28 @@
 
 #include "chrome/browser/ui/search/search_model.h"
 
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/search/search_model_observer.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 
 namespace chrome {
 namespace search {
 
-SearchModel::SearchModel(TabContents* contents)
-    : contents_(contents) {
+SearchModel::SearchModel(content::WebContents* web_contents)
+    : web_contents_(web_contents) {
 }
 
 SearchModel::~SearchModel() {
 }
 
 void SearchModel::SetMode(const Mode& new_mode) {
-  if (!contents_)
+  if (!web_contents_)
     return;
 
-  DCHECK(IsInstantExtendedAPIEnabled(contents_->profile()))
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
+  DCHECK(IsInstantExtendedAPIEnabled(profile))
       << "Please do not try to set the SearchModel mode without first "
       << "checking if Search is enabled.";
 
