@@ -183,7 +183,6 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
 #endif
     { "doNotTrack", IDS_OPTIONS_ENABLE_DO_NOT_TRACK },
     { "doNotTrackConfirmMessage", IDS_OPTIONS_ENABLE_DO_NOT_TRACK_BUBBLE_TEXT },
-    { "doNotTrackConfirmTitle", IDS_OPTIONS_ENABLE_DO_NOT_TRACK_BUBBLE_TITLE },
     { "doNotTrackConfirmEnable",
        IDS_OPTIONS_ENABLE_DO_NOT_TRACK_BUBBLE_ENABLE },
     { "doNotTrackConfirmDisable",
@@ -210,7 +209,6 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
     { "homePageUseNewTab", IDS_OPTIONS_HOMEPAGE_USE_NEWTAB },
     { "homePageUseURL", IDS_OPTIONS_HOMEPAGE_USE_URL },
     { "instantConfirmMessage", IDS_INSTANT_OPT_IN_MESSAGE },
-    { "instantConfirmTitle", IDS_INSTANT_OPT_IN_TITLE },
     { "importData", IDS_OPTIONS_IMPORT_DATA_BUTTON },
     { "improveBrowsingExperience", IDS_OPTIONS_IMPROVE_BROWSING_EXPERIENCE },
     { "languageAndSpellCheckSettingsButton",
@@ -250,7 +248,6 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
     { "sectionTitleStartup", IDS_OPTIONS_STARTUP_GROUP_NAME },
     { "sectionTitleSync", IDS_SYNC_OPTIONS_GROUP_NAME },
     { "spellingConfirmMessage", IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_TEXT },
-    { "spellingConfirmTitle", IDS_CONTENT_CONTEXT_SPELLING_ASK_GOOGLE },
     { "spellingConfirmEnable", IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_ENABLE },
     { "spellingConfirmDisable", IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_DISABLE },
     { "spellingPref", IDS_OPTIONS_SPELLING_PREF },
@@ -326,6 +323,11 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
   };
 
   RegisterStrings(values, resources, arraysize(resources));
+  RegisterTitle(values, "instantConfirmOverlay", IDS_INSTANT_OPT_IN_TITLE);
+  RegisterTitle(values, "doNotTrackConfirmOverlay",
+                IDS_OPTIONS_ENABLE_DO_NOT_TRACK_BUBBLE_TITLE);
+  RegisterTitle(values, "spellingConfirmOverlay",
+                IDS_CONTENT_CONTEXT_SPELLING_ASK_GOOGLE);
   RegisterCloudPrintValues(values);
 
 #if !defined(OS_CHROMEOS)

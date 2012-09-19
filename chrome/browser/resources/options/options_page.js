@@ -197,6 +197,10 @@ cr.define('options', function() {
     var path = window.location.pathname + window.location.hash;
     if (path)
       path = path.slice(1).replace(/\/(?:#|$)/, '');  // Remove trailing slash.
+
+    // Update tab title.
+    this.setTitle_(page.title);
+
     // The page is already in history (the user may have clicked the same link
     // twice). Do nothing.
     if (path == page.name &&
@@ -219,9 +223,6 @@ cr.define('options', function() {
                          {pageName: page.name},
                          page.title,
                          '/' + page.name + hash);
-
-    // Update tab title.
-    this.setTitle_(page.title);
   };
 
   /**

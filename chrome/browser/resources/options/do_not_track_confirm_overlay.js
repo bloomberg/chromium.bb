@@ -11,12 +11,13 @@ cr.define('options', function() {
    * @extends {SettingsDialog}
    */
   function DoNotTrackConfirmOverlay() {
-    SettingsDialog.call(this,
-                        'doNotTrackConfirm',
-                        loadTimeData.getString('doNotTrackConfirmTitle'),
-                        'do-not-track-confirm-overlay',
-                        $('do-not-track-confirm-ok'),
-                        $('do-not-track-confirm-cancel'));
+    SettingsDialog.call(
+        this,
+        'doNotTrackConfirm',
+        loadTimeData.getString('doNotTrackConfirmOverlayTabTitle'),
+        'do-not-track-confirm-overlay',
+        $('do-not-track-confirm-ok'),
+        $('do-not-track-confirm-cancel'));
   };
 
   cr.addSingletonGetter(DoNotTrackConfirmOverlay);

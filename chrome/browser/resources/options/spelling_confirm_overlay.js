@@ -11,12 +11,13 @@ cr.define('options', function() {
    * @extends {SettingsDialog}
    */
   function SpellingConfirmOverlay() {
-    SettingsDialog.call(this,
-                        'spellingConfirm',
-                        loadTimeData.getString('spellingConfirmTitle'),
-                        'spelling-confirm-overlay',
-                        $('spelling-confirm-ok'),
-                        $('spelling-confirm-cancel'));
+    SettingsDialog.call(
+        this,
+        'spellingConfirm',
+        loadTimeData.getString('spellingConfirmOverlayTabTitle'),
+        'spelling-confirm-overlay',
+        $('spelling-confirm-ok'),
+        $('spelling-confirm-cancel'));
   };
 
   cr.addSingletonGetter(SpellingConfirmOverlay);

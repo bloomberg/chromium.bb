@@ -13,7 +13,7 @@ cr.define('options', function() {
   function InstantConfirmOverlay() {
     SettingsDialog.call(this,
                         'instantConfirm',
-                        loadTimeData.getString('instantConfirmTitle'),
+                        loadTimeData.getString('instantConfirmOverlayTabTitle'),
                         'instantConfirmOverlay',
                         $('instantConfirmOk'),
                         $('instantConfirmCancel'));
