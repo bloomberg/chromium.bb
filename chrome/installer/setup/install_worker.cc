@@ -188,7 +188,7 @@ void AddInstallAppCommandWorkItems(const InstallerState& installer_state,
   } else {
     CommandLine cmd_line(
         installer_state.target_path().Append(installer::kChromeAppHostExe));
-    cmd_line.AppendSwitchASCII(::switches::kAppsInstallFromManifestURL, "%1");
+    cmd_line.AppendSwitchASCII(::switches::kInstallFromWebstore, "%1");
 
     AppCommand cmd(cmd_line.GetCommandLineString());
     cmd.set_sends_pings(true);

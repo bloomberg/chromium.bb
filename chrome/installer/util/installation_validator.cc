@@ -224,7 +224,7 @@ void InstallationValidator::ValidateInstallAppCommand(
   SwitchExpectations expected;
 
   expected.push_back(
-      std::make_pair(std::string(::switches::kAppsInstallFromManifestURL),
+      std::make_pair(std::string(::switches::kInstallFromWebstore),
                      true));
 
   ValidateCommandExpectations(ctx, the_command, expected, "install application",
