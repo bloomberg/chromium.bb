@@ -151,6 +151,31 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         }
     }
 
+    // In contrast to AwSettingsJavaScriptTestHelper, doesn't reload the page when testing
+    // JavaScript state.
+    class AwSettingsJavaScriptDynamicTestHelper extends AwSettingsJavaScriptTestHelper {
+        AwSettingsJavaScriptDynamicTestHelper(
+                ContentViewCore contentViewCore,
+                TestAwContentsClient contentViewClient) throws Throwable {
+            super(contentViewCore, contentViewClient);
+            // Load the page.
+            super.doEnsureSettingHasValue(getInitialValue());
+        }
+
+        @Override
+        protected void doEnsureSettingHasValue(Boolean value) throws Throwable {
+            String oldTitle = getTitleOnUiThread();
+            String newTitle = oldTitle + "_modified";
+            executeJavaScriptAndWaitForResult(
+                mContentViewCore, mContentViewClient, getScript(newTitle));
+            assertEquals(value == ENABLED ? newTitle : oldTitle, getTitleOnUiThread());
+        }
+
+        private String getScript(String title) {
+            return "document.title='" + title + "';";
+        }
+    }
+
     class AwSettingsPluginsTestHelper extends AwSettingsTestHelper<Boolean> {
         private static final String PLUGINS_ENABLED_STRING = "Embed";
         private static final String PLUGINS_DISABLED_STRING = "NoEmbed";
@@ -694,6 +719,33 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         runPerViewSettingsTest(
             new AwSettingsJavaScriptTestHelper(views.getView0(), views.getClient0()),
             new AwSettingsJavaScriptTestHelper(views.getView1(), views.getClient1()));
+    }
+
+    @SmallTest
+    @Feature({"Android-WebView", "Preferences"})
+    public void testJavaScriptEnabledDynamicNormal() throws Throwable {
+        ViewPair views = createViews(NORMAL_VIEW, NORMAL_VIEW);
+        runPerViewSettingsTest(
+            new AwSettingsJavaScriptDynamicTestHelper(views.getView0(), views.getClient0()),
+            new AwSettingsJavaScriptDynamicTestHelper(views.getView1(), views.getClient1()));
+    }
+
+    @SmallTest
+    @Feature({"Android-WebView", "Preferences"})
+    public void testJavaScriptEnabledDynamicIncognito() throws Throwable {
+        ViewPair views = createViews(INCOGNITO_VIEW, INCOGNITO_VIEW);
+        runPerViewSettingsTest(
+            new AwSettingsJavaScriptDynamicTestHelper(views.getView0(), views.getClient0()),
+            new AwSettingsJavaScriptDynamicTestHelper(views.getView1(), views.getClient1()));
+    }
+
+    @SmallTest
+    @Feature({"Android-WebView", "Preferences"})
+    public void testJavaScriptEnabledDynamicBoth() throws Throwable {
+        ViewPair views = createViews(NORMAL_VIEW, INCOGNITO_VIEW);
+        runPerViewSettingsTest(
+            new AwSettingsJavaScriptDynamicTestHelper(views.getView0(), views.getClient0()),
+            new AwSettingsJavaScriptDynamicTestHelper(views.getView1(), views.getClient1()));
     }
 
     @SmallTest

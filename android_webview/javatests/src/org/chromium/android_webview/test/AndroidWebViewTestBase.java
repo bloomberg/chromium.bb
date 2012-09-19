@@ -10,6 +10,8 @@ import android.test.ActivityInstrumentationTestCase2;
 import android.view.View;
 import android.view.ViewGroup;
 
+import junit.framework.Assert;
+
 import org.chromium.android_webview.AndroidWebViewUtil;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsClient;
@@ -19,9 +21,11 @@ import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.LoadUrlParams;
 import org.chromium.content.browser.test.CallbackHelper;
+import org.chromium.content.browser.test.TestCallbackHelperContainer;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -183,5 +187,27 @@ public class AndroidWebViewTestBase
                 return contentViewCore.getContentSettings();
             }
         });
+    }
+
+    /**
+     * Executes the given snippet of JavaScript code within the given ContentView. Returns the
+     * result of its execution in JSON format.
+     */
+    protected String executeJavaScriptAndWaitForResult(final ContentViewCore core,
+            TestAwContentsClient viewClient, final String code) throws Throwable {
+        final AtomicInteger requestId = new AtomicInteger();
+        TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper
+                onEvaluateJavaScriptResultHelper = viewClient.getOnEvaluateJavaScriptResultHelper();
+        int currentCallCount = onEvaluateJavaScriptResultHelper.getCallCount();
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                requestId.set(core.evaluateJavaScript(code));
+            }
+        });
+        onEvaluateJavaScriptResultHelper.waitForCallback(currentCallCount);
+        Assert.assertEquals("Response ID mismatch when evaluating JavaScript.",
+                requestId.get(), onEvaluateJavaScriptResultHelper.getId());
+        return onEvaluateJavaScriptResultHelper.getJsonResult();
     }
 }
