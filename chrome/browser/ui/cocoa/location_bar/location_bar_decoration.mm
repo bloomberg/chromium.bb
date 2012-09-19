@@ -26,6 +26,13 @@ void LocationBarDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
   NOTREACHED();
 }
 
+void LocationBarDecoration::DrawWithBackgroundInFrame(NSRect background_frame,
+                                                      NSRect frame,
+                                                      NSView* control_view) {
+  // Default to no background.
+  DrawInFrame(frame, control_view);
+}
+
 NSString* LocationBarDecoration::GetToolTip() {
   return nil;
 }

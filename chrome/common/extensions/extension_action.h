@@ -228,6 +228,11 @@ class ExtensionAction {
     return GetValue(&appearance_, tab_id) != INVISIBLE;
   }
 
+  // True if the tab's action wants the user's attention.
+  bool WantsAttention(int tab_id) const {
+    return GetValue(&appearance_, tab_id) == WANTS_ATTENTION;
+  }
+
   // Remove all tab-specific state.
   void ClearAllValuesForTab(int tab_id);
 

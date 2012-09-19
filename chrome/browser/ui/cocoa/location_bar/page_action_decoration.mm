@@ -19,6 +19,7 @@
 #import "chrome/browser/ui/cocoa/extensions/extension_popup_controller.h"
 #include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
+#include "chrome/browser/ui/omnibox/location_bar_util.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/extensions/extension_info_ui.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -27,6 +28,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "skia/ext/skia_utils_mac.h"
+#include "ui/gfx/canvas_skia_paint.h"
 
 using content::WebContents;
 using extensions::Extension;
@@ -80,6 +82,26 @@ PageActionDecoration::~PageActionDecoration() {}
 // image centered.
 CGFloat PageActionDecoration::GetWidthForSpace(CGFloat width) {
   return Extension::kPageActionIconMaxSize;
+}
+
+void PageActionDecoration::DrawWithBackgroundInFrame(NSRect background_frame,
+                                                     NSRect frame,
+                                                     NSView* control_view) {
+  {
+    gfx::Rect bounds(NSRectToCGRect(background_frame));
+    gfx::CanvasSkiaPaint canvas(background_frame, /*opaque=*/false);
+    // set_composite_alpha(true) makes the extension action paint on top of the
+    // location bar instead of whatever's behind the Chrome window.
+    canvas.set_composite_alpha(true);
+    location_bar_util::PaintExtensionActionBackground(
+        *page_action_, current_tab_id_,
+        &canvas, bounds,
+        SK_ColorBLACK, SK_ColorWHITE);
+    // Destroying |canvas| draws the background.
+  }
+
+  ImageDecoration::DrawWithBackgroundInFrame(
+      background_frame, frame, control_view);
 }
 
 bool PageActionDecoration::AcceptsMousePress() {

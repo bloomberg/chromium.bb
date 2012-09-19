@@ -29,6 +29,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/omnibox/location_bar_util.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/search/search_model.h"
@@ -117,6 +118,8 @@ const int kBorderCornerRadius = 2;
 
 const int kDesktopItemPadding = 3;
 const int kDesktopEdgeItemPadding = kDesktopItemPadding;
+const int kDesktopScriptBadgeItemPadding = 9;
+const int kDesktopScriptBadgeEdgeItemPadding = kDesktopScriptBadgeItemPadding;
 
 const int kTouchItemPadding = 8;
 const int kTouchEdgeItemPadding = kTouchItemPadding;
@@ -393,14 +396,18 @@ SkColor LocationBarView::GetColor(ToolbarModel::SecurityLevel security_level,
 
 // static
 int LocationBarView::GetItemPadding() {
-  return (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH) ?
-      kTouchItemPadding : kDesktopItemPadding;
+  if (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH)
+    return kTouchItemPadding;
+  return extensions::switch_utils::AreScriptBadgesEnabled() ?
+      kDesktopScriptBadgeItemPadding : kDesktopItemPadding;
 }
 
 // static
 int LocationBarView::GetEdgeItemPadding() {
-  return (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH) ?
-      kTouchEdgeItemPadding : kDesktopEdgeItemPadding;
+  if (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH)
+    return kTouchEdgeItemPadding;
+  return extensions::switch_utils::AreScriptBadgesEnabled() ?
+      kDesktopScriptBadgeEdgeItemPadding : kDesktopEdgeItemPadding;
 }
 
 // DropdownBarHostDelegate
@@ -983,6 +990,7 @@ void LocationBarView::OnPaint(gfx::Canvas* canvas) {
                                        radius, paint);
     if (action_box_button_view_)
       PaintActionBoxBackground(canvas, bounds);
+    PaintPageActionBackgrounds(canvas);
   } else {
     canvas->FillRect(bounds, color);
   }
@@ -1293,6 +1301,31 @@ void LocationBarView::PaintActionBoxBackground(gfx::Canvas* canvas,
   line_end.Offset(0, bounds.height());
   canvas->DrawLine(bounds.origin(), line_end,
                    action_box_button_view_->GetBorderColor());
+}
+
+void LocationBarView::PaintPageActionBackgrounds(gfx::Canvas* canvas) {
+  for (PageActionViews::const_iterator
+           page_action_view = page_action_views_.begin();
+       page_action_view != page_action_views_.end();
+       ++page_action_view) {
+    gfx::Rect bounds = (*page_action_view)->bounds();
+    int horizontal_padding = GetItemPadding() -
+        (*page_action_view)->GetBuiltInHorizontalPadding();
+    // Make the bounding rectangle include the whole vertical range of the
+    // location bar, and the mid-point pixels between adjacent page actions.
+    //
+    // For odd horizontal_paddings, "horizontal_padding + 1" includes the
+    // mid-point between two page actions in the bounding rectangle.  For even
+    // paddings, the +1 is dropped, which is right since there is no pixel at
+    // the mid-point.
+    bounds.Inset(-(horizontal_padding + 1) / 2, 0);
+    ToolbarModel::SecurityLevel security_level = model_->GetSecurityLevel();
+    location_bar_util::PaintExtensionActionBackground(
+        *(*page_action_view)->image_view()->page_action(),
+        SessionID::IdForTab(GetTabContents()->web_contents()),
+        canvas, bounds,
+        GetColor(security_level, TEXT), GetColor(security_level, BACKGROUND));
+  }
 }
 
 std::string LocationBarView::GetClassName() const {

@@ -815,6 +815,10 @@ void GtkThemeService::LoadGtkValues() {
       gfx::GdkColorToSkColor(entry_style->base[GTK_STATE_ACTIVE]);
   inactive_selection_fg_color_ =
       gfx::GdkColorToSkColor(entry_style->text[GTK_STATE_ACTIVE]);
+  location_bar_bg_color_ =
+      gfx::GdkColorToSkColor(entry_style->base[GTK_STATE_NORMAL]);
+  location_bar_text_color_ =
+      gfx::GdkColorToSkColor(entry_style->text[GTK_STATE_NORMAL]);
 }
 
 GdkColor GtkThemeService::BuildFrameColors(GtkStyle* frame_style) {

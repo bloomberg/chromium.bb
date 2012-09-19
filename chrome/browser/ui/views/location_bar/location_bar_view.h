@@ -437,6 +437,10 @@ class LocationBarView : public LocationBar,
   void PaintActionBoxBackground(gfx::Canvas* canvas,
                                 const gfx::Rect& content_rect);
 
+  // Draw backgrounds and borders for page actions.  Must be called
+  // after layout, so the |page_action_views_| have their bounds.
+  void PaintPageActionBackgrounds(gfx::Canvas* canvas);
+
 #if defined(USE_AURA)
   // Fade in the location bar view so the icons come in gradually.
   void StartFadeAnimation();

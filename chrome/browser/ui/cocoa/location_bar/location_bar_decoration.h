@@ -39,6 +39,15 @@ class LocationBarDecoration {
   // generated from an earlier call to |GetWidthForSpace()|.
   virtual void DrawInFrame(NSRect frame, NSView* control_view);
 
+  // Draw the decoration in the frame provided, possibly including a
+  // background that fills |background_frame|.  The frame will be
+  // generated from an earlier call to |GetWidthForSpace()|, and the
+  // |background_frame| will include the column of pixels exactly
+  // between two decorations.
+  virtual void DrawWithBackgroundInFrame(NSRect background_frame,
+                                         NSRect frame,
+                                         NSView* control_view);
+
   // Returns the tooltip for this decoration, return |nil| for no tooltip.
   virtual NSString* GetToolTip();
 

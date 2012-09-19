@@ -8,6 +8,7 @@
 #include "base/mac/mac_logging.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_decoration.h"
+#import "chrome/common/extensions/extension_switch_utils.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 
 namespace {
@@ -23,11 +24,25 @@ const CGFloat kLeftDecorationXOffset = 5.0;
 // How far to inset the right-hand decorations from the field's bounds.
 // TODO(shess): Why is this different from |kLeftDecorationXOffset|?
 // |kDecorationOuterXOffset|?
-const CGFloat kRightDecorationXOffset = 5.0;
+CGFloat RightDecorationXOffset() {
+  const CGFloat kRightDecorationXOffset = 5.0;
+  const CGFloat kScriptBadgeRightDecorationXOffset = 9.0;
+
+  return extensions::switch_utils::AreScriptBadgesEnabled() ?
+      kScriptBadgeRightDecorationXOffset : kRightDecorationXOffset;
+}
 
 // The amount of padding on either side reserved for drawing
 // decorations.  [Views has |kItemPadding| == 3.]
-const CGFloat kDecorationHorizontalPad = 3.0;
+CGFloat DecorationHorizontalPad() {
+  const CGFloat kDecorationHorizontalPad = 3.0;
+  const CGFloat kScriptBadgeDecorationHorizontalPad = 9.0;
+
+  return extensions::switch_utils::AreScriptBadgesEnabled() ?
+      kScriptBadgeDecorationHorizontalPad : kDecorationHorizontalPad;
+}
+
+
 
 // How long to wait for mouse-up on the location icon before assuming
 // that the user wants to drag.
@@ -41,7 +56,7 @@ const NSTimeInterval kLocationIconDragTimeout = 0.25;
 // while |decoration_frames| will be the corresponding frames.
 // |x_edge| describes the edge to layout the decorations against
 // (|NSMinXEdge| or |NSMaxXEdge|).  |initial_padding| is the padding
-// from the edge of |cell_frame| (|kDecorationHorizontalPad| is used
+// from the edge of |cell_frame| (|DecorationHorizontalPad()| is used
 // between decorations).
 void CalculatePositionsHelper(
     NSRect frame,
@@ -84,7 +99,7 @@ void CalculatePositionsHelper(
         DCHECK_EQ(decorations->size(), decoration_frames->size());
 
         // Adjust padding for between decorations.
-        padding = kDecorationHorizontalPad;
+        padding = DecorationHorizontalPad();
       }
     }
   }
@@ -124,7 +139,7 @@ size_t CalculatePositionsInFrame(
 
   // Layout |right_decorations| against the RHS.
   CalculatePositionsHelper(frame, right_decorations,
-                           NSMaxXEdge, kRightDecorationXOffset,
+                           NSMaxXEdge, RightDecorationXOffset(),
                            decorations, decoration_frames, &frame);
   DCHECK_EQ(decorations->size(), decoration_frames->size());
 
@@ -135,6 +150,14 @@ size_t CalculatePositionsInFrame(
                decoration_frames->end());
 
   *remaining_frame = frame;
+  if (extensions::switch_utils::AreScriptBadgesEnabled()) {
+    // Keep the padding distance between the right-most decoration and the edit
+    // box, so that any decoration background isn't overwritten by the edit
+    // box's background.
+    NSRect dummy;
+    NSDivideRect(frame, &dummy, remaining_frame,
+                 DecorationHorizontalPad(), NSMaxXEdge);
+  }
   return left_count;
 }
 
@@ -238,7 +261,7 @@ size_t CalculatePositionsInFrame(
     if (!index) {
       minX = NSMinX(cellFrame);
     } else {
-      minX = NSMinX(decorationFrames[index]) - kDecorationHorizontalPad;
+      minX = NSMinX(decorationFrames[index]) - DecorationHorizontalPad();
     }
   }
 
@@ -252,7 +275,7 @@ size_t CalculatePositionsInFrame(
     if (index == decorations.size() - 1) {
       maxX = NSMaxX(cellFrame);
     } else {
-      maxX = NSMaxX(decorationFrames[index]) + kDecorationHorizontalPad;
+      maxX = NSMaxX(decorationFrames[index]) + DecorationHorizontalPad();
     }
   }
 
@@ -269,8 +292,12 @@ size_t CalculatePositionsInFrame(
 
   // Draw the decorations.
   for (size_t i = 0; i < decorations.size(); ++i) {
-    if (decorations[i])
-      decorations[i]->DrawInFrame(decorationFrames[i], controlView);
+    if (decorations[i]) {
+      NSRect background_frame = NSInsetRect(
+          decorationFrames[i], -(DecorationHorizontalPad() + 1) / 2, 2);
+      decorations[i]->DrawWithBackgroundInFrame(
+          background_frame, decorationFrames[i], controlView);
+    }
   }
 
   // NOTE: This function must closely match the logic in
