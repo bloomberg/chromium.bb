@@ -6,6 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/property_util.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace_controller_test_helper.h"
 #include "ash/wm/workspace/workspace_manager.h"
@@ -75,6 +76,9 @@ TEST_F(WorkspaceEventHandlerTest, DoubleClickSingleAxisResizeEdge) {
   generator.DoubleClickLeftButton();
   EXPECT_EQ(restored_bounds.y(), window->bounds().y());
   EXPECT_EQ(restored_bounds.height(), window->bounds().height());
+  // Note that it should not even be restored at this point, it should have
+  // also cleared the restore rectangle.
+  EXPECT_EQ(NULL, GetRestoreBoundsInScreen(window.get()));
 
   // Double-click the top resize edge again to maximize vertically, then double
   // click again to restore.
