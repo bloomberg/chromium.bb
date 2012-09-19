@@ -214,7 +214,7 @@ lou_translate (const char *tableList, const widechar
 	  else
 	    outbuf[k] = getCharFromDots (currentOutput[k]);
 	}
-      *inlen = srcMapping[realInlen];
+      *inlen = realInlen;
       *outlen = dest;
       if (inputPositions != NULL)
 	memcpy (inputPositions, srcMapping, destmax * sizeof (int));
@@ -354,11 +354,11 @@ for_updatePositions (const widechar * outChars, int inLength, int outLength)
 	      if (inputPositions != NULL)
 		srcMapping[dest + k] = prevSrcMapping[src];
 	      if (outputPositions != NULL)
-		outputPositions[srcMapping[src + k]] = dest;
+		outputPositions[prevSrcMapping[src + k]] = dest;
 	    }
 	  for (k = outLength; k < inLength; k++)
 	    if (outputPositions != NULL)
-	      outputPositions[srcMapping[src + k]] = dest;
+	      outputPositions[prevSrcMapping[src + k]] = dest;
 	}
       else
 	{
@@ -367,7 +367,7 @@ for_updatePositions (const widechar * outChars, int inLength, int outLength)
 	      if (inputPositions != NULL)
 		srcMapping[dest + k] = prevSrcMapping[src];
 	      if (outputPositions != NULL)
-		outputPositions[srcMapping[src + k]] = dest;
+		outputPositions[prevSrcMapping[src + k]] = dest;
 	    }
 	  for (k = inLength; k < outLength; k++)
 	    if (inputPositions != NULL)
@@ -1460,7 +1460,7 @@ undefinedCharacter (widechar c)
   if ((dest + strlen (display)) > destmax)
     return 0;
   if (outputPositions != NULL)
-    outputPositions[srcMapping[src]] = dest;
+    outputPositions[prevSrcMapping[src]] = dest;
   for (k = 0; k < strlen (display); k++)
     {
       if (inputPositions != NULL)
@@ -1867,7 +1867,7 @@ translateString (void)
 		  {
 		    int tcc;
 		    for (tcc = 0; tcc < transCharslen; tcc++)
-		      outputPositions[srcMapping[src + tcc]] = dest - 1;
+		      outputPositions[prevSrcMapping[src + tcc]] = dest - 1;
 		  }
 		if (!cursorStatus && src <= cursorPosition
 		    && cursorPosition < src + transCharslen)
@@ -1896,7 +1896,7 @@ translateString (void)
 		  {
 		    int tcc;
 		    for (tcc = 0; tcc < transCharslen; tcc++)
-		      outputPositions[srcMapping[src + tcc]] = dest - 1;
+		      outputPositions[prevSrcMapping[src + tcc]] = dest - 1;
 		  }
 		if (!cursorStatus && src <= cursorPosition
 		    && cursorPosition < src + transCharslen)

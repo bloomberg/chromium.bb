@@ -6,14 +6,14 @@
 
 SRCDIR = ..\liblouis
 CC = cl.exe
-CFLAGS =  /nologo /O2 /W1 /c
+CFLAGS =  /nologo /Od /W1 /c /Z7
 CFLAGS = $(CFLAGS) /Iinclude
 HEADERS = $(SRCDIR)\louis.h include\liblouis.h include\config.h
-DLLFLAGS = /dll /nologo /DEF:liblouis.def /OUT:liblouis-2.dll
+DLLFLAGS = /dll /nologo /DEF:liblouis.def /OUT:liblouis.dll /DEBUG /PDB:liblouis.dll.pdb
 OBJ = compileTranslationTable.obj lou_translateString.obj \
     lou_backTranslateString.obj wrappers.obj
 !if "$(UCS)" == "2"
-CFLAGS = $(CFLAGS) /DWIDECHAR_TYPE="unsigned short int"
+CFLAGS = $(CFLAGS) /DWIDECHAR_TYPE="wchar_t"
 CFLAGS = $(CFLAGS) /DUNICODEBITS=16
 !else
 CFLAGS = $(CFLAGS) /DWIDECHAR_TYPE="unsigned int"
