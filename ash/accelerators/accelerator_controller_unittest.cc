@@ -317,7 +317,7 @@ class AcceleratorControllerTest : public AshTestBase {
   void EnableInternalDisplay() {
     static_cast<internal::MultiDisplayManager*>(
         aura::Env::GetInstance()->display_manager())->
-        EnableInternalDisplayForTest();
+        SetFirstDisplayAsInternalDisplayForTest();
   }
 
   static AcceleratorController* GetController();

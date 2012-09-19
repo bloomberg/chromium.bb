@@ -67,13 +67,8 @@ void SetDisplayLayoutPref(PrefService* pref_service,
     aura::DisplayManager* display_manager =
         aura::Env::GetInstance()->display_manager();
     std::string name;
-    for (size_t i = 0; i < display_manager->GetNumDisplays(); ++i) {
-      if (display_manager->GetDisplayAt(i)->id() == display.id()) {
-        EscapeDisplayName(display_manager->GetDisplayNameAt(i), &name);
-        break;
-      }
-    }
-
+    EscapeDisplayName(display_manager->GetDisplayNameFor(display),
+                      &name);
     DCHECK(!name.empty());
 
     base::DictionaryValue* pref_data = update.Get();

@@ -748,12 +748,22 @@ void RootWindowHostLinux::SetBounds(const gfx::Rect& bounds) {
       delegate_->AsRootWindow()).device_scale_factor();
   bool size_changed = bounds_.size() != bounds.size() ||
       current_scale != new_scale;
+  XWindowChanges changes = {0};
+  unsigned value_mask = 0;
 
-  if (bounds.size() != bounds_.size())
-    XResizeWindow(xdisplay_, xwindow_, bounds.width(), bounds.height());
+  if (bounds.size() != bounds_.size()) {
+    changes.width = bounds.width();
+    changes.height = bounds.height();
+    value_mask = CWHeight | CWWidth;
+  }
 
-  if (bounds.origin() != bounds_.origin())
-    XMoveWindow(xdisplay_, xwindow_, bounds.x(), bounds.y());
+  if (bounds.origin() != bounds_.origin()) {
+    changes.x = bounds.x();
+    changes.y = bounds.y();
+    value_mask |= CWX | CWY;
+  }
+  if (value_mask)
+    XConfigureWindow(xdisplay_, xwindow_, value_mask, &changes);
 
   // Assume that the resize will go through as requested, which should be the
   // case if we're running without a window manager.  If there's a window

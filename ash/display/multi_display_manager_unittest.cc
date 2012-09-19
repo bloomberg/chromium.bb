@@ -65,6 +65,10 @@ class MultiDisplayManagerTest : public test::AshTestBase,
     return root_window_destroyed_;
   }
 
+  const gfx::Display& FindDisplayForId(int64 id) {
+    return display_manager()->FindDisplayForId(id);
+  }
+
   // aura::DisplayObserver overrides:
   virtual void OnDisplayBoundsChanged(const gfx::Display& display) OVERRIDE {
     changed_.push_back(display);
@@ -239,7 +243,7 @@ TEST_F(MultiDisplayManagerTest, MAYBE_TestDeviceScaleOnlyChange) {
 
 TEST_F(MultiDisplayManagerTest, MAYBE_TestNativeDisplaysChanged) {
   const int64 internal_display_id =
-      display_manager()->EnableInternalDisplayForTest();
+      display_manager()->SetFirstDisplayAsInternalDisplayForTest();
   const gfx::Display native_display(internal_display_id,
                                     gfx::Rect(0, 0, 500, 500));
 
@@ -259,9 +263,9 @@ TEST_F(MultiDisplayManagerTest, MAYBE_TestNativeDisplaysChanged) {
   display_manager()->OnNativeDisplaysChanged(displays);
   EXPECT_EQ(2U, display_manager()->GetNumDisplays());
   EXPECT_EQ(default_bounds,
-            display_manager()->GetDisplayAt(0)->bounds().ToString());
+            FindDisplayForId(internal_display_id).bounds().ToString());
   EXPECT_EQ("1,1 100x100",
-            display_manager()->GetDisplayAt(1)->bounds_in_pixel().ToString());
+            FindDisplayForId(10).bounds_in_pixel().ToString());
 
   // Primary connected, with different bounds.
   displays.clear();
@@ -270,9 +274,9 @@ TEST_F(MultiDisplayManagerTest, MAYBE_TestNativeDisplaysChanged) {
   display_manager()->OnNativeDisplaysChanged(displays);
   EXPECT_EQ(2U, display_manager()->GetNumDisplays());
   EXPECT_EQ("0,0 500x500",
-            display_manager()->GetDisplayAt(0)->bounds().ToString());
+            FindDisplayForId(internal_display_id).bounds().ToString());
   EXPECT_EQ("1,1 100x100",
-            display_manager()->GetDisplayAt(1)->bounds_in_pixel().ToString());
+            FindDisplayForId(10).bounds_in_pixel().ToString());
 
   // Turn off primary.
   displays.clear();
@@ -280,25 +284,25 @@ TEST_F(MultiDisplayManagerTest, MAYBE_TestNativeDisplaysChanged) {
   display_manager()->OnNativeDisplaysChanged(displays);
   EXPECT_EQ(2U, display_manager()->GetNumDisplays());
   EXPECT_EQ("0,0 500x500",
-            display_manager()->GetDisplayAt(0)->bounds().ToString());
+            FindDisplayForId(internal_display_id).bounds().ToString());
   EXPECT_EQ("1,1 100x100",
-            display_manager()->GetDisplayAt(1)->bounds_in_pixel().ToString());
+            FindDisplayForId(10).bounds_in_pixel().ToString());
 
   // Emulate suspend.
   displays.clear();
   display_manager()->OnNativeDisplaysChanged(displays);
   EXPECT_EQ(2U, display_manager()->GetNumDisplays());
   EXPECT_EQ("0,0 500x500",
-            display_manager()->GetDisplayAt(0)->bounds().ToString());
+            FindDisplayForId(internal_display_id).bounds().ToString());
   EXPECT_EQ("1,1 100x100",
-            display_manager()->GetDisplayAt(1)->bounds_in_pixel().ToString());
+            FindDisplayForId(10).bounds_in_pixel().ToString());
 
   // External display has disconnected then resumed.
   displays.push_back(native_display);
   display_manager()->OnNativeDisplaysChanged(displays);
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
   EXPECT_EQ("0,0 500x500",
-            display_manager()->GetDisplayAt(0)->bounds().ToString());
+            FindDisplayForId(internal_display_id).bounds().ToString());
 }
 
 }  // namespace internal

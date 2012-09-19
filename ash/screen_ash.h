@@ -51,6 +51,10 @@ class ASH_EXPORT ScreenAsh : public gfx::ScreenImpl {
   static gfx::Rect ConvertRectFromScreen(aura::Window* window,
                                          const gfx::Rect& rect);
 
+  // Returns a gfx::Display object for secondary display. Returns
+  // ivalid display if there is no secondary display connected.
+  static const gfx::Display& GetSecondaryDisplay();
+
  protected:
   virtual gfx::Point GetCursorScreenPoint() OVERRIDE;
   virtual gfx::NativeWindow GetWindowAtCursorScreenPoint() OVERRIDE;

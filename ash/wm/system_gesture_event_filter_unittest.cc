@@ -163,7 +163,7 @@ class SystemGestureEventFilterTest : public AshTestBase {
     // Enable brightness key.
     static_cast<internal::MultiDisplayManager*>(
         aura::Env::GetInstance()->display_manager())->
-        EnableInternalDisplayForTest();
+        SetFirstDisplayAsInternalDisplayForTest();
   }
 
  private:

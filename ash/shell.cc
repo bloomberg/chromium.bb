@@ -195,8 +195,6 @@ Shell::Shell(ShellDelegate* delegate)
   output_configurator_->AddObserver(output_configurator_animation_.get());
   base::MessagePumpAuraX11::Current()->AddDispatcherForRootWindow(
       output_configurator());
-  static_cast<internal::MultiDisplayManager*>(
-      aura::Env::GetInstance()->display_manager())->InitInternalDisplayInfo();
 #endif  // defined(OS_CHROMEOS)
 }
 
@@ -450,6 +448,16 @@ void Shell::Init() {
 
   InitRootWindowController(root_window_controller);
 
+  // This controller needs to be set before SetupManagedWindowMode.
+  desktop_background_controller_.reset(new DesktopBackgroundController());
+  if (delegate_.get())
+    user_wallpaper_delegate_.reset(delegate_->CreateUserWallpaperDelegate());
+  if (!user_wallpaper_delegate_.get())
+    user_wallpaper_delegate_.reset(new DummyUserWallpaperDelegate());
+
+  // Launcher must be created after secondary displays are initialized.
+  display_controller_->InitSecondaryDisplays();
+
   // StatusAreaWidget uses Shell's CapsLockDelegate.
   if (delegate_.get())
     caps_lock_delegate_.reset(delegate_->CreateCapsLockDelegate());
@@ -466,22 +474,12 @@ void Shell::Init() {
   focus_cycler_.reset(new internal::FocusCycler());
   focus_cycler_->AddWidget(status_area_widget_);
 
-  // This controller needs to be set before SetupManagedWindowMode.
-  desktop_background_controller_.reset(new DesktopBackgroundController());
-  if (delegate_.get())
-    user_wallpaper_delegate_.reset(delegate_->CreateUserWallpaperDelegate());
-  if (!user_wallpaper_delegate_.get())
-    user_wallpaper_delegate_.reset(new DummyUserWallpaperDelegate());
-
   InitLayoutManagersForPrimaryDisplay(root_window_controller);
 
   if (!command_line->HasSwitch(switches::kAuraNoShadows)) {
     resize_shadow_controller_.reset(new internal::ResizeShadowController());
     shadow_controller_.reset(new internal::ShadowController());
   }
-
-  // Launcher must be created after secondary displays are initialized.
-  display_controller_->InitSecondaryDisplays();
 
   if (!delegate_.get() || delegate_->IsUserLoggedIn())
     CreateLauncher();

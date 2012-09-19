@@ -56,6 +56,7 @@ enum AcceleratorAction {
   SHOW_KEYBOARD_OVERLAY,
   SHOW_OAK,
   SHOW_TASK_MANAGER,
+  SWAP_PRIMARY_DISPLAY,
   SWITCH_IME,  // Switch to another IME depending on the accelerator.
   TAKE_PARTIAL_SCREENSHOT,
   TAKE_SCREENSHOT,  // Control+F5

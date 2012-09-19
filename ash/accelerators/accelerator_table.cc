@@ -44,14 +44,18 @@ const AcceleratorData kAcceleratorData[] = {
   { true, ui::VKEY_BRIGHTNESS_UP, ui::EF_NONE, BRIGHTNESS_UP },
   { true, ui::VKEY_KBD_BRIGHTNESS_DOWN, ui::EF_NONE, KEYBOARD_BRIGHTNESS_DOWN },
   { true, ui::VKEY_KBD_BRIGHTNESS_UP, ui::EF_NONE, KEYBOARD_BRIGHTNESS_UP },
-  { true, ui::VKEY_F4, ui::EF_CONTROL_DOWN, CYCLE_DISPLAY_MODE },
   { true, ui::VKEY_F4, ui::EF_NONE, TOGGLE_MAXIMIZED },
+  { true, ui::VKEY_F4, ui::EF_CONTROL_DOWN, CYCLE_DISPLAY_MODE },
+  { true, ui::VKEY_F4, ui::EF_ALT_DOWN, SWAP_PRIMARY_DISPLAY },
   { true, ui::VKEY_L, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, LOCK_SCREEN },
   { true, ui::VKEY_POWER, ui::EF_NONE, POWER_PRESSED },
   { false, ui::VKEY_POWER, ui::EF_NONE, POWER_RELEASED },
 #if !defined(NDEBUG)
   // Extra shortcut for debug build to activate lock screen on linux desktop.
   { true, ui::VKEY_L, ui::EF_ALT_DOWN, LOCK_SCREEN },
+  // Extra shortcut for display swaping as alt-f4 is taken on linux desktop.
+  { true, ui::VKEY_F4, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN,
+    SWAP_PRIMARY_DISPLAY },
 #endif
   { true, ui::VKEY_O, ui::EF_CONTROL_DOWN, OPEN_FILE_MANAGER_DIALOG },
   { true, ui::VKEY_M, ui::EF_CONTROL_DOWN, OPEN_FILE_MANAGER_TAB },

@@ -4,13 +4,17 @@
 
 #include "ash/display/display_controller.h"
 
+#include "ash/launcher/launcher.h"
+#include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ui/aura/display_manager.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/window_tracker.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 namespace test {
@@ -147,6 +151,93 @@ TEST_F(DisplayControllerTest, MAYBE_BoundsUpdated) {
   ASSERT_EQ(2, gfx::Screen::GetNumDisplays());
   EXPECT_EQ("0,0 500x500", GetPrimaryDisplay().bounds().ToString());
   EXPECT_EQ("0,500 700x700", GetSecondaryDisplay().bounds().ToString());
+}
+
+TEST_F(DisplayControllerTest, InvertLayout) {
+  EXPECT_EQ("left, 0",
+            DisplayLayout(DisplayLayout::RIGHT, 0).Invert().ToString());
+  EXPECT_EQ("left, -100",
+            DisplayLayout(DisplayLayout::RIGHT, 100).Invert().ToString());
+  EXPECT_EQ("left, 50",
+            DisplayLayout(DisplayLayout::RIGHT, -50).Invert().ToString());
+
+  EXPECT_EQ("right, 0",
+            DisplayLayout(DisplayLayout::LEFT, 0).Invert().ToString());
+  EXPECT_EQ("right, -90",
+            DisplayLayout(DisplayLayout::LEFT, 90).Invert().ToString());
+  EXPECT_EQ("right, 60",
+            DisplayLayout(DisplayLayout::LEFT, -60).Invert().ToString());
+
+  EXPECT_EQ("bottom, 0",
+            DisplayLayout(DisplayLayout::TOP, 0).Invert().ToString());
+  EXPECT_EQ("bottom, -80",
+            DisplayLayout(DisplayLayout::TOP, 80).Invert().ToString());
+  EXPECT_EQ("bottom, 70",
+            DisplayLayout(DisplayLayout::TOP, -70).Invert().ToString());
+
+  EXPECT_EQ("top, 0",
+            DisplayLayout(DisplayLayout::BOTTOM, 0).Invert().ToString());
+  EXPECT_EQ("top, -70",
+            DisplayLayout(DisplayLayout::BOTTOM, 70).Invert().ToString());
+  EXPECT_EQ("top, 80",
+            DisplayLayout(DisplayLayout::BOTTOM, -80).Invert().ToString());
+}
+
+TEST_F(DisplayControllerTest, SwapPrimary) {
+  DisplayController* display_controller =
+      Shell::GetInstance()->display_controller();
+
+  UpdateDisplay("200x200,300x300");
+  gfx::Display primary_display = gfx::Screen::GetPrimaryDisplay();
+  gfx::Display secondary_display = ScreenAsh::GetSecondaryDisplay();
+
+  std::string secondary_name = aura::Env::GetInstance()->
+      display_manager()->GetDisplayNameFor(secondary_display);
+  DisplayLayout secondary_layout(DisplayLayout::RIGHT, 50);
+  display_controller->SetLayoutForDisplayName(secondary_name, secondary_layout);
+
+  EXPECT_NE(primary_display.id(), secondary_display.id());
+  aura::RootWindow* primary_root =
+      display_controller->GetRootWindowForDisplayId(primary_display.id());
+  aura::RootWindow* secondary_root =
+      display_controller->GetRootWindowForDisplayId(secondary_display.id());
+  EXPECT_NE(primary_root, secondary_root);
+  aura::Window* launcher_window =
+      Shell::GetInstance()->launcher()->widget()->GetNativeView();
+  EXPECT_TRUE(primary_root->Contains(launcher_window));
+  EXPECT_FALSE(secondary_root->Contains(launcher_window));
+
+  // Switch primary and secondary
+  display_controller->SetPrimaryDisplay(secondary_display);
+  EXPECT_EQ(secondary_display.id(), gfx::Screen::GetPrimaryDisplay().id());
+  EXPECT_EQ(primary_display.id(), ScreenAsh::GetSecondaryDisplay().id());
+
+  EXPECT_EQ(
+      primary_root,
+      display_controller->GetRootWindowForDisplayId(secondary_display.id()));
+  EXPECT_EQ(
+      secondary_root,
+      display_controller->GetRootWindowForDisplayId(primary_display.id()));
+  EXPECT_TRUE(primary_root->Contains(launcher_window));
+  EXPECT_FALSE(secondary_root->Contains(launcher_window));
+
+  const DisplayLayout& inverted_layout =
+      display_controller->GetLayoutForDisplay(primary_display);
+
+  EXPECT_EQ("left, -50", inverted_layout.ToString());
+
+  aura::WindowTracker tracker;
+  tracker.Add(primary_root);
+  tracker.Add(secondary_root);
+
+  // Deleting 2nd display should move the primary to original primary display.
+  UpdateDisplay("200x200");
+  RunAllPendingInMessageLoop();  // RootWindow is deleted in a posted task.
+  EXPECT_EQ(1, gfx::Screen::GetNumDisplays());
+  EXPECT_EQ(primary_display.id(), gfx::Screen::GetPrimaryDisplay().id());
+  EXPECT_TRUE(tracker.Contains(primary_root));
+  EXPECT_FALSE(tracker.Contains(secondary_root));
+  EXPECT_TRUE(primary_root->Contains(launcher_window));
 }
 
 }  // namespace test

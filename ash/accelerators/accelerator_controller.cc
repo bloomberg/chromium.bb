@@ -22,6 +22,7 @@
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/root_window_controller.h"
 #include "ash/rotator/screen_rotation.h"
+#include "ash/screen_ash.h"
 #include "ash/screenshot_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
@@ -48,6 +49,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/layer_animator.h"
+#include "ui/gfx/screen.h"
 #include "ui/oak/oak.h"
 #include "ui/views/debug_utils.h"
 #include "ui/views/widget/widget.h"
@@ -117,6 +119,13 @@ void HandleCycleDisplayMode() {
     animation->StartFadeOutAnimation(base::Bind(
         base::IgnoreResult(&chromeos::OutputConfigurator::CycleDisplayMode),
         base::Unretained(shell->output_configurator())));
+  }
+}
+
+void HandleSwapPrimaryDisplay() {
+  if (gfx::Screen::GetNumDisplays() > 1) {
+    Shell::GetInstance()->display_controller()->SetPrimaryDisplay(
+        ScreenAsh::GetSecondaryDisplay());
   }
 }
 
@@ -441,6 +450,9 @@ bool AcceleratorController::PerformAction(int action,
       HandleCycleWindowLinear(CYCLE_FORWARD);
       return true;
 #if defined(OS_CHROMEOS)
+    case CYCLE_DISPLAY_MODE:
+      HandleCycleDisplayMode();
+      return true;
     case LOCK_SCREEN:
       return HandleLock();
     case OPEN_FILE_MANAGER_DIALOG:
@@ -449,14 +461,14 @@ bool AcceleratorController::PerformAction(int action,
       return HandleFileManager(false /* as_dialog */);
     case OPEN_CROSH:
       return HandleCrosh();
+    case SWAP_PRIMARY_DISPLAY:
+      HandleSwapPrimaryDisplay();
+      return true;
     case TOGGLE_SPOKEN_FEEDBACK:
       return HandleToggleSpokenFeedback();
     case TOGGLE_WIFI:
       if (Shell::GetInstance()->tray_delegate())
         Shell::GetInstance()->tray_delegate()->ToggleWifi();
-      return true;
-    case CYCLE_DISPLAY_MODE:
-      HandleCycleDisplayMode();
       return true;
 #endif
     case OPEN_FEEDBACK_PAGE:

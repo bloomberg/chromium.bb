@@ -353,8 +353,7 @@ TEST_F(ExtendedDesktopTest, Capture) {
   EXPECT_EQ("1 1", r1_d2.GetMouseButtonCountsAndReset());
 
   r1_w2->ReleaseCapture();
-  EXPECT_EQ(NULL,
-            aura::client::GetCaptureWindow(r2_w1->GetRootWindow()));
+  EXPECT_EQ(NULL, aura::client::GetCaptureWindow(r2_w1->GetRootWindow()));
   generator2.MoveMouseTo(15, 15);
   generator2.ClickLeftButton();
   EXPECT_EQ("1 1 0", r2_d1.GetMouseMotionCountsAndReset());
