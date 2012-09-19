@@ -138,3 +138,25 @@ TEST_F(ConstrainedWindowSheetControllerTest, TwoParentWindows) {
 
   [parent_window2 close];
 }
+
+// Test that using a top level parent view works.
+TEST_F(ConstrainedWindowSheetControllerTest, TopLevelView) {
+  ConstrainedWindowSheetController* controller =
+      [ConstrainedWindowSheetController
+          controllerForParentWindow:test_window()];
+  EXPECT_TRUE(controller);
+
+  NSView* parentView = [[test_window() contentView] superview];
+  [controller parentViewDidBecomeActive:parentView];
+
+  EXPECT_FALSE([sheet_ isVisible]);
+  [controller showSheet:sheet_ forParentView:parentView];
+  EXPECT_TRUE([ConstrainedWindowSheetController controllerForSheet:sheet_]);
+  EXPECT_TRUE([sheet_ isVisible]);
+
+  NSRect window_frame = [test_window() frame];
+  NSRect sheet_frame = [sheet_ frame];
+  CGFloat expected_x = NSMinX(window_frame) +
+      (NSWidth(window_frame) - NSWidth(sheet_frame)) / 2.0;
+  EXPECT_EQ(expected_x, NSMinX(sheet_frame));
+}

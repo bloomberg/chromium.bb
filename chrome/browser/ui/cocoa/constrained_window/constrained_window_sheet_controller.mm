@@ -229,8 +229,7 @@ NSValue* GetKeyForParentWindow(NSWindow* parent_window) {
 }
 
 - (NSRect)overlayWindowFrameForParentView:(NSView*)parentView {
-  NSRect viewFrame = [parentView frame];
-  viewFrame = [[parentView superview] convertRect:viewFrame toView:nil];
+  NSRect viewFrame = [parentView convertRect:[parentView bounds] toView:nil];
   viewFrame.origin = [[parentView window] convertBaseToScreen:viewFrame.origin];
   return viewFrame;
 }
