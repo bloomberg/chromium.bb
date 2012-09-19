@@ -349,6 +349,11 @@ void DesktopRootWindowHostLinux::SetWindowTitle(const string16& title) {
   NOTIMPLEMENTED();
 }
 
+void DesktopRootWindowHostLinux::ClearNativeFocus() {
+  // TODO(erg):
+  NOTIMPLEMENTED();
+}
+
 Widget::MoveLoopResult DesktopRootWindowHostLinux::RunMoveLoop(
     const gfx::Point& drag_offset) {
   // TODO(erg):

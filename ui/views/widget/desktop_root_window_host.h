@@ -74,6 +74,8 @@ class DesktopRootWindowHost {
 
   virtual void SetWindowTitle(const string16& title) = 0;
 
+  virtual void ClearNativeFocus() = 0;
+
   virtual Widget::MoveLoopResult RunMoveLoop(const gfx::Point& drag_offset) = 0;
   virtual void EndMoveLoop() = 0;
 

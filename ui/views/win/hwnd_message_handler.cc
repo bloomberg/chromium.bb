@@ -712,12 +712,6 @@ void HWNDMessageHandler::ClearNativeFocus() {
   ::SetFocus(hwnd());
 }
 
-void HWNDMessageHandler::FocusHWND(HWND hwnd) {
-  // Only reset focus if hwnd is not already focused.
-  if (hwnd && ::GetFocus() != hwnd)
-    ::SetFocus(hwnd);
-}
-
 void HWNDMessageHandler::SetCapture() {
   DCHECK(!HasCapture());
   ::SetCapture(hwnd());

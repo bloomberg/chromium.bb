@@ -659,10 +659,6 @@ void NativeWidgetAura::ClearNativeFocus() {
     window_->GetFocusManager()->SetFocusedWindow(window_, NULL);
 }
 
-void NativeWidgetAura::FocusNativeView(gfx::NativeView native_view) {
-  window_->GetFocusManager()->SetFocusedWindow(native_view, NULL);
-}
-
 gfx::Rect NativeWidgetAura::GetWorkAreaBoundsInScreen() const {
   return gfx::Screen::GetDisplayNearestWindow(GetNativeView()).work_area();
 }

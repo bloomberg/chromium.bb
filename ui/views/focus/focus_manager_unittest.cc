@@ -16,12 +16,25 @@
 #include "ui/views/focus/widget_focus_manager.h"
 #include "ui/views/widget/widget.h"
 
-#if !defined(USE_AURA)
+#if defined(USE_AURA)
+#include "ui/aura/focus_manager.h"
+#include "ui/aura/window.h"
+#else
 #include "ui/views/controls/tabbed_pane/native_tabbed_pane_wrapper.h"
 #include "ui/views/controls/tabbed_pane/tabbed_pane.h"
 #endif
 
 namespace views {
+
+void FocusNativeView(gfx::NativeView view) {
+#if defined(USE_AURA)
+  view->GetFocusManager()->SetFocusedWindow(view, NULL);
+#elif defined(OS_WIN)
+  SetFocus(view);
+#else
+#error
+#endif
+}
 
 enum FocusTestEventType {
   ON_FOCUS = 0,
@@ -139,14 +152,14 @@ TEST_F(FocusManagerTest, WidgetFocusChangeListener) {
 
   widget_listener.ClearFocusChanges();
   gfx::NativeView native_view1 = widget1->GetNativeView();
-  GetWidget()->FocusNativeView(native_view1);
+  FocusNativeView(native_view1);
   ASSERT_EQ(2, static_cast<int>(widget_listener.focus_changes().size()));
   EXPECT_EQ(native_view1, widget_listener.focus_changes()[0].second);
   EXPECT_EQ(native_view1, widget_listener.focus_changes()[1].second);
 
   widget_listener.ClearFocusChanges();
   gfx::NativeView native_view2 = widget2->GetNativeView();
-  GetWidget()->FocusNativeView(native_view2);
+  FocusNativeView(native_view2);
   ASSERT_EQ(2, static_cast<int>(widget_listener.focus_changes().size()));
   EXPECT_EQ(NativeViewPair(native_view1, native_view2),
             widget_listener.focus_changes()[0]);
@@ -185,13 +198,13 @@ TEST_F(FocusManagerTest, FAILS_FocusNativeControls) {
   tabbed_pane->AddTab(ASCIIToUTF16("Awesome textfield"), textfield2);
 
   // Simulate the native view getting the native focus (such as by user click).
-  GetWidget()->FocusNativeView(textfield->TestGetNativeControlView());
+  FocusNativeView(textfield->TestGetNativeControlView());
   EXPECT_EQ(textfield, GetFocusManager()->GetFocusedView());
 
-  GetWidget()->FocusNativeView(tabbed_pane->TestGetNativeControlView());
+  FocusNativeView(tabbed_pane->TestGetNativeControlView());
   EXPECT_EQ(tabbed_pane, GetFocusManager()->GetFocusedView());
 
-  GetWidget()->FocusNativeView(textfield2->TestGetNativeControlView());
+  FocusNativeView(textfield2->TestGetNativeControlView());
   EXPECT_EQ(textfield2, GetFocusManager()->GetFocusedView());
 }
 #endif

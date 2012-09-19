@@ -471,10 +471,6 @@ void NativeWidgetWin::ClearNativeFocus() {
   message_handler_->ClearNativeFocus();
 }
 
-void NativeWidgetWin::FocusNativeView(gfx::NativeView native_view) {
-  message_handler_->FocusHWND(native_view);
-}
-
 gfx::Rect NativeWidgetWin::GetWorkAreaBoundsInScreen() const {
   return gfx::Screen::GetDisplayNearestWindow(GetNativeView()).work_area();
 }

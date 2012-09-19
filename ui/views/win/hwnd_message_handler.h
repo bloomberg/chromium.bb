@@ -115,7 +115,6 @@ class VIEWS_EXPORT HWNDMessageHandler : public ui::WindowImpl,
   void FlashFrame(bool flash);
 
   void ClearNativeFocus();
-  void FocusHWND(HWND hwnd);
 
   void SetCapture();
   void ReleaseCapture();

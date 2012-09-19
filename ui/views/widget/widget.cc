@@ -780,10 +780,6 @@ void Widget::ClearNativeFocus() {
   native_widget_->ClearNativeFocus();
 }
 
-void Widget::FocusNativeView(gfx::NativeView native_view) {
-  native_widget_->FocusNativeView(native_view);
-}
-
 NonClientFrameView* Widget::CreateNonClientFrameView() {
   NonClientFrameView* frame_view =
       widget_delegate_->CreateNonClientFrameView(this);

@@ -304,9 +304,7 @@ void DesktopNativeWidgetAura::SetCursor(gfx::NativeCursor cursor) {
 }
 
 void DesktopNativeWidgetAura::ClearNativeFocus() {
-}
-
-void DesktopNativeWidgetAura::FocusNativeView(gfx::NativeView native_view) {
+  desktop_root_window_host_->ClearNativeFocus();
 }
 
 gfx::Rect DesktopNativeWidgetAura::GetWorkAreaBoundsInScreen() const {

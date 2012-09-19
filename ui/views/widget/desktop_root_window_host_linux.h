@@ -84,6 +84,7 @@ class DesktopRootWindowHostLinux : public DesktopRootWindowHost,
   virtual InputMethod* CreateInputMethod() OVERRIDE;
   virtual internal::InputMethodDelegate* GetInputMethodDelegate() OVERRIDE;
   virtual void SetWindowTitle(const string16& title) OVERRIDE;
+  virtual void ClearNativeFocus() OVERRIDE;
   virtual Widget::MoveLoopResult RunMoveLoop(
       const gfx::Point& drag_offset) OVERRIDE;
   virtual void EndMoveLoop() OVERRIDE;
