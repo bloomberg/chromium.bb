@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROME_BROWSER_MAIN_MAC_H_
 
 #include "chrome/browser/chrome_browser_main_posix.h"
+#include "base/memory/ref_counted.h"
 
 namespace chrome {
 class RemovableDeviceNotificationsMac;
@@ -27,7 +28,7 @@ class ChromeBrowserMainPartsMac : public ChromeBrowserMainPartsPosix {
   static void DidEndMainMessageLoop();
 
  private:
-  scoped_ptr<chrome::RemovableDeviceNotificationsMac>
+  scoped_refptr<chrome::RemovableDeviceNotificationsMac>
       removable_device_notifications_mac_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsMac);

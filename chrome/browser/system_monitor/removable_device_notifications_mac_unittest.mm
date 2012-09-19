@@ -55,7 +55,7 @@ class RemovableDeviceNotificationsMacTest : public testing::Test {
     system_monitor_->AddDevicesChangedObserver(
         mock_devices_changed_observer_.get());
 
-    notifications_.reset(new RemovableDeviceNotificationsMac);
+    notifications_ = new RemovableDeviceNotificationsMac;
 
     unique_id_ = "test_id";
     display_name_ = ASCIIToUTF16("Test Display Name");
@@ -81,7 +81,7 @@ class RemovableDeviceNotificationsMacTest : public testing::Test {
   std::string device_id_;
   DiskInfoMac disk_info_;
 
-  scoped_ptr<RemovableDeviceNotificationsMac> notifications_;
+  scoped_refptr<RemovableDeviceNotificationsMac> notifications_;
 };
 
 TEST_F(RemovableDeviceNotificationsMacTest, AddRemove) {

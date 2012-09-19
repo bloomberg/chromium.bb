@@ -9,7 +9,7 @@
 #include <map>
 
 #include "base/mac/scoped_cftyperef.h"
-#include "base/memory/weak_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "base/system_monitor/system_monitor.h"
 #include "chrome/browser/system_monitor/disk_info_mac.h"
 
@@ -21,7 +21,7 @@ typedef RemovableDeviceNotificationsMac RemovableDeviceNotifications;
 // This class posts notifications to base::SystemMonitor when a new disk
 // is attached, removed, or changed.
 class RemovableDeviceNotificationsMac :
-    public base::SupportsWeakPtr<RemovableDeviceNotificationsMac> {
+    public base::RefCountedThreadSafe<RemovableDeviceNotificationsMac> {
  public:
   enum UpdateType {
     UPDATE_DEVICE_ADDED,
@@ -31,7 +31,6 @@ class RemovableDeviceNotificationsMac :
 
   // Should only be called by browser start up code.  Use GetInstance() instead.
   RemovableDeviceNotificationsMac();
-  virtual ~RemovableDeviceNotificationsMac();
 
   static RemovableDeviceNotificationsMac* GetInstance();
 
@@ -42,6 +41,9 @@ class RemovableDeviceNotificationsMac :
       base::SystemMonitor::RemovableStorageInfo* device_info) const;
 
  private:
+  friend class base::RefCountedThreadSafe<RemovableDeviceNotificationsMac>;
+  virtual ~RemovableDeviceNotificationsMac();
+
   static void DiskAppearedCallback(DADiskRef disk, void* context);
   static void DiskDisappearedCallback(DADiskRef disk, void* context);
   static void DiskDescriptionChangedCallback(DADiskRef disk,

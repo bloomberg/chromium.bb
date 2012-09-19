@@ -180,8 +180,8 @@ void ChromeBrowserMainPartsMac::PreMainMessageLoopStart() {
 }
 
 void ChromeBrowserMainPartsMac::PreProfileInit() {
-  removable_device_notifications_mac_.reset(
-      new chrome::RemovableDeviceNotificationsMac());
+  removable_device_notifications_mac_ =
+      new chrome::RemovableDeviceNotificationsMac();
   ChromeBrowserMainPartsPosix::PreProfileInit();
 }
 

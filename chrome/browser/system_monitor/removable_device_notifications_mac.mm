@@ -14,7 +14,7 @@ static RemovableDeviceNotificationsMac*
     g_removable_device_notifications_mac = NULL;
 
 void GetDiskInfoAndUpdateOnFileThread(
-    const base::WeakPtr<RemovableDeviceNotificationsMac>& notifications,
+    const scoped_refptr<RemovableDeviceNotificationsMac>& notifications,
     base::mac::ScopedCFTypeRef<CFDictionaryRef> dict,
     RemovableDeviceNotificationsMac::UpdateType update_type) {
   DiskInfoMac info = DiskInfoMac::BuildDiskInfoOnFileThread(dict);
@@ -31,7 +31,7 @@ void GetDiskInfoAndUpdateOnFileThread(
 }
 
 void GetDiskInfoAndUpdate(
-    const base::WeakPtr<RemovableDeviceNotificationsMac>& notifications,
+    const scoped_refptr<RemovableDeviceNotificationsMac>& notifications,
     DADiskRef disk,
     RemovableDeviceNotificationsMac::UpdateType update_type) {
   base::mac::ScopedCFTypeRef<CFDictionaryRef> dict(DADiskCopyDescription(disk));
@@ -149,7 +149,7 @@ void RemovableDeviceNotificationsMac::DiskAppearedCallback(
     void* context) {
   RemovableDeviceNotificationsMac* notifications =
       static_cast<RemovableDeviceNotificationsMac*>(context);
-  GetDiskInfoAndUpdate(notifications->AsWeakPtr(),
+  GetDiskInfoAndUpdate(notifications,
                        disk,
                        UPDATE_DEVICE_ADDED);
 }
@@ -160,7 +160,7 @@ void RemovableDeviceNotificationsMac::DiskDisappearedCallback(
     void* context) {
   RemovableDeviceNotificationsMac* notifications =
       static_cast<RemovableDeviceNotificationsMac*>(context);
-  GetDiskInfoAndUpdate(notifications->AsWeakPtr(),
+  GetDiskInfoAndUpdate(notifications,
                        disk,
                        UPDATE_DEVICE_REMOVED);
 }
@@ -172,7 +172,7 @@ void RemovableDeviceNotificationsMac::DiskDescriptionChangedCallback(
     void *context) {
   RemovableDeviceNotificationsMac* notifications =
       static_cast<RemovableDeviceNotificationsMac*>(context);
-  GetDiskInfoAndUpdate(notifications->AsWeakPtr(),
+  GetDiskInfoAndUpdate(notifications,
                        disk,
                        UPDATE_DEVICE_CHANGED);
 }
