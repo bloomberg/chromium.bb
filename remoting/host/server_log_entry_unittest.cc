@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_ptr.h"
+#include "base/stringize_macros.h"
 #include "remoting/host/server_log_entry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
@@ -110,6 +111,7 @@ TEST_F(ServerLogEntryTest, AddHostFields) {
 #elif defined(OS_LINUX)
   key_value_pairs["os-name"] = "Linux";
 #endif
+  key_value_pairs["host-version"] = STRINGIZE(VERSION);
   ASSERT_TRUE(VerifyStanza(key_value_pairs, keys, stanza.get(), &error)) <<
       error;
 }

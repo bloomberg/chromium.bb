@@ -1250,6 +1250,9 @@
         'differ_block',
         '../crypto/crypto.gyp:crypto',
       ],
+      'defines': [
+        'VERSION=<(version_full)',
+      ],
       'sources': [
         'host/audio_capturer.cc',
         'host/audio_capturer.h',
@@ -1799,6 +1802,9 @@
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../ui/ui.gyp:ui',
+      ],
+      'defines': [
+        'VERSION=<(version_full)',
       ],
       'include_dirs': [
         '../testing/gmock/include',

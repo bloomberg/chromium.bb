@@ -5,6 +5,7 @@
 #include "remoting/host/server_log_entry.h"
 
 #include "base/logging.h"
+#include "base/stringize_macros.h"
 #include "base/sys_info.h"
 #include "remoting/base/constants.h"
 #include "remoting/protocol/session.h"
@@ -44,6 +45,8 @@ const char kValueOsNameMac[] = "Mac";
 const char kValueOsNameChromeOS[] = "ChromeOS";
 
 const char kKeyOsVersion[] = "os-version";
+
+const char kKeyHostVersion[] = "host-version";
 
 const char kKeyCpu[] = "cpu";
 
@@ -106,6 +109,7 @@ void ServerLogEntry::AddHostFields() {
   Set(kKeyOsVersion, os_version.str());
 #endif
 
+  Set(kKeyHostVersion, STRINGIZE(VERSION));
   Set(kKeyCpu, SysInfo::CPUArchitecture());
 };
 
