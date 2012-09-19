@@ -40,7 +40,8 @@ GURL GetGoogleURL() {
 }
 
 GURL GetSettingsURL() {
-  return GURL(chrome::kChromeUISettingsURL);
+  return GURL(chrome::kChromeUIUberURL).Resolve(
+      chrome::kChromeUISettingsHost + std::string("/"));
 }
 
 GURL GetContentSettingsURL() {
@@ -49,20 +50,6 @@ GURL GetContentSettingsURL() {
 
 GURL GetClearBrowsingDataURL() {
   return GetSettingsURL().Resolve(chrome::kClearBrowserDataSubPage);
-}
-
-// Converts long uber URLs ("chrome://chrome/foo/") to short (virtual) URLs
-// ("chrome://foo/"). This should be used to convert the return value of
-// WebContentsImpl::GetURL before comparison because it can return either the
-// real URL or the virtual URL.
-GURL ShortenUberURL(const GURL& url) {
-  std::string url_string = url.spec();
-  const std::string long_prefix = "chrome://chrome/";
-  const std::string short_prefix = "chrome://";
-  if (url_string.find(long_prefix) != 0)
-    return url;
-  url_string.replace(0, long_prefix.length(), short_prefix);
-  return GURL(url_string);
 }
 
 } // namespace
@@ -735,7 +722,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   EXPECT_EQ(3, browser()->tab_count());
   EXPECT_EQ(2, browser()->active_index());
   EXPECT_EQ(GetContentSettingsURL(),
-            ShortenUberURL(chrome::GetActiveWebContents(browser())->GetURL()));
+            chrome::GetActiveWebContents(browser())->GetURL());
 }
 
 // This test verifies that constructing params with disposition = SINGLETON_TAB
@@ -768,7 +755,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   EXPECT_EQ(3, browser()->tab_count());
   EXPECT_EQ(1, browser()->active_index());
   EXPECT_EQ(GetContentSettingsURL(),
-            ShortenUberURL(chrome::GetActiveWebContents(browser())->GetURL()));
+            chrome::GetActiveWebContents(browser())->GetURL());
 }
 
 // This test verifies that constructing params with disposition = SINGLETON_TAB
@@ -801,7 +788,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   EXPECT_EQ(3, browser()->tab_count());
   EXPECT_EQ(1, browser()->active_index());
   EXPECT_EQ(GetClearBrowsingDataURL(),
-            ShortenUberURL(chrome::GetActiveWebContents(browser())->GetURL()));
+            chrome::GetActiveWebContents(browser())->GetURL());
 }
 
 // This test verifies that constructing params with disposition = SINGLETON_TAB
@@ -833,7 +820,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   EXPECT_EQ(3, browser()->tab_count());
   EXPECT_EQ(1, browser()->active_index());
   EXPECT_EQ(singleton_url1,
-            ShortenUberURL(chrome::GetActiveWebContents(browser())->GetURL()));
+            chrome::GetActiveWebContents(browser())->GetURL());
 }
 
 // This test verifies that constructing params with disposition = SINGLETON_TAB
@@ -864,7 +851,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   EXPECT_EQ(2, browser()->tab_count());
   EXPECT_EQ(1, browser()->active_index());
   EXPECT_EQ(singleton_url_target,
-            ShortenUberURL(chrome::GetActiveWebContents(browser())->GetURL()));
+            chrome::GetActiveWebContents(browser())->GetURL());
 }
 
 // This test verifies that constructing params with disposition = SINGLETON_TAB
@@ -923,7 +910,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 
   EXPECT_EQ(1u, BrowserList::size());
   EXPECT_EQ(GetSettingsURL(),
-            ShortenUberURL(chrome::GetActiveWebContents(browser())->GetURL()));
+            chrome::GetActiveWebContents(browser())->GetURL());
 }
 
 // Settings page is expected to always open in normal mode regardless
@@ -1007,7 +994,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   }
   EXPECT_EQ(1, browser()->tab_count());
   EXPECT_EQ(GetSettingsURL(),
-            ShortenUberURL(chrome::GetActiveWebContents(browser())->GetURL()));
+            chrome::GetActiveWebContents(browser())->GetURL());
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
@@ -1025,7 +1012,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   }
   EXPECT_EQ(1, browser()->tab_count());
   EXPECT_EQ(GetSettingsURL(),
-            ShortenUberURL(chrome::GetActiveWebContents(browser())->GetURL()));
+            chrome::GetActiveWebContents(browser())->GetURL());
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
@@ -1046,7 +1033,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   }
   EXPECT_EQ(1, browser()->tab_count());
   EXPECT_EQ(GetSettingsURL(),
-            ShortenUberURL(chrome::GetActiveWebContents(browser())->GetURL()));
+            chrome::GetActiveWebContents(browser())->GetURL());
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
@@ -1066,7 +1053,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   }
   EXPECT_EQ(2, browser()->tab_count());
   EXPECT_EQ(GetSettingsURL(),
-            ShortenUberURL(chrome::GetActiveWebContents(browser())->GetURL()));
+            chrome::GetActiveWebContents(browser())->GetURL());
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
@@ -1092,7 +1079,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   }
   EXPECT_EQ(2, browser()->tab_count());
   EXPECT_EQ(GetSettingsURL(),
-            ShortenUberURL(chrome::GetActiveWebContents(browser())->GetURL()));
+            chrome::GetActiveWebContents(browser())->GetURL());
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
@@ -1157,7 +1144,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   }
   EXPECT_EQ(2, browser()->tab_count());
   EXPECT_EQ(GetSettingsURL(),
-            ShortenUberURL(chrome::GetActiveWebContents(browser())->GetURL()));
+            chrome::GetActiveWebContents(browser())->GetURL());
 }
 
 // Tests that when a new tab is opened from the omnibox, the focus is moved from

@@ -21,7 +21,6 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
@@ -112,7 +111,7 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, BrowserActionCreateTab) {
   // Background page created a new tab before it closed.
   EXPECT_FALSE(pm->GetBackgroundHostForExtension(last_loaded_extension_id_));
   EXPECT_EQ(num_tabs_before + 1, browser()->tab_count());
-  EXPECT_EQ(std::string(chrome::kChromeUIExtensionsURL),
+  EXPECT_EQ("chrome://chrome/extensions/",
             chrome::GetActiveWebContents(browser())->GetURL().spec());
 }
 
