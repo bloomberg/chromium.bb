@@ -1,5 +1,5 @@
 vars = {
-  "pnacl_llvm_rev": "aa1912aafcdcf65105943faf7f60351855ac3756",
+  "pnacl_llvm_rev": "5e79ec1d7ada2e14283e2b69b6f4375eb4dd1890",
   "pnacl_gcc_rev": "a8b45d06c8fdf36cfdb7c996393940077097d988",
 
   "glibc_rev": "ef989bae60d93e2906847b367becbd0e7f27679f",
