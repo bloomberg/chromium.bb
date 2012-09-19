@@ -28,6 +28,9 @@ class DriveCacheMetadata {
   // A map table of cache file's resource id to its CacheEntry* entry.
   typedef std::map<std::string, DriveCacheEntry> CacheMap;
 
+  // Database path.
+  static const FilePath::CharType* kDriveCacheMetadataDBPath;
+
   virtual ~DriveCacheMetadata();
 
   // Creates DriveCacheMetadata instance.

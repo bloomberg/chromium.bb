@@ -347,7 +347,7 @@ TEST_F(DriveCacheMetadataTest, Initialization) {
 }
 
 // Test DriveCacheMetadata::RemoveTemporaryFiles.
-TEST_F(DriveCacheMetadataTest, RemoveTemporaryFilesTest) {
+TEST_F(DriveCacheMetadataTest, RemoveTemporaryFiles) {
   SetUpCacheMetadata();
 
   DriveCacheMetadata::CacheMap cache_map;
@@ -386,6 +386,26 @@ TEST_F(DriveCacheMetadataTest, RemoveTemporaryFilesTest) {
   EXPECT_TRUE(metadata_->GetCacheEntry("<resource_id_2>", "", &cache_entry));
   EXPECT_TRUE(metadata_->GetCacheEntry("<resource_id_3>", "", &cache_entry));
   EXPECT_FALSE(metadata_->GetCacheEntry("<resource_id_4>", "", &cache_entry));
+}
+
+TEST_F(DriveCacheMetadataTest, CorruptDB) {
+  SetUpCacheWithVariousFiles();
+
+  const FilePath db_path = cache_paths_[DriveCache::CACHE_TYPE_META].Append(
+      DriveCacheMetadata::kDriveCacheMetadataDBPath);
+
+  // Write a bogus file.
+  std::string text("Hello world");
+  file_util::WriteFile(db_path, text.c_str(), text.length());
+
+  SetUpCacheMetadata();
+
+  // "id_foo" is present and pinned.
+  DriveCacheEntry cache_entry;
+  ASSERT_TRUE(metadata_->GetCacheEntry("id_foo", "md5foo", &cache_entry));
+  EXPECT_EQ("md5foo", cache_entry.md5());
+  EXPECT_EQ(DriveCache::CACHE_TYPE_PERSISTENT,
+            DriveCache::GetSubDirectoryType(cache_entry));
 }
 
 }  // namespace gdata
