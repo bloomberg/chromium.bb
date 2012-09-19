@@ -8,14 +8,8 @@
 
   'target_defaults': {
     'conditions': [
-      ['OS=="win"', {'sources/': [
-        ['include', '_(win)\\.cc$'],
-        ['include', '/win/'],
-        ['include', '/win_[^/]*\\.cc$'],
-      ]}],
       ['use_aura==1', {
-        'sources/': [ ['exclude', '_win\\.(h|cc)$'],
-                      ['exclude', '_x\\.(h|cc)$'] ],
+        'sources/': [ ['exclude', '_win\\.(h|cc)$'] ],
         'dependencies': [ '../aura/aura.gyp:aura', ],
       }],
       ['OS!="linux" or chromeos==1', {
@@ -394,8 +388,6 @@
       'conditions': [
         ['use_aura==1', {
           'sources/': [
-            ['exclude', '_x\\.cc$'],
-            ['exclude', '/x_[^/]*\\.cc$'],
             ['exclude', 'controls/menu/menu_2.*'],
           ],
           'sources!': [
@@ -419,7 +411,6 @@
                 ['exclude', 'controls/menu/*'],
                 ['exclude', 'controls/scrollbar/*'],
                 ['exclude', 'focus/accelerator_handler_aura.cc'],
-                ['exclude', 'widget/tooltip_manager_views.cc'],
               ],
             }],
             ['OS=="win"', {
@@ -428,32 +419,21 @@
                 ['include', 'ime/input_method_win.h'],
                 ['include', 'widget/desktop_root_window_host_win.cc'],
                 ['include', 'widget/desktop_root_window_host_win.h'],
-                ['include', 'widget/desktop_capture_client.cc'],
-                ['include', 'widget/desktop_capture_client.h'],
               ],
             }],
           ],
         }],
-        ['chromeos==1 or use_aura==0', {
-          'sources!': [
-            'widget/desktop_root_window_host.h',
-            'widget/desktop_root_window_host_linux.cc',
-            'widget/desktop_root_window_host_linux.h',
-            'widget/desktop_native_widget_aura.cc',
-            'widget/desktop_native_widget_aura.h',
-            'widget/desktop_root_window_host_win.cc',
-            'widget/desktop_root_window_host_win.h',
-            'widget/desktop_capture_client.cc',
-            'widget/desktop_capture_client.h',
-          ],
+        ['use_aura==0', {
           'sources/': [
-            ['exclude', 'widget/desktop_root_window_host_win.cc'],
-            ['exclude', 'widget/desktop_root_window_host_win.h'],
+            ['exclude', '/desktop_[^/]*\\.cc$'],
+            ['exclude', '/x11_[^/]*\\.cc$'],
           ],
         }],
-        ['use_aura==0', {
-          'sources!': [
-            'widget/tooltip_manager_views.cc',
+        ['chromeos==1', {
+          'sources/': [
+            ['exclude', '/desktop_[^/]*\\.cc$'],
+            ['include', 'desktop_native_widget_helper_aura.cc'],
+            ['include', 'desktop_native_widget_helper_aura.h'],
           ],
         }],
         ['use_aura==0 and OS=="win"', {
@@ -476,11 +456,6 @@
           ],
           'include_dirs': [
             '../../third_party/wtl/include',
-          ],
-        }],
-        ['use_x11==0', {
-          'sources!': [
-            'events/event_x.cc',
           ],
         }],
         ['use_aura==0 or OS!="win"', {
