@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "chrome/browser/tab_contents/web_contents_user_data.h"
 #include "content/public/browser/web_contents_observer.h"
 
 namespace content {
@@ -22,9 +23,9 @@ class URLRequest;
 // process of helping the user connect his profile with one click.  The process
 // begins with an infobar and is followed with a confirmation dialog explaining
 // more about what this means.
-class OneClickSigninHelper : public content::WebContentsObserver {
+class OneClickSigninHelper : public content::WebContentsObserver,
+                             public WebContentsUserData<OneClickSigninHelper> {
  public:
-  explicit OneClickSigninHelper(content::WebContents* web_contents);
   virtual ~OneClickSigninHelper();
 
   // Returns true if the one-click signin feature can be offered at this time.
@@ -48,6 +49,10 @@ class OneClickSigninHelper : public content::WebContentsObserver {
                                     int route_id);
 
  private:
+  explicit OneClickSigninHelper(content::WebContents* web_contents);
+  static int kUserDataKey;
+  friend class WebContentsUserData<OneClickSigninHelper>;
+
   // The portion of ShowInfoBarIfPossible() that needs to run on the UI thread.
   static void ShowInfoBarUIThread(const std::string& session_index,
                                   const std::string& email,

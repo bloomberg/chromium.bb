@@ -66,10 +66,6 @@ class WebIntentPickerGtk;
 class WebUITestContentsCreator;
 class ZoomController;
 
-#if defined(ENABLE_ONE_CLICK_SIGNIN)
-class OneClickSigninHelper;
-#endif
-
 namespace browser_sync {
 class SyncedTabDelegate;
 }
@@ -219,12 +215,6 @@ class TabContents : public content::WebContentsObserver {
   }
   InfoBarTabHelper* infobar_tab_helper() { return infobar_tab_helper_.get(); }
 
-#if defined(ENABLE_ONE_CLICK_SIGNIN)
-  OneClickSigninHelper* one_click_signin_helper() {
-    return one_click_signin_helper_.get();
-  }
-#endif
-
   PasswordManager* password_manager() { return password_manager_.get(); }
   PrefsTabHelper* prefs_tab_helper() { return prefs_tab_helper_.get(); }
 
@@ -336,9 +326,6 @@ class TabContents : public content::WebContentsObserver {
   scoped_ptr<extensions::WebNavigationTabObserver> webnavigation_observer_;
   scoped_ptr<ExternalProtocolObserver> external_protocol_observer_;
   scoped_ptr<NavigationMetricsRecorder> navigation_metrics_recorder_;
-#if defined(ENABLE_ONE_CLICK_SIGNIN)
-  scoped_ptr<OneClickSigninHelper> one_click_signin_helper_;
-#endif
   scoped_ptr<PepperBrokerObserver> pepper_broker_observer_;
   scoped_ptr<PluginObserver> plugin_observer_;
   scoped_ptr<safe_browsing::SafeBrowsingTabObserver>

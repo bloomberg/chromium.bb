@@ -192,14 +192,14 @@ TabContents::TabContents(WebContents* contents)
     thumbnail_generator_->StartThumbnailing(web_contents_.get());
   }
 
+#if defined(ENABLE_ONE_CLICK_SIGNIN)
   // If this is not an incognito window, setup to handle one-click login.
   // We don't want to check that the profile is already connected at this time
   // because the connected state may change while this tab is open.  Having a
   // one-click signin helper attached does not cause problems if the profile
   // happens to be already connected.
-#if defined(ENABLE_ONE_CLICK_SIGNIN)
   if (OneClickSigninHelper::CanOffer(contents, "", false))
-      one_click_signin_helper_.reset(new OneClickSigninHelper(contents));
+      OneClickSigninHelper::CreateForWebContents(contents);
 #endif
 }
 

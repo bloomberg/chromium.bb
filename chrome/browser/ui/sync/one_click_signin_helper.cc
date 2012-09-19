@@ -48,6 +48,8 @@
 #include "webkit/forms/password_form.h"
 #include "webkit/forms/password_form_dom_manager.h"
 
+int OneClickSigninHelper::kUserDataKey;
+
 namespace {
 
 // Set to true if this chrome instance is in the blue-button-on-white-bar
@@ -378,16 +380,14 @@ void OneClickSigninHelper::ShowInfoBarUIThread(
   if (!web_contents || !CanOffer(web_contents, email, true))
     return;
 
-  TabContents* tab_contents = TabContents::FromWebContents(web_contents);
-  if (!tab_contents)
+  OneClickSigninHelper* one_click_signin_tab_helper =
+      OneClickSigninHelper::FromWebContents(web_contents);
+  // The manager may not exist if the contents is incognito or if the profile is
+  // already connected to a Google account.
+  if (!one_click_signin_tab_helper)
     return;
 
-  // Save the email in the one-click signin manager.  The manager may
-  // not exist if the contents is incognito or if the profile is already
-  // connected to a Google account.
-  OneClickSigninHelper* helper = tab_contents->one_click_signin_helper();
-  if (helper)
-    helper->SaveSessionIndexAndEmail(session_index, email);
+  one_click_signin_tab_helper->SaveSessionIndexAndEmail(session_index, email);
 }
 
 void OneClickSigninHelper::DidNavigateAnyFrame(
