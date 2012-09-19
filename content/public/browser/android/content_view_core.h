@@ -8,6 +8,8 @@
 #include "base/android/scoped_java_ref.h"
 #include <jni.h>
 
+#include "content/public/browser/navigation_controller.h"
+
 namespace ui {
 class WindowAndroid;
 }
@@ -37,6 +39,8 @@ class ContentViewCore {
   static ContentViewCore* Create(
       JNIEnv* env, jobject obj, WebContents* web_contents);
   static ContentViewCore* GetNativeContentViewCore(JNIEnv* env, jobject obj);
+
+  virtual void LoadUrl(NavigationController::LoadURLParams& params) = 0;
 
  protected:
   virtual ~ContentViewCore() {};
