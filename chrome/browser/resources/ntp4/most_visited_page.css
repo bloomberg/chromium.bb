@@ -63,6 +63,7 @@ html[dir=rtl] .most-visited .close-button {
 .most-visited .favicon {
   -webkit-margin-start: 5px;
   background: no-repeat left 50%;
+  background-size: 16px;
   bottom: 7px;
   box-sizing: border-box;
   display: block;

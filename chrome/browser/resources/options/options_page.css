@@ -369,6 +369,7 @@ html[dir=rtl].option-name {
   -webkit-padding-start: 20px;
   background-position: left;
   background-repeat: no-repeat;
+  background-size: 16px;
 }
 
 input[type='url'].favicon-cell {

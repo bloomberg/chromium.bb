@@ -51,6 +51,23 @@ class FaviconSource : public ChromeURLDataManager::DataSource {
   Profile* profile_;
 
  private:
+
+  struct IconRequest {
+    IconRequest()
+      : request_id(0),
+        pixel_size(16),
+        scale_factor(ui::SCALE_FACTOR_NONE) {
+    }
+    IconRequest(int id, int size, ui::ScaleFactor scale)
+      : request_id(id),
+        pixel_size(size),
+        scale_factor(scale) {
+    }
+    int request_id;
+    int pixel_size;
+    ui::ScaleFactor scale_factor;
+  };
+
   void Init(Profile* profile, IconType type);
 
   // Called when favicon data is available from the history backend.
@@ -59,13 +76,9 @@ class FaviconSource : public ChromeURLDataManager::DataSource {
       const history::FaviconBitmapResult& bitmap_result);
 
   // Sends the default favicon.
-  void SendDefaultResponse(int request_id);
+  void SendDefaultResponse(const IconRequest& request);
 
-  CancelableRequestConsumerT<int, 0> cancelable_consumer_;
-
-  // Map from request ID to size requested (in pixels). TODO(estade): Get rid of
-  // this map when we properly support multiple favicon sizes.
-  std::map<int, int> request_size_map_;
+  CancelableRequestConsumerTSimple<IconRequest> cancelable_consumer_;
 
   // Raw PNG representation of the favicon to show when the favicon
   // database doesn't have a favicon for a webpage.

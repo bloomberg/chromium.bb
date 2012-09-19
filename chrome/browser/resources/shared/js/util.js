@@ -226,3 +226,15 @@ function appendParam(url, key, value) {
     return url + '?' + param;
   return url + '&' + param;
 }
+
+/**
+ * Creates a new URL for a favicon request.
+ * @param {string} url The url for the favicon.
+ * @param {number=} opt_size Optional preferred size of the favicon.
+ * @return {string} Updated URL for the favicon.
+ */
+function getFaviconURL(url, opt_size) {
+  var size = opt_size || 16;
+  return 'chrome://favicon/size/' + size + '@' +
+      window.devicePixelRatio + 'x/' + url;
+}

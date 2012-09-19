@@ -16,6 +16,9 @@
 }
 
 .search-engine-list .favicon {
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: 16px;
   height: 16px;
   line-height: 16px;
   padding: 0 7px;

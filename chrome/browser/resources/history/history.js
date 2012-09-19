@@ -219,8 +219,8 @@ Visit.prototype.addHighlightedText_ = function(node, content, highlightText) {
  */
 Visit.prototype.getTitleDOM_ = function() {
   var node = createElementWithClassName('div', 'title');
-  node.style.backgroundImage =
-      'url(chrome://favicon/' + encodeURIForCSS(this.url_) + ')';
+  node.style.backgroundImage = url(getFaviconURL(encodeURIForCSS(this.url_)));
+  node.style.backgroundSize = '16px';
 
   var link = document.createElement('a');
   link.href = this.url_;

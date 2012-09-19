@@ -96,9 +96,11 @@ cr.define('options.search_engines', function() {
       // Add the favicon.
       var faviconDivEl = this.ownerDocument.createElement('div');
       faviconDivEl.className = 'favicon';
-      var imgEl = this.ownerDocument.createElement('img');
-      imgEl.src = 'chrome://favicon/iconurl/' + engine.iconURL;
-      faviconDivEl.appendChild(imgEl);
+      if (!this.isPlaceholder) {
+        faviconDivEl.style.backgroundImage =
+            url('chrome://favicon/iconurl@' + window.devicePixelRatio + 'x/' +
+                engine.iconURL);
+      }
       nameColEl.appendChild(faviconDivEl);
 
       var nameEl = this.createEditableTextCell(engine.displayName);
