@@ -1931,9 +1931,15 @@ binutils-make() {
       ac_cv_search_zlibVersion=no \
       make ${MAKE_OPTS}
   else
+    local control_parallel=""
+    if ${BUILD_PLATFORM_MAC}; then
+      # Try to avoid parallel builds for Mac to see if it avoids flake.
+      # http://code.google.com/p/nativeclient/issues/detail?id=2926
+      control_parallel="-j1"
+    fi
     RunWithLog binutils.make \
       env -i PATH="/usr/bin:/bin" \
-      make ${MAKE_OPTS}
+      make ${MAKE_OPTS} ${control_parallel}
   fi
 
   ts-touch-commit "${objdir}"
