@@ -557,6 +557,17 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
         return mContentViewCore.zoomOut();
     }
 
+    /**
+     * Resets the zoom factor of the WebView.
+     *
+     * @return True if there was a zoom change, false otherwise.
+     */
+    // This method uses the term 'zoom' for legacy reasons, but relates
+    // to what chrome calls the 'page scale factor'.
+    public boolean zoomReset() {
+        return mContentViewCore.zoomReset();
+    }
+
     // Invokes the graphical zoom picker widget for this ContentView.
     public void invokeZoomPicker() {
         mContentViewCore.invokeZoomPicker();

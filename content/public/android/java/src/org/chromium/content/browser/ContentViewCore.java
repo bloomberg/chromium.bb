@@ -1137,21 +1137,7 @@ public class ContentViewCore implements MotionEventDelegate {
         if (!canZoomIn()) {
             return false;
         }
-
-        if (mNativeContentViewCore == 0) {
-            return false;
-        }
-
-        long timeMs = System.currentTimeMillis();
-        int x = getWidth() / 2;
-        int y = getHeight() / 2;
-        float delta = 1.25f;
-
-        getContentViewGestureHandler().pinchBegin(timeMs, x, y);
-        getContentViewGestureHandler().pinchBy(timeMs, x, y, delta);
-        getContentViewGestureHandler().pinchEnd(timeMs);
-
-        return true;
+        return zoomByDelta(1.25f);
     }
 
     /**
@@ -1166,7 +1152,26 @@ public class ContentViewCore implements MotionEventDelegate {
         if (!canZoomOut()) {
             return false;
         }
+        return zoomByDelta(0.8f);
+    }
 
+    /**
+     * Resets the zoom factor of the ContentViewCore.
+     *
+     * @return True if there was a zoom change, false otherwise.
+     */
+    // This method uses the term 'zoom' for legacy reasons, but relates
+    // to what chrome calls the 'page scale factor'.
+    public boolean zoomReset() {
+        // The page scale factor is initialized to mNativeMinimumScale when
+        // the page finishes loading. Thus sets it back to mNativeMinimumScale.
+        if (mNativePageScaleFactor - mNativeMinimumScale < ZOOM_CONTROLS_EPSILON) {
+            return false;
+        }
+        return zoomByDelta(mNativeMinimumScale / mNativePageScaleFactor);
+    }
+
+    private boolean zoomByDelta(float delta) {
         if (mNativeContentViewCore == 0) {
             return false;
         }
@@ -1174,7 +1179,6 @@ public class ContentViewCore implements MotionEventDelegate {
         long timeMs = System.currentTimeMillis();
         int x = getWidth() / 2;
         int y = getHeight() / 2;
-        float delta = 0.8f;
 
         getContentViewGestureHandler().pinchBegin(timeMs, x, y);
         getContentViewGestureHandler().pinchBy(timeMs, x, y, delta);
