@@ -97,16 +97,26 @@ void AshTestBase::UpdateDisplay(const std::string& display_specs) {
   display_manager->SetDisplayIdsForTest(&displays);
   display_manager->OnNativeDisplaysChanged(displays);
 
+  bool is_host_origin_set = false;
+  for (size_t i = 0; i < displays.size(); ++i) {
+    if (displays[i].bounds_in_pixel().origin() != gfx::Point(0, 0)) {
+      is_host_origin_set = true;
+      break;
+    }
+  }
+
   // On non-testing environment, when a secondary display is connected, a new
   // native (i.e. X) window for the display is always created below the previous
-  // one for GPU performance reasons. Try to emulate the behavior.
-  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
-  DCHECK_EQ(displays.size(), root_windows.size());
-  size_t next_y = 0;
-  for (size_t i = 0; i < root_windows.size(); ++i) {
-    const gfx::Size size = root_windows[i]->GetHostSize();
-    root_windows[i]->SetHostBounds(gfx::Rect(gfx::Point(0, next_y), size));
-    next_y += size.height();
+  // one for GPU performance reasons. Try to emulate the behavior unless host
+  // origins are explicitly set.
+  if (!is_host_origin_set) {
+    Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+    int next_y = 0;
+    for (size_t i = 0; i < root_windows.size(); ++i) {
+      const gfx::Size size = root_windows[i]->GetHostSize();
+      root_windows[i]->SetHostBounds(gfx::Rect(gfx::Point(0, next_y), size));
+      next_y += size.height();
+    }
   }
 }
 
