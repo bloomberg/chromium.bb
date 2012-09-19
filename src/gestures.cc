@@ -316,6 +316,8 @@ stime_t InternalTimerCallback(stime_t now, void* callback_data) {
 void GestureInterpreter::PushHardwareState(HardwareState* hwstate) {
   stime_t timeout = -1.0;
   Gesture* gs = interpreter_->SyncInterpret(hwstate, &timeout);
+  if (gs && callback_)
+    (*callback_)(callback_data_, gs);
   if (timer_provider_ && interpret_timer_) {
     timer_provider_->cancel_fn(timer_provider_data_, interpret_timer_);
     if (timeout > 0.0) {
@@ -328,9 +330,6 @@ void GestureInterpreter::PushHardwareState(HardwareState* hwstate) {
     }
   } else {
     Err("No timer!");
-  }
-  if (gs && callback_) {
-    (*callback_)(callback_data_, gs);
   }
 }
 
