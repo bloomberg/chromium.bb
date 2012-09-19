@@ -78,14 +78,13 @@ class DeletingLayerAnimationObserver : public LayerAnimationObserver {
 class TestLayerAnimator : public LayerAnimator {
  public:
   TestLayerAnimator() : LayerAnimator(base::TimeDelta::FromSeconds(0)) {}
-
- protected:
   virtual ~TestLayerAnimator() {}
 
-  virtual void ProgressAnimation(LayerAnimationSequence* sequence,
+ protected:
+  virtual bool ProgressAnimation(LayerAnimationSequence* sequence,
                                  base::TimeDelta delta) OVERRIDE {
     EXPECT_TRUE(HasAnimation(sequence));
-    LayerAnimator::ProgressAnimation(sequence, delta);
+    return LayerAnimator::ProgressAnimation(sequence, delta);
   }
 
  private:
@@ -118,8 +117,7 @@ class TestLayerAnimationSequence : public LayerAnimationSequence {
 // Checks that setting a property on an implicit animator causes an animation to
 // happen.
 TEST(LayerAnimatorTest, ImplicitAnimation) {
-  scoped_refptr<LayerAnimator> animator(
-      LayerAnimator::CreateImplicitAnimator());
+  scoped_ptr<LayerAnimator> animator(LayerAnimator::CreateImplicitAnimator());
   AnimationContainerElement* element = animator.get();
   animator->set_disable_timer_for_test(true);
   TestLayerAnimationDelegate delegate;
@@ -134,7 +132,7 @@ TEST(LayerAnimatorTest, ImplicitAnimation) {
 // Checks that if the animator is a default animator, that implicit animations
 // are not started.
 TEST(LayerAnimatorTest, NoImplicitAnimation) {
-  scoped_refptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
+  scoped_ptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
   animator->set_disable_timer_for_test(true);
   TestLayerAnimationDelegate delegate;
   animator->SetDelegate(&delegate);
@@ -146,8 +144,7 @@ TEST(LayerAnimatorTest, NoImplicitAnimation) {
 // Checks that StopAnimatingProperty stops animation for that property, and also
 // skips the stopped animation to the end.
 TEST(LayerAnimatorTest, StopAnimatingProperty) {
-  scoped_refptr<LayerAnimator> animator(
-      LayerAnimator::CreateImplicitAnimator());
+  scoped_ptr<LayerAnimator> animator(LayerAnimator::CreateImplicitAnimator());
   animator->set_disable_timer_for_test(true);
   TestLayerAnimationDelegate delegate;
   animator->SetDelegate(&delegate);
@@ -166,8 +163,7 @@ TEST(LayerAnimatorTest, StopAnimatingProperty) {
 // Checks that multiple running animation for separate properties can be stopped
 // simultaneously and that all animations are advanced to their target values.
 TEST(LayerAnimatorTest, StopAnimating) {
-  scoped_refptr<LayerAnimator> animator(
-      LayerAnimator::CreateImplicitAnimator());
+  scoped_ptr<LayerAnimator> animator(LayerAnimator::CreateImplicitAnimator());
   animator->set_disable_timer_for_test(true);
   TestLayerAnimationDelegate delegate;
   animator->SetDelegate(&delegate);
@@ -185,7 +181,7 @@ TEST(LayerAnimatorTest, StopAnimating) {
 // Schedule an animation that can run immediately. This is the trivial case and
 // should result in the animation being started immediately.
 TEST(LayerAnimatorTest, ScheduleAnimationThatCanRunImmediately) {
-  scoped_refptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
+  scoped_ptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
   AnimationContainerElement* element = animator.get();
   animator->set_disable_timer_for_test(true);
   TestLayerAnimationDelegate delegate;
@@ -222,7 +218,7 @@ TEST(LayerAnimatorTest, ScheduleAnimationThatCanRunImmediately) {
 // Schedule two animations on separate properties. Both animations should
 // start immediately and should progress in lock step.
 TEST(LayerAnimatorTest, ScheduleTwoAnimationsThatCanRunImmediately) {
-  scoped_refptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
+  scoped_ptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
   AnimationContainerElement* element = animator.get();
   animator->set_disable_timer_for_test(true);
   TestLayerAnimationDelegate delegate;
@@ -272,7 +268,7 @@ TEST(LayerAnimatorTest, ScheduleTwoAnimationsThatCanRunImmediately) {
 // Schedule two animations on the same property. In this case, the two
 // animations should run one after another.
 TEST(LayerAnimatorTest, ScheduleTwoAnimationsOnSameProperty) {
-  scoped_refptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
+  scoped_ptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
   AnimationContainerElement* element = animator.get();
   animator->set_disable_timer_for_test(true);
   TestLayerAnimationDelegate delegate;
@@ -324,7 +320,7 @@ TEST(LayerAnimatorTest, ScheduleTwoAnimationsOnSameProperty) {
 // is, ensure that all animations targetting a particular property are run in
 // order.
 TEST(LayerAnimatorTest, ScheduleBlockedAnimation) {
-  scoped_refptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
+  scoped_ptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
   AnimationContainerElement* element = animator.get();
   animator->set_disable_timer_for_test(true);
   TestLayerAnimationDelegate delegate;
@@ -402,7 +398,7 @@ TEST(LayerAnimatorTest, ScheduleBlockedAnimation) {
 // ScheduleTogether is being used, the bounds animation should not start until
 // the second opacity animation starts.
 TEST(LayerAnimatorTest, ScheduleTogether) {
-  scoped_refptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
+  scoped_ptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
   AnimationContainerElement* element = animator.get();
   animator->set_disable_timer_for_test(true);
   TestLayerAnimationDelegate delegate;
@@ -455,7 +451,7 @@ TEST(LayerAnimatorTest, ScheduleTogether) {
 // Start animation (that can run immediately). This is the trivial case (see
 // the trival case for ScheduleAnimation).
 TEST(LayerAnimatorTest, StartAnimationThatCanRunImmediately) {
-  scoped_refptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
+  scoped_ptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
   AnimationContainerElement* element = animator.get();
   animator->set_disable_timer_for_test(true);
   TestLayerAnimationDelegate delegate;
@@ -491,7 +487,7 @@ TEST(LayerAnimatorTest, StartAnimationThatCanRunImmediately) {
 
 // Preempt by immediately setting new target.
 TEST(LayerAnimatorTest, PreemptBySettingNewTarget) {
-  scoped_refptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
+  scoped_ptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
   animator->set_disable_timer_for_test(true);
   TestLayerAnimationDelegate delegate;
   animator->SetDelegate(&delegate);
@@ -519,7 +515,7 @@ TEST(LayerAnimatorTest, PreemptBySettingNewTarget) {
 
 // Preempt by animating to new target.
 TEST(LayerAnimatorTest, PreemptByImmediatelyAnimatingToNewTarget) {
-  scoped_refptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
+  scoped_ptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
   AnimationContainerElement* element = animator.get();
   animator->set_disable_timer_for_test(true);
   TestLayerAnimationDelegate delegate;
@@ -571,7 +567,7 @@ TEST(LayerAnimatorTest, PreemptByImmediatelyAnimatingToNewTarget) {
 
 // Preempt by enqueuing the new animation.
 TEST(LayerAnimatorTest, PreemptEnqueueNewAnimation) {
-  scoped_refptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
+  scoped_ptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
   AnimationContainerElement* element = animator.get();
   animator->set_disable_timer_for_test(true);
   TestLayerAnimationDelegate delegate;
@@ -624,7 +620,7 @@ TEST(LayerAnimatorTest, PreemptEnqueueNewAnimation) {
 // case, all pending and running animations should be finished, and the new
 // animation started.
 TEST(LayerAnimatorTest, PreemptyByReplacingQueuedAnimations) {
-  scoped_refptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
+  scoped_ptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
   AnimationContainerElement* element = animator.get();
   animator->set_disable_timer_for_test(true);
   TestLayerAnimationDelegate delegate;
@@ -679,7 +675,7 @@ TEST(LayerAnimatorTest, PreemptyByReplacingQueuedAnimations) {
 
 // Test that cyclic sequences continue to animate.
 TEST(LayerAnimatorTest, CyclicSequences) {
-  scoped_refptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
+  scoped_ptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
   AnimationContainerElement* element = animator.get();
   animator->set_disable_timer_for_test(true);
   TestLayerAnimationDelegate delegate;
@@ -738,7 +734,7 @@ TEST(LayerAnimatorTest, CyclicSequences) {
 }
 
 TEST(LayerAnimatorTest, AddObserverExplicit) {
-  scoped_refptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
+  scoped_ptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
   AnimationContainerElement* element = animator.get();
   animator->set_disable_timer_for_test(true);
   TestLayerAnimationObserver observer;
@@ -772,7 +768,7 @@ TEST(LayerAnimatorTest, AddObserverExplicit) {
 
   animator->StartAnimation(sequence);
 
-  animator = NULL;
+  animator.reset();
 
   EXPECT_EQ(observer.last_aborted_sequence(), sequence);
 }
@@ -780,7 +776,7 @@ TEST(LayerAnimatorTest, AddObserverExplicit) {
 // Tests that an observer added to a scoped settings object is still notified
 // when the object goes out of scope.
 TEST(LayerAnimatorTest, ImplicitAnimationObservers) {
-  scoped_refptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
+  scoped_ptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
   AnimationContainerElement* element = animator.get();
   animator->set_disable_timer_for_test(true);
   TestImplicitAnimationObserver observer(false);
@@ -806,7 +802,7 @@ TEST(LayerAnimatorTest, ImplicitAnimationObservers) {
 // Tests that an observer added to a scoped settings object is still notified
 // when the object goes out of scope due to the animation being interrupted.
 TEST(LayerAnimatorTest, InterruptedImplicitAnimationObservers) {
-  scoped_refptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
+  scoped_ptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
   animator->set_disable_timer_for_test(true);
   TestImplicitAnimationObserver observer(false);
   TestLayerAnimationDelegate delegate;
@@ -832,7 +828,7 @@ TEST(LayerAnimatorTest, InterruptedImplicitAnimationObservers) {
 // Tests that an observer added to a scoped settings object is not notified
 // when the animator is destroyed unless explicitly requested.
 TEST(LayerAnimatorTest, ImplicitObserversAtAnimatorDestruction) {
-  scoped_refptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
+  scoped_ptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
   animator->set_disable_timer_for_test(true);
   TestImplicitAnimationObserver observer_notify(true);
   TestImplicitAnimationObserver observer_do_not_notify(false);
@@ -853,14 +849,14 @@ TEST(LayerAnimatorTest, ImplicitObserversAtAnimatorDestruction) {
 
   EXPECT_FALSE(observer_notify.animations_completed());
   EXPECT_FALSE(observer_do_not_notify.animations_completed());
-  animator = NULL;
+  animator.reset(NULL);
   EXPECT_TRUE(observer_notify.animations_completed());
   EXPECT_FALSE(observer_do_not_notify.animations_completed());
 }
 
 
 TEST(LayerAnimatorTest, RemoveObserverShouldRemoveFromSequences) {
-  scoped_refptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
+  scoped_ptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
   AnimationContainerElement* element = animator.get();
   animator->set_disable_timer_for_test(true);
   TestLayerAnimationObserver observer;
@@ -895,7 +891,7 @@ TEST(LayerAnimatorTest, RemoveObserverShouldRemoveFromSequences) {
 }
 
 TEST(LayerAnimatorTest, ObserverReleasedBeforeAnimationSequenceEnds) {
-  scoped_refptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
+  scoped_ptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
   animator->set_disable_timer_for_test(true);
 
   scoped_ptr<TestLayerAnimationObserver> observer(
@@ -923,7 +919,7 @@ TEST(LayerAnimatorTest, ObserverReleasedBeforeAnimationSequenceEnds) {
 }
 
 TEST(LayerAnimatorTest, ObserverAttachedAfterAnimationStarted) {
-  scoped_refptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
+  scoped_ptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
   AnimationContainerElement* element = animator.get();
   animator->set_disable_timer_for_test(true);
 
@@ -956,7 +952,7 @@ TEST(LayerAnimatorTest, ObserverAttachedAfterAnimationStarted) {
 }
 
 TEST(LayerAnimatorTest, ObserverDetachedBeforeAnimationFinished) {
-  scoped_refptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
+  scoped_ptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
   AnimationContainerElement* element = animator.get();
   animator->set_disable_timer_for_test(true);
 
@@ -993,7 +989,7 @@ TEST(LayerAnimatorTest, ObserverDetachedBeforeAnimationFinished) {
 // animation.
 TEST(LayerAnimatorTest, ObserverDeletesAnimations) {
   LayerAnimator::set_disable_animations_for_test(false);
-  scoped_refptr<LayerAnimator> animator(new TestLayerAnimator());
+  scoped_ptr<LayerAnimator> animator(new TestLayerAnimator());
   AnimationContainerElement* element = animator.get();
   animator->set_disable_timer_for_test(true);
   TestLayerAnimationDelegate delegate;
@@ -1036,7 +1032,7 @@ TEST(LayerAnimatorTest, ObserverDeletesAnimations) {
 // Check that setting a property during an animation with a default animator
 // cancels the original animation.
 TEST(LayerAnimatorTest, SettingPropertyDuringAnAnimation) {
-  scoped_refptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
+  scoped_ptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
   animator->set_disable_timer_for_test(true);
   TestLayerAnimationDelegate delegate;
   animator->SetDelegate(&delegate);
@@ -1063,7 +1059,7 @@ TEST(LayerAnimatorTest, SettingPropertyDuringAnAnimation) {
 // Tests that the preemption mode IMMEDIATELY_SET_NEW_TARGET, doesn't cause the
 // second sequence to be leaked.
 TEST(LayerAnimatorTest, ImmediatelySettingNewTargetDoesNotLeak) {
-  scoped_refptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
+  scoped_ptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
   animator->set_preemption_strategy(LayerAnimator::IMMEDIATELY_SET_NEW_TARGET);
   animator->set_disable_timer_for_test(true);
   TestLayerAnimationDelegate delegate;
@@ -1103,7 +1099,7 @@ TEST(LayerAnimatorTest, ImmediatelySettingNewTargetDoesNotLeak) {
 
 // Verifies GetTargetOpacity() works when multiple sequences are scheduled.
 TEST(LayerAnimatorTest, GetTargetOpacity) {
-  scoped_refptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
+  scoped_ptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
   animator->set_preemption_strategy(LayerAnimator::ENQUEUE_NEW_ANIMATION);
   animator->set_disable_timer_for_test(true);
   TestLayerAnimationDelegate delegate;
@@ -1124,7 +1120,7 @@ TEST(LayerAnimatorTest, GetTargetOpacity) {
 
 // Verifies GetTargetBrightness() works when multiple sequences are scheduled.
 TEST(LayerAnimatorTest, GetTargetBrightness) {
-  scoped_refptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
+  scoped_ptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
   animator->set_preemption_strategy(LayerAnimator::ENQUEUE_NEW_ANIMATION);
   animator->set_disable_timer_for_test(true);
   TestLayerAnimationDelegate delegate;
@@ -1145,7 +1141,7 @@ TEST(LayerAnimatorTest, GetTargetBrightness) {
 
 // Verifies GetTargetGrayscale() works when multiple sequences are scheduled.
 TEST(LayerAnimatorTest, GetTargetGrayscale) {
-  scoped_refptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
+  scoped_ptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
   animator->set_preemption_strategy(LayerAnimator::ENQUEUE_NEW_ANIMATION);
   animator->set_disable_timer_for_test(true);
   TestLayerAnimationDelegate delegate;
@@ -1166,7 +1162,7 @@ TEST(LayerAnimatorTest, GetTargetGrayscale) {
 
 // Verifies SchedulePauseForProperties().
 TEST(LayerAnimatorTest, SchedulePauseForProperties) {
-  scoped_refptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
+  scoped_ptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
   animator->set_preemption_strategy(LayerAnimator::ENQUEUE_NEW_ANIMATION);
   animator->SchedulePauseForProperties(base::TimeDelta::FromMilliseconds(100),
                                        LayerAnimationElement::TRANSFORM,
@@ -1174,224 +1170,6 @@ TEST(LayerAnimatorTest, SchedulePauseForProperties) {
   EXPECT_TRUE(animator->IsAnimatingProperty(LayerAnimationElement::TRANSFORM));
   EXPECT_TRUE(animator->IsAnimatingProperty(LayerAnimationElement::BOUNDS));
   EXPECT_FALSE(animator->IsAnimatingProperty(LayerAnimationElement::OPACITY));
-}
-
-
-class AnimatorOwner {
-public:
-  AnimatorOwner()
-      : animator_(LayerAnimator::CreateDefaultAnimator()) {
-  }
-
-  LayerAnimator* animator() { return animator_.get(); }
-
-private:
-  scoped_refptr<LayerAnimator> animator_;
-
-  DISALLOW_COPY_AND_ASSIGN(AnimatorOwner);
-};
-
-class DeletingObserver : public LayerAnimationObserver {
-public:
-  DeletingObserver(bool* was_deleted)
-      : animator_owner_(new AnimatorOwner),
-        delete_on_animation_ended_(false),
-        delete_on_animation_aborted_(false),
-        delete_on_animation_scheduled_(false),
-        was_deleted_(was_deleted) {
-    animator()->AddObserver(this);
-  }
-
-  ~DeletingObserver() {
-    animator()->RemoveObserver(this);
-    *was_deleted_ = true;
-  }
-
-  LayerAnimator* animator() { return animator_owner_->animator(); }
-
-  bool delete_on_animation_ended() const {
-    return delete_on_animation_ended_;
-  }
-  void set_delete_on_animation_ended(bool enabled) {
-    delete_on_animation_ended_ = enabled;
-  }
-
-  bool delete_on_animation_aborted() const {
-    return delete_on_animation_aborted_;
-  }
-  void set_delete_on_animation_aborted(bool enabled) {
-    delete_on_animation_aborted_ = enabled;
-  }
-
-  bool delete_on_animation_scheduled() const {
-    return delete_on_animation_scheduled_;
-  }
-  void set_delete_on_animation_scheduled(bool enabled) {
-    delete_on_animation_scheduled_ = enabled;
-  }
-
-  // LayerAnimationObserver implementation.
-  virtual void OnLayerAnimationEnded(
-      LayerAnimationSequence* sequence) OVERRIDE {
-    if (delete_on_animation_ended_)
-      delete this;
-  }
-
-  virtual void OnLayerAnimationAborted(
-      LayerAnimationSequence* sequence) OVERRIDE {
-    if (delete_on_animation_aborted_)
-      delete this;
-  }
-
-  virtual void OnLayerAnimationScheduled(
-      LayerAnimationSequence* sequence) {
-    if (delete_on_animation_scheduled_)
-      delete this;
-  }
-
-private:
-  scoped_ptr<AnimatorOwner> animator_owner_;
-  bool delete_on_animation_ended_;
-  bool delete_on_animation_aborted_;
-  bool delete_on_animation_scheduled_;
-  bool* was_deleted_;
-
-  DISALLOW_COPY_AND_ASSIGN(DeletingObserver);
-};
-
-TEST(LayerAnimatorTest, ObserverDeletesAnimatorAfterFinishingAnimation) {
-  bool observer_was_deleted = false;
-  DeletingObserver* observer = new DeletingObserver(&observer_was_deleted);
-  observer->set_delete_on_animation_ended(true);
-  observer->set_delete_on_animation_aborted(true);
-  LayerAnimator* animator = observer->animator();
-  AnimationContainerElement* element = observer->animator();
-  animator->set_disable_timer_for_test(true);
-  TestLayerAnimationDelegate delegate;
-  animator->SetDelegate(&delegate);
-
-  delegate.SetOpacityFromAnimation(0.0f);
-
-  gfx::Rect start_bounds(0, 0, 50, 50);
-  gfx::Rect target_bounds(10, 10, 100, 100);
-
-  delegate.SetBoundsFromAnimation(start_bounds);
-
-  base::TimeDelta delta = base::TimeDelta::FromSeconds(1);
-  LayerAnimationSequence* opacity_sequence = new LayerAnimationSequence(
-      LayerAnimationElement::CreateOpacityElement(1.0f, delta));
-  animator->StartAnimation(opacity_sequence);
-
-  delta = base::TimeDelta::FromSeconds(2);
-  LayerAnimationSequence* bounds_sequence = new LayerAnimationSequence(
-      LayerAnimationElement::CreateBoundsElement(target_bounds, delta));
-  animator->StartAnimation(bounds_sequence);
-
-  base::TimeTicks start_time = animator->last_step_time();
-  element->Step(start_time + base::TimeDelta::FromMilliseconds(1500));
-
-  EXPECT_TRUE(observer_was_deleted);
-}
-
-TEST(LayerAnimatorTest, ObserverDeletesAnimatorAfterStoppingAnimating) {
-  bool observer_was_deleted = false;
-  DeletingObserver* observer = new DeletingObserver(&observer_was_deleted);
-  observer->set_delete_on_animation_ended(true);
-  observer->set_delete_on_animation_aborted(true);
-  LayerAnimator* animator = observer->animator();
-  animator->set_disable_timer_for_test(true);
-  TestLayerAnimationDelegate delegate;
-  animator->SetDelegate(&delegate);
-
-  delegate.SetOpacityFromAnimation(0.0f);
-
-  gfx::Rect start_bounds(0, 0, 50, 50);
-  gfx::Rect target_bounds(10, 10, 100, 100);
-
-  delegate.SetBoundsFromAnimation(start_bounds);
-
-  base::TimeDelta delta = base::TimeDelta::FromSeconds(1);
-  LayerAnimationSequence* opacity_sequence = new LayerAnimationSequence(
-      LayerAnimationElement::CreateOpacityElement(1.0f, delta));
-  animator->StartAnimation(opacity_sequence);
-
-  delta = base::TimeDelta::FromSeconds(2);
-  LayerAnimationSequence* bounds_sequence = new LayerAnimationSequence(
-      LayerAnimationElement::CreateBoundsElement(target_bounds, delta));
-  animator->StartAnimation(bounds_sequence);
-
-  animator->StopAnimating();
-
-  EXPECT_TRUE(observer_was_deleted);
-}
-
-TEST(LayerAnimatorTest, ObserverDeletesAnimatorAfterScheduling) {
-  bool observer_was_deleted = false;
-  DeletingObserver* observer = new DeletingObserver(&observer_was_deleted);
-  observer->set_delete_on_animation_scheduled(true);
-  LayerAnimator* animator = observer->animator();
-  animator->set_disable_timer_for_test(true);
-  TestLayerAnimationDelegate delegate;
-  animator->SetDelegate(&delegate);
-
-  delegate.SetOpacityFromAnimation(0.0f);
-
-  gfx::Rect start_bounds(0, 0, 50, 50);
-  gfx::Rect target_bounds(10, 10, 100, 100);
-
-  delegate.SetBoundsFromAnimation(start_bounds);
-
-  std::vector<LayerAnimationSequence*> to_start;
-
-  base::TimeDelta delta = base::TimeDelta::FromSeconds(1);
-  to_start.push_back(new LayerAnimationSequence(
-      LayerAnimationElement::CreateOpacityElement(1.0f, delta)));
-
-  delta = base::TimeDelta::FromSeconds(2);
-  to_start.push_back(new LayerAnimationSequence(
-      LayerAnimationElement::CreateBoundsElement(target_bounds, delta)));
-
-  animator->ScheduleTogether(to_start);
-
-  EXPECT_TRUE(observer_was_deleted);
-}
-
-TEST(LayerAnimatorTest, ObserverDeletesAnimatorAfterAborted) {
-  bool observer_was_deleted = false;
-  DeletingObserver* observer = new DeletingObserver(&observer_was_deleted);
-  observer->set_delete_on_animation_aborted(true);
-  LayerAnimator* animator = observer->animator();
-  animator->set_preemption_strategy(
-      LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-  animator->set_disable_timer_for_test(true);
-  TestLayerAnimationDelegate delegate;
-  animator->SetDelegate(&delegate);
-
-  delegate.SetOpacityFromAnimation(0.0f);
-
-  gfx::Rect start_bounds(0, 0, 50, 50);
-  gfx::Rect target_bounds(10, 10, 100, 100);
-
-  delegate.SetBoundsFromAnimation(start_bounds);
-
-  std::vector<LayerAnimationSequence*> to_start;
-
-  base::TimeDelta delta = base::TimeDelta::FromSeconds(1);
-  to_start.push_back(new LayerAnimationSequence(
-      LayerAnimationElement::CreateOpacityElement(1.0f, delta)));
-
-  delta = base::TimeDelta::FromSeconds(2);
-  to_start.push_back(new LayerAnimationSequence(
-      LayerAnimationElement::CreateBoundsElement(target_bounds, delta)));
-
-  animator->ScheduleTogether(to_start);
-
-  EXPECT_FALSE(observer_was_deleted);
-
-  animator->StartAnimation(new LayerAnimationSequence(
-      LayerAnimationElement::CreateOpacityElement(1.0f, delta)));
-
-  EXPECT_TRUE(observer_was_deleted);
 }
 
 }  // namespace ui

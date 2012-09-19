@@ -2873,9 +2873,6 @@ class TestLayerAnimator : public ui::LayerAnimator {
   // LayerAnimator.
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
 
- protected:
-  ~TestLayerAnimator() { }
-
  private:
   gfx::Rect last_bounds_;
 
