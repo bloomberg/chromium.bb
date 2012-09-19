@@ -83,6 +83,9 @@ class WebUILoginDisplayHost : public BaseLoginDisplayHost,
   // Login display we are using.
   WebUILoginDisplay* webui_login_display_;
 
+  // True if alternate boot animation is enabled.
+  bool is_boot_animation2_enabled_;
+
   // True if the login display is the current screen.
   bool is_showing_login_;
 

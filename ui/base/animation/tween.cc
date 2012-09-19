@@ -45,6 +45,9 @@ double Tween::CalculateValue(Tween::Type type, double state) {
     case EASE_OUT:
       return 1.0 - pow(1.0 - state, 2);
 
+    case EASE_OUT_2:
+      return 1.0 - pow(1.0 - state, 4);
+
     case SMOOTH_IN_OUT:
       return sin(state);
 

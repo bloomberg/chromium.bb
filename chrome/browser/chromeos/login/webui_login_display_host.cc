@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/webui_login_display_host.h"
 
+#include "ash/ash_switches.h"
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
@@ -81,11 +82,18 @@ WebUILoginDisplayHost::WebUILoginDisplayHost(const gfx::Rect& background_bounds)
       (is_registered || !disable_oobe_animation) &&
       (!is_registered || !disable_boot_animation);
 
+  // For slower hardware we have boot animation disabled so
+  // we'll be initializing WebUI hidden, waiting for user pods to load and then
+  // show WebUI at once.
   waiting_for_user_pods_ =
       new_oobe_ui && !zero_delay_enabled && !waiting_for_wallpaper_load_;
 
   initialize_webui_hidden_ = kHiddenWebUIInitializationDefault &&
       (waiting_for_user_pods_ || waiting_for_wallpaper_load_);
+
+  is_boot_animation2_enabled_ = waiting_for_wallpaper_load_ &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          ash::switches::kAshDisableBootAnimation2);
 
   // Prevents white flashing on OOBE (http://crbug.com/131569).
   aura::Env::GetInstance()->set_render_white_bg(false);
@@ -110,7 +118,9 @@ WebUILoginDisplayHost::WebUILoginDisplayHost(const gfx::Rect& background_bounds)
                    content::NotificationService::AllSources());
   }
 
-  if (waiting_for_user_pods_ && initialize_webui_hidden_) {
+  // In boot-animation2 we want to show login WebUI as soon as possible.
+  if ((waiting_for_user_pods_ || is_boot_animation2_enabled_)
+      && initialize_webui_hidden_) {
     registrar_.Add(this, chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE,
                    content::NotificationService::AllSources());
   }
@@ -247,6 +257,10 @@ void WebUILoginDisplayHost::Observe(
     LOG(INFO) << "Login WebUI >> WEBUI_VISIBLE";
     if (waiting_for_user_pods_ && initialize_webui_hidden_) {
       waiting_for_user_pods_ = false;
+      ShowWebUI();
+    } else if (waiting_for_wallpaper_load_ && initialize_webui_hidden_) {
+      // Reduce time till login UI is shown - show it as soon as possible.
+      waiting_for_wallpaper_load_ = false;
       ShowWebUI();
     }
     registrar_.Remove(this,

@@ -828,6 +828,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kDisableBootAnimation),
   },
   {
+    "disable-boot-animation2",
+    IDS_FLAGS_DISABLE_BOOT_ANIMATION2,
+    IDS_FLAGS_DISABLE_BOOT_ANIMATION2_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(ash::switches::kAshDisableBootAnimation2),
+  },
+  {
     "disable-workspace2",
     IDS_FLAGS_DISABLE_WORKSPACE2,
     IDS_FLAGS_DISABLE_WORKSPACE2_DESCRIPTION,

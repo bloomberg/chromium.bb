@@ -6324,6 +6324,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_DISABLE_BOOT_ANIMATION_DESCRIPTION" desc="Description for the flag to disable wallpaper boot animation (except for OOBE).">
           Disables wallpaper boot animation (except for OOBE case).
         </message>
+        <message name="IDS_FLAGS_DISABLE_BOOT_ANIMATION2" desc="Name for the flag to go back to wallpaper boot animation v1.">
+          Disable boot animation v2 (go back to v1).
+        </message>
+        <message name="IDS_FLAGS_DISABLE_BOOT_ANIMATION2_DESCRIPTION" desc="Description for the flag to go back to wallpaper boot animation v2.">
+          Disables wallpaper boot animation v2 - goes back to v1 (except for OOBE case).
+        </message>
         <message name="IDS_FLAGS_DISABLE_WORKSPACE2" desc="Description for the flag to turn off workspace2.">
           Disable new window stacking.
         </message>

@@ -16,6 +16,9 @@ const char kAshDebugShortcuts[] = "ash-debug-shortcuts";
 // Disables Workspace2.
 const char kAshDisableWorkspace2[] = "ash-disable-workspace2";
 
+// Disables boot animation v2, go back to v1.
+const char kAshDisableBootAnimation2[] = "ash-disable-boot-animation2";
+
 // Enable advanced gestures (e.g. for window management).
 const char kAshEnableAdvancedGestures[] = "ash-enable-advanced-gestures";
 

@@ -511,9 +511,16 @@ void AnimateShowHideWindowCommon_BrightnessGrayscale(aura::Window* window,
     window->layer()->SetVisible(true);
   }
 
+  int animation_duration = kBrightnessGrayscaleFadeDurationMs;
+  ui::Tween::Type animation_type = ui::Tween::EASE_OUT_2;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          ash::switches::kAshDisableBootAnimation2)) {
+    animation_type = ui::Tween::EASE_OUT;
+  }
+
   ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
   settings.SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(kBrightnessGrayscaleFadeDurationMs));
+      base::TimeDelta::FromMilliseconds(animation_duration));
   if (!show)
     settings.AddObserver(new HidingWindowAnimationObserver(window));
 
@@ -525,17 +532,15 @@ void AnimateShowHideWindowCommon_BrightnessGrayscale(aura::Window* window,
   scoped_ptr<ui::LayerAnimationElement> brightness_element(
       ui::LayerAnimationElement::CreateBrightnessElement(
           end_value,
-          base::TimeDelta::FromMilliseconds(
-              kBrightnessGrayscaleFadeDurationMs)));
-  brightness_element->set_tween_type(ui::Tween::EASE_OUT);
+          base::TimeDelta::FromMilliseconds(animation_duration)));
+  brightness_element->set_tween_type(animation_type);
   brightness_sequence->AddElement(brightness_element.release());
 
   scoped_ptr<ui::LayerAnimationElement> grayscale_element(
       ui::LayerAnimationElement::CreateGrayscaleElement(
           end_value,
-          base::TimeDelta::FromMilliseconds(
-              kBrightnessGrayscaleFadeDurationMs)));
-  grayscale_element->set_tween_type(ui::Tween::EASE_OUT);
+          base::TimeDelta::FromMilliseconds(animation_duration)));
+  grayscale_element->set_tween_type(animation_type);
   grayscale_sequence->AddElement(grayscale_element.release());
 
    std::vector<ui::LayerAnimationSequence*> animations;
