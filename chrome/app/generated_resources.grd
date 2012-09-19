@@ -17583,7 +17583,7 @@ Battery full
       No apps for this action are installed, and there are no app recommendations for this action in the Chrome Web Store either.
     </message>
     <message name="IDS_INTENT_PICKER_USE_ALTERNATE_SERVICE" desc="Link text that, when clicked, allows the user to choose an alternate intent service from the picker.">
-      or use another app...
+      Use another service
     </message>
     <message name="IDS_INTENT_PICKER_USE_ANOTHER_SERVICE" desc="Button text providing a way for the user to not use the web intents service they are on, and select a new one.">
       Use another app 

@@ -37,6 +37,13 @@
 using content::OpenURLParams;
 using content::Referrer;
 
+@interface HyperlinkButtonCell (Private)
+- (void)customizeButtonCell;
+@end
+
+@interface CustomLinkButtonCell : HyperlinkButtonCell
+@end
+
 namespace {
 
 // The width of a service button, in view coordinates.
@@ -47,9 +54,6 @@ const CGFloat kVerticalSpacing = 18;
 
 // Square size of the close button.
 const CGFloat kCloseButtonSize = 16;
-
-// Font size for picker header.
-const CGFloat kHeaderFontSize = 14.5;
 
 // Width of the text fields.
 const CGFloat kTextWidth = WebIntentPicker::kWindowWidth -
@@ -68,8 +72,8 @@ void ConfigureTextFieldAsLabel(NSTextField* field) {
 
 NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
   NSButton* button = [[NSButton alloc] initWithFrame:frame];
-  scoped_nsobject<HyperlinkButtonCell> cell(
-      [[HyperlinkButtonCell alloc] initTextCell:title]);
+  scoped_nsobject<CustomLinkButtonCell> cell(
+      [[CustomLinkButtonCell alloc] initTextCell:title]);
   [cell setControlSize:NSSmallControlSize];
   [button setCell:cell.get()];
   [button setButtonType:NSMomentaryPushInButton];
@@ -79,6 +83,32 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
 }
 
 }  // namespace
+
+
+// Provide custom link format for intent picker. Removes underline attribute,
+// since UX direction is "look like WebUI".
+@implementation CustomLinkButtonCell
+- (void)customizeButtonCell {
+  [super customizeButtonCell];
+  [self setTextColor:[NSColor colorWithDeviceRed:0xff/255.0
+                                           green:0x11/255.0
+                                            blue:0x55/255.0
+                                           alpha:0xcc/255.0]];
+}
+
+- (NSDictionary*)linkAttributes {
+  scoped_nsobject<NSMutableParagraphStyle> paragraphStyle(
+      [[NSParagraphStyle defaultParagraphStyle] mutableCopy]);
+  [paragraphStyle setAlignment:[self alignment]];
+
+  return @{
+    NSForegroundColorAttributeName: [self textColor],
+    NSFontAttributeName: [self font],
+    NSCursorAttributeName: [NSCursor pointingHandCursor],
+    NSParagraphStyleAttributeName: paragraphStyle.get()
+  };
+}
+@end
 
 // This simple NSView subclass is used as the single subview of the page info
 // bubble's window's contentView. Drawing is flipped so that layout of the
@@ -253,6 +283,7 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
     spacer_.reset([[NSBox alloc] initWithFrame:frame]);
     [spacer_ setBoxType:NSBoxSeparator];
     [spacer_ setBorderColor:[NSColor blackColor]];
+    [spacer_ setAlphaValue:0.2];
 
     NSArray* subviews = @[titleField_, subtitleField_, spacer_];
     [self setSubviews:subviews];
@@ -504,7 +535,9 @@ const CGFloat kAddButtonWidth = 128.0;
   frame.origin.y = (kMaxHeight - NSHeight(frame)) / 2.0;
   [label_ setFrame:frame];
 
-  [self setActionButton:@"Select"
+  string = l10n_util::GetNSStringWithFixup(
+      IDS_INTENT_PICKER_SELECT_INTENT);
+  [self setActionButton:string
            withSelector:@selector(invokeService:)
           forController:controller];
   [installButton_ setTag:index];
@@ -694,7 +727,8 @@ const CGFloat kAddButtonWidth = 128.0;
 
     inlineDispositionTitleField_.reset([[NSTextField alloc] init]);
     ConfigureTextFieldAsLabel(inlineDispositionTitleField_);
-
+    [inlineDispositionTitleField_ setFont:
+        [NSFont boldSystemFontOfSize:[NSFont systemFontSize]]];
     flipView_.reset([[WebIntentsContentView alloc] init]);
     [flipView_ setAutoresizingMask:NSViewMinYMargin];
     [[[self window] contentView] setSubviews:@[flipView_]];
@@ -744,13 +778,6 @@ const CGFloat kAddButtonWidth = 128.0;
 
   // Resize web contents.
   [webContentView setFrameSize:inlineContentSize];
-
-  // Position close button.
-  NSRect buttonFrame = [closeButton_ frame];
-  buttonFrame.origin.x = containerSize.width -
-      WebIntentPicker::kContentAreaBorder - kCloseButtonSize;
-  [closeButton_ setFrame:buttonFrame];
-
   [self setContainerSize:containerSize];
 }
 
@@ -843,13 +870,17 @@ const CGFloat kAddButtonWidth = 128.0;
 }
 
 - (void)addCloseButtonToSubviews:(NSMutableArray*)subviews  {
+  const CGFloat kButtonPadding = 4.0; // whitespace inside button frame.
   if (!closeButton_.get()) {
     NSRect buttonFrame = NSMakeRect(
-        WebIntentPicker::kContentAreaBorder + kTextWidth,
-        WebIntentPicker::kContentAreaBorder,
+        WebIntentPicker::kContentAreaBorder + kTextWidth + kButtonPadding,
+        WebIntentPicker::kContentAreaBorder - kButtonPadding,
         kCloseButtonSize, kCloseButtonSize);
     closeButton_.reset(
         [[HoverCloseButton alloc] initWithFrame:buttonFrame]);
+    // Anchor close button to upper right.
+    // (NSViewMaxYMargin since parent view is flipped.)
+    [closeButton_ setAutoresizingMask:NSViewMaxYMargin|NSViewMinXMargin];
     [closeButton_ setTarget:self];
     [closeButton_ setAction:@selector(cancelOperation:)];
     [[closeButton_ cell] setKeyEquivalent:@"\e"];
@@ -905,9 +936,35 @@ const CGFloat kAddButtonWidth = 128.0;
 
 - (CGFloat)addAnotherServiceLinkToSubviews:(NSMutableArray*)subviews
                                   atOffset:(CGFloat)offset {
+  DCHECK(model_);
+  DCHECK(model_->IsInlineDisposition());
+  GURL url = model_->inline_disposition_url();
 
+  const WebIntentPickerModel::InstalledService* service =
+      model_->GetInstalledServiceWithURL(url);
+  DCHECK(service);
+
+  CGFloat originalOffset = offset;
+
+  // Icon for current service.
+  scoped_nsobject<NSImageView> icon;
+  NSRect imageFrame =  NSMakeRect(WebIntentPicker::kContentAreaBorder, offset,
+                                  0, 0);
+  icon.reset([[NSImageView alloc] initWithFrame:imageFrame]);
+  [icon setImage:service->favicon.ToNSImage()];
+  [icon setImageFrameStyle:NSImageFrameNone];
+  [icon setEnabled:YES];
+
+  imageFrame.size = [service->favicon.ToNSImage() size];
+  [icon setFrame:imageFrame];
+
+  [subviews addObject:icon];
+
+  // Resize control to fit text
   NSRect textFrame =
-      NSMakeRect(WebIntentPicker::kContentAreaBorder, offset, kTextWidth, 1);
+      NSMakeRect(NSMaxX(imageFrame) + 4,
+                 offset,
+                 WebIntentPicker::kTitleLinkMaxWidth, 1);
   [inlineDispositionTitleField_ setFrame:textFrame];
   [subviews addObject:inlineDispositionTitleField_];
   [GTMUILocalizerAndLayoutTweaker sizeToFitView:inlineDispositionTitleField_];
@@ -919,17 +976,26 @@ const CGFloat kAddButtonWidth = 128.0;
     model_->GetSuggestedExtensionCount()) {
     NSRect frame = NSMakeRect(
         NSMaxX(textFrame) + WebIntentPicker::kContentAreaBorder, offset,
-        WebIntentPicker::kTitleLinkMaxWidth, 1);
+        1, 1);
     NSString* string = l10n_util::GetNSStringWithFixup(
         IDS_INTENT_PICKER_USE_ALTERNATE_SERVICE);
     scoped_nsobject<NSButton> button(CreateHyperlinkButton(string, frame));
     [[button cell] setControlSize:NSRegularControlSize];
+    [[button cell] setFont:
+        [NSFont controlContentFontOfSize:[NSFont systemFontSize]]];
     [button setTarget:self];
     [button setAction:@selector(chooseAnotherService:)];
     [subviews addObject:button];
 
     // Call size-to-fit to fixup for the localized string.
     [GTMUILocalizerAndLayoutTweaker sizeToFitView:button];
+
+    // Right-align the "use another service" button.
+    frame = [button frame];
+    frame.origin.x = WebIntentPicker::kWindowWidth - NSWidth(frame) -
+        2 * WebIntentPicker::kContentAreaBorder - kCloseButtonSize;
+    [button setFrame:frame];
+    [button setAutoresizingMask:NSViewMinXMargin];
 
     // And finally, make sure the link and the title are horizontally centered.
     frame = [button frame];
@@ -942,7 +1008,18 @@ const CGFloat kAddButtonWidth = 128.0;
     [inlineDispositionTitleField_ setFrame:textFrame];
   }
 
-  return NSHeight(textFrame);
+  offset += NSHeight(textFrame) + kVerticalSpacing;
+
+  scoped_nsobject<NSBox> spacer;
+
+  NSRect frame = NSMakeRect(0, offset, WebIntentPicker::kWindowWidth, 1.0);
+  spacer.reset([[NSBox alloc] initWithFrame:frame]);
+  [spacer setBoxType:NSBoxSeparator];
+  [spacer setAlphaValue:0.2];
+  [spacer setAutoresizingMask:NSViewWidthSizable];
+  [subviews addObject: spacer];
+
+  return offset + kVerticalSpacing - originalOffset;
 }
 
 - (NSView*)createEmptyView {
@@ -1019,7 +1096,6 @@ const CGFloat kAddButtonWidth = 128.0;
   } else if (contents_) {
     offset += [self addAnotherServiceLinkToSubviews:subviews
                                            atOffset:offset];
-    offset += WebIntentPicker::kContentAreaBorder;
     offset += [self addInlineHtmlToSubviews:subviews atOffset:offset];
   } else {
     offset += [self addHeaderToSubviews:subviews atOffset:offset];
@@ -1033,16 +1109,17 @@ const CGFloat kAddButtonWidth = 128.0;
     }
     offset += [self addCwsButtonToSubviews:subviews atOffset:offset];
   }
-  [self addCloseButtonToSubviews:subviews];
 
   // Add the bottom padding.
   offset += WebIntentPicker::kContentAreaBorder;
 
+  // Resize to fit.
+  [self setContainerSize:NSMakeSize(WebIntentPicker::kWindowWidth, offset)];
+
+  [self addCloseButtonToSubviews:subviews];
+
   // Replace the window's content.
   [flipView_ setSubviews:subviews];
-
-  // And resize to fit.
-  [self setContainerSize:NSMakeSize(WebIntentPicker::kWindowWidth, offset)];
 }
 
 - (void)setActionString:(NSString*)actionString {
