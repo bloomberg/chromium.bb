@@ -319,8 +319,9 @@ void GestureInterpreter::PushHardwareState(HardwareState* hwstate) {
   if (gs && callback_)
     (*callback_)(callback_data_, gs);
   if (timer_provider_ && interpret_timer_) {
-    timer_provider_->cancel_fn(timer_provider_data_, interpret_timer_);
-    if (timeout > 0.0) {
+    if (timeout <= 0.0) {
+      timer_provider_->cancel_fn(timer_provider_data_, interpret_timer_);
+    } else {
       timer_provider_->set_fn(timer_provider_data_,
                               interpret_timer_,
                               timeout,
