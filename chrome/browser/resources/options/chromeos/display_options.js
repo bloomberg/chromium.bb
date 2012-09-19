@@ -60,8 +60,21 @@ cr.define('options', function() {
     /**
      * The index for the currently focused display in the options UI.  null if
      * no one has focus.
+     * @private
      */
     focusedIndex_: null,
+
+    /**
+     * The primary display.
+     * @private
+     */
+    primaryDisplay_: null,
+
+    /**
+     * The secondary display.
+     * @private
+     */
+    secondaryDisplay_: null,
 
     /**
      * The flag to check if the current options status should be sent to the
@@ -110,8 +123,8 @@ cr.define('options', function() {
      */
     applyResult_: function() {
       // Offset is calculated from top or left edge.
-      var primary = this.displays_[0];
-      var secondary = this.displays_[1];
+      var primary = this.primaryDisplay_;
+      var secondary = this.secondaryDisplay_;
       var offset;
       if (this.layout_ == SecondaryDisplayLayout.LEFT ||
           this.layout_ == SecondaryDisplayLayout.RIGHT) {
@@ -182,7 +195,8 @@ cr.define('options', function() {
         y: mousePosition.y - this.dragging_.clickLocation.y
       };
 
-      var baseDiv = this.displays_[this.dragging_.isPrimary ? 1 : 0].div;
+      var baseDiv = this.dragging_.display.isPrimary ?
+          this.secondaryDisplay_.div : this.primaryDisplay_.div;
       var draggingDiv = this.dragging_.display.div;
 
       newPosition.x = this.snapToEdge_(newPosition.x, draggingDiv.offsetWidth,
@@ -191,7 +205,7 @@ cr.define('options', function() {
                                        baseDiv.offsetTop, baseDiv.offsetHeight);
 
       // Separate the area into four (LEFT/RIGHT/TOP/BOTTOM) by the diagonals of
-      // the primary display, and decide which area the display should reside.
+      // the base display, and decide which area the display should reside.
       var diagonalSlope = baseDiv.offsetHeight / baseDiv.offsetWidth;
       var topDownIntercept =
           baseDiv.offsetTop - baseDiv.offsetLeft * diagonalSlope;
@@ -202,42 +216,42 @@ cr.define('options', function() {
           topDownIntercept + mousePosition.x * diagonalSlope) {
         if (mousePosition.y >
             bottomUpIntercept - mousePosition.x * diagonalSlope)
-          this.layout_ = this.dragging_.isPrimary ?
+          this.layout_ = this.dragging_.display.isPrimary ?
               SecondaryDisplayLayout.TOP : SecondaryDisplayLayout.BOTTOM;
         else
-          this.layout_ = this.dragging_.isPrimary ?
+          this.layout_ = this.dragging_.display.isPrimary ?
               SecondaryDisplayLayout.RIGHT : SecondaryDisplayLayout.LEFT;
       } else {
         if (mousePosition.y >
             bottomUpIntercept - mousePosition.x * diagonalSlope)
-          this.layout_ = this.dragging_.isPrimary ?
+          this.layout_ = this.dragging_.display.isPrimary ?
               SecondaryDisplayLayout.LEFT : SecondaryDisplayLayout.RIGHT;
         else
-          this.layout_ = this.dragging_.isPrimary ?
+          this.layout_ = this.dragging_.display.isPrimary ?
               SecondaryDisplayLayout.BOTTOM : SecondaryDisplayLayout.TOP;
       }
 
       if (this.layout_ == SecondaryDisplayLayout.LEFT ||
           this.layout_ == SecondaryDisplayLayout.RIGHT) {
         if (newPosition.y > baseDiv.offsetTop + baseDiv.offsetHeight)
-          this.layout_ = this.dragging_.isPrimary ?
+          this.layout_ = this.dragging_.display.isPrimary ?
               SecondaryDisplayLayout.TOP : SecondaryDisplayLayout.BOTTOM;
         else if (newPosition.y + draggingDiv.offsetHeight <
                  baseDiv.offsetTop)
-          this.layout_ = this.dragging_.isPrimary ?
+          this.layout_ = this.dragging_.display.isPrimary ?
               SecondaryDisplayLayout.BOTTOM : SecondaryDisplayLayout.TOP;
       } else {
         if (newPosition.y > baseDiv.offsetLeft + baseDiv.offsetWidth)
-          this.layout_ = this.dragging_.isPrimary ?
+          this.layout_ = this.dragging_.display.isPrimary ?
               SecondaryDisplayLayout.LEFT : SecondaryDisplayLayout.RIGHT;
         else if (newPosition.y + draggingDiv.offsetWidth <
                    baseDiv.offstLeft)
-          this.layout_ = this.dragging_.isPrimary ?
+          this.layout_ = this.dragging_.display.isPrimary ?
               SecondaryDisplayLayout.RIGHT : SecondaryDisplayLayout.LEFT;
       }
 
       var layout_to_base;
-      if (!this.dragging_.isPrimary) {
+      if (!this.dragging_.display.isPrimary) {
         layout_to_base = this.layout_;
       } else {
         switch (this.layout_) {
@@ -299,7 +313,7 @@ cr.define('options', function() {
       for (var i = 0; i < this.displays_.length; i++) {
         var display = this.displays_[i];
         if (this.displays_[i].div == e.target ||
-            (i == 0 && $('display-launcher') == e.target)) {
+            (display.isPrimary && $('display-launcher') == e.target)) {
           this.focusedIndex_ = i;
           break;
         }
@@ -315,7 +329,6 @@ cr.define('options', function() {
         display.div.classList.add('displays-focused');
         this.dragging_ = {
             display: display,
-            isPrimary: i == 0,
             clickLocation: {x: e.offsetX, y: e.offsetY},
             offset: {x: e.pageX - e.offsetX - display.div.offsetLeft,
                      y: e.pageY - e.offsetY - display.div.offsetTop}
@@ -333,23 +346,24 @@ cr.define('options', function() {
     onMouseUp_: function(e) {
       if (this.dragging_) {
         // Make sure the dragging location is connected.
-        var primaryDiv = this.displays_[0].div;
+        var baseDiv = this.dragging_.display.isPrimary ?
+            this.secondaryDisplay_.div : this.primaryDisplay_.div;
         var draggingDiv = this.dragging_.display.div;
         if (this.layout_ == SecondaryDisplayLayout.LEFT ||
             this.layout_ == SecondaryDisplayLayout.RIGHT) {
           var top = Math.max(draggingDiv.offsetTop,
-                             primaryDiv.offsetTop - draggingDiv.offsetHeight +
+                             baseDiv.offsetTop - draggingDiv.offsetHeight +
                              MIN_OFFSET_OVERLAP);
           top = Math.min(top,
-                         primaryDiv.offsetTop + primaryDiv.offsetHeight -
+                         baseDiv.offsetTop + baseDiv.offsetHeight -
                          MIN_OFFSET_OVERLAP);
           draggingDiv.style.top = top + 'px';
         } else {
           var left = Math.max(draggingDiv.offsetLeft,
-                              primaryDiv.offsetLeft - draggingDiv.offsetWidth +
+                              baseDiv.offsetLeft - draggingDiv.offsetWidth +
                               MIN_OFFSET_OVERLAP);
           left = Math.min(left,
-                          primaryDiv.offsetLeft + primaryDiv.offsetWidth -
+                          baseDiv.offsetLeft + baseDiv.offsetWidth -
                           MIN_OFFSET_OVERLAP);
           draggingDiv.style.left = left + 'px';
         }
@@ -426,7 +440,7 @@ cr.define('options', function() {
       display.div.style.height =
           display.height * this.visualScale_ - borderWidth * 2 + 'px';
       display.div.style.lineHeight = display.div.style.height;
-      if (index == 0) {
+      if (display.isPrimary) {
         var launcher = display.div.firstChild;
         if (launcher && launcher.id == 'display-launcher') {
           launcher.style.width = display.div.style.width;
@@ -447,7 +461,7 @@ cr.define('options', function() {
       /** @const */ var MIN_NUM_DISPLAYS = 2;
       /** @const */ var MIRRORING_VERTICAL_MARGIN = 20;
 
-      // The width/height should be same as the primary display:
+      // The width/height should be same as the first display:
       var width = this.displays_[0].width * this.visualScale_;
       var height = this.displays_[0].height * this.visualScale_;
 
@@ -531,12 +545,15 @@ cr.define('options', function() {
         if (i == this.focusedIndex_)
           div.classList.add('displays-focused');
 
-        if (i == 0) {
-          // Assumes that first display is primary and put a grey rectangle to
-          // denote launcher below.
+        if (display.isPrimary) {
+          // Put a grey rectangle to the primary display to denote launcher
+          // below.
           var launcher = document.createElement('div');
           launcher.id = 'display-launcher';
           div.appendChild(launcher);
+          this.primaryDisplay_ = display;
+        } else {
+          this.secondaryDisplay_ = display;
         }
         this.resizeDisplayRectangle_(display, i);
         div.style.left = display.x * this.visualScale_ + offset.x + 'px';

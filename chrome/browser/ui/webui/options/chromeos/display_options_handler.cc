@@ -26,6 +26,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/screen.h"
 
 namespace chromeos {
 namespace options {
@@ -109,6 +110,7 @@ void DisplayOptionsHandler::SendDisplayInfo() {
   base::FundamentalValue mirroring(
       output_configurator->output_state() == chromeos::STATE_DUAL_MIRROR);
 
+  int64 primary_id = gfx::Screen::GetPrimaryDisplay().id();
   base::ListValue displays;
   for (size_t i = 0; i < display_manager->GetNumDisplays(); ++i) {
     const gfx::Display* display = display_manager->GetDisplayAt(i);
@@ -121,6 +123,7 @@ void DisplayOptionsHandler::SendDisplayInfo() {
     js_display->SetDouble("height", bounds.height());
     js_display->SetString("name",
                           display_manager->GetDisplayNameFor(*display));
+    js_display->SetBoolean("isPrimary", display->id() == primary_id);
     displays.Set(i, js_display);
   }
 
