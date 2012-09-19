@@ -28,15 +28,30 @@ MANIFEST_BASENAME = 'naclsdk_manifest2.json'
 class TestAutoUpdateSdkTools(unittest.TestCase):
   def setUp(self):
     self.basedir = tempfile.mkdtemp()
-    build_updater.BuildUpdater(self.basedir)
+    # We have to make sure that we build our updaters with a version that is at
+    # least as large as the version in the sdk_tools bundle. If not, update
+    # tests may fail because the "current" version (according to the sdk_cache)
+    # is greater than the version we are attempting to update to.
+    self.current_revision = self._GetSdkToolsBundleRevision()
+    build_updater.BuildUpdater(self.basedir, self.current_revision)
     self._LoadCacheManifest()
-    self.current_revision = int(build_utils.ChromeRevision())
     self.server = test_server.LocalHTTPServer(self.basedir)
 
   def tearDown(self):
     if self.server:
       self.server.Shutdown()
     buildbot_common.RemoveDir(self.basedir)
+
+  def _GetSdkToolsBundleRevision(self):
+    """Get the sdk_tools bundle revision.
+    We get this from the checked-in path; this is the same file that
+    build_updater uses to specify the current revision of sdk_tools."""
+
+    manifest_filename = os.path.join(BUILD_TOOLS_DIR, 'json',
+                                     'naclsdk_manifest0.json')
+    manifest = manifest_util.SDKManifest()
+    manifest.LoadDataFromString(open(manifest_filename, 'r').read())
+    return manifest.GetBundle('sdk_tools').revision
 
   def _LoadCacheManifest(self):
     """Read the manifest from nacl_sdk/sdk_cache.
