@@ -27,8 +27,6 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 
-class SkCanvas;
-
 namespace gfx {
 class Display;
 }
