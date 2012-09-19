@@ -9,6 +9,7 @@ import traceback
 
 import chrome_remote_control
 import chrome_remote_control.browser_options
+from gpu_tools import page_runner
 from gpu_tools import page_set
 
 class MeasurementFailure(Exception):
@@ -96,20 +97,20 @@ class MultiPageBenchmark(object):
     self.options = options
     self.field_names = None
 
-    page_runner = page_set.PageRunner(ps)
+    pr = page_runner.PageRunner(ps)
     with browser.ConnectToNthTab(0) as tab:
       for page in ps.pages:
-        self._RunPage(results_writer, page_runner, page, tab)
-    page_runner.Close()
+        self._RunPage(results_writer, pr, page, tab)
+    pr.Close()
 
     self.options = None
     self.field_names = None
 
-  def _RunPage(self, results_writer, page_runner, page, tab):
+  def _RunPage(self, results_writer, pr, page, tab):
     logging.debug('Running test on %s' % page.url)
     try:
       try:
-        page_runner.PreparePage(page, tab)
+        pr.PreparePage(page, tab)
         results = self.MeasurePage(page, tab)
       except MeasurementFailure, ex:
         logging.info('%s: %s', ex, page.url)
@@ -122,7 +123,7 @@ class MultiPageBenchmark(object):
                         page.url, traceback.format_exc())
         raise
       finally:
-        page_runner.CleanUpPage()
+        pr.CleanUpPage()
     except Exception, ex:
       self.page_failures.append({'page': page, 'exception': ex,
                                  'trace': traceback.format_exc()})

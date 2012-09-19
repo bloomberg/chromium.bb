@@ -10,7 +10,7 @@ class DidNotScrollException(multi_page_benchmark.MeasurementFailure):
   def __init__(self):
     super(DidNotScrollException, self).__init__('Page did not scroll')
 
-def _CalcScrollResults(rendering_stats):
+def CalcScrollResults(rendering_stats):
   num_frames_sent_to_screen = rendering_stats['numFramesSentToScreen']
 
   mean_frame_time_seconds = (
@@ -60,7 +60,7 @@ class ScrollingBenchmark(multi_page_benchmark.MultiPageBenchmark):
 
   def MeasurePage(self, _, tab):
     rendering_stats = self.ScrollPageFully(tab)
-    return _CalcScrollResults(rendering_stats)
+    return CalcScrollResults(rendering_stats)
 
 
 def Main():

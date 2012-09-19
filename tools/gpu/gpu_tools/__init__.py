@@ -11,6 +11,4 @@ def Init():
   absolute_crc_path = os.path.abspath(crc_path)
   sys.path.append(absolute_crc_path)
 
-  import chrome_remote_control
-
 Init()

@@ -11,7 +11,7 @@ class PageRunner(object):
     self._server = None
 
   def __del__(self):
-    self.CleanUp()
+    self.Close()
 
   def Close(self):
     if self._server:
@@ -20,8 +20,8 @@ class PageRunner(object):
 
   def PreparePage(self, page, tab):
     parsed_url = urlparse.urlparse(page.url)
-    if parsed_url.scheme == 'file':
-      path = os.path.join(self.page_set.file_path, parsed_url.path)
+    if parsed_url[0] == 'file':
+      path = os.path.join(self.page_set.file_path, parsed_url[2])
       dirname, filename = os.path.split(path)
       if self._server and self._server.path != dirname:
         self._server.Close()

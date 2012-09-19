@@ -44,7 +44,7 @@ class ScrollingBenchmarkUnitTest(
                'totalTimeInSeconds': 1,
                'numAnimationFrames': 10,
                'numFramesSentToScreen': 10}
-    res = scrolling_benchmark._CalcScrollResults(rendering_stats)
+    res = scrolling_benchmark.CalcScrollResults(rendering_stats)
     self.assertEquals(50, res['dropped_percent'])
     self.assertAlmostEquals(100, res['mean_frame_time_ms'], 2)
 
@@ -61,6 +61,6 @@ class ScrollingBenchmarkUnitTest(
                        'totalTextureUploadTimeInSeconds': 0,
                        'totalRasterizeTimeInSeconds': 0,
                        'totalTimeInSeconds': 1.0}
-    res = scrolling_benchmark._CalcScrollResults(rendering_stats)
+    res = scrolling_benchmark.CalcScrollResults(rendering_stats)
     self.assertEquals(0, res['dropped_percent'])
     self.assertAlmostEquals(1000/60.0, res['mean_frame_time_ms'], 2)
