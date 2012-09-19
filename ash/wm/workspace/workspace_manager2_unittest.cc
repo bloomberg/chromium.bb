@@ -1014,5 +1014,27 @@ TEST_F(WorkspaceManager2Test, DontCrashOnChangeAndActivate) {
   w1->Show();
 }
 
+// Verifies a window with a transient parent not managed by workspace works.
+TEST_F(WorkspaceManager2Test, TransientParent) {
+  // Normal window with no transient parent.
+  scoped_ptr<Window> w2(CreateTestWindow());
+  w2->SetBounds(gfx::Rect(10, 11, 250, 251));
+  w2->Show();
+  wm::ActivateWindow(w2.get());
+
+  // Window with a transient parent. We set the transient parent to the root,
+  // which would never happen but is enough to exercise the bug.
+  scoped_ptr<Window> w1(CreateTestWindowUnparented());
+  Shell::GetInstance()->GetPrimaryRootWindow()->AddTransientChild(w1.get());
+  w1->SetBounds(gfx::Rect(10, 11, 250, 251));
+  w1->SetParent(NULL);
+  w1->Show();
+  wm::ActivateWindow(w1.get());
+
+  // The window with the transient parent should get added to the same parent as
+  // the normal window.
+  EXPECT_EQ(w2->parent(), w1->parent());
+}
+
 }  // namespace internal
 }  // namespace ash

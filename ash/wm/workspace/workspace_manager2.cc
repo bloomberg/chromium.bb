@@ -208,10 +208,13 @@ void WorkspaceManager2::SetActiveWorkspaceByWindow(Window* window) {
 }
 
 Window* WorkspaceManager2::GetParentForNewWindow(Window* window) {
-  if (window->transient_parent()) {
-    DCHECK(contents_view_->Contains(window->transient_parent()));
-    DCHECK(!IsMaximized(window));
-    return window->transient_parent()->parent();
+  // Try to put windows with transient parents in the same workspace as their
+  // transient parent.
+  if (window->transient_parent() && !IsMaximized(window)) {
+    Workspace2* workspace = FindBy(window->transient_parent());
+    if (workspace)
+      return workspace->window();
+    // Fall through to normal logic.
   }
 
   if (IsMaximized(window)) {
@@ -257,7 +260,7 @@ Workspace2* WorkspaceManager2::FindBy(Window* window) const {
     Workspace2* workspace = window->GetProperty(kWorkspaceKey);
     if (workspace)
       return workspace;
-    window = window->transient_parent();
+    window = window->parent();
   }
   return NULL;
 }
