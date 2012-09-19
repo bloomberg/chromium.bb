@@ -24,6 +24,8 @@
 #include "chrome/browser/ui/gtk/tab_contents/chrome_web_contents_view_delegate_gtk.h"
 #endif
 
+int SadTabHelper::kUserDataKey;
+
 SadTabHelper::SadTabHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents) {
   registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_CONNECTED,

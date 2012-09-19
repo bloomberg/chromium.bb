@@ -59,14 +59,17 @@ content::WebDragDestDelegate*
 }
 
 bool ChromeWebContentsViewDelegateViews::Focus() {
-  TabContents* tab_contents = TabContents::FromWebContents(web_contents_);
-  if (tab_contents) {
-      views::Widget* sad_tab = tab_contents->sad_tab_helper()->sad_tab();
+  SadTabHelper* sad_tab_helper = SadTabHelper::FromWebContents(web_contents_);
+  if (sad_tab_helper) {
+    views::Widget* sad_tab = sad_tab_helper->sad_tab();
     if (sad_tab) {
       sad_tab->GetContentsView()->RequestFocus();
       return true;
     }
+  }
 
+  TabContents* tab_contents = TabContents::FromWebContents(web_contents_);
+  if (tab_contents) {
     // TODO(erg): WebContents used to own constrained windows, which is why
     // this is here. Eventually this should be ported to a containing view
     // specializing in constrained window management.
@@ -159,10 +162,10 @@ void ChromeWebContentsViewDelegateViews::ShowContextMenu(
 }
 
 void ChromeWebContentsViewDelegateViews::SizeChanged(const gfx::Size& size) {
-  TabContents* tab_contents = TabContents::FromWebContents(web_contents_);
-  if (!tab_contents)
+  SadTabHelper* sad_tab_helper = SadTabHelper::FromWebContents(web_contents_);
+  if (!sad_tab_helper)
     return;
-  views::Widget* sad_tab = tab_contents->sad_tab_helper()->sad_tab();
+  views::Widget* sad_tab = sad_tab_helper->sad_tab();
   if (sad_tab)
     sad_tab->SetBounds(gfx::Rect(size));
 }

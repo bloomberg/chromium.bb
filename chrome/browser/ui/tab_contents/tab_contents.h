@@ -46,7 +46,6 @@ class PepperBrokerObserver;
 class PluginObserver;
 class PrefsTabHelper;
 class Profile;
-class SadTabHelper;
 class SearchEngineTabHelper;
 class ShellWindow;
 class TabAutofillManagerDelegate;
@@ -216,8 +215,6 @@ class TabContents : public content::WebContentsObserver {
     return prerender_tab_helper_.get();
   }
 
-  SadTabHelper* sad_tab_helper() { return sad_tab_helper_.get(); }
-
   SearchEngineTabHelper* search_engine_tab_helper() {
     return search_engine_tab_helper_.get();
   }
@@ -292,7 +289,6 @@ class TabContents : public content::WebContentsObserver {
   scoped_ptr<PrefsTabHelper> prefs_tab_helper_;
   scoped_ptr<prerender::PrerenderTabHelper> prerender_tab_helper_;
 
-  scoped_ptr<SadTabHelper> sad_tab_helper_;
   scoped_ptr<SearchEngineTabHelper> search_engine_tab_helper_;
   scoped_ptr<browser_sync::SyncedTabDelegate> synced_tab_delegate_;
 

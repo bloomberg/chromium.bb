@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/tab_contents/web_contents_user_data.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -28,9 +29,9 @@ class SadTabGtk;
 
 // Per-tab class to manage sad tab views.
 class SadTabHelper : public content::WebContentsObserver,
-                     public content::NotificationObserver {
+                     public content::NotificationObserver,
+                     public WebContentsUserData<SadTabHelper> {
  public:
-  explicit SadTabHelper(content::WebContents* web_contents);
   virtual ~SadTabHelper();
 
   // Platform specific function to determine if there is a current sad tab page.
@@ -41,6 +42,10 @@ class SadTabHelper : public content::WebContentsObserver,
 #endif
 
  private:
+  explicit SadTabHelper(content::WebContents* web_contents);
+  static int kUserDataKey;
+  friend class WebContentsUserData<SadTabHelper>;
+
   // Platform specific function to get an instance of the sad tab page.
   void InstallSadTab(base::TerminationStatus status);
 

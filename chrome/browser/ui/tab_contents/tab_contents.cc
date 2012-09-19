@@ -164,7 +164,7 @@ TabContents::TabContents(WebContents* contents)
   if (OmniboxSearchHint::IsEnabled(profile()))
     OmniboxSearchHint::CreateForWebContents(contents);
   PDFTabHelper::CreateForWebContents(contents);
-  sad_tab_helper_.reset(new SadTabHelper(contents));
+  SadTabHelper::CreateForWebContents(contents);
   web_intent_picker_controller_.reset(new WebIntentPickerController(this));
 #endif
 
