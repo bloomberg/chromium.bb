@@ -146,6 +146,8 @@ bool enabled(Action action) {
 
 std::map<std::string, size_t> instruction_names;
 
+/* Raw data about instruction pulled from .def file.  This class is never used
+   directly, we do all the processing using it's descendants. */
 class Instruction {
  public:
   struct Operand {
@@ -160,34 +162,14 @@ class Instruction {
   const std::string& name(void) const {
     return name_;
   }
-  Instruction with_name(const std::string& name) const {
-    Instruction result = *this;
-    result.name_ = name;
-    return result;
-  }
   const std::vector<Operand>& operands(void) const {
     return operands_;
-  }
-  Instruction with_operands(const std::vector<Operand>& operands) const {
-    Instruction result = *this;
-    result.operands_ = operands;
-    return result;
   }
   const std::vector<std::string>& opcodes(void) const {
     return opcodes_;
   }
-  Instruction with_opcodes(const std::vector<std::string>& opcodes) const {
-    Instruction result = *this;
-    result.opcodes_ = opcodes;
-    return result;
-  }
   const std::set<std::string>& flags(void) const {
     return flags_;
-  }
-  Instruction with_flags(const std::set<std::string>& flags) const {
-    Instruction result = *this;
-    result.flags_ = flags;
-    return result;
   }
   bool has_flag(const std::string& flag) const {
     return flags_.find(flag) != flags_.end();
@@ -198,6 +180,27 @@ class Instruction {
   std::vector<Operand> operands_;
   std::vector<std::string> opcodes_;
   std::set<std::string> flags_;
+
+  Instruction with_name(const std::string& name) const {
+    Instruction result = *this;
+    result.name_ = name;
+    return result;
+  }
+  Instruction with_operands(const std::vector<Operand>& operands) const {
+    Instruction result = *this;
+    result.operands_ = operands;
+    return result;
+  }
+  Instruction with_opcodes(const std::vector<std::string>& opcodes) const {
+    Instruction result = *this;
+    result.opcodes_ = opcodes;
+    return result;
+  }
+  Instruction with_flags(const std::set<std::string>& flags) const {
+    Instruction result = *this;
+    result.flags_ = flags;
+    return result;
+  }
 
  private:
   static void check_flag_valid(const std::string& flag) {
@@ -604,22 +607,11 @@ void print_name_actions(void) {
 
 class MarkedInstruction : public Instruction {
  public:
-  /* Describes REX.B, REX.X, REX.R, and REX.W bits in REX/VEX instruction prefix
-     (see AMD/Intel documentation for details for when these bits can/should be
-     allowed and when they are correct/incorrect).  */
-  struct RexType {
-    bool b_ : 1;
-    bool x_ : 1;
-    bool r_ : 1;
-    bool w_ : 1;
-    RexType(bool b, bool x, bool r, bool w) : b_(b), x_(x), r_(r), w_(w) { }
-  };
-
   explicit MarkedInstruction(const Instruction& instruction_) :
       Instruction(instruction_),
       required_prefixes_(),
       optional_prefixes_(),
-      rex_(false, false, false, false),
+      rex_(),
       opcode_in_modrm_(false),
       opcode_in_imm_(false),
       fwait_(false) {
@@ -673,7 +665,7 @@ class MarkedInstruction : public Instruction {
             /* x87 and MMX registers are not extended in x86-64 mode: there are
                only 8 of them.  But only x87 operands use opcode to specify
                register number.  */
-            if (operand->size != "7") rex_.b_ = true;
+            if (operand->size != "7") rex_.b = true;
             break;
           }
         }
@@ -687,7 +679,7 @@ class MarkedInstruction : public Instruction {
     /* Some 'opcodes' include prefixes, move them there.  */
     for (;;) {
       if ((*opcodes_.begin()) == "rexw") {
-        rex_.w_ = true;
+        rex_.w = true;
       } else if ((*opcodes_.begin()) == "fwait") {
         fwait_ = true;
       } else {
@@ -705,21 +697,6 @@ class MarkedInstruction : public Instruction {
       }
       opcodes_.erase(opcodes_.begin());
     }
-  }
-  MarkedInstruction(const Instruction& instruction,
-                    const std::multiset<std::string>& required_prefixes,
-                    const std::multiset<std::string>& optional_prefixes,
-                    const RexType& rex,
-                    bool opcode_in_modrm,
-                    bool opcode_in_imm,
-                    bool fwait) :
-    Instruction(instruction),
-    required_prefixes_(required_prefixes),
-    optional_prefixes_(optional_prefixes),
-    rex_(rex),
-    opcode_in_modrm_(opcode_in_modrm),
-    opcode_in_imm_(opcode_in_imm),
-    fwait_(fwait) {
   }
   MarkedInstruction with_name(const std::string& name) const {
     return MarkedInstruction(Instruction::with_name(name),
@@ -783,35 +760,35 @@ class MarkedInstruction : public Instruction {
     return result;
   }
   bool rex_b(void) const {
-    return rex_.b_;
+    return rex_.b;
   }
   MarkedInstruction set_rex_b(void) const {
     MarkedInstruction result = *this;
-    result.rex_.b_ = true;
+    result.rex_.b = true;
     return result;
   }
   bool rex_x(void) const {
-    return rex_.x_;
+    return rex_.x;
   }
   MarkedInstruction set_rex_x(void) const {
     MarkedInstruction result = *this;
-    result.rex_.x_ = true;
+    result.rex_.x = true;
     return result;
   }
   bool rex_r(void) const {
-    return rex_.r_;
+    return rex_.r;
   }
   MarkedInstruction set_rex_r(void) const {
     MarkedInstruction result = *this;
-    result.rex_.r_ = true;
+    result.rex_.r = true;
     return result;
   }
   bool rex_w(void) const {
-    return rex_.w_;
+    return rex_.w;
   }
   MarkedInstruction set_rex_w(void) const {
     MarkedInstruction result = *this;
-    result.rex_.w_ = true;
+    result.rex_.w = true;
     for (std::vector<Operand>::iterator operand = result.operands_.begin();
          operand != result.operands_.end(); ++operand)
       if (operand->size == "v" || operand->size == "y")
@@ -822,7 +799,7 @@ class MarkedInstruction : public Instruction {
   }
   MarkedInstruction clear_rex_w(void) const {
     MarkedInstruction result = *this;
-    result.rex_.w_ = false;
+    result.rex_.w = false;
     for (std::vector<Operand>::iterator operand = result.operands_.begin();
          operand != result.operands_.end(); ++operand)
       if (operand->size == "v" || operand->size == "y" || operand->size == "z")
@@ -845,12 +822,63 @@ class MarkedInstruction : public Instruction {
   }
 
  private:
+  /* Prefixes which can affect the decoder state for this instruction, i.e. they
+     may make instruction use different size of immediate, different register or
+     even change the instruction completely.  For example “data16” prefix must
+     always be present in “mov $imm16, %ax” instruction, otherwise instruction
+     will be different and will include not two-byte  immediate, but four byte
+     immediate.  Another example: “movbe %eax,(%rax)” becomes totally different
+     instruction “crc32l (%rax),%eax” if you add “0xf2” (aka “repnz”) prefix.
+     These two instructions have nothing  to do with each other even if they
+     share the opcode.  Not only the semantic differs, but there are CPUs where
+     one of them is valid and accepted and another is invalid (all four
+     possibilities are actually realized).  Yet another example: “mov %cr, %reg”
+     uses “0xf0” (aka “lock”) as a replacement for REX.B in ia32 mode.  */
   std::multiset<std::string> required_prefixes_;
+  /* Optional prefixes for this instruction.  Don't affect the instruction
+     decoding but may affect the instruction semantic.
+     For example “branch_hints”, “repnz”/“repz” in a string instructions, etc.
+     Note that these same prefixes may be used as a “required prefixes” in some
+     other instructions!  */
   std::multiset<std::string> optional_prefixes_;
-  RexType rex_;
+  /* Describes REX.B, REX.X, REX.R, and REX.W bits in REX/VEX instruction prefix
+     (see AMD/Intel documentation for details for when these bits can/should be
+     allowed and when they are correct/incorrect).  */
+  struct RexType {
+    bool b : 1;
+    bool x : 1;
+    bool r : 1;
+    bool w : 1;
+  } rex_;
+  /* True iff “reg” field in “ModR/M byte” is used as an opcode extension.
+     Note that this covers cases where “reg-to-reg” instruction and
+     “reg-to-memory” instruction have diffrently-sized operands, e.g. 128bit
+     XMM register and 32bit single-precision float.  */
   bool opcode_in_modrm_ : 1;
+  /* True iff “imm” byte is used as an opcode extension.  Used mostly by 3D Now!
+     instructions, but there are some multimedia instructions which use “imm”
+     byte in a similar fashion, such as “vcmppd”.  */
   bool opcode_in_imm_ : 1;
+  /* True if instruction includes “fwait” “prefix”.  Note that “fwait” is not
+     actually a prefix, it's separate instruction, but assemblers and objdump
+     recognize it as part of other instruction, such as “finit” or “fsave”.  */
   bool fwait_ : 1;
+
+  MarkedInstruction(const Instruction& instruction,
+                    const std::multiset<std::string>& required_prefixes,
+                    const std::multiset<std::string>& optional_prefixes,
+                    const RexType& rex,
+                    bool opcode_in_modrm,
+                    bool opcode_in_imm,
+                    bool fwait) :
+    Instruction(instruction),
+    required_prefixes_(required_prefixes),
+    optional_prefixes_(optional_prefixes),
+    rex_(rex),
+    opcode_in_modrm_(opcode_in_modrm),
+    opcode_in_imm_(opcode_in_imm),
+    fwait_(fwait) {
+  }
 };
 
 /* mod_reg_is_used returns true if the instruction includes operands which is
