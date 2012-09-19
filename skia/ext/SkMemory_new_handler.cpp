@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <new>
 
+#include "base/process_util.h"
+
 #include "third_party/skia/include/core/SkTypes.h"
 #include "third_party/skia/include/core/SkThread.h"
 
@@ -54,10 +56,14 @@ void* sk_malloc_flags(size_t size, unsigned flags) {
     p = malloc(size);
 #else
     if (!(flags & SK_MALLOC_THROW)) {
+#if defined(OS_MACOSX)
+      p = base::UncheckedMalloc(size);
+#else
       SkAutoMutexAcquire lock(gSkNewHandlerMutex);
       std::new_handler old_handler = std::set_new_handler(NULL);
       p = malloc(size);
       std::set_new_handler(old_handler);
+#endif
     } else {
       p = malloc(size);
     }
