@@ -11,4 +11,8 @@
 // process.
 void CrashDumpAndTerminateHungChildProcess(HANDLE hprocess);
 
+// Causes the given process to generate a crash dump if it is handling pepper
+// messages.
+void CrashDumpIfProcessHandlingPepper(HANDLE hprocess);
+
 #endif  // CHROME_BROWSER_HANG_MONITOR_HANG_CRASH_DUMP_WIN_H_

@@ -13,6 +13,7 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/resource_message_params.h"
 #include "ppapi/shared_impl/host_resource.h"
+#include "ppapi/shared_impl/ppapi_message_tracker.h"
 
 namespace ppapi {
 namespace host {
@@ -39,10 +40,12 @@ PpapiHost::~PpapiHost() {
 }
 
 bool PpapiHost::Send(IPC::Message* msg) {
+  ScopedTrackPpapiMessage track_ppapi_message;
   return sender_->Send(msg);
 }
 
 bool PpapiHost::OnMessageReceived(const IPC::Message& msg) {
+  ScopedTrackPpapiMessage track_ppapi_message;
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PpapiHost, msg)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_ResourceCall,
