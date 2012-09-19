@@ -12,69 +12,34 @@
 
   <import file="../../../../build/android/ant/common.xml"/>
 
-  <property name="target.abi" value="${APP_ABI}"/>
-  <property name="out.dir" location="${PRODUCT_DIR}/content_shell_test"/>
+  <property-value name="target.abi" value="${APP_ABI}"/>
+  <property-location name="out.dir" location="${PRODUCT_DIR}/content_shell_test"
+      check-exists="false"/>
   <property name="resource.absolute.dir" value="${RESOURCE_DIR}"/>
-  <property name="gen.absolute.dir" value="${out.dir}/gen"/>
-  <path id="native.libs.gdbserver">
-    <fileset file="${android.gdbserver}"/>
-  </path>
-  <property name="native.libs.absolute.dir" location="${out.dir}/libs" />
-  <property name="asset.absolute.dir" location="${out.dir}/assets" />
+  <property-value name="gen.absolute.dir" value="${out.dir}/gen"/>
+  <property-location name="native.libs.absolute.dir" location="${out.dir}/libs"
+      check-exists="false"/>
+  <property-location name="asset.absolute.dir" location="${out.dir}/assets"
+      check-exists="false"/>
+  <!-- Set the output directory for the final apk to the ${apks.dir}. -->
+  <property-location name="out.final.file"
+      location="${apks.dir}/${ant.project.name}-debug.apk"
+      check-exists="false"/>
+  <property name="generate.test.jar" value="true"/>
+
+  <property-location name="contentshell.classes.dir"
+      location="${PRODUCT_DIR}/content_shell/classes"/>
 
   <path id="out.dex.jar.input.ref">
     <filelist files="${INPUT_JARS_PATHS}"/>
-    <pathelement location="${PRODUCT_DIR}/content_shell/classes"/>
+    <pathelement location="${contentshell.classes.dir}"/>
   </path>
-  <property name="java.compilerargs" value="-classpath ${toString:out.dex.jar.input.ref}"/>
-
-  <!-- We expect PRODUCT_DIR to be set like the gyp var
-       (e.g. $ROOT/out/Debug) -->
-  <fail message="PRODUCT_DIR env var not set?">
-    <condition>
-      <not>
-        <isset property="PRODUCT_DIR"/>
-      </not>
-    </condition>
-  </fail>
-
-  <target name="-post-compile">
-    <!-- copy gdbserver to main libs directory if building debug.
-      TODO(jrg): for now, Chrome on Android always builds native code
-      as Release and java/ant as Debug, which means we always install
-      gdbserver.  Resolve this discrepancy, possibly by making this
-      Release Official build java/ant as Release. -->
-    <if>
-      <condition>
-        <equals arg1="${build.target}" arg2="debug" />
-      </condition>
-      <then>
-        <echo message="Copying gdbserver to the apk to enable native debugging"/>
-        <copy todir="${out.dir}/libs/${target.abi}">
-          <path refid="native.libs.gdbserver"/>
-        </copy>
-      </then>
-    </if>
-
-    <!-- We also want a .jar as well as an .apk for ContentShellTest-debug
-         so that proguard can be used to list the tests by annotation. -->
-    <jar destfile="${out.dir}/${ant.project.name}-debug.jar">
-      <fileset dir="${out.dir}/classes" includes="**/*.class"/>
-      <zipfileset
-         includes="**/*.class"
-         src="${PRODUCT_DIR}/lib.java/chromium_content_javatests.jar"/>
-      <zipfileset
-         includes="**/*.class"
-         src="${PRODUCT_DIR}/lib.java/chromium_net_javatests.jar"/>
-    </jar>
-
-  </target>
 
   <!-- Classpath for javac -->
   <path id="javac.custom.classpath">
     <path refid="out.dex.jar.input.ref"/>
   </path>
-  <import file="../../../../build/android/ant/sdk-targets.xml"/>
-  <import file="${sdk.dir}/tools/ant/build.xml" />
 
+  <import file="../../../../build/android/ant/sdk-targets.xml"/>
+  <import file="${sdk.dir}/tools/ant/build.xml"/>
 </project>

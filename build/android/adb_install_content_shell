@@ -11,12 +11,13 @@ import sys
 
 from pylib import android_commands
 from pylib import test_options_parser
+from pylib import constants
 
 
 def InstallContentShell(device, build_type):
   apk_path = os.path.join(os.environ['CHROME_SRC'],
                           'out', build_type,
-                          'content_shell', 'ContentShell-debug.apk')
+                          constants.SDK_BUILD_APKS_DIR, 'ContentShell-debug.apk')
   result = android_commands.AndroidCommands(device=device).ManagedInstall(
       apk_path, False, 'org.chromium.content_shell')
   print '-----  Installed on %s  -----' % device

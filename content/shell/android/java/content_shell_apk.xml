@@ -10,7 +10,10 @@
   </description>
   <import file="../../../../build/android/ant/common.xml"/>
 
-  <!-- Convert the buildtype to lowercase. E.g Debug -> debug, Release -> release.  -->
+  <!--
+      Convert the buildtype to lowercase. E.g Debug -> debug,
+      Release -> release.
+  -->
   <script language="javascript">
     project.setProperty("configuration.name",
                         project.getProperty("CONFIGURATION_NAME").toLowerCase())
@@ -20,29 +23,20 @@
       check-exists="false"/>
   <property name="resource.absolute.dir" value="${RESOURCE_DIR}"/>
   <property name="gen.absolute.dir" value="${out.dir}/gen"/>
-  <property name="jar.libs.dir" value="${out.dir}/java/libs"/>
   <path id="native.libs.gdbserver">
     <fileset file="${android.gdbserver}"/>
   </path>
   <property name="native.libs.absolute.dir" location="${out.dir}/libs"/>
   <property name="asset.absolute.dir" location="${out.dir}/assets"/>
+  <!-- Set the output directory for the final apk to the ${apks.dir}. -->
+  <property-location name="out.final.file"
+      location="${apks.dir}/${ant.project.name}-debug.apk"
+      check-exists="false"/>
 
   <path id="out.dex.jar.input.ref">
     <filelist files="${INPUT_JARS_PATHS}"/>
   </path>
-  <property name="java.compilerargs" value="-classpath ${toString:out.dex.jar.input.ref}"/>
-
   <echo>resources: ${RESOURCE_DIR} classpath: ${toString:out.dex.jar.input.ref}</echo>
-
-  <!-- We expect PRODUCT_DIR to be set like the gyp var (e.g. $ROOT/out/Debug) -->
-  <fail message="PRODUCT_DIR env var not set?">
-    <condition>
-      <not>
-        <isset property="PRODUCT_DIR"/>
-      </not>
-    </condition>
-  </fail>
-
   <target name="-post-compile">
     <!--
       Copy gdbserver to main libs directory if building debug.
@@ -56,7 +50,7 @@
         <equals arg1="${build.target}" arg2="debug"/>
       </condition>
       <then>
-        <echo message="Copying gdbserver to the apk to enable native debugging" />
+        <echo message="Copying gdbserver to the apk to enable native debugging"/>
         <copy todir="${out.dir}/libs/${target.abi}">
           <path refid="native.libs.gdbserver"/>
         </copy>
