@@ -139,7 +139,9 @@ const char* kDisablableActionsList[] = {
   "parse_ymm_operands",
   "parse_operand_positions"
 };
+
 bool disabled_actions[NACL_ARRAY_SIZE(kDisablableActionsList)];
+
 bool enabled(Action action) {
   return !disabled_actions[static_cast<int>(action)];
 }
@@ -162,15 +164,19 @@ class Instruction {
   const std::string& name(void) const {
     return name_;
   }
+
   const std::vector<Operand>& operands(void) const {
     return operands_;
   }
+
   const std::vector<std::string>& opcodes(void) const {
     return opcodes_;
   }
+
   const std::set<std::string>& flags(void) const {
     return flags_;
   }
+
   bool has_flag(const std::string& flag) const {
     return flags_.find(flag) != flags_.end();
   }
@@ -186,16 +192,19 @@ class Instruction {
     result.name_ = name;
     return result;
   }
+
   Instruction with_operands(const std::vector<Operand>& operands) const {
     Instruction result = *this;
     result.operands_ = operands;
     return result;
   }
+
   Instruction with_opcodes(const std::vector<std::string>& opcodes) const {
     Instruction result = *this;
     result.opcodes_ = opcodes;
     return result;
   }
+
   Instruction with_flags(const std::set<std::string>& flags) const {
     Instruction result = *this;
     result.flags_ = flags;
@@ -698,6 +707,7 @@ class MarkedInstruction : public Instruction {
       opcodes_.erase(opcodes_.begin());
     }
   }
+
   MarkedInstruction with_name(const std::string& name) const {
     return MarkedInstruction(Instruction::with_name(name),
                              required_prefixes_,
@@ -707,6 +717,7 @@ class MarkedInstruction : public Instruction {
                              opcode_in_imm_,
                              fwait_);
   }
+
   MarkedInstruction with_operands(
       const std::vector<Operand>& operands) const {
     return MarkedInstruction(Instruction::with_operands(operands),
@@ -717,6 +728,7 @@ class MarkedInstruction : public Instruction {
                              opcode_in_imm_,
                              fwait_);
   }
+
   MarkedInstruction with_opcodes(
       const std::vector<std::string>& opcodes) const {
     return MarkedInstruction(Instruction::with_opcodes(opcodes),
@@ -727,6 +739,7 @@ class MarkedInstruction : public Instruction {
                              opcode_in_imm_,
                              fwait_);
   }
+
   MarkedInstruction with_flags(const std::set<std::string>& flags) const {
     return MarkedInstruction(Instruction::with_flags(flags),
                              required_prefixes_,
@@ -736,9 +749,11 @@ class MarkedInstruction : public Instruction {
                              opcode_in_imm_,
                              fwait_);
   }
+
   const std::multiset<std::string>& required_prefixes(void) const {
     return required_prefixes_;
   }
+
   MarkedInstruction add_requred_prefix(const std::string& string) const {
     MarkedInstruction result = *this;
     result.required_prefixes_.insert(string);
@@ -751,41 +766,51 @@ class MarkedInstruction : public Instruction {
           operand->size = "d";
     return result;
   }
+
   const std::multiset<std::string>& optional_prefixes(void) const {
     return optional_prefixes_;
   }
+
   MarkedInstruction add_optional_prefix(const std::string& string) const {
     MarkedInstruction result = *this;
     result.optional_prefixes_.insert(string);
     return result;
   }
+
   bool rex_b(void) const {
     return rex_.b;
   }
+
   MarkedInstruction set_rex_b(void) const {
     MarkedInstruction result = *this;
     result.rex_.b = true;
     return result;
   }
+
   bool rex_x(void) const {
     return rex_.x;
   }
+
   MarkedInstruction set_rex_x(void) const {
     MarkedInstruction result = *this;
     result.rex_.x = true;
     return result;
   }
+
   bool rex_r(void) const {
     return rex_.r;
   }
+
   MarkedInstruction set_rex_r(void) const {
     MarkedInstruction result = *this;
     result.rex_.r = true;
     return result;
   }
+
   bool rex_w(void) const {
     return rex_.w;
   }
+
   MarkedInstruction set_rex_w(void) const {
     MarkedInstruction result = *this;
     result.rex_.w = true;
@@ -797,6 +822,7 @@ class MarkedInstruction : public Instruction {
         operand->size = "d";
     return result;
   }
+
   MarkedInstruction clear_rex_w(void) const {
     MarkedInstruction result = *this;
     result.rex_.w = false;
@@ -806,17 +832,21 @@ class MarkedInstruction : public Instruction {
         operand->size = "d";
     return result;
   }
+
   MarkedInstruction set_opcode_in_modrm(void) const {
     MarkedInstruction result = *this;
     result.opcode_in_modrm_ = true;
     return result;
   }
+
   bool opcode_in_modrm(void) const {
     return opcode_in_modrm_;
   }
+
   bool opcode_in_imm(void) const {
     return opcode_in_imm_;
   }
+
   bool fwait(void) const {
     return fwait_;
   }
@@ -832,15 +862,16 @@ class MarkedInstruction : public Instruction {
      These two instructions have nothing  to do with each other even if they
      share the opcode.  Not only the semantic differs, but there are CPUs where
      one of them is valid and accepted and another is invalid (all four
-     possibilities are actually realized).  Yet another example: “mov %cr, %reg”
-     uses “0xf0” (aka “lock”) as a replacement for REX.B in ia32 mode.  */
+     possibilities are actually realized).  */
   std::multiset<std::string> required_prefixes_;
+
   /* Optional prefixes for this instruction.  Don't affect the instruction
      decoding but may affect the instruction semantic.
      For example “branch_hints”, “repnz”/“repz” in a string instructions, etc.
      Note that these same prefixes may be used as a “required prefixes” in some
      other instructions!  */
   std::multiset<std::string> optional_prefixes_;
+
   /* Describes REX.B, REX.X, REX.R, and REX.W bits in REX/VEX instruction prefix
      (see AMD/Intel documentation for details for when these bits can/should be
      allowed and when they are correct/incorrect).  */
@@ -850,15 +881,18 @@ class MarkedInstruction : public Instruction {
     bool r : 1;
     bool w : 1;
   } rex_;
+
   /* True iff “reg” field in “ModR/M byte” is used as an opcode extension.
      Note that this covers cases where “reg-to-reg” instruction and
      “reg-to-memory” instruction have diffrently-sized operands, e.g. 128bit
      XMM register and 32bit single-precision float.  */
   bool opcode_in_modrm_ : 1;
+
   /* True iff “imm” byte is used as an opcode extension.  Used mostly by 3D Now!
      instructions, but there are some multimedia instructions which use “imm”
      byte in a similar fashion, such as “vcmppd”.  */
   bool opcode_in_imm_ : 1;
+
   /* True if instruction includes “fwait” “prefix”.  Note that “fwait” is not
      actually a prefix, it's separate instruction, but assemblers and objdump
      recognize it as part of other instruction, such as “finit” or “fsave”.  */
