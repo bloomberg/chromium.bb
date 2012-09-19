@@ -33,10 +33,11 @@ gfx::Display DisplayManager::CreateDisplayFromSpec(const std::string& spec) {
                    kDefaultHostWindowWidth, kDefaultHostWindowHeight);
   int x = 0, y = 0, width, height;
   float scale = 1.0f;
-  if (sscanf(spec.c_str(), "%dx%d*%f", &width, &height, &scale) >= 2 ||
-      sscanf(spec.c_str(), "%d+%d-%dx%d*%f", &x, &y, &width, &height,
-             &scale) >= 4) {
-    bounds.SetRect(x, y, width, height);
+  if (sscanf(spec.c_str(), "%dx%d*%f", &width, &height, &scale) >= 2) {
+    bounds.set_size(gfx::Size(width, height));
+  } else if (sscanf(spec.c_str(), "%d+%d-%dx%d*%f", &x, &y, &width, &height,
+                    &scale) >= 4 ) {
+    bounds = gfx::Rect(x, y, width, height);
   } else if (use_fullscreen_host_window_) {
     bounds = gfx::Rect(aura::RootWindowHost::GetNativeScreenSize());
   }

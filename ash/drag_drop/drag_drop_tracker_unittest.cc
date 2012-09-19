@@ -19,7 +19,7 @@ class DragDropTrackerTest : public test::AshTestBase {
  public:
   virtual void SetUp() OVERRIDE {
     AshTestBase::SetUp();
-    UpdateDisplay("200x200,200x200");
+    UpdateDisplay("0+0-200x200,0+201-200x200");
   }
 
   static aura::Window* CreateTestWindow(const gfx::Rect& bounds,
@@ -147,8 +147,8 @@ TEST_F(DragDropTrackerTest, MAYBE_ConvertMouseEvent) {
                                                            window0.get(),
                                                            original00));
   EXPECT_EQ(original00.type(), converted00->type());
-  EXPECT_EQ("50,50", converted00->location().ToString());
-  EXPECT_EQ("50,50", converted00->root_location().ToString());
+  EXPECT_EQ(gfx::Point(50, 50), converted00->location());
+  EXPECT_EQ(gfx::Point(50, 50), converted00->root_location());
   EXPECT_EQ(original00.flags(), converted00->flags());
 
   // Start tracking from the RootWindow0 and converts the mouse event into
@@ -161,8 +161,8 @@ TEST_F(DragDropTrackerTest, MAYBE_ConvertMouseEvent) {
                                                            window1.get(),
                                                            original01));
   EXPECT_EQ(original01.type(), converted01->type());
-  EXPECT_EQ("50,50", converted01->location().ToString());
-  EXPECT_EQ("150,150", converted01->root_location().ToString());
+  EXPECT_EQ(gfx::Point(50, 50), converted01->location());
+  EXPECT_EQ(gfx::Point(150, 150), converted01->root_location());
   EXPECT_EQ(original01.flags(), converted01->flags());
 
   // Start tracking from the RootWindow1 and converts the mouse event into
@@ -175,8 +175,8 @@ TEST_F(DragDropTrackerTest, MAYBE_ConvertMouseEvent) {
                                                            window0.get(),
                                                            original10));
   EXPECT_EQ(original10.type(), converted10->type());
-  EXPECT_EQ("50,50", converted10->location().ToString());
-  EXPECT_EQ("50,50", converted10->root_location().ToString());
+  EXPECT_EQ(gfx::Point(50, 50), converted10->location());
+  EXPECT_EQ(gfx::Point(50, 50), converted10->root_location());
   EXPECT_EQ(original10.flags(), converted10->flags());
 
   // Start tracking from the RootWindow1 and converts the mouse event into
@@ -189,8 +189,8 @@ TEST_F(DragDropTrackerTest, MAYBE_ConvertMouseEvent) {
                                                            window1.get(),
                                                            original11));
   EXPECT_EQ(original11.type(), converted11->type());
-  EXPECT_EQ("50,50", converted11->location().ToString());
-  EXPECT_EQ("150,150", converted11->root_location().ToString());
+  EXPECT_EQ(gfx::Point(50, 50), converted11->location());
+  EXPECT_EQ(gfx::Point(150, 150), converted11->root_location());
   EXPECT_EQ(original11.flags(), converted11->flags());
 }
 

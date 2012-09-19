@@ -710,12 +710,9 @@ void RootWindowHostLinux::Show() {
     // Before we map the window, set size hints. Otherwise, some window managers
     // will ignore toplevel XMoveWindow commands.
     XSizeHints size_hints;
-    size_hints.flags = PPosition | PWinGravity;
+    size_hints.flags = PPosition;
     size_hints.x = bounds_.x();
     size_hints.y = bounds_.y();
-    // Set StaticGravity so that the window position is not affected by the
-    // frame width when running with window manager.
-    size_hints.win_gravity = StaticGravity;
     XSetWMNormalHints(xdisplay_, xwindow_, &size_hints);
 
     XMapWindow(xdisplay_, xwindow_);

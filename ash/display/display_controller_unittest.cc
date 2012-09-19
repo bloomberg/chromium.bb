@@ -240,39 +240,5 @@ TEST_F(DisplayControllerTest, SwapPrimary) {
   EXPECT_TRUE(primary_root->Contains(launcher_window));
 }
 
-TEST_F(DisplayControllerTest, UpdateDisplayWithHostOrigin) {
-  UpdateDisplay("100x200,300x400");
-  ASSERT_EQ(2, gfx::Screen::GetNumDisplays());
-  Shell::RootWindowList root_windows =
-      Shell::GetInstance()->GetAllRootWindows();
-  ASSERT_EQ(2U, root_windows.size());
-  EXPECT_EQ("0,0", root_windows[0]->GetHostOrigin().ToString());
-  EXPECT_EQ("100x200", root_windows[0]->GetHostSize().ToString());
-  // UpdateDisplay set the origin if it's not set.
-  EXPECT_NE("0,0", root_windows[1]->GetHostOrigin().ToString());
-  EXPECT_EQ("300x400", root_windows[1]->GetHostSize().ToString());
-
-  UpdateDisplay("100x200,200+300-300x400");
-  ASSERT_EQ(2, gfx::Screen::GetNumDisplays());
-  EXPECT_EQ("0,0", root_windows[0]->GetHostOrigin().ToString());
-  EXPECT_EQ("100x200", root_windows[0]->GetHostSize().ToString());
-  EXPECT_EQ("200,300", root_windows[1]->GetHostOrigin().ToString());
-  EXPECT_EQ("300x400", root_windows[1]->GetHostSize().ToString());
-
-  UpdateDisplay("400+500-200x300,300x400");
-  ASSERT_EQ(2, gfx::Screen::GetNumDisplays());
-  EXPECT_EQ("400,500", root_windows[0]->GetHostOrigin().ToString());
-  EXPECT_EQ("200x300", root_windows[0]->GetHostSize().ToString());
-  EXPECT_EQ("0,0", root_windows[1]->GetHostOrigin().ToString());
-  EXPECT_EQ("300x400", root_windows[1]->GetHostSize().ToString());
-
-  UpdateDisplay("100+200-100x200,300+500-200x300");
-  ASSERT_EQ(2, gfx::Screen::GetNumDisplays());
-  EXPECT_EQ("100,200", root_windows[0]->GetHostOrigin().ToString());
-  EXPECT_EQ("100x200", root_windows[0]->GetHostSize().ToString());
-  EXPECT_EQ("300,500", root_windows[1]->GetHostOrigin().ToString());
-  EXPECT_EQ("200x300", root_windows[1]->GetHostSize().ToString());
-}
-
 }  // namespace test
 }  // namespace ash
