@@ -235,9 +235,10 @@ def recreate_tree(outdir, indir, infiles, action, as_sha1):
       if not os.path.isdir(outsubdir):
         os.makedirs(outsubdir)
 
-    if metadata.get('touched_only') == True:
-      open(outfile, 'ab').close()
-    elif 'link' in metadata:
+    # TODO(csharp): Fix crbug.com/150823 and enable the touched logic again.
+    # if metadata.get('touched_only') == True:
+    #   open(outfile, 'ab').close()
+    if 'link' in metadata:
       pointed = metadata['link']
       logging.debug('Symlink: %s -> %s' % (outfile, pointed))
       os.symlink(pointed, outfile)
@@ -262,7 +263,7 @@ def upload_hash_content(url, params, hash_content):
 
 
 def upload_sha1_tree(base_url, indir, infiles):
-  """Upload the given tree to the given url.
+  """Uploads the given tree to the given url.
 
   Arguments:
     base_url: The base url, it is assume that |base_url|/has/ can be used to
@@ -297,12 +298,12 @@ def upload_sha1_tree(base_url, indir, infiles):
       # assume it isn't present.
       pass
 
-    if metadata.get('touched_only') == True:
-      hash_data = ''
-    else:
-      infile = os.path.join(indir, relfile)
-      with open(infile, 'rb') as f:
-        hash_data = f.read()
+    # TODO(csharp): Fix crbug.com/150823 and enable the touched logic again.
+    # if metadata.get('touched_only') == True:
+    #   hash_data = ''
+    infile = os.path.join(indir, relfile)
+    with open(infile, 'rb') as f:
+      hash_data = f.read()
 
     response = None
     for attempt in range(MAX_UPLOAD_ATTEMPTS):
@@ -345,14 +346,15 @@ def process_input(filepath, prevdict, level, read_only):
   """
   assert level in (NO_INFO, STATS_ONLY, WITH_HASH)
   out = {}
-  if prevdict.get('touched_only') == True:
-    # The file's content is ignored. Skip the time and hard code mode.
-    if get_flavor() != 'win':
-      out['mode'] = stat.S_IRUSR | stat.S_IRGRP
-    out['size'] = 0
-    out['sha-1'] = SHA_1_NULL
-    out['touched_only'] = True
-    return out
+  # TODO(csharp): Fix crbug.com/150823 and enable the touched logic again.
+  # if prevdict.get('touched_only') == True:
+  #   # The file's content is ignored. Skip the time and hard code mode.
+  #   if get_flavor() != 'win':
+  #     out['mode'] = stat.S_IRUSR | stat.S_IRGRP
+  #   out['size'] = 0
+  #   out['sha-1'] = SHA_1_NULL
+  #   out['touched_only'] = True
+  #   return out
 
   if level >= STATS_ONLY:
     filestats = os.lstat(filepath)

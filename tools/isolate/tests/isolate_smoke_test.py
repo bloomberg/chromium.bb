@@ -359,6 +359,9 @@ class Isolate(unittest.TestCase):
       # Symlink stuff is unsupported there, remove them from the list.
       files = [f for f in files if not f.startswith('symlink_')]
 
+    # TODO(csharp): touched_only is disabled until crbug.com/150823 is fixed.
+    files.remove('touch_only')
+
     # modes read and trace are tested together.
     modes_to_check = list(EXPECTED_MODES)
     modes_to_check.remove('help')
@@ -407,7 +410,8 @@ class Isolate_check(IsolateModeBase):
     self._expect_no_tree()
     self._expect_results([], None, None, None)
 
-  def test_touch_only(self):
+  # TODO(csharp): Disabled until crbug.com/150823 is fixed.
+  def do_not_test_touch_only(self):
     self._execute('check', 'touch_only.isolate', ['-V', 'FLAG', 'gyp'], False)
     self._expect_no_tree()
     empty = os.path.join('files1', 'test_file1.txt')
@@ -479,7 +483,8 @@ class Isolate_hashtable(IsolateModeBase):
     self._expected_hash_tree(None)
     self._expect_results([], None, None, None)
 
-  def test_touch_only(self):
+  # TODO(csharp): Disabled until crbug.com/150823 is fixed.
+  def do_not_test_touch_only(self):
     self._execute(
         'hashtable', 'touch_only.isolate', ['-V', 'FLAG', 'gyp'], False)
     empty = os.path.join('files1', 'test_file1.txt')
@@ -554,7 +559,8 @@ class Isolate_remap(IsolateModeBase):
     self._expected_tree()
     self._expect_results([], None, None, None)
 
-  def test_touch_only(self):
+  # TODO(csharp): Disabled until crbug.com/150823 is fixed.
+  def do_not_test_touch_only(self):
     self._execute('remap', 'touch_only.isolate', ['-V', 'FLAG', 'gyp'], False)
     self._expected_tree()
     empty = os.path.join('files1', 'test_file1.txt')
@@ -626,7 +632,8 @@ class Isolate_run(IsolateModeBase):
     self._expect_empty_tree()
     self._expect_no_result()
 
-  def test_touch_only(self):
+  # TODO(csharp): Disabled until crbug.com/150823 is fixed.
+  def do_not_test_touch_only(self):
     self._execute('run', 'touch_only.isolate', ['-V', 'FLAG', 'run'], False)
     self._expect_empty_tree()
     empty = os.path.join('files1', 'test_file1.txt')
@@ -739,7 +746,8 @@ class Isolate_trace_read_merge(IsolateModeBase):
     self.assertEquals('', out)
     self.assertEquals(expected, err)
 
-  def test_touch_only(self):
+  # TODO(csharp): Disabled until crbug.com/150823 is fixed.
+  def do_not_test_touch_only(self):
     out = self._execute(
         'trace', 'touch_only.isolate', ['-V', 'FLAG', 'trace'], True)
     self.assertEquals('', out)
