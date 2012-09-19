@@ -96,7 +96,7 @@ CompositorImpl::~CompositorImpl() {
 
 void CompositorImpl::OnSurfaceUpdated(
     const SurfacePresentedCallback& callback) {
-  if (host_->get())
+  if (host_.get())
     host_->composite();
   // TODO(sievers): Let RWHV do this
   uint32 sync_point =
