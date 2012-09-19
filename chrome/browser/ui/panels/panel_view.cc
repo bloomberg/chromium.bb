@@ -286,12 +286,27 @@ void PanelView::AnimationProgressed(const ui::Animation* animation) {
 }
 
 void PanelView::ClosePanel() {
+  // We're already closing. Do nothing.
+  if (!window_)
+    return;
+
+  if (!panel_->ShouldCloseWindow())
+    return;
+
   // Cancel any currently running animation since we're closing down.
   if (bounds_animator_.get())
     bounds_animator_.reset();
 
+  if (panel_->GetWebContents()) {
+    // Still have web contents. Allow renderer to shut down.
+    // When web contents are destroyed, we will be called back again.
+    panel_->OnWindowClosing();
+    return;
+  }
+
   panel_->OnNativePanelClosed();
   window_->Close();
+  window_ = NULL;
 }
 
 void PanelView::ActivatePanel() {
