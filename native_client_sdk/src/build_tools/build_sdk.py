@@ -390,11 +390,9 @@ def BuildStepBuildToolchains(pepperdir, platform, arch, pepper_ver, toolchains):
       buildbot_common.Run(
           GetBuildArgs('pnacl', pnacldir, pepperdir, 'x86', '64'),
           cwd=NACL_DIR, shell=(platform=='win'))
-      # Pnacl libraries are typically bitcode, but some are native and
-      # will be looked up in the native library directory.
-      buildbot_common.Move(
-          os.path.join(GetToolchainNaClLib('pnacl', pnacldir, 'x86', '64'),
-                       'libpnacl_irt_shim.a'),
+      # Fill in the latest native pnacl shim library from the chrome build.
+      buildbot_common.CopyFile(
+          os.path.join(OUT_DIR, 'Release', 'libpnacl_irt_shim.a'),
           GetPNaClNativeLib(pnacldir, 'x86-64'))
       InstallHeaders(GetToolchainNaClInclude('pnacl', pnacldir, 'x86'),
                      pepper_ver,
