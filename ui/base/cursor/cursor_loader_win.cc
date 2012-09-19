@@ -4,8 +4,6 @@
 
 #include "ui/base/cursor/cursor_loader_win.h"
 
-#include "ui/base/cursor/cursor.h"
-
 namespace ui {
 
 #if defined(USE_AURA)
