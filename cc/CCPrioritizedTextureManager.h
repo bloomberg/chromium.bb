@@ -57,10 +57,11 @@ public:
     void clearPriorities();
 
     void reduceMemoryOnImplThread(size_t limitBytes, CCResourceProvider*);
+    bool evictedBackingsExist() const { return !m_evictedBackings.isEmpty(); }
     void getEvictedBackings(BackingVector& evictedBackings);
     void unlinkEvictedBackings(const BackingVector& evictedBackings);
     // Deletes all evicted backings, unlinking them from their owning textures if needed.
-    // Returns true if this function to unlinked any backings from their owning texture while
+    // Returns true if this function unlinked any backings from their owning texture while
     // destroying them.
     bool deleteEvictedBackings();
 

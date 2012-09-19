@@ -22,7 +22,7 @@ public:
     void appendPartialUpload(TextureUploader::Parameters);
     void appendCopy(TextureCopier::Parameters);
 
-    void clearUploads();
+    void clearUploadsToEvictedResources();
 
     TextureUploader::Parameters takeFirstFullUpload();
     TextureUploader::Parameters takeFirstPartialUpload();
@@ -35,6 +35,7 @@ public:
     bool hasMoreUpdates() const;
 
 private:
+    void clearUploadsToEvictedResources(Deque<TextureUploader::Parameters>& entryQueue);
     Deque<TextureUploader::Parameters> m_fullEntries;
     Deque<TextureUploader::Parameters> m_partialEntries;
     Deque<TextureCopier::Parameters> m_copyEntries;

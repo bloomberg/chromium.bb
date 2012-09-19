@@ -265,11 +265,6 @@ void CCPrioritizedTextureManager::reduceMemoryOnImplThread(size_t limitBytes, CC
     ASSERT(resourceProvider);
 
     evictBackingsToReduceMemory(limitBytes, DoNotRespectManagerPriorityCutoff, resourceProvider);
-
-    // Deleting just some (not all) resources is not supported yet because we do not clear
-    // only the deleted resources from the texture upload queues (rather, we clear all uploads).
-    // Make sure that if we evict all resources.
-    ASSERT(m_backings.isEmpty());
 }
 
 void CCPrioritizedTextureManager::getEvictedBackings(BackingVector& evictedBackings)
@@ -344,7 +339,7 @@ CCPrioritizedTexture::Backing* CCPrioritizedTextureManager::createBacking(IntSiz
     ASSERT(CCProxy::isImplThread() && CCProxy::isMainThreadBlocked());
     ASSERT(resourceProvider);
     CCResourceProvider::ResourceId resourceId = resourceProvider->createResource(m_pool, size, format, CCResourceProvider::TextureUsageAny);
-    CCPrioritizedTexture::Backing* backing = new CCPrioritizedTexture::Backing(resourceId, size, format);
+    CCPrioritizedTexture::Backing* backing = new CCPrioritizedTexture::Backing(resourceId, resourceProvider, size, format);
     m_memoryUseBytes += backing->bytes();
     // Put backing texture at the front for eviction, since it isn't in use yet.
     m_backings.insertBefore(m_backings.begin(), backing);
@@ -358,8 +353,11 @@ void CCPrioritizedTextureManager::evictBackingResource(CCPrioritizedTexture::Bac
     ASSERT(resourceProvider);
     ASSERT(m_backings.find(backing) != m_backings.end());
 
-    resourceProvider->deleteResource(backing->id());
-    backing->setId(0);
+    // Note that we create a backing and its resource at the same time, but we
+    // delete the backing structure and its resource in two steps. This is because
+    // we can delete the resource while the main thread is running, but we cannot
+    // unlink backings while the main thread is running.
+    backing->deleteResource(resourceProvider);
     m_memoryUseBytes -= backing->bytes();
     m_backings.remove(backing);
     m_evictedBackings.append(backing);

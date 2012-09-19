@@ -33,10 +33,21 @@ void CCTextureUpdateQueue::appendCopy(TextureCopier::Parameters copy)
     m_copyEntries.append(copy);
 }
 
-void CCTextureUpdateQueue::clearUploads()
+void CCTextureUpdateQueue::clearUploadsToEvictedResources()
 {
-    m_fullEntries.clear();
-    m_partialEntries.clear();
+    clearUploadsToEvictedResources(m_fullEntries);
+    clearUploadsToEvictedResources(m_partialEntries);
+}
+
+void CCTextureUpdateQueue::clearUploadsToEvictedResources(Deque<TextureUploader::Parameters>& entryQueue)
+{
+    Deque<TextureUploader::Parameters> temp;
+    entryQueue.swap(temp);
+    while (temp.size()) {
+        TextureUploader::Parameters upload = temp.takeFirst();
+        if (!upload.texture->backingResourceWasEvicted())
+            entryQueue.append(upload);
+    }
 }
 
 TextureUploader::Parameters CCTextureUpdateQueue::takeFirstFullUpload()

@@ -446,6 +446,13 @@ void CCLayerTreeHost::reduceContentsTexturesMemoryOnImplThread(size_t limitBytes
     m_contentsTextureManager->reduceMemoryOnImplThread(limitBytes, resourceProvider);
 }
 
+bool CCLayerTreeHost::evictedContentsTexturesBackingsExist() const
+{
+    ASSERT(CCProxy::isImplThread());
+    ASSERT(m_contentsTextureManager.get());
+    return m_contentsTextureManager->evictedBackingsExist();
+}
+
 void CCLayerTreeHost::getEvictedContentTexturesBackings(CCPrioritizedTextureManager::BackingVector& evictedBackings)
 {
     ASSERT(CCProxy::isImplThread());

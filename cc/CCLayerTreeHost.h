@@ -170,6 +170,8 @@ public:
     // Delete contents textures' backing resources until they use only bytesLimit bytes. This may
     // be called on the impl thread while the main thread is running.
     void reduceContentsTexturesMemoryOnImplThread(size_t bytesLimit, CCResourceProvider*);
+    // Returns true if there any evicted backing textures that have not been deleted.
+    bool evictedContentsTexturesBackingsExist() const;
     // Retrieve the list of all contents textures' backings that have been evicted, to pass to the
     // main thread to unlink them from their owning textures.
     void getEvictedContentTexturesBackings(CCPrioritizedTextureManager::BackingVector&);

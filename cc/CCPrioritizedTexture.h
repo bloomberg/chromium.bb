@@ -52,6 +52,8 @@ public:
     // taken away "soon".
     bool haveBackingTexture() const { return !!backing(); }
 
+    bool backingResourceWasEvicted() const;
+
     // If canAcquireBackingTexture() is true acquireBackingTexture() will acquire
     // a backing texture for use. Call this whenever the texture is actually needed.
     void acquireBackingTexture(CCResourceProvider*);
@@ -85,7 +87,7 @@ private:
     class Backing : public CCTexture {
         WTF_MAKE_NONCOPYABLE(Backing);
     public:
-        Backing(unsigned id, IntSize, GC3Denum format);
+        Backing(unsigned id, CCResourceProvider*, IntSize, GC3Denum format);
         ~Backing();
         void updatePriority();
 
@@ -94,12 +96,19 @@ private:
         bool requestPriorityAtLastPriorityUpdate() const { return m_priorityAtLastPriorityUpdate; }
         bool wasAbovePriorityCutoffAtLastPriorityUpdate() const { return m_wasAbovePriorityCutoffAtLastPriorityUpdate; }
 
+        void deleteResource(CCResourceProvider*);
+        bool resourceHasBeenDeleted() const;
+
     private:
         friend class CCPrioritizedTexture;
         CCPrioritizedTexture* m_owner;
         int m_priorityAtLastPriorityUpdate;
         bool m_ownerExistedAtLastPriorityUpdate;
         bool m_wasAbovePriorityCutoffAtLastPriorityUpdate;
+        bool m_resourceHasBeenDeleted;
+#ifndef NDEBUG
+        CCResourceProvider* m_resourceProvider;
+#endif
     };
 
     CCPrioritizedTexture(CCPrioritizedTextureManager*, IntSize, GC3Denum format);

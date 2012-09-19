@@ -357,8 +357,10 @@ void CCThreadProxy::releaseContentsTexturesOnImplThread()
     m_layerTreeHost->reduceContentsTexturesMemoryOnImplThread(0, m_layerTreeHostImpl->resourceProvider());
     // Make sure that we get a new commit before drawing again.
     m_resetContentsTexturesPurgedAfterCommitOnImplThread = false;
-    // The texture upload queue may reference textures that were just purged, so clear it.
-    m_currentTextureUpdateControllerOnImplThread.clear();
+    // The texture upload queue may reference textures that were just purged, clear
+    // them from the queue.
+    if (m_currentTextureUpdateControllerOnImplThread.get() && m_layerTreeHost->evictedContentsTexturesBackingsExist())
+        m_currentTextureUpdateControllerOnImplThread->discardUploadsToEvictedResources();
 }
 
 void CCThreadProxy::setNeedsRedraw()
@@ -587,14 +589,16 @@ void CCThreadProxy::beginFrameCompleteOnImplThread(CCCompletionEvent* completion
         return;
     }
 
+    // Clear any uploads we were making to textures linked to evicted
+    // resources
+    if (m_layerTreeHost->evictedContentsTexturesBackingsExist())
+        queue->clearUploadsToEvictedResources();
+
     // If we unlinked evicted textures on the main thread, delete them now.
     if (m_layerTreeHost->deleteEvictedContentTexturesBackings()) {
-
         // Deleting the evicted textures' backings resulted in some textures in the
-        // layer tree being invalidated (unliked from their backings). The upload queue
-        // may contain references to these textures, so clear the queue and kick off
+        // layer tree being invalidated (unliked from their backings). Kick off
         // another commit to fill them again.
-        queue->clearUploads();
         setNeedsCommitOnImplThread();
     } else {
         // The layer tree does not reference evicted textures, so mark that we

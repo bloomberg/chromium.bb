@@ -69,6 +69,11 @@ bool CCPrioritizedTexture::requestLate()
     return m_manager->requestLate(this);
 }
 
+bool CCPrioritizedTexture::backingResourceWasEvicted() const
+{
+    return m_backing ? m_backing->resourceHasBeenDeleted() : false;
+}
+
 void CCPrioritizedTexture::acquireBackingTexture(CCResourceProvider* resourceProvider)
 {
     ASSERT(m_isAbovePriorityCutoff);
@@ -120,18 +125,42 @@ void CCPrioritizedTexture::setToSelfManagedMemoryPlaceholder(size_t bytes)
     m_bytes = bytes;
 }
 
-CCPrioritizedTexture::Backing::Backing(unsigned id, IntSize size, GC3Denum format)
+CCPrioritizedTexture::Backing::Backing(unsigned id, CCResourceProvider* resourceProvider, IntSize size, GC3Denum format)
     : CCTexture(id, size, format)
     , m_owner(0)
     , m_priorityAtLastPriorityUpdate(CCPriorityCalculator::lowestPriority())
     , m_ownerExistedAtLastPriorityUpdate(false)
     , m_wasAbovePriorityCutoffAtLastPriorityUpdate(false)
+    , m_resourceHasBeenDeleted(false)
+#ifndef NDEBUG
+    , m_resourceProvider(resourceProvider)
+#endif
 {
 }
 
 CCPrioritizedTexture::Backing::~Backing()
 {
     ASSERT(!m_owner);
+    ASSERT(m_resourceHasBeenDeleted);
+}
+
+void CCPrioritizedTexture::Backing::deleteResource(CCResourceProvider* resourceProvider)
+{
+    ASSERT(CCProxy::isImplThread());
+    ASSERT(!m_resourceHasBeenDeleted);
+#ifndef NDEBUG
+    ASSERT(resourceProvider == m_resourceProvider);
+#endif
+
+    resourceProvider->deleteResource(id());
+    setId(0);
+    m_resourceHasBeenDeleted = true;
+}
+
+bool CCPrioritizedTexture::Backing::resourceHasBeenDeleted() const
+{
+    ASSERT(CCProxy::isImplThread());
+    return m_resourceHasBeenDeleted;
 }
 
 void CCPrioritizedTexture::Backing::updatePriority()

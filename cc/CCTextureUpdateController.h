@@ -34,6 +34,9 @@ public:
 
     virtual ~CCTextureUpdateController();
 
+    // Discard uploads to textures that were evicted on the impl thread.
+    void discardUploadsToEvictedResources();
+
     void performMoreUpdates(double monotonicTimeLimit);
     void finalize();
 

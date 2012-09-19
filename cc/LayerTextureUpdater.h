@@ -30,6 +30,7 @@ public:
         void swapTextureWith(OwnPtr<CCPrioritizedTexture>& texture) { m_texture.swap(texture); }
         virtual void prepareRect(const IntRect& /* sourceRect */, CCRenderingStats&) { }
         virtual void updateRect(CCResourceProvider*, const IntRect& sourceRect, const IntSize& destOffset) = 0;
+        virtual bool backingResourceWasEvicted() const { return m_texture->backingResourceWasEvicted(); }
     protected:
         explicit Texture(PassOwnPtr<CCPrioritizedTexture> texture) : m_texture(texture) { }
 

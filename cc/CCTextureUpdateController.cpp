@@ -120,6 +120,11 @@ void CCTextureUpdateController::performMoreUpdates(
         updateMoreTexturesNow();
 }
 
+void CCTextureUpdateController::discardUploadsToEvictedResources()
+{
+    m_queue->clearUploadsToEvictedResources();
+}
+
 void CCTextureUpdateController::finalize()
 {
     updateTextures(m_resourceProvider, m_uploader, m_queue.get());

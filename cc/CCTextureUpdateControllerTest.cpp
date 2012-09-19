@@ -67,8 +67,16 @@ private:
 
 class TextureForUploadTest : public LayerTextureUpdater::Texture {
 public:
-    TextureForUploadTest() : LayerTextureUpdater::Texture(adoptPtr<CCPrioritizedTexture>(0)) { }
+    TextureForUploadTest() 
+        : LayerTextureUpdater::Texture(nullptr)
+        , m_evicted(false)
+    {
+    }
     virtual void updateRect(CCResourceProvider*, const IntRect& sourceRect, const IntSize& destOffset) { }
+    virtual bool backingResourceWasEvicted() const { return m_evicted; }
+    void evictBackingResource() { m_evicted = true; }
+private:
+    bool m_evicted;
 };
 
 
@@ -157,26 +165,37 @@ protected:
         m_resourceProvider = CCResourceProvider::create(m_context.get(), UnthrottledUploader);
     }
 
-    void appendFullUploadsToUpdateQueue(int count)
+
+    void appendFullUploadsOfIndexedTextureToUpdateQueue(int count, int textureIndex)
     {
         m_fullUploadCountExpected += count;
         m_totalUploadCountExpected += count;
 
         const IntRect rect(0, 0, 300, 150);
-        const TextureUploader::Parameters upload = { &m_texture, rect, IntSize() };
+        const TextureUploader::Parameters upload = { &m_textures[textureIndex], rect, IntSize() };
         for (int i = 0; i < count; i++)
             m_queue->appendFullUpload(upload);
     }
 
-    void appendPartialUploadsToUpdateQueue(int count)
+    void appendFullUploadsToUpdateQueue(int count)
+    {
+        appendFullUploadsOfIndexedTextureToUpdateQueue(count, 0);
+    }
+
+    void appendPartialUploadsOfIndexedTextureToUpdateQueue(int count, int textureIndex)
     {
         m_partialCountExpected += count;
         m_totalUploadCountExpected += count;
 
         const IntRect rect(0, 0, 100, 100);
-        const TextureUploader::Parameters upload = { &m_texture, rect, IntSize() };
+        const TextureUploader::Parameters upload = { &m_textures[textureIndex], rect, IntSize() };
         for (int i = 0; i < count; i++)
             m_queue->appendPartialUpload(upload);
+    }
+
+    void appendPartialUploadsToUpdateQueue(int count)
+    {
+        appendPartialUploadsOfIndexedTextureToUpdateQueue(count, 0);
     }
 
     void setMaxUploadCountPerUpdate(int count)
@@ -189,7 +208,7 @@ protected:
     OwnPtr<CCGraphicsContext> m_context;
     OwnPtr<CCResourceProvider> m_resourceProvider;
     OwnPtr<CCTextureUpdateQueue> m_queue;
-    TextureForUploadTest m_texture;
+    TextureForUploadTest m_textures[4];
     TextureUploaderForUploadTest m_uploader;
     OwnPtr<WebThread> m_thread;
     WebCompositorInitializer m_compositorInitializer;
@@ -494,6 +513,39 @@ TEST_F(CCTextureUpdateControllerTest, UpdatesCompleteInFiniteTime)
     EXPECT_EQ(2, m_numBeginUploads);
     EXPECT_EQ(2, m_numEndUploads);
     EXPECT_EQ(2, m_numTotalUploads);
+}
+
+TEST_F(CCTextureUpdateControllerTest, ClearUploadsToEvictedResources)
+{
+    appendFullUploadsOfIndexedTextureToUpdateQueue(1, 0);
+    appendPartialUploadsOfIndexedTextureToUpdateQueue(1, 1);
+    appendFullUploadsOfIndexedTextureToUpdateQueue(1, 2);
+    appendPartialUploadsOfIndexedTextureToUpdateQueue(1, 3);
+    DebugScopedSetImplThread implThread;
+
+    m_queue->clearUploadsToEvictedResources();
+    EXPECT_EQ(2u, m_queue->fullUploadSize());
+    EXPECT_EQ(2u, m_queue->partialUploadSize());
+
+    m_textures[0].evictBackingResource();
+    m_queue->clearUploadsToEvictedResources();
+    EXPECT_EQ(1u, m_queue->fullUploadSize());
+    EXPECT_EQ(2u, m_queue->partialUploadSize());
+
+    m_textures[3].evictBackingResource();
+    m_queue->clearUploadsToEvictedResources();
+    EXPECT_EQ(1u, m_queue->fullUploadSize());
+    EXPECT_EQ(1u, m_queue->partialUploadSize());
+
+    m_textures[2].evictBackingResource();
+    m_queue->clearUploadsToEvictedResources();
+    EXPECT_EQ(0u, m_queue->fullUploadSize());
+    EXPECT_EQ(1u, m_queue->partialUploadSize());
+
+    m_textures[1].evictBackingResource();
+    m_queue->clearUploadsToEvictedResources();
+    EXPECT_EQ(0u, m_queue->fullUploadSize());
+    EXPECT_EQ(0u, m_queue->partialUploadSize());
 }
 
 } // namespace
