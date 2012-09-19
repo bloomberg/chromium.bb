@@ -73,6 +73,13 @@ std::string GetDeviceIdFromStorageInfo(const MtpStorageInfo& storage_info) {
                                         unique_id);
 }
 
+// Returns the |data_store_id| string in the required format.
+// If the |data_store_id| is 65537, this function returns "(65537)".
+std::string GetFormattedIdString(const std::string& data_store_id) {
+  return base::StringPrintf("%s%s%s", chrome::kLeftParen, data_store_id.c_str(),
+                            chrome::kRightParen);
+}
+
 // Helper function to get device label from storage information.
 string16 GetDeviceLabelFromStorageInfo(const MtpStorageInfo& storage_info) {
   std::string device_label;
@@ -90,15 +97,12 @@ string16 GetDeviceLabelFromStorageInfo(const MtpStorageInfo& storage_info) {
   if (!device_label.empty()) {
     const std::string& volume_id = storage_info.volume_identifier();
     if (!volume_id.empty()) {
-      // TODO(kmadhusu): Use StringPrintf here and on line 98.
-      device_label += chrome::kLeftParen + volume_id + chrome::kRightParen;
+      device_label += GetFormattedIdString(volume_id);
     } else {
       const std::string data_store_id =
           GetStorageIdFromStorageName(storage_info.storage_name());
-      if (!data_store_id.empty()) {
-        device_label += chrome::kLeftParen + data_store_id +
-                        chrome::kRightParen;
-      }
+      if (!data_store_id.empty())
+        device_label += GetFormattedIdString(data_store_id);
     }
   }
   return UTF8ToUTF16(device_label);
