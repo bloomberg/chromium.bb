@@ -6,6 +6,9 @@
 
 #include "base/message_loop.h"
 #include "base/string_util.h"
+#if defined (OS_WIN)
+#include "base/sys_info.h"
+#endif
 #include "content/common/browser_plugin_messages.h"
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/content_renderer_client.h"
@@ -54,6 +57,7 @@ BrowserPlugin::BrowserPlugin(
       sad_guest_(NULL),
       guest_crashed_(false),
       resize_pending_(false),
+      navigate_src_sent_(false),
       parent_frame_(frame->identifier()) {
   BrowserPluginManager::Get()->AddBrowserPlugin(instance_id, this);
   bindings_.reset(new BrowserPluginBindings(this));
@@ -90,13 +94,21 @@ std::string BrowserPlugin::GetSrcAttribute() const {
 void BrowserPlugin::SetSrcAttribute(const std::string& src) {
   if (src == src_ && !guest_crashed_)
     return;
-  if (!src.empty()) {
+  if (!src.empty() || navigate_src_sent_) {
     BrowserPluginManager::Get()->Send(
-        new BrowserPluginHostMsg_NavigateOrCreateGuest(
+        new BrowserPluginHostMsg_NavigateGuest(
             render_view_->GetRoutingID(),
             instance_id_,
             parent_frame_,
-            src));
+            src,
+            gfx::Size(width(), height())));
+    // Record that we sent a NavigateGuest message to embedder. Once we send
+    // such a message, subsequent SetSrcAttribute() calls must always send
+    // NavigateGuest messages to the embedder (even if |src| is empty), so
+    // resize works correctly for all cases (e.g. The embedder can reset the
+    // guest's |src| to empty value, resize and then set the |src| to a
+    // non-empty value).
+    navigate_src_sent_ = true;
   }
   src_ = src;
   guest_crashed_ = false;
@@ -310,8 +322,9 @@ void BrowserPlugin::paint(WebCanvas* canvas, const WebRect& rect) {
   paint.setStyle(SkPaint::kFill_Style);
   paint.setColor(SK_ColorWHITE);
   canvas->drawRect(image_data_rect, paint);
-  // Stay at white if we have no src set, or we don't yet have a backing store.
-  if (!backing_store_.get() || src_.empty())
+  // Stay at white if we have never set a non-empty src, or we don't yet have a
+  // backing store.
+  if (!backing_store_.get() || !navigate_src_sent_)
     return;
   float inverse_scale_factor =  1.0f / backing_store_->GetScaleFactor();
   canvas->scale(inverse_scale_factor, inverse_scale_factor);
@@ -327,23 +340,51 @@ void BrowserPlugin::updateGeometry(
   int old_height = height();
   plugin_rect_ = window_rect;
   if (old_width == window_rect.width &&
-      old_height == window_rect.height)
+      old_height == window_rect.height) {
+    return;
+  }
+  // Until an actual navigation occurs, there is no browser side embedder
+  // present to notify about geometry updates. In this case, after we've updated
+  // the BrowserPlugin's state we are done and can return immediately.
+  if (!navigate_src_sent_)
     return;
 
   const size_t stride = skia::PlatformCanvas::StrideForWidth(window_rect.width);
-  const size_t size = window_rect.height *
-                      stride *
-                      GetDeviceScaleFactor() *
-                      GetDeviceScaleFactor();
+  // Make sure the size of the damage buffer is at least four bytes so that we
+  // can fit in a magic word to verify that the memory is shared correctly.
+  size_t size =
+      std::max(sizeof(unsigned int),
+               static_cast<size_t>(window_rect.height *
+                                   stride *
+                                   GetDeviceScaleFactor() *
+                                   GetDeviceScaleFactor()));
 
   // Don't drop the old damage buffer until after we've made sure that the
   // browser process has dropped it.
-  TransportDIB* new_damage_buffer =
-      RenderProcess::current()->CreateTransportDIB(size);
-  DCHECK(new_damage_buffer);
+  TransportDIB* new_damage_buffer = NULL;
+#if defined(OS_WIN)
+  size_t allocation_granularity = base::SysInfo::VMAllocationGranularity();
+  size_t shared_mem_size = size / allocation_granularity + 1;
+  shared_mem_size = shared_mem_size * allocation_granularity;
+
+  base::SharedMemory shared_mem;
+  if (!shared_mem.CreateAnonymous(shared_mem_size))
+    NOTREACHED() << "Unable to create shared memory of size:" << size;
+  new_damage_buffer = TransportDIB::Map(shared_mem.handle());
+#else
+  new_damage_buffer = RenderProcess::current()->CreateTransportDIB(size);
+#endif
+  if (!new_damage_buffer)
+    NOTREACHED() << "Unable to create damage buffer";
+  DCHECK(new_damage_buffer->memory());
+  // Insert the magic word.
+  *static_cast<unsigned int*>(new_damage_buffer->memory()) = 0xdeadbeef;
 
   BrowserPluginHostMsg_ResizeGuest_Params params;
   params.damage_buffer_id = new_damage_buffer->id();
+#if defined(OS_WIN)
+  params.damage_buffer_size = size;
+#endif
   params.width = window_rect.width;
   params.height = window_rect.height;
   params.resize_pending = resize_pending_;
@@ -377,7 +418,7 @@ bool BrowserPlugin::acceptsInputEvents() {
 
 bool BrowserPlugin::handleInputEvent(const WebKit::WebInputEvent& event,
                                      WebKit::WebCursorInfo& cursor_info) {
-  if (guest_crashed_ || src_.empty())
+  if (guest_crashed_ || !navigate_src_sent_)
     return false;
   bool handled = false;
   WebCursor cursor;

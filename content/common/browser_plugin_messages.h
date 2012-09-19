@@ -54,10 +54,11 @@ IPC_MESSAGE_ROUTED3(BrowserPluginHostMsg_UpdateRect_ACK,
 // that WebContents. If not, it will create the WebContents, associate it with
 // the BrowserPlugin's browser-side BrowserPluginHost as a guest, and navigate
 // it to the requested URL.
-IPC_MESSAGE_ROUTED3(BrowserPluginHostMsg_NavigateOrCreateGuest,
+IPC_MESSAGE_ROUTED4(BrowserPluginHostMsg_NavigateGuest,
                     int /* instance_id*/,
-                    long long /* frame_id */,
-                    std::string /* src */)
+                    int64 /* frame_id */,
+                    std::string /* src */,
+                    gfx::Size /* size */)
 
 // When a BrowserPlugin has been removed from the embedder's DOM, it informs
 // the browser process to cleanup the guest.
@@ -71,6 +72,11 @@ IPC_STRUCT_BEGIN(BrowserPluginHostMsg_ResizeGuest_Params)
   // A handle to the new buffer to use to transport damage to the
   // embedder renderer process.
   IPC_STRUCT_MEMBER(TransportDIB::Id, damage_buffer_id)
+#if defined(OS_WIN)
+  // The size of the damage buffer because this information is not available
+  // on Windows.
+  IPC_STRUCT_MEMBER(int, damage_buffer_size)
+#endif
   // The new width of the plugin container.
   IPC_STRUCT_MEMBER(int, width)
   // The new height of the plugin container.
