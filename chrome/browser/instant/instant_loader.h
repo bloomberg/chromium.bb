@@ -68,6 +68,10 @@ class InstantLoader : public content::NotificationObserver {
   void SendAutocompleteResults(
       const std::vector<InstantAutocompleteResult>& results);
 
+  // Tells the preview page that the user pressed the up or down key. |count|
+  // is a repeat count, negative for moving up, positive for moving down.
+  void OnUpOrDownKeyPressed(int count);
+
   // Releases the preview TabContents passing ownership to the caller. This
   // should be called when the preview is committed. Notifies the page but not
   // the delegate. |text| is the final omnibox text being committed. NOTE: The

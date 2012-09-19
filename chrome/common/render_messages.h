@@ -303,8 +303,8 @@ IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxAutocompleteResults,
                     std::vector<InstantAutocompleteResult>
                         /* native_suggestions */)
 
-IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxKeyPress,
-                    int /* keycode */)
+IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxUpOrDownKeyPressed,
+                    int /* count */)
 
 // Toggles visual muting of the render view area. This is on when a constrained
 // window is showing.

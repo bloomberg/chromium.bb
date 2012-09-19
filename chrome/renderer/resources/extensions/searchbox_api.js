@@ -29,7 +29,6 @@ if (!chrome.searchBox) {
     native function GetWidth();
     native function GetHeight();
     native function GetAutocompleteResults();
-    native function GetKeyCode();
     native function SetSuggestions();
     native function SetQuerySuggestion();
     native function SetQuerySuggestionFromAutocompleteResult();
@@ -156,7 +155,6 @@ if (!chrome.searchBox) {
     this.__defineGetter__('width', GetWidth);
     this.__defineGetter__('height', GetHeight);
     this.__defineGetter__('nativeSuggestions', GetAutocompleteResultsWrapper);
-    this.__defineGetter__('keyCode', GetKeyCode);
     this.setSuggestions = function(text) {
       SetSuggestions(text);
     };

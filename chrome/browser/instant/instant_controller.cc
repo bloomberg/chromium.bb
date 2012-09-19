@@ -29,7 +29,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
-#include "ui/gfx/codec/png_codec.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "ui/views/widget/widget.h"
@@ -289,6 +288,14 @@ void InstantController::HandleAutocompleteResults(
   loader_->SendAutocompleteResults(results);
 }
 
+bool InstantController::OnUpOrDownKeyPressed(int count) {
+  if (mode_ != EXTENDED || !GetPreviewContents())
+    return false;
+
+  loader_->OnUpOrDownKeyPressed(count);
+  return true;
+}
+
 TabContents* InstantController::GetPreviewContents() const {
   return loader_.get() ? loader_->preview_contents() : NULL;
 }
@@ -483,17 +490,30 @@ void InstantController::SetSuggestions(
   if (!suggestions.empty())
     suggestion = suggestions[0];
 
-  string16 suggestion_lower = base::i18n::ToLower(suggestion.text);
-  string16 user_text_lower = base::i18n::ToLower(last_user_text_);
-  if (user_text_lower.size() >= suggestion_lower.size() ||
-      suggestion_lower.compare(0, user_text_lower.size(), user_text_lower))
-    suggestion.text.clear();
-  else
-    suggestion.text.erase(0, last_user_text_.size());
-
-  last_suggestion_ = suggestion;
-  if (!last_verbatim_)
+  if (suggestion.behavior == INSTANT_COMPLETE_REPLACE) {
+    // We don't get an Update() when changing the omnibox due to a REPLACE
+    // suggestion (so that we don't inadvertently cause the preview to change
+    // what it's showing, as the user arrows up/down through the page-provided
+    // suggestions). So, update these state variables here.
+    last_full_text_ = suggestion.text;
+    last_user_text_.clear();
+    last_verbatim_ = true;
+    last_suggestion_ = InstantSuggestion();
+    last_match_was_search_ = suggestion.type == INSTANT_SUGGESTION_SEARCH;
     delegate_->SetSuggestedText(suggestion.text, suggestion.behavior);
+  } else {
+    string16 suggestion_lower = base::i18n::ToLower(suggestion.text);
+    string16 user_text_lower = base::i18n::ToLower(last_user_text_);
+    if (user_text_lower.size() >= suggestion_lower.size() ||
+        suggestion_lower.compare(0, user_text_lower.size(), user_text_lower))
+      suggestion.text.clear();
+    else
+      suggestion.text.erase(0, last_user_text_.size());
+
+    last_suggestion_ = suggestion;
+    if (!last_verbatim_)
+      delegate_->SetSuggestedText(suggestion.text, suggestion.behavior);
+  }
 
   if (mode_ != SUGGEST)
     Show();

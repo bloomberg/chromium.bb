@@ -110,6 +110,11 @@ class InstantController : public InstantLoaderDelegate {
   void HandleAutocompleteResults(
       const std::vector<AutocompleteProvider*>& providers);
 
+  // Called when the user presses up or down. |count| is a repeat count,
+  // negative for moving up, positive for moving down. Returns true if Instant
+  // handled the key press.
+  bool OnUpOrDownKeyPressed(int count);
+
   // The preview TabContents. May be NULL if ReleasePreviewContents() has been
   // called, with no subsequent successful call to Update(). InstantController
   // retains ownership of the object.

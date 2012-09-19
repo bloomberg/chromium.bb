@@ -15,8 +15,7 @@ SearchBox::SearchBox(content::RenderView* render_view)
       verbatim_(false),
       selection_start_(0),
       selection_end_(0),
-      results_base_(0),
-      key_code_(0) {
+      results_base_(0) {
 }
 
 SearchBox::~SearchBox() {
@@ -68,7 +67,8 @@ bool SearchBox::OnMessageReceived(const IPC::Message& message) {
                         OnDetermineIfPageSupportsInstant)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxAutocompleteResults,
                         OnAutocompleteResults)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxKeyPress, OnKeyPress)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxUpOrDownKeyPressed,
+                        OnUpOrDownKeyPressed)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -137,11 +137,10 @@ void SearchBox::OnAutocompleteResults(
   }
 }
 
-void SearchBox::OnKeyPress(int key_code) {
-  key_code_ = key_code;
+void SearchBox::OnUpOrDownKeyPressed(int count) {
   if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
-    extensions_v8::SearchBoxExtension::DispatchKeyPress(
-        render_view()->GetWebView()->mainFrame());
+    extensions_v8::SearchBoxExtension::DispatchUpOrDownKeyPress(
+        render_view()->GetWebView()->mainFrame(), count);
   }
 }
 
@@ -152,5 +151,4 @@ void SearchBox::Reset() {
   results_base_ = 0;
   rect_ = gfx::Rect();
   autocomplete_results_.clear();
-  key_code_ = 0;
 }

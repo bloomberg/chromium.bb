@@ -5,18 +5,16 @@
 #include "chrome/renderer/searchbox/searchbox_extension.h"
 
 #include <ctype.h>
-#include <vector>
 
 #include "base/string_number_conversions.h"
-#include "base/string_piece.h"
-#include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/renderer/searchbox/searchbox.h"
 #include "content/public/renderer/render_view.h"
 #include "grit/renderer_resources.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScriptSource.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "v8/include/v8.h"
 
@@ -108,13 +106,14 @@ static const char kDispatchAutocompleteResultsEventScript[] =
     "  true;"
     "}";
 
-static const char kDispatchKeyPressEventScript[] =
+// Takes two printf-style replaceable values: count, key_code.
+static const char kDispatchUpOrDownKeyPressEventScript[] =
     "if (window.chrome &&"
     "    window.chrome.searchBox &&"
     "    window.chrome.searchBox.onkeypress &&"
     "    typeof window.chrome.searchBox.onkeypress == 'function') {"
-    "  window.chrome.searchBox.onkeypress("
-    "      {keyCode:window.chrome.searchBox.keyCode});"
+    "  for (var i = 0; i < %d; ++i)"
+    "    window.chrome.searchBox.onkeypress({keyCode: %d});"
     "  true;"
     "}";
 
@@ -163,9 +162,6 @@ class SearchBoxExtensionWrapper : public v8::Extension {
   // Gets the autocomplete results from search box.
   static v8::Handle<v8::Value> GetAutocompleteResults(
       const v8::Arguments& args);
-
-  // Gets the last key code entered in search box.
-  static v8::Handle<v8::Value> GetKeyCode(const v8::Arguments& args);
 
   // Sets ordered suggestions. Valid for current |value|.
   static v8::Handle<v8::Value> SetSuggestions(const v8::Arguments& args);
@@ -216,8 +212,6 @@ v8::Handle<v8::FunctionTemplate> SearchBoxExtensionWrapper::GetNativeFunction(
     return v8::FunctionTemplate::New(GetHeight);
   } else if (name->Equals(v8::String::New("GetAutocompleteResults"))) {
     return v8::FunctionTemplate::New(GetAutocompleteResults);
-  } else if (name->Equals(v8::String::New("GetKeyCode"))) {
-    return v8::FunctionTemplate::New(GetKeyCode);
   } else if (name->Equals(v8::String::New("SetSuggestions"))) {
     return v8::FunctionTemplate::New(SetSuggestions);
   } else if (name->Equals(v8::String::New("SetQuerySuggestion"))) {
@@ -343,14 +337,6 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetAutocompleteResults(
 }
 
 // static
-v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetKeyCode(
-    const v8::Arguments& args) {
-  content::RenderView* render_view = GetRenderView();
-  if (!render_view) return v8::Undefined();
-  return v8::Int32::New(SearchBox::Get(render_view)->key_code());
-}
-
-// static
 v8::Handle<v8::Value> SearchBoxExtensionWrapper::SetSuggestions(
     const v8::Arguments& args) {
   std::vector<InstantSuggestion> suggestions;
@@ -466,14 +452,13 @@ v8::Handle<v8::Value>
 // static
 v8::Handle<v8::Value> SearchBoxExtensionWrapper::SetQuery(
     const v8::Arguments& args) {
-  // TODO(sreeram): Make the second argument (type) mandatory.
   if (1 <= args.Length() && args.Length() <= 2 && args[0]->IsString()) {
     string16 text = V8ValueToUTF16(args[0]);
     InstantCompleteBehavior behavior = INSTANT_COMPLETE_REPLACE;
-    InstantSuggestionType type = INSTANT_SUGGESTION_SEARCH;
+    InstantSuggestionType type = INSTANT_SUGGESTION_URL;
 
-    if (args.Length() >= 2 && args[1]->Uint32Value() == 1)
-      type = INSTANT_SUGGESTION_URL;
+    if (args.Length() >= 2 && args[1]->Uint32Value() == 0)
+      type = INSTANT_SUGGESTION_SEARCH;
 
     if (content::RenderView* render_view = GetRenderView()) {
       std::vector<InstantSuggestion> suggestions;
@@ -549,7 +534,7 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::SetPreviewHeight(
 }
 
 // static
-void Dispatch(WebKit::WebFrame* frame, WebKit::WebString script) {
+void Dispatch(WebKit::WebFrame* frame, const WebKit::WebString& script) {
   DCHECK(frame) << "Dispatch requires frame";
   if (!frame) return;
   frame->executeScript(WebKit::WebScriptSource(script));
@@ -581,8 +566,11 @@ void SearchBoxExtension::DispatchAutocompleteResults(WebKit::WebFrame* frame) {
 }
 
 // static
-void SearchBoxExtension::DispatchKeyPress(WebKit::WebFrame* frame) {
-  Dispatch(frame, kDispatchKeyPressEventScript);
+void SearchBoxExtension::DispatchUpOrDownKeyPress(WebKit::WebFrame* frame,
+                                                  int count) {
+  Dispatch(frame, WebKit::WebString::fromUTF8(
+      base::StringPrintf(kDispatchUpOrDownKeyPressEventScript, abs(count),
+                         count < 0 ? ui::VKEY_UP : ui::VKEY_DOWN)));
 }
 
 // static

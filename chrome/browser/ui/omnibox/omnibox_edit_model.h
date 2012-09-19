@@ -466,6 +466,12 @@ class OmniboxEditModel : public AutocompleteControllerDelegate {
   bool has_temporary_text_;
   GURL original_url_;
 
+  // True if Instant set the current temporary text, as opposed to it being set
+  // due to the user arrowing up/down through the popup.
+  // TODO(sreeram): This is a temporary hack. Remove it once the omnibox edit
+  // model/view code is decoupled from Instant (among other things).
+  bool is_temporary_text_set_by_instant_;
+
   // When the user's last action was to paste, we disallow inline autocomplete
   // (on the theory that the user is trying to paste in a new URL or part of
   // one, and in either case inline autocomplete would get in the way).

@@ -309,6 +309,13 @@ void InstantLoader::SendAutocompleteResults(
                                                            results));
 }
 
+void InstantLoader::OnUpOrDownKeyPressed(int count) {
+  content::RenderViewHost* rvh =
+      preview_contents_->web_contents()->GetRenderViewHost();
+  rvh->Send(new ChromeViewMsg_SearchBoxUpOrDownKeyPressed(rvh->GetRoutingID(),
+                                                          count));
+}
+
 TabContents* InstantLoader::ReleasePreviewContents(InstantCommitType type,
                                                    const string16& text) {
   content::RenderViewHost* rvh =

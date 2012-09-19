@@ -34,7 +34,7 @@ class SearchBoxExtension {
 
   // Extended API.
   static void DispatchAutocompleteResults(WebKit::WebFrame* frame);
-  static void DispatchKeyPress(WebKit::WebFrame* frame);
+  static void DispatchUpOrDownKeyPress(WebKit::WebFrame* frame, int count);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SearchBoxExtension);
