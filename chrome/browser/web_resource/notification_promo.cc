@@ -406,7 +406,6 @@ void NotificationPromo::RegisterUserPrefs(PrefService* prefs) {
 }
 
 void NotificationPromo::WritePrefs() {
-  DVLOG(1) << "WritePrefs";
   base::DictionaryValue* ntp_promo = new base::DictionaryValue;
   ntp_promo->SetString(kPrefPromoText, promo_text_);
   ntp_promo->Set(kPrefPromoPayload, promo_payload_->DeepCopy());
@@ -431,8 +430,10 @@ void NotificationPromo::WritePrefs() {
   promo_list->Set(0, ntp_promo);  // Only support 1 promo for now.
 
   base::DictionaryValue promo_dict;
+  promo_dict.MergeDictionary(prefs_->GetDictionary(kPrefPromoObject));
   promo_dict.Set(PromoTypeToString(promo_type_), promo_list);
   prefs_->Set(kPrefPromoObject, promo_dict);
+  DVLOG(1) << "WritePrefs " << promo_dict;
 }
 
 void NotificationPromo::InitFromPrefs(PromoType promo_type) {
