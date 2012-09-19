@@ -45,7 +45,7 @@ ResourceBundle* g_shared_instance_ = NULL;
 // Returns the actual scale factor of |bitmap| given the image representations
 // which have already been added to |image|.
 // TODO(pkotwicz): Remove this once we are no longer loading 1x resources
-// as part of 2x data packs.
+// as part of non 1x data packs.
 ui::ScaleFactor GetActualScaleFactor(const gfx::ImageSkia& image,
                                      const SkBitmap& bitmap,
                                      ui::ScaleFactor data_pack_scale_factor) {
@@ -56,24 +56,28 @@ ui::ScaleFactor GetActualScaleFactor(const gfx::ImageSkia& image,
       static_cast<float>(bitmap.width()) / image.width());
 }
 
-bool ShouldHighlightMissing2xResources() {
+bool ShouldHighlightMissingScaledResources() {
   return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kHighlightMissing2xResources);
+      switches::kHighlightMissingScaledResources);
 }
 
 }  // namespace
 
-// An ImageSkiaSource that loads bitmaps for given scale factor from
+// An ImageSkiaSource that loads bitmaps for requested scale factor from
 // ResourceBundle on demand for given resource_id. It falls back
-// to 100P image if corresponding 200P image doesn't exist.
-// If 200P image does not have 2x size of 100P images, it will end up
-// with broken UI because it will be drawn as if it has 2x size.
-// When --highlight-missing-2x-resources flag is specified, it
+// to the 1x bitmap if the bitmap for the requested scale factor does not
+// exist. If the resource for the requested scale factor is not exactly
+// |scale_factor| * the size of the 1x resource, it will end up with
+// broken UI because it will be drawn as if the bitmap was the correct size.
+// When --highlight-missing-scaled-resources flag is specified, it
 // will show the scaled image blended with red instead.
 class ResourceBundle::ResourceBundleImageSource : public gfx::ImageSkiaSource {
  public:
-  ResourceBundleImageSource(int resource_id, const gfx::Size& size_in_dip)
-      : resource_id_(resource_id),
+  ResourceBundleImageSource(ResourceBundle* rb,
+                            int resource_id,
+                            const gfx::Size& size_in_dip)
+      : rb_(rb),
+        resource_id_(resource_id),
         size_in_dip_(size_in_dip) {
   }
   virtual ~ResourceBundleImageSource() {}
@@ -81,59 +85,64 @@ class ResourceBundle::ResourceBundleImageSource : public gfx::ImageSkiaSource {
   // gfx::ImageSkiaSource overrides:
   virtual gfx::ImageSkiaRep GetImageForScale(
       ui::ScaleFactor scale_factor) OVERRIDE {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    scoped_ptr<SkBitmap> result(rb_->LoadBitmap(resource_id_, scale_factor));
+    float scale = ui::GetScaleFactorScale(scale_factor);
+    gfx::Size size_in_pixel = size_in_dip_.Scale(scale);
 
-    scoped_ptr<SkBitmap> result(rb.LoadBitmap(resource_id_, scale_factor));
-    gfx::Size size_in_pixel =
-        size_in_dip_.Scale(ui::GetScaleFactorScale(scale_factor));
-
-    if (scale_factor == SCALE_FACTOR_200P &&
+    if (scale_factor != SCALE_FACTOR_100P &&
         (!result.get() ||
          result->width() != size_in_pixel.width() ||
          result->height() != size_in_pixel.height())) {
 
-      // If 2x resource is missing from |image| or is the incorrect
-      // size and --highlight-missing-2x-resources is specified, logs
-      // the resource id and creates a 2x version of the resource.
-      // Blends the created resource with red to make it
+      // If non 1x resource is missing from |image| or is the incorrect
+      // size and --highlight-missing-scaled-resources is specified, logs
+      // the resource id and creates a version of the resource at the correct
+      // size. Blends the created resource with red to make it
       // distinguishable from bitmaps in the resource pak.
-      if (ShouldHighlightMissing2xResources()) {
-        if (!result.get())
-          LOG(ERROR) << "Missing 2x resource. id=" << resource_id_;
-        else
-          LOG(ERROR) << "Incorrectly sized 2x resource. id=" << resource_id_;
+      if (ShouldHighlightMissingScaledResources()) {
+        if (!result.get()) {
+          LOG(ERROR) << "Missing " << scale << "x resource. id="
+                     << resource_id_;
+        } else {
+          LOG(ERROR) << "Incorrectly sized " << scale << "x resource. id="
+                     << resource_id_;
+        }
 
-        SkBitmap bitmap1x = *(rb.LoadBitmap(resource_id_, SCALE_FACTOR_100P));
-        SkBitmap bitmap2x = skia::ImageOperations::Resize(
-            bitmap1x,
+        scoped_ptr<SkBitmap> bitmap1x(
+            rb_->LoadBitmap(resource_id_, SCALE_FACTOR_100P));
+        DCHECK(bitmap1x.get());
+        SkBitmap bitmap_scaled = skia::ImageOperations::Resize(
+            *bitmap1x,
             skia::ImageOperations::RESIZE_LANCZOS3,
-            bitmap1x.width() * 2, bitmap1x.height() * 2);
+            size_in_pixel.width(),
+            size_in_pixel.height());
 
         SkBitmap mask;
         mask.setConfig(SkBitmap::kARGB_8888_Config,
-                       bitmap2x.width(),
-                       bitmap2x.height());
+                       bitmap_scaled.width(),
+                       bitmap_scaled.height());
         mask.allocPixels();
         mask.eraseColor(SK_ColorRED);
         result.reset(new SkBitmap());
-        *result.get() = SkBitmapOperations::CreateBlendedBitmap(bitmap2x, mask,
-                                                                0.2);
-      } else if (!result.get() ||
-                 result->width() == size_in_dip_.width()) {
-        // The 2x resource pack may have the 1x image if its grd file
+        *result.get() = SkBitmapOperations::CreateBlendedBitmap(
+            bitmap_scaled, mask, 0.2);
+      } else if (!result.get() || result->width() == size_in_dip_.width()) {
+        // The scaled resource pack may have the 1x image if its grd file
         // points to 1x image. Fallback to 1x by returning empty image
         // in this case. This 1x image will be scaled when drawn.
         return gfx::ImageSkiaRep();
       }
-      // If the size of 2x image isn't exactly 2x of 1x version,
+      // If the size of scaled image isn't exactly |scale| * 1x version,
       // create ImageSkia as usual. This will end up with
       // corrupted visual representation as the size of image doesn't
       // match the expected size.
     }
+    DCHECK(result.get());
     return gfx::ImageSkiaRep(*result.get(), scale_factor);
   }
 
  private:
+  ResourceBundle* rb_;
   const int resource_id_;
   const gfx::Size size_in_dip_;
 
@@ -358,9 +367,12 @@ gfx::Image& ResourceBundle::GetImageNamed(int resource_id) {
       return GetEmptyImage();
     }
 
+    // ResourceBundle::GetSharedInstance() is destroyed after the
+    // BrowserMainLoop has finished running. |image_skia| is guaranteed to be
+    // destroyed before the resource bundle is destroyed.
     gfx::Size size_in_dip(bitmap->width(), bitmap->height());
     gfx::ImageSkia image_skia(
-        new ResourceBundleImageSource(resource_id, size_in_dip),
+        new ResourceBundleImageSource(this, resource_id, size_in_dip),
         size_in_dip);
     image_skia.AddRepresentation(gfx::ImageSkiaRep(*bitmap.get(),
                                                    SCALE_FACTOR_100P));

@@ -15,6 +15,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/layout.h"
+#include "ui/base/resource/data_pack.h"
+#include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/image/image_skia.h"
 
 using ::testing::_;
 using ::testing::Between;
@@ -72,6 +75,22 @@ class MockResourceBundleDelegate : public ui::ResourceBundle::Delegate {
     return scoped_ptr<gfx::Font>(GetFontMock(style));
   }
 };
+
+// Creates datapack at |path| with a single bitmap at resource ID 3
+// which is |edge_size|x|edge_size| pixels.
+void CreateDataPackWithSingleBitmap(const FilePath& path,
+                                    int edge_size) {
+  SkBitmap bitmap;
+  bitmap.setConfig(SkBitmap::kARGB_8888_Config, edge_size, edge_size);
+  bitmap.allocPixels();
+  std::vector<unsigned char> bitmap_data;
+  EXPECT_TRUE(gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, false, &bitmap_data));
+
+  std::map<uint16, base::StringPiece> resources;
+  resources[3u] = base::StringPiece(
+      reinterpret_cast<const char*>(&bitmap_data[0]), bitmap_data.size());
+  DataPack::WritePack(path, resources, ui::DataPack::BINARY);
+}
 
 }  // namespace
 
@@ -305,6 +324,48 @@ TEST(ResourceBundle, LocaleDataPakExists) {
   // Check that ResourceBundle::LocaleDataPakExists returns the correct results.
   EXPECT_TRUE(resource_bundle.LocaleDataPakExists("en-US"));
   EXPECT_FALSE(resource_bundle.LocaleDataPakExists("not_a_real_locale"));
+}
+
+// Test requesting image reps at various scale factors from the image returned
+// via ResourceBundle::GetImageNamed().
+TEST(ResourceBundle, GetImageNamed) {
+  // On Windows, the default data is compiled into the binary so this does
+  // nothing.
+  ScopedTempDir dir;
+  ASSERT_TRUE(dir.CreateUniqueTempDir());
+
+  FilePath locale_path = dir.path().Append(FILE_PATH_LITERAL("empty.pak"));
+  FilePath data_path = dir.path().Append(FILE_PATH_LITERAL("sample.pak"));
+  FilePath data_2x_path = dir.path().Append(FILE_PATH_LITERAL("sample_2x.pak"));
+
+  {
+    // Create the pak files.
+    ASSERT_EQ(file_util::WriteFile(locale_path, kEmptyPakContents,
+        kEmptyPakSize), static_cast<int>(kEmptyPakSize));
+    CreateDataPackWithSingleBitmap(data_path, 10);
+    CreateDataPackWithSingleBitmap(data_2x_path, 20);
+
+    // Load the regular and 2x pak files.
+    ResourceBundle resource_bundle(NULL);
+    resource_bundle.LoadTestResources(data_path, locale_path);
+    resource_bundle.AddDataPackFromPath(data_2x_path, SCALE_FACTOR_200P);
+
+    gfx::ImageSkia* image_skia = resource_bundle.GetImageSkiaNamed(3);
+
+    // Resource ID 3 exists in both 1x and 2x paks. Image reps should be
+    // available for both scale factors in |image_skia|.
+    gfx::ImageSkiaRep image_rep =
+        image_skia->GetRepresentation(ui::SCALE_FACTOR_100P);
+    EXPECT_EQ(ui::SCALE_FACTOR_100P, image_rep.scale_factor());
+    image_rep = image_skia->GetRepresentation(ui::SCALE_FACTOR_200P);
+    EXPECT_EQ(ui::SCALE_FACTOR_200P, image_rep.scale_factor());
+
+    // The 1.4x pack was not loaded. Requesting the 1.4x resource should return
+    // either the 1x or the 2x resource.
+    image_rep = image_skia->GetRepresentation(ui::SCALE_FACTOR_140P);
+    EXPECT_TRUE(image_rep.scale_factor() == ui::SCALE_FACTOR_100P ||
+                image_rep.scale_factor() == ui::SCALE_FACTOR_200P);
+  }
 }
 
 }  // namespace ui
