@@ -193,7 +193,7 @@ cr.define('ntp', function() {
     if (loadTimeData.valueExists('bubblePromoText')) {
       promoBubble = new cr.ui.Bubble;
       promoBubble.anchorNode = getRequiredElement('logo-img');
-      promoBubble.setArrowLocation(cr.ui.ArrowLocation.BOTTOM_START);
+      promoBubble.arrowLocation = cr.ui.ArrowLocation.BOTTOM_START;
       promoBubble.bubbleAlignment =
           cr.ui.BubbleAlignment.BUBBLE_EDGE_TO_ANCHOR_EDGE;
       promoBubble.deactivateToDismissDelay = 2000;
