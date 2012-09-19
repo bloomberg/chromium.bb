@@ -640,6 +640,12 @@ const char kZygoteProcess[]                 = "zygote";
 const char kEnableVisualWordMovement[]      = "enable-visual-word-movement";
 
 #if defined(OS_ANDROID)
+// Disable history logging for media elements.
+const char kDisableMediaHistoryLogging[]    = "disable-media-history";
+
+// Whether to run media elements in the renderer process.
+const char kMediaPlayerInRenderProcess[]    = "media-player-in-render-process";
+
 // Set when Chromium should use a mobile user agent.
 const char kUseMobileUserAgent[] = "use-mobile-user-agent";
 // Omnibus flag setting an Android graphics mode.  May be:

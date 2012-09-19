@@ -12,6 +12,7 @@
     'public/android/java/src/org/chromium/content/app/LibraryLoader.java',
     'public/android/java/src/org/chromium/content/app/SandboxedProcessService.java',
     'public/android/java/src/org/chromium/content/browser/AndroidBrowserProcess.java',
+    'public/android/java/src/org/chromium/content/browser/BrowserProcessSurfaceTexture.java',
     'public/android/java/src/org/chromium/content/browser/ContentSettings.java',
     'public/android/java/src/org/chromium/content/browser/ContentVideoView.java',
     'public/android/java/src/org/chromium/content/browser/ContentViewClient.java',

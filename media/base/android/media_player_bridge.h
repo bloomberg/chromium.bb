@@ -11,20 +11,24 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time.h"
+#include "base/timer.h"
+#include "media/base/android/media_player_listener.h"
 
 namespace media {
+
+class CookieGetter;
+class MediaPlayerBridgeManager;
 
 // This class serves as a bridge for native code to call java functions inside
 // android mediaplayer class. For more information on android mediaplayer, check
 // http://developer.android.com/reference/android/media/MediaPlayer.html
-// To use this class, follow the state diagram listed in the above url.
-// Here is the normal work flow for this class:
-// 1. Call SetDataSource() to set the media url.
-// 2. Call Prepare() to prepare the player for playback. This is a non
-//    blocking call.
-// 3. When Prepare() succeeds, OnMediaPrepared() will get called.
-// 4. Call Start(), Pause(), SeekTo() to play/pause/seek the media.
+// The actual android mediaplayer instance is created lazily when Start(),
+// Pause(), SeekTo() gets called. As a result, media information may not
+// be available until one of those operations is performed. After that, we
+// will cache those information in case the mediaplayer gets released.
 class MediaPlayerBridge {
  public:
   // Error types for MediaErrorCB.
@@ -35,63 +39,65 @@ class MediaPlayerBridge {
     MEDIA_ERROR_INVALID_CODE,
   };
 
-  // Info types for MediaInfoCB.
-  enum MediaInfoType {
-    MEDIA_INFO_UNKNOWN,
-    MEDIA_INFO_VIDEO_TRACK_LAGGING,
-    MEDIA_INFO_BUFFERING_START,
-    MEDIA_INFO_BUFFERING_END,
-    MEDIA_INFO_BAD_INTERLEAVING,
-    MEDIA_INFO_NOT_SEEKABLE,
-    MEDIA_INFO_METADATA_UPDATE,
-  };
+  // Callback when error happens. Args: player ID, error type.
+  typedef base::Callback<void(int, int)> MediaErrorCB;
 
-  // Callback when video info is received. Args: info type.
-  typedef base::Callback<void(int)> MediaInfoCB;
+  // Callback when video size has changed. Args: player ID, width, height.
+  typedef base::Callback<void(int, int, int)> VideoSizeChangedCB;
 
-  // Callback when error happens. Args: error type.
-  typedef base::Callback<void(int)> MediaErrorCB;
+  // Callback when buffering has changed. Args: player ID, percentage
+  // of the media.
+  typedef base::Callback<void(int, int)> BufferingUpdateCB;
 
-  // Callback when video size has changed. Args: width, height.
-  typedef base::Callback<void(int,int)> VideoSizeChangedCB;
+  // Callback when player got prepared. Args: player ID, duration of the media.
+  typedef base::Callback<void(int, base::TimeDelta)> MediaPreparedCB;
 
-  // Callback when buffering has changed. Args: percentage of the media.
-  typedef base::Callback<void(int)> BufferingUpdateCB;
+  // Callbacks when seek completed. Args: player ID, current time.
+  typedef base::Callback<void(int, base::TimeDelta)> SeekCompleteCB;
 
-  MediaPlayerBridge();
+  // Callbacks when playback completed. Args: player ID.
+  typedef base::Callback<void(int)> PlaybackCompleteCB;
+
+  // Callback when time update messages need to be sent. Args: player ID,
+  // current time.
+  typedef base::Callback<void(int, base::TimeDelta)> TimeUpdateCB;
+
+  // Construct a MediaPlayerBridge object with all the needed media player
+  // callbacks. This object needs to call |manager|'s RequestMediaResources()
+  // before decoding the media stream. This allows |manager| to track
+  // unused resources and free them when needed. On the other hand, it needs
+  // to call ReleaseMediaResources() when it is done with decoding.
+  MediaPlayerBridge(int player_id,
+                    const std::string& url,
+                    const std::string& first_party_for_cookies,
+                    CookieGetter* cookies_getter,
+                    bool hide_url_log,
+                    MediaPlayerBridgeManager* manager,
+                    const MediaErrorCB& media_error_cb,
+                    const VideoSizeChangedCB& video_size_changed_cb,
+                    const BufferingUpdateCB& buffering_update_cb,
+                    const MediaPreparedCB& media_prepared_cb,
+                    const PlaybackCompleteCB& playback_complete_cb,
+                    const SeekCompleteCB& seek_complete_cb,
+                    const TimeUpdateCB& time_update_cb);
   ~MediaPlayerBridge();
 
   typedef std::map<std::string, std::string> HeadersMap;
-  void SetDataSource(const std::string& url,
-                     const std::string& cookies,
-                     bool hide_url_log);
 
   void SetVideoSurface(jobject surface);
 
-  // Prepare the player for playback, asynchronously. When succeeds,
-  // OnMediaPrepared() will be called. Otherwise, OnMediaError() will
-  // be called with an error type.
-  void Prepare(const MediaInfoCB& media_info_cb,
-               const MediaErrorCB& media_error_cb,
-               const VideoSizeChangedCB& video_size_changed_cb,
-               const BufferingUpdateCB& buffering_update_cb,
-               const base::Closure& media_prepared_cb);
-
   // Start playing the media.
-  void Start(const base::Closure& playback_complete_cb);
+  void Start();
 
   // Pause the media.
   void Pause();
 
-  // Stop the media playback. Needs to call Prepare() again to play the media.
-  void Stop();
-
   // Seek to a particular position. When succeeds, OnSeekComplete() will be
   // called. Otherwise, nothing will happen.
-  void SeekTo(base::TimeDelta time, const base::Closure& seek_complete_cb);
+  void SeekTo(base::TimeDelta time);
 
-  // Reset the player. Needs to call SetDataSource() again after this call.
-  void Reset();
+  // Release the player resources.
+  void Release();
 
   // Set the player volume.
   void SetVolume(float leftVolume, float rightVolume);
@@ -104,43 +110,112 @@ class MediaPlayerBridge {
   bool IsPlaying();
 
   // Get metadata from the media.
-  void GetMetadata(bool* can_pause,
-                   bool* can_seek_forward,
-                   bool* can_seek_backward);
+  void GetMetadata();
 
-  // Set the device to stay awake when player is playing.
-  void SetStayAwakeWhilePlaying();
+  // Called by the timer to check for current time routinely and generates
+  // time update events.
+  void DoTimeUpdate();
 
-  // Called by the Java MediaPlayerListener and mirrored to corresponding
+  // Called by the MediaPlayerListener and mirrored to corresponding
   // callbacks.
-  void OnMediaError(JNIEnv* /* env */, jobject /* obj */, jint error_type);
-  void OnMediaInfo(JNIEnv* /* env */, jobject /* obj */, jint info_type);
-  void OnVideoSizeChanged(JNIEnv* /* env */, jobject /* obj */,
-                          jint width, jint height);
-  void OnBufferingUpdate(JNIEnv* /* env */, jobject /* obj */, jint percent);
-  void OnPlaybackComplete(JNIEnv* /* env */, jobject /* obj */);
-  void OnSeekComplete(JNIEnv* /* env */, jobject /* obj */);
-  void OnMediaPrepared(JNIEnv* /* env */, jobject /* obj */);
+  void OnMediaError(int error_type);
+  void OnVideoSizeChanged(int width, int height);
+  void OnBufferingUpdate(int percent);
+  void OnPlaybackComplete();
+  void OnSeekComplete();
+  void OnMediaPrepared();
 
-  // Register MediaPlayerListener in the system library loader.
-  static bool RegisterMediaPlayerListener(JNIEnv* env);
+  // Prepare the player for playback, asynchronously. When succeeds,
+  // OnMediaPrepared() will be called. Otherwise, OnMediaError() will
+  // be called with an error type.
+  void Prepare();
+
+  // Callback function passed to |cookies_retriever_|.
+  void GetCookiesCallback(const std::string& cookies);
+
+  int player_id() { return player_id_; }
+  bool can_pause() { return can_pause_; }
+  bool can_seek_forward() { return can_seek_forward_; }
+  bool can_seek_backward() { return can_seek_backward_; }
+  bool prepared() { return prepared_; }
 
  private:
   void CallVoidMethod(std::string method_name);
   int CallIntMethod(std::string method_name);
 
+  // Create the actual android media player.
+  void InitializePlayer();
+
+  // Functions that implements media player control.
+  void StartInternal();
+  void PauseInternal();
+  void SeekInternal(base::TimeDelta time);
+
   // Callbacks when events are received.
-  MediaInfoCB media_info_cb_;
   MediaErrorCB media_error_cb_;
   VideoSizeChangedCB video_size_changed_cb_;
   BufferingUpdateCB buffering_update_cb_;
-  base::Closure playback_complete_cb_;
-  base::Closure seek_complete_cb_;
-  base::Closure media_prepared_cb_;
+  MediaPreparedCB media_prepared_cb_;
+  PlaybackCompleteCB playback_complete_cb_;
+  SeekCompleteCB seek_complete_cb_;
+
+  // Callbacks when timer events are received.
+  TimeUpdateCB time_update_cb_;
+
+  // Player ID assigned to this player.
+  int player_id_;
+
+  // Whether the player is prepared for playback.
+  bool prepared_;
+
+  // Pending play event while player is preparing.
+  bool pending_play_;
+
+  // Pending seek time while player is preparing.
+  base::TimeDelta pending_seek_;
+
+  // Url for playback.
+  std::string url_;
+
+  // First party url for cookies.
+  std::string first_party_for_cookies_;
+
+  // Whether cookies are available.
+  bool has_cookies_;
+
+  // Hide url log from media player.
+  bool hide_url_log_;
+
+  // Stats about the media.
+  base::TimeDelta duration_;
+  int width_;
+  int height_;
+
+  // Meta data about actions can be taken.
+  bool can_pause_;
+  bool can_seek_forward_;
+  bool can_seek_backward_;
+
+  // Cookies for |url_|
+  std::string cookies_;
+
+  // Resource manager for all the media players.
+  MediaPlayerBridgeManager* manager_;
+
+  // Object for retrieving cookies for this media player.
+  scoped_ptr<CookieGetter> cookie_getter_;
 
   // Java MediaPlayer class and instance.
   base::android::ScopedJavaGlobalRef<jclass> j_media_player_class_;
   base::android::ScopedJavaGlobalRef<jobject> j_media_player_;
+
+  base::RepeatingTimer<MediaPlayerBridge> time_update_timer_;
+
+  // Weak pointer passed to |listener_| for callbacks.
+  base::WeakPtrFactory<MediaPlayerBridge> weak_this_;
+
+  // Listener object that listens to all the media player events.
+  MediaPlayerListener listener_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaPlayerBridge);
 };

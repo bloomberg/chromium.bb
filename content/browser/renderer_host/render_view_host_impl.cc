@@ -71,6 +71,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/win/WebScreenInfoFactory.h"
 #elif defined(OS_MACOSX)
 #include "content/browser/renderer_host/popup_menu_helper_mac.h"
+#elif defined(OS_ANDROID)
+#include "content/browser/android/media_player_manager_android.h"
 #endif
 
 using base::TimeDelta;
@@ -185,6 +187,10 @@ RenderViewHostImpl::RenderViewHostImpl(
       content::NOTIFICATION_RENDER_VIEW_HOST_CREATED,
       content::Source<RenderViewHost>(this),
       content::NotificationService::NoDetails());
+
+#if defined(OS_ANDROID)
+  media_player_manager_ = new MediaPlayerManagerAndroid(this);
+#endif
 }
 
 RenderViewHostImpl::~RenderViewHostImpl() {

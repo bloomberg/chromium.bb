@@ -817,12 +817,13 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kInProcessWebGL,
     switches::kJavaScriptFlags,
     switches::kLoggingLevel,
-    switches::kOldCheckboxStyle,
 #if defined(OS_ANDROID)
+    switches::kMediaPlayerInRenderProcess,
     switches::kNetworkCountryIso,
 #endif
     switches::kNoReferrers,
     switches::kNoSandbox,
+    switches::kOldCheckboxStyle,
     switches::kPpapiOutOfProcess,
     switches::kRegisterPepperPlugins,
     switches::kRendererAssertTest,
@@ -849,6 +850,9 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
   if (GetBrowserContext()->IsOffTheRecord() &&
       !browser_cmd.HasSwitch(switches::kDisableDatabases)) {
     renderer_cmd->AppendSwitch(switches::kDisableDatabases);
+#if defined(OS_ANDROID)
+    renderer_cmd->AppendSwitch(switches::kDisableMediaHistoryLogging);
+#endif
   }
 }
 

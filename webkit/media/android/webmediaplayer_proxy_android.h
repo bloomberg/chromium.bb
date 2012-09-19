@@ -5,68 +5,38 @@
 #ifndef WEBKIT_MEDIA_ANDROID_WEBMEDIAPLAYER_PROXY_ANDROID_H_
 #define WEBKIT_MEDIA_ANDROID_WEBMEDIAPLAYER_PROXY_ANDROID_H_
 
-#include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
+#include <string>
 
-namespace base {
-class MessageLoopProxy;
-}
+#include "base/time.h"
 
 namespace webkit_media {
 
-class WebMediaPlayerAndroid;
-
-// Acts as a thread proxy between media::MediaPlayerBridge and
-// WebMediaPlayerAndroid so that callbacks are posted onto the render thread.
-class WebMediaPlayerProxyAndroid
-    : public base::RefCountedThreadSafe<WebMediaPlayerProxyAndroid> {
+// An interface to facilitate the IPC between the browser side
+// android::MediaPlayer and the WebMediaPlayerImplAndroid in the renderer
+// process.
+// Implementation is provided by content::WebMediaPlayerProxyImplAndroid.
+class WebMediaPlayerProxyAndroid {
  public:
-  WebMediaPlayerProxyAndroid(
-      const scoped_refptr<base::MessageLoopProxy>& render_loop,
-      base::WeakPtr<WebMediaPlayerAndroid> webmediaplayer);
-
-  // Callbacks from media::MediaPlayerBridge to WebMediaPlayerAndroid.
-  void MediaErrorCallback(int error_type);
-  void MediaInfoCallback(int info_type);
-  void VideoSizeChangedCallback(int width, int height);
-  void BufferingUpdateCallback(int percent);
-  void PlaybackCompleteCallback();
-  void SeekCompleteCallback();
-  void MediaPreparedCallback();
-
- private:
-  friend class base::RefCountedThreadSafe<WebMediaPlayerProxyAndroid>;
   virtual ~WebMediaPlayerProxyAndroid();
 
-  // Notify |webmediaplayer_| that an error has occured.
-  void MediaErrorTask(int error_type);
+  // Initialize a MediaPlayerBridge object in browser process
+  virtual void Initialize(int player_id, const std::string& url,
+                          const std::string& first_party_for_cookies) = 0;
 
-  // Notify |webmediaplayer_| that some info has been received from
-  // media::MediaPlayerBridge.
-  void MediaInfoTask(int info_type);
+  // Start the player.
+  virtual void Start(int player_id) = 0;
 
-  // Notify |webmediaplayer_| that the video size has changed.
-  void VideoSizeChangedTask(int width, int height);
+  // Pause the player.
+  virtual void Pause(int player_id) = 0;
 
-  // Notify |webmediaplayer_| that an update in buffering has occured.
-  void BufferingUpdateTask(int percent);
+  // Perform seek on the player.
+  virtual void Seek(int player_id, base::TimeDelta time) = 0;
 
-  // Notify |webmediaplayer_| that playback has completed.
-  void PlaybackCompleteTask();
+  // Release resources for the player.
+  virtual void ReleaseResources(int player_id) = 0;
 
-  // Notify |webmediaplayer_| that seek has completed.
-  void SeekCompleteTask();
-
-  // Notify |webmediaplayer_| that media has been prepared successfully.
-  void MediaPreparedTask();
-
-  // The render message loop where WebKit lives.
-  scoped_refptr<base::MessageLoopProxy> render_loop_;
-
-  // The WebMediaPlayerAndroid object all the callbacks should be send to.
-  base::WeakPtr<WebMediaPlayerAndroid> webmediaplayer_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerProxyAndroid);
+  // Destroy the player in the browser process
+  virtual void DestroyPlayer(int player_id) = 0;
 };
 
 }  // namespace webkit_media

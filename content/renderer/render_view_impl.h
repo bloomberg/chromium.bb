@@ -102,6 +102,9 @@ class RenderViewObserver;
 class RenderViewTest;
 class RendererAccessibility;
 class RendererPpapiHost;
+#if defined(OS_ANDROID)
+class WebMediaPlayerProxyImplAndroid;
+#endif
 struct CustomContextMenuContext;
 struct FileChooserParams;
 
@@ -136,6 +139,7 @@ class ResourceFetcher;
 
 #if defined(OS_ANDROID)
 namespace webkit_media {
+class MediaPlayerBridgeManagerImpl;
 class WebMediaPlayerManagerAndroid;
 }
 #endif
@@ -1407,6 +1411,17 @@ class RenderViewImpl : public RenderWidget,
   typedef std::vector< linked_ptr<content::ContentDetector> >
       ContentDetectorList;
   ContentDetectorList content_detectors_;
+
+  // Proxy class for WebMediaPlayer to communicate with the real media player
+  // objects in browser process.
+  content::WebMediaPlayerProxyImplAndroid* media_player_proxy_;
+
+  // The media player manager for managing all the media players on this view.
+  scoped_ptr<webkit_media::WebMediaPlayerManagerAndroid> media_player_manager_;
+
+  // Resource manager for all the android media player objects if they are
+  // created in the renderer process.
+  scoped_ptr<webkit_media::MediaPlayerBridgeManagerImpl> media_bridge_manager_;
 #endif
 
   // Misc ----------------------------------------------------------------------
@@ -1464,11 +1479,6 @@ class RenderViewImpl : public RenderWidget,
 
   // Wraps the |webwidget_| as a MouseLockDispatcher::LockTarget interface.
   scoped_ptr<MouseLockDispatcher::LockTarget> webwidget_mouse_lock_target_;
-
-#if defined(OS_ANDROID)
-  // The media player manager for managing all the media players on this view.
-  scoped_ptr<webkit_media::WebMediaPlayerManagerAndroid> media_player_manager_;
-#endif
 
   // Plugins -------------------------------------------------------------------
 

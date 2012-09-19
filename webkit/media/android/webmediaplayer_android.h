@@ -10,46 +10,24 @@
 #include "base/basictypes.h"
 #include "base/message_loop.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
+#include "base/time.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayer.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebVideoFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSize.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebVideoFrame.h"
-
-namespace WebKit {
-class WebCookieJar;
-class WebFrame;
-}
-
-namespace media {
-class MediaPlayerBridge;
-}
 
 namespace webkit_media {
 
 class StreamTextureFactory;
 class StreamTextureProxy;
 class WebMediaPlayerManagerAndroid;
-class WebMediaPlayerProxyAndroid;
 
-// This class serves as the android implementation of WebKit::WebMediaPlayer.
-// It implements all the playback functions by forwarding calls to android
-// media player, and reports player state changes to the webkit.
-class WebMediaPlayerAndroid :
-    public WebKit::WebMediaPlayer,
-    public MessageLoop::DestructionObserver,
-    public base::SupportsWeakPtr<WebMediaPlayerAndroid> {
+// An abstract class that serves as the common base class for implementing
+// WebKit::WebMediaPlayer on Android.
+class WebMediaPlayerAndroid
+    : public WebKit::WebMediaPlayer,
+      public MessageLoop::DestructionObserver {
  public:
-  WebMediaPlayerAndroid(WebKit::WebFrame* frame,
-                        WebKit::WebMediaPlayerClient* client,
-                        WebKit::WebCookieJar* cookie_jar,
-                        webkit_media::WebMediaPlayerManagerAndroid* manager,
-                        webkit_media::StreamTextureFactory* factory);
-  virtual ~WebMediaPlayerAndroid();
-
-  // Set |incognito_mode_| to true if in incognito mode.
-  static void InitIncognito(bool incognito_mode);
-
   // Resource loading.
   virtual void load(const WebKit::WebURL& url, CORSMode cors_mode);
   virtual void cancelLoad();
@@ -113,60 +91,86 @@ class WebMediaPlayerAndroid :
   // compositor thread.
   virtual WebKit::WebVideoFrame* getCurrentFrame();
   virtual void putCurrentFrame(WebKit::WebVideoFrame*);
-  virtual void setStreamTextureClient(
-      WebKit::WebStreamTextureClient* client);
+
+  // This gets called both on compositor and main thread to set the callback
+  // target when a frame is produced.
+  virtual void setStreamTextureClient(WebKit::WebStreamTextureClient* client);
 
   // Media player callback handlers.
-  void OnMediaPrepared();
-  void OnPlaybackComplete();
-  void OnBufferingUpdate(int percentage);
-  void OnSeekComplete();
-  void OnMediaError(int error_type);
-  void OnMediaInfo(int info_type);
-  void OnVideoSizeChanged(int width, int height);
+  virtual void OnMediaPrepared(base::TimeDelta duration);
+  virtual void OnPlaybackComplete();
+  virtual void OnBufferingUpdate(int percentage);
+  virtual void OnSeekComplete(base::TimeDelta current_time);
+  virtual void OnMediaError(int error_type);
+  virtual void OnVideoSizeChanged(int width, int height);
 
-  // This function is called by WebMediaPlayerManagerAndroid to pause the video
-  // and release |media_player_| and its surface texture when we switch tabs.
+  // Called to update the current time.
+  virtual void OnTimeUpdate(base::TimeDelta current_time) = 0;
+
+  // Called when the player is released.
+  virtual void OnPlayerReleased();
+
+  // This function is called by the WebMediaPlayerManagerAndroid to pause the
+  // video and release the media player and surface texture when we switch tabs.
   // However, the actual GlTexture is not released to keep the video screenshot.
-  void ReleaseMediaResources();
+  virtual void ReleaseMediaResources();
 
-  // Whether |media_player_| has been initialized.
-  bool IsInitialized() const;
+  // Method to set the surface for video.
+  virtual void SetVideoSurface(jobject j_surface) = 0;
 
   // Method inherited from DestructionObserver.
   virtual void WillDestroyCurrentMessageLoop() OVERRIDE;
 
- private:
-  // Create a media player to load the |url_| and prepare for playback.
-  // Because of limited decoding resources on mobile devices, idle media players
-  // could get released. In that case, we call this function to get a new media
-  // player when needed.
-  void InitializeMediaPlayer();
+ protected:
+  // Construct a WebMediaPlayerAndroid object with reference to the
+  // client, manager and stream texture factory.
+  WebMediaPlayerAndroid(WebKit::WebMediaPlayerClient* client,
+                        WebMediaPlayerManagerAndroid* manager,
+                        StreamTextureFactory* factory);
+  virtual ~WebMediaPlayerAndroid();
 
-  // Functions that implements media player control.
-  void PlayInternal();
-  void PauseInternal();
-  void SeekInternal(float seconds);
+  // Helper method to update the playing state.
+  virtual void UpdatePlayingState(bool is_playing_);
 
   // Helper methods for posting task for setting states and update WebKit.
-  void UpdateNetworkState(WebKit::WebMediaPlayer::NetworkState state);
-  void UpdateReadyState(WebKit::WebMediaPlayer::ReadyState state);
+  virtual void UpdateNetworkState(WebKit::WebMediaPlayer::NetworkState state);
+  virtual void UpdateReadyState(WebKit::WebMediaPlayer::ReadyState state);
 
-  // whether the current process is incognito mode
-  static bool incognito_mode_;
+  // Helper method to reestablish the surface texture peer for android
+  // mediaplayer.
+  virtual void EstablishSurfaceTexturePeer();
 
-  WebKit::WebFrame* frame_;
+  // Method to be implemented by child classes.
+  // Initialize the media player bridge object.
+  virtual void InitializeMediaPlayer(GURL url) = 0;
 
+  // Inform the media player to start playing.
+  virtual void PlayInternal() = 0;
+
+  // Inform the media player to pause.
+  virtual void PauseInternal() = 0;
+
+  // Inform the media player to seek to a particular position.
+  virtual void SeekInternal(base::TimeDelta time) = 0;
+
+  // Get the current time from the media player.
+  virtual float GetCurrentTimeInternal() const = 0;
+
+  // Release the Android Media player.
+  virtual void ReleaseResourcesInternal() = 0;
+
+  // Cleaning up all remaining resources as this object is about to get deleted.
+  virtual void Destroy() = 0;
+
+  WebKit::WebMediaPlayerClient* client() { return client_; }
+
+  int player_id() { return player_id_; }
+
+ private:
   WebKit::WebMediaPlayerClient* const client_;
 
   // Save the list of buffered time ranges.
   WebKit::WebTimeRanges buffered_;
-
-  // Bridge to the android media player.
-  scoped_ptr<media::MediaPlayerBridge> media_player_;
-
-  // Size of the media element.
-  WebKit::WebSize texture_size_;
 
   // Size of the video.
   WebKit::WebSize natural_size_;
@@ -174,49 +178,29 @@ class WebMediaPlayerAndroid :
   // The video frame object used for renderering by WebKit.
   scoped_ptr<WebKit::WebVideoFrame> video_frame_;
 
-  // Message loops for main renderer thread.
+  // Message loop for main renderer thread.
   MessageLoop* main_loop_;
-
-  // Proxy object that delegates method calls on Render Thread.
-  // This object is created on the Render Thread and is only called in the
-  // destructor.
-  scoped_refptr<WebMediaPlayerProxyAndroid> proxy_;
-
-  // If this is set to true, prepare of the media player is done.
-  bool prepared_;
 
   // URL of the media file to be fetched.
   GURL url_;
 
   // Media duration.
-  float duration_;
+  base::TimeDelta duration_;
 
-  // When switching tabs, we release the media player. This variable keeps
-  // track of the current playback time so that a seek will be performed
-  // next time the media player gets recreated.
+  // The time android media player is trying to seek.
   float pending_seek_;
 
   // Internal seek state.
   bool seeking_;
 
-  // Whether playback has completed.
-  float playback_completed_;
-
   // Whether loading has progressed since the last call to didLoadingProgress.
   mutable bool did_loading_progress_;
 
-  // Pointer to the cookie jar to get the cookie for the media url.
-  WebKit::WebCookieJar* cookie_jar_;
+  // Manager for managing this object.
+  WebMediaPlayerManagerAndroid* manager_;
 
-  // Manager for managing this media player.
-  webkit_media::WebMediaPlayerManagerAndroid* manager_;
-
-  // Player ID assigned by the media player manager.
+  // Player ID assigned by the |manager_|.
   int player_id_;
-
-  // Whether the user has clicked the play button while media player
-  // is preparing.
-  bool pending_play_event_;
 
   // Current player states.
   WebKit::WebMediaPlayer::NetworkState network_state_;
@@ -228,15 +212,18 @@ class WebMediaPlayerAndroid :
   // Stream texture ID allocated to the video.
   unsigned int stream_id_;
 
-  // Whether |media_player_| needs to re-establish the surface texture peer.
+  // Whether the mediaplayer is playing.
+  bool is_playing_;
+
+  // Whether media player needs to re-establish the surface texture peer.
   bool needs_establish_peer_;
 
   // Object for allocating stream textures.
-  scoped_ptr<webkit_media::StreamTextureFactory> stream_texture_factory_;
+  scoped_ptr<StreamTextureFactory> stream_texture_factory_;
 
   // Object for calling back the compositor thread to repaint the video when a
   // frame available. It should be initialized on the compositor thread.
-  scoped_ptr<webkit_media::StreamTextureProxy> stream_texture_proxy_;
+  scoped_ptr<StreamTextureProxy> stream_texture_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerAndroid);
 };

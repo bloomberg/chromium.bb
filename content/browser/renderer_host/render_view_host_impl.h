@@ -50,6 +50,9 @@ struct SelectedFileInfo;
 
 namespace content {
 
+#if defined(OS_ANDROID)
+class MediaPlayerManagerAndroid;
+#endif
 class PowerSaveBlocker;
 class RenderViewHostObserver;
 class RenderWidgetHostDelegate;
@@ -398,6 +401,10 @@ class CONTENT_EXPORT RenderViewHostImpl
 #endif
 
 #if defined(OS_ANDROID)
+  MediaPlayerManagerAndroid* media_player_manager() {
+    return media_player_manager_;
+  }
+
   void DidSelectPopupMenuItems(const std::vector<int>& selected_indices);
   void DidCancelPopupMenu();
 #endif
@@ -674,6 +681,12 @@ class CONTENT_EXPORT RenderViewHostImpl
 
   // When the last ShouldClose message was sent.
   base::TimeTicks send_should_close_start_time_;
+
+#if defined(OS_ANDROID)
+  // Manages all the android mediaplayer objects and handling IPCs for video.
+  // This class inherits from RenderViewHostObserver.
+  MediaPlayerManagerAndroid* media_player_manager_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewHostImpl);
 };

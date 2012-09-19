@@ -17,8 +17,7 @@ class MediaPlayerListener implements MediaPlayer.OnPreparedListener,
                                      MediaPlayer.OnBufferingUpdateListener,
                                      MediaPlayer.OnSeekCompleteListener,
                                      MediaPlayer.OnVideoSizeChangedListener,
-                                     MediaPlayer.OnErrorListener,
-                                     MediaPlayer.OnInfoListener {
+                                     MediaPlayer.OnErrorListener {
     // These values are mirrored as enums in media/base/android/media_player_bridge.h.
     // Please ensure they stay in sync.
     private static final int MEDIA_ERROR_UNKNOWN = 0;
@@ -26,52 +25,11 @@ class MediaPlayerListener implements MediaPlayer.OnPreparedListener,
     private static final int MEDIA_ERROR_NOT_VALID_FOR_PROGRESSIVE_PLAYBACK = 2;
     private static final int MEDIA_ERROR_INVALID_CODE = 3;
 
-    private static final int MEDIA_INFO_UNKNOWN = 0;
-    private static final int MEDIA_INFO_VIDEO_TRACK_LAGGING = 1;
-    private static final int MEDIA_INFO_BUFFERING_START = 2;
-    private static final int MEDIA_INFO_BUFFERING_END = 3;
-    private static final int MEDIA_INFO_BAD_INTERLEAVING = 4;
-    private static final int MEDIA_INFO_NOT_SEEKABLE = 5;
-    private static final int MEDIA_INFO_METADATA_UPDATE = 6;
-
     // Used to determine the class instance to dispatch the native call to.
-    private int mNativeMediaPlayerBridge = 0;
+    private int mNativeMediaPlayerListener = 0;
 
-    private MediaPlayerListener(int nativeMediaPlayerBridge) {
-        mNativeMediaPlayerBridge = nativeMediaPlayerBridge;
-    }
-
-    @Override
-    public boolean onInfo(MediaPlayer mp, int what, int extra) {
-        int infoType;
-        switch (what) {
-            case MediaPlayer.MEDIA_INFO_UNKNOWN:
-                infoType = MEDIA_INFO_UNKNOWN;
-                break;
-            case MediaPlayer.MEDIA_INFO_VIDEO_TRACK_LAGGING:
-                infoType = MEDIA_INFO_VIDEO_TRACK_LAGGING;
-                break;
-            case MediaPlayer.MEDIA_INFO_BUFFERING_START:
-                infoType = MEDIA_INFO_BUFFERING_START;
-                break;
-            case MediaPlayer.MEDIA_INFO_BUFFERING_END:
-                infoType = MEDIA_INFO_BUFFERING_END;
-                break;
-            case MediaPlayer.MEDIA_INFO_BAD_INTERLEAVING:
-                infoType = MEDIA_INFO_BAD_INTERLEAVING;
-                break;
-            case MediaPlayer.MEDIA_INFO_NOT_SEEKABLE:
-                infoType = MEDIA_INFO_NOT_SEEKABLE;
-                break;
-            case MediaPlayer.MEDIA_INFO_METADATA_UPDATE:
-                infoType = MEDIA_INFO_METADATA_UPDATE;
-                break;
-            default:
-                infoType = MEDIA_INFO_UNKNOWN;
-                break;
-        }
-        nativeOnMediaInfo(mNativeMediaPlayerBridge, infoType);
-        return true;
+    private MediaPlayerListener(int nativeMediaPlayerListener) {
+        mNativeMediaPlayerListener = nativeMediaPlayerListener;
     }
 
     @Override
@@ -95,62 +53,58 @@ class MediaPlayerListener implements MediaPlayer.OnPreparedListener,
                 errorType = MEDIA_ERROR_INVALID_CODE;
                 break;
         }
-        nativeOnMediaError(mNativeMediaPlayerBridge, errorType);
+        nativeOnMediaError(mNativeMediaPlayerListener, errorType);
         return true;
     }
 
     @Override
     public void onVideoSizeChanged(MediaPlayer mp, int width, int height) {
-        nativeOnVideoSizeChanged(mNativeMediaPlayerBridge, width, height);
+        nativeOnVideoSizeChanged(mNativeMediaPlayerListener, width, height);
     }
 
     @Override
     public void onSeekComplete(MediaPlayer mp) {
-        nativeOnSeekComplete(mNativeMediaPlayerBridge);
+        nativeOnSeekComplete(mNativeMediaPlayerListener);
     }
 
     @Override
     public void onBufferingUpdate(MediaPlayer mp, int percent) {
-        nativeOnBufferingUpdate(mNativeMediaPlayerBridge, percent);
+        nativeOnBufferingUpdate(mNativeMediaPlayerListener, percent);
     }
 
     @Override
     public void onCompletion(MediaPlayer mp) {
-        nativeOnPlaybackComplete(mNativeMediaPlayerBridge);
+        nativeOnPlaybackComplete(mNativeMediaPlayerListener);
     }
 
     @Override
     public void onPrepared(MediaPlayer mp) {
-        nativeOnMediaPrepared(mNativeMediaPlayerBridge);
+        nativeOnMediaPrepared(mNativeMediaPlayerListener);
     }
 
     @CalledByNative
-    private static MediaPlayerListener create(int nativeMediaPlayerBridge) {
-        return new MediaPlayerListener(nativeMediaPlayerBridge);
+    private static MediaPlayerListener create(int nativeMediaPlayerListener) {
+        return new MediaPlayerListener(nativeMediaPlayerListener);
     }
 
     /**
-     * See media/base/android/media_player_bridge.cc for all the following functions.
+     * See media/base/android/media_player_listener.cc for all the following functions.
      */
     private native void nativeOnMediaError(
-            int nativeMediaPlayerBridge,
+            int nativeMediaPlayerListener,
             int errorType);
 
-    private native void nativeOnMediaInfo(
-            int nativeMediaPlayerBridge,
-            int infoType);
-
     private native void nativeOnVideoSizeChanged(
-            int nativeMediaPlayerBridge,
+            int nativeMediaPlayerListener,
             int width, int height);
 
     private native void nativeOnBufferingUpdate(
-            int nativeMediaPlayerBridge,
+            int nativeMediaPlayerListener,
             int percent);
 
-    private native void nativeOnMediaPrepared(int nativeMediaPlayerBridge);
+    private native void nativeOnMediaPrepared(int nativeMediaPlayerListener);
 
-    private native void nativeOnPlaybackComplete(int nativeMediaPlayerBridge);
+    private native void nativeOnPlaybackComplete(int nativeMediaPlayerListener);
 
-    private native void nativeOnSeekComplete(int nativeMediaPlayerBridge);
+    private native void nativeOnSeekComplete(int nativeMediaPlayerListener);
 }

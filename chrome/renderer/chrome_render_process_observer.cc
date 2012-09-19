@@ -45,10 +45,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "v8/include/v8.h"
 
-#if defined(OS_ANDROID)
-#include "webkit/media/android/webmediaplayer_android.h"
-#endif
-
 #if defined(OS_WIN)
 #include "base/win/iat_patch_function.h"
 #endif
@@ -242,9 +238,6 @@ bool ChromeRenderProcessObserver::OnControlMessageReceived(
 void ChromeRenderProcessObserver::OnSetIsIncognitoProcess(
     bool is_incognito_process) {
   is_incognito_process_ = is_incognito_process;
-#if defined(OS_ANDROID)
-  webkit_media::WebMediaPlayerAndroid::InitIncognito(is_incognito_process_);
-#endif
 }
 
 void ChromeRenderProcessObserver::OnSetContentSettingRules(

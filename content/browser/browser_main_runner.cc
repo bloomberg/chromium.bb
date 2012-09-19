@@ -24,6 +24,10 @@
 #include "ui/base/win/tsf_bridge.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "content/browser/android/surface_texture_peer_browser_impl.h"
+#endif
+
 bool g_exited_main_message_loop = false;
 
 namespace {
@@ -94,6 +98,13 @@ class BrowserMainRunnerImpl : public content::BrowserMainRunner {
     if (base::win::IsTsfAwareRequired())
       ui::TsfBridge::Initialize();
 #endif  // OS_WIN
+
+#if defined(OS_ANDROID)
+    content::SurfaceTexturePeer::InitInstance(
+        new content::SurfaceTexturePeerBrowserImpl(
+            parameters.command_line.HasSwitch(
+                switches::kMediaPlayerInRenderProcess)));
+#endif
 
     main_loop_->CreateThreads();
     int result_code = main_loop_->GetResultCode();

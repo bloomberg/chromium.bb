@@ -140,6 +140,8 @@
     'renderer/media/video_capture_impl_manager.h',
     'renderer/media/video_capture_message_filter.cc',
     'renderer/media/video_capture_message_filter.h',
+    'renderer/media/webmediaplayer_proxy_impl_android.cc',
+    'renderer/media/webmediaplayer_proxy_impl_android.h',
     'renderer/mhtml_generator.cc',
     'renderer/mhtml_generator.h',
     'renderer/mouse_lock_dispatcher.cc',

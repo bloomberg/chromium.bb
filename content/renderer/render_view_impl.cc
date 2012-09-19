@@ -204,11 +204,15 @@
 #include "content/renderer/android/email_detector.h"
 #include "content/renderer/android/phone_number_detector.h"
 #include "content/renderer/media/stream_texture_factory_impl_android.h"
+#include "content/renderer/media/webmediaplayer_proxy_impl_android.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebHitTestResult.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebFloatRect.h"
 #include "ui/gfx/rect_f.h"
+#include "webkit/media/android/media_player_bridge_manager_impl.h"
 #include "webkit/media/android/webmediaplayer_android.h"
+#include "webkit/media/android/webmediaplayer_impl_android.h"
+#include "webkit/media/android/webmediaplayer_in_process_android.h"
 #include "webkit/media/android/webmediaplayer_manager_android.h"
 #elif defined(OS_WIN)
 // TODO(port): these files are currently Windows only because they concern:
@@ -612,6 +616,7 @@ RenderViewImpl::RenderViewImpl(
       mouse_lock_dispatcher_(NULL),
 #if defined(OS_ANDROID)
       expected_content_intent_id_(0),
+      media_player_proxy_(NULL),
 #endif
       session_storage_namespace_id_(session_storage_namespace_id),
       handling_select_range_(false),
@@ -2496,12 +2501,36 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
   FOR_EACH_OBSERVER(
       RenderViewObserver, observers_, WillCreateMediaPlayer(frame, client));
 
+  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
 #if defined(OS_ANDROID)
   // TODO(qinmin): upstream the implementation of getting WebGraphicsContext3D
   // and GpuChannelHost here to replace the NULL params.
-  return new webkit_media::WebMediaPlayerAndroid(
-      frame, client, cookieJar(frame), media_player_manager_.get(),
-      new content::StreamTextureFactoryImpl(NULL, NULL, routing_id_));
+  if (cmd_line->HasSwitch(switches::kMediaPlayerInRenderProcess)) {
+    if (!media_bridge_manager_.get()) {
+      media_bridge_manager_.reset(
+          new webkit_media::MediaPlayerBridgeManagerImpl(1));
+    }
+    return new webkit_media::WebMediaPlayerInProcessAndroid(
+        frame,
+        client,
+        cookieJar(frame),
+        media_player_manager_.get(),
+        media_bridge_manager_.get(),
+        new content::StreamTextureFactoryImpl(
+            NULL, NULL, routing_id_),
+        cmd_line->HasSwitch(switches::kDisableMediaHistoryLogging));
+  }
+  if (!media_player_proxy_) {
+    media_player_proxy_ = new content::WebMediaPlayerProxyImplAndroid(
+        this, media_player_manager_.get());
+  }
+  return new webkit_media::WebMediaPlayerImplAndroid(
+      frame,
+      client,
+      media_player_manager_.get(),
+      media_player_proxy_,
+      new content::StreamTextureFactoryImpl(
+          NULL, NULL, routing_id_));
 #endif
 
   media::MessageLoopFactory* message_loop_factory =
@@ -2512,7 +2541,6 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
   RenderAudioSourceProvider* audio_source_provider = NULL;
 
   // Add in any custom filter factories first.
-  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
   if (!cmd_line->HasSwitch(switches::kDisableAudio)) {
     // audio_source_provider is a "provider" to WebKit, and a sink
     // from the perspective of the audio renderer.
