@@ -30,6 +30,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "sync/api/sync_error.h"
+#include "sync/api/time.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/base/model_type_state_map.h"
 #include "sync/internal_api/public/read_node.h"
@@ -41,7 +42,6 @@
 #include "sync/syncable/read_transaction.h"
 #include "sync/syncable/write_transaction.h"
 #include "sync/util/get_session_name.h"
-#include "sync/util/time.h"
 #include "ui/gfx/favicon_size.h"
 #if defined(OS_LINUX)
 #include "base/linux_util.h"

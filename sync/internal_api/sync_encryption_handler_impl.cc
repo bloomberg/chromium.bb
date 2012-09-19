@@ -128,8 +128,7 @@ SyncEncryptionHandlerImpl::SyncEncryptionHandlerImpl(
       encrypt_everything_(false),
       passphrase_type_(IMPLICIT_PASSPHRASE),
       keystore_key_(restored_keystore_key_for_bootstrapping),
-      nigori_overwrite_count_(0),
-      migration_time_ms_(0) {
+      nigori_overwrite_count_(0) {
   // We only bootstrap the user provided passphrase. The keystore key is handled
   // at Init time once we're sure the nigori is downloaded.
   vault_unsafe_.cryptographer.Bootstrap(restored_key_for_bootstrapping);
@@ -594,6 +593,10 @@ bool SyncEncryptionHandlerImpl::MigratedToKeystore() {
   return IsNigoriMigratedToKeystore(nigori_node.GetNigoriSpecifics());
 }
 
+base::Time SyncEncryptionHandlerImpl::migration_time() const {
+  return migration_time_;
+}
+
 // This function iterates over all encrypted types.  There are many scenarios in
 // which data for some or all types is not currently available.  In that case,
 // the lookup of the root node will fail and we will skip encryption for that
@@ -674,7 +677,8 @@ bool SyncEncryptionHandlerImpl::ApplyNigoriUpdateImpl(
                                                                   trans);
   bool is_nigori_migrated = IsNigoriMigratedToKeystore(nigori);
   if (is_nigori_migrated) {
-    migration_time_ms_ = nigori.keystore_migration_time();
+    DCHECK(nigori.has_keystore_migration_time());
+    migration_time_ = ProtoTimeToTime(nigori.keystore_migration_time());
     PassphraseType nigori_passphrase_type =
         ProtoPassphraseTypeToEnum(nigori.passphrase_type());
 
@@ -1142,10 +1146,7 @@ bool SyncEncryptionHandlerImpl::AttemptToMigrateNigoriToKeystore(
     return false;
 
   DVLOG(1) << "Starting nigori migration to keystore support.";
-  if (migration_time_ms_ == 0)
-    migration_time_ms_ = TimeToProtoTime(base::Time::Now());
   sync_pb::NigoriSpecifics migrated_nigori(old_nigori);
-  migrated_nigori.set_keystore_migration_time(migration_time_ms_);
 
   PassphraseType new_passphrase_type = passphrase_type_;
   bool new_encrypt_everything = encrypt_everything_;
@@ -1189,13 +1190,23 @@ bool SyncEncryptionHandlerImpl::AttemptToMigrateNigoriToKeystore(
     return false;
   }
 
+  if (migration_time_.is_null())
+    migration_time_ = base::Time::Now();
+  migrated_nigori.set_keystore_migration_time(TimeToProtoTime(migration_time_));
+
   DVLOG(1) << "Completing nigori migration to keystore support.";
   nigori_node->SetNigoriSpecifics(migrated_nigori);
+
+  FOR_EACH_OBSERVER(
+      SyncEncryptionHandler::Observer,
+      observers_,
+      OnCryptographerStateChanged(cryptographer));
   if (passphrase_type_ != new_passphrase_type) {
     passphrase_type_ = new_passphrase_type;
     FOR_EACH_OBSERVER(SyncEncryptionHandler::Observer, observers_,
                       OnPassphraseTypeChanged(passphrase_type_));
   }
+
   if (new_encrypt_everything && !encrypt_everything_) {
     EnableEncryptEverythingImpl(trans->GetWrappedTrans());
     ReEncryptEverything(trans);

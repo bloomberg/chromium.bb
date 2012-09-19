@@ -30,7 +30,9 @@ SyncStatus::SyncStatus()
       useless_sync_cycles(0),
       useful_sync_cycles(0),
       cryptographer_ready(false),
-      crypto_has_pending_keys(false) {
+      crypto_has_pending_keys(false),
+      has_keystore_key(false),
+      passphrase_type(IMPLICIT_PASSPHRASE) {
 }
 
 SyncStatus::~SyncStatus() {

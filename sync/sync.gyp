@@ -402,6 +402,7 @@
         'api/sync_error.cc',
         'api/sync_error_factory.h',
         'api/sync_error_factory.cc',
+        'api/time.h',
       ],
     },
 

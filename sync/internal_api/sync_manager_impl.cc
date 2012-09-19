@@ -383,6 +383,8 @@ void SyncManagerImpl::Init(
   unrecoverable_error_handler_ = unrecoverable_error_handler;
   report_unrecoverable_error_function_ = report_unrecoverable_error_function;
 
+  allstatus_.SetHasKeystoreKey(
+      !restored_keystore_key_for_bootstrapping.empty());
   sync_encryption_handler_.reset(new SyncEncryptionHandlerImpl(
       &share_,
       encryptor,
@@ -534,7 +536,8 @@ void SyncManagerImpl::OnPassphraseAccepted() {
 void SyncManagerImpl::OnBootstrapTokenUpdated(
     const std::string& bootstrap_token,
     BootstrapTokenType type) {
-  // Does nothing.
+  if (type == KEYSTORE_BOOTSTRAP_TOKEN)
+    allstatus_.SetHasKeystoreKey(true);
 }
 
 void SyncManagerImpl::OnEncryptedTypesChanged(ModelTypeSet encrypted_types,
@@ -550,10 +553,14 @@ void SyncManagerImpl::OnCryptographerStateChanged(
     Cryptographer* cryptographer) {
   allstatus_.SetCryptographerReady(cryptographer->is_ready());
   allstatus_.SetCryptoHasPendingKeys(cryptographer->has_pending_keys());
+  allstatus_.SetKeystoreMigrationTime(
+      sync_encryption_handler_->migration_time());
 }
 
 void SyncManagerImpl::OnPassphraseTypeChanged(PassphraseType type) {
-  // Does nothing.
+  allstatus_.SetPassphraseType(type);
+  allstatus_.SetKeystoreMigrationTime(
+      sync_encryption_handler_->migration_time());
 }
 
 void SyncManagerImpl::StartSyncingNormally(

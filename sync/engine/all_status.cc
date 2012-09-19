@@ -154,6 +154,21 @@ void AllStatus::SetCryptoHasPendingKeys(bool has_pending_keys) {
   status_.crypto_has_pending_keys = has_pending_keys;
 }
 
+void AllStatus::SetPassphraseType(PassphraseType type) {
+  ScopedStatusLock lock(this);
+  status_.passphrase_type = type;
+}
+
+void AllStatus::SetHasKeystoreKey(bool has_keystore_key) {
+  ScopedStatusLock lock(this);
+  status_.has_keystore_key = has_keystore_key;
+}
+
+void AllStatus::SetKeystoreMigrationTime(const base::Time& migration_time) {
+  ScopedStatusLock lock(this);
+  status_.keystore_migration_time = migration_time;
+}
+
 void AllStatus::SetUniqueId(const std::string& guid) {
   ScopedStatusLock lock(this);
   status_.unique_id = guid;

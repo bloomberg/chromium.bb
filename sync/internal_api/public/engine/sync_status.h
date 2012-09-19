@@ -9,6 +9,7 @@
 
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
+#include "sync/internal_api/public/sync_encryption_handler.h"
 #include "sync/protocol/sync_protocol_error.h"
 
 namespace syncer {
@@ -84,6 +85,9 @@ struct SYNC_EXPORT SyncStatus {
   ModelTypeSet encrypted_types;
   bool cryptographer_ready;
   bool crypto_has_pending_keys;
+  bool has_keystore_key;
+  base::Time keystore_migration_time;
+  PassphraseType passphrase_type;
 
   // Per-datatype throttled status.
   ModelTypeSet throttled_types;

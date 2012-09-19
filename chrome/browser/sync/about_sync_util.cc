@@ -11,6 +11,8 @@
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/chrome_version_info.h"
+#include "sync/api/time.h"
+#include "sync/internal_api/public/util/sync_string_conversions.h"
 #include "sync/protocol/proto_enum_conversions.h"
 
 using base::DictionaryValue;
@@ -141,6 +143,15 @@ std::string GetVersionString() {
       version_modifier;
 }
 
+std::string GetKeystoreMigrationTimeStr(base::Time migration_time) {
+  std::string migration_time_str;
+  if (migration_time.is_null())
+    migration_time_str = "Not Migrated";
+  else
+    migration_time_str = syncer::GetTimeDebugString(migration_time);
+  return migration_time_str;
+}
+
 }  // namespace
 
 namespace sync_ui_util {
@@ -193,6 +204,11 @@ scoped_ptr<DictionaryValue> ConstructAboutInformation(
   BoolSyncStat has_pending_keys(section_encryption,
                                 "Cryptographer Has Pending Keys");
   StringSyncStat encrypted_types(section_encryption, "Encrypted Types");
+  BoolSyncStat has_keystore_key(section_encryption, "Has Keystore Key");
+  StringSyncStat keystore_migration_time(section_encryption,
+                                         "Keystore Migration Time");
+  StringSyncStat passphrase_type(section_encryption,
+                                 "Passphrase Type");
 
   ListValue* section_last_session = AddSection(
       stats_list, "Status from Last Completed Session");
@@ -293,6 +309,11 @@ scoped_ptr<DictionaryValue> ConstructAboutInformation(
     has_pending_keys.SetValue(full_status.crypto_has_pending_keys);
     encrypted_types.SetValue(
         ModelTypeSetToString(full_status.encrypted_types));
+    has_keystore_key.SetValue(full_status.has_keystore_key);
+    keystore_migration_time.SetValue(
+        GetKeystoreMigrationTimeStr(full_status.keystore_migration_time));
+    passphrase_type.SetValue(
+        PassphraseTypeToString(full_status.passphrase_type));
   }
 
   if (snapshot.is_initialized()) {
