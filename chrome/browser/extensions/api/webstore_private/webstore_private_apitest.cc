@@ -292,21 +292,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, InstallCancelled) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, IncorrectManifest1) {
-  WebstoreInstallListener listener;
-  WebstorePrivateApi::SetWebstoreInstallerDelegateForTesting(&listener);
   ASSERT_TRUE(RunInstallTest("incorrect_manifest1.html", "extension.crx"));
-  listener.Wait();
-  ASSERT_TRUE(listener.received_failure());
-  ASSERT_EQ("Manifest file is invalid.", listener.error());
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, IncorrectManifest2) {
-  WebstoreInstallListener listener;
-  WebstorePrivateApi::SetWebstoreInstallerDelegateForTesting(&listener);
   ASSERT_TRUE(RunInstallTest("incorrect_manifest2.html", "extension.crx"));
-  listener.Wait();
-  EXPECT_TRUE(listener.received_failure());
-  ASSERT_EQ("Manifest file is invalid.", listener.error());
 }
 
 // Tests that we can request an app installed bubble (instead of the default
@@ -354,6 +344,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, InstallTheme) {
   listener.Wait();
   ASSERT_TRUE(listener.received_success());
   ASSERT_EQ("iamefpfkojoapidjnbafmgkgncegbkad", listener.id());
+}
+
+// Tests that an error is properly reported when an empty crx is returned.
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, EmptyCrx) {
+  ASSERT_TRUE(RunInstallTest("empty.html", "empty.crx"));
 }
 
 // Tests successfully installing a bundle of 2 apps and 2 extensions.

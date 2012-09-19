@@ -438,16 +438,42 @@ bool CompleteInstallFunction::RunImpl() {
     return false;
   }
 
+  AddRef();
+
   // The extension will install through the normal extension install flow, but
   // the whitelist entry will bypass the normal permissions install dialog.
   scoped_refptr<WebstoreInstaller> installer = new WebstoreInstaller(
-      profile(), test_webstore_installer_delegate,
+      profile(), this,
       &(dispatcher()->delegate()->GetAssociatedWebContents()->GetController()),
       id, approval.Pass(), WebstoreInstaller::FLAG_NONE);
   installer->Start();
 
   return true;
 }
+
+void CompleteInstallFunction::OnExtensionInstallSuccess(
+    const std::string& id) {
+  if (test_webstore_installer_delegate)
+    test_webstore_installer_delegate->OnExtensionInstallSuccess(id);
+
+  SendResponse(true);
+
+  // Matches the AddRef in RunImpl().
+  Release();
+}
+
+void CompleteInstallFunction::OnExtensionInstallFailure(
+    const std::string& id, const std::string& error) {
+  if (test_webstore_installer_delegate)
+    test_webstore_installer_delegate->OnExtensionInstallFailure(id, error);
+
+  error_ = error;
+  SendResponse(false);
+
+  // Matches the AddRef in RunImpl().
+  Release();
+}
+
 
 bool GetBrowserLoginFunction::RunImpl() {
   SetResult(CreateLoginResult(profile_->GetOriginalProfile()));

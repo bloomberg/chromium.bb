@@ -149,10 +149,16 @@ class BeginInstallWithManifestFunction
   scoped_ptr<ExtensionInstallPrompt> install_prompt_;
 };
 
-class CompleteInstallFunction : public SyncExtensionFunction {
+class CompleteInstallFunction
+    : public AsyncExtensionFunction,
+      public WebstoreInstaller::Delegate {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("webstorePrivate.completeInstall");
 
+  // WebstoreInstaller::Delegate:
+  virtual void OnExtensionInstallSuccess(const std::string& id) OVERRIDE;
+  virtual void OnExtensionInstallFailure(const std::string& id,
+                                         const std::string& error) OVERRIDE;
  protected:
   virtual ~CompleteInstallFunction() {}
 
