@@ -46,6 +46,9 @@ class PlatformContext3DImpl
       const ConsoleMessageCallback& callback) OVERRIDE;
   virtual bool Echo(const base::Closure& task) OVERRIDE;
 
+  virtual void SetParentContext(
+      PepperParentContextProvider* parent_context_provider);
+
  private:
   bool InitRaw();
   void OnContextLost();

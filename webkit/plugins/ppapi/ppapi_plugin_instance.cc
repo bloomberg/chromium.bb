@@ -1607,6 +1607,7 @@ bool PluginInstance::SetFullscreen(bool fullscreen) {
 }
 
 void PluginInstance::FlashSetFullscreen(bool fullscreen, bool delay_report) {
+  TRACE_EVENT0("ppapi", "PluginInstance::FlashSetFullscreen");
   // Keep a reference on the stack. See NOTE above.
   scoped_refptr<PluginInstance> ref(this);
 
@@ -1617,10 +1618,10 @@ void PluginInstance::FlashSetFullscreen(bool fullscreen, bool delay_report) {
     return;
 
   // Unbind current 2D or 3D graphics context.
-  BindGraphics(pp_instance(), 0);
   VLOG(1) << "Setting fullscreen to " << (fullscreen ? "on" : "off");
   if (fullscreen) {
     DCHECK(!fullscreen_container_);
+    setBackingTextureId(0, false);
     fullscreen_container_ = delegate_->CreateFullscreenContainer(this);
   } else {
     DCHECK(fullscreen_container_);
@@ -1644,6 +1645,17 @@ void PluginInstance::UpdateFlashFullscreenState(bool flash_fullscreen) {
     if (!flash_fullscreen && is_mouselock_pending)
       TrackedCallback::ClearAndRun(&lock_mouse_callback_, PP_ERROR_FAILED);
     return;
+  }
+
+  PPB_Graphics3D_Impl* graphics_3d  = GetBoundGraphics3D();
+  if (graphics_3d) {
+    if (flash_fullscreen) {
+      fullscreen_container_->ReparentContext(graphics_3d->platform_context());
+    } else {
+      delegate_->ReparentContext(graphics_3d->platform_context());
+      setBackingTextureId(graphics_3d->GetBackingTextureId(),
+                          graphics_3d->IsOpaque());
+    }
   }
 
   bool old_plugin_focus = PluginHasFocus();
@@ -2008,6 +2020,7 @@ void PluginInstance::ClosePendingUserGesture(PP_Instance instance,
 
 PP_Bool PluginInstance::BindGraphics(PP_Instance instance,
                                      PP_Resource device) {
+  TRACE_EVENT0("ppapi", "PluginInstance::BindGraphics");
   // The Graphics3D instance can't be destroyed until we call
   // setBackingTextureId.
   scoped_refptr< ::ppapi::Resource> old_graphics = bound_graphics_;

@@ -21,6 +21,8 @@ class FlashFullscreen {
   bool SetFullscreen(bool fullscreen);
   bool GetScreenSize(Size* size);
 
+  bool MustRecreateContexts();
+
  private:
   InstanceHandle instance_;
 };

@@ -54,6 +54,8 @@ class RenderWidgetFullscreenPepper :
   virtual webkit::ppapi::PluginDelegate::PlatformContext3D*
       CreateContext3D() OVERRIDE;
   virtual MouseLockDispatcher* GetMouseLockDispatcher() OVERRIDE;
+  virtual void ReparentContext(
+      webkit::ppapi::PluginDelegate::PlatformContext3D*) OVERRIDE;
 
   // IPC::Listener implementation. This overrides the implementation
   // in RenderWidgetFullscreen.

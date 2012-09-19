@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_flash_fullscreen.idl modified Wed Dec 14 18:08:00 2011. */
+/* From private/ppb_flash_fullscreen.idl modified Tue Sep 11 13:52:24 2012. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_FLASH_FULLSCREEN_H_
 #define PPAPI_C_PRIVATE_PPB_FLASH_FULLSCREEN_H_
@@ -15,7 +15,8 @@
 #include "ppapi/c/pp_stdint.h"
 
 #define PPB_FLASHFULLSCREEN_INTERFACE_0_1 "PPB_FlashFullscreen;0.1"
-#define PPB_FLASHFULLSCREEN_INTERFACE PPB_FLASHFULLSCREEN_INTERFACE_0_1
+#define PPB_FLASHFULLSCREEN_INTERFACE_1_0 "PPB_FlashFullscreen;1.0"
+#define PPB_FLASHFULLSCREEN_INTERFACE PPB_FLASHFULLSCREEN_INTERFACE_1_0
 
 /**
  * @file
@@ -27,7 +28,7 @@
  * @addtogroup Interfaces
  * @{
  */
-struct PPB_FlashFullscreen_0_1 {
+struct PPB_FlashFullscreen_1_0 {
   /**
    * Checks whether the plugin instance is currently in fullscreen mode.
    */
@@ -36,16 +37,12 @@ struct PPB_FlashFullscreen_0_1 {
    * Switches the plugin instance to/from fullscreen mode. Returns PP_TRUE on
    * success, PP_FALSE on failure.
    *
-   * This unbinds the current Graphics2D or Graphics3D. Pending flushes and
-   * swapbuffers will execute as if the resource was off-screen. The transition
-   * is asynchronous. During the transition, IsFullscreen will return PP_FALSE,
-   * and no Graphics2D or Graphics3D can be bound. The transition ends at the
-   * next DidChangeView when going into fullscreen mode. The transition out of
-   * fullscreen mode is synchronous.
-   *
-   * Note: when switching to and from fullscreen, Graphics3D resources need to
-   * be re-created. This is a current limitation that will be lifted in a later
-   * revision.
+   * This does not unbind the current Graphics2D or Graphics3D. Pending flushes
+   * and swapbuffers will execute as if the resource was off-screen. The
+   * transition is asynchronous. During the transition, IsFullscreen will
+   * return PP_FALSE, and no Graphics2D or Graphics3D can be bound. The
+   * transition ends at the next DidChangeView when going into fullscreen mode.
+   * The transition out of fullscreen mode is synchronous.
    */
   PP_Bool (*SetFullscreen)(PP_Instance instance, PP_Bool fullscreen);
   /**
@@ -55,7 +52,13 @@ struct PPB_FlashFullscreen_0_1 {
   PP_Bool (*GetScreenSize)(PP_Instance instance, struct PP_Size* size);
 };
 
-typedef struct PPB_FlashFullscreen_0_1 PPB_FlashFullscreen;
+typedef struct PPB_FlashFullscreen_1_0 PPB_FlashFullscreen;
+
+struct PPB_FlashFullscreen_0_1 {
+  PP_Bool (*IsFullscreen)(PP_Instance instance);
+  PP_Bool (*SetFullscreen)(PP_Instance instance, PP_Bool fullscreen);
+  PP_Bool (*GetScreenSize)(PP_Instance instance, struct PP_Size* size);
+};
 /**
  * @}
  */

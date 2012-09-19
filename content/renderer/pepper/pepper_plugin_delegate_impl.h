@@ -203,6 +203,7 @@ class PepperPluginDelegateImpl
       PlatformAudioInputClient* client) OVERRIDE;
   virtual PlatformImage2D* CreateImage2D(int width, int height) OVERRIDE;
   virtual PlatformContext3D* CreateContext3D() OVERRIDE;
+  virtual void ReparentContext(PlatformContext3D*) OVERRIDE;
   virtual PlatformVideoCapture* CreateVideoCapture(
       const std::string& device_id,
       PlatformVideoCaptureEventHandler* handler) OVERRIDE;

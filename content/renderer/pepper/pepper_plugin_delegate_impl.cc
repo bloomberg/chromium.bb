@@ -778,6 +778,11 @@ webkit::ppapi::PluginDelegate::PlatformContext3D*
 #endif
 }
 
+void PepperPluginDelegateImpl::ReparentContext(
+    webkit::ppapi::PluginDelegate::PlatformContext3D* context) {
+  static_cast<PlatformContext3DImpl*>(context)->SetParentContext(this);
+}
+
 webkit::ppapi::PluginDelegate::PlatformVideoCapture*
 PepperPluginDelegateImpl::CreateVideoCapture(
     const std::string& device_id,

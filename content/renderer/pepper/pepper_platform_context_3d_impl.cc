@@ -147,6 +147,37 @@ bool PlatformContext3DImpl::Init(const int32* attrib_list,
   return true;
 }
 
+void PlatformContext3DImpl::SetParentContext(
+    PepperParentContextProvider* parent_context_provider) {
+  if (parent_context_.get() && parent_texture_id_ != 0) {
+    // Flush any remaining commands in the parent context to make sure the
+    // texture id accounting stays consistent.
+    gpu::gles2::GLES2Implementation* parent_gles2 =
+        parent_context_->GetImplementation();
+    parent_gles2->helper()->CommandBufferHelper::Flush();
+    parent_gles2->FreeTextureId(parent_texture_id_);
+    parent_context_.reset();
+    parent_texture_id_ = 0;
+  }
+
+  WebGraphicsContext3DCommandBufferImpl* parent_context =
+      parent_context_provider->GetParentContextForPlatformContext3D();
+  if (!parent_context)
+    return;
+
+  parent_context_ = parent_context->AsWeakPtr();
+  // Flush any remaining commands in the parent context to make sure the
+  // texture id accounting stays consistent.
+  gpu::gles2::GLES2Implementation* parent_gles2 =
+      parent_context_->GetImplementation();
+  parent_gles2->helper()->CommandBufferHelper::Flush();
+  parent_texture_id_ = parent_gles2->MakeTextureId();
+
+  CommandBufferProxy* parent_command_buffer =
+      parent_context_->GetCommandBufferProxy();
+  command_buffer_->SetParent(parent_command_buffer, parent_texture_id_);
+}
+
 unsigned PlatformContext3DImpl::GetBackingTextureId() {
   DCHECK(command_buffer_);
   return parent_texture_id_;

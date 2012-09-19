@@ -39,6 +39,8 @@ class FullscreenContainer {
 
   virtual PluginDelegate::PlatformContext3D* CreateContext3D() = 0;
 
+  virtual void ReparentContext(PluginDelegate::PlatformContext3D*) = 0;
+
   // The returned object is owned by FullscreenContainer.
   virtual MouseLockDispatcher* GetMouseLockDispatcher() = 0;
 

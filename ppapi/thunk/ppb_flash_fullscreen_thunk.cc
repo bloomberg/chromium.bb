@@ -37,7 +37,7 @@ PP_Bool GetScreenSize(PP_Instance instance, PP_Size* size) {
   return enter.functions()->GetFlashAPI()->FlashGetScreenSize(instance, size);
 }
 
-const PPB_FlashFullscreen g_ppb_flash_fullscreen_thunk = {
+const PPB_FlashFullscreen_0_1 g_ppb_flash_fullscreen_thunk = {
   &IsFullscreen,
   &SetFullscreen,
   &GetScreenSize

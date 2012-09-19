@@ -367,6 +367,11 @@ RenderWidgetFullscreenPepper::CreateContext3D() {
 #endif
 }
 
+void RenderWidgetFullscreenPepper::ReparentContext(
+    webkit::ppapi::PluginDelegate::PlatformContext3D* context) {
+  static_cast<content::PlatformContext3DImpl*>(context)->SetParentContext(this);
+}
+
 MouseLockDispatcher* RenderWidgetFullscreenPepper::GetMouseLockDispatcher() {
   return mouse_lock_dispatcher_.get();
 }

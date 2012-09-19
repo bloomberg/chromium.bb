@@ -79,6 +79,9 @@ MockPluginDelegate::PlatformImage2D* MockPluginDelegate::CreateImage2D(
 MockPluginDelegate::PlatformContext3D* MockPluginDelegate::CreateContext3D() {
   return NULL;
 }
+void MockPluginDelegate::ReparentContext(
+    MockPluginDelegate::PlatformContext3D* context) {
+}
 
 MockPluginDelegate::PlatformVideoDecoder*
 MockPluginDelegate::CreateVideoDecoder(

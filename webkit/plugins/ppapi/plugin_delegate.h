@@ -365,6 +365,9 @@ class PluginDelegate {
   // The caller will own the pointer returned from this.
   virtual PlatformContext3D* CreateContext3D() = 0;
 
+  // Set that the context will now present to the delegate.
+  virtual void ReparentContext(PlatformContext3D*) = 0;
+
   // If |device_id| is empty, the default video capture device will be used. The
   // user can start using the returned object to capture video right away.
   // Otherwise, the specified device will be used. The user needs to wait till
