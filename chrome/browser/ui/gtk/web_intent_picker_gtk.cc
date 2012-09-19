@@ -592,9 +592,17 @@ void WebIntentPickerGtk::InitMainContents() {
 
   // CWS 'More Suggestions' link.
   GtkWidget* link_alignment = gtk_alignment_new(0, 0.5f, 0, 0);
+  GtkWidget* more_hbox = gtk_hbox_new(FALSE, ui::kControlSpacing);
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  GdkPixbuf* cws_icon =
+      rb.GetNativeImageNamed(IDR_WEBSTORE_ICON_16).ToGdkPixbuf();
+  gtk_box_pack_start(GTK_BOX(more_hbox), gtk_image_new_from_pixbuf(cws_icon),
+                     FALSE, FALSE, 0);
   GtkWidget* more_suggestions_link = theme_service->BuildChromeLinkButton(
       l10n_util::GetStringUTF8(IDS_FIND_MORE_INTENT_HANDLER_MESSAGE).c_str());
-  gtk_container_add(GTK_CONTAINER(link_alignment), more_suggestions_link);
+  gtk_box_pack_start(GTK_BOX(more_hbox), more_suggestions_link,
+                     FALSE, FALSE, 0);
+  gtk_container_add(GTK_CONTAINER(link_alignment), more_hbox);
   gtk_chrome_link_button_set_use_gtk_theme(
       GTK_CHROME_LINK_BUTTON(more_suggestions_link),
       theme_service->UsingNativeTheme());
