@@ -93,18 +93,31 @@ class VersionInfoTest(mox.MoxTestBase):
     self.tmpdir = tempfile.mkdtemp()
 
   @classmethod
-  def CreateFakeVersionFile(cls, tmpdir, version=FAKE_VERSION_STRING):
-    """Helper method to create a version file from specified version number."""
-    (version_file_fh, version_file) = tempfile.mkstemp(dir=tmpdir)
+  def WriteFakeVersionFile(cls, version_file, version=FAKE_VERSION_STRING):
+    """Helper method to write a version file from specified version number."""
+    osutils.SafeMakedirs(os.path.split(version_file)[0])
     info = manifest_version.VersionInfo(version, CHROME_BRANCH)
-    os.write(version_file_fh, FAKE_VERSION % info.__dict__)
-    os.close(version_file_fh)
+    osutils.WriteFile(version_file, FAKE_VERSION % info.__dict__)
+
+  @classmethod
+  def CreateFakeVersionFile(cls, tmpdir, version=FAKE_VERSION_STRING,
+                            filename=None):
+    """Helper method to create a version file from specified version number."""
+    version_file = tempfile.mktemp(dir=tmpdir)
+    cls.WriteFakeVersionFile(version_file, version=version)
     return version_file
 
   def testLoadFromFile(self):
     """Tests whether we can load from a version file."""
     version_file = self.CreateFakeVersionFile(self.tmpdir)
     info = manifest_version.VersionInfo(version_file=version_file)
+    self.assertEqual(info.VersionString(), FAKE_VERSION_STRING)
+
+  def testLoadFromRepo(self):
+    """Tests whether we can load from a source repo."""
+    version_file = os.path.join(self.tmpdir, constants.VERSION_FILE)
+    self.WriteFakeVersionFile(version_file)
+    info = manifest_version.VersionInfo.from_repo(self.tmpdir)
     self.assertEqual(info.VersionString(), FAKE_VERSION_STRING)
 
   def testLoadFromString(self):

@@ -131,10 +131,12 @@ def CreateSymlink(src_file, dest_file):
 class VersionInfo(object):
   """Class to encapsulate the Chrome OS version info scheme.
 
-  You can instantiate this class in two ways.
-  1)using a version file, specifically chromeos_version.sh,
-  which contains the version information.
-  2) passing in a string with the 3 version components ()
+  You can instantiate this class in three ways.
+  1) using a version file, specifically chromeos_version.sh,
+     which contains the version information.
+  2) passing in a string with the 3 version components.
+  3) using a source repo and calling from_repo().
+
   Args:
     version_string: Optional 3 component version string to parse.  Contains:
         build_number: release build number.
@@ -162,6 +164,10 @@ class VersionInfo(object):
       self.version_file = None
 
     self.incr_type = incr_type
+
+  @classmethod
+  def from_repo(cls, source_repo):
+    return cls(version_file=os.path.join(source_repo, constants.VERSION_FILE))
 
   def _LoadFromFile(self):
     """Read the version file and set the version components"""
