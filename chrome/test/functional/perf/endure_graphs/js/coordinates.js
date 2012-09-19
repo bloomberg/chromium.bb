@@ -57,30 +57,32 @@ Coordinates.prototype.processValues_ = function (type) {
   var bufferSpace = 0.02 * (max - min);
 
   if (type == 'x') {
-    this.xMinValue = min - bufferSpace;
-    this.xMaxValue = max + bufferSpace;
+    this.xBufferSpace_ = bufferSpace;
+    this.xMinValue_ = min;
+    this.xMaxValue_ = max;
   } else {
-    this.yMinValue = min - bufferSpace;
-    this.yMaxValue = max + bufferSpace;
+    this.yBufferSpace_ = bufferSpace;
+    this.yMinValue_ = min;
+    this.yMaxValue_ = max;
   }
 };
 
 /**
- * Difference between horizontal max and min values.
+ * Difference between horizontal upper and lower limit values.
  *
  * @return {number} The x value range.
  */
 Coordinates.prototype.xValueRange = function() {
-  return this.xMaxValue - this.xMinValue;
+  return this.xUpperLimitValue() - this.xLowerLimitValue();
 };
 
 /**
- * Difference between vertical max and min values.
+ * Difference between vertical upper and lower limit values.
  *
  * @return {number} The y value range.
  */
 Coordinates.prototype.yValueRange = function() {
-  return this.yMaxValue - this.yMinValue
+  return this.yUpperLimitValue() - this.yLowerLimitValue();
 };
 
 /**
@@ -90,7 +92,8 @@ Coordinates.prototype.yValueRange = function() {
  * @return {number} The corresponding x pixel value on the canvas.
  */
 Coordinates.prototype.xPixel = function(value) {
-  return this.widthMax * ((value - this.xMinValue) / this.xValueRange());
+  return this.widthMax *
+      ((value - this.xLowerLimitValue()) / this.xValueRange());
 };
 
 /**
@@ -105,7 +108,8 @@ Coordinates.prototype.yPixel = function(value) {
     return this.heightMax / 2;
   } else {
     return this.heightMax -
-        (this.heightMax * (value - this.yMinValue) / this.yValueRange());
+        (this.heightMax *
+         (value - this.yLowerLimitValue()) / this.yValueRange());
   }
 };
 
@@ -116,7 +120,8 @@ Coordinates.prototype.yPixel = function(value) {
  * @return {number} The corresponding x data value.
  */
 Coordinates.prototype.xValue = function(position) {
-  return this.xMinValue + (position / this.widthMax * this.xValueRange());
+  return this.xLowerLimitValue() +
+      (position / this.widthMax * this.xValueRange());
 };
 
 /**
@@ -127,5 +132,81 @@ Coordinates.prototype.xValue = function(position) {
  */
 Coordinates.prototype.yValue = function(position) {
   var ratio = this.heightMax / (this.heightMax - position);
-  return this.yMinValue + (this.yValueRange() / ratio);
+  return this.yLowerLimitValue() + (this.yValueRange() / ratio);
+};
+
+/**
+ * Returns the minimum x value of all the data points.
+ *
+ * @return {number} The minimum x value of all the data points.
+ */
+Coordinates.prototype.xMinValue = function() {
+  return this.xMinValue_;
+};
+
+/**
+ * Returns the maximum x value of all the data points.
+ *
+ * @return {number} The maximum x value of all the data points.
+ */
+Coordinates.prototype.xMaxValue = function() {
+  return this.xMaxValue_;
+};
+
+/**
+ * Returns the minimum y value of all the data points.
+ *
+ * @return {number} The minimum y value of all the data points.
+ */
+Coordinates.prototype.yMinValue = function() {
+  return this.yMinValue_;
+};
+
+/**
+ * Returns the maximum y value of all the data points.
+ *
+ * @return {number} The maximum y value of all the data points.
+ */
+Coordinates.prototype.yMaxValue = function() {
+  return this.yMaxValue_;
+};
+
+/**
+ * Returns the x value at the lower limit of the bounding box of the canvas.
+ *
+ * @return {number} The x value at the lower limit of the bounding box of
+ *     the canvas.
+ */
+Coordinates.prototype.xLowerLimitValue = function() {
+  return this.xMinValue_ - this.xBufferSpace_;
+};
+
+/**
+ * Returns the x value at the upper limit of the bounding box of the canvas.
+ *
+ * @return {number} The x value at the upper limit of the bounding box of
+ *     the canvas.
+ */
+Coordinates.prototype.xUpperLimitValue = function() {
+  return this.xMaxValue_ + this.xBufferSpace_;
+};
+
+/**
+ * Returns the y value at the lower limit of the bounding box of the canvas.
+ *
+ * @return {number} The y value at the lower limit of the bounding box of
+ *     the canvas.
+ */
+Coordinates.prototype.yLowerLimitValue = function() {
+  return this.yMinValue_ - this.yBufferSpace_;
+};
+
+/**
+ * Returns the y value at the upper limit of the bounding box of the canvas.
+ *
+ * @return {number} The y value at the upper limit of the bounding box of
+ *     the canvas.
+ */
+Coordinates.prototype.yUpperLimitValue = function() {
+  return this.yMaxValue_ + this.yBufferSpace_;
 };

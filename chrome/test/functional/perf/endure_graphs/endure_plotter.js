@@ -263,44 +263,63 @@ function initPlotSwitcher(tabs) {
  */
 function addToPlotData(revisionNum, dataRows, plotData, dataDescriptions) {
   // Get data for the revision number(s) to plot.
-  var revData = null;
+  var found = false;
   for (var i = 0; i < dataRows.length; ++i) {
     var row = dataRows.get(i);
-    if (!row)
-      continue;
-
-    var revision = row.revision;
-    var traces = row.traces;
-
-    if (revisionNum == revision) {
-      revData = traces;
+    if (row && row.revision == revisionNum) {
+      found = true;
       break;
     }
   }
+  if (!found) {
+    return null;
+  }
 
-  if (!revData)
-    return false;
-
-  // Identify the (single) trace name associated with this revision.
-  var traceName = '';
-  for (var t in revData) {
-    if (traceName) {
-      reportError('Only one trace per revision is supported.');
-      return false;
+  if (row.stack) {
+    if (!row.stack_order) {
+      reportError('No stack order was specified.');
+      return null;
     }
-    traceName = t;
+    var traceList = row.stack_order;
+  } else {
+    // Identify the (single) trace name associated with this revision.
+    var traceName = null;
+    for (var t in row.traces) {
+      if (traceName) {
+        reportError('Only one trace per revision is supported for ' +
+                    'non-stacked graphs.');
+        return null;
+      }
+      traceName = t;
+    }
+    var traceList = [traceName];
   }
 
-  var traceData = [];
-  for (var pointIndex = 0; pointIndex < revData[traceName].length;
-       ++pointIndex) {
-    traceData.push([parseFloat(revData[traceName][pointIndex][0]),
-                    parseFloat(revData[traceName][pointIndex][1])]);
+  var lines = [];
+  for (var i = 0, traceName; traceName = traceList[i]; ++i) {
+    var trace = row.traces[traceName];
+    if (!trace) {
+      reportError('No specified trace was found.');
+      return null;
+    }
+
+    var points = [];
+    for (var j = 0, point; point = trace[j]; ++j) {
+      points.push([parseFloat(point[0]), parseFloat(point[1])]);
+    }
+    lines.push(points);
+    dataDescriptions.push(traceName + ' [r' + row.revision + ']');
   }
 
-  plotData.push(traceData);
-  dataDescriptions.push(traceName + ' [r' + revisionNum + ']');
-  return true;
+  if (row.stack) {
+    lines = graphUtils.stackFrontToBack(graphUtils.interpolate(lines));
+  }
+
+  for (var i = 0, line; line = lines[i]; ++i) {
+    plotData.push(line);
+  }
+
+  return row;
 }
 
 /**
@@ -352,8 +371,10 @@ function receivedSummary(data, error) {
                       // representing the (x, y) pair.
   var dataDescriptions = [];
 
-  if (!addToPlotData(params.revision, rows, plotData, dataDescriptions))
+  var row = addToPlotData(params.revision, rows, plotData, dataDescriptions);
+  if (!row) {
     errorMessages += 'No data for the specified revision.<br>';
+  }
 
   if ('revisionOther' in params) {
     if (!addToPlotData(params.revisionOther, rows, plotData, dataDescriptions))
@@ -410,7 +431,8 @@ function receivedSummary(data, error) {
         eventNameToPlot, eventInfoToPlot,
         unitsX, unitsY, unitsYOther,
         document.getElementById('output'),
-        'lookout' in params);
+        'lookout' in params,
+        !!row.stack);
 
     plotter.plot();
   } else {

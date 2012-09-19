@@ -54,26 +54,20 @@ function VerticalMarker(color) {
  * Class representing a horizontal marker at the indicated mouse location.
  * @constructor
  *
- * @param {Object} canvasRect The canvas bounds (in client coords).
- * @param {Number} yPixelClicked The vertical mouse click location that spawned
- *     the marker, in the client coordinate space.
+ * @param {Element} canvasElement The canvas bounds.
  * @param {Number} yValue The data value corresponding to the vertical click
  *     location.
  * @param {Number} yOtherValue If the plot is overlaying two coordinate systems,
  *     this is the data value corresponding to the vertical click location in
  *     the second coordinate system.  Can be null.
  */
-function HorizontalMarker(canvasRect, yPixelClicked, yValue, yOtherValue) {
+function HorizontalMarker(canvasElement, yValue, yOtherValue) {
   var m = document.createElement('div');
   m.style.backgroundColor = HorizontalMarker.COLOR;
   m.style.opacity = '0.3';
   m.style.position = 'absolute';
-  m.style.left = canvasRect.offsetLeft;
-  var h = HorizontalMarker.HEIGHT;
-  m.style.top = (yPixelClicked + document.body.scrollTop - (h / 2)).toFixed(0) +
-                'px';
-  m.style.width = canvasRect.offsetWidth + 'px';
-  m.style.height = h + 'px';
+  m.style.width = canvasElement.offsetWidth + 'px';
+  m.style.height = HorizontalMarker.HEIGHT + 'px';
 
   this.markerDiv = m;
   this.value = yValue;
@@ -84,10 +78,118 @@ HorizontalMarker.HEIGHT = 5;
 HorizontalMarker.COLOR = 'rgb(0,100,100)';
 
 /**
+ * Locates this element at a specified position.
+ *
+ * @param {Element} canvasElement The canvas element at which this element is
+ *     to be placed.
+ * @param {number} y Y position relative to the canvas element.
+ */
+HorizontalMarker.prototype.locateAt = function(canvasElement, y) {
+  var div = this.markerDiv;
+  div.style.left = domUtils.pageXY(canvasElement).x -
+                   domUtils.pageXY(div.offsetParent) + 'px';
+  div.style.top = (y + domUtils.pageXY(canvasElement).y
+                   - domUtils.pageXY(div.offsetParent).y
+                   - (HorizontalMarker.HEIGHT / 2)) + 'px';
+};
+
+/**
  * Removes the horizontal marker from the graph.
  */
 HorizontalMarker.prototype.remove = function() {
   this.markerDiv.parentNode.removeChild(this.markerDiv);
+};
+
+/**
+ * An information indicator hovering around the mouse cursor on the graph.
+ * This class is used to show a legend.
+ *
+ * @constructor
+ */
+function HoveringInfo() {
+  this.containerDiv_ = document.createElement('div');
+  this.containerDiv_.style.display = 'none';
+  this.containerDiv_.style.position = 'absolute';
+  this.containerDiv_.style.border = '1px solid #000';
+  this.containerDiv_.style.padding = '0.12em';
+  this.containerDiv_.style.backgroundColor = '#ddd';
+  this.colorIndicator_ = document.createElement('div');
+  this.colorIndicator_.style.display = 'inline-block';
+  this.colorIndicator_.style.width = '1em';
+  this.colorIndicator_.style.height = '1em';
+  this.colorIndicator_.style.verticalAlign = 'text-bottom';
+  this.colorIndicator_.style.margin = '0 0.24em 0 0';
+  this.colorIndicator_.style.border = '1px solid #000';
+  this.textSpan_ = document.createElement('span');
+
+  this.containerDiv_.appendChild(this.colorIndicator_);
+  this.containerDiv_.appendChild(this.textSpan_);
+}
+
+/**
+ * Returns the container element;
+ *
+ * @return {Element} The container element.
+ */
+HoveringInfo.prototype.getElement = function() {
+  return this.containerDiv_;
+};
+
+/**
+ * Shows or hides the element.
+ *
+ * @param {boolean} show Shows the element if true, or hides it.
+ */
+HoveringInfo.prototype.show = function(show) {
+  this.containerDiv_.style.display = show ? 'block' : 'none';
+};
+
+/**
+ * Returns the position of the container element in the page coordinate.
+ *
+ * @return {Object} A point object which has {@code x} and {@code y} fields.
+ */
+HoveringInfo.prototype.pageXY = function() {
+  return domUtils.pageXY(this.containerDiv_);
+};
+
+/**
+ * Locates the element at the specified position.
+ *
+ * @param {number} x X position in the page coordinate.
+ * @param {number} y Y position in the page coordinate.
+ */
+HoveringInfo.prototype.locateAtPageXY = function(x, y) {
+  var parentXY = domUtils.pageXY(this.containerDiv_.offsetParent);
+  this.containerDiv_.style.left = x - parentXY.x + 'px';
+  this.containerDiv_.style.top = y - parentXY.y + 'px';
+};
+
+/**
+ * Returns the text content.
+ *
+ * @return {?string} The text content.
+ */
+HoveringInfo.prototype.getText = function() {
+  return this.textSpan_.textContent;
+};
+
+/**
+ * Changes the text content.
+ *
+ * @param {string} text The new text to be set.
+ */
+HoveringInfo.prototype.setText = function(text) {
+  this.textSpan_.textContent = text;
+};
+
+/**
+ * Changes the color of the color indicator.
+ *
+ * @param {string} color The new color to be set.
+ */
+HoveringInfo.prototype.setColorIndicator = function(color) {
+  this.colorIndicator_.style.backgroundColor = color;
 };
 
 /**
@@ -115,9 +217,11 @@ HorizontalMarker.prototype.remove = function() {
  *    other graph.  Otherwise, this should be 'null'.
  * @param {string} resultNode A DOM Element object representing the DOM node to
  *     which the plot should be attached.
- * @param {boolean} Whether or not the graph should be drawn in 'lookout' mode,
- *     which is a summarized view that is made for overview pages when the graph
- *     is drawn in a more confined space.
+ * @param {boolean} is_lookout Whether or not the graph should be drawn
+ *     in 'lookout' mode, which is a summarized view that is made for overview
+ *     pages when the graph is drawn in a more confined space.
+ * @param {boolean} fillAreaUnderLine Whether or not fill the area under
+ *     the lines.  Should be set to true when drawing stacked graphs.
  *
  * Example of the |plotData|:
  *  [
@@ -128,7 +232,8 @@ HorizontalMarker.prototype.remove = function() {
  *  And individual points are [x value, y value]
  */
 function Plotter(plotData, dataDescriptions, eventName, eventInfo, unitsX,
-                 unitsY, unitsYOther, resultNode, is_lookout) {
+                 unitsY, unitsYOther, resultNode, is_lookout,
+                 fillAreaUnderLine) {
   this.plotData_ = plotData;
   this.dataDescriptions_ = dataDescriptions;
   this.eventName_ = eventName;
@@ -138,6 +243,7 @@ function Plotter(plotData, dataDescriptions, eventName, eventInfo, unitsX,
   this.unitsYOther_ = unitsYOther;
   this.resultNode_ = resultNode;
   this.is_lookout_ = is_lookout;
+  this.fillAreaUnderLine_ = fillAreaUnderLine;
 
   this.dataColors_ = [];
 
@@ -145,10 +251,10 @@ function Plotter(plotData, dataDescriptions, eventName, eventInfo, unitsX,
   this.coordinatesOther = null;
   if (this.unitsYOther_) {
     // Need two different coordinate systems to overlay on the same graph.
-    this.coordinates = new Coordinates([plotData[0]]);
-    this.coordinatesOther = new Coordinates([plotData[1]]);
+    this.coordinates = new Coordinates([this.plotData_[0]]);
+    this.coordinatesOther = new Coordinates([this.plotData_[1]]);
   } else {
-    this.coordinates = new Coordinates(plotData);
+    this.coordinates = new Coordinates(this.plotData_);
   }
 
   // A color palette that's unambigous for normal and color-deficient viewers.
@@ -214,6 +320,17 @@ Plotter.prototype.getDataColor = function(i) {
 };
 
 /**
+ * Gets the fill color value associated with a specified color index.
+ *
+ * @param {number} i An index into the |this.colors| array.
+ * @return {string} A string representing a color in 'rgba(R,G,B,A)' format,
+ *     where A is the percentage transparency.
+ */
+Plotter.prototype.getFillColor = function(i) {
+  return this.makeColorTransparent(i, 0.4);
+};
+
+/**
  * Does the actual plotting.
  */
 Plotter.prototype.plot = function() {
@@ -225,6 +342,7 @@ Plotter.prototype.plot = function() {
   this.cursorDiv_ = new VerticalMarker('rgb(100,80,240)');
   this.cursorDivOther_ = new VerticalMarker('rgb(50,50,50)');
   this.eventDiv_ = new VerticalMarker('rgb(255, 0, 0)');
+  this.hoveringInfo_ = new HoveringInfo();
 
   this.resultNode_.appendChild(this.canvasElement_);
   this.resultNode_.appendChild(this.coordinates_());
@@ -232,6 +350,7 @@ Plotter.prototype.plot = function() {
   this.resultNode_.appendChild(this.cursorDiv_);
   this.resultNode_.appendChild(this.cursorDivOther_);
   this.resultNode_.appendChild(this.eventDiv_);
+  this.resultNode_.appendChild(this.hoveringInfo_.getElement());
   this.attachEventListeners_();
 
   // Now draw the canvas.
@@ -240,11 +359,18 @@ Plotter.prototype.plot = function() {
   // Clear it with white: otherwise canvas will draw on top of existing data.
   ctx.clearRect(0, 0, this.canvasElement_.width, this.canvasElement_.height);
 
-  // Draw all data lines.
-  for (var i = 0; i < this.plotData_.length; ++i) {
+  // Draw all data lines in the reverse order so the last graph appears on
+  // the backmost and the first graph appears on the frontmost.
+  for (var i = this.plotData_.length - 1; i >= 0; --i) {
     var coordinateSystem = this.coordinates;
     if (i > 0 && this.unitsYOther_)
       coordinateSystem = this.coordinatesOther;
+
+    if (this.fillAreaUnderLine_) {
+      this.plotAreaUnderLine_(ctx, this.getFillColor(i), this.plotData_[i],
+                              coordinateSystem);
+    }
+
     this.plotLine_(ctx, this.getDataColor(i), this.plotData_[i],
                    coordinateSystem);
   }
@@ -309,7 +435,7 @@ Plotter.prototype.plotLine_ = function(ctx, strokeStyles, data,
     var pointX = parseFloat(data[i][0]);
     var pointY = parseFloat(data[i][1]);
     var x = coordinateSystem.xPixel(pointX);
-    var y = 0.0;
+    var y = coordinateSystem.yPixel(0);
     if (isNaN(pointY)) {
       // Re-set 'initial' if we're at a gap in the data.
       initial = true;
@@ -322,7 +448,9 @@ Plotter.prototype.plotLine_ = function(ctx, strokeStyles, data,
     }
 
     ctx.moveTo(x, y);
-    allPoints.push([x, y]);
+    if (!data[i].interpolated) {
+      allPoints.push([x, y]);
+    }
   }
   ctx.closePath();
   ctx.stroke();
@@ -338,12 +466,67 @@ Plotter.prototype.plotLine_ = function(ctx, strokeStyles, data,
 };
 
 /**
+ * Fills an area under the given line on the graph.
+ *
+ * @param {Object} ctx A canvas element object for drawing.
+ * @param {string} fillStyle A string representing the drawing style.
+ * @param {Array} data A list of [x, y] values representing the line to plot.
+ * @param {Object} coordinateSystem A Coordinates object representing the
+ *     coordinate system of the graph.
+ */
+Plotter.prototype.plotAreaUnderLine_ = function(ctx, fillStyle, data,
+                                                coordinateSystem) {
+  if (!data[0]) {
+    return;  // nothing to draw
+  }
+
+  ctx.beginPath();
+  var x = coordinateSystem.xPixel(parseFloat(data[0][0]) || 0);
+  var y = coordinateSystem.yPixel(parseFloat(data[0][1]) || 0);
+  var y0 = coordinateSystem.yPixel(coordinateSystem.yMinValue());
+  ctx.moveTo(x, y0);
+  for (var point, i = 0; point = data[i]; ++i) {
+    var pointX = parseFloat(point[0]);
+    var pointY = parseFloat(point[1]);
+    if (isNaN(pointX)) { continue; }  // Skip an invalid point.
+    if (isNaN(pointY)) {
+      ctx.lineTo(x, y0);
+      var yWasNaN = true;
+    } else {
+      x = coordinateSystem.xPixel(pointX);
+      y = coordinateSystem.yPixel(pointY);
+      if (yWasNaN) {
+        ctx.lineTo(x, y0);
+        yWasNaN = false;
+      }
+      ctx.lineTo(x, y);
+    }
+  }
+  ctx.lineTo(x, y0);
+
+  ctx.lineWidth = 0;
+  // Clear the area with white color first.
+  var COLOR_WHITE = 'rgb(255,255,255)';
+  ctx.strokeStyle = COLOR_WHITE;
+  ctx.fillStyle = COLOR_WHITE;
+  ctx.fill();
+  // Then, fill the area with the specified color.
+  ctx.strokeStyle = fillStyle;
+  ctx.fillStyle = fillStyle;
+  ctx.fill();
+};
+
+/**
  * Attaches event listeners to DOM nodes.
  */
 Plotter.prototype.attachEventListeners_ = function() {
   var self = this;
   this.canvasElement_.parentNode.addEventListener(
     'mousemove', function(evt) { self.onMouseMove_(evt); }, false);
+  this.canvasElement_.parentNode.addEventListener(
+    'mouseover', function(evt) { self.onMouseOver_(evt); }, false);
+  this.canvasElement_.parentNode.addEventListener(
+    'mouseout', function(evt) { self.onMouseOut_(evt); }, false);
   this.cursorDiv_.addEventListener(
     'click', function(evt) { self.onMouseClick_(evt); }, false);
   this.cursorDivOther_.addEventListener(
@@ -362,7 +545,8 @@ Plotter.prototype.updateRuler_ = function(evt) {
   r.style.left = this.canvasElement_.offsetLeft + 'px';
   r.style.top = this.canvasElement_.offsetTop + 'px';
   r.style.width = this.canvasElement_.offsetWidth + 'px';
-  var h = evt.clientY + document.body.scrollTop - this.canvasElement_.offsetTop;
+  var h = domUtils.pageXYOfEvent(evt).y -
+          domUtils.pageXY(this.canvasElement_).y;
   if (h > this.canvasElement_.offsetHeight)
     h = this.canvasElement_.offsetHeight;
   r.style.height = h + 'px';
@@ -441,16 +625,70 @@ Plotter.prototype.updateEventDiv_ = function(x, show) {
 };
 
 /**
+ * Updates the hovering information.
+ *
+ * @param {Event} evt An event object, which specifies the position of the mouse
+ *     cursor.
+ * @param {boolean} show Whether or not to show the hovering info.  Even if it's
+ *     true, if the cursor position is out of the appropriate area, nothing will
+ *     be shown.
+ */
+Plotter.prototype.updateHoveringInfo_ = function(evt, show) {
+  var evtPageXY = domUtils.pageXYOfEvent(evt);
+  var hoveringInfoPageXY = this.hoveringInfo_.pageXY();
+  var canvasPageXY = domUtils.pageXY(this.canvasElement_);
+
+  var coord = this.coordinates;
+  var p = {'x': coord.xValue(evtPageXY.x - canvasPageXY.x),
+           'y': coord.yValue(evtPageXY.y - canvasPageXY.y)};
+  if (!show ||
+      p.x < coord.xMinValue() || coord.xMaxValue() < p.x ||
+      p.y < coord.yMinValue() || coord.yMaxValue() < p.y) {
+    this.hoveringInfo_.show(false);
+    return;
+  } else {
+    this.hoveringInfo_.show(true);
+  }
+
+  var closestLineIndex = null;
+  var closestDistance = coord.yValueRange();
+  for (var lineIndex = 0, line; line = this.plotData_[lineIndex]; ++lineIndex) {
+    for (var i = 1; line[i]; ++i) {
+      var p0 = line[i - 1], p1 = line[i];
+      if (p0[0] <= p.x && p.x < p1[0]) {
+        // Calculate y-value of the line at p.x, which is the cursor point.
+        var y = (p.x - p0[0]) / (p1[0] - p0[0]) * (p1[1] - p0[1]) + p0[1];
+        if (p.y < y && y - p.y < closestDistance) {
+          closestLineIndex = lineIndex;
+          closestDistance = y - p.y;
+        }
+        break;
+      }
+    }
+  }
+  if (!(closestLineIndex && this.dataDescriptions_[closestLineIndex])) {
+    this.hoveringInfo_.show(false);
+    return;
+  }
+
+  var DIV_X_OFFSET = 10, DIV_Y_OFFSET = -20;
+  this.hoveringInfo_.setText(this.dataDescriptions_[closestLineIndex]);
+  this.hoveringInfo_.setColorIndicator(this.getDataColor(closestLineIndex));
+  this.hoveringInfo_.locateAtPageXY(evtPageXY.x + DIV_X_OFFSET,
+                                    evtPageXY.y + DIV_Y_OFFSET);
+};
+
+/**
  * Handle a mouse move event.
  *
  * @param {Object} evt A mouse event object representing a mouse move event.
  */
 Plotter.prototype.onMouseMove_ = function(evt) {
   var canvas = evt.currentTarget.firstChild;
-  var positionX = evt.clientX + document.body.scrollLeft -
-      this.canvasElement_.offsetLeft;
-  var positionY = evt.clientY + document.body.scrollTop -
-      this.canvasElement_.offsetTop;
+  var evtPageXY = domUtils.pageXYOfEvent(evt);
+  var canvasPageXY = domUtils.pageXY(this.canvasElement_);
+  var positionX = evtPageXY.x - canvasPageXY.x;
+  var positionY = evtPageXY.y - canvasPageXY.y;
 
   // Identify the index of the x value that is closest to the mouse x value.
   var xValue = this.coordinates.xValue(positionX);
@@ -569,6 +807,26 @@ Plotter.prototype.onMouseMove_ = function(evt) {
       this.updateEventDiv_(x, false);
     }
   }
+
+  this.updateHoveringInfo_(evt, true);
+};
+
+/**
+ * Handle a mouse over event.
+ *
+ * @param {Object} evt A mouse event object representing a mouse move event.
+ */
+Plotter.prototype.onMouseOver_ = function(evt) {
+  this.updateHoveringInfo_(evt, true);
+};
+
+/**
+ * Handle a mouse out event.
+ *
+ * @param {Object} evt A mouse event object representing a mouse move event.
+ */
+Plotter.prototype.onMouseOut_ = function(evt) {
+  this.updateHoveringInfo_(evt, false);
 };
 
 /**
@@ -582,13 +840,16 @@ Plotter.prototype.onMouseClick_ = function(evt) {
     if (this.horizontal_marker_)
       this.horizontal_marker_.remove();
 
-    var canvasY = evt.clientY - this.canvasElement_.offsetTop;
+    var canvasY = domUtils.pageXYOfEvent(evt).y -
+                  domUtils.pageXY(this.canvasElement_).y;
     this.horizontal_marker_ = new HorizontalMarker(
-        this.canvasElement_, evt.clientY, this.coordinates.yValue(canvasY),
+        this.canvasElement_,
+        this.coordinates.yValue(canvasY),
         (this.coordinatesOther ? this.coordinatesOther.yValue(canvasY) : null));
     // Insert before cursor node, otherwise it catches clicks.
     this.cursorDiv_.parentNode.insertBefore(
         this.horizontal_marker_.markerDiv, this.cursorDiv_);
+    this.horizontal_marker_.locateAt(this.canvasElement_, canvasY);
   }
 };
 
@@ -610,8 +871,9 @@ Plotter.prototype.graduations_ = function(coordinateSystem, colorIndex,
                                           isRightSide) {
   // Don't allow a graduation in the bottom 5% of the chart or the number label
   // would overflow the chart bounds.
-  var yMin = coordinateSystem.yMinValue + .05 * coordinateSystem.yValueRange();
-  var yRange = coordinateSystem.yMaxValue - yMin;
+  var yMin = coordinateSystem.yLowerLimitValue() +
+      .05 * coordinateSystem.yValueRange();
+  var yRange = coordinateSystem.yUpperLimitValue() - yMin;
 
   // Use the largest scale that fits 3 or more graduations.
   // We allow scales of [...,500, 250, 100, 50, 25, 10,...].
@@ -627,7 +889,8 @@ Plotter.prototype.graduations_ = function(coordinateSystem, colorIndex,
 
   var graduationPosition = yMin + (scale - yMin % scale);
   var graduationDivs = [];
-  while (graduationPosition < coordinateSystem.yMaxValue || yRange == 0) {
+  while (graduationPosition < coordinateSystem.yUpperLimitValue() ||
+         yRange == 0) {
     var graduation = document.createElement('div');
     var canvasPosition;
     if (yRange == 0) {
