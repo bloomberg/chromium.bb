@@ -72,6 +72,7 @@ const char* kAttrNameReceivedAccessCode = "RECEIVED_ACCESS_CODE";
 const char* kAttrNameConnected = "CONNECTED";
 const char* kAttrNameDisconnecting = "DISCONNECTING";
 const char* kAttrNameError = "ERROR";
+const char* kAttrNameInvalidDomainError = "INVALID_DOMAIN_ERROR";
 
 const int kMaxLoginAttempts = 5;
 
@@ -315,6 +316,9 @@ bool HostNPScriptObject::GetProperty(const std::string& property_name,
   } else if (property_name == kAttrNameError) {
     INT32_TO_NPVARIANT(kError, *result);
     return true;
+  } else if (property_name == kAttrNameInvalidDomainError) {
+    INT32_TO_NPVARIANT(kInvalidDomainError, *result);
+    return true;
   } else {
     SetException("GetProperty: unsupported property " + property_name);
     return false;
@@ -545,7 +549,7 @@ void HostNPScriptObject::FinishConnect(
   // Check the host domain policy.
   if (!required_host_domain_.empty() &&
       !EndsWith(uid, std::string("@") + required_host_domain_, false)) {
-    SetState(kError);
+    SetState(kInvalidDomainError);
     return;
   }
 
@@ -1035,7 +1039,8 @@ void HostNPScriptObject::SetState(State state) {
     case kStarting:
       DCHECK(state == kRequestedAccessCode ||
              state == kDisconnecting ||
-             state == kError) << state;
+             state == kError ||
+             state == kInvalidDomainError) << state;
       break;
     case kRequestedAccessCode:
       DCHECK(state == kReceivedAccessCode ||
@@ -1056,6 +1061,9 @@ void HostNPScriptObject::SetState(State state) {
       DCHECK(state == kDisconnected) << state;
       break;
     case kError:
+      DCHECK(state == kDisconnecting) << state;
+      break;
+    case kInvalidDomainError:
       DCHECK(state == kDisconnecting) << state;
       break;
   };

@@ -150,6 +150,10 @@
     "message": "The access code is invalid. Please try again.",
     "description": "Error displayed if an invalid access code is entered."
   },
+  "ERROR_INVALID_HOST_DOMAIN": {
+    "message": "Policy settings do not permit sharing this computer as a Chromoting host. Contact your system administrator for assistance.",
+    "description": "Error displayed when the computer has a policy that only users in a particular domain may use it as a Chromoting host, and a user in a different domain is trying to use it as a Chromoting host."
+  },
   "ERROR_NETWORK_FAILURE": {
     "message": "Unable to reach the host. This is probably due to the configuration of the network you are using.",
     "description": "Error displayed when the host is online, but we are unable to connect to it due to network configuration."

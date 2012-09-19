@@ -121,6 +121,9 @@ function onHostStateChanged_(state) {
   } else if (state == remoting.HostSession.State.ERROR) {
     console.error('Host plugin state: ERROR');
     showShareError_(remoting.Error.UNEXPECTED);
+  } else if (state == remoting.HostSession.State.INVALID_DOMAIN_ERROR) {
+    console.error('Host plugin state: INVALID_DOMAIN_ERROR');
+    showShareError_(remoting.Error.INVALID_HOST_DOMAIN);
   } else {
     console.error('Unknown state -> ' + state);
   }

@@ -85,8 +85,8 @@ class HostNPScriptObject : public HostStatusObserver {
   void SetWindow(NPWindow* np_window);
 
  private:
-  // These state values are duplicated in the JS code. Remember to update both
-  // copies when making changes.
+  // These state values are duplicated in host_session.js. Remember to update
+  // both copies when making changes.
   enum State {
     kDisconnected,
     kStarting,
@@ -94,7 +94,8 @@ class HostNPScriptObject : public HostStatusObserver {
     kReceivedAccessCode,
     kConnected,
     kDisconnecting,
-    kError
+    kError,
+    kInvalidDomainError
   };
 
   //////////////////////////////////////////////////////////

@@ -36,7 +36,8 @@ remoting.HostSession.State = {
   RECEIVED_ACCESS_CODE: 3,
   CONNECTED: 4,
   DISCONNECTING: 5,
-  ERROR: 6
+  ERROR: 6,
+  INVALID_DOMAIN_ERROR: 7
 };
 
 /**
