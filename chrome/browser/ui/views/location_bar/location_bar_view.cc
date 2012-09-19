@@ -319,11 +319,10 @@ void LocationBarView::Init(views::View* popup_parent_view) {
     AddChildView(star_view_);
     star_view_->SetVisible(true);
   }
-  if (extensions::switch_utils::IsActionBoxEnabled() && browser_) {
-    gfx::Point menu_offset(
-        (mode_ == NORMAL) ? kNormalHorizontalEdgeThickness : 0,
-        kVerticalEdgeThickness);
-    action_box_button_view_ = new ActionBoxButtonView(browser_, menu_offset);
+  if (extensions::switch_utils::IsActionBoxEnabled() && (mode_ == NORMAL) &&
+      browser_) {
+    action_box_button_view_ = new ActionBoxButtonView(browser_,
+        gfx::Point(kNormalHorizontalEdgeThickness, kVerticalEdgeThickness));
     AddChildView(action_box_button_view_);
 
     if (star_view_)
