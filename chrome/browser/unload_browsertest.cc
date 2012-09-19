@@ -215,8 +215,10 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, CrossSiteInfiniteUnloadSync) {
 // Navigate to a page with an infinite beforeunload handler.
 // Then two two async crosssite requests to ensure
 // we don't get confused and think we're closing the tab.
-// This test is flaky on the valgrind UI bots. http://crbug.com/39057
-IN_PROC_BROWSER_TEST_F(UnloadTest, CrossSiteInfiniteBeforeUnloadAsync) {
+// This test is flaky on the valgrind UI bots. http://crbug.com/39057 and
+// http://crbug.com/86469
+IN_PROC_BROWSER_TEST_F(UnloadTest,
+                       DISABLED_CrossSiteInfiniteBeforeUnloadAsync) {
   // Tests makes no sense in single-process mode since the renderer is hung.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess))
     return;
@@ -331,7 +333,7 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserCloseInfiniteUnload) {
 
 // Tests closing the browser with a beforeunload handler that hangs.
 // If this flakes, use http://crbug.com/78803 and http://crbug.com/86469
-IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserCloseInfiniteBeforeUnload) {
+IN_PROC_BROWSER_TEST_F(UnloadTest, DISABLED_BrowserCloseInfiniteBeforeUnload) {
   // Tests makes no sense in single-process mode since the renderer is hung.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess))
     return;
@@ -352,8 +354,9 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserCloseInfiniteUnloadAlert) {
 
 // Tests closing the browser with a beforeunload handler that hangs then
 // pops up an alert.
-// If this flakes, use http://crbug.com/78803.
-IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserCloseInfiniteBeforeUnloadAlert) {
+// If this flakes, use http://crbug.com/78803 and http://crbug.com/86469.
+IN_PROC_BROWSER_TEST_F(UnloadTest,
+                       DISABLED_BrowserCloseInfiniteBeforeUnloadAlert) {
   // Tests makes no sense in single-process mode since the renderer is hung.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess))
     return;
