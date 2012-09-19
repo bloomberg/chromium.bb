@@ -6,7 +6,6 @@
 int
 main(int argc, char **argv)
 {
-  printf("hi\n");
   const char* table = "en-us-g1.ctb";
   int result = 0;
 
