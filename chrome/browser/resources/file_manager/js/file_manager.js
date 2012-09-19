@@ -982,12 +982,9 @@ FileManager.prototype = {
     // TODO(bshe): should override cr.ui.List's activateItemAtIndex function
     // rather than listen explicitly for double click or tap events.
     this.grid_.addEventListener(
-        'dblclick', this.onDetailDoubleClickOrTap_.bind(this));
+        'dblclick', this.onDetailDoubleClick_.bind(this));
     this.grid_.addEventListener(
         'click', this.onDetailClick_.bind(this));
-    this.grid_.addEventListener(
-        cr.ui.TouchHandler.EventType.TAP,
-        this.onDetailDoubleClickOrTap_.bind(this));
   };
 
   /**
@@ -1045,12 +1042,9 @@ FileManager.prototype = {
     // rather than listen explicitly for double click or tap events.
     // Don't pay attention to double clicks on the table header.
     this.table_.list.addEventListener(
-        'dblclick', this.onDetailDoubleClickOrTap_.bind(this));
+        'dblclick', this.onDetailDoubleClick_.bind(this));
     this.table_.list.addEventListener(
         'click', this.onDetailClick_.bind(this));
-    this.table_.list.addEventListener(
-        cr.ui.TouchHandler.EventType.TAP,
-        this.onDetailDoubleClickOrTap_.bind(this));
   };
 
   FileManager.prototype.onCopyProgress_ = function(event) {
@@ -2706,7 +2700,7 @@ FileManager.prototype = {
    *
    * @param {Event} event The click event.
    */
-  FileManager.prototype.onDetailDoubleClickOrTap_ = function(event) {
+  FileManager.prototype.onDetailDoubleClick_ = function(event) {
     if (this.isRenamingInProgress()) {
       // Don't pay attention to double clicks during a rename.
       return;
@@ -2741,7 +2735,7 @@ FileManager.prototype = {
 
     if (event.target.parentElement.classList.contains('filename-label') ||
         event.target.classList.contains('detail-icon')) {
-      this.onDetailDoubleClickOrTap_(event);
+      this.onDetailDoubleClick_(event);
       event.stopPropagation();
       event.preventDefault();
     }
