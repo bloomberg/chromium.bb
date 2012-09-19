@@ -113,7 +113,7 @@ class NativeMessagingTest : public ::testing::Test,
 };
 
 // Read a single message from a local file (single_message_response.msg).
-TEST_F(NativeMessagingTest, SingleSendMessageRead) {
+TEST_F(NativeMessagingTest, DISABLED_SingleSendMessageRead) {
   FilePath temp_file;
   file_util::CreateTemporaryFile(&temp_file);
   FakeLauncher launcher(GetTestDir().AppendASCII("single_message_response.msg"),
@@ -133,7 +133,7 @@ TEST_F(NativeMessagingTest, SingleSendMessageRead) {
 
 // Tests sending a single message. The message should get written to
 // |temp_file| and should match the contents of single_message_request.msg.
-TEST_F(NativeMessagingTest, SingleSendMessageWrite) {
+TEST_F(NativeMessagingTest, DISABLED_SingleSendMessageWrite) {
   FilePath temp_file;
   file_util::CreateTemporaryFile(&temp_file);
   FakeLauncher launcher(GetTestDir().AppendASCII("single_message_response.msg"),
@@ -154,7 +154,7 @@ TEST_F(NativeMessagingTest, SingleSendMessageWrite) {
 
 // Test send message with a real client. The client just echo's back the text
 // it recieved.
-TEST_F(NativeMessagingTest, EchoConnect) {
+TEST_F(NativeMessagingTest, DISABLED_EchoConnect) {
   NativeMessageProcessHost::Create(
       AsWeakPtr(), "echo.py", "{\"text\": \"Hello.\"}", 0,
       NativeMessageProcessHost::TYPE_CONNECT, base::Bind(
