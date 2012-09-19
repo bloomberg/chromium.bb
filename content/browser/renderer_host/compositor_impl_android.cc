@@ -96,7 +96,8 @@ CompositorImpl::~CompositorImpl() {
 
 void CompositorImpl::OnSurfaceUpdated(
     const SurfacePresentedCallback& callback) {
-  host_->composite();
+  if (host_->get())
+    host_->composite();
   // TODO(sievers): Let RWHV do this
   uint32 sync_point =
       ImageTransportFactoryAndroid::GetInstance()->InsertSyncPoint();
