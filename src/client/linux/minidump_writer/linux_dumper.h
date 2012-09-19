@@ -59,6 +59,9 @@ typedef Elf32_auxv_t elf_aux_entry;
 #elif defined(__x86_64)
 typedef Elf64_auxv_t elf_aux_entry;
 #endif
+
+typedef typeof(((elf_aux_entry*) 0)->a_un.a_val) elf_aux_val_t;
+
 // When we find the VDSO mapping in the process's address space, this
 // is the name we use for it when writing it to the minidump.
 // This should always be less than NAME_MAX!
@@ -124,6 +127,7 @@ class LinuxDumper {
   const wasteful_vector<pid_t> &threads() { return threads_; }
   const wasteful_vector<MappingInfo*> &mappings() { return mappings_; }
   const MappingInfo* FindMapping(const void* address) const;
+  const wasteful_vector<elf_aux_val_t>& auxv() { return auxv_; }
 
   // Find a block of memory to take as the stack given the top of stack pointer.
   //   stack: (output) the lowest address in the memory area
@@ -151,15 +155,6 @@ class LinuxDumper {
                                    unsigned int mapping_id,
                                    uint8_t identifier[sizeof(MDGUID)]);
 
-  // Utility method to find the location of where the kernel has
-  // mapped linux-gate.so in memory(shows up in /proc/pid/maps as
-  // [vdso], but we can't guarantee that it's the only virtual dynamic
-  // shared object.  Parsing the auxilary vector for AT_SYSINFO_EHDR
-  // is the safest way to go.)
-  void* FindBeginningOfLinuxGateSharedLibrary(pid_t pid) const;
-  // Utility method to find the entry point location.
-  void* FindEntryPoint(pid_t pid) const;
-
   uintptr_t crash_address() const { return crash_address_; }
   void set_crash_address(uintptr_t crash_address) {
     crash_address_ = crash_address;
@@ -172,6 +167,8 @@ class LinuxDumper {
   void set_crash_thread(pid_t crash_thread) { crash_thread_ = crash_thread; }
 
  protected:
+  bool ReadAuxv();
+
   virtual bool EnumerateMappings();
 
   virtual bool EnumerateThreads() = 0;
@@ -206,6 +203,9 @@ class LinuxDumper {
 
   // Info from /proc/<pid>/maps.
   wasteful_vector<MappingInfo*> mappings_;
+
+  // Info from /proc/<pid>/auxv
+  wasteful_vector<elf_aux_val_t> auxv_;
 };
 
 }  // namespace google_breakpad

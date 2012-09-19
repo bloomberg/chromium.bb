@@ -32,7 +32,7 @@
 
 # This allows #includes to be relative to src/
 AM_CPPFLAGS = -I$(top_srcdir)/src
-
+AM_CFLAGS =
 AM_CXXFLAGS =
 
 if ANDROID_HOST
@@ -51,6 +51,12 @@ AM_CXXFLAGS += \
 	-Werror=unused-variable \
 	-Werror=missing-braces \
 	-Werror=overloaded-virtual
+endif
+
+if LINUX_HOST
+# Build as PIC on Linux, for linux_client_unittest_shlib
+AM_CFLAGS += -fPIC
+AM_CXXFLAGS += -fPIC
 endif
 
 # Specify include paths for ac macros
@@ -281,6 +287,9 @@ check_PROGRAMS += \
 endif
 
 if LINUX_HOST
+EXTRA_PROGRAMS = \
+	src/client/linux/linux_client_unittest_shlib
+
 check_PROGRAMS += \
 	src/client/linux/linux_client_unittest
 
@@ -321,7 +330,7 @@ src_client_linux_linux_dumper_unittest_helper_CXXFLAGS=$(PTHREAD_CFLAGS)
 src_client_linux_linux_dumper_unittest_helper_LDFLAGS=$(PTHREAD_CFLAGS)
 src_client_linux_linux_dumper_unittest_helper_CC=$(PTHREAD_CC)
 
-src_client_linux_linux_client_unittest_SOURCES = \
+src_client_linux_linux_client_unittest_shlib_SOURCES = \
 	src/client/linux/handler/exception_handler_unittest.cc \
 	src/client/linux/minidump_writer/directory_reader_unittest.cc \
 	src/client/linux/minidump_writer/line_reader_unittest.cc \
@@ -343,17 +352,20 @@ src_client_linux_linux_client_unittest_SOURCES = \
 	src/processor/minidump.cc \
 	src/processor/pathname_stripper.cc
 if ANDROID_HOST
-src_client_linux_linux_client_unittest_SOURCES += \
+src_client_linux_linux_client_unittest_shlib_SOURCES += \
 	src/common/android/breakpad_getcontext.S
 endif
 
-src_client_linux_linux_client_unittest_CPPFLAGS = \
+src_client_linux_linux_client_unittest_shlib_CPPFLAGS = \
 	-I$(top_srcdir)/src \
 	-I$(top_srcdir)/src/testing/include \
 	-I$(top_srcdir)/src/testing/gtest/include \
 	-I$(top_srcdir)/src/testing/gtest \
 	-I$(top_srcdir)/src/testing
-src_client_linux_linux_client_unittest_LDADD = \
+src_client_linux_linux_client_unittest_shlib_LDFLAGS = \
+	-shared \
+	-Wl,-h,linux_client_unittest_shlib
+src_client_linux_linux_client_unittest_shlib_LDADD = \
 	src/client/linux/handler/exception_handler.o \
 	src/client/linux/handler/minidump_descriptor.o \
 	src/client/linux/log/log.o \
@@ -373,16 +385,26 @@ src_client_linux_linux_client_unittest_LDADD = \
 	src/common/string_conversion.o \
 	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 if ANDROID_HOST
-src_client_linux_linux_client_unittest_SOURCES += \
+src_client_linux_linux_client_unittest_shlib_SOURCES += \
 	src/common/android/breakpad_getcontext_unittest.cc
-src_client_linux_linux_client_unittest_LDFLAGS = \
+src_client_linux_linux_client_unittest_shlib_LDFLAGS += \
 	-llog
 endif
 
-src_client_linux_linux_client_unittest_DEPENDENCIES = \
+src_client_linux_linux_client_unittest_shlib_DEPENDENCIES = \
 	src/client/linux/linux_dumper_unittest_helper \
 	src/client/linux/libbreakpad_client.a \
 	src/libbreakpad.a
+
+src_client_linux_linux_client_unittest_SOURCES =
+src_client_linux_linux_client_unittest_LDFLAGS = \
+	-Wl,-rpath,'$$ORIGIN'
+
+src_client_linux_linux_client_unittest_LDADD = \
+	src/client/linux/linux_client_unittest_shlib
+
+src_client_linux_linux_client_unittest_DEPENDENCIES = \
+	src/client/linux/linux_client_unittest_shlib
 
 if !DISABLE_TOOLS
 src_tools_linux_core2md_core2md_SOURCES = \

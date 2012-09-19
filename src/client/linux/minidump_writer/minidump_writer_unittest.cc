@@ -34,6 +34,7 @@
 #include <sys/types.h>
 #include <ucontext.h>
 #include <unistd.h>
+#include <ucontext.h>
 
 #include <string>
 
@@ -172,7 +173,8 @@ TEST(MinidumpWriterTest, MappingInfo) {
 
   ExceptionHandler::CrashContext context;
   memset(&context, 0, sizeof(context));
-  context.tid = 1;
+  ASSERT_EQ(0, getcontext(&context.context));
+  context.tid = child;
 
   AutoTempDir temp_dir;
   string templ = temp_dir.path() + "/minidump-writer-unittest";
@@ -209,6 +211,20 @@ TEST(MinidumpWriterTest, MappingInfo) {
   EXPECT_EQ(memory_size, module->size());
   EXPECT_EQ(kMemoryName, module->code_file());
   EXPECT_EQ(module_identifier, module->debug_identifier());
+
+  u_int32_t len;
+  // These streams are expected to be there
+  EXPECT_TRUE(minidump.SeekToStreamType(MD_THREAD_LIST_STREAM, &len));
+  EXPECT_TRUE(minidump.SeekToStreamType(MD_MEMORY_LIST_STREAM, &len));
+  EXPECT_TRUE(minidump.SeekToStreamType(MD_EXCEPTION_STREAM, &len));
+  EXPECT_TRUE(minidump.SeekToStreamType(MD_SYSTEM_INFO_STREAM, &len));
+  EXPECT_TRUE(minidump.SeekToStreamType(MD_LINUX_CPU_INFO, &len));
+  EXPECT_TRUE(minidump.SeekToStreamType(MD_LINUX_PROC_STATUS, &len));
+  EXPECT_TRUE(minidump.SeekToStreamType(MD_LINUX_CMD_LINE, &len));
+  EXPECT_TRUE(minidump.SeekToStreamType(MD_LINUX_ENVIRON, &len));
+  EXPECT_TRUE(minidump.SeekToStreamType(MD_LINUX_AUXV, &len));
+  EXPECT_TRUE(minidump.SeekToStreamType(MD_LINUX_MAPS, &len));
+  EXPECT_TRUE(minidump.SeekToStreamType(MD_LINUX_DSO_DEBUG, &len));
 
   close(fds[1]);
 }

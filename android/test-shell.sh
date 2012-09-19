@@ -73,6 +73,9 @@ case $TEST_PROGRAM_NAME in
     # linux_client_unittest will call another executable at runtime, ensure
     # it is installed too.
     adb_install "$TEST_PROGRAM_DIR/linux_dumper_unittest_helper" "$TEST_DIR"
+    # linux_client_unittest loads a shared library at runtime, ensure it is
+    # installed too.
+    adb_install "$TEST_PROGRAM_DIR/linux_client_unittest_shlib" "$TEST_DIR"
     ;;
   basic_source_line_resolver_unittest)
     DATA_FILES="module1.out \
@@ -121,7 +124,7 @@ done
 adb_install "$TEST_PROGRAM" "$TEST_DIR"
 
 # Run it
-adb_shell "cd $TEST_DIR && ./$TEST_PROGRAM_NAME $@"
+adb_shell "cd $TEST_DIR && LD_LIBRARY_PATH=. ./$TEST_PROGRAM_NAME $@"
 
 # Note: exiting here will call cleanup_exit which will remove the temporary
 #       files from the device.
