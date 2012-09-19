@@ -1943,7 +1943,8 @@ void RenderViewImpl::didAddMessageToConsole(
 }
 
 void RenderViewImpl::printPage(WebFrame* frame) {
-  FOR_EACH_OBSERVER(RenderViewObserver, observers_, PrintPage(frame));
+  FOR_EACH_OBSERVER(RenderViewObserver, observers_,
+                    PrintPage(frame, handling_input_event_));
 }
 
 WebKit::WebNotificationPresenter* RenderViewImpl::notificationPresenter() {

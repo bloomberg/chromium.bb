@@ -104,6 +104,7 @@ extern const char kDisablePreconnect[];
 extern const char kDisablePromptOnRepost[];
 extern const char kDisableRestoreBackgroundContents[];
 extern const char kDisableRestoreSessionState[];
+extern const char kDisableScriptedPrintThrottling[];
 extern const char kDisableSync[];
 extern const char kDisableSyncAppSettings[];
 extern const char kDisableSyncApps[];

@@ -364,6 +364,10 @@ const char kDisableRestoreBackgroundContents[] =
 // restoring the browsing session.
 const char kDisableRestoreSessionState[]    = "disable-restore-session-state";
 
+// Disables throttling prints initiated by scripts.
+const char kDisableScriptedPrintThrottling[] =
+    "disable-scripted-print-throttling";
+
 // Disables syncing browser data to a Google Account.
 const char kDisableSync[]                   = "disable-sync";
 

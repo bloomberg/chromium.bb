@@ -138,7 +138,7 @@ class PrintWebViewHelper
 
   // RenderViewObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void PrintPage(WebKit::WebFrame* frame) OVERRIDE;
+  virtual void PrintPage(WebKit::WebFrame* frame, bool user_initiated) OVERRIDE;
 
   // Message handlers ---------------------------------------------------------
 
@@ -331,8 +331,11 @@ class PrintWebViewHelper
 
   // Script Initiated Printing ------------------------------------------------
 
-  // Return true if script initiated printing is currently allowed.
-  bool IsScriptInitiatedPrintAllowed(WebKit::WebFrame* frame);
+  // Return true if script initiated printing is currently
+  // allowed. |user_initiated| should be true when a user event triggered the
+  // script, most likely by pressing a print button on the page.
+  bool IsScriptInitiatedPrintAllowed(WebKit::WebFrame* frame,
+                                     bool user_initiated);
 
   // Returns true if script initiated printing occurs too often.
   bool IsScriptInitiatedPrintTooFrequent(WebKit::WebFrame* frame);
@@ -363,6 +366,7 @@ class PrintWebViewHelper
 
   scoped_ptr<PrintMsg_PrintPages_Params> print_pages_params_;
   bool is_preview_enabled_;
+  bool is_scripted_print_throttling_disabled_;
   bool is_print_ready_metafile_sent_;
   bool ignore_css_margins_;
 

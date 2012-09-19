@@ -76,7 +76,7 @@ class CONTENT_EXPORT RenderViewObserver : public IPC::Listener,
                               const WebKit::WebFormElement& form) {}
   virtual void DidCreateDataSource(WebKit::WebFrame* frame,
                                    WebKit::WebDataSource* ds) {}
-  virtual void PrintPage(WebKit::WebFrame* frame) {}
+  virtual void PrintPage(WebKit::WebFrame* frame, bool user_initiated) {}
   virtual void FocusedNodeChanged(const WebKit::WebNode& node) {}
   virtual void WillCreateMediaPlayer(WebKit::WebFrame* frame,
                                      WebKit::WebMediaPlayerClient* client) {}

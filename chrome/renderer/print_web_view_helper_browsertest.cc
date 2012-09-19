@@ -12,8 +12,8 @@
 #include "printing/print_job_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
 #include "base/file_util.h"
@@ -55,6 +55,12 @@ const char kHTMLWithLandscapePageCss[] =
 // A simple webpage that prints itself.
 const char kPrintWithJSHTML[] =
     "<body>Hello<script>window.print()</script>World</body>";
+
+// A simple webpage with a button to print itself with.
+const char kPrintOnUserAction[] =
+    "<body>"
+    "  <button id=\"print\" onclick=\"window.print();\">Hello World!</button>"
+    "</body>";
 
 // A longer web page.
 const char kLongPageHTML[] =
@@ -194,6 +200,44 @@ TEST_F(PrintWebViewHelperTest, BlockScriptInitiatedPrinting) {
   PrintWebViewHelper::Get(view_)->ResetScriptedPrintCount();
   chrome_render_thread_->printer()->ResetPrinter();
   LoadHTML(kPrintWithJSHTML);
+  VerifyPageCount(1);
+  VerifyPagesPrinted(true);
+}
+
+// Tests that the renderer always allows window.print() calls if they are user
+// initiated.
+TEST_F(PrintWebViewHelperTest, AllowUserOriginatedPrinting) {
+  // Pretend user will cancel printing.
+  chrome_render_thread_->set_print_dialog_user_response(false);
+  // Try to print with window.print() a few times.
+  LoadHTML(kPrintWithJSHTML);
+  LoadHTML(kPrintWithJSHTML);
+  LoadHTML(kPrintWithJSHTML);
+  VerifyPagesPrinted(false);
+
+  // Pretend user will print. (but printing is blocked.)
+  chrome_render_thread_->set_print_dialog_user_response(true);
+  LoadHTML(kPrintWithJSHTML);
+  VerifyPagesPrinted(false);
+
+  // Try again as if user initiated, without resetting the print count.
+  chrome_render_thread_->printer()->ResetPrinter();
+  LoadHTML(kPrintOnUserAction);
+  gfx::Size newSize(200,100);
+  Resize(newSize, gfx::Rect(), false);
+
+  gfx::Rect bounds = GetElementBounds("print");
+  EXPECT_FALSE(bounds.IsEmpty());
+  WebKit::WebMouseEvent mouse_event;
+  mouse_event.type = WebKit::WebInputEvent::MouseDown;
+  mouse_event.button = WebKit::WebMouseEvent::ButtonLeft;
+  mouse_event.x = bounds.CenterPoint().x();
+  mouse_event.y = bounds.CenterPoint().y();
+  mouse_event.clickCount = 1;
+  SendWebMouseEvent(mouse_event);
+  mouse_event.type = WebKit::WebInputEvent::MouseUp;
+  SendWebMouseEvent(mouse_event);
+
   VerifyPageCount(1);
   VerifyPagesPrinted(true);
 }
@@ -830,3 +874,42 @@ TEST_F(PrintWebViewHelperPreviewTest,
 }
 
 #endif  // !defined(OS_CHROMEOS)
+
+class PrintWebViewHelperKioskTest : public PrintWebViewHelperTestBase {
+ public:
+  PrintWebViewHelperKioskTest() {}
+  virtual ~PrintWebViewHelperKioskTest() {}
+
+  virtual void SetUp() OVERRIDE {
+    // Append the throttling disable switch before creating the
+    // PrintWebViewHelper.
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kDisableScriptedPrintThrottling);
+
+    ChromeRenderViewTest::SetUp();
+  }
+
+ protected:
+  DISALLOW_COPY_AND_ASSIGN(PrintWebViewHelperKioskTest);
+};
+
+// Tests that the switch overrides the throttling that blocks window.print()
+// calls if they occur too frequently. Compare with
+// PrintWebViewHelperTest.BlockScriptInitiatedPrinting above.
+TEST_F(PrintWebViewHelperKioskTest, DontBlockScriptInitiatedPrinting) {
+  // Pretend user will cancel printing.
+  chrome_render_thread_->set_print_dialog_user_response(false);
+  // Try to print with window.print() a few times.
+  LoadHTML(kPrintWithJSHTML);
+  chrome_render_thread_->printer()->ResetPrinter();
+  LoadHTML(kPrintWithJSHTML);
+  chrome_render_thread_->printer()->ResetPrinter();
+  LoadHTML(kPrintWithJSHTML);
+  chrome_render_thread_->printer()->ResetPrinter();
+  VerifyPagesPrinted(false);
+
+  // Pretend user will print, should not be throttled.
+  chrome_render_thread_->set_print_dialog_user_response(true);
+  LoadHTML(kPrintWithJSHTML);
+  VerifyPagesPrinted(true);
+}
