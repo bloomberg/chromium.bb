@@ -46,6 +46,10 @@ class PPB_Flash_Impl : public ::ppapi::PPB_Flash_Shared {
                            PP_Resource request_info,
                            const char* target,
                            PP_Bool from_user_action) OVERRIDE;
+  virtual int32_t Navigate(PP_Instance instance,
+                           const ::ppapi::URLRequestInfoData& data,
+                           const char* target,
+                           PP_Bool from_user_action) OVERRIDE;
   virtual void RunMessageLoop(PP_Instance instance) OVERRIDE;
   virtual void QuitMessageLoop(PP_Instance instance) OVERRIDE;
   virtual double GetLocalTimeZoneOffset(PP_Instance instance,

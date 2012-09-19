@@ -2,99 +2,37 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ppapi/shared_impl/ppb_url_request_info_shared.h"
+#include "ppapi/proxy/url_request_info_resource.h"
 
-#include "base/string_util.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_file_ref_api.h"
 
-using ppapi::thunk::EnterResourceNoLock;
-
 namespace ppapi {
+namespace proxy {
 
-namespace {
-
-const int32_t kDefaultPrefetchBufferUpperThreshold = 100 * 1000 * 1000;
-const int32_t kDefaultPrefetchBufferLowerThreshold = 50 * 1000 * 1000;
-
-}  // namespace
-
-PPB_URLRequestInfo_Data::BodyItem::BodyItem()
-    : is_file(false),
-      start_offset(0),
-      number_of_bytes(-1),
-      expected_last_modified_time(0.0) {
-}
-
-PPB_URLRequestInfo_Data::BodyItem::BodyItem(const std::string& data)
-    : is_file(false),
-      data(data),
-      start_offset(0),
-      number_of_bytes(-1),
-      expected_last_modified_time(0.0) {
-}
-
-PPB_URLRequestInfo_Data::BodyItem::BodyItem(
-    Resource* file_ref,
-    int64_t start_offset,
-    int64_t number_of_bytes,
-    PP_Time expected_last_modified_time)
-    : is_file(true),
-      file_ref(file_ref),
-      file_ref_host_resource(file_ref->host_resource()),
-      start_offset(start_offset),
-      number_of_bytes(number_of_bytes),
-      expected_last_modified_time(expected_last_modified_time) {
-}
-
-PPB_URLRequestInfo_Data::PPB_URLRequestInfo_Data()
-    : url(),
-      method(),
-      headers(),
-      stream_to_file(false),
-      follow_redirects(true),
-      record_download_progress(false),
-      record_upload_progress(false),
-      has_custom_referrer_url(false),
-      custom_referrer_url(),
-      allow_cross_origin_requests(false),
-      allow_credentials(false),
-      has_custom_content_transfer_encoding(false),
-      custom_content_transfer_encoding(),
-      has_custom_user_agent(false),
-      custom_user_agent(),
-      prefetch_buffer_upper_threshold(kDefaultPrefetchBufferUpperThreshold),
-      prefetch_buffer_lower_threshold(kDefaultPrefetchBufferLowerThreshold),
-      body() {
-}
-
-PPB_URLRequestInfo_Data::~PPB_URLRequestInfo_Data() {
-}
-
-PPB_URLRequestInfo_Shared::PPB_URLRequestInfo_Shared(
-    ResourceObjectType type,
-    PP_Instance instance,
-    const PPB_URLRequestInfo_Data& data)
-    : Resource(type, instance),
+URLRequestInfoResource::URLRequestInfoResource(Connection connection,
+                                               PP_Instance instance,
+                                               const URLRequestInfoData& data)
+    : PluginResource(connection, instance),
       data_(data) {
 }
 
-PPB_URLRequestInfo_Shared::~PPB_URLRequestInfo_Shared() {
+URLRequestInfoResource::~URLRequestInfoResource() {
 }
 
 thunk::PPB_URLRequestInfo_API*
-PPB_URLRequestInfo_Shared::AsPPB_URLRequestInfo_API() {
+URLRequestInfoResource::AsPPB_URLRequestInfo_API() {
   return this;
 }
 
-PP_Bool PPB_URLRequestInfo_Shared::SetProperty(PP_URLRequestProperty property,
-                                               PP_Var var) {
+PP_Bool URLRequestInfoResource::SetProperty(PP_URLRequestProperty property,
+                                            PP_Var var) {
   // IMPORTANT: Do not do security validation of parameters at this level
   // without also adding them to PPB_URLRequestInfo_Impl::ValidateData. This
   // code is used both in the plugin (which we don't trust) and in the renderer
   // (which we trust more). When running out-of-process, the plugin calls this
-  // function to configure the PPB_URLRequestInfo_Data, which is then sent to
+  // function to configure the URLRequestInfoData, which is then sent to
   // the renderer and *not* run through SetProperty again.
   //
   // This means that anything in the PPB_URLRequestInfo_Data needs to be
@@ -131,21 +69,21 @@ PP_Bool PPB_URLRequestInfo_Shared::SetProperty(PP_URLRequestProperty property,
   return result;
 }
 
-PP_Bool PPB_URLRequestInfo_Shared::AppendDataToBody(const void* data,
-                                                    uint32_t len) {
+PP_Bool URLRequestInfoResource::AppendDataToBody(const void* data,
+                                                 uint32_t len) {
   if (len > 0) {
-    data_.body.push_back(PPB_URLRequestInfo_Data::BodyItem(
+    data_.body.push_back(URLRequestInfoData::BodyItem(
         std::string(static_cast<const char*>(data), len)));
   }
   return PP_TRUE;
 }
 
-PP_Bool PPB_URLRequestInfo_Shared::AppendFileToBody(
+PP_Bool URLRequestInfoResource::AppendFileToBody(
     PP_Resource file_ref,
     int64_t start_offset,
     int64_t number_of_bytes,
     PP_Time expected_last_modified_time) {
-  EnterResourceNoLock<thunk::PPB_FileRef_API> enter(file_ref, true);
+  thunk::EnterResourceNoLock<thunk::PPB_FileRef_API> enter(file_ref, true);
   if (enter.failed())
     return PP_FALSE;
 
@@ -157,7 +95,7 @@ PP_Bool PPB_URLRequestInfo_Shared::AppendFileToBody(
   if (start_offset < 0 || number_of_bytes < -1)
     return PP_FALSE;
 
-  data_.body.push_back(PPB_URLRequestInfo_Data::BodyItem(
+  data_.body.push_back(URLRequestInfoData::BodyItem(
       enter.resource(),
       start_offset,
       number_of_bytes,
@@ -165,11 +103,11 @@ PP_Bool PPB_URLRequestInfo_Shared::AppendFileToBody(
   return PP_TRUE;
 }
 
-const PPB_URLRequestInfo_Data& PPB_URLRequestInfo_Shared::GetData() const {
+const URLRequestInfoData& URLRequestInfoResource::GetData() const {
   return data_;
 }
 
-bool PPB_URLRequestInfo_Shared::SetUndefinedProperty(
+bool URLRequestInfoResource::SetUndefinedProperty(
     PP_URLRequestProperty property) {
   // IMPORTANT: Do not do security validation of parameters at this level
   // without also adding them to PPB_URLRequestInfo_Impl::ValidateData. See
@@ -192,7 +130,7 @@ bool PPB_URLRequestInfo_Shared::SetUndefinedProperty(
   }
 }
 
-bool PPB_URLRequestInfo_Shared::SetBooleanProperty(
+bool URLRequestInfoResource::SetBooleanProperty(
     PP_URLRequestProperty property,
     bool value) {
   // IMPORTANT: Do not do security validation of parameters at this level
@@ -222,7 +160,7 @@ bool PPB_URLRequestInfo_Shared::SetBooleanProperty(
   }
 }
 
-bool PPB_URLRequestInfo_Shared::SetIntegerProperty(
+bool URLRequestInfoResource::SetIntegerProperty(
     PP_URLRequestProperty property,
     int32_t value) {
   // IMPORTANT: Do not do security validation of parameters at this level
@@ -240,7 +178,7 @@ bool PPB_URLRequestInfo_Shared::SetIntegerProperty(
   }
 }
 
-bool PPB_URLRequestInfo_Shared::SetStringProperty(
+bool URLRequestInfoResource::SetStringProperty(
     PP_URLRequestProperty property,
     const std::string& value) {
   // IMPORTANT: Do not do security validation of parameters at this level
@@ -273,4 +211,5 @@ bool PPB_URLRequestInfo_Shared::SetStringProperty(
   }
 }
 
+}  // namespace proxy
 }  // namespace ppapi

@@ -46,9 +46,11 @@ class PepperInProcessResourceCreation
       PP_Instance instance,
       PP_FileChooserMode_Dev mode,
       const char* accept_types) OVERRIDE;
-
   virtual PP_Resource CreatePrinting(
       PP_Instance instance) OVERRIDE;
+  virtual PP_Resource CreateURLRequestInfo(
+      PP_Instance instance,
+      const ::ppapi::URLRequestInfoData& data) OVERRIDE;
 
  private:
   // Non-owning pointer to the host for the current plugin.

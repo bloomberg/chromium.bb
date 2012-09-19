@@ -12,6 +12,7 @@
 namespace ppapi {
 
 class TrackedCallback;
+struct URLRequestInfoData;
 
 namespace thunk {
 
@@ -19,8 +20,14 @@ class PPB_URLLoader_API {
  public:
   virtual ~PPB_URLLoader_API() {}
 
+  // Open given the resource ID of a PPB_URLRequestInfo resource.
   virtual int32_t Open(PP_Resource request_id,
                        scoped_refptr<TrackedCallback> callback) = 0;
+
+  // Internal open given a URLRequestInfoData.
+  virtual int32_t Open(const URLRequestInfoData& data,
+                       scoped_refptr<TrackedCallback> callback) = 0;
+
   virtual int32_t FollowRedirect(scoped_refptr<TrackedCallback> callback) = 0;
   virtual PP_Bool GetUploadProgress(int64_t* bytes_sent,
                                     int64_t* total_bytes_to_be_sent) = 0;

@@ -31,7 +31,6 @@
 #include "webkit/plugins/ppapi/ppb_tcp_socket_private_impl.h"
 #include "webkit/plugins/ppapi/ppb_udp_socket_private_impl.h"
 #include "webkit/plugins/ppapi/ppb_url_loader_impl.h"
-#include "webkit/plugins/ppapi/ppb_url_request_info_impl.h"
 #include "webkit/plugins/ppapi/ppb_video_capture_impl.h"
 #include "webkit/plugins/ppapi/ppb_video_decoder_impl.h"
 #include "webkit/plugins/ppapi/ppb_video_layer_impl.h"
@@ -276,12 +275,6 @@ PP_Resource ResourceCreationImpl::CreateUDPSocketPrivate(PP_Instance instance) {
 
 PP_Resource ResourceCreationImpl::CreateURLLoader(PP_Instance instance) {
   return (new PPB_URLLoader_Impl(instance, false))->GetReference();
-}
-
-PP_Resource ResourceCreationImpl::CreateURLRequestInfo(
-    PP_Instance instance,
-    const ::ppapi::PPB_URLRequestInfo_Data& data) {
-  return (new PPB_URLRequestInfo_Impl(instance, data))->GetReference();
 }
 
 PP_Resource ResourceCreationImpl::CreateVideoCapture(PP_Instance instance) {

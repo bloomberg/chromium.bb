@@ -2,19 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_SHARED_IMPL_PPB_URL_REQUEST_INFO_SHARED_H_
-#define PPAPI_SHARED_IMPL_PPB_URL_REQUEST_INFO_SHARED_H_
+#ifndef PPAPI_SHARED_IMPL_URL_REQUEST_INFO_DATA_H_
+#define PPAPI_SHARED_IMPL_URL_REQUEST_INFO_DATA_H_
 
 #include <string>
 #include <vector>
 
-#include "base/compiler_specific.h"
-#include "ppapi/shared_impl/resource.h"
-#include "ppapi/thunk/ppb_url_request_info_api.h"
+#include "base/memory/ref_counted.h"
+#include "ppapi/c/pp_stdint.h"
+#include "ppapi/c/pp_time.h"
+#include "ppapi/shared_impl/host_resource.h"
+#include "ppapi/shared_impl/ppapi_shared_export.h"
 
 namespace ppapi {
 
-struct PPAPI_SHARED_EXPORT PPB_URLRequestInfo_Data {
+class Resource;
+
+struct PPAPI_SHARED_EXPORT URLRequestInfoData {
   struct PPAPI_SHARED_EXPORT BodyItem {
     BodyItem();
     explicit BodyItem(const std::string& data);
@@ -50,8 +54,8 @@ struct PPAPI_SHARED_EXPORT PPB_URLRequestInfo_Data {
     // ppapi_messages.h
   };
 
-  PPB_URLRequestInfo_Data();
-  ~PPB_URLRequestInfo_Data();
+  URLRequestInfoData();
+  ~URLRequestInfoData();
 
   std::string url;
   std::string method;
@@ -88,49 +92,6 @@ struct PPAPI_SHARED_EXPORT PPB_URLRequestInfo_Data {
   // ppapi_messages.h
 };
 
-class PPAPI_SHARED_EXPORT PPB_URLRequestInfo_Shared
-    : public ::ppapi::Resource,
-      public ::ppapi::thunk::PPB_URLRequestInfo_API {
- public:
-  PPB_URLRequestInfo_Shared(ResourceObjectType type,
-                            PP_Instance instance,
-                            const PPB_URLRequestInfo_Data& data);
-  ~PPB_URLRequestInfo_Shared();
-
-  // Resource overrides.
-  virtual thunk::PPB_URLRequestInfo_API* AsPPB_URLRequestInfo_API() OVERRIDE;
-
-  // PPB_URLRequestInfo_API implementation.
-  virtual PP_Bool SetProperty(PP_URLRequestProperty property,
-                              PP_Var var) OVERRIDE;
-  virtual PP_Bool AppendDataToBody(const void* data, uint32_t len) OVERRIDE;
-  virtual PP_Bool AppendFileToBody(
-      PP_Resource file_ref,
-      int64_t start_offset,
-      int64_t number_of_bytes,
-      PP_Time expected_last_modified_time) OVERRIDE;
-  virtual const PPB_URLRequestInfo_Data& GetData() const OVERRIDE;
-
- protected:
-  // Constructor used by the webkit implementation.
-  PPB_URLRequestInfo_Shared(PP_Instance instance,
-                     const PPB_URLRequestInfo_Data& data);
-
-  bool SetUndefinedProperty(PP_URLRequestProperty property);
-  bool SetBooleanProperty(PP_URLRequestProperty property, bool value);
-  bool SetIntegerProperty(PP_URLRequestProperty property, int32_t value);
-  bool SetStringProperty(PP_URLRequestProperty property,
-                         const std::string& value);
-
-  const PPB_URLRequestInfo_Data& data() const { return data_; }
-  PPB_URLRequestInfo_Data& data() { return data_; }
-
- private:
-  PPB_URLRequestInfo_Data data_;
-
-  DISALLOW_IMPLICIT_CONSTRUCTORS(PPB_URLRequestInfo_Shared);
-};
-
 }  // namespace ppapi
 
-#endif  // PPAPI_SHARED_IMPL_PPB_URL_REQUEST_INFO_SHARED_H_
+#endif  // PPAPI_SHARED_IMPL_URL_REQUEST_INFO_DATA_H_

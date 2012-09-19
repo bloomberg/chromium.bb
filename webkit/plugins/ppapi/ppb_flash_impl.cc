@@ -20,6 +20,7 @@
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_file_ref_api.h"
 #include "ppapi/thunk/ppb_image_data_api.h"
+#include "ppapi/thunk/ppb_url_request_info_api.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkMatrix.h"
@@ -39,7 +40,6 @@
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_file_ref_impl.h"
-#include "webkit/plugins/ppapi/ppb_url_request_info_impl.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
 
@@ -197,12 +197,17 @@ int32_t PPB_Flash_Impl::Navigate(PP_Instance instance,
   EnterResourceNoLock<PPB_URLRequestInfo_API> enter(request_info, true);
   if (enter.failed())
     return PP_ERROR_BADRESOURCE;
-  PPB_URLRequestInfo_Impl* request =
-      static_cast<PPB_URLRequestInfo_Impl*>(enter.object());
+  return Navigate(instance, enter.object()->GetData(), target,
+                  from_user_action);
+}
 
+int32_t PPB_Flash_Impl::Navigate(PP_Instance instance,
+                                 const ::ppapi::URLRequestInfoData& data,
+                                 const char* target,
+                                 PP_Bool from_user_action) {
   if (!target)
     return PP_ERROR_BADARGUMENT;
-  return instance_->Navigate(request, target, PP_ToBool(from_user_action));
+  return instance_->Navigate(data, target, PP_ToBool(from_user_action));
 }
 
 void PPB_Flash_Impl::RunMessageLoop(PP_Instance instance) {

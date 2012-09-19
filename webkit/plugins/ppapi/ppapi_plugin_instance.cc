@@ -81,7 +81,7 @@
 #include "webkit/plugins/ppapi/ppb_graphics_3d_impl.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
 #include "webkit/plugins/ppapi/ppb_url_loader_impl.h"
-#include "webkit/plugins/ppapi/ppb_url_request_info_impl.h"
+#include "webkit/plugins/ppapi/url_request_info_util.h"
 #include "webkit/plugins/ppapi/ppp_pdf.h"
 #include "webkit/plugins/sad_plugin.h"
 
@@ -1657,7 +1657,7 @@ void PluginInstance::UpdateFlashFullscreenState(bool flash_fullscreen) {
     SendFocusChangeNotification();
 }
 
-int32_t PluginInstance::Navigate(PPB_URLRequestInfo_Impl* request,
+int32_t PluginInstance::Navigate(const ::ppapi::URLRequestInfoData& request,
                                  const char* target,
                                  bool from_user_action) {
   if (!container_)
@@ -1668,8 +1668,10 @@ int32_t PluginInstance::Navigate(PPB_URLRequestInfo_Impl* request,
   if (!frame)
     return PP_ERROR_FAILED;
 
+  ::ppapi::URLRequestInfoData completed_request = request;
+
   WebURLRequest web_request;
-  if (!request->ToWebURLRequest(frame, &web_request))
+  if (!CreateWebURLRequest(&completed_request, frame, &web_request))
     return PP_ERROR_FAILED;
   web_request.setFirstPartyForCookies(document.firstPartyForCookies());
   web_request.setHasUserGesture(from_user_action);

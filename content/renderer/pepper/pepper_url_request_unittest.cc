@@ -2,16 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/compiler_specific.h"
+#include "content/public/test/render_view_test.h"
+#include "ppapi/proxy/connection.h"
+#include "ppapi/proxy/url_request_info_resource.h"
+#include "ppapi/shared_impl/test_globals.h"
+#include "ppapi/shared_impl/url_request_info_data.h"
 #include "ppapi/thunk/thunk.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrameClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
-#include "webkit/plugins/ppapi/ppb_url_request_info_impl.h"
-#include "webkit/plugins/ppapi/ppapi_unittest.h"
+#include "webkit/plugins/ppapi/url_request_info_util.h"
 #include "webkit/user_agent/user_agent.h"
 #include "webkit/user_agent/user_agent_util.h"
+
+// This test is a end-to-end test from the resource to the WebKit request
+// object. The actual resource implementation is so simple, it makes sense to
+// test it by making sure the conversion routines actually work at the same
+// time.
 
 using WebKit::WebCString;
 using WebKit::WebFrame;
@@ -42,63 +52,64 @@ class TestWebFrameClient : public WebFrameClient {
 
 }  // namespace
 
+using ppapi::proxy::URLRequestInfoResource;
+using ppapi::URLRequestInfoData;
+
+// TODO(brettw) move to content namespace when url_request_info_util.h is moved
+// to this directory. This file used to be in webkit/plugins/ppapi and had to
+// be moved in advance of the rest of the files to make things compile.
 namespace webkit {
 namespace ppapi {
 
-class URLRequestInfoTest : public PpapiUnittest {
+class URLRequestInfoTest : public content::RenderViewTest {
  public:
-  URLRequestInfoTest() {
+  URLRequestInfoTest() : pp_instance_(1234) {
   }
 
-  virtual void SetUp() {
-    PpapiUnittest::SetUp();
+  virtual void SetUp() OVERRIDE {
+    RenderViewTest::SetUp();
 
-    // Must be after our base class's SetUp for the instance to be valid.
-    info_ = new PPB_URLRequestInfo_Impl(instance()->pp_instance(),
-                                        ::ppapi::PPB_URLRequestInfo_Data());
+    test_globals_.GetResourceTracker()->DidCreateInstance(pp_instance_);
+
+    // This resource doesn't do IPC, so a null connection is fine.
+    info_ = new URLRequestInfoResource(::ppapi::proxy::Connection(),
+                                       pp_instance_,
+                                       URLRequestInfoData());
   }
 
-  static void SetUpTestCase() {
-    webkit_glue::SetUserAgent(webkit_glue::BuildUserAgentFromProduct(
-        "TestShell/0.0.0.0"), false);
-    web_view_ = WebView::create(NULL);
-    web_view_->initializeMainFrame(&web_frame_client_);
-    WebURL web_url(GURL(""));
-    WebURLRequest url_request;
-    url_request.initialize();
-    url_request.setURL(web_url);
-    frame_ = web_view_->mainFrame();
-    frame_->loadRequest(url_request);
-  }
-
-  static void TearDownTestCase() {
-    web_view_->close();
+  virtual void TearDown() OVERRIDE {
+    test_globals_.GetResourceTracker()->DidDeleteInstance(pp_instance_);
+    RenderViewTest::TearDown();
   }
 
   bool GetDownloadToFile() {
     WebURLRequest web_request;
-    if (!info_->ToWebURLRequest(frame_, &web_request))
+    URLRequestInfoData data = info_->GetData();
+    if (!CreateWebURLRequest(&data, GetMainFrame(), &web_request))
       return false;
     return web_request.downloadToFile();
   }
 
   WebCString GetURL() {
     WebURLRequest web_request;
-    if (!info_->ToWebURLRequest(frame_, &web_request))
+    URLRequestInfoData data = info_->GetData();
+    if (!CreateWebURLRequest(&data, GetMainFrame(), &web_request))
       return WebCString();
     return web_request.url().spec();
   }
 
   WebString GetMethod() {
     WebURLRequest web_request;
-    if (!info_->ToWebURLRequest(frame_, &web_request))
+    URLRequestInfoData data = info_->GetData();
+    if (!CreateWebURLRequest(&data, GetMainFrame(), &web_request))
       return WebString();
     return web_request.httpMethod();
   }
 
   WebString GetHeaderValue(const char* field) {
     WebURLRequest web_request;
-    if (!info_->ToWebURLRequest(frame_, &web_request))
+    URLRequestInfoData data = info_->GetData();
+    if (!CreateWebURLRequest(&data, GetMainFrame(), &web_request))
       return WebString();
     return web_request.httpHeaderField(WebString::fromUTF8(field));
   }
@@ -110,16 +121,13 @@ class URLRequestInfoTest : public PpapiUnittest {
     return info_->SetStringProperty(prop, s);
   }
 
-  scoped_refptr<PPB_URLRequestInfo_Impl> info_;
+  PP_Instance pp_instance_;
 
-  static TestWebFrameClient web_frame_client_;
-  static WebView* web_view_;
-  static WebFrame* frame_;
+  // Needs to be alive for resource tracking to work.
+  ::ppapi::TestGlobals test_globals_;
+
+  scoped_refptr<URLRequestInfoResource> info_;
 };
-
-TestWebFrameClient URLRequestInfoTest::web_frame_client_;
-WebView* URLRequestInfoTest::web_view_;
-WebFrame* URLRequestInfoTest::frame_;
 
 TEST_F(URLRequestInfoTest, GetInterface) {
   const PPB_URLRequestInfo* request_info =
@@ -211,9 +219,6 @@ TEST_F(URLRequestInfoTest, AllowCredentials) {
 }
 
 TEST_F(URLRequestInfoTest, SetURL) {
-  // Test default URL is "about:blank".
-  EXPECT_TRUE(IsExpected(GetURL(), "about:blank"));
-
   const char* url = "http://www.google.com/";
   EXPECT_TRUE(SetStringProperty(
       PP_URLREQUESTPROPERTY_URL, url));
@@ -222,9 +227,9 @@ TEST_F(URLRequestInfoTest, SetURL) {
 
 TEST_F(URLRequestInfoTest, JavascriptURL) {
   const char* url = "javascript:foo = bar";
-  EXPECT_FALSE(info_->RequiresUniversalAccess());
+  EXPECT_FALSE(URLRequestRequiresUniversalAccess(info_->GetData()));
   SetStringProperty(PP_URLREQUESTPROPERTY_URL, url);
-  EXPECT_TRUE(info_->RequiresUniversalAccess());
+  EXPECT_TRUE(URLRequestRequiresUniversalAccess(info_->GetData()));
 }
 
 TEST_F(URLRequestInfoTest, SetMethod) {

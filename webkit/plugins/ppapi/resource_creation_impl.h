@@ -116,9 +116,6 @@ class WEBKIT_PLUGINS_EXPORT ResourceCreationImpl
 
   virtual PP_Resource CreateUDPSocketPrivate(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateURLLoader(PP_Instance instance) OVERRIDE;
-  virtual PP_Resource CreateURLRequestInfo(
-      PP_Instance instance,
-      const ::ppapi::PPB_URLRequestInfo_Data& data) OVERRIDE;
   virtual PP_Resource CreateVideoCapture(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateVideoDecoder(
       PP_Instance instance,

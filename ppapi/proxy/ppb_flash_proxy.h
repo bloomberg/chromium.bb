@@ -24,7 +24,7 @@ struct PPB_Flash_Print_1_0;
 
 namespace ppapi {
 
-struct PPB_URLRequestInfo_Data;
+struct URLRequestInfoData;
 
 namespace proxy {
 
@@ -62,6 +62,10 @@ class PPB_Flash_Proxy : public InterfaceProxy, public PPB_Flash_Shared {
   virtual PP_Var GetProxyForURL(PP_Instance instance, const char* url) OVERRIDE;
   virtual int32_t Navigate(PP_Instance instance,
                            PP_Resource request_info,
+                           const char* target,
+                           PP_Bool from_user_action) OVERRIDE;
+  virtual int32_t Navigate(PP_Instance instance,
+                           const URLRequestInfoData& data,
                            const char* target,
                            PP_Bool from_user_action) OVERRIDE;
   virtual void RunMessageLoop(PP_Instance instance) OVERRIDE;
@@ -138,7 +142,7 @@ class PPB_Flash_Proxy : public InterfaceProxy, public PPB_Flash_Shared {
                                const std::string& url,
                                SerializedVarReturnValue result);
   void OnHostMsgNavigate(PP_Instance instance,
-                         const PPB_URLRequestInfo_Data& data,
+                         const URLRequestInfoData& data,
                          const std::string& target,
                          PP_Bool from_user_action,
                          int32_t* result);

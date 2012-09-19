@@ -11,6 +11,9 @@
 #include "ppapi/thunk/ppapi_thunk_export.h"
 
 namespace ppapi {
+
+struct URLRequestInfoData;
+
 namespace thunk {
 
 // This class collects all of the Flash interface-related APIs into one place.
@@ -32,10 +35,19 @@ class PPAPI_THUNK_EXPORT PPB_Flash_API {
                              const uint16_t glyph_indices[],
                              const PP_Point glyph_advances[]) = 0;
   virtual PP_Var GetProxyForURL(PP_Instance instance, const char* url) = 0;
+
+  // External function that takes a PPB_URLRequestInfo resource.
   virtual int32_t Navigate(PP_Instance instance,
                            PP_Resource request_info,
                            const char* target,
                            PP_Bool from_user_action) = 0;
+
+  // Internal navigate function that takes a URLRequestInfoData.
+  virtual int32_t Navigate(PP_Instance instance,
+                           const URLRequestInfoData& data,
+                           const char* target,
+                           PP_Bool from_user_action) = 0;
+
   virtual void RunMessageLoop(PP_Instance instance) = 0;
   virtual void QuitMessageLoop(PP_Instance instance) = 0;
   virtual double GetLocalTimeZoneOffset(PP_Instance instance, PP_Time t) = 0;

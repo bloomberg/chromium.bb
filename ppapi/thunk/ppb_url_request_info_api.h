@@ -10,7 +10,7 @@
 
 namespace ppapi {
 
-struct PPB_URLRequestInfo_Data;
+struct URLRequestInfoData;
 
 namespace thunk {
 
@@ -27,7 +27,7 @@ class PPAPI_THUNK_EXPORT PPB_URLRequestInfo_API {
                                    PP_Time expected_last_modified_time) = 0;
 
   // Internal-only function for retrieving the current config.
-  virtual const PPB_URLRequestInfo_Data& GetData() const = 0;
+  virtual const URLRequestInfoData& GetData() const = 0;
 };
 
 }  // namespace thunk

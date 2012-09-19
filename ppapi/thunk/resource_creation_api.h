@@ -28,7 +28,7 @@ struct PP_Size;
 
 namespace ppapi {
 
-struct PPB_URLRequestInfo_Data;
+struct URLRequestInfoData;
 
 namespace thunk {
 
@@ -82,7 +82,7 @@ class ResourceCreationAPI {
   virtual PP_Resource CreateURLLoader(PP_Instance instance) = 0;
   virtual PP_Resource CreateURLRequestInfo(
       PP_Instance instance,
-      const PPB_URLRequestInfo_Data& data) = 0;
+      const URLRequestInfoData& data) = 0;
   virtual PP_Resource CreateWheelInputEvent(
       PP_Instance instance,
       PP_TimeTicks time_stamp,

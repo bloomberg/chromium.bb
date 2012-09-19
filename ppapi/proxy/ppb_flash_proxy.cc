@@ -202,12 +202,17 @@ int32_t PPB_Flash_Proxy::Navigate(PP_Instance instance,
       request_info, true);
   if (enter.failed())
     return PP_ERROR_BADRESOURCE;
+  return Navigate(instance, enter.object()->GetData(), target,
+                  from_user_action);
+}
 
+int32_t PPB_Flash_Proxy::Navigate(PP_Instance instance,
+                                  const URLRequestInfoData& data,
+                                  const char* target,
+                                  PP_Bool from_user_action) {
   int32_t result = PP_ERROR_FAILED;
   dispatcher()->Send(new PpapiHostMsg_PPBFlash_Navigate(
-      API_ID_PPB_FLASH,
-      instance, enter.object()->GetData(), target, from_user_action,
-      &result));
+      API_ID_PPB_FLASH, instance, data, target, from_user_action, &result));
   return result;
 }
 
@@ -658,7 +663,7 @@ void PPB_Flash_Proxy::OnHostMsgGetProxyForURL(PP_Instance instance,
 }
 
 void PPB_Flash_Proxy::OnHostMsgNavigate(PP_Instance instance,
-                                        const PPB_URLRequestInfo_Data& data,
+                                        const URLRequestInfoData& data,
                                         const std::string& target,
                                         PP_Bool from_user_action,
                                         int32_t* result) {
@@ -684,19 +689,8 @@ void PPB_Flash_Proxy::OnHostMsgNavigate(PP_Instance instance,
   // It is safe, because it is essentially equivalent to NPN_GetURL, where Flash
   // would expect re-entrancy. When running in-process, it does re-enter here.
   host_dispatcher->set_allow_plugin_reentrancy();
-
-  // Make a temporary request resource.
-  thunk::EnterResourceCreation enter(instance);
-  if (enter.failed()) {
-    *result = PP_ERROR_FAILED;
-    return;
-  }
-  ScopedPPResource request_resource(
-      ScopedPPResource::PassRef(),
-      enter.functions()->CreateURLRequestInfo(instance, data));
-
   *result = enter_instance.functions()->GetFlashAPI()->Navigate(
-      instance, request_resource, target.c_str(), from_user_action);
+      instance, data, target.c_str(), from_user_action);
 }
 
 void PPB_Flash_Proxy::OnHostMsgRunMessageLoop(PP_Instance instance) {

@@ -80,6 +80,7 @@ namespace ppapi {
 struct InputEventData;
 struct PPP_Instance_Combined;
 class Resource;
+struct URLRequestInfoData;
 }
 
 namespace ui {
@@ -98,7 +99,6 @@ class PPB_Graphics2D_Impl;
 class PPB_Graphics3D_Impl;
 class PPB_ImageData_Impl;
 class PPB_URLLoader_Impl;
-class PPB_URLRequestInfo_Impl;
 
 // Represents one time a plugin appears on one web page.
 //
@@ -327,7 +327,7 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   bool SetFullscreen(bool fullscreen);
 
   // Implementation of PPB_Flash.
-  int32_t Navigate(PPB_URLRequestInfo_Impl* request,
+  int32_t Navigate(const ::ppapi::URLRequestInfoData& request,
                    const char* target,
                    bool from_user_action);
   bool IsRectTopmost(const gfx::Rect& rect);

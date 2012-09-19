@@ -20,7 +20,7 @@
 
 namespace ppapi {
 
-struct PPB_URLRequestInfo_Data;
+struct URLRequestInfoData;
 
 namespace proxy {
 
@@ -58,7 +58,7 @@ class PPB_URLLoader_Proxy : public InterfaceProxy {
   void OnMsgCreate(PP_Instance instance,
                    HostResource* result);
   void OnMsgOpen(const HostResource& loader,
-                 const PPB_URLRequestInfo_Data& data);
+                 const URLRequestInfoData& data);
   void OnMsgFollowRedirect(const HostResource& loader);
   void OnMsgGetResponseInfo(const HostResource& loader,
                             HostResource* result);

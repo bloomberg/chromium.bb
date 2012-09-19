@@ -153,6 +153,8 @@
           'proxy/proxy_object_var.h',
           'proxy/resource_creation_proxy.cc',
           'proxy/resource_creation_proxy.h',
+          'proxy/url_request_info_resource.cc',
+          'proxy/url_request_info_resource.h',
           'proxy/var_serialization_rules.h',
         ],
         'defines': [

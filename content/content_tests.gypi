@@ -239,6 +239,7 @@
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../ui/ui.gyp:ui',
+        '../webkit/support/webkit_support.gyp:glue',
         '../webkit/support/webkit_support.gyp:user_agent',
       ],
       'include_dirs': [
@@ -669,6 +670,7 @@
             'renderer/mouse_lock_dispatcher_browsertest.cc',
             'renderer/pepper/mock_renderer_ppapi_host.cc',
             'renderer/pepper/pepper_file_chooser_host_unittest.cc',
+            'renderer/pepper/pepper_url_request_unittest.cc',
             'renderer/render_view_browsertest.cc',
             'renderer/render_view_browsertest_mac.mm',
             'renderer/renderer_accessibility_browsertest.cc',

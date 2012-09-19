@@ -11,6 +11,7 @@
 #include "ppapi/c/ppb_url_loader.h"
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
 #include "ppapi/thunk/enter.h"
+#include "ppapi/thunk/ppb_url_request_info_api.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
@@ -27,9 +28,9 @@
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
-#include "webkit/plugins/ppapi/ppb_url_request_info_impl.h"
-#include "webkit/plugins/ppapi/ppb_url_response_info_impl.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
+#include "webkit/plugins/ppapi/url_request_info_util.h"
+#include "webkit/plugins/ppapi/ppb_url_response_info_impl.h"
 
 using appcache::WebApplicationCacheHostImpl;
 using ppapi::Resource;
@@ -97,11 +98,6 @@ void PPB_URLLoader_Impl::InstanceWasDeleted() {
 
 int32_t PPB_URLLoader_Impl::Open(PP_Resource request_id,
                                  scoped_refptr<TrackedCallback> callback) {
-  // Main document loads are already open, so don't allow people to open them
-  // again.
-  if (main_document_loader_)
-    return PP_ERROR_INPROGRESS;
-
   EnterResourceNoLock<PPB_URLRequestInfo_API> enter_request(request_id, true);
   if (enter_request.failed()) {
     Log(PP_LOGLEVEL_ERROR,
@@ -110,14 +106,27 @@ int32_t PPB_URLLoader_Impl::Open(PP_Resource request_id,
         " else the request will be null.)");
     return PP_ERROR_BADARGUMENT;
   }
-  PPB_URLRequestInfo_Impl* request = static_cast<PPB_URLRequestInfo_Impl*>(
-      enter_request.object());
+  return Open(enter_request.object()->GetData(), callback);
+}
+
+int32_t PPB_URLLoader_Impl::Open(
+    const ::ppapi::URLRequestInfoData& request_data,
+    scoped_refptr<TrackedCallback> callback) {
+  // Main document loads are already open, so don't allow people to open them
+  // again.
+  if (main_document_loader_)
+    return PP_ERROR_INPROGRESS;
 
   int32_t rv = ValidateCallback(callback);
   if (rv != PP_OK)
     return rv;
 
-  if (request->RequiresUniversalAccess() && !has_universal_access_) {
+  // Create a copy of the request data since CreateWebURLRequest will populate
+  // the file refs.
+  ::ppapi::URLRequestInfoData filled_in_request_data = request_data;
+
+  if (URLRequestRequiresUniversalAccess(filled_in_request_data) &&
+      !has_universal_access_) {
     Log(PP_LOGLEVEL_ERROR, "PPB_URLLoader.Open: The URL you're requesting is "
         " on a different security origin than your plugin. To request "
         " cross-origin resources, see "
@@ -132,13 +141,13 @@ int32_t PPB_URLLoader_Impl::Open(PP_Resource request_id,
   if (!frame)
     return PP_ERROR_FAILED;
   WebURLRequest web_request;
-  if (!request->ToWebURLRequest(frame, &web_request))
+  if (!CreateWebURLRequest(&filled_in_request_data, frame, &web_request))
     return PP_ERROR_FAILED;
 
   // Save a copy of the request info so the plugin can continue to use and
   // change it while we're doing the request without affecting us. We must do
-  // this after ToWebURLRequest since that fills out the file refs.
-  request_data_ = request->GetData();
+  // this after CreateWebURLRequest since that fills out the file refs.
+  request_data_ = filled_in_request_data;
 
   WebURLLoaderOptions options;
   if (has_universal_access_) {
@@ -177,8 +186,6 @@ int32_t PPB_URLLoader_Impl::FollowRedirect(
   int32_t rv = ValidateCallback(callback);
   if (rv != PP_OK)
     return rv;
-
-  WebURL redirect_url = GURL(response_info_->redirect_url());
 
   SetDefersLoading(false);  // Allow the redirect to continue.
   RegisterCallback(callback);

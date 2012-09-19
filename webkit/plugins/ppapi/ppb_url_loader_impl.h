@@ -11,9 +11,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
-#include "ppapi/shared_impl/ppb_url_request_info_shared.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/shared_impl/tracked_callback.h"
+#include "ppapi/shared_impl/url_request_info_data.h"
 #include "ppapi/thunk/ppb_url_loader_api.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLLoaderClient.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
@@ -42,6 +42,8 @@ class PPB_URLLoader_Impl : public ::ppapi::Resource,
   virtual int32_t Open(
       PP_Resource request_id,
       scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
+  int32_t Open(const ::ppapi::URLRequestInfoData& data,
+               scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
   virtual int32_t FollowRedirect(
       scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
   virtual PP_Bool GetUploadProgress(int64_t* bytes_sent,
@@ -131,7 +133,7 @@ class PPB_URLLoader_Impl : public ::ppapi::Resource,
   // Keep a copy of the request data. We specifically do this instead of
   // keeping a reference to the request resource, because the plugin might
   // change the request info resource out from under us.
-  ::ppapi::PPB_URLRequestInfo_Data request_data_;
+  ::ppapi::URLRequestInfoData request_data_;
 
   // The loader associated with this request. MAY BE NULL.
   //
