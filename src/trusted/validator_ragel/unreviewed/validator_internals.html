@@ -15,32 +15,35 @@
 <ol style="clear:both;">
 <li><a href="#1">DFA, Ragel, macros and inline functions, oh my…</a></li>
 <li><a href="#2">What is ragel and how it works.</a></li>
-<ol>
-<li><a href="#2-1">Ragel actions.</a></li>
-</ol>
-<li><a href="#3">“Special” instructions.</a></li>
-<li><a href="#4">“No so special” instructions.</a></li>
-<li><a href="#5">Features beyond minimal validation.</a></li>
-<ol>
-<li><a href="#5-1"><code>CPUID</code> support.</a></li>
-<li><a href="#5-2">Dynamic code modification support.</a></li>
-<ol>
-<li><a href="#5-2-1">Replacement validation.</a></li>
-<li><a href="#5-2-2">Replacement copying.</a></li>
-</ol>
-</ol>
-<li><a href="#6">Validation for x86-64 mode.</a></li>
-<ol>
-<li><a href="#6-1">“Secondary” states.</a></li>
-<li><a href="#6-2">“Normal” instructions.</a></li>
-<li><a href="#6-3">Operands handling.</a></li>
-<li><a href="#6-4">Dynamic code modification support.</a></li>
-<ol>
-<li><a href="#6-4-1">Replacement validation.</a></li>
-<li><a href="#6-4-2">Replacement copying.</a></li>
-</ol>
-</ol>
-<li><a href="#7">Decoders.</a></li>
+  <ol>
+  <li><a href="#2-1">Ragel actions.</a></li>
+  </ol>
+<li><a href="#3">Validator for x86-32 mode</a></li>
+  <ol>
+  <li><a href="#3-1">Valid jump targets (instruction boundaries).</a></li>
+  <li><a href="#3-2">Jump destinations.</a></li>
+  </ol>
+<li><a href="#4">Features beyond minimal validation.</a></li>
+  <ol>
+  <li><a href="#4-1"><code>CPUID</code> support.</a></li>
+  <li><a href="#4-2">Dynamic code modification support.</a></li>
+    <ol>
+    <li><a href="#4-2-1">Replacement validation.</a></li>
+    <li><a href="#4-2-2">Replacement copying.</a></li>
+    </ol>
+  </ol>
+<li><a href="#5">Validation for x86-64 mode.</a></li>
+  <ol>
+  <li><a href="#5-1">“Secondary” states.</a></li>
+  <li><a href="#5-2">“Normal” instructions.</a></li>
+  <li><a href="#5-3">Operands handling.</a></li>
+  <li><a href="#5-4">Dynamic code modification support.</a></li>
+    <ol>
+    <li><a href="#5-4-1">Replacement validation.</a></li>
+    <li><a href="#5-4-2">Replacement copying.</a></li>
+    </ol>
+  </ol>
+<li><a href="#6">Decoders.</a></li>
 </ol>
 <h2><div style="float:right"><a href="#TOC">▲</a></div><a name="1">1. DFA, Ragel, macros and inline functions, oh my…</a></h2>
 
@@ -54,16 +57,9 @@
 
 <p>But note that build-time complexity ≠ source code complexity. Since our goal is to produce extremely fast validator, not extremely complicated validator with unpenetrable source we try to keep it's source as simple as feasible. To achieve this we employ <a href="http://www.complang.org/ragel/">ragel</a> and our own generator of ragel code. Why two levels of indirection? Ragel is industry-standard tool for DFA generation (you can find it in most Linux distributions, <a href="http://en.wikipedia.org/wiki/Ragel">article on the Wikipedia</a> was added in 2006, etc) and our generator is used to produce ragel output from textual description of the x86 instruction set. Said textual description uses form which is pretty close to what you can find in AMD manual (Intel manuals use similar acronims, but they use significantly different approach to describe VEX-encoded commands). The initial goal was to use snippets from the manual, but this proved to be unfeasible is a few cases because manual is designed to be read by human. For example <code>POPF/D/Q Fv</code> describes instruction which has different names in legacy 16bit mode, 32bit ia32 mode and 64bit x86-64 mode while <code>STOSW/D/Q Yv, rAX</code> is an instruction which is called differently if different prefixes are used. The fact that you have access to all three forms of <code>STOSW/D/Q</code> in x86-64 mode but can only use <code>POPF</code> and <code>POPFD</code> is not reflected anywhere. To solve this problem we use slightly more formalized (and thus machine-parseable) description, but, thankfully, such cases are rare thus most commands in our tables are disribed exactly as they are described in the AMD manual.</p>
 
-<p>Here is how the whole thing is stitched together:</p>
-<center><img src="files32.svg" style="width:40em;"/><br />Gray elements are hand-written, white elements are generated and dark-gray are aforementioned code generators.</center><br />
-
-<p>To understand how validator works it's best to start from function <code>ValidateChunkIA32</code> in <code>validator_x86_32.rl</code>. Said function is very short and “simple”: it allocates couple of arrays (<code>valid_targets</code> and <code>jump_dests</code>), then cycles over code passed to it (processing it in bundle-sized chunks) and at the end it compares valid jump targets and collected jump destinations… that's it. Oh, and it also includes couple of cryptic lines right in the middle of innermost cycle:<hr />
-&nbsp;&nbsp;&nbsp;&nbsp;<code>%% write init;</code><br />
-&nbsp;&nbsp;&nbsp;&nbsp;<code>%% write exec;</code><hr />
-Apparently collection of valid jump targets and actual target destinations happens here. How?</p>
 <h2><div style="float:right"><a href="#TOC">▲</a></div><a name="2">2. What is ragel and how it works.</a></h2>
 
-<p>To understand that you need to know a little about Ragel. If you know how Ragel works <b>or</b> if the phrase “Ragel is compiler of <a href="http://en.wikipedia.org/wiki/Finite_state_machine">finite state machines</a> and it can produce not just <a href="http://en.wikipedia.org/wiki/Finite_state_automaton">finite-state automata</a> but <a href="http://en.wikipedia.org/wiki/Finite_state_transducer">finite state transducers</a> and we use this capability in our work” makes perfect sense and clarifies the affairs to you then you can skip next [optional] part.</p>
+<p>If you know how Ragel works <b>or</b> if the phrase “Ragel is compiler of <a href="http://en.wikipedia.org/wiki/Finite_state_machine">finite state machines</a> and it can produce not just <a href="http://en.wikipedia.org/wiki/Finite_state_automaton">finite-state automata</a> but <a href="http://en.wikipedia.org/wiki/Finite_state_transducer">finite state transducers</a> and we use this capability in our work” makes perfect sense and clarifies the affairs to you then you can skip next [optional] part.</p>
 
 <blockquote style="background:lightgray; font-size:90%;">
 
@@ -113,16 +109,46 @@ Apparently collection of valid jump targets and actual target destinations happe
 <li>Actions are called in non-random order—take a look on <i>offset 4</i>: <code>end2</code> is called before <code>begin3</code>. That's because <code>begin3</code> has lower priority than <code>end2</code>! Note that in previous example this same effect was observed, but it was quite mysterious there. The closer the action is to the beginning of the source file the higher it's priority is.</li>
 </ol>
 </blockquote>
-<h2><div style="float:right"><a href="#TOC">▲</a></div><a name="3">3. “Special” instructions.</a></h2>
-<p>Now we can go back to machine description. Our main DFA is the same in all cases, it's “<code>(one_instruction | special_instruction)*</code>”—i.e. it accepts sequence of “normal” instructions and “special” instructions.</p>
 
-<p>Also, just like in example above there are two actions: first one is triggered at the beginning of the <code>instruction</code> (“normal” or “special”)—it's used to remember the beginning of the instruction, to clear the <code>instruction_info_collected</code>, and to mark the first byte of the instruction as valid target for the direct jump; second one is triggered at the final byte of the <code>instruction</code> (“normal” or “special”)—and is used to report errors. And there are also one additional action which is declared as “<code>$err</code>”. This is <i>error fallback action</i>: it's called whenever there is no transition for a particular byte in our DFA. This means we've hit either forbidden instruction like <code>lgdt</code> or some undefined byte sequence… in both cases <code> UNRECOGNIZED_INSTRUCTION</code> error is reported and processing is stopped.</p>
+<h2><div style="float:right"><a href="#TOC">▲</a></div><a name="3">3. Validator for x86-32 mode.</a></h2>
+
+<p>Here is the build diagram:</p>
+<center><img src="files32.svg" style="width:40em;"/><br />Gray elements are hand-written, white elements are generated and dark-gray are aforementioned code generators.</center><br />
+
+<p>
+  <code>*.def</code> files contain instruction definitions taken almost verbatim from AMD instruction manual. They are parsed by <code>gen_dfa</code>, which in turn produces ragel definition of regular language of all instructions (<code>validator_x86_32_instruction.rl</code>). This regular language (machine in ragel terms) is used as a building block to define language of all 'valid' bundles (give or take some subtle details we will discuss later). Language of valid bundles is defined in <code>validator_x86_32.rl</code>.
+</p>
+
+<p>To understand how validator works it's best to start from function <code>ValidateChunkIA32</code> in <code>validator_x86_32.rl</code>. Said function is very short and “simple”: it allocates couple of arrays (<code>valid_targets</code> and <code>jump_dests</code>), then cycles over code passed to it (processing it in bundle-sized chunks) and at the end it compares valid jump targets and collected jump destinations… that's it. Oh, and it also includes couple of cryptic lines right in the middle of innermost cycle:<hr />
+&nbsp;&nbsp;&nbsp;&nbsp;<code>%% write init;</code><br />
+&nbsp;&nbsp;&nbsp;&nbsp;<code>%% write exec;</code><hr />
+</p>
+
+<p>These lines instruct ragel to insert DFA code (in C) here. Resulting output will go to file <code>validator_x86-32.c</code>, which performs actual validation. </p>
+
+<p>Our main DFA is “<code>(one_instruction | special_instruction)*</code>”—i.e. it accepts sequence of “normal” instructions and “special” instructions.
+It consumes byte by byte from <code>current_position</code> pointer until one of the following ending conditions is met:
+<ul>
+  <li>there is no transition from given state for a given byte (that is, either instruction is unknown or explicitly disallowed);</li>
+  <li>end of bundle is reached (<code>current_position == end_of_bundle</code>).</li>
+</ul>
+
+If end of bundle is reached when automaton is not in accepting state, it means instruction we are currenly reading crosses bundle boundary (strictly speaking, it may be not a valid instruction at all, only a prefix of some valid instruction (we haven't seen what's in the next bundle yet), but anyway it's something that definitely violates ABI).
+</p>
+
+<p> Note that even if automaton leaves prematurely (before the end of bundle), validation goes on from the beginning of the next bundle. If one bundle is rejected then the whole chunk is always rejected, but this approach makes it possible to diagnose more errors in one pass which helps while code is developed. </p>
+
+<p>Apparently collection of valid jump targets and actual target destinations happens inside this automaton. How? </p>
+
+<h3><div style="float:right"><a href="#TOC">▲</a></div><a name="3-1">3.1. Valid jump targets (instruction boundaries).</a></h3>
+
+<p>Just like in <a href="#2-1">example</a> above there are two actions: first one is triggered at the beginning of the <code>instruction</code> (“normal” or “special”)—it's used to remember the beginning of the instruction, to clear the <code>instruction_info_collected</code>, and to mark the first byte of the instruction as valid target for the direct jump; second one is triggered at the final byte of the <code>instruction</code> (“normal” or “special”)—and is used to report errors. And there are also one additional action which is declared as “<code>$err</code>”. This is <i>error fallback action</i>: it's called whenever there is no transition for a particular byte in our DFA. This means we've hit either forbidden instruction like <code>lgdt</code> or some undefined byte sequence… in both cases <code> UNRECOGNIZED_INSTRUCTION</code> error is reported and processing is stopped.</p>
 
 <p>There are three “special” instructions in IA32 case: <code>naclcall</code>, <code>nacljmp</code> and <code title="mov %gs:0x0,%reg is part of public ABI,       mov %gs:0x4,%reg is used in IRT">mov %gs:0x0/0x4,%reg</code>. The last one is declared as “special” instruction to simplify the validation logic (and DFA, too): instead of accepting all versions of <code>mov %gs:<i>something</i>,%reg</code> instruction followed by additional logic which rejects most possibilities (only plain vanialla “zero” is allowed here as per ABI) we only describe this one version of the instruction and ragel does the rest. <code>naclcall</code> and <code>nacljmp</code> include special action which clears the “valid destination address” bit (remember the story with <code>begin</code> and <code>end</code> actions above? when first byte of a second half of <code>naclcall</code>/<code>nacljmp</code> is processed it's processed as <b>both</b> part of the <code>naclcall</code>/<code>nacljmp</code> <b>and</b> as a start of a regular instruction, too).</p>
 
 <p>This explains how <code>valid_targets</code> array is filled and invalid instructions are rejected. Note that even invalid instruction would be marked as valid jump target, but we don't care about this peculiarity because validation result will be negative anyway.</p>
 
-<h2><div style="float:right"><a href="#TOC">▲</a></div><a name="4">4. “Not so special” instructions.</a></h2>
+<h3><div style="float:right"><a href="#TOC">▲</a></div><a name="3-2">3.2. Jump destinations.</a></h3>
 <p>But of course there are <code>jump_dests</code>, too. Special instructions don't touch it, but something obviously fills the array, isn't it. This can only be result of processing of normal instructions, thus we need to go deeper. Where it all comes from? To understand that we need to look on [autogenerated] <code>validator_x86_32_instruction.rl</code> file. The file looks like this:<hr />
 &nbsp;&nbsp;&nbsp;&nbsp;⋮<br />
 &nbsp;&nbsp;<i>Semi-manual&nbsp;simple&nbsp;helper&nbsp;machines&nbsp;and&nbsp;actions</i><br />
@@ -155,7 +181,7 @@ It's "more interesting not because it's complex or non-obvious. The interesting 
 &nbsp;&nbsp;<code>}</code><hr />
 We just check if jump target passes preliminary check (direct jump to the outside of the region is always invalid) and that's not so then we detect error <code>DIRECT_JUMP_OUT_OF_RANGE</code>.</p>
 
-<h2><div style="float:right"><a href="#TOC">▲</a></div><a name="5">5. Features beyond minimal validation.</a></h2>
+<h2><div style="float:right"><a href="#TOC">▲</a></div><a name="4">4. Features beyond minimal validation.</a></h2>
 <p style="margin-bottom:0px;">This covers most of the functionality of the validator (we'll discuss the generation of <code>validator_x86_32_instruction.rl</code> file later), but there are still some details not covered here:</p>
 <ol style="margin-top:0px;">
 <li><a href="#5-1"><code>CPUID</code> support.</a></li>
@@ -167,7 +193,7 @@ We just check if jump target passes preliminary check (direct jump to the outsid
 </ol>
 
 
-<h3><div style="float:right"><a href="#TOC">▲</a></div><a name="5-1">5.1. <code>CPUID</code> support.</a></h3>
+<h3><div style="float:right"><a href="#TOC">▲</a></div><a name="4-1">4.1. <code>CPUID</code> support.</a></h3>
 
 <p><code>CPUID</code> support is implemented using large set of actions embedded in definition of instructions (see, e.g. <code>@CPUFeature_FXSR</code> in the line for instruction <code>0x0f 0x01 0xd0</code> AKA <code>xgetbv</code>). CPUID-related actions are triggered when we know the identity of the instruction (which happens at different times for different instructions: some instructions are detected when opcode is read, some use <i>opcode extension</i>, etc—AMD/Intel manuals contain all the gory details), but the definition for said actions in <code>validator_x86_32_instruction.rl</code> are very simple<hr />
 &nbsp;&nbsp;<code>action&nbsp;CPUFeature_FXSR&nbsp;{</code><br />
@@ -184,7 +210,7 @@ IOW: it's pretty straighforward and simple, but there are a twist: <code>CPUFeat
 
 <p>Note: there are two CPUID masks: hardcoded one (it can be replaced if you link in different definition of <code>validator_cpuid_features</code> global variable in your program) and runtime-supplied one (usually obtained from actual <code>CPUID</code> call in production, but hardcoded in tests). New instructions are first added in “production disabled” mode and must pass a security review before they can be used in Chrome.</p>
 
-<h3><div style="float:right"><a href="#TOC">▲</a></div><a name="5-2">5.2. Dynamic code modification support.</a></h3>
+<h3><div style="float:right"><a href="#TOC">▲</a></div><a name="4-2">4.2. Dynamic code modification support.</a></h3>
 
 <p>Dynamic code modification support is implemented with the help of <code>CALL_USER_CALLBACK_ON_EACH_INSTRUCTION</code> option. Normally user callback is only used when some kind of error is detected, but if this option is used then callback is called after <b>each</b> instruction. When that happend callback have all the information needed to process the instruction: collected errors, information about immediates, etc.</p>
 
@@ -221,7 +247,7 @@ IOW: it's pretty straighforward and simple, but there are a twist: <code>CPUFeat
 
 <p>Using this information you can determine if the given instruction follows <span title="Only “naclcall” and “nacljmp” in ia32 mode.">special rules</span>, if it includes <span title="Commands like jcc, jmp, loopcc, or call.">relative offsets</span>, <span title="Most commands which access memory support displacements.">displacements</span>, or <span title="Immediates are support by many different commands.  They can be combined with displacement if command accesses memory.">immediates</span>. Tests way use the information collected to precisely separate different <i title="Immediates, displacements, relative offsets.">anyfields</i>, but in production only few bits are used to determine if the instruction can be changed or not: in ia32 mode only <span title="naclcall and nacljmp">special instructions</span> can not be changed, while in amd64 situation is the opposite: <span title="Only “call” and “mov” can be changed.">most instructions can not be changed</span>.</p>
 
-<h4><div style="float:right"><a href="#TOC">▲</a></div><a name="5-2-1">5.2.1. Replacement validation.</a></h4>
+<h4><div style="float:right"><a href="#TOC">▲</a></div><a name="4-2-1">4.2.1. Replacement validation.</a></h4>
 
 <p>As was said <a href="#5-2">above</a> code replacement is not supported by <code>ValidateChunkIA32</code> function directly. Instead it's done by higher-level function in <code>dfa_validate_32.c</code>.</p>
 
@@ -229,13 +255,13 @@ IOW: it's pretty straighforward and simple, but there are a twist: <code>CPUFeat
 
 <p>One tricky thing there is handling of relative jumps and calls: if relative jump (or call) triggers <code>DIRECT_JUMP_OUT_OF_RANGE</code> <b>but</b> is bit-to-bit identical to the original instruction it's accepted anyway: this means that this particular <code>jump</code> (or <code>call</code>) jumps (or calls) some valid position outside of a given range. If it must be changed then you need to pass bigger region to the <code>ValidatorCodeReplacement_x86_32</code> function—<span title="This is, of course, not needed if landing point is bundle-aligned.">this way validator will have a chance to check the landing place for validity</span>.</p>
 
-<h4><div style="float:right"><a href="#TOC">▲</a></div><a name="5-2-2">5.2.2. Replacement copying.</a></h4>
+<h4><div style="float:right"><a href="#TOC">▲</a></div><a name="4-2-2">4.2.2. Replacement copying.</a></h4>
 
 <p>As was said <a href="#5-2">above</a> code replacement is not supported by <code>ValidateChunkIA32</code> function directly. Instead it's done by higher-level function in <code>dfa_validate_32.c</code>.</p>
 
 <p>This is done by very simple function which uses <code>CALL_USER_CALLBACK_ON_EACH_INSTRUCTION</code> option to process instructions one-after-another.</p>
 
-<h2><div style="float:right"><a href="#TOC">▲</a></div><a name="6">6. Validation for x86-64 mode.</a></h2>
+<h2><div style="float:right"><a href="#TOC">▲</a></div><a name="5">5. Validation for x86-64 mode.</a></h2>
 
 <p>While validator for ia32 mode is very simple and short (it also produces pretty compact code) validator for x86-64 mode is different. It still has all the same properties validator for ia32 mode had (<code>valid_targets</code> and <code>jump_dests</code> arrays, “normal” and “special” instructions, bundles and <code>rel8_operand</code>/<code>rel32_operand</code> actions), but it adds quite a few additional twists to the whole scheme.</p>
 
@@ -243,11 +269,11 @@ IOW: it's pretty straighforward and simple, but there are a twist: <code>CPUFeat
 
 <center><img src="files64.svg" style="width:40em;"/><br />Gray elements are hand-written, white elements are generated and dark-gray are code generators.</center><br />
 
-<h3><div style="float:right"><a href="#TOC">▲</a></div><a name="6-1">6.1. “Secondary” states.</a></h3>
+<h3><div style="float:right"><a href="#TOC">▲</a></div><a name="5-1">5.1. “Secondary” states.</a></h3>
 
 <p>First of all: ia32 mode validator had one DFA in it and two arrays which kept track of the instruction boundaries but x86-64 has few more state variables. Most of them (<code>rex_prefix</code>, <code>vex_prefix2</code>, <code>vex_prefix3</code>, <code>operand_states</code>, <code>base</code>, and <code>index</code>) keep track of the instruction parts (and thus they are cleared before each instruction), but one variable called <code>restricted_register</code> is used to tie different instructions together. As the name implies it keeps track of the restricted register (if any). Restricted register in the <a href="http://www.chromium.org/nativeclient/design-documents/nacl-sfi-model-on-x86-64-systems">NaCl SFI model on x86-64 systems</a> is general purpose register which has top 32bits cleared up. Note that not all restricted registers are born equal: most registers can be restricted and then forgotten (if you write to <code>%eax</code> and do nothing with the value before <code>call</code> then nothing problematic or dangerous can ever happen), but <code>%esp</code> and <code>%ebp</code> are exceptions. If you write to the <code>%esp</code> then the very next instruction must be <code>add %r15,%rsp</code> or <code>lea (%r15,%rsp,1),%rsp</code>—and <code>%rbp</code> has similar requirements. This means that if at the end of a bundle restricted register is <code>%rsp</code> or <code>%rbp</code> then program is invalid. For the same reason if at the beginning of a normal instruction (this includes first instruction in the “compound”) we see restricted <code>%rsp</code> or restricted <code>%rbp</code> then it's an error, too. On the other hand few rare special instructions which are used to restore the SFI invariant WRT <code>%rsp</code> or <code>%rbp</code> will only be accepted if restricted register is <code>%rsp</code> xor <code>%rbp</code> (depending on special instruction).</p>
 
-<h3><div style="float:right"><a href="#TOC">▲</a></div><a name="6-2">6.2. “Normal” instructions.</a></h3>
+<h3><div style="float:right"><a href="#TOC">▲</a></div><a name="5-2">5.2. “Normal” instructions.</a></h3>
 
 <p>The hard part is, as before, in the DFA. First of all, main machine is similar to what we had in ia32 mode, but subtly different: it's “<code>(normal_instruction | special_instruction)*</code>” now. I.e.: <code>one_instruction</code> is replaced with <code>normal_instruction</code>. And what is <code>normal_instruction</code>? Why, it's “<code>one_instruction - special_instruction</code>”, of course! Well… this is unexpected: why will we want to remove <code>special_instruction</code>s from <code>normal_instruction</code>s only to add them back? The answer is related to actions: recall how <a href="#2-1">actions</a> work. When we remove <code>special_instruction</code> from <code>one_instruction</code> we also remove the associated actions. This is important in x86-64 case because some special instructions are just a normal instructions which are permitted to violate the usual rules! E.g. “special” instruction <code>and $~0x1f,%rsp</code> (which is used to align the stack pointer) changes the <code>%rsp</code> directly which is usually forbidden, but because of properties of <code>and $xxx,…</code> (for any <code>$xxx</code> &lt; <code>0</code>) we know that invariants will not be violated.</p>
 
@@ -269,7 +295,7 @@ As you can see <code>check_access</code> is triggered after parsing ModRM/SIB by
 
 <p>You can find yet another suprising thing in the snippet above: <code>and</code> instruction is handled either as instruction with zero operands or as instruction with one operand… but of course in reality it always has two operands! Something is strange here… Well, sure: the decoder part of validator is as streamlined as possible. We just ignore all non-register arguments and arguments which are not written to (but we <b>don't</b> ignore memory accesses if they happen here, of course). That's why <code>and</code> has either one or zero operands as far as validator is concerned.</p>
 
-<h3><div style="float:right"><a href="#TOC">▲</a></div><a name="6-3">6.3. Operands handling.</a></h3>
+<h3><div style="float:right"><a href="#TOC">▲</a></div><a name="5-3">5.3. Operands handling.</a></h3>
 
 <p>Operands handling as, again, is not that complex… if you are familiar with bit operations. Initial version of the validator used simple array of records to store the information and everything worked well… with GCC, that is. MSVC produced awful code which was almost 30% slower and also needed twenty minutes to do so thus we replaced this simple version with the current macro-based one.</p>
 
@@ -298,7 +324,7 @@ Calls like <code>SET_OPERAND_NAME(0, REG_RAX)</code> are used by actions to set 
 &nbsp;&nbsp;&nbsp;&nbsp;<code>}</code><hr />
 If you'll take a look on the layout of <code>operand_states</code> then it's pretty easy to understand what goes on here: <code>(operand_states &amp; 0x70) == (OperandSandboxRestricted &lt;&lt; 5)</code> yeilds <code>TRUE</code> if and only if zeroth operand is “normal” register <b>and</b> it's of type <code>OperandSandboxRestricted</code>. This is actually central piece of the <code>restricted_register</code> handling—most other pieces just return it back to <code>NO_REG</code> state.</p>
 
-<h3><div style="float:right"><a href="#TOC">▲</a></div><a name="6-4">6.4. Dynamic code modification support.</a></h3>
+<h3><div style="float:right"><a href="#TOC">▲</a></div><a name="5-4">5.4. Dynamic code modification support.</a></h3>
 
 <p>Dynamic code modification support is implemented similarly to ia32 mode—with the help of <code>CALL_USER_CALLBACK_ON_EACH_INSTRUCTION</code> option. When that happend callback have all the information needed to process the instruction: collected errors, information about immediates, etc.</p>
 
@@ -335,7 +361,7 @@ If you'll take a look on the layout of <code>operand_states</code> then it's pre
 
 <p>Using this information you can determine if the given instruction follows <span title="A lot of different commands in amd64 mode: %rbp/%rsp modifications, string instructions, “naclcall”, and “nacljmp”.">special rules</span>, if it includes <span title="Commands like “jcc”, “jmp”, “loopcc”, or “call”.">relative offsets</span>, <span title="Most commands which access memory support displacements.">displacements</span>, or <span title="Immediates are support by many different commands.  They can be combined with displacement if command accesses memory.">immediates</span>. Tests way use the information collected to precisely separate different <i title="Immediates, displacements, relative offsets.">anyfields</i>, but in production only few bits are used to determine if the instruction can be changed or not: in amd64 mode <span title="Only “call” and “mov” can be changed.">most instructions can not be changed</span>—and then only <i title="Immediates, displacements, relative offsets.">anyfields</i>.</p>
 
-<h4><div style="float:right"><a href="#TOC">▲</a></div><a name="6-4-1">6.4.1. Replacement validation.</a></h4>
+<h4><div style="float:right"><a href="#TOC">▲</a></div><a name="5-4-1">5.4.1. Replacement validation.</a></h4>
 
 <p>As was said <a href="#6-4">above</a> code replacement is not supported by <code>ValidateChunkAMD64</code> function directly. Instead it's done by higher-level function in <code>dfa_validate_64.c</code>.</p>
 
@@ -351,13 +377,13 @@ If you'll take a look on the layout of <code>operand_states</code> then it's pre
 </ul>
 <p style="margin-top:0px;">All these instructions set <code>LAST_BYTE_IS_NOT_IMMEDIATE</code> flag, last form can be distinguished because it sets <span title="Which actually includes LAST_BYTE_IS_NOT_IMMEDIATE flag"><code>IMMEDIATE_2BIT</code> flag</span>.</p>
 
-<h4><div style="float:right"><a href="#TOC">▲</a></div><a name="6-4-2">6.4.2. Replacement copying.</a></h4>
+<h4><div style="float:right"><a href="#TOC">▲</a></div><a name="5-4-2">5.4.2. Replacement copying.</a></h4>
 
 <p>As was said <a href="#6-4">above</a> code replacement is not supported by <code>ValidateChunkAMD64</code> function directly. Instead it's done by higher-level function in <code>dfa_validate_64.c</code>.</p>
 
 <p>This is done by very simple function which uses <code>CALL_USER_CALLBACK_ON_EACH_INSTRUCTION</code> option to process instructions one-after-another.</p>
 
-<h2><div style="float:right"><a href="#TOC">▲</a></div><a name="7">7. Decoders.</a></h2>
+<h2><div style="float:right"><a href="#TOC">▲</a></div><a name="6">6. Decoders.</a></h2>
 
 <p>The only remaining issue (but a big one) is about generation of the actual decoders (<code>{decoder,validator}_x86_{32,64}_instruction.rl files)</code>. This is big part of the whole package, but, thankfully, it happens in significantly less hostile environment: decoder and validator must work even if they are processing specially-crafted file created by clever adversary while <code>gen_dfa</code> processes data files created by us and should only correcly process certain “good” files.</p>
 
