@@ -6,6 +6,7 @@
 #include "base/file_util.h"
 #include "base/scoped_temp_dir.h"
 #include "chrome/browser/history/top_sites_database.h"
+#include "sql/connection.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace history {

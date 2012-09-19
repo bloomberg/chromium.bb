@@ -13,6 +13,7 @@
 #include "base/memory/mru_cache.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/cancelable_request.h"
+#include "chrome/browser/common/url_database/template_url_id.h"
 #include "chrome/browser/history/archived_database.h"
 #include "chrome/browser/history/expire_history_backend.h"
 #include "chrome/browser/history/history_database.h"
@@ -21,7 +22,6 @@
 #include "chrome/browser/history/text_database_manager.h"
 #include "chrome/browser/history/thumbnail_database.h"
 #include "chrome/browser/history/visit_tracker.h"
-#include "chrome/browser/search_engines/template_url_id.h"
 #include "sql/init_status.h"
 #include "ui/base/layout.h"
 

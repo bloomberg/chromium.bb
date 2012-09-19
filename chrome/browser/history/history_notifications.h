@@ -11,8 +11,8 @@
 #include <vector>
 
 #include "googleurl/src/gurl.h"
+#include "chrome/browser/common/url_database/template_url_id.h"
 #include "chrome/browser/history/history_types.h"
-#include "chrome/browser/search_engines/template_url_id.h"
 
 namespace history {
 

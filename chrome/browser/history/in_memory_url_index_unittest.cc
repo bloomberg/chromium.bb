@@ -230,7 +230,7 @@ void InMemoryURLIndexTest::SetUp() {
   // Update the last_visit_time table column
   // such that it represents a time relative to 'now'.
   sql::Statement statement(db.GetUniqueStatement(
-      "SELECT" HISTORY_URL_ROW_FIELDS "FROM urls;"));
+      "SELECT" URL_DATABASE_ROW_FIELDS "FROM urls;"));
   ASSERT_TRUE(statement.is_valid());
   base::Time time_right_now = base::Time::NowFromSystemTime();
   base::TimeDelta day_delta = base::TimeDelta::FromDays(1);

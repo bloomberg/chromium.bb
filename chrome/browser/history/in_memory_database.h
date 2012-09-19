@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_HISTORY_IN_MEMORY_DATABASE_H_
 
 #include "base/basictypes.h"
-#include "chrome/browser/history/url_database.h"
+#include "chrome/browser/common/url_database/url_database.h"
 #include "sql/connection.h"
 
 class FilePath;
