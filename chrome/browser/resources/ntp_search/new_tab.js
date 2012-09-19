@@ -79,7 +79,7 @@ cr.define('ntp', function() {
   var NtpFollowAction = {
     CLICKED_TILE: 11,
     CLICKED_OTHER_NTP_PANE: 12,
-    OTHER: 13
+    OTHER: 13,
   };
 
   /**
@@ -189,7 +189,8 @@ cr.define('ntp', function() {
         // Request data on the apps so we can fill them in.
         // Note that this is kicked off asynchronously.  'getAppsCallback' will
         // be invoked at some point after this function returns.
-        chrome.send('getApps');
+        if (!ntp.ntp5)
+          chrome.send('getApps');
       } else if (this.shownPage == loadTimeData.getInteger('apps_page_id')) {
         // No apps page.
         this.setShownPage_(
@@ -567,9 +568,11 @@ cr.define('ntp', function() {
      * @param {Event} e A card removed or added event.
      */
     onCardAdded_: function(e) {
+      var page = e.addedCard;
       // When the second arg passed to insertBefore is falsey, it acts just like
       // appendChild.
-      this.pageList.insertBefore(e.addedCard, this.tilePages[e.addedIndex]);
+      this.pageList.insertBefore(page, this.tilePages[e.addedIndex]);
+      page.layout(true);
       this.onCardAddedOrRemoved_();
     },
 
@@ -716,10 +719,10 @@ cr.define('ntp', function() {
     doWhenAllSectionsReady(function() {
       // Tell the slider about the pages.
       newTabView.updateSliderCards();
-      // Mark the current page.
-      newTabView.cardSlider.currentCardValue.navigationDot.classList.add(
-          'selected');
-
+      // Restore the visibility only after calling updateSliderCards to avoid
+      // flickering, otherwise we'll see for a small fraction of a second the
+      // Page List partially rendered.
+      newTabView.cardSlider.frame_.style.visibility = 'visible';
       if (loadTimeData.valueExists('serverpromo')) {
         var promo = loadTimeData.getString('serverpromo');
         var tags = ['IMG'];
@@ -746,7 +749,7 @@ cr.define('ntp', function() {
    * The number of sections to wait on.
    * @type {number}
    */
-  var sectionsToWaitFor = -1;
+  var sectionsToWaitFor = 2;
 
   /**
    * Queued callbacks which lie in wait for all sections to be ready.
@@ -891,6 +894,7 @@ cr.define('ntp', function() {
 
   function setRecentlyClosedTabs(data) {
     newTabView.recentlyClosedPage.setData(data);
+    cr.dispatchSimpleEvent(document, 'sectionready', true, true);
   }
 
   function setMostVisitedPages(data, hasBlacklistedUrls) {
@@ -1028,6 +1032,10 @@ cr.define('ntp', function() {
     incrementHoveredThumbnailCount: incrementHoveredThumbnailCount,
     logTimeToClickAndHoverCount: logTimeToClickAndHoverCount,
     onLoad: onLoad,
+    // This property is being used to disable NTP5 features that are not ready
+    // yet. Right now this is being used just to disable Apps page.
+    // TODO(pedrosimonetti): Remove this property after porting Apps Page.
+    ntp5: true,
     NtpFollowAction: NtpFollowAction,
     setAppToBeHighlighted: setAppToBeHighlighted,
     setBookmarkBarAttached: setBookmarkBarAttached,
@@ -1036,7 +1044,7 @@ cr.define('ntp', function() {
     setRecentlyClosedTabs: setRecentlyClosedTabs,
     showNotification: showNotification,
     themeChanged: themeChanged,
-    updateLogin: updateLogin
+    updateLogin: updateLogin,
   };
 });
 

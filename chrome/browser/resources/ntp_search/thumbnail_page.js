@@ -220,9 +220,6 @@ cr.define('ntp', function() {
      * Update the tiles after a change to |data_|.
      */
     updateTiles_: function() {
-      if (!this.hasBeenRendered())
-        this.layout_();
-
       var maxTileCount = this.config_.maxTileCount;
       var data = this.data_;
       var tiles = this.tiles;
@@ -269,10 +266,9 @@ cr.define('ntp', function() {
           this.tiles_.pop();
       }
 
-      // TODO(pedrosimonetti): Fix this as part of a larger restructuring of
-      // the layout/render logic.
-      if (dataLength != tileCount && this.hasBeenRendered())
+      if (dataLength != tileCount)
         this.renderGrid_();
+
       this.updateTiles_();
     },
 
@@ -284,6 +280,6 @@ cr.define('ntp', function() {
 
   return {
     Thumbnail: Thumbnail,
-    ThumbnailPage: ThumbnailPage
+    ThumbnailPage: ThumbnailPage,
   };
 });

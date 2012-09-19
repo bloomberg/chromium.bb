@@ -103,7 +103,7 @@ cr.define('ntp', function() {
      */
     initialize: function(config) {
       this.className = 'tile';
-    }
+    },
   };
 
   var TileGetters = {
@@ -122,7 +122,7 @@ cr.define('ntp', function() {
     'index': function() {
       assert(this.tileCell);
       return this.tileCell.index;
-    }
+    },
   };
 
   //----------------------------------------------------------------------------
@@ -202,7 +202,7 @@ cr.define('ntp', function() {
         this.firstChild.classList.add('removing-tile-contents');
       else
         this.tilePage.removeTile(this, false);
-    }
+    },
   };
 
   //----------------------------------------------------------------------------
@@ -265,18 +265,19 @@ cr.define('ntp', function() {
       this.tiles_ = [];
 
       // Event handlers.
-      this.tileGrid_.addEventListener('webkitTransitionEnd',
-          this.onTileGridTransitionEnd_.bind(this));
-
-      $('page-list').addEventListener('webkitTransitionEnd',
-          this.onPageListTransitionEnd_.bind(this));
-
       this.eventTracker = new EventTracker();
       this.eventTracker.add(window, 'resize', this.onResize_.bind(this));
       this.eventTracker.add(window, 'keyup', this.onKeyUp_.bind(this));
 
-      this.addEventListener('cardselected', this.handleCardSelection_);
-      this.addEventListener('carddeselected', this.handleCardDeselection_);
+      this.eventTracker.add(this, 'cardselected', this.handleCardSelection_);
+      this.eventTracker.add(this, 'carddeselected',
+          this.handleCardDeselection_);
+
+      this.eventTracker.add(this.tileGrid_, 'webkitTransitionEnd',
+          this.onTileGridTransitionEnd_.bind(this));
+
+      this.eventTracker.add($('page-list'), 'webkitTransitionEnd',
+          this.onPageListTransitionEnd_.bind(this));
     },
 
     /**
@@ -354,8 +355,7 @@ cr.define('ntp', function() {
         this.classList.add('animating-tile-page');
       var index = tile.index;
       tile.parentNode.removeChild(tile);
-      this.layout_();
-      this.cleanupDrag();
+      this.renderGrid_();
 
       if (!opt_dontNotify)
         this.fireRemovedEvent(tile, index, !!opt_animate);
@@ -391,7 +391,7 @@ cr.define('ntp', function() {
      * @private
      */
     handleCardSelection_: function(e) {
-      this.layout_();
+      this.layout();
     },
 
     /**
@@ -508,31 +508,24 @@ cr.define('ntp', function() {
       return width;
     },
 
-    /**
-     * Gets the number of available columns.
-     * @private
-     */
-    getAvailableColCount_: function() {
-      return this.getColCountForWidth_(this.getBottomPanelWidth_());
-    },
-
-    /**
-     * @return {boolean} Whether the page has been rendered.
-     */
-    hasBeenRendered: function() {
-      return this.numOfVisibleRows_ != 0 || this.animatingColCount_ != 0;
-    },
-
     // rendering
     // -------------------------------------------------------------------------
 
     /**
-     * Renders the grid.
-     * @param {number} colCount The number of columns.
+     * Renders the tile grid, and the individual tiles. Rendering the grid
+     * consists of adding/removing tile rows and tile cells according to the
+     * specified size (defined by the number of columns in the grid). While
+     * rendering the grid, the tiles are rendered in order in their respective
+     * cells and tile fillers are rendered when needed. This method sets the
+     * private properties colCount_ and rowCount_.
+     *
+     * This method should be called every time the contents of the grid changes,
+     * that is, when the number, contents or order of the tiles has changed.
+     * @param {number=} opt_colCount The number of columns.
      * @private
      */
-    renderGrid_: function(colCount) {
-      colCount = colCount || this.colCount_;
+    renderGrid_: function(opt_colCount) {
+      var colCount = opt_colCount || this.colCount_;
 
       var tileGridContent = this.tileGridContent_;
       var tiles = this.tiles_;
@@ -615,12 +608,22 @@ cr.define('ntp', function() {
 
     /**
      * Adjusts the layout of the tile page according to the current window size.
-     * @private
+     * This method will resize the containers of the bottom panel + tile page,
+     * and re-render the grid when its dimension changes (number of columns or
+     * visible rows changes). This method also sets the private properties
+     * numOfVisibleRows_ and animatingColCount_, and these values are
+     * initialized when each tile page is created by using the opt_force
+     * parameter.
+     *
+     * This method should be called every time the dimension of the grid changes
+     * or when you need to reinforce its dimension.
+     * @param {boolean=} opt_force Whether the layout should be forced, which
+     *   implies not animating the resizing.
      */
-    layout_: function() {
-      // Only adjusts the layout if the page is currently selected, and we have
-      // tiles to render.
-      if (!this.selected || this.tiles_.length == 0)
+    layout: function(opt_force) {
+      // Only adjusts the layout if the page is currently selected, or when
+      // it is being forced.
+      if (!(this.selected || opt_force))
         return;
 
       var bottomPanelWidth = this.getBottomPanelWidth_();
@@ -630,13 +633,10 @@ cr.define('ntp', function() {
 
       var windowHeight = cr.doc.documentElement.clientHeight;
 
-      // We should not animate the very first layout, that is, when the page
-      // has not been rendered.
-      var shouldAnimate = this.hasBeenRendered();
-
       this.showBottomPanel_(windowHeight >= HEIGHT_FOR_BOTTOM_PANEL);
 
-      // TODO(pedrosimonetti): Add constants?
+      var shouldAnimate = !opt_force;
+
       // If the number of visible rows has changed, then we need to resize the
       // grid and animate the affected rows. We also need to keep track of
       // whether the number of visible rows has changed because we might have
@@ -681,7 +681,7 @@ cr.define('ntp', function() {
           var self = this;
           // We need to save the animatingColCount value in a closure otherwise
           // the animation of tiles won't work when expanding horizontally.
-          // The problem happens because the layout_ method is called several
+          // The problem happens because the layout method is called several
           // times when resizing the window, and the animatingColCount is saved
           // and restored each time a new column has to be animated. So, if we
           // don't save the value, by the time the showTileCols_ method is
@@ -800,7 +800,7 @@ cr.define('ntp', function() {
      * @param {Event} e The window resize event.
      */
     onResize_: function(e) {
-      this.layout_();
+      this.layout();
     },
 
     /**
@@ -861,21 +861,11 @@ cr.define('ntp', function() {
       // Changes the pagination according to which arrow key was pressed.
       if (pageOffset != this.pageOffset_)
         this.paginate_(pageOffset);
-    }
+    },
   };
 
-  /**
-   * Shows a deprecate error.
-   */
-  function deprecate() {
-    console.error('This function is deprecated!');
-  }
-
   return {
-    // TODO(pedrosimonetti): Drag. Delete after porting the rest of the code.
-    getCurrentlyDraggingTile2: deprecate,
-    setCurrentDropEffect2: deprecate,
     Tile2: Tile,
-    TilePage2: TilePage
+    TilePage2: TilePage,
   };
 });

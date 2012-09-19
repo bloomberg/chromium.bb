@@ -151,7 +151,7 @@ cr.define('ntp', function() {
      */
     canBeRemoved: function() {
       return true;
-    }
+    },
   };
 
   /**
