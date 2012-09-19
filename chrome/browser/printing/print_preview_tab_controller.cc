@@ -165,8 +165,10 @@ class PrintPreviewWebContentDelegate : public WebDialogWebContentsDelegate,
       const NativeWebKeyboardEvent& event) OVERRIDE;
 
   // Overridden from CoreTabHelperDelegate:
-  virtual bool CanReloadContents(TabContents* source) const OVERRIDE;
-  virtual bool CanSaveContents(TabContents* source) const OVERRIDE;
+  virtual bool CanReloadContents(
+      content::WebContents* web_contents) const OVERRIDE;
+  virtual bool CanSaveContents(
+      content::WebContents* web_contents) const OVERRIDE;
 
  private:
   TabContents* tab_;
@@ -183,12 +185,12 @@ PrintPreviewWebContentDelegate::PrintPreviewWebContentDelegate(
 PrintPreviewWebContentDelegate::~PrintPreviewWebContentDelegate() {}
 
 bool PrintPreviewWebContentDelegate::CanReloadContents(
-    TabContents* source) const {
+    content::WebContents* web_contents) const {
   return false;
 }
 
 bool PrintPreviewWebContentDelegate::CanSaveContents(
-    TabContents* source) const {
+    content::WebContents* web_contents) const {
   return false;
 }
 
@@ -434,7 +436,8 @@ TabContents* PrintPreviewTabController::CreatePrintPreviewTab(
           initiator_tab);
   TabContents* preview_tab = constrained_delegate->tab();
   EnableInternalPDFPluginForTab(preview_tab);
-  preview_tab->core_tab_helper()->set_delegate(pp_wcd);
+  CoreTabHelper::FromWebContents(preview_tab->web_contents())->
+      set_delegate(pp_wcd);
 
   // Add an entry to the map.
   preview_tab_map_[preview_tab] = initiator_tab;

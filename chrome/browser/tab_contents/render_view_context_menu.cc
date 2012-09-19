@@ -1149,13 +1149,14 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       return source_web_contents_->GetController().CanGoForward();
 
     case IDC_RELOAD: {
-      TabContents* tab_contents =
-          TabContents::FromWebContents(source_web_contents_);
-      if (!tab_contents)
+      CoreTabHelper* core_tab_helper =
+          CoreTabHelper::FromWebContents(source_web_contents_);
+      if (!core_tab_helper)
         return false;
-      CoreTabHelperDelegate* core_delegate =
-          tab_contents->core_tab_helper()->delegate();
-      return !core_delegate || core_delegate->CanReloadContents(tab_contents);
+
+      CoreTabHelperDelegate* core_delegate = core_tab_helper->delegate();
+      return !core_delegate ||
+             core_delegate->CanReloadContents(source_web_contents_);
     }
 
     case IDC_VIEW_SOURCE:
@@ -1293,14 +1294,14 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       return true;
 
     case IDC_SAVE_PAGE: {
-      TabContents* tab_contents =
-          TabContents::FromWebContents(source_web_contents_);
-      if (!tab_contents)
+      CoreTabHelper* core_tab_helper =
+          CoreTabHelper::FromWebContents(source_web_contents_);
+      if (!core_tab_helper)
         return false;
 
-      CoreTabHelperDelegate* core_delegate =
-          tab_contents->core_tab_helper()->delegate();
-      if (core_delegate && !core_delegate->CanSaveContents(tab_contents))
+      CoreTabHelperDelegate* core_delegate = core_tab_helper->delegate();
+      if (core_delegate &&
+          !core_delegate->CanSaveContents(source_web_contents_))
         return false;
 
       PrefService* local_state = g_browser_process->local_state();

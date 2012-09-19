@@ -24,7 +24,6 @@ class BrowserTabstripTabContentsCreator;
 class ChromeWebContentsHandler;
 class ConstrainedWebDialogDelegateBase;
 class ConstrainedWindowTabHelper;
-class CoreTabHelper;
 class ExtensionTabUtil;
 class ExternalProtocolObserver;
 class ExternalTabContainerWin;
@@ -188,8 +187,6 @@ class TabContents : public content::WebContentsObserver {
     return constrained_window_tab_helper_.get();
   }
 
-  CoreTabHelper* core_tab_helper() { return core_tab_helper_.get(); }
-
   FaviconTabHelper* favicon_tab_helper() { return favicon_tab_helper_.get(); }
   FindTabHelper* find_tab_helper() { return find_tab_helper_.get(); }
   HistoryTabHelper* history_tab_helper() { return history_tab_helper_.get(); }
@@ -261,7 +258,6 @@ class TabContents : public content::WebContentsObserver {
   scoped_ptr<AutomationTabHelper> automation_tab_helper_;
   scoped_ptr<BlockedContentTabHelper> blocked_content_tab_helper_;
   scoped_ptr<ConstrainedWindowTabHelper> constrained_window_tab_helper_;
-  scoped_ptr<CoreTabHelper> core_tab_helper_;
   scoped_ptr<FaviconTabHelper> favicon_tab_helper_;
   scoped_ptr<FindTabHelper> find_tab_helper_;
   scoped_ptr<HistoryTabHelper> history_tab_helper_;

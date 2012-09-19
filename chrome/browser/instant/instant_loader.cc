@@ -42,8 +42,8 @@ class InstantLoader::WebContentsDelegateImpl
   virtual bool ShouldFocusConstrainedWindow() OVERRIDE;
 
   // CoreTabHelperDelegate:
-  virtual void SwapTabContents(TabContents* old_tc,
-                               TabContents* new_tc) OVERRIDE;
+  virtual void SwapTabContents(content::WebContents* old_contents,
+                               content::WebContents* new_contents) OVERRIDE;
 
   // content::WebContentsDelegate:
   virtual bool ShouldSuppressDialogs() OVERRIDE;
@@ -105,11 +105,11 @@ bool InstantLoader::WebContentsDelegateImpl::ShouldFocusConstrainedWindow() {
 }
 
 void InstantLoader::WebContentsDelegateImpl::SwapTabContents(
-    TabContents* old_tc,
-    TabContents* new_tc) {
+    content::WebContents* old_contents,
+    content::WebContents* new_contents) {
   // If this is being called, something is swapping in to our
   // |preview_contents_| before we've added it to the tab strip.
-  loader_->ReplacePreviewContents(old_tc, new_tc);
+  loader_->ReplacePreviewContents(old_contents, new_contents);
 }
 
 bool InstantLoader::WebContentsDelegateImpl::ShouldSuppressDialogs() {
@@ -355,10 +355,10 @@ void InstantLoader::SetupPreviewContents() {
   // Disable popups and such (mainly to avoid losing focus and reverting the
   // preview prematurely).
   preview_contents_->blocked_content_tab_helper()->SetAllContentsBlocked(true);
-  preview_contents_->constrained_window_tab_helper()->set_delegate(
-                                                          new_delegate);
+  preview_contents_->constrained_window_tab_helper()->
+      set_delegate(new_delegate);
   preview_contents_->content_settings()->SetPopupsBlocked(true);
-  preview_contents_->core_tab_helper()->set_delegate(new_delegate);
+  CoreTabHelper::FromWebContents(new_contents)->set_delegate(new_delegate);
   if (ThumbnailGenerator* tg = preview_contents_->thumbnail_generator())
     tg->set_enabled(false);
 
@@ -383,7 +383,7 @@ void InstantLoader::CleanupPreviewContents() {
   preview_contents_->blocked_content_tab_helper()->SetAllContentsBlocked(false);
   preview_contents_->constrained_window_tab_helper()->set_delegate(NULL);
   preview_contents_->content_settings()->SetPopupsBlocked(false);
-  preview_contents_->core_tab_helper()->set_delegate(NULL);
+  CoreTabHelper::FromWebContents(old_contents)->set_delegate(NULL);
   if (ThumbnailGenerator* tg = preview_contents_->thumbnail_generator())
     tg->set_enabled(true);
 
@@ -397,14 +397,14 @@ void InstantLoader::CleanupPreviewContents() {
 #endif
 }
 
-void InstantLoader::ReplacePreviewContents(TabContents* old_tc,
-                                           TabContents* new_tc) {
-  DCHECK(old_tc == preview_contents_);
+void InstantLoader::ReplacePreviewContents(content::WebContents* old_contents,
+                                           content::WebContents* new_contents) {
+  DCHECK(old_contents == preview_contents_->web_contents());
   CleanupPreviewContents();
   // We release here without deleting so that the caller still has the
   // responsibility for deleting the TabContents.
   ignore_result(preview_contents_.release());
-  preview_contents_.reset(new_tc);
+  preview_contents_.reset(TabContents::FromWebContents(new_contents));
   SetupPreviewContents();
   loader_delegate_->SwappedTabContents(this);
 }

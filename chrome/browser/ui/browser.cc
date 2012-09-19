@@ -1105,7 +1105,8 @@ void Browser::ActiveTabChanged(TabContents* old_contents,
 
     // Show the loading state (if any).
     status_bubble->SetStatus(
-        chrome::GetActiveTabContents(this)->core_tab_helper()->GetStatusText());
+        CoreTabHelper::FromWebContents(chrome::GetActiveWebContents(this))->
+            GetStatusText());
   }
 
   if (HasFindBarController()) {
@@ -1320,7 +1321,7 @@ void Browser::LoadingStateChanged(WebContents* source) {
     command_controller_->LoadingStateChanged(is_loading, false);
     if (GetStatusBubble()) {
       GetStatusBubble()->SetStatus(
-          chrome::GetActiveTabContents(this)->core_tab_helper()->
+          CoreTabHelper::FromWebContents(chrome::GetActiveWebContents(this))->
               GetStatusText());
     }
   }
@@ -1701,18 +1702,19 @@ void Browser::RequestMediaAccessPermission(
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, CoreTabHelperDelegate implementation:
 
-void Browser::SwapTabContents(TabContents* old_tab_contents,
-                              TabContents* new_tab_contents) {
-  int index = tab_strip_model_->GetIndexOfTabContents(old_tab_contents);
+void Browser::SwapTabContents(content::WebContents* old_contents,
+                              content::WebContents* new_contents) {
+  int index = tab_strip_model_->GetIndexOfWebContents(old_contents);
   DCHECK_NE(TabStripModel::kNoTab, index);
+  TabContents* new_tab_contents = TabContents::FromWebContents(new_contents);
   tab_strip_model_->ReplaceTabContentsAt(index, new_tab_contents);
 }
 
-bool Browser::CanReloadContents(TabContents* source) const {
+bool Browser::CanReloadContents(content::WebContents* web_contents) const {
   return chrome::CanReload(this);
 }
 
-bool Browser::CanSaveContents(TabContents* source) const {
+bool Browser::CanSaveContents(content::WebContents* web_contents) const {
   return chrome::CanSavePage(this);
 }
 
@@ -2006,8 +2008,9 @@ void Browser::ProcessPendingUIUpdates() {
       }
       // Updating the URL happens synchronously in ScheduleUIUpdate.
       if (flags & content::INVALIDATE_TYPE_LOAD && GetStatusBubble()) {
-        GetStatusBubble()->SetStatus(chrome::GetActiveTabContents(this)->
-            core_tab_helper()->GetStatusText());
+        GetStatusBubble()->SetStatus(
+            CoreTabHelper::FromWebContents(chrome::GetActiveWebContents(this))->
+                GetStatusText());
       }
 
       if (flags & (content::INVALIDATE_TYPE_TAB |

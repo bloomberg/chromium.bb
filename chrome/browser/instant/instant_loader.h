@@ -23,6 +23,7 @@ class TabContents;
 namespace content {
 class NotificationDetails;
 class NotificationSource;
+class WebContents;
 }
 
 namespace gfx {
@@ -113,7 +114,8 @@ class InstantLoader : public content::NotificationObserver {
 
   void SetupPreviewContents();
   void CleanupPreviewContents();
-  void ReplacePreviewContents(TabContents* old_tc, TabContents* new_tc);
+  void ReplacePreviewContents(content::WebContents* old_contents,
+                              content::WebContents* new_contents);
 
   InstantLoaderDelegate* const loader_delegate_;
 

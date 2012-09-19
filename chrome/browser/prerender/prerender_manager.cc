@@ -402,8 +402,9 @@ bool PrerenderManager::MaybeUsePrerenderedPage(WebContents* web_contents,
   // Merge the browsing history.
   new_tab_contents->web_contents()->GetController().CopyStateFromAndPrune(
       &old_tab_contents->web_contents()->GetController());
-  old_tab_contents->core_tab_helper()->delegate()->
-      SwapTabContents(old_tab_contents, new_tab_contents);
+  CoreTabHelper::FromWebContents(old_tab_contents->web_contents())->delegate()->
+      SwapTabContents(old_tab_contents->web_contents(),
+                      new_tab_contents->web_contents());
   prerender_contents->CommitHistory(new_tab_contents);
 
   GURL icon_url = prerender_contents->icon_url();

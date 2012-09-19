@@ -130,7 +130,7 @@ TabContents::TabContents(WebContents* contents)
   chrome_browser_net::LoadTimeStatsTabHelper::CreateForWebContents(contents);
   constrained_window_tab_helper_.reset(new ConstrainedWindowTabHelper(this));
   content_settings_.reset(new TabSpecificContentSettings(contents));
-  core_tab_helper_.reset(new CoreTabHelper(contents));
+  CoreTabHelper::CreateForWebContents(contents);
   extensions::TabHelper::CreateForWebContents(contents);
   favicon_tab_helper_.reset(new FaviconTabHelper(contents));
   find_tab_helper_.reset(new FindTabHelper(contents));

@@ -7,14 +7,17 @@
 CoreTabHelperDelegate::~CoreTabHelperDelegate() {
 }
 
-void CoreTabHelperDelegate::SwapTabContents(TabContents* old_tc,
-                                            TabContents* new_tc) {
+void CoreTabHelperDelegate::SwapTabContents(
+    content::WebContents* old_contents,
+    content::WebContents* new_contents) {
 }
 
-bool CoreTabHelperDelegate::CanReloadContents(TabContents* source) const {
+bool CoreTabHelperDelegate::CanReloadContents(
+    content::WebContents* web_contents) const {
   return true;
 }
 
-bool CoreTabHelperDelegate::CanSaveContents(TabContents* source) const {
+bool CoreTabHelperDelegate::CanSaveContents(
+    content::WebContents* web_contents) const {
   return true;
 }

@@ -756,8 +756,9 @@ bool TabStripModel::IsContextMenuCommandEnabled(
         TabContents* tab = GetTabContentsAt(indices[i]);
         if (tab) {
           CoreTabHelperDelegate* core_delegate =
-              tab->core_tab_helper()->delegate();
-          if (!core_delegate || core_delegate->CanReloadContents(tab))
+              CoreTabHelper::FromWebContents(tab->web_contents())->delegate();
+          if (!core_delegate ||
+              core_delegate->CanReloadContents(tab->web_contents()))
             return true;
         }
       }
@@ -822,8 +823,9 @@ void TabStripModel::ExecuteContextMenuCommand(
         TabContents* tab = GetTabContentsAt(indices[i]);
         if (tab) {
           CoreTabHelperDelegate* core_delegate =
-              tab->core_tab_helper()->delegate();
-          if (!core_delegate || core_delegate->CanReloadContents(tab))
+              CoreTabHelper::FromWebContents(tab->web_contents())->delegate();
+          if (!core_delegate ||
+              core_delegate->CanReloadContents(tab->web_contents()))
             tab->web_contents()->GetController().Reload(true);
         }
       }
