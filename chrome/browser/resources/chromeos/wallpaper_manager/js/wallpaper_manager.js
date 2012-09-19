@@ -152,12 +152,7 @@ function WallpaperManager(dialogDom) {
 
     this.wallpaperGrid_.addEventListener('change',
         this.onThumbnailClicked_.bind(this));
-    this.wallpaperGrid_.addEventListener('activate', this.onClose_.bind(this));
-
-    var self = this;
-    // Override cr.ui.List's activateItemIndex function. Called when a list item
-    // is activated.
-    this.wallpaperGrid_.activateItemAtIndex = this.onClose_.bind(this);
+    this.wallpaperGrid_.addEventListener('dblclick', this.onClose_.bind(this));
   };
 
   /**
