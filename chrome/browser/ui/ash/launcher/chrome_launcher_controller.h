@@ -251,28 +251,11 @@ class ChromeLauncherController
  private:
   friend class BrowserLauncherItemControllerTest;
   friend class ChromeLauncherControllerTest;
+  friend class LauncherAppBrowserTest;
+  friend class LauncherPlatformAppBrowserTest;
 
-  enum ItemType {
-    TYPE_APP,
-    TYPE_TABBED_BROWSER
-  };
-
-  // Used to identity an item on the launcher.
-  struct Item {
-    Item();
-    ~Item();
-
-    // Type of item.
-    ItemType item_type;
-
-    // ID of the app.
-    std::string app_id;
-
-    // The LauncherItemController this item came from. NULL if a shortcut.
-    LauncherItemController* controller;
-  };
-
-  typedef std::map<ash::LauncherID, Item> IDToItemMap;
+  typedef std::map<ash::LauncherID, LauncherItemController*>
+          IDToItemControllerMap;
   typedef std::list<TabContents*> TabContentsList;
   typedef std::map<std::string, TabContentsList> AppIDToTabContentsListMap;
   typedef std::map<TabContents*, std::string> TabContentsToAppIDMap;
@@ -284,9 +267,6 @@ class ChromeLauncherController
 
   // Returns the profile used for new windows.
   Profile* GetProfileForNewWindows();
-
-  // Returns item status for given |id|.
-  ash::LauncherItemStatus GetItemStatus(ash::LauncherID id) const;
 
   // Invoked when the associated browser or app is closed.
   void LauncherItemClosed(ash::LauncherID id);
@@ -316,6 +296,13 @@ class ChromeLauncherController
       ash::LauncherItemStatus status,
       int index);
 
+  // Creates a new app shortcut item and controller on the launcher at |index|.
+  // Use kInsertItemAtEnd to add a shortcut as the last item.
+  ash::LauncherID CreateAppShortcutLauncherItem(const std::string& app_id,
+                                                int index);
+
+  bool HasItemController(ash::LauncherID id) const;
+
   // Checks whether app sync status and starts/stops loading animation
   // accordingly. If sync has not setup, do nothing. If sync is completed and
   // there is no pending synced extension install, call StopLoadingAnimation.
@@ -335,7 +322,7 @@ class ChromeLauncherController
   // profile new windows are created with.
   Profile* profile_;
 
-  IDToItemMap id_to_item_map_;
+  IDToItemControllerMap id_to_item_controller_map_;
 
   // Maintains activation order of tab contents for each app.
   AppIDToTabContentsListMap app_id_to_tab_contents_list_;

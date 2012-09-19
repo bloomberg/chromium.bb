@@ -28,36 +28,60 @@ class LauncherItemController {
     TYPE_APP,
     TYPE_APP_PANEL,
     TYPE_EXTENSION_PANEL,
+    TYPE_SHORTCUT,
     TYPE_TABBED
   };
 
   LauncherItemController(Type type,
+                         const std::string& app_id,
                          ChromeLauncherController* launcher_controller);
   virtual ~LauncherItemController();
 
   Type type() const { return type_; }
   ash::LauncherID launcher_id() const { return launcher_id_; }
   void set_launcher_id(ash::LauncherID id) { launcher_id_ = id; }
+  const std::string& app_id() const { return app_id_; }
   ChromeLauncherController* launcher_controller() {
     return launcher_controller_;
   }
 
   // Returns the title for this item.
   virtual string16 GetTitle() = 0;
+
   // Returns true if this item controls |window|.
   virtual bool HasWindow(aura::Window* window) const = 0;
+
+  // Returns true if this item is open.
+  virtual bool IsOpen() const = 0;
+
   // Shows and actives the appropriate window associated with this item.
-  virtual void Open() = 0;
+  // |event_flags| holds the flags of the event which triggered this command.
+  virtual void Open(int event_flags) = 0;
+
   // Closes all windows associated with this item.
   virtual void Close() = 0;
+
   // Called when the item is clicked. The bahavior varies by the number of
   // windows associated with the item:
   // * One window: toggles the minimize state.
   // * Multiple windows: cycles the active window.
   virtual void Clicked() = 0;
 
+  // Called when the controlled item is removed from the launcher.
+  virtual void OnRemoved() = 0;
+
+  // Helper function to get the ash::LauncherItemType for the item type.
+  ash::LauncherItemType GetLauncherItemType() const;
+
+ protected:
+  // Helper function to return the title associated with |app_id_|.
+  // Returns an empty title if no matching extension can be found.
+  string16 GetAppTitle() const;
+
  private:
   const Type type_;
+  // App id will be empty if there is no app associated with the window.
+  const std::string app_id_;
   ash::LauncherID launcher_id_;
   ChromeLauncherController* launcher_controller_;
 

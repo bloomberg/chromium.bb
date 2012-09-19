@@ -59,9 +59,8 @@ class ShellWindowLauncherController::AppLauncherItemController
   AppLauncherItemController(const std::string& app_launcher_id,
                             const std::string& app_id,
                             ChromeLauncherController* controller) :
-      LauncherItemController(TYPE_APP, controller),
-      app_launcher_id_(app_launcher_id),
-      app_id_(app_id) {
+      LauncherItemController(TYPE_APP, app_id, controller),
+      app_launcher_id_(app_launcher_id) {
   }
   virtual ~AppLauncherItemController() {}
 
@@ -95,10 +94,7 @@ class ShellWindowLauncherController::AppLauncherItemController
   const std::string& app_launcher_id() const { return app_launcher_id_; }
 
   virtual string16 GetTitle() OVERRIDE {
-    const extensions::Extension* extension =
-        launcher_controller()->profile()->GetExtensionService()->
-        GetInstalledExtension(app_id_);
-    return extension ? UTF8ToUTF16(extension->name()) : string16();
+    return GetAppTitle();
   }
 
   virtual bool HasWindow(aura::Window* window) const OVERRIDE {
@@ -108,7 +104,11 @@ class ShellWindowLauncherController::AppLauncherItemController
     return iter != shell_windows_.end();
   }
 
-  virtual void Open() OVERRIDE {
+  virtual bool IsOpen() const OVERRIDE {
+    return !shell_windows_.empty();
+  }
+
+  virtual void Open(int event_flags) OVERRIDE {
     ShowAndActivate(shell_windows_.front());
   }
 
@@ -146,7 +146,9 @@ class ShellWindowLauncherController::AppLauncherItemController
     }
   }
 
-  const std::string& app_id() const { return app_id_; }
+  virtual void OnRemoved() OVERRIDE {
+  }
+
   size_t shell_window_count() const { return shell_windows_.size(); }
 
  private:
@@ -163,11 +165,6 @@ class ShellWindowLauncherController::AppLauncherItemController
   // The launcher id associated with this set of windows. There is one
   // AppLauncherItemController for each |app_launcher_id_|.
   const std::string app_launcher_id_;
-
-  // The app id associated with this set of windows. There may be multiple
-  // AppLauncherItemControllers with the same |app_id_| if the app uses multiple
-  // window identifiers (e.g. panels).
-  const std::string app_id_;
 
   DISALLOW_COPY_AND_ASSIGN(AppLauncherItemController);
 };
@@ -237,7 +234,6 @@ void ShellWindowLauncherController::OnShellWindowAdded(
       launcher_id = owner_->CreateAppLauncherItem(controller, app_id, status);
     else
       owner_->SetItemController(launcher_id, controller);
-    controller->set_launcher_id(launcher_id);
     const std::string app_launcher_id = GetAppLauncherId(shell_window);
     app_controller_map_[app_launcher_id] = controller;
   }

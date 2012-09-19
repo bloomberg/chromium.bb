@@ -18,6 +18,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
+#include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service.h"
@@ -90,11 +91,11 @@ class ChromeLauncherControllerTest : public testing::Test {
     launchers->clear();
     for (ash::LauncherItems::const_iterator iter(model_.items().begin());
          iter != model_.items().end(); ++iter) {
-      ChromeLauncherController::IDToItemMap::const_iterator entry(
-          controller->id_to_item_map_.find(iter->id));
+      ChromeLauncherController::IDToItemControllerMap::const_iterator entry(
+          controller->id_to_item_controller_map_.find(iter->id));
       if (iter->type == ash::TYPE_APP_SHORTCUT &&
-          entry != controller->id_to_item_map_.end()) {
-        launchers->push_back(entry->second.app_id);
+          entry != controller->id_to_item_controller_map_.end()) {
+        launchers->push_back(entry->second->app_id());
       }
     }
   }

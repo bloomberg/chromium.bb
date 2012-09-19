@@ -38,7 +38,29 @@
 using extensions::Extension;
 using content::WebContents;
 
-typedef extensions::PlatformAppBrowserTest LauncherPlatformAppBrowserTest;
+class LauncherPlatformAppBrowserTest
+    : public extensions::PlatformAppBrowserTest {
+ protected:
+  LauncherPlatformAppBrowserTest()
+      : launcher_(NULL) {
+  }
+
+  virtual ~LauncherPlatformAppBrowserTest() {}
+
+  virtual void RunTestOnMainThreadLoop() {
+    launcher_ = ash::Shell::GetInstance()->launcher();
+    controller_ = static_cast<ChromeLauncherController*>(launcher_->delegate());
+    return extensions::PlatformAppBrowserTest::RunTestOnMainThreadLoop();
+  }
+
+  ash::LauncherID CreateAppShortcutLauncherItem(const std::string& name) {
+    return controller_->CreateAppShortcutLauncherItem(
+        name, controller_->model()->item_count());
+  }
+
+  ash::Launcher* launcher_;
+  ChromeLauncherController* controller_;
+};
 
 class LauncherAppBrowserTest : public ExtensionBrowserTest {
  protected:
@@ -84,8 +106,8 @@ class LauncherAppBrowserTest : public ExtensionBrowserTest {
     ChromeLauncherController* controller =
         static_cast<ChromeLauncherController*>(launcher_->delegate());
     int item_count = model_->item_count();
-    ash::LauncherID shortcut_id =
-        controller->CreateAppLauncherItem(NULL, app_id, ash::STATUS_CLOSED);
+    ash::LauncherID shortcut_id = controller->CreateAppShortcutLauncherItem(
+        app_id, item_count);
     controller->PersistPinnedState();
     EXPECT_EQ(++item_count, model_->item_count());
     ash::LauncherItem item = *model_->ItemByID(shortcut_id);
@@ -116,148 +138,133 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, LaunchUnpinned) {
 
 // Test that we can launch a platform app that already has a shortcut.
 IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, LaunchPinned) {
-  ash::Launcher* launcher = ash::Shell::GetInstance()->launcher();
-  int item_count = launcher->model()->item_count();
+  int item_count = launcher_->model()->item_count();
 
   // First get app_id.
   const Extension* extension = LoadAndLaunchPlatformApp("launch");
   const std::string app_id = extension->id();
 
   // Then create a shortcut.
-  ChromeLauncherController* controller =
-      static_cast<ChromeLauncherController*>(launcher->delegate());
-  ash::LauncherID shortcut_id =
-      controller->CreateAppLauncherItem(NULL, app_id, ash::STATUS_CLOSED);
+  ash::LauncherID shortcut_id = CreateAppShortcutLauncherItem(app_id);
   ++item_count;
-  ASSERT_EQ(item_count, launcher->model()->item_count());
-  ash::LauncherItem item = *launcher->model()->ItemByID(shortcut_id);
+  ASSERT_EQ(item_count, launcher_->model()->item_count());
+  ash::LauncherItem item = *launcher_->model()->ItemByID(shortcut_id);
   EXPECT_EQ(ash::TYPE_APP_SHORTCUT, item.type);
   EXPECT_EQ(ash::STATUS_CLOSED, item.status);
 
   // Open a window. Confirm the item is now running.
   ShellWindow* window = CreateShellWindow(extension);
   ash::wm::ActivateWindow(window->GetNativeWindow());
-  ASSERT_EQ(item_count, launcher->model()->item_count());
-  item = *launcher->model()->ItemByID(shortcut_id);
+  ASSERT_EQ(item_count, launcher_->model()->item_count());
+  item = *launcher_->model()->ItemByID(shortcut_id);
   EXPECT_EQ(ash::TYPE_APP_SHORTCUT, item.type);
   EXPECT_EQ(ash::STATUS_ACTIVE, item.status);
 
   // Then close it, make sure there's still an item.
   CloseShellWindow(window);
-  ASSERT_EQ(item_count, launcher->model()->item_count());
-  item = *launcher->model()->ItemByID(shortcut_id);
+  ASSERT_EQ(item_count, launcher_->model()->item_count());
+  item = *launcher_->model()->ItemByID(shortcut_id);
   EXPECT_EQ(ash::TYPE_APP_SHORTCUT, item.type);
   EXPECT_EQ(ash::STATUS_CLOSED, item.status);
 }
 
 IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, PinRunning) {
   // Run.
-  ash::Launcher* launcher = ash::Shell::GetInstance()->launcher();
-  ChromeLauncherController* controller =
-      static_cast<ChromeLauncherController*>(launcher->delegate());
-  int item_count = launcher->model()->item_count();
+  int item_count = launcher_->model()->item_count();
   const Extension* extension = LoadAndLaunchPlatformApp("launch");
   ShellWindow* window = CreateShellWindow(extension);
   ++item_count;
-  ASSERT_EQ(item_count, launcher->model()->item_count());
+  ASSERT_EQ(item_count, launcher_->model()->item_count());
   ash::LauncherItem item =
-      launcher->model()->items()[launcher->model()->item_count() - 2];
+      launcher_->model()->items()[launcher_->model()->item_count() - 2];
   ash::LauncherID id = item.id;
   EXPECT_EQ(ash::TYPE_PLATFORM_APP, item.type);
   EXPECT_EQ(ash::STATUS_ACTIVE, item.status);
 
   // Create a shortcut. The app item should be after it.
-  ash::LauncherID foo_id = controller->CreateAppLauncherItem(
-      NULL, std::string("foo"), ash::STATUS_CLOSED);
+  ash::LauncherID foo_id = CreateAppShortcutLauncherItem("foo");
   ++item_count;
-  ASSERT_EQ(item_count, launcher->model()->item_count());
-  EXPECT_LT(launcher->model()->ItemIndexByID(foo_id),
-            launcher->model()->ItemIndexByID(id));
+  ASSERT_EQ(item_count, launcher_->model()->item_count());
+  EXPECT_LT(launcher_->model()->ItemIndexByID(foo_id),
+            launcher_->model()->ItemIndexByID(id));
 
   // Pin the app. The item should remain.
-  controller->Pin(id);
-  ASSERT_EQ(item_count, launcher->model()->item_count());
-  item = *launcher->model()->ItemByID(id);
+  controller_->Pin(id);
+  ASSERT_EQ(item_count, launcher_->model()->item_count());
+  item = *launcher_->model()->ItemByID(id);
   EXPECT_EQ(ash::TYPE_APP_SHORTCUT, item.type);
   EXPECT_EQ(ash::STATUS_ACTIVE, item.status);
 
   // New shortcuts should come after the item.
-  ash::LauncherID bar_id = controller->CreateAppLauncherItem(
-      NULL, std::string("bar"), ash::STATUS_CLOSED);
+  ash::LauncherID bar_id = CreateAppShortcutLauncherItem("bar");
   ++item_count;
-  ASSERT_EQ(item_count, launcher->model()->item_count());
-  EXPECT_LT(launcher->model()->ItemIndexByID(id),
-            launcher->model()->ItemIndexByID(bar_id));
+  ASSERT_EQ(item_count, launcher_->model()->item_count());
+  EXPECT_LT(launcher_->model()->ItemIndexByID(id),
+            launcher_->model()->ItemIndexByID(bar_id));
 
   // Then close it, make sure the item remains.
   CloseShellWindow(window);
-  ASSERT_EQ(item_count, launcher->model()->item_count());
+  ASSERT_EQ(item_count, launcher_->model()->item_count());
 }
 
 IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, UnpinRunning) {
-  ash::Launcher* launcher = ash::Shell::GetInstance()->launcher();
-  int item_count = launcher->model()->item_count();
+  int item_count = launcher_->model()->item_count();
 
   // First get app_id.
   const Extension* extension = LoadAndLaunchPlatformApp("launch");
   const std::string app_id = extension->id();
 
   // Then create a shortcut.
-  ChromeLauncherController* controller =
-      static_cast<ChromeLauncherController*>(launcher->delegate());
-  ash::LauncherID shortcut_id =
-      controller->CreateAppLauncherItem(NULL, app_id, ash::STATUS_CLOSED);
+  ash::LauncherID shortcut_id = CreateAppShortcutLauncherItem(app_id);
   ++item_count;
-  ASSERT_EQ(item_count, launcher->model()->item_count());
-  ash::LauncherItem item = *launcher->model()->ItemByID(shortcut_id);
+  ASSERT_EQ(item_count, launcher_->model()->item_count());
+  ash::LauncherItem item = *launcher_->model()->ItemByID(shortcut_id);
   EXPECT_EQ(ash::TYPE_APP_SHORTCUT, item.type);
   EXPECT_EQ(ash::STATUS_CLOSED, item.status);
 
   // Create a second shortcut. This will be needed to force the first one to
   // move once it gets unpinned.
-  ash::LauncherID foo_id = controller->CreateAppLauncherItem(
-      NULL, std::string("foo"), ash::STATUS_CLOSED);
+  ash::LauncherID foo_id = CreateAppShortcutLauncherItem("foo");
   ++item_count;
-  ASSERT_EQ(item_count, launcher->model()->item_count());
-  EXPECT_LT(launcher->model()->ItemIndexByID(shortcut_id),
-            launcher->model()->ItemIndexByID(foo_id));
+  ASSERT_EQ(item_count, launcher_->model()->item_count());
+  EXPECT_LT(launcher_->model()->ItemIndexByID(shortcut_id),
+            launcher_->model()->ItemIndexByID(foo_id));
 
   // Open a window. Confirm the item is now running.
   ShellWindow* window = CreateShellWindow(extension);
   ash::wm::ActivateWindow(window->GetNativeWindow());
-  ASSERT_EQ(item_count, launcher->model()->item_count());
-  item = *launcher->model()->ItemByID(shortcut_id);
+  ASSERT_EQ(item_count, launcher_->model()->item_count());
+  item = *launcher_->model()->ItemByID(shortcut_id);
   EXPECT_EQ(ash::TYPE_APP_SHORTCUT, item.type);
   EXPECT_EQ(ash::STATUS_ACTIVE, item.status);
 
   // Unpin the app. The item should remain.
-  controller->Unpin(shortcut_id);
-  ASSERT_EQ(item_count, launcher->model()->item_count());
-  item = *launcher->model()->ItemByID(shortcut_id);
+  controller_->Unpin(shortcut_id);
+  ASSERT_EQ(item_count, launcher_->model()->item_count());
+  item = *launcher_->model()->ItemByID(shortcut_id);
   EXPECT_EQ(ash::TYPE_PLATFORM_APP, item.type);
   EXPECT_EQ(ash::STATUS_ACTIVE, item.status);
   // The item should have moved after the other shortcuts.
-  EXPECT_GT(launcher->model()->ItemIndexByID(shortcut_id),
-            launcher->model()->ItemIndexByID(foo_id));
+  EXPECT_GT(launcher_->model()->ItemIndexByID(shortcut_id),
+            launcher_->model()->ItemIndexByID(foo_id));
 
   // Then close it, make sure the item's gone.
   CloseShellWindow(window);
   --item_count;
-  ASSERT_EQ(item_count, launcher->model()->item_count());
+  ASSERT_EQ(item_count, launcher_->model()->item_count());
 }
 
 // Test that we can launch a platform app with more than one window.
 IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, MultipleWindows) {
-  ash::Launcher* launcher = ash::Shell::GetInstance()->launcher();
-  int item_count = launcher->model()->item_count();
+  int item_count = launcher_->model()->item_count();
 
   // First run app.
   const Extension* extension = LoadAndLaunchPlatformApp("launch");
   ShellWindow* window1 = CreateShellWindow(extension);
   ++item_count;
-  ASSERT_EQ(item_count, launcher->model()->item_count());
+  ASSERT_EQ(item_count, launcher_->model()->item_count());
   ash::LauncherItem item =
-      launcher->model()->items()[launcher->model()->item_count() - 2];
+      launcher_->model()->items()[launcher_->model()->item_count() - 2];
   ash::LauncherID item_id = item.id;
   EXPECT_EQ(ash::TYPE_PLATFORM_APP, item.type);
   EXPECT_EQ(ash::STATUS_ACTIVE, item.status);
@@ -265,35 +272,34 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, MultipleWindows) {
   // Add second window.
   ShellWindow* window2 = CreateShellWindow(extension);
   // Confirm item stays.
-  ASSERT_EQ(item_count, launcher->model()->item_count());
-  item = *launcher->model()->ItemByID(item_id);
+  ASSERT_EQ(item_count, launcher_->model()->item_count());
+  item = *launcher_->model()->ItemByID(item_id);
   EXPECT_EQ(ash::STATUS_ACTIVE, item.status);
 
   // Close second window.
   CloseShellWindow(window2);
   // Confirm item stays.
-  ASSERT_EQ(item_count, launcher->model()->item_count());
-  item = *launcher->model()->ItemByID(item_id);
+  ASSERT_EQ(item_count, launcher_->model()->item_count());
+  item = *launcher_->model()->ItemByID(item_id);
   EXPECT_EQ(ash::STATUS_ACTIVE, item.status);
 
   // Close first window.
   CloseShellWindow(window1);
   // Confirm item is removed.
   --item_count;
-  ASSERT_EQ(item_count, launcher->model()->item_count());
+  ASSERT_EQ(item_count, launcher_->model()->item_count());
 }
 
 IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, MultipleApps) {
-  ash::Launcher* launcher = ash::Shell::GetInstance()->launcher();
-  int item_count = launcher->model()->item_count();
+  int item_count = launcher_->model()->item_count();
 
   // First run app.
   const Extension* extension1 = LoadAndLaunchPlatformApp("launch");
   ShellWindow* window1 = CreateShellWindow(extension1);
   ++item_count;
-  ASSERT_EQ(item_count, launcher->model()->item_count());
+  ASSERT_EQ(item_count, launcher_->model()->item_count());
   ash::LauncherItem item1 =
-      launcher->model()->items()[launcher->model()->item_count() - 2];
+      launcher_->model()->items()[launcher_->model()->item_count() - 2];
   ash::LauncherID item_id1 = item1.id;
   EXPECT_EQ(ash::TYPE_PLATFORM_APP, item1.type);
   EXPECT_EQ(ash::STATUS_ACTIVE, item1.status);
@@ -302,43 +308,44 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, MultipleApps) {
   const Extension* extension2 = LoadAndLaunchPlatformApp("launch_2");
   ShellWindow* window2 = CreateShellWindow(extension2);
   ++item_count;
-  ASSERT_EQ(item_count, launcher->model()->item_count());
+  ASSERT_EQ(item_count, launcher_->model()->item_count());
   ash::LauncherItem item2 =
-      launcher->model()->items()[launcher->model()->item_count() - 2];
+      launcher_->model()->items()[launcher_->model()->item_count() - 2];
   ash::LauncherID item_id2 = item2.id;
   EXPECT_EQ(ash::TYPE_PLATFORM_APP, item2.type);
   EXPECT_EQ(ash::STATUS_ACTIVE, item2.status);
 
   EXPECT_NE(item_id1, item_id2);
-  EXPECT_EQ(ash::STATUS_RUNNING, launcher->model()->ItemByID(item_id1)->status);
+  EXPECT_EQ(ash::STATUS_RUNNING,
+            launcher_->model()->ItemByID(item_id1)->status);
 
   // Close second app.
   CloseShellWindow(window2);
   --item_count;
-  ASSERT_EQ(item_count, launcher->model()->item_count());
+  ASSERT_EQ(item_count, launcher_->model()->item_count());
   // First app should be active again.
-  EXPECT_EQ(ash::STATUS_ACTIVE, launcher->model()->ItemByID(item_id1)->status);
+  EXPECT_EQ(ash::STATUS_ACTIVE,
+            launcher_->model()->ItemByID(item_id1)->status);
 
   // Close first app.
   CloseShellWindow(window1);
   --item_count;
-  ASSERT_EQ(item_count, launcher->model()->item_count());
+  ASSERT_EQ(item_count, launcher_->model()->item_count());
 
 }
 
 // Confirm that app windows can be reactivated by clicking their icons and that
 // the correct activation order is maintained.
 IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, WindowActivation) {
-  ash::Launcher* launcher = ash::Shell::GetInstance()->launcher();
-  int item_count = launcher->model()->item_count();
+  int item_count = launcher_->model()->item_count();
 
   // First run app.
   const Extension* extension1 = LoadAndLaunchPlatformApp("launch");
   ShellWindow* window1 = CreateShellWindow(extension1);
   ++item_count;
-  ASSERT_EQ(item_count, launcher->model()->item_count());
+  ASSERT_EQ(item_count, launcher_->model()->item_count());
   ash::LauncherItem item1 =
-      launcher->model()->items()[launcher->model()->item_count() - 2];
+      launcher_->model()->items()[launcher_->model()->item_count() - 2];
   ash::LauncherID item_id1 = item1.id;
   EXPECT_EQ(ash::TYPE_PLATFORM_APP, item1.type);
   EXPECT_EQ(ash::STATUS_ACTIVE, item1.status);
@@ -347,27 +354,30 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, WindowActivation) {
   const Extension* extension2 = LoadAndLaunchPlatformApp("launch_2");
   ShellWindow* window2 = CreateShellWindow(extension2);
   ++item_count;
-  ASSERT_EQ(item_count, launcher->model()->item_count());
+  ASSERT_EQ(item_count, launcher_->model()->item_count());
   ash::LauncherItem item2 =
-      launcher->model()->items()[launcher->model()->item_count() - 2];
+      launcher_->model()->items()[launcher_->model()->item_count() - 2];
   ash::LauncherID item_id2 = item2.id;
   EXPECT_EQ(ash::TYPE_PLATFORM_APP, item2.type);
   EXPECT_EQ(ash::STATUS_ACTIVE, item2.status);
 
   EXPECT_NE(item_id1, item_id2);
-  EXPECT_EQ(ash::STATUS_RUNNING, launcher->model()->ItemByID(item_id1)->status);
+  EXPECT_EQ(ash::STATUS_RUNNING,
+            launcher_->model()->ItemByID(item_id1)->status);
 
   // Activate first one.
-  launcher->ActivateLauncherItem(launcher->model()->ItemIndexByID(item_id1));
-  EXPECT_EQ(ash::STATUS_ACTIVE, launcher->model()->ItemByID(item_id1)->status);
-  EXPECT_EQ(ash::STATUS_RUNNING, launcher->model()->ItemByID(item_id2)->status);
+  launcher_->ActivateLauncherItem(launcher_->model()->ItemIndexByID(item_id1));
+  EXPECT_EQ(ash::STATUS_ACTIVE, launcher_->model()->ItemByID(item_id1)->status);
+  EXPECT_EQ(ash::STATUS_RUNNING,
+            launcher_->model()->ItemByID(item_id2)->status);
   EXPECT_TRUE(ash::wm::IsActiveWindow(window1->GetNativeWindow()));
   EXPECT_FALSE(ash::wm::IsActiveWindow(window2->GetNativeWindow()));
 
   // Activate second one.
-  launcher->ActivateLauncherItem(launcher->model()->ItemIndexByID(item_id2));
-  EXPECT_EQ(ash::STATUS_RUNNING, launcher->model()->ItemByID(item_id1)->status);
-  EXPECT_EQ(ash::STATUS_ACTIVE, launcher->model()->ItemByID(item_id2)->status);
+  launcher_->ActivateLauncherItem(launcher_->model()->ItemIndexByID(item_id2));
+  EXPECT_EQ(ash::STATUS_RUNNING,
+            launcher_->model()->ItemByID(item_id1)->status);
+  EXPECT_EQ(ash::STATUS_ACTIVE, launcher_->model()->ItemByID(item_id2)->status);
   EXPECT_FALSE(ash::wm::IsActiveWindow(window1->GetNativeWindow()));
   EXPECT_TRUE(ash::wm::IsActiveWindow(window2->GetNativeWindow()));
 
@@ -379,21 +389,21 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, WindowActivation) {
   EXPECT_TRUE(ash::wm::IsActiveWindow(window1b->GetNativeWindow()));
 
   // Activate launcher item for app1, this will cycle the active window.
-  launcher->ActivateLauncherItem(launcher->model()->ItemIndexByID(item_id1));
+  launcher_->ActivateLauncherItem(launcher_->model()->ItemIndexByID(item_id1));
   EXPECT_FALSE(ash::wm::IsActiveWindow(window1b->GetNativeWindow()));
   EXPECT_TRUE(ash::wm::IsActiveWindow(window1->GetNativeWindow()));
-  launcher->ActivateLauncherItem(launcher->model()->ItemIndexByID(item_id1));
+  launcher_->ActivateLauncherItem(launcher_->model()->ItemIndexByID(item_id1));
   EXPECT_TRUE(ash::wm::IsActiveWindow(window1b->GetNativeWindow()));
   EXPECT_FALSE(ash::wm::IsActiveWindow(window1->GetNativeWindow()));
 
   // Activate the second app again
-  launcher->ActivateLauncherItem(launcher->model()->ItemIndexByID(item_id2));
+  launcher_->ActivateLauncherItem(launcher_->model()->ItemIndexByID(item_id2));
   EXPECT_FALSE(ash::wm::IsActiveWindow(window1->GetNativeWindow()));
   EXPECT_TRUE(ash::wm::IsActiveWindow(window2->GetNativeWindow()));
   EXPECT_FALSE(ash::wm::IsActiveWindow(window1b->GetNativeWindow()));
 
   // Activate the first app again
-  launcher->ActivateLauncherItem(launcher->model()->ItemIndexByID(item_id1));
+  launcher_->ActivateLauncherItem(launcher_->model()->ItemIndexByID(item_id1));
   EXPECT_FALSE(ash::wm::IsActiveWindow(window1->GetNativeWindow()));
   EXPECT_FALSE(ash::wm::IsActiveWindow(window2->GetNativeWindow()));
   EXPECT_TRUE(ash::wm::IsActiveWindow(window1b->GetNativeWindow()));
@@ -401,34 +411,34 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, WindowActivation) {
   // Close second app.
   CloseShellWindow(window2);
   --item_count;
-  EXPECT_EQ(item_count, launcher->model()->item_count());
+  EXPECT_EQ(item_count, launcher_->model()->item_count());
   // First app should be active again.
-  EXPECT_EQ(ash::STATUS_ACTIVE, launcher->model()->ItemByID(item_id1)->status);
+  EXPECT_EQ(ash::STATUS_ACTIVE, launcher_->model()->ItemByID(item_id1)->status);
 
   // Close first app.
   CloseShellWindow(window1b);
   CloseShellWindow(window1);
   --item_count;
-  EXPECT_EQ(item_count, launcher->model()->item_count());
+  EXPECT_EQ(item_count, launcher_->model()->item_count());
 }
 
 IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, BrowserActivation) {
-  ash::Launcher* launcher = ash::Shell::GetInstance()->launcher();
-  int item_count = launcher->model()->item_count();
+  int item_count = launcher_->model()->item_count();
 
   // First run app.
   const Extension* extension1 = LoadAndLaunchPlatformApp("launch");
   CreateShellWindow(extension1);
   ++item_count;
-  ASSERT_EQ(item_count, launcher->model()->item_count());
+  ASSERT_EQ(item_count, launcher_->model()->item_count());
   ash::LauncherItem item1 =
-      launcher->model()->items()[launcher->model()->item_count() - 2];
+      launcher_->model()->items()[launcher_->model()->item_count() - 2];
   ash::LauncherID item_id1 = item1.id;
   EXPECT_EQ(ash::TYPE_PLATFORM_APP, item1.type);
   EXPECT_EQ(ash::STATUS_ACTIVE, item1.status);
 
   ash::wm::ActivateWindow(browser()->window()->GetNativeWindow());
-  EXPECT_EQ(ash::STATUS_RUNNING, launcher->model()->ItemByID(item_id1)->status);
+  EXPECT_EQ(ash::STATUS_RUNNING,
+            launcher_->model()->ItemByID(item_id1)->status);
 }
 
 // Test that we can launch an app with a shortcut.

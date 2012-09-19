@@ -33,10 +33,9 @@ BrowserLauncherItemController::BrowserLauncherItemController(
     TabStripModel* tab_model,
     ChromeLauncherController* launcher_controller,
     const std::string& app_id)
-    : LauncherItemController(type, launcher_controller),
+    : LauncherItemController(type, app_id, launcher_controller),
       window_(window),
       tab_model_(tab_model),
-      app_id_(app_id),
       is_incognito_(tab_model->profile()->GetOriginalProfile() !=
                     tab_model->profile() && !Profile::IsGuestSession()) {
   window_->AddObserver(this);
@@ -54,18 +53,15 @@ void BrowserLauncherItemController::Init() {
   ash::LauncherItemStatus app_status =
       ash::wm::IsActiveWindow(window_) ?
       ash::STATUS_ACTIVE : ash::STATUS_RUNNING;
-  ash::LauncherID launcher_id;
   if (type() != TYPE_TABBED) {
-    launcher_id = launcher_controller()->CreateAppLauncherItem(
-        this, app_id_, app_status);
+    launcher_controller()->CreateAppLauncherItem(this, app_id(), app_status);
   } else {
-    launcher_id = launcher_controller()->CreateTabbedLauncherItem(
+    launcher_controller()->CreateTabbedLauncherItem(
         this,
         is_incognito_ ? ChromeLauncherController::STATE_INCOGNITO :
                         ChromeLauncherController::STATE_NOT_INCOGNITO,
         app_status);
   }
-  set_launcher_id(launcher_id);
   // In testing scenarios we can get tab strips with no active contents.
   if (tab_model_->GetActiveTabContents())
     UpdateLauncher(tab_model_->GetActiveTabContents());
@@ -119,14 +115,18 @@ string16 BrowserLauncherItemController::GetTitle() {
     if (contents)
       return contents->GetTitle();
   }
-  return string16();
+  return GetAppTitle();
 }
 
 bool BrowserLauncherItemController::HasWindow(aura::Window* window) const {
   return window_ == window;
 }
 
-void BrowserLauncherItemController::Open() {
+bool BrowserLauncherItemController::IsOpen() const {
+  return window_ != NULL;
+}
+
+void BrowserLauncherItemController::Open(int event_flags) {
   window_->Show();
   ash::wm::ActivateWindow(window_);
 }
@@ -143,7 +143,10 @@ void BrowserLauncherItemController::Clicked() {
   if (widget && widget->IsActive())
     widget->Minimize();
   else
-    Open();
+    Open(ui::EF_NONE);
+}
+
+void BrowserLauncherItemController::OnRemoved() {
 }
 
 void BrowserLauncherItemController::ActiveTabChanged(

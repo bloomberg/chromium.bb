@@ -11,6 +11,7 @@
 #include "ash/launcher/launcher_model.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/test_tab_strip_model_delegate.h"
@@ -187,7 +188,7 @@ class BrowserLauncherItemControllerTest
   };
 
   const std::string& GetAppID(ash::LauncherID id) const {
-    return launcher_delegate_->id_to_item_map_[id].app_id;
+    return launcher_delegate_->id_to_item_controller_map_[id]->app_id();
   }
 
   void ResetAppTabHelper() {

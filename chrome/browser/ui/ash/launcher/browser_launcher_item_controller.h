@@ -73,9 +73,11 @@ class BrowserLauncherItemController : public LauncherItemController,
   // LauncherItemController overrides:
   virtual string16 GetTitle() OVERRIDE;
   virtual bool HasWindow(aura::Window* window) const OVERRIDE;
-  virtual void Open() OVERRIDE;
+  virtual bool IsOpen() const OVERRIDE;
+  virtual void Open(int event_flags) OVERRIDE;
   virtual void Close() OVERRIDE;
   virtual void Clicked() OVERRIDE;
+  virtual void OnRemoved() OVERRIDE;
 
   // TabStripModel overrides:
   virtual void ActiveTabChanged(TabContents* old_contents,
@@ -128,8 +130,6 @@ class BrowserLauncherItemController : public LauncherItemController,
   aura::Window* window_;
 
   TabStripModel* tab_model_;
-
-  const std::string app_id_;
 
   // Whether this is associated with an incognito profile.
   const bool is_incognito_;
