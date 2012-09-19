@@ -339,7 +339,24 @@ gfx::Size NativeViewGLSurfaceEGL::GetSize() {
 }
 
 bool NativeViewGLSurfaceEGL::Resize(const gfx::Size& size) {
-  return size == GetSize();
+  if (size == GetSize())
+    return true;
+
+  GLContext* current_context = GLContext::GetCurrent();
+  bool was_current = current_context && current_context->IsCurrent(this);
+  if (was_current)
+    current_context->ReleaseCurrent(this);
+
+  Destroy();
+
+  if (!Initialize()) {
+    LOG(ERROR) << "Failed to resize pbuffer.";
+    return false;
+  }
+
+  if (was_current)
+    return current_context->MakeCurrent(this);
+  return true;
 }
 
 EGLSurface NativeViewGLSurfaceEGL::GetHandle() {
