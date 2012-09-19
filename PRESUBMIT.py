@@ -377,6 +377,25 @@ def _CheckNoPragmaOnce(input_api, output_api):
   return []
 
 
+def _CheckNoTrinaryTrueFalse(input_api, output_api):
+  """Checks to make sure we don't introduce use of foo ? true : false."""
+  problems = []
+  pattern = input_api.re.compile(r'\?\s*(true|false)\s*:\s*(true|false)')
+  for f in input_api.AffectedFiles():
+    if not f.LocalPath().endswith(('.cc', '.h', '.inl', '.m', '.mm')):
+      continue
+
+    for line_num, line in f.ChangedContents():
+      if pattern.match(line):
+        problems.append('    %s:%d' % (f.LocalPath(), line_num))
+
+  if not problems:
+    return []
+  return [output_api.PresubmitPromptWarning(
+      'Please consider avoiding the "? true : false" pattern if possible.\n' +
+      '\n'.join(problems))]
+
+
 def _CheckUnwantedDependencies(input_api, output_api):
   """Runs checkdeps on #include statements added in this
   change. Breaking - rules is an error, breaking ! rules is a
@@ -466,6 +485,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckNoDEPSGIT(input_api, output_api))
   results.extend(_CheckNoBannedFunctions(input_api, output_api))
   results.extend(_CheckNoPragmaOnce(input_api, output_api))
+  results.extend(_CheckNoTrinaryTrueFalse(input_api, output_api))
   results.extend(_CheckUnwantedDependencies(input_api, output_api))
   results.extend(_CheckFilePermissions(input_api, output_api))
   return results
