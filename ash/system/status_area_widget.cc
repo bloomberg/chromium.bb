@@ -336,10 +336,10 @@ void StatusAreaWidget::Shutdown() {
   // hierarchy. Do not used scoped pointers since we don't want to destroy them
   // in the destructor if Shutdown() is not called (e.g. in tests).
   system_tray_delegate_.reset();
-  delete system_tray_;
   system_tray_ = NULL;
-  delete web_notification_tray_;
+  delete system_tray_;
   web_notification_tray_ = NULL;
+  delete web_notification_tray_;
 }
 
 bool StatusAreaWidget::ShouldShowLauncher() const {
