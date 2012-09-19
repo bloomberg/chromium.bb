@@ -88,10 +88,11 @@ void DesktopNativeWidgetAura::ViewRemoved(View* view) {
 
 void DesktopNativeWidgetAura::SetNativeWindowProperty(const char* name,
                                                       void* value) {
+  window_->SetNativeWindowProperty(name, value);
 }
 
 void* DesktopNativeWidgetAura::GetNativeWindowProperty(const char* name) const {
-  return NULL;
+  return window_->GetNativeWindowProperty(name);
 }
 
 TooltipManager* DesktopNativeWidgetAura::GetTooltipManager() const {
