@@ -29,6 +29,7 @@
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
 #include "chrome/browser/extensions/api/page_capture/page_capture_api.h"
 #include "chrome/browser/extensions/api/permissions/permissions_api.h"
+#include "chrome/browser/extensions/api/preference/preference_api.h"
 #include "chrome/browser/extensions/api/processes/processes_api.h"
 #include "chrome/browser/extensions/api/record/record_api.h"
 #include "chrome/browser/extensions/api/runtime/runtime_api.h"
@@ -42,7 +43,6 @@
 #include "chrome/browser/extensions/api/web_socket_proxy_private/web_socket_proxy_private_api.h"
 #include "chrome/browser/extensions/api/webstore_private/webstore_private_api.h"
 #include "chrome/browser/extensions/extension_module.h"
-#include "chrome/browser/extensions/extension_preference_api.h"
 #include "chrome/browser/extensions/settings/settings_api.h"
 #include "chrome/browser/extensions/system/system_api.h"
 #include "chrome/browser/history/history_extension_api.h"
@@ -340,9 +340,9 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<WebRequestHandlerBehaviorChanged>();
 
   // Preferences.
-  RegisterFunction<GetPreferenceFunction>();
-  RegisterFunction<SetPreferenceFunction>();
-  RegisterFunction<ClearPreferenceFunction>();
+  RegisterFunction<extensions::GetPreferenceFunction>();
+  RegisterFunction<extensions::SetPreferenceFunction>();
+  RegisterFunction<extensions::ClearPreferenceFunction>();
 
   // ChromeOS-specific part of the API.
 #if defined(OS_CHROMEOS)

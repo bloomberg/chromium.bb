@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_PREFERENCE_API_H__
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_PREFERENCE_API_H__
+#ifndef CHROME_BROWSER_EXTENSIONS_API_PREFERENCE_PREFERENCE_API_H__
+#define CHROME_BROWSER_EXTENSIONS_API_PREFERENCE_PREFERENCE_API_H__
 
 #include <string>
 
@@ -17,10 +17,12 @@ namespace base {
 class Value;
 }
 
-class ExtensionPreferenceEventRouter : public content::NotificationObserver {
+namespace extensions {
+
+class PreferenceEventRouter : public content::NotificationObserver {
  public:
-  explicit ExtensionPreferenceEventRouter(Profile* profile);
-  virtual ~ExtensionPreferenceEventRouter();
+  explicit PreferenceEventRouter(Profile* profile);
+  virtual ~PreferenceEventRouter();
 
  private:
   // content::NotificationObserver implementation.
@@ -41,7 +43,7 @@ class ExtensionPreferenceEventRouter : public content::NotificationObserver {
   // Weak, owns us (transitively via ExtensionService).
   Profile* profile_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionPreferenceEventRouter);
+  DISALLOW_COPY_AND_ASSIGN(PreferenceEventRouter);
 };
 
 class PrefTransformerInterface {
@@ -115,4 +117,6 @@ class ClearPreferenceFunction : public PreferenceFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_PREFERENCE_API_H__
+}  // namespace extensions
+
+#endif  // CHROME_BROWSER_EXTENSIONS_API_PREFERENCE_PREFERENCE_API_H__

@@ -10,13 +10,13 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/values.h"
+#include "chrome/browser/content_settings/cookie_settings.h"
+#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_api_constants.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_helpers.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_store.h"
-#include "chrome/browser/content_settings/cookie_settings.h"
-#include "chrome/browser/content_settings/host_content_settings_map.h"
-#include "chrome/browser/extensions/extension_preference_api_constants.h"
-#include "chrome/browser/extensions/extension_preference_helpers.h"
+#include "chrome/browser/extensions/api/preference/preference_api_constants.h"
+#include "chrome/browser/extensions/api/preference/preference_helpers.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/plugin_finder.h"
 #include "chrome/browser/plugin_installer.h"
@@ -34,8 +34,8 @@ using content::PluginService;
 namespace Clear = extensions::api::content_settings::ContentSetting::Clear;
 namespace Get = extensions::api::content_settings::ContentSetting::Get;
 namespace Set = extensions::api::content_settings::ContentSetting::Set;
-namespace pref_helpers = extension_preference_helpers;
-namespace pref_keys = extension_preference_api_constants;
+namespace pref_helpers = extensions::preference_helpers;
+namespace pref_keys = extensions::preference_api_constants;
 
 namespace {
 

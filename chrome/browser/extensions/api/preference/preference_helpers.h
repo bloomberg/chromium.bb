@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_PREFERENCE_HELPERS_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_PREFERENCE_HELPERS_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_PREFERENCE_PREFERENCE_HELPERS_H_
+#define CHROME_BROWSER_EXTENSIONS_API_PREFERENCE_PREFERENCE_HELPERS_H_
 
 #include <string>
 
@@ -16,7 +16,8 @@ namespace base {
 class ListValue;
 };
 
-namespace extension_preference_helpers {
+namespace extensions {
+namespace preference_helpers {
 
 bool StringToScope(const std::string& s,
                    extensions::ExtensionPrefsScope* scope);
@@ -42,6 +43,7 @@ void DispatchEventToExtensions(
     bool incognito,
     const std::string& browser_pref);
 
-} // namespace extension_preference_helpers
+}  // namespace preference_helpers
+}  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_PREFERENCE_HELPERS_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_API_PREFERENCE_PREFERENCE_HELPERS_H_

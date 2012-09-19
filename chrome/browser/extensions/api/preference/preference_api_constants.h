@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_PREFERENCE_API_CONSTANTS_H__
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_PREFERENCE_API_CONSTANTS_H__
+#ifndef CHROME_BROWSER_EXTENSIONS_API_PREFERENCE_PREFERENCE_API_CONSTANTS_H__
+#define CHROME_BROWSER_EXTENSIONS_API_PREFERENCE_PREFERENCE_API_CONSTANTS_H__
 
-namespace extension_preference_api_constants {
+namespace extensions {
+namespace preference_api_constants {
 
 // Keys for incoming arguments.
 extern const char kIncognitoKey[];
@@ -21,6 +22,7 @@ extern const char kIncognitoErrorMessage[];
 extern const char kIncognitoSessionOnlyErrorMessage[];
 extern const char kPermissionErrorMessage[];
 
-}
+}  // namespace preference_api_constants
+}  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_PREFERENCE_API_CONSTANTS_H__
+#endif  // CHROME_BROWSER_EXTENSIONS_API_PREFERENCE_PREFERENCE_API_CONSTANTS_H__

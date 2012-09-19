@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_preference_api.h"
+#include "chrome/browser/extensions/api/preference/preference_api.h"
 
 #include <map>
 #include <utility>
@@ -11,9 +11,9 @@
 #include "base/stl_util.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/api/preference/preference_api_constants.h"
+#include "chrome/browser/extensions/api/preference/preference_helpers.h"
 #include "chrome/browser/extensions/api/proxy/proxy_api.h"
-#include "chrome/browser/extensions/extension_preference_api_constants.h"
-#include "chrome/browser/extensions/extension_preference_helpers.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_prefs_scope.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -26,10 +26,10 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 
-namespace keys = extension_preference_api_constants;
-namespace helpers = extension_preference_helpers;
+namespace keys = extensions::preference_api_constants;
+namespace helpers = extensions::preference_helpers;
 
-using extensions::APIPermission;
+namespace extensions {
 
 namespace {
 
@@ -238,8 +238,8 @@ class PrefMapping {
 
 }  // namespace
 
-ExtensionPreferenceEventRouter::ExtensionPreferenceEventRouter(
-    Profile* profile) : profile_(profile) {
+PreferenceEventRouter::PreferenceEventRouter(Profile* profile)
+    : profile_(profile) {
   registrar_.Init(profile_->GetPrefs());
   incognito_registrar_.Init(profile_->GetOffTheRecordPrefs());
   for (size_t i = 0; i < arraysize(kPrefMapping); ++i) {
@@ -248,9 +248,9 @@ ExtensionPreferenceEventRouter::ExtensionPreferenceEventRouter(
   }
 }
 
-ExtensionPreferenceEventRouter::~ExtensionPreferenceEventRouter() { }
+PreferenceEventRouter::~PreferenceEventRouter() { }
 
-void ExtensionPreferenceEventRouter::Observe(
+void PreferenceEventRouter::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
@@ -263,9 +263,8 @@ void ExtensionPreferenceEventRouter::Observe(
   }
 }
 
-void ExtensionPreferenceEventRouter::OnPrefChanged(
-    PrefService* pref_service,
-    const std::string& browser_pref) {
+void PreferenceEventRouter::OnPrefChanged(PrefService* pref_service,
+                                          const std::string& browser_pref) {
   bool incognito = (pref_service != profile_->GetPrefs());
 
   std::string event_name;
@@ -491,3 +490,5 @@ bool ClearPreferenceFunction::RunImpl() {
   prefs->RemoveExtensionControlledPref(extension_id(), browser_pref, scope);
   return true;
 }
+
+}  // namespace extensions

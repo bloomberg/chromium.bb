@@ -49,7 +49,6 @@ class CommandLine;
 class ExtensionErrorUI;
 class ExtensionFontSettingsEventRouter;
 class ExtensionManagementEventRouter;
-class ExtensionPreferenceEventRouter;
 class ExtensionSyncData;
 class ExtensionToolbarModel;
 class HistoryExtensionEventRouter;
@@ -79,6 +78,7 @@ class ExtensionUpdater;
 class FontSettingsEventRouter;
 class MediaGalleriesPrivateEventRouter;
 class PendingExtensionManager;
+class PreferenceEventRouter;
 class PushMessagingEventRouter;
 class SettingsFrontend;
 class WebNavigationEventRouter;
@@ -827,7 +827,7 @@ class ExtensionService
 
   scoped_ptr<extensions::WindowEventRouter> window_event_router_;
 
-  scoped_ptr<ExtensionPreferenceEventRouter> preference_event_router_;
+  scoped_ptr<extensions::PreferenceEventRouter> preference_event_router_;
 
   scoped_ptr<BookmarkExtensionEventRouter> bookmark_event_router_;
 

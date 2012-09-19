@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_preference_helpers.h"
+#include "chrome/browser/extensions/api/preference/preference_helpers.h"
 
 #include "base/json/json_writer.h"
 #include "base/values.h"
@@ -11,6 +11,9 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+
+namespace extensions {
+namespace preference_helpers {
 
 namespace {
 
@@ -27,8 +30,6 @@ const char kControllableByThisExtension[] = "controllable_by_this_extension";
 const char kControlledByThisExtension[] = "controlled_by_this_extension";
 
 }  // namespace
-
-namespace extension_preference_helpers {
 
 bool StringToScope(const std::string& s,
                    extensions::ExtensionPrefsScope* scope) {
@@ -132,4 +133,5 @@ void DispatchEventToExtensions(
   }
 }
 
-}  // namespace extension_preference_helpers
+}  // namespace preference_helpers
+}  // namespace extensions

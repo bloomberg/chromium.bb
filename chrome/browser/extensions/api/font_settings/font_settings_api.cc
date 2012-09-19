@@ -12,7 +12,7 @@
 #include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_preference_helpers.h"
+#include "chrome/browser/extensions/api/preference/preference_helpers.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -207,7 +207,7 @@ void FontSettingsEventRouter::OnFontNamePrefChanged(
   dict->SetString(kGenericFamilyKey, generic_family);
   dict->SetString(kScriptKey, script);
 
-  extension_preference_helpers::DispatchEventToExtensions(
+  extensions::preference_helpers::DispatchEventToExtensions(
       profile_,
       kOnFontChanged,
       &args,
@@ -231,7 +231,7 @@ void FontSettingsEventRouter::OnFontPrefChanged(
   args.Append(dict);
   dict->Set(key, pref->GetValue()->DeepCopy());
 
-  extension_preference_helpers::DispatchEventToExtensions(
+  extensions::preference_helpers::DispatchEventToExtensions(
       profile_,
       event_name,
       &args,
@@ -284,10 +284,10 @@ bool GetFontFunction::RunImpl() {
   // getting level of control.
   const bool kIncognito = false;
   std::string level_of_control =
-      extension_preference_helpers::GetLevelOfControl(profile_,
-                                                      extension_id(),
-                                                      pref_path,
-                                                      kIncognito);
+      extensions::preference_helpers::GetLevelOfControl(profile_,
+                                                        extension_id(),
+                                                        pref_path,
+                                                        kIncognito);
 
   DictionaryValue* result = new DictionaryValue();
   result->SetString(kFontIdKey, font_name);
@@ -386,10 +386,10 @@ bool GetFontPrefExtensionFunction::RunImpl() {
   const bool kIncognito = false;
 
   std::string level_of_control =
-      extension_preference_helpers::GetLevelOfControl(profile_,
-                                                      extension_id(),
-                                                      GetPrefName(),
-                                                      kIncognito);
+      extensions::preference_helpers::GetLevelOfControl(profile_,
+                                                        extension_id(),
+                                                        GetPrefName(),
+                                                        kIncognito);
 
   DictionaryValue* result = new DictionaryValue();
   result->Set(GetKey(), pref->GetValue()->DeepCopy());

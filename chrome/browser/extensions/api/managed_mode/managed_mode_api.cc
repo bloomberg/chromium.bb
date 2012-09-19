@@ -11,8 +11,8 @@
 #include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/api/preference/preference_api_constants.h"
 #include "chrome/browser/extensions/event_router.h"
-#include "chrome/browser/extensions/extension_preference_api_constants.h"
 #include "chrome/browser/managed_mode.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -35,7 +35,7 @@ const char kEnterSuccessKey[] = "success";
 
 }  // namespace
 
-namespace keys = extension_preference_api_constants;
+namespace keys = extensions::preference_api_constants;
 
 namespace extensions {
 
@@ -61,7 +61,8 @@ void ExtensionManagedModeEventRouter::Observe(
   DCHECK_EQ(std::string(prefs::kInManagedMode), pref_name);
 
   DictionaryValue* dict = new DictionaryValue();
-  dict->SetBoolean(extension_preference_api_constants::kValue,
+  dict->SetBoolean(
+      keys::kValue,
       g_browser_process->local_state()->GetBoolean(prefs::kInManagedMode));
   scoped_ptr<ListValue> args(new ListValue());
   args->Set(0, dict);

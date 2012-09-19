@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_preference_api_constants.h"
+#include "chrome/browser/extensions/api/preference/preference_api_constants.h"
 
-namespace extension_preference_api_constants {
+namespace extensions {
+namespace preference_api_constants {
 
 const char kIncognitoKey[] = "incognito";
 
@@ -25,4 +26,5 @@ const char kPermissionErrorMessage[] =
     "You do not have permission to access the preference '*'. "
     "Be sure to declare in your manifest what permissions you need.";
 
-}  // extension_preference_api_constants
+}  // preference_api_constants
+}  // extensions

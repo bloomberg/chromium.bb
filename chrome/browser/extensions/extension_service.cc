@@ -37,6 +37,7 @@
 #include "chrome/browser/extensions/api/managed_mode/managed_mode_api.h"
 #include "chrome/browser/extensions/api/management/management_api.h"
 #include "chrome/browser/extensions/api/media_galleries_private/media_galleries_private_event_router.h"
+#include "chrome/browser/extensions/api/preference/preference_api.h"
 #include "chrome/browser/extensions/api/processes/processes_api.h"
 #include "chrome/browser/extensions/api/push_messaging/push_messaging_api.h"
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
@@ -52,7 +53,6 @@
 #include "chrome/browser/extensions/extension_error_ui.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
-#include "chrome/browser/extensions/extension_preference_api.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_sorting.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
@@ -477,7 +477,8 @@ void ExtensionService::InitEventRouters() {
   browser_event_router_->Init();
   window_event_router_.reset(new extensions::WindowEventRouter(profile_));
   window_event_router_->Init();
-  preference_event_router_.reset(new ExtensionPreferenceEventRouter(profile_));
+  preference_event_router_.reset(
+      new extensions::PreferenceEventRouter(profile_));
   bookmark_event_router_.reset(new BookmarkExtensionEventRouter(
       BookmarkModelFactory::GetForProfile(profile_)));
   bookmark_event_router_->Init();
