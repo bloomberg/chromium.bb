@@ -3243,7 +3243,7 @@ std::set<FilePath> Extension::GetBrowserImages() const {
     }
   }
 
-  if (page_action()) {
+  if (page_action() && page_action()->default_icon()) {
     for (ExtensionIconSet::IconMap::const_iterator iter =
              page_action()->default_icon()->map().begin();
          iter != page_action()->default_icon()->map().end();
@@ -3252,7 +3252,7 @@ std::set<FilePath> Extension::GetBrowserImages() const {
     }
   }
 
-  if (browser_action()) {
+  if (browser_action() && browser_action()->default_icon()) {
     for (ExtensionIconSet::IconMap::const_iterator iter =
              browser_action()->default_icon()->map().begin();
          iter != browser_action()->default_icon()->map().end();
