@@ -78,8 +78,6 @@ class RemovableDeviceNotificationsLinux
   // Structure to save mounted device information such as device path and unique
   // identifier.
   struct MountPointInfo {
-    MountPointInfo();
-
     FilePath mount_device;
     std::string device_id;
     string16 device_name;

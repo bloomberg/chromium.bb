@@ -231,9 +231,6 @@ void GetDeviceInfo(const FilePath& device_path, std::string* unique_id,
 
 }  // namespace
 
-RemovableDeviceNotificationsLinux::MountPointInfo::MountPointInfo() {
-}
-
 RemovableDeviceNotificationsLinux::RemovableDeviceNotificationsLinux(
     const FilePath& path)
     : initialized_(false),
