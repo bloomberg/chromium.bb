@@ -16,6 +16,7 @@
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/shelf_layout_manager.h"
+#include "ash/wm/window_properties.h"
 #include "grit/ash_resources.h"
 #include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -209,6 +210,8 @@ Launcher::Launcher(aura::Window* window_container,
   widget_->set_focus_on_creation(false);
   widget_->SetContentsView(delegate_view_);
   widget_->GetNativeView()->SetName("LauncherView");
+  widget_->GetNativeView()->SetProperty(internal::kStayInSameRootWindowKey,
+                                        true);
 }
 
 Launcher::~Launcher() {

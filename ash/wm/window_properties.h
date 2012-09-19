@@ -5,6 +5,7 @@
 #ifndef ASH_WM_WINDOW_PROPERTIES_H_
 #define ASH_WM_WINDOW_PROPERTIES_H_
 
+#include "ash/ash_export.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/shadow_types.h"
 #include "ui/aura/window.h"
@@ -48,6 +49,12 @@ extern const aura::WindowProperty<RootWindowController*>* const
 // A property key describing the drop shadow that should be displayed under the
 // window.  If unset, no shadow is displayed.
 extern const aura::WindowProperty<ShadowType>* const kShadowTypeKey;
+
+// If this is set to true, the window stays in the same root window
+// even if the bounds outside of its root window is set.
+// This is exported as it's used in the tests.
+ASH_EXPORT extern const aura::WindowProperty<bool>* const
+    kStayInSameRootWindowKey;
 
 // Used to store a ui_controls for each root window.
 extern const aura::WindowProperty<ui_controls::UIControlsAura*>* const

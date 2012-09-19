@@ -10,6 +10,7 @@
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_cycle_controller.h"
+#include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/capture_client.h"
@@ -567,6 +568,27 @@ TEST_F(ExtendedDesktopTest, OpenSystemTray) {
   EXPECT_FALSE(tray->HasSystemBubble());
   UpdateDisplay("100x600,600x400");
   EXPECT_FALSE(tray->HasSystemBubble());
+}
+
+TEST_F(ExtendedDesktopTest, StayInSameRootWindow) {
+  UpdateDisplay("100x100,200x200");
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  views::Widget* w1 = CreateTestWidgetWithParent(
+      NULL, gfx::Rect(10, 10, 50, 50), false);
+  EXPECT_EQ(root_windows[0], w1->GetNativeView()->GetRootWindow());
+  w1->SetBounds(gfx::Rect(150, 10, 50, 50));
+  EXPECT_EQ(root_windows[1], w1->GetNativeView()->GetRootWindow());
+
+  // The widget stays in the same root if kStayInSameRootWindowKey is set to
+  // true.
+  w1->GetNativeView()->SetProperty(internal::kStayInSameRootWindowKey, true);
+  w1->SetBounds(gfx::Rect(10, 10, 50, 50));
+  EXPECT_EQ(root_windows[1], w1->GetNativeView()->GetRootWindow());
+
+  // The widget should now move to the 1st root window without the property.
+  w1->GetNativeView()->ClearProperty(internal::kStayInSameRootWindowKey);
+  w1->SetBounds(gfx::Rect(10, 10, 50, 50));
+  EXPECT_EQ(root_windows[0], w1->GetNativeView()->GetRootWindow());
 }
 
 }  // namespace internal

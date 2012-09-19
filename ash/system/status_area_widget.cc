@@ -16,6 +16,7 @@
 #include "ash/system/web_notification/web_notification_tray.h"
 #include "ash/volume_control_delegate.h"
 #include "ash/wm/shelf_layout_manager.h"
+#include "ash/wm/window_properties.h"
 #include "base/i18n/time_formatting.h"
 #include "base/utf_string_conversions.h"
 #include "ui/aura/window.h"
@@ -315,6 +316,7 @@ StatusAreaWidget::StatusAreaWidget()
   set_focus_on_creation(false);
   SetContentsView(status_area_widget_delegate_);
   GetNativeView()->SetName("StatusAreaWidget");
+  GetNativeView()->SetProperty(internal::kStayInSameRootWindowKey, true);
 }
 
 StatusAreaWidget::~StatusAreaWidget() {

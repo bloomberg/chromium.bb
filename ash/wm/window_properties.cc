@@ -31,6 +31,7 @@ DEFINE_WINDOW_PROPERTY_KEY(
 DEFINE_WINDOW_PROPERTY_KEY(RootWindowController*,
                            kRootWindowControllerKey, NULL);
 DEFINE_WINDOW_PROPERTY_KEY(ShadowType, kShadowTypeKey, SHADOW_TYPE_NONE);
+DEFINE_WINDOW_PROPERTY_KEY(bool, kStayInSameRootWindowKey, false);
 DEFINE_OWNED_WINDOW_PROPERTY_KEY(ui_controls::UIControlsAura,
                                  kUIControlsKey,
                                  NULL);

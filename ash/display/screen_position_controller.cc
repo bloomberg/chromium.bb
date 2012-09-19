@@ -85,9 +85,13 @@ void ScreenPositionController::SetBounds(aura::Window* window,
     return;
   }
 
-  // Don't move a transient windows to other root window.
-  // It moves when its transient_parent moves.
-  if (!window->transient_parent()) {
+  // Don't move a window to other root window if:
+  // a) the window is a transient window. It moves when its
+  //    transient_parent moves.
+  // b) if the window has kStayInSameRootWindowkey. It's intentionally kept in
+  //    the same root window even if the bounds is outside of the display.
+  if (!window->transient_parent() &&
+      !window->GetProperty(internal::kStayInSameRootWindowKey)) {
     aura::RootWindow* dst_root =
         Shell::GetInstance()->display_controller()->GetRootWindowForDisplayId(
             display.id());
