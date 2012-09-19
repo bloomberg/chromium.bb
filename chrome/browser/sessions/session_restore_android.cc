@@ -26,9 +26,9 @@ void SessionRestore::RestoreForeignSessionTab(
   Profile* profile = Profile::FromBrowserContext(context);
   TabModel* tab_model = TabModelList::GetTabModelWithProfile(profile);
   DCHECK(tab_model);
-  std::vector<content::NavigationEntry*> entries;
-  TabNavigation::CreateNavigationEntriesFromTabNavigations(
-        profile, session_tab.navigations, &entries);
+  std::vector<content::NavigationEntry*> entries =
+      TabNavigation::CreateNavigationEntriesFromTabNavigations(
+          session_tab.navigations, profile);
   content::WebContents* new_web_contents = content::WebContents::Create(
         context, NULL, MSG_ROUTING_NONE, NULL);
   int selected_index = session_tab.normalized_navigation_index();

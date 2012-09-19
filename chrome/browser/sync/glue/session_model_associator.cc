@@ -256,7 +256,7 @@ bool SessionModelAssociator::AssociateWindows(bool reload_tabs,
         // change processor calling AssociateTab for all modified tabs.
         // Therefore, we can key whether this window has valid tabs based on
         // the tab's presence in the tracker.
-        const SyncedSessionTab* tab;
+        const SessionTab* tab = NULL;
         if (synced_session_tracker_.LookupSessionTab(local_tag, tab_id, &tab)) {
           found_tabs = true;
           window_s.add_tab(tab_id);
@@ -385,7 +385,7 @@ bool SessionModelAssociator::WriteTabContentsToSyncModel(
 
   // Load the last stored version of this tab so we can compare changes. If this
   // is a new tab, session_tab will be a blank/newly created SessionTab object.
-  SyncedSessionTab* session_tab =
+  SessionTab* session_tab =
       synced_session_tracker_.GetTab(GetCurrentMachineTag(),
                                      tab.GetSessionId());
 
@@ -453,7 +453,7 @@ bool SessionModelAssociator::WriteTabContentsToSyncModel(
 void SessionModelAssociator::AssociateTabContents(
     const SyncedWindowDelegate& window,
     const SyncedTabDelegate& new_tab,
-    SyncedSessionTab* prev_tab,
+    SessionTab* prev_tab,
     sync_pb::SessionTab* sync_tab,
     GURL* new_url) {
   DCHECK(prev_tab);
@@ -475,8 +475,8 @@ void SessionModelAssociator::AssociateTabContents(
   }
 
   sync_tab->mutable_navigation()->Clear();
-  std::vector<SyncedTabNavigation>::const_iterator prev_nav_iter =
-      prev_tab->synced_tab_navigations.begin();
+  std::vector<TabNavigation>::const_iterator prev_nav_iter =
+      prev_tab->navigations.begin();
   for (int i = min_index; i < max_index; ++i) {
     const NavigationEntry* entry = (i == pending_index) ?
        new_tab.GetPendingEntry() : new_tab.GetEntryAtIndex(i);
@@ -485,7 +485,7 @@ void SessionModelAssociator::AssociateTabContents(
       // Find the location of the first navigation within the previous list of
       // navigations. We only need to do this once, as all subsequent
       // navigations are either contiguous or completely new.
-      for (;prev_nav_iter != prev_tab->synced_tab_navigations.end();
+      for (;prev_nav_iter != prev_tab->navigations.end();
            ++prev_nav_iter) {
         if (prev_nav_iter->unique_id() == entry->GetUniqueID())
           break;
@@ -500,11 +500,13 @@ void SessionModelAssociator::AssociateTabContents(
 
       }
       sync_pb::TabNavigation* sync_nav = sync_tab->add_navigation();
-      PopulateSessionSpecificsNavigation(*entry, sync_nav);
+      const TabNavigation& navigation =
+          TabNavigation::FromNavigationEntry(i, *entry, base::Time::Now());
+      *sync_nav = navigation.ToSyncData();
 
       // If this navigation is an old one, reuse the old timestamp. Otherwise we
       // leave the timestamp as the current time.
-      if (prev_nav_iter != prev_tab->synced_tab_navigations.end() &&
+      if (prev_nav_iter != prev_tab->navigations.end() &&
           prev_nav_iter->unique_id() == entry->GetUniqueID()) {
         // Check that we haven't gone back/foward in the nav stack to this page
         // (if so, we want to refresh the timestamp).
@@ -520,7 +522,7 @@ void SessionModelAssociator::AssociateTabContents(
         // old timestamps preserved.
         ++prev_nav_iter;
       } else if (current_index != i &&
-                 prev_tab->synced_tab_navigations.empty()) {
+                 prev_tab->navigations.empty()) {
         // If this is a new tab, and has more than one navigation, we don't
         // actually want to assign the current timestamp to other navigations.
         // Override the timestamp to 0 in that case.
@@ -645,86 +647,6 @@ void SessionModelAssociator::FaviconsUpdated(
       }
     }
   }
-}
-
-// Static
-// TODO(zea): perhaps sync state (scroll position, form entries, etc.) as well?
-// See http://crbug.com/67068.
-void SessionModelAssociator::PopulateSessionSpecificsNavigation(
-    const NavigationEntry& navigation,
-    sync_pb::TabNavigation* tab_navigation) {
-  tab_navigation->set_virtual_url(navigation.GetVirtualURL().spec());
-  // FIXME(zea): Support referrer policy?
-  tab_navigation->set_referrer(navigation.GetReferrer().url.spec());
-  tab_navigation->set_title(UTF16ToUTF8(navigation.GetTitle()));
-  switch (navigation.GetTransitionType()) {
-    case content::PAGE_TRANSITION_LINK:
-      tab_navigation->set_page_transition(
-        sync_pb::SyncEnums_PageTransition_LINK);
-      break;
-    case content::PAGE_TRANSITION_TYPED:
-      tab_navigation->set_page_transition(
-        sync_pb::SyncEnums_PageTransition_TYPED);
-      break;
-    case content::PAGE_TRANSITION_AUTO_BOOKMARK:
-      tab_navigation->set_page_transition(
-        sync_pb::SyncEnums_PageTransition_AUTO_BOOKMARK);
-      break;
-    case content::PAGE_TRANSITION_AUTO_SUBFRAME:
-      tab_navigation->set_page_transition(
-        sync_pb::SyncEnums_PageTransition_AUTO_SUBFRAME);
-      break;
-    case content::PAGE_TRANSITION_MANUAL_SUBFRAME:
-      tab_navigation->set_page_transition(
-        sync_pb::SyncEnums_PageTransition_MANUAL_SUBFRAME);
-      break;
-    case content::PAGE_TRANSITION_GENERATED:
-      tab_navigation->set_page_transition(
-        sync_pb::SyncEnums_PageTransition_GENERATED);
-      break;
-    case content::PAGE_TRANSITION_AUTO_TOPLEVEL:
-      tab_navigation->set_page_transition(
-        sync_pb::SyncEnums_PageTransition_AUTO_TOPLEVEL);
-      break;
-    case content::PAGE_TRANSITION_FORM_SUBMIT:
-      tab_navigation->set_page_transition(
-        sync_pb::SyncEnums_PageTransition_FORM_SUBMIT);
-      break;
-    case content::PAGE_TRANSITION_RELOAD:
-      tab_navigation->set_page_transition(
-        sync_pb::SyncEnums_PageTransition_RELOAD);
-      break;
-    case content::PAGE_TRANSITION_KEYWORD:
-      tab_navigation->set_page_transition(
-        sync_pb::SyncEnums_PageTransition_KEYWORD);
-      break;
-    case content::PAGE_TRANSITION_KEYWORD_GENERATED:
-      tab_navigation->set_page_transition(
-        sync_pb::SyncEnums_PageTransition_KEYWORD_GENERATED);
-      break;
-    case content::PAGE_TRANSITION_CHAIN_START:
-      tab_navigation->set_page_transition(
-        sync_pb::SyncEnums_PageTransition_CHAIN_START);
-      break;
-    case content::PAGE_TRANSITION_CHAIN_END:
-      tab_navigation->set_page_transition(
-        sync_pb::SyncEnums_PageTransition_CHAIN_END);
-      break;
-    case content::PAGE_TRANSITION_CLIENT_REDIRECT:
-      tab_navigation->set_navigation_qualifier(
-        sync_pb::SyncEnums_PageTransitionQualifier_CLIENT_REDIRECT);
-      break;
-    case content::PAGE_TRANSITION_SERVER_REDIRECT:
-      tab_navigation->set_navigation_qualifier(
-        sync_pb::SyncEnums_PageTransitionQualifier_SERVER_REDIRECT);
-      break;
-    default:
-      tab_navigation->set_page_transition(
-        sync_pb::SyncEnums_PageTransition_TYPED);
-  }
-  tab_navigation->set_unique_id(navigation.GetUniqueID());
-  tab_navigation->set_timestamp(
-      syncer::TimeToProtoTime(base::Time::Now()));
 }
 
 void SessionModelAssociator::Associate(const SyncedTabDelegate* tab,
@@ -1026,7 +948,7 @@ void SessionModelAssociator::AssociateForeignSpecifics(
   } else if (specifics.has_tab()) {
     const sync_pb::SessionTab& tab_s = specifics.tab();
     SessionID::id_type tab_id = tab_s.tab_id();
-    SyncedSessionTab* tab =
+    SessionTab* tab =
         synced_session_tracker_.GetTab(foreign_session_tag, tab_id);
 
     // Figure out what the previous url for this tab was (may be empty string
@@ -1185,7 +1107,7 @@ void SessionModelAssociator::PopulateSessionWindowFromSpecifics(
 void SessionModelAssociator::PopulateSessionTabFromSpecifics(
     const sync_pb::SessionTab& specifics,
     const base::Time& mtime,
-    SyncedSessionTab* tab) {
+    SessionTab* tab) {
   DCHECK_EQ(tab->tab_id.id(), specifics.tab_id());
   if (specifics.has_tab_id())
     tab->tab_id.set_id(specifics.tab_id());
@@ -1202,108 +1124,10 @@ void SessionModelAssociator::PopulateSessionTabFromSpecifics(
   tab->timestamp = mtime;
   // Cleared in case we reuse a pre-existing SyncedSessionTab object.
   tab->navigations.clear();
-  tab->synced_tab_navigations.clear();
   for (int i = 0; i < specifics.navigation_size(); ++i) {
-    AppendSessionTabNavigation(specifics.navigation(i),
-                               tab);
+    tab->navigations.push_back(
+        TabNavigation::FromSyncData(i, specifics.navigation(i)));
   }
-}
-
-// Static
-void SessionModelAssociator::AppendSessionTabNavigation(
-    const sync_pb::TabNavigation& specifics,
-    SyncedSessionTab* tab) {
-  int index = 0;
-  GURL virtual_url;
-  GURL referrer;
-  string16 title;
-  std::string state;
-  content::PageTransition transition(content::PAGE_TRANSITION_LINK);
-  base::Time timestamp;
-  int unique_id = 0;
-  if (specifics.has_virtual_url()) {
-    GURL gurl(specifics.virtual_url());
-    virtual_url = gurl;
-  }
-  if (specifics.has_referrer()) {
-    GURL gurl(specifics.referrer());
-    referrer = gurl;
-  }
-  if (specifics.has_title())
-    title = UTF8ToUTF16(specifics.title());
-  if (specifics.has_state())
-    state = specifics.state();
-  if (specifics.has_page_transition() ||
-      specifics.has_navigation_qualifier()) {
-    switch (specifics.page_transition()) {
-      case sync_pb::SyncEnums_PageTransition_LINK:
-        transition = content::PAGE_TRANSITION_LINK;
-        break;
-      case sync_pb::SyncEnums_PageTransition_TYPED:
-        transition = content::PAGE_TRANSITION_TYPED;
-        break;
-      case sync_pb::SyncEnums_PageTransition_AUTO_BOOKMARK:
-        transition = content::PAGE_TRANSITION_AUTO_BOOKMARK;
-        break;
-      case sync_pb::SyncEnums_PageTransition_AUTO_SUBFRAME:
-        transition = content::PAGE_TRANSITION_AUTO_SUBFRAME;
-        break;
-      case sync_pb::SyncEnums_PageTransition_MANUAL_SUBFRAME:
-        transition = content::PAGE_TRANSITION_MANUAL_SUBFRAME;
-        break;
-      case sync_pb::SyncEnums_PageTransition_GENERATED:
-        transition = content::PAGE_TRANSITION_GENERATED;
-        break;
-      case sync_pb::SyncEnums_PageTransition_AUTO_TOPLEVEL:
-        transition = content::PAGE_TRANSITION_AUTO_TOPLEVEL;
-        break;
-      case sync_pb::SyncEnums_PageTransition_FORM_SUBMIT:
-        transition = content::PAGE_TRANSITION_FORM_SUBMIT;
-        break;
-      case sync_pb::SyncEnums_PageTransition_RELOAD:
-        transition = content::PAGE_TRANSITION_RELOAD;
-        break;
-      case sync_pb::SyncEnums_PageTransition_KEYWORD:
-        transition = content::PAGE_TRANSITION_KEYWORD;
-        break;
-      case sync_pb::SyncEnums_PageTransition_KEYWORD_GENERATED:
-        transition = content::PAGE_TRANSITION_KEYWORD_GENERATED;
-        break;
-      case sync_pb::SyncEnums_PageTransition_CHAIN_START:
-        transition = content::PAGE_TRANSITION_CHAIN_START;
-        break;
-      case sync_pb::SyncEnums_PageTransition_CHAIN_END:
-        transition = content::PAGE_TRANSITION_CHAIN_END;
-        break;
-      default:
-        switch (specifics.navigation_qualifier()) {
-          case sync_pb::SyncEnums_PageTransitionQualifier_CLIENT_REDIRECT:
-            transition = content::PAGE_TRANSITION_CLIENT_REDIRECT;
-            break;
-            case sync_pb::SyncEnums_PageTransitionQualifier_SERVER_REDIRECT:
-            transition = content::PAGE_TRANSITION_SERVER_REDIRECT;
-              break;
-            default:
-            transition = content::PAGE_TRANSITION_TYPED;
-        }
-    }
-  }
-  if (specifics.has_timestamp()) {
-    timestamp = syncer::ProtoTimeToTime(specifics.timestamp());
-  }
-  if (specifics.has_unique_id()) {
-    unique_id = specifics.unique_id();
-  }
-  SyncedTabNavigation tab_navigation(
-      index, virtual_url,
-      content::Referrer(referrer, WebKit::WebReferrerPolicyDefault), title,
-      state, transition, unique_id, timestamp);
-  // We insert it twice, once for our SyncedTabNavigations, once for the normal
-  // TabNavigation (used by the session restore UI).
-  tab->synced_tab_navigations.insert(tab->synced_tab_navigations.end(),
-                                     tab_navigation);
-  tab->navigations.insert(tab->navigations.end(),
-                          tab_navigation);
 }
 
 void SessionModelAssociator::LoadForeignTabFavicon(
@@ -1450,7 +1274,7 @@ bool SessionModelAssociator::GetForeignTab(
     const SessionID::id_type tab_id,
     const SessionTab** tab) {
   DCHECK(CalledOnValidThread());
-  const SyncedSessionTab* synced_tab;
+  const SessionTab* synced_tab = NULL;
   bool success = synced_session_tracker_.LookupSessionTab(tag,
                                                           tab_id,
                                                           &synced_tab);

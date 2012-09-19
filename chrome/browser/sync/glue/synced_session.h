@@ -18,45 +18,6 @@ class NavigationEntry;
 
 namespace browser_sync {
 
-// Sync-specific wrapper around a normal TabNavigation.
-// Copy semantics supported.
-class SyncedTabNavigation : public TabNavigation {
- public:
-  SyncedTabNavigation();
-  SyncedTabNavigation(const SyncedTabNavigation& tab);
-  SyncedTabNavigation(int index,
-                      const GURL& virtual_url,
-                      const content::Referrer& referrer,
-                      const string16& title,
-                      const std::string& state,
-                      content::PageTransition transition,
-                      int unique_id,
-                      const base::Time& timestamp);
-  virtual ~SyncedTabNavigation();
-
-  // Unique id for this navigation.
-  void set_unique_id(int unique_id);
-  int unique_id() const;
-
-  // Timestamp this navigation occurred.
-  void set_timestamp(const base::Time& timestamp);
-  base::Time timestamp() const;
-
- private:
-  int unique_id_;
-  base::Time timestamp_;
-};
-
-// Sync-specific wrapper around a normal SessionTab to support using
-// SyncedTabNavigation.
-struct SyncedSessionTab : public SessionTab {
- public:
-  SyncedSessionTab();
-  virtual ~SyncedSessionTab();
-
-  std::vector<SyncedTabNavigation> synced_tab_navigations;
-};
-
 // Defines a synced session for use by session sync. A synced session is a
 // list of windows along with a unique session identifer (tag) and meta-data
 // about the device being synced.

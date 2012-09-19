@@ -14,6 +14,8 @@
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/session_service_test_helper.h"
+#include "chrome/browser/sessions/session_types.h"
+#include "chrome/browser/sessions/session_types_test_helper.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -387,10 +389,11 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, IncognitotoNonIncognito) {
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignTab) {
   GURL url1("http://google.com");
   GURL url2("http://google2.com");
-  TabNavigation nav1(0, url1, content::Referrer(), ASCIIToUTF16("one"),
-        std::string(), content::PAGE_TRANSITION_TYPED);
-  TabNavigation nav2(0, url2, content::Referrer(), ASCIIToUTF16("two"),
-        std::string(), content::PAGE_TRANSITION_TYPED);
+  TabNavigation nav1 =
+      SessionTypesTestHelper::CreateNavigation(url1.spec(), "one");
+  TabNavigation nav2 =
+      SessionTypesTestHelper::CreateNavigation(url2.spec(), "two");
+  SessionTypesTestHelper::SetIsOverridingUserAgent(&nav2, true);
 
   // Set up the restore data.
   SessionTab tab;
@@ -450,12 +453,10 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignSession) {
 
   GURL url1("http://google.com");
   GURL url2("http://google2.com");
-  TabNavigation nav1(0, url1, content::Referrer(), ASCIIToUTF16("one"),
-        std::string(), content::PAGE_TRANSITION_TYPED);
-  TabNavigation nav2(0, url2, content::Referrer(), ASCIIToUTF16("two"),
-        std::string(), content::PAGE_TRANSITION_TYPED);
-  nav1.set_is_overriding_user_agent(false);
-  nav2.set_is_overriding_user_agent(true);
+  TabNavigation nav1 =
+      SessionTypesTestHelper::CreateNavigation(url1.spec(), "one");
+  TabNavigation nav2 =
+      SessionTypesTestHelper::CreateNavigation(url2.spec(), "two");
 
   // Set up the restore data -- one window with two tabs.
   std::vector<const SessionWindow*> session;
@@ -499,11 +500,13 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignSession) {
   content::NavigationEntry* entry =
       web_contents_1->GetController().GetActiveEntry();
   ASSERT_TRUE(entry);
-  ASSERT_EQ(nav1.is_overriding_user_agent(), entry->GetIsOverridingUserAgent());
+  ASSERT_EQ(SessionTypesTestHelper::GetIsOverridingUserAgent(nav1),
+            entry->GetIsOverridingUserAgent());
 
   entry = web_contents_2->GetController().GetActiveEntry();
   ASSERT_TRUE(entry);
-  ASSERT_EQ(nav2.is_overriding_user_agent(), entry->GetIsOverridingUserAgent());
+  ASSERT_EQ(SessionTypesTestHelper::GetIsOverridingUserAgent(nav2),
+            entry->GetIsOverridingUserAgent());
 
   // The SessionWindow destructor deletes the tabs, so we have to clear them
   // here to avoid a crash.

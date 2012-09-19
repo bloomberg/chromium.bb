@@ -4,9 +4,10 @@
 
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/session_service.h"
+#include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/session_types.h"
+#include "chrome/browser/sessions/session_types_test_helper.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -119,9 +120,9 @@ class TabRestoreServiceTest : public ChromeRenderViewHostTestHarness {
     session_service->SetSelectedTabInWindow(window_id, 0);
     if (pinned)
       session_service->SetPinnedState(window_id, tab_id, true);
-    scoped_ptr<NavigationEntry> entry(NavigationEntry::Create());
-    entry->SetURL(url1_);
-    session_service->UpdateTabNavigation(window_id, tab_id, 0, *entry.get());
+    session_service->UpdateTabNavigation(
+        window_id, tab_id,
+        SessionTypesTestHelper::CreateNavigation(url1_.spec(), "title"));
   }
 
   // Creates a SessionService and assigns it to the Profile. The SessionService
@@ -557,10 +558,10 @@ TEST_F(TabRestoreServiceTest, PruneEntries) {
 
   const size_t max_entries = TabRestoreService::kMaxEntries;
   for (size_t i = 0; i < max_entries + 5; i++) {
-    TabNavigation navigation;
-    navigation.set_virtual_url(GURL(StringPrintf("http://%d",
-                                                 static_cast<int>(i))));
-    navigation.set_title(ASCIIToUTF16(StringPrintf("%d", static_cast<int>(i))));
+    TabNavigation navigation =
+        SessionTypesTestHelper::CreateNavigation(
+            StringPrintf("http://%d", static_cast<int>(i)),
+            StringPrintf("%d", static_cast<int>(i)));
 
     Tab* tab = new Tab();
     tab->navigations.push_back(navigation);
@@ -578,10 +579,9 @@ TEST_F(TabRestoreServiceTest, PruneEntries) {
   EXPECT_EQ(max_entries, service_->entries_.size());
 
   // Prune older first.
-  TabNavigation navigation;
   const char kRecentUrl[] = "http://recent";
-  navigation.set_virtual_url(GURL(kRecentUrl));
-  navigation.set_title(ASCIIToUTF16("Most recent"));
+  TabNavigation navigation =
+      SessionTypesTestHelper::CreateNavigation(kRecentUrl, "Most recent");
   Tab* tab = new Tab();
   tab->navigations.push_back(navigation);
   tab->current_navigation_index = 0;
@@ -594,8 +594,9 @@ TEST_F(TabRestoreServiceTest, PruneEntries) {
           navigations[0].virtual_url());
 
   // Ignore NTPs.
-  navigation.set_virtual_url(GURL(chrome::kChromeUINewTabURL));
-  navigation.set_title(ASCIIToUTF16("New tab"));
+  navigation =
+      SessionTypesTestHelper::CreateNavigation(
+          chrome::kChromeUINewTabURL, "New tab");
 
   tab = new Tab();
   tab->navigations.push_back(navigation);

@@ -422,7 +422,7 @@ class SessionModelAssociator
   // |new_url| will be the tab's current url.
   void AssociateTabContents(const SyncedWindowDelegate& window,
                             const SyncedTabDelegate& new_tab,
-                            SyncedSessionTab* prev_tab,
+                            SessionTab* prev_tab,
                             sync_pb::SessionTab* sync_tab,
                             GURL* new_url);
 
@@ -456,22 +456,12 @@ class SessionModelAssociator
   // Used to populate a session tab from the session specifics tab provided.
   static void PopulateSessionTabFromSpecifics(const sync_pb::SessionTab& tab,
                                               const base::Time& mtime,
-                                              SyncedSessionTab* session_tab);
+                                              SessionTab* session_tab);
 
   // Helper method to load the favicon data from the tab specifics. If the
   // favicon is valid, stores the favicon data and increments the usage counter
   // in |synced_favicons_| and updates |synced_favicon_pages_| appropriately.
   void LoadForeignTabFavicon(const sync_pb::SessionTab& tab);
-
-  // Append a new navigation from sync specifics onto |tab| navigation vectors.
-  static void AppendSessionTabNavigation(
-     const sync_pb::TabNavigation& navigation,
-     SyncedSessionTab* tab);
-
-  // Populates the navigation portion of the session specifics.
-  static void PopulateSessionSpecificsNavigation(
-     const content::NavigationEntry& navigation,
-     sync_pb::TabNavigation* tab_navigation);
 
   // Returns true if this tab belongs to this profile and belongs to a window,
   // false otherwise.

@@ -12,6 +12,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/cancelable_request.h"
+#include "chrome/browser/sessions/session_types_test_helper.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/browser/ui/cocoa/history_menu_bridge.h"
@@ -90,12 +91,12 @@ class HistoryMenuBridgeTest : public CocoaProfileTest {
     return item;
   }
 
-  MockTRS::Tab CreateSessionTab(const GURL& url, const string16& title) {
+  MockTRS::Tab CreateSessionTab(const std::string& url,
+                                const std::string& title) {
     MockTRS::Tab tab;
     tab.current_navigation_index = 0;
     tab.navigations.push_back(
-        TabNavigation(0, url, content::Referrer(), title, std::string(),
-                      content::PAGE_TRANSITION_LINK));
+        SessionTypesTestHelper::CreateNavigation(url, title));
     return tab;
   }
 
@@ -213,13 +214,11 @@ TEST_F(HistoryMenuBridgeTest, RecentlyClosedTabs) {
   scoped_ptr<MockTRS> trs(new MockTRS(profile()));
   MockTRS::Entries entries;
 
-  MockTRS::Tab tab1 = CreateSessionTab(GURL("http://google.com"),
-                                       ASCIIToUTF16("Google"));
+  MockTRS::Tab tab1 = CreateSessionTab("http://google.com", "Google");
   tab1.id = 24;
   entries.push_back(&tab1);
 
-  MockTRS::Tab tab2 = CreateSessionTab(GURL("http://apple.com"),
-                                       ASCIIToUTF16("Apple"));
+  MockTRS::Tab tab2 = CreateSessionTab("http://apple.com", "Apple");
   tab2.id = 42;
   entries.push_back(&tab2);
 
@@ -249,37 +248,29 @@ TEST_F(HistoryMenuBridgeTest, RecentlyClosedTabsAndWindows) {
   scoped_ptr<MockTRS> trs(new MockTRS(profile()));
   MockTRS::Entries entries;
 
-  MockTRS::Tab tab1 = CreateSessionTab(GURL("http://google.com"),
-                                       ASCIIToUTF16("Google"));
+  MockTRS::Tab tab1 = CreateSessionTab("http://google.com", "Google");
   tab1.id = 24;
   entries.push_back(&tab1);
 
   MockTRS::Window win1;
   win1.id = 30;
-  win1.tabs.push_back(
-      CreateSessionTab(GURL("http://foo.com"), ASCIIToUTF16("foo")));
+  win1.tabs.push_back(CreateSessionTab("http://foo.com", "foo"));
   win1.tabs[0].id = 31;
-  win1.tabs.push_back(
-      CreateSessionTab(GURL("http://bar.com"), ASCIIToUTF16("bar")));
+  win1.tabs.push_back(CreateSessionTab("http://bar.com", "bar"));
   win1.tabs[1].id = 32;
   entries.push_back(&win1);
 
-  MockTRS::Tab tab2 = CreateSessionTab(GURL("http://apple.com"),
-                                       ASCIIToUTF16("Apple"));
+  MockTRS::Tab tab2 = CreateSessionTab("http://apple.com", "Apple");
   tab2.id = 42;
   entries.push_back(&tab2);
 
   MockTRS::Window win2;
   win2.id = 50;
-  win2.tabs.push_back(
-      CreateSessionTab(GURL("http://magic.com"), ASCIIToUTF16("magic")));
+  win2.tabs.push_back(CreateSessionTab("http://magic.com", "magic"));
   win2.tabs[0].id = 51;
-  win2.tabs.push_back(
-      CreateSessionTab(GURL("http://goats.com"), ASCIIToUTF16("goats")));
+  win2.tabs.push_back(CreateSessionTab("http://goats.com", "goats"));
   win2.tabs[1].id = 52;
-  win2.tabs.push_back(
-      CreateSessionTab(GURL("http://teleporter.com"),
-                       ASCIIToUTF16("teleporter")));
+  win2.tabs.push_back(CreateSessionTab("http://teleporter.com", "teleporter"));
   win2.tabs[1].id = 53;
   entries.push_back(&win2);
 

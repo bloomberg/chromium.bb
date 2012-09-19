@@ -947,7 +947,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
         base::PLATFORM_FILE_EXCLUSIVE_READ |
         base::PLATFORM_FILE_ASYNC;
     const std::string& state =
-        tab.navigations.at(selected_index).state();
+        tab.navigations.at(selected_index).content_state();
     const std::vector<FilePath>& file_paths =
         webkit_glue::FilePathsFromHistoryState(state);
     for (std::vector<FilePath>::const_iterator file = file_paths.begin();

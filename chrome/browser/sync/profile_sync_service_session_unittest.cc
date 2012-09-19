@@ -15,6 +15,7 @@
 #include "base/scoped_temp_dir.h"
 #include "base/stl_util.h"
 #include "base/time.h"
+#include "chrome/browser/sessions/session_types_test_helper.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/token_service_factory.h"
@@ -139,9 +140,10 @@ void VerifySyncedSession(
       ASSERT_EQ("app_id", tab->extension_app_id);
       ASSERT_EQ(1U, tab->navigations.size());
       ASSERT_EQ(tab->navigations[0].virtual_url(), GURL("http://foo/1"));
-      ASSERT_EQ(tab->navigations[0].referrer().url, GURL("referrer"));
+      ASSERT_EQ(SessionTypesTestHelper::GetReferrer(tab->navigations[0]).url,
+                GURL("referrer"));
       ASSERT_EQ(tab->navigations[0].title(), string16(ASCIIToUTF16("title")));
-      ASSERT_EQ(tab->navigations[0].transition(),
+      ASSERT_EQ(SessionTypesTestHelper::GetTransitionType(tab->navigations[0]),
                 content::PAGE_TRANSITION_TYPED);
     }
   }

@@ -149,8 +149,7 @@ class SessionService : public BaseSessionService,
   // Updates the navigation entry for the specified tab.
   void UpdateTabNavigation(const SessionID& window_id,
                            const SessionID& tab_id,
-                           int index,
-                           const content::NavigationEntry& entry);
+                           const TabNavigation& navigation);
 
   // Notification that a tab has restored its entries or a closed tab is being
   // reused.

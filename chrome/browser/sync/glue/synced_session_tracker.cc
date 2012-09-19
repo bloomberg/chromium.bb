@@ -67,7 +67,7 @@ bool SyncedSessionTracker::LookupSessionWindows(
 bool SyncedSessionTracker::LookupSessionTab(
     const std::string& tag,
     SessionID::id_type tab_id,
-    const SyncedSessionTab** tab) const {
+    const SessionTab** tab) const {
   DCHECK(tab);
   SyncedTabMap::const_iterator tab_map_iter = synced_tab_map_.find(tag);
   if (tab_map_iter == synced_tab_map_.end()) {
@@ -165,7 +165,7 @@ bool SyncedSessionTracker::DeleteOldSessionTabIfNecessary(
     SessionTabWrapper tab_wrapper) {
   if (!tab_wrapper.owned) {
     if (VLOG_IS_ON(1)) {
-      SyncedSessionTab* tab_ptr = tab_wrapper.tab_ptr;
+      SessionTab* tab_ptr = tab_wrapper.tab_ptr;
       std::string title;
       if (tab_ptr->navigations.size() > 0) {
         title = " (" + UTF16ToUTF8(
@@ -239,7 +239,7 @@ void SyncedSessionTracker::PutTabInWindow(const std::string& session_tag,
                                           SessionID::id_type window_id,
                                           SessionID::id_type tab_id,
                                           size_t tab_index) {
-  SyncedSessionTab* tab_ptr = GetTab(session_tag, tab_id);
+  SessionTab* tab_ptr = GetTab(session_tag, tab_id);
   unmapped_tabs_.erase(tab_ptr);
   synced_tab_map_[session_tag][tab_id].owned = true;
   tab_ptr->window_id.set_id(window_id);
@@ -251,14 +251,14 @@ void SyncedSessionTracker::PutTabInWindow(const std::string& session_tag,
   if (window_tabs.size() <= tab_index) {
     window_tabs.resize(tab_index+1, NULL);
   }
-  DCHECK_EQ((SyncedSessionTab*)NULL, window_tabs[tab_index]);
+  DCHECK(!window_tabs[tab_index]);
   window_tabs[tab_index] = tab_ptr;
 }
 
-SyncedSessionTab* SyncedSessionTracker::GetTab(
+SessionTab* SyncedSessionTracker::GetTab(
     const std::string& session_tag,
     SessionID::id_type tab_id) {
-  SyncedSessionTab* tab_ptr = NULL;
+  SessionTab* tab_ptr = NULL;
   IDToSessionTabMap::iterator iter =
       synced_tab_map_[session_tag].find(tab_id);
   if (iter != synced_tab_map_[session_tag].end()) {
@@ -275,7 +275,7 @@ SyncedSessionTab* SyncedSessionTracker::GetTab(
                << "'s seen tab " << tab_id  << " at " << tab_ptr << title;
     }
   } else {
-    tab_ptr = new SyncedSessionTab();
+    tab_ptr = new SessionTab();
     tab_ptr->tab_id.set_id(tab_id);
     synced_tab_map_[session_tag][tab_id] = SessionTabWrapper(tab_ptr, false);
     unmapped_tabs_.insert(tab_ptr);

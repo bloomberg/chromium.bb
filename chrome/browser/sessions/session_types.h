@@ -8,119 +8,121 @@
 #include <string>
 #include <vector>
 
-#include "base/stl_util.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/time.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/referrer.h"
 #include "googleurl/src/gurl.h"
+#include "sync/protocol/session_specifics.pb.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/rect.h"
 
-class Profile;
+class Pickle;
+class PickleIterator;
 
 namespace content {
+class BrowserContext;
 class NavigationEntry;
 }
 
 // TabNavigation  -------------------------------------------------------------
 
-// TabNavigation corresponds to the parts of NavigationEntry needed to restore
-// the NavigationEntry during session restore and tab restore.
+// TabNavigation is a "freeze-dried" version of NavigationEntry.  It
+// contains the data needed to restore a NavigationEntry during
+// session restore and tab restore, and it can also be pickled and
+// unpickled.  It is also convertible to a sync protocol buffer for
+// session syncing.
 //
-// TabNavigation is cheap and supports copy semantics.
+// Default copy constructor and assignment operator welcome.
 class TabNavigation {
  public:
-  enum TypeMask {
-    HAS_POST_DATA = 1
-  };
-
+  // Creates an invalid (index < 0) TabNavigation.
   TabNavigation();
-  TabNavigation(int index,
-                const GURL& virtual_url,
-                const content::Referrer& referrer,
-                const string16& title,
-                const std::string& state,
-                content::PageTransition transition);
-  TabNavigation(const TabNavigation& tab);
-  virtual ~TabNavigation();
-  TabNavigation& operator=(const TabNavigation& tab);
+  ~TabNavigation();
 
-  // Converts this TabNavigation into a NavigationEntry with a page id of
-  // |page_id|. The caller owns the returned NavigationEntry.
-  content::NavigationEntry* ToNavigationEntry(int page_id,
-                                              Profile* profile) const;
-
-  // Resets this TabNavigation from |entry|.
-  void SetFromNavigationEntry(const content::NavigationEntry& entry);
-
-  // Virtual URL of the page. See NavigationEntry::GetVirtualURL() for details.
-  void set_virtual_url(const GURL& url) { virtual_url_ = url; }
-  const GURL& virtual_url() const { return virtual_url_; }
-
-  // The referrer.
-  const content::Referrer& referrer() const { return referrer_; }
-
-  // The title of the page.
-  void set_title(const string16& title) { title_ = title; }
-  const string16& title() const { return title_; }
-
-  // State bits.
-  const std::string& state() const { return state_; }
-
-  // Transition type.
-  void set_transition(content::PageTransition transition) {
-    transition_ = transition;
-  }
-  content::PageTransition transition() const { return transition_; }
-
-  // A mask used for arbitrary boolean values needed to represent a
-  // NavigationEntry. Currently only contains HAS_POST_DATA or 0.
-  void set_type_mask(int type_mask) { type_mask_ = type_mask; }
-  int type_mask() const { return type_mask_; }
-
-  // The index in the NavigationController. If this is -1, it means this
-  // TabNavigation is bogus.
+  // Construct a TabNavigation for a particular index from a
+  // NavigationEntry with the given timestamp.
   //
-  // This is used when determining the selected TabNavigation and only useful
-  // by BaseSessionService and SessionService.
-  void set_index(int index) { index_ = index; }
+  // TODO(akalin): Add a timestamp field to
+  // navigation::NavigationEntry and use that instead of passing a
+  // separate timestamp.
+  static TabNavigation FromNavigationEntry(
+      int index,
+      const content::NavigationEntry& entry,
+      base::Time timestamp);
+
+  // Construct a TabNavigation for a particular index from a sync
+  // protocol buffer.  Note that the sync protocol buffer doesn't
+  // contain all TabNavigation fields.
+  static TabNavigation FromSyncData(
+      int index,
+      const sync_pb::TabNavigation& specifics);
+
+  // Note that not all TabNavigation fields are preserved.
+  void WriteToPickle(Pickle* pickle) const;
+  bool ReadFromPickle(PickleIterator* iterator);
+
+  // Convert this TabNavigation into a NavigationEntry with the given
+  // page ID and context.  The NavigationEntry will have a transition
+  // type of PAGE_TRANSITION_RELOAD and a new unique ID.
+  scoped_ptr<content::NavigationEntry> ToNavigationEntry(
+      int page_id,
+      content::BrowserContext* browser_context) const;
+
+  // Convert this navigation into its sync protocol buffer equivalent.
+  // Note that the protocol buffer doesn't contain all TabNavigation
+  // fields.
+  sync_pb::TabNavigation ToSyncData() const;
+
+  // The index in the NavigationController. This TabNavigation is
+  // valid only when the index is non-negative.
+  //
+  // This is used when determining the selected TabNavigation and only
+  // used by SessionService.
   int index() const { return index_; }
+  void set_index(int index) { index_ = index; }
 
-  // The URL that initially spawned the NavigationEntry.
-  const GURL& original_request_url() const { return original_request_url_; }
-  void set_original_request_url(const GURL& url) {
-    original_request_url_ = url;
-  }
+  // Accessors for some fields taken from NavigationEntry.
+  int unique_id() const { return unique_id_; }
+  const GURL& virtual_url() const { return virtual_url_; }
+  const string16& title() const { return title_; }
+  const std::string& content_state() const { return content_state_; }
 
-  // Whether or not we're overriding the standard user agent.
-  bool is_overriding_user_agent() const { return is_overriding_user_agent_; }
-  void set_is_overriding_user_agent(bool state) {
-    is_overriding_user_agent_ = state;
-  }
+  // Timestamp this navigation occurred.
+  base::Time timestamp() const { return timestamp_; }
 
-  // Converts a set of TabNavigations into a set of NavigationEntrys. The
-  // caller owns the NavigationEntrys.
-  static void CreateNavigationEntriesFromTabNavigations(
-      Profile* profile,
+  // Converts a set of TabNavigations into a list of NavigationEntrys
+  // with sequential page IDs and the given context. The caller owns
+  // the returned NavigationEntrys.
+  static std::vector<content::NavigationEntry*>
+  CreateNavigationEntriesFromTabNavigations(
       const std::vector<TabNavigation>& navigations,
-      std::vector<content::NavigationEntry*>* entries);
+      content::BrowserContext* browser_context);
 
  private:
-  friend class BaseSessionService;
+  friend struct SessionTypesTestHelper;
 
-  GURL virtual_url_;
-  content::Referrer referrer_;
-  string16 title_;
-  std::string state_;
-  content::PageTransition transition_;
-  int type_mask_;
-  int64 post_id_;
-
+  // Index in the NavigationController.
   int index_;
+
+  // Member variables corresponding to NavigationEntry fields.
+  int unique_id_;
+  content::Referrer referrer_;
+  GURL virtual_url_;
+  string16 title_;
+  std::string content_state_;
+  content::PageTransition transition_type_;
+  bool has_post_data_;
+  int64 post_id_;
   GURL original_request_url_;
   bool is_overriding_user_agent_;
+
+  // Timestamp when the navigation occurred.
+  //
+  // TODO(akalin): Add a timestamp field to NavigationEntry.
+  base::Time timestamp_;
 };
 
 // SessionTab ----------------------------------------------------------------

@@ -22,10 +22,6 @@ class SessionBackend;
 class SessionCommand;
 class TabNavigation;
 
-namespace content {
-class NavigationEntry;
-}
-
 // BaseSessionService is the super class of both tab restore service and
 // session service. It contains commonality needed by both, in particular
 // it manages a set of SessionCommands that are periodically sent to a
@@ -113,8 +109,7 @@ class BaseSessionService : public CancelableRequestProvider,
   SessionCommand* CreateUpdateTabNavigationCommand(
       SessionID::id_type command_id,
       SessionID::id_type tab_id,
-      int index,
-      const content::NavigationEntry& entry);
+      const TabNavigation& navigation);
 
   // Creates a SessionCommand that represents marking a tab as an application.
   SessionCommand* CreateSetTabExtensionAppIDCommand(

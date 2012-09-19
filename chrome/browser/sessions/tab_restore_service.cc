@@ -17,9 +17,9 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sessions/session_command.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
-#include "chrome/browser/sessions/session_command.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sessions/tab_restore_service_delegate.h"
 #include "chrome/browser/sessions/tab_restore_service_observer.h"
@@ -529,7 +529,8 @@ void TabRestoreService::PopulateTab(Tab* tab,
   for (int i = 0; i < entry_count; ++i) {
     NavigationEntry* entry = (i == pending_index) ?
         controller->GetPendingEntry() : controller->GetEntryAtIndex(i);
-    tab->navigations[i].SetFromNavigationEntry(*entry);
+    tab->navigations[i] =
+        TabNavigation::FromNavigationEntry(i, *entry, base::Time::Now());
   }
   tab->timestamp = TimeNow();
   tab->current_navigation_index = controller->GetCurrentEntryIndex();
@@ -708,14 +709,9 @@ void TabRestoreService::ScheduleCommandsForTab(const Tab& tab,
   for (int i = first_index_to_persist, wrote_count = 0;
        i < max_index && wrote_count < 2 * max_persist_navigation_count; ++i) {
     if (ShouldTrackEntry(navigations[i].virtual_url())) {
-      // Creating a NavigationEntry isn't the most efficient way to go about
-      // this, but it simplifies the code and makes it less error prone as we
-      // add new data to NavigationEntry.
-      scoped_ptr<NavigationEntry> entry(
-          navigations[i].ToNavigationEntry(wrote_count, profile()));
       ScheduleCommand(
           CreateUpdateTabNavigationCommand(kCommandUpdateTabNavigation, tab.id,
-                                           wrote_count++, *entry));
+                                           navigations[i]));
     }
   }
 }

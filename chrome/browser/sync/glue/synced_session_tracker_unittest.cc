@@ -10,6 +10,7 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/sessions/session_types.h"
+#include "chrome/browser/sessions/session_types_test_helper.h"
 #include "chrome/browser/sync/glue/synced_session_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -28,7 +29,7 @@ TEST_F(SyncedSessionTrackerTest, GetSession) {
 
 TEST_F(SyncedSessionTrackerTest, GetTabUnmapped) {
   SyncedSessionTracker tracker;
-  SyncedSessionTab* tab = tracker.GetTab("tag", 0);
+  SessionTab* tab = tracker.GetTab("tag", 0);
   ASSERT_EQ(tab, tracker.GetTab("tag", 0));
   // Should clean up memory on its own.
 }
@@ -60,12 +61,10 @@ TEST_F(SyncedSessionTrackerTest, LookupAllForeignSessions) {
   tracker.GetSession("tag2");
   tracker.PutWindowInSession("tag1", 0);
   tracker.PutTabInWindow("tag1", 0, 15, 0);
-  SyncedSessionTab* tab = tracker.GetTab("tag1", 15);
+  SessionTab* tab = tracker.GetTab("tag1", 15);
   ASSERT_TRUE(tab);
-  tab->navigations.push_back(TabNavigation(
-      0, GURL("bla://valid_url"), content::Referrer(GURL("bla://referrer"),
-      WebKit::WebReferrerPolicyDefault), string16(ASCIIToUTF16("title")),
-      std::string("state"), content::PageTransitionFromInt(0)));
+  tab->navigations.push_back(SessionTypesTestHelper::CreateNavigation(
+      "bla://valid_url", "title"));
   ASSERT_TRUE(tracker.LookupAllForeignSessions(&sessions));
   // Only the session with a valid window and tab gets returned.
   ASSERT_EQ(1U, sessions.size());
@@ -91,13 +90,13 @@ TEST_F(SyncedSessionTrackerTest, LookupSessionWindows) {
 
 TEST_F(SyncedSessionTrackerTest, LookupSessionTab) {
   SyncedSessionTracker tracker;
-  const SyncedSessionTab* tab;
+  const SessionTab* tab;
   ASSERT_FALSE(tracker.LookupSessionTab("tag1", 5, &tab));
   tracker.GetSession("tag1");
   tracker.PutWindowInSession("tag1", 0);
   tracker.PutTabInWindow("tag1", 0, 5, 0);
   ASSERT_TRUE(tracker.LookupSessionTab("tag1", 5, &tab));
-  ASSERT_NE((SyncedSessionTab*)NULL, tab);
+  ASSERT_NE((SessionTab*)NULL, tab);
 }
 
 TEST_F(SyncedSessionTrackerTest, Complex) {
@@ -105,8 +104,8 @@ TEST_F(SyncedSessionTrackerTest, Complex) {
   const std::string tag2 = "tag2";
   const std::string tag3 = "tag3";
   SyncedSessionTracker tracker;
-  std::vector<SyncedSessionTab*> tabs1, tabs2;
-  SyncedSessionTab* temp_tab;
+  std::vector<SessionTab*> tabs1, tabs2;
+  SessionTab* temp_tab;
   ASSERT_TRUE(tracker.Empty());
   ASSERT_EQ(0U, tracker.num_synced_sessions());
   ASSERT_EQ(0U, tracker.num_synced_tabs(tag1));
@@ -141,13 +140,13 @@ TEST_F(SyncedSessionTrackerTest, Complex) {
   tracker.PutTabInWindow(tag1, 0, 2, 0);    // No longer unmapped.
   ASSERT_EQ(3U, tracker.num_synced_tabs(tag1));      // Has not changed.
 
-  const SyncedSessionTab *tab_ptr;
+  const SessionTab *tab_ptr;
   ASSERT_TRUE(tracker.LookupSessionTab(tag1, 0, &tab_ptr));
   ASSERT_EQ(tab_ptr, tabs1[0]);
   ASSERT_TRUE(tracker.LookupSessionTab(tag1, 2, &tab_ptr));
   ASSERT_EQ(tab_ptr, tabs1[2]);
   ASSERT_FALSE(tracker.LookupSessionTab(tag1, 3, &tab_ptr));
-  ASSERT_EQ(static_cast<const SyncedSessionTab*>(NULL), tab_ptr);
+  ASSERT_EQ(static_cast<const SessionTab*>(NULL), tab_ptr);
 
   std::vector<const SessionWindow*> windows;
   ASSERT_TRUE(tracker.LookupSessionWindows(tag1, &windows));
@@ -177,7 +176,7 @@ TEST_F(SyncedSessionTrackerTest, ManyGetTabs) {
       // More attempts than tabs means we'll sometimes get the same tabs,
       // sometimes have to allocate new tabs.
       int rand_tab_num = base::RandInt(0, kMaxTabs);
-      SyncedSessionTab* tab = tracker.GetTab(tag, rand_tab_num);
+      SessionTab* tab = tracker.GetTab(tag, rand_tab_num);
       ASSERT_TRUE(tab);
     }
   }

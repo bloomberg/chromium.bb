@@ -430,9 +430,8 @@ void SessionService::TabNavigationPathPrunedFromFront(
 void SessionService::UpdateTabNavigation(
     const SessionID& window_id,
     const SessionID& tab_id,
-    int index,
-    const NavigationEntry& entry) {
-  if (!ShouldTrackEntry(entry.GetVirtualURL()) ||
+    const TabNavigation& navigation) {
+  if (!ShouldTrackEntry(navigation.virtual_url()) ||
       !ShouldTrackChangesToWindow(window_id)) {
     return;
   }
@@ -440,11 +439,11 @@ void SessionService::UpdateTabNavigation(
   if (tab_to_available_range_.find(tab_id.id()) !=
       tab_to_available_range_.end()) {
     std::pair<int, int>& range = tab_to_available_range_[tab_id.id()];
-    range.first = std::min(index, range.first);
-    range.second = std::max(index, range.second);
+    range.first = std::min(navigation.index(), range.first);
+    range.second = std::max(navigation.index(), range.second);
   }
   ScheduleCommand(CreateUpdateTabNavigationCommand(kCommandUpdateTabNavigation,
-                                                   tab_id.id(), index, entry));
+                                                   tab_id.id(), navigation));
 }
 
 void SessionService::TabRestored(TabContents* tab, bool pinned) {
@@ -689,9 +688,13 @@ void SessionService::Observe(int type,
       if (!session_tab_helper || web_contents->GetBrowserContext() != profile())
         return;
       content::Details<content::EntryChangedDetails> changed(details);
+      const TabNavigation navigation =
+          TabNavigation::FromNavigationEntry(
+              changed->index, *changed->changed_entry,
+              base::Time::Now());
       UpdateTabNavigation(session_tab_helper->window_id(),
                           session_tab_helper->session_id(),
-                          changed->index, *changed->changed_entry);
+                          navigation);
       break;
     }
 
@@ -709,11 +712,16 @@ void SessionService::Observe(int type,
           session_tab_helper->window_id(),
           session_tab_helper->session_id(),
           current_entry_index);
+      const TabNavigation navigation =
+          TabNavigation::FromNavigationEntry(
+              current_entry_index,
+              *web_contents->GetController().GetEntryAtIndex(
+                  current_entry_index),
+              base::Time::Now());
       UpdateTabNavigation(
           session_tab_helper->window_id(),
           session_tab_helper->session_id(),
-          current_entry_index,
-          *web_contents->GetController().GetEntryAtIndex(current_entry_index));
+          navigation);
       content::Details<content::LoadCommittedDetails> changed(details);
       if (changed->type == content::NAVIGATION_TYPE_NEW_PAGE ||
         changed->type == content::NAVIGATION_TYPE_EXISTING_PAGE) {
@@ -1352,9 +1360,11 @@ void SessionService::BuildCommandsForTab(
         tab->web_contents()->GetController().GetEntryAtIndex(i);
     DCHECK(entry);
     if (ShouldTrackEntry(entry->GetVirtualURL())) {
+      const TabNavigation navigation =
+          TabNavigation::FromNavigationEntry(i, *entry, base::Time::Now());
       commands->push_back(
           CreateUpdateTabNavigationCommand(
-              kCommandUpdateTabNavigation, session_id.id(), i, *entry));
+              kCommandUpdateTabNavigation, session_id.id(), navigation));
     }
   }
   commands->push_back(

@@ -20,7 +20,6 @@
 #include "content/public/common/referrer.h"
 #include "webkit/glue/webkit_glue.h"
 
-using WebKit::WebReferrerPolicy;
 using content::BrowserThread;
 using content::NavigationEntry;
 
@@ -150,52 +149,11 @@ void BaseSessionService::Save() {
 SessionCommand* BaseSessionService::CreateUpdateTabNavigationCommand(
     SessionID::id_type command_id,
     SessionID::id_type tab_id,
-    int index,
-    const NavigationEntry& entry) {
+    const TabNavigation& navigation) {
   // Use pickle to handle marshalling.
   Pickle pickle;
   pickle.WriteInt(tab_id);
-  pickle.WriteInt(index);
-
-  // We only allow navigations up to 63k (which should be completely
-  // reasonable). On the off chance we get one that is too big, try to
-  // keep the url.
-
-  // Bound the string data (which is variable length) to
-  // |max_state_size bytes| bytes.
-  static const SessionCommand::size_type max_state_size =
-      std::numeric_limits<SessionCommand::size_type>::max() - 1024;
-
-  int bytes_written = 0;
-
-  WriteStringToPickle(pickle, &bytes_written, max_state_size,
-                      entry.GetVirtualURL().spec());
-
-  WriteString16ToPickle(pickle, &bytes_written, max_state_size,
-                        entry.GetTitle());
-
-  std::string content_state = entry.GetContentState();
-  if (entry.GetHasPostData()) {
-    content_state =
-        webkit_glue::RemovePasswordDataFromHistoryState(content_state);
-  }
-  WriteStringToPickle(pickle, &bytes_written, max_state_size, content_state);
-
-  pickle.WriteInt(entry.GetTransitionType());
-  int type_mask = entry.GetHasPostData() ? TabNavigation::HAS_POST_DATA : 0;
-  pickle.WriteInt(type_mask);
-
-  WriteStringToPickle(pickle, &bytes_written, max_state_size,
-      entry.GetReferrer().url.is_valid() ?
-          entry.GetReferrer().url.spec() : std::string());
-  pickle.WriteInt(entry.GetReferrer().policy);
-
-  // Save info required to override the user agent.
-  WriteStringToPickle(pickle, &bytes_written, max_state_size,
-      entry.GetOriginalRequestURL().is_valid() ?
-          entry.GetOriginalRequestURL().spec() : std::string());
-  pickle.WriteBool(entry.GetIsOverridingUserAgent());
-
+  navigation.WriteToPickle(&pickle);
   return new SessionCommand(command_id, pickle);
 }
 
@@ -266,51 +224,9 @@ bool BaseSessionService::RestoreUpdateTabNavigationCommand(
   if (!pickle.get())
     return false;
   PickleIterator iterator(*pickle);
-  std::string url_spec;
-  if (!pickle->ReadInt(&iterator, tab_id) ||
-      !pickle->ReadInt(&iterator, &(navigation->index_)) ||
-      !pickle->ReadString(&iterator, &url_spec) ||
-      !pickle->ReadString16(&iterator, &(navigation->title_)) ||
-      !pickle->ReadString(&iterator, &(navigation->state_)) ||
-      !pickle->ReadInt(&iterator,
-                       reinterpret_cast<int*>(&(navigation->transition_))))
-    return false;
-  // type_mask did not always exist in the written stream. As such, we
-  // don't fail if it can't be read.
-  bool has_type_mask = pickle->ReadInt(&iterator, &(navigation->type_mask_));
-
-  if (has_type_mask) {
-    // the "referrer" property was added after type_mask to the written
-    // stream. As such, we don't fail if it can't be read.
-    std::string referrer_spec;
-    pickle->ReadString(&iterator, &referrer_spec);
-    // The "referrer policy" property was added even later, so we fall back to
-    // the default policy if the property is not present.
-    int policy_int;
-    WebReferrerPolicy policy;
-    if (pickle->ReadInt(&iterator, &policy_int))
-      policy = static_cast<WebReferrerPolicy>(policy_int);
-    else
-      policy = WebKit::WebReferrerPolicyDefault;
-    navigation->referrer_ = content::Referrer(
-        referrer_spec.empty() ? GURL() : GURL(referrer_spec),
-        policy);
-
-    // If the original URL can't be found, leave it empty.
-    std::string url_spec;
-    if (!pickle->ReadString(&iterator, &url_spec))
-      url_spec = std::string();
-    navigation->set_original_request_url(GURL(url_spec));
-
-    // Default to not overriding the user agent if we don't have info.
-    bool override_user_agent;
-    if (!pickle->ReadBool(&iterator, &override_user_agent))
-      override_user_agent = false;
-    navigation->set_is_overriding_user_agent(override_user_agent);
-  }
-
-  navigation->virtual_url_ = GURL(url_spec);
-  return true;
+  return
+      pickle->ReadInt(&iterator, tab_id) &&
+      navigation->ReadFromPickle(&iterator);
 }
 
 bool BaseSessionService::RestoreSetTabExtensionAppIDCommand(

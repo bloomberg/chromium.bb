@@ -59,9 +59,9 @@ content::WebContents* AddRestoredTab(
   WebContents* new_tab = tab_contents->web_contents();
   extensions::TabHelper::FromWebContents(new_tab)->
       SetExtensionAppById(extension_app_id);
-  std::vector<NavigationEntry*> entries;
-  TabNavigation::CreateNavigationEntriesFromTabNavigations(
-      browser->profile(), navigations, &entries);
+  std::vector<NavigationEntry*> entries =
+      TabNavigation::CreateNavigationEntriesFromTabNavigations(
+          navigations, browser->profile());
   new_tab->SetUserAgentOverride(user_agent_override);
   new_tab->GetController().Restore(
       selected_navigation, from_last_session, &entries);
@@ -123,9 +123,9 @@ void ReplaceRestoredTab(
   extensions::TabHelper::FromWebContents(replacement)->
       SetExtensionAppById(extension_app_id);
   replacement->SetUserAgentOverride(user_agent_override);
-  std::vector<NavigationEntry*> entries;
-  TabNavigation::CreateNavigationEntriesFromTabNavigations(
-      browser->profile(), navigations, &entries);
+  std::vector<NavigationEntry*> entries =
+      TabNavigation::CreateNavigationEntriesFromTabNavigations(
+          navigations, browser->profile());
   replacement->GetController().Restore(
       selected_navigation, from_last_session, &entries);
   DCHECK_EQ(0u, entries.size());

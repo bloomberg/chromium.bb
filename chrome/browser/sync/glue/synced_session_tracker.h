@@ -56,7 +56,7 @@ class SyncedSessionTracker {
   // - Returns false, tab is set to NULL.
   bool LookupSessionTab(const std::string& session_tag,
                         SessionID::id_type tab_id,
-                        const SyncedSessionTab** tab) const;
+                        const SessionTab** tab) const;
 
   // Returns a pointer to the SyncedSession object associated with
   // |session_tag|.  If none exists, creates one. Ownership of the
@@ -103,8 +103,8 @@ class SyncedSessionTracker {
   // Returns a pointer to the SessionTab object associated with |tab_id| for
   // the session specified with |session_tag|. If none exists, creates one.
   // Ownership of the SessionTab remains within the SyncedSessionTracker.
-  SyncedSessionTab* GetTab(const std::string& session_tag,
-                           SessionID::id_type tab_id);
+  SessionTab* GetTab(const std::string& session_tag,
+                     SessionID::id_type tab_id);
 
   // Free the memory for all dynamically allocated objects and clear the
   // tracking structures.
@@ -138,10 +138,10 @@ class SyncedSessionTracker {
   // above).
   struct SessionTabWrapper {
     SessionTabWrapper() : tab_ptr(NULL), owned(false) {}
-    SessionTabWrapper(SyncedSessionTab* tab_ptr, bool owned)
+    SessionTabWrapper(SessionTab* tab_ptr, bool owned)
         : tab_ptr(tab_ptr),
           owned(owned) {}
-    SyncedSessionTab* tab_ptr;
+    SessionTab* tab_ptr;
     bool owned;
   };
   typedef std::map<SessionID::id_type, SessionTabWrapper> IDToSessionTabMap;
@@ -184,7 +184,7 @@ class SyncedSessionTracker {
   // have not yet mapped to SyncedSessions. These are temporarily orphaned
   // tabs, and won't be deleted if we delete synced_session_map_, but are still
   // owned by the SyncedSessionTracker itself (and deleted on Clear()).
-  std::set<SyncedSessionTab*> unmapped_tabs_;
+  std::set<SessionTab*> unmapped_tabs_;
 
   // The tag for this machine's local session, so we can distinguish the foreign
   // sessions.
