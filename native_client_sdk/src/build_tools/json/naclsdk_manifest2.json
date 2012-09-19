@@ -33,7 +33,7 @@
         }
       ],
       "revision": 157127
-    }
+    },
     {
       "name": "gdb_builds",
       "description": "gdb (Gnu Debugger) build for debugging x86-64 binary from win64 host",
