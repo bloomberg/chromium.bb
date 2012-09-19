@@ -1749,8 +1749,9 @@ TabContents* Browser::GetConstrainingTabContents(TabContents* source) {
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, BookmarkTabHelperDelegate implementation:
 
-void Browser::URLStarredChanged(TabContents* source, bool starred) {
-  if (source == chrome::GetActiveTabContents(this))
+void Browser::URLStarredChanged(content::WebContents* web_contents,
+                                bool starred) {
+  if (web_contents == chrome::GetActiveWebContents(this))
     window_->SetStarredState(starred);
 }
 
@@ -2175,8 +2176,10 @@ void Browser::UpdateBookmarkBarState(BookmarkBarStateChangeReason reason) {
       (!window_ || !window_->IsFullscreen())) {
     state = BookmarkBar::SHOW;
   } else {
-    TabContents* tab = chrome::GetActiveTabContents(this);
-    if (tab && tab->bookmark_tab_helper()->ShouldShowBookmarkBar())
+    WebContents* web_contents = chrome::GetActiveWebContents(this);
+    BookmarkTabHelper* bookmark_tab_helper =
+        web_contents ? BookmarkTabHelper::FromWebContents(web_contents) : NULL;
+    if (bookmark_tab_helper && bookmark_tab_helper->ShouldShowBookmarkBar())
       state = BookmarkBar::DETACHED;
     else
       state = BookmarkBar::HIDDEN;

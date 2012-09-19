@@ -245,7 +245,7 @@ bool WebContentsDelegateAndroid::AddMessageToConsole(
 }
 
 // TODO(merge): WARNING! method no longer available on the base class.
-// See http://b/issue?id=5862108
+// See http://crbug.com/149477
 void WebContentsDelegateAndroid::URLStarredChanged(WebContents* source,
                                                    bool starred) {
   JNIEnv* env = AttachCurrentThread();

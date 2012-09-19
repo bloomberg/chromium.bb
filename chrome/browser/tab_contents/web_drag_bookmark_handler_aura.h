@@ -9,7 +9,11 @@
 #include "content/public/browser/web_drag_dest_delegate.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 
-class TabContents;
+class BookmarkTabHelper;
+
+namespace content {
+class WebContents;
+}
 
 // Chrome needs to intercept content drag events so it can dispatch them to the
 // bookmarks and extensions system.
@@ -30,10 +34,12 @@ class WebDragBookmarkHandlerAura : public content::WebDragDestDelegate {
   virtual void OnReceiveDragData(const ui::OSExchangeData& data) OVERRIDE;
 
  private:
-  // The TabContents.
-  // Weak reference; may be NULL if the contents aren't contained in a
-  // TabContents (e.g. WebUI dialogs).
-  TabContents* tab_;
+  // The BookmarkTabHelper.
+  // Weak reference; may be NULL if the contents don't have a
+  // BookmarkTabHelper (e.g. WebUI dialogs).
+  BookmarkTabHelper* bookmark_tab_helper_;
+
+  content::WebContents* web_contents_;
 
   // The bookmark data for the active drag.  Empty when there is no active drag.
   BookmarkNodeData bookmark_drag_data_;

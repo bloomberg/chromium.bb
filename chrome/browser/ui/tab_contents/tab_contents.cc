@@ -127,7 +127,7 @@ TabContents::TabContents(WebContents* contents)
         autofill_external_delegate_.get());
   }
   blocked_content_tab_helper_.reset(new BlockedContentTabHelper(this));
-  bookmark_tab_helper_.reset(new BookmarkTabHelper(this));
+  BookmarkTabHelper::CreateForWebContents(contents);
   chrome_browser_net::LoadTimeStatsTabHelper::CreateForWebContents(contents);
   constrained_window_tab_helper_.reset(new ConstrainedWindowTabHelper(this));
   content_settings_.reset(new TabSpecificContentSettings(contents));

@@ -89,7 +89,7 @@ class WebContentsDelegateAndroid : public content::WebContentsDelegate {
                                    int32 line_no,
                                    const string16& source_id) OVERRIDE;
   // TODO(merge): WARNING! method no longer available on the base class.
-  // See http://b/issue?id=5862108
+  // See http://crbug.com/149477
   virtual void URLStarredChanged(content::WebContents* source, bool starred);
   virtual void UpdateTargetURL(content::WebContents* source,
                                int32 page_id,

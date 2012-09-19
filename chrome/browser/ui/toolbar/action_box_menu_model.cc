@@ -48,8 +48,11 @@ ActionBoxMenuModel::ActionBoxMenuModel(Browser* browser)
             rb.GetNativeImageNamed(IDR_MOBILE));
   }
 
-  TabContents* current_tab_contents = chrome::GetActiveTabContents(browser_);
-  bool starred = current_tab_contents->bookmark_tab_helper()->is_starred();
+  content::WebContents* current_web_contents =
+      chrome::GetActiveWebContents(browser_);
+  BookmarkTabHelper* bookmark_tab_helper =
+      BookmarkTabHelper::FromWebContents(current_web_contents);
+  bool starred = bookmark_tab_helper->is_starred();
   AddItemWithStringId(IDC_BOOKMARK_PAGE,
                       starred ? IDS_TOOLTIP_STARRED : IDS_TOOLTIP_STAR);
   SetIcon(GetIndexOfCommandId(IDC_BOOKMARK_PAGE),

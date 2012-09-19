@@ -45,7 +45,7 @@ void Browser::SetAsDelegate(WebContents* web_contents, Browser* delegate) {
   // ...and all the helpers.
   TabContents* tab = TabContents::FromWebContents(web_contents);
   tab->blocked_content_tab_helper()->set_delegate(delegate);
-  tab->bookmark_tab_helper()->set_delegate(delegate);
+  BookmarkTabHelper::FromWebContents(web_contents)->set_delegate(delegate);
   tab->constrained_window_tab_helper()->set_delegate(delegate);
   tab->core_tab_helper()->set_delegate(delegate);
   tab->search_engine_tab_helper()->set_delegate(delegate);

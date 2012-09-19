@@ -9,7 +9,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
@@ -20,75 +19,75 @@
 using content::WebContents;
 
 WebDragBookmarkHandlerWin::WebDragBookmarkHandlerWin()
-    : tab_(NULL) {
+    : bookmark_tab_helper_(NULL),
+      web_contents_(NULL) {
 }
 
 WebDragBookmarkHandlerWin::~WebDragBookmarkHandlerWin() {
 }
 
 void WebDragBookmarkHandlerWin::DragInitialize(WebContents* contents) {
-  // Ideally we would want to initialize the the TabContents member in
+  // Ideally we would want to initialize the the BookmarkTabHelper member in
   // the constructor. We cannot do that as the WebDragTargetWin object is
   // created during the construction of the WebContents object.  The
-  // TabContents is created much later.
-  DCHECK(tab_ ? (tab_->web_contents() == contents) : true);
-  if (!tab_)
-    tab_ = TabContents::FromWebContents(contents);
+  // BookmarkTabHelper is created much later.
+  web_contents_ = contents;
+  if (!bookmark_tab_helper_)
+    bookmark_tab_helper_ = BookmarkTabHelper::FromWebContents(contents);
 }
 
 void WebDragBookmarkHandlerWin::OnDragOver(IDataObject* data_object) {
-  if (tab_ && tab_->bookmark_tab_helper()->GetBookmarkDragDelegate()) {
+  if (bookmark_tab_helper_ && bookmark_tab_helper_->GetBookmarkDragDelegate()) {
     ui::OSExchangeData os_exchange_data(
         new ui::OSExchangeDataProviderWin(data_object));
     BookmarkNodeData bookmark_drag_data;
     if (bookmark_drag_data.Read(os_exchange_data))
-      tab_->bookmark_tab_helper()->GetBookmarkDragDelegate()->OnDragOver(
+      bookmark_tab_helper_->GetBookmarkDragDelegate()->OnDragOver(
           bookmark_drag_data);
   }
 }
 
 void WebDragBookmarkHandlerWin::OnDragEnter(IDataObject* data_object) {
-  // This is non-null if web_contents_ is showing an ExtensionWebUI with
+  // This is non-null if the web_contents_ is showing an ExtensionWebUI with
   // support for (at the moment experimental) drag and drop extensions.
-  if (tab_ && tab_->bookmark_tab_helper()->GetBookmarkDragDelegate()) {
+  if (bookmark_tab_helper_ && bookmark_tab_helper_->GetBookmarkDragDelegate()) {
     ui::OSExchangeData os_exchange_data(
         new ui::OSExchangeDataProviderWin(data_object));
     BookmarkNodeData bookmark_drag_data;
     if (bookmark_drag_data.Read(os_exchange_data))
-      tab_->bookmark_tab_helper()->GetBookmarkDragDelegate()->OnDragEnter(
+      bookmark_tab_helper_->GetBookmarkDragDelegate()->OnDragEnter(
           bookmark_drag_data);
   }
 }
 
 void WebDragBookmarkHandlerWin::OnDrop(IDataObject* data_object) {
-  // This is non-null if tab_contents_ is showing an ExtensionWebUI with
+  // This is non-null if the web_contents_ is showing an ExtensionWebUI with
   // support for (at the moment experimental) drag and drop extensions.
-  if (tab_) {
-    if (tab_->bookmark_tab_helper()->GetBookmarkDragDelegate()) {
+  if (bookmark_tab_helper_) {
+    if (bookmark_tab_helper_->GetBookmarkDragDelegate()) {
       ui::OSExchangeData os_exchange_data(
           new ui::OSExchangeDataProviderWin(data_object));
       BookmarkNodeData bookmark_drag_data;
       if (bookmark_drag_data.Read(os_exchange_data)) {
-        tab_->bookmark_tab_helper()->GetBookmarkDragDelegate()->OnDrop(
+        bookmark_tab_helper_->GetBookmarkDragDelegate()->OnDrop(
             bookmark_drag_data);
       }
     }
 
     // Focus the target browser.
-    Browser* browser = browser::FindBrowserWithWebContents(
-        tab_->web_contents());
+    Browser* browser = browser::FindBrowserWithWebContents(web_contents_);
     if (browser)
       browser->window()->Show();
   }
 }
 
 void WebDragBookmarkHandlerWin::OnDragLeave(IDataObject* data_object) {
-  if (tab_ && tab_->bookmark_tab_helper()->GetBookmarkDragDelegate()) {
+  if (bookmark_tab_helper_ && bookmark_tab_helper_->GetBookmarkDragDelegate()) {
     ui::OSExchangeData os_exchange_data(
         new ui::OSExchangeDataProviderWin(data_object));
     BookmarkNodeData bookmark_drag_data;
     if (bookmark_drag_data.Read(os_exchange_data))
-      tab_->bookmark_tab_helper()->GetBookmarkDragDelegate()->OnDragLeave(
+      bookmark_tab_helper_->GetBookmarkDragDelegate()->OnDragLeave(
           bookmark_drag_data);
   }
 }

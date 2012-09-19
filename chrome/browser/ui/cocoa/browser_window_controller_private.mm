@@ -486,8 +486,10 @@ willPositionSheet:(NSWindow*)sheet
 
 - (BOOL)shouldShowDetachedBookmarkBar {
   DCHECK(browser_.get());
-  TabContents* tab = chrome::GetActiveTabContents(browser_.get());
-  return (tab && tab->bookmark_tab_helper()->ShouldShowBookmarkBar() &&
+  WebContents* web_contents = chrome::GetActiveWebContents(browser_.get());
+  BookmarkTabHelper* bookmark_tab_helper =
+      web_contents ? BookmarkTabHelper::FromWebContents(web_contents) : NULL;
+  return (bookmark_tab_helper && bookmark_tab_helper->ShouldShowBookmarkBar() &&
           ![previewableContentsController_ isShowingPreview]);
 }
 

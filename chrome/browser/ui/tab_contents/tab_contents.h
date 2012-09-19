@@ -17,7 +17,6 @@ class AutofillManager;
 class AutomationTabHelper;
 class BasePanelBrowserTest;
 class BlockedContentTabHelper;
-class BookmarkTabHelper;
 class Browser;
 class BrowserCommandsTabContentsCreator;
 class BrowserLauncherItemControllerContentsCreator;
@@ -200,10 +199,6 @@ class TabContents : public content::WebContentsObserver {
     return blocked_content_tab_helper_.get();
   }
 
-  BookmarkTabHelper* bookmark_tab_helper() {
-    return bookmark_tab_helper_.get();
-  }
-
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
   captive_portal::CaptivePortalTabHelper* captive_portal_tab_helper() {
     return captive_portal_tab_helper_.get();
@@ -298,7 +293,6 @@ class TabContents : public content::WebContentsObserver {
   scoped_ptr<AutofillExternalDelegate> autofill_external_delegate_;
   scoped_ptr<AutomationTabHelper> automation_tab_helper_;
   scoped_ptr<BlockedContentTabHelper> blocked_content_tab_helper_;
-  scoped_ptr<BookmarkTabHelper> bookmark_tab_helper_;
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
   scoped_ptr<captive_portal::CaptivePortalTabHelper> captive_portal_tab_helper_;
 #endif

@@ -946,10 +946,9 @@ void BrowserCommandController::UpdateCommandsForIncognitoAvailability() {
 }
 
 void BrowserCommandController::UpdateCommandsForTabState() {
-  TabContents* current_tab_contents = chrome::GetActiveTabContents(browser_);
-  if (!current_tab_contents)  // May be NULL during tab restore.
+  WebContents* current_web_contents = chrome::GetActiveWebContents(browser_);
+  if (!current_web_contents)  // May be NULL during tab restore.
     return;
-  WebContents* current_web_contents = current_tab_contents->web_contents();
 
   // Navigation commands
   command_updater_.UpdateCommandEnabled(IDC_BACK, CanGoBack(browser_));
@@ -966,7 +965,7 @@ void BrowserCommandController::UpdateCommandsForTabState() {
 
   // Page-related commands
   window()->SetStarredState(
-      current_tab_contents->bookmark_tab_helper()->is_starred());
+      BookmarkTabHelper::FromWebContents(current_web_contents)->is_starred());
   window()->ZoomChangedForActiveTab(false);
   command_updater_.UpdateCommandEnabled(IDC_VIEW_SOURCE,
                                         CanViewSource(browser_));

@@ -16,6 +16,8 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 
+int BookmarkTabHelper::kUserDataKey;
+
 namespace {
 
 bool CanShowBookmarkBar(content::WebUI* ui) {
@@ -27,10 +29,9 @@ bool CanShowBookmarkBar(content::WebUI* ui) {
 
 }  // namespace
 
-BookmarkTabHelper::BookmarkTabHelper(TabContents* tab_contents)
-    : content::WebContentsObserver(tab_contents->web_contents()),
+BookmarkTabHelper::BookmarkTabHelper(content::WebContents* web_contents)
+    : content::WebContentsObserver(web_contents),
       is_starred_(false),
-      tab_contents_(tab_contents),
       delegate_(NULL),
       bookmark_drag_(NULL) {
   // Register for notifications about URL starredness changing on any profile.
@@ -80,8 +81,9 @@ void BookmarkTabHelper::Observe(int type,
       // Somewhere, a URL has been starred.
       // Ignore notifications for profiles other than our current one.
       Profile* source_profile = content::Source<Profile>(source).ptr();
-      if (!source_profile ||
-          !source_profile->IsSameProfile(tab_contents_->profile()))
+      Profile* this_profile =
+          Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+      if (!source_profile || !source_profile->IsSameProfile(this_profile))
         return;
 
       UpdateStarredStateForCurrentURL();
@@ -111,5 +113,5 @@ void BookmarkTabHelper::UpdateStarredStateForCurrentURL() {
   is_starred_ = (model && model->IsBookmarked(web_contents()->GetURL()));
 
   if (is_starred_ != old_state && delegate())
-    delegate()->URLStarredChanged(tab_contents_, is_starred_);
+    delegate()->URLStarredChanged(web_contents(), is_starred_);
 }

@@ -237,10 +237,12 @@ void ThumbnailLoader::LoadThumbnail() {
         [infoBarContainer overlappingTipHeight];
   }
 
+  BookmarkTabHelper* bookmark_tab_helper =
+      BookmarkTabHelper::FromWebContents(contents_->web_contents());
   bool always_show_bookmark_bar =
       contents_->profile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);
   bool has_detached_bookmark_bar =
-      contents_->bookmark_tab_helper()->ShouldShowBookmarkBar() &&
+      bookmark_tab_helper->ShouldShowBookmarkBar() &&
       !always_show_bookmark_bar;
   if (has_detached_bookmark_bar)
     topOffset += bookmarks::kNTPBookmarkBarHeight;

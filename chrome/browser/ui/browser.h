@@ -665,7 +665,7 @@ class Browser : public TabStripModelObserver,
   virtual TabContents* GetConstrainingTabContents(TabContents* source) OVERRIDE;
 
   // Overridden from BookmarkTabHelperDelegate:
-  virtual void URLStarredChanged(TabContents* source,
+  virtual void URLStarredChanged(content::WebContents* web_contents,
                                  bool starred) OVERRIDE;
 
   // Overridden from ZoomObserver:
