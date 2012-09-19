@@ -1521,8 +1521,10 @@ void ImmediateInterpreter::UpdateButtons(const HardwareState& hwstate) {
   }
   if (!sent_button_down_) {
     button_type_ = EvaluateButtonType(hwstate);
+    // button_up before button_evaluation_timeout_ expired.
+    // Send up & down for button that was previously down, but not yet sent.
     if (button_type_ == 0)
-      Err("button type = 0?\n");
+      button_type_ = prev_button_down;
     // We send non-left buttons immediately, but delay left in case future
     // packets indicate non-left button.
     if (button_type_ != GESTURES_BUTTON_LEFT ||

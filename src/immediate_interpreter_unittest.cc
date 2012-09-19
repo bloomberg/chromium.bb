@@ -3516,15 +3516,20 @@ TEST(ImmediateInterpreterTest, BasicButtonTest) {
     { 1.1, GESTURES_BUTTON_RIGHT, 0, 0, NULL },  // not delay right button down
     { 1.3, GESTURES_BUTTON_RIGHT, 0, 0, NULL },
     { 1.5, 0, 0, 0, NULL },                      // right button up
+    { 1.6, GESTURES_BUTTON_LEFT, 0, 0, NULL },   // left button down
+    { 1.7, 0, 0, 0, NULL },                      // short left button up (<.3s)
   };
 
   ii.SetHardwareProperties(hwprops);
 
   for (size_t idx = 0; idx < arraysize(hardware_states); ++idx) {
     Gesture* gs = ii.SyncInterpret(&hardware_states[idx], NULL);
-    if (idx < 2 || idx == 5) {
+    if (idx < 2 || idx == 5 || idx == 7) {
       EXPECT_EQ(NULL, gs);
     } else {
+      EXPECT_TRUE(gs != NULL);
+      if (gs == NULL)  /* Avoid SEGV on test failure */
+        continue;
       EXPECT_EQ(kGestureTypeButtonsChange, gs->type);
       if (idx == 2)
         EXPECT_EQ(GESTURES_BUTTON_LEFT, gs->details.buttons.down);
@@ -3534,6 +3539,10 @@ TEST(ImmediateInterpreterTest, BasicButtonTest) {
         EXPECT_EQ(GESTURES_BUTTON_RIGHT, gs->details.buttons.down);
       else if (idx == 6)
         EXPECT_EQ(GESTURES_BUTTON_RIGHT, gs->details.buttons.up);
+      else if (idx == 8) {
+        EXPECT_EQ(GESTURES_BUTTON_LEFT, gs->details.buttons.up);
+        EXPECT_EQ(GESTURES_BUTTON_LEFT, gs->details.buttons.down);
+      }
     }
   }
 }
