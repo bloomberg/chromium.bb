@@ -390,9 +390,17 @@ def BuildStepBuildToolchains(pepperdir, platform, arch, pepper_ver, toolchains):
       buildbot_common.Run(
           GetBuildArgs('pnacl', pnacldir, pepperdir, 'x86', '64'),
           cwd=NACL_DIR, shell=(platform=='win'))
+
       # Fill in the latest native pnacl shim library from the chrome build.
+      if platform == 'win':
+        # The windows nacl buildbots still use devenv to build, which uses
+        # 'src/build' as its output directory.
+        release_build_dir = os.path.join(SRC_DIR, 'build', 'Release')
+      else:
+        release_build_dir = os.path.join(OUT_DIR, 'Release')
+
       buildbot_common.CopyFile(
-          os.path.join(OUT_DIR, 'Release', 'libpnacl_irt_shim.a'),
+          os.path.join(release_build_dir, 'libpnacl_irt_shim.a'),
           GetPNaClNativeLib(pnacldir, 'x86-64'))
       InstallHeaders(GetToolchainNaClInclude('pnacl', pnacldir, 'x86'),
                      pepper_ver,
