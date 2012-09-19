@@ -298,6 +298,7 @@ void DesktopNativeWidgetAura::SchedulePaintInRect(const gfx::Rect& rect) {
 }
 
 void DesktopNativeWidgetAura::SetCursor(gfx::NativeCursor cursor) {
+  desktop_root_window_host_->AsRootWindowHost()->SetCursor(cursor);
 }
 
 void DesktopNativeWidgetAura::ClearNativeFocus() {

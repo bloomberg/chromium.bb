@@ -168,10 +168,12 @@ int ChromeViewsDelegate::GetDispositionForEvent(int event_flags) {
 views::NativeWidgetHelperAura* ChromeViewsDelegate::CreateNativeWidgetHelper(
     views::NativeWidgetAura* native_widget) {
   // TODO(beng): insufficient but currently necessary. http://crbug.com/133312
+#if !defined(OS_CHROMEOS)  // We don't build this class for ChromeOS.
 #if defined(USE_ASH)
   if (!chrome::ShouldOpenAshOnStartup())
 #endif
     return new views::DesktopNativeWidgetHelperAura(native_widget);
+#endif
 #if defined(USE_ASH)
   return NULL;
 #endif

@@ -765,9 +765,16 @@ View* View::GetEventHandlerForPoint(const gfx::Point& point) {
 }
 
 gfx::NativeCursor View::GetCursor(const ui::MouseEvent& event) {
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
+#if defined(USE_AURA)
+  static ui::Cursor arrow;
+  if (!arrow.platform())
+    arrow.SetPlatformCursor(LoadCursor(NULL, IDC_ARROW));
+  return arrow;
+#else
   static HCURSOR arrow = LoadCursor(NULL, IDC_ARROW);
   return arrow;
+#endif
 #else
   return gfx::kNullCursor;
 #endif

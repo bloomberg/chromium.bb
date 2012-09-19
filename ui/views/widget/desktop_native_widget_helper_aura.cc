@@ -5,7 +5,6 @@
 #include "ui/views/widget/desktop_native_widget_helper_aura.h"
 
 #include "ui/aura/client/dispatcher_client.h"
-#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/desktop/desktop_activation_client.h"
 #include "ui/aura/desktop/desktop_cursor_client.h"
 #include "ui/aura/desktop/desktop_dispatcher_client.h"
@@ -15,6 +14,7 @@
 #include "ui/aura/shared/input_method_event_filter.h"
 #include "ui/aura/shared/root_window_capture_client.h"
 #include "ui/aura/window_property.h"
+#include "ui/views/widget/desktop_screen_position_client.h"
 #include "ui/views/widget/native_widget_aura.h"
 
 #if defined(OS_WIN)
@@ -31,62 +31,6 @@ namespace views {
 
 DEFINE_WINDOW_PROPERTY_KEY(
     aura::Window*, kViewsWindowForRootWindow, NULL);
-
-namespace {
-
-// Client that always offsets by the toplevel RootWindow of the passed
-// in child NativeWidgetAura.
-class DesktopScreenPositionClient
-    : public aura::client::ScreenPositionClient {
- public:
-  DesktopScreenPositionClient() {}
-  virtual ~DesktopScreenPositionClient() {}
-
-  // aura::client::ScreenPositionClient overrides:
-  virtual void ConvertPointToScreen(const aura::Window* window,
-                                    gfx::Point* point) OVERRIDE {
-    const aura::RootWindow* root_window = window->GetRootWindow();
-    aura::Window::ConvertPointToTarget(window, root_window, point);
-    gfx::Point origin = root_window->GetHostOrigin();
-    point->Offset(origin.x(), origin.y());
-  }
-
-  virtual void ConvertPointFromScreen(const aura::Window* window,
-                                      gfx::Point* point) OVERRIDE {
-    const aura::RootWindow* root_window = window->GetRootWindow();
-    gfx::Point origin = root_window->GetHostOrigin();
-    point->Offset(-origin.x(), -origin.y());
-    aura::Window::ConvertPointToTarget(root_window, window, point);
-  }
-
-  virtual void SetBounds(aura::Window* window,
-                         const gfx::Rect& bounds,
-                         const gfx::Display& display) OVERRIDE {
-    // TODO: Use the 3rd parameter, |display|.
-    gfx::Point origin = bounds.origin();
-    aura::RootWindow* root = window->GetRootWindow();
-    aura::Window::ConvertPointToTarget(window->parent(), root, &origin);
-
-#if !defined(OS_WIN)
-    if  (window->type() == aura::client::WINDOW_TYPE_CONTROL) {
-      window->SetBounds(gfx::Rect(origin, bounds.size()));
-      return;
-    } else if (window->type() == aura::client::WINDOW_TYPE_POPUP) {
-      // The caller expects windows we consider "embedded" to be placed in the
-      // screen coordinate system. So we need to offset the root window's
-      // position (which is in screen coordinates) from these bounds.
-      gfx::Point host_origin = root->GetHostOrigin();
-      origin.Offset(-host_origin.x(), -host_origin.y());
-      window->SetBounds(gfx::Rect(origin, bounds.size()));
-      return;
-    }
-#endif  // !defined(OS_WIN)
-    root->SetHostBounds(bounds);
-    window->SetBounds(gfx::Rect(bounds.size()));
-  }
-};
-
-}  // namespace
 
 DesktopNativeWidgetHelperAura::DesktopNativeWidgetHelperAura(
     NativeWidgetAura* widget)
@@ -172,9 +116,6 @@ void DesktopNativeWidgetHelperAura::PreInitialize(
   capture_client_.reset(
       new aura::shared::RootWindowCaptureClient(root_window_.get()));
 
-  cursor_client_.reset(new aura::DesktopCursorClient(root_window_.get()));
-  aura::client::SetCursorClient(root_window_.get(), cursor_client_.get());
-
 #if defined(USE_X11)
   x11_window_event_filter_.reset(
       new X11WindowEventFilter(root_window_.get(), activation_client));
@@ -207,9 +148,14 @@ void DesktopNativeWidgetHelperAura::PreInitialize(
                                     x11_window_move_client_.get());
 #endif
 
+#if !defined(OS_WIN)  // Windows does this in DesktopRootWindowHostWin.
+  cursor_client_.reset(new aura::DesktopCursorClient(root_window_.get()));
+  aura::client::SetCursorClient(root_window_.get(), cursor_client_.get());
+
   position_client_.reset(new DesktopScreenPositionClient());
   aura::client::SetScreenPositionClient(root_window_.get(),
                                         position_client_.get());
+#endif
 }
 
 void DesktopNativeWidgetHelperAura::PostInitialize() {

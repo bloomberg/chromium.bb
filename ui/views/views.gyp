@@ -320,6 +320,8 @@
         'widget/desktop_root_window_host_linux.h',
         'widget/desktop_root_window_host_win.cc',
         'widget/desktop_root_window_host_win.h',
+        'widget/desktop_screen_position_client.cc',
+        'widget/desktop_screen_position_client.h',
         'widget/drop_helper.cc',
         'widget/drop_helper.h',
         'widget/drop_target_win.cc',
@@ -432,8 +434,10 @@
         ['chromeos==1', {
           'sources/': [
             ['exclude', '/desktop_[^/]*\\.cc$'],
-            ['include', 'desktop_native_widget_helper_aura.cc'],
-            ['include', 'desktop_native_widget_helper_aura.h'],
+            ['include', 'widget/desktop_native_widget_helper_aura.cc'],
+            ['include', 'widget/desktop_native_widget_helper_aura.h'],
+            ['include', 'widget/desktop_screen_position_client.cc'],
+            ['include', 'widget/desktop_screen_position_client.h'],
           ],
         }],
         ['use_aura==0 and OS=="win"', {

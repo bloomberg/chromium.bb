@@ -11,8 +11,12 @@
 
 namespace aura {
 class DesktopActivationClient;
+class DesktopCursorClient;
 class DesktopDispatcherClient;
 class FocusManager;
+namespace client {
+class ScreenPositionClient;
+}
 }
 
 namespace views {
@@ -178,6 +182,13 @@ class DesktopRootWindowHostWin : public DesktopRootWindowHost,
 
   aura::RootWindowHostDelegate* root_window_host_delegate_;
   aura::Window* content_window_;
+
+  // In some cases, we set a screen position client on |root_window_|. If we
+  // do, we're responsible for the lifetime.
+  scoped_ptr<aura::client::ScreenPositionClient> position_client_;
+
+  // A simple cursor client which just forwards events to the RootWindow.
+  scoped_ptr<aura::DesktopCursorClient> cursor_client_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopRootWindowHostWin);
 };

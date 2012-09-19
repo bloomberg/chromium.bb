@@ -428,7 +428,7 @@ bool RenderWidgetHostViewAura::IsShowing() {
 }
 
 gfx::Rect RenderWidgetHostViewAura::GetViewBounds() const {
-  return window_->GetBoundsInRootWindow();
+  return window_->GetBoundsInScreen();
 }
 
 void RenderWidgetHostViewAura::UpdateCursor(const WebCursor& cursor) {
@@ -1628,7 +1628,11 @@ void RenderWidgetHostViewAura::UpdateCursorIfOverSelf() {
   if (!root_window)
     return;
 
-  if (root_window->GetEventHandlerForPoint(screen_point) != window_)
+  gfx::Rect screen_rect = GetViewBounds();
+  gfx::Point local_point = screen_point;
+  local_point.Offset(-screen_rect.x(), -screen_rect.y());
+
+  if (root_window->GetEventHandlerForPoint(local_point) != window_)
     return;
 
   gfx::NativeCursor cursor = current_cursor_.GetNativeCursor();

@@ -7,15 +7,18 @@
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/desktop/desktop_activation_client.h"
+#include "ui/aura/desktop/desktop_cursor_client.h"
 #include "ui/aura/desktop/desktop_dispatcher_client.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/shared/compound_event_filter.h"
+#include "ui/base/cursor/cursor_loader_win.h"
 #include "ui/base/win/shell.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/path_win.h"
 #include "ui/views/ime/input_method_win.h"
 #include "ui/views/widget/desktop_capture_client.h"
+#include "ui/views/widget/desktop_screen_position_client.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/win/hwnd_message_handler.h"
 
@@ -71,6 +74,14 @@ void DesktopRootWindowHostWin::Init(aura::Window* content_window,
   dispatcher_client_.reset(new aura::DesktopDispatcherClient);
   aura::client::SetDispatcherClient(root_window_.get(),
                                     dispatcher_client_.get());
+
+  cursor_client_.reset(new aura::DesktopCursorClient(root_window_.get()));
+  aura::client::SetCursorClient(root_window_.get(), cursor_client_.get());
+
+
+  position_client_.reset(new DesktopScreenPositionClient());
+  aura::client::SetScreenPositionClient(root_window_.get(),
+                                        position_client_.get());
 
   // CEF sets focus to the window the user clicks down on.
   // TODO(beng): see if we can't do this some other way. CEF seems a heavy-
@@ -239,6 +250,13 @@ void DesktopRootWindowHostWin::ReleaseCapture() {
 }
 
 void DesktopRootWindowHostWin::SetCursor(gfx::NativeCursor cursor) {
+  // Custom web cursors are handled directly.
+  if (cursor == ui::kCursorCustom)
+    return;
+  ui::CursorLoaderWin cursor_loader;
+  cursor_loader.SetPlatformCursor(&cursor);
+
+  message_handler_->SetCursor(cursor.platform());
 }
 
 void DesktopRootWindowHostWin::ShowCursor(bool show) {
