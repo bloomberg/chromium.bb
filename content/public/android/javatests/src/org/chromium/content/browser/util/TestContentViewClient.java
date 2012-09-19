@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.browser.test;
+package org.chromium.content.browser.util;
 
 
 import org.chromium.content.browser.ContentViewClient;
-import org.chromium.content.browser.test.TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper;
-import org.chromium.content.browser.test.TestCallbackHelperContainer.OnPageFinishedHelper;
-import org.chromium.content.browser.test.TestCallbackHelperContainer.OnPageStartedHelper;
-import org.chromium.content.browser.test.TestCallbackHelperContainer.OnReceivedErrorHelper;
+import org.chromium.content.browser.util.TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper;
+import org.chromium.content.browser.util.TestCallbackHelperContainer.OnPageFinishedHelper;
+import org.chromium.content.browser.util.TestCallbackHelperContainer.OnPageStartedHelper;
+import org.chromium.content.browser.util.TestCallbackHelperContainer.OnReceivedErrorHelper;
 
 /**
  * The default ContentViewClient used by ContentView tests.

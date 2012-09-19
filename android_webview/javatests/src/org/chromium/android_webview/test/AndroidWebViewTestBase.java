@@ -20,8 +20,8 @@ import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.LoadUrlParams;
-import org.chromium.content.browser.test.CallbackHelper;
-import org.chromium.content.browser.test.TestCallbackHelperContainer;
+import org.chromium.content.browser.util.CallbackHelper;
+import org.chromium.content.browser.util.TestCallbackHelperContainer;
 import org.chromium.ui.gfx.NativeWindow;
 
 import java.util.HashMap;

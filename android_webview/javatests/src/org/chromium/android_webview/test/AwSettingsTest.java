@@ -17,8 +17,8 @@ import org.chromium.android_webview.AwContentsClient;
 import org.chromium.android_webview.tests.TestContentProvider;
 import org.chromium.content.browser.ContentSettings;
 import org.chromium.content.browser.ContentViewCore;
-import org.chromium.content.browser.test.CallbackHelper;
-import org.chromium.content.browser.test.HistoryUtils;
+import org.chromium.content.browser.util.CallbackHelper;
+import org.chromium.content.browser.util.HistoryUtils;
 
 import java.util.concurrent.Callable;
 import java.util.regex.Matcher;

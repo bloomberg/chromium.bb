@@ -12,9 +12,9 @@ import android.util.Pair;
 import org.chromium.android_webview.CookieManager;
 import org.chromium.base.test.Feature;
 import org.chromium.content.browser.ContentViewCore;
-import org.chromium.content.browser.test.Criteria;
-import org.chromium.content.browser.test.CriteriaHelper;
-import org.chromium.content.browser.test.
+import org.chromium.content.browser.util.Criteria;
+import org.chromium.content.browser.util.CriteriaHelper;
+import org.chromium.content.browser.util.
         TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper;
 
 import java.util.ArrayList;
