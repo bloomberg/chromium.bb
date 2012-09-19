@@ -32,7 +32,23 @@ int NaClKernelServiceCtor(
 
 void NaClKernelServiceDtor(struct NaClRefCount *vself);
 
-extern struct NaClSimpleServiceVtbl const kNaClKernelServiceVtbl;
+struct NaClKernelServiceVtbl {
+  struct NaClSimpleServiceVtbl  vbase;
+
+  void                          (*InitializationComplete)(
+      struct NaClKernelService *self);
+
+  /*
+   * Create new service runtime process and return its socket address
+   * in |out_sock_addr| argument. Returns 0 if successful or negative
+   * ABI error value otherwise (see service_runtime/include/sys/errno.h)
+   */
+  int                           (*CreateProcess)(
+      struct NaClKernelService *self,
+      struct NaClDesc          **out_sock_addr);
+};
+
+extern struct NaClKernelServiceVtbl const kNaClKernelServiceVtbl;
 
 EXTERN_C_END
 
