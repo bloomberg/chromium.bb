@@ -7,6 +7,8 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "chrome/browser/ui/views/unhandled_keyboard_event_handler.h"
+#include "content/public/browser/native_web_keyboard_event.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/views/controls/native/native_view_host.h"
 
@@ -55,6 +57,9 @@ class ExtensionViewViews : public views::NativeViewHost {
 
   // Sets the container for this view.
   void SetContainer(Container* container) { container_ = container; }
+
+  // Handles unhandled keyboard messages coming back from the renderer process.
+  void HandleKeyboardEvent(const content::NativeWebKeyboardEvent& event);
 
   // Overridden from views::NativeViewHost:
   virtual gfx::NativeCursor GetCursor(const ui::MouseEvent& event) OVERRIDE;
@@ -106,6 +111,10 @@ class ExtensionViewViews : public views::NativeViewHost {
 
   // Whether this extension view is clipped.
   bool is_clipped_;
+
+  // A handler to handle unhandled keyboard messages coming back from the
+  // renderer process.
+  UnhandledKeyboardEventHandler unhandled_keyboard_event_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionViewViews);
 };

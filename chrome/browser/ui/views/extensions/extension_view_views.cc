@@ -178,3 +178,9 @@ void ExtensionViewViews::RenderViewCreated() {
   if (container_)
     container_->OnViewWasResized();
 }
+
+void ExtensionViewViews::HandleKeyboardEvent(
+    const content::NativeWebKeyboardEvent& event) {
+  unhandled_keyboard_event_handler_.HandleKeyboardEvent(event,
+                                                        GetFocusManager());
+}

@@ -550,10 +550,20 @@ void ExtensionHost::OnDecrementLazyKeepaliveCount() {
 void ExtensionHost::UnhandledKeyboardEvent(
     WebContents* source,
     const content::NativeWebKeyboardEvent& event) {
-  // Handle lower priority browser shortcuts such as Ctrl-f.
   Browser* browser = view() ? view()->browser() : NULL;
-  if (browser)
+  if (browser) {
+    // Handle lower priority browser shortcuts such as Ctrl-f.
     return browser->HandleKeyboardEvent(source, event);
+  } else {
+#if defined(TOOLKIT_VIEWS)
+    // In case there's no Browser (e.g. for dialogs), pass it to
+    // ExtensionViewViews to handle acceleratos. The view's FocusManager does
+    // not know anything about Browser accelerators, but might know others such
+    // as Ash's.
+    if (view())
+      view()->HandleKeyboardEvent(event);
+#endif
+  }
 }
 
 void ExtensionHost::RenderViewCreated(RenderViewHost* render_view_host) {
