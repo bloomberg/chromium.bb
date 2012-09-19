@@ -11,7 +11,6 @@ import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.common.CleanupReference;
-import org.chromium.ui.gfx.NativeWindow;
 
 /**
  * Exposes the native AwContents class, and together these classes wrap the ContentViewCore
@@ -58,8 +57,7 @@ public class AwContents {
     public AwContents(ViewGroup containerView,
         ContentViewCore.InternalAccessDelegate internalAccessAdapter,
         ContentViewCore contentViewCore, AwContentsClient contentsClient,
-        NativeWindow nativeWindow, boolean privateBrowsing,
-        boolean isAccessFromFileURLsGrantedByDefault) {
+        boolean privateBrowsing, boolean isAccessFromFileURLsGrantedByDefault) {
       mNativeAwContents = nativeInit(contentsClient.getWebContentsDelegate(), privateBrowsing);
       mContentViewCore = contentViewCore;
       mContentsClient = contentsClient;
@@ -67,8 +65,7 @@ public class AwContents {
 
       // TODO: upstream the needed ContentViewCore initialization method.
       // mContentViewCore.initialize(containerView, internalAccessAdapter, false,
-      //     nativeGetWebContents(mNativeAwContents), nativeWindow,
-      //     isAccessFromFileURLsGrantedByDefault);
+      //     nativeGetWebContents(mNativeAwContents), isAccessFromFileURLsGrantedByDefault);
       mContentViewCore.setContentViewClient(contentsClient);
     }
 

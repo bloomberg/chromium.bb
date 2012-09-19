@@ -85,7 +85,6 @@
       'dependencies': [
         '<(DEPTH)/content/content.gyp:content_java',
         '<(DEPTH)/chrome/browser/component/components.gyp:web_contents_delegate_android_java',
-        '<(DEPTH)/ui/ui.gyp:ui_java',
       ],
       'variables': {
         'package_name': 'android_webview_java',
@@ -136,12 +135,6 @@
         'action_name': 'copy_content_jar',
         'inputs': ['<(PRODUCT_DIR)/lib.java/chromium_content.jar'],
         'outputs': ['<(PRODUCT_DIR)/android_webview/java/libs/chromium_content.jar'],
-        'action': ['cp', '<@(_inputs)', '<@(_outputs)'],
-      },
-      {
-        'action_name': 'copy_ui_jar',
-        'inputs': ['<(PRODUCT_DIR)/lib.java/chromium_ui.jar'],
-        'outputs': ['<(PRODUCT_DIR)/android_webview/java/libs/chromium_ui.jar'],
         'action': ['cp', '<@(_inputs)', '<@(_outputs)'],
       },
       # TODO: This should be removed once we stop sharing the chrome/ layer JNI
@@ -220,7 +213,6 @@
           '<(PRODUCT_DIR)/android_webview/java/libs/chromium_media.jar',
           '<(PRODUCT_DIR)/android_webview/java/libs/chromium_content.jar',
           '<(PRODUCT_DIR)/android_webview/java/libs/chromium_chrome.jar',
-          '<(PRODUCT_DIR)/android_webview/java/libs/chromium_ui.jar',
           '<(SHARED_INTERMEDIATE_DIR)/repack/chrome.pak',
           '<(SHARED_INTERMEDIATE_DIR)/repack/chrome_100_percent.pak',
           '<(SHARED_INTERMEDIATE_DIR)/repack/resources.pak',
@@ -282,12 +274,6 @@
           'action_name': 'copy_media_jar',
           'inputs': ['<(PRODUCT_DIR)/lib.java/chromium_media.jar'],
           'outputs': ['<(PRODUCT_DIR)/android_webview_test/java/libs/chromium_media.jar'],
-          'action': ['cp', '<@(_inputs)', '<@(_outputs)'],
-        },
-        {
-          'action_name': 'copy_ui_jar',
-          'inputs': ['<(PRODUCT_DIR)/lib.java/chromium_ui.jar'],
-          'outputs': ['<(PRODUCT_DIR)/android_webview_test/java/libs/chromium_ui.jar'],
           'action': ['cp', '<@(_inputs)', '<@(_outputs)'],
         },
         {
