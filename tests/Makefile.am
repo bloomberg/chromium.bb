@@ -79,6 +79,11 @@ pass1Only_SOURCES =				\
 	brl_checks.h				\
 	pass1Only.c
 
+outpos_SOURCES =			\
+	brl_checks.c		\
+	brl_checks.h		\
+	outpos.c	
+
 check_PROGRAMS =				\
 	pass2					\
 	pass2_inpos				\
@@ -94,7 +99,8 @@ check_PROGRAMS =				\
 	letterDefTest				\
 	squash_space				\
 	hyphenate				\
-	pass1Only
+	pass1Only				\
+	outpos
 
 dist_check_SCRIPTS =		\
 	check_all_tables.pl	\

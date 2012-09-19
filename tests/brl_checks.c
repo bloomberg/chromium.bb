@@ -145,6 +145,54 @@ check_inpos(const char *tableList, const char *str, const int *expected_poslist)
 }
 
 int
+check_outpos(const char *tableList, const char *str, const int *expected_poslist)
+{
+  widechar *inbuf;
+  widechar *outbuf;
+  int *inpos, *outpos;
+  int origInlen, inlen;
+  int outlen;
+  int i, rv = 0;
+
+  origInlen = inlen = strlen(str);
+  outlen = inlen * 2;
+  inbuf = malloc(sizeof(widechar) * inlen);
+  outbuf = malloc(sizeof(widechar) * outlen);
+  /* outputPos can be affected by inputPos, so pass inputPos as well. */
+  inpos = malloc(sizeof(int) * outlen);
+  outpos = malloc(sizeof(int) * inlen);
+  for (i = 0; i < inlen; i++)
+    {
+      inbuf[i] = str[i];
+    }
+  lou_translate(tableList, inbuf, &inlen, outbuf, &outlen,
+		NULL, NULL, outpos, inpos, NULL, 0);
+  if (inlen != origInlen)
+    {
+      printf("original inlen %d and returned inlen %d differ\n",
+        origInlen, inlen);
+    }
+
+  for (i = 0; i < inlen; i++)
+    {
+      if (expected_poslist[i] != outpos[i])
+	{
+	  rv = 1;
+	  printf("Expected %d, recieved %d in index %d\n",
+		 expected_poslist[i], outpos[i], i);
+	}
+    }
+
+  free(inbuf);
+  free(outbuf);
+  free(inpos);
+  free(outpos);
+  lou_free();
+  return rv;
+
+}
+
+int
 check_cursor_pos(const char *str, const int *expected_pos)
 {
   widechar *inbuf;
