@@ -336,7 +336,7 @@ chrome.browserAction.onClicked.addListener(goToInbox);
 // state, and also doesn't expose onStartup. So the icon always starts out in
 // wrong state. We don't actually need onStartup, we just use it as a clue
 // that we're in a version of Chrome that has this problem.
-if (!chrome.runtime.onStartup) {
+if (chrome.runtime && !chrome.runtime.onStartup) {
   chrome.windows.onCreated.addListener(function() {
     console.log('Window created... updating icon.');
     updateIcon();
