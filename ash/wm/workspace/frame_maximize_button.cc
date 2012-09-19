@@ -144,8 +144,14 @@ void FrameMaximizeButton::SnapButtonHovered(SnapType type) {
     case SNAP_MINIMIZE:
       location.set_y(location.y() + height());
       break;
-    case SNAP_MAXIMIZE:
     case SNAP_RESTORE:
+      // Simulate a mouse button move over the according button.
+      if (GetMaximizeBubbleFrameState() == FRAME_STATE_SNAP_LEFT)
+        location.set_x(location.x() - width());
+      else if (GetMaximizeBubbleFrameState() == FRAME_STATE_SNAP_RIGHT)
+        location.set_x(location.x() + width());
+      break;
+    case SNAP_MAXIMIZE:
       break;
     case SNAP_NONE:
       Cancel(true);

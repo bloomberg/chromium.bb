@@ -731,8 +731,8 @@ void BubbleContentsView::SetSnapType(SnapType snap_type) {
       break;
     default:
       // If nothing is selected, we automatically select the click operation.
-      id = bubble_->controller()->maximize_type() ? IDS_ASH_RESTORE_WINDOW :
-               IDS_ASH_MAXIMIZE_WINDOW;
+      id = bubble_->controller()->maximize_type() == FRAME_STATE_FULL ?
+               IDS_ASH_RESTORE_WINDOW : IDS_ASH_MAXIMIZE_WINDOW;
       break;
   }
   label_view_->SetText(rb.GetLocalizedString(id));
