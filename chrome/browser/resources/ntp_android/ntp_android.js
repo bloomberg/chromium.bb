@@ -592,7 +592,7 @@ cr.define('ntp', function() {
 
     cell.setAttribute(CONTEXT_MENU_URL_KEY, item.url);
 
-    var iconUrl = item.icon || 'chrome://touch-icon/size/64/' + item.url;
+    var iconUrl = item.icon || 'chrome://touch-icon/size/16/' + item.url;
     var icon = createDiv('icon', iconUrl);
     trackImageLoad(iconUrl);
     cell.appendChild(icon);
