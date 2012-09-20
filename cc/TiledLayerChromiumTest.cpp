@@ -52,6 +52,7 @@ public:
     TiledLayerChromiumTest()
         : m_compositorInitializer(0)
         , m_context(WebKit::createFakeCCGraphicsContext())
+        , m_queue(adoptPtr(new CCTextureUpdateQueue))
         , m_textureManager(CCPrioritizedTextureManager::create(60*1024*1024, 1024, CCRenderer::ContentPool))
         , m_occlusion(0)
     {
@@ -99,7 +100,16 @@ public:
     void updateTextures()
     {
         DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
-        CCTextureUpdateController::updateTextures(m_resourceProvider.get(), &m_uploader, &m_queue);
+        ASSERT(m_queue);
+        OwnPtr<CCTextureUpdateController> updateController =
+            CCTextureUpdateController::create(
+                NULL,
+                CCProxy::implThread(),
+                m_queue.release(),
+                m_resourceProvider.get(),
+                &m_uploader);
+        updateController->finalize();
+        m_queue = adoptPtr(new CCTextureUpdateQueue);
     }
     void layerPushPropertiesTo(FakeTiledLayerChromium* layer, FakeCCTiledLayerImpl* layerImpl)
     {
@@ -109,7 +119,7 @@ public:
     void layerUpdate(FakeTiledLayerChromium* layer, TestCCOcclusionTracker* occluded)
     {
         DebugScopedSetMainThread mainThread;
-        layer->update(m_queue, occluded, m_stats);
+        layer->update(*m_queue.get(), occluded, m_stats);
     }
 
     bool updateAndPush(FakeTiledLayerChromium* layer1,
@@ -127,9 +137,9 @@ public:
 
         // Update content
         if (layer1)
-            layer1->update(m_queue, m_occlusion, m_stats);
+            layer1->update(*m_queue.get(), m_occlusion, m_stats);
         if (layer2)
-            layer2->update(m_queue, m_occlusion, m_stats);
+            layer2->update(*m_queue.get(), m_occlusion, m_stats);
 
         bool needsUpdate = false;
         if (layer1)
@@ -151,7 +161,7 @@ public:
     WebKitTests::WebCompositorInitializer m_compositorInitializer;
     OwnPtr<CCGraphicsContext> m_context;
     OwnPtr<CCResourceProvider> m_resourceProvider;
-    CCTextureUpdateQueue m_queue;
+    OwnPtr<CCTextureUpdateQueue> m_queue;
     CCRenderingStats m_stats;
     FakeTextureUploader m_uploader;
     CCPriorityCalculator m_priorityCalculator;
@@ -469,7 +479,7 @@ TEST_F(TiledLayerChromiumTest, paintSmallAnimatedLayersImmediately)
         // if it is close to the viewport size and has the available memory.
         layer->setTexturePriorities(m_priorityCalculator);
         m_textureManager->prioritizeTextures();
-        layer->update(m_queue, 0, m_stats);
+        layer->update(*m_queue.get(), 0, m_stats);
         updateTextures();
         layerPushPropertiesTo(layer.get(), layerImpl.get());
 
@@ -623,7 +633,7 @@ TEST_F(TiledLayerChromiumTest, verifyUpdateRectWhenContentBoundsAreScaled)
 
     layer->setTexturePriorities(m_priorityCalculator);
     m_textureManager->prioritizeTextures();
-    layer->update(m_queue, 0, m_stats);
+    layer->update(*m_queue.get(), 0, m_stats);
     EXPECT_FLOAT_RECT_EQ(FloatRect(0, 0, 300, 300 * 0.8), layer->updateRect());
     updateTextures();
 
@@ -631,7 +641,7 @@ TEST_F(TiledLayerChromiumTest, verifyUpdateRectWhenContentBoundsAreScaled)
     layer->setTexturePriorities(m_priorityCalculator);
     m_textureManager->prioritizeTextures();
     layer->invalidateContentRect(contentBounds);
-    layer->update(m_queue, 0, m_stats);
+    layer->update(*m_queue.get(), 0, m_stats);
     EXPECT_FLOAT_RECT_EQ(FloatRect(layerBounds), layer->updateRect());
     updateTextures();
 
@@ -640,7 +650,7 @@ TEST_F(TiledLayerChromiumTest, verifyUpdateRectWhenContentBoundsAreScaled)
     layer->invalidateContentRect(partialDamage);
     layer->setTexturePriorities(m_priorityCalculator);
     m_textureManager->prioritizeTextures();
-    layer->update(m_queue, 0, m_stats);
+    layer->update(*m_queue.get(), 0, m_stats);
     EXPECT_FLOAT_RECT_EQ(FloatRect(45, 80, 15, 8), layer->updateRect());
 }
 
@@ -660,7 +670,7 @@ TEST_F(TiledLayerChromiumTest, verifyInvalidationWhenContentsScaleChanges)
     // Push the tiles to the impl side and check that there is exactly one.
     layer->setTexturePriorities(m_priorityCalculator);
     m_textureManager->prioritizeTextures();
-    layer->update(m_queue, 0, m_stats);
+    layer->update(*m_queue.get(), 0, m_stats);
     updateTextures();
     layerPushPropertiesTo(layer.get(), layerImpl.get());
     EXPECT_TRUE(layerImpl->hasTileAt(0, 0));
@@ -677,7 +687,7 @@ TEST_F(TiledLayerChromiumTest, verifyInvalidationWhenContentsScaleChanges)
     // The impl side should get 2x2 tiles now.
     layer->setTexturePriorities(m_priorityCalculator);
     m_textureManager->prioritizeTextures();
-    layer->update(m_queue, 0, m_stats);
+    layer->update(*m_queue.get(), 0, m_stats);
     updateTextures();
     layerPushPropertiesTo(layer.get(), layerImpl.get());
     EXPECT_TRUE(layerImpl->hasTileAt(0, 0));
@@ -727,7 +737,7 @@ TEST_F(TiledLayerChromiumTest, skipsDrawGetsReset)
     ccLayerTreeHost->setRootLayer(rootLayer);
     ccLayerTreeHost->setViewportSize(IntSize(300, 300), IntSize(300, 300));
 
-    ccLayerTreeHost->updateLayers(m_queue, memoryLimit);
+    ccLayerTreeHost->updateLayers(*m_queue.get(), memoryLimit);
 
     // We'll skip the root layer.
     EXPECT_TRUE(rootLayer->skipsDraw());
@@ -738,7 +748,7 @@ TEST_F(TiledLayerChromiumTest, skipsDrawGetsReset)
     // Remove the child layer.
     rootLayer->removeAllChildren();
 
-    ccLayerTreeHost->updateLayers(m_queue, memoryLimit);
+    ccLayerTreeHost->updateLayers(*m_queue.get(), memoryLimit);
     EXPECT_FALSE(rootLayer->skipsDraw());
 
     textureManagerClearAllMemory(ccLayerTreeHost->contentsTextureManager(), m_resourceProvider.get());
@@ -756,7 +766,7 @@ TEST_F(TiledLayerChromiumTest, resizeToSmaller)
 
     layer->setTexturePriorities(m_priorityCalculator);
     m_textureManager->prioritizeTextures();
-    layer->update(m_queue, 0, m_stats);
+    layer->update(*m_queue.get(), 0, m_stats);
 
     layer->setBounds(IntSize(200, 200));
     layer->invalidateContentRect(IntRect(0, 0, 200, 200));
@@ -774,7 +784,7 @@ TEST_F(TiledLayerChromiumTest, hugeLayerUpdateCrash)
     // Ensure no crash for bounds where size * size would overflow an int.
     layer->setTexturePriorities(m_priorityCalculator);
     m_textureManager->prioritizeTextures();
-    layer->update(m_queue, 0, m_stats);
+    layer->update(*m_queue.get(), 0, m_stats);
 }
 
 TEST_F(TiledLayerChromiumTest, partialUpdates)
@@ -800,14 +810,15 @@ TEST_F(TiledLayerChromiumTest, partialUpdates)
     ccLayerTreeHost->setViewportSize(IntSize(300, 200), IntSize(300, 200));
 
     // Full update of all 6 tiles.
-    ccLayerTreeHost->updateLayers(m_queue, std::numeric_limits<size_t>::max());
+    ccLayerTreeHost->updateLayers(
+        *m_queue.get(), std::numeric_limits<size_t>::max());
     {
         ScopedFakeCCTiledLayerImpl layerImpl(1);
-        EXPECT_EQ(6, m_queue.fullUploadSize());
-        EXPECT_EQ(0, m_queue.partialUploadSize());
+        EXPECT_EQ(6, m_queue->fullUploadSize());
+        EXPECT_EQ(0, m_queue->partialUploadSize());
         updateTextures();
         EXPECT_EQ(6, layer->fakeLayerTextureUpdater()->updateCount());
-        EXPECT_FALSE(m_queue.hasMoreUpdates());
+        EXPECT_FALSE(m_queue->hasMoreUpdates());
         layer->fakeLayerTextureUpdater()->clearUpdateCount();
         layerPushPropertiesTo(layer.get(), layerImpl.get());
     }
@@ -815,14 +826,14 @@ TEST_F(TiledLayerChromiumTest, partialUpdates)
 
     // Full update of 3 tiles and partial update of 3 tiles.
     layer->invalidateContentRect(IntRect(0, 0, 300, 150));
-    ccLayerTreeHost->updateLayers(m_queue, std::numeric_limits<size_t>::max());
+    ccLayerTreeHost->updateLayers(*m_queue.get(), std::numeric_limits<size_t>::max());
     {
         ScopedFakeCCTiledLayerImpl layerImpl(1);
-        EXPECT_EQ(3, m_queue.fullUploadSize());
-        EXPECT_EQ(3, m_queue.partialUploadSize());
+        EXPECT_EQ(3, m_queue->fullUploadSize());
+        EXPECT_EQ(3, m_queue->partialUploadSize());
         updateTextures();
         EXPECT_EQ(6, layer->fakeLayerTextureUpdater()->updateCount());
-        EXPECT_FALSE(m_queue.hasMoreUpdates());
+        EXPECT_FALSE(m_queue->hasMoreUpdates());
         layer->fakeLayerTextureUpdater()->clearUpdateCount();
         layerPushPropertiesTo(layer.get(), layerImpl.get());
     }
@@ -832,12 +843,12 @@ TEST_F(TiledLayerChromiumTest, partialUpdates)
     layer->invalidateContentRect(IntRect(50, 50, 200, 100));
     {
         ScopedFakeCCTiledLayerImpl layerImpl(1);
-        ccLayerTreeHost->updateLayers(m_queue, std::numeric_limits<size_t>::max());
-        EXPECT_EQ(2, m_queue.fullUploadSize());
-        EXPECT_EQ(4, m_queue.partialUploadSize());
+        ccLayerTreeHost->updateLayers(*m_queue.get(), std::numeric_limits<size_t>::max());
+        EXPECT_EQ(2, m_queue->fullUploadSize());
+        EXPECT_EQ(4, m_queue->partialUploadSize());
         updateTextures();
         EXPECT_EQ(6, layer->fakeLayerTextureUpdater()->updateCount());
-        EXPECT_FALSE(m_queue.hasMoreUpdates());
+        EXPECT_FALSE(m_queue->hasMoreUpdates());
         layer->fakeLayerTextureUpdater()->clearUpdateCount();
         layerPushPropertiesTo(layer.get(), layerImpl.get());
     }
@@ -855,12 +866,12 @@ TEST_F(TiledLayerChromiumTest, partialUpdates)
     layer->invalidateContentRect(IntRect(50, 50, 200, 100));
     {
         ScopedFakeCCTiledLayerImpl layerImpl(1);
-        ccLayerTreeHost->updateLayers(m_queue, std::numeric_limits<size_t>::max());
-        EXPECT_EQ(6, m_queue.fullUploadSize());
-        EXPECT_EQ(0, m_queue.partialUploadSize());
+        ccLayerTreeHost->updateLayers(*m_queue.get(), std::numeric_limits<size_t>::max());
+        EXPECT_EQ(6, m_queue->fullUploadSize());
+        EXPECT_EQ(0, m_queue->partialUploadSize());
         updateTextures();
         EXPECT_EQ(6, layer->fakeLayerTextureUpdater()->updateCount());
-        EXPECT_FALSE(m_queue.hasMoreUpdates());
+        EXPECT_FALSE(m_queue->hasMoreUpdates());
         layer->fakeLayerTextureUpdater()->clearUpdateCount();
         layerPushPropertiesTo(layer.get(), layerImpl.get());
     }
@@ -870,12 +881,12 @@ TEST_F(TiledLayerChromiumTest, partialUpdates)
     layer->invalidateContentRect(IntRect(50, 50, 100, 100));
     {
         ScopedFakeCCTiledLayerImpl layerImpl(1);
-        ccLayerTreeHost->updateLayers(m_queue, std::numeric_limits<size_t>::max());
-        EXPECT_EQ(0, m_queue.fullUploadSize());
-        EXPECT_EQ(4, m_queue.partialUploadSize());
+        ccLayerTreeHost->updateLayers(*m_queue.get(), std::numeric_limits<size_t>::max());
+        EXPECT_EQ(0, m_queue->fullUploadSize());
+        EXPECT_EQ(4, m_queue->partialUploadSize());
         updateTextures();
         EXPECT_EQ(4, layer->fakeLayerTextureUpdater()->updateCount());
-        EXPECT_FALSE(m_queue.hasMoreUpdates());
+        EXPECT_FALSE(m_queue->hasMoreUpdates());
         layer->fakeLayerTextureUpdater()->clearUpdateCount();
         layerPushPropertiesTo(layer.get(), layerImpl.get());
     }
@@ -898,7 +909,7 @@ TEST_F(TiledLayerChromiumTest, tilesPaintedWithoutOcclusion)
 
     layer->setTexturePriorities(m_priorityCalculator);
     m_textureManager->prioritizeTextures();
-    layer->update(m_queue, 0, m_stats);
+    layer->update(*m_queue.get(), 0, m_stats);
     EXPECT_EQ(2, layer->fakeLayerTextureUpdater()->prepareRectCount());
 }
 
@@ -918,7 +929,7 @@ TEST_F(TiledLayerChromiumTest, tilesPaintedWithOcclusion)
 
     layer->setTexturePriorities(m_priorityCalculator);
     m_textureManager->prioritizeTextures();
-    layer->update(m_queue, &occluded, m_stats);
+    layer->update(*m_queue.get(), &occluded, m_stats);
     EXPECT_EQ(36-3, layer->fakeLayerTextureUpdater()->prepareRectCount());
 
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 0, 1);
@@ -931,7 +942,7 @@ TEST_F(TiledLayerChromiumTest, tilesPaintedWithOcclusion)
 
     occluded.setOcclusion(IntRect(250, 200, 300, 100));
     layer->invalidateContentRect(IntRect(0, 0, 600, 600));
-    layer->update(m_queue, &occluded, m_stats);
+    layer->update(*m_queue.get(), &occluded, m_stats);
     EXPECT_EQ(36-2, layer->fakeLayerTextureUpdater()->prepareRectCount());
 
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 0, 1);
@@ -944,7 +955,7 @@ TEST_F(TiledLayerChromiumTest, tilesPaintedWithOcclusion)
 
     occluded.setOcclusion(IntRect(250, 250, 300, 100));
     layer->invalidateContentRect(IntRect(0, 0, 600, 600));
-    layer->update(m_queue, &occluded, m_stats);
+    layer->update(*m_queue.get(), &occluded, m_stats);
     EXPECT_EQ(36, layer->fakeLayerTextureUpdater()->prepareRectCount());
 
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 0, 1);
@@ -969,7 +980,7 @@ TEST_F(TiledLayerChromiumTest, tilesPaintedWithOcclusionAndVisiblityConstraints)
 
     layer->setTexturePriorities(m_priorityCalculator);
     m_textureManager->prioritizeTextures();
-    layer->update(m_queue, &occluded, m_stats);
+    layer->update(*m_queue.get(), &occluded, m_stats);
     EXPECT_EQ(24-3, layer->fakeLayerTextureUpdater()->prepareRectCount());
 
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 0, 1);
@@ -985,7 +996,7 @@ TEST_F(TiledLayerChromiumTest, tilesPaintedWithOcclusionAndVisiblityConstraints)
     layer->invalidateContentRect(IntRect(0, 0, 600, 600));
     layer->setTexturePriorities(m_priorityCalculator);
     m_textureManager->prioritizeTextures();
-    layer->update(m_queue, &occluded, m_stats);
+    layer->update(*m_queue.get(), &occluded, m_stats);
     EXPECT_EQ(24-6, layer->fakeLayerTextureUpdater()->prepareRectCount());
 
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 0, 1);
@@ -1001,7 +1012,7 @@ TEST_F(TiledLayerChromiumTest, tilesPaintedWithOcclusionAndVisiblityConstraints)
     layer->invalidateContentRect(IntRect(0, 0, 600, 600));
     layer->setTexturePriorities(m_priorityCalculator);
     m_textureManager->prioritizeTextures();
-    layer->update(m_queue, &occluded, m_stats);
+    layer->update(*m_queue.get(), &occluded, m_stats);
     EXPECT_EQ(24-6, layer->fakeLayerTextureUpdater()->prepareRectCount());
 
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 0, 1);
@@ -1025,7 +1036,7 @@ TEST_F(TiledLayerChromiumTest, tilesNotPaintedWithoutInvalidation)
     layer->invalidateContentRect(IntRect(0, 0, 600, 600));
     layer->setTexturePriorities(m_priorityCalculator);
     m_textureManager->prioritizeTextures();
-    layer->update(m_queue, &occluded, m_stats);
+    layer->update(*m_queue.get(), &occluded, m_stats);
     EXPECT_EQ(36-3, layer->fakeLayerTextureUpdater()->prepareRectCount());
     {
         updateTextures();
@@ -1040,7 +1051,7 @@ TEST_F(TiledLayerChromiumTest, tilesNotPaintedWithoutInvalidation)
     m_textureManager->prioritizeTextures();
 
     // Repaint without marking it dirty. The 3 culled tiles will be pre-painted now.
-    layer->update(m_queue, &occluded, m_stats);
+    layer->update(*m_queue.get(), &occluded, m_stats);
     EXPECT_EQ(3, layer->fakeLayerTextureUpdater()->prepareRectCount());
 
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 0, 1);
@@ -1069,7 +1080,7 @@ TEST_F(TiledLayerChromiumTest, tilesPaintedWithOcclusionAndTransforms)
     layer->invalidateContentRect(IntRect(0, 0, 600, 600));
     layer->setTexturePriorities(m_priorityCalculator);
     m_textureManager->prioritizeTextures();
-    layer->update(m_queue, &occluded, m_stats);
+    layer->update(*m_queue.get(), &occluded, m_stats);
     EXPECT_EQ(36-3, layer->fakeLayerTextureUpdater()->prepareRectCount());
 
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 0, 1);
@@ -1100,7 +1111,7 @@ TEST_F(TiledLayerChromiumTest, tilesPaintedWithOcclusionAndScaling)
     layer->invalidateContentRect(IntRect(0, 0, 600, 600));
     layer->setTexturePriorities(m_priorityCalculator);
     m_textureManager->prioritizeTextures();
-    layer->update(m_queue, &occluded, m_stats);
+    layer->update(*m_queue.get(), &occluded, m_stats);
     // The content is half the size of the layer (so the number of tiles is fewer).
     // In this case, the content is 300x300, and since the tile size is 100, the
     // number of tiles 3x3.
@@ -1121,7 +1132,7 @@ TEST_F(TiledLayerChromiumTest, tilesPaintedWithOcclusionAndScaling)
     layer->invalidateContentRect(IntRect(0, 0, 600, 600));
     layer->setTexturePriorities(m_priorityCalculator);
     m_textureManager->prioritizeTextures();
-    layer->update(m_queue, &occluded, m_stats);
+    layer->update(*m_queue.get(), &occluded, m_stats);
     EXPECT_EQ(9-1, layer->fakeLayerTextureUpdater()->prepareRectCount());
 
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 0, 1);
@@ -1142,7 +1153,7 @@ TEST_F(TiledLayerChromiumTest, tilesPaintedWithOcclusionAndScaling)
     layer->invalidateContentRect(IntRect(0, 0, 600, 600));
     layer->setTexturePriorities(m_priorityCalculator);
     m_textureManager->prioritizeTextures();
-    layer->update(m_queue, &occluded, m_stats);
+    layer->update(*m_queue.get(), &occluded, m_stats);
     EXPECT_EQ(9-1, layer->fakeLayerTextureUpdater()->prepareRectCount());
 
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 0, 1);
@@ -1174,7 +1185,7 @@ TEST_F(TiledLayerChromiumTest, visibleContentOpaqueRegion)
     // If the layer doesn't paint opaque content, then the visibleContentOpaqueRegion should be empty.
     layer->fakeLayerTextureUpdater()->setOpaquePaintRect(IntRect());
     layer->invalidateContentRect(contentBounds);
-    layer->update(m_queue, &occluded, m_stats);
+    layer->update(*m_queue.get(), &occluded, m_stats);
     opaqueContents = layer->visibleContentOpaqueRegion();
     EXPECT_TRUE(opaqueContents.isEmpty());
 
@@ -1187,7 +1198,7 @@ TEST_F(TiledLayerChromiumTest, visibleContentOpaqueRegion)
     opaquePaintRect = IntRect(10, 10, 90, 190);
     layer->fakeLayerTextureUpdater()->setOpaquePaintRect(opaquePaintRect);
     layer->invalidateContentRect(contentBounds);
-    layer->update(m_queue, &occluded, m_stats);
+    layer->update(*m_queue.get(), &occluded, m_stats);
     updateTextures();
     opaqueContents = layer->visibleContentOpaqueRegion();
     EXPECT_RECT_EQ(intersection(opaquePaintRect, visibleBounds), opaqueContents.bounds());
@@ -1200,7 +1211,7 @@ TEST_F(TiledLayerChromiumTest, visibleContentOpaqueRegion)
 
     // If we paint again without invalidating, the same stuff should be opaque.
     layer->fakeLayerTextureUpdater()->setOpaquePaintRect(IntRect());
-    layer->update(m_queue, &occluded, m_stats);
+    layer->update(*m_queue.get(), &occluded, m_stats);
     updateTextures();
     opaqueContents = layer->visibleContentOpaqueRegion();
     EXPECT_RECT_EQ(intersection(opaquePaintRect, visibleBounds), opaqueContents.bounds());
@@ -1215,7 +1226,7 @@ TEST_F(TiledLayerChromiumTest, visibleContentOpaqueRegion)
     // not be affected.
     layer->fakeLayerTextureUpdater()->setOpaquePaintRect(IntRect());
     layer->invalidateContentRect(IntRect(0, 0, 1, 1));
-    layer->update(m_queue, &occluded, m_stats);
+    layer->update(*m_queue.get(), &occluded, m_stats);
     updateTextures();
     opaqueContents = layer->visibleContentOpaqueRegion();
     EXPECT_RECT_EQ(intersection(opaquePaintRect, visibleBounds), opaqueContents.bounds());
@@ -1230,7 +1241,7 @@ TEST_F(TiledLayerChromiumTest, visibleContentOpaqueRegion)
     // not be affected.
     layer->fakeLayerTextureUpdater()->setOpaquePaintRect(IntRect());
     layer->invalidateContentRect(IntRect(10, 10, 1, 1));
-    layer->update(m_queue, &occluded, m_stats);
+    layer->update(*m_queue.get(), &occluded, m_stats);
     updateTextures();
     opaqueContents = layer->visibleContentOpaqueRegion();
     EXPECT_RECT_EQ(intersection(IntRect(10, 100, 90, 100), visibleBounds), opaqueContents.bounds());
@@ -1266,7 +1277,7 @@ TEST_F(TiledLayerChromiumTest, pixelsPaintedMetrics)
     // Invalidates and paints the whole layer.
     layer->fakeLayerTextureUpdater()->setOpaquePaintRect(IntRect());
     layer->invalidateContentRect(contentBounds);
-    layer->update(m_queue, &occluded, m_stats);
+    layer->update(*m_queue.get(), &occluded, m_stats);
     updateTextures();
     opaqueContents = layer->visibleContentOpaqueRegion();
     EXPECT_TRUE(opaqueContents.isEmpty());
@@ -1281,7 +1292,7 @@ TEST_F(TiledLayerChromiumTest, pixelsPaintedMetrics)
     layer->fakeLayerTextureUpdater()->setOpaquePaintRect(IntRect());
     layer->invalidateContentRect(IntRect(0, 0, 1, 1));
     layer->invalidateContentRect(IntRect(50, 200, 10, 10));
-    layer->update(m_queue, &occluded, m_stats);
+    layer->update(*m_queue.get(), &occluded, m_stats);
     updateTextures();
     opaqueContents = layer->visibleContentOpaqueRegion();
     EXPECT_TRUE(opaqueContents.isEmpty());
@@ -1342,13 +1353,14 @@ TEST_F(TiledLayerChromiumTest, dontAllocateContentsWhenTargetSurfaceCantBeAlloca
     root->invalidateContentRect(rootRect);
     child->invalidateContentRect(childRect);
     child2->invalidateContentRect(child2Rect);
-    ccLayerTreeHost->updateLayers(m_queue, std::numeric_limits<size_t>::max());
+    ccLayerTreeHost->updateLayers(
+        *m_queue.get(), std::numeric_limits<size_t>::max());
     {
         updateTextures();
         EXPECT_EQ(6, root->fakeLayerTextureUpdater()->updateCount());
         EXPECT_EQ(3, child->fakeLayerTextureUpdater()->updateCount());
         EXPECT_EQ(3, child2->fakeLayerTextureUpdater()->updateCount());
-        EXPECT_FALSE(m_queue.hasMoreUpdates());
+        EXPECT_FALSE(m_queue->hasMoreUpdates());
 
         root->fakeLayerTextureUpdater()->clearUpdateCount();
         child->fakeLayerTextureUpdater()->clearUpdateCount();
@@ -1376,13 +1388,14 @@ TEST_F(TiledLayerChromiumTest, dontAllocateContentsWhenTargetSurfaceCantBeAlloca
     root->invalidateContentRect(rootRect);
     child->invalidateContentRect(childRect);
     child2->invalidateContentRect(child2Rect);
-    ccLayerTreeHost->updateLayers(m_queue, (3 * 2 + 3 * 1) * (100 * 100) * 4);
+    ccLayerTreeHost->updateLayers(
+        *m_queue.get(), (3 * 2 + 3 * 1) * (100 * 100) * 4);
     {
         updateTextures();
         EXPECT_EQ(6, root->fakeLayerTextureUpdater()->updateCount());
         EXPECT_EQ(0, child->fakeLayerTextureUpdater()->updateCount());
         EXPECT_EQ(0, child2->fakeLayerTextureUpdater()->updateCount());
-        EXPECT_FALSE(m_queue.hasMoreUpdates());
+        EXPECT_FALSE(m_queue->hasMoreUpdates());
 
         root->fakeLayerTextureUpdater()->clearUpdateCount();
         child->fakeLayerTextureUpdater()->clearUpdateCount();
@@ -1411,13 +1424,14 @@ TEST_F(TiledLayerChromiumTest, dontAllocateContentsWhenTargetSurfaceCantBeAlloca
     root->invalidateContentRect(rootRect);
     child->invalidateContentRect(childRect);
     child2->invalidateContentRect(child2Rect);
-    ccLayerTreeHost->updateLayers(m_queue, (3 * 1) * (100 * 100) * 4);
+    ccLayerTreeHost->updateLayers(
+        *m_queue.get(), (3 * 1) * (100 * 100) * 4);
     {
         updateTextures();
         EXPECT_EQ(0, root->fakeLayerTextureUpdater()->updateCount());
         EXPECT_EQ(0, child->fakeLayerTextureUpdater()->updateCount());
         EXPECT_EQ(0, child2->fakeLayerTextureUpdater()->updateCount());
-        EXPECT_FALSE(m_queue.hasMoreUpdates());
+        EXPECT_FALSE(m_queue->hasMoreUpdates());
 
         root->fakeLayerTextureUpdater()->clearUpdateCount();
         child->fakeLayerTextureUpdater()->clearUpdateCount();
@@ -1501,7 +1515,7 @@ TEST_F(TiledLayerChromiumTest, nonIntegerContentsScaleIsNotDistortedDuringPaint)
     m_textureManager->prioritizeTextures();
 
     // Update the whole tile.
-    layer->update(m_queue, 0, m_stats);
+    layer->update(*m_queue.get(), 0, m_stats);
     layer->trackingLayerPainter()->resetPaintedRect();
 
     EXPECT_RECT_EQ(IntRect(), layer->trackingLayerPainter()->paintedRect());
@@ -1509,7 +1523,7 @@ TEST_F(TiledLayerChromiumTest, nonIntegerContentsScaleIsNotDistortedDuringPaint)
 
     // Invalidate the entire layer in content space. When painting, the rect given to webkit should match the layer's bounds.
     layer->invalidateContentRect(contentRect);
-    layer->update(m_queue, 0, m_stats);
+    layer->update(*m_queue.get(), 0, m_stats);
 
     EXPECT_RECT_EQ(layerRect, layer->trackingLayerPainter()->paintedRect());
 }
@@ -1531,7 +1545,7 @@ TEST_F(TiledLayerChromiumTest, nonIntegerContentsScaleIsNotDistortedDuringInvali
     m_textureManager->prioritizeTextures();
 
     // Update the whole tile.
-    layer->update(m_queue, 0, m_stats);
+    layer->update(*m_queue.get(), 0, m_stats);
     layer->trackingLayerPainter()->resetPaintedRect();
 
     EXPECT_RECT_EQ(IntRect(), layer->trackingLayerPainter()->paintedRect());
@@ -1539,7 +1553,7 @@ TEST_F(TiledLayerChromiumTest, nonIntegerContentsScaleIsNotDistortedDuringInvali
 
     // Invalidate the entire layer in layer space. When painting, the rect given to webkit should match the layer's bounds.
     layer->setNeedsDisplayRect(layerRect);
-    layer->update(m_queue, 0, m_stats);
+    layer->update(*m_queue.get(), 0, m_stats);
 
     EXPECT_RECT_EQ(layerRect, layer->trackingLayerPainter()->paintedRect());
 }

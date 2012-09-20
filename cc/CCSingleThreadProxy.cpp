@@ -175,7 +175,7 @@ void CCSingleThreadProxy::setNeedsAnimate()
     ASSERT_NOT_REACHED();
 }
 
-void CCSingleThreadProxy::doCommit(CCTextureUpdateQueue& queue)
+void CCSingleThreadProxy::doCommit(PassOwnPtr<CCTextureUpdateQueue> queue)
 {
     ASSERT(CCProxy::isMainThread());
     // Commit immediately
@@ -187,7 +187,14 @@ void CCSingleThreadProxy::doCommit(CCTextureUpdateQueue& queue)
 
         m_layerTreeHost->beginCommitOnImplThread(m_layerTreeHostImpl.get());
 
-        CCTextureUpdateController::updateTextures(m_layerTreeHostImpl->resourceProvider(), m_layerTreeHostImpl->resourceProvider()->textureUploader(), &queue);
+        OwnPtr<CCTextureUpdateController> updateController =
+            CCTextureUpdateController::create(
+                NULL,
+                CCProxy::mainThread(),
+                queue,
+                m_layerTreeHostImpl->resourceProvider(),
+                m_layerTreeHostImpl->resourceProvider()->textureUploader());
+        updateController->finalize();
 
         m_layerTreeHost->finishCommitOnImplThread(m_layerTreeHostImpl.get());
 
@@ -312,14 +319,14 @@ bool CCSingleThreadProxy::commitAndComposite()
         m_layerTreeHost->deleteEvictedContentTexturesBackings();
     }
 
-    CCTextureUpdateQueue queue;
-    m_layerTreeHost->updateLayers(queue, m_layerTreeHostImpl->memoryAllocationLimitBytes());
+    OwnPtr<CCTextureUpdateQueue> queue = adoptPtr(new CCTextureUpdateQueue);
+    m_layerTreeHost->updateLayers(*(queue.get()), m_layerTreeHostImpl->memoryAllocationLimitBytes());
 
     if (m_layerTreeHostImpl->contentsTexturesPurged())
         m_layerTreeHostImpl->resetContentsTexturesPurged();
 
     m_layerTreeHost->willCommit();
-    doCommit(queue);
+    doCommit(queue.release());
     bool result = doComposite();
     m_layerTreeHost->didBeginFrame();
     return result;

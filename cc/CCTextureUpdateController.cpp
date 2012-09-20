@@ -43,43 +43,6 @@ size_t CCTextureUpdateController::maxFullUpdatesPerTick(TextureUploader* uploade
     return texturesPerTick ? texturesPerTick : 1;
 }
 
-void CCTextureUpdateController::updateTextures(CCResourceProvider* resourceProvider, TextureUploader* uploader, CCTextureUpdateQueue* queue)
-{
-    size_t uploadCount = 0;
-    while (queue->fullUploadSize()) {
-        if (!(uploadCount % textureUploadFlushPeriod) && uploadCount)
-            resourceProvider->shallowFlushIfSupported();
-
-        uploader->uploadTexture(
-            resourceProvider, queue->takeFirstFullUpload());
-        uploadCount++;
-    }
-
-    while (queue->partialUploadSize()) {
-        if (!(uploadCount % textureUploadFlushPeriod) && uploadCount)
-            resourceProvider->shallowFlushIfSupported();
-
-        uploader->uploadTexture(
-            resourceProvider, queue->takeFirstPartialUpload());
-        uploadCount++;
-    }
-
-    if (uploadCount)
-        resourceProvider->shallowFlushIfSupported();
-
-    if (queue->copySize()) {
-        TextureCopier* copier = resourceProvider->textureCopier();
-        while (queue->copySize())
-            copier->copyTexture(queue->takeFirstCopy());
-
-        // If we've performed any texture copies, we need to insert a flush
-        // here into the compositor context before letting the main thread
-        // proceed as it may make draw calls to the source texture of one of
-        // our copy operations.
-        copier->flush();
-    }
-}
-
 CCTextureUpdateController::CCTextureUpdateController(CCTextureUpdateControllerClient* client, CCThread* thread, PassOwnPtr<CCTextureUpdateQueue> queue, CCResourceProvider* resourceProvider, TextureUploader* uploader)
     : m_client(client)
     , m_timer(adoptPtr(new CCTimer(thread, this)))
@@ -127,7 +90,39 @@ void CCTextureUpdateController::discardUploadsToEvictedResources()
 
 void CCTextureUpdateController::finalize()
 {
-    updateTextures(m_resourceProvider, m_uploader, m_queue.get());
+    size_t uploadCount = 0;
+    while (m_queue->fullUploadSize()) {
+        if (!(uploadCount % textureUploadFlushPeriod) && uploadCount)
+            m_resourceProvider->shallowFlushIfSupported();
+
+        m_uploader->uploadTexture(
+            m_resourceProvider, m_queue->takeFirstFullUpload());
+        uploadCount++;
+    }
+
+    while (m_queue->partialUploadSize()) {
+        if (!(uploadCount % textureUploadFlushPeriod) && uploadCount)
+            m_resourceProvider->shallowFlushIfSupported();
+
+        m_uploader->uploadTexture(
+            m_resourceProvider, m_queue->takeFirstPartialUpload());
+        uploadCount++;
+    }
+
+    if (uploadCount)
+        m_resourceProvider->shallowFlushIfSupported();
+
+    if (m_queue->copySize()) {
+        TextureCopier* copier = m_resourceProvider->textureCopier();
+        while (m_queue->copySize())
+            copier->copyTexture(m_queue->takeFirstCopy());
+
+        // If we've performed any texture copies, we need to insert a flush
+        // here into the compositor context before letting the main thread
+        // proceed as it may make draw calls to the source texture of one of
+        // our copy operations.
+        copier->flush();
+    }
 }
 
 void CCTextureUpdateController::onTimerFired()

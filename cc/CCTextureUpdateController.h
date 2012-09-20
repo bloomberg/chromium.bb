@@ -30,7 +30,6 @@ public:
         return adoptPtr(new CCTextureUpdateController(client, thread, queue, resourceProvider, uploader));
     }
     static size_t maxPartialTextureUpdates();
-    static void updateTextures(CCResourceProvider*, TextureUploader*, CCTextureUpdateQueue*);
 
     virtual ~CCTextureUpdateController();
 
