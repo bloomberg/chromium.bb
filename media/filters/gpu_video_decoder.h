@@ -102,6 +102,9 @@ class MEDIA_EXPORT GpuVideoDecoder
   // decoder, kick some off demuxing/decoding.
   void EnsureDemuxOrDecode();
 
+  // Return true if more decode work can be piled on to the VDA.
+  bool CanMoreDecodeWorkBeDone();
+
   // Callback to pass to demuxer_stream_->Read() for receiving encoded bits.
   void RequestBufferDecode(DemuxerStream::Status status,
                            const scoped_refptr<DecoderBuffer>& buffer);
