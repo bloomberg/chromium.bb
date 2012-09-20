@@ -225,11 +225,11 @@ archived-pexe-translator-test() {
   #       package and the toolchain package maybe out of sync and
   #       strip does more than just stripping, it also upgrades
   #       bitcode versions if there was a format change.
-  # http://code.google.com/p/nativeclient/issues/detail?id=2840
-  # x86-64 will crash when ext=""
+  #       We only run with ext="" to save time, but if any bugs show up
+  #       we can switch to ext=".strip-all" and diagnose the bugs.
   # pexe archive rev: 8834
   # pre-built translator rev: 8759
-  local ext=".strip-all"
+  local ext=""
 
   # Note, that the arch flag has two functions:
   # 1) it selects the target arch for the translator
