@@ -159,7 +159,7 @@ class GerritHelper():
     return results[0]
 
   def Query(self, query, sort=None, current_patch=True, options=(),
-            dryrun=False, raw=False):
+            dryrun=False, raw=False, _resume_sortkey=None):
     """Freeform querying of a gerrit server
 
     Args:
@@ -186,7 +186,14 @@ class GerritHelper():
       raw = True
 
 
-    cmd.extend(['--', query])
+    # Note we intentionally cap the query to 500; gerrit does so
+    # already, but we force it so that if gerrit were to change
+    # its return limit, this wouldn't break.
+    overrides = ['limit:%i' % self._GERRIT_MAX_QUERY_RETURN]
+    if _resume_sortkey:
+      overrides += ['resume_sortkey:%s' % _resume_sortkey]
+
+    cmd.extend(['--', query] + overrides)
 
     if dryrun:
       logging.info('Would have run %s', ' '.join(cmd))
@@ -197,7 +204,7 @@ class GerritHelper():
     if len(result) == self._GERRIT_MAX_QUERY_RETURN:
       # Gerrit cuts us off at 500; thus go recursive via the sortKey to
       # get the rest of the results.
-      result += self.Query('resume_sortkey:%s' % (result[-1]['sortKey'],),
+      result += self.Query(query, _resume_sortkey=result[-1]['sortKey'],
                            current_patch=current_patch,
                            options=options, dryrun=dryrun, raw=True)
 
