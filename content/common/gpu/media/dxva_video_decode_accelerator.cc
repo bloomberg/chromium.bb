@@ -295,7 +295,7 @@ linked_ptr<DXVAVideoDecodeAccelerator::DXVAPictureBuffer>
       EGL_D3D_TEXTURE_2D_SHARE_HANDLE_ANGLE,
       &share_handle);
 
-  RETURN_ON_FAILURE(share_handle || ret != EGL_TRUE,
+  RETURN_ON_FAILURE(share_handle && ret == EGL_TRUE,
                     "Failed to query ANGLE surface pointer",
                     linked_ptr<DXVAPictureBuffer>(NULL));
 
