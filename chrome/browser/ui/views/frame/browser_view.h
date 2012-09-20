@@ -336,7 +336,9 @@ class BrowserView : public BrowserWindow,
   virtual void Cut() OVERRIDE;
   virtual void Copy() OVERRIDE;
   virtual void Paste() OVERRIDE;
-  virtual void ShowInstant(TabContents* preview) OVERRIDE;
+  virtual void ShowInstant(TabContents* preview,
+                           int height,
+                           InstantSizeUnits units) OVERRIDE;
   virtual void HideInstant() OVERRIDE;
   virtual gfx::Rect GetInstantBounds() OVERRIDE;
   virtual bool IsInstantTabShowing() OVERRIDE;

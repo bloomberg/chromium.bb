@@ -222,7 +222,7 @@ bool InstantController::Update(const AutocompleteMatch& match,
     //    still Q, so we don't Update() the loader, but we do need to Show().
     if (loader_processed_last_update_ &&
         (mode_ == INSTANT || mode_ == EXTENDED))
-      Show();
+      Show(100, INSTANT_SIZE_PERCENT);
     return true;
   }
 
@@ -305,6 +305,11 @@ void InstantController::Hide() {
   if (is_showing_) {
     is_showing_ = false;
     delegate_->HideInstant();
+
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_INSTANT_CONTROLLER_HIDDEN,
+        content::Source<InstantController>(this),
+        content::NotificationService::NoDetails());
   }
   if (GetPreviewContents() && !last_full_text_.empty()) {
     // Send a blank query to ask the preview to clear out old results.
@@ -516,7 +521,7 @@ void InstantController::SetSuggestions(
   }
 
   if (mode_ != SUGGEST)
-    Show();
+    Show(100, INSTANT_SIZE_PERCENT);
 }
 
 void InstantController::CommitInstantLoader(InstantLoader* loader) {
@@ -526,6 +531,16 @@ void InstantController::CommitInstantLoader(InstantLoader* loader) {
     return;
 
   CommitCurrentPreview(INSTANT_COMMIT_FOCUS_LOST);
+}
+
+void InstantController::SetInstantPreviewHeight(InstantLoader* loader,
+                                                int height,
+                                                InstantSizeUnits units) {
+  DCHECK_EQ(loader_.get(), loader);
+  if (loader_ != loader || mode_ != EXTENDED)
+    return;
+
+  Show(height, units);
 }
 
 void InstantController::InstantLoaderPreviewLoaded(InstantLoader* loader) {
@@ -560,7 +575,7 @@ void InstantController::InstantSupportDetermined(InstantLoader* loader,
 void InstantController::SwappedTabContents(InstantLoader* loader) {
   DCHECK_EQ(loader_.get(), loader);
   if (loader_ == loader && is_showing_)
-    delegate_->ShowInstant();
+    delegate_->ShowInstant(100, INSTANT_SIZE_PERCENT);
 }
 
 void InstantController::InstantLoaderContentsFocused(InstantLoader* loader) {
@@ -655,11 +670,17 @@ void InstantController::DeleteLoader() {
   loader_.reset();
 }
 
-void InstantController::Show() {
+void InstantController::Show(int height, InstantSizeUnits units) {
+  // Call even if showing in case height changed.
+  delegate_->ShowInstant(height, units);
   if (!is_showing_) {
     is_showing_ = true;
-    delegate_->ShowInstant();
     AddPreviewUsageForHistogram(mode_, PREVIEW_SHOWED);
+
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_INSTANT_CONTROLLER_SHOWN,
+        content::Source<InstantController>(this),
+        content::NotificationService::NoDetails());
   }
 }
 

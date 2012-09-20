@@ -79,6 +79,11 @@ class InstantLoader::WebContentsDelegateImpl
   // Message from the renderer determining whether it supports the Instant API.
   void OnInstantSupportDetermined(int page_id, bool result);
 
+  // Message from the renderer requesting the preview be resized.
+  void OnSetInstantPreviewHeight(int page_id,
+                                 int height,
+                                 InstantSizeUnits units);
+
   void CommitFromPointerReleaseIfNecessary();
   void MaybeSetAndNotifyInstantSupportDetermined(bool supports_instant);
 
@@ -190,6 +195,8 @@ bool InstantLoader::WebContentsDelegateImpl::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_SetSuggestions, OnSetSuggestions)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_InstantSupportDetermined,
                         OnInstantSupportDetermined)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_SetInstantPreviewHeight,
+                        OnSetInstantPreviewHeight);
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -227,6 +234,23 @@ void InstantLoader::WebContentsDelegateImpl::OnInstantSupportDetermined(
     MaybeSetAndNotifyInstantSupportDetermined(result);
 }
 
+void InstantLoader::WebContentsDelegateImpl::OnSetInstantPreviewHeight(
+    int page_id,
+    int height,
+    InstantSizeUnits units) {
+  DCHECK(loader_->preview_contents() &&
+         loader_->preview_contents_->web_contents());
+  // TODO(sreeram): Remove this 'if' bandaid once bug 141875 is confirmed fixed.
+  if (!loader_->preview_contents() ||
+      !loader_->preview_contents_->web_contents())
+    return;
+  content::NavigationEntry* entry = loader_->preview_contents_->web_contents()->
+                                        GetController().GetActiveEntry();
+  if (entry && page_id == entry->GetPageID()) {
+    MaybeSetAndNotifyInstantSupportDetermined(true);
+    loader_->loader_delegate_->SetInstantPreviewHeight(loader_, height, units);
+  }
+}
 
 void InstantLoader::WebContentsDelegateImpl
     ::CommitFromPointerReleaseIfNecessary() {

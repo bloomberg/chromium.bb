@@ -161,6 +161,9 @@ class InstantController : public InstantLoaderDelegate {
       InstantLoader* loader,
       const std::vector<InstantSuggestion>& suggestions) OVERRIDE;
   virtual void CommitInstantLoader(InstantLoader* loader) OVERRIDE;
+  virtual void SetInstantPreviewHeight(InstantLoader* loader,
+                                       int height,
+                                       InstantSizeUnits units) OVERRIDE;
   virtual void InstantLoaderPreviewLoaded(InstantLoader* loader) OVERRIDE;
   virtual void InstantSupportDetermined(InstantLoader* loader,
                                         bool supports_instant) OVERRIDE;
@@ -198,8 +201,9 @@ class InstantController : public InstantLoaderDelegate {
   // Destroys the |loader_| and its preview contents.
   void DeleteLoader();
 
-  // Counterpart to Hide(). Asks the |delegate_| to display the preview.
-  void Show();
+  // Counterpart to Hide(). Asks the |delegate_| to display the preview with
+  // the given |height|.
+  void Show(int height, InstantSizeUnits units);
 
   // Send the omnibox dropdown bounds to the page.
   void SendBoundsToPage();

@@ -1351,12 +1351,15 @@ void BrowserView::Paste() {
   }
 }
 
-void BrowserView::ShowInstant(TabContents* preview) {
+void BrowserView::ShowInstant(TabContents* preview,
+                              int height,
+                              InstantSizeUnits units) {
   if (!preview_container_) {
     preview_container_ = new views::WebView(browser_->profile());
     preview_container_->set_id(VIEW_ID_TAB_CONTAINER);
   }
-  contents_->SetPreview(preview_container_, preview->web_contents());
+  contents_->SetPreview(preview_container_, preview->web_contents(),
+                        height, units);
   preview_container_->SetWebContents(preview->web_contents());
 #if defined(USE_AURA)
   if (search_view_controller_.get())
@@ -1371,7 +1374,7 @@ void BrowserView::HideInstant() {
 
   // The contents must be changed before SetPreview is invoked.
   preview_container_->SetWebContents(NULL);
-  contents_->SetPreview(NULL, NULL);
+  contents_->SetPreview(NULL, NULL, 100, INSTANT_SIZE_PERCENT);
   delete preview_container_;
   preview_container_ = NULL;
 }

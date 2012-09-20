@@ -23,6 +23,11 @@ class InstantLoaderDelegate {
   // Commit the preview.
   virtual void CommitInstantLoader(InstantLoader* loader) = 0;
 
+  // Resize the preview.
+  virtual void SetInstantPreviewHeight(InstantLoader* loader,
+                                       int height,
+                                       InstantSizeUnits units) = 0;
+
   // Notification that the first page load (of the Instant URL) completed.
   virtual void InstantLoaderPreviewLoaded(InstantLoader* loader) = 0;
 

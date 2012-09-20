@@ -1134,7 +1134,11 @@ void BrowserWindowGtk::Paste() {
       window_, chrome::GetActiveWebContents(browser_.get()));
 }
 
-void BrowserWindowGtk::ShowInstant(TabContents* preview) {
+void BrowserWindowGtk::ShowInstant(TabContents* preview,
+                                   int height,
+                                   InstantSizeUnits units) {
+  // TODO(jered): Support height < 100%.
+  DCHECK(height == 100 && units == INSTANT_SIZE_PERCENT);
   contents_container_->SetPreview(preview);
   MaybeShowBookmarkBar(false);
 }

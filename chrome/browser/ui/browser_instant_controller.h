@@ -50,7 +50,7 @@ class BrowserInstantController : public InstantControllerDelegate,
 
  private:
   // Overridden from InstantControllerDelegate:
-  virtual void ShowInstant() OVERRIDE;
+  virtual void ShowInstant(int height, InstantSizeUnits units) OVERRIDE;
   virtual void HideInstant() OVERRIDE;
   virtual void CommitInstant(TabContents* preview) OVERRIDE;
   virtual void SetSuggestedText(const string16& text,

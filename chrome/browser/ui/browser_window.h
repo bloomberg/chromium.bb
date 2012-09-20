@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/fullscreen/fullscreen_exit_bubble_type.h"
 #include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
 #include "chrome/common/content_settings_types.h"
+#include "chrome/common/instant_types.h"
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/glue/window_open_disposition.h"
 
@@ -323,10 +324,12 @@ class BrowserWindow : public BaseWindow {
   virtual bool InPresentationMode() = 0;
 #endif
 
-  // Invoked when instant's tab contents should be shown.
-  virtual void ShowInstant(TabContents* preview) = 0;
+  // Invoked when instant's tab contents should be shown with given |height|.
+  virtual void ShowInstant(TabContents* preview,
+                           int height,
+                           InstantSizeUnits units) = 0;
 
-  // Invoked when the instant's tab contents should be hidden.
+  // Invoked when instant's tab contents should be hidden.
   virtual void HideInstant() = 0;
 
   // Returns the desired bounds for instant in screen coordinates. Note that if

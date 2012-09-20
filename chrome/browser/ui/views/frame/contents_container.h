@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FRAME_CONTENTS_CONTAINER_H_
 #define CHROME_BROWSER_UI_VIEWS_FRAME_CONTENTS_CONTAINER_H_
 
+#include "chrome/common/instant_types.h"
 #include "ui/views/view.h"
 
 namespace content {
@@ -43,8 +44,11 @@ class ContentsContainer : public views::View {
 
   // Sets the preview view. This does not delete the old.
   void SetPreview(views::WebView* preview,
-                  content::WebContents* preview_web_contents);
+                  content::WebContents* preview_web_contents,
+                  int height,
+                  InstantSizeUnits units);
   views::WebView* preview() { return preview_; }
+
   content::WebContents* preview_web_contents() const {
     return preview_web_contents_;
   }
@@ -66,9 +70,16 @@ class ContentsContainer : public views::View {
   views::WebView* preview_;
   content::WebContents* preview_web_contents_;
 
+  // Returns |preview_height_| in pixels.
+  int PreviewHeightInPixels() const;
+
   // The margin between the top and the active view. This is used to make the
   // preview overlap the bookmark bar on the new tab page.
   int active_top_margin_;
+
+  // The desired height of the preview and units.
+  int preview_height_;
+  InstantSizeUnits preview_height_units_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentsContainer);
 };

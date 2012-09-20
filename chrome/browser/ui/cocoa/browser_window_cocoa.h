@@ -132,7 +132,9 @@ class BrowserWindowCocoa : public BrowserWindow,
       FullscreenExitBubbleType bubble_type) OVERRIDE;
   virtual void ExitPresentationMode() OVERRIDE;
   virtual bool InPresentationMode() OVERRIDE;
-  virtual void ShowInstant(TabContents* preview) OVERRIDE;
+  virtual void ShowInstant(TabContents* preview,
+                           int height,
+                           InstantSizeUnits units) OVERRIDE;
   virtual void HideInstant() OVERRIDE;
   virtual gfx::Rect GetInstantBounds() OVERRIDE;
   virtual bool IsInstantTabShowing() OVERRIDE;

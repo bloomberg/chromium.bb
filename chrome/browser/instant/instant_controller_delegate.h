@@ -22,8 +22,8 @@ class Rect;
 // (note that it may return NULL).
 class InstantControllerDelegate {
  public:
-  // Show the preview.
-  virtual void ShowInstant() = 0;
+  // Show the preview with the given |height|.
+  virtual void ShowInstant(int height, InstantSizeUnits units) = 0;
 
   // Hide any preview currently being shown.
   virtual void HideInstant() = 0;

@@ -18,7 +18,9 @@ ContentsContainer::ContentsContainer(views::WebView* active)
       overlay_(NULL),
       preview_(NULL),
       preview_web_contents_(NULL),
-      active_top_margin_(0) {
+      active_top_margin_(0),
+      preview_height_(100),
+      preview_height_units_(INSTANT_SIZE_PERCENT) {
   AddChildView(active_);
 }
 
@@ -54,17 +56,23 @@ void ContentsContainer::MakePreviewContentsActiveContents() {
 }
 
 void ContentsContainer::SetPreview(views::WebView* preview,
-                                   WebContents* preview_web_contents) {
-  if (preview == preview_)
+                                   WebContents* preview_web_contents,
+                                   int height,
+                                   InstantSizeUnits units) {
+  const int old_height = PreviewHeightInPixels();
+  preview_height_ = height;
+  preview_height_units_ = units;
+  if (preview == preview_ && preview_web_contents_ == preview_web_contents &&
+      old_height == PreviewHeightInPixels())
     return;
-
-  if (preview_)
-    RemoveChildView(preview_);
-  preview_ = preview;
+  if (preview_ != preview) {
+    if (preview_)
+      RemoveChildView(preview_);
+    preview_ = preview;
+    if (preview_)
+      AddChildView(preview_);
+  }
   preview_web_contents_ = preview_web_contents;
-  if (preview_)
-    AddChildView(preview_);
-
   Layout();
 }
 
@@ -95,11 +103,23 @@ void ContentsContainer::Layout() {
     overlay_->SetBounds(0, 0, width(), height());
 
   if (preview_)
-    preview_->SetBounds(0, 0, width(), height());
+    preview_->SetBounds(0, 0, width(), PreviewHeightInPixels());
 
   // Need to invoke views::View in case any views whose bounds didn't change
   // still need a layout.
   views::View::Layout();
+}
+
+int ContentsContainer::PreviewHeightInPixels() const {
+  switch (preview_height_units_) {
+    case INSTANT_SIZE_PERCENT:
+      return std::min(height(), (height() * preview_height_) / 100);
+
+    case INSTANT_SIZE_PIXELS:
+      return std::min(height(), preview_height_);
+  }
+  NOTREACHED() << "unknown units: " << preview_height_units_;
+  return 0;
 }
 
 std::string ContentsContainer::GetClassName() const {
