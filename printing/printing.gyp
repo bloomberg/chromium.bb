@@ -247,6 +247,8 @@
           'dependencies': [
             '../build/linux/system.gyp:gtk',
           ],
+        }],
+        [ 'os_posix == 1 and OS != "mac" and OS != "android" and OS != "ios"', {
           'conditions': [
             ['linux_use_tcmalloc == 1', {
               'dependencies': [
