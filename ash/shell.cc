@@ -172,6 +172,11 @@ internal::WorkspaceController* Shell::TestApi::workspace_controller() {
   return shell_->GetPrimaryRootWindowController()->workspace_controller();
 }
 
+internal::ScreenPositionController*
+    Shell::TestApi::screen_position_controller() {
+  return shell_->screen_position_controller_.get();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Shell, public:
 

@@ -457,6 +457,7 @@
         'display/display_controller_unittest.cc',
         'display/mouse_cursor_event_filter_unittest.cc',
         'display/multi_display_manager_unittest.cc',
+        'display/screen_position_controller_unittest.cc',
         'drag_drop/drag_drop_controller_unittest.cc',
         'drag_drop/drag_drop_tracker_unittest.cc',
         'extended_desktop_unittest.cc',

@@ -131,6 +131,7 @@ class ASH_EXPORT Shell : ash::CursorDelegate {
     aura::shared::InputMethodEventFilter* input_method_event_filter();
     internal::SystemGestureEventFilter* system_gesture_event_filter();
     internal::WorkspaceController* workspace_controller();
+    internal::ScreenPositionController* screen_position_controller();
 
    private:
     Shell* shell_;  // not owned

@@ -8,6 +8,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/system_modal_container_layout_manager.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/workspace_controller.h"
@@ -74,6 +75,15 @@ void ScreenPositionController::ConvertPointFromScreen(
           const_cast<aura::RootWindow*>(root)).bounds().origin();
   point->Offset(-display_origin.x(), -display_origin.y());
   aura::Window::ConvertPointToTarget(root, window, point);
+}
+
+void ScreenPositionController::ConvertNativePointToScreen(
+    aura::Window* window,
+    gfx::Point* point) {
+  std::pair<aura::RootWindow*, gfx::Point> pair =
+      wm::GetRootWindowRelativeToWindow(window, *point);
+  *point = pair.second;
+  ConvertPointToScreen(pair.first, point);
 }
 
 void ScreenPositionController::SetBounds(aura::Window* window,

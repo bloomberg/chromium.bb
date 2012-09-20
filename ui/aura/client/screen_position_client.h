@@ -31,6 +31,13 @@ class AURA_EXPORT ScreenPositionClient {
                                     gfx::Point* point) = 0;
   virtual void ConvertPointFromScreen(const Window* window,
                                       gfx::Point* point) = 0;
+  // Converts the |screen_point| from a given |window|'s native screen
+  // coordinate space into screen coordinate space.
+  // A typical example of using this function instead of ConvertPointToScreen is
+  // when X's native input is captured by a drag operation.
+  // See the comments in ash::wm::GetRootWindowRelativeToWindow for details.
+  virtual void ConvertNativePointToScreen(Window* window,
+                                          gfx::Point* point) = 0;
   // Sets the bounds of the window. The implementation is responsible
   // for finding out and translating the right coordinates for the |window|.
   virtual void SetBounds(Window* window,

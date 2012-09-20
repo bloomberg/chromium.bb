@@ -30,6 +30,11 @@ void DesktopScreenPositionClient::ConvertPointFromScreen(
   aura::Window::ConvertPointToTarget(root_window, window, point);
 }
 
+void DesktopScreenPositionClient::ConvertNativePointToScreen(
+    aura::Window* window, gfx::Point* point) {
+  ConvertPointToScreen(window, point);
+}
+
 void DesktopScreenPositionClient::SetBounds(
     aura::Window* window,
     const gfx::Rect& bounds,
