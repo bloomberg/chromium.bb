@@ -622,6 +622,7 @@ class SegmentInfo {
 
   void set_duration(double duration) { duration_ = duration; }
   double duration() const { return duration_; }
+  void set_muxing_app(const char* app);
   const char* muxing_app() const { return muxing_app_; }
   void set_timecode_scale(uint64 scale) { timecode_scale_ = scale; }
   uint64 timecode_scale() const { return timecode_scale_; }
