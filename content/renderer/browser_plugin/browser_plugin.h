@@ -9,9 +9,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
-#if defined(OS_WIN)
-#include "base/shared_memory.h"
-#endif
 #include "content/renderer/browser_plugin/browser_plugin_backing_store.h"
 #include "content/renderer/browser_plugin/browser_plugin_bindings.h"
 #include "content/renderer/render_view_impl.h"
@@ -139,16 +136,11 @@ class CONTENT_EXPORT BrowserPlugin :
   SkBitmap* sad_guest_;
   bool guest_crashed_;
   bool resize_pending_;
-  // True if we have ever sent a NavigateGuest message to the embedder.
-  bool navigate_src_sent_;
-  int64 parent_frame_;
+  long long parent_frame_;
   std::string src_;
   typedef std::vector<v8::Persistent<v8::Function> > EventListeners;
   typedef std::map<std::string, EventListeners> EventListenerMap;
   EventListenerMap event_listener_map_;
-#if defined(OS_WIN)
-  base::SharedMemory shared_memory_;
-#endif
   DISALLOW_COPY_AND_ASSIGN(BrowserPlugin);
 };
 

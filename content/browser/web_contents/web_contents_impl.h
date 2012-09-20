@@ -39,8 +39,6 @@ class WebContentsImpl;
 struct ViewMsg_PostMessage_Params;
 
 namespace content {
-class BrowserPluginEmbedder;
-class BrowserPluginGuest;
 class ColorChooser;
 class DownloadItem;
 class JavaScriptDialogCreator;
@@ -90,11 +88,6 @@ class CONTENT_EXPORT WebContentsImpl
       int routing_id,
       const WebContentsImpl* base_web_contents,
       WebContentsImpl* opener);
-
-  // Creates a WebContents to be used as a browser plugin guest.
-  static WebContentsImpl* CreateGuest(content::BrowserContext* browser_context,
-                                      const std::string& host,
-                                      int guest_instance_id);
 
   // Returns the content specific prefs for the given RVH.
   static webkit_glue::WebPreferences GetWebkitPrefs(
@@ -168,13 +161,6 @@ class CONTENT_EXPORT WebContentsImpl
 
   // Expose the render manager for testing.
   RenderViewHostManager* GetRenderManagerForTesting();
-
-  // Returns guest browser plugin object, or NULL if this WebContents is not a
-  // guest.
-  content::BrowserPluginGuest* GetBrowserPluginGuest();
-  // Returns embedder browser plugin object, or NULL if this WebContents is not
-  // an embedder.
-  content::BrowserPluginEmbedder* GetBrowserPluginEmbedder();
 
   // content::WebContents ------------------------------------------------------
   virtual content::WebContentsDelegate* GetDelegate() OVERRIDE;
@@ -566,10 +552,6 @@ class CONTENT_EXPORT WebContentsImpl
   void OnRequestPpapiBrokerPermission(int request_id,
                                       const GURL& url,
                                       const FilePath& plugin_path);
-  void OnBrowserPluginNavigateGuest(int instance_id,
-                                    int64 frame_id,
-                                    const std::string& src,
-                                    const gfx::Size& size);
 
   // Changes the IsLoading state and notifies delegate as needed
   // |details| is used to provide details on the load that just finished
@@ -675,9 +657,6 @@ class CONTENT_EXPORT WebContentsImpl
                                     std::string* embedder_channel_name,
                                     int* embedder_container_id);
 
-  // Removes browser plugin embedder if there is one.
-  void RemoveBrowserPluginEmbedder();
-
   // Data for core operation ---------------------------------------------------
 
   // Delegate for notifying our owner about stuff. Not owned by us.
@@ -725,7 +704,7 @@ class CONTENT_EXPORT WebContentsImpl
       java_bridge_dispatcher_host_manager_;
 
   // TODO(fsamuel): Remove this once upstreaming of the new browser plugin
-  // implementation is complete.
+  // implmentation is complete.
   // Manages the browser plugin instances hosted by this WebContents.
   scoped_ptr<content::old::BrowserPluginHost> old_browser_plugin_host_;
 
@@ -843,13 +822,6 @@ class CONTENT_EXPORT WebContentsImpl
 
   // Color chooser that was opened by this tab.
   content::ColorChooser* color_chooser_;
-
-  // Manages the embedder state for browser plugins, if this WebContents is an
-  // embedder; NULL otherwise.
-  scoped_ptr<content::BrowserPluginEmbedder> browser_plugin_embedder_;
-  // Manages the guest state for browser plugin, if this WebContents is a guest;
-  // NULL otherwise.
-  scoped_ptr<content::BrowserPluginGuest> browser_plugin_guest_;
 
   // This must be at the end, or else we might get notifications and use other
   // member variables that are gone.

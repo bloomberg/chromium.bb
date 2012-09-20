@@ -30,7 +30,7 @@ std::string GetHTMLForBrowserPluginObject() {
                       content::kBrowserPluginNewMimeType);
 }
 
-}  // namespace
+}
 
 namespace content {
 
@@ -114,43 +114,39 @@ TEST_F(BrowserPluginTest, SrcAttribute) {
   {
     const IPC::Message* msg =
     browser_plugin_manager()->sink().GetUniqueMessageMatching(
-        BrowserPluginHostMsg_NavigateGuest::ID);
+        BrowserPluginHostMsg_NavigateOrCreateGuest::ID);
     ASSERT_TRUE(msg);
 
     int instance_id;
     long long frame_id;
     std::string src;
-    gfx::Size size;
-    BrowserPluginHostMsg_NavigateGuest::Read(
+    BrowserPluginHostMsg_NavigateOrCreateGuest::Read(
         msg,
         &instance_id,
         &frame_id,
-        &src,
-        &size);
+        &src);
     EXPECT_EQ("foo", src);
   }
 
   browser_plugin_manager()->sink().ClearMessages();
   // Navigate to bar and observe the associated
-  // BrowserPluginHostMsg_NavigateGuest message.
+  // BrowserPluginHostMsg_NavigateOrCreateGuest message.
   // Verify that the src attribute is updated as well.
   ExecuteJavaScript("document.getElementById('browserplugin').src = 'bar'");
   {
     const IPC::Message* msg =
       browser_plugin_manager()->sink().GetUniqueMessageMatching(
-          BrowserPluginHostMsg_NavigateGuest::ID);
+          BrowserPluginHostMsg_NavigateOrCreateGuest::ID);
     ASSERT_TRUE(msg);
 
     int instance_id;
     long long frame_id;
     std::string src;
-    gfx::Size size;
-    BrowserPluginHostMsg_NavigateGuest::Read(
+    BrowserPluginHostMsg_NavigateOrCreateGuest::Read(
         msg,
         &instance_id,
         &frame_id,
-        &src,
-        &size);
+        &src);
     EXPECT_EQ("bar", src);
     std::string src_value =
         ExecuteScriptAndReturnString(

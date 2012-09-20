@@ -15,8 +15,6 @@
 #include "base/sys_info.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "content/browser/browser_plugin/browser_plugin_embedder.h"
-#include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/browser_plugin/old/old_browser_plugin_host.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/debugger/devtools_manager_impl.h"
@@ -37,7 +35,6 @@
 #include "content/browser/web_contents/interstitial_page_impl.h"
 #include "content/browser/web_contents/navigation_entry_impl.h"
 #include "content/browser/webui/web_ui_impl.h"
-#include "content/common/browser_plugin_messages.h"
 #include "content/common/intents_messages.h"
 #include "content/common/ssl_status_serialization.h"
 #include "content/common/view_messages.h"
@@ -426,34 +423,6 @@ WebContentsImpl* WebContentsImpl::CreateWithOpener(
   return new_contents;
 }
 
-WebContentsImpl* WebContentsImpl::CreateGuest(BrowserContext* browser_context,
-                                              const std::string& host_url,
-                                              int guest_instance_id) {
-  // The SiteInstance of a given guest is based on the fact that it's a guest
-  // in addition to which platform application the guest belongs to, rather
-  // than the URL that the guest is being navigated to.
-  GURL guest_site(
-      base::StringPrintf("%s://%s", chrome::kGuestScheme, host_url.c_str()));
-  SiteInstance* guest_site_instance =
-      SiteInstance::CreateForURL(browser_context, guest_site);
-  WebContentsImpl* new_contents = WebContentsImpl::Create(
-      browser_context,
-      guest_site_instance,
-      MSG_ROUTING_NONE,
-      NULL);  // base WebContents
-  WebContentsImpl* new_contents_impl =
-      static_cast<WebContentsImpl*>(new_contents);
-
-  // This makes |new_contents| act as a guest.
-  // For more info, see comment above class BrowserPluginGuest.
-  new_contents_impl->browser_plugin_guest_.reset(
-      content::BrowserPluginGuest::Create(
-          guest_instance_id,
-          new_contents_impl,
-          new_contents_impl->GetRenderViewHost()));
-  return new_contents;
-}
-
 WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
                                                const GURL& url) {
   WebPreferences prefs;
@@ -730,8 +699,6 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
     IPC_MESSAGE_HANDLER(ViewHostMsg_WebUISend, OnWebUISend)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RequestPpapiBrokerPermission,
                         OnRequestPpapiBrokerPermission)
-    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_NavigateGuest,
-                        OnBrowserPluginNavigateGuest)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
   message_source_ = NULL;
@@ -2343,29 +2310,6 @@ void WebContentsImpl::OnPpapiBrokerPermissionResult(int request_id,
                                                     result));
 }
 
-void WebContentsImpl::OnBrowserPluginNavigateGuest(int instance_id,
-                                                   int64 frame_id,
-                                                   const std::string& src,
-                                                   const gfx::Size& size) {
-  // This is the first 'navigate' to a browser plugin, before WebContents has/is
-  // an 'Embedder'; subsequent navigate messages for this WebContents will
-  // be handled by the BrowserPluginEmbedderHelper of the embedder itself (this
-  // also means any message from browser plugin renderer prior to NavigateGuest
-  // which is not NavigateGuest will be ignored). Therefore
-  // |browser_plugin_embedder_| should not be set.
-  // For more info, see comment above classes BrowserPluginEmbedder and
-  // BrowserPluginGuest.
-  CHECK(!browser_plugin_embedder_.get());
-
-  browser_plugin_embedder_.reset(
-      content::BrowserPluginEmbedder::Create(this, GetRenderViewHost()));
-  browser_plugin_embedder_->NavigateGuest(GetRenderViewHost(),
-                                          instance_id,
-                                          frame_id,
-                                          src,
-                                          size);
-}
-
 // Notifies the RenderWidgetHost instance about the fact that the page is
 // loading, or done loading and calls the base implementation.
 void WebContentsImpl::SetIsLoading(bool is_loading,
@@ -2522,11 +2466,6 @@ void WebContentsImpl::NotifySwapped() {
       content::NOTIFICATION_WEB_CONTENTS_SWAPPED,
       content::Source<WebContents>(this),
       content::NotificationService::NoDetails());
-
-  // Ensure that the associated embedder gets cleared after a RenderViewHost
-  // gets swapped, so we don't reuse the same embedder next time a
-  // RenderViewHost is attached to this WebContents.
-  RemoveBrowserPluginEmbedder();
 }
 
 void WebContentsImpl::NotifyConnected() {
@@ -2570,11 +2509,6 @@ gfx::Rect WebContentsImpl::GetRootWindowResizerRect() const {
   if (delegate_)
     return delegate_->GetRootWindowResizerRect();
   return gfx::Rect();
-}
-
-void WebContentsImpl::RemoveBrowserPluginEmbedder() {
-  if (browser_plugin_embedder_.get())
-    browser_plugin_embedder_.reset();
 }
 
 void WebContentsImpl::RenderViewCreated(RenderViewHost* render_view_host) {
@@ -3364,12 +3298,4 @@ void WebContentsImpl::GetBrowserPluginEmbedderInfo(
         StringPrintf("%d.r%d", render_view_host->GetProcess()->GetID(),
                      embedder_process_id);
   }
-}
-
-content::BrowserPluginGuest* WebContentsImpl::GetBrowserPluginGuest() {
-  return browser_plugin_guest_.get();
-}
-
-content::BrowserPluginEmbedder* WebContentsImpl::GetBrowserPluginEmbedder() {
-  return browser_plugin_embedder_.get();
 }

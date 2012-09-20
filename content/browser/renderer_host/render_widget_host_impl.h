@@ -412,13 +412,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   virtual void RemoveLayer(WebKit::WebLayer* layer) {}
 #endif
 
-  // Resets state variables related to tracking pending size and painting.
-  //
-  // We need to reset these flags when we want to repaint the contents of
-  // browser plugin in this RWH. Resetting these flags will ensure we ignore
-  // any previous pending acks that are not relevant upon repaint.
-  void ResetSizeAndRepaintPendingFlags();
-
  protected:
   virtual RenderWidgetHostImpl* AsRenderWidgetHostImpl() OVERRIDE;
 
