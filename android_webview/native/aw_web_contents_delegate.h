@@ -19,6 +19,8 @@ class AwWebContentsDelegate
  public:
   AwWebContentsDelegate(JNIEnv* env, jobject obj);
   virtual ~AwWebContentsDelegate();
+  virtual content::JavaScriptDialogCreator* GetJavaScriptDialogCreator()
+      OVERRIDE;
 };
 
 }  // namespace android_webview

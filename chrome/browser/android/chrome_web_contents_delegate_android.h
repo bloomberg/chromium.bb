@@ -50,6 +50,8 @@ class ChromeWebContentsDelegateAndroid
                                    int version,
                                    const std::vector<gfx::RectF>& rects,
                                    const gfx::RectF& active_rect) OVERRIDE;
+  virtual content::JavaScriptDialogCreator*
+  GetJavaScriptDialogCreator() OVERRIDE;
 
  private:
   // NotificationObserver implementation.

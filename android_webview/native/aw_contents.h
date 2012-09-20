@@ -11,6 +11,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/android/jni_helper.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/public/browser/javascript_dialogs.h"
 
 class TabContents;
 
@@ -38,6 +39,18 @@ class AwContents {
              jobject web_contents_delegate,
              bool private_browsing);
   ~AwContents();
+
+  void RunJavaScriptDialog(
+      content::JavaScriptMessageType message_type,
+      const GURL& origin_url,
+      const string16& message_text,
+      const string16& default_prompt_text,
+      const base::android::ScopedJavaLocalRef<jobject>& js_result);
+
+  void RunBeforeUnloadDialog(
+      const GURL& origin_url,
+      const string16& message_text,
+      const base::android::ScopedJavaLocalRef<jobject>& js_result);
 
   // |handler| is an instance of
   // org.chromium.android_webview.AwHttpAuthHandler.

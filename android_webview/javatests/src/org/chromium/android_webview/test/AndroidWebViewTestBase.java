@@ -80,6 +80,15 @@ public class AndroidWebViewTestBase
         }
     }
 
+    protected void enableJavaScriptOnUiThread(final ContentViewCore contentViewCore) {
+        getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                contentViewCore.getContentSettings().setJavaScriptEnabled(true);
+            }
+        });
+    }
+
     /**
      * Loads url on the UI thread and blocks until onPageFinished is called.
      */

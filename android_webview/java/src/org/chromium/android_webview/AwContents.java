@@ -233,6 +233,27 @@ public class AwContents {
         return null;
     }
 
+    @CalledByNative
+    private void handleJsAlert(String url, String message, JsResultReceiver receiver) {
+        mContentsClient.handleJsAlert(url, message, receiver);
+    }
+
+    @CalledByNative
+    private void handleJsBeforeUnload(String url, String message, JsResultReceiver receiver) {
+        mContentsClient.handleJsBeforeUnload(url, message, receiver);
+    }
+
+    @CalledByNative
+    private void handleJsConfirm(String url, String message, JsResultReceiver receiver) {
+        mContentsClient.handleJsConfirm(url, message, receiver);
+    }
+
+    @CalledByNative
+    private void handleJsPrompt(String url, String message, String defaultValue,
+            JsPromptResultReceiver receiver) {
+        mContentsClient.handleJsPrompt(url, message, defaultValue, receiver);
+    }
+
     //--------------------------------------------------------------------------------------------
     //  Native methods
     //--------------------------------------------------------------------------------------------

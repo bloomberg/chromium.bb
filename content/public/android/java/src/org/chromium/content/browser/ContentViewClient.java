@@ -142,30 +142,6 @@ public class ContentViewClient {
     public void onImeEvent() {
     }
 
-    // Return true if the client will handle the JS alert.
-    @CalledByNative
-    public boolean  onJsAlert(String url, String Message) {
-        return false;
-    }
-
-    // Return true if the client will handle the JS before unload dialog.
-    @CalledByNative
-    public boolean onJsBeforeUnload(String url, String message) {
-        return false;
-    }
-
-    // Return true if the client will handle the JS confirmation prompt.
-    @CalledByNative
-    public boolean onJsConfirm(String url, String message) {
-        return false;
-    }
-
-    // Return true if the client will handle the JS prompt dialog.
-    @CalledByNative
-    public boolean onJsPrompt(String url, String message, String defaultValue) {
-        return false;
-    }
-
     /**
      * A callback invoked after the JavaScript code passed to evaluateJavaScript
      * has finished execution.

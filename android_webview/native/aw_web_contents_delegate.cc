@@ -4,7 +4,13 @@
 
 #include "android_webview/native/aw_web_contents_delegate.h"
 
+#include "base/lazy_instance.h"
+#include "android_webview/native/aw_javascript_dialog_creator.h"
+
 namespace android_webview {
+
+static base::LazyInstance<AwJavaScriptDialogCreator>::Leaky
+    g_javascript_dialog_creator = LAZY_INSTANCE_INITIALIZER;
 
 AwWebContentsDelegate::AwWebContentsDelegate(
     JNIEnv* env,
@@ -13,6 +19,11 @@ AwWebContentsDelegate::AwWebContentsDelegate(
 }
 
 AwWebContentsDelegate::~AwWebContentsDelegate() {
+}
+
+content::JavaScriptDialogCreator*
+AwWebContentsDelegate::GetJavaScriptDialogCreator() {
+  return g_javascript_dialog_creator.Pointer();
 }
 
 }  // namespace android_webview

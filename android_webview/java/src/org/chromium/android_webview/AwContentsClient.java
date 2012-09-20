@@ -33,7 +33,6 @@ public abstract class AwContentsClient extends ContentViewClient {
     //--------------------------------------------------------------------------------------------
 
     class WebContentsDelegateAdapter extends AwWebContentsDelegate {
-
         @Override
         public void onLoadProgressChanged(int progress) {
             AwContentsClient.this.onProgressChanged(progress);
@@ -122,6 +121,16 @@ public abstract class AwContentsClient extends ContentViewClient {
 
     public abstract void onReceivedHttpAuthRequest(AwHttpAuthHandler handler,
             String host, String realm);
+
+    protected abstract void handleJsAlert(String url, String message, JsResultReceiver receiver);
+
+    protected abstract void handleJsBeforeUnload(String url, String message,
+                                                 JsResultReceiver receiver);
+
+    protected abstract void handleJsConfirm(String url, String message, JsResultReceiver receiver);
+
+    protected abstract void handleJsPrompt(String url, String message, String defaultValue,
+            JsPromptResultReceiver receiver);
 
     //--------------------------------------------------------------------------------------------
     //             Stuff that we ignore since it only makes sense for Chrome browser

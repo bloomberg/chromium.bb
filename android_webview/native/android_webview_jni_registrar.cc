@@ -9,6 +9,7 @@
 #include "android_webview/native/aw_contents_io_thread_client.h"
 #include "android_webview/native/aw_http_auth_handler.h"
 #include "android_webview/native/cookie_manager.h"
+#include "android_webview/native/js_result_handler.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "chrome/browser/component/web_contents_delegate_android/component_jni_registrar.h"
@@ -21,6 +22,7 @@ static base::android::RegistrationMethod kWebViewRegisteredMethods[] = {
   { "AwContentsIoThreadClient", RegisterAwContentsIoThreadClient},
   { "AwHttpAuthHandler", RegisterAwHttpAuthHandler },
   { "CookieManager", RegisterCookieManager },
+  { "JsResultHandler", RegisterJsResultHandler },
 };
 
 bool RegisterJni(JNIEnv* env) {

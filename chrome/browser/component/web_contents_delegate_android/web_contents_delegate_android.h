@@ -103,14 +103,7 @@ class WebContentsDelegateAndroid : public content::WebContentsDelegate {
   virtual void HandleKeyboardEvent(
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
-  virtual content::JavaScriptDialogCreator* GetJavaScriptDialogCreator()
-      OVERRIDE;
   virtual bool TakeFocus(content::WebContents* source, bool reverse) OVERRIDE;
-
-  void SetJavaScriptDialogCreator(
-      content::JavaScriptDialogCreator* javascript_dialog_creator) {
-    javascript_dialog_creator_ = javascript_dialog_creator;
-  }
 
  protected:
   base::android::ScopedJavaLocalRef<jobject> GetJavaDelegate(JNIEnv* env) const;
@@ -120,9 +113,6 @@ class WebContentsDelegateAndroid : public content::WebContentsDelegate {
   // strong reference to that object as long as they want to receive callbacks
   // on it. Using a weak ref here allows it to be correctly GCed.
   JavaObjectWeakGlobalRef weak_java_delegate_;
-
-  // The object responsible for creating JavaScript dialogs.
-  content::JavaScriptDialogCreator* javascript_dialog_creator_;
 };
 
 bool RegisterWebContentsDelegateAndroid(JNIEnv* env);

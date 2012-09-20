@@ -8,7 +8,6 @@
 #include "base/android/jni_helper.h"
 #include "base/compiler_specific.h"
 #include "content/public/browser/native_web_keyboard_event.h"
-#include "content/public/common/javascript_message_type.h"
 #include "content/public/common/referrer.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
@@ -83,15 +82,6 @@ class ContentViewClient {
                             const GURL& base_url);
   void OnInterstitialShown();
   void OnInterstitialHidden();
-
-  void SetJavaScriptDialogCreator(
-      JavaScriptDialogCreator* javascript_dialog_creator);
-
-  bool OnJSModalDialog(JavaScriptMessageType type,
-                       bool is_before_unload_dialog,
-                       const GURL& url,
-                       const string16& message,
-                       const string16& default_value);
 
  private:
   // Get the closest ContentViewClient match to the given Chrome error code.

@@ -38,8 +38,7 @@ using content::WebContents;
 namespace web_contents_delegate_android {
 
 WebContentsDelegateAndroid::WebContentsDelegateAndroid(JNIEnv* env, jobject obj)
-    : weak_java_delegate_(env, obj),
-      javascript_dialog_creator_(NULL) {
+    : weak_java_delegate_(env, obj) {
 }
 
 WebContentsDelegateAndroid::~WebContentsDelegateAndroid() {
@@ -334,11 +333,6 @@ bool WebContentsDelegateAndroid::TakeFocus(WebContents* source, bool reverse) {
     return WebContentsDelegate::TakeFocus(source, reverse);
   return Java_WebContentsDelegateAndroid_takeFocus(
       env, obj.obj(), reverse);
-}
-
-JavaScriptDialogCreator*
-    WebContentsDelegateAndroid::GetJavaScriptDialogCreator() {
-  return javascript_dialog_creator_;
 }
 
 // ----------------------------------------------------------------------------

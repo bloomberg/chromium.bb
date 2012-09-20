@@ -120,53 +120,6 @@ void ContentViewClient::OnInterstitialHidden() {
   Java_ContentViewClient_onInterstitialHidden(env, obj.obj());
 }
 
-bool ContentViewClient::OnJSModalDialog(JavaScriptMessageType type,
-                                        bool is_before_unload_dialog,
-                                        const GURL& url,
-                                        const string16& message,
-                                        const string16& default_value) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = weak_java_client_.get(env);
-  if (obj.is_null())
-    return false;
-  ScopedJavaLocalRef<jstring> jurl(ConvertUTF8ToJavaString(env, url.spec()));
-  ScopedJavaLocalRef<jstring> jmessage(ConvertUTF16ToJavaString(env, message));
-
-  // Special case for beforeunload dialogs, as that isn't encoded in the
-  // |type| of the dialog.
-  if (is_before_unload_dialog) {
-    return Java_ContentViewClient_onJsBeforeUnload(
-        env, obj.obj(),
-        jurl.obj(),
-        jmessage.obj());
-  }
-
-  switch (type) {
-    case JAVASCRIPT_MESSAGE_TYPE_ALERT:
-      return Java_ContentViewClient_onJsAlert(env, obj.obj(),
-                                              jurl.obj(),
-                                              jmessage.obj());
-
-    case JAVASCRIPT_MESSAGE_TYPE_CONFIRM:
-      return Java_ContentViewClient_onJsConfirm(env, obj.obj(),
-                                                jurl.obj(),
-                                                jmessage.obj());
-
-    case JAVASCRIPT_MESSAGE_TYPE_PROMPT: {
-      ScopedJavaLocalRef<jstring> jdefault_value(
-          ConvertUTF16ToJavaString(env, default_value));
-      return Java_ContentViewClient_onJsPrompt(env, obj.obj(),
-                                               jurl.obj(),
-                                               jmessage.obj(),
-                                               jdefault_value.obj());
-    }
-
-    default:
-      NOTREACHED();
-      return false;
-  }
-}
-
 ContentViewClientError ContentViewClient::ToContentViewClientError(
     int net_error) {
     // Note: many net::Error constants don't have an obvious mapping.

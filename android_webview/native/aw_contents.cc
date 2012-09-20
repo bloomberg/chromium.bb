@@ -20,8 +20,8 @@
 #include "jni/AwContents_jni.h"
 
 using base::android::AttachCurrentThread;
-using base::android::ConvertUTF8ToJavaString;
 using base::android::ConvertUTF16ToJavaString;
+using base::android::ConvertUTF8ToJavaString;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
 using content::BrowserThread;
@@ -69,8 +69,6 @@ AwContents::AwContents(JNIEnv* env,
   contents_container_.reset(dependency_factory->CreateContentsContainer(
       web_contents));
   web_contents->SetDelegate(web_contents_delegate_.get());
-  web_contents_delegate_->SetJavaScriptDialogCreator(
-      dependency_factory->GetJavaScriptDialogCreator());
   web_contents->SetUserData(kAwContentsUserDataKey,
                             new AwContentsUserData(this));
   render_view_host_ext_.reset(new AwRenderViewHostExt(web_contents));
@@ -127,6 +125,62 @@ void AwContents::GenerateMHTML(JNIEnv* env, jobject obj,
   contents_container_->GetWebContents()->GenerateMHTML(
       FilePath(base::android::ConvertJavaStringToUTF8(env, jpath)),
       base::Bind(&GenerateMHTMLCallback, base::Owned(j_callback)));
+}
+
+void AwContents::RunJavaScriptDialog(
+    content::JavaScriptMessageType message_type,
+    const GURL& origin_url,
+    const string16& message_text,
+    const string16& default_prompt_text,
+    const base::android::ScopedJavaLocalRef<jobject>& js_result) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+
+  ScopedJavaLocalRef<jstring> jurl(ConvertUTF8ToJavaString(
+      env, origin_url.spec()));
+  ScopedJavaLocalRef<jstring> jmessage(ConvertUTF16ToJavaString(
+      env, message_text));
+  switch (message_type) {
+    case content::JAVASCRIPT_MESSAGE_TYPE_ALERT:
+      Java_AwContents_handleJsAlert(
+          env, obj.obj(), jurl.obj(), jmessage.obj(), js_result.obj());
+      break;
+    case content::JAVASCRIPT_MESSAGE_TYPE_CONFIRM:
+      Java_AwContents_handleJsConfirm(
+          env, obj.obj(), jurl.obj(), jmessage.obj(), js_result.obj());
+      break;
+    case content::JAVASCRIPT_MESSAGE_TYPE_PROMPT: {
+      ScopedJavaLocalRef<jstring> jdefault_value(
+          ConvertUTF16ToJavaString(env, default_prompt_text));
+      Java_AwContents_handleJsPrompt(
+          env, obj.obj(), jurl.obj(), jmessage.obj(),
+          jdefault_value.obj(), js_result.obj());
+      break;
+    }
+    default:
+      NOTREACHED();
+  }
+}
+
+void AwContents::RunBeforeUnloadDialog(
+    const GURL& origin_url,
+    const string16& message_text,
+    const base::android::ScopedJavaLocalRef<jobject>& js_result) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+
+  ScopedJavaLocalRef<jstring> jurl(ConvertUTF8ToJavaString(
+      env, origin_url.spec()));
+  ScopedJavaLocalRef<jstring> jmessage(ConvertUTF16ToJavaString(
+      env, message_text));
+  Java_AwContents_handleJsBeforeUnload(
+          env, obj.obj(), jurl.obj(), jmessage.obj(), js_result.obj());
 }
 
 void AwContents::onReceivedHttpAuthRequest(
