@@ -260,6 +260,7 @@ int PpapiPluginMain() {
     return error;
 
   PpapiDispatcher ppapi_dispatcher(io_thread.message_loop_proxy());
+  plugin_globals.set_plugin_proxy_delegate(&ppapi_dispatcher);
 
   loop.Run();
 
