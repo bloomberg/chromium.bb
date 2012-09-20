@@ -55,6 +55,12 @@
           '-m', 'x86',
         ],
       }],
+      [ 'OS=="mac" and target_arch=="x64"', {
+        'yasm_flags': [
+          '-fmacho64',
+          '-m', 'amd64',
+        ],
+      }],
       [ 'OS=="win" and target_arch=="ia32"', {
         'yasm_flags': [
           '-DPREFIX',
