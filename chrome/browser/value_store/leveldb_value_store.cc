@@ -8,7 +8,6 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
-#include "base/stringprintf.h"
 #include "base/sys_string_conversions.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/leveldatabase/src/include/leveldb/iterator.h"
@@ -18,39 +17,8 @@ using content::BrowserThread;
 
 namespace {
 
-const char* kInvalidJson = "Invalid JSON";
-
-ValueStore::ReadResult ReadFailure(const std::string& action,
-                                   const std::string& reason) {
-  CHECK_NE("", reason);
-  return ValueStore::MakeReadResult(base::StringPrintf(
-      "Failure to %s: %s", action.c_str(), reason.c_str()));
-}
-
-ValueStore::ReadResult ReadFailureForKey(const std::string& action,
-                                         const std::string& key,
-                                         const std::string& reason) {
-  CHECK_NE("", reason);
-  return ValueStore::MakeReadResult(base::StringPrintf(
-      "Failure to %s for key %s: %s",
-      action.c_str(), key.c_str(), reason.c_str()));
-}
-
-ValueStore::WriteResult WriteFailure(const std::string& action,
-                                     const std::string& reason) {
-  CHECK_NE("", reason);
-  return ValueStore::MakeWriteResult(base::StringPrintf(
-      "Failure to %s: %s", action.c_str(), reason.c_str()));
-}
-
-ValueStore::WriteResult WriteFailureForKey(const std::string& action,
-                                           const std::string& key,
-                                           const std::string& reason) {
-  CHECK_NE("", reason);
-  return ValueStore::MakeWriteResult(base::StringPrintf(
-      "Failure to %s for key %s: %s",
-      action.c_str(), key.c_str(), reason.c_str()));
-}
+// Generic error message on failure.
+const char kGenericOnFailureMessage[] = "Failure accessing database";
 
 // Scoped leveldb snapshot which releases the snapshot on destruction.
 class ScopedSnapshot {
@@ -137,24 +105,23 @@ size_t LeveldbValueStore::GetBytesInUse() {
   return 0;
 }
 
-ValueStore::ReadResult LeveldbValueStore::Get(const std::string& key) {
+ValueStore::ReadResult LeveldbValueStore::Get(
+    const std::string& key) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
   scoped_ptr<Value> setting;
-  std::string error = ReadFromDb(leveldb::ReadOptions(), key, &setting);
-  if (!error.empty())
-    return ReadFailureForKey("get", key, error);
-
+  if (!ReadFromDb(leveldb::ReadOptions(), key, &setting)) {
+    return MakeReadResult(kGenericOnFailureMessage);
+  }
   DictionaryValue* settings = new DictionaryValue();
-  if (setting.get())
+  if (setting.get()) {
     settings->SetWithoutPathExpansion(key, setting.release());
+  }
   return MakeReadResult(settings);
 }
 
 ValueStore::ReadResult LeveldbValueStore::Get(
     const std::vector<std::string>& keys) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
   leveldb::ReadOptions options;
   scoped_ptr<DictionaryValue> settings(new DictionaryValue());
 
@@ -165,11 +132,12 @@ ValueStore::ReadResult LeveldbValueStore::Get(
   for (std::vector<std::string>::const_iterator it = keys.begin();
       it != keys.end(); ++it) {
     scoped_ptr<Value> setting;
-    std::string error = ReadFromDb(options, *it, &setting);
-    if (!error.empty())
-      return ReadFailureForKey("get multiple items", *it, error);
-    if (setting.get())
+    if (!ReadFromDb(options, *it, &setting)) {
+      return MakeReadResult(kGenericOnFailureMessage);
+    }
+    if (setting.get()) {
       settings->SetWithoutPathExpansion(*it, setting.release());
+    }
   }
 
   return MakeReadResult(settings.release());
@@ -177,7 +145,6 @@ ValueStore::ReadResult LeveldbValueStore::Get(
 
 ValueStore::ReadResult LeveldbValueStore::Get() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
   base::JSONReader json_reader;
   leveldb::ReadOptions options = leveldb::ReadOptions();
   // All interaction with the db is done on the same thread, so snapshotting
@@ -188,22 +155,19 @@ ValueStore::ReadResult LeveldbValueStore::Get() {
   options.snapshot = snapshot.get();
   scoped_ptr<leveldb::Iterator> it(db_->NewIterator(options));
   for (it->SeekToFirst(); it->Valid(); it->Next()) {
-    std::string key = it->key().ToString();
     Value* value = json_reader.ReadToValue(it->value().ToString());
-    if (value == NULL) {
+    if (value != NULL) {
+      settings->SetWithoutPathExpansion(it->key().ToString(), value);
+    } else {
       // TODO(kalman): clear the offending non-JSON value from the database.
-      return ReadFailureForKey("get all", key, kInvalidJson);
+      LOG(ERROR) << "Invalid JSON: " << it->value().ToString();
     }
-    settings->SetWithoutPathExpansion(key, value);
   }
 
-  if (it->status().IsNotFound()) {
-    NOTREACHED() << "IsNotFound() but iterating over all keys?!";
-    return MakeReadResult(settings.release());
+  if (!it->status().ok()) {
+    LOG(ERROR) << "DB iteration failed: " << it->status().ToString();
+    return MakeReadResult(kGenericOnFailureMessage);
   }
-
-  if (!it->status().ok())
-    return ReadFailure("get all items", it->status().ToString());
 
   return MakeReadResult(settings.release());
 }
@@ -214,15 +178,8 @@ ValueStore::WriteResult LeveldbValueStore::Set(
 
   leveldb::WriteBatch batch;
   scoped_ptr<ValueStoreChangeList> changes(new ValueStoreChangeList());
-  std::string read_error =
-      AddToBatch(options, key, value, &batch, changes.get());
-  if (!read_error.empty())
-    return WriteFailureForKey("find changes to set", key, read_error);
-
-  std::string write_error = WriteToDb(&batch);
-  if (!write_error.empty())
-    return WriteFailureForKey("set", key, write_error);
-  return MakeWriteResult(changes.release());
+  AddToBatch(options, key, value, &batch, changes.get());
+  return WriteToDb(&batch, changes.Pass());
 }
 
 ValueStore::WriteResult LeveldbValueStore::Set(
@@ -233,24 +190,19 @@ ValueStore::WriteResult LeveldbValueStore::Set(
   scoped_ptr<ValueStoreChangeList> changes(new ValueStoreChangeList());
 
   for (DictionaryValue::Iterator it(settings); it.HasNext(); it.Advance()) {
-    std::string read_error =
-        AddToBatch(options, it.key(), it.value(), &batch, changes.get());
-    if (!read_error.empty()) {
-      return WriteFailureForKey("find changes to set multiple items",
-                                it.key(),
-                                read_error);
-    }
+    if (!AddToBatch(options, it.key(), it.value(), &batch, changes.get()))
+      return MakeWriteResult(kGenericOnFailureMessage);
   }
 
-  std::string write_error = WriteToDb(&batch);
-  if (!write_error.empty())
-    return WriteFailure("set multiple items", write_error);
-  return MakeWriteResult(changes.release());
+  return WriteToDb(&batch, changes.Pass());
 }
 
-ValueStore::WriteResult LeveldbValueStore::Remove(const std::string& key) {
+ValueStore::WriteResult LeveldbValueStore::Remove(
+    const std::string& key) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  return Remove(std::vector<std::string>(1, key));
+  std::vector<std::string> keys;
+  keys.push_back(key);
+  return Remove(keys);
 }
 
 ValueStore::WriteResult LeveldbValueStore::Remove(
@@ -263,23 +215,23 @@ ValueStore::WriteResult LeveldbValueStore::Remove(
   for (std::vector<std::string>::const_iterator it = keys.begin();
       it != keys.end(); ++it) {
     scoped_ptr<Value> old_value;
-    std::string read_error =
-        ReadFromDb(leveldb::ReadOptions(), *it, &old_value);
-    if (!read_error.empty()) {
-      return WriteFailureForKey("find changes to remove multiple items",
-                                *it,
-                                read_error);
+    if (!ReadFromDb(leveldb::ReadOptions(), *it, &old_value)) {
+      return MakeWriteResult(kGenericOnFailureMessage);
     }
 
     if (old_value.get()) {
-      changes->push_back(ValueStoreChange(*it, old_value.release(), NULL));
+      changes->push_back(
+          ValueStoreChange(*it, old_value.release(), NULL));
       batch.Delete(*it);
     }
   }
 
   leveldb::Status status = db_->Write(leveldb::WriteOptions(), &batch);
-  if (!status.ok() && !status.IsNotFound())
-    return WriteFailure("remove multiple items", status.ToString());
+  if (!status.ok() && !status.IsNotFound()) {
+    LOG(WARNING) << "DB batch delete failed: " << status.ToString();
+    return MakeWriteResult(kGenericOnFailureMessage);
+  }
+
   return MakeWriteResult(changes.release());
 }
 
@@ -299,30 +251,29 @@ ValueStore::WriteResult LeveldbValueStore::Clear() {
     const std::string key = it->key().ToString();
     const std::string old_value_json = it->value().ToString();
     Value* old_value = base::JSONReader().ReadToValue(old_value_json);
-    if (!old_value) {
-      // TODO: delete the bad JSON.
-      return WriteFailureForKey("find changes to clear", key, kInvalidJson);
+    if (old_value) {
+      changes->push_back(ValueStoreChange(key, old_value, NULL));
+    } else {
+      LOG(ERROR) << "Invalid JSON in database: " << old_value_json;
     }
-    changes->push_back(ValueStoreChange(key, old_value, NULL));
     batch.Delete(key);
   }
 
-  if (it->status().IsNotFound())
-    NOTREACHED() << "IsNotFound() but clearing?!";
-  else if (!it->status().ok())
-    return WriteFailure("find changes to clear", it->status().ToString());
+  if (!it->status().ok()) {
+    LOG(WARNING) << "Clear iteration failed: " << it->status().ToString();
+    return MakeWriteResult(kGenericOnFailureMessage);
+  }
 
   leveldb::Status status = db_->Write(leveldb::WriteOptions(), &batch);
-  if (status.IsNotFound()) {
-    NOTREACHED() << "IsNotFound() but clearing?!";
-    return MakeWriteResult(changes.release());
+  if (!status.ok() && !status.IsNotFound()) {
+    LOG(WARNING) << "Clear failed: " << status.ToString();
+    return MakeWriteResult(kGenericOnFailureMessage);
   }
-  if (!status.ok())
-    return WriteFailure("clear", status.ToString());
+
   return MakeWriteResult(changes.release());
 }
 
-std::string LeveldbValueStore::ReadFromDb(
+bool LeveldbValueStore::ReadFromDb(
     leveldb::ReadOptions options,
     const std::string& key,
     scoped_ptr<Value>* setting) {
@@ -333,24 +284,26 @@ std::string LeveldbValueStore::ReadFromDb(
 
   if (s.IsNotFound()) {
     // Despite there being no value, it was still a success.
-    // Check this first because ok() is false on IsNotFound.
-    return "";
+    return true;
   }
 
-  if (!s.ok())
-    return s.ToString();
+  if (!s.ok()) {
+    LOG(ERROR) << "Error reading from database: " << s.ToString();
+    return false;
+  }
 
   Value* value = base::JSONReader().ReadToValue(value_as_json);
   if (value == NULL) {
     // TODO(kalman): clear the offending non-JSON value from the database.
-    return kInvalidJson;
+    LOG(ERROR) << "Invalid JSON in database: " << value_as_json;
+    return false;
   }
 
   setting->reset(value);
-  return "";
+  return true;
 }
 
-std::string LeveldbValueStore::AddToBatch(
+bool LeveldbValueStore::AddToBatch(
     ValueStore::WriteOptions options,
     const std::string& key,
     const base::Value& value,
@@ -358,9 +311,8 @@ std::string LeveldbValueStore::AddToBatch(
     ValueStoreChangeList* changes) {
   scoped_ptr<Value> old_value;
   if (!(options & NO_CHECK_OLD_VALUE)) {
-    std::string error = ReadFromDb(leveldb::ReadOptions(), key, &old_value);
-    if (!error.empty())
-      return error;
+    if (!ReadFromDb(leveldb::ReadOptions(), key, &old_value))
+      return false;
   }
 
   if (!old_value.get() || !old_value->Equals(&value)) {
@@ -373,16 +325,19 @@ std::string LeveldbValueStore::AddToBatch(
     batch->Put(key, value_as_json);
   }
 
-  return "";
+  return true;
 }
 
-std::string LeveldbValueStore::WriteToDb(leveldb::WriteBatch* batch) {
+ValueStore::WriteResult LeveldbValueStore::WriteToDb(
+    leveldb::WriteBatch* batch,
+    scoped_ptr<ValueStoreChangeList> changes) {
   leveldb::Status status = db_->Write(leveldb::WriteOptions(), batch);
-  if (status.IsNotFound()) {
-    NOTREACHED() << "IsNotFound() but writing?!";
-    return "";
+  if (!status.ok()) {
+    LOG(WARNING) << "DB batch write failed: " << status.ToString();
+    return MakeWriteResult(kGenericOnFailureMessage);
   }
-  return status.ok() ? "" : status.ToString();
+
+  return MakeWriteResult(changes.release());
 }
 
 bool LeveldbValueStore::IsEmpty() {
