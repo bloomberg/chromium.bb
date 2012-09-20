@@ -87,7 +87,7 @@ Widget* CreateBorderWidget(BubbleDelegateView* bubble) {
   Widget::InitParams border_params(Widget::InitParams::TYPE_BUBBLE);
   border_params.delegate = new BubbleBorderDelegate(bubble, border_widget);
   border_params.transparent = true;
-  border_params.parent_widget = bubble->anchor_widget();
+  border_params.parent_widget = bubble->GetWidget();
   border_params.can_activate = bubble->CanActivate();
   border_widget->Init(border_params);
   return border_widget;
