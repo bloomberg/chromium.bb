@@ -363,11 +363,11 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableExperimentalExtensionApis)
   },
   {
-    "action-box",
+    "disable-action-box",
     IDS_FLAGS_ACTION_BOX_NAME,
     IDS_FLAGS_ACTION_BOX_DESCRIPTION,
     kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableActionBox),
+    SINGLE_VALUE_TYPE(switches::kDisableActionBox),
   },
   {
     "script-badges",
