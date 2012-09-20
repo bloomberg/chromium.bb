@@ -496,14 +496,14 @@ PermissionSet* ExtensionPrefs::ReadExtensionPrefPermissionSet(
       std::string permission_name;
       if (!api_values->GetString(i, &permission_name) &&
           !api_values->GetDictionary(i, &permission_dict)) {
-        NOTREACHED() << "Permission is not a string or dict. ";
+        LOG(WARNING) << "Permission is not a string or dict. ";
         continue;
       }
 
       const base::Value *permission_detail = NULL;
       if (permission_dict) {
         if (permission_dict->size() != 1u) {
-          NOTREACHED() << "Permission is not a single key dict.";
+          LOG(WARNING) << "Permission is not a single key dict.";
           continue;
         }
         base::DictionaryValue::Iterator it(*permission_dict);
@@ -514,14 +514,14 @@ PermissionSet* ExtensionPrefs::ReadExtensionPrefPermissionSet(
       const APIPermissionInfo *permission_info =
         info->GetByName(permission_name);
       if (!permission_info) {
-        NOTREACHED() << "Unknown permission[" << permission_name << "].";
+        LOG(WARNING) << "Unknown permission[" << permission_name << "].";
         continue;
       }
 
       scoped_ptr<APIPermission> permission(
           permission_info->CreateAPIPermission());
       if (!permission->FromValue(permission_detail)) {
-        NOTREACHED() << "Parse permission failed.";
+        LOG(WARNING) << "Parse permission failed.";
         continue;
       }
       apis.insert(permission.release());
