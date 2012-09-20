@@ -4548,10 +4548,12 @@
    fun:_ZN7leveldb6DBImpl23MaybeScheduleCompactionEv
    fun:_ZN7leveldb6DBImpl16MakeRoomForWriteEb
    fun:_ZN7leveldb6DBImpl5WriteERKNS_12WriteOptionsEPNS_10WriteBatchE
-   fun:_ZN17LeveldbValueStore9WriteToDbEPN7leveldb10WriteBatchE10scoped_ptrISt6vectorI16ValueStoreChangeSaIS5_EEE
+   fun:_ZN17LeveldbValueStore9WriteToDbEPN7leveldb10WriteBatchE
    fun:_ZN17LeveldbValueStore3SetEiRKSsRKN4base5ValueE
    fun:_ZN10extensions28SettingsStorageQuotaEnforcer3SetEiRKSsRKN4base5ValueE
    fun:_ZN10extensions23SyncableSettingsStorage3SetEiRKSsRKN4base5ValueE
+   fun:_ZN10extensions28WeakUnlimitedSettingsStorage3SetEiRKSsRKN4base5ValueE
+   fun:_ZN10extensionsL33UnlimitedLocalStorageTestCallbackEP10ValueStore
 }
 {
    bug_111341
