@@ -100,7 +100,8 @@ class BrowserOptions(optparse.Values):
       if self.browser_executable and not self.browser_type:
         self.browser_type = 'exact'
       if not self.browser_executable and not self.browser_type:
-        sys.stderr.write('Must provide --browser=<type>\n')
+        sys.stderr.write('Must provide --browser=<type>. ' +
+                         'Use --browser=list for valid options.\n')
         sys.exit(1)
       if self.browser_type == 'list':
         types = browser_finder.GetAllAvailableBrowserTypes(self)
