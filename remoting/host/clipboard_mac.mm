@@ -4,7 +4,7 @@
 
 #include "remoting/host/clipboard.h"
 
-#import <cocoa/cocoa.h>
+#import <Cocoa/Cocoa.h>
 
 #include "base/basictypes.h"
 #include "base/logging.h"
