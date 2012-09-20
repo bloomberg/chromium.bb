@@ -14,10 +14,10 @@ def main(argv):
                     help="Query gerrit-int.")
   parser.add_option('-e', "--external", dest='internal', action='store_false',
                     help="Query gerrit.  Note this is the default.")
-  parser.add_option('--age', default='3mon',
+  parser.add_option('--age', default='6mon',
                     help="Limit results to within this gerrit age query.  See "
-                    "http://goo.gl/AdJy3 for the age form; to see the last 6 "
-                    "months, it would be '6mon'.  Defaults to the last 3 "
+                    "http://goo.gl/AdJy3 for the age form; to see the last 3 "
+                    "months, it would be '3mon'.  Defaults to the last 6 "
                     "months.")
   parser.add_option("--cl-stats", default=False, action='store_true',
                     help="If given, output merged/abandoned/open stats.  "
