@@ -268,6 +268,8 @@ int NaClIPCAdapter::RewrittenMessage::Read(NaClImcTypedMsgHdr* msg) {
       NaClDescRef(descs_[i]->desc());
     }
     descs_.clear();
+  } else {
+    msg->ndesc_length = 0;
   }
   return static_cast<int>(bytes_to_write);
 }
