@@ -16,7 +16,7 @@
 namespace {
 
 // Number of partial updates we allow.
-static const size_t maxPartialTextureUpdatesMax = 12;
+static const size_t partialTextureUpdatesMax = 12;
 
 // Measured in seconds.
 static const double textureUpdateTickRate = 0.004;
@@ -33,7 +33,7 @@ namespace cc {
 
 size_t CCTextureUpdateController::maxPartialTextureUpdates()
 {
-    return maxPartialTextureUpdatesMax;
+    return partialTextureUpdatesMax;
 }
 
 size_t CCTextureUpdateController::maxFullUpdatesPerTick(TextureUploader* uploader)
