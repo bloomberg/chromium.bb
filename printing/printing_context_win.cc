@@ -16,6 +16,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/win/metro.h"
+#include "printing/backend/print_backend.h"
 #include "printing/backend/win_helper.h"
 #include "printing/print_job_constants.h"
 #include "printing/print_settings_initializer_win.h"
@@ -504,6 +505,7 @@ PrintingContext::Result PrintingContextWin::NewDocument(
   if (SP_ERROR == SetAbortProc(context_, &AbortProc))
     return OnError();
 
+  DCHECK(PrintBackend::SimplifyDocumentTitle(document_name) == document_name);
   DOCINFO di = { sizeof(DOCINFO) };
   const std::wstring& document_name_wide = UTF16ToWide(document_name);
   di.lpszDocName = document_name_wide.c_str();

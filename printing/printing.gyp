@@ -209,6 +209,7 @@
         '../ui/ui.gyp:ui',
       ],
       'sources': [
+        'backend/print_backend_unittest.cc',
         'emf_win_unittest.cc',
         'printing_test.h',
         'page_number_unittest.cc',

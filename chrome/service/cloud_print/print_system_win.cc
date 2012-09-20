@@ -430,7 +430,9 @@ class PrintSystemWin : public PrintSystem {
           hr = E_FAIL;
           DOCINFO di = {0};
           di.cbSize = sizeof(DOCINFO);
-          std::wstring doc_name = UTF8ToWide(job_title);
+          string16 doc_name = UTF8ToUTF16(job_title);
+          DCHECK(printing::PrintBackend::SimplifyDocumentTitle(doc_name) ==
+                 doc_name);
           di.lpszDocName = doc_name.c_str();
           job_id_ = StartDoc(dc, &di);
           if (job_id_ <= 0)

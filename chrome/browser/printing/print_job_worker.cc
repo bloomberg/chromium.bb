@@ -15,9 +15,12 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "grit/generated_resources.h"
+#include "printing/backend/print_backend.h"
 #include "printing/print_job_constants.h"
 #include "printing/printed_document.h"
 #include "printing/printed_page.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
 
@@ -202,8 +205,14 @@ void PrintJobWorker::StartPrinting(PrintedDocument* new_document) {
     return;
   }
 
+  string16 document_name =
+      printing::PrintBackend::SimplifyDocumentTitle(document_->name());
+  if (document_name.empty()) {
+    document_name = printing::PrintBackend::SimplifyDocumentTitle(
+        l10n_util::GetStringUTF16(IDS_DEFAULT_PRINT_DOCUMENT_TITLE));
+  }
   PrintingContext::Result result =
-      printing_context_->NewDocument(document_->name());
+      printing_context_->NewDocument(document_name);
   if (result != PrintingContext::OK) {
     OnFailure();
     return;
