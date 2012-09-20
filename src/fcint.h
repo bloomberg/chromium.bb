@@ -819,54 +819,14 @@ FcListPatternMatchAny (const FcPattern *p,
 
 /* fcname.c */
 
-/*
- * NOTE -- this ordering is part of the cache file format.
- * It must also match the ordering in fcname.c
- */
-
-#define FC_FAMILY_OBJECT	1
-#define FC_FAMILYLANG_OBJECT	2
-#define FC_STYLE_OBJECT		3
-#define FC_STYLELANG_OBJECT	4
-#define FC_FULLNAME_OBJECT	5
-#define FC_FULLNAMELANG_OBJECT	6
-#define FC_SLANT_OBJECT		7
-#define FC_WEIGHT_OBJECT	8
-#define FC_WIDTH_OBJECT		9
-#define FC_SIZE_OBJECT		10
-#define FC_ASPECT_OBJECT	11
-#define FC_PIXEL_SIZE_OBJECT	12
-#define FC_SPACING_OBJECT	13
-#define FC_FOUNDRY_OBJECT	14
-#define FC_ANTIALIAS_OBJECT	15
-#define FC_HINT_STYLE_OBJECT	16
-#define FC_HINTING_OBJECT	17
-#define FC_VERTICAL_LAYOUT_OBJECT	18
-#define FC_AUTOHINT_OBJECT	19
-#define FC_GLOBAL_ADVANCE_OBJECT	20	/* deprecated */
-#define FC_FILE_OBJECT		21
-#define FC_INDEX_OBJECT		22
-#define FC_RASTERIZER_OBJECT	23
-#define FC_OUTLINE_OBJECT	24
-#define FC_SCALABLE_OBJECT	25
-#define FC_DPI_OBJECT		26
-#define FC_RGBA_OBJECT		27
-#define FC_SCALE_OBJECT		28
-#define FC_MINSPACE_OBJECT	29
-#define FC_CHAR_WIDTH_OBJECT	30
-#define FC_CHAR_HEIGHT_OBJECT	31
-#define FC_MATRIX_OBJECT	32
-#define FC_CHARSET_OBJECT	33
-#define FC_LANG_OBJECT		34
-#define FC_FONTVERSION_OBJECT	35
-#define FC_CAPABILITY_OBJECT	36
-#define FC_FONTFORMAT_OBJECT	37
-#define FC_EMBOLDEN_OBJECT	38
-#define FC_EMBEDDED_BITMAP_OBJECT	39
-#define FC_DECORATIVE_OBJECT	40
-#define FC_LCD_FILTER_OBJECT	41
-#define FC_NAMELANG_OBJECT	42
-#define FC_MAX_BASE_OBJECT	FC_NAMELANG_OBJECT
+enum {
+  FC_INVALID_OBJECT = 0,
+#define FC_OBJECT(NAME, Type) FC_##NAME##_OBJECT,
+#include "fcobjs.h"
+#undef FC_OBJECT
+  FC_ONE_AFTER_MAX_BASE_OBJECT
+#define FC_MAX_BASE_OBJECT (FC_ONE_AFTER_MAX_BASE_OBJECT - 1)
+};
 
 FcPrivate FcBool
 FcNameBool (const FcChar8 *v, FcBool *result);
@@ -882,12 +842,6 @@ FcObjectName (FcObject object);
 
 FcPrivate FcObjectSet *
 FcObjectGetSet (void);
-
-FcPrivate FcBool
-FcObjectInit (void);
-
-FcPrivate void
-FcObjectFini (void);
 
 #define FcObjectCompare(a, b)	((int) a - (int) b)
 
@@ -1101,5 +1055,22 @@ FcStrSerializeAlloc (FcSerialize *serialize, const FcChar8 *str);
 
 FcPrivate FcChar8 *
 FcStrSerialize (FcSerialize *serialize, const FcChar8 *str);
+
+/* fcobjs.c */
+
+FcPrivate FcObject
+FcObjectLookupIdByName (const char *str);
+
+FcPrivate FcObject
+FcObjectLookupBuiltinIdByName (const char *str);
+
+FcPrivate const char *
+FcObjectLookupOtherNameById (FcObject id);
+
+FcPrivate const FcObjectType *
+FcObjectLookupOtherTypeById (FcObject id);
+
+FcPrivate const FcObjectType *
+FcObjectLookupOtherTypeByName (const char *str);
 
 #endif /* _FC_INT_H_ */

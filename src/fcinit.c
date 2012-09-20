@@ -155,7 +155,6 @@ FcFini (void)
     if (_fcConfig)
 	FcConfigDestroy (_fcConfig);
 
-    FcObjectFini ();
     FcCacheFini ();
 }
 

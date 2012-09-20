@@ -21,6 +21,8 @@
 # TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 # PERFORMANCE OF THIS SOFTWARE.
 
+EXTRA_DIST =
+
 if OS_WIN32
 
 export_symbols = -export-symbols fontconfig.def
@@ -78,7 +80,7 @@ INCLUDES = 						\
 	-DFC_CACHEDIR='"$(FC_CACHEDIR)"'                \
 	-DFONTCONFIG_PATH='"$(BASECONFIGDIR)"'
 
-EXTRA_DIST = makealias
+EXTRA_DIST += makealias
 
 noinst_HEADERS=fcint.h fcftint.h fcdeprecate.h fcstdint.h
 
@@ -88,7 +90,8 @@ BUILT_SOURCES = $(ALIAS_FILES) \
 	../fc-case/fccase.h \
 	../fc-glyphname/fcglyphname.h \
 	../fc-lang/fclang.h \
-	stamp-fcstdint
+	stamp-fcstdint \
+	fcobjshash.h
 
 noinst_PROGRAMS = fcarch
 
@@ -98,6 +101,22 @@ noinst_PROGRAMS = fcarch
 	cd ../fc-glyphname && $(MAKE) $(AM_MAKEFLAGS) fcglyphname.h
 ../fc-lang/fclang.h:
 	cd ../fc-lang && $(MAKE) $(AM_MAKEFLAGS) fclang.h
+
+fcobjshash.gperf: fcobjshash.gperf.h fcobjs.h
+	$(AM_V_GEN) $(CPP) -I$(top_srcdir) $< | $(GREP) '^[^#]' | awk ' \
+	/CUT_OUT_BEGIN/ { no_write=1; next; }; \
+	/CUT_OUT_END/ { no_write=0; next; }; \
+	{ if (!no_write) print; next; }; \
+	' - > $@.tmp && \
+	mv -f $@.tmp $@
+
+fcobjshash.h: fcobjshash.gperf
+	$(AM_V_GEN) $(top_srcdir)/missing --run gperf -m 100 $< > $@.tmp && \
+	mv -f $@.tmp $@
+
+EXTRA_DIST += \
+	fcobjshash.gperf.h \
+	fcobjshash.gperf
 
 libfontconfig_la_SOURCES = \
 	fcarch.h \
@@ -118,6 +137,9 @@ libfontconfig_la_SOURCES = \
 	fcmatch.c \
 	fcmatrix.c \
 	fcname.c \
+	fcobjs.c \
+	fcobjs.h \
+	fcobjshash.h \
 	fcpat.c \
 	fcserialize.c \
 	fcstat.c \
