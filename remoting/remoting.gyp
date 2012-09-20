@@ -189,6 +189,13 @@
       'host/installer/mac/Keystone/GoogleSoftwareUpdate.pkg',
       '<(DEPTH)/chrome/installer/mac/pkg-dmg',
     ],
+    'remoting_host_installer_win_roots': [
+      'host/win/',
+    ],
+    'remoting_host_installer_win_files': [
+      'host/win/chromoting.wxs',
+      'host/win/parameters.json',
+    ],
   },
 
   'target_defaults': {
@@ -697,65 +704,31 @@
           'target_name': 'remoting_host_installation',
           'type': 'none',
           'dependencies': [
-            'remoting_host_controller',
-            'remoting_service',
-            'remoting_me2me_host',
+            'remoting_me2me_host_archive',
           ],
           'sources': [
-            'host/win/chromoting.wxs',
+            '<(PRODUCT_DIR)/remoting-me2me-host-<(OS).zip',
           ],
           'outputs': [
             '<(PRODUCT_DIR)/chromoting.msi',
           ],
-          'wix_defines' : [
-            '-dBranding=<(branding)',
-            '-dRemotingMultiProcess=<(remoting_multi_process)',
-          ],
-          'wix_inputs' : [
-            '<(PRODUCT_DIR)/remoting_host_controller.exe',
-            '<(PRODUCT_DIR)/remoting_me2me_host.exe',
-            '<(PRODUCT_DIR)/remoting_service.exe',
-            '<(sas_dll_path)/sas.dll',
-            'resources/chromoting.ico',
-          ],
-          'conditions': [
-            ['remoting_multi_process != 0', {
-              'dependencies': [
-                'remoting_desktop',
-              ],
-              'wix_inputs' : [
-                '<(PRODUCT_DIR)/remoting_desktop.exe',
-              ],
-            }],
-            ['buildtype == "Official"', {
-              'wix_defines': [
-                '-dOfficialBuild=1',
-              ],
-            }],
-          ],
           'rules': [
             {
-              'rule_name': 'candle_and_light',
-              'extension': 'wxs',
+              'rule_name': 'zip2msi',
+              'extension': 'zip',
               'inputs': [
-                '<@(_wix_inputs)',
-                'tools/candle_and_light.py',
+                'tools/zip2msi.py',
               ],
               'outputs': [
-                '<(PRODUCT_DIR)/<(RULE_INPUT_ROOT).msi',
+                '<(PRODUCT_DIR)/chromoting.msi',
               ],
               'msvs_cygwin_shell': 0,
               'action': [
-                'python', 'tools/candle_and_light.py',
+                'python', 'tools/zip2msi.py',
                 '--wix_path', '<(wix_path)',
-                '--controller_clsid', '{<(daemon_controller_clsid)}',
-                '--version', '<(version_full)',
-                '--product_dir', '<(PRODUCT_DIR).',
-                '--intermediate_dir', '<(INTERMEDIATE_DIR).',
-                '--sas_dll_path', '<(sas_dll_path)',
-                '--input', '<(RULE_INPUT_PATH)',
-                '--output', '<@(_outputs)',
-                '<@(_wix_defines)',
+                '--intermediate_dir', '<(INTERMEDIATE_DIR)/installation',
+                '<(RULE_INPUT_PATH)',
+                '<@(_outputs)',
               ],
               'message': 'Generating <@(_outputs)',
             },
@@ -799,13 +772,108 @@
                 'tools/dark_and_candle_and_light.py',
                 '--wix_path', '<(wix_path)',
                 '--input', '<(RULE_INPUT_PATH)',
-                '--intermediate_dir', '<(INTERMEDIATE_DIR).',
+                '--intermediate_dir', '<(INTERMEDIATE_DIR)/installation',
                 '--output', '<@(_outputs)',
               ],
               'message': 'Unpacking and repacking to <@(_outputs)',
             },
           ],
         },  # end of target 'remoting_host_installation_unittest'
+        {
+          'target_name': 'remoting_me2me_host_archive',
+          'type': 'none',
+          'dependencies': [
+            'remoting_host_controller',
+            'remoting_service',
+            'remoting_me2me_host',
+          ],
+          'sources': [
+            '<(sas_dll_path)/sas.dll',
+            '<@(remoting_host_installer_win_files)',
+            'host/installer/build-installer-archive.py',
+            'resources/chromoting.ico',
+          ],
+          'defs': [
+            'BRANDING=<(branding)',
+            'CONTROLLER_CLSID={<(daemon_controller_clsid)}',
+            'REMOTING_MULTI_PROCESS=<(remoting_multi_process)',
+            'VERSION=<(version_full)',
+          ],
+          'generated_files': [
+            '<(PRODUCT_DIR)/remoting_host_controller.exe',
+            '<(PRODUCT_DIR)/remoting_me2me_host.exe',
+            '<(PRODUCT_DIR)/remoting_service.exe',
+            '<(sas_dll_path)/sas.dll',
+            'resources/chromoting.ico',
+          ],
+          'generated_files_dst': [
+            'files/remoting_host_controller.exe',
+            'files/remoting_me2me_host.exe',
+            'files/remoting_service.exe',
+            'files/sas.dll',
+            'files/chromoting.ico',
+          ],
+          'conditions': [
+            ['buildtype == "Official"', {
+              'defs': [
+                'OFFICIAL_BUILD=1',
+              ],
+            }, {  # else buildtype != "Official"
+              'defs': [
+                'OFFICIAL_BUILD=0',
+              ],
+            }],
+            ['remoting_multi_process != 0', {
+              'dependencies': [
+                'remoting_desktop',
+              ],
+              'generated_files': [
+                '<(PRODUCT_DIR)/remoting_desktop.exe',
+              ],
+              'generated_files_dst': [
+                'files/remoting_desktop.exe',
+              ],
+            }],
+          ],
+          'zip_path': '<(PRODUCT_DIR)/remoting-me2me-host-<(OS).zip',
+          'outputs': [
+            '<(_zip_path)',
+          ],
+          'actions': [
+            {
+              'action_name': 'Zip installer files for signing',
+              'temp_dir': '<(INTERMEDIATE_DIR)/installation',
+              'source_files': [
+                '<@(remoting_host_installer_win_files)',
+              ],
+              'inputs': [
+                '<(sas_dll_path)/sas.dll',
+                '<@(_source_files)',
+                'host/installer/build-installer-archive.py',
+                'resources/chromoting.ico',
+              ],
+              'outputs': [
+                '<(_zip_path)',
+              ],
+              'action': [
+                'python',
+                'host/installer/build-installer-archive.py',
+                '<(_temp_dir)',
+                '<(_zip_path)',
+                '--source-file-roots',
+                '<@(remoting_host_installer_win_roots)',
+                '--source-files',
+                '<@(_source_files)',
+                '--generated-files',
+                '<@(_generated_files)',
+                '--generated-files-dst',
+                '<@(_generated_files_dst)',
+                '--defs',
+                '<@(_defs)',
+              ],
+            },
+          ],  # actions
+        }, # end of target 'remoting_me2me_host_archive'
       ],  # end of 'targets'
     }],  # '<(wix_path) != ""'
 

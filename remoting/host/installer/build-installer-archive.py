@@ -102,8 +102,10 @@ def remapSrcFile(dst_root, src_roots, src_file):
   # Strip of directory prefix.
   found_root = False
   for root in src_roots:
-    if src_file.startswith(root):
-      src_file = src_file[len(root):]
+    root = os.path.normpath(root)
+    src_file = os.path.normpath(src_file)
+    if os.path.commonprefix([root, src_file]) == root:
+      src_file = os.path.relpath(src_file, root)
       found_root = True
       break
 
@@ -190,13 +192,15 @@ def buildHostArchive(temp_dir, zip_path, source_file_roots, source_files,
     (base, ext) = os.path.splitext(f)
     if ext == '.zip':
       copyZipIntoArchive(temp_dir, source_file_roots, f)
-    elif ext in ['.packproj', '.pkgproj', '.plist', '.props', '.sh']:
+    elif ext in ['.packproj', '.pkgproj', '.plist', '.props', '.sh', '.json']:
       copyFileWithDefs(f, dst_file, defs)
     else:
       shutil.copy2(f, dst_file)
 
   for bs, bd in zip(gen_files, gen_files_dst):
     dst_file = os.path.join(temp_dir, bd)
+    if not os.path.exists(os.path.dirname(dst_file)):
+      os.makedirs(os.path.dirname(dst_file))
     if os.path.isdir(bs):
       shutil.copytree(bs, dst_file)
     else:
@@ -266,13 +270,9 @@ def main():
   if len(source_files) == 0 and len(generated_files) == 0:
     error('At least one input file must be specified.')
 
-  # Ensure that each path in source_file_roots ends with a directory separator.
-  for root in source_file_roots:
-    if root[-1:] != os.sep:
-      error('Each source-file-root should end with a "\": %s' % root)
-
   # Sort roots to ensure the longest one is first. See comment in remapSrcFile
   # for why this is necessary.
+  source_file_roots = map(os.path.normpath, source_file_roots)
   source_file_roots.sort(key=len, reverse=True)
 
   # Verify that the 2 generated_files arrays have the same number of elements.

@@ -47,18 +47,6 @@
     <?error ControllerClsid must be defined ?>
   <?endif?>
 
-  <?ifndef FileSource ?>
-    <?error FileSource must be defined ?>
-  <?endif?>
-
-  <?ifndef IconPath ?>
-    <?error IconPath must be defined ?>
-  <?endif?>
-
-  <?ifndef SasDllPath ?>
-    <?error SasDllPath must be defined ?>
-  <?endif?>
-
   <?ifndef Version ?>
     <?error Version must be defined ?>
   <?endif?>
@@ -111,7 +99,7 @@
 
     <Directory Id="TARGETDIR" Name="SourceDir">
       <Directory Id="ProgramFilesFolder">
-        <?ifdef OfficialBuild ?>
+        <?if $(var.OfficialBuild) != 0 ?>
           <Directory Id="program_files_google" Name="Google">
             <Directory Id="chromoting" Name="Chrome Remote Desktop">
               <Directory Id="binaries" Name="$(var.Version)"/>
@@ -124,7 +112,7 @@
         <?endif?>
       </Directory>
       <Directory Id="CommonAppDataFolder">
-        <?ifdef OfficialBuild ?>
+        <?if $(var.OfficialBuild) != 0 ?>
           <Directory Id="common_app_data_google" Name="Google">
             <Directory Id="config_files" Name="Chrome Remote Desktop"/>
           </Directory>
@@ -134,12 +122,11 @@
       </Directory>
     </Directory>
 
-    <DirectoryRef Id="binaries" FileSource="$(var.FileSource)">
+    <DirectoryRef Id="binaries">
       <Component Id="sas" Guid="*">
         <File Id="sas.dll"
               DiskId="1"
               Name="sas.dll"
-              Source="$(var.SasDllPath)"
               Vital="yes"/>
       </Component>
 
@@ -202,7 +189,7 @@
                                 Scope="any" />
       </Component>
 
-      <?ifdef OfficialBuild ?>
+      <?if $(var.OfficialBuild) != 0 ?>
         <Component Id="omaha_registration" Guid="*">
           <RegistryKey Id="omaha_client_key"
                        Root="HKLM"
@@ -416,7 +403,7 @@
     <UIRef Id="WixUI_ErrorProgressText" />
 
     <Feature Id="chromoting_host" Level="1" Title="$(var.ChromotingHost)">
-      <?ifdef OfficialBuild ?>
+      <?if $(var.OfficialBuild) != 0 ?>
         <ComponentRef Id="omaha_registration"/>
       <?endif?>
       <ComponentRef Id="remoting_controller"/>
@@ -429,7 +416,7 @@
     </Feature>
 
     <!-- Set the icon shown in Add/Remove Programs. -->
-    <Icon Id="chromoting.ico" SourceFile="$(var.IconPath)"/>
+    <Icon Id="chromoting.ico" SourceFile="chromoting.ico"/>
     <Property Id="ARPPRODUCTICON" Value="chromoting.ico" />
 
     <InstallExecuteSequence>
