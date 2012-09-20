@@ -23,9 +23,9 @@ def main(argv):
                     help="If given, output merged/abandoned/open stats.  "
                     "Note this suppresses comment/scoring analysis.")
   parser.add_option("--query", default=None,
-                    help="Freeform gerrit query.  If specified, it overrides the"
-                    "normal querying behaviour.  Use only if you know what "
-                    "you're doing.")
+                    help="Freeform gerrit query.  If specified, it overrides "
+                    "the normal querying behaviour.  Use only if you know "
+                    "what you're doing.")
 
   opts, args = parser.parse_args(argv)
   if not args and not opts.query:
@@ -62,7 +62,7 @@ def main(argv):
     stats = {}
     for x in results:
       status = x['status'].lower()
-      stats[status] = x.get(status, 0) + 1
+      stats[status] = stats.get(status, 0) + 1
     if 'new' in stats:
       stats['open'] = stats.pop('new')
     for status, value in sorted(stats.iteritems(), key=lambda x:x[0]):
