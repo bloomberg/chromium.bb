@@ -5418,7 +5418,7 @@
    fun:_ZN2v88internalL6InvokeEbNS0_6HandleINS0_10JSFunctionEEENS1_INS0_6ObjectEEEiPS5_Pb
    fun:_ZN2v88internal9Execution4CallENS0_6HandleINS0_6ObjectEEES4_iPS4_Pbb
    fun:_ZN2v86Script3RunEv
-   fun:_ZN7WebCore27WorkerContextExecutionProxy9runScriptEN2v86HandleINS1_6ScriptEEE
+   ...
    fun:_ZN7WebCore27WorkerContextExecutionProxy8evaluateERKN3WTF6StringES4_RKNS1_12TextPositionEPNS_27WorkerContextExecutionStateE
    fun:_ZN7WebCore22WorkerScriptController8evaluateERKNS_16ScriptSourceCodeEPNS_11ScriptValueE
    fun:_ZN7WebCore22WorkerScriptController8evaluateERKNS_16ScriptSourceCodeE
@@ -6065,5 +6065,51 @@
    fun:_XConnectXCB
    fun:XOpenDisplay
    fun:_ZN4base18MessagePumpAuraX1118GetDefaultXDisplayEv
+}
+{
+   bug_151006
+   Memcheck:Leak
+   fun:malloc
+   fun:uprv_malloc_46
+   fun:_ZN6icu_467UMemorynwEm
+   fun:_ZN6icu_4610DateFormat6createENS0_6EStyleES1_RKNS_6LocaleE
+   fun:_ZN6icu_4610DateFormat22createDateTimeInstanceENS0_6EStyleES1_RKNS_6LocaleE
+   fun:udat_open_46
+   fun:_ZNK7WebCore9LocaleICU14openDateFormatE16UDateFormatStyleS1_
+   fun:_ZN7WebCore9LocaleICU24initializeDateTimeFormatEv
+   fun:_ZN7WebCore9LocaleICU15shortTimeFormatEv
+   fun:_ZN7WebCore19DateTimeEditElement6layoutERKNS_9StepRangeERKNS_14DateComponentsERNS_9LocalizerE
+   fun:_ZN7WebCore19DateTimeEditElement13setEmptyValueERKNS_9StepRangeERKNS_14DateComponentsERNS_9LocalizerE
+   fun:_ZN7WebCore13TimeInputType20updateInnerTextValueEv
+   fun:_ZN7WebCore13TimeInputType19createShadowSubtreeEv
+   fun:_ZN7WebCore16HTMLInputElement10updateTypeEv
+   fun:_ZN7WebCore16HTMLInputElement14parseAttributeERKNS_9AttributeE
+   fun:_ZN7WebCore7Element16attributeChangedERKNS_9AttributeE
+   fun:_ZN7WebCore13StyledElement16attributeChangedERKNS_9AttributeE
+   fun:_ZN7WebCore7Element19parserSetAttributesERKN3WTF6VectorINS_9AttributeELm0EEENS_27FragmentScriptingPermissionE
+   fun:_ZN7WebCore20HTMLConstructionSite17createHTMLElementEPNS_15AtomicHTMLTokenE
+   fun:_ZN7WebCore20HTMLConstructionSite28insertSelfClosingHTMLElementEPNS_15AtomicHTMLTokenE
+   fun:_ZN7WebCore15HTMLTreeBuilder24processStartTagForInBodyEPNS_15AtomicHTMLTokenE
+   fun:_ZN7WebCore15HTMLTreeBuilder15processStartTagEPNS_15AtomicHTMLTokenE
+}
+{
+   bug_151007
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocEm
+   fun:_ZN3WTF10RefCountedIN7WebCore15AtomicHTMLTokenEEnwEm
+   fun:_ZN7WebCore15AtomicHTMLToken6createERNS_9HTMLTokenE
+   fun:_ZN7WebCore15HTMLTreeBuilder22constructTreeFromTokenERNS_9HTMLTokenE
+   fun:_ZN7WebCore18HTMLDocumentParser13pumpTokenizerENS0_15SynchronousModeE
+   fun:_ZN7WebCore18HTMLDocumentParser23pumpTokenizerIfPossibleENS0_15SynchronousModeE
+   fun:_ZN7WebCore18HTMLDocumentParser6insertERKNS_15SegmentedStringE
+   fun:_ZN7WebCore18HTMLDocumentParser21parseDocumentFragmentERKN3WTF6StringEPNS_16DocumentFragmentEPNS_7ElementENS_27FragmentScriptingPermissionE
+   fun:_ZN7WebCore16DocumentFragment9parseHTMLERKN3WTF6StringEPNS_7ElementENS_27FragmentScriptingPermissionE
+   fun:_ZN7WebCore31createFragmentForInnerOuterHTMLERKN3WTF6StringEPNS_7ElementENS_27FragmentScriptingPermissionERi
+   fun:_ZN7WebCore11HTMLElement12setInnerHTMLERKN3WTF6StringERi
+   fun:_ZN7WebCore21HTMLElementV8InternalL19innerHTMLAttrSetterEN2v85LocalINS1_6StringEEENS2_INS1_5ValueEEERKNS1_12AccessorInfoE
+   fun:_ZN2v88internal21StoreCallbackPropertyENS0_9ArgumentsEPNS0_7IsolateE
+   ...
+   fun:_ZN2v88internalL6InvokeEbNS0_6HandleINS0_10JSFunctionEEENS1_INS0_6ObjectEEEiPS5_Pb
 }
 
