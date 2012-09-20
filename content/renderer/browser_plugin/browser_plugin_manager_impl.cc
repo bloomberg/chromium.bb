@@ -36,7 +36,7 @@ bool BrowserPluginManagerImpl::OnControlMessageReceived(
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(BrowserPluginManagerImpl, message)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_UpdateRect, OnUpdateRect)
-    IPC_MESSAGE_HANDLER(BrowserPluginMsg_GuestCrashed,OnGuestCrashed)
+    IPC_MESSAGE_HANDLER(BrowserPluginMsg_GuestCrashed, OnGuestCrashed)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_DidNavigate, OnDidNavigate)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_AdvanceFocus, OnAdvanceFocus)
     IPC_MESSAGE_UNHANDLED(handled = false)

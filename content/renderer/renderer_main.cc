@@ -24,6 +24,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/renderer/content_renderer_client.h"
+#include "content/renderer/browser_plugin/browser_plugin_manager_impl.h"
 #include "content/renderer/render_process_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_main_platform_delegate.h"
@@ -223,6 +224,7 @@ int RendererMain(const content::MainFunctionParams& parameters) {
     RenderProcessImpl render_process;
     new RenderThreadImpl();
 #endif
+    new content::BrowserPluginManagerImpl();
 
     platform.RunSandboxTests();
 
