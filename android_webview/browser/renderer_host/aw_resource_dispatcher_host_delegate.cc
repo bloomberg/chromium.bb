@@ -36,6 +36,7 @@ AwResourceDispatcherHostDelegate::~AwResourceDispatcherHostDelegate() {
 void AwResourceDispatcherHostDelegate::RequestBeginning(
     net::URLRequest* request,
     content::ResourceContext* resource_context,
+    appcache::AppCacheService* appcache_service,
     ResourceType::Type resource_type,
     int child_id,
     int route_id,
