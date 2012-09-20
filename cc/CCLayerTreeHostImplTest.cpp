@@ -7,6 +7,7 @@
 #include "CCLayerTreeHostImpl.h"
 
 #include "CCAnimationTestCommon.h"
+#include "CCDelegatedRendererLayerImpl.h"
 #include "CCGeometryTestUtils.h"
 #include "CCHeadsUpDisplayLayerImpl.h"
 #include "CCIOSurfaceLayerImpl.h"
@@ -15,6 +16,7 @@
 #include "CCLayerTilingData.h"
 #include "CCQuadSink.h"
 #include "CCRenderPassDrawQuad.h"
+#include "CCRenderPassTestCommon.h"
 #include "CCRendererGL.h"
 #include "CCScrollbarGeometryFixedThumb.h"
 #include "CCScrollbarLayerImpl.h"
@@ -22,6 +24,7 @@
 #include "CCSingleThreadProxy.h"
 #include "CCSolidColorDrawQuad.h"
 #include "CCTestCommon.h"
+#include "CCTextureDrawQuad.h"
 #include "CCTextureLayerImpl.h"
 #include "CCTileDrawQuad.h"
 #include "CCTiledLayerImpl.h"
@@ -2480,6 +2483,20 @@ protected:
     }
 };
 
+static inline PassOwnPtr<CCRenderPass> createRenderPassWithResource(CCResourceProvider* provider)
+{
+    CCResourceProvider::ResourceId resourceId = provider->createResource(0, IntSize(1, 1), GraphicsContext3D::RGBA, CCResourceProvider::TextureUsageAny);
+
+    OwnPtr<CCRenderPass> pass = CCRenderPass::create(CCRenderPass::Id(1, 1), IntRect(0, 0, 1, 1), WebTransformationMatrix());
+    OwnPtr<CCSharedQuadState> sharedState = CCSharedQuadState::create(WebTransformationMatrix(), IntRect(0, 0, 1, 1), IntRect(0, 0, 1, 1), 1, false);
+    OwnPtr<CCTextureDrawQuad> quad = CCTextureDrawQuad::create(sharedState.get(), IntRect(0, 0, 1, 1), resourceId, false, FloatRect(0, 0, 1, 1), false);
+
+    static_cast<CCTestRenderPass*>(pass.get())->appendSharedQuadState(sharedState.release());
+    static_cast<CCTestRenderPass*>(pass.get())->appendQuad(quad.release());
+
+    return pass.release();
+}
+
 TEST_F(CCLayerTreeHostImplTest, dontUseOldResourcesAfterLostContext)
 {
     OwnPtr<CCLayerImpl> rootLayer(CCLayerImpl::create(1));
@@ -2546,13 +2563,23 @@ TEST_F(CCLayerTreeHostImplTest, dontUseOldResourcesAfterLostContext)
     rootLayer->addChild(hudLayer.release());
 
     OwnPtr<FakeScrollbarLayerImpl> scrollbarLayer(FakeScrollbarLayerImpl::create(8));
-    scrollbarLayer->setLayerTreeHostImpl(m_hostImpl.get());
     scrollbarLayer->setBounds(IntSize(10, 10));
     scrollbarLayer->setContentBounds(IntSize(10, 10));
     scrollbarLayer->setDrawsContent(true);
     scrollbarLayer->setLayerTreeHostImpl(m_hostImpl.get());
     scrollbarLayer->createResources(m_hostImpl->resourceProvider());
     rootLayer->addChild(scrollbarLayer.release());
+
+    OwnPtr<CCDelegatedRendererLayerImpl> delegatedRendererLayer(CCDelegatedRendererLayerImpl::create(9));
+    delegatedRendererLayer->setBounds(IntSize(10, 10));
+    delegatedRendererLayer->setContentBounds(IntSize(10, 10));
+    delegatedRendererLayer->setDrawsContent(true);
+    delegatedRendererLayer->setLayerTreeHostImpl(m_hostImpl.get());
+    OwnPtrVector<CCRenderPass> passList;
+    passList.append(createRenderPassWithResource(m_hostImpl->resourceProvider()));
+    delegatedRendererLayer->setRenderPasses(passList);
+    EXPECT_TRUE(passList.isEmpty());
+    rootLayer->addChild(delegatedRendererLayer.release());
 
     // Use a context that supports IOSurfaces
     m_hostImpl->initializeRenderer(FakeWebCompositorOutputSurface::create(adoptPtr(new FakeWebGraphicsContext3DWithIOSurface)), UnthrottledUploader);
@@ -3862,16 +3889,6 @@ struct RenderPassRemovalTestData : public CCLayerTreeHostImpl::FrameData {
     OwnPtr<CCSharedQuadState> sharedQuadState;
 };
 
-class CCTestRenderPass: public CCRenderPass {
-public:
-    static PassOwnPtr<CCRenderPass> create(CCRenderPass::Id id, IntRect outputRect, const WebTransformationMatrix& rootTransform) { return adoptPtr(new CCTestRenderPass(id, outputRect, rootTransform)); }
-
-    void appendQuad(PassOwnPtr<CCDrawQuad> quad) { m_quadList.append(quad); }
-
-protected:
-    CCTestRenderPass(CCRenderPass::Id id, IntRect outputRect, const WebTransformationMatrix& rootTransform) : CCRenderPass(id, outputRect, rootTransform) { }
-};
-
 class CCTestRenderer : public CCRendererGL, public CCRendererClient {
 public:
     static PassOwnPtr<CCTestRenderer> create(CCResourceProvider* resourceProvider)
@@ -3917,7 +3934,7 @@ static void configureRenderPassTestData(const char* testScript, RenderPassRemova
 
     // Pre-create root pass
     CCRenderPass::Id rootRenderPassId = CCRenderPass::Id(testScript[0], testScript[1]);
-    OwnPtr<CCRenderPass> rootRenderPass = CCTestRenderPass::create(rootRenderPassId, IntRect(), WebTransformationMatrix());
+    OwnPtr<CCRenderPass> rootRenderPass = CCRenderPass::create(rootRenderPassId, IntRect(), WebTransformationMatrix());
     testData.renderPassCache.insert(std::pair<CCRenderPass::Id, RenderPassCacheEntry>(rootRenderPassId, RenderPassCacheEntry(rootRenderPass.release())));
     while (*currentChar) {
         int layerId = *currentChar;

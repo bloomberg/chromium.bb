@@ -5,12 +5,22 @@
 #ifndef CCAppendQuadsData_h
 #define CCAppendQuadsData_h
 
+#include "CCRenderPass.h"
+
 namespace cc {
 
 struct CCAppendQuadsData {
     CCAppendQuadsData()
         : hadOcclusionFromOutsideTargetSurface(false)
         , hadMissingTiles(false)
+        , renderPassId(0, 0)
+    {
+    }
+
+    explicit CCAppendQuadsData(CCRenderPass::Id renderPassId)
+        : hadOcclusionFromOutsideTargetSurface(false)
+        , hadMissingTiles(false)
+        , renderPassId(renderPassId)
     {
     }
 
@@ -18,6 +28,8 @@ struct CCAppendQuadsData {
     bool hadOcclusionFromOutsideTargetSurface;
     // Set by the layer appending quads.
     bool hadMissingTiles;
+    // Given to the layer appending quads.
+    const CCRenderPass::Id renderPassId;
 };
 
 }
