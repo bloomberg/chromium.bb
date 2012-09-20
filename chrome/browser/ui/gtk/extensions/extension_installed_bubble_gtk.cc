@@ -31,6 +31,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/gtk_util.h"
@@ -50,9 +51,6 @@ const int kTextColumnWidth = 350;
 // will be.
 const int kAnimationWaitRetries = 10;
 const int kAnimationWaitMS = 50;
-
-// Padding between content and edge of bubble.
-const int kContentBorder = 7;
 
 }  // namespace
 
@@ -184,7 +182,8 @@ void ExtensionInstalledBubbleGtk::ShowInternal() {
 
   // Setup the BubbleGtk content.
   GtkWidget* bubble_content = gtk_hbox_new(FALSE, kHorizontalColumnSpacing);
-  gtk_container_set_border_width(GTK_CONTAINER(bubble_content), kContentBorder);
+  gtk_container_set_border_width(GTK_CONTAINER(bubble_content),
+                                 ui::kContentAreaBorder);
 
   if (!icon_.isNull()) {
     // Scale icon down to 43x43, but allow smaller icons (don't scale up).

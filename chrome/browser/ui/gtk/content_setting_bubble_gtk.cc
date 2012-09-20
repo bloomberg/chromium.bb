@@ -33,9 +33,6 @@ using content::WebContents;
 
 namespace {
 
-// Padding between content and edge of bubble.
-const int kContentBorder = 7;
-
 // The maximum width of a title entry in the content box. We elide anything
 // longer than this.
 const int kMaxLinkPixelSize = 500;
@@ -94,7 +91,8 @@ void ContentSettingBubbleGtk::BuildBubble() {
   GtkThemeService* theme_provider = GtkThemeService::GetFrom(profile_);
 
   GtkWidget* bubble_content = gtk_vbox_new(FALSE, ui::kControlSpacing);
-  gtk_container_set_border_width(GTK_CONTAINER(bubble_content), kContentBorder);
+  gtk_container_set_border_width(GTK_CONTAINER(bubble_content),
+                                 ui::kContentAreaBorder);
 
   const ContentSettingBubbleModel::BubbleContent& content =
       content_setting_bubble_model_->bubble_content();

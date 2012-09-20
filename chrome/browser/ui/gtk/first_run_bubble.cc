@@ -19,14 +19,9 @@
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
+
 // Markup for the text of the Omnibox search label
 const char kSearchLabelMarkup[] = "<big><b>%s</b></big>";
-
-// Padding between content and edge of bubble.
-const int kContentBorder = 7;
-
-// Vertical spacing between labels.
-const int kInterLineSpacing = 5;
 
 }  // namespace
 
@@ -63,12 +58,13 @@ FirstRunBubble::FirstRunBubble(Browser* browser,
   GtkWidget* subtext = theme_service->BuildLabel(
       l10n_util::GetStringUTF8(IDS_FR_BUBBLE_SUBTEXT), ui::kGdkBlack);
 
-  GtkWidget* top_line = gtk_hbox_new(FALSE, kContentBorder);
+  GtkWidget* top_line = gtk_hbox_new(FALSE, ui::kControlSpacing);
   gtk_box_pack_start(GTK_BOX(top_line), title, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(top_line), change, FALSE, FALSE, 0);
 
-  GtkWidget* content = gtk_vbox_new(FALSE, kInterLineSpacing);
-  gtk_container_set_border_width(GTK_CONTAINER(content), kContentBorder);
+  GtkWidget* content = gtk_vbox_new(FALSE, ui::kControlSpacing);
+  gtk_container_set_border_width(GTK_CONTAINER(content),
+                                 ui::kContentAreaBorder);
   g_signal_connect(content, "destroy", G_CALLBACK(&HandleDestroyThunk), this);
   gtk_box_pack_start(GTK_BOX(content), top_line, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(content), subtext, FALSE, FALSE, 0);

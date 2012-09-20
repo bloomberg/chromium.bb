@@ -38,9 +38,6 @@ namespace {
 // keeps track of the currently open bubble, or NULL if none is open.
 BookmarkBubbleGtk* g_bubble = NULL;
 
-// Padding between content and edge of bubble.
-const int kContentBorder = 7;
-
 }  // namespace
 
 // static
@@ -119,7 +116,8 @@ BookmarkBubbleGtk::BookmarkBubbleGtk(GtkWidget* anchor,
   // portion with the name entry and the folder combo.  |bottom| is the final
   // row with a spacer, and the edit... and close buttons on the right.
   GtkWidget* content = gtk_vbox_new(FALSE, 5);
-  gtk_container_set_border_width(GTK_CONTAINER(content), kContentBorder);
+  gtk_container_set_border_width(GTK_CONTAINER(content),
+                                 ui::kContentAreaBorder);
   GtkWidget* top = gtk_hbox_new(FALSE, 0);
 
   gtk_misc_set_alignment(GTK_MISC(label), 0, 1);

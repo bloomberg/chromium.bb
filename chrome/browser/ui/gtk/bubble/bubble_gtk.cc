@@ -35,12 +35,6 @@ const int kArrowToContentPadding = -4;
 // We draw flat diagonal corners, each corner is an NxN square.
 const int kCornerSize = 3;
 
-// Margins around the content.
-const int kTopMargin = kArrowSize + kCornerSize - 1;
-const int kBottomMargin = kCornerSize - 1;
-const int kLeftMargin = kCornerSize - 1;
-const int kRightMargin = kCornerSize - 1;
-
 const GdkColor kBackgroundColor = GDK_COLOR_RGB(0xff, 0xff, 0xff);
 const GdkColor kFrameColor = GDK_COLOR_RGB(0x63, 0x63, 0x63);
 
@@ -161,9 +155,7 @@ void BubbleGtk::Init(GtkWidget* anchor_widget,
   gtk_window_add_accel_group(GTK_WINDOW(window_), accel_group_);
 
   GtkWidget* alignment = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(alignment),
-                            kTopMargin, kBottomMargin,
-                            kLeftMargin, kRightMargin);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), kArrowSize, 0, 0, 0);
 
   gtk_container_add(GTK_CONTAINER(alignment), content);
   gtk_container_add(GTK_CONTAINER(window_), alignment);
@@ -178,7 +170,9 @@ void BubbleGtk::Init(GtkWidget* anchor_widget,
 
   gtk_widget_add_events(window_, GDK_BUTTON_PRESS_MASK);
 
-  signals_.Connect(window_, "expose-event", G_CALLBACK(OnExposeThunk), this);
+  // Connect during the bubbling phase so the border is always on top.
+  signals_.ConnectAfter(window_, "expose-event",
+                        G_CALLBACK(OnExposeThunk), this);
   signals_.Connect(window_, "size-allocate", G_CALLBACK(OnSizeAllocateThunk),
                    this);
   signals_.Connect(window_, "button-press-event",

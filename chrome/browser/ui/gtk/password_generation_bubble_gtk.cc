@@ -26,9 +26,6 @@
 
 using content::RenderViewHost;
 
-const int kContentBorder = 4;
-const int kHorizontalSpacing = 4;
-
 namespace {
 
 GdkPixbuf* GetImage(int resource_id) {
@@ -65,7 +62,7 @@ PasswordGenerationBubbleGtk::PasswordGenerationBubbleGtk(
 
   // The second contains the password in a text field, a regenerate button, and
   // an accept button.
-  GtkWidget* password_line = gtk_hbox_new(FALSE, kHorizontalSpacing);
+  GtkWidget* password_line = gtk_hbox_new(FALSE, ui::kControlSpacing);
   text_field_ = gtk_entry_new();
   gtk_entry_set_text(GTK_ENTRY(text_field_),
                      password_generator_->Generate().c_str());
@@ -78,7 +75,8 @@ PasswordGenerationBubbleGtk::PasswordGenerationBubbleGtk(
   gtk_box_pack_start(GTK_BOX(password_line), text_field_, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(password_line), accept_button, TRUE, TRUE, 0);
 
-  gtk_container_set_border_width(GTK_CONTAINER(content), kContentBorder);
+  gtk_container_set_border_width(GTK_CONTAINER(content),
+                                 ui::kContentAreaBorder);
   gtk_box_pack_start(GTK_BOX(content), title_line, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(content), password_line, TRUE, TRUE, 0);
 

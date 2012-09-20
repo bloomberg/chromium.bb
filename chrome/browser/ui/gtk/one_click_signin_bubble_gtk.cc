@@ -16,14 +16,8 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
-
-namespace {
-
-// Padding between content and edge of bubble (in pixels).
-const int kContentBorder = 7;
-
-}  // namespace
 
 OneClickSigninBubbleGtk::OneClickSigninBubbleGtk(
     BrowserWindowGtk* browser_window_gtk,
@@ -34,7 +28,7 @@ OneClickSigninBubbleGtk::OneClickSigninBubbleGtk(
   // Setup the BubbleGtk content.
   GtkWidget* bubble_content = gtk_vbox_new(FALSE, 0);
   gtk_container_set_border_width(GTK_CONTAINER(bubble_content),
-                                 kContentBorder);
+                                 ui::kContentAreaBorder);
 
   // Message.
   GtkWidget* message_label = gtk_label_new(
@@ -46,7 +40,7 @@ OneClickSigninBubbleGtk::OneClickSigninBubbleGtk(
   GtkThemeService* const theme_provider = GtkThemeService::GetFrom(
       browser_window_gtk->browser()->profile());
 
-  GtkWidget* bottom_line = gtk_hbox_new(FALSE, kContentBorder);
+  GtkWidget* bottom_line = gtk_hbox_new(FALSE, ui::kControlSpacing);
   gtk_box_pack_start(GTK_BOX(bubble_content),
                      bottom_line, FALSE, FALSE, 0);
 

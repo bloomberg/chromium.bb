@@ -68,7 +68,6 @@ PermissionSelector::PermissionSelector(GtkThemeService* theme_service,
       IDS_WEBSITE_SETTINGS_PERMISSION_TYPE,
       WebsiteSettingsUI::PermissionTypeToUIString(type)),
       ui::kGdkBlack);
-  gtk_label_set_selectable(GTK_LABEL(label), TRUE);
   gtk_label_set_line_wrap_mode(GTK_LABEL(label), PANGO_WRAP_WORD_CHAR);
 
   gtk_box_pack_start(GTK_BOX(widget_), label, FALSE, FALSE, 0);

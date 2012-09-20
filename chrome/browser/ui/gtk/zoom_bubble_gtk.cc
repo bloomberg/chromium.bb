@@ -23,10 +23,6 @@ namespace {
 // Pointer to singleton object (NULL if no bubble is open).
 ZoomBubbleGtk* g_bubble = NULL;
 
-// Padding on each side of the percentage label and the left and right sides of
-// the "Set to default" button.
-const int kSidePadding = 5;
-
 // Number of milliseconds the bubble should stay open for if it will auto-close.
 const int kBubbleCloseDelay = 1500;
 
@@ -76,6 +72,7 @@ ZoomBubbleGtk::ZoomBubbleGtk(GtkWidget* anchor,
           tab_contents->web_contents()->GetBrowserContext()));
 
   event_box_ = gtk_event_box_new();
+  gtk_event_box_set_visible_window(GTK_EVENT_BOX(event_box_), FALSE);
   GtkWidget* container = gtk_vbox_new(FALSE, 0);
   gtk_container_add(GTK_CONTAINER(event_box_), container);
 
@@ -84,8 +81,8 @@ ZoomBubbleGtk::ZoomBubbleGtk(GtkWidget* anchor,
       IDS_TOOLTIP_ZOOM, zoom_percent));
   label_ = theme_service->BuildLabel(percentage_text, ui::kGdkBlack);
   gtk_widget_modify_font(label_, pango_font_description_from_string("13"));
-  gtk_misc_set_padding(GTK_MISC(label_), kSidePadding, kSidePadding);
-
+  gtk_misc_set_padding(GTK_MISC(label_),
+                       ui::kControlSpacing, ui::kControlSpacing);
   gtk_box_pack_start(GTK_BOX(container), label_, FALSE, FALSE, 0);
 
   GtkWidget* separator = gtk_hseparator_new();
@@ -97,7 +94,7 @@ ZoomBubbleGtk::ZoomBubbleGtk(GtkWidget* anchor,
 
   GtkWidget* alignment = gtk_alignment_new(0, 0, 1, 1);
   gtk_alignment_set_padding(
-      GTK_ALIGNMENT(alignment), 0, 0, kSidePadding, kSidePadding);
+      GTK_ALIGNMENT(alignment), 0, 0, ui::kControlSpacing, ui::kControlSpacing);
   gtk_container_add(GTK_CONTAINER(alignment), set_default_button);
 
   gtk_box_pack_start(GTK_BOX(container), alignment, FALSE, FALSE, 0);

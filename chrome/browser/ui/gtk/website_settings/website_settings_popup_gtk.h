@@ -14,8 +14,11 @@
 #include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
 #include "chrome/browser/ui/gtk/website_settings/permission_selector_observer.h"
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class Browser;
+class CustomDrawButton;
 class GtkThemeService;
 class GURL;
 class PermissionSelector;
@@ -30,7 +33,8 @@ struct SSLStatus;
 // GTK implementation of the website settings UI.
 class WebsiteSettingsPopupGtk : public WebsiteSettingsUI,
                                 public PermissionSelectorObserver,
-                                public BubbleDelegateGtk {
+                                public BubbleDelegateGtk,
+                                public content::NotificationObserver {
  public:
   // Creates a |WebsiteSettingsPopupGtk| and displays the UI. The |url|
   // contains the omnibox URL of the currently active tab, |parent| contains
@@ -43,6 +47,8 @@ class WebsiteSettingsPopupGtk : public WebsiteSettingsUI,
                    TabContents* tab_contents,
                    const GURL& url,
                    const content::SSLStatus& ssl);
+
+  virtual ~WebsiteSettingsPopupGtk();
 
  private:
   WebsiteSettingsPopupGtk(gfx::NativeWindow parent,
@@ -66,12 +72,28 @@ class WebsiteSettingsPopupGtk : public WebsiteSettingsUI,
   // BubbleDelegateGtk implementation.
   virtual void BubbleClosing(BubbleGtk* bubble, bool closed_by_escape) OVERRIDE;
 
-  virtual ~WebsiteSettingsPopupGtk();
+  // content::NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Layouts the different sections retrieved from the model.
   void InitContents();
 
+  // Creates a tab for the tabstrip with label indicated by |ids|. This tab
+  // is not used in GTK theme mode.
+  GtkWidget* BuildTab(int ids);
+
+  // Gives the index in the notebook for the given tab widget.
+  int TabstripButtonToTabIndex(GtkWidget* tab);
+
   // Callbacks for the link buttons.
+  CHROMEGTK_CALLBACK_1(WebsiteSettingsPopupGtk, gboolean,
+                       OnTabButtonPress, GdkEvent*);
+  CHROMEGTK_CALLBACK_1(WebsiteSettingsPopupGtk, gboolean,
+                       OnTabExpose, GdkEventExpose*);
+  CHROMEGTK_CALLBACK_1(WebsiteSettingsPopupGtk, gboolean,
+                       OnTabstripExpose, GdkEventExpose*);
   CHROMEGTK_CALLBACK_0(WebsiteSettingsPopupGtk, void, OnCookiesLinkClicked);
   CHROMEGTK_CALLBACK_0(WebsiteSettingsPopupGtk, void, OnViewCertLinkClicked);
   CHROMEGTK_CALLBACK_0(WebsiteSettingsPopupGtk, void, OnCloseButtonClicked);
@@ -107,6 +129,9 @@ class WebsiteSettingsPopupGtk : public WebsiteSettingsUI,
   // Container for the popup header content.
   GtkWidget* header_box_;
 
+  // Close button for the bubble.
+  scoped_ptr<CustomDrawButton> close_button_;
+
   // Container for the cookies and site data section content.
   GtkWidget* cookies_section_contents_;
 
@@ -123,6 +148,9 @@ class WebsiteSettingsPopupGtk : public WebsiteSettingsUI,
   // Container for the information about the first visit date of the website.
   GtkWidget* first_visit_contents_;
 
+  // The widget that wraps the tabstrip.
+  GtkWidget* tabstrip_alignment_;
+
   // The widget that contains the tabs display on the popup.
   GtkWidget* notebook_;
 
@@ -133,6 +161,8 @@ class WebsiteSettingsPopupGtk : public WebsiteSettingsUI,
   // The permission selectors that allow the user to change individual
   // permissions.
   ScopedVector<PermissionSelector> selectors_;
+
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(WebsiteSettingsPopupGtk);
 };

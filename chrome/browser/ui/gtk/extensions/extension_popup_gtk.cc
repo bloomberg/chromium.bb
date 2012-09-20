@@ -175,6 +175,12 @@ void ExtensionPopupGtk::ShowPopup() {
     current_extension_popup_->DestroyPopup();
   current_extension_popup_ = this;
 
+  GtkWidget* border_box = gtk_alignment_new(0, 0, 1.0, 1.0);
+  // This border is necessary so the bubble's corners do not get cut off by the
+  // render view.
+  gtk_container_set_border_width(GTK_CONTAINER(border_box), 2);
+  gtk_container_add(GTK_CONTAINER(border_box), host_->view()->native_view());
+
   // We'll be in the upper-right corner of the window for LTR languages, so we
   // want to put the arrow at the upper-right corner of the bubble to match the
   // page and app menus.
@@ -184,7 +190,7 @@ void ExtensionPopupGtk::ShowPopup() {
       BubbleGtk::ARROW_LOCATION_TOP_LEFT;
   bubble_ = BubbleGtk::Show(anchor_,
                             NULL,
-                            host_->view()->native_view(),
+                            border_box,
                             arrow_location,
                             being_inspected_ ? 0 :
                                 BubbleGtk::POPUP_WINDOW | BubbleGtk::GRAB_INPUT,

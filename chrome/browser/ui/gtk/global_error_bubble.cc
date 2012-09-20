@@ -23,15 +23,6 @@
 
 namespace {
 
-// Padding between content and edge of bubble.
-const int kContentBorder = 7;
-
-// Horizontal spacing between the image view and the label.
-const int kImageViewSpacing = 5;
-
-// Vertical spacing between labels.
-const int kInterLineSpacing = 5;
-
 // Text size of the message label. 12.1px = 9pt @ 96dpi.
 const double kMessageTextSize = 12.1;
 
@@ -48,8 +39,9 @@ GlobalErrorBubble::GlobalErrorBubble(Browser* browser,
       error_(error) {
   DCHECK(browser_);
   DCHECK(error_);
-  GtkWidget* content = gtk_vbox_new(FALSE, kInterLineSpacing);
-  gtk_container_set_border_width(GTK_CONTAINER(content), kContentBorder);
+  GtkWidget* content = gtk_vbox_new(FALSE, ui::kControlSpacing);
+  gtk_container_set_border_width(GTK_CONTAINER(content),
+                                 ui::kContentAreaBorder);
   g_signal_connect(content, "destroy", G_CALLBACK(OnDestroyThunk), this);
 
   GtkThemeService* theme_service =
@@ -79,7 +71,7 @@ GlobalErrorBubble::GlobalErrorBubble(Browser* browser,
   }
 
   // Top, icon and title.
-  GtkWidget* top = gtk_hbox_new(FALSE, kImageViewSpacing);
+  GtkWidget* top = gtk_hbox_new(FALSE, ui::kControlSpacing);
   gtk_box_pack_start(GTK_BOX(top), image_view, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(top), title_label, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(content), top, FALSE, FALSE, 0);
