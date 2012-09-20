@@ -208,10 +208,6 @@ bool PathProvider(int key, FilePath* result) {
       cur = cur.Append(FILE_PATH_LITERAL("Crash Reports"));
       create_dir = true;
       break;
-    case chrome::DIR_USER_DESKTOP:
-      if (!GetUserDesktop(&cur))
-        return false;
-      break;
     case chrome::DIR_RESOURCES:
 #if defined(OS_MACOSX)
       cur = base::mac::FrameworkBundlePath();

@@ -16,7 +16,6 @@
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_registrar.h"
@@ -191,7 +190,7 @@ void UpdateShortcutWorker::CheckExistingShortcuts() {
   } locations[] = {
     {
       shortcut_info_.create_on_desktop,
-      chrome::DIR_USER_DESKTOP,
+      base::DIR_USER_DESKTOP,
       NULL
     }, {
       shortcut_info_.create_in_applications_menu,

@@ -138,7 +138,7 @@ bool DownloadPathIsDangerous(const FilePath& download_path) {
   return false;
 #else
   FilePath desktop_dir;
-  if (!PathService::Get(chrome::DIR_USER_DESKTOP, &desktop_dir)) {
+  if (!PathService::Get(base::DIR_USER_DESKTOP, &desktop_dir)) {
     NOTREACHED();
     return false;
   }

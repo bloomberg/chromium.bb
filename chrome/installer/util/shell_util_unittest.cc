@@ -2,14 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <shlobj.h>
-
 #include <fstream>
 #include <vector>
 
 #include "base/file_util.h"
-#include "base/path_service.h"
 #include "base/md5.h"
+#include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string16.h"
 #include "base/string_util.h"
@@ -24,17 +22,27 @@
 
 namespace {
 
-class ShellUtilTestWithDirAndDist : public testing::Test {
+class ShellUtilShortcutTest : public testing::Test {
  protected:
-  virtual void SetUp() {
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+  virtual void SetUp() OVERRIDE {
     dist_ = BrowserDistribution::GetDistribution();
     ASSERT_TRUE(dist_ != NULL);
+
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    ASSERT_TRUE(fake_user_desktop_.CreateUniqueTempDir());
+    ASSERT_TRUE(fake_common_desktop_.CreateUniqueTempDir());
+    ASSERT_TRUE(PathService::Override(base::DIR_USER_DESKTOP,
+                                      fake_user_desktop_.path()));
+    ASSERT_TRUE(PathService::Override(base::DIR_COMMON_DESKTOP,
+                                      fake_common_desktop_.path()));
   }
 
   BrowserDistribution* dist_;
 
   ScopedTempDir temp_dir_;
+
+  ScopedTempDir fake_user_desktop_;
+  ScopedTempDir fake_common_desktop_;
 };
 
 // Returns the status of a call to base::win::VerifyShorcut for the properties
@@ -58,7 +66,7 @@ base::win::VerifyShortcutStatus VerifyChromeShortcut(
 }
 
 // Test that we can open archives successfully.
-TEST_F(ShellUtilTestWithDirAndDist, UpdateChromeShortcutTest) {
+TEST_F(ShellUtilShortcutTest, UpdateChromeShortcut) {
   // Create an executable in test path by copying ourself to it.
   wchar_t exe_full_path_str[MAX_PATH];
   EXPECT_FALSE(::GetModuleFileName(NULL, exe_full_path_str, MAX_PATH) == 0);
@@ -122,13 +130,7 @@ TEST_F(ShellUtilTestWithDirAndDist, UpdateChromeShortcutTest) {
             VerifyChromeShortcut(exe_path, shortcut_path, description2, 1));
 }
 
-TEST_F(ShellUtilTestWithDirAndDist, CreateChromeDesktopShortcutTest) {
-  // Run this test on Vista+ only if we are running elevated.
-  if (base::win::GetVersion() > base::win::VERSION_XP && !IsUserAnAdmin()) {
-    LOG(ERROR) << "Must be admin to run this test on Vista+";
-    return;
-  }
-
+TEST_F(ShellUtilShortcutTest, CreateChromeDesktopShortcut) {
   // Create an executable in test path by copying ourself to it.
   wchar_t exe_full_path_str[MAX_PATH];
   EXPECT_FALSE(::GetModuleFileName(NULL, exe_full_path_str, MAX_PATH) == 0);
@@ -306,16 +308,18 @@ TEST_F(ShellUtilTestWithDirAndDist, CreateChromeDesktopShortcutTest) {
       profile_names));
 }
 
-TEST_F(ShellUtilTestWithDirAndDist, BuildAppModelIdBasic) {
+TEST(ShellUtilTest, BuildAppModelIdBasic) {
   std::vector<string16> components;
-  const string16 base_app_id(dist_->GetBaseAppId());
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  const string16 base_app_id(dist->GetBaseAppId());
   components.push_back(base_app_id);
   ASSERT_EQ(base_app_id, ShellUtil::BuildAppModelId(components));
 }
 
-TEST_F(ShellUtilTestWithDirAndDist, BuildAppModelIdManySmall) {
+TEST(ShellUtilTest, BuildAppModelIdManySmall) {
   std::vector<string16> components;
-  const string16 suffixed_app_id(dist_->GetBaseAppId().append(L".gab"));
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  const string16 suffixed_app_id(dist->GetBaseAppId().append(L".gab"));
   components.push_back(suffixed_app_id);
   components.push_back(L"Default");
   components.push_back(L"Test");
@@ -323,7 +327,7 @@ TEST_F(ShellUtilTestWithDirAndDist, BuildAppModelIdManySmall) {
             ShellUtil::BuildAppModelId(components));
 }
 
-TEST_F(ShellUtilTestWithDirAndDist, BuildAppModelIdLongUsernameNormalProfile) {
+TEST(ShellUtilTest, BuildAppModelIdLongUsernameNormalProfile) {
   std::vector<string16> components;
   const string16 long_appname(
       L"Chrome.a_user_who_has_a_crazy_long_name_with_some_weird@symbols_in_it_"
@@ -334,7 +338,7 @@ TEST_F(ShellUtilTestWithDirAndDist, BuildAppModelIdLongUsernameNormalProfile) {
             ShellUtil::BuildAppModelId(components));
 }
 
-TEST_F(ShellUtilTestWithDirAndDist, BuildAppModelIdLongEverything) {
+TEST(ShellUtilTest, BuildAppModelIdLongEverything) {
   std::vector<string16> components;
   const string16 long_appname(
       L"Chrome.a_user_who_has_a_crazy_long_name_with_some_weird@symbols_in_it_"

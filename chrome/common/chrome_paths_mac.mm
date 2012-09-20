@@ -147,10 +147,6 @@ bool GetUserVideosDirectory(FilePath* result) {
   return base::mac::GetUserDirectory(NSMoviesDirectory, result);
 }
 
-bool GetUserDesktop(FilePath* result) {
-  return base::mac::GetUserDirectory(NSDesktopDirectory, result);
-}
-
 FilePath GetVersionedDirectory() {
   if (g_override_versioned_directory)
     return *g_override_versioned_directory;

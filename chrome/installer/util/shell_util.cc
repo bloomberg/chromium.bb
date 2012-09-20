@@ -1098,43 +1098,15 @@ bool ShellUtil::GetChromeShortcutName(BrowserDistribution* dist,
 }
 
 bool ShellUtil::GetDesktopPath(bool system_level, FilePath* path) {
-  wchar_t desktop[MAX_PATH];
-  int dir = system_level ? CSIDL_COMMON_DESKTOPDIRECTORY :
-                           CSIDL_DESKTOPDIRECTORY;
-  if (FAILED(SHGetFolderPath(NULL, dir, NULL, SHGFP_TYPE_CURRENT, desktop)))
-    return false;
-  *path = FilePath(desktop);
-  return true;
+  int dir_key = system_level ? base::DIR_COMMON_DESKTOP :
+                               base::DIR_USER_DESKTOP;
+  return PathService::Get(dir_key, path);
 }
 
 bool ShellUtil::GetQuickLaunchPath(bool system_level, FilePath* path) {
-  if (system_level) {
-    wchar_t qlaunch[MAX_PATH];
-    // We are accessing GetDefaultUserProfileDirectory this way so that we do
-    // not have to declare dependency to Userenv.lib for chrome.exe
-    typedef BOOL (WINAPI *PROFILE_FUNC)(LPWSTR, LPDWORD);
-    HMODULE module = LoadLibrary(L"Userenv.dll");
-    PROFILE_FUNC p = reinterpret_cast<PROFILE_FUNC>(GetProcAddress(module,
-        "GetDefaultUserProfileDirectoryW"));
-    DWORD size = _countof(qlaunch);
-    if ((p == NULL) || ((p)(qlaunch, &size) != TRUE))
-      return false;
-    *path = FilePath(qlaunch);
-    if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
-      *path = path->AppendASCII("AppData");
-      *path = path->AppendASCII("Roaming");
-    } else {
-      *path = path->AppendASCII("Application Data");
-    }
-  } else {
-    if (!PathService::Get(base::DIR_APP_DATA, path)) {
-      return false;
-    }
-  }
-  *path = path->AppendASCII("Microsoft");
-  *path = path->AppendASCII("Internet Explorer");
-  *path = path->AppendASCII("Quick Launch");
-  return true;
+  int dir_key = system_level ? base::DIR_DEFAULT_USER_QUICK_LAUNCH :
+                               base::DIR_USER_QUICK_LAUNCH;
+  return PathService::Get(dir_key, path);
 }
 
 void ShellUtil::GetRegisteredBrowsers(
