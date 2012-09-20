@@ -148,6 +148,17 @@ public class AwContents {
         return null;
     }
 
+    public String[] getHttpAuthUsernamePassword(String host, String realm) {
+        return HttpAuthDatabase.getInstance(mContentViewCore.getContext())
+                .getHttpAuthUsernamePassword(host, realm);
+    }
+
+    public void setHttpAuthUsernamePassword(String host, String realm, String username,
+            String password) {
+        HttpAuthDatabase.getInstance(mContentViewCore.getContext())
+                .setHttpAuthUsernamePassword(host, realm, username, password);
+    }
+
     //--------------------------------------------------------------------------------------------
     //  Methods called from native via JNI
     //--------------------------------------------------------------------------------------------
