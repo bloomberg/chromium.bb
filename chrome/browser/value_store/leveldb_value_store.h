@@ -45,29 +45,27 @@ class LeveldbValueStore : public ValueStore {
   // Ownership of db is taken.
   LeveldbValueStore(const FilePath& db_path, leveldb::DB* db);
 
-  // Reads a setting from the database.  Returns whether the read was
-  // successful, in which case |setting| will be reset to the Value read
-  // from the database.  This value may be NULL.
-  bool ReadFromDb(
+  // Reads a setting from the database. Returns the error message on failure,
+  // or "" on success in which case |setting| will be reset to the Value read
+  // from the database. This value may be NULL.
+  std::string ReadFromDb(
       leveldb::ReadOptions options,
       const std::string& key,
       // Will be reset() with the result, if any.
       scoped_ptr<Value>* setting);
 
-  // Adds a setting to a WriteBatch, and logs the change in |changes|. For
-  // use with WriteToDb.
-  bool AddToBatch(
+  // Adds a setting to a WriteBatch, and logs the change in |changes|. For use
+  // with WriteToDb. Returns the error message on failure, or "" on success.
+  std::string AddToBatch(
       ValueStore::WriteOptions options,
       const std::string& key,
       const base::Value& value,
       leveldb::WriteBatch* batch,
       ValueStoreChangeList* changes);
 
-  // Commits the changes in |batch| to the database, and returns a WriteResult
-  // with the changes.
-  WriteResult WriteToDb(
-      leveldb::WriteBatch* batch,
-      scoped_ptr<ValueStoreChangeList> changes);
+  // Commits the changes in |batch| to the database, returning the error message
+  // on failure or "" on success.
+  std::string WriteToDb(leveldb::WriteBatch* batch);
 
   // Returns whether the database is empty.
   bool IsEmpty();
