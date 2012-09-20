@@ -25,7 +25,10 @@ bool ShouldProcessAcceleratorsNow(const ui::Accelerator& accelerator,
                                   aura::Window* target) {
   if (!target)
     return true;
-  if (target == Shell::GetPrimaryRootWindow())
+
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  if (std::find(root_windows.begin(), root_windows.end(), target) !=
+      root_windows.end())
     return true;
 
   // A full screen window should be able to handle all key events including the
