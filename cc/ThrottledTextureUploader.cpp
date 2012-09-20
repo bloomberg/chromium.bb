@@ -44,6 +44,7 @@ ThrottledTextureUploader::Query::~Query()
 
 void ThrottledTextureUploader::Query::begin()
 {
+    m_hasValue = false;
     m_context->beginQueryEXT(Extensions3DChromium::COMMANDS_ISSUED_CHROMIUM, m_queryId);
 }
 
