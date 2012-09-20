@@ -7,6 +7,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/stringprintf.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/bundle_installer.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/test_launcher_utils.h"
@@ -25,6 +27,7 @@
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/test/browser_test_utils.h"
 #include "net/base/mock_host_resolver.h"
 #include "ui/gl/gl_switches.h"
 
@@ -256,6 +259,20 @@ class ExtensionWebstoreGetWebGLStatusTest : public InProcessBrowserTest {
                  webgl_status.c_str());
   }
 };
+
+// Test case for webstore origin frame blocking.
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, FLAKY_FrameBlocked) {
+  content::WebContents* contents = chrome::GetActiveWebContents(browser());
+  string16 expected_title = UTF8ToUTF16("PASS: about:blank");
+  string16 failure_title = UTF8ToUTF16("FAIL");
+  content::TitleWatcher watcher(contents, expected_title);
+  watcher.AlsoWaitForTitle(failure_title);
+  GURL url = test_server()->GetURL(
+      "files/extensions/api_test/webstore_private/noframe.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+  string16 final_title = watcher.WaitAndGetTitle();
+  EXPECT_EQ(expected_title, final_title);
+}
 
 // Test cases where the user accepts the install confirmation dialog.
 IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, InstallAccepted) {

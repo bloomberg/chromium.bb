@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/login/login_prompt.h"
 #include "chrome/browser/ui/sync/one_click_signin_helper.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/metrics/variations/variations_util.h"
 #include "chrome/common/metrics/proto/chrome_experiments.pb.h"
@@ -40,6 +41,7 @@
 #include "content/public/browser/resource_request_info.h"
 #include "net/base/load_flags.h"
 #include "net/base/ssl_config_service.h"
+#include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 #include "third_party/protobuf/src/google/protobuf/repeated_field.h"
 
@@ -352,6 +354,18 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
   OneClickSigninHelper::ShowInfoBarIfPossible(request, info->GetChildID(),
                                               info->GetRouteID());
 #endif
+
+  // Build in additional protection for the chrome web store origin.
+  GURL webstore_url(extension_urls::GetWebstoreLaunchURL());
+  if (request->url().DomainIs(webstore_url.host().c_str()) &&
+      StartsWithASCII(request->url().path(), webstore_url.path(), false)) {
+    net::HttpResponseHeaders* response_headers = request->response_headers();
+    if (!response_headers->HasHeaderValue("x-frame-options", "deny") &&
+        !response_headers->HasHeaderValue("x-frame-options", "sameorigin")) {
+      response_headers->RemoveHeader("x-frame-options");
+      response_headers->AddHeader("x-frame-options: sameorigin");
+    }
+  }
 
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
   if (io_data->resource_prefetch_predictor_observer())
