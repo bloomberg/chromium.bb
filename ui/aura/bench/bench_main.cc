@@ -13,6 +13,7 @@
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/aura/env.h"
+#include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/single_display_manager.h"
 #include "ui/aura/shared/root_window_capture_client.h"
@@ -299,6 +300,9 @@ int main(int argc, char** argv) {
       root_window.get(),
       new aura::shared::RootWindowCaptureClient(root_window.get()));
 
+  scoped_ptr<aura::FocusManager> focus_manager(new aura::FocusManager);
+  root_window->set_focus_manager(focus_manager.get());
+
   // add layers
   ColoredLayer background(SK_ColorRED);
   background.SetBounds(root_window->bounds());
@@ -341,6 +345,7 @@ int main(int argc, char** argv) {
 
   root_window->ShowRootWindow();
   MessageLoopForUI::current()->Run();
+  focus_manager.reset();
   root_window.reset();
 
   ui::CompositorTestSupport::Terminate();
