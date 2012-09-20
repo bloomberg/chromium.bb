@@ -14,7 +14,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/mac/app_mode_common.h"
 #include "grit/theme_resources.h"
-#include "third_party/skia/include/core/SKBitmap.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
