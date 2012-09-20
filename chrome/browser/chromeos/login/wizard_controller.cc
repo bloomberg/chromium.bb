@@ -421,6 +421,7 @@ void WizardController::RegisterPrefs(PrefService* local_state) {
   }
   local_state->RegisterBooleanPref(prefs::kOwnerPrimaryMouseButtonRight, false);
   local_state->RegisterBooleanPref(prefs::kOwnerTapToClickEnabled, true);
+  local_state->RegisterBooleanPref(prefs::kFactoryResetRequested, false);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

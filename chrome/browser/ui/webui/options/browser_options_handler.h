@@ -239,6 +239,10 @@ class BrowserOptionsHandler
   void HighContrastChangeCallback(const base::ListValue* args);
   void ScreenMagnifierChangeCallback(const base::ListValue* args);
   void VirtualKeyboardChangeCallback(const base::ListValue* args);
+
+  // Called when the user confirmed factory reset. Chrome will
+  // initiate asynchronous file operation and then log out.
+  void PerformFactoryResetRestart(const base::ListValue* args);
 #endif
 
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)

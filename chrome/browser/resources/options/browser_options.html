@@ -529,6 +529,18 @@
       </div>
     </div>
   </section>
+<if expr="pp_ifdef('chromeos')">
+  <section id="factory-reset-section" hidden>
+    <h3 i18n-content="factoryResetTitle"></h3>
+    <div>
+      <span class="settings-row" i18n-content="factoryResetDescription">
+      </span>
+      <button id="factory-reset-restart"
+          i18n-content="factoryResetRestart">
+      </button>
+    </div>
+  </section>
+</if>
 </if>
 <if expr="not is_macosx and not pp_ifdef('chromeos')">
   <section id="background-section">
