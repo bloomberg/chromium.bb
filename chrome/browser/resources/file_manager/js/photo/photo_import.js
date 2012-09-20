@@ -21,11 +21,10 @@ function PhotoImport(dom, filesystem, params) {
   this.volumeManager_ = new VolumeManager();
   this.copyManager_ = FileCopyManagerWrapper.getInstance(this.filesystem_.root);
   this.mediaFilesList_ = null;
-  this.albums_ = null;
-  this.albumsDir_ = null;
+  this.destination_ = null;
 
   this.initDom_();
-  this.initAlbums_();
+  this.initDestination_();
   this.loadSource_(params.source);
 }
 
@@ -110,7 +109,6 @@ PhotoImport.prototype.initDom_ = function() {
 
   this.grid_ = this.dom_.querySelector('grid');
   cr.ui.Grid.decorate(this.grid_);
-  this.onResize_();  // To set columns number.
   this.grid_.itemConstructor =
       GridItem.bind(null, this);
   this.fileList_ = new cr.ui.ArrayDataModel([]);
@@ -120,35 +118,27 @@ PhotoImport.prototype.initDom_ = function() {
   this.grid_.addEventListener('keypress', this.onGridKeyPress_.bind(this));
   this.onPickedItemsChanged_();
 
-  this.selectAlbumDialog_ = new SelectAlbumDialog(this.dom_);
+  this.importingDialog_ = new ImportingDialog(this.dom_, this.copyManager_,
+      this.metadataCache_);
 };
 
 /**
- * One-time initialization of albums.
+ * One-time initialization of destination directory.
  * @private
  */
-PhotoImport.prototype.initAlbums_ = function() {
+PhotoImport.prototype.initDestination_ = function() {
   var onError = this.onError_.bind(
       this, loadTimeData.getString('PHOTO_IMPORT_GDATA_ERROR'));
 
-  var albums = [];
-
-  var onEntry = function(entry) {
-    if (entry != null) {
-      albums.push(entry);
-    } else {
-      this.albums_ = albums;
-    }
-  }.bind(this);
-
-  var onGData = function(gdata) {
-    this.albumsDir_ = gdata;
-    util.forEachDirEntry(gdata, onEntry);
+  var onDirectory = function(dir) {
+    this.destination_ = dir;
+    // This may enable the import button, so check that.
+    this.onPickedItemsChanged_();
   }.bind(this);
 
   var onMounted = function() {
     var dir = PathUtil.join(RootDirectory.GDATA, PhotoImport.GDATA_PHOTOS_DIR);
-    util.getOrCreateDirectory(this.filesystem_.root, dir, onGData, onError);
+    util.getOrCreateDirectory(this.filesystem_.root, dir, onDirectory, onError);
   }.bind(this);
 
   if (this.volumeManager_.isMounted(RootDirectory.GDATA)) {
@@ -380,12 +370,13 @@ PhotoImport.prototype.onError_ = function(message) {
  * @private
  */
 PhotoImport.prototype.onResize_ = function() {
-  var columns =
-      Math.floor((this.dom_.clientWidth - 60) / PhotoImport.ITEM_WIDTH);
-  if (columns != this.grid_.columns) {
-    this.grid_.columns = columns;
-    this.fillGrid_();
-  }
+  var g = this.grid_;
+  g.startBatchUpdates();
+  setTimeout(function() {
+    g.columns = 0;
+    g.redraw();
+    g.endBatchUpdates();
+  }, 0);
 };
 
 /**
@@ -403,11 +394,10 @@ PhotoImport.prototype.getPickedItems_ = function() {
 };
 
 /**
- * Event handler for selection change.
- * @param {Event} event The event.
+ * Event handler for picked items change.
  * @private
  */
-PhotoImport.prototype.onPickedItemsChanged_ = function(event) {
+PhotoImport.prototype.onPickedItemsChanged_ = function() {
   var count = this.getPickedItems_().length;
   this.pickedCount_.textContent =
       count == 0 ?
@@ -415,7 +405,7 @@ PhotoImport.prototype.onPickedItemsChanged_ = function(event) {
           count == 1 ?
               loadTimeData.getString('PHOTO_IMPORT_ONE_PICKED') :
               loadTimeData.getStringF('PHOTO_IMPORT_MANY_PICKED', count);
-  this.importButton_.disabled = count == 0 || this.albums_ == null;
+  this.importButton_.disabled = count == 0 || this.destination_ == null;
 };
 
 /**
@@ -425,87 +415,9 @@ PhotoImport.prototype.onPickedItemsChanged_ = function(event) {
  */
 PhotoImport.prototype.onImportClick_ = function(event) {
   var items = this.getPickedItems_();
-
-  var defaultTitle = loadTimeData.getString('PHOTO_IMPORT_NEW_ALBUM_NAME');
-  var group = items[0].group;
-  if (items.filter(function(i) { return i.group !== group }).length == 0)
-    defaultTitle = group.title;
-
-  // TODO: use albums instead.
-  var dialogAlbums = [];
-  for (var index = 0; index < this.albums_.length; index++) {
-    dialogAlbums.push({
-      name: this.albums_[index].name,
-      entry: this.albums_[index],
-      url: chrome.extension.getURL('../../images/filetype_large_audio.png')
-    });
-  }
-
-  this.selectAlbumDialog_.show(
-      items.length == 1 ?
-          loadTimeData.getString('PHOTO_IMPORT_SELECT_ALBUM_CAPTION') :
-          loadTimeData.getStringF('PHOTO_IMPORT_SELECT_ALBUM_CAPTION_PLURAL',
-                                  items.length),
-      dialogAlbums,
-      defaultTitle,
-      loadTimeData.getString('PHOTO_IMPORT_IMPORT_BUTTON'),
-      this.onAlbumSelected_.bind(this, items)
-  );
-};
-
-/**
- * Called when album is selected.
- * @param {Array.<Object>} items List of items to import.
- * @param {Object} album Album description.
- * @private
- */
-PhotoImport.prototype.onAlbumSelected_ = function(items, album) {
-  var entries = items.map(function(i) { return i.entry });
-
-  if (album.create) {
-    var onError = this.onError_.bind(this,
-        loadTimeData.getString('PHOTO_IMPORT_IMPORTING_ERROR'));
-    this.createAlbum_(album.name,
-        this.startImport_.bind(this, entries),
-        onError);
-  } else {
-    this.startImport_(entries, album.entry);
-  }
-};
-
-/**
- * Starts importing process.
- * @param {Array.<FileEntry>} entries List of entries to import.
- * @param {DirectoryEntry} dir Where to import.
- * @private
- */
-PhotoImport.prototype.startImport_ = function(entries, dir) {
-  var files = entries.map(function(e) { return e.fullPath }).join('\n');
-  var operationInfo = {
-    isCut: false,
-    isOnGData: PathUtil.getRootType(entries[0].fullPath) == RootType.GDATA,
-    sourceDir: null,
-    directories: '',
-    files: files
-  };
-  this.copyManager_.paste(operationInfo, dir.fullPath, true);
-};
-
-/**
- * Creates a directory for an album.
- * @param {string} name Album name.
- * @param {function(DirectoryEntry)} onSuccess Success callback.
- * @param {function} onError Failure callback.
- * @private
- */
-PhotoImport.prototype.createAlbum_ = function(name, onSuccess, onError) {
-  var callback = function(entry) {
-    this.initAlbums_();
-    onSuccess(entry);
-  }.bind(this);
-
-  this.albumsDir_.getDirectory(name, { create: true, exclusive: true},
-      callback, onError);
+  var entries = items.map(function(item) { return item.entry; });
+  var move = this.dom_.querySelector('#delete-after-checkbox').checked;
+  this.importingDialog_.show(entries, this.destination_, move);
 };
 
 /**

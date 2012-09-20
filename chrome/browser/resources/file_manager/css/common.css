@@ -225,7 +225,6 @@ input.common[type='checkbox']::after {
   color: #FFF;
   font-weight: bold;
   letter-spacing: 1;
-  margin-bottom: 16px;
   text-transform: uppercase;
 }
 

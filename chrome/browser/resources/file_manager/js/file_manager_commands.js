@@ -121,8 +121,8 @@ Commands.importCommand = {
     var root = CommandUtil.getCommandRoot(event, rootsList);
 
     if (root) {
-      chrome.tabs.create({url: chrome.extension.getURL('photo_import.html') +
-          '#' + PathUtil.getRootPath(root.fullPath)});
+      chrome.windows.create({url: chrome.extension.getURL('photo_import.html') +
+          '#' + PathUtil.getRootPath(root.fullPath), type: 'popup'});
     }
   },
   canExecute: function(event, rootsList) {

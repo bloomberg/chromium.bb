@@ -816,7 +816,7 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
         chrome.fileBrowserPrivate.onFileTransfersUpdated.removeListener(
             onFileTransfersUpdated);
         if (chrome.extension.lastError) {
-          this.log_(
+          self.log_(
               'Error copying ' + sourceFileUrl + ' to ' + targetFileUrl);
           onFilesystemError({
             code: chrome.extension.lastError.message,

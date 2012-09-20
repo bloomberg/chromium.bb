@@ -37,6 +37,6 @@
 //<include src="../image_editor/image_util.js"/>
 //<include src="../media/media_util.js"/>
 
-//<include src="select_album_dialog.js"/>
+//<include src="importing_dialog.js"/>
 //<include src="tile_view.js"/>
 //<include src="photo_import.js"/>
