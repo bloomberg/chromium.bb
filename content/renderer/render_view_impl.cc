@@ -3812,7 +3812,7 @@ void RenderViewImpl::CreateFrameTree(WebKit::WebFrame* frame,
 
   string16 name;
   if (frame_tree->GetString(content::kFrameTreeNodeNameKey, &name) &&
-      name != string16()) {
+      !name.empty()) {
     frame->setName(name);
   }
 
