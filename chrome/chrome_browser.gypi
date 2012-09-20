@@ -1330,6 +1330,8 @@
         'browser/policy/policy_service_impl.h',
         'browser/policy/policy_service_stub.cc',
         'browser/policy/policy_service_stub.h',
+        'browser/policy/policy_statistics_collector.cc',
+        'browser/policy/policy_statistics_collector.h',
         'browser/policy/policy_types.h',
         'browser/policy/proxy_policy_provider.cc',
         'browser/policy/proxy_policy_provider.h',

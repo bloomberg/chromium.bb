@@ -41,8 +41,6 @@
 #include "chrome/browser/page_info_model.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/pepper_flash_settings_manager.h"
-#include "chrome/browser/policy/cloud_policy_subsystem.h"
-#include "chrome/browser/policy/url_blacklist_manager.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
@@ -74,6 +72,12 @@
 #include "chrome/browser/web_resource/promo_resource_service.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/render_process_host.h"
+
+#if defined(ENABLE_CONFIGURATION_POLICY)
+#include "chrome/browser/policy/cloud_policy_subsystem.h"
+#include "chrome/browser/policy/policy_statistics_collector.h"
+#include "chrome/browser/policy/url_blacklist_manager.h"
+#endif
 
 #if defined(OS_MACOSX)
 #include "chrome/browser/ui/cocoa/confirm_quit.h"
@@ -151,6 +155,7 @@ void RegisterLocalState(PrefService* local_state) {
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
   policy::CloudPolicySubsystem::RegisterPrefs(local_state);
+  policy::PolicyStatisticsCollector::RegisterPrefs(local_state);
 #endif
 
 #if defined(ENABLE_NOTIFICATIONS)

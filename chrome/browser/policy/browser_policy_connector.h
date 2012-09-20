@@ -30,6 +30,7 @@ class ConfigurationPolicyProvider;
 class DeviceManagementService;
 class NetworkConfigurationUpdater;
 class PolicyService;
+class PolicyStatisticsCollector;
 class UserCloudPolicyManager;
 class UserPolicyTokenCache;
 
@@ -202,6 +203,8 @@ class BrowserPolicyConnector : public content::NotificationObserver {
   scoped_ptr<UserPolicyTokenCache> user_policy_token_cache_;
   scoped_ptr<CloudPolicyDataStore> user_data_store_;
   scoped_ptr<CloudPolicySubsystem> user_cloud_policy_subsystem_;
+
+  scoped_ptr<PolicyStatisticsCollector> policy_statistics_collector_;
 
   // Components of the new-style cloud policy implementation.
   // TODO(mnissler): Remove the old-style components above once we have

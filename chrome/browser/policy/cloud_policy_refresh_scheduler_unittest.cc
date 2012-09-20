@@ -7,10 +7,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "chrome/browser/policy/cloud_policy_refresh_scheduler.h"
 #include "chrome/browser/policy/mock_cloud_policy_client.h"
 #include "chrome/browser/policy/mock_cloud_policy_store.h"
+#include "chrome/browser/policy/test_task_runner.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service.h"
@@ -27,25 +27,7 @@ using testing::_;
 namespace policy {
 
 namespace {
-
 const int64 kPolicyRefreshRate = 4 * 60 * 60 * 1000;
-
-class TestTaskRunner : public base::TaskRunner {
- public:
-  TestTaskRunner() {}
-
-  virtual bool RunsTasksOnCurrentThread() const OVERRIDE { return true; }
-  MOCK_METHOD3(PostDelayedTask, bool(const tracked_objects::Location&,
-                                     const base::Closure&,
-                                     base::TimeDelta));
-
- protected:
-  virtual ~TestTaskRunner() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestTaskRunner);
-};
-
 }  // namespace
 
 class CloudPolicyRefreshSchedulerTest : public testing::Test {

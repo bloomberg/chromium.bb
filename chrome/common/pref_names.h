@@ -747,6 +747,8 @@ extern const char kInManagedMode[];
 extern const char kNetworkProfileWarningsLeft[];
 extern const char kNetworkProfileLastWarningTime[];
 
+extern const char kLastPolicyStatisticsUpdate[];
+
 }  // namespace prefs
 
 #endif  // CHROME_COMMON_PREF_NAMES_H_

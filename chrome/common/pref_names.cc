@@ -2044,4 +2044,8 @@ const char kNetworkProfileWarningsLeft[] = "network_profile.warnings_left";
 const char kNetworkProfileLastWarningTime[] =
     "network_profile.last_warning_time";
 
+// 64-bit serialization of the time last policy usage statistics were collected
+// by UMA_HISTOGRAM_ENUMERATION.
+const char kLastPolicyStatisticsUpdate[] = "policy.last_statistics_update";
+
 }  // namespace prefs

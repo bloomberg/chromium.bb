@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
+#include "base/message_loop.h"
 #include "base/path_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/async_policy_provider.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/policy/managed_mode_policy_provider.h"
 #include "chrome/browser/policy/managed_mode_policy_provider_factory.h"
 #include "chrome/browser/policy/policy_service_impl.h"
+#include "chrome/browser/policy/policy_statistics_collector.h"
 #include "chrome/browser/policy/user_cloud_policy_manager.h"
 #include "chrome/browser/policy/user_policy_cache.h"
 #include "chrome/browser/policy/user_policy_token_cache.h"
@@ -160,13 +162,13 @@ void BrowserPolicyConnector::Init() {
   }
 
   InitializeDevicePolicy();
+#endif
 
   // Complete the initialization once the message loops are spinning.
   MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&BrowserPolicyConnector::CompleteInitialization,
                  weak_ptr_factory_.GetWeakPtr()));
-#endif
 }
 
 scoped_ptr<UserCloudPolicyManager>
@@ -622,6 +624,13 @@ void BrowserPolicyConnector::CompleteInitialization() {
 
   SetTimezoneIfPolicyAvailable();
 #endif
+
+  // TODO: Do not use g_browser_process once policy service is moved to
+  // BrowserPolicyConnector (http://crbug.com/128999).
+  policy_statistics_collector_.reset(new policy::PolicyStatisticsCollector(
+      g_browser_process->policy_service(),
+      g_browser_process->local_state(),
+      MessageLoop::current()->message_loop_proxy()));
 }
 
 void BrowserPolicyConnector::SetTimezoneIfPolicyAvailable() {
