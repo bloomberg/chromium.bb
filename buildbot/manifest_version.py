@@ -298,10 +298,6 @@ class VersionInfo(object):
     return map(int, [info.build_number, info.branch_build_number,
                      info.patch_number])
 
-  def DirPrefix(self):
-    """Returns the sub directory suffix in manifest-versions"""
-    return self.chrome_branch
-
   def BuildPrefix(self):
     """Returns the build prefix to match the buildspecs in  manifest-versions"""
     if self.incr_type == 'branch':
@@ -444,7 +440,7 @@ class BuildSpecsManager(object):
       version_info: Info class for version information of cros.
     """
     working_dir = os.path.join(self.manifest_dir, self.rel_working_dir)
-    dir_pfx = version_info.DirPrefix()
+    dir_pfx = version_info.chrome_branch
     self.specs_for_builder = os.path.join(working_dir, 'build-name',
                                           '%(builder)s')
     specs_for_build = self.specs_for_builder % {'builder': self.build_name}

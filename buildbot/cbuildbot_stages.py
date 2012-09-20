@@ -967,16 +967,19 @@ class BuildTargetStage(BoardSpecificBuilderStage):
 
   def _CommunicateVersion(self):
     """Communicates to archive_stage the image path of this stage."""
-    image_path = self.GetImageDirSymlink()
-    if os.path.isdir(image_path):
-      version = os.readlink(image_path)
-      # Non-versioned builds need the build number to uniquify the image.
-      if not self._version:
-        version = version + '-b%s' % self._options.buildnumber
-
-      self._archive_stage.SetVersion(version)
+    verinfo = manifest_version.VersionInfo.from_repo(self._build_root)
+    if self._version:
+      version = self._version
     else:
-      self._archive_stage.SetVersion(None)
+      version = verinfo.VersionString()
+
+    version = 'R%s-%s' % (verinfo.chrome_branch, version)
+
+    # Non-versioned builds need the build number to uniquify the image.
+    if not self._version:
+      version += '-b%s' % self._options.buildnumber
+
+    self._archive_stage.SetVersion(version)
 
   def HandleSkip(self):
     self._CommunicateVersion()
