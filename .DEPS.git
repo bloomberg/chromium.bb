@@ -11,7 +11,7 @@ vars = {
     'git_url':
          'http://git.chromium.org',
     'webkit_rev':
-         '@72ff3e6fb22cdca813a434af62786d8d20f9048c'
+         '@d2e9ad2a437caedc410c7d61667ac6fcaf842a8f'
 }
 
 deps = {
@@ -26,7 +26,7 @@ deps = {
     'src/googleurl':
         Var('git_url') + '/external/google-url.git@eb8b21b16f6e39375bf4048567d4844027e47186',
     'src/native_client':
-        Var('git_url') + '/native_client/src/native_client.git@51d1a3d52cecd7ad821c8511ebc06afe871e69ca',
+        Var('git_url') + '/native_client/src/native_client.git@18b9b0c13078ec9cd3ce133025e1d12496cabd0d',
     'src/sandbox/linux/seccomp-legacy':
         Var('git_url') + '/external/seccompsandbox.git@95fc762804a289168b66f3a9a9676ad9a9dd89a4',
     'src/sdch/open-vcdiff':
@@ -98,9 +98,9 @@ deps = {
     'src/third_party/skia/gyp':
         Var('git_url') + '/external/skia/gyp.git@5ae5ef89eb67a870438a2675ef2d8aa85f749705',
     'src/third_party/skia/include':
-        Var('git_url') + '/external/skia/include.git@0658f2b1daafbc8e42953d285f806ee24a33d35a',
+        Var('git_url') + '/external/skia/include.git@87c2e5fa9acca0d65c619c5d1487646879d3e33f',
     'src/third_party/skia/src':
-        Var('git_url') + '/external/skia/src.git@efb1be6bc02b2991931b720f6aa67259825c2b8a',
+        Var('git_url') + '/external/skia/src.git@e36d5b1ecb1cac5f4a14a9c4c5cb5101dbbd3452',
     'src/third_party/smhasher/src':
         Var('git_url') + '/external/smhasher.git@6895dced6534c9a041ceba5cabed231d3b2d8518',
     'src/third_party/snappy/src':
