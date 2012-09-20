@@ -9,6 +9,9 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
+#include "base/file_path.h"
+#include "base/file_util.h"
+#include "base/i18n/case_conversion.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/scoped_vector.h"
@@ -16,6 +19,7 @@
 #include "base/string_split.h"
 #include "base/stringprintf.h"
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
@@ -32,8 +36,10 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/process_map.h"
+#include "chrome/browser/google_apis/operation_registry.h"
 #include "chrome/browser/google_apis/gdata_util.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
+#include "chrome/browser/intents/web_intents_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -53,6 +59,7 @@
 #include "grit/generated_resources.h"
 #include "grit/platform_locale_settings.h"
 #include "net/base/escape.h"
+#include "net/base/mime_util.h"
 #include "ui/base/dialogs/selected_file_info.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "webkit/chromeos/fileapi/cros_mount_point_provider.h"
@@ -62,6 +69,7 @@
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/file_system_util.h"
+#include "webkit/glue/web_intent_service_data.h"
 
 using chromeos::disks::DiskMountManager;
 using content::BrowserContext;
@@ -76,7 +84,7 @@ using gdata::InstalledApp;
 namespace {
 
 // Default icon path for drive docs.
-const char kDefaultDriveIcon[] = "images/filetype_generic.png";
+const char kDefaultIcon[] = "images/filetype_generic.png";
 const int kPreferredIconSize = 16;
 
 // Error messages.
@@ -232,6 +240,45 @@ GURL FindPreferredIcon(const InstalledApp::IconList& icons,
         result = iter->second;
   }
   return result;
+}
+
+// Finds the title of the given Web Intents |action|, if the passed extension
+// supports this action for all specified |mime_types|. Returns true and
+// provides the |title| as output on success.
+bool FindTitleForActionWithTypes(
+    const Extension* extension,
+    const std::string& action,
+    const std::set<std::string>& mime_types,
+    std::string* title) {
+  DCHECK(!mime_types.empty());
+  std::set<std::string> pending(mime_types.begin(), mime_types.end());
+  std::string found_title;
+
+  for (std::vector<webkit_glue::WebIntentServiceData>::const_iterator data =
+          extension->intents_services().begin();
+       data != extension->intents_services().end(); ++data) {
+    if (pending.empty())
+      break;
+
+    if (UTF16ToUTF8(data->action) != action)
+      continue;
+
+    std::set<std::string>::iterator pending_iter = pending.begin();
+    while (pending_iter != pending.end()) {
+      std::set<std::string>::iterator current = pending_iter++;
+      if (net::MatchesMimeType(UTF16ToUTF8(data->type), *current))
+        pending.erase(current);
+    }
+    if (found_title.empty())
+      found_title = UTF16ToUTF8(data->title);
+  }
+
+  // Not all mime-types have been found.
+  if (!pending.empty())
+    return false;
+
+  *title = found_title;
+  return true;
 }
 
 // Retrieves total and remaining available size on |mount_path|.
@@ -602,8 +649,8 @@ void GetFileTasksFileBrowserFunction::IntersectAvailableDriveTasks(
           app_info->insert(std::make_pair((*apps)->app_id, *apps));
       // TODO(gspencer): For now, the action id is always "open-with", but we
       // could add any actions that the drive app supports.
-      std::string task_id =
-          file_handler_util::MakeDriveTaskID((*apps)->app_id, "open-with");
+      std::string task_id = file_handler_util::MakeTaskID(
+          (*apps)->app_id, file_handler_util::kTaskDrive, "open-with");
       tasks_for_this_file.insert(task_id);
       // If we failed to insert a task_id because there was a duplicate, then we
       // must delete it (since we own it).
@@ -656,10 +703,12 @@ void GetFileTasksFileBrowserFunction::CreateDriveTasks(
   for (std::set<std::string>::const_iterator app_iter = available_tasks.begin();
        app_iter != available_tasks.end(); ++app_iter) {
     std::string app_id;
-    bool result = file_handler_util::CrackDriveTaskID(*app_iter, &app_id, NULL);
+    std::string task_type;
+    bool result = file_handler_util::CrackTaskID(
+        *app_iter, &app_id, &task_type, NULL);
     DCHECK(result) << "Unable to parse Drive task id: " << *app_iter;
-    if (!result)
-      continue;
+    DCHECK_EQ(task_type, file_handler_util::kTaskDrive);
+
     WebAppInfoMap::const_iterator info_iter = app_info.find(app_id);
     DCHECK(info_iter != app_info.end());
     gdata::DriveWebAppInfo* info = info_iter->second;
@@ -707,7 +756,6 @@ bool GetFileTasksFileBrowserFunction::FindDriveAppTasks(
   if (!system_service || !system_service->webapps_registry())
     return true;
 
-
   gdata::DriveWebAppsRegistry* registry = system_service->webapps_registry();
 
   // Map of app_id to DriveWebAppInfo so we can look up the apps we've found
@@ -726,6 +774,77 @@ bool GetFileTasksFileBrowserFunction::FindDriveAppTasks(
 
   // We own the pointers in |app_info|, so we need to delete them.
   STLDeleteContainerPairSecondPointers(app_info.begin(), app_info.end());
+  return true;
+}
+
+// Find Web Intent platform apps that support the View task, and add them to
+// the |result_list|. These will be marked as kTaskWebIntent.
+bool GetFileTasksFileBrowserFunction::FindWebIntentTasks(
+    const std::vector<GURL>& file_urls,
+    ListValue* result_list) {
+  DCHECK(!file_urls.empty());
+  ExtensionService* service = profile_->GetExtensionService();
+  if (!service)
+    return false;
+
+  std::set<std::string> mime_types;
+  for (std::vector<GURL>::const_iterator iter = file_urls.begin();
+       iter != file_urls.end(); ++iter) {
+    const FilePath file = FilePath(GURL(iter->spec()).ExtractFileName());
+    const FilePath::StringType file_extension =
+        StringToLowerASCII(file.Extension());
+
+    // TODO(thorogood): Rearchitect this call so it can run on the File thread;
+    // GetMimeTypeFromFile requires this on Linux. Right now, we use
+    // Chrome-level knowledge only.
+    std::string mime_type;
+    if (file_extension.empty() || !net::GetWellKnownMimeTypeFromExtension(
+            file_extension.substr(1), &mime_type)) {
+      // If the file doesn't have an extension or its mime-type cannot be
+      // determined, then indicate that it has the empty mime-type. This will
+      // only be matched if the Web Intents accepts "*" or "*/*".
+      mime_types.insert("");
+    } else {
+      mime_types.insert(mime_type);
+    }
+  }
+
+  for (ExtensionSet::const_iterator iter = service->extensions()->begin();
+       iter != service->extensions()->end();
+       ++iter) {
+    const Extension* extension = *iter;
+
+    // We don't support using hosted apps to open files.
+    if (!extension->is_platform_app())
+      continue;
+
+    if (profile_->IsOffTheRecord() &&
+        !service->IsIncognitoEnabled(extension->id()))
+      continue;
+
+    std::string title;
+    if (!FindTitleForActionWithTypes(
+            extension, web_intents::kActionView, mime_types, &title))
+      continue;
+
+    DictionaryValue* task = new DictionaryValue;
+    std::string task_id = file_handler_util::MakeTaskID(extension->id(),
+        file_handler_util::kTaskWebIntent, web_intents::kActionView);
+    task->SetString("taskId", task_id);
+    task->SetString("title", title);
+    task->SetBoolean("isDefault", false);
+
+    GURL best_icon = extension->GetIconURL(kPreferredIconSize,
+                                           ExtensionIconSet::MATCH_BIGGER);
+    if (!best_icon.is_empty())
+      task->SetString("iconUrl", best_icon.spec());
+    else
+      task->SetString("iconUrl", kDefaultIcon);
+
+    task->SetBoolean("driveApp", false);
+    result_list->Append(task);
+  }
+
   return true;
 }
 
@@ -798,8 +917,8 @@ bool GetFileTasksFileBrowserFunction::RunImpl() {
     const Extension* extension = service->GetExtensionById(extension_id, false);
     CHECK(extension);
     DictionaryValue* task = new DictionaryValue;
-    task->SetString("taskId",
-        file_handler_util::MakeTaskID(extension_id, handler->id()));
+    task->SetString("taskId", file_handler_util::MakeTaskID(
+        extension_id, file_handler_util::kTaskFile, handler->id()));
     task->SetString("title", handler->title());
     // TODO(zelidrag): Figure out how to expose icon URL that task defined in
     // manifest instead of the default extension icon.
@@ -823,6 +942,12 @@ bool GetFileTasksFileBrowserFunction::RunImpl() {
     result_list->Append(task);
   }
 
+  // Take the union of Web Intents (that platform apps may accept) and all
+  // previous Drive and extension tasks. As above, we know there aren't
+  // duplicates because they're entirely different kinds of tasks.
+  if (!FindWebIntentTasks(file_urls, result_list))
+    return false;
+
   if (VLOG_IS_ON(1)) {
     std::string result_json;
     base::JSONWriter::WriteWithOptions(
@@ -833,8 +958,6 @@ bool GetFileTasksFileBrowserFunction::RunImpl() {
     VLOG(1) << "GetFileTasks result:\n" << result_json;
   }
 
-  // TODO(zelidrag, serya): Add intent content tasks to result_list once we
-  // implement that API.
   SendResponse(true);
   return true;
 }
@@ -863,8 +986,10 @@ bool ExecuteTasksFileBrowserFunction::RunImpl() {
     return false;
 
   std::string extension_id;
+  std::string task_type;
   std::string action_id;
-  if (!file_handler_util::CrackTaskID(task_id, &extension_id, &action_id)) {
+  if (!file_handler_util::CrackTaskID(
+      task_id, &extension_id, &task_type, &action_id)) {
     LOG(WARNING) << "Invalid task " << task_id;
     return false;
   }
@@ -886,6 +1011,7 @@ bool ExecuteTasksFileBrowserFunction::RunImpl() {
       FileTaskExecutor::Create(profile(),
                                source_url(),
                                extension_id,
+                               task_type,
                                action_id));
 
   if (!executor->ExecuteAndNotify(
@@ -2035,7 +2161,8 @@ void GetDriveFilePropertiesFunction::OnOperationComplete(
         file_specific_info.content_mime_type(),
         file_path.Extension());
     std::string default_app_id;
-    file_handler_util::CrackDriveTaskID(default_task_id, &default_app_id, NULL);
+    file_handler_util::CrackTaskID(
+        default_task_id, &default_app_id, NULL, NULL);
 
     ListValue* apps = new ListValue();
     property_dict->Set("driveApps", apps);

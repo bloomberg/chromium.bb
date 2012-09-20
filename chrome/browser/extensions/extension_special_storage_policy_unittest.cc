@@ -122,6 +122,39 @@ class ExtensionSpecialStoragePolicyTest : public testing::Test {
     return handler_app;
   }
 
+  scoped_refptr<Extension> CreateWebIntentViewApp() {
+#if defined(OS_WIN)
+    FilePath path(FILE_PATH_LITERAL("c:\\bar"));
+#elif defined(OS_POSIX)
+    FilePath path(FILE_PATH_LITERAL("/bar"));
+#endif
+    DictionaryValue manifest;
+    manifest.SetString(keys::kName, "WebIntent");
+    manifest.SetString(keys::kVersion, "1");
+    manifest.SetString(keys::kLaunchWebURL, "http://explicit/unlimited/start");
+
+    ListValue* view_intent_types = new ListValue;
+    view_intent_types->Append(Value::CreateStringValue("text/plain"));
+
+    DictionaryValue* view_intent = new DictionaryValue;
+    view_intent->SetString(keys::kIntentTitle, "Test Intent");
+    view_intent->Set(keys::kIntentType, view_intent_types);
+
+    ListValue* view_intent_list = new ListValue;
+    view_intent_list->Append(view_intent);
+
+    DictionaryValue* intents = new DictionaryValue;
+    intents->SetWithoutPathExpansion("http://webintents.org/view",
+                                     view_intent_list);
+    manifest.Set(keys::kIntents, intents);
+
+    std::string error;
+    scoped_refptr<Extension> intent_app = Extension::Create(
+        path, Extension::INVALID, manifest, Extension::NO_FLAGS, &error);
+    EXPECT_TRUE(intent_app.get()) << error;
+    return intent_app;
+  }
+
   // Verifies that the set of extensions protecting |url| is *exactly* equal to
   // |expected_extensions|. Pass in an empty set to verify that an origin is not
   // protected.
@@ -241,6 +274,16 @@ TEST_F(ExtensionSpecialStoragePolicyTest, OverlappingApps) {
   ExpectProtectedBy(empty_set, GURL("http://explicit/"));
   ExpectProtectedBy(empty_set, GURL("http://foo.wildcards/"));
   ExpectProtectedBy(empty_set, GURL("https://bar.wildcards/"));
+}
+
+TEST_F(ExtensionSpecialStoragePolicyTest, WebIntentViewApp) {
+  scoped_refptr<Extension> intent_app(CreateWebIntentViewApp());
+
+  policy_->GrantRightsForExtension(intent_app);
+  EXPECT_TRUE(policy_->IsFileHandler(intent_app->id()));
+
+  policy_->RevokeRightsForExtension(intent_app);
+  EXPECT_FALSE(policy_->IsFileHandler(intent_app->id()));
 }
 
 TEST_F(ExtensionSpecialStoragePolicyTest, HasSessionOnlyOrigins) {

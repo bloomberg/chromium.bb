@@ -86,49 +86,53 @@ FileTasks.prototype.processTasks_ = function(tasks) {
 
     // Tweak images, titles of internal tasks.
     var task_parts = task.taskId.split('|');
-    if (task_parts[0] == id) {
-      if (task_parts[1] == 'play') {
+    if (task_parts[0] == id && task_parts[1] == 'file') {
+      if (task_parts[2] == 'play') {
         // TODO(serya): This hack needed until task.iconUrl is working
         //             (see GetFileTasksFileBrowserFunction::RunImpl).
         task.iconType = 'audio';
         task.title = loadTimeData.getString('ACTION_LISTEN');
-      } else if (task_parts[1] == 'mount-archive') {
+      } else if (task_parts[2] == 'mount-archive') {
         task.iconType = 'archive';
         task.title = loadTimeData.getString('MOUNT_ARCHIVE');
-      } else if (task_parts[1] == 'gallery') {
+      } else if (task_parts[2] == 'gallery') {
         task.iconType = 'image';
         task.title = loadTimeData.getString('ACTION_OPEN');
-      } else if (task_parts[1] == 'watch') {
+      } else if (task_parts[2] == 'watch') {
         task.iconType = 'video';
         task.title = loadTimeData.getString('ACTION_WATCH');
-      } else if (task_parts[1] == 'open-hosted-generic') {
+      } else if (task_parts[2] == 'open-hosted-generic') {
         if (this.urls_.length > 1)
           task.iconType = 'generic';
         else // Use specific icon.
           task.iconType = FileType.getIcon(this.urls_[0]);
         task.title = loadTimeData.getString('ACTION_OPEN');
-      } else if (task_parts[1] == 'open-hosted-gdoc') {
+      } else if (task_parts[2] == 'open-hosted-gdoc') {
         task.iconType = 'gdoc';
         task.title = loadTimeData.getString('ACTION_OPEN_GDOC');
-      } else if (task_parts[1] == 'open-hosted-gsheet') {
+      } else if (task_parts[2] == 'open-hosted-gsheet') {
         task.iconType = 'gsheet';
         task.title = loadTimeData.getString('ACTION_OPEN_GSHEET');
-      } else if (task_parts[1] == 'open-hosted-gslides') {
+      } else if (task_parts[2] == 'open-hosted-gslides') {
         task.iconType = 'gslides';
         task.title = loadTimeData.getString('ACTION_OPEN_GSLIDES');
-      } else if (task_parts[1] == 'view-pdf') {
+      } else if (task_parts[2] == 'view-pdf') {
         // Do not render this task if disabled.
         if (!loadTimeData.getBoolean('PDF_VIEW_ENABLED'))
           continue;
         task.iconType = 'pdf';
         task.title = loadTimeData.getString('ACTION_VIEW');
-      } else if (task_parts[1] == 'view-in-browser') {
+      } else if (task_parts[2] == 'view-in-browser') {
         task.iconType = 'generic';
         task.title = loadTimeData.getString('ACTION_VIEW');
-      } else if (task_parts[1] == 'install-crx') {
+      } else if (task_parts[2] == 'install-crx') {
         task.iconType = 'generic';
         task.title = loadTimeData.getString('INSTALL_CRX');
       }
+    }
+
+    if (!task.iconType && task_parts[1] == 'web-intent') {
+      task.iconType = 'generic';
     }
 
     this.tasks_.push(task);
@@ -190,11 +194,11 @@ FileTasks.prototype.execute_ = function(taskId, opt_urls) {
     chrome.fileBrowserPrivate.executeTask(taskId, urls);
 
     var task_parts = taskId.split('|');
-    if (task_parts[0] == util.getExtensionId()) {
+    if (task_parts[0] == util.getExtensionId() && task_parts[1] == 'file') {
       // For internal tasks we do not listen to the event to avoid
       // handling the same task instance from multiple tabs.
       // So, we manually execute the task.
-      this.executeInternalTask_(task_parts[1], urls);
+      this.executeInternalTask_(task_parts[2], urls);
     }
   }.bind(this));
 };

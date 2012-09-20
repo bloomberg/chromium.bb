@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_HANDLER_UTIL_H_
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_HANDLER_UTIL_H_
 
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
@@ -17,7 +18,19 @@ class Browser;
 class GURL;
 class Profile;
 
+namespace extensions {
+class Extension;
+}  // namespace extensions
+
 namespace file_handler_util {
+
+// Specifies the task type for a task id that represents some file action, Drive
+// action, or Web Intent action.
+extern const char kTaskFile[];
+extern const char kTaskDrive[];
+extern const char kTaskWebIntent[];
+
+void UpdateFileHandlerUsageStats(Profile* profile, const std::string& task_id);
 
 // Update the default file handler for the given sets of suffixes and MIME
 // types.
@@ -39,27 +52,18 @@ int GetReadWritePermissions();
 // Gets read-only file access permission flags.
 int GetReadOnlyPermissions();
 
-// Generates file task id for the file action specified by the extension.
+// Generates task id for the action specified by the extension. The |task_type|
+// must be one of kTaskFile, kTaskDrive, or kTaskWebIntent.
 std::string MakeTaskID(const std::string& extension_id,
+                       const std::string& task_type,
                        const std::string& action_id);
 
-// Make a task id specific to drive apps instead of extensions.
-std::string MakeDriveTaskID(const std::string& app_id,
-                            const std::string& action_id);
-
-// Returns the |target_id| and |action_id| of a drive app or extension, given
-// the drive |task_id| created by MakeDriveTaskID. If the |task_id| is a drive
-// task_id then it will return true. If not, or if parsing fails, will return
-// false and not set |app_id| or |action_id|.
-bool CrackDriveTaskID(const std::string& task_id,
-                      std::string* app_id,
-                      std::string* action_id);
-
-// Extracts action and extension id bound to the file task. Either
+// Extracts action, type and extension id bound to the file task. Either
 // |target_extension_id| or |action_id| are allowed to be NULL if caller isn't
 // interested in those values.  Returns false on failure to parse.
 bool CrackTaskID(const std::string& task_id,
                  std::string* target_extension_id,
+                 std::string* task_type,
                  std::string* action_id);
 
 // This generates a list of default tasks (tasks set as default by the user in
@@ -88,13 +92,11 @@ typedef base::Callback<void(bool)> FileTaskFinishedCallback;
 // Helper class for executing file browser file action.
 class FileTaskExecutor : public base::RefCountedThreadSafe<FileTaskExecutor> {
  public:
-  static const char kDriveTaskExtensionPrefix[];
-  static const size_t kDriveTaskExtensionPrefixLength;
-
   // Creates the appropriate FileTaskExecutor for the given |extension_id|.
   static FileTaskExecutor* Create(Profile* profile,
                                   const GURL source_url,
                                   const std::string& extension_id,
+                                  const std::string& task_type,
                                   const std::string& action_id);
 
   // Same as ExecuteAndNotify, but no notification is performed.
@@ -110,7 +112,7 @@ class FileTaskExecutor : public base::RefCountedThreadSafe<FileTaskExecutor> {
                                 const FileTaskFinishedCallback& done) = 0;
 
  protected:
-  explicit FileTaskExecutor(Profile* profile);
+  explicit FileTaskExecutor(Profile* profile, const std::string& extension_id);
   virtual ~FileTaskExecutor();
 
   // Returns the profile that this task was created with.
@@ -118,10 +120,18 @@ class FileTaskExecutor : public base::RefCountedThreadSafe<FileTaskExecutor> {
 
   // Returns a browser to use for the current browser.
   Browser* GetBrowser() const;
+
+  // Returns the extension for this profile.
+  const extensions::Extension* GetExtension();
+
+  // Returns the extension ID set for this FileTaskExecutor.
+  const std::string& extension_id() { return extension_id_; }
+
  private:
   friend class base::RefCountedThreadSafe<FileTaskExecutor>;
 
   Profile* profile_;
+  const std::string extension_id_;
 };
 
 }  // namespace file_handler_util

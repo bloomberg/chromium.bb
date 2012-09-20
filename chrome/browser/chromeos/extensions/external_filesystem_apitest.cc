@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/gdata/drive_file_system.h"
 #include "chrome/browser/chromeos/gdata/drive_system_service.h"
 #include "chrome/browser/chromeos/gdata/mock_drive_service.h"
+#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/google_apis/gdata_util.h"
@@ -24,6 +25,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -243,6 +245,35 @@ IN_PROC_BROWSER_TEST_F(FileSystemExtensionApiTest, FileBrowserTestLazy) {
       << message_;
   ASSERT_TRUE(RunExtensionSubtest(
       "filebrowser_component", "read.html", kComponentFlags)) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemExtensionApiTest, FileBrowserWebIntentTest) {
+  AddTmpMountPoint();
+
+  ResultCatcher catcher;
+  ScopedTempDir tmp_dir;
+  ASSERT_TRUE(tmp_dir.CreateUniqueTempDir());
+
+  // Create a test file inside the ScopedTempDir.
+  FilePath test_file = tmp_dir.path().AppendASCII("text_file.xul");
+  CreateDownloadFile(test_file);
+
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("webintent_handler"))) << message_;
+
+  // Load the source component, with the fileUrl within the virtual mount
+  // point.
+  const extensions::Extension* extension = LoadExtensionAsComponent(
+      test_data_dir_.AppendASCII("filebrowser_component"));
+  ASSERT_TRUE(extension) << message_;
+  std::string path = "filesystem:chrome-extension://" + extension->id() +
+      "/external" + test_file.value();
+  GURL url = extension->GetResourceURL("intent.html#" + path);
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // The webintent_handler sends chrome.test.succeed() on successful receipt
+  // of the incoming Web Intent.
+  ASSERT_TRUE(catcher.GetNextResult()) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemExtensionApiTest, FileBrowserTestWrite) {

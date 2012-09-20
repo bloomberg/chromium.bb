@@ -31,17 +31,10 @@ using file_handler_util::FileTaskExecutor;
 DriveTaskExecutor::DriveTaskExecutor(Profile* profile,
                                      const std::string& app_id,
                                      const std::string& action_id)
-  : file_handler_util::FileTaskExecutor(profile),
-    app_id_(app_id),
+  : file_handler_util::FileTaskExecutor(profile, app_id),
     action_id_(action_id),
     current_index_(0) {
   DCHECK("open-with" == action_id_);
-  DCHECK(app_id.size() > FileTaskExecutor::kDriveTaskExtensionPrefixLength);
-  DCHECK(StartsWithASCII(app_id,
-                         FileTaskExecutor::kDriveTaskExtensionPrefix,
-                         false));
-  // Strip off the prefix from the extension ID so we convert it to an app id.
-  app_id_ = app_id_.substr(FileTaskExecutor::kDriveTaskExtensionPrefixLength);
 }
 
 DriveTaskExecutor::~DriveTaskExecutor() {
@@ -105,7 +98,7 @@ void DriveTaskExecutor::OnFileEntryFetched(
   // open-with-<app_id> urls from the document entry.
   drive_service->AuthorizeApp(
       GURL(entry_proto->edit_url()),
-      app_id_,
+      extension_id(),  // really app_id
       base::Bind(&DriveTaskExecutor::OnAppAuthorized,
                  this,
                  entry_proto->resource_id()));
@@ -138,7 +131,7 @@ void DriveTaskExecutor::OnAppAuthorized(
     link_list->GetDictionary(i, &entry);
     std::string app_id;
     entry->GetString("app_id", &app_id);
-    if (app_id == app_id_) {
+    if (app_id == extension_id()) {
       std::string href;
       entry->GetString("href", &href);
       open_with_url = GURL(href);

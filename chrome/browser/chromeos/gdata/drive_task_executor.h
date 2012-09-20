@@ -46,7 +46,6 @@ class DriveTaskExecutor : public file_handler_util::FileTaskExecutor {
   void Done(bool success);
 
   const GURL source_url_;
-  std::string app_id_;
   const std::string action_id_;
   int current_index_;
   file_handler_util::FileTaskFinishedCallback done_;
