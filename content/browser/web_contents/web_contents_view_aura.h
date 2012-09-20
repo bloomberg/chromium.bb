@@ -123,8 +123,6 @@ class CONTENT_EXPORT WebContentsViewAura
   virtual void OnDragExited() OVERRIDE;
   virtual int OnPerformDrop(const ui::DropTargetEvent& event) OVERRIDE;
 
-  gfx::Size initial_size_;
-
   scoped_ptr<aura::Window> window_;
 
   // The WebContentsImpl whose contents we display.

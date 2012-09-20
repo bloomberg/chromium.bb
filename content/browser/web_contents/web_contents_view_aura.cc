@@ -251,7 +251,9 @@ void WebContentsViewAura::EndDrag(WebKit::WebDragOperationsMask ops) {
 // WebContentsViewAura, WebContentsView implementation:
 
 void WebContentsViewAura::CreateView(const gfx::Size& initial_size) {
-  initial_size_ = initial_size;
+  // NOTE: we ignore |initial_size| since in some cases it's wrong (such as
+  // if the bookmark bar is not shown and you create a new tab). The right
+  // value is set shortly after this, so its safe to ignore.
 
   window_.reset(new aura::Window(this));
   window_->set_owned_by_parent(false);
