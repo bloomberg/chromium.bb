@@ -71,7 +71,7 @@ class TestSpellingURLFetcher : public net::TestURLFetcher {
     EXPECT_EQ(language_, language);
     ASSERT_TRUE(GetExpectedCountry(language, &country_));
     std::string country;
-    EXPECT_TRUE(value->GetString("params.origin_country", &country));
+    EXPECT_TRUE(value->GetString("params.originCountry", &country));
     EXPECT_EQ(country_, country);
 
     net::TestURLFetcher::SetUploadData(upload_content_type, upload_content);

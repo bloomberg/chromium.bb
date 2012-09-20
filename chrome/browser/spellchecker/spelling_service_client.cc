@@ -18,24 +18,12 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/spellcheck_result.h"
 #include "content/public/browser/browser_thread.h"
+#include "google_apis/google_api_keys.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
 #include "unicode/uloc.h"
 
-#if defined(GOOGLE_CHROME_BUILD)
-#include "chrome/browser/spellchecker/internal/spellcheck_internal.h"
-#endif
-
-// Use the public URL to the Spelling service on Chromium. Unfortunately, this
-// service is an experimental service and returns an error without a key.
-#ifndef SPELLING_SERVICE_KEY_V1
-#define SPELLING_SERVICE_KEY_V1 ""
-#endif
-
-#ifndef SPELLING_SERVICE_KEY_V2
-#define SPELLING_SERVICE_KEY_V2 ""
-#endif
-
+// Use the public URL to the Spelling service on Chromium.
 #ifndef SPELLING_SERVICE_URL
 #define SPELLING_SERVICE_URL "https://www.googleapis.com/rpc"
 #endif
@@ -88,17 +76,18 @@ bool SpellingServiceClient::RequestTextCheck(
       "\"params\":{"
       "\"text\":\"%s\","
       "\"language\":\"%s\","
-      "\"origin_country\":\"%s\","
+      "\"originCountry\":\"%s\","
       "\"key\":\"%s\""
       "}"
       "}";
+  std::string api_key = google_apis::GetAPIKey();
   std::string request = base::StringPrintf(
       kSpellingRequest,
       type,
       encoded_text.c_str(),
       language,
       country,
-      type == SUGGEST ? SPELLING_SERVICE_KEY_V1 : SPELLING_SERVICE_KEY_V2);
+      api_key.c_str());
 
   static const char kSpellingServiceURL[] = SPELLING_SERVICE_URL;
   GURL url = GURL(kSpellingServiceURL);
