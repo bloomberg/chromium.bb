@@ -15,6 +15,7 @@
 #include "ui/gfx/font.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/painter.h"
+#include "ui/views/view.h"
 
 class LocationBarView;
 class TabContents;
@@ -25,6 +26,8 @@ class WebContents;
 
 namespace views {
 class GestureEvent;
+class ImageView;
+class Label;
 class MouseEvent;
 }
 
@@ -35,7 +38,7 @@ class SlideAnimation;
 // A base class for location bar decorations showing icons and label animations.
 // Used for content settings and web intents button. Class is owned by the
 // LocationBarView.
-class LocationBarDecorationView : public views::ImageView,
+class LocationBarDecorationView : public views::View,
                                   public ui::AnimationDelegate,
                                   public TouchableLocationBarView {
  public:
@@ -49,6 +52,9 @@ class LocationBarDecorationView : public views::ImageView,
 
   // Update the decoration from the shown TabContents.
   virtual void Update(TabContents* tab_contents) = 0;
+
+  void SetImage(const gfx::ImageSkia* image_skia);
+  void SetTooltipText(const string16& tooltip);
 
   // views::View overrides:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
@@ -79,11 +85,9 @@ class LocationBarDecorationView : public views::ImageView,
   void AlwaysDrawText();
 
  private:
-  // views::ImageView overrides:
+  // views::View overrides:
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-
   virtual void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE;
 
   // Notify the possibly-running animation that it was clicked.
@@ -92,8 +96,11 @@ class LocationBarDecorationView : public views::ImageView,
   // The owning LocationBarView. Weak pointer.
   LocationBarView* parent_;
 
+  // Child views that comprise the bubble.
+  views::Label* text_label_;
+  views::ImageView* icon_;
+
   scoped_ptr<ui::SlideAnimation> slide_animator_;
-  string16 animated_text_;
   gfx::Font font_;
   SkColor font_color_;
   bool pause_animation_;

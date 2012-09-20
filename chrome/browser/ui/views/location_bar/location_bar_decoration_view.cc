@@ -14,15 +14,17 @@
 #include "ui/base/animation/tween.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/skia_util.h"
-#include "ui/views/border.h"
+#include "ui/views/controls/image_view.h"
+#include "ui/views/controls/label.h"
+#include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
 // Animation parameters.
 const int kFrameRateHz = 60;
 // Margins for animated box (pixels).
-const int kTextMargin = 5;
-const int kIconLeftMargin = 4;
+const int kHorizMargin = 4;
+const int kIconLabelSpacing = 4;
 }
 
 LocationBarDecorationView::LocationBarDecorationView(
@@ -31,6 +33,8 @@ LocationBarDecorationView::LocationBarDecorationView(
     const gfx::Font& font,
     SkColor font_color)
     : parent_(parent),
+      text_label_(NULL),
+      icon_(new views::ImageView),
       font_(font),
       font_color_(font_color),
       pause_animation_(false),
@@ -39,19 +43,30 @@ LocationBarDecorationView::LocationBarDecorationView(
       visible_text_size_(0),
       force_draw_text_(false),
       background_painter_(background_images) {
-  SetHorizontalAlignment(ImageView::LEADING);
+  icon_->SetHorizontalAlignment(views::ImageView::LEADING);
+  AddChildView(icon_);
   TouchableLocationBarView::Init(this);
 }
 
 LocationBarDecorationView::~LocationBarDecorationView() {
 }
 
+void LocationBarDecorationView::SetImage(const gfx::ImageSkia* image_skia) {
+  icon_->SetImage(image_skia);
+}
+
+void LocationBarDecorationView::SetTooltipText(const string16& tooltip) {
+  icon_->SetTooltipText(tooltip);
+}
+
 gfx::Size LocationBarDecorationView::GetPreferredSize() {
-  gfx::Size preferred_size(views::ImageView::GetPreferredSize());
+  gfx::Size preferred_size(views::View::GetPreferredSize());
   preferred_size.set_height(std::max(preferred_size.height(),
                                      background_painter_.height()));
+  int non_label_width = preferred_size.width() -
+      (text_label_ ? text_label_->GetPreferredSize().width() : 0);
   // When view is animated |visible_text_size_| > 0, it is 0 otherwise.
-  preferred_size.set_width(preferred_size.width() + visible_text_size_);
+  preferred_size.set_width(non_label_width + visible_text_size_);
   return preferred_size;
 }
 
@@ -69,8 +84,12 @@ ui::EventResult LocationBarDecorationView::OnGestureEvent(
 }
 
 void LocationBarDecorationView::AnimationEnded(const ui::Animation* animation) {
-  if (pause_animation_)
-    pause_animation_ = false;
+  if (!pause_animation_ && !force_draw_text_) {
+    SetLayoutManager(NULL);
+    RemoveChildView(text_label_);  // will also delete the view.
+    text_label_ = NULL;
+    SchedulePaint();
+  }
   slide_animator_->Reset();
 }
 
@@ -107,9 +126,17 @@ void LocationBarDecorationView::StartLabelAnimation(string16 animated_text,
   if (!slide_animator_->is_animating()) {
     // Initialize animated string. It will be cleared when animation is
     // completed.
-    animated_text_ = animated_text;
+    if (!text_label_) {
+      text_label_ = new views::Label;
+      text_label_->SetElideBehavior(views::Label::NO_ELIDE);
+      text_label_->SetFont(font_);
+      SetLayoutManager(new views::BoxLayout(
+          views::BoxLayout::kHorizontal, kHorizMargin, 0, kIconLabelSpacing));
+      AddChildView(text_label_);
+    }
+    text_label_->SetText(animated_text);
     text_size_ = font_.GetStringWidth(animated_text);
-    text_size_ += 2 * kTextMargin + kIconLeftMargin;
+    text_size_ += kHorizMargin;
     slide_animator_->Show();
   }
 }
@@ -154,40 +181,10 @@ void LocationBarDecorationView::OnMouseReleased(const ui::MouseEvent& event) {
   OnClick(parent_);
 }
 
-void LocationBarDecorationView::OnPaint(gfx::Canvas* canvas) {
-  // During the animation we draw a border, an icon and the text. The text area
-  // is changing in size during the animation, giving the appearance of the text
-  // sliding out and then back in. When the text completely slid out the yellow
-  // border is no longer painted around the icon. |visible_text_size_| is 0 when
-  // animation is stopped.
-  if (force_draw_text_ || (slide_animator_.get() &&
-      (slide_animator_->is_animating() || pause_animation_))) {
-    // In the non-animated state borders' left() is 0, in the animated state it
-    // is the kIconLeftMargin, so we need to animate border reduction when it
-    // starts to disappear.
-    int necessary_left_margin = std::min(kIconLeftMargin, visible_text_size_);
-    views::Border* empty_border =
-        views::Border::CreateEmptyBorder(0, necessary_left_margin, 0, 0);
-    set_border(empty_border);
-    views::ImageView::OnPaint(canvas);
-
-    // Paint text to the right of the icon.
-    canvas->DrawStringInt(animated_text_, font_, font_color_,
-        GetImageBounds().right() + kTextMargin, 0,
-        width() - GetImageBounds().width(), height(),
-        gfx::Canvas::TEXT_ALIGN_LEFT | gfx::Canvas::TEXT_VALIGN_MIDDLE);
-  } else {
-    views::ImageView::OnPaint(canvas);
-  }
-}
-
 void LocationBarDecorationView::OnPaintBackground(gfx::Canvas* canvas) {
   if (force_draw_text_ || (slide_animator_.get() &&
-      (slide_animator_->is_animating() || pause_animation_))) {
+      (slide_animator_->is_animating() || pause_animation_)))
     background_painter_.Paint(canvas, size());
-  } else {
-    views::ImageView::OnPaintBackground(canvas);
-  }
 }
 
 void LocationBarDecorationView::AnimationOnClick() {
