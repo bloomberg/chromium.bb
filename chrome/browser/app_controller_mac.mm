@@ -29,6 +29,7 @@
 #include "chrome/browser/printing/print_dialog_cloud.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/service/service_process_control.h"
+#include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
@@ -807,6 +808,13 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
       return;
     }
   }
+
+  // Ignore commands during session restore's browser creation.  It uses a
+  // nested message loop and commands dispatched during this operation cause
+  // havoc.
+  if (SessionRestore::IsRestoring(lastProfile) &&
+      MessageLoop::current()->IsNested())
+    return;
 
   NSInteger tag = [sender tag];
   switch (tag) {
