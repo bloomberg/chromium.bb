@@ -505,7 +505,13 @@ class IntentRowView : public views::View,
 };
 
 IntentRowView::IntentRowView(ActionType type, size_t tag)
-    : type_(type), tag_(tag) {}
+    : delegate_(NULL),
+      icon_(NULL),
+      title_link_(NULL),
+      stars_(NULL),
+      install_button_(NULL),
+      type_(type),
+      tag_(tag) {}
 
 IntentRowView* IntentRowView::CreateHandlerRow(
     const WebIntentPickerModel::InstalledService* service,
@@ -563,7 +569,6 @@ IntentRowView* IntentRowView::CreateHandlerRow(
 
   view->title_link_ = label;
   view->AddChildView(view->title_link_);
-
 
   if (stars != NULL) {
     view->stars_ = stars;

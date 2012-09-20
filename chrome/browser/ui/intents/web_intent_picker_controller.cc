@@ -921,7 +921,8 @@ void WebIntentPickerController::OnPickerEvent(WebIntentPickerEvent event) {
     case kPickerEventAsyncDataComplete:
       DCHECK(dialog_state_ == kPickerSetup ||
              dialog_state_ == kPickerWaiting ||
-             dialog_state_ == kPickerWaitLong);
+             dialog_state_ == kPickerWaitLong ||
+             dialog_state_ == kPickerInline);
 
       // In setup state, transition to main dialog. In waiting state, let
       // timer expire.
@@ -978,7 +979,7 @@ void WebIntentPickerController::InvokeService(
     const WebIntentPickerModel::InstalledService& service) {
   if (service.disposition ==
       webkit_glue::WebIntentServiceData::DISPOSITION_INLINE) {
-    SetDialogState(kPickerMain);
+    SetDialogState(kPickerInline);
   }
   OnServiceChosen(service.url, service.disposition);
 }
@@ -1016,6 +1017,8 @@ void WebIntentPickerController::SetDialogState(WebIntentPickerState state) {
       DCHECK_EQ(dialog_state_, kPickerWaiting);
       break;
 
+    case kPickerInline:
+      // Intentional fall-through.
     case kPickerMain:
       // No DCHECK - main state can be reached from any state.
       // Ready to display data.

@@ -55,6 +55,7 @@ class WebIntentPickerController
     kPickerWaiting, // Displaying "waiting for CWS".
     kPickerWaitLong,  // "waiting" has displayed for longer than min. time.
     kPickerMain,  // Displaying main picker dialog.
+    kPickerInline, // Displaying inline intent handler.
   };
 
   // Events that happen during picker life time. Drive state machine.
