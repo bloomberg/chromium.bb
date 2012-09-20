@@ -235,6 +235,12 @@ void RenderWidgetHostImpl::CompositingSurfaceUpdated() {
   process_->SurfaceUpdated(surface_id_);
 }
 
+void RenderWidgetHostImpl::ResetSizeAndRepaintPendingFlags() {
+  resize_ack_pending_ = false;
+  repaint_ack_pending_ = false;
+  in_flight_size_.SetSize(0, 0);
+}
+
 void RenderWidgetHostImpl::Init() {
   DCHECK(process_->HasConnection());
 
@@ -1111,10 +1117,7 @@ void RenderWidgetHostImpl::RendererExited(base::TerminationStatus status,
   suppress_next_char_events_ = false;
 
   // Reset some fields in preparation for recovering from a crash.
-  resize_ack_pending_ = false;
-  repaint_ack_pending_ = false;
-
-  in_flight_size_.SetSize(0, 0);
+  ResetSizeAndRepaintPendingFlags();
   current_size_.SetSize(0, 0);
   is_hidden_ = false;
   is_accelerated_compositing_active_ = false;
