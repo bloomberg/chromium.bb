@@ -74,6 +74,9 @@ const long int kReleaseNotesTargetRelease = 19;
 const char kGetStartedURLPattern[] =
     "http://gweb-gettingstartedguide.appspot.com/";
 
+// Getting started guide application window size.
+const char kGSGAppWindowSize[] = "820,550";
+
 // Parameter to be added to GetStarted URL that contains board.
 const char kGetStartedBoardParam[] = "board";
 
@@ -810,9 +813,8 @@ void ExistingUserController::InitializeStartUrls() const {
   if (!guide_url.empty()) {
     CommandLine::ForCurrentProcess()->AppendSwitchASCII(switches::kApp,
                                                         guide_url);
-    // NTP would open in the background, app window with GSG would be focused
-    // so that user won't have an empty desktop after GSG is closed.
-    CommandLine::ForCurrentProcess()->AppendArg(chrome::kChromeUINewTabURL);
+    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kAppWindowSize, kGSGAppWindowSize);
   } else {
     // We should not be adding any start URLs if guide
     // is defined as it launches as a standalone app window.

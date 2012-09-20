@@ -62,6 +62,10 @@ const char kAppId[]                         = "app-id";
 // mode.
 const char kApp[]                           = "app";
 
+// Specifies the initial size for application windows launched with --app.
+// --app-window-size=w,h
+const char kAppWindowSize[]                 = "app-window-size";
+
 // A URL for the server which assigns channel ids for server pushed app
 // notifications.
 const char kAppNotifyChannelServerURL[]     = "app-notify-channel-server-url";

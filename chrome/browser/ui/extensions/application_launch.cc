@@ -29,6 +29,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/renderer_preferences.h"
+#include "ui/gfx/rect.h"
 
 using content::WebContents;
 using extensions::Extension;
@@ -68,7 +69,8 @@ WebContents* OpenApplicationWindow(
     const Extension* extension,
     extension_misc::LaunchContainer container,
     const GURL& url_input,
-    Browser** app_browser) {
+    Browser** app_browser,
+    const gfx::Rect& override_bounds) {
   DCHECK(!url_input.is_empty() || extension);
   GURL url = UrlForExtension(extension, url_input);
 
@@ -83,6 +85,8 @@ WebContents* OpenApplicationWindow(
   if (extension) {
     window_bounds.set_width(extension->launch_width());
     window_bounds.set_height(extension->launch_height());
+  } else if (!override_bounds.IsEmpty()) {
+    window_bounds = override_bounds;
   }
 
   Browser::CreateParams params(type, profile);
@@ -255,7 +259,7 @@ WebContents* OpenApplication(const LaunchParams& params) {
     case extension_misc::LAUNCH_PANEL:
     case extension_misc::LAUNCH_WINDOW:
       tab = OpenApplicationWindow(profile, extension, container,
-                                  override_url, NULL);
+                                  override_url, NULL, gfx::Rect());
       break;
     case extension_misc::LAUNCH_TAB: {
       tab = OpenApplicationTab(profile, extension, override_url,
@@ -270,14 +274,16 @@ WebContents* OpenApplication(const LaunchParams& params) {
 }
 
 WebContents* OpenAppShortcutWindow(Profile* profile,
-                                   const GURL& url) {
+                                   const GURL& url,
+                                   const gfx::Rect& override_bounds) {
   Browser* app_browser;
   WebContents* tab = OpenApplicationWindow(
       profile,
       NULL,  // this is a URL app.  No extension.
       extension_misc::LAUNCH_WINDOW,
       url,
-      &app_browser);
+      &app_browser,
+      override_bounds);
 
   if (!tab)
     return NULL;

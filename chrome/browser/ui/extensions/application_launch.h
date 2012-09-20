@@ -22,6 +22,10 @@ namespace extensions {
 class Extension;
 }
 
+namespace gfx {
+class Rect;
+}
+
 namespace application_launch {
 
 struct LaunchParams {
@@ -57,14 +61,14 @@ struct LaunchParams {
 // Open the application in a way specified by |params|.
 content::WebContents* OpenApplication(const LaunchParams& params);
 
-// Open |url| in an app shortcut window.  If |update_shortcut| is true,
-// update the name, description, and favicon of the shortcut.
+// Open |url| in an app shortcut window. |override_bounds| param is optional.
 // There are two kinds of app shortcuts: Shortcuts to a URL,
 // and shortcuts that open an installed application.  This function
 // is used to open the former.  To open the latter, use
 // application_launch::OpenApplication().
 content::WebContents* OpenAppShortcutWindow(Profile* profile,
-                                            const GURL& url);
+                                            const GURL& url,
+                                            const gfx::Rect& override_bounds);
 
 }  // namespace application_launch
 
