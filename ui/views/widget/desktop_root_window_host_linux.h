@@ -34,13 +34,15 @@ class DesktopRootWindowHostLinux : public DesktopRootWindowHost,
                                    public aura::RootWindowHost,
                                    public MessageLoop::Dispatcher {
  public:
-  DesktopRootWindowHostLinux();
+  DesktopRootWindowHostLinux(
+      internal::NativeWidgetDelegate* native_widget_delegate,
+      const gfx::Rect& initial_bounds);
   virtual ~DesktopRootWindowHostLinux();
 
  private:
   // Initializes our X11 surface to draw on. This method performs all
   // initialization related to talking to the X11 server.
-  void InitX11Window(const gfx::Rect& bounds);
+  void InitX11Window(const Widget::InitParams& params);
 
   // Creates an aura::RootWindow to contain the |content_window|, along with
   // all aura client objects that direct behavior.
@@ -152,6 +154,10 @@ class DesktopRootWindowHostLinux : public DesktopRootWindowHost,
   // An event filter that pre-handles all key events to send them to an IME.
   scoped_ptr<aura::shared::InputMethodEventFilter> input_method_filter_;
   scoped_ptr<X11WindowEventFilter> x11_window_event_filter_;
+
+  // TODO(beng): Consider providing an interface to DesktopNativeWidgetAura
+  //             instead of providing this route back to Widget.
+  internal::NativeWidgetDelegate* native_widget_delegate_;
 
   aura::RootWindowHostDelegate* root_window_host_delegate_;
   aura::Window* content_window_;

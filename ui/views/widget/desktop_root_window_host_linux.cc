@@ -10,6 +10,7 @@
 
 #include "base/message_pump_aurax11.h"
 #include "base/stringprintf.h"
+#include "base/utf_string_conversions.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/client/user_action_client.h"
 #include "ui/aura/desktop/desktop_activation_client.h"
@@ -21,6 +22,7 @@
 #include "ui/base/touch/touch_factory.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/views/widget/desktop_capture_client.h"
+#include "ui/views/widget/desktop_layout_manager.h"
 #include "ui/views/widget/x11_desktop_handler.h"
 #include "ui/views/widget/x11_window_event_filter.h"
 
@@ -45,13 +47,16 @@ const char* kAtomsToCache[] = {
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopRootWindowHostLinux, public:
 
-DesktopRootWindowHostLinux::DesktopRootWindowHostLinux()
+DesktopRootWindowHostLinux::DesktopRootWindowHostLinux(
+    internal::NativeWidgetDelegate* native_widget_delegate,
+    const gfx::Rect& initial_bounds)
     : xdisplay_(base::MessagePumpAuraX11::GetDefaultXDisplay()),
       xwindow_(0),
       x_root_window_(DefaultRootWindow(xdisplay_)),
       atom_cache_(xdisplay_, kAtomsToCache),
       window_mapped_(false),
-      focus_when_shown_(false) {
+      focus_when_shown_(false),
+      native_widget_delegate_(native_widget_delegate) {
 }
 
 DesktopRootWindowHostLinux::~DesktopRootWindowHostLinux() {
@@ -62,18 +67,27 @@ DesktopRootWindowHostLinux::~DesktopRootWindowHostLinux() {
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopRootWindowHostLinux, private:
 
-void DesktopRootWindowHostLinux::InitX11Window(const gfx::Rect& bounds) {
+void DesktopRootWindowHostLinux::InitX11Window(
+    const Widget::InitParams& params) {
+  unsigned long attribute_mask = CWBackPixmap;
   XSetWindowAttributes swa;
   memset(&swa, 0, sizeof(swa));
   swa.background_pixmap = None;
+
+  if (params.type == Widget::InitParams::TYPE_MENU) {
+    swa.override_redirect = True;
+    attribute_mask |= CWOverrideRedirect;
+  }
+
   xwindow_ = XCreateWindow(
       xdisplay_, x_root_window_,
-      bounds.x(), bounds.y(), bounds.width(), bounds.height(),
+      params.bounds.x(), params.bounds.y(),
+      params.bounds.width(), params.bounds.height(),
       0,               // border width
       CopyFromParent,  // depth
       InputOutput,
       CopyFromParent,  // visual
-      CWBackPixmap,
+      attribute_mask,
       &swa);
   base::MessagePumpAuraX11::Current()->AddDispatcherForWindow(this, xwindow_);
 
@@ -113,26 +127,29 @@ void DesktopRootWindowHostLinux::InitX11Window(const gfx::Rect& bounds) {
                   32,
                   PropModeReplace,
                   reinterpret_cast<unsigned char*>(&pid), 1);
-
-  // TODO(erg): Now that we're forked from RootWindowHostLinux, we should be
-  // doing a much better job about communicating things like the window title
-  // and icon to the window manager, which should replace this piece of copied
-  // code.
-  static int root_window_number = 0;
-  std::string name = StringPrintf("aura_root_%d", root_window_number++);
-  XStoreName(xdisplay_, xwindow_, name.c_str());
 }
 
 // TODO(erg): This method should basically be everything I need form
 // RootWindowHostLinux::RootWindowHostLinux().
 void DesktopRootWindowHostLinux::InitRootWindow(
     const Widget::InitParams& params) {
-  aura::RootWindow::CreateParams rw_params(params.bounds);
+  bounds_ = params.bounds;
+
+  aura::RootWindow::CreateParams rw_params(bounds_);
   rw_params.host = this;
   root_window_.reset(new aura::RootWindow(rw_params));
   root_window_->Init();
   root_window_->AddChild(content_window_);
+  root_window_->SetLayoutManager(new DesktopLayoutManager(root_window_.get()));
   root_window_host_delegate_ = root_window_.get();
+
+  // If we're given a parent, we need to mark ourselves as transient to another
+  // window. Otherwise activation gets screwy.
+  gfx::NativeView parent = params.GetParent();
+  if (!params.child && params.GetParent())
+    parent->AddTransientChild(content_window_);
+
+  native_widget_delegate_->OnNativeWidgetCreated();
 
   capture_client_.reset(new DesktopCaptureClient);
   aura::client::SetCaptureClient(root_window_.get(), capture_client_.get());
@@ -182,15 +199,16 @@ void DesktopRootWindowHostLinux::Init(aura::Window* content_window,
   // TODO(erg): Check whether we *should* be building a RootWindowHost here, or
   // whether we should be proxying requests to another DRWHL.
 
-  // TODO(erg): We can finally solve the role problem! Based on params, try to
-  // determine whether this is a utility window such as a menu.
+  // In some situations, views tries to make a zero sized window, and that
+  // makes us crash. Make sure we have valid sizes.
+  Widget::InitParams sanitized_params = params;
+  if (sanitized_params.bounds.width() == 0)
+    sanitized_params.bounds.set_width(100);
+  if (sanitized_params.bounds.height() == 0)
+    sanitized_params.bounds.set_height(100);
 
-  InitX11Window(params.bounds);
-  InitRootWindow(params);
-
-  // TODO(erg): This should be done by a LayoutManager instead of being a
-  // one-off hack.
-  content_window_->SetBounds(params.bounds);
+  InitX11Window(sanitized_params);
+  InitRootWindow(sanitized_params);
 
   // This needs to be the intersection of:
   // - NativeWidgetAura::InitNativeWidget()
@@ -244,20 +262,22 @@ void DesktopRootWindowHostLinux::CenterWindow(const gfx::Size& size) {
 void DesktopRootWindowHostLinux::GetWindowPlacement(
     gfx::Rect* bounds,
     ui::WindowShowState* show_state) const {
-  // TODO(erg):
-  NOTIMPLEMENTED();
+  *bounds = bounds_;
+
+  // TODO(erg): This needs a better implementation. For now, we're just pass
+  // back the normal state until we keep track of this.
+  *show_state = ui::SHOW_STATE_NORMAL;
 }
 
 gfx::Rect DesktopRootWindowHostLinux::GetWindowBoundsInScreen() const {
-  // TODO(erg):
-  NOTIMPLEMENTED();
-  return gfx::Rect();
+  return bounds_;
 }
 
 gfx::Rect DesktopRootWindowHostLinux::GetClientAreaBoundsInScreen() const {
-  // TODO(erg):
   NOTIMPLEMENTED();
-  return gfx::Rect(100, 100);
+  // TODO(erg): This is wrong, but would require looking at the actual views
+  // hierarchy to do correctly.
+  return bounds_;
 }
 
 gfx::Rect DesktopRootWindowHostLinux::GetRestoredBounds() const {
@@ -289,7 +309,7 @@ void DesktopRootWindowHostLinux::Deactivate() {
 
 bool DesktopRootWindowHostLinux::IsActive() const {
   // TODO(erg):
-  NOTIMPLEMENTED();
+  //NOTIMPLEMENTED();
   return true;
 }
 
@@ -345,8 +365,7 @@ internal::InputMethodDelegate*
 }
 
 void DesktopRootWindowHostLinux::SetWindowTitle(const string16& title) {
-  // TODO(erg):
-  NOTIMPLEMENTED();
+  XStoreName(xdisplay_, xwindow_, UTF16ToUTF8(title).c_str());
 }
 
 void DesktopRootWindowHostLinux::ClearNativeFocus() {
@@ -425,41 +444,62 @@ void DesktopRootWindowHostLinux::ToggleFullScreen() {
 }
 
 gfx::Rect DesktopRootWindowHostLinux::GetBounds() const {
-  return gfx::Rect(100, 100);
+  return bounds_;
 }
 
 void DesktopRootWindowHostLinux::SetBounds(const gfx::Rect& bounds) {
+  bool size_changed = bounds.size() != bounds_.size();
+
+  if (bounds != bounds_) {
+    XMoveResizeWindow(xdisplay_, xwindow_, bounds.x(), bounds.y(),
+                      bounds.width(), bounds.height());
+    bounds_ = bounds;
+  }
+
+  if (size_changed)
+    root_window_host_delegate_->OnHostResized(bounds_.size());
+  else
+    root_window_host_delegate_->OnHostPaint();
 }
 
 gfx::Point DesktopRootWindowHostLinux::GetLocationOnNativeScreen() const {
+  NOTIMPLEMENTED();
   return gfx::Point(1, 1);
 }
 
 void DesktopRootWindowHostLinux::SetCapture() {
+  NOTIMPLEMENTED();
 }
 
 void DesktopRootWindowHostLinux::ReleaseCapture() {
+  NOTIMPLEMENTED();
 }
 
 void DesktopRootWindowHostLinux::SetCursor(gfx::NativeCursor cursor) {
+  NOTIMPLEMENTED();
 }
 
 void DesktopRootWindowHostLinux::ShowCursor(bool show) {
+  NOTIMPLEMENTED();
 }
 
 bool DesktopRootWindowHostLinux::QueryMouseLocation(
     gfx::Point* location_return) {
+  NOTIMPLEMENTED();
   return false;
 }
 
 bool DesktopRootWindowHostLinux::ConfineCursorToRootWindow() {
+  NOTIMPLEMENTED();
   return false;
 }
 
 void DesktopRootWindowHostLinux::UnConfineCursor() {
+  NOTIMPLEMENTED();
 }
 
 void DesktopRootWindowHostLinux::MoveCursorTo(const gfx::Point& location) {
+  NOTIMPLEMENTED();
 }
 
 void DesktopRootWindowHostLinux::SetFocusWhenShown(bool focus_when_shown) {
@@ -476,6 +516,7 @@ void DesktopRootWindowHostLinux::SetFocusWhenShown(bool focus_when_shown) {
 bool DesktopRootWindowHostLinux::GrabSnapshot(
       const gfx::Rect& snapshot_bounds,
       std::vector<unsigned char>* png_representation) {
+  NOTIMPLEMENTED();
   return false;
 }
 
@@ -735,7 +776,7 @@ bool DesktopRootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
 DesktopRootWindowHost* DesktopRootWindowHost::Create(
     internal::NativeWidgetDelegate* native_widget_delegate,
     const gfx::Rect& initial_bounds) {
-  return new DesktopRootWindowHostLinux;
+  return new DesktopRootWindowHostLinux(native_widget_delegate, initial_bounds);
 }
 
 }  // namespace views

@@ -311,6 +311,8 @@
         'widget/default_theme_provider.h',
         'widget/desktop_capture_client.cc',
         'widget/desktop_capture_client.h',
+        'widget/desktop_layout_manager.cc',
+        'widget/desktop_layout_manager.h',
         'widget/desktop_native_widget_aura.cc',
         'widget/desktop_native_widget_aura.h',
         'widget/desktop_native_widget_helper_aura.cc',
