@@ -26,7 +26,7 @@
 
 #if defined(OS_ANDROID)
 #include "net/base/network_change_notifier.h"
-#include "net/android/network_change_notifier_factory.h"
+#include "net/android/network_change_notifier_factory_android.h"
 #endif
 
 namespace content {
@@ -91,7 +91,7 @@ void ShellBrowserMainParts::PostMainMessageLoopStart() {
 void ShellBrowserMainParts::PreEarlyInitialization() {
 #if defined(OS_ANDROID)
   net::NetworkChangeNotifier::SetFactory(
-      new net::android::NetworkChangeNotifierFactory());
+      new net::NetworkChangeNotifierFactoryAndroid());
 #endif
 }
 

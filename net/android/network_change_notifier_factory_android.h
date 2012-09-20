@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_ANDROID_NETWORK_CHANGE_NOTIFIER_FACTORY_H_
-#define NET_ANDROID_NETWORK_CHANGE_NOTIFIER_FACTORY_H_
+#ifndef NET_ANDROID_NETWORK_CHANGE_NOTIFIER_FACTORY_ANDROID_H_
+#define NET_ANDROID_NETWORK_CHANGE_NOTIFIER_FACTORY_ANDROID_H_
 
 #include "base/compiler_specific.h"
 #include "net/base/network_change_notifier_factory.h"
@@ -12,19 +12,17 @@ namespace net {
 
 class NetworkChangeNotifier;
 
-namespace android {
-
 // NetworkChangeNotifierFactory creates Android-specific specialization of
 // NetworkChangeNotifier.
-class NetworkChangeNotifierFactory : public net::NetworkChangeNotifierFactory {
+class NetworkChangeNotifierFactoryAndroid :
+    public NetworkChangeNotifierFactory {
  public:
-  NetworkChangeNotifierFactory();
+  NetworkChangeNotifierFactoryAndroid();
 
-  // Overrides of net::NetworkChangeNotifierFactory.
-  virtual net::NetworkChangeNotifier* CreateInstance() OVERRIDE;
+  // Overrides of NetworkChangeNotifierFactory.
+  virtual NetworkChangeNotifier* CreateInstance() OVERRIDE;
 };
 
-}  // namespace android
 }  // namespace net
 
 #endif  // NET_ANDROID_NETWORK_CHANGE_NOTIFIER_FACTORY_H_

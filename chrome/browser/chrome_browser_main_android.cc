@@ -6,7 +6,7 @@
 
 #include "chrome/common/chrome_switches.h"
 #include "content/public/common/main_function_params.h"
-#include "net/android/network_change_notifier_factory.h"
+#include "net/android/network_change_notifier_factory_android.h"
 #include "net/base/network_change_notifier.h"
 
 ChromeBrowserMainPartsAndroid::ChromeBrowserMainPartsAndroid(
@@ -19,7 +19,7 @@ ChromeBrowserMainPartsAndroid::~ChromeBrowserMainPartsAndroid() {
 
 void ChromeBrowserMainPartsAndroid::PreEarlyInitialization() {
   net::NetworkChangeNotifier::SetFactory(
-      new net::android::NetworkChangeNotifierFactory());
+      new net::NetworkChangeNotifierFactoryAndroid());
 
   // Chrome on Android does not use default MessageLoop. It has its own
   // Android specific MessageLoop.
