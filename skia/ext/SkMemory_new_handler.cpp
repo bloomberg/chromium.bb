@@ -56,7 +56,7 @@ void* sk_malloc_flags(size_t size, unsigned flags) {
     p = malloc(size);
 #else
     if (!(flags & SK_MALLOC_THROW)) {
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) && !defined(OS_IOS)
       p = base::UncheckedMalloc(size);
 #else
       SkAutoMutexAcquire lock(gSkNewHandlerMutex);
