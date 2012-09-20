@@ -130,6 +130,19 @@ static void ConvertHexadecimalToIDAlphabet(std::string* id) {
   }
 }
 
+// Strips leading slashes from the file path. Returns true iff the final path is
+// non empty.
+bool NormalizeAndValidatePath(std::string* path) {
+  size_t first_non_slash = path->find_first_not_of('/');
+  if (first_non_slash == std::string::npos) {
+    *path = "";
+    return false;
+  }
+
+  *path = path->substr(first_non_slash);
+  return true;
+}
+
 // Loads icon paths defined in dictionary |icons_value| into ExtensionIconSet
 // |icons|. |icons_value| is a dictionary value {icon size -> icon path}. Icons
 // in |icons_value| whose size is not in |icon_sizes| will be ignored.
@@ -150,14 +163,12 @@ bool LoadIconsFromDictionary(const DictionaryValue* icons_value,
         return false;
       }
 
-      if (!icon_path.empty() && icon_path[0] == '/')
-        icon_path = icon_path.substr(1);
-
-      if (icon_path.empty()) {
+      if (!NormalizeAndValidatePath(&icon_path)) {
         *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
             errors::kInvalidIconPath, key);
         return false;
       }
+
       icons->Add(icon_sizes[i], icon_path);
     }
   }
@@ -852,7 +863,7 @@ scoped_ptr<ExtensionAction> Extension::LoadExtensionActionHelper(
       for (ListValue::const_iterator iter = icons->begin();
            iter != icons->end(); ++iter) {
         std::string path;
-        if (!(*iter)->GetAsString(&path) || path.empty()) {
+        if (!(*iter)->GetAsString(&path) || !NormalizeAndValidatePath(&path)) {
           *error = ASCIIToUTF16(errors::kInvalidPageActionIconPath);
           return scoped_ptr<ExtensionAction>();
         }
@@ -894,7 +905,7 @@ scoped_ptr<ExtensionAction> Extension::LoadExtensionActionHelper(
       result->set_default_icon(default_icons.Pass());
     } else if (extension_action->GetString(keys::kPageActionDefaultIcon,
                                            &default_icon) &&
-               !default_icon.empty()) {
+               NormalizeAndValidatePath(&default_icon)) {
       scoped_ptr<ExtensionIconSet> icon_set(new ExtensionIconSet);
       icon_set->Add(extension_misc::EXTENSION_ICON_ACTION, default_icon);
       result->set_default_icon(icon_set.Pass());
@@ -2417,9 +2428,8 @@ bool Extension::LoadScriptBadge(string16* error) {
   for (size_t i = 0; i < extension_misc::kNumScriptBadgeIconSizes; i++) {
     std::string path = icons().Get(extension_misc::kScriptBadgeIconSizes[i],
                                    ExtensionIconSet::MATCH_EXACTLY);
-    if (!path.empty()) {
+    if (!path.empty())
       icon_set->Add(extension_misc::kScriptBadgeIconSizes[i], path);
-    }
   }
 
   if (!icon_set->map().empty()) {
