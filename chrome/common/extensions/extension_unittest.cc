@@ -461,7 +461,7 @@ static bool CheckSocketPermission(scoped_refptr<Extension> extension,
 TEST(ExtensionTest, SocketPermissions) {
   // Set feature current channel to appropriate value.
   Feature::ScopedCurrentChannel scoped_channel(
-      chrome::VersionInfo::GetChannel());
+      chrome::VersionInfo::CHANNEL_DEV);
   scoped_refptr<Extension> extension;
   std::string error;
 
