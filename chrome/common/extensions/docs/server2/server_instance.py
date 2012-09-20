@@ -42,13 +42,19 @@ class ServerInstance(object):
 
     content = None
     if fnmatch(path, 'extensions/examples/*.zip'):
-      content = self._example_zipper.Create(
-          path[len('extensions/'):-len('.zip')])
-      response.headers['content-type'] = mimetypes.types_map['.zip']
+      try:
+        content = self._example_zipper.Create(
+            path[len('extensions/'):-len('.zip')])
+        response.headers['content-type'] = mimetypes.types_map['.zip']
+      except FileNotFoundError:
+        content = None
     elif path.startswith('extensions/examples/'):
-      content = self._cache.GetFromFile(
-          DOCS_PATH + '/' + path[len('extensions/'):])
-      response.headers['content-type'] = 'text/plain'
+      try:
+        content = self._cache.GetFromFile(
+            '%s/%s' % (DOCS_PATH, path[len('extensions/'):]))
+        response.headers['content-type'] = 'text/plain'
+      except FileNotFoundError:
+        content = None
     elif path.startswith('static/'):
       content = self._FetchStaticResource(path, response)
     elif path.endswith('.html'):
