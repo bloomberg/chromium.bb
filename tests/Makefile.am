@@ -84,6 +84,8 @@ outpos_SOURCES =			\
 	brl_checks.h		\
 	outpos.c	
 
+getTable_SOURCES = getTable.c
+
 check_PROGRAMS =				\
 	pass2					\
 	pass2_inpos				\
@@ -100,7 +102,8 @@ check_PROGRAMS =				\
 	squash_space				\
 	hyphenate				\
 	pass1Only				\
-	outpos
+	outpos				\
+	getTable
 
 dist_check_SCRIPTS =		\
 	check_all_tables.pl	\
