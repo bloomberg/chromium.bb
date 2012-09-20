@@ -25,8 +25,7 @@ SkRect RectToSkRect(const gfx::Rect& rect) {
 }
 
 SkIRect RectToSkIRect(const gfx::Rect& rect) {
-  SkIRect r = { rect.x(), rect.y(), rect.right(), rect.bottom() };
-  return r;
+  return SkIRect::MakeXYWH(rect.x(), rect.y(), rect.width(), rect.height());
 }
 
 gfx::Rect SkRectToRect(const SkRect& rect) {
