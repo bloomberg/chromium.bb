@@ -11,7 +11,7 @@
 
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
-#include "chrome/browser/history/url_database.h"
+#include "chrome/browser/common/url_database/url_database.h"
 #include "chrome/browser/history/visit_filter.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/common/page_transition_types.h"

@@ -14,10 +14,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/string16.h"
 #include "base/memory/mru_cache.h"
+#include "chrome/browser/common/url_database/url_database.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/text_database.h"
 #include "chrome/browser/history/query_parser.h"
-#include "chrome/browser/history/url_database.h"
 
 namespace history {
 

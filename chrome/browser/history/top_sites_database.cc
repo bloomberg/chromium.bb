@@ -11,6 +11,7 @@
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/history/top_sites_database.h"
 #include "sql/connection.h"
+#include "sql/statement.h"
 #include "sql/transaction.h"
 
 namespace history {
