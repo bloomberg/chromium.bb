@@ -15,7 +15,6 @@ var ContentSettingsExceptionsArea =
 var CookiesView = options.CookiesView;
 var CookiesViewApp = options.CookiesViewApp;
 var DoNotTrackConfirmOverlay = options.DoNotTrackConfirmOverlay;
-var FactoryResetOverlay = options.FactoryResetOverlay;
 var FontSettings = options.FontSettings;
 var HandlerOptions = options.HandlerOptions;
 var HomePageOverlay = options.HomePageOverlay;
@@ -132,9 +131,6 @@ function load() {
                                 [$('bluetooth-add-device')]);
     OptionsPage.registerOverlay(BluetoothPairing.getInstance(),
                                 BrowserOptions.getInstance());
-    OptionsPage.registerOverlay(FactoryResetOverlay.getInstance(),
-                                BrowserOptions.getInstance(),
-                                [$('factory-reset-restart')]);
     OptionsPage.registerOverlay(ChangePictureOptions.getInstance(),
                                 BrowserOptions.getInstance(),
                                 [$('account-picture')]);

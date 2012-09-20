@@ -30,11 +30,9 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
@@ -1009,16 +1007,6 @@ void SigninScreenHandler::SendUserList(bool animated) {
 
 void SigninScreenHandler::HandleAccountPickerReady(
     const base::ListValue* args) {
-
-  PrefService* prefs = g_browser_process->local_state();
-  if (prefs->GetBoolean(prefs::kFactoryResetRequested)) {
-    prefs->SetBoolean(prefs::kFactoryResetRequested, false);
-    prefs->CommitPendingWrite();
-    base::ListValue args;
-    HandleToggleResetScreen(&args);
-    return;
-  }
-
   is_account_picker_showing_first_time_ = true;
   MaybePreloadAuthExtension();
 
