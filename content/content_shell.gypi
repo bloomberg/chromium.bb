@@ -631,6 +631,46 @@
           ],
           'includes': [ '../build/java_apk.gypi' ],
         },
+        {
+          # content_shell_apk creates a .jar as a side effect. Any java targets
+          # that need that .jar in their classpath should depend on this target,
+          # content_shell_java.
+          'target_name': 'content_shell_java',
+          'type': 'none',
+          'outputs': [
+            '<(PRODUCT_DIR)/lib.java/chromium_content_shell.jar',
+          ],
+          'dependencies': [
+            'content_java',
+            'content_shell_apk',
+            '../base/base.gyp:base_java',
+            '../media/media.gyp:media_java',
+            '../net/net.gyp:net_java',
+            '../ui/ui.gyp:ui_java',
+          ],
+          'export_dependent_settings': [
+            'content_java',
+            '../base/base.gyp:base_java',
+            '../media/media.gyp:media_java',
+            '../net/net.gyp:net_java',
+            '../ui/ui.gyp:ui_java',
+          ],
+          'direct_dependent_settings': {
+            'variables': {
+              'input_jars_paths': ['<(PRODUCT_DIR)/lib.java/chromium_content_shell.jar'],
+            },
+          },
+          # Add an action with the appropriate output. This allows the generated
+          # buildfiles to determine which target the output corresponds to.
+          'actions': [
+            {
+              'action_name': 'fake_generate_jar',
+              'inputs': [],
+              'outputs': ['<(PRODUCT_DIR)/lib.java/chromium_content_shell.jar'],
+              'action': [],
+            },
+          ],
+        },
       ],
     }],  # OS=="android"
   ]

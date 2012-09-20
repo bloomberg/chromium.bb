@@ -56,6 +56,12 @@
         </copy>
       </then>
     </if>
+
+    <!-- Package all the compiled .class files into a .jar. -->
+    <jar
+      jarfile="${lib.java.dir}/chromium_${PACKAGE_NAME}.jar"
+      basedir="${out.classes.absolute.dir}"
+    />
   </target>
 
   <!-- Classpath for javac -->
