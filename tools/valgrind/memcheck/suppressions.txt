@@ -5994,6 +5994,44 @@
    fun:_ZN7WebCore15GraphicsContext10strokeRectERKNS_9FloatRectEf
    fun:_ZNK7WebCore13RenderSVGRect11strokeShapeEPNS_15GraphicsContextE
 }
+{
+   bug_150995_a
+   Memcheck:Uninitialized
+   ...
+   fun:_ZN3gfx12_GLOBAL__N_113DoLibpngWriteEP14png_struct_defP15png_info_structPNS0_15PngEncoderStateEiiiPKhiiiPFvS8_iPhPbERKSt6vectorINS_8PNGCodec7CommentESaISF_EE
+   fun:_ZN3gfx8PNGCodec26EncodeWithCompressionLevelEPKhNS0_11ColorFormatERKNS_4SizeEibRKSt6vectorINS0_7CommentESaIS8_EEiPS7_IhSaIhEE
+   fun:_ZN3gfx8PNGCodec6EncodeEPKhNS0_11ColorFormatERKNS_4SizeEibRKSt6vectorINS0_7CommentESaIS8_EEPS7_IhSaIhEE
+   fun:_ZN3gfx8PNGCodec18EncodeBGRASkBitmapERK8SkBitmapbPSt6vectorIhSaIhEE
+   fun:_ZN2ui12_GLOBAL__N_130CreateDataPackWithSingleBitmapERK8FilePathi
+   fun:_ZN2ui33ResourceBundle_GetImageNamed_Test8TestBodyEv
+}
+{
+   bug_150995_b
+   Memcheck:Param
+   write(buf)
+   fun:write$NOCANCEL$UNIX2003
+   fun:__sflush
+   fun:fclose
+   fun:_ZN9file_util9CloseFileEP7__sFILE
+   fun:_ZN2ui8DataPack9WritePackERK8FilePathRKSt3mapItN4base16BasicStringPieceISsEESt4lessItESaISt4pairIKtS7_EEENS_14ResourceHandle16TextEncodingTypeE
+   fun:_ZN2ui12_GLOBAL__N_130CreateDataPackWithSingleBitmapERK8FilePathi
+   fun:_ZN2ui33ResourceBundle_GetImageNamed_Test8TestBodyEv
+}
+{
+   bug_150998
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7leveldb12_GLOBAL__N_111ChromiumEnv11StartThreadEPFvPvES2_
+   fun:_ZN7leveldb12_GLOBAL__N_111ChromiumEnv8ScheduleEPFvPvES2_
+   fun:_ZN7leveldb6DBImpl23MaybeScheduleCompactionEv
+   fun:_ZN7leveldb6DBImpl16MakeRoomForWriteEb
+   fun:_ZN7leveldb6DBImpl5WriteERKNS_12WriteOptionsEPNS_10WriteBatchE
+   fun:_ZN17LeveldbValueStore9WriteToDbEPN7leveldb10WriteBatchE
+   fun:_ZN17LeveldbValueStore3SetEiRKSsRKN4base5ValueE
+   fun:_ZN10extensions28SettingsStorageQuotaEnforcer3SetEiRKSsRKN4base5ValueE
+   fun:_ZN10extensions23SyncableSettingsStorage3SetEiRKSsRKN4base5ValueE
+   fun:_ZN10extensions78ExtensionSettingsFrontendTest_QuotaLimitsEnforcedCorrectlyForSyncAndLocal_Test8TestBodyEv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
