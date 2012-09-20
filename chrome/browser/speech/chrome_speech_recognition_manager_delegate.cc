@@ -274,11 +274,8 @@ void ChromeSpeechRecognitionManagerDelegate::InfoBubbleFocusChanged(
   GetBubbleController()->CloseBubble();
   last_session_config_.reset();
 
-  // If the user clicks outside the bubble while capturing audio we abort the
-  // session. Otherwise, i.e. audio capture is ended and we are just waiting for
-  // results, this activity is carried silently in background.
-  if (SpeechRecognitionManager::GetInstance()->IsCapturingAudio())
-    SpeechRecognitionManager::GetInstance()->AbortSession(session_id);
+  // Clicking outside the bubble means we should abort.
+  SpeechRecognitionManager::GetInstance()->AbortSession(session_id);
 }
 
 void ChromeSpeechRecognitionManagerDelegate::RestartLastSession() {
