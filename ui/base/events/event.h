@@ -204,7 +204,11 @@ class UI_EXPORT LocatedEvent : public Event {
 
   int x() const { return location_.x(); }
   int y() const { return location_.y(); }
+  void set_location(const gfx::Point& location) { location_ = location; }
   gfx::Point location() const { return location_; }
+  void set_root_location(const gfx::Point& root_location) {
+    root_location_ = root_location;
+  }
   gfx::Point root_location() const { return root_location_; }
 
   bool valid_system_location() const { return valid_system_location_; }

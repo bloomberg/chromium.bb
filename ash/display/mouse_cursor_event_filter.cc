@@ -86,10 +86,10 @@ bool MouseCursorEventFilter::PreHandleMouseEvent(aura::Window* target,
       return false;
   }
 
-  aura::RootWindow* current_root = target->GetRootWindow();
-  gfx::Point location_in_root(event->location());
-  aura::Window::ConvertPointToTarget(target, current_root, &location_in_root);
-  return WarpMouseCursorIfNecessary(current_root, location_in_root);
+  gfx::Point point_in_screen(event->location());
+  wm::ConvertPointToScreen(target, &point_in_screen);
+  return
+      WarpMouseCursorIfNecessary(target->GetRootWindow(), point_in_screen);
 }
 
 ui::TouchStatus MouseCursorEventFilter::PreHandleTouchEvent(
@@ -105,38 +105,31 @@ ui::EventResult MouseCursorEventFilter::PreHandleGestureEvent(
 }
 
 bool MouseCursorEventFilter::WarpMouseCursorIfNecessary(
-    aura::RootWindow* current_root,
-    const gfx::Point& point_in_root) {
+    aura::RootWindow* target_root,
+    const gfx::Point& point_in_screen) {
   if (gfx::Screen::GetNumDisplays() <= 1 || mouse_warp_mode_ == WARP_NONE)
     return false;
-  const float scale = ui::GetDeviceScaleFactor(current_root->layer());
+  const float scale = ui::GetDeviceScaleFactor(target_root->layer());
 
-  // The pointer might be outside the |current_root|. Get the root window where
-  // the pointer is currently on.
-  std::pair<aura::RootWindow*, gfx::Point> actual_location =
-      wm::GetRootWindowRelativeToWindow(current_root, point_in_root);
-  current_root = actual_location.first;
-  // Don't use |point_in_root| below. Instead, use |actual_location.second|
-  // which is in |actual_location.first|'s coordinates.
-
-  gfx::Rect root_bounds = current_root->bounds();
+  aura::RootWindow* root_at_point = wm::GetRootWindowAt(point_in_screen);
+  gfx::Point point_in_root = point_in_screen;
+  wm::ConvertPointFromScreen(root_at_point, &point_in_root);
+  gfx::Rect root_bounds = root_at_point->bounds();
   int offset_x = 0;
   int offset_y = 0;
-  if (actual_location.second.x() <= root_bounds.x()) {
+  if (point_in_root.x() <= root_bounds.x()) {
     // Use -2, not -1, to avoid infinite loop of pointer warp.
     offset_x = -2 * scale;
-  } else if (actual_location.second.x() >= root_bounds.right() - 1) {
+  } else if (point_in_root.x() >= root_bounds.right() - 1) {
     offset_x = 2 * scale;
-  } else if (actual_location.second.y() <= root_bounds.y()) {
+  } else if (point_in_root.y() <= root_bounds.y()) {
     offset_y = -2 * scale;
-  } else if (actual_location.second.y() >= root_bounds.bottom() - 1) {
+  } else if (point_in_root.y() >= root_bounds.bottom() - 1) {
     offset_y = 2 * scale;
   } else {
     return false;
   }
 
-  gfx::Point point_in_screen(actual_location.second);
-  wm::ConvertPointToScreen(current_root, &point_in_screen);
   gfx::Point point_in_dst_screen(point_in_screen);
   point_in_dst_screen.Offset(offset_x, offset_y);
   aura::RootWindow* dst_root = wm::GetRootWindowAt(point_in_dst_screen);
@@ -152,7 +145,7 @@ bool MouseCursorEventFilter::WarpMouseCursorIfNecessary(
   wm::ConvertPointFromScreen(dst_root, &point_in_dst_screen);
 
   if (dst_root->bounds().Contains(point_in_dst_screen)) {
-    DCHECK_NE(dst_root, current_root);
+    DCHECK_NE(dst_root, root_at_point);
     dst_root->MoveCursorTo(point_in_dst_screen);
     ash::Shell::GetInstance()->cursor_manager()->SetDeviceScaleFactor(
         dst_root->AsRootWindowHostDelegate()->GetDeviceScaleFactor());

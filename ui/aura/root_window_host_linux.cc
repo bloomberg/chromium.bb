@@ -437,7 +437,7 @@ bool RootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
   switch (xev->type) {
     case EnterNotify: {
       ui::MouseEvent mouseenter_event(xev);
-      delegate_->OnHostMouseEvent(&mouseenter_event);
+      TranslateAndDispatchMouseEvent(&mouseenter_event);
       break;
     }
     case Expose:
@@ -469,7 +469,7 @@ bool RootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
     }  // fallthrough
     case ButtonRelease: {
       ui::MouseEvent mouseev(xev);
-      delegate_->OnHostMouseEvent(&mouseev);
+      TranslateAndDispatchMouseEvent(&mouseev);
       break;
     }
     case FocusOut:
@@ -573,7 +573,7 @@ bool RootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
       }
 
       ui::MouseEvent mouseev(xev);
-      delegate_->OnHostMouseEvent(&mouseev);
+      TranslateAndDispatchMouseEvent(&mouseev);
       break;
     }
   }
@@ -671,12 +671,12 @@ void RootWindowHostLinux::DispatchXI2Event(const base::NativeEvent& event) {
         }
       }
       ui::MouseEvent mouseev(xev);
-      delegate_->OnHostMouseEvent(&mouseev);
+      TranslateAndDispatchMouseEvent(&mouseev);
       break;
     }
     case ui::ET_MOUSEWHEEL: {
       ui::MouseWheelEvent mouseev(xev);
-      delegate_->OnHostMouseEvent(&mouseev);
+      TranslateAndDispatchMouseEvent(&mouseev);
       break;
     }
     case ui::ET_SCROLL_FLING_START:
@@ -987,6 +987,21 @@ bool RootWindowHostLinux::IsWindowManagerPresent() {
 
 void RootWindowHostLinux::SetCursorInternal(gfx::NativeCursor cursor) {
   XDefineCursor(xdisplay_, xwindow_, cursor.platform());
+}
+
+void RootWindowHostLinux::TranslateAndDispatchMouseEvent(
+    ui::MouseEvent* event) {
+  RootWindow* root = GetRootWindow();
+  client::ScreenPositionClient* screen_position_client =
+      GetScreenPositionClient(root);
+  if (screen_position_client && !bounds_.Contains(event->location())) {
+    gfx::Point location(event->location());
+    screen_position_client->ConvertNativePointToScreen(root, &location);
+    screen_position_client->ConvertPointFromScreen(root, &location);
+    event->set_location(location);
+    event->set_root_location(location);
+  }
+  delegate_->OnHostMouseEvent(event);
 }
 
 // static

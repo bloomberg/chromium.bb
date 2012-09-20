@@ -28,13 +28,9 @@ aura::Window* GetLocalProcessWindowAtPointImpl(
   if (window->id() == ash::internal::kShellWindowId_PhantomWindow)
     return NULL;
 
-  if (window->layer()->type() == ui::LAYER_TEXTURED) {
-    gfx::Point window_point(screen_point);
-    aura::client::GetScreenPositionClient(window->GetRootWindow())->
-        ConvertPointFromScreen(window, &window_point);
-    return gfx::Rect(window->bounds().size()).Contains(window_point) ?
-        window : NULL;
-  }
+  if (window->layer()->type() == ui::LAYER_TEXTURED)
+    return window->GetBoundsInScreen().Contains(screen_point) ? window : NULL;
+
   for (aura::Window::Windows::const_reverse_iterator i =
            window->children().rbegin(); i != window->children().rend(); ++i) {
     aura::Window* result =

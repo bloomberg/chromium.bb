@@ -64,7 +64,8 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   }
 
   // Overridden from WindowResizer:
-  virtual void Drag(const gfx::Point& location, int event_flags) OVERRIDE;
+  virtual void Drag(const gfx::Point& location_in_parent,
+                    int event_flags) OVERRIDE;
   virtual void CompleteDrag(int event_flags) OVERRIDE;
   virtual void RevertDrag() OVERRIDE;
   virtual aura::Window* GetTarget() OVERRIDE;

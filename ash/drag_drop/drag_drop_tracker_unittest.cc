@@ -89,7 +89,7 @@ TEST_F(DragDropTrackerTest, MAYBE_GetTarget) {
 
   // Start tracking from the RootWindow0 and check the point on RootWindow1 that
   // |window1| covers.
-  EXPECT_EQ(window1.get(), GetTarget(root_windows[0], gfx::Point(150, 350)));
+  EXPECT_EQ(window1.get(), GetTarget(root_windows[0], gfx::Point(350, 150)));
 
   // Start tracking from the RootWindow0 and check the point on RootWindow1 that
   // neither |window0| nor |window1| covers.
@@ -98,7 +98,7 @@ TEST_F(DragDropTrackerTest, MAYBE_GetTarget) {
 
   // Start tracking from the RootWindow1 and check the point on RootWindow0 that
   // |window0| covers.
-  EXPECT_EQ(window0.get(), GetTarget(root_windows[1], gfx::Point(50, -150)));
+  EXPECT_EQ(window0.get(), GetTarget(root_windows[1], gfx::Point(-150, 50)));
 
   // Start tracking from the RootWindow1 and check the point on RootWindow0 that
   // neither |window0| nor |window1| covers.
@@ -154,8 +154,8 @@ TEST_F(DragDropTrackerTest, MAYBE_ConvertMouseEvent) {
   // Start tracking from the RootWindow0 and converts the mouse event into
   // |window1|'s coodinates.
   ui::MouseEvent original01(ui::ET_MOUSE_DRAGGED,
-                            gfx::Point(150, 350),
-                            gfx::Point(150, 350),
+                            gfx::Point(350, 150),
+                            gfx::Point(350, 150),
                             ui::EF_NONE);
   scoped_ptr<ui::MouseEvent> converted01(ConvertMouseEvent(root_windows[0],
                                                            window1.get(),
@@ -168,8 +168,8 @@ TEST_F(DragDropTrackerTest, MAYBE_ConvertMouseEvent) {
   // Start tracking from the RootWindow1 and converts the mouse event into
   // |window0|'s coodinates.
   ui::MouseEvent original10(ui::ET_MOUSE_DRAGGED,
-                            gfx::Point(50, -150),
-                            gfx::Point(50, -150),
+                            gfx::Point(-150, 50),
+                            gfx::Point(-150, 50),
                             ui::EF_NONE);
   scoped_ptr<ui::MouseEvent> converted10(ConvertMouseEvent(root_windows[1],
                                                            window0.get(),

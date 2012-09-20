@@ -122,22 +122,9 @@ WorkspaceWindowResizer* WorkspaceWindowResizer::Create(
       new WorkspaceWindowResizer(details, attached_windows) : NULL;
 }
 
-void WorkspaceWindowResizer::Drag(const gfx::Point& location, int event_flags) {
-  std::pair<aura::RootWindow*, gfx::Point> actual_location =
-      wm::GetRootWindowRelativeToWindow(window()->parent(), location);
-  aura::RootWindow* current_root = actual_location.first;
-  gfx::Point location_in_parent = actual_location.second;
-  aura::Window::ConvertPointToTarget(current_root,
-                                     window()->parent(),
-                                     &location_in_parent);
+void WorkspaceWindowResizer::Drag(const gfx::Point& location_in_parent,
+                                  int event_flags) {
   last_mouse_location_ = location_in_parent;
-
-  // Do not use |location| below this point, use |location_in_parent| instead.
-  // When the pointer is on |window()->GetRootWindow()|, |location| and
-  // |location_in_parent| have the same value and both of them are in
-  // |window()->parent()|'s coordinates, but once the pointer enters the
-  // other root window, you will see an unexpected value on the former. See
-  // comments in wm::GetRootWindowRelativeToWindow() for details.
 
   int grid_size = event_flags & ui::EF_CONTROL_DOWN ? 0 : kScreenEdgeInset;
   gfx::Rect bounds =  // in |window()->parent()|'s coordinates.
@@ -155,7 +142,10 @@ void WorkspaceWindowResizer::Drag(const gfx::Point& location, int event_flags) {
     did_move_or_resize_ = true;
   }
 
-  const bool in_original_root = (window()->GetRootWindow() == current_root);
+  gfx::Point location_in_screen = location_in_parent;
+  wm::ConvertPointToScreen(window()->parent(), &location_in_screen);
+  const bool in_original_root =
+      wm::GetRootWindowAt(location_in_screen) == window()->GetRootWindow();
   // Hide a phantom window for snapping if the cursor is in another root window.
   if (in_original_root) {
     UpdateSnapPhantomWindow(location_in_parent, bounds);

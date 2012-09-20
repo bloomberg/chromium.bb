@@ -17,6 +17,7 @@
 #include "ui/gfx/rect.h"
 
 namespace ui {
+class MouseEvent;
 class ViewProp;
 }
 
@@ -77,6 +78,10 @@ class RootWindowHostLinux : public RootWindowHost,
   // Sets the cursor on |xwindow_| to |cursor|.  Does not check or update
   // |current_cursor_|.
   void SetCursorInternal(gfx::NativeCursor cursor);
+
+  // Translates the native mouse location into screen coordinates and and
+  // dispatches the event to RootWindowHostDelegate.
+  void TranslateAndDispatchMouseEvent(ui::MouseEvent* event);
 
   RootWindowHostDelegate* delegate_;
 

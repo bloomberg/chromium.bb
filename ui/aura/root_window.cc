@@ -1037,13 +1037,9 @@ bool RootWindow::DispatchMouseEventToTarget(ui::MouseEvent* event,
       break;
   }
   if (target) {
-    int flags = event->flags();
-    gfx::Point location_in_window = event->location();
-    Window::ConvertPointToTarget(this, target, &location_in_window);
-    if (IsNonClientLocation(target, location_in_window))
-      flags |= ui::EF_IS_NON_CLIENT;
-    event->set_flags(flags);
     event->ConvertLocationToTarget(static_cast<Window*>(this), target);
+    if (IsNonClientLocation(target, event->location()))
+      event->set_flags(event->flags() | ui::EF_IS_NON_CLIENT);
     return ProcessMouseEvent(target, event);
   }
   return false;

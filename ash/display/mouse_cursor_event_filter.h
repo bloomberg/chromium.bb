@@ -72,12 +72,12 @@ class ASH_EXPORT MouseCursorEventFilter : public aura::EventFilter {
   FRIEND_TEST_ALL_PREFIXES(WorkspaceWindowResizerTest, WarpMousePointer);
 
   // Warps the mouse cursor to an alternate root window when the
-  // |point_in_root|, which is the location of the mouse cursor,
-  // hits or exceeds the edge of the |root_window| and the mouse cursor
+  // |point_in_screen|, which is the location of the mouse cursor,
+  // hits or exceeds the edge of the |target_root| and the mouse cursor
   // is considered to be in an alternate display. Returns true if
   // the cursor was moved.
-  bool WarpMouseCursorIfNecessary(aura::RootWindow* root_window,
-                                  const gfx::Point& point_in_root);
+  bool WarpMouseCursorIfNecessary(aura::RootWindow* target_root,
+                                  const gfx::Point& point_in_screen);
 
   void UpdateHorizontalIndicatorWindowBounds();
   void UpdateVerticalIndicatorWindowBounds();
