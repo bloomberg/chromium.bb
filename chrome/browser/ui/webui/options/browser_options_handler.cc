@@ -86,8 +86,11 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/options/take_photo_dialog.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/webui/options/chromeos/timezone_options_util.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/session_manager_client.h"
 #include "ui/gfx/image/image_skia.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -287,6 +290,9 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
       IDS_OPTIONS_SETTINGS_SECTION_TITLE_ACCESSIBILITY },
     { "accessibilityVirtualKeyboard",
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_VIRTUAL_KEYBOARD_DESCRIPTION },
+    { "factoryResetTitle", IDS_OPTIONS_FACTORY_RESET },
+    { "factoryResetRestart", IDS_OPTIONS_FACTORY_RESET_BUTTON },
+    { "factoryResetDataRestart", IDS_RELAUNCH_BUTTON },
     { "changePicture", IDS_OPTIONS_CHANGE_PICTURE_CAPTION },
     { "datetimeTitle", IDS_OPTIONS_SETTINGS_SECTION_TITLE_DATETIME },
     { "deviceGroupDescription", IDS_OPTIONS_DEVICE_GROUP_DESCRIPTION },
@@ -377,6 +383,12 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
         chromeos::UserManager::Get()->IsUserLoggedIn() ?
             chromeos::UserManager::Get()->GetLoggedInUser().email() :
             std::string());
+
+    values->SetString(
+        "factoryResetDescription",
+        l10n_util::GetStringFUTF16(
+            IDS_OPTIONS_FACTORY_RESET_DESCRIPTION,
+            l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
 #endif
 
   // Pass along sync status early so it will be available during page init.
@@ -544,6 +556,10 @@ void BrowserOptionsHandler::RegisterMessages() {
       "virtualKeyboardChange",
       base::Bind(&BrowserOptionsHandler::VirtualKeyboardChangeCallback,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "performFactoryResetRestart",
+      base::Bind(&BrowserOptionsHandler::PerformFactoryResetRestart,
+                 base::Unretained(this)));
 #endif
 }
 
@@ -645,6 +661,13 @@ void BrowserOptionsHandler::InitializePage() {
 #endif
 #if defined(OS_CHROMEOS)
   SetupAccessibilityFeatures();
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableFactoryReset) &&
+      !g_browser_process->browser_policy_connector()->IsEnterpriseManaged()) {
+    web_ui()->CallJavascriptFunction(
+        "BrowserOptions.enableFactoryResetSection");
+  }
+
 #endif
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
   SetupBackgroundModeSettings();
@@ -1333,6 +1356,23 @@ void BrowserOptionsHandler::VirtualKeyboardChangeCallback(
 
   chromeos::accessibility::EnableVirtualKeyboard(enabled);
 }
+
+#if defined(OS_CHROMEOS)
+
+void BrowserOptionsHandler::PerformFactoryResetRestart(const ListValue* args) {
+  if (g_browser_process->browser_policy_connector()->IsEnterpriseManaged())
+    return;
+
+  PrefService* prefs = g_browser_process->local_state();
+  prefs->SetBoolean(prefs::kFactoryResetRequested, true);
+  prefs->CommitPendingWrite();
+
+  // Perform sign out. Current chrome process will then terminate, new one will
+  // be launched (as if it was a restart).
+  chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->StopSession();
+}
+
+#endif
 
 void BrowserOptionsHandler::SetupAccessibilityFeatures() {
   PrefService* pref_service = g_browser_process->local_state();

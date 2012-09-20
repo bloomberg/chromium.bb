@@ -706,6 +706,8 @@ extern const char kDevicePolicyRefreshRate[];
 extern const char kUserPolicyRefreshRate[];
 extern const char kLoadCloudPolicyOnSignin[];
 
+extern const char kFactoryResetRequested[];
+
 extern const char kRecoveryComponentVersion[];
 extern const char kComponentUpdaterState[];
 

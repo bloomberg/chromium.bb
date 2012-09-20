@@ -474,6 +474,14 @@ cr.define('options', function() {
               [String($('backgroundModeCheckbox').checked)]);
         };
       }
+
+      // Factory reset section (CrOS only).
+      if (cr.isChromeOS) {
+        $('factory-reset-restart').onclick = function(event) {
+          OptionsPage.navigateToPage('factoryResetData');
+        };
+      }
+
     },
 
     /**
@@ -996,6 +1004,14 @@ cr.define('options', function() {
     },
 
     /**
+     * Enables factory reset section.
+     * @private
+     */
+    enableFactoryResetSection_: function() {
+      $('factory-reset-section').hidden = false;
+    },
+
+    /**
      * Set the checked state of the metrics reporting checkbox.
      * @private
      */
@@ -1313,11 +1329,12 @@ cr.define('options', function() {
   //Forward public APIs to private implementations.
   [
     'addBluetoothDevice',
+    'enableFactoryResetSection',
     'getCurrentProfile',
     'getStartStopSyncButton',
     'hideBluetoothSettings',
-    'removeCloudPrintConnectorSection',
     'removeBluetoothDevice',
+    'removeCloudPrintConnectorSection',
     'setAutoOpenFileTypesDisplayed',
     'setBackgroundModeCheckboxState',
     'setBluetoothState',
@@ -1332,10 +1349,10 @@ cr.define('options', function() {
     'setScreenMagnifierCheckboxState',
     'setSpokenFeedbackCheckboxState',
     'setThemesResetButtonEnabled',
+    'setVirtualKeyboardCheckboxState',
     'setupCloudPrintConnectorSection',
     'setupPageZoomSelector',
     'setupProxySettingsSection',
-    'setVirtualKeyboardCheckboxState',
     'showBluetoothSettings',
     'showDisplayOptions',
     'showMouseControls',
@@ -1345,8 +1362,8 @@ cr.define('options', function() {
     'updateDefaultBrowserState',
     'updateManagedBannerVisibility',
     'updateSearchEngines',
-    'updateSyncState',
     'updateStartupPages',
+    'updateSyncState',
   ].forEach(function(name) {
     BrowserOptions[name] = function() {
       var instance = BrowserOptions.getInstance();
