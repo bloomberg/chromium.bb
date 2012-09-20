@@ -69,8 +69,9 @@ chrome.test.runTests([
 
   function closeTab() {
     chrome.tabs.create({url:"inspected.html"}, function(tab) {
-      function onDetach(debuggee) {
+      function onDetach(debuggee, reason) {
         chrome.test.assertEq(tab.id, debuggee.tabId);
+        chrome.test.assertEq("target_closed", reason);
         chrome.debugger.onDetach.removeListener(onDetach);
         chrome.test.succeed();
       }

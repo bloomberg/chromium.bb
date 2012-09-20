@@ -133,6 +133,12 @@
             "$ref": "Debuggee",
             "name": "source",
             "description": "The debuggee that was detached."
+          },
+          {
+            "type": "string",
+            "name": "reason",
+            "description": "Connection termination reason.",
+            "enum": [ "target_closed", "canceled_by_user", "replaced_with_devtools" ]
           }
         ]
       }

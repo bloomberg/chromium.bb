@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/debugger/devtools_window.h"
+#include "chrome/browser/extensions/api/debugger/debugger_api.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -628,6 +629,7 @@ DevToolsWindow* DevToolsWindow::ToggleDevToolsWindow(
   DevToolsWindow* window = AsDevToolsWindow(host);
   if (host && !window) {
     // Break remote debugging / extension debugging session.
+    DebuggerApi::MarkDevToolsClientHostAsReplaced(host);
     manager->UnregisterDevToolsClientHostFor(agent);
   }
 
