@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/cocoa/gradient_button_cell.h"
 
+#include <cmath>
+
 #include "base/logging.h"
 #import "base/memory/scoped_nsobject.h"
 #import "chrome/browser/themes/theme_service.h"
@@ -648,12 +650,10 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
   // Empirically, Cocoa will draw an extra 2 pixels past NSWidth(cellFrame)
   // before it clips the text.
   const CGFloat kOverflowBeforeClip = 2;
-  // Don't complicate drawing unless we need to clip.
-  if (floor(size.width) <= (NSWidth(cellFrame) + kOverflowBeforeClip)) {
+  BOOL clipping = YES;
+  if (std::floor(size.width) <= (NSWidth(cellFrame) + kOverflowBeforeClip)) {
     cellFrame.origin.y += ([self verticalTextOffset] - 1);
-    // The super is called to provide the background shadow "highlight" for
-    // non-clipping text.
-    return [super drawTitle:title withFrame:cellFrame inView:controlView];
+    clipping = NO;
   }
 
   // Gradient is about twice our line height long.
@@ -667,7 +667,8 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
   NSPoint textOffset = NSZeroPoint;
   {
     gfx::ScopedNSGraphicsContextSaveGState scopedGState;
-    [NSBezierPath clipRect:solidPart];
+    if (clipping)
+      [NSBezierPath clipRect:solidPart];
 
     // 11 is the magic number needed to make this match the native
     // NSButtonCell's label display.
@@ -684,6 +685,9 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
                              [self verticalTextOffset]);
     [title drawAtPoint:textOffset];
   }
+
+  if (!clipping)
+    return cellFrame;
 
   // Draw the gradient part with a transparency layer. This makes the text look
   // suboptimal, but since it fades out, that's ok.
