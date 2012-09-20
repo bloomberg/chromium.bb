@@ -11,7 +11,6 @@
 #include "webkit/compositor_bindings/WebLayerTreeViewImpl.h"
 #include "webkit/compositor_bindings/WebCompositorImpl.h"
 #include "webkit/compositor_bindings/WebContentLayerImpl.h"
-#include "webkit/compositor_bindings/WebDelegatedRendererLayerImpl.h"
 #include "webkit/compositor_bindings/WebExternalTextureLayerImpl.h"
 #include "webkit/compositor_bindings/WebIOSurfaceLayerImpl.h"
 #include "webkit/compositor_bindings/WebSolidColorLayerImpl.h"
@@ -40,7 +39,6 @@ using WebKit::WebAnimation;
 using WebKit::WebAnimationCurve;
 using WebKit::WebContentLayer;
 using WebKit::WebContentLayerClient;
-using WebKit::WebDelegatedRendererLayer;
 using WebKit::WebExternalTextureLayer;
 using WebKit::WebExternalTextureLayerClient;
 using WebKit::WebFloatAnimationCurve;
@@ -152,11 +150,6 @@ WebContentLayer* WebCompositorSupportImpl::createContentLayer(
 #else
   return WebKit::WebContentLayer::create(client);
 #endif
-}
-
-WebDelegatedRendererLayer*
-    WebCompositorSupportImpl::createDelegatedRendererLayer() {
-  return new WebKit::WebDelegatedRendererLayerImpl();
 }
 
 WebExternalTextureLayer* WebCompositorSupportImpl::createExternalTextureLayer(

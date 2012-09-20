@@ -7,7 +7,6 @@
 
 #include "CCInputHandler.h"
 #include "CCLayerAnimationController.h"
-#include "CCRenderPass.h"
 #include "CCRenderSurface.h"
 #include "CCResourceProvider.h"
 #include "CCSharedQuadState.h"
@@ -82,10 +81,6 @@ public:
 
     virtual CCResourceProvider::ResourceId contentsResourceId() const;
 
-    virtual bool hasContributingDelegatedRenderPasses() const { return false; }
-    virtual CCRenderPass::Id firstContributingRenderPassId() const { return CCRenderPass::Id(0, 0); }
-    virtual CCRenderPass::Id nextContributingRenderPassId(CCRenderPass::Id) const { return CCRenderPass::Id(0, 0); }
-
     // Returns true if this layer has content to draw.
     void setDrawsContent(bool);
     bool drawsContent() const { return m_drawsContent; }
@@ -94,7 +89,7 @@ public:
     void setForceRenderSurface(bool force) { m_forceRenderSurface = force; }
 
     // Returns true if any of the layer's descendants has content to draw.
-    virtual bool descendantDrawsContent();
+    bool descendantDrawsContent();
 
     void setAnchorPoint(const FloatPoint&);
     const FloatPoint& anchorPoint() const { return m_anchorPoint; }

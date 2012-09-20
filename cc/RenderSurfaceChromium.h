@@ -57,11 +57,8 @@ public:
     const IntRect& clipRect() const { return m_clipRect; }
     void setClipRect(const IntRect& clipRect) { m_clipRect = clipRect; }
 
+    void clearLayerList() { m_layerList.clear(); }
     Vector<RefPtr<LayerChromium> >& layerList() { return m_layerList; }
-    // A no-op since DelegatedRendererLayers on the main thread don't have any
-    // RenderPasses so they can't contribute to a surface.
-    void addContributingDelegatedRenderPassLayer(LayerChromium*) { }
-    void clearLayerLists() { m_layerList.clear(); }
 
     void setNearestAncestorThatMovesPixels(RenderSurfaceChromium* surface) { m_nearestAncestorThatMovesPixels = surface; }
     const RenderSurfaceChromium* nearestAncestorThatMovesPixels() const { return m_nearestAncestorThatMovesPixels; }

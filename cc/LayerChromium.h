@@ -172,8 +172,6 @@ public:
 
     virtual void setLayerTreeHost(CCLayerTreeHost*);
 
-    bool hasContributingDelegatedRenderPasses() const { return false; }
-
     void setIsDrawable(bool);
 
     void setReplicaLayer(LayerChromium*);

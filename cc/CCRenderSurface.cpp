@@ -11,7 +11,6 @@
 #include "base/stringprintf.h"
 #include "CCDamageTracker.h"
 #include "CCDebugBorderDrawQuad.h"
-#include "CCDelegatedRendererLayerImpl.h"
 #include "CCLayerImpl.h"
 #include "CCMathUtil.h"
 #include "CCQuadSink.h"
@@ -145,19 +144,6 @@ bool CCRenderSurface::surfacePropertyChangedOnlyFromDescendant() const
     return m_surfacePropertyChanged && !m_owningLayer->layerPropertyChanged();
 }
 
-void CCRenderSurface::addContributingDelegatedRenderPassLayer(CCLayerImpl* layer)
-{
-    ASSERT(m_layerList.contains(layer));
-    CCDelegatedRendererLayerImpl* delegatedRendererLayer = static_cast<CCDelegatedRendererLayerImpl*>(layer);
-    m_contributingDelegatedRenderPassLayerList.append(delegatedRendererLayer);
-}
-
-void CCRenderSurface::clearLayerLists()
-{
-    m_layerList.clear();
-    m_contributingDelegatedRenderPassLayerList.clear();
-}
-
 static inline IntRect computeClippedRectInTarget(const CCLayerImpl* owningLayer)
 {
     ASSERT(owningLayer->parent());
@@ -188,9 +174,6 @@ CCRenderPass::Id CCRenderSurface::renderPassId()
 
 void CCRenderSurface::appendRenderPasses(CCRenderPassSink& passSink)
 {
-    for (size_t i = 0; i < m_contributingDelegatedRenderPassLayerList.size(); ++i)
-        m_contributingDelegatedRenderPassLayerList[i]->appendContributingRenderPasses(passSink);
-
     OwnPtr<CCRenderPass> pass = CCRenderPass::create(renderPassId(), m_contentRect, m_screenSpaceTransform);
     pass->setDamageRect(m_damageTracker->currentDamageRect());
     pass->setFilters(m_owningLayer->filters());

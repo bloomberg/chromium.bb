@@ -291,7 +291,7 @@ bool CCLayerTreeHostImpl::calculateRenderPasses(FrameData& frame)
 
         occlusionTracker.enterLayer(it);
 
-        CCAppendQuadsData appendQuadsData(targetRenderPass->id());
+        CCAppendQuadsData appendQuadsData;
 
         if (it.representsContributingRenderSurface()) {
             CCRenderPass::Id contributingRenderPassId = it->renderSurface()->renderPassId();
@@ -304,19 +304,6 @@ bool CCLayerTreeHostImpl::calculateRenderPasses(FrameData& frame)
             else {
                 it->willDraw(m_resourceProvider.get());
                 frame.willDrawLayers.append(*it);
-
-                if (it->hasContributingDelegatedRenderPasses()) {
-                    CCRenderPass::Id contributingRenderPassId = it->firstContributingRenderPassId();
-                    while (frame.renderPassesById.contains(contributingRenderPassId)) {
-                        CCRenderPass* renderPass = frame.renderPassesById.get(contributingRenderPassId);
-  
-                        CCAppendQuadsData appendQuadsData(renderPass->id());
-                        renderPass->appendQuadsForLayer(*it, &occlusionTracker, appendQuadsData);
-
-                        contributingRenderPassId = it->nextContributingRenderPassId(contributingRenderPassId);
-                    }
-                }
-
                 targetRenderPass->appendQuadsForLayer(*it, &occlusionTracker, appendQuadsData);
             }
         }
