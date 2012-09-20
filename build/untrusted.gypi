@@ -23,8 +23,10 @@
     ],
     'nacl_default_compile_flags': [
       #'-std=gnu99',  Added by build_nexe
-      '-O3',
+      '-O2',
       '-g',
+      '-Wall',
+      '-fdiagnostics-show-option',
     ],
   },
   'conditions': [
@@ -81,17 +83,6 @@
             '<@(nacl_default_defines)',
             'NACL_BUILD_ARCH=x86',
           ],
-          'compile_flags': [
-            '<@(nacl_default_compile_flags)',
-            '-fomit-frame-pointer',
-            # A debugger should be able to unwind IRT call frames. As the IRT is
-            # compiled with high level of optimizations and without debug info,
-            # compiler is requested to generate unwind tables explicitly. This
-            # is the default behavior on x86-64 and when compiling C++ with
-            # exceptions enabled, the change is for the benefit of x86-32 C.
-            '-fasynchronous-unwind-tables',
-            '-mtls-use-call'
-          ],
           'sources': [],
           'link_flags': [],
           'get_sources': [
@@ -129,9 +120,6 @@
           'defines': [
             '<@(nacl_default_defines)',
             'NACL_BUILD_ARCH=arm',
-           ],
-           'compile_flags': [
-             '<@(nacl_default_compile_flags)',
            ],
            'sources': [],
            'link_flags': [],
@@ -183,7 +171,7 @@
                    '--objdir', '>(objdir_newlib64)',
                    '--include-dirs=<(inst_dir)/include ^(include_dirs) >(_include_dirs)',
                    '--lib-dirs=>(lib_dirs_newlib64) ',
-                   '--compile_flags=-m64 ^(compile_flags) >(_compile_flags)',
+                   '--compile_flags=-m64 ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-B<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64 ^(link_flags) >(_link_flags)',
                    '--source-list=^|(<(source_list_newlib64) ^(_sources) ^(sources))',
@@ -224,7 +212,7 @@
                    '--objdir', '>(objdir_newlib64)',
                    '--include-dirs=<(inst_dir)/include ^(include_dirs) >(_include_dirs)',
                    '--lib-dirs=>(lib_dirs_newlib64) ',
-                   '--compile_flags=-m64 ^(compile_flags) >(_compile_flags)',
+                   '--compile_flags=-m64 ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-B<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64 ^(link_flags) >(_link_flags)',
                    '--source-list=^|(<(source_list_newlib64) ^(_sources) ^(sources))',
@@ -265,7 +253,7 @@
                    '--objdir', '>(objdir_newlib32)',
                    '--include-dirs=<(inst_dir)/include ^(include_dirs) >(_include_dirs)',
                    '--lib-dirs=>(lib_dirs_newlib32)',
-                   '--compile_flags=-m32 ^(compile_flags) >(_compile_flags)',
+                   '--compile_flags=-m32 ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-m32 -B<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32 ^(link_flags) >(_link_flags)',
                    '--source-list=^|(<(source_list_newlib32) ^(_sources) ^(sources))',
@@ -306,7 +294,7 @@
                    '--objdir', '>(objdir_newlib32)',
                    '--include-dirs=<(inst_dir)/include ^(include_dirs) >(_include_dirs)',
                    '--lib-dirs=>(lib_dirs_newlib32)',
-                   '--compile_flags=-m32 ^(compile_flags) >(_compile_flags)',
+                   '--compile_flags=-m32 ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-m32 -B<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32 ^(link_flags) >(_link_flags)',
                    '--source-list=^|(<(source_list_newlib32) ^(_sources) ^(sources))',
@@ -352,7 +340,7 @@
                   '--objdir', '>(objdir_newlib_arm)',
                   '--include-dirs=<(inst_dir)/include ^(include_dirs) >(_include_dirs)',
                   '--lib-dirs=>(lib_dirs_newlib_arm) ',
-                  '--compile_flags=^(compile_flags) >(_compile_flags)',
+                  '--compile_flags=^(pnacl_compile_flags) >(_pnacl_compile_flags) ^(compile_flags) >(_compile_flags)',
                   '--defines=^(defines) >(_defines)',
                   '--link_flags=-B<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm ^(link_flags) >(_link_flags)',
                   '--source-list=^|(<(source_list_newlib_arm) ^(_sources) ^(sources))',
@@ -392,7 +380,7 @@
                   '--objdir', '>(objdir_newlib_arm)',
                   '--include-dirs=<(inst_dir)/include ^(include_dirs) >(_include_dirs)',
                   '--lib-dirs=>(lib_dirs_newlib_arm) ',
-                  '--compile_flags=^(compile_flags) >(_compile_flags)',
+                  '--compile_flags=^(pnacl_compile_flags) >(_pnacl_compile_flags) ^(compile_flags) >(_compile_flags)',
                   '--defines=^(defines) >(_defines)',
                   '--link_flags=-B<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm ^(link_flags) >(_link_flags)',
                   '--source-list=^|(<(source_list_newlib_arm) ^(_sources) ^(sources))',
@@ -439,7 +427,7 @@
                    '--objdir', '>(objdir_glibc64)',
                    '--include-dirs=<(inst_dir)/include ^(include_dirs) >(_include_dirs)',
                    '--lib-dirs=>(lib_dirs_glibc64) ',
-                   '--compile_flags=-m64 ^(compile_flags) >(_compile_flags)',
+                   '--compile_flags=-m64 ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-B<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib64 ^(link_flags) >(_link_flags)',
                    '--source-list=^|(<(source_list_glibc64) ^(_sources) ^(sources))',
@@ -480,7 +468,7 @@
                    '--objdir', '>(objdir_glibc32)',
                    '--include-dirs=<(inst_dir)/include ^(include_dirs) >(_include_dirs)',
                    '--lib-dirs=>(lib_dirs_glibc32) ',
-                   '--compile_flags=-m32 ^(compile_flags) >(_compile_flags)',
+                   '--compile_flags=-m32 ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-m32 -B<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib32 ^(link_flags) >(_link_flags)',
                    '--source-list=^|(<(source_list_glibc32) ^(_sources) ^(sources))',
@@ -521,7 +509,7 @@
                    '--objdir', '>(objdir_glibc64)',
                    '--include-dirs=<(inst_dir)/include ^(include_dirs) >(_include_dirs)',
                    '--lib-dirs=>(lib_dirs_glibc64) ',
-                   '--compile_flags=-m64 ^(compile_flags) >(_compile_flags)',
+                   '--compile_flags=-m64 ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-B<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib64 ^(link_flags) >(_link_flags)',
                    '--source-list=^|(<(source_list_glibc64) ^(_sources) ^(sources))',
@@ -562,7 +550,7 @@
                    '--objdir', '>(objdir_glibc32)',
                    '--include-dirs=<(inst_dir)/include ^(include_dirs) >(_include_dirs)',
                    '--lib-dirs=>(lib_dirs_glibc32)',
-                   '--compile_flags=-m32 ^(compile_flags) >(_compile_flags)',
+                   '--compile_flags=-m32 ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-m32 -B<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib32 ^(link_flags) >(_link_flags)',
                    '--source-list=^|(<(source_list_glibc32) ^(_sources) ^(sources))',
@@ -603,7 +591,7 @@
                    '--objdir', '>(objdir_glibc64)',
                    '--include-dirs=<(inst_dir)/include ^(include_dirs) >(_include_dirs)',
                    '--lib-dirs=>(lib_dirs_glibc64) ',
-                   '--compile_flags=-m64 -fPIC ^(compile_flags) >(_compile_flags)',
+                   '--compile_flags=-m64 -fPIC ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-B<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib64 ^(link_flags) >(_link_flags)',
                    '--source-list=^|(<(source_list_glibc64) ^(_sources) ^(sources))',
@@ -644,7 +632,7 @@
                    '--objdir', '>(objdir_glibc32)',
                    '--include-dirs=<(inst_dir)/include ^(include_dirs) >(_include_dirs)',
                    '--lib-dirs=>(lib_dirs_glibc32)',
-                   '--compile_flags=-m32 -fPIC ^(compile_flags) >(_compile_flags)',
+                   '--compile_flags=-m32 -fPIC ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-m32 -B<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib32 ^(link_flags) >(_link_flags)',
                    '--source-list=^|(<(source_list_glibc32) ^(_sources) ^(sources))',
@@ -656,4 +644,120 @@
       },
     }],
   ],
+  'target_defaults': {
+    'gcc_compile_flags': [],
+    'pnacl_compile_flags': [],
+    'variables': {
+      'build_pnacl_newlib': 0,
+      'nlib_target': '',
+      'extra_deps_pnacl_newlib': [],
+      'lib_dirs_pnacl_newlib': [],
+      'compile_flags': [
+        '<@(nacl_default_compile_flags)',
+      ],
+      'gcc_compile_flags': [
+        '-fomit-frame-pointer',
+        # A debugger should be able to unwind IRT call frames. As the IRT is
+        # compiled with high level of optimizations and without debug info,
+        # compiler is requested to generate unwind tables explicitly. This
+        # is the default behavior on x86-64 and when compiling C++ with
+        # exceptions enabled, the change is for the benefit of x86-32 C.
+        # These are only required for the IRT but are here for all
+        # nacl-gcc-compiled binaries because the IRT depends on other libs
+        '-fasynchronous-unwind-tables',
+        '-mtls-use-call',
+      ],
+      'pnacl_compile_flags': [
+        '-Wno-extra-semi',
+        '-Wno-unused-private-field',
+      ],
+    },
+    'target_conditions': [
+      ['nexe_target!="" and build_pnacl_newlib!=0', {
+        'variables': {
+          'tool_name': 'pnacl_newlib',
+          'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_pnacl_newlib',
+          'out_pnacl_newlib%': '<(PRODUCT_DIR)/>(nexe_target)_newlib.pexe',
+          'objdir_pnacl_newlib%': '>(INTERMEDIATE_DIR)/<(tool_name)/>(_target_name)',
+          'source_list_pnacl_newlib%': '<(tool_name).>(_target_name).source_list.gypcmd',
+          'link_flags': [
+            '-O3',
+          ],
+        },
+        'actions': [
+          {
+            'action_name': 'build newlib pexe',
+            'msvs_cygwin_shell': 0,
+            'description': 'building >(out_pnacl_newlib)',
+            'inputs': [
+              '<(DEPTH)/native_client/build/build_nexe.py',
+              '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+              '>@(extra_deps_pnacl_newlib)',
+              '>(source_list_pnacl_newlib)',
+              '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_pnacl/stamp.untar',
+            ],
+            'outputs': ['>(out_pnacl_newlib)'],
+            'action': [
+              '>(python_exe)',
+              '<(DEPTH)/native_client/build/build_nexe.py',
+              '-t', '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/',
+              '>@(extra_args)',
+              '--arch', 'pnacl',
+              '--build', 'newlib_pexe',
+              '--root', '<(DEPTH)',
+              '--name', '>(out_pnacl_newlib)',
+              '--objdir', '>(objdir_pnacl_newlib)',
+              '--include-dirs=<(inst_dir)/include ^(include_dirs) >(_include_dirs)',
+              '--lib-dirs=>(lib_dirs_pnacl_newlib)',
+              '--compile_flags=^(pnacl_compile_flags) >(_pnacl_compile_flags) ^(compile_flags) >(_compile_flags)',
+              '--defines=^(defines) >(_defines)',
+              '--link_flags=-B<(SHARED_INTERMEDIATE_DIR)/tc_pnacl_newlib/lib ^(link_flags) >(_link_flags)',
+              '--source-list=^|(<(source_list_pnacl_newlib) ^(_sources) ^(sources))',
+            ],
+          },
+        ],
+      }],
+      ['nlib_target!="" and build_pnacl_newlib!=0', {
+        'variables': {
+          'tool_name': 'pnacl_newlib',
+          'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_pnacl_newlib',
+          'objdir_pnacl_newlib%': '>(INTERMEDIATE_DIR)/<(tool_name)-pnacl/>(_target_name)',
+          'source_list_pnacl_newlib%': '<(tool_name).>(_target_name).source_list.gypcmd',
+          'out_pnacl_newlib%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/lib/>(nlib_target)',
+        },
+        'actions': [
+          {
+            'action_name': 'build newlib plib',
+            'msvs_cygwin_shell': 0,
+            'description': 'building >(out_pnacl_newlib)',
+            'inputs': [
+              '<(DEPTH)/native_client/build/build_nexe.py',
+              '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+              '>@(extra_deps_pnacl_newlib)',
+              '>(source_list_pnacl_newlib)',
+              '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_pnacl/stamp.untar',
+            ],
+            'outputs': ['>(out_pnacl_newlib)'],
+            'action': [
+              '>(python_exe)',
+              '<(DEPTH)/native_client/build/build_nexe.py',
+              '-t', '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/',
+              '>@(extra_args)',
+              '--arch', 'pnacl',
+              '--build', 'newlib_plib',
+              '--root', '<(DEPTH)',
+              '--name', '>(out_pnacl_newlib)',
+              '--objdir', '>(objdir_pnacl_newlib)',
+              '--include-dirs=<(inst_dir)/include ^(include_dirs) >(_include_dirs)',
+              '--lib-dirs=>(lib_dirs_pnacl_newlib) ',
+              '--compile_flags=^(pnacl_compile_flags) >(_pnacl_compile_flags) ^(compile_flags) >(_compile_flags)',
+              '--defines=^(defines) >(_defines)',
+              '--link_flags=-B<(SHARED_INTERMEDIATE_DIR)/tc_pnacl_newlib/lib ^(link_flags) >(_link_flags)',
+              '--source-list=^|(<(source_list_pnacl_newlib) ^(_sources) ^(sources))',
+            ],
+          },
+        ],
+      }],
+    ],
+  },
 }

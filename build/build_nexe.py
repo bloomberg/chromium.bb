@@ -63,6 +63,7 @@ class Builder(object):
   """
   def __init__(self, options):
     arch = options.arch
+    self.arch = arch
     build_type = options.build.split('_')
     toolname = build_type[0]
     self.outtype = build_type[1]
@@ -76,31 +77,38 @@ class Builder(object):
     else:
       ErrOut('Toolchain OS %s not supported.' % sys.platform)
 
-    if arch  in ['x86-32', 'x86-64']:
-      self.arch = arch
+    if arch in ['x86-32', 'x86-64']:
       self.mainarch = 'x86'
       self.subarch = arch.split('-')[1]
       tool_subdir = 'x86_64-nacl'
-      self.pnacl = False
+      self.is_pnacl_toolchain = False
     elif arch == 'arm':
-      self.arch = arch
+      # For now assume that arm implies pnacl toolchain. But don't assume that
+      # elsewhere in this script.
       self.mainarch = 'arm'
       self.subarch = ''
-      tool_subdir  = toolname
-      self.pnacl = True
+      tool_subdir = toolname
+      self.is_pnacl_toolchain = True
+    elif arch == 'pnacl':
+      self.mainarch = arch
+      self.subarch = ''
+      tool_subdir = toolname
+      self.is_pnacl_toolchain = True
     else:
       ErrOut('Toolchain architecture %s not supported.' % arch)
 
     if arch == 'arm' and toolname == 'glibc':
       ErrOut('arm/glibc not yet supported.')
 
-    if arch == 'arm':
-      self.toolname = '%s_x86_pnacl' % (self.osname)
+    if arch == 'pnacl' and toolname == 'glibc':
+      ErrOut('pnacl glibc not yet supported.')
 
-    if arch != 'arm':
+    if self.is_pnacl_toolchain:
+      self.toolname = '%s_x86_pnacl' % (self.osname)
+    else:
       self.toolname = '%s_x86_%s' % (self.osname, toolname)
 
-    if toolname not in ['newlib', 'glibc', 'pnacl']:
+    if toolname not in ['newlib', 'glibc']:
       ErrOut('Toolchain of type %s not supported.' % toolname)
 
     self.root_path = options.root
@@ -113,7 +121,7 @@ class Builder(object):
     self.toolchain = os.path.join(options.toolpath, self.toolname)
     self.toolbin = os.path.join(self.toolchain, tool_subdir, 'bin')
 
-    if self.pnacl:
+    if self.is_pnacl_toolchain:
       self.toollib = os.path.join(self.toolchain, tool_subdir,'lib')
       self.toolinc = os.path.join(self.toolchain, tool_subdir, 'sysroot',
                                   'include')
@@ -151,28 +159,28 @@ class Builder(object):
 
   def GetCCompiler(self):
     """Helper which returns C compiler path."""
-    if self.pnacl:
+    if self.is_pnacl_toolchain:
       return self.GetBinName('pnacl-clang')
     else:
       return self.GetBinName('gcc')
 
   def GetCXXCompiler(self):
     """Helper which returns C++ compiler path."""
-    if self.pnacl:
+    if self.is_pnacl_toolchain:
       return self.GetBinName('pnacl-clang++')
     else:
       return self.GetBinName('g++')
 
   def GetAr(self):
     """Helper which returns ar path."""
-    if self.pnacl:
+    if self.is_pnacl_toolchain:
       return self.GetBinName('pnacl-ar')
     else:
       return self.GetBinName('ar')
 
   def GetStrip(self):
     """Helper which returns strip path."""
-    if self.pnacl:
+    if self.is_pnacl_toolchain:
       return self.GetBinName('pnacl-strip')
     else:
       return self.GetBinName('strip')
@@ -220,12 +228,19 @@ class Builder(object):
     """Helper which runs a command line."""
 
     # For POSIX style path on windows for POSIX based toolchain
-    cmd_line = [cmd.replace('\\', '/') for cmd in cmd_line]
+    # (just for arguments, not for the path to the command itself)
+    cmd_line = [cmd_line[0]] + [cmd.replace('\\', '/') for cmd in cmd_line[1:]]
 
     if self.verbose:
       print ' '.join(cmd_line)
     try:
-      ecode = subprocess.call(cmd_line)
+      if self.is_pnacl_toolchain:
+        # PNaCl toolchain executable is a script, not a binary, so it doesn't
+        # want to run on Windows without a shell
+        ecode = subprocess.call(' '.join(cmd_line), shell=True)
+      else:
+        ecode = subprocess.call(cmd_line)
+
     except Exception, err:
       ErrOut('\n%s\nFAILED: %s\n\n' % (' '.join(cmd_line), str(err)))
     if ecode != 0:
@@ -255,7 +270,7 @@ class Builder(object):
     if ext in ['.c', '.S']:
       bin_name = self.GetCCompiler()
       extra = ['-std=gnu99']
-      if self.pnacl and ext == '.S':
+      if self.is_pnacl_toolchain and ext == '.S':
         extra.append('-arch')
         extra.append(self.arch)
     elif ext in ['.cc', '.cpp']:
@@ -356,12 +371,14 @@ class Builder(object):
 
     Link or Archive the final output file, from the compiled sources.
     """
-    if self.outtype in ['nexe', 'nso']:
+    if self.outtype in ['nexe', 'pexe', 'nso']:
       out = self.Link(srcs)
       if self.strip_debug:
         self.Strip(out)
-    elif self.outtype == 'nlib':
+    elif self.outtype in ['nlib', 'plib']:
       self.Archive(srcs)
+    else:
+      ErrOut('FAILED: Unknown outtype %s:\n' % (self.outtype))
 
 
 def Main(argv):

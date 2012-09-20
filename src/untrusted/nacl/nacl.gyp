@@ -94,6 +94,7 @@
         'nlib_target': 'libnacl.a',
         'build_glibc': 0,
         'build_newlib': 1,
+        'build_pnacl_newlib': 1,
       },
       'sources': [
         '<@(sources_for_nacl_extensions)',
