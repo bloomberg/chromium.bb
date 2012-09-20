@@ -29,7 +29,6 @@ void TestDirectorySetterUpper::SetUp() {
       NULL,
       &encryption_handler_,
       encryption_handler_.cryptographer()));
-  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   ASSERT_EQ(syncable::OPENED, directory_->Open(
           name_, &delegate_, NullTransactionObserver()));
 }
@@ -44,8 +43,6 @@ void TestDirectorySetterUpper::TearDown() {
   directory()->SaveChanges();
 
   directory_.reset();
-
-  ASSERT_TRUE(temp_dir_.Delete());
 }
 
 void TestDirectorySetterUpper::RunInvariantCheck() {
