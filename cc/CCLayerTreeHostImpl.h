@@ -12,6 +12,7 @@
 #include "CCRenderPassSink.h"
 #include "CCRenderer.h"
 #include "SkColor.h"
+#include "base/time.h"
 #include <public/WebCompositorOutputSurfaceClient.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/RefPtr.h>
@@ -217,8 +218,8 @@ protected:
     // Virtual for testing.
     virtual void animateLayers(double monotonicTime, double wallClockTime);
 
-    // Virtual for testing. Measured in seconds.
-    virtual double lowFrequencyAnimationInterval() const;
+    // Virtual for testing.
+    virtual base::TimeDelta lowFrequencyAnimationInterval() const;
 
     CCLayerTreeHostImplClient* m_client;
     int m_sourceFrameNumber;

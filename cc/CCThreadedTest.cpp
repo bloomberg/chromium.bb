@@ -120,9 +120,9 @@ void MockLayerTreeHostImpl::animateLayers(double monotonicTime, double wallClock
     m_testHooks->animateLayers(this, monotonicTime);
 }
 
-double MockLayerTreeHostImpl::lowFrequencyAnimationInterval() const
+base::TimeDelta MockLayerTreeHostImpl::lowFrequencyAnimationInterval() const
 {
-    return 1.0 / 60;
+    return base::TimeDelta::FromMilliseconds(16);
 }
 
 MockLayerTreeHostImpl::MockLayerTreeHostImpl(TestHooks* testHooks, const CCLayerTreeSettings& settings, CCLayerTreeHostImplClient* client)

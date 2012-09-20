@@ -122,9 +122,9 @@ void CCScheduler::didRecreateContext()
     processScheduledActions();
 }
 
-void CCScheduler::setTimebaseAndInterval(double timebase, double intervalSeconds)
+void CCScheduler::setTimebaseAndInterval(base::TimeTicks timebase, base::TimeDelta interval)
 {
-    m_frameRateController->setTimebaseAndInterval(timebase, intervalSeconds);
+    m_frameRateController->setTimebaseAndInterval(timebase, interval);
 }
 
 void CCScheduler::vsyncTick()

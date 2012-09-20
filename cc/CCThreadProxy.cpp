@@ -319,7 +319,9 @@ void CCThreadProxy::onVSyncParametersChanged(double monotonicTimebase, double in
 {
     ASSERT(isImplThread());
     TRACE_EVENT2("cc", "CCThreadProxy::onVSyncParametersChanged", "monotonicTimebase", monotonicTimebase, "intervalInSeconds", intervalInSeconds);
-    m_schedulerOnImplThread->setTimebaseAndInterval(monotonicTimebase, intervalInSeconds);
+    base::TimeTicks timebase = base::TimeTicks::FromInternalValue(monotonicTimebase * base::Time::kMicrosecondsPerSecond);
+    base::TimeDelta interval = base::TimeDelta::FromMicroseconds(intervalInSeconds * base::Time::kMicrosecondsPerSecond);
+    m_schedulerOnImplThread->setTimebaseAndInterval(timebase, interval);
 }
 
 void CCThreadProxy::onCanDrawStateChanged(bool canDraw)
@@ -624,12 +626,12 @@ void CCThreadProxy::beginFrameAbortedOnImplThread()
     m_schedulerOnImplThread->beginFrameAborted();
 }
 
-void CCThreadProxy::scheduledActionUpdateMoreResources(double monotonicTimeLimit)
+void CCThreadProxy::scheduledActionUpdateMoreResources(base::TimeTicks timeLimit)
 {
     TRACE_EVENT0("cc", "CCThreadProxy::scheduledActionUpdateMoreResources");
     ASSERT(m_currentTextureUpdateControllerOnImplThread);
-    m_currentTextureUpdateControllerOnImplThread->performMoreUpdates(
-        monotonicTimeLimit);
+    double monotonicTimeLimit = timeLimit.ToInternalValue() / static_cast<double>(base::Time::kMicrosecondsPerSecond);
+    m_currentTextureUpdateControllerOnImplThread->performMoreUpdates(monotonicTimeLimit);
 }
 
 void CCThreadProxy::scheduledActionCommit()
@@ -854,7 +856,7 @@ void CCThreadProxy::initializeImplOnImplThread(CCCompletionEvent* completion, Pa
     TRACE_EVENT0("cc", "CCThreadProxy::initializeImplOnImplThread");
     ASSERT(isImplThread());
     m_layerTreeHostImpl = m_layerTreeHost->createLayerTreeHostImpl(this);
-    const double displayRefreshInterval = 1.0 / 60.0;
+    const base::TimeDelta displayRefreshInterval = base::TimeDelta::FromMicroseconds(base::Time::kMicrosecondsPerSecond / 60);
     OwnPtr<CCFrameRateController> frameRateController;
     if (m_renderVSyncEnabled)
         frameRateController = adoptPtr(new CCFrameRateController(CCDelayBasedTimeSource::create(displayRefreshInterval, CCProxy::implThread())));

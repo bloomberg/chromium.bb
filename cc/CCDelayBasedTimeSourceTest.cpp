@@ -17,19 +17,23 @@ using namespace WebKitTests;
 
 namespace {
 
+base::TimeDelta interval()
+{
+    return base::TimeDelta::FromMicroseconds(base::Time::kMicrosecondsPerSecond / 60);
+}
+
 TEST(CCDelayBasedTimeSourceTest, TaskPostedAndTickCalled)
 {
     FakeCCThread thread;
     FakeCCTimeSourceClient client;
-    RefPtr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(1.0 / 60.0, &thread);
+    RefPtr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval(), &thread);
     timer->setClient(&client);
 
-    timer->setMonotonicTimeNow(0);
     timer->setActive(true);
     EXPECT_TRUE(timer->active());
     EXPECT_TRUE(thread.hasPendingTask());
 
-    timer->setMonotonicTimeNow(0.016);
+    timer->setNow(timer->now() + base::TimeDelta::FromMilliseconds(16));
     thread.runPendingTask();
     EXPECT_TRUE(timer->active());
     EXPECT_TRUE(client.tickCalled());
@@ -39,7 +43,7 @@ TEST(CCDelayBasedTimeSource, TickNotCalledWithTaskPosted)
 {
     FakeCCThread thread;
     FakeCCTimeSourceClient client;
-    RefPtr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(1.0 / 60.0, &thread);
+    RefPtr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval(), &thread);
     timer->setClient(&client);
     timer->setActive(true);
     EXPECT_TRUE(thread.hasPendingTask());
@@ -52,7 +56,7 @@ TEST(CCDelayBasedTimeSource, StartTwiceEnqueuesOneTask)
 {
     FakeCCThread thread;
     FakeCCTimeSourceClient client;
-    RefPtr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(1.0 / 60.0, &thread);
+    RefPtr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval(), &thread);
     timer->setClient(&client);
     timer->setActive(true);
     EXPECT_TRUE(thread.hasPendingTask());
@@ -65,7 +69,7 @@ TEST(CCDelayBasedTimeSource, StartWhenRunningDoesntTick)
 {
     FakeCCThread thread;
     FakeCCTimeSourceClient client;
-    RefPtr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(1.0 / 60.0, &thread);
+    RefPtr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval(), &thread);
     timer->setClient(&client);
     timer->setActive(true);
     thread.runPendingTask();
@@ -80,8 +84,7 @@ TEST(CCDelayBasedTimeSource, NextDelaySaneWhenExactlyOnRequestedTime)
 {
     FakeCCThread thread;
     FakeCCTimeSourceClient client;
-    double interval = 1.0 / 60.0;
-    RefPtr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval, &thread);
+    RefPtr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval(), &thread);
     timer->setClient(&client);
     timer->setActive(true);
     // Run the first task, as that activates the timer and picks up a timebase.
@@ -89,7 +92,7 @@ TEST(CCDelayBasedTimeSource, NextDelaySaneWhenExactlyOnRequestedTime)
 
     EXPECT_EQ(16, thread.pendingDelayMs());
 
-    timer->setMonotonicTimeNow(interval);
+    timer->setNow(timer->now() + interval());
     thread.runPendingTask();
 
     EXPECT_EQ(16, thread.pendingDelayMs());
@@ -101,8 +104,7 @@ TEST(CCDelayBasedTimeSource, NextDelaySaneWhenSlightlyAfterRequestedTime)
 {
     FakeCCThread thread;
     FakeCCTimeSourceClient client;
-    double interval = 1.0 / 60.0;
-    RefPtr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval, &thread);
+    RefPtr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval(), &thread);
     timer->setClient(&client);
     timer->setActive(true);
     // Run the first task, as that activates the timer and picks up a timebase.
@@ -110,7 +112,7 @@ TEST(CCDelayBasedTimeSource, NextDelaySaneWhenSlightlyAfterRequestedTime)
 
     EXPECT_EQ(16, thread.pendingDelayMs());
 
-    timer->setMonotonicTimeNow(interval + 0.0000001);
+    timer->setNow(timer->now() + interval() + base::TimeDelta::FromMicroseconds(1));
     thread.runPendingTask();
 
     EXPECT_EQ(16, thread.pendingDelayMs());
@@ -122,8 +124,7 @@ TEST(CCDelayBasedTimeSource, NextDelaySaneWhenExactlyTwiceAfterRequestedTime)
 {
     FakeCCThread thread;
     FakeCCTimeSourceClient client;
-    double interval = 1.0 / 60.0;
-    RefPtr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval, &thread);
+    RefPtr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval(), &thread);
     timer->setClient(&client);
     timer->setActive(true);
     // Run the first task, as that activates the timer and picks up a timebase.
@@ -131,7 +132,7 @@ TEST(CCDelayBasedTimeSource, NextDelaySaneWhenExactlyTwiceAfterRequestedTime)
 
     EXPECT_EQ(16, thread.pendingDelayMs());
 
-    timer->setMonotonicTimeNow(2*interval);
+    timer->setNow(timer->now() + 2 * interval());
     thread.runPendingTask();
 
     EXPECT_EQ(16, thread.pendingDelayMs());
@@ -143,8 +144,7 @@ TEST(CCDelayBasedTimeSource, NextDelaySaneWhenSlightlyAfterTwiceRequestedTime)
 {
     FakeCCThread thread;
     FakeCCTimeSourceClient client;
-    double interval = 1.0 / 60.0;
-    RefPtr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval, &thread);
+    RefPtr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval(), &thread);
     timer->setClient(&client);
     timer->setActive(true);
     // Run the first task, as that activates the timer and picks up a timebase.
@@ -152,7 +152,7 @@ TEST(CCDelayBasedTimeSource, NextDelaySaneWhenSlightlyAfterTwiceRequestedTime)
 
     EXPECT_EQ(16, thread.pendingDelayMs());
 
-    timer->setMonotonicTimeNow(2*interval + 0.0000001);
+    timer->setNow(timer->now() + 2 * interval() + base::TimeDelta::FromMicroseconds(1));
     thread.runPendingTask();
 
     EXPECT_EQ(16, thread.pendingDelayMs());
@@ -164,8 +164,7 @@ TEST(CCDelayBasedTimeSource, NextDelaySaneWhenHalfAfterRequestedTime)
 {
     FakeCCThread thread;
     FakeCCTimeSourceClient client;
-    double interval = 1.0 / 60.0;
-    RefPtr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval, &thread);
+    RefPtr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval(), &thread);
     timer->setClient(&client);
     timer->setActive(true);
     // Run the first task, as that activates the timer and picks up a timebase.
@@ -173,7 +172,7 @@ TEST(CCDelayBasedTimeSource, NextDelaySaneWhenHalfAfterRequestedTime)
 
     EXPECT_EQ(16, thread.pendingDelayMs());
 
-    timer->setMonotonicTimeNow(interval + interval * 0.5);
+    timer->setNow(timer->now() + interval() + base::TimeDelta::FromMilliseconds(8));
     thread.runPendingTask();
 
     EXPECT_EQ(8, thread.pendingDelayMs());
@@ -185,8 +184,7 @@ TEST(CCDelayBasedTimeSource, SaneHandlingOfJitteryTimebase)
 {
     FakeCCThread thread;
     FakeCCTimeSourceClient client;
-    double interval = 1.0 / 60.0;
-    RefPtr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval, &thread);
+    RefPtr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval(), &thread);
     timer->setClient(&client);
     timer->setActive(true);
     // Run the first task, as that activates the timer and picks up a timebase.
@@ -195,27 +193,26 @@ TEST(CCDelayBasedTimeSource, SaneHandlingOfJitteryTimebase)
     EXPECT_EQ(16, thread.pendingDelayMs());
 
     // Jitter timebase ~1ms late
-    timer->setTimebaseAndInterval(interval + 0.001, interval);
-    timer->setMonotonicTimeNow(interval);
+    timer->setNow(timer->now() + interval());
+    timer->setTimebaseAndInterval(timer->now() + base::TimeDelta::FromMilliseconds(1), interval());
     thread.runPendingTask();
 
     // Without double tick prevention, pendingDelayMs would be 1.
     EXPECT_EQ(17, thread.pendingDelayMs());
 
     // Jitter timebase ~1ms early
-    timer->setTimebaseAndInterval(interval * 2 - 0.001, interval);
-    timer->setMonotonicTimeNow(interval * 2);
+    timer->setNow(timer->now() + interval());
+    timer->setTimebaseAndInterval(timer->now() - base::TimeDelta::FromMilliseconds(1), interval());
     thread.runPendingTask();
 
     EXPECT_EQ(15, thread.pendingDelayMs());
 }
 
-TEST(CCDelayBasedTimeSource, HanldlesSignificantTimebaseChangesImmediately)
+TEST(CCDelayBasedTimeSource, HandlesSignificantTimebaseChangesImmediately)
 {
     FakeCCThread thread;
     FakeCCTimeSourceClient client;
-    double interval = 1.0 / 60.0;
-    RefPtr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval, &thread);
+    RefPtr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval(), &thread);
     timer->setClient(&client);
     timer->setActive(true);
     // Run the first task, as that activates the timer and picks up a timebase.
@@ -224,28 +221,29 @@ TEST(CCDelayBasedTimeSource, HanldlesSignificantTimebaseChangesImmediately)
     EXPECT_EQ(16, thread.pendingDelayMs());
 
     // Tick, then shift timebase by +7ms.
-    timer->setMonotonicTimeNow(interval);
+    timer->setNow(timer->now() + interval());
     thread.runPendingTask();
 
     EXPECT_EQ(16, thread.pendingDelayMs());
 
     client.reset();
     thread.runPendingTaskOnOverwrite(true);
-    timer->setTimebaseAndInterval(interval + 0.0070001, interval);
+    base::TimeDelta jitter = base::TimeDelta::FromMilliseconds(7) + base::TimeDelta::FromMicroseconds(1);
+    timer->setTimebaseAndInterval(timer->now() + jitter, interval());
     thread.runPendingTaskOnOverwrite(false);
 
     EXPECT_FALSE(client.tickCalled()); // Make sure pending tasks were canceled.
     EXPECT_EQ(7, thread.pendingDelayMs());
 
     // Tick, then shift timebase by -7ms.
-    timer->setMonotonicTimeNow(interval + 0.0070001);
+    timer->setNow(timer->now() + jitter);
     thread.runPendingTask();
 
     EXPECT_EQ(16, thread.pendingDelayMs());
 
     client.reset();
     thread.runPendingTaskOnOverwrite(true);
-    timer->setTimebaseAndInterval(interval, interval);
+    timer->setTimebaseAndInterval(base::TimeTicks() + interval(), interval());
     thread.runPendingTaskOnOverwrite(false);
 
     EXPECT_FALSE(client.tickCalled()); // Make sure pending tasks were canceled.
@@ -256,8 +254,7 @@ TEST(CCDelayBasedTimeSource, HanldlesSignificantIntervalChangesImmediately)
 {
     FakeCCThread thread;
     FakeCCTimeSourceClient client;
-    double interval = 1.0 / 60.0;
-    RefPtr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval, &thread);
+    RefPtr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval(), &thread);
     timer->setClient(&client);
     timer->setActive(true);
     // Run the first task, as that activates the timer and picks up a timebase.
@@ -266,28 +263,28 @@ TEST(CCDelayBasedTimeSource, HanldlesSignificantIntervalChangesImmediately)
     EXPECT_EQ(16, thread.pendingDelayMs());
 
     // Tick, then double the interval.
-    timer->setMonotonicTimeNow(interval);
+    timer->setNow(timer->now() + interval());
     thread.runPendingTask();
 
     EXPECT_EQ(16, thread.pendingDelayMs());
 
     client.reset();
     thread.runPendingTaskOnOverwrite(true);
-    timer->setTimebaseAndInterval(interval, interval * 2);
+    timer->setTimebaseAndInterval(base::TimeTicks() + interval(), interval() * 2);
     thread.runPendingTaskOnOverwrite(false);
 
     EXPECT_FALSE(client.tickCalled()); // Make sure pending tasks were canceled.
     EXPECT_EQ(33, thread.pendingDelayMs());
 
     // Tick, then halve the interval.
-    timer->setMonotonicTimeNow(interval * 3);
+    timer->setNow(timer->now() + interval() * 2);
     thread.runPendingTask();
 
     EXPECT_EQ(33, thread.pendingDelayMs());
 
     client.reset();
     thread.runPendingTaskOnOverwrite(true);
-    timer->setTimebaseAndInterval(interval * 3, interval);
+    timer->setTimebaseAndInterval(base::TimeTicks() + interval() * 3, interval());
     thread.runPendingTaskOnOverwrite(false);
 
     EXPECT_FALSE(client.tickCalled()); // Make sure pending tasks were canceled.
@@ -296,11 +293,11 @@ TEST(CCDelayBasedTimeSource, HanldlesSignificantIntervalChangesImmediately)
 
 TEST(CCDelayBasedTimeSourceTest, AchievesTargetRateWithNoNoise)
 {
-    int numIterations = 1000;
+    int numIterations = 10;
 
     FakeCCThread thread;
     FakeCCTimeSourceClient client;
-    RefPtr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(1.0 / 60.0, &thread);
+    RefPtr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval(), &thread);
     timer->setClient(&client);
     timer->setActive(true);
 
@@ -312,8 +309,7 @@ TEST(CCDelayBasedTimeSourceTest, AchievesTargetRateWithNoNoise)
         totalFrameTime += delayMs / 1000.0;
 
         // Run the callback exactly when asked
-        double now = timer->monotonicTimeNow() + delayMs / 1000.0;
-        timer->setMonotonicTimeNow(now);
+        timer->setNow(timer->now() + base::TimeDelta::FromMilliseconds(delayMs));
         thread.runPendingTask();
     }
     double averageInterval = totalFrameTime / static_cast<double>(numIterations);
@@ -324,7 +320,7 @@ TEST(CCDelayBasedTimeSource, TestDeactivateWhilePending)
 {
     FakeCCThread thread;
     FakeCCTimeSourceClient client;
-    RefPtr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(1.0 / 60.0, &thread);
+    RefPtr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval(), &thread);
     timer->setClient(&client);
     timer->setActive(true); // Should post a task.
     timer->setActive(false);
@@ -336,12 +332,11 @@ TEST(CCDelayBasedTimeSource, TestDeactivateAndReactivateBeforeNextTickTime)
 {
     FakeCCThread thread;
     FakeCCTimeSourceClient client;
-    RefPtr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(1.0 / 60.0, &thread);
+    RefPtr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval(), &thread);
     timer->setClient(&client);
 
     // Should run the activate task, and pick up a new timebase.
     timer->setActive(true);
-    timer->setMonotonicTimeNow(0);
     thread.runPendingTask();
 
     // Stop the timer
@@ -352,7 +347,7 @@ TEST(CCDelayBasedTimeSource, TestDeactivateAndReactivateBeforeNextTickTime)
 
     // Start the timer again, but before the next tick time the timer previously
     // planned on using. That same tick time should still be targeted.
-    timer->setMonotonicTimeNow(0.004);
+    timer->setNow(timer->now() + base::TimeDelta::FromMilliseconds(4));
     timer->setActive(true);
     EXPECT_EQ(12, thread.pendingDelayMs());
 }
@@ -361,12 +356,11 @@ TEST(CCDelayBasedTimeSource, TestDeactivateAndReactivateAfterNextTickTime)
 {
     FakeCCThread thread;
     FakeCCTimeSourceClient client;
-    RefPtr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(1.0 / 60.0, &thread);
+    RefPtr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval(), &thread);
     timer->setClient(&client);
 
     // Should run the activate task, and pick up a new timebase.
     timer->setActive(true);
-    timer->setMonotonicTimeNow(0);
     thread.runPendingTask();
 
     // Stop the timer
@@ -377,7 +371,7 @@ TEST(CCDelayBasedTimeSource, TestDeactivateAndReactivateAfterNextTickTime)
 
     // Start the timer again, but before the next tick time the timer previously
     // planned on using. That same tick time should still be targeted.
-    timer->setMonotonicTimeNow(0.02);
+    timer->setNow(timer->now() + base::TimeDelta::FromMilliseconds(20));
     timer->setActive(true);
     EXPECT_EQ(13, thread.pendingDelayMs());
 }

@@ -77,7 +77,6 @@ class FakeCCTimeSource : public cc::CCTimeSource {
 public:
     FakeCCTimeSource()
         : m_active(false)
-        , m_nextTickTime(0)
         , m_client(0)
     {
         turnOffVerifier();
@@ -88,9 +87,9 @@ public:
     virtual void setClient(cc::CCTimeSourceClient* client) OVERRIDE { m_client = client; }
     virtual void setActive(bool b) OVERRIDE { m_active = b; }
     virtual bool active() const OVERRIDE { return m_active; }
-    virtual void setTimebaseAndInterval(double timebase, double interval) OVERRIDE { }
-    virtual double lastTickTime() OVERRIDE { return 0; }
-    virtual double nextTickTimeIfActivated() OVERRIDE { return 0; }
+    virtual void setTimebaseAndInterval(base::TimeTicks timebase, base::TimeDelta interval) OVERRIDE { }
+    virtual base::TimeTicks lastTickTime() OVERRIDE { return base::TimeTicks(); }
+    virtual base::TimeTicks nextTickTimeIfActivated() OVERRIDE { return base::TimeTicks(); }
 
     void tick()
     {
@@ -99,30 +98,31 @@ public:
             m_client->onTimerTick();
     }
 
-    void setNextTickTime(double nextTickTime) { m_nextTickTime = nextTickTime; }
+    void setNextTickTime(base::TimeTicks nextTickTime) { m_nextTickTime = nextTickTime; }
 
 protected:
     bool m_active;
-    double m_nextTickTime;
+    base::TimeTicks m_nextTickTime;
     cc::CCTimeSourceClient* m_client;
 };
 
 class FakeCCDelayBasedTimeSource : public cc::CCDelayBasedTimeSource {
 public:
-    static PassRefPtr<FakeCCDelayBasedTimeSource> create(double interval, cc::CCThread* thread)
+    static PassRefPtr<FakeCCDelayBasedTimeSource> create(base::TimeDelta interval, cc::CCThread* thread)
     {
         return adoptRef(new FakeCCDelayBasedTimeSource(interval, thread));
     }
 
-    void setMonotonicTimeNow(double time) { m_monotonicTimeNow = time; }
-    virtual double monotonicTimeNow() const OVERRIDE { return m_monotonicTimeNow; }
+    void setNow(base::TimeTicks time) { m_now = time; }
+    virtual base::TimeTicks now() const OVERRIDE { return m_now; }
 
 protected:
-    FakeCCDelayBasedTimeSource(double interval, cc::CCThread* thread)
+    FakeCCDelayBasedTimeSource(base::TimeDelta interval, cc::CCThread* thread)
         : CCDelayBasedTimeSource(interval, thread)
-        , m_monotonicTimeNow(0) { }
+    {
+    }
 
-    double m_monotonicTimeNow;
+    base::TimeTicks m_now;
 };
 
 class FakeCCFrameRateController : public cc::CCFrameRateController {

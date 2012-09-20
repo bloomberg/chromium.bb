@@ -90,10 +90,10 @@ void CCFrameRateController::setMaxFramesPending(int maxFramesPending)
     m_maxFramesPending = maxFramesPending;
 }
 
-void CCFrameRateController::setTimebaseAndInterval(double timebase, double intervalSeconds)
+void CCFrameRateController::setTimebaseAndInterval(base::TimeTicks timebase, base::TimeDelta interval)
 {
     if (m_isTimeSourceThrottling)
-        m_timeSource->setTimebaseAndInterval(timebase, intervalSeconds);
+        m_timeSource->setTimebaseAndInterval(timebase, interval);
 }
 
 void CCFrameRateController::setSwapBuffersCompleteSupported(bool supported)
@@ -151,12 +151,12 @@ void CCFrameRateController::didAbortAllPendingFrames()
     m_numFramesPending = 0;
 }
 
-double CCFrameRateController::nextTickTimeIfActivated()
+base::TimeTicks CCFrameRateController::nextTickTimeIfActivated()
 {
     if (m_isTimeSourceThrottling)
         return m_timeSource->nextTickTimeIfActivated();
 
-    return monotonicallyIncreasingTime();
+    return base::TimeTicks::Now();
 }
 
 }

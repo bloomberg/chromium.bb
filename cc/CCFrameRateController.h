@@ -6,7 +6,7 @@
 #define CCFrameRateController_h
 
 #include "CCTimer.h"
-
+#include "base/time.h"
 #include <wtf/Deque.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
@@ -47,9 +47,9 @@ public:
     void didFinishFrame();
     void didAbortAllPendingFrames();
     void setMaxFramesPending(int); // 0 for unlimited.
-    double nextTickTimeIfActivated();
+    base::TimeTicks nextTickTimeIfActivated();
 
-    void setTimebaseAndInterval(double timebase, double intervalSeconds);
+    void setTimebaseAndInterval(base::TimeTicks timebase, base::TimeDelta interval);
     void setSwapBuffersCompleteSupported(bool);
 
 protected:

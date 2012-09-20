@@ -156,7 +156,7 @@ public:
 
 protected:
     virtual void animateLayers(double monotonicTime, double wallClockTime);
-    virtual double lowFrequencyAnimationInterval() const;
+    virtual base::TimeDelta lowFrequencyAnimationInterval() const;
 
 private:
     MockLayerTreeHostImpl(TestHooks*, const cc::CCLayerTreeSettings&, cc::CCLayerTreeHostImplClient*);

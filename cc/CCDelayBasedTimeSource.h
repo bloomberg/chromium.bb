@@ -17,32 +17,32 @@ class CCThread;
 // in face of millisecond-precision delayed callbacks and random queueing delays.
 class CCDelayBasedTimeSource : public CCTimeSource, CCTimerClient {
 public:
-    static PassRefPtr<CCDelayBasedTimeSource> create(double intervalSeconds, CCThread*);
+    static PassRefPtr<CCDelayBasedTimeSource> create(base::TimeDelta interval, CCThread*);
 
     virtual ~CCDelayBasedTimeSource() { }
 
     virtual void setClient(CCTimeSourceClient* client) OVERRIDE { m_client = client; }
 
     // CCTimeSource implementation
-    virtual void setTimebaseAndInterval(double timebase, double intervalSeconds) OVERRIDE;
+    virtual void setTimebaseAndInterval(base::TimeTicks timebase, base::TimeDelta interval) OVERRIDE;
 
     virtual void setActive(bool) OVERRIDE;
     virtual bool active() const OVERRIDE { return m_state != STATE_INACTIVE; }
 
     // Get the last and next tick times.
-    virtual double lastTickTime() OVERRIDE;
-    virtual double nextTickTimeIfActivated() OVERRIDE;
+    virtual base::TimeTicks lastTickTime() OVERRIDE;
+    virtual base::TimeTicks nextTickTimeIfActivated() OVERRIDE;
 
     // CCTimerClient implementation.
     virtual void onTimerFired() OVERRIDE;
 
     // Virtual for testing.
-    virtual double monotonicTimeNow() const;
+    virtual base::TimeTicks now() const;
 
 protected:
-    CCDelayBasedTimeSource(double interval, CCThread*);
-    double nextTickTarget(double now);
-    void postNextTickTask(double now);
+    CCDelayBasedTimeSource(base::TimeDelta interval, CCThread*);
+    base::TimeTicks nextTickTarget(base::TimeTicks now);
+    void postNextTickTask(base::TimeTicks now);
 
     enum State {
         STATE_INACTIVE,
@@ -51,16 +51,16 @@ protected:
     };
 
     struct Parameters {
-        Parameters(double interval, double tickTarget)
+        Parameters(base::TimeDelta interval, base::TimeTicks tickTarget)
             : interval(interval), tickTarget(tickTarget)
         { }
-        double interval;
-        double tickTarget;
+        base::TimeDelta interval;
+        base::TimeTicks tickTarget;
     };
 
     CCTimeSourceClient* m_client;
     bool m_hasTickTarget;
-    double m_lastTickTime;
+    base::TimeTicks m_lastTickTime;
 
     // m_currentParameters should only be written by postNextTickTask.
     // m_nextParameters will take effect on the next call to postNextTickTask.

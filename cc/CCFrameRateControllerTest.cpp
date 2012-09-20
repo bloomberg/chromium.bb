@@ -33,17 +33,18 @@ TEST(CCFrameRateControllerTest, TestFrameThrottling_ImmediateAck)
 {
     FakeCCThread thread;
     FakeCCFrameRateControllerClient client;
-    RefPtr<FakeCCDelayBasedTimeSource> timeSource = FakeCCDelayBasedTimeSource::create(1.0 / 60.0, &thread);
+    base::TimeDelta interval = base::TimeDelta::FromMicroseconds(base::Time::kMicrosecondsPerSecond / 60);
+    RefPtr<FakeCCDelayBasedTimeSource> timeSource = FakeCCDelayBasedTimeSource::create(interval, &thread);
     CCFrameRateController controller(timeSource);
 
     controller.setClient(&client);
     controller.setActive(true);
 
-    double elapsed = 0; // Muck around with time a bit
+    base::TimeTicks elapsed; // Muck around with time a bit
 
     // Trigger one frame, make sure the vsync callback is called
-    elapsed += thread.pendingDelayMs() / 1000.0;
-    timeSource->setMonotonicTimeNow(elapsed);
+    elapsed += base::TimeDelta::FromMilliseconds(thread.pendingDelayMs());
+    timeSource->setNow(elapsed);
     thread.runPendingTask();
     EXPECT_TRUE(client.vsyncTicked());
     client.reset();
@@ -52,13 +53,13 @@ TEST(CCFrameRateControllerTest, TestFrameThrottling_ImmediateAck)
     controller.didBeginFrame();
 
     // Tell the controller the frame ended 5ms later
-    timeSource->setMonotonicTimeNow(timeSource->monotonicTimeNow() + 0.005);
+    timeSource->setNow(timeSource->now() + base::TimeDelta::FromMilliseconds(5));
     controller.didFinishFrame();
 
     // Trigger another frame, make sure vsync runs again
-    elapsed += thread.pendingDelayMs() / 1000.0;
-    EXPECT_TRUE(elapsed >= timeSource->monotonicTimeNow()); // Sanity check that previous code didn't move time backward.
-    timeSource->setMonotonicTimeNow(elapsed);
+    elapsed += base::TimeDelta::FromMilliseconds(thread.pendingDelayMs());
+    EXPECT_TRUE(elapsed >= timeSource->now()); // Sanity check that previous code didn't move time backward.
+    timeSource->setNow(elapsed);
     thread.runPendingTask();
     EXPECT_TRUE(client.vsyncTicked());
 }
@@ -67,18 +68,19 @@ TEST(CCFrameRateControllerTest, TestFrameThrottling_TwoFramesInFlight)
 {
     FakeCCThread thread;
     FakeCCFrameRateControllerClient client;
-    RefPtr<FakeCCDelayBasedTimeSource> timeSource = FakeCCDelayBasedTimeSource::create(1.0 / 60.0, &thread);
+    base::TimeDelta interval = base::TimeDelta::FromMicroseconds(base::Time::kMicrosecondsPerSecond / 60);
+    RefPtr<FakeCCDelayBasedTimeSource> timeSource = FakeCCDelayBasedTimeSource::create(interval, &thread);
     CCFrameRateController controller(timeSource);
 
     controller.setClient(&client);
     controller.setActive(true);
     controller.setMaxFramesPending(2);
 
-    double elapsed = 0; // Muck around with time a bit
+    base::TimeTicks elapsed; // Muck around with time a bit
 
     // Trigger one frame, make sure the vsync callback is called
-    elapsed += thread.pendingDelayMs() / 1000.0;
-    timeSource->setMonotonicTimeNow(elapsed);
+    elapsed += base::TimeDelta::FromMilliseconds(thread.pendingDelayMs());
+    timeSource->setNow(elapsed);
     thread.runPendingTask();
     EXPECT_TRUE(client.vsyncTicked());
     client.reset();
@@ -87,9 +89,9 @@ TEST(CCFrameRateControllerTest, TestFrameThrottling_TwoFramesInFlight)
     controller.didBeginFrame();
 
     // Trigger another frame, make sure vsync callback runs again
-    elapsed += thread.pendingDelayMs() / 1000.0;
-    EXPECT_TRUE(elapsed >= timeSource->monotonicTimeNow()); // Sanity check that previous code didn't move time backward.
-    timeSource->setMonotonicTimeNow(elapsed);
+    elapsed += base::TimeDelta::FromMilliseconds(thread.pendingDelayMs());
+    EXPECT_TRUE(elapsed >= timeSource->now()); // Sanity check that previous code didn't move time backward.
+    timeSource->setNow(elapsed);
     thread.runPendingTask();
     EXPECT_TRUE(client.vsyncTicked());
     client.reset();
@@ -98,23 +100,23 @@ TEST(CCFrameRateControllerTest, TestFrameThrottling_TwoFramesInFlight)
     controller.didBeginFrame();
 
     // Trigger another frame. Since two frames are pending, we should not draw.
-    elapsed += thread.pendingDelayMs() / 1000.0;
-    EXPECT_TRUE(elapsed >= timeSource->monotonicTimeNow()); // Sanity check that previous code didn't move time backward.
-    timeSource->setMonotonicTimeNow(elapsed);
+    elapsed += base::TimeDelta::FromMilliseconds(thread.pendingDelayMs());
+    EXPECT_TRUE(elapsed >= timeSource->now()); // Sanity check that previous code didn't move time backward.
+    timeSource->setNow(elapsed);
     thread.runPendingTask();
     EXPECT_FALSE(client.vsyncTicked());
 
     // Tell the controller the first frame ended 5ms later
-    timeSource->setMonotonicTimeNow(timeSource->monotonicTimeNow() + 0.005);
+    timeSource->setNow(timeSource->now() + base::TimeDelta::FromMilliseconds(5));
     controller.didFinishFrame();
 
     // Tick should not have been called
     EXPECT_FALSE(client.vsyncTicked());
 
     // Trigger yet another frame. Since one frames is pending, another vsync callback should run.
-    elapsed += thread.pendingDelayMs() / 1000.0;
-    EXPECT_TRUE(elapsed >= timeSource->monotonicTimeNow()); // Sanity check that previous code didn't move time backward.
-    timeSource->setMonotonicTimeNow(elapsed);
+    elapsed += base::TimeDelta::FromMilliseconds(thread.pendingDelayMs());
+    EXPECT_TRUE(elapsed >= timeSource->now()); // Sanity check that previous code didn't move time backward.
+    timeSource->setNow(elapsed);
     thread.runPendingTask();
     EXPECT_TRUE(client.vsyncTicked());
 }

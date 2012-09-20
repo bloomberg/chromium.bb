@@ -67,7 +67,7 @@ public:
     virtual void scheduledActionBeginFrame() OVERRIDE;
     virtual CCScheduledActionDrawAndSwapResult scheduledActionDrawAndSwapIfPossible() OVERRIDE;
     virtual CCScheduledActionDrawAndSwapResult scheduledActionDrawAndSwapForced() OVERRIDE;
-    virtual void scheduledActionUpdateMoreResources(double monotonicTimeLimit) OVERRIDE;
+    virtual void scheduledActionUpdateMoreResources(base::TimeTicks timeLimit) OVERRIDE;
     virtual void scheduledActionCommit() OVERRIDE;
     virtual void scheduledActionBeginContextRecreation() OVERRIDE;
     virtual void scheduledActionAcquireLayerTexturesForMainThread() OVERRIDE;

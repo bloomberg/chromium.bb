@@ -54,7 +54,7 @@ public:
         return CCScheduledActionDrawAndSwapResult(true, m_swapWillHappenIfDrawHappens);
     }
 
-    virtual void scheduledActionUpdateMoreResources(double) OVERRIDE { m_actions.push_back("scheduledActionUpdateMoreResources"); }
+    virtual void scheduledActionUpdateMoreResources(base::TimeTicks) OVERRIDE { m_actions.push_back("scheduledActionUpdateMoreResources"); }
     virtual void scheduledActionCommit() OVERRIDE { m_actions.push_back("scheduledActionCommit"); }
     virtual void scheduledActionBeginContextRecreation() OVERRIDE { m_actions.push_back("scheduledActionBeginContextRecreation"); }
     virtual void scheduledActionAcquireLayerTexturesForMainThread() OVERRIDE { m_actions.push_back("scheduledActionAcquireLayerTexturesForMainThread"); }
@@ -229,7 +229,7 @@ public:
         return CCScheduledActionDrawAndSwapResult(true, true);
     }
 
-    virtual void scheduledActionUpdateMoreResources(double) OVERRIDE { }
+    virtual void scheduledActionUpdateMoreResources(base::TimeTicks) OVERRIDE { }
     virtual void scheduledActionCommit() OVERRIDE { }
     virtual void scheduledActionBeginContextRecreation() OVERRIDE { }
 
@@ -331,7 +331,7 @@ public:
         return CCScheduledActionDrawAndSwapResult(true, true);
     }
 
-    virtual void scheduledActionUpdateMoreResources(double) OVERRIDE { }
+    virtual void scheduledActionUpdateMoreResources(base::TimeTicks) OVERRIDE { }
     virtual void scheduledActionCommit() OVERRIDE { }
     virtual void scheduledActionBeginContextRecreation() OVERRIDE { }
 

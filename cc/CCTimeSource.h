@@ -5,6 +5,7 @@
 #ifndef CCTimeSource_h
 #define CCTimeSource_h
 
+#include "base/time.h"
 #include <wtf/RefCounted.h>
 
 namespace cc {
@@ -30,9 +31,9 @@ public:
     virtual void setClient(CCTimeSourceClient*) = 0;
     virtual void setActive(bool) = 0;
     virtual bool active() const = 0;
-    virtual void setTimebaseAndInterval(double timebase, double intervalSeconds) = 0;
-    virtual double lastTickTime() = 0;
-    virtual double nextTickTimeIfActivated() = 0;
+    virtual void setTimebaseAndInterval(base::TimeTicks timebase, base::TimeDelta interval) = 0;
+    virtual base::TimeTicks lastTickTime() = 0;
+    virtual base::TimeTicks nextTickTimeIfActivated() = 0;
 };
 
 }
