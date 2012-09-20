@@ -4552,8 +4552,6 @@
    fun:_ZN17LeveldbValueStore3SetEiRKSsRKN4base5ValueE
    fun:_ZN10extensions28SettingsStorageQuotaEnforcer3SetEiRKSsRKN4base5ValueE
    fun:_ZN10extensions23SyncableSettingsStorage3SetEiRKSsRKN4base5ValueE
-   fun:_ZN10extensions28WeakUnlimitedSettingsStorage3SetEiRKSsRKN4base5ValueE
-   fun:_ZN10extensionsL33UnlimitedLocalStorageTestCallbackEP10ValueStore
 }
 {
    bug_111341
@@ -6016,21 +6014,6 @@
    fun:_ZN2ui8DataPack9WritePackERK8FilePathRKSt3mapItN4base16BasicStringPieceISsEESt4lessItESaISt4pairIKtS7_EEENS_14ResourceHandle16TextEncodingTypeE
    fun:_ZN2ui12_GLOBAL__N_130CreateDataPackWithSingleBitmapERK8FilePathi
    fun:_ZN2ui33ResourceBundle_GetImageNamed_Test8TestBodyEv
-}
-{
-   bug_150998
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN7leveldb12_GLOBAL__N_111ChromiumEnv11StartThreadEPFvPvES2_
-   fun:_ZN7leveldb12_GLOBAL__N_111ChromiumEnv8ScheduleEPFvPvES2_
-   fun:_ZN7leveldb6DBImpl23MaybeScheduleCompactionEv
-   fun:_ZN7leveldb6DBImpl16MakeRoomForWriteEb
-   fun:_ZN7leveldb6DBImpl5WriteERKNS_12WriteOptionsEPNS_10WriteBatchE
-   fun:_ZN17LeveldbValueStore9WriteToDbEPN7leveldb10WriteBatchE
-   fun:_ZN17LeveldbValueStore3SetEiRKSsRKN4base5ValueE
-   fun:_ZN10extensions28SettingsStorageQuotaEnforcer3SetEiRKSsRKN4base5ValueE
-   fun:_ZN10extensions23SyncableSettingsStorage3SetEiRKSsRKN4base5ValueE
-   fun:_ZN10extensions78ExtensionSettingsFrontendTest_QuotaLimitsEnforcedCorrectlyForSyncAndLocal_Test8TestBodyEv
 }
 
 #-----------------------------------------------------------------------
