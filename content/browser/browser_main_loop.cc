@@ -156,6 +156,9 @@ static void GLibLogHandler(const gchar* log_domain,
              strstr(message, "theme pixmap") ||
              strstr(message, "locate theme engine")) {
     LOG(ERROR) << "GTK theme error: " << message;
+  } else if (strstr(message, "Unable to create Ubuntu Menu Proxy") &&
+             strstr(log_domain, "<unknown>")) {
+    LOG(ERROR) << "GTK menu proxy create failed";
   } else if (strstr(message, "gtk_drag_dest_leave: assertion")) {
     LOG(ERROR) << "Drag destination deleted: http://crbug.com/18557";
   } else if (strstr(message, "Out of memory") &&
