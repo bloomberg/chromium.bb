@@ -36,7 +36,6 @@
 0xb41d9c886871e31a	AboutFlags_page-prerender
 0x735ca25b198de8ab	AboutFlags_prerender-from-omnibox
 0xb33861525ba727a4	AboutFlags_print-preview
-0x89ee0fa8efbf345c	AboutFlags_print-setting-reset
 0x75b933619fb87fec	AboutFlags_remoting
 0x4ef8419b680e7a19	AboutFlags_save-page-as-mhtml
 0xb9396e0515186060	AboutFlags_snap-start
