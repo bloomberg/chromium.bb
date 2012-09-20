@@ -286,9 +286,12 @@ void APIPermissionInfo::RegisterAllPermissions(
     { APIPermission::kSerial, "serial", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_SERIAL,
       PermissionMessage::kSerial },
-    { APIPermission::kSocket, "socket", kFlagCannotBeOptional,
-      IDS_EXTENSION_PROMPT_WARNING_SOCKET, PermissionMessage::kSocket,
-      &::CreateAPIPermission<SocketPermission> },
+    // Because warning messages for the "socket" permission vary based on the
+    // permissions parameters, no message ID or message text is specified here.
+    // The message ID and text used will be determined at run-time in the
+    // |SocketPermission| class.
+    { APIPermission::kSocket, "socket", kFlagCannotBeOptional, 0,
+      PermissionMessage::kNone, &::CreateAPIPermission<SocketPermission> },
     { APIPermission::kAppCurrentWindowInternal, "app.currentWindowInternal" },
     { APIPermission::kAppRuntime, "app.runtime" },
     { APIPermission::kAppWindow, "app.window" },

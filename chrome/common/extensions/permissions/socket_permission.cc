@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/permissions/permissions_info.h"
@@ -24,24 +25,84 @@ SocketPermission::~SocketPermission() {
 }
 
 bool SocketPermission::HasMessages() const {
-  return info()->message_id() > PermissionMessage::kNone;
+  return !data_set_.empty();
 }
 
 PermissionMessages SocketPermission::GetMessages() const {
   DCHECK(HasMessages());
   PermissionMessages result;
-  result.push_back(GetMessage_());
+  if (!AddAnyHostMessage(result)) {
+    AddSpecificHostMessage(result);
+    AddSubdomainHostMessage(result);
+  }
   return result;
+}
+
+bool SocketPermission::AddAnyHostMessage(PermissionMessages& messages)
+    const {
+  std::set<SocketPermissionData>::const_iterator i;
+  for (i = data_set_.begin(); i != data_set_.end(); ++i) {
+    if (i->GetHostType() == SocketPermissionData::ANY_HOST) {
+      messages.push_back(PermissionMessage(
+            PermissionMessage::kSocketAnyHost,
+            l10n_util::GetStringUTF16(
+                IDS_EXTENSION_PROMPT_WARNING_SOCKET_ANY_HOST)));
+      return true;
+    }
+  }
+  return false;
+}
+
+void SocketPermission::AddSubdomainHostMessage(PermissionMessages& messages)
+    const {
+  std::set<string16> domains;
+  std::set<SocketPermissionData>::const_iterator i;
+  for (i = data_set_.begin(); i != data_set_.end(); ++i) {
+    if (i->GetHostType() == SocketPermissionData::HOSTS_IN_DOMAINS)
+      domains.insert(UTF8ToUTF16(i->GetHost()));
+  }
+  if (!domains.empty()) {
+    int id = (domains.size() == 1) ?
+             IDS_EXTENSION_PROMPT_WARNING_SOCKET_HOSTS_IN_DOMAIN :
+             IDS_EXTENSION_PROMPT_WARNING_SOCKET_HOSTS_IN_DOMAINS;
+    messages.push_back(PermissionMessage(
+          PermissionMessage::kSocketDomainHosts,
+          l10n_util::GetStringFUTF16(
+              id,
+              JoinString(
+                  std::vector<string16>(
+                      domains.begin(), domains.end()), ' '))));
+  }
+}
+
+void SocketPermission::AddSpecificHostMessage(PermissionMessages& messages)
+    const {
+  std::set<string16> hostnames;
+  std::set<SocketPermissionData>::const_iterator i;
+  for (i = data_set_.begin(); i != data_set_.end(); ++i) {
+    if (i->GetHostType() == SocketPermissionData::SPECIFIC_HOSTS)
+      hostnames.insert(UTF8ToUTF16(i->GetHost()));
+  }
+  if (!hostnames.empty()) {
+    int id = (hostnames.size() == 1) ?
+             IDS_EXTENSION_PROMPT_WARNING_SOCKET_SPECIFIC_HOST :
+             IDS_EXTENSION_PROMPT_WARNING_SOCKET_SPECIFIC_HOSTS;
+    messages.push_back(PermissionMessage(
+          PermissionMessage::kSocketSpecificHosts,
+          l10n_util::GetStringFUTF16(
+              id,
+              JoinString(
+                  std::vector<string16>(
+                      hostnames.begin(), hostnames.end()), ' '))));
+  }
 }
 
 bool SocketPermission::Check(
     const APIPermission::CheckParam* param) const {
   const CheckParam* socket_param = static_cast<const CheckParam*>(param);
-  std::set<SocketPermissionData>::const_iterator it = data_set_.begin();
-  std::set<SocketPermissionData>::const_iterator end = data_set_.end();
-
-  for (; it != end; ++it) {
-    if (it->Match(socket_param->type, socket_param->host, socket_param->port))
+  std::set<SocketPermissionData>::const_iterator i;
+  for (i = data_set_.begin(); i != data_set_.end(); ++i) {
+    if (i->Match(socket_param->type, socket_param->host, socket_param->port))
       return true;
   }
   return false;
@@ -82,12 +143,9 @@ bool SocketPermission::FromValue(const base::Value* value) {
 
 void SocketPermission::ToValue(base::Value** value) const {
   base::ListValue* list = new ListValue();
-
-  std::set<SocketPermissionData>::const_iterator it = data_set_.begin();
-  std::set<SocketPermissionData>::const_iterator end = data_set_.end();
-
-  for (;it != end; ++it) {
-    list->Append(base::Value::CreateStringValue(it->GetAsString()));
+  std::set<SocketPermissionData>::const_iterator i;
+  for (i = data_set_.begin(); i != data_set_.end(); ++i) {
+    list->Append(base::Value::CreateStringValue(i->GetAsString()));
   }
   *value = list;
 }

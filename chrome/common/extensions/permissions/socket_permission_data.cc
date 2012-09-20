@@ -197,6 +197,16 @@ bool SocketPermissionData::Parse(const std::string& permission) {
   return false;
 }
 
+SocketPermissionData::HostType SocketPermissionData::GetHostType() const {
+  return host_.empty() ?     SocketPermissionData::ANY_HOST :
+         match_subdomains_ ? SocketPermissionData::HOSTS_IN_DOMAINS :
+                             SocketPermissionData::SPECIFIC_HOSTS;
+}
+
+const std::string SocketPermissionData::GetHost() const {
+  return host_;
+}
+
 const std::string& SocketPermissionData::GetAsString() const {
   if (!spec_.empty())
     return spec_;

@@ -88,6 +88,10 @@ class SocketPermission : public APIPermission {
   virtual void Log(std::string* log) const OVERRIDE;
 
  private:
+  bool AddAnyHostMessage(PermissionMessages& messages) const;
+  void AddSubdomainHostMessage(PermissionMessages& messages) const;
+  void AddSpecificHostMessage(PermissionMessages& messages) const;
+
   std::set<SocketPermissionData> data_set_;
 };
 

@@ -9,12 +9,20 @@
 namespace extensions {
 
 // A pattern that can be used to match socket permission.
-// <socket-permission-pattern>
-//     := <op> | <op> ':' <host> | <op> ':' ':' <port> |
-//        <op> ':' <host> ':' <port>
-// <op> := 'tcp-connect' | 'tcp-listen' | 'udp-bind' | 'udp-send-to'
-// <host> := '*' | '*.' <anychar except '/' and '*'>+
-// <port> := '*' | <port number between 0 and 65535>)
+//   <socket-permission-pattern>
+//          := <op> |
+//             <op> ':' <host> |
+//             <op> ':' ':' <port> |
+//             <op> ':' <host> ':' <port>
+//   <op>   := 'tcp-connect' |
+//             'tcp-listen' |
+//             'udp-bind' |
+//             'udp-send-to'
+//   <host> := '*' |
+//             '*.' <anychar except '/' and '*'>+ |
+//             <anychar except '/' and '*'>+
+//   <port> := '*' |
+//             <port number between 0 and 65535>)
 class SocketPermissionData {
  public:
   enum OperationType {
@@ -23,6 +31,12 @@ class SocketPermissionData {
     TCP_LISTEN,
     UDP_BIND,
     UDP_SEND_TO,
+  };
+
+  enum HostType {
+    ANY_HOST,
+    HOSTS_IN_DOMAINS,
+    SPECIFIC_HOSTS,
   };
 
   SocketPermissionData();
@@ -36,6 +50,9 @@ class SocketPermissionData {
   bool Match(OperationType type, const std::string& host, int port) const;
 
   bool Parse(const std::string& permission);
+
+  HostType GetHostType() const;
+  const std::string GetHost() const;
 
   const std::string& GetAsString() const;
 

@@ -49,7 +49,9 @@ class PermissionMessage {
     kFileSystemWrite,
     kMediaGalleriesAllGalleries,
     kSerial,
-    kSocket,
+    kSocketAnyHost,
+    kSocketDomainHosts,
+    kSocketSpecificHosts,
     kEnumBoundary
   };
 

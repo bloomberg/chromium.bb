@@ -727,6 +727,7 @@ TEST(PermissionsTest, PermissionMessages) {
 
   // Platform apps.
   skip.insert(APIPermission::kFileSystem);
+  skip.insert(APIPermission::kSocket);
 
   PermissionsInfo* info = PermissionsInfo::GetInstance();
   APIPermissionSet permissions = info->GetAll();
@@ -887,18 +888,68 @@ TEST(PermissionsTest, GetWarningMessages_Serial) {
   ASSERT_EQ(1u, warnings.size());
 }
 
-TEST(PermissionsTest, GetWarningMessages_Socket) {
-   extensions::Feature::ScopedCurrentChannel channel(
-       chrome::VersionInfo::CHANNEL_DEV);
-   scoped_refptr<Extension> extension =
-       LoadManifest("permissions", "socket.json");
+TEST(PermissionsTest, GetWarningMessages_Socket_AnyHost) {
+  extensions::Feature::ScopedCurrentChannel channel(
+      chrome::VersionInfo::CHANNEL_DEV);
 
-   EXPECT_TRUE(extension->is_platform_app());
-   EXPECT_TRUE(extension->HasAPIPermission(APIPermission::kSocket));
-   std::vector<string16> warnings = extension->GetPermissionMessageStrings();
-   EXPECT_TRUE(Contains(warnings,
-                        "Exchange data with other computers"));
-   ASSERT_EQ(1u, warnings.size());
+  scoped_refptr<Extension> extension =
+      LoadManifest("permissions", "socket_any_host.json");
+  EXPECT_TRUE(extension->is_platform_app());
+  EXPECT_TRUE(extension->HasAPIPermission(APIPermission::kSocket));
+  std::vector<string16> warnings = extension->GetPermissionMessageStrings();
+  EXPECT_EQ(1u, warnings.size());
+  EXPECT_TRUE(Contains(warnings, "Exchange data with any computer "
+                                 "on the local network or internet"));
+}
+
+TEST(PermissionsTest, GetWarningMessages_Socket_OneDomainTwoHostnames) {
+  extensions::Feature::ScopedCurrentChannel channel(
+      chrome::VersionInfo::CHANNEL_DEV);
+
+  scoped_refptr<Extension> extension =
+      LoadManifest("permissions", "socket_one_domain_two_hostnames.json");
+  EXPECT_TRUE(extension->is_platform_app());
+  EXPECT_TRUE(extension->HasAPIPermission(APIPermission::kSocket));
+  std::vector<string16> warnings = extension->GetPermissionMessageStrings();
+
+  // Verify the warnings, including support for unicode characters, the fact
+  // that domain host warnings come before specific host warnings, and the fact
+  // that domains and hostnames are in alphabetical order regardless of the
+  // order in the manifest file.
+  EXPECT_EQ(2u, warnings.size());
+  if (warnings.size() > 0)
+    EXPECT_EQ(warnings[0],
+              UTF8ToUTF16("Exchange data with any computer in the domain "
+                          "example.org"));
+  if (warnings.size() > 1)
+    EXPECT_EQ(warnings[1],
+              UTF8ToUTF16("Exchange data with the computers named: "
+                          "b\xC3\xA5r.example.com foo.example.com"));
+                          // "\xC3\xA5" = UTF-8 for lowercase A with ring above
+}
+
+TEST(PermissionsTest, GetWarningMessages_Socket_TwoDomainsOneHostname) {
+  extensions::Feature::ScopedCurrentChannel channel(
+      chrome::VersionInfo::CHANNEL_DEV);
+
+  scoped_refptr<Extension> extension =
+      LoadManifest("permissions", "socket_two_domains_one_hostname.json");
+  EXPECT_TRUE(extension->is_platform_app());
+  EXPECT_TRUE(extension->HasAPIPermission(APIPermission::kSocket));
+  std::vector<string16> warnings = extension->GetPermissionMessageStrings();
+
+  // Verify the warnings, including the fact that domain host warnings come
+  // before specific host warnings and the fact that domains and hostnames are
+  // in alphabetical order regardless of the order in the manifest file.
+  EXPECT_EQ(2u, warnings.size());
+  if (warnings.size() > 0)
+    EXPECT_EQ(warnings[0],
+              UTF8ToUTF16("Exchange data with any computer in the domains: "
+                           "example.com foo.example.org"));
+  if (warnings.size() > 1)
+    EXPECT_EQ(warnings[1],
+              UTF8ToUTF16("Exchange data with the computer named "
+                           "bar.example.org"));
 }
 
 TEST(PermissionsTest, GetWarningMessages_PlatformApppHosts) {
