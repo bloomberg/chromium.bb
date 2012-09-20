@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/plugin_prefs.h"
+#include "chrome/browser/plugins/plugin_prefs.h"
 
 #include <string>
 
@@ -14,8 +14,8 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/browser/plugin_installer.h"
-#include "chrome/browser/plugin_prefs_factory.h"
+#include "chrome/browser/plugins/plugin_installer.h"
+#include "chrome/browser/plugins/plugin_prefs_factory.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"

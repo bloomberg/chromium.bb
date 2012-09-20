@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/plugin_status_pref_setter.h"
+#include "chrome/browser/plugins/plugin_status_pref_setter.h"
 
 #include "base/bind.h"
 #include "chrome/browser/pepper_flash_settings_manager.h"
-#include "chrome/browser/plugin_data_remover_helper.h"
-#include "chrome/browser/plugin_prefs.h"
+#include "chrome/browser/plugins/plugin_data_remover_helper.h"
+#include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"

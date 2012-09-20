@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/plugin_observer.h"
+#include "chrome/browser/plugins/plugin_observer.h"
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
@@ -14,8 +14,8 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/metrics/metrics_service.h"
-#include "chrome/browser/plugin_finder.h"
-#include "chrome/browser/plugin_infobar_delegates.h"
+#include "chrome/browser/plugins/plugin_finder.h"
+#include "chrome/browser/plugins/plugin_infobar_delegates.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
@@ -32,8 +32,8 @@
 #include "webkit/plugins/webplugininfo.h"
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
-#include "chrome/browser/plugin_installer.h"
-#include "chrome/browser/plugin_installer_observer.h"
+#include "chrome/browser/plugins/plugin_installer.h"
+#include "chrome/browser/plugins/plugin_installer_observer.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
 #endif  // defined(ENABLE_PLUGIN_INSTALLATION)
 

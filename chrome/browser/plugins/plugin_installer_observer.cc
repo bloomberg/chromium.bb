@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/plugin_installer_observer.h"
+#include "chrome/browser/plugins/plugin_installer_observer.h"
 
-#include "chrome/browser/plugin_installer.h"
+#include "chrome/browser/plugins/plugin_installer.h"
 
 PluginInstallerObserver::PluginInstallerObserver(PluginInstaller* installer)
     : installer_(installer) {

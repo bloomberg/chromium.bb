@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PLUGIN_INFOBAR_DELEGATES_H_
-#define CHROME_BROWSER_PLUGIN_INFOBAR_DELEGATES_H_
+#ifndef CHROME_BROWSER_PLUGINS_PLUGIN_INFOBAR_DELEGATES_H_
+#define CHROME_BROWSER_PLUGINS_PLUGIN_INFOBAR_DELEGATES_H_
 
 #include "base/callback.h"
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
 #include "googleurl/src/gurl.h"
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
-#include "chrome/browser/plugin_installer_observer.h"
+#include "chrome/browser/plugins/plugin_installer_observer.h"
 #endif  // defined(ENABLE_PLUGIN_INSTALLATION)
 
 class InfoBarService;
@@ -199,4 +199,4 @@ class PluginMetroModeInfoBarDelegate : public ConfirmInfoBarDelegate {
 };
 #endif  // defined(OS_WIN)
 
-#endif  // CHROME_BROWSER_PLUGIN_INFOBAR_DELEGATES_H_
+#endif  // CHROME_BROWSER_PLUGINS_PLUGIN_INFOBAR_DELEGATES_H_

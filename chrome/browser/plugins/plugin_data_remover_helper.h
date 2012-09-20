@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PLUGIN_DATA_REMOVER_HELPER_H_
-#define CHROME_BROWSER_PLUGIN_DATA_REMOVER_HELPER_H_
+#ifndef CHROME_BROWSER_PLUGINS_PLUGIN_DATA_REMOVER_HELPER_H_
+#define CHROME_BROWSER_PLUGINS_PLUGIN_DATA_REMOVER_HELPER_H_
 
 class PluginPrefs;
 
@@ -14,4 +14,4 @@ class PluginDataRemoverHelper {
   static bool IsSupported(PluginPrefs* plugin_prefs);
 };
 
-#endif  // CHROME_BROWSER_PLUGIN_DATA_REMOVER_HELPER_H_
+#endif  // CHROME_BROWSER_PLUGINS_PLUGIN_DATA_REMOVER_HELPER_H_

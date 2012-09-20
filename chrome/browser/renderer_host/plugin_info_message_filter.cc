@@ -23,8 +23,8 @@
 #include "webkit/plugins/npapi/plugin_list.h"
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
-#include "chrome/browser/plugin_finder.h"
-#include "chrome/browser/plugin_installer.h"
+#include "chrome/browser/plugins/plugin_finder.h"
+#include "chrome/browser/plugins/plugin_installer.h"
 #endif
 
 using content::PluginService;

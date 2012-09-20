@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PLUGIN_INSTALLER_H_
-#define CHROME_BROWSER_PLUGIN_INSTALLER_H_
+#ifndef CHROME_BROWSER_PLUGINS_PLUGIN_INSTALLER_H_
+#define CHROME_BROWSER_PLUGINS_PLUGIN_INSTALLER_H_
 
 #include "base/observer_list.h"
 #include "base/string16.h"
@@ -125,4 +125,4 @@ class PluginInstaller : public content::DownloadItem::Observer {
   DISALLOW_COPY_AND_ASSIGN(PluginInstaller);
 };
 
-#endif  // CHROME_BROWSER_PLUGIN_INSTALLER_H_
+#endif  // CHROME_BROWSER_PLUGINS_PLUGIN_INSTALLER_H_

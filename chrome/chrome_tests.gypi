@@ -1437,9 +1437,9 @@
         'browser/password_manager/password_store_win_unittest.cc',
         'browser/password_manager/password_store_x_unittest.cc',
         'browser/performance_monitor/database_unittest.cc',
-        'browser/plugin_finder_unittest.cc',
-        'browser/plugin_installer_unittest.cc',
-        'browser/plugin_prefs_unittest.cc',
+        'browser/plugins/plugin_finder_unittest.cc',
+        'browser/plugins/plugin_installer_unittest.cc',
+        'browser/plugins/plugin_prefs_unittest.cc',
         'browser/policy/async_policy_provider_unittest.cc',
         'browser/policy/auto_enrollment_client_unittest.cc',
         'browser/policy/cloud_policy_client_unittest.cc',
@@ -2574,8 +2574,8 @@
         }],
         ['enable_plugin_installation==0', {
           'sources!': [
-            'browser/plugin_finder_unittest.cc',
-            'browser/plugin_installer_unittest.cc',
+            'browser/plugins/plugin_finder_unittest.cc',
+            'browser/plugins/plugin_installer_unittest.cc',
           ],
         }],
         ['enable_protector_service==0', {

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PLUGIN_PREFS_H_
-#define CHROME_BROWSER_PLUGIN_PREFS_H_
+#ifndef CHROME_BROWSER_PLUGINS_PLUGIN_PREFS_H_
+#define CHROME_BROWSER_PLUGINS_PLUGIN_PREFS_H_
 
 #include <map>
 #include <set>
@@ -13,7 +13,7 @@
 #include "base/file_path.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/api/prefs/pref_change_registrar.h"
-#include "chrome/browser/plugin_finder.h"
+#include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/refcounted_profile_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
@@ -201,4 +201,4 @@ class PluginPrefs : public RefcountedProfileKeyedService,
   DISALLOW_COPY_AND_ASSIGN(PluginPrefs);
 };
 
-#endif  // CHROME_BROWSER_PLUGIN_PREFS_H_
+#endif  // CHROME_BROWSER_PLUGINS_PLUGIN_PREFS_H_

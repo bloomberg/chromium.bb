@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/plugin_data_remover_helper.h"
+#include "chrome/browser/plugins/plugin_data_remover_helper.h"
 
-#include "chrome/browser/plugin_prefs.h"
+#include "chrome/browser/plugins/plugin_prefs.h"
 #include "content/public/browser/plugin_data_remover.h"
 #include "webkit/plugins/webplugininfo.h"
 

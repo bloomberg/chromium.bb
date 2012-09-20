@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/plugin_infobar_delegates.h"
+#include "chrome/browser/plugins/plugin_infobar_delegates.h"
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/plugin_observer.h"
+#include "chrome/browser/plugins/plugin_observer.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
@@ -29,7 +29,7 @@
 #endif
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
-#include "chrome/browser/plugin_installer.h"
+#include "chrome/browser/plugins/plugin_installer.h"
 #endif  // defined(ENABLE_PLUGIN_INSTALLATION)
 
 using content::OpenURLParams;

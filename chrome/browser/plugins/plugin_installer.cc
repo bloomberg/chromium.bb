@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/plugin_installer.h"
+#include "chrome/browser/plugins/plugin_installer.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -12,7 +12,7 @@
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/platform_util.h"
-#include "chrome/browser/plugin_installer_observer.h"
+#include "chrome/browser/plugins/plugin_installer_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_context.h"

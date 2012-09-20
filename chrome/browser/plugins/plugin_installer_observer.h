@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PLUGIN_INSTALLER_OBSERVER_H_
-#define CHROME_BROWSER_PLUGIN_INSTALLER_OBSERVER_H_
+#ifndef CHROME_BROWSER_PLUGINS_PLUGIN_INSTALLER_OBSERVER_H_
+#define CHROME_BROWSER_PLUGINS_PLUGIN_INSTALLER_OBSERVER_H_
 
 #include <string>
 
@@ -43,4 +43,4 @@ class WeakPluginInstallerObserver : public PluginInstallerObserver {
   virtual void OnlyWeakObserversLeft();
 };
 
-#endif  // CHROME_BROWSER_PLUGIN_INSTALLER_OBSERVER_H_
+#endif  // CHROME_BROWSER_PLUGINS_PLUGIN_INSTALLER_OBSERVER_H_

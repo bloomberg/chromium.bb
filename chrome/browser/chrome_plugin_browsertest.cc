@@ -7,7 +7,7 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/plugin_prefs.h"
+#include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/test/base/in_process_browser_test.h"
