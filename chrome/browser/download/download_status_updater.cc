@@ -10,6 +10,41 @@
 #include "base/stl_util.h"
 #include "chrome/browser/download/download_util.h"
 
+namespace {
+
+// DownloadStatusUpdater::UpdateAppIconDownloadProgress() expects to only be
+// called once when a DownloadItem completes, then not again (except perhaps
+// until it is resumed). The existence of WasInProgressData is effectively a
+// boolean that indicates whether that final UpdateAppIconDownloadProgress()
+// call has been made for a given DownloadItem. It is expected that there will
+// be many more non-in-progress downloads than in-progress downloads, so
+// WasInProgressData is set for in-progress downloads and cleared from
+// non-in-progress downloads instead of the other way around in order to save
+// memory.
+class WasInProgressData : public base::SupportsUserData::Data {
+ public:
+  static bool Get(content::DownloadItem* item) {
+    return item->GetUserData(kKey) != NULL;
+  }
+
+  static void Clear(content::DownloadItem* item) {
+    item->RemoveUserData(kKey);
+  }
+
+  explicit WasInProgressData(content::DownloadItem* item) {
+    item->SetUserData(kKey, this);
+  }
+
+ private:
+  static const char kKey[];
+  DISALLOW_COPY_AND_ASSIGN(WasInProgressData);
+};
+
+const char WasInProgressData::kKey[] =
+  "DownloadItem DownloadStatusUpdater WasInProgressData";
+
+}  // anonymous namespace
+
 DownloadStatusUpdater::DownloadStatusUpdater() {
 }
 
@@ -35,7 +70,7 @@ bool DownloadStatusUpdater::GetProgress(float* progress,
         if ((*it)->IsInProgress()) {
           ++*download_count;
           if ((*it)->GetTotalBytes() <= 0) {
-            // We don't know how much more is coming down this pipe.
+            // There may or may not be more data coming down this pipe.
             progress_certain = false;
           } else {
             received_bytes += (*it)->GetReceivedBytes();
@@ -57,21 +92,41 @@ void DownloadStatusUpdater::AddManager(content::DownloadManager* manager) {
   manager->GetAllDownloads(&items);
   for (content::DownloadManager::DownloadVector::const_iterator
        it = items.begin(); it != items.end(); ++it) {
-    if ((*it)->IsInProgress()) {
-      UpdateAppIconDownloadProgress(*it);
-      // Only need to notify once.
-      break;
-    }
+    OnDownloadCreated(manager, *it);
   }
 }
 
 void DownloadStatusUpdater::OnDownloadCreated(
     content::DownloadManager* manager, content::DownloadItem* item) {
-  UpdateAppIconDownloadProgress(item);
+  // Ignore downloads loaded from history, which are in a terminal state.
+  // TODO(benjhayden): Use the Observer interface to distinguish between
+  // historical and started downloads.
+  if (item->IsInProgress()) {
+    UpdateAppIconDownloadProgress(item);
+    new WasInProgressData(item);
+  }
+  // else, the lack of WasInProgressData indicates to OnDownloadUpdated that it
+  // should not call UpdateAppIconDownloadProgress().
 }
 
 void DownloadStatusUpdater::OnDownloadUpdated(
     content::DownloadManager* manager, content::DownloadItem* item) {
+  if (item->IsInProgress()) {
+    // If the item was interrupted/cancelled and then resumed/restarted, then
+    // set WasInProgress so that UpdateAppIconDownloadProgress() will be called
+    // when it completes.
+    if (!WasInProgressData::Get(item))
+      new WasInProgressData(item);
+  } else {
+    // The item is now in a terminal state. If it was already in a terminal
+    // state, then do not call UpdateAppIconDownloadProgress() again. If it is
+    // now transitioning to a terminal state, then clear its WasInProgressData
+    // so that UpdateAppIconDownloadProgress() won't be called after this final
+    // call.
+    if (!WasInProgressData::Get(item))
+      return;
+    WasInProgressData::Clear(item);
+  }
   UpdateAppIconDownloadProgress(item);
 }
 

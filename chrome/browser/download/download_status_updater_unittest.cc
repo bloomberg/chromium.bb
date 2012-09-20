@@ -260,7 +260,7 @@ TEST_F(DownloadStatusUpdaterTest, ProgressNotification) {
 
   // Expect two notifications, one for each item; which item will come first
   // isn't defined so it cannot be tested.
-  expected_notifications += 1;
+  expected_notifications += 2;
   ASSERT_EQ(expected_notifications, updater_->NotificationCount());
 
   // Make progress on the first item.
