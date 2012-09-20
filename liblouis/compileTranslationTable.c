@@ -4899,6 +4899,7 @@ lou_getTable (const char *tableList)
   char trialPath[MAXSTRING];
   if (tableList == NULL || tableList[0] == 0)
     return NULL;
+  errorCount = fileCount = 0;
   pathEnd[0] = DIR_SEP;
   pathEnd[1] = 0;
   /* See if table is on environment path LOUIS_TABLEPATH */
