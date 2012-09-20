@@ -8,8 +8,6 @@
 # These should all be in chromium's bug tracking system (but a few aren't yet).
 # Periodically we should sweep this file and the bug tracker clean by
 # running overnight and removing outdated bugs/suppressions.
-#
-# 4. issues that happen only on Google workstations.
 #-----------------------------------------------------------------------
 
 # 1. third party stuff we have no control over
@@ -747,6 +745,33 @@
    ...
    fun:_ZN7WebCore12CCRendererGL23initializeSharedObjectsEv
    fun:_ZN7WebCore12CCRendererGL10initializeEv
+}
+# bug_todo_getdelim, bug_todo_getdelim2 and bug_todo_grep used to happen on
+# Google Lucid workstations only.
+{
+   bug_todo_getdelim
+   Memcheck:Leak
+   fun:malloc
+   fun:getdelim
+   ...
+   fun:call_init
+   fun:_dl_init
+}
+{
+   bug_todo_getdelim2
+   Memcheck:Leak
+   fun:malloc
+   fun:getdelim
+   obj:/lib/libselinux.so.1
+   obj:/lib/libselinux.so.1
+   obj:/lib/libselinux.so.1
+}
+{
+   bug_todo_grep
+   Memcheck:Leak
+   fun:malloc
+   obj:/bin/grep
+   obj:/bin/grep
 }
 
 #-----------------------------------------------------------------------
@@ -5874,12 +5899,34 @@
    fun:_ZN20TranslateManagerTest31SimulateTranslateScriptURLFetchEb
 }
 {
+   bug_146464
+   Memcheck:Leak
+   fun:realloc
+   fun:add_codeset.isra.10
+   ...
+   fun:XCreatePixmap
+   fun:XCreateBitmapFromData
+   ...
+   fun:_ZN4aura19RootWindowHostLinuxC1EPNS_22RootWindowHostDelegateERKN3gfx4RectE
+}
+{
    bug_146500
    Memcheck:Unaddressable
    ...
    fun:_ZN11EventSender17replaySavedEventsEv
    fun:_ZN11EventSender7mouseUpERKN3WTF6VectorI10CppVariantLm0EEEPS2_
    fun:_ZN13CppBoundClass14MemberCallbackI11EventSenderE3runERKN3WTF6VectorI10CppVariantLm0EEEPS5_
+}
+{
+   bug_146950
+   Memcheck:Leak
+   fun:malloc
+   fun:get_peer_sock_name
+   fun:_xcb_get_auth_info
+   fun:xcb_connect_to_display_with_auth_info
+   fun:_XConnectXCB
+   fun:XOpenDisplay
+   fun:_ZN4base18MessagePumpAuraX1118GetDefaultXDisplayEv
 }
 {
    bug_147755
@@ -6014,57 +6061,6 @@
    fun:_ZN2ui8DataPack9WritePackERK8FilePathRKSt3mapItN4base16BasicStringPieceISsEESt4lessItESaISt4pairIKtS7_EEENS_14ResourceHandle16TextEncodingTypeE
    fun:_ZN2ui12_GLOBAL__N_130CreateDataPackWithSingleBitmapERK8FilePathi
    fun:_ZN2ui33ResourceBundle_GetImageNamed_Test8TestBodyEv
-}
-
-#-----------------------------------------------------------------------
-# 4. These only occur on our Google workstations
-
-{
-   bug_todo_getdelim
-   Memcheck:Leak
-   fun:malloc
-   fun:getdelim
-   ...
-   fun:call_init
-   fun:_dl_init
-}
-{
-   bug_todo_getdelim2
-   Memcheck:Leak
-   fun:malloc
-   fun:getdelim
-   obj:/lib/libselinux.so.1
-   obj:/lib/libselinux.so.1
-   obj:/lib/libselinux.so.1
-}
-{
-   bug_todo_grep
-   Memcheck:Leak
-   fun:malloc
-   obj:/bin/grep
-   obj:/bin/grep
-}
-{
-   bug_146464
-   Memcheck:Leak
-   fun:realloc
-   fun:add_codeset.isra.10
-   ...
-   fun:XCreatePixmap
-   fun:XCreateBitmapFromData
-   ...
-   fun:_ZN4aura19RootWindowHostLinuxC1EPNS_22RootWindowHostDelegateERKN3gfx4RectE
-}
-{
-   bug_146950
-   Memcheck:Leak
-   fun:malloc
-   fun:get_peer_sock_name
-   fun:_xcb_get_auth_info
-   fun:xcb_connect_to_display_with_auth_info
-   fun:_XConnectXCB
-   fun:XOpenDisplay
-   fun:_ZN4base18MessagePumpAuraX1118GetDefaultXDisplayEv
 }
 {
    bug_151006
