@@ -734,7 +734,12 @@ void VirtualNetwork::MatchCertificatePattern(bool allow_enroll,
                                              const base::Closure& connect) {
   DCHECK(client_cert_type() == CLIENT_CERT_TYPE_PATTERN);
   DCHECK(!client_cert_pattern().Empty());
-  if (client_cert_pattern().Empty()) {
+
+  // We skip certificate patterns for device policy ONC so that an unmanaged
+  // user can't get to the place where a cert is presented for them
+  // involuntarily.
+  if (client_cert_pattern().Empty() ||
+      ui_data().onc_source() == NetworkUIData::ONC_SOURCE_DEVICE_POLICY) {
     connect.Run();
     return;
   }
@@ -761,8 +766,8 @@ void VirtualNetwork::MatchCertificatePattern(bool allow_enroll,
                      false,
                      connect);
 
-     enrollment_delegate()->Enroll(client_cert_pattern().enrollment_uri_list(),
-                                   wrapped_connect);
+      enrollment_delegate()->Enroll(client_cert_pattern().enrollment_uri_list(),
+                                    wrapped_connect);
       // Enrollment delegate will take care of running the closure at the
       // appropriate time, if the user doesn't cancel.
       return;

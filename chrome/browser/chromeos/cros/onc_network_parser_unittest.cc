@@ -331,6 +331,32 @@ TEST_F(OncNetworkParserTest, TestLoadVPNCertificatePattern) {
             vpn->client_cert_pattern().enrollment_uri_list()[1]);
 }
 
+TEST_F(OncNetworkParserTest, TestNoCertificatePatternForDevicePolicy) {
+  std::string test_blob;
+  GetTestData("cert-pattern.onc", &test_blob);
+  OncNetworkParser parser(test_blob, "",
+                          NetworkUIData::ONC_SOURCE_DEVICE_POLICY);
+
+  // Make sure we fail when parsing a certificate pattern from a device policy
+  // ONC file.
+  ASSERT_TRUE(parser.parse_error().empty());
+  EXPECT_EQ(1, parser.GetNetworkConfigsSize());
+  EXPECT_EQ(2, parser.GetCertificatesSize());
+  scoped_ptr<Network> network(parser.ParseNetwork(0, NULL));
+  ASSERT_TRUE(network.get());
+
+  EXPECT_EQ(chromeos::TYPE_WIFI, network->type());
+  WifiNetwork* wifi = static_cast<WifiNetwork*>(network.get());
+  EXPECT_EQ(chromeos::SECURITY_8021X, wifi->encryption());
+  EXPECT_EQ("WirelessNetwork", wifi->name());
+  EXPECT_FALSE(wifi->auto_connect());
+  EXPECT_EQ("", wifi->passphrase());
+  EXPECT_EQ(chromeos::EAP_METHOD_TLS, wifi->eap_method());
+  EXPECT_EQ(chromeos::CLIENT_CERT_TYPE_PATTERN, wifi->client_cert_type());
+  EXPECT_EQ("", wifi->client_cert_pattern().issuer().organization());
+  ASSERT_EQ(0ul, wifi->client_cert_pattern().enrollment_uri_list().size());
+}
+
 TEST_F(OncNetworkParserTest, TestCreateNetworkWifiEAP1) {
   std::string test_blob;
   GetTestData("network-wifi-eap1.onc", &test_blob);

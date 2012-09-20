@@ -522,6 +522,8 @@ class Network {
                            TestLoadWifiCertificatePattern);
   FRIEND_TEST_ALL_PREFIXES(OncNetworkParserTest,
                            TestLoadVPNCertificatePattern);
+  FRIEND_TEST_ALL_PREFIXES(OncNetworkParserTest,
+                           TestNoCertificatePatternForDevicePolicy);
   FRIEND_TEST_ALL_PREFIXES(NetworkLibraryStubTest, NetworkConnectOncWifi);
   FRIEND_TEST_ALL_PREFIXES(NetworkLibraryStubTest, NetworkConnectOncVPN);
 
