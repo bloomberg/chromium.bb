@@ -64,6 +64,10 @@ class MockShillDeviceClient : public ShillDeviceClient {
                               const std::string& network_id,
                               const base::Closure& callback,
                               const ErrorCallback& error_callback));
+  MOCK_METHOD4(SetCarrier, void(const dbus::ObjectPath& device_path,
+                                const std::string& carrier,
+                                const base::Closure& callback,
+                                const ErrorCallback& error_callback));
 };
 
 }  // namespace chromeos

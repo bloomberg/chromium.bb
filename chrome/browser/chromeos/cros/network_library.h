@@ -130,6 +130,7 @@ class NetworkDevice {
   }
   bool data_roaming_allowed() const { return data_roaming_allowed_; }
   bool support_network_scan() const { return support_network_scan_; }
+  std::string carrier() const { return carrier_; }
   base::ListValue* supported_carriers() const {
     return supported_carriers_.get();
   }
@@ -1554,8 +1555,7 @@ class NetworkLibrary {
 
   // Changes the active cellular carrier to the one provided, calls the closure
   // once the transition is complete.
-  virtual void SetCarrier(const std::string& service_path,
-                          const std::string& carrier,
+  virtual void SetCarrier(const std::string& carrier,
                           const NetworkOperationCallback& completed) = 0;
 
   // Return true if GSM SIM card can work only with enabled roaming.

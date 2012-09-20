@@ -432,7 +432,6 @@ void NetworkLibraryImplCros::SetCellularDataRoamingAllowed(bool new_value) {
 }
 
 void NetworkLibraryImplCros::SetCarrier(
-    const std::string& service_path,
     const std::string& carrier,
     const NetworkOperationCallback& completed) {
   const NetworkDevice* cellular = FindCellularDevice();

@@ -952,18 +952,7 @@ cr.define('options.network', function() {
 
     // Only show cellular control if available and not in airplane mode.
     if (data.cellularAvailable && !data.airplaneMode) {
-      if (data.cellularEnabled) {
-        loadData_('cellular', data.wirelessList, data.rememberedList);
-      } else {
-        var subtitle = loadTimeData.getString('networkDisabled');
-        var enableCellular = function() {
-          chrome.send('enableCellular');
-        };
-        networkList.update({key: 'cellular',
-                            subtitle: subtitle,
-                            iconType: 'cellular',
-                            command: enableCellular});
-      }
+      loadData_('cellular', data.wirelessList, data.rememberedList);
     } else {
       networkList.deleteItem('cellular');
     }

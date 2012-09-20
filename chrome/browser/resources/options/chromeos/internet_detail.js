@@ -467,26 +467,26 @@ cr.define('options.internet', function() {
 
     for (var i = 0; i < buttonsToDisableList.length; ++i) {
       button = $(buttonsToDisableList[i]);
-      if (!button.hidden)
-        button.disabled = disable;
+      button.disabled = disable;
     }
   };
 
   /**
    * Shows a spinner while the carrier is changed.
    */
-  DetailsInternetPage.showCarrierChangeSpinner = function() {
+  DetailsInternetPage.showCarrierChangeSpinner = function(visible) {
+    $('switch-carrier-spinner').hidden = !visible;
     // Disable any buttons that allow us to operate on cellular networks.
-    DetailsInternetPage.changeCellularButtonsState(true);
+    DetailsInternetPage.changeCellularButtonsState(visible);
   };
 
   /**
    * Changes the network carrier.
    */
   DetailsInternetPage.handleCarrierChanged = function() {
-    var serviceSelector = $('select-service');
-    var carrier = serviceSelector[serviceSelector.selectedIndex].textContent;
-    DetailsInternetPage.showCarrierChangeSpinner();
+    var carrierSelector = $('select-carrier');
+    var carrier = carrierSelector[carrierSelector.selectedIndex].textContent;
+    DetailsInternetPage.showCarrierChangeSpinner(true);
     var data = $('connection-state').data;
     chrome.send('setCarrier', [data.servicePath, carrier]);
   };
@@ -522,7 +522,7 @@ cr.define('options.internet', function() {
   };
 
   DetailsInternetPage.updateCarrier = function(carrier) {
-    DetailsInternetPage.changeCellularButtonsState(false);
+    DetailsInternetPage.showCarrierChangeSpinner(false);
   };
 
   DetailsInternetPage.updateSecurityTab = function(requirePin) {
@@ -873,14 +873,16 @@ cr.define('options.internet', function() {
       detailsPage.wimax = false;
       detailsPage.vpn = false;
       detailsPage.cellular = true;
-      if (data.showCarrierSelect) {
-        var serviceSelector = $('select-service');
-        serviceSelector.onchange = DetailsInternetPage.handleCarrierChanged;
-        for (var i = 0; i < data.services.length; ++i) {
+      if (data.showCarrierSelect && data.currentCarrierIndex != -1) {
+        var carrierSelector = $('select-carrier');
+        carrierSelector.onchange = DetailsInternetPage.handleCarrierChanged;
+        carrierSelector.options.length = 0;
+        for (var i = 0; i < data.carriers.length; ++i) {
           var option = document.createElement('option');
-          option.textContent = data.services[i];
-          serviceSelector.add(option);
+          option.textContent = data.carriers[i];
+          carrierSelector.add(option);
         }
+        carrierSelector.selectedIndex = data.currentCarrierIndex;
       } else {
         $('service-name').textContent = data.serviceName;
       }

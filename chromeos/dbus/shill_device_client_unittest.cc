@@ -354,4 +354,25 @@ TEST_F(ShillDeviceClientTest, Register) {
   message_loop_.RunAllPending();
 }
 
+TEST_F(ShillDeviceClientTest, SetCarrier) {
+  const char kCarrier[] = "carrier";
+  // Create response.
+  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+
+  // Set expectations.
+  MockClosure mock_closure;
+  MockErrorCallback mock_error_callback;
+  PrepareForMethodCall(shill::kSetCarrierFunction,
+                       base::Bind(&ExpectStringArgument, kCarrier),
+                       response.get());
+  EXPECT_CALL(mock_closure, Run()).Times(1);
+  // Call method.
+  client_->SetCarrier(dbus::ObjectPath(kExampleDevicePath),
+                    kCarrier,
+                    mock_closure.GetCallback(),
+                    mock_error_callback.GetCallback());
+  // Run the message loop.
+  message_loop_.RunAllPending();
+}
+
 }  // namespace chromeos

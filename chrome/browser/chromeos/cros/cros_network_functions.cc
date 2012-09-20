@@ -831,7 +831,11 @@ int32 CrosNetmaskToPrefixLength(const std::string& netmask) {
 void CrosSetCarrier(const std::string& device_path,
                     const std::string& carrier,
                     const NetworkOperationCallback& callback) {
-  // TODO(rkc): Implement this once the backend changes land.
+  DBusThreadManager::Get()->GetShillDeviceClient()->SetCarrier(
+      dbus::ObjectPath(device_path), carrier,
+      base::Bind(callback, device_path, NETWORK_METHOD_ERROR_NONE,
+                 std::string()),
+      base::Bind(&OnNetworkActionError, callback, device_path));
 }
 
 }  // namespace chromeos

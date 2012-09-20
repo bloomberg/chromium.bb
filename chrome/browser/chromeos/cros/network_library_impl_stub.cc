@@ -41,13 +41,15 @@ void NetworkLibraryImplStub::Init() {
   connected_devices_ = devices;
 
   base::ListValue supported_carriers;
-  supported_carriers.Append(new StringValue("Generic CDMA1"));
-  supported_carriers.Append(new StringValue("Generic CDMA2"));
-  supported_carriers.Append(new StringValue("Generic GSM1"));
-  supported_carriers.Append(new StringValue("Generic GSM2"));
+  supported_carriers.Append(new StringValue("Generic CDMA Carrier 1"));
+  supported_carriers.Append(new StringValue("Generic UMTS"));
+  supported_carriers.Append(new StringValue("Generic CDMA Carrier 2"));
+  supported_carriers.Append(new StringValue("Generic CDMA Carrier 3"));
 
   NetworkDevice* cellular = new NetworkDevice("cellular");
   cellular->type_ = TYPE_CELLULAR;
+  cellular->set_technology_family(TECHNOLOGY_FAMILY_CDMA);
+  cellular->set_carrier("Generic CDMA Carrier 2");
   cellular->imsi_ = "123456789012345";
   cellular->set_supported_carriers(supported_carriers);
   device_map_["cellular"] = cellular;
@@ -636,7 +638,6 @@ void NetworkLibraryImplStub::RequestCellularRegister(
 void NetworkLibraryImplStub::SetCellularDataRoamingAllowed(bool new_value) {}
 
 void NetworkLibraryImplStub::SetCarrier(
-    const std::string& service_path,
     const std::string& carrier,
     const NetworkOperationCallback& completed) {
   // Call the completed callback with a 10s delay.

@@ -171,6 +171,18 @@ class ShillDeviceClientImpl : public ShillDeviceClient {
         &method_call, callback, error_callback);
   }
 
+  virtual void SetCarrier(const dbus::ObjectPath& device_path,
+                          const std::string& carrier,
+                          const base::Closure& callback,
+                          const ErrorCallback& error_callback) OVERRIDE {
+    dbus::MethodCall method_call(flimflam::kFlimflamDeviceInterface,
+                                 shill::kSetCarrierFunction);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(carrier);
+    GetHelper(device_path)->CallVoidMethodWithErrorCallback(
+        &method_call, callback, error_callback);
+  }
+
  private:
   typedef std::map<std::string, ShillClientHelper*> HelperMap;
 
@@ -351,6 +363,14 @@ class ShillDeviceClientStubImpl : public ShillDeviceClient {
                         const std::string& network_id,
                         const base::Closure& callback,
                         const ErrorCallback& error_callback) OVERRIDE {
+    MessageLoop::current()->PostTask(FROM_HERE, callback);
+  }
+
+  // ShillDeviceClient override.
+  virtual void SetCarrier(const dbus::ObjectPath& device_path,
+                          const std::string& carrier,
+                          const base::Closure& callback,
+                          const ErrorCallback& error_callback) OVERRIDE {
     MessageLoop::current()->PostTask(FROM_HERE, callback);
   }
 

@@ -208,7 +208,8 @@ const char kTagRestrictedPool[] = "restrictedPool";
 const char kTagRoamingState[] = "roamingState";
 const char kTagServerHostname[] = "serverHostname";
 const char kTagService_name[] = "service_name";
-const char kTagServices[] = "services";
+const char kTagCarriers[] = "carriers";
+const char kTagCurrentCarrierIndex[] = "currentCarrierIndex";
 const char kTagServiceName[] = "serviceName";
 const char kTagServicePath[] = "servicePath";
 const char kTagShared[] = "shared";
@@ -535,6 +536,36 @@ void PopulateVPNDetails(
                      Value::CreateStringValue(vpn->server_hostname()),
                      hostname_ui_data);
 }
+
+// Given a list of supported carrier's by the device, return the index of
+// the carrier the device is currently using.
+int FindCurrentCarrierIndex(const base::ListValue* carriers,
+                            const chromeos::NetworkDevice* device) {
+  DCHECK(carriers);
+  DCHECK(device);
+
+  bool gsm = (device->technology_family() == chromeos::TECHNOLOGY_FAMILY_GSM);
+  int index = 0;
+  for (base::ListValue::const_iterator it = carriers->begin();
+       it != carriers->end();
+       ++it, ++index) {
+    std::string value;
+    if ((*it)->GetAsString(&value)) {
+      // For GSM devices the device name will be empty, so simply select
+      // the Generic UMTS carrier option if present.
+      if (gsm && (value == shill::kCarrierGenericUMTS)) {
+        return index;
+      } else {
+        // For other carriers, the service name will match the carrier name.
+        if (value == device->carrier())
+          return index;
+      }
+    }
+  }
+
+  return -1;
+}
+
 }  // namespace
 
 namespace options {
@@ -920,7 +951,6 @@ void InternetOptionsHandler::SetCarrierCallback(const ListValue* args) {
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
   if (cros_net) {
     cros_net->SetCarrier(
-        service_path,
         carrier,
         base::Bind(&InternetOptionsHandler::CarrierStatusCallback,
                    weak_factory_.GetWeakPtr()));
@@ -1385,10 +1415,7 @@ void InternetOptionsHandler::PopulateCellularDetails(
                          CommandLine::ForCurrentProcess()->HasSwitch(
                              switches::kEnableCarrierSwitching));
   // Cellular network / connection settings.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableCarrierSwitching)) {
-    dictionary->SetString(kTagServiceName, cellular->name());
-  }
+  dictionary->SetString(kTagServiceName, cellular->name());
   dictionary->SetString(kTagNetworkTechnology,
                         cellular->GetNetworkTechnologyString());
   dictionary->SetString(kTagOperatorName, cellular->operator_name());
@@ -1456,8 +1483,19 @@ void InternetOptionsHandler::PopulateCellularDetails(
                        cellular_property_ui_data);
 
     if (CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableCarrierSwitching))
-      dictionary->Set(kTagServices, device->supported_carriers());
+        switches::kEnableCarrierSwitching)) {
+      base::ListValue* supported_carriers = device->supported_carriers();
+      if (supported_carriers) {
+        dictionary->Set(kTagCarriers, supported_carriers->DeepCopy());
+        dictionary->SetInteger(kTagCurrentCarrierIndex,
+                               FindCurrentCarrierIndex(supported_carriers,
+                                                       device));
+      } else {
+        // In case of any error, set the current carrier tag to -1 indicating
+        // to the JS code to fallback to a single carrier.
+        dictionary->SetInteger(kTagCurrentCarrierIndex, -1);
+      }
+    }
   }
 
   SetActivationButtonVisibility(cellular,
