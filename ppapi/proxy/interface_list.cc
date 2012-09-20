@@ -229,7 +229,6 @@ InterfaceList::InterfaceList() {
   // TODO(brettw) remove these.
   AddPPB(PPB_Instance_Proxy::GetInfoPrivate());
   AddPPB(PPB_PDF_Proxy::GetInfo());
-  AddPPB(PPB_Testing_Proxy::GetInfo());
   AddPPB(PPB_URLLoader_Proxy::GetTrustedInfo());
   AddPPB(PPB_Var_Deprecated_Proxy::GetInfo());
 
@@ -241,6 +240,7 @@ InterfaceList::InterfaceList() {
          API_ID_PPP_CONTENT_DECRYPTOR_PRIVATE,
          PPP_ContentDecryptor_Private_Proxy::GetProxyInterface());
 #endif
+  AddPPB(PPB_Testing_Proxy::GetInfo());
 
   // PPP (plugin) interfaces.
   // TODO(brettw) move these to interface_list*.h

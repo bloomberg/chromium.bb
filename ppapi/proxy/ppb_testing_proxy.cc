@@ -93,10 +93,16 @@ void SimulateInputEvent(PP_Instance instance_id, PP_Resource input_event) {
 }
 
 PP_Var GetDocumentURL(PP_Instance instance, PP_URLComponents_Dev* components) {
+#if !defined(OS_NACL)
   EnterInstance enter(instance);
   if (enter.failed())
     return PP_MakeUndefined();
   return enter.functions()->GetDocumentURL(instance, components);
+#else
+  // TODO(nfullagar): Implement something better for the new NaCl IPC plugin.
+  // For now, this will at least allow some of the PPAPI tests to work.
+  return PP_MakeUndefined();
+#endif
 }
 
 // TODO(dmichael): Ideally we could get a way to check the number of vars in the
