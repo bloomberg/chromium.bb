@@ -175,7 +175,5 @@ void BrowsingDataQuotaHelperImpl::OnComplete() {
 
 void BrowsingDataQuotaHelperImpl::DidRevokeHostQuota(
     quota::QuotaStatusCode status_unused,
-    const std::string& host_unused,
-    quota::StorageType type_unused,
     int64 quota_unused) {
 }

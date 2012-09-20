@@ -236,9 +236,9 @@ class QuotaManager::UsageAndQuotaDispatcherTask : public QuotaTask {
     CheckCompleted();
   }
 
-  void DidGetHostQuota(QuotaStatusCode status,
-                       const std::string& host,
+  void DidGetHostQuota(const std::string& host,
                        StorageType type,
+                       QuotaStatusCode status,
                        int64 host_quota) {
     DCHECK_EQ(this->host(), host);
     DCHECK_EQ(this->type(), type);
@@ -362,7 +362,7 @@ class QuotaManager::UsageAndQuotaDispatcherTask : public QuotaTask {
   HostQuotaCallback NewWaitableHostQuotaCallback() {
     ++waiting_callbacks_;
     return base::Bind(&UsageAndQuotaDispatcherTask::DidGetHostQuota,
-                      weak_factory_.GetWeakPtr());
+                      weak_factory_.GetWeakPtr(), host(), type());
   }
   AvailableSpaceCallback NewWaitableAvailableSpaceCallback() {
     ++waiting_callbacks_;
@@ -1020,7 +1020,7 @@ void QuotaManager::GetPersistentHostQuota(const std::string& host,
     // This could happen if we are called on file:///.
     // TODO(kinuko) We may want to respect --allow-file-access-from-files
     // command line switch.
-    callback.Run(kQuotaStatusOk, host, kStorageTypePersistent, 0);
+    callback.Run(kQuotaStatusOk, 0);
     return;
   }
 
@@ -1043,18 +1043,16 @@ void QuotaManager::SetPersistentHostQuota(const std::string& host,
   LazyInitialize();
   if (host.empty()) {
     // This could happen if we are called on file:///.
-    callback.Run(kQuotaErrorNotSupported, host, kStorageTypePersistent, 0);
+    callback.Run(kQuotaErrorNotSupported, 0);
     return;
   }
   if (new_quota < 0) {
-    callback.Run(kQuotaErrorInvalidModification,
-                 host, kStorageTypePersistent, -1);
+    callback.Run(kQuotaErrorInvalidModification, -1);
     return;
   }
 
   if (db_disabled_) {
-    callback.Run(kQuotaErrorInvalidAccess,
-                 host, kStorageTypePersistent, -1);
+    callback.Run(kQuotaErrorInvalidAccess, -1);
     return;
   }
 
@@ -1502,7 +1500,7 @@ void QuotaManager::DidGetPersistentHostQuota(const HostQuotaCallback& callback,
                                              const int64* quota,
                                              bool success) {
   DidDatabaseWork(success);
-  callback.Run(kQuotaStatusOk, host, kStorageTypePersistent, *quota);
+  callback.Run(kQuotaStatusOk, *quota);
 }
 
 void QuotaManager::DidSetPersistentHostQuota(const std::string& host,
@@ -1510,8 +1508,7 @@ void QuotaManager::DidSetPersistentHostQuota(const std::string& host,
                                              const int64* new_quota,
                                              bool success) {
   DidDatabaseWork(success);
-  callback.Run(success ? kQuotaStatusOk : kQuotaErrorInvalidAccess,
-               host, kStorageTypePersistent, *new_quota);
+  callback.Run(success ? kQuotaStatusOk : kQuotaErrorInvalidAccess, *new_quota);
 }
 
 void QuotaManager::DidInitialize(int64* temporary_quota_override,

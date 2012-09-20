@@ -94,11 +94,8 @@ class BrowsingDataQuotaHelperTest : public testing::Test {
   }
 
   void GotPersistentHostQuota(quota::QuotaStatusCode status,
-                              const std::string& host,
-                              quota::StorageType type,
                               int64 quota) {
     EXPECT_EQ(quota::kQuotaStatusOk, status);
-    EXPECT_EQ(quota::kStorageTypePersistent, type);
     quota_ = quota;
   }
 

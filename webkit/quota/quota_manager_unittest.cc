@@ -309,12 +309,8 @@ class QuotaManagerTest : public testing::Test {
   }
 
   void DidGetHostQuota(QuotaStatusCode status,
-                       const std::string& host,
-                       StorageType type,
                        int64 quota) {
     quota_status_ = status;
-    host_ = host;
-    type_ = type;
     quota_ = quota;
   }
 
@@ -929,8 +925,6 @@ TEST_F(QuotaManagerTest, GetAndSetPerststentHostQuota) {
 
   GetPersistentHostQuota("foo.com");
   MessageLoop::current()->RunAllPending();
-  EXPECT_EQ("foo.com", host());
-  EXPECT_EQ(kPerm, type());
   EXPECT_EQ(0, quota());
 
   SetPersistentHostQuota("foo.com", 100);

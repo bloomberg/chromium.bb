@@ -46,12 +46,9 @@ typedef base::Callback<void(StorageType status,
 typedef base::Callback<void(QuotaStatusCode status,
                             StorageType type,
                             int64 quota)> QuotaCallback;
-// TODO(kinuko,nhiroki): HostUsageCallback could be probably replaced with
-// simple Callback<void(int64)> callback by binding host and type with Bind.
 typedef base::Callback<void(int64 usage)> UsageCallback;
+// TODO(calvinlo): Merge HostQuotaCallback and QuotaCallback
 typedef base::Callback<void(QuotaStatusCode status,
-                            const std::string& host,
-                            StorageType type,
                             int64 quota)> HostQuotaCallback;
 typedef base::Callback<void(QuotaStatusCode, int64)> AvailableSpaceCallback;
 typedef base::Callback<void(QuotaStatusCode)> StatusCallback;

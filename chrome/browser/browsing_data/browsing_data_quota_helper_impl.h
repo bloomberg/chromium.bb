@@ -50,10 +50,7 @@ class BrowsingDataQuotaHelperImpl : public BrowsingDataQuotaHelper {
                     int64 usage);
 
   void OnComplete();
-  void DidRevokeHostQuota(quota::QuotaStatusCode status,
-                          const std::string& host,
-                          quota::StorageType type,
-                          int64 quota);
+  void DidRevokeHostQuota(quota::QuotaStatusCode status, int64 quota);
 
   scoped_refptr<quota::QuotaManager> quota_manager_;
   FetchResultCallback callback_;
