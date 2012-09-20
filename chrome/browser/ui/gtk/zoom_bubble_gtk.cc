@@ -89,8 +89,9 @@ ZoomBubbleGtk::ZoomBubbleGtk(GtkWidget* anchor,
   gtk_box_pack_start(GTK_BOX(container), separator, FALSE, FALSE, 0);
 
   GtkWidget* set_default_button = theme_service->BuildChromeButton();
-  gtk_button_set_label(GTK_BUTTON(set_default_button),
-      l10n_util::GetStringUTF8(IDS_ZOOM_SET_DEFAULT).c_str());
+  GtkWidget* label = theme_service->BuildLabel(
+      l10n_util::GetStringUTF8(IDS_ZOOM_SET_DEFAULT).c_str(), ui::kGdkBlack);
+  gtk_container_add(GTK_CONTAINER(set_default_button), label);
 
   GtkWidget* alignment = gtk_alignment_new(0, 0, 1, 1);
   gtk_alignment_set_padding(
