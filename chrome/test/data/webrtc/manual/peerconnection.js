@@ -35,6 +35,10 @@ function sendLocalStreamFromHere() {
   sendLocalStreamOverPeerConnection();
 }
 
+function removeLocalStreamFromHere() {
+  removeLocalStream();
+}
+
 function hangUpFromHere() {
   hangUp();
   acceptIncomingCallsAgain();
@@ -58,6 +62,11 @@ function showServerHelp() {
     + 'peerconnection_server. Otherwise, read in https://code.google'
     + '.com/searchframe#xSWYf0NTG_Q/trunk/peerconnection/README&q=REA'
     + 'DME%20package:webrtc%5C.googlecode%5C.com.');
+}
+
+function clearLog() {
+  document.getElementById('messages').innerHTML = '';
+  document.getElementById('debug').innerHTML = '';
 }
 
 window.onload = function() {

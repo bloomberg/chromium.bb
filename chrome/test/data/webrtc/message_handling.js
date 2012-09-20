@@ -113,6 +113,18 @@ function sendLocalStreamOverPeerConnection() {
 }
 
 /**
+ * Removes the local stream from the call.
+ */
+function removeLocalStream() {
+  if (gPeerConnection == null)
+    failTest('attempting to remove local stream, but no call is up');
+
+  removeLocalStreamFromPeerConnection(gPeerConnection);
+  setupCall(gPeerConnection);
+  returnToTest('ok-local-stream-removed');
+}
+
+/**
  * Queries if a call is up or not. Returns either 'yes' or 'no' to PyAuto and
  * true to any calling javascript functions if the call is active.
  */
@@ -127,26 +139,31 @@ function isCallActive() {
 
 /**
  * Toggles the remote streams' enabled state on the peer connection, given that
- * a call is active. Returns ok-toggled on success.
+ * a call is active. Returns ok-toggled-to-[true/false] on success.
  */
 function toggleRemoteStream() {
   if (gPeerConnection == null)
     failTest('Tried to toggle remote stream, but no call is up.');
+  if (gPeerConnection.remoteStreams.length == 0)
+    failTest('Tried to toggle remote stream, but not receiving any stream.');
 
-  toggle_(gPeerConnection.remoteStreams[0]);
-  returnToTest('ok-toggled');
+  var enabled = toggle_(gPeerConnection.remoteStreams[0]);
+  returnToTest('ok-toggled-to-' + enabled);
 }
 
 /**
  * Toggles the local streams' enabled state on the peer connection, given that
- * a call is active. Returns ok-toggled on success.
+ * a call is active. Returns ok-toggled-to-[true/false] on success.
  */
 function toggleLocalStream() {
   if (gPeerConnection == null)
     failTest('Tried to toggle local stream, but no call is up.');
+  if (gPeerConnection.localStreams.length == 0)
+    failTest('Tried to toggle local stream, but there is no local' +
+        ' stream in the call (must send local stream first).');
 
-  toggle_(gPeerConnection.localStreams[0]);
-  returnToTest('ok-toggled');
+  var enabled = toggle_(gPeerConnection.localStreams[0]);
+  returnToTest('ok-toggled-to-' + enabled);
 }
 
 /**
@@ -209,11 +226,10 @@ function isDisconnected() {
 
 /** @private */
 function toggle_(stream) {
-  if (!isCallActive())
-    failTest('Cannot manipulate local streams: no call active.');
-
   stream.videoTracks[0].enabled = !stream.videoTracks[0].enabled;
   stream.audioTracks[0].enabled = !stream.audioTracks[0].enabled;
+
+  return stream.videoTracks[0].enabled;
 }
 
 /** @private */

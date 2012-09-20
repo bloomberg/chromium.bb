@@ -34,7 +34,11 @@ function handleMessage(peerConnection, message) {
 
 function createPeerConnection(stun_server) {
   servers = {iceServers:[{uri:"stun:" + stun_server}]};
-  peerConnection = new webkitRTCPeerConnection(servers, null);
+  try {
+    peerConnection = new webkitRTCPeerConnection(servers, null);
+  } catch (exception) {
+    failTest('Failed to create peer connection: ' + exception);
+  }
   peerConnection.onaddstream = addStreamCallback_;
   peerConnection.onremovestream = removeStreamCallback_;
   peerConnection.onicecandidate = iceCallback_;

@@ -45,7 +45,7 @@ function getUserMedia(requestVideo, requestAudio, mediaHints) {
     returnToTest('Browser does not support WebRTC.');
     return;
   }
-  gMediaHints = eval(mediaHints);
+  eval('gMediaHints = ' + mediaHints);
 
   debug('Requesting: video ' + requestVideo + ', audio ' + requestAudio);
   navigator.webkitGetUserMedia({video: requestVideo, audio: requestAudio},
@@ -99,6 +99,22 @@ function addLocalStreamToPeerConnection(peerConnection) {
         + exception);
   }
   debug('Added local stream.');
+}
+
+/**
+ * Removes the local stream from the peer connection.
+ * @param peerConnection
+ */
+function removeLocalStreamFromPeerConnection(peerConnection) {
+  if (gLocalStream == null)
+    failTest('Tried to remove local stream from peer connection,'
+        + ' but there is no stream yet.');
+  try {
+    peerConnection.removeStream(gLocalStream);
+  } catch (exception) {
+    failTest('Could not remove stream: ' + exception);
+  }
+  debug('Removed local stream.');
 }
 
 // Internals.

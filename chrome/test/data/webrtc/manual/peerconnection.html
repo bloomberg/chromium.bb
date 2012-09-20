@@ -53,28 +53,30 @@
       </td>
     </tr>
     <tr>
-      <td valign="top">
-        <button id="call" onclick="callFromHere();">
-            Call</button>
-      </td>
-      <td valign="top">
-        <button id="send-local-stream" onclick="sendLocalStreamFromHere();">
-            Send Local Stream</button>
-      </td>
-      <td valign="top">
+      <td>PeerConnection:</td>
+      <td colspan="2">
+        <button id="call" onclick="callFromHere();">Call</button>
         <button id="hangup" onclick="hangUpFromHere();">Hang up</button>
       </td>
-      <td valign="top">
-        <button id="toggle-remote" onclick="toggleRemoteFromHere();">
-            Toggle Remote Stream</button>
-      </td>
-      <td valign="top">
+    </tr>
+    <tr>
+      <td>Local Stream:</td>
+      <td colspan="2">
+        <button id="send-local-stream" onclick="sendLocalStreamFromHere();">
+            Send</button>
+        <button id="remove-local-stream" onclick="removeLocalStreamFromHere();">
+            Remove</button>
         <button id="toggle-local" onclick="toggleLocalFromHere();">
-            Toggle Local Stream</button>
-      </td>
-      <td valign="top">
+            Toggle</button>
         <button id="stop-local" onclick="stopLocalFromHere();">
-            Stop Local Stream</button>
+            Stop</button>
+      </td>
+    </tr>
+    <tr>
+      <td>Remote Stream:</td>
+      <td colspan="2">
+        <button id="toggle-remote" onclick="toggleRemoteFromHere();">
+            Toggle</button>
       </td>
     </tr>
   </table>
@@ -85,7 +87,10 @@
       <col style="width: 50%;">
     </colgroup>
     <tr>
-      <td><h1>Messages</h1></td>
+      <td>
+        <h1>Messages</h1>
+        <button onclick="clearLog();">Clear Logs</button>
+      </td>
       <td><h1>Debug</h1></td>
     </tr>
     <tr>
