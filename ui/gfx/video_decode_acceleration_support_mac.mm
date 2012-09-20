@@ -175,7 +175,9 @@ VideoDecodeAccelerationSupport::Status VideoDecodeAccelerationSupport::Flush(
 
 VideoDecodeAccelerationSupport::Status
 VideoDecodeAccelerationSupport::Destroy() {
-  DCHECK(decoder_);
+  // Decoder might be NULL if Create() fails.
+  if (!decoder_)
+    return SUCCESS;
   OSStatus status = g_VDADecoderDestroy(decoder_);
   decoder_ = NULL;
   return status == kVDADecoderNoErr ? SUCCESS : OTHER_ERROR;
