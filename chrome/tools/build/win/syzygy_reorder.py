@@ -43,7 +43,7 @@ def _ReorderBinary(relink_exe, executable, symbol, destination_dir):
   output binaries, otherwise orders them randomly.
   """
   cmd = [relink_exe,
-         '--verbose',
+         '--overwrite',
          '--input-dll=%s' % executable,
          '--input-pdb=%s' % symbol,
          '--output-dll=%s' % os.path.abspath(
