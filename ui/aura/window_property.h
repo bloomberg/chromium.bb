@@ -5,6 +5,7 @@
 #ifndef UI_AURA_WINDOW_PROPERTY_H_
 #define UI_AURA_WINDOW_PROPERTY_H_
 
+#include "base/basictypes.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/window.h"
 
@@ -45,27 +46,27 @@
 namespace aura {
 namespace {
 
-// No single new-style cast works for every conversion to/from intptr_t, so we
+// No single new-style cast works for every conversion to/from int64, so we
 // need this helper class. A third specialization is needed for bool because
 // MSVC warning C4800 (forcing value to bool) is not suppressed by an explicit
 // cast (!).
 template<typename T>
 class WindowPropertyCaster {
  public:
-  static intptr_t ToIntptrT(T x) { return static_cast<intptr_t>(x); }
-  static T FromIntptrT(intptr_t x) { return static_cast<T>(x); }
+  static int64 ToInt64(T x) { return static_cast<int64>(x); }
+  static T FromInt64(int64 x) { return static_cast<T>(x); }
 };
 template<typename T>
 class WindowPropertyCaster<T*> {
  public:
-  static intptr_t ToIntptrT(T* x) { return reinterpret_cast<intptr_t>(x); }
-  static T* FromIntptrT(intptr_t x) { return reinterpret_cast<T*>(x); }
+  static int64 ToInt64(T* x) { return reinterpret_cast<int64>(x); }
+  static T* FromInt64(int64 x) { return reinterpret_cast<T*>(x); }
 };
 template<>
 class WindowPropertyCaster<bool> {
  public:
-  static intptr_t ToIntptrT(bool x) { return static_cast<intptr_t>(x); }
-  static bool FromIntptrT(intptr_t x) { return x != 0; }
+  static int64 ToInt64(bool x) { return static_cast<int64>(x); }
+  static bool FromInt64(int64 x) { return x != 0; }
 };
 
 }  // namespace
@@ -79,22 +80,22 @@ struct WindowProperty {
 
 template<typename T>
 void Window::SetProperty(const WindowProperty<T>* property, T value) {
-  intptr_t old = SetPropertyInternal(
+  int64 old = SetPropertyInternal(
       property,
       property->name,
       value == property->default_value ? NULL : property->deallocator,
-      WindowPropertyCaster<T>::ToIntptrT(value),
-      WindowPropertyCaster<T>::ToIntptrT(property->default_value));
+      WindowPropertyCaster<T>::ToInt64(value),
+      WindowPropertyCaster<T>::ToInt64(property->default_value));
   if (property->deallocator &&
-      old != WindowPropertyCaster<T>::ToIntptrT(property->default_value)) {
+      old != WindowPropertyCaster<T>::ToInt64(property->default_value)) {
     (*property->deallocator)(old);
   }
 }
 
 template<typename T>
 T Window::GetProperty(const WindowProperty<T>* property) const {
-  return WindowPropertyCaster<T>::FromIntptrT(GetPropertyInternal(
-      property, WindowPropertyCaster<T>::ToIntptrT(property->default_value)));
+  return WindowPropertyCaster<T>::FromInt64(GetPropertyInternal(
+      property, WindowPropertyCaster<T>::ToInt64(property->default_value)));
 }
 
 template<typename T>
@@ -116,22 +117,24 @@ void Window::ClearProperty(const WindowProperty<T>* property) {
     DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(, T)
 
 #define DEFINE_WINDOW_PROPERTY_KEY(TYPE, NAME, DEFAULT) \
+  COMPILE_ASSERT(sizeof(TYPE) <= sizeof(int64), property_type_too_large);     \
   namespace {                                                                 \
     const aura::WindowProperty<TYPE> NAME ## _Value = {DEFAULT, #NAME, NULL}; \
   }                                                                           \
   const aura::WindowProperty<TYPE>* const NAME = & NAME ## _Value;
 
 #define DEFINE_LOCAL_WINDOW_PROPERTY_KEY(TYPE, NAME, DEFAULT) \
+  COMPILE_ASSERT(sizeof(TYPE) <= sizeof(int64), property_type_too_large);     \
   namespace {                                                                 \
     const aura::WindowProperty<TYPE> NAME ## _Value = {DEFAULT, #NAME, NULL}; \
     const aura::WindowProperty<TYPE>* const NAME = & NAME ## _Value;          \
   }
 
-#define DEFINE_OWNED_WINDOW_PROPERTY_KEY(TYPE, NAME, DEFAULT) \
+#define DEFINE_OWNED_WINDOW_PROPERTY_KEY(TYPE, NAME, DEFAULT)   \
   namespace {                                                   \
-    void Deallocator ## NAME (intptr_t p) {                     \
+    void Deallocator ## NAME (int64 p) {                        \
       enum { type_must_be_complete = sizeof(TYPE) };            \
-      delete aura::WindowPropertyCaster<TYPE*>::FromIntptrT(p); \
+      delete aura::WindowPropertyCaster<TYPE*>::FromInt64(p); \
     }                                                           \
     const aura::WindowProperty<TYPE*> NAME ## _Value =          \
         {DEFAULT,#NAME,&Deallocator ## NAME};                   \
