@@ -982,7 +982,6 @@
         ],
         'isolate_dependency_touched': [
           '<(PRODUCT_DIR)/plugins/libTestNetscapePlugIn.so',
-          '<(PRODUCT_DIR)/plugins/libnpapi_test_plugin.so',
           'test/data/extensions/api_test/active_tab/final_page.html',
           'test/data/extensions/api_test/active_tab/page.html',
           'test/data/extensions/api_test/extension_resource_request_policy/web_accessible/accessible_resource_with_csp.html',
