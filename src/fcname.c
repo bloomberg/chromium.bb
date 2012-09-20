@@ -233,55 +233,18 @@ FcObjectHashInsert (const FcObjectType *object, FcBool copy)
     return FcTrue;
 }
 
-static void
-FcObjectHashRemove (const FcObjectType *object, FcBool cleanobj)
-{
-    FcChar32	    hash = FcStringHash ((const FcChar8 *) object->object);
-    FcObjectBucket  **p;
-    FcObjectBucket  *b;
-    FcObjectType    *o;
-
-    if (!FcObjectsInited)
-	FcObjectInit ();
-    for (p = &FcObjectBuckets[hash%OBJECT_HASH_SIZE]; (b = *p); p = &(b->next))
-    {
-	o = FcObjects + b->id - 1;
-        if (b->hash == hash && !strcmp (object->object, o->object))
-	{
-	    *p = b->next;
-	    free (b);
-	    if (cleanobj)
-	    {
-		/* Clean up object array */
-		o->object = NULL;
-		o->type = -1;
-		while (FcObjects[FcObjectsNumber-1].object == NULL)
-		    --FcObjectsNumber;
-	    }
-            break;
-	}
-    }
-}
-
 FcBool
 FcNameRegisterObjectTypes (const FcObjectType *types, int ntypes)
 {
-    int	i;
-
-    for (i = 0; i < ntypes; i++)
-	if (!FcObjectHashInsert (&types[i], FcTrue))
-	    return FcFalse;
-    return FcTrue;
+    /* Deprecated. */
+    return FcFalse;
 }
 
 FcBool
 FcNameUnregisterObjectTypes (const FcObjectType *types, int ntypes)
 {
-    int	i;
-
-    for (i = 0; i < ntypes; i++)
-	FcObjectHashRemove (&types[i], FcTrue);
-    return FcTrue;
+    /* Deprecated. */
+    return FcFalse;
 }
 
 const FcObjectType *
@@ -457,68 +420,29 @@ static const FcConstant _FcBaseConstants[] = {
 
 #define NUM_FC_CONSTANTS   (sizeof _FcBaseConstants/sizeof _FcBaseConstants[0])
 
-typedef struct _FcConstantList FcConstantList;
-
-struct _FcConstantList {
-    const FcConstantList    *next;
-    const FcConstant	    *consts;
-    int			    nconsts;
-};
-
-static const FcConstantList _FcBaseConstantList = {
-    0,
-    _FcBaseConstants,
-    NUM_FC_CONSTANTS
-};
-
-static const FcConstantList	*_FcConstants = &_FcBaseConstantList;
-
 FcBool
 FcNameRegisterConstants (const FcConstant *consts, int nconsts)
 {
-    FcConstantList	*l;
-
-    l = (FcConstantList *) malloc (sizeof (FcConstantList));
-    if (!l)
-	return FcFalse;
-    l->consts = consts;
-    l->nconsts = nconsts;
-    l->next = _FcConstants;
-    _FcConstants = l;
-    return FcTrue;
+    /* Deprecated. */
+    return FcFalse;
 }
 
 FcBool
 FcNameUnregisterConstants (const FcConstant *consts, int nconsts)
 {
-    const FcConstantList	*l, **prev;
-
-    for (prev = &_FcConstants;
-	 (l = *prev);
-	 prev = (const FcConstantList **) &(l->next))
-    {
-	if (l->consts == consts && l->nconsts == nconsts)
-	{
-	    *prev = l->next;
-	    free ((void *) l);
-	    return FcTrue;
-	}
-    }
+    /* Deprecated. */
     return FcFalse;
 }
 
 const FcConstant *
 FcNameGetConstant (const FcChar8 *string)
 {
-    const FcConstantList    *l;
-    int			    i;
+    int	    i;
 
-    for (l = _FcConstants; l; l = l->next)
-    {
-	for (i = 0; i < l->nconsts; i++)
-	    if (!FcStrCmpIgnoreCase (string, l->consts[i].name))
-		return &l->consts[i];
-    }
+    for (i = 0; i < NUM_FC_CONSTANTS; i++)
+	if (!FcStrCmpIgnoreCase (string, _FcBaseConstants[i].name))
+	    return &_FcBaseConstants[i];
+
     return 0;
 }
 
