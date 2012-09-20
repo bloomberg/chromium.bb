@@ -18,6 +18,8 @@
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_message_utils.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebData.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebTransformationMatrix.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
 #include "webkit/blob/blob_data.h"
@@ -76,6 +78,22 @@ struct NPIdentifier_Param {
 };
 
 namespace IPC {
+
+template <>
+struct ParamTraits<WebKit::WebData> {
+  typedef WebKit::WebData param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct ParamTraits<WebKit::WebTransformationMatrix> {
+  typedef WebKit::WebTransformationMatrix param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
 
 template <>
 struct ParamTraits<webkit_glue::ResourceLoadTimingInfo> {

@@ -29,6 +29,8 @@
 #include "media/base/channel_layout.h"
 #include "media/base/media_log_event.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebFloatPoint.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebFloatRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFindOptions.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
@@ -116,7 +118,24 @@ IPC_STRUCT_TRAITS_BEGIN(WebKit::WebPluginAction)
   IPC_STRUCT_TRAITS_MEMBER(enable)
 IPC_STRUCT_TRAITS_END()
 
+IPC_STRUCT_TRAITS_BEGIN(WebKit::WebPoint)
+  IPC_STRUCT_TRAITS_MEMBER(x)
+  IPC_STRUCT_TRAITS_MEMBER(y)
+IPC_STRUCT_TRAITS_END()
+
 IPC_STRUCT_TRAITS_BEGIN(WebKit::WebRect)
+  IPC_STRUCT_TRAITS_MEMBER(x)
+  IPC_STRUCT_TRAITS_MEMBER(y)
+  IPC_STRUCT_TRAITS_MEMBER(width)
+  IPC_STRUCT_TRAITS_MEMBER(height)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(WebKit::WebFloatPoint)
+  IPC_STRUCT_TRAITS_MEMBER(x)
+  IPC_STRUCT_TRAITS_MEMBER(y)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(WebKit::WebFloatRect)
   IPC_STRUCT_TRAITS_MEMBER(x)
   IPC_STRUCT_TRAITS_MEMBER(y)
   IPC_STRUCT_TRAITS_MEMBER(width)
