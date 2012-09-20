@@ -85,7 +85,7 @@ class ASH_EXPORT DisplayController : public aura::DisplayObserver {
 
   // Gets primary display. This information is stored in global
   // object as this can be accessed after Shell is closed.
-  static gfx::Display GetPrimaryDisplay();
+  static const gfx::Display& GetPrimaryDisplay();
 
   // Initializes primary display.
   void InitPrimaryDisplay();

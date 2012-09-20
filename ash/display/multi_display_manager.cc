@@ -119,6 +119,16 @@ bool MultiDisplayManager::UpdateWorkAreaOfDisplayNearestWindow(
   return old_work_area != display.work_area();
 }
 
+const gfx::Display& MultiDisplayManager::GetDisplayForId(int64 id) const {
+  for (DisplayList::const_iterator iter = displays_.begin();
+       iter != displays_.end(); ++iter) {
+    if ((*iter).id() == id)
+      return *iter;
+  }
+  VLOG(1) << "display not found for id:" << id;
+  return GetInvalidDisplay();
+}
+
 const gfx::Display& MultiDisplayManager::FindDisplayContainingPoint(
     const gfx::Point& point_in_screen) const {
   for (DisplayList::const_iterator iter = displays_.begin();
@@ -264,7 +274,7 @@ size_t MultiDisplayManager::GetNumDisplays() const {
 const gfx::Display& MultiDisplayManager::GetDisplayNearestWindow(
     const Window* window) const {
   if (!window)
-    return displays_[0];
+    return DisplayController::GetPrimaryDisplay();
   const RootWindow* root = window->GetRootWindow();
   MultiDisplayManager* manager = const_cast<MultiDisplayManager*>(this);
   return root ? manager->FindDisplayForRootWindow(root) : GetInvalidDisplay();
@@ -275,7 +285,7 @@ const gfx::Display& MultiDisplayManager::GetDisplayNearestPoint(
   // Fallback to the primary display if there is no root display containing
   // the |point|.
   const gfx::Display& display = FindDisplayContainingPoint(point);
-  return display.is_valid() ? display : displays_[0];
+  return display.is_valid() ? display : DisplayController::GetPrimaryDisplay();
 }
 
 const gfx::Display& MultiDisplayManager::GetDisplayMatching(
@@ -296,7 +306,7 @@ const gfx::Display& MultiDisplayManager::GetDisplayMatching(
     }
   }
   // Fallback to the primary display if there is no matching display.
-  return matching ? *matching : displays_[0];
+  return matching ? *matching : DisplayController::GetPrimaryDisplay();
 }
 
 std::string MultiDisplayManager::GetDisplayNameFor(
@@ -362,37 +372,28 @@ void MultiDisplayManager::Init() {
 }
 
 void MultiDisplayManager::CycleDisplayImpl() {
+  DCHECK(!displays_.empty());
   std::vector<gfx::Display> new_displays;
-  if (displays_.size() > 1) {
-    // Remove if there is more than one display.
-    int count = displays_.size() - 1;
-    for (DisplayList::const_iterator iter = displays_.begin();
-         count-- > 0; ++iter) {
-      new_displays.push_back(*iter);
-    }
-  } else {
-    // Add if there is only one display.
-    new_displays.push_back(displays_[0]);
+  new_displays.push_back(DisplayController::GetPrimaryDisplay());
+  // Add if there is only one display.
+  if (displays_.size() == 1)
     new_displays.push_back(CreateDisplayFromSpec("100+200-500x400"));
-  }
-  if (new_displays.size())
-    OnNativeDisplaysChanged(new_displays);
+  OnNativeDisplaysChanged(new_displays);
 }
 
 void MultiDisplayManager::ScaleDisplayImpl() {
-  if (displays_.size() > 0) {
-    std::vector<gfx::Display> new_displays;
-    for (DisplayList::const_iterator iter = displays_.begin();
-         iter != displays_.end(); ++iter) {
-      gfx::Display display = *iter;
-      float factor = display.device_scale_factor() == 1.0f ? 2.0f : 1.0f;
-      display.SetScaleAndBounds(
-          factor, gfx::Rect(display.bounds_in_pixel().origin(),
-                            display.size().Scale(factor)));
-      new_displays.push_back(display);
-    }
-    OnNativeDisplaysChanged(new_displays);
+  DCHECK(!displays_.empty());
+  std::vector<gfx::Display> new_displays;
+  for (DisplayList::const_iterator iter = displays_.begin();
+       iter != displays_.end(); ++iter) {
+    gfx::Display display = *iter;
+    float factor = display.device_scale_factor() == 1.0f ? 2.0f : 1.0f;
+    display.SetScaleAndBounds(
+        factor, gfx::Rect(display.bounds_in_pixel().origin(),
+                          display.size().Scale(factor)));
+    new_displays.push_back(display);
   }
+  OnNativeDisplaysChanged(new_displays);
 }
 
 gfx::Display& MultiDisplayManager::FindDisplayForRootWindow(

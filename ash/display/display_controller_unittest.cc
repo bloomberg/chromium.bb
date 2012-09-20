@@ -208,11 +208,19 @@ TEST_F(DisplayControllerTest, SwapPrimary) {
       Shell::GetInstance()->launcher()->widget()->GetNativeView();
   EXPECT_TRUE(primary_root->Contains(launcher_window));
   EXPECT_FALSE(secondary_root->Contains(launcher_window));
+  EXPECT_EQ(primary_display.id(),
+            gfx::Screen::GetDisplayNearestPoint(gfx::Point(-100, -100)).id());
+  EXPECT_EQ(primary_display.id(),
+            gfx::Screen::GetDisplayNearestWindow(NULL).id());
 
   // Switch primary and secondary
   display_controller->SetPrimaryDisplay(secondary_display);
   EXPECT_EQ(secondary_display.id(), gfx::Screen::GetPrimaryDisplay().id());
   EXPECT_EQ(primary_display.id(), ScreenAsh::GetSecondaryDisplay().id());
+  EXPECT_EQ(secondary_display.id(),
+            gfx::Screen::GetDisplayNearestPoint(gfx::Point(-100, -100)).id());
+  EXPECT_EQ(secondary_display.id(),
+            gfx::Screen::GetDisplayNearestWindow(NULL).id());
 
   EXPECT_EQ(
       primary_root,
@@ -237,6 +245,10 @@ TEST_F(DisplayControllerTest, SwapPrimary) {
   RunAllPendingInMessageLoop();  // RootWindow is deleted in a posted task.
   EXPECT_EQ(1, gfx::Screen::GetNumDisplays());
   EXPECT_EQ(primary_display.id(), gfx::Screen::GetPrimaryDisplay().id());
+  EXPECT_EQ(primary_display.id(),
+            gfx::Screen::GetDisplayNearestPoint(gfx::Point(-100, -100)).id());
+  EXPECT_EQ(primary_display.id(),
+            gfx::Screen::GetDisplayNearestWindow(NULL).id());
   EXPECT_TRUE(tracker.Contains(primary_root));
   EXPECT_FALSE(tracker.Contains(secondary_root));
   EXPECT_TRUE(primary_root->Contains(launcher_window));
