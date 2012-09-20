@@ -37,13 +37,11 @@ def main(argv):
     query.append(opts.query)
   elif args:
     addresses = [x.replace(":", "\:") for x in args]
-    if len(args) == 1:
-      query.extend(addresses)
-    else:
-      if not opts.cl_stats:
-        targets = ["reviewer:%s" % x for x in addresses]
-      targets.extend("owner:%s" % x for x in addresses)
-      query.append("( %s )" % " OR ".join(targets))
+    targets = []
+    if not opts.cl_stats:
+      targets = ["reviewer:%s" % x for x in addresses]
+    targets.extend("owner:%s" % x for x in addresses)
+    query.append("( %s )" % " OR ".join(targets))
     query.append("-age:%s" % opts.age)
 
   query = ' AND '.join(query)
