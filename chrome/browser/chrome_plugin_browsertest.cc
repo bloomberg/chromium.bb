@@ -143,7 +143,13 @@ class ChromePluginTest : public InProcessBrowserTest {
 };
 
 // Tests a bunch of basic scenarios with Flash.
-IN_PROC_BROWSER_TEST_F(ChromePluginTest, Flash) {
+// This test fails under ASan on Mac, see http://crbug.com/147004.
+#if defined(ADDRESS_SANITIZER) && defined(OS_MACOSX)
+#define MAYBE_Flash DISABLED_Flash
+#else
+#define MAYBE_Flash Flash
+#endif
+IN_PROC_BROWSER_TEST_F(ChromePluginTest, MAYBE_Flash) {
   // Official builds always have bundled Flash.
 #if !defined(OFFICIAL_BUILD)
   if (GetFlashPath().empty()) {
