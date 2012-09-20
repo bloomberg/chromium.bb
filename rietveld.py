@@ -315,10 +315,11 @@ class Rietveld(object):
     params = [
       ('reason', reason),
       ('clobber', 'True' if clobber else 'False'),
-      ('revision', revision if revision else 'HEAD'),
       ('builders', json.dumps(builders_and_tests)),
       ('xsrf_token', self.xsrf_token()),
     ]
+    if revision:
+      params.append(('revision', revision))
     return self.post('/%d/try/%d' % (issue, patchset), params)
 
   def get_pending_try_jobs(self, cursor=None, limit=100):

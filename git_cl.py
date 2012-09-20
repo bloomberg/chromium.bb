@@ -1598,6 +1598,10 @@ def CMDtry(parser, args):
   cl.RpcServer().trigger_try_jobs(
       cl.GetIssue(), patchset, options.name, options.clobber, options.revision,
       builders_and_tests)
+  print('Tried jobs on:')
+  length = max(len(builder) for builder in builders_and_tests)
+  for builder in sorted(builders_and_tests):
+    print '  %*s: %s' % (length, builder, ','.join(builders_and_tests[builder]))
   return 0
 
 
