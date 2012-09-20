@@ -14,6 +14,8 @@
 #include "grit/renderer_resources.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScriptSource.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLRequest.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "v8/include/v8.h"
@@ -163,6 +165,10 @@ class SearchBoxExtensionWrapper : public v8::Extension {
   static v8::Handle<v8::Value> GetAutocompleteResults(
       const v8::Arguments& args);
 
+  // Navigates the window to a URL represented by either a URL string or a
+  // restricted ID.
+  static v8::Handle<v8::Value> NavigateContentWindow(const v8::Arguments& args);
+
   // Sets ordered suggestions. Valid for current |value|.
   static v8::Handle<v8::Value> SetSuggestions(const v8::Arguments& args);
 
@@ -212,6 +218,8 @@ v8::Handle<v8::FunctionTemplate> SearchBoxExtensionWrapper::GetNativeFunction(
     return v8::FunctionTemplate::New(GetHeight);
   } else if (name->Equals(v8::String::New("GetAutocompleteResults"))) {
     return v8::FunctionTemplate::New(GetAutocompleteResults);
+  } else if (name->Equals(v8::String::New("NavigateContentWindow"))) {
+    return v8::FunctionTemplate::New(NavigateContentWindow);
   } else if (name->Equals(v8::String::New("SetSuggestions"))) {
     return v8::FunctionTemplate::New(SetSuggestions);
   } else if (name->Equals(v8::String::New("SetQuerySuggestion"))) {
@@ -312,8 +320,8 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetAutocompleteResults(
   content::RenderView* render_view = GetRenderView();
   if (!render_view) return v8::Undefined();
   const std::vector<InstantAutocompleteResult>& results =
-      SearchBox::Get(render_view)->autocomplete_results();
-  const int results_base = SearchBox::Get(render_view)->results_base();
+      SearchBox::Get(render_view)->GetAutocompleteResults();
+  const size_t results_base = SearchBox::Get(render_view)->results_base();
   v8::Handle<v8::Array> results_array = v8::Array::New(results.size());
   for (size_t i = 0; i < results.size(); ++i) {
     v8::Handle<v8::Object> result = v8::Object::New();
@@ -334,6 +342,31 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetAutocompleteResults(
   }
 
   return results_array;
+}
+
+// static
+v8::Handle<v8::Value> SearchBoxExtensionWrapper::NavigateContentWindow(
+    const v8::Arguments& args) {
+  content::RenderView* render_view = GetRenderView();
+  if (!render_view || !args.Length()) return v8::Undefined();
+
+  GURL destination_url;
+  if (args[0]->IsString()) {
+    destination_url = GURL(*v8::String::Utf8Value(args[0]));
+  } else if (args[0]->IsNumber()) {
+    // Get the restricted_id.
+    const size_t restricted_id = args[0]->Uint32Value();
+    const InstantAutocompleteResult* result =
+        SearchBox::Get(render_view)->GetAutocompleteResultWithId(restricted_id);
+    if (result)
+      destination_url = result->destination_url;
+  }
+  // Navigate the main frame.
+  if (destination_url.is_valid()) {
+    WebKit::WebURLRequest request(destination_url);
+    render_view->GetWebView()->mainFrame()->loadRequest(request);
+  }
+  return v8::Undefined();
 }
 
 // static
@@ -418,23 +451,20 @@ v8::Handle<v8::Value>
   content::RenderView* render_view = GetRenderView();
   if (1 <= args.Length() && args.Length() <= 2 && args[0]->IsNumber() &&
       render_view) {
-    const int results_id = args[0]->Uint32Value();
-    const int results_base = SearchBox::Get(render_view)->results_base();
-    // Note that stale results_ids, less than the current results_base, will
-    // wrap.
-    const size_t index = results_id - results_base;
-    const std::vector<InstantAutocompleteResult>& suggestions =
-        SearchBox::Get(render_view)->autocomplete_results();
-    if (index < suggestions.size()) {
-      string16 text = UTF8ToUTF16(suggestions[index].destination_url.spec());
+    const size_t results_id = args[0]->Uint32Value();
+
+    const InstantAutocompleteResult* result =
+        SearchBox::Get(render_view)->GetAutocompleteResultWithId(results_id);
+    if (result) {
+      string16 text = UTF8ToUTF16(result->destination_url.spec());
       InstantCompleteBehavior behavior = INSTANT_COMPLETE_NOW;
       InstantSuggestionType type = INSTANT_SUGGESTION_URL;
 
       if (args.Length() >= 2 && args[1]->Uint32Value() == 2)
         behavior = INSTANT_COMPLETE_NEVER;
 
-      if (suggestions[index].is_search) {
-        text = suggestions[index].contents;
+      if (result->is_search) {
+        text = result->contents;
         type = INSTANT_SUGGESTION_SEARCH;
       }
 
@@ -442,8 +472,7 @@ v8::Handle<v8::Value>
       suggestions.push_back(InstantSuggestion(text, behavior, type));
       SearchBox::Get(render_view)->SetSuggestions(suggestions);
     } else {
-      VLOG(1) << "Invalid results_id " << results_id << "; "
-              << "results_base is " << results_base << ".";
+      VLOG(1) << "Invalid results_id " << results_id;
     }
   }
   return v8::Undefined();
@@ -475,21 +504,17 @@ v8::Handle<v8::Value>
   content::RenderView* render_view = GetRenderView();
   if (1 <= args.Length() && args.Length() <= 2 && args[0]->IsNumber() &&
       render_view) {
-    const int results_id = args[0]->Uint32Value();
-    const int results_base = SearchBox::Get(render_view)->results_base();
-    // Note that stale results_ids, less than the current results_base, will
-    // wrap.
-    const size_t index = results_id - results_base;
-    const std::vector<InstantAutocompleteResult>& suggestions =
-        SearchBox::Get(render_view)->autocomplete_results();
-    if (index < suggestions.size()) {
-      string16 text = UTF8ToUTF16(suggestions[index].destination_url.spec());
+    const size_t results_id = args[0]->Uint32Value();
+    const InstantAutocompleteResult* result =
+        SearchBox::Get(render_view)->GetAutocompleteResultWithId(results_id);
+    if (result) {
+      string16 text = UTF8ToUTF16(result->destination_url.spec());
       InstantCompleteBehavior behavior = INSTANT_COMPLETE_REPLACE;
       InstantSuggestionType type = INSTANT_SUGGESTION_URL;
 
       if ((args.Length() >= 2 && args[1]->Uint32Value() == 0) ||
-          (args.Length() < 2 && suggestions[index].is_search)) {
-        text = suggestions[index].contents;
+          (args.Length() < 2 && result->is_search)) {
+        text = result->contents;
         type = INSTANT_SUGGESTION_SEARCH;
       }
 
@@ -497,8 +522,7 @@ v8::Handle<v8::Value>
       suggestions.push_back(InstantSuggestion(text, behavior, type));
       SearchBox::Get(render_view)->SetSuggestions(suggestions);
     } else {
-      VLOG(1) << "Invalid results_id " << results_id << "; "
-              << "results_base is " << results_base << ".";
+      VLOG(1) << "Invalid results_id " << results_id;
     }
   }
   return v8::Undefined();

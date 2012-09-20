@@ -56,6 +56,24 @@ gfx::Rect SearchBox::GetRect() {
                    static_cast<int>(static_cast<float>(rect_.height()) / zoom));
 }
 
+const std::vector<InstantAutocompleteResult>&
+    SearchBox::GetAutocompleteResults() {
+  // Remember the last requested autocomplete_results to account for race
+  // conditions between autocomplete providers returning new data and the user
+  // clicking on a suggestion.
+  last_autocomplete_results_ = autocomplete_results_;
+  last_results_base_ = results_base_;
+  return autocomplete_results_;
+}
+
+const InstantAutocompleteResult* SearchBox::GetAutocompleteResultWithId(
+    size_t restricted_id) const {
+  if (restricted_id < last_results_base_ ||
+      restricted_id >= last_results_base_ + last_autocomplete_results_.size())
+    return NULL;
+  return &last_autocomplete_results_[restricted_id - last_results_base_];
+}
+
 bool SearchBox::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(SearchBox, message)

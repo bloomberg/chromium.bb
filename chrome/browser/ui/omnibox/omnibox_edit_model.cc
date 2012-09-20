@@ -44,6 +44,7 @@
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_view.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
+#include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -84,10 +85,7 @@ OmniboxEditModel::State::~State() {
 OmniboxEditModel::OmniboxEditModel(OmniboxView* view,
                                    OmniboxEditController* controller,
                                    Profile* profile)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(
-        autocomplete_controller_(new AutocompleteController(profile, this,
-            AutocompleteClassifier::kDefaultOmniboxProviders))),
-      view_(view),
+    : view_(view),
       popup_(NULL),
       controller_(controller),
       has_focus_(false),
@@ -101,6 +99,12 @@ OmniboxEditModel::OmniboxEditModel(OmniboxView* view,
       profile_(profile),
       in_revert_(false),
       allow_exact_keyword_match_(false) {
+  // Use a restricted subset of the autocomplete providers if we're using the
+  // Instant Extended API, as it doesn't support them all.
+  autocomplete_controller_.reset(new AutocompleteController(profile, this,
+      chrome::search::IsInstantExtendedAPIEnabled(profile) ?
+          AutocompleteClassifier::kInstantExtendedOmniboxProviders :
+          AutocompleteClassifier::kDefaultOmniboxProviders));
 }
 
 OmniboxEditModel::~OmniboxEditModel() {

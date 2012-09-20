@@ -29,6 +29,7 @@ if (!chrome.searchBox) {
     native function GetWidth();
     native function GetHeight();
     native function GetAutocompleteResults();
+    native function NavigateContentWindow();
     native function SetSuggestions();
     native function SetQuerySuggestion();
     native function SetQuerySuggestionFromAutocompleteResult();
@@ -175,6 +176,9 @@ if (!chrome.searchBox) {
     };
     this.markDuplicateSuggestions = function(clientSuggestions) {
       return DedupeClientSuggestions(clientSuggestions);
+    };
+    this.navigateContentWindow = function(destination) {
+      return NavigateContentWindow(destination);
     };
     this.onchange = null;
     this.onsubmit = null;

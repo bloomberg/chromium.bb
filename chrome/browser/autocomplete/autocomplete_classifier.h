@@ -23,6 +23,11 @@ class AutocompleteClassifier : public ProfileKeyedService {
   // AutocompleteController().
   static const int kDefaultOmniboxProviders;
 
+  // Bitmap of AutocompleteProvider::Type values describing the set of providers
+  // that have been whitelisted as working properly with the Instant Extended
+  // API.  Intended to be passed to AutocompleteController().
+  static const int kInstantExtendedOmniboxProviders;
+
   explicit AutocompleteClassifier(Profile* profile);
   virtual ~AutocompleteClassifier();
 
