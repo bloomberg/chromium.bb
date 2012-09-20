@@ -289,7 +289,9 @@ function onInit() {
 
 function onAlarm(alarm) {
   console.log('Got alarm', alarm);
-  if (alarm.name == 'watchdog') {
+  // |alarm| can be undefined because onAlarm also gets called from
+  // window.setTimeout on old chrome versions.
+  if (alarm && alarm.name == 'watchdog') {
     onWatchdog();
   } else {
     startRequest({scheduleRequest:true, showLoadingAnimation:false});
