@@ -969,11 +969,11 @@ public:
     virtual void beginCommitOnCCThread(CCLayerTreeHostImpl* impl) OVERRIDE
     {
         LayerChromium* root = m_layerTreeHost->rootLayer();
-        if (!impl->sourceFrameNumber())
+        if (!m_layerTreeHost->commitNumber())
             EXPECT_EQ(root->scrollPosition(), m_initialScroll);
-        else if (impl->sourceFrameNumber() == 1)
+        else if (m_layerTreeHost->commitNumber() == 1)
             EXPECT_EQ(root->scrollPosition(), m_initialScroll + m_scrollAmount + m_scrollAmount);
-        else if (impl->sourceFrameNumber() == 2)
+        else if (m_layerTreeHost->commitNumber() == 2)
             EXPECT_EQ(root->scrollPosition(), m_initialScroll + m_scrollAmount + m_scrollAmount);
     }
 
@@ -1025,7 +1025,7 @@ private:
     int m_scrolls;
 };
 
-TEST_F(CCLayerTreeHostTestScrollMultipleRedraw, DISABLED_runMultiThread)
+TEST_F(CCLayerTreeHostTestScrollMultipleRedraw, runMultiThread)
 {
     runTest(true);
 }
