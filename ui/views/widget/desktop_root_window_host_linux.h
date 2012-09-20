@@ -94,6 +94,16 @@ class DesktopRootWindowHostLinux : public DesktopRootWindowHost,
   virtual bool ShouldUseNativeFrame() OVERRIDE;
   virtual void FrameTypeChanged() OVERRIDE;
   virtual NonClientFrameView* CreateNonClientFrameView() OVERRIDE;
+  virtual void SetFullscreen(bool fullscreen) OVERRIDE;
+  virtual bool IsFullscreen() const OVERRIDE;
+  virtual void SetOpacity(unsigned char opacity) OVERRIDE;
+  virtual void SetWindowIcons(const gfx::ImageSkia& window_icon,
+                              const gfx::ImageSkia& app_icon) OVERRIDE;
+  virtual void SetAccessibleName(const string16& name) OVERRIDE;
+  virtual void SetAccessibleRole(ui::AccessibilityTypes::Role role) OVERRIDE;
+  virtual void SetAccessibleState(ui::AccessibilityTypes::State state) OVERRIDE;
+  virtual void InitModalType(ui::ModalType modal_type) OVERRIDE;
+  virtual void FlashFrame(bool flash_frame) OVERRIDE;
 
   // Overridden from aura::RootWindowHost:
   virtual aura::RootWindow* GetRootWindow() OVERRIDE;

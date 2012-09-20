@@ -402,6 +402,55 @@ NonClientFrameView* DesktopRootWindowHostLinux::CreateNonClientFrameView() {
   return NULL;
 }
 
+void DesktopRootWindowHostLinux::SetFullscreen(bool fullscreen) {
+  // TODO(erg):
+  NOTIMPLEMENTED();
+}
+
+bool DesktopRootWindowHostLinux::IsFullscreen() const {
+  // TODO(erg):
+  NOTIMPLEMENTED();
+  return false;
+}
+
+void DesktopRootWindowHostLinux::SetOpacity(unsigned char opacity) {
+  // TODO(erg):
+  NOTIMPLEMENTED();
+}
+
+void DesktopRootWindowHostLinux::SetWindowIcons(
+    const gfx::ImageSkia& window_icon, const gfx::ImageSkia& app_icon) {
+  // TODO(erg):
+  NOTIMPLEMENTED();
+}
+
+void DesktopRootWindowHostLinux::SetAccessibleName(const string16& name) {
+  // TODO(erg):
+  NOTIMPLEMENTED();
+}
+
+void DesktopRootWindowHostLinux::SetAccessibleRole(
+    ui::AccessibilityTypes::Role role) {
+  // TODO(erg):
+  NOTIMPLEMENTED();
+}
+
+void DesktopRootWindowHostLinux::SetAccessibleState(
+    ui::AccessibilityTypes::State state) {
+  // TODO(erg):
+  NOTIMPLEMENTED();
+}
+
+void DesktopRootWindowHostLinux::InitModalType(ui::ModalType modal_type) {
+  // TODO(erg):
+  NOTIMPLEMENTED();
+}
+
+void DesktopRootWindowHostLinux::FlashFrame(bool flash_frame) {
+  // TODO(erg):
+  NOTIMPLEMENTED();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopRootWindowHostLinux, aura::RootWindowHost implementation:
 

@@ -14,6 +14,7 @@ class Window;
 }
 
 namespace gfx {
+class ImageSkia;
 class Rect;
 }
 
@@ -84,6 +85,23 @@ class DesktopRootWindowHost {
   virtual bool ShouldUseNativeFrame() = 0;
   virtual void FrameTypeChanged() = 0;
   virtual NonClientFrameView* CreateNonClientFrameView() = 0;
+
+  virtual void SetFullscreen(bool fullscreen) = 0;
+  virtual bool IsFullscreen() const = 0;
+
+  virtual void SetOpacity(unsigned char opacity) = 0;
+
+  virtual void SetWindowIcons(const gfx::ImageSkia& window_icon,
+                              const gfx::ImageSkia& app_icon) = 0;
+
+  virtual void SetAccessibleName(const string16& name) = 0;
+  virtual void SetAccessibleRole(ui::AccessibilityTypes::Role role) = 0;
+  virtual void SetAccessibleState(ui::AccessibilityTypes::State state) = 0;
+
+  virtual void InitModalType(ui::ModalType modal_type) = 0;
+
+  virtual void FlashFrame(bool flash_frame) = 0;
+
 };
 
 }  // namespace views

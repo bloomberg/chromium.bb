@@ -20,6 +20,7 @@
 #include "ui/views/widget/desktop_capture_client.h"
 #include "ui/views/widget/desktop_screen_position_client.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/views/win/fullscreen_handler.h"
 #include "ui/views/win/hwnd_message_handler.h"
 #include "ui/views/window/native_frame_view.h"
 
@@ -242,6 +243,46 @@ void DesktopRootWindowHostWin::FrameTypeChanged() {
 NonClientFrameView* DesktopRootWindowHostWin::CreateNonClientFrameView() {
   return GetWidget()->ShouldUseNativeFrame() ?
       new NativeFrameView(GetWidget()) : NULL;
+}
+
+void DesktopRootWindowHostWin::SetFullscreen(bool fullscreen) {
+  message_handler_->fullscreen_handler()->SetFullscreen(fullscreen);
+}
+
+bool DesktopRootWindowHostWin::IsFullscreen() const {
+  return message_handler_->fullscreen_handler()->fullscreen();
+}
+
+void DesktopRootWindowHostWin::SetOpacity(unsigned char opacity) {
+  message_handler_->SetOpacity(static_cast<BYTE>(opacity));
+  GetWidget()->GetRootView()->SchedulePaint();
+}
+
+void DesktopRootWindowHostWin::SetWindowIcons(
+    const gfx::ImageSkia& window_icon, const gfx::ImageSkia& app_icon) {
+  message_handler_->SetWindowIcons(window_icon, app_icon);
+}
+
+void DesktopRootWindowHostWin::SetAccessibleName(const string16& name) {
+  message_handler_->SetAccessibleName(name);
+}
+
+void DesktopRootWindowHostWin::SetAccessibleRole(
+    ui::AccessibilityTypes::Role role) {
+  message_handler_->SetAccessibleRole(role);
+}
+
+void DesktopRootWindowHostWin::SetAccessibleState(
+    ui::AccessibilityTypes::State state) {
+  message_handler_->SetAccessibleState(state);
+}
+
+void DesktopRootWindowHostWin::InitModalType(ui::ModalType modal_type) {
+  message_handler_->InitModalType(modal_type);
+}
+
+void DesktopRootWindowHostWin::FlashFrame(bool flash_frame) {
+  message_handler_->FlashFrame(flash_frame);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
