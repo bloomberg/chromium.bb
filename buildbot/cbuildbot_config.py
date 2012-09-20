@@ -250,6 +250,9 @@ _settings = dict(
   images=['test'],
   factory_install_netboot=True,
 
+# packages -- Tuple of specific packages we want to build.  Most configs won't
+#             specify anything here and instead let build_packages calculate.
+  packages=(),
 
 # push_image -- Do we push a final release image to chromeos-images.
   push_image=False,

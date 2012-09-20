@@ -931,6 +931,7 @@ class BuildTargetStageTest(AbstractStageTest):
                    usepkg=True,
                    skip_toolchain_update=False,
                    nowithdebug=False,
+                   packages=(),
                    extra_env=proper_env)
 
     commands.BuildImage(self.build_root, self._current_board,
@@ -968,6 +969,7 @@ class BuildTargetStageTest(AbstractStageTest):
                    usepkg=mox.IgnoreArg(),
                    skip_toolchain_update=mox.IgnoreArg(),
                    nowithdebug=mox.IgnoreArg(),
+                   packages=mox.IgnoreArg(),
                    extra_env={})
     self.archive_stage_mock.AutotestTarballsReady(None)
     commands.BuildImage(self.build_root, self._current_board, ['test'],
@@ -1000,6 +1002,7 @@ class BuildTargetStageTest(AbstractStageTest):
                    usepkg=True,
                    skip_toolchain_update=False,
                    nowithdebug=True,
+                   packages=(),
                    extra_env=proper_env)
     self.archive_stage_mock.AutotestTarballsReady(None)
     commands.BuildImage(self.build_root, self._current_board, ['test'],
@@ -1048,6 +1051,7 @@ class BuildTargetStageTest(AbstractStageTest):
                    usepkg=True,
                    skip_toolchain_update=False,
                    nowithdebug=False,
+                   packages=(),
                    extra_env=proper_env)
 
     commands.BuildImage(self.build_root, self._current_board,

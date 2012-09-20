@@ -1043,6 +1043,7 @@ class BuildTargetStage(BoardSpecificBuilderStage):
                    skip_toolchain_update=skip_toolchain_update,
                    usepkg=self._build_config['usepkg_build_packages'],
                    nowithdebug=self._build_config['nowithdebug'],
+                   packages=self._build_config['packages'],
                    extra_env=self._env)
 
     # Build images and autotest tarball in parallel.

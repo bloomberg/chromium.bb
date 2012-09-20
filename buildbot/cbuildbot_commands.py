@@ -309,12 +309,15 @@ def SetupBoard(buildroot, board, usepkg, latest_toolchain, extra_env=None,
 
 
 def Build(buildroot, board, build_autotest, usepkg, skip_toolchain_update,
-          nowithdebug, extra_env=None, chrome_root=None):
+          nowithdebug, packages=(), extra_env=None, chrome_root=None):
   """Wrapper around build_packages."""
   cmd = ['./build_packages', '--board=%s' % board]
-  if not build_autotest: cmd.append('--nowithautotest')
 
-  if skip_toolchain_update: cmd.append('--skip_toolchain_update')
+  if not build_autotest:
+    cmd.append('--nowithautotest')
+
+  if skip_toolchain_update:
+    cmd.append('--skip_toolchain_update')
 
   if not usepkg:
     cmd.extend(_LOCAL_BUILD_FLAGS)
@@ -326,6 +329,7 @@ def Build(buildroot, board, build_autotest, usepkg, skip_toolchain_update,
   if chrome_root:
     chroot_args.append('--chrome_root=%s' % chrome_root)
 
+  cmd.extend(packages)
   _RunBuildScript(buildroot, cmd, extra_env=extra_env, chroot_args=chroot_args,
                   enter_chroot=True)
 
