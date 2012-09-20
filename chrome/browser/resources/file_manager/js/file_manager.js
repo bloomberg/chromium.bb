@@ -535,10 +535,8 @@ FileManager.prototype = {
 
     var doc = this.document_;
 
-    if (this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE ||
-        this.dialogType_ == FileManager.DialogType.FULL_PAGE)
-      CommandUtil.registerCommand(doc, 'newfolder',
-          Commands.newFolderCommand, this, this.directoryModel_);
+    CommandUtil.registerCommand(doc, 'newfolder',
+        Commands.newFolderCommand, this, this.directoryModel_);
 
     CommandUtil.registerCommand(this.rootsList_, 'unmount',
         Commands.unmountCommand, this.rootsList_, this);
