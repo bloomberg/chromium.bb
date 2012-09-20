@@ -201,9 +201,6 @@ void MultiDisplayManager::OnNativeDisplaysChanged(
         changed_display_indices.push_back(new_iter - new_displays.begin());
       }
       // TODO(oshima): This is ugly. Simplify these operations.
-      new_display.SetScaleAndBounds(
-          new_display.device_scale_factor(),
-          new_display.bounds_in_pixel());
       // If the display is primary, then simpy use 0,0. Otherwise,
       // use the origin currently used.
       if ((*new_iter).id() != current_primary.id()) {
