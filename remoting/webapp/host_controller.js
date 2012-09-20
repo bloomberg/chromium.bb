@@ -139,18 +139,20 @@ remoting.HostController.prototype.start = function(hostPin, consent, callback) {
 
   /** @param {function(remoting.HostController.AsyncResult):void} callback
    *  @param {remoting.HostController.AsyncResult} result
-   *  @param {string} hostName */
-  function onStarted(callback, result, hostName) {
+   *  @param {string} hostName
+   *  @param {string} publicKey */
+  function onStarted(callback, result, hostName, publicKey) {
     if (result == remoting.HostController.AsyncResult.OK) {
       // Create a dummy remoting.Host instance to represent the local host.
       // Refreshing the list is no good in general, because the directory
       // information won't be in sync for several seconds. We don't know the
-      // host JID or public key, but they can be missing from the cache with
-      // no ill effects (it will be refreshed--we hope that the directory
-      // will have been updated by that point).
+      // host JID, but it can be missing from the cache with no ill effects.
+      // It will be refreshed if the user tries to connect to the local host,
+      // and we hope that the directory will have been updated by that point.
       var localHost = new remoting.Host();
       localHost.hostName = hostName;
       localHost.hostId = newHostId;
+      localHost.publicKey = publicKey;
       localHost.status = 'ONLINE';
       that.setHost(localHost);
       remoting.hostList.addHost(localHost);
@@ -161,9 +163,10 @@ remoting.HostController.prototype.start = function(hostPin, consent, callback) {
     callback(result);
   };
 
-  /** @param {string} privateKey
+  /** @param {string} publicKey
+   *  @param {string} privateKey
    *  @param {XMLHttpRequest} xhr */
-  function onRegistered(privateKey, xhr) {
+  function onRegistered(publicKey, privateKey, xhr) {
     var success = (xhr.status == 200);
 
     if (success) {
@@ -181,7 +184,7 @@ remoting.HostController.prototype.start = function(hostPin, consent, callback) {
       });
       /** @param {remoting.HostController.AsyncResult} result */
       var onStartDaemon = function(result) {
-        onStarted(callback, result, hostName);
+        onStarted(callback, result, hostName, publicKey);
       };
       that.plugin_.startDaemon(hostConfig, consent, onStartDaemon);
     } else {
@@ -210,7 +213,7 @@ remoting.HostController.prototype.start = function(hostPin, consent, callback) {
     remoting.xhr.post(
         'https://www.googleapis.com/chromoting/v1/@me/hosts/',
         /** @param {XMLHttpRequest} xhr */
-        function (xhr) { onRegistered(privateKey, xhr); },
+        function (xhr) { onRegistered(publicKey, privateKey, xhr); },
         JSON.stringify(newHostDetails),
         headers);
   };
