@@ -149,6 +149,23 @@ void DoPostMessage(NaClReverseInterface* self,
   }
 }
 
+int CreateProcess(NaClReverseInterface* self,
+                  NaClDesc** out_sock_addr) {
+  ReverseInterfaceWrapper* wrapper =
+      reinterpret_cast<ReverseInterfaceWrapper*>(self);
+  if (NULL == wrapper->iface) {
+    NaClLog(1, "CreateProcess, no reverse_interface.\n");
+    return -NACL_ABI_EAGAIN;
+  }
+
+  int status;
+  nacl::DescWrapper* sock_addr;
+  if ((status = wrapper->iface->CreateProcess(&sock_addr)) != 0) {
+    *out_sock_addr = sock_addr->desc();
+  }
+  return status;
+}
+
 int64_t RequestQuotaForWrite(NaClReverseInterface* self,
                              char const* file_id,
                              int64_t offset,
@@ -186,7 +203,7 @@ static NaClReverseInterfaceVtbl const kReverseInterfaceWrapperVtbl = {
   ReportCrash,
   ReportExitStatus,
   DoPostMessage,
-  NaClReverseInterfaceCreateProcess,
+  CreateProcess,
   RequestQuotaForWrite,
 };
 

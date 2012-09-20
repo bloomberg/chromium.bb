@@ -19,6 +19,7 @@
 #include "native_client/src/shared/platform/nacl_sync.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/reverse_service/reverse_service_c.h"
+#include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_name_service.h"
 
 namespace nacl {
@@ -65,6 +66,14 @@ class ReverseInterface : public RefCountBase {
   // string, so the implementation should take care to handle this
   // appropriately.
   virtual void DoPostMessage(nacl::string message) = 0;
+
+  // Create new service runtime process and return its socket address.
+  // Returns 0 if successful or negative ABI error value otherwise.
+  // TODO(phosek): remove the stub interface once the plugin provides one.
+  virtual int CreateProcess(nacl::DescWrapper** out_sock_addr) {
+    UNREFERENCED_PARAMETER(out_sock_addr);
+    return -NACL_ABI_EAGAIN;
+  }
 
   // Quota checking for files that were sent to the untrusted module.
   // TODO(sehr): remove the stub interface once the plugin provides one.

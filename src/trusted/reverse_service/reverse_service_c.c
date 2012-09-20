@@ -27,6 +27,7 @@
 #include "native_client/src/trusted/reverse_service/manifest_rpc.h"
 #include "native_client/src/trusted/reverse_service/reverse_control_rpc.h"
 
+#include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 
 struct NaClSrpcHandlerDesc const kNaClReverseServiceHandlers[]; /* fwd */
@@ -714,7 +715,7 @@ int NaClReverseInterfaceCreateProcess(
           ("NaClReverseInterfaceCreateProcess(0x%08"NACL_PRIxPTR
            ", 0x%08"NACL_PRIxPTR")\n"),
           (uintptr_t) self, (uintptr_t) out_sock_addr);
-  return 0;
+  return -NACL_ABI_EAGAIN;
 }
 
 int64_t NaClReverseInterfaceRequestQuotaForWrite(
