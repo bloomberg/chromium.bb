@@ -100,6 +100,7 @@ WorkspaceManager2::WorkspaceManager2(Window* contents_view)
       in_move_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           clear_unminimizing_workspace_factory_(this)),
+      unminimizing_workspace_(NULL),
       app_terminating_(false) {
   // Clobber any existing event filter.
   contents_view->SetEventFilter(NULL);
