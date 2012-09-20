@@ -61,7 +61,12 @@ class ProfileShortcutManagerTest : public testing::Test {
         file_thread_(BrowserThread::FILE, &message_loop_) {
   }
 
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
+    // Mock the user's Desktop into a temp directory.
+    ASSERT_TRUE(fake_user_desktop_.CreateUniqueTempDir());
+    ASSERT_TRUE(PathService::Override(base::DIR_USER_DESKTOP,
+                                      fake_user_desktop_.path()));
+
     TestingBrowserProcess* browser_process =
         static_cast<TestingBrowserProcess*>(g_browser_process);
     profile_manager_.reset(new TestingProfileManager(browser_process));
@@ -80,7 +85,7 @@ class ProfileShortcutManagerTest : public testing::Test {
     second_profile_name_ = ASCIIToUTF16("My profile 2");
   }
 
-  virtual void TearDown() {
+  virtual void TearDown() OVERRIDE {
     message_loop_.RunAllPending();
 
     int num_profiles =
@@ -148,6 +153,7 @@ class ProfileShortcutManagerTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
   scoped_ptr<TestingProfileManager> profile_manager_;
+  ScopedTempDir fake_user_desktop_;
   FilePath dest_path_;
   string16 profile_name_;
   FilePath second_dest_path_;

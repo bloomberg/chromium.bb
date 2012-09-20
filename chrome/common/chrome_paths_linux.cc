@@ -37,7 +37,8 @@ bool GetUserMediaDirectory(const std::string& xdg_name,
   FilePath home = file_util::GetHomeDir();
   if (*result != home) {
     FilePath desktop;
-    GetUserDesktop(&desktop);
+    if (!PathService::Get(base::DIR_USER_DESKTOP, &desktop))
+      return false;
     if (*result != desktop) {
       return true;
     }
@@ -140,11 +141,6 @@ bool GetUserPicturesDirectory(FilePath* result) {
 // ~ or their desktop directory, in which case we default to ~/Videos.
 bool GetUserVideosDirectory(FilePath* result) {
   return GetUserMediaDirectory("VIDEOS", kVideosDir, result);
-}
-
-bool GetUserDesktop(FilePath* result) {
-  *result = GetXDGUserDirectory("DESKTOP", "Desktop");
-  return true;
 }
 
 bool ProcessNeedsProfileDir(const std::string& process_type) {
