@@ -1534,6 +1534,7 @@ void RenderWidgetHostViewWin::OnCaptureChanged(HWND window) {
   TRACE_EVENT0("browser", "RenderWidgetHostViewWin::OnCaptureChanged");
   if (render_widget_host_)
     render_widget_host_->LostCapture();
+  pointer_down_context_ = false;
 }
 
 void RenderWidgetHostViewWin::OnCancelMode() {
@@ -1845,7 +1846,8 @@ LRESULT RenderWidgetHostViewWin::OnMouseEvent(UINT message, WPARAM wparam,
     }
   }
 
-  if (message == WM_LBUTTONDOWN && GetBrowserAccessibilityManager())
+  if (message == WM_LBUTTONDOWN && pointer_down_context_ &&
+      GetBrowserAccessibilityManager())
     GetBrowserAccessibilityManager()->GotMouseDown();
 
   if (message == WM_LBUTTONUP && ui::IsMouseEventFromTouch(message) &&
@@ -2210,6 +2212,9 @@ LRESULT RenderWidgetHostViewWin::OnTouchEvent(UINT message, WPARAM wparam,
     TRACE_EVENT0("browser", "EarlyOut_NothingToDo");
     return 0;
   }
+
+  if (total == 1 && (points[0].dwFlags & TOUCHEVENTF_DOWN))
+      pointer_down_context_ = true;
 
   bool has_touch_handler = render_widget_host_->has_touch_handler() &&
       touch_events_enabled_;
@@ -2690,8 +2695,8 @@ LRESULT RenderWidgetHostViewWin::OnPointerMessage(
   lparam = MAKELPARAM(point.x, point.y);
 
   if (message == WM_POINTERDOWN) {
-    pointer_down_context_ = true;
     if (!base::win::IsMetroProcess()) {
+      pointer_down_context_ = true;
       SetFocus();
       received_focus_change_after_pointer_down_ = false;
       MessageLoop::current()->PostDelayedTask(FROM_HERE,
