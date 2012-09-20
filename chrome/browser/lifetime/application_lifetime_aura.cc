@@ -19,13 +19,18 @@ namespace browser {
 void HandleAppExitingForPlatform() {
   // Close all non browser windows now. Those includes notifications
   // and windows created by Ash (launcher, background, etc).
-  g_browser_process->notification_ui_manager()->CancelAll();
-
 #if defined(USE_ASH)
-  // Releasing the capture will close any menus that might be open:
-  // http://crbug.com/134472
-  aura::client::GetCaptureClient(ash::Shell::GetPrimaryRootWindow())->
-      SetCapture(NULL);
+  // This may be called before |ash::Shell| is initialized when
+  // XIOError is reported.  crbug.com/150633.
+  if (ash::Shell::HasInstance()) {
+    g_browser_process->notification_ui_manager()->CancelAll();
+    // Releasing the capture will close any menus that might be open:
+    // http://crbug.com/134472
+    aura::client::GetCaptureClient(ash::Shell::GetPrimaryRootWindow())->
+        SetCapture(NULL);
+  }
+#else
+  g_browser_process->notification_ui_manager()->CancelAll();
 #endif
 
   // TODO(oshima): Close all non browser windows here while

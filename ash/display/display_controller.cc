@@ -33,6 +33,10 @@
 namespace ash {
 namespace {
 
+// Primary display stored in global object as it can be
+// accessed after Shell is deleted.
+gfx::Display* primary_display = NULL;
+
 // The maximum value for 'offset' in DisplayLayout in case of outliers.  Need
 // to change this value in case to support even larger displays.
 const int kMaxValidOffset = 10000;
@@ -152,6 +156,11 @@ void DisplayLayout::RegisterJSONConverter(
 }
 
 DisplayController::DisplayController() {
+  // Reinstantiate display to make sure that tests don't use
+  // stale display info from previous tests.
+  delete primary_display;
+  primary_display = new gfx::Display();
+
   GetDisplayManager()->AddObserver(this);
 }
 
@@ -166,6 +175,11 @@ DisplayController::~DisplayController() {
     DCHECK(controller);
     delete controller;
   }
+}
+// static
+gfx::Display DisplayController::GetPrimaryDisplay() {
+  DCHECK(primary_display);
+  return *primary_display;
 }
 
 void DisplayController::InitPrimaryDisplay() {
@@ -189,9 +203,9 @@ void DisplayController::InitPrimaryDisplay() {
     }
   }
 #endif
-  primary_display_ = *primary_candidate;
-  aura::RootWindow* root = AddRootWindowForDisplay(primary_display_);
-  root->SetHostBounds(primary_display_.bounds_in_pixel());
+  *primary_display = *primary_candidate;
+  aura::RootWindow* root = AddRootWindowForDisplay(*primary_display);
+  root->SetHostBounds(primary_display->bounds_in_pixel());
   UpdateDisplayBoundsForLayout();
 }
 
@@ -199,7 +213,7 @@ void DisplayController::InitSecondaryDisplays() {
   internal::MultiDisplayManager* display_manager = GetDisplayManager();
   for (size_t i = 0; i < display_manager->GetNumDisplays(); ++i) {
     const gfx::Display* display = display_manager->GetDisplayAt(i);
-    if (primary_display_.id() != display->id()) {
+    if (primary_display->id() != display->id()) {
       aura::RootWindow* root = AddRootWindowForDisplay(*display);
       Shell::GetInstance()->InitRootWindowForSecondaryDisplay(root);
     }
@@ -235,7 +249,7 @@ void DisplayController::RemoveObserver(Observer* observer) {
 
 aura::RootWindow* DisplayController::GetPrimaryRootWindow() {
   DCHECK(!root_windows_.empty());
-  return root_windows_[primary_display_.id()];
+  return root_windows_[primary_display->id()];
 }
 
 aura::RootWindow* DisplayController::GetRootWindowForDisplayId(int64 id) {
@@ -337,7 +351,7 @@ void DisplayController::SetPrimaryDisplay(
     return;
   }
 
-  if (primary_display_.id() == new_primary_display.id() ||
+  if (primary_display->id() == new_primary_display.id() ||
       root_windows_.size() < 2) {
     return;
   }
@@ -349,10 +363,10 @@ void DisplayController::SetPrimaryDisplay(
   if (!non_primary_root)
     return;
 
-  gfx::Display old_primary_display = primary_display_;
+  gfx::Display old_primary_display = *primary_display;
 
   // Swap root windows between current and new primary display.
-  aura::RootWindow* primary_root = root_windows_[primary_display_.id()];
+  aura::RootWindow* primary_root = root_windows_[primary_display->id()];
   DCHECK(primary_root);
   DCHECK_NE(primary_root, non_primary_root);
 
@@ -363,7 +377,7 @@ void DisplayController::SetPrimaryDisplay(
   non_primary_root->SetProperty(internal::kDisplayIdKey,
                                 old_primary_display.id());
 
-  primary_display_ = new_primary_display;
+  *primary_display = new_primary_display;
 
   // Update the layout.
   SetLayoutForDisplayName(
@@ -372,7 +386,7 @@ void DisplayController::SetPrimaryDisplay(
 
   // Update the dispay manager with new display info.
   std::vector<gfx::Display> displays;
-  displays.push_back(primary_display_);
+  displays.push_back(*primary_display);
   displays.push_back(*GetSecondaryDisplay());
   GetDisplayManager()->set_force_bounds_changed(true);
   GetDisplayManager()->OnNativeDisplaysChanged(displays);
@@ -382,13 +396,13 @@ void DisplayController::SetPrimaryDisplay(
 gfx::Display* DisplayController::GetSecondaryDisplay() {
   internal::MultiDisplayManager* display_manager = GetDisplayManager();
   CHECK_EQ(2U, display_manager->GetNumDisplays());
-  return display_manager->GetDisplayAt(0)->id() == primary_display_.id() ?
+  return display_manager->GetDisplayAt(0)->id() == primary_display->id() ?
       display_manager->GetDisplayAt(1) : display_manager->GetDisplayAt(0);
 }
 
 void DisplayController::OnDisplayBoundsChanged(const gfx::Display& display) {
-  if (display.id() == primary_display_.id())
-    primary_display_ = display;
+  if (display.id() == primary_display->id())
+    *primary_display = display;
   NotifyDisplayConfigurationChanging();
   UpdateDisplayBoundsForLayout();
   root_windows_[display.id()]->SetHostBounds(display.bounds_in_pixel());
@@ -413,20 +427,20 @@ void DisplayController::OnDisplayRemoved(const gfx::Display& display) {
 
   // When the primary root window's display is removed, move the primary
   // root to the other display.
-  if (primary_display_.id() == display.id()) {
+  if (primary_display->id() == display.id()) {
     DCHECK_EQ(1U, root_windows_.size());
-    primary_display_ = *GetSecondaryDisplay();
+    *primary_display = *GetSecondaryDisplay();
     aura::RootWindow* primary_root = root_to_delete;
 
     // Delete the other root instead.
-    root_to_delete = root_windows_[primary_display_.id()];
+    root_to_delete = root_windows_[primary_display->id()];
     root_to_delete->SetProperty(internal::kDisplayIdKey, display.id());
 
     // Setup primary root.
-    root_windows_[primary_display_.id()] = primary_root;
-    primary_root->SetProperty(internal::kDisplayIdKey, primary_display_.id());
+    root_windows_[primary_display->id()] = primary_root;
+    primary_root->SetProperty(internal::kDisplayIdKey, primary_display->id());
 
-    OnDisplayBoundsChanged(primary_display_);
+    OnDisplayBoundsChanged(*primary_display);
   }
   internal::RootWindowController* controller =
       GetRootWindowController(root_to_delete);
@@ -459,7 +473,7 @@ void DisplayController::UpdateDisplayBoundsForLayout() {
     return;
 
   DCHECK_EQ(2, gfx::Screen::GetNumDisplays());
-  const gfx::Rect& primary_bounds = primary_display_.bounds();
+  const gfx::Rect& primary_bounds = primary_display->bounds();
 
   gfx::Display* secondary_display = GetSecondaryDisplay();
   const gfx::Rect& secondary_bounds = secondary_display->bounds();

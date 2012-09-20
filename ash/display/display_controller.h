@@ -83,6 +83,10 @@ class ASH_EXPORT DisplayController : public aura::DisplayObserver {
   DisplayController();
   virtual ~DisplayController();
 
+  // Gets primary display. This information is stored in global
+  // object as this can be accessed after Shell is closed.
+  static gfx::Display GetPrimaryDisplay();
+
   // Initializes primary display.
   void InitPrimaryDisplay();
 
@@ -99,10 +103,8 @@ class ASH_EXPORT DisplayController : public aura::DisplayObserver {
   // Returns the root window for |display_id|.
   aura::RootWindow* GetRootWindowForDisplayId(int64 id);
 
-  // Sets/Gets primary display.
-  const gfx::Display& primary_display() const {
-    return primary_display_;
-  }
+  // Sets primary display. This re-assigns the current root
+  // window to given |display|.
   void SetPrimaryDisplay(const gfx::Display& display);
 
   // Returns the secondary display.
@@ -159,8 +161,6 @@ class ASH_EXPORT DisplayController : public aura::DisplayObserver {
   std::map<std::string, DisplayLayout> secondary_layouts_;
 
   ObserverList<Observer> observers_;
-
-  gfx::Display primary_display_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayController);
 };

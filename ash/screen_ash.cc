@@ -117,7 +117,7 @@ gfx::Display ScreenAsh::GetDisplayMatching(const gfx::Rect& match_rect) const {
 }
 
 gfx::Display ScreenAsh::GetPrimaryDisplay() const {
-  return Shell::GetInstance()->display_controller()->primary_display();
+  return DisplayController::GetPrimaryDisplay();
 }
 
 }  // namespace ash
