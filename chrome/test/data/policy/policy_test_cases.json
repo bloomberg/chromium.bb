@@ -181,10 +181,12 @@
   "MetricsReportingEnabled": {
     "pref": "user_experience_metrics.reporting_enabled",
     "test_policy": { "MetricsReportingEnabled": false },
-    "settings_pages": ["chrome://settings-frame"],
+    "settings_pages": [],
     "os": ["win", "mac", "linux"],
     "local_state": true,
-    "official_only": true
+    "official_only": true,
+
+    "note": "TODO(joaodasilva): Should be chrome://settings-frame. http://crbug.com/131042"
   },
 
   "PasswordManagerEnabled": {
