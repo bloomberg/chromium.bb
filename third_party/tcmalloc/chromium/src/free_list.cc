@@ -59,8 +59,10 @@
 // head to NULL.
 
 
+#include <limits>
 #include <stddef.h>
 #include "free_list.h"
+#include "system-alloc.h"
 
 #if defined(TCMALLOC_USE_DOUBLYLINKED_FREELIST)
 
@@ -78,15 +80,28 @@ void EnsureNonLoop(void* node, void* next) {
   Log(kCrash, __FILE__, __LINE__, "Circular loop in list detected: ", next);
 }
 
+inline void* MaskPtr(void* p) {
+  // Maximize ASLR entropy and guarantee the result is an invalid address.
+  const uintptr_t q = ~(reinterpret_cast<intptr_t>(TCMalloc_SystemAlloc) >> 13);
+  // Do not mask NULL pointers, otherwise we could leak address state.
+  if (p)
+    return reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(p) ^ q);
+  return p;
+}
+
+inline void* UnmaskPtr(void* p) {
+  return MaskPtr(p);
+}
+
 // Returns value of the |previous| pointer w/out running a sanity
 // check.
 inline void *FL_Previous_No_Check(void *t) {
-  return reinterpret_cast<void**>(t)[1];
+  return UnmaskPtr(reinterpret_cast<void**>(t)[1]);
 }
 
 // Returns value of the |next| pointer w/out running a sanity check.
 inline void *FL_Next_No_Check(void *t) {
-  return reinterpret_cast<void**>(t)[0];
+  return UnmaskPtr(reinterpret_cast<void**>(t)[0]);
 }
 
 void *FL_Previous(void *t) {
@@ -99,12 +114,12 @@ void *FL_Previous(void *t) {
 
 inline void FL_SetPrevious(void *t, void *n) {
   EnsureNonLoop(t, n);
-  reinterpret_cast<void**>(t)[1] = n;
+  reinterpret_cast<void**>(t)[1] = MaskPtr(n);
 }
 
 inline void FL_SetNext(void *t, void *n) {
   EnsureNonLoop(t, n);
-  reinterpret_cast<void**>(t)[0] = n;
+  reinterpret_cast<void**>(t)[0] = MaskPtr(n);
 }
 
 } // namespace
