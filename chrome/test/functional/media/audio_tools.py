@@ -27,8 +27,8 @@ import pyauto_media
 import pyauto
 
 
-_TOOLS_PATH = os.path.join(pyauto.PyUITest.DataDir(), 'pyauto_private', 'media',
-                           'tools')
+_TOOLS_PATH = os.path.abspath(os.path.join(pyauto.PyUITest.DataDir(),
+                                           'pyauto_private', 'media', 'tools'))
 
 WINDOWS = 'win32' in sys.platform
 if WINDOWS:
@@ -94,7 +94,7 @@ def RunPESQ(audio_file_ref, audio_file_test, sample_rate=16000):
     logging.error('Error running pesq: %s\n%s', output, error)
   # Last line of PESQ output shows the results.  Example:
   # P.862 Prediction (Raw MOS, MOS-LQO):  = 4.180    4.319
-  result = re.search('Prediction.*= (\d{1}\.\d{3})\t(\d{1}\.\d{3})$',
+  result = re.search('Prediction.*= (\d{1}\.\d{3})\t(\d{1}\.\d{3})',
                      output)
   if not result or len(result.groups()) != 2:
     return None
@@ -120,7 +120,8 @@ def RemoveSilence(input_audio_file, output_audio_file):
   # THRESHOLD: value used to indicate what sample value is treates as silence.
   ABOVE_PERIODS = '1'
   DURATION = '2'
-  THRESHOLD = '5%%'
+  THRESHOLD = '5%'
+
   cmd = [_SOX_PATH, input_audio_file, output_audio_file, 'silence',
          ABOVE_PERIODS, DURATION, THRESHOLD, 'reverse', 'silence',
          ABOVE_PERIODS, DURATION, THRESHOLD, 'reverse']

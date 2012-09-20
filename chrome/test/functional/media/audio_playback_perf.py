@@ -18,7 +18,6 @@ RESULT audio_pesq: actual= 4.547 score
 """
 
 import logging
-import optparse
 import os
 import sys
 import tempfile
@@ -29,12 +28,13 @@ import pyauto
 import pyauto_utils
 
 
-_TEST_HTML_PATH = os.path.join(pyauto.PyUITest.DataDir(), 'media', 'html',
-                               'audio_record.html')
-_MEDIA_PATH = os.path.join(pyauto.PyUITest.DataDir(), 'pyauto_private', 'media')
+_TEST_HTML_PATH = pyauto.PyUITest.GetFileURLForDataPath('media', 'html',
+                                                        'audio_record.html')
+_MEDIA_PATH = os.path.abspath(os.path.join(pyauto.PyUITest.DataDir(),
+                                           'pyauto_private', 'media'))
 
 # The media file to play.
-_TEST_AUDIO = os.path.join(_MEDIA_PATH, 'dance2_10sec.wav')
+_TEST_AUDIO = pyauto.PyUITest.GetFileURLForPath(_MEDIA_PATH, 'dance2_10sec.wav')
 # The recording duration should be at least as the media duration.  We use 5
 # extra seconds of record in this test.
 _RECORD_DURATION = 15
@@ -54,16 +54,6 @@ def GetTempFilename():
   return path
 
 
-def _ParseArgs():
-  """Parse --rebase option only used by this test."""
-  pyauto.PyUITest.test_rebase = False
-  if '--rebase' in sys.argv:
-    print 'Running test as a rebase for audio output.'
-    pyauto.PyUITest.test_rebase = True
-    # Need to remove this option so that pyauto options do not complain.
-    sys.argv.remove('--rebase')
-
-
 class AudioRecordPerfTest(pyauto.PyUITest):
   """PyAuto test container.  See file doc string for more information."""
 
@@ -72,23 +62,25 @@ class AudioRecordPerfTest(pyauto.PyUITest):
     # The 2 temp files that will be potentially used in the test.
     temp_file = None
     file_no_silence = None
+    # Rebase test expectation file is REBASE=1 env variable is set.
+    rebase = 'REBASE' in os.environ
+
     try:
       temp_file = GetTempFilename()
       record_thread = audio_tools.AudioRecorderThread(_RECORD_DURATION,
                                                       temp_file)
       record_thread.start()
-      self.NavigateToURL(self.GetFileURLForDataPath(_TEST_HTML_PATH))
+      self.NavigateToURL(_TEST_HTML_PATH)
       self.assertTrue(self.ExecuteJavascript("startTest('%s');" % _TEST_AUDIO))
       record_thread.join()
 
       if record_thread.error:
         self.fail(record_thread.error)
-      file_no_silence = (_TEST_EXPECTED_AUDIO if pyauto.PyUITest.test_rebase
-                         else GetTempFilename())
+      file_no_silence = _TEST_EXPECTED_AUDIO if rebase else GetTempFilename()
       audio_tools.RemoveSilence(temp_file, file_no_silence)
 
       # Exit if we just want to rebase expected output.
-      if pyauto.PyUITest.test_rebase:
+      if rebase:
         return
 
       pesq_values = audio_tools.RunPESQ(_TEST_EXPECTED_AUDIO, file_no_silence)
@@ -103,10 +95,9 @@ class AudioRecordPerfTest(pyauto.PyUITest):
       # Delete the temporary files used by the test.
       if temp_file:
         os.remove(temp_file)
-      if not pyauto.PyUITest.test_rebase and file_no_silence:
+      if not rebase and file_no_silence:
         os.remove(file_no_silence)
 
 
 if __name__ == '__main__':
-  _ParseArgs()
   pyauto_media.Main()
