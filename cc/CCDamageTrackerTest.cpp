@@ -45,7 +45,7 @@ void clearDamageForAllSurfaces(CCLayerImpl* layer)
 
     // Recursively clear damage for any existing surface.
     for (size_t i = 0; i < layer->children().size(); ++i)
-        clearDamageForAllSurfaces(layer->children()[i].get());
+        clearDamageForAllSurfaces(layer->children()[i]);
 }
 
 void emulateDrawingOneFrame(CCLayerImpl* root)
@@ -193,8 +193,8 @@ TEST_F(CCDamageTrackerTest, sanityCheckTestTreeWithTwoSurfaces)
 
     OwnPtr<CCLayerImpl> root = createAndSetUpTestTreeWithTwoSurfaces();
 
-    CCLayerImpl* child1 = root->children()[0].get();
-    CCLayerImpl* child2 = root->children()[1].get();
+    CCLayerImpl* child1 = root->children()[0];
+    CCLayerImpl* child2 = root->children()[1];
     FloatRect childDamageRect = child1->renderSurface()->damageTracker()->currentDamageRect();
     FloatRect rootDamageRect = root->renderSurface()->damageTracker()->currentDamageRect();
 
@@ -211,7 +211,7 @@ TEST_F(CCDamageTrackerTest, sanityCheckTestTreeWithTwoSurfaces)
 TEST_F(CCDamageTrackerTest, verifyDamageForUpdateRects)
 {
     OwnPtr<CCLayerImpl> root = createAndSetUpTestTreeWithOneSurface();
-    CCLayerImpl* child = root->children()[0].get();
+    CCLayerImpl* child = root->children()[0];
 
     // CASE 1: Setting the update rect should cause the corresponding damage to the surface.
     //
@@ -245,7 +245,7 @@ TEST_F(CCDamageTrackerTest, verifyDamageForUpdateRects)
 TEST_F(CCDamageTrackerTest, verifyDamageForPropertyChanges)
 {
     OwnPtr<CCLayerImpl> root = createAndSetUpTestTreeWithOneSurface();
-    CCLayerImpl* child = root->children()[0].get();
+    CCLayerImpl* child = root->children()[0];
 
     // CASE 1: The layer's property changed flag takes priority over update rect.
     //
@@ -289,7 +289,7 @@ TEST_F(CCDamageTrackerTest, verifyDamageForTransformedLayer)
     // transformed layer.
 
     OwnPtr<CCLayerImpl> root = createAndSetUpTestTreeWithOneSurface();
-    CCLayerImpl* child = root->children()[0].get();
+    CCLayerImpl* child = root->children()[0];
 
     WebTransformationMatrix rotation;
     rotation.rotate(45);
@@ -332,7 +332,7 @@ TEST_F(CCDamageTrackerTest, verifyDamageForPerspectiveClippedLayer)
     //
 
     OwnPtr<CCLayerImpl> root = createAndSetUpTestTreeWithOneSurface();
-    CCLayerImpl* child = root->children()[0].get();
+    CCLayerImpl* child = root->children()[0];
 
     WebTransformationMatrix transform;
     transform.translate3d(500, 500, 0);
@@ -369,7 +369,7 @@ TEST_F(CCDamageTrackerTest, verifyDamageForPerspectiveClippedLayer)
 TEST_F(CCDamageTrackerTest, verifyDamageForBlurredSurface)
 {
     OwnPtr<CCLayerImpl> root = createAndSetUpTestTreeWithOneSurface();
-    CCLayerImpl* child = root->children()[0].get();
+    CCLayerImpl* child = root->children()[0];
 
     WebFilterOperations filters;
     filters.append(WebFilterOperation::createBlurFilter(5));
@@ -397,8 +397,8 @@ TEST_F(CCDamageTrackerTest, verifyDamageForBlurredSurface)
 TEST_F(CCDamageTrackerTest, verifyDamageForBackgroundBlurredChild)
 {
     OwnPtr<CCLayerImpl> root = createAndSetUpTestTreeWithTwoSurfaces();
-    CCLayerImpl* child1 = root->children()[0].get();
-    CCLayerImpl* child2 = root->children()[1].get();
+    CCLayerImpl* child1 = root->children()[0];
+    CCLayerImpl* child2 = root->children()[1];
 
     // Allow us to set damage on child1 too.
     child1->setDrawsContent(true);
@@ -500,7 +500,7 @@ TEST_F(CCDamageTrackerTest, verifyDamageForBackgroundBlurredChild)
 TEST_F(CCDamageTrackerTest, verifyDamageForAddingAndRemovingLayer)
 {
     OwnPtr<CCLayerImpl> root = createAndSetUpTestTreeWithOneSurface();
-    CCLayerImpl* child1 = root->children()[0].get();
+    CCLayerImpl* child1 = root->children()[0];
 
     // CASE 1: Adding a new layer should cause the appropriate damage.
     //
@@ -571,7 +571,7 @@ TEST_F(CCDamageTrackerTest, verifyDamageForNewUnchangedLayer)
 TEST_F(CCDamageTrackerTest, verifyDamageForMultipleLayers)
 {
     OwnPtr<CCLayerImpl> root = createAndSetUpTestTreeWithOneSurface();
-    CCLayerImpl* child1 = root->children()[0].get();
+    CCLayerImpl* child1 = root->children()[0];
 
     // In this test we don't want the above tree manipulation to be considered part of the same frame.
     clearDamageForAllSurfaces(root.get());
@@ -584,7 +584,7 @@ TEST_F(CCDamageTrackerTest, verifyDamageForMultipleLayers)
         child2->setDrawsContent(true);
         root->addChild(child2.release());
     }
-    CCLayerImpl* child2 = root->children()[1].get();
+    CCLayerImpl* child2 = root->children()[1];
     emulateDrawingOneFrame(root.get());
 
     // Damaging two layers simultaneously should cause combined damage.
@@ -601,9 +601,9 @@ TEST_F(CCDamageTrackerTest, verifyDamageForMultipleLayers)
 TEST_F(CCDamageTrackerTest, verifyDamageForNestedSurfaces)
 {
     OwnPtr<CCLayerImpl> root = createAndSetUpTestTreeWithTwoSurfaces();
-    CCLayerImpl* child1 = root->children()[0].get();
-    CCLayerImpl* child2 = root->children()[1].get();
-    CCLayerImpl* grandChild1 = root->children()[0]->children()[0].get();
+    CCLayerImpl* child1 = root->children()[0];
+    CCLayerImpl* child2 = root->children()[1];
+    CCLayerImpl* grandChild1 = root->children()[0]->children()[0];
     FloatRect childDamageRect;
     FloatRect rootDamageRect;
 
@@ -640,8 +640,8 @@ TEST_F(CCDamageTrackerTest, verifyDamageForSurfaceChangeFromDescendantLayer)
     // surface should be marked dirty.
 
     OwnPtr<CCLayerImpl> root = createAndSetUpTestTreeWithTwoSurfaces();
-    CCLayerImpl* child1 = root->children()[0].get();
-    CCLayerImpl* grandChild1 = root->children()[0]->children()[0].get();
+    CCLayerImpl* child1 = root->children()[0];
+    CCLayerImpl* grandChild1 = root->children()[0]->children()[0];
     FloatRect childDamageRect;
     FloatRect rootDamageRect;
 
@@ -673,7 +673,7 @@ TEST_F(CCDamageTrackerTest, verifyDamageForSurfaceChangeFromAncestorLayer)
     //        root surface would be damaged appropriately.
 
     OwnPtr<CCLayerImpl> root = createAndSetUpTestTreeWithTwoSurfaces();
-    CCLayerImpl* child1 = root->children()[0].get();
+    CCLayerImpl* child1 = root->children()[0];
     FloatRect childDamageRect;
     FloatRect rootDamageRect;
 
@@ -695,7 +695,7 @@ TEST_F(CCDamageTrackerTest, verifyDamageForSurfaceChangeFromAncestorLayer)
 TEST_F(CCDamageTrackerTest, verifyDamageForAddingAndRemovingRenderSurfaces)
 {
     OwnPtr<CCLayerImpl> root = createAndSetUpTestTreeWithTwoSurfaces();
-    CCLayerImpl* child1 = root->children()[0].get();
+    CCLayerImpl* child1 = root->children()[0];
     FloatRect childDamageRect;
     FloatRect rootDamageRect;
 
@@ -739,7 +739,7 @@ TEST_F(CCDamageTrackerTest, verifyDamageForAddingAndRemovingRenderSurfaces)
 TEST_F(CCDamageTrackerTest, verifyNoDamageWhenNothingChanged)
 {
     OwnPtr<CCLayerImpl> root = createAndSetUpTestTreeWithTwoSurfaces();
-    CCLayerImpl* child1 = root->children()[0].get();
+    CCLayerImpl* child1 = root->children()[0];
     FloatRect childDamageRect;
     FloatRect rootDamageRect;
 
@@ -765,7 +765,7 @@ TEST_F(CCDamageTrackerTest, verifyNoDamageWhenNothingChanged)
 TEST_F(CCDamageTrackerTest, verifyNoDamageForUpdateRectThatDoesNotDrawContent)
 {
     OwnPtr<CCLayerImpl> root = createAndSetUpTestTreeWithTwoSurfaces();
-    CCLayerImpl* child1 = root->children()[0].get();
+    CCLayerImpl* child1 = root->children()[0];
     FloatRect childDamageRect;
     FloatRect rootDamageRect;
 
@@ -783,9 +783,9 @@ TEST_F(CCDamageTrackerTest, verifyNoDamageForUpdateRectThatDoesNotDrawContent)
 TEST_F(CCDamageTrackerTest, verifyDamageForReplica)
 {
     OwnPtr<CCLayerImpl> root = createAndSetUpTestTreeWithTwoSurfaces();
-    CCLayerImpl* child1 = root->children()[0].get();
-    CCLayerImpl* grandChild1 = child1->children()[0].get();
-    CCLayerImpl* grandChild2 = child1->children()[1].get();
+    CCLayerImpl* child1 = root->children()[0];
+    CCLayerImpl* grandChild1 = child1->children()[0];
+    CCLayerImpl* grandChild2 = child1->children()[1];
 
     // Damage on a surface that has a reflection should cause the target surface to
     // receive the surface's damage and the surface's reflected damage.
@@ -869,7 +869,7 @@ TEST_F(CCDamageTrackerTest, verifyDamageForReplica)
 TEST_F(CCDamageTrackerTest, verifyDamageForMask)
 {
     OwnPtr<CCLayerImpl> root = createAndSetUpTestTreeWithOneSurface();
-    CCLayerImpl* child = root->children()[0].get();
+    CCLayerImpl* child = root->children()[0];
 
     // In the current implementation of the damage tracker, changes to mask layers should
     // damage the entire corresponding surface.
@@ -953,8 +953,8 @@ TEST_F(CCDamageTrackerTest, verifyDamageForMask)
 TEST_F(CCDamageTrackerTest, verifyDamageForReplicaMask)
 {
     OwnPtr<CCLayerImpl> root = createAndSetUpTestTreeWithTwoSurfaces();
-    CCLayerImpl* child1 = root->children()[0].get();
-    CCLayerImpl* grandChild1 = child1->children()[0].get();
+    CCLayerImpl* child1 = root->children()[0];
+    CCLayerImpl* grandChild1 = child1->children()[0];
 
     // Changes to a replica's mask should not damage the original surface, because it is
     // not masked. But it does damage the ancestor target surface.
@@ -1016,8 +1016,8 @@ TEST_F(CCDamageTrackerTest, verifyDamageForReplicaMask)
 TEST_F(CCDamageTrackerTest, verifyDamageForReplicaMaskWithAnchor)
 {
     OwnPtr<CCLayerImpl> root = createAndSetUpTestTreeWithTwoSurfaces();
-    CCLayerImpl* child1 = root->children()[0].get();
-    CCLayerImpl* grandChild1 = child1->children()[0].get();
+    CCLayerImpl* child1 = root->children()[0];
+    CCLayerImpl* grandChild1 = child1->children()[0];
 
     // Verify that the correct replicaOriginTransform is used for the replicaMask;
     clearDamageForAllSurfaces(root.get());
@@ -1064,7 +1064,7 @@ TEST_F(CCDamageTrackerTest, verifyDamageForReplicaMaskWithAnchor)
 TEST_F(CCDamageTrackerTest, verifyDamageWhenForcedFullDamage)
 {
     OwnPtr<CCLayerImpl> root = createAndSetUpTestTreeWithOneSurface();
-    CCLayerImpl* child = root->children()[0].get();
+    CCLayerImpl* child = root->children()[0];
 
     // Case 1: This test ensures that when the tracker is forced to have full damage, that
     //         it takes priority over any other partial damage.
@@ -1108,7 +1108,7 @@ TEST_F(CCDamageTrackerTest, verifyDamageAccumulatesUntilReset)
     // If damage is not cleared, it should accumulate.
 
     OwnPtr<CCLayerImpl> root = createAndSetUpTestTreeWithOneSurface();
-    CCLayerImpl* child = root->children()[0].get();
+    CCLayerImpl* child = root->children()[0];
 
     clearDamageForAllSurfaces(root.get());
     child->setUpdateRect(FloatRect(10, 11, 1, 2));

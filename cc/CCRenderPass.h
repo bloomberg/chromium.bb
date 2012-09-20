@@ -10,6 +10,7 @@
 #include "CCSharedQuadState.h"
 #include "FloatRect.h"
 #include "SkColor.h"
+#include "cc/own_ptr_vector.h"
 #include <public/WebFilterOperations.h>
 #include <public/WebTransformationMatrix.h>
 #include <wtf/HashMap.h>
@@ -24,7 +25,7 @@ class CCRenderSurface;
 struct CCAppendQuadsData;
 
 // A list of CCDrawQuad objects, sorted internally in front-to-back order.
-class CCQuadList : public Vector<OwnPtr<CCDrawQuad> > {
+class CCQuadList : public OwnPtrVector<CCDrawQuad> {
 public:
     typedef reverse_iterator backToFrontIterator;
     typedef const_reverse_iterator constBackToFrontIterator;
@@ -35,7 +36,7 @@ public:
     inline constBackToFrontIterator backToFrontEnd() const { return rend(); }
 };
 
-typedef Vector<OwnPtr<CCSharedQuadState> > CCSharedQuadStateList;
+typedef OwnPtrVector<CCSharedQuadState> CCSharedQuadStateList;
 
 class CCRenderPass {
     WTF_MAKE_NONCOPYABLE(CCRenderPass);

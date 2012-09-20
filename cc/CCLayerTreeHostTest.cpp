@@ -1315,7 +1315,7 @@ public:
         EXPECT_EQ(IntSize(60, 60), impl->deviceViewportSize());
 
         CCLayerImpl* root = impl->rootLayer();
-        CCLayerImpl* child = impl->rootLayer()->children()[0].get();
+        CCLayerImpl* child = impl->rootLayer()->children()[0];
 
         // Positions remain in layout pixels.
         EXPECT_EQ(IntPoint(0, 0), root->position());

@@ -21,7 +21,7 @@ protected:
     {
         m_scrollLayer = CCLayerImpl::create(1);
         m_scrollLayer->addChild(CCLayerImpl::create(2));
-        m_contentLayer = m_scrollLayer->children()[0].get();
+        m_contentLayer = m_scrollLayer->children()[0];
         m_scrollbarLayer = CCScrollbarLayerImpl::create(3);
 
         m_scrollLayer->setMaxScrollPosition(IntSize(50, 50));

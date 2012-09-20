@@ -194,10 +194,10 @@ void CCDirectRenderer::drawRenderPass(DrawingFrame& frame, const CCRenderPass* r
     const CCQuadList& quadList = renderPass->quadList();
     for (CCQuadList::constBackToFrontIterator it = quadList.backToFrontBegin(); it != quadList.backToFrontEnd(); ++it) {
         FloatRect quadScissorRect = frame.scissorRectInRenderPassSpace;
-        quadScissorRect.intersect(it->get()->clippedRectInTarget());
+        quadScissorRect.intersect((*it)->clippedRectInTarget());
         if (!quadScissorRect.isEmpty()) {
             enableScissorTestRect(moveScissorToWindowSpace(frame, quadScissorRect));
-            drawQuad(frame, it->get());
+            drawQuad(frame, *it);
         }
     }
 

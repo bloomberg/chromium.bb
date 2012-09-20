@@ -88,7 +88,7 @@ void CCLayerImpl::removeFromParent()
     m_parent = 0;
 
     for (size_t i = 0; i < parent->m_children.size(); ++i) {
-        if (parent->m_children[i].get() == this) {
+        if (parent->m_children[i] == this) {
             parent->m_children.remove(i);
             return;
         }

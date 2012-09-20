@@ -62,9 +62,9 @@ TEST(CCLayerImplTest, verifyLayerChangesAreTrackedProperly)
     // Create a simple CCLayerImpl tree:
     OwnPtr<CCLayerImpl> root = CCLayerImpl::create(1);
     root->addChild(CCLayerImpl::create(2));
-    CCLayerImpl* child = root->children()[0].get();
+    CCLayerImpl* child = root->children()[0];
     child->addChild(CCLayerImpl::create(3));
-    CCLayerImpl* grandChild = child->children()[0].get();
+    CCLayerImpl* grandChild = child->children()[0];
 
     // Adding children is an internal operation and should not mark layers as changed.
     EXPECT_FALSE(root->layerPropertyChanged());

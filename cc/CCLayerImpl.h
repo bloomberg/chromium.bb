@@ -14,6 +14,7 @@
 #include "IntRect.h"
 #include "Region.h"
 #include "SkColor.h"
+#include "cc/own_ptr_vector.h"
 #include <public/WebFilterOperations.h>
 #include <public/WebTransformationMatrix.h>
 #include <string>
@@ -51,7 +52,7 @@ public:
 
     // Tree structure.
     CCLayerImpl* parent() const { return m_parent; }
-    const Vector<OwnPtr<CCLayerImpl> >& children() const { return m_children; }
+    const OwnPtrVector<CCLayerImpl>& children() const { return m_children; }
     void addChild(PassOwnPtr<CCLayerImpl>);
     void removeFromParent();
     void removeAllChildren();
@@ -275,7 +276,7 @@ private:
 
     // Properties internal to CCLayerImpl
     CCLayerImpl* m_parent;
-    Vector<OwnPtr<CCLayerImpl> > m_children;
+    OwnPtrVector<CCLayerImpl> m_children;
     // m_maskLayer can be temporarily stolen during tree sync, we need this ID to confirm newly assigned layer is still the previous one
     int m_maskLayerId;
     OwnPtr<CCLayerImpl> m_maskLayer;

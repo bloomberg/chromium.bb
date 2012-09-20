@@ -181,18 +181,18 @@ TEST(CCQuadCullerTest, verifyCullCenterTileOnly)
     appendQuads(quadList, sharedStateList, rootLayer.get(), it, occlusionTracker);
     ASSERT_EQ(quadList.size(), 12u);
 
-    IntRect quadVisibleRect1 = quadList[5].get()->quadVisibleRect();
+    IntRect quadVisibleRect1 = quadList[5]->quadVisibleRect();
     EXPECT_EQ(quadVisibleRect1.height(), 50);
 
-    IntRect quadVisibleRect3 = quadList[7].get()->quadVisibleRect();
+    IntRect quadVisibleRect3 = quadList[7]->quadVisibleRect();
     EXPECT_EQ(quadVisibleRect3.width(), 50);
 
     // Next index is 8, not 9, since centre quad culled.
-    IntRect quadVisibleRect4 = quadList[8].get()->quadVisibleRect();
+    IntRect quadVisibleRect4 = quadList[8]->quadVisibleRect();
     EXPECT_EQ(quadVisibleRect4.width(), 50);
     EXPECT_EQ(quadVisibleRect4.x(), 250);
 
-    IntRect quadVisibleRect6 = quadList[10].get()->quadVisibleRect();
+    IntRect quadVisibleRect6 = quadList[10]->quadVisibleRect();
     EXPECT_EQ(quadVisibleRect6.height(), 50);
     EXPECT_EQ(quadVisibleRect6.y(), 250);
 

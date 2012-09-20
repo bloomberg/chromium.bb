@@ -67,6 +67,7 @@ public:
     void removeFromParent();
     void removeAllChildren();
     void setChildren(const Vector<RefPtr<LayerChromium> >&);
+
     const Vector<RefPtr<LayerChromium> >& children() const { return m_children; }
 
     void setAnchorPoint(const FloatPoint&);

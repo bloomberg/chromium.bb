@@ -117,7 +117,7 @@ CCActiveAnimation* CCLayerAnimationController::getActiveAnimation(int groupId, C
 {
     for (size_t i = 0; i < m_activeAnimations.size(); ++i)
         if (m_activeAnimations[i]->group() == groupId && m_activeAnimations[i]->targetProperty() == targetProperty)
-            return m_activeAnimations[i].get();
+            return m_activeAnimations[i];
     return 0;
 }
 
@@ -126,7 +126,7 @@ CCActiveAnimation* CCLayerAnimationController::getActiveAnimation(CCActiveAnimat
     for (size_t i = 0; i < m_activeAnimations.size(); ++i) {
         size_t index = m_activeAnimations.size() - i - 1;
         if (m_activeAnimations[index]->targetProperty() == targetProperty)
-            return m_activeAnimations[index].get();
+            return m_activeAnimations[index];
     }
     return 0;
 }

@@ -119,12 +119,12 @@ void expectTreesAreIdentical(LayerChromium* layer, CCLayerImpl* ccLayer, CCLayer
         expectTreesAreIdentical(layer->replicaLayer(), ccLayer->replicaLayer(), hostImpl);
 
     const Vector<RefPtr<LayerChromium> >& layerChildren = layer->children();
-    const Vector<OwnPtr<CCLayerImpl> >& ccLayerChildren = ccLayer->children();
+    const OwnPtrVector<CCLayerImpl>& ccLayerChildren = ccLayer->children();
 
     ASSERT_EQ(layerChildren.size(), ccLayerChildren.size());
 
     for (size_t i = 0; i < layerChildren.size(); ++i)
-        expectTreesAreIdentical(layerChildren[i].get(), ccLayerChildren[i].get(), hostImpl);
+        expectTreesAreIdentical(layerChildren[i].get(), ccLayerChildren[i], hostImpl);
 }
 
 // Attempts to synchronizes a null tree. This should not crash, and should

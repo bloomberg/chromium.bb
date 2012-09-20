@@ -62,7 +62,7 @@ TEST(CCSolidColorLayerImplTest, verifyCorrectBackgroundColorInQuad)
     layer->appendQuads(quadCuller, data);
 
     ASSERT_EQ(quadCuller.quadList().size(), 1U);
-    EXPECT_EQ(CCSolidColorDrawQuad::materialCast(quadCuller.quadList()[0].get())->color(), testColor);
+    EXPECT_EQ(CCSolidColorDrawQuad::materialCast(quadCuller.quadList()[0])->color(), testColor);
 }
 
 TEST(CCSolidColorLayerImplTest, verifyCorrectOpacityInQuad)
@@ -87,7 +87,7 @@ TEST(CCSolidColorLayerImplTest, verifyCorrectOpacityInQuad)
     layer->appendQuads(quadCuller, data);
 
     ASSERT_EQ(quadCuller.quadList().size(), 1U);
-    EXPECT_EQ(opacity, CCSolidColorDrawQuad::materialCast(quadCuller.quadList()[0].get())->opacity());
+    EXPECT_EQ(opacity, CCSolidColorDrawQuad::materialCast(quadCuller.quadList()[0])->opacity());
 }
 
 } // namespace

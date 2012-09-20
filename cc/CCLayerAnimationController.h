@@ -7,11 +7,11 @@
 
 #include "CCAnimationEvents.h"
 
+#include "cc/own_ptr_vector.h"
 #include <wtf/HashSet.h>
 #include <wtf/Noncopyable.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
-#include <wtf/Vector.h>
 
 namespace WebKit {
 class WebTransformationMatrix;
@@ -104,7 +104,7 @@ private:
     bool m_forceSync;
 
     CCLayerAnimationControllerClient* m_client;
-    Vector<OwnPtr<CCActiveAnimation> > m_activeAnimations;
+    OwnPtrVector<CCActiveAnimation> m_activeAnimations;
 };
 
 } // namespace cc

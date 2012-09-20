@@ -59,8 +59,8 @@ TEST(ScrollbarLayerChromiumTest, resolveScrollLayerPointer)
 
         OwnPtr<CCLayerImpl> ccLayerTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), nullptr, 0);
 
-        CCLayerImpl* ccChild1 = ccLayerTreeRoot->children()[0].get();
-        CCScrollbarLayerImpl* ccChild2 = static_cast<CCScrollbarLayerImpl*>(ccLayerTreeRoot->children()[1].get());
+        CCLayerImpl* ccChild1 = ccLayerTreeRoot->children()[0];
+        CCScrollbarLayerImpl* ccChild2 = static_cast<CCScrollbarLayerImpl*>(ccLayerTreeRoot->children()[1]);
 
         EXPECT_TRUE(ccChild1->scrollbarAnimationController());
         EXPECT_EQ(ccChild1->horizontalScrollbarLayer(), ccChild2);
@@ -76,8 +76,8 @@ TEST(ScrollbarLayerChromiumTest, resolveScrollLayerPointer)
 
         OwnPtr<CCLayerImpl> ccLayerTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), nullptr, 0);
 
-        CCScrollbarLayerImpl* ccChild1 = static_cast<CCScrollbarLayerImpl*>(ccLayerTreeRoot->children()[0].get());
-        CCLayerImpl* ccChild2 = ccLayerTreeRoot->children()[1].get();
+        CCScrollbarLayerImpl* ccChild1 = static_cast<CCScrollbarLayerImpl*>(ccLayerTreeRoot->children()[0]);
+        CCLayerImpl* ccChild2 = ccLayerTreeRoot->children()[1];
 
         EXPECT_TRUE(ccChild2->scrollbarAnimationController());
         EXPECT_EQ(ccChild2->horizontalScrollbarLayer(), ccChild1);
@@ -103,7 +103,7 @@ TEST(ScrollbarLayerChromiumTest, scrollOffsetSynchronization)
 
     OwnPtr<CCLayerImpl> ccLayerTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), nullptr, 0);
 
-    CCScrollbarLayerImpl* ccScrollbarLayer = static_cast<CCScrollbarLayerImpl*>(ccLayerTreeRoot->children()[1].get());
+    CCScrollbarLayerImpl* ccScrollbarLayer = static_cast<CCScrollbarLayerImpl*>(ccLayerTreeRoot->children()[1]);
 
     EXPECT_EQ(10, ccScrollbarLayer->currentPos());
     EXPECT_EQ(100, ccScrollbarLayer->totalSize());

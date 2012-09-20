@@ -721,8 +721,8 @@ TEST(CCLayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWit
 
     DebugScopedSetImplThread scopedImplThread;
     OwnPtr<CCLayerImpl> root = createTreeForFixedPositionTests();
-    CCLayerImpl* child = root->children()[0].get();
-    CCLayerImpl* grandChild = child->children()[0].get();
+    CCLayerImpl* child = root->children()[0];
+    CCLayerImpl* grandChild = child->children()[0];
 
     child->setIsContainerForFixedPositionLayers(true);
     grandChild->setFixedToContainerLayer(true);
@@ -762,8 +762,8 @@ TEST(CCLayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWit
 
     DebugScopedSetImplThread scopedImplThread;
     OwnPtr<CCLayerImpl> root = createTreeForFixedPositionTests();
-    CCLayerImpl* child = root->children()[0].get();
-    CCLayerImpl* grandChild = child->children()[0].get();
+    CCLayerImpl* child = root->children()[0];
+    CCLayerImpl* grandChild = child->children()[0];
 
     // This scale will cause child and grandChild to be effectively 200 x 800 with respect to the renderTarget.
     WebTransformationMatrix nonUniformScale;
@@ -805,9 +805,9 @@ TEST(CCLayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWit
     DebugScopedSetImplThread scopedImplThread;
 
     OwnPtr<CCLayerImpl> root = createTreeForFixedPositionTests();
-    CCLayerImpl* child = root->children()[0].get();
-    CCLayerImpl* grandChild = child->children()[0].get();
-    CCLayerImpl* greatGrandChild = grandChild->children()[0].get();
+    CCLayerImpl* child = root->children()[0];
+    CCLayerImpl* grandChild = child->children()[0];
+    CCLayerImpl* greatGrandChild = grandChild->children()[0];
 
     child->setIsContainerForFixedPositionLayers(true);
     grandChild->setPosition(FloatPoint(8, 6));
@@ -849,9 +849,9 @@ TEST(CCLayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWit
     DebugScopedSetImplThread scopedImplThread;
 
     OwnPtr<CCLayerImpl> root = createTreeForFixedPositionTests();
-    CCLayerImpl* child = root->children()[0].get();
-    CCLayerImpl* grandChild = child->children()[0].get();
-    CCLayerImpl* greatGrandChild = grandChild->children()[0].get();
+    CCLayerImpl* child = root->children()[0];
+    CCLayerImpl* grandChild = child->children()[0];
+    CCLayerImpl* greatGrandChild = grandChild->children()[0];
 
     WebTransformationMatrix rotationAboutZ;
     rotationAboutZ.rotate3d(0, 0, 90);
@@ -911,9 +911,9 @@ TEST(CCLayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWit
     DebugScopedSetImplThread scopedImplThread;
 
     OwnPtr<CCLayerImpl> root = createTreeForFixedPositionTests();
-    CCLayerImpl* child = root->children()[0].get();
-    CCLayerImpl* grandChild = child->children()[0].get();
-    CCLayerImpl* greatGrandChild = grandChild->children()[0].get();
+    CCLayerImpl* child = root->children()[0];
+    CCLayerImpl* grandChild = child->children()[0];
+    CCLayerImpl* greatGrandChild = grandChild->children()[0];
 
     WebTransformationMatrix rotationAboutZ;
     rotationAboutZ.rotate3d(0, 0, 90);
@@ -973,9 +973,9 @@ TEST(CCLayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWit
     DebugScopedSetImplThread scopedImplThread;
 
     OwnPtr<CCLayerImpl> root = createTreeForFixedPositionTests();
-    CCLayerImpl* child = root->children()[0].get();
-    CCLayerImpl* grandChild = child->children()[0].get();
-    CCLayerImpl* greatGrandChild = grandChild->children()[0].get();
+    CCLayerImpl* child = root->children()[0];
+    CCLayerImpl* grandChild = child->children()[0];
+    CCLayerImpl* greatGrandChild = grandChild->children()[0];
 
     child->setIsContainerForFixedPositionLayers(true);
     grandChild->setPosition(FloatPoint(8, 6));
@@ -1046,9 +1046,9 @@ TEST(CCLayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWit
     DebugScopedSetImplThread scopedImplThread;
 
     OwnPtr<CCLayerImpl> root = createTreeForFixedPositionTests();
-    CCLayerImpl* child = root->children()[0].get();
-    CCLayerImpl* grandChild = child->children()[0].get();
-    CCLayerImpl* greatGrandChild = grandChild->children()[0].get();
+    CCLayerImpl* child = root->children()[0];
+    CCLayerImpl* grandChild = child->children()[0];
+    CCLayerImpl* greatGrandChild = grandChild->children()[0];
 
     // Add one more layer to the test tree for this scenario.
     {
@@ -1057,7 +1057,7 @@ TEST(CCLayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWit
         setLayerPropertiesForTesting(fixedPositionChild.get(), identity, identity, FloatPoint(0, 0), FloatPoint(0, 0), IntSize(100, 100), false);
         greatGrandChild->addChild(fixedPositionChild.release());
     }
-    CCLayerImpl* fixedPositionChild = greatGrandChild->children()[0].get();
+    CCLayerImpl* fixedPositionChild = greatGrandChild->children()[0];
 
     // Actually set up the scenario here.
     child->setIsContainerForFixedPositionLayers(true);
@@ -1157,8 +1157,8 @@ TEST(CCLayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWit
     DebugScopedSetImplThread scopedImplThread;
 
     OwnPtr<CCLayerImpl> root = createTreeForFixedPositionTests();
-    CCLayerImpl* child = root->children()[0].get();
-    CCLayerImpl* grandChild = child->children()[0].get();
+    CCLayerImpl* child = root->children()[0];
+    CCLayerImpl* grandChild = child->children()[0];
 
     child->setIsContainerForFixedPositionLayers(true);
     child->setForceRenderSurface(true);
@@ -1204,8 +1204,8 @@ TEST(CCLayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerTha
     DebugScopedSetImplThread scopedImplThread;
 
     OwnPtr<CCLayerImpl> root = createTreeForFixedPositionTests();
-    CCLayerImpl* child = root->children()[0].get();
-    CCLayerImpl* grandChild = child->children()[0].get();
+    CCLayerImpl* child = root->children()[0];
+    CCLayerImpl* grandChild = child->children()[0];
 
     child->setIsContainerForFixedPositionLayers(true);
     grandChild->setFixedToContainerLayer(true);
@@ -1241,8 +1241,8 @@ TEST(CCLayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerTha
     DebugScopedSetImplThread scopedImplThread;
 
     OwnPtr<CCLayerImpl> root = createTreeForFixedPositionTests();
-    CCLayerImpl* child = root->children()[0].get();
-    CCLayerImpl* grandChild = child->children()[0].get();
+    CCLayerImpl* child = root->children()[0];
+    CCLayerImpl* grandChild = child->children()[0];
 
     WebTransformationMatrix rotationByZ;
     rotationByZ.rotate3d(0, 0, 90);
@@ -2859,7 +2859,7 @@ TEST(CCLayerTreeHostCommonTest, verifyHitTestingForSingleLayerWithScaledContents
 
     // Sanity check the scenario we just created.
     // The visibleContentRect for testLayer is actually 100x100, even though its layout size is 50x50, positioned at 25x25.
-    CCLayerImpl* testLayer = root->children()[0].get();
+    CCLayerImpl* testLayer = root->children()[0];
     EXPECT_RECT_EQ(IntRect(IntPoint::zero(), IntSize(100, 100)), testLayer->visibleContentRect());
     ASSERT_EQ(1u, renderSurfaceLayerList.size());
     ASSERT_EQ(1u, root->renderSurface()->layerList().size());
@@ -3168,9 +3168,9 @@ TEST(CCLayerTreeHostCommonTest, verifyHitTestingForMultipleLayers)
         root->addChild(child2.release());
     }
 
-    CCLayerImpl* child1 = root->children()[0].get();
-    CCLayerImpl* child2 = root->children()[1].get();
-    CCLayerImpl* grandChild1 = child1->children()[0].get();
+    CCLayerImpl* child1 = root->children()[0];
+    CCLayerImpl* child2 = root->children()[1];
+    CCLayerImpl* grandChild1 = child1->children()[0];
 
     Vector<CCLayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
@@ -3277,9 +3277,9 @@ TEST(CCLayerTreeHostCommonTest, verifyHitTestingForMultipleLayerLists)
         root->addChild(child2.release());
     }
 
-    CCLayerImpl* child1 = root->children()[0].get();
-    CCLayerImpl* child2 = root->children()[1].get();
-    CCLayerImpl* grandChild1 = child1->children()[0].get();
+    CCLayerImpl* child1 = root->children()[0];
+    CCLayerImpl* child2 = root->children()[1];
+    CCLayerImpl* grandChild1 = child1->children()[0];
 
     Vector<CCLayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;

@@ -22,7 +22,7 @@ void verifyQuadsExactlyCoverRect(const CCQuadList& quads, const IntRect& rect)
     Region remaining(rect);
 
     for (size_t i = 0; i < quads.size(); ++i) {
-        CCDrawQuad* quad = quads[i].get();
+        CCDrawQuad* quad = quads[i];
         IntRect quadRect = quad->quadRect();
 
         EXPECT_TRUE(rect.contains(quadRect)) << quadString << i;

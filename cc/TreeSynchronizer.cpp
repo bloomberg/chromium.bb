@@ -36,9 +36,9 @@ void TreeSynchronizer::collectExistingCCLayerImplRecursive(OwnPtrCCLayerImplMap&
     if (!ccLayerImpl)
         return;
 
-    Vector<OwnPtr<CCLayerImpl> >& children = ccLayerImpl->m_children;
+    OwnPtrVector<CCLayerImpl>& children = ccLayerImpl->m_children;
     for (size_t i = 0; i < children.size(); ++i)
-        collectExistingCCLayerImplRecursive(oldLayers, children[i].release());
+        collectExistingCCLayerImplRecursive(oldLayers, children.take(i));
 
     collectExistingCCLayerImplRecursive(oldLayers, ccLayerImpl->m_maskLayer.release());
     collectExistingCCLayerImplRecursive(oldLayers, ccLayerImpl->m_replicaLayer.release());

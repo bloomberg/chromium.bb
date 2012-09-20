@@ -7,6 +7,7 @@
 
 #include "CCAnimationCurve.h"
 #include "CCTimingFunction.h"
+#include "cc/own_ptr_vector.h"
 #include <public/WebTransformOperations.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
@@ -79,7 +80,7 @@ private:
 
     // Always sorted in order of increasing time. No two keyframes have the
     // same time.
-    Vector<OwnPtr<CCFloatKeyframe> > m_keyframes;
+    OwnPtrVector<CCFloatKeyframe> m_keyframes;
 };
 
 class CCKeyframedTransformAnimationCurve : public CCTransformAnimationCurve {
@@ -103,7 +104,7 @@ private:
 
     // Always sorted in order of increasing time. No two keyframes have the
     // same time.
-    Vector<OwnPtr<CCTransformKeyframe> > m_keyframes;
+    OwnPtrVector<CCTransformKeyframe> m_keyframes;
 };
 
 } // namespace cc

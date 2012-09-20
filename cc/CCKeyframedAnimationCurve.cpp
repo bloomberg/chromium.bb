@@ -15,7 +15,7 @@ namespace cc {
 namespace {
 
 template <class Keyframe>
-void insertKeyframe(PassOwnPtr<Keyframe> popKeyframe, Vector<OwnPtr<Keyframe> >& keyframes)
+void insertKeyframe(PassOwnPtr<Keyframe> popKeyframe, OwnPtrVector<Keyframe>& keyframes)
 {
     OwnPtr<Keyframe> keyframe = popKeyframe;
 

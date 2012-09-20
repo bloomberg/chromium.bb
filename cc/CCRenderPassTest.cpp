@@ -66,7 +66,7 @@ TEST(CCRenderPassTest, copyShouldBeIdenticalExceptIdAndQuads)
     // Stick a quad in the pass, this should not get copied.
     CCTestRenderPass* testPass = static_cast<CCTestRenderPass*>(pass.get());
     testPass->sharedQuadStateList().append(CCSharedQuadState::create(WebTransformationMatrix(), IntRect(), IntRect(), 1, false));
-    testPass->quadList().append(CCCheckerboardDrawQuad::create(testPass->sharedQuadStateList().last().get(), IntRect()));
+    testPass->quadList().append(CCCheckerboardDrawQuad::create(testPass->sharedQuadStateList().last(), IntRect()));
 
     CCRenderPass::Id newId(63, 4);
 

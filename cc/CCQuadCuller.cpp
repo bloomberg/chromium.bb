@@ -77,7 +77,7 @@ bool CCQuadCuller::append(PassOwnPtr<CCDrawQuad> passDrawQuad, CCAppendQuadsData
     ASSERT(passDrawQuad->sharedQuadState() == m_currentSharedQuadState);
     ASSERT(passDrawQuad->sharedQuadStateId() == m_currentSharedQuadState->id);
     ASSERT(!m_sharedQuadStateList.isEmpty());
-    ASSERT(m_sharedQuadStateList.last().get() == m_currentSharedQuadState);
+    ASSERT(m_sharedQuadStateList.last() == m_currentSharedQuadState);
 
     IntRect culledRect;
     bool hasOcclusionFromOutsideTargetSurface;

@@ -12,6 +12,7 @@
 #include "CCSharedQuadState.h"
 #include "CCSingleThreadProxy.h"
 #include "MockCCQuadCuller.h"
+#include "cc/own_ptr_vector.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <public/WebTransformationMatrix.h>
@@ -107,7 +108,7 @@ TEST(CCRenderSurfaceTest, sanityCheckSurfaceCreatesCorrectSharedQuadState)
     renderSurface->appendQuads(mockQuadCuller, appendQuadsData, forReplica, CCRenderPass::Id(2, 0));
 
     ASSERT_EQ(1u, sharedStateList.size());
-    CCSharedQuadState* sharedQuadState = sharedStateList[0].get();
+    CCSharedQuadState* sharedQuadState = sharedStateList[0];
 
     EXPECT_EQ(30, sharedQuadState->quadTransform.m41());
     EXPECT_EQ(40, sharedQuadState->quadTransform.m42());
@@ -120,10 +121,10 @@ class TestCCRenderPassSink : public CCRenderPassSink {
 public:
     virtual void appendRenderPass(PassOwnPtr<CCRenderPass> renderPass) OVERRIDE { m_renderPasses.append(renderPass); }
 
-    const Vector<OwnPtr<CCRenderPass> >& renderPasses() const { return m_renderPasses; }
+    const OwnPtrVector<CCRenderPass>& renderPasses() const { return m_renderPasses; }
 
 private:
-    Vector<OwnPtr<CCRenderPass> > m_renderPasses;
+    OwnPtrVector<CCRenderPass> m_renderPasses;
 
 };
 
@@ -154,7 +155,7 @@ TEST(CCRenderSurfaceTest, sanityCheckSurfaceCreatesCorrectRenderPass)
     renderSurface->appendRenderPasses(passSink);
 
     ASSERT_EQ(1u, passSink.renderPasses().size());
-    CCRenderPass* pass = passSink.renderPasses()[0].get();
+    CCRenderPass* pass = passSink.renderPasses()[0];
 
     EXPECT_EQ(CCRenderPass::Id(2, 0), pass->id());
     EXPECT_EQ(contentRect, pass->outputRect());

@@ -643,7 +643,7 @@ static void calculateDrawTransformsInternal(LayerType* layer, LayerType* rootLay
 
     IntRect accumulatedDrawableContentRectOfChildren;
     for (size_t i = 0; i < layer->children().size(); ++i) {
-        LayerType* child = layer->children()[i].get();
+        LayerType* child = CCLayerTreeHostCommon::getChildAsRawPtr(layer->children(), i);
         IntRect drawableContentRectOfChildSubtree;
         calculateDrawTransformsInternal<LayerType, LayerList, RenderSurfaceType, LayerSorter>(child, rootLayer, sublayerMatrix, nextHierarchyMatrix, nextScrollCompensationMatrix,
                                                                                               clipRectForSubtree, subtreeShouldBeClipped, nearestAncestorThatMovesPixels,

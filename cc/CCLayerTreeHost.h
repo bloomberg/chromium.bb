@@ -16,6 +16,7 @@
 #include "IntRect.h"
 #include "RateLimiter.h"
 #include "SkColor.h"
+#include "cc/own_ptr_vector.h"
 #include <limits>
 #include <wtf/HashMap.h>
 #include <wtf/OwnPtr.h>
@@ -213,7 +214,6 @@ protected:
 
 private:
     typedef Vector<RefPtr<LayerChromium> > LayerList;
-    typedef Vector<OwnPtr<CCPrioritizedTexture> > TextureList;
 
     void initializeRenderer();
 
@@ -271,6 +271,7 @@ private:
     SkColor m_backgroundColor;
     bool m_hasTransparentBackground;
 
+    typedef OwnPtrVector<CCPrioritizedTexture> TextureList;
     TextureList m_deleteTextureAfterCommitList;
     size_t m_partialTextureUpdateRequests;
 

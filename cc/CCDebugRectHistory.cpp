@@ -54,7 +54,7 @@ void CCDebugRectHistory::savePaintRects(CCLayerImpl* layer)
     }
 
     for (unsigned i = 0; i < layer->children().size(); ++i)
-        savePaintRects(layer->children()[i].get());
+        savePaintRects(layer->children()[i]);
 }
 
 void CCDebugRectHistory::savePropertyChangedRects(const Vector<CCLayerImpl*>& renderSurfaceLayerList)
