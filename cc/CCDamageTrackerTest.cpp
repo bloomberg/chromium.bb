@@ -1096,7 +1096,7 @@ TEST_F(CCDamageTrackerTest, verifyDamageForEmptyLayerList)
 
     ASSERT_TRUE(root == root->renderTarget());
     CCRenderSurface* targetSurface = root->renderSurface();
-    targetSurface->clearLayerList();
+    targetSurface->clearLayerLists();
     targetSurface->damageTracker()->updateDamageTrackingState(targetSurface->layerList(), targetSurface->owningLayerId(), false, IntRect(), 0, WebFilterOperations());
 
     FloatRect damageRect = targetSurface->damageTracker()->currentDamageRect();

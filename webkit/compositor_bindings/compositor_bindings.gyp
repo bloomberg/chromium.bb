@@ -17,6 +17,8 @@
       'WebCompositorImpl.h',
       'WebContentLayerImpl.cpp',
       'WebContentLayerImpl.h',
+      'WebDelegatedRendererLayerImpl.cpp',
+      'WebDelegatedRendererLayerImpl.h',
       'WebExternalTextureLayerImpl.cpp',
       'WebExternalTextureLayerImpl.h',
       'WebFloatAnimationCurveImpl.cpp',

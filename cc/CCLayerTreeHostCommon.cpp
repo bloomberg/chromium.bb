@@ -341,7 +341,7 @@ void setupRootLayerAndSurfaceForRecursion(LayerType* rootLayer, LayerList& rende
         rootLayer->createRenderSurface();
 
     rootLayer->renderSurface()->setContentRect(IntRect(IntPoint::zero(), deviceViewportSize));
-    rootLayer->renderSurface()->clearLayerList();
+    rootLayer->renderSurface()->clearLayerLists();
 
     ASSERT(renderSurfaceLayerList.isEmpty());
     renderSurfaceLayerList.append(rootLayer);
@@ -528,7 +528,7 @@ static void calculateDrawTransformsInternal(LayerType* layer, LayerType* rootLay
             layer->createRenderSurface();
 
         RenderSurfaceType* renderSurface = layer->renderSurface();
-        renderSurface->clearLayerList();
+        renderSurface->clearLayerLists();
 
         // The origin of the new surface is the upper left corner of the layer.
         renderSurface->setDrawTransform(drawTransform);
@@ -697,7 +697,7 @@ static void calculateDrawTransformsInternal(LayerType* layer, LayerType* rootLay
         clippedContentRect.setHeight(std::min(clippedContentRect.height(), maxTextureSize));
 
         if (clippedContentRect.isEmpty())
-            renderSurface->clearLayerList();
+            renderSurface->clearLayerLists();
 
         renderSurface->setContentRect(clippedContentRect);
         renderSurface->setScreenSpaceTransform(layer->screenSpaceTransform());
@@ -753,7 +753,8 @@ static void calculateDrawTransformsInternal(LayerType* layer, LayerType* rootLay
     else
         drawableContentRectOfSubtree = localDrawableContentRectOfSubtree;
 
-    return;
+    if (layer->hasContributingDelegatedRenderPasses())
+        layer->renderTarget()->renderSurface()->addContributingDelegatedRenderPassLayer(layer);
 }
 
 // FIXME: Instead of using the following function to set visibility rects on a second
