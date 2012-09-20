@@ -39,6 +39,10 @@ LIBRARY_DEPENDENCIES_DEFAULT = {
         'sel',
         'debug_stub',
         ],
+    'sel_main': [
+        'sel',
+        'debug_stub',
+        ],
     'testrunner_browser': [
         'ppapi',
         ],

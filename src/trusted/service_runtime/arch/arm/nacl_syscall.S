@@ -69,8 +69,10 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
   ldr  r1, [r1, r0, lsl #2]
   /* r1 = nacl_user[r0*4], r1 points to the nacl_user entry of this thread */
 
+DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallThreadCaptureFault):
   /* store thread state to the nacl_user entry */
   stmia r1, NACL_CALLEE_SAVE_LIST
+  /* if r1 is NULL, we would have faulted here */
 
   /*
    * Store the untrusted fpscr state and load the trusted fpscr into r2.

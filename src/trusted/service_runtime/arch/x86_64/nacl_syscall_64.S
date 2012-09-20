@@ -34,6 +34,8 @@
  * data in OSX and puts it in %eax.
  *
  * May clobber two registers %rcx and %rdx (windows only).
+ *
+ * If %rax contains 0, then this is an invalid thread.
  */
 MACRO(get_tls)
         /*
@@ -43,6 +45,8 @@ MACRO(get_tls)
          * OS/toolchains.  If the compiler / runtime conventions for
          * how to access TLS or TSD changes, this code will break
          * mysteriously.
+         *
+         * Any changes/fixes for this must be mirrored in nacl_test_capture.S
          *
          * WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
          */
@@ -137,8 +141,13 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
         leaq    IDENTIFIER(nacl_user)(%rip), %rdx
         leaq    (%rdx,%rax,8), %rdx
         movq    0x0(%rdx), %rdx
+        /*
+         * Code below will segfault if %rdx is the NULL pointer, since
+         * the zero page is unmapped.
+         */
 
         /* only save the callee saved registers */
+DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallThreadCaptureFault):
         movq    %rbx, NACL_THREAD_CONTEXT_OFFSET_RBX(%rdx)
         movq    %rbp, NACL_THREAD_CONTEXT_OFFSET_RBP(%rdx)
         movq    %rsp, %rbx

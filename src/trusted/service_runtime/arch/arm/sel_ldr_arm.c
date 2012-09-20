@@ -21,12 +21,10 @@
  * Install a syscall trampoline at target_addr.  NB: Thread-safe.
  * The code being patched is from tramp.S
  */
-void  NaClPatchOneTrampoline(struct NaClApp *nap,
-                             uintptr_t      target_addr) {
-  struct NaClPatchInfo  patch_info;
-  struct NaClPatch      patch_syscall_seg;
-
-  UNREFERENCED_PARAMETER(nap);
+void  NaClPatchOneTrampolineCall(uintptr_t call_target_addr,
+                                 uintptr_t target_addr) {
+  struct NaClPatchInfo patch_info;
+  struct NaClPatch patch_syscall_seg;
 
   /*
    * For ARM we only need to patch in the address of NaClSyscallSeg.
@@ -43,9 +41,16 @@ void  NaClPatchOneTrampoline(struct NaClApp *nap,
   patch_info.num_abs32 = 1;
   patch_info.abs32 = &patch_syscall_seg;
   patch_syscall_seg.target = (uintptr_t) &NaCl_trampoline_syscall_seg_addr;
-  patch_syscall_seg.value = (uintptr_t) &NaClSyscallSeg;
+  patch_syscall_seg.value = call_target_addr;
 
   NaClApplyPatchToMemory(&patch_info);
+}
+
+void  NaClPatchOneTrampoline(struct NaClApp *nap,
+                             uintptr_t      target_addr) {
+  UNREFERENCED_PARAMETER(nap);
+
+  NaClPatchOneTrampolineCall((uintptr_t) &NaClSyscallSeg, target_addr);
 }
 
 

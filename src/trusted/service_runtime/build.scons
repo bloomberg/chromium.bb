@@ -253,6 +253,8 @@ env.DualLibrary('sel', ldr_inputs)
 
 env.DualLibrary('sel_main_chrome', ['sel_main_chrome.c'])
 
+env.DualLibrary('sel_main', ['sel_main.c'])
+
 env.DualLibrary('env_cleanser', ['env_cleanser.c'])
 
 env.DualLibrary('nacl_error_code',
@@ -291,6 +293,7 @@ if env.Bit('windows'):
   )
 
 sel_ldr_libs = ['sel',
+                'sel_main',
                 'env_cleanser',
                 'nacl_error_code',
                 'manifest_proxy',
@@ -311,9 +314,9 @@ sel_ldr_libs = ['sel',
                 ]
 
 if not env.Bit('coverage_enabled') or not env.Bit('windows'):
-  sel_main_objs = [env.ComponentObject('sel_main.c')]
+  sel_main_objs = [env.ComponentObject('nacl_test_injection_main.c')]
   SEL_LDR_NODE = env.ComponentProgram('sel_ldr', sel_main_objs,
-                                      EXTRA_LIBS=['sel', 'debug_stub'])
+                                      EXTRA_LIBS=['sel_main'])
   if env.Bit('mac'):
     # This target exists only to check that the service_runtime code
     # can successfully be linked into a Mac OS X dynamic library.  Our
@@ -326,7 +329,7 @@ if not env.Bit('coverage_enabled') or not env.Bit('windows'):
     dylib_env = env.Clone()
     dylib_env.Append(LINKFLAGS=['-bundle'])
     dylib_env.ComponentProgram('dummy_sel_ldr.dylib', sel_main_objs,
-                               EXTRA_LIBS=['sel', 'debug_stub'])
+                               EXTRA_LIBS=['sel_main'])
 
   # NOTE: we do not have segments on ARM
   if env.Bit('build_x86'):

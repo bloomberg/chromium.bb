@@ -17,6 +17,8 @@
         'sources': [
           'fault_injection.h',
           'fault_injection.c',
+          'test_injection.h',
+          'test_injection.c',
         ],
         'xcode_settings': {
           'WARNING_CFLAGS': [

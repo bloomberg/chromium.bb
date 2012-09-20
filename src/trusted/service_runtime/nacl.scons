@@ -5,7 +5,7 @@
 
 Import('env')
 
-# So far, all tests involve native assembler
+# All tests below involve native assembler
 
 HALT_SLED_SIZE=32
 

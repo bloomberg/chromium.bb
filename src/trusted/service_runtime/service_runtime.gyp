@@ -288,15 +288,24 @@
         'sel',
       ],
     }, {
+      'target_name': 'sel_main',
+      'type': 'static_library',
+      'sources': [
+        'sel_main.c',
+      ],
+      'dependencies': [
+        'sel',
+      ],
+    }, {
       'target_name': 'sel_ldr',
       'type': 'executable',
       'dependencies': [
-        'sel',
+        'sel_main',
         '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
         '<(DEPTH)/native_client/src/trusted/gio/gio_wrapped_desc.gyp:gio_wrapped_desc',
       ],
       'sources': [
-        'sel_main.c',
+        'nacl_test_injection_main.c',
       ],
       'conditions': [
         ['OS=="linux"', {
@@ -381,18 +390,31 @@
           ],
         },
         {
+          'target_name': 'sel_main64',
+          'type': 'static_library',
+          'sources': [
+            'sel_main.c',
+          ],
+          'dependencies': [
+            'sel64',
+          ],
+          'variables': {
+            'win_target': 'x64',
+          },
+        },
+        {
           'target_name': 'sel_ldr64',
           'type': 'executable',
           'variables': {
             'win_target': 'x64',
           },
           'dependencies': [
-            'sel64',
+            'sel_main64',
             '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform64',
             '<(DEPTH)/native_client/src/trusted/gio/gio_wrapped_desc.gyp:gio_wrapped_desc64',
           ],
           'sources': [
-            'sel_main.c',
+            'nacl_test_injection_main.c',
           ],
         },
       ],

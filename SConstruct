@@ -2701,6 +2701,7 @@ irt_variant_tests = [
     'tests/syscall_return_regs/nacl.scons',
     'tests/syscall_return_sandboxing/nacl.scons',
     'tests/syscalls/nacl.scons',
+    'tests/thread_capture/nacl.scons',
     'tests/threads/nacl.scons',
     'tests/time/nacl.scons',
     'tests/tls/nacl.scons',

@@ -102,6 +102,11 @@ void NaClAppThreadTeardown(struct NaClAppThread *natp) {
    * any ldt-based lookups will not reach this dying thread's data.
    */
   thread_idx = NaClGetThreadIdx(natp);
+  /*
+   * On x86-64 and ARM, clearing nacl_user entry ensures that we will
+   * fault if another syscall is made with this thread_idx.  In
+   * particular, thread_idx 0 is never used.
+   */
   nacl_user[thread_idx] = NULL;
   nacl_thread[thread_idx] = NULL;
 #if NACL_WINDOWS

@@ -34,6 +34,7 @@
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 
 #include "native_client/src/trusted/fault_injection/fault_injection.h"
+#include "native_client/src/trusted/fault_injection/test_injection.h"
 #include "native_client/src/trusted/perf_counter/nacl_perf_counter.h"
 #include "native_client/src/trusted/service_runtime/env_cleanser.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
@@ -163,8 +164,8 @@ static int my_getopt(int argc, char *const *argv, const char *shortopts) {
 #define my_getopt getopt
 #endif
 
-int main(int  argc,
-         char **argv) {
+int NaClPostTestInjectionMain(int  argc,
+                              char **argv) {
   int                           opt;
   char                          *rest;
   struct redir                  *entry;
@@ -851,6 +852,7 @@ int main(int  argc,
       goto done;
     }
   }
+  NACL_TEST_INJECTION(BeforeMainThreadLaunches, ());
   if (!NaClCreateMainThread(nap,
                             argc - optind,
                             argv + optind,

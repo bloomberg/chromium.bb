@@ -18,6 +18,7 @@
 
 static struct NaClMutex gNaClTlsMu;
 static int gNaClThreadIdxInUse[NACL_THREAD_MAX];  /* bool */
+static size_t const kNumThreads = NACL_ARRAY_SIZE_UNSAFE(gNaClThreadIdxInUse);
 
 /*
  * This holds the index of the current thread.
@@ -43,7 +44,7 @@ int NaClTlsInit() {
 
   NaClLog(2, "NaClTlsInit\n");
 
-  for (i = 0; i < NACL_ARRAY_SIZE(gNaClThreadIdxInUse); i++) {
+  for (i = 0; i < kNumThreads; i++) {
     gNaClThreadIdxInUse[i] = 0;
   }
   if (!NaClMutexCtor(&gNaClTlsMu)) {
@@ -62,10 +63,10 @@ void NaClTlsFini() {
 }
 
 static int NaClThreadIdxAllocate() {
-  int i;
+  size_t i;
 
   NaClXMutexLock(&gNaClTlsMu);
-  for (i = 0; i < NACL_THREAD_MAX; i++) {
+  for (i = 1; i < kNumThreads; i++) {
     if (!gNaClThreadIdxInUse[i]) {
       gNaClThreadIdxInUse[i] = 1;
       break;
@@ -73,12 +74,12 @@ static int NaClThreadIdxAllocate() {
   }
   NaClXMutexUnlock(&gNaClTlsMu);
 
-  if (NACL_THREAD_MAX != i) {
+  if (kNumThreads != i) {
     return i;
   }
 
   NaClLog(LOG_ERROR, "NaClThreadIdxAllocate: no more slots for a thread\n");
-  return -1;
+  return NACL_TLS_INDEX_INVALID;
 }
 
 
@@ -90,18 +91,11 @@ uint32_t NaClTlsAllocate(struct NaClAppThread *natp) {
   int idx = NaClThreadIdxAllocate();
 
   NaClLog(2, "NaClTlsAllocate: $tp %x idx %d\n", natp->tls_values.tls1, idx);
-  if (-1 == idx) {
-    NaClLog(LOG_FATAL,
-            "NaClTlsAllocate: thread limit reached\n");
-    return NACL_TLS_INDEX_INVALID;
+  if (NACL_TLS_INDEX_INVALID != idx) {
+    natp->user.r9 = natp->tls_values.tls1;
   }
 
-  natp->user.r9 = natp->tls_values.tls1;
-
-  /*
-   * Bias by 1: successful return value is never 0.
-   */
-  return idx + 1;
+  return idx;
 }
 
 
@@ -112,7 +106,7 @@ void NaClTlsFree(struct NaClAppThread *natp) {
           idx, natp->user.r9);
 
   NaClXMutexLock(&gNaClTlsMu);
-  gNaClThreadIdxInUse[idx - 1] = 0;
+  gNaClThreadIdxInUse[idx] = 0;
   NaClXMutexUnlock(&gNaClTlsMu);
 
   natp->user.r9 = 0;

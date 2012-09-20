@@ -52,7 +52,24 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
         cld
         xor     %eax, %eax
         movw    %gs, %ax
+        /*
+         * Check that the %gs value is really one that might have been
+         * assigned to a NaCl thread.  This could only happen if an
+         * attacker adaptively used a NaCl module to discover the
+         * absolute addresses needed to make a syscall (%cs relative
+         * is not enough, unless it is a zero-based code memory
+         * sandbox), and use an independent code vulnerability (e.g.,
+         * in an image processing library linked into the same
+         * application embedding NaCl) to cause a trusted thread to
+         * jump into this code.
+         */
+        movl    %eax, %edx
+        andl    $7, %edx  /* extract TI and RPL fields */
+        cmpl    $7, %edx  /* make sure it's LDT, ring 3 */
+        jne     1f
         shr     $3, %eax
+        test    %eax, %eax  /* zero is illegal (and default) */
+        jz      1f
 
 #if __PIC__
         movl    0(%ecx), %edx
@@ -60,6 +77,8 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
 #else
         movl    IDENTIFIER(nacl_user)(,%eax,4), %edx
 #endif
+        test    %edx, %edx
+        jz      1f
 
         /* check NaClThreadContext in sel_rt_32.h for the offsets */
         movl    %ebx, NACL_THREAD_CONTEXT_OFFSET_EBX(%edx)
@@ -103,5 +122,6 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
          * If stack usage in the above code changes, modify initial %esp
          * computation -- see nacl_switch_to_app.c:NaClStartThreadInApp.
          */
-        hlt
+DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallThreadCaptureFault):
+1:      hlt
         /* noret */

@@ -645,10 +645,15 @@ int NaClMakePcrelThunk(struct NaClApp *nap);
 
 #endif
 
-#if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 \
-     && NACL_BUILD_SUBARCH == 64)
+#if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64)
 
 int NaClMakeDispatchThunk(struct NaClApp *nap);
+
+#endif
+
+#if ((NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64) || \
+     NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm)
+
 void NaClPatchOneTrampolineCall(uintptr_t call_target_addr,
                                 uintptr_t target_addr);
 
@@ -783,6 +788,8 @@ static INLINE void NaClHandleBootstrapArgs(int *argc_p, char ***argv_p) {
   UNREFERENCED_PARAMETER(argv_p);
 }
 #endif
+
+int NaClPostTestInjectionMain(int argc, char **argv);
 
 EXTERN_C_END
 

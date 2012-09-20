@@ -12,6 +12,7 @@ if env.Bit('built_elsewhere'):
 
 nacl_fi_lib_inputs = [
   'fault_injection.c',
+  'test_injection.c',
 ]
 
 env.DualLibrary('nacl_fault_inject', nacl_fi_lib_inputs,
