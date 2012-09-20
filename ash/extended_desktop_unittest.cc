@@ -305,7 +305,14 @@ TEST_F(ExtendedDesktopTest, GetRootWindowMatching) {
             wm::GetRootWindowMatching(gfx::Rect(0, 1000, 50, 50)));
 }
 
-TEST_F(ExtendedDesktopTest, Capture) {
+#if defined(OS_WIN)
+// TODO(mazda): Re-enable this (http://crbug.com/150986).
+#define MAYBE_Capture DISABLED_Capture
+#else
+#define MAYBE_Capture Capture
+#endif
+
+TEST_F(ExtendedDesktopTest, MAYBE_Capture) {
   UpdateDisplay("1000x600,600x400");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
 
