@@ -778,9 +778,6 @@ const char kHostResolverRules[]             = "host-resolver-rules";
 // <profile_dir>/Default/TransportSecurity
 const char kHstsHosts[]                     = "hsts-hosts";
 
-// Ignores GPU blacklist.
-const char kIgnoreGpuBlacklist[]            = "ignore-gpu-blacklist";
-
 // Performs importing from another browser. The value associated with this
 // setting encodes the target browser and what items to import.
 const char kImport[]                        = "import";

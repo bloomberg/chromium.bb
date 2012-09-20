@@ -16,8 +16,6 @@
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
-#include "grit/browser_resources.h"
-#include "ui/base/resource/resource_bundle.h"
 
 using content::GpuDataManager;
 
@@ -120,28 +118,6 @@ void InitializeCompositingFieldTrial() {
   UMA_HISTOGRAM_BOOLEAN("GPU.InForceCompositingModeFieldTrial",
                         force_compositing);
   UMA_HISTOGRAM_BOOLEAN("GPU.InCompositorThreadFieldTrial", thread);
-}
-
-// Load GPU Blacklist, collect preliminary gpu info, and compute preliminary
-// gpu feature flags.
-void InitializeGpuDataManager(const CommandLine& command_line) {
-  if (command_line.HasSwitch(switches::kSkipGpuDataLoading))
-    return;
-
-  std::string chrome_version_string = "0";
-  std::string gpu_blacklist_json_string;
-  if (!command_line.HasSwitch(switches::kIgnoreGpuBlacklist)) {
-    chrome::VersionInfo chrome_version_info;
-    if (chrome_version_info.is_valid())
-        chrome_version_string = chrome_version_info.Version();
-
-    const base::StringPiece gpu_blacklist_json(
-        ResourceBundle::GetSharedInstance().GetRawDataResource(
-            IDR_GPU_BLACKLIST, ui::SCALE_FACTOR_NONE));
-    gpu_blacklist_json_string = gpu_blacklist_json.as_string();
-  }
-  content::GpuDataManager::GetInstance()->Initialize(
-      chrome_version_string, gpu_blacklist_json_string);
 }
 
 }  // namespace gpu_util;

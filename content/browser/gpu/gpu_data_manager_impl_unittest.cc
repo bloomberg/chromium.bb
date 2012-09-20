@@ -96,7 +96,7 @@ TEST_F(GpuDataManagerImplTest, GpuSideBlacklisting) {
   content::GPUInfo gpu_info;
   gpu_info.gpu.vendor_id = 0x10de;
   gpu_info.gpu.device_id = 0x0640;
-  manager->Initialize("0", blacklist_json, gpu_info);
+  manager->InitializeForTesting(blacklist_json, gpu_info);
 
   EXPECT_TRUE(manager->GpuAccessAllowed());
   EXPECT_EQ(content::GPU_FEATURE_TYPE_WEBGL,
@@ -143,7 +143,7 @@ TEST_F(GpuDataManagerImplTest, GpuSideExceptions) {
   content::GPUInfo gpu_info;
   gpu_info.gpu.vendor_id = 0x10de;
   gpu_info.gpu.device_id = 0x0640;
-  manager->Initialize("0", blacklist_json, gpu_info);
+  manager->InitializeForTesting(blacklist_json, gpu_info);
 
   EXPECT_TRUE(manager->GpuAccessAllowed());
   EXPECT_EQ(content::GPU_FEATURE_TYPE_WEBGL,

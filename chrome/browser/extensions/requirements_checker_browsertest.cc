@@ -20,6 +20,7 @@
 #include "chrome/test/base/test_launcher_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_data_manager.h"
+#include "content/public/common/gpu_info.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gl/gl_switches.h"
@@ -73,7 +74,9 @@ class RequirementsCheckerBrowserTest : public ExtensionBrowserTest {
       "    }\n"
       "  ]\n"
       "}";
-    content::GpuDataManager::GetInstance()->Initialize("0", json_blacklist);
+    content::GPUInfo gpu_info;
+    content::GpuDataManager::GetInstance()->InitializeForTesting(
+        json_blacklist, gpu_info);
   }
 
  protected:

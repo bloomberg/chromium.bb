@@ -427,6 +427,9 @@ const char kGpuVendorID[]                   = "gpu-vendor-id";
 // to run as a guest renderer instead of a regular renderer.
 const char kGuestRenderer[]                 = "guest-renderer";
 
+// Ignores GPU blacklist.
+const char kIgnoreGpuBlacklist[]            = "ignore-gpu-blacklist";
+
 // Run the GPU process as a thread in the browser process.
 const char kInProcessGPU[]                  = "in-process-gpu";
 

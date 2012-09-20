@@ -87,7 +87,7 @@
             'content_browser.gypi',
           ],
           'dependencies': [
-            'content_common',
+            'content_common', 'content_resources.gyp:content_resources',
           ],
         },
         {

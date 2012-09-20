@@ -70,8 +70,8 @@ class GpuFeatureTest : public InProcessBrowserTest {
 
   void SetupBlacklist(const std::string& json_blacklist) {
     content::GPUInfo gpu_info;
-    GpuDataManager::GetInstance()->Initialize(
-        "0", json_blacklist, gpu_info);
+    GpuDataManager::GetInstance()->InitializeForTesting(
+        json_blacklist, gpu_info);
   }
 
   // If expected_reply is NULL, we don't check the reply content.

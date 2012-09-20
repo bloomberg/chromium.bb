@@ -34,7 +34,6 @@
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
-#include "chrome/browser/chrome_gpu_util.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_protocols.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -99,7 +98,6 @@
 #include "chrome/common/profiling.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/main_function_params.h"
@@ -1335,9 +1333,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 #if !defined(OS_ANDROID)
   CloudPrintProxyServiceFactory::GetForProfile(profile_);
 #endif
-
-  // Load GPU Blacklist; load preliminary GPU info.
-  gpu_util::InitializeGpuDataManager(parsed_command_line());
 
   // Start watching all browser threads for responsiveness.
   ThreadWatcherList::StartWatchingAll(parsed_command_line());

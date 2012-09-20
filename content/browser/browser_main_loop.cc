@@ -20,6 +20,7 @@
 #include "content/browser/download/save_file_manager.h"
 #include "content/browser/gamepad/gamepad_service.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
+#include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/histogram_synchronizer.h"
@@ -33,7 +34,6 @@
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/browser_shutdown.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
@@ -454,8 +454,7 @@ void BrowserMainLoop::CreateThreads() {
   // When running the GPU thread in-process, avoid optimistically starting it
   // since creating the GPU thread races against creation of the one-and-only
   // ChildProcess instance which is created by the renderer thread.
-  GpuDataManager* gpu_data_manager = content::GpuDataManager::GetInstance();
-  if (gpu_data_manager->GpuAccessAllowed() &&
+  if (GpuDataManagerImpl::GetInstance()->GpuAccessAllowed() &&
       !parsed_command_line_.HasSwitch(switches::kDisableGpuProcessPrelaunch) &&
       !parsed_command_line_.HasSwitch(switches::kSingleProcess) &&
       !parsed_command_line_.HasSwitch(switches::kInProcessGPU)) {
@@ -657,9 +656,9 @@ void BrowserMainLoop::BrowserThreadsStarted() {
   // RDH needs the IO thread to be created.
   resource_dispatcher_host_.reset(new ResourceDispatcherHostImpl());
 
-  // Start the GpuDataManager before we set up the MessageLoops because
+  // Initialize the GpuDataManager before we set up the MessageLoops because
   // otherwise we'll trigger the assertion about doing IO on the UI thread.
-  content::GpuDataManager::GetInstance();
+  GpuDataManagerImpl::GetInstance()->Initialize();
 #endif  // !OS_IOS
 
 #if defined(ENABLE_INPUT_SPEECH)

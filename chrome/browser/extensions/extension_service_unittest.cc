@@ -74,6 +74,7 @@
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_constants.h"
+#include "content/public/common/gpu_info.h"
 #include "content/public/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "grit/browser_resources.h"
@@ -731,7 +732,9 @@ class ExtensionServiceTest
       "    }\n"
       "  ]\n"
       "}";
-    content::GpuDataManager::GetInstance()->Initialize("0", json_blacklist);
+    content::GPUInfo gpu_info;
+    content::GpuDataManager::GetInstance()->InitializeForTesting(
+        json_blacklist, gpu_info);
   }
 
   void UpdateExtension(const std::string& id, const FilePath& in_path,

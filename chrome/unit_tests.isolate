@@ -106,7 +106,6 @@
       '<(PRODUCT_DIR)/resources.pak',
       '<(PRODUCT_DIR)/test_data/chrome/browser/resources/print_preview/print_preview_utils.js',
       '<(PRODUCT_DIR)/unit_tests<(EXECUTABLE_SUFFIX)',
-      'browser/resources/software_rendering_list.json',
       'test/data/History/ArchivedNoDuration',
       'test/data/History/HistoryNoDuration',
       'test/data/History/HistoryNoSource',

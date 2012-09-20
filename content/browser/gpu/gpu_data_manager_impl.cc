@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/string_piece.h"
 #include "base/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/values.h"
@@ -20,6 +21,7 @@
 #include "content/public/browser/gpu_data_manager_observer.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
+#include "grit/content_resources.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
@@ -33,6 +35,25 @@ using content::BrowserThread;
 using content::GpuDataManagerObserver;
 using content::GpuFeatureType;
 using content::GpuSwitchingOption;
+
+namespace {
+
+// Strip out the non-digital info; if after that, we get an empty string,
+// return "0".
+std::string ProcessVersionString(const std::string& raw_string) {
+  const std::string valid_set = "0123456789.";
+  size_t start_pos = raw_string.find_first_of(valid_set);
+  if (start_pos == std::string::npos)
+    return "0";
+  size_t end_pos = raw_string.find_first_not_of(raw_string, start_pos);
+  std::string version_string = raw_string.substr(
+      start_pos, end_pos - start_pos);
+  if (version_string.empty())
+    return "0";
+  return version_string;
+}
+
+}  // namespace anonymous
 
 // static
 content::GpuDataManager* content::GpuDataManager::GetInstance() {
@@ -62,9 +83,11 @@ GpuDataManagerImpl::GpuDataManagerImpl()
     BlacklistCard();
 }
 
-void GpuDataManagerImpl::Initialize(
-    const std::string& browser_version_string,
-    const std::string& gpu_blacklist_json) {
+void GpuDataManagerImpl::Initialize() {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kSkipGpuDataLoading))
+    return;
+
   content::GPUInfo gpu_info;
   gpu_info_collector::CollectPreliminaryGraphicsInfo(&gpu_info);
 #if defined(ARCH_CPU_X86_FAMILY)
@@ -72,11 +95,27 @@ void GpuDataManagerImpl::Initialize(
     gpu_info.finalized = true;
 #endif
 
-  Initialize(browser_version_string, gpu_blacklist_json, gpu_info);
+  std::string gpu_blacklist_string;
+  if (!command_line->HasSwitch(switches::kIgnoreGpuBlacklist)) {
+    const base::StringPiece gpu_blacklist_json =
+        content::GetContentClient()->GetDataResource(
+            IDR_GPU_BLACKLIST, ui::SCALE_FACTOR_NONE);
+    gpu_blacklist_string = gpu_blacklist_json.as_string();
+  }
+
+  InitializeImpl(gpu_blacklist_string, gpu_info);
 }
 
-void GpuDataManagerImpl::Initialize(
-    const std::string& browser_version_string,
+void GpuDataManagerImpl::InitializeForTesting(
+    const std::string& gpu_blacklist_json,
+    const content::GPUInfo& gpu_info) {
+  // This function is for testing only, so disable histograms.
+  update_histograms_ = false;
+
+  InitializeImpl(gpu_blacklist_json, gpu_info);
+}
+
+void GpuDataManagerImpl::InitializeImpl(
     const std::string& gpu_blacklist_json,
     const content::GPUInfo& gpu_info) {
   {
@@ -87,10 +126,9 @@ void GpuDataManagerImpl::Initialize(
     gpu_info_ = empty_gpu_info;
   }
 
-  // This function is for testing only, so disable histograms.
-  update_histograms_ = false;
-
   if (!gpu_blacklist_json.empty()) {
+    std::string browser_version_string = ProcessVersionString(
+        content::GetContentClient()->GetProduct());
     CHECK(!browser_version_string.empty());
     gpu_blacklist_.reset(new GpuBlacklist());
     bool succeed = gpu_blacklist_->LoadGpuBlacklist(

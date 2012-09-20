@@ -27,6 +27,7 @@
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/common/gpu_info.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/mock_host_resolver.h"
 #include "ui/gl/gl_switches.h"
@@ -447,7 +448,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstoreGetWebGLStatusTest, Blocked) {
       "    }\n"
       "  ]\n"
       "}";
-  content::GpuDataManager::GetInstance()->Initialize("0", json_blacklist);
+  content::GPUInfo gpu_info;
+  content::GpuDataManager::GetInstance()->InitializeForTesting(
+      json_blacklist, gpu_info);
   GpuFeatureType type =
       content::GpuDataManager::GetInstance()->GetBlacklistedFeatures();
   EXPECT_EQ(type, content::GPU_FEATURE_TYPE_WEBGL);
