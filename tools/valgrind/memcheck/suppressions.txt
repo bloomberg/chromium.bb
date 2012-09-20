@@ -6108,4 +6108,24 @@
    ...
    fun:_ZN2v88internalL6InvokeEbNS0_6HandleINS0_10JSFunctionEEENS1_INS0_6ObjectEEEiPS5_Pb
 }
+{
+   bug_151017
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN19GrTextureStripAtlas8GetAtlasERKNS_4DescE
+   fun:_ZN16GrGradientEffectC2EP9GrContextRK20SkGradientShaderBaseN8SkShader8TileModeE
+   ...
+   fun:_ZN12_GLOBAL__N_121skPaint2GrPaintShaderEP11SkGpuDeviceRK7SkPaintbPNS0_19SkAutoCachedTextureEP7GrPaint
+   fun:_ZN11SkGpuDevice8drawRectERK6SkDrawRK6SkRectRK7SkPaint
+   fun:_ZN8SkCanvas8drawRectERK6SkRectRK7SkPaint
+   fun:_ZN7WebCore15GraphicsContext8fillRectERKNS_9FloatRectE
+   fun:_ZN7WebCore24CanvasRenderingContext2D8fillRectEffff
+   fun:_ZN7WebCore34CanvasRenderingContext2DV8InternalL16fillRectCallbackERKN2v89ArgumentsE
+   fun:_ZN2v88internalL19HandleApiCallHelperILb0EEEPNS0_11MaybeObjectENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
+   fun:_ZN2v88internalL21Builtin_HandleApiCallENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
+   ...
+   fun:_ZN2v88internalL6InvokeEbNS0_6HandleINS0_10JSFunctionEEENS1_INS0_6ObjectEEEiPS5_Pb
+   fun:_ZN2v88internal9Execution4CallENS0_6HandleINS0_6ObjectEEES4_iPS4_Pbb
+   fun:_ZN2v88Function4CallENS_6HandleINS_6ObjectEEEiPNS1_INS_5ValueEEE
+}
 
