@@ -37,6 +37,7 @@
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/ui/search/search.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/url_util.h"
@@ -273,8 +274,16 @@ void SearchProvider::Start(const AutocompleteInput& input,
 
   input_ = input;
 
-  DoHistoryQuery(minimal_changes);
-  StartOrStopSuggestQuery(minimal_changes);
+  // Don't run the normal provider flow when the Instant Extended API is
+  // enabled.  (When the Extended API is enabled, the embedded page will handle
+  // all search suggestions itself.)
+  // TODO(dcblack): once we are done refactoring the omnibox so we don't need to
+  // use FinalizeInstantQuery anymore, we can take out this check and remove
+  // this provider from kInstantExtendedOmniboxProviders.
+  if (!chrome::search::IsInstantExtendedAPIEnabled(profile_)) {
+    DoHistoryQuery(minimal_changes);
+    StartOrStopSuggestQuery(minimal_changes);
+  }
   ConvertResultsToAutocompleteMatches();
 }
 
