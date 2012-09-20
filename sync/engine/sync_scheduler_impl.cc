@@ -300,16 +300,12 @@ void SyncSchedulerImpl::SendInitialSnapshot() {
 
 namespace {
 
-// Helper to extract the routing info and workers corresponding to types in
-// |types| from |current_routes| and |current_workers|.
+// Helper to extract the routing info corresponding to types in
+// |types| from |current_routes|.
 void BuildModelSafeParams(
     ModelTypeSet types_to_download,
     const ModelSafeRoutingInfo& current_routes,
-    const std::vector<ModelSafeWorker*>& current_workers,
-    ModelSafeRoutingInfo* result_routes,
-    std::vector<ModelSafeWorker*>* result_workers) {
-  std::set<ModelSafeGroup> active_groups;
-  active_groups.insert(GROUP_PASSIVE);
+    ModelSafeRoutingInfo* result_routes) {
   for (ModelTypeSet::Iterator iter = types_to_download.First(); iter.Good();
        iter.Inc()) {
     ModelType type = iter.Get();
@@ -317,13 +313,6 @@ void BuildModelSafeParams(
     DCHECK(route != current_routes.end());
     ModelSafeGroup group = route->second;
     (*result_routes)[type] = group;
-    active_groups.insert(group);
-  }
-
-  for(std::vector<ModelSafeWorker*>::const_iterator iter =
-          current_workers.begin(); iter != current_workers.end(); ++iter) {
-    if (active_groups.count((*iter)->GetModelSafeGroup()) > 0)
-      result_workers->push_back(*iter);
   }
 }
 
@@ -341,16 +330,10 @@ bool SyncSchedulerImpl::ScheduleConfiguration(
   // for a pending configure job.
   DCHECK(!wait_interval_.get() || !wait_interval_->pending_configure_job.get());
 
-  // TODO(sync): now that ModelChanging commands only use those workers within
-  // the routing info, we don't really need |restricted_workers|. Remove it.
-  // crbug.com/133030
   ModelSafeRoutingInfo restricted_routes;
-  std::vector<ModelSafeWorker*> restricted_workers;
   BuildModelSafeParams(params.types_to_download,
                        params.routing_info,
-                       session_context_->workers(),
-                       &restricted_routes,
-                       &restricted_workers);
+                       &restricted_routes);
   session_context_->set_routing_info(params.routing_info);
 
   // Only reconfigure if we have types to download.
@@ -364,7 +347,7 @@ bool SyncSchedulerImpl::ScheduleConfiguration(
                            restricted_routes,
                            std::string())),
         restricted_routes,
-        restricted_workers));
+        session_context_->workers()));
     SyncSessionJob job(SyncSessionJob::CONFIGURATION,
                        TimeTicks::Now(),
                        session,
