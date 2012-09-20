@@ -11,6 +11,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -187,6 +188,10 @@ TEST_F(ToolbarModelTest, ShouldDisplayURLInstantExtendedAPIDisabled) {
 TEST_F(ToolbarModelTest, ShouldDisplayURLInstantExtendedAPIEnabled) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableInstantExtendedAPI);
+
+  // Avoid tests on branded Chrome where channel is set to CHANNEL_STABLE.
+  if (!chrome::search::IsInstantExtendedAPIEnabled(profile()))
+    return;
 
   ResetDefaultTemplateURL();
   AddTab(browser(), GURL(chrome::kAboutBlankURL));
