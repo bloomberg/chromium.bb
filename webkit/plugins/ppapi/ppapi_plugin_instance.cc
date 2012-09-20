@@ -431,6 +431,7 @@ PluginInstance::PluginInstance(
       plugin_zoom_interface_(NULL),
       checked_for_plugin_input_event_interface_(false),
       checked_for_plugin_messaging_interface_(false),
+      checked_for_plugin_pdf_interface_(false),
       gamepad_impl_(delegate),
       plugin_print_interface_(NULL),
       plugin_graphics_3d_interface_(NULL),
@@ -1176,7 +1177,8 @@ bool PluginInstance::LoadMouseLockInterface() {
 }
 
 bool PluginInstance::LoadPdfInterface() {
-  if (!plugin_pdf_interface_) {
+  if (!checked_for_plugin_pdf_interface_) {
+    checked_for_plugin_pdf_interface_ = true;
     plugin_pdf_interface_ =
         static_cast<const PPP_Pdf_1*>(module_->GetPluginInterface(
             PPP_PDF_INTERFACE_1));

@@ -635,6 +635,7 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   // corresponding interfaces, so that we can ask only once.
   bool checked_for_plugin_input_event_interface_;
   bool checked_for_plugin_messaging_interface_;
+  bool checked_for_plugin_pdf_interface_;
 
   // This is only valid between a successful PrintBegin call and a PrintEnd
   // call.
