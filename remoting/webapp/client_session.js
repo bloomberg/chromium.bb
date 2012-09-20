@@ -517,6 +517,7 @@ remoting.ClientSession.prototype.onConnectionStatusUpdate_ =
     function(status, error) {
   if (status == remoting.ClientSession.State.CONNECTED) {
     this.onDesktopSizeChanged_();
+    this.plugin.notifyClientDimensions(window.innerWidth, window.innerHeight)
   } else if (status == remoting.ClientSession.State.FAILED) {
     this.error = /** @type {remoting.ClientSession.ConnectionError} */ (error);
   }
