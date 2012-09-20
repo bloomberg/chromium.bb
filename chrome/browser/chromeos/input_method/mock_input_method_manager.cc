@@ -95,6 +95,14 @@ void MockInputMethodManager::AddInputMethodExtension(
 void MockInputMethodManager::RemoveInputMethodExtension(const std::string& id) {
 }
 
+void MockInputMethodManager::GetInputMethodExtensions(
+    InputMethodDescriptors* result) {
+}
+
+void MockInputMethodManager::SetFilteredExtensionImes(
+    std::vector<std::string>* ids) {
+}
+
 bool MockInputMethodManager::SwitchToNextInputMethod() {
   return true;
 }

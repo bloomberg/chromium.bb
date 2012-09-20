@@ -46,6 +46,12 @@ class CrosLanguageOptionsHandler
   static base::ListValue* GetLanguageList(
       const input_method::InputMethodDescriptors& descriptors);
 
+  // Gets the list of input methods that are implemented in an extension.
+  // The return value will look like:
+  // [{'id': '_ext_ime_nejguenhnsnjnwychcnsdsdjketest',
+  //   'displayName': 'Sample IME'},  ...]
+  static base::ListValue* GetExtensionImeList();
+
  private:
   // LanguageOptionsHandlerCommon implementation.
   virtual string16 GetProductName() OVERRIDE;

@@ -93,12 +93,17 @@ cr.define('options', function() {
       if (cr.isChromeOS) {
         // Listen to user clicks on the add language list.
         var addLanguageList = $('add-language-overlay-language-list');
-        addLanguageList.addEventListener('click',
+        addLanguageList.addEventListener(
+            'click',
             this.handleAddLanguageListClick_.bind(this));
+        $('language-options-extension-ime-button').addEventListener(
+            'click',
+            this.handleExtensionImeButtonClick_.bind(this));
       } else {
         // Listen to add language dialog ok button.
         var addLanguageOkButton = $('add-language-overlay-ok-button');
-        addLanguageOkButton.addEventListener('click',
+        addLanguageOkButton.addEventListener(
+            'click',
             this.handleAddLanguageOkButtonClick_.bind(this));
 
         // Show experimental features if enabled.
@@ -136,6 +141,11 @@ cr.define('options', function() {
     preloadEnginesPref: 'settings.language.preload_engines',
     // The list of preload engines, like ['mozc', 'pinyin'].
     preloadEngines_: [],
+    // The preference that lists the extension IMEs that are filtered out of
+    // the language menu.
+    filteredExtensionImesPref: 'settings.language.filtered_extension_imes',
+    // The list of extension IMEs that are filtered out of the language menu.
+    filteredExtensionImes_: [],
     // The preference is a string that describes the spell check
     // dictionary language, like "en-US".
     spellCheckDictionaryPref: 'spellcheck.dictionary',
@@ -180,9 +190,31 @@ cr.define('options', function() {
         }
         inputMethodList.appendChild(element);
       }
+
+      var extensionImeList = loadTimeData.getValue('extensionImeList');
+      for (var i = 0; i < extensionImeList.length; i++) {
+        var inputMethod = extensionImeList[i];
+        var element = inputMethodPrototype.cloneNode(true);
+        element.id = '';
+        element.languageCodeSet = {};
+        var input = element.querySelectorAll('input')[0];
+        input.inputMethodId = inputMethod.id;
+        var span = element.querySelectorAll('span')[0];
+        span.textContent = inputMethod.displayName;
+
+        input.addEventListener('click',
+                               this.handleExtensionCheckboxClick_.bind(this));
+
+        inputMethodList.appendChild(element);
+      }
+
       // Listen to pref change once the input method list is initialized.
-      Preferences.getInstance().addEventListener(this.preloadEnginesPref,
+      Preferences.getInstance().addEventListener(
+          this.preloadEnginesPref,
           this.handlePreloadEnginesPrefChange_.bind(this));
+      Preferences.getInstance().addEventListener(
+          this.filteredExtensionImesPref,
+          this.handleFilteredExtensionsPrefChange_.bind(this));
     },
 
     /**
@@ -225,6 +257,10 @@ cr.define('options', function() {
     handleLanguageOptionsListChange_: function(e) {
       var languageOptionsList = $('language-options-list');
       var languageCode = languageOptionsList.getSelectedLanguageCode();
+
+      // If there's no selection, just return.
+      if (!languageCode)
+        return;
 
       // Select the language if it's specified in the URL hash (ex. lang=ja).
       // Used for automated testing.
@@ -518,6 +554,17 @@ cr.define('options', function() {
     },
 
     /**
+     * Handles filteredExtensionImesPref change.
+     * @param {Event} e Change event.
+     * @private
+     */
+    handleFilteredExtensionsPrefChange_: function(e) {
+      var value = e.value.value;
+      this.filteredExtensionImes_ = value.split(',');
+      this.updateCheckboxesFromFilteredExtensions_();
+    },
+
+    /**
      * Handles input method checkbox's click event.
      * @param {Event} e Click event.
      * @private
@@ -540,6 +587,17 @@ cr.define('options', function() {
       this.updatePreloadEnginesFromCheckboxes_();
       this.preloadEngines_ = this.sortPreloadEngines_(this.preloadEngines_);
       this.savePreloadEnginesPref_();
+    },
+
+    /**
+     * Handles extension input method checkbox's click event.
+     * @param {Event} e Click event.
+     * @private
+     */
+    handleExtensionCheckboxClick_: function(e) {
+      var checkbox = e.target;
+      this.updateFilteredExtensionsFromCheckboxes_();
+      this.saveFilteredExtensionPref_();
     },
 
     /**
@@ -571,8 +629,39 @@ cr.define('options', function() {
     },
 
     /**
-     * Handles add language dialog ok button.
+     * Handles extension IME button.
      */
+    handleExtensionImeButtonClick_: function() {
+      $('language-options-list').clearSelection();
+
+      var languageName = $('language-options-language-name');
+      languageName.textContent = loadTimeData.getString('extension_ime_label');
+
+      var uiLanguageMessage = $('language-options-ui-language-message');
+      uiLanguageMessage.textContent =
+          loadTimeData.getString('extension_ime_description');
+
+      var uiLanguageButton = $('language-options-ui-language-button');
+      uiLanguageButton.onclick = null;
+      uiLanguageButton.hidden = true;
+
+      this.updateSpellCheckLanguageButton_();
+
+      // Hide all input method checkboxes that aren't extension IMEs.
+      var inputMethodList = $('language-options-input-method-list');
+      var methods = inputMethodList.querySelectorAll('.input-method');
+      for (var i = 0; i < methods.length; i++) {
+        var method = methods[i];
+        var input = method.querySelectorAll('input')[0];
+        // Give it focus if the ID matches.
+        if (input.inputMethodId.match(/^_ext_ime_/))
+          method.hidden = false;
+        else
+          method.hidden = true;
+      }
+    },
+
+
     handleAddLanguageOkButtonClick_: function() {
       var languagesSelect = $('add-language-overlay-language-list');
       var selectedIndex = languagesSelect.selectedIndex;
@@ -685,6 +774,51 @@ cr.define('options', function() {
     },
 
     /**
+     * Saves the filtered extension preference.
+     * @private
+     */
+    saveFilteredExtensionPref_: function() {
+      Preferences.setStringPref(this.filteredExtensionImesPref,
+                                this.filteredExtensionImes_.join(','), true);
+    },
+
+    /**
+     * Updates the checkboxes in the input method list from the filtered
+     * extensions preference.
+     * @private
+     */
+    updateCheckboxesFromFilteredExtensions_: function() {
+      // Convert the list into a dictonary for simpler lookup.
+      var dictionary = {};
+      for (var i = 0; i < this.filteredExtensionImes_.length; i++)
+        dictionary[this.filteredExtensionImes_[i]] = true;
+
+      var inputMethodList = $('language-options-input-method-list');
+      var checkboxes = inputMethodList.querySelectorAll('input');
+      for (var i = 0; i < checkboxes.length; i++) {
+        if (checkboxes[i].inputMethodId.match(/^_ext_ime_/))
+          checkboxes[i].checked = !(checkboxes[i].inputMethodId in dictionary);
+      }
+    },
+
+    /**
+     * Updates the filtered extensions preference from the checkboxes in the
+     * input method list.
+     * @private
+     */
+    updateFilteredExtensionsFromCheckboxes_: function() {
+      this.filteredExtensionImes_ = [];
+      var inputMethodList = $('language-options-input-method-list');
+      var checkboxes = inputMethodList.querySelectorAll('input');
+      for (var i = 0; i < checkboxes.length; i++) {
+        if (checkboxes[i].inputMethodId.match(/^_ext_ime_/)) {
+          if (!checkboxes[i].checked)
+            this.filteredExtensionImes_.push(checkboxes[i].inputMethodId);
+        }
+      }
+    },
+
+    /**
      * Saves the preload engines preference.
      * @private
      */
@@ -708,7 +842,8 @@ cr.define('options', function() {
       var inputMethodList = $('language-options-input-method-list');
       var checkboxes = inputMethodList.querySelectorAll('input');
       for (var i = 0; i < checkboxes.length; i++) {
-        checkboxes[i].checked = (checkboxes[i].inputMethodId in dictionary);
+        if (!checkboxes[i].inputMethodId.match(/^_ext_ime_/))
+          checkboxes[i].checked = (checkboxes[i].inputMethodId in dictionary);
       }
     },
 
@@ -722,8 +857,9 @@ cr.define('options', function() {
       var inputMethodList = $('language-options-input-method-list');
       var checkboxes = inputMethodList.querySelectorAll('input');
       for (var i = 0; i < checkboxes.length; i++) {
-        if (checkboxes[i].checked) {
-          this.preloadEngines_.push(checkboxes[i].inputMethodId);
+        if (!checkboxes[i].inputMethodId.match(/^_ext_ime_/)) {
+          if (checkboxes[i].checked)
+            this.preloadEngines_.push(checkboxes[i].inputMethodId);
         }
       }
       var languageOptionsList = $('language-options-list');

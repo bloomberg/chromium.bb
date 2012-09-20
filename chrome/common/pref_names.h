@@ -204,6 +204,7 @@ extern const char kLanguageHotkeyNextEngineInMenu[];
 extern const char kLanguageHotkeyPreviousEngine[];
 extern const char kLanguagePreferredLanguages[];
 extern const char kLanguagePreloadEngines[];
+extern const char kLanguageFilteredExtensionImes[];
 extern const char kLanguageChewingAutoShiftCur[];
 extern const char kLanguageChewingAddPhraseDirection[];
 extern const char kLanguageChewingEasySymbolInput[];

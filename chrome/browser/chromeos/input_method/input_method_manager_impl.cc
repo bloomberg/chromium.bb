@@ -316,18 +316,19 @@ void InputMethodManagerImpl::AddInputMethodExtension(
   const std::string layout = layouts.empty() ? "" : layouts[0];
   extra_input_methods_[id] =
       InputMethodDescriptor(id, name, layout, language, true);
+  if (!Contains(filtered_extension_imes_, id)) {
+    if (!Contains(active_input_method_ids_, id)) {
+      active_input_method_ids_.push_back(id);
+    } else {
+      DVLOG(1) << "AddInputMethodExtension: alread added: "
+               << id << ", " << name;
+      // Call Start() anyway, just in case.
+    }
 
-  if (!Contains(active_input_method_ids_, id)) {
-    active_input_method_ids_.push_back(id);
-  } else {
-    DVLOG(1) << "AddInputMethodExtension: alread added: "
-             << id << ", " << name;
-    // Call Start() anyway, just in case.
+    // Ensure that the input method daemon is running.
+    MaybeInitializeCandidateWindowController();
+    ibus_controller_->Start();
   }
-
-  // Ensure that the input method daemon is running.
-  MaybeInitializeCandidateWindowController();
-  ibus_controller_->Start();
 
   extra_input_method_instances_[id] =
       static_cast<InputMethodEngineIBus*>(engine);
@@ -362,6 +363,56 @@ void InputMethodManagerImpl::RemoveInputMethodExtension(const std::string& id) {
     // Do NOT release the actual instance here. This class does not take an
     // onwership of engine instance.
     extra_input_method_instances_.erase(ite);
+  }
+}
+
+void InputMethodManagerImpl::GetInputMethodExtensions(
+    InputMethodDescriptors* result) {
+  // Build the extension input method descriptors from the extra input
+  // methods cache |extra_input_methods_|.
+  std::map<std::string, InputMethodDescriptor>::iterator iter;
+  for (iter = extra_input_methods_.begin(); iter != extra_input_methods_.end();
+       ++iter) {
+    result->push_back(iter->second);
+  }
+}
+
+void InputMethodManagerImpl::SetFilteredExtensionImes(
+    std::vector<std::string>* ids) {
+  filtered_extension_imes_.clear();
+  filtered_extension_imes_.insert(filtered_extension_imes_.end(),
+                                  ids->begin(),
+                                  ids->end());
+
+  bool active_imes_changed = false;
+
+  for (std::map<std::string, InputMethodDescriptor>::iterator extra_iter =
+       extra_input_methods_.begin(); extra_iter != extra_input_methods_.end();
+       ++extra_iter) {
+    std::vector<std::string>::iterator active_iter = std::find(
+        active_input_method_ids_.begin(), active_input_method_ids_.end(),
+        extra_iter->first);
+
+    bool active = active_iter != active_input_method_ids_.end();
+    bool filtered = Contains(filtered_extension_imes_, extra_iter->first);
+
+    if (active && filtered)
+      active_input_method_ids_.erase(active_iter);
+
+    if (!active && !filtered)
+      active_input_method_ids_.push_back(extra_iter->first);
+
+    if (active == filtered)
+      active_imes_changed = true;
+  }
+
+  if (active_imes_changed) {
+    MaybeInitializeCandidateWindowController();
+    ibus_controller_->Start();
+
+    // If |current_input_method| is no longer in |active_input_method_ids_|,
+    // switch to the first one in |active_input_method_ids_|.
+    ChangeInputMethod(current_input_method_.id());
   }
 }
 
@@ -503,7 +554,8 @@ void InputMethodManagerImpl::OnConnected() {
           extra_input_method_instances_.begin();
        ite != extra_input_method_instances_.end();
        ite++) {
-    ite->second->OnConnected();
+    if (!Contains(filtered_extension_imes_, ite->first))
+      ite->second->OnConnected();
   }
 }
 
@@ -512,7 +564,8 @@ void InputMethodManagerImpl::OnDisconnected() {
           extra_input_method_instances_.begin();
        ite != extra_input_method_instances_.end();
        ite++) {
-    ite->second->OnDisconnected();
+    if (!Contains(filtered_extension_imes_, ite->first))
+      ite->second->OnDisconnected();
   }
 }
 

@@ -175,6 +175,13 @@ cr.define('options', function() {
     },
 
     /*
+     * Clears the selection
+     */
+    clearSelection: function() {
+      this.selectionModel.unselectAll();
+    },
+
+    /*
      * Gets the language code of the selected language.
      */
     getSelectedLanguageCode: function() {

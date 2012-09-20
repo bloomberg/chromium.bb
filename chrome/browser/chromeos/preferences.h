@@ -117,6 +117,7 @@ class Preferences : public content::NotificationObserver {
   StringPrefMember preload_engines_;
   StringPrefMember current_input_method_;
   StringPrefMember previous_input_method_;
+  StringPrefMember filtered_extension_imes_;
 
   BooleanPrefMember chewing_boolean_prefs_[
       language_prefs::kNumChewingBooleanPrefs];

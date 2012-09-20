@@ -19,7 +19,13 @@
         <list id="language-options-list"></list>
         <div class="language-options-lower-left">
           <button id="language-options-add-button"
-                  i18n-content="add_button"></button>
+            i18n-content="add_button">
+          </button>
+<if expr="pp_ifdef('chromeos')">
+          <button id="language-options-extension-ime-button"
+            i18n-content="extension_ime_label">
+          </button>
+</if>
         </div>
         <div id="language-options-list-dropmarker"></div>
       </div>

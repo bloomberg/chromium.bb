@@ -154,6 +154,9 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterStringPref(prefs::kLanguagePreloadEngines,
                             hardware_keyboard_id,
                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterStringPref(prefs::kLanguageFilteredExtensionImes,
+                            "",
+                            PrefService::UNSYNCABLE_PREF);
   for (size_t i = 0; i < language_prefs::kNumChewingBooleanPrefs; ++i) {
     prefs->RegisterBooleanPref(
         language_prefs::kChewingBooleanPrefs[i].pref_name,
@@ -306,6 +309,8 @@ void Preferences::InitUserPrefs(PrefService* prefs) {
   preferred_languages_.Init(prefs::kLanguagePreferredLanguages,
                             prefs, this);
   preload_engines_.Init(prefs::kLanguagePreloadEngines, prefs, this);
+  filtered_extension_imes_.Init(prefs::kLanguageFilteredExtensionImes,
+                                prefs, this);
   current_input_method_.Init(prefs::kLanguageCurrentInputMethod, prefs, this);
   previous_input_method_.Init(prefs::kLanguagePreviousInputMethod, prefs, this);
 
@@ -492,6 +497,16 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
     SetLanguageConfigStringListAsCSV(language_prefs::kGeneralSectionName,
                                      language_prefs::kPreloadEnginesConfigName,
                                      preload_engines_.GetValue());
+  }
+
+  if (!pref_name || *pref_name == prefs::kLanguageFilteredExtensionImes) {
+    std::string value(filtered_extension_imes_.GetValue());
+
+    std::vector<std::string> split_values;
+    if (!value.empty())
+      base::SplitString(value, ',', &split_values);
+
+    input_method_manager_->SetFilteredExtensionImes(&split_values);
   }
 
   // Do not check |*pref_name| of the prefs for remembering current/previous

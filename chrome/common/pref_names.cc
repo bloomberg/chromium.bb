@@ -572,6 +572,10 @@ const char kLanguagePreferredLanguages[] =
 // method IDs (ex. "pinyin,mozc").
 const char kLanguagePreloadEngines[] = "settings.language.preload_engines";
 
+// A List pref (comma-separated list) set to the extension IMEs to filter out.
+const char kLanguageFilteredExtensionImes[] =
+    "settings.language.filtered_extension_imes";
+
 // Boolean prefs for ibus-chewing Chinese input method.
 const char kLanguageChewingAutoShiftCur[] =
     "settings.language.chewing_auto_shift_cur";

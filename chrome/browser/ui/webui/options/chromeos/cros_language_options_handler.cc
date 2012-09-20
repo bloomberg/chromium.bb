@@ -67,6 +67,12 @@ void CrosLanguageOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("restart_button",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_LANGUAGES_SIGN_OUT_BUTTON));
+  localized_strings->SetString("extension_ime_label",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_LANGUAGES_INPUT_METHOD_EXTENSION_IME));
+  localized_strings->SetString("extension_ime_description",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_LANGUAGES_INPUT_METHOD_EXTENSION_DESCRIPTION));
 
   input_method::InputMethodManager* manager =
       input_method::InputMethodManager::GetInstance();
@@ -75,6 +81,7 @@ void CrosLanguageOptionsHandler::GetLocalizedValues(
       manager->GetSupportedInputMethods());
   localized_strings->Set("languageList", GetLanguageList(*descriptors));
   localized_strings->Set("inputMethodList", GetInputMethodList(*descriptors));
+  localized_strings->Set("extensionImeList", GetExtensionImeList());
 }
 
 void CrosLanguageOptionsHandler::RegisterMessages() {
@@ -193,7 +200,7 @@ ListValue* CrosLanguageOptionsHandler::GetLanguageList(
 
     const LanguagePair& pair = language_map[display_names[i]];
     DictionaryValue* dictionary = new DictionaryValue();
-    dictionary->SetString("code",  pair.first);
+    dictionary->SetString("code", pair.first);
     dictionary->SetString("displayName", display_names[i]);
     dictionary->SetString("textDirection", directionality);
     dictionary->SetString("nativeDisplayName", pair.second);
@@ -201,6 +208,26 @@ ListValue* CrosLanguageOptionsHandler::GetLanguageList(
   }
 
   return language_list;
+}
+
+base::ListValue* CrosLanguageOptionsHandler::GetExtensionImeList() {
+  input_method::InputMethodManager* manager =
+      input_method::InputMethodManager::GetInstance();
+
+  input_method::InputMethodDescriptors descriptors;
+  manager->GetInputMethodExtensions(&descriptors);
+
+  ListValue* extension_ime_ids_list = new ListValue();
+
+  for (size_t i = 0; i < descriptors.size(); ++i) {
+    const input_method::InputMethodDescriptor& descriptor = descriptors[i];
+    DictionaryValue* dictionary = new DictionaryValue();
+    dictionary->SetString("id", descriptor.id());
+    dictionary->SetString("displayName", descriptor.name());
+    extension_ime_ids_list->Append(dictionary);
+  }
+
+  return extension_ime_ids_list;
 }
 
 string16 CrosLanguageOptionsHandler::GetProductName() {
