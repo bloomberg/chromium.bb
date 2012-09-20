@@ -13,6 +13,14 @@
 #include "ui/base/layout.h"
 #include "ui/gfx/screen.h"
 
+#if defined(OS_WIN)
+// TOD(mazda): UpdateDisplay does not work properly on Win.
+// Fix this and enable tests.
+#define MAYBE_ConvertNativePointToScreen DISABLED_ConvertNativePointToScreen
+#else
+#define MAYBE_ConvertNativePointToScreen ConvertNativePointToScreen
+#endif
+
 namespace ash {
 namespace test {
 
@@ -68,7 +76,7 @@ class ScreenPositionControllerTest : public test::AshTestBase {
 
 }  // namespace
 
-TEST_F(ScreenPositionControllerTest, ConvertNativePointToScreen) {
+TEST_F(ScreenPositionControllerTest, MAYBE_ConvertNativePointToScreen) {
   UpdateDisplay("100+100-200x200,100+500-200x200");
 
   Shell::RootWindowList root_windows =
