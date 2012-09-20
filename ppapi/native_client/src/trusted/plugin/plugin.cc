@@ -441,17 +441,17 @@ void Plugin::AddPropertyGet(const nacl::string& prop_name,
 bool Plugin::HasProperty(const nacl::string& prop_name) {
   PLUGIN_PRINTF(("Plugin::HasProperty (prop_name=%s)\n",
                  prop_name.c_str()));
-  return property_getters_[prop_name] != NULL;
+  return property_getters_.find(prop_name) != property_getters_.end();
 }
 
 bool Plugin::GetProperty(const nacl::string& prop_name,
                          NaClSrpcArg* prop_value) {
   PLUGIN_PRINTF(("Plugin::GetProperty (prop_name=%s)\n", prop_name.c_str()));
 
-  PropertyGetter getter = property_getters_[prop_name];
-  if (NULL == getter) {
+  if (property_getters_.find(prop_name) == property_getters_.end()) {
     return false;
   }
+  PropertyGetter getter = property_getters_[prop_name];
   (this->*getter)(prop_value);
   return true;
 }
