@@ -48,6 +48,7 @@ class ContentViewCoreImpl : public ContentViewCore,
   virtual base::android::ScopedJavaLocalRef<jobject> GetJavaObject() OVERRIDE;
   virtual WebContents* GetWebContents() const OVERRIDE;
   virtual ui::WindowAndroid* GetWindowAndroid() OVERRIDE;
+  virtual void LoadUrl(NavigationController::LoadURLParams& params) OVERRIDE;
 
   // --------------------------------------------------------------------------
   // Methods called from Java via JNI
@@ -175,8 +176,6 @@ class ContentViewCoreImpl : public ContentViewCore,
   // --------------------------------------------------------------------------
 
   gfx::Rect GetBounds() const;
-
-  void LoadUrl(NavigationController::LoadURLParams& params);
 
  private:
   // NotificationObserver implementation.
