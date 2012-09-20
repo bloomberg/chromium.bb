@@ -32,6 +32,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -118,7 +119,7 @@ bool CreateShortcutOnDesktop(const FilePath& shortcut_filename,
   DCHECK_EQ(shortcut_filename.BaseName().value(), shortcut_filename.value());
 
   FilePath desktop_path;
-  if (!PathService::Get(base::DIR_USER_DESKTOP, &desktop_path))
+  if (!PathService::Get(chrome::DIR_USER_DESKTOP, &desktop_path))
     return false;
 
   int desktop_fd = open(desktop_path.value().c_str(), O_RDONLY | O_DIRECTORY);
@@ -155,7 +156,7 @@ bool CreateShortcutOnDesktop(const FilePath& shortcut_filename,
 
 void DeleteShortcutOnDesktop(const FilePath& shortcut_filename) {
   FilePath desktop_path;
-  if (PathService::Get(base::DIR_USER_DESKTOP, &desktop_path))
+  if (PathService::Get(chrome::DIR_USER_DESKTOP, &desktop_path))
     file_util::Delete(desktop_path.Append(shortcut_filename), false);
 }
 
@@ -483,7 +484,7 @@ FilePath GetWebShortcutFilename(const GURL& url) {
   file_util::ReplaceIllegalCharactersInPath(&filename, '_');
 
   FilePath desktop_path;
-  if (!PathService::Get(base::DIR_USER_DESKTOP, &desktop_path))
+  if (!PathService::Get(chrome::DIR_USER_DESKTOP, &desktop_path))
     return FilePath();
 
   FilePath filepath = desktop_path.Append(filename);

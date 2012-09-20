@@ -25,6 +25,7 @@
 #include "base/win/windows_version.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/setup/setup_util.h"
@@ -363,7 +364,7 @@ void MigrateChromiumShortcutsCallback() {
       base::DIR_APP_DATA,
       L"Microsoft\\Internet Explorer\\Quick Launch\\User Pinned\\TaskBar"
     }, {
-      base::DIR_USER_DESKTOP,
+      chrome::DIR_USER_DESKTOP,
       NULL
     }, {
       base::DIR_START_MENU,

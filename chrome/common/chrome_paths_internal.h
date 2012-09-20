@@ -65,6 +65,9 @@ bool GetUserPicturesDirectory(FilePath* result);
 // Gets the path to the user's videos directory.
 bool GetUserVideosDirectory(FilePath* result);
 
+// The path to the user's desktop.
+bool GetUserDesktop(FilePath* result);
+
 #if defined(OS_MACOSX)
 // The "versioned directory" is a directory in the browser .app bundle.  It
 // contains the bulk of the application, except for the things that the system

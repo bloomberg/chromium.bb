@@ -48,6 +48,11 @@ bool GetUserVideosDirectory(FilePath* result) {
   return false;
 }
 
+bool GetUserDesktop(FilePath* result) {
+  NOTIMPLEMENTED() << "Android doesn't support GetUserDesktop";
+  return false;
+}
+
 bool ProcessNeedsProfileDir(const std::string& process_type) {
   return true;
 }

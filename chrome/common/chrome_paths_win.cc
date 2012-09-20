@@ -131,6 +131,10 @@ bool GetUserVideosDirectory(FilePath* result) {
   return GetUserDirectory(CSIDL_MYVIDEO, result);
 }
 
+bool GetUserDesktop(FilePath* result) {
+  return GetUserDirectory(CSIDL_DESKTOPDIRECTORY, result);
+}
+
 bool ProcessNeedsProfileDir(const std::string& process_type) {
   // On windows we don't want subprocesses other than the browser process and
   // service processes to be able to use the profile directory because if it

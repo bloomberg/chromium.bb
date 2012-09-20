@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/window_snapshot/window_snapshot.h"
+#include "chrome/common/chrome_paths.h"
 #include "ui/base/win/foreground_helper.h"
 #include "ui/ui_controls/ui_controls.h"
 #include "ui/views/focus/focus_manager.h"
@@ -143,7 +144,7 @@ bool SaveScreenSnapshotToDirectory(const FilePath& directory,
 bool SaveScreenSnapshotToDesktop(FilePath* screenshot_path) {
   FilePath desktop;
 
-  return PathService::Get(base::DIR_USER_DESKTOP, &desktop) &&
+  return PathService::Get(chrome::DIR_USER_DESKTOP, &desktop) &&
       SaveScreenSnapshotToDirectory(desktop, screenshot_path);
 }
 
