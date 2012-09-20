@@ -81,8 +81,13 @@ def main(argv):
           total_scored_patchsets += 1
     if touched_it:
       scoring += 1
-  print "Requested as a reviewer for %i changes" % len(non_owned_by)
+  if non_owned_by and scoring:
+    response_rate = 100 * (float(scoring)/len(non_owned_by))
+  else:
+    response_rate = 0
+  print "Requested as a reviewer for %i changes, commented on %2.1f%%" % (
+      len(non_owned_by), response_rate)
+  ratio = float(total_scored_patchsets)/scoring if total_scored_patchsets else 0
   print ("Review stats: %i Changes scored; %i individual patchsets scored "
-         "(for a %2.2f scoring/patch rate)" % (
-             scoring, total_scored_patchsets,
-             (float(total_scored_patchsets)/scoring)))
+         "(for a %2.2fx scoring/change rate)" % (
+             scoring, total_scored_patchsets, ratio))
