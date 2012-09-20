@@ -17,8 +17,8 @@ bool SerialConnection::PostOpen() {
 
   // Bitrate (sometimes erroneously referred to as baud rate).
   if (bitrate_ >= 0) {
-    options.c_ispeed = bitrate_;
-    options.c_ospeed = bitrate_;
+    cfsetispeed(&options, bitrate_);
+    cfsetospeed(&options, bitrate_);
   }
 
   // 8N1
