@@ -6,6 +6,8 @@
 
 #include <cmath>
 
+#import <AppKit/AppKit.h>
+
 #include "base/string_number_conversions.h"
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/certificate_viewer.h"
@@ -28,6 +30,7 @@
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
 namespace {
 
@@ -128,6 +131,10 @@ NSColor* IdentityVerifiedTextColor() {
   scoped_nsobject<NSImage> tabCenterImage_;
   scoped_nsobject<NSImage> tabLeftImage_;
   scoped_nsobject<NSImage> tabRightImage_;
+
+  // Key track of the index of segment which has keyboard focus. This is not
+  // the same as the currently selected segment.
+  NSInteger keySegment_;
 }
 @end
 
@@ -145,6 +152,24 @@ NSColor* IdentityVerifiedTextColor() {
         rb.GetNativeImageNamed(IDR_WEBSITE_SETTINGS_TAB_RIGHT).CopyNSImage());
   }
   return self;
+}
+
+// Called when keyboard focus in the segmented control is moved forward.
+- (void)makeNextSegmentKey {
+  [super makeNextSegmentKey];
+  keySegment_ = (keySegment_ + 1) % [self segmentCount];
+}
+
+// Called when keyboard focus in the segmented control is moved backwards.
+- (void)makePreviousSegmentKey {
+  [super makePreviousSegmentKey];
+  if (--keySegment_ < 0)
+    keySegment_ += [self segmentCount];
+}
+
+- (void)setSelectedSegment:(NSInteger)selectedSegment {
+  keySegment_ = selectedSegment;
+  [super setSelectedSegment:selectedSegment];
 }
 
 - (void)drawWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
@@ -191,6 +216,15 @@ NSColor* IdentityVerifiedTextColor() {
 
   // Call the superclass method to trigger drawing of the tab labels.
   [self drawInteriorWithFrame:cellFrame inView:controlView];
+  if ([[controlView window] firstResponder] == controlView)
+    [self drawFocusRect];
+}
+
+- (void)drawFocusRect {
+  gfx::ScopedNSGraphicsContextSaveGState scoped_state;
+  NSSetFocusRingStyle(NSFocusRingOnly);
+  [[NSColor keyboardFocusIndicatorColor] set];
+  NSFrameRect([self hitRectForSegment:keySegment_]);
 }
 
 // Return the hit rect (i.e., the visual bounds of the tab) for
