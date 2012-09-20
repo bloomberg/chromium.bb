@@ -80,7 +80,7 @@
     this.finalStats_ = this.getRenderingStats_();
   }
 
-  GpuBenchmarkingRenderingStats.prototype.get = function() {
+  GpuBenchmarkingRenderingStats.prototype.getDeltas = function() {
     if (!this.initialStats_)
       throw new Error('Start not called.');
 
@@ -119,7 +119,7 @@
     this.recording_ = false;
   }
 
-  RafRenderingStats.prototype.get = function() {
+  RafRenderingStats.prototype.getDeltas = function() {
     var results = {};
     results.numAnimationFrames = this.frameTimes_.length - 1;
     results.numFramesSentToScreen = results.numAnimationFrames;
@@ -225,9 +225,9 @@
 
     // We're done.
     if (this.callback_)
-      this.callback_(this.renderingStats_.get());
+      this.callback_(this.renderingStats_.getDeltas());
     else
-      console.log(this.renderingStats_.get());
+      console.log(this.renderingStats_.getDeltas());
   };
 
   ScrollTest.prototype.endPass_ = function() {

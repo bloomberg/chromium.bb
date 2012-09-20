@@ -10,14 +10,15 @@ class DidNotScrollException(multi_page_benchmark.MeasurementFailure):
   def __init__(self):
     super(DidNotScrollException, self).__init__('Page did not scroll')
 
-def CalcScrollResults(rendering_stats):
-  num_frames_sent_to_screen = rendering_stats['numFramesSentToScreen']
+def CalcScrollResults(rendering_stats_deltas):
+  num_frames_sent_to_screen = rendering_stats_deltas['numFramesSentToScreen']
 
   mean_frame_time_seconds = (
-    rendering_stats['totalTimeInSeconds'] / float(num_frames_sent_to_screen))
+    rendering_stats_deltas['totalTimeInSeconds'] /
+      float(num_frames_sent_to_screen))
 
   dropped_percent = (
-    rendering_stats['droppedFrameCount'] /
+    rendering_stats_deltas['droppedFrameCount'] /
     float(num_frames_sent_to_screen))
 
   return {
@@ -30,6 +31,11 @@ class ScrollingBenchmark(multi_page_benchmark.MultiPageBenchmark):
     super(ScrollingBenchmark, self).__init__()
     self.use_gpu_benchmarking_extension = True
 
+  def AddOptions(self, parser):
+    parser.add_option('--report-all-results', dest='report_all_results',
+                      action='store_true',
+                      help='Reports all data collected, not just FPS')
+
   @staticmethod
   def ScrollPageFully(tab):
     scroll_js_path = os.path.join(os.path.dirname(__file__), 'scroll.js')
@@ -38,28 +44,37 @@ class ScrollingBenchmark(multi_page_benchmark.MultiPageBenchmark):
     # Run scroll test.
     tab.runtime.Execute(scroll_js)
     tab.runtime.Execute("""
-      window.__scrollTestResult = null;
-      new __ScrollTest(function(rendering_stats) {
-        window.__scrollTestResult = rendering_stats;
+      window.__renderingStatsDeltas = null;
+      new __ScrollTest(function(rendering_stats_deltas) {
+        window.__renderingStatsDeltas = rendering_stats_deltas;
       });
     """)
 
     # Poll for scroll benchmark completion.
-    util.WaitFor(lambda: tab.runtime.Evaluate('window.__scrollTestResult'), 60)
+    util.WaitFor(lambda: tab.runtime.Evaluate(
+        'window.__renderingStatsDeltas'), 60)
 
-    rendering_stats = tab.runtime.Evaluate('window.__scrollTestResult')
+    rendering_stats_deltas = tab.runtime.Evaluate(
+      'window.__renderingStatsDeltas')
 
-    if not (rendering_stats['numFramesSentToScreen'] > 0):
+    if not (rendering_stats_deltas['numFramesSentToScreen'] > 0):
       raise DidNotScrollException()
-    return rendering_stats
+    return rendering_stats_deltas
 
   def CustomizeBrowserOptions(self, options):
     if self.use_gpu_benchmarking_extension:
       options.extra_browser_args.append('--enable-gpu-benchmarking')
 
   def MeasurePage(self, _, tab):
-    rendering_stats = self.ScrollPageFully(tab)
-    return CalcScrollResults(rendering_stats)
+    rendering_stats_deltas = self.ScrollPageFully(tab)
+    scroll_results = CalcScrollResults(rendering_stats_deltas)
+    if self.options.report_all_results:
+      all_results = {}
+      all_results.update(rendering_stats_deltas)
+      all_results.update(scroll_results)
+      return all_results
+    return scroll_results
+
 
 
 def Main():
