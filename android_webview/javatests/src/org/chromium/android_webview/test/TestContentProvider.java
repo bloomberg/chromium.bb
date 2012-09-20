@@ -6,7 +6,7 @@
  * Content provider for testing content URLs.
  */
 
-package org.chromium.android_webview.tests;
+package org.chromium.android_webview.test;
 
 import android.content.ContentProvider;
 import android.content.ContentValues;
@@ -26,7 +26,7 @@ import java.util.Map;
 // Note: if you move this class, make sure you have also updated AndroidManifest.xml
 public class TestContentProvider extends ContentProvider {
     private static final String AUTHORITY =
-            "org.chromium.android_webview.tests.TestContentProvider";
+            "org.chromium.android_webview.test.TestContentProvider";
     private static final String CONTENT_SCHEME = "content://";
     private static final String CONTENT_TYPE = "image/png";
     private static final String GET_RESOURCE_REQUEST_COUNT = "get_resource_request_count";

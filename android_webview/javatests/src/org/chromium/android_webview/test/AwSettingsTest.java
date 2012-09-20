@@ -14,7 +14,7 @@ import org.chromium.base.test.TestFileUtil;
 import org.chromium.base.test.UrlUtils;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsClient;
-import org.chromium.android_webview.tests.TestContentProvider;
+import org.chromium.android_webview.test.TestContentProvider;
 import org.chromium.content.browser.ContentSettings;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.util.CallbackHelper;
