@@ -30,10 +30,10 @@ static const char* kBasicTests[] = {
   "basics-shared-workers.html",
   // Failing on Precise bot (crbug.com/145592).
   // "basics-workers.html",
-  "database-basics.html",
+  // "database-basics.html", // Depends on crrev.com/10941011
   "factory-basics.html",
-  "index-basics.html",
-  "objectstore-basics.html",
+  // "index-basics.html", // Depends on crrev.com/10941011
+  // "objectstore-basics.html", // Depends on crrev.com/10941011
   NULL
 };
 
@@ -95,14 +95,14 @@ static const char* kRegressionTests[] = {
 
 const char* kIntVersionTests[] = {
   "intversion-abort-in-initial-upgradeneeded.html",
-  "intversion-and-setversion.html",
+  // "intversion-and-setversion.html", // Depends on crrev.com/10941011
   "intversion-blocked.html",
-  "intversion-close-between-events.html",
-  "intversion-close-in-oncomplete.html",
-//  "intversion-close-in-upgradeneeded.html", // crbug.com/150961
+  // "intversion-close-between-events.html", // crbug.com/150947
+  // "intversion-close-in-oncomplete.html", // crbug.com/150691
+  "intversion-close-in-upgradeneeded.html",
   "intversion-delete-in-upgradeneeded.html",
-//  "intversion-gated-on-delete.html", // behaves slightly differently in DRT
-  "intversion-long-queue.html",
+  // "intversion-gated-on-delete.html", // behaves slightly differently in DRT
+  // "intversion-long-queue.html", // Depends on crrev.com/10941011
   "intversion-omit-parameter.html",
   "intversion-open-with-version.html",
   NULL
@@ -114,19 +114,23 @@ IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, BasicTests) {
   RunLayoutTests(kBasicTests);
 }
 
-IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, ComplexTests) {
+// Depends on crrev.com/10941011
+IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, DISABLED_ComplexTests) {
   RunLayoutTests(kComplexTests);
 }
 
-IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, IndexTests) {
+// Depends on crrev.com/10941011
+IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, DISABLED_IndexTests) {
   RunLayoutTests(kIndexTests);
 }
 
-IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, KeyTests) {
+// Depends on crrev.com/10941011
+IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, DISABLED_KeyTests) {
   RunLayoutTests(kKeyTests);
 }
 
-IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, TransactionTests) {
+// Depends on crrev.com/10941011
+IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, DISABLED_TransactionTests) {
   RunLayoutTests(kTransactionTests);
 }
 
@@ -135,6 +139,6 @@ IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, IntVersionTests) {
 }
 
 // Frequent flaky timeouts.  http://crbug.com/123685
-IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, RegressionTests) {
+IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, DISABLED_RegressionTests) {
   RunLayoutTests(kRegressionTests);
 }
