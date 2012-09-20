@@ -333,8 +333,18 @@ def main(argv):
 
   repo_root = cros_build_lib.FindRepoCheckoutRoot()
   chromium_src_root = os.path.join(repo_root, _CHROMIUM_SRC_ROOT)
-  if not os.path.isdir(chromium_src_root):
-    cros_build_lib.Die('chromium src/ dir not found')
+  if not os.path.isdir(os.path.join(chromium_src_root, '.git')):
+    error_msg = 'chromium checkout not found at %s.\n' % chromium_src_root
+
+    manifest = os.path.join(repo_root, '.repo', 'manifest.xml')
+    if os.path.basename(os.path.realpath(manifest)) == 'gerrit-source.xml':
+      error_msg += ("Please run repo sync and try again.")
+    else:
+      link = 'http://www.chromium.org/chromium-os/new-chrome-developer-workflow'
+      error_msg += ('Detected you are not using gerrit_source.xml.  Follow '
+                    'instructions at %s to use repo checkout of chrome.' % link)
+
+    cros_build_lib.Die(error_msg)
 
   # Add DEPS files to parse.
   deps_files_to_parse = []
