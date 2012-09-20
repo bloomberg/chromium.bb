@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/extension_devtools_manager.h"
 #include "chrome/browser/extensions/extension_host.h"
+#include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -54,12 +55,13 @@ void NotifyEventListenerRemovedOnIOThread(
 void DispatchOnInstalledEvent(
     Profile* profile,
     const std::string& extension_id,
-    const Version& old_version) {
+    const Version& old_version,
+    bool chrome_updated) {
   if (!g_browser_process->profile_manager()->IsValidProfile(profile))
     return;
 
   RuntimeEventRouter::DispatchOnInstalledEvent(profile, extension_id,
-                                               old_version);
+                                               old_version, chrome_updated);
 }
 
 }  // namespace
@@ -115,21 +117,33 @@ void EventRouter::DispatchEvent(IPC::Sender* ipc_sender,
                            event_args.get(), event_url, user_gesture, info);
 }
 
-EventRouter::EventRouter(Profile* profile)
+EventRouter::EventRouter(Profile* profile, ExtensionPrefs* extension_prefs)
     : profile_(profile),
       extension_devtools_manager_(
           ExtensionSystem::Get(profile)->devtools_manager()),
-      listeners_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      listeners_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      dispatch_chrome_updated_event_(false) {
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
                  content::NotificationService::AllSources());
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
                  content::NotificationService::AllSources());
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSIONS_READY,
+                 content::Source<Profile>(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  content::Source<Profile>(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,
                  content::Source<Profile>(profile_));
+
+  // NULL in unit_tests.
+  if (extension_prefs) {
+    // Check if registered events are up-to-date. We need to do this before
+    // reading the registered events, because it deletes them if they're out of
+    // date.
+    dispatch_chrome_updated_event_ =
+        !extension_prefs->CheckRegisteredEventsUpToDate();
+  }
 }
 
 EventRouter::~EventRouter() {}
@@ -555,6 +569,11 @@ void EventRouter::Observe(int type,
       listeners_.RemoveListenersForProcess(renderer);
       break;
     }
+    case chrome::NOTIFICATION_EXTENSIONS_READY: {
+      // We're done restarting Chrome after an update.
+      dispatch_chrome_updated_event_ = false;
+      break;
+    }
     case chrome::NOTIFICATION_EXTENSION_LOADED: {
       // Add all registered lazy listeners to our cache.
       const Extension* extension =
@@ -569,6 +588,12 @@ void EventRouter::Observe(int type,
           prefs->GetFilteredEvents(extension->id());
       if (filtered_events)
         listeners_.LoadFilteredLazyListeners(extension->id(), *filtered_events);
+
+      if (dispatch_chrome_updated_event_) {
+        MessageLoop::current()->PostTask(FROM_HERE,
+            base::Bind(&DispatchOnInstalledEvent, profile_, extension->id(),
+                       Version(), true));
+      }
       break;
     }
     case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
@@ -593,7 +618,7 @@ void EventRouter::Observe(int type,
 
       MessageLoop::current()->PostTask(FROM_HERE,
           base::Bind(&DispatchOnInstalledEvent, profile_, extension->id(),
-                     old_version));
+                     old_version, false));
       break;
     }
     default:

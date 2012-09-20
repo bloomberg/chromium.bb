@@ -25,6 +25,7 @@ const char kOnInstalledEvent[] = "runtime.onInstalled";
 const char kNoBackgroundPageError[] = "You do not have a background page.";
 const char kPageLoadError[] = "Background page failed to load.";
 const char kInstallReason[] = "reason";
+const char kInstallReasonChromeUpdate[] = "chrome_update";
 const char kInstallReasonUpdate[] = "update";
 const char kInstallReasonInstall[] = "install";
 const char kInstallPreviousVersion[] = "previousVersion";
@@ -78,7 +79,8 @@ void RuntimeEventRouter::DispatchOnStartupEvent(
 void RuntimeEventRouter::DispatchOnInstalledEvent(
     Profile* profile,
     const std::string& extension_id,
-    const Version& old_version) {
+    const Version& old_version,
+    bool chrome_updated) {
   ExtensionSystem* system = ExtensionSystem::Get(profile);
   if (!system)
     return;
@@ -91,10 +93,14 @@ void RuntimeEventRouter::DispatchOnInstalledEvent(
   scoped_ptr<base::ListValue> event_args(new ListValue());
   base::DictionaryValue* info = new base::DictionaryValue();
   event_args->Append(info);
-  info->SetString(kInstallReason,
-      old_version.IsValid() ? kInstallReasonUpdate : kInstallReasonInstall);
-  if (old_version.IsValid())
+  if (old_version.IsValid()) {
+    info->SetString(kInstallReason, kInstallReasonUpdate);
     info->SetString(kInstallPreviousVersion, old_version.GetString());
+  } else if (chrome_updated) {
+    info->SetString(kInstallReason, kInstallReasonChromeUpdate);
+  } else {
+    info->SetString(kInstallReason, kInstallReasonInstall);
+  }
   system->event_router()->AddLazyEventListener(kOnInstalledEvent, extension_id);
   system->event_router()->DispatchEventToExtension(
       extension_id, kOnInstalledEvent, event_args.Pass(), NULL, GURL());

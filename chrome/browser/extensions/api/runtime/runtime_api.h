@@ -23,7 +23,8 @@ class RuntimeEventRouter {
   // Dispatches the onInstalled event to the given extension.
   static void DispatchOnInstalledEvent(Profile* profile,
                                        const std::string& extension_id,
-                                       const Version& old_version);
+                                       const Version& old_version,
+                                       bool chrome_updated);
 };
 
 class RuntimeGetBackgroundPageFunction : public AsyncExtensionFunction {

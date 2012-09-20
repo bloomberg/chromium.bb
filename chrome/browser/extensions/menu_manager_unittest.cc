@@ -437,8 +437,7 @@ TEST_F(MenuManagerTest, ExtensionUnloadRemovesMenuItems) {
 // A mock message service for tests of MenuManager::ExecuteCommand.
 class MockEventRouter : public EventRouter {
  public:
-  explicit MockEventRouter(Profile* profile) :
-      EventRouter(profile) {}
+  explicit MockEventRouter(Profile* profile) : EventRouter(profile, NULL) {}
 
   MOCK_METHOD6(DispatchEventToExtensionMock,
                void(const std::string& extension_id,
@@ -527,8 +526,7 @@ TEST_F(MenuManagerTest, RemoveOneByOne) {
 TEST_F(MenuManagerTest, ExecuteCommand) {
   MockTestingProfile profile;
 
-  scoped_ptr<MockEventRouter> mock_event_router(
-      new MockEventRouter(&profile));
+  scoped_ptr<MockEventRouter> mock_event_router(new MockEventRouter(&profile));
 
   content::ContextMenuParams params;
   params.media_type = WebKit::WebContextMenuData::MediaTypeImage;

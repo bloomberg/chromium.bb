@@ -30,6 +30,7 @@ class RenderProcessHost;
 namespace extensions {
 class Extension;
 class ExtensionHost;
+class ExtensionPrefs;
 
 struct Event;
 
@@ -54,7 +55,7 @@ class EventRouter : public content::NotificationObserver,
                             UserGestureState user_gesture,
                             const EventFilteringInfo& info);
 
-  explicit EventRouter(Profile* profile);
+  EventRouter(Profile* profile, ExtensionPrefs* extension_prefs);
   virtual ~EventRouter();
 
   // Add or remove the process/extension pair as a listener for |event_name|.
@@ -240,6 +241,10 @@ class EventRouter : public content::NotificationObserver,
   scoped_refptr<ExtensionDevToolsManager> extension_devtools_manager_;
 
   EventListenerMap listeners_;
+
+  // True if we should dispatch the event signalling that Chrome was updated
+  // upon loading an extension.
+  bool dispatch_chrome_updated_event_;
 
   DISALLOW_COPY_AND_ASSIGN(EventRouter);
 };

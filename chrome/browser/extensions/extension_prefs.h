@@ -269,6 +269,10 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   void SetActivePermissions(const std::string& extension_id,
                             const PermissionSet* permissions);
 
+  // Returns true if registered events are from this version of Chrome. Else,
+  // clear them, and return false.
+  bool CheckRegisteredEventsUpToDate();
+
   // Returns the list of events that the given extension has registered for.
   std::set<std::string> GetRegisteredEvents(const std::string& extension_id);
   void SetRegisteredEvents(const std::string& extension_id,
@@ -540,6 +544,9 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
 
   // Migrates the disable reasons from a single enum to a bit mask.
   void MigrateDisableReasons(const ExtensionIds& extension_ids);
+
+  // Clears the registered events for event pages.
+  void ClearRegisteredEvents();
 
   // Checks whether there is a state pref for the extension and if so, whether
   // it matches |check_state|.

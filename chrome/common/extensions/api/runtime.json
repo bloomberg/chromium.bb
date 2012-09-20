@@ -90,7 +90,7 @@
       {
         "name": "onInstalled",
         "type": "function",
-        "description": "Fired when the extension is first installed, and on each update to a new version.",
+        "description": "Fired when the extension is first installed, when the extension is updated to a new version, and when Chrome is updated to a new version.",
         "parameters": [
           {
             "type": "object",
@@ -98,7 +98,7 @@
             "properties": {
               "reason": {
                 "type": "string",
-                "enum": ["install", "update"],
+                "enum": ["install", "update", "chrome_update"],
                 "description": "The reason that this event is being dispatched."
               },
               "previousVersion": {

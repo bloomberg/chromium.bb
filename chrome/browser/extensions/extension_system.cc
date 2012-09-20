@@ -105,7 +105,8 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
 
   lazy_background_task_queue_.reset(new LazyBackgroundTaskQueue(profile_));
   message_service_.reset(new MessageService(lazy_background_task_queue_.get()));
-  extension_event_router_.reset(new EventRouter(profile_));
+  extension_event_router_.reset(new EventRouter(profile_,
+                                                extension_prefs_.get()));
   navigation_observer_.reset(new NavigationObserver(profile_));
 
   ExtensionErrorReporter::Init(true);  // allow noisy errors.

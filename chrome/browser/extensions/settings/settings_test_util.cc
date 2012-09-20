@@ -109,7 +109,7 @@ void MockExtensionService::AddExtensionWithIdAndPermissions(
 
 MockProfile::MockProfile(const FilePath& file_path)
     : TestingProfile(file_path) {
-  event_router_.reset(new EventRouter(this));
+  event_router_.reset(new EventRouter(this, NULL));
 }
 
 MockProfile::~MockProfile() {}
