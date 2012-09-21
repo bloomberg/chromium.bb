@@ -90,7 +90,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/webui/options/chromeos/timezone_options_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/session_manager_client.h"
+#include "chromeos/dbus/power_manager_client.h"
 #include "ui/gfx/image/image_skia.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -1362,7 +1362,7 @@ void BrowserOptionsHandler::PerformFactoryResetRestart(const ListValue* args) {
 
   // Perform sign out. Current chrome process will then terminate, new one will
   // be launched (as if it was a restart).
-  chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->StopSession();
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();
 }
 
 #endif
