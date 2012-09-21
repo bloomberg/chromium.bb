@@ -430,6 +430,8 @@ const void *__%(wrapper_prefix)s_PPPGetInterface(const char *name) {
     # Generate the includes.
     self.GenerateIncludes(iface_releases, out)
 
+    out.Write(self.GetGuardStart())
+
     # Write out static helper functions (mystrcmp).
     self.GenerateHelperFunctions(out)
 
@@ -449,5 +451,7 @@ const void *__%(wrapper_prefix)s_PPPGetInterface(const char *name) {
 
     # Write out the IDL-invariant functions.
     self.GenerateFixedFunctions(out)
+
+    out.Write(self.GetGuardEnd())
     out.Close()
     return 0

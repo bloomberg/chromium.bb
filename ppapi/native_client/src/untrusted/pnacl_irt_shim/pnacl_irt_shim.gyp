@@ -15,8 +15,6 @@
         'out_newlib64': '<(PRODUCT_DIR)/libpnacl_irt_shim.a',
         'build_glibc': 0,
         'build_newlib': 1,
-        'enable_x86_32': 0,
-        'enable_arm': 0,
         'sources': [
           'pnacl_shim.c',
           'shim_entry.c',

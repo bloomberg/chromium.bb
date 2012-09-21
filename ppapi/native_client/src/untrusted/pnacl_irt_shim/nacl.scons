@@ -4,22 +4,30 @@
 # found in the LICENSE file.
 
 Import('env')
-import os
 
-# This library is part of the pnacl x86-64 toolchain only, and is used
-# to match the pnacl ABI to the IRT ABI.  It was necessitated by problems
-# in passing structures by value on x86-64.
-if not env.Bit('bitcode') or not env.Bit('target_x86_64'):
+# This library contains PNaCl ABI shims which convert between the
+# x86-64 calling conventions used by the IRT library (which uses gcc's
+# ABI) and those used by the PNaCl translator.  It was necessitated by
+# problems in passing structures by value on x86-64.
+#
+# We build the library on all architectures so that we can use the
+# same entry point symbol everywhere.  On architectures other than
+# x86-64, the library currently does no calling conventions
+# conversion.
+if not env.Bit('bitcode'):
   Return()
 
 # The library must be compiled with nacl-gcc.
 # Clear out the pnacl_generate_pexe bit to allow building this as a
 # library dependency (much like the IRT).
-nacl_gcc_env = env.Clone()
-nacl_gcc_env.ClearBits('pnacl_generate_pexe')
-nacl_gcc_env = nacl_gcc_env.PNaClGetNNaClEnv()
+native_env = env.Clone()
+native_env.ClearBits('pnacl_generate_pexe')
+if env.Bit('target_arm'):
+  native_env.PNaClForceNative()
+else:
+  native_env = native_env.PNaClGetNNaClEnv()
 
-pnacl_irt_shim = nacl_gcc_env.ComponentLibrary('pnacl_irt_shim', [
+pnacl_irt_shim = native_env.ComponentLibrary('pnacl_irt_shim', [
     'pnacl_shim.c',
     'shim_entry.c',
     'shim_ppapi.c',

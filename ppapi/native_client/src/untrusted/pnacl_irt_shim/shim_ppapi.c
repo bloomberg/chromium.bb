@@ -12,6 +12,9 @@
 #include "native_client/src/untrusted/irt/irt_ppapi.h"
 #include "ppapi/generators/pnacl_shim.h"
 
+/* The PNaCl PPAPI shims are only needed on x86-64. */
+#if defined(__x86_64__)
+
 TYPE_nacl_irt_query __pnacl_real_irt_interface;
 
 /*
@@ -100,3 +103,5 @@ size_t __pnacl_irt_interface_wrapper(const char *interface_ident,
   }
   return 0;
 }
+
+#endif

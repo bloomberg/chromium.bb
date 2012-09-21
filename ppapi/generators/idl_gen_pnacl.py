@@ -51,6 +51,13 @@ class PnaclGen(WrapperGen):
     We do not generate the header files.  """
     return 'ppapi/generators/pnacl_shim.h'
 
+  def GetGuardStart(self):
+    return ('\n/* The PNaCl PPAPI shims are only needed on x86-64. */\n'
+            '#if defined(__x86_64__)\n\n')
+
+  def GetGuardEnd(self):
+    return '\n#endif\n'
+
   def InterfaceNeedsWrapper(self, iface, releases):
     """Return true if the interface has ANY methods that need wrapping.
     """
