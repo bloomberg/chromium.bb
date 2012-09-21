@@ -199,6 +199,7 @@ void InstalledLoader::LoadAllExtensions() {
   int page_action_count = 0;
   int browser_action_count = 0;
   int disabled_for_permissions_count = 0;
+  int item_user_count = 0;
   const ExtensionSet* extensions = extension_service_->extensions();
   ExtensionSet::const_iterator ex;
   for (ex = extensions->begin(); ex != extensions->end(); ++ex) {
@@ -258,6 +259,8 @@ void InstalledLoader::LoadAllExtensions() {
         }
         break;
     }
+    if (!Extension::IsExternalLocation((*ex)->location()))
+      ++item_user_count;
     if ((*ex)->page_action() != NULL)
       ++page_action_count;
     if ((*ex)->browser_action() != NULL)
@@ -275,6 +278,8 @@ void InstalledLoader::LoadAllExtensions() {
       ++disabled_for_permissions_count;
     }
   }
+
+  UMA_HISTOGRAM_COUNTS_100("Extensions.LoadAllUser", item_user_count);
   UMA_HISTOGRAM_COUNTS_100("Extensions.LoadApp",
                            app_user_count + app_external_count);
   UMA_HISTOGRAM_COUNTS_100("Extensions.LoadAppUser", app_user_count);
