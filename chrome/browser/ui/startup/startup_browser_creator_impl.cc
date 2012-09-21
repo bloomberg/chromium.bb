@@ -849,12 +849,8 @@ Browser* StartupBrowserCreatorImpl::OpenTabsInBrowser(Browser* browser,
   // value of StartupBrowserCreated::show_main_browser_window_. If this was set
   // to true ahead of this place, it means another task must have been spawned
   // to take care of that.
-  if (!browser_creator_ || browser_creator_->show_main_browser_window()) {
+  if (!browser_creator_ || browser_creator_->show_main_browser_window())
     browser->window()->Show();
-    // TODO(jcampan): http://crbug.com/8123 we should not need to set the
-    //                initial focus explicitly.
-    chrome::GetActiveWebContents(browser)->GetView()->SetInitialFocus();
-  }
 
   return browser;
 }
