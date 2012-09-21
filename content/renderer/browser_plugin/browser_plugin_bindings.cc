@@ -39,12 +39,22 @@ namespace content {
 namespace {
 
 const char kAddEventListener[] = "addEventListener";
+const char kReloadMethod[] = "reload";
 const char kRemoveEventListener[] = "removeEventListener";
 const char kSrcAttribute[] = "src";
+const char kStopMethod[] = "stop";
 
 BrowserPluginBindings* GetBindings(NPObject* object) {
   return static_cast<BrowserPluginBindings::BrowserPluginNPObject*>(object)->
       message_channel;
+}
+
+bool IdentifierIsReload(NPIdentifier identifier) {
+  return WebBindings::getStringIdentifier(kReloadMethod) == identifier;
+}
+
+bool IdentifierIsStop(NPIdentifier identifier) {
+  return WebBindings::getStringIdentifier(kStopMethod) == identifier;
 }
 
 bool IdentifierIsAddEventListener(NPIdentifier identifier) {
@@ -112,6 +122,12 @@ bool BrowserPluginBindingsHasMethod(NPObject* np_obj, NPIdentifier name) {
   if (IdentifierIsRemoveEventListener(name))
     return true;
 
+  if (IdentifierIsStop(name))
+    return true;
+
+  if (IdentifierIsReload(name))
+    return true;
+
   return false;
 }
 
@@ -152,6 +168,16 @@ bool BrowserPluginBindingsInvoke(NPObject* np_obj, NPIdentifier name,
 
     v8::Local<v8::Function> function = v8::Local<v8::Function>::Cast(value);
     return bindings->instance()->RemoveEventListener(event_name, function);
+  }
+
+  if (IdentifierIsStop(name) && !arg_count) {
+    bindings->instance()->Stop();
+    return true;
+  }
+
+  if (IdentifierIsReload(name) && !arg_count) {
+    bindings->instance()->Reload();
+    return true;
   }
 
   return false;

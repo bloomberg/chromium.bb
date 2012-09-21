@@ -32,6 +32,14 @@ IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_SetFocus,
                     int /* instance_id */,
                     bool /* enable */)
 
+// Tell the guest to stop loading.
+IPC_MESSAGE_ROUTED1(BrowserPluginHostMsg_Stop,
+                    int /* instance_id */)
+
+/// Tell the guest to reload.
+IPC_MESSAGE_ROUTED1(BrowserPluginHostMsg_Reload,
+                    int /* instance_id */)
+
 // Message payload includes:
 // 1. A blob that should be cast to WebInputEvent
 // 2. An optional boolean value indicating if a RawKeyDown event is associated

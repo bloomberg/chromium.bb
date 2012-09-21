@@ -487,4 +487,86 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, VisibilityChanged) {
   test_guest->WaitUntilHidden();
 }
 
+// This test verifies that calling the reload method reloads the guest.
+IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, ReloadGuest) {
+  ASSERT_TRUE(test_server()->Start());
+  GURL test_url(test_server()->GetURL(
+      "files/browser_plugin_embedder.html"));
+  NavigateToURL(shell(), test_url);
+
+  WebContentsImpl* embedder_web_contents = static_cast<WebContentsImpl*>(
+      shell()->web_contents());
+  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
+      embedder_web_contents->GetRenderViewHost());
+
+  rvh->ExecuteJavascriptAndGetValue(string16(), ASCIIToUTF16(
+      StringPrintf("SetSrc('%s');", kHTMLForGuest)));
+
+  // Wait to make sure embedder is created/attached to WebContents.
+  TestBrowserPluginHostFactory::GetInstance()->WaitForEmbedderCreation();
+
+  TestBrowserPluginEmbedder* test_embedder =
+      static_cast<TestBrowserPluginEmbedder*>(
+          embedder_web_contents->GetBrowserPluginEmbedder());
+  ASSERT_TRUE(test_embedder);
+  test_embedder->WaitForGuestAdded();
+
+  // Verify that we have exactly one guest.
+  const BrowserPluginEmbedder::ContainerInstanceMap& instance_map =
+      test_embedder->guest_web_contents_for_testing();
+  EXPECT_EQ(1u, instance_map.size());
+
+  WebContentsImpl* test_guest_web_contents = static_cast<WebContentsImpl*>(
+      instance_map.begin()->second);
+  TestBrowserPluginGuest* test_guest = static_cast<TestBrowserPluginGuest*>(
+      test_guest_web_contents->GetBrowserPluginGuest());
+  test_guest->WaitForUpdateRectMsg();
+  test_guest->ResetUpdateRectCount();
+
+  rvh->ExecuteJavascriptAndGetValue(string16(), ASCIIToUTF16(
+      "document.getElementById('plugin').reload()"));
+  test_guest->WaitForReload();
+}
+
+// This test verifies that calling the stop method forwards the stop request
+// to the guest's WebContents.
+IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, StopGuest) {
+  ASSERT_TRUE(test_server()->Start());
+  GURL test_url(test_server()->GetURL(
+      "files/browser_plugin_embedder.html"));
+  NavigateToURL(shell(), test_url);
+
+  WebContentsImpl* embedder_web_contents = static_cast<WebContentsImpl*>(
+      shell()->web_contents());
+  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
+      embedder_web_contents->GetRenderViewHost());
+
+  rvh->ExecuteJavascriptAndGetValue(string16(), ASCIIToUTF16(
+      StringPrintf("SetSrc('%s');", kHTMLForGuest)));
+
+  // Wait to make sure embedder is created/attached to WebContents.
+  TestBrowserPluginHostFactory::GetInstance()->WaitForEmbedderCreation();
+
+  TestBrowserPluginEmbedder* test_embedder =
+      static_cast<TestBrowserPluginEmbedder*>(
+          embedder_web_contents->GetBrowserPluginEmbedder());
+  ASSERT_TRUE(test_embedder);
+  test_embedder->WaitForGuestAdded();
+
+  // Verify that we have exactly one guest.
+  const BrowserPluginEmbedder::ContainerInstanceMap& instance_map =
+      test_embedder->guest_web_contents_for_testing();
+  EXPECT_EQ(1u, instance_map.size());
+
+  WebContentsImpl* test_guest_web_contents = static_cast<WebContentsImpl*>(
+      instance_map.begin()->second);
+  TestBrowserPluginGuest* test_guest = static_cast<TestBrowserPluginGuest*>(
+      test_guest_web_contents->GetBrowserPluginGuest());
+  test_guest->WaitForUpdateRectMsg();
+
+  rvh->ExecuteJavascriptAndGetValue(string16(), ASCIIToUTF16(
+      "document.getElementById('plugin').stop()"));
+  test_guest->WaitForStop();
+}
+
 }  // namespace content

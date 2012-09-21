@@ -149,6 +149,23 @@ void BrowserPlugin::RemoveEventListeners() {
   event_listener_map_.clear();
 }
 
+void BrowserPlugin::Stop() {
+  if (!navigate_src_sent_)
+    return;
+  BrowserPluginManager::Get()->Send(
+      new BrowserPluginHostMsg_Stop(render_view_->GetRoutingID(),
+                                    instance_id_));
+}
+
+void BrowserPlugin::Reload() {
+  if (!navigate_src_sent_)
+    return;
+  guest_crashed_ = false;
+  BrowserPluginManager::Get()->Send(
+      new BrowserPluginHostMsg_Reload(render_view_->GetRoutingID(),
+                                      instance_id_));
+}
+
 void BrowserPlugin::UpdateRect(
     int message_id,
     const BrowserPluginMsg_UpdateRect_Params& params) {

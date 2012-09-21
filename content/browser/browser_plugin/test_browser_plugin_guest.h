@@ -39,11 +39,14 @@ class TestBrowserPluginGuest : public BrowserPluginGuest,
   virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
   virtual void SetFocus(bool focused) OVERRIDE;
   virtual bool ViewTakeFocus(bool reverse) OVERRIDE;
+  virtual void Reload() OVERRIDE;
+  virtual void Stop() OVERRIDE;
 
   // Test utilities to wait for a event we are interested in.
   // Waits until UpdateRect message is sent from the guest, meaning it is
   // ready/rendered.
   void WaitForUpdateRectMsg();
+  void ResetUpdateRectCount();
   // Waits until UpdateRect message with a specific size is sent from the guest.
   void WaitForUpdateRectMsgWithSize(int width, int height);
   // Waits for focus to reach this guest.
@@ -54,6 +57,10 @@ class TestBrowserPluginGuest : public BrowserPluginGuest,
   void WaitUntilHidden();
   // Waits until guest crashes.
   void WaitForCrashed();
+  // Wait until a reload request is observed.
+  void WaitForReload();
+  // Wait until a stop request is observed.
+  void WaitForStop();
 
  private:
   // Overridden methods from BrowserPluginGuest to intercept in test objects.
@@ -64,6 +71,8 @@ class TestBrowserPluginGuest : public BrowserPluginGuest,
   bool focus_observed_;
   bool advance_focus_observed_;
   bool was_hidden_observed_;
+  bool stop_observed_;
+  bool reload_observed_;
 
   // For WaitForUpdateRectMsgWithSize().
   bool waiting_for_update_rect_msg_with_size_;
@@ -78,6 +87,8 @@ class TestBrowserPluginGuest : public BrowserPluginGuest,
   scoped_refptr<MessageLoopRunner> focus_message_loop_runner_;
   scoped_refptr<MessageLoopRunner> advance_focus_message_loop_runner_;
   scoped_refptr<MessageLoopRunner> was_hidden_message_loop_runner_;
+  scoped_refptr<MessageLoopRunner> reload_message_loop_runner_;
+  scoped_refptr<MessageLoopRunner> stop_message_loop_runner_;
 
   // A scoped container for notification registries.
   NotificationRegistrar registrar_;

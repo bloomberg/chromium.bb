@@ -145,6 +145,10 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsDelegate,
   virtual void SetFocus(bool focused);
   // Overridden in tests.
   virtual bool ViewTakeFocus(bool reverse);
+  // Reload the guest.
+  virtual void Reload();
+  // Stop loading the guest.
+  virtual void Stop();
 
   // Static factory instance (always NULL for non-test).
   static content::BrowserPluginHostFactory* factory_;

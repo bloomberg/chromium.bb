@@ -28,6 +28,8 @@ TestBrowserPluginGuest::TestBrowserPluginGuest(
       focus_observed_(false),
       advance_focus_observed_(false),
       was_hidden_observed_(false),
+      stop_observed_(false),
+      reload_observed_(false),
       waiting_for_update_rect_msg_with_size_(false),
       last_update_rect_width_(-1),
       last_update_rect_height_(-1) {
@@ -97,6 +99,10 @@ void TestBrowserPluginGuest::WaitForUpdateRectMsg() {
   send_message_loop_runner_->Run();
 }
 
+void TestBrowserPluginGuest::ResetUpdateRectCount() {
+  update_rect_count_ = 0;
+}
+
 void TestBrowserPluginGuest::WaitForUpdateRectMsgWithSize(int width,
                                                           int height) {
   if (update_rect_count_ > 0 &&
@@ -154,6 +160,29 @@ void TestBrowserPluginGuest::WaitUntilHidden() {
   was_hidden_observed_ = false;
 }
 
+void TestBrowserPluginGuest::WaitForReload() {
+  if (reload_observed_) {
+    reload_observed_ = false;
+    return;
+  }
+
+  reload_message_loop_runner_ = new MessageLoopRunner();
+  reload_message_loop_runner_->Run();
+  reload_observed_ = false;
+}
+
+void TestBrowserPluginGuest::WaitForStop() {
+  if (stop_observed_) {
+    stop_observed_ = false;
+    return;
+  }
+
+  stop_message_loop_runner_ = new MessageLoopRunner();
+  stop_message_loop_runner_->Run();
+  stop_observed_ = false;
+}
+
+
 void TestBrowserPluginGuest::SetFocus(bool focused) {
   focus_observed_ = true;
   if (focus_message_loop_runner_)
@@ -166,6 +195,20 @@ bool TestBrowserPluginGuest::ViewTakeFocus(bool reverse) {
   if (advance_focus_message_loop_runner_)
     advance_focus_message_loop_runner_->Quit();
   return BrowserPluginGuest::ViewTakeFocus(reverse);
+}
+
+void TestBrowserPluginGuest::Reload() {
+  reload_observed_ = true;
+  if (reload_message_loop_runner_)
+    reload_message_loop_runner_->Quit();
+  BrowserPluginGuest::Reload();
+}
+
+void TestBrowserPluginGuest::Stop() {
+  stop_observed_ = true;
+  if (stop_message_loop_runner_)
+    stop_message_loop_runner_->Quit();
+  BrowserPluginGuest::Stop();
 }
 
 }  // namespace content

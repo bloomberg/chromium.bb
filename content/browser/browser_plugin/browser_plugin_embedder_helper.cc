@@ -43,6 +43,8 @@ bool BrowserPluginEmbedderHelper::OnMessageReceived(
                            &handled))
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_PluginDestroyed,
                         OnPluginDestroyed);
+    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_Stop, OnStop)
+    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_Reload, OnReload)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -146,6 +148,14 @@ void BrowserPluginEmbedderHelper::OnSetFocus(int instance_id, bool focused) {
 
 void BrowserPluginEmbedderHelper::OnPluginDestroyed(int instance_id) {
   embedder_->PluginDestroyed(instance_id);
+}
+
+void BrowserPluginEmbedderHelper::OnStop(int instance_id) {
+  embedder_->Stop(instance_id);
+}
+
+void BrowserPluginEmbedderHelper::OnReload(int instance_id) {
+  embedder_->Reload(instance_id);
 }
 
 }  // namespace content

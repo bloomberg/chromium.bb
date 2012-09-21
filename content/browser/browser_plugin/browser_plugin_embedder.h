@@ -67,6 +67,8 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver,
                      int64 frame_id,
                      const std::string& src,
                      const gfx::Size& size);
+  void Stop(int instance_id);
+  void Reload(int instance_id);
 
   // WebContentsObserver implementation.
   virtual void RenderViewDeleted(RenderViewHost* render_view_host) OVERRIDE;

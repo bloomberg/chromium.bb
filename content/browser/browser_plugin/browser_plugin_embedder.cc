@@ -214,6 +214,18 @@ void BrowserPluginEmbedder::PluginDestroyed(int instance_id) {
   DestroyGuestByInstanceID(instance_id);
 }
 
+void BrowserPluginEmbedder::Stop(int instance_id) {
+  BrowserPluginGuest* guest = GetGuestByInstanceID(instance_id);
+  if (guest)
+    guest->Stop();
+}
+
+void BrowserPluginEmbedder::Reload(int instance_id) {
+  BrowserPluginGuest* guest = GetGuestByInstanceID(instance_id);
+  if (guest)
+    guest->Reload();
+}
+
 void BrowserPluginEmbedder::Observe(int type,
                                     const NotificationSource& source,
                                     const NotificationDetails& details) {

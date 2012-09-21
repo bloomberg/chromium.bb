@@ -58,6 +58,11 @@ class CONTENT_EXPORT BrowserPlugin :
   bool RemoveEventListener(const std::string& event_name,
                         v8::Local<v8::Function> function);
 
+  // A request from Javascript has been made to stop the loading of the page.
+  void Stop();
+  // A request from Javascript has been made to reload the page.
+  void Reload();
+
   // WebKit::WebPlugin implementation.
   virtual WebKit::WebPluginContainer* container() const OVERRIDE;
   virtual bool initialize(WebKit::WebPluginContainer* container) OVERRIDE;

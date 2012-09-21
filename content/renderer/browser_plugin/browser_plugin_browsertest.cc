@@ -323,4 +323,22 @@ TEST_F(BrowserPluginTest, CustomEvents) {
   EXPECT_EQ(kGoogleURL, ExecuteScriptAndReturnString("url"));
 }
 
+TEST_F(BrowserPluginTest, StopMethod) {
+  const char* kCallStop =
+    "document.getElementById('browserplugin').stop();";
+  LoadHTML(GetHTMLForBrowserPluginObject().c_str());
+  ExecuteJavaScript(kCallStop);
+  EXPECT_TRUE(browser_plugin_manager()->sink().GetUniqueMessageMatching(
+      BrowserPluginHostMsg_Stop::ID));
+}
+
+TEST_F(BrowserPluginTest, ReloadMethod) {
+  const char* kCallReload =
+    "document.getElementById('browserplugin').reload();";
+  LoadHTML(GetHTMLForBrowserPluginObject().c_str());
+  ExecuteJavaScript(kCallReload);
+  EXPECT_TRUE(browser_plugin_manager()->sink().GetUniqueMessageMatching(
+      BrowserPluginHostMsg_Reload::ID));
+}
+
 }  // namespace content
