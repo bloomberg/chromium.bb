@@ -8,7 +8,6 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
-#include "base/metrics/field_trial.h"
 #include "base/string_piece.h"
 #include "base/stringprintf.h"
 #include "base/sys_info.h"
@@ -21,7 +20,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "grit/content_resources.h"
 #include "ui/base/ui_base_switches.h"
@@ -423,12 +421,6 @@ void GpuDataManagerImpl::UpdateVideoMemoryUsageStats(
                          video_memory_usage_stats);
 }
 
-// Experiment to determine whether Stage3D should be blacklisted on XP.
-bool Stage3DBlacklisted() {
-  return base::FieldTrialList::FindFullName(content::kStage3DFieldTrialName) ==
-      content::kStage3DFieldTrialBlacklistedName;
-}
-
 void GpuDataManagerImpl::UpdateBlacklistedFeatures(
     GpuFeatureType features) {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
@@ -443,9 +435,6 @@ void GpuDataManagerImpl::UpdateBlacklistedFeatures(
   if (card_blacklisted_ ||
       command_line->HasSwitch(switches::kBlacklistWebGL)) {
     flags |= content::GPU_FEATURE_TYPE_WEBGL;
-  }
-  if (Stage3DBlacklisted()) {
-    flags |= content::GPU_FEATURE_TYPE_FLASH_STAGE3D;
   }
   gpu_feature_type_ = static_cast<GpuFeatureType>(flags);
 

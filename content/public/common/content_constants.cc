@@ -39,8 +39,4 @@ const char kGpuCompositingFieldTrialName[] = "ForceCompositingMode";
 const char kGpuCompositingFieldTrialForceCompositingEnabledName[] = "enabled";
 const char kGpuCompositingFieldTrialThreadEnabledName[] = "thread";
 
-const char kStage3DFieldTrialName[] = "EnableStage3D";
-const char kStage3DFieldTrialBlacklistedName[] = "blacklisted";
-const char kStage3DFieldTrialEnabledName[] = "enabled";
-
 }  // namespace content

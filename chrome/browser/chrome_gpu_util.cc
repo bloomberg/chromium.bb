@@ -21,43 +21,6 @@ using content::GpuDataManager;
 
 namespace gpu_util {
 
-bool ShouldRunStage3DFieldTrial() {
-#if !defined(OS_WIN)
-  return false;
-#else
-  if (base::win::GetVersion() >= base::win::VERSION_VISTA)
-    return false;
-  return true;
-#endif
-}
-
-void InitializeStage3DFieldTrial() {
-  if (!ShouldRunStage3DFieldTrial()) {
-    base::FieldTrial* trial =
-        base::FieldTrialList::Find(content::kStage3DFieldTrialName);
-    if (trial)
-      trial->Disable();
-    return;
-  }
-
-  const base::FieldTrial::Probability kDivisor = 1000;
-  scoped_refptr<base::FieldTrial> trial(
-    base::FieldTrialList::FactoryGetFieldTrial(
-        content::kStage3DFieldTrialName, kDivisor,
-        content::kStage3DFieldTrialEnabledName, 2013, 3, 1, NULL));
-
-  // Produce the same result on every run of this client.
-  trial->UseOneTimeRandomization();
-
-  // Kill-switch, so disabled unless we get info from server.
-  int blacklisted_group = trial->AppendGroup(
-      content::kStage3DFieldTrialBlacklistedName, kDivisor);
-
-  bool enabled = (trial->group() != blacklisted_group);
-
-  UMA_HISTOGRAM_BOOLEAN("GPU.Stage3DFieldTrial", enabled);
-}
-
 void DisableCompositingFieldTrial() {
   base::FieldTrial* trial =
       base::FieldTrialList::Find(content::kGpuCompositingFieldTrialName);
