@@ -11350,11 +11350,6 @@ The following application will be launched if you accept this request:
       <message name="IDS_OPTIONS_ENABLE_DO_NOT_TRACK_BUBBLE_DISABLE" desc="The label of a button that disables sending the 'Do Not Track' header">
         Cancel
       </message>
-      <if expr="is_win">
-        <message name="IDS_WINDOWS8_PRIVACY_HANDLING_INFO" desc="The text which describes how user data is handled differently in Windows8">
-          Your data is handled differently in Windows 8.
-        </message>
-      </if>
       <message name="IDS_OPTIONS_TABS_TO_LINKS_PREF" desc="The documentation string of the 'Tabs to Links' preference">
         Pressing Tab on a webpage highlights links, as well as form fields
       </message>

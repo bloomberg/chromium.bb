@@ -233,9 +233,6 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
     { "privacyClearDataButton", IDS_OPTIONS_PRIVACY_CLEAR_DATA_BUTTON },
     { "privacyContentSettingsButton",
       IDS_OPTIONS_PRIVACY_CONTENT_SETTINGS_BUTTON },
-#if defined(OS_WIN)
-    { "privacyWin8Data", IDS_WINDOWS8_PRIVACY_HANDLING_INFO },
-#endif
     { "profilesCreate", IDS_PROFILES_CREATE_BUTTON_LABEL },
     { "profilesDelete", IDS_PROFILES_DELETE_BUTTON_LABEL },
     { "profilesDeleteSingle", IDS_PROFILES_DELETE_SINGLE_BUTTON_LABEL },
@@ -394,10 +391,6 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
   // Pass along sync status early so it will be available during page init.
   values->Set("syncData", GetSyncStateDictionary().release());
 
-#if defined(OS_WIN)
-  values->SetString("privacyWin8DataLearnMoreURL",
-                    chrome::kPrivacyWin8DataLearnMoreURL);
-#endif
   values->SetString("privacyLearnMoreURL", chrome::kPrivacyLearnMoreURL);
   values->SetString("sessionRestoreLearnMoreURL",
                     chrome::kSessionRestoreLearnMoreURL);
