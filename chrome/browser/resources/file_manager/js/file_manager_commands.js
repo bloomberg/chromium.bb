@@ -50,8 +50,10 @@ CommandUtil.registerCommand = function(node, commandId, handler, var_args) {
   var args = Array.prototype.slice.call(arguments, 3);
 
   node.addEventListener('command', function(event) {
-    if (event.command.id == commandId)
+    if (event.command.id == commandId) {
       handler.execute.apply(handler, [event].concat(args));
+      event.cancelBubble = true;
+    }
   });
 
   node.addEventListener('canExecute', function(event) {

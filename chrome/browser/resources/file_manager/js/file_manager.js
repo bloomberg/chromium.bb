@@ -2611,6 +2611,10 @@ FileManager.prototype = {
       }
     }
 
+    var commands = this.dialogDom_.querySelectorAll('command');
+    for (var i = 0; i < commands.length; i++)
+      commands[i].canExecuteChange();
+
     this.updateOkButton_();
 
     setTimeout(this.onSelectionChangeComplete_.bind(this, event), 0);
