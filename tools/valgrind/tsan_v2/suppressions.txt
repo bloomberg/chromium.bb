@@ -1,0 +1,12 @@
+# Intentional race in ToolsSanityTest.DataRace in base_unittests.
+race:base/tools_sanity_unittest.cc
+
+# Data race on WatchdogCounter [test-only]
+race:base/threading/watchdog_unittest.cc
+
+# Races in libevent, http://crbug.com/23244
+race:libevent.c
+
+# http://crbug.com/120808
+race:base/threading/watchdog.cc
+
