@@ -54,27 +54,16 @@ class MockTranslateInfoBarDelegate : public TranslateInfoBarDelegate {
 
   }
 
-  virtual string16 GetDisplayNameForLocale(const std::string& language_code) {
-    return ASCIIToUTF16("Foo");
-  }
-
-  virtual bool IsLanguageBlacklisted() {
-    return false;
-  }
-
-  virtual bool IsSiteBlacklisted() {
-    return false;
-  }
-
-  virtual bool ShouldAlwaysTranslate() {
-    return false;
-  }
-
   MOCK_METHOD0(Translate, void());
   MOCK_METHOD0(RevertTranslation, void());
+
   MOCK_METHOD0(TranslationDeclined, void());
+
+  virtual bool IsLanguageBlacklisted() OVERRIDE { return false; }
   MOCK_METHOD0(ToggleLanguageBlacklist, void());
+  virtual bool IsSiteBlacklisted() OVERRIDE { return false; }
   MOCK_METHOD0(ToggleSiteBlacklist, void());
+  virtual bool ShouldAlwaysTranslate() OVERRIDE { return false; }
   MOCK_METHOD0(ToggleAlwaysTranslate, void());
 };
 

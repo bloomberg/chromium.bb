@@ -1124,7 +1124,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, TranslateEnabled) {
       infobar_delegate->AsTranslateInfoBarDelegate();
   ASSERT_TRUE(delegate);
   EXPECT_EQ(TranslateInfoBarDelegate::BEFORE_TRANSLATE, delegate->type());
-  EXPECT_EQ("fr", delegate->GetOriginalLanguageCode());
+  EXPECT_EQ("fr", delegate->original_language_code());
 
   // Now force disable translate.
   ui_test_utils::CloseAllInfoBars(tab_contents);

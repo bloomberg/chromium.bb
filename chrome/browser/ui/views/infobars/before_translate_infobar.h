@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_INFOBARS_BEFORE_TRANSLATE_INFOBAR_H_
 #define CHROME_BROWSER_UI_VIEWS_INFOBARS_BEFORE_TRANSLATE_INFOBAR_H_
 
-#include "chrome/browser/translate/languages_menu_model.h"
 #include "chrome/browser/translate/options_menu_model.h"
 #include "chrome/browser/ui/views/infobars/translate_infobar_base.h"
+#include "chrome/browser/ui/views/infobars/translate_language_menu_model.h"
 #include "ui/views/controls/button/menu_button_listener.h"
 
 class TranslateInfoBarDelegate;
@@ -32,7 +32,6 @@ class BeforeTranslateInfoBar : public TranslateInfoBarBase,
                                     views::View* parent,
                                     views::View* child) OVERRIDE;
   virtual int ContentMinimumWidth() const OVERRIDE;
-  virtual void OriginalLanguageChanged() OVERRIDE;
 
   // views::MenuButtonListener:
   virtual void OnMenuButtonClicked(views::View* source,
@@ -52,7 +51,7 @@ class BeforeTranslateInfoBar : public TranslateInfoBarBase,
   views::TextButton* always_translate_button_;
   views::MenuButton* options_menu_button_;
 
-  LanguagesMenuModel languages_menu_model_;
+  scoped_ptr<TranslateLanguageMenuModel> language_menu_model_;
   OptionsMenuModel options_menu_model_;
 
   DISALLOW_COPY_AND_ASSIGN(BeforeTranslateInfoBar);

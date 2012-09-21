@@ -6,8 +6,6 @@
 #define CHROME_BROWSER_UI_VIEWS_INFOBARS_TRANSLATE_INFOBAR_BASE_H_
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/translate/languages_menu_model.h"
-#include "chrome/browser/translate/translate_infobar_view.h"
 #include "chrome/browser/ui/views/infobars/infobar_background.h"
 #include "chrome/browser/ui/views/infobars/infobar_view.h"
 
@@ -19,12 +17,15 @@ class MenuButton;
 
 // This class contains some of the base functionality that translate infobars
 // use.
-class TranslateInfoBarBase : public TranslateInfoBarView,
-                             public InfoBarView {
+class TranslateInfoBarBase : public InfoBarView {
  public:
   TranslateInfoBarBase(InfoBarTabHelper* owner,
                        TranslateInfoBarDelegate* delegate);
   virtual ~TranslateInfoBarBase();
+
+  // Sets the text of the provided language menu button.
+  void UpdateLanguageButtonText(views::MenuButton* button,
+                                const string16& text);
 
  protected:
   static const int kButtonInLabelSpacing;
@@ -33,11 +34,6 @@ class TranslateInfoBarBase : public TranslateInfoBarView,
   virtual void ViewHierarchyChanged(bool is_add,
                                     View* parent,
                                     View* child) OVERRIDE;
-
-  // Sets the text of the provided language menu button to reflect the current
-  // value from the delegate.
-  void UpdateLanguageButtonText(views::MenuButton* button,
-                                LanguagesMenuModel::LanguageType language);
 
   // Convenience to retrieve the TranslateInfoBarDelegate for this infobar.
   TranslateInfoBarDelegate* GetDelegate();

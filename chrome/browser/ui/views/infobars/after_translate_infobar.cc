@@ -23,8 +23,6 @@ AfterTranslateInfoBar::AfterTranslateInfoBar(
       target_language_menu_button_(NULL),
       revert_button_(NULL),
       options_menu_button_(NULL),
-      original_language_menu_model_(delegate, LanguagesMenuModel::ORIGINAL),
-      target_language_menu_model_(delegate, LanguagesMenuModel::TARGET),
       options_menu_model_(delegate),
       swapped_language_buttons_(false) {
 }
@@ -85,14 +83,21 @@ void AfterTranslateInfoBar::ViewHierarchyChanged(bool is_add,
   }
 
   std::vector<string16> strings;
-  GetDelegate()->GetAfterTranslateStrings(&strings, &swapped_language_buttons_);
+  TranslateInfoBarDelegate* delegate = GetDelegate();
+  delegate->GetAfterTranslateStrings(&strings, &swapped_language_buttons_);
   DCHECK_EQ(3U, strings.size());
 
   label_1_ = CreateLabel(strings[0]);
   AddChildView(label_1_);
 
   original_language_menu_button_ = CreateMenuButton(string16(), this);
+  original_language_menu_model_.reset(new TranslateLanguageMenuModel(
+      TranslateLanguageMenuModel::ORIGINAL, delegate, this,
+      original_language_menu_button_, true));
   target_language_menu_button_ = CreateMenuButton(string16(), this);
+  original_language_menu_model_.reset(new TranslateLanguageMenuModel(
+      TranslateLanguageMenuModel::TARGET, delegate, this,
+      target_language_menu_button_, true));
   AddChildView(swapped_language_buttons_ ?
       target_language_menu_button_ : original_language_menu_button_);
 
@@ -120,8 +125,10 @@ void AfterTranslateInfoBar::ViewHierarchyChanged(bool is_add,
   // These must happen after adding all children because they trigger layout,
   // which assumes that particular children (e.g. the close button) have already
   // been added.
-  OriginalLanguageChanged();
-  TargetLanguageChanged();
+  UpdateLanguageButtonText(original_language_menu_button_,
+      delegate->language_name_at(delegate->original_language_index()));
+  UpdateLanguageButtonText(target_language_menu_button_,
+      delegate->language_name_at(delegate->target_language_index()));
 }
 
 void AfterTranslateInfoBar::ButtonPressed(views::Button* sender,
@@ -146,42 +153,19 @@ int AfterTranslateInfoBar::ContentMinimumWidth() const {
       (kEndOfLabelSpacing + options_menu_button_->GetPreferredSize().width());
 }
 
-void AfterTranslateInfoBar::OriginalLanguageChanged() {
-  // Tests can call this function when the infobar has never been added to a
-  // view hierarchy and thus there is no button.
-  if (original_language_menu_button_) {
-    UpdateLanguageButtonText(original_language_menu_button_,
-                             LanguagesMenuModel::ORIGINAL);
-  }
-}
-
-void AfterTranslateInfoBar::TargetLanguageChanged() {
-  // Tests can call this function when the infobar has never been added to a
-  // view hierarchy and thus there is no button.
-  if (target_language_menu_button_) {
-    UpdateLanguageButtonText(target_language_menu_button_,
-                             LanguagesMenuModel::TARGET);
-  }
-}
-
 void AfterTranslateInfoBar::OnMenuButtonClicked(views::View* source,
                                                 const gfx::Point& point) {
   if (!owned())
     return;  // We're closing; don't call anything, it might access the owner.
-  ui::MenuModel* menu_model = NULL;
-  views::MenuButton* button = NULL;
-  views::MenuItemView::AnchorPosition anchor = views::MenuItemView::TOPLEFT;
   if (source == original_language_menu_button_) {
-    menu_model = &original_language_menu_model_;
-    button = original_language_menu_button_;
+    RunMenuAt(original_language_menu_model_.get(),
+              original_language_menu_button_, views::MenuItemView::TOPLEFT);
   } else if (source == target_language_menu_button_) {
-    menu_model = &target_language_menu_model_;
-    button = target_language_menu_button_;
+    RunMenuAt(target_language_menu_model_.get(), target_language_menu_button_,
+              views::MenuItemView::TOPLEFT);
   } else {
     DCHECK_EQ(options_menu_button_, source);
-    menu_model = &options_menu_model_;
-    button = options_menu_button_;
-    anchor = views::MenuItemView::TOPRIGHT;
+    RunMenuAt(&options_menu_model_, options_menu_button_,
+              views::MenuItemView::TOPRIGHT);
   }
-  RunMenuAt(menu_model, button, anchor);
 }

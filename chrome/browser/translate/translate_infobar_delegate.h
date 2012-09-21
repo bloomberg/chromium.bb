@@ -10,13 +10,14 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/logging.h"
 #include "chrome/browser/api/infobars/infobar_delegate.h"
 #include "chrome/browser/translate/translate_prefs.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/translate_errors.h"
 
 class InfoBarTabHelper;
 class PrefService;
-class TranslateInfoBarView;
 
 class TranslateInfoBarDelegate : public InfoBarDelegate {
  public:
@@ -61,29 +62,44 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
   virtual ~TranslateInfoBarDelegate();
 
   // Returns the number of languages supported.
-  size_t GetLanguageCount() const { return languages_.size(); }
+  size_t num_languages() const { return languages_.size(); }
 
   // Returns the ISO code for the language at |index|.
-  std::string GetLanguageCodeAt(size_t index) const;
+  std::string language_code_at(size_t index) const {
+    DCHECK_LT(index, num_languages());
+    return languages_[index].first;
+  }
 
   // Returns the displayable name for the language at |index|.
-  string16 GetLanguageDisplayableNameAt(size_t index) const;
+  string16 language_name_at(size_t index) const {
+    DCHECK_LT(index, num_languages());
+    return languages_[index].second;
+  }
 
   Type type() const { return type_; }
 
   TranslateErrors::Type error() const { return error_; }
 
   size_t original_language_index() const { return original_language_index_; }
+  void set_original_language_index(size_t language_index) {
+    DCHECK_LT(language_index, num_languages());
+    original_language_index_ = language_index;
+  }
   size_t target_language_index() const { return target_language_index_; }
+  void set_target_language_index(size_t language_index) {
+    DCHECK_LT(language_index, num_languages());
+    target_language_index_ = language_index;
+  }
 
   // Convenience methods.
-  std::string GetOriginalLanguageCode() const;
-  std::string GetTargetLanguageCode() const;
-
-  // Called by the InfoBar to notify that the original/target language has
-  // changed and is now the language at |language_index|.
-  virtual void SetOriginalLanguage(size_t language_index);
-  virtual void SetTargetLanguage(size_t language_index);
+  std::string original_language_code() const {
+    return (original_language_index() == kNoIndex) ?
+        chrome::kUnknownLanguageCode :
+        language_code_at(original_language_index());
+  }
+  std::string target_language_code() const {
+    return language_code_at(target_language_index());
+  }
 
   // Returns true if the current infobar indicates an error (in which case it
   // should get a yellow background instead of a blue one).
@@ -97,11 +113,11 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
 
   virtual void Translate();
   virtual void RevertTranslation();
-  virtual void ReportLanguageDetectionError();
+  void ReportLanguageDetectionError();
 
   // Called when the user declines to translate a page, by either closing the
   // infobar or pressing the "Don't translate" button.
-  void TranslationDeclined();
+  virtual void TranslationDeclined();
 
   // Methods called by the Options menu delegate.
   virtual bool IsLanguageBlacklisted();
@@ -114,8 +130,8 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
   // Methods called by the extra-buttons that can appear on the "before
   // translate" infobar (when the user has accepted/declined the translation
   // several times).
-  virtual void AlwaysTranslatePageLanguage();
-  virtual void NeverTranslatePageLanguage();
+  void AlwaysTranslatePageLanguage();
+  void NeverTranslatePageLanguage();
 
   // The following methods are called by the infobar that displays the status
   // while translating and also the one displaying the error message.
@@ -200,9 +216,6 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
 
   // The error that occurred when trying to translate (NONE if no error).
   TranslateErrors::Type error_;
-
-  // The current infobar view.
-  TranslateInfoBarView* infobar_view_;
 
   // The translation related preferences.
   TranslatePrefs prefs_;

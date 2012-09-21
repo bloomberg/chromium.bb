@@ -24,7 +24,6 @@ BeforeTranslateInfoBar::BeforeTranslateInfoBar(
       never_translate_button_(NULL),
       always_translate_button_(NULL),
       options_menu_button_(NULL),
-      languages_menu_model_(delegate, LanguagesMenuModel::ORIGINAL),
       options_menu_model_(delegate) {
 }
 
@@ -100,6 +99,10 @@ void BeforeTranslateInfoBar::ViewHierarchyChanged(bool is_add,
   AddChildView(label_1_);
 
   language_menu_button_ = CreateMenuButton(string16(), this);
+  TranslateInfoBarDelegate* delegate = GetDelegate();
+  language_menu_model_.reset(new TranslateLanguageMenuModel(
+      TranslateLanguageMenuModel::ORIGINAL, delegate, this,
+      language_menu_button_, false));
   AddChildView(language_menu_button_);
 
   label_2_ = CreateLabel(text.substr(offset));
@@ -113,9 +116,8 @@ void BeforeTranslateInfoBar::ViewHierarchyChanged(bool is_add,
       l10n_util::GetStringUTF16(IDS_TRANSLATE_INFOBAR_DENY), false);
   AddChildView(deny_button_);
 
-  TranslateInfoBarDelegate* delegate = GetDelegate();
-  const string16& language(delegate->GetLanguageDisplayableNameAt(
-      delegate->original_language_index()));
+  const string16& language(
+      delegate->language_name_at(delegate->original_language_index()));
   if (delegate->ShouldShowNeverTranslateButton()) {
     DCHECK(!delegate->ShouldShowAlwaysTranslateButton());
     never_translate_button_ = CreateTextButton(this,
@@ -140,7 +142,8 @@ void BeforeTranslateInfoBar::ViewHierarchyChanged(bool is_add,
   // This must happen after adding all children because it triggers layout,
   // which assumes that particular children (e.g. the close button) have already
   // been added.
-  OriginalLanguageChanged();
+  UpdateLanguageButtonText(language_menu_button_,
+      delegate->language_name_at(delegate->original_language_index()));
 }
 
 int BeforeTranslateInfoBar::ContentMinimumWidth() const {
@@ -178,30 +181,16 @@ void BeforeTranslateInfoBar::ButtonPressed(views::Button* sender,
   }
 }
 
-void BeforeTranslateInfoBar::OriginalLanguageChanged() {
-  // Tests can call this function when the infobar has never been added to a
-  // view hierarchy and thus there is no button.
-  if (language_menu_button_) {
-    UpdateLanguageButtonText(language_menu_button_,
-                             LanguagesMenuModel::ORIGINAL);
-  }
-}
-
 void BeforeTranslateInfoBar::OnMenuButtonClicked(views::View* source,
                                                  const gfx::Point& point) {
   if (!owned())
     return;  // We're closing; don't call anything, it might access the owner.
-  ui::MenuModel* menu_model = NULL;
-  views::MenuButton* button = NULL;
-  views::MenuItemView::AnchorPosition anchor = views::MenuItemView::TOPLEFT;
   if (source == language_menu_button_) {
-    menu_model = &languages_menu_model_;
-    button = language_menu_button_;
+    RunMenuAt(language_menu_model_.get(), language_menu_button_,
+              views::MenuItemView::TOPLEFT);
   } else {
     DCHECK_EQ(options_menu_button_, source);
-    menu_model = &options_menu_model_;
-    button = options_menu_button_;
-    anchor = views::MenuItemView::TOPRIGHT;
+    RunMenuAt(&options_menu_model_, options_menu_button_,
+              views::MenuItemView::TOPRIGHT);
   }
-  RunMenuAt(menu_model, button, anchor);
 }

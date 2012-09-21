@@ -22,23 +22,11 @@
 
 InfoBar* TranslateInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
   InfoBarTabHelper* helper = static_cast<InfoBarTabHelper*>(owner);
-  TranslateInfoBarBase* infobar = NULL;
-  switch (type_) {
-    case BEFORE_TRANSLATE:
-      infobar = new BeforeTranslateInfoBar(helper, this);
-      break;
-    case AFTER_TRANSLATE:
-      infobar = new AfterTranslateInfoBar(helper, this);
-      break;
-    case TRANSLATING:
-    case TRANSLATION_ERROR:
-      infobar = new TranslateMessageInfoBar(helper, this);
-      break;
-    default:
-      NOTREACHED();
-  }
-  infobar_view_ = infobar;
-  return infobar;
+  if (type_ == BEFORE_TRANSLATE)
+    return new BeforeTranslateInfoBar(helper, this);
+  if (type_ == AFTER_TRANSLATE)
+    return new AfterTranslateInfoBar(helper, this);
+  return new TranslateMessageInfoBar(helper, this);
 }
 
 // TranslateInfoBarBase -------------------------------------------------------
@@ -54,6 +42,15 @@ TranslateInfoBarBase::TranslateInfoBarBase(InfoBarTabHelper* owner,
 }
 
 TranslateInfoBarBase::~TranslateInfoBarBase() {
+}
+
+void TranslateInfoBarBase::UpdateLanguageButtonText(views::MenuButton* button,
+                                                    const string16& text) {
+  DCHECK(button);
+  button->SetText(text);
+  // The button may have to grow to show the new text.
+  Layout();
+  SchedulePaint();
 }
 
 void TranslateInfoBarBase::ViewHierarchyChanged(bool is_add,
@@ -77,20 +74,6 @@ void TranslateInfoBarBase::ViewHierarchyChanged(bool is_add,
   // This must happen after adding all other children so InfoBarView can ensure
   // the close button is the last child.
   InfoBarView::ViewHierarchyChanged(is_add, parent, child);
-}
-
-void TranslateInfoBarBase::UpdateLanguageButtonText(
-    views::MenuButton* button,
-    LanguagesMenuModel::LanguageType language_type) {
-  DCHECK(button);
-  TranslateInfoBarDelegate* delegate = GetDelegate();
-  bool is_original = language_type == LanguagesMenuModel::ORIGINAL;
-  int index = is_original ? delegate->original_language_index()
-                          : delegate->target_language_index();
-  button->SetText(delegate->GetLanguageDisplayableNameAt(index));
-  // The button may have to grow to show the new text.
-  Layout();
-  SchedulePaint();
 }
 
 TranslateInfoBarDelegate* TranslateInfoBarBase::GetDelegate() {

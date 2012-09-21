@@ -106,9 +106,11 @@ void AfterTranslateInfoBar::OnRevertPressed(GtkWidget* sender) {
 }
 
 void AfterTranslateInfoBar::SetOriginalLanguage(size_t language_index) {
-  GetDelegate()->SetOriginalLanguage(language_index);
+  GetDelegate()->set_original_language_index(language_index);
+  GetDelegate()->Translate();
 }
 
 void AfterTranslateInfoBar::SetTargetLanguage(size_t language_index) {
-  GetDelegate()->SetTargetLanguage(language_index);
+  GetDelegate()->set_target_language_index(language_index);
+  GetDelegate()->Translate();
 }

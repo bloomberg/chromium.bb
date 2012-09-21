@@ -9,7 +9,6 @@
 
 #import "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/translate/languages_menu_model.h"
 #include "chrome/browser/translate/options_menu_model.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_controller.h"
@@ -43,8 +42,6 @@
   // Space between controls in pixels - read from the NIB.
   CGFloat spaceBetweenControls_;
 
-  scoped_ptr<LanguagesMenuModel> originalLanguageMenuModel_;
-  scoped_ptr<LanguagesMenuModel> targetLanguageMenuModel_;
   scoped_ptr<OptionsMenuModel> optionsMenuModel_;
 }
 

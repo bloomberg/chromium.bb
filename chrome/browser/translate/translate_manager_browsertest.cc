@@ -400,10 +400,11 @@ TEST_F(TranslateManagerTest, NormalTranslate) {
   ASSERT_TRUE(infobar != NULL);
   EXPECT_EQ(TranslateInfoBarDelegate::AFTER_TRANSLATE, infobar->type());
 
-  // Simulate changing the original language, this should trigger a translation.
+  // Simulate changing the original language and translating.
   process()->sink().ClearMessages();
-  std::string new_original_lang = infobar->GetLanguageCodeAt(0);
-  infobar->SetOriginalLanguage(0);
+  std::string new_original_lang = infobar->language_code_at(0);
+  infobar->set_original_language_index(0);
+  infobar->Translate();
   EXPECT_TRUE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
   EXPECT_EQ(new_original_lang, original_lang);
   EXPECT_EQ("en", target_lang);
@@ -417,10 +418,11 @@ TEST_F(TranslateManagerTest, NormalTranslate) {
   ASSERT_TRUE(new_infobar != NULL);
   infobar = new_infobar;
 
-  // Simulate changing the target language, this should trigger a translation.
+  // Simulate changing the target language and translating.
   process()->sink().ClearMessages();
-  std::string new_target_lang = infobar->GetLanguageCodeAt(1);
-  infobar->SetTargetLanguage(1);
+  std::string new_target_lang = infobar->language_code_at(1);
+  infobar->set_target_language_index(1);
+  infobar->Translate();
   EXPECT_TRUE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
   EXPECT_EQ(new_original_lang, original_lang);
   EXPECT_EQ(new_target_lang, target_lang);
@@ -437,7 +439,7 @@ TEST_F(TranslateManagerTest, NormalTranslate) {
   ReloadAndWait();
   new_infobar = GetTranslateInfoBar();
   ASSERT_TRUE(new_infobar != NULL);
-  ASSERT_EQ(new_target_lang, infobar->GetTargetLanguageCode());
+  ASSERT_EQ(new_target_lang, infobar->target_language_code());
 }
 
 TEST_F(TranslateManagerTest, TranslateScriptNotAvailable) {
@@ -501,8 +503,8 @@ TEST_F(TranslateManagerTest, TranslateUnknownLanguage) {
   infobar = GetTranslateInfoBar();
   ASSERT_TRUE(infobar != NULL);
   EXPECT_EQ(TranslateInfoBarDelegate::AFTER_TRANSLATE, infobar->type());
-  EXPECT_EQ("fr", infobar->GetOriginalLanguageCode());
-  EXPECT_EQ("en", infobar->GetTargetLanguageCode());
+  EXPECT_EQ("fr", infobar->original_language_code());
+  EXPECT_EQ("en", infobar->target_language_code());
 
   // Let's run the same steps but this time the server detects the page is
   // already in English.

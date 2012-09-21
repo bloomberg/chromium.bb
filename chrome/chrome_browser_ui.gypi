@@ -1466,6 +1466,8 @@
         'browser/ui/views/infobars/one_click_signin_infobar.h',
         'browser/ui/views/infobars/translate_infobar_base.cc',
         'browser/ui/views/infobars/translate_infobar_base.h',
+        'browser/ui/views/infobars/translate_language_menu_model.cc',
+        'browser/ui/views/infobars/translate_language_menu_model.h',
         'browser/ui/views/infobars/translate_message_infobar.cc',
         'browser/ui/views/infobars/translate_message_infobar.h',
         'browser/ui/views/javascript_app_modal_dialog_views.cc',
