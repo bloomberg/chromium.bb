@@ -459,6 +459,11 @@ IPC_STRUCT_BEGIN(ViewHostMsg_TextInputState_Params)
 
   // Whether or not inline composition can be performed for the current input.
   IPC_STRUCT_MEMBER(bool, can_compose_inline)
+
+  // Whether or not the IME should be shown as a result of this update. Even if
+  // true, the IME will only be shown if the type is appropriate (e.g. not
+  // TEXT_INPUT_TYPE_NONE).
+  IPC_STRUCT_MEMBER(bool, show_ime_if_needed)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(ViewHostMsg_CreateWorker_Params)

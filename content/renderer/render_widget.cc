@@ -605,6 +605,13 @@ void RenderWidget::OnHandleInputEvent(const IPC::Message& message) {
     Send(response);
   }
 
+#if defined(OS_ANDROID)
+  // Allow the IME to be shown when the focus changes as a consequence
+  // of a processed touch end event.
+  if (input_event->type == WebInputEvent::TouchEnd && processed)
+    UpdateTextInputState(SHOW_IME_IF_NEEDED);
+#endif
+
   handling_input_event_ = false;
 
   if (!prevent_default) {
@@ -873,7 +880,7 @@ void RenderWidget::DoDeferredUpdate() {
   // The following two can result in further layout and possibly
   // enable GPU acceleration so they need to be called before any painting
   // is done.
-  UpdateTextInputState();
+  UpdateTextInputState(DO_NOT_SHOW_IME);
   UpdateSelectionBounds();
 
   // Suppress painting if nothing is dirty.  This has to be done after updating
@@ -1163,7 +1170,7 @@ void RenderWidget::willBeginCompositorFrame() {
   // The following two can result in further layout and possibly
   // enable GPU acceleration so they need to be called before any painting
   // is done.
-  UpdateTextInputState();
+  UpdateTextInputState(DO_NOT_SHOW_IME);
   UpdateSelectionBounds();
 
   WillInitiatePaint();
@@ -1637,8 +1644,9 @@ void RenderWidget::set_next_paint_is_repaint_ack() {
   next_paint_flags_ |= ViewHostMsg_UpdateRect_Flags::IS_REPAINT_ACK;
 }
 
-void RenderWidget::UpdateTextInputState() {
-  if (!input_method_is_active_)
+void RenderWidget::UpdateTextInputState(ShowIme show_ime) {
+  bool show_ime_if_needed = (show_ime == SHOW_IME_IF_NEEDED);
+  if (!show_ime_if_needed && !input_method_is_active_)
     return;
   ui::TextInputType new_type = GetTextInputType();
   WebKit::WebTextInputInfo new_info;
@@ -1647,9 +1655,11 @@ void RenderWidget::UpdateTextInputState() {
 
   bool new_can_compose_inline = CanComposeInline();
 
-  // Only sends text input params if they are changed.
-  if (text_input_type_ != new_type || text_input_info_ != new_info
-      || can_compose_inline_ != new_can_compose_inline) {
+  // Only sends text input params if they are changed or if the ime should be
+  // shown.
+  if (show_ime_if_needed || (text_input_type_ != new_type
+      || text_input_info_ != new_info
+      || can_compose_inline_ != new_can_compose_inline)) {
     ViewHostMsg_TextInputState_Params p;
     p.type = new_type;
     p.value = new_info.value.utf8();
@@ -1658,6 +1668,7 @@ void RenderWidget::UpdateTextInputState() {
     p.composition_start = new_info.compositionStart;
     p.composition_end = new_info.compositionEnd;
     p.can_compose_inline = new_can_compose_inline;
+    p.show_ime_if_needed = show_ime_if_needed;
     Send(new ViewHostMsg_TextInputStateChanged(routing_id(), p));
 
     text_input_info_ = new_info;

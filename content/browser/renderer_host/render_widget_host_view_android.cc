@@ -199,7 +199,7 @@ void RenderWidgetHostViewAndroid::TextInputStateChanged(
       static_cast<int>(params.type),
       params.value, params.selection_start, params.selection_end,
       params.composition_start, params.composition_end,
-      false /* show_ime_if_needed */);
+      params.show_ime_if_needed);
 }
 
 int RenderWidgetHostViewAndroid::GetNativeImeAdapter() {

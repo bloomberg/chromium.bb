@@ -255,12 +255,14 @@ using WebKit::WebFindOptions;
 using WebKit::WebFormControlElement;
 using WebKit::WebFormElement;
 using WebKit::WebFrame;
+using WebKit::WebGestureEvent;
 using WebKit::WebGraphicsContext3D;
 using WebKit::WebHistoryItem;
 using WebKit::WebHTTPBody;
 using WebKit::WebIconURL;
 using WebKit::WebImage;
 using WebKit::WebInputElement;
+using WebKit::WebInputEvent;
 using WebKit::WebIntentRequest;
 using WebKit::WebIntentServiceInfo;
 using WebKit::WebMediaPlayer;
@@ -2065,6 +2067,16 @@ bool RenderViewImpl::handleCurrentKeyboardEvent() {
   }
 
   return did_execute_command;
+}
+
+void RenderViewImpl::didHandleGestureEvent(const WebGestureEvent& event,
+                                           bool event_swallowed) {
+#if defined(OS_ANDROID)
+  if (event.type == WebInputEvent::GestureTap ||
+      event.type == WebInputEvent::GestureLongPress) {
+    UpdateTextInputState(SHOW_IME_IF_NEEDED);
+  }
+#endif
 }
 
 WebKit::WebColorChooser* RenderViewImpl::createColorChooser(
@@ -5706,12 +5718,12 @@ void RenderViewImpl::OnSetFocus(bool enable) {
 }
 
 void RenderViewImpl::PpapiPluginFocusChanged() {
-  UpdateTextInputState();
+  UpdateTextInputState(DO_NOT_SHOW_IME);
   UpdateSelectionBounds();
 }
 
 void RenderViewImpl::PpapiPluginTextInputTypeChanged() {
-  UpdateTextInputState();
+  UpdateTextInputState(DO_NOT_SHOW_IME);
   if (renderer_accessibility_)
     renderer_accessibility_->FocusedNodeChanged(WebNode());
 }

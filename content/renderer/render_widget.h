@@ -185,6 +185,11 @@ class CONTENT_EXPORT RenderWidget
     return filtered_time_per_frame_;
   }
 
+  enum ShowIme {
+    DO_NOT_SHOW_IME,
+    SHOW_IME_IF_NEEDED
+  };
+
  protected:
   // Friend RefCounted so that the dtor can be non-public. Using this class
   // without ref-counting is an error.
@@ -351,7 +356,9 @@ class CONTENT_EXPORT RenderWidget
 
   // Checks if the text input state and compose inline mode have been changed.
   // If they are changed, the new value will be sent to the browser process.
-  void UpdateTextInputState();
+  // |show_ime_if_needed| should be SHOW_IME_IF_NEEDED iff the update may cause
+  // the ime to be displayed, e.g. after a tap on an input field on mobile.
+  void UpdateTextInputState(ShowIme show_ime);
 
   // Checks if the selection bounds have been changed. If they are changed,
   // the new value will be sent to the browser process.
