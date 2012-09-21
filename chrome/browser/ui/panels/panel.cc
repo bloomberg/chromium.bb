@@ -93,13 +93,11 @@ PanelExtensionWindowController::CreateWindowValueWithTabs(
   content::WebContents* web_contents = panel_->GetWebContents();
   if (web_contents) {
     DictionaryValue* tab_value = new DictionaryValue();
-    // TabId must be >= 0. Use panel session id to avoid conflict with
-    // browser tab ids (which are also session ids).
     tab_value->SetInteger(extensions::tabs_constants::kIdKey,
-                          panel_->session_id().id());
+                          SessionID::IdForTab(web_contents));
     tab_value->SetInteger(extensions::tabs_constants::kIndexKey, 0);
-    tab_value->SetInteger(
-        extensions::tabs_constants::kWindowIdKey, GetWindowId());
+    tab_value->SetInteger(extensions::tabs_constants::kWindowIdKey,
+                          SessionID::IdForWindowContainingTab(web_contents));
     tab_value->SetString(
         extensions::tabs_constants::kUrlKey, web_contents->GetURL().spec());
     tab_value->SetString(extensions::tabs_constants::kStatusKey,

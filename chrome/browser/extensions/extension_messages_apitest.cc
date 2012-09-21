@@ -90,3 +90,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MessagingEventURL) {
   MessageSender sender;
   ASSERT_TRUE(RunExtensionTest("messaging/event_url")) << message_;
 }
+
+// Tests connecting from a panel to its extension.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MessagingPanel) {
+  ASSERT_TRUE(RunExtensionTest("messaging/connect_panel")) << message_;
+}

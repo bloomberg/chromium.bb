@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
@@ -55,6 +56,12 @@ void PanelHost::Init(const GURL& url) {
   chrome::SetViewType(web_contents_.get(), chrome::VIEW_TYPE_PANEL);
   web_contents_->SetDelegate(this);
   content::WebContentsObserver::Observe(web_contents_.get());
+
+  // Needed to give the web contents a Tab ID. Extension APIs
+  // expect web contents to have a Tab ID.
+  SessionTabHelper::CreateForWebContents(web_contents_.get());
+  SessionTabHelper::FromWebContents(web_contents_.get())->SetWindowID(
+      panel_->session_id());
 
   favicon_tab_helper_.reset(new FaviconTabHelper(web_contents_.get()));
   prefs_tab_helper_.reset(new PrefsTabHelper(web_contents_.get()));
