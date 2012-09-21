@@ -108,9 +108,10 @@ IPC_SYNC_MESSAGE_ROUTED2_0(BrowserPluginHostMsg_ResizeGuest,
 
 // When the guest navigates, the browser process informs the embedder through
 // the BrowserPluginMsg_DidNavigate message.
-IPC_MESSAGE_CONTROL2(BrowserPluginMsg_DidNavigate,
+IPC_MESSAGE_CONTROL3(BrowserPluginMsg_DidNavigate,
                      int /* instance_id */,
-                     GURL /* url */)
+                     GURL /* url */,
+                     int /* process_id */)
 
 // When the guest crashes, the browser process informs the embedder through this
 // message.

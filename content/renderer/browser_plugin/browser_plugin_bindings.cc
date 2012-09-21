@@ -39,6 +39,7 @@ namespace content {
 namespace {
 
 const char kAddEventListener[] = "addEventListener";
+const char kGetProcessId[] = "getProcessId";
 const char kReloadMethod[] = "reload";
 const char kRemoveEventListener[] = "removeEventListener";
 const char kSrcAttribute[] = "src";
@@ -63,6 +64,10 @@ bool IdentifierIsAddEventListener(NPIdentifier identifier) {
 
 bool IdentifierIsRemoveEventListener(NPIdentifier identifier) {
   return WebBindings::getStringIdentifier(kRemoveEventListener) == identifier;
+}
+
+bool IdentifierIsGetProcessID(NPIdentifier identifier) {
+  return WebBindings::getStringIdentifier(kGetProcessId) == identifier;
 }
 
 bool IdentifierIsSrcAttribute(NPIdentifier identifier) {
@@ -119,13 +124,16 @@ bool BrowserPluginBindingsHasMethod(NPObject* np_obj, NPIdentifier name) {
   if (IdentifierIsAddEventListener(name))
     return true;
 
+  if (IdentifierIsGetProcessID(name))
+    return true;
+
+  if (IdentifierIsReload(name))
+    return true;
+
   if (IdentifierIsRemoveEventListener(name))
     return true;
 
   if (IdentifierIsStop(name))
-    return true;
-
-  if (IdentifierIsReload(name))
     return true;
 
   return false;
@@ -155,6 +163,18 @@ bool BrowserPluginBindingsInvoke(NPObject* np_obj, NPIdentifier name,
     return bindings->instance()->AddEventListener(event_name, function);
   }
 
+  if (IdentifierIsGetProcessID(name) && !arg_count) {
+    int process_id = bindings->instance()->process_id();
+    result->type = NPVariantType_Int32;
+    result->value.intValue = process_id;
+    return true;
+  }
+
+  if (IdentifierIsReload(name) && !arg_count) {
+    bindings->instance()->Reload();
+    return true;
+  }
+
   if (IdentifierIsRemoveEventListener(name) && arg_count == 2) {
     std::string event_name = StringFromNPVariant(args[0]);
     if (event_name.empty())
@@ -172,11 +192,6 @@ bool BrowserPluginBindingsInvoke(NPObject* np_obj, NPIdentifier name,
 
   if (IdentifierIsStop(name) && !arg_count) {
     bindings->instance()->Stop();
-    return true;
-  }
-
-  if (IdentifierIsReload(name) && !arg_count) {
-    bindings->instance()->Reload();
     return true;
   }
 

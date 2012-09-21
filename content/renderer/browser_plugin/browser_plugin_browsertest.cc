@@ -64,6 +64,16 @@ std::string BrowserPluginTest::ExecuteScriptAndReturnString(
   return str.get();
 }
 
+int BrowserPluginTest::ExecuteScriptAndReturnInt(
+    const std::string& script) {
+  v8::Handle<v8::Value>  value = GetMainFrame()->executeScriptAndReturnValue(
+      WebKit::WebScriptSource(WebKit::WebString::fromUTF8(script.c_str())));
+  if (value.IsEmpty() || !value->IsInt32())
+    return 0;
+
+  return value->Int32Value();
+}
+
 // This test verifies that an initial resize occurs when we instantiate the
 // browser plugin. This test also verifies that the browser plugin is waiting
 // for a BrowserPluginMsg_UpdateRect in response. We issue an UpdateRect, and
@@ -293,6 +303,8 @@ TEST_F(BrowserPluginTest, CustomEvents) {
   const char* kRemoveEventListener =
     "document.getElementById('browserplugin')."
     "    removeEventListener('navigation', nav);";
+  const char* kGetProcessID =
+      "document.getElementById('browserplugin').getProcessId()";
   const char* kGoogleURL = "http://www.google.com/";
   const char* kGoogleNewsURL = "http://news.google.com/";
 
@@ -313,14 +325,16 @@ TEST_F(BrowserPluginTest, CustomEvents) {
           browser_plugin_manager()->GetBrowserPlugin(instance_id));
   ASSERT_TRUE(browser_plugin);
 
-  browser_plugin->DidNavigate(GURL(kGoogleURL));
+  browser_plugin->DidNavigate(GURL(kGoogleURL), 1337);
   EXPECT_EQ(kGoogleURL, ExecuteScriptAndReturnString("url"));
+  EXPECT_EQ(1337, ExecuteScriptAndReturnInt(kGetProcessID));
 
   ExecuteJavaScript(kRemoveEventListener);
-  browser_plugin->DidNavigate(GURL(kGoogleNewsURL));
+  browser_plugin->DidNavigate(GURL(kGoogleNewsURL), 42);
   // The URL variable should not change because we've removed the event
   // listener.
   EXPECT_EQ(kGoogleURL, ExecuteScriptAndReturnString("url"));
+  EXPECT_EQ(42, ExecuteScriptAndReturnInt(kGetProcessID));
 }
 
 TEST_F(BrowserPluginTest, StopMethod) {

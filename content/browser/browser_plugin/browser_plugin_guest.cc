@@ -129,7 +129,6 @@ void BrowserPluginGuest::UpdateRect(
       memcpy(embedder_memory, guest_memory, size);
     }
   }
-  DCHECK(embedder_render_process_host());
   BrowserPluginMsg_UpdateRect_Params relay_params;
   relay_params.bitmap_rect = params.bitmap_rect;
   relay_params.dx = params.dx;
@@ -198,7 +197,7 @@ void BrowserPluginGuest::HandleInputEvent(RenderViewHost* render_view_host,
     // embedder doesn't hang.
     BrowserPluginHostMsg_HandleInputEvent::WriteReplyParams(
         reply_message, false /* handled */, cursor_);
-    embedder_render_process_host()->Send(reply_message);
+    SendMessageToEmbedder(reply_message);
     return;
   }
 
@@ -262,13 +261,15 @@ void BrowserPluginGuest::DidCommitProvisionalLoadForFrame(
     PageTransition transition_type,
     RenderViewHost* render_view_host) {
   // Inform its embedder of the updated URL.
-  DCHECK(embedder_render_process_host());
   if (is_main_frame)
-    SendMessageToEmbedder(new BrowserPluginMsg_DidNavigate(instance_id(), url));
+    SendMessageToEmbedder(
+        new BrowserPluginMsg_DidNavigate(
+            instance_id(),
+            url,
+            render_view_host->GetProcess()->GetID()));
 }
 
 void BrowserPluginGuest::RenderViewGone(base::TerminationStatus status) {
-  DCHECK(embedder_render_process_host());
   if (pending_input_event_reply_.get()) {
     IPC::Message* reply_message = pending_input_event_reply_.release();
     BrowserPluginHostMsg_HandleInputEvent::WriteReplyParams(reply_message,
@@ -285,6 +286,7 @@ void BrowserPluginGuest::RenderViewGone(base::TerminationStatus status) {
 }
 
 void BrowserPluginGuest::SendMessageToEmbedder(IPC::Message* msg) {
+  DCHECK(embedder_render_process_host());
   embedder_render_process_host()->Send(msg);
 }
 

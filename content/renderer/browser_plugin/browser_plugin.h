@@ -35,6 +35,8 @@ class CONTENT_EXPORT BrowserPlugin :
   // Set the src attribute value of the BrowserPlugin instance and reset
   // the guest_crashed_ flag.
   void SetSrcAttribute(const std::string& src);
+  // Returns Chrome's process ID for the current guest.
+  int process_id() const { return process_id_; }
 
   // Inform the BrowserPlugin to update its backing store with the pixels in
   // its damage buffer.
@@ -43,7 +45,7 @@ class CONTENT_EXPORT BrowserPlugin :
   // Inform the BrowserPlugin that its guest has crashed.
   void GuestCrashed();
   // Informs the BrowserPlugin that the guest has navigated to a new URL.
-  void DidNavigate(const GURL& url);
+  void DidNavigate(const GURL& url, int process_id);
   // Tells the BrowserPlugin to advance the focus to the next (or previous)
   // element.
   void AdvanceFocus(bool reverse);
@@ -148,6 +150,7 @@ class CONTENT_EXPORT BrowserPlugin :
   bool navigate_src_sent_;
   int64 parent_frame_;
   std::string src_;
+  int process_id_;
   typedef std::vector<v8::Persistent<v8::Function> > EventListeners;
   typedef std::map<std::string, EventListeners> EventListenerMap;
   EventListenerMap event_listener_map_;

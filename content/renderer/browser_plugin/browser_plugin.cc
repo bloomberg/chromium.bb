@@ -58,7 +58,8 @@ BrowserPlugin::BrowserPlugin(
       guest_crashed_(false),
       resize_pending_(false),
       navigate_src_sent_(false),
-      parent_frame_(frame->identifier()) {
+      parent_frame_(frame->identifier()),
+      process_id_(-1) {
   BrowserPluginManager::Get()->AddBrowserPlugin(instance_id, this);
   bindings_.reset(new BrowserPluginBindings(this));
 
@@ -231,8 +232,9 @@ void BrowserPlugin::GuestCrashed() {
   }
 }
 
-void BrowserPlugin::DidNavigate(const GURL& url) {
+void BrowserPlugin::DidNavigate(const GURL& url, int process_id) {
   src_ = url.spec();
+  process_id_ = process_id;
   if (!HasListeners(kNavigationEventName))
     return;
 

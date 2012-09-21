@@ -31,6 +31,7 @@ class BrowserPluginTest : public RenderViewTest {
     return browser_plugin_manager_.get();
   }
   std::string ExecuteScriptAndReturnString(const std::string& script);
+  int ExecuteScriptAndReturnInt(const std::string& script);
  private:
   scoped_ptr<MockBrowserPluginManager> browser_plugin_manager_;
   ContentRendererClient content_renderer_client_;

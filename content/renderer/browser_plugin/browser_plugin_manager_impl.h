@@ -33,7 +33,7 @@ class BrowserPluginManagerImpl : public BrowserPluginManager {
                     int message_id,
                     const BrowserPluginMsg_UpdateRect_Params& params);
   void OnGuestCrashed(int instance_id);
-  void OnDidNavigate(int instance_id, const GURL& url);
+  void OnDidNavigate(int instance_id, const GURL& url, int process_id);
   void OnAdvanceFocus(int instance_id, bool reverse);
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginManagerImpl);
