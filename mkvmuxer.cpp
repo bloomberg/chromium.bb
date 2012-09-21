@@ -1600,6 +1600,29 @@ uint64 Segment::AddVideoTrack(int32 width, int32 height, int32 number) {
   return vid_track->number();
 }
 
+bool Segment::AddCuePoint(uint64 timestamp, uint64 track) {
+  if (cluster_list_size_  < 1)
+    return false;
+
+  const Cluster* const cluster = cluster_list_[cluster_list_size_-1];
+  if (!cluster)
+    return false;
+
+  CuePoint* const cue = new (std::nothrow) CuePoint();  // NOLINT
+  if (!cue)
+    return false;
+
+  cue->set_time(timestamp / segment_info_.timecode_scale());
+  cue->set_block_number(cluster->blocks_added() + 1);
+  cue->set_cluster_pos(cluster->position_for_cues());
+  cue->set_track(track);
+  if (!cues_.AddCue(cue))
+    return false;
+
+  new_cuepoint_ = false;
+  return true;
+}
+
 uint64 Segment::AddAudioTrack(int32 sample_rate,
                               int32 channels,
                               int32 number) {
@@ -2043,29 +2066,6 @@ bool Segment::CheckHeaderInfo() {
       }
     }
   }
-  return true;
-}
-
-bool Segment::AddCuePoint(uint64 timestamp, uint64 track) {
-  if (cluster_list_size_  < 1)
-    return false;
-
-  const Cluster* const cluster = cluster_list_[cluster_list_size_-1];
-  if (!cluster)
-    return false;
-
-  CuePoint* const cue = new (std::nothrow) CuePoint();  // NOLINT
-  if (!cue)
-    return false;
-
-  cue->set_time(timestamp / segment_info_.timecode_scale());
-  cue->set_block_number(cluster->blocks_added() + 1);
-  cue->set_cluster_pos(cluster->position_for_cues());
-  cue->set_track(track);
-  if (!cues_.AddCue(cue))
-    return false;
-
-  new_cuepoint_ = false;
   return true;
 }
 

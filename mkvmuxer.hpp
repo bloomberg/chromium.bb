@@ -674,6 +674,11 @@ class Segment {
   // the track number.
   uint64 AddAudioTrack(int32 sample_rate, int32 channels, int32 number);
 
+  // Adds a cue point to the Cues element. |timestamp| is the time in
+  // nanoseconds of the cue's time. |track| is the Track of the Cue. Returns
+  // true on success.
+  bool AddCuePoint(uint64 timestamp, uint64 track);
+
   // Adds a frame to be output in the file. Returns true on success.
   // Inputs:
   //   frame: Pointer to the data
@@ -744,11 +749,6 @@ class Segment {
   const SegmentInfo* segment_info() const { return &segment_info_; }
 
  private:
-  // Adds a cue point to the Cues element. |timestamp| is the time in
-  // nanoseconds of the cue's time. |track| is the Track of the Cue. Returns
-  // true on success.
-  bool AddCuePoint(uint64 timestamp, uint64 track);
-
   // Checks if header information has been output and initialized. If not it
   // will output the Segment element and initialize the SeekHead elment and
   // Cues elements.
