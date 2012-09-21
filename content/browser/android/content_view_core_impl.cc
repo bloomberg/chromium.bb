@@ -79,12 +79,10 @@ ContentViewCore* ContentViewCore::GetNativeContentViewCore(JNIEnv* env,
 
 ContentViewCoreImpl::ContentViewCoreImpl(JNIEnv* env, jobject obj,
                                          bool hardware_accelerated,
-                                         bool take_ownership_of_web_contents,
                                          WebContents* web_contents,
                                          ui::WindowAndroid* window_android)
     : java_ref_(env, obj),
       web_contents_(static_cast<WebContentsImpl*>(web_contents)),
-      owns_web_contents_(take_ownership_of_web_contents),
       tab_crashed_(false),
       window_android_(window_android) {
   DCHECK(web_contents) <<
@@ -557,11 +555,10 @@ ui::WindowAndroid* ContentViewCoreImpl::GetWindowAndroid() {
 // This is called for each ContentViewCore.
 jint Init(JNIEnv* env, jobject obj,
           jboolean hardware_accelerated,
-          jboolean take_ownership_of_web_contents,
           jint native_web_contents,
           jint native_window) {
   ContentViewCoreImpl* view = new ContentViewCoreImpl(
-      env, obj, hardware_accelerated, take_ownership_of_web_contents,
+      env, obj, hardware_accelerated,
       reinterpret_cast<WebContents*>(native_web_contents),
       reinterpret_cast<ui::WindowAndroid*>(native_window));
   return reinterpret_cast<jint>(view);

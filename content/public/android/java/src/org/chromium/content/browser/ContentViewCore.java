@@ -309,25 +309,25 @@ public class ContentViewCore implements MotionEventDelegate {
      * @param containerView The view that will act as a container for all views created by this.
      * @param internalDispatcher Handles dispatching all hidden or super methods to the
      *                           containerView.
-     * @param takeOwnershipOfWebContents Whether this object will take ownership of
-     *                                   nativeWebContents over on its native side.
      * @param nativeWebContents A pointer to the native web contents.
      * @param nativeWindow An instance of the NativeWindow.
      * @param isAccessFromFileURLsGrantedByDefault Default WebSettings configuration.
      */
     // Perform important post-construction set up of the ContentViewCore.
     // We do not require the containing view in the constructor to allow embedders to create a
-    // ContentViewCore without having fully created it's containing view. The containing view
+    // ContentViewCore without having fully created its containing view. The containing view
     // is a vital component of the ContentViewCore, so embedders must exercise caution in what
     // they do with the ContentViewCore before calling initialize().
     // We supply the nativeWebContents pointer here rather than in the constructor to allow us
     // to set the private browsing mode at a later point for the WebView implementation.
+    // Note that the caller remains the owner of the nativeWebContents and is responsible for
+    // deleting it after destroying the ContentViewCore.
     public void initialize(ViewGroup containerView, InternalAccessDelegate internalDispatcher,
-            boolean takeOwnershipOfWebContents, int nativeWebContents, NativeWindow nativeWindow,
+            int nativeWebContents, NativeWindow nativeWindow,
             boolean isAccessFromFileURLsGrantedByDefault) {
         mContainerView = containerView;
-        mNativeContentViewCore = nativeInit(mHardwareAccelerated, takeOwnershipOfWebContents,
-                nativeWebContents, nativeWindow.getNativePointer());
+        mNativeContentViewCore = nativeInit(mHardwareAccelerated, nativeWebContents,
+                nativeWindow.getNativePointer());
         mCleanupReference = new CleanupReference(
                 this, new DestroyRunnable(mNativeContentViewCore));
         mContentSettings = new ContentSettings(
@@ -1332,8 +1332,8 @@ public class ContentViewCore implements MotionEventDelegate {
 
     // The following methods are implemented at native side.
 
-    private native int nativeInit(boolean hardwareAccelerated, boolean takeOwnershipOfWebContents,
-            int webContentsPtr, int windowAndroidPtr);
+    private native int nativeInit(boolean hardwareAccelerated, int webContentsPtr,
+            int windowAndroidPtr);
 
     private static native void nativeDestroy(int nativeContentViewCore);
 
