@@ -189,6 +189,16 @@ class HostContentSettingsMap
                                     const GURL& secondary_url,
                                     ContentSettingsType content_type);
 
+  // Returns the ProviderType associated with the given source string.
+  // TODO(estade): I regret adding this. At the moment there are no legitimate
+  // uses. We should stick to ProviderType rather than string so we don't have
+  // to convert backwards.
+  static ProviderType GetProviderTypeFromSource(const std::string& source);
+
+  bool is_off_the_record() const {
+    return is_off_the_record_;
+  }
+
  private:
   friend class base::RefCountedThreadSafe<HostContentSettingsMap>;
   friend class HostContentSettingsMapTest_NonDefaultSettings_Test;

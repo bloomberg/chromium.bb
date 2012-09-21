@@ -58,15 +58,19 @@ enum ExContentSettingsTypeEnum {
   EX_CONTENT_SETTINGS_NUM_TYPES
 };
 
-typedef std::map<ContentSettingsPattern, ContentSetting> OnePatternSettings;
-typedef std::map<ContentSettingsPattern, OnePatternSettings>
+// Maps from a secondary pattern to a setting.
+typedef std::map<ContentSettingsPattern, ContentSetting>
+    OnePatternSettings;
+// Maps from a primary pattern/source pair to a OnePatternSettings. All the
+// mappings in OnePatternSettings share the given primary pattern and source.
+typedef std::map<std::pair<ContentSettingsPattern, std::string>,
+                 OnePatternSettings>
     AllPatternsSettings;
 
 // The AppFilter is used in AddExceptionsGrantedByHostedApps() to choose
 // extensions which should have their extent displayed.
 typedef bool (*AppFilter)(const extensions::Extension& app, Profile* profile);
 
-const char* kDisplayPattern = "displayPattern";
 const char* kSetting = "setting";
 const char* kOrigin = "origin";
 const char* kSource = "source";
@@ -74,7 +78,7 @@ const char* kAppName = "appName";
 const char* kAppId = "appId";
 const char* kEmbeddingOrigin = "embeddingOrigin";
 const char* kDefaultProviderID = "default";
-const char* kPreferencesSource = "preferences";
+const char* kPreferencesSource = "preference";
 
 std::string ContentSettingToString(ContentSetting setting) {
   switch (setting) {
@@ -114,10 +118,14 @@ ContentSetting ContentSettingFromString(const std::string& name) {
 // Ownership of the pointer is passed to the caller.
 DictionaryValue* GetExceptionForPage(
     const ContentSettingsPattern& pattern,
+    const ContentSettingsPattern& secondary_pattern,
     const ContentSetting& setting,
     const std::string& provider_name) {
   DictionaryValue* exception = new DictionaryValue();
-  exception->SetString(kDisplayPattern, pattern.ToString());
+  exception->SetString(kOrigin, pattern.ToString());
+  exception->SetString(kEmbeddingOrigin,
+      secondary_pattern == ContentSettingsPattern::Wildcard() ? "" :
+          secondary_pattern.ToString());
   exception->SetString(kSetting, ContentSettingToString(setting));
   exception->SetString(kSource, provider_name);
   return exception;
@@ -145,7 +153,6 @@ DictionaryValue* GetNotificationExceptionForPage(
     ContentSetting setting,
     const std::string& provider_name) {
   DictionaryValue* exception = new DictionaryValue();
-  exception->SetString(kDisplayPattern, pattern.ToString());
   exception->SetString(kSetting, ContentSettingToString(setting));
   exception->SetString(kOrigin, pattern.ToString());
   exception->SetString(kSource, provider_name);
@@ -174,7 +181,6 @@ bool HostedAppHasPermission(
 void AddExceptionForHostedApp(const std::string& url_pattern,
     const extensions::Extension& app, ListValue* exceptions) {
   DictionaryValue* exception = new DictionaryValue();
-  exception->SetString(kDisplayPattern, url_pattern);
   exception->SetString(kSetting, ContentSettingToString(CONTENT_SETTING_ALLOW));
   exception->SetString(kOrigin, url_pattern);
   exception->SetString(kEmbeddingOrigin, url_pattern);
@@ -700,6 +706,7 @@ void ContentSettingsHandler::UpdateOTRExceptionsViewFromModel(
   }
 }
 
+// TODO(estade): merge with GetExceptionsFromHostContentSettingsMap.
 void ContentSettingsHandler::UpdateGeolocationExceptionsView() {
   Profile* profile = Profile::FromWebUI(web_ui());
   HostContentSettingsMap* map = profile->GetHostContentSettingsMap();
@@ -712,18 +719,16 @@ void ContentSettingsHandler::UpdateGeolocationExceptionsView() {
 
   // Group geolocation settings by primary_pattern.
   AllPatternsSettings all_patterns_settings;
-  for (ContentSettingsForOneType::iterator i =
-           all_settings.begin();
-       i != all_settings.end();
-       ++i) {
+  for (ContentSettingsForOneType::iterator i = all_settings.begin();
+       i != all_settings.end(); ++i) {
     // Don't add default settings.
     if (i->primary_pattern == ContentSettingsPattern::Wildcard() &&
         i->secondary_pattern == ContentSettingsPattern::Wildcard() &&
         i->source != kPreferencesSource) {
       continue;
     }
-    all_patterns_settings[i->primary_pattern][i->secondary_pattern] =
-        i->setting;
+    all_patterns_settings[std::make_pair(i->primary_pattern, i->source)]
+        [i->secondary_pattern] = i->setting;
   }
 
   ListValue exceptions;
@@ -733,9 +738,8 @@ void ContentSettingsHandler::UpdateGeolocationExceptionsView() {
       &exceptions);
 
   for (AllPatternsSettings::iterator i = all_patterns_settings.begin();
-       i != all_patterns_settings.end();
-       ++i) {
-    const ContentSettingsPattern& primary_pattern = i->first;
+       i != all_patterns_settings.end(); ++i) {
+    const ContentSettingsPattern& primary_pattern = i->first.first;
     const OnePatternSettings& one_settings = i->second;
 
     OnePatternSettings::const_iterator parent =
@@ -756,8 +760,8 @@ void ContentSettingsHandler::UpdateGeolocationExceptionsView() {
       if (j == parent)
         continue;
 
-      exceptions.Append(
-          GetGeolocationExceptionForPage(primary_pattern, j->first, j->second));
+      exceptions.Append(GetGeolocationExceptionForPage(
+          primary_pattern, j->first, j->second));
     }
   }
 
@@ -818,11 +822,11 @@ void ContentSettingsHandler::UpdateFlashCameraMicExceptionsView() {
            flash_cameramic_settings_.sites.begin();
        iter != flash_cameramic_settings_.sites.end(); ++iter) {
     DictionaryValue* exception = new DictionaryValue();
-    exception->SetString(kDisplayPattern, iter->first);
+    exception->SetString(kOrigin, iter->first);
     exception->SetString(
         kSetting,
         ContentSettingToString(FlashPermissionToContentSetting(iter->second)));
-    exception->SetString(kSource, "preference");
+    exception->SetString(kSource, kPreferencesSource);
     exceptions.Append(exception);
   }
 
@@ -837,42 +841,9 @@ void ContentSettingsHandler::UpdateFlashCameraMicExceptionsView() {
 
 void ContentSettingsHandler::UpdateExceptionsViewFromHostContentSettingsMap(
     ContentSettingsType type) {
-  ContentSettingsForOneType entries;
-  GetContentSettingsMap()->GetSettingsForOneType(type, "", &entries);
-
   ListValue exceptions;
-  for (size_t i = 0; i < entries.size(); ++i) {
-    // Skip default settings from extensions and policy, and the default content
-    // settings; all of them will affect the default setting UI.
-    if (entries[i].primary_pattern == ContentSettingsPattern::Wildcard() &&
-        entries[i].secondary_pattern == ContentSettingsPattern::Wildcard() &&
-        entries[i].source != "preference") {
-      continue;
-    }
-    // The content settings UI does not support secondary content settings
-    // pattern yet. For content settings set through the content settings UI the
-    // secondary pattern is by default a wildcard pattern. Hence users are not
-    // able to modify content settings with a secondary pattern other than the
-    // wildcard pattern. So only show settings that the user is able to modify.
-    // TODO(bauerb): Support a read-only view for those patterns.
-    if (entries[i].secondary_pattern == ContentSettingsPattern::Wildcard()) {
-      // Media Stream is using compound values for exceptions, which are
-      // granted as |CONTENT_SETTING_ALLOW|.
-      ContentSetting content_setting = CONTENT_SETTING_DEFAULT;
-      if (type == CONTENT_SETTINGS_TYPE_MEDIASTREAM)
-        content_setting = CONTENT_SETTING_ALLOW;
-      else
-        content_setting = entries[i].setting;
-
-      exceptions.Append(GetExceptionForPage(entries[i].primary_pattern,
-                                            content_setting,
-                                            entries[i].source));
-    } else {
-      LOG(ERROR) << "Secondary content settings patterns are not "
-                 << "supported by the content settings UI";
-    }
-  }
-
+  GetExceptionsFromHostContentSettingsMap(
+      GetContentSettingsMap(), type, &exceptions);
   StringValue type_string(ContentSettingsTypeToGroupName(type));
   web_ui()->CallJavascriptFunction("ContentSettings.setExceptions", type_string,
                                    exceptions);
@@ -894,65 +865,99 @@ void ContentSettingsHandler::UpdateExceptionsViewFromOTRHostContentSettingsMap(
   const HostContentSettingsMap* otr_settings_map = GetOTRContentSettingsMap();
   if (!otr_settings_map)
     return;
+  ListValue exceptions;
+  GetExceptionsFromHostContentSettingsMap(otr_settings_map, type, &exceptions);
+  StringValue type_string(ContentSettingsTypeToGroupName(type));
+  web_ui()->CallJavascriptFunction("ContentSettings.setOTRExceptions",
+                                   type_string, exceptions);
+}
 
-  ContentSettingsForOneType otr_entries;
-  otr_settings_map->GetSettingsForOneType(type, "", &otr_entries);
+void ContentSettingsHandler::GetExceptionsFromHostContentSettingsMap(
+    const HostContentSettingsMap* map,
+    ContentSettingsType type,
+    ListValue* exceptions) {
+  ContentSettingsForOneType entries;
+  map->GetSettingsForOneType(type, std::string(), &entries);
+  // Group settings by primary_pattern.
+  AllPatternsSettings all_patterns_settings;
+  for (ContentSettingsForOneType::iterator i = entries.begin();
+       i != entries.end(); ++i) {
+    // Don't add default settings.
+    if (i->primary_pattern == ContentSettingsPattern::Wildcard() &&
+        i->secondary_pattern == ContentSettingsPattern::Wildcard() &&
+        i->source != kPreferencesSource) {
+      continue;
+    }
 
-  ListValue otr_exceptions;
-  for (size_t i = 0; i < otr_entries.size(); ++i) {
     // Off-the-record HostContentSettingsMap contains incognito content settings
     // as well as normal content settings. Here, we use the incongnito settings
     // only.
-    if (!otr_entries[i].incognito)
+    if (map->is_off_the_record() && !i->incognito)
       continue;
-    // The content settings UI does not support secondary content settings
-    // pattern yet. For content settings set through the content settings UI the
-    // secondary pattern is by default a wildcard pattern. Hence users are not
-    // able to modify content settings with a secondary pattern other than the
-    // wildcard pattern. So only show settings that the user is able to modify.
-    // TODO(bauerb): Support a read-only view for those patterns.
-    if (otr_entries[i].secondary_pattern ==
-        ContentSettingsPattern::Wildcard()) {
-      ContentSetting content_setting = CONTENT_SETTING_DEFAULT;
-      // Media Stream is using compound values for its exceptions and arbitrary
-      // values for its default setting. And all the exceptions are granted as
-      // |CONTENT_SETTING_ALLOW|.
-      if (type == CONTENT_SETTINGS_TYPE_MEDIASTREAM &&
-          otr_entries[i].primary_pattern != ContentSettingsPattern::Wildcard())
-        content_setting = CONTENT_SETTING_ALLOW;
-      else
-        content_setting = otr_entries[i].setting;
 
-      otr_exceptions.Append(GetExceptionForPage(otr_entries[i].primary_pattern,
-                                                content_setting,
-                                                otr_entries[i].source));
-    } else {
-      LOG(ERROR) << "Secondary content settings patterns are not "
-                 << "supported by the content settings UI";
+    all_patterns_settings[std::make_pair(i->primary_pattern, i->source)]
+        [i->secondary_pattern] = i->setting;
+  }
+
+  // Keep the exceptions sorted by provider so they will be displayed in
+  // precedence order.
+  std::vector<std::vector<Value*> > all_provider_exceptions;
+  all_provider_exceptions.resize(HostContentSettingsMap::NUM_PROVIDER_TYPES);
+
+  for (AllPatternsSettings::iterator i = all_patterns_settings.begin();
+       i != all_patterns_settings.end();
+       ++i) {
+    const ContentSettingsPattern& primary_pattern = i->first.first;
+    const OnePatternSettings& one_settings = i->second;
+
+    // The "parent" entry either has an identical primary and secondary pattern,
+    // or has a wildcard secondary. The two cases are indistinguishable in the
+    // UI.
+    OnePatternSettings::const_iterator parent =
+        one_settings.find(primary_pattern);
+    if (parent == one_settings.end())
+      parent = one_settings.find(ContentSettingsPattern::Wildcard());
+
+    const std::string& source = i->first.second;
+    std::vector<Value*>* this_provider_exceptions = &all_provider_exceptions.at(
+        HostContentSettingsMap::GetProviderTypeFromSource(source));
+
+    // Add the "parent" entry for the non-embedded setting.
+    ContentSetting parent_setting =
+        parent == one_settings.end() ? CONTENT_SETTING_DEFAULT : parent->second;
+    const ContentSettingsPattern& secondary_pattern =
+        parent == one_settings.end() ? primary_pattern : parent->first;
+    this_provider_exceptions->push_back(GetExceptionForPage(primary_pattern,
+                                                            secondary_pattern,
+                                                            parent_setting,
+                                                            source));
+
+    // Add the "children" for any embedded settings.
+    for (OnePatternSettings::const_iterator j = one_settings.begin();
+         j != one_settings.end(); ++j) {
+      // Skip the non-embedded setting which we already added above.
+      if (j == parent)
+        continue;
+
+      ContentSetting content_setting = j->second;
+      // Media Stream is using compound values for exceptions, which are
+      // granted as |CONTENT_SETTING_ALLOW|.
+      if (type == CONTENT_SETTINGS_TYPE_MEDIASTREAM)
+        content_setting = CONTENT_SETTING_ALLOW;
+
+      this_provider_exceptions->push_back(GetExceptionForPage(
+          primary_pattern,
+          j->first,
+          content_setting,
+          source));
     }
   }
 
-  StringValue type_string(ContentSettingsTypeToGroupName(type));
-  web_ui()->CallJavascriptFunction("ContentSettings.setOTRExceptions",
-                                   type_string, otr_exceptions);
-}
-
-void ContentSettingsHandler::RemoveGeolocationException(
-    const ListValue* args, size_t arg_index) {
-  Profile* profile = Profile::FromWebUI(web_ui());
-  std::string origin;
-  std::string embedding_origin;
-  bool rv = args->GetString(arg_index++, &origin);
-  DCHECK(rv);
-  rv = args->GetString(arg_index++, &embedding_origin);
-  DCHECK(rv);
-
-  profile->GetHostContentSettingsMap()->
-      SetContentSetting(ContentSettingsPattern::FromString(origin),
-                        ContentSettingsPattern::FromString(embedding_origin),
-                        CONTENT_SETTINGS_TYPE_GEOLOCATION,
-                        std::string(),
-                        CONTENT_SETTING_DEFAULT);
+  for (size_t i = 0; i < all_provider_exceptions.size(); ++i) {
+    for (size_t j = 0; j < all_provider_exceptions[i].size(); ++j) {
+      exceptions->Append(all_provider_exceptions[i][j]);
+    }
+  }
 }
 
 void ContentSettingsHandler::RemoveNotificationException(
@@ -1012,13 +1017,18 @@ void ContentSettingsHandler::RemoveExceptionFromHostContentSettingsMap(
   rv = args->GetString(arg_index++, &pattern);
   DCHECK(rv);
 
+  std::string secondary_pattern;
+  rv = args->GetString(arg_index++, &secondary_pattern);
+  DCHECK(rv);
+
   HostContentSettingsMap* settings_map =
       mode == "normal" ? GetContentSettingsMap() :
                          GetOTRContentSettingsMap();
   if (settings_map) {
     settings_map->SetWebsiteSetting(
         ContentSettingsPattern::FromString(pattern),
-        ContentSettingsPattern::Wildcard(),
+        secondary_pattern.empty() ? ContentSettingsPattern::Wildcard() :
+            ContentSettingsPattern::FromString(secondary_pattern),
         type.ToContentSettingsType(),
         "",
         NULL);
@@ -1163,9 +1173,6 @@ void ContentSettingsHandler::RemoveException(const ListValue* args) {
 
   ExContentSettingsType type = ExContentSettingsTypeFromGroupName(type_string);
   switch (type) {
-    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
-      RemoveGeolocationException(args, arg_i);
-      break;
     case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
       RemoveNotificationException(args, arg_i);
       break;

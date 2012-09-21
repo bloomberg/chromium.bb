@@ -566,3 +566,16 @@ base::Value* HostContentSettingsMap::GetWebsiteSetting(
   }
   return NULL;
 }
+
+// static
+HostContentSettingsMap::ProviderType
+    HostContentSettingsMap::GetProviderTypeFromSource(
+        const std::string& source) {
+  for (size_t i = 0; i < arraysize(kProviderNames); ++i) {
+    if (source == kProviderNames[i])
+      return static_cast<ProviderType>(i);
+  }
+
+  NOTREACHED();
+  return DEFAULT_PROVIDER;
+}

@@ -90,14 +90,16 @@ cr.define('options.contentSettings', function() {
         select.appendChild(optionBlock);
       }
 
-      if (this.contentType == 'location') {
-        if (this.dataItem.origin !== this.dataItem.embeddingOrigin) {
-          this.patternLabel.classList.add('sublabel');
-        } else if (this.setting == 'default') {
-          // Items that don't have their own settings (parents of 'embedded on'
-          // items) aren't deletable.
-          this.deletable = false;
-        }
+      if (this.isEmbeddingRule()) {
+        this.patternLabel.classList.add('sublabel');
+        this.editable = false;
+      }
+
+      if (this.setting == 'default') {
+        // Items that don't have their own settings (parents of 'embedded on'
+        // items) aren't deletable.
+        this.deletable = false;
+        this.editable = false;
       }
 
       this.contentElement.appendChild(select);
@@ -166,19 +168,22 @@ cr.define('options.contentSettings', function() {
       this.addEventListener('commitedit', this.onEditCommitted_);
     },
 
+    isEmbeddingRule: function() {
+      return this.dataItem.embeddingOrigin &&
+          this.dataItem.embeddingOrigin !== this.dataItem.origin;
+    },
+
     /**
      * The pattern (e.g., a URL) for the exception.
      *
      * @type {string}
      */
     get pattern() {
-      if (this.contentType == 'location') {
-        if (this.dataItem.embeddingOrigin === this.dataItem.origin) {
-          return this.dataItem.origin;
-        } else {
-          return loadTimeData.getStringF('embeddedOnHost',
-                                         this.dataItem.embeddingOrigin);
-        }
+      if (!this.isEmbeddingRule()) {
+        return this.dataItem.origin;
+      } else {
+        return loadTimeData.getStringF('embeddedOnHost',
+                                       this.dataItem.embeddingOrigin);
       }
 
       return this.dataItem.displayPattern;
@@ -505,17 +510,15 @@ cr.define('options.contentSettings', function() {
     /** @inheritDoc */
     deleteItemAtIndex: function(index) {
       var listItem = this.getListItemByIndex(index);
-      if (listItem.undeletable)
+      if (!listItem.deletable)
         return;
 
       var dataItem = listItem.dataItem;
       var args = [listItem.contentType];
-      if (listItem.contentType == 'location')
-        args.push(dataItem.origin, dataItem.embeddingOrigin);
-      else if (listItem.contentType == 'notifications')
+      if (listItem.contentType == 'notifications')
         args.push(dataItem.origin, dataItem.setting);
       else
-        args.push(listItem.mode, listItem.pattern);
+        args.push(listItem.mode, dataItem.origin, dataItem.embeddingOrigin);
 
       chrome.send('removeException', args);
     },

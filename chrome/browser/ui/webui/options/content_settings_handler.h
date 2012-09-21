@@ -163,6 +163,12 @@ class ContentSettingsHandler : public OptionsPageUIHandler,
   // initialized.
   void RefreshFlashSettingsCache(bool force);
 
+  // Fills in |exceptions| with Values for the given |type| from |map|.
+  void GetExceptionsFromHostContentSettingsMap(
+      const HostContentSettingsMap* map,
+      ContentSettingsType type,
+      base::ListValue* exceptions);
+
   static ExContentSettingsType ExContentSettingsTypeFromGroupName(
       const std::string& name);
   static std::string ExContentSettingsTypeToGroupName(
