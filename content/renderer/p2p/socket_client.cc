@@ -28,16 +28,21 @@ void P2PSocketClient::Init(
     const net::IPEndPoint& local_address,
     const net::IPEndPoint& remote_address,
     P2PSocketClient::Delegate* delegate) {
-  if (!ipc_message_loop_->BelongsToCurrentThread()) {
-    ipc_message_loop_->PostTask(
-        FROM_HERE, base::Bind(&P2PSocketClient::Init, this, type, local_address,
-                              remote_address, delegate));
-    return;
-  }
-
-  DCHECK_EQ(state_, STATE_UNINITIALIZED);
-  state_ = STATE_OPENING;
+  DCHECK(delegate_message_loop_->BelongsToCurrentThread());
+  // |delegate_| is only accessesed on |delegate_message_loop_|.
   delegate_ = delegate;
+
+  ipc_message_loop_->PostTask(
+      FROM_HERE, base::Bind(&P2PSocketClient::DoInit, this, type, local_address,
+                            remote_address));
+}
+
+void P2PSocketClient::DoInit(P2PSocketType type,
+                             const net::IPEndPoint& local_address,
+                             const net::IPEndPoint& remote_address) {
+  DCHECK_EQ(state_, STATE_UNINITIALIZED);
+  DCHECK(delegate_);
+  state_ = STATE_OPENING;
   socket_id_ = dispatcher_->RegisterClient(this);
   dispatcher_->SendP2PMessage(new P2PHostMsg_CreateSocket(
       type, socket_id_, local_address, remote_address));
@@ -68,6 +73,7 @@ void P2PSocketClient::Close() {
 }
 
 void P2PSocketClient::DoClose() {
+  DCHECK(ipc_message_loop_->BelongsToCurrentThread());
   if (dispatcher_) {
     if (state_ == STATE_OPEN || state_ == STATE_OPENING ||
         state_ == STATE_ERROR) {
@@ -95,6 +101,7 @@ void P2PSocketClient::OnSocketCreated(const net::IPEndPoint& address) {
 }
 
 void P2PSocketClient::DeliverOnSocketCreated(const net::IPEndPoint& address) {
+  DCHECK(delegate_message_loop_->BelongsToCurrentThread());
   if (delegate_)
     delegate_->OnOpen(address);
 }
@@ -118,6 +125,7 @@ void P2PSocketClient::OnIncomingTcpConnection(const net::IPEndPoint& address) {
 
 void P2PSocketClient::DeliverOnIncomingTcpConnection(
     const net::IPEndPoint& address, scoped_refptr<P2PSocketClient> new_client) {
+  DCHECK(delegate_message_loop_->BelongsToCurrentThread());
   if (delegate_)
     delegate_->OnIncomingTcpConnection(address, new_client);
 }
@@ -131,6 +139,7 @@ void P2PSocketClient::OnError() {
 }
 
 void P2PSocketClient::DeliverOnError() {
+  DCHECK(delegate_message_loop_->BelongsToCurrentThread());
   if (delegate_)
     delegate_->OnError();
 }
@@ -146,6 +155,7 @@ void P2PSocketClient::OnDataReceived(const net::IPEndPoint& address,
 
 void P2PSocketClient::DeliverOnDataReceived(const net::IPEndPoint& address,
                                             const std::vector<char>& data) {
+  DCHECK(delegate_message_loop_->BelongsToCurrentThread());
   if (delegate_)
     delegate_->OnDataReceived(address, data);
 }

@@ -93,6 +93,11 @@ class P2PSocketClient : public base::RefCountedThreadSafe<P2PSocketClient> {
   void DeliverOnDataReceived(const net::IPEndPoint& address,
                              const std::vector<char>& data);
 
+  // Scheduled on the IPC thread to finish initialization.
+  void DoInit(P2PSocketType type,
+              const net::IPEndPoint& local_address,
+              const net::IPEndPoint& remote_address);
+
   // Scheduled on the IPC thread to finish closing the connection.
   void DoClose();
 
