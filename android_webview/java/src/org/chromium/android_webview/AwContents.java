@@ -78,10 +78,9 @@ public class AwContents {
       mContentsClient = contentsClient;
       mCleanupReference = new CleanupReference(this, new DestroyRunnable(mNativeAwContents));
 
-      // TODO: upstream the needed ContentViewCore initialization method.
-      // mContentViewCore.initialize(containerView, internalAccessAdapter, false,
-      //     nativeGetWebContents(mNativeAwContents), nativeWindow,
-      //     isAccessFromFileURLsGrantedByDefault);
+      mContentViewCore.initialize(containerView, internalAccessAdapter,
+              nativeGetWebContents(mNativeAwContents), nativeWindow,
+              isAccessFromFileURLsGrantedByDefault);
       mContentViewCore.setContentViewClient(contentsClient);
     }
 
