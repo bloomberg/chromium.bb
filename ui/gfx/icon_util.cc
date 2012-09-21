@@ -195,8 +195,7 @@ SkBitmap IconUtil::CreateSkBitmapFromHICONHelper(HICON icon,
 
   // Capture boolean opacity. We may not use it if we find out the bitmap has
   // an alpha channel.
-  bool* opaque = new bool[num_pixels];
-  DCHECK(opaque);
+  scoped_array<bool> opaque(new bool[num_pixels]);
   for (size_t i = 0; i < num_pixels; ++i)
     opaque[i] = !bits[i];
 
@@ -222,7 +221,6 @@ SkBitmap IconUtil::CreateSkBitmapFromHICONHelper(HICON icon,
     }
   }
 
-  delete [] opaque;
   ::SelectObject(dib_dc, old_obj);
   ::DeleteObject(dib);
   ::DeleteDC(dib_dc);
