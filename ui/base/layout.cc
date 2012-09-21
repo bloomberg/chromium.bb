@@ -110,19 +110,16 @@ DisplayLayout GetDisplayLayout() {
 }
 
 ScaleFactor GetScaleFactorFromScale(float scale) {
-  ScaleFactor closest_match = SCALE_FACTOR_100P;
+  size_t closest_match = 0;
   float smallest_diff =  std::numeric_limits<float>::max();
-  const std::vector<ScaleFactor>& supported =
-      GetSupportedScaleFactorsInternal();
-  for (size_t i = 0; i < supported.size(); ++i) {
-    ScaleFactor scale_factor = supported[i];
-    float diff = std::abs(kScaleFactorScales[scale_factor] - scale);
+  for (size_t i = 0; i < kScaleFactorScalesLength; ++i) {
+    float diff = std::abs(kScaleFactorScales[i] - scale);
     if (diff < smallest_diff) {
-      closest_match = scale_factor;
+      closest_match = i;
       smallest_diff = diff;
     }
   }
-  return closest_match;
+  return static_cast<ui::ScaleFactor>(closest_match);
 }
 
 float GetScaleFactorScale(ScaleFactor scale_factor) {
