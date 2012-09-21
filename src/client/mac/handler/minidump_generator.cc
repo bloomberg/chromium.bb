@@ -294,7 +294,7 @@ size_t MinidumpGenerator::CalculateStackSize(mach_vm_address_t start_addr) {
       mach_vm_address_t proposed_next_region_base = next_region_base;
       mach_vm_size_t next_region_size;
       nesting_level = 0;
-      mach_msg_type_number_t info_count = VM_REGION_SUBMAP_INFO_COUNT_64;
+      info_count = VM_REGION_SUBMAP_INFO_COUNT_64;
       result = mach_vm_region_recurse(crashing_task_, &next_region_base,
                                       &next_region_size, &nesting_level,
                                       region_info, &info_count);
@@ -429,7 +429,7 @@ u_int64_t MinidumpGenerator::CurrentPCForStack(
       return CurrentPCForStackX86_64(state);
 #endif
     default:
-      assert("Unknown CPU type!");
+      assert(0 && "Unknown CPU type!");
       return 0;
   }
 }
@@ -902,18 +902,20 @@ bool MinidumpGenerator::WriteMemoryListStream(
       // Bound it to the upper and lower bounds of the region
       // it's contained within. If it's not in a known memory region,
       // don't bother trying to write it.
-      mach_vm_address_t addr = ip;
+      mach_vm_address_t addr = static_cast<vm_address_t>(ip);
       mach_vm_size_t size;
       natural_t nesting_level = 0;
       vm_region_submap_info_64 info;
       mach_msg_type_number_t info_count = VM_REGION_SUBMAP_INFO_COUNT_64;
+      vm_region_recurse_info_t recurse_info;
+      recurse_info = reinterpret_cast<vm_region_recurse_info_t>(&info);
 
       kern_return_t ret =
         mach_vm_region_recurse(crashing_task_,
                                &addr,
                                &size,
                                &nesting_level,
-                               (vm_region_recurse_info_t)&info,
+                               recurse_info,
                                &info_count);
       if (ret == KERN_SUCCESS && ip >= addr && ip < (addr + size)) {
         // Try to get 128 bytes before and after the IP, but
@@ -925,7 +927,8 @@ bool MinidumpGenerator::WriteMemoryListStream(
           std::min(uintptr_t(ip + (kIPMemorySize / 2)),
                    uintptr_t(addr + size));
         ip_memory_d.memory.data_size =
-          end_of_range - ip_memory_d.start_of_memory_range;
+            end_of_range -
+            static_cast<uintptr_t>(ip_memory_d.start_of_memory_range);
         have_ip_memory = true;
         // This needs to get appended to the list even though
         // the memory bytes aren't filled in yet so the entire
@@ -1119,7 +1122,7 @@ bool MinidumpGenerator::WriteSystemInfoStream(
       break;
   }
 
-  info_ptr->number_of_processors = number_of_processors;
+  info_ptr->number_of_processors = static_cast<uint8_t>(number_of_processors);
 #if TARGET_OS_IPHONE
   info_ptr->platform_id = MD_OS_IOS;
 #else
@@ -1164,7 +1167,7 @@ bool MinidumpGenerator::WriteModuleStream(unsigned int index,
     // We'll skip the executable module, because they don't have
     // LC_ID_DYLIB load commands, and the crash processing server gets
     // version information from the Plist file, anyway.
-    if (index != (uint32_t)FindExecutableModule()) {
+    if (index != static_cast<uint32_t>(FindExecutableModule())) {
       module->version_info.signature = MD_VSFIXEDFILEINFO_SIGNATURE;
       module->version_info.struct_version |= MD_VSFIXEDFILEINFO_VERSION;
       // Convert MAC dylib version format, which is a 32 bit number, to the
@@ -1312,11 +1315,15 @@ bool MinidumpGenerator::WriteCVRecord(MDRawModule *module, int cpu_type,
   }
 
   if (result) {
-    cv_ptr->signature.data1 = (uint32_t)identifier[0] << 24 |
-      (uint32_t)identifier[1] << 16 | (uint32_t)identifier[2] << 8 |
-      (uint32_t)identifier[3];
-    cv_ptr->signature.data2 = (uint32_t)identifier[4] << 8 | identifier[5];
-    cv_ptr->signature.data3 = (uint32_t)identifier[6] << 8 | identifier[7];
+    cv_ptr->signature.data1 =
+        static_cast<uint32_t>(identifier[0]) << 24 |
+        static_cast<uint32_t>(identifier[1]) << 16 |
+        static_cast<uint32_t>(identifier[2]) << 8 |
+        static_cast<uint32_t>(identifier[3]);
+    cv_ptr->signature.data2 =
+        static_cast<uint16_t>(identifier[4] << 8) | identifier[5];
+    cv_ptr->signature.data3 =
+        static_cast<uint16_t>(identifier[6] << 8) | identifier[7];
     cv_ptr->signature.data4[0] = identifier[8];
     cv_ptr->signature.data4[1] = identifier[9];
     cv_ptr->signature.data4[2] = identifier[10];

@@ -89,7 +89,7 @@ static bool ModuleDataForSymbolFile(const std::string &file,
       std::string line(buffer);
       std::string::size_type line_break_pos = line.find_first_of('\n');
       if (line_break_pos == std::string::npos) {
-        assert(!"The file is invalid!");
+        assert(0 && "The file is invalid!");
         fclose(fp);
         return false;
       }

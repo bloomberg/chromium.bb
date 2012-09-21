@@ -261,8 +261,8 @@ bool FindTextSection(DynamicImage& image) {
             reinterpret_cast<const mach_segment_command_type *>(cmd);
 
         if (!strcmp(seg->segname, "__TEXT")) {
-          image.vmaddr_ = seg->vmaddr;
-          image.vmsize_ = seg->vmsize;
+          image.vmaddr_ = static_cast<mach_vm_address_t>(seg->vmaddr);
+          image.vmsize_ = static_cast<mach_vm_size_t>(seg->vmsize);
           image.slide_ = 0;
 
           if (seg->fileoff == 0 && seg->filesize != 0) {
@@ -492,7 +492,7 @@ void ReadImageInfo(DynamicImages& images,
                                    header_size,
                                    info.load_address_,
                                    file_path,
-                                   info.file_mod_date_,
+                                   static_cast<uintptr_t>(info.file_mod_date_),
                                    images.task_,
                                    images.cpu_type_);
 

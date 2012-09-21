@@ -111,7 +111,7 @@ bool MachoWalker::ReadBytes(void *buffer, size_t size, off_t offset) {
     if (offset + size > memory_size_) {
       if (static_cast<size_t>(offset) >= memory_size_)
         return false;
-      size = memory_size_ - offset;
+      size = memory_size_ - static_cast<size_t>(offset);
       result = false;
     }
     memcpy(buffer, static_cast<char *>(memory_) + offset, size);
