@@ -94,8 +94,6 @@ const char kOAuth2ClientSecret[] = "oauth2-client-secret";
 
 namespace google_apis {
 
-namespace {
-
 // This is used as a lazy instance to determine keys once and cache them.
 class APIKeyCache {
  public:
@@ -238,8 +236,6 @@ class APIKeyCache {
 
 static base::LazyInstance<APIKeyCache> g_api_key_cache =
     LAZY_INSTANCE_INITIALIZER;
-
-}  // namespace
 
 std::string GetAPIKey() {
   return g_api_key_cache.Get().api_key();

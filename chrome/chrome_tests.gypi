@@ -959,6 +959,7 @@
         '../sync/sync.gyp:test_support_syncapi_service',
         'test_support_unit',
         # 3) anything tests directly depend on
+        '../google_apis/google_apis.gyp:google_apis',
         '../skia/skia.gyp:skia',
         '../third_party/bzip2/bzip2.gyp:bzip2',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
@@ -976,9 +977,6 @@
         'common/extensions/api/api.gyp:api',
         'chrome_resources.gyp:chrome_resources',
         'chrome_resources.gyp:chrome_strings',
-        # TODO(joi): Move these to their own unittest executable?
-        '../google_apis/google_apis.gyp:google_apis',
-        '../google_apis/google_apis.gyp:google_apis_unittests',
       ],
       'include_dirs': [
         '..',
@@ -2100,6 +2098,21 @@
         '../ash/test/test_launcher_delegate.cc',
         '../ash/test/test_launcher_delegate.h',
         '../ash/test/test_shell_delegate.cc',
+        # TODO(joi): Move the google_apis tests to a separate
+        # google_apis_unittests executable.
+        '../google_apis/google_api_keys_unittest.cc',
+        '../google_apis/gaia/mock_url_fetcher_factory.h',
+        '../google_apis/gaia/gaia_auth_fetcher_unittest.cc',
+        '../google_apis/gaia/gaia_auth_util_unittest.cc',
+        '../google_apis/gaia/gaia_authenticator_unittest.cc',
+        '../google_apis/gaia/gaia_oauth_client_unittest.cc',
+        '../google_apis/gaia/google_service_auth_error_unittest.cc',
+        '../google_apis/gaia/oauth_request_signer_unittest.cc',
+        '../google_apis/gaia/oauth2_access_token_fetcher_unittest.cc',
+        '../google_apis/gaia/oauth2_api_call_flow_unittest.cc',
+        '../google_apis/gaia/oauth2_mint_token_fetcher_unittest.cc',
+        '../google_apis/gaia/oauth2_mint_token_flow_unittest.cc',
+        '../google_apis/gaia/oauth2_revocation_fetcher_unittest.cc',
         '../skia/ext/bitmap_platform_device_mac_unittest.cc',
         '../skia/ext/convolver_unittest.cc',
         '../skia/ext/image_operations_unittest.cc',
@@ -2618,6 +2631,11 @@
             '../content/common/socket_stream_dispatcher.cc',
           ]},
         ],
+        # TODO(joi): Remove from this file once separate
+        # google_apis_unittests target is established.
+        ['use_official_google_api_keys==1', {
+          'defines': ['USE_OFFICIAL_GOOGLE_API_KEYS=1'],
+        }],
       ],
     },
     {
