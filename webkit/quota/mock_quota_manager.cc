@@ -90,6 +90,11 @@ MockQuotaManager::OriginInfo::OriginInfo(
 
 MockQuotaManager::OriginInfo::~OriginInfo() {}
 
+MockQuotaManager::StorageInfo::StorageInfo() : usage(0), quota(kint64max) {}
+MockQuotaManager::StorageInfo::~StorageInfo() {}
+
+// MockQuotaManager ----------------------------------------------------------
+
 MockQuotaManager::MockQuotaManager(
     bool is_incognito,
     const FilePath& profile_path,
@@ -98,6 +103,19 @@ MockQuotaManager::MockQuotaManager(
     SpecialStoragePolicy* special_storage_policy)
     : QuotaManager(is_incognito, profile_path, io_thread, db_thread,
         special_storage_policy) {
+}
+
+void MockQuotaManager::GetUsageAndQuota(
+    const GURL& origin,
+    quota::StorageType type,
+    const GetUsageAndQuotaCallback& callback) {
+  StorageInfo& info = usage_and_quota_map_[std::make_pair(origin, type)];
+  callback.Run(quota::kQuotaStatusOk, info.usage, info.quota);
+}
+
+void MockQuotaManager::SetQuota(const GURL& origin, StorageType type,
+                                int64 quota) {
+  usage_and_quota_map_[std::make_pair(origin, type)].quota = quota;
 }
 
 bool MockQuotaManager::AddOrigin(
@@ -159,5 +177,58 @@ void MockQuotaManager::DeleteOriginData(
 }
 
 MockQuotaManager::~MockQuotaManager() {}
+
+void MockQuotaManager::UpdateUsage(
+    const GURL& origin, StorageType type, int64 delta) {
+  usage_and_quota_map_[std::make_pair(origin, type)].usage += delta;
+}
+
+// MockQuotaManagerProxy -----------------------------------------------------
+
+MockQuotaManagerProxy::MockQuotaManagerProxy(
+    MockQuotaManager* quota_manager,
+    base::SingleThreadTaskRunner* task_runner)
+    : QuotaManagerProxy(quota_manager, task_runner),
+      storage_accessed_count_(0),
+      storage_modified_count_(0),
+      last_notified_type_(kStorageTypeUnknown),
+      last_notified_delta_(0),
+      registered_client_(NULL) {}
+
+void MockQuotaManagerProxy::RegisterClient(QuotaClient* client) {
+  DCHECK(!registered_client_);
+  registered_client_ = client;
+}
+
+void MockQuotaManagerProxy::SimulateQuotaManagerDestroyed() {
+  if (registered_client_) {
+    // We cannot call this in the destructor as the client (indirectly)
+    // holds a refptr of the proxy.
+    registered_client_->OnQuotaManagerDestroyed();
+    registered_client_ = NULL;
+  }
+}
+
+void MockQuotaManagerProxy::NotifyStorageAccessed(
+    QuotaClient::ID client_id, const GURL& origin, StorageType type) {
+  ++storage_accessed_count_;
+  last_notified_origin_ = origin;
+  last_notified_type_ = type;
+}
+
+void MockQuotaManagerProxy::NotifyStorageModified(
+    QuotaClient::ID client_id, const GURL& origin,
+    StorageType type, int64 delta) {
+  ++storage_modified_count_;
+  last_notified_origin_ = origin;
+  last_notified_type_ = type;
+  last_notified_delta_ = delta;
+  if (mock_manager())
+    mock_manager()->UpdateUsage(origin, type, delta);
+}
+
+MockQuotaManagerProxy::~MockQuotaManagerProxy() {
+  DCHECK(!registered_client_);
+}
 
 }  // namespace quota
