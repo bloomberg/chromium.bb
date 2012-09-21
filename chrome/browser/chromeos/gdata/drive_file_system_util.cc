@@ -176,6 +176,19 @@ void OnGetEntryInfoForInsertDriveCachePathsPermissions(
   callback.Run();
 }
 
+void EnsureDirectoryExistsCallback(const base::Closure& callback,
+                                   DriveFileError error) {
+  if (error != gdata::DRIVE_FILE_OK &&
+      error != gdata::DRIVE_FILE_ERROR_EXISTS) {
+    LOG(ERROR) << "Failed to ensure the existence of the specified directory "
+               << "in Google Drive: " << error;
+    return;
+  }
+
+  if (!callback.is_null())
+    callback.Run();
+}
+
 }  // namespace
 
 const FilePath& GetDriveMountPointPath() {
@@ -393,6 +406,25 @@ void PrepareWritableFileAndRun(Profile* profile,
       content::BrowserThread::GetBlockingPool()->PostTask(
           FROM_HERE, base::Bind(callback, DRIVE_FILE_OK, path));
     }
+  }
+}
+
+void EnsureDirectoryExists(Profile* profile,
+                           const FilePath& directory,
+                           const base::Closure& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
+         BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (IsUnderDriveMountPoint(directory)) {
+    DriveFileSystemInterface* file_system = GetDriveFileSystem(profile);
+    DCHECK(file_system);
+    file_system->CreateDirectory(
+        ExtractDrivePath(directory),
+        true /* is_exclusive */,
+        true /* is_recursive */,
+        base::Bind(&EnsureDirectoryExistsCallback, callback));
+  } else {
+    if (!callback.is_null())
+      callback.Run();
   }
 }
 

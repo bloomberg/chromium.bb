@@ -116,8 +116,8 @@ bool GetScreenshotDirectory(FilePath* directory) {
   return true;
 }
 
-void SaveScreenshot(const FilePath& screenshot_path,
-                    scoped_refptr<base::RefCountedBytes> png_data) {
+void SaveScreenshotInternal(const FilePath& screenshot_path,
+                            scoped_refptr<base::RefCountedBytes> png_data) {
   DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
   DCHECK(!screenshot_path.empty());
   if (static_cast<size_t>(file_util::WriteFile(
@@ -126,6 +126,19 @@ void SaveScreenshot(const FilePath& screenshot_path,
           png_data->size())) != png_data->size()) {
     LOG(ERROR) << "Failed to save to " << screenshot_path.value();
   }
+}
+
+void SaveScreenshot(const FilePath& screenshot_path,
+                    scoped_refptr<base::RefCountedBytes> png_data) {
+  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
+  DCHECK(!screenshot_path.empty());
+
+  if (!file_util::CreateDirectory(screenshot_path.DirName())) {
+    LOG(ERROR) << "Failed to ensure the existence of "
+               << screenshot_path.DirName().value();
+    return;
+  }
+  SaveScreenshotInternal(screenshot_path, png_data);
 }
 
 // TODO(kinaba): crbug.com/140425, remove this ungly #ifdef dispatch.
@@ -137,7 +150,7 @@ void SaveScreenshotToDrive(scoped_refptr<base::RefCountedBytes> png_data,
     LOG(ERROR) << "Failed to write screenshot image to Google Drive: " << error;
     return;
   }
-  SaveScreenshot(local_path, png_data);
+  SaveScreenshotInternal(local_path, png_data);
 }
 
 void PostSaveScreenshotTask(const FilePath& screenshot_path,
@@ -145,10 +158,13 @@ void PostSaveScreenshotTask(const FilePath& screenshot_path,
   if (gdata::util::IsUnderDriveMountPoint(screenshot_path)) {
     Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
     if (profile) {
-      gdata::util::PrepareWritableFileAndRun(
+      gdata::util::EnsureDirectoryExists(
           profile,
-          screenshot_path,
-          base::Bind(&SaveScreenshotToDrive, png_data));
+          screenshot_path.DirName(),
+          base::Bind(&gdata::util::PrepareWritableFileAndRun,
+                     profile,
+                     screenshot_path,
+                     base::Bind(&SaveScreenshotToDrive, png_data)));
     }
   } else {
     content::BrowserThread::GetBlockingPool()->PostTask(

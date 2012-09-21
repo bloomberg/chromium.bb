@@ -115,6 +115,18 @@ void PrepareWritableFileAndRun(Profile* profile,
                                const FilePath& path,
                                const OpenFileCallback& callback);
 
+// Ensures the existence of |directory| of '/special/drive/foo'.  This will
+// create |directory| and its ancestors if they don't exist.  |callback| is
+// invoked after making sure that |directory| exists.
+//
+// If |directory| is not a Drive path, it won't check the existence and just
+// runs |callback|.
+//
+// Must be called from UI/IO thread.
+void EnsureDirectoryExists(Profile* profile,
+                           const FilePath& directory,
+                           const base::Closure& callback);
+
 // Converts GData error code into file platform error code.
 DriveFileError GDataToDriveFileError(GDataErrorCode status);
 
