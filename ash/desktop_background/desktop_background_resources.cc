@@ -413,7 +413,7 @@ const int kSolidColorIndex = -2;
 #if defined(GOOGLE_CHROME_BUILD)
 const int kDefaultWallpaperIndex = 20; // IDR_AURA_WALLPAPERS_2_LANDSCAPE8
 const int kLastRandomWallpaperIndex = 19; // The first 20 are random.
-const int kGuestWallpaperIndex = kDefaultWallpaperIndex;
+const int kGuestWallpaperIndex = 15; // IDR_AURA_WALLPAPERS_2_LANDSCAPE7
 #else
 // Set default wallpaper to the grey background for faster wallpaper loading
 // time in browser tests. Otherwise, some of the tests will finish before
