@@ -31,8 +31,10 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/protocol_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
@@ -545,7 +547,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest,
   ASSERT_TRUE(InitSafeBrowsingService());
 
   net::URLRequestContextGetter* request_context =
-      GetBrowserContext()->GetRequestContext();
+      browser()->profile()->GetRequestContext();
   scoped_refptr<SafeBrowsingServiceTestHelper> safe_browsing_helper(
       new SafeBrowsingServiceTestHelper(this, request_context));
   int last_step = 0;

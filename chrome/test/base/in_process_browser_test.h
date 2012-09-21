@@ -31,9 +31,7 @@ class CommandLine;
 class Profile;
 
 namespace content {
-class BrowserContext;
 class ContentRendererClient;
-class ResourceContext;
 }
 
 namespace net {
@@ -108,11 +106,6 @@ class InProcessBrowserTest : public content::BrowserTestBase {
  protected:
   // Returns the browser created by CreateBrowser.
   Browser* browser() const { return browser_; }
-
-  // Returns the Resource/BrowserContext from browser_. Needed because tests in
-  // content don't have access to Profile.
-  content::BrowserContext* GetBrowserContext();
-  content::ResourceContext* GetResourceContext();
 
   // Convenience methods for adding tabs to a Browser.
   void AddTabAtIndexToBrowser(Browser* browser,
