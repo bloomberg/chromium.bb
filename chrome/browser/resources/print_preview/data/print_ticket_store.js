@@ -254,6 +254,11 @@ cr.define('print_preview', function() {
       return this.documentInfo_.margins;
     },
 
+    /** @return {string} Title of the document. */
+    getDocumentTitle: function() {
+      return this.documentInfo_.title;
+    },
+
     /**
      * Initializes the print ticket store. Dispatches an INITIALIZE event.
      * @param {boolean} isDocumentModifiable Whether the document to print is

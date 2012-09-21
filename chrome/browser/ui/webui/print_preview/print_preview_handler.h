@@ -163,8 +163,7 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   void SendCloudPrintEnabled();
 
   // Send the PDF data to the cloud to print.
-  void SendCloudPrintJob(const base::DictionaryValue& settings,
-                         std::string print_ticket);
+  void SendCloudPrintJob();
 
   // Gets the initiator tab for the print preview tab.
   TabContents* GetInitiatorTab() const;

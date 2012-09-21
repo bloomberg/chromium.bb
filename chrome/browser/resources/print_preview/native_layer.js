@@ -260,17 +260,7 @@ cr.define('print_preview', function() {
         ticket['OpenPDFInPreview'] = true;
       }
 
-      var cloudTicket = null;
-      if (!destination.isLocal) {
-        assert(cloudPrintInterface != null,
-               'Trying to print to a cloud destination but Google Cloud ' +
-               'Print integration is disabled');
-        cloudTicket = cloudPrintInterface.createPrintTicket(
-            destination, printTicketStore);
-        cloudTicket = JSON.stringify(cloudTicket);
-      }
-
-      chrome.send('print', [JSON.stringify(ticket), cloudTicket]);
+      chrome.send('print', [JSON.stringify(ticket)]);
     },
 
     /** Requests that the current pending print request be cancelled. */

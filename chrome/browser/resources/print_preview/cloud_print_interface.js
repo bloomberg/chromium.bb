@@ -53,12 +53,22 @@ cr.define('cloudprint', function() {
       'application/x-www-form-urlencoded';
 
   /**
+   * Multi-part POST request boundary used in communication with Google
+   * Cloud Print.
+   * @type {string}
+   * @private
+   */
+  CloudPrintInterface.MULTIPART_BOUNDARY_ =
+      '----CloudPrintFormBoundaryjc9wuprokl8i';
+
+  /**
    * Content type header value for a multipart HTTP request.
    * @type {string}
    * @private
    */
   CloudPrintInterface.MULTIPART_CONTENT_TYPE_ =
-      'multipart/form-data; boundary=----CloudPrintFormBoundaryjc9wuprokl8i';
+      'multipart/form-data; boundary=' +
+      CloudPrintInterface.MULTIPART_BOUNDARY_;
 
   /**
    * Enumeration of JSON response fields from Google Cloud Print API.
@@ -84,16 +94,27 @@ cr.define('cloudprint', function() {
       }
       params['connection_status'] = 'ALL';
       params['client'] = 'chrome';
-      this.sendRequest_('GET', 'search', params, null,
+      this.sendRequest_('GET', 'search', params,
                         this.onSearchDone_.bind(this, isRecent));
     },
 
     /**
      * Sends a Google Cloud Print submit API request.
-     * @param {string} body Body of the HTTP post request to send.
+     * @param {!print_preview.Destination} destination Cloud destination to
+     *     print to.
+     * @param {!print_preview.PrintTicketStore} printTicketStore Contains the
+     *     print ticket to print.
+     * @param {string} data Base64 encoded data of the document.
      */
-    submit: function(body) {
-      this.sendRequest_('POST', 'submit', null, body,
+    submit: function(destination, printTicketStore, data) {
+      var params = {
+        'printerid': destination.id,
+        'contentType': 'dataUrl',
+        'title': printTicketStore.getDocumentTitle(),
+        'capabilities': this.createPrintTicket_(destination, printTicketStore),
+        'content': 'data:application/pdf;base64,' + data,
+      };
+      this.sendRequest_('POST', 'submit', params,
                         this.onSubmitDone_.bind(this));
     },
 
@@ -103,7 +124,7 @@ cr.define('cloudprint', function() {
      */
     printer: function(printerId) {
       var params = {'printerid': printerId};
-      this.sendRequest_('GET', 'printer', params, null,
+      this.sendRequest_('GET', 'printer', params,
                         this.onPrinterDone_.bind(this, printerId));
     },
 
@@ -120,7 +141,7 @@ cr.define('cloudprint', function() {
         'printerid': printerId,
         'is_tos_accepted': isAccepted
       };
-      this.sendRequest_('POST', 'update', params, null,
+      this.sendRequest_('POST', 'update', params,
                         this.onUpdatePrinterTosAcceptanceDone_.bind(this));
     },
 
@@ -130,8 +151,9 @@ cr.define('cloudprint', function() {
      * @param {!print_preview.PrintTicketStore} printTicketStore Used to create
      *     the state of the print ticket.
      * @return {!Object} Google Cloud Print print ticket.
+     * @private
      */
-    createPrintTicket: function(destination, printTicketStore) {
+    createPrintTicket_: function(destination, printTicketStore) {
       assert(!destination.isLocal,
              'Trying to create a Google Cloud Print print ticket for a local ' +
                  'destination');
@@ -194,20 +216,30 @@ cr.define('cloudprint', function() {
      * @param {string} method HTTP method of the request.
      * @param {string} action Google Cloud Print action to perform.
      * @param {Object} params HTTP parameters to include in the request.
-     * @param {string} body HTTP multi-part encoded body.
      * @param {function(number, Object)} callback Callback to invoke when
      *     request completes.
      */
-    sendRequest_: function(method, action, params, body, callback) {
+    sendRequest_: function(method, action, params, callback) {
       if (!this.xsrfToken_) {
         // TODO(rltoscano): Should throw an error if not a read-only action or
         // issue an xsrf token request.
       }
       var url = this.baseURL_ + '/' + action + '?xsrf=' + this.xsrfToken_;
+      var body = null;
 
       if (params) {
-        for (var paramName in params) {
-          url += '&' + paramName + '=' + encodeURIComponent(params[paramName]);
+        if (method == 'GET') {
+          for (var paramName in params) {
+            url += '&' + paramName + '=' +
+                encodeURIComponent(params[paramName]);
+          }
+        } else {
+          body = '--' + CloudPrintInterface.MULTIPART_BOUNDARY_ + '\r\n';
+          for (var paramName in params) {
+            body += 'Content-Disposition: form-data; name=\"' + paramName +
+                '\"\r\n\r\n' + params[paramName] + '\r\n--' +
+                CloudPrintInterface.MULTIPART_BOUNDARY_ + '\r\n';
+          }
         }
       }
 
