@@ -186,16 +186,21 @@ BOOL CALLBACK PainEnumChildProc(HWND hwnd, LPARAM lparam) {
 }
 
 // Windows callback for OnDestroy to detach the plugin windows.
-BOOL CALLBACK DetachPluginWindowsCallback(HWND window, LPARAM param) {
+BOOL CALLBACK DetachPluginWindowsCallbackInternal(HWND window, LPARAM param) {
+  RenderWidgetHostViewBase::DetachPluginWindowsCallback(window);
+  return TRUE;
+}
+
+}  // namespace
+
+// static
+void RenderWidgetHostViewBase::DetachPluginWindowsCallback(HWND window) {
   if (webkit::npapi::WebPluginDelegateImpl::IsPluginDelegateWindow(window) &&
       !IsHungAppWindow(window)) {
     ::ShowWindow(window, SW_HIDE);
     SetParent(window, NULL);
   }
-  return TRUE;
 }
-
-}  // namespace
 
 // static
 void RenderWidgetHostViewBase::MovePluginWindowsHelper(
@@ -331,7 +336,7 @@ void RenderWidgetHostViewBase::DetachPluginsHelper(HWND parent) {
   // away. This will prevent the plugin windows from getting destroyed
   // automatically. The detached plugin windows will get cleaned up in proper
   // sequence as part of the usual cleanup when the plugin instance goes away.
-  EnumChildWindows(parent, DetachPluginWindowsCallback, NULL);
+  EnumChildWindows(parent, DetachPluginWindowsCallbackInternal, NULL);
 }
 
 #endif  // OS_WIN

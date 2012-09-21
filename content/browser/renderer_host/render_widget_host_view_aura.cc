@@ -50,6 +50,10 @@
 #include "ui/gfx/screen.h"
 #include "ui/gfx/skia_util.h"
 
+#if defined(OS_WIN)
+#include "ui/base/win/hidden_window.h"
+#endif
+
 using WebKit::WebScreenInfo;
 using WebKit::WebTouchEvent;
 
@@ -70,6 +74,41 @@ const int kMouseLockBorderPercentage = 15;
 // length of time that we should delay further UI resizes while waiting for a
 // resized frame from a renderer.
 const int kResizeLockTimeoutMs = 67;
+
+#if defined(OS_WIN)
+// Used to associate a plugin HWND with its RenderWidgetHostViewAura instance.
+const wchar_t kWidgetOwnerProperty[] = L"RenderWidgetHostViewAuraOwner";
+
+BOOL CALLBACK WindowDestroyingCallback(HWND window, LPARAM param) {
+  RenderWidgetHostViewAura* widget =
+      reinterpret_cast<RenderWidgetHostViewAura*>(param);
+  if (GetProp(window, kWidgetOwnerProperty) == widget) {
+    // Properties set on HWNDs must be removed to avoid leaks.
+    RemoveProp(window, kWidgetOwnerProperty);
+    RenderWidgetHostViewBase::DetachPluginWindowsCallback(window);
+  }
+  return TRUE;
+}
+
+BOOL CALLBACK HideWindowsCallback(HWND window, LPARAM param) {
+  RenderWidgetHostViewAura* widget =
+      reinterpret_cast<RenderWidgetHostViewAura*>(param);
+  if (GetProp(window, kWidgetOwnerProperty) == widget)
+    SetParent(window, ui::GetHiddenWindow());
+  return TRUE;
+}
+
+BOOL CALLBACK ShowWindowsCallback(HWND window, LPARAM param) {
+  RenderWidgetHostViewAura* widget =
+      reinterpret_cast<RenderWidgetHostViewAura*>(param);
+
+  HWND parent =
+      widget->GetNativeView()->GetRootWindow()->GetAcceleratedWidget();
+  if (GetProp(window, kWidgetOwnerProperty) == widget)
+    SetParent(window, parent);
+  return TRUE;
+}
+#endif
 
 ui::TouchStatus DecideTouchStatus(const WebKit::WebTouchEvent& event,
                                   WebKit::WebTouchPoint* point) {
@@ -310,6 +349,11 @@ void RenderWidgetHostViewAura::WasShown() {
   }
 
   AdjustSurfaceProtection();
+
+#if defined(OS_WIN)
+  LPARAM lparam = reinterpret_cast<LPARAM>(this);
+  EnumChildWindows(ui::GetHiddenWindow(), ShowWindowsCallback, lparam);
+#endif
 }
 
 void RenderWidgetHostViewAura::WasHidden() {
@@ -326,6 +370,13 @@ void RenderWidgetHostViewAura::WasHidden() {
   }
 
   AdjustSurfaceProtection();
+
+#if defined(OS_WIN)
+  HWND parent = window_->GetRootWindow()->GetAcceleratedWidget();
+  LPARAM lparam = reinterpret_cast<LPARAM>(this);
+
+  EnumChildWindows(parent, HideWindowsCallback, lparam);
+#endif
 }
 
 void RenderWidgetHostViewAura::SetSize(const gfx::Size& size) {
@@ -392,6 +443,18 @@ void RenderWidgetHostViewAura::MovePluginWindows(
     moves[i].window_rect.Offset(view_bounds.origin());
   }
   MovePluginWindowsHelper(parent, moves);
+
+  // Make sure each plugin window (or its wrapper if it exists) has a pointer to
+  // |this|.
+  for (size_t i = 0; i < moves.size(); ++i) {
+    HWND window = moves[i].window;
+    if (GetParent(window) != parent) {
+      window = GetParent(window);
+      DCHECK(GetParent(window) == parent);
+    }
+    if (!GetProp(window, kWidgetOwnerProperty))
+      CHECK(SetProp(window, kWidgetOwnerProperty, this));
+  }
 #endif  // defined(OS_WIN)
 }
 
@@ -1297,10 +1360,16 @@ void RenderWidgetHostViewAura::OnDeviceScaleFactorChanged(
 
 void RenderWidgetHostViewAura::OnWindowDestroying() {
 #if defined(OS_WIN)
-  if (window_->GetRootWindow()) {
-    HWND parent = window_->GetRootWindow()->GetAcceleratedWidget();
-    DetachPluginsHelper(parent);
+  HWND parent = NULL;
+  // If the tab was hidden and it's closed, host_->is_hidden would have been
+  // reset to false in RenderWidgetHostImpl::RendererExited.
+  if (!window_->GetRootWindow() || host_->is_hidden()) {
+    parent = ui::GetHiddenWindow();
+  } else {
+    parent = window_->GetRootWindow()->GetAcceleratedWidget();
   }
+  LPARAM lparam = reinterpret_cast<LPARAM>(this);
+  EnumChildWindows(parent, WindowDestroyingCallback, lparam);
 #endif
 }
 

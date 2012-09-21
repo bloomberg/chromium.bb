@@ -66,6 +66,12 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // Notification that a resize or move session ended on the native widget.
   void UpdateScreenInfo();
 
+#if defined(OS_WIN)
+  // The callback that DetachPluginsHelper calls for each child window. Call
+  // this directly if you want to do custom filtering on plugin windows first.
+  static void DetachPluginWindowsCallback(HWND window);
+#endif
+
  protected:
   // Interface class only, do not construct.
   RenderWidgetHostViewBase();
