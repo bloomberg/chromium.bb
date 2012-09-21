@@ -154,6 +154,10 @@ double CCActiveAnimation::trimTimeToCurrentIteration(double monotonicTime) const
     if (!m_iterations)
         return 0;
 
+    // Don't attempt to trim if we have no duration.
+    if (m_curve->duration() <= 0)
+        return 0;
+
     // If less than an iteration duration, just return trimmed.
     if (trimmed < m_curve->duration())
         return trimmed;

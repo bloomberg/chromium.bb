@@ -58,6 +58,12 @@ void addAnimatedTransform(Target& target, double duration, int deltaX, int delta
 namespace WebKitTests {
 
 FakeFloatAnimationCurve::FakeFloatAnimationCurve()
+    : m_duration(1)
+{
+}
+
+FakeFloatAnimationCurve::FakeFloatAnimationCurve(double duration)
+    : m_duration(duration)
 {
 }
 
@@ -67,7 +73,7 @@ FakeFloatAnimationCurve::~FakeFloatAnimationCurve()
 
 double FakeFloatAnimationCurve::duration() const
 {
-    return 1;
+    return m_duration;
 }
 
 float FakeFloatAnimationCurve::getValue(double now) const

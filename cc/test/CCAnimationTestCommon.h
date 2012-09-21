@@ -22,11 +22,15 @@ namespace WebKitTests {
 class FakeFloatAnimationCurve : public cc::CCFloatAnimationCurve {
 public:
     FakeFloatAnimationCurve();
+    explicit FakeFloatAnimationCurve(double duration);
     virtual ~FakeFloatAnimationCurve();
 
     virtual double duration() const OVERRIDE;
     virtual float getValue(double now) const OVERRIDE;
     virtual PassOwnPtr<cc::CCAnimationCurve> clone() const OVERRIDE;
+
+private:
+    double m_duration;
 };
 
 class FakeTransformTransition : public cc::CCTransformAnimationCurve {

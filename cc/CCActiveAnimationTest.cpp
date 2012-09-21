@@ -16,11 +16,16 @@ using namespace cc;
 
 namespace {
 
-PassOwnPtr<CCActiveAnimation> createActiveAnimation(int iterations)
+PassOwnPtr<CCActiveAnimation> createActiveAnimation(int iterations, double duration)
 {
-    OwnPtr<CCActiveAnimation> toReturn(CCActiveAnimation::create(adoptPtr(new FakeFloatAnimationCurve), 0, 1, CCActiveAnimation::Opacity));
+    OwnPtr<CCActiveAnimation> toReturn(CCActiveAnimation::create(adoptPtr(new FakeFloatAnimationCurve(duration)), 0, 1, CCActiveAnimation::Opacity));
     toReturn->setIterations(iterations);
     return toReturn.release();
+}
+
+PassOwnPtr<CCActiveAnimation> createActiveAnimation(int iterations)
+{
+    return createActiveAnimation(iterations, 1);
 }
 
 TEST(CCActiveAnimationTest, TrimTimeZeroIterations)
@@ -105,6 +110,15 @@ TEST(CCActiveAnimationTest, TrimTimeSuspendResume)
     anim->resume(1024);
     EXPECT_EQ(0.5, anim->trimTimeToCurrentIteration(1024));
     EXPECT_EQ(1, anim->trimTimeToCurrentIteration(1024.5));
+}
+
+TEST(CCActiveAnimationTest, TrimTimeZeroDuration)
+{
+    OwnPtr<CCActiveAnimation> anim(createActiveAnimation(0, 0));
+    anim->setRunState(CCActiveAnimation::Running, 0);
+    EXPECT_EQ(0, anim->trimTimeToCurrentIteration(-1));
+    EXPECT_EQ(0, anim->trimTimeToCurrentIteration(0));
+    EXPECT_EQ(0, anim->trimTimeToCurrentIteration(1));
 }
 
 TEST(CCActiveAnimationTest, IsFinishedAtZeroIterations)
