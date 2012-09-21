@@ -6346,7 +6346,19 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Disable boot animation v2 (go back to v1).
         </message>
         <message name="IDS_FLAGS_DISABLE_BOOT_ANIMATION2_DESCRIPTION" desc="Description for the flag to go back to wallpaper boot animation v2.">
-          Disables wallpaper boot animation v2 - goes back to v1 (except for OOBE case).
+          Disables wallpaper boot animation v2 - goes back to v1 (except for OOBE case) i.e. login UI is not shown till animation is complete.
+        </message>
+        <message name="IDS_FLAGS_ASH_BOOT_ANIMATION_FUNCTION" desc="Name for the flag to switch wallpaper boot animation function.">
+          Boot animation function.
+        </message>
+        <message name="IDS_FLAGS_ASH_BOOT_ANIMATION_FUNCTION_DESCRIPTION" desc="Description for the flag to switch wallpaper boot animation function.">
+          Change boot animation function.
+        </message>
+        <message name="IDS_FLAGS_ASH_BOOT_ANIMATION_FUNCTION2" desc="Description for the option of boot animation function.">
+          EASE_OUT_2
+        </message>
+        <message name="IDS_FLAGS_ASH_BOOT_ANIMATION_FUNCTION3" desc="Description for the option of boot animation function.">
+          EASE_OUT_3
         </message>
         <message name="IDS_FLAGS_DISABLE_WORKSPACE2" desc="Description for the flag to turn off workspace2.">
           Disable new window stacking.

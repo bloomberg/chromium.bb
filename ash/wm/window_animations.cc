@@ -512,10 +512,13 @@ void AnimateShowHideWindowCommon_BrightnessGrayscale(aura::Window* window,
   }
 
   int animation_duration = kBrightnessGrayscaleFadeDurationMs;
-  ui::Tween::Type animation_type = ui::Tween::EASE_OUT_2;
+  ui::Tween::Type animation_type = ui::Tween::EASE_OUT;
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-          ash::switches::kAshDisableBootAnimation2)) {
-    animation_type = ui::Tween::EASE_OUT;
+          ash::switches::kAshBootAnimationFunction2)) {
+    animation_type = ui::Tween::EASE_OUT_2;
+  } else if (CommandLine::ForCurrentProcess()->HasSwitch(
+                  ash::switches::kAshBootAnimationFunction3)) {
+    animation_type = ui::Tween::EASE_OUT_3;
   }
 
   ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());

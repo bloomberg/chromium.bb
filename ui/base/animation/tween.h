@@ -18,6 +18,7 @@ class UI_EXPORT Tween {
     LINEAR,        // Linear.
     EASE_OUT,      // Fast in, slow out (default).
     EASE_OUT_2,    // Variant of EASE_OUT, that starts out slower.
+    EASE_OUT_3,    // Variant of EASE_OUT_2, that starts out slower.
     EASE_IN,       // Slow in, fast out.
     EASE_IN_2,     // Variant of EASE_IN that starts out slower.
     EASE_IN_OUT,   // Slow in and out, fast in the middle.

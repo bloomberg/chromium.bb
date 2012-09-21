@@ -149,6 +149,16 @@ const Experiment::Choice kAsyncDnsChoices[] = {
     switches::kEnableAsyncDns, ""}
 };
 
+#if defined(OS_CHROMEOS)
+const Experiment::Choice kAshBootAnimationFunction[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_FLAGS_ASH_BOOT_ANIMATION_FUNCTION2,
+    ash::switches::kAshBootAnimationFunction2, ""},
+  { IDS_FLAGS_ASH_BOOT_ANIMATION_FUNCTION3,
+    ash::switches::kAshBootAnimationFunction3, ""}
+};
+#endif
+
 
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
@@ -833,6 +843,13 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_DISABLE_BOOT_ANIMATION2_DESCRIPTION,
     kOsCrOS,
     SINGLE_VALUE_TYPE(ash::switches::kAshDisableBootAnimation2),
+  },
+  {
+    "boot-animation-fucntion",
+    IDS_FLAGS_ASH_BOOT_ANIMATION_FUNCTION,
+    IDS_FLAGS_ASH_BOOT_ANIMATION_FUNCTION_DESCRIPTION,
+    kOsCrOS,
+    MULTI_VALUE_TYPE(kAshBootAnimationFunction),
   },
   {
     "disable-workspace2",

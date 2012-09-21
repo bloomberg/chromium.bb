@@ -7,6 +7,12 @@
 namespace ash {
 namespace switches {
 
+// Variation of boot animation that uses Tween::EASE_OUT_2.
+const char kAshBootAnimationFunction2[] = "ash-boot-animation-function2";
+
+// Variation of boot animation that uses Tween::EASE_OUT_3.
+const char kAshBootAnimationFunction3[] = "ash-boot-animation-function3";
+
 // Constrains the pointer movement within a root window on desktop.
 const char kAshConstrainPointerToRoot[] = "ash-constrain-pointer-to-root";
 
