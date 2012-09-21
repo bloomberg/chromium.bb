@@ -29,7 +29,6 @@ class WindowAndroid;
 }
 
 namespace content {
-class ContentViewClient;
 class RenderWidgetHostViewAndroid;
 
 // TODO(jrg): this is a shell.  Upstream the rest.
@@ -124,7 +123,6 @@ class ContentViewCoreImpl : public ContentViewCore,
   void Reload(JNIEnv* env, jobject obj);
   jboolean NeedsReload(JNIEnv* env, jobject obj);
   void ClearHistory(JNIEnv* env, jobject obj);
-  void SetClient(JNIEnv* env, jobject obj, jobject jclient);
   jint EvaluateJavaScript(JNIEnv* env, jobject obj, jstring script);
   int GetNativeImeAdapter(JNIEnv* env, jobject obj);
   void AddJavascriptInterface(JNIEnv* env,
@@ -213,9 +211,6 @@ class ContentViewCoreImpl : public ContentViewCore,
   // Reference to the current WebContents used to determine how and what to
   // display in the ContentViewCore.
   WebContentsImpl* web_contents_;
-
-  // We only set this to be the delegate of the web_contents if we own it.
-  scoped_ptr<ContentViewClient> content_view_client_;
 
   // Whether the renderer backing this ContentViewCore has crashed.
   bool tab_crashed_;
