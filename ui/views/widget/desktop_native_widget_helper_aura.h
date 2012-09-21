@@ -63,6 +63,9 @@ class VIEWS_EXPORT DesktopNativeWidgetHelperAura
   virtual gfx::Rect ModifyAndSetBounds(const gfx::Rect& bounds) OVERRIDE;
 
   // Overridden from aura::RootWindowObserver:
+  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
+
+  // Overridden from aura::RootWindowObserver:
   virtual void OnRootWindowResized(const aura::RootWindow* root,
                                    const gfx::Size& old_size) OVERRIDE;
   virtual void OnRootWindowMoved(const aura::RootWindow* root,

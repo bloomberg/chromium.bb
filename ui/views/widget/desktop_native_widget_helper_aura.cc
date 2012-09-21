@@ -172,6 +172,11 @@ aura::RootWindow* DesktopNativeWidgetHelperAura::GetRootWindow() {
   return root_window_.get();
 }
 
+void DesktopNativeWidgetHelperAura::OnWindowDestroying(aura::Window* window) {
+  window_->RemoveObserver(this);
+  window_ = NULL;
+}
+
 gfx::Rect DesktopNativeWidgetHelperAura::ModifyAndSetBounds(
     const gfx::Rect& bounds) {
   gfx::Rect out_bounds = bounds;
