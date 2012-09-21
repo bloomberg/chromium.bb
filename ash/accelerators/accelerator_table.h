@@ -53,7 +53,15 @@ enum AcceleratorAction {
   SELECT_WIN_5,
   SELECT_WIN_6,
   SELECT_WIN_7,
+  // This one is for Control+Alt+/ and Control+Alt+Shift+/, and is not included
+  // in kReservedActions[]. A windowed app should be able to handle these
+  // accelerators.
   SHOW_KEYBOARD_OVERLAY,
+  // This one is for the help key. This is included in kReservedActions[] since
+  // sending VKEY_F14 to a windowed app when the key is pressed does not make
+  // much sense. See crosbug.com/p/14330 for more details.
+  // TODO(yusukes): Reserve F15 as well.
+  SHOW_KEYBOARD_OVERLAY_BY_F14_KEY,
   SHOW_OAK,
   SHOW_TASK_MANAGER,
   SWAP_PRIMARY_DISPLAY,

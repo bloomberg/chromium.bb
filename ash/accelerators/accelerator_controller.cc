@@ -564,6 +564,7 @@ bool AcceleratorController::PerformAction(int action,
             shell->system_tray()->GetWidget());
       break;
     case SHOW_KEYBOARD_OVERLAY:
+    case SHOW_KEYBOARD_OVERLAY_BY_F14_KEY:
       ash::Shell::GetInstance()->delegate()->ShowKeyboardOverlay();
       return true;
     case SHOW_OAK:
