@@ -399,6 +399,66 @@ class Property : public PropertyBase {
   T set_value_;
 };
 
+template <> Property<uint8>::Property();
+template <> bool Property<uint8>::PopValueFromReader(MessageReader* reader);
+template <> void Property<uint8>::AppendSetValueToWriter(MessageWriter* writer);
+
+template <> Property<bool>::Property();
+template <> bool Property<bool>::PopValueFromReader(MessageReader* reader);
+template <> void Property<bool>::AppendSetValueToWriter(MessageWriter* writer);
+
+template <> Property<int16>::Property();
+template <> bool Property<int16>::PopValueFromReader(MessageReader* reader);
+template <> void Property<int16>::AppendSetValueToWriter(MessageWriter* writer);
+
+template <> Property<uint16>::Property();
+template <> bool Property<uint16>::PopValueFromReader(MessageReader* reader);
+template <> void Property<uint16>::AppendSetValueToWriter(
+  MessageWriter* writer);
+
+template <> Property<int32>::Property();
+template <> bool Property<int32>::PopValueFromReader(MessageReader* reader);
+template <> void Property<int32>::AppendSetValueToWriter(MessageWriter* writer);
+
+template <> Property<uint32>::Property();
+template <> bool Property<uint32>::PopValueFromReader(MessageReader* reader);
+template <> void Property<uint32>::AppendSetValueToWriter(
+  MessageWriter* writer);
+
+template <> Property<int64>::Property();
+template <> bool Property<int64>::PopValueFromReader(MessageReader* reader);
+template <> void Property<int64>::AppendSetValueToWriter(MessageWriter* writer);
+
+template <> Property<uint64>::Property();
+template <> bool Property<uint64>::PopValueFromReader(MessageReader* reader);
+template <> void Property<uint64>::AppendSetValueToWriter(
+  MessageWriter* writer);
+
+template <> Property<double>::Property();
+template <> bool Property<double>::PopValueFromReader(MessageReader* reader);
+template <> void Property<double>::AppendSetValueToWriter(
+  MessageWriter* writer);
+
+template <> bool Property<std::string>::PopValueFromReader(
+  MessageReader* reader);
+template <> void Property<std::string>::AppendSetValueToWriter(
+  MessageWriter* writer);
+
+template <> bool Property<ObjectPath>::PopValueFromReader(
+  MessageReader* reader);
+template <> void Property<ObjectPath>::AppendSetValueToWriter(
+  MessageWriter* writer);
+
+template <> bool Property<std::vector<std::string> >::PopValueFromReader(
+  MessageReader* reader);
+template <> void Property<std::vector<std::string> >::AppendSetValueToWriter(
+  MessageWriter* writer);
+
+template <> bool Property<std::vector<ObjectPath> >::PopValueFromReader(
+  MessageReader* reader);
+template <> void Property<std::vector<ObjectPath> >::AppendSetValueToWriter(
+  MessageWriter* writer);
+
 }  // namespace dbus
 
 #endif  // DBUS_PROPERTY_H_
