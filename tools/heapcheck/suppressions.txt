@@ -1530,3 +1530,19 @@
    fun:WebCore::FrameLoader::dispatchDidClearWindowObjectInWorld
    fun:WebCore::V8DOMWindowShell::initializeIfNeeded
 }
+
+{
+   bug_v8_2345
+   Heapcheck:Leak
+   fun:v8::internal::SkipList::Update
+   fun:v8::internal::PagedSpace::AllocateRaw
+   fun:v8::internal::Heap::ReserveSpace
+   fun:v8::internal::Deserializer::Deserialize
+   fun:v8::internal::Isolate::Init
+   fun:v8::internal::V8::Initialize
+   fun:v8::internal::Snapshot::Initialize
+   fun:v8::InitializeHelper
+   fun:v8::V8::Initialize
+   fun:WebKit::initialize
+   fun:content::UnitTestTestSuite::UnitTestTestSuite
+}

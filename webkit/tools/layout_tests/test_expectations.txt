@@ -31,3 +31,7 @@
 // Right?)
 //
 // EVERYTHING BELOW THIS LINE WILL BE DELETED AT EVERY WEBKIT DEPS ROLL
+
+webkit.org/b/97206 http/tests/security/contentSecurityPolicy/eval-blocked-in-about-blank-iframe.html [ Failure Skip ]
+webkit.org/b/97206 http/tests/security/contentSecurityPolicy/function-constructor-blocked.html [ Failure Skip ]
+webkit.org/b/97206 http/tests/security/contentSecurityPolicy/eval-blocked.html [ Failure Skip ]
