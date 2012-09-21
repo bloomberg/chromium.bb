@@ -1,3 +1,0 @@
-0: -> ZeroExtends(esp)
-2: ZeroExtends(esp)
-VALIDATOR: Checking block alignment and jump targets: 0 to 5

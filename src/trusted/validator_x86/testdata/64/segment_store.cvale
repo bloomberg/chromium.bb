@@ -1,4 +1,0 @@
-VALIDATOR: 0000000000000000: 6d                                           insd
-VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-0: SafeAddress(rdi)
-VALIDATOR: Checking block alignment and jump targets: 0 to 1

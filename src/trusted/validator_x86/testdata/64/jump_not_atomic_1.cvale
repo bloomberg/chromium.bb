@@ -1,4 +1,0 @@
-1002: -> ZeroExtends(edx)
-VALIDATOR: Checking block alignment and jump targets: 1000 to 1005
-VALIDATOR: 0000000000001000: eb 02                                        jmp 0x1004
-VALIDATOR: ERROR: Doesn't jump to instruction address

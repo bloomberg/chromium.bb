@@ -1,4 +1,0 @@
-0: ZeroExtends(esp)
-VALIDATOR: Checking block alignment and jump targets: 0 to 3
-VALIDATOR: 0000000000000000: 4c 01 fc                                     add %rsp, %r15
-VALIDATOR: ERROR: Instruction begins basic block, but in middle of nacl pattern

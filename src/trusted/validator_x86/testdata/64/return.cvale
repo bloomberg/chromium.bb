@@ -1,2 +1,0 @@
-20042: -> ZeroExtends(r11d)
-VALIDATOR: Checking block alignment and jump targets: 20040 to 2004c

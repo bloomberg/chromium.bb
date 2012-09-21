@@ -1,2 +1,0 @@
-0: -> ZeroExtends(ecx)
-3: ZeroExtends(ecx)

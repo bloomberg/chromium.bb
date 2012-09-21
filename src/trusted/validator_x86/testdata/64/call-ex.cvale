@@ -1,2 +1,0 @@
-18: -> ZeroExtends(eax)
-VALIDATOR: Checking block alignment and jump targets: 0 to 20

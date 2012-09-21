@@ -1,5 +1,0 @@
-0: -> ZeroExtends(edx)
-3: ZeroExtends(edx) -> SafeAddress(r9)
-VALIDATOR: 0000000000000007: 41 ff e1                                     jmp %r9
-VALIDATOR: ERROR: Invalid indirect jump
-VALIDATOR: Checking block alignment and jump targets: 0 to a

@@ -1,2 +1,0 @@
-0: ZeroExtends(edi) -> SafeAddress(rdi)
-4: SafeAddress(rdi)

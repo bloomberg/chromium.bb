@@ -1,2 +1,0 @@
-101d: -> ZeroExtends(ebp)
-1020: ZeroExtends(ebp)

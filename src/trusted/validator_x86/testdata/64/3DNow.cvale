@@ -1,3 +1,0 @@
-VALIDATOR: Checking block alignment and jump targets: 0 to 2a
-VALIDATOR: 000000000000001e: 0f 0d 0c 24                                  prefetch_modified [%rsp]
-VALIDATOR: ERROR: Instruction crosses basic block alignment

@@ -1,8 +1,0 @@
-4: -> ZeroExtends(edi)
-6: ZeroExtends(edi) -> SafeAddress(rdi)
-a: SafeAddress(rdi)
-c: -> ZeroExtends(edi)
-e: ZeroExtends(edi) -> SafeAddress(rdi)
-12: SafeAddress(rdi)
-22: -> ZeroExtends(edi)
-24: ZeroExtends(edi) -> SafeAddress(rdi)

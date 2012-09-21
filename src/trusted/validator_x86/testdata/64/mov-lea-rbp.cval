@@ -1,2 +1,0 @@
-0: -> ZeroExtends(ebp)
-2: ZeroExtends(ebp)

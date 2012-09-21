@@ -1,5 +1,0 @@
-VALIDATOR: 0000000000000000: 67 ff 05 a4 76 39 00                         inc [%rip+0x3976a4]
-VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
-VALIDATOR: 0000000000000000: 67 ff 05 a4 76 39 00                         inc [%rip+0x3976a4]
-VALIDATOR: ERROR: Assignment to non-64 bit memory address
-VALIDATOR: Checking block alignment and jump targets: 0 to 7

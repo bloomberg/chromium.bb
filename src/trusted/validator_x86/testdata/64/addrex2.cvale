@@ -1,4 +1,0 @@
-VALIDATOR: 0000000000000000: 40 41 01 c3                                  add %r11d, %eax
-VALIDATOR: ERROR: Multiple use of REX prefix not allowed
-0: -> ZeroExtends(r11d)
-VALIDATOR: Checking block alignment and jump targets: 0 to 4

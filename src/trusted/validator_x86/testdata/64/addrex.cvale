@@ -1,2 +1,0 @@
-0: -> ZeroExtends(r11d)
-VALIDATOR: Checking block alignment and jump targets: 0 to 3
