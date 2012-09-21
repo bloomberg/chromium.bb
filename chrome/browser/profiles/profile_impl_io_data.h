@@ -139,7 +139,9 @@ class ProfileImplIOData : public ProfileIOData {
       ProfileParams* profile_params) const OVERRIDE;
   virtual ChromeURLRequestContext* InitializeAppRequestContext(
       ChromeURLRequestContext* main_context,
-      const std::string& app_id) const OVERRIDE;
+      const std::string& app_id,
+      scoped_ptr<net::URLRequestJobFactory::Interceptor>
+          protocol_handler_interceptor) const OVERRIDE;
   virtual ChromeURLRequestContext* InitializeMediaRequestContext(
       ChromeURLRequestContext* original_context,
       const std::string& app_id) const OVERRIDE;
@@ -148,7 +150,9 @@ class ProfileImplIOData : public ProfileIOData {
   virtual ChromeURLRequestContext*
       AcquireIsolatedAppRequestContext(
           ChromeURLRequestContext* main_context,
-          const std::string& app_id) const OVERRIDE;
+          const std::string& app_id,
+          scoped_ptr<net::URLRequestJobFactory::Interceptor>
+              protocol_handler_interceptor) const OVERRIDE;
   virtual ChromeURLRequestContext*
       AcquireIsolatedMediaRequestContext(
           ChromeURLRequestContext* app_context,
@@ -156,8 +160,12 @@ class ProfileImplIOData : public ProfileIOData {
   virtual chrome_browser_net::LoadTimeStats* GetLoadTimeStats(
       IOThread::Globals* io_thread_globals) const OVERRIDE;
 
-  void CreateFtpProtocolHandler(net::URLRequestJobFactory* job_factory,
-                                net::FtpAuthCache* ftp_auth_cache) const;
+  void SetUpJobFactory(net::URLRequestJobFactory* job_factory,
+                       scoped_ptr<net::URLRequestJobFactory::Interceptor>
+                           protocol_handler_interceptor,
+                       net::NetworkDelegate* network_delegate,
+                       net::FtpTransactionFactory* ftp_transaction_factory,
+                       net::FtpAuthCache* ftp_auth_cache) const;
 
   // Clears the networking history since |time|.
   void ClearNetworkingHistorySinceOnIOThread(base::Time time);

@@ -13,6 +13,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "net/url_request/url_request_job_factory.h"
 
 class ChromeURLDataManagerBackend;
 class ChromeURLRequestContextFactory;
@@ -144,12 +145,15 @@ class ChromeURLRequestContextGetter : public net::URLRequestContextGetter,
   static ChromeURLRequestContextGetter* CreateOriginalForIsolatedApp(
       Profile* profile,
       const ProfileIOData* profile_io_data,
-      const std::string& app_id);
+      const std::string& app_id,
+      scoped_ptr<net::URLRequestJobFactory::Interceptor>
+          protocol_handler_interceptor);
 
   // Create an instance for an original profile for media with isolated
   // storage. This is expected to get called on UI thread.
   static ChromeURLRequestContextGetter* CreateOriginalForIsolatedMedia(
       Profile* profile,
+      ChromeURLRequestContextGetter* app_context,
       const ProfileIOData* profile_io_data,
       const std::string& app_id);
 
@@ -168,7 +172,9 @@ class ChromeURLRequestContextGetter : public net::URLRequestContextGetter,
   static ChromeURLRequestContextGetter* CreateOffTheRecordForIsolatedApp(
       Profile* profile,
       const ProfileIOData* profile_io_data,
-      const std::string& app_id);
+      const std::string& app_id,
+      scoped_ptr<net::URLRequestJobFactory::Interceptor>
+          protocol_handler_interceptor);
 
   // Clean up UI thread resources. This is expected to get called on the UI
   // thread before the instance is deleted on the IO thread.

@@ -99,7 +99,9 @@ class OffTheRecordProfileIOData : public ProfileIOData {
       ProfileParams* profile_params) const OVERRIDE;
   virtual ChromeURLRequestContext* InitializeAppRequestContext(
       ChromeURLRequestContext* main_context,
-      const std::string& app_id) const OVERRIDE;
+      const std::string& app_id,
+      scoped_ptr<net::URLRequestJobFactory::Interceptor>
+          protocol_handler_interceptor) const OVERRIDE;
   virtual ChromeURLRequestContext* InitializeMediaRequestContext(
       ChromeURLRequestContext* original_context,
       const std::string& app_id) const OVERRIDE;
@@ -108,14 +110,13 @@ class OffTheRecordProfileIOData : public ProfileIOData {
   virtual ChromeURLRequestContext*
       AcquireIsolatedAppRequestContext(
           ChromeURLRequestContext* main_context,
-          const std::string& app_id) const OVERRIDE;
+          const std::string& app_id,
+          scoped_ptr<net::URLRequestJobFactory::Interceptor>
+              protocol_handler_interceptor) const OVERRIDE;
   virtual ChromeURLRequestContext*
       AcquireIsolatedMediaRequestContext(
           ChromeURLRequestContext* app_context,
           const std::string& app_id) const OVERRIDE;
-
-  void CreateFtpProtocolHandler(net::URLRequestJobFactory* job_factory,
-                                net::FtpAuthCache* ftp_auth_cache) const;
 
   virtual chrome_browser_net::LoadTimeStats* GetLoadTimeStats(
       IOThread::Globals* io_thread_globals) const OVERRIDE;

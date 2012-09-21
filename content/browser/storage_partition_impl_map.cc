@@ -144,11 +144,24 @@ void InitializeURLRequestContext(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!context_getter)
     return;  // tests.
+
+  // This code only modifies the URLRequestJobFactory on the context
+  // to handle blob: URLs, filesystem: URLs, and to let AppCache intercept
+  // the appropriate requests.  This is in addition to the slew of other
+  // initializtion that is done in during creation of the URLRequestContext.
+  // We cannot yet centralize this code because URLRequestContext needs
+  // to be created before the StoragePartition context.
+  //
+  // TODO(ajwong): Fix the ordering so all the initialization is in one spot.
   net::URLRequestContext* context = context_getter->GetURLRequestContext();
   net::URLRequestJobFactory* job_factory =
       const_cast<net::URLRequestJobFactory*>(context->job_factory());
+
+  // Note: if this is called twice with 2 request contexts that share one job
+  // factory (as is the case with a media request context and its related
+  // normal request context) then this will early exit.
   if (job_factory->IsHandledProtocol(chrome::kBlobScheme))
-    return;  // Already initialized this RequestContext.
+    return;  // Already initialized this JobFactory.
 
   bool set_protocol = job_factory->SetProtocolHandler(
       chrome::kBlobScheme,
@@ -253,15 +266,12 @@ void StoragePartitionImplMap::PostCreateInitialization(
             make_scoped_refptr(partition->GetFileSystemContext()),
             make_scoped_refptr(
                 ChromeBlobStorageContext::GetFor(browser_context_))));
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(
-            &InitializeURLRequestContext,
-            make_scoped_refptr(partition->GetMediaURLRequestContext()),
-            make_scoped_refptr(partition->GetAppCacheService()),
-            make_scoped_refptr(partition->GetFileSystemContext()),
-            make_scoped_refptr(
-                ChromeBlobStorageContext::GetFor(browser_context_))));
+
+    // We do not call InitializeURLRequestContext() for media contexts because,
+    // other than the HTTP cache, the media contexts share the same backing
+    // objects as their associated "normal" request context.  Thus, the previous
+    // call serves to initialize the media request context for this storage
+    // partition as well.
   }
 }
 
