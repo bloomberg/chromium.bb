@@ -158,14 +158,14 @@ SkColor GetPlatformImageColor(PlatformImage image, int x, int y) {
 void CheckColor(SkColor color, bool is_red) {
   // Be tolerant of floating point rounding and lossy color space conversions.
   if (is_red) {
-    EXPECT_GT(SkColorGetR(color), 0.95);
-    EXPECT_LT(SkColorGetG(color), 0.05);
+    EXPECT_GT(SkColorGetR(color) / 255.0, 0.95);
+    EXPECT_LT(SkColorGetG(color) / 255.0, 0.05);
   } else {
-    EXPECT_GT(SkColorGetG(color), 0.95);
-    EXPECT_LT(SkColorGetR(color), 0.05);
+    EXPECT_GT(SkColorGetG(color) / 255.0, 0.95);
+    EXPECT_LT(SkColorGetR(color) / 255.0, 0.05);
   }
-  EXPECT_LT(SkColorGetB(color), 0.05);
-  EXPECT_GT(SkColorGetA(color), 0.95);
+  EXPECT_LT(SkColorGetB(color) / 255.0, 0.05);
+  EXPECT_GT(SkColorGetA(color) / 255.0, 0.95);
 }
 
 bool IsPlatformImageValid(PlatformImage image) {

@@ -10,7 +10,10 @@
 namespace gfx {
 namespace test {
 
-  SkColor GetPlatformImageColor(PlatformImage image, int x, int y) {
+SkColor GetPlatformImageColor(PlatformImage image, int x, int y) {
+  // AppKit's coordinate system is flipped.
+  y = [image size].height - y;
+
   [image lockFocus];
   NSColor* color = NSReadPixel(NSMakePoint(x, y));
   [image unlockFocus];

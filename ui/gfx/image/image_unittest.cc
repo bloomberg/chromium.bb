@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkPaint.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_unittest_util.h"
@@ -305,6 +307,44 @@ TEST_F(ImageTest, CheckSkiaColor) {
   SkAutoLockPixels auto_lock(*bitmap);
   gt::CheckColor(bitmap->getColor(10, 10), false);
 }
+
+// TODO(rohitrao): This test needs an iOS implementation of
+// GetPlatformImageColor().
+#if !defined(OS_IOS)
+TEST_F(ImageTest, SkBitmapConversionPreservesOrientation) {
+  const int width = 50;
+  const int height = 50;
+  SkBitmap bitmap;
+  bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
+  bitmap.allocPixels();
+  bitmap.eraseRGB(0, 255, 0);
+
+  // Paint the upper half of the image in red (lower half is in green).
+  SkCanvas canvas(bitmap);
+  SkPaint red;
+  red.setColor(SK_ColorRED);
+  canvas.drawRect(SkRect::MakeWH(width, height / 2), red);
+  gt::CheckColor(bitmap.getColor(10, 10), true);
+  gt::CheckColor(bitmap.getColor(10, 40), false);
+
+  // Convert from SkBitmap to a platform representation, then check the upper
+  // half of the platform image to make sure it is red, not green.
+  gfx::Image from_skbitmap(bitmap);
+  gt::CheckColor(
+      gt::GetPlatformImageColor(gt::ToPlatformType(from_skbitmap), 10, 10),
+      true);
+  gt::CheckColor(
+      gt::GetPlatformImageColor(gt::ToPlatformType(from_skbitmap), 10, 40),
+      false);
+
+  // Force a conversion back to SkBitmap and check that the upper half is red.
+  gfx::Image from_platform(gt::CopyPlatformType(from_skbitmap));
+  const SkBitmap* bitmap2 = from_platform.ToSkBitmap();
+  SkAutoLockPixels auto_lock(*bitmap2);
+  gt::CheckColor(bitmap2->getColor(10, 10), true);
+  gt::CheckColor(bitmap2->getColor(10, 40), false);
+}
+#endif  // !defined(OS_IOS)
 
 TEST_F(ImageTest, SwapRepresentations) {
   const size_t kRepCount = kUsesSkiaNatively ? 1U : 2U;
