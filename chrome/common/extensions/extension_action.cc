@@ -319,9 +319,10 @@ bool ExtensionAction::SetAppearance(int tab_id, Appearance new_appearance) {
 
   SetValue(&appearance_, tab_id, new_appearance);
 
-  // When showing a badge for the first time on a web page, fade it
-  // in.  Other transitions happen instantly.
-  if (old_appearance == INVISIBLE && tab_id != kDefaultTabId) {
+  // When showing a script badge for the first time on a web page, fade it in.
+  // Other transitions happen instantly.
+  if (old_appearance == INVISIBLE && tab_id != kDefaultTabId &&
+      action_type_ == TYPE_SCRIPT_BADGE) {
     RunIconAnimation(tab_id);
   }
 
