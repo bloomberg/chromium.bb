@@ -13,13 +13,6 @@ class PermissionSelectorObserver {
   // |selector|.
   virtual void OnPermissionChanged(PermissionSelector* selector) = 0;
 
-  // GtkComboBox grabs the keyboard and pointer when it displays its popup,
-  // which steals the grabs that BubbleGtk had installed. When the combobox
-  // popup is hidden, we notify BubbleGtk so it can try to reacquire the grabs
-  // (otherwise, GTK won't activate our widgets when the user clicks in them).
-  // OnComboboxShown is called when a combobox popup is closed.
-  virtual void OnComboboxShown() = 0;
-
  protected:
   virtual ~PermissionSelectorObserver() {}
 };

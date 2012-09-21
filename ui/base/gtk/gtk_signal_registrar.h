@@ -49,6 +49,9 @@ class UI_EXPORT GtkSignalRegistrar {
   glong ConnectAfter(gpointer instance, const gchar* detailed_signal,
                      GCallback signal_handler, gpointer data);
 
+  // Disconnects all signal handlers connected to |instance|.
+  void DisconnectAll(gpointer instance);
+
  private:
   typedef std::vector<glong> HandlerList;
   typedef std::map<GObject*, HandlerList> HandlerMap;

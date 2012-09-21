@@ -23,8 +23,8 @@ GtkSignalRegistrar::~GtkSignalRegistrar() {
 
     HandlerList& handlers = list_iter->second;
     for (HandlerList::iterator ids_iter = handlers.begin();
-         ids_iter != handlers.end(); ids_iter++) {
-      g_signal_handler_disconnect(list_iter->first, *ids_iter);
+         ids_iter != handlers.end(); ++ids_iter) {
+      g_signal_handler_disconnect(object, *ids_iter);
     }
   }
 }
@@ -75,6 +75,23 @@ void GtkSignalRegistrar::WeakNotify(GObject* where_the_object_was) {
   }
   // The signal handlers will be disconnected automatically. Just erase the
   // handler id list.
+  handler_lists_.erase(iter);
+}
+
+void GtkSignalRegistrar::DisconnectAll(gpointer instance) {
+  GObject* object = G_OBJECT(instance);
+  HandlerMap::iterator iter = handler_lists_.find(object);
+  if (iter == handler_lists_.end())
+    return;
+
+  GObjectDestructorFILO::GetInstance()->Disconnect(
+      object, WeakNotifyThunk, this);
+  HandlerList& handlers = iter->second;
+  for (HandlerList::iterator ids_iter = handlers.begin();
+       ids_iter != handlers.end(); ++ids_iter) {
+    g_signal_handler_disconnect(object, *ids_iter);
+  }
+
   handler_lists_.erase(iter);
 }
 

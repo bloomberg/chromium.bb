@@ -67,7 +67,6 @@ class WebsiteSettingsPopupGtk : public WebsiteSettingsUI,
 
   // PermissionSelectorObserver implementations.
   virtual void OnPermissionChanged(PermissionSelector* selector) OVERRIDE;
-  virtual void OnComboboxShown() OVERRIDE;
 
   // BubbleDelegateGtk implementation.
   virtual void BubbleClosing(BubbleGtk* bubble, bool closed_by_escape) OVERRIDE;

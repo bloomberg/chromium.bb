@@ -92,16 +92,6 @@ class BubbleGtk : public content::NotificationObserver {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // If the content contains widgets that can steal our pointer and keyboard
-  // grabs (e.g. GtkComboBox), this method should be called after a widget
-  // releases the grabs so we can reacquire them.  Note that this causes a race
-  // condition; another client could grab them before we do (ideally, GDK would
-  // transfer the grabs back to us when the widget releases them).  The window
-  // is small, though, and the worst-case scenario for this seems to just be
-  // that the content's widgets will appear inactive even after the user clicks
-  // in them.
-  void HandlePointerAndKeyboardUngrabbedByContent();
-
   // Change an input-grabbing bubble into a non-input-grabbing bubble. This
   // allows a window to change from auto closing when it loses to focus to being
   // a window that does not auto close, and is useful if an auto closing window
@@ -180,6 +170,8 @@ class BubbleGtk : public content::NotificationObserver {
   CHROMEGTK_CALLBACK_1(BubbleGtk, gboolean, OnButtonPress, GdkEventButton*);
   CHROMEGTK_CALLBACK_0(BubbleGtk, gboolean, OnDestroy);
   CHROMEGTK_CALLBACK_0(BubbleGtk, void, OnHide);
+  CHROMEGTK_CALLBACK_1(BubbleGtk, gboolean, OnGrabBroken, GdkEventGrabBroken*);
+  CHROMEGTK_CALLBACK_0(BubbleGtk, void, OnForeshadowWidgetHide);
   CHROMEGTK_CALLBACK_1(BubbleGtk, gboolean, OnToplevelConfigure,
                        GdkEventConfigure*);
   CHROMEGTK_CALLBACK_1(BubbleGtk, gboolean, OnToplevelUnmap, GdkEvent*);

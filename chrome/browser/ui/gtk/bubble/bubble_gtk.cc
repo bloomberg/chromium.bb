@@ -179,6 +179,10 @@ void BubbleGtk::Init(GtkWidget* anchor_widget,
                    G_CALLBACK(OnButtonPressThunk), this);
   signals_.Connect(window_, "destroy", G_CALLBACK(OnDestroyThunk), this);
   signals_.Connect(window_, "hide", G_CALLBACK(OnHideThunk), this);
+  if (grab_input_) {
+    signals_.Connect(window_, "grab-broken-event",
+                     G_CALLBACK(OnGrabBrokenThunk), this);
+  }
 
   // If the toplevel window is being used as the anchor, then the signals below
   // are enough to keep us positioned correctly.
@@ -462,11 +466,6 @@ void BubbleGtk::Observe(int type,
   }
 }
 
-void BubbleGtk::HandlePointerAndKeyboardUngrabbedByContent() {
-  if (grab_input_)
-    GrabPointerAndKeyboard();
-}
-
 void BubbleGtk::StopGrabbingInput() {
   if (!grab_input_)
     return;
@@ -648,6 +647,30 @@ gboolean BubbleGtk::OnDestroy(GtkWidget* widget) {
 
 void BubbleGtk::OnHide(GtkWidget* widget) {
   gtk_widget_destroy(widget);
+}
+
+gboolean BubbleGtk::OnGrabBroken(GtkWidget* widget,
+                                 GdkEventGrabBroken* grab_broken) {
+  // |grab_input_| may have been changed to false.
+  if (!grab_input_)
+    return false;
+
+  gpointer user_data;
+  gdk_window_get_user_data(grab_broken->grab_window, &user_data);
+
+  if (GTK_IS_WIDGET(user_data)) {
+    signals_.Connect(GTK_WIDGET(user_data), "hide",
+                     G_CALLBACK(OnForeshadowWidgetHideThunk), this);
+  }
+
+  return FALSE;
+}
+
+void BubbleGtk::OnForeshadowWidgetHide(GtkWidget* widget) {
+  if (grab_input_)
+    GrabPointerAndKeyboard();
+
+  signals_.DisconnectAll(widget);
 }
 
 gboolean BubbleGtk::OnToplevelConfigure(GtkWidget* widget,

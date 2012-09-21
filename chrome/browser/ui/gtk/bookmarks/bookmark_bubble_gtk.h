@@ -60,8 +60,6 @@ class BookmarkBubbleGtk : public BubbleDelegateGtk,
   CHROMEGTK_CALLBACK_0(BookmarkBubbleGtk, void, OnDestroy);
   CHROMEGTK_CALLBACK_0(BookmarkBubbleGtk, void, OnNameActivate);
   CHROMEGTK_CALLBACK_0(BookmarkBubbleGtk, void, OnFolderChanged);
-  CHROMEGTK_CALLBACK_1(BookmarkBubbleGtk, void, OnFolderPopupShown,
-                       GParamSpec*);
   CHROMEGTK_CALLBACK_0(BookmarkBubbleGtk, void, OnEditClicked);
   CHROMEGTK_CALLBACK_0(BookmarkBubbleGtk, void, OnCloseClicked);
   CHROMEGTK_CALLBACK_0(BookmarkBubbleGtk, void, OnRemoveClicked);

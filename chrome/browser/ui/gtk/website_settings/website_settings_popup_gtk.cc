@@ -423,10 +423,6 @@ void WebsiteSettingsPopupGtk::OnPermissionChanged(
                                       selector->GetSetting());
 }
 
-void WebsiteSettingsPopupGtk::OnComboboxShown() {
-  bubble_->HandlePointerAndKeyboardUngrabbedByContent();
-}
-
 void WebsiteSettingsPopupGtk::SetCookieInfo(
     const CookieInfoList& cookie_info_list) {
   DCHECK(cookies_section_contents_);
