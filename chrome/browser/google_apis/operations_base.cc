@@ -10,6 +10,7 @@
 #include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/net/url_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -19,6 +20,7 @@
 #include "net/http/http_util.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
+#include "webkit/user_agent/user_agent_util.h"
 
 using content::BrowserThread;
 using net::URLFetcher;
@@ -60,6 +62,33 @@ void ParseJsonOnBlockingPool(const std::string& data,
                << ", data:\n"
                << data;
   }
+}
+
+// Returns a user agent string used for communicating with the Drive backend,
+// both WAPI and Drive API.  The user agent looks like:
+//
+// chromedrive-<VERSION> chrome-cc/none (<OS_CPU_INFO>)
+// chromedrive-24.0.1274.0 chrome-cc/none (CrOS x86_64 0.4.0)
+//
+// TODO(satorux): Move this function to somewhere else: crbug.com/151605
+std::string GetDriveUserAgent() {
+  const char kDriveClientName[] = "chromedrive";
+
+  chrome::VersionInfo version_info;
+  const std::string version = (version_info.is_valid() ?
+                               version_info.Version() :
+                               std::string("unknown"));
+
+  // This part is <client_name>/<version>.
+  const char kLibraryInfo[] = "chrome-cc/none";
+
+  const std::string os_cpu_info = webkit_glue::BuildOSCpuInfo();
+
+  return base::StringPrintf("%s-%s %s (%s)",
+                            kDriveClientName,
+                            version.c_str(),
+                            kLibraryInfo,
+                            os_cpu_info.c_str());
 }
 
 }  // namespace
@@ -182,6 +211,10 @@ void UrlFetchOperationBase::Start(const std::string& auth_token) {
   // Note that SetExtraRequestHeaders clears the current headers and sets it
   // to the passed-in headers, so calling it for each header will result in
   // only the last header being set in request headers.
+  //
+  // TODO(satorux): The custom user-agent should be set only for Drive
+  // operations. crbug.com/151605
+  url_fetcher_->AddExtraRequestHeader("User-Agent: " + GetDriveUserAgent());
   url_fetcher_->AddExtraRequestHeader(kGDataVersionHeader);
   url_fetcher_->AddExtraRequestHeader(
         base::StringPrintf(kAuthorizationHeaderFormat, auth_token.data()));
