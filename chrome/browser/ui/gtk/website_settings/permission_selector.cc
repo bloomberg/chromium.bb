@@ -73,19 +73,31 @@ PermissionSelector::PermissionSelector(GtkThemeService* theme_service,
   gtk_box_pack_start(GTK_BOX(widget_), label, FALSE, FALSE, 0);
 
   // Add the menu button.
-  menu_button_ = gtk_button_new_with_label(
+  menu_button_ = theme_service->BuildChromeButton();
+  GtkWidget* button_hbox = gtk_hbox_new(FALSE, 0);
+  gtk_container_add(GTK_CONTAINER(menu_button_), button_hbox);
+
+  GtkWidget* button_label = theme_service->BuildLabel(
       UTF16ToUTF8(WebsiteSettingsUI::PermissionActionToUIString(
-          setting, default_setting, source)).c_str());
+          setting, default_setting, source)),
+      ui::kGdkBlack);
+  gtk_box_pack_start(GTK_BOX(button_hbox), button_label, FALSE, FALSE,
+                     ui::kControlSpacing);
+
   bool user_setting = source == content_settings::SETTING_SOURCE_USER;
   gtk_widget_set_sensitive(GTK_WIDGET(menu_button_), user_setting);
   if (user_setting) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    pixbuf = rb.GetNativeImageNamed(IDR_APP_DROPARROW).ToGdkPixbuf();
-    GtkWidget* arrow = gtk_image_new_from_pixbuf(pixbuf);
-    gtk_button_set_image(GTK_BUTTON(menu_button_), arrow);
-    gtk_button_set_image_position(GTK_BUTTON(menu_button_),
-                                  base::i18n::IsRTL() ? GTK_POS_LEFT
-                                                      : GTK_POS_RIGHT);
+    GtkWidget* arrow = NULL;
+    // We don't handle theme changes, which is a bug but they are very unlikely
+    // to occur while a bubble is grabbing input.
+    if (theme_service->UsingNativeTheme()) {
+      arrow = gtk_arrow_new(GTK_ARROW_DOWN, GTK_SHADOW_NONE);
+    } else {
+      ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+      arrow = gtk_image_new_from_pixbuf(
+          rb.GetNativeImageNamed(IDR_APP_DROPARROW).ToGdkPixbuf());
+    }
+    gtk_box_pack_start(GTK_BOX(button_hbox), arrow, FALSE, FALSE, 0);
   }
   gtk_button_set_relief(GTK_BUTTON(menu_button_), GTK_RELIEF_NONE);
   gtk_box_pack_start(GTK_BOX(widget_), menu_button_, FALSE, FALSE, 0);
