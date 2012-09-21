@@ -48,9 +48,16 @@ class BrowserFrameAura::WindowPropertyWatcher : public aura::WindowObserver {
     if (key != aura::client::kShowStateKey)
       return;
 
-    // Allow the frame to be replaced when maximizing an app.
+    ui::WindowShowState old_state = static_cast<ui::WindowShowState>(old);
+    ui::WindowShowState new_state =
+        window->GetProperty(aura::client::kShowStateKey);
+
+    // Allow the frame to be replaced when entering or exiting the maximized
+    // state.
     if (browser_frame_->non_client_view() &&
-        browser_frame_aura_->browser_view()->browser()->is_app()) {
+        browser_frame_aura_->browser_view()->browser()->is_app() &&
+        (old_state == ui::SHOW_STATE_MAXIMIZED ||
+         new_state == ui::SHOW_STATE_MAXIMIZED)) {
       // Defer frame layout when replacing the frame. Layout will occur when the
       // window's bounds are updated. The window maximize/restore animations
       // clone the window's layers and rely on the subsequent layout to set
