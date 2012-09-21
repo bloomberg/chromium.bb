@@ -29,6 +29,9 @@ MERGE_TOOL=pnacl/scripts/merge-tool-git.sh
 SPEC2K_SCRIPT=buildbot/buildbot_spec2k.sh
 PNACL_SCRIPT=buildbot/buildbot_pnacl.sh
 
+SVN_REV_LEN=6
+GIT_HASH_LEN=40
+
 clobber() {
   echo @@@BUILD_STEP clobber@@@
   rm -rf scons-out
@@ -48,12 +51,33 @@ merge-bot() {
   echo "@@@BUILD_STEP show-config@@@"
   ${PNACL_BUILD} show-config
 
+  echo "@@@BUILD_STEP sync-sources@@@"
+  ${MERGE_TOOL} pull-upstream
+
+  # TODO(dschuff): figure out how the buildbot side will actually work
+  # For now, handle all the cases
   # If BUILDBOT_REVISION is blank, use LLVM tip of tree
   if [ -z "${BUILDBOT_REVISION}" ]; then
-    # TODO(dschuff): find out what vars are set on the LLVM bot
-    ${MERGE_TOOL} pull-upstream
-    export BUILDBOT_REVISION=$(${MERGE_TOOL} get-head-revision)
+    upstream_revision=$(${MERGE_TOOL} get-head-revision)
+  elif [ ${#BUILDBOT_REVISION} -eq ${SVN_REV_LEN} ]; then
+    # The revision is probably an SVN revision
+    upstream_revision=$(${MERGE_TOOL} \
+      get-git-svn-revision ${BUILDBOT_REVISION})
+    if [ ${#upstream_revision} -ne ${GIT_HASH_LEN} ]; then
+      echo "Could not find a single git revision for rev ${BUILDBOT_REVISION}"
+      echo "got ${upstream_revision}"
+      upstream_revision=$(${MERGE_TOOL} get-head-revision)
+      # If we use the SVN buildbot poller, it may be ahead of the LLVM git
+      # mirror which means that the latest SVN commit will never be in
+      # git (so it will always fail). So for now, just use the latest git
+      # revision.
+      echo "using ${upstream_revision} instead"
+    fi
+  else
+    # The revision is probably a git revision
+    upstream_revision=${BUILDBOT_REVISION}
   fi
+
 
   if [ -z "${BUILDBOT_BUILDNUMBER:-}" ]; then
     echo "Please set BUILDBOT_BUILDNUMBER"
@@ -61,13 +85,14 @@ merge-bot() {
   fi
 
   local ret=0
+
   # Sync the rest of pnacl sources before doing the merge, because it
   # steps on the LLVM source
   ${PNACL_BUILD} sync-sources
 
   # Merge LLVM
   ${MERGE_TOOL} clean
-  ${MERGE_TOOL} auto ${BUILDBOT_REVISION} || ret=$?
+  ${MERGE_TOOL} auto ${upstream_revision} || ret=$?
   if [ ${ret} -eq 55 ] ; then
     echo '@@@BUILD_STEP No changes, skipping tests@@@'
     exit 0

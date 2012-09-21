@@ -79,8 +79,12 @@ manual() {
 
 #@ upstream-remote-setup - Add the LLVM remote repo to a pnacl git checkout
 upstream-remote-setup() {
-  cd "${TC_SRC_LLVM}"
-  git remote add ${UPSTREAM_REMOTE} ${UPSTREAM_URL}
+  pushd "${TC_SRC_LLVM}"
+  if ! $(git remote | grep ${UPSTREAM_REMOTE}); then
+    git remote add ${UPSTREAM_REMOTE} ${UPSTREAM_URL}
+    git branch ${UPSTREAM_BRANCH} ${UPSTREAM_REMOTE}/master
+  fi
+  popd
 }
 
 #+ get-head-revision   - get the head revision for LLVM
@@ -91,11 +95,20 @@ get-head-revision() {
   spopd
 }
 
+#+ get-git-svn-revision  - Return the git revision matching the given SVN rev
+get-git-svn-revision() {
+  spushd ${TC_SRC_LLVM}
+  git rev-list --grep=@${1} ${UPSTREAM_REMOTE}/master
+  spopd
+}
+
 pull-upstream() {
+  spushd ${TC_SRC_LLVM}
   # Get the upstream changes onto the local tracking branch
   git checkout ${UPSTREAM_BRANCH}
   git fetch ${UPSTREAM_REMOTE}
   git merge --ff ${UPSTREAM_REMOTE_BRANCH}
+  spopd
 }
 
 pull-pnacl() {
