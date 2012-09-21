@@ -39,14 +39,20 @@ class TsfBridgeDelegate : public TsfBridge {
       return false;
     }
 
-    text_store_.reset(new scoped_refptr<TsfTextStore>(new TsfTextStore()));
-
     if (FAILED(thread_manager_.CreateInstance(CLSID_TF_ThreadMgr))) {
       VLOG(1) << "Failed to create ThreadManager instance.";
       return false;
     }
 
+    if (FAILED(thread_manager_->Activate(&client_id_))) {
+      VLOG(1) << "Failed to activate Thread Manager.";
+      return false;
+    }
+
     if (!InitializeForEnabledDocumentManager())
+      return false;
+
+    if (!InitializeForPasswordDocumentManager())
       return false;
 
     if (!InitializeForDisabledDocumentManager())
@@ -86,7 +92,7 @@ class TsfBridgeDelegate : public TsfBridge {
     if (!IsInitialized())
       return;
     base::win::ScopedComPtr<ITfContext> context;
-    if (FAILED(document_manager_->GetTop(context.Receive())))
+    if (FAILED(document_manager_for_editable_->GetTop(context.Receive())))
       return;
     base::win::ScopedComPtr<ITfSource> source;
     if (FAILED(source.QueryFrom(context)))
@@ -113,23 +119,30 @@ class TsfBridgeDelegate : public TsfBridge {
 
     DCHECK(client_);
     const TextInputType type = client_->GetTextInputType();
-    const bool is_ime_enabled =
-        type != TEXT_INPUT_TYPE_NONE && type != TEXT_INPUT_TYPE_PASSWORD;
-    thread_manager_->SetFocus(
-        is_ime_enabled ? document_manager_ : disabled_document_manager_);
+    switch (type) {
+      case TEXT_INPUT_TYPE_NONE:
+        thread_manager_->SetFocus(document_manager_for_non_editable_);
+        break;
+      case TEXT_INPUT_TYPE_PASSWORD:
+        thread_manager_->SetFocus(document_manager_for_password_);
+        break;
+      default:
+        thread_manager_->SetFocus(document_manager_for_editable_);
+        break;
+    }
   }
 
   // TsfBridge override.
   virtual bool CancelComposition() OVERRIDE {
     DCHECK_EQ(MessageLoop::TYPE_UI, MessageLoop::current()->type());
     DCHECK(IsInitialized());
-    // If the current focused document manager is not |document_manager_|, do
-    // nothing here.
-    if (!IsFocused(document_manager_))
+    // If the current focused document manager is not
+    // |document_manager_for_editable_|, do nothing here.
+    if (!IsFocused(document_manager_for_editable_))
       return false;
 
     base::win::ScopedComPtr<ITfContext> context;
-    if (FAILED(document_manager_->GetTop(context.Receive()))) {
+    if (FAILED(document_manager_for_editable_->GetTop(context.Receive()))) {
       VLOG(1) << "Failed to get top context.";
       return false;
     }
@@ -152,6 +165,8 @@ class TsfBridgeDelegate : public TsfBridge {
     DCHECK(IsInitialized());
     client_ = client;
     text_store_->get()->SetFocusedTextInputClient(focused_window, client);
+    password_text_store_->get()->SetFocusedTextInputClient(focused_window,
+                                                           client);
 
     // Synchronize text input type state.
     OnTextInputTypeChanged(client);
@@ -164,28 +179,26 @@ class TsfBridgeDelegate : public TsfBridge {
     if (client_ == client) {
       client_ = NULL;
       text_store_->get()->SetFocusedTextInputClient(NULL, NULL);
+      password_text_store_->get()->SetFocusedTextInputClient(NULL, NULL);
     }
   }
 
  private:
   friend struct DefaultSingletonTraits<TsfBridgeDelegate>;
 
-  // Initializes |document_manager_|.
+  // Initializes |document_manager_for_editable_|.
   bool InitializeForEnabledDocumentManager() {
-    if (FAILED(thread_manager_->Activate(&client_id_))) {
-      VLOG(1) << "Failed to activate Thread Manager.";
-      return false;
-    }
-
     if (FAILED(thread_manager_->CreateDocumentMgr(
-            document_manager_.Receive()))) {
+            document_manager_for_editable_.Receive()))) {
       VLOG(1) << "Failed to create Document Manager.";
       return false;
     }
 
     TfEditCookie unused_edit_cookie = TF_INVALID_EDIT_COOKIE;
+    text_store_.reset(new scoped_refptr<TsfTextStore>(new TsfTextStore()));
+
     base::win::ScopedComPtr<ITfContext> context;
-    if (FAILED(document_manager_->CreateContext(client_id_,
+    if (FAILED(document_manager_for_editable_->CreateContext(client_id_,
                                                 0,
                                                 static_cast<ITextStoreACP*>(
                                                     text_store_->get()),
@@ -195,14 +208,8 @@ class TsfBridgeDelegate : public TsfBridge {
       return false;
     }
 
-    if (FAILED(document_manager_->Push(context))) {
+    if (FAILED(document_manager_for_editable_->Push(context))) {
       VLOG(1) << "Failed to push context.";
-      return false;
-    }
-
-    if (FAILED(thread_manager_->CreateDocumentMgr(
-        disabled_document_manager_.Receive()))) {
-      VLOG(1) << "Failed to create Document Manager.";
       return false;
     }
 
@@ -228,15 +235,107 @@ class TsfBridgeDelegate : public TsfBridge {
     return true;
   }
 
-  // Initializes |disabled_document_manager_|.
+  // Initializes |document_manager_for_password_|.
+  bool InitializeForPasswordDocumentManager() {
+    if (FAILED(thread_manager_->CreateDocumentMgr(
+            document_manager_for_password_.Receive()))) {
+      VLOG(1) << "Failed to create Document Manager.";
+      return false;
+    }
+
+    TfEditCookie unused_edit_cookie = TF_INVALID_EDIT_COOKIE;
+    password_text_store_.reset(
+        new scoped_refptr<TsfTextStore>(new TsfTextStore()));
+
+    base::win::ScopedComPtr<ITfContext> context;
+    if (FAILED(document_manager_for_password_->CreateContext(
+            client_id_,
+            0,
+            static_cast<ITextStoreACP*>(password_text_store_->get()),
+            context.Receive(),
+            &unused_edit_cookie))) {
+      VLOG(1) << "Failed to create Context.";
+      return false;
+    }
+
+    base::win::ScopedComPtr<ITfCompartmentMgr> compartment_mgr;
+    if (FAILED(compartment_mgr.QueryFrom(context))) {
+      VLOG(1) << "Failed to get CompartmentMgr.";
+      return false;
+    }
+
+    base::win::ScopedComPtr<ITfCompartment> disabled_compartment;
+    if (FAILED(compartment_mgr->GetCompartment(
+        GUID_COMPARTMENT_KEYBOARD_DISABLED,
+        disabled_compartment.Receive()))) {
+      VLOG(1) << "Failed to get keyboard disabled compartment.";
+      return false;
+    }
+
+    base::win::ScopedVariant variant;
+    variant.Set(static_cast<int32>(1));
+    if (FAILED(disabled_compartment->SetValue(client_id_, &variant))) {
+      VLOG(1) << "Failed to disable the DocumentMgr.";
+      return false;
+    }
+
+    base::win::ScopedComPtr<ITfCompartment> empty_context;
+    if (FAILED(compartment_mgr->GetCompartment(GUID_COMPARTMENT_EMPTYCONTEXT,
+                                               empty_context.Receive()))) {
+      VLOG(1) << "Failed to get empty context compartment.";
+      return false;
+    }
+    base::win::ScopedVariant empty_context_variant;
+    empty_context_variant.Set(static_cast<int32>(1));
+    if (FAILED(empty_context->SetValue(client_id_, &empty_context_variant))) {
+      VLOG(1) << "Failed to set empty context.";
+      return false;
+    }
+
+    if (FAILED(document_manager_for_password_->Push(context))) {
+      VLOG(1) << "Failed to push context.";
+      return false;
+    }
+
+    base::win::ScopedComPtr<ITfSource> source;
+    if (FAILED(source.QueryFrom(context))) {
+      VLOG(1) << "Failed to get source.";
+      return false;
+    }
+
+    if (FAILED(source->AdviseSink(IID_ITfTextEditSink,
+                                  static_cast<ITfTextEditSink*>(
+                                      password_text_store_->get()),
+                                  &source_cookie_))) {
+      VLOG(1) << "AdviseSink failed.";
+      return false;
+    }
+
+    if (source_cookie_ == TF_INVALID_COOKIE) {
+      VLOG(1) << "The result of cookie is invalid.";
+      return false;
+    }
+
+    return true;
+  }
+
+  // Initializes |document_manager_for_non_editable_|.
   bool InitializeForDisabledDocumentManager() {
+    if (FAILED(thread_manager_->CreateDocumentMgr(
+        document_manager_for_non_editable_.Receive()))) {
+      VLOG(1) << "Failed to create Document Manager.";
+      return false;
+    }
+
     base::win::ScopedComPtr<ITfContext> disabled_context;
     DWORD disabled_edit_cookie;
-    if (document_manager_->CreateContext(client_id_,
-                                         0,
-                                         NULL,
-                                         disabled_context.Receive(),
-                                         &disabled_edit_cookie)) {
+    // Passing NULL as ITextStoreACP to disable IMEs completely.
+    if (document_manager_for_non_editable_->CreateContext(
+            client_id_,
+            0,
+            NULL,
+            disabled_context.Receive(),
+            &disabled_edit_cookie)) {
       VLOG(1) << "Failed to create disabled Context";
       return false;
     }
@@ -275,7 +374,7 @@ class TsfBridgeDelegate : public TsfBridge {
       return false;
     }
 
-    if (FAILED(disabled_document_manager_->Push(disabled_context))) {
+    if (FAILED(document_manager_for_non_editable_->Push(disabled_context))) {
       VLOG(1) << "Failed to push disabled context.";
       return false;
     }
@@ -296,20 +395,34 @@ class TsfBridgeDelegate : public TsfBridge {
     return client_id_ != TF_CLIENTID_NULL;
   }
 
-  // An ITfContext object to be used in normal text field.
-  base::win::ScopedComPtr<ITfDocumentMgr> document_manager_;
+  // An ITfContext object to be used in normal text field. This document manager
+  // contains a TsfTextStore instance and an activated context.
+  base::win::ScopedComPtr<ITfDocumentMgr> document_manager_for_editable_;
 
   // Altough TSF support IME enable/disable switching without context changing,
   // some IMEs don't change their state. So we should switch a focus to a
-  // |disabled_document_manager_| which contains deactivated context for
-  // disabling IMEs.
-  base::win::ScopedComPtr<ITfDocumentMgr> disabled_document_manager_;
+  // |document_manager_for_non_editable_| which contains deactivated context to
+  // disable IMEs.
+  base::win::ScopedComPtr<ITfDocumentMgr> document_manager_for_non_editable_;
+
+  // In the case of password field, we can't use
+  // |document_manager_for_non_editable_| because password field should accept
+  // key input but IMEs must not be enbaled. In addition to this, a user expects
+  // on-screen keyboard layout should be changed to a sutable one on the
+  // password field. To achieve these requirements, we use a different document
+  // manager where 1) the context has special TSF compartments to specify IME
+  // status, and 2) TSF TextStore has a special input scope to specify password
+  // type keyboard layout.
+  base::win::ScopedComPtr<ITfDocumentMgr> document_manager_for_password_;
 
   // An ITfThreadMgr object to be used in focus and document management.
   base::win::ScopedComPtr<ITfThreadMgr> thread_manager_;
 
-  // A TextStore object to be used in communicating with IME.
+  // A TextStore object to be used in communicating with IME for normal field.
   scoped_ptr<scoped_refptr<TsfTextStore> > text_store_;
+
+  // A TextStore object to be used in communicating with IME for password field.
+  scoped_ptr<scoped_refptr<TsfTextStore> > password_text_store_;
 
   DWORD source_cookie_;
   TfClientId client_id_;

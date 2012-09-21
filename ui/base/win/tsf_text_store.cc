@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#define INITGUID  // required for GUID_PROP_INPUTSCOPE
 #include "ui/base/win/tsf_text_store.h"
 
 #include <OleCtl.h>
 
 #include "base/win/scoped_variant.h"
 #include "ui/base/ime/text_input_client.h"
+#include "ui/base/win/tsf_input_scope.h"
 #include "ui/gfx/rect.h"
 
 namespace ui {
@@ -554,13 +556,17 @@ STDMETHODIMP TsfTextStore::RequestLock(DWORD lock_flags, HRESULT* result) {
 }
 
 STDMETHODIMP TsfTextStore::RequestSupportedAttrs(
-    DWORD flags,
+    DWORD /* flags */,  // Seems that we should ignore this.
     ULONG attribute_buffer_size,
     const TS_ATTRID* attribute_buffer) {
-  // We don't support any document attributes.
-  // This method just returns S_OK, and the subsequently called
-  // RetrieveRequestedAttrs() returns 0 as the number of supported attributes.
-  return S_OK;
+  if (!attribute_buffer)
+    return E_INVALIDARG;
+  // We support only input scope attribute.
+  for (size_t i = 0; i < attribute_buffer_size; ++i) {
+    if (IsEqualGUID(GUID_PROP_INPUTSCOPE, attribute_buffer[i]))
+      return S_OK;
+  }
+  return E_FAIL;
 }
 
 STDMETHODIMP TsfTextStore::RetrieveRequestedAttrs(
@@ -569,8 +575,20 @@ STDMETHODIMP TsfTextStore::RetrieveRequestedAttrs(
     ULONG* attribute_buffer_copied) {
   if (!attribute_buffer_copied)
     return E_INVALIDARG;
-  // We don't support any document attributes.
-  attribute_buffer_copied = 0;
+  if (!attribute_buffer)
+    return E_INVALIDARG;
+  // We support only input scope attribute.
+  *attribute_buffer_copied = 0;
+  if (attribute_buffer_size == 0)
+    return S_OK;
+
+  attribute_buffer[0].dwOverlapId = 0;
+  attribute_buffer[0].idAttr = GUID_PROP_INPUTSCOPE;
+  attribute_buffer[0].varValue.vt = VT_UNKNOWN;
+  attribute_buffer[0].varValue.punkVal = new TsfInputScope(
+      text_input_client_->GetTextInputType());
+  attribute_buffer[0].varValue.punkVal->AddRef();
+  *attribute_buffer_copied = 1;
   return S_OK;
 }
 
