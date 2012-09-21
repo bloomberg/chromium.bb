@@ -11,6 +11,15 @@
 #include "testing/platform_test.h"
 #include "ui/gfx/rect.h"
 
+#if !defined(MAC_OS_X_VERSION_10_7) || \
+    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
+
+@interface NSWindow (LionAPI)
+- (CGFloat)backingScaleFactor;
+@end
+
+#endif  // 10.7
+
 namespace chrome {
 namespace {
 
@@ -39,8 +48,11 @@ TEST_F(GrabWindowSnapshotTest, TestGrabWindowSnapshot) {
                              length:png_representation->size()]);
   NSBitmapImageRep* rep = [NSBitmapImageRep imageRepWithData:image_data.get()];
   EXPECT_TRUE([rep isKindOfClass:[NSBitmapImageRep class]]);
-  EXPECT_TRUE(CGImageGetWidth([rep CGImage]) == 400);
-  NSColor* color = [rep colorAtX:200 y:200];
+  CGFloat scaleFactor = 1.0f;
+  if ([window respondsToSelector:@selector(backingScaleFactor)])
+    scaleFactor = [window backingScaleFactor];
+  EXPECT_EQ(400 * scaleFactor, CGImageGetWidth([rep CGImage]));
+  NSColor* color = [rep colorAtX:200 * scaleFactor y:200 * scaleFactor];
   CGFloat red = 0, green = 0, blue = 0, alpha = 0;
   [color getRed:&red green:&green blue:&blue alpha:&alpha];
   EXPECT_GE(red + green + blue, 3.0);
