@@ -131,9 +131,10 @@ AutocompleteController::AutocompleteController(
     providers_.push_back(new ShortcutsProvider(this, profile));
 
   // Create ZeroSuggest if it is enabled.
-  zero_suggest_provider_ = ZeroSuggestProvider::Create(this, profile);
-  if (zero_suggest_provider_) {
-    providers_.push_back(zero_suggest_provider_);
+  if (provider_types & AutocompleteProvider::TYPE_ZERO_SUGGEST) {
+    zero_suggest_provider_ = ZeroSuggestProvider::Create(this, profile);
+    if (zero_suggest_provider_)
+      providers_.push_back(zero_suggest_provider_);
   }
 
   for (ACProviders::iterator i(providers_.begin()); i != providers_.end(); ++i)
