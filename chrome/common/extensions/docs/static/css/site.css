@@ -55,12 +55,12 @@ a, a:link {
 }
 
 a:visited {
-  color: #194c7f;
+  color: #236bb2;
 }
 
 a:active,
 a:hover {
-  color: #236bb2;
+  color: #3bf;
 }
 
 #toc a {
@@ -369,10 +369,15 @@ span.displayModeWarning {
 #toc {
   background-color: #F5F5F5;
   float: right;
-  margin: 5px 0px 5px 20px;
+  margin: 5px 0px 0px 0px;
   padding: 5px;
   width: 250px;
   word-break: break-word;
+  /* We want this element to have a visual left-margin of 20px, but margins on
+     floated elements don't affect the borders and background of the elements
+     they float over. So we add this border to force the issue. */
+  border-left: 20px solid white;
+  border-bottom: 20px solid white;
 }
 
 #toc * {
