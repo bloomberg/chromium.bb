@@ -55,6 +55,11 @@ def MakePythonExtension(env, module_name, sources):
   # header does "#if __BIG_ENDIAN__".
   env.FilterOut(CCFLAGS=['-Wundef'])
 
+  # We are building a shared library, but clang++ passes LINKFLAGS
+  # from linux_env, which contains "-pie" which is incompatible with
+  # the "-shared" flag for shared libraries.
+  env.FilterOut(LINKFLAGS=['-pie'])
+
   # We need to leave out the definitions of these symbols because they
   # conflict with pyconfig.h's own definitions of them.
   env['CPPDEFINES'] = [item for item in env['CPPDEFINES']
