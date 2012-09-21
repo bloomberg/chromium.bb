@@ -2499,11 +2499,13 @@ static inline PassOwnPtr<CCRenderPass> createRenderPassWithResource(CCResourcePr
 
 TEST_F(CCLayerTreeHostImplTest, dontUseOldResourcesAfterLostContext)
 {
-    OwnPtr<CCLayerImpl> rootLayer(CCLayerImpl::create(1));
+    int layerId = 1;
+
+    OwnPtr<CCLayerImpl> rootLayer(CCLayerImpl::create(layerId++));
     rootLayer->setBounds(IntSize(10, 10));
     rootLayer->setAnchorPoint(FloatPoint(0, 0));
 
-    OwnPtr<CCTiledLayerImpl> tileLayer = CCTiledLayerImpl::create(2);
+    OwnPtr<CCTiledLayerImpl> tileLayer = CCTiledLayerImpl::create(layerId++);
     tileLayer->setBounds(IntSize(10, 10));
     tileLayer->setAnchorPoint(FloatPoint(0, 0));
     tileLayer->setContentBounds(IntSize(10, 10));
@@ -2515,7 +2517,7 @@ TEST_F(CCLayerTreeHostImplTest, dontUseOldResourcesAfterLostContext)
     tileLayer->pushTileProperties(0, 0, 1, IntRect(0, 0, 10, 10));
     rootLayer->addChild(tileLayer.release());
 
-    OwnPtr<CCTextureLayerImpl> textureLayer = CCTextureLayerImpl::create(3);
+    OwnPtr<CCTextureLayerImpl> textureLayer = CCTextureLayerImpl::create(layerId++);
     textureLayer->setBounds(IntSize(10, 10));
     textureLayer->setAnchorPoint(FloatPoint(0, 0));
     textureLayer->setContentBounds(IntSize(10, 10));
@@ -2523,10 +2525,28 @@ TEST_F(CCLayerTreeHostImplTest, dontUseOldResourcesAfterLostContext)
     textureLayer->setTextureId(1);
     rootLayer->addChild(textureLayer.release());
 
+    OwnPtr<CCTiledLayerImpl> maskLayer = CCTiledLayerImpl::create(layerId++);
+    maskLayer->setBounds(IntSize(10, 10));
+    maskLayer->setAnchorPoint(FloatPoint(0, 0));
+    maskLayer->setContentBounds(IntSize(10, 10));
+    maskLayer->setDrawsContent(true);
+    maskLayer->setSkipsDraw(false);
+    maskLayer->setTilingData(*tilingData);
+    maskLayer->pushTileProperties(0, 0, 1, IntRect(0, 0, 10, 10));
+
+    OwnPtr<CCTextureLayerImpl> textureLayerWithMask = CCTextureLayerImpl::create(layerId++);
+    textureLayerWithMask->setBounds(IntSize(10, 10));
+    textureLayerWithMask->setAnchorPoint(FloatPoint(0, 0));
+    textureLayerWithMask->setContentBounds(IntSize(10, 10));
+    textureLayerWithMask->setDrawsContent(true);
+    textureLayerWithMask->setTextureId(1);
+    textureLayerWithMask->setMaskLayer(maskLayer.release());
+    rootLayer->addChild(textureLayerWithMask.release());
+
     FakeVideoFrame videoFrame;
     FakeVideoFrameProvider provider;
     provider.setFrame(&videoFrame);
-    OwnPtr<CCVideoLayerImpl> videoLayer = CCVideoLayerImpl::create(4, &provider);
+    OwnPtr<CCVideoLayerImpl> videoLayer = CCVideoLayerImpl::create(layerId++, &provider);
     videoLayer->setBounds(IntSize(10, 10));
     videoLayer->setAnchorPoint(FloatPoint(0, 0));
     videoLayer->setContentBounds(IntSize(10, 10));
@@ -2537,7 +2557,7 @@ TEST_F(CCLayerTreeHostImplTest, dontUseOldResourcesAfterLostContext)
     FakeVideoFrame hwVideoFrame;
     FakeVideoFrameProvider hwProvider;
     hwProvider.setFrame(&hwVideoFrame);
-    OwnPtr<CCVideoLayerImpl> hwVideoLayer = CCVideoLayerImpl::create(5, &hwProvider);
+    OwnPtr<CCVideoLayerImpl> hwVideoLayer = CCVideoLayerImpl::create(layerId++, &hwProvider);
     hwVideoLayer->setBounds(IntSize(10, 10));
     hwVideoLayer->setAnchorPoint(FloatPoint(0, 0));
     hwVideoLayer->setContentBounds(IntSize(10, 10));
@@ -2545,7 +2565,7 @@ TEST_F(CCLayerTreeHostImplTest, dontUseOldResourcesAfterLostContext)
     hwVideoLayer->setLayerTreeHostImpl(m_hostImpl.get());
     rootLayer->addChild(hwVideoLayer.release());
 
-    OwnPtr<CCIOSurfaceLayerImpl> ioSurfaceLayer = CCIOSurfaceLayerImpl::create(6);
+    OwnPtr<CCIOSurfaceLayerImpl> ioSurfaceLayer = CCIOSurfaceLayerImpl::create(layerId++);
     ioSurfaceLayer->setBounds(IntSize(10, 10));
     ioSurfaceLayer->setAnchorPoint(FloatPoint(0, 0));
     ioSurfaceLayer->setContentBounds(IntSize(10, 10));
@@ -2554,7 +2574,7 @@ TEST_F(CCLayerTreeHostImplTest, dontUseOldResourcesAfterLostContext)
     ioSurfaceLayer->setLayerTreeHostImpl(m_hostImpl.get());
     rootLayer->addChild(ioSurfaceLayer.release());
 
-    OwnPtr<CCHeadsUpDisplayLayerImpl> hudLayer = CCHeadsUpDisplayLayerImpl::create(7);
+    OwnPtr<CCHeadsUpDisplayLayerImpl> hudLayer = CCHeadsUpDisplayLayerImpl::create(layerId++);
     hudLayer->setBounds(IntSize(10, 10));
     hudLayer->setAnchorPoint(FloatPoint(0, 0));
     hudLayer->setContentBounds(IntSize(10, 10));
@@ -2562,7 +2582,7 @@ TEST_F(CCLayerTreeHostImplTest, dontUseOldResourcesAfterLostContext)
     hudLayer->setLayerTreeHostImpl(m_hostImpl.get());
     rootLayer->addChild(hudLayer.release());
 
-    OwnPtr<FakeScrollbarLayerImpl> scrollbarLayer(FakeScrollbarLayerImpl::create(8));
+    OwnPtr<FakeScrollbarLayerImpl> scrollbarLayer(FakeScrollbarLayerImpl::create(layerId++));
     scrollbarLayer->setBounds(IntSize(10, 10));
     scrollbarLayer->setContentBounds(IntSize(10, 10));
     scrollbarLayer->setDrawsContent(true);
@@ -2570,7 +2590,7 @@ TEST_F(CCLayerTreeHostImplTest, dontUseOldResourcesAfterLostContext)
     scrollbarLayer->createResources(m_hostImpl->resourceProvider());
     rootLayer->addChild(scrollbarLayer.release());
 
-    OwnPtr<CCDelegatedRendererLayerImpl> delegatedRendererLayer(CCDelegatedRendererLayerImpl::create(9));
+    OwnPtr<CCDelegatedRendererLayerImpl> delegatedRendererLayer(CCDelegatedRendererLayerImpl::create(layerId++));
     delegatedRendererLayer->setBounds(IntSize(10, 10));
     delegatedRendererLayer->setContentBounds(IntSize(10, 10));
     delegatedRendererLayer->setDrawsContent(true);

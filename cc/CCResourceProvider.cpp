@@ -134,7 +134,7 @@ bool CCResourceProvider::inUseByConsumer(ResourceId id)
 {
     ASSERT(CCProxy::isImplThread());
     ResourceMap::iterator it = m_resources.find(id);
-    ASSERT(it != m_resources.end());
+    CHECK(it != m_resources.end());
 #if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
     Resource* resource = &it->value;
 #else
@@ -210,7 +210,7 @@ void CCResourceProvider::deleteResource(ResourceId id)
 {
     ASSERT(CCProxy::isImplThread());
     ResourceMap::iterator it = m_resources.find(id);
-    ASSERT(it != m_resources.end());
+    CHECK(it != m_resources.end());
 #if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
     Resource* resource = &it->value;
 #else
@@ -250,7 +250,7 @@ void CCResourceProvider::deleteOwnedResources(int pool)
 CCResourceProvider::ResourceType CCResourceProvider::resourceType(ResourceId id)
 {
     ResourceMap::iterator it = m_resources.find(id);
-    ASSERT(it != m_resources.end());
+    CHECK(it != m_resources.end());
 #if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
     Resource* resource = &it->value;
 #else
@@ -263,7 +263,7 @@ void CCResourceProvider::upload(ResourceId id, const uint8_t* image, const IntRe
 {
     ASSERT(CCProxy::isImplThread());
     ResourceMap::iterator it = m_resources.find(id);
-    ASSERT(it != m_resources.end());
+    CHECK(it != m_resources.end());
 #if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
     Resource* resource = &it->value;
 #else
@@ -319,7 +319,7 @@ const CCResourceProvider::Resource* CCResourceProvider::lockForRead(ResourceId i
 {
     ASSERT(CCProxy::isImplThread());
     ResourceMap::iterator it = m_resources.find(id);
-    ASSERT(it != m_resources.end());
+    CHECK(it != m_resources.end());
 #if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
     Resource* resource = &it->value;
 #else
@@ -334,7 +334,7 @@ void CCResourceProvider::unlockForRead(ResourceId id)
 {
     ASSERT(CCProxy::isImplThread());
     ResourceMap::iterator it = m_resources.find(id);
-    ASSERT(it != m_resources.end());
+    CHECK(it != m_resources.end());
 #if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
     Resource* resource = &it->value;
 #else
@@ -348,7 +348,7 @@ const CCResourceProvider::Resource* CCResourceProvider::lockForWrite(ResourceId 
 {
     ASSERT(CCProxy::isImplThread());
     ResourceMap::iterator it = m_resources.find(id);
-    ASSERT(it != m_resources.end());
+    CHECK(it != m_resources.end());
 #if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
     Resource* resource = &it->value;
 #else
@@ -365,7 +365,7 @@ void CCResourceProvider::unlockForWrite(ResourceId id)
 {
     ASSERT(CCProxy::isImplThread());
     ResourceMap::iterator it = m_resources.find(id);
-    ASSERT(it != m_resources.end());
+    CHECK(it != m_resources.end());
 #if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
     Resource* resource = &it->value;
 #else
@@ -646,7 +646,7 @@ bool CCResourceProvider::transferResource(WebGraphicsContext3D* context, Resourc
 {
     ASSERT(CCProxy::isImplThread());
     ResourceMap::const_iterator it = m_resources.find(id);
-    ASSERT(it != m_resources.end());
+    CHECK(it != m_resources.end());
 #if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
     const Resource* source = &it->value;
 #else

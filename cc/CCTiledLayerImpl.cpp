@@ -69,8 +69,6 @@ CCResourceProvider::ResourceId CCTiledLayerImpl::contentsResourceId() const
 
     DrawableTile* tile = tileAt(0, 0);
     CCResourceProvider::ResourceId resourceId = tile ? tile->resourceId() : 0;
-    ASSERT(resourceId);
-
     return resourceId;
 }
 
