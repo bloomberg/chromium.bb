@@ -245,6 +245,7 @@ void ToolbarView::Init(views::View* location_bar_parent,
   // Have to create this before |reload_| as |reload_|'s constructor needs it.
   location_bar_container_ = new LocationBarContainer(
       location_bar_parent,
+      this,
       chrome::search::IsInstantExtendedAPIEnabled(browser_->profile()));
   location_bar_ = new LocationBarView(
       browser_,
@@ -304,6 +305,11 @@ void ToolbarView::Init(views::View* location_bar_parent,
   AddChildView(home_);
   AddChildView(browser_actions_);
   AddChildView(app_menu_);
+
+  // Put the location bar container between the home button and browser
+  // actions when doing a focus search.
+  home_->SetNextFocusableView(location_bar_container_);
+  location_bar_container_->SetNextFocusableView(browser_actions_);
 
   location_bar_->Init(popup_parent_view);
   show_home_button_.Init(prefs::kShowHomeButton,
@@ -863,7 +869,7 @@ std::string ToolbarView::GetClassName() const {
 }
 
 bool ToolbarView::AcceleratorPressed(const ui::Accelerator& accelerator) {
-  const views::View* focused_view = focus_manager_->GetFocusedView();
+  const views::View* focused_view = focus_manager()->GetFocusedView();
   if (focused_view == location_bar_)
     return false;  // Let location bar handle all accelerator events.
   return AccessiblePaneView::AcceleratorPressed(accelerator);
@@ -881,6 +887,7 @@ bool ToolbarView::IsWrenchMenuShowing() const {
 // also so that it selects all content in the location bar.
 bool ToolbarView::SetPaneFocusAndFocusDefault() {
   if (!location_bar_->HasFocus()) {
+    SetPaneFocus(location_bar_);
     location_bar_->FocusLocation(true);
     return true;
   }
@@ -894,6 +901,21 @@ bool ToolbarView::SetPaneFocusAndFocusDefault() {
 void ToolbarView::RemovePaneFocus() {
   AccessiblePaneView::RemovePaneFocus();
   location_bar_->SetShowFocusRect(false);
+}
+
+views::View* ToolbarView::GetParentForFocusSearch(views::View* v) {
+  if (v == location_bar_container_)
+    return this;
+
+  return AccessiblePaneView::GetParentForFocusSearch(v);
+}
+
+bool ToolbarView::ContainsForFocusSearch(views::View* root,
+                                         const views::View* v) {
+  if (Contains(root) && location_bar_container_->Contains(v))
+    return true;
+
+  return AccessiblePaneView::ContainsForFocusSearch(root, v);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

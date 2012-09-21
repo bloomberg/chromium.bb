@@ -3039,6 +3039,7 @@
         'browser/ui/views/frame/browser_view_browsertest.cc',
         'browser/ui/views/search_view_controller_browsertest.cc',
         'browser/ui/views/select_file_dialog_extension_browsertest.cc',
+        'browser/ui/views/toolbar_view_browsertest.cc',
         'browser/ui/views/sync/one_click_signin_bubble_view_browsertest.cc',
         'browser/ui/views/web_dialog_view_browsertest.cc',
         'browser/ui/webui/chrome_url_data_manager_browsertest.cc',

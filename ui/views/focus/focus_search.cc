@@ -44,7 +44,7 @@ View* FocusSearch::FindNextFocusableView(View* starting_view,
     check_starting_view = true;
   } else {
     // The starting view should be a direct or indirect child of the root.
-    DCHECK(root_->Contains(starting_view));
+    DCHECK(Contains(root_, starting_view));
   }
 
   View* v = NULL;
@@ -68,7 +68,7 @@ View* FocusSearch::FindNextFocusableView(View* starting_view,
   }
 
   // Don't set the focus to something outside of this view hierarchy.
-  if (v && v != root_ && !root_->Contains(v))
+  if (v && v != root_ && !Contains(root_, v))
     v = NULL;
 
   // If |cycle_| is true, prefer to keep cycling rather than returning NULL.
@@ -118,7 +118,11 @@ View* FocusSearch::FindSelectedViewForGroup(View* view) {
 }
 
 View* FocusSearch::GetParent(View* v) {
-  return root_->Contains(v) ? v->parent() : NULL;
+  return Contains(root_, v) ? v->parent() : NULL;
+}
+
+bool FocusSearch::Contains(View* root, const View* v) {
+  return root->Contains(v);
 }
 
 // Strategy for finding the next focusable view:
@@ -179,7 +183,7 @@ View* FocusSearch::FindNextFocusableViewImpl(
   // Then go up to the parent sibling.
   if (can_go_up) {
     View* parent = GetParent(starting_view);
-    while (parent) {
+    while (parent && parent != root_) {
       sibling = parent->GetNextFocusableView();
       if (sibling) {
         return FindNextFocusableViewImpl(sibling,

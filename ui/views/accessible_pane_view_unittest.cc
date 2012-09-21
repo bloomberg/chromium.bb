@@ -30,12 +30,6 @@ class TestBarView : public AccessiblePaneView,
   TextButton* third_child_button() const { return third_child_button_.get(); }
   TextButton* not_child_button() const { return not_child_button_.get(); }
 
-  const ui::Accelerator& home_key() const { return home_key_; }
-  const ui::Accelerator& end_key() const { return end_key_; }
-  const ui::Accelerator& escape_key() const { return escape_key_; }
-  const ui::Accelerator& left_key() const { return left_key_; }
-  const ui::Accelerator& right_key() const { return right_key_; }
-
   virtual View* GetDefaultFocusableChild() OVERRIDE;
 
  private:

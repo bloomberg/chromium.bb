@@ -68,6 +68,18 @@ class VIEWS_EXPORT FocusSearch {
                                       FocusTraversable** focus_traversable,
                                       View** focus_traversable_view);
 
+ protected:
+  // Get the parent, but stay within the root. Returns NULL if asked for
+  // the parent of |root_|. Subclasses can override this if they need custom
+  // focus search behavior.
+  virtual View* GetParent(View* v);
+
+  // Returns true if |v| is contained within the hierarchy rooted at |root|.
+  // Subclasses can override this if they need custom focus search behavior.
+  virtual bool Contains(View* root, const View* v);
+
+  View* root() const { return root_; }
+
  private:
   // Convenience method that returns true if a view is focusable and does not
   // belong to the specified group.
@@ -81,10 +93,6 @@ class VIEWS_EXPORT FocusSearch {
   // does not belong to a group or if no view is selected in the group, the
   // specified view is returned.
   View* FindSelectedViewForGroup(View* view);
-
-  // Get the parent, but stay within the root. Returns NULL if asked for
-  // the parent of root_.
-  View* GetParent(View* view);
 
   // Returns the next focusable view or view containing a FocusTraversable
   // (NULL if none was found), starting at the starting_view.

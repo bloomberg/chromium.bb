@@ -57,10 +57,26 @@ class VIEWS_EXPORT AccessiblePaneView : public View,
   virtual FocusTraversable* GetFocusTraversableParent() OVERRIDE;
   virtual View* GetFocusTraversableParentView() OVERRIDE;
 
+  // For testing only.
+  const ui::Accelerator& home_key() const { return home_key_; }
+  const ui::Accelerator& end_key() const { return end_key_; }
+  const ui::Accelerator& escape_key() const { return escape_key_; }
+  const ui::Accelerator& left_key() const { return left_key_; }
+  const ui::Accelerator& right_key() const { return right_key_; }
+
  protected:
   // A subclass can override this to provide a default focusable child
   // other than the first focusable child.
   virtual View* GetDefaultFocusableChild();
+
+  // Returns the parent of |v|. Subclasses can override this if
+  // they need custom focus search behavior.
+  virtual View* GetParentForFocusSearch(View* v);
+
+  // Returns true if |v| is contained within the hierarchy rooted at |root|
+  // for the purpose of focus searching. Subclasses can override this if
+  // they need custom focus search behavior.
+  virtual bool ContainsForFocusSearch(View* root, const View* v);
 
   // Remove pane focus.
   virtual void RemovePaneFocus();
@@ -70,6 +86,9 @@ class VIEWS_EXPORT AccessiblePaneView : public View,
   View* GetFirstFocusableChild();
   View* GetLastFocusableChild();
 
+  FocusManager* focus_manager() const { return focus_manager_; }
+
+ private:
   bool pane_has_focus_;
 
   base::WeakPtrFactory<AccessiblePaneView> method_factory_;
@@ -89,6 +108,8 @@ class VIEWS_EXPORT AccessiblePaneView : public View,
   ui::Accelerator escape_key_;
   ui::Accelerator left_key_;
   ui::Accelerator right_key_;
+
+  friend class AccessiblePaneViewFocusSearch;
 
   DISALLOW_COPY_AND_ASSIGN(AccessiblePaneView);
 };

@@ -13,6 +13,8 @@
 class LocationBarView;
 
 namespace views {
+class AccessiblePaneView;
+class FocusTraversable;
 class NativeViewHost;
 }
 
@@ -25,8 +27,11 @@ class NativeViewHost;
 class LocationBarContainer : public views::View,
                              public views::BoundsAnimatorObserver {
  public:
-  // Creates a new LocationBarContainer as a child of |parent|.
-  LocationBarContainer(views::View* parent, bool instant_extended_api_enabled);
+  // Creates a new LocationBarContainer as a child of |parent|,
+  // with |accessible_pane_view| as the owning view for focus searching.
+  LocationBarContainer(views::View* parent,
+                       views::AccessiblePaneView* accessible_pane_view,
+                       bool instant_extended_api_enabled);
   virtual ~LocationBarContainer();
 
   // Sets whether the LocationBarContainer is in the toolbar.
@@ -56,6 +61,7 @@ class LocationBarContainer : public views::View,
   virtual bool SkipDefaultKeyEventProcessing(
       const ui::KeyEvent& event) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual views::FocusTraversable* GetPaneFocusTraversable() OVERRIDE;
 
   // views::BoundsAnimatorObserver overrides:
   virtual void OnBoundsAnimatorProgressed(
@@ -86,6 +92,8 @@ class LocationBarContainer : public views::View,
   views::NativeViewHost* native_view_host_;
 
   bool in_toolbar_;
+
+  views::AccessiblePaneView* accessible_pane_view_;
 
   bool instant_extended_api_enabled_;
 

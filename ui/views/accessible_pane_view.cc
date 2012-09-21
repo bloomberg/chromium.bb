@@ -12,6 +12,34 @@
 
 namespace views {
 
+// Create tiny subclass of FocusSearch that overrides GetParent and Contains,
+// delegating these to methods in AccessiblePaneView. This is needed so that
+// subclasses of AccessiblePaneView can customize the focus search logic and
+// include views that aren't part of the AccessiblePaneView's view
+// hierarchy in the focus order.
+class AccessiblePaneViewFocusSearch : public FocusSearch {
+ public:
+  explicit AccessiblePaneViewFocusSearch(AccessiblePaneView* pane_view)
+      : FocusSearch(pane_view, true, true),
+        accessible_pane_view_(pane_view) {}
+
+ protected:
+  virtual View* GetParent(View* v) OVERRIDE {
+    return accessible_pane_view_->ContainsForFocusSearch(root(), v) ?
+        accessible_pane_view_->GetParentForFocusSearch(v) : NULL;
+  }
+
+  // Returns true if |v| is contained within the hierarchy rooted at |root|.
+  // Subclasses can override this if they need custom focus search behavior.
+  virtual bool Contains(View* root, const View* v) OVERRIDE {
+    return accessible_pane_view_->ContainsForFocusSearch(root, v);
+  }
+
+ private:
+  AccessiblePaneView* accessible_pane_view_;
+  DISALLOW_COPY_AND_ASSIGN(AccessiblePaneViewFocusSearch);
+};
+
 AccessiblePaneView::AccessiblePaneView()
     : pane_has_focus_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
@@ -21,7 +49,7 @@ AccessiblePaneView::AccessiblePaneView()
       escape_key_(ui::VKEY_ESCAPE, ui::EF_NONE),
       left_key_(ui::VKEY_LEFT, ui::EF_NONE),
       right_key_(ui::VKEY_RIGHT, ui::EF_NONE) {
-  focus_search_.reset(new views::FocusSearch(this, true, true));
+  focus_search_.reset(new AccessiblePaneViewFocusSearch(this));
 }
 
 AccessiblePaneView::~AccessiblePaneView() {
@@ -42,7 +70,7 @@ bool AccessiblePaneView::SetPaneFocus(views::View* initial_focus) {
   // Use the provided initial focus if it's visible and enabled, otherwise
   // use the first focusable child.
   if (!initial_focus ||
-      !Contains(initial_focus) ||
+      !ContainsForFocusSearch(this, initial_focus) ||
       !initial_focus->visible() ||
       !initial_focus->enabled()) {
     initial_focus = GetFirstFocusableChild();
@@ -78,6 +106,14 @@ bool AccessiblePaneView::SetPaneFocusAndFocusDefault() {
 
 views::View* AccessiblePaneView::GetDefaultFocusableChild() {
   return NULL;
+}
+
+View* AccessiblePaneView::GetParentForFocusSearch(View* v) {
+  return v->parent();
+}
+
+bool AccessiblePaneView::ContainsForFocusSearch(View* root, const View* v) {
+  return root->Contains(v);
 }
 
 void AccessiblePaneView::RemovePaneFocus() {
@@ -121,7 +157,7 @@ bool AccessiblePaneView::AcceleratorPressed(
     const ui::Accelerator& accelerator) {
 
   const views::View* focused_view = focus_manager_->GetFocusedView();
-  if (!Contains(focused_view))
+  if (!ContainsForFocusSearch(this, focused_view))
     return false;
 
   switch (accelerator.key_code()) {
@@ -176,7 +212,7 @@ void AccessiblePaneView::OnDidChangeFocus(views::View* focused_before,
   views::FocusManager::FocusChangeReason reason =
       focus_manager_->focus_change_reason();
 
-  if (!Contains(focused_now) ||
+  if (!ContainsForFocusSearch(this, focused_now) ||
       reason == views::FocusManager::kReasonDirectFocusChange) {
     // We should remove pane focus (i.e. make most of the controls
     // not focusable again) because the focus has left the pane,

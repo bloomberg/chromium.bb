@@ -7,6 +7,7 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/webui/instant_ui.h"
 #include "ui/base/events/event.h"
+#include "ui/views/accessible_pane_view.h"
 #include "ui/views/background.h"
 
 namespace {
@@ -16,13 +17,16 @@ const int kAnimationDuration = 180;
 
 }
 
-LocationBarContainer::LocationBarContainer(views::View* parent,
-                                           bool instant_extended_api_enabled)
+LocationBarContainer::LocationBarContainer(
+    views::View* parent,
+    views::AccessiblePaneView* accessible_pane_view,
+    bool instant_extended_api_enabled)
     : animator_(parent),
       view_parent_(NULL),
       location_bar_view_(NULL),
       native_view_host_(NULL),
       in_toolbar_(true),
+      accessible_pane_view_(accessible_pane_view),
       instant_extended_api_enabled_(instant_extended_api_enabled) {
   parent->AddChildView(this);
   animator_.set_tween_type(ui::Tween::EASE_IN_OUT);
@@ -81,6 +85,11 @@ bool LocationBarContainer::SkipDefaultKeyEventProcessing(
 void LocationBarContainer::GetAccessibleState(
     ui::AccessibleViewState* state) {
   location_bar_view_->GetAccessibleState(state);
+}
+
+views::FocusTraversable* LocationBarContainer::GetPaneFocusTraversable() {
+  // Use the accessible pane view that this belongs to for focus searching.
+  return accessible_pane_view_->GetPaneFocusTraversable();
 }
 
 void LocationBarContainer::OnBoundsAnimatorDone(

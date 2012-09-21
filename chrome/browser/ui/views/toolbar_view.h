@@ -173,6 +173,8 @@ class ToolbarView : public views::AccessiblePaneView,
   // Overridden from AccessiblePaneView
   virtual bool SetPaneFocusAndFocusDefault() OVERRIDE;
   virtual void RemovePaneFocus() OVERRIDE;
+  virtual View* GetParentForFocusSearch(View* v) OVERRIDE;
+  virtual bool ContainsForFocusSearch(View* root, const View* v) OVERRIDE;
 
  private:
   // Types of display mode this toolbar can have.
