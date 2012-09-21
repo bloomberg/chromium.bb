@@ -1922,6 +1922,7 @@ void LocationBarViewGtk::PageActionViewGtk::OnIconUpdated() {
 
 void LocationBarViewGtk::PageActionViewGtk::TestActivatePageAction() {
   GdkEventButton event = {};
+  event.type = GDK_BUTTON_PRESS;
   event.button = 1;
   OnButtonPressed(widget(), &event);
 }
@@ -2033,6 +2034,12 @@ void LocationBarViewGtk::PageActionViewGtk::DisconnectPageActionAccelerator() {
 gboolean LocationBarViewGtk::PageActionViewGtk::OnButtonPressed(
     GtkWidget* sender,
     GdkEventButton* event) {
+  // Double and triple-clicks generate both a GDK_BUTTON_PRESS and a
+  // GDK_[23]BUTTON_PRESS event. We don't want to double-trigger by acting on
+  // both.
+  if (event->type != GDK_BUTTON_PRESS)
+    return TRUE;
+
   TabContents* tab_contents = owner_->GetTabContents();
   if (!tab_contents)
     return TRUE;
@@ -2122,6 +2129,7 @@ gboolean LocationBarViewGtk::PageActionViewGtk::OnGtkAccelerator(
     return FALSE;
 
   GdkEventButton event = {};
+  event.type = GDK_BUTTON_PRESS;
   event.button = 1;
   return view->OnButtonPressed(view->widget(), &event);
 }
