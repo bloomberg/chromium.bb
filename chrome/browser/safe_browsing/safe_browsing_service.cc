@@ -272,7 +272,6 @@ void SafeBrowsingService::Initialize() {
       base::Bind(
           &SafeBrowsingService::InitURLRequestContextOnIOThread, this,
           make_scoped_refptr(g_browser_process->system_request_context())));
-#if !defined(OS_CHROMEOS)
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableClientSidePhishingDetection)) {
     csd_service_.reset(
@@ -282,7 +281,6 @@ void SafeBrowsingService::Initialize() {
   download_service_.reset(new safe_browsing::DownloadProtectionService(
       this,
       url_request_context_getter_));
-#endif
 
   // Track the safe browsing preference of existing profiles.
   // The SafeBrowsingService will be started if any existing profile has the
@@ -1004,14 +1002,8 @@ void SafeBrowsingService::Start() {
 
   // We only download the csd-whitelist if client-side phishing detection is
   // enabled.
-#ifdef OS_CHROMEOS
-  // Client-side detection is disabled on ChromeOS for now, so don't bother
-  // downloading the whitelist.
-  enable_csd_whitelist_ = false;
-#else
   enable_csd_whitelist_ =
       !cmdline->HasSwitch(switches::kDisableClientSidePhishingDetection);
-#endif
 
   // TODO(noelutz): remove this boolean variable since it should always be true
   // if SafeBrowsing is enabled.  Unfortunately, we have no test data for this
