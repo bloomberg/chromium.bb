@@ -66,6 +66,12 @@ void BuildMediaSourceCollection(
     media::Decryptor* decryptor) {
   DCHECK(demuxer);
   filter_collection->SetDemuxer(demuxer);
+
+  // Remove GPUVideoDecoder until it supports codec config changes.
+  // TODO(acolwell): Remove this once http://crbug.com/151045 is fixed.
+  DCHECK_LE(filter_collection->GetVideoDecoders()->size(), 1u);
+  filter_collection->GetVideoDecoders()->clear();
+
   AddDefaultDecodersToCollection(message_loop_factory, filter_collection,
                                  decryptor);
 }
