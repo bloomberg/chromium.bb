@@ -218,15 +218,18 @@ void SetFrameWindowInternal(HWND hwnd) {
     ::ShowWindow(current_top_frame, SW_HIDE);
   }
 
-  // If chrome opens a url in a foreground tab, it may call SetFrameWindow
-  // again. Ensure that we don't have dups.
-  globals.host_windows.remove_if([hwnd](std::pair<HWND, bool>& item) {
+  std::list<std::pair<HWND, bool> >::iterator index =
+      std::find_if(globals.host_windows.begin(), globals.host_windows.end(),
+              [hwnd](std::pair<HWND, bool>& item) {
     return (item.first == hwnd);
   });
 
-  globals.host_windows.push_front(std::make_pair(hwnd, false));
-
-  AdjustFrameWindowStyleForMetro(hwnd);
+  if (index == globals.host_windows.end()) {
+    globals.host_windows.push_front(std::make_pair(hwnd, false));
+    AdjustFrameWindowStyleForMetro(hwnd);
+  } else {
+    SetForegroundWindow(hwnd);
+  }
 }
 
 void CloseFrameWindowInternal(HWND hwnd) {
@@ -900,13 +903,17 @@ HRESULT ChromeAppView::OnActivate(winapp::Core::ICoreApplicationView*,
   DVLOG(1) << "CoreWindow found: " << std::hex << globals.core_window;
 
   if (!globals.host_thread) {
+    DWORD chrome_ui_thread_id = 0;
     globals.host_thread =
-        ::CreateThread(NULL, 0, HostMainThreadProc, NULL, 0, NULL);
+        ::CreateThread(NULL, 0, HostMainThreadProc, NULL, 0,
+                       &chrome_ui_thread_id);
 
     if (!globals.host_thread) {
       NOTREACHED() << "thread creation failed.";
       return E_UNEXPECTED;
     }
+
+    ::AttachThreadInput(chrome_ui_thread_id, globals.main_thread_id, TRUE);
   }
 
   if (RegisterHotKey(globals.core_window, kFlipWindowsHotKeyId,
