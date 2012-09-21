@@ -123,7 +123,10 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
     profile_ = ProfileManager::GetDefaultProfile()->GetOriginalProfile();
 
     // Monitor app sync on chromeos.
-    if (!IsLoggedInAsGuest()) {
+    PrefService* prefs = profile_->GetPrefs();
+    if (!IsLoggedInAsGuest() &&
+        prefs->GetBoolean(prefs::kLauncherShouldRunSyncAnimation)) {
+      prefs->SetBoolean(prefs::kLauncherShouldRunSyncAnimation, false);
       observed_sync_service_ =
           ProfileSyncServiceFactory::GetForProfile(profile_);
       if (observed_sync_service_)

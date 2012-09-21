@@ -1994,6 +1994,13 @@ const char kUseDefaultPinnedApps[] = "use_default_pinned_apps";
 const char kPinnedLauncherApps[] =
     "pinned_launcher_apps";
 
+// Boolean value indicating whether launcher should run sync animation.
+// Note this is an unsyncable pref value used as a flag per profile because sync
+// animation should only run once for new ChromeOS login (i.e. once per created
+// profile on ChromeOS device).
+const char kLauncherShouldRunSyncAnimation[] =
+    "launcher_should_run_sync_animation";
+
 const char kLongPressTimeInSeconds[] =
     "gesture.long_press_time_in_seconds";
 const char kMaxDistanceBetweenTapsForDoubleTap[] =
