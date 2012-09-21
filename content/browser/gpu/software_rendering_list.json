@@ -68,7 +68,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "2.11",
+  "version": "3.1",
   "entries": [
     {
       "id": 1,
@@ -687,6 +687,21 @@
       "blacklist": [
         "flash_3d",
         "flash_stage3d"
+      ]
+    },
+    {
+      "id": 50,
+      "description": "Disable VMware software renderer.",
+      "cr_bugs": [145531],
+      "os": {
+        "type": "linux"
+      },
+      "gl_vendor": {
+        "op": "beginwith",
+        "value": "VMware"
+      },
+      "blacklist": [
+        "all"
       ]
     }
   ]
