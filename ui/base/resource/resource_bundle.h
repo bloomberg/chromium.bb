@@ -177,8 +177,7 @@ class UI_EXPORT ResourceBundle {
   // instance is owned by the resource bundle and should not be freed.
   // TODO(pkotwicz): Make method return const gfx::ImageSkia*
   //
-  // NOTE: It is preferrable to use GetImageNamed such that code is more
-  // portable.
+  // NOTE: GetNativeImageNamed is preferred for cross-platform gfx::Image use.
   gfx::ImageSkia* GetImageSkiaNamed(int resource_id);
 
   // Gets an image resource from the current module data. This will load the
