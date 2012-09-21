@@ -20,7 +20,7 @@ cr.define('options', function() {
    * Interval between consecutive camera liveness checks in msec.
    * @const
    */
-  var CAMERA_LIVENESS_CHECK_MS = 1000;
+  var CAMERA_LIVENESS_CHECK_MS = 3000;
 
   /**
    * Number of frames recorded by takeVideo().
@@ -170,6 +170,8 @@ cr.define('options', function() {
       if (this.selectedItem === null)
         return;
 
+      var oldSelectionType = this.selectionType;
+
       // Update current selection type.
       this.selectionType = this.selectedItem.type;
 
@@ -179,7 +181,9 @@ cr.define('options', function() {
 
       this.updatePreview_();
 
-      cr.dispatchSimpleEvent(this, 'select');
+      var e = new cr.Event('select', false, false);
+      e.oldSelectionType = oldSelectionType;
+      this.dispatchEvent(e);
     },
 
     /**
@@ -241,6 +245,7 @@ cr.define('options', function() {
       }
       if (!this.cameraVideo_)
         return;
+      this.cameraCheckInProgress_ = true;
       navigator.webkitGetUserMedia(
           {video: true},
           this.handleCameraAvailable_.bind(this, onAvailable),
@@ -255,6 +260,8 @@ cr.define('options', function() {
       this.cameraOnline = false;
       if (this.cameraVideo_)
         this.cameraVideo_.src = '';
+      // Cancel any pending getUserMedia() checks.
+      this.cameraCheckInProgress_ = false;
     },
 
     /**
@@ -266,8 +273,9 @@ cr.define('options', function() {
      */
     handleCameraAvailable_: function(onAvailable, stream) {
       this.cameraPresent = true;
-      if (onAvailable())
+      if (this.cameraCheckInProgress_ && onAvailable())
         this.cameraVideo_.src = window.webkitURL.createObjectURL(stream);
+      this.cameraCheckInProgress_ = false;
     },
 
     /**
@@ -289,6 +297,7 @@ cr.define('options', function() {
             this.checkCameraPresence.bind(this, onAvailable, onAbsent),
             CAMERA_CHECK_INTERVAL_MS);
       }
+      this.cameraCheckInProgress_ = false;
     },
 
     /**
@@ -452,6 +461,13 @@ cr.define('options', function() {
       this.cameraVideo_.addEventListener('timeupdate',
                                          this.handleVideoUpdate_.bind(this));
       this.updatePreview_();
+      this.checkCameraPresence(
+          function() {
+            return false;  // Don't start streaming if camera is present.
+          },
+          function() {
+            return false;  // Don't retry if camera is absent.
+          });
     },
 
     /**

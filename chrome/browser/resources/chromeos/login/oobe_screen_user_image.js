@@ -475,9 +475,10 @@ cr.define('oobe', function() {
 
     /**
      * Handles selection change.
+     * @param {cr.Event} e Selection change event.
      * @private
      */
-    handleSelect_: function() {
+    handleSelect_: function(e) {
       var imageGrid = $('user-image-grid');
       if (imageGrid.selectionType == 'camera' && imageGrid.cameraLive) {
         // No current image selected.
@@ -487,8 +488,9 @@ cr.define('oobe', function() {
         chrome.send('selectImage', [imageGrid.selectedItemUrl]);
       }
       // Start/stop camera on (de)selection.
-      if (!imageGrid.inProgramSelection) {
-        if (imageGrid.selectionType == 'camera' && !imageGrid.cameraOnline) {
+      if (!imageGrid.inProgramSelection &&
+          imageGrid.selectionType != e.oldSelectionType) {
+        if (imageGrid.selectionType == 'camera') {
           // Programmatic selection of camera item is done in
           // checkCameraPresence callback where streaming is started by itself.
           imageGrid.checkCameraPresence(
@@ -499,8 +501,7 @@ cr.define('oobe', function() {
               function() {  // When absent.
                 return true;  // Check again after some time.
               });
-        } else if (imageGrid.selectionType != 'camera' &&
-                   imageGrid.cameraOnline) {
+        } else {
           imageGrid.stopCamera();
         }
       }
