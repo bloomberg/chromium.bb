@@ -25,6 +25,7 @@ class RenderViewContextMenuMac : public RenderViewContextMenu {
   // SimpleMenuModel::Delegate implementation.
   virtual void ExecuteCommand(int command_id) OVERRIDE;
   virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
+  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
   virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
 
   // RenderViewContextMenuDelegate implementation.
@@ -40,10 +41,14 @@ class RenderViewContextMenuMac : public RenderViewContextMenu {
   virtual bool GetAcceleratorForCommandId(
       int command_id,
       ui::Accelerator* accelerator) OVERRIDE;
+  virtual void AppendPlatformEditableItems() OVERRIDE;
 
  private:
   // Adds platform-specific items to the menu.
   void InitPlatformMenu();
+
+  // Adds writing direction submenu.
+  void AppendBidiSubMenu();
 
   // Handler for the "Look Up in Dictionary" menu item.
   void LookUpInDictionary();
@@ -59,6 +64,9 @@ class RenderViewContextMenuMac : public RenderViewContextMenu {
 
   // Model for the "Speech" submenu.
   ui::SimpleMenuModel speech_submenu_model_;
+
+  // Model for the BiDi input submenu.
+  ui::SimpleMenuModel bidi_submenu_model_;
 
   // The Cocoa parent view.
   NSView* parent_view_;

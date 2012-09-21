@@ -176,6 +176,7 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
   virtual bool GetAcceleratorForCommandId(
       int command_id,
       ui::Accelerator* accelerator) = 0;
+  virtual void AppendPlatformEditableItems();
 
   // Attempts to get an MenuItem given the id of a context menu item.
   extensions::MenuItem* GetExtensionMenuItem(int id) const;
@@ -228,8 +229,6 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
   void AppendSpellingSuggestionsSubMenu();
   void AppendSpellcheckOptionsSubMenu();
   void AppendSpeechInputOptionsSubMenu();
-  // Add writing direction sub menu (only used on Mac).
-  void AppendBidiSubMenu();
   void AppendProtocolHandlerSubMenu();
 
   // This is a helper function to append items for one particular extension.
@@ -282,7 +281,6 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
   GURL selection_navigation_url_;
 
   ui::SimpleMenuModel speech_input_submenu_model_;
-  ui::SimpleMenuModel bidi_submenu_model_;
   ui::SimpleMenuModel protocol_handler_submenu_model_;
   ScopedVector<ui::SimpleMenuModel> extension_menu_models_;
   ProtocolHandlerRegistry* protocol_handler_registry_;

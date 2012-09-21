@@ -255,7 +255,6 @@ RenderViewContextMenu::RenderViewContextMenu(
       ALLOW_THIS_IN_INITIALIZER_LIST(menu_model_(this)),
       external_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(speech_input_submenu_model_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(bidi_submenu_model_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(protocol_handler_submenu_model_(this)),
       protocol_handler_registry_(profile_->GetProtocolHandlerRegistry()) {
 }
@@ -993,13 +992,7 @@ void RenderViewContextMenu::AppendEditableItems() {
 
   AppendSpellcheckOptionsSubMenu();
   AppendSpeechInputOptionsSubMenu();
-
-#if defined(OS_MACOSX)
-  // OS X provides a contextual menu to set writing direction for BiDi
-  // languages.
-  // This functionality is exposed as a keyboard shortcut on Windows & Linux.
-  AppendBidiSubMenu();
-#endif  // OS_MACOSX
+  AppendPlatformEditableItems();
 
   menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SELECTALL,
@@ -1040,22 +1033,6 @@ void RenderViewContextMenu::AppendSpeechInputOptionsSubMenu() {
   }
 }
 
-#if defined(OS_MACOSX)
-void RenderViewContextMenu::AppendBidiSubMenu() {
-  bidi_submenu_model_.AddCheckItem(IDC_WRITING_DIRECTION_DEFAULT,
-      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_WRITING_DIRECTION_DEFAULT));
-  bidi_submenu_model_.AddCheckItem(IDC_WRITING_DIRECTION_LTR,
-      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_WRITING_DIRECTION_LTR));
-  bidi_submenu_model_.AddCheckItem(IDC_WRITING_DIRECTION_RTL,
-      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_WRITING_DIRECTION_RTL));
-
-  menu_model_.AddSubMenu(
-      IDC_WRITING_DIRECTION_MENU,
-      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_WRITING_DIRECTION_MENU),
-      &bidi_submenu_model_);
-}
-#endif  // OS_MACOSX
-
 void RenderViewContextMenu::AppendProtocolHandlerSubMenu() {
   const ProtocolHandlerRegistry::ProtocolHandlerList handlers =
       GetHandlersForLinkUrl();
@@ -1077,6 +1054,9 @@ void RenderViewContextMenu::AppendProtocolHandlerSubMenu() {
       IDC_CONTENT_CONTEXT_OPENLINKWITH,
       l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_OPENLINKWITH),
       &protocol_handler_submenu_model_);
+}
+
+void RenderViewContextMenu::AppendPlatformEditableItems() {
 }
 
 MenuItem* RenderViewContextMenu::GetExtensionMenuItem(int id) const {
@@ -1372,19 +1352,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     case IDC_CHECK_SPELLING_WHILE_TYPING:
       return profile_->GetPrefs()->GetBoolean(prefs::kEnableSpellCheck);
 
-#if defined(OS_MACOSX)
-    case IDC_WRITING_DIRECTION_DEFAULT:  // Provided to match OS defaults.
-      return params_.writing_direction_default &
-          WebContextMenuData::CheckableMenuItemEnabled;
-    case IDC_WRITING_DIRECTION_RTL:
-      return params_.writing_direction_right_to_left &
-          WebContextMenuData::CheckableMenuItemEnabled;
-    case IDC_WRITING_DIRECTION_LTR:
-      return params_.writing_direction_left_to_right &
-          WebContextMenuData::CheckableMenuItemEnabled;
-    case IDC_WRITING_DIRECTION_MENU:
-      return true;
-#elif defined(OS_POSIX)
+#if !defined(OS_MACOSX) && defined(OS_POSIX)
     // TODO(suzhe): this should not be enabled for password fields.
     case IDC_INPUT_METHODS_MENU:
       return true;
@@ -1449,20 +1417,6 @@ bool RenderViewContextMenu::IsCommandIdChecked(int id) const {
     else
       return false;
   }
-
-#if defined(OS_MACOSX)
-    if (id == IDC_WRITING_DIRECTION_DEFAULT)
-      return params_.writing_direction_default &
-          WebContextMenuData::CheckableMenuItemChecked;
-    if (id == IDC_WRITING_DIRECTION_RTL)
-      return params_.writing_direction_right_to_left &
-          WebContextMenuData::CheckableMenuItemChecked;
-    if (id == IDC_WRITING_DIRECTION_LTR)
-      return params_.writing_direction_left_to_right &
-          WebContextMenuData::CheckableMenuItemChecked;
-    if (id == IDC_CONTENT_CONTEXT_LOOK_UP_IN_DICTIONARY)
-      return false;
-#endif  // OS_MACOSX
 
 #if defined(ENABLE_INPUT_SPEECH)
   // Check box for menu item 'Block offensive words'.
@@ -1851,21 +1805,6 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       break;
     }
 
-#if defined(OS_MACOSX)
-    case IDC_WRITING_DIRECTION_DEFAULT:
-      // WebKit's current behavior is for this menu item to always be disabled.
-      NOTREACHED();
-      break;
-    case IDC_WRITING_DIRECTION_RTL:
-    case IDC_WRITING_DIRECTION_LTR: {
-      WebKit::WebTextDirection dir = WebKit::WebTextDirectionLeftToRight;
-      if (id == IDC_WRITING_DIRECTION_RTL)
-        dir = WebKit::WebTextDirectionRightToLeft;
-      rvh->UpdateTextDirection(dir);
-      rvh->NotifyTextDirection();
-      break;
-    }
-#endif  // OS_MACOSX
     case IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_SETTINGS: {
       content::RecordAction(
           UserMetricsAction("RegisterProtocolHandler.ContextMenu_Settings"));

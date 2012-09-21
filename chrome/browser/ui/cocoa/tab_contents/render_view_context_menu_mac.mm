@@ -57,6 +57,7 @@ RenderViewContextMenuMac::RenderViewContextMenuMac(
     NSView* parent_view)
     : RenderViewContextMenu(web_contents, params),
       ALLOW_THIS_IN_INITIALIZER_LIST(speech_submenu_model_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(bidi_submenu_model_(this)),
       parent_view_(parent_view) {
 }
 
@@ -132,9 +133,42 @@ void RenderViewContextMenuMac::ExecuteCommand(int command_id, int event_flags) {
       StopSpeaking();
       break;
 
+    case IDC_WRITING_DIRECTION_DEFAULT:
+      // WebKit's current behavior is for this menu item to always be disabled.
+      NOTREACHED();
+      break;
+
+    case IDC_WRITING_DIRECTION_RTL:
+    case IDC_WRITING_DIRECTION_LTR: {
+      content::RenderViewHost* view_host = GetRenderViewHost();
+      WebKit::WebTextDirection dir = WebKit::WebTextDirectionLeftToRight;
+      if (command_id == IDC_WRITING_DIRECTION_RTL)
+        dir = WebKit::WebTextDirectionRightToLeft;
+      view_host->UpdateTextDirection(dir);
+      view_host->NotifyTextDirection();
+      break;
+    }
+
     default:
       RenderViewContextMenu::ExecuteCommand(command_id, event_flags);
       break;
+  }
+}
+
+bool RenderViewContextMenuMac::IsCommandIdChecked(int command_id) const {
+  switch (command_id) {
+    case IDC_WRITING_DIRECTION_DEFAULT:
+      return params_.writing_direction_default &
+          WebKit::WebContextMenuData::CheckableMenuItemChecked;
+    case IDC_WRITING_DIRECTION_RTL:
+      return params_.writing_direction_right_to_left &
+          WebKit::WebContextMenuData::CheckableMenuItemChecked;
+    case IDC_WRITING_DIRECTION_LTR:
+      return params_.writing_direction_left_to_right &
+          WebKit::WebContextMenuData::CheckableMenuItemChecked;
+
+    default:
+      return RenderViewContextMenu::IsCommandIdChecked(command_id);
   }
 }
 
@@ -155,6 +189,16 @@ bool RenderViewContextMenuMac::IsCommandIdEnabled(int command_id) const {
       return view && view->IsSpeaking();
     }
 
+    case IDC_WRITING_DIRECTION_DEFAULT:  // Provided to match OS defaults.
+      return params_.writing_direction_default &
+          WebKit::WebContextMenuData::CheckableMenuItemEnabled;
+    case IDC_WRITING_DIRECTION_RTL:
+      return params_.writing_direction_right_to_left &
+          WebKit::WebContextMenuData::CheckableMenuItemEnabled;
+    case IDC_WRITING_DIRECTION_LTR:
+      return params_.writing_direction_left_to_right &
+          WebKit::WebContextMenuData::CheckableMenuItemEnabled;
+
     default:
       return RenderViewContextMenu::IsCommandIdEnabled(command_id);
   }
@@ -164,6 +208,13 @@ bool RenderViewContextMenuMac::GetAcceleratorForCommandId(
     int command_id,
     ui::Accelerator* accelerator) {
   return false;
+}
+
+void RenderViewContextMenuMac::AppendPlatformEditableItems() {
+  // OS X provides a contextual menu to set writing direction for BiDi
+  // languages.
+  // This functionality is exposed as a keyboard shortcut on Windows & Linux.
+  AppendBidiSubMenu();
 }
 
 void RenderViewContextMenuMac::InitPlatformMenu() {
@@ -189,6 +240,20 @@ void RenderViewContextMenuMac::InitPlatformMenu() {
           &speech_submenu_model_);
     }
   }
+}
+
+void RenderViewContextMenuMac::AppendBidiSubMenu() {
+  bidi_submenu_model_.AddCheckItem(IDC_WRITING_DIRECTION_DEFAULT,
+      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_WRITING_DIRECTION_DEFAULT));
+  bidi_submenu_model_.AddCheckItem(IDC_WRITING_DIRECTION_LTR,
+      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_WRITING_DIRECTION_LTR));
+  bidi_submenu_model_.AddCheckItem(IDC_WRITING_DIRECTION_RTL,
+      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_WRITING_DIRECTION_RTL));
+
+  menu_model_.AddSubMenu(
+      IDC_WRITING_DIRECTION_MENU,
+      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_WRITING_DIRECTION_MENU),
+      &bidi_submenu_model_);
 }
 
 void RenderViewContextMenuMac::LookUpInDictionary() {
