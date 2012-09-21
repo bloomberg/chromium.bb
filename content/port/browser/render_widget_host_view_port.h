@@ -222,6 +222,10 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView {
       TransportDIB::Handle transport_dib) = 0;
 #endif
 
+#if defined(OS_ANDROID)
+  virtual void DidSetNeedTouchEvents(bool need_touch_events) = 0;
+#endif
+
   virtual void AcceleratedSurfaceNew(
       int32 width_in_pixel,
       int32 height_in_pixel,
