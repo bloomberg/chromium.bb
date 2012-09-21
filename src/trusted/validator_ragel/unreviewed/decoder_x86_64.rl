@@ -12,7 +12,7 @@
 
 #include "native_client/src/include/elf32.h"
 #include "native_client/src/shared/utils/types.h"
-#include "native_client/src/trusted/validator_ragel/unreviewed/decoder.h"
+#include "native_client/src/trusted/validator_ragel/unreviewed/decoder_internal.h"
 
 #include "native_client/src/trusted/validator_ragel/gen/decoder_x86_64_instruction_consts.c"
 

@@ -165,8 +165,9 @@
       (REX_WRX? 0xff (0xe0|0xe1|0xe2|0xe3|0xe4|0xe5|0xe6|0xe7))))
      @{
        instruction_start -= 6;
-       if (((instruction_start[1] & 0x07) != (instruction_start[5] & 0x07)) ||
-           ((instruction_start[1] & 0x07) != (*current_position & 0x07)))
+       if (RMFromModRM(instruction_start[1]) !=
+                                            RMFromModRM(instruction_start[5]) ||
+           RMFromModRM(instruction_start[1]) != RMFromModRM(*current_position))
          instruction_info_collected |= UNRECOGNIZED_INSTRUCTION;
        BitmapClearBit(valid_targets, (instruction_start - data) + 3);
        BitmapClearBit(valid_targets, (instruction_start - data) + 6);
@@ -183,9 +184,9 @@
       (REX_WRX? 0xff (0xe0|0xe1|0xe2|0xe3|0xe4|0xe5|0xe6|0xe7))))
      @{
        instruction_start -= 6;
-       if (((instruction_start[1] & 0x07) !=
-                                        ((instruction_start[5] & 0x38) >> 3)) ||
-           ((instruction_start[1] & 0x07) != (*current_position & 0x07)))
+       if (RMFromModRM(instruction_start[1]) !=
+                                           RegFromModRM(instruction_start[5]) ||
+           RMFromModRM(instruction_start[1]) != RMFromModRM(*current_position))
          instruction_info_collected |= UNRECOGNIZED_INSTRUCTION;
        BitmapClearBit(valid_targets, (instruction_start - data) + 3);
        BitmapClearBit(valid_targets, (instruction_start - data) + 6);
@@ -211,8 +212,9 @@
       (b_0100_xxx1 0xff (0xe0|0xe1|0xe2|0xe3|0xe4|0xe5|0xe6)))))
      @{
        instruction_start -= 7;
-       if (((instruction_start[2] & 0x07) != (instruction_start[6] & 0x07)) ||
-           ((instruction_start[2] & 0x07) != (*current_position & 0x07)))
+       if (RMFromModRM(instruction_start[2]) !=
+                                            RMFromModRM(instruction_start[6]) ||
+           RMFromModRM(instruction_start[2]) != RMFromModRM(*current_position))
          instruction_info_collected |= UNRECOGNIZED_INSTRUCTION;
        BitmapClearBit(valid_targets, (instruction_start - data) + 4);
        BitmapClearBit(valid_targets, (instruction_start - data) + 7);
@@ -238,9 +240,9 @@
       (b_0100_xxx1 0xff (0xe0|0xe1|0xe2|0xe3|0xe4|0xe5|0xe6)))))
      @{
        instruction_start -= 7;
-       if (((instruction_start[2] & 0x07) !=
-                                        ((instruction_start[6] & 0x38) >> 3)) ||
-           ((instruction_start[2] & 0x07) != (*current_position & 0x07)))
+       if (RMFromModRM(instruction_start[2]) !=
+                                           RegFromModRM(instruction_start[6]) ||
+           RMFromModRM(instruction_start[2]) != RMFromModRM(*current_position))
          instruction_info_collected |= UNRECOGNIZED_INSTRUCTION;
        BitmapClearBit(valid_targets, (instruction_start - data) + 4);
        BitmapClearBit(valid_targets, (instruction_start - data) + 7);

@@ -2368,9 +2368,9 @@ _resume:
 tr0:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -2404,9 +2404,9 @@ tr0:
 	goto st904;
 tr7:
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x07) |
-                           ((GET_REX_PREFIX() & 0x01) << 3) |
-                           (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     process_1_operand(&restricted_register, &instruction_info_collected,
@@ -2436,13 +2436,13 @@ tr7:
 tr8:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register,
@@ -2540,9 +2540,9 @@ tr14:
 	goto st904;
 tr17:
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x07) |
-                           ((GET_REX_PREFIX() & 0x01) << 3) |
-                           (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     process_1_operand_zero_extends(&restricted_register,
@@ -2572,15 +2572,15 @@ tr17:
 	goto st904;
 tr18:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -2615,9 +2615,9 @@ tr18:
 	goto st904;
 tr25:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     process_1_operand(&restricted_register, &instruction_info_collected,
@@ -2647,13 +2647,13 @@ tr25:
 tr26:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register,
@@ -2754,15 +2754,15 @@ tr32:
 	goto st904;
 tr35:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -2798,9 +2798,9 @@ tr35:
 	goto st904;
 tr42:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     process_1_operand_zero_extends(&restricted_register,
@@ -2831,13 +2831,13 @@ tr42:
 tr43:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register,
@@ -3105,9 +3105,9 @@ tr78:
 	goto st904;
 tr96:
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x7) |
-                            ((GET_REX_PREFIX() & 0x01) << 3) |
-                            (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RegFromOpcode(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
 	{
@@ -3223,9 +3223,9 @@ tr103:
 	{ SET_CPU_FEATURE(CPUFeature_3DPRFTCH); }
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -3256,13 +3256,13 @@ tr103:
 tr110:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
     process_0_operands(&restricted_register, &instruction_info_collected);
@@ -3408,9 +3408,9 @@ tr138:
 	{ SET_CPU_FEATURE(CPUFeature_SSE); }
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -3472,9 +3472,9 @@ tr146:
 	{ SET_CPU_FEATURE(CPUFeature_SSE); }
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -3505,9 +3505,9 @@ tr146:
 tr153:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -3597,9 +3597,9 @@ tr188:
 	{ SET_CPU_FEATURE(CPUFeature_FXSR); }
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -3635,9 +3635,9 @@ tr191:
 	{ SET_CPU_FEATURE(CPUFeature_CLFLUSH); }
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -3723,14 +3723,14 @@ tr203:
 	goto st904;
 tr204:
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x07) |
-                           ((GET_REX_PREFIX() & 0x01) << 3) |
-                           (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    SET_OPERAND_NAME(1, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(1, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     process_2_operands(&restricted_register, &instruction_info_collected,
@@ -3759,14 +3759,14 @@ tr204:
 	goto st904;
 tr206:
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x07) |
-                           ((GET_REX_PREFIX() & 0x01) << 3) |
-                           (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    SET_OPERAND_NAME(1, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(1, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     process_2_operands_zero_extends(&restricted_register,
@@ -3798,9 +3798,9 @@ tr216:
 	{ SET_CPU_FEATURE(CPUFeature_CX8); }
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -3922,9 +3922,9 @@ tr234:
 	goto st904;
 tr244:
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x7) |
-                            ((GET_REX_PREFIX() & 0x01) << 3) |
-                            (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RegFromOpcode(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{  SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
 	{
@@ -3957,9 +3957,9 @@ tr256:
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x7) |
-                            ((GET_REX_PREFIX() & 0x01) << 3) |
-                            (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RegFromOpcode(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
 	{ SET_OPERAND_TYPE(1, OPERAND_SIZE_32_BIT); }
@@ -3992,9 +3992,9 @@ tr256:
 	goto st904;
 tr257:
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x7) |
-                            ((GET_REX_PREFIX() & 0x01) << 3) |
-                            (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RegFromOpcode(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
 	{ SET_OPERAND_TYPE(1, OPERAND_SIZE_32_BIT); }
@@ -4084,15 +4084,15 @@ tr305:
 	goto st904;
 tr344:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -4125,13 +4125,13 @@ tr344:
 tr351:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
     process_1_operand_zero_extends(&restricted_register,
@@ -4224,9 +4224,9 @@ tr357:
 tr360:
 	{  SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x07) |
-                           ((GET_REX_PREFIX() & 0x01) << 3) |
-                           (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     process_1_operand(&restricted_register, &instruction_info_collected,
@@ -4256,9 +4256,9 @@ tr360:
 tr377:
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_8_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x07) |
-                           ((GET_REX_PREFIX() & 0x01) << 3) |
-                           (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     process_1_operand(&restricted_register, &instruction_info_collected,
@@ -4288,9 +4288,9 @@ tr377:
 tr378:
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x07) |
-                           ((GET_REX_PREFIX() & 0x01) << 3) |
-                           (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     process_1_operand(&restricted_register, &instruction_info_collected,
@@ -4321,9 +4321,9 @@ tr379:
 	{ SET_CPU_FEATURE(CPUFeature_x87); }
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -4446,9 +4446,9 @@ tr391:
 tr392:
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x07) |
-                           ((GET_REX_PREFIX() & 0x01) << 3) |
-                           (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     process_1_operand_zero_extends(&restricted_register,
@@ -4478,9 +4478,9 @@ tr392:
 	goto st904;
 tr405:
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x7) |
-                            ((GET_REX_PREFIX() & 0x01) << 3) |
-                            (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RegFromOpcode(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
 	{ SET_OPERAND_TYPE(1, OPERAND_SIZE_64_BIT); }
@@ -4512,9 +4512,9 @@ tr405:
 	goto st904;
 tr420:
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x7) |
-                            ((GET_REX_PREFIX() & 0x01) << 3) |
-                            (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RegFromOpcode(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
 	{
@@ -4546,9 +4546,9 @@ tr424:
 	{ SET_CPU_FEATURE(CPUFeature_CX16); }
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -4635,15 +4635,15 @@ tr467:
 	goto st904;
 tr468:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -4675,13 +4675,13 @@ tr468:
 tr475:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
     process_1_operand(&restricted_register, &instruction_info_collected,
@@ -4801,9 +4801,9 @@ tr491:
 tr493:
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x07) |
-                           ((GET_REX_PREFIX() & 0x01) << 3) |
-                           (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     process_1_operand(&restricted_register, &instruction_info_collected,
@@ -4927,9 +4927,9 @@ tr511:
 	goto st904;
 tr533:
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x7) |
-                            ((GET_REX_PREFIX() & 0x01) << 3) |
-                            (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RegFromOpcode(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_16_BIT); }
 	{
@@ -4959,9 +4959,9 @@ tr533:
 	goto st904;
 tr544:
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x7) |
-                            ((GET_REX_PREFIX() & 0x01) << 3) |
-                            (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RegFromOpcode(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_16_BIT); }
 	{ SET_OPERAND_TYPE(1, OPERAND_SIZE_16_BIT); }
@@ -5081,9 +5081,9 @@ tr616:
 tr652:
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_16_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x07) |
-                           ((GET_REX_PREFIX() & 0x01) << 3) |
-                           (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     process_1_operand(&restricted_register, &instruction_info_collected,
@@ -5113,9 +5113,9 @@ tr652:
 tr699:
 	{
        instruction_start -= 6;
-       if (((instruction_start[1] & 0x07) !=
-                                        ((instruction_start[5] & 0x38) >> 3)) ||
-           ((instruction_start[1] & 0x07) != (*current_position & 0x07)))
+       if (RMFromModRM(instruction_start[1]) !=
+                                           RegFromModRM(instruction_start[5]) ||
+           RMFromModRM(instruction_start[1]) != RMFromModRM(*current_position))
          instruction_info_collected |= UNRECOGNIZED_INSTRUCTION;
        BitmapClearBit(valid_targets, (instruction_start - data) + 3);
        BitmapClearBit(valid_targets, (instruction_start - data) + 6);
@@ -5152,9 +5152,9 @@ tr699:
 tr700:
 	{
        instruction_start -= 6;
-       if (((instruction_start[1] & 0x07) !=
-                                        ((instruction_start[5] & 0x38) >> 3)) ||
-           ((instruction_start[1] & 0x07) != (*current_position & 0x07)))
+       if (RMFromModRM(instruction_start[1]) !=
+                                           RegFromModRM(instruction_start[5]) ||
+           RMFromModRM(instruction_start[1]) != RMFromModRM(*current_position))
          instruction_info_collected |= UNRECOGNIZED_INSTRUCTION;
        BitmapClearBit(valid_targets, (instruction_start - data) + 3);
        BitmapClearBit(valid_targets, (instruction_start - data) + 6);
@@ -5280,13 +5280,13 @@ tr878:
 	{ SET_CPU_FEATURE(CPUFeature_TBM); }
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -5323,7 +5323,7 @@ tr881:
 	{ SET_CPU_FEATURE(CPUFeature_TBM); }
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	{
     process_1_operand(&restricted_register, &instruction_info_collected,
@@ -5380,9 +5380,9 @@ tr884:
 	{ SET_CPU_FEATURE(CPUFeature_LWP); }
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x07) |
-                           ((GET_REX_PREFIX() & 0x01) << 3) |
-                           (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     process_1_operand(&restricted_register, &instruction_info_collected,
@@ -5413,13 +5413,13 @@ tr887:
 	{ SET_CPU_FEATURE(CPUFeature_TBM); }
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -5456,7 +5456,7 @@ tr890:
 	{ SET_CPU_FEATURE(CPUFeature_TBM); }
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	{
     process_1_operand(&restricted_register, &instruction_info_collected,
@@ -5487,9 +5487,9 @@ tr892:
 	{ SET_CPU_FEATURE(CPUFeature_LWP); }
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x07) |
-                           ((GET_REX_PREFIX() & 0x01) << 3) |
-                           (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     process_1_operand(&restricted_register, &instruction_info_collected,
@@ -5549,9 +5549,9 @@ tr1085:
 	{ SET_CPU_FEATURE(CPUFeature_AVX); }
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -5613,13 +5613,13 @@ tr1226:
 	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -5656,7 +5656,7 @@ tr1229:
 	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	{
     process_1_operand(&restricted_register, &instruction_info_collected,
@@ -5687,13 +5687,13 @@ tr1231:
 	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -5730,7 +5730,7 @@ tr1234:
 	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	{
     process_1_operand(&restricted_register, &instruction_info_collected,
@@ -5852,8 +5852,9 @@ tr1355:
 tr1370:
 	{
        instruction_start -= 6;
-       if (((instruction_start[1] & 0x07) != (instruction_start[5] & 0x07)) ||
-           ((instruction_start[1] & 0x07) != (*current_position & 0x07)))
+       if (RMFromModRM(instruction_start[1]) !=
+                                            RMFromModRM(instruction_start[5]) ||
+           RMFromModRM(instruction_start[1]) != RMFromModRM(*current_position))
          instruction_info_collected |= UNRECOGNIZED_INSTRUCTION;
        BitmapClearBit(valid_targets, (instruction_start - data) + 3);
        BitmapClearBit(valid_targets, (instruction_start - data) + 6);
@@ -5890,8 +5891,9 @@ tr1370:
 tr1371:
 	{
        instruction_start -= 6;
-       if (((instruction_start[1] & 0x07) != (instruction_start[5] & 0x07)) ||
-           ((instruction_start[1] & 0x07) != (*current_position & 0x07)))
+       if (RMFromModRM(instruction_start[1]) !=
+                                            RMFromModRM(instruction_start[5]) ||
+           RMFromModRM(instruction_start[1]) != RMFromModRM(*current_position))
          instruction_info_collected |= UNRECOGNIZED_INSTRUCTION;
        BitmapClearBit(valid_targets, (instruction_start - data) + 3);
        BitmapClearBit(valid_targets, (instruction_start - data) + 6);
@@ -6021,8 +6023,9 @@ tr1391:
 tr1405:
 	{
        instruction_start -= 7;
-       if (((instruction_start[2] & 0x07) != (instruction_start[6] & 0x07)) ||
-           ((instruction_start[2] & 0x07) != (*current_position & 0x07)))
+       if (RMFromModRM(instruction_start[2]) !=
+                                            RMFromModRM(instruction_start[6]) ||
+           RMFromModRM(instruction_start[2]) != RMFromModRM(*current_position))
          instruction_info_collected |= UNRECOGNIZED_INSTRUCTION;
        BitmapClearBit(valid_targets, (instruction_start - data) + 4);
        BitmapClearBit(valid_targets, (instruction_start - data) + 7);
@@ -6059,8 +6062,9 @@ tr1405:
 tr1406:
 	{
        instruction_start -= 7;
-       if (((instruction_start[2] & 0x07) != (instruction_start[6] & 0x07)) ||
-           ((instruction_start[2] & 0x07) != (*current_position & 0x07)))
+       if (RMFromModRM(instruction_start[2]) !=
+                                            RMFromModRM(instruction_start[6]) ||
+           RMFromModRM(instruction_start[2]) != RMFromModRM(*current_position))
          instruction_info_collected |= UNRECOGNIZED_INSTRUCTION;
        BitmapClearBit(valid_targets, (instruction_start - data) + 4);
        BitmapClearBit(valid_targets, (instruction_start - data) + 7);
@@ -6093,9 +6097,9 @@ tr1406:
 tr1410:
 	{
        instruction_start -= 7;
-       if (((instruction_start[2] & 0x07) !=
-                                        ((instruction_start[6] & 0x38) >> 3)) ||
-           ((instruction_start[2] & 0x07) != (*current_position & 0x07)))
+       if (RMFromModRM(instruction_start[2]) !=
+                                           RegFromModRM(instruction_start[6]) ||
+           RMFromModRM(instruction_start[2]) != RMFromModRM(*current_position))
          instruction_info_collected |= UNRECOGNIZED_INSTRUCTION;
        BitmapClearBit(valid_targets, (instruction_start - data) + 4);
        BitmapClearBit(valid_targets, (instruction_start - data) + 7);
@@ -6132,9 +6136,9 @@ tr1410:
 tr1411:
 	{
        instruction_start -= 7;
-       if (((instruction_start[2] & 0x07) !=
-                                        ((instruction_start[6] & 0x38) >> 3)) ||
-           ((instruction_start[2] & 0x07) != (*current_position & 0x07)))
+       if (RMFromModRM(instruction_start[2]) !=
+                                           RegFromModRM(instruction_start[6]) ||
+           RMFromModRM(instruction_start[2]) != RMFromModRM(*current_position))
          instruction_info_collected |= UNRECOGNIZED_INSTRUCTION;
        BitmapClearBit(valid_targets, (instruction_start - data) + 4);
        BitmapClearBit(valid_targets, (instruction_start - data) + 7);
@@ -6197,9 +6201,9 @@ tr1451:
        BitmapSetBit(valid_targets, current_position - data);
      }
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x7) |
-                            ((GET_REX_PREFIX() & 0x01) << 3) |
-                            (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RegFromOpcode(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{  SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
 	{
@@ -6232,9 +6236,9 @@ tr1467:
        BitmapSetBit(valid_targets, current_position - data);
      }
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x7) |
-                            ((GET_REX_PREFIX() & 0x01) << 3) |
-                            (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RegFromOpcode(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
 	{ SET_OPERAND_TYPE(1, OPERAND_SIZE_32_BIT); }
@@ -6392,9 +6396,9 @@ tr2:
 	goto st3;
 tr5:
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -6403,22 +6407,22 @@ tr9:
 	{
     SET_DISP_TYPE(DISPNONE);
     SET_MODRM_BASE(NO_REG);
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	goto st3;
 tr16:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	goto st3;
 tr140:
@@ -6432,9 +6436,9 @@ tr140:
 tr143:
 	{ SET_CPU_FEATURE(CPUFeature_SSE); }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -6458,9 +6462,9 @@ tr193:
 tr198:
 	{ SET_CPU_FEATURE(CPUFeature_FXSR); }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -6468,9 +6472,9 @@ tr198:
 tr200:
 	{ SET_CPU_FEATURE(CPUFeature_CLFLUSH); }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -6486,9 +6490,9 @@ tr218:
 tr221:
 	{ SET_CPU_FEATURE(CPUFeature_CX8); }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -6504,9 +6508,9 @@ tr381:
 tr384:
 	{ SET_CPU_FEATURE(CPUFeature_x87); }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -6522,9 +6526,9 @@ tr426:
 tr429:
 	{ SET_CPU_FEATURE(CPUFeature_CX16); }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -6532,9 +6536,9 @@ tr429:
 tr1087:
 	{ SET_CPU_FEATURE(CPUFeature_AVX); }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -6569,9 +6573,9 @@ case 6:
 	goto tr13;
 tr3:
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -6579,21 +6583,21 @@ tr3:
 tr15:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	goto st7;
 tr141:
 	{ SET_CPU_FEATURE(CPUFeature_SSE); }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -6601,9 +6605,9 @@ tr141:
 tr194:
 	{ SET_CPU_FEATURE(CPUFeature_FXSR); }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -6611,9 +6615,9 @@ tr194:
 tr196:
 	{ SET_CPU_FEATURE(CPUFeature_CLFLUSH); }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -6621,9 +6625,9 @@ tr196:
 tr219:
 	{ SET_CPU_FEATURE(CPUFeature_CX8); }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -6631,9 +6635,9 @@ tr219:
 tr382:
 	{ SET_CPU_FEATURE(CPUFeature_x87); }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -6641,9 +6645,9 @@ tr382:
 tr427:
 	{ SET_CPU_FEATURE(CPUFeature_CX16); }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -6651,9 +6655,9 @@ tr427:
 tr1086:
 	{ SET_CPU_FEATURE(CPUFeature_AVX); }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -6949,37 +6953,37 @@ case 11:
 	}
 tr19:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st12;
 tr863:
 	{ SET_CPU_FEATURE(CPUFeature_TBM); }
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	goto st12;
 tr866:
 	{ SET_CPU_FEATURE(CPUFeature_TBM); }
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	goto st12;
 tr1214:
 	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	goto st12;
 tr1216:
 	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	goto st12;
 st12:
@@ -6995,29 +6999,29 @@ tr27:
 	{
     SET_DISP_TYPE(DISPNONE);
     SET_MODRM_BASE(NO_REG);
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	goto st13;
 tr34:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	goto st13;
 tr20:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     SET_MODRM_BASE(REG_RIP);
@@ -7027,14 +7031,14 @@ tr20:
 	goto st13;
 tr23:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -7043,12 +7047,12 @@ tr880:
 	{ SET_CPU_FEATURE(CPUFeature_TBM); }
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -7057,12 +7061,12 @@ tr889:
 	{ SET_CPU_FEATURE(CPUFeature_TBM); }
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -7071,7 +7075,7 @@ tr907:
 	{ SET_CPU_FEATURE(CPUFeature_TBM); }
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	{
     SET_MODRM_BASE(REG_RIP);
@@ -7083,7 +7087,7 @@ tr910:
 	{ SET_CPU_FEATURE(CPUFeature_TBM); }
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	{
     SET_MODRM_BASE(REG_RIP);
@@ -7095,12 +7099,12 @@ tr1228:
 	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -7109,12 +7113,12 @@ tr1233:
 	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -7123,7 +7127,7 @@ tr1243:
 	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	{
     SET_MODRM_BASE(REG_RIP);
@@ -7135,7 +7139,7 @@ tr1245:
 	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	{
     SET_MODRM_BASE(REG_RIP);
@@ -7166,25 +7170,25 @@ case 16:
 tr33:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	goto st17;
 tr21:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -7193,12 +7197,12 @@ tr879:
 	{ SET_CPU_FEATURE(CPUFeature_TBM); }
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -7207,12 +7211,12 @@ tr888:
 	{ SET_CPU_FEATURE(CPUFeature_TBM); }
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -7221,12 +7225,12 @@ tr1227:
 	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -7235,12 +7239,12 @@ tr1232:
 	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -7252,37 +7256,37 @@ case 17:
 	goto tr32;
 tr22:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st18;
 tr844:
 	{ SET_CPU_FEATURE(CPUFeature_TBM); }
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	goto st18;
 tr849:
 	{ SET_CPU_FEATURE(CPUFeature_TBM); }
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	goto st18;
 tr1203:
 	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	goto st18;
 tr1207:
 	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	goto st18;
 st18:
@@ -7292,37 +7296,37 @@ case 18:
 	goto tr33;
 tr24:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st19;
 tr845:
 	{ SET_CPU_FEATURE(CPUFeature_TBM); }
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	goto st19;
 tr850:
 	{ SET_CPU_FEATURE(CPUFeature_TBM); }
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	goto st19;
 tr1204:
 	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	goto st19;
 tr1208:
 	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	goto st19;
 st19:
@@ -7356,9 +7360,9 @@ case 20:
 	}
 tr36:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st21;
 st21:
@@ -7374,29 +7378,29 @@ tr44:
 	{
     SET_DISP_TYPE(DISPNONE);
     SET_MODRM_BASE(NO_REG);
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	goto st22;
 tr51:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	goto st22;
 tr37:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     SET_MODRM_BASE(REG_RIP);
@@ -7406,14 +7410,14 @@ tr37:
 	goto st22;
 tr40:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -7441,25 +7445,25 @@ case 25:
 tr50:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	goto st26;
 tr38:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -7471,9 +7475,9 @@ case 26:
 	goto tr49;
 tr39:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st27;
 st27:
@@ -7483,9 +7487,9 @@ case 27:
 	goto tr50;
 tr41:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st28;
 st28:
@@ -7495,21 +7499,21 @@ case 28:
 	goto tr51;
 tr215:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st29;
 tr455:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register,
@@ -7538,17 +7542,17 @@ tr461:
 	goto st29;
 tr187:
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x07) |
-                           ((GET_REX_PREFIX() & 0x01) << 3) |
-                           (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st29;
 tr205:
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x07) |
-                           ((GET_REX_PREFIX() & 0x01) << 3) |
-                           (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st29;
 tr238:
@@ -7557,9 +7561,9 @@ tr238:
 	goto st29;
 tr259:
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x7) |
-                            ((GET_REX_PREFIX() & 0x01) << 3) |
-                            (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RegFromOpcode(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
@@ -7568,15 +7572,15 @@ tr259:
 	goto st29;
 tr448:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -7588,9 +7592,9 @@ tr448:
 tr315:
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_8_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x07) |
-                           ((GET_REX_PREFIX() & 0x01) << 3) |
-                           (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st29;
 tr368:
@@ -7599,17 +7603,17 @@ tr368:
   }
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_8_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x07) |
-                           ((GET_REX_PREFIX() & 0x01) << 3) |
-                           (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st29;
 tr423:
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x07) |
-                           ((GET_REX_PREFIX() & 0x01) << 3) |
-                           (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st29;
 tr601:
@@ -7619,17 +7623,17 @@ tr601:
 	{ SET_CPU_FEATURE(CPUFeature_SSE41); }
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x07) |
-                           ((GET_REX_PREFIX() & 0x01) << 3) |
-                           (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st29;
 tr604:
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_16_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x07) |
-                           ((GET_REX_PREFIX() & 0x01) << 3) |
-                           (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st29;
 tr669:
@@ -7639,18 +7643,18 @@ tr669:
 	{ SET_CPU_FEATURE(CPUFeature_SSE41); }
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x07) |
-                           ((GET_REX_PREFIX() & 0x01) << 3) |
-                           (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st29;
 tr1134:
 	{ SET_CPU_FEATURE(CPUFeature_AVX); }
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x07) |
-                           ((GET_REX_PREFIX() & 0x01) << 3) |
-                           (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st29;
 tr1429:
@@ -7665,9 +7669,9 @@ tr1469:
        BitmapSetBit(valid_targets, current_position - data);
      }
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x7) |
-                            ((GET_REX_PREFIX() & 0x01) << 3) |
-                            (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RegFromOpcode(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
@@ -7681,21 +7685,21 @@ case 29:
 	goto tr52;
 tr287:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st30;
 tr288:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register,
@@ -7725,9 +7729,9 @@ tr294:
 tr323:
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x07) |
-                           ((GET_REX_PREFIX() & 0x01) << 3) |
-                           (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st30;
 tr239:
@@ -7736,9 +7740,9 @@ tr239:
 	goto st30;
 tr260:
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x7) |
-                            ((GET_REX_PREFIX() & 0x01) << 3) |
-                            (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RegFromOpcode(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
@@ -7747,15 +7751,15 @@ tr260:
 	goto st30;
 tr280:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -7770,9 +7774,9 @@ tr376:
   }
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x07) |
-                           ((GET_REX_PREFIX() & 0x01) << 3) |
-                           (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st30;
 tr1430:
@@ -7787,9 +7791,9 @@ tr1470:
        BitmapSetBit(valid_targets, current_position - data);
      }
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x7) |
-                            ((GET_REX_PREFIX() & 0x01) << 3) |
-                            (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RegFromOpcode(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
@@ -7883,9 +7887,9 @@ tr155:
 	goto st38;
 tr158:
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -7894,22 +7898,22 @@ tr111:
 	{
     SET_DISP_TYPE(DISPNONE);
     SET_MODRM_BASE(NO_REG);
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	goto st38;
 tr118:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	goto st38;
 tr105:
@@ -7923,9 +7927,9 @@ tr105:
 tr108:
 	{ SET_CPU_FEATURE(CPUFeature_3DPRFTCH); }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -7941,9 +7945,9 @@ tr148:
 tr151:
 	{ SET_CPU_FEATURE(CPUFeature_SSE); }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -7970,9 +7974,9 @@ case 41:
 	goto tr115;
 tr156:
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -7980,21 +7984,21 @@ tr156:
 tr117:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	goto st42;
 tr106:
 	{ SET_CPU_FEATURE(CPUFeature_3DPRFTCH); }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -8002,9 +8006,9 @@ tr106:
 tr149:
 	{ SET_CPU_FEATURE(CPUFeature_SSE); }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -8048,9 +8052,9 @@ case 45:
 tr119:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -8062,13 +8066,13 @@ tr119:
 tr129:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register,
@@ -8122,9 +8126,9 @@ tr121:
 	goto st48;
 tr124:
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -8133,22 +8137,22 @@ tr130:
 	{
     SET_DISP_TYPE(DISPNONE);
     SET_MODRM_BASE(NO_REG);
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	goto st48;
 tr137:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	goto st48;
 st48:
@@ -8173,9 +8177,9 @@ case 51:
 	goto tr134;
 tr122:
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -8183,13 +8187,13 @@ tr122:
 tr136:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	goto st52;
 st52:
@@ -8568,9 +8572,9 @@ tr214:
 tr164:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -8582,13 +8586,13 @@ tr164:
 tr173:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register,
@@ -8619,9 +8623,9 @@ tr207:
 	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE); }
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -8636,9 +8640,9 @@ tr361:
   }
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -8666,9 +8670,9 @@ tr594:
 	{ SET_CPU_FEATURE(CPUFeature_SSE41); }
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -8684,9 +8688,9 @@ tr605:
 	{ SET_CPU_FEATURE(CPUFeature_SSE); }
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -8708,9 +8712,9 @@ tr1093:
 	{ SET_CPU_FEATURE(CPUFeature_AVX); }
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -8776,9 +8780,9 @@ tr166:
 	goto st66;
 tr169:
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -8787,22 +8791,22 @@ tr174:
 	{
     SET_DISP_TYPE(DISPNONE);
     SET_MODRM_BASE(NO_REG);
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	goto st66;
 tr181:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	goto st66;
 tr209:
@@ -8816,9 +8820,9 @@ tr209:
 tr212:
 	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE); }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -8838,9 +8842,9 @@ tr366:
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -8862,9 +8866,9 @@ tr599:
   }
 	{ SET_CPU_FEATURE(CPUFeature_SSE41); }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -8886,9 +8890,9 @@ tr610:
   }
 	{ SET_CPU_FEATURE(CPUFeature_SSE); }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -8896,9 +8900,9 @@ tr610:
 tr1095:
 	{ SET_CPU_FEATURE(CPUFeature_AVX); }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -8933,9 +8937,9 @@ case 69:
 	goto tr178;
 tr167:
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -8943,21 +8947,21 @@ tr167:
 tr180:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	goto st70;
 tr210:
 	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE); }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -8967,9 +8971,9 @@ tr364:
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -8980,9 +8984,9 @@ tr597:
   }
 	{ SET_CPU_FEATURE(CPUFeature_SSE41); }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -8993,9 +8997,9 @@ tr608:
   }
 	{ SET_CPU_FEATURE(CPUFeature_SSE); }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -9003,9 +9007,9 @@ tr608:
 tr1094:
 	{ SET_CPU_FEATURE(CPUFeature_AVX); }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -9333,21 +9337,21 @@ case 87:
 	goto tr57;
 tr438:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st88;
 tr439:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register,
@@ -9377,9 +9381,9 @@ tr445:
 tr324:
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x07) |
-                           ((GET_REX_PREFIX() & 0x01) << 3) |
-                           (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st88;
 tr241:
@@ -9388,15 +9392,15 @@ tr241:
 	goto st88;
 tr431:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -9412,9 +9416,9 @@ tr395:
 tr464:
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x07) |
-                           ((GET_REX_PREFIX() & 0x01) << 3) |
-                           (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st88;
 tr492:
@@ -9423,9 +9427,9 @@ tr492:
   }
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x07) |
-                           ((GET_REX_PREFIX() & 0x01) << 3) |
-                           (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st88;
 tr1434:
@@ -9521,9 +9525,9 @@ case 95:
 tr316:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -9535,13 +9539,13 @@ tr316:
 tr325:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register,
@@ -9574,9 +9578,9 @@ tr369:
   }
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -9592,9 +9596,9 @@ tr897:
 	{ SET_CPU_FEATURE(CPUFeature_LWP); }
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -9682,9 +9686,9 @@ case 102:
 	}
 tr281:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st103;
 st103:
@@ -9700,29 +9704,29 @@ tr289:
 	{
     SET_DISP_TYPE(DISPNONE);
     SET_MODRM_BASE(NO_REG);
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	goto st104;
 tr296:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	goto st104;
 tr282:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     SET_MODRM_BASE(REG_RIP);
@@ -9732,14 +9736,14 @@ tr282:
 	goto st104;
 tr285:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -9767,25 +9771,25 @@ case 107:
 tr295:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	goto st108;
 tr283:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -9797,9 +9801,9 @@ case 108:
 	goto tr294;
 tr284:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st109;
 st109:
@@ -9809,9 +9813,9 @@ case 109:
 	goto tr295;
 tr286:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st110;
 st110:
@@ -9839,21 +9843,21 @@ case 111:
 	}
 tr304:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st112;
 tr306:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register,
@@ -9883,22 +9887,22 @@ tr312:
 tr334:
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x07) |
-                           ((GET_REX_PREFIX() & 0x01) << 3) |
-                           (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st112;
 tr297:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -9914,9 +9918,9 @@ case 112:
 	goto tr305;
 tr298:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st113;
 st113:
@@ -9932,29 +9936,29 @@ tr307:
 	{
     SET_DISP_TYPE(DISPNONE);
     SET_MODRM_BASE(NO_REG);
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	goto st114;
 tr314:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	goto st114;
 tr299:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     SET_MODRM_BASE(REG_RIP);
@@ -9964,14 +9968,14 @@ tr299:
 	goto st114;
 tr302:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -9999,25 +10003,25 @@ case 117:
 tr313:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	goto st118;
 tr300:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -10029,9 +10033,9 @@ case 118:
 	goto tr312;
 tr301:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st119;
 st119:
@@ -10041,9 +10045,9 @@ case 119:
 	goto tr313;
 tr303:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st120;
 st120:
@@ -10105,9 +10109,9 @@ tr318:
 	goto st124;
 tr321:
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -10116,22 +10120,22 @@ tr326:
 	{
     SET_DISP_TYPE(DISPNONE);
     SET_MODRM_BASE(NO_REG);
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	goto st124;
 tr333:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	goto st124;
 tr371:
@@ -10149,9 +10153,9 @@ tr374:
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -10159,9 +10163,9 @@ tr374:
 tr899:
 	{ SET_CPU_FEATURE(CPUFeature_LWP); }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -10196,9 +10200,9 @@ case 127:
 	goto tr330;
 tr319:
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -10206,13 +10210,13 @@ tr319:
 tr332:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	goto st128;
 tr372:
@@ -10220,9 +10224,9 @@ tr372:
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -10230,9 +10234,9 @@ tr372:
 tr898:
 	{ SET_CPU_FEATURE(CPUFeature_LWP); }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -10280,9 +10284,9 @@ case 131:
 tr335:
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x07) |
-                           ((GET_REX_PREFIX() & 0x01) << 3) |
-                           (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st132;
 st132:
@@ -10369,9 +10373,9 @@ case 134:
 tr340:
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x07) |
-                           ((GET_REX_PREFIX() & 0x01) << 3) |
-                           (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st135;
 st135:
@@ -10463,9 +10467,9 @@ case 137:
 	}
 tr342:
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x07) |
-                           ((GET_REX_PREFIX() & 0x01) << 3) |
-                           (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     process_1_operand_zero_extends(&restricted_register,
@@ -10495,9 +10499,9 @@ tr342:
 	goto st907;
 tr513:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     process_1_operand_zero_extends(&restricted_register,
@@ -10579,9 +10583,9 @@ case 139:
 	}
 tr345:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st140;
 st140:
@@ -10597,29 +10601,29 @@ tr352:
 	{
     SET_DISP_TYPE(DISPNONE);
     SET_MODRM_BASE(NO_REG);
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	goto st141;
 tr359:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	goto st141;
 tr346:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     SET_MODRM_BASE(REG_RIP);
@@ -10629,14 +10633,14 @@ tr346:
 	goto st141;
 tr349:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -10664,25 +10668,25 @@ case 144:
 tr358:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	goto st145;
 tr347:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -10694,9 +10698,9 @@ case 145:
 	goto tr357;
 tr348:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st146;
 st146:
@@ -10706,9 +10710,9 @@ case 146:
 	goto tr358;
 tr350:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st147;
 st147:
@@ -11165,9 +11169,9 @@ case 176:
 	}
 tr432:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st177;
 st177:
@@ -11183,29 +11187,29 @@ tr440:
 	{
     SET_DISP_TYPE(DISPNONE);
     SET_MODRM_BASE(NO_REG);
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	goto st178;
 tr447:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	goto st178;
 tr433:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     SET_MODRM_BASE(REG_RIP);
@@ -11215,14 +11219,14 @@ tr433:
 	goto st178;
 tr436:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -11250,25 +11254,25 @@ case 181:
 tr446:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	goto st182;
 tr434:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -11280,9 +11284,9 @@ case 182:
 	goto tr445;
 tr435:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st183;
 st183:
@@ -11292,9 +11296,9 @@ case 183:
 	goto tr446;
 tr437:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st184;
 st184:
@@ -11319,9 +11323,9 @@ case 185:
 	}
 tr449:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st186;
 st186:
@@ -11337,29 +11341,29 @@ tr456:
 	{
     SET_DISP_TYPE(DISPNONE);
     SET_MODRM_BASE(NO_REG);
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	goto st187;
 tr463:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	goto st187;
 tr450:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     SET_MODRM_BASE(REG_RIP);
@@ -11369,14 +11373,14 @@ tr450:
 	goto st187;
 tr453:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -11404,25 +11408,25 @@ case 190:
 tr462:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	goto st191;
 tr451:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -11434,9 +11438,9 @@ case 191:
 	goto tr461;
 tr452:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st192;
 st192:
@@ -11446,9 +11450,9 @@ case 192:
 	goto tr462;
 tr454:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st193;
 st193:
@@ -11477,18 +11481,18 @@ case 195:
 tr465:
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x07) |
-                           ((GET_REX_PREFIX() & 0x01) << 3) |
-                           (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st196;
 st196:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof196;
 case 196:
-	if ( 128u <= (*( current_position)) )
-		goto tr466;
-	goto tr52;
+	if ( (*( current_position)) <= 127u )
+		goto tr52;
+	goto tr466;
 tr402:
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
@@ -11536,9 +11540,9 @@ case 199:
 	}
 tr469:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st200;
 st200:
@@ -11554,29 +11558,29 @@ tr476:
 	{
     SET_DISP_TYPE(DISPNONE);
     SET_MODRM_BASE(NO_REG);
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	goto st201;
 tr483:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	goto st201;
 tr470:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     SET_MODRM_BASE(REG_RIP);
@@ -11586,14 +11590,14 @@ tr470:
 	goto st201;
 tr473:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -11621,25 +11625,25 @@ case 204:
 tr482:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	goto st205;
 tr471:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -11651,9 +11655,9 @@ case 205:
 	goto tr481;
 tr472:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st206;
 st206:
@@ -11663,9 +11667,9 @@ case 206:
 	goto tr482;
 tr474:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st207;
 st207:
@@ -11675,9 +11679,9 @@ case 207:
 	goto tr483;
 tr406:
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x7) |
-                            ((GET_REX_PREFIX() & 0x01) << 3) |
-                            (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RegFromOpcode(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
@@ -11834,9 +11838,9 @@ case 224:
 	}
 tr501:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st225;
 st225:
@@ -11850,9 +11854,9 @@ case 225:
 	}
 tr502:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st226;
 st226:
@@ -11867,13 +11871,13 @@ case 226:
 tr503:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
     process_1_operand(&restricted_register, &instruction_info_collected,
@@ -11943,9 +11947,9 @@ case 228:
 	}
 tr506:
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x07) |
-                           ((GET_REX_PREFIX() & 0x01) << 3) |
-                           (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     process_1_operand_zero_extends(&restricted_register,
@@ -11975,9 +11979,9 @@ tr506:
 	goto st909;
 tr1384:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     process_1_operand_zero_extends(&restricted_register,
@@ -12045,9 +12049,9 @@ case 230:
 	}
 tr508:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st231;
 st231:
@@ -12062,13 +12066,13 @@ case 231:
 tr509:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
     process_1_operand(&restricted_register, &instruction_info_collected,
@@ -12180,9 +12184,9 @@ case 236:
 	}
 tr343:
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x07) |
-                           ((GET_REX_PREFIX() & 0x01) << 3) |
-                           (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     process_1_operand_zero_extends(&restricted_register,
@@ -12212,9 +12216,9 @@ tr343:
 	goto st911;
 tr514:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     process_1_operand_zero_extends(&restricted_register,
@@ -12282,9 +12286,9 @@ case 238:
 	}
 tr516:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st239;
 st239:
@@ -12299,13 +12303,13 @@ case 239:
 tr517:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
     process_1_operand(&restricted_register, &instruction_info_collected,
@@ -12478,9 +12482,9 @@ case 248:
 	}
 tr521:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st249;
 st249:
@@ -12494,9 +12498,9 @@ case 249:
 	}
 tr522:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st250;
 st250:
@@ -12509,13 +12513,13 @@ case 250:
 tr523:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	goto st251;
 st251:
@@ -12607,21 +12611,21 @@ case 256:
 	}
 tr625:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st257;
 tr626:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register,
@@ -12650,15 +12654,15 @@ tr632:
 	goto st257;
 tr618:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -12673,9 +12677,9 @@ tr527:
 	goto st257;
 tr545:
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x7) |
-                            ((GET_REX_PREFIX() & 0x01) << 3) |
-                            (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RegFromOpcode(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
@@ -12685,9 +12689,9 @@ tr545:
 tr642:
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_16_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x07) |
-                           ((GET_REX_PREFIX() & 0x01) << 3) |
-                           (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st257;
 tr660:
@@ -12696,9 +12700,9 @@ tr660:
   }
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_16_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x07) |
-                           ((GET_REX_PREFIX() & 0x01) << 3) |
-                           (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st257;
 st257:
@@ -12918,9 +12922,9 @@ case 277:
 tr635:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -12932,13 +12936,13 @@ tr635:
 tr643:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register,
@@ -12971,9 +12975,9 @@ tr653:
   }
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -13029,9 +13033,9 @@ case 282:
 	}
 tr619:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st283;
 st283:
@@ -13047,29 +13051,29 @@ tr627:
 	{
     SET_DISP_TYPE(DISPNONE);
     SET_MODRM_BASE(NO_REG);
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	goto st284;
 tr634:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	goto st284;
 tr620:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     SET_MODRM_BASE(REG_RIP);
@@ -13079,14 +13083,14 @@ tr620:
 	goto st284;
 tr623:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -13114,25 +13118,25 @@ case 287:
 tr633:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	goto st288;
 tr621:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -13144,9 +13148,9 @@ case 288:
 	goto tr632;
 tr622:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st289;
 st289:
@@ -13156,9 +13160,9 @@ case 289:
 	goto tr633;
 tr624:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st290;
 st290:
@@ -13198,9 +13202,9 @@ tr637:
 	goto st293;
 tr640:
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -13209,22 +13213,22 @@ tr644:
 	{
     SET_DISP_TYPE(DISPNONE);
     SET_MODRM_BASE(NO_REG);
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	goto st293;
 tr651:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	goto st293;
 tr655:
@@ -13242,9 +13246,9 @@ tr658:
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -13271,9 +13275,9 @@ case 296:
 	goto tr648;
 tr638:
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -13281,13 +13285,13 @@ tr638:
 tr650:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	goto st297;
 tr656:
@@ -13295,9 +13299,9 @@ tr656:
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -13777,9 +13781,9 @@ case 332:
 tr692:
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x07) |
-                           ((GET_REX_PREFIX() & 0x01) << 3) |
-                           (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st333;
 st333:
@@ -13860,9 +13864,9 @@ case 335:
 	}
 tr695:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     process_1_operand(&restricted_register, &instruction_info_collected,
@@ -14280,9 +14284,9 @@ case 355:
 	}
 tr709:
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x07) |
-                           ((GET_REX_PREFIX() & 0x01) << 3) |
-                           (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     process_1_operand_zero_extends(&restricted_register,
@@ -14312,9 +14316,9 @@ tr709:
 	goto st915;
 tr723:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     process_1_operand_zero_extends(&restricted_register,
@@ -14382,9 +14386,9 @@ case 357:
 	}
 tr712:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st358;
 st358:
@@ -14399,13 +14403,13 @@ case 358:
 tr713:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
     process_1_operand(&restricted_register, &instruction_info_collected,
@@ -14475,9 +14479,9 @@ case 360:
 	}
 tr716:
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x07) |
-                           ((GET_REX_PREFIX() & 0x01) << 3) |
-                           (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     process_1_operand_zero_extends(&restricted_register,
@@ -14507,9 +14511,9 @@ tr716:
 	goto st917;
 tr1348:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     process_1_operand_zero_extends(&restricted_register,
@@ -14577,9 +14581,9 @@ case 362:
 	}
 tr718:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st363;
 st363:
@@ -14594,13 +14598,13 @@ case 363:
 tr719:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
     process_1_operand(&restricted_register, &instruction_info_collected,
@@ -14739,9 +14743,9 @@ case 368:
 	}
 tr710:
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x07) |
-                           ((GET_REX_PREFIX() & 0x01) << 3) |
-                           (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     process_1_operand_zero_extends(&restricted_register,
@@ -14771,9 +14775,9 @@ tr710:
 	goto st919;
 tr724:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     process_1_operand_zero_extends(&restricted_register,
@@ -14841,9 +14845,9 @@ case 370:
 	}
 tr726:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st371;
 st371:
@@ -14858,13 +14862,13 @@ case 371:
 tr727:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
     process_1_operand(&restricted_register, &instruction_info_collected,
@@ -15329,9 +15333,9 @@ case 398:
 tr811:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -15343,13 +15347,13 @@ tr811:
 tr769:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register,
@@ -15406,9 +15410,9 @@ case 400:
 	goto tr771;
 tr812:
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -15416,13 +15420,13 @@ tr812:
 tr771:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	goto st401;
 st401:
@@ -15444,9 +15448,9 @@ tr829:
 	goto st403;
 tr813:
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -15455,22 +15459,22 @@ tr796:
 	{
     SET_DISP_TYPE(DISPNONE);
     SET_MODRM_BASE(NO_REG);
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	goto st403;
 tr773:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	goto st403;
 st403:
@@ -15720,9 +15724,9 @@ case 420:
 	}
 tr787:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st421;
 st421:
@@ -16568,37 +16572,37 @@ case 471:
 	}
 tr966:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st472;
 tr843:
 	{ SET_CPU_FEATURE(CPUFeature_TBM); }
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	goto st472;
 tr848:
 	{ SET_CPU_FEATURE(CPUFeature_TBM); }
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	goto st472;
 tr1202:
 	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	goto st472;
 tr1206:
 	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
 	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
 	{
-    SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	goto st472;
 st472:
@@ -18053,9 +18057,9 @@ case 565:
 tr1126:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -18067,13 +18071,13 @@ tr1126:
 tr996:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register,
@@ -18116,9 +18120,9 @@ case 567:
 	goto tr998;
 tr1127:
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -18126,13 +18130,13 @@ tr1127:
 tr998:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	goto st568;
 st568:
@@ -18154,9 +18158,9 @@ tr1191:
 	goto st570;
 tr1128:
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -18165,22 +18169,22 @@ tr1059:
 	{
     SET_DISP_TYPE(DISPNONE);
     SET_MODRM_BASE(NO_REG);
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	goto st570;
 tr1000:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	goto st570;
 st570:
@@ -22267,9 +22271,9 @@ case 810:
 	}
 tr1351:
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x07) |
-                           ((GET_REX_PREFIX() & 0x01) << 3) |
-                           (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     process_1_operand_zero_extends(&restricted_register,
@@ -22299,9 +22303,9 @@ tr1351:
 	goto st922;
 tr1362:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     process_1_operand_zero_extends(&restricted_register,
@@ -22369,9 +22373,9 @@ case 812:
 	}
 tr1353:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st813;
 st813:
@@ -22386,13 +22390,13 @@ case 813:
 tr1354:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
     process_1_operand(&restricted_register, &instruction_info_collected,
@@ -22715,9 +22719,9 @@ case 827:
 	}
 tr1366:
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x07) |
-                           ((GET_REX_PREFIX() & 0x01) << 3) |
-                           (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     process_1_operand(&restricted_register, &instruction_info_collected,
@@ -23317,9 +23321,9 @@ case 853:
 	}
 tr1387:
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x07) |
-                           ((GET_REX_PREFIX() & 0x01) << 3) |
-                           (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     process_1_operand_zero_extends(&restricted_register,
@@ -23349,9 +23353,9 @@ tr1387:
 	goto st925;
 tr1398:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     process_1_operand_zero_extends(&restricted_register,
@@ -23419,9 +23423,9 @@ case 855:
 	}
 tr1389:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	goto st856;
 st856:
@@ -23436,13 +23440,13 @@ case 856:
 tr1390:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
     process_1_operand(&restricted_register, &instruction_info_collected,
@@ -23748,9 +23752,9 @@ case 869:
 	}
 tr1403:
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x07) |
-                           ((GET_REX_PREFIX() & 0x01) << 3) |
-                           (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     process_1_operand(&restricted_register, &instruction_info_collected,
@@ -23886,9 +23890,9 @@ case 876:
 	}
 tr1408:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     process_1_operand(&restricted_register, &instruction_info_collected,
@@ -24041,9 +24045,9 @@ case 884:
 	}
 tr1414:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     process_1_operand(&restricted_register, &instruction_info_collected,
@@ -24316,9 +24320,9 @@ case 895:
 	}
 tr1420:
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x07) |
-                           ((GET_REX_PREFIX() & 0x01) << 3) |
-                           (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
     process_1_operand(&restricted_register, &instruction_info_collected,

@@ -11,7 +11,7 @@
 
 #include "native_client/src/include/elf32.h"
 #include "native_client/src/shared/utils/types.h"
-#include "native_client/src/trusted/validator_ragel/unreviewed/decoder.h"
+#include "native_client/src/trusted/validator_ragel/unreviewed/decoder_internal.h"
 
 #include "native_client/src/trusted/validator_ragel/gen/decoder_x86_64_instruction_consts.c"
 
@@ -9508,8 +9508,8 @@ static const unsigned char _x86_64_decoder_trans_keys[] = {
 	80u, 87u, 88u, 95u, 96u, 103u, 104u, 111u, 
 	112u, 119u, 120u, 127u, 128u, 135u, 136u, 143u, 
 	144u, 151u, 152u, 159u, 160u, 167u, 168u, 175u, 
-	176u, 183u, 184u, 191u, 200u, 207u, 208u, 215u, 
-	216u, 223u, 224u, 231u, 232u, 239u, 240u, 247u, 
+	176u, 183u, 184u, 191u, 192u, 199u, 200u, 207u, 
+	208u, 215u, 216u, 223u, 224u, 231u, 232u, 239u, 
 	248u, 255u, 4u, 5u, 12u, 13u, 20u, 21u, 
 	28u, 29u, 36u, 37u, 44u, 45u, 52u, 53u, 
 	60u, 61u, 68u, 76u, 84u, 92u, 100u, 108u, 
@@ -9521,7 +9521,7 @@ static const unsigned char _x86_64_decoder_trans_keys[] = {
 	120u, 127u, 128u, 135u, 136u, 143u, 144u, 151u, 
 	152u, 159u, 160u, 167u, 168u, 175u, 176u, 183u, 
 	184u, 191u, 192u, 199u, 200u, 207u, 208u, 215u, 
-	216u, 223u, 232u, 239u, 240u, 247u, 248u, 255u, 
+	216u, 223u, 224u, 231u, 232u, 239u, 248u, 255u, 
 	4u, 5u, 12u, 13u, 20u, 21u, 28u, 29u, 
 	36u, 37u, 44u, 45u, 68u, 76u, 84u, 92u, 
 	100u, 108u, 132u, 140u, 148u, 156u, 164u, 172u, 
@@ -9629,7 +9629,7 @@ static const unsigned char _x86_64_decoder_trans_keys[] = {
 	80u, 87u, 88u, 95u, 96u, 103u, 104u, 111u, 
 	112u, 119u, 120u, 127u, 128u, 135u, 136u, 143u, 
 	144u, 151u, 152u, 159u, 160u, 167u, 168u, 175u, 
-	176u, 183u, 184u, 191u, 200u, 207u, 208u, 215u, 
+	176u, 183u, 184u, 191u, 192u, 199u, 200u, 207u, 
 	216u, 223u, 224u, 231u, 232u, 239u, 240u, 247u, 
 	248u, 255u, 4u, 5u, 20u, 21u, 28u, 29u, 
 	36u, 37u, 44u, 45u, 52u, 53u, 60u, 61u, 
@@ -9858,8 +9858,8 @@ static const unsigned char _x86_64_decoder_trans_keys[] = {
 	95u, 96u, 103u, 104u, 111u, 112u, 119u, 120u, 
 	127u, 128u, 135u, 136u, 143u, 144u, 151u, 152u, 
 	159u, 160u, 167u, 168u, 175u, 176u, 183u, 184u, 
-	191u, 192u, 199u, 200u, 207u, 208u, 215u, 216u, 
-	223u, 224u, 231u, 240u, 247u, 248u, 255u, 4u, 
+	191u, 192u, 199u, 208u, 215u, 216u, 223u, 224u, 
+	231u, 232u, 239u, 240u, 247u, 248u, 255u, 4u, 
 	5u, 12u, 13u, 20u, 21u, 28u, 29u, 36u, 
 	37u, 44u, 45u, 68u, 76u, 84u, 92u, 100u, 
 	108u, 132u, 140u, 148u, 156u, 164u, 172u, 0u, 
@@ -10827,8 +10827,8 @@ static const unsigned char _x86_64_decoder_trans_keys[] = {
 	111u, 112u, 119u, 120u, 127u, 128u, 135u, 136u, 
 	143u, 144u, 151u, 152u, 159u, 160u, 167u, 168u, 
 	175u, 176u, 183u, 184u, 191u, 192u, 199u, 200u, 
-	207u, 208u, 215u, 216u, 223u, 224u, 231u, 232u, 
-	239u, 248u, 255u, 4u, 5u, 12u, 13u, 20u, 
+	207u, 216u, 223u, 224u, 231u, 232u, 239u, 240u, 
+	247u, 248u, 255u, 4u, 5u, 12u, 13u, 20u, 
 	21u, 28u, 29u, 36u, 37u, 44u, 45u, 52u, 
 	53u, 60u, 61u, 68u, 76u, 84u, 92u, 100u, 
 	108u, 116u, 124u, 132u, 140u, 148u, 156u, 164u, 
@@ -10839,8 +10839,8 @@ static const unsigned char _x86_64_decoder_trans_keys[] = {
 	119u, 120u, 127u, 128u, 135u, 136u, 143u, 144u, 
 	151u, 152u, 159u, 160u, 167u, 168u, 175u, 176u, 
 	183u, 184u, 191u, 192u, 199u, 200u, 207u, 208u, 
-	215u, 216u, 223u, 224u, 231u, 232u, 239u, 240u, 
-	247u, 192u, 239u, 4u, 5u, 68u, 132u, 0u, 
+	215u, 216u, 223u, 224u, 231u, 240u, 247u, 248u, 
+	255u, 192u, 239u, 4u, 5u, 68u, 132u, 0u, 
 	7u, 64u, 71u, 128u, 135u, 192u, 199u, 4u, 
 	5u, 12u, 13u, 20u, 21u, 28u, 29u, 36u, 
 	37u, 44u, 45u, 60u, 61u, 68u, 76u, 84u, 
@@ -23588,16 +23588,16 @@ static const short _x86_64_decoder_indicies[] = {
 	1835, 1780, 1783, 1786, 1789, 1792, 1795, 1798, 
 	1801, 1804, 1806, 1808, 1810, 1812, 1814, 1816, 
 	1818, 1820, 1822, 1824, 1826, 1828, 1830, 1832, 
-	1834, 1837, 1838, 1839, 1840, 1841, 1842, 1843, 
-	1836, 1845, 1846, 1848, 1849, 1851, 1852, 1854, 
+	1834, 1836, 1837, 1838, 1839, 1840, 1841, 1843, 
+	1842, 1845, 1846, 1848, 1849, 1851, 1852, 1854, 
 	1855, 1857, 1858, 1860, 1861, 1863, 1864, 1866, 
 	1867, 1869, 1871, 1873, 1875, 1877, 1879, 1881, 
 	1883, 1885, 1887, 1889, 1891, 1893, 1895, 1897, 
 	1899, 1844, 1847, 1850, 1853, 1856, 1859, 1862, 
 	1865, 1868, 1870, 1872, 1874, 1876, 1878, 1880, 
 	1882, 1884, 1886, 1888, 1890, 1892, 1894, 1896, 
-	1898, 1900, 1901, 1902, 1903, 1905, 1906, 1907, 
-	1904, 1909, 1910, 1909, 1910, 1909, 1910, 1909, 
+	1898, 1900, 1901, 1902, 1903, 1904, 1905, 1907, 
+	1906, 1909, 1910, 1909, 1910, 1909, 1910, 1909, 
 	1910, 1909, 1910, 1909, 1910, 1912, 1912, 1912, 
 	1912, 1912, 1912, 1914, 1914, 1914, 1914, 1914, 
 	1914, 1908, 1911, 1913, 1915, 34, 1917, 1918, 
@@ -23680,8 +23680,8 @@ static const short _x86_64_decoder_indicies[] = {
 	2345, 2347, 2349, 2351, 2296, 2299, 2302, 2305, 
 	2308, 2311, 2314, 2317, 2320, 2322, 2324, 2326, 
 	2328, 2330, 2332, 2334, 2336, 2338, 2340, 2342, 
-	2344, 2346, 2348, 2350, 2353, 2354, 2355, 2356, 
-	2357, 2358, 2359, 2352, 2361, 2362, 2364, 2365, 
+	2344, 2346, 2348, 2350, 2352, 2353, 2355, 2356, 
+	2357, 2358, 2359, 2354, 2361, 2362, 2364, 2365, 
 	2367, 2368, 2370, 2371, 2373, 2374, 2376, 2377, 
 	2379, 2380, 2382, 2384, 2386, 2388, 2390, 2392, 
 	2394, 2396, 2398, 2400, 2402, 2404, 2406, 2408, 
@@ -23856,8 +23856,8 @@ static const short _x86_64_decoder_indicies[] = {
 	3281, 3283, 3285, 3287, 3289, 3291, 3236, 3239, 
 	3242, 3245, 3248, 3251, 3254, 3257, 3260, 3262, 
 	3264, 3266, 3268, 3270, 3272, 3274, 3276, 3278, 
-	3280, 3282, 3284, 3286, 3288, 3290, 3292, 3293, 
-	3294, 3295, 3296, 3298, 3299, 3297, 1909, 1910, 
+	3280, 3282, 3284, 3286, 3288, 3290, 3292, 3294, 
+	3295, 3296, 3297, 3298, 3299, 3293, 1909, 1910, 
 	1909, 1910, 1909, 1910, 1909, 1910, 1909, 1910, 
 	1909, 1910, 1912, 1912, 1912, 1912, 1912, 1912, 
 	1914, 1914, 1914, 1914, 1914, 1914, 1908, 1911, 
@@ -24765,16 +24765,16 @@ static const short _x86_64_decoder_indicies[] = {
 	5351, 5296, 5299, 5302, 5305, 5308, 5311, 5314, 
 	5317, 5320, 5322, 5324, 5326, 5328, 5330, 5332, 
 	5334, 5336, 5338, 5340, 5342, 5344, 5346, 5348, 
-	5350, 5352, 5353, 5354, 5355, 5356, 5357, 5359, 
-	5358, 5361, 5362, 5364, 5365, 5367, 5368, 5370, 
+	5350, 5352, 5353, 5355, 5356, 5357, 5358, 5359, 
+	5354, 5361, 5362, 5364, 5365, 5367, 5368, 5370, 
 	5371, 5373, 5374, 5376, 5377, 5379, 5380, 5382, 
 	5383, 5385, 5387, 5389, 5391, 5393, 5395, 5397, 
 	5399, 5401, 5403, 5405, 5407, 5409, 5411, 5413, 
 	5415, 5360, 5363, 5366, 5369, 5372, 5375, 5378, 
 	5381, 5384, 5386, 5388, 5390, 5392, 5394, 5396, 
 	5398, 5400, 5402, 5404, 5406, 5408, 5410, 5412, 
-	5414, 5416, 5417, 5418, 5419, 5420, 5421, 5422, 
-	5423, 5424, 34, 5426, 5427, 5429, 5431, 5425, 
+	5414, 5416, 5417, 5418, 5419, 5420, 5422, 5423, 
+	5421, 5424, 34, 5426, 5427, 5429, 5431, 5425, 
 	5428, 5430, 5432, 34, 5434, 5435, 5437, 5438, 
 	5440, 5441, 5443, 5444, 5446, 5447, 5449, 5450, 
 	5452, 5453, 5455, 5457, 5459, 5461, 5463, 5465, 
@@ -39819,18 +39819,18 @@ _match:
 	case 19:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
 	break;
 	case 20:
 	{
-    SET_MODRM_BASE(((*current_position) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
@@ -39846,22 +39846,22 @@ _match:
 	{
     SET_DISP_TYPE(DISPNONE);
     SET_MODRM_BASE(NO_REG);
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	break;
 	case 23:
 	{
     SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*current_position) & 0x7) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(index_registers[(((*current_position) & 0x38) >> 3) |
-                                    ((GET_REX_PREFIX() & 0x02) << 2) |
-                                    (((~GET_VEX_PREFIX2()) & 0x40) >> 3)]);
-    SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
+    SET_MODRM_BASE(BaseFromSIB(*current_position) |
+                   BaseExtentionFromREX(GET_REX_PREFIX()) |
+                   BaseExtentionFromVEX(GET_VEX_PREFIX2()));
+    SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
+                                    IndexExtentionFromREX(GET_REX_PREFIX()) |
+                                    IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
+    SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	break;
 	case 24:
@@ -40147,32 +40147,32 @@ _match:
 	break;
 	case 117:
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x38) >> 3);
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position));
   }
 	break;
 	case 118:
 	{
-    SET_OPERAND_NAME(0, (*current_position) & 0x7);
+    SET_OPERAND_NAME(0, RegFromOpcode(*current_position));
   }
 	break;
 	case 119:
 	{
-    SET_OPERAND_NAME(1, ((*current_position) & 0x38) >> 3);
+    SET_OPERAND_NAME(1, RegFromModRM(*current_position));
   }
 	break;
 	case 120:
 	{
-    SET_OPERAND_NAME(1, (*current_position) & 0x7);
+    SET_OPERAND_NAME(1, RegFromOpcode(*current_position));
   }
 	break;
 	case 121:
 	{
-    SET_OPERAND_NAME(2, (*current_position) >> 4);
+    SET_OPERAND_NAME(2, RegisterFromIS4(*current_position));
   }
 	break;
 	case 122:
 	{
-    SET_OPERAND_NAME(3, (*current_position) >> 4);
+    SET_OPERAND_NAME(3, RegisterFromIS4(*current_position));
   }
 	break;
 	case 123:
@@ -40194,28 +40194,28 @@ _match:
 	break;
 	case 127:
 	{
-    SET_OPERAND_NAME(0, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	break;
 	case 128:
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x07) |
-                           ((GET_REX_PREFIX() & 0x01) << 3) |
-                           (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	break;
 	case 129:
 	{
-    SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
+    SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	break;
 	case 130:
 	{
-    SET_OPERAND_NAME(0, ((*current_position) & 0x7) |
-                            ((GET_REX_PREFIX() & 0x01) << 3) |
-                            (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, RegFromOpcode(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	break;
 	case 131:
@@ -40228,47 +40228,47 @@ _match:
 	break;
 	case 132:
 	{
-    SET_OPERAND_NAME(1, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(1, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	break;
 	case 133:
 	{
-    SET_OPERAND_NAME(1, ((*current_position) & 0x07) |
-                           ((GET_REX_PREFIX() & 0x01) << 3) |
-                           (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(1, RMFromModRM(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	break;
 	case 134:
 	{
-    SET_OPERAND_NAME(1, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
+    SET_OPERAND_NAME(1, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	break;
 	case 135:
 	{
-    SET_OPERAND_NAME(2, (((*current_position) & 0x38) >> 3) |
-                           ((GET_REX_PREFIX() & 0x04) << 1) |
-                           (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
+    SET_OPERAND_NAME(2, RegFromModRM(*current_position) |
+                        RegisterExtentionFromREX(GET_REX_PREFIX()) |
+                        RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	break;
 	case 136:
 	{
-    SET_OPERAND_NAME(2, ((*current_position) & 0x07) |
-                           ((GET_REX_PREFIX() & 0x01) << 3) |
-                           (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(2, RMFromModRM(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	break;
 	case 137:
 	{
-    SET_OPERAND_NAME(2, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
+    SET_OPERAND_NAME(2, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	break;
 	case 138:
 	{
-    SET_OPERAND_NAME(3, ((*current_position) & 0x07) |
-                           ((GET_REX_PREFIX() & 0x01) << 3) |
-                           (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(3, RMFromModRM(*current_position) |
+                        BaseExtentionFromREX(GET_REX_PREFIX()) |
+                        BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	break;
 	case 139:

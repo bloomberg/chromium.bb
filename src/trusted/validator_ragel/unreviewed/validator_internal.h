@@ -14,13 +14,8 @@
 
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/utils/types.h"
+#include "native_client/src/trusted/validator_ragel/unreviewed/decoder_internal.h"
 #include "native_client/src/trusted/validator_ragel/unreviewed/validator.h"
-
-#if NACL_WINDOWS
-# define FORCEINLINE __forceinline
-#else
-# define FORCEINLINE __inline __attribute__ ((always_inline))
-#endif
 
 /* Maximum set of R-DFA allowable CPUID features.  */
 extern const NaClCPUFeaturesX86 validator_cpuid_features;
