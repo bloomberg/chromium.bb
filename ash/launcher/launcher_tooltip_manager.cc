@@ -17,7 +17,6 @@
 #include "ui/base/events/event.h"
 #include "ui/base/events/event_constants.h"
 #include "ui/gfx/insets.h"
-#include "ui/views/bubble/bubble_border_2.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/label.h"
@@ -37,21 +36,17 @@ const SkColor kTooltipTextColor = SkColorSetRGB(0x22, 0x22, 0x22);
 // ash/tooltip/tooltip_controller.cc
 const int kTooltipMaxWidth = 250;
 
-// Bubble border metrics
-const int kArrowHeight = 7;
-const int kArrowWidth = 15;
-const int kShadowWidth = 8;
 // The distance between the arrow tip and edge of the anchor view.
 const int kArrowOffset = 10;
 
 views::BubbleBorder::ArrowLocation GetArrowLocation(ShelfAlignment alignment) {
   switch (alignment) {
     case SHELF_ALIGNMENT_LEFT:
-      return views::BubbleBorder::LEFT_BOTTOM;
+      return views::BubbleBorder::LEFT_CENTER;
     case SHELF_ALIGNMENT_RIGHT:
-      return views::BubbleBorder::RIGHT_BOTTOM;
+      return views::BubbleBorder::RIGHT_CENTER;
     case SHELF_ALIGNMENT_BOTTOM:
-      return views::BubbleBorder::BOTTOM_RIGHT;
+      return views::BubbleBorder::BOTTOM_CENTER;
   }
 
   return views::BubbleBorder::NONE;
@@ -70,9 +65,6 @@ class LauncherTooltipManager::LauncherTooltipBubble
   void Close();
 
  private:
-  // Overridden from views::BubbleDelegateView:
-  virtual gfx::Rect GetBubbleBounds() OVERRIDE;
-
   // views::WidgetDelegate overrides:
   virtual void WindowClosing() OVERRIDE;
 
@@ -81,7 +73,6 @@ class LauncherTooltipManager::LauncherTooltipBubble
 
   LauncherTooltipManager* host_;
   views::Label* label_;
-  views::BubbleBorder2* bubble_border_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherTooltipBubble);
 };
@@ -91,14 +82,16 @@ LauncherTooltipManager::LauncherTooltipBubble::LauncherTooltipBubble(
     views::BubbleBorder::ArrowLocation arrow_location,
     LauncherTooltipManager* host)
     : views::BubbleDelegateView(anchor, arrow_location),
-      host_(host),
-      bubble_border_(NULL) {
+      host_(host) {
+  set_anchor_insets(gfx::Insets(kArrowOffset, kArrowOffset, kArrowOffset,
+      kArrowOffset));
   set_close_on_esc(false);
   set_close_on_deactivate(false);
   set_use_focusless(true);
   set_accept_events(false);
   set_margins(gfx::Insets(kTooltipTopBottomMargin, kTooltipLeftRightMargin,
                           kTooltipTopBottomMargin, kTooltipLeftRightMargin));
+  set_shadow(views::BubbleBorder::SMALL_SHADOW);
   SetLayoutManager(new views::FillLayout());
   // The anchor may not have the widget in tests.
   if (anchor->GetWidget() && anchor->GetWidget()->GetNativeView()) {
@@ -113,17 +106,6 @@ LauncherTooltipManager::LauncherTooltipBubble::LauncherTooltipBubble(
   label_->SetElideBehavior(views::Label::ELIDE_AT_END);
   AddChildView(label_);
   views::BubbleDelegateView::CreateBubble(this);
-  bubble_border_ = new views::BubbleBorder2(views::BubbleBorder::BOTTOM_RIGHT);
-  bubble_border_->SetShadow(gfx::ShadowValue(
-      gfx::Point(0, 5), kShadowWidth, SkColorSetARGB(0x72, 0, 0, 0)));
-  bubble_border_->set_arrow_width(kArrowWidth);
-  bubble_border_->set_arrow_height(kArrowHeight);
-  set_anchor_insets(gfx::Insets(kArrowOffset, kArrowOffset, kArrowOffset,
-      kArrowOffset));
-  GetBubbleFrameView()->SetBubbleBorder(bubble_border_);
-
-  // BubbleBorder2 paints its own background.
-  GetBubbleFrameView()->set_background(NULL);
 }
 
 void LauncherTooltipManager::LauncherTooltipBubble::SetText(
@@ -137,28 +119,6 @@ void LauncherTooltipManager::LauncherTooltipBubble::Close() {
     host_ = NULL;
     GetWidget()->Close();
   }
-}
-
-gfx::Rect LauncherTooltipManager::LauncherTooltipBubble::GetBubbleBounds() {
-  // This happens before replacing the default border.
-  if (!bubble_border_)
-    return views::BubbleDelegateView::GetBubbleBounds();
-
-  const gfx::Rect anchor_rect = GetAnchorRect();
-  gfx::Rect bubble_rect = GetBubbleFrameView()->GetUpdatedWindowBounds(
-      anchor_rect,
-      GetPreferredSize(),
-      false /* try_mirroring_arrow */);
-
-  const gfx::Point old_offset = bubble_border_->offset();
-  bubble_rect = bubble_border_->ComputeOffsetAndUpdateBubbleRect(bubble_rect,
-      anchor_rect);
-
-  // Repaints border if arrow offset is changed.
-  if (bubble_border_->offset() != old_offset)
-    GetBubbleFrameView()->SchedulePaint();
-
-  return bubble_rect;
 }
 
 void LauncherTooltipManager::LauncherTooltipBubble::WindowClosing() {
@@ -204,9 +164,9 @@ LauncherTooltipManager::~LauncherTooltipManager() {
 void LauncherTooltipManager::ShowDelayed(views::View* anchor,
                                          const string16& text) {
   if (view_) {
-    if (timer_.get() && timer_->IsRunning())
+    if (timer_.get() && timer_->IsRunning()) {
       return;
-    else {
+    } else {
       CancelHidingAnimation();
       Close();
     }

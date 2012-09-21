@@ -49,14 +49,14 @@ views::BubbleBorder::ArrowLocation GetBubbleArrowLocation() {
   ShelfAlignment shelf_alignment = Shell::GetInstance()->GetShelfAlignment();
   switch (shelf_alignment) {
     case ash::SHELF_ALIGNMENT_BOTTOM:
-      return views::BubbleBorder::BOTTOM_RIGHT;
+      return views::BubbleBorder::BOTTOM_CENTER;
     case ash::SHELF_ALIGNMENT_LEFT:
-      return views::BubbleBorder::LEFT_BOTTOM;
+      return views::BubbleBorder::LEFT_CENTER;
     case ash::SHELF_ALIGNMENT_RIGHT:
-      return views::BubbleBorder::RIGHT_BOTTOM;
+      return views::BubbleBorder::RIGHT_CENTER;
     default:
       NOTREACHED() << "Unknown shelf alignment " << shelf_alignment;
-      return views::BubbleBorder::BOTTOM_RIGHT;
+      return views::BubbleBorder::BOTTOM_CENTER;
   }
 }
 

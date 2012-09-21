@@ -22,8 +22,8 @@
         'APP_LIST_IMPLEMENTATION',
       ],
       'sources': [
-        'app_list_bubble_border.cc',
-        'app_list_bubble_border.h',
+        'app_list_background.cc',
+        'app_list_background.h',
         'app_list_constants.cc',
         'app_list_constants.h',
         'app_list_export.h',

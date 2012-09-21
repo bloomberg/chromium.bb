@@ -5,7 +5,7 @@
 #include "ui/app_list/app_list_view.h"
 
 #include "base/string_util.h"
-#include "ui/app_list/app_list_bubble_border.h"
+#include "ui/app_list/app_list_background.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_item_view.h"
 #include "ui/app_list/app_list_model.h"
@@ -16,6 +16,8 @@
 #include "ui/app_list/search_box_view.h"
 #include "ui/base/events/event.h"
 #include "ui/gfx/insets.h"
+#include "ui/gfx/path.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/box_layout.h"
@@ -38,7 +40,6 @@ const int kArrowOffset = 10;
 
 AppListView::AppListView(AppListViewDelegate* delegate)
     : delegate_(delegate),
-      bubble_border_(NULL),
       search_box_view_(NULL),
       contents_view_(NULL) {
 }
@@ -76,22 +77,23 @@ void AppListView::InitAsBubble(
 
   set_anchor_view(anchor);
   set_anchor_point(anchor_point);
+  set_color(kContentsBackgroundColor);
   set_margins(gfx::Insets());
   set_move_with_anchor(true);
   set_parent_window(parent);
   set_close_on_deactivate(false);
-  set_anchor_insets(gfx::Insets(kArrowOffset, kArrowOffset, kArrowOffset,
-      kArrowOffset));
+  // Shift anchor rect up 1px because app menu icon center is 1px above anchor
+  // rect center when shelf is on left/right.
+  set_anchor_insets(gfx::Insets(kArrowOffset - 1, kArrowOffset,
+                                kArrowOffset + 1, kArrowOffset));
+  set_shadow(views::BubbleBorder::BIG_SHADOW);
   views::BubbleDelegateView::CreateBubble(this);
-
-  // Overrides border with AppListBubbleBorder.
-  bubble_border_ = new AppListBubbleBorder(this, search_box_view_);
-  GetBubbleFrameView()->SetBubbleBorder(bubble_border_);
   SetBubbleArrowLocation(arrow_location);
 
 #if !defined(OS_WIN)
-  // Resets default background since AppListBubbleBorder paints background.
-  GetBubbleFrameView()->set_background(NULL);
+  GetBubbleFrameView()->set_background(new AppListBackground(
+      GetBubbleFrameView()->bubble_border()->GetBorderCornerRadius(),
+      search_box_view_));
 
   contents_view_->SetPaintToLayer(true);
   contents_view_->SetFillsBoundsOpaquely(false);
@@ -103,9 +105,9 @@ void AppListView::InitAsBubble(
 
 void AppListView::SetBubbleArrowLocation(
     views::BubbleBorder::ArrowLocation arrow_location) {
-  DCHECK(bubble_border_);
-  bubble_border_->set_arrow_location(arrow_location);
+  GetBubbleFrameView()->bubble_border()->set_arrow_location(arrow_location);
   SizeToContents();  // Recalcuates with new border.
+  GetBubbleFrameView()->SchedulePaint();
 }
 
 void AppListView::Close() {
@@ -149,7 +151,8 @@ bool AppListView::HasHitTestMask() const {
 
 void AppListView::GetHitTestMask(gfx::Path* mask) const {
   DCHECK(mask);
-  bubble_border_->GetMask(GetBubbleFrameView()->bounds(), mask);
+  mask->addRect(gfx::RectToSkRect(
+      GetBubbleFrameView()->GetContentsBounds()));
 }
 
 bool AppListView::OnKeyPressed(const ui::KeyEvent& event) {
@@ -171,28 +174,6 @@ void AppListView::ButtonPressed(views::Button* sender, const ui::Event& event) {
         event.flags());
   }
   Close();
-}
-
-gfx::Rect AppListView::GetBubbleBounds() {
-  // This happens before replacing the default border.
-  if (!bubble_border_)
-    return views::BubbleDelegateView::GetBubbleBounds();
-
-  const gfx::Rect anchor_rect = GetAnchorRect();
-  gfx::Rect bubble_rect = GetBubbleFrameView()->GetUpdatedWindowBounds(
-      anchor_rect,
-      GetPreferredSize(),
-      false /* try_mirroring_arrow */);
-
-  const gfx::Point old_offset = bubble_border_->offset();
-  bubble_rect = bubble_border_->ComputeOffsetAndUpdateBubbleRect(bubble_rect,
-      anchor_rect);
-
-  // Repaints border if arrow offset is changed.
-  if (bubble_border_->offset() != old_offset)
-    GetBubbleFrameView()->SchedulePaint();
-
-  return bubble_rect;
 }
 
 void AppListView::QueryChanged(SearchBoxView* sender) {

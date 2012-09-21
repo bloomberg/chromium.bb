@@ -42,10 +42,10 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView {
 
   // Given the size of the contents and the rect to point at, returns the bounds
   // of the bubble window. The bubble's arrow location may change if the bubble
-  // does not fit on the monitor and |try_mirroring_arrow| is true.
+  // does not fit on the monitor and |adjust_if_offscreen| is true.
   gfx::Rect GetUpdatedWindowBounds(const gfx::Rect& anchor_rect,
                                    gfx::Size client_size,
-                                   bool try_mirroring_arrow);
+                                   bool adjust_if_offscreen);
 
   void SetBubbleBorder(BubbleBorder* border);
 
@@ -61,6 +61,11 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView {
   // if the generated window bounds don't fit in the monitor bounds.
   void MirrorArrowIfOffScreen(bool vertical,
                               const gfx::Rect& anchor_rect,
+                              const gfx::Size& client_size);
+
+  // Adjust the bubble's arrow offsets if the generated window bounds don't fit
+  // in the monitor bounds.
+  void OffsetArrowIfOffScreen(const gfx::Rect& anchor_rect,
                               const gfx::Size& client_size);
 
   // The bubble border.

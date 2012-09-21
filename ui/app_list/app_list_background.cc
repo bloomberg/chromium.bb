@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/app_list/app_list_bubble_border.h"
+#include "ui/app_list/app_list_background.h"
 
-#include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkPaint.h"
-#include "third_party/skia/include/effects/SkGradientShader.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/path.h"
+#include "ui/gfx/rect.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/views/view.h"
 
 namespace {
 
@@ -24,25 +24,33 @@ const int kTopSeparatorSize = 1;
 
 namespace app_list {
 
-AppListBubbleBorder::AppListBubbleBorder(views::View* app_list_view,
-                                         views::View* search_box_view)
-    : views::BubbleBorder2(views::BubbleBorder::BOTTOM_RIGHT),
-      app_list_view_(app_list_view),
+AppListBackground::AppListBackground(int corner_radius,
+                                     views::View* search_box_view)
+    : corner_radius_(corner_radius),
       search_box_view_(search_box_view) {
 }
 
-AppListBubbleBorder::~AppListBubbleBorder() {
+AppListBackground::~AppListBackground() {
 }
 
-void AppListBubbleBorder::PaintBackground(gfx::Canvas* canvas,
-                                          const gfx::Rect& bounds) const {
+void AppListBackground::Paint(gfx::Canvas* canvas,
+                              views::View* view) const {
+  gfx::Rect bounds = view->GetContentsBounds();
+
+  canvas->Save();
+  SkPath path;
+  // Contents corner radius is 1px smaller than border corner radius.
+  SkScalar radius = SkIntToScalar(corner_radius_ - 1);
+  path.addRoundRect(gfx::RectToSkRect(bounds), radius, radius);
+  canvas->ClipPath(path);
+
   SkPaint paint;
   paint.setStyle(SkPaint::kFill_Style);
 
 // TODO(benwells): Get these details painting on Windows.
 #if !defined(OS_WIN)
   const gfx::Rect search_box_view_bounds =
-      app_list_view_->ConvertRectToWidget(search_box_view_->bounds());
+      search_box_view_->ConvertRectToWidget(search_box_view_->GetLocalBounds());
   gfx::Rect search_box_rect(bounds.x(),
                             bounds.y(),
                             bounds.width(),
@@ -66,6 +74,7 @@ void AppListBubbleBorder::PaintBackground(gfx::Canvas* canvas,
 
   paint.setColor(kContentsBackgroundColor);
   canvas->DrawRect(contents_rect, paint);
+  canvas->Restore();
 }
 
 }  // namespace app_list

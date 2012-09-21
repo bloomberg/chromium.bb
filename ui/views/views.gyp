@@ -58,8 +58,6 @@
         'bubble/bubble_delegate.h',
         'bubble/bubble_frame_view.cc',
         'bubble/bubble_frame_view.h',
-        'bubble/bubble_border_2.cc',
-        'bubble/bubble_border_2.h',
         'button_drag_utils.cc',
         'button_drag_utils.h',
         'color_chooser/color_chooser_listener.h',
@@ -541,6 +539,7 @@
       'sources': [
         'accessible_pane_view_unittest.cc',
         'animation/bounds_animator_unittest.cc',
+        'bubble/bubble_border_unittest.cc',
         'bubble/bubble_delegate_unittest.cc',
         'bubble/bubble_frame_view_unittest.cc',
         'controls/button/image_button_unittest.cc',

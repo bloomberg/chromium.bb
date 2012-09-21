@@ -207,7 +207,7 @@ gfx::Rect OverflowBubbleView::GetBubbleBounds() {
       kLauncherPreferredSize / 2;
 
   const gfx::Size content_size = GetPreferredSize();
-  border->SetArrowOffset(arrow_offset, content_size);
+  border->set_arrow_offset(arrow_offset);
 
   const gfx::Rect anchor_rect = GetAnchorRect();
   gfx::Rect bubble_rect = GetBubbleFrameView()->GetUpdatedWindowBounds(
@@ -226,8 +226,7 @@ gfx::Rect OverflowBubbleView::GetBubbleBounds() {
       offset = monitor_rect.right() - bubble_rect.right();
 
     bubble_rect.Offset(offset, 0);
-    border->SetArrowOffset(anchor_rect.CenterPoint().x() - bubble_rect.x(),
-                           content_size);
+    border->set_arrow_offset(anchor_rect.CenterPoint().x() - bubble_rect.x());
   } else {
     if (bubble_rect.y() < monitor_rect.y())
       offset = monitor_rect.y() - bubble_rect.y();
@@ -235,8 +234,7 @@ gfx::Rect OverflowBubbleView::GetBubbleBounds() {
       offset =  monitor_rect.bottom() - bubble_rect.bottom();
 
     bubble_rect.Offset(0, offset);
-    border->SetArrowOffset(anchor_rect.CenterPoint().y() - bubble_rect.y(),
-                           content_size);
+    border->set_arrow_offset(anchor_rect.CenterPoint().y() - bubble_rect.y());
   }
 
   GetBubbleFrameView()->SchedulePaint();

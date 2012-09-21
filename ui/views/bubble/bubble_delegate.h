@@ -67,6 +67,9 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
     arrow_location_ = arrow_location;
   }
 
+  BubbleBorder::Shadow shadow() const { return shadow_; }
+  void set_shadow(BubbleBorder::Shadow shadow) { shadow_ = shadow; }
+
   SkColor color() const { return color_; }
   void set_color(SkColor color) { color_ = color; }
 
@@ -87,10 +90,8 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   bool accept_events() const { return accept_events_; }
   void set_accept_events(bool accept_events) { accept_events_ = accept_events; }
 
-  bool try_mirroring_arrow() const { return try_mirroring_arrow_; }
-  void set_try_mirroring_arrow(bool try_mirroring_arrow) {
-    try_mirroring_arrow_ = try_mirroring_arrow;
-  }
+  bool adjust_if_offscreen() const { return adjust_if_offscreen_; }
+  void set_adjust_if_offscreen(bool adjust) { adjust_if_offscreen_ = adjust; }
 
   // Get the arrow's anchor rect in screen space.
   virtual gfx::Rect GetAnchorRect();
@@ -173,6 +174,9 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   // The arrow's location on the bubble.
   BubbleBorder::ArrowLocation arrow_location_;
 
+  // Bubble border shadow to use.
+  BubbleBorder::Shadow shadow_;
+
   // The background color of the bubble.
   SkColor color_;
 
@@ -195,9 +199,9 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   // Specifies whether the popup accepts events or lets them pass through.
   bool accept_events_;
 
-  // If true (defaults to true), the arrow may be mirrored to fit the
-  // bubble on screen better.
-  bool try_mirroring_arrow_;
+  // If true (defaults to true), the arrow may be mirrored and moved to fit the
+  // bubble on screen better. It would be a no-op if the bubble has no arrow.
+  bool adjust_if_offscreen_;
 
   // Parent native window of the bubble.
   gfx::NativeView parent_window_;
