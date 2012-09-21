@@ -3,38 +3,47 @@ This file describes the TODO items for the liblouis project.  	-*- org -*-
 When a task is done and accepted, consider moving it into the NEWS
 file, with a bit of extra info.
 
-* 2.5
+* 2.6
 ** Document the changes to LOUIS_TABLEPATH
 ** Extend and document the scripting language
-** configure.ac does not check for nose now. Instead it is done with
-   a try except in the python script. Need to be added to configure.ac so that debian packages can automatically pick up dependancies.
+http://www.freelists.org/post/liblouis-liblouisxml/Very-preliminary-documentation-of-scripting-language
+
+** configure.ac does not check for nose now. 
+Instead it is done with a try except in the python script. Need to be
+added to configure.ac so that debian packages can automatically pick
+up dependencies.
 
 * near term
 ** (google issue 9) bindings should provide variable to pick up table location at runtime.
 
 ** Mapping between table filenames, human readable names, and translatable strings, needs to be accessible from bindings.
-   Will remove the need of redefining translatable names for the tables in orca, nvda, blaster etc.
+Will remove the need of redefining translatable names for the tables
+in orca, nvda, blaster etc.
 
-** Fix the problem that LOUIS_TABLEPATH always looks in the standard PATH even if
-  that was not in the environment var
+** Fix the problem that LOUIS_TABLEPATH always looks in the standard PATH
+even if that was not in the environment var
 
 ** Add more test harness data for languages.
 
 ** [mh] compBrlLeftCursor is wrong, provide test case for correct behaviour
-   Once corrected, consider merging compBrlLeftCursor and compBrlAtCursor, since neither provide the needed behaviour, but the corrected version should.
-   also see https://bugzilla.gnome.org/show_bug.cgi?id=592421
+Once corrected, consider merging compBrlLeftCursor and
+compBrlAtCursor, since neither provide the needed behaviour, but the
+corrected version should. also see
+https://bugzilla.gnome.org/show_bug.cgi?id=592421
 
 ** fix bug described by squash_space.c
 
 ** Fix cursor position problems when capsigns are used.
-   Originally reported at:  https://bugzilla.gnome.org/show_bug.cgi?id=651217
-   testcase added in en-GB-g2_harness.txt, search for 651217
-   The bug can be seen with other tables too.
+Originally reported at:
+https://bugzilla.gnome.org/show_bug.cgi?id=651217 testcase added in
+en-GB-g2_harness.txt, search for 651217. The bug can be seen with
+other tables too.
 
 ** Esperanto table should not be blacklisted, work out whats wrong and make sure it is usable.
 
 ** [mh] According to the harness, Danish table isn't producing correct output.
-   From memory of Swedish, the actual output is correct, but the harness might be wrong, best to check with Danish users.
+From memory of Swedish, the actual output is correct, but the harness
+might be wrong, best to check with Danish users.
 
 * unallocated
 ** (google issue 16) infinite loop in lou_backtranslate.
@@ -68,19 +77,19 @@ to get rid of the windows #ifdefs
 ** Update gnulib
 
 ** Enhance translation table compiler to issue warnings
-   [jb]: It should be an error to define the same
-   single-cell dot pattern for two different characters. I am considering
-   issuing an error message and rejecting the table if this happens.
+[jb]: It should be an error to define the same single-cell dot pattern
+for two different characters. I am considering issuing an error
+message and rejecting the table if this happens.
 
-  [mh]: It would also be very helpful if we could issue a warning when a character
-  has been defined as two or more braille representations.
-  Could we have these as warnings, not errors please.
+[mh]: It would also be very helpful if we could issue a warning when a
+character has been defined as two or more braille representations.
+Could we have these as warnings, not errors please.
 
 ** followup to above enhancement, either at the terminal or when called by 
-   bindings, we should be able to give 
-   more useful feedback, i.e. could not translate because table not found, or table found but 
-   has errors, or characters undefined, etc.
-   also see: http://www.nvda-project.org/ticket/2448
+bindings, we should be able to give more useful feedback, i.e. could
+not translate because table not found, or table found but has errors,
+or characters undefined, etc. also see:
+http://www.nvda-project.org/ticket/2448
 
 ** Optimize for use with large tables
 When used with dictionary based tables liblouis is very slow. The
@@ -88,5 +97,10 @@ issue is probably that the hash key is not very well suited for this
 use case and there will be tons of collisions, making the lookup
 essentially linear.
 
-mh: if a braille table is declared as a dictionary, it sounds like the table is wrongly written, and should be a candidate for rewriting.
-    Braille contractions are defined as rules, not as instances. The dictionary data should be pulled out to provide test data.
+There was a discussion about this on the mailing list
+(http://www.freelists.org/post/liblouis-liblouisxml/Improved-hash-function-for-tables).
+
+
+** apply the the patch by Igor B. Poretsky
+
+** apply the jptest_patch
