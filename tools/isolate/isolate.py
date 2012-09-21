@@ -21,6 +21,7 @@ import re
 import stat
 import subprocess
 import sys
+import time
 import urllib
 import urllib2
 
@@ -47,6 +48,9 @@ _SVN_PATH = os.path.sep + '.svn'
 
 # The maximum number of upload attempts to try when uploading a single file.
 MAX_UPLOAD_ATTEMPTS = 5
+
+# The minimum size of files to upload directly to the blobstore.
+MIN_SIZE_FOR_DIRECT_BLOBSTORE = 1024 * 1024 * 30
 
 
 class ExecutionError(Exception):
@@ -246,20 +250,87 @@ def recreate_tree(outdir, indir, infiles, action, as_sha1):
       run_test_from_archive.link_file(outfile, infile, action)
 
 
-def upload_hash_content(url, params, hash_content):
+def encode_multipart_formdata(fields, files,
+                              mime_mapper=lambda _: 'application/octet-stream'):
+  """Encodes a Multipart form data object.
+
+  Args:
+    fields: a sequence (name, value) elements for
+      regular form fields.
+    files: a sequence of (name, filename, value) elements for data to be
+      uploaded as files.
+    mime_mapper: function to return the mime type from the filename.
+  Returns:
+    content_type: for httplib.HTTP instance
+    body: for httplib.HTTP instance
+  """
+  boundary = hashlib.md5(str(time.time())).hexdigest()
+  body_list = []
+  for (key, value) in fields:
+    body_list.append('--' + boundary)
+    body_list.append('Content-Disposition: form-data; name="%s"' % key)
+    body_list.append('')
+    body_list.append(value)
+    body_list.append('--' + boundary)
+    body_list.append('')
+  for (key, filename, value) in files:
+    body_list.append('--' + boundary)
+    body_list.append('Content-Disposition: form-data; name="%s"; '
+                     'filename="%s"' % (key, filename))
+    body_list.append('Content-Type: %s' % mime_mapper(filename))
+    body_list.append('')
+    body_list.append(value)
+    body_list.append('--' + boundary)
+    body_list.append('')
+  if body_list:
+    body_list[-2] += '--'
+  body = '\r\n'.join(body_list)
+  content_type = 'multipart/form-data; boundary=%s' % boundary
+  return content_type, body
+
+
+def upload_hash_content(url, params=None, payload=None,
+                        content_type='application/octet-stream'):
   """Uploads the given hash contents.
 
   Arguments:
     url: The url to upload the hash contents to.
     params: The params to include with the upload.
-    hash_contents: The contents to upload.
+    payload: The data to upload.
+    content_type: The content_type of the data being uploaded.
   """
-  url = url + '?' + urllib.urlencode(params)
-  request = urllib2.Request(url, data=hash_content)
-  request.add_header('Content-Type', 'application/octet-stream')
-  request.add_header('Content-Length', len(hash_content or ''))
+  if params:
+    url = url + '?' + urllib.urlencode(params)
+  request = urllib2.Request(url, data=payload)
+  request.add_header('Content-Type', content_type)
+  request.add_header('Content-Length', len(payload or ''))
 
   return urllib2.urlopen(request)
+
+
+def upload_hash_content_to_blobstore(generate_upload_url, params,
+                                     hash_data):
+  """Uploads the given hash contents directly to the blobsotre via a generated
+  url.
+
+  Arguments:
+    generate_upload_url: The url to get the new upload url from.
+    params: The params to include with the upload.
+    hash_contents: The contents to upload.
+  """
+  content_type, body = encode_multipart_formdata(
+      params.items(), [('hash_contents', 'hash_contest', hash_data)])
+
+  logging.debug('Generating url to directly upload file to blobstore')
+  response = urllib2.urlopen(generate_upload_url)
+  upload_url = response.read()
+
+  if not upload_url:
+    logging.error('Unable to generate upload url')
+    return
+
+  return upload_hash_content(upload_url, payload=body,
+                             content_type=content_type)
 
 
 def upload_sha1_tree(base_url, indir, infiles):
@@ -276,6 +347,7 @@ def upload_sha1_tree(base_url, indir, infiles):
                (base_url, indir, len(infiles)))
 
   contains_hash_url = base_url.rstrip('/') + '/content/contains'
+  generate_upload_url = base_url.rstrip('/') + '/content/generate_blobstore_url'
   upload_hash_url = base_url.rstrip('/') + '/content/store'
 
   # TODO(csharp): Get this code to upload in parallel, similiar to how
@@ -311,13 +383,16 @@ def upload_sha1_tree(base_url, indir, infiles):
         logging.debug('Attempting to upload hash key, %s, to %s',
                       metadata['sha-1'], upload_hash_url)
 
-        response = upload_hash_content(upload_hash_url,
-                                       {'hash_key': metadata['sha-1']},
-                                       hash_data)
+        params = {'hash_key': metadata['sha-1']}
+        if len(hash_data) > MIN_SIZE_FOR_DIRECT_BLOBSTORE:
+          response = upload_hash_content_to_blobstore(generate_upload_url,
+                                                      params, hash_data)
+        else:
+          response = upload_hash_content(upload_hash_url, params, hash_data)
         break
-      except urllib2.URLError:
-        logging.error('Failed to upload hash key, %s, on attempt %d.',
-                      metadata['sha-1'], attempt + 1)
+      except urllib2.URLError as e:
+        logging.error('Failed to upload hash key, %s, on attempt %d.\n%s',
+                      metadata['sha-1'], attempt + 1, e)
 
     if not response:
       raise run_test_from_archive.MappingError('Unable to upload hash key, %s.',
