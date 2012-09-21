@@ -15,6 +15,8 @@ class Window;
 // NonClientFrameViewAura implementation for apps.
 class AppNonClientFrameViewAura : public BrowserNonClientFrameView {
  public:
+  static const char kControlWindowName[];  // visible for test
+
   AppNonClientFrameViewAura(
       BrowserFrame* frame, BrowserView* browser_view);
   virtual ~AppNonClientFrameViewAura();

@@ -162,6 +162,10 @@ class AppNonClientFrameViewAura::FrameObserver : public views::WidgetObserver {
   DISALLOW_COPY_AND_ASSIGN(FrameObserver);
 };
 
+// static
+const char AppNonClientFrameViewAura::kControlWindowName[] =
+    "AppNonClientFrameViewAuraControls";
+
 AppNonClientFrameViewAura::AppNonClientFrameViewAura(
     BrowserFrame* frame, BrowserView* browser_view)
     : BrowserNonClientFrameView(frame, browser_view),
@@ -182,7 +186,7 @@ AppNonClientFrameViewAura::AppNonClientFrameViewAura(
   control_widget_->Init(params);
   control_widget_->SetContentsView(control_view_);
   aura::Window* window = control_widget_->GetNativeView();
-  window->SetName("AppNonClientFrameViewAuraControls");
+  window->SetName(kControlWindowName);
   gfx::Rect control_bounds = GetControlBounds();
   window->SetBounds(control_bounds);
   control_widget_->Show();
@@ -190,6 +194,9 @@ AppNonClientFrameViewAura::AppNonClientFrameViewAura(
 
 AppNonClientFrameViewAura::~AppNonClientFrameViewAura() {
   frame()->RemoveObserver(frame_observer_.get());
+  // This frame view can be replaced (and deleted) if the window is restored
+  // via a keyboard shortcut like Alt-[.  Ensure we close the control widget.
+  CloseControlWidget();
 }
 
 gfx::Rect AppNonClientFrameViewAura::GetBoundsForClientView() const {

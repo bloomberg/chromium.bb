@@ -16,6 +16,21 @@
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
 
+using aura::Window;
+
+namespace {
+
+bool HasChildWindowNamed(Window* window, const char* name) {
+  for (size_t i = 0; i < window->children().size(); ++i) {
+    Window* child = window->children()[i];
+    if (child->name() == name)
+      return true;
+  }
+  return false;
+}
+
+}  // namespace
+
 class AppNonClientFrameViewAuraTest : public InProcessBrowserTest {
  public:
   AppNonClientFrameViewAuraTest() : InProcessBrowserTest(), app_browser_(NULL) {
@@ -93,4 +108,24 @@ IN_PROC_BROWSER_TEST_F(AppNonClientFrameViewAuraTest, KeyboardClose) {
 
   // App browser is closed.
   EXPECT_EQ(1u, browser::GetBrowserCount(browser()->profile()));
+}
+
+// Ensure that snapping left with Alt-[ closes the control window.
+IN_PROC_BROWSER_TEST_F(AppNonClientFrameViewAuraTest, SnapLeftClosesControls) {
+  aura::RootWindow* root_window = GetRootWindow();
+  aura::test::EventGenerator eg(root_window);
+  aura::Window* native_window = app_browser()->window()->GetNativeWindow();
+
+  // Control window exists.
+  EXPECT_TRUE(HasChildWindowNamed(
+      native_window, AppNonClientFrameViewAura::kControlWindowName));
+
+  // Send Alt-[
+  eg.PressKey(ui::VKEY_OEM_4, ui::EF_ALT_DOWN);
+  eg.ReleaseKey(ui::VKEY_OEM_4, ui::EF_ALT_DOWN);
+  content::RunAllPendingInMessageLoop();
+
+  // Control window is gone.
+  EXPECT_FALSE(HasChildWindowNamed(
+      native_window, AppNonClientFrameViewAura::kControlWindowName));
 }
