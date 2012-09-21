@@ -25,38 +25,19 @@ LauncherContextMenu::~LauncherContextMenu() {
 
 // static
 bool LauncherContextMenu::IsAutoHideMenuHideChecked() {
-  internal::RootWindowController* controller =
-      Shell::GetPrimaryRootWindowController();
-  ash::ShelfAutoHideBehavior auto_hide_behavior =
+  return ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS ==
       Shell::GetInstance()->GetShelfAutoHideBehavior();
-  return (controller->IsInMaximizedMode() &&
-          (auto_hide_behavior == ash::SHELF_AUTO_HIDE_BEHAVIOR_DEFAULT ||
-           auto_hide_behavior == ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS)) ||
-      (!controller->IsInMaximizedMode() &&
-       auto_hide_behavior == ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
 }
 
 // static
 ShelfAutoHideBehavior LauncherContextMenu::GetToggledAutoHideBehavior() {
-  ash::ShelfAutoHideBehavior auto_hide_behavior;
-  if (Shell::GetPrimaryRootWindowController()->IsInMaximizedMode()) {
-    if (IsAutoHideMenuHideChecked())
-      auto_hide_behavior = ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER;
-    else
-      auto_hide_behavior = ash::SHELF_AUTO_HIDE_BEHAVIOR_DEFAULT;
-  } else if (IsAutoHideMenuHideChecked()) {
-    auto_hide_behavior = ash::SHELF_AUTO_HIDE_BEHAVIOR_DEFAULT;
-  } else {
-    auto_hide_behavior = ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
-  }
-  return auto_hide_behavior;
+  return IsAutoHideMenuHideChecked() ? ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER :
+      ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
 }
 
 // static
 int LauncherContextMenu::GetAutoHideResourceStringId() {
-  return Shell::GetPrimaryRootWindowController()->IsInMaximizedMode() ?
-      IDS_AURA_LAUNCHER_CONTEXT_MENU_AUTO_HIDE_MAXIMIZED :
-      IDS_AURA_LAUNCHER_CONTEXT_MENU_AUTO_HIDE_NOT_MAXIMIZED;
+  return IDS_AURA_LAUNCHER_CONTEXT_MENU_AUTO_HIDE;
 }
 
 bool LauncherContextMenu::IsCommandIdChecked(int command_id) const {

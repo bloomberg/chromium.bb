@@ -14,9 +14,6 @@ enum ShelfAlignment {
 };
 
 enum ShelfAutoHideBehavior {
-  // The default; maximized windows trigger an auto-hide.
-  SHELF_AUTO_HIDE_BEHAVIOR_DEFAULT,
-
   // Always auto-hide.
   SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS,
 

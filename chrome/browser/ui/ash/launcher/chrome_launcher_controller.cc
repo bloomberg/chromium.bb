@@ -482,9 +482,6 @@ void ChromeLauncherController::SetAutoHideBehavior(
   ash::Shell::GetInstance()->SetShelfAutoHideBehavior(behavior);
   const char* value = NULL;
   switch (behavior) {
-    case ash::SHELF_AUTO_HIDE_BEHAVIOR_DEFAULT:
-      value = ash::kShelfAutoHideBehaviorDefault;
-      break;
     case ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS:
       value = ash::kShelfAutoHideBehaviorAlways;
       break;
@@ -852,13 +849,16 @@ void ChromeLauncherController::UpdateAppLaunchersFromPref() {
 }
 
 void ChromeLauncherController::SetShelfAutoHideBehaviorFromPrefs() {
+  // Note: To maintain sync compatibility with old images of chrome/chromeos
+  // the set of values that may be encountered includes the now-extinct
+  // "Default" as well as "Never" and "Always", "Default" should now
+  // be treated as "Never".
+  // (http://code.google.com/p/chromium/issues/detail?id=146773)
   const std::string behavior_value(
       profile_->GetPrefs()->GetString(prefs::kShelfAutoHideBehavior));
   ash::ShelfAutoHideBehavior behavior =
-      ash::SHELF_AUTO_HIDE_BEHAVIOR_DEFAULT;
-  if (behavior_value == ash::kShelfAutoHideBehaviorNever)
-    behavior = ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER;
-  else if (behavior_value == ash::kShelfAutoHideBehaviorAlways)
+      ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER;
+  if (behavior_value == ash::kShelfAutoHideBehaviorAlways)
     behavior = ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
   ash::Shell::GetInstance()->SetShelfAutoHideBehavior(behavior);
 }
