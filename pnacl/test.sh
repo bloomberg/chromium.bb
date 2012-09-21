@@ -89,9 +89,8 @@ show-tests() {
 }
 
 Run() {
-  if ${DRYRUN}; then
-    echo "$@"
-  else
+  echo "$@"
+  if ! ${DRYRUN}; then
     "$@"
   fi
 }

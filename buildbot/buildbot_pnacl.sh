@@ -21,13 +21,16 @@ BUILD_MODE_HOST=OPT
 FAIL_FAST=${FAIL_FAST:-true}
 # This remembers when any build steps failed, but we ended up continuing.
 RETCODE=0
-# for scons builds an empty target indicates all targets should be build
-# this does not run any tests, though
+# For scons builds an empty target indicates all targets should be built.
+# This does not run any tests, though.
+# Large tests are not included in this group because they cannot be run
+# in parallel (they can do things like bind to local TCP ports). Large
+# tests are run separately in the functions below.
 readonly SCONS_EVERYTHING=""
-readonly SCONS_S_M_L="small_tests medium_tests large_tests"
-readonly SCONS_S_M_L_IRT="small_tests_irt medium_tests_irt large_tests_irt"
+readonly SCONS_S_M="small_tests medium_tests"
+readonly SCONS_S_M_IRT="small_tests_irt medium_tests_irt"
 # subset of tests used on toolchain builders
-readonly SCONS_TC_TESTS="small_tests medium_tests large_tests"
+readonly SCONS_TC_TESTS="small_tests medium_tests"
 
 readonly SCONS_COMMON="./scons --verbose bitcode=1"
 readonly UP_DOWN_LOAD="buildbot/file_up_down_load.sh"
@@ -379,7 +382,9 @@ mode-buildbot-x86() {
   # specifying "" as the target which means "build everything"
 
   scons-stage-noirt "${arch}" "${flags_build}" "${SCONS_EVERYTHING}"
-  scons-stage-noirt "${arch}" "${flags_run}"   "${SCONS_S_M_L}"
+  scons-stage-noirt "${arch}" "${flags_run}"   "${SCONS_S_M}"
+  # Large tests cannot be run in parallel
+  scons-stage-noirt "${arch}" "${flags_run} -j1"  "large_tests"
 
   # non-pexe tests (Do the build-everything step just to make sure it all still
   # builds as non-pexe)
@@ -389,20 +394,20 @@ mode-buildbot-x86() {
       "nonpexe_tests"
 
   # also run some tests with the irt
-  scons-stage-irt "${arch}" "${flags_run}" "${SCONS_S_M_L_IRT}"
+  scons-stage-irt "${arch}" "${flags_run}" "${SCONS_S_M_IRT}"
 
   # PIC
   scons-stage-noirt "${arch}" "${flags_build} nacl_pic=1 pnacl_generate_pexe=0" \
       "${SCONS_EVERYTHING}"
   scons-stage-noirt "${arch}" "${flags_run} nacl_pic=1 pnacl_generate_pexe=0" \
-      "${SCONS_S_M_L}"
+      "${SCONS_S_M}"
 
   # sandboxed translation
   build-sbtc-prerequisites ${arch}
   scons-stage-noirt "${arch}" "${flags_build} use_sandboxed_translator=1" \
       "${SCONS_EVERYTHING}"
   scons-stage-irt "${arch}" "${flags_run} use_sandboxed_translator=1" \
-      "${SCONS_S_M_L_IRT}"
+      "${SCONS_S_M_IRT}"
   # translator memory consumption regression test
   scons-stage-irt "${arch}" "${flags_run} use_sandboxed_translator=1" \
       "large_code"
@@ -429,15 +434,17 @@ mode-buildbot-arm() {
   # This extra step is required to translate the pexes (because translation
   # happens as part of CommandSelLdrTestNacl and not part of the
   # build-everything step)
-  scons-stage-noirt "arm" "${qemuflags}" "${SCONS_S_M_L}"
+  scons-stage-noirt "arm" "${qemuflags}" "${SCONS_S_M}"
+  # Large tests cannot be run in parallel
+  scons-stage-noirt "arm" "${qemuflags} -j1" "large_tests"
 
   # also run some tests with the irt
-  scons-stage-irt "arm" "${qemuflags}" "${SCONS_S_M_L_IRT}"
+  scons-stage-irt "arm" "${qemuflags}" "${SCONS_S_M_IRT}"
 
   # PIC
   # Don't bother to build everything here, just the tests we want to run
   scons-stage-noirt "arm" "${qemuflags} nacl_pic=1 pnacl_generate_pexe=0" \
-    "${SCONS_S_M_L}"
+    "${SCONS_S_M}"
 
   # non-pexe-mode tests
   scons-stage-noirt "arm" "${qemuflags} pnacl_generate_pexe=0" "nonpexe_tests"
@@ -453,12 +460,14 @@ mode-buildbot-arm-hw() {
   FAIL_FAST=false
   local hwflags="-j2 -k naclsdk_validate=0 built_elsewhere=1"
 
-  scons-stage-noirt "arm" "${hwflags}" "${SCONS_S_M_L}"
+  scons-stage-noirt "arm" "${hwflags}" "${SCONS_S_M}"
+  # Large tests cannot be run in parallel
+  scons-stage-noirt "arm" "${hwflags} -j1" "large_tests"
   scons-stage-noirt "arm" "${hwflags} nacl_pic=1 pnacl_generate_pexe=0" \
-    "${SCONS_S_M_L}"
+    "${SCONS_S_M}"
 
   # also run some tests with the irt
-  scons-stage-irt "arm" "${hwflags}" "${SCONS_S_M_L_IRT}"
+  scons-stage-irt "arm" "${hwflags}" "${SCONS_S_M_IRT}"
 
   scons-stage-noirt "arm" "${hwflags} pnacl_generate_pexe=0" "nonpexe_tests"
   scons-stage-noirt "arm" \
@@ -476,15 +485,16 @@ mode-trybot-qemu() {
   gyp-arm-build
 
   scons-stage-noirt "arm" "${qemuflags}" "${SCONS_EVERYTHING}"
-  scons-stage-noirt "arm" "${qemuflags} -j1" "${SCONS_S_M_L}"
+  # Large tests cannot be run in parallel
+  scons-stage-noirt "arm" "${qemuflags} -j1" "${SCONS_S_M} large_tests"
 
   # also run some tests with the irt
-  scons-stage-irt "arm" "${qemuflags}" "${SCONS_S_M_L_IRT}"
+  scons-stage-irt "arm" "${qemuflags}" "${SCONS_S_M_IRT}"
 
   scons-stage-noirt "arm" "${qemuflags} nacl_pic=1 pnacl_generate_pexe=0" \
       "${SCONS_EVERYTHING}"
   scons-stage-noirt "arm" "${qemuflags} -j1 nacl_pic=1 pnacl_generate_pexe=0" \
-      "${SCONS_S_M_L}"
+      "${SCONS_S_M}"
 
   # non-pexe tests
   scons-stage-noirt "arm" "${qemuflags} pnacl_generate_pexe=0" "nonpexe_tests"
@@ -525,7 +535,7 @@ mode-buildbot-arm-hw-try() {
 }
 
 # These are also suitable for local TC sanity testing
-tc-tests-large() {
+tc-tests-all() {
   local is_try=$1
 
   local label="pnaclsdk_mode=custom:toolchain/${TOOLCHAIN_LABEL}"
@@ -533,8 +543,12 @@ tc-tests-large() {
 
   # newlib
   scons-stage-noirt "x86-32" "${scons_flags}" "${SCONS_TC_TESTS}"
+  # Large tests cannot be run in parallel
+  scons-stage-noirt "x86-32" "${scons_flags} -j1" "large_tests"
   scons-stage-noirt "x86-64" "${scons_flags}" "${SCONS_TC_TESTS}"
+  scons-stage-noirt "x86-64" "${scons_flags} -j1" "large_tests"
   scons-stage-noirt "arm"    "${scons_flags}" "${SCONS_TC_TESTS}"
+  scons-stage-noirt "arm"    "${scons_flags} -j1" "large_tests"
 
   # glibc
   scons-stage-noirt "x86-32" "${scons_flags} --nacl_glibc pnacl_generate_pexe=0" \
@@ -543,8 +557,10 @@ tc-tests-large() {
               "${SCONS_TC_TESTS}"
 }
 
-tc-tests-small() {
+tc-tests-fast() {
   scons-stage-noirt "$1" "-j8 -k" "${SCONS_TC_TESTS}"
+  # Large tests cannot be run in parallel
+  scons-stage-noirt "$1" "-j1 -k" "large_tests"
 }
 
 mode-buildbot-tc-x8664-linux() {
@@ -552,7 +568,7 @@ mode-buildbot-tc-x8664-linux() {
   FAIL_FAST=false
   TOOLCHAIN_LABEL=pnacl_linux_x86
   tc-build-all ${TOOLCHAIN_LABEL} ${is_try} true true
-  tc-tests-large ${is_try}
+  tc-tests-all ${is_try}
 }
 
 mode-buildbot-tc-x8632-linux() {
@@ -561,7 +577,7 @@ mode-buildbot-tc-x8632-linux() {
   TOOLCHAIN_LABEL=pnacl_linux_x86
   # For now, just use this bot to test a pure 32 bit build but don't upload
   tc-build-all ${TOOLCHAIN_LABEL} true false false
-  tc-tests-small "x86-32"
+  tc-tests-fast "x86-32"
 }
 
 mode-buildbot-tc-x8632-mac() {
@@ -571,7 +587,7 @@ mode-buildbot-tc-x8632-mac() {
   # We can't test ARM because we do not have QEMU for Mac.
   # We can't test X86-64 because NaCl X86-64 Mac support is not in good shape.
   tc-build-all ${TOOLCHAIN_LABEL} ${is_try} false false
-  tc-tests-small "x86-32"
+  tc-tests-fast "x86-32"
 }
 
 mode-buildbot-tc-x8664-win() {
@@ -582,7 +598,7 @@ mode-buildbot-tc-x8664-win() {
   tc-build-all ${TOOLCHAIN_LABEL} ${is_try} false false
 
   # We can't test ARM because we do not have QEMU for Win.
-  tc-tests-small "x86-64"
+  tc-tests-fast "x86-64"
 }
 
 
@@ -611,11 +627,14 @@ test-all-newlib() {
   scons-stage-noirt "arm"    "${scons_flags}" "${SCONS_EVERYTHING}"
   scons-stage-noirt "x86-32" "${scons_flags}" "${SCONS_EVERYTHING}"
   scons-stage-noirt "x86-64" "${scons_flags}" "${SCONS_EVERYTHING}"
-  # Then run at least the smoke_tests
+  # Then run the tests. smoke_tests can be run in parallel but not large_tests
   echo "@@@BUILD_STEP scons smoke_tests @@@"
   scons-stage-noirt "arm"    "${scons_flags}" "smoke_tests"
+  scons-stage-noirt "arm"    "${scons_flags} -j1" "large_tests"
   scons-stage-noirt "x86-32" "${scons_flags}" "smoke_tests"
+  scons-stage-noirt "x86-32"    "${scons_flags} -j1" "large_tests"
   scons-stage-noirt "x86-64" "${scons_flags}" "smoke_tests"
+  scons-stage-noirt "x86-64"    "${scons_flags} -j1" "large_tests"
 }
 
 test-all-glibc() {
