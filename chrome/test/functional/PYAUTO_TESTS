@@ -667,6 +667,7 @@
   'AV_PERF': {
      'linux': [
        'media.audio_latency_perf',
+       'media.audio_playback_perf',
        'media.media_constrained_network_perf',
        'media.media_scrub_perf',
        'media.media_seek_perf',
@@ -675,6 +676,7 @@
      ],
      'win': [
        'media.audio_latency_perf',
+       'media.audio_playback_perf',
        'media.media_constrained_network_perf',
        'media.media_scrub_perf',
        'media.media_seek_perf',
