@@ -585,6 +585,7 @@ void WallpaperManager::SetUserWallpaper(const std::string& email) {
   if (email == kGuestUser) {
     ash::Shell::GetInstance()->desktop_background_controller()->
       SetDefaultWallpaper(ash::GetGuestWallpaperIndex(), false);
+    return;
   }
 
   if (!UserManager::Get()->IsKnownUser(email))
