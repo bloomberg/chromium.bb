@@ -411,19 +411,21 @@ cr.define('options', function() {
           found = true;
           var nextNode = walker.nextNode();
           var parentNode = node.parentNode;
-          parentNode.removeChild(node);
-          node = nextNode;
-
+          // Use existing node as placeholder to determine where to insert the
+          // replacement content.
           for (var i = 0; i < split.length; ++i) {
             if (i % 2 == 0) {
-              parentNode.appendChild(document.createTextNode(split[i]));
+              parentNode.insertBefore(document.createTextNode(split[i]), node);
             } else {
               var span = document.createElement('span');
               span.className = 'search-highlighted';
               span.textContent = split[i];
-              parentNode.appendChild(span);
+              parentNode.insertBefore(span, node);
             }
           }
+          // Remove old node.
+          parentNode.removeChild(node);
+          node = nextNode;
         } else {
           node = walker.nextNode();
         }
