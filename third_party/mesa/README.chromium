@@ -113,3 +113,5 @@ Later modifications (see chromium.patch):
   http://code.google.com/p/chromium/issues/detail?id=142316
 
 - Fix the compile errors on Android
+
+- Added constants for GL_NVX_gpu_memory_info to glext.h

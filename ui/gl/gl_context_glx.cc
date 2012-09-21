@@ -244,6 +244,18 @@ std::string GLContextGLX::GetExtensions() {
   return GLContext::GetExtensions();
 }
 
+bool GLContextGLX::GetTotalGpuMemory(size_t* bytes) {
+  DCHECK(bytes);
+  *bytes = 0;
+  if (HasExtension("GL_NVX_gpu_memory_info")) {
+    GLint kbytes = 0;
+    glGetIntegerv(GL_GPU_MEMORY_INFO_DEDICATED_VIDMEM_NVX, &kbytes);
+    *bytes = 1024*kbytes;
+    return true;
+  }
+  return false;
+}
+
 bool GLContextGLX::WasAllocatedUsingRobustnessExtension() {
   return GLSurfaceGLX::IsCreateContextRobustnessSupported();
 }

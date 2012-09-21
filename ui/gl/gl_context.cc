@@ -35,6 +35,12 @@ GLContext::~GLContext() {
   }
 }
 
+bool GLContext::GetTotalGpuMemory(size_t* bytes) {
+  DCHECK(bytes);
+  *bytes = 0;
+  return false;
+}
+
 std::string GLContext::GetExtensions() {
   DCHECK(IsCurrent(NULL));
   const char* ext = reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS));

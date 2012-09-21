@@ -7,7 +7,6 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
-#include "base/memory/scoped_generic_obj.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/mesa/MesaLib/include/GL/osmesa.h"
 #include "ui/gl/gl_bindings.h"
@@ -21,18 +20,6 @@
 #if defined(USE_AURA)
 #include "ui/gl/gl_context_nsview.h"
 #endif
-
-namespace {
-
-// ScopedGenericObj functor for CGLDestroyRendererInfo().
-class ScopedDestroyRendererInfo {
- public:
-  void operator()(CGLRendererInfoObj x) const {
-    CGLDestroyRendererInfo(x);
-  }
-};
-
-}  // namespace
 
 namespace gfx {
 
@@ -119,8 +106,7 @@ bool GLContext::SupportsDualGpus() {
     return false;
   }
 
-  ScopedGenericObj<CGLRendererInfoObj, ScopedDestroyRendererInfo>
-      scoper(renderer_info);
+  ScopedCGLRendererInfoObj scoper(renderer_info);
 
   for (GLint i = 0; i < num_renderers; ++i) {
     GLint accelerated = 0;
