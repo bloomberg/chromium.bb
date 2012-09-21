@@ -253,6 +253,10 @@ class RenderViewImpl : public RenderWidget,
     return webkit_preferences_;
   }
 
+  bool enable_do_not_track() const {
+    return renderer_preferences_.enable_do_not_track;
+  }
+
   void set_send_content_state_immediately(bool value) {
     send_content_state_immediately_ = value;
   }

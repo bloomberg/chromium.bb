@@ -69,6 +69,7 @@
 #include "content/renderer/devtools_agent.h"
 #include "content/renderer/dom_automation_controller.h"
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
+#include "content/renderer/do_not_track_bindings.h"
 #include "content/renderer/external_popup_menu.h"
 #include "content/renderer/geolocation_dispatcher.h"
 #include "content/renderer/gpu/compositor_thread.h"
@@ -3382,6 +3383,8 @@ void RenderViewImpl::didClearWindowObject(WebFrame* frame) {
     dom_automation_controller_->BindToJavascript(frame,
                                                  "domAutomationController");
   }
+
+  content::InjectDoNotTrackBindings(frame);
 }
 
 void RenderViewImpl::didCreateDocumentElement(WebFrame* frame) {

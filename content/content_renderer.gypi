@@ -67,6 +67,8 @@
     'renderer/devtools_agent_filter.h',
     'renderer/devtools_client.cc',
     'renderer/devtools_client.h',
+    'renderer/do_not_track_bindings.cc',
+    'renderer/do_not_track_bindings.h',
     'renderer/dom_automation_controller.cc',
     'renderer/dom_automation_controller.h',
     'renderer/dom_storage/dom_storage_dispatcher.cc',

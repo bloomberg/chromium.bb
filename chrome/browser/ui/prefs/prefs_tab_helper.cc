@@ -96,6 +96,7 @@ const char* kPrefsToObserve[] = {
   prefs::kDefaultZoomLevel,
   prefs::kDefaultCharset,
   prefs::kEnableReferrers,
+  prefs::kEnableDoNotTrack,
   prefs::kWebKitAllowDisplayingInsecureContent,
   prefs::kWebKitAllowRunningInsecureContent,
   prefs::kWebKitDefaultFixedFontSize,
@@ -525,7 +526,8 @@ void PrefsTabHelper::Observe(int type,
           StartsWithASCII(*pref_name_in, "webkit.webprefs.", true)) {
         UpdateWebPreferences();
       } else if (*pref_name_in == prefs::kDefaultZoomLevel ||
-                 *pref_name_in == prefs::kEnableReferrers) {
+                 *pref_name_in == prefs::kEnableReferrers ||
+                 *pref_name_in == prefs::kEnableDoNotTrack) {
         UpdateRendererPreferences();
       } else {
         NOTREACHED() << "unexpected pref change notification" << *pref_name_in;

@@ -75,6 +75,8 @@ void UpdateFromSystemSettings(
     content::RendererPreferences* prefs, Profile* profile) {
   const PrefService* pref_service = profile->GetPrefs();
   prefs->enable_referrers = pref_service->GetBoolean(prefs::kEnableReferrers);
+  prefs->enable_do_not_track =
+      pref_service->GetBoolean(prefs::kEnableDoNotTrack);
   prefs->default_zoom_level = pref_service->GetDouble(prefs::kDefaultZoomLevel);
 
 #if defined(TOOLKIT_GTK)
