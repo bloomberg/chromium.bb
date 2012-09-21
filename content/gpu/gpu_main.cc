@@ -22,10 +22,12 @@
 #include "content/gpu/gpu_process.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/gpu_switching_option.h"
 #include "content/public/common/main_function_params.h"
 #include "crypto/hmac.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_switches.h"
+#include "ui/gl/gpu_switching_manager.h"
 
 #if defined(OS_WIN)
 #include "content/common/gpu/media/dxva_video_decode_accelerator.h"
@@ -71,6 +73,15 @@ int GpuMain(const content::MainFunctionParams& parameters) {
 #elif defined(USE_X11)
     ui::SetDefaultX11ErrorHandlers();
 #endif
+  }
+
+  if (command_line.HasSwitch(switches::kGpuSwitching)) {
+    std::string option = command_line.GetSwitchValueASCII(
+        switches::kGpuSwitching);
+    if (option == switches::kGpuSwitchingOptionNameForceDiscrete)
+      gfx::GpuSwitchingManager::GetInstance()->ForceUseOfDiscreteGpu();
+    else if (option == switches::kGpuSwitchingOptionNameForceIntegrated)
+      gfx::GpuSwitchingManager::GetInstance()->ForceUseOfIntegratedGpu();
   }
 
   // Initialization of the OpenGL bindings may fail, in which case we

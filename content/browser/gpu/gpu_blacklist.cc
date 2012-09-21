@@ -794,7 +794,7 @@ bool GpuBlacklist::GpuBlacklistEntry::SetGpuSwitchingOption(
     const std::string& switching_string) {
   GpuSwitchingOption switching = gpu_util::StringToGpuSwitchingOption(
       switching_string);
-  if (switching == content::GPU_SWITCHING_UNKNOWN)
+  if (switching == content::GPU_SWITCHING_OPTION_UNKNOWN)
     return false;
   decision_.gpu_switching = switching;
   return true;
@@ -1036,7 +1036,7 @@ GpuBlacklist::Decision GpuBlacklist::MakeBlacklistDecision(
     const content::GPUInfo& gpu_info) {
   active_entries_.clear();
   int type = 0;
-  GpuSwitchingOption switching = content::GPU_SWITCHING_AUTOMATIC;
+  GpuSwitchingOption switching = content::GPU_SWITCHING_OPTION_AUTOMATIC;
 
   if (os == kOsAny)
     os = GetOsType();
@@ -1056,7 +1056,7 @@ GpuBlacklist::Decision GpuBlacklist::MakeBlacklistDecision(
       if (!blacklist_[i]->disabled()) {
         type |= blacklist_[i]->GetGpuFeatureType();
         if (blacklist_[i]->GetGpuSwitchingOption() !=
-                content::GPU_SWITCHING_AUTOMATIC)
+                content::GPU_SWITCHING_OPTION_AUTOMATIC)
           switching = blacklist_[i]->GetGpuSwitchingOption();
       }
       active_entries_.push_back(blacklist_[i]);

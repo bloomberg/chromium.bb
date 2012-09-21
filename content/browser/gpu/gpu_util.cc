@@ -13,6 +13,7 @@
 #include "base/version.h"
 #include "content/browser/gpu/gpu_blacklist.h"
 #include "content/public/common/content_switches.h"
+#include "ui/gl/gl_switches.h"
 
 using content::GpuFeatureType;
 using content::GpuSwitchingOption;
@@ -29,11 +30,6 @@ const char kGpuFeatureNameTextureSharing[] = "texture_sharing";
 const char kGpuFeatureNameAcceleratedVideoDecode[] = "accelerated_video_decode";
 const char kGpuFeatureNameAll[] = "all";
 const char kGpuFeatureNameUnknown[] = "unknown";
-
-const char kGpuSwitchingNameAutomatic[] = "automatic";
-const char kGpuSwitchingNameForceIntegrated[] = "force_integrated";
-const char kGpuSwitchingNameForceDiscrete[] = "force_discrete";
-const char kGpuSwitchingNameUnknown[] = "unknown";
 
 enum GpuFeatureStatus {
     kGpuFeatureEnabled = 0,
@@ -141,13 +137,26 @@ std::string GpuFeatureTypeToString(GpuFeatureType type) {
 
 GpuSwitchingOption StringToGpuSwitchingOption(
     const std::string& switching_string) {
-  if (switching_string == kGpuSwitchingNameAutomatic)
-    return content::GPU_SWITCHING_AUTOMATIC;
-  if (switching_string == kGpuSwitchingNameForceIntegrated)
-    return content::GPU_SWITCHING_FORCE_INTEGRATED;
-  if (switching_string == kGpuSwitchingNameForceDiscrete)
-    return content::GPU_SWITCHING_FORCE_DISCRETE;
-  return content::GPU_SWITCHING_UNKNOWN;
+  if (switching_string == switches::kGpuSwitchingOptionNameAutomatic)
+    return content::GPU_SWITCHING_OPTION_AUTOMATIC;
+  if (switching_string == switches::kGpuSwitchingOptionNameForceIntegrated)
+    return content::GPU_SWITCHING_OPTION_FORCE_INTEGRATED;
+  if (switching_string == switches::kGpuSwitchingOptionNameForceDiscrete)
+    return content::GPU_SWITCHING_OPTION_FORCE_DISCRETE;
+  return content::GPU_SWITCHING_OPTION_UNKNOWN;
+}
+
+std::string GpuSwitchingOptionToString(GpuSwitchingOption option) {
+  switch (option) {
+    case content::GPU_SWITCHING_OPTION_AUTOMATIC:
+      return switches::kGpuSwitchingOptionNameAutomatic;
+    case content::GPU_SWITCHING_OPTION_FORCE_INTEGRATED:
+      return switches::kGpuSwitchingOptionNameForceIntegrated;
+    case content::GPU_SWITCHING_OPTION_FORCE_DISCRETE:
+      return switches::kGpuSwitchingOptionNameForceDiscrete;
+    default:
+      return "unknown";
+  }
 }
 
 void UpdateStats(const GpuBlacklist* blacklist,

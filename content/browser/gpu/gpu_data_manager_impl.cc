@@ -69,7 +69,7 @@ GpuDataManagerImpl::GpuDataManagerImpl()
     : complete_gpu_info_already_requested_(false),
       gpu_feature_type_(content::GPU_FEATURE_TYPE_UNKNOWN),
       preliminary_gpu_feature_type_(content::GPU_FEATURE_TYPE_UNKNOWN),
-      gpu_switching_(content::GPU_SWITCHING_AUTOMATIC),
+      gpu_switching_(content::GPU_SWITCHING_OPTION_AUTOMATIC),
       observer_list_(new GpuDataManagerObserverList),
       software_rendering_(false),
       card_blacklisted_(false),
@@ -81,6 +81,14 @@ GpuDataManagerImpl::GpuDataManagerImpl()
   }
   if (command_line->HasSwitch(switches::kDisableGpu))
     BlacklistCard();
+  if (command_line->HasSwitch(switches::kGpuSwitching)) {
+    std::string option_string = command_line->GetSwitchValueASCII(
+        switches::kGpuSwitching);
+    GpuSwitchingOption option = gpu_util::StringToGpuSwitchingOption(
+        option_string);
+    if (option != content::GPU_SWITCHING_OPTION_UNKNOWN)
+      gpu_switching_ = option;
+  }
 }
 
 void GpuDataManagerImpl::Initialize() {
@@ -175,7 +183,8 @@ void GpuDataManagerImpl::UpdateGpuInfo(const content::GPUInfo& gpu_info) {
                             decision.blacklisted_features);
     }
     UpdateBlacklistedFeatures(decision.blacklisted_features);
-    gpu_switching_ = decision.gpu_switching;
+    if (decision.gpu_switching != content::GPU_SWITCHING_OPTION_UNKNOWN)
+      gpu_switching_ = decision.gpu_switching;
   }
 
   {
@@ -336,6 +345,18 @@ void GpuDataManagerImpl::AppendGpuCommandLine(
         switches::kUseGL, gfx::kGLImplementationOSMesaName);
   } else if (!use_gl.empty()) {
     command_line->AppendSwitchASCII(switches::kUseGL, use_gl);
+  }
+  switch (gpu_switching_) {
+    case content::GPU_SWITCHING_OPTION_FORCE_DISCRETE:
+      command_line->AppendSwitchASCII(switches::kGpuSwitching,
+          switches::kGpuSwitchingOptionNameForceDiscrete);
+      break;
+    case content::GPU_SWITCHING_OPTION_FORCE_INTEGRATED:
+      command_line->AppendSwitchASCII(switches::kGpuSwitching,
+          switches::kGpuSwitchingOptionNameForceIntegrated);
+      break;
+    default:
+      break;
   }
 
   if (!swiftshader_path.empty())

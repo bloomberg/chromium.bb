@@ -345,13 +345,13 @@ Value* GetFeatureStatus() {
         gpu_info.optimus || gpu_info.amd_switchable) {
       std::string gpu_switching;
       switch (GpuDataManager::GetInstance()->GetGpuSwitchingOption()) {
-        case content::GPU_SWITCHING_AUTOMATIC:
+        case content::GPU_SWITCHING_OPTION_AUTOMATIC:
           gpu_switching = "gpu_switching_automatic";
           break;
-        case content::GPU_SWITCHING_FORCE_DISCRETE:
+        case content::GPU_SWITCHING_OPTION_FORCE_DISCRETE:
           gpu_switching = "gpu_switching_force_discrete";
           break;
-        case content::GPU_SWITCHING_FORCE_INTEGRATED:
+        case content::GPU_SWITCHING_OPTION_FORCE_INTEGRATED:
           gpu_switching = "gpu_switching_force_integrated";
           break;
         default:
