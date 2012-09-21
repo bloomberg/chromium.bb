@@ -134,7 +134,10 @@ if __name__ == '__main__':
   parser = optparse.OptionParser()
   parser.add_option('-p',
                     '--path',
-                    default=os.path.join(os.pardir, os.pardir))
+                    default=os.path.join(
+                        os.path.abspath(os.path.dirname(__file__)),
+                        os.pardir,
+                        os.pardir))
   parser.add_option('-a',
                     '--all',
                     action='store_true',
