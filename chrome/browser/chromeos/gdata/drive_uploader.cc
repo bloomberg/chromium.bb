@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/chromeos/gdata/drive_service_interface.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
@@ -37,6 +38,8 @@ DriveUploader::DriveUploader(DriveServiceInterface* drive_service)
 }
 
 DriveUploader::~DriveUploader() {
+  STLDeleteContainerPairSecondPointers(pending_uploads_.begin(),
+                                       pending_uploads_.end());
 }
 
 int DriveUploader::UploadNewFile(
@@ -128,7 +131,7 @@ int DriveUploader::StartUploadFile(
   DVLOG(1) << "Uploading file: " << info->DebugString();
 
   // Create a FileStream to make sure the file can be opened successfully.
-  info->file_stream = new net::FileStream(NULL);
+  info->file_stream.reset(new net::FileStream(NULL));
 
   // Create buffer to hold upload data. The full file size may not be known at
   // this point, so it may not be appropriate to use info->file_size.
@@ -285,16 +288,14 @@ void DriveUploader::OpenCompletionCallback(FileOpenType open_type,
       upload_file_info->should_retry_file_open = !exceeded_max_attempts;
     }
     if (!upload_file_info->should_retry_file_open) {
-      UploadFailed(scoped_ptr<UploadFileInfo>(upload_file_info),
-                   DRIVE_FILE_ERROR_NOT_FOUND);
+      UploadFailed(upload_file_info, DRIVE_FILE_ERROR_NOT_FOUND);
       return;
     }
   } else {
     // Open succeeded, initiate the upload.
     upload_file_info->should_retry_file_open = false;
     if (upload_file_info->initial_upload_location.is_empty()) {
-      UploadFailed(scoped_ptr<UploadFileInfo>(upload_file_info),
-                   DRIVE_FILE_ERROR_ABORT);
+      UploadFailed(upload_file_info, DRIVE_FILE_ERROR_ABORT);
       return;
     }
     drive_service_->InitiateUpload(
@@ -341,8 +342,7 @@ void DriveUploader::OnUploadLocationReceived(
 
   if (code != HTTP_SUCCESS) {
     // TODO(achuith): Handle error codes from Google Docs server.
-    UploadFailed(scoped_ptr<UploadFileInfo>(upload_file_info),
-                 DRIVE_FILE_ERROR_ABORT);
+    UploadFailed(upload_file_info, DRIVE_FILE_ERROR_ABORT);
     return;
   }
 
@@ -470,10 +470,6 @@ void DriveUploader::OnResumeUploadResponseReceived(
     DVLOG(1) << "Successfully created uploaded file=["
              << upload_file_info->title;
 
-    // Remove |upload_id| from the UploadFileInfoMap. The UploadFileInfo object
-    // will be deleted upon completion of completion_callback.
-    RemoveUpload(upload_id);
-
     // Done uploading.
     upload_file_info->entry = entry.Pass();
     if (!upload_file_info->completion_callback.is_null()) {
@@ -483,6 +479,9 @@ void DriveUploader::OnResumeUploadResponseReceived(
           upload_file_info->file_path,
           upload_file_info->entry.Pass());
     }
+
+    // This will delete |upload_file_info|.
+    RemoveUpload(scoped_ptr<UploadFileInfo>(upload_file_info));
     return;
   }
 
@@ -500,7 +499,7 @@ void DriveUploader::OnResumeUploadResponseReceived(
                << ", end_range_received=" << response.end_range_received
                << ", expected end range=" << upload_file_info->end_range;
     UploadFailed(
-        scoped_ptr<UploadFileInfo>(upload_file_info),
+        upload_file_info,
         response.code == HTTP_FORBIDDEN ?
             DRIVE_FILE_ERROR_NO_SPACE : DRIVE_FILE_ERROR_ABORT);
     return;
@@ -514,27 +513,26 @@ void DriveUploader::OnResumeUploadResponseReceived(
   UploadNextChunk(upload_file_info);
 }
 
-void DriveUploader::UploadFailed(scoped_ptr<UploadFileInfo> upload_file_info,
+void DriveUploader::UploadFailed(UploadFileInfo* upload_file_info,
                                  DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  RemoveUpload(upload_file_info->upload_id);
-
   LOG(ERROR) << "Upload failed " << upload_file_info->DebugString();
-  // This is subtle but we should take the callback reference before
-  // calling upload_file_info.Pass(). Otherwise, it'll crash.
-  const UploadCompletionCallback& callback =
-      upload_file_info->completion_callback;
-  if (!callback.is_null())
-    callback.Run(error,
+
+  if (!upload_file_info->completion_callback.is_null())
+    upload_file_info->completion_callback.Run(
+        error,
         upload_file_info->drive_path,
         upload_file_info->file_path,
         upload_file_info->entry.Pass());
+
+  // This will delete |upload_file_info|.
+  RemoveUpload(scoped_ptr<UploadFileInfo>(upload_file_info));
 }
 
-void DriveUploader::RemoveUpload(int upload_id) {
+void DriveUploader::RemoveUpload(scoped_ptr<UploadFileInfo> upload_file_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  pending_uploads_.erase(upload_id);
+  pending_uploads_.erase(upload_file_info->upload_id);
 }
 
 DriveUploader::UploadFileInfo::UploadFileInfo()
@@ -552,13 +550,7 @@ DriveUploader::UploadFileInfo::UploadFileInfo()
       num_file_open_tries(0) {
 }
 
-DriveUploader::UploadFileInfo::~UploadFileInfo() {
-  // The file stream is closed by the destructor asynchronously.
-  if (file_stream) {
-    delete file_stream;
-    file_stream = NULL;
-  }
-}
+DriveUploader::UploadFileInfo::~UploadFileInfo() { }
 
 int64 DriveUploader::UploadFileInfo::SizeRemaining() const {
   DCHECK(file_size > end_range);

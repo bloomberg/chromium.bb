@@ -162,7 +162,7 @@ class DriveUploader : public DriveUploaderInterface {
     // to extend a generic stream.
     //
     // For opening and reading from physical file.
-    net::FileStream* file_stream;
+    scoped_ptr<net::FileStream> file_stream;
     scoped_refptr<net::IOBuffer> buf;  // Holds current content to be uploaded.
     // Size of |buf|, max is 512KB; Google Docs requires size of each upload
     // chunk to be a multiple of 512KB.
@@ -236,16 +236,16 @@ class DriveUploader : public DriveUploaderInterface {
   void InitiateUpload(UploadFileInfo* uploader_file_info);
 
   // Handle failed uploads.
-  void UploadFailed(scoped_ptr<UploadFileInfo> upload_file_info,
+  void UploadFailed(UploadFileInfo* upload_file_info,
                     DriveFileError error);
 
-  // Removes |upload_id| from UploadFileInfoMap |pending_uploads_|.
-  // Note that this does not delete the UploadFileInfo object itself,
-  // because it may still be in use by an asynchronous function.
-  void RemoveUpload(int upload_id);
+  // Removes |upload_file_info| from UploadFileInfoMap |pending_uploads_|.
+  // After its removal from the map, |upload_file_info| is deleted.
+  void RemoveUpload(scoped_ptr<UploadFileInfo> upload_file_info);
 
   // Starts uploading a file with |upload_file_info|. Returns a new upload
-  // ID assigned to |upload_file_info|.
+  // ID assigned to |upload_file_info|. |upload_file_info| is added to
+  // |pending_uploads_map_|.
   int StartUploadFile(scoped_ptr<UploadFileInfo> upload_file_info);
 
   // Pointers to DriveServiceInterface object owned by DriveSystemService.
@@ -256,6 +256,8 @@ class DriveUploader : public DriveUploaderInterface {
   int next_upload_id_;  // id counter.
 
   typedef std::map<int, UploadFileInfo*> UploadFileInfoMap;
+  // Upload file infos added to the map are deleted either in |RemoveUpload| or
+  // in DriveUploader dtor (i.e. we can assume |this| takes their ownership).
   UploadFileInfoMap pending_uploads_;
 
   // Note: This should remain the last member so it'll be destroyed and
