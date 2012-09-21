@@ -123,7 +123,7 @@ class SearchBuilderResult : public app_list::SearchResult {
   virtual void UpdateIcon() {
     int resource_id = match_.starred ?
         IDR_OMNIBOX_STAR : AutocompleteMatch::TypeToIcon(match_.type);
-    SetIcon(*ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(
+    SetIcon(*ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
         resource_id));
   }
 
