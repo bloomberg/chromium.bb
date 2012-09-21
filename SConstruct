@@ -1870,6 +1870,7 @@ def MakeBaseTrustedEnv():
       # KEEP THIS SORTED PLEASE
       'src/shared/gio/build.scons',
       'src/shared/imc/build.scons',
+      'src/shared/ldr/build.scons',
       'src/shared/platform/build.scons',
       'src/shared/srpc/build.scons',
       'src/shared/utils/build.scons',
@@ -2612,6 +2613,7 @@ nacl_env.Append(
     'src/include/nacl/nacl.scons',
     'src/shared/gio/nacl.scons',
     'src/shared/imc/nacl.scons',
+    'src/shared/ldr/nacl.scons',
     'src/shared/platform/nacl.scons',
     'src/shared/srpc/nacl.scons',
     'src/trusted/service_runtime/nacl.scons',
