@@ -1,0 +1,5 @@
+# This file is used for tests that only need to be suppressed on
+# the Chromium WebKit ASAN bots. We keep these here because the memory
+# sheriffs are not usually WebKit committers; we can create an upstream
+# file if this turns out to not be true.
+
