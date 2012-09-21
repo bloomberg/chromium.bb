@@ -268,7 +268,6 @@ bool FaviconHandler::UpdateFaviconCandidate(const GURL& url,
                                             float score,
                                             history::IconType icon_type) {
   bool update_candidate = false;
-  SkBitmap bitmap = *(image.ToSkBitmap());
   bool exact_match = score == 1;
   if (preferred_icon_size() == 0) {
     // No preferred size, use this icon.
