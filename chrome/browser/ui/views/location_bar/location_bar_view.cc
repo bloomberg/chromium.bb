@@ -1000,10 +1000,8 @@ void LocationBarView::OnPaint(gfx::Canvas* canvas) {
     paint.setAntiAlias(true);
     // TODO(jamescook): Make the corners of the dropdown match the corners of
     // the omnibox.
-    const SkScalar radius(SkIntToScalar(kBorderCornerRadius));
     bounds.Inset(kNormalHorizontalEdgeThickness, 0);
-    canvas->sk_canvas()->drawRoundRect(gfx::RectToSkRect(bounds), radius,
-                                       radius, paint);
+    canvas->DrawRoundRect(bounds, kBorderCornerRadius, paint);
     if (action_box_button_view_)
       PaintActionBoxBackground(canvas, bounds);
     PaintPageActionBackgrounds(canvas);
