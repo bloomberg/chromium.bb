@@ -47,7 +47,9 @@ class FramedBrowserWindowTest : public CocoaTest {
     while ([frameView superview]) {
       frameView = [frameView superview];
     }
-    const NSRect bounds = [frameView bounds];
+
+    // Inset to mask off left and right edges which vary in HighDPI.
+    const NSRect bounds = NSInsetRect([frameView bounds], 4, 0);
 
     [frameView lockFocus];
     scoped_nsobject<NSBitmapImageRep> bitmap(
