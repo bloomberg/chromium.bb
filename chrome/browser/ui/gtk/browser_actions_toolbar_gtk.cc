@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
+#include "chrome/browser/ui/gtk/custom_button.h"
 #include "chrome/browser/ui/gtk/extensions/extension_popup_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_button.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_shrinkable_hbox.h"
@@ -47,6 +48,7 @@
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia_operations.h"
 
 using extensions::Extension;
 
@@ -124,7 +126,7 @@ class BrowserActionButton : public content::NotificationObserver,
     signals_.Connect(button(), "clicked",
                      G_CALLBACK(OnClicked), this);
     signals_.Connect(button(), "drag-begin",
-                     G_CALLBACK(&OnDragBegin), this);
+                     G_CALLBACK(OnDragBegin), this);
     signals_.ConnectAfter(widget(), "expose-event",
                      G_CALLBACK(OnExposeEvent), this);
     if (toolbar_->browser()->window()) {
@@ -218,11 +220,21 @@ class BrowserActionButton : public content::NotificationObserver,
     else
       gtk_widget_set_tooltip_text(button(), tooltip.c_str());
 
+    enabled_ = extension_->browser_action()->GetIsVisible(tab_id);
+    if (!enabled_)
+      button_->SetPaintOverride(GTK_STATE_INSENSITIVE);
+    else
+      button_->UnsetPaintOverride();
+
     gfx::Image image = icon_factory_.GetIcon(tab_id);
-    if (!image.IsEmpty())
-      SetImage(image.ToGdkPixbuf());
-    bool enabled = extension_->browser_action()->GetIsVisible(tab_id);
-    gtk_widget_set_sensitive(button(), enabled);
+    if (!image.IsEmpty()) {
+      if (enabled_) {
+        SetImage(image);
+      } else {
+        SetImage(gfx::Image(gfx::ImageSkiaOperations::CreateTransparentImage(
+            image.AsImageSkia(), .25)));
+      }
+    }
 
     gtk_widget_queue_draw(button());
   }
@@ -262,7 +274,10 @@ class BrowserActionButton : public content::NotificationObserver,
 
   // MenuGtk::Delegate implementation.
   virtual void StoppedShowing() {
-    button_->UnsetPaintOverride();
+    if (enabled_)
+      button_->UnsetPaintOverride();
+    else
+      button_->SetPaintOverride(GTK_STATE_INSENSITIVE);
 
     // If the context menu was showing for the overflow menu, re-assert the
     // grab that was shadowed.
@@ -284,33 +299,34 @@ class BrowserActionButton : public content::NotificationObserver,
                             ExtensionPopupGtk::SHOW_AND_INSPECT);
   }
 
-  void SetImage(GdkPixbuf* image) {
+  void SetImage(const gfx::Image& image) {
     if (!image_) {
-      image_ = gtk_image_new_from_pixbuf(image);
+      image_ = gtk_image_new_from_pixbuf(image.ToGdkPixbuf());
       gtk_button_set_image(GTK_BUTTON(button()), image_);
     } else {
-      gtk_image_set_from_pixbuf(GTK_IMAGE(image_), image);
+      gtk_image_set_from_pixbuf(GTK_IMAGE(image_), image.ToGdkPixbuf());
     }
   }
 
   static gboolean OnButtonPress(GtkWidget* widget,
                                 GdkEventButton* event,
-                                BrowserActionButton* action) {
+                                BrowserActionButton* button) {
     if (event->button != 3)
       return FALSE;
 
-    MenuGtk* menu = action->GetContextMenu();
+    MenuGtk* menu = button->GetContextMenu();
     if (!menu)
       return FALSE;
 
-    action->button_->SetPaintOverride(GTK_STATE_ACTIVE);
+    button->button_->SetPaintOverride(GTK_STATE_ACTIVE);
     menu->PopupForWidget(widget, event->button, event->time);
 
     return TRUE;
   }
 
-  static void OnClicked(GtkWidget* widget, BrowserActionButton* action) {
-    action->Activate(widget);
+  static void OnClicked(GtkWidget* widget, BrowserActionButton* button) {
+    if (button->enabled_)
+      button->Activate(widget);
   }
 
   static gboolean OnExposeEvent(GtkWidget* widget,
@@ -429,6 +445,10 @@ class BrowserActionButton : public content::NotificationObserver,
 
   // The button for this browser action.
   scoped_ptr<CustomDrawButton> button_;
+
+  // Whether the browser action is enabled (equivalent to whether a page action
+  // is visible).
+  bool enabled_;
 
   // The top level widget (parent of |button_|).
   ui::OwnedWidgetGtk alignment_;
