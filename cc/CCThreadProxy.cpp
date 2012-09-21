@@ -936,4 +936,13 @@ void CCThreadProxy::implSideRenderingStatsOnImplThread(CCCompletionEvent* comple
     completion->signal();
 }
 
+CCThreadProxy::BeginFrameAndCommitState::BeginFrameAndCommitState()
+    : monotonicFrameBeginTime(0)
+{
+}
+
+CCThreadProxy::BeginFrameAndCommitState::~BeginFrameAndCommitState()
+{
+}
+
 } // namespace cc

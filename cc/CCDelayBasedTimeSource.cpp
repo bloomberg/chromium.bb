@@ -45,6 +45,10 @@ CCDelayBasedTimeSource::CCDelayBasedTimeSource(base::TimeDelta interval, CCThrea
     turnOffVerifier();
 }
 
+CCDelayBasedTimeSource::~CCDelayBasedTimeSource()
+{
+}
+
 void CCDelayBasedTimeSource::setActive(bool active)
 {
     TRACE_EVENT1("cc", "CCDelayBasedTimeSource::setActive", "active", active);
@@ -69,6 +73,11 @@ void CCDelayBasedTimeSource::setActive(bool active)
     m_state = STATE_ACTIVE;
 
     postNextTickTask(now());
+}
+
+bool CCDelayBasedTimeSource::active() const
+{
+    return m_state != STATE_INACTIVE;
 }
 
 base::TimeTicks CCDelayBasedTimeSource::lastTickTime()
@@ -98,6 +107,11 @@ void CCDelayBasedTimeSource::onTimerFired()
     // Fire the tick
     if (m_client)
         m_client->onTimerTick();
+}
+
+void CCDelayBasedTimeSource::setClient(CCTimeSourceClient* client)
+{
+    m_client = client;
 }
 
 void CCDelayBasedTimeSource::setTimebaseAndInterval(base::TimeTicks timebase, base::TimeDelta interval)

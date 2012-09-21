@@ -44,5 +44,10 @@ void CCSolidColorLayerImpl::appendQuads(CCQuadSink& quadSink, CCAppendQuadsData&
     }
 }
 
+const char* CCSolidColorLayerImpl::layerTypeAsString() const
+{
+    return "SolidColorLayer";
+}
+
 } // namespace cc
 #endif // USE(ACCELERATED_COMPOSITING)

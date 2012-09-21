@@ -24,6 +24,10 @@ CCLayerTilingData::CCLayerTilingData(const IntSize& tileSize, BorderTexelOption 
     setTileSize(tileSize);
 }
 
+CCLayerTilingData::~CCLayerTilingData()
+{
+}
+
 void CCLayerTilingData::setTileSize(const IntSize& size)
 {
     if (tileSize() == size)

@@ -34,12 +34,12 @@ public:
 
     virtual void didLoseContext() OVERRIDE;
 
-    virtual bool layerIsAlwaysDamaged() const OVERRIDE { return true; }
+    virtual bool layerIsAlwaysDamaged() const OVERRIDE;
 
 private:
     explicit CCHeadsUpDisplayLayerImpl(int);
 
-    virtual const char* layerTypeAsString() const OVERRIDE { return "HeadsUpDisplayLayer"; }
+    virtual const char* layerTypeAsString() const OVERRIDE;
 
     void drawHudContents(SkCanvas*);
     void drawFPSCounter(SkCanvas*, CCFrameRateCounter*, int top, int height);

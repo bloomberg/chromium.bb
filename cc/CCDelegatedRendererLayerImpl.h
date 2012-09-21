@@ -38,7 +38,7 @@ private:
 
     PassOwnPtr<CCDrawQuad> createCopyOfQuad(const CCDrawQuad*);
 
-    virtual const char* layerTypeAsString() const OVERRIDE { return "DelegatedRendererLayer"; }
+    virtual const char* layerTypeAsString() const OVERRIDE;
 
     OwnPtrVector<CCRenderPass> m_renderPassesInDrawOrder;
     HashMap<CCRenderPass::Id, int> m_renderPassesIndexById;

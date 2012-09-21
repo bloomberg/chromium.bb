@@ -21,13 +21,9 @@ public:
     virtual void layout() OVERRIDE { }
     virtual void applyScrollAndScale(const IntSize& scrollDelta, float pageScale) OVERRIDE { }
 
-    virtual PassOwnPtr<WebKit::WebCompositorOutputSurface> createOutputSurface() OVERRIDE
-    {
-        WebKit::WebGraphicsContext3D::Attributes attrs;
-        return WebKit::FakeWebCompositorOutputSurface::create(WebKit::CompositorFakeWebGraphicsContext3D::create(attrs));
-    }
+    virtual PassOwnPtr<WebKit::WebCompositorOutputSurface> createOutputSurface() OVERRIDE;
     virtual void didRecreateOutputSurface(bool success) OVERRIDE { }
-    virtual PassOwnPtr<CCInputHandler> createInputHandler() OVERRIDE { return nullptr; }
+    virtual PassOwnPtr<CCInputHandler> createInputHandler() OVERRIDE;
     virtual void willCommit() OVERRIDE { }
     virtual void didCommit() OVERRIDE { }
     virtual void didCommitAndDrawFrame() OVERRIDE { }

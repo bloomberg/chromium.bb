@@ -18,7 +18,7 @@ public:
     virtual ~HeadsUpDisplayLayerChromium();
 
     virtual void update(CCTextureUpdateQueue&, const CCOcclusionTracker*, CCRenderingStats&) OVERRIDE;
-    virtual bool drawsContent() const OVERRIDE { return true; }
+    virtual bool drawsContent() const OVERRIDE;
 
     void setFontAtlas(PassOwnPtr<CCFontAtlas>);
 

@@ -80,6 +80,11 @@ bool ContentLayerChromium::needMoreUpdates()
     return needsIdlePaint();
 }
 
+LayerTextureUpdater* ContentLayerChromium::textureUpdater() const
+{
+    return m_textureUpdater.get();
+}
+
 void ContentLayerChromium::createTextureUpdaterIfNeeded()
 {
     if (m_textureUpdater)

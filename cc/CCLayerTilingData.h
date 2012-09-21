@@ -21,6 +21,8 @@ class CCLayerTilingData {
 public:
     enum BorderTexelOption { HasBorderTexels, NoBorderTexels };
 
+    ~CCLayerTilingData();
+
     static PassOwnPtr<CCLayerTilingData> create(const IntSize& tileSize, BorderTexelOption);
 
     bool hasEmptyBounds() const { return m_tilingData.hasEmptyBounds(); }

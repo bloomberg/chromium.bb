@@ -153,6 +153,21 @@ void CCLayerImpl::appendDebugBorderQuad(CCQuadSink& quadList, const CCSharedQuad
     quadList.append(CCDebugBorderDrawQuad::create(sharedQuadState, contentRect, debugBorderColor(), debugBorderWidth()), appendQuadsData);
 }
 
+bool CCLayerImpl::hasContributingDelegatedRenderPasses() const
+{
+    return false;
+}
+
+CCRenderPass::Id CCLayerImpl::firstContributingRenderPassId() const
+{
+    return CCRenderPass::Id(0, 0);
+}
+
+CCRenderPass::Id CCLayerImpl::nextContributingRenderPassId(CCRenderPass::Id) const
+{
+    return CCRenderPass::Id(0, 0);
+}
+
 CCResourceProvider::ResourceId CCLayerImpl::contentsResourceId() const
 {
     ASSERT_NOT_REACHED();

@@ -38,6 +38,10 @@ ScrollbarLayerChromium::ScrollbarLayerChromium(PassOwnPtr<WebKit::WebScrollbar> 
 {
 }
 
+ScrollbarLayerChromium::~ScrollbarLayerChromium()
+{
+}
+
 void ScrollbarLayerChromium::pushPropertiesTo(CCLayerImpl* layer)
 {
     LayerChromium::pushPropertiesTo(layer);
@@ -63,6 +67,11 @@ void ScrollbarLayerChromium::pushPropertiesTo(CCLayerImpl* layer)
         scrollbarLayer->setThumbResourceId(m_thumb->texture()->resourceId());
     else
         scrollbarLayer->setThumbResourceId(0);
+}
+
+ScrollbarLayerChromium* ScrollbarLayerChromium::toScrollbarLayerChromium()
+{
+    return this;
 }
 
 class ScrollbarBackgroundPainter : public LayerPainterChromium {

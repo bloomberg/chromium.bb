@@ -14,10 +14,20 @@ const CCFloatAnimationCurve* CCAnimationCurve::toFloatAnimationCurve() const
     return static_cast<const CCFloatAnimationCurve*>(this);
 }
 
+CCAnimationCurve::Type CCFloatAnimationCurve::type() const
+{
+    return Float;
+}
+
 const CCTransformAnimationCurve* CCAnimationCurve::toTransformAnimationCurve() const
 {
     ASSERT(type() ==  CCAnimationCurve::Transform);
     return static_cast<const CCTransformAnimationCurve*>(this);
+}
+
+CCAnimationCurve::Type CCTransformAnimationCurve::type() const
+{
+    return Transform;
 }
 
 } // namespace cc

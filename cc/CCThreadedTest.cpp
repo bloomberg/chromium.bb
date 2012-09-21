@@ -77,6 +77,15 @@ CompositorFakeWebGraphicsContext3DWithTextureTracking::CompositorFakeWebGraphics
 {
 }
 
+CompositorFakeWebGraphicsContext3DWithTextureTracking::~CompositorFakeWebGraphicsContext3DWithTextureTracking()
+{
+}
+
+bool TestHooks::prepareToDrawOnCCThread(cc::CCLayerTreeHostImpl*)
+{
+    return true;
+}
+
 PassOwnPtr<WebCompositorOutputSurface> TestHooks::createOutputSurface()
 {
     return FakeWebCompositorOutputSurface::create(CompositorFakeWebGraphicsContext3DWithTextureTracking::create(WebGraphicsContext3D::Attributes()));
@@ -296,7 +305,12 @@ CCThreadedTest::CCThreadedTest()
     , m_finished(false)
     , m_scheduled(false)
     , m_started(false)
-{ }
+{
+}
+
+CCThreadedTest::~CCThreadedTest()
+{
+}
 
 void CCThreadedTest::endTest()
 {

@@ -24,7 +24,7 @@ protected:
     explicit CCSolidColorLayerImpl(int id);
 
 private:
-    virtual const char* layerTypeAsString() const OVERRIDE { return "SolidColorLayer"; }
+    virtual const char* layerTypeAsString() const OVERRIDE;
 
     const int m_tileSize;
 };

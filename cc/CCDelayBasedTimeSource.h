@@ -19,15 +19,15 @@ class CCDelayBasedTimeSource : public CCTimeSource, CCTimerClient {
 public:
     static PassRefPtr<CCDelayBasedTimeSource> create(base::TimeDelta interval, CCThread*);
 
-    virtual ~CCDelayBasedTimeSource() { }
+    virtual ~CCDelayBasedTimeSource();
 
-    virtual void setClient(CCTimeSourceClient* client) OVERRIDE { m_client = client; }
+    virtual void setClient(CCTimeSourceClient* client) OVERRIDE;
 
     // CCTimeSource implementation
     virtual void setTimebaseAndInterval(base::TimeTicks timebase, base::TimeDelta interval) OVERRIDE;
 
     virtual void setActive(bool) OVERRIDE;
-    virtual bool active() const OVERRIDE { return m_state != STATE_INACTIVE; }
+    virtual bool active() const OVERRIDE;
 
     // Get the last and next tick times.
     virtual base::TimeTicks lastTickTime() OVERRIDE;

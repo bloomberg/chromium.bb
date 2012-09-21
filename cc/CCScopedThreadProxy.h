@@ -7,6 +7,8 @@
 
 #include "CCThreadTask.h"
 #include "base/threading/platform_thread.h"
+#include <wtf/OwnPtr.h>
+#include <wtf/PassOwnPtr.h>
 #include <wtf/ThreadSafeRefCounted.h>
 
 namespace cc {
@@ -29,6 +31,8 @@ public:
         return adoptRef(new CCScopedThreadProxy(targetThread));
     }
 
+    ~CCScopedThreadProxy();
+
     // Can be called from any thread. Posts a task to the target thread that runs unless
     // shutdown() is called before it runs.
     void postTask(PassOwnPtr<CCThread::Task> task)
@@ -45,9 +49,7 @@ public:
     }
 
 private:
-    explicit CCScopedThreadProxy(CCThread* targetThread)
-        : m_targetThread(targetThread)
-        , m_shutdown(false) { }
+    explicit CCScopedThreadProxy(CCThread* targetThread);
 
     void runTaskIfNotShutdown(PassOwnPtr<CCThread::Task> popTask)
     {

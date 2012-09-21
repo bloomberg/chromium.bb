@@ -126,6 +126,11 @@ void CCHeadsUpDisplayLayerImpl::didLoseContext()
     m_hudTexture.clear();
 }
 
+bool CCHeadsUpDisplayLayerImpl::layerIsAlwaysDamaged() const
+{
+    return true;
+}
+
 void CCHeadsUpDisplayLayerImpl::drawHudContents(SkCanvas* canvas)
 {
     const CCLayerTreeSettings& settings = layerTreeHostImpl()->settings();
@@ -280,6 +285,11 @@ void CCHeadsUpDisplayLayerImpl::drawDebugRects(SkCanvas* canvas, CCDebugRectHist
         paint.setStrokeWidth(2);
         canvas->drawRect(skRect, paint);
     }
+}
+
+const char* CCHeadsUpDisplayLayerImpl::layerTypeAsString() const
+{
+    return "HeadsUpDisplayLayer";
 }
 
 }

@@ -38,7 +38,7 @@ public:
     virtual float getValue(double t) const = 0;
 
     // Partial CCAnimation implementation.
-    virtual Type type() const OVERRIDE { return Float; }
+    virtual Type type() const OVERRIDE;
 };
 
 class CCTransformAnimationCurve : public CCAnimationCurve {
@@ -48,7 +48,7 @@ public:
     virtual WebKit::WebTransformationMatrix getValue(double t) const = 0;
 
     // Partial CCAnimation implementation.
-    virtual Type type() const OVERRIDE { return Transform; }
+    virtual Type type() const OVERRIDE;
 };
 
 } // namespace cc

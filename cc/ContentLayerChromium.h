@@ -54,7 +54,7 @@ protected:
 
 
 private:
-    virtual LayerTextureUpdater* textureUpdater() const OVERRIDE { return m_textureUpdater.get(); }
+    virtual LayerTextureUpdater* textureUpdater() const OVERRIDE;
     virtual void createTextureUpdaterIfNeeded() OVERRIDE;
 
     ContentLayerChromiumClient* m_client;

@@ -50,14 +50,14 @@ public:
     virtual ~LayerChromium();
 
     // CCLayerAnimationControllerClient implementation
-    virtual int id() const OVERRIDE { return m_layerId; }
+    virtual int id() const OVERRIDE;
     virtual void setOpacityFromAnimation(float) OVERRIDE;
-    virtual float opacity() const OVERRIDE { return m_opacity; }
+    virtual float opacity() const OVERRIDE;
     virtual void setTransformFromAnimation(const WebKit::WebTransformationMatrix&) OVERRIDE;
     // A layer's transform operates layer space. That is, entirely in logical,
     // non-page-scaled pixels (that is, they have page zoom baked in, but not page scale).
     // The root layer is a special case -- it operates in physical pixels.
-    virtual const WebKit::WebTransformationMatrix& transform() const OVERRIDE { return m_transform; }
+    virtual const WebKit::WebTransformationMatrix& transform() const OVERRIDE;
 
     LayerChromium* rootLayer();
     LayerChromium* parent() const;
@@ -83,7 +83,7 @@ public:
     // root layer's bounds are in physical pixels).
     void setBounds(const IntSize&);
     const IntSize& bounds() const { return m_bounds; }
-    virtual IntSize contentBounds() const { return bounds(); }
+    virtual IntSize contentBounds() const;
 
     void setMasksToBounds(bool);
     bool masksToBounds() const { return m_masksToBounds; }
@@ -93,7 +93,7 @@ public:
 
     virtual void setNeedsDisplayRect(const FloatRect& dirtyRect);
     void setNeedsDisplay() { setNeedsDisplayRect(FloatRect(FloatPoint(), bounds())); }
-    virtual bool needsDisplay() const { return m_needsDisplay; }
+    virtual bool needsDisplay() const;
 
     void setOpacity(float);
     bool opacityIsAnimating() const;
@@ -184,12 +184,12 @@ public:
     bool replicaHasMask() const { return m_replicaLayer && (m_maskLayer || m_replicaLayer->m_maskLayer); }
 
     // These methods typically need to be overwritten by derived classes.
-    virtual bool drawsContent() const { return m_isDrawable; }
+    virtual bool drawsContent() const;
     virtual void update(CCTextureUpdateQueue&, const CCOcclusionTracker*, CCRenderingStats&) { }
-    virtual bool needMoreUpdates() { return false; }
+    virtual bool needMoreUpdates();
     virtual void setIsMask(bool) { }
     virtual void bindContentsTexture() { }
-    virtual bool needsContentsScale() const { return false; }
+    virtual bool needsContentsScale() const;
 
     void setDebugBorderColor(SkColor);
     void setDebugBorderWidth(float);
@@ -263,7 +263,7 @@ public:
 
     virtual Region visibleContentOpaqueRegion() const;
 
-    virtual ScrollbarLayerChromium* toScrollbarLayerChromium() { return 0; }
+    virtual ScrollbarLayerChromium* toScrollbarLayerChromium();
 
 protected:
     friend class CCLayerImpl;

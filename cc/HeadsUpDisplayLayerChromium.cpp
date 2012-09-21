@@ -45,6 +45,11 @@ void HeadsUpDisplayLayerChromium::update(CCTextureUpdateQueue&, const CCOcclusio
     setBounds(bounds);
 }
 
+bool HeadsUpDisplayLayerChromium::drawsContent() const
+{
+    return true;
+}
+
 void HeadsUpDisplayLayerChromium::setFontAtlas(PassOwnPtr<CCFontAtlas> fontAtlas)
 {
     m_fontAtlas = fontAtlas;

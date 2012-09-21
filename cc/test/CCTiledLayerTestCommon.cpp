@@ -147,4 +147,9 @@ void FakeTextureUploader::uploadTexture(cc::CCResourceProvider* resourceProvider
     upload.texture->updateRect(resourceProvider, upload.sourceRect, upload.destOffset);
 }
 
+double FakeTextureUploader::estimatedTexturesPerSecond()
+{
+    return std::numeric_limits<double>::max();
+}
+
 } // namespace

@@ -174,4 +174,9 @@ void CCDelegatedRendererLayerImpl::appendRenderPassQuads(CCQuadSink& quadSink, C
     }
 }
 
+const char* CCDelegatedRendererLayerImpl::layerTypeAsString() const
+{
+    return "DelegatedRendererLayer";
+}
+
 }

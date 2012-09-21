@@ -7,6 +7,7 @@
 
 #include "CCDrawQuad.h"
 #include "CCQuadSink.h"
+#include "CCRenderPass.h"
 #include "IntRect.h"
 #include <wtf/PassOwnPtr.h>
 
@@ -14,35 +15,14 @@ namespace cc {
 
 class MockCCQuadCuller : public CCQuadSink {
 public:
-    MockCCQuadCuller()
-        : m_activeQuadList(m_quadListStorage)
-        , m_activeSharedQuadStateList(m_sharedQuadStateStorage)
-    { }
+    MockCCQuadCuller();
+    virtual ~MockCCQuadCuller();
 
-    explicit MockCCQuadCuller(CCQuadList& externalQuadList, CCSharedQuadStateList& externalSharedQuadStateList)
-        : m_activeQuadList(externalQuadList)
-        , m_activeSharedQuadStateList(externalSharedQuadStateList)
-    { }
+    MockCCQuadCuller(CCQuadList& externalQuadList, CCSharedQuadStateList& externalSharedQuadStateList);
 
-    virtual bool append(PassOwnPtr<CCDrawQuad> newQuad, CCAppendQuadsData&) OVERRIDE
-    {
-        OwnPtr<CCDrawQuad> drawQuad = newQuad;
-        if (!drawQuad->quadRect().isEmpty()) {
-            m_activeQuadList.append(drawQuad.release());
-            return true;
-        }
-        return false;
-    }
+    virtual bool append(PassOwnPtr<CCDrawQuad> newQuad, CCAppendQuadsData&) OVERRIDE;
 
-    virtual CCSharedQuadState* useSharedQuadState(PassOwnPtr<CCSharedQuadState> passSharedQuadState) OVERRIDE
-    {
-        OwnPtr<CCSharedQuadState> sharedQuadState(passSharedQuadState);
-        sharedQuadState->id = m_activeSharedQuadStateList.size();
-
-        CCSharedQuadState* rawPtr = sharedQuadState.get();
-        m_activeSharedQuadStateList.append(sharedQuadState.release());
-        return rawPtr;
-    }
+    virtual CCSharedQuadState* useSharedQuadState(PassOwnPtr<CCSharedQuadState> passSharedQuadState) OVERRIDE;
 
     const CCQuadList& quadList() const { return m_activeQuadList; };
     const CCSharedQuadStateList& sharedQuadStateList() const { return m_activeSharedQuadStateList; };

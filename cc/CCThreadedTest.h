@@ -28,7 +28,7 @@ class TestHooks : public WebKit::WebAnimationDelegate {
 public:
     virtual void beginCommitOnCCThread(cc::CCLayerTreeHostImpl*) { }
     virtual void commitCompleteOnCCThread(cc::CCLayerTreeHostImpl*) { }
-    virtual bool prepareToDrawOnCCThread(cc::CCLayerTreeHostImpl*) { return true; }
+    virtual bool prepareToDrawOnCCThread(cc::CCLayerTreeHostImpl*);
     virtual void drawLayersOnCCThread(cc::CCLayerTreeHostImpl*) { }
     virtual void animateLayers(cc::CCLayerTreeHostImpl*, double monotonicTime) { }
     virtual void willAnimateLayers(cc::CCLayerTreeHostImpl*, double monotonicTime) { }
@@ -66,6 +66,8 @@ class MockCCLayerTreeHostClient : public cc::CCLayerTreeHostClient {
 // ending the test is an asynchronous process.
 class CCThreadedTest : public testing::Test, public TestHooks {
 public:
+    virtual ~CCThreadedTest();
+
     virtual void afterTest() = 0;
     virtual void beginTest() = 0;
 
@@ -94,7 +96,7 @@ protected:
 
     virtual void initializeSettings(cc::CCLayerTreeSettings&) { }
 
-    virtual void scheduleComposite();
+    virtual void scheduleComposite() OVERRIDE;
 
     void realEndTest();
 
@@ -145,18 +147,18 @@ class MockLayerTreeHostImpl : public cc::CCLayerTreeHostImpl {
 public:
     static PassOwnPtr<MockLayerTreeHostImpl> create(TestHooks*, const cc::CCLayerTreeSettings&, cc::CCLayerTreeHostImplClient*);
 
-    virtual void beginCommit();
-    virtual void commitComplete();
-    virtual bool prepareToDraw(FrameData&);
-    virtual void drawLayers(const FrameData&);
+    virtual void beginCommit() OVERRIDE;
+    virtual void commitComplete() OVERRIDE;
+    virtual bool prepareToDraw(FrameData&) OVERRIDE;
+    virtual void drawLayers(const FrameData&) OVERRIDE;
 
     // Make these public.
     typedef Vector<cc::CCLayerImpl*> CCLayerList;
     using CCLayerTreeHostImpl::calculateRenderSurfaceLayerList;
 
 protected:
-    virtual void animateLayers(double monotonicTime, double wallClockTime);
-    virtual base::TimeDelta lowFrequencyAnimationInterval() const;
+    virtual void animateLayers(double monotonicTime, double wallClockTime) OVERRIDE;
+    virtual base::TimeDelta lowFrequencyAnimationInterval() const OVERRIDE;
 
 private:
     MockLayerTreeHostImpl(TestHooks*, const cc::CCLayerTreeSettings&, cc::CCLayerTreeHostImplClient*);
@@ -167,6 +169,7 @@ private:
 class CompositorFakeWebGraphicsContext3DWithTextureTracking : public WebKit::CompositorFakeWebGraphicsContext3D {
 public:
     static PassOwnPtr<CompositorFakeWebGraphicsContext3DWithTextureTracking> create(Attributes);
+    virtual ~CompositorFakeWebGraphicsContext3DWithTextureTracking();
 
     virtual WebKit::WebGLId createTexture();
 

@@ -81,10 +81,8 @@ private:
 
     // Set on impl thread, read on main thread.
     struct BeginFrameAndCommitState {
-        BeginFrameAndCommitState()
-            : monotonicFrameBeginTime(0)
-        {
-        }
+        BeginFrameAndCommitState();
+        ~BeginFrameAndCommitState();
 
         double monotonicFrameBeginTime;
         OwnPtr<CCScrollAndScaleSet> scrollInfo;

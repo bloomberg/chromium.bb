@@ -82,9 +82,9 @@ public:
 
     virtual CCResourceProvider::ResourceId contentsResourceId() const;
 
-    virtual bool hasContributingDelegatedRenderPasses() const { return false; }
-    virtual CCRenderPass::Id firstContributingRenderPassId() const { return CCRenderPass::Id(0, 0); }
-    virtual CCRenderPass::Id nextContributingRenderPassId(CCRenderPass::Id) const { return CCRenderPass::Id(0, 0); }
+    virtual bool hasContributingDelegatedRenderPasses() const;
+    virtual CCRenderPass::Id firstContributingRenderPassId() const;
+    virtual CCRenderPass::Id nextContributingRenderPassId(CCRenderPass::Id) const;
 
     // Returns true if this layer has content to draw.
     void setDrawsContent(bool);

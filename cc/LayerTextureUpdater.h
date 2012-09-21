@@ -24,15 +24,15 @@ public:
     // Allows texture uploaders to store per-tile resources.
     class Texture {
     public:
-        virtual ~Texture() { }
+        virtual ~Texture();
 
         CCPrioritizedTexture* texture() { return m_texture.get(); }
         void swapTextureWith(OwnPtr<CCPrioritizedTexture>& texture) { m_texture.swap(texture); }
         virtual void prepareRect(const IntRect& /* sourceRect */, CCRenderingStats&) { }
         virtual void updateRect(CCResourceProvider*, const IntRect& sourceRect, const IntSize& destOffset) = 0;
-        virtual bool backingResourceWasEvicted() const { return m_texture->backingResourceWasEvicted(); }
+        virtual bool backingResourceWasEvicted() const;
     protected:
-        explicit Texture(PassOwnPtr<CCPrioritizedTexture> texture) : m_texture(texture) { }
+        explicit Texture(PassOwnPtr<CCPrioritizedTexture> texture);
 
     private:
         OwnPtr<CCPrioritizedTexture> m_texture;
