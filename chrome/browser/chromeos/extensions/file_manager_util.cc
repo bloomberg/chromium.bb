@@ -43,6 +43,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/pepper_plugin_info.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "net/base/net_util.h"
@@ -783,15 +784,16 @@ bool ShouldBeOpenedWithPdfPlugin(Profile* profile, const char* file_extension) {
   FilePath pdf_path;
   PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf_path);
 
-  webkit::WebPluginInfo plugin;
-  if (!PluginService::GetInstance()->GetPluginInfoByPath(pdf_path, &plugin))
+  content::PepperPluginInfo* pepper_info =
+      PluginService::GetInstance()->GetRegisteredPpapiPluginInfo(pdf_path);
+  if (!pepper_info)
     return false;
 
   PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(profile);
   if (!plugin_prefs)
     return false;
 
-  return plugin_prefs->IsPluginEnabled(plugin);
+  return plugin_prefs->IsPluginEnabled(pepper_info->ToWebPluginInfo());
 }
 
 ListValue* ProgressStatusVectorToListValue(
