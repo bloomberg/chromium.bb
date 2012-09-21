@@ -3821,11 +3821,15 @@ void RenderViewImpl::CreateFrameTree(WebKit::WebFrame* frame,
   if (!frame_tree->GetList(content::kFrameTreeNodeSubtreeKey, &children))
     return;
 
+  // Create an invisible iframe tree in the swapped out page.
   base::DictionaryValue* child;
   for (size_t i = 0; i < children->GetSize(); ++i) {
     if (!children->GetDictionary(i, &child))
       continue;
     WebElement element = frame->document().createElement("iframe");
+    element.setAttribute("width", "0");
+    element.setAttribute("height", "0");
+    element.setAttribute("frameBorder", "0");
     if (frame->document().body().appendChild(element)) {
       WebFrame* subframe = WebFrame::fromFrameOwnerElement(element);
       if (subframe)
@@ -6232,6 +6236,11 @@ void RenderViewImpl::OnUpdatedFrameTree(
     int process_id,
     int route_id,
     const std::string& frame_tree) {
+  // We should only act on this message if we are swapped out.  It's possible
+  // for this to happen due to races.
+  if (!is_swapped_out_)
+    return;
+
   base::DictionaryValue* frames = NULL;
   scoped_ptr<base::Value> tree(base::JSONReader::Read(frame_tree));
   if (tree.get() && tree->IsType(base::Value::TYPE_DICTIONARY))

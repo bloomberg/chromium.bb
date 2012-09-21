@@ -1298,4 +1298,67 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, FrameTreeUpdates) {
       GetTree(opener_rvhm->GetSwappedOutRenderViewHost(site_instance2))));
 }
 
+// Test for crbug.com/143155.  Frame tree updates during unload should not
+// interrupt the intended navigation and show swappedout:// instead.
+// Specifically:
+// 1) Open 2 tabs in an HTTP SiteInstance, with a subframe in the opener.
+// 2) Send the second tab to a different HTTPS SiteInstance.
+//    This creates a swapped out opener for the first tab in the HTTPS process.
+// 3) Navigate the first tab to the HTTPS SiteInstance, and have the first
+//    tab's unload handler remove its frame.
+// This used to cause an update to the frame tree of the swapped out RV,
+// just as it was navigating to a real page.  That pre-empted the real
+// navigation and visibly sent the tab to swappedout://.
+IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
+                       DontPreemptNavigationWithFrameTreeUpdate) {
+  // Start two servers with different sites.
+  ASSERT_TRUE(test_server()->Start());
+  net::TestServer https_server(
+      net::TestServer::TYPE_HTTPS,
+      net::TestServer::kLocalhost,
+      FilePath(FILE_PATH_LITERAL("content/test/data")));
+  ASSERT_TRUE(https_server.Start());
+
+  // 1. Load a page that deletes its iframe during unload.
+  NavigateToURL(shell(),
+                test_server()->GetURL("files/remove_frame_on_unload.html"));
+
+  // Get the original SiteInstance for later comparison.
+  scoped_refptr<SiteInstance> orig_site_instance(
+      shell()->web_contents()->GetSiteInstance());
+
+  // Open a same-site page in a new window.
+  ShellAddedObserver new_shell_observer;
+  bool success = false;
+  EXPECT_TRUE(ExecuteJavaScriptAndExtractBool(
+      shell()->web_contents()->GetRenderViewHost(), L"",
+      L"window.domAutomationController.send(openWindow());",
+      &success));
+  EXPECT_TRUE(success);
+  Shell* new_shell = new_shell_observer.GetShell();
+
+  // Wait for the navigation in the new window to finish, if it hasn't.
+  WaitForLoadStop(new_shell->web_contents());
+  EXPECT_EQ("/files/title1.html",
+            new_shell->web_contents()->GetURL().path());
+
+  // Should have the same SiteInstance.
+  EXPECT_EQ(orig_site_instance, new_shell->web_contents()->GetSiteInstance());
+
+  // 2. Send the second tab to a different process.
+  NavigateToURL(new_shell, https_server.GetURL("files/title1.html"));
+  scoped_refptr<SiteInstance> new_site_instance(
+      new_shell->web_contents()->GetSiteInstance());
+  EXPECT_NE(orig_site_instance, new_site_instance);
+
+  // 3. Send the first tab to the second tab's process.
+  NavigateToURL(shell(), https_server.GetURL("files/title1.html"));
+
+  // Make sure it ends up at the right page.
+  WaitForLoadStop(shell()->web_contents());
+  EXPECT_EQ(https_server.GetURL("files/title1.html"),
+            shell()->web_contents()->GetURL());
+  EXPECT_EQ(new_site_instance, shell()->web_contents()->GetSiteInstance());
+}
+
 }  // namespace content

@@ -257,10 +257,17 @@ void RenderViewHostManager::DidUpdateFrameTree(
     DCHECK_NE(iter->second->GetSiteInstance(),
         current_host()->GetSiteInstance());
 
-    iter->second->UpdateFrameTree(
-        render_view_host_impl->GetProcess()->GetID(),
-        render_view_host_impl->GetRoutingID(),
-        render_view_host_impl->frame_tree());
+    // Send updates to the other swapped out RVHs, unless it's the pending RVH
+    // (which is in the process of navigating).
+    // TODO(creis): Remove the pending RVH from swapped_out_hosts_.
+    // TODO(nasko): Don't send updates across BrowsingInstances.
+    // See http://crbug.com/150855.
+    if (iter->second != pending_render_view_host_) {
+      iter->second->UpdateFrameTree(
+          render_view_host_impl->GetProcess()->GetID(),
+          render_view_host_impl->GetRoutingID(),
+          render_view_host_impl->frame_tree());
+    }
   }
 }
 
