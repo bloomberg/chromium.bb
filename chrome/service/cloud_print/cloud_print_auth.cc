@@ -17,7 +17,6 @@
 CloudPrintAuth::CloudPrintAuth(
     Client* client,
     const GURL& cloud_print_server_url,
-    const base::DictionaryValue* print_sys_settings,
     const gaia::OAuthClientInfo& oauth_client_info,
     const std::string& proxy_id)
       : client_(client),
@@ -25,10 +24,6 @@ CloudPrintAuth::CloudPrintAuth(
         cloud_print_server_url_(cloud_print_server_url),
         proxy_id_(proxy_id) {
   DCHECK(client);
-  if (print_sys_settings) {
-    // It is possible to have no print settings specified.
-    print_system_settings_.reset(print_sys_settings->DeepCopy());
-  }
 }
 
 void CloudPrintAuth::AuthenticateWithLsid(

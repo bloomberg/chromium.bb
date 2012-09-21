@@ -276,7 +276,6 @@ void CloudPrintProxyBackend::Core::CreateAuthAndConnector() {
   if (!auth_.get()) {
     auth_ = new CloudPrintAuth(this,
                                cloud_print_server_url_,
-                               print_system_settings_.get(),
                                oauth_client_info_,
                                proxy_id_);
   }
