@@ -5,6 +5,7 @@
  */
 
 #include <assert.h>
+#include <errno.h>
 #include <pthread.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -22,6 +23,8 @@ static pthread_t g_initial_thread_id;
 
 /* This flag is set to zero by the IRT's thread_exit() function. */
 static int32_t g_thread_flag;
+
+static __thread uint32_t g_block_hook_call_count = 0;
 
 
 static void wait_for_thread_exit(void) {
@@ -51,9 +54,34 @@ static void check_thread(void) {
   assert(!pthread_equal(pthread_self(), g_initial_thread_id));
 }
 
+static void pre_block_hook(void) {
+  g_block_hook_call_count++;
+}
+
+static void post_block_hook(void) {
+}
+
+static int block_hooks_are_called(void) {
+  uint32_t old_count = g_block_hook_call_count;
+  /*
+   * Call a syscall that should use NACL_GC_WRAP_SYSCALL.  In general,
+   * read() can block, but it does not when we pass it these bad
+   * arguments.
+   */
+  int result = read(-1, NULL, 0);
+  /* Sanity checks. */
+  assert(result == -1);
+  assert(errno == EBADF);
+
+  uint32_t count_diff = g_block_hook_call_count - old_count;
+  assert(count_diff <= 1);
+  return count_diff == 1;
+}
+
 
 static void user_thread_func(void) {
   check_thread();
+  assert(block_hooks_are_called());
   nacl_irt_thread.thread_exit(&g_thread_flag);
 }
 
@@ -76,6 +104,8 @@ void test_user_thread(void) {
 static void *irt_thread_func(void *arg) {
   assert((uintptr_t) arg == 0x12345678);
   check_thread();
+  /* GC block hooks should not be called on IRT-internal threads. */
+  assert(!block_hooks_are_called());
   return (void *) 0x23456789;
 }
 
@@ -118,6 +148,15 @@ void test_exiting_initial_thread(void) {
 
 int main(void) {
   /*
+   * Register these at startup because deregistering them is not
+   * allowed by the IRT's interface and nor is registering different
+   * functions afterwards.
+   */
+  int rc = nacl_irt_blockhook.register_block_hooks(pre_block_hook,
+                                                   post_block_hook);
+  assert(rc == 0);
+
+  /*
    * There are three kinds of thread inside the IRT, which we test here.
    *
    * Type 1: user threads, created by the IRT's public thread_create()
@@ -136,6 +175,7 @@ int main(void) {
   /*
    * Type 3: the initial thread
    */
+  assert(block_hooks_are_called());
   printf("Running test_exiting_initial_thread...\n");
   test_exiting_initial_thread();
   /* This last test does not return. */

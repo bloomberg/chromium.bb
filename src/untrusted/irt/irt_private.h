@@ -7,6 +7,7 @@
 #define NATIVE_CLIENT_SRC_UNTRUSTED_IRT_IRT_PRIVATE_H_
 
 extern __thread int g_is_main_thread;
+extern __thread int g_is_irt_internal_thread;
 
 int irt_nameservice_lookup(const char *name, int oflag, int *out_fd);
 

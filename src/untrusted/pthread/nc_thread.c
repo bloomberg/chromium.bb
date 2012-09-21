@@ -29,6 +29,10 @@
 
 #include "native_client/src/untrusted/valgrind/dynamic_annotations.h"
 
+#if defined(NACL_IN_IRT)
+# include "native_client/src/untrusted/irt/irt_private.h"
+#endif
+
 #define FUN_TO_VOID_PTR(a) ((void*)((uintptr_t) a))
 
 /*
@@ -102,6 +106,9 @@ static inline nc_thread_descriptor_t *nc_get_tdb(void) {
 static void nc_thread_starter(void) {
   nc_thread_descriptor_t *tdb = nc_get_tdb();
   __newlib_thread_init();
+#if defined(NACL_IN_IRT)
+  g_is_irt_internal_thread = 1;
+#endif
   void *retval = tdb->start_func(tdb->state);
   /* if the function returns, terminate the thread */
   pthread_exit(retval);
