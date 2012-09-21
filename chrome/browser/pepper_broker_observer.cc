@@ -183,8 +183,8 @@ bool PepperBrokerObserver::RequestPpapiBrokerPermission(
   }
 
   Profile* profile = tab->profile();
-  // Disallow broker access in incognito mode.
-  if (profile->IsOffTheRecord() || Profile::IsGuestSession()) {
+  // TODO(wad): Add ephemeral device ID support for broker in guest mode.
+  if (Profile::IsGuestSession()) {
     callback.Run(false);
     return true;
   }
