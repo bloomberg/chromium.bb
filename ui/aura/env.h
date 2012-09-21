@@ -10,6 +10,8 @@
 #include "base/observer_list.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/client/stacking_client.h"
+#include "ui/base/events/event_handler.h"
+#include "ui/base/events/event_target.h"
 #include "ui/gfx/point.h"
 
 #if defined(USE_X11)
@@ -33,10 +35,10 @@ MessageLoop::Dispatcher* CreateDispatcher();
 
 // A singleton object that tracks general state within Aura.
 // TODO(beng): manage RootWindows.
-class AURA_EXPORT Env {
+class AURA_EXPORT Env : public ui::EventTarget {
  public:
   Env();
-  ~Env();
+  virtual ~Env();
 
   static Env* GetInstance();
   static void DeleteInstance();
@@ -80,10 +82,6 @@ class AURA_EXPORT Env {
   DisplayManager* display_manager() { return display_manager_.get(); }
   void SetDisplayManager(DisplayManager* display_manager);
 
-  // Env takes ownership of the EventFilter.
-  EventFilter* event_filter() { return event_filter_.get(); }
-  void SetEventFilter(EventFilter* event_filter);
-
   // Returns the native event dispatcher. The result should only be passed to
   // base::RunLoop(dispatcher), or used to dispatch an event by
   // |Dispatch(const NativeEvent&)| on it. It must never be stored.
@@ -98,6 +96,10 @@ class AURA_EXPORT Env {
 
   // Called by the Window when it is initialized. Notifies observers.
   void NotifyWindowInitialized(Window* window);
+
+  // Overridden from ui::EventTarget:
+  virtual bool CanAcceptEvents() OVERRIDE;
+  virtual ui::EventTarget* GetParentTarget() OVERRIDE;
 
   ObserverList<EnvObserver> observers_;
 #if !defined(USE_X11)
@@ -115,7 +117,6 @@ class AURA_EXPORT Env {
   bool render_white_bg_;
   client::StackingClient* stacking_client_;
   scoped_ptr<DisplayManager> display_manager_;
-  scoped_ptr<EventFilter> event_filter_;
 
 #if defined(USE_X11)
   scoped_ptr<internal::DisplayChangeObserverX11> display_change_observer_;

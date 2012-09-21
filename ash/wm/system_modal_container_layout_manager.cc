@@ -15,6 +15,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/shared/compound_event_filter.h"
 #include "ui/aura/window.h"
 #include "ui/base/events/event.h"
 #include "ui/compositor/layer.h"
@@ -200,7 +201,7 @@ void SystemModalContainerLayoutManager::CreateModalScreen() {
     modal_screen_->SetContentsView(new ScreenView);
     modal_screen_->GetNativeView()->layer()->SetOpacity(0.0f);
 
-    Shell::GetInstance()->AddEnvEventFilter(modality_filter_.get());
+    Shell::GetInstance()->env_filter()->AddFilter(modality_filter_.get());
   }
 
   ui::ScopedLayerAnimationSettings settings(
@@ -211,7 +212,7 @@ void SystemModalContainerLayoutManager::CreateModalScreen() {
 }
 
 void SystemModalContainerLayoutManager::DestroyModalScreen() {
-  Shell::GetInstance()->RemoveEnvEventFilter(modality_filter_.get());
+  Shell::GetInstance()->env_filter()->RemoveFilter(modality_filter_.get());
   // modal_screen_ can be NULL when a root window is shutting down
   // and OnWindowDestroying is called first.
   if (modal_screen_) {

@@ -23,8 +23,12 @@ void EventTarget::AddPreTargetHandler(EventHandler* handler) {
 }
 
 void EventTarget::RemovePreTargetHandler(EventHandler* handler) {
-  pre_target_list_.erase(std::remove(pre_target_list_.begin(),
-      pre_target_list_.end(), handler));
+  EventHandlerList::iterator find =
+      std::find(pre_target_list_.begin(),
+                pre_target_list_.end(),
+                handler);
+  if (find != pre_target_list_.end())
+    pre_target_list_.erase(find);
 }
 
 void EventTarget::AddPostTargetHandler(EventHandler* handler) {
@@ -32,8 +36,12 @@ void EventTarget::AddPostTargetHandler(EventHandler* handler) {
 }
 
 void EventTarget::RemovePostTargetHandler(EventHandler* handler) {
-  post_target_list_.erase(std::remove(post_target_list_.begin(),
-      post_target_list_.end(), handler));
+  EventHandlerList::iterator find =
+      std::find(post_target_list_.begin(),
+                post_target_list_.end(),
+                handler);
+  if (find != post_target_list_.end())
+    post_target_list_.erase(find);
 }
 
 void EventTarget::GetPreTargetHandlers(EventHandlerList* list) {

@@ -32,6 +32,21 @@ class UI_EXPORT EventTarget : public EventHandler {
     DISALLOW_COPY_AND_ASSIGN(TestApi);
   };
 
+  class DispatcherApi {
+   public:
+    explicit DispatcherApi(EventTarget* target) : target_(target) {}
+
+    const EventHandlerList& pre_target_list() const {
+      return target_->pre_target_list_;
+    }
+
+   private:
+    DispatcherApi();
+    EventTarget* target_;
+
+    DISALLOW_COPY_AND_ASSIGN(DispatcherApi);
+  };
+
   EventTarget();
   virtual ~EventTarget();
 

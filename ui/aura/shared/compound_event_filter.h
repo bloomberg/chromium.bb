@@ -46,9 +46,10 @@ class AURA_EXPORT CompoundEventFilter : public EventFilter {
 
   // Adds/removes additional event filters. This does not take ownership of
   // the EventFilter.
+  // NOTE: EventFilters are deprecated. Use env::AddPreTargetEventHandler etc.
+  // instead.
   void AddFilter(EventFilter* filter);
   void RemoveFilter(EventFilter* filter);
-  size_t GetFilterCount() const;
 
  private:
   // Updates the cursor if the target provides a custom one, and provides

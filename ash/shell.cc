@@ -183,7 +183,6 @@ internal::ScreenPositionController*
 Shell::Shell(ShellDelegate* delegate)
     : screen_(new ScreenAsh),
       active_root_window_(NULL),
-      env_filter_(NULL),
       delegate_(delegate),
 #if defined(OS_CHROMEOS)
       output_configurator_(new chromeos::OutputConfigurator()),
@@ -361,9 +360,8 @@ void Shell::Init() {
   // Launcher, and WallPaper could be created by the factory.
   views::FocusManagerFactory::Install(new AshFocusManagerFactory);
 
-  env_filter_ = new aura::shared::CompoundEventFilter;
-  // Pass ownership of the filter to the Env.
-  aura::Env::GetInstance()->SetEventFilter(env_filter_);
+  env_filter_.reset(new aura::shared::CompoundEventFilter);
+  AddEnvEventFilter(env_filter_.get());
 
   cursor_manager_.set_delegate(this);
 
@@ -387,20 +385,16 @@ void Shell::Init() {
   shell_context_menu_.reset(new internal::ShellContextMenu);
 
   // The order in which event filters are added is significant.
-  DCHECK(!GetEnvEventFilterCount());
   user_activity_detector_.reset(new UserActivityDetector);
   AddEnvEventFilter(user_activity_detector_.get());
 
-  DCHECK_EQ(1U, GetEnvEventFilterCount());
   event_rewriter_filter_.reset(new internal::EventRewriterEventFilter);
   AddEnvEventFilter(event_rewriter_filter_.get());
 
-  DCHECK_EQ(2U, GetEnvEventFilterCount());
   overlay_filter_.reset(new internal::OverlayEventFilter);
   AddEnvEventFilter(overlay_filter_.get());
   AddShellObserver(overlay_filter_.get());
 
-  DCHECK_EQ(3U, GetEnvEventFilterCount());
   input_method_filter_.reset(new aura::shared::InputMethodEventFilter());
   AddEnvEventFilter(input_method_filter_.get());
 
@@ -506,15 +500,11 @@ void Shell::Init() {
 }
 
 void Shell::AddEnvEventFilter(aura::EventFilter* filter) {
-  env_filter_->AddFilter(filter);
+  aura::Env::GetInstance()->AddPreTargetHandler(filter);
 }
 
 void Shell::RemoveEnvEventFilter(aura::EventFilter* filter) {
-  env_filter_->RemoveFilter(filter);
-}
-
-size_t Shell::GetEnvEventFilterCount() const {
-  return env_filter_->GetFilterCount();
+  aura::Env::GetInstance()->RemovePreTargetHandler(filter);
 }
 
 void Shell::ShowBackgroundMenu(views::Widget* widget,

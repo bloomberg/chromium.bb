@@ -181,10 +181,10 @@ class ASH_EXPORT Shell : ash::CursorDelegate {
     active_root_window_ = active_root_window;
   }
 
-  // Adds or removes |filter| from the aura::Env's CompoundEventFilter.
+  // Adds or removes |filter| from the aura::Env's pre-target event-handler
+  // list.
   void AddEnvEventFilter(aura::EventFilter* filter);
   void RemoveEnvEventFilter(aura::EventFilter* filter);
-  size_t GetEnvEventFilterCount() const;
 
   // Shows the background menu over |widget|.
   void ShowBackgroundMenu(views::Widget* widget, const gfx::Point& location);
@@ -246,7 +246,7 @@ class ASH_EXPORT Shell : ash::CursorDelegate {
 #endif  // !defined(OS_MACOSX)
 
   aura::shared::CompoundEventFilter* env_filter() {
-    return env_filter_;
+    return env_filter_.get();
   }
   internal::TooltipController* tooltip_controller() {
     return tooltip_controller_.get();
@@ -400,7 +400,7 @@ class ASH_EXPORT Shell : ash::CursorDelegate {
   aura::RootWindow* active_root_window_;
 
   // The CompoundEventFilter owned by aura::Env object.
-  aura::shared::CompoundEventFilter* env_filter_;
+  scoped_ptr<aura::shared::CompoundEventFilter> env_filter_;
 
   std::vector<WindowAndBoundsPair> to_restore_;
 

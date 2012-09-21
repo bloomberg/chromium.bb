@@ -79,10 +79,6 @@ void CompoundEventFilter::RemoveFilter(EventFilter* filter) {
   filters_.RemoveObserver(filter);
 }
 
-size_t CompoundEventFilter::GetFilterCount() const {
-  return filters_.size();
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // CompoundEventFilter, private:
 

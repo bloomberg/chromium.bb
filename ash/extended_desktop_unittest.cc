@@ -140,6 +140,7 @@ TEST_F(ExtendedDesktopTest, SystemModal) {
 
   views::Widget* widget_on_1st = CreateTestWidget(gfx::Rect(10, 10, 100, 100));
   EXPECT_TRUE(wm::IsActiveWindow(widget_on_1st->GetNativeView()));
+  EXPECT_EQ(root_windows[0], widget_on_1st->GetNativeView()->GetRootWindow());
   EXPECT_EQ(root_windows[0], Shell::GetActiveRootWindow());
 
   // Open system modal. Make sure it's on 2nd root window and active.

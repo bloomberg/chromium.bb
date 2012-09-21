@@ -97,10 +97,6 @@ void Env::SetDisplayManager(DisplayManager* display_manager) {
 #endif
 }
 
-void Env::SetEventFilter(EventFilter* event_filter) {
-  event_filter_.reset(event_filter);
-}
-
 #if !defined(OS_MACOSX)
 MessageLoop::Dispatcher* Env::GetDispatcher() {
 #if defined(USE_X11)
@@ -133,6 +129,17 @@ void Env::Init() {
 
 void Env::NotifyWindowInitialized(Window* window) {
   FOR_EACH_OBSERVER(EnvObserver, observers_, OnWindowInitialized(window));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Env, ui::EventTarget implementation:
+
+bool Env::CanAcceptEvents() {
+  return true;
+}
+
+ui::EventTarget* Env::GetParentTarget() {
+  return NULL;
 }
 
 }  // namespace aura

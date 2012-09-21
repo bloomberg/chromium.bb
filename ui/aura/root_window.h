@@ -251,6 +251,9 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   virtual const RootWindow* GetRootWindow() const OVERRIDE;
   virtual void SetTransform(const ui::Transform& transform) OVERRIDE;
 
+  // Overridden from ui::EventTarget:
+  virtual ui::EventTarget* GetParentTarget() OVERRIDE;
+
   // Overridden from ui::CompositorDelegate:
   virtual void ScheduleDraw() OVERRIDE;
 
