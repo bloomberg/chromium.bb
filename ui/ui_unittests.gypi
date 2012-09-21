@@ -84,6 +84,7 @@
         'base/gtk/gtk_expanded_container_unittest.cc',
         'base/gtk/gtk_im_context_util_unittest.cc',
         'base/gtk/menu_label_accelerator_util_unittest.cc',
+        'base/layout_unittest.cc',
         'base/l10n/l10n_util_mac_unittest.mm',
         'base/l10n/l10n_util_unittest.cc',
         'base/models/list_model_unittest.cc',

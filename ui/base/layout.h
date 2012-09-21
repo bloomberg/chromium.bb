@@ -48,7 +48,7 @@ enum ScaleFactor {
 // Returns the float scale value for |scale_factor|.
 UI_EXPORT float GetScaleFactorScale(ScaleFactor scale_factor);
 
-// Returns the ScaleFactor which most closely matches |scale|.
+// Returns the supported ScaleFactor which most closely matches |scale|.
 // Converting from float to ScaleFactor is inefficient and should be done as
 // little as possible.
 UI_EXPORT ScaleFactor GetScaleFactorFromScale(float scale);
