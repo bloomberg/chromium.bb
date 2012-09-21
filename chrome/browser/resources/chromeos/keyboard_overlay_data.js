@@ -351,7 +351,7 @@ var keyboardOverlayData = {
           'label': 'reload'
         },
         '3E': {
-          'label': 'full screen'
+          'label': 'maximize'
         },
         '3F': {
           'label': 'switch window'
@@ -667,7 +667,7 @@ var keyboardOverlayData = {
           'label': 'reload'
         },
         '3E': {
-          'label': 'full screen'
+          'label': 'maximize'
         },
         '3F': {
           'label': 'switch window'
@@ -944,7 +944,7 @@ var keyboardOverlayData = {
           'label': 'reload'
         },
         '3E': {
-          'label': 'full screen'
+          'label': 'maximize'
         },
         '3F': {
           'label': 'switch window'
@@ -1252,7 +1252,7 @@ var keyboardOverlayData = {
           'label': 'reload'
         },
         '3E': {
-          'label': 'full screen'
+          'label': 'maximize'
         },
         '3F': {
           'label': 'switch window'
@@ -1532,7 +1532,7 @@ var keyboardOverlayData = {
           'label': 'reload'
         },
         '3E': {
-          'label': 'full screen'
+          'label': 'maximize'
         },
         '3F': {
           'label': 'switch window'
@@ -1812,7 +1812,7 @@ var keyboardOverlayData = {
           'label': 'reload'
         },
         '3E': {
-          'label': 'full screen'
+          'label': 'maximize'
         },
         '3F': {
           'label': 'switch window'
@@ -2115,7 +2115,7 @@ var keyboardOverlayData = {
           'label': 'reload'
         },
         '3E': {
-          'label': 'full screen'
+          'label': 'maximize'
         },
         '3F': {
           'label': 'switch window'
@@ -2394,7 +2394,7 @@ var keyboardOverlayData = {
           'label': 'reload'
         },
         '3E': {
-          'label': 'full screen'
+          'label': 'maximize'
         },
         '3F': {
           'label': 'switch window'
@@ -2664,7 +2664,7 @@ var keyboardOverlayData = {
           'label': 'reload'
         },
         '3E': {
-          'label': 'full screen'
+          'label': 'maximize'
         },
         '3F': {
           'label': 'switch window'
@@ -2929,7 +2929,7 @@ var keyboardOverlayData = {
           'label': 'reload'
         },
         '3E': {
-          'label': 'full screen'
+          'label': 'maximize'
         },
         '3F': {
           'label': 'switch window'
@@ -3192,7 +3192,7 @@ var keyboardOverlayData = {
           'label': 'reload'
         },
         '3E': {
-          'label': 'full screen'
+          'label': 'maximize'
         },
         '3F': {
           'label': 'switch window'
@@ -3451,7 +3451,7 @@ var keyboardOverlayData = {
           'label': 'reload'
         },
         '3E': {
-          'label': 'full screen'
+          'label': 'maximize'
         },
         '3F': {
           'label': 'switch window'
@@ -3711,7 +3711,7 @@ var keyboardOverlayData = {
           'label': 'reload'
         },
         '3E': {
-          'label': 'full screen'
+          'label': 'maximize'
         },
         '3F': {
           'label': 'switch window'
@@ -3979,7 +3979,7 @@ var keyboardOverlayData = {
           'label': 'reload'
         },
         '3E': {
-          'label': 'full screen'
+          'label': 'maximize'
         },
         '3F': {
           'label': 'switch window'
@@ -4246,7 +4246,7 @@ var keyboardOverlayData = {
           'label': 'reload'
         },
         '3E': {
-          'label': 'full screen'
+          'label': 'maximize'
         },
         '3F': {
           'label': 'switch window'
@@ -4515,7 +4515,7 @@ var keyboardOverlayData = {
           'label': 'reload'
         },
         '3E': {
-          'label': 'full screen'
+          'label': 'maximize'
         },
         '3F': {
           'label': 'switch window'
@@ -4783,7 +4783,7 @@ var keyboardOverlayData = {
           'label': 'reload'
         },
         '3E': {
-          'label': 'full screen'
+          'label': 'maximize'
         },
         '3F': {
           'label': 'switch window'
@@ -5054,7 +5054,7 @@ var keyboardOverlayData = {
           'label': 'reload'
         },
         '3E': {
-          'label': 'full screen'
+          'label': 'maximize'
         },
         '3F': {
           'label': 'switch window'
@@ -5333,7 +5333,7 @@ var keyboardOverlayData = {
           'label': 'reload'
         },
         '3E': {
-          'label': 'full screen'
+          'label': 'maximize'
         },
         '3F': {
           'label': 'switch window'
@@ -5617,7 +5617,7 @@ var keyboardOverlayData = {
           'label': 'reload'
         },
         '3E': {
-          'label': 'full screen'
+          'label': 'maximize'
         },
         '3F': {
           'label': 'switch window'
@@ -5904,7 +5904,7 @@ var keyboardOverlayData = {
           'label': 'reload'
         },
         '3E': {
-          'label': 'full screen'
+          'label': 'maximize'
         },
         '3F': {
           'label': 'switch window'
@@ -6262,7 +6262,7 @@ var keyboardOverlayData = {
           'label': 'reload'
         },
         '3E': {
-          'label': 'full screen'
+          'label': 'maximize'
         },
         '3F': {
           'label': 'switch window'
@@ -6551,7 +6551,7 @@ var keyboardOverlayData = {
           'label': 'reload'
         },
         '3E': {
-          'label': 'full screen'
+          'label': 'maximize'
         },
         '3F': {
           'label': 'switch window'
@@ -6846,7 +6846,7 @@ var keyboardOverlayData = {
           'label': 'reload'
         },
         '3E': {
-          'label': 'full screen'
+          'label': 'maximize'
         },
         '3F': {
           'label': 'switch window'
@@ -7121,7 +7121,7 @@ var keyboardOverlayData = {
           'label': 'reload'
         },
         '3E': {
-          'label': 'full screen'
+          'label': 'maximize'
         },
         '3F': {
           'label': 'switch window'
@@ -7417,7 +7417,7 @@ var keyboardOverlayData = {
           'label': 'reload'
         },
         '3E': {
-          'label': 'full screen'
+          'label': 'maximize'
         },
         '3F': {
           'label': 'switch window'
@@ -7734,7 +7734,7 @@ var keyboardOverlayData = {
           'label': 'reload'
         },
         '3E': {
-          'label': 'full screen'
+          'label': 'maximize'
         },
         '3F': {
           'label': 'switch window'
@@ -8046,7 +8046,7 @@ var keyboardOverlayData = {
           'label': 'reload'
         },
         '3E': {
-          'label': 'full screen'
+          'label': 'maximize'
         },
         '3F': {
           'label': 'switch window'
@@ -8328,7 +8328,7 @@ var keyboardOverlayData = {
           'label': 'reload'
         },
         '3E': {
-          'label': 'full screen'
+          'label': 'maximize'
         },
         '3F': {
           'label': 'switch window'
@@ -8593,7 +8593,7 @@ var keyboardOverlayData = {
           'label': 'reload'
         },
         '3E': {
-          'label': 'full screen'
+          'label': 'maximize'
         },
         '3F': {
           'label': 'switch window'
@@ -8865,7 +8865,7 @@ var keyboardOverlayData = {
           'label': 'reload'
         },
         '3E': {
-          'label': 'full screen'
+          'label': 'maximize'
         },
         '3F': {
           'label': 'switch window'
@@ -9132,7 +9132,7 @@ var keyboardOverlayData = {
           'label': 'reload'
         },
         '3E': {
-          'label': 'full screen'
+          'label': 'maximize'
         },
         '3F': {
           'label': 'switch window'
@@ -9429,7 +9429,7 @@ var keyboardOverlayData = {
           'label': 'reload'
         },
         '3E': {
-          'label': 'full screen'
+          'label': 'maximize'
         },
         '3F': {
           'label': 'switch window'
@@ -9701,7 +9701,7 @@ var keyboardOverlayData = {
           'label': 'reload'
         },
         '3E': {
-          'label': 'full screen'
+          'label': 'maximize'
         },
         '3F': {
           'label': 'switch window'
@@ -9983,7 +9983,7 @@ var keyboardOverlayData = {
           'label': 'reload'
         },
         '3E': {
-          'label': 'full screen'
+          'label': 'maximize'
         },
         '3F': {
           'label': 'switch window'
@@ -10276,7 +10276,7 @@ var keyboardOverlayData = {
           'label': 'reload'
         },
         '3E': {
-          'label': 'full screen'
+          'label': 'maximize'
         },
         '3F': {
           'label': 'switch window'
@@ -10591,7 +10591,7 @@ var keyboardOverlayData = {
           'label': 'reload'
         },
         '3E': {
-          'label': 'full screen'
+          'label': 'maximize'
         },
         '3F': {
           'label': 'switch window'
@@ -10899,7 +10899,7 @@ var keyboardOverlayData = {
           'label': 'reload'
         },
         '3E': {
-          'label': 'full screen'
+          'label': 'maximize'
         },
         '3F': {
           'label': 'switch window'
@@ -11194,7 +11194,7 @@ var keyboardOverlayData = {
           'label': 'reload'
         },
         '3E': {
-          'label': 'full screen'
+          'label': 'maximize'
         },
         '3F': {
           'label': 'switch window'
@@ -11478,7 +11478,7 @@ var keyboardOverlayData = {
           'label': 'reload'
         },
         '3E': {
-          'label': 'full screen'
+          'label': 'maximize'
         },
         '3F': {
           'label': 'switch window'
@@ -11756,7 +11756,7 @@ var keyboardOverlayData = {
           'label': 'reload'
         },
         '3E': {
-          'label': 'full screen'
+          'label': 'maximize'
         },
         '3F': {
           'label': 'switch window'
@@ -12122,7 +12122,7 @@ var keyboardOverlayData = {
           'label': 'reload'
         },
         '3E': {
-          'label': 'full screen'
+          'label': 'maximize'
         },
         '3F': {
           'label': 'switch window'
@@ -12388,7 +12388,7 @@ var keyboardOverlayData = {
           'label': 'reload'
         },
         '3E': {
-          'label': 'full screen'
+          'label': 'maximize'
         },
         '3F': {
           'label': 'switch window'
@@ -12707,7 +12707,7 @@ var keyboardOverlayData = {
           'label': 'reload'
         },
         '3E': {
-          'label': 'full screen'
+          'label': 'maximize'
         },
         '3F': {
           'label': 'switch window'
@@ -12960,7 +12960,7 @@ var keyboardOverlayData = {
           'label': 'reload'
         },
         '3E': {
-          'label': 'full screen'
+          'label': 'maximize'
         },
         '3F': {
           'label': 'switch window'
@@ -13230,7 +13230,7 @@ var keyboardOverlayData = {
           'label': 'reload'
         },
         '3E': {
-          'label': 'full screen'
+          'label': 'maximize'
         },
         '3F': {
           'label': 'switch window'
@@ -13556,7 +13556,7 @@ var keyboardOverlayData = {
           'label': 'reload'
         },
         '3E': {
-          'label': 'full screen'
+          'label': 'maximize'
         },
         '3F': {
           'label': 'switch window'
@@ -15819,8 +15819,8 @@ var keyboardOverlayData = {
     'f<>ALT': 'keyboardOverlayShowWrenchMenu',
     'f<>CTRL': 'keyboardOverlayFindText',
     'forward<>CTRL': 'keyboardOverlayFocusNextPane',
-    'full screen<>ALT': 'keyboardOverlaySwapPrimaryMonitor',
-    'full screen<>CTRL': 'keyboardOverlayMirrorMonitors',
+    'maximize<>ALT': 'keyboardOverlaySwapPrimaryMonitor',
+    'maximize<>CTRL': 'keyboardOverlayMirrorMonitors',
     'g<>CTRL': 'keyboardOverlayFindTextAgain',
     'g<>CTRL<>SHIFT': 'keyboardOverlayFindPreviousText',
     'h<>CTRL': 'keyboardOverlayHistory',

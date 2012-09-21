@@ -67,7 +67,7 @@ LABEL_MAP = {
   'glyph_brightness_up': 'bright up',
   'glyph_enter': 'enter',
   'glyph_forward': 'forward',
-  'glyph_fullscreen': 'full screen',
+  'glyph_fullscreen': 'maximize',
   # Kana/Eisu key on Japanese keyboard
   'glyph_ime': u'\u304b\u306a\u0020\u002f\u0020\u82f1\u6570',
   'glyph_lock': 'lock',

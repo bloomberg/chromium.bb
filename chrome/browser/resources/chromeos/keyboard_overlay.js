@@ -74,7 +74,7 @@ var KEYCODE_TO_LABEL = {
   112: 'back',
   113: 'forward',
   114: 'reload',
-  115: 'full screen',
+  115: 'maximize',
   116: 'switch window',
   117: 'bright down',
   118: 'bright up',
