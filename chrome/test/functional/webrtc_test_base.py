@@ -33,7 +33,7 @@ class WebrtcTestBase(pyauto.PyUITest):
       A string as specified by the getUserMedia javascript function.
     """
     self.assertEquals('ok-requested', self.ExecuteJavascript(
-        'getUserMedia(true, true, {})', tab_index=tab_index))
+        'getUserMedia(true, true, "{}")', tab_index=tab_index))
 
     self.WaitForInfobarCount(1, tab_index=tab_index)
     self.PerformActionOnInfobar(action, infobar_index=0, tab_index=tab_index)

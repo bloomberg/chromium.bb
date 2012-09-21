@@ -70,7 +70,7 @@ class MediaStreamInfobarTest(webrtc_test_base.WebrtcTestBase):
     self.NavigateToURL(url)
 
     self.assertEquals('ok-requested', self.ExecuteJavascript(
-        'getUserMedia(true, true, {})'))
+        'getUserMedia(true, true, "{}")'))
 
     self.WaitForInfobarCount(1)
     self.PerformActionOnInfobar(with_action, infobar_index=0)

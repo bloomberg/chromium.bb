@@ -33,7 +33,7 @@ function handleMessage(peerConnection, message) {
 }
 
 function createPeerConnection(stun_server) {
-  servers = {iceServers:[{uri:"stun:" + stun_server}]};
+  servers = {iceServers:[{url:"stun:" + stun_server}]};
   try {
     peerConnection = new webkitRTCPeerConnection(servers, null);
   } catch (exception) {

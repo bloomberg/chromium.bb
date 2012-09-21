@@ -45,7 +45,11 @@ function getUserMedia(requestVideo, requestAudio, mediaHints) {
     returnToTest('Browser does not support WebRTC.');
     return;
   }
-  eval('gMediaHints = ' + mediaHints);
+  try {
+    eval('gMediaHints = ' + mediaHints);
+  } catch (exception) {
+    failTest('Not valid javascript expression: ' + mediaHints);
+  }
 
   debug('Requesting: video ' + requestVideo + ', audio ' + requestAudio);
   navigator.webkitGetUserMedia({video: requestVideo, audio: requestAudio},

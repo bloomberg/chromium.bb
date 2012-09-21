@@ -8,7 +8,7 @@
  * The ID of the video tag from which frames are captured.
  * @private
  */
-var gVideoId = 'remote_view';
+var gVideoId = 'remote-view';
 
 /**
  * Counts the number of frames that have been captured. Used in timeout
@@ -107,7 +107,7 @@ function startFrameCapture(width, height, canvas_height, frame_rate, duration){
  * @return {Canvas}
  */
 function capture(video, width, height) {
-  var canvas = document.getElementById('remote_canvas');
+  var canvas = document.getElementById('remote-canvas');
   var ctx = canvas.getContext('2d');
   ctx.drawImage(video, 0, 0, width, height);
   return canvas;
