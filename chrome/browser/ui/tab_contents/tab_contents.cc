@@ -125,7 +125,7 @@ TabContents::TabContents(WebContents* contents)
     autocomplete_history_manager_->SetExternalDelegate(
         autofill_external_delegate_.get());
   }
-  blocked_content_tab_helper_.reset(new BlockedContentTabHelper(this));
+  BlockedContentTabHelper::CreateForWebContents(contents);
   BookmarkTabHelper::CreateForWebContents(contents);
   chrome_browser_net::LoadTimeStatsTabHelper::CreateForWebContents(contents);
   constrained_window_tab_helper_.reset(new ConstrainedWindowTabHelper(this));

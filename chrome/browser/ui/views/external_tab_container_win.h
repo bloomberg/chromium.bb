@@ -222,7 +222,8 @@ class ExternalTabContainerWin : public ExternalTabContainer,
   virtual bool DrawInfoBarArrows(int* x) const OVERRIDE;
 
   // Overridden from BlockedContentTabHelperDelegate:
-  virtual TabContents* GetConstrainingTabContents(TabContents* source) OVERRIDE;
+  virtual content::WebContents* GetConstrainingWebContents(
+      content::WebContents* source) OVERRIDE;
 
  protected:
   virtual ~ExternalTabContainerWin();

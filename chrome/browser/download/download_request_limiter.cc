@@ -301,14 +301,12 @@ void DownloadRequestLimiter::CanDownloadImpl(WebContents* originating_contents,
   // If the tab requesting the download is a constrained popup that is not
   // shown, treat the request as if it came from the parent.
   WebContents* effective_contents = originating_contents;
-  TabContents* originating_tab_contents =
-     TabContents::FromWebContents(originating_contents);
-  if (originating_tab_contents &&
-      originating_tab_contents->blocked_content_tab_helper()->delegate()) {
-    effective_contents =
-        originating_tab_contents->blocked_content_tab_helper()->delegate()->
-            GetConstrainingTabContents(originating_tab_contents)->
-                web_contents();
+  BlockedContentTabHelper* blocked_content_tab_helper =
+      BlockedContentTabHelper::FromWebContents(originating_contents);
+  if (blocked_content_tab_helper &&
+      blocked_content_tab_helper->delegate()) {
+    effective_contents = blocked_content_tab_helper->delegate()->
+        GetConstrainingWebContents(originating_contents);
   }
 
   TabDownloadState* state = GetDownloadState(

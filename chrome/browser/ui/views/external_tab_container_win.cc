@@ -256,7 +256,8 @@ bool ExternalTabContainerWin::Init(Profile* profile,
 
   LoadAccelerators();
   SetupExternalTabView();
-  tab_contents_->blocked_content_tab_helper()->set_delegate(this);
+  BlockedContentTabHelper::FromWebContents(tab_contents_->web_contents())->
+      set_delegate(this);
   return true;
 }
 
@@ -568,8 +569,8 @@ void ExternalTabContainerWin::MoveContents(WebContents* source,
     automation_->Send(new AutomationMsg_MoveWindow(tab_handle_, pos));
 }
 
-TabContents* ExternalTabContainerWin::GetConstrainingTabContents(
-    TabContents* source) {
+content::WebContents* ExternalTabContainerWin::GetConstrainingWebContents(
+    content::WebContents* source) {
   return source;
 }
 

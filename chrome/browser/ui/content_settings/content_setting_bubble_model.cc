@@ -456,12 +456,12 @@ ContentSettingPopupBubbleModel::ContentSettingPopupBubbleModel(
 
 
 void ContentSettingPopupBubbleModel::SetPopups() {
-  std::vector<TabContents*> blocked_contents;
-  tab_contents()->blocked_content_tab_helper()->
+  std::vector<content::WebContents*> blocked_contents;
+  BlockedContentTabHelper::FromWebContents(tab_contents()->web_contents())->
       GetBlockedContents(&blocked_contents);
-  for (std::vector<TabContents*>::const_iterator
+  for (std::vector<content::WebContents*>::const_iterator
        i = blocked_contents.begin(); i != blocked_contents.end(); ++i) {
-    std::string title(UTF16ToUTF8((*i)->web_contents()->GetTitle()));
+    std::string title(UTF16ToUTF8((*i)->GetTitle()));
     // The popup may not have committed a load yet, in which case it won't
     // have a URL or title.
     if (title.empty())
@@ -469,16 +469,19 @@ void ContentSettingPopupBubbleModel::SetPopups() {
     PopupItem popup_item;
     popup_item.title = title;
     // TODO: Make this use gfx::Image.
-    popup_item.bitmap = (*i)->favicon_tab_helper()->GetFavicon().AsBitmap();
-    popup_item.tab_contents = (*i);
+    TabContents* tab_contents = TabContents::FromWebContents(*i);
+    popup_item.bitmap =
+        tab_contents->favicon_tab_helper()->GetFavicon().AsBitmap();
+    popup_item.tab_contents = tab_contents;
     add_popup(popup_item);
   }
 }
 
 void ContentSettingPopupBubbleModel::OnPopupClicked(int index) {
   if (tab_contents()) {
-    tab_contents()->blocked_content_tab_helper()->
-        LaunchForContents(bubble_content().popup_items[index].tab_contents);
+    BlockedContentTabHelper::FromWebContents(tab_contents()->web_contents())->
+        LaunchForContents(
+            bubble_content().popup_items[index].tab_contents->web_contents());
   }
 }
 

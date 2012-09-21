@@ -106,23 +106,24 @@ void AddWebContents(Browser* browser,
   // Can't create a new contents for the current tab - invalid case.
   DCHECK(disposition != CURRENT_TAB);
 
-  TabContents* source_tab_contents = NULL;
-  BlockedContentTabHelper* source_blocked_content = NULL;
+  // TODO(avi): Use browser tab contents adoption here.
   TabContents* new_tab_contents = TabContents::FromWebContents(new_contents);
   if (!new_tab_contents) {
     new_tab_contents =
         BrowserTabstripTabContentsCreator::CreateTabContents(new_contents);
   }
+
+  BlockedContentTabHelper* source_blocked_content = NULL;
   if (source_contents) {
-    source_tab_contents = TabContents::FromWebContents(source_contents);
-    source_blocked_content = source_tab_contents->blocked_content_tab_helper();
+    source_blocked_content =
+        BlockedContentTabHelper::FromWebContents(source_contents);
   }
 
-  if (source_tab_contents) {
+  if (source_contents) {
     // Handle blocking of tabs.
     if (source_blocked_content->all_contents_blocked()) {
-      source_blocked_content->AddTabContents(
-          new_tab_contents, disposition, initial_pos, user_gesture);
+      source_blocked_content->AddWebContents(
+          new_contents, disposition, initial_pos, user_gesture);
       if (was_blocked)
         *was_blocked = true;
       return;
@@ -136,7 +137,7 @@ void AddWebContents(Browser* browser,
       // Unrequested popups from normal pages are constrained unless they're in
       // the white list.  The popup owner will handle checking this.
       source_blocked_content->AddPopup(
-          new_tab_contents, disposition, initial_pos, user_gesture);
+          new_contents, disposition, initial_pos, user_gesture);
       if (was_blocked)
         *was_blocked = true;
       return;

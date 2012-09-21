@@ -16,7 +16,6 @@ class AutofillExternalDelegate;
 class AutofillManager;
 class AutomationTabHelper;
 class BasePanelBrowserTest;
-class BlockedContentTabHelper;
 class Browser;
 class BrowserCommandsTabContentsCreator;
 class BrowserLauncherItemControllerContentsCreator;
@@ -179,10 +178,6 @@ class TabContents : public content::WebContentsObserver {
     return automation_tab_helper_.get();
   }
 
-  BlockedContentTabHelper* blocked_content_tab_helper() {
-    return blocked_content_tab_helper_.get();
-  }
-
   ConstrainedWindowTabHelper* constrained_window_tab_helper() {
     return constrained_window_tab_helper_.get();
   }
@@ -256,7 +251,6 @@ class TabContents : public content::WebContentsObserver {
   scoped_ptr<TabAutofillManagerDelegate> autofill_delegate_;
   scoped_ptr<AutofillExternalDelegate> autofill_external_delegate_;
   scoped_ptr<AutomationTabHelper> automation_tab_helper_;
-  scoped_ptr<BlockedContentTabHelper> blocked_content_tab_helper_;
   scoped_ptr<ConstrainedWindowTabHelper> constrained_window_tab_helper_;
   scoped_ptr<FaviconTabHelper> favicon_tab_helper_;
   scoped_ptr<FindTabHelper> find_tab_helper_;

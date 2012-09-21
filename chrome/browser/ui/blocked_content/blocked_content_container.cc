@@ -17,23 +17,23 @@ using content::WebContents;
 const size_t BlockedContentContainer::kImpossibleNumberOfPopups = 30;
 
 struct BlockedContentContainer::BlockedContent {
-  BlockedContent(TabContents* tab_contents,
+  BlockedContent(WebContents* web_contents,
                  WindowOpenDisposition disposition,
                  const gfx::Rect& bounds,
                  bool user_gesture)
-      : tab_contents(tab_contents),
+      : web_contents(web_contents),
         disposition(disposition),
         bounds(bounds),
         user_gesture(user_gesture) {
   }
 
-  TabContents* tab_contents;
+  WebContents* web_contents;
   WindowOpenDisposition disposition;
   gfx::Rect bounds;
   bool user_gesture;
 };
 
-BlockedContentContainer::BlockedContentContainer(TabContents* owner)
+BlockedContentContainer::BlockedContentContainer(content::WebContents* owner)
     : owner_(owner) {
 }
 
@@ -41,44 +41,46 @@ BlockedContentContainer::~BlockedContentContainer() {
   Clear();
 }
 
-void BlockedContentContainer::AddTabContents(TabContents* tab_contents,
+void BlockedContentContainer::AddWebContents(content::WebContents* web_contents,
                                              WindowOpenDisposition disposition,
                                              const gfx::Rect& bounds,
                                              bool user_gesture) {
   if (blocked_contents_.size() == (kImpossibleNumberOfPopups - 1)) {
-    delete tab_contents;
+    delete web_contents;
     VLOG(1) << "Warning: Renderer is sending more popups to us than should be "
                "possible. Renderer compromised?";
     return;
   }
 
   blocked_contents_.push_back(
-      BlockedContent(tab_contents, disposition, bounds, user_gesture));
-  tab_contents->web_contents()->SetDelegate(this);
-  tab_contents->blocked_content_tab_helper()->set_delegate(this);
-  // Since the new tab_contents will not be shown, call WasHidden to change
+      BlockedContent(web_contents, disposition, bounds, user_gesture));
+  web_contents->SetDelegate(this);
+  BlockedContentTabHelper::FromWebContents(web_contents)->set_delegate(this);
+  // Since the new web_contents will not be shown, call WasHidden to change
   // its status on both RenderViewHost and RenderView.
-  tab_contents->web_contents()->WasHidden();
+  web_contents->WasHidden();
 }
 
-void BlockedContentContainer::LaunchForContents(TabContents* tab_contents) {
+void BlockedContentContainer::LaunchForContents(
+    content::WebContents* web_contents) {
   // Open the popup.
-  for (BlockedContents::iterator i(blocked_contents_.begin());
+  for (BlockedContents::iterator i = blocked_contents_.begin();
        i != blocked_contents_.end(); ++i) {
-    if (i->tab_contents == tab_contents) {
+    if (i->web_contents == web_contents) {
       // To support the owner blocking the content again we copy and erase
       // before attempting to add.
       BlockedContent content(*i);
       blocked_contents_.erase(i);
       i = blocked_contents_.end();
-      tab_contents->web_contents()->SetDelegate(NULL);
-      tab_contents->blocked_content_tab_helper()->set_delegate(NULL);
+      web_contents->SetDelegate(NULL);
+      BlockedContentTabHelper::FromWebContents(web_contents)->
+          set_delegate(NULL);
       // We needn't call WasShown to change its status because the
       // WebContents::AddNewContents will do it.
-      WebContentsDelegate* delegate = owner_->web_contents()->GetDelegate();
+      WebContentsDelegate* delegate = owner_->GetDelegate();
       if (delegate) {
-        delegate->AddNewContents(owner_->web_contents(),
-                                 tab_contents->web_contents(),
+        delegate->AddNewContents(owner_,
+                                 web_contents,
                                  content.disposition,
                                  content.bounds,
                                  content.user_gesture,
@@ -94,20 +96,20 @@ size_t BlockedContentContainer::GetBlockedContentsCount() const {
 }
 
 void BlockedContentContainer::GetBlockedContents(
-    std::vector<TabContents*>* blocked_contents) const {
+    std::vector<WebContents*>* blocked_contents) const {
   DCHECK(blocked_contents);
-  for (BlockedContents::const_iterator i(blocked_contents_.begin());
+  for (BlockedContents::const_iterator i = blocked_contents_.begin();
        i != blocked_contents_.end(); ++i)
-    blocked_contents->push_back(i->tab_contents);
+    blocked_contents->push_back(i->web_contents);
 }
 
 void BlockedContentContainer::Clear() {
-  for (BlockedContents::iterator i(blocked_contents_.begin());
+  for (BlockedContents::iterator i = blocked_contents_.begin();
        i != blocked_contents_.end(); ++i) {
-    TabContents* tab_contents = i->tab_contents;
-    tab_contents->web_contents()->SetDelegate(NULL);
-    tab_contents->blocked_content_tab_helper()->set_delegate(NULL);
-    delete tab_contents;
+    WebContents* web_contents = i->web_contents;
+    web_contents->SetDelegate(NULL);
+    BlockedContentTabHelper::FromWebContents(web_contents)->set_delegate(NULL);
+    delete TabContents::FromWebContents(web_contents);
   }
   blocked_contents_.clear();
 }
@@ -117,7 +119,7 @@ void BlockedContentContainer::Clear() {
 WebContents* BlockedContentContainer::OpenURLFromTab(
     WebContents* source,
     const OpenURLParams& params) {
-  return owner_->web_contents()->OpenURL(params);
+  return owner_->OpenURL(params);
 }
 
 void BlockedContentContainer::AddNewContents(WebContents* source,
@@ -126,22 +128,23 @@ void BlockedContentContainer::AddNewContents(WebContents* source,
                                              const gfx::Rect& initial_position,
                                              bool user_gesture,
                                              bool* was_blocked) {
-  WebContentsDelegate* delegate = owner_->web_contents()->GetDelegate();
+  WebContentsDelegate* delegate = owner_->GetDelegate();
   if (delegate) {
-    delegate->AddNewContents(owner_->web_contents(), new_contents, disposition,
+    delegate->AddNewContents(owner_, new_contents, disposition,
                              initial_position, user_gesture, was_blocked);
   }
 }
 
 void BlockedContentContainer::CloseContents(WebContents* source) {
-  for (BlockedContents::iterator i(blocked_contents_.begin());
+  for (BlockedContents::iterator i = blocked_contents_.begin();
        i != blocked_contents_.end(); ++i) {
-    TabContents* tab_contents = i->tab_contents;
-    if (tab_contents->web_contents() == source) {
-      tab_contents->web_contents()->SetDelegate(NULL);
-      tab_contents->blocked_content_tab_helper()->set_delegate(NULL);
+    WebContents* web_contents = i->web_contents;
+    if (web_contents == source) {
+      web_contents->SetDelegate(NULL);
+      BlockedContentTabHelper::FromWebContents(web_contents)->
+          set_delegate(NULL);
       blocked_contents_.erase(i);
-      delete tab_contents;
+      delete TabContents::FromWebContents(web_contents);
       break;
     }
   }
@@ -149,9 +152,9 @@ void BlockedContentContainer::CloseContents(WebContents* source) {
 
 void BlockedContentContainer::MoveContents(WebContents* source,
                                            const gfx::Rect& new_bounds) {
-  for (BlockedContents::iterator i(blocked_contents_.begin());
+  for (BlockedContents::iterator i = blocked_contents_.begin();
        i != blocked_contents_.end(); ++i) {
-    if (i->tab_contents->web_contents() == source) {
+    if (i->web_contents == source) {
       i->bounds = new_bounds;
       break;
     }
@@ -171,7 +174,7 @@ bool BlockedContentContainer::ShouldSuppressDialogs() {
   return true;
 }
 
-TabContents* BlockedContentContainer::GetConstrainingTabContents(
-    TabContents* source) {
+content::WebContents* BlockedContentContainer::GetConstrainingWebContents(
+    content::WebContents* source) {
   return owner_;
 }

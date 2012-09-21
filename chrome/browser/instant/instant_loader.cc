@@ -378,7 +378,8 @@ void InstantLoader::SetupPreviewContents() {
 
   // Disable popups and such (mainly to avoid losing focus and reverting the
   // preview prematurely).
-  preview_contents_->blocked_content_tab_helper()->SetAllContentsBlocked(true);
+  BlockedContentTabHelper::FromWebContents(new_contents)->
+      SetAllContentsBlocked(true);
   preview_contents_->constrained_window_tab_helper()->
       set_delegate(new_delegate);
   preview_contents_->content_settings()->SetPopupsBlocked(true);
@@ -404,7 +405,8 @@ void InstantLoader::CleanupPreviewContents() {
   old_contents->SetDelegate(NULL);
   preview_delegate_.reset();
 
-  preview_contents_->blocked_content_tab_helper()->SetAllContentsBlocked(false);
+  BlockedContentTabHelper::FromWebContents(old_contents)->
+      SetAllContentsBlocked(false);
   preview_contents_->constrained_window_tab_helper()->set_delegate(NULL);
   preview_contents_->content_settings()->SetPopupsBlocked(false);
   CoreTabHelper::FromWebContents(old_contents)->set_delegate(NULL);

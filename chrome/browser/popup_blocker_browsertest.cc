@@ -21,7 +21,6 @@
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -50,16 +49,15 @@ class PopupBlockerBrowserTest : public InProcessBrowserTest {
       FilePath(FILE_PATH_LITERAL("popup-blocked-to-post-blank.html")));
   }
 
-  std::vector<TabContents*> GetBlockedContents(Browser* browser) {
+  std::vector<WebContents*> GetBlockedContents(Browser* browser) {
     // Do a round trip to the renderer first to flush any in-flight IPCs to
     // create a to-be-blocked window.
-    TabContents* tab = chrome::GetActiveTabContents(browser);
-    CHECK(content::ExecuteJavaScript(
-        tab->web_contents()->GetRenderViewHost(), L"", L""));
-    BlockedContentTabHelper* blocked_content =
-        tab->blocked_content_tab_helper();
-    std::vector<TabContents*> blocked_contents;
-    blocked_content->GetBlockedContents(&blocked_contents);
+    WebContents* tab = chrome::GetActiveWebContents(browser);
+    CHECK(content::ExecuteJavaScript(tab->GetRenderViewHost(), L"", L""));
+    BlockedContentTabHelper* blocked_content_tab_helper =
+        BlockedContentTabHelper::FromWebContents(tab);
+    std::vector<WebContents*> blocked_contents;
+    blocked_content_tab_helper->GetBlockedContents(&blocked_contents);
     return blocked_contents;
   }
 
@@ -72,7 +70,7 @@ class PopupBlockerBrowserTest : public InProcessBrowserTest {
 
     ASSERT_EQ(2u, browser::GetBrowserCount(browser->profile()));
 
-    std::vector<TabContents*> blocked_contents = GetBlockedContents(browser);
+    std::vector<WebContents*> blocked_contents = GetBlockedContents(browser);
     ASSERT_TRUE(blocked_contents.empty());
   }
 
@@ -88,17 +86,16 @@ class PopupBlockerBrowserTest : public InProcessBrowserTest {
     WebContents* web_contents = chrome::GetActiveWebContents(browser);
     EXPECT_EQ(url, web_contents->GetURL());
 
-    std::vector<TabContents*> blocked_contents = GetBlockedContents(browser);
+    std::vector<WebContents*> blocked_contents = GetBlockedContents(browser);
     ASSERT_EQ(1u, blocked_contents.size());
 
     content::WindowedNotificationObserver observer(
         chrome::NOTIFICATION_TAB_ADDED,
         content::NotificationService::AllSources());
 
-    TabContents* tab_contents = TabContents::FromWebContents(web_contents);
-    BlockedContentTabHelper* blocked_content =
-        tab_contents->blocked_content_tab_helper();
-    blocked_content->LaunchForContents(blocked_contents[0]);
+    BlockedContentTabHelper* blocked_content_tab_helper =
+        BlockedContentTabHelper::FromWebContents(web_contents);
+    blocked_content_tab_helper->LaunchForContents(blocked_contents[0]);
 
     observer.Wait();
   }
@@ -117,7 +114,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, MultiplePopups) {
   GURL url(ui_test_utils::GetTestUrl(
       FilePath(kTestDir), FilePath(FILE_PATH_LITERAL("popup-many.html"))));
   ui_test_utils::NavigateToURL(browser(), url);
-  std::vector<TabContents*> blocked_contents = GetBlockedContents(browser());
+  std::vector<WebContents*> blocked_contents = GetBlockedContents(browser());
   ASSERT_EQ(2u, blocked_contents.size());
 }
 

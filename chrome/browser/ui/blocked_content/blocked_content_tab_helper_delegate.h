@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_UI_BLOCKED_CONTENT_BLOCKED_CONTENT_TAB_HELPER_DELEGATE_H_
 #define CHROME_BROWSER_UI_BLOCKED_CONTENT_BLOCKED_CONTENT_TAB_HELPER_DELEGATE_H_
 
-class TabContents;
+namespace content {
+class WebContents;
+}
 
 // Objects implement this interface to get notified about changes in the
 // BlockedContentTabHelper and to provide necessary functionality.
@@ -13,7 +15,8 @@ class BlockedContentTabHelperDelegate {
  public:
   // If |source| is constrained, returns the tab containing it.  Otherwise
   // returns |source|.
-  virtual TabContents* GetConstrainingTabContents(TabContents* source) = 0;
+  virtual content::WebContents* GetConstrainingWebContents(
+      content::WebContents* source) = 0;
 
  protected:
   virtual ~BlockedContentTabHelperDelegate();
