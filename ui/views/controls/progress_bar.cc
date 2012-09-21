@@ -252,7 +252,7 @@ void ProgressBar::OnPaint(gfx::Canvas* canvas) {
 
     // Draw inner stroke and shadow if wide enough.
     if (progress_width > 2 * kBorderWidth) {
-      canvas->sk_canvas()->save();
+      canvas->Save();
 
       SkPath inner_path;
       AddRoundRectPathWithPadding(
@@ -260,7 +260,7 @@ void ProgressBar::OnPaint(gfx::Canvas* canvas) {
           kCornerRadius,
           SkIntToScalar(kBorderWidth),
           &inner_path);
-      canvas->sk_canvas()->clipPath(inner_path);
+      canvas->ClipPath(inner_path);
 
       // Draw bar inner stroke
       StrokeRoundRect(canvas,
@@ -278,7 +278,7 @@ void ProgressBar::OnPaint(gfx::Canvas* canvas) {
                       bar_inner_shadow_color,
                       kBorderWidth);
 
-      canvas->sk_canvas()->restore();
+      canvas->Restore();
     }
 
     // Draw bar stroke
