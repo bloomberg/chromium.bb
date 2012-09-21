@@ -204,6 +204,29 @@ TEST_F(DeviceSettingsProviderTest, SetPrefSucceed) {
   EXPECT_TRUE(bool_value);
 }
 
+TEST_F(DeviceSettingsProviderTest, SetPrefTwice) {
+  owner_key_util_->SetPrivateKey(policy_.signing_key());
+  device_settings_service_.SetUsername(policy_.policy_data().username());
+  device_settings_test_helper_.Flush();
+
+  EXPECT_CALL(*this, SettingChanged(_)).Times(AnyNumber());
+
+  base::StringValue value1("beta");
+  provider_->Set(kReleaseChannel, value1);
+  base::StringValue value2("dev");
+  provider_->Set(kReleaseChannel, value2);
+
+  // Let the changes propagate through the system.
+  device_settings_test_helper_.set_policy_blob(std::string());
+  device_settings_test_helper_.Flush();
+
+  // Verify the second change has been applied.
+  const base::Value* saved_value = provider_->Get(kReleaseChannel);
+  EXPECT_TRUE(value2.Equals(saved_value));
+
+  Mock::VerifyAndClearExpectations(this);
+}
+
 TEST_F(DeviceSettingsProviderTest, PolicyRetrievalFailedBadSignature) {
   owner_key_util_->SetPublicKeyFromPrivateKey(policy_.signing_key());
   policy_.policy().set_policy_data_signature("bad signature");

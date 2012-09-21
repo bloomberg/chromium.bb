@@ -658,11 +658,8 @@ void DeviceSettingsProvider::UpdateAndProceedStoring() {
   UpdateFromService();
 
   // Trigger the next change if necessary.
-  if (trusted_status_ == TRUSTED &&
-      !store_callback_factory_.HasWeakPtrs() &&
-      !pending_changes_.empty()) {
+  if (trusted_status_ == TRUSTED && !pending_changes_.empty())
     SetInPolicy();
-  }
 }
 
 bool DeviceSettingsProvider::UpdateFromService() {
