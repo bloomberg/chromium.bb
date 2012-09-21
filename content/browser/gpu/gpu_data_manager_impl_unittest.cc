@@ -166,11 +166,55 @@ TEST_F(GpuDataManagerImplTest, BlacklistCard) {
 
   manager->BlacklistCard();
   EXPECT_FALSE(manager->GpuAccessAllowed());
+  EXPECT_EQ(content::GPU_FEATURE_TYPE_ALL,
+            manager->GetBlacklistedFeatures());
+
+  delete manager;
+}
+
+TEST_F(GpuDataManagerImplTest, SoftwareRendering) {
+  // Blacklist, then register SwiftShader.
+  GpuDataManagerImpl* manager = new GpuDataManagerImpl();
+  ASSERT_TRUE(manager);
+  EXPECT_EQ(0, manager->GetBlacklistedFeatures());
+  EXPECT_TRUE(manager->GpuAccessAllowed());
+  EXPECT_FALSE(manager->ShouldUseSoftwareRendering());
+
+  manager->BlacklistCard();
+  EXPECT_FALSE(manager->GpuAccessAllowed());
+  EXPECT_FALSE(manager->ShouldUseSoftwareRendering());
 
   // If software rendering is enabled, even if we blacklist GPU,
   // GPU process is still allowed.
-  manager->software_rendering_ = true;
+  const FilePath test_path(FILE_PATH_LITERAL("AnyPath"));
+  manager->RegisterSwiftShaderPath(test_path);
+  EXPECT_TRUE(manager->ShouldUseSoftwareRendering());
   EXPECT_TRUE(manager->GpuAccessAllowed());
+  EXPECT_EQ(content::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS,
+            manager->GetBlacklistedFeatures());
+
+  delete manager;
+}
+
+TEST_F(GpuDataManagerImplTest, SoftwareRendering2) {
+  // Register SwiftShader, then blacklist.
+  GpuDataManagerImpl* manager = new GpuDataManagerImpl();
+  ASSERT_TRUE(manager);
+  EXPECT_EQ(0, manager->GetBlacklistedFeatures());
+  EXPECT_TRUE(manager->GpuAccessAllowed());
+  EXPECT_FALSE(manager->ShouldUseSoftwareRendering());
+
+  const FilePath test_path(FILE_PATH_LITERAL("AnyPath"));
+  manager->RegisterSwiftShaderPath(test_path);
+  EXPECT_EQ(0, manager->GetBlacklistedFeatures());
+  EXPECT_TRUE(manager->GpuAccessAllowed());
+  EXPECT_FALSE(manager->ShouldUseSoftwareRendering());
+
+  manager->BlacklistCard();
+  EXPECT_TRUE(manager->GpuAccessAllowed());
+  EXPECT_TRUE(manager->ShouldUseSoftwareRendering());
+  EXPECT_EQ(content::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS,
+            manager->GetBlacklistedFeatures());
 
   delete manager;
 }

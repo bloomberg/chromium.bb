@@ -481,12 +481,10 @@ void GpuDataManagerImpl::RegisterSwiftShaderPath(const FilePath& path) {
 void GpuDataManagerImpl::EnableSoftwareRenderingIfNecessary() {
   if (!GpuAccessAllowed() ||
       (gpu_feature_type_ & content::GPU_FEATURE_TYPE_WEBGL)) {
-#if defined(ENABLE_SWIFTSHADER)
     if (!swiftshader_path_.empty() &&
         !CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kDisableSoftwareRasterizer))
       software_rendering_ = true;
-#endif
   }
 }
 
@@ -502,4 +500,3 @@ void GpuDataManagerImpl::BlacklistCard() {
   EnableSoftwareRenderingIfNecessary();
   NotifyGpuInfoUpdate();
 }
-
