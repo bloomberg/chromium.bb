@@ -408,6 +408,9 @@ void RenderViewHostImpl::FirePageBeforeUnload(bool for_cross_site_transition) {
     // handler.
     is_waiting_for_beforeunload_ack_ = true;
     unload_ack_is_for_cross_site_transition_ = for_cross_site_transition;
+    // Increment the in-flight event count, to ensure that input events won't
+    // cancel the timeout timer.
+    increment_in_flight_event_count();
     StartHangMonitorTimeout(TimeDelta::FromMilliseconds(kUnloadTimeoutMS));
     send_should_close_start_time_ = base::TimeTicks::Now();
     Send(new ViewMsg_ShouldClose(GetRoutingID()));
@@ -420,6 +423,9 @@ void RenderViewHostImpl::SwapOut(int new_render_process_host_id,
   // this RVH with the pending RVH.
   is_waiting_for_unload_ack_ = true;
   // Start the hang monitor in case the renderer hangs in the unload handler.
+  // Increment the in-flight event count, to ensure that input events won't
+  // cancel the timeout timer.
+  increment_in_flight_event_count();
   StartHangMonitorTimeout(TimeDelta::FromMilliseconds(kUnloadTimeoutMS));
 
   ViewMsg_SwapOut_Params params;
@@ -439,6 +445,7 @@ void RenderViewHostImpl::SwapOut(int new_render_process_host_id,
 
 void RenderViewHostImpl::OnSwapOutACK() {
   // Stop the hang monitor now that the unload handler has finished.
+  decrement_in_flight_event_count();
   StopHangMonitorTimeout();
   is_waiting_for_unload_ack_ = false;
   delegate_->SwappedOut(this);
@@ -466,6 +473,11 @@ void RenderViewHostImpl::ClosePage() {
   StartHangMonitorTimeout(TimeDelta::FromMilliseconds(kUnloadTimeoutMS));
 
   if (IsRenderViewLive()) {
+    // Since we are sending an IPC message to the renderer, increase the event
+    // count to prevent the hang monitor timeout from being stopped by input
+    // event acknowledgements.
+    increment_in_flight_event_count();
+
     // TODO(creis): Should this be moved to Shutdown?  It may not be called for
     // RenderViewHosts that have been swapped out.
     content::NotificationService::current()->Notify(
@@ -704,8 +716,15 @@ void RenderViewHostImpl::JavaScriptDialogClosed(IPC::Message* reply_msg,
   GetProcess()->SetIgnoreInputEvents(false);
   bool is_waiting =
       is_waiting_for_beforeunload_ack_ || is_waiting_for_unload_ack_;
-  if (is_waiting)
-    StartHangMonitorTimeout(TimeDelta::FromMilliseconds(kUnloadTimeoutMS));
+
+  // If we are executing as part of (before)unload event handling, we don't
+  // want to use the regular hung_renderer_delay_ms_ if the user has agreed to
+  // leave the current page. In this case, use the regular timeout value used
+  // during the (before)unload handling.
+  if (is_waiting) {
+    StartHangMonitorTimeout(TimeDelta::FromMilliseconds(
+        success ? kUnloadTimeoutMS : hung_renderer_delay_ms_));
+  }
 
   ViewHostMsg_RunJavaScriptMessage::WriteReplyParams(reply_msg,
                                                      success, user_input);
@@ -1493,6 +1512,7 @@ void RenderViewHostImpl::OnMsgShouldCloseACK(
     bool proceed,
     const base::TimeTicks& renderer_before_unload_start_time,
     const base::TimeTicks& renderer_before_unload_end_time) {
+  decrement_in_flight_event_count();
   StopHangMonitorTimeout();
   // If this renderer navigated while the beforeunload request was in flight, we
   // may have cleared this state in OnMsgNavigate, in which case we can ignore
@@ -1534,6 +1554,7 @@ void RenderViewHostImpl::OnMsgShouldCloseACK(
 }
 
 void RenderViewHostImpl::OnMsgClosePageACK() {
+  decrement_in_flight_event_count();
   ClosePageIgnoringUnloadEvents();
 }
 
