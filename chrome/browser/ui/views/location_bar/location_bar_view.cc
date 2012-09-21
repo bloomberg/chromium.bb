@@ -74,6 +74,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/border.h"
 #include "ui/views/button_drag_utils.h"
@@ -220,7 +221,7 @@ LocationBarView::LocationBarView(Browser* browser,
   set_id(VIEW_ID_LOCATION_BAR);
 
   if (mode_ == NORMAL) {
-    painter_.reset(
+    background_painter_.reset(
         views::Painter::CreateImagePainter(
             *ui::ResourceBundle::GetSharedInstance().GetImageNamed(
                 IDR_LOCATION_BAR_BORDER).ToImageSkia(),
@@ -429,6 +430,11 @@ void LocationBarView::ModeChanged(const chrome::search::Mode& old_mode,
     StopFadeAnimation();
   }
 #endif
+
+  // Focus border changes when the search mode transitions to or from |NTP|,
+  // schedule paint to redraw.
+  if (old_mode.is_ntp() || new_mode.is_ntp())
+    SchedulePaint();
 }
 
 void LocationBarView::Update(const WebContents* tab_for_state_restoring) {
@@ -672,6 +678,11 @@ void LocationBarView::Layout() {
   // In NTP mode, hide all location bar decorations.
   if (search_model_ && search_model_->mode().is_ntp()) {
     gfx::Rect location_bounds(0, location_y, width(), location_height);
+    // The location bar border, when drawn, has colored edges that need to be
+    // inset, so that these edges won't be clipped by |location_entry_view_|.
+    // |location_y| and |location_height| already include insets of top and
+    // bottom edges, so we only need to inset for left and right edges here.
+    location_bounds.Inset(kNormalHorizontalEdgeThickness, 0);
     location_entry_view_->SetBoundsRect(location_bounds);
     for (int i = 0; i < child_count(); ++i)
       if (child_at(i) != location_entry_view_)
@@ -957,8 +968,14 @@ void LocationBarView::Layout() {
 void LocationBarView::OnPaint(gfx::Canvas* canvas) {
   View::OnPaint(canvas);
 
-  if (painter_.get()) {
-    painter_->Paint(canvas, size());
+  // If search mode is |NTP|, paint the background color of NTP page first;
+  // otherwise, there will be a white outline around the location bar border.
+  bool is_search_ntp = search_model_ && search_model_->mode().is_ntp();
+  if (is_search_ntp)
+    canvas->DrawColor(chrome::search::kNTPBackgroundColor);
+
+  if (background_painter_.get()) {
+    background_painter_->Paint(canvas, size());
   } else if (mode_ == POPUP) {
     canvas->TileImageInt(*GetThemeProvider()->GetImageSkiaNamed(
         IDR_LOCATIONBG_POPUPMODE_CENTER), 0, 0, 0, 0, width(), height());
@@ -996,11 +1013,14 @@ void LocationBarView::OnPaint(gfx::Canvas* canvas) {
 
   // If |show_focus_rect_| is false but search mode is |NTP|, we still show
   // focus rect.
-  bool is_search_ntp = search_model_ && search_model_->mode().is_ntp();
   bool show_focus_rect = show_focus_rect_ || is_search_ntp;
   if (show_focus_rect && HasFocus()) {
-    gfx::Rect r = location_entry_view_->bounds();
+    if (is_search_ntp) {
+      PaintSearchNTPFocusBorder(canvas);
+      return;
+    }
 
+    gfx::Rect r = location_entry_view_->bounds();
     // TODO(jamescook): Is this still needed?
 #if defined(OS_WIN)
     r.Inset(-1,  -1);
@@ -1577,6 +1597,41 @@ int LocationBarView::GetInternalHeight(bool use_preferred_size) {
 bool LocationBarView::HasValidSuggestText() const {
   return suggested_text_view_ && !suggested_text_view_->size().IsEmpty() &&
       !suggested_text_view_->text().empty();
+}
+
+void LocationBarView::PaintSearchNTPFocusBorder(gfx::Canvas* canvas) {
+  // Load search focus border mask image if not already loaded.
+  if (!search_focus_painter_.get()) {
+    search_focus_painter_.reset(
+        views::Painter::CreateImagePainter(
+            *ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+                IDR_LOCATION_BAR_SEARCH_FOCUS_BORDER_MASK).ToImageSkia(),
+            gfx::Insets(kBorderRoundCornerHeight, kBorderRoundCornerWidth,
+                kBorderRoundCornerHeight, kBorderRoundCornerWidth),
+            true));
+    DCHECK(search_focus_painter_.get());
+  }
+
+  // On first canvas, draw rounded rect with system highlight color.
+  gfx::Canvas border_canvas(size(), canvas->scale_factor(), false);
+  SkPaint paint;
+  paint.setColor(ui::NativeTheme::instance()->GetSystemColor(
+                     ui::NativeTheme::kColorId_FocusedBorderColor));
+  paint.setStyle(SkPaint::kFill_Style);
+  paint.setAntiAlias(true);
+  border_canvas.DrawRoundRect(GetLocalBounds(), kBorderCornerRadius, paint);
+
+  // On second canvas, draw the mask image.
+  gfx::Canvas mask_canvas(size(), canvas->scale_factor(), false);
+  search_focus_painter_->Paint(&mask_canvas, size());
+
+  // Create a masked image from the 2 canvases, and draw the final image
+  // on the destination canvas.
+  gfx::ImageSkia focus_image =
+      gfx::ImageSkiaOperations::CreateMaskedImage(
+          gfx::ImageSkia(border_canvas.ExtractImageRep()),
+          gfx::ImageSkia(mask_canvas.ExtractImageRep()));
+  canvas->DrawImageInt(focus_image, 0, 0);
 }
 
 #if defined(USE_AURA)

@@ -441,6 +441,9 @@ class LocationBarView : public LocationBar,
   // after layout, so the |page_action_views_| have their bounds.
   void PaintPageActionBackgrounds(gfx::Canvas* canvas);
 
+  // Draw the focus border when the search mode is |NTP|.
+  void PaintSearchNTPFocusBorder(gfx::Canvas* canvas);
+
 #if defined(USE_AURA)
   // Fade in the location bar view so the icons come in gradually.
   void StartFadeAnimation();
@@ -490,7 +493,10 @@ class LocationBarView : public LocationBar,
   gfx::Font font_;
 
   // An object used to paint the normal-mode background.
-  scoped_ptr<views::Painter> painter_;
+  scoped_ptr<views::Painter> background_painter_;
+
+  // An object used to paint the focus border when search mode is |NTP|.
+  scoped_ptr<views::Painter> search_focus_painter_;
 
   // An icon to the left of the edit field.
   LocationIconView* location_icon_view_;
