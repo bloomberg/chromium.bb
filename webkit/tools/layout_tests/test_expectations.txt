@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # This file should almost always be empty. Normally Chromium test expectations
 # are only put here temporarily, and moved to
 # src/third_party/WebKit/LayoutTests/platform/chromium/TestExpectations
