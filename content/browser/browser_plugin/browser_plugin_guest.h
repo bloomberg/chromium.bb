@@ -76,6 +76,11 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsDelegate,
     guest_hang_timeout_ = timeout;
   }
 
+  void set_embedder_render_process_host(
+      RenderProcessHost* render_process_host) {
+    embedder_render_process_host_ = render_process_host;
+  }
+
   // WebContentsObserver implementation.
   virtual void DidCommitProvisionalLoadForFrame(
       int64 frame_id,
@@ -88,30 +93,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsDelegate,
   // WebContentsDelegate implementation.
   virtual void RendererUnresponsive(WebContents* source) OVERRIDE;
 
- private:
-  friend class BrowserPluginEmbedder;
-  friend class BrowserPluginGuestHelper;
-  friend class TestBrowserPluginGuest;
-
-  BrowserPluginGuest(int instance_id,
-                     WebContentsImpl* web_contents,
-                     RenderViewHost* render_view_host);
-
-  void set_embedder_render_process_host(
-      RenderProcessHost* render_process_host) {
-    embedder_render_process_host_ = render_process_host;
-  }
-  RenderProcessHost* embedder_render_process_host() {
-    return embedder_render_process_host_;
-  }
-  // Returns the identifier that uniquely identifies a browser plugin guest
-  // within an embedder.
-  int instance_id() const { return instance_id_; }
-  TransportDIB* damage_buffer() const { return damage_buffer_.get(); }
-  const gfx::Size& damage_view_size() const { return damage_view_size_; }
-  float damage_buffer_scale_factor() const {
-    return damage_buffer_scale_factor_;
-  }
   void SetDamageBuffer(TransportDIB* damage_buffer,
 #if defined(OS_WIN)
                        int damage_buffer_size,
@@ -138,17 +119,40 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsDelegate,
   // embedder) instead of default view/widget host.
   void HandleInputEventAck(RenderViewHost* render_view_host, bool handled);
 
-  // Helper to send messages to embedder. Overridden in test implementation
-  // since we want to intercept certain messages for testing.
-  virtual void SendMessageToEmbedder(IPC::Message* msg);
-  // Overridden in tests.
-  virtual void SetFocus(bool focused);
+  // Exposes the protected web_contents() from WebContentsObserver.
+  WebContents* GetWebContents();
+
   // Overridden in tests.
   virtual bool ViewTakeFocus(bool reverse);
+  // Overridden in tests.
+  virtual void SetFocus(bool focused);
   // Reload the guest.
   virtual void Reload();
   // Stop loading the guest.
   virtual void Stop();
+
+ private:
+  friend class TestBrowserPluginGuest;
+
+  BrowserPluginGuest(int instance_id,
+                     WebContentsImpl* web_contents,
+                     RenderViewHost* render_view_host);
+
+  RenderProcessHost* embedder_render_process_host() {
+    return embedder_render_process_host_;
+  }
+  // Returns the identifier that uniquely identifies a browser plugin guest
+  // within an embedder.
+  int instance_id() const { return instance_id_; }
+  TransportDIB* damage_buffer() const { return damage_buffer_.get(); }
+  const gfx::Size& damage_view_size() const { return damage_view_size_; }
+  float damage_buffer_scale_factor() const {
+    return damage_buffer_scale_factor_;
+  }
+
+  // Helper to send messages to embedder. Overridden in test implementation
+  // since we want to intercept certain messages for testing.
+  virtual void SendMessageToEmbedder(IPC::Message* msg);
 
   // Static factory instance (always NULL for non-test).
   static content::BrowserPluginHostFactory* factory_;

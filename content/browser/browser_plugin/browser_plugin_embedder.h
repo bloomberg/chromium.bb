@@ -79,29 +79,6 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver,
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE;
 
-  // Overrides factory for testing. Default (NULL) value indicates regular
-  // (non-test) environment.
-  static void set_factory_for_testing(BrowserPluginHostFactory* factory) {
-    factory_ = factory;
-  }
-
- private:
-  friend class BrowserPluginEmbedderHelper;
-  friend class TestBrowserPluginEmbedder;
-
-  BrowserPluginEmbedder(WebContentsImpl* web_contents,
-                        RenderViewHost* render_view_host);
-
-  // Returns a guest browser plugin delegate by its container ID specified
-  // in BrowserPlugin.
-  BrowserPluginGuest* GetGuestByInstanceID(int instance_id) const;
-  // Adds a new guest web_contents to the embedder (overridable in test).
-  virtual void AddGuest(int instance_id,
-                        WebContents* guest_web_contents,
-                        int64 frame_id);
-  void DestroyGuestByInstanceID(int instance_id);
-  void DestroyGuests();
-
   // Message handlers (direct/indirect via BrowserPluginEmbedderHelper).
   // Routes update rect ack message to the appropriate guest.
   void UpdateRectACK(int instance_id, int message_id, const gfx::Size& size);
@@ -123,6 +100,28 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver,
                         const WebKit::WebInputEvent& event,
                         IPC::Message* reply_message);
   void PluginDestroyed(int instance_id);
+
+  // Overrides factory for testing. Default (NULL) value indicates regular
+  // (non-test) environment.
+  static void set_factory_for_testing(BrowserPluginHostFactory* factory) {
+    factory_ = factory;
+  }
+
+ private:
+  friend class TestBrowserPluginEmbedder;
+
+  BrowserPluginEmbedder(WebContentsImpl* web_contents,
+                        RenderViewHost* render_view_host);
+
+  // Returns a guest browser plugin delegate by its container ID specified
+  // in BrowserPlugin.
+  BrowserPluginGuest* GetGuestByInstanceID(int instance_id) const;
+  // Adds a new guest web_contents to the embedder (overridable in test).
+  virtual void AddGuest(int instance_id,
+                        WebContents* guest_web_contents,
+                        int64 frame_id);
+  void DestroyGuestByInstanceID(int instance_id);
+  void DestroyGuests();
 
   // Called when visiblity of web_contents changes, so the embedder will
   // show/hide its guest.

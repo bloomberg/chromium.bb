@@ -102,7 +102,8 @@ void BrowserPluginEmbedder::NavigateGuest(RenderViewHost* render_view_host,
     AddGuest(instance_id, guest_web_contents, frame_id);
     guest_web_contents->SetDelegate(guest);
   } else {
-    guest_web_contents = static_cast<WebContentsImpl*>(guest->web_contents());
+    guest_web_contents =
+        static_cast<WebContentsImpl*>(guest->GetWebContents());
   }
 
   // We ignore loading empty urls in web_contents.
@@ -142,7 +143,7 @@ void BrowserPluginEmbedder::ResizeGuest(int instance_id,
   if (!guest)
     return;
   WebContentsImpl* guest_web_contents =
-      static_cast<WebContentsImpl*>(guest->web_contents());
+      static_cast<WebContentsImpl*>(guest->GetWebContents());
   guest->SetDamageBuffer(damage_buffer,
 #if defined(OS_WIN)
                          damage_buffer_size,
@@ -180,7 +181,7 @@ void BrowserPluginEmbedder::HandleInputEvent(int instance_id,
 void BrowserPluginEmbedder::DestroyGuestByInstanceID(int instance_id) {
   BrowserPluginGuest* guest = GetGuestByInstanceID(instance_id);
   if (guest) {
-    WebContents* guest_web_contents = guest->web_contents();
+    WebContents* guest_web_contents = guest->GetWebContents();
 
     // Destroy the guest's web_contents.
     delete guest_web_contents;

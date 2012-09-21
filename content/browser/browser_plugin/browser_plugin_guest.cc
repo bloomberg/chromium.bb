@@ -73,6 +73,10 @@ void BrowserPluginGuest::RendererUnresponsive(WebContents* source) {
   base::KillProcess(process_handle, RESULT_CODE_HUNG, false);
 }
 
+WebContents* BrowserPluginGuest::GetWebContents() {
+  return web_contents();
+}
+
 void BrowserPluginGuest::SetDamageBuffer(
     TransportDIB* damage_buffer,
 #if defined(OS_WIN)
