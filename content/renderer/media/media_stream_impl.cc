@@ -19,6 +19,7 @@
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "content/renderer/media/webrtc_uma_histograms.h"
 #include "media/base/message_loop_factory.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaStreamRegistry.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
@@ -104,7 +105,7 @@ void MediaStreamImpl::requestUserMedia(
     // Get the WebFrame that requested a MediaStream.
     // The frame is needed to tell the MediaStreamDispatcher when a stream goes
     // out of scope.
-    frame = WebKit::WebFrame::frameForCurrentContext();
+    frame = user_media_request.ownerDocument().frame();
     DCHECK(frame);
   }
 
