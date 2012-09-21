@@ -39,12 +39,10 @@ const char kOnBookmarkMoved[] = "bookmarks.onMoved";
 const char kOnBookmarkChildrenReordered[] = "bookmarks.onChildrenReordered";
 const char kOnBookmarkImportBegan[] = "bookmarks.onImportBegan";
 const char kOnBookmarkImportEnded[] = "bookmarks.onImportEnded";
+
 // TODO(arv): Move bookmark manager related constants out of this file.
-const char kOnBookmarkDragEnter[] =
-    "experimental.bookmarkManager.onDragEnter";
-const char kOnBookmarkDragLeave[] =
-    "experimental.bookmarkManager.onDragLeave";
-const char kOnBookmarkDrop[] =
-    "experimental.bookmarkManager.onDrop";
+const char kOnBookmarkDragEnter[] = "bookmarkManagerPrivate.onDragEnter";
+const char kOnBookmarkDragLeave[] = "bookmarkManagerPrivate.onDragLeave";
+const char kOnBookmarkDrop[] = "bookmarkManagerPrivate.onDrop";
 
 }  // namespace bookmark_extension_api_constants

@@ -19,7 +19,7 @@ if (!chrome.bookmarks)
   console.error('Bookmarks extension API is not available');
 
 // Get the localized strings from the backend.
-chrome.experimental.bookmarkManager.getStrings(function(data) {
+chrome.bookmarkManagerPrivate.getStrings(function(data) {
   // The strings may contain & which we need to strip.
   for (var key in data) {
     data[key] = data[key].replace(/&/, '');
@@ -219,7 +219,7 @@ list.addEventListener('dblclick', function(e) {
 // folder part.
 list.addEventListener('urlClicked', function(e) {
   getLinkController().openUrlFromEvent(e.url, e.originalEvent);
-  chrome.experimental.bookmarkManager.recordLaunch();
+  chrome.bookmarkManagerPrivate.recordLaunch();
 });
 
 $('term').onsearch = function(e) {
@@ -543,7 +543,7 @@ var dnd = {
         return node.id;
       });
 
-      chrome.experimental.bookmarkManager.startDrag(ids);
+      chrome.bookmarkManagerPrivate.startDrag(ids);
     }
   },
 
@@ -770,9 +770,9 @@ var dnd = {
       selectItemsAfterUserAction(selectTarget, selectedTreeId);
 
       if (index != undefined && index != -1)
-        chrome.experimental.bookmarkManager.drop(parentId, index);
+        chrome.bookmarkManagerPrivate.drop(parentId, index);
       else
-        chrome.experimental.bookmarkManager.drop(parentId);
+        chrome.bookmarkManagerPrivate.drop(parentId);
 
       e.preventDefault();
 
@@ -804,11 +804,11 @@ var dnd = {
     document.addEventListener('dragend', deferredClearData);
     document.addEventListener('mouseup', deferredClearData);
 
-    chrome.experimental.bookmarkManager.onDragEnter.addListener(
+    chrome.bookmarkManagerPrivate.onDragEnter.addListener(
         this.handleChromeDragEnter.bind(this));
-    chrome.experimental.bookmarkManager.onDragLeave.addListener(
+    chrome.bookmarkManagerPrivate.onDragLeave.addListener(
         deferredClearData);
-    chrome.experimental.bookmarkManager.onDrop.addListener(deferredClearData);
+    chrome.bookmarkManagerPrivate.onDrop.addListener(deferredClearData);
   }
 };
 
@@ -834,7 +834,7 @@ for (var i = 0, command; command = commands[i]; i++) {
 }
 
 var canEdit = true;
-chrome.experimental.bookmarkManager.canEdit(function(result) {
+chrome.bookmarkManagerPrivate.canEdit(function(result) {
   canEdit = result;
 });
 
@@ -855,7 +855,7 @@ chrome.systemPrivate.getIncognitoModeAvailability(function(result) {
  * New Windows are not allowed in Windows 8 metro mode.
  */
 var canOpenNewWindows = true;
-chrome.experimental.bookmarkManager.canOpenNewWindows(function(result) {
+chrome.bookmarkManagerPrivate.canOpenNewWindows(function(result) {
     canOpenNewWindows = result;
 });
 
@@ -936,7 +936,7 @@ function updatePasteCommand(opt_f) {
   if (list.isSearch() || list.isRecent()) {
     update(false);
   } else {
-    chrome.experimental.bookmarkManager.canPaste(list.parentId, update);
+    chrome.bookmarkManagerPrivate.canPaste(list.parentId, update);
   }
 }
 
@@ -1146,7 +1146,7 @@ function updateEditingCommands() {
   var editingCommands = ['cut', 'delete', 'rename-folder', 'edit',
       'add-new-bookmark', 'new-folder', 'sort', 'paste'];
 
-  chrome.experimental.bookmarkManager.canEdit(function(result) {
+  chrome.bookmarkManagerPrivate.canEdit(function(result) {
     if (result != canEdit) {
       canEdit = result;
       editingCommands.forEach(function(baseId) {
@@ -1335,7 +1335,7 @@ function openBookmarks(kind) {
         addNodes(v);
     });
     getLinkController().openUrls(urls, kind);
-    chrome.experimental.bookmarkManager.recordLaunch();
+    chrome.bookmarkManagerPrivate.recordLaunch();
   });
 }
 
@@ -1566,20 +1566,20 @@ function handleCommand(e) {
       deleteBookmarks();
       break;
     case 'copy-command':
-      chrome.experimental.bookmarkManager.copy(getSelectedBookmarkIds(),
-                                               updatePasteCommand);
+      chrome.bookmarkManagerPrivate.copy(getSelectedBookmarkIds(),
+                                         updatePasteCommand);
       break;
     case 'cut-command':
-      chrome.experimental.bookmarkManager.cut(getSelectedBookmarkIds(),
-                                              updatePasteCommand);
+      chrome.bookmarkManagerPrivate.cut(getSelectedBookmarkIds(),
+                                        updatePasteCommand);
       break;
     case 'paste-command':
       selectItemsAfterUserAction(list);
-      chrome.experimental.bookmarkManager.paste(list.parentId,
-                                                getSelectedBookmarkIds());
+      chrome.bookmarkManagerPrivate.paste(list.parentId,
+                                          getSelectedBookmarkIds());
       break;
     case 'sort-command':
-      chrome.experimental.bookmarkManager.sortChildren(list.parentId);
+      chrome.bookmarkManagerPrivate.sortChildren(list.parentId);
       break;
     case 'rename-folder-command':
     case 'edit-command':

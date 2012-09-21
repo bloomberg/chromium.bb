@@ -10,7 +10,7 @@
   "chromeos_info_private.json": "150737",
   "font_settings.json": "147621",
   "management.json": "151113",
-  "experimental_bookmark_manager.json": "140864",
+  "bookmark_manager.json": "140864",
   "experimental_commands.json": "149147",
   "web_navigation.json": "148204",
   "echo_private.json": "136747",

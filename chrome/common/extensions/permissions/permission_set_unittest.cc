@@ -704,6 +704,7 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kExperimental);
 
   // These are private.
+  skip.insert(APIPermission::kBookmarkManagerPrivate);
   skip.insert(APIPermission::kChromeosInfoPrivate);
   skip.insert(APIPermission::kCloudPrintPrivate);
   skip.insert(APIPermission::kEchoPrivate);

@@ -33,8 +33,8 @@ void AddNode(const BookmarkNode* node,
   }
 }
 
-// TODO(mwrosen): Remove this function once chrome.experimental.bookmarkManager
-// is refactored to use the JSON schema compiler.
+// TODO(mwrosen): Remove this function once chrome.bookmarkManagerPrivate is
+// refactored to use the JSON schema compiler.
 void AddNode(const BookmarkNode* node,
              base::ListValue* list,
              bool recurse,

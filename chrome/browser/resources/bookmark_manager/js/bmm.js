@@ -41,8 +41,7 @@ cr.define('bmm', function() {
     var p = new Promise;
     if (!(id in loadingPromises)) {
       loadingPromises[id] = new Promise;
-      chrome.experimental.bookmarkManager.getSubtree(id, false,
-                                                     function(nodes) {
+      chrome.bookmarkManagerPrivate.getSubtree(id, false, function(nodes) {
         loadingPromises[id].value = nodes && nodes[0];
         delete loadingPromises[id];
       });

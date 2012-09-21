@@ -243,7 +243,7 @@ void WebClipboardImpl::writeDataObject(const WebDragData& data) {
   // that ScopedClipboardWriterGlue's dtor remains a no-op if the page didn't
   // modify the DataTransfer object, which is important to avoid stomping on
   // any clipboard contents written by extension functions such as
-  // chrome.experimental.bookmarkManager.copy.
+  // chrome.bookmarkManagerPrivate.copy.
   if (!data_object.custom_data.empty()) {
     Pickle pickle;
     ui::WriteCustomDataToPickle(data_object.custom_data, &pickle);

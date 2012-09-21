@@ -265,7 +265,7 @@ cr.define('bmm', function() {
       }
 
       var self = this;
-      chrome.experimental.bookmarkManager.getSubtree('', true, function(root) {
+      chrome.bookmarkManagerPrivate.getSubtree('', true, function(root) {
         self.clear();
         buildTreeItems(self, root[0].children);
         cr.dispatchSimpleEvent(self, 'load');

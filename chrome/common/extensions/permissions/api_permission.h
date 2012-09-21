@@ -46,6 +46,7 @@ class APIPermission {
     kAudioCapture,
     kBackground,
     kBookmark,
+    kBookmarkManagerPrivate,
     kBrowserTag,
     kBrowsingData,
     kChromeosInfoPrivate,

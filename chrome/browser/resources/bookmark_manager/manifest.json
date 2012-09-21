@@ -10,7 +10,7 @@
   "incognito" : "split",
   "permissions": [
     "bookmarks",
-    "experimental",
+    "bookmarkManagerPrivate",
     "systemPrivate",
     "tabs",
     "chrome://favicon/",

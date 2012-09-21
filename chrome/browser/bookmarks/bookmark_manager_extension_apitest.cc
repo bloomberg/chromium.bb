@@ -19,7 +19,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, BookmarkManager) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
 
-  ASSERT_TRUE(RunExtensionTest("bookmark_manager/standard")) << message_;
+  ASSERT_TRUE(RunComponentExtensionTest("bookmark_manager/standard"))
+      << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, BookmarkManagerEditDisabled) {
@@ -39,5 +40,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, BookmarkManagerEditDisabled) {
 
   profile->GetPrefs()->SetBoolean(prefs::kEditBookmarksEnabled, false);
 
-  ASSERT_TRUE(RunExtensionTest("bookmark_manager/edit_disabled")) << message_;
+  ASSERT_TRUE(RunComponentExtensionTest("bookmark_manager/edit_disabled"))
+      << message_;
 }

@@ -868,16 +868,16 @@ This CL:
 <tr class="vc_row_odd">
 <td colspan="2">
 
-<a name="experimental_bookmark_manager.json" href="/viewvc/chrome/trunk/src/chrome/common/extensions/api/experimental_bookmark_manager.json?view=log" title="View file revision log">
+<a name="bookmark_manager.json" href="/viewvc/chrome/trunk/src/chrome/common/extensions/api/bookmark_manager.json?view=log" title="View file revision log">
 
 <img src="/viewvc/*docroot*/images/text.png" alt="" width="16" height="16" />
-experimental_bookmark_manager.json</a>
+bookmark_manager.json</a>
 
 </td>
 
 
 
-<td>&nbsp;<a href="/viewvc/chrome/trunk/src/chrome/common/extensions/api/experimental_bookmark_manager.json?revision=140864&amp;view=markup" title="View file contents"><strong>140864</strong></a></td>
+<td>&nbsp;<a href="/viewvc/chrome/trunk/src/chrome/common/extensions/api/bookmark_manager.json?revision=140864&amp;view=markup" title="View file contents"><strong>140864</strong></a></td>
 
 <td>&nbsp;2 months</td>
 <td>&nbsp;ananta@chromium.org</td>

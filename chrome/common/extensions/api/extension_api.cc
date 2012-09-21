@@ -346,6 +346,8 @@ void ExtensionAPI::InitDefaultConfiguration() {
       IDR_EXTENSION_API_JSON_APP));
   RegisterSchema("bookmarks", ReadFromResource(
       IDR_EXTENSION_API_JSON_BOOKMARKS));
+  RegisterSchema("bookmarkManagerPrivate", ReadFromResource(
+      IDR_EXTENSION_API_JSON_BOOKMARKMANAGERPRIVATE));
   RegisterSchema("browserAction", ReadFromResource(
       IDR_EXTENSION_API_JSON_BROWSERACTION));
   RegisterSchema("browsingData", ReadFromResource(
@@ -374,8 +376,6 @@ void ExtensionAPI::InitDefaultConfiguration() {
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_ACCESSIBILITY));
   RegisterSchema("experimental.app", ReadFromResource(
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_APP));
-  RegisterSchema("experimental.bookmarkManager", ReadFromResource(
-      IDR_EXTENSION_API_JSON_EXPERIMENTAL_BOOKMARKMANAGER));
   RegisterSchema("experimental.infobars", ReadFromResource(
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_INFOBARS));
   RegisterSchema("experimental.input.virtualKeyboard", ReadFromResource(

@@ -10,7 +10,7 @@ const fail = chrome.test.callbackFail;
 const assertEq = chrome.test.assertEq;
 const assertTrue = chrome.test.assertTrue;
 const bookmarks = chrome.bookmarks;
-const bookmarkManager = chrome.experimental.bookmarkManager;
+const bookmarkManager = chrome.bookmarkManagerPrivate;
 var fooNode, fooNode2, barNode, gooNode, count, emptyFolder, emptyFolder2;
 var folder, nodeA, nodeB;
 var childFolder, grandChildFolder, childNodeA, childNodeB;

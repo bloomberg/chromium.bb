@@ -235,6 +235,8 @@ void APIPermissionInfo::RegisterAllPermissions(
     { APIPermission::kWebRequestBlocking, "webRequestBlocking" },
 
     // Register private permissions.
+    { APIPermission::kBookmarkManagerPrivate, "bookmarkManagerPrivate",
+      kFlagCannotBeOptional },
     { APIPermission::kChromeosInfoPrivate, "chromeosInfoPrivate",
       kFlagCannotBeOptional },
     { APIPermission::kFileBrowserHandlerInternal, "fileBrowserHandlerInternal",

@@ -335,9 +335,8 @@ TEST(ExtensionAPI, GetAPINameFromFullName) {
     { "bookmarks.create", "bookmarks", "create" },
     { "bookmarks.create.", "bookmarks", "create." },
     { "bookmarks.create.monkey", "bookmarks", "create.monkey" },
-    { "experimental.bookmarkManager", "experimental.bookmarkManager", "" },
-    { "experimental.bookmarkManager.copy", "experimental.bookmarkManager",
-      "copy" }
+    { "bookmarkManagerPrivate", "bookmarkManagerPrivate", "" },
+    { "bookmarkManagerPrivate.copy", "bookmarkManagerPrivate", "copy" }
   };
 
   scoped_ptr<ExtensionAPI> api(ExtensionAPI::CreateWithDefaultConfiguration());

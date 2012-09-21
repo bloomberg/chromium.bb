@@ -4,7 +4,7 @@
 
 [
   {
-    "namespace": "experimental.bookmarkManager",
+    "namespace": "bookmarkManagerPrivate",
     "nodoc": true,
     "dependencies": [ "bookmarks" ],
     "types": [
