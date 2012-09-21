@@ -475,8 +475,8 @@ MetadataCache.prototype.evict_ = function() {
 MetadataCache.prototype.itemToUrl_ = function(item) {
   if (typeof(item) == 'string')
     return item;
-  else
-    return item.toURL();
+
+  return item._URL_ || (item._URL_ = item.toURL());
 };
 
 /**
