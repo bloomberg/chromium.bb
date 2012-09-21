@@ -23,6 +23,7 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/gl/gl_switches.h"
 #include "webkit/glue/webthread_impl.h"
 #include "webkit/gpu/webgraphicscontext3d_in_process_impl.h"
 
@@ -117,7 +118,7 @@ WebKit::WebGraphicsContext3D* DefaultContextFactory::CreateContextCommon(
   if (!offscreen) {
     context->makeContextCurrent();
     gfx::GLContext* gl_context = gfx::GLContext::GetCurrent();
-    bool vsync = !command_line->HasSwitch(switches::kDisableUIVsync);
+    bool vsync = !command_line->HasSwitch(switches::kDisableGpuVsync);
     gl_context->SetSwapInterval(vsync ? 1 : 0);
     gl_context->ReleaseCurrent(NULL);
   }

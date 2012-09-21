@@ -8,8 +8,6 @@ namespace switches {
 
 const char kDisableTestCompositor[] = "disable-test-compositor";
 
-const char kDisableUIVsync[] = "disable-ui-vsync";
-
 const char kUIEnablePartialSwap[] = "ui-enable-partial-swap";
 
 // Show FPS counter.
