@@ -9,6 +9,7 @@
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/json/json_writer.h"
+#include "content/browser/android/content_view_client.h"
 #include "content/browser/android/load_url_params.h"
 #include "content/browser/android/touch_point.h"
 #include "content/browser/renderer_host/java/java_bound_object.h"
@@ -461,6 +462,13 @@ void ContentViewCoreImpl::ClearHistory(JNIEnv* env, jobject obj) {
 
 jboolean ContentViewCoreImpl::NeedsReload(JNIEnv* env, jobject obj) {
   return web_contents_->GetController().NeedsReload();
+}
+
+void ContentViewCoreImpl::SetClient(JNIEnv* env, jobject obj, jobject jclient) {
+  scoped_ptr<ContentViewClient> client(
+      ContentViewClient::CreateNativeContentViewClient(env, jclient));
+
+  content_view_client_.swap(client);
 }
 
 void ContentViewCoreImpl::AddJavascriptInterface(

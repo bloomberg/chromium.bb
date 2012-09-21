@@ -15,6 +15,7 @@
     'public/android/java/src/org/chromium/content/browser/BrowserProcessSurfaceTexture.java',
     'public/android/java/src/org/chromium/content/browser/ContentSettings.java',
     'public/android/java/src/org/chromium/content/browser/ContentVideoView.java',
+    'public/android/java/src/org/chromium/content/browser/ContentViewClient.java',
     'public/android/java/src/org/chromium/content/browser/ContentViewCore.java',
     'public/android/java/src/org/chromium/content/browser/ContentViewStatics.java',
     'public/android/java/src/org/chromium/content/browser/DeviceOrientation.java',

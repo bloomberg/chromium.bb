@@ -38,18 +38,27 @@ class TestAwContentsClient extends NullContentsClient {
         return mOnEvaluateJavaScriptResultHelper;
     }
 
+    /**
+     * ATTENTION!: When overriding the following methods, be sure to call
+     * the corresponding methods in the super class. Otherwise
+     * {@link CallbackHelper#waitForCallback()} methods will
+     * stop working!
+     */
     @Override
     public void onPageStarted(String url) {
+        super.onPageStarted(url);
         mOnPageStartedHelper.notifyCalled(url);
     }
 
     @Override
     public void onPageFinished(String url) {
+        super.onPageFinished(url);
         mOnPageFinishedHelper.notifyCalled(url);
     }
 
     @Override
     public void onReceivedError(int errorCode, String description, String failingUrl) {
+        super.onReceivedError(errorCode, description, failingUrl);
         mOnReceivedErrorHelper.notifyCalled(errorCode, description, failingUrl);
     }
 

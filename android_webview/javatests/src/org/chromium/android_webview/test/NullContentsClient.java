@@ -62,16 +62,4 @@ class NullContentsClient extends AwContentsClient {
     public void onFindResultReceived(int activeMatchOrdinal, int numberOfMatches,
             boolean isDoneCounting) {
     }
-
-    @Override
-    public void onPageStarted(String url) {
-    }
-
-    @Override
-    public void onPageFinished(String url) {
-    }
-
-    @Override
-    public void onReceivedError(int errorCode, String description, String failingUrl) {
-    }
 }

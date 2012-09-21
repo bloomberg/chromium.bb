@@ -19,10 +19,28 @@ import org.chromium.content.browser.util.TestCallbackHelperContainer.OnReceivedE
  */
 public class TestContentViewClient extends ContentViewClient {
 
+    private OnPageStartedHelper mOnPageStartedHelper;
+    private OnPageFinishedHelper mOnPageFinishedHelper;
+    private OnReceivedErrorHelper mOnReceivedErrorHelper;
     private OnEvaluateJavaScriptResultHelper mOnEvaluateJavaScriptResultHelper;
 
     public TestContentViewClient() {
+        mOnPageStartedHelper = new OnPageStartedHelper();
+        mOnPageFinishedHelper = new OnPageFinishedHelper();
+        mOnReceivedErrorHelper = new OnReceivedErrorHelper();
         mOnEvaluateJavaScriptResultHelper = new OnEvaluateJavaScriptResultHelper();
+    }
+
+    public OnPageStartedHelper getOnPageStartedHelper() {
+        return mOnPageStartedHelper;
+    }
+
+    public OnPageFinishedHelper getOnPageFinishedHelper() {
+        return mOnPageFinishedHelper;
+    }
+
+    public OnReceivedErrorHelper getOnReceivedErrorHelper() {
+        return mOnReceivedErrorHelper;
     }
 
     public OnEvaluateJavaScriptResultHelper getOnEvaluateJavaScriptResultHelper() {
@@ -35,6 +53,24 @@ public class TestContentViewClient extends ContentViewClient {
      * {@link CallbackHelper#waitForCallback()} methods will
      * stop working!
      */
+    @Override
+    public void onPageStarted(String url) {
+        super.onPageStarted(url);
+        mOnPageStartedHelper.notifyCalled(url);
+    }
+
+    @Override
+    public void onPageFinished(String url) {
+        super.onPageFinished(url);
+        mOnPageFinishedHelper.notifyCalled(url);
+    }
+
+    @Override
+    public void onReceivedError(int errorCode, String description, String failingUrl) {
+        super.onReceivedError(errorCode, description, failingUrl);
+        mOnReceivedErrorHelper.notifyCalled(errorCode, description, failingUrl);
+    }
+
     @Override
     public void onEvaluateJavaScriptResult(int id, String jsonResult) {
         super.onEvaluateJavaScriptResult(id, jsonResult);

@@ -5,7 +5,7 @@
 package org.chromium.net;
 
 public class NetError {
-#define NET_ERROR(name, value) public static final int ERR_##name = value;
+#define NET_ERROR(name, value) public static int ERR_##name = value;
 #include "net/base/net_error_list.h"
 }
 

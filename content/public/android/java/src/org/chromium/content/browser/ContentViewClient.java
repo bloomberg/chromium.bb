@@ -40,7 +40,63 @@ public class ContentViewClient {
     @AccessedByNative
     private int mNativeClazz = 0;
 
+    // These ints must match up to the native values in content_view_client.h.
+    // Generic error
+    public static final int ERROR_UNKNOWN = -1;
+    // Server or proxy hostname lookup failed
+    public static final int ERROR_HOST_LOOKUP = -2;
+    // Unsupported authentication scheme (not basic or digest)
+    public static final int ERROR_UNSUPPORTED_AUTH_SCHEME = -3;
+    // User authentication failed on server
+    public static final int ERROR_AUTHENTICATION = -4;
+    // User authentication failed on proxy
+    public static final int ERROR_PROXY_AUTHENTICATION = -5;
+    // Failed to connect to the server
+    public static final int ERROR_CONNECT = -6;
+    // Failed to read or write to the server
+    public static final int ERROR_IO = -7;
+    // Connection timed out
+    public static final int ERROR_TIMEOUT = -8;
+    // Too many redirects
+    public static final int ERROR_REDIRECT_LOOP = -9;
+    // Unsupported URI scheme
+    public static final int ERROR_UNSUPPORTED_SCHEME = -10;
+    // Failed to perform SSL handshake
+    public static final int ERROR_FAILED_SSL_HANDSHAKE = -11;
+    // Malformed URL
+    public static final int ERROR_BAD_URL = -12;
+    // Generic file error
+    public static final int ERROR_FILE = -13;
+    // File not found
+    public static final int ERROR_FILE_NOT_FOUND = -14;
+    // Too many requests during this load
+    public static final int ERROR_TOO_MANY_REQUESTS = -15;
+
+    @CalledByNative
+    public void onPageStarted(String url) {
+    }
+
+    @CalledByNative
+    public void onPageFinished(String url) {
+    }
+
+    @CalledByNative
+    public void onReceivedError(int errorCode, String description, String failingUrl) {
+    }
+
+    @CalledByNative
+    public void onMainFrameCommitted(String url, String baseUrl) {
+    }
+
     public void onUpdateTitle(String title) {
+    }
+
+    @CalledByNative
+    public void onInterstitialShown() {
+    }
+
+    @CalledByNative
+    public void onInterstitialHidden() {
     }
 
     public void onTabCrash(int pid) {

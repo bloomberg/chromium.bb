@@ -35,11 +35,11 @@ WebContentsObserverAndroid::WebContentsObserverAndroid(
 WebContentsObserverAndroid::~WebContentsObserverAndroid() {
 }
 
-jint Init(JNIEnv* env, jobject obj, jint native_content_view_core) {
-  ContentViewCore* content_view_core =
-      reinterpret_cast<ContentViewCore*>(native_content_view_core);
+jint Init(JNIEnv* env, jobject obj, jint native_web_contents) {
+  WebContents* web_contents =
+      reinterpret_cast<WebContents*>(native_web_contents);
   WebContentsObserverAndroid* native_observer = new WebContentsObserverAndroid(
-      env, obj, content_view_core->GetWebContents());
+      env, obj, web_contents);
   return reinterpret_cast<jint>(native_observer);
 }
 
@@ -103,21 +103,6 @@ void WebContentsObserverAndroid::DidFailLoad(
     RenderViewHost* render_view_host) {
   DidFailLoadInternal(
         false, is_main_frame, error_code, error_description, validated_url);
-}
-
-void WebContentsObserverAndroid::DidNavigateMainFrame(
-    const LoadCommittedDetails& details,
-    const FrameNavigateParams& params) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = weak_java_observer_.get(env);
-  if (obj.is_null())
-    return;
-  ScopedJavaLocalRef<jstring> jstring_url =
-      ConvertUTF8ToJavaString(env, params.url.spec());
-  ScopedJavaLocalRef<jstring> jstring_base_url =
-      ConvertUTF8ToJavaString(env, params.base_url.spec());
-  Java_WebContentsObserverAndroid_didNavigateMainFrame(
-      env, obj.obj(), jstring_url.obj(), jstring_base_url.obj());
 }
 
 void WebContentsObserverAndroid::DidFailLoadInternal(
