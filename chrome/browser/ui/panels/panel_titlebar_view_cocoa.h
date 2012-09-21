@@ -8,9 +8,11 @@
 #import <Cocoa/Cocoa.h>
 
 #import "chrome/browser/ui/cocoa/tracking_area.h"
+#import "chrome/browser/ui/panels/mouse_drag_controller.h"
 
 @class CrTrackingArea;
 @class HoverImageButton;
+@class MouseDragController;
 @class PanelWindowControllerCocoa;
 
 // A class that works as a custom titlebar for Panels. It is placed on top of
@@ -23,15 +25,6 @@
 // but it seems to affect too many other behaviors (for example, it draws shadow
 // differently based on being key window) so it appears easier to simply overlay
 // the standard titlebar.
-
-// When Drag is cancelled by hitting ESC key, we may still receive
-// the mouseDragged events but should ignore them until the mouse button is
-// released. Use these simple states to track this condition.
-enum PanelDragState {
-  PANEL_DRAG_CAN_START,  // Mouse key went down, drag may be started.
-  PANEL_DRAG_IN_PROGRESS,
-  PANEL_DRAG_SUPPRESSED  // Ignore drag events until PANEL_DRAG_CAN_START.
-};
 
 // This view overlays the titlebar on top. It is used to intercept
 // mouse input to prevent reordering of the other browser windows when clicking
@@ -51,7 +44,9 @@ enum PanelDragState {
 - (void)setCurrentProgress:(NSAnimationProgress)progress;
 @end
 
-@interface PanelTitlebarViewCocoa : NSView<NSAnimationDelegate> {
+@interface PanelTitlebarViewCocoa : NSView
+                                   <NSAnimationDelegate,
+                                    MouseDragControllerClient> {
  @private
   IBOutlet PanelWindowControllerCocoa* controller_;
   IBOutlet NSView* icon_;
@@ -65,7 +60,6 @@ enum PanelDragState {
   NSButton* closeButton_;  // Created explicitly, not from NIB. Weak, destroyed
                            // when view is destroyed, as a subview.
   ScopedCrTrackingArea closeButtonTrackingArea_;
-  PanelDragState dragState_;
   BOOL isDrawingAttention_;
 
   // "Glint" animation is used in "Draw Attention" mode.
@@ -74,7 +68,7 @@ enum PanelDragState {
   double glintInterval_;
 
   // Drag support.
-  NSPoint dragStartLocation_;  // In cocoa's screen coordinates.
+  scoped_nsobject<MouseDragController> dragController_;
 }
 
 // Callbacks from Close, Minimize, and Restore buttons.
@@ -102,12 +96,6 @@ enum PanelDragState {
 - (void)didChangeFrame:(NSNotification*)notification;
 - (void)didChangeTheme:(NSNotification*)notification;
 - (void)didChangeMainWindow:(NSNotification*)notification;
-
-// Helpers to control title drag operation, called from more then one place.
-// |mouseLocation| is in Cocoa's screen coordinates.
-- (void)startDrag:(NSPoint)mouseLocation;
-- (void)endDrag:(BOOL)cancelled;
-- (void)drag:(NSPoint)mouseLocation;
 
 // Draw Attention methods - change appearance of titlebar to attract user.
 - (void)drawAttention;

@@ -1078,6 +1078,8 @@
         'browser/ui/panels/display_settings_provider.h',
         'browser/ui/panels/docked_panel_strip.cc',
         'browser/ui/panels/docked_panel_strip.h',
+        'browser/ui/panels/mouse_drag_controller.h',
+        'browser/ui/panels/mouse_drag_controller.mm',
         'browser/ui/panels/native_panel.h',
         'browser/ui/panels/panel.cc',
         'browser/ui/panels/panel.h',

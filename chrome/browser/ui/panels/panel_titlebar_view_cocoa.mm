@@ -4,7 +4,6 @@
 
 #import "chrome/browser/ui/panels/panel_titlebar_view_cocoa.h"
 
-#include <Carbon/Carbon.h>  // kVK_Escape
 #import <Cocoa/Cocoa.h>
 
 #include "base/logging.h"
@@ -28,11 +27,6 @@
 
 const int kButtonPadding = 8;
 const int kIconAndTextPadding = 5;
-
-// Distance that user needs to move the mouse in order to start the drag.
-// Threshold is needed to differentiate drags from attempts to click the
-// titlebar with a twitch of the mouse pointer.
-const int kDragThreshold = 3;
 
 // 'Glint' is a speck of light that moves across the titlebar to attract a bit
 // more attention using movement in addition to color of the titlebar.
@@ -58,6 +52,29 @@ static NSEvent* MakeMouseEvent(NSEventType type,
                           clickCount:clickCount
                             pressure:0.0];
 }
+
+// Test drag controller - does not contain a nested message loop, directly
+// invokes the dragStarted/dragProgress instead.
+@interface TestDragController : MouseDragController {
+ @private
+  BOOL dragStarted_;
+}
+- (void)mouseDragged:(NSEvent*)event;
+@end
+
+@implementation TestDragController
+// Bypass nested message loop for tests. There is no need to check for
+// threshold here as the base class does because tests only simulate a single
+// 'mouse drag' to the destination point.
+- (void)mouseDragged:(NSEvent*)event {
+  if (!dragStarted_) {
+    [[self client] dragStarted:[self initialMouseLocation]];
+    dragStarted_ = YES;
+  }
+
+  [[self client] dragProgress:[event locationInWindow]];
+}
+@end
 
 @implementation PanelTitlebarOverlayView
 // Sometimes we do not want to bring chrome window to foreground when we click
@@ -105,7 +122,7 @@ static NSEvent* MakeMouseEvent(NSEventType type,
 
 - (id)initWithFrame:(NSRect)frame {
   if ((self = [super initWithFrame:frame]))
-    dragState_ = PANEL_DRAG_SUPPRESSED;
+    dragController_.reset([[MouseDragController alloc] initWithClient:self]);
   return self;
 }
 
@@ -472,105 +489,45 @@ static NSEvent* MakeMouseEvent(NSEventType type,
 }
 
 - (void)mouseDown:(NSEvent*)event {
-  dragState_ = PANEL_DRAG_CAN_START;
-  dragStartLocation_ =
-      [[self window] convertBaseToScreen:[event locationInWindow]];
+  [dragController_ mouseDown:event];
 }
 
 - (void)mouseUp:(NSEvent*)event {
-  DCHECK(dragState_ != PANEL_DRAG_IN_PROGRESS);
+  [dragController_ mouseUp:event];
 
   if ([event clickCount] == 1)
     [controller_ onTitlebarMouseClicked:[event modifierFlags]];
 }
 
-- (BOOL)exceedsDragThreshold:(NSPoint)mouseLocation {
-  float deltaX = fabs(dragStartLocation_.x - mouseLocation.x);
-  float deltaY = fabs(dragStartLocation_.y - mouseLocation.y);
-  return deltaX > kDragThreshold || deltaY > kDragThreshold;
-}
-
 - (void)mouseDragged:(NSEvent*)event {
-  if (dragState_ == PANEL_DRAG_SUPPRESSED)
-    return;
-
-  // In addition to events needed to control the drag operation, fetch the right
-  // mouse click events and key down events and ignore them, to prevent their
-  // accumulation in the queue and "playing out" when the mouse is released.
-  const NSUInteger mask =
-      NSLeftMouseUpMask | NSLeftMouseDraggedMask | NSKeyUpMask |
-      NSRightMouseDownMask | NSKeyDownMask ;
-  BOOL keepGoing = YES;
-
-  while (keepGoing) {
-    base::mac::ScopedNSAutoreleasePool autorelease_pool;
-
-    NSEvent* event = [NSApp nextEventMatchingMask:mask
-                                        untilDate:[NSDate distantFuture]
-                                           inMode:NSDefaultRunLoopMode
-                                          dequeue:YES];
-
-    switch ([event type]) {
-      case NSLeftMouseDragged: {
-        // Get current mouse location in Cocoa's screen coordinates.
-        NSPoint mouseLocation =
-            [[self window] convertBaseToScreen:[event locationInWindow]];
-        if (dragState_ == PANEL_DRAG_CAN_START) {
-          if (![self exceedsDragThreshold:mouseLocation])
-            return;  // Don't start real drag yet.
-          [self startDrag:dragStartLocation_];
-        }
-        DCHECK(dragState_ == PANEL_DRAG_IN_PROGRESS);
-        [self drag:mouseLocation];
-        break;
-      }
-
-      case NSKeyUp:
-        if ([event keyCode] == kVK_Escape) {
-          [self endDrag:YES];
-          keepGoing = NO;
-        }
-        break;
-
-      case NSLeftMouseUp:
-        if (dragState_ == PANEL_DRAG_CAN_START)
-          [self mouseUp:event];  // Drag didn't really start, minimize instead.
-        else
-          [self endDrag:NO];
-        keepGoing = NO;
-        break;
-
-      case NSRightMouseDownMask:
-        break;
-
-      default:
-        // Dequeue and ignore other mouse and key events so the Chrome context
-        // menu does not come after right click on a page during Panel
-        // rearrangement, or the keystrokes are not 'accumulated' and entered
-        // at once when the drag ends.
-        break;
-    }
-  }
+  [dragController_ mouseDragged:event];
 }
 
-- (void)startDrag:(NSPoint)mouseLocation {
-  DCHECK(dragState_ == PANEL_DRAG_CAN_START);
-  dragState_ = PANEL_DRAG_IN_PROGRESS;
-  [controller_ startDrag:mouseLocation];
+// MouseDragControllerClient implementaiton
+
+- (void)prepareForDrag {
 }
 
-- (void)endDrag:(BOOL)cancelled {
-  if (dragState_ == PANEL_DRAG_IN_PROGRESS)
-    [controller_ endDrag:cancelled];
-  dragState_ = PANEL_DRAG_SUPPRESSED;
-  dragStartLocation_ = NSZeroPoint;
+- (void)dragStarted:(NSPoint)initialMouseLocation {
+  NSPoint initialMouseLocationScreen =
+      [[self window] convertBaseToScreen:initialMouseLocation];
+  [controller_ startDrag:initialMouseLocationScreen];
 }
 
-- (void)drag:(NSPoint)mouseLocation {
-  if (dragState_ != PANEL_DRAG_IN_PROGRESS)
-    return;
-  [controller_ drag:mouseLocation];
+- (void)dragEnded:(BOOL)cancelled {
+  [controller_ endDrag:cancelled];
 }
+
+- (void)dragProgress:(NSPoint)mouseLocation {
+  NSPoint mouseLocationScreen =
+      [[self window] convertBaseToScreen:mouseLocation];
+  [controller_ drag:mouseLocationScreen];
+}
+
+- (void)cleanupAfterDrag {
+}
+
+// End of MouseDragControllerClient implementaiton
 
 - (void)drawAttention {
   if (isDrawingAttention_)
@@ -647,10 +604,13 @@ static NSEvent* MakeMouseEvent(NSEventType type,
 
 - (void)pressLeftMouseButtonTitlebar:(NSPoint)mouseLocation
                            modifiers:(int)modifierFlags {
+  // Override the drag controller. It's ok to create a new one for each drag.
+  dragController_.reset([[TestDragController alloc] initWithClient:self]);
   // Convert from Cocoa's screen coordinates to base coordinates since the mouse
-  // event takes base coordinates.
-  NSEvent* event = MakeMouseEvent(
-      NSLeftMouseDown, [[self window] convertScreenToBase:mouseLocation],
+  // event takes base (NSWindow) coordinates.
+  NSPoint mouseLocationWindow =
+      [[self window] convertScreenToBase:mouseLocation];
+  NSEvent* event = MakeMouseEvent(NSLeftMouseDown, mouseLocationWindow,
       modifierFlags, 0);
   [self mouseDown:event];
 }
@@ -661,19 +621,21 @@ static NSEvent* MakeMouseEvent(NSEventType type,
 }
 
 - (void)dragTitlebar:(NSPoint)mouseLocation {
-  if (dragState_ == PANEL_DRAG_CAN_START)
-    [self startDrag:dragStartLocation_];
-  // No need to do any conversion since |mouseLocation| is already in Cocoa's
-  // screen coordinates.
-  [self drag:mouseLocation];
+  // Convert from Cocoa's screen coordinates to base coordinates since the mouse
+  // event takes base (NSWindow) coordinates.
+  NSPoint mouseLocationWindow =
+      [[self window] convertScreenToBase:mouseLocation];
+  NSEvent* event =
+      MakeMouseEvent(NSLeftMouseDragged, mouseLocationWindow, 0, 0);
+  [self mouseDragged:event];
 }
 
 - (void)cancelDragTitlebar {
-  [self endDrag:YES];
+  [self dragEnded:YES];
 }
 
 - (void)finishDragTitlebar {
-  [self endDrag:NO];
+  [self dragEnded:NO];
 }
 
 - (NSButton*)closeButton {

@@ -24,6 +24,7 @@
 #import "chrome/browser/ui/cocoa/tab_contents/favicon_util_mac.h"
 #import "chrome/browser/ui/cocoa/tab_contents/tab_contents_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/throbber_view.h"
+#import "chrome/browser/ui/panels/mouse_drag_controller.h"
 #include "chrome/browser/ui/panels/panel_bounds_animation.h"
 #include "chrome/browser/ui/panels/panel_cocoa.h"
 #include "chrome/browser/ui/panels/panel_constants.h"
@@ -49,9 +50,6 @@ const double kBoundsAnimationMaxDurationSeconds = 0.18;
 
 // Resize edge thickness, in screen pixels.
 const double kWidthOfMouseResizeArea = 4.0;
-// The distance the user has to move the mouse while keeping the left button
-// down before panel resizing operation actually starts.
-const double kDragThreshold = 3.0;
 
 @interface PanelWindowControllerCocoa (PanelsCanBecomeKey)
 // Internal helper method for extracting the total number of panel windows
@@ -103,13 +101,10 @@ const double kDragThreshold = 3.0;
 // Transparent view covering the whole panel in order to intercept mouse
 // messages for custom user resizing. We need custom resizing because panels
 // use their own constrained layout.
-// TODO(dimich): Pull the start/stop drag logic into a separate base class and
-// reuse between here and PanelTitlebarController.
-@interface PanelResizeByMouseOverlay : NSView {
+@interface PanelResizeByMouseOverlay : NSView <MouseDragControllerClient> {
  @private
    Panel* panel_;
-   NSPoint startMouseLocation_;
-   PanelDragState dragState_;
+   scoped_nsobject<MouseDragController> dragController_;
    scoped_nsobject<NSCursor> dragCursor_;
    scoped_nsobject<NSCursor> eastWestCursor_;
    scoped_nsobject<NSCursor> northSouthCursor_;
@@ -136,6 +131,7 @@ NSCursor* LoadWebKitCursor(WebKit::WebCursorInfo::Type type) {
 - (PanelResizeByMouseOverlay*)initWithFrame:(NSRect)frame panel:(Panel*)panel {
   if ((self = [super initWithFrame:frame])) {
     panel_ = panel;
+    dragController_.reset([[MouseDragController alloc] initWithClient:self]);
 
     eastWestCursor_.reset(
         [LoadWebKitCursor(WebKit::WebCursorInfo::TypeEastWestResize) retain]);
@@ -201,97 +197,26 @@ NSCursor* LoadWebKitCursor(WebKit::WebCursorInfo::Type type) {
   return [self edgeHitTest:pointInWindow] == panel::RESIZE_NONE ? nil : self;
 }
 
+// Delegate these to MouseDragController, it will call back on
+// MouseDragControllerClient protocol.
 - (void)mouseDown:(NSEvent*)event {
-  // If the panel is not resizable, hitTest should have failed and no mouse
-  // events should have came here.
-  DCHECK_NE(panel::NOT_RESIZABLE, panel_->CanResizeByMouse());
-  [self prepareForDrag:event];
-}
-
-- (void)mouseUp:(NSEvent*)event {
-  // The mouseUp while in drag should be processed by nested message loop
-  // in mouseDragged: method.
-  DCHECK(dragState_ != PANEL_DRAG_IN_PROGRESS);
-  // Cleanup in case the actual drag was not started (because of threshold).
-  [self cleanupAfterDrag];
+  [dragController_ mouseDown:event];
 }
 
 - (void)mouseDragged:(NSEvent*)event {
-  if (dragState_ == PANEL_DRAG_SUPPRESSED)
-    return;
-
-  // In addition to events needed to control the drag operation, fetch the right
-  // mouse click events and key down events and ignore them, to prevent their
-  // accumulation in the queue and "playing out" when the mouse is released.
-  const NSUInteger mask =
-      NSLeftMouseUpMask | NSLeftMouseDraggedMask | NSKeyUpMask |
-      NSRightMouseDownMask | NSKeyDownMask ;
-
-  while (true) {
-    base::mac::ScopedNSAutoreleasePool autorelease_pool;
-    BOOL keepGoing = YES;
-
-    switch ([event type]) {
-      case NSLeftMouseDragged: {
-        // Set the resize cursor on every mouse drag event in case the mouse
-        // wandered outside the window and was switched to another one.
-        // This does not produce flicker, seems the real cursor is updated after
-        // mouseDrag is processed.
-        [dragCursor_ set];
-
-        // If drag didn't start yet, see if mouse moved far enough to start it.
-        if (dragState_ == PANEL_DRAG_CAN_START && ![self tryStartDrag:event])
-          return;
-
-        DCHECK(dragState_ == PANEL_DRAG_IN_PROGRESS);
-        [self resizeByMouse:[event locationInWindow]];
-        break;
-      }
-
-      case NSKeyUp:
-        if ([event keyCode] == kVK_Escape) {
-          // The drag might not be started yet because of threshold, so check.
-          if (dragState_ == PANEL_DRAG_IN_PROGRESS)
-            [self endResize:YES];
-          keepGoing = NO;
-        }
-        break;
-
-      case NSLeftMouseUp:
-        // The drag might not be started yet because of threshold, so check.
-        if (dragState_ == PANEL_DRAG_IN_PROGRESS)
-          [self endResize:NO];
-        keepGoing = NO;
-        break;
-
-      case NSRightMouseDownMask:
-        break;
-
-      default:
-        // Dequeue and ignore other mouse and key events so the Chrome context
-        // menu does not come after right click on a page during Panel
-        // resize, or the keystrokes are not 'accumulated' and entered
-        // at once when the drag ends.
-        break;
-    }
-
-    if (!keepGoing)
-      break;
-
-    autorelease_pool.Recycle();
-
-    event = [NSApp nextEventMatchingMask:mask
-                               untilDate:[NSDate distantFuture]
-                                  inMode:NSDefaultRunLoopMode
-                                 dequeue:YES];
-
-  }
-  [self cleanupAfterDrag];
+  [dragController_ mouseDragged:event];
 }
 
-- (void)prepareForDrag:(NSEvent*)initialMouseDownEvent {
-  dragState_ = PANEL_DRAG_CAN_START;
-  startMouseLocation_ = [initialMouseDownEvent locationInWindow];
+- (void)mouseUp:(NSEvent*)event {
+  [dragController_ mouseUp:event];
+}
+
+// MouseDragControllerClient protocol.
+
+- (void)prepareForDrag {
+  // If the panel is not resizable, hitTest should have failed and no mouse
+  // events should have come here.
+  DCHECK_NE(panel::NOT_RESIZABLE, panel_->CanResizeByMouse());
 
   // Make sure the cursor stays the same during whole resize operation.
   // The cursor rects normally do not guarantee the same cursor, since the
@@ -302,35 +227,12 @@ NSCursor* LoadWebKitCursor(WebKit::WebCursorInfo::Type type) {
   dragCursor_.reset([NSCursor currentCursor], base::scoped_policy::RETAIN);
 }
 
--(void)cleanupAfterDrag {
-  dragState_ = PANEL_DRAG_SUPPRESSED;
+- (void)cleanupAfterDrag {
   [[self window] enableCursorRects];
   dragCursor_.reset();
-  startMouseLocation_ = NSZeroPoint;
 }
 
-- (BOOL)exceedsDragThreshold:(NSPoint)mouseLocation {
-  float deltaX = fabs(startMouseLocation_.x - mouseLocation.x);
-  float deltaY = fabs(startMouseLocation_.y - mouseLocation.y);
-  return deltaX > kDragThreshold || deltaY > kDragThreshold;
-}
-
-- (BOOL)tryStartDrag:(NSEvent*)event {
-  DCHECK(dragState_ == PANEL_DRAG_CAN_START);
-  NSPoint mouseLocation = [event locationInWindow];
-  if (![self exceedsDragThreshold:mouseLocation])
-    return NO;
-
-  // Mouse moved over threshold, start drag.
-  dragState_ = PANEL_DRAG_IN_PROGRESS;
-  [self startResize:startMouseLocation_];
-  return YES;
-}
-
-// |initialMouseLocation| is in window coordinates.
-- (void)startResize:(NSPoint)initialMouseLocation {
-  DCHECK(dragState_ == PANEL_DRAG_IN_PROGRESS);
-
+- (void)dragStarted:(NSPoint)initialMouseLocation {
   NSPoint initialMouseLocationScreen =
       [[self window] convertBaseToScreen:initialMouseLocation];
 
@@ -340,17 +242,20 @@ NSCursor* LoadWebKitCursor(WebKit::WebCursorInfo::Type type) {
       [self edgeHitTest:initialMouseLocation]);
 }
 
-// |mouseLocation| is in window coordinates.
-- (void)resizeByMouse:(NSPoint)mouseLocation {
-  DCHECK(dragState_ == PANEL_DRAG_IN_PROGRESS);
+- (void)dragProgress:(NSPoint)mouseLocation {
   NSPoint mouseLocationScreen =
       [[self window] convertBaseToScreen:mouseLocation];
   panel_->manager()->ResizeByMouse(
       cocoa_utils::ConvertPointFromCocoaCoordinates(mouseLocationScreen));
+
+  // Set the resize cursor on every mouse drag event in case the mouse
+  // wandered outside the window and was switched to another one.
+  // This does not produce flicker, seems the real cursor is updated after
+  // mouseDrag is processed.
+  [dragCursor_ set];
 }
 
-- (void)endResize:(BOOL)cancelled {
-  DCHECK(dragState_ == PANEL_DRAG_IN_PROGRESS);
+- (void)dragEnded:(BOOL)cancelled {
   panel_->manager()->EndResizingByMouse(cancelled);
 }
 
@@ -495,7 +400,7 @@ NSCursor* LoadWebKitCursor(WebKit::WebCursorInfo::Type type) {
   overlayView_.reset(
       [[PanelResizeByMouseOverlay alloc] initWithFrame:bounds
                                                  panel:windowShim_->panel()]);
-    // Set autoresizing behavior: glued to edges.
+  // Set autoresizing behavior: glued to edges.
   [overlayView_ setAutoresizingMask:(NSViewHeightSizable | NSViewWidthSizable)];
   [superview addSubview:overlayView_ positioned:NSWindowAbove relativeTo:nil];
 }
