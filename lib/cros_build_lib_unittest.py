@@ -739,11 +739,51 @@ class TestContextManagerStack(cros_test_lib.TestCase):
 
 class TestManifestCheckout(cros_test_lib.TempDirTestCase):
 
+  def setUp(self):
+    self.manifest_dir = os.path.join(self.tempdir, '.repo', 'manifests')
+    # Initialize a repo intance here.
+    # TODO(vapier, ferringb):  mangle this so it inits from a local
+    # checkout if one is available, same for the git-repo fetch.
+    cmd = ['repo', 'init', '-u', constants.MANIFEST_URL,]
+    cros_build_lib.RunCommandCaptureOutput(cmd, cwd=self.tempdir, input='')
+    self.active_manifest = os.path.realpath(
+        os.path.join(self.tempdir, '.repo', 'manifest.xml'))
+
+  def testManifestInheritance(self):
+    osutils.WriteFile(self.active_manifest, """
+        <manifest>
+          <include name="include-target.xml" />
+          <include name="empty.xml" />
+          <project name="monkeys" remote="foon" revision="master" />
+        </manifest>""")
+    # First, verify it properly explodes if the include can't be found.
+    self.assertRaises(EnvironmentError,
+                      cros_build_lib.ManifestCheckout, self.tempdir)
+
+    # Next, verify it can read an empty manifest; this is to ensure
+    # that we can point Manifest at the empty manifest without exploding,
+    # same for ManifestCheckout; this sort of thing is primarily useful
+    # to ensure no step of an include assumes everything is yet assembled.
+    empty_path = os.path.join(self.manifest_dir, 'empty.xml')
+    osutils.WriteFile(empty_path, '<manifest/>')
+    cros_build_lib.Manifest(empty_path)
+    cros_build_lib.ManifestCheckout(self.tempdir, manifest_path=empty_path)
+
+    # Next, verify include works.
+    osutils.WriteFile(os.path.join(self.manifest_dir, 'include-target.xml'),
+        """
+        <manifest>
+          <remote name="foon" fetch="http://localhost" />
+        </manifest>""")
+    manifest = cros_build_lib.ManifestCheckout(self.tempdir)
+    self.assertEqual(list(manifest.projects), ['monkeys'])
+    self.assertEqual(list(manifest.remotes), ['foon'])
+
   # pylint: disable=E1101
   def testGetManifestsBranch(self):
-    path = self.tempdir
-    manifest = os.path.join(path, '.repo', 'manifests')
     func = cros_build_lib.ManifestCheckout._GetManifestsBranch
+    manifest = self.manifest_dir
+    repo_root = self.tempdir
 
     # pylint: disable=W0613
     def reconfig(merge='master', origin='origin'):
@@ -758,23 +798,21 @@ class TestManifestCheckout(cros_test_lib.TempDirTestCase):
         else:
           cros_build_lib.RunGitCommand(manifest, ['config', key, val])
 
-    cmd = ['repo', 'init', '-u', constants.MANIFEST_URL]
-    cros_build_lib.RunCommandCaptureOutput(cmd, cwd=path, input='')
-
     # First, verify our assumptions about a fresh repo init are correct.
     self.assertEqual('default', cros_build_lib.GetCurrentBranch(manifest))
-    self.assertEqual('master', func(path))
+    self.assertEqual('master', func(repo_root))
 
     # Ensure we can handle a missing origin; this can occur jumping between
     # branches, and can be worked around.
     reconfig(origin=None)
     self.assertEqual('default', cros_build_lib.GetCurrentBranch(manifest))
-    self.assertEqual('master', func(path))
+    self.assertEqual('master', func(repo_root))
 
+    # TODO(ferringb): convert this over to assertRaises2
     def assertExcept(message, **kwds):
       reconfig(**kwds)
       try:
-        func(path)
+        func(repo_root)
         assert "Testing for %s, an exception wasn't thrown." % (message,)
       except OSError, e:
         self.assertEqual(e.errno, errno.ENOENT)

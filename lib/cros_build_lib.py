@@ -734,28 +734,34 @@ class Manifest(object):
 
   _instance_cache = {}
 
-  def __init__(self, source):
+  def __init__(self, source, manifest_include_dir=None):
     """Initialize this instance.
 
     Args:
       source: The path to the manifest to parse.  May be a file handle.
+      manifest_include_dir: If given, this is where to start looking for
+        include targets.
     """
 
-    self.default = None
+    self.default = {}
     self.projects = {}
     self.remotes = {}
+    self.includes = []
     self.revision = None
+    self.manifest_include_dir = manifest_include_dir
     self._RunParser(source)
+    self.includes = tuple(self.includes)
 
-  def _RunParser(self, source):
+  def _RunParser(self, source, finalize=True):
     parser = xml.sax.make_parser()
     handler = xml.sax.handler.ContentHandler()
     handler.startElement = self._ProcessElement
     parser.setContentHandler(handler)
     parser.parse(source)
-    # Rewrite projects mixing defaults in and adding our attributes.
-    for data in self.projects.itervalues():
-      self._FinalizeProjectData(data)
+    if finalize:
+      # Rewrite projects mixing defaults in and adding our attributes.
+      for data in self.projects.itervalues():
+        self._FinalizeProjectData(data)
 
   def _ProcessElement(self, name, attrs):
     """Stores the default manifest properties and per-project overrides."""
@@ -768,6 +774,26 @@ class Manifest(object):
       self.projects[attrs['name']] = attrs
     elif name == 'manifest':
       self.revision = attrs.get('revision')
+    elif name == 'include':
+      if self.manifest_include_dir is None:
+        raise OSError(
+            errno.ENOENT, "No manifest_include_dir given, but an include was "
+            "encountered; target=%r." % name)
+      # Include is calculated relative to the manifest that has the include;
+      # thus set the path temporarily to the dirname of the target.
+      original_include_dir = self.manifest_include_dir
+      include_path = os.path.realpath(
+          os.path.join(original_include_dir, attrs['name']))
+      self.includes.append((attrs['name'], include_path))
+      try:
+        # Temporarily mangle the pathway for the context of this includes
+        # processing; do this so that any sub includes calculate from
+        # relative to that manifest.
+        self.manifest_include_dir = include_path
+        self._RunParser(include_path, finalize=False)
+      finally:
+        self.manifest_include_dir = original_include_dir
+
 
   def ProjectExists(self, project):
     """Returns True if a project is in this manifest."""
@@ -840,11 +866,18 @@ class Manifest(object):
       raise AssertionError('Remote %s is not pushable.' % data['remote'])
 
   @staticmethod
-  def _GetManifestHash(source):
+  def _GetManifestHash(source, ignore_missing=False):
     if isinstance(source, basestring):
-      with open(source, 'rb') as f:
-        # pylint: disable=E1101
-        return hashlib.md5(f.read()).hexdigest()
+      try:
+        # TODO(build): convert this to osutils.ReadFile once these
+        # classes are moved out into their own module (if possible;
+        # may still be cyclic).
+        with open(source, 'rb') as f:
+          # pylint: disable=E1101
+          return hashlib.md5(f.read()).hexdigest()
+      except EnvironmentError, e:
+        if e.errno != errno.ENOENT or not ignore_missing:
+          raise
     source.seek(0)
     # pylint: disable=E1101
     md5 = hashlib.md5(source.read()).hexdigest()
@@ -852,16 +885,30 @@ class Manifest(object):
     return md5
 
   @classmethod
-  def Cached(cls, source):
+  def Cached(cls, source, manifest_include_dir=None):
     """Return an instance, reusing an existing one if possible.
 
-    May be a seekable filehandle, or a filepath."""
+    May be a seekable filehandle, or a filepath.
+    See __init__ for an explanation of these arguments.
+    """
 
     md5 = cls._GetManifestHash(source)
-
-    obj = cls._instance_cache.get(md5)
+    obj, sources = cls._instance_cache.get(md5, (None, ()))
+    if manifest_include_dir is None and sources:
+      # We're being invoked in a different way than the orignal
+      # caching; disregard the cached entry.
+      # Most likely, the instantiation will explode; let it fly.
+      obj, sources = None, ()
+    for include_target, target_md5 in sources:
+      if cls._GetManifestHash(include_target, True) != target_md5:
+        obj = None
+        break
     if obj is None:
-      obj = cls._instance_cache[md5] = cls(source)
+      obj = cls(source, manifest_include_dir=manifest_include_dir)
+      sources = tuple((abspath, cls._GetManifestHash(abspath))
+                      for (target, abspath) in obj.includes)
+      cls._instance_cache[md5] = (obj, sources)
+
     return obj
 
 
@@ -884,13 +931,17 @@ class ManifestCheckout(Manifest):
     Raises:
       OSError: if a failure occurs.
     """
-    self.root, manifest_path = self._NormalizeArgs(path, manifest_path,
-                                                   search=search)
+    self.root, manifest_path = self._NormalizeArgs(
+        path, manifest_path, search=search)
+
+    self.manifest_path = os.path.realpath(manifest_path)
+    manifest_include_dir = os.path.dirname(self.manifest_path)
     self.manifest_branch = self._GetManifestsBranch(self.root)
     self.default_branch = 'refs/remotes/m/%s' % self.manifest_branch
     self._content_merging = {}
     self.configured_groups = self._GetManifestGroups(self.root)
-    Manifest.__init__(self, manifest_path)
+    Manifest.__init__(self, self.manifest_path,
+                      manifest_include_dir=manifest_include_dir)
 
   @staticmethod
   def _NormalizeArgs(path, manifest_path=None, search=True):
@@ -1053,13 +1104,16 @@ class ManifestCheckout(Manifest):
                                              search=search)
 
     md5 = cls._GetManifestHash(manifest_path)
-
-    obj = cls._instance_cache.get((root, md5))
+    obj, sources = cls._instance_cache.get((root, md5), (None, ()))
+    for include_target, target_md5 in sources:
+      if cls._GetManifestHash(include_target, True) != target_md5:
+        obj = None
+        break
     if obj is None:
-      # Pass search=False since via the steps above, we *must* be pointing
-      # at the repo root.
-      obj = cls._instance_cache[(root, md5)] = cls(root, manifest_path,
-                                                   search=False)
+      obj = cls(manifest_path)
+      sources = tuple((abspath, cls._GetManifestHash(abspath))
+                      for (target, abspath) in obj.includes)
+      cls._instance_cache[(root, md5)] = (obj, sources)
     return obj
 
 def _GitRepoIsContentMerging(git_repo, remote):
