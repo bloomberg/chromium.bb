@@ -360,6 +360,12 @@ bool StatusAreaWidget::ShouldShowLauncher() const {
          web_notification_tray_->IsMouseInNotificationBubble());
 }
 
+bool StatusAreaWidget::IsMessageBubbleShown() const {
+  return ((system_tray_ && system_tray_->IsAnyBubbleVisible()) ||
+          (web_notification_tray_ &&
+           web_notification_tray_->IsMessageCenterBubbleVisible()));
+}
+
 void StatusAreaWidget::AddSystemTray(ShellDelegate* shell_delegate) {
   system_tray_ = new SystemTray(this);
   status_area_widget_delegate_->AddTray(system_tray_);
