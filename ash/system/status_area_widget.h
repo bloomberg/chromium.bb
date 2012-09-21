@@ -74,9 +74,6 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget {
   // the launcher to remain visible.
   bool ShouldShowLauncher() const;
 
-  // True if any message bubble is shown.
-  bool IsMessageBubbleShown() const;
-
  private:
   void AddSystemTray(ShellDelegate* shell_delegate);
   void AddWebNotificationTray();

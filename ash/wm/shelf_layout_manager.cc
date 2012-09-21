@@ -36,11 +36,6 @@ namespace {
 // Delay before showing the launcher. This is after the mouse stops moving.
 const int kAutoHideDelayMS = 200;
 
-// To avoid hiding the shelf when the mouse transitions from a message bubble
-// into the shelf, the hit test area is enlarged by this amount of pixels to
-// keep the shelf from hiding.
-const int kNotificationBubbleGapHeight = 6;
-
 ui::Layer* GetLayer(views::Widget* widget) {
   return widget->GetNativeView()->layer();
 }
@@ -858,21 +853,10 @@ ShelfLayoutManager::AutoHideState ShelfLayoutManager::CalculateAutoHideState(
   if (event_filter_.get() && event_filter_->in_mouse_drag())
     return AUTO_HIDE_HIDDEN;
 
-  gfx::Rect shelf_region = launcher_widget()->GetWindowBoundsInScreen();
-  if (Shell::GetInstance()->status_area_widget()->IsMessageBubbleShown() &&
-      IsVisible()) {
-    // Increase the the hit test area to prevent the shelf from disappearing
-    // when the mouse is over the bubble gap.
-    shelf_region.Inset(alignment_ == SHELF_ALIGNMENT_RIGHT ?
-                           -kNotificationBubbleGapHeight : 0,
-                       alignment_ == SHELF_ALIGNMENT_BOTTOM ?
-                           -kNotificationBubbleGapHeight : 0,
-                       alignment_ == SHELF_ALIGNMENT_LEFT ?
-                           -kNotificationBubbleGapHeight : 0,
-                       0);
-  }
-  return shelf_region.Contains(gfx::Screen::GetCursorScreenPoint()) ?
-      AUTO_HIDE_SHOWN : AUTO_HIDE_HIDDEN;
+  bool mouse_over_launcher =
+      launcher_widget()->GetWindowBoundsInScreen().Contains(
+          gfx::Screen::GetCursorScreenPoint());
+  return mouse_over_launcher ? AUTO_HIDE_SHOWN : AUTO_HIDE_HIDDEN;
 }
 
 void ShelfLayoutManager::UpdateHitTestBounds() {
