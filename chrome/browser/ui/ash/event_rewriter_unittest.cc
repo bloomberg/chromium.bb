@@ -16,6 +16,7 @@
 #include <X11/keysym.h>
 #include <X11/Xlib.h>
 
+#include "chrome/browser/chromeos/input_method/mock_input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/mock_xkeyboard.h"
 #include "chrome/browser/chromeos/login/mock_user_manager.h"
 #include "chrome/browser/chromeos/preferences.h"
@@ -109,13 +110,24 @@ class EventRewriterTest : public testing::Test {
         keycode_prior_(XKeysymToKeycode(display_, XK_Prior)),
         keycode_next_(XKeysymToKeycode(display_, XK_Next)),
         keycode_home_(XKeysymToKeycode(display_, XK_Home)),
-        keycode_end_(XKeysymToKeycode(display_, XK_End)) {
+        keycode_end_(XKeysymToKeycode(display_, XK_End)),
+        input_method_manager_mock_(NULL) {
   }
   virtual ~EventRewriterTest() {}
+
   virtual void SetUp() {
     // Mocking user manager because the real one needs to be called on UI thread
     EXPECT_CALL(*user_manager_mock_.user_manager(), IsLoggedInAsGuest())
         .WillRepeatedly(testing::Return(false));
+    input_method_manager_mock_ =
+        new chromeos::input_method::MockInputMethodManager;
+    chromeos::input_method::InputMethodManager::InitializeForTesting(
+        input_method_manager_mock_);  // pass ownership
+  }
+
+  virtual void TearDown() {
+    // Shutdown() deletes the IME mock object.
+    chromeos::input_method::InputMethodManager::Shutdown();
   }
 
  protected:
@@ -163,6 +175,7 @@ class EventRewriterTest : public testing::Test {
   const KeyCode keycode_home_;
   const KeyCode keycode_end_;
   chromeos::ScopedMockUserManagerEnabler user_manager_mock_;
+  chromeos::input_method::MockInputMethodManager* input_method_manager_mock_;
 };
 
 }  // namespace
@@ -1463,6 +1476,79 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
                                       keycode_caps_lock_,
                                       LockMask));
   EXPECT_FALSE(xkeyboard.caps_lock_is_enabled_);
+}
+
+TEST_F(EventRewriterTest, TestRewriteFn) {
+  TestingPrefService prefs;
+  EventRewriter rewriter;
+  rewriter.set_pref_service_for_testing(&prefs);
+
+  // Press F15+a. Confirm that Mod3Mask is rewritten to ControlMask.
+  // On Chrome OS, F15 works as a modifier (Mod3). http://crosbug/p/14339
+  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_A,
+                                      ui::EF_CONTROL_DOWN,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_a_,
+                                      ControlMask,
+                                      KeyPress),
+            GetRewrittenEventAsString(&rewriter,
+                                      ui::VKEY_A,
+                                      0,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_a_,
+                                      Mod3Mask));
+
+  // Press Control+F15+a. Confirm that Mod3Mask is rewritten to ControlMask.
+  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_A,
+                                      ui::EF_CONTROL_DOWN,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_a_,
+                                      ControlMask,
+                                      KeyPress),
+            GetRewrittenEventAsString(&rewriter,
+                                      ui::VKEY_A,
+                                      ui::EF_CONTROL_DOWN,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_a_,
+                                      Mod3Mask | ControlMask));
+
+  // Press Alt+F15+a. Confirm that Mod3Mask is rewritten to ControlMask.
+  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_A,
+                                      ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_a_,
+                                      Mod1Mask | ControlMask,
+                                      KeyPress),
+            GetRewrittenEventAsString(&rewriter,
+                                      ui::VKEY_A,
+                                      ui::EF_ALT_DOWN,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_a_,
+                                      Mod1Mask | Mod3Mask));
+}
+
+TEST_F(EventRewriterTest, TestRewriteFnMod3InUse) {
+  TestingPrefService prefs;
+  EventRewriter rewriter;
+  rewriter.set_pref_service_for_testing(&prefs);
+  input_method_manager_mock_->SetCurrentInputMethodId("xkb:de:neo:ger");
+
+  // Press F15+a. Confirm that Mod3Mask is NOT rewritten to ControlMask when
+  // Mod3Mask is already in use by the current XKB layout.
+  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_A,
+                                      0,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_a_,
+                                      Mod3Mask,
+                                      KeyPress),
+            GetRewrittenEventAsString(&rewriter,
+                                      ui::VKEY_A,
+                                      0,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_a_,
+                                      Mod3Mask));
+
+  input_method_manager_mock_->SetCurrentInputMethodId("xkb:us::eng");
 }
 
 TEST_F(EventRewriterTest, TestRewriteBackspaceAndArrowKeys) {

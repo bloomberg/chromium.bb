@@ -41,6 +41,8 @@ namespace {
 const int kBadDeviceId = -1;
 
 #if defined(OS_CHROMEOS)
+const char kNeo2LayoutId[] = "xkb:de:neo:ger";
+
 // A key code and a flag we should use when a key is remapped to |remap_to|.
 const struct ModifierRemapping {
   int remap_to;
@@ -340,6 +342,9 @@ void EventRewriter::Rewrite(ui::KeyEvent* event) {
     return;
 #endif
   RewriteModifiers(event);
+  // This should be called after RewriteModifiers(). Otherwise, remapped
+  // Mod3Mask might be re-remapped.
+  RewriteFnKey(event);
   RewriteNumPadKeys(event);
   RewriteBackspaceAndArrowKeys(event);
   // TODO(yusukes): Implement crosbug.com/27167 (allow sending function keys).
@@ -493,6 +498,41 @@ bool EventRewriter::RewriteModifiers(ui::KeyEvent* event) {
   OverwriteEvent(event,
                  remapped_native_keycode, remapped_native_modifiers,
                  remapped_keycode, remapped_flags);
+  return true;
+#else
+  // TODO(yusukes): Support Ash on other platforms if needed.
+  return false;
+#endif
+}
+
+bool EventRewriter::RewriteFnKey(ui::KeyEvent* event) {
+#if defined(OS_CHROMEOS)
+  // Since both German Neo2 XKB layout and F15 depend on Mod3Mask, it's not
+  // possible to make both features work. For now, we don't remap Mod3Mask to
+  // ControlMask when Neo2 is in use.
+  // TODO(yusukes): Remove the restriction.
+  if (InputMethodManager::GetInstance()->GetCurrentInputMethod().id() ==
+      kNeo2LayoutId) {
+    return false;
+  }
+
+  XEvent* xev = event->native_event();
+  XKeyEvent* xkey = &(xev->xkey);
+
+  int remapped_flags = event->flags();
+  unsigned int remapped_native_modifiers = xkey->state;
+
+  // TODO(yusukes): Add a pref entry for specifying how to remap Fn key, and
+  // check it here if not in guest mode.
+  if (xkey->state & Mod3Mask) {
+    remapped_flags |= ui::EF_CONTROL_DOWN;
+    remapped_native_modifiers =
+        (remapped_native_modifiers & ~Mod3Mask) | ControlMask;
+  }
+
+  OverwriteEvent(event,
+                 xkey->keycode, remapped_native_modifiers,
+                 event->key_code(), remapped_flags);
   return true;
 #else
   // TODO(yusukes): Support Ash on other platforms if needed.

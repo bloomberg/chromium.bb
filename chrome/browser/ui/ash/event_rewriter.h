@@ -101,6 +101,11 @@ class EventRewriter : public ash::EventRewriterDelegate,
   // preferences.
   bool RewriteModifiers(ui::KeyEvent* event);
 
+  // Rewrites Fn key press/release to Control. In some cases, Fn key is not
+  // intercepted by the EC, but generates a key event like "XK_F15 + Mod3Mask"
+  // as shown in crosbug.com/p/14339.
+  bool RewriteFnKey(ui::KeyEvent* event);
+
   // Rewrites a NumPad key press/release without Num Lock to a corresponding key
   // press/release with the lock.  Returns true when |event| is rewritten.
   bool RewriteNumPadKeys(ui::KeyEvent* event);
