@@ -19,6 +19,7 @@ function WallpaperManager(dialogDom) {
   this.selectedCategory = null;
   this.butterBar_ = new ButterBar(this.dialogDom_);
   this.customWallpaperData_ = null;
+  this.currentWallpaper_ = null;
   this.fetchManifest_();
   this.initDom_();
 }
@@ -112,8 +113,8 @@ function WallpaperManager(dialogDom) {
     this.initCategoriesList_();
     this.initThumbnailsGrid_();
 
-    var selectedWallpaper = str('selectedWallpaper');
-    if (selectedWallpaper == 'CUSTOM') {
+    this.currentWallpaper_ = str('currentWallpaper');
+    if (this.currentWallpaper_ == 'CUSTOM') {
       // Custom is the last one in the categories list.
       this.categoriesList_.selectionModel.selectedIndex =
           this.categoriesList_.dataModel.length - 1;
@@ -124,7 +125,7 @@ function WallpaperManager(dialogDom) {
       for (var key in this.manifest_.wallpaper_list) {
         var url = this.manifest_.wallpaper_list[key].base_url +
             HighResolutionSuffix;
-        if (url.indexOf(selectedWallpaper) != -1) {
+        if (url.indexOf(this.currentWallpaper_) != -1) {
           firstCategory = this.manifest_.wallpaper_list[key].categories[0];
         }
       }
@@ -200,6 +201,7 @@ function WallpaperManager(dialogDom) {
         chrome.wallpaperPrivate.setWallpaper(image,
                                              selectedItem.layout,
                                              wallpaperURL);
+        self.currentWallpaper_ = wallpaperURL;
       } else {
         self.butterBar_.showError_(str('downloadFailed'));
       }
@@ -313,6 +315,7 @@ function WallpaperManager(dialogDom) {
         setWallpaperLayout.options[setWallpaperLayout.selectedIndex].value;
     chrome.wallpaperPrivate.setCustomWallpaper(customWallpaper,
                                                layout);
+    this.currentWallpaper_ = 'CUSTOM';
   };
 
   /**
@@ -376,7 +379,7 @@ function WallpaperManager(dialogDom) {
           wallpapersDataModel.push(wallpaperInfo);
           var url = this.manifest_.wallpaper_list[key].base_url +
               HighResolutionSuffix;
-          if (url == str('selectedWallpaper')) {
+          if (url == this.currentWallpaper_) {
             selectedItem = wallpaperInfo;
           }
         }

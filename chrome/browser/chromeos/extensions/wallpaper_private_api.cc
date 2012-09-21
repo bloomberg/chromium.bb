@@ -70,9 +70,9 @@ bool WallpaperStringsFunction::RunImpl() {
 
   if (wallpaper_manager->GetLoggedInUserWallpaperInfo(&info)) {
     if (info.type == chromeos::User::ONLINE)
-      dict->SetString("selectedWallpaper", info.file);
+      dict->SetString("currentWallpaper", info.file);
     else if (info.type == chromeos::User::CUSTOMIZED)
-      dict->SetString("selectedWallpaper", "CUSTOM");
+      dict->SetString("currentWallpaper", "CUSTOM");
   }
 
   return true;
