@@ -57,7 +57,8 @@ PowerApiManager::~PowerApiManager() {}
 void PowerApiManager::UpdatePowerSettings() {
   // If we have a wake lock and don't have the power state overriden.
   if (extension_ids_set_.size() && !power_state_override_.get()) {
-    power_state_override_.reset(new chromeos::PowerStateOverride());
+    power_state_override_.reset(new chromeos::PowerStateOverride(
+        chromeos::PowerStateOverride::BLOCK_DISPLAY_SLEEP));
   // else, if we don't have any wake locks and do have a power override.
   } else if (extension_ids_set_.empty() && power_state_override_.get()) {
     power_state_override_.reset(NULL);

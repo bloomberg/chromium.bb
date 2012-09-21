@@ -464,8 +464,10 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   output_observer_.reset(new chromeos::OutputObserver());
   resume_observer_.reset(new chromeos::ResumeObserver());
   screen_lock_observer_.reset(new chromeos::ScreenLockObserver());
-  if (chromeos::KioskModeSettings::Get()->IsKioskModeEnabled())
-    power_state_override_.reset(new chromeos::PowerStateOverride());
+  if (chromeos::KioskModeSettings::Get()->IsKioskModeEnabled()) {
+    power_state_override_.reset(new chromeos::PowerStateOverride(
+        chromeos::PowerStateOverride::BLOCK_DISPLAY_SLEEP));
+  }
 
   removable_device_notifications_ =
       new chromeos::RemovableDeviceNotificationsCros();

@@ -5,17 +5,27 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POWER_POWER_STATE_OVERRIDE_H_
 #define CHROME_BROWSER_CHROMEOS_POWER_POWER_STATE_OVERRIDE_H_
 
+#include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer.h"
 
 namespace chromeos {
 
 // This class overrides the current power state on the machine, disabling
-// all power management features - this includes screen dimming, screen
-// blanking, suspend and suspend on lid down.
+// a set of power management features.
 class PowerStateOverride {
  public:
-  PowerStateOverride();
+  enum Mode {
+    // Blocks the screen from being dimmed or blanked due to user inactivity.
+    // Also implies BLOCK_SYSTEM_SUSPEND.
+    BLOCK_DISPLAY_SLEEP,
+
+    // Blocks the system from being suspended due to user inactivity or (in the
+    // case of a laptop) the lid being closed.
+    BLOCK_SYSTEM_SUSPEND,
+  };
+
+  explicit PowerStateOverride(Mode mode);
   ~PowerStateOverride();
 
  private:
@@ -27,8 +37,15 @@ class PowerStateOverride {
   // since the last request has just been completed at that point.
   void CallRequestPowerStateOverrides();
 
+  // Bitmap containing requested override types from
+  // PowerManagerClient::PowerStateOverrideType.
+  uint32 override_types_;
+
+  // Outstanding override request ID, or 0 if there is no outstanding request.
   uint32 request_id_;
 
+  // Periodically invokes CallRequestPowerStateOverrides() to refresh the
+  // override.
   base::RepeatingTimer<PowerStateOverride> heartbeat_;
 
   base::WeakPtrFactory<PowerStateOverride> weak_ptr_factory_;

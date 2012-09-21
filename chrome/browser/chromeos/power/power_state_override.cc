@@ -14,16 +14,37 @@ using chromeos::PowerManagerClient;
 
 namespace {
 
+// Frequency with which overrides are renewed.
 const int kHeartbeatTimeInSecs = 300;
 
-}
+// Duration beyond |kHeartbeatTimeInSecs| for which overrides are requested.
+// This should be long enough that we're able to renew the request before it
+// expires, but short enough that the power manager won't end up honoring a
+// stale request for a long time if Chrome crashes and orphans its requests.
+const int kRequestSlackInSecs = 15;
+
+}  // namespace
 
 namespace chromeos {
 
-PowerStateOverride::PowerStateOverride()
-    : request_id_(0),
+PowerStateOverride::PowerStateOverride(Mode mode)
+    : override_types_(0),
+      request_id_(0),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
-  // request id_ = 0 will create a new override request.
+  switch (mode) {
+    case BLOCK_DISPLAY_SLEEP:
+      override_types_ |= (PowerManagerClient::DISABLE_IDLE_DIM |
+                          PowerManagerClient::DISABLE_IDLE_BLANK);
+      // fallthrough
+    case BLOCK_SYSTEM_SUSPEND:
+      override_types_ |= (PowerManagerClient::DISABLE_IDLE_SUSPEND |
+                          PowerManagerClient::DISABLE_IDLE_LID_SUSPEND);
+      break;
+    default:
+      NOTREACHED() << "Unhandled mode " << mode;
+  }
+
+  // request_id_ = 0 will create a new override request.
   CallRequestPowerStateOverrides();
 
   heartbeat_.Start(FROM_HERE,
@@ -49,14 +70,10 @@ void PowerStateOverride::CallRequestPowerStateOverrides() {
   PowerManagerClient* power_manager =
       DBusThreadManager::Get()->GetPowerManagerClient();
   if (power_manager) {
-    // Request the duration of twice our heartbeat.
     power_manager->RequestPowerStateOverrides(
         request_id_,
-        kHeartbeatTimeInSecs * 2,
-        PowerManagerClient::DISABLE_IDLE_DIM |
-        PowerManagerClient::DISABLE_IDLE_BLANK |
-        PowerManagerClient::DISABLE_IDLE_SUSPEND |
-        PowerManagerClient::DISABLE_IDLE_LID_SUSPEND,
+        kHeartbeatTimeInSecs + kRequestSlackInSecs,
+        override_types_,
         base::Bind(&PowerStateOverride::SetRequestId,
                    weak_ptr_factory_.GetWeakPtr()));
   }
