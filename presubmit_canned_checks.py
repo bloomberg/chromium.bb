@@ -675,7 +675,12 @@ def RunPylint(input_api, output_api, white_list=None, black_list=None,
       return 'Pylint failed!'
 
   result = None
-  if not input_api.verbose:
+  # Always run pylint and pass it all the py files at once.
+  # Passing py files one at time is slower and can produce
+  # different results.  input_api.verbose used to be used
+  # to enable this behaviour but differing behaviour in
+  # verbose mode is not desirable.
+  if True:
     result = run_lint(sorted(files))
   else:
     for filename in sorted(files):
