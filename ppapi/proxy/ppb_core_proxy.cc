@@ -54,6 +54,12 @@ void CallOnMainThread(int delay_in_ms,
                       PP_CompletionCallback callback,
                       int32_t result) {
   DCHECK(callback.func);
+#if defined(OS_NACL)
+  // Some NaCl apps pass a negative delay, so we just sanitize to 0, to run as
+  // soon as possible. MessageLoop checks that the delay is non-negative.
+  if (delay_in_ms < 0)
+    delay_in_ms = 0;
+#endif
   if (!callback.func)
     return;
   PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostDelayedTask(
