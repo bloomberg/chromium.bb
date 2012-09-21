@@ -26,7 +26,6 @@
 
 class AutocompleteInput;
 class GURL;
-class PrefService;
 class TemplateURLService;
 
 namespace base {
@@ -54,8 +53,6 @@ class ZeroSuggestProvider : public AutocompleteProvider,
   // Returns NULL if not enabled.
   static ZeroSuggestProvider* Create(AutocompleteProviderListener* listener,
                                      Profile* profile);
-
-  static void RegisterUserPrefs(PrefService* user_prefs);
 
   // AutocompleteProvider:
   virtual void Start(const AutocompleteInput& input,

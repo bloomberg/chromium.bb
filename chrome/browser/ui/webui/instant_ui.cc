@@ -44,10 +44,6 @@ class InstantUIMessageHandler
     return slow_animation_scale_factor_;
   }
 
-  static bool show_search_provider_logo() {
-    return show_search_provider_logo_;
-  }
-
  private:
   void GetPreferenceValue(const base::ListValue* args);
   void SetPreferenceValue(const base::ListValue* args);
@@ -55,15 +51,11 @@ class InstantUIMessageHandler
   // Slows down Instant animations by a time factor.
   static int slow_animation_scale_factor_;
 
-  // True if search provider logo should be shown.
-  static bool show_search_provider_logo_;
-
   DISALLOW_COPY_AND_ASSIGN(InstantUIMessageHandler);
 };
 
 // static
 int InstantUIMessageHandler::slow_animation_scale_factor_ = 1;
-bool InstantUIMessageHandler::show_search_provider_logo_ = false;
 
 InstantUIMessageHandler::InstantUIMessageHandler() {}
 
@@ -94,7 +86,8 @@ void InstantUIMessageHandler::GetPreferenceValue(const base::ListValue* args) {
     web_ui()->CallJavascriptFunction(
         "instantConfig.getPreferenceValueResult", pref_name_value, arg);
   } else if (pref_name == prefs::kInstantShowSearchProviderLogo) {
-    base::FundamentalValue arg(show_search_provider_logo_);
+    PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
+    base::FundamentalValue arg(prefs->GetBoolean(pref_name.c_str()));
     web_ui()->CallJavascriptFunction(
         "instantConfig.getPreferenceValueResult", pref_name_value, arg);
   } else if (pref_name == prefs::kExperimentalZeroSuggestUrlPrefix) {
@@ -124,7 +117,8 @@ void InstantUIMessageHandler::SetPreferenceValue(const base::ListValue* args) {
     bool value;
     if (!args->GetBoolean(1, &value))
       return;
-    show_search_provider_logo_ = value;
+    PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
+    prefs->SetBoolean(pref_name.c_str(), value);
   } else if (pref_name == prefs::kExperimentalZeroSuggestUrlPrefix) {
     std::string value;
     if (!args->GetString(1, &value))
@@ -153,6 +147,16 @@ int InstantUI::GetSlowAnimationScaleFactor() {
 }
 
 // static
-bool InstantUI::ShouldShowSearchProviderLogo() {
-  return InstantUIMessageHandler::show_search_provider_logo();
+bool InstantUI::ShouldShowSearchProviderLogo(
+      content::BrowserContext* browser_context) {
+  PrefService* prefs = Profile::FromBrowserContext(browser_context)->GetPrefs();
+  return prefs->GetBoolean(prefs::kInstantShowSearchProviderLogo);
+}
+
+// static
+void InstantUI::RegisterUserPrefs(PrefService* user_prefs) {
+  user_prefs->RegisterBooleanPref(prefs::kInstantShowSearchProviderLogo, false,
+                                  PrefService::UNSYNCABLE_PREF);
+  user_prefs->RegisterStringPref(prefs::kExperimentalZeroSuggestUrlPrefix, "",
+                                 PrefService::UNSYNCABLE_PREF);
 }

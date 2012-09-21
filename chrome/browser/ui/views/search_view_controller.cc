@@ -480,7 +480,8 @@ void SearchViewController::CreateViews(State state) {
           Profile::FromBrowserContext(browser_context_))->
               GetDefaultSearchProvider();
 
-  if (default_provider && InstantUI::ShouldShowSearchProviderLogo() &&
+  if (default_provider &&
+      InstantUI::ShouldShowSearchProviderLogo(browser_context_) &&
       (TemplateURLPrepopulateData::GetEngineType(default_provider->url()) ==
        SEARCH_ENGINE_GOOGLE)) {
     default_provider_logo_.reset(new views::ImageView());

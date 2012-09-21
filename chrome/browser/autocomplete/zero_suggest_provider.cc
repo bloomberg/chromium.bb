@@ -53,12 +53,6 @@ ZeroSuggestProvider::ZeroSuggestProvider(
       template_url_service_(TemplateURLServiceFactory::GetForProfile(profile)) {
 }
 
-// static
-void ZeroSuggestProvider::RegisterUserPrefs(PrefService* user_prefs) {
-  user_prefs->RegisterStringPref(prefs::kExperimentalZeroSuggestUrlPrefix, "",
-                                 PrefService::UNSYNCABLE_PREF);
-}
-
 void ZeroSuggestProvider::Start(const AutocompleteInput& input,
                                 bool /*minimal_changes*/) {
   UpdateMatches(input.text());

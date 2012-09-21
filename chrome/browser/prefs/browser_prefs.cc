@@ -6,7 +6,6 @@
 
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/accessibility/invert_bubble_prefs.h"
-#include "chrome/browser/autocomplete/zero_suggest_provider.h"
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
@@ -63,6 +62,7 @@
 #include "chrome/browser/ui/tabs/pinned_tab_codec.h"
 #include "chrome/browser/ui/webui/extensions/extension_settings_handler.h"
 #include "chrome/browser/ui/webui/flags_ui.h"
+#include "chrome/browser/ui/webui/instant_ui.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/plugins_ui.h"
 #include "chrome/browser/ui/webui/print_preview/sticky_settings.h"
@@ -229,7 +229,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   TemplateURLPrepopulateData::RegisterUserPrefs(user_prefs);
   TranslatePrefs::RegisterUserPrefs(user_prefs);
   web_intents::RegisterUserPrefs(user_prefs);
-  ZeroSuggestProvider::RegisterUserPrefs(user_prefs);
+  InstantUI::RegisterUserPrefs(user_prefs);
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
   policy::URLBlacklistManager::RegisterPrefs(user_prefs);
