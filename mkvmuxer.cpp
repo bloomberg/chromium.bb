@@ -1406,17 +1406,19 @@ void SegmentInfo::set_muxing_app(const char* app) {
 
 void SegmentInfo::set_writing_app(const char* app) {
   if (app) {
-    delete [] writing_app_;
-
     const size_t length = strlen(app) + 1;
-    writing_app_ = new (std::nothrow) char[length];  // NOLINT
-    if (writing_app_) {
+    char* temp_str = new (std::nothrow) char[length];  // NOLINT
+    if (!temp_str)
+      return;
+
 #ifdef _MSC_VER
-      strcpy_s(writing_app_, length, app);
+    strcpy_s(temp_str, length, app);
 #else
-      strcpy(writing_app_, app);
+    strcpy(temp_str, app);
 #endif
-    }
+
+    delete [] writing_app_;
+    writing_app_ = temp_str;
   }
 }
 
