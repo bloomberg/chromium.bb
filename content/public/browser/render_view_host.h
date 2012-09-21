@@ -273,6 +273,14 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
 
   // Asks the renderer to send the rects of the current find matches.
   virtual void RequestFindMatchRects(int current_version) = 0;
+
+  // Synchronous find request. Returns the number of matches found and the
+  // ordinal of the active match. Required by the legacy Android WebView API.
+  virtual void SynchronousFind(int request_id,
+                               const string16& search_text,
+                               const WebKit::WebFindOptions& options,
+                               int* match_count,
+                               int* active_ordinal) = 0;
 #endif
 
 };

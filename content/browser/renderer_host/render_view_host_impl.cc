@@ -12,6 +12,7 @@
 #include "base/i18n/rtl.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
@@ -509,6 +510,20 @@ void RenderViewHostImpl::ActivateNearestFindResult(int request_id,
 
 void RenderViewHostImpl::RequestFindMatchRects(int current_version) {
   Send(new ViewMsg_FindMatchRects(GetRoutingID(), current_version));
+}
+
+void RenderViewHostImpl::SynchronousFind(int request_id,
+                                         const string16& search_text,
+                                         const WebKit::WebFindOptions& options,
+                                         int* match_count,
+                                         int* active_ordinal) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableWebViewSynchronousAPIs)) {
+    return;
+  }
+
+  Send(new ViewMsg_SynchronousFind(GetRoutingID(), request_id, search_text,
+                                   options, match_count, active_ordinal));
 }
 #endif
 

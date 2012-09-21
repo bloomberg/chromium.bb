@@ -5,6 +5,7 @@
 #include "android_webview/native/cookie_manager.h"
 
 #include "android_webview/browser/aw_cookie_access_policy.h"
+#include "android_webview/browser/scoped_allow_wait_for_legacy_web_view_api.h"
 #include "android_webview/native/aw_browser_dependency_factory.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
@@ -25,16 +26,6 @@ using content::BrowserThread;
 using net::CookieList;
 using net::CookieMonster;
 using net::URLRequestContextGetter;
-
-// This class is only available when building the chromium back-end for andriod
-// webview: it is required where API backward compatibility demands that the UI
-// thread must block waiting on other threads e.g. to obtain a synchronous
-// return value. Long term, asynchronous overloads of all such methods will be
-// added in the public API, and and no new uses of this will be allowed.
-class ScopedAllowWaitForLegacyWebViewApi {
- private:
-  base::ThreadRestrictions::ScopedAllowWait wait;
-};
 
 // CookieManager should be refactored to not require all tasks accessing the
 // CookieStore to be piped through the IO thread.  It is currently required as

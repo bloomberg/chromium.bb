@@ -57,4 +57,9 @@ class NullContentsClient extends AwContentsClient {
     public void handleJsPrompt(
             String url, String message, String defaultValue, JsPromptResultReceiver receiver) {
     }
+
+    @Override
+    public void onFindResultReceived(int activeMatchOrdinal, int numberOfMatches,
+            boolean isDoneCounting) {
+    }
 }

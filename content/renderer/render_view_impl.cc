@@ -618,6 +618,7 @@ RenderViewImpl::RenderViewImpl(
 #if defined(OS_ANDROID)
       expected_content_intent_id_(0),
       media_player_proxy_(NULL),
+      synchronous_find_active_match_ordinal_(-1),
 #endif
       session_storage_namespace_id_(session_storage_namespace_id),
       handling_select_range_(false),
@@ -945,9 +946,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_Redo, OnRedo)
     IPC_MESSAGE_HANDLER(ViewMsg_Cut, OnCut)
     IPC_MESSAGE_HANDLER(ViewMsg_Copy, OnCopy)
-#if defined(OS_MACOSX)
-    IPC_MESSAGE_HANDLER(ViewMsg_CopyToFindPboard, OnCopyToFindPboard)
-#endif
     IPC_MESSAGE_HANDLER(ViewMsg_Paste, OnPaste)
     IPC_MESSAGE_HANDLER(ViewMsg_PasteAndMatchStyle, OnPasteAndMatchStyle)
     IPC_MESSAGE_HANDLER(ViewMsg_Replace, OnReplace)
@@ -966,12 +964,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_ExecuteEditCommand, OnExecuteEditCommand)
     IPC_MESSAGE_HANDLER(ViewMsg_Find, OnFind)
     IPC_MESSAGE_HANDLER(ViewMsg_StopFinding, OnStopFinding)
-#if defined(OS_ANDROID)
-    IPC_MESSAGE_HANDLER(ViewMsg_ActivateNearestFindResult,
-                        OnActivateNearestFindResult)
-    IPC_MESSAGE_HANDLER(ViewMsg_FindMatchRects,
-                        OnFindMatchRects)
-#endif
     IPC_MESSAGE_HANDLER(ViewMsg_Zoom, OnZoom)
     IPC_MESSAGE_HANDLER(ViewMsg_SetZoomLevel, OnSetZoomLevel)
     IPC_MESSAGE_HANDLER(ViewMsg_ZoomFactor, OnZoomFactor)
@@ -1024,12 +1016,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_SetActive, OnSetActive)
     IPC_MESSAGE_HANDLER(ViewMsg_SetNavigationStartTime,
                         OnSetNavigationStartTime)
-#if defined(OS_MACOSX)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetWindowVisibility, OnSetWindowVisibility)
-    IPC_MESSAGE_HANDLER(ViewMsg_WindowFrameChanged, OnWindowFrameChanged)
-    IPC_MESSAGE_HANDLER(ViewMsg_PluginImeCompositionCompleted,
-                        OnPluginImeCompositionCompleted)
-#endif
     IPC_MESSAGE_HANDLER(ViewMsg_SetEditCommandsForNextKeyEvent,
                         OnSetEditCommandsForNextKeyEvent)
     IPC_MESSAGE_HANDLER(ViewMsg_CustomContextMenuAction,
@@ -1044,22 +1030,29 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(
         ViewMsg_GetSerializedHtmlDataForCurrentPageWithLocalLinks,
         OnGetSerializedHtmlDataForCurrentPageWithLocalLinks)
-#if defined(OS_MACOSX)
-    IPC_MESSAGE_HANDLER(ViewMsg_SelectPopupMenuItem, OnSelectPopupMenuItem)
-#elif defined(OS_ANDROID)
-    IPC_MESSAGE_HANDLER(ViewMsg_SelectPopupMenuItems, OnSelectPopupMenuItems)
-#endif
     IPC_MESSAGE_HANDLER(ViewMsg_ContextMenuClosed, OnContextMenuClosed)
     // TODO(viettrungluu): Move to a separate message filter.
-#if defined(OS_MACOSX)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetInLiveResize, OnSetInLiveResize)
-#endif
     IPC_MESSAGE_HANDLER(ViewMsg_SetHistoryLengthAndPrune,
                         OnSetHistoryLengthAndPrune)
     IPC_MESSAGE_HANDLER(ViewMsg_EnableViewSourceMode, OnEnableViewSourceMode)
     IPC_MESSAGE_HANDLER(JavaBridgeMsg_Init, OnJavaBridgeInit)
     IPC_MESSAGE_HANDLER(ViewMsg_SetAccessibilityMode, OnSetAccessibilityMode)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateFrameTree, OnUpdatedFrameTree)
+#if defined(OS_ANDROID)
+    IPC_MESSAGE_HANDLER(ViewMsg_ActivateNearestFindResult,
+                        OnActivateNearestFindResult)
+    IPC_MESSAGE_HANDLER(ViewMsg_FindMatchRects, OnFindMatchRects)
+    IPC_MESSAGE_HANDLER(ViewMsg_SelectPopupMenuItems, OnSelectPopupMenuItems)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewMsg_SynchronousFind, OnSynchronousFind)
+#elif defined(OS_MACOSX)
+    IPC_MESSAGE_HANDLER(ViewMsg_CopyToFindPboard, OnCopyToFindPboard)
+    IPC_MESSAGE_HANDLER(ViewMsg_PluginImeCompositionCompleted,
+                        OnPluginImeCompositionCompleted)
+    IPC_MESSAGE_HANDLER(ViewMsg_SelectPopupMenuItem, OnSelectPopupMenuItem)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetInLiveResize, OnSetInLiveResize)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetWindowVisibility, OnSetWindowVisibility)
+    IPC_MESSAGE_HANDLER(ViewMsg_WindowFrameChanged, OnWindowFrameChanged)
+#endif
 
     // Have the super handle all other messages.
     IPC_MESSAGE_UNHANDLED(handled = RenderWidget::OnMessageReceived(message))
@@ -3926,30 +3919,64 @@ void RenderViewImpl::hasTouchEventHandlers(bool has_handlers) {
   Send(new ViewHostMsg_HasTouchEventHandlers(routing_id_, has_handlers));
 }
 
-void RenderViewImpl::reportFindInPageMatchCount(int request_id, int count,
+void RenderViewImpl::SendFindReply(int request_id,
+                                   int match_count,
+                                   int ordinal,
+                                   const WebRect& selection_rect,
+                                   bool final_status_update) {
+#if defined(OS_ANDROID)
+  if (synchronous_find_reply_message_.get()) {
+    if (final_status_update) {
+      ViewMsg_SynchronousFind::WriteReplyParams(
+          synchronous_find_reply_message_.get(),
+          match_count,
+          match_count ? synchronous_find_active_match_ordinal_ : 0);
+      Send(synchronous_find_reply_message_.release());
+    }
+    return;
+  }
+#endif
+
+  Send(new ViewHostMsg_Find_Reply(routing_id_,
+                                  request_id,
+                                  match_count,
+                                  selection_rect,
+                                  ordinal,
+                                  final_status_update));
+}
+
+void RenderViewImpl::reportFindInPageMatchCount(int request_id,
+                                                int count,
                                                 bool final_update) {
   int active_match_ordinal = -1;  // -1 = don't update active match ordinal
   if (!count)
     active_match_ordinal = 0;
 
-  Send(new ViewHostMsg_Find_Reply(routing_id_,
-                                  request_id,
-                                  count,
-                                  gfx::Rect(),
-                                  active_match_ordinal,
-                                  final_update));
+  // Send the search result over to the browser process.
+  SendFindReply(request_id,
+                count,
+                active_match_ordinal,
+                gfx::Rect(),
+                final_update);
 }
 
 void RenderViewImpl::reportFindInPageSelection(int request_id,
                                                int active_match_ordinal,
                                                const WebRect& selection_rect) {
-  // Send the search result over to the browser process.
-  Send(new ViewHostMsg_Find_Reply(routing_id_,
-                                  request_id,
-                                  -1,
-                                  selection_rect,
-                                  active_match_ordinal,
-                                  false));
+#if defined(OS_ANDROID)
+  // If this was a SynchronousFind request, we need to remember the ordinal
+  // value here for replying when reportFindInPageMatchCount is called.
+  if (synchronous_find_reply_message_.get()) {
+    synchronous_find_active_match_ordinal_ = active_match_ordinal;
+    return;
+  }
+#endif
+
+  SendFindReply(request_id,
+                -1,
+                active_match_ordinal,
+                selection_rect,
+                false);
 }
 
 void RenderViewImpl::openFileSystem(
@@ -4557,8 +4584,22 @@ WebKit::WebPlugin* RenderViewImpl::GetWebPluginFromPluginDocument() {
   return webview()->mainFrame()->document().to<WebPluginDocument>().plugin();
 }
 
-void RenderViewImpl::OnFind(int request_id, const string16& search_text,
+void RenderViewImpl::OnFind(int request_id,
+                            const string16& search_text,
                             const WebFindOptions& options) {
+#if defined(OS_ANDROID)
+  // Make sure any asynchronous messages do not disrupt an ongoing synchronous
+  // find request as it might lead to deadlocks. Also, these should be safe to
+  // ignore since they would belong to a previous find request.
+  if (synchronous_find_reply_message_.get())
+    return;
+#endif
+  Find(request_id, search_text, options);
+}
+
+void RenderViewImpl::Find(int request_id,
+                          const string16& search_text,
+                          const WebFindOptions& options) {
   WebFrame* main_frame = webview()->mainFrame();
 
   // Check if the plugin still exists in the document.
@@ -4568,16 +4609,10 @@ void RenderViewImpl::OnFind(int request_id, const string16& search_text,
       // Just navigate back/forward.
       GetWebPluginFromPluginDocument()->selectFindResult(options.forward);
     } else {
-      if (GetWebPluginFromPluginDocument()->startFind(
+      if (!GetWebPluginFromPluginDocument()->startFind(
           search_text, options.matchCase, request_id)) {
-      } else {
         // Send "no results".
-        Send(new ViewHostMsg_Find_Reply(routing_id_,
-                                        request_id,
-                                        0,
-                                        gfx::Rect(),
-                                        0,
-                                        true));
+        SendFindReply(request_id, 0, 0, gfx::Rect(), true);
       }
     }
     return;
@@ -4650,13 +4685,8 @@ void RenderViewImpl::OnFind(int request_id, const string16& search_text,
     // Otherwise the scoping effort will send more results.
     bool final_status_update = !result;
 
-    // Send the search result over to the browser process.
-    Send(new ViewHostMsg_Find_Reply(routing_id_,
-                                    request_id,
-                                    match_count,
-                                    selection_rect,
-                                    ordinal,
-                                    final_status_update));
+    SendFindReply(request_id, match_count, ordinal, selection_rect,
+                  final_status_update);
 
     // Scoping effort begins, starting with the mainframe.
     search_frame = main_frame;
@@ -4686,6 +4716,18 @@ void RenderViewImpl::OnFind(int request_id, const string16& search_text,
 }
 
 void RenderViewImpl::OnStopFinding(content::StopFindAction action) {
+#if defined(OS_ANDROID)
+  // Make sure any asynchronous messages do not disrupt an ongoing synchronous
+  // find request as it might lead to deadlocks. Also, these should be safe to
+  // ignore since they would belong to a previous find request.
+  if (synchronous_find_reply_message_.get())
+    return;
+#endif
+
+  StopFinding(action);
+}
+
+void RenderViewImpl::StopFinding(content::StopFindAction action) {
   WebView* view = webview();
   if (!view)
     return;
@@ -4720,6 +4762,23 @@ void RenderViewImpl::OnStopFinding(content::StopFindAction action) {
 }
 
 #if defined(OS_ANDROID)
+void RenderViewImpl::OnSynchronousFind(int request_id,
+                                       const string16& search_string,
+                                       const WebFindOptions& options,
+                                       IPC::Message* reply_msg) {
+  // It is impossible for simultaneous blocking finds to occur.
+  CHECK(!synchronous_find_reply_message_.get());
+  synchronous_find_reply_message_.reset(reply_msg);
+
+  // Find next should be asynchronous in order to minimize blocking
+  // the UI thread as much as possible.
+  DCHECK(!options.findNext);
+  StopFinding(content::STOP_FIND_ACTION_KEEP_SELECTION);
+  synchronous_find_active_match_ordinal_ = -1;
+
+  Find(request_id, search_string, options);
+}
+
 void RenderViewImpl::OnActivateNearestFindResult(int request_id,
                                                  float x, float y) {
   if (!webview())
@@ -4737,12 +4796,11 @@ void RenderViewImpl::OnActivateNearestFindResult(int request_id,
     return;
   }
 
-  Send(new ViewHostMsg_Find_Reply(routing_id_,
-                                  request_id,
-                                  -1 /* number_of_matches */,
-                                  selection_rect,
-                                  ordinal,
-                                  true /* final_update */));
+  SendFindReply(request_id,
+                -1 /* number_of_matches */,
+                ordinal,
+                selection_rect,
+                true /* final_update */);
 }
 
 void RenderViewImpl::OnFindMatchRects(int current_version) {

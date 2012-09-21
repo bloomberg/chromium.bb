@@ -133,6 +133,14 @@ public abstract class AwContentsClient extends ContentViewClient {
             JsPromptResultReceiver receiver);
 
     //--------------------------------------------------------------------------------------------
+    //                              Other WebView-specific methods
+    //--------------------------------------------------------------------------------------------
+    //
+
+    public abstract void onFindResultReceived(int activeMatchOrdinal, int numberOfMatches,
+            boolean isDoneCounting);
+
+    //--------------------------------------------------------------------------------------------
     //             Stuff that we ignore since it only makes sense for Chrome browser
     //--------------------------------------------------------------------------------------------
     //

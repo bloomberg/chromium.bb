@@ -20,8 +20,11 @@
 #include "jni/AwContents_jni.h"
 
 using base::android::AttachCurrentThread;
+using base::android::ConvertJavaStringToUTF16;
+using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF16ToJavaString;
 using base::android::ConvertUTF8ToJavaString;
+using base::android::JavaRef;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
 using content::BrowserThread;
@@ -37,7 +40,14 @@ const void* kAwContentsUserDataKey = &kAwContentsUserDataKey;
 class AwContentsUserData : public base::SupportsUserData::Data {
  public:
   AwContentsUserData(AwContents* ptr) : contents_(ptr) {}
-  AwContents* get() { return contents_; }
+
+  static AwContents* GetContents(WebContents* web_contents) {
+    if (!web_contents)
+      return NULL;
+    AwContentsUserData* data = reinterpret_cast<AwContentsUserData*>(
+        web_contents->GetUserData(kAwContentsUserDataKey));
+    return data ? data->contents_ : NULL;
+  }
 
  private:
   AwContents* contents_;
@@ -46,13 +56,8 @@ class AwContentsUserData : public base::SupportsUserData::Data {
 }  // namespace
 
 // static
-AwContents* AwContents::FromWebContents(content::WebContents* web_contents) {
-  if (web_contents) {
-    AwContentsUserData* data = reinterpret_cast<AwContentsUserData*>(
-              web_contents->GetUserData(kAwContentsUserDataKey));
-    if (data) return data->get();
-  }
-  return NULL;
+AwContents* AwContents::FromWebContents(WebContents* web_contents) {
+  return AwContentsUserData::GetContents(web_contents);
 }
 
 AwContents::AwContents(JNIEnv* env,
@@ -64,20 +69,26 @@ AwContents::AwContents(JNIEnv* env,
           new AwWebContentsDelegate(env, web_contents_delegate)) {
   android_webview::AwBrowserDependencyFactory* dependency_factory =
       android_webview::AwBrowserDependencyFactory::GetInstance();
-  content::WebContents* web_contents =
+
+  WebContents* web_contents =
       dependency_factory->CreateWebContents(private_browsing);
+
+  DCHECK(!AwContents::FromWebContents(web_contents));
+  web_contents->SetUserData(kAwContentsUserDataKey,
+                            new AwContentsUserData(this));
+
   contents_container_.reset(dependency_factory->CreateContentsContainer(
       web_contents));
   web_contents->SetDelegate(web_contents_delegate_.get());
-  web_contents->SetUserData(kAwContentsUserDataKey,
-                            new AwContentsUserData(this));
   render_view_host_ext_.reset(new AwRenderViewHostExt(web_contents));
 }
 
 AwContents::~AwContents() {
-  content::WebContents* web_contents = contents_container_->GetWebContents();
+  WebContents* web_contents = contents_container_->GetWebContents();
   DCHECK(AwContents::FromWebContents(web_contents) == this);
   web_contents->RemoveUserData(kAwContentsUserDataKey);
+  if (find_helper_.get())
+    find_helper_->SetListener(NULL);
 }
 
 jint AwContents::GetWebContents(JNIEnv* env, jobject obj) {
@@ -113,7 +124,7 @@ void GenerateMHTMLCallback(ScopedJavaGlobalRef<jobject>* callback,
   // Android files are UTF8, so the path conversion below is safe.
   Java_AwContents_generateMHTMLCallback(
       env,
-      base::android::ConvertUTF8ToJavaString(env, path.AsUTF8Unsafe()).obj(),
+      ConvertUTF8ToJavaString(env, path.AsUTF8Unsafe()).obj(),
       size, callback->obj());
 }
 }  // namespace
@@ -123,7 +134,7 @@ void AwContents::GenerateMHTML(JNIEnv* env, jobject obj,
   ScopedJavaGlobalRef<jobject>* j_callback = new ScopedJavaGlobalRef<jobject>();
   j_callback->Reset(env, callback);
   contents_container_->GetWebContents()->GenerateMHTML(
-      FilePath(base::android::ConvertJavaStringToUTF8(env, jpath)),
+      FilePath(ConvertJavaStringToUTF8(env, jpath)),
       base::Bind(&GenerateMHTMLCallback, base::Owned(j_callback)));
 }
 
@@ -132,8 +143,8 @@ void AwContents::RunJavaScriptDialog(
     const GURL& origin_url,
     const string16& message_text,
     const string16& default_prompt_text,
-    const base::android::ScopedJavaLocalRef<jobject>& js_result) {
-  JNIEnv* env = base::android::AttachCurrentThread();
+    const ScopedJavaLocalRef<jobject>& js_result) {
+  JNIEnv* env = AttachCurrentThread();
 
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
@@ -168,8 +179,8 @@ void AwContents::RunJavaScriptDialog(
 void AwContents::RunBeforeUnloadDialog(
     const GURL& origin_url,
     const string16& message_text,
-    const base::android::ScopedJavaLocalRef<jobject>& js_result) {
-  JNIEnv* env = base::android::AttachCurrentThread();
+    const ScopedJavaLocalRef<jobject>& js_result) {
+  JNIEnv* env = AttachCurrentThread();
 
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
@@ -184,7 +195,7 @@ void AwContents::RunBeforeUnloadDialog(
 }
 
 void AwContents::onReceivedHttpAuthRequest(
-    const base::android::JavaRef<jobject>& handler,
+    const JavaRef<jobject>& handler,
     const std::string& host,
     const std::string& realm) {
   JNIEnv* env = AttachCurrentThread();
@@ -215,5 +226,42 @@ bool RegisterAwContents(JNIEnv* env) {
   return RegisterNativesImpl(env) >= 0;
 }
 
+jint AwContents::FindAllSync(JNIEnv* env, jobject obj, jstring search_string) {
+  return GetFindHelper()->FindAllSync(
+      ConvertJavaStringToUTF16(env, search_string));
+}
+
+void AwContents::FindAllAsync(JNIEnv* env, jobject obj, jstring search_string) {
+  GetFindHelper()->FindAllAsync(ConvertJavaStringToUTF16(env, search_string));
+}
+
+void AwContents::FindNext(JNIEnv* env, jobject obj, jboolean forward) {
+  GetFindHelper()->FindNext(forward);
+}
+
+void AwContents::ClearMatches(JNIEnv* env, jobject obj) {
+  GetFindHelper()->ClearMatches();
+}
+
+FindHelper* AwContents::GetFindHelper() {
+  if (!find_helper_.get()) {
+    WebContents* web_contents = contents_container_->GetWebContents();
+    find_helper_.reset(new FindHelper(web_contents));
+    find_helper_->SetListener(this);
+  }
+  return find_helper_.get();
+}
+
+void AwContents::OnFindResultReceived(int active_ordinal,
+                                      int match_count,
+                                      bool finished) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+
+  Java_AwContents_onFindResultReceived(
+      env, obj.obj(), active_ordinal, match_count, finished);
+}
 
 }  // namespace android_webview

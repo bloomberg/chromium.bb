@@ -102,8 +102,24 @@ public class AwContents {
         mCleanupReference.cleanupNow();
     }
 
+    public int findAllSync(String searchString) {
+        return nativeFindAllSync(mNativeAwContents, searchString);
+    }
+
+    public void findAllAsync(String searchString) {
+        nativeFindAllAsync(mNativeAwContents, searchString);
+    }
+
+    public void findNext(boolean forward) {
+        nativeFindNext(mNativeAwContents, forward);
+    }
+
+    public void clearMatches() {
+        nativeClearMatches(mNativeAwContents);
+    }
+
     /**
-     * @return load progress of the WebContents
+     * @return load progress of the WebContents.
      */
     public int getMostRecentProgress() {
         // WebContentsDelegateAndroid conveniently caches the most recent notified value for us.
@@ -180,6 +196,12 @@ public class AwContents {
     @CalledByNative
     private void onReceivedHttpAuthRequest(AwHttpAuthHandler handler, String host, String realm) {
         mContentsClient.onReceivedHttpAuthRequest(handler, host, realm);
+    }
+
+    @CalledByNative
+    public void onFindResultReceived(int activeMatchOrdinal, int numberOfMatches,
+            boolean isDoneCounting) {
+        mContentsClient.onFindResultReceived(activeMatchOrdinal, numberOfMatches, isDoneCounting);
     }
 
     // -------------------------------------------------------------------------------------------
@@ -270,4 +292,9 @@ public class AwContents {
 
     private native void nativeSetIoThreadClient(int nativeAwContents,
             AwContentsIoThreadClient ioThreadClient);
+
+    private native int nativeFindAllSync(int nativeAwContents, String searchString);
+    private native void nativeFindAllAsync(int nativeAwContents, String searchString);
+    private native void nativeFindNext(int nativeAwContents, boolean forward);
+    private native void nativeClearMatches(int nativeAwContents);
 }

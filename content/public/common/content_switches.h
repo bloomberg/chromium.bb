@@ -212,6 +212,7 @@ extern const char kGraphicsMode[];
 // Not actual flags, just values: for example, --graphics-mode=compositor
 extern const char kGraphicsModeValueBasic[];
 extern const char kGraphicsModeValueCompositor[];
+extern const char kEnableWebViewSynchronousAPIs[];
 #endif
 
 #if defined(OS_POSIX)

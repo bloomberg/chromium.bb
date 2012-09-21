@@ -111,6 +111,7 @@
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_platform_file.h"
 #include "ipc/ipc_switches.h"
+#include "ipc/ipc_sync_channel.h"
 #include "media/base/media_switches.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/ui_base_switches.h"
@@ -343,6 +344,9 @@ RenderProcessHostImpl::RenderProcessHostImpl(
           storage_partition_impl_(storage_partition_impl),
           sudden_termination_allowed_(true),
           ignore_input_events_(false),
+#if defined(OS_ANDROID)
+          dummy_shutdown_event_(false, false),
+#endif
           is_guest_(is_guest) {
   widget_helper_ = new RenderWidgetHelper();
 
@@ -450,9 +454,19 @@ bool RenderProcessHostImpl::Init() {
   // Setup the IPC channel.
   const std::string channel_id =
       IPC::Channel::GenerateVerifiedChannelID(std::string());
-  channel_.reset(new IPC::ChannelProxy(
-      channel_id, IPC::Channel::MODE_SERVER, this,
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
+  channel_.reset(
+#if defined(OS_ANDROID)
+      // Android WebView needs to be able to wait from the UI thread to support
+      // the synchronous legacy APIs.
+      browser_command_line.HasSwitch(switches::kEnableWebViewSynchronousAPIs) ?
+          new IPC::SyncChannel(
+              channel_id, IPC::Channel::MODE_SERVER, this,
+              BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+              true, &dummy_shutdown_event_) :
+#endif
+      new IPC::ChannelProxy(
+          channel_id, IPC::Channel::MODE_SERVER, this,
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
 
   // Call the embedder first so that their IPC filters have priority.
   GetContentClient()->browser()->RenderProcessHostCreated(this);

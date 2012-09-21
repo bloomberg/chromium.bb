@@ -8,7 +8,6 @@ import android.app.Instrumentation;
 import android.content.Context;
 import android.test.ActivityInstrumentationTestCase2;
 import android.view.View;
-import android.view.ViewGroup;
 
 import junit.framework.Assert;
 
@@ -179,6 +178,16 @@ public class AndroidWebViewTestBase
             }
         });
         return testContainerView.get();
+    }
+
+    protected void destroyAwContentsOnMainSync(final AwContents contents) {
+        if (contents == null) return;
+        getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                contents.destroy();
+            }
+        });
     }
 
     protected String getTitleOnUiThread(final ContentViewCore contentViewCore) throws Throwable {

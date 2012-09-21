@@ -228,6 +228,11 @@ class CONTENT_EXPORT RenderViewHostImpl
                                          float x,
                                          float y) OVERRIDE;
   virtual void RequestFindMatchRects(int current_version) OVERRIDE;
+  virtual void SynchronousFind(int request_id,
+                               const string16& search_text,
+                               const WebKit::WebFindOptions& options,
+                               int* match_count,
+                               int* active_ordinal) OVERRIDE;
 #endif
 
   void set_delegate(RenderViewHostDelegate* d) {

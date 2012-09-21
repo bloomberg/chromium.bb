@@ -2,4 +2,7 @@ include_rules = [
   "-android_webview",
   "+android_webview/browser",
   "+android_webview/common",
+
+  # POD structure required by the find-in-page IPC messages.
+  "+third_party/WebKit/Source/WebKit/chromium/public/WebFindOptions.h",
 ]

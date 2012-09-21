@@ -904,9 +904,6 @@ class RenderViewImpl : public RenderWidget,
   // The documentation for these functions should be in
   // render_messages_internal.h for the message that the function is handling.
 
-#if defined(OS_ANDROID)
-  void OnActivateNearestFindResult(int request_id, float x, float y);
-#endif
   CONTENT_EXPORT void OnAllowBindings(int enabled_bindings_flags);
   void OnAllowScriptToClose(bool script_can_close);
   void OnAsyncFileOpened(base::PlatformFileError error_code,
@@ -922,9 +919,6 @@ class RenderViewImpl : public RenderWidget,
       const content::CustomContextMenuContext& custom_context);
   void OnCopy();
   void OnCopyImageAt(int x, int y);
-#if defined(OS_MACOSX)
-  void OnCopyToFindPboard();
-#endif
   void OnCut();
   void OnCSSInsertRequest(const string16& frame_xpath,
                           const std::string& css);
@@ -964,9 +958,6 @@ class RenderViewImpl : public RenderWidget,
       const std::vector<ui::SelectedFileInfo>& files);
   void OnFind(int request_id, const string16&, const WebKit::WebFindOptions&);
   void OnGetAllSavableResourceLinksForCurrentPage(const GURL& page_url);
-#if defined(OS_ANDROID)
-  void OnFindMatchRects(int current_version);
-#endif
   void OnGetSerializedHtmlDataForCurrentPageWithLocalLinks(
       const std::vector<GURL>& links,
       const std::vector<FilePath>& local_paths,
@@ -983,9 +974,6 @@ class RenderViewImpl : public RenderWidget,
   CONTENT_EXPORT void OnNavigate(const ViewMsg_Navigate_Params& params);
   void OnPaste();
   void OnPasteAndMatchStyle();
-#if defined(OS_MACOSX)
-  void OnPluginImeCompositionCompleted(const string16& text, int plugin_id);
-#endif
   void OnPostMessageEvent(const ViewMsg_PostMessage_Params& params);
   void OnRedo();
   void OnReloadFrame();
@@ -1014,15 +1002,9 @@ class RenderViewImpl : public RenderWidget,
   CONTENT_EXPORT void OnSetHistoryLengthAndPrune(int history_length,
                                                  int32 minimum_page_id);
   void OnSetInitialFocus(bool reverse);
-#if defined(OS_MACOSX)
-  void OnSetInLiveResize(bool in_live_resize);
-#endif
   void OnScrollFocusedEditableNodeIntoRect(const gfx::Rect& rect);
   void OnSetPageEncoding(const std::string& encoding_name);
   void OnSetRendererPrefs(const content::RendererPreferences& renderer_prefs);
-#if defined(OS_MACOSX)
-  void OnSetWindowVisibility(bool visible);
-#endif
   void OnSetZoomLevel(double zoom_level);
   CONTENT_EXPORT void OnSetZoomLevelForLoadingURL(const GURL& url,
                                                   double zoom_level);
@@ -1038,17 +1020,6 @@ class RenderViewImpl : public RenderWidget,
       const webkit_glue::WebPreferences& prefs);
   CONTENT_EXPORT void OnUnselect();
 
-#if defined(OS_MACOSX)
-  void OnWindowFrameChanged(const gfx::Rect& window_frame,
-                            const gfx::Rect& view_frame);
-  CONTENT_EXPORT void OnSelectPopupMenuItem(int selected_index);
-#endif
-
-#if defined(OS_ANDROID)
-  void OnSelectPopupMenuItems(bool canceled,
-                              const std::vector<int>& selected_indices);
-#endif
-
   void OnZoom(content::PageZoom zoom);
   void OnZoomFactor(content::PageZoom zoom, int zoom_center_x,
                     int zoom_center_y);
@@ -1060,6 +1031,26 @@ class RenderViewImpl : public RenderWidget,
   void OnUpdatedFrameTree(int process_id,
                           int route_id,
                           const std::string& frame_tree);
+
+#if defined(OS_ANDROID)
+  void OnActivateNearestFindResult(int request_id, float x, float y);
+  void OnFindMatchRects(int current_version);
+  void OnSelectPopupMenuItems(bool canceled,
+                              const std::vector<int>& selected_indices);
+  void OnSynchronousFind(int request_id,
+                         const string16& search_string,
+                         const WebKit::WebFindOptions& options,
+                         IPC::Message* reply_msg);
+#elif defined(OS_MACOSX)
+  void OnCopyToFindPboard();
+  void OnPluginImeCompositionCompleted(const string16& text, int plugin_id);
+  CONTENT_EXPORT void OnSelectPopupMenuItem(int selected_index);
+  void OnSetInLiveResize(bool in_live_resize);
+  void OnSetWindowVisibility(bool visible);
+  void OnWindowFrameChanged(const gfx::Rect& window_frame,
+                            const gfx::Rect& view_frame);
+#endif
+
 
   // Adding a new message handler? Please add it in alphabetical order above
   // and put it in the same position in the .cc file.
@@ -1115,6 +1106,11 @@ class RenderViewImpl : public RenderWidget,
   // doesn't have a frame at the specified size, the first is returned.
   bool DownloadFavicon(int id, const GURL& image_url, int image_size);
 
+  // Starts a new find-in-page search or looks for the next match.
+  void Find(int request_id,
+            const string16& search_text,
+            const WebKit::WebFindOptions& options);
+
   GURL GetAlternateErrorPageURL(const GURL& failed_url,
                                 ErrorPageType error_type);
 
@@ -1161,8 +1157,19 @@ class RenderViewImpl : public RenderWidget,
   // --enable-fixed-layout[=w,h].
   void ProcessViewLayoutFlags(const CommandLine& command_line);
 
+  // Sends a reply to the current find operation handling if it was a
+  // synchronous find request.
+  void SendFindReply(int request_id,
+                     int match_count,
+                     int ordinal,
+                     const WebKit::WebRect& selection_rect,
+                     bool final_status_update);
+
   // Starts nav_state_sync_timer_ if it isn't already running.
   void StartNavStateSyncTimerIfNecessary();
+
+  // Stops the current find-in-page search.
+  void StopFinding(content::StopFindAction action);
 
   // Dispatches the current navigation state to the browser. Called on a
   // periodic timer so we don't send too many messages.
@@ -1422,6 +1429,14 @@ class RenderViewImpl : public RenderWidget,
   // Resource manager for all the android media player objects if they are
   // created in the renderer process.
   scoped_ptr<webkit_media::MediaPlayerBridgeManagerImpl> media_bridge_manager_;
+
+  // Holds the message used to return find results to the browser during
+  // synchronous find-in-page requests. Only non-null during these requests.
+  scoped_ptr<IPC::Message> synchronous_find_reply_message_;
+
+  // The active find-in-page match ordinal during synchronous requests.
+  // Needed to be remembered across WebKit callbacks.
+  int synchronous_find_active_match_ordinal_;
 #endif
 
   // Misc ----------------------------------------------------------------------
