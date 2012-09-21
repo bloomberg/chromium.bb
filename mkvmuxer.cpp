@@ -1582,10 +1582,6 @@ bool Segment::Finalize() {
   return true;
 }
 
-uint64 Segment::AddVideoTrack(int32 width, int32 height) {
-  return AddVideoTrack(width, height, 0);
-}
-
 uint64 Segment::AddVideoTrack(int32 width, int32 height, int32 number) {
   VideoTrack* const vid_track = new (std::nothrow) VideoTrack();  // NOLINT
   if (!vid_track)
@@ -1600,10 +1596,6 @@ uint64 Segment::AddVideoTrack(int32 width, int32 height, int32 number) {
   has_video_ = true;
 
   return vid_track->number();
-}
-
-uint64 Segment::AddAudioTrack(int32 sample_rate, int32 channels) {
-  return AddAudioTrack(sample_rate, channels, 0);
 }
 
 uint64 Segment::AddAudioTrack(int32 sample_rate,
