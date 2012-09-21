@@ -292,6 +292,16 @@ class GIT(object):
       'old mode 100644\n'
       'new mode 100755\n')
 
+  NEW_NOT_EXECUTABLE = (
+      'diff --git a/build/android/ant/create.js b/build/android/ant/create.js\n'
+      'new file mode 100644\n'
+      'index 0000000000000000000..542a89e978feada38dd\n'
+      '--- /dev/null\n'
+      '+++ b/build/android/ant/create.js\n'
+      '@@ -0,0 +1,1 @@\n'
+      '+// Copyright (c) 2012 The Chromium Authors. All rights reserved.\n'
+  )
+
   FOUR_HUNKS = (
       'Index: presubmit_support.py\n'
       'diff --git a/presubmit_support.py b/presubmit_support.py\n'

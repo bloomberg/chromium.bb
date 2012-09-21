@@ -32,7 +32,6 @@ class PatchTest(unittest.TestCase):
       patchlevel=0,
       svn_properties=None,
       nb_hunks=None):
-    svn_properties = svn_properties or []
     self.assertEquals(p.filename, filename)
     self.assertEquals(p.source_filename, source_filename)
     self.assertEquals(p.is_binary, is_binary)
@@ -51,6 +50,8 @@ class PatchTest(unittest.TestCase):
       self.assertEquals(len(p.hunks), nb_hunks)
     else:
       self.assertEquals(None, nb_hunks)
+    if hasattr(p, 'svn_properties'):
+      self.assertEquals(p.svn_properties, svn_properties or [])
 
   def testFilePatchDelete(self):
     p = patch.FilePatchDelete('foo', False)
@@ -88,6 +89,14 @@ class PatchTest(unittest.TestCase):
     self._check_patch(
         p, 'git_cl/git-cl', GIT.MODE_EXE_JUNK, is_git_diff=True, patchlevel=1,
         svn_properties=[('svn:executable', '*')], nb_hunks=0)
+
+  def testFilePatchDiffHeaderNotExecutable(self):
+    p = patch.FilePatchDiff(
+        'build/android/ant/create.js', GIT.NEW_NOT_EXECUTABLE, [])
+    self._check_patch(
+        p, 'build/android/ant/create.js', GIT.NEW_NOT_EXECUTABLE,
+        is_git_diff=True, patchlevel=1, is_new=True,
+        nb_hunks=1)
 
   def testFilePatchDiffSvnNew(self):
     # The code path is different for git and svn.
