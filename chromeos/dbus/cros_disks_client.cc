@@ -28,6 +28,7 @@ const char* kDefaultMountOptions[] = {
 
 const char* kDefaultUnmountOptions[] = {
   "force",
+  "lazy",
 };
 
 const char kMountLabelOption[] = "mountlabel";
