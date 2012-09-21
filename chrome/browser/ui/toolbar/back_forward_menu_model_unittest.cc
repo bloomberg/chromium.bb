@@ -7,6 +7,7 @@
 #include "base/path_service.h"
 #include "base/string16.h"
 #include "base/string_util.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history.h"
@@ -527,7 +528,7 @@ TEST_F(BackFwdMenuModelTest, FaviconLoadTest) {
   // Set the desired favicon for url1.
   HistoryServiceFactory::GetForProfile(
       profile(), Profile::EXPLICIT_ACCESS)->AddPage(
-          url1, history::SOURCE_BROWSED);
+          url1, base::Time::Now(), history::SOURCE_BROWSED);
   FaviconServiceFactory::GetForProfile(
       profile(), Profile::EXPLICIT_ACCESS)->SetFavicons(
           url1, url1_favicon, history::FAVICON, gfx::Image(new_icon_bitmap));

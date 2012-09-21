@@ -145,7 +145,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   // Navigation ----------------------------------------------------------------
 
-  void AddPage(scoped_refptr<HistoryAddPageArgs> request);
+  void AddPage(const HistoryAddPageArgs& request);
   virtual void SetPageTitle(const GURL& url, const string16& title);
   void AddPageNoVisitForBookmark(const GURL& url, const string16& title);
 

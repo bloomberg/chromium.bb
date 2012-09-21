@@ -160,8 +160,8 @@ void AddToHistory(HistoryService* service,
                    NULL, // scope
                    1234, // page_id
                    GURL(),  // referrer
-                   transition,
                    history::RedirectList(),
+                   transition,
                    source,
                    false);
   service->SetPageTitle(url, ASCIIToUTF16(url.spec() + " - title"));

@@ -172,7 +172,7 @@ bool InstantLoader::WebContentsDelegateImpl::OnGoToEntryOffset(int offset) {
 bool InstantLoader::WebContentsDelegateImpl::ShouldAddNavigationToHistory(
     const history::HistoryAddPageArgs& add_page_args,
     content::NavigationType navigation_type) {
-  loader_->last_navigation_ = add_page_args.Clone();
+  loader_->last_navigation_ = add_page_args;
   return false;
 }
 
@@ -312,7 +312,7 @@ void InstantLoader::Init() {
 
 void InstantLoader::Update(const string16& user_text, bool verbatim) {
   // TODO: Support real cursor position.
-  last_navigation_ = NULL;
+  last_navigation_ = history::HistoryAddPageArgs();
   content::RenderViewHost* rvh =
       preview_contents_->web_contents()->GetRenderViewHost();
   rvh->Send(new ChromeViewMsg_SearchBoxChange(rvh->GetRoutingID(), user_text,

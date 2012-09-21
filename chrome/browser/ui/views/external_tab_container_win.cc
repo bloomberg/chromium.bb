@@ -435,9 +435,9 @@ WebContents* ExternalTabContainerWin::OpenURLFromTab(
         content::LoadCommittedDetails details;
         details.did_replace_entry = false;
 
-        scoped_refptr<history::HistoryAddPageArgs> add_page_args(
+        const history::HistoryAddPageArgs& add_page_args =
             tab_contents_->history_tab_helper()->
-                CreateHistoryAddPageArgs(params.url, details, nav_params));
+                CreateHistoryAddPageArgs(params.url, details, nav_params);
         tab_contents_->history_tab_helper()->
             UpdateHistoryForNavigation(add_page_args);
 

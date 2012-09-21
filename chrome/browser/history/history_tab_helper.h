@@ -15,7 +15,7 @@ class SkBitmap;
 struct ThumbnailScore;
 
 namespace history {
-class HistoryAddPageArgs;
+struct HistoryAddPageArgs;
 }
 
 class HistoryTabHelper : public content::WebContentsObserver,
@@ -27,7 +27,7 @@ class HistoryTabHelper : public content::WebContentsObserver,
   // Updates history with the specified navigation. This is called by
   // OnMsgNavigate to update history state.
   void UpdateHistoryForNavigation(
-      scoped_refptr<history::HistoryAddPageArgs> add_page_args);
+      const history::HistoryAddPageArgs& add_page_args);
 
   // Sends the page title to the history service. This is called when we receive
   // the page title and we know we want to update history.
@@ -35,7 +35,7 @@ class HistoryTabHelper : public content::WebContentsObserver,
 
   // Returns the history::HistoryAddPageArgs to use for adding a page to
   // history.
-  scoped_refptr<history::HistoryAddPageArgs> CreateHistoryAddPageArgs(
+  history::HistoryAddPageArgs CreateHistoryAddPageArgs(
       const GURL& virtual_url,
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params);

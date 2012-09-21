@@ -9,8 +9,9 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
+#include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/autofill/autofill_common_test.h"
 #include "chrome/browser/autofill/autofill_profile.h"
@@ -146,7 +147,8 @@ static void SetupHistoryPageTest(Browser* browser,
   HistoryService* history_service = HistoryServiceFactory::GetForProfile(
       browser->profile(), Profile::IMPLICIT_ACCESS);
   const GURL history_url = GURL(page_url);
-  history_service->AddPage(history_url, history::SOURCE_BROWSED);
+  history_service->AddPage(
+      history_url, base::Time::Now(), history::SOURCE_BROWSED);
   history_service->SetPageTitle(history_url, UTF8ToUTF16(page_title));
 }
 

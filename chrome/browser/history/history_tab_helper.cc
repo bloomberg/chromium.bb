@@ -16,8 +16,8 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
-#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/frame_navigate_params.h"
 
 using content::NavigationEntry;
@@ -34,10 +34,10 @@ HistoryTabHelper::~HistoryTabHelper() {
 }
 
 void HistoryTabHelper::UpdateHistoryForNavigation(
-    scoped_refptr<history::HistoryAddPageArgs> add_page_args) {
+    const history::HistoryAddPageArgs& add_page_args) {
   HistoryService* hs = GetHistoryService();
   if (hs)
-    GetHistoryService()->AddPage(*add_page_args);
+    GetHistoryService()->AddPage(add_page_args);
 }
 
 void HistoryTabHelper::UpdateHistoryPageTitle(const NavigationEntry& entry) {
@@ -46,16 +46,18 @@ void HistoryTabHelper::UpdateHistoryPageTitle(const NavigationEntry& entry) {
     hs->SetPageTitle(entry.GetVirtualURL(), entry.GetTitleForDisplay(""));
 }
 
-scoped_refptr<history::HistoryAddPageArgs>
+history::HistoryAddPageArgs
 HistoryTabHelper::CreateHistoryAddPageArgs(
     const GURL& virtual_url,
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
-  scoped_refptr<history::HistoryAddPageArgs> add_page_args(
-      new history::HistoryAddPageArgs(
-          params.url, base::Time::Now(), web_contents(), params.page_id,
+  // TODO(akalin): Use the timestamp from details.entry when it
+  // becomes available.
+  const base::Time time = base::Time::Now();
+  history::HistoryAddPageArgs add_page_args(
+          params.url, time, web_contents(), params.page_id,
           params.referrer.url, params.redirects, params.transition,
-          history::SOURCE_BROWSED, details.did_replace_entry));
+          history::SOURCE_BROWSED, details.did_replace_entry);
   if (content::PageTransitionIsMainFrame(params.transition) &&
       virtual_url != params.url) {
     // Hack on the "virtual" URL so that it will appear in history. For some
@@ -64,9 +66,9 @@ HistoryTabHelper::CreateHistoryAddPageArgs(
     // they saw in the URL bar, so we add the virtual URL as a redirect.  This
     // only applies to the main frame, as the virtual URL doesn't apply to
     // sub-frames.
-    add_page_args->url = virtual_url;
-    if (!add_page_args->redirects.empty())
-      add_page_args->redirects.back() = virtual_url;
+    add_page_args.url = virtual_url;
+    if (!add_page_args.redirects.empty())
+      add_page_args.redirects.back() = virtual_url;
   }
   return add_page_args;
 }
@@ -101,11 +103,11 @@ void HistoryTabHelper::DidNavigateAnyFrame(
   // URLs, we use a data: URL as the real value.  We actually want to save the
   // about: URL to the history db and keep the data: URL hidden. This is what
   // the WebContents' URL getter does.
-  scoped_refptr<history::HistoryAddPageArgs> add_page_args(
-      CreateHistoryAddPageArgs(web_contents()->GetURL(), details, params));
+  const history::HistoryAddPageArgs& add_page_args =
+      CreateHistoryAddPageArgs(web_contents()->GetURL(), details, params);
   if (!web_contents()->GetDelegate() ||
       !web_contents()->GetDelegate()->ShouldAddNavigationToHistory(
-          *add_page_args, details.type))
+          add_page_args, details.type))
     return;
 
   UpdateHistoryForNavigation(add_page_args);

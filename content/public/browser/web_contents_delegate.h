@@ -50,7 +50,7 @@ class Size;
 }
 
 namespace history {
-class HistoryAddPageArgs;
+struct HistoryAddPageArgs;
 }
 
 namespace webkit_glue {

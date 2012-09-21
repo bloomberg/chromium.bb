@@ -16,6 +16,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -945,8 +946,8 @@ TEST_F(BookmarkModelTestWithProfile, RemoveNotification) {
 
   HistoryServiceFactory::GetForProfile(
       profile_.get(), Profile::EXPLICIT_ACCESS)->AddPage(
-          url, NULL, 1, GURL(), content::PAGE_TRANSITION_TYPED,
-          history::RedirectList(), history::SOURCE_BROWSED, false);
+          url, base::Time::Now(), NULL, 1, GURL(), history::RedirectList(),
+          content::PAGE_TRANSITION_TYPED, history::SOURCE_BROWSED, false);
 
   // This won't actually delete the URL, rather it'll empty out the visits.
   // This triggers blocking on the BookmarkModel.

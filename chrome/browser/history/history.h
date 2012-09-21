@@ -15,6 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/string16.h"
+#include "base/time.h"
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/common/url_database/template_url_id.h"
 #include "chrome/browser/favicon/favicon_service.h"
@@ -42,7 +43,6 @@ class Profile;
 
 namespace base {
 class Thread;
-class Time;
 }
 
 namespace content {
@@ -53,7 +53,7 @@ namespace history {
 class InMemoryHistoryBackend;
 class InMemoryURLIndex;
 class InMemoryURLIndexTest;
-class HistoryAddPageArgs;
+struct HistoryAddPageArgs;
 class HistoryBackend;
 class HistoryDatabase;
 struct HistoryDetails;
@@ -165,7 +165,7 @@ class HistoryService : public CancelableRequestProvider,
 
   // Navigation ----------------------------------------------------------------
 
-  // Adds the given canonical URL to history with the current time as the visit
+  // Adds the given canonical URL to history with the given time as the visit
   // time. Referrer may be the empty string.
   //
   // The supplied render process host is used to scope the given page ID. Page
@@ -188,31 +188,19 @@ class HistoryService : public CancelableRequestProvider,
   //
   // All "Add Page" functions will update the visited link database.
   void AddPage(const GURL& url,
-               const void* id_scope,
-               int32 page_id,
-               const GURL& referrer,
-               content::PageTransition transition,
-               const history::RedirectList& redirects,
-               history::VisitSource visit_source,
-               bool did_replace_entry);
-
-  // For adding pages to history with a specific time. This is for testing
-  // purposes. Call the previous one to use the current time.
-  void AddPage(const GURL& url,
                base::Time time,
                const void* id_scope,
                int32 page_id,
                const GURL& referrer,
-               content::PageTransition transition,
                const history::RedirectList& redirects,
+               content::PageTransition transition,
                history::VisitSource visit_source,
                bool did_replace_entry);
 
   // For adding pages to history where no tracking information can be done.
-  void AddPage(const GURL& url, history::VisitSource visit_source) {
-    AddPage(url, NULL, 0, GURL(), content::PAGE_TRANSITION_LINK,
-            history::RedirectList(), visit_source, false);
-  }
+  void AddPage(const GURL& url,
+               base::Time time,
+               history::VisitSource visit_source);
 
   // All AddPage variants end up here.
   void AddPage(const history::HistoryAddPageArgs& add_page_args);

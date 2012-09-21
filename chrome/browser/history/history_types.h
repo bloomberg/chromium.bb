@@ -360,22 +360,24 @@ struct FilteredURL {
 // Navigation -----------------------------------------------------------------
 
 // Marshalling structure for AddPage.
-class HistoryAddPageArgs
-    : public base::RefCountedThreadSafe<HistoryAddPageArgs> {
- public:
-  HistoryAddPageArgs(const GURL& arg_url,
-                     base::Time arg_time,
-                     const void* arg_id_scope,
-                     int32 arg_page_id,
-                     const GURL& arg_referrer,
-                     const history::RedirectList& arg_redirects,
-                     content::PageTransition arg_transition,
-                     VisitSource arg_source,
-                     bool arg_did_replace_entry);
-
-  // Returns a new HistoryAddPageArgs that is a copy of this (ref count is
-  // of course reset). Ownership of returned object passes to caller.
-  HistoryAddPageArgs* Clone() const;
+struct HistoryAddPageArgs {
+  // The default constructor is equivalent to:
+  //
+  //   HistoryAddPageArgs(
+  //       GURL(), base::Time(), NULL, 0, GURL(),
+  //       history::RedirectList(), content::PAGE_TRANSITION_LINK,
+  //       SOURCE_BROWSED, false)
+  HistoryAddPageArgs();
+  HistoryAddPageArgs(const GURL& url,
+                     base::Time time,
+                     const void* id_scope,
+                     int32 page_id,
+                     const GURL& referrer,
+                     const history::RedirectList& redirects,
+                     content::PageTransition transition,
+                     VisitSource source,
+                     bool did_replace_entry);
+  ~HistoryAddPageArgs();
 
   GURL url;
   base::Time time;
@@ -388,13 +390,6 @@ class HistoryAddPageArgs
   content::PageTransition transition;
   VisitSource visit_source;
   bool did_replace_entry;
-
- private:
-  friend class base::RefCountedThreadSafe<HistoryAddPageArgs>;
-
-  ~HistoryAddPageArgs();
-
-  DISALLOW_COPY_AND_ASSIGN(HistoryAddPageArgs);
 };
 
 // TopSites -------------------------------------------------------------------

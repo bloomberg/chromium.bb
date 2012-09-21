@@ -173,10 +173,10 @@ void InsertURLBatch(Profile* profile,
     }
 
     // Add all of this information to the history service.
-    history_service->AddPage(url,
+    history_service->AddPage(url, base::Time::Now(),
                              id_scope, page_id,
-                             previous_url, transition,
-                             redirects, history::SOURCE_BROWSED, true);
+                             previous_url, redirects,
+                             transition, history::SOURCE_BROWSED, true);
     ThumbnailScore score(0.75, false, false);
     history_service->SetPageTitle(url, ConstructRandomTitle());
     if (types & FULL_TEXT)

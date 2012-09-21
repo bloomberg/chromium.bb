@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
+#include "chrome/browser/history/history_types.h"
 #include "chrome/browser/instant/instant_commit_type.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -28,10 +29,6 @@ class WebContents;
 
 namespace gfx {
 class Rect;
-}
-
-namespace history {
-class HistoryAddPageArgs;
 }
 
 // InstantLoader is created with an "Instant URL". It loads the URL and tells
@@ -95,8 +92,8 @@ class InstantLoader : public content::NotificationObserver {
   const std::string& instant_url() const { return instant_url_; }
 
   // Returns info about the last navigation by the Instant page. If the page
-  // hasn't navigated since the last Update(), this contains NULL.
-  scoped_refptr<history::HistoryAddPageArgs> last_navigation() const {
+  // hasn't navigated since the last Update(), the URL is empty.
+  const history::HistoryAddPageArgs& last_navigation() const {
     return last_navigation_;
   }
 
@@ -136,7 +133,7 @@ class InstantLoader : public content::NotificationObserver {
   content::NotificationRegistrar registrar_;
 
   // See comments on the getter above.
-  scoped_refptr<history::HistoryAddPageArgs> last_navigation_;
+  history::HistoryAddPageArgs last_navigation_;
 
   DISALLOW_COPY_AND_ASSIGN(InstantLoader);
 };

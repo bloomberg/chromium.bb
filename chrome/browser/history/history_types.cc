@@ -265,34 +265,35 @@ TopSitesDelta::~TopSitesDelta() {}
 
 // HistoryAddPageArgs ---------------------------------------------------------
 
+HistoryAddPageArgs::HistoryAddPageArgs()
+    : id_scope(NULL),
+      page_id(0),
+      transition(content::PAGE_TRANSITION_LINK),
+      visit_source(SOURCE_BROWSED),
+      did_replace_entry(false) {}
+
 HistoryAddPageArgs::HistoryAddPageArgs(
-    const GURL& arg_url,
-    base::Time arg_time,
-    const void* arg_id_scope,
-    int32 arg_page_id,
-    const GURL& arg_referrer,
-    const history::RedirectList& arg_redirects,
-    content::PageTransition arg_transition,
-    VisitSource arg_source,
-    bool arg_did_replace_entry)
-      : url(arg_url),
-        time(arg_time),
-        id_scope(arg_id_scope),
-        page_id(arg_page_id),
-        referrer(arg_referrer),
-        redirects(arg_redirects),
-        transition(arg_transition),
-        visit_source(arg_source),
-        did_replace_entry(arg_did_replace_entry) {
+    const GURL& url,
+    base::Time time,
+    const void* id_scope,
+    int32 page_id,
+    const GURL& referrer,
+    const history::RedirectList& redirects,
+    content::PageTransition transition,
+    VisitSource source,
+    bool did_replace_entry)
+      : url(url),
+        time(time),
+        id_scope(id_scope),
+        page_id(page_id),
+        referrer(referrer),
+        redirects(redirects),
+        transition(transition),
+        visit_source(source),
+        did_replace_entry(did_replace_entry) {
 }
 
 HistoryAddPageArgs::~HistoryAddPageArgs() {}
-
-HistoryAddPageArgs* HistoryAddPageArgs::Clone() const {
-  return new HistoryAddPageArgs(
-      url, time, id_scope, page_id, referrer, redirects, transition,
-      visit_source, did_replace_entry);
-}
 
 ThumbnailMigration::ThumbnailMigration() {}
 

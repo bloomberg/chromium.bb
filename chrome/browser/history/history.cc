@@ -344,31 +344,28 @@ void HistoryService::SetOnBackendDestroyTask(const base::Closure& task) {
 }
 
 void HistoryService::AddPage(const GURL& url,
-                             const void* id_scope,
-                             int32 page_id,
-                             const GURL& referrer,
-                             content::PageTransition transition,
-                             const history::RedirectList& redirects,
-                             history::VisitSource visit_source,
-                             bool did_replace_entry) {
-  AddPage(url, Time::Now(), id_scope, page_id, referrer, transition, redirects,
-          visit_source, did_replace_entry);
-}
-
-void HistoryService::AddPage(const GURL& url,
                              Time time,
                              const void* id_scope,
                              int32 page_id,
                              const GURL& referrer,
-                             content::PageTransition transition,
                              const history::RedirectList& redirects,
+                             content::PageTransition transition,
                              history::VisitSource visit_source,
                              bool did_replace_entry) {
-  scoped_refptr<history::HistoryAddPageArgs> request(
-      new history::HistoryAddPageArgs(url, time, id_scope, page_id, referrer,
-                                      redirects, transition, visit_source,
-                                      did_replace_entry));
-  AddPage(*request);
+  AddPage(
+      history::HistoryAddPageArgs(url, time, id_scope, page_id, referrer,
+                                  redirects, transition, visit_source,
+                                  did_replace_entry));
+}
+
+void HistoryService::AddPage(const GURL& url,
+                             base::Time time,
+                             history::VisitSource visit_source) {
+  AddPage(
+      history::HistoryAddPageArgs(url, time, NULL, 0, GURL(),
+                                  history::RedirectList(),
+                                  content::PAGE_TRANSITION_LINK,
+                                  visit_source, false));
 }
 
 void HistoryService::AddPage(const history::HistoryAddPageArgs& add_page_args) {
@@ -398,9 +395,7 @@ void HistoryService::AddPage(const history::HistoryAddPageArgs& add_page_args) {
     }
   }
 
-  ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::AddPage,
-                    scoped_refptr<history::HistoryAddPageArgs>(
-                        add_page_args.Clone()));
+  ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::AddPage, add_page_args);
 }
 
 void HistoryService::AddPageNoVisitForBookmark(const GURL& url,

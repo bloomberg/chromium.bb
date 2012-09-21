@@ -63,12 +63,11 @@ class WebDialogWebContentsDelegateTest : public BrowserWithTestWindowTest {
 TEST_F(WebDialogWebContentsDelegateTest, DoNothingMethodsTest) {
   // None of the following calls should do anything.
   EXPECT_TRUE(test_web_contents_delegate_->IsPopupOrPanel(NULL));
-  scoped_refptr<history::HistoryAddPageArgs> should_add_args(
-      new history::HistoryAddPageArgs(
+  history::HistoryAddPageArgs should_add_args(
           GURL(), base::Time::Now(), 0, 0, GURL(), history::RedirectList(),
-          content::PAGE_TRANSITION_TYPED, history::SOURCE_SYNCED, false));
+          content::PAGE_TRANSITION_TYPED, history::SOURCE_SYNCED, false);
   EXPECT_FALSE(test_web_contents_delegate_->ShouldAddNavigationToHistory(
-                   *should_add_args, content::NAVIGATION_TYPE_NEW_PAGE));
+                   should_add_args, content::NAVIGATION_TYPE_NEW_PAGE));
   test_web_contents_delegate_->NavigationStateChanged(NULL, 0);
   test_web_contents_delegate_->ActivateContents(NULL);
   test_web_contents_delegate_->LoadingStateChanged(NULL);

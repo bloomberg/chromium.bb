@@ -10,6 +10,7 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
@@ -412,9 +413,9 @@ TEST_F(HistoryURLProviderTest, CullRedirects) {
   redirects_to_a.push_back(GURL(test_cases[1].url));
   redirects_to_a.push_back(GURL(test_cases[2].url));
   redirects_to_a.push_back(GURL(test_cases[0].url));
-  history_service_->AddPage(GURL(test_cases[0].url), NULL, 0, GURL(),
-      content::PAGE_TRANSITION_TYPED, redirects_to_a, history::SOURCE_BROWSED,
-      true);
+  history_service_->AddPage(GURL(test_cases[0].url), base::Time::Now(),
+      NULL, 0, GURL(), redirects_to_a, content::PAGE_TRANSITION_TYPED,
+      history::SOURCE_BROWSED, true);
 
   // Because all the results are part of a redirect chain with other results,
   // all but the first one (A) should be culled. We should get the default

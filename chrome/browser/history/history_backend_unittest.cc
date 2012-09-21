@@ -170,11 +170,10 @@ class HistoryBackendTest : public testing::Test {
     int int_scope = 1;
     void* scope = 0;
     memcpy(&scope, &int_scope, sizeof(int_scope));
-    scoped_refptr<history::HistoryAddPageArgs> request(
-        new history::HistoryAddPageArgs(
-            redirects.back(), time, scope, page_id, GURL(),
-            redirects, transition, history::SOURCE_BROWSED,
-            true));
+    history::HistoryAddPageArgs request(
+        redirects.back(), time, scope, page_id, GURL(),
+        redirects, transition, history::SOURCE_BROWSED,
+        true);
     backend_->AddPage(request);
   }
 
@@ -194,10 +193,10 @@ class HistoryBackendTest : public testing::Test {
       redirects.push_back(url1);
     if (url2.is_valid())
       redirects.push_back(url2);
-    scoped_refptr<HistoryAddPageArgs> request(
-        new HistoryAddPageArgs(url2, time, dummy_scope, 0, url1,
-            redirects, content::PAGE_TRANSITION_CLIENT_REDIRECT,
-            history::SOURCE_BROWSED, did_replace));
+    HistoryAddPageArgs request(
+        url2, time, dummy_scope, 0, url1,
+        redirects, content::PAGE_TRANSITION_CLIENT_REDIRECT,
+        history::SOURCE_BROWSED, did_replace);
     backend_->AddPage(request);
 
     *transition1 = getTransition(url1);
@@ -625,11 +624,10 @@ TEST_F(HistoryBackendTest, DeleteAllThenAddData) {
 
   Time visit_time = Time::Now();
   GURL url("http://www.google.com/");
-  scoped_refptr<HistoryAddPageArgs> request(
-      new HistoryAddPageArgs(url, visit_time, NULL, 0, GURL(),
+  HistoryAddPageArgs request(url, visit_time, NULL, 0, GURL(),
                              history::RedirectList(),
                              content::PAGE_TRANSITION_KEYWORD_GENERATED,
-                             history::SOURCE_BROWSED, false));
+                             history::SOURCE_BROWSED, false);
   backend_->AddPage(request);
 
   // Check that a row was added.
@@ -783,11 +781,10 @@ TEST_F(HistoryBackendTest, KeywordGenerated) {
   GURL url("http://google.com");
 
   Time visit_time = Time::Now() - base::TimeDelta::FromDays(1);
-  scoped_refptr<HistoryAddPageArgs> request(
-      new HistoryAddPageArgs(url, visit_time, NULL, 0, GURL(),
+  HistoryAddPageArgs request(url, visit_time, NULL, 0, GURL(),
                              history::RedirectList(),
                              content::PAGE_TRANSITION_KEYWORD_GENERATED,
-                             history::SOURCE_BROWSED, false));
+                             history::SOURCE_BROWSED, false);
   backend_->AddPage(request);
 
   // A row should have been added for the url.
@@ -1011,25 +1008,22 @@ TEST_F(HistoryBackendTest, AddPageArgsSource) {
   GURL url("http://testpageargs.com");
 
   // Assume this page is browsed by user.
-  scoped_refptr<HistoryAddPageArgs> request1(
-      new HistoryAddPageArgs(url, base::Time::Now(), NULL, 0, GURL(),
+  HistoryAddPageArgs request1(url, base::Time::Now(), NULL, 0, GURL(),
                              history::RedirectList(),
                              content::PAGE_TRANSITION_KEYWORD_GENERATED,
-                             history::SOURCE_BROWSED, false));
+                             history::SOURCE_BROWSED, false);
   backend_->AddPage(request1);
   // Assume this page is synced.
-  scoped_refptr<HistoryAddPageArgs> request2(
-      new HistoryAddPageArgs(url, base::Time::Now(), NULL, 0, GURL(),
+  HistoryAddPageArgs request2(url, base::Time::Now(), NULL, 0, GURL(),
                              history::RedirectList(),
                              content::PAGE_TRANSITION_LINK,
-                             history::SOURCE_SYNCED, false));
+                             history::SOURCE_SYNCED, false);
   backend_->AddPage(request2);
   // Assume this page is browsed again.
-  scoped_refptr<HistoryAddPageArgs> request3(
-      new HistoryAddPageArgs(url, base::Time::Now(), NULL, 0, GURL(),
+  HistoryAddPageArgs request3(url, base::Time::Now(), NULL, 0, GURL(),
                              history::RedirectList(),
                              content::PAGE_TRANSITION_TYPED,
-                             history::SOURCE_BROWSED, false));
+                             history::SOURCE_BROWSED, false);
   backend_->AddPage(request3);
 
   // Three visits should be added with proper sources.

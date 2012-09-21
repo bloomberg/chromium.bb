@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/i18n/case_conversion.h"
 #include "base/metrics/histogram.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
@@ -346,12 +347,12 @@ TabContents* InstantController::ReleasePreviewContents(InstantCommitType type) {
   // If the preview page has navigated since the last Update(), we need to add
   // the navigation to history ourselves. Else, the page will navigate after
   // commit, and it will be added to history in the usual manner.
-  scoped_refptr<history::HistoryAddPageArgs> last_navigation =
+  const history::HistoryAddPageArgs& last_navigation =
       loader_->last_navigation();
-  if (last_navigation != NULL) {
+  if (!last_navigation.url.is_empty()) {
     content::NavigationEntry* entry =
         preview->web_contents()->GetController().GetActiveEntry();
-    DCHECK_EQ(last_navigation->url, entry->GetURL());
+    DCHECK_EQ(last_navigation.url, entry->GetURL());
 
     // Add the page to history.
     preview->history_tab_helper()->UpdateHistoryForNavigation(last_navigation);
@@ -374,8 +375,9 @@ TabContents* InstantController::ReleasePreviewContents(InstantCommitType type) {
   HistoryService* history = HistoryServiceFactory::GetForProfile(
       preview->profile(), Profile::EXPLICIT_ACCESS);
   if (history) {
-    history->AddPage(url_for_history_, NULL, 0, GURL(), last_transition_type_,
-                     history::RedirectList(), history::SOURCE_BROWSED, false);
+    history->AddPage(url_for_history_, base::Time::Now(), NULL, 0, GURL(),
+                     history::RedirectList(), last_transition_type_,
+                     history::SOURCE_BROWSED, false);
   }
 
   AddPreviewUsageForHistogram(mode_, PREVIEW_COMMITTED);

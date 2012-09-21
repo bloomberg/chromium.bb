@@ -16,6 +16,7 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/google/google_url_tracker.h"
@@ -1920,9 +1921,10 @@ void TemplateURLService::AddTabToSearchVisit(const TemplateURL& t_url) {
 
   // Synthesize a visit for the keyword. This ensures the url for the keyword is
   // autocompleted even if the user doesn't type the url in directly.
-  history->AddPage(url, NULL, 0, GURL(),
+  history->AddPage(url, base::Time::Now(), NULL, 0, GURL(),
+                   history::RedirectList(),
                    content::PAGE_TRANSITION_KEYWORD_GENERATED,
-                   history::RedirectList(), history::SOURCE_BROWSED, false);
+                   history::SOURCE_BROWSED, false);
 }
 
 // static

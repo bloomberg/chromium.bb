@@ -195,7 +195,7 @@ TEST_F(BookmarkHTMLWriterTest, Test) {
       model->bookmark_bar_node(), 0, f1_title);
   model->AddURLWithCreationTime(f1, 0, url1_title, url1, t1);
   HistoryServiceFactory::GetForProfile(&profile, Profile::EXPLICIT_ACCESS)->
-      AddPage(url1, history::SOURCE_BROWSED);
+      AddPage(url1, base::Time::Now(), history::SOURCE_BROWSED);
   FaviconServiceFactory::GetForProfile(
       &profile, Profile::EXPLICIT_ACCESS)->SetFavicons(
           url1, url1_favicon, history::FAVICON, gfx::Image(bitmap));

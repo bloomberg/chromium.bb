@@ -12,6 +12,7 @@
 #include "base/process_util.h"
 #include "base/shared_memory.h"
 #include "base/string_util.h"
+#include "base/time.h"
 #include "chrome/browser/visitedlink/visitedlink_event_listener.h"
 #include "chrome/browser/visitedlink/visitedlink_master.h"
 #include "chrome/common/render_messages.h"
@@ -381,7 +382,8 @@ TEST_F(VisitedLinkTest, Rebuild) {
   // initialize the visited link DB.
   int history_count = g_test_count / 2;
   for (int i = 0; i < history_count; i++)
-    history_service_->AddPage(TestURL(i), history::SOURCE_BROWSED);
+    history_service_->AddPage(
+        TestURL(i), base::Time::Now(), history::SOURCE_BROWSED);
 
   // Initialize the visited link DB. Since the visited links file doesn't exist
   // and we don't suppress history rebuilding, this will load from history.

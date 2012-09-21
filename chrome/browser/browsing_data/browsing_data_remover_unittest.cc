@@ -327,7 +327,7 @@ class RemoveHistoryTester {
 
   void AddHistory(const GURL& url, base::Time time) {
     history_service_->AddPage(url, time, NULL, 0, GURL(),
-        content::PAGE_TRANSITION_LINK, history::RedirectList(),
+        history::RedirectList(), content::PAGE_TRANSITION_LINK,
         history::SOURCE_BROWSED, false);
   }
 

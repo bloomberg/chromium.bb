@@ -23,11 +23,11 @@
 #include "chrome/common/icon_messages.h"
 #include "chrome/common/prerender_messages.h"
 #include "chrome/common/url_constants.h"
-#include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/session_storage_namespace.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -107,8 +107,7 @@ class PrerenderContents::TabContentsDelegateImpl
   virtual bool ShouldAddNavigationToHistory(
       const history::HistoryAddPageArgs& add_page_args,
       content::NavigationType navigation_type) OVERRIDE {
-    add_page_vector_.push_back(
-        scoped_refptr<history::HistoryAddPageArgs>(add_page_args.Clone()));
+    add_page_vector_.push_back(add_page_args);
     return false;
   }
 
@@ -175,12 +174,11 @@ class PrerenderContents::TabContentsDelegateImpl
   void CommitHistory(TabContents* tab) {
     for (size_t i = 0; i < add_page_vector_.size(); ++i)
       tab->history_tab_helper()->UpdateHistoryForNavigation(
-          add_page_vector_[i].get());
+          add_page_vector_[i]);
   }
 
  private:
-  typedef std::vector<scoped_refptr<history::HistoryAddPageArgs> >
-      AddPageVector;
+  typedef std::vector<history::HistoryAddPageArgs> AddPageVector;
 
   // Caches pages to be added to the history.
   AddPageVector add_page_vector_;

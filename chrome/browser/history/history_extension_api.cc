@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/event_router.h"
@@ -331,7 +332,7 @@ bool AddUrlHistoryFunction::RunImpl() {
   HistoryService* hs =
       HistoryServiceFactory::GetForProfile(profile(),
                                            Profile::EXPLICIT_ACCESS);
-  hs->AddPage(url, history::SOURCE_EXTENSION);
+  hs->AddPage(url, base::Time::Now(), history::SOURCE_EXTENSION);
 
   SendResponse(true);
   return true;
