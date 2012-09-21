@@ -1670,7 +1670,7 @@ bool Segment::AddFrame(const uint8* frame,
     return false;
 
   if (new_cuepoint_ && cues_track_ == track_number) {
-    if (!AddCuePoint(timestamp))
+    if (!AddCuePoint(timestamp, cues_track_))
       return false;
   }
 
@@ -2046,7 +2046,7 @@ bool Segment::CheckHeaderInfo() {
   return true;
 }
 
-bool Segment::AddCuePoint(uint64 timestamp) {
+bool Segment::AddCuePoint(uint64 timestamp, uint64 track) {
   if (cluster_list_size_  < 1)
     return false;
 
@@ -2061,7 +2061,7 @@ bool Segment::AddCuePoint(uint64 timestamp) {
   cue->set_time(timestamp / segment_info_.timecode_scale());
   cue->set_block_number(cluster->blocks_added() + 1);
   cue->set_cluster_pos(cluster->position_for_cues());
-  cue->set_track(cues_track_);
+  cue->set_track(track);
   if (!cues_.AddCue(cue))
     return false;
 
@@ -2173,7 +2173,7 @@ int Segment::WriteFramesAll() {
       return -1;
 
     if (new_cuepoint_ && cues_track_ == frame->track_number()) {
-      if (!AddCuePoint(frame_timestamp))
+      if (!AddCuePoint(frame_timestamp, cues_track_))
         return -1;
     }
 
@@ -2225,7 +2225,7 @@ bool Segment::WriteFramesLessThan(uint64 timestamp) {
         return false;
 
       if (new_cuepoint_ && cues_track_ == frame_prev->track_number()) {
-        if (!AddCuePoint(frame_timestamp))
+        if (!AddCuePoint(frame_timestamp, cues_track_))
           return false;
       }
 
