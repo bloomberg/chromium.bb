@@ -392,13 +392,6 @@ void CdmWrapper::Decrypt(pp::Buffer_Dev encrypted_buffer,
   LinkedOutputBuffer output_buffer(new OutputBufferImpl());
   cdm::Status status = cdm_->Decrypt(input_buffer, output_buffer.get());
 
-  if (status != cdm::kSuccess || !output_buffer->buffer()) {
-    CallOnMain(callback_factory_.NewCallback(&CdmWrapper::KeyError,
-                                             std::string()));
-    return;
-  }
-
-  PP_DCHECK(output_buffer->buffer());
   CallOnMain(callback_factory_.NewCallback(
       &CdmWrapper::DeliverBlock,
       status,
@@ -446,6 +439,7 @@ void CdmWrapper::DeliverBlock(int32_t result,
   switch (status) {
     case cdm::kSuccess:
       decrypted_block_info.result = PP_DECRYPTRESULT_SUCCESS;
+      PP_DCHECK(output_buffer.get() && output_buffer->buffer());
       break;
     case cdm::kNoKey:
       decrypted_block_info.result = PP_DECRYPTRESULT_DECRYPT_NOKEY;
@@ -454,9 +448,12 @@ void CdmWrapper::DeliverBlock(int32_t result,
       decrypted_block_info.result = PP_DECRYPTRESULT_DECRYPT_ERROR;
   }
 
-  pp::ContentDecryptor_Private::DeliverBlock(
-      static_cast<PpbBuffer*>(output_buffer->buffer())->buffer_dev(),
-      decrypted_block_info);
+  const pp::Buffer_Dev& buffer =
+      output_buffer.get() && output_buffer->buffer() ?
+      static_cast<PpbBuffer*>(output_buffer->buffer())->buffer_dev() :
+      pp::Buffer_Dev();
+
+  pp::ContentDecryptor_Private::DeliverBlock(buffer, decrypted_block_info);
 }
 
 // This object is the global object representing this plugin library as long
