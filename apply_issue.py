@@ -35,7 +35,8 @@ def main():
       help='Email address to access rietveld.  If not specified, anonymous '
            'access will be used.')
   parser.add_option(
-      '-w', '--password', default=None, help='Password for email addressed.')
+      '-w', '--password', default=None,
+      help='Password for email addressed.  Use - to read password from stdin.')
   parser.add_option(
       '-i', '--issue', type='int', help='Rietveld issue number')
   parser.add_option(
@@ -62,6 +63,9 @@ def main():
   options.server = options.server.rstrip('/')
   if not options.server:
     parser.error('Require a valid server')
+
+  if options.password == '-':
+    options.password = sys.stdin.readline().strip()
 
   obj = rietveld.Rietveld(options.server, options.email, options.password)
   try:
