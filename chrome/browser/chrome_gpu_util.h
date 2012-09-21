@@ -7,6 +7,9 @@
 
 namespace gpu_util {
 
+// Sets up Stage3D on XP field trial
+void InitializeStage3DFieldTrial();
+
 // Sets up force-compositing-mode and threaded compositing field trials.
 void InitializeCompositingFieldTrial();
 

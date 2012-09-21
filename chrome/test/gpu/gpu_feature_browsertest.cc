@@ -29,6 +29,10 @@
 #include "ui/surface/io_surface_support_mac.h"
 #endif
 
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
+
 using content::GpuDataManager;
 using content::GpuFeatureType;
 using trace_analyzer::Query;
@@ -177,6 +181,16 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, AcceleratedCompositingAllowed) {
   RunTest(url, EXPECT_GPU_SWAP_BUFFERS);
 }
 
+// Flash Stage3D may be blacklisted for other reasons on XP, so ignore it.
+GpuFeatureType IgnoreGpuFeatures(GpuFeatureType type) {
+#if defined(OS_WIN)
+  if (base::win::GetVersion() < base::win::VERSION_VISTA)
+    return static_cast<GpuFeatureType>(type &
+        ~content::GPU_FEATURE_TYPE_FLASH_STAGE3D);
+#endif
+  return type;
+}
+
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest, AcceleratedCompositingBlocked) {
   const std::string json_blacklist =
       "{\n"
@@ -194,6 +208,7 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, AcceleratedCompositingBlocked) {
   SetupBlacklist(json_blacklist);
   GpuFeatureType type =
       GpuDataManager::GetInstance()->GetBlacklistedFeatures();
+  type = IgnoreGpuFeatures(type);
   EXPECT_EQ(type, content::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING);
 
   const FilePath url(FILE_PATH_LITERAL("feature_compositing.html"));
@@ -240,6 +255,7 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, WebGLBlocked) {
   SetupBlacklist(json_blacklist);
   GpuFeatureType type =
       GpuDataManager::GetInstance()->GetBlacklistedFeatures();
+  type = IgnoreGpuFeatures(type);
   EXPECT_EQ(type, content::GPU_FEATURE_TYPE_WEBGL);
 
   const FilePath url(FILE_PATH_LITERAL("feature_webgl.html"));
@@ -306,6 +322,7 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, MultisamplingBlocked) {
   SetupBlacklist(json_blacklist);
   GpuFeatureType type =
       GpuDataManager::GetInstance()->GetBlacklistedFeatures();
+  type = IgnoreGpuFeatures(type);
   EXPECT_EQ(type, content::GPU_FEATURE_TYPE_MULTISAMPLING);
 
   const FilePath url(FILE_PATH_LITERAL("feature_multisampling.html"));
@@ -359,6 +376,7 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, Canvas2DBlocked) {
   SetupBlacklist(json_blacklist);
   GpuFeatureType type =
       GpuDataManager::GetInstance()->GetBlacklistedFeatures();
+  type = IgnoreGpuFeatures(type);
   EXPECT_EQ(type, content::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS);
 
   const FilePath url(FILE_PATH_LITERAL("feature_canvas2d.html"));
