@@ -509,7 +509,7 @@ TEST_F(WebRTCAudioDeviceTest, FullDuplexAudioWithAGC) {
   LOG(INFO) << ">> You should now be able to hear yourself in loopback...";
   message_loop_.PostDelayedTask(FROM_HERE,
                                 MessageLoop::QuitClosure(),
-                                TestTimeouts::action_timeout());
+                                base::TimeDelta::FromSeconds(2));
   message_loop_.Run();
 
   EXPECT_EQ(0, base->StopSend(ch));
