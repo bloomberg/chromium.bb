@@ -1323,6 +1323,16 @@ void LocationBarView::PaintActionBoxBackground(gfx::Canvas* canvas,
 }
 
 void LocationBarView::PaintPageActionBackgrounds(gfx::Canvas* canvas) {
+  TabContents* tab_contents = GetTabContents();
+  // tab_contents may be NULL while the browser is shutting down.
+  if (tab_contents == NULL)
+    return;
+
+  const int32 tab_id = SessionID::IdForTab(tab_contents->web_contents());
+  const ToolbarModel::SecurityLevel security_level = model_->GetSecurityLevel();
+  const SkColor text_color = GetColor(security_level, TEXT);
+  const SkColor background_color = GetColor(security_level, BACKGROUND);
+
   for (PageActionViews::const_iterator
            page_action_view = page_action_views_.begin();
        page_action_view != page_action_views_.end();
@@ -1338,12 +1348,9 @@ void LocationBarView::PaintPageActionBackgrounds(gfx::Canvas* canvas) {
     // paddings, the +1 is dropped, which is right since there is no pixel at
     // the mid-point.
     bounds.Inset(-(horizontal_padding + 1) / 2, 0);
-    ToolbarModel::SecurityLevel security_level = model_->GetSecurityLevel();
     location_bar_util::PaintExtensionActionBackground(
         *(*page_action_view)->image_view()->page_action(),
-        SessionID::IdForTab(GetTabContents()->web_contents()),
-        canvas, bounds,
-        GetColor(security_level, TEXT), GetColor(security_level, BACKGROUND));
+        tab_id, canvas, bounds, text_color, background_color);
   }
 }
 
