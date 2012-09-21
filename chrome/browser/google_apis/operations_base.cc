@@ -150,7 +150,8 @@ UrlFetchOperationBase::UrlFetchOperationBase(OperationRegistry* registry,
                                              const FilePath& path)
     : OperationRegistry::Operation(registry, type, path),
       re_authenticate_count_(0),
-      save_temp_file_(false) {
+      save_temp_file_(false),
+      started_(false) {
 }
 
 UrlFetchOperationBase::~UrlFetchOperationBase() {}
