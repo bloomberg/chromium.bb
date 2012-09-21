@@ -77,7 +77,7 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallThreadCaptureFault):
   /*
    * Store the untrusted fpscr state and load the trusted fpscr into r2.
    */
-  vmrs ip, fpscr
+  fmrx ip, fpscr
   str ip, [r1, #NACL_THREAD_CONTEXT_OFFSET_FPSCR]
   ldr r2, [r1, #NACL_THREAD_CONTEXT_OFFSET_SYS_FPSCR]
 
@@ -85,7 +85,7 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallThreadCaptureFault):
   ldr  sp, [r1, #NACL_THREAD_CONTEXT_OFFSET_TRUSTED_STACK_PTR]
 
   /* Restore the trusted fpscr. */
-  vmsr fpscr, r2
+  fmxr fpscr, r2
 
   bl  NaClSyscallCSegHook
 

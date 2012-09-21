@@ -63,7 +63,7 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSwitch):
 /*
  * Restore the untrusted code's fpscr state.
  */
-  vmsr fpscr, ip
+  fmxr fpscr, ip
 
   ldmia r0!, NACL_CALLEE_SAVE_LIST
   add r0, #4  /* skip prog_ctr in struct NaClThreadContext */

@@ -47,7 +47,7 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
    * Save the system's state of the FPSCR so we can restore
    * the same state when returning to trusted code.
    */
-  __asm__ __volatile__("vmrs %0, fpscr" : "=r" (ntcp->sys_fpscr));
+  __asm__ __volatile__("fmrx %0, fpscr" : "=r" (ntcp->sys_fpscr));
 
   NaClLog(4, "user.tls_idx: 0x%08"NACL_PRIxNACL_REG"\n", tls_idx);
   NaClLog(4, "user.stack_ptr: 0x%08"NACL_PRIxNACL_REG"\n", ntcp->stack_ptr);
