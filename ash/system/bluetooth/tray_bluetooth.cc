@@ -46,7 +46,7 @@ class BluetoothDefaultView : public TrayItemMore {
     if (delegate->GetBluetoothAvailable()) {
       ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
       SetLabel(rb.GetLocalizedString(delegate->GetBluetoothEnabled() ?
-          IDS_ASH_STATUS_TRAY_BLUETOOTH_CONNECTED :
+          IDS_ASH_STATUS_TRAY_BLUETOOTH_ENABLED :
           IDS_ASH_STATUS_TRAY_BLUETOOTH_DISABLED));
       SetVisible(true);
     } else {
