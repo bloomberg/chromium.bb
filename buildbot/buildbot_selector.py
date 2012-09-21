@@ -15,9 +15,9 @@ BOT_ASSIGNMENT = {
     # Buildbots.
     ######################################################################
     'xp-newlib-opt':
-        python + ' buildbot\\buildbot_standard.py opt 32 newlib',
+        python + ' buildbot\\buildbot_standard.py opt 32 newlib --no-gyp',
     'xp-glibc-opt':
-        python + ' buildbot\\buildbot_standard.py opt 32 glibc',
+        python + ' buildbot\\buildbot_standard.py opt 32 glibc --no-gyp',
     'vista-64-newlib-dbg':
         python + ' buildbot\\buildbot_standard.py dbg 64 newlib',
     'vista-64-newlib-opt':
@@ -27,9 +27,9 @@ BOT_ASSIGNMENT = {
     'win7-64-glibc-opt':
         python + ' buildbot\\buildbot_standard.py opt 64 glibc',
     'xp-bare-newlib-opt':
-        python + ' buildbot\\buildbot_standard.py opt 32 newlib',
+        python + ' buildbot\\buildbot_standard.py opt 32 newlib --no-gyp',
     'xp-bare-glibc-opt':
-        python + ' buildbot\\buildbot_standard.py opt 32 glibc',
+        python + ' buildbot\\buildbot_standard.py opt 32 glibc --no-gyp',
     'win7-32-bare-newlib-opt':
         python + ' buildbot\\buildbot_standard.py opt 32 newlib',
     'win7-32-bare-glibc-opt':
@@ -139,9 +139,9 @@ BOT_ASSIGNMENT = {
     # Trybots.
     ######################################################################
     'nacl-win32_newlib_opt':
-        python + ' buildbot\\buildbot_standard.py opt 32 newlib',
+        python + ' buildbot\\buildbot_standard.py opt 32 newlib --no-gyp',
     'nacl-win32_glibc_opt':
-        python + ' buildbot\\buildbot_standard.py opt 32 glibc',
+        python + ' buildbot\\buildbot_standard.py opt 32 glibc --no-gyp',
     'nacl-win64_newlib_dbg':
         python + ' buildbot\\buildbot_standard.py dbg 64 newlib',
     'nacl-win64_newlib_opt':

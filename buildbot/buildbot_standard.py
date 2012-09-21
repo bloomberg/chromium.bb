@@ -300,8 +300,9 @@ def BuildScript(status, context):
     Command(context, cmd=[sys.executable, 'tools/checkdeps/checkdeps.py'])
 
   # Make sure our Gyp build is working.
-  with Step('gyp_compile', status):
-    CommandGypBuild(context)
+  if not context['no_gyp']:
+    with Step('gyp_compile', status):
+      CommandGypBuild(context)
 
   # The main compile step.
   with Step('scons_compile', status):
@@ -337,18 +338,19 @@ def BuildScript(status, context):
 
   ### END tests ###
 
-  # Build with ragel-based validator using GYP.
-  gyp_defines_save = context.GetEnv('GYP_DEFINES')
-  context.SetEnv('GYP_DEFINES',
-                 ' '.join([gyp_defines_save, 'nacl_validator_ragel=1']))
-  with Step('gyp_compile_ragel', status):
-    # Clobber GYP build to recompile necessary files with new preprocessor macro
-    # definitions.  It is done because some build systems (such as GNU Make,
-    # MSBuild etc.) do not consider compiler arguments as a dependency.
-    RemoveGypBuildDirectories()
-    CommandGclientRunhooks(context)
-    CommandGypBuild(context)
-  context.SetEnv('GYP_DEFINES', gyp_defines_save)
+  if not context['no_gyp']:
+    # Build with ragel-based validator using GYP.
+    gyp_defines_save = context.GetEnv('GYP_DEFINES')
+    context.SetEnv('GYP_DEFINES',
+                   ' '.join([gyp_defines_save, 'nacl_validator_ragel=1']))
+    with Step('gyp_compile_ragel', status):
+      # Clobber GYP build to recompile necessary files with new preprocessor macro
+      # definitions.  It is done because some build systems (such as GNU Make,
+      # MSBuild etc.) do not consider compiler arguments as a dependency.
+      RemoveGypBuildDirectories()
+      CommandGclientRunhooks(context)
+      CommandGypBuild(context)
+    context.SetEnv('GYP_DEFINES', gyp_defines_save)
 
   # Build with ragel-based validator using scons.
   with Step('scons_compile_ragel', status):

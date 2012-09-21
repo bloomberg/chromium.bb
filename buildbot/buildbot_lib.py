@@ -51,6 +51,8 @@ def ParseStandardCommandLine(context):
                     action='store_true', help='Build trusted code with ASan.')
   parser.add_option('--step-suffix', metavar='SUFFIX', default='',
                     help='Append SUFFIX to buildbot step names.')
+  parser.add_option('--no-gyp', dest='no_gyp', default=False,
+                    action='store_true', help='Do not run the gyp build')
 
   options, args = parser.parse_args()
 
@@ -94,6 +96,7 @@ def ParseStandardCommandLine(context):
   context['dry_run'] = options.dry_run
   context['inside_toolchain'] = options.inside_toolchain
   context['step_suffix'] = options.step_suffix
+  context['no_gyp'] = options.no_gyp
 
   for key, value in sorted(context.config.items()):
     print '%s=%s' % (key, value)
