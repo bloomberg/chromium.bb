@@ -16,8 +16,8 @@ def find_user(helper, username):
             for domain in ("google.com", "chromium.org")]
   owners = ["owner:%s" % x for x in emails]
   try:
-    helper.Query("( %s ) limit 0" % " OR ".join(owners))
-    return owners
+    helper.Query('( %s ) limit:0' % ' OR '.join(owners))
+    return emails
   except gerrit_helper.GerritException:
     # find the offender.
     pass
