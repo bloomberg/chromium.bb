@@ -1757,18 +1757,20 @@ class ArchiveStage(BoardSpecificBuilderStage):
       upload_queue.put([filename])
 
     def PushImage():
+      # This helper script is only available on internal manifests currently.
+      if not config['internal']:
+        return
+
       # Now that all data has been generated, we can upload the final result to
       # the image server.
       # TODO: When we support branches fully, the friendly name of the branch
       # needs to be used with PushImages
-      if config['push_image']:
-        commands.PushImages(buildroot,
-                            board=board,
-                            branch_name='master',
-                            archive_url=upload_url,
-                            dryrun=debug,
-                            profile=self._options.profile or config['profile'])
-
+      commands.PushImages(buildroot,
+                          board=board,
+                          branch_name='master',
+                          archive_url=upload_url,
+                          dryrun=debug or not config['push_image'],
+                          profile=self._options.profile or config['profile'])
 
     def ArchiveReleaseArtifacts(num_upload_processes=10):
       with bg_task_runner(release_upload_queue, UploadArtifact,
