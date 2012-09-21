@@ -163,6 +163,9 @@ void ScreenshotSource::CacheAndSendScreenshot(
     const std::string& screenshot_path,
     int request_id,
     ScreenshotDataPtr bytes) {
-  cached_screenshots_[screenshot_path] = bytes;
+  // Strip the query from the screenshot path.
+  std::string path = screenshot_path.substr(
+      0, screenshot_path.find_first_of("?"));
+  cached_screenshots_[path] = bytes;
   SendResponse(request_id, new base::RefCountedBytes(*bytes));
 }

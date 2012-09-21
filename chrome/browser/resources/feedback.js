@@ -37,7 +37,7 @@ function selectImage(divId, thumbnailId) {
     // or there is no thumbnail id given, and we're at the first thumbnail.
     if (thumbnailDivs[i].id == thumbnailId || (!thumbnailId && !i)) {
       thumbnailDivs[i].classList.add('image-thumbnail-container-selected');
-      selectedThumbnailId = thumbnailId;
+      selectedThumbnailId = thumbnailDivs[i].id;
       savedThumbnailIds[divId] = thumbnailId;
     }
   }
