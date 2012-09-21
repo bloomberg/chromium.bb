@@ -43,13 +43,11 @@ void BeforeInitialize(bool unit_test_mode) {
   // loading and complaining the non-exsistent /etc/xml/catalog file.
   setenv("XML_CATALOG_FILES", "", 0);
 
-  // For now TestWebKitAPI and webkit_unit_tests are standalone executables
-  // which don't have Java capabilities. Init Java for only DumpRenderTree.
-  if (!unit_test_mode) {
-    JNIEnv* env = base::android::AttachCurrentThread();
+  JNIEnv* env = base::android::AttachCurrentThread();
+  net::android::RegisterNetworkLibrary(env);
+
+  if (!unit_test_mode)
     media::MediaPlayerListener::RegisterMediaPlayerListener(env);
-    net::android::RegisterNetworkLibrary(env);
-  }
 }
 
 void AfterInitialize(bool unit_test_mode) {
