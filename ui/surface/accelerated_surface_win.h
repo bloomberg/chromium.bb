@@ -79,19 +79,6 @@ class SURFACE_EXPORT AcceleratedPresenter
   bool DoRealPresent(HDC dc);
   void DoReleaseSurface();
 
-  // This gets the timestamp and period of the display's last vsync.
-  // The period is represented as a ratio which, when divided, will give you
-  // the interval in seconds. i.e.:
-  // inteval_in_seconds = interval_numerator / interval_denominator;
-  // For example, some machines will return an interval_numerator of 1001
-  // and an interval_denominator of 60000, resulting in an interval of
-  // 1001/60000 ~= .016683 seconds
-  // Note: This function assumes lock_ is acquired.
-  // Returns true on success.
-  bool GetPresentationStats(base::TimeTicks* timebase,
-                            uint32* interval_numerator,
-                            uint32* interval_denominator);
-
   // The thread with which this presenter has affinity.
   PresentThread* const present_thread_;
 
@@ -123,6 +110,8 @@ class SURFACE_EXPORT AcceleratedPresenter
   // are used so it is possible to represent it to quickly validate the window.
   base::win::ScopedComPtr<IDirect3DSwapChain9> swap_chain_;
 
+  // Whether the window is hidden or has not been presented to since it was
+  // last hidden.
   bool hidden_;
 
   DISALLOW_COPY_AND_ASSIGN(AcceleratedPresenter);

@@ -840,18 +840,6 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
 
   present_size_ = size;
 
-  // Wait for the StretchRect to complete before notifying the GPU process
-  // that it is safe to write to its backing store again.
-  {
-    TRACE_EVENT0("gpu", "spin");
-    do {
-      hr = present_thread_->query()->GetData(NULL, 0, D3DGETDATA_FLUSH);
-
-      if (hr == S_FALSE)
-        Sleep(1);
-    } while (hr == S_FALSE);
-  }
-
   static const base::TimeDelta swap_delay = GetSwapDelay();
   if (swap_delay.ToInternalValue())
     base::PlatformThread::Sleep(swap_delay);
@@ -867,30 +855,55 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
     }
   }
 
-  // Disable call to DwmGetCompositionTimingInfo until we figure out why it
-  // causes a flicker of the last software window during tab switch and
-  // navigate. crbug.com/143854
-#if 0
-  {
-    TRACE_EVENT0("gpu", "GetPresentationStats");
-    base::TimeTicks timebase;
-    base::TimeDelta interval;
-    uint32 numerator = 0, denominator = 0;
-    if (GetPresentationStats(&timebase, &numerator, &denominator) &&
-        numerator > 0 && denominator > 0) {
-      int64 interval_micros =
-          1000000 * static_cast<int64>(numerator) / denominator;
-      interval = base::TimeDelta::FromMicroseconds(interval_micros);
-    }
-    scoped_completion_runner.Release();
-    completion_task.Run(true, timebase, interval);
-    TRACE_EVENT2("gpu", "GetPresentationStats",
-                 "timebase", timebase.ToInternalValue(),
-                 "interval", interval.ToInternalValue());
-  }
-#endif
-
   hidden_ = false;
+
+  D3DDISPLAYMODE display_mode;
+  hr = present_thread_->device()->GetDisplayMode(0, &display_mode);
+  if (FAILED(hr))
+    return;
+
+  D3DRASTER_STATUS raster_status;
+  hr = swap_chain_->GetRasterStatus(&raster_status);
+  if (FAILED(hr))
+    return;
+
+  // I can't figure out how to determine how many scanlines are in the
+  // vertical blank so clamp it such that scanline / height <= 1.
+  int clamped_scanline = std::min(raster_status.ScanLine, display_mode.Height);
+
+  // The Internet says that on some GPUs, the scanline is not available
+  // while in the vertical blank.
+  if (raster_status.InVBlank)
+    clamped_scanline = display_mode.Height;
+
+  base::TimeTicks current_time = base::TimeTicks::HighResNow();
+
+  // Figure out approximately how far back in time the last vsync was based on
+  // the ratio of the raster scanline to the display height.
+  base::TimeTicks last_vsync_time;
+  base::TimeDelta refresh_period;
+  if (display_mode.Height) {
+      last_vsync_time = current_time -
+        base::TimeDelta::FromMilliseconds((clamped_scanline * 1000) /
+            (display_mode.RefreshRate * display_mode.Height));
+      refresh_period = base::TimeDelta::FromMicroseconds(
+          1000000 / display_mode.RefreshRate);
+  }
+
+  // Wait for the StretchRect to complete before notifying the GPU process
+  // that it is safe to write to its backing store again.
+  {
+    TRACE_EVENT0("gpu", "spin");
+    do {
+      hr = present_thread_->query()->GetData(NULL, 0, D3DGETDATA_FLUSH);
+
+      if (hr == S_FALSE)
+        Sleep(1);
+    } while (hr == S_FALSE);
+  }
+
+  scoped_completion_runner.Release();
+  completion_task.Run(true, last_vsync_time, refresh_period);
 }
 
 void AcceleratedPresenter::DoSuspend() {
@@ -901,29 +914,6 @@ void AcceleratedPresenter::DoSuspend() {
 void AcceleratedPresenter::DoReleaseSurface() {
   base::AutoLock locked(lock_);
   source_texture_.Release();
-}
-
-bool AcceleratedPresenter::GetPresentationStats(base::TimeTicks* timebase,
-                                                uint32* interval_numerator,
-                                                uint32* interval_denominator) {
-  lock_.AssertAcquired();
-
-  DWM_TIMING_INFO timing_info;
-  timing_info.cbSize = sizeof(timing_info);
-  HRESULT result = DwmGetCompositionTimingInfo(window_, &timing_info);
-  if (result != S_OK)
-    return false;
-
-  *timebase = base::TimeTicks::FromQPCValue(
-      static_cast<LONGLONG>(timing_info.qpcVBlank));
-  // Offset from QPC-space to TimeTicks::Now-space.
-  *timebase += (base::TimeTicks::Now() - base::TimeTicks::HighResNow());
-
-  // Swap the numerator/denominator to convert frequency to period.
-  *interval_numerator = timing_info.rateRefresh.uiDenominator;
-  *interval_denominator = timing_info.rateRefresh.uiNumerator;
-
-  return true;
 }
 
 AcceleratedSurface::AcceleratedSurface(gfx::PluginWindowHandle window)
