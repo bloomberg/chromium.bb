@@ -11,13 +11,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/command_updater.h"
-#include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/base_window.h"
 #include "chrome/browser/ui/panels/panel_constants.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "ui/gfx/image/image.h"
 #include "ui/gfx/rect.h"
 
 class GURL;
@@ -33,8 +31,11 @@ struct NativeWebKeyboardEvent;
 }
 
 namespace extensions {
-class Extension;
 class WindowController;
+}
+
+namespace gfx {
+class Image;
 }
 
 // A platform independent implementation of BaseWindow for Panels.
@@ -48,8 +49,7 @@ class WindowController;
 //   other Panels. For example deleting a panel would rearrange other panels.
 class Panel : public BaseWindow,
               public CommandUpdater::CommandUpdaterDelegate,
-              public content::NotificationObserver,
-              public ImageLoadingTracker::Observer {
+              public content::NotificationObserver {
  public:
   enum ExpansionState {
     // The panel is fully expanded with both title-bar and the client-area.
@@ -77,7 +77,6 @@ class Panel : public BaseWindow,
   PanelManager* manager() const;
 
   const std::string& app_name() const { return app_name_; }
-  const gfx::Image& app_icon() const { return app_icon_; }
   const SessionID& session_id() const { return session_id_; }
   extensions::WindowController* extension_window_controller() const {
     return extension_window_controller_.get();
@@ -310,21 +309,11 @@ class Panel : public BaseWindow,
     CUSTOM_MAX_SIZE
   };
 
-  // ImageLoadingTracker::Observer implementation.
-  virtual void OnImageLoaded(const gfx::Image& image,
-                             const std::string& extension_id,
-                             int index) OVERRIDE;
-
   // Initialize state for all supported commands.
   void InitCommandState();
 
   // Configures the renderer for auto resize (if auto resize is enabled).
   void ConfigureAutoResize(content::WebContents* web_contents);
-
-  const extensions::Extension* GetExtension() const;
-
-  // Load the app's image, firing a load state change when loaded.
-  void UpdateAppIcon();
 
   // Prepares a title string for display (removes embedded newlines, etc).
   static void FormatTitleForDisplay(string16* title);
@@ -379,12 +368,6 @@ class Panel : public BaseWindow,
   const SessionID session_id_;
   scoped_ptr<extensions::WindowController> extension_window_controller_;
   scoped_ptr<PanelHost> panel_host_;
-
-  // Used for loading app_icon_.
-  scoped_ptr<ImageLoadingTracker> app_icon_loader_;
-
-  // Icon showed in the task bar.
-  gfx::Image app_icon_;
 
   DISALLOW_COPY_AND_ASSIGN(Panel);
 };

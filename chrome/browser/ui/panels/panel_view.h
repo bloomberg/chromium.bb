@@ -112,7 +112,6 @@ class PanelView : public NativePanel,
   virtual views::Widget* GetWidget() OVERRIDE;
   virtual const views::Widget* GetWidget() const OVERRIDE;
   virtual string16 GetWindowTitle() const OVERRIDE;
-  virtual gfx::ImageSkia GetWindowAppIcon() OVERRIDE;
   virtual gfx::ImageSkia GetWindowIcon() OVERRIDE;
   virtual void DeleteDelegate() OVERRIDE;
   virtual void OnWindowBeginUserBoundsChange() OVERRIDE;
