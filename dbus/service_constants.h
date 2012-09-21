@@ -644,6 +644,8 @@ const char kSetCarrierFunction[] = "SetCarrier";
 const char kReceiveByteCountProperty[] = "ReceiveByteCount";
 const char kTransmitByteCountProperty[] = "TransmitByteCount";
 const char kLinkMonitorResponseTimeProperty[] = "LinkMonitorResponseTime";
+const char kProviderRequiresRoamingProperty[] =
+    "Cellular.ProviderRequiresRoaming";
 const char kSupportedCarriersProperty[] = "Cellular.SupportedCarriers";
 
 // IPConfig property names.
