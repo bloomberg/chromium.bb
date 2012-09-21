@@ -61,12 +61,14 @@ class DefaultTransportFactory
 
   virtual scoped_refptr<ui::Texture> CreateTransportClient(
       const gfx::Size& size,
+      float device_scale_factor,
       uint64 transport_handle) OVERRIDE {
     return NULL;
   }
 
   virtual scoped_refptr<ui::Texture> CreateOwnedTexture(
       const gfx::Size& size,
+      float device_scale_factor,
       unsigned int texture_id) OVERRIDE {
     return NULL;
   }
@@ -97,8 +99,9 @@ class ImageTransportClientTexture : public ui::Texture {
   ImageTransportClientTexture(
       WebKit::WebGraphicsContext3D* host_context,
       const gfx::Size& size,
+      float device_scale_factor,
       uint64 surface_id)
-          : ui::Texture(true, size),
+          : ui::Texture(true, size, device_scale_factor),
             host_context_(host_context) {
     set_texture_id(surface_id);
   }
@@ -123,8 +126,9 @@ class OwnedTexture : public ui::Texture, ImageTransportFactoryObserver {
  public:
   OwnedTexture(WebKit::WebGraphicsContext3D* host_context,
                const gfx::Size& size,
+               float device_scale_factor,
                unsigned int texture_id)
-      : ui::Texture(true, size),
+      : ui::Texture(true, size, device_scale_factor),
         host_context_(host_context) {
     ImageTransportFactory::GetInstance()->AddObserver(this);
     set_texture_id(texture_id);
@@ -281,22 +285,26 @@ class GpuProcessTransportFactory :
 
   virtual scoped_refptr<ui::Texture> CreateTransportClient(
       const gfx::Size& size,
+      float device_scale_factor,
       uint64 transport_handle) {
     if (!shared_context_.get())
         return NULL;
     scoped_refptr<ImageTransportClientTexture> image(
         new ImageTransportClientTexture(shared_context_.get(),
-                                        size, transport_handle));
+                                        size, device_scale_factor,
+                                        transport_handle));
     return image;
   }
 
   virtual scoped_refptr<ui::Texture> CreateOwnedTexture(
       const gfx::Size& size,
+      float device_scale_factor,
       unsigned int texture_id) OVERRIDE {
     if (!shared_context_.get())
         return NULL;
     scoped_refptr<OwnedTexture> image(
-        new OwnedTexture(shared_context_.get(), size, texture_id));
+        new OwnedTexture(shared_context_.get(), size, device_scale_factor,
+                         texture_id));
     return image;
   }
 

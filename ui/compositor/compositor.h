@@ -94,12 +94,13 @@ class COMPOSITOR_EXPORT DefaultContextFactory : public ContextFactory {
 // to a layer.
 class COMPOSITOR_EXPORT Texture : public base::RefCounted<Texture> {
  public:
-  Texture(bool flipped, const gfx::Size& size);
+  Texture(bool flipped, const gfx::Size& size, float device_scale_factor);
 
   unsigned int texture_id() const { return texture_id_; }
   void set_texture_id(unsigned int id) { texture_id_ = id; }
   bool flipped() const { return flipped_; }
   gfx::Size size() const { return size_; }
+  float device_scale_factor() const { return device_scale_factor_; }
   virtual WebKit::WebGraphicsContext3D* HostContext3D() = 0;
 
  protected:
@@ -111,6 +112,7 @@ class COMPOSITOR_EXPORT Texture : public base::RefCounted<Texture> {
   unsigned int texture_id_;
   bool flipped_;
   gfx::Size size_;  // in pixel
+  float device_scale_factor_;
 
   DISALLOW_COPY_AND_ASSIGN(Texture);
 };

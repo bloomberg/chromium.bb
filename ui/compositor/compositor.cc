@@ -125,10 +125,11 @@ WebKit::WebGraphicsContext3D* DefaultContextFactory::CreateContextCommon(
   return context;
 }
 
-Texture::Texture(bool flipped, const gfx::Size& size)
+Texture::Texture(bool flipped, const gfx::Size& size, float device_scale_factor)
     : texture_id_(0),
       flipped_(flipped),
-      size_(size) {
+      size_(size),
+      device_scale_factor_(device_scale_factor) {
 }
 
 Texture::~Texture() {

@@ -262,6 +262,7 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
       text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
       can_compose_inline_(true),
       has_composition_text_(false),
+      device_scale_factor_(1.0f),
       current_surface_(0),
       current_surface_is_protected_(true),
       current_surface_in_use_by_compositor_(true),
@@ -926,7 +927,8 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceNew(
       uint64 surface_handle) {
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
   scoped_refptr<ui::Texture> surface(factory->CreateTransportClient(
-      gfx::Size(width_in_pixel, height_in_pixel), surface_handle));
+      gfx::Size(width_in_pixel, height_in_pixel), device_scale_factor_,
+      surface_handle));
   if (!surface) {
     LOG(ERROR) << "Failed to create ImageTransport texture";
     return;
@@ -1349,6 +1351,7 @@ void RenderWidgetHostViewAura::OnDeviceScaleFactorChanged(
   if (!host_)
     return;
 
+  device_scale_factor_ = device_scale_factor;
   BackingStoreAura* backing_store = static_cast<BackingStoreAura*>(
       host_->GetBackingStore(false));
   if (backing_store)  // NULL in hardware path.
@@ -1410,7 +1413,8 @@ scoped_refptr<ui::Texture> RenderWidgetHostViewAura::CopyTexture() {
     return scoped_refptr<ui::Texture>();
 
   return scoped_refptr<ui::Texture>(
-      factory->CreateOwnedTexture(container->size(), texture_id));
+      factory->CreateOwnedTexture(
+          container->size(), device_scale_factor_, texture_id));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -749,10 +749,12 @@ void Layer::RecomputeDrawsContentAndUVRect() {
     DCHECK(texture_);
 
     gfx::Size texture_size;
-    if (scale_content_)
+    if (scale_content_) {
       texture_size = texture_->size();
-    else
-      texture_size = ConvertSizeToDIP(this, texture_->size());
+    } else {
+      texture_size =
+          texture_->size().Scale(1.0f / texture_->device_scale_factor());
+    }
 
     gfx::Size size(std::min(bounds().width(), texture_size.width()),
                    std::min(bounds().height(), texture_size.height()));

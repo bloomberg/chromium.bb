@@ -135,7 +135,7 @@ class BenchCompositorObserver : public ui::CompositorObserver {
 class WebGLTexture : public ui::Texture {
  public:
   WebGLTexture(WebGraphicsContext3D* context, const gfx::Size& size)
-      : ui::Texture(false, size),
+      : ui::Texture(false, size, 1.0f),
         context_(context) {
     set_texture_id(context_->createTexture());
     context_->bindTexture(GL_TEXTURE_2D, texture_id());

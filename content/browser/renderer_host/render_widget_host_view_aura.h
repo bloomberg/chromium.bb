@@ -324,6 +324,9 @@ class RenderWidgetHostViewAura
   // Current tooltip text.
   string16 tooltip_;
 
+  // The scale factor of the display the renderer is currently on.
+  float device_scale_factor_;
+
   std::vector< base::Callback<void(ui::Compositor*)> >
       on_compositing_did_commit_callbacks_;
 
