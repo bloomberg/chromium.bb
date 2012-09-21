@@ -1,3 +1,8 @@
+2012-09-21  Christian Egli  <christian.egli@sbs.ch>
+
+	* tables/it-it-comp8.utb: More fixes to the italian table. Thanks
+	to Simone Dal Maso <simone.dalmaso@juvox.it>
+
 2012-09-06  Christian Egli  <christian.egli@sbs.ch>
 
 	* tests/Makefile.am (check_PROGRAMS):

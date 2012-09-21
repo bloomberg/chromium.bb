@@ -1,10 +1,11 @@
 # liblouis: Italiano 8 punti
 
-#  Copyright 2011 by Caterina Avoledo <catery81@yahoo.it> 
+#  Copyright (C) 2011 by Caterina Avoledo <catery81@yahoo.it>
+#  Copyright (C) 2012 by Simone Dal Maso <simone.dalmaso@juvox.it>
 
 #  This file is part of liblouis.
 #
-# liblouis is free software: you can redistribute it and/or modify it
+#  liblouis is free software: you can redistribute it and/or modify it
 #  under the terms of the GNU Lesser General Public License as
 #  published by the Free Software Foundation, either version 3 of the
 #  License, or (at your option) any later version.
@@ -104,35 +105,35 @@ sign  \x007F  456   #Delete
 
 space \x00A0 0				#no-break space
 punctuation \x00A1  367   #Inverted exclamation mark
-sign ¢ 58						#cent sign	x00A2
-sign £ 467					#pound sign		x00A3
-sign ¤ 4678					#currency sign	x00A4
-sign ¥ 468				#yen	sign			x00A5
+sign \x00A2  58						#cent sign
+sign \x00A3 467 		#pound sign
+sign \x00A4 4678 #Â¤ currency sign	x00A4
+sign \x00A5 468 #Â¥ yen	sign			x00A5
 sign  \x00A6  158   #Broken bar
-sign § 357				#paragraph sign	x00A7
+sign \x00A7 357 #Â§ paragraph sign	x00A7
 sign  \x00A8  48  #Diaeresis sign
-sign © 123468   #copyright			x00A9
+sign \x00A9 123468 #Â© copyright			x00A9
 sign  \x00AA  1258    #Feminine ordinal indicator
-punctuation « 5678		#left-pointing double quotation mark	x00AB
+punctuation \x00AB 5678 # Â«		#left-pointing double quotation mark	x00AB
 sign  \x00AC    25678   #Not sign
 sign  \x00AD  368   #Soft hyphen
 sign  \x00AE  12358   #Registered sign
 sign  \x00AF  458   #Macron sign
-sign ° 4568			#degree sign		x00B0
+sign \x00B0 4568 #Â° degree sign		x00B0
 sign  \x00B1    23578   #Plus-Minus sign
-sign ² 128				#superscript 2 sign	x00B2
-sign ³ 148				#superscript 3 sign	x00B3
+sign \x00B2 128 #Â² 				#superscript 2 sign	x00B2
+sign \x00B3 148 #Â³superscript 3 sign	x00B3
 sign \x00B4 568			#acute accent
-sign \x00B5 1348		#µ micro sign									x00B5
-sign \x00B6 1458		#¶ pilcrow sign								x00B6
+sign \x00B5 1348		#Âµ micro sign									x00B5
+sign \x00B6 1458		#Â¶ pilcrow sign								x00B6
 punctuation \x00B7  37    #Middle dot
 sign \x00B8 68    #Cedilla
-sign ¹ 18			#superscript 1 sign	x00B9
+sign \x00B9 18    #Â¹ superscript 1 sign	x00B9
 sign  \x00BA  2458    #Masculine ordinal indicator
-punctuation » 4578		#right-pointing double quotation mark		x00BB
-sign ¼ 1368		#vulgar fraction one quarter	x00BC
-sign ½ 12368		#vulgar fraction one half	x00BD
-sign ¾ 13468	#vulgar fraction 3 quarters	x00BE
+punctuation \x00BB 4578 #Â»right-pointing double quotation mark		x00BB
+sign \x00BC 1368 #Â¼ vulgar fraction one quarter	x00BC
+sign \x00BD 12368 #Â½vulgar fraction one half	x00BD
+sign \x00BE 13468 #Â¾ vulgar fraction 3 quarters	x00BE
 punctuation \x00BF  38    #Inverted question mark
 
 uppercase \x00C0 23678    #A with grave above
@@ -158,7 +159,7 @@ uppercase	\x00D3  2568    #O with acute
 uppercase \x00D4  14567   #O with circumflex
 uppercase \x00D5  267   #O with tilde
 uppercase \x00D6  358   #O with diaeresis
-math \x00d7  23468   #Multiplication sign \x00d7
+math \x00D7  23468   #Multiplication sign \x00d7
 uppercase \x00D8  2467    #O with stroke
 uppercase \x00D9 35678    #U with grave above
 uppercase \x00DA 268    #U with acute above
@@ -190,7 +191,7 @@ lowercase \x00F3 14568    #o with acute
 lowercase \x00F4  145678    #o with circumflex
 lowercase \x00F5  1358    #o with tilde
 lowercase \x00F6  2468    #o with diaeresis
-math \x00f7 125678    #division sign x00f7
+math \x00F7 125678    #division sign x00f7
 lowercase \x00F8  24678   #o with stroke
 lowercase \x00F9 234567			#u with grave above
 lowercase \x00FA 1568			#u with acute above
@@ -367,10 +368,20 @@ sign  \x2591  78    #Light shade
 sign  \x2592  3678    #Medium shade
 sign  \x2593  235678    #Dark shade
 sign  \x25A0  1234567   #Black square
-sign  \x25AA  35   #indented bullet
-sign  \x25B6  267   #Black right-pointing triangle
+sign  \x25AA  5678   #black small square
+sign  \x25B6  456-135   #Black right-pointing triangle
 sign  \x25CF  35    #Black circle
-sign  \x25E6  35    #Black circle
+sign  \x25E6  35    #White bullet
+sign  \x2665  56-146    #heart
+sign  \x2713  3678    #check mark
+sign  \x2714  235678    #Heavy check mark
+sign  \x2794  25-25-135    #right arrow
+sign  \x2190  25-25-246    #left arrow
+sign  \x2192  25-25-246    #left arrow
+sign  \x25B7  456-135    #white right-pointing triangle
+sign  \xF0B7  35    #bullet
+sign  \xFB00  124-124    #latin small ligature
+
 
 #--- Unicode Greek
 sign	\x0374	3456	#GREEK UPPER NUMERAL SIGN Dexia keraia
