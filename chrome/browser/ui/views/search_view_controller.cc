@@ -393,10 +393,6 @@ void SearchViewController::SetState(State state) {
     case STATE_NTP:
       DestroyViews();
       CreateViews(state);
-      // In |CreateViews|, the main web contents view was reparented, so force
-      // a search re-layout by |toolbar_view_| to re-position the omnibox per
-      // the new bounds of web contents view.
-      toolbar_view_->LayoutForSearch();
       break;
 
     case STATE_NTP_ANIMATING:
@@ -411,6 +407,15 @@ void SearchViewController::SetState(State state) {
       break;
   }
   state_ = state;
+
+  // In |CreateViews|, the main web contents view was reparented, so for
+  // |STATE_NTP| and |STATE_NTP_LOADING|, force a search re-layout by
+  // |toolbar_view_| to re-position the omnibox per the new bounds of web
+  // contents view.
+  // Note: call |LayoutForSearch()| after |state_| has been updated, because
+  // the former calls |GetNTPOmniboxBounds()| which accesses the latter.
+  if (state_ == STATE_NTP_LOADING || state_ == STATE_NTP)
+    toolbar_view_->LayoutForSearch();
 }
 
 void SearchViewController::StartAnimation() {
