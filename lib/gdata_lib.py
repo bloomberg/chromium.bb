@@ -264,6 +264,13 @@ class Issue(object):
 
     return comments
 
+  def __eq__(self, other):
+    return (self.id == other.id and self.labels == other.labels and
+            self.owner == other.owner and self.status == other.status and
+            self.summary == other.summary and self.title == other.title)
+
+  def __ne__(self, other):
+    return not self == other
 
 class TrackerError(RuntimeError):
   """Error class for tracker communication errors."""
@@ -307,6 +314,19 @@ class TrackerComm(object):
     self.author = creds.user
     self.it_client = it_client
 
+  def _QueryTracker(self, query):
+    """Query the tracker for a list of issues. Return |None| on failure."""
+    try:
+      return self.it_client.get_issues(self.project_name, query=query)
+    except gdata.client.RequestError:
+      return None
+
+  def _CreateIssue(self, t_issue):
+    """Create an Issue from a Tracker Issue."""
+    issue = Issue()
+    issue.InitFromTracker(t_issue, self.project_name)
+    return issue
+
   # TODO(mtennant): This method works today, but is not being actively used.
   # Leaving it in, because a logical use of the method is for to verify
   # that a Tracker issue in the package spreadsheet is open, and to add
@@ -315,17 +335,22 @@ class TrackerComm(object):
     """Get tracker issue given |tid| number.  Return Issue object if found."""
 
     query = gdata.projecthosting.client.Query(issue_id=str(tid))
-
-    try:
-      feed = self.it_client.get_issues(self.project_name, query=query)
-    except gdata.client.RequestError:
-      return None
+    feed = self._QueryTracker(query)
 
     if feed.entry:
-      issue = Issue()
-      issue.InitFromTracker(feed.entry[0], self.project_name)
-      return issue
+      return self._CreateIssue(feed.entry[0])
     return None
+
+  def GetTrackerIssuesByText(self, search_text, full_text=False):
+    """Find all Tracker Issues that contain the text search_text."""
+    if not full_text:
+      search_text = 'summary:' + search_text
+    query = gdata.projecthosting.client.Query(query=search_text)
+    feed = self._QueryTracker(query)
+    if feed:
+      return [self._CreateIssue(tissue) for tissue in feed.entry]
+    else:
+      return []
 
   def CreateTrackerIssue(self, issue):
     """Create a new issue in Tracker according to |issue|."""

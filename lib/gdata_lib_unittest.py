@@ -720,6 +720,17 @@ class IssueCommentTest(cros_test_lib.TestCase):
     self.assertEquals(title, ic.title)
     self.assertEquals(text, ic.text)
 
+def createTrackerIssue(id, labels, owner, status, content, title):
+  tissue = cros_test_lib.EasyAttr()
+  tissue.id = cros_test_lib.EasyAttr(
+      text='http://www/some/path/%d' % id)
+  tissue.label = [cros_test_lib.EasyAttr(text=l) for l in labels]
+  tissue.owner = cros_test_lib.EasyAttr(
+      username=cros_test_lib.EasyAttr(text=owner))
+  tissue.status = cros_test_lib.EasyAttr(text=status)
+  tissue.content = cros_test_lib.EasyAttr(text=content)
+  tissue.title = cros_test_lib.EasyAttr(text=title)
+  return tissue
 
 class IssueTest(cros_test_lib.MoxTestCase):
 
@@ -744,15 +755,9 @@ class IssueTest(cros_test_lib.MoxTestCase):
     tissue_content = 'The summary message'
     tissue_title = 'The Big Title'
 
-    tissue = cros_test_lib.EasyAttr()
-    tissue.id = cros_test_lib.EasyAttr(
-        text='http://www/some/path/%d' % tissue_id)
-    tissue.label = [cros_test_lib.EasyAttr(text=l) for l in tissue_labels]
-    tissue.owner = cros_test_lib.EasyAttr(
-        username=cros_test_lib.EasyAttr(text=tissue_owner))
-    tissue.status = cros_test_lib.EasyAttr(text=tissue_status)
-    tissue.content = cros_test_lib.EasyAttr(text=tissue_content)
-    tissue.title = cros_test_lib.EasyAttr(text=tissue_title)
+    tissue = createTrackerIssue(id=tissue_id, labels=tissue_labels,
+                                owner=tissue_owner, status=tissue_status,
+                                content=tissue_content, title=tissue_title)
 
     mocked_issue = self.mox.CreateMock(gdata_lib.Issue)
 
@@ -830,9 +835,9 @@ class TrackerCommTest(cros_test_lib.MoxOutputTestCase):
 
   def testGetTrackerIssueById(self):
     mocked_itclient = self.mox.CreateMock(gd_ph_client.ProjectHostingClient)
-    mocked_tcomm = self.mox.CreateMock(gdata_lib.TrackerComm)
-    mocked_tcomm.it_client = mocked_itclient
-    mocked_tcomm.project_name = 'TheProject'
+    tcomm = gdata_lib.TrackerComm()
+    tcomm.it_client = mocked_itclient
+    tcomm.project_name = 'TheProject'
 
     self.mox.StubOutClassWithMocks(gd_ph_client, 'Query')
     self.mox.StubOutClassWithMocks(gdata_lib, 'Issue')
@@ -850,8 +855,53 @@ class TrackerCommTest(cros_test_lib.MoxOutputTestCase):
     self.mox.ReplayAll()
 
     # Verify
-    gdata_lib.TrackerComm.GetTrackerIssueById(mocked_tcomm, issue_id)
+    issue = tcomm.GetTrackerIssueById(issue_id)
     self.mox.VerifyAll()
+    self.assertEquals(mocked_issue, issue)
+
+  def testGetTrackerIssuesByText(self):
+    author = 'TheAuthor'
+    project = 'TheProject'
+    text = "find me"
+
+    # Set up the fake tracker issue.
+    tissue_id = 1
+    tissue_labels = ['auto-filed']
+    tissue_owner = 'someone@chromium.org'
+    tissue_status = 'Available'
+    tissue_content = 'find me in body'
+    tissue_title = 'find me in title'
+
+    tissue = createTrackerIssue(id=tissue_id, labels=tissue_labels,
+                                owner=tissue_owner, status=tissue_status,
+                                content=tissue_content, title=tissue_title)
+
+    issue = gdata_lib.Issue(id=tissue_id, labels=tissue_labels,
+                            owner=tissue_owner, status=tissue_status,
+                            title=tissue_title, summary=tissue_content)
+
+    # This will get called as part of Issue.InitFromTracker.
+    self.mox.StubOutWithMock(gdata_lib.Issue, 'GetTrackerIssueComments')
+
+    mocked_itclient = self.mox.CreateMock(gd_ph_client.ProjectHostingClient)
+
+    tcomm = gdata_lib.TrackerComm()
+    tcomm.author = author
+    tcomm.it_client = mocked_itclient
+    tcomm.project_name = project
+
+    # We expect a Query instance to be passed into get_issues.
+    self.mox.StubOutClassWithMocks(gd_ph_client, 'Query')
+
+    mocked_query = gd_ph_client.Query(query='summary:'+text)
+    feed = cros_test_lib.EasyAttr(entry=[tissue])
+    mocked_itclient.get_issues(project, query=mocked_query).AndReturn(feed)
+    gdata_lib.Issue.GetTrackerIssueComments(1, project).AndReturn([])
+
+    self.mox.ReplayAll()
+
+    issues = tcomm.GetTrackerIssuesByText(text)
+    self.assertEquals(issues, [issue])
 
   def testCreateTrackerIssue(self):
     author = 'TheAuthor'
