@@ -4763,6 +4763,29 @@
         },
       ],
     }],
+    ['OS == "android"', {
+      'targets': [
+        {
+          'target_name': 'chromium_testshell_test_apk',
+          'type': 'none',
+          'dependencies': [
+            '../base/base.gyp:base',
+            '../base/base.gyp:base_java_test_support',
+            'chrome_java',
+            'chromium_testshell',
+            '../tools/android/forwarder/forwarder.gyp:forwarder',
+          ],
+          'variables': {
+            'package_name': 'chromium_testshell_test',
+            'apk_name': 'ChromiumTestShellTest',
+            'java_in_dir': './android/testshell/javatests',
+            'resource_dir': '../res',
+            'additional_input_paths': ['<!@(find android/javatests/src -name "*.java")', ],
+          },
+          'includes': [ '../build/java_apk.gypi' ],
+        },
+      ],
+    }],
     ['test_isolation_mode != "noop"', {
       'targets': [
         {

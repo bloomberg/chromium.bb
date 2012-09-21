@@ -39,9 +39,19 @@
       'target_name': 'chromium_testshell',
       'type': 'none',
       'dependencies': [
+        '../media/media.gyp:media_java',
+        'chrome.gyp:chrome_java',
         'chrome_android_paks',
         'libchromiumtestshell',
       ],
+      'variables': {
+        'package_name': 'chromium_testshell',
+        'apk_name': 'ChromiumTestShell',
+        'java_in_dir': 'android/testshell/java',
+        'resource_dir': '../res',
+        'native_libs_paths': [ '<(PRODUCT_DIR)/chromium_testshell/libs/<(android_app_abi)/libchromiumtestshell.so', ],
+        'additional_input_paths': [ '<@(chrome_android_pak_output_resources)', ],
+      },
       'actions': [
         {
           'action_name': 'copy_and_strip_so',
@@ -55,40 +65,8 @@
             '<@(_outputs)',
           ],
         },
-        {
-          'action_name': 'chromium_testshell_generate_apk',
-          'inputs': [
-            '<@(chrome_android_pak_output_resources)',
-            '<!@(find android/testshell/java/src -name "*.java")',
-            # TODO(dtrainor): Uncomment these once resources are added.
-            #'<!@(find android/testshell/java/res -name "*.png")',
-            #'<!@(find android/testshell/java/res -name "*.xml")',
-            '<(PRODUCT_DIR)/lib.java/chromium_base.jar',
-            '<(PRODUCT_DIR)/lib.java/chromium_net.jar',
-            '<(PRODUCT_DIR)/lib.java/chromium_media.jar',
-            '<(PRODUCT_DIR)/lib.java/chromium_content.jar',
-            '<(PRODUCT_DIR)/lib.java/chromium_chrome.jar',
-            '<(PRODUCT_DIR)/lib.java/chromium_web_contents_delegate_android.jar',
-            '<(PRODUCT_DIR)/chromium_testshell/libs/<(android_app_abi)/libchromiumtestshell.so'
-          ],
-          'outputs': [
-            '<(PRODUCT_DIR)/chromium_testshell/ChromiumTestShell-debug.apk',
-          ],
-          'action': [
-            'ant',
-            '-DPRODUCT_DIR=<(ant_build_out)',
-            '-DAPP_ABI=<(android_app_abi)',
-            '-DANDROID_SDK=<(android_sdk)',
-            '-DANDROID_SDK_ROOT=<(android_sdk_root)',
-            '-DANDROID_SDK_TOOLS=<(android_sdk_tools)',
-            '-DANDROID_SDK_VERSION=<(android_sdk_version)',
-            '-DANDROID_GDBSERVER=<(android_gdbserver)',
-            '-DCONFIGURATION_NAME=<(CONFIGURATION_NAME)',
-            '-buildfile',
-            '<(DEPTH)/chrome/android/testshell/java/chromium_testshell_apk.xml',
-          ],
-        },
       ],
+      'includes': [ '../build/java_apk.gypi', ],
     },
     {
       'target_name': 'chrome_android_core',

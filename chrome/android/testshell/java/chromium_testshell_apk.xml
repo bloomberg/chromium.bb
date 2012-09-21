@@ -11,33 +11,22 @@
   <import file="../../../../build/android/ant/common.xml"/>
 
   <property-value name="target.abi" value="${APP_ABI}"/>
-
-  <!-- Root directory for output -->
   <property-location name="out.dir" location="${PRODUCT_DIR}/chromium_testshell"
       check-exists="false"/>
-  <property name="resource.absolute.dir" value="res"/>
+  <property name="resource.absolute.dir" value="${RESOURCE_DIR}"/>
   <property name="gen.absolute.dir" value="${out.dir}/gen"/>
-
-  <!-- Standard directory for chromium_*.jars -->
-  <property-value name="lib.java.dir" value="${PRODUCT_DIR}/lib.java"/>
   <path id="native.libs.gdbserver">
     <fileset file="${android.gdbserver}"/>
   </path>
-  <!-- Specify directory for libchromiumtestshell.so so that it can be packaged by aapt -->
   <property name="native.libs.absolute.dir" location="${out.dir}/libs"/>
-  <!-- Specify assets dir, this allows both mmm and SDK builds to use same pak files.  -->
   <property-location name="asset.absolute.dir" location="${PRODUCT_DIR}/../assets/chrome"/>
-
-  <property name="version.code" value="16"/>
-  <property name="version.name" value="0.1 Developer Build"/>
+  <!-- Set the output directory for the final apk to the ${apks.dir}. -->
+  <property-location name="out.final.file"
+      location="${apks.dir}/${ant.project.name}-debug.apk"
+      check-exists="false"/>
 
   <path id="out.dex.jar.input.ref">
-    <pathelement location="${lib.java.dir}/chromium_base.jar"/>
-    <pathelement location="${lib.java.dir}/chromium_content.jar"/>
-    <pathelement location="${lib.java.dir}/chromium_media.jar"/>
-    <pathelement location="${lib.java.dir}/chromium_net.jar"/>
-    <pathelement location="${lib.java.dir}/chromium_chrome.jar"/>
-    <pathelement location="${lib.java.dir}/chromium_web_contents_delegate_android.jar"/>
+    <filelist files="${INPUT_JARS_PATHS}"/>
   </path>
 
   <!-- We expect PRODUCT_DIR to be set like the gyp var (e.g. $ROOT/out/Debug) -->

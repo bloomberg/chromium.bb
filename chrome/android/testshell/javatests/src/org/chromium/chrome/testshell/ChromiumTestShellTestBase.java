@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content_shell;
+package org.chromium.chrome.testshell;
 
 import android.content.ComponentName;
 import android.content.Intent;
@@ -10,24 +10,25 @@ import android.net.Uri;
 import android.test.ActivityInstrumentationTestCase2;
 
 /**
- * Base test class for all ContentShell based tests.
+ * Base test class for all ChromiumTestShell based tests.
  */
-public class ContentShellTestBase extends ActivityInstrumentationTestCase2<ContentShellActivity> {
+public class ChromiumTestShellTestBase extends
+        ActivityInstrumentationTestCase2<ChromiumTestShellActivity> {
 
-    public ContentShellTestBase() {
-        super(ContentShellActivity.class);
+    public ChromiumTestShellTestBase() {
+        super(ChromiumTestShellActivity.class);
     }
 
     /**
-     * Starts the ContentShell activity and loads the given URL.
+     * Starts the ChromiumTestShell activity and loads the given URL.
      */
-    protected ContentShellActivity launchContentShellWithUrl(String url) {
+    protected ChromiumTestShellActivity launchChromiumTestShellWithUrl(String url) {
         Intent intent = new Intent(Intent.ACTION_MAIN);
         intent.addCategory(Intent.CATEGORY_LAUNCHER);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.setData(Uri.parse(url));
         intent.setComponent(new ComponentName(getInstrumentation().getTargetContext(),
-              ContentShellActivity.class));
+                ChromiumTestShellActivity.class));
         setActivityIntent(intent);
         return getActivity();
     }
