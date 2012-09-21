@@ -47,6 +47,9 @@ class LauncherFaviconLoader : public content::WebContentsObserver {
   // available will return an isNull bitmap.
   SkBitmap GetFavicon() const;
 
+  // Returns true if the loader is waiting for downloads to finish.
+  bool HasPendingDownloads() const;
+
  private:
   // Message Handlers.
   void OnUpdateFaviconURL(int32 page_id,

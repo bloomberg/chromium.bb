@@ -46,6 +46,8 @@ class FaviconBitmapHandler {
                             int requested_size,
                             const std::vector<SkBitmap>& bitmaps);
 
+  bool HasPendingDownloads() const;
+
  private:
   void DownloadFavicon(const GURL& image_url);
   void AddFavicon(const GURL& image_url, const SkBitmap& new_bitmap);
@@ -132,6 +134,10 @@ void FaviconBitmapHandler::OnDidDownloadFavicon(
     AddFavicon(image_url, bitmaps[0]);
 }
 
+bool FaviconBitmapHandler::HasPendingDownloads() const {
+  return !pending_requests_.empty();
+}
+
 void FaviconBitmapHandler::AddFavicon(const GURL& image_url,
                                       const SkBitmap& new_bitmap) {
   processed_requests_.insert(image_url);
@@ -176,6 +182,10 @@ bool LauncherFaviconLoader::OnMessageReceived(const IPC::Message& message) {
 
 SkBitmap LauncherFaviconLoader::GetFavicon() const {
   return favicon_handler_->bitmap();
+}
+
+bool LauncherFaviconLoader::HasPendingDownloads() const {
+  return favicon_handler_->HasPendingDownloads();
 }
 
 void LauncherFaviconLoader::OnUpdateFaviconURL(

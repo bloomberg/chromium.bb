@@ -27,24 +27,20 @@ class ContentsObserver : public content::WebContentsObserver {
  public:
   explicit ContentsObserver(content::WebContents* web_contents)
       : content::WebContentsObserver(web_contents),
-        got_favicons_(false),
-        downloads_received_(0) {
+        got_favicons_(false) {
   }
 
   virtual ~ContentsObserver() {}
 
   bool got_favicons() const { return got_favicons_; }
-  int downloads_received() const { return downloads_received_; }
   void Reset() {
     got_favicons_ = false;
-    downloads_received_ = 0;
   }
 
   // content::WebContentsObserver overrides.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
     bool message_handled = false;   // Allow other handlers to receive these.
     IPC_BEGIN_MESSAGE_MAP(ContentsObserver, message)
-      IPC_MESSAGE_HANDLER(IconHostMsg_DidDownloadFavicon, OnDidDownloadFavicon)
       IPC_MESSAGE_HANDLER(IconHostMsg_UpdateFaviconURL, OnUpdateFaviconURL)
       IPC_MESSAGE_UNHANDLED(message_handled = false)
     IPC_END_MESSAGE_MAP()
@@ -54,55 +50,61 @@ class ContentsObserver : public content::WebContentsObserver {
  private:
   void OnUpdateFaviconURL(int32 page_id,
                           const std::vector<FaviconURL>& candidates) {
-    got_favicons_ = true;
-  }
-
-  void OnDidDownloadFavicon(int id,
-                            const GURL& image_url,
-                            bool errored,
-                            int requested_size,
-                            const std::vector<SkBitmap>& bitmaps) {
-    ++downloads_received_;
+    if (!candidates.empty())
+      got_favicons_ = true;
   }
 
   bool got_favicons_;
-  int downloads_received_;
 };
 
 }  // namespace
 
 class LauncherFaviconLoaderBrowsertest : public InProcessBrowserTest {
+ public:
+  LauncherFaviconLoaderBrowsertest()
+    : panel_browser_(NULL),
+      loader_(NULL),
+      contents_observer_(NULL) {
+  }
+
+  virtual ~LauncherFaviconLoaderBrowsertest() {
+  }
+
  protected:
-  void NavigateTo(Browser* browser, const char* url) {
+  void NavigateTo(const char* url) {
+    Browser* browser = GetPanelBrowser();
     std::string url_path = base::StringPrintf("files/ash/launcher/%s", url);
     ui_test_utils::NavigateToURL(browser, test_server()->GetURL(url_path));
   }
 
-  void CreatePanelBrowser(const char* url, Browser** result) {
-    Browser* panel_browser =  new Browser(
-        Browser::CreateParams::CreateForApp(
-            Browser::TYPE_PANEL, "Test Panel", gfx::Rect(),
-            browser()->profile()));
-    EXPECT_TRUE(panel_browser->is_type_panel());
-    ASSERT_EQ(static_cast<void*>(NULL), contents_observer_.get());
-    // Load initial tab contents before setting the observer.
-    ui_test_utils::NavigateToURL(panel_browser, GURL());
-    contents_observer_.reset(
-        new ContentsObserver(chrome::GetWebContentsAt(panel_browser, 0)));
-    NavigateTo(panel_browser, url);
-    *result = panel_browser;
+  Browser* GetPanelBrowser() {
+    if (!panel_browser_) {
+      panel_browser_ = new Browser(Browser::CreateParams::CreateForApp(
+          Browser::TYPE_PANEL, "Test Panel", gfx::Rect(),
+          browser()->profile()));
+      EXPECT_TRUE(panel_browser_->is_type_panel());
+      // Load initial tab contents before setting the observer.
+      ui_test_utils::NavigateToURL(panel_browser_, GURL());
+      EXPECT_FALSE(contents_observer_.get());
+      contents_observer_.reset(
+          new ContentsObserver(chrome::GetWebContentsAt(panel_browser_, 0)));
+    }
+    return panel_browser_;
   }
 
-  LauncherFaviconLoader* GetFaviconLoader(Browser* browser) {
-    BrowserView* browser_view = static_cast<BrowserView*>(browser->window());
-    BrowserLauncherItemController* launcher_item_controller =
-        browser_view->launcher_item_controller();
-    if (!launcher_item_controller)
-      return NULL;
-    EXPECT_EQ(BrowserLauncherItemController::TYPE_EXTENSION_PANEL,
-              launcher_item_controller->type());
-    LauncherFaviconLoader* loader = launcher_item_controller->favicon_loader();
-    return loader;
+  LauncherFaviconLoader* GetFaviconLoader() {
+    if (!loader_) {
+      Browser* browser = GetPanelBrowser();
+      BrowserView* browser_view = static_cast<BrowserView*>(browser->window());
+      BrowserLauncherItemController* launcher_item_controller =
+          browser_view->launcher_item_controller();
+      if (!launcher_item_controller)
+        return NULL;
+      EXPECT_EQ(BrowserLauncherItemController::TYPE_EXTENSION_PANEL,
+                launcher_item_controller->type());
+      loader_ = launcher_item_controller->favicon_loader();
+    }
+    return loader_;
   }
 
   void ResetDownloads() {
@@ -110,18 +112,21 @@ class LauncherFaviconLoaderBrowsertest : public InProcessBrowserTest {
     contents_observer_->Reset();
   }
 
-  bool WaitForFaviconDownlads(int expected) {
+  bool WaitForFaviconDownloads() {
+    LauncherFaviconLoader* loader = GetFaviconLoader();
+    if (!loader)
+      return false;
+
     const int64 max_seconds = 2;
     base::Time start_time = base::Time::Now();
     while (!contents_observer_->got_favicons() ||
-           contents_observer_->downloads_received() < expected) {
+           loader->HasPendingDownloads()) {
       content::RunAllPendingInMessageLoop();
       base::TimeDelta delta = base::Time::Now() - start_time;
       if (delta.InSeconds() >= max_seconds) {
         LOG(ERROR) << " WaitForFaviconDownlads timed out:"
                    << " Got Favicons:" << contents_observer_->got_favicons()
-                   << " Received: " << contents_observer_->downloads_received()
-                   << " / " << expected;
+                   << " Pending Downloads: " << loader->HasPendingDownloads();
         return false;
       }
     }
@@ -129,43 +134,38 @@ class LauncherFaviconLoaderBrowsertest : public InProcessBrowserTest {
   }
 
  private:
+  Browser* panel_browser_;
+  LauncherFaviconLoader* loader_;
   scoped_ptr<ContentsObserver> contents_observer_;
-  scoped_ptr<net::TestServer> test_server_;
 };
 
 IN_PROC_BROWSER_TEST_F(LauncherFaviconLoaderBrowsertest, SmallLauncherIcon) {
   ASSERT_TRUE(test_server()->Start());
-  Browser* panel_browser;
-  ASSERT_NO_FATAL_FAILURE(
-      CreatePanelBrowser("launcher-smallfavicon.html", &panel_browser));
-  LauncherFaviconLoader* favicon_loader = GetFaviconLoader(panel_browser);
+  NavigateTo("launcher-smallfavicon.html");
+  LauncherFaviconLoader* favicon_loader = GetFaviconLoader();
   ASSERT_NE(static_cast<LauncherFaviconLoader*>(NULL), favicon_loader);
-  EXPECT_TRUE(WaitForFaviconDownlads(1));
+  EXPECT_TRUE(WaitForFaviconDownloads());
   // No large favicons specified, bitmap should be empty.
   EXPECT_TRUE(favicon_loader->GetFavicon().empty());
 }
 
 IN_PROC_BROWSER_TEST_F(LauncherFaviconLoaderBrowsertest, LargeLauncherIcon) {
   ASSERT_TRUE(test_server()->Start());
-  Browser* panel_browser;
-  ASSERT_NO_FATAL_FAILURE(
-      CreatePanelBrowser("launcher-largefavicon.html", &panel_browser));
-  LauncherFaviconLoader* favicon_loader = GetFaviconLoader(panel_browser);
+  NavigateTo("launcher-largefavicon.html");
+  LauncherFaviconLoader* favicon_loader = GetFaviconLoader();
   ASSERT_NE(static_cast<LauncherFaviconLoader*>(NULL), favicon_loader);
-  EXPECT_TRUE(WaitForFaviconDownlads(1));
+  EXPECT_TRUE(WaitForFaviconDownloads());
   EXPECT_FALSE(favicon_loader->GetFavicon().empty());
   EXPECT_EQ(128, favicon_loader->GetFavicon().height());
 }
 
 IN_PROC_BROWSER_TEST_F(LauncherFaviconLoaderBrowsertest, ManyLauncherIcons) {
   ASSERT_TRUE(test_server()->Start());
-  Browser* panel_browser;
-  ASSERT_NO_FATAL_FAILURE(
-      CreatePanelBrowser("launcher-manyfavicon.html", &panel_browser));
-  LauncherFaviconLoader* favicon_loader = GetFaviconLoader(panel_browser);
+  NavigateTo("launcher-manyfavicon.html");
+  LauncherFaviconLoader* favicon_loader = GetFaviconLoader();
   ASSERT_NE(static_cast<LauncherFaviconLoader*>(NULL), favicon_loader);
 
-  EXPECT_TRUE(WaitForFaviconDownlads(3));
+  EXPECT_TRUE(WaitForFaviconDownloads());
   EXPECT_FALSE(favicon_loader->GetFavicon().empty());
   // When multiple favicons are present, the correctly sized icon should be
   // chosen. The icons are sized assuming ash::kLauncherPreferredSize < 128.
@@ -175,24 +175,22 @@ IN_PROC_BROWSER_TEST_F(LauncherFaviconLoaderBrowsertest, ManyLauncherIcons) {
 
 IN_PROC_BROWSER_TEST_F(LauncherFaviconLoaderBrowsertest, ChangeLauncherIcons) {
   ASSERT_TRUE(test_server()->Start());
-  Browser* panel_browser;
-  ASSERT_NO_FATAL_FAILURE(
-      CreatePanelBrowser("launcher-manyfavicon.html", &panel_browser));
-  LauncherFaviconLoader* favicon_loader = GetFaviconLoader(panel_browser);
+  NavigateTo("launcher-manyfavicon.html");
+  LauncherFaviconLoader* favicon_loader = GetFaviconLoader();
   ASSERT_NE(static_cast<LauncherFaviconLoader*>(NULL), favicon_loader);
 
-  EXPECT_TRUE(WaitForFaviconDownlads(3));
+  EXPECT_TRUE(WaitForFaviconDownloads());
   EXPECT_FALSE(favicon_loader->GetFavicon().empty());
   EXPECT_EQ(48, favicon_loader->GetFavicon().height());
   ASSERT_NO_FATAL_FAILURE(ResetDownloads());
 
-  NavigateTo(panel_browser, "launcher-smallfavicon.html");
-  EXPECT_TRUE(WaitForFaviconDownlads(1));
+  NavigateTo("launcher-smallfavicon.html");
+  EXPECT_TRUE(WaitForFaviconDownloads());
   EXPECT_TRUE(favicon_loader->GetFavicon().empty());
   ASSERT_NO_FATAL_FAILURE(ResetDownloads());
 
-  NavigateTo(panel_browser, "launcher-largefavicon.html");
-  EXPECT_TRUE(WaitForFaviconDownlads(1));
+  NavigateTo("launcher-largefavicon.html");
+  EXPECT_TRUE(WaitForFaviconDownloads());
   EXPECT_FALSE(favicon_loader->GetFavicon().empty());
   EXPECT_EQ(128, favicon_loader->GetFavicon().height());
 }
