@@ -25,14 +25,14 @@ SelLdrLauncherBase::~SelLdrLauncherBase() {
   }
 }
 
-static DescWrapper* GetSockAddr(DescWrapper* desc) {
+bool SelLdrLauncherBase::RetrieveSockAddr() {
   DescWrapper::MsgHeader   header;
   DescWrapper::MsgIoVec    iovec[1];
   DescWrapper*             descs[NACL_ABI_IMC_USER_DESC_MAX];
   scoped_array<unsigned char> bytes(
       new unsigned char[NACL_ABI_IMC_USER_BYTES_MAX]);
   if (bytes.get() == NULL) {
-    return NULL;
+    return false;
   }
 
   // Set up to receive a message.
@@ -44,15 +44,16 @@ static DescWrapper* GetSockAddr(DescWrapper* desc) {
   header.ndescv_length = NACL_ARRAY_SIZE(descs);
   header.flags = 0;
   // Receive the message.
-  if (0 != desc->RecvMsg(&header, 0, NULL)) {
-    return NULL;
+  if (0 != bootstrap_socket_->RecvMsg(&header, 0, NULL)) {
+    return false;
   }
   // Check that there was exactly one descriptor passed.
   if (1 != header.ndescv_length) {
-    return NULL;
+    return false;
   }
+  socket_addr_.reset(descs[0]);
 
-  return descs[0];
+  return true;
 }
 
 bool SelLdrLauncherBase::SetupCommandAndLoad(NaClSrpcChannel* command,
@@ -71,8 +72,7 @@ bool SelLdrLauncherBase::SetupCommandAndLoad(NaClSrpcChannel* command,
   // our "reference" to it.
   channel_ = kInvalidHandle;
   // Get the socket address from the descriptor.
-  socket_addr_.reset(GetSockAddr(bootstrap_socket_.get()));
-  if (socket_addr_ == NULL) {
+  if (!RetrieveSockAddr()) {
     NaClLog(0, "SelLdrLauncher::SetupCommandAndLoad: "
             "getting sel_ldr socket address failed\n");
     return false;

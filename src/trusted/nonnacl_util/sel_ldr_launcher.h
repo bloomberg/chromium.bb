@@ -82,6 +82,9 @@ class SelLdrLauncherBase {
   // After starting the sel_ldr process.
   /////////////////////////////////////////////////////////////////////////////
 
+  // Retrieves the socket address.
+  bool RetrieveSockAddr();
+
   // Sets up the command channel |command| and sends the SRPC to load |nexe|.
   bool SetupCommandAndLoad(NaClSrpcChannel* command, DescWrapper* nexe);
 

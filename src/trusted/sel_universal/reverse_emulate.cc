@@ -46,6 +46,9 @@ class ReverseEmulate : public nacl::ReverseInterface {
   // Send a string as a PostMessage to the browser.
   virtual void DoPostMessage(nacl::string message);
 
+  // Create new service runtime process and return its socket address.
+  virtual int CreateProcess(nacl::DescWrapper** out_sock_addr);
+
   // Request quota for a write to a file.
   virtual int64_t RequestQuotaForWrite(nacl::string file_id,
                                        int64_t offset,
@@ -209,6 +212,28 @@ void ReverseEmulate::ReportExitStatus(int exit_status) {
 
 void ReverseEmulate::DoPostMessage(nacl::string message) {
   NaClLog(1, "ReverseEmulate::DoPostMessage (message=%s)\n", message.c_str());
+}
+
+int ReverseEmulate::CreateProcess(nacl::DescWrapper** out_sock_addr) {
+  NaClLog(1, "ReverseEmulate::CreateProcess)\n");
+  vector<nacl::string> command_prefix;
+  vector<nacl::string> sel_ldr_argv;
+  vector<nacl::string> app_argv;
+
+  nacl::SelLdrLauncherStandalone launcher;
+  if (!launcher.StartViaCommandLine(command_prefix, sel_ldr_argv, app_argv)) {
+    NaClLog(LOG_FATAL,
+            "ReverseEmulate::CreateProcess: failed to launch sel_ldr\n");
+  }
+
+  if (!launcher.RetrieveSockAddr()) {
+    NaClLog(LOG_ERROR,
+            "ReverseEmulate::CreateProcess: failed to obtain socket addr\n");
+    return -NACL_ABI_EAGAIN;
+  }
+  *out_sock_addr = launcher.socket_addr();
+
+  return 0;
 }
 
 int64_t ReverseEmulate::RequestQuotaForWrite(nacl::string file_id,
