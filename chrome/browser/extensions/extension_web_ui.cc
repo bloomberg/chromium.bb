@@ -97,13 +97,30 @@ class ExtensionWebUIImageLoadingTracker : public ImageLoadingTracker::Observer {
 
   void Init() {
     if (extension_) {
-      ExtensionResource icon_resource =
-          extension_->GetIconResource(extension_misc::EXTENSION_ICON_BITTY,
-                                      ExtensionIconSet::MATCH_EXACTLY);
+      // Fetch resources for all supported scale factors for which there are
+      // resources. Load image reps for all supported scale factors immediately
+      // instead of in an as needed fashion to be consistent with how favicons
+      // are requested for chrome:// and page URLs.
+      const std::vector<ui::ScaleFactor>& scale_factors =
+          ui::GetSupportedScaleFactors();
+      std::vector<ImageLoadingTracker::ImageRepresentation> info_list;
+      for (size_t i = 0; i < scale_factors.size(); ++i) {
+        float scale = ui::GetScaleFactorScale(scale_factors[i]);
+        int pixel_size = static_cast<int>(gfx::kFaviconSize * scale);
+        ExtensionResource icon_resource =
+            extension_->GetIconResource(pixel_size,
+                                        ExtensionIconSet::MATCH_BIGGER);
 
-      tracker_.LoadImage(extension_, icon_resource,
-                         gfx::Size(gfx::kFaviconSize, gfx::kFaviconSize),
-                         ImageLoadingTracker::DONT_CACHE);
+        info_list.push_back(
+            ImageLoadingTracker::ImageRepresentation(
+                icon_resource,
+                ImageLoadingTracker::ImageRepresentation::ALWAYS_RESIZE,
+                gfx::Size(pixel_size, pixel_size),
+                scale_factors[i]));
+      }
+
+      tracker_.LoadImages(extension_, info_list,
+                          ImageLoadingTracker::DONT_CACHE);
     } else {
       ForwardResult(gfx::Image());
     }
@@ -119,33 +136,42 @@ class ExtensionWebUIImageLoadingTracker : public ImageLoadingTracker::Observer {
   ~ExtensionWebUIImageLoadingTracker() {}
 
   // Forwards the result of the request. If no favicon was available then
-  // |icon| will be empty. Once the result has been forwarded the instance is
+  // |image| will be empty. Once the result has been forwarded the instance is
   // deleted.
-  void ForwardResult(const gfx::Image& icon) {
+  void ForwardResult(const gfx::Image& image) {
     std::vector<history::FaviconBitmapResult> favicon_bitmap_results;
-    history::IconURLSizesMap icon_url_sizes;
-    SkBitmap icon_bitmap = icon.AsBitmap();
-    if (!icon_bitmap.empty()) {
-      scoped_refptr<base::RefCountedBytes> icon_data(
+    const std::vector<gfx::ImageSkiaRep>& image_reps =
+        image.AsImageSkia().image_reps();
+    for (size_t i = 0; i < image_reps.size(); ++i) {
+      const gfx::ImageSkiaRep& image_rep = image_reps[i];
+      scoped_refptr<base::RefCountedBytes> bitmap_data(
           new base::RefCountedBytes());
-      if (gfx::PNGCodec::EncodeBGRASkBitmap(icon_bitmap, false,
-                                            &icon_data->data())) {
+      if (gfx::PNGCodec::EncodeBGRASkBitmap(image_rep.sk_bitmap(),
+                                            false,
+                                            &bitmap_data->data())) {
         history::FaviconBitmapResult bitmap_result;
-        bitmap_result.bitmap_data = icon_data;
-        bitmap_result.pixel_size = gfx::Size(icon_bitmap.width(),
-                                             icon_bitmap.height());
+        bitmap_result.bitmap_data = bitmap_data;
+        bitmap_result.pixel_size = gfx::Size(image_rep.pixel_width(),
+                                             image_rep.pixel_height());
         // Leave |bitmap_result|'s icon URL as the default of GURL().
         bitmap_result.icon_type = history::FAVICON;
 
         favicon_bitmap_results.push_back(bitmap_result);
-
-        // Build IconURLSizesMap such that the requirement that all the icon
-        // URLs in |favicon_bitmap_results| be present in |icon_url_sizes|
-        // holds. Set the favicon sizes to the pixel size of |icon_bitmap|.
-        icon_url_sizes[GURL()].push_back(bitmap_result.pixel_size);
       } else {
         NOTREACHED() << "Could not encode extension favicon";
       }
+    }
+
+    // Populate IconURLSizesMap such that all the icon URLs in
+    // |favicon_bitmap_results| are present in |icon_url_sizes|.
+    // Populate the favicon sizes with the relevant pixel sizes in the
+    // extension's icon set.
+    history::IconURLSizesMap icon_url_sizes;
+    for (size_t i = 0; i < favicon_bitmap_results.size(); ++i) {
+      const history::FaviconBitmapResult& bitmap_result =
+          favicon_bitmap_results[i];
+      const GURL& icon_url = bitmap_result.icon_url;
+      icon_url_sizes[icon_url].push_back(bitmap_result.pixel_size);
     }
 
     request_->ForwardResultAsync(request_->handle(), favicon_bitmap_results,
