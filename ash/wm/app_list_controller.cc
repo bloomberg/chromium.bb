@@ -338,7 +338,7 @@ void AppListController::TransitionChanged() {
   if (pagination_model_->is_valid_page(transition.target_page))
     return;
 
-  if (pagination_model_->scrolling()) {
+  if (!pagination_model_->IsRevertingCurrentTransition()) {
     const int current_page = pagination_model_->selected_page();
     const int dir = transition.target_page > current_page ? -1 : 1;
 

@@ -44,6 +44,8 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   void EnsureItemVisible(const AppListItemView* item);
 
+  bool HasPageTransition() const;
+
   int tiles_per_page() const { return cols_ * rows_per_page_; }
 
   // Overridden from views::View:

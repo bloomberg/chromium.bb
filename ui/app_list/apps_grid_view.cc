@@ -92,6 +92,10 @@ void AppsGridView::EnsureItemVisible(const AppListItemView* item) {
   }
 }
 
+bool AppsGridView::HasPageTransition() const {
+  return pagination_model_->has_transition();
+}
+
 gfx::Size AppsGridView::GetPreferredSize() {
   gfx::Insets insets(GetInsets());
   gfx::Size tile_size = gfx::Size(kPreferredTileWidth, kPreferredTileHeight);

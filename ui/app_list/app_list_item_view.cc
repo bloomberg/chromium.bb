@@ -216,7 +216,9 @@ void AppListItemView::ShowContextMenuForView(views::View* source,
 
 void AppListItemView::StateChanged() {
   if (state() == BS_HOT || state() == BS_PUSHED) {
-    apps_grid_view_->SetSelectedItem(this);
+    // Don't auto select item if there is a running page transition.
+    if (!apps_grid_view_->HasPageTransition())
+      apps_grid_view_->SetSelectedItem(this);
     title_->SetEnabledColor(kTitleHoverColor);
   } else {
     apps_grid_view_->ClearSelectedItem(this);
