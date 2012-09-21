@@ -52,6 +52,7 @@
 // the following values: "=", "<", "<=", ">", ">=", "any", "between".  "style"
 // is optional and can be "lexical" or "numerical"; if it's not specified, it
 // defaults to "numerical".  "number2" is only used if "op" is "between".
+// "between" is "number <= * <= number2".
 // "number" is used for all "op" values except "any". "number" and "number2"
 // are in the format of x, x.x, x.x.x, etc.
 // Only "driver_version" supports lexical style if the format is major.minor;
@@ -68,7 +69,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "3.1",
+  "version": "3.2",
   "entries": [
     {
       "id": 1,
@@ -588,8 +589,9 @@
       "os": {
         "type": "macosx",
         "version": {
-          "op": "=",
-          "number": "10.7"
+          "op": "between",
+          "number": "10.7.0",
+          "number2": "10.7.4"
         }
       },
       "vendor_id": "0x8086",
