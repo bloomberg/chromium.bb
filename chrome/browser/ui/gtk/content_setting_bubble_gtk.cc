@@ -98,7 +98,8 @@ void ContentSettingBubbleGtk::BuildBubble() {
       content_setting_bubble_model_->bubble_content();
   if (!content.title.empty()) {
     // Add the content label.
-    GtkWidget* label = gtk_label_new(content.title.c_str());
+    GtkWidget* label = theme_provider->BuildLabel(content.title.c_str(),
+                                                  ui::kGdkBlack);
     gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
     gtk_box_pack_start(GTK_BOX(bubble_content), label, FALSE, FALSE, 0);
   }
@@ -114,7 +115,8 @@ void ContentSettingBubbleGtk::BuildBubble() {
       if (name.empty())
         name = *it;
 
-      GtkWidget* label = gtk_label_new(BuildElidedText(name).c_str());
+      GtkWidget* label = theme_provider->BuildLabel(
+          BuildElidedText(name).c_str(), ui::kGdkBlack);
       GtkWidget* label_box = gtk_hbox_new(FALSE, 0);
       gtk_box_pack_start(GTK_BOX(label_box), label, FALSE, FALSE, 0);
 
@@ -174,10 +176,12 @@ void ContentSettingBubbleGtk::BuildBubble() {
     std::string elided = BuildElidedText(*i);
     GtkWidget* radio =
         radio_group_gtk_.empty() ?
-            gtk_radio_button_new_with_label(NULL, elided.c_str()) :
-            gtk_radio_button_new_with_label_from_widget(
-                GTK_RADIO_BUTTON(radio_group_gtk_[0]),
-                elided.c_str());
+            gtk_radio_button_new(NULL) :
+            gtk_radio_button_new_from_widget(
+                GTK_RADIO_BUTTON(radio_group_gtk_[0]));
+    GtkWidget* label =
+        theme_provider->BuildLabel(elided.c_str(), ui::kGdkBlack);
+    gtk_container_add(GTK_CONTAINER(radio), label);
     gtk_box_pack_start(GTK_BOX(bubble_content), radio, FALSE, FALSE, 0);
     if (i - radio_group.radio_items.begin() == radio_group.default_item) {
       // We must set the default value before we attach the signal handlers
@@ -200,7 +204,8 @@ void ContentSettingBubbleGtk::BuildBubble() {
     // Put each list into its own vbox to allow spacing between lists.
     GtkWidget* list_content = gtk_vbox_new(FALSE, ui::kControlSpacing);
 
-    GtkWidget* label = gtk_label_new(BuildElidedText(i->title).c_str());
+    GtkWidget* label = theme_provider->BuildLabel(
+        BuildElidedText(i->title).c_str(), ui::kGdkBlack);
     gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
     GtkWidget* label_box = gtk_hbox_new(FALSE, 0);
     gtk_box_pack_start(GTK_BOX(label_box), label, FALSE, FALSE, 0);
@@ -219,11 +224,13 @@ void ContentSettingBubbleGtk::BuildBubble() {
     GtkWidget* custom_link_box = gtk_hbox_new(FALSE, 0);
     GtkWidget* custom_link = NULL;
     if (content.custom_link_enabled) {
-      custom_link = gtk_chrome_link_button_new(content.custom_link.c_str());
+      custom_link =
+          theme_provider->BuildChromeLinkButton(content.custom_link.c_str());
       g_signal_connect(custom_link, "clicked",
                        G_CALLBACK(OnCustomLinkClickedThunk), this);
     } else {
-      custom_link = gtk_label_new(content.custom_link.c_str());
+      custom_link = theme_provider->BuildLabel(content.custom_link.c_str(),
+                                               ui::kGdkBlack);
       gtk_misc_set_alignment(GTK_MISC(custom_link), 0, 0.5);
     }
     DCHECK(custom_link);
@@ -238,7 +245,7 @@ void ContentSettingBubbleGtk::BuildBubble() {
   GtkWidget* bottom_box = gtk_hbox_new(FALSE, 0);
 
   GtkWidget* manage_link =
-      gtk_chrome_link_button_new(content.manage_link.c_str());
+      theme_provider->BuildChromeLinkButton(content.manage_link.c_str());
   g_signal_connect(manage_link, "clicked", G_CALLBACK(OnManageLinkClickedThunk),
                    this);
   gtk_box_pack_start(GTK_BOX(bottom_box), manage_link, FALSE, FALSE, 0);

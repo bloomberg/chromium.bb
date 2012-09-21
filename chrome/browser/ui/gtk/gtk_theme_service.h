@@ -95,7 +95,7 @@ class GtkThemeService : public ThemeService {
   // Builds a GtkLabel that is |color| in chrome theme mode, and the normal
   // text color in gtk-mode. Like the previous two calls, listens for the
   // object's destruction.
-  GtkWidget* BuildLabel(const std::string& text, GdkColor color);
+  GtkWidget* BuildLabel(const std::string& text, const GdkColor& color);
 
   // Creates a theme-aware vertical separator widget.
   GtkWidget* CreateToolbarSeparator();

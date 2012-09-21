@@ -410,10 +410,10 @@ GtkWidget* GtkThemeService::BuildChromeLinkButton(const std::string& text) {
 }
 
 GtkWidget* GtkThemeService::BuildLabel(const std::string& text,
-                                       GdkColor color) {
+                                       const GdkColor& color) {
   GtkWidget* label = gtk_label_new(text.empty() ? NULL : text.c_str());
   if (!use_gtk_)
-    gtk_widget_modify_fg(label, GTK_STATE_NORMAL, &color);
+    gtk_util::SetLabelColor(label, &color);
   labels_.insert(std::make_pair(label, color));
 
   signals_->Connect(label, "destroy", G_CALLBACK(OnDestroyLabelThunk), this);
