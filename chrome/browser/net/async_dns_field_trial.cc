@@ -18,10 +18,8 @@ bool ConfigureAsyncDnsFieldTrial() {
   const base::FieldTrial::Probability kAsyncDnsDivisor = 100;
   base::FieldTrial::Probability enabled_probability = 0;
 
-#if defined(OS_CHROMEOS)
   if (chrome::VersionInfo::GetChannel() <= chrome::VersionInfo::CHANNEL_DEV)
     enabled_probability = 50;
-#endif
 
   scoped_refptr<base::FieldTrial> trial(
       base::FieldTrialList::FactoryGetFieldTrial(
