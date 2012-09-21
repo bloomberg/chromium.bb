@@ -43,13 +43,15 @@ void VaapiVideoDecodeAccelerator::NotifyError(Error error) {
     return;
   }
 
-  DVLOG(1) << "Notifying of error " << error;
+  // Post Cleanup() as a task so we don't recursively acquire lock_.
+  message_loop_->PostTask(FROM_HERE, base::Bind(
+      &VaapiVideoDecodeAccelerator::Cleanup, weak_this_));
 
+  DVLOG(1) << "Notifying of error " << error;
   if (client_) {
     client_->NotifyError(error);
     client_ptr_factory_.InvalidateWeakPtrs();
   }
-  Cleanup();
 }
 
 VaapiVideoDecodeAccelerator::VaapiVideoDecodeAccelerator(
