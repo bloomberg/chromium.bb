@@ -393,7 +393,6 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignTab) {
       SessionTypesTestHelper::CreateNavigation(url1.spec(), "one");
   TabNavigation nav2 =
       SessionTypesTestHelper::CreateNavigation(url2.spec(), "two");
-  SessionTypesTestHelper::SetIsOverridingUserAgent(&nav2, true);
 
   // Set up the restore data.
   SessionTab tab;
@@ -457,6 +456,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignSession) {
       SessionTypesTestHelper::CreateNavigation(url1.spec(), "one");
   TabNavigation nav2 =
       SessionTypesTestHelper::CreateNavigation(url2.spec(), "two");
+  SessionTypesTestHelper::SetIsOverridingUserAgent(&nav2, true);
 
   // Set up the restore data -- one window with two tabs.
   std::vector<const SessionWindow*> session;
