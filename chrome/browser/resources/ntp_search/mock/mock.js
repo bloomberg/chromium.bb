@@ -20,6 +20,7 @@ var recordMockData = false;
     'blacklistURLFromMostVisited': NO_CALLBACK,
     'clearMostVisitedURLsBlacklist': NO_CALLBACK,
     'getApps': 'ntp.getAppsCallback',
+    'getForeignSessions': 'ntp.setForeignSessions',
     'getMostVisited': 'ntp.setMostVisitedPages',
     'getRecentlyClosedTabs': 'ntp.setRecentlyClosedTabs',
     'metricsHandler:logEventTime': NO_CALLBACK,
