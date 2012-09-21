@@ -69,18 +69,11 @@ MediaStreamImpl::MediaStreamImpl(
 MediaStreamImpl::~MediaStreamImpl() {
 }
 
-void MediaStreamImpl::StopLocalMediaStream(
-    const WebKit::WebMediaStreamDescriptor& stream) {
-  DVLOG(1) << "MediaStreamImpl::StopLocalMediaStream";
-
-  MediaStreamExtraData* extra_data =
-      static_cast<MediaStreamExtraData*>(stream.extraData());
-  if (extra_data && extra_data->local_stream()) {
-    media_stream_dispatcher_->StopStream(extra_data->local_stream()->label());
-    local_media_streams_.erase(extra_data->local_stream()->label());
-  } else {
-    NOTREACHED();
-  }
+void MediaStreamImpl::OnLocalMediaStreamStop(
+    const std::string& label) {
+  DVLOG(1) << "MediaStreamImpl::OnLocalMediaStreamStop";
+  media_stream_dispatcher_->StopStream(label);
+  local_media_streams_.erase(label);
 }
 
 void MediaStreamImpl::requestUserMedia(
@@ -205,7 +198,9 @@ void MediaStreamImpl::OnStreamGenerated(
   description.initialize(webkit_label, audio_source_vector,
                          video_source_vector);
 
-  if (!dependency_factory_->CreateNativeLocalMediaStream(&description)) {
+  if (!dependency_factory_->CreateNativeLocalMediaStream(
+      &description, base::Bind(
+          &MediaStreamImpl::OnLocalMediaStreamStop, base::Unretained(this)))) {
     DVLOG(1) << "Failed to create native stream in OnStreamGenerated.";
     media_stream_dispatcher_->StopStream(label);
     it->second.request_.requestFailed();
@@ -357,9 +352,21 @@ MediaStreamExtraData::MediaStreamExtraData(
     webrtc::MediaStreamInterface* remote_stream)
     : remote_stream_(remote_stream) {
 }
+
 MediaStreamExtraData::MediaStreamExtraData(
     webrtc::LocalMediaStreamInterface* local_stream)
     : local_stream_(local_stream) {
 }
+
 MediaStreamExtraData::~MediaStreamExtraData() {
+}
+
+void MediaStreamExtraData::SetLocalStreamStopCallback(
+    const StreamStopCallback& stop_callback) {
+  stream_stop_callback_ = stop_callback;
+}
+
+void MediaStreamExtraData::OnLocalStreamStop() {
+  if (!stream_stop_callback_.is_null())
+    stream_stop_callback_.Run(local_stream_->label());
 }

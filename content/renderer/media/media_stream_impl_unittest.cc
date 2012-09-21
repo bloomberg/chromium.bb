@@ -16,6 +16,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamComponent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamDescriptor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamSource.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 
 class MediaStreamImplUnderTest : public MediaStreamImpl {
@@ -40,6 +41,8 @@ class MediaStreamImplUnderTest : public MediaStreamImpl {
   const WebKit::WebMediaStreamDescriptor& last_generated_stream() {
     return last_generated_stream_;
   }
+
+  using MediaStreamImpl::OnLocalMediaStreamStop;
 
  private:
   WebKit::WebMediaStreamDescriptor last_generated_stream_;
@@ -124,9 +127,9 @@ TEST_F(MediaStreamImplTest, LocalMediaStream) {
   EXPECT_TRUE(video_decoder.get() != NULL);
 
   // Stop generated local streams.
-  ms_impl_->StopLocalMediaStream(mixed_desc);
+  ms_impl_->OnLocalMediaStreamStop(mixed_desc.label().utf8());
   EXPECT_EQ(1, ms_dispatcher_->stop_stream_counter());
-  ms_impl_->StopLocalMediaStream(audio_desc);
+  ms_impl_->OnLocalMediaStreamStop(audio_desc.label().utf8());
   EXPECT_EQ(2, ms_dispatcher_->stop_stream_counter());
 
   // Test that the MediaStreams are deleted if the owning WebFrame is deleted.

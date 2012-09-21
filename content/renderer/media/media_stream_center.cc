@@ -27,15 +27,6 @@
 
 namespace content {
 
-static MediaStreamImpl* GetMediaStreamImpl(WebKit::WebFrame* web_frame) {
-  RenderViewImpl* render_view = RenderViewImpl::FromWebView(web_frame->view());
-  if (!render_view)
-    return NULL;
-
-  // TODO(perkj): Avoid this cast?
-  return static_cast<MediaStreamImpl*>(render_view->userMediaClient());
-}
-
 static webrtc::MediaStreamInterface* GetNativeMediaStream(
     const WebKit::WebMediaStreamDescriptor& stream) {
   MediaStreamExtraData* extra_data =
@@ -116,16 +107,14 @@ void MediaStreamCenter::didDisableMediaStreamTrack(
 void MediaStreamCenter::didStopLocalMediaStream(
     const WebKit::WebMediaStreamDescriptor& stream) {
   DVLOG(1) << "MediaStreamCenter::didStopLocalMediaStream";
-  WebKit::WebFrame* web_frame = WebKit::WebFrame::frameForCurrentContext();
-  if (!web_frame)
-    return;
-  MediaStreamImpl* ms_impl = GetMediaStreamImpl(web_frame);
-  if (ms_impl) {
-    ms_impl->StopLocalMediaStream(stream);
+  MediaStreamExtraData* extra_data =
+       static_cast<MediaStreamExtraData*>(stream.extraData());
+  if (!extra_data) {
+    NOTREACHED();
     return;
   }
 
-  NOTREACHED();
+  extra_data->OnLocalStreamStop();
 }
 
 void MediaStreamCenter::didCreateMediaStream(

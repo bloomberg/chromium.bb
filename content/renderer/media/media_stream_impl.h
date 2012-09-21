@@ -51,11 +51,6 @@ class CONTENT_EXPORT MediaStreamImpl
       MediaStreamDependencyFactory* dependency_factory);
   virtual ~MediaStreamImpl();
 
-  // Stops a local MediaStream by notifying the MediaStreamDispatcher that the
-  // stream no longer may be used.
-  virtual void StopLocalMediaStream(
-      const WebKit::WebMediaStreamDescriptor& stream);
-
   // WebKit::WebUserMediaClient implementation
   virtual void requestUserMedia(
       const WebKit::WebUserMediaRequest& user_media_request,
@@ -97,6 +92,9 @@ class CONTENT_EXPORT MediaStreamImpl
   virtual void FrameWillClose(WebKit::WebFrame* frame) OVERRIDE;
 
  protected:
+  // Stops a local MediaStream by notifying the MediaStreamDispatcher that the
+  // stream no longer may be used.
+  void OnLocalMediaStreamStop(const std::string& label);
   // This function is virtual for test purposes. A test can override this to
   // test requesting local media streams. The function notifies WebKit that the
   // |request| have completed and generated the MediaStream |stream|.

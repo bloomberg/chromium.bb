@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
+#include "content/renderer/media/media_stream_extra_data.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "third_party/libjingle/source/talk/app/webrtc/peerconnectioninterface.h"
 
@@ -41,8 +42,8 @@ class WebRTCPeerConnectionHandler;
 class WebRTCPeerConnectionHandlerClient;
 }
 
-class WebRtcAudioDeviceImpl;
 class VideoCaptureImplManager;
+class WebRtcAudioDeviceImpl;
 
 // Object factory for RTC MediaStreams and RTC PeerConnections.
 class CONTENT_EXPORT MediaStreamDependencyFactory
@@ -64,9 +65,17 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
       WebKit::WebRTCPeerConnectionHandlerClient* client);
 
   // Creates a libjingle representation of a MediaStream and stores
-  // it in the extra data field of |description|
+  // it in the extra data field of |description|.
   bool CreateNativeLocalMediaStream(
       WebKit::WebMediaStreamDescriptor* description);
+
+  // Creates a libjingle representation of a MediaStream and stores
+  // it in the extra data field of |description|.
+  // |stream_stopped| a is callback that is run when a MediaStream have been
+  // stopped.
+  bool CreateNativeLocalMediaStream(
+      WebKit::WebMediaStreamDescriptor* description,
+      const MediaStreamExtraData::StreamStopCallback& stream_stop);
 
   // Asks the libjingle PeerConnection factory to create a libjingle
   // PeerConnection object.

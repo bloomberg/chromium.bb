@@ -8,7 +8,6 @@
 
 #include "base/synchronization/waitable_event.h"
 #include "base/utf_string_conversions.h"
-#include "content/renderer/media/media_stream_extra_data.h"
 #include "content/renderer/media/media_stream_source_extra_data.h"
 #include "content/renderer/media/peer_connection_handler_jsep.h"
 #include "content/renderer/media/rtc_peer_connection_handler.h"
@@ -178,6 +177,18 @@ bool MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
 
   description->setExtraData(new MediaStreamExtraData(native_stream));
   return true;
+}
+
+bool MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
+    WebKit::WebMediaStreamDescriptor* description,
+    const MediaStreamExtraData::StreamStopCallback& stream_stop) {
+ if(!CreateNativeLocalMediaStream(description))
+   return false;
+
+ MediaStreamExtraData* extra_data =
+     static_cast<MediaStreamExtraData*>(description->extraData());
+ extra_data->SetLocalStreamStopCallback(stream_stop);
+ return true;
 }
 
 bool MediaStreamDependencyFactory::CreatePeerConnectionFactory(
