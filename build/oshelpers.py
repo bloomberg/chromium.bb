@@ -255,7 +255,8 @@ def Remove(args):
       dst_files = glob.glob(pattern)
       # Ignore non existing files when using force
       if len(dst_files) == 0 and options.force:
-        print "rm: Skipping " + pattern
+        if options.verbose:
+          print 'rm: Skipping ' + pattern
         continue
       elif len(dst_files) == 0:
         raise OSError('rm: no such file or directory: ' + pattern)

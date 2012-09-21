@@ -263,6 +263,52 @@ class Builder(object):
     if os.path.isfile(out):
       os.remove(out)
 
+  def FixWindowsPath(self, path):
+    # The windows version of the nacl toolchain returns badly
+    # formed system header paths. As we do want changes in the
+    # toolchain to trigger rebuilds, compensate by detecting
+    # malformed paths (starting with /libexec/) and assume these
+    # are actually toolchain relative.
+    #
+    # Additionally, in some cases the toolchains emit cygwin paths
+    # which don't work in a win32 python.
+    # Assume they are all /cygdrive/ relative and convert to a
+    # drive letter.
+    cygdrive = '/cygdrive/'
+    if path.startswith('/cygdrive/'):
+      path = os.path.normpath(
+          path[len(cygdrive)] + ':' + path[len(cygdrive)+1:])
+    elif path.startswith('/libexec/'):
+      path = os.path.normpath(os.path.join(self.toolchain, path[1:]))
+    return path
+
+  def NeedsRebuild(self, outd, out, src):
+    if not os.path.isfile(outd):
+      return True
+    if not os.path.isfile(out):
+      return True
+    out_tm = os.path.getmtime(out)
+    outd_tm = os.path.getmtime(outd)
+    src_tm = os.path.getmtime(src)
+    if out_tm <= src_tm or outd_tm <= src_tm:
+      return True
+    # Decode emitted makefile.
+    fh = open(outd, 'r')
+    deps = fh.read()
+    fh.close()
+    deps = deps.replace('\\\n', ' ')
+    deps = deps.replace('\n', '')
+    deps = deps.split(':')[1]
+    deps = deps.split()
+    if sys.platform in ['win32', 'cygwin']:
+      deps = [self.FixWindowsPath(d) for d in deps]
+    # Check if any input has changed.
+    for filename in deps:
+      file_tm = os.path.getmtime(filename)
+      if out_tm <= file_tm or outd_tm <= file_tm:
+        return True
+    return False
+
   def Compile(self, src):
     """Compile the source with pre-determined options."""
 
@@ -285,15 +331,26 @@ class Builder(object):
       print '\nCompile %s' % src
 
     out = self.GetObjectName(src)
+    outd = out + '.d'
+
+    # Don't rebuild unneeded.
+    if not self.NeedsRebuild(outd, out, src):
+      return out
+
     MakeDir(os.path.dirname(out))
     self.CleanOutput(out)
-    cmd_line = [bin_name, '-c', src, '-o', out] + extra + self.compile_options
+    self.CleanOutput(outd)
+    cmd_line = [bin_name, '-c', src, '-o', out,
+                '-MD', '-MF', outd] + extra + self.compile_options
     err = self.Run(cmd_line, out)
     if sys.platform.startswith('win') and err == 5:
       # Try again on mystery windows failure.
       err = self.Run(cmd_line, out)
     if err:
+      self.CleanOutput(outd)
       ErrOut('\nFAILED with %d: %s\n\n' % (err, ' '.join(cmd_line)))
+    else:
+      assert not self.NeedsRebuild(outd, out, src)
     return out
 
   def Link(self, srcs):
