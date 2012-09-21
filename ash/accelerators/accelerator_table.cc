@@ -179,6 +179,7 @@ const AcceleratorAction kReservedActions[] = {
   // Chrome OS top-row keys.
   FOCUS_PREVIOUS_PANE,  // Control+F1
   FOCUS_NEXT_PANE,  // Control+F2
+  SWAP_PRIMARY_DISPLAY,  // Alt+F4
   CYCLE_DISPLAY_MODE,  // Control+F4
   TOGGLE_MAXIMIZED, // F4
   CYCLE_FORWARD_LINEAR,  // F5
