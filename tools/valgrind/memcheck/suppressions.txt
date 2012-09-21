@@ -6063,6 +6063,31 @@
    fun:_ZN2ui33ResourceBundle_GetImageNamed_Test8TestBodyEv
 }
 {
+   bug_150995_c
+   Memcheck:Leak
+   fun:_Zna*
+   fun:_ZN14webkit_support12_GLOBAL__N_113DoLibpngWriteEP14png_struct_defP15png_info_structPNS0_15PngEncoderStateEiiiPKhiiiPFvS8_iPhPbERKSt6vectorINS0_7CommentESaISE_EE
+   fun:_ZN14webkit_support26EncodeWithCompressionLevelEPKhNS_12_GLOBAL__N_111ColorFormatEiiibRKSt6vectorINS2_7CommentESaIS5_EEiPS4_IhSaIhEE
+   fun:_ZN14webkit_support6EncodeEPKhNS_12_GLOBAL__N_111ColorFormatEiiibRKSt6vectorINS2_7CommentESaIS5_EEPS4_IhSaIhEE
+   fun:_ZN14webkit_support25EncodeBGRAPNGWithChecksumEPKhiiibRKSsPSt6vectorIhSaIhEE
+   fun:_ZNK9TestShell9dumpImageEP8SkCanvas
+   fun:_ZN9TestShell4dumpEv
+   fun:_ZN9TestShell12testFinishedEv
+   fun:_ZN13DRTTestRunner9WorkQueue15processWorkSoonEv
+   fun:_ZN13DRTTestRunner18locationChangeDoneEv
+   fun:_ZN11WebViewHost18locationChangeDoneEPN6WebKit8WebFrameE
+   fun:_ZN11WebViewHost13didFinishLoadEPN6WebKit8WebFrameE
+   fun:_ZN6WebKit21FrameLoaderClientImpl21dispatchDidFinishLoadEv
+   fun:_ZN7WebCore11FrameLoader29checkLoadCompleteForThisFrameEv
+   fun:_ZN7WebCore11FrameLoader17checkLoadCompleteEv
+   fun:_ZN7WebCore14DocumentLoader15finishedLoadingEv
+   fun:_ZN7WebCore18MainResourceLoader16didFinishLoadingEd
+   fun:_ZN7WebCore14ResourceLoader16didFinishLoadingEPNS_14ResourceHandleEd
+   fun:_ZN7WebCore22ResourceHandleInternal16didFinishLoadingEPN6WebKit12WebURLLoaderEd
+   fun:_ZN11webkit_glue16WebURLLoaderImpl7Context18OnCompletedRequestEibRKSsRKN4base9TimeTicksE
+   fun:_ZN12_GLOBAL__N_112RequestProxy22NotifyCompletedRequestEiRKSsRKN4base9TimeTicksE
+}
+{
    bug_151006
    Memcheck:Leak
    fun:malloc
