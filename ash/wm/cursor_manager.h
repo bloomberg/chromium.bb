@@ -5,21 +5,26 @@
 #ifndef ASH_WM_CURSOR_MANAGER_H_
 #define ASH_WM_CURSOR_MANAGER_H_
 
+#include "ash/ash_export.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/aura/aura_export.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace ash {
+
+namespace test {
+class CursorManagerTestApi;
+}
+
 class CursorDelegate;
 class ImageCursors;
 
 // This class controls the visibility and the type of the cursor.
 // The cursor type can be locked so that the type stays the same
 // until it's unlocked.
-class CursorManager : public aura::client::CursorClient {
+class ASH_EXPORT CursorManager : public aura::client::CursorClient {
  public:
   CursorManager();
   virtual ~CursorManager();
@@ -42,6 +47,8 @@ class CursorManager : public aura::client::CursorClient {
   virtual void SetDeviceScaleFactor(float device_scale_factor) OVERRIDE;
 
  private:
+  friend class test::CursorManagerTestApi;
+
   void SetCursorInternal(gfx::NativeCursor cursor);
 
   CursorDelegate* delegate_;
@@ -68,6 +75,6 @@ class CursorManager : public aura::client::CursorClient {
   DISALLOW_COPY_AND_ASSIGN(CursorManager);
 };
 
-}  // namespace aura
+}  // namespace ash
 
 #endif  // UI_AURA_CURSOR_MANAGER_H_

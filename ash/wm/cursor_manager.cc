@@ -36,7 +36,7 @@ void CursorManager::UnlockCursor() {
     if (did_cursor_change_) {
       did_cursor_change_ = false;
       if (delegate_)
-        delegate_->SetCursor(cursor_to_set_on_unlock_);
+        SetCursorInternal(cursor_to_set_on_unlock_);
     }
     did_cursor_change_ = false;
     cursor_to_set_on_unlock_ = gfx::kNullCursor;
