@@ -214,7 +214,7 @@ bool AboutResource::Parse(const base::Value& value) {
 ////////////////////////////////////////////////////////////////////////////////
 // DriveAppIcon implementation
 
-DriveAppIcon::DriveAppIcon() {}
+DriveAppIcon::DriveAppIcon() : category_(UNKNOWN), icon_side_length_(0) {}
 
 DriveAppIcon::~DriveAppIcon() {}
 
@@ -266,7 +266,12 @@ bool DriveAppIcon::GetIconCategory(const base::StringPiece& category,
 ////////////////////////////////////////////////////////////////////////////////
 // AppResource implementation
 
-AppResource::AppResource() {}
+AppResource::AppResource()
+    : supports_create_(false),
+      supports_import_(false),
+      installed_(false),
+      authorized_(false) {
+}
 
 AppResource::~AppResource() {}
 
