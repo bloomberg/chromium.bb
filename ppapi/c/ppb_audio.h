@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_audio.idl modified Thu Mar  1 14:50:30 2012. */
+/* From ppb_audio.idl modified Mon Jul  9 12:03:36 2012. */
 
 #ifndef PPAPI_C_PPB_AUDIO_H_
 #define PPAPI_C_PPB_AUDIO_H_
@@ -47,9 +47,9 @@ typedef void (*PPB_Audio_Callback)(void* sample_buffer,
  */
 /**
  * The <code>PPB_Audio</code> interface contains pointers to several functions
- * for handling audio resources. Please refer to the
- * <a href="/native-client/{{pepperversion}}/devguide/coding/audio">Pepper
- * Audio API</a> for information on using this interface.
+ * for handling audio resources. Refer to the
+ * <a href="/native-client/{{pepperversion}}/devguide/coding/audio">Audio</a>
+ * chapter in the Developer's Guide for information on using this interface.
  * Please see descriptions for each <code>PPB_Audio</code> and
  * <code>PPB_AudioConfig</code> function for more details. A C example using
  * <code>PPB_Audio</code> and <code>PPB_AudioConfig</code> follows.
