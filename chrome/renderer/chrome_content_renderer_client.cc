@@ -311,11 +311,7 @@ bool ChromeContentRendererClient::OverrideCreatePlugin(
     WebFrame* frame,
     const WebPluginParams& params,
     WebPlugin** plugin) {
-  ChromeViewHostMsg_GetPluginInfo_Status status;
-  webkit::WebPluginInfo plugin_info;
-  std::string actual_mime_type;
   std::string orig_mime_type = params.mimeType.utf8();
-
   if (orig_mime_type == content::kBrowserPluginNewMimeType ||
       ((orig_mime_type == content::kBrowserPluginMimeType) &&
         extensions::ExtensionHelper::Get(render_view)->view_type() ==
@@ -323,12 +319,11 @@ bool ChromeContentRendererClient::OverrideCreatePlugin(
       return false;
   }
 
+  ChromeViewHostMsg_GetPluginInfo_Output output;
   render_view->Send(new ChromeViewHostMsg_GetPluginInfo(
       render_view->GetRoutingID(), GURL(params.url),
-      frame->top()->document().url(), orig_mime_type,
-      &status, &plugin_info, &actual_mime_type));
-  *plugin = CreatePlugin(render_view, frame, params,
-                         status, plugin_info, actual_mime_type);
+      frame->top()->document().url(), orig_mime_type, &output));
+  *plugin = CreatePlugin(render_view, frame, params, output);
   return true;
 }
 
@@ -369,9 +364,12 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
     content::RenderView* render_view,
     WebFrame* frame,
     const WebPluginParams& original_params,
-    const ChromeViewHostMsg_GetPluginInfo_Status& status,
-    const webkit::WebPluginInfo& plugin,
-    const std::string& actual_mime_type) {
+    const ChromeViewHostMsg_GetPluginInfo_Output& output) {
+  const ChromeViewHostMsg_GetPluginInfo_Status& status = output.status;
+  const webkit::WebPluginInfo& plugin = output.plugin;
+  const std::string& actual_mime_type = output.actual_mime_type;
+  const string16& group_name = output.group_name;
+  const std::string& identifier = output.group_identifier;
   ChromeViewHostMsg_GetPluginInfo_Status::Value status_value = status.value;
   GURL url(original_params.url);
   std::string orig_mime_type = original_params.mimeType.utf8();
@@ -392,10 +390,6 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
     placeholder = PluginPlaceholder::CreateMissingPlugin(
         render_view, frame, original_params);
   } else {
-    scoped_ptr<webkit::npapi::PluginGroup> group(
-        webkit::npapi::PluginList::Singleton()->GetPluginGroup(plugin));
-    string16 name = group->GetGroupName();
-
     // TODO(bauerb): This should be in content/.
     WebPluginParams params(original_params);
     for (size_t i = 0; i < plugin.mime_types.size(); ++i) {
@@ -429,7 +423,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
              ChromeViewHostMsg_GetPluginInfo_Status::kUnauthorized ||
          status_value == ChromeViewHostMsg_GetPluginInfo_Status::kClickToPlay ||
          status_value == ChromeViewHostMsg_GetPluginInfo_Status::kBlocked) &&
-        observer->IsPluginTemporarilyAllowed(group->identifier())) {
+        observer->IsPluginTemporarilyAllowed(identifier)) {
       status_value = ChromeViewHostMsg_GetPluginInfo_Status::kAllowed;
     }
 
@@ -484,7 +478,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
                     "Chrome Web Store can load NaCl modules without enabling "
                     "Native Client in about:flags."));
             placeholder = PluginPlaceholder::CreateBlockedPlugin(
-                render_view, frame, params, plugin, group->identifier(), name,
+                render_view, frame, params, plugin, identifier, group_name,
                 IDR_BLOCKED_PLUGIN_HTML, IDS_PLUGIN_BLOCKED);
             break;
           }
@@ -496,7 +490,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         //                reduce the chance of future regressions.
         if (prerender::PrerenderHelper::IsPrerendering(render_view)) {
           placeholder = PluginPlaceholder::CreateBlockedPlugin(
-              render_view, frame, params, plugin, group->identifier(), name,
+              render_view, frame, params, plugin, identifier, group_name,
               IDR_CLICK_TO_PLAY_PLUGIN_HTML, IDS_PLUGIN_LOAD);
           placeholder->set_blocked_for_prerendering(true);
           placeholder->set_allow_loading(true);
@@ -507,19 +501,19 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
       }
       case ChromeViewHostMsg_GetPluginInfo_Status::kDisabled: {
         placeholder = PluginPlaceholder::CreateBlockedPlugin(
-            render_view, frame, params, plugin, group->identifier(), name,
+            render_view, frame, params, plugin, identifier, group_name,
             IDR_DISABLED_PLUGIN_HTML, IDS_PLUGIN_DISABLED);
         break;
       }
       case ChromeViewHostMsg_GetPluginInfo_Status::kOutdatedBlocked: {
 #if defined(ENABLE_PLUGIN_INSTALLATION)
         placeholder = PluginPlaceholder::CreateBlockedPlugin(
-            render_view, frame, params, plugin, group->identifier(), name,
+            render_view, frame, params, plugin, identifier, group_name,
             IDR_BLOCKED_PLUGIN_HTML, IDS_PLUGIN_OUTDATED);
         placeholder->set_allow_loading(true);
         render_view->Send(new ChromeViewHostMsg_BlockedOutdatedPlugin(
             render_view->GetRoutingID(), placeholder->CreateRoutingId(),
-            group->identifier()));
+            identifier));
 #else
         NOTREACHED();
 #endif
@@ -527,37 +521,37 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
       }
       case ChromeViewHostMsg_GetPluginInfo_Status::kOutdatedDisallowed: {
         placeholder = PluginPlaceholder::CreateBlockedPlugin(
-            render_view, frame, params, plugin, group->identifier(), name,
+            render_view, frame, params, plugin, identifier, group_name,
             IDR_BLOCKED_PLUGIN_HTML, IDS_PLUGIN_OUTDATED);
         break;
       }
       case ChromeViewHostMsg_GetPluginInfo_Status::kUnauthorized: {
         placeholder = PluginPlaceholder::CreateBlockedPlugin(
-            render_view, frame, params, plugin, group->identifier(), name,
+            render_view, frame, params, plugin, identifier, group_name,
             IDR_BLOCKED_PLUGIN_HTML, IDS_PLUGIN_NOT_AUTHORIZED);
         placeholder->set_allow_loading(true);
         render_view->Send(new ChromeViewHostMsg_BlockedUnauthorizedPlugin(
             render_view->GetRoutingID(),
-            group->GetGroupName(),
-            group->identifier()));
+            group_name,
+            identifier));
         break;
       }
       case ChromeViewHostMsg_GetPluginInfo_Status::kClickToPlay: {
         placeholder = PluginPlaceholder::CreateBlockedPlugin(
-            render_view, frame, params, plugin, group->identifier(), name,
+            render_view, frame, params, plugin, identifier, group_name,
             IDR_CLICK_TO_PLAY_PLUGIN_HTML, IDS_PLUGIN_LOAD);
         placeholder->set_allow_loading(true);
         RenderThread::Get()->RecordUserMetrics("Plugin_ClickToPlay");
-        observer->DidBlockContentType(content_type, group->identifier());
+        observer->DidBlockContentType(content_type, identifier);
         break;
       }
       case ChromeViewHostMsg_GetPluginInfo_Status::kBlocked: {
         placeholder = PluginPlaceholder::CreateBlockedPlugin(
-            render_view, frame, params, plugin, group->identifier(), name,
+            render_view, frame, params, plugin, identifier, group_name,
             IDR_BLOCKED_PLUGIN_HTML, IDS_PLUGIN_BLOCKED);
         placeholder->set_allow_loading(true);
         RenderThread::Get()->RecordUserMetrics("Plugin_Blocked");
-        observer->DidBlockContentType(content_type, group->identifier());
+        observer->DidBlockContentType(content_type, identifier);
         break;
       }
     }

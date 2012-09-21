@@ -126,6 +126,15 @@ IPC_STRUCT_TRAITS_BEGIN(ChromeViewHostMsg_GetPluginInfo_Status)
 IPC_STRUCT_TRAITS_MEMBER(value)
 IPC_STRUCT_TRAITS_END()
 
+// Output parameters for ChromeViewHostMsg_GetPluginInfo message.
+IPC_STRUCT_BEGIN(ChromeViewHostMsg_GetPluginInfo_Output)
+  IPC_STRUCT_MEMBER(ChromeViewHostMsg_GetPluginInfo_Status, status)
+  IPC_STRUCT_MEMBER(webkit::WebPluginInfo, plugin)
+  IPC_STRUCT_MEMBER(std::string, actual_mime_type)
+  IPC_STRUCT_MEMBER(std::string, group_identifier)
+  IPC_STRUCT_MEMBER(string16, group_name)
+IPC_STRUCT_END()
+
 IPC_STRUCT_TRAITS_BEGIN(ContentSettingsPattern::PatternParts)
   IPC_STRUCT_TRAITS_MEMBER(scheme)
   IPC_STRUCT_TRAITS_MEMBER(is_scheme_wildcard)
@@ -433,14 +442,12 @@ IPC_SYNC_MESSAGE_CONTROL4_1(ChromeViewHostMsg_AllowIndexedDB,
 // In contrast to ViewHostMsg_GetPluginInfo in content/, this IPC call knows
 // about specific reasons why a plug-in can't be used, for example because it's
 // disabled.
-IPC_SYNC_MESSAGE_CONTROL4_3(ChromeViewHostMsg_GetPluginInfo,
+IPC_SYNC_MESSAGE_CONTROL4_1(ChromeViewHostMsg_GetPluginInfo,
                             int /* render_view_id */,
                             GURL /* url */,
                             GURL /* top origin url */,
                             std::string /* mime_type */,
-                            ChromeViewHostMsg_GetPluginInfo_Status /* status */,
-                            webkit::WebPluginInfo /* plugin */,
-                            std::string /* actual_mime_type */)
+                            ChromeViewHostMsg_GetPluginInfo_Output /* output */)
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
 // Tells the browser to search for a plug-in that can handle the given MIME

@@ -15,6 +15,7 @@
 #include "chrome/common/content_settings.h"
 #include "content/public/browser/browser_message_filter.h"
 
+struct ChromeViewHostMsg_GetPluginInfo_Output;
 struct ChromeViewHostMsg_GetPluginInfo_Status;
 class GURL;
 class HostContentSettingsMap;
@@ -49,7 +50,9 @@ class PluginInfoMessageFilter : public content::BrowserMessageFilter {
         const GetPluginInfo_Params& params,
         const webkit::WebPluginInfo& plugin,
         PluginFinder* plugin_finder,
-        ChromeViewHostMsg_GetPluginInfo_Status* status) const;
+        ChromeViewHostMsg_GetPluginInfo_Status* status,
+        std::string* group_identifier,
+        string16* group_name) const;
     bool FindEnabledPlugin(int render_view_id,
                            const GURL& url,
                            const GURL& top_origin_url,
@@ -101,8 +104,7 @@ class PluginInfoMessageFilter : public content::BrowserMessageFilter {
 
   void GotPluginFinder(const GetPluginInfo_Params& params,
                        IPC::Message* reply_msg,
-                       const webkit::WebPluginInfo& plugin,
-                       const std::string& actual_mime_type,
+                       ChromeViewHostMsg_GetPluginInfo_Output output,
                        PluginFinder* plugin_finder);
 
   Context context_;
