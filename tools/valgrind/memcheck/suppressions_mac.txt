@@ -2466,19 +2466,3 @@
    fun:_ZN16RenderThreadImplC1ERKSs
    fun:_ZN21WebRTCAudioDeviceTest5SetUpEv
 }
-{
-   bug_150705
-   Memcheck:Uninitialized
-   ...
-   fun:_ZN7testing12_GLOBAL__N_126PrintByteSegmentInObjectToEPKhmmPSo
-   fun:_ZN7testing12_GLOBAL__N_124PrintBytesInObjectToImplEPKhmPSo
-   fun:_ZN7testing9internal220PrintBytesInObjectToEPKhmPSo
-   fun:_ZN7testing9internal220TypeWithoutFormatterI18DownloadCreateInfoLNS0_8TypeKindE2EE10PrintValueERKS2_PSo
-   fun:_ZN7testing9internal2lsIcSt11char_traitsIcE18DownloadCreateInfoEERSt13basic_ostreamIT_T0_ES9_RKT1_
-   fun:_ZN16testing_internal26DefaultPrintNonContainerToI18DownloadCreateInfoEEvRKT_PSo
-   fun:_ZN7testing8internal14DefaultPrintToI18DownloadCreateInfoEEvcNS0_13bool_constantILb0EEERKT_PSo
-   fun:_ZN7testing8internal7PrintToI18DownloadCreateInfoEEvRKT_PSo
-   fun:_ZN7testing8internal16UniversalPrinterI18DownloadCreateInfoE5PrintERKS2_PSo
-   fun:_ZN7testing8internal14UniversalPrintI18DownloadCreateInfoEEvRKT_PSo
-   fun:_ZN7testing8internal20MatchPrintAndExplainI18DownloadCreateInfoRKS2_EEbRT_RKNS_7MatcherIT0_EEPNS_19MatchResultListenerE
-}

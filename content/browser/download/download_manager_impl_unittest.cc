@@ -40,8 +40,6 @@
 using ::testing::AllOf;
 using ::testing::DoAll;
 using ::testing::Eq;
-using ::testing::Field;
-using ::testing::Pointee;
 using ::testing::Ref;
 using ::testing::Return;
 using ::testing::ReturnRef;
@@ -58,6 +56,13 @@ class ByteStreamReader;
 }
 
 namespace {
+
+// Matches a DownloadCreateInfo* that points to the same object as |info| and
+// has a |default_download_directory| that matches |download_directory|.
+MATCHER_P2(DownloadCreateInfoWithDefaultPath, info, download_directory, "") {
+  return arg == info &&
+      arg->default_download_directory == download_directory;
+}
 
 class MockDownloadItemImpl : public DownloadItemImpl {
  public:
@@ -590,12 +595,11 @@ TEST_F(DownloadManagerTest, StartDownload) {
       .WillOnce(Return(true));
   EXPECT_CALL(GetMockDownloadManagerDelegate(), GetSaveDir(_,_,_,_))
       .WillOnce(SetArgPointee<2>(download_path));
+
   // The CreateDownloadFile call should specify a DownloadCreateInfo that
   // includes the result of the GetSaveDir() call.
   EXPECT_CALL(GetMockDownloadFileManager(), MockCreateDownloadFile(
-      AllOf(Eq(info.get()),
-            Pointee(Field(&DownloadCreateInfo::default_download_directory,
-                          download_path))),
+      DownloadCreateInfoWithDefaultPath(info.get(), download_path),
       static_cast<content::ByteStreamReader*>(NULL),
       download_manager_.get(), true, _, _));
 
