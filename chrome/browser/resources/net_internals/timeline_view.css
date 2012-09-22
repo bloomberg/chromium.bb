@@ -50,6 +50,10 @@
   color: rgb(102, 187, 187);
 }
 
+#timeline-view-dns-jobs {
+  color: rgb(150, 20, 29);
+}
+
 #timeline-view-bytes-received {
   color: rgb(0, 187, 0);
 }
