@@ -990,9 +990,13 @@ class BuildTargetStage(BoardSpecificBuilderStage):
     images_to_build = set(self._build_config['images']).intersection(
         images_can_build)
     root_boost = None
+    double_stateful = False
     if (self._build_config['useflags'] and
         'pgo_generate' in self._build_config['useflags']):
       root_boost = 400
+      # With PGO, Chrome artifacts are much larger so we need to allot more
+      # space on stateful partitions.
+      double_stateful = True
 
     commands.BuildImage(self._build_root,
                         self._current_board,
@@ -1004,6 +1008,7 @@ class BuildTargetStage(BoardSpecificBuilderStage):
     if self._build_config['vm_tests']:
       commands.BuildVMImageForTesting(self._build_root,
                                       self._current_board,
+                                      double_stateful=double_stateful,
                                       extra_env=self._env)
 
     # Update link to latest image.

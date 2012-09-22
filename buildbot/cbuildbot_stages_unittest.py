@@ -943,6 +943,7 @@ class BuildTargetStageTest(AbstractStageTest):
                         ['test', 'base', 'dev'], version=self.version,
                         root_boost=None, extra_env=proper_env)
     commands.BuildVMImageForTesting(self.build_root, self._current_board,
+                                    double_stateful=False,
                                     extra_env=proper_env)
     tempfile.mkdtemp(prefix='autotest').AndReturn(fake_autotest_dir)
     commands.BuildAutotestTarballs(self.build_root, self._current_board,
@@ -1061,6 +1062,7 @@ class BuildTargetStageTest(AbstractStageTest):
                         ['test', 'base', 'dev'], version='', root_boost=None,
                         extra_env=proper_env)
     commands.BuildVMImageForTesting(self.build_root, self._current_board,
+                                    double_stateful=False,
                                     extra_env=proper_env)
     tempfile.mkdtemp(prefix='autotest').AndReturn(fake_autotest_dir)
     commands.BuildAutotestTarballs(self.build_root, self._current_board,

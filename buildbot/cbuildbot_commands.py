@@ -347,8 +347,13 @@ def BuildImage(buildroot, board, images_to_build, version='', extra_env=None,
   _RunBuildScript(buildroot, cmd, extra_env=extra_env, enter_chroot=True)
 
 
-def BuildVMImageForTesting(buildroot, board, extra_env=None):
+def BuildVMImageForTesting(buildroot, board, double_stateful=False,
+                           extra_env=None):
   (vdisk_size, statefulfs_size) = _GetVMConstants(buildroot)
+  if double_stateful:
+    vdisk_size += statefulfs_size
+    statefulfs_size += statefulfs_size
+
   cmd = ['./image_to_vm.sh', '--board=%s' % board, '--test_image',
          '--full', '--vdisk_size=%s' % vdisk_size,
          '--statefulfs_size=%s' % statefulfs_size]
@@ -884,7 +889,7 @@ def UpdateUploadedList(last_uploaded, archive_path, upload_url, debug):
 
   # Append to the uploaded list.
   filename = _UPLOADED_LIST_FILENAME
-  AppendToFile(os.path.join(archive_path, filename), last_uploaded+'\n')
+  AppendToFile(os.path.join(archive_path, filename), last_uploaded + '\n')
 
   # Upload the updated list to Google Storage.
   UploadArchivedFile(archive_path, upload_url, filename, debug,
