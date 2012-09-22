@@ -5,7 +5,6 @@
 #include "sandbox/win/src/service_resolver.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "sandbox/win/src/sandbox_utils.h"
 #include "sandbox/win/src/win_utils.h"
 
 namespace {
@@ -210,10 +209,9 @@ bool ServiceResolverThunk::IsFunctionAService(void* local_thunk) const {
 
     HMODULE module_1, module_2;
     // last check, call_stub should point to a KiXXSystemCall function on ntdll
-    if (!GetModuleHandleHelper(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
-                                  GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
-                               bit_cast<const wchar_t*>(ki_system_call),
-                               &module_1))
+    if (!GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
+                               GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+                           bit_cast<const wchar_t*>(ki_system_call), &module_1))
       return false;
 
     if (NULL != ntdll_base_) {
@@ -221,13 +219,11 @@ bool ServiceResolverThunk::IsFunctionAService(void* local_thunk) const {
       // able to patch a buffer in memory, so target_ is not inside ntdll.
       module_2 = ntdll_base_;
     } else {
-      if (!GetModuleHandleHelper(
-              GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
-                  GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
-              reinterpret_cast<const wchar_t*>(target_),
-              &module_2)) {
+      if (!GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
+                                 GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+                             reinterpret_cast<const wchar_t*>(target_),
+                             &module_2))
         return false;
-      }
     }
 
     if (module_1 != module_2)

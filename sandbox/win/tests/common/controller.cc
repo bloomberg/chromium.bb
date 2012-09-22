@@ -11,7 +11,6 @@
 #include "base/sys_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "sandbox/win/src/sandbox_factory.h"
-#include "sandbox/win/src/sandbox_utils.h"
 
 namespace {
 
@@ -300,10 +299,9 @@ int DispatchCall(int argc, wchar_t **argv) {
     return SBOX_TEST_INVALID_PARAMETER;
 
   HMODULE module;
-  if (!GetModuleHandleHelper(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
-                                 GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
-                             reinterpret_cast<wchar_t*>(&DispatchCall),
-                             &module))
+  if (!GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
+                             GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+                         reinterpret_cast<wchar_t*>(&DispatchCall), &module))
     return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
 
   std::string command_name = base::SysWideToMultiByte(argv[3], CP_UTF8);

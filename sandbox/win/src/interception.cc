@@ -453,9 +453,9 @@ bool InterceptionManager::PatchClientFunctions(DllInterceptionData* thunks,
   wchar_t* loader_get = reinterpret_cast<wchar_t*>(
                             ntdll_image.GetProcAddress("LdrGetDllHandle"));
   if (loader_get) {
-    if (!GetModuleHandleHelper(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
-                                   GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
-                               loader_get, &ntdll_base))
+    if (!GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
+                               GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+                           loader_get, &ntdll_base))
       return false;
   }
 

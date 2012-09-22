@@ -16,7 +16,6 @@
 #include "sandbox/win/src/sandbox.h"
 #include "sandbox/win/src/sandbox_nt_types.h"
 #include "sandbox/win/src/sandbox_types.h"
-#include "sandbox/win/src/sandbox_utils.h"
 #include "sandbox/win/src/target_process.h"
 
 // This code executes on the broker side, as a callback from the policy on the
@@ -47,9 +46,9 @@ bool SetupNtdllImports(TargetProcess *child) {
   wchar_t* loader_get = reinterpret_cast<wchar_t*>(
                             ntdll_image.GetProcAddress("LdrGetDllHandle"));
   if (loader_get) {
-    GetModuleHandleHelper(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
-                              GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
-                          loader_get, &ntdll);
+    GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
+                          GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+                      loader_get, &ntdll);
   }
 
   INIT_GLOBAL_NT(AllocateVirtualMemory);
