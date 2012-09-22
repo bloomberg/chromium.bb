@@ -844,7 +844,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       connection_string = l10n_util::GetStringUTF8(
           IDS_STATUSBAR_NETWORK_NO_NETWORK_TOOLTIP);
     }
-    accessibility::Speak(connection_string.c_str());
+    if (connection_string != last_connection_string_) {
+      last_connection_string_ = connection_string;
+      accessibility::Speak(connection_string);
+    }
   }
 
   void AddNetworkToList(std::vector<ash::NetworkIconInfo>* list,
@@ -1241,6 +1244,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   bool screen_locked_;
   ConnectionState connected_network_state_;
   std::string connected_network_path_;
+
+  std::string last_connection_string_;
 
   scoped_refptr<BluetoothAdapter> bluetooth_adapter_;
 
