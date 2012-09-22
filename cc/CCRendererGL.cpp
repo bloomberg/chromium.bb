@@ -284,9 +284,6 @@ void CCRendererGL::drawCheckerboardQuad(const DrawingFrame& frame, const CCCheck
     ASSERT(program && program->initialized());
     GLC(context(), context()->useProgram(program->program()));
 
-    SkColor color = quad->color();
-    GLC(context(), context()->uniform4f(program->fragmentShader().colorLocation(), SkColorGetR(color) / 255.0, SkColorGetG(color) / 255.0, SkColorGetB(color) / 255.0, 1));
-
     IntRect tileRect = quad->quadRect();
     float texOffsetX = tileRect.x();
     float texOffsetY = tileRect.y();

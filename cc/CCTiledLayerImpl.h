@@ -30,7 +30,6 @@ public:
     void setSkipsDraw(bool skipsDraw) { m_skipsDraw = skipsDraw; }
     void setTilingData(const CCLayerTilingData& tiler);
     void pushTileProperties(int, int, CCResourceProvider::ResourceId, const IntRect& opaqueRect);
-    void pushInvalidTile(int, int);
 
     void setContentsSwizzled(bool contentsSwizzled) { m_contentsSwizzled = contentsSwizzled; }
     bool contentsSwizzled() const { return m_contentsSwizzled; }

@@ -35,16 +35,6 @@ static const int debugTileBorderMissingTileColorRed = 255;
 static const int debugTileBorderMissingTileColorGreen = 0;
 static const int debugTileBorderMissingTileColorBlue = 0;
 
-static const int defaultCheckerboardColorRed = 241;
-static const int defaultCheckerboardColorGreen = 241;
-static const int defaultCheckerboardColorBlue = 241;
-static const int debugTileEvictedCheckerboardColorRed = 255;
-static const int debugTileEvictedCheckerboardColorGreen = 200;
-static const int debugTileEvictedCheckerboardColorBlue = 200;
-static const int debugTileInvalidatedCheckerboardColorRed = 128;
-static const int debugTileInvalidatedCheckerboardColorGreen = 200;
-static const int debugTileInvalidatedCheckerboardColorBlue = 245;
-
 class DrawableTile : public CCLayerTilingData::Tile {
     WTF_MAKE_NONCOPYABLE(DrawableTile);
 public:
@@ -156,19 +146,9 @@ void CCTiledLayerImpl::appendQuads(CCQuadSink& quadSink, CCAppendQuadsData& appe
                 continue;
 
             if (!tile || !tile->resourceId()) {
-                if (drawCheckerboardForMissingTiles()) {
-                    SkColor defaultColor = SkColorSetRGB(defaultCheckerboardColorRed, defaultCheckerboardColorGreen, defaultCheckerboardColorBlue);
-                    SkColor evictedColor = SkColorSetRGB(debugTileEvictedCheckerboardColorRed, debugTileEvictedCheckerboardColorGreen, debugTileEvictedCheckerboardColorBlue);
-                    SkColor invalidatedColor = SkColorSetRGB(debugTileInvalidatedCheckerboardColorRed, debugTileEvictedCheckerboardColorGreen, debugTileEvictedCheckerboardColorBlue);
-
-                    SkColor checkerColor;
-                    if (hasDebugBorders())
-                        checkerColor = tile ? invalidatedColor : evictedColor;
-                    else
-                        checkerColor = defaultColor;
-
-                    appendQuadsData.hadMissingTiles |= quadSink.append(CCCheckerboardDrawQuad::create(sharedQuadState, tileRect, checkerColor), appendQuadsData);
-                } else
+                if (drawCheckerboardForMissingTiles())
+                    appendQuadsData.hadMissingTiles |= quadSink.append(CCCheckerboardDrawQuad::create(sharedQuadState, tileRect), appendQuadsData);
+                else
                     appendQuadsData.hadMissingTiles |= quadSink.append(CCSolidColorDrawQuad::create(sharedQuadState, tileRect, backgroundColor()), appendQuadsData);
                 continue;
             }
@@ -216,15 +196,6 @@ void CCTiledLayerImpl::pushTileProperties(int i, int j, CCResourceProvider::Reso
         tile = createTile(i, j);
     tile->setResourceId(resourceId);
     tile->setOpaqueRect(opaqueRect);
-}
-
-void CCTiledLayerImpl::pushInvalidTile(int i, int j)
-{
-    DrawableTile* tile = tileAt(i, j);
-    if (!tile)
-        tile = createTile(i, j);
-    tile->setResourceId(0);
-    tile->setOpaqueRect(IntRect());
 }
 
 Region CCTiledLayerImpl::visibleContentOpaqueRegion() const

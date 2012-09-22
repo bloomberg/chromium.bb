@@ -215,20 +215,13 @@ void TiledLayerChromium::pushPropertiesTo(CCLayerImpl* layer)
         // FIXME: This should not ever be null.
         if (!tile)
             continue;
-
         tile->isInUseOnImpl = false;
-
         if (!tile->managedTexture()->haveBackingTexture()) {
-            // Evicted tiles get deleted from both layers
             invalidTiles.append(tile);
             continue;
         }
-
-        if (!tile->validForFrame) {
-            // Invalidated tiles are set so they can get different debug colors.
-            tiledLayer->pushInvalidTile(i, j);
+        if (!tile->validForFrame)
             continue;
-        }
 
         tiledLayer->pushTileProperties(i, j, tile->managedTexture()->resourceId(), tile->opaqueRect());
         tile->isInUseOnImpl = true;
