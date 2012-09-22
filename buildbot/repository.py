@@ -69,7 +69,7 @@ def IsInternalRepoCheckout(root):
 
 
 def CloneGitRepo(working_dir, repo_url, reference=None, bare=False,
-                 mirror=False, retries=2):
+                 mirror=False, retries=2, depth=None):
   """Clone given git repo
   Args:
     repo_url: git repo to clone
@@ -82,15 +82,23 @@ def CloneGitRepo(working_dir, repo_url, reference=None, bare=False,
     retries: If error code 128 is encountered, how many times to retry.  When
       128 is returned from git, it's essentially a server error- specifically
       common to manifest-versions and gerrit.
+    depth: If given, do a shallow clone limiting the objects pulled to just
+      that # of revs of history.  This option is mutually exclusive to
+      reference.
   """
   osutils.SafeMakedirs(working_dir)
   cmd = ['git', 'clone', repo_url, working_dir]
   if reference:
+    if depth:
+      raise ValueError("reference and depth are mutually exclusive "
+                       "options; please pick one or the other.")
     cmd += ['--reference', reference]
   if bare:
     cmd += ['--bare']
   if mirror:
     cmd += ['--mirror']
+  if depth:
+    cmd += ['--depth', str(int(depth))]
   cros_build_lib.RunCommandWithRetries(
       retries, cmd, cwd=working_dir, redirect_stdout=True, redirect_stderr=True,
       retry_on=[128])
@@ -132,6 +140,11 @@ class RepoRepository(object):
     repo_url: gitserver URL to fetch repo manifest from.
     directory: local path where to checkout the repository.
     branch: Branch to check out the manifest at.
+    referenced_repo: Repository to reference for git objects, if possible.
+    manifest: Which manifest.xml within the branch to use.  Effectively
+      default.xml if not given.
+    depth: Mutually exclusive option to referenced_repo; this limits the
+      checkout to a max commit history of the given integer.
   """
   DEFAULT_MANIFEST = 'default'
   # Use our own repo, in case android.kernel.org (the default location) is down.
@@ -146,8 +159,12 @@ class RepoRepository(object):
     # It's perfectly acceptable to pass in a reference pathway that isn't
     # usable.  Detect it, and suppress the setting so that any depth
     # settings aren't disabled due to it.
-    if referenced_repo is not None and not IsARepoRoot(referenced_repo):
-      referenced_repo = None
+    if referenced_repo is not None:
+      if depth is not None:
+        raise ValueError("referenced_repo and depth are mutually exclusive "
+                         "options; please pick one or the other.")
+      if not IsARepoRoot(referenced_repo):
+        referenced_repo = None
     self._referenced_repo = referenced_repo
     self._manifest = manifest
 
@@ -157,9 +174,7 @@ class RepoRepository(object):
       raise ValueError('Given directory %s is not the root of a repository.'
                        % self.directory)
 
-    if depth is not None and referenced_repo is None:
-      depth = int(depth)
-    self._depth = depth
+    self._depth = int(depth) if depth is not None else None
 
   def _SwitchToLocalManifest(self, local_manifest):
     """Reinitializes the repository if the manifest has changed."""
