@@ -805,18 +805,27 @@ class WebIntentPickerViews : public views::ButtonListener,
       size_t tag) OVERRIDE;
 
  private:
-  // Initialize the contents of the picker. After this call, contents_ will be
-  // non-NULL.
-  void InitContents();
+  // Update picker contents to reflect the current state of the model.
+  void UpdateContents();
 
-  // Initialize the main contents of the picker. (Suggestions, services).
-  void InitMainContents();
+  // Updates the dialog with the list of available services, suggestions,
+  // and a nice link to CWS to find more suggestions. This is the "Main"
+  // view of the picker.
+  void ShowAvailableServices();
+
+  // Informs the user that there are no services available to handle
+  // the intent, and that there are no suggestions from the Chrome Web Store.
+  void ShowNoServicesMessage();
 
   // Restore the contents of the picker to the initial contents.
   void ResetContents();
 
   // Resize the constrained window to the size of its contents.
   void SizeToContents();
+
+  // Returns the service selection question text used in the title
+  // of the picker.
+  const string16 GetActionTitle();
 
   // A weak pointer to the WebIntentPickerDelegate to notify when the user
   // chooses a service or cancels.
@@ -901,7 +910,6 @@ WebIntentPickerViews::WebIntentPickerViews(TabContents* tab_contents,
       extensions_(NULL),
       tab_contents_(tab_contents),
       webview_(new views::WebView(tab_contents->profile())),
-      contents_(NULL),
       window_(NULL),
       more_suggestions_link_(NULL),
       choose_another_service_link_(NULL),
@@ -911,10 +919,11 @@ WebIntentPickerViews::WebIntentPickerViews(TabContents* tab_contents,
       switches::kEnableFramelessConstrainedDialogs);
 
   model_->set_observer(this);
-  InitContents();
-
+  contents_ = new views::View();
   // Show the dialog.
   window_ = new ConstrainedWindowViews(tab_contents, this);
+
+  UpdateContents();
 }
 
 WebIntentPickerViews::~WebIntentPickerViews() {
@@ -971,7 +980,9 @@ void WebIntentPickerViews::SetActionString(const string16& action) {
   action_text_ = action;
 
   if (action_label_)
-    action_label_->SetText(action);
+    action_label_->SetText(GetActionTitle());
+    contents_->Layout();
+    SizeToContents();
 }
 
 void WebIntentPickerViews::OnExtensionInstallSuccess(const std::string& id) {
@@ -981,6 +992,7 @@ void WebIntentPickerViews::OnExtensionInstallFailure(const std::string& id) {
   extensions_->StopThrobber();
   more_suggestions_link_->SetEnabled(true);
   contents_->Layout();
+  SizeToContents();
 
   // TODO(binji): What to display to user on failure?
 }
@@ -993,15 +1005,10 @@ void WebIntentPickerViews::OnInlineDispositionAutoResize(
 }
 
 void WebIntentPickerViews::OnPendingAsyncCompleted() {
-  // Requests to both the WebIntentService and the Chrome Web Store have
-  // completed. If there are any services, installed or suggested, there's
-  // nothing to do.
-  if (model_->GetInstalledServiceCount() ||
-      model_->GetSuggestedExtensionCount())
-    return;
+  UpdateContents();
+}
 
-  // If there are no installed or suggested services at this point,
-  // inform the user about it.
+void WebIntentPickerViews::ShowNoServicesMessage() {
   contents_->RemoveAllChildViews(true);
   more_suggestions_link_ = NULL;
 
@@ -1033,8 +1040,8 @@ void WebIntentPickerViews::OnPendingAsyncCompleted() {
   body->SetText(l10n_util::GetStringUTF16(IDS_INTENT_PICKER_NO_SERVICES));
   grid_layout->AddView(body);
 
-  contents_->Layout();
-  SizeToContents();
+  int height = contents_->GetHeightForWidth(kWindowWidth);
+  contents_->SetSize(gfx::Size(kWindowWidth, height));
 }
 
 void WebIntentPickerViews::OnInlineDispositionWebContentsLoaded(
@@ -1106,9 +1113,9 @@ void WebIntentPickerViews::OnInlineDispositionWebContentsLoaded(
 }
 
 void WebIntentPickerViews::OnModelChanged(WebIntentPickerModel* model) {
-  if (waiting_view_ && !model->IsWaitingForSuggestions()) {
-    InitMainContents();
-  }
+  if (waiting_view_ && !model->IsWaitingForSuggestions())
+    UpdateContents();
+
   if (suggestions_label_) {
     string16 label_text = model->GetSuggestionsLinkText();
     suggestions_label_->SetText(label_text);
@@ -1195,22 +1202,31 @@ void WebIntentPickerViews::OnActionButtonClicked(
   delegate_->OnServiceChosen(service.url, service.disposition);
 }
 
-void WebIntentPickerViews::InitContents() {
-  DCHECK(!contents_);
-  contents_ = new views::View();
-
+void WebIntentPickerViews::UpdateContents() {
   if (model_ && model_->IsWaitingForSuggestions()) {
     contents_->RemoveAllChildViews(true);
     contents_->SetLayoutManager(new views::FillLayout());
     waiting_view_ = new WaitingView(this, use_close_button_);
     contents_->AddChildView(waiting_view_);
+    int height = contents_->GetHeightForWidth(kWindowWidth);
+    contents_->SetSize(gfx::Size(kWindowWidth, height));
     contents_->Layout();
+  } else if (model_->GetInstalledServiceCount() ||
+      model_->GetSuggestedExtensionCount()) {
+    ShowAvailableServices();
   } else {
-    InitMainContents();
+    ShowNoServicesMessage();
   }
+  SizeToContents();
 }
 
-void WebIntentPickerViews::InitMainContents() {
+const string16 WebIntentPickerViews::GetActionTitle() {
+  return (!action_text_.empty()) ?
+      action_text_ :
+      l10n_util::GetStringUTF16(IDS_INTENT_PICKER_CHOOSE_SERVICE);
+}
+
+void WebIntentPickerViews::ShowAvailableServices() {
   DCHECK(contents_);
   enum {
     kHeaderRowColumnSet,  // Column set for header layout.
@@ -1253,7 +1269,7 @@ void WebIntentPickerViews::InitMainContents() {
 
   // Header row.
   grid_layout->StartRow(0, kHeaderRowColumnSet);
-  action_label_ = new views::Label();
+  action_label_ = new views::Label(GetActionTitle());
   action_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   action_label_->SetFont(rb.GetFont(ui::ResourceBundle::MediumFont));
   grid_layout->AddView(action_label_);
@@ -1290,6 +1306,7 @@ void WebIntentPickerViews::InitMainContents() {
   more_suggestions_link_->set_listener(this);
   grid_layout->AddView(more_suggestions_link_, 1, 1, GridLayout::LEADING,
                        GridLayout::CENTER);
+  contents_->Layout();
 }
 
 void WebIntentPickerViews::ResetContents() {
@@ -1299,7 +1316,7 @@ void WebIntentPickerViews::ResetContents() {
   webview_ = NULL;
 
   // Re-initialize the UI.
-  InitMainContents();
+  UpdateContents();
 
   // Restore previous state.
   extensions_->Update();
