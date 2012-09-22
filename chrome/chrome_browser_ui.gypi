@@ -103,6 +103,8 @@
         # * tests and mocks.
         'browser/ui/alternate_error_tab_observer.cc',
         'browser/ui/alternate_error_tab_observer.h',
+        'browser/ui/android/android_about_app_info.cc',
+        'browser/ui/android/android_about_app_info.h',
         'browser/ui/android/certificate_viewer_android.cc',
         'browser/ui/android/chrome_http_auth_handler.cc',
         'browser/ui/android/chrome_http_auth_handler.h',
