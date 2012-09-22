@@ -18,7 +18,10 @@
  * eh_frame_headers
  */
 
+#include <stdint.h>
 
+void _pnacl_wrapper_start(uint32_t *info);
+void _start(uint32_t *info);
 
 /*
  * HACK:
@@ -74,3 +77,21 @@ static void __attribute__((constructor)) __do_eh_ctor(void) {
 static void __attribute__((destructor)) __do_eh_dtor(void) {
   __deregister_frame_info (__EH_FRAME_BEGIN__);
 }
+
+#if !defined(SHARED)
+
+/* This defines the entry point for a nexe produced by the PNaCl translator. */
+void __pnacl_start(uint32_t *info) {
+  /*
+   * TODO(mseaborn): Change the PPAPI shims to define
+   * _pnacl_wrapper_start() on all architectures so that we can remove
+   * the conditional here.
+   */
+#if USE_PNACL_SHIMS
+  _pnacl_wrapper_start(info);
+#else
+  _start(info);
+#endif
+}
+
+#endif

@@ -46,8 +46,7 @@ EXTRA_ENV = {
   # Library Strings
   'LD_ARGS' : '${STDLIB ? ${LD_ARGS_normal} : ${LD_ARGS_nostdlib}}',
 
-  'LD_ARGS_IRT_SHIM':
-    '--entry=_pnacl_wrapper_start -l:libpnacl_irt_shim.a',
+  'LD_ARGS_IRT_SHIM': '-l:libpnacl_irt_shim.a',
 
   'CRTBEGIN' : '${SHARED ? -l:crtbeginS.o : -l:crtbegin.o}',
   'CRTEND'   : '${SHARED ? -l:crtendS.o : -l:crtend.o}',
@@ -488,6 +487,8 @@ def RunLD(infile, outfile):
   ToggleDefaultCommandlineLD(inputs, infile)
   env.set('ld_inputs', *inputs)
   args = env.get('LD_ARGS') + ['-o', outfile]
+  if not env.getbool('SHARED') and env.getbool('STDLIB'):
+    args += ['--entry=__pnacl_start']
   args += env.get('LD_FLAGS')
   # If there is bitcode, there is also a metadata file.
   if infile and env.getbool('USE_META'):

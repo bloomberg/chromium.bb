@@ -2930,6 +2930,11 @@ libs-support-native() {
   mkdir -p "${destdir}"
 
   local flags="--pnacl-allow-native --pnacl-allow-translate -Wall -Werror"
+  if [ "$arch" = "x86-64" ]; then
+    flags="$flags -DUSE_PNACL_SHIMS=1"
+  else
+    flags="$flags -DUSE_PNACL_SHIMS=0"
+  fi
   local cc_cmd="${PNACL_CC_NEUTRAL} -arch ${arch} ${flags}"
 
   spushd "${PNACL_SUPPORT}"
