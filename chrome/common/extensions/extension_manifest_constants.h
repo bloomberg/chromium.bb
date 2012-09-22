@@ -33,6 +33,7 @@ namespace extension_manifest_keys {
   extern const char kDefaultLocale[];
   extern const char kDescription[];
   extern const char kDevToolsPage[];
+  extern const char kDisplayInLauncher[];
   extern const char kEventName[];
   extern const char kExcludeGlobs[];
   extern const char kExcludeMatches[];
@@ -197,6 +198,7 @@ namespace extension_manifest_errors {
   extern const char kInvalidDefaultLocale[];
   extern const char kInvalidDescription[];
   extern const char kInvalidDevToolsPage[];
+  extern const char kInvalidDisplayInLauncher[];
   extern const char kInvalidExcludeMatch[];
   extern const char kInvalidExcludeMatches[];
   extern const char kInvalidFileAccessList[];

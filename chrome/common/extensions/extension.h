@@ -1143,6 +1143,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   int launch_width_;
   int launch_height_;
 
+  // Should this app be shown in a launcher.
+  bool display_in_launcher_;
+
   // The Omnibox keyword for this extension, or empty if there is none.
   std::string omnibox_keyword_;
 

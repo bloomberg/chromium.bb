@@ -16,5 +16,6 @@
   },
   "permissions": [
     "cloudPrintPrivate"
-  ]
+  ],
+  "display_in_launcher": false
 }

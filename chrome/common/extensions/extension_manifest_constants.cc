@@ -26,6 +26,7 @@ const char kCurrentLocale[] = "current_locale";
 const char kDefaultLocale[] = "default_locale";
 const char kDescription[] = "description";
 const char kDevToolsPage[] = "devtools_page";
+const char kDisplayInLauncher[] = "display_in_launcher";
 const char kEventName[] = "event_name";
 const char kExcludeGlobs[] = "exclude_globs";
 const char kExcludeMatches[] = "exclude_matches";
@@ -226,6 +227,8 @@ const char kInvalidDescription[] =
     "Invalid value for 'description'.";
 const char kInvalidDevToolsPage[] =
     "Invalid value for 'devtools_page'.";
+const char kInvalidDisplayInLauncher[] =
+    "Invalid value for 'display_in_launcher'.";
 const char kInvalidExcludeMatch[] =
     "Invalid value for 'content_scripts[*].exclude_matches[*]': *";
 const char kInvalidExcludeMatches[] =

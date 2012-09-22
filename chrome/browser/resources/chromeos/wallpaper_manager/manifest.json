@@ -25,5 +25,6 @@
     }
   },
   "content_security_policy":
-    "default-src:none; object-src 'none'; script-src 'self'"
+    "default-src:none; object-src 'none'; script-src 'self'",
+  "display_in_launcher": false
 }
