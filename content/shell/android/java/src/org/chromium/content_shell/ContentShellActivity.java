@@ -15,7 +15,7 @@ import org.chromium.content.app.AppResource;
 import org.chromium.content.app.LibraryLoader;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.common.CommandLine;
-import org.chromium.ui.gfx.NativeWindow;
+import org.chromium.ui.gfx.ActivityNativeWindow;
 
 /**
  * Activity for managing the Content Shell.
@@ -29,6 +29,7 @@ public class ContentShellActivity extends Activity {
     public static final String DEFAULT_SHELL_URL = "http://www.google.com";
 
     private ShellManager mShellManager;
+    private ActivityNativeWindow mActivityNativeWindow;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,7 +44,9 @@ public class ContentShellActivity extends Activity {
 
         setContentView(R.layout.content_shell_activity);
         mShellManager = (ShellManager) findViewById(R.id.shell_container);
-        mShellManager.setWindow(new NativeWindow(this));
+        mActivityNativeWindow = new ActivityNativeWindow(this);
+        mActivityNativeWindow.restoreInstanceState(savedInstanceState);
+        mShellManager.setWindow(mActivityNativeWindow);
 
         String startupUrl = getUrlFromIntent(getIntent());
         if (!TextUtils.isEmpty(startupUrl)) {
@@ -67,6 +70,8 @@ public class ContentShellActivity extends Activity {
         if (activeShell != null) {
             outState.putString(ACTIVE_SHELL_URL_KEY, activeShell.getContentView().getUrl());
         }
+
+        mActivityNativeWindow.saveInstanceState(outState);
     }
 
     private void waitForDebuggerIfNeeded() {
@@ -115,6 +120,12 @@ public class ContentShellActivity extends Activity {
 
         ContentView view = getActiveContentView();
         if (view != null) view.onActivityResume();
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        mActivityNativeWindow.onActivityResult(requestCode, resultCode, data);
     }
 
     private static String getUrlFromIntent(Intent intent) {

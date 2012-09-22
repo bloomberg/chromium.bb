@@ -65,6 +65,13 @@ public class ShellManager extends FrameLayout {
     }
 
     /**
+     * @return The window used to generate all shells.
+     */
+    public NativeWindow getWindow() {
+        return mWindow;
+    }
+
+    /**
      * Sets the startup URL for new shell windows.
      */
     public void setStartupUrl(String url) {

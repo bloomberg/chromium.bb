@@ -161,7 +161,7 @@ class SelectFileDialog implements NativeWindow.IntentCallback{
             // Broadcast to the media scanner that there's a new photo on the device so it will
             // show up right away in the gallery (rather than waiting until the next time the media
             // scanner runs).
-            window.getActivity().sendBroadcast(new Intent(
+            window.sendBroadcast(new Intent(
                     Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, mCameraOutputUri));
         } else {
             // We get back a content:// URI from the system if the user picked a file from the

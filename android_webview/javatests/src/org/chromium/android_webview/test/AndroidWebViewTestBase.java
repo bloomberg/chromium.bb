@@ -21,7 +21,7 @@ import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.LoadUrlParams;
 import org.chromium.content.browser.util.CallbackHelper;
 import org.chromium.content.browser.util.TestCallbackHelperContainer;
-import org.chromium.ui.gfx.NativeWindow;
+import org.chromium.ui.gfx.ActivityNativeWindow;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -154,7 +154,7 @@ public class AndroidWebViewTestBase
                 getActivity(), ContentViewCore.PERSONALITY_VIEW);
         testContainerView.initialize(contentViewCore,
                 new AwContents(testContainerView, testContainerView.getInternalAccessDelegate(),
-                contentViewCore, contentsClient, new NativeWindow(getActivity()),
+                contentViewCore, contentsClient, new ActivityNativeWindow(getActivity()),
                 incognito, false));
         getActivity().addView(testContainerView);
         return testContainerView;

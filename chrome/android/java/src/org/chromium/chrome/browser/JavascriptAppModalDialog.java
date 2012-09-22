@@ -62,7 +62,7 @@ public class JavascriptAppModalDialog {
     @CalledByNative
     void showJavascriptAppModalDialog(NativeWindow window, int nativeDialogPointer) {
         assert window != null;
-        Context context = window.getActivity();
+        Context context = window.getContext();
 
         // Cache the native dialog pointer so that we can use it to return the
         // response.
