@@ -494,6 +494,7 @@ void Dispatcher::OnLoaded(
     // TODO(miket): consider enhancing WebView to allow removing
     // single stylesheets, or else to edit the pattern set associated
     // with one.
+    RenderThread::Get()->EnsureWebKitInitialized();
     WebVector<WebString> patterns;
     patterns.assign(platform_app_patterns);
     WebView::addUserStyleSheet(
