@@ -97,7 +97,7 @@ NMF_TARGET = """\
       'product_name': '%(NAME)s.nmf',
       'product_dir': '<(PRODUCT_DIR)/%(TOOLCHAIN)s',
       'type': 'none',
-      'make_valid_configurations': ['newlib-debug', 'newlib-release', 'glibc-debug', 'glibc-release'],
+      'make_valid_configurations': ['%(TOOLCHAIN)s-debug', '%(TOOLCHAIN)s-release'],
       'actions': [
         {
           'action_name': 'nmf',
@@ -290,9 +290,9 @@ def ProcessDSC(filename, outfile=None):
       else:
         target['CONFIGS'] = ''
         target['HOST'] = 'linux'
-        target['CFLAGS'] = ['-fPIC']
+        target['CFLAGS'].append('-fPIC')
       if target['TYPE'] == 'main':
-        target['GYP_TYPE'] = 'executable'
+        target['GYP_TYPE'] = 'shared_library'
         if win32:
           target['EXT'] = ''
         else:

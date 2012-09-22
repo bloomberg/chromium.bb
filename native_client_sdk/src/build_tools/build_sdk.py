@@ -480,7 +480,11 @@ def BuildStepCopyExamples(pepperdir, toolchains, build_experimental):
   plat = getos.GetPlatform()
   for arch in LIB_DICT[plat]:
     buildbot_common.MakeDir(os.path.join(libdir, '%s_%s_host' % (plat, arch)))
-    for config in ['Debug', 'Release']:
+    if options.gyp and plat != 'win':
+      configs = ['debug', 'release']
+    else:
+      configs = ['Debug', 'Release']
+    for config in configs:
       buildbot_common.MakeDir(os.path.join(libdir, '%s_%s_host' % (plat, arch),
                               config))
 

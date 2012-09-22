@@ -351,14 +351,21 @@ def ProcessHTML(srcroot, dstroot, desc, toolchains):
   srcfile = os.path.join(srcroot, 'index.html')
   tools = GetPlatforms(toolchains, desc['TOOLS'])
 
-  configs = ['Debug', 'Release']
+  if use_gyp and getos.GetPlatform() != 'win':
+    configs = ['debug', 'release']
+  else:
+    configs = ['Debug', 'Release']
 
   for tool in tools:
     for cfg in configs:
       dstfile = os.path.join(outdir, 'index_%s_%s.html' % (tool, cfg))
       print 'Writing from %s to %s' % (srcfile, dstfile)
+      if use_gyp:
+        path = "build/%s-%s" % (tool, cfg)
+      else:
+        path = "%s/%s" % (tool, cfg)
       replace = {
-        '<config>': cfg,
+        '<path>': path,
         '<NAME>': name,
         '<TITLE>': desc['TITLE'],
         '<tc>': tool
@@ -474,7 +481,8 @@ def ProcessProject(srcroot, dstroot, desc, toolchains):
 
 def GenerateMasterMakefile(in_path, out_path, projects):
   """Generate a Master Makefile that builds all examples. """
-  replace = {  '__PROJECT_LIST__' : SetVar('PROJECTS', projects) }
+  replace = { '__PROJECT_LIST__' : SetVar('PROJECTS', projects) }
+
   WriteReplaced(in_path, out_path, replace)
 
   outdir = os.path.dirname(os.path.abspath(out_path))
@@ -545,7 +553,10 @@ def main(argv):
     master_projects.setdefault(desc['DEST'], []).append(desc['NAME'])
 
   if options.master:
-    master_in = os.path.join(SDK_EXAMPLE_DIR, 'Makefile')
+    if use_gyp:
+      master_in = os.path.join(SDK_EXAMPLE_DIR, 'Makefile_gyp')
+    else:
+      master_in = os.path.join(SDK_EXAMPLE_DIR, 'Makefile')
     for dest, projects in master_projects.iteritems():
       master_out = os.path.join(options.dstroot, dest, 'Makefile')
       GenerateMasterMakefile(master_in, master_out, projects)
