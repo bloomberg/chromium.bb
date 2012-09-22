@@ -338,10 +338,12 @@ public:
     int alphaLocation() const { return m_alphaLocation; }
     int texTransformLocation() const { return m_texTransformLocation; }
     int frequencyLocation() const { return m_frequencyLocation; }
+    int colorLocation() const { return m_colorLocation; }
 private:
     int m_alphaLocation;
     int m_texTransformLocation;
     int m_frequencyLocation;
+    int m_colorLocation;
 };
 
 } // namespace cc

@@ -8,13 +8,14 @@
 
 namespace cc {
 
-PassOwnPtr<CCCheckerboardDrawQuad> CCCheckerboardDrawQuad::create(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect)
+PassOwnPtr<CCCheckerboardDrawQuad> CCCheckerboardDrawQuad::create(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, SkColor color)
 {
-    return adoptPtr(new CCCheckerboardDrawQuad(sharedQuadState, quadRect));
+    return adoptPtr(new CCCheckerboardDrawQuad(sharedQuadState, quadRect, color));
 }
 
-CCCheckerboardDrawQuad::CCCheckerboardDrawQuad(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect)
+CCCheckerboardDrawQuad::CCCheckerboardDrawQuad(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, SkColor color)
     : CCDrawQuad(sharedQuadState, CCDrawQuad::Checkerboard, quadRect)
+    , m_color(color)
 {
 }
 

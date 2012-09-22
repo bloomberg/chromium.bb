@@ -6,6 +6,7 @@
 #define CCCheckerboardDrawQuad_h
 
 #include "CCDrawQuad.h"
+#include "SkColor.h"
 #include <wtf/PassOwnPtr.h>
 
 namespace cc {
@@ -14,11 +15,15 @@ namespace cc {
 
 class CCCheckerboardDrawQuad : public CCDrawQuad {
 public:
-    static PassOwnPtr<CCCheckerboardDrawQuad> create(const CCSharedQuadState*, const IntRect&);
+    static PassOwnPtr<CCCheckerboardDrawQuad> create(const CCSharedQuadState*, const IntRect&, SkColor);
+
+    SkColor color() const { return m_color; };
 
     static const CCCheckerboardDrawQuad* materialCast(const CCDrawQuad*);
 private:
-    CCCheckerboardDrawQuad(const CCSharedQuadState*, const IntRect&);
+    CCCheckerboardDrawQuad(const CCSharedQuadState*, const IntRect&, SkColor);
+
+    SkColor m_color;
 };
 
 #pragma pack(pop)
