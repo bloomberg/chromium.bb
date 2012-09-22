@@ -139,7 +139,11 @@ void SearchTabHelper::Observe(
                   content::Source<content::RenderWidgetHost>(source).ptr());
         DCHECK(IsNTP(web_contents()->GetURL()));
         ntp_load_state_ = PAINTED;
-        UpdateModelBasedOnURL(web_contents()->GetURL(), ntp_load_state_, false);
+        if (model_.mode().is_ntp()) {
+          UpdateModelBasedOnURL(web_contents()->GetURL(),
+                                ntp_load_state_,
+                                false);
+        }
         registrar_.Remove(
             this,
             content::NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_BACKING_STORE,
