@@ -199,7 +199,8 @@ WebIntentPickerController::WebIntentPickerController(
       intents_dispatcher_(NULL),
       service_tab_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(timer_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(timer_factory_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(dispatcher_factory_(this)) {
   content::NavigationController* controller =
       &tab_contents->web_contents()->GetController();
   registrar_.Add(this, content::NOTIFICATION_LOAD_START,
@@ -217,10 +218,13 @@ WebIntentPickerController::~WebIntentPickerController() {
 // TODO(gbillock): combine this with ShowDialog.
 void WebIntentPickerController::SetIntentsDispatcher(
     content::WebIntentsDispatcher* intents_dispatcher) {
+  // TODO(gbillock): This is to account for multiple dispatches in the same tab.
+  // That is currently not a well-handled case, and this is a band-aid.
+  dispatcher_factory_.InvalidateWeakPtrs();
   intents_dispatcher_ = intents_dispatcher;
   intents_dispatcher_->RegisterReplyNotification(
       base::Bind(&WebIntentPickerController::OnSendReturnMessage,
-                 weak_ptr_factory_.GetWeakPtr()));
+                 dispatcher_factory_.GetWeakPtr()));
 
   // Initialize the reporting bucket.
   const webkit_glue::WebIntentData& intent = intents_dispatcher_->GetIntent();

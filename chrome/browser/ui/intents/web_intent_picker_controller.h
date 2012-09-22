@@ -307,10 +307,16 @@ class WebIntentPickerController
   // Request consumer used when asynchronously loading favicons.
   CancelableRequestConsumerTSimple<size_t> favicon_consumer_;
 
+  // Factory for weak pointers used in callbacks for async calls to load the
+  // picker model.
   base::WeakPtrFactory<WebIntentPickerController> weak_ptr_factory_;
 
   // Timer factory for minimum display time of "waiting" dialog.
   base::WeakPtrFactory<WebIntentPickerController> timer_factory_;
+
+  // Weak pointers for the dispatcher OnSendReturnMessage will not be
+  // cancelled on picker close.
+  base::WeakPtrFactory<WebIntentPickerController> dispatcher_factory_;
 
   // Bucket identifier for UMA reporting. Saved off in a field
   // to avoid repeated calculation of the bucket across
