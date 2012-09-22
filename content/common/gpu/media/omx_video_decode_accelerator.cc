@@ -190,7 +190,8 @@ bool OmxVideoDecodeAccelerator::CreateComponent() {
                         PLATFORM_FAILURE, false);
   RETURN_ON_FAILURE(num_components == 1, "No components for: " << role_name,
                     PLATFORM_FAILURE, false);
-  component_name_is_nvidia_h264ext_ = component == "OMX.Nvidia.h264ext.decode";
+  component_name_is_nvidia_h264ext_ = StartsWithASCII(
+      component, "OMX.Nvidia.h264ext.decode", true);
 
   // Get the handle to the component.
   result = omx_gethandle(
@@ -517,6 +518,22 @@ void OmxVideoDecodeAccelerator::OnReachedIdleInInitializing() {
     RETURN_ON_OMX_FAILURE(result,
                           "Resource Allocation failed",
                           PLATFORM_FAILURE,);
+
+    // The OMX spec doesn't say whether (0,0) is bottom-left or top-left, but
+    // NVIDIA OMX implementation used with this class chooses the opposite
+    // of other APIs used for HW decode (DXVA, OS/X, VAAPI).  So we request
+    // a mirror here to avoid having to track Y-orientation throughout the
+    // stack (particularly unattractive because this is exposed to ppapi
+    // plugin authors and NaCl programs).
+    OMX_CONFIG_MIRRORTYPE mirror_config;
+    InitParam(*this, &mirror_config);
+    result = OMX_GetConfig(component_handle_,
+                           OMX_IndexConfigCommonMirror, &mirror_config);
+    RETURN_ON_OMX_FAILURE(result, "Failed to get mirror", PLATFORM_FAILURE,);
+    mirror_config.eMirror = OMX_MirrorVertical;
+    result = OMX_SetConfig(component_handle_,
+                           OMX_IndexConfigCommonMirror, &mirror_config);
+    RETURN_ON_OMX_FAILURE(result, "Failed to set mirror", PLATFORM_FAILURE,);
   }
   BeginTransitionToState(OMX_StateExecuting);
 }
