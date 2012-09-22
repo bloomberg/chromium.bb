@@ -7,11 +7,10 @@
 """Unit tests for cros_portage_upgrade.py."""
 
 import exceptions
-import unittest
 
 import mox
 
-from chromite.lib import cros_test_lib as test_lib
+from chromite.lib import cros_test_lib
 from chromite.lib import gdata_lib
 from chromite.lib import osutils
 from chromite.lib import table as tablelib
@@ -50,7 +49,7 @@ class SSFeed(object):
       self.entry.append(SSRow(row, cols))
 
 
-class UploaderTest(test_lib.MoxTestCase):
+class UploaderTest(cros_test_lib.MoxOutputTestCase):
   """Test the functionality of upload_package_status.Uploader class."""
 
   COL_PKG = 'Package'
@@ -116,9 +115,6 @@ class UploaderTest(test_lib.MoxTestCase):
   EMAIL = 'knights@ni.com'
   PASSWORD = 'the'
 
-  def setUp(self):
-    mox.MoxTestBase.setUp(self)
-
   def _MockUploader(self, table=None):
     """Set up a mocked Uploader object."""
     uploader = self.mox.CreateMock(ups.Uploader)
@@ -132,7 +128,8 @@ class UploaderTest(test_lib.MoxTestCase):
 
     uploader._csv_table = table
     uploader._scomm = self.mox.CreateMock(gdata_lib.SpreadsheetComm)
-    uploader._creds = test_lib.EasyAttr(user=self.EMAIL, password=self.PASSWORD)
+    uploader._creds = cros_test_lib.EasyAttr(user=self.EMAIL,
+                                             password=self.PASSWORD)
     uploader._ss_row_cache = self._CreateRowCache(table)
 
     return uploader
@@ -340,12 +337,8 @@ class UploaderTest(test_lib.MoxTestCase):
     self.mox.VerifyAll()
 
 
-class MainTest(test_lib.MoxTestCase):
+class MainTest(cros_test_lib.MoxOutputTestCase):
   """Test argument handling at the main method level."""
-
-  def setUp(self):
-    """Setup for all tests in this class."""
-    mox.MoxTestBase.setUp(self)
 
   def testHelp(self):
     """Test that --help is functioning"""
@@ -479,4 +472,4 @@ class MainTest(test_lib.MoxTestCase):
 
 
 if __name__ == '__main__':
-  unittest.main()
+  cros_test_lib.main()

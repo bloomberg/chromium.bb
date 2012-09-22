@@ -462,10 +462,3 @@ class Table(object):
     for row in self._rows:
       vals = [row.get(col, self.EMPTY_CELL) for col in cols]
       filehandle.write(','.join(vals) + '\n')
-
-# Support having this module test itself if run as __main__, by leveraging
-# the table_unittest module.
-# Also, the unittests serve as extra documentation.
-if __name__ == "__main__":
-  import table_unittest
-  table_unittest.unittest.main(table_unittest)

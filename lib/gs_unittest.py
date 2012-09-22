@@ -11,9 +11,6 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__)))))
 
-import mox
-import unittest
-
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import gs
@@ -21,7 +18,7 @@ from chromite.lib import osutils
 
 
 #pylint: disable=E1101,W0212
-class GSContextTest(cros_test_lib.TempDirMixin, mox.MoxTestBase):
+class GSContextTest(cros_test_lib.MoxTempDirTestCase):
   """Tests for GSContext()"""
 
   _GSResponsePreconditionFailed = """
@@ -30,7 +27,6 @@ class GSContextTest(cros_test_lib.TempDirMixin, mox.MoxTestBase):
         reason=Precondition Failed."""
 
   def setUp(self):
-    cros_test_lib.TempDirMixin.setUp(self)
     for attr in ('gsutil_bin', 'boto_file', 'acl_file'):
       path = os.path.join(self.tempdir, attr)
       osutils.WriteFile(path, '')
@@ -39,17 +35,11 @@ class GSContextTest(cros_test_lib.TempDirMixin, mox.MoxTestBase):
                      'DEFAULT_GSUTIL_BIN': self.gsutil_bin}
     self.bad_path = os.path.join(self.tempdir, 'nonexistent')
 
-    self._boto_config_env = os.environ.pop("BOTO_CONFIG", None)
-    mox.MoxTestBase.setUp(self)
+    # Protect ourselves from preexisting BOTO_CONFIG env settings.
+    os.environ.pop("BOTO_CONFIG", None)
 
     # No command should be ran w/out us explicitly asseting it.
     self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
-
-  def tearDown(self):
-    mox.MoxTestBase.tearDown(self)
-    cros_test_lib.TempDirMixin.tearDown(self)
-    if self._boto_config_env is not None:
-      os.environ['BOTO_CONFIG'] = self._boto_config_env
 
   def MkContext(self, *args, **kwds):
     # Note we derive on the fly here so we can ensure that
@@ -212,7 +202,6 @@ class GSContextTest(cros_test_lib.TempDirMixin, mox.MoxTestBase):
     self.mox.VerifyAll()
 
 if __name__ == '__main__':
-  cros_build_lib.SetupBasicLogging()
-  unittest.main()
+  cros_test_lib.main()
 
 

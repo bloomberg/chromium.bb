@@ -10,22 +10,94 @@ from __future__ import print_function
 import cStringIO
 import exceptions
 import mox
+import os
 import re
 import sys
 import unittest
 
 import osutils
 import terminal
+import cros_build_lib
 
 
-class TempDirMixin(object):
-  """Mixin used to give each test a tempdir that is cleansed upon finish"""
+def _stacked_setUp(self):
+  self.__test_was_run__ = False
+  try:
+    for target in self.__setUp_stack__:
+      target(self)
+  except:
+    # TestCase doesn't trigger tearDowns if setUp failed; thus
+    # manually force it ourselves to ensure cleanup occurs.
+    _stacked_tearDown(self)
+    raise
 
-  def setUp(self):
-    osutils._TempDirSetup(self)
+  # Now mark the object as fully setUp; this is done so that
+  # any last minute assertions in tearDown can know if they should
+  # run or not.
+  self.__test_was_run__ = True
 
-  def tearDown(self):
-    osutils._TempDirTearDown(self, False)
+
+def _stacked_tearDown(self):
+  exc_info = None
+  for target in self.__tearDown_stack__:
+    #pylint: disable=W0702
+    try:
+      target(self)
+    except:
+      # Preserve the exception, throw it after running
+      # all tearDowns; we throw just the first also.  We suppress
+      # pylint's warning here since it can't understand that we're
+      # actually raising the exception, just in a nonstandard way.
+      if exc_info is None:
+        exc_info = sys.exc_info()
+
+  if exc_info:
+    # Chuck the saved exception, w/ the same TB from
+    # when it occurred.
+    raise exc_info[0], exc_info[1], exc_info[2]
+
+
+class StackedSetup(type):
+
+  """Metaclass that extracts automatically stacks setUp and tearDown calls.
+
+  Basically this exists to make it easier to do setUp *correctly*, while also
+  suppressing some unittests misbehaviours- for example, the fact that if a
+  setUp throws an exception the corresponding tearDown isn't ran.  This sorts
+  it.
+
+  Usage of it is via usual metaclass approach; just set
+  `__metaclass__ = StackedSetup` .
+
+  Note that this metaclass is designed such that because this is a metaclass,
+  rather than just a scope mutator, all derivative classes derive from this
+  metaclass; thus all derivative TestCase classes get automatic stacking."""
+  def __new__(mcs, name, bases, scope):
+
+    def stack_methods(method_name, default, bases=bases):
+      storage = '__%s_stack__' % method_name
+      chain = []
+      for base in bases:
+        chain.extend(getattr(base, storage, []))
+        # We grab the classes setUp/tearDown (if existent) since one of the
+        # parents may be a mixin, meaning untouched/unseen by this metaclass.
+        chain.append(getattr(base, method_name, default))
+      chain.append(scope.pop(method_name, default))
+      # We do not want the default integrated in; it would result in invoking
+      # setup/teardown individual methods multiple of times; filter it.
+      # Note to do this filtering, we unwind any instance/static/classmethod
+      # wrapping in place; this is what 'im_func' is on descriptor protocol
+      # methods.
+      chain = [getattr(x, 'im_func', x) for x in chain]
+      scope[storage] = tuple(x for x in chain if x is not default)
+      scope[method_name] = default
+
+    stack_methods('setUp', _stacked_setUp)
+    # Note, we walk teardown in reverse for classes- this is to match
+    # what people would expect considering the stack aspect of this class.
+    stack_methods('tearDown', _stacked_tearDown, bases=reversed(bases))
+
+    return type.__new__(mcs, name, bases, scope)
 
 
 class EasyAttr(dict):
@@ -59,6 +131,7 @@ class EasyAttr(dict):
 
   def __dir__(self):
     return self.keys()
+
 
 class OutputCapturer(object):
   """Class with limited support for capturing test stdout/stderr output.
@@ -175,14 +248,80 @@ class OutputCapturer(object):
     """
     return self._GetOutputLines(self.GetStderr(), include_empties)
 
+
+
 class TestCase(unittest.TestCase):
+
+  __metaclass__ = StackedSetup
+
+  def __init__(self, *args, **kwds):
+    unittest.TestCase.__init__(self, *args, **kwds)
+    # This is set to keep pylint from complaining.
+    self.__test_was_run__ = False
+
+  def setUp(self):
+    self.__saved_env__ = os.environ.copy()
+    self.__saved_cwd__ = os.getcwd()
+
+  def tearDown(self):
+    for var in set(os.environ).difference(self.__saved_env__):
+      del os.environ[var]
+    # Just brute force overwrite whats there with the
+    # saved copy.
+    os.environ.update(self.__saved_env__)
+    os.chdir(self.__saved_cwd__)
+
+  def assertRaises2(self, exception, functor, *args, **kwargs):
+    """Like assertRaises, just with checking of the excpetion.
+
+    args:
+      exception: The expected exception type to intecept.
+      functor: The function to invoke.
+      args: Positional args to pass to the function.
+      kwargs: Optional args to pass to the function.  Note we pull
+        exact_kls, msg, and check_attrs from these kwargs.
+      exact_kls: If given, the exception raise must be *exactly* that class
+        type; derivatives are a failure.
+      check_attrs: If given, a mapping of attribute -> value to assert on
+        the resultant exception.  Thus if you wanted to catch a ENOENT, you
+        would do:
+          assertRaises2(EnvironmentError, func, args,
+                        attrs={"errno":errno.ENOENT})
+      msg: The error message to be displayed if the exception isn't raised.
+        If not given, a suitable one is defaulted to.
+      returns: The exception object.
+    """
+    exact_kls = kwargs.pop("exact_kls", None)
+    check_attrs = kwargs.pop("check_attrs", {})
+    msg = kwargs.pop("msg", None)
+    if msg is None:
+      msg = ("%s(*%r, **%r) didn't throw an exception"
+             % (functor.__name__, args, kwargs))
+    try:
+      functor(*args, **kwargs)
+      raise AssertionError(msg)
+    except exception, e:
+      if exact_kls:
+        self.assertEqual(e.__class__, exception)
+      bad = []
+      for attr, required in check_attrs.iteritems():
+        self.assertTrue(hasattr(e, attr),
+                        msg="%s lacks attr %s" % (e, attr))
+        value = getattr(e, attr)
+        if value != required:
+          bad.append("%s attr is %s, needed to be %s"
+                     % (attr, value, required))
+      if bad:
+        raise AssertionError("\n".join(bad))
+      return e
+
+
+class OutputTestCase(TestCase):
   """Base class for cros unit tests with utility methods."""
 
-  __slots__ = ['_output_capturer']
-
-  def __init__(self, arg):
+  def __init__(self, *args, **kwds):
     """Base class __init__ takes a second argument."""
-    unittest.TestCase.__init__(self, arg)
+    TestCase.__init__(self, *args, **kwds)
     self._output_capturer = None
 
   def OutputCapturer(self):
@@ -382,7 +521,7 @@ class TestCase(unittest.TestCase):
 
     If the func does not raise a SystemExit with exit code 0 then assert.
     """
-    returnval, exit_code = self.FuncCatchSystemExit(func, *args, **kwargs)
+    exit_code = self.FuncCatchSystemExit(func, *args, **kwargs)[1]
     self.assertFalse(exit_code is None,
                       msg='Expected system exit code 0, but caught none')
     self.assertTrue(exit_code == 0,
@@ -394,7 +533,7 @@ class TestCase(unittest.TestCase):
 
     If the func does not raise a non-zero SystemExit code then assert.
     """
-    returnval, exit_code = self.FuncCatchSystemExit(func, *args, **kwargs)
+    exit_code = self.FuncCatchSystemExit(func, *args, **kwargs)[1]
     self.assertFalse(exit_code is None,
                       msg='Expected non-zero system exit code, but caught none')
     self.assertFalse(exit_code == 0,
@@ -409,5 +548,57 @@ class TestCase(unittest.TestCase):
     except error as ex:
       return ex
 
-class MoxTestCase(TestCase, mox.MoxTestBase):
-  """Add mox.MoxTestBase super class to TestCase."""
+
+class TempDirTestCase(TestCase):
+  """Mixin used to give each test a tempdir that is cleansed upon finish"""
+
+  sudo_cleanup = False
+
+  def __init__(self, *args, **kwds):
+    TestCase.__init__(self, *args, **kwds)
+    self.tempdir = None
+
+  def setUp(self):
+    #pylint: disable=W0212
+    osutils._TempDirSetup(self)
+
+  def tearDown(self):
+    #pylint: disable=W0212
+    osutils._TempDirTearDown(self, self.sudo_cleanup)
+
+
+class MoxTestCase(TestCase):
+  """Mox based test case; compatible with StackedSetup"""
+
+  mox_suppress_verify_all = False
+
+  def setUp(self):
+    self.mox = mox.Mox()
+    self.stubs = mox.stubout.StubOutForTesting()
+
+  def tearDown(self):
+    try:
+      if self.__test_was_run__ and not self.mox_suppress_verify_all:
+        # This means the test code was actually ran.
+        # force a verifyall
+        self.mox.VerifyAll()
+    finally:
+      if hasattr(self, 'mox'):
+        self.mox.UnsetStubs()
+      if hasattr(self, 'stubs'):
+        self.stubs.UnsetAll()
+        self.stubs.SmartUnsetAll()
+
+
+class MoxTempDirTestCase(TempDirTestCase, MoxTestCase):
+  """Convenience class mixing TempDir and Mox"""
+
+
+class MoxOutputTestCase(OutputTestCase, MoxTestCase):
+  """Conevenience class mixing OutputTestCase and MoxTestCase."""
+
+
+def main():
+  """Helper wrapper around unittest.main.  Invoke this, not unittest.main."""
+  cros_build_lib.SetupBasicLogging()
+  unittest.main()

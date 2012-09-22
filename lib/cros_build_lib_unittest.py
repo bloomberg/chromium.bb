@@ -14,11 +14,8 @@ import errno
 import itertools
 import logging
 import mox
-import shutil
 import signal
-import tempfile
 import time
-import unittest
 import __builtin__
 
 from chromite.buildbot import constants
@@ -29,7 +26,7 @@ from chromite.lib import signals as cros_signals
 
 # pylint: disable=W0212,R0904
 
-class TestRunCommandNoMock(unittest.TestCase):
+class TestRunCommandNoMock(cros_test_lib.TestCase):
   """Class that tests RunCommand by not mocking subprocess.Popen"""
 
   def testErrorCodeNotRaisesError(self):
@@ -55,14 +52,13 @@ def _ForceLoggingLevel(functor):
   return inner
 
 
-class TestRunCommand(unittest.TestCase):
+class TestRunCommand(cros_test_lib.MoxTestCase):
 
   def setUp(self):
     # Get the original value for SIGINT so our signal() mock can return the
     # correct thing.
     self._old_sigint = signal.getsignal(signal.SIGINT)
 
-    self.mox = mox.Mox()
     self.mox.StubOutWithMock(cros_build_lib, '_Popen', use_mock_anything=True)
     self.mox.StubOutWithMock(signal, 'signal')
     self.mox.StubOutWithMock(signal, 'getsignal')
@@ -70,10 +66,6 @@ class TestRunCommand(unittest.TestCase):
     self.proc_mock = self.mox.CreateMockAnything()
     self.error = 'test error'
     self.output = 'test output'
-
-  def tearDown(self):
-    # Unset anything that we set with mox.
-    self.mox.UnsetStubs()
 
   @contextlib.contextmanager
   def _SetupPopen(self, cmd, **kwds):
@@ -375,7 +367,7 @@ class TestRunCommand(unittest.TestCase):
                   rc_kv=dict(user='MMMMMonster', shell=True))
 
 
-class TestRunCommandLogging(cros_test_lib.TempDirMixin, unittest.TestCase):
+class TestRunCommandLogging(cros_test_lib.TempDirTestCase):
 
   @_ForceLoggingLevel
   def testLogStdoutToFile(self):
@@ -413,7 +405,7 @@ class TestRunCommandLogging(cros_test_lib.TempDirMixin, unittest.TestCase):
     self.assertEqual(osutils.ReadFile(log), 'monkeys4\nmonkeys5\n')
 
 
-class TestRunCommandWithRetries(unittest.TestCase):
+class TestRunCommandWithRetries(cros_test_lib.TestCase):
 
   @osutils.TempDirDecorator
   def testBasicRetry(self):
@@ -474,16 +466,11 @@ class TestRunCommandWithRetries(unittest.TestCase):
     self.mox.VerifyAll()
 
 
-class TestTimedCommand(unittest.TestCase):
+class TestTimedCommand(cros_test_lib.MoxTestCase):
   """Tests for TimedCommand()"""
 
   def setUp(self):
-    self.mox = mox.Mox()
     self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
-
-  def tearDown(self):
-    self.mox.UnsetStubs()
-    self.mox.VerifyAll()
 
   def testBasic(self):
     """Make sure simple stuff works."""
@@ -513,17 +500,11 @@ class TestTimedCommand(unittest.TestCase):
                                 timed_log_msg='msg! %s', shell=True)
 
 
-class TestListFiles(unittest.TestCase):
-
-  def setUp(self):
-    self.root_dir = tempfile.mkdtemp(prefix='listfiles_unittest')
-
-  def tearDown(self):
-    shutil.rmtree(self.root_dir)
+class TestListFiles(cros_test_lib.TempDirTestCase):
 
   def _CreateNestedDir(self, dir_structure):
     for entry in dir_structure:
-      full_path = os.path.join(os.path.join(self.root_dir, entry))
+      full_path = os.path.join(os.path.join(self.tempdir, entry))
       # ensure dirs are created
       try:
         os.makedirs(os.path.dirname(full_path))
@@ -546,9 +527,9 @@ class TestListFiles(unittest.TestCase):
                      'three/extra.conf']
     self._CreateNestedDir(dir_structure)
 
-    files = cros_build_lib.ListFiles(self.root_dir)
+    files = cros_build_lib.ListFiles(self.tempdir)
     for f in files:
-      f = f.replace(self.root_dir, '').lstrip('/')
+      f = f.replace(self.tempdir, '').lstrip('/')
       if f not in dir_structure:
         self.fail('%s was not found in %s' % (f, dir_structure))
 
@@ -556,17 +537,17 @@ class TestListFiles(unittest.TestCase):
     """Test that we return nothing when directories are empty."""
     dir_structure = ['one/', 'two/', 'one/a/']
     self._CreateNestedDir(dir_structure)
-    files = cros_build_lib.ListFiles(self.root_dir)
+    files = cros_build_lib.ListFiles(self.tempdir)
     self.assertEqual(files, [])
 
   def testNoSuchDir(self):
     try:
-      cros_build_lib.ListFiles('/me/no/existe')
+      cros_build_lib.ListFiles(os.path.join(self.tempdir, 'missing'))
     except OSError, err:
       self.assertEqual(err.errno, errno.ENOENT)
 
 
-class HelperMethodSimpleTests(unittest.TestCase):
+class HelperMethodSimpleTests(cros_test_lib.TestCase):
   """Tests for various helper methods without using mox."""
 
   def _TestChromeosVersion(self, test_str, expected=None):
@@ -602,10 +583,8 @@ class YNInteraction():
     self.expected_result = expected_result
 
 
-class InputTest(cros_test_lib.MoxTestCase):
+class InputTest(cros_test_lib.MoxOutputTestCase):
 
-  def setUp(self):
-    mox.MoxTestBase.setUp(self)
 
   def testGetInput(self):
     self.mox.StubOutWithMock(__builtin__, 'raw_input')
@@ -722,7 +701,7 @@ class InputTest(cros_test_lib.MoxTestCase):
         self.assertTrue(False, 'Should have thrown an exception')
 
 
-class TestContextManagerStack(unittest.TestCase):
+class TestContextManagerStack(cros_test_lib.TestCase):
 
   def test(self):
     invoked = []
@@ -758,7 +737,7 @@ class TestContextManagerStack(unittest.TestCase):
     self.assertEqual(invoked, list(reversed(range(6))))
 
 
-class TestManifestCheckout(cros_test_lib.TempDirMixin, unittest.TestCase):
+class TestManifestCheckout(cros_test_lib.TempDirTestCase):
 
   # pylint: disable=E1101
   def testGetManifestsBranch(self):
@@ -824,5 +803,4 @@ class TestManifestCheckout(cros_test_lib.TempDirMixin, unittest.TestCase):
 
 
 if __name__ == '__main__':
-  cros_build_lib.SetupBasicLogging()
-  unittest.main()
+  cros_test_lib.main()

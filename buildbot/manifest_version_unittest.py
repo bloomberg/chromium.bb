@@ -6,12 +6,9 @@
 
 """Unittests for manifest_version. Needs to be run inside of chroot for mox."""
 
-import mox
 import os
-import shutil
 import sys
 import tempfile
-import unittest
 
 import constants
 if __name__ == '__main__':
@@ -21,6 +18,7 @@ from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import manifest_version
 from chromite.buildbot import repository
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 
 # pylint: disable=W0212,R0904
@@ -45,17 +43,14 @@ def TouchFile(file_path):
   osutils.WriteFile(file_path, 'w+')
 
 
-class HelperMethodsTest(unittest.TestCase):
+class HelperMethodsTest(cros_test_lib.TempDirTestCase):
   """Test methods associated with methods not in a class."""
-
-  def setUp(self):
-    self.tmpdir = tempfile.mkdtemp()
 
   def testCreateSymlink(self):
     """Tests that we can create symlinks and remove a previous one."""
-    (unused_fd, srcfile) = tempfile.mkstemp(dir=self.tmpdir)
-    destfile1 = tempfile.mktemp(dir=os.path.join(self.tmpdir, 'other_dir1'))
-    destfile2 = tempfile.mktemp(dir=os.path.join(self.tmpdir, 'other_dir2'))
+    (unused_fd, srcfile) = tempfile.mkstemp(dir=self.tempdir)
+    destfile1 = tempfile.mktemp(dir=os.path.join(self.tempdir, 'other_dir1'))
+    destfile2 = tempfile.mktemp(dir=os.path.join(self.tempdir, 'other_dir2'))
 
     manifest_version.CreateSymlink(srcfile, destfile1)
     self.assertTrue(os.path.lexists(destfile1),
@@ -63,7 +58,7 @@ class HelperMethodsTest(unittest.TestCase):
 
   def testRemoveDirs(self):
     """Tests if _RemoveDirs works with a recursive directory structure."""
-    otherdir1 = tempfile.mkdtemp(dir=self.tmpdir)
+    otherdir1 = tempfile.mkdtemp(dir=self.tempdir)
     tempfile.mkdtemp(dir=otherdir1)
     manifest_version._RemoveDirs(otherdir1)
     self.assertFalse(os.path.exists(otherdir1), 'Failed to rmdirs.')
@@ -81,16 +76,9 @@ class HelperMethodsTest(unittest.TestCase):
     manifest_version._PushGitChanges(git_dir, 'Test appending user.',
                                      dry_run=True)
 
-  def tearDown(self):
-    shutil.rmtree(self.tmpdir)
 
-
-class VersionInfoTest(mox.MoxTestBase):
+class VersionInfoTest(cros_test_lib.MoxTempDirTestCase):
   """Test methods testing methods in VersionInfo class."""
-
-  def setUp(self):
-    mox.MoxTestBase.setUp(self)
-    self.tmpdir = tempfile.mkdtemp()
 
   @classmethod
   def WriteFakeVersionFile(cls, version_file, version=FAKE_VERSION_STRING):
@@ -109,15 +97,15 @@ class VersionInfoTest(mox.MoxTestBase):
 
   def testLoadFromFile(self):
     """Tests whether we can load from a version file."""
-    version_file = self.CreateFakeVersionFile(self.tmpdir)
+    version_file = self.CreateFakeVersionFile(self.tempdir)
     info = manifest_version.VersionInfo(version_file=version_file)
     self.assertEqual(info.VersionString(), FAKE_VERSION_STRING)
 
   def testLoadFromRepo(self):
     """Tests whether we can load from a source repo."""
-    version_file = os.path.join(self.tmpdir, constants.VERSION_FILE)
+    version_file = os.path.join(self.tempdir, constants.VERSION_FILE)
     self.WriteFakeVersionFile(version_file)
-    info = manifest_version.VersionInfo.from_repo(self.tmpdir)
+    info = manifest_version.VersionInfo.from_repo(self.tempdir)
     self.assertEqual(info.VersionString(), FAKE_VERSION_STRING)
 
   def testLoadFromString(self):
@@ -132,13 +120,13 @@ class VersionInfoTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(manifest_version, '_PushGitChanges')
     self.mox.StubOutWithMock(cros_build_lib, 'GitCleanAndCheckoutUpstream')
 
-    cros_build_lib.CreatePushBranch(manifest_version.PUSH_BRANCH, self.tmpdir)
+    cros_build_lib.CreatePushBranch(manifest_version.PUSH_BRANCH, self.tempdir)
 
-    version_file = self.CreateFakeVersionFile(self.tmpdir, version)
+    version_file = self.CreateFakeVersionFile(self.tempdir, version)
 
-    manifest_version._PushGitChanges(self.tmpdir, message, dry_run=False)
+    manifest_version._PushGitChanges(self.tempdir, message, dry_run=False)
 
-    cros_build_lib.GitCleanAndCheckoutUpstream(self.tmpdir)
+    cros_build_lib.GitCleanAndCheckoutUpstream(self.tempdir)
     self.mox.ReplayAll()
     info = manifest_version.VersionInfo(version_file=version_file,
                                         incr_type=incr_type)
@@ -167,18 +155,12 @@ class VersionInfoTest(mox.MoxTestBase):
                                             incr_type='build')
     self.assertEqual(new_info.VersionString(), '2.0.0')
 
-  def tearDown(self):
-    shutil.rmtree(self.tmpdir)
 
-
-class BuildSpecsManagerTest(mox.MoxTestBase):
+class BuildSpecsManagerTest(cros_test_lib.MoxTempDirTestCase):
   """Tests for the BuildSpecs manager."""
 
   def setUp(self):
-    mox.MoxTestBase.setUp(self)
-
-    self.tmpdir = tempfile.mkdtemp()
-    os.makedirs(os.path.join(self.tmpdir, '.repo'))
+    os.makedirs(os.path.join(self.tempdir, '.repo'))
     self.source_repo = 'ssh://source/repo'
     self.manifest_repo = 'ssh://manifest/repo'
     self.version_file = 'version-file.sh'
@@ -187,7 +169,7 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
     self.incr_type = 'branch'
 
     repo = repository.RepoRepository(
-      self.source_repo, self.tmpdir, self.branch)
+      self.source_repo, self.tempdir, self.branch)
     self.manager = manifest_version.BuildSpecsManager(
       repo, self.manifest_repo, self.build_name, self.incr_type, False,
       branch=self.branch, dry_run=True)
@@ -272,7 +254,7 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
   def testGetNextVersionIncrement(self):
     """Tests that we create a new version if a previous one exists."""
     self.mox.StubOutWithMock(manifest_version.VersionInfo, 'IncrementVersion')
-    version_file = VersionInfoTest.CreateFakeVersionFile(self.tmpdir)
+    version_file = VersionInfoTest.CreateFakeVersionFile(self.tempdir)
     info = manifest_version.VersionInfo(version_file=version_file,
                                         incr_type='branch')
     info.IncrementVersion(
@@ -291,11 +273,6 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
     print self.manager.GetNextBuildSpec(retries=0)
     print self.manager.UpdateStatus('pass')
 
-  def tearDown(self):
-    if os.path.exists(self.tmpdir): shutil.rmtree(self.tmpdir)
-    shutil.rmtree(self.tmpmandir)
-
 
 if __name__ == '__main__':
-  cros_build_lib.SetupBasicLogging()
-  unittest.main()
+  cros_test_lib.main()

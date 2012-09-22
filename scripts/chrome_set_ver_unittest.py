@@ -10,12 +10,11 @@ import mox
 import os
 import shutil
 import sys
-import tempfile
-import unittest
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 '..', '..'))
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_test_lib
 from chromite.scripts import chrome_set_ver
 
 
@@ -25,13 +24,11 @@ class TestEndedException(Exception):
   pass
 
 
-class DEPSFileTest(mox.MoxTestBase):
+class DEPSFileTest(cros_test_lib.MoxTempDirTestCase):
 
   def setUp(self):
-    mox.MoxTestBase.setUp(self)
-
-    self.tempdir = tempfile.mkdtemp()
-    self.test_base = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+    testdata = os.path.dirname(os.path.abspath(__file__))
+    self.test_base = os.path.join(testdata,
                                   'testdata/chrome_set_ver_unittest')
     self.repo_root = os.path.join(self.tempdir, 'repo_root')
     self.repo_root_zip = os.path.join(self.test_base,
@@ -43,7 +40,6 @@ class DEPSFileTest(mox.MoxTestBase):
                               cwd=self.tempdir, redirect_stdout=True)
     assert(os.path.exists(self.repo_root))
 
-    self.old_dir = os.getcwd()
     os.chdir(self.repo_root)
     repo_root = cros_build_lib.FindRepoDir()
     assert(os.path.realpath(os.path.dirname(repo_root)) == self.repo_root)
@@ -168,12 +164,5 @@ class DEPSFileTest(mox.MoxTestBase):
                       chrome_set_ver._ExtractProjectFromUrl(url))
 
 
-  def tearDown(self):
-    os.chdir(self.old_dir)
-    cros_build_lib.RunCommand(['rm', '-rf', self.tempdir])
-    assert(not os.path.exists(self.repo_root))
-    mox.MoxTestBase.tearDown(self)
-
 if __name__ == '__main__':
-  cros_build_lib.SetupBasicLogging()
-  unittest.main()
+  cros_test_lib.main()

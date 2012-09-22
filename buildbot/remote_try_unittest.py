@@ -10,7 +10,6 @@ import os
 import sys
 import shutil
 import time
-import unittest
 
 import constants
 sys.path.insert(0, constants.SOURCE_ROOT)
@@ -24,26 +23,18 @@ class RemoteTryJobMock(remote_try.RemoteTryJob):
   pass
 
 # pylint: disable=W0212,R0904,E1101
-class RemoteTryTests(mox.MoxTestBase, cros_test_lib.TempDirMixin):
+class RemoteTryTests(cros_test_lib.MoxTempDirTestCase):
 
   PATCHES = ('5555', '6666')
   BOTS = ('x86-generic-paladin', 'arm-generic-paladin')
 
   def setUp(self):
-    cros_test_lib.TempDirMixin.setUp(self)
-
     self.parser = cbuildbot._CreateParser()
     args = ['-r', '/tmp/test_build1', '-g', '5555', '-g',
             '6666', '--remote']
     args.extend(self.BOTS)
     self.options, args = cbuildbot._ParseCommandLine(self.parser, args)
     self.checkout_dir = os.path.join(self.tempdir, 'test_checkout')
-
-    mox.MoxTestBase.setUp(self)
-
-  def tearDown(self):
-    cros_test_lib.TempDirMixin.tearDown(self)
-    mox.MoxTestBase.tearDown(self)
 
   def _RunCommandSingleOutput(self, cmd, cwd):
     result = cros_build_lib.RunCommandCaptureOutput(cmd, cwd=cwd)
@@ -200,5 +191,4 @@ class RemoteTryTests(mox.MoxTestBase, cros_test_lib.TempDirMixin):
 
 
 if __name__ == '__main__':
-  cros_build_lib.SetupBasicLogging()
-  unittest.main()
+  cros_test_lib.main()

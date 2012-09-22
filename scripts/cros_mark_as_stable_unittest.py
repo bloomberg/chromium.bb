@@ -6,21 +6,19 @@
 
 """Unit tests for cros_mark_as_stable.py."""
 
-import mox
 import os
 import sys
-import unittest
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 '..', '..'))
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_test_lib
 from chromite.scripts import cros_mark_as_stable
 
 
 # pylint: disable=W0212,R0904
-class NonClassTests(mox.MoxTestBase):
+class NonClassTests(cros_test_lib.MoxTestCase):
   def setUp(self):
-    mox.MoxTestBase.setUp(self)
     self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
     self.mox.StubOutWithMock(cros_build_lib, 'RunCommandCaptureOutput')
     self._branch = 'test_branch'
@@ -61,10 +59,9 @@ class NonClassTests(mox.MoxTestBase):
     self.mox.VerifyAll()
 
 
-class GitBranchTest(mox.MoxTestBase):
+class GitBranchTest(cros_test_lib.MoxTestCase):
 
   def setUp(self):
-    mox.MoxTestBase.setUp(self)
     # Always stub RunCommmand out as we use it in every method.
     self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
     self.mox.StubOutWithMock(cros_build_lib, 'RunCommandCaptureOutput')
@@ -107,5 +104,4 @@ class GitBranchTest(mox.MoxTestBase):
 
 
 if __name__ == '__main__':
-  cros_build_lib.SetupBasicLogging()
-  unittest.main()
+  cros_test_lib.main()

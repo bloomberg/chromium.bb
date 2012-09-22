@@ -12,7 +12,6 @@ import shutil
 import StringIO
 import sys
 import tempfile
-import unittest
 
 import constants
 sys.path.insert(0, constants.SOURCE_ROOT)
@@ -33,7 +32,7 @@ from chromite.scripts import cbuildbot
 
 
 # pylint: disable=E1120,W0212,R0904
-class AbstractStageTest(mox.MoxTestBase):
+class AbstractStageTest(cros_test_lib.MoxTestCase):
   """Base class for tests that test a particular build stage.
 
   Abstract base class that sets up the build config and options with some
@@ -49,7 +48,6 @@ class AbstractStageTest(mox.MoxTestBase):
     raise NotImplementedError, "return an instance of stage to be tested."
 
   def setUp(self):
-    mox.MoxTestBase.setUp(self)
     # Always stub RunCommmand out as we use it in every method.
     self.bot_id = 'x86-generic-paladin'
     self.build_config = config.config[self.bot_id].copy()
@@ -95,10 +93,6 @@ class AbstractStageTest(mox.MoxTestBase):
 
 class BuilderStageTest(AbstractStageTest):
 
-  def setUp(self):
-    mox.MoxTestBase.setUp(self)
-    AbstractStageTest.setUp(self)
-
   def ConstructStage(self):
     return bs.BuilderStage(self.options, self.build_config)
 
@@ -119,17 +113,14 @@ class BuilderStageTest(AbstractStageTest):
     self.assertEqual(result, 'RESULT')
 
 
-class ManifestVersionedSyncStageTest(AbstractStageTest):
+class ManifestVersionedSyncStageTest(AbstractStageTest,
+                                     cros_test_lib.TempDirTestCase):
   """Tests the two (heavily related) stages ManifestVersionedSync, and
      ManifestVersionedSyncCompleted.
   """
   # pylint: disable=W0223
 
   def setUp(self):
-    mox.MoxTestBase.setUp(self)
-    AbstractStageTest.setUp(self)
-
-    self.tmpdir = tempfile.mkdtemp()
     self.source_repo = 'ssh://source/repo'
     self.manifest_version_url = 'fake manifest url'
     self.branch = 'master'
@@ -140,15 +131,12 @@ class ManifestVersionedSyncStageTest(AbstractStageTest):
     self.next_version = 'next_version'
 
     repo = repository.RepoRepository(
-      self.source_repo, self.tmpdir, self.branch)
+      self.source_repo, self.tempdir, self.branch)
     self.manager = manifest_version.BuildSpecsManager(
       repo, self.manifest_version_url, self.build_name, self.incr_type,
       force=False, branch=self.branch, dry_run=True)
 
     stages.ManifestVersionedSyncStage.manifest_manager = self.manager
-
-  def tearDown(self):
-    if os.path.exists(self.tmpdir): shutil.rmtree(self.tmpdir)
 
   def testManifestVersionedSyncOnePartBranch(self):
     """Tests basic ManifestVersionedSyncStage with branch ooga_booga"""
@@ -217,16 +205,13 @@ class ManifestVersionedSyncStageTest(AbstractStageTest):
     self.mox.VerifyAll()
 
 
-class LKGMCandidateSyncCompletionStage(AbstractStageTest):
+class LKGMCandidateSyncCompletionStage(AbstractStageTest,
+                                       cros_test_lib.TempDirTestCase):
   """Tests the two (heavily related) stages ManifestVersionedSync, and
      ManifestVersionedSyncCompleted.
   """
 
   def setUp(self):
-    mox.MoxTestBase.setUp(self)
-    AbstractStageTest.setUp(self)
-
-    self.tmpdir = tempfile.mkdtemp()
     self.source_repo = 'ssh://source/repo'
     self.manifest_version_url = 'fake manifest url'
     self.branch = 'master'
@@ -238,7 +223,7 @@ class LKGMCandidateSyncCompletionStage(AbstractStageTest):
     self.build_config['master'] = True
 
     repo = repository.RepoRepository(
-      self.source_repo, self.tmpdir, self.branch)
+      self.source_repo, self.tempdir, self.branch)
     self.manager = lkgm_manager.LKGMManager(
       repo, self.manifest_version_url, self.build_name, self.build_type,
       incr_type='branch', force=False, branch=self.branch, dry_run=True)
@@ -393,8 +378,6 @@ class LKGMCandidateSyncCompletionStage(AbstractStageTest):
 class BuildBoardTest(AbstractStageTest):
 
   def setUp(self):
-    mox.MoxTestBase.setUp(self)
-    AbstractStageTest.setUp(self)
     self.mox.StubOutWithMock(os.path, 'isdir')
 
   def ConstructStage(self):
@@ -536,8 +519,6 @@ class BuildBoardTest(AbstractStageTest):
 class VMTestStageTest(AbstractStageTest):
 
   def setUp(self):
-    mox.MoxTestBase.setUp(self)
-    AbstractStageTest.setUp(self)
     self.fake_results_dir = '/tmp/fake_results_dir'
     self.fake_chroot_results_dir = '/my/fake_chroot/tmp/fake_results_dir'
     self.mox.StubOutWithMock(commands, 'ArchiveTestResults')
@@ -605,8 +586,6 @@ class VMTestStageTest(AbstractStageTest):
 class UnitTestStageTest(AbstractStageTest):
 
   def setUp(self):
-    mox.MoxTestBase.setUp(self)
-    AbstractStageTest.setUp(self)
     self.bot_id = 'x86-generic-full'
     self.build_config = config.config[self.bot_id].copy()
     self.mox.StubOutWithMock(commands, 'RunUnitTests')
@@ -636,8 +615,6 @@ class UnitTestStageTest(AbstractStageTest):
 class HWTestStageTest(AbstractStageTest):
 
   def setUp(self):
-    mox.MoxTestBase.setUp(self)
-    AbstractStageTest.setUp(self)
     self.bot_id = 'x86-mario-release'
     self.build_config = config.config[self.bot_id].copy()
     self.archive_stage_mock = self.mox.CreateMock(stages.ArchiveStage)
@@ -744,9 +721,6 @@ class HWTestStageTest(AbstractStageTest):
 class UprevStageTest(AbstractStageTest):
 
   def setUp(self):
-    mox.MoxTestBase.setUp(self)
-    AbstractStageTest.setUp(self)
-
     # Disable most paths by default and selectively enable in tests
 
     self.options.chrome_rev = None
@@ -844,8 +818,6 @@ def _DoSteps(steps):
 class BuildTargetStageTest(AbstractStageTest):
 
   def setUp(self):
-    mox.MoxTestBase.setUp(self)
-    AbstractStageTest.setUp(self)
     self.images_root = os.path.join(self.build_root,
                                     'src/build/images/x86-generic')
     latest_image_dir = os.path.join(self.images_root, 'latest')
@@ -1092,9 +1064,6 @@ def _replace_archive_path(functor):
 class ArchiveStageTest(AbstractStageTest):
 
   def setUp(self):
-    mox.MoxTestBase.setUp(self)
-    AbstractStageTest.setUp(self)
-
     self._build_config = self.build_config.copy()
     self._build_config['upload_symbols'] = True
     self._build_config['push_image'] = True
@@ -1149,8 +1118,6 @@ class ArchiveStageTest(AbstractStageTest):
 
 class UploadPrebuiltsStageTest(AbstractStageTest):
   def setUp(self):
-    mox.MoxTestBase.setUp(self)
-    AbstractStageTest.setUp(self)
     self.options.chrome_rev = 'tot'
     self.options.prebuilts = True
     self.mox.StubOutWithMock(stages.UploadPrebuiltsStage, '_GetPortageEnvVar')
@@ -1220,9 +1187,6 @@ class UploadPrebuiltsStageTest(AbstractStageTest):
 class PublishUprevChangesStageTest(AbstractStageTest):
 
   def setUp(self):
-    mox.MoxTestBase.setUp(self)
-    AbstractStageTest.setUp(self)
-
     # Disable most paths by default and selectively enable in tests
 
     self.build_config['build_type'] = constants.BUILD_FROM_SOURCE_TYPE
@@ -1251,10 +1215,9 @@ class PublishUprevChangesStageTest(AbstractStageTest):
     self.mox.VerifyAll()
 
 
-class BuildStagesResultsTest(unittest.TestCase):
+class BuildStagesResultsTest(cros_test_lib.TestCase):
 
   def setUp(self):
-    unittest.TestCase.setUp(self)
     # Always stub RunCommmand out as we use it in every method.
     self.bot_id = 'x86-generic-paladin'
     self.build_config = config.config[self.bot_id]
@@ -1534,5 +1497,4 @@ class BuildStagesResultsTest(unittest.TestCase):
 
 
 if __name__ == '__main__':
-  cros_build_lib.SetupBasicLogging()
-  unittest.main()
+  cros_test_lib.main()

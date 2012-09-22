@@ -8,10 +8,8 @@
 
 import mox
 import os
-import shutil
 import sys
 import tempfile
-import unittest
 from xml.dom import minidom
 
 if __name__ == '__main__':
@@ -24,6 +22,7 @@ from chromite.buildbot import repository
 from chromite.buildbot import manifest_version_unittest
 from chromite.buildbot import patch
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 
 
@@ -39,44 +38,9 @@ CHROMEOS_PATCH=4
 CHROME_BRANCH=13
 """
 
-def _CreateFakeManifest(internal, entries, commits):
-  """Creates a fake manifest with some internal projects."""
-  tmp_manifest = tempfile.mktemp('manifest')
-  # Create fake but empty manifest file.
-  new_doc = minidom.getDOMImplementation().createDocument(None, 'manifest',
-                                                          None)
-  m_element = new_doc.getElementsByTagName('manifest')[0]
-  for idx in range(entries):
-    internal_element = idx % 2 == 0 and internal
-    new_element = minidom.Element('project')
-    new_element.setAttribute('name', 'project_%d' % idx)
-    new_element.setAttribute('path', 'some_path/to/project_%d' % idx)
-    new_element.setAttribute('revision', 'revision_%d' % idx)
-    if internal_element:
-      new_element.setAttribute('remote', 'cros-internal')
 
-    m_element.appendChild(new_element)
-
-  for idx in range(commits):
-    internal_element = idx % 2 == 0 and internal
-    new_element = minidom.Element('pending_commit')
-    new_element.setAttribute('project', 'project_%d' % idx)
-    new_element.setAttribute('change_id', 'changeid_%d' % idx)
-    new_element.setAttribute('commit', 'commit_%d' % idx)
-    m_element.appendChild(new_element)
-
-  with open(tmp_manifest, 'w+') as manifest_file:
-    new_doc.writexml(manifest_file, newl='\n')
-
-  return tmp_manifest
-
-
-class LKGMCandidateInfoTest(mox.MoxTestBase):
+class LKGMCandidateInfoTest(cros_test_lib.MoxTempDirTestCase):
   """Test methods testing methods in _LKGMCandidateInfo class."""
-
-  def setUp(self):
-    mox.MoxTestBase.setUp(self)
-    self.tmpdir = tempfile.mkdtemp()
 
   @classmethod
   def CreateFakeVersionFile(cls, tmpdir):
@@ -114,19 +78,44 @@ class LKGMCandidateInfoTest(mox.MoxTestBase):
     self.assertTrue(info4 > info2)
     self.assertTrue(info4 > info3)
 
-  def tearDown(self):
-    mox.MoxTestBase.tearDown(self)
-    shutil.rmtree(self.tmpdir)
 
-
-class LKGMManagerTest(mox.MoxTestBase):
+class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
   """Tests for the BuildSpecs manager."""
 
+  def _CreateFakeManifest(self, internal, entries, commits):
+    """Creates a fake manifest with some internal projects."""
+    tmp_manifest = tempfile.mktemp('manifest')
+    # Create fake but empty manifest file.
+    new_doc = minidom.getDOMImplementation().createDocument(None, 'manifest',
+                                                            None)
+    m_element = new_doc.getElementsByTagName('manifest')[0]
+    for idx in xrange(entries):
+      internal_element = idx % 2 == 0 and internal
+      new_element = minidom.Element('project')
+      new_element.setAttribute('name', 'project_%d' % idx)
+      new_element.setAttribute('path', 'some_path/to/project_%d' % idx)
+      new_element.setAttribute('revision', 'revision_%d' % idx)
+      if internal_element:
+        new_element.setAttribute('remote', 'cros-internal')
+
+      m_element.appendChild(new_element)
+
+    for idx in xrange(commits):
+      internal_element = idx % 2 == 0 and internal
+      new_element = minidom.Element('pending_commit')
+      new_element.setAttribute('project', 'project_%d' % idx)
+      new_element.setAttribute('change_id', 'changeid_%d' % idx)
+      new_element.setAttribute('commit', 'commit_%d' % idx)
+      m_element.appendChild(new_element)
+
+    with open(tmp_manifest, 'w+') as manifest_file:
+      new_doc.writexml(manifest_file, newl='\n')
+
+    return tmp_manifest
+
   def setUp(self):
-    mox.MoxTestBase.setUp(self)
     self.mox.StubOutWithMock(cros_build_lib, 'CreatePushBranch')
 
-    self.tmpdir = tempfile.mkdtemp()
     self.source_repo = 'ssh://source/repo'
     self.manifest_repo = 'ssh://manifest/repo'
     self.version_file = 'version-file.sh'
@@ -135,7 +124,7 @@ class LKGMManagerTest(mox.MoxTestBase):
     self.incr_type = 'branch'
 
     repo = repository.RepoRepository(
-      self.source_repo, self.tmpdir, self.branch, depth=1)
+      self.source_repo, self.tempdir, self.branch, depth=1)
     self.tmpmandir = tempfile.mkdtemp()
     self.manager = lkgm_manager.LKGMManager(
       repo, self.manifest_repo, self.build_name, constants.PFQ_TYPE, 'branch',
@@ -452,7 +441,7 @@ class LKGMManagerTest(mox.MoxTestBase):
     cros_build_lib.RunCommand(['git', 'log', '--pretty=full',
                                '%s..HEAD' % fake_revision],
                               print_cmd=False, redirect_stdout=True,
-                              cwd=self.tmpdir + '/fake/path').AndReturn(
+                              cwd=self.tempdir + '/fake/path').AndReturn(
                                   fake_result)
     cros_build_lib.PrintBuildbotLink('CHUMP fake:1234',
                                      'http://gerrit.chromium.org/gerrit/1234')
@@ -502,7 +491,8 @@ class LKGMManagerTest(mox.MoxTestBase):
     fake_manifest = None
     fake_new_manifest = None
     try:
-      fake_manifest = _CreateFakeManifest(internal=True, entries=100, commits=4)
+      fake_manifest = self._CreateFakeManifest(internal=True, entries=100,
+                                               commits=4)
       fake_new_manifest = \
           lkgm_manager.LKGMManager._FilterCrosInternalProjectsFromManifest(
               fake_manifest)
@@ -528,8 +518,8 @@ class LKGMManagerTest(mox.MoxTestBase):
     fake_manifest = None
     fake_new_manifest = None
     try:
-      fake_manifest = _CreateFakeManifest(internal=False, entries=100,
-                                          commits=20)
+      fake_manifest = self._CreateFakeManifest(internal=False, entries=100,
+                                               commits=20)
       fake_new_manifest = \
           lkgm_manager.LKGMManager._FilterCrosInternalProjectsFromManifest(
               fake_manifest)
@@ -545,12 +535,5 @@ class LKGMManagerTest(mox.MoxTestBase):
       if fake_new_manifest: os.remove(fake_new_manifest)
 
 
-  def tearDown(self):
-    mox.MoxTestBase.tearDown(self)
-    if os.path.exists(self.tmpdir): shutil.rmtree(self.tmpdir)
-    shutil.rmtree(self.tmpmandir)
-
-
 if __name__ == '__main__':
-  cros_build_lib.SetupBasicLogging()
-  unittest.main()
+  cros_test_lib.main()

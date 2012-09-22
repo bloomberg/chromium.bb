@@ -5,10 +5,8 @@
 # found in the LICENSE file.
 
 import functools
-import mox
 import os
 import sys
-import unittest
 
 import constants
 sys.path.insert(0, constants.SOURCE_ROOT)
@@ -17,7 +15,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 
 # pylint: disable=W0212,R0904,E1101,W0613
-class RepositoryTests(mox.MoxTestBase):
+class RepositoryTests(cros_test_lib.MoxTestCase):
 
   def RunCommand_Mock(self, result, *args, **kwargs):
     output = self.mox.CreateMockAnything()
@@ -54,7 +52,8 @@ class RepositoryTests(mox.MoxTestBase):
       self.assertTrue(repository.IsInternalRepoCheckout('.'))
 
 
-class RepoInitTests(mox.MoxTestBase, cros_test_lib.TempDirMixin):
+class RepoInitTests(cros_test_lib.MoxTempDirTestCase):
+
   def _Initialize(self, branch='master'):
     repo = repository.RepoRepository(constants.MANIFEST_URL, self.tempdir,
                                       branch=branch)
@@ -62,15 +61,8 @@ class RepoInitTests(mox.MoxTestBase, cros_test_lib.TempDirMixin):
     return repo
 
   def setUp(self):
-    cros_test_lib.TempDirMixin.setUp(self)
     self._Initialize()
     self.manifests_dir = os.path.join(self.tempdir, '.repo', 'manifests')
-
-    mox.MoxTestBase.setUp(self)
-
-  def tearDown(self):
-    cros_test_lib.TempDirMixin.tearDown(self)
-    mox.MoxTestBase.tearDown(self)
 
   def testFailedReInitialization(self):
     """Test that a failed re-init doesn't leave repo in bad state."""
@@ -96,9 +88,7 @@ class RepoInitChromeBotTests(RepoInitTests):
   def setUp(self):
     os.putenv('GIT_COMMITTER_EMAIL', 'chrome-bot@chromium.org')
     os.putenv('GIT_AUTHOR_EMAIL', 'chrome-bot@chromium.org')
-    RepoInitTests.setUp(self)
 
 
 if __name__ == '__main__':
-  cros_build_lib.SetupBasicLogging()
-  unittest.main()
+  cros_test_lib.main()

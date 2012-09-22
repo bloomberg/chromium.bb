@@ -7,18 +7,17 @@
 """Unittests for config.  Needs to be run inside of chroot for mox."""
 
 import json
-import mox
 import os
 import re
 import subprocess
 import sys
-import unittest
 import urllib
 
 import constants
 sys.path.insert(0, constants.SOURCE_ROOT)
 from chromite.buildbot import cbuildbot_config
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_test_lib
 
 CHROMIUM_WATCHING_URL = ("http://src.chromium.org/viewvc/" +
     "chrome/trunk/tools/build/masters/" +
@@ -26,10 +25,7 @@ CHROMIUM_WATCHING_URL = ("http://src.chromium.org/viewvc/" +
     "master_chromiumos_cros_cfg.py")
 
 # pylint: disable=W0212,R0904
-class CBuildBotTest(mox.MoxTestBase):
-
-  def setUp(self):
-    mox.MoxTestBase.setUp(self)
+class CBuildBotTest(cros_test_lib.MoxTestCase):
 
   def testConfigsKeysMismatch(self):
     """Verify that all configs contain exactly the default keys.
@@ -317,5 +313,4 @@ class CBuildBotTest(mox.MoxTestBase):
 
 
 if __name__ == '__main__':
-  cros_build_lib.SetupBasicLogging()
-  unittest.main()
+  cros_test_lib.main()

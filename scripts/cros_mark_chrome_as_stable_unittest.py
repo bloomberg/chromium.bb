@@ -11,16 +11,13 @@
 
 import mox
 import os
-import shutil
 import sys
-import tempfile
-import unittest
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 '..', '..'))
 from chromite.buildbot import constants
 from chromite.buildbot import portage_utilities
-from chromite.lib import cros_build_lib
+from chromite.lib import cros_test_lib
 from chromite.scripts import cros_mark_chrome_as_stable
 
 # pylint: disable=W0212,R0904
@@ -43,12 +40,11 @@ class _StubCommandResult(object):
     self.output = msg
 
 
-class CrosMarkChromeAsStable(mox.MoxTestBase):
+class CrosMarkChromeAsStable(cros_test_lib.MoxTempDirTestCase):
 
   def setUp(self):
     """Setup vars and create mock dir."""
-    mox.MoxTestBase.setUp(self)
-    self.tmp_overlay = tempfile.mkdtemp(prefix='chromiumos-overlay')
+    self.tmp_overlay = os.path.join(self.tempdir, 'chromiumos-overlay')
     self.mock_chrome_dir = os.path.join(self.tmp_overlay, 'chromeos-base',
                                         'chromeos-chrome')
     os.makedirs(self.mock_chrome_dir)
@@ -95,10 +91,6 @@ class CrosMarkChromeAsStable(mox.MoxTestBase):
                        (stable_data,
                         '%s=%s' % (cros_mark_chrome_as_stable._CHROME_SVN_TAG,
                                    fake_svn_rev))))
-
-  def tearDown(self):
-    """Cleans up mock dir."""
-    shutil.rmtree(self.tmp_overlay)
 
   def testFindChromeCandidates(self):
     """Test creation of stable ebuilds from mock dir."""
@@ -323,5 +315,4 @@ class CrosMarkChromeAsStable(mox.MoxTestBase):
 
 
 if __name__ == '__main__':
-  cros_build_lib.SetupBasicLogging()
-  unittest.main()
+  cros_test_lib.main()

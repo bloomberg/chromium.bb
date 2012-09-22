@@ -13,14 +13,13 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
 
 import shutil
 import tempfile
-import unittest
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 
 
-class TestOsutils(cros_test_lib.TempDirMixin, unittest.TestCase):
+class TestOsutils(cros_test_lib.TempDirTestCase):
 
   def testReadWriteFile(self):
     """Verify we can write data to a file, and then read it back."""
@@ -89,5 +88,4 @@ class TestOsutils(cros_test_lib.TempDirMixin, unittest.TestCase):
 
 
 if __name__ == '__main__':
-  cros_build_lib.SetupBasicLogging()
-  unittest.main()
+  cros_test_lib.main()

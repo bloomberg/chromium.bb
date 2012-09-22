@@ -650,11 +650,3 @@ class RetrySpreadsheetsService(gdata.spreadsheet.service.SpreadsheetsService):
 
     oper.Warning('Giving up on HTTP request after %d tries' % self.TRY_MAX)
     return first_retval
-
-
-# Support having this module test itself if run as __main__, by leveraging
-# the gdata_lib_unittest module.
-# Also, the unittests serve as extra documentation.
-if __name__ == '__main__':
-  import gdata_lib_unittest
-  gdata_lib_unittest.unittest.main(gdata_lib_unittest)

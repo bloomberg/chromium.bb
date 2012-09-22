@@ -15,7 +15,6 @@ import os
 import pickle
 import sys
 import time
-import unittest
 import urllib
 
 import constants
@@ -68,10 +67,9 @@ class MockManifest(object):
 
 
 # pylint: disable=W0212,R0904
-class base_mixin(object):
+class base(cros_test_lib.MoxTestCase):
 
   def setUp(self):
-    mox.MoxTestBase.setUp(self)
     self.mox.StubOutWithMock(validation_pool, '_RunCommand')
     self.mox.StubOutWithMock(time, 'sleep')
     self.mox.StubOutWithMock(validation_pool.ValidationPool, '_IsTreeOpen')
@@ -136,12 +134,11 @@ class base_mixin(object):
 
 
 # pylint: disable=W0212,R0904
-class TestPatchSeries(base_mixin, mox.MoxTestBase):
+class TestPatchSeries(base):
   """Tests the core resolution and applying logic of
   validation_pool.ValidationPool."""
 
   def setUp(self):
-    base_mixin.setUp(self)
     # All tests should set their content merging projects via
     # SetContentMergingProjects since FindContentMergingProjects
     # requires admin rights in gerrit.
@@ -485,12 +482,11 @@ class TestPatchSeries(base_mixin, mox.MoxTestBase):
 
 
 # pylint: disable=W0212,R0904
-class TestCoreLogic(base_mixin, mox.MoxTestBase):
+class TestCoreLogic(base):
   """Tests the core resolution and applying logic of
   validation_pool.ValidationPool."""
 
   def setUp(self):
-    base_mixin.setUp(self)
     self.mox.StubOutWithMock(gerrit_helper.GerritHelper,
                              'FindContentMergingProjects')
 
@@ -792,11 +788,10 @@ class TestCoreLogic(base_mixin, mox.MoxTestBase):
 
 
 # pylint: disable=W0212,R0904
-class TestTreeStatus(mox.MoxTestBase):
+class TestTreeStatus(cros_test_lib.MoxTestCase):
   """Tests methods in validation_pool.ValidationPool."""
 
   def setUp(self):
-    mox.MoxTestBase.setUp(self)
     self.mox.StubOutWithMock(validation_pool, '_RunCommand')
     self.mox.StubOutWithMock(time, 'sleep')
 
@@ -875,7 +870,7 @@ class TestTreeStatus(mox.MoxTestBase):
 
 
 
-class TestPickling(cros_test_lib.TempDirMixin, unittest.TestCase):
+class TestPickling(cros_test_lib.TempDirTestCase):
 
   """Tests to validate pickling of ValidationPool, covering CQ's needs"""
 
@@ -959,11 +954,10 @@ sys.stdout.write(validation_pool_unittest.TestPickling.%s)
     return ''
 
 
-class TestFindSuspects(base_mixin, mox.MoxTestBase):
+class TestFindSuspects(base):
   """Tests validation_pool.ValidationPool._FindSuspects"""
 
   def setUp(self):
-    base_mixin.setUp(self)
     overlay = 'chromiumos/overlays/chromiumos-overlay'
     self.overlay_patch = self.GetPatches(project=overlay)
     self.power_manager = 'chromiumos/platform/power_manager'
@@ -1064,7 +1058,7 @@ class SimplePatch(object):
     return str(self.id)
 
 
-class TestCreateValidationFailureMessage(unittest.TestCase):
+class TestCreateValidationFailureMessage(cros_test_lib.TestCase):
   """Tests validation_pool.ValidationPool._CreateValidationFailureMessage"""
 
   def GetPatches(self, how_many=1):
@@ -1120,5 +1114,4 @@ class TestCreateValidationFailureMessage(unittest.TestCase):
 
 
 if __name__ == '__main__':
-  cros_build_lib.SetupBasicLogging()
-  unittest.main()
+  cros_test_lib.main()

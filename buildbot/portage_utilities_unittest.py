@@ -12,17 +12,17 @@ import fileinput
 import mox
 import os
 import re
-import shutil
 import StringIO
 import sys
 import tempfile
-import unittest
 
 import constants
 if __name__ == '__main__':
   sys.path.insert(0, constants.SOURCE_ROOT)
 
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_test_lib
+from chromite.lib import osutils
 from chromite.buildbot import patch as cros_patch
 from chromite.buildbot import gerrit_helper
 from chromite.buildbot import portage_utilities
@@ -45,10 +45,7 @@ class _DummyCommandResult(object):
     self.output = output + '\n'
 
 
-class EBuildTest(mox.MoxTestBase):
-
-  def setUp(self):
-    mox.MoxTestBase.setUp(self)
+class EBuildTest(cros_test_lib.MoxTestCase):
 
   def _makeFakeEbuild(self, fake_ebuild_path):
     self.mox.StubOutWithMock(fileinput, 'input')
@@ -116,7 +113,7 @@ class EBuildTest(mox.MoxTestBase):
     self.assertEquals(test_hash, fake_hash)
 
 
-class ProjectAndPathTest(mox.MoxTestBase):
+class ProjectAndPathTest(cros_test_lib.MoxTestCase):
   # Some globals.
   FAKE_SRCROOT = '/there/is/no/srcroot'
   FAKE_EBUILD_PATH = '/path/to/test_package/test_package-9999.ebuild'
@@ -209,7 +206,7 @@ class StubEBuild(portage_utilities.EBuild):
       return 'you_lose'
 
 
-class EBuildRevWorkonTest(mox.MoxTestBase):
+class EBuildRevWorkonTest(cros_test_lib.MoxTempDirTestCase):
   # Lines that we will feed as fake ebuild contents to
   # EBuild.MarAsStable().  This is the minimum content needed
   # to test the various branches in the function's main processing
@@ -224,7 +221,6 @@ class EBuildRevWorkonTest(mox.MoxTestBase):
                         'src_unpack(){}\n']
 
   def setUp(self):
-    mox.MoxTestBase.setUp(self)
     self.overlay = '/sources/overlay'
     package_name = os.path.join(self.overlay,
                                 'category/test_package/test_package-0.0.1')
@@ -412,7 +408,7 @@ class EBuildRevWorkonTest(mox.MoxTestBase):
 
   def testGitRepoHasChanges(self):
     """Tests that GitRepoHasChanges works correctly."""
-    tmp_dir = tempfile.mkdtemp('portage_utilities_unittest')
+    tmp_dir = self.tempdir
     cros_build_lib.RunCommand(
         ['git', 'clone', '--depth=1',
          'file://' + os.path.join(constants.SOURCE_ROOT, 'chromite'),
@@ -425,13 +421,11 @@ class EBuildRevWorkonTest(mox.MoxTestBase):
     # A real change.
     cros_build_lib.RunCommand('echo hi > LICENSE', cwd=tmp_dir, shell=True)
     self.assertTrue(portage_utilities.EBuild.GitRepoHasChanges(tmp_dir))
-    shutil.rmtree(tmp_dir)
 
 
-class FindOverlaysTest(mox.MoxTestBase):
+class FindOverlaysTest(cros_test_lib.MoxTestCase):
 
   def setUp(self):
-    mox.MoxTestBase.setUp(self)
     self.build_root = '/fake_root'
     self.overlay = os.path.join(self.build_root,
                                 'src/third_party/chromiumos-overlay')
@@ -476,10 +470,9 @@ class FindOverlaysTest(mox.MoxTestBase):
     self.mox.VerifyAll()
 
 
-class BuildEBuildDictionaryTest(mox.MoxTestBase):
+class BuildEBuildDictionaryTest(cros_test_lib.MoxTestCase):
 
   def setUp(self):
-    mox.MoxTestBase.setUp(self)
     self.mox.StubOutWithMock(os, 'walk')
     self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
     self.package = 'chromeos-base/test_package'
@@ -514,7 +507,7 @@ class BuildEBuildDictionaryTest(mox.MoxTestBase):
     self.mox.VerifyAll()
 
 
-class BlacklistManagerTest(mox.MoxTestBase):
+class BlacklistManagerTest(cros_test_lib.MoxTestCase):
   """Class that tests the blacklist manager."""
   FAKE_BLACKLIST = """
     # A Fake blacklist file.
@@ -522,9 +515,7 @@ class BlacklistManagerTest(mox.MoxTestBase):
     chromeos-base/fake-package
   """
 
-  def setUp(self):
-    mox.MoxTestBase.setUp(self)
-
+  @osutils.TempDirDecorator
   def testInitializeFromFile(self):
     """Tests whether we can correctly initialize from a fake blacklist file."""
     file_path = tempfile.mktemp()
@@ -561,7 +552,7 @@ class BlacklistManagerTest(mox.MoxTestBase):
     self.mox.VerifyAll()
 
 
-class ProjectMappingTest(unittest.TestCase):
+class ProjectMappingTest(cros_test_lib.TestCase):
 
   def testSplitEbuildPath(self):
     """Test if we can split an ebuild path into its components."""
@@ -587,5 +578,4 @@ class ProjectMappingTest(unittest.TestCase):
 
 
 if __name__ == '__main__':
-  cros_build_lib.SetupBasicLogging()
-  unittest.main()
+  cros_test_lib.main()

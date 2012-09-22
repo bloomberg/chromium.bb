@@ -8,11 +8,10 @@
 
 import os
 import sys
-import unittest
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 '..', '..'))
-from chromite.lib import cros_test_lib as test_lib
+from chromite.lib import cros_test_lib
 from chromite.lib import gdata_lib
 from chromite.lib import upgrade_table as utable
 from chromite.scripts import sync_package_status as sps
@@ -20,7 +19,7 @@ from chromite.scripts import sync_package_status as sps
 # pylint: disable=W0212,R0904
 
 
-class SyncerTest(test_lib.MoxTestCase):
+class SyncerTest(cros_test_lib.MoxOutputTestCase):
 
   col_amd64 = utable.UpgradeTable.GetColumnName(utable.UpgradeTable.COL_STATE,
                                                 'amd64')
@@ -327,7 +326,7 @@ class SyncerTest(test_lib.MoxTestCase):
   def _TestGenIssueForRowNeedsUpgrade(self, row):
     mocked_syncer = self.mox.CreateMock(sps.Syncer)
     mocked_syncer.default_owner = None
-    mocked_syncer.scomm = test_lib.EasyAttr(ss_key='SomeSSKey')
+    mocked_syncer.scomm = cros_test_lib.EasyAttr(ss_key='SomeSSKey')
 
     # Replay script
     for arch in sps.ARCHES:
@@ -546,4 +545,4 @@ class SyncerTest(test_lib.MoxTestCase):
 
 
 if __name__ == '__main__':
-  unittest.main()
+  cros_test_lib.main()

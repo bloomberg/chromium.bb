@@ -1,4 +1,4 @@
-#!/usr/bin/python2.6
+#!/usr/bin/python
 # Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -9,12 +9,15 @@ import cStringIO
 import os
 import sys
 import tempfile
-import unittest
 
-import table
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
+    os.path.abspath(__file__)))))
+from chromite.lib import cros_test_lib
+from chromite.lib import osutils
+from chromite.lib import table
 
 # pylint: disable=W0212,R0904
-class TableTest(unittest.TestCase):
+class TableTest(cros_test_lib.TestCase):
   """Unit tests for the Table class."""
 
   COL0 = 'Column1'
@@ -293,6 +296,7 @@ class TableTest(unittest.TestCase):
       vals = table.Table._SplitCSVLine(line)
       self.assertEquals(vals, tests[line])
 
+  @osutils.TempDirDecorator
   def testWriteReadCSV(self):
     """Write and Read CSV and verify contents preserved."""
     # This also tests the Table == and != operators.
@@ -303,7 +307,6 @@ class TableTest(unittest.TestCase):
     mytable = table.Table.LoadFromCSV(path)
     self.assertEquals(mytable, self._table)
     self.assertFalse(mytable != self._table)
-    os.unlink(path)
 
   def testInsertColumn(self):
     self._table.InsertColumn(1, self.EXTRACOL, 'blah')
@@ -336,4 +339,4 @@ class TableTest(unittest.TestCase):
     self.assertRowsEqual(final_row2, self._table[2])
 
 if __name__ == "__main__":
-  unittest.main()
+  cros_test_lib.main()

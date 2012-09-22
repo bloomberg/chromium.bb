@@ -7,21 +7,19 @@
 """Unit tests for cros_portage_upgrade.py."""
 
 import exceptions
+import mox
 import os
 import re
 import sys
 import tempfile
-import unittest
 
-import mox
-
-from chromite.lib import cros_test_lib as test_lib
+from chromite.lib import cros_test_lib
 from chromite.lib import table
 from chromite.scripts import merge_package_status as mps
 
 # pylint: disable=W0212,R0904
 
-class MergeTest(test_lib.TestCase):
+class MergeTest(cros_test_lib.OutputTestCase, cros_test_lib.TempDirTestCase):
   """Test the functionality of merge_package_status."""
 
   # These taken from cros_portage_upgrade column names.
@@ -222,12 +220,8 @@ class MergeTest(test_lib.TestCase):
     for ix, row_out in enumerate(final_rows):
       self.assertRowsEqual(row_out, self._table[ix])
 
-class MainTest(test_lib.MoxTestCase):
+class MainTest(cros_test_lib.MoxOutputTestCase):
   """Test argument handling at the main method level."""
-
-  def setUp(self):
-    """Setup for all tests in this class."""
-    mox.MoxTestBase.setUp(self)
 
   def testHelp(self):
     """Test that --help is functioning"""
@@ -283,4 +277,4 @@ class MainTest(test_lib.MoxTestCase):
     self.mox.VerifyAll()
 
 if __name__ == '__main__':
-  unittest.main()
+  cros_test_lib.main()

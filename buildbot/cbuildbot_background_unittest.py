@@ -7,11 +7,11 @@ import multiprocessing
 import sys
 import tempfile
 import time
-import unittest
 
 import constants
 sys.path.insert(0, constants.SOURCE_ROOT)
 from chromite.buildbot import cbuildbot_background as background
+from chromite.lib import cros_test_lib
 
 # pylint: disable=W0212
 _BUFSIZE = 10**4
@@ -21,7 +21,7 @@ _TOTAL_BYTES = _NUM_THREADS * _NUM_WRITES * _BUFSIZE
 _GREETING = 'hello world'
 
 
-class TestBackgroundWrapper(unittest.TestCase):
+class TestBackgroundWrapper(cros_test_lib.TestCase):
 
   def setUp(self):
     self.tempfile = None
@@ -99,4 +99,4 @@ class TestFastPrinting(TestBackgroundWrapper):
 
 
 if __name__ == '__main__':
-  unittest.main()
+  cros_test_lib.main()

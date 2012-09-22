@@ -1,4 +1,4 @@
-#!/usr/bin/python2.6
+#!/usr/bin/python
 # Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -7,21 +7,25 @@
 
 import getpass
 import re
-import unittest
 
 import atom.service
 import gdata.projecthosting.client as gd_ph_client
 import gdata.spreadsheet.service
 import mox
+import os
+import sys
 
-import cros_test_lib as test_lib
-import gdata_lib
-import osutils
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
+    os.path.abspath(__file__)))))
+
+from chromite.lib import cros_test_lib
+from chromite.lib import gdata_lib
+from chromite.lib import osutils
 
 # pylint: disable=W0201,W0212,E1101,R0904
 
 
-class GdataLibTest(test_lib.TestCase):
+class GdataLibTest(cros_test_lib.OutputTestCase):
 
   def testPrepColNameForSS(self):
     tests = {
@@ -91,7 +95,7 @@ class GdataLibTest(test_lib.TestCase):
       self.assertEquals(expected, gdata_lib.ScrubValFromSS(val))
 
 
-class CredsTest(test_lib.MoxTestCase):
+class CredsTest(cros_test_lib.MoxOutputTestCase):
 
   USER = 'somedude@chromium.org'
   PASSWORD = 'worldsbestpassword'
@@ -214,7 +218,8 @@ class CredsTest(test_lib.MoxTestCase):
     self.assertEquals(self.TRACKER_TOKEN, mocked_creds.tracker_auth_token)
     self.assertTrue(mocked_creds.token_dirty)
 
-class SpreadsheetRowTest(test_lib.TestCase):
+
+class SpreadsheetRowTest(cros_test_lib.OutputTestCase):
 
   SS_ROW_OBJ = 'SSRowObj'
   SS_ROW_NUM = 5
@@ -250,7 +255,7 @@ class SpreadsheetRowTest(test_lib.TestCase):
     self.assertTrue('abc' in row)
 
 
-class SpreadsheetCommTest(test_lib.MoxTestCase):
+class SpreadsheetCommTest(cros_test_lib.MoxOutputTestCase):
 
   SS_KEY = 'TheSSKey'
   WS_NAME = 'TheWSName'
@@ -339,8 +344,9 @@ class SpreadsheetCommTest(test_lib.MoxTestCase):
 
     # Simulate a Cells feed from spreadsheet for the column row.
     cols = [c[0].upper() + c[1:] for c in self.COLUMNS]
-    entry = [test_lib.EasyAttr(content=test_lib.EasyAttr(text=c)) for c in cols]
-    feed = test_lib.EasyAttr(entry=entry)
+    entry = [cros_test_lib.EasyAttr(
+        content=cros_test_lib.EasyAttr(text=c)) for c in cols]
+    feed = cros_test_lib.EasyAttr(entry=entry)
 
     # This is the replay script for the test.
     gdata.spreadsheet.service.CellQuery().AndReturn(query)
@@ -367,9 +373,10 @@ class SpreadsheetCommTest(test_lib.MoxTestCase):
             ]
     entry = []
     for row in rows:
-      custom = dict((k, test_lib.EasyAttr(text=v)) for (k, v) in row.items())
-      entry.append(test_lib.EasyAttr(custom=custom))
-    feed = test_lib.EasyAttr(entry=entry)
+      custom = dict((k, cros_test_lib.EasyAttr(text=v))
+                    for (k, v) in row.iteritems())
+      entry.append(cros_test_lib.EasyAttr(custom=custom))
+    feed = cros_test_lib.EasyAttr(entry=entry)
 
     # This is the replay script for the test.
     mocked_gdclient.GetListFeed(self.SS_KEY, self.WS_KEY).AndReturn(feed)
@@ -509,12 +516,15 @@ class SpreadsheetCommTest(test_lib.MoxTestCase):
     mocked_scomm = self.MockScomm()
 
     entrylist = [
-      test_lib.EasyAttr(title=test_lib.EasyAttr(text='Foo'), id='NotImportant'),
-      test_lib.EasyAttr(title=test_lib.EasyAttr(text=self.WS_NAME),
-               id=test_lib.EasyAttr(text='/some/path/%s' % self.WS_KEY)),
-      test_lib.EasyAttr(title=test_lib.EasyAttr(text='Bar'), id='NotImportant'),
+      cros_test_lib.EasyAttr(
+          title=cros_test_lib.EasyAttr(text='Foo'), id='NotImportant'),
+      cros_test_lib.EasyAttr(
+          title=cros_test_lib.EasyAttr(text=self.WS_NAME),
+          id=cros_test_lib.EasyAttr(text='/some/path/%s' % self.WS_KEY)),
+      cros_test_lib.EasyAttr(
+          title=cros_test_lib.EasyAttr(text='Bar'), id='NotImportant'),
       ]
-    feed = test_lib.EasyAttr(entry=entrylist)
+    feed = cros_test_lib.EasyAttr(entry=entrylist)
 
     # This is the replay script for the test.
     mocked_scomm.gd_client.GetWorksheetsFeed(self.SS_KEY).AndReturn(feed)
@@ -700,7 +710,7 @@ class SpreadsheetCommTest(test_lib.MoxTestCase):
     self.mox.VerifyAll()
 
 
-class IssueCommentTest(unittest.TestCase):
+class IssueCommentTest(cros_test_lib.TestCase):
 
   def testInit(self):
     title = 'Greetings, Earthlings'
@@ -711,7 +721,7 @@ class IssueCommentTest(unittest.TestCase):
     self.assertEquals(text, ic.text)
 
 
-class IssueTest(mox.MoxTestBase):
+class IssueTest(cros_test_lib.MoxTestCase):
 
   def testInitOverride(self):
     owner = 'somedude@chromium.org'
@@ -734,14 +744,15 @@ class IssueTest(mox.MoxTestBase):
     tissue_content = 'The summary message'
     tissue_title = 'The Big Title'
 
-    tissue = test_lib.EasyAttr()
-    tissue.id = test_lib.EasyAttr(text='http://www/some/path/%d' % tissue_id)
-    tissue.label = [test_lib.EasyAttr(text=l) for l in tissue_labels]
-    tissue.owner = test_lib.EasyAttr(
-      username=test_lib.EasyAttr(text=tissue_owner))
-    tissue.status = test_lib.EasyAttr(text=tissue_status)
-    tissue.content = test_lib.EasyAttr(text=tissue_content)
-    tissue.title = test_lib.EasyAttr(text=tissue_title)
+    tissue = cros_test_lib.EasyAttr()
+    tissue.id = cros_test_lib.EasyAttr(
+        text='http://www/some/path/%d' % tissue_id)
+    tissue.label = [cros_test_lib.EasyAttr(text=l) for l in tissue_labels]
+    tissue.owner = cros_test_lib.EasyAttr(
+        username=cros_test_lib.EasyAttr(text=tissue_owner))
+    tissue.status = cros_test_lib.EasyAttr(text=tissue_status)
+    tissue.content = cros_test_lib.EasyAttr(text=tissue_content)
+    tissue.title = cros_test_lib.EasyAttr(text=tissue_title)
 
     mocked_issue = self.mox.CreateMock(gdata_lib.Issue)
 
@@ -761,7 +772,7 @@ class IssueTest(mox.MoxTestBase):
     self.assertEquals([], mocked_issue.comments)
 
 
-class TrackerCommTest(test_lib.MoxTestCase):
+class TrackerCommTest(cros_test_lib.MoxOutputTestCase):
 
   def testConnectEmail(self):
     source = 'TheSource'
@@ -774,7 +785,7 @@ class TrackerCommTest(test_lib.MoxTestCase):
     mocked_tcomm = self.mox.CreateMock(gdata_lib.TrackerComm)
 
     def set_token(*_args, **_kwargs):
-      mocked_itclient.auth_token = test_lib.EasyAttr(token_string=token)
+      mocked_itclient.auth_token = cros_test_lib.EasyAttr(token_string=token)
 
     # Replay script
     mocked_itclient = gd_ph_client.ProjectHostingClient()
@@ -828,7 +839,7 @@ class TrackerCommTest(test_lib.MoxTestCase):
     self.mox.StubOutWithMock(gdata_lib.Issue, 'InitFromTracker')
 
     issue_id = 12345
-    feed = test_lib.EasyAttr(entry=['hi', 'there'])
+    feed = cros_test_lib.EasyAttr(entry=['hi', 'there'])
 
     # Replay script
     mocked_query = gd_ph_client.Query(issue_id=str(issue_id))
@@ -850,14 +861,15 @@ class TrackerCommTest(test_lib.MoxTestCase):
     mocked_tcomm.it_client = mocked_itclient
     mocked_tcomm.project_name = 'TheProject'
 
-    issue = test_lib.EasyAttr(title='TheTitle',
-                     summary='TheSummary',
-                     status='TheStatus',
-                     owner='TheOwner',
-                     labels='TheLabels')
+    issue = cros_test_lib.EasyAttr(title='TheTitle',
+                                   summary='TheSummary',
+                                   status='TheStatus',
+                                   owner='TheOwner',
+                                   labels='TheLabels')
 
     # Replay script
-    issue_id = test_lib.EasyAttr(id=test_lib.EasyAttr(text='foo/bar/123'))
+    issue_id = cros_test_lib.EasyAttr(
+        id=cros_test_lib.EasyAttr(text='foo/bar/123'))
     mocked_itclient.add_issue(project_name='TheProject',
                               title=issue.title,
                               content=issue.summary,
@@ -899,7 +911,7 @@ class TrackerCommTest(test_lib.MoxTestCase):
     self.assertEquals(issue_id, result)
 
 
-class RetrySpreadsheetsServiceTest(test_lib.MoxTestCase):
+class RetrySpreadsheetsServiceTest(cros_test_lib.MoxOutputTestCase):
 
   def testRequest(self):
     """Test that calling request method invokes _RetryRequest wrapper."""
@@ -946,7 +958,7 @@ class RetrySpreadsheetsServiceTest(test_lib.MoxTestCase):
     # This is the replay script for the test.
     # Simulate the return codes in statuses.
     for status in statuses:
-      retstatus = test_lib.EasyAttr(status=status, read=_read)
+      retstatus = cros_test_lib.EasyAttr(status=status, read=_read)
       atom.http.ProxiedHttpClient.request(*args,
                                           data=mox.IgnoreArg(),
                                           headers=mox.IgnoreArg()
@@ -1007,7 +1019,7 @@ class RetrySpreadsheetsServiceTest(test_lib.MoxTestCase):
       # Add index of status to track which status the request function is
       # returning.  It is expected to return the last return status if
       # successful (retries or not), but first return status if failed.
-      retval = test_lib.EasyAttr(status=status, index=ix)
+      retval = cros_test_lib.EasyAttr(status=status, index=ix)
       mocked_ss.request(*args).AndReturn(retval)
 
     self.mox.ReplayAll()
@@ -1054,4 +1066,4 @@ class RetrySpreadsheetsServiceTest(test_lib.MoxTestCase):
 
 
 if __name__ == '__main__':
-  unittest.main()
+  cros_test_lib.main()

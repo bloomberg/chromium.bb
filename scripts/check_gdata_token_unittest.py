@@ -10,26 +10,21 @@ import filecmp
 import mox
 import os
 import shutil
-import unittest
 
 import gdata.service
 from gdata.projecthosting import client as gdata_ph_client
 from gdata.spreadsheet import service as gdata_ss_service
 
 from chromite.lib import cros_build_lib as build_lib
-from chromite.lib import cros_test_lib as test_lib
+from chromite.lib import cros_test_lib
 from chromite.lib import gdata_lib
 from chromite.scripts import check_gdata_token as cgt
 
 # pylint: disable=W0212,R0904,E1120,E1101
 
 
-class MainTest(test_lib.MoxTestCase):
+class MainTest(cros_test_lib.MoxOutputTestCase):
   """Test argument handling at the main method level."""
-
-  def setUp(self):
-    """Setup for all tests in this class."""
-    mox.MoxTestBase.setUp(self)
 
   def testHelp(self):
     """Test that --help is functioning"""
@@ -84,12 +79,8 @@ class MainTest(test_lib.MoxTestCase):
     self.mox.VerifyAll()
 
 
-class OutsideChrootTest(test_lib.MoxTestCase):
+class OutsideChrootTest(cros_test_lib.MoxOutputTestCase):
   """Test flow when run outside chroot."""
-
-  def setUp(self):
-    """Setup for all tests in this class."""
-    mox.MoxTestBase.setUp(self)
 
   def _MockOutsideChroot(self, *args):
     """Prepare mocked OutsideChroot object with |args|."""
@@ -104,7 +95,7 @@ class OutsideChrootTest(test_lib.MoxTestCase):
 
     self.mox.StubOutWithMock(build_lib, 'RunCommand')
     cmd = ['check_gdata_token']
-    run_result = test_lib.EasyAttr(returncode=1)
+    run_result = cros_test_lib.EasyAttr(returncode=1)
 
     # Create replay script.
     build_lib.RunCommand(cmd, enter_chroot=True,
@@ -129,7 +120,7 @@ class OutsideChrootTest(test_lib.MoxTestCase):
     self.mox.StubOutWithMock(os.path, 'exists')
     self.mox.StubOutWithMock(build_lib, 'RunCommand')
     cmd = ['check_gdata_token', 'foo']
-    run_result = test_lib.EasyAttr(returncode=0)
+    run_result = cros_test_lib.EasyAttr(returncode=0)
 
     # Create replay script.
     build_lib.RunCommand(cmd, enter_chroot=True,
@@ -157,7 +148,7 @@ class OutsideChrootTest(test_lib.MoxTestCase):
     self.mox.StubOutWithMock(shutil, 'copy2')
     self.mox.StubOutWithMock(build_lib, 'RunCommand')
     cmd = ['check_gdata_token', 'foo']
-    run_result = test_lib.EasyAttr(returncode=0)
+    run_result = cros_test_lib.EasyAttr(returncode=0)
 
     # Create replay script.
     build_lib.RunCommand(cmd, enter_chroot=True,
@@ -183,7 +174,7 @@ class OutsideChrootTest(test_lib.MoxTestCase):
     self.mox.StubOutWithMock(filecmp, 'cmp')
     self.mox.StubOutWithMock(build_lib, 'RunCommand')
     cmd = ['check_gdata_token', 'foo']
-    run_result = test_lib.EasyAttr(returncode=0)
+    run_result = cros_test_lib.EasyAttr(returncode=0)
 
     # Create replay script.
     build_lib.RunCommand(cmd, enter_chroot=True,
@@ -209,7 +200,7 @@ class OutsideChrootTest(test_lib.MoxTestCase):
     self.mox.StubOutWithMock(filecmp, 'cmp')
     self.mox.StubOutWithMock(build_lib, 'RunCommand')
     cmd = ['check_gdata_token', 'foo']
-    run_result = test_lib.EasyAttr(returncode=0)
+    run_result = cros_test_lib.EasyAttr(returncode=0)
 
     # Create replay script.
     build_lib.RunCommand(cmd, enter_chroot=True,
@@ -226,12 +217,8 @@ class OutsideChrootTest(test_lib.MoxTestCase):
       cgt.OutsideChroot.Run(mocked_outsidechroot)
     self.mox.VerifyAll()
 
-class InsideChrootTest(test_lib.MoxTestCase):
+class InsideChrootTest(cros_test_lib.MoxOutputTestCase):
   """Test flow when run inside chroot."""
-
-  def setUp(self):
-    """Setup for all tests in this class."""
-    mox.MoxTestBase.setUp(self)
 
   def _MockInsideChroot(self):
     """Prepare mocked OutsideChroot object."""
@@ -379,7 +366,7 @@ class InsideChrootTest(test_lib.MoxTestCase):
     mocked_creds.user = 'joe@chromium.org'
     mocked_creds.password = 'shhh'
     auth_token = 'SomeToken'
-    mocked_itclient.auth_token = test_lib.EasyAttr(token_string=auth_token)
+    mocked_itclient.auth_token = cros_test_lib.EasyAttr(token_string=auth_token)
 
     mocked_creds.LoadCreds(cgt.CRED_FILE)
     mocked_itclient.ClientLogin(mocked_creds.user, mocked_creds.password,
@@ -541,5 +528,4 @@ class InsideChrootTest(test_lib.MoxTestCase):
     self.mox.VerifyAll()
 
 if __name__ == '__main__':
-  build_lib.SetupBasicLogging()
-  unittest.main()
+  cros_test_lib.main()

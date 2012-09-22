@@ -1991,11 +1991,3 @@ def SetupBasicLogging():
   date_format = constants.LOGGER_DATE_FMT
   logging.basicConfig(level=logging.DEBUG, format=logging_format,
                       datefmt=date_format)
-
-
-# Support having this module test itself if run as __main__, by leveraging
-# the corresponding unittest module.
-# Also, the unittests serve as extra documentation.
-if __name__ == '__main__':
-  import cros_build_lib_unittest
-  cros_build_lib_unittest.unittest.main(cros_build_lib_unittest)

@@ -11,8 +11,6 @@ import mox
 import optparse
 import os
 import sys
-import tempfile
-import unittest
 
 import constants
 sys.path.insert(0, constants.SOURCE_ROOT)
@@ -37,13 +35,11 @@ class TestFailedException(Exception):
   """Exception used by mocks to halt execution and indicate failure."""
   pass
 
-class RunBuildStagesTest(cros_test_lib.TempDirMixin, mox.MoxTestBase):
+class RunBuildStagesTest(cros_test_lib.MoxTempDirTestCase):
 
   def setUp(self):
-    mox.MoxTestBase.setUp(self)
-    cros_test_lib.TempDirMixin.setUp(self)
-
-    self.buildroot = tempfile.mkdtemp()
+    self.buildroot = os.path.join(self.tempdir, 'buildroot')
+    osutils.SafeMakedirs(self.buildroot)
     # Always stub RunCommmand out as we use it in every method.
     self.bot_id = 'x86-generic-paladin'
     self.build_config = config.config[self.bot_id]
@@ -68,9 +64,6 @@ class RunBuildStagesTest(cros_test_lib.TempDirMixin, mox.MoxTestBase):
 
     self.mox.StubOutWithMock(stages.SyncStage, 'HandleSkip')
     stages.SyncStage.HandleSkip()
-
-  def tearDown(self):
-    cros_test_lib.TempDirMixin.tearDown(self)
 
   def testChromeosOfficialSet(self):
     """Verify that CHROMEOS_OFFICIAL is set correctly."""
@@ -149,7 +142,7 @@ class RunBuildStagesTest(cros_test_lib.TempDirMixin, mox.MoxTestBase):
       del os.environ['CHROMEOS_OFFICIAL']
 
 
-class LogTest(mox.MoxTestBase):
+class LogTest(cros_test_lib.MoxTestCase):
 
   def _generateLogs(self, num):
     """Generates cbuildbot.log and num backups."""
@@ -192,12 +185,12 @@ class LogTest(mox.MoxTestBase):
                       25)
 
 
-class InterfaceTest(mox.MoxTestBase):
+class InterfaceTest(cros_test_lib.MoxTestCase):
 
   _X86_PREFLIGHT = 'x86-generic-paladin'
   _BUILD_ROOT = '/b/test_build1'
+
   def setUp(self):
-    mox.MoxTestBase.setUp(self)
     self.parser = cbuildbot._CreateParser()
     self.mox.StubOutWithMock(cros_build_lib, 'Die')
 
@@ -413,20 +406,21 @@ class InterfaceTest(mox.MoxTestBase):
     self.assertRaises(Exception, cbuildbot._ParseCommandLine, self.parser, args)
 
 
-class FullInterfaceTest(cros_test_lib.TempDirMixin, unittest.TestCase):
+class FullInterfaceTest(cros_test_lib.MoxTempDirTestCase):
   """Tests that run the cbuildbot.main() function directly.
 
-  Don't inherit from MoxTestBase since it runs VerifyAll() at the end of every
-  test which we don't want.
+  Note this explicitly suppresses automatic VerifyAll() calls; thus if you want
+  that checked, you have to invoke it yourself.
   """
+
+  mox_suppress_verify_all = True
+
   def MakeTestRootDir(self, relpath):
     abspath = os.path.join(self.root, relpath)
     os.makedirs(abspath)
     return abspath
 
   def setUp(self):
-    cros_test_lib.TempDirMixin.setUp(self)
-    self.mox = mox.Mox()
     self.root = self.tempdir
     self.buildroot = self.MakeTestRootDir('build_root')
     self.sourceroot = self.MakeTestRootDir('source_root')
@@ -459,10 +453,6 @@ class FullInterfaceTest(cros_test_lib.TempDirMixin, unittest.TestCase):
     cbuildbot._RunBuildStagesWrapper(
         mox.IgnoreArg(),
         mox.IgnoreArg()).InAnyOrder().AndReturn(True)
-
-  def tearDown(self):
-    cros_test_lib.TempDirMixin.tearDown(self)
-    self.mox.UnsetStubs()
 
   def assertMain(self, args, common_options=True):
     if common_options:
@@ -546,5 +536,4 @@ class FullInterfaceTest(cros_test_lib.TempDirMixin, unittest.TestCase):
 
 
 if __name__ == '__main__':
-  cros_build_lib.SetupBasicLogging()
-  unittest.main()
+  cros_test_lib.main()

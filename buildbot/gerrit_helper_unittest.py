@@ -8,19 +8,18 @@
 
 import mox
 import sys
-import unittest
 
 import constants
 sys.path.insert(0, constants.SOURCE_ROOT)
 from chromite.buildbot import gerrit_helper
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_test_lib
 
 
 # pylint: disable=W0212,R0904
-class GerritHelperTest(mox.MoxTestBase):
+class GerritHelperTest(cros_test_lib.MoxTestCase):
 
   def setUp(self):
-    mox.MoxTestBase.setUp(self)
     self.footer_template = (
       '{"type":"stats","rowCount":%(count)i,"runTimeMilliseconds":205}')
     self.results = (
@@ -215,10 +214,9 @@ class GerritHelperTest(mox.MoxTestBase):
 
 
 # pylint: disable=W0212,R0904
-class GerritQueryTests(mox.MoxTestBase):
+class GerritQueryTests(cros_test_lib.MoxTestCase):
 
   def setUp(self):
-    mox.MoxTestBase.setUp(self)
     raw_json = ('{"project":"chromiumos/chromite","branch":"master","id":'
              '"Icb8e1d315d465a077ffcddd7d1ab2307573017d5","number":"2144",'
              '"subject":"Add functionality to cbuildbot to patch in a set '
@@ -352,8 +350,5 @@ class GerritQueryTests(mox.MoxTestBase):
     self.mox.VerifyAll()
 
 
-
-
 if __name__ == '__main__':
-  cros_build_lib.SetupBasicLogging()
-  unittest.main()
+  cros_test_lib.main()

@@ -9,12 +9,12 @@ import os
 import multiprocessing
 import sys
 import tempfile
-import unittest
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 '..', '..'))
 from chromite.scripts import upload_prebuilts as prebuilt
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_test_lib
 from chromite.lib import binpkg
 
 # pylint: disable=E1120,W0212,R0904
@@ -33,7 +33,7 @@ def SimplePackageIndex(header=True, packages=True):
   return pkgindex
 
 
-class TestUpdateFile(unittest.TestCase):
+class TestUpdateFile(cros_test_lib.TempDirTestCase):
 
   def setUp(self):
     self.contents_str = ['# comment that should be skipped',
@@ -45,9 +45,6 @@ class TestUpdateFile(unittest.TestCase):
     temp_fd, self.version_file = tempfile.mkstemp()
     os.write(temp_fd, '\n'.join(self.contents_str))
     os.close(temp_fd)
-
-  def tearDown(self):
-    os.remove(self.version_file)
 
   def _read_version_file(self, version_file=None):
     """Read the contents of self.version_file and return as a list."""
@@ -106,14 +103,7 @@ class TestUpdateFile(unittest.TestCase):
         os.remove(non_existent_file)
 
 
-class TestPrebuilt(unittest.TestCase):
-
-  def setUp(self):
-    self.mox = mox.Mox()
-
-  def tearDown(self):
-    self.mox.UnsetStubs()
-    self.mox.VerifyAll()
+class TestPrebuilt(cros_test_lib.MoxTestCase):
 
   def testGenerateUploadDict(self):
     base_local_path = '/b/cbuild/build/chroot/build/x86-dogfood/'
@@ -191,7 +181,7 @@ class TestPrebuilt(unittest.TestCase):
         expected_results['result'])
 
 
-class TestPackagesFileFiltering(unittest.TestCase):
+class TestPackagesFileFiltering(cros_test_lib.TestCase):
 
   def testFilterPkgIndex(self):
     pkgindex = SimplePackageIndex()
@@ -200,7 +190,7 @@ class TestPackagesFileFiltering(unittest.TestCase):
     self.assertEqual(pkgindex.modified, True)
 
 
-class TestPopulateDuplicateDB(unittest.TestCase):
+class TestPopulateDuplicateDB(cros_test_lib.TestCase):
 
   def testEmptyIndex(self):
     pkgindex = SimplePackageIndex(packages=False)
@@ -235,17 +225,13 @@ class TestPopulateDuplicateDB(unittest.TestCase):
     self.assertRaises(KeyError, pkgindex._PopulateDuplicateDB, db, 0)
 
 
-class TestResolveDuplicateUploads(unittest.TestCase):
+class TestResolveDuplicateUploads(cros_test_lib.MoxTestCase):
 
   def setUp(self):
-    self.mox = mox.Mox()
     self.mox.StubOutWithMock(binpkg.time, 'time')
     binpkg.time.time().AndReturn(binpkg.TWO_WEEKS)
+    # wtf...?
     self.mox.ReplayAll()
-
-  def tearDown(self):
-    self.mox.UnsetStubs()
-    self.mox.VerifyAll()
 
   def testEmptyList(self):
     pkgindex = SimplePackageIndex()
@@ -298,14 +284,7 @@ class TestResolveDuplicateUploads(unittest.TestCase):
     self.assertEqual(pkgindex.packages, expected_pkgindex.packages)
 
 
-class TestWritePackageIndex(unittest.TestCase):
-
-  def setUp(self):
-    self.mox = mox.Mox()
-
-  def tearDown(self):
-    self.mox.UnsetStubs()
-    self.mox.VerifyAll()
+class TestWritePackageIndex(cros_test_lib.MoxTestCase):
 
   def testSimple(self):
     pkgindex = SimplePackageIndex()
@@ -316,7 +295,7 @@ class TestWritePackageIndex(unittest.TestCase):
     self.assertEqual(f.read(), '')
 
 
-class TestUploadPrebuilt(unittest.TestCase):
+class TestUploadPrebuilt(cros_test_lib.TestCase):
 
   def setUp(self):
     class MockTemporaryFile(object):
@@ -332,10 +311,6 @@ class TestUploadPrebuilt(unittest.TestCase):
     self.mox.StubOutWithMock(self.pkgindex, 'WriteToNamedTemporaryFile')
     fake_pkgs_file = MockTemporaryFile('fake')
     self.pkgindex.WriteToNamedTemporaryFile().AndReturn(fake_pkgs_file)
-
-  def tearDown(self):
-    self.mox.UnsetStubs()
-    self.mox.VerifyAll()
 
   def testSuccessfulGsUpload(self):
     uploads = {'/packages/private.tbz2': 'gs://foo/private.tbz2'}
@@ -353,10 +328,9 @@ class TestUploadPrebuilt(unittest.TestCase):
     uploader._UploadPrebuilt('/packages', 'suffix')
 
 
-class TestSyncPrebuilts(unittest.TestCase):
+class TestSyncPrebuilts(cros_test_lib.MoxTestCase):
 
   def setUp(self):
-    self.mox = mox.Mox()
     self.mox.StubOutWithMock(prebuilt, 'DeterminePrebuiltConfFile')
     self.mox.StubOutWithMock(prebuilt, 'RevGitFile')
     self.mox.StubOutWithMock(prebuilt, 'UpdateBinhostConfFile')
@@ -366,10 +340,6 @@ class TestSyncPrebuilts(unittest.TestCase):
     self.binhost = 'http://prebuilt/'
     self.key = 'PORTAGE_BINHOST'
     self.mox.StubOutWithMock(prebuilt.PrebuiltUploader, '_UploadPrebuilt')
-
-  def tearDown(self):
-    self.mox.UnsetStubs()
-    self.mox.VerifyAll()
 
   def testSyncHostPrebuilts(self):
     board = 'x86-foo'
@@ -432,14 +402,7 @@ class TestSyncPrebuilts(unittest.TestCase):
     uploader.SyncBoardPrebuilts(self.version, self.key, True, True, True, None)
 
 
-class TestMain(unittest.TestCase):
-
-  def setUp(self):
-    self.mox = mox.Mox()
-
-  def tearDown(self):
-    self.mox.UnsetStubs()
-    self.mox.VerifyAll()
+class TestMain(cros_test_lib.MoxTestCase):
 
   def testMain(self):
     """Test that the main function works."""
@@ -494,5 +457,4 @@ class TestMain(unittest.TestCase):
     prebuilt.main([])
 
 if __name__ == '__main__':
-  cros_build_lib.SetupBasicLogging()
-  unittest.main()
+  cros_test_lib.main()

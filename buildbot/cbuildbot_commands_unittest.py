@@ -11,7 +11,6 @@ import os
 import shutil
 import sys
 import tempfile
-import unittest
 
 import constants
 sys.path.insert(0, constants.SOURCE_ROOT)
@@ -22,13 +21,7 @@ from chromite.lib import cros_test_lib
 
 
 # pylint: disable=E1101,W0212,R0904
-class RunBuildScriptTest(mox.MoxTestBase):
-
-  def setUp(self):
-    mox.MoxTestBase.setUp(self)
-
-  def tearDown(self):
-    self.mox.UnsetStubs()
+class RunBuildScriptTest(cros_test_lib.MoxTestCase):
 
   def _assertRunBuildScript(self, in_chroot=False, tmpf=None, raises=None):
     """Test the RunBuildScript function.
@@ -115,10 +108,9 @@ class RunBuildScriptTest(mox.MoxTestBase):
                                  raises=results_lib.PackageBuildFailure)
 
 
-class CBuildBotTest(mox.MoxTestBase):
+class CBuildBotTest(cros_test_lib.MoxTempDirTestCase):
 
   def setUp(self):
-    mox.MoxTestBase.setUp(self)
     # Always stub RunCommmand out as we use it in every method.
     self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
     self._test_repos = [['kernel', 'third_party/kernel/files'],
@@ -142,12 +134,7 @@ class CBuildBotTest(mox.MoxTestBase):
         cros_build_lib.ReinterpretPathForChroot(p) for p in self._overlays
     ]
     self._CWD = os.path.dirname(os.path.realpath(__file__))
-    self._work_dir = tempfile.mkdtemp()
-    os.makedirs(self._work_dir + '/chroot/tmp/taco')
-
-  def tearDown(self):
-    shutil.rmtree(self._work_dir)
-    self.mox.UnsetStubs()
+    os.makedirs(self.tempdir + '/chroot/tmp/taco')
 
   def testRunTestSuite(self):
     """Tests if we can parse the test_types so that sane commands are called."""
@@ -155,7 +142,7 @@ class CBuildBotTest(mox.MoxTestBase):
       """Helper function that returns whether items are not in a list."""
       return set(items).isdisjoint(set(list_))
 
-    cwd = self._work_dir + '/src/scripts'
+    cwd = self.tempdir + '/src/scripts'
 
     obj = cros_test_lib.EasyAttr(returncode=0)
 
@@ -164,7 +151,7 @@ class CBuildBotTest(mox.MoxTestBase):
         cwd=cwd, error_code_ok=True).AndReturn(obj)
 
     self.mox.ReplayAll()
-    commands.RunTestSuite(self._work_dir, self._test_board, self._buildroot,
+    commands.RunTestSuite(self.tempdir, self._test_board, self._buildroot,
                           '/tmp/taco', build_config='test_config',
                           whitelist_chrome_crashes=False,
                           test_type=constants.FULL_AU_TEST_TYPE)
@@ -175,7 +162,7 @@ class CBuildBotTest(mox.MoxTestBase):
                               error_code_ok=True).AndReturn(obj)
 
     self.mox.ReplayAll()
-    commands.RunTestSuite(self._work_dir, self._test_board, self._buildroot,
+    commands.RunTestSuite(self.tempdir, self._test_board, self._buildroot,
                           '/tmp/taco', build_config='test_config',
                           whitelist_chrome_crashes=False,
                           test_type=constants.SIMPLE_AU_TEST_TYPE)
@@ -187,7 +174,7 @@ class CBuildBotTest(mox.MoxTestBase):
         cwd=cwd, error_code_ok=True).AndReturn(obj)
 
     self.mox.ReplayAll()
-    commands.RunTestSuite(self._work_dir, self._test_board, self._buildroot,
+    commands.RunTestSuite(self.tempdir, self._test_board, self._buildroot,
                           '/tmp/taco', build_config='test_config',
                           whitelist_chrome_crashes=False,
                           test_type=constants.SMOKE_SUITE_TEST_TYPE)
@@ -440,5 +427,4 @@ class CBuildBotTest(mox.MoxTestBase):
 
 
 if __name__ == '__main__':
-  cros_build_lib.SetupBasicLogging()
-  unittest.main()
+  cros_test_lib.main()

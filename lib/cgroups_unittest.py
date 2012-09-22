@@ -5,7 +5,6 @@
 # found in the LICENSE file.
 
 import os
-import unittest
 import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__)))))
@@ -13,10 +12,11 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
 from chromite.buildbot import cbuildbot_background as bg
 from chromite.lib import cgroups
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_test_lib
 from chromite.lib import sudo
 
 
-class TestCreateGroups(unittest.TestCase):
+class TestCreateGroups(cros_test_lib.TestCase):
 
   def _CrosSdk(self):
     cmd = ['cros_sdk', '--', 'sleep', '0.001']
@@ -30,5 +30,4 @@ class TestCreateGroups(unittest.TestCase):
 
 
 if __name__ == '__main__':
-  cros_build_lib.SetupBasicLogging()
-  unittest.main()
+  cros_test_lib.main()

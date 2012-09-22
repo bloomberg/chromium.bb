@@ -15,13 +15,11 @@ import re
 import shutil
 import sys
 import tempfile
-import unittest
-
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 '..', '..'))
 from chromite.lib import cros_build_lib
-from chromite.lib import cros_test_lib as test_lib
+from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import upgrade_table as utable
 from chromite.scripts import cros_portage_upgrade as cpu
@@ -352,7 +350,7 @@ class RunCommandResult(object):
     self.output = output
 
 
-class PInfoTest(test_lib.TestCase):
+class PInfoTest(cros_test_lib.OutputTestCase):
 
   def testInit(self):
     pinfo = cpu.PInfo(category='SomeCat', user_arg='SomeArg')
@@ -391,7 +389,7 @@ class PInfoTest(test_lib.TestCase):
     self.assertTrue(pinfo1 != pinfo4)
 
 
-class CpuTestBase(test_lib.MoxTestCase):
+class CpuTestBase(cros_test_lib.MoxOutputTestCase):
   """Base class for all test classes in this file."""
 
   __slots__ = [
@@ -400,8 +398,6 @@ class CpuTestBase(test_lib.MoxTestCase):
     ]
 
   def setUp(self):
-    mox.MoxTestBase.setUp(self)
-
     self.playground = None
     self.playground_envvars = None
 
@@ -2396,10 +2392,7 @@ class UpgradePackagesTest(CpuTestBase):
 ### CategoriesRoundtripTest ###
 ###############################
 
-class CategoriesRoundtripTest(test_lib.MoxTestCase):
-
-  def setUp(self):
-    mox.MoxTestBase.setUp(self)
+class CategoriesRoundtripTest(cros_test_lib.MoxOutputTestCase):
 
   @osutils.TempDirDecorator
   def _TestCategoriesRoundtrip(self, categories):
@@ -2413,7 +2406,7 @@ class CategoriesRoundtripTest(test_lib.MoxTestCase):
     cpu.Upgrader._RunGit(stable_repo, ['add', cat_file])
     self.mox.ReplayAll()
 
-    options = test_lib.EasyAttr(srcroot='foobar') # Not important
+    options = cros_test_lib.EasyAttr(srcroot='foobar') # Not important
     upgrader = cpu.Upgrader(options=options)
     upgrader._stable_repo = stable_repo
     os.makedirs(profiles_dir)
@@ -3786,5 +3779,4 @@ class MainTest(CpuTestBase):
     self.mox.VerifyAll()
 
 if __name__ == '__main__':
-  cros_build_lib.SetupBasicLogging()
-  unittest.main()
+  cros_test_lib.main()

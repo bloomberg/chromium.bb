@@ -13,7 +13,6 @@ import sys
 import copy
 import shutil
 import time
-import unittest
 
 import constants
 sys.path.insert(0, constants.SOURCE_ROOT)
@@ -48,40 +47,7 @@ GERRIT_MERGED_CHANGEID = '3'
 GERRIT_ABANDONED_CHANGEID = '2'
 
 
-class UsableAssertRaises(object):
-  """This is a mixin to provide a assertRaises2, allowing finer grained tests.
-  """
-
-  # TODO(build): move this into lib/ once we rebase everything to import from
-  # our own custom unittest.TestCase.
-
-  def assertRaises2(self, exception, functor, *args, **kwargs):
-    exact_kls = kwargs.pop('exact_kls', None)
-    check_attrs = kwargs.pop('check_attrs', {})
-    msg = kwargs.pop('msg', None)
-    if msg is None:
-      msg = ("%s(*%r, **%r) didn't throw an exception"
-             % (functor.__name__, args, kwargs))
-    try:
-      functor(*args, **kwargs)
-      raise AssertionError(msg)
-    except exception, e:
-      if exact_kls:
-        self.assertEqual(e.__class__, exception)
-      bad = []
-      for attr, required in check_attrs.iteritems():
-        self.assertTrue(hasattr(e, attr),
-                        msg="%s lacks attr %s" % (e, attr))
-        value = getattr(e, attr)
-        if value != required:
-          bad.append("%s attr is %s, needed to be %s"
-                     % (attr, value, required))
-      if bad:
-        raise AssertionError("\n".join(bad))
-
-
-class TestGitRepoPatch(UsableAssertRaises, cros_test_lib.TempDirMixin,
-                       unittest.TestCase):
+class TestGitRepoPatch(cros_test_lib.TempDirTestCase):
 
   # No pymox bits are to be used in this class's tests.
   # This needs to actually validate git output, and git behaviour, rather
@@ -122,7 +88,6 @@ I am the first commit.
     shutil.rmtree(tmp_path)
 
   def setUp(self):
-    cros_test_lib.TempDirMixin.setUp(self)
     # Create an empty repo to work from.
     self.source = os.path.join(self.tempdir, 'source.git')
     self._CreateSourceRepo(self.source)
@@ -135,11 +100,8 @@ I am the first commit.
     os.chmod(self.default_cwd, 0500)
 
   def tearDown(self):
-    os.chdir(self.original_cwd)
-    # shutil.rmtree won't reset perms on an unwritable directory; do it
-    # ourselves.
-    os.chmod(self.default_cwd, 0700)
-    cros_test_lib.TempDirMixin.tearDown(self)
+    if hasattr(self, 'original_cwd'):
+      os.chdir(self.original_cwd)
 
   def _MkPatch(self, source, sha1, ref='refs/heads/master', **kwds):
     return self.patch_kls(source, 'chromiumos/chromite', ref,
@@ -486,7 +448,6 @@ class TestLocalPatchGit(TestGitRepoPatch):
   patch_kls = cros_patch.LocalPatch
 
   def setUp(self):
-    TestGitRepoPatch.setUp(self)
     self.sourceroot = os.path.join(self.tempdir, 'sourceroot')
 
 
@@ -642,7 +603,7 @@ class TestGerritPatch(TestGitRepoPatch):
       self.assertEqual(patch.approval_timestamp, expected, msg)
 
 
-class PrepareRemotePatchesTest(unittest.TestCase):
+class PrepareRemotePatchesTest(cros_test_lib.TestCase):
 
   def MkRemote(self,
                project='my/project', original_branch='my-local',
@@ -687,11 +648,9 @@ class PrepareRemotePatchesTest(unittest.TestCase):
                       ':'.join(chunks + [':']))
 
 
-class PrepareLocalPatchesTests(mox.MoxTestBase):
+class PrepareLocalPatchesTests(cros_test_lib.MoxTestCase):
 
   def setUp(self):
-    mox.MoxTestBase.setUp(self)
-
     self.patches = ['my/project:mybranch']
 
     self.mox.StubOutWithMock(cros_build_lib, 'GetProjectDir')
@@ -745,7 +704,7 @@ class PrepareLocalPatchesTests(mox.MoxTestBase):
         self.manifest, self.patches)
 
 
-class TestFormatting(UsableAssertRaises, unittest.TestCase):
+class TestFormatting(cros_test_lib.TestCase):
 
   def _assertResult(self, functor, value, expected=None, raises=False,
                     fixup=str, **kwds):
@@ -865,5 +824,4 @@ class TestFormatting(UsableAssertRaises, unittest.TestCase):
 
 
 if __name__ == '__main__':
-  cros_build_lib.SetupBasicLogging()
-  unittest.main()
+  cros_test_lib.main()
