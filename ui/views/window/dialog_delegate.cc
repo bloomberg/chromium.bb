@@ -60,7 +60,7 @@ bool DialogDelegate::Cancel() {
   return true;
 }
 
-bool DialogDelegate::Accept(bool window_closiang) {
+bool DialogDelegate::Accept(bool window_closing) {
   return Accept();
 }
 
