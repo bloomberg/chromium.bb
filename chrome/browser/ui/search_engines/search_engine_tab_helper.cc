@@ -23,6 +23,8 @@ using content::NavigationController;
 using content::NavigationEntry;
 using content::WebContents;
 
+int SearchEngineTabHelper::kUserDataKey;
+
 namespace {
 
 // Returns true if the entry's transition type is FORM_SUBMIT.
@@ -60,11 +62,6 @@ string16 GenerateKeywordFromNavigationEntry(const NavigationEntry* entry) {
 
 }  // namespace
 
-SearchEngineTabHelper::SearchEngineTabHelper(WebContents* web_contents)
-    : content::WebContentsObserver(web_contents) {
-  DCHECK(web_contents);
-}
-
 SearchEngineTabHelper::~SearchEngineTabHelper() {
 }
 
@@ -82,6 +79,11 @@ bool SearchEngineTabHelper::OnMessageReceived(const IPC::Message& message) {
   IPC_END_MESSAGE_MAP()
 
   return handled;
+}
+
+SearchEngineTabHelper::SearchEngineTabHelper(WebContents* web_contents)
+    : content::WebContentsObserver(web_contents) {
+  DCHECK(web_contents);
 }
 
 void SearchEngineTabHelper::OnPageHasOSDD(

@@ -1824,11 +1824,10 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
         return;
       model->Load();
 
-      TabContents* tab_contents =
-          TabContents::FromWebContents(source_web_contents_);
-      if (tab_contents &&
-          tab_contents->search_engine_tab_helper() &&
-          tab_contents->search_engine_tab_helper()->delegate()) {
+      SearchEngineTabHelper* search_engine_tab_helper =
+          SearchEngineTabHelper::FromWebContents(source_web_contents_);
+      if (search_engine_tab_helper &&
+          search_engine_tab_helper->delegate()) {
         string16 keyword(TemplateURLService::GenerateKeyword(params_.page_url));
         TemplateURLData data;
         data.short_name = keyword;
@@ -1837,7 +1836,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
         data.favicon_url =
             TemplateURL::GenerateFaviconURL(params_.page_url.GetOrigin());
         // Takes ownership of the TemplateURL.
-        tab_contents->search_engine_tab_helper()->delegate()->
+        search_engine_tab_helper->delegate()->
             ConfirmAddSearchProvider(new TemplateURL(profile_, data), profile_);
       }
       break;

@@ -44,7 +44,6 @@ class PepperBrokerObserver;
 class PluginObserver;
 class PrefsTabHelper;
 class Profile;
-class SearchEngineTabHelper;
 class ShellWindow;
 class TabAutofillManagerDelegate;
 class TabContentsTestHarness;
@@ -196,10 +195,6 @@ class TabContents : public content::WebContentsObserver {
     return prerender_tab_helper_.get();
   }
 
-  SearchEngineTabHelper* search_engine_tab_helper() {
-    return search_engine_tab_helper_.get();
-  }
-
   browser_sync::SyncedTabDelegate* synced_tab_delegate() {
     return synced_tab_delegate_.get();
   }
@@ -265,7 +260,6 @@ class TabContents : public content::WebContentsObserver {
   scoped_ptr<PrefsTabHelper> prefs_tab_helper_;
   scoped_ptr<prerender::PrerenderTabHelper> prerender_tab_helper_;
 
-  scoped_ptr<SearchEngineTabHelper> search_engine_tab_helper_;
   scoped_ptr<browser_sync::SyncedTabDelegate> synced_tab_delegate_;
 
   // The TabSpecificContentSettings object is used to query the blocked content

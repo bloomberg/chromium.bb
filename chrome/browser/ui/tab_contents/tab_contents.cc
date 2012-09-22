@@ -144,7 +144,7 @@ TabContents::TabContents(WebContents* contents)
       new PasswordManager(contents, password_manager_delegate_.get()));
   prefs_tab_helper_.reset(new PrefsTabHelper(contents));
   prerender_tab_helper_.reset(new prerender::PrerenderTabHelper(this));
-  search_engine_tab_helper_.reset(new SearchEngineTabHelper(contents));
+  SearchEngineTabHelper::CreateForWebContents(contents);
   chrome::search::SearchTabHelper::CreateForWebContents(contents);
   SnapshotTabHelper::CreateForWebContents(contents);
   SSLTabHelper::CreateForWebContents(contents);
