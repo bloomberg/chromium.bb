@@ -658,6 +658,7 @@
             'browser/plugin_service_impl_browsertest.cc',
             'browser/renderer_host/render_view_host_browsertest.cc',
             'browser/renderer_host/render_view_host_manager_browsertest.cc',
+            'browser/renderer_host/render_widget_host_view_win_browsertest.cc',
             'browser/renderer_host/resource_dispatcher_host_browsertest.cc',
             'browser/session_history_browsertest.cc',
             'browser/speech/speech_recognition_browsertest.cc',
@@ -723,6 +724,10 @@
                   },
                 },
               },
+            }, {  # OS!="win"
+              'sources!': [
+                'browser/renderer_host/render_widget_host_view_win_browsertest.cc',
+              ],
             }],
             ['OS=="win" and win_use_allocator_shim==1', {
               'dependencies': [

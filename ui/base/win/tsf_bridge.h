@@ -23,17 +23,22 @@ class TextInputClient;
 // of text inputting and current focused TextInputClient.
 //
 // All methods in this class must be used in UI thread.
-class TsfBridge {
+class UI_EXPORT TsfBridge {
  public:
   virtual ~TsfBridge();
 
   // Returns the thread local TsfBridge instance. Initialize() must be called
   // first. Do not cache this pointer and use it after TsfBridge Shutdown().
-  static UI_EXPORT TsfBridge* GetInstance();
+  static TsfBridge* GetInstance();
 
   // Sets the thread local instance. Must be called before any calls to
   // GetInstance().
-  static UI_EXPORT bool Initialize();
+  static bool Initialize();
+
+  // Injects an alternative TsfBridge such as MockTsfBridge for testing. The
+  // injected object should be released by the caller. This function returns
+  // previous TsfBridge pointer with ownership.
+  static TsfBridge* ReplaceForTesting(TsfBridge* bridge);
 
   // Destroys the thread local instance.
   virtual void Shutdown() = 0;

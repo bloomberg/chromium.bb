@@ -9,6 +9,7 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
+        '../skia/skia.gyp:skia',
         '../testing/gtest.gyp:gtest',
       ],
       'sources': [
@@ -18,6 +19,8 @@
         'base/test/ui_cocoa_test_helper.mm',
         'base/test/dummy_input_method.cc',
         'base/test/dummy_input_method.h',
+        'base/win/mock_tsf_bridge.cc',
+        'base/win/mock_tsf_bridge.h',
       ],
       'include_dirs': [
         '../',

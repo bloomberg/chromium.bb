@@ -463,6 +463,17 @@ bool TsfBridge::Initialize() {
 }
 
 // static
+TsfBridge* TsfBridge::ReplaceForTesting(TsfBridge* bridge) {
+  if (MessageLoop::current()->type() != MessageLoop::TYPE_UI) {
+    VLOG(1) << "Do not use TsfBridge without UI thread.";
+    return NULL;
+  }
+  TsfBridge* old_bridge = TsfBridge::GetInstance();
+  tls_tsf_bridge.Set(bridge);
+  return old_bridge;
+}
+
+// static
 TsfBridge* TsfBridge::GetInstance() {
   if (MessageLoop::current()->type() != MessageLoop::TYPE_UI) {
     VLOG(1) << "Do not use TsfBridge without UI thread.";
