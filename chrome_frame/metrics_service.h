@@ -50,9 +50,6 @@ class MetricsService : public MetricsServiceBase {
     STOPPED,                // Service has stopped
   };
 
-  // Maintain a map of histogram names to the sample stats we've sent.
-  typedef std::map<std::string, base::Histogram::SampleSet> LoggedSampleMap;
-
   // Sets and gets whether metrics recording is active.
   // SetRecording(false) also forces a persistent save of logging state (if
   // anything has been recorded, or transmitted).

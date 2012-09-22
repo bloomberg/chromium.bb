@@ -11,6 +11,10 @@
 #include "base/metrics/histogram_snapshot_manager.h"
 #include "chrome/common/metrics/metrics_log_manager.h"
 
+namespace base {
+class HistogramSamples;
+}  // namespace base
+
 // This class provides base functionality for logging metrics data.
 // TODO(ananta): Factor out more common code from chrome and chrome frame
 // metrics service into this class.
@@ -18,7 +22,7 @@ class MetricsServiceBase : public base::HistogramFlattener {
  public:
   // HistogramFlattener interface (override) methods.
   virtual void RecordDelta(const base::Histogram& histogram,
-                           const base::Histogram::SampleSet& snapshot) OVERRIDE;
+                           const base::HistogramSamples& snapshot) OVERRIDE;
   virtual void InconsistencyDetected(
       base::Histogram::Inconsistencies problem) OVERRIDE;
   virtual void UniqueInconsistencyDetected(

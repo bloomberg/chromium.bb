@@ -16,6 +16,10 @@
 
 class MessageLoop;
 
+namespace base {
+class HistogramSamples;
+}  // namespace base
+
 namespace content {
 
 class ChildHistogramMessageFilter : public base::HistogramFlattener,
@@ -32,7 +36,7 @@ class ChildHistogramMessageFilter : public base::HistogramFlattener,
 
   // HistogramFlattener interface (override) methods.
   virtual void RecordDelta(const base::Histogram& histogram,
-                           const base::Histogram::SampleSet& snapshot) OVERRIDE;
+                           const base::HistogramSamples& snapshot) OVERRIDE;
   virtual void InconsistencyDetected(
       base::Histogram::Inconsistencies problem) OVERRIDE;
   virtual void UniqueInconsistencyDetected(

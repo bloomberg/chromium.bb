@@ -18,6 +18,10 @@
 
 class GURL;
 
+namespace base {
+class HistogramSamples;
+}  // namespace base
+
 // This class provides base functionality for logging metrics data.
 class MetricsLogBase {
  public:
@@ -72,7 +76,7 @@ class MetricsLogBase {
 
   // Record any changes in a given histogram for transmission.
   void RecordHistogramDelta(const base::Histogram& histogram,
-                            const base::Histogram::SampleSet& snapshot);
+                            const base::HistogramSamples& snapshot);
 
   // Stop writing to this record and generate the encoded representation.
   // None of the Record* methods can be called after this is called.

@@ -71,10 +71,8 @@ void ChildHistogramMessageFilter::UploadAllHistrograms(int sequence_number) {
 
 void ChildHistogramMessageFilter::RecordDelta(
     const base::Histogram& histogram,
-    const base::Histogram::SampleSet& snapshot) {
+    const base::HistogramSamples& snapshot) {
   DCHECK_NE(0, snapshot.TotalCount());
-  DCHECK_EQ(histogram.bucket_count(), snapshot.size());
-
   std::string histogram_info =
       base::Histogram::SerializeHistogramInfo(histogram, snapshot);
 

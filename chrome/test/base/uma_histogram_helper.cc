@@ -30,30 +30,29 @@ void UMAHistogramHelper::Fetch() {
 
 void UMAHistogramHelper::ExpectUniqueSample(
     const std::string& name,
-    size_t bucket_id,
-    base::Histogram::Count expected_count) {
+    base::HistogramBase::Sample sample,
+    base::HistogramBase::Count expected_count) {
   base::Histogram* histogram = base::StatisticsRecorder::FindHistogram(name);
-  EXPECT_NE(static_cast<base::Histogram*>(NULL), histogram) <<
-      "Histogram \"" << name << "\" does not exist.";
+  EXPECT_NE(static_cast<base::Histogram*>(NULL), histogram)
+      << "Histogram \"" << name << "\" does not exist.";
 
   if (histogram) {
-    base::Histogram::SampleSet samples;
-    histogram->SnapshotSample(&samples);
-    CheckBucketCount(name, bucket_id, expected_count, samples);
-    CheckTotalCount(name, expected_count, samples);
+    scoped_ptr<base::HistogramSamples> samples(histogram->SnapshotSamples());
+    CheckBucketCount(name, sample, expected_count, *samples);
+    CheckTotalCount(name, expected_count, *samples);
   }
 }
 
-void UMAHistogramHelper::ExpectTotalCount(const std::string& name,
-                                       base::Histogram::Count count) {
+void UMAHistogramHelper::ExpectTotalCount(
+    const std::string& name,
+    base::HistogramBase::Count count) {
   base::Histogram* histogram = base::StatisticsRecorder::FindHistogram(name);
-  EXPECT_NE((base::Histogram*)NULL, histogram) << "Histogram \"" << name <<
-      "\" does not exist.";
+  EXPECT_NE(static_cast<base::Histogram*>(NULL), histogram)
+      << "Histogram \"" << name << "\" does not exist.";
 
   if (histogram) {
-    base::Histogram::SampleSet samples;
-    histogram->SnapshotSample(&samples);
-    CheckTotalCount(name, count, samples);
+    scoped_ptr<base::HistogramSamples> samples(histogram->SnapshotSamples());
+    CheckTotalCount(name, count, *samples);
   }
 }
 
@@ -61,19 +60,23 @@ void UMAHistogramHelper::FetchCallback() {
   MessageLoopForUI::current()->Quit();
 }
 
-void UMAHistogramHelper::CheckBucketCount(const std::string& name,
-                                       size_t bucket_id,
-                                       base::Histogram::Count expected_count,
-                                       base::Histogram::SampleSet& samples) {
-  EXPECT_EQ(expected_count, samples.counts(bucket_id)) << "Histogram \"" <<
-      name << "\" does not have the right number of samples (" <<
-      expected_count << ") in the expected bucket (" << bucket_id << ").";
+void UMAHistogramHelper::CheckBucketCount(
+    const std::string& name,
+    base::HistogramBase::Sample sample,
+    base::HistogramBase::Count expected_count,
+    base::HistogramSamples& samples) {
+  EXPECT_EQ(expected_count, samples.GetCount(sample))
+      << "Histogram \"" << name
+      << "\" does not have the right number of samples (" << expected_count
+      << ") in the expected bucket (" << sample << ").";
 }
 
-void UMAHistogramHelper::CheckTotalCount(const std::string& name,
-                                      base::Histogram::Count expected_count,
-                                      base::Histogram::SampleSet& samples) {
-  EXPECT_EQ(expected_count, samples.TotalCount()) << "Histogram \"" << name <<
-      "\" does not have the right total number of samples (" <<
-      expected_count << ").";
+void UMAHistogramHelper::CheckTotalCount(
+    const std::string& name,
+    base::HistogramBase::Count expected_count,
+    base::HistogramSamples& samples) {
+  EXPECT_EQ(expected_count, samples.TotalCount())
+      << "Histogram \"" << name
+      << "\" does not have the right total number of samples ("
+      << expected_count << ").";
 }

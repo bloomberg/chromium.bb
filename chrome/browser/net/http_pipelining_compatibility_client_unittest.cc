@@ -9,8 +9,10 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/stl_util.h"
 #include "base/stringprintf.h"
@@ -22,6 +24,9 @@
 #include "net/test/test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using base::Histogram;
+using base::HistogramSamples;
 
 namespace chrome_browser_net {
 
@@ -95,9 +100,9 @@ class HttpPipeliningCompatibilityClientTest : public testing::Test {
 
     for (size_t i = 0; i < arraysize(kHistogramNames); ++i) {
       const char* name = kHistogramNames[i];
-      base::Histogram::SampleSet sample = GetHistogram(name);
-      if (sample.TotalCount() > 0) {
-        original_samples_[name] = sample;
+      scoped_ptr<HistogramSamples> samples = GetHistogram(name);
+      if (samples.get() && samples->TotalCount() > 0) {
+        original_samples_[name] = samples.release();
       }
     }
   }
@@ -105,6 +110,7 @@ class HttpPipeliningCompatibilityClientTest : public testing::Test {
   virtual void TearDown() OVERRIDE {
     BrowserThread::ReleaseSoon(BrowserThread::IO, FROM_HERE, context_);
     message_loop_.RunAllPending();
+    STLDeleteValues(&original_samples_);
   }
 
   void RunTest(
@@ -118,7 +124,8 @@ class HttpPipeliningCompatibilityClientTest : public testing::Test {
     callback.WaitForResult();
   }
 
-  void ExpectHistogramCount(int expected_count, int expected_value,
+  void ExpectHistogramCount(int expected_count,
+                            int expected_value,
                             HistogramField field) {
     const char* name;
 
@@ -143,19 +150,24 @@ class HttpPipeliningCompatibilityClientTest : public testing::Test {
         FAIL() << "Unexpected field: " << field;
     }
 
-    base::Histogram::SampleSet sample = GetHistogram(name);
+    scoped_ptr<HistogramSamples> samples = GetHistogram(name);
+    if (!samples.get())
+      return;
+
     if (ContainsKey(original_samples_, name)) {
-      sample.Subtract(original_samples_[name]);
+      samples->Subtract((*original_samples_[name]));
     }
 
-    EXPECT_EQ(expected_count, sample.TotalCount()) << name;
+    EXPECT_EQ(expected_count, samples->TotalCount()) << name;
     if (expected_count > 0) {
-      EXPECT_EQ(expected_count, sample.counts(expected_value)) << name;
+      EXPECT_EQ(expected_count, samples->GetCount(expected_value)) << name;
     }
   }
 
-  void ExpectRequestHistogramCount(int expected_count, int expected_value,
-                                   int request_id, HistogramField field) {
+  void ExpectRequestHistogramCount(int expected_count,
+                                   int expected_value,
+                                   int request_id,
+                                   HistogramField field) {
     const char* field_str = "";
     switch (field) {
       case FIELD_STATUS:
@@ -176,14 +188,17 @@ class HttpPipeliningCompatibilityClientTest : public testing::Test {
 
     std::string name = base::StringPrintf("NetConnectivity.Pipeline.%d.%s",
                                           request_id, field_str);
-    base::Histogram::SampleSet sample = GetHistogram(name.c_str());
+    scoped_ptr<HistogramSamples> samples = GetHistogram(name.c_str());
+    if (!samples.get())
+      return;
+
     if (ContainsKey(original_samples_, name)) {
-      sample.Subtract(original_samples_[name]);
+      samples->Subtract(*(original_samples_[name]));
     }
 
-    EXPECT_EQ(expected_count, sample.TotalCount()) << name;
+    EXPECT_EQ(expected_count, samples->TotalCount()) << name;
     if (expected_count > 0) {
-      EXPECT_EQ(expected_count, sample.counts(expected_value)) << name;
+      EXPECT_EQ(expected_count, samples->GetCount(expected_value)) << name;
     }
   }
 
@@ -193,10 +208,10 @@ class HttpPipeliningCompatibilityClientTest : public testing::Test {
   content::TestBrowserThread io_thread_;
 
  private:
-  base::Histogram::SampleSet GetHistogram(const char* name) {
-    base::Histogram::SampleSet sample;
-    base::Histogram* cached_histogram = NULL;
-    base::Histogram* current_histogram =
+  scoped_ptr<HistogramSamples> GetHistogram(const char* name) {
+    scoped_ptr<HistogramSamples> samples;
+    Histogram* cached_histogram = NULL;
+    Histogram* current_histogram =
         base::StatisticsRecorder::FindHistogram(name);
     if (ContainsKey(histograms_, name)) {
       cached_histogram = histograms_[name];
@@ -209,29 +224,26 @@ class HttpPipeliningCompatibilityClientTest : public testing::Test {
     // last used Histogram and then update the cache if it's different than the
     // current Histogram.
     if (cached_histogram && current_histogram) {
-      cached_histogram->SnapshotSample(&sample);
+      samples = cached_histogram->SnapshotSamples();
       if (cached_histogram != current_histogram) {
-        base::Histogram::SampleSet current_sample;
-        current_histogram->SnapshotSample(&current_sample);
-        sample.Add(current_sample);
+        samples->Add(*(current_histogram->SnapshotSamples()));
         histograms_[name] = current_histogram;
       }
     } else if (current_histogram) {
-      current_histogram->SnapshotSample(&sample);
+      samples = current_histogram->SnapshotSamples();
       histograms_[name] = current_histogram;
     } else if (cached_histogram) {
-      cached_histogram->SnapshotSample(&sample);
+      samples = cached_histogram->SnapshotSamples();
     }
-    return sample;
+    return samples.Pass();
   }
 
-  static std::map<std::string, base::Histogram*> histograms_;
-  std::map<std::string, base::Histogram::SampleSet> samples_;
-  std::map<std::string, base::Histogram::SampleSet> original_samples_;
+  static std::map<std::string, Histogram*> histograms_;
+  std::map<std::string, HistogramSamples*> original_samples_;
 };
 
 // static
-std::map<std::string, base::Histogram*>
+std::map<std::string, Histogram*>
     HttpPipeliningCompatibilityClientTest::histograms_;
 
 TEST_F(HttpPipeliningCompatibilityClientTest, Success) {

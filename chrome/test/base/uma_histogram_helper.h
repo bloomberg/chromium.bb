@@ -6,6 +6,8 @@
 #define CHROME_TEST_BASE_UMA_HISTOGRAM_HELPER_H_
 
 #include "base/metrics/histogram.h"
+#include "base/metrics/histogram_base.h"
+#include "base/metrics/histogram_samples.h"
 
 // UMAHistogramHelper provides a simple interface for examining UMA histograms.
 // Tests can use this interface to verify that UMA data is getting logged as
@@ -20,22 +22,25 @@ class UMAHistogramHelper {
 
   // We know the exact number of samples in a bucket, and that no other bucket
   // should have samples.
-  void ExpectUniqueSample(const std::string& name, size_t bucket_id,
-                          base::Histogram::Count expected_count);
+  void ExpectUniqueSample(const std::string& name,
+                          base::HistogramBase::Sample sample,
+                          base::HistogramBase::Count expected_count);
 
   // We don't know the values of the samples, but we know how many there are.
-  void ExpectTotalCount(const std::string& name, base::Histogram::Count count);
+  void ExpectTotalCount(const std::string& name,
+                        base::HistogramBase::Count count);
 
  private:
   void FetchCallback();
 
-  void CheckBucketCount(const std::string& name, size_t bucket_id,
+  void CheckBucketCount(const std::string& name,
+                        base::HistogramBase::Sample sample,
                         base::Histogram::Count expected_count,
-                        base::Histogram::SampleSet& samples);
+                        base::HistogramSamples& samples);
 
   void CheckTotalCount(const std::string& name,
                        base::Histogram::Count expected_count,
-                       base::Histogram::SampleSet& samples);
+                       base::HistogramSamples& samples);
 
   DISALLOW_COPY_AND_ASSIGN(UMAHistogramHelper);
 };

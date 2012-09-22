@@ -37,7 +37,7 @@ void MetricsServiceBase::RecordCurrentHistograms() {
 
 void MetricsServiceBase::RecordDelta(
     const base::Histogram& histogram,
-    const base::Histogram::SampleSet& snapshot) {
+    const base::HistogramSamples& snapshot) {
   log_manager_.current_log()->RecordHistogramDelta(histogram, snapshot);
 }
 

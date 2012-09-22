@@ -7,6 +7,8 @@
 #include "base/base64.h"
 #include "base/basictypes.h"
 #include "base/md5.h"
+#include "base/metrics/histogram_base.h"
+#include "base/metrics/histogram_samples.h"
 #include "base/perftimer.h"
 #include "base/string_number_conversions.h"
 #include "base/sys_byteorder.h"
@@ -23,6 +25,9 @@
 #define OPEN_ELEMENT_FOR_SCOPE(name) ScopedElement scoped_element(this, name)
 
 using base::Histogram;
+using base::HistogramBase;
+using base::HistogramSamples;
+using base::SampleCountIterator;
 using base::Time;
 using base::TimeDelta;
 using metrics::HistogramEventProto;
@@ -449,10 +454,9 @@ void MetricsLogBase::EndElement() {
 // the same infrastructure for logging StatsCounters, RatesCounters, etc.
 void MetricsLogBase::RecordHistogramDelta(
     const Histogram& histogram,
-    const Histogram::SampleSet& snapshot) {
+    const HistogramSamples& snapshot) {
   DCHECK(!locked_);
   DCHECK_NE(0, snapshot.TotalCount());
-  DCHECK_EQ(histogram.bucket_count(), snapshot.size());
 
   // We will ignore the MAX_INT/infinite value in the last element of range[].
 
@@ -471,13 +475,17 @@ void MetricsLogBase::RecordHistogramDelta(
   // TODO(jar): Remove sumsquares when protobuffer accepts this as optional.
   WriteInt64Attribute("sumsquares", 0);
 
-  for (size_t i = 0; i < histogram.bucket_count(); i++) {
-    if (snapshot.counts(i)) {
-      OPEN_ELEMENT_FOR_SCOPE("histogrambucket");
-      WriteIntAttribute("min", histogram.ranges(i));
-      WriteIntAttribute("max", histogram.ranges(i + 1));
-      WriteIntAttribute("count", snapshot.counts(i));
-    }
+  for (scoped_ptr<SampleCountIterator> it = snapshot.Iterator();
+       !it->Done();
+       it->Next()) {
+    OPEN_ELEMENT_FOR_SCOPE("histogrambucket");
+    HistogramBase::Sample min;
+    HistogramBase::Sample max;
+    HistogramBase::Count count;
+    it->Get(&min, &max, &count);
+    WriteIntAttribute("min", min);
+    WriteIntAttribute("max", max);
+    WriteIntAttribute("count", count);
   }
 
   // Write the protobuf version.
@@ -485,13 +493,20 @@ void MetricsLogBase::RecordHistogramDelta(
   histogram_proto->set_name_hash(numeric_name_hash);
   histogram_proto->set_sum(snapshot.sum());
 
-  for (size_t i = 0; i < histogram.bucket_count(); ++i) {
-    if (snapshot.counts(i)) {
-      HistogramEventProto::Bucket* bucket = histogram_proto->add_bucket();
-      bucket->set_min(histogram.ranges(i));
-      bucket->set_max(histogram.ranges(i + 1));
-      bucket->set_bucket_index(i);
-      bucket->set_count(snapshot.counts(i));
-    }
+  for (scoped_ptr<SampleCountIterator> it = snapshot.Iterator();
+       !it->Done();
+       it->Next()) {
+    HistogramBase::Sample min;
+    HistogramBase::Sample max;
+    HistogramBase::Count count;
+    it->Get(&min, &max, &count);
+    HistogramEventProto::Bucket* bucket = histogram_proto->add_bucket();
+    bucket->set_min(min);
+    bucket->set_max(max);
+    bucket->set_count(count);
+
+    size_t index;
+    if (it->GetBucketIndex(&index))
+      bucket->set_bucket_index(index);
   }
 }
