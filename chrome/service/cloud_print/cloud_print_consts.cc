@@ -32,7 +32,6 @@ const char kProxyTagPrefix[] = "__cp__";
 const char kTagsHashTagName[] = "__cp__tagshash";
 const char kTagDryRunFlag[] = "__cp__dry_run";
 
-const char kDefaultCloudPrintServerUrl[] = "https://www.google.com/cloudprint";
 const char kCloudPrintGaiaServiceId[] = "cloudprint";
 const char kProxyAuthUserAgent[] = "ChromiumBrowser";
 const char kCloudPrintPushNotificationsSource[] = "cloudprint.google.com";

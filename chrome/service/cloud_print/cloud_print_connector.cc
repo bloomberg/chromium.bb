@@ -19,38 +19,21 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-const char kDeleteOnEnumFail[] = "delete_on_enum_fail";
-
-CloudPrintConnector::CloudPrintConnector(
-    Client* client,
-    const std::string& proxy_id,
-    const GURL& cloud_print_server_url,
-    const DictionaryValue* print_system_settings)
+CloudPrintConnector::CloudPrintConnector(Client* client,
+                                         const ConnectorSettings& settings)
   : client_(client),
-    proxy_id_(proxy_id),
-    cloud_print_server_url_(cloud_print_server_url),
-    next_response_handler_(NULL),
-    delete_on_enum_fail_(false) {
-  if (print_system_settings) {
-    // It is possible to have no print settings specified.
-    print_system_settings_.reset(print_system_settings->DeepCopy());
-  }
+    next_response_handler_(NULL) {
+  settings_.CopyFrom(settings);
 }
 
 bool CloudPrintConnector::InitPrintSystem() {
   if (print_system_.get())
     return true;
   print_system_ = cloud_print::PrintSystem::CreateInstance(
-      print_system_settings_.get());
+      settings_.print_system_settings());
   if (!print_system_.get()) {
     NOTREACHED();
     return false;  // No memory.
-  }
-  if (print_system_settings_.get()) {
-    bool delete_on_enum_fail = false;
-    print_system_settings_->GetBoolean(kDeleteOnEnumFail,
-                                       &delete_on_enum_fail);
-    delete_on_enum_fail_ = delete_on_enum_fail;
   }
   cloud_print::PrintSystem::PrintSystemResult result = print_system_->Init();
   if (!result.succeeded()) {
@@ -64,7 +47,7 @@ bool CloudPrintConnector::InitPrintSystem() {
 
 bool CloudPrintConnector::Start() {
   VLOG(1) << "CP_CONNECTOR: Starting connector"
-          << ", proxy id: " << proxy_id_;
+          << ", proxy id: " << settings_.proxy_id();
 
   pending_tasks_.clear();
 
@@ -82,7 +65,7 @@ bool CloudPrintConnector::Start() {
 
 void CloudPrintConnector::Stop() {
   VLOG(1) << "CP_CONNECTOR: Stopping connector"
-          << ", proxy id: " << proxy_id_;
+          << ", proxy id: " << settings_.proxy_id();
   DCHECK(IsRunning());
   // Do uninitialization here.
   pending_tasks_.clear();
@@ -231,13 +214,13 @@ CloudPrintConnector::HandlePrinterListResponse(
           // Cloud printer is not found on the local system.
           std::string printer_id;
           printer_data->GetString(kIdValue, &printer_id);
-          if (full_list || delete_on_enum_fail_) {
+          if (full_list || settings_.delete_on_enum_fail()) {
             // Delete if we get the full list of printers or
             // |delete_on_enum_fail_| is set.
             VLOG(1) << "CP_CONNECTOR: Deleting " << printer_name <<
               " id: " << printer_id <<
               " full_list: " << full_list <<
-              " delete_on_enum_fail: " << delete_on_enum_fail_;
+              " delete_on_enum_fail: " << settings_.delete_on_enum_fail();
             AddPendingDeleteTask(printer_id);
           } else {
             LOG(ERROR) << "CP_CONNECTOR: Printer: " << printer_name <<
@@ -325,7 +308,7 @@ void CloudPrintConnector::ReportUserMessage(const std::string& message_id,
   // Result of this request will be ignored.
   std::string mime_boundary;
   cloud_print::CreateMimeBoundaryForUpload(&mime_boundary);
-  GURL url = CloudPrintHelpers::GetUrlForUserMessage(cloud_print_server_url_,
+  GURL url = CloudPrintHelpers::GetUrlForUserMessage(settings_.server_url(),
                                                      message_id);
   std::string post_data;
   cloud_print::AddMultipartValueForUpload(kMessageTextValue, failure_msg,
@@ -394,7 +377,7 @@ void CloudPrintConnector::InitJobHandlerForPrinter(
   scoped_refptr<PrinterJobHandler> job_handler;
   job_handler = new PrinterJobHandler(printer_info,
                                       printer_info_cloud,
-                                      cloud_print_server_url_,
+                                      settings_.server_url(),
                                       print_system_.get(),
                                       this);
   job_handler_map_[printer_info_cloud.printer_id] = job_handler;
@@ -467,9 +450,8 @@ void CloudPrintConnector::ContinuePendingTaskProcessing() {
 }
 
 void CloudPrintConnector::OnPrintersAvailable() {
-  GURL printer_list_url =
-      CloudPrintHelpers::GetUrlForPrinterList(cloud_print_server_url_,
-                                              proxy_id_);
+  GURL printer_list_url = CloudPrintHelpers::GetUrlForPrinterList(
+      settings_.server_url(), settings_.proxy_id());
   StartGetRequest(printer_list_url,
                   kCloudPrintRegisterMaxRetryCount,
                   &CloudPrintConnector::HandlePrinterListResponse);
@@ -505,9 +487,8 @@ void CloudPrintConnector::OnPrinterDelete(const std::string& printer_id) {
   // TODO(gene): We probably should not try indefinitely here. Just once or
   // twice should be enough.
   // Bug: http://code.google.com/p/chromium/issues/detail?id=101850
-  GURL url = CloudPrintHelpers::GetUrlForPrinterDelete(cloud_print_server_url_,
-                                                       printer_id,
-                                                       "printer_deleted");
+  GURL url = CloudPrintHelpers::GetUrlForPrinterDelete(
+      settings_.server_url(), printer_id, "printer_deleted");
   StartGetRequest(url,
                   kCloudPrintAPIMaxRetryCount,
                   &CloudPrintConnector::HandlePrinterDeleteResponse);
@@ -544,7 +525,7 @@ void CloudPrintConnector::OnReceivePrinterCaps(
   cloud_print::CreateMimeBoundaryForUpload(&mime_boundary);
   std::string post_data;
 
-  cloud_print::AddMultipartValueForUpload(kProxyIdValue, proxy_id_,
+  cloud_print::AddMultipartValueForUpload(kProxyIdValue, settings_.proxy_id(),
       mime_boundary, std::string(), &post_data);
   cloud_print::AddMultipartValueForUpload(kPrinterNameValue, info.printer_name,
       mime_boundary, std::string(), &post_data);
@@ -576,7 +557,7 @@ void CloudPrintConnector::OnReceivePrinterCaps(
   mime_type += mime_boundary;
 
   GURL post_url = CloudPrintHelpers::GetUrlForPrinterRegistration(
-      cloud_print_server_url_);
+      settings_.server_url());
   StartPostRequest(post_url,
                    kCloudPrintAPIMaxRetryCount,
                    mime_type,

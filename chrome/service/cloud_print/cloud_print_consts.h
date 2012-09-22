@@ -33,7 +33,6 @@ extern const char kOAuthCodeValue[];
 extern const char kProxyTagPrefix[];
 extern const char kTagsHashTagName[];
 extern const char kTagDryRunFlag[];
-extern const char kDefaultCloudPrintServerUrl[];
 extern const char kCloudPrintGaiaServiceId[];
 extern const char kProxyAuthUserAgent[];
 extern const char kCloudPrintPushNotificationsSource[];

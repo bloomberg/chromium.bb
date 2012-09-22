@@ -23,7 +23,7 @@ void ServiceProcessPrefs::WritePrefs() {
 }
 
 void ServiceProcessPrefs::GetString(const std::string& key,
-                                    std::string* result) {
+                                    std::string* result) const {
   const Value* value;
   if (prefs_->GetValue(key, &value) == PersistentPrefStore::READ_OK)
     value->GetAsString(result);
@@ -34,7 +34,8 @@ void ServiceProcessPrefs::SetString(const std::string& key,
   prefs_->SetValue(key, Value::CreateStringValue(value));
 }
 
-void ServiceProcessPrefs::GetBoolean(const std::string& key, bool* result) {
+void ServiceProcessPrefs::GetBoolean(const std::string& key,
+                                     bool* result) const {
   const Value* value;
   if (prefs_->GetValue(key, &value) == PersistentPrefStore::READ_OK)
     value->GetAsBoolean(result);
@@ -45,7 +46,7 @@ void ServiceProcessPrefs::SetBoolean(const std::string& key, bool value) {
 }
 
 void ServiceProcessPrefs::GetDictionary(const std::string& key,
-                                        const DictionaryValue** result) {
+                                        const DictionaryValue** result) const {
   const Value* value;
   if (prefs_->GetValue(key, &value) != PersistentPrefStore::READ_OK ||
       !value->IsType(Value::TYPE_DICTIONARY)) {

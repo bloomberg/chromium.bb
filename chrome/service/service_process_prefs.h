@@ -30,20 +30,20 @@ class ServiceProcessPrefs {
   void WritePrefs();
 
   // Get a string preference for |key| and store it in |result|.
-  void GetString(const std::string& key, std::string* result);
+  void GetString(const std::string& key, std::string* result) const;
 
   // Set a string |value| for |key|.
   void SetString(const std::string& key, const std::string& value);
 
   // Get a boolean preference for |key| and store it in |result|.
-  void GetBoolean(const std::string& key, bool* result);
+  void GetBoolean(const std::string& key, bool* result) const;
 
   // Set a boolean |value| for |key|.
   void SetBoolean(const std::string& key, bool value);
 
   // Get a dictionary preference for |key| and store it in |result|.
   void GetDictionary(const std::string& key,
-                     const base::DictionaryValue** result);
+                     const base::DictionaryValue** result) const;
 
   // Removes the pref specified by |key|.
   void RemovePref(const std::string& key);

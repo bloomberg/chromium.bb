@@ -11,6 +11,7 @@
 
 #include "base/threading/thread.h"
 #include "base/values.h"
+#include "chrome/service/cloud_print/connector_settings.h"
 #include "chrome/service/cloud_print/print_system.h"
 #include "chrome/service/cloud_print/printer_job_handler.h"
 
@@ -18,7 +19,7 @@
 //  - Matching local and cloud printers
 //  - Registration of local printers
 //  - Deleting cloud printers
-// All tasks are posted to the commond queue (PendingTasks) and executed
+// All tasks are posted to the common queue (PendingTasks) and executed
 // one-by-one in FIFO order.
 // CloudPrintConnector will notify client over Client interface.
 class CloudPrintConnector
@@ -34,10 +35,7 @@ class CloudPrintConnector
      virtual ~Client() {}
   };
 
-  CloudPrintConnector(Client* client,
-                      const std::string& proxy_id,
-                      const GURL& cloud_print_server_url,
-                      const DictionaryValue* print_system_settings);
+  CloudPrintConnector(Client* client, const ConnectorSettings& settings);
 
   bool Start();
   void Stop();
@@ -162,26 +160,19 @@ class CloudPrintConnector
 
   // CloudPrintConnector client.
   Client* client_;
-  // Print system settings.
-  scoped_ptr<DictionaryValue> print_system_settings_;
+  // Connector settings.
+  ConnectorSettings settings_;
   // Pointer to current print system.
   scoped_refptr<cloud_print::PrintSystem> print_system_;
   // Watcher for print system updates.
   scoped_refptr<cloud_print::PrintSystem::PrintServerWatcher>
       print_server_watcher_;
-  // Id of the Cloud Print proxy.
-  std::string proxy_id_;
-  // Cloud Print server url.
-  GURL cloud_print_server_url_;
   // A map of printer id to job handler.
   typedef std::map<std::string, scoped_refptr<PrinterJobHandler> >
       JobHandlerMap;
   JobHandlerMap job_handler_map_;
   // Next response handler.
   ResponseHandler next_response_handler_;
-  // If |true| printers that are not found locally will be deleted on GCP
-  // even if the local enumeration failed.
-  bool delete_on_enum_fail_;
   // The list of pending tasks to be done in the background.
   std::list<PendingTask> pending_tasks_;
   // The CloudPrintURLFetcher instance for the current request.

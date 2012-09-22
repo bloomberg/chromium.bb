@@ -101,25 +101,20 @@ void CloudPrintProxy::EnableForUser(const std::string& lsid) {
   // If we have been passed in an LSID, we want to use this to authenticate.
   // Else we will try and retrieve the last used auth tokens from prefs.
   if (!lsid.empty()) {
-    backend_->InitializeWithLsid(lsid,
-                                 proxy_id_,
-                                 robot_refresh_token,
-                                 robot_email,
+    backend_->InitializeWithLsid(lsid, robot_refresh_token, robot_email,
                                  user_email_);
   } else {
     // See if we have persisted robot credentials.
     if (!robot_refresh_token.empty()) {
       DCHECK(!robot_email.empty());
-      backend_->InitializeWithRobotToken(robot_refresh_token,
-                                         robot_email,
-                                         proxy_id_);
+      backend_->InitializeWithRobotToken(robot_refresh_token, robot_email);
     } else {
       // Finally see if we have persisted user credentials (legacy case).
       std::string cloud_print_token;
       service_prefs_->GetString(prefs::kCloudPrintAuthToken,
                                 &cloud_print_token);
       DCHECK(!cloud_print_token.empty());
-      backend_->InitializeWithToken(cloud_print_token, proxy_id_);
+      backend_->InitializeWithToken(cloud_print_token);
     }
   }
   if (client_) {
@@ -136,9 +131,7 @@ void CloudPrintProxy::EnableForUserWithRobot(
     return;
   DCHECK(backend_.get());
   user_email_ = user_email;
-  backend_->InitializeWithRobotAuthCode(robot_auth_code,
-                                        robot_email,
-                                        proxy_id_);
+  backend_->InitializeWithRobotAuthCode(robot_auth_code, robot_email);
   if (client_) {
     client_->OnCloudPrintProxyEnabled(true);
   }
@@ -149,46 +142,21 @@ bool CloudPrintProxy::CreateBackend() {
   if (backend_.get())
     return false;
 
-  service_prefs_->GetString(prefs::kCloudPrintProxyId, &proxy_id_);
-  if (proxy_id_.empty()) {
-    proxy_id_ = cloud_print::PrintSystem::GenerateProxyId();
-    service_prefs_->SetString(prefs::kCloudPrintProxyId, proxy_id_);
-    service_prefs_->WritePrefs();
-  }
-
-  // Getting print system specific settings from the preferences.
-  const DictionaryValue* print_system_settings = NULL;
-  service_prefs_->GetDictionary(prefs::kCloudPrintPrintSystemSettings,
-                                &print_system_settings);
-
-  // Check if there is an override for the cloud print server URL.
-  std::string cloud_print_server_url_str;
-  service_prefs_->GetString(prefs::kCloudPrintServiceURL,
-                            &cloud_print_server_url_str);
-  if (cloud_print_server_url_str.empty()) {
-    cloud_print_server_url_str = kDefaultCloudPrintServerUrl;
-  }
+  settings_.InitFrom(service_prefs_);
 
   // By default we don't poll for jobs when we lose XMPP connection. But this
   // behavior can be overridden by a preference.
   bool enable_job_poll = false;
-  service_prefs_->GetBoolean(prefs::kCloudPrintEnableJobPoll,
-                             &enable_job_poll);
+  service_prefs_->GetBoolean(prefs::kCloudPrintEnableJobPoll, &enable_job_poll);
 
-  // TODO(sanjeevr): Allow overriding OAuthClientInfo in prefs.
   gaia::OAuthClientInfo oauth_client_info;
   oauth_client_info.client_id =
-      google_apis::GetOAuth2ClientID(google_apis::CLIENT_CLOUD_PRINT);
+    google_apis::GetOAuth2ClientID(google_apis::CLIENT_CLOUD_PRINT);
   oauth_client_info.client_secret =
-      google_apis::GetOAuth2ClientSecret(google_apis::CLIENT_CLOUD_PRINT);
-
-  cloud_print_server_url_ = GURL(cloud_print_server_url_str.c_str());
-  DCHECK(cloud_print_server_url_.is_valid());
-  backend_.reset(new CloudPrintProxyBackend(this, proxy_id_,
-                                            cloud_print_server_url_,
-                                            print_system_settings,
-                                            oauth_client_info,
+    google_apis::GetOAuth2ClientSecret(google_apis::CLIENT_CLOUD_PRINT);
+  backend_.reset(new CloudPrintProxyBackend(this, settings_, oauth_client_info,
                                             enable_job_poll));
+
   return true;
 }
 
@@ -219,7 +187,7 @@ void CloudPrintProxy::GetProxyInfo(cloud_print::CloudPrintProxyInfo* info) {
   info->email.clear();
   if (enabled_)
     info->email = user_email();
-  info->proxy_id = proxy_id_;
+  info->proxy_id = settings_.proxy_id();
   // If the Cloud Print service is not enabled, we may need to read the old
   // value of proxy_id from prefs.
   if (info->proxy_id.empty())
@@ -281,7 +249,7 @@ void CloudPrintProxy::OnUnregisterPrinters(
     const std::string& auth_token,
     const std::list<std::string>& printer_ids) {
   ShutdownBackend();
-  wipeout_.reset(new CloudPrintWipeout(this, cloud_print_server_url_));
+  wipeout_.reset(new CloudPrintWipeout(this, settings_.server_url()));
   wipeout_->UnregisterPrinters(auth_token, printer_ids);
 }
 
