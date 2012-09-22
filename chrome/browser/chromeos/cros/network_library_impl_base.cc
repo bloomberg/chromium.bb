@@ -1535,6 +1535,8 @@ void NetworkLibraryImplBase::DeleteRememberedNetwork(
     return;
   }
   Network* remembered_network = found->second;
+  VLOG(1) << "Deleting remembered network: "
+          << remembered_network->service_path();
 
   // Update any associated network service before removing from profile
   // so that shill doesn't recreate the service (e.g. when we disconenct it).

@@ -1553,41 +1553,42 @@ void InternetOptionsHandler::NetworkCommandCallback(const ListValue* args) {
   chromeos::ConnectionType type =
       (chromeos::ConnectionType) atoi(str_type.c_str());
 
-  chromeos::Network *network = NULL;
-  if (service_path.size() != 0) {
-    network = cros_->FindNetworkByPath(service_path);
-    if (!network) {
-      VLOG(2) << "Unknown network service-path '" << service_path << "'";
-      return;
-    }
-    DCHECK_EQ(network->type(), type)
-        << "provided type and the type of the provided network '"
-        << service_path << "' do not match";
+  // Process commands that do not require an existing network.
+  if (command == kTagAddConnection) {
+    if (CanAddNetworkType(type))
+      AddConnection(type);
+    return;
+  } else if (command == kTagForget) {
+    if (CanForgetNetworkType(type))
+      cros_->ForgetNetwork(service_path);
+    return;
   }
 
-  if (command != kTagAddConnection) {
-    DCHECK(network) << "network command '" << command
-                    << "' called but no network provided";
+  // Process commands that require an active network.
+  chromeos::Network *network = NULL;
+  if (!service_path.empty())
+    network = cros_->FindNetworkByPath(service_path);
+
+  if (!network) {
+    VLOG(2) << "Network command: " << command
+            << "Called with unknown service-path: " << service_path;
+    return;
   }
+  DCHECK_EQ(network->type(), type)
+      << "Provided type: " << type << " does not match: " << network->type()
+      << " For network: " << service_path;
 
   if (command == kTagOptions) {
     PopulateDictionaryDetails(network);
   } else if (command == kTagConnect) {
     ConnectToNetwork(network);
-  } else if (command == kTagForget &&
-             CanForgetNetworkType(type)) {
-    cros_->ForgetNetwork(service_path);
-  } else if (command == kTagAddConnection &&
-             CanAddNetworkType(type)) {
-    AddConnection(type);
-  } else if (command == kTagDisconnect &&
-             type != chromeos::TYPE_ETHERNET) {
+  } else if (command == kTagDisconnect && type != chromeos::TYPE_ETHERNET) {
     cros_->DisconnectFromNetwork(network);
-  } else if (command == kTagActivate &&
-             type == chromeos::TYPE_CELLULAR) {
+  } else if (command == kTagActivate && type == chromeos::TYPE_CELLULAR) {
     ash::Shell::GetInstance()->delegate()->OpenMobileSetup(
         network->service_path());
   } else {
+    VLOG(1) << "Unknown command: " << command;
     NOTREACHED();
   }
 }
