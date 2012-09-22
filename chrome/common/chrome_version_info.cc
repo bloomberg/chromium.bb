@@ -122,6 +122,8 @@ std::string VersionInfo::OSType() const {
     return UTF16ToASCII(l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_OS_NAME));
   else
     return "Chromium OS";
+#elif defined(OS_ANDROID)
+  return "Android";
 #elif defined(OS_LINUX)
   return "Linux";
 #elif defined(OS_FREEBSD)
