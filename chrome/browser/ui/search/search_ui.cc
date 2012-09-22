@@ -6,12 +6,6 @@
 
 #include "ui/gfx/font.h"
 
-namespace {
-
-const int kNTPOmniboxFontSize = 18;
-
-}  // namespace
-
 namespace chrome {
 namespace search {
 
@@ -23,13 +17,14 @@ const SkColor kSearchBackgroundColor = SK_ColorWHITE;
 const SkColor kSuggestBackgroundColor = SkColorSetRGB(0xEF, 0xEF, 0xEF);
 
 const int kOmniboxFontSize = 16;
-const int kLogoYPosition = 200;
+const int kLogoYPosition = 130;
 const int kLogoBottomGap = 20;
 const int kNTPOmniboxHeight = 40;
 const int kOmniboxBottomGap = 4;
 const int kSearchResultsHeight = 122;
 
 gfx::Font GetNTPOmniboxFont(const gfx::Font& font) {
+  const int kNTPOmniboxFontSize = 18;
   return font.DeriveFont(kNTPOmniboxFontSize - font.GetFontSize());
 }
 
