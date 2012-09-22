@@ -8,7 +8,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/cancelable_request.h"
+#include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_service_factory.h"

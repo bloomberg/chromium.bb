@@ -24,7 +24,7 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/timer.h"
-#include "chrome/browser/cancelable_request.h"
+#include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/icon_manager.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"

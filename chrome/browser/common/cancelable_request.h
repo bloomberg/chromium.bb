@@ -85,8 +85,8 @@
 //     }
 //   };
 
-#ifndef CHROME_BROWSER_CANCELABLE_REQUEST_H_
-#define CHROME_BROWSER_CANCELABLE_REQUEST_H_
+#ifndef CHROME_BROWSER_COMMON_CANCELABLE_REQUEST_H_
+#define CHROME_BROWSER_COMMON_CANCELABLE_REQUEST_H_
 
 #include <map>
 #include <vector>
@@ -1013,4 +1013,4 @@ class CancelableRequest1 : public CancelableRequest<CB> {
   virtual ~CancelableRequest1() {}
 };
 
-#endif  // CHROME_BROWSER_CANCELABLE_REQUEST_H_
+#endif  // CHROME_BROWSER_COMMON_CANCELABLE_REQUEST_H_

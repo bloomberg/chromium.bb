@@ -8,7 +8,7 @@
 #ifndef CHROME_BROWSER_HISTORY_HISTORY_MARSHALING_ANDROID_H_
 #define CHROME_BROWSER_HISTORY_HISTORY_MARSHALING_ANDROID_H_
 
-#include "chrome/browser/cancelable_request.h"
+#include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/history/android/android_history_provider_service.h"
 
 namespace history {

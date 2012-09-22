@@ -11,7 +11,7 @@
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/cancelable_request.h"
+#include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/sessions/session_types_test_helper.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"

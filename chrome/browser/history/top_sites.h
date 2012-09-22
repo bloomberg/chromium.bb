@@ -17,7 +17,7 @@
 #include "base/synchronization/lock.h"
 #include "base/time.h"
 #include "base/timer.h"
-#include "chrome/browser/cancelable_request.h"
+#include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/page_usage_data.h"

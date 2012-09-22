@@ -9,7 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/api/prefs/pref_change_registrar.h"
-#include "chrome/browser/cancelable_request.h"
+#include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/favicon/favicon_service.h"

@@ -9,7 +9,7 @@
 
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
-#include "chrome/browser/cancelable_request.h"
+#include "chrome/browser/common/cancelable_request.h"
 
 namespace chromeos {
 

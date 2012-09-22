@@ -19,7 +19,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/cancelable_request.h"
+#include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/prerender/prerender_condition.h"
 #include "chrome/browser/prerender/prerender_contents.h"

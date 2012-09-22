@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/timer.h"
-#include "chrome/browser/cancelable_request.h"
+#include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/history/visit_database.h"
 #include "googleurl/src/gurl.h"
 

@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/string16.h"
-#include "chrome/browser/cancelable_request.h"
+#include "chrome/browser/common/cancelable_request.h"
 #include "unicode/timezone.h"
 
 namespace chromeos {

@@ -14,7 +14,7 @@
 #include "base/synchronization/waitable_event_watcher.h"
 #include "base/time.h"
 #include "chrome/browser/api/prefs/pref_member.h"
-#include "chrome/browser/cancelable_request.h"
+#include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/pepper_flash_settings_manager.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/notification_observer.h"

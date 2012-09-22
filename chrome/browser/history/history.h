@@ -16,7 +16,7 @@
 #include "base/observer_list_threadsafe.h"
 #include "base/string16.h"
 #include "base/time.h"
-#include "chrome/browser/cancelable_request.h"
+#include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/common/url_database/template_url_id.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/history/history_types.h"

@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_HISTORY_TOP_SITES_EXTENSION_API_H_
 #define CHROME_BROWSER_HISTORY_TOP_SITES_EXTENSION_API_H_
 
-#include "chrome/browser/cancelable_request.h"
+#include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/history/history_types.h"
 

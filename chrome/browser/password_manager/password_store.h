@@ -12,7 +12,7 @@
 #include "base/observer_list.h"
 #include "base/threading/thread.h"
 #include "base/time.h"
-#include "chrome/browser/cancelable_request.h"
+#include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/profiles/refcounted_profile_keyed_service.h"
 
 class PasswordStore;

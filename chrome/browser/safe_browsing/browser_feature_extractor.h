@@ -21,7 +21,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/time.h"
-#include "chrome/browser/cancelable_request.h"
+#include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "googleurl/src/gurl.h"

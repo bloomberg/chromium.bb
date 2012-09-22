@@ -17,7 +17,7 @@
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/api/bookmarks/bookmark_service.h"
-#include "chrome/browser/cancelable_request.h"
+#include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"

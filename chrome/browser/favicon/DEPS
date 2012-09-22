@@ -4,6 +4,7 @@
   # add to the list of exceptions!
   "-chrome/browser",
   "+chrome/browser/api",
+  "+chrome/browser/common",
   "+chrome/browser/favicon",
 
   # Permanently-allowed DEPS beyond the standard Browser
@@ -16,7 +17,6 @@
   # and please do not introduce more #includes of these files.
   "!chrome/browser/bookmarks/bookmark_model.h",
   "!chrome/browser/bookmarks/bookmark_model_factory.h",
-  "!chrome/browser/cancelable_request.h",
   "!chrome/browser/history/history.h",
   "!chrome/browser/history/history_backend.h",
   "!chrome/browser/history/history_service_factory.h",

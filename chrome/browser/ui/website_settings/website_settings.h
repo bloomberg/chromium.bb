@@ -8,7 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/time.h"
-#include "chrome/browser/cancelable_request.h"
+#include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/common/content_settings.h"

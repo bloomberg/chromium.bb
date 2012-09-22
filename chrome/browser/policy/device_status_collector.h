@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "base/timer.h"
-#include "chrome/browser/cancelable_request.h"
+#include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/chromeos/version_loader.h"
 #include "chrome/browser/idle.h"
 #include "content/public/browser/geolocation.h"

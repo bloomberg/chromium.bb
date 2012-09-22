@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/callback.h"
-#include "chrome/browser/cancelable_request.h"
+#include "chrome/browser/common/cancelable_request.h"
 
 class CancelableRequestConsumerBase;
 

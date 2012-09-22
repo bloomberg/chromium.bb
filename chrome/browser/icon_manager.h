@@ -48,7 +48,7 @@
 #include <map>
 
 #include "base/hash_tables.h"
-#include "chrome/browser/cancelable_request.h"
+#include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/icon_loader.h"
 #include "ui/gfx/image/image.h"
 

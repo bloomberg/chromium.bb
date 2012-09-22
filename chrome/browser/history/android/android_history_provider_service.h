@@ -7,7 +7,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/cancelable_request.h"
+#include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/history/android/android_history_types.h"
 #include "sql/statement.h"
 

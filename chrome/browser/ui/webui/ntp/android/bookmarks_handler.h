@@ -7,7 +7,7 @@
 
 #include "base/values.h"
 #include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
-#include "chrome/browser/cancelable_request.h"
+#include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/ui/webui/ntp/android/partner_bookmarks_shim.h"
 #include "content/public/browser/web_ui_message_handler.h"

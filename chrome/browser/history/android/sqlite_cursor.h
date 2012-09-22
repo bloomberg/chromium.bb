@@ -14,7 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/synchronization/waitable_event.h"
-#include "chrome/browser/cancelable_request.h"
+#include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/history/android/android_history_provider_service.h"
 #include "chrome/browser/history/history_types.h"
