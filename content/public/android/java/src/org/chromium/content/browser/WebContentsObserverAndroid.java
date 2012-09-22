@@ -15,8 +15,8 @@ import org.chromium.base.JNINamespace;
 public abstract class WebContentsObserverAndroid {
     private int mNativeWebContentsObserverAndroid;
 
-    public WebContentsObserverAndroid(int webContentsPtr) {
-        mNativeWebContentsObserverAndroid = nativeInit(webContentsPtr);
+    public WebContentsObserverAndroid(ContentViewCore contentViewCore) {
+        mNativeWebContentsObserverAndroid = nativeInit(contentViewCore.getNativeContentViewCore());
     }
 
     /**
@@ -47,6 +47,15 @@ public abstract class WebContentsObserverAndroid {
     }
 
     /**
+     * Called when the main frame of the page has committed.
+     * @param url The validated url for the page.
+     * @param baseUrl The validated base url for the page.
+     */
+    @CalledByNative
+    public void didNavigateMainFrame(String url, String baseUrl) {
+    }
+
+    /**
      * Destroy the corresponding native object.
      */
     @CalledByNative
@@ -57,6 +66,6 @@ public abstract class WebContentsObserverAndroid {
         }
     }
 
-    private native int nativeInit(int webContentsPtr);
+    private native int nativeInit(int contentViewCorePtr);
     private native void nativeDestroy(int nativeWebContentsObserverAndroid);
 }

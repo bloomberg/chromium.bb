@@ -12,10 +12,12 @@ import org.chromium.content.browser.ContentView;
  */
 public class TestCallbackHelperContainer{
     private TestContentViewClient mTestContentViewClient;
+    private TestWebContentsObserver mTestWebContentsObserver;
 
     public TestCallbackHelperContainer(ContentView contentView) {
         mTestContentViewClient = new TestContentViewClient();
         contentView.getContentViewCore().setContentViewClient(mTestContentViewClient);
+        mTestWebContentsObserver = new TestWebContentsObserver(contentView.getContentViewCore());
     }
 
     public static class OnPageFinishedHelper extends CallbackHelper {
@@ -85,15 +87,15 @@ public class TestCallbackHelperContainer{
     }
 
     public OnPageStartedHelper getOnPageStartedHelper() {
-        return mTestContentViewClient.getOnPageStartedHelper();
+        return mTestWebContentsObserver.getOnPageStartedHelper();
     }
 
     public OnPageFinishedHelper getOnPageFinishedHelper() {
-        return mTestContentViewClient.getOnPageFinishedHelper();
+        return mTestWebContentsObserver.getOnPageFinishedHelper();
     }
 
     public OnReceivedErrorHelper getOnReceivedErrorHelper() {
-        return mTestContentViewClient.getOnReceivedErrorHelper();
+        return mTestWebContentsObserver.getOnReceivedErrorHelper();
     }
 
     public OnEvaluateJavaScriptResultHelper getOnEvaluateJavaScriptResultHelper() {

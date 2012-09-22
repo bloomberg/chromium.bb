@@ -19,6 +19,7 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.JavascriptInterface;
+import org.chromium.content.browser.WebContentsObserverAndroid;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -33,7 +34,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Responsible for accessibility injection and management of a {@link ContentViewCore}.
  */
-public class AccessibilityInjector {
+public class AccessibilityInjector extends WebContentsObserverAndroid {
     // The ContentView this injector is responsible for managing.
     protected ContentViewCore mContentViewCore;
 
@@ -93,6 +94,7 @@ public class AccessibilityInjector {
      * @param view The ContentViewCore that this AccessibilityInjector manages.
      */
     protected AccessibilityInjector(ContentViewCore view) {
+        super(view);
         mContentViewCore = view;
     }
 
@@ -185,8 +187,14 @@ public class AccessibilityInjector {
      * accessibility script as not being injected.  This way we can properly ignore incoming
      * accessibility gesture events.
      */
-    public void onPageLoadStarted() {
+    @Override
+    public void didStartLoading(String url) {
         mScriptInjected = false;
+    }
+
+    @Override
+    public void didStopLoading(String url) {
+        injectAccessibilityScriptIntoPage();
     }
 
     /**

@@ -32,6 +32,7 @@ import org.chromium.content.browser.accessibility.AccessibilityInjector;
 import org.chromium.content.browser.ContentViewGestureHandler;
 import org.chromium.content.browser.ContentViewGestureHandler.MotionEventDelegate;
 import org.chromium.content.browser.TouchPoint;
+import org.chromium.content.browser.WebContentsObserverAndroid;
 import org.chromium.content.browser.ZoomManager;
 import org.chromium.content.common.CleanupReference;
 import org.chromium.content.common.TraceEvent;
@@ -141,11 +142,8 @@ public class ContentViewCore implements MotionEventDelegate {
     private final Context mContext;
     private ViewGroup mContainerView;
     private InternalAccessDelegate mContainerViewInternals;
+    private WebContentsObserverAndroid mWebContentsObserver;
 
-    // content_view_client.cc depends on ContentViewCore.java holding a ref to the current client
-    // instance since the native side only holds a weak pointer to the client. We chose this
-    // solution over the managed object owning the C++ object's memory since it's a lot simpler
-    // in terms of clean up.
     private ContentViewClient mContentViewClient;
 
     private ContentSettings mContentSettings;
@@ -193,7 +191,7 @@ public class ContentViewCore implements MotionEventDelegate {
     private boolean mKeyboardConnected;
 
     // The AccessibilityInjector that handles loading Accessibility scripts into the web page.
-    private final AccessibilityInjector mAccessibilityInjector;
+    private AccessibilityInjector mAccessibilityInjector;
 
     private boolean mNeedUpdateOrientationChanged;
 
@@ -248,9 +246,6 @@ public class ContentViewCore implements MotionEventDelegate {
         // enableMultiProcess() or the platform browser called initChromiumBrowserProcess().
         AndroidBrowserProcess.initContentViewProcess(
                 context, AndroidBrowserProcess.MAX_RENDERERS_SINGLE_PROCESS);
-
-        mAccessibilityInjector = AccessibilityInjector.newInstance(this);
-        mAccessibilityInjector.addOrRemoveAccessibilityApisIfNecessary();
 
         mPersonality = personality;
         HeapStatsLogger.init(mContext.getApplicationContext());
@@ -337,6 +332,10 @@ public class ContentViewCore implements MotionEventDelegate {
             setAllUserAgentOverridesInHistory();
         }
 
+
+        mAccessibilityInjector = AccessibilityInjector.newInstance(this);
+        mAccessibilityInjector.addOrRemoveAccessibilityApisIfNecessary();
+
         String contentDescription = "Web View";
         if (AppResource.STRING_CONTENT_VIEW_CONTENT_DESCRIPTION == 0) {
             Log.w(TAG, "Setting contentDescription to 'Web View' as no value was specified.");
@@ -345,6 +344,12 @@ public class ContentViewCore implements MotionEventDelegate {
                     AppResource.STRING_CONTENT_VIEW_CONTENT_DESCRIPTION);
         }
         mContainerView.setContentDescription(contentDescription);
+        mWebContentsObserver = new WebContentsObserverAndroid(this) {
+            @Override
+            public void didStartLoading(String url) {
+                hidePopupDialog();
+            }
+        };
     }
 
     /**
@@ -471,9 +476,6 @@ public class ContentViewCore implements MotionEventDelegate {
             throw new IllegalArgumentException("The client can't be null.");
         }
         mContentViewClient = client;
-        if (mNativeContentViewCore != 0) {
-            nativeSetClient(mNativeContentViewCore, mContentViewClient);
-        }
     }
 
     ContentViewClient getContentViewClient() {
@@ -1410,8 +1412,6 @@ public class ContentViewCore implements MotionEventDelegate {
     private native void nativeReload(int nativeContentViewCoreImpl);
 
     private native void nativeSelectPopupMenuItems(int nativeContentViewCoreImpl, int[] indices);
-
-    private native void nativeSetClient(int nativeContentViewCoreImpl, ContentViewClient client);
 
     private native boolean nativeNeedsReload(int nativeContentViewCoreImpl);
 

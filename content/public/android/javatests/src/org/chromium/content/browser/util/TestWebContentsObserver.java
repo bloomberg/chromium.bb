@@ -2,24 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.android_webview.test;
+package org.chromium.content.browser.util;
 
-import org.chromium.content.browser.util.TestCallbackHelperContainer.OnPageStartedHelper;
+import org.chromium.content.browser.ContentViewCore;
+import org.chromium.content.browser.WebContentsObserverAndroid;
 import org.chromium.content.browser.util.TestCallbackHelperContainer.OnPageFinishedHelper;
+import org.chromium.content.browser.util.TestCallbackHelperContainer.OnPageStartedHelper;
 import org.chromium.content.browser.util.TestCallbackHelperContainer.OnReceivedErrorHelper;
-import org.chromium.content.browser.util.TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper;
 
-class TestAwContentsClient extends NullContentsClient {
+/**
+ * The default WebContentsObserverAndroid used by ContentView tests. The below callbacks can be
+ * accessed by using {@link TestCallbackHelperContainer} or extending this class.
+ */
+public class TestWebContentsObserver extends WebContentsObserverAndroid {
+
     private OnPageStartedHelper mOnPageStartedHelper;
     private OnPageFinishedHelper mOnPageFinishedHelper;
     private OnReceivedErrorHelper mOnReceivedErrorHelper;
-    private OnEvaluateJavaScriptResultHelper mOnEvaluateJavaScriptResultHelper;
 
-    public TestAwContentsClient() {
+    public TestWebContentsObserver(ContentViewCore contentViewCore) {
+        super(contentViewCore);
         mOnPageStartedHelper = new OnPageStartedHelper();
         mOnPageFinishedHelper = new OnPageFinishedHelper();
         mOnReceivedErrorHelper = new OnReceivedErrorHelper();
-        mOnEvaluateJavaScriptResultHelper = new OnEvaluateJavaScriptResultHelper();
     }
 
     public OnPageStartedHelper getOnPageStartedHelper() {
@@ -34,28 +39,28 @@ class TestAwContentsClient extends NullContentsClient {
         return mOnReceivedErrorHelper;
     }
 
-    public OnEvaluateJavaScriptResultHelper getOnEvaluateJavaScriptResultHelper() {
-        return mOnEvaluateJavaScriptResultHelper;
-    }
-
+    /**
+     * ATTENTION!: When overriding the following methods, be sure to call
+     * the corresponding methods in the super class. Otherwise
+     * {@link CallbackHelper#waitForCallback()} methods will
+     * stop working!
+     */
     @Override
-    public void onPageStarted(String url) {
+    public void didStartLoading(String url) {
+        super.didStartLoading(url);
         mOnPageStartedHelper.notifyCalled(url);
     }
 
     @Override
-    public void onPageFinished(String url) {
+    public void didStopLoading(String url) {
+        super.didStopLoading(url);
         mOnPageFinishedHelper.notifyCalled(url);
     }
 
     @Override
-    public void onReceivedError(int errorCode, String description, String failingUrl) {
+    public void didFailLoad(boolean isProvisionalLoad, boolean isMainFrame,
+            int errorCode, String description, String failingUrl) {
+        super.didFailLoad(isProvisionalLoad, isMainFrame, errorCode, description, failingUrl);
         mOnReceivedErrorHelper.notifyCalled(errorCode, description, failingUrl);
-    }
-
-    @Override
-    public void onEvaluateJavaScriptResult(int id, String jsonResult) {
-        super.onEvaluateJavaScriptResult(id, jsonResult);
-        mOnEvaluateJavaScriptResultHelper.notifyCalled(id, jsonResult);
     }
 }

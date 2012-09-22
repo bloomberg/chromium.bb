@@ -197,8 +197,6 @@
     'browser/android/content_startup_flags.h',
     'browser/android/content_video_view.cc',
     'browser/android/content_video_view.h',
-    'browser/android/content_view_client.cc',
-    'browser/android/content_view_client.h',
     'browser/android/content_view_core_impl.cc',
     'browser/android/content_view_core_impl.h',
     'browser/android/content_view_statics.cc',
