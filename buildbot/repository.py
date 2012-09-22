@@ -277,14 +277,26 @@ class RepoRepository(object):
         ['git', 'config', '--file', self._ManifestConfig, 'repo.reference',
          self._referenced_repo])
 
-  def Sync(self, local_manifest=None, jobs=None, cleanup=True):
+  def Sync(self, local_manifest=None, jobs=None, cleanup=True,
+           all_branches=False, network_only=False):
     """Sync/update the source.  Changes manifest if specified.
 
     Args:
-      local_manifest:  If set, checks out source to manifest.  DEFAULT_MANIFEST
+      local_manifest: If true, checks out source to manifest.  DEFAULT_MANIFEST
         may be used to set it back to the default manifest.
-      jobs: may be set to override the default sync parallelism defined by
+      jobs: May be set to override the default sync parallelism defined by
         the manifest.
+      cleanup: If true, repo referencing is rebuilt, insteadOf configuration is
+        wiped, and appropriate remotes are setup.  Should only be turned off
+        by code that knows the repo is clean.
+      all_branches: If False (the default), a repo sync -c is performed; this
+        saves on sync'ing via grabbing only what is needed for the manifest
+        specified branch.
+      network_only: If true, perform only the network half of the sync; skip
+        the checkout.  Primarily of use to validate a manifest (although
+        if the manifest has bad copyfile statements, via skipping checkout
+        the broken copyfile tag won't be spotted), or of use when the
+        invoking code is fine w/ operating on bare repos, ie .repo/projects/*.
     """
     try:
       # Always re-initialize to the current branch.
@@ -298,8 +310,13 @@ class RepoRepository(object):
       cmd = ['repo', '--time', 'sync']
       if jobs:
         cmd += ['--jobs', str(jobs)]
+      if not all_branches:
+        cmd.append('-c')
       # Do the network half of the sync; retry as necessary to get the content.
       cros_build_lib.RunCommandWithRetries(2, cmd + ['-n'], cwd=self.directory)
+
+      if network_only:
+        return
 
       # Do the local sync; note that there is a couple of corner cases where
       # the new manifest cannot transition from the old checkout cleanly-
