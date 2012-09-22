@@ -297,8 +297,10 @@ DisplayController::GetAllRootWindowControllers() {
 }
 
 void DisplayController::SetDefaultDisplayLayout(const DisplayLayout& layout) {
-  if (default_display_layout_.position != layout.position ||
-      default_display_layout_.offset != layout.offset) {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (!command_line->HasSwitch(switches::kAshSecondaryDisplayLayout) &&
+      (default_display_layout_.position != layout.position ||
+       default_display_layout_.offset != layout.offset)) {
     default_display_layout_ = layout;
     NotifyDisplayConfigurationChanging();
     UpdateDisplayBoundsForLayout();
