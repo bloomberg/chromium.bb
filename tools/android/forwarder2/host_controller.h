@@ -19,12 +19,22 @@ class HostProxy;
 
 class HostController : public Thread {
  public:
+  // If |device_port| is zero, it dynamically allocates a port.
   HostController(int device_port,
                  const std::string& forward_to_host,
                  int forward_to_host_port,
                  int adb_port,
                  int exit_notifier_fd);
   virtual ~HostController();
+
+  // Connects to the device forwarder app and sets the |device_port_| to the
+  // dynamically allocated port (when the provided |device_port| is zero).
+  // Returns true on success.  Clients must call Connect() before calling
+  // Start().
+  bool Connect();
+
+  // Gets the current device allocated port. Must be called after Connect().
+  int device_port() const { return device_port_; }
 
  protected:
   // Thread:
@@ -34,13 +44,15 @@ class HostController : public Thread {
   void StartForwarder(scoped_ptr<Socket> host_server_data_socket_ptr);
 
   Socket adb_control_socket_;
-  const int device_port_;
+  int device_port_;
   const std::string forward_to_host_;
   const int forward_to_host_port_;
   const int adb_port_;
 
   // Used to notify the controller to exit.
   const int exit_notifier_fd_;
+
+  bool ready_;
 
   DISALLOW_COPY_AND_ASSIGN(HostController);
 };

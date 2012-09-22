@@ -23,7 +23,8 @@ HostController::HostController(int device_port,
       forward_to_host_(forward_to_host),
       forward_to_host_port_(forward_to_host_port),
       adb_port_(adb_port),
-      exit_notifier_fd_(exit_notifier_fd) {
+      exit_notifier_fd_(exit_notifier_fd),
+      ready_(false) {
   adb_control_socket_.set_exit_notifier_fd(exit_notifier_fd);
 }
 
@@ -60,19 +61,31 @@ void HostController::StartForwarder(
   forwarder->Start();
 }
 
-void HostController::Run() {
+bool HostController::Connect() {
   if (!adb_control_socket_.ConnectTcp("", adb_port_)) {
     LOG(ERROR) << "Could not Connect HostController socket on port: "
                << adb_port_;
-    return;
+    return false;
   }
   // Send the command to the device start listening to the "device_forward_port"
   SendCommand(command::LISTEN, device_port_, &adb_control_socket_);
-  if (!ReceivedCommand(command::BIND_SUCCESS, &adb_control_socket_)) {
+  int device_port_allocated;
+  command::Type command;
+  if (!ReadCommand(&adb_control_socket_, &device_port_allocated, &command) ||
+      command != command::BIND_SUCCESS) {
     LOG(ERROR) << "Device binding error using port " << device_port_;
     adb_control_socket_.Close();
-    return;
+    return false;
   }
+  // When doing dynamically allocation of port, we get the port from the
+  // BIND_SUCCESS command we received above.
+  device_port_ = device_port_allocated;
+  ready_ = true;
+  return true;
+}
+
+void HostController::Run() {
+  CHECK(ready_) << "HostController not ready. Must call Connect() first.";
   while (true) {
     if (!ReceivedCommand(command::ACCEPT_SUCCESS,
                          &adb_control_socket_)) {
@@ -82,6 +95,7 @@ void HostController::Run() {
     }
     // Try to connect to host server.
     scoped_ptr<Socket> host_server_data_socket(new Socket);
+    host_server_data_socket->set_exit_notifier_fd(exit_notifier_fd_);
     if (!host_server_data_socket->ConnectTcp(
             forward_to_host_, forward_to_host_port_)) {
       LOG(ERROR) << "Could not Connect HostServerData socket on port: "

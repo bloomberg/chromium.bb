@@ -28,20 +28,23 @@ class DeviceListener : public Thread {
 
   bool SetAdbDataSocket(scoped_ptr<Socket> adb_data_socket);
 
-  // |is_alive_| is set only on creation and written once when Run() terminates.
-  // So even in case of a race condition, the worst that could happen is for the
-  // main thread to see the listener alive when it isn't. And also, this is not
-  // a problem since the main thread checks the liveliness of the listeners in a
-  // loop.
+  bool BindListenerSocket();
+
+  // |is_alive_| is set only on BindAndListenSocket and written once when Run()
+  // terminates.  So even in case of a race condition, the worst that could
+  // happen is for the main thread to see the listener alive when it isn't. And
+  // also, this is not a problem since the main thread checks the liveliness of
+  // the listeners in a loop.
   bool is_alive() const { return is_alive_; }
   void ForceExit();
+
+  int listener_port() const { return listener_port_; }
 
  protected:
   // Thread:
   virtual void Run() OVERRIDE;
 
  private:
-  bool BindListenerSocket();
   void RunInternal();
 
   // Must be called after successfully acquired mutex.
@@ -58,7 +61,7 @@ class DeviceListener : public Thread {
   // the forwarder. Ownership transferred to the Forwarder.
   scoped_ptr<Socket> adb_data_socket_;
 
-  const int listener_port_;
+  int listener_port_;
   pthread_mutex_t adb_data_socket_mutex_;
   pthread_cond_t adb_data_socket_cond_;
   bool is_alive_;

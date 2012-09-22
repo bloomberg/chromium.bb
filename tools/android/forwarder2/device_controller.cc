@@ -81,10 +81,19 @@ bool DeviceController::Start(const std::string& adb_unix_socket) {
           // Remove deletes the listener object.
           listeners_.Remove(port);
         }
-        // Listener object will be deleted by the CleanUpDeadListeners method.
-        DeviceListener* new_listener = new DeviceListener(socket.Pass(), port);
-        listeners_.AddWithID(new_listener, port);
+        scoped_ptr<DeviceListener> new_listener(
+            new DeviceListener(socket.Pass(), port));
+        if (!new_listener->BindListenerSocket())
+          continue;
         new_listener->Start();
+        // |port| can be zero, to allow dynamically allocated port, so instead,
+        // we call DeviceListener::listener_port() to retrieve the currently
+        // allocated port to this new listener, which has been set by the
+        // BindListenerSocket() method in case of success.
+        const int listener_port = new_listener->listener_port();
+        // |new_listener| is now owned by listeners_ map.
+        listeners_.AddWithID(new_listener.release(), listener_port);
+        printf("Forwarding device port %d to host.\n", listener_port);
         break;
       }
       case command::DATA_CONNECTION:

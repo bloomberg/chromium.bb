@@ -37,6 +37,9 @@ class Socket {
 
   bool Accept(Socket* new_socket);
 
+  // Returns the port allocated to this socket or zero on error.
+  int GetPort();
+
   bool IsFdInSet(const fd_set& fds) const;
   bool AddFdToSet(fd_set* fds) const;
 
@@ -96,10 +99,17 @@ class Socket {
   bool InitSocketInternal();
   void SetSocketError();
 
+  enum EventType {
+    READ,
+    WRITE
+  };
+
   // Waits until either the Socket or the |exit_notifier_fd_| has received a
   // read event (accept or read). Returns false iff an exit notification was
-  // received.
-  bool WaitForEvent() const;
+  // received.  If |read| is false, it waits until Socket is ready to write,
+  // instead.  If |timeout_secs| is a non-negative value, it sets the timeout,
+  // for the select operation.
+  bool WaitForEvent(EventType type, int timeout_secs) const;
 
   int socket_;
   int port_;

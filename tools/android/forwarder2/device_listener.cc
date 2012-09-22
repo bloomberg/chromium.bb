@@ -27,7 +27,7 @@ namespace forwarder2 {
 DeviceListener::DeviceListener(scoped_ptr<Socket> adb_control_socket, int port)
     : adb_control_socket_(adb_control_socket.Pass()),
       listener_port_(port),
-      is_alive_(true),
+      is_alive_(false),
       must_exit_(false) {
   CHECK(adb_control_socket_.get());
   adb_control_socket_->set_exit_notifier_fd(exit_notifier_.receiver_fd());
@@ -152,20 +152,25 @@ void DeviceListener::RunInternal() {
 bool DeviceListener::BindListenerSocket() {
   bool success = listener_socket_.BindTcp("", listener_port_);
   if (success) {
+    // In case the |listener_port_| was zero, GetPort() will return the
+    // currently (non-zero) allocated port for this socket.
+    listener_port_ = listener_socket_.GetPort();
     SendCommand(command::BIND_SUCCESS,
                 listener_port_,
                 adb_control_socket_.get());
+    is_alive_ = true;
   } else {
     LOG(ERROR) << "Device could not bind and listen to local port.";
     SendCommand(command::BIND_ERROR,
                 listener_port_,
                 adb_control_socket_.get());
+    adb_control_socket_->Close();
   }
   return success;
 }
 
 void DeviceListener::Run() {
-  if (BindListenerSocket())
+  if (is_alive_)
     RunInternal();
   adb_control_socket_->Close();
   listener_socket_.Close();
