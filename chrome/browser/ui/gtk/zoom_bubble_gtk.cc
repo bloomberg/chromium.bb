@@ -123,8 +123,6 @@ ZoomBubbleGtk::ZoomBubbleGtk(GtkWidget* anchor,
   if (auto_close_) {
     // If this is an auto-closing bubble, listen to leave/enter to keep the
     // bubble alive if the mouse stays anywhere inside the bubble.
-    gtk_widget_add_events(event_box_, GDK_ENTER_NOTIFY_MASK |
-                                      GDK_LEAVE_NOTIFY_MASK);
     g_signal_connect_after(event_box_, "enter-notify-event",
                            G_CALLBACK(&OnMouseEnterThunk), this);
     g_signal_connect(event_box_, "leave-notify-event",
@@ -135,6 +133,8 @@ ZoomBubbleGtk::ZoomBubbleGtk(GtkWidget* anchor,
     gtk_widget_add_events(set_default_button, GDK_ENTER_NOTIFY_MASK);
     g_signal_connect_after(set_default_button, "enter-notify-event",
                            G_CALLBACK(&OnMouseEnterThunk), this);
+    g_signal_connect(set_default_button, "leave-notify-event",
+                     G_CALLBACK(&OnMouseLeaveThunk), this);
   }
 
   StartTimerIfNecessary();
