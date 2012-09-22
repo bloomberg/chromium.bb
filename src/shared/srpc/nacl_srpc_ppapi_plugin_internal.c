@@ -11,7 +11,7 @@
 #include <sys/fcntl.h>
 #include <sys/nacl_syscalls.h>
 #if 0  /* until toolchain propagation */
-#include <sys/nacl_kern_rpc.h>
+#include <sys/nacl_kernel_service.h>
 #else
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_kernel_service.h"
 #endif
