@@ -12,9 +12,12 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
+#include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray.h"
+#include "ash/system/tray/system_tray_item.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_util.h"
+#include "base/utf_string_conversions.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/display_manager.h"
@@ -26,6 +29,9 @@
 #include "ui/compositor/layer_animator.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/controls/label.h"
+#include "ui/views/layout/fill_layout.h"
+#include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -66,6 +72,76 @@ class ShelfLayoutObserverTest : public ShelfLayoutManager::Observer {
   bool changed_auto_hide_state_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfLayoutObserverTest);
+};
+
+// Trivial item implementation that tracks its views for testing.
+class TestItem : public SystemTrayItem {
+ public:
+  TestItem()
+      : tray_view_(NULL),
+        default_view_(NULL),
+        detailed_view_(NULL),
+        notification_view_(NULL) {}
+
+  virtual views::View* CreateTrayView(user::LoginStatus status) OVERRIDE {
+    tray_view_ = new views::View;
+    // Add a label so it has non-zero width.
+    tray_view_->SetLayoutManager(new views::FillLayout);
+    tray_view_->AddChildView(new views::Label(UTF8ToUTF16("Tray")));
+    return tray_view_;
+  }
+
+  virtual views::View* CreateDefaultView(user::LoginStatus status) OVERRIDE {
+    default_view_ = new views::View;
+    default_view_->SetLayoutManager(new views::FillLayout);
+    default_view_->AddChildView(new views::Label(UTF8ToUTF16("Default")));
+    return default_view_;
+  }
+
+  virtual views::View* CreateDetailedView(user::LoginStatus status) OVERRIDE {
+    detailed_view_ = new views::View;
+    detailed_view_->SetLayoutManager(new views::FillLayout);
+    detailed_view_->AddChildView(new views::Label(UTF8ToUTF16("Detailed")));
+    return detailed_view_;
+  }
+
+  virtual views::View* CreateNotificationView(
+      user::LoginStatus status) OVERRIDE {
+    notification_view_ = new views::View;
+    return notification_view_;
+  }
+
+  virtual void DestroyTrayView() OVERRIDE {
+    tray_view_ = NULL;
+  }
+
+  virtual void DestroyDefaultView() OVERRIDE {
+    default_view_ = NULL;
+  }
+
+  virtual void DestroyDetailedView() OVERRIDE {
+    detailed_view_ = NULL;
+  }
+
+  virtual void DestroyNotificationView() OVERRIDE {
+    notification_view_ = NULL;
+  }
+
+  virtual void UpdateAfterLoginStatusChange(
+      user::LoginStatus status) OVERRIDE {}
+
+  views::View* tray_view() const { return tray_view_; }
+  views::View* default_view() const { return default_view_; }
+  views::View* detailed_view() const { return detailed_view_; }
+  views::View* notification_view() const { return notification_view_; }
+
+ private:
+  views::View* tray_view_;
+  views::View* default_view_;
+  views::View* detailed_view_;
+  views::View* notification_view_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestItem);
 };
 
 }  // namespace
@@ -806,6 +882,54 @@ TEST_F(ShelfLayoutManagerTest, Dimming) {
   Shell::GetInstance()->shelf()->SetAutoHideBehavior(
       SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   EXPECT_FALSE(Shell::GetInstance()->launcher()->GetDimsShelf());
+}
+
+// Make sure that the shelf will not hide if the mouse is between a bubble and
+// the shelf.
+TEST_F(ShelfLayoutManagerTest, BubbleEnlargesShelfMouseHitArea) {
+  ShelfLayoutManager* shelf = GetShelfLayoutManager();
+  StatusAreaWidget* status_area = Shell::GetInstance()->status_area_widget();
+  SystemTray* tray = Shell::GetInstance()->system_tray();
+
+  shelf->LayoutShelf();
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+
+  // Make two iterations - first without a message bubble which should make
+  // the shelf disappear and then with a message bubble which should keep it
+  // visible.
+  for (int i = 0; i < 2; i++) {
+    // Make sure the shelf is visible and position the mouse over it. Then
+    // allow auto hide.
+    shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
+    EXPECT_FALSE(status_area->IsMessageBubbleShown());
+    gfx::Point center =
+        shelf->status()->GetWindowBoundsInScreen().CenterPoint();
+    generator.MoveMouseTo(center.x(), center.y());
+    shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+    EXPECT_TRUE(shelf->IsVisible());
+    if (!i) {
+      // In our first iteration we make sure there is no bubble.
+      tray->CloseBubbleForTest();
+      EXPECT_FALSE(status_area->IsMessageBubbleShown());
+    } else {
+      // In our second iteration we show a bubble.
+      TestItem *item = new TestItem;
+      tray->AddTrayItem(item);
+      tray->ShowNotificationView(item);
+      EXPECT_TRUE(status_area->IsMessageBubbleShown());
+    }
+    // Move the pointer over the edge of the shelf.
+    generator.MoveMouseTo(center.x(),
+                          shelf->status()->GetWindowBoundsInScreen().y() - 5);
+    shelf->UpdateVisibilityState();
+    if (i) {
+      EXPECT_TRUE(shelf->IsVisible());
+      EXPECT_TRUE(status_area->IsMessageBubbleShown());
+    } else {
+      EXPECT_FALSE(shelf->IsVisible());
+      EXPECT_FALSE(status_area->IsMessageBubbleShown());
+    }
+  }
 }
 
 }  // namespace internal
