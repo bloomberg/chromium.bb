@@ -12,7 +12,7 @@
 namespace {
 
 const wchar_t kDefaultDocumentTitle[] = L"Untitled Document";
-const int kMaxDocumentTitleLength = 25;
+const int kMaxDocumentTitleLength = 50;
 
 }  // namespace
 
