@@ -253,6 +253,8 @@ void WebNavigationEventRouter::TabDestroyed(content::WebContents* tab) {
 
 // WebNavigationTabObserver ------------------------------------------
 
+int WebNavigationTabObserver::kUserDataKey;
+
 WebNavigationTabObserver::WebNavigationTabObserver(
     content::WebContents* web_contents)
     : WebContentsObserver(web_contents),

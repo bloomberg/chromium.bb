@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/api/web_navigation/frame_navigation_state.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/tab_contents/web_contents_user_data.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/notification_observer.h"
@@ -27,10 +28,11 @@ struct RetargetingDetails;
 namespace extensions {
 
 // Tab contents observer that forwards navigation events to the event router.
-class WebNavigationTabObserver : public content::NotificationObserver,
-                                 public content::WebContentsObserver {
+class WebNavigationTabObserver
+    : public content::NotificationObserver,
+      public content::WebContentsObserver,
+      public WebContentsUserData<WebNavigationTabObserver> {
  public:
-  explicit WebNavigationTabObserver(content::WebContents* web_contents);
   virtual ~WebNavigationTabObserver();
 
   // Returns the object for the given |tab_contents|.
@@ -94,6 +96,10 @@ class WebNavigationTabObserver : public content::NotificationObserver,
   virtual void WebContentsDestroyed(content::WebContents* tab) OVERRIDE;
 
  private:
+  explicit WebNavigationTabObserver(content::WebContents* web_contents);
+  static int kUserDataKey;
+  friend class WebContentsUserData<WebNavigationTabObserver>;
+
   // True if the transition and target url correspond to a reference fragment
   // navigation.
   bool IsReferenceFragmentNavigation(FrameNavigationState::FrameID frame_id,

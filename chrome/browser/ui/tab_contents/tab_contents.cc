@@ -132,6 +132,7 @@ TabContents::TabContents(WebContents* contents)
   content_settings_.reset(new TabSpecificContentSettings(contents));
   CoreTabHelper::CreateForWebContents(contents);
   extensions::TabHelper::CreateForWebContents(contents);
+  extensions::WebNavigationTabObserver::CreateForWebContents(contents);
   favicon_tab_helper_.reset(new FaviconTabHelper(contents));
   find_tab_helper_.reset(new FindTabHelper(contents));
   history_tab_helper_.reset(new HistoryTabHelper(contents));
@@ -173,8 +174,6 @@ TabContents::TabContents(WebContents* contents)
   plugin_observer_.reset(new PluginObserver(this));
   safe_browsing_tab_observer_.reset(
       new safe_browsing::SafeBrowsingTabObserver(this));
-    webnavigation_observer_.reset(
-        new extensions::WebNavigationTabObserver(contents));
 
 #if defined(ENABLE_PRINTING)
   printing::PrintPreviewMessageHandler::CreateForWebContents(contents);

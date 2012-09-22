@@ -74,7 +74,6 @@ class WebUILoginView;
 
 namespace extensions {
 class WebAuthFlow;
-class WebNavigationTabObserver;
 }
 
 namespace prerender {
@@ -285,7 +284,6 @@ class TabContents : public content::WebContentsObserver {
   // (These provide no API for callers; objects that need to exist 1:1 with tabs
   // and silently do their thing live here.)
 
-  scoped_ptr<extensions::WebNavigationTabObserver> webnavigation_observer_;
   scoped_ptr<ExternalProtocolObserver> external_protocol_observer_;
   scoped_ptr<NavigationMetricsRecorder> navigation_metrics_recorder_;
   scoped_ptr<PepperBrokerObserver> pepper_broker_observer_;
