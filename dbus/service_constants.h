@@ -1098,34 +1098,16 @@ const char kGetFileInfoById[] = "GetFileInfoById";
 const char kMTPStorageAttached[] = "MTPStorageAttached";
 const char kMTPStorageDetached[] = "MTPStorageDetached";
 
-// For MTPStorage struct:
-// TODO(thestig) Remove this section after the protobuf conversion.
-const char kVendor[] = "Vendor";
-const char kVendorId[] = "VendorId";
-const char kProduct[] = "Product";
-const char kProductId[] = "ProductId";
-const char kDeviceFlags[] = "DeviceFlags";
-const char kStorageType[] = "StorageType";
-const char kFilesystemType[] = "FilesystemType";
-const char kAccessCapability[] = "AccessCapability";
-const char kMaxCapacity[] = "MaxCapacity";
-const char kFreeSpaceInBytes[] = "FreeSpaceInBytes";
-const char kFreeSpaceInObjects[] = "FreeSpaceInObjects";
-const char kStorageDescription[] = "StorageDescription";
-const char kVolumeIdentifier[] = "VolumeIdentifier";
-
 // For FileEntry struct:
 const uint32 kInvalidFileId = 0xffffffff;
-// TODO(thestig) Remove the rest of this section after the protobuf conversion.
-const char kItemId[] = "ItemId";
-const char kParentId[] = "ParentId";
-const char kFileName[] = "FileName";
-const char kFileSize[] = "FileSize";
-const char kModificationDate[] = "ModificationDate";
-const char kFileType[] = "FileType";
 
 // For OpenStorage method:
 const char kReadOnlyMode[] = "ro";
+
+// For GetFileInfo() method:
+// The id of the root node in a storage, as defined by the PTP/MTP standards.
+// Use this when referring to the root node in the context of GetFileInfo().
+const uint32 kRootFileId = 0;
 }  // namespace mtpd
 
 namespace update_engine {
