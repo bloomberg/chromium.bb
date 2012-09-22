@@ -96,8 +96,10 @@ SBOX_TESTS_COMMAND int CheckWin8(int argc, wchar_t **argv) {
   if (!CheckWin8DepPolicy())
     return SBOX_TEST_FIRST_ERROR;
 
+#if defined(NDEBUG)  // ASLR cannot be forced in debug builds.
   if (!CheckWin8AslrPolicy())
     return SBOX_TEST_SECOND_ERROR;
+#endif
 
   if (!CheckWin8StrictHandlePolicy())
     return SBOX_TEST_THIRD_ERROR;
@@ -118,18 +120,20 @@ TEST(ProcessMitigationsTest, CheckWin8) {
   TestRunner runner;
   sandbox::TargetPolicy* policy = runner.GetPolicy();
 
-  EXPECT_EQ(policy->SetProcessMitigations(
-                MITIGATION_DEP |
-                MITIGATION_DEP_NO_ATL_THUNK |
-                MITIGATION_RELOCATE_IMAGE |
-                MITIGATION_RELOCATE_IMAGE_REQUIRED |
-                MITIGATION_EXTENSION_DLL_DISABLE),
-            SBOX_ALL_OK);
+  sandbox::MitigationFlags mitigations = MITIGATION_DEP |
+                                         MITIGATION_DEP_NO_ATL_THUNK |
+                                         MITIGATION_EXTENSION_DLL_DISABLE;
+#if defined(NDEBUG)  // ASLR cannot be forced in debug builds.
+  mitigations |= MITIGATION_RELOCATE_IMAGE |
+                 MITIGATION_RELOCATE_IMAGE_REQUIRED;
+#endif
 
-  EXPECT_EQ(policy->SetDelayedProcessMitigations(
-                MITIGATION_STRICT_HANDLE_CHECKS |
-                MITIGATION_WIN32K_DISABLE),
-            SBOX_ALL_OK);
+  EXPECT_EQ(policy->SetProcessMitigations(mitigations), SBOX_ALL_OK);
+
+  mitigations |= MITIGATION_STRICT_HANDLE_CHECKS |
+                 MITIGATION_WIN32K_DISABLE;
+
+  EXPECT_EQ(policy->SetDelayedProcessMitigations(mitigations), SBOX_ALL_OK);
 
   EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(L"CheckWin8"));
 }
