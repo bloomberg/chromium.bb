@@ -293,8 +293,10 @@ void AppsGridView::SetSelectedItemByIndex(int index) {
     selected_item_index_ = index;
     AppListItemView* selected_view = GetItemViewAtIndex(selected_item_index_);
     selected_view->SchedulePaint();
-    GetWidget()->NotifyAccessibilityEvent(
-        selected_view, ui::AccessibilityTypes::EVENT_FOCUS, true);
+    if (GetWidget()) {
+      GetWidget()->NotifyAccessibilityEvent(
+          selected_view, ui::AccessibilityTypes::EVENT_FOCUS, true);
+    }
 
     if (tiles_per_page()) {
       pagination_model_->SelectPage(selected_item_index_ / tiles_per_page(),
