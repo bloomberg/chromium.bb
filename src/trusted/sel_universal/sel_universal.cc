@@ -60,6 +60,8 @@ static const char* kUsage =
     "  --var <tag> <value>\n"
     "  --url_alias <url> <filename>\n"
     "  --uses_reverse_service\n"
+    "  --no_app_channel\n"
+    "  --irt <file>\n"
     "\n"
     "The following sel_ldr arguments might be useful:\n"
     "  -v                    increase verbosity\n"
@@ -79,6 +81,7 @@ static bool abort_on_error = false;
 static bool silence_nexe = false;
 static vector<string> command_prefix;
 static bool uses_reverse_service = false;
+static bool app_channel = true;
 
 // When given argc and argv this function (a) extracts the nexe argument,
 // (b) populates sel_ldr_argv with sel_ldr arguments, and (c) populates
@@ -86,6 +89,7 @@ static bool uses_reverse_service = false;
 // It will call exit with codes 0 (help message) and 1 (incorrect args).
 static nacl::string ProcessArguments(int argc,
                                      char* argv[],
+                                     nacl::string* irt_name,
                                      vector<nacl::string>* const sel_ldr_argv,
                                      vector<nacl::string>* const app_argv) {
   if (argc == 1) {
@@ -141,6 +145,13 @@ static nacl::string ProcessArguments(int argc,
       initial_vars[tag] = val;
     } else if (flag == "--uses_reverse_service") {
       uses_reverse_service = true;
+    } else if (flag == "--no_app_channel") {
+      app_channel = false;
+    } else if (flag == "--irt") {
+      if (argc <= i + 1) {
+        NaClLog(LOG_FATAL, "not enough args for --irt option\n");
+      }
+      *irt_name = argv[++i];
     } else if (flag == "--") {
       // Done processing sel_ldr args.  The first argument after '--' is the
       // nexe.
@@ -175,8 +186,9 @@ int raii_main(int argc, char* argv[]) {
   // Get the arguments to sed_ldr and the nexe module
   vector<nacl::string> sel_ldr_argv;
   vector<nacl::string> app_argv;
+  nacl::string irt_name;
   nacl::string app_name =
-    ProcessArguments(argc, argv, &sel_ldr_argv, &app_argv);
+    ProcessArguments(argc, argv, &irt_name, &sel_ldr_argv, &app_argv);
 
   if (silence_nexe) {
     // redirect stdout/stderr in the nexe to /dev/null
@@ -199,27 +211,55 @@ int raii_main(int argc, char* argv[]) {
     NaClLog(LOG_FATAL, "sel_universal: Failed to launch sel_ldr\n");
   }
 
+  if (!launcher.SetupCommand(&command_channel)) {
+    NaClLog(LOG_ERROR, "sel_universal: set up command failed\n");
+    exit(1);
+  }
+
   DescWrapper *host_file = factory.OpenHostFile(app_name.c_str(), O_RDONLY, 0);
   if (NULL == host_file) {
     NaClLog(LOG_ERROR, "Could not open %s\n", app_name.c_str());
     exit(1);
   }
 
-  if (!launcher.SetupCommandAndLoad(&command_channel, host_file)) {
-    NaClLog(LOG_ERROR, "sel_universal: set up command and load failed\n");
+  if (!launcher.LoadModule(&command_channel, host_file)) {
+    NaClLog(LOG_ERROR, "sel_universal: load module failed\n");
     exit(1);
   }
 
   delete host_file;
 
+  if (irt_name != "") {
+    DescWrapper* irt = factory.OpenHostFile(irt_name.c_str(), O_RDONLY, 0);
+    if (NULL == irt) {
+      NaClLog(LOG_ERROR, "Could not open %s\n", irt_name.c_str());
+      exit(1);
+    }
+
+    if (!launcher.LoadIrt(&command_channel, irt)) {
+      NaClLog(LOG_ERROR, "sel_universal: load irt failed\n");
+      exit(1);
+    }
+
+    delete irt;
+  }
+
   if (uses_reverse_service) {
     ReverseEmulateInit(&command_channel, &launcher);
   }
 
-  if (!launcher.StartModuleAndSetupAppChannel(&command_channel, &channel)) {
+  if (!launcher.StartModule(&command_channel)) {
     NaClLog(LOG_ERROR,
-            "sel_universal: start module and set up app channel failed\n");
+            "sel_universal: start module failed\n");
     exit(1);
+  }
+
+  if (app_channel) {
+    if (!launcher.SetupAppChannel(&channel)) {
+      NaClLog(LOG_ERROR,
+              "sel_universal: set up app channel failed\n");
+      exit(1);
+    }
   }
 
   NaClCommandLoop loop(channel.client,

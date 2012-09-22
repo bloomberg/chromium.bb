@@ -19,3 +19,17 @@ node = env.CommandSelLdrTestNacl(
      )
 
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_irt_present_test')
+
+# sel_universal test
+
+# Don't provide IRT, we provide it ourselves over SRPC
+env.ClearBits('tests_use_irt')
+
+node = env.SelUniversalTest(
+    'srpc_irt_present_test.out',
+    nexe,
+    sel_universal_flags=['--irt', env.GetIrtNexe(),
+                         '--no_app_channel'],
+    )
+
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_srpc_irt_present_test')

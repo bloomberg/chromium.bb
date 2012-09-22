@@ -56,15 +56,14 @@ bool SelLdrLauncherBase::RetrieveSockAddr() {
   return true;
 }
 
-bool SelLdrLauncherBase::SetupCommandAndLoad(NaClSrpcChannel* command,
-                                             DescWrapper* nexe) {
+bool SelLdrLauncherBase::SetupCommand(NaClSrpcChannel* command) {
   // Get the bootstrap socket.
   CHECK(factory_ == NULL);
   factory_.reset(new DescWrapperFactory);
   CHECK(channel_ != kInvalidHandle);
   bootstrap_socket_.reset(factory_->MakeImcSock(channel_));
   if (bootstrap_socket_ == NULL) {
-    NaClLog(4, ("SelLdrLauncher::SetupCommandAndLoad: "
+    NaClLog(4, ("SelLdrLauncher::SetupCommand: "
                 "getting bootstrap socket failed\n"));
     return false;
   }
@@ -73,46 +72,81 @@ bool SelLdrLauncherBase::SetupCommandAndLoad(NaClSrpcChannel* command,
   channel_ = kInvalidHandle;
   // Get the socket address from the descriptor.
   if (!RetrieveSockAddr()) {
-    NaClLog(0, "SelLdrLauncher::SetupCommandAndLoad: "
+    NaClLog(0, "SelLdrLauncher::SetupCommand: "
             "getting sel_ldr socket address failed\n");
     return false;
   }
   // The first connection goes to the trusted command channel.
   scoped_ptr<DescWrapper> command_desc(socket_addr_->Connect());
   if (command_desc == NULL) {
-    NaClLog(0, "SelLdrLauncher::SetupCommandAndLoad: Connect failed\n");
+    NaClLog(0, "SelLdrLauncher::SetupCommand: Connect failed\n");
     return false;
   }
   // Start the SRPC client to communicate with the trusted command channel.
   // SRPC client takes an additional reference to command_desc.
   if (!NaClSrpcClientCtor(command, command_desc->desc())) {
-    NaClLog(0, "SelLdrLauncher::SetupCommandAndLoad: "
+    NaClLog(0, "SelLdrLauncher::SetupCommand: "
             "NaClSrpcClientCtor failed\n");
     return false;
   }
-  if (NULL != nexe) {
-    // TODO(sehr): This argument to load_module is unused.  Remove it.
-    static const char kLoadModulePlaceHolderString[] = "place holder";
-    NaClSrpcResultCodes rpc_result =
-        NaClSrpcInvokeBySignature(command,
-                                  "load_module:hs:",
-                                  nexe->desc(),
-                                  kLoadModulePlaceHolderString);
-    if (NACL_SRPC_RESULT_OK != rpc_result) {
-      NaClLog(0, "SelLdrLauncher::SetupCommandAndLoad: "
-              "rpc_result= %d is not successful\n",
-              static_cast<int>(rpc_result));
-      NaClSrpcDtor(command);
+  return true;
+}
+
+bool SelLdrLauncherBase::LoadModule(NaClSrpcChannel* command,
+                                    DescWrapper* nexe) {
+  // TODO(sehr): This argument to load_module is unused.  Remove it.
+  static const char kLoadModulePlaceHolderString[] = "place holder";
+
+  CHECK(nexe != NULL);
+  // Load module over command channel.
+  NaClSrpcResultCodes rpc_result =
+      NaClSrpcInvokeBySignature(command,
+                                "load_module:hs:",
+                                nexe->desc(),
+                                kLoadModulePlaceHolderString);
+  if (NACL_SRPC_RESULT_OK != rpc_result) {
+    NaClLog(0, "SelLdrLauncher::LoadModule: "
+            "rpc_result= %d is not successful\n",
+            static_cast<int>(rpc_result));
+    NaClSrpcDtor(command);
+    return false;
+  }
+  return true;
+}
+
+bool SelLdrLauncherBase::SetupCommandAndLoad(NaClSrpcChannel* command,
+                                             DescWrapper* nexe) {
+  if (!SetupCommand(command)) {
+    return false;
+  }
+  if (nexe != NULL) {
+    if (!LoadModule(command, nexe)) {
       return false;
     }
   }
   return true;
 }
 
-bool
-SelLdrLauncherBase::StartModuleAndSetupAppChannel(
-    NaClSrpcChannel* command,
-    NaClSrpcChannel* out_app_chan) {
+bool SelLdrLauncherBase::LoadIrt(NaClSrpcChannel* command,
+                                 DescWrapper* irt) {
+  CHECK(irt != NULL);
+  // Load integrated runtime over command channel.
+  NaClSrpcResultCodes rpc_result =
+      NaClSrpcInvokeBySignature(command,
+                                "load_irt:h:",
+                                irt->desc());
+  if (NACL_SRPC_RESULT_OK != rpc_result) {
+    NaClLog(LOG_ERROR, "SelLdrLauncher::LoadRuntime: "
+            "load_runtime failed: rpc_result=%d\n",
+            static_cast<int>(rpc_result));
+    NaClSrpcDtor(command);
+    return false;
+  }
+
+  return true;
+}
+
+bool SelLdrLauncherBase::StartModule(NaClSrpcChannel* command) {
   // Start untrusted code module.
   int start_result;
   NaClSrpcResultCodes rpc_result = NaClSrpcInvokeBySignature(command,
@@ -128,6 +162,10 @@ SelLdrLauncherBase::StartModuleAndSetupAppChannel(
             NaClErrorString(static_cast<NaClErrorCode>(start_result)));
     return false;
   }
+  return true;
+}
+
+bool SelLdrLauncherBase::SetupAppChannel(NaClSrpcChannel* out_app_chan) {
   // The second connection goes to the untrusted service itself.
   scoped_ptr<DescWrapper> untrusted_desc(socket_addr_->Connect());
   if (untrusted_desc == NULL) {
@@ -140,6 +178,20 @@ SelLdrLauncherBase::StartModuleAndSetupAppChannel(
   if (!NaClSrpcClientCtor(out_app_chan, untrusted_desc->desc())) {
     NaClLog(4, "SelLdrLauncher::StartModuleAndSetupAppChannel: "
             "NaClSrpcClientCtor failed\n");
+    return false;
+  }
+  return true;
+}
+
+// Sends the SRPC to start the nexe over |command| and sets up the application
+// SRPC chanel |out_app_chan|.
+bool SelLdrLauncherBase::StartModuleAndSetupAppChannel(
+    NaClSrpcChannel* command,
+    NaClSrpcChannel* out_app_chan) {
+  if (!StartModule(command)) {
+    return false;
+  }
+  if (!SetupAppChannel(out_app_chan)) {
     return false;
   }
   return true;

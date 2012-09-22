@@ -900,75 +900,57 @@ static void NaClSecureChannelShutdownRpc(
   /* Return is never reached, so no need to invoke (*done->Run)(done). */
 }
 
-/*
- * This RPC is invoked by the plugin when the nexe is downloaded as a
- * stream and not as a file. The only arguments are a handle to a
- * shared memory object that contains the nexe.
- */
-static void NaClLoadModuleRpc(struct NaClSrpcRpc      *rpc,
-                              struct NaClSrpcArg      **in_args,
-                              struct NaClSrpcArg      **out_args,
-                              struct NaClSrpcClosure  *done) {
-  struct NaClApp          *nap =
-      (struct NaClApp *) rpc->channel->server_instance_data;
-  struct NaClDesc         *nexe_binary = in_args[0]->u.hval;
-  struct NaClGioShm       gio_shm;
-  struct NaClGioNaClDesc  gio_desc;
-  struct Gio              *load_src = NULL;
+static int NaClLoadDesc(struct NaClDesc *desc, struct Gio **out_src) {
+  struct NaClGioShm       *gio_shm;
+  struct NaClGioNaClDesc  *gio_desc;
   struct nacl_abi_stat    stbuf;
-  char                    *aux;
-  int                     rval;
-  NaClErrorCode           suberr = LOAD_INTERNAL;
   size_t                  rounded_size;
 
-  UNREFERENCED_PARAMETER(out_args);
-
-  NaClLog(4, "NaClLoadModuleRpc: entered\n");
-
-  rpc->result = NACL_SRPC_RESULT_INTERNAL;
-
-  aux = strdup(in_args[1]->arrays.str);
-  if (NULL == aux) {
-    rpc->result = NACL_SRPC_RESULT_NO_MEMORY;
-    goto cleanup;
-  }
-  NaClLog(4, "Received aux_info: %s\n", aux);
-
-  switch (NACL_VTBL(NaClDesc, nexe_binary)->typeTag) {
+  switch (NACL_VTBL(NaClDesc, desc)->typeTag) {
     case NACL_DESC_SHM:
       /*
-       * We don't know the actual size of the nexe, but it should not
+       * We don't know the actual size of the binary, but it should not
        * matter.  The shared memory object's size is rounded up to at
        * least 4K, and we can map it in with uninitialized data (should be
        * zero filled) at the end.
        */
-      NaClLog(4, "NaClLoadModuleRpc: finding shm size\n");
+      NaClLog(4, "NaClLoadDesc: finding shm size\n");
 
-      rval = (*NACL_VTBL(NaClDesc, nexe_binary)->
-              Fstat)(nexe_binary, &stbuf);
-      if (0 != rval) {
-        goto cleanup;
+      if (0 != (*NACL_VTBL(NaClDesc, desc)->Fstat)(desc, &stbuf)) {
+        return 0;
       }
 
       rounded_size = (size_t) stbuf.nacl_abi_st_size;
 
-      NaClLog(4, "NaClLoadModuleRpc: shm size 0x%"NACL_PRIxS"\n", rounded_size);
+      NaClLog(4, "NaClLoadDesc: shm size 0x%"NACL_PRIxS"\n", rounded_size);
 
-      if (!NaClGioShmCtor(&gio_shm, nexe_binary, rounded_size)) {
-        rpc->result = NACL_SRPC_RESULT_NO_MEMORY;
-        goto cleanup;
+      gio_shm = malloc(sizeof *gio_shm);
+      if (NULL == gio_shm){
+        NaClLog(LOG_ERROR, "NaClLoadDesc: malloc failed\n");
+        return 0;
       }
-      load_src = (struct Gio *) &gio_shm;
+      if (!NaClGioShmCtor(gio_shm, desc, rounded_size)) {
+        NaClLog(LOG_ERROR, "NaClLoadDesc: NaClGioShmCtor failed\n");
+        free(gio_shm);
+        return 0;
+      }
+      *out_src = (struct Gio *) gio_shm;
       break;
 
     case NACL_DESC_HOST_IO:
-      NaClLog(4, "NaClLoadModuleRpc: creating Gio from NaClDescHostDesc\n");
+      NaClLog(4, "NaClLoadDesc: creating Gio from NaClDescHostDesc\n");
 
-      if (!NaClGioNaClDescCtor(&gio_desc, nexe_binary)) {
-        rpc->result = NACL_SRPC_RESULT_NO_MEMORY;
-        goto cleanup;
+      gio_desc = malloc(sizeof *gio_desc);
+      if (NULL == gio_desc){
+        NaClLog(LOG_ERROR, "NaClLoadDesc: malloc failed\n");
+        return 0;
       }
-      load_src = (struct Gio *) &gio_desc;
+      if (!NaClGioNaClDescCtor(gio_desc, desc)) {
+        NaClLog(LOG_ERROR, "NaClLoadDesc: NaClGioNaClDescCtor failed\n");
+        free(gio_desc);
+        return 0;
+      }
+      *out_src = (struct Gio *) gio_desc;
       break;
 
     case NACL_DESC_INVALID:
@@ -990,22 +972,59 @@ static void NaClLoadModuleRpc(struct NaClSrpcRpc      *rpc,
     case NACL_DESC_CUSTOM:
     case NACL_DESC_NULL:
       NaClLog(LOG_ERROR,
-              "NaClLoadModuleRpc: cannot load from desc of type=%d\n",
-              NACL_VTBL(NaClDesc, nexe_binary)->typeTag);
-      rpc->result = NACL_SRPC_RESULT_APP_ERROR;
-      goto cleanup;
+              "NaClLoadDesc: cannot load from desc of type=%d\n",
+              NACL_VTBL(NaClDesc, desc)->typeTag);
+      return 0;
   }
 
   /*
-   * do not use default case label, to make sure that the compiler
+   * Do not use default case label, to make sure that the compiler
    * will generate a warning with -Wswitch-enum for new entries in
    * NaClDescTypeTag introduced in nacl_desc_base.h for which there is no
-   * corresponding entry here.  instead, we pretend that fall-through
+   * corresponding entry here. Instead, we pretend that fall-through
    * from the switch is possible.
    */
-  if (NACL_FI_ERROR_COND("NaClLoadModuleRpc__typeTag", NULL == load_src)) {
-    NaClLog(LOG_FATAL, "nexe_binary's typeTag has unsupported value: %d\n",
-            NACL_VTBL(NaClDesc, nexe_binary)->typeTag);
+  if (NACL_FI_ERROR_COND("NaClLoadDesc__typeTag", NULL == *out_src)) {
+    NaClLog(LOG_FATAL, "desc's typeTag has unsupported value: %d\n",
+            NACL_VTBL(NaClDesc, desc)->typeTag);
+  }
+
+  return 1;
+}
+
+/*
+ * This RPC is invoked by the plugin when the nexe is downloaded as a
+ * stream and not as a file. The only arguments are a handle to a
+ * shared memory object that contains the nexe.
+ */
+static void NaClLoadModuleRpc(struct NaClSrpcRpc      *rpc,
+                              struct NaClSrpcArg      **in_args,
+                              struct NaClSrpcArg      **out_args,
+                              struct NaClSrpcClosure  *done) {
+  struct NaClApp          *nap =
+      (struct NaClApp *) rpc->channel->server_instance_data;
+  struct NaClDesc         *nexe_binary = in_args[0]->u.hval;
+  struct Gio              *load_src = NULL;
+  char                    *aux;
+  NaClErrorCode           suberr = LOAD_INTERNAL;
+
+  UNREFERENCED_PARAMETER(out_args);
+
+  NaClLog(4, "NaClLoadModuleRpc: entered\n");
+
+  rpc->result = NACL_SRPC_RESULT_INTERNAL;
+
+  aux = strdup(in_args[1]->arrays.str);
+  if (NULL == aux) {
+    rpc->result = NACL_SRPC_RESULT_NO_MEMORY;
+    goto cleanup;
+  }
+  NaClLog(4, "Received aux_info: %s\n", aux);
+
+  if (!NaClLoadDesc(nexe_binary, &load_src)) {
+    NaClLog(4, "NaClLoadModuleRpc: failed to load descriptor\n");
+    rpc->result = NACL_SRPC_RESULT_APP_ERROR;
+    goto cleanup;
   }
 
   /*
@@ -1035,7 +1054,6 @@ static void NaClLoadModuleRpc(struct NaClSrpcRpc      *rpc,
   suberr = NACL_FI_VAL("load_module", NaClErrorCode,
                        NaClAppLoadFile(load_src, nap));
   (*NACL_VTBL(Gio, load_src)->Close)(load_src);
-  (*NACL_VTBL(Gio, load_src)->Dtor)(load_src);
 
   if (LOAD_OK != suberr) {
     nap->module_load_status = suberr;
@@ -1072,9 +1090,76 @@ static void NaClLoadModuleRpc(struct NaClSrpcRpc      *rpc,
   NaClGdbHook(nap);
 
  cleanup:
-
+  (*NACL_VTBL(Gio, load_src)->Dtor)(load_src);
+  free(load_src);
+  load_src = NULL;
   NaClDescUnref(nexe_binary);
   nexe_binary = NULL;
+  (*done->Run)(done);
+}
+
+/*
+ * This RPC can be used to load to the integrated runtime library.
+ * The only argument is a handle to a shared memory object that
+ * contains the IRT.
+ */
+static void NaClLoadIrtRpc(struct NaClSrpcRpc      *rpc,
+                           struct NaClSrpcArg      **in_args,
+                           struct NaClSrpcArg      **out_args,
+                           struct NaClSrpcClosure  *done) {
+  struct NaClApp          *nap =
+      (struct NaClApp *) rpc->channel->server_instance_data;
+  struct NaClDesc         *irt_binary = in_args[0]->u.hval;
+  struct Gio              *load_src = NULL;
+  NaClErrorCode           suberr = LOAD_INTERNAL;
+
+  UNREFERENCED_PARAMETER(out_args);
+
+  NaClLog(4, "NaClLoadIrtRpc: entered\n");
+
+  rpc->result = NACL_SRPC_RESULT_INTERNAL;
+
+  suberr = NaClWaitForLoadModuleStatus(nap);
+  if (LOAD_OK != suberr) {
+    NaClLog(LOG_ERROR, "NaClLoadIrtRpc: Failed to load module.\n");
+    rpc->result = NACL_SRPC_RESULT_APP_ERROR;
+    goto cleanup;
+  }
+
+  if (!NaClLoadDesc(irt_binary, &load_src)) {
+    NaClLog(4, "NaClLoadIrtRpc: failed to load descriptor\n");
+    rpc->result = NACL_SRPC_RESULT_APP_ERROR;
+    goto cleanup;
+  }
+
+  /*
+   * We cannot take the nap->mu lock, since NaClAppLoadFileDynamically
+   * invokes NaClElfImageLoadDynamically which in turn invokes
+   * NaClCommonSysMmapIntern resulting in a deadlock. This is not really
+   * a problem since there is only one secure command channel, unless
+   * embedders invokes load_irt repeatedly, which is against the protocol.
+   * TODO(phosek): record load_module/load_irt state and return error
+   * on repeated invocations (issue 3038).
+   */
+
+  suberr = NACL_FI_VAL("load_irt", NaClErrorCode,
+                       NaClAppLoadFileDynamically(nap, load_src));
+  (*NACL_VTBL(Gio, load_src)->Close)(load_src);
+
+  if (LOAD_OK != suberr) {
+    NaClLog(LOG_FATAL,
+            "NaClLoadIrt: Failed to load the integrated runtime (IRT). "
+            "The user executable was probably not built to use the IRT.\n");
+  }
+  rpc->result = NACL_SRPC_RESULT_OK;
+
+ cleanup:
+  (*NACL_VTBL(Gio, load_src)->Dtor)(load_src);
+  free(load_src);
+  load_src = NULL;
+  NaClDescUnref(irt_binary);
+  irt_binary = NULL;
+  NaClLog(4, "NaClLoadIrtRpc: leaving\n");
   (*done->Run)(done);
 }
 
@@ -1645,6 +1730,7 @@ void NaClSecureCommandChannel(struct NaClApp *nap) {
     { "start_module::i", NaClSecureChannelStartModuleRpc, },
     { "log:is:", NaClSecureChannelLog, },
     { "load_module:hs:", NaClLoadModuleRpc, },
+    { "load_irt:h:", NaClLoadIrtRpc, },
     { "reverse_setup::h", NaClSecureReverseClientSetup, },
     /* add additional calls here.  upcall set up?  start module signal? */
     { (char const *) NULL, (NaClSrpcMethod) NULL, },
