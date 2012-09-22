@@ -4,6 +4,7 @@
 
 """Module for running cbuildbot stages in the background."""
 
+import collections
 import contextlib
 import functools
 import multiprocessing
@@ -34,7 +35,7 @@ class BackgroundSteps(multiprocessing.Process):
 
   def __init__(self):
     multiprocessing.Process.__init__(self)
-    self._steps = []
+    self._steps = collections.deque()
     self._queue = multiprocessing.Queue()
 
   def AddStep(self, step):
@@ -50,7 +51,7 @@ class BackgroundSteps(multiprocessing.Process):
     If an exception occurs, return a string containing the traceback.
     """
     assert not self.Empty()
-    _step, output = self._steps.pop(0)
+    _step, output = self._steps.popleft()
 
     # Flush stdout and stderr to be sure no output is interleaved.
     sys.stdout.flush()
@@ -109,7 +110,8 @@ class BackgroundSteps(multiprocessing.Process):
     stderr_fileno = sys.stderr.fileno()
     orig_stdout_fd, orig_stderr_fd = map(os.dup,
                                          [stdout_fileno, stderr_fileno])
-    for step, output in self._steps:
+    while self._steps:
+      step, output = self._steps.popleft()
       # Send all output to a named temporary file.
       os.dup2(output.fileno(), stdout_fileno)
       os.dup2(output.fileno(), stderr_fileno)
