@@ -138,7 +138,8 @@ void ChromeQuotaPermissionContext::RequestQuotaPermission(
   }
 
   TabContents* tab_contents = TabContents::FromWebContents(web_contents);
-  InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
+  InfoBarTabHelper* infobar_helper =
+      tab_contents ? tab_contents->infobar_tab_helper() : NULL;
   if (!infobar_helper) {
     // The tab has no infobar helper.
     LOG(WARNING) << "Attempt to request quota from a background page: "
