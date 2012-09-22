@@ -90,10 +90,10 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
 @implementation CustomLinkButtonCell
 - (void)customizeButtonCell {
   [super customizeButtonCell];
-  [self setTextColor:[NSColor colorWithDeviceRed:0xff/255.0
-                                           green:0x11/255.0
-                                            blue:0x55/255.0
-                                           alpha:0xcc/255.0]];
+  [self setTextColor:[NSColor colorWithDeviceRed:0x11/255.0
+                                           green:0x55/255.0
+                                            blue:0xcc/255.0
+                                           alpha:0xff/255.0]];
 }
 
 - (NSDictionary*)linkAttributes {
