@@ -150,11 +150,11 @@ bool GLContext::SupportsDualGpus() {
 
     const int kMacBookProFirstDualAMDIntelGPUModel = 8;
 
+    // Do not overwrite commandline switches to honor a user's decision.
     bool forcibly_disable =
         ((model == "MacBookPro") &&
-         (model_major < kMacBookProFirstDualAMDIntelGPUModel)) ||
-        CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kDisableGpuSwitching);
+         (model_major < kMacBookProFirstDualAMDIntelGPUModel)) &&
+        !CommandLine::ForCurrentProcess()->HasSwitch(switches::kGpuSwitching);
 
     if (forcibly_disable) {
       GpuSwitchingManager::GetInstance()->ForceUseOfDiscreteGpu();

@@ -224,4 +224,15 @@ void ScopedCGLDestroyRendererInfo::operator()(CGLRendererInfoObj x) const {
   CGLDestroyRendererInfo(x);
 }
 
+void GLContextCGL::ForceUseOfDiscreteGPU() {
+  static CGLPixelFormatObj format = NULL;
+  if (format)
+    return;
+  CGLPixelFormatAttribute attribs[1];
+  attribs[0] = static_cast<CGLPixelFormatAttribute>(0);
+  GLint num_pixel_formats = 0;
+  CGLChoosePixelFormat(attribs, &format, &num_pixel_formats);
+  // format is deliberately leaked.
+}
+
 }  // namespace gfx

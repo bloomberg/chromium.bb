@@ -8,6 +8,9 @@
 #include <vector>
 
 #include "base/memory/singleton.h"
+#if defined(OS_MACOSX)
+#include "ui/gl/gl_context_cgl.h"
+#endif  // OS_MACOSX
 #include "ui/gl/gl_export.h"
 #include "ui/gl/gpu_preference.h"
 
@@ -23,8 +26,10 @@ class GL_EXPORT GpuSwitchingManager {
   void ForceUseOfIntegratedGpu();
   void ForceUseOfDiscreteGpu();
 
-  // Adjust GpuPreference based on the current switching option.
-  // If none is set, return the original GpuPreference.
+  // If no GPU is forced, return the original GpuPreference; otherwise, return
+  // the forced GPU.
+  // If forcing discrete GPU on Mac, we set up a pixel format, which keeps
+  // Chrome on the discrete GPU throughout the rest of Chrome's lifetime.
   GpuPreference AdjustGpuPreference(GpuPreference gpu_preference);
 
  private:

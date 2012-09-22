@@ -30,6 +30,10 @@ class GLContextCGL : public GLContext {
   virtual void SetSwapInterval(int interval) OVERRIDE;
   virtual bool GetTotalGpuMemory(size_t* bytes) OVERRIDE;
 
+  // Helper for dual-GPU support on systems where this is necessary
+  // for stability reasons.
+  static void ForceUseOfDiscreteGPU();
+
  protected:
   virtual ~GLContextCGL();
 

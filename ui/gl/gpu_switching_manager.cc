@@ -34,7 +34,14 @@ GpuPreference GpuSwitchingManager::AdjustGpuPreference(
   if (gpu_switching_option_.size() == 0)
     return gpu_preference;
   DCHECK_EQ(gpu_switching_option_.size(), 1u);
+#if defined(OS_MACOSX)
+  // Create a pixel format that lasts the lifespan of Chrome, so Chrome
+  // stays on the discrete GPU.
+  if (gpu_switching_option_[0] == PreferDiscreteGpu)
+    GLContextCGL::ForceUseOfDiscreteGPU();
+#endif  // OS_MACOSX
   return gpu_switching_option_[0];
 }
 
 }  // namespace gfx
+
