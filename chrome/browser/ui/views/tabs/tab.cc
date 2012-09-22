@@ -61,7 +61,7 @@ int top_padding() {
     switch (ui::GetDisplayLayout()) {
       case ui::LAYOUT_ASH:
       case ui::LAYOUT_DESKTOP:
-        value = 6;
+        value = 7;
         break;
       case ui::LAYOUT_TOUCH:
         value = 12;
