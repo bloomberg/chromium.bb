@@ -34,11 +34,19 @@ namespace {
 const int kBackMouseButton = 8;
 const int kForwardMouseButton = 9;
 
+// Constants that are part of EWMH.
+const int k_NET_WM_STATE_ADD = 1;
+const int k_NET_WM_STATE_REMOVE = 0;
+
 const char* kAtomsToCache[] = {
   "WM_DELETE_WINDOW",
-  "_NET_WM_PING",
-  "_NET_WM_PID",
   "WM_S0",
+  "_NET_WM_PID",
+  "_NET_WM_PING",
+  "_NET_WM_STATE",
+  "_NET_WM_STATE_HIDDEN",
+  "_NET_WM_STATE_MAXIMIZED_HORZ",
+  "_NET_WM_STATE_MAXIMIZED_VERT",
   NULL
 };
 
@@ -56,6 +64,7 @@ DesktopRootWindowHostLinux::DesktopRootWindowHostLinux(
       atom_cache_(xdisplay_, kAtomsToCache),
       window_mapped_(false),
       focus_when_shown_(false),
+      has_capture_(false),
       native_widget_delegate_(native_widget_delegate) {
 }
 
@@ -189,6 +198,32 @@ bool DesktopRootWindowHostLinux::IsWindowManagerPresent() {
       xdisplay_, atom_cache_.GetAtom("WM_S0")) != None;
 }
 
+void DesktopRootWindowHostLinux::SetWMSpecState(bool enabled,
+                                                ::Atom state1,
+                                                ::Atom state2) {
+  XEvent xclient;
+  memset(&xclient, 0, sizeof(xclient));
+  xclient.type = ClientMessage;
+  xclient.xclient.window = xwindow_;
+  xclient.xclient.message_type = atom_cache_.GetAtom("_NET_WM_STATE");
+  xclient.xclient.format = 32;
+  xclient.xclient.data.l[0] =
+      enabled ? k_NET_WM_STATE_ADD : k_NET_WM_STATE_REMOVE;
+  xclient.xclient.data.l[1] = state1;
+  xclient.xclient.data.l[2] = state2;
+  xclient.xclient.data.l[3] = 1;
+  xclient.xclient.data.l[4] = 0;
+
+  XSendEvent(xdisplay_, x_root_window_, False,
+             SubstructureRedirectMask | SubstructureNotifyMask,
+             &xclient);
+}
+
+bool DesktopRootWindowHostLinux::HasWMSpecProperty(const char* property) const {
+  return window_properties_.find(atom_cache_.GetAtom(property)) !=
+      window_properties_.end();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopRootWindowHostLinux, DesktopRootWindowHost implementation:
 
@@ -314,36 +349,32 @@ bool DesktopRootWindowHostLinux::IsActive() const {
 }
 
 void DesktopRootWindowHostLinux::Maximize() {
-  // TODO(erg):
-  NOTIMPLEMENTED();
+  SetWMSpecState(true,
+                 atom_cache_.GetAtom("_NET_WM_STATE_MAXIMIZED_VERT"),
+                 atom_cache_.GetAtom("_NET_WM_STATE_MAXIMIZED_HORZ"));
 }
 
 void DesktopRootWindowHostLinux::Minimize() {
-  // TODO(erg):
-  NOTIMPLEMENTED();
+  XIconifyWindow(xdisplay_, xwindow_, 0);
 }
 
 void DesktopRootWindowHostLinux::Restore() {
-  // TODO(erg):
-  NOTIMPLEMENTED();
+  SetWMSpecState(false,
+                 atom_cache_.GetAtom("_NET_WM_STATE_MAXIMIZED_VERT"),
+                 atom_cache_.GetAtom("_NET_WM_STATE_MAXIMIZED_HORZ"));
 }
 
 bool DesktopRootWindowHostLinux::IsMaximized() const {
-  // TODO(erg):
-  NOTIMPLEMENTED();
-  return false;
+  return (HasWMSpecProperty("_NET_WM_STATE_MAXIMIZED_VERT") ||
+          HasWMSpecProperty("_NET_WM_STATE_MAXIMIZED_HORZ"));
 }
 
 bool DesktopRootWindowHostLinux::IsMinimized() const {
-  // TODO(erg):
-  NOTIMPLEMENTED();
-  return false;
+  return HasWMSpecProperty("_NET_WM_STATE_HIDDEN");
 }
 
 bool DesktopRootWindowHostLinux::HasCapture() const {
-  // TODO(erg):
-  NOTIMPLEMENTED();
-  return false;
+  return has_capture_;
 }
 
 void DesktopRootWindowHostLinux::SetAlwaysOnTop(bool always_on_top) {
@@ -490,6 +521,7 @@ void DesktopRootWindowHostLinux::Hide() {
 }
 
 void DesktopRootWindowHostLinux::ToggleFullScreen() {
+  NOTIMPLEMENTED();
 }
 
 gfx::Rect DesktopRootWindowHostLinux::GetBounds() const {
@@ -512,16 +544,24 @@ void DesktopRootWindowHostLinux::SetBounds(const gfx::Rect& bounds) {
 }
 
 gfx::Point DesktopRootWindowHostLinux::GetLocationOnNativeScreen() const {
-  NOTIMPLEMENTED();
-  return gfx::Point(1, 1);
+  return bounds_.origin();
 }
 
 void DesktopRootWindowHostLinux::SetCapture() {
-  NOTIMPLEMENTED();
+  // TODO(erg): I don't entirely understand the concept of capture in views.
+  // As described in the comment on View::OnMouseCaptureLost, it seems like
+  // it's what view started the current mouse press/drag. But that doesn't
+  // really square with the comments in RootWindowHostLinux.
+  //
+  // Maybe the following is correct due to X's implicit grabs? Just keeping
+  // track if we've been told that we're whatever capture is and returning it
+  // when asked fixes the case where buttons pressed don't receive button
+  // release events.
+  has_capture_ = true;
 }
 
 void DesktopRootWindowHostLinux::ReleaseCapture() {
-  NOTIMPLEMENTED();
+  has_capture_ = false;
 }
 
 void DesktopRootWindowHostLinux::SetCursor(gfx::NativeCursor cursor) {
@@ -534,8 +574,21 @@ void DesktopRootWindowHostLinux::ShowCursor(bool show) {
 
 bool DesktopRootWindowHostLinux::QueryMouseLocation(
     gfx::Point* location_return) {
-  NOTIMPLEMENTED();
-  return false;
+  ::Window root_return, child_return;
+  int root_x_return, root_y_return, win_x_return, win_y_return;
+  unsigned int mask_return;
+  XQueryPointer(xdisplay_,
+                xwindow_,
+                &root_return,
+                &child_return,
+                &root_x_return, &root_y_return,
+                &win_x_return, &win_y_return,
+                &mask_return);
+  *location_return = gfx::Point(
+      std::max(0, std::min(bounds_.width(), win_x_return)),
+      std::max(0, std::min(bounds_.height(), win_y_return)));
+  return (win_x_return >= 0 && win_x_return < bounds_.width() &&
+          win_y_return >= 0 && win_y_return < bounds_.height());
 }
 
 bool DesktopRootWindowHostLinux::ConfineCursorToRootWindow() {
@@ -813,6 +866,23 @@ bool DesktopRootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
       ui::MouseEvent mouseev(xev);
       root_window_host_delegate_->OnHostMouseEvent(&mouseev);
       break;
+    }
+    case PropertyNotify: {
+      // Get our new window property state if the WM has told us its changed.
+      ::Atom state = atom_cache_.GetAtom("_NET_WM_STATE");
+
+      std::vector< ::Atom> atom_list;
+      if (xev->xproperty.atom == state &&
+          ui::GetAtomArrayProperty(xwindow_, "_NET_WM_STATE", &atom_list)) {
+        window_properties_.clear();
+        std::copy(atom_list.begin(), atom_list.end(),
+                  inserter(window_properties_, window_properties_.begin()));
+
+        // Now that we have different window properties, we may need to
+        // relayout the window. (The windows code doesn't need this because
+        // their window change is synchronous.)
+        native_widget_delegate_->AsWidget()->GetRootView()->Layout();
+      }
     }
   }
   return true;

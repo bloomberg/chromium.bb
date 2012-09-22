@@ -53,6 +53,13 @@ class DesktopRootWindowHostLinux : public DesktopRootWindowHost,
   // detect that they're there.
   bool IsWindowManagerPresent();
 
+  // Sends a message to the x11 window manager, enabling or disabling the
+  // states |state1| and |state2|.
+  void SetWMSpecState(bool enabled, ::Atom state1, ::Atom state2);
+
+  // Checks if the window manager has set a specific state.
+  bool HasWMSpecProperty(const char* property) const;
+
   // Overridden from DesktopRootWindowHost:
   virtual void Init(aura::Window* content_window,
                     const Widget::InitParams& params) OVERRIDE;
@@ -151,6 +158,12 @@ class DesktopRootWindowHostLinux : public DesktopRootWindowHost,
 
   // True if the window should be focused when the window is shown.
   bool focus_when_shown_;
+
+  // Whether we've been told that we hold the capture bit.
+  bool has_capture_;
+
+  // The window manager state bits.
+  std::set< ::Atom> window_properties_;
 
   // aura:: objects that we own.
   scoped_ptr<aura::RootWindow> root_window_;
