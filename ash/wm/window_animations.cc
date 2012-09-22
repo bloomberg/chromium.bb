@@ -688,7 +688,7 @@ const float kWorkspaceScaleBelow = .9f;
 
 // Amount of time to pause before animating anything. Only used during initial
 // animation (when logging in).
-const int kWorkspaceInitialPauseTimeMS = 500;
+const int kWorkspaceInitialPauseTimeMS = 750;
 
 // TODO: leaving in for now since Nicholas wants to play with this, remove if we
 // leave it at 0.
