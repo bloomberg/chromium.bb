@@ -727,27 +727,33 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
     return process;
   }
 
-  // TODO(jschuh): Add all Win8 mitigations. crbug.com/147752
-  if (type != content::PROCESS_TYPE_NACL_LOADER) {
-    if (policy->SetProcessMitigations(MITIGATION_DEP |
-                                      MITIGATION_DEP_NO_ATL_THUNK |
-                                      MITIGATION_SEHOP |
-                                      MITIGATION_BOTTOM_UP_ASLR)
-        != sandbox::SBOX_ALL_OK) {
-      return 0;
-    }
-  } else {
-    // TODO(jschuh): Make NaCl work with DEP and SEHOP. crbug.com/147752
-    if (policy->SetDelayedProcessMitigations(MITIGATION_DEP |
-                                             MITIGATION_DEP_NO_ATL_THUNK)
-        != sandbox::SBOX_ALL_OK) {
-      return 0;
-    }
-    if (policy->SetProcessMitigations(MITIGATION_BOTTOM_UP_ASLR)
-        != sandbox::SBOX_ALL_OK) {
-      return 0;
-    }
-  }
+  // TODO(jschuh): Make NaCl work with DEP and SEHOP. crbug.com/147752
+  sandbox::MitigationFlags mitigations = MITIGATION_HEAP_TERMINATE |
+                                         MITIGATION_BOTTOM_UP_ASLR |
+                                         MITIGATION_HIGH_ENTROPY_ASLR;
+#if !defined(NACL_WIN64)
+  mitigations |= MITIGATION_DEP |
+                 MITIGATION_DEP_NO_ATL_THUNK |
+                 MITIGATION_SEHOP;
+#if defined(NDEBUG)
+  mitigations |= MITIGATION_RELOCATE_IMAGE |
+                 MITIGATION_RELOCATE_IMAGE_REQUIRED;
+#endif
+#endif
+
+  if (policy->SetProcessMitigations(mitigations) != sandbox::SBOX_ALL_OK)
+    return 0;
+
+  mitigations = MITIGATION_STRICT_HANDLE_CHECKS |
+                MITIGATION_EXTENSION_DLL_DISABLE |
+                MITIGATION_DLL_SEARCH_ORDER;
+#if defined(NACL_WIN64)
+  mitigations |= MITIGATION_DEP |
+                 MITIGATION_DEP_NO_ATL_THUNK;
+#endif
+
+  if (policy->SetDelayedProcessMitigations(mitigations) != sandbox::SBOX_ALL_OK)
+    return 0;
 
   if (type == content::PROCESS_TYPE_PLUGIN) {
     AddGenericDllEvictionPolicy(policy);
