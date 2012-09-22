@@ -25,7 +25,9 @@ class RenderWidgetHostViewWinTest : public content::ContentBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewWinTest, SwichToPasswordField) {
+// crbug.com/151798
+IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewWinTest,
+                       DISABLED_SwichToPasswordField) {
   ui::MockTsfBridge mock_bridge;
   ui::TsfBridge* old_bridge = ui::TsfBridge::ReplaceForTesting(&mock_bridge);
   GURL test_url = content::GetTestUrl("textinput",
@@ -62,7 +64,9 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewWinTest, SwichToPasswordField) {
   ui::TsfBridge::ReplaceForTesting(old_bridge);
 }
 
-IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewWinTest, SwitchToSameField) {
+// crbug.com/151798
+IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewWinTest,
+                       DISABLED_SwitchToSameField) {
   ui::MockTsfBridge mock_bridge;
   ui::TsfBridge* old_bridge = ui::TsfBridge::ReplaceForTesting(&mock_bridge);
   GURL test_url = content::GetTestUrl("textinput",
@@ -99,7 +103,9 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewWinTest, SwitchToSameField) {
   ui::TsfBridge::ReplaceForTesting(old_bridge);
 }
 
-IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewWinTest, SwitchToSamePasswordField) {
+// crbug.com/151798
+IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewWinTest,
+                       DISABLED_SwitchToSamePasswordField) {
   ui::MockTsfBridge mock_bridge;
   ui::TsfBridge* old_bridge = ui::TsfBridge::ReplaceForTesting(&mock_bridge);
   GURL test_url = content::GetTestUrl("textinput",
