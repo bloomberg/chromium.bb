@@ -57,7 +57,7 @@ public:
         , m_occlusion(0)
     {
         DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
-        m_resourceProvider = CCResourceProvider::create(m_context.get(), UnthrottledUploader);
+        m_resourceProvider = CCResourceProvider::create(m_context.get());
     }
 
     virtual ~TiledLayerChromiumTest()

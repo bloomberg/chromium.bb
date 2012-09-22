@@ -112,7 +112,7 @@ bool CCSingleThreadProxy::initializeRenderer()
     ASSERT(m_contextBeforeInitialization);
     {
         DebugScopedSetImplThread impl;
-        bool ok = m_layerTreeHostImpl->initializeRenderer(m_contextBeforeInitialization.release(), UnthrottledUploader);
+        bool ok = m_layerTreeHostImpl->initializeRenderer(m_contextBeforeInitialization.release());
         if (ok) {
             m_rendererInitialized = true;
             m_RendererCapabilitiesForMainThread = m_layerTreeHostImpl->rendererCapabilities();
@@ -138,7 +138,7 @@ bool CCSingleThreadProxy::recreateContext()
         DebugScopedSetImplThread impl;
         if (!m_layerTreeHostImpl->contentsTexturesPurged())
             m_layerTreeHost->deleteContentsTexturesOnImplThread(m_layerTreeHostImpl->resourceProvider());
-        initialized = m_layerTreeHostImpl->initializeRenderer(context.release(), UnthrottledUploader);
+        initialized = m_layerTreeHostImpl->initializeRenderer(context.release());
         if (initialized) {
             m_RendererCapabilitiesForMainThread = m_layerTreeHostImpl->rendererCapabilities();
         }

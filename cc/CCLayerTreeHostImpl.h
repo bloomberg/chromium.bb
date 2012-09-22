@@ -114,7 +114,7 @@ public:
     void finishAllRendering();
     int sourceAnimationFrameNumber() const;
 
-    bool initializeRenderer(PassOwnPtr<CCGraphicsContext>, TextureUploaderOption);
+    bool initializeRenderer(PassOwnPtr<CCGraphicsContext>);
     bool isContextLost();
     CCRenderer* renderer() { return m_renderer.get(); }
     const RendererCapabilities& rendererCapabilities() const;

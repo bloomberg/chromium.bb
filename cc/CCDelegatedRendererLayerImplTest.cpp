@@ -38,7 +38,7 @@ public:
         settings.minimumOcclusionTrackingSize = IntSize();
 
         m_hostImpl = CCLayerTreeHostImpl::create(settings, this);
-        m_hostImpl->initializeRenderer(createContext(), UnthrottledUploader);
+        m_hostImpl->initializeRenderer(createContext());
         m_hostImpl->setViewportSize(IntSize(10, 10), IntSize(10, 10));
     }
 

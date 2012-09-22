@@ -29,7 +29,7 @@ public:
         , m_context(WebKit::createFakeCCGraphicsContext())
     {
         DebugScopedSetImplThread implThread;
-        m_resourceProvider = CCResourceProvider::create(m_context.get(), UnthrottledUploader);
+        m_resourceProvider = CCResourceProvider::create(m_context.get());
     }
 
     virtual ~CCPrioritizedTextureTest()

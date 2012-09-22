@@ -709,7 +709,7 @@ void CCLayerTreeHostImpl::setVisible(bool visible)
     setBackgroundTickingEnabled(!m_visible && m_needsAnimateLayers);
 }
 
-bool CCLayerTreeHostImpl::initializeRenderer(PassOwnPtr<CCGraphicsContext> context, TextureUploaderOption textureUploader)
+bool CCLayerTreeHostImpl::initializeRenderer(PassOwnPtr<CCGraphicsContext> context)
 {
     if (!context->bindToClient(this))
         return false;
@@ -722,7 +722,7 @@ bool CCLayerTreeHostImpl::initializeRenderer(PassOwnPtr<CCGraphicsContext> conte
     }
 
     OwnPtr<CCGraphicsContext> contextRef(context);
-    OwnPtr<CCResourceProvider> resourceProvider = CCResourceProvider::create(contextRef.get(), textureUploader);
+    OwnPtr<CCResourceProvider> resourceProvider = CCResourceProvider::create(contextRef.get());
     OwnPtr<CCRendererGL> renderer;
     if (resourceProvider.get())
         renderer = CCRendererGL::create(this, resourceProvider.get());

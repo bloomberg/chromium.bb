@@ -162,7 +162,7 @@ protected:
     {
         m_context = FakeWebCompositorOutputSurface::create(adoptPtr(new WebGraphicsContext3DForUploadTest(this)));
         DebugScopedSetImplThread implThread;
-        m_resourceProvider = CCResourceProvider::create(m_context.get(), UnthrottledUploader);
+        m_resourceProvider = CCResourceProvider::create(m_context.get());
     }
 
 
