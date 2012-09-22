@@ -17,7 +17,8 @@ class ProfileSyncServiceBase {
  public:
   // Retrieve the sync service to use in the given context.
   // Returns NULL if sync is not enabled for the context.
-  static ProfileSyncServiceBase* ForContext(content::BrowserContext* context);
+  static ProfileSyncServiceBase* FromBrowserContext(
+      content::BrowserContext* context);
 
   typedef ProfileSyncServiceObserver Observer;
 

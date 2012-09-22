@@ -135,7 +135,7 @@ class WindowedPersonalDataManagerObserver
                        const content::NotificationDetails& details) OVERRIDE {
     // Accept in the infobar.
     infobar_service_ =
-        InfoBarService::ForTab(chrome::GetActiveTabContents(browser_));
+        InfoBarService::FromTabContents(chrome::GetActiveTabContents(browser_));
     InfoBarDelegate* infobar = infobar_service_->GetInfoBarDelegateAt(0);
 
     ConfirmInfoBarDelegate* confirm_infobar =
@@ -841,7 +841,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, AutofillAfterTranslate) {
       render_view_host(),
       ChromeViewHostMsg_TranslateLanguageDetermined(0, "ja", true));
   TranslateInfoBarDelegate* infobar =
-      InfoBarService::ForTab(chrome::GetActiveTabContents(browser()))->
+      InfoBarService::FromTabContents(chrome::GetActiveTabContents(browser()))->
           GetInfoBarDelegateAt(0)->AsTranslateInfoBarDelegate();
 
   ASSERT_TRUE(infobar != NULL);
@@ -1015,8 +1015,8 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, InvalidCreditCardNumberIsNotAggregated) {
   ASSERT_FALSE(CreditCard::IsValidCreditCardNumber(ASCIIToUTF16(card)));
   SubmitCreditCard("Bob Smith", card.c_str(), "12", "2014");
   ASSERT_EQ(0u,
-            InfoBarService::ForTab(chrome::GetActiveTabContents(browser()))->
-                GetInfoBarCount());
+            InfoBarService::FromTabContents(
+                chrome::GetActiveTabContents(browser()))->GetInfoBarCount());
 }
 
 // Test whitespaces and separator chars are stripped for valid CC numbers.
@@ -1229,8 +1229,8 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, CCInfoNotStoredWhenAutocompleteOff) {
   FillFormAndSubmit("cc_autocomplete_off_test.html", data);
 
   ASSERT_EQ(0u,
-            InfoBarService::ForTab(chrome::GetActiveTabContents(browser()))->
-                GetInfoBarCount());
+            InfoBarService::FromTabContents(
+                chrome::GetActiveTabContents(browser()))->GetInfoBarCount());
 }
 
 // Test that Autofill does not fill in read-only fields.

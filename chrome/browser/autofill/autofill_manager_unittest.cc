@@ -2623,7 +2623,7 @@ TEST_F(AutofillManagerTest, FormSubmittedWithDefaultValues) {
 // Checks that resetting the auxiliary profile enabled preference does the right
 // thing on all platforms.
 TEST_F(AutofillManagerTest, AuxiliaryProfilesReset) {
-  PrefServiceBase* prefs = PrefServiceBase::ForContext(profile());
+  PrefServiceBase* prefs = PrefServiceBase::FromBrowserContext(profile());
 #if defined(OS_MACOSX)
   // Auxiliary profiles is implemented on Mac only.  It enables Mac Address
   // Book integration.
@@ -2919,7 +2919,7 @@ TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesForUpload) {
 }
 
 TEST_F(AutofillManagerTest, UpdatePasswordSyncState) {
-  PrefServiceBase* prefs = PrefServiceBase::ForContext(profile());
+  PrefServiceBase* prefs = PrefServiceBase::FromBrowserContext(profile());
 
   // Allow this test to control what should get synced.
   prefs->SetBoolean(prefs::kSyncKeepEverythingSynced, false);
@@ -2977,7 +2977,7 @@ TEST_F(AutofillManagerTest, UpdatePasswordSyncState) {
 }
 
 TEST_F(AutofillManagerTest, UpdatePasswordGenerationState) {
-  PrefServiceBase* prefs = PrefServiceBase::ForContext(profile());
+  PrefServiceBase* prefs = PrefServiceBase::FromBrowserContext(profile());
 
   // Always set password sync enabled so we can test the behavior of password
   // generation.

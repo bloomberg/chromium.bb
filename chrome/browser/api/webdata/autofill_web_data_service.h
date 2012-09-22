@@ -19,7 +19,7 @@ class AutofillWebDataService
   // Retrieve an AutofillWebDataService for the given context.
   //
   // Can return NULL in some contexts.
-  static scoped_ptr<AutofillWebDataService> ForContext(
+  static scoped_ptr<AutofillWebDataService> FromBrowserContext(
       content::BrowserContext* context);
 
   virtual ~AutofillWebDataService() {}

@@ -34,7 +34,7 @@ class TabContents;
 class PrefServiceBase {
  public:
   // Retrieves a PrefServiceBase for the given context.
-  static PrefServiceBase* ForContext(content::BrowserContext* context);
+  static PrefServiceBase* FromBrowserContext(content::BrowserContext* context);
 
   virtual ~PrefServiceBase() {}
 

@@ -176,7 +176,8 @@ OutdatedPluginInfoBarDelegate::OutdatedPluginInfoBarDelegate(
     PluginObserver* observer,
     PluginInstaller* installer,
     const string16& message)
-    : PluginInfoBarDelegate(InfoBarService::ForTab(observer->tab_contents()),
+    : PluginInfoBarDelegate(
+          InfoBarService::FromTabContents(observer->tab_contents()),
           installer->name(),
           installer->identifier()),
       WeakPluginInstallerObserver(installer),

@@ -78,7 +78,7 @@ void PreferencesBrowserTest::SetUpOnMainThread() {
   render_view_host_ = web_contents->GetRenderViewHost();
   ASSERT_TRUE(render_view_host_);
   pref_change_registrar_.Init(
-      PrefServiceBase::ForContext(browser()->profile()));
+      PrefServiceBase::FromBrowserContext(browser()->profile()));
   pref_service_ = browser()->profile()->GetPrefs();
   ASSERT_TRUE(content::ExecuteJavaScript(render_view_host_, L"",
       L"function TestEnv() {"

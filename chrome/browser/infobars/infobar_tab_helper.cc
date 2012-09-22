@@ -17,7 +17,7 @@
 using content::NavigationController;
 using content::WebContents;
 
-InfoBarService* InfoBarService::ForTab(TabContents* tab) {
+InfoBarService* InfoBarService::FromTabContents(TabContents* tab) {
   return tab->infobar_tab_helper();
 }
 

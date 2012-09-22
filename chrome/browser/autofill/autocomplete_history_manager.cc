@@ -116,9 +116,9 @@ AutocompleteHistoryManager::AutocompleteHistoryManager(
       external_delegate_(NULL) {
   browser_context_ = web_contents->GetBrowserContext();
   // May be NULL in unit tests.
-  autofill_data_ = AutofillWebDataService::ForContext(browser_context_);
+  autofill_data_ = AutofillWebDataService::FromBrowserContext(browser_context_);
   autofill_enabled_.Init(prefs::kAutofillEnabled,
-                         PrefServiceBase::ForContext(browser_context_),
+                         PrefServiceBase::FromBrowserContext(browser_context_),
                          NULL);
 }
 
@@ -246,7 +246,7 @@ AutocompleteHistoryManager::AutocompleteHistoryManager(
       query_id_(0),
       external_delegate_(NULL) {
   autofill_enabled_.Init(prefs::kAutofillEnabled,
-                         PrefServiceBase::ForContext(browser_context_),
+                         PrefServiceBase::FromBrowserContext(browser_context_),
                          NULL);
 }
 

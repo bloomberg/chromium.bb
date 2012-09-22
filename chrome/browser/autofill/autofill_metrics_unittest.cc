@@ -322,7 +322,7 @@ AutofillCCInfoBarDelegate* AutofillMetricsTest::CreateDelegate(
   if (created_card)
     *created_card = credit_card;
   return new AutofillCCInfoBarDelegate(
-      InfoBarService::ForTab(tab_contents()),
+      InfoBarService::FromTabContents(tab_contents()),
       credit_card,
       &personal_data_,
       metric_logger);

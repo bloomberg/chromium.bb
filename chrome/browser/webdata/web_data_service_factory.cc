@@ -11,7 +11,7 @@
 #include "chrome/common/chrome_constants.h"
 
 // static
-scoped_ptr<AutofillWebDataService> AutofillWebDataService::ForContext(
+scoped_ptr<AutofillWebDataService> AutofillWebDataService::FromBrowserContext(
     content::BrowserContext* context) {
   // For this service, the implicit/explicit distinction doesn't
   // really matter; it's just used for a DCHECK.  So we currently
@@ -41,7 +41,7 @@ scoped_refptr<WebDataService> WebDataServiceFactory::GetForProfile(
     Profile* profile, Profile::ServiceAccessType access_type) {
   // If |access_type| starts being used for anything other than this
   // DCHECK, we need to start taking it as a parameter to
-  // AutofillWebDataServiceImpl::ForContext (see above).
+  // AutofillWebDataServiceImpl::FromBrowserContext (see above).
   DCHECK(access_type != Profile::IMPLICIT_ACCESS || !profile->IsOffTheRecord());
   return static_cast<WebDataService*>(
       GetInstance()->GetServiceForProfile(profile, true).get());

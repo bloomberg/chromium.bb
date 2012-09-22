@@ -115,7 +115,7 @@ class ReadErrorHandler : public PersistentPrefStore::ReadErrorDelegate {
 
 }  // namespace
 
-PrefServiceBase* PrefServiceBase::ForContext(BrowserContext* context) {
+PrefServiceBase* PrefServiceBase::FromBrowserContext(BrowserContext* context) {
   return static_cast<Profile*>(context)->GetPrefs();
 }
 

@@ -17,7 +17,7 @@ class TabContents;
 class InfoBarService {
  public:
   // Retrieves the InfoBarService for a given tab.
-  static InfoBarService* ForTab(TabContents* tab_contents);
+  static InfoBarService* FromTabContents(TabContents* tab_contents);
 
   virtual ~InfoBarService() {}
 
