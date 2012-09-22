@@ -95,7 +95,7 @@ void AfterTranslateInfoBar::ViewHierarchyChanged(bool is_add,
       TranslateLanguageMenuModel::ORIGINAL, delegate, this,
       original_language_menu_button_, true));
   target_language_menu_button_ = CreateMenuButton(string16(), this);
-  original_language_menu_model_.reset(new TranslateLanguageMenuModel(
+  target_language_menu_model_.reset(new TranslateLanguageMenuModel(
       TranslateLanguageMenuModel::TARGET, delegate, this,
       target_language_menu_button_, true));
   AddChildView(swapped_language_buttons_ ?
