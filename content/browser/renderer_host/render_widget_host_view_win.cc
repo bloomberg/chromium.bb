@@ -2681,32 +2681,6 @@ LRESULT RenderWidgetHostViewWin::OnParentNotify(UINT message, WPARAM wparam,
   return 0;
 }
 
-LRESULT RenderWidgetHostViewWin::OnPointerMessage(
-    UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled) {
-  TRACE_EVENT0("browser", "RenderWidgetHostViewWin::OnPointerMessage");
-  POINT point = {0};
-
-  point.x = GET_X_LPARAM(lparam);
-  point.y = GET_Y_LPARAM(lparam);
-  ScreenToClient(&point);
-
-  lparam = MAKELPARAM(point.x, point.y);
-
-  if (message == WM_POINTERDOWN) {
-    if (!base::win::IsMetroProcess()) {
-      pointer_down_context_ = true;
-      SetFocus();
-      received_focus_change_after_pointer_down_ = false;
-      MessageLoop::current()->PostDelayedTask(FROM_HERE,
-          base::Bind(&RenderWidgetHostViewWin::ResetPointerDownContext,
-                      weak_factory_.GetWeakPtr()),
-          base::TimeDelta::FromMilliseconds(kPointerDownContextResetDelay));
-    }
-  }
-  handled = FALSE;
-  return 0;
-}
-
 void RenderWidgetHostViewWin::OnFinalMessage(HWND window) {
   TRACE_EVENT0("browser", "RenderWidgetHostViewWin::OnFinalMessage");
   // When the render widget host is being destroyed, it ends up calling

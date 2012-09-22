@@ -141,8 +141,6 @@ class RenderWidgetHostViewWin
     MESSAGE_HANDLER(WM_MOUSEACTIVATE, OnMouseActivate)
     MESSAGE_HANDLER(WM_GETOBJECT, OnGetObject)
     MESSAGE_HANDLER(WM_PARENTNOTIFY, OnParentNotify)
-    MESSAGE_HANDLER(WM_POINTERDOWN, OnPointerMessage)
-    MESSAGE_HANDLER(WM_POINTERUP, OnPointerMessage)
     MESSAGE_HANDLER(WM_GESTURE, OnGestureEvent)
   END_MSG_MAP()
 
@@ -327,9 +325,6 @@ class RenderWidgetHostViewWin
   LRESULT OnParentNotify(UINT message, WPARAM wparam, LPARAM lparam,
                          BOOL& handled);
 
-  // Handle the new pointer messages
-  LRESULT OnPointerMessage(UINT message, WPARAM wparam, LPARAM lparam,
-                           BOOL& handled);
   // Handle high-level touch events.
   LRESULT OnGestureEvent(UINT message, WPARAM wparam, LPARAM lparam,
                          BOOL& handled);
