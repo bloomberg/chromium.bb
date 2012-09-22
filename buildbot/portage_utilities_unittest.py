@@ -408,19 +408,18 @@ class EBuildRevWorkonTest(cros_test_lib.MoxTempDirTestCase):
 
   def testGitRepoHasChanges(self):
     """Tests that GitRepoHasChanges works correctly."""
-    tmp_dir = self.tempdir
     cros_build_lib.RunCommand(
         ['git', 'clone', '--depth=1',
          'file://' + os.path.join(constants.SOURCE_ROOT, 'chromite'),
-         tmp_dir])
+         self.tempdir])
     # No changes yet as we just cloned the repo.
-    self.assertFalse(portage_utilities.EBuild.GitRepoHasChanges(tmp_dir))
+    self.assertFalse(portage_utilities.EBuild.GitRepoHasChanges(self.tempdir))
     # Update metadata but no real changes.
-    cros_build_lib.RunCommand('touch LICENSE', cwd=tmp_dir, shell=True)
-    self.assertFalse(portage_utilities.EBuild.GitRepoHasChanges(tmp_dir))
+    osutils.Touch(os.path.join(self.tempdir, 'LICENSE'))
+    self.assertFalse(portage_utilities.EBuild.GitRepoHasChanges(self.tempdir))
     # A real change.
-    cros_build_lib.RunCommand('echo hi > LICENSE', cwd=tmp_dir, shell=True)
-    self.assertTrue(portage_utilities.EBuild.GitRepoHasChanges(tmp_dir))
+    osutils.WriteFile(os.path.join(self.tempdir, 'LICENSE'), 'hi')
+    self.assertTrue(portage_utilities.EBuild.GitRepoHasChanges(self.tempdir))
 
 
 class FindOverlaysTest(cros_test_lib.MoxTestCase):
@@ -519,8 +518,7 @@ class BlacklistManagerTest(cros_test_lib.MoxTestCase):
   def testInitializeFromFile(self):
     """Tests whether we can correctly initialize from a fake blacklist file."""
     file_path = tempfile.mktemp()
-    with open(file_path, 'w+') as fh:
-      fh.write(self.FAKE_BLACKLIST)
+    osutils.WriteFile(file_path, self.FAKE_BLACKLIST)
     saved_black_list = portage_utilities._BlackListManager.BLACK_LIST_FILE
     try:
       portage_utilities._BlackListManager.BLACK_LIST_FILE = file_path

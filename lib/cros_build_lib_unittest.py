@@ -411,16 +411,17 @@ class TestRunCommandWithRetries(cros_test_lib.TestCase):
   def testBasicRetry(self):
     # pylint: disable=E1101
     path = os.path.join(self.tempdir, 'script')
-    stop_path = os.path.join(self.tempdir, 'stop')
-    store_path = os.path.join(self.tempdir, 'store')
-    with open(path, 'w') as f:
-      f.write("import sys\n"
-              "val = int(open(%(store)r).read())\n"
-              "stop_val = int(open(%(stop)r).read())\n"
-              "open(%(store)r, 'w').write(str(val + 1))\n"
-              "print val\n"
-              "sys.exit(0 if val == stop_val else 1)\n" %
-              {'store': store_path, 'stop': stop_path})
+    paths = {
+      'stop': os.path.join(self.tempdir, 'stop'),
+      'store': os.path.join(self.tempdir, 'store')
+    }
+    osutils.WriteFile(path,
+        "import sys\n"
+        "val = int(open(%(store)r).read())\n"
+        "stop_val = int(open(%(stop)r).read())\n"
+        "open(%(store)r, 'w').write(str(val + 1))\n"
+        "print val\n"
+        "sys.exit(0 if val == stop_val else 1)\n" % paths)
 
     os.chmod(path, 0755)
 
@@ -430,11 +431,8 @@ class TestRunCommandWithRetries(cros_test_lib.TestCase):
         time.sleep(sleep * (i + 1))
       self.mox.ReplayAll()
 
-      with open(store_path, 'w') as f:
-        f.write(str(start))
-
-      with open(stop_path, 'w') as f:
-        f.write(str(stop))
+      osutils.WriteFile(paths['store'], str(start))
+      osutils.WriteFile(paths['stop'], str(stop))
 
     self.mox = mox.Mox()
     self.mox.StubOutWithMock(time, 'sleep')

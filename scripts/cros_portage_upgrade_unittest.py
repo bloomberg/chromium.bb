@@ -551,11 +551,7 @@ class CopyUpstreamTest(CpuTestBase):
     eclass_path = os.path.join(portdir, 'eclass', '%s.eclass' % eclass)
 
     # Create the eclass file
-    fd = open(eclass_path, 'w')
-    if lines:
-      for line in lines:
-        fd.write(line + '\n')
-    fd.close()
+    osutils.WriteFile(eclass_path, '\n'.join(lines if lines else []))
 
     # Insert the inherit line into the ebuild file, if requested.
     if ebuilds:
@@ -568,9 +564,7 @@ class CopyUpstreamTest(CpuTestBase):
           return match.group(1) + '\ninherit ' + eclass
         text = re.sub(r'(EAPI.*)', repl, text)
 
-        fd = open(ebuild_path, 'w')
-        fd.write(text)
-        fd.close()
+        osutils.WriteFile(ebuild_path, text)
 
         # Remove the Manifest file
         os.remove(os.path.join(os.path.dirname(ebuild_path), 'Manifest'))
@@ -666,9 +660,7 @@ class CopyUpstreamTest(CpuTestBase):
     elif local_copy_identical is not None:
       # Make local copy some other gibberish.
       os.makedirs(os.path.dirname(eclass_path))
-      fd = open(eclass_path, 'w')
-      fd.write('garblety gook')
-      fd.close()
+      osutils.WriteFile(eclass_path, 'garblety gook')
 
     # Add test-specific mocks/stubs
 
@@ -867,14 +859,12 @@ class CopyUpstreamTest(CpuTestBase):
     current_manifest = os.path.join(current_dir, 'Manifest')
 
     if upstream_mlines:
-      with open(upstream_manifest, 'w') as f:
-        for mline in upstream_mlines:
-          f.write('%s\n' % mline)
+      osutils.WriteFile(upstream_manifest,
+                        '\n'.join(str(x) for x in upstream_mlines) + '\n')
 
     if current_mlines:
-      with open(current_manifest, 'w') as f:
-        for mline in current_mlines:
-          f.write('%s\n' % mline)
+      osutils.WriteFile(current_manifest,
+                        '\n'.join(str(x) for x in current_mlines) + '\n')
 
     ebuild_path = os.path.join(current_dir, ebuild)
 
@@ -1984,19 +1974,10 @@ class RunBoardTest(CpuTestBase):
     mocked_upgrader = self._MockUpgrader(cmdargs=cmdargs,
                                          _curr_board=None)
 
-    # Add test-specific mocks/stubs
-    self.mox.StubOutWithMock(tempfile, 'mkdtemp')
-    self.mox.StubOutWithMock(os.path, 'exists')
-
     # Replay script
-    os.path.exists(mocked_upgrader._upstream_repo).AndReturn(True)
-    mocked_upgrader._RunGit(mocked_upgrader._upstream_repo,
-                            ['remote', 'update'])
-    mocked_upgrader._RunGit(mocked_upgrader._upstream_repo,
-                            ['checkout', 'origin/gentoo'],
-                            redirect_stdout=True,
-                            combine_stdout_stderr=True)
-    tempfile.mkdtemp()
+    mocked_upgrader._RunGit(
+        '/tmp', ['clone', '--branch', 'gentoo', '--depth', '1',
+                 cpu.Upgrader.PORTAGE_GIT_URL, 'portage'])
     self.mox.ReplayAll()
 
     # Verify
@@ -2012,21 +1993,18 @@ class RunBoardTest(CpuTestBase):
                                          _curr_board=None)
 
     # Add test-specific mocks/stubs
-    self.mox.StubOutWithMock(tempfile, 'mkdtemp')
-    self.mox.StubOutWithMock(os.path, 'exists')
     self.mox.StubOutWithMock(os.path, 'dirname')
     self.mox.StubOutWithMock(os.path, 'basename')
+    self.mox.StubOutWithMock(tempfile, 'mkdtemp')
 
     # Replay script
-    os.path.exists(mocked_upgrader._upstream_repo).AndReturn(False)
+    tempfile.mkdtemp()
     root = os.path.dirname(mocked_upgrader._upstream_repo).AndReturn('root')
     name = os.path.basename(mocked_upgrader._upstream_repo).AndReturn('name')
     os.path.basename('origin/gentoo').AndReturn('gentoo')
-    os.path.exists(mocked_upgrader._upstream_git).AndReturn(False)
     mocked_upgrader._RunGit(root,
-                            ['clone', '--branch', 'gentoo',
+                            ['clone', '--branch', 'gentoo', '--depth', '1',
                              cpu.Upgrader.PORTAGE_GIT_URL, name])
-    tempfile.mkdtemp()
     self.mox.ReplayAll()
 
     # Verify
@@ -3346,8 +3324,7 @@ class StabilizeEbuildTest(CpuTestBase):
     gold_content = self.PREFIX_LINES + gold_keyword_line + self.POSTFIX_LINES
 
     # Write contents to ebuild_path before test.
-    with open(ebuild_path, 'w') as f:
-      f.write('\n'.join(input_content))
+    osutils.WriteFile(ebuild_path, '\n'.join(input_content))
 
     self._TestStabilizeEbuild(ebuild_path, arch)
 

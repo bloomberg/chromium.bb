@@ -37,31 +37,27 @@ CHROME_BRANCH = '13'
 GIT_TEST_PATH = 'chromite'
 
 
-def TouchFile(file_path):
-  """Touches a file specified by file_path"""
-  osutils.SafeMakedirs(os.path.dirname(file_path))
-  osutils.WriteFile(file_path, 'w+')
-
-
 class HelperMethodsTest(cros_test_lib.TempDirTestCase):
   """Test methods associated with methods not in a class."""
 
   def testCreateSymlink(self):
     """Tests that we can create symlinks and remove a previous one."""
-    (unused_fd, srcfile) = tempfile.mkstemp(dir=self.tempdir)
-    destfile1 = tempfile.mktemp(dir=os.path.join(self.tempdir, 'other_dir1'))
-    destfile2 = tempfile.mktemp(dir=os.path.join(self.tempdir, 'other_dir2'))
+    srcfile = os.path.join(self.tempdir, 'src')
+    osutils.Touch(srcfile)
+    other_dir = os.path.join(self.tempdir, 'other_dir')
+    os.makedirs(other_dir)
+    destfile = os.path.join(other_dir, 'dest')
 
-    manifest_version.CreateSymlink(srcfile, destfile1)
-    self.assertTrue(os.path.lexists(destfile1),
-                    'Unable to create symlink to %s' % destfile1)
+    manifest_version.CreateSymlink(srcfile, destfile)
+    self.assertTrue(os.path.lexists(destfile),
+                    'Unable to create symlink to %s' % destfile)
 
   def testRemoveDirs(self):
     """Tests if _RemoveDirs works with a recursive directory structure."""
-    otherdir1 = tempfile.mkdtemp(dir=self.tempdir)
-    tempfile.mkdtemp(dir=otherdir1)
-    manifest_version._RemoveDirs(otherdir1)
-    self.assertFalse(os.path.exists(otherdir1), 'Failed to rmdirs.')
+    otherdir = os.path.join(self.tempdir, "foo")
+    osutils.SafeMakedirs(os.path.join(otherdir, "bar"))
+    manifest_version._RemoveDirs(otherdir)
+    self.assertFalse(os.path.exists(otherdir), 'Failed to rmdirs.')
 
   def testPushGitChangesWithRealPrep(self):
     """Another push test that tests push but on non-repo does it on a branch."""
@@ -175,29 +171,23 @@ class BuildSpecsManagerTest(cros_test_lib.MoxTempDirTestCase):
       branch=self.branch, dry_run=True)
 
     # Change default to something we clean up.
-    self.tmpmandir = tempfile.mkdtemp()
+    self.tmpmandir = os.path.join(self.tempdir, "man")
+    osutils.SafeMakedirs(self.tmpmandir)
     self.manager.manifest_dir = self.tmpmandir
 
   def testLoadSpecs(self):
     """Tests whether we can load specs correctly."""
     info = manifest_version.VersionInfo(
         FAKE_VERSION_STRING, CHROME_BRANCH, incr_type='branch')
-    m1 = os.path.join(self.manager.manifest_dir, 'buildspecs',
-                      CHROME_BRANCH, '1.2.2.xml')
-    m2 = os.path.join(self.manager.manifest_dir, 'buildspecs',
-                      CHROME_BRANCH, '1.2.3.xml')
-    m3 = os.path.join(self.manager.manifest_dir, 'buildspecs',
-                      CHROME_BRANCH, '1.2.4.xml')
-    m4 = os.path.join(self.manager.manifest_dir, 'buildspecs',
-                      CHROME_BRANCH, '1.2.5.xml')
+    mpath = os.path.join(self.manager.manifest_dir, 'buildspecs', CHROME_BRANCH)
+    m1, m2, m3, m4 = [os.path.join(mpath, '1.2.%d.xml' % x)
+                      for x in [2,3,4,5]]
     for_build = os.path.join(self.manager.manifest_dir, 'build-name',
                              self.build_name)
 
     # Create fake buildspecs.
-    TouchFile(m1)
-    TouchFile(m2)
-    TouchFile(m3)
-    TouchFile(m4)
+    osutils.SafeMakedirs(os.path.join(mpath))
+    for m in [m1, m2, m3, m4]: osutils.Touch(m)
 
     # Fail 1, pass 2, leave 3,4 unprocessed.
     manifest_version.CreateSymlink(m1, os.path.join(
@@ -220,16 +210,13 @@ class BuildSpecsManagerTest(cros_test_lib.MoxTempDirTestCase):
 
     specs_dir = os.path.join(self.manager.manifest_dir, 'buildspecs',
                              CHROME_BRANCH)
-    m1 = os.path.join(specs_dir, '100.0.0.xml')
-    m2 = os.path.join(specs_dir, '99.3.3.xml')
-    m3 = os.path.join(specs_dir, '99.1.10.xml')
-    m4 = os.path.join(specs_dir, '99.1.5.xml')
+    m1, m2, m3, m4 = [os.path.join(specs_dir, x)
+                      for x in ['100.0.0.xml', '99.3.3.xml', '99.1.10.xml',
+                                '99.1.5.xml']]
 
     # Create fake buildspecs.
-    TouchFile(m1)
-    TouchFile(m2)
-    TouchFile(m3)
-    TouchFile(m4)
+    osutils.SafeMakedirs(specs_dir)
+    for m in [m1, m2, m3, m4]: osutils.Touch(m)
 
     self.mox.ReplayAll()
     spec = self.manager._LatestSpecFromDir(info, specs_dir)

@@ -16,6 +16,7 @@ from chromite.scripts import upload_prebuilts as prebuilt
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import binpkg
+from chromite.lib import osutils
 
 # pylint: disable=E1120,W0212,R0904
 PUBLIC_PACKAGES = [{'CPV': 'gtk+/public1', 'SHA1': '1', 'MTIME': '1'},
@@ -42,9 +43,8 @@ class TestUpdateFile(cros_test_lib.TempDirTestCase):
                          'portage portage-20100310.tar.bz2',
                          'COMPILE_FLAGS="some_value=some_other"',
                          ]
-    temp_fd, self.version_file = tempfile.mkstemp()
-    os.write(temp_fd, '\n'.join(self.contents_str))
-    os.close(temp_fd)
+    self.version_file = os.path.join(self.tempdir, 'version')
+    osutils.WriteFile(self.version_file, '\n'.join(self.contents_str))
 
   def _read_version_file(self, version_file=None):
     """Read the contents of self.version_file and return as a list."""

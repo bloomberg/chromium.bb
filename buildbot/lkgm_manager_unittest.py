@@ -19,7 +19,6 @@ if __name__ == '__main__':
 from chromite.buildbot import lkgm_manager
 from chromite.buildbot import manifest_version
 from chromite.buildbot import repository
-from chromite.buildbot import manifest_version_unittest
 from chromite.buildbot import patch
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
@@ -39,17 +38,8 @@ CHROME_BRANCH=13
 """
 
 
-class LKGMCandidateInfoTest(cros_test_lib.MoxTempDirTestCase):
+class LKGMCandidateInfoTest(cros_test_lib.TestCase):
   """Test methods testing methods in _LKGMCandidateInfo class."""
-
-  @classmethod
-  def CreateFakeVersionFile(cls, tmpdir):
-    """Helper method to create a version file from FAKE_VERSION."""
-    osutils.SafeMakedirs(tmpdir)
-    (version_file_fh, version_file) = tempfile.mkstemp(dir=tmpdir)
-    os.write(version_file_fh, FAKE_VERSION)
-    os.close(version_file_fh)
-    return version_file
 
   def testLoadFromString(self):
     """Tests whether we can load from a string."""
@@ -123,9 +113,14 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
     self.build_name = 'x86-generic'
     self.incr_type = 'branch'
 
+    # Create tmp subdirs based on the one provided TempDirMixin.
+    self.tmpdir = os.path.join(self.tempdir, "base")
+    osutils.SafeMakedirs(self.tmpdir)
+    self.tmpmandir = os.path.join(self.tempdir, "man")
+    osutils.SafeMakedirs(self.tmpmandir)
+
     repo = repository.RepoRepository(
-      self.source_repo, self.tempdir, self.branch, depth=1)
-    self.tmpmandir = tempfile.mkdtemp()
+      self.source_repo, self.tmpdir, self.branch, depth=1)
     self.manager = lkgm_manager.LKGMManager(
       repo, self.manifest_repo, self.build_name, constants.PFQ_TYPE, 'branch',
       force=False, branch=self.branch, dry_run=True)
@@ -341,7 +336,7 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
     manifest = os.path.join(self.manager.manifest_dir,
                             self.manager.rel_working_dir, 'buildspecs',
                             dir_pfx, '1.2.4-rc21.xml')
-    manifest_version_unittest.TouchFile(manifest)
+    osutils.Touch(manifest)
     return manifest, dir_pfx
 
   def _GetBuildersStatus(self, builders, status_runs):
@@ -441,7 +436,7 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
     cros_build_lib.RunCommand(['git', 'log', '--pretty=full',
                                '%s..HEAD' % fake_revision],
                               print_cmd=False, redirect_stdout=True,
-                              cwd=self.tempdir + '/fake/path').AndReturn(
+                              cwd=self.tmpdir + '/fake/path').AndReturn(
                                   fake_result)
     cros_build_lib.PrintBuildbotLink('CHUMP fake:1234',
                                      'http://gerrit.chromium.org/gerrit/1234')
