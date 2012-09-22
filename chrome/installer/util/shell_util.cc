@@ -1331,12 +1331,8 @@ bool ShellUtil::ShowMakeChromeDefaultSystemUI(BrowserDistribution* dist,
   // Return true only when the user took an action and there was no error.
   const bool ret = LaunchSelectDefaultProtocolHandlerDialog(L"http");
 
-  if (ret) {
-    const int shell_change =
-        InstallUtil::IsPerUserInstall(chrome_exe.c_str()) ? CURRENT_USER :
-                                                            SYSTEM_LEVEL;
-    RegisterChromeAsDefaultForXP(dist, shell_change, chrome_exe);
-  }
+  if (ret)
+    RegisterChromeAsDefaultForXP(dist, CURRENT_USER, chrome_exe);
 
   return ret;
 }
