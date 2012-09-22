@@ -1182,6 +1182,11 @@ void NetworkLibraryImplCros::SetIPParametersCallback(
     const IPParameterInfo& info,
     const std::string& service_path,
     const base::DictionaryValue* properties) {
+  // crbug.com/146616 will fix this once we have better
+  // handling of shill errors.
+  if (!properties)
+    return;
+
   // Find the properties we're going to set, and minimize the DBus calls below
   // by not clearing if it's already cleared, and not setting if it's already
   // set to the same value. Also, don't reconnect at the end if nothing changed.
