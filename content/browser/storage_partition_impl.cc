@@ -25,16 +25,16 @@ namespace {
 // for the "default" extension storage partition and one directory for each
 // persistent partition used by an extension's browser tags. Example:
 //
-//   {kStoragePartitionDirname}/extensions/ABCDEF/default
-//   {kStoragePartitionDirname}/extensions/ABCDEF/{hash(guest partition)}
+//   Storage/ext/ABCDEF/def
+//   Storage/ext/ABCDEF/{hash(guest partition)}
 //
 // The code in GetPartitionPath() constructs these path names.
 const FilePath::CharType kStoragePartitionDirname[] =
-    FILE_PATH_LITERAL("Storage Partitions");
+    FILE_PATH_LITERAL("Storage");
 const FilePath::CharType kExtensionsDirname[] =
-    FILE_PATH_LITERAL("extensions");
+    FILE_PATH_LITERAL("ext");
 const FilePath::CharType kDefaultPartitionDirname[] =
-    FILE_PATH_LITERAL("default");
+    FILE_PATH_LITERAL("def");
 
 }  // namespace
 
