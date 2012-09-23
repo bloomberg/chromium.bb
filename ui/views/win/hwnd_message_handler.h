@@ -38,8 +38,6 @@ class FullscreenHandler;
 class HWNDMessageHandlerDelegate;
 class InputMethod;
 
-VIEWS_EXPORT bool IsAeroGlassEnabled();
-
 // These two messages aren't defined in winuser.h, but they are sent to windows
 // with captions. They appear to paint the window caption and frame.
 // Unfortunately if you override the standard non-client rendering as we do
