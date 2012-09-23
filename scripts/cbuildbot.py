@@ -666,7 +666,7 @@ def _CheckChromeRevOption(_option, _opt_str, value, parser):
   parser.values.chrome_rev = value
 
 
-def _CheckGerritChromeOption(_option, _opt_str, value, parser):
+def _CheckGerritChromeOption(_option, _opt_str, _value, parser):
   """Validate the chrome_rev option."""
   if parser.values.chrome_rev is None:
     parser.values.chrome_rev = constants.CHROME_REV_TOT
@@ -934,10 +934,13 @@ def _CreateParser():
   #
   # Debug options
   #
-  group = CustomGroup(parser, "Debug Options")
+  group = parser.get_option_group('--debug')
 
-  group.add_remote_option('--debug', action='store_true', default=None,
-                          help='Override some options to run as a developer.')
+  # Temporary hack; in place till --dry-run replaces --debug.
+  # pylint: disable=W0212
+  debug = [x for x in group.option_list if x._long_opts == ['--debug']][0]
+  debug.help += "  Currently functions as --dry-run in addition."
+  debug.pass_through = True
   group.add_option('--dump_config', action='store_true', dest='dump_config',
                     default=False,
                     help='Dump out build config options, and exit.')
@@ -958,10 +961,6 @@ def _FinishParsing(options, args):
   Args:
     options, args: The options/args object returned by optparse
   """
-  # Setup logging levels first so any parsing triggered log messages
-  # are appropriately filtered.
-  logging.getLogger().setLevel(
-    logging.DEBUG if options.debug else logging.INFO)
 
   if options.chrome_root:
     if options.chrome_rev != constants.CHROME_REV_LOCAL:

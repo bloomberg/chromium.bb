@@ -6,7 +6,6 @@
 """This script fetches and prepares an SDK chroot.
 """
 
-import logging
 import os
 import urlparse
 
@@ -316,14 +315,7 @@ Action taken is the following:
   parser.add_option('-v', '--version',
                     dest='sdk_version', default=None,
                     help=('Use this sdk version [%s]' % sdk_latest_version))
-  parser.add_option('--debug', action='store_true', default=False,
-                    help="Show debugging messages.")
   (options, remaining_arguments) = parser.parse_args(argv)
-
-  # Setup logging levels first so any parsing triggered log messages
-  # are appropriately filtered.
-  logging.getLogger().setLevel(
-      logging.DEBUG if options.debug else logging.INFO)
 
   # Some sanity checks first, before we ask for sudo credentials.
   if cros_build_lib.IsInsideChroot():
