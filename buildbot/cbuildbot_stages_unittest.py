@@ -110,7 +110,7 @@ class BuilderStageTest(AbstractStageTest):
     cros_build_lib.RunCommand(mox.And(mox.IsA(list), mox.In(envvar)),
                               cwd='%s/src/scripts' % self.build_root,
                               redirect_stdout=True, enter_chroot=True,
-                              error_ok=True).AndReturn(obj)
+                              error_code_ok=True).AndReturn(obj)
     self.mox.ReplayAll()
     stage = self.ConstructStage()
     board = self._current_board

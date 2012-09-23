@@ -26,7 +26,7 @@ def FixBrokenExistingRepos(buildroot):
   cros_build_lib.RunCommand(
       ['repo', '--time', 'forall', '-c',
       'git config --remove-section "url.%s" 2> /dev/null' %
-      constants.GERRIT_SSH_URL], cwd=buildroot, error_ok=True)
+      constants.GERRIT_SSH_URL], cwd=buildroot, error_code_ok=True)
 
 
 def SetupGerritRemote(buildroot):

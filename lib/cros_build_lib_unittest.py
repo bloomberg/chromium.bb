@@ -218,7 +218,7 @@ class TestRunCommand(unittest.TestCase):
     self.mox.ReplayAll()
     self.assertRaises(cros_build_lib.RunCommandError,
                       cros_build_lib.RunCommand, cmd, shell=True,
-                      ignore_sigint=ignore_sigint, error_ok=False)
+                      ignore_sigint=ignore_sigint, error_code_ok=False)
     self.mox.VerifyAll()
 
   @_ForceLoggingLevel
@@ -494,11 +494,12 @@ class TestTimedCommand(unittest.TestCase):
 
   def testArgs(self):
     """Verify passing of optional args to the destination function."""
-    cros_build_lib.RunCommand(':', shell=True, print_cmd=False, error_ok=False)
+    cros_build_lib.RunCommand(':', shell=True, print_cmd=False,
+                              error_code_ok=False)
     self.mox.ReplayAll()
 
     cros_build_lib.TimedCommand(cros_build_lib.RunCommand, ':', shell=True,
-                                print_cmd=False, error_ok=False)
+                                print_cmd=False, error_code_ok=False)
 
   def testLog(self):
     """Verify logging does the right thing."""

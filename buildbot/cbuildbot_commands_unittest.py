@@ -161,7 +161,7 @@ class CBuildBotTest(mox.MoxTestBase):
 
     cros_build_lib.RunCommand(
         mox.Func(lambda x: ItemsNotInList(['--quick', '--only_verify'], x)),
-        cwd=cwd, error_ok=True).AndReturn(obj)
+        cwd=cwd, error_code_ok=True).AndReturn(obj)
 
     self.mox.ReplayAll()
     commands.RunTestSuite(self._work_dir, self._test_board, self._buildroot,
@@ -172,7 +172,7 @@ class CBuildBotTest(mox.MoxTestBase):
     self.mox.ResetAll()
 
     cros_build_lib.RunCommand(mox.In('--quick'), cwd=cwd,
-                              error_ok=True).AndReturn(obj)
+                              error_code_ok=True).AndReturn(obj)
 
     self.mox.ReplayAll()
     commands.RunTestSuite(self._work_dir, self._test_board, self._buildroot,
@@ -184,7 +184,7 @@ class CBuildBotTest(mox.MoxTestBase):
 
     cros_build_lib.RunCommand(
         mox.And(mox.In('--quick'), mox.In('--only_verify')),
-        cwd=cwd, error_ok=True).AndReturn(obj)
+        cwd=cwd, error_code_ok=True).AndReturn(obj)
 
     self.mox.ReplayAll()
     commands.RunTestSuite(self._work_dir, self._test_board, self._buildroot,
@@ -253,12 +253,12 @@ class CBuildBotTest(mox.MoxTestBase):
          test_tarball,
          '--directory=%s' % temp_dir,
          '--wildcards', '*.dmp'],
-         error_ok=True,
+         error_code_ok=True,
          redirect_stderr=True).AndReturn(cros_build_lib.CommandResult())
     stack_trace = '%s.txt' % dump_file
     cros_build_lib.RunCommand(
         ['minidump_stackwalk', dump_file, symbol_dir], cwd=cwd,
-        enter_chroot=True, error_ok=True, log_stdout_to_file=stack_trace,
+        enter_chroot=True, error_code_ok=True, log_stdout_to_file=stack_trace,
         redirect_stderr=True)
     commands.ArchiveFile(stack_trace, archive_dir)
     cros_build_lib.RunCommand(

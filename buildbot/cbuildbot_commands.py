@@ -396,7 +396,7 @@ def RunChromeSuite(buildroot, board, image_dir, results_dir):
          'desktopui_BrowserTest.control.two',
          'desktopui_BrowserTest.control.three',
          'desktopui_PyAutoFunctionalTests.control.vm']
-  cros_build_lib.RunCommand(cmd, cwd=cwd, error_ok=True)
+  cros_build_lib.RunCommand(cmd, cwd=cwd, error_code_ok=True)
 
 
 def RunTestSuite(buildroot, board, image_dir, results_dir, test_type,
@@ -428,7 +428,7 @@ def RunTestSuite(buildroot, board, image_dir, results_dir, test_type,
   if whitelist_chrome_crashes:
     cmd.append('--whitelist_chrome_crashes')
 
-  result = cros_build_lib.RunCommand(cmd, cwd=cwd, error_ok=True)
+  result = cros_build_lib.RunCommand(cmd, cwd=cwd, error_code_ok=True)
   if result.returncode:
     if os.path.exists(results_dir_in_chroot):
       error = '%s exited with code %d' % (' '.join(cmd), result.returncode)
@@ -538,7 +538,7 @@ def GenerateMinidumpStackTraces(buildroot, board, gzipped_test_tarball,
   # build process.
   tar_cmd = cros_build_lib.RunCommand(
       ['tar', 'xf', test_tarball, '--directory=%s' % temp_dir,
-       '--wildcards', '*.dmp'], error_ok=True, redirect_stderr=True)
+       '--wildcards', '*.dmp'], error_code_ok=True, redirect_stderr=True)
   if not tar_cmd.returncode:
     symbol_dir = os.path.join('/build', board, 'usr', 'lib', 'debug',
                               'breakpad')
@@ -552,7 +552,7 @@ def GenerateMinidumpStackTraces(buildroot, board, gzipped_test_tarball,
         cwd = os.path.join(buildroot, 'src', 'scripts')
         cros_build_lib.RunCommand(
             ['minidump_stackwalk', minidump, symbol_dir], cwd=cwd,
-            enter_chroot=True, error_ok=True, redirect_stderr=True,
+            enter_chroot=True, error_code_ok=True, redirect_stderr=True,
             log_stdout_to_file=minidump_stack_trace)
         filename = ArchiveFile(minidump_stack_trace, archive_dir)
         stack_trace_filenames.append(filename)
@@ -846,7 +846,8 @@ def GenerateDebugTarball(buildroot, board, archive_path, gdb_symbols):
   else:
     cmd.append('debug/breakpad')
 
-  tar_cmd = cros_build_lib.SudoRunCommand(cmd, cwd=board_dir, error_ok=True)
+  tar_cmd = cros_build_lib.SudoRunCommand(cmd, cwd=board_dir,
+                                          error_code_ok=True)
 
   # Emerging the factory kernel while this is running installs different debug
   # symbols. When tar spots this, it flags this and returns status code 1.

@@ -439,6 +439,11 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
       if cmd_result.error:
         logger.log(debug_level, '(stderr):\n%s' % cmd_result.error)
 
+    if error_ok:
+      logger.warning("error_ok is deprecated; use error_code_ok instead."
+                     "error_ok will be removed in Q1 2013.  Was invoked "
+                     "with args=%r", cmd)
+
     if not error_ok and not error_code_ok and proc.returncode:
       msg = 'Failed command "%r", cwd=%s, extra env=%r' % (cmd, cwd, extra_env)
       if error_message:
@@ -1330,7 +1335,7 @@ def SyncPushBranch(git_repo, remote, rebase_target):
   except RunCommandError:
     # Looks like our change conflicts with upstream. Cleanup our failed
     # rebase.
-    RunGitCommand(git_repo, ['rebase', '--abort'], error_ok=True)
+    RunGitCommand(git_repo, ['rebase', '--abort'], error_code_ok=True)
     raise
 
 
@@ -1491,7 +1496,8 @@ def RunCommandCaptureOutput(cmd, **kwds):
     cmd: The command to run.
     kwds: Optional args passed to RunCommand; see RunCommand for specifics.
   """
-  return RunCommand(cmd, redirect_stdout=True, redirect_stderr=True, **kwds)
+  return RunCommand(cmd, redirect_stdout=kwds.pop('redirect_stdout', True),
+                    redirect_stderr=kwds.pop('redirect_stderr', True), **kwds)
 
 
 def TimedCommand(functor, *args, **kwargs):

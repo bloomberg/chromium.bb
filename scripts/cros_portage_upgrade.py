@@ -436,10 +436,10 @@ class Upgrader(object):
 
     # Point equery to the upstream source to get latest version for keywords.
     equery = ['equery', 'which', pkg ]
-    cmd_result = cros_build_lib.RunCommand(equery, extra_env=envvars,
-                                           print_cmd=self._verbose,
-                                           error_ok=True, redirect_stdout=True,
-                                           combine_stdout_stderr=True)
+    cmd_result = cros_build_lib.RunCommand(
+        equery, extra_env=envvars, print_cmd=self._verbose,
+        error_code_ok=True, redirect_stdout=True, combine_stdout_stderr=True)
+
     if cmd_result.returncode == 0:
       ebuild_path = cmd_result.output.strip()
       (_overlay, cat, _pn, pv) = self._SplitEBuildPath(ebuild_path)
@@ -469,10 +469,9 @@ class Upgrader(object):
     envvars = self._GenPortageEnvvars(self._curr_arch, unstable_ok=False)
     emerge = self._GetBoardCmd(self.EMERGE_CMD)
     cmd = [emerge, '-p'] + ['=' + cpv for cpv in cpvlist]
-    result = cros_build_lib.RunCommand(cmd, error_ok=True,
-                                       extra_env=envvars, print_cmd=False,
-                                       redirect_stdout=True,
-                                       combine_stdout_stderr=True)
+    result = cros_build_lib.RunCommand(
+        cmd, error_code_ok=True, extra_env=envvars, print_cmd=False,
+        redirect_stdout=True, combine_stdout_stderr=True)
 
     return (result.returncode == 0, ' '.join(cmd), result.output)
 
@@ -482,10 +481,9 @@ class Upgrader(object):
 
     equery = self._GetBoardCmd(self.EQUERY_CMD)
     cmd = [equery, 'which', pkg]
-    cmd_result = cros_build_lib.RunCommand(cmd, error_ok=True,
-                                           extra_env=envvars, print_cmd=False,
-                                           redirect_stdout=True,
-                                           combine_stdout_stderr=True)
+    cmd_result = cros_build_lib.RunCommand(
+        cmd, error_code_ok=True, extra_env=envvars, print_cmd=False,
+        redirect_stdout=True, combine_stdout_stderr=True)
 
     if cmd_result.returncode == 0:
       ebuild_path = cmd_result.output.strip()
@@ -501,10 +499,10 @@ class Upgrader(object):
 
     equery = self._GetBoardCmd('equery')
     cmd = [equery, '--no-pipe', 'list', '-op', cpv]
-    result = cros_build_lib.RunCommand(cmd, error_ok=True,
-                                       extra_env=envvars, print_cmd=False,
-                                       redirect_stdout=True,
-                                       combine_stdout_stderr=True)
+    result = cros_build_lib.RunCommand(
+        cmd, error_code_ok=True, extra_env=envvars, print_cmd=False,
+        redirect_stdout=True, combine_stdout_stderr=True)
+
     output = result.output.strip()
 
     # Expect output like one of these cases (~ == unstable, M == masked):
@@ -541,10 +539,10 @@ class Upgrader(object):
 
     equery = self._GetBoardCmd(self.EQUERY_CMD)
     cmd = [equery, 'which', '--include-masked', cpv]
-    result = cros_build_lib.RunCommand(cmd, error_ok=True,
-                                       extra_env=envvars, print_cmd=False,
-                                       redirect_stdout=True,
-                                       combine_stdout_stderr=True)
+    result = cros_build_lib.RunCommand(
+        cmd, error_code_ok=True, extra_env=envvars, print_cmd=False,
+        redirect_stdout=True, combine_stdout_stderr=True)
+
     ebuild_path = result.output.strip()
     (overlay, _cat, _pn, _pv) = self._SplitEBuildPath(ebuild_path)
     if overlay != expected_overlay:
@@ -585,10 +583,9 @@ class Upgrader(object):
 
     equery = self._GetBoardCmd(self.EQUERY_CMD)
     cmd = [equery, '--no-pipe', 'which', cpv]
-    result = cros_build_lib.RunCommand(cmd, error_ok=True,
-                                       extra_env=envvars, print_cmd=False,
-                                       redirect_stdout=True,
-                                       combine_stdout_stderr=True)
+    result = cros_build_lib.RunCommand(
+        cmd, error_code_ok=True, extra_env=envvars, print_cmd=False,
+        redirect_stdout=True, combine_stdout_stderr=True)
 
     if result.returncode != 0:
       output = result.output.strip()
@@ -808,10 +805,9 @@ class Upgrader(object):
       shutil.copyfile(upstream_manifest, current_manifest)
 
     manifest_cmd = ['ebuild', os.path.join(pkgdir, ebuild), 'manifest']
-    manifest_result = cros_build_lib.RunCommand(manifest_cmd,
-                                                error_ok=True, print_cmd=False,
-                                                redirect_stdout=True,
-                                                combine_stdout_stderr=True)
+    manifest_result = cros_build_lib.RunCommand(
+        manifest_cmd, error_code_ok=True, print_cmd=False,
+        redirect_stdout=True, combine_stdout_stderr=True)
 
     if manifest_result.returncode != 0:
       raise RuntimeError('Failed "ebuild manifest" for upgraded package.\n'

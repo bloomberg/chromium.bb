@@ -162,7 +162,7 @@ def _GetLatestRelease(base_url, branch=None):
     if chrome_version_re.match(chrome_version):
       deps_url = os.path.join(buildspec_url, chrome_version, 'DEPS')
       deps_check = RunCommand(['svn', 'ls', deps_url],
-                              error_ok=True,
+                              error_code_ok=True,
                               redirect_stdout=True).output
       if deps_check == 'DEPS\n':
         return chrome_version.rstrip('/')

@@ -465,7 +465,7 @@ class Cgroup(object):
 
     result = cros_build_lib.SudoRunCommand(
         ['find', path, '-depth', '-type', 'd', '-exec', 'rmdir', '{}', '+'],
-        redirect_stderr=True, error_ok=not strict,
+        redirect_stderr=True, error_code_ok=not strict,
         print_cmd=False, strict=sudo_strict)
     if result.returncode == 0:
       return True

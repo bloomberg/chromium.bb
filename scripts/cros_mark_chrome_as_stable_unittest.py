@@ -206,11 +206,11 @@ class CrosMarkChromeAsStable(mox.MoxTestBase):
     # pretend this one is missing to test the skipping logic.
     cros_mark_chrome_as_stable.RunCommand(
         ['svn', 'ls', ARBITRARY_URL + '/releases/8.0.365.5/DEPS'],
-        error_ok=True, redirect_stdout=True).AndReturn(
+        error_code_ok=True, redirect_stdout=True).AndReturn(
           _StubCommandResult('BAH BAH BAH'))
     cros_mark_chrome_as_stable.RunCommand(
         ['svn', 'ls', ARBITRARY_URL + '/releases/7.0.224.2/DEPS'],
-        error_ok=True, redirect_stdout=True).AndReturn(
+        error_code_ok=True, redirect_stdout=True).AndReturn(
           _StubCommandResult('DEPS\n'))
     self.mox.ReplayAll()
     release = cros_mark_chrome_as_stable._GetLatestRelease(ARBITRARY_URL)
@@ -233,7 +233,7 @@ class CrosMarkChromeAsStable(mox.MoxTestBase):
         redirect_stdout=True).AndReturn(_StubCommandResult(test_data))
     cros_mark_chrome_as_stable.RunCommand(
         ['svn', 'ls', ARBITRARY_URL + '/releases/8.0.224.2/DEPS'],
-        error_ok=True, redirect_stdout=True).AndReturn(
+        error_code_ok=True, redirect_stdout=True).AndReturn(
           _StubCommandResult('DEPS\n'))
     self.mox.ReplayAll()
     release = cros_mark_chrome_as_stable._GetLatestRelease(ARBITRARY_URL,

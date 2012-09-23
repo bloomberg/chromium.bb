@@ -86,7 +86,7 @@ def _RunCommand(cmd, dryrun):
   if dryrun:
     logging.info('Would have run: %s', ' '.join(cmd))
   else:
-    cros_build_lib.RunCommand(cmd, error_ok=True)
+    cros_build_lib.RunCommand(cmd, error_code_ok=True)
 
 
 class GerritHelperNotAvailable(gerrit_helper.GerritException):

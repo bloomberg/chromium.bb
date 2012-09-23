@@ -201,12 +201,9 @@ def WalkReferences(repo_root, max_depth=5, suppress=()):
 
     yield repo_root
     seen.add(repo_root)
-
     base = os.path.join(repo_root, '.repo', 'manifests.git')
-    result = cros_build_lib.RunCommand(
-        ['git', 'config', '--file', os.path.join(base, 'config'),
-        'repo.reference'], print_cmd=False, redirect_stdout=True, cwd=base,
-        error_ok=True)
+    result = cros_build_lib.RunGitCommand(
+        base, ['config', 'repo.reference'], error_code_ok=True)
 
     if result.returncode not in (0, 1):
       raise Failed('Unexpected returncode %i from examining %s git '

@@ -127,7 +127,7 @@ class BuilderStage(object):
       portageq = 'portageq'
     binhost = cros_build_lib.RunCommand(
         [portageq, 'envvar', envvar], cwd=cwd, redirect_stdout=True,
-        enter_chroot=True, error_ok=True)
+        enter_chroot=True, error_code_ok=True)
     return binhost.output.rstrip('\n')
 
   # pylint: disable=W0102
