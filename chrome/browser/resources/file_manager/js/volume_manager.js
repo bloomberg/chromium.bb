@@ -203,7 +203,7 @@ VolumeManager.prototype.onMountCompleted_ = function(event) {
         this.waitGDataLoaded_(event.mountPath,
             this.setGDataStatus_.bind(this, VolumeManager.GDataStatus.MOUNTED));
       } else if (event.eventType == 'unmount') {
-        this.setGDataStatus_(VolumeManager.GDataStatus.UMOUNTED);
+        this.setGDataStatus_(VolumeManager.GDataStatus.UNMOUNTED);
       }
     }
   }
