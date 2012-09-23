@@ -16,7 +16,6 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_switches.h"
-#include "ui/gl/gpu_switching_manager.h"
 
 #if defined(USE_AURA)
 #include "ui/gl/gl_context_nsview.h"
@@ -157,7 +156,7 @@ bool GLContext::SupportsDualGpus() {
         !CommandLine::ForCurrentProcess()->HasSwitch(switches::kGpuSwitching);
 
     if (forcibly_disable) {
-      GpuSwitchingManager::GetInstance()->ForceUseOfDiscreteGpu();
+      GLContextCGL::ForceUseOfDiscreteGPU();
       return false;
     }
 

@@ -1032,7 +1032,7 @@ TEST_F(GpuBlacklistTest, GpuSwitching) {
   GpuSwitchingOption switching = blacklist->MakeBlacklistDecision(
       GpuBlacklist::kOsMacosx, &os_version,
       gpu_info()).gpu_switching;
-  EXPECT_EQ(switching, content::GPU_SWITCHING_OPTION_FORCE_DISCRETE);
+  EXPECT_EQ(switching, content::GPU_SWITCHING_FORCE_DISCRETE);
   std::vector<uint32> entries;
   bool disabled = false;
   blacklist->GetDecisionEntries(entries, disabled);
@@ -1045,7 +1045,7 @@ TEST_F(GpuBlacklistTest, GpuSwitching) {
   switching = blacklist->MakeBlacklistDecision(
       GpuBlacklist::kOsWin, &os_version,
       gpu_info()).gpu_switching;
-  EXPECT_EQ(switching, content::GPU_SWITCHING_OPTION_FORCE_INTEGRATED);
+  EXPECT_EQ(switching, content::GPU_SWITCHING_FORCE_INTEGRATED);
   blacklist->GetDecisionEntries(entries, disabled);
   EXPECT_EQ(entries.size(), 1u);
   EXPECT_EQ(entries[0], 2u);
@@ -1056,7 +1056,7 @@ TEST_F(GpuBlacklistTest, GpuSwitching) {
   switching = blacklist->MakeBlacklistDecision(
       GpuBlacklist::kOsLinux, &os_version,
       gpu_info()).gpu_switching;
-  EXPECT_EQ(switching, content::GPU_SWITCHING_OPTION_AUTOMATIC);
+  EXPECT_EQ(switching, content::GPU_SWITCHING_AUTOMATIC);
   blacklist->GetDecisionEntries(entries, disabled);
   EXPECT_EQ(entries.size(), 1u);
   EXPECT_EQ(entries[0], 3u);

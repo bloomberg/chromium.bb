@@ -16,7 +16,6 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/common/gpu_feature_type.h"
-#include "content/public/common/gpu_switching_option.h"
 
 class Version;
 
@@ -48,7 +47,7 @@ class CONTENT_EXPORT GpuBlacklist {
 
     Decision()
         : blacklisted_features(content::GPU_FEATURE_TYPE_UNKNOWN),
-          gpu_switching(content::GPU_SWITCHING_OPTION_UNKNOWN) {
+          gpu_switching(content::GPU_SWITCHING_AUTOMATIC) {
     }
   };
 

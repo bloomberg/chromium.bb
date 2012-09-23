@@ -76,8 +76,6 @@
         'gl_surface_osmesa.h',
         'gl_switches.cc',
         'gl_switches.h',
-        'gpu_switching_manager.cc',
-        'gpu_switching_manager.h',
         'scoped_make_current.cc',
         'scoped_make_current.h',
         '<(gl_binding_output_dir)/gl_bindings_autogen_gl.cc',

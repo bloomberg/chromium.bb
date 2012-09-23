@@ -13,7 +13,6 @@
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface_cgl.h"
-#include "ui/gl/gpu_switching_manager.h"
 
 namespace gfx {
 
@@ -27,9 +26,6 @@ GLContextCGL::GLContextCGL(GLShareGroup* share_group)
 bool GLContextCGL::Initialize(GLSurface* compatible_surface,
                               GpuPreference gpu_preference) {
   DCHECK(compatible_surface);
-
-  gpu_preference = GpuSwitchingManager::GetInstance()->AdjustGpuPreference(
-      gpu_preference);
 
   GLContextCGL* share_context = share_group() ?
       static_cast<GLContextCGL*>(share_group()->GetContext()) : NULL;
@@ -218,6 +214,17 @@ GLContextCGL::~GLContextCGL() {
 
 GpuPreference GLContextCGL::GetGpuPreference() {
   return gpu_preference_;
+}
+
+void GLContextCGL::ForceUseOfDiscreteGPU() {
+  static CGLPixelFormatObj format = NULL;
+  if (format)
+    return;
+  CGLPixelFormatAttribute attribs[1];
+  attribs[0] = static_cast<CGLPixelFormatAttribute>(0);
+  GLint num_pixel_formats = 0;
+  CGLChoosePixelFormat(attribs, &format, &num_pixel_formats);
+  // format is deliberately leaked.
 }
 
 void ScopedCGLDestroyRendererInfo::operator()(CGLRendererInfoObj x) const {
