@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/base_window.h"
 #include "chrome/browser/ui/views/extensions/extension_dialog_observer.h"
+#include "chrome/browser/ui/views/extensions/extension_view_views.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -42,6 +43,8 @@ ExtensionDialog::ExtensionDialog(extensions::ExtensionHost* host,
   // Listen for a crash or other termination of the extension process.
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
                  content::Source<Profile>(host->profile()));
+
+  view_ = static_cast<ExtensionViewViews*>(host->GetExtensionView());
 }
 
 ExtensionDialog::~ExtensionDialog() {
@@ -101,12 +104,6 @@ ExtensionDialog* ExtensionDialog::ShowInternal(
   else
     dialog->InitWindow(base_window, width, height);
 
-  // Show a white background while the extension loads.  This is prettier than
-  // flashing a black unfilled window frame.
-  host->view()->set_background(
-      views::Background::CreateSolidBackground(0xFF, 0xFF, 0xFF));
-  host->view()->SetVisible(true);
-
   // Ensure the DOM JavaScript can respond immediately to keyboard shortcuts.
   host->host_contents()->Focus();
   return dialog;
@@ -144,6 +141,12 @@ void ExtensionDialog::InitWindowFullscreen() {
 
   // TODO(jamescook): Remove redundant call to Activate()?
   window_->Activate();
+
+  // Show a white background while the extension loads.  This is prettier than
+  // flashing a black unfilled window frame.
+  view_->set_background(
+      views::Background::CreateSolidBackground(0xFF, 0xFF, 0xFF));
+  view_->SetVisible(true);
 }
 #else
 void ExtensionDialog::InitWindowFullscreen() {
@@ -172,6 +175,12 @@ void ExtensionDialog::InitWindow(BaseWindow* base_window,
   window_->Show();
   // TODO(jamescook): Remove redundant call to Activate()?
   window_->Activate();
+
+  // Show a white background while the extension loads.  This is prettier than
+  // flashing a black unfilled window frame.
+  view_->set_background(
+      views::Background::CreateSolidBackground(0xFF, 0xFF, 0xFF));
+  view_->SetVisible(true);
 }
 
 void ExtensionDialog::ObserverDestroyed() {
@@ -211,11 +220,11 @@ void ExtensionDialog::MaybeFocusRenderView() {
 
 bool ExtensionDialog::CanResize() const {
   // Can resize only if minimum contents size set.
-  return extension_host_->view()->GetPreferredSize() != gfx::Size();
+  return view_->GetPreferredSize() != gfx::Size();
 }
 
 void ExtensionDialog::SetMinimumContentsSize(int width, int height) {
-  extension_host_->view()->SetPreferredSize(gfx::Size(width, height));
+  view_->SetPreferredSize(gfx::Size(width, height));
 }
 
 ui::ModalType ExtensionDialog::GetModalType() const {
@@ -241,15 +250,15 @@ void ExtensionDialog::DeleteDelegate() {
 }
 
 views::Widget* ExtensionDialog::GetWidget() {
-  return extension_host_->view()->GetWidget();
+  return view_->GetWidget();
 }
 
 const views::Widget* ExtensionDialog::GetWidget() const {
-  return extension_host_->view()->GetWidget();
+  return view_->GetWidget();
 }
 
 views::View* ExtensionDialog::GetContentsView() {
-  return extension_host_->view();
+  return view_;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -262,7 +271,7 @@ void ExtensionDialog::Observe(int type,
     case chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING:
       // Avoid potential overdraw by removing the temporary background after
       // the extension finishes loading.
-      extension_host_->view()->set_background(NULL);
+      view_->set_background(NULL);
       // The render view is created during the LoadURL(), so we should
       // set the focus to the view if nobody else takes the focus.
       if (content::Details<extensions::ExtensionHost>(host()) == details)

@@ -8,8 +8,8 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/extensions/extension_view_container.h"
 #include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
-#include "chrome/browser/ui/gtk/extensions/extension_view_gtk.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/rect.h"
@@ -23,7 +23,7 @@ class ExtensionHost;
 
 class ExtensionPopupGtk : public content::NotificationObserver,
                           public BubbleDelegateGtk,
-                          public ExtensionViewGtk::Container {
+                          public ExtensionViewContainer {
  public:
   enum ShowAction {
     SHOW,
@@ -44,10 +44,10 @@ class ExtensionPopupGtk : public content::NotificationObserver,
   virtual void BubbleClosing(BubbleGtk* bubble,
                              bool closed_by_escape) OVERRIDE;
 
-  // ExtensionViewGtk::Container implementation.
-  virtual void OnExtensionSizeChanged(
-      ExtensionViewGtk* view,
-      const gfx::Size& new_size) OVERRIDE;
+  // ExtensionViewContainer implementation.
+  virtual void OnExtensionSizeChanged(ExtensionView* view,
+                                      const gfx::Size& new_size) OVERRIDE;
+  virtual void OnExtensionViewDidShow(ExtensionView* view) OVERRIDE;
 
   // Destroys the popup widget. This will in turn destroy us since we delete
   // ourselves when the bubble closes. Returns true if we successfully

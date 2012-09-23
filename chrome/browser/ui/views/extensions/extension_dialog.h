@@ -24,6 +24,8 @@ namespace extensions {
 class ExtensionHost;
 }
 
+class ExtensionViewViews;
+
 // Modal dialog containing contents provided by an extension.
 // Dialog is automatically centered in the owning window and has fixed size.
 // For example, used by the Chrome OS file browser.
@@ -135,6 +137,8 @@ class ExtensionDialog : public views::WidgetDelegate,
 
   // The observer of this popup.
   ExtensionDialogObserver* observer_;
+
+  ExtensionViewViews* view_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionDialog);
 };

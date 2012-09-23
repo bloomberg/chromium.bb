@@ -19,24 +19,40 @@ ExtensionViewGtk::ExtensionViewGtk(extensions::ExtensionHost* extension_host,
       container_(NULL) {
 }
 
+ExtensionViewGtk::~ExtensionViewGtk() {
+}
+
 void ExtensionViewGtk::Init() {
   CreateWidgetHostView();
 }
 
-gfx::NativeView ExtensionViewGtk::native_view() {
-  return extension_host_->host_contents()->GetView()->GetNativeView();
-}
-
-content::RenderViewHost* ExtensionViewGtk::render_view_host() const {
-  return extension_host_->render_view_host();
-}
-
 void ExtensionViewGtk::SetBackground(const SkBitmap& background) {
-  if (render_view_host()->IsRenderViewLive() && render_view_host()->GetView()) {
-    render_view_host()->GetView()->SetBackground(background);
+  if (GetRenderViewHost()->IsRenderViewLive() &&
+      GetRenderViewHost()->GetView()) {
+    GetRenderViewHost()->GetView()->SetBackground(background);
   } else {
     pending_background_ = background;
   }
+}
+
+Browser* ExtensionViewGtk::GetBrowser() {
+  return browser_;
+}
+
+const Browser* ExtensionViewGtk::GetBrowser() const {
+  return browser_;
+}
+
+gfx::NativeView ExtensionViewGtk::GetNativeView() {
+  return extension_host_->host_contents()->GetView()->GetNativeView();
+}
+
+content::RenderViewHost* ExtensionViewGtk::GetRenderViewHost() const {
+  return extension_host_->render_view_host();
+}
+
+void ExtensionViewGtk::SetContainer(ExtensionViewContainer* container) {
+  container_ = container;
 }
 
 void ExtensionViewGtk::ResizeDueToAutoResize(const gfx::Size& new_size) {
@@ -44,13 +60,9 @@ void ExtensionViewGtk::ResizeDueToAutoResize(const gfx::Size& new_size) {
     container_->OnExtensionSizeChanged(this, new_size);
 }
 
-void ExtensionViewGtk::CreateWidgetHostView() {
-  extension_host_->CreateRenderViewSoon();
-}
-
 void ExtensionViewGtk::RenderViewCreated() {
-  if (!pending_background_.empty() && render_view_host()->GetView()) {
-    render_view_host()->GetView()->SetBackground(pending_background_);
+  if (!pending_background_.empty() && GetRenderViewHost()->GetView()) {
+    GetRenderViewHost()->GetView()->SetBackground(pending_background_);
     pending_background_.reset();
   }
 
@@ -60,6 +72,26 @@ void ExtensionViewGtk::RenderViewCreated() {
                        ExtensionPopupGtk::kMinHeight);
     gfx::Size max_size(ExtensionPopupGtk::kMaxWidth,
                        ExtensionPopupGtk::kMaxHeight);
-    render_view_host()->EnableAutoResize(min_size, max_size);
+    GetRenderViewHost()->EnableAutoResize(min_size, max_size);
   }
+}
+
+void ExtensionViewGtk::DidStopLoading() {
+  NOTIMPLEMENTED();
+}
+
+void ExtensionViewGtk::WindowFrameChanged() {
+  NOTIMPLEMENTED();
+}
+
+void ExtensionViewGtk::CreateWidgetHostView() {
+  extension_host_->CreateRenderViewSoon();
+}
+
+// static
+ExtensionView* ExtensionView::Create(extensions::ExtensionHost* host,
+                                     Browser* browser) {
+  ExtensionViewGtk* extension_view = new ExtensionViewGtk(host, browser);
+  extension_view->Init();
+  return extension_view;
 }

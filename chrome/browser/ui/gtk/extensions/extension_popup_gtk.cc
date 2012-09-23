@@ -16,6 +16,7 @@
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
+#include "chrome/browser/extensions/extension_view.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -48,7 +49,7 @@ ExtensionPopupGtk::ExtensionPopupGtk(Browser* browser,
       host_(host),
       anchor_(anchor),
       weak_factory_(this) {
-  host_->view()->SetContainer(this);
+  host_->GetExtensionView()->SetContainer(this);
   being_inspected_ = show_action == SHOW_AND_INSPECT;
 
   // If the host had somehow finished loading, then we'd miss the notification
@@ -138,14 +139,16 @@ void ExtensionPopupGtk::BubbleClosing(BubbleGtk* bubble,
   delete this;
 }
 
-void ExtensionPopupGtk::OnExtensionSizeChanged(
-    ExtensionViewGtk* view,
-    const gfx::Size& new_size) {
+void ExtensionPopupGtk::OnExtensionSizeChanged(ExtensionView* view,
+                                               const gfx::Size& new_size) {
   int width = std::max(kMinWidth, std::min(kMaxWidth, new_size.width()));
   int height = std::max(kMinHeight, std::min(kMaxHeight, new_size.height()));
 
-  view->render_view_host()->GetView()->SetSize(gfx::Size(width, height));
-  gtk_widget_set_size_request(view->native_view(), width, height);
+  view->GetRenderViewHost()->GetView()->SetSize(gfx::Size(width, height));
+  gtk_widget_set_size_request(view->GetNativeView(), width, height);
+}
+
+void ExtensionPopupGtk::OnExtensionViewDidShow(ExtensionView* view) {
 }
 
 bool ExtensionPopupGtk::DestroyPopup() {
@@ -179,7 +182,8 @@ void ExtensionPopupGtk::ShowPopup() {
   // This border is necessary so the bubble's corners do not get cut off by the
   // render view.
   gtk_container_set_border_width(GTK_CONTAINER(border_box), 2);
-  gtk_container_add(GTK_CONTAINER(border_box), host_->view()->native_view());
+  gtk_container_add(GTK_CONTAINER(border_box),
+                    host_->GetExtensionView()->GetNativeView());
 
   // We'll be in the upper-right corner of the window for LTR languages, so we
   // want to put the arrow at the upper-right corner of the bubble to match the
@@ -204,6 +208,7 @@ void ExtensionPopupGtk::DestroyPopupWithoutResult() {
 
 gfx::Rect ExtensionPopupGtk::GetViewBounds() {
   GtkAllocation allocation;
-  gtk_widget_get_allocation(host_->view()->native_view(), &allocation);
+  gtk_widget_get_allocation(host_->GetExtensionView()->GetNativeView(),
+                            &allocation);
   return gfx::Rect(allocation);
 }

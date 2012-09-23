@@ -7,6 +7,7 @@
 #include "base/debug/trace_event.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/extensions/extension_host.h"
+#include "chrome/browser/extensions/extension_view.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
@@ -51,7 +52,7 @@ ExtensionInfoBarGtk::~ExtensionInfoBarGtk() {}
 void ExtensionInfoBarGtk::PlatformSpecificHide(bool animate) {
   // This view is not owned by us; we can't unparent it because we aren't the
   // owning container.
-  gtk_container_remove(GTK_CONTAINER(alignment_), view_->native_view());
+  gtk_container_remove(GTK_CONTAINER(alignment_), view_->GetNativeView());
 }
 
 void ExtensionInfoBarGtk::GetTopColor(InfoBarDelegate::Type type,
@@ -127,19 +128,19 @@ void ExtensionInfoBarGtk::BuildWidgets() {
   gtk_box_pack_start(GTK_BOX(hbox_), alignment_, TRUE, TRUE, 0);
 
   extensions::ExtensionHost* extension_host = delegate_->extension_host();
-  view_ = extension_host->view();
+  view_ = extension_host->GetExtensionView();
 
-  if (gtk_widget_get_parent(view_->native_view())) {
-    gtk_widget_reparent(view_->native_view(), alignment_);
+  if (gtk_widget_get_parent(view_->GetNativeView())) {
+    gtk_widget_reparent(view_->GetNativeView(), alignment_);
   } else {
-    gtk_container_add(GTK_CONTAINER(alignment_), view_->native_view());
+    gtk_container_add(GTK_CONTAINER(alignment_), view_->GetNativeView());
   }
 
   Signals()->Connect(button_, "button-press-event",
                      G_CALLBACK(&OnButtonPressThunk), this);
-  Signals()->Connect(view_->native_view(), "expose-event",
+  Signals()->Connect(view_->GetNativeView(), "expose-event",
                      G_CALLBACK(&OnExposeThunk), this);
-  Signals()->Connect(view_->native_view(), "size_allocate",
+  Signals()->Connect(view_->GetNativeView(), "size_allocate",
                      G_CALLBACK(&OnSizeAllocateThunk), this);
 }
 
@@ -172,8 +173,8 @@ void ExtensionInfoBarGtk::OnSizeAllocate(GtkWidget* widget,
                                          GtkAllocation* allocation) {
   gfx::Size new_size(allocation->width, allocation->height);
 
-  delegate_->extension_host()->view()->render_view_host()->GetView()
-      ->SetSize(new_size);
+  delegate_->extension_host()->GetExtensionView()->GetRenderViewHost()->
+      GetView()->SetSize(new_size);
 }
 
 gboolean ExtensionInfoBarGtk::OnButtonPress(GtkWidget* widget,

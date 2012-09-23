@@ -7,7 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/extension_host.h"
-#include "chrome/browser/ui/views/extensions/extension_view_views.h"
+#include "chrome/browser/extensions/extension_view_container.h"
 #include "content/public/browser/notification_observer.h"
 #include "googleurl/src/gurl.h"
 #include "ui/views/bubble/bubble_delegate.h"
@@ -16,7 +16,7 @@
 class Browser;
 
 class ExtensionPopup : public views::BubbleDelegateView,
-                       public ExtensionViewViews::Container,
+                       public ExtensionViewContainer,
                        public content::NotificationObserver,
                        public views::WidgetFocusChangeListener {
  public:
@@ -51,8 +51,10 @@ class ExtensionPopup : public views::BubbleDelegateView,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // ExtensionViewViews::Container overrides.
-  virtual void OnExtensionSizeChanged(ExtensionViewViews* view) OVERRIDE;
+  // ExtensionViewContainer overrides.
+  virtual void OnExtensionSizeChanged(ExtensionView* view,
+                                      const gfx::Size& new_size) OVERRIDE;
+  virtual void OnExtensionViewDidShow(ExtensionView* view) OVERRIDE;
 
   // views::View overrides.
   virtual gfx::Size GetPreferredSize() OVERRIDE;

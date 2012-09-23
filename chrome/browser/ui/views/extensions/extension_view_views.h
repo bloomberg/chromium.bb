@@ -7,12 +7,11 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "chrome/browser/extensions/extension_view.h"
 #include "chrome/browser/ui/views/unhandled_keyboard_event_handler.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/views/controls/native/native_view_host.h"
-
-class Browser;
 
 namespace content {
 class RenderViewHost;
@@ -24,51 +23,25 @@ class ExtensionHost;
 }
 
 // This handles the display portion of an ExtensionHost.
-class ExtensionViewViews : public views::NativeViewHost {
+class ExtensionViewViews : public ExtensionView,
+                           public views::NativeViewHost {
  public:
   ExtensionViewViews(extensions::ExtensionHost* host, Browser* browser);
   virtual ~ExtensionViewViews();
 
-  // A class that represents the container that this view is in.
-  // (bottom shelf, side bar, etc.)
-  class Container {
-   public:
-    virtual ~Container() {}
-    virtual void OnExtensionSizeChanged(ExtensionViewViews* view) {}
-    virtual void OnViewWasResized() {}
-  };
-
-  extensions::ExtensionHost* host() const { return host_; }
-  Browser* browser() const { return browser_; }
-  const extensions::Extension* extension() const;
-  content::RenderViewHost* render_view_host() const;
-  void DidStopLoading();
-  void SetIsClipped(bool is_clipped);
-
-  // Notification from ExtensionHost.
-  void ResizeDueToAutoResize(const gfx::Size& new_size);
-
-  // Method for the ExtensionHost to notify us when the RenderViewHost has a
-  // connection.
-  void RenderViewCreated();
-
   // Set a custom background for the view. The background will be tiled.
   void SetBackground(const SkBitmap& background);
 
-  // Sets the container for this view.
-  void SetContainer(Container* container) { container_ = container; }
+  // Overridden from views::View:
+  virtual void SetVisible(bool is_visible) OVERRIDE;
 
-  // Handles unhandled keyboard messages coming back from the renderer process.
-  void HandleKeyboardEvent(const content::NativeWebKeyboardEvent& event);
-
+ protected:
   // Overridden from views::NativeViewHost:
   virtual gfx::NativeCursor GetCursor(const ui::MouseEvent& event) OVERRIDE;
-  virtual void SetVisible(bool is_visible) OVERRIDE;
   virtual void ViewHierarchyChanged(bool is_add,
                                     views::View* parent,
                                     views::View* child) OVERRIDE;
 
- protected:
   // Overridden from views::View.
   virtual void PreferredSizeChanged() OVERRIDE;
   virtual bool SkipDefaultKeyEventProcessing(const ui::KeyEvent& e) OVERRIDE;
@@ -76,6 +49,20 @@ class ExtensionViewViews : public views::NativeViewHost {
 
  private:
   friend class extensions::ExtensionHost;
+
+  // Overridden from ExtensionView:
+  virtual Browser* GetBrowser() OVERRIDE;
+  virtual const Browser* GetBrowser() const OVERRIDE;
+  virtual gfx::NativeView GetNativeView() OVERRIDE;
+  virtual content::RenderViewHost* GetRenderViewHost() const OVERRIDE;
+  virtual void SetContainer(ExtensionViewContainer* container) OVERRIDE;
+  virtual void ResizeDueToAutoResize(const gfx::Size& new_size) OVERRIDE;
+  virtual void RenderViewCreated() OVERRIDE;
+  virtual void DidStopLoading() OVERRIDE;
+  virtual void WindowFrameChanged() OVERRIDE;
+  virtual void HandleKeyboardEvent(
+      const content::NativeWebKeyboardEvent& event) OVERRIDE;
+
 
   // Initializes the RenderWidgetHostView for this object.
   void CreateWidgetHostView();
@@ -107,10 +94,7 @@ class ExtensionViewViews : public views::NativeViewHost {
 
   // The container this view is in (not necessarily its direct superview).
   // Note: the view does not own its container.
-  Container* container_;
-
-  // Whether this extension view is clipped.
-  bool is_clipped_;
+  ExtensionViewContainer* container_;
 
   // A handler to handle unhandled keyboard messages coming back from the
   // renderer process.

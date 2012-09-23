@@ -7,6 +7,7 @@
 #include "chrome/browser/ui/cocoa/extensions/extension_view_mac.h"
 
 #include "chrome/browser/extensions/extension_host.h"
+#include "chrome/browser/extensions/extension_view_container.h"
 #include "chrome/common/view_type.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -25,7 +26,7 @@ ExtensionViewMac::ExtensionViewMac(extensions::ExtensionHost* extension_host,
       extension_host_(extension_host),
       container_(NULL) {
   DCHECK(extension_host_);
-  [native_view() setHidden:YES];
+  [GetNativeView() setHidden:YES];
 }
 
 ExtensionViewMac::~ExtensionViewMac() {
@@ -35,25 +36,33 @@ void ExtensionViewMac::Init() {
   CreateWidgetHostView();
 }
 
-gfx::NativeView ExtensionViewMac::native_view() {
-  return extension_host_->host_contents()->GetView()->GetNativeView();
-}
-
-content::RenderViewHost* ExtensionViewMac::render_view_host() const {
-  return extension_host_->render_view_host();
-}
-
-void ExtensionViewMac::DidStopLoading() {
-  ShowIfCompletelyLoaded();
-}
-
 void ExtensionViewMac::SetBackground(const SkBitmap& background) {
-  if (!pending_background_.empty() && render_view_host()->GetView()) {
-    render_view_host()->GetView()->SetBackground(background);
+  if (!pending_background_.empty() && GetRenderViewHost()->GetView()) {
+    GetRenderViewHost()->GetView()->SetBackground(background);
   } else {
     pending_background_ = background;
   }
   ShowIfCompletelyLoaded();
+}
+
+Browser* ExtensionViewMac::GetBrowser() {
+  return browser_;
+}
+
+const Browser* ExtensionViewMac::GetBrowser() const {
+  return browser_;
+}
+
+gfx::NativeView ExtensionViewMac::GetNativeView() {
+  return extension_host_->host_contents()->GetView()->GetNativeView();
+}
+
+content::RenderViewHost* ExtensionViewMac::GetRenderViewHost() const {
+  return extension_host_->render_view_host();
+}
+
+void ExtensionViewMac::SetContainer(ExtensionViewContainer* container) {
+  container_ = container;
 }
 
 void ExtensionViewMac::ResizeDueToAutoResize(const gfx::Size& new_size) {
@@ -62,8 +71,8 @@ void ExtensionViewMac::ResizeDueToAutoResize(const gfx::Size& new_size) {
 }
 
 void ExtensionViewMac::RenderViewCreated() {
-  if (!pending_background_.empty() && render_view_host()->GetView()) {
-    render_view_host()->GetView()->SetBackground(pending_background_);
+  if (!pending_background_.empty() && GetRenderViewHost()->GetView()) {
+    GetRenderViewHost()->GetView()->SetBackground(pending_background_);
     pending_background_.reset();
   }
 
@@ -73,13 +82,17 @@ void ExtensionViewMac::RenderViewCreated() {
                        ExtensionViewMac::kMinHeight);
     gfx::Size max_size(ExtensionViewMac::kMaxWidth,
                        ExtensionViewMac::kMaxHeight);
-    render_view_host()->EnableAutoResize(min_size, max_size);
+    GetRenderViewHost()->EnableAutoResize(min_size, max_size);
   }
 }
 
+void ExtensionViewMac::DidStopLoading() {
+  ShowIfCompletelyLoaded();
+}
+
 void ExtensionViewMac::WindowFrameChanged() {
-  if (render_view_host()->GetView())
-    render_view_host()->GetView()->WindowFrameChanged();
+  if (GetRenderViewHost()->GetView())
+    GetRenderViewHost()->GetView()->WindowFrameChanged();
 }
 
 void ExtensionViewMac::CreateWidgetHostView() {
@@ -90,8 +103,16 @@ void ExtensionViewMac::ShowIfCompletelyLoaded() {
   // We wait to show the ExtensionView until it has loaded, and the view has
   // actually been created. These can happen in different orders.
   if (extension_host_->did_stop_loading()) {
-    [native_view() setHidden:NO];
+    [GetNativeView() setHidden:NO];
     if (container_)
       container_->OnExtensionViewDidShow(this);
   }
+}
+
+// static
+ExtensionView* ExtensionView::Create(extensions::ExtensionHost* host,
+                                     Browser* browser) {
+  ExtensionViewMac* extension_view = new ExtensionViewMac(host, browser);
+  extension_view->Init();
+  return extension_view;
 }
