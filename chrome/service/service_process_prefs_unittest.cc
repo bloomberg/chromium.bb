@@ -40,11 +40,7 @@ TEST_F(ServiceProcessPrefsTest, RetrievePrefs) {
   prefs_->SetBoolean("testb", false);   // overwrite
   prefs_->SetString("tests", "");   // overwrite
   prefs_->ReadPrefs();
-  bool testb;
-  prefs_->GetBoolean("testb", &testb);
-  EXPECT_EQ(testb, true);
-  std::string tests;
-  prefs_->GetString("tests", &tests);
-  EXPECT_EQ(tests, "testvalue");
+  EXPECT_EQ(prefs_->GetBoolean("testb", false), true);
+  EXPECT_EQ(prefs_->GetString("tests", ""), "testvalue");
 }
 

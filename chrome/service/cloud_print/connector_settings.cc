@@ -17,7 +17,8 @@ const char kDeleteOnEnumFail[] = "delete_on_enum_fail";
 
 }  // namespace
 
-ConnectorSettings::ConnectorSettings() : delete_on_enum_fail_(false) {
+ConnectorSettings::ConnectorSettings()
+  : delete_on_enum_fail_(false) {
 }
 
 ConnectorSettings::~ConnectorSettings() {
@@ -26,7 +27,7 @@ ConnectorSettings::~ConnectorSettings() {
 void ConnectorSettings::InitFrom(ServiceProcessPrefs* prefs) {
   CopyFrom(ConnectorSettings());
 
-  prefs->GetString(prefs::kCloudPrintProxyId, &proxy_id_);
+  proxy_id_ = prefs->GetString(prefs::kCloudPrintProxyId, "");
   if (proxy_id_.empty()) {
     proxy_id_ = cloud_print::PrintSystem::GenerateProxyId();
     prefs->SetString(prefs::kCloudPrintProxyId, proxy_id_);
@@ -34,24 +35,22 @@ void ConnectorSettings::InitFrom(ServiceProcessPrefs* prefs) {
   }
 
   // Getting print system specific settings from the preferences.
-  const base::DictionaryValue* print_system_settings = NULL;
-  prefs->GetDictionary(prefs::kCloudPrintPrintSystemSettings,
-                       &print_system_settings);
+  const base::DictionaryValue* print_system_settings =
+      prefs->GetDictionary(prefs::kCloudPrintPrintSystemSettings);
   if (print_system_settings) {
     print_system_settings_.reset(print_system_settings->DeepCopy());
-    // TODO(vitalybuka) : Consider to move option from print_system_settings.
+    // TODO(vitalybuka) : Consider to rename and move out option from
+    // print_system_settings.
     print_system_settings_->GetBoolean(kDeleteOnEnumFail,
                                        &delete_on_enum_fail_);
   }
 
   // Check if there is an override for the cloud print server URL.
-  std::string cloud_print_server_url_str;
-  prefs->GetString(prefs::kCloudPrintServiceURL,
-                   &cloud_print_server_url_str);
-  if (cloud_print_server_url_str.empty()) {
-    cloud_print_server_url_str = kDefaultCloudPrintServerUrl;
+  server_url_ = GURL(prefs->GetString(prefs::kCloudPrintServiceURL, ""));
+  DCHECK(server_url_.is_empty() || server_url_.is_valid());
+  if (server_url_.is_empty() || !server_url_.is_valid()) {
+    server_url_ = GURL(kDefaultCloudPrintServerUrl);
   }
-  server_url_ = GURL(cloud_print_server_url_str.c_str());
   DCHECK(server_url_.is_valid());
 }
 

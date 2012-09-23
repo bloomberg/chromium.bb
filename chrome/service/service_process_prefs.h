@@ -11,6 +11,7 @@
 
 namespace base {
 class DictionaryValue;
+class ListValue;
 }
 
 // Manages persistent preferences for the service process. This is basically a
@@ -29,21 +30,24 @@ class ServiceProcessPrefs {
   // Write the data to the backing file.
   void WritePrefs();
 
-  // Get a string preference for |key| and store it in |result|.
-  void GetString(const std::string& key, std::string* result) const;
+  // Returns a string preference for |key|.
+  std::string GetString(const std::string& key,
+                        const std::string& default_value) const;
 
   // Set a string |value| for |key|.
   void SetString(const std::string& key, const std::string& value);
 
-  // Get a boolean preference for |key| and store it in |result|.
-  void GetBoolean(const std::string& key, bool* result) const;
+  // Returns a boolean preference for |key|.
+  bool GetBoolean(const std::string& key, bool default_value) const;
 
   // Set a boolean |value| for |key|.
   void SetBoolean(const std::string& key, bool value);
 
-  // Get a dictionary preference for |key| and store it in |result|.
-  void GetDictionary(const std::string& key,
-                     const base::DictionaryValue** result) const;
+  // Returns a dictionary preference for |key|.
+  const base::DictionaryValue* GetDictionary(const std::string& key) const;
+
+  // Returns a list for |key|.
+  const base::ListValue* GetList(const std::string& key) const;
 
   // Removes the pref specified by |key|.
   void RemovePref(const std::string& key);

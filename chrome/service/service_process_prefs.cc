@@ -22,11 +22,16 @@ void ServiceProcessPrefs::WritePrefs() {
   prefs_->CommitPendingWrite();
 }
 
-void ServiceProcessPrefs::GetString(const std::string& key,
-                                    std::string* result) const {
+std::string ServiceProcessPrefs::GetString(
+    const std::string& key,
+    const std::string& default_value) const {
   const Value* value;
-  if (prefs_->GetValue(key, &value) == PersistentPrefStore::READ_OK)
-    value->GetAsString(result);
+  std::string result;
+  if (prefs_->GetValue(key, &value) != PersistentPrefStore::READ_OK ||
+      !value->GetAsString(&result)) {
+    return default_value;
+  }
+  return result;
 }
 
 void ServiceProcessPrefs::SetString(const std::string& key,
@@ -34,28 +39,44 @@ void ServiceProcessPrefs::SetString(const std::string& key,
   prefs_->SetValue(key, Value::CreateStringValue(value));
 }
 
-void ServiceProcessPrefs::GetBoolean(const std::string& key,
-                                     bool* result) const {
+bool ServiceProcessPrefs::GetBoolean(const std::string& key,
+                                     bool default_value) const {
   const Value* value;
-  if (prefs_->GetValue(key, &value) == PersistentPrefStore::READ_OK)
-    value->GetAsBoolean(result);
+  bool result = false;
+  if (prefs_->GetValue(key, &value) != PersistentPrefStore::READ_OK ||
+      !value->GetAsBoolean(&result)) {
+    return default_value;
+  }
+  return result;
 }
 
 void ServiceProcessPrefs::SetBoolean(const std::string& key, bool value) {
   prefs_->SetValue(key, Value::CreateBooleanValue(value));
 }
 
-void ServiceProcessPrefs::GetDictionary(const std::string& key,
-                                        const DictionaryValue** result) const {
+const DictionaryValue* ServiceProcessPrefs::GetDictionary(
+    const std::string& key) const {
   const Value* value;
   if (prefs_->GetValue(key, &value) != PersistentPrefStore::READ_OK ||
       !value->IsType(Value::TYPE_DICTIONARY)) {
-    return;
+    return NULL;
   }
 
-  *result = static_cast<const DictionaryValue*>(value);
+  return static_cast<const DictionaryValue*>(value);
+}
+
+const base::ListValue* ServiceProcessPrefs::GetList(
+    const std::string& key) const {
+  const Value* value;
+  if (prefs_->GetValue(key, &value) != PersistentPrefStore::READ_OK ||
+    !value->IsType(Value::TYPE_LIST)) {
+      return NULL;
+  }
+
+  return static_cast<const ListValue*>(value);
 }
 
 void ServiceProcessPrefs::RemovePref(const std::string& key) {
   prefs_->RemoveValue(key);
 }
+
