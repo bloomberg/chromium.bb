@@ -19,8 +19,17 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 
+#if defined(TOOLKIT_VIEWS)
+#include "chrome/browser/ui/views/extensions/extension_view_views.h"
+#elif defined(OS_MACOSX)
+#include "chrome/browser/ui/cocoa/extensions/extension_view_mac.h"
+#elif defined(TOOLKIT_GTK)
+#include "chrome/browser/ui/gtk/extensions/extension_view_gtk.h"
+#elif defined(OS_ANDROID)
+#include "chrome/browser/ui/android/extensions/extension_view_android.h"
+#endif
+
 class Browser;
-class ExtensionView;
 class PrefsTabHelper;
 
 namespace content {
@@ -45,16 +54,39 @@ class ExtensionHost : public content::WebContentsDelegate,
  public:
   class ProcessCreationQueue;
 
+#if defined(TOOLKIT_VIEWS)
+  typedef ExtensionViewViews PlatformExtensionView;
+#elif defined(OS_MACOSX)
+  typedef ExtensionViewMac PlatformExtensionView;
+#elif defined(TOOLKIT_GTK)
+  typedef ExtensionViewGtk PlatformExtensionView;
+#elif defined(OS_ANDROID)
+  // Android does not support extensions.
+  typedef ExtensionViewAndroid PlatformExtensionView;
+#endif
+
   ExtensionHost(const Extension* extension,
                 content::SiteInstance* site_instance,
-                const GURL& url,
-                chrome::ViewType host_type);
+                const GURL& url, chrome::ViewType host_type);
   virtual ~ExtensionHost();
 
-  void SetExtensionView(ExtensionView* view);
+#if defined(TOOLKIT_VIEWS)
+  void set_view(PlatformExtensionView* view) { view_.reset(view); }
+#endif
 
-  const ExtensionView* GetExtensionView() const;
-  ExtensionView* GetExtensionView();
+  const PlatformExtensionView* view() const {
+#if defined(OS_ANDROID)
+    NOTREACHED();
+#endif
+    return view_.get();
+  }
+
+  PlatformExtensionView* view() {
+#if defined(OS_ANDROID)
+    NOTREACHED();
+#endif
+    return view_.get();
+  }
 
   // Create an ExtensionView and tie it to this host and |browser|.  Note NULL
   // is a valid argument for |browser|.  Extension views may be bound to
@@ -176,7 +208,7 @@ class ExtensionHost : public content::WebContentsDelegate,
 
   // Returns true if we're hosting a background page.
   // This isn't valid until CreateRenderView is called.
-  bool is_background_page() const { return !GetExtensionView(); }
+  bool is_background_page() const { return !view(); }
 
   // The extension that we're hosting in this view.
   const Extension* extension_;
@@ -188,7 +220,7 @@ class ExtensionHost : public content::WebContentsDelegate,
   Profile* profile_;
 
   // Optional view that shows the rendered content in the UI.
-  scoped_ptr<ExtensionView> extension_view_;
+  scoped_ptr<PlatformExtensionView> view_;
 
   // Used to create dialog boxes.
   // It must outlive host_contents_ as host_contents_ will access it

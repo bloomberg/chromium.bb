@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/extension_host_mac.h"
 
-#include "chrome/browser/extensions/extension_view.h"
 #import "chrome/browser/ui/cocoa/chrome_event_processing_window.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_popup_controller.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
@@ -35,8 +34,7 @@ void ExtensionHostMac::UnhandledKeyboardEvent(
   }
 
   ChromeEventProcessingWindow* event_window =
-      static_cast<ChromeEventProcessingWindow*>(
-          [GetExtensionView()->GetNativeView() window]);
+      static_cast<ChromeEventProcessingWindow*>([view()->native_view() window]);
   DCHECK([event_window isKindOfClass:[ChromeEventProcessingWindow class]]);
   [event_window redispatchKeyEvent:event.os_event];
 }

@@ -479,8 +479,6 @@
         'browser/extensions/extension_toolbar_model.h',
         'browser/extensions/extension_uninstall_dialog.cc',
         'browser/extensions/extension_uninstall_dialog.h',
-        'browser/extensions/extension_view.h',
-        'browser/extensions/extension_view_container.h',
         'browser/extensions/extension_warning_set.cc',
         'browser/extensions/extension_warning_set.h',
         'browser/extensions/extension_web_ui.cc',

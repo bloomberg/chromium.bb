@@ -12,7 +12,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/views/extensions/extension_view_views.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -76,8 +75,8 @@ ExtensionPopup::ExtensionPopup(
   const int margin = views::BubbleBorder::GetCornerRadius() / 2;
   set_margins(gfx::Insets(margin, margin, margin, margin));
   SetLayoutManager(new views::FillLayout());
-  AddChildView(static_cast<ExtensionViewViews*>(host->GetExtensionView()));
-  host->GetExtensionView()->SetContainer(this);
+  AddChildView(host->view());
+  host->view()->SetContainer(this);
   // Use OnNativeFocusChange to check for child window activation on deactivate.
   set_close_on_deactivate(false);
   // Make the bubble move with its anchor (during inspection, etc.).
@@ -143,12 +142,8 @@ void ExtensionPopup::Observe(int type,
   }
 }
 
-void ExtensionPopup::OnExtensionSizeChanged(ExtensionView* view,
-                                            const gfx::Size& new_size) {
+void ExtensionPopup::OnExtensionSizeChanged(ExtensionViewViews* view) {
   SizeToContents();
-}
-
-void ExtensionPopup::OnExtensionViewDidShow(ExtensionView* view) {
 }
 
 gfx::Size ExtensionPopup::GetPreferredSize() {

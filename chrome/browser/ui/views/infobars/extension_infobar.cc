@@ -9,7 +9,6 @@
 #include "chrome/browser/extensions/extension_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/platform_util.h"
-#include "chrome/browser/ui/views/extensions/extension_view_views.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -102,12 +101,11 @@ void ExtensionInfoBar::Layout() {
   menu_->SetBounds(StartX(), OffsetY(menu_size), menu_size.width(),
                    menu_size.height());
 
-  ExtensionViewViews* view = static_cast<ExtensionViewViews*>(
-      GetDelegate()->extension_host()->GetExtensionView());
-  view->SetBounds(menu_->bounds().right() + kMenuHorizontalMargin,
-                  arrow_height(),
-                  std::max(0, EndX() - StartX() - ContentMinimumWidth()),
-                  height() - arrow_height() - 1);
+  GetDelegate()->extension_host()->view()->SetBounds(
+      menu_->bounds().right() + kMenuHorizontalMargin,
+      arrow_height(),
+      std::max(0, EndX() - StartX() - ContentMinimumWidth()),
+      height() - arrow_height() - 1);
 }
 
 void ExtensionInfoBar::ViewHierarchyChanged(bool is_add,
@@ -124,9 +122,7 @@ void ExtensionInfoBar::ViewHierarchyChanged(bool is_add,
   AddChildView(menu_);
 
   extensions::ExtensionHost* extension_host = GetDelegate()->extension_host();
-  ExtensionViewViews* view =
-      static_cast<ExtensionViewViews*>(extension_host->GetExtensionView());
-  AddChildView(view);
+  AddChildView(extension_host->view());
 
   // This must happen after adding all other children so InfoBarView can ensure
   // the close button is the last child.

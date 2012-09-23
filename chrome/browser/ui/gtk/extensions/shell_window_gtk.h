@@ -10,6 +10,7 @@
 #include "base/timer.h"
 #include "chrome/browser/ui/extensions/native_shell_window.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
+#include "chrome/browser/ui/gtk/extensions/extension_view_gtk.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/x/active_window_watcher_x_observer.h"
@@ -24,6 +25,7 @@ struct DraggableRegion;
 }
 
 class ShellWindowGtk : public NativeShellWindow,
+                       public ExtensionViewGtk::Container,
                        public ui::ActiveWindowWatcherXObserver {
  public:
   ShellWindowGtk(ShellWindow* shell_window,

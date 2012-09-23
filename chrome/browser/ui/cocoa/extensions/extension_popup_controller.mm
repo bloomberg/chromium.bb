@@ -9,7 +9,6 @@
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
-#include "chrome/browser/extensions/extension_view_container.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #import "chrome/browser/ui/cocoa/browser_window_cocoa.h"
@@ -57,19 +56,20 @@ CGFloat Clamp(CGFloat value, CGFloat min, CGFloat max) {
 - (void)onViewDidShow;
 @end
 
-class ExtensionPopupContainer : public ExtensionViewContainer {
+class ExtensionPopupContainer : public ExtensionViewMac::Container {
  public:
   explicit ExtensionPopupContainer(ExtensionPopupController* controller)
       : controller_(controller) {
   }
 
-  virtual void OnExtensionSizeChanged(ExtensionView* view,
-                                      const gfx::Size& new_size) OVERRIDE {
+  virtual void OnExtensionSizeChanged(
+      ExtensionViewMac* view,
+      const gfx::Size& new_size) OVERRIDE {
     [controller_ onSizeChanged:
         NSMakeSize(new_size.width(), new_size.height())];
   }
 
-  virtual void OnExtensionViewDidShow(ExtensionView* view) OVERRIDE {
+  virtual void OnExtensionViewDidShow(ExtensionViewMac* view) OVERRIDE {
     [controller_ onViewDidShow];
   }
 
@@ -147,9 +147,9 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
     InfoBubbleView* view = self.bubble;
     [view setArrowLocation:arrowLocation];
 
-    extensionView_ = host->GetExtensionView()->GetNativeView();
+    extensionView_ = host->view()->native_view();
     container_.reset(new ExtensionPopupContainer(self));
-    host->GetExtensionView()->SetContainer(container_.get());
+    host->view()->set_container(container_.get());
 
     NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
     [center addObserver:self
@@ -197,8 +197,8 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
 - (void)windowWillClose:(NSNotification *)notification {
   [super windowWillClose:notification];
   gPopup = nil;
-  if (host_->GetExtensionView())
-    host_->GetExtensionView()->SetContainer(NULL);
+  if (host_->view())
+    host_->view()->set_container(NULL);
 }
 
 - (void)windowDidResignKey:(NSNotification*)notification {
@@ -349,14 +349,14 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
 
 - (void)windowDidResize:(NSNotification*)notification {
   // Let the extension view know, so that it can tell plugins.
-  if (host_->GetExtensionView())
-    host_->GetExtensionView()->WindowFrameChanged();
+  if (host_->view())
+    host_->view()->WindowFrameChanged();
 }
 
 - (void)windowDidMove:(NSNotification*)notification {
   // Let the extension view know, so that it can tell plugins.
-  if (host_->GetExtensionView())
-    host_->GetExtensionView()->WindowFrameChanged();
+  if (host_->view())
+    host_->view()->WindowFrameChanged();
 }
 
 // Private (TestingAPI)

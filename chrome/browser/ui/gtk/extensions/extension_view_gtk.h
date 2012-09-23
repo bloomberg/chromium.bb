@@ -6,10 +6,12 @@
 #define CHROME_BROWSER_UI_GTK_EXTENSIONS_EXTENSION_VIEW_GTK_H_
 
 #include "base/basictypes.h"
-#include "base/compiler_specific.h"
-#include "chrome/browser/extensions/extension_view.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/size.h"
+
+class Browser;
+class SkBitmap;
 
 namespace content {
 class RenderViewHost;
@@ -19,27 +21,38 @@ namespace extensions {
 class ExtensionHost;
 }
 
-class ExtensionViewGtk : public ExtensionView {
+class ExtensionViewGtk {
  public:
   ExtensionViewGtk(extensions::ExtensionHost* extension_host, Browser* browser);
-  virtual ~ExtensionViewGtk();
+
+  class Container {
+   public:
+    virtual ~Container() {}
+    virtual void OnExtensionSizeChanged(ExtensionViewGtk* view,
+                                        const gfx::Size& new_size) {}
+  };
 
   void Init();
 
+  gfx::NativeView native_view();
+  Browser* browser() const { return browser_; }
+
   void SetBackground(const SkBitmap& background);
 
- private:
-  // Overridden from ExtensionView:
-  virtual Browser* GetBrowser() OVERRIDE;
-  virtual const Browser* GetBrowser() const OVERRIDE;
-  virtual gfx::NativeView GetNativeView() OVERRIDE;
-  virtual content::RenderViewHost* GetRenderViewHost() const OVERRIDE;
-  virtual void SetContainer(ExtensionViewContainer* container) OVERRIDE;
-  virtual void ResizeDueToAutoResize(const gfx::Size& new_size) OVERRIDE;
-  virtual void RenderViewCreated() OVERRIDE;
-  virtual void DidStopLoading() OVERRIDE;
-  virtual void WindowFrameChanged() OVERRIDE;
+  // Sets the container for this view.
+  void SetContainer(Container* container) { container_ = container; }
 
+  // Method for the ExtensionHost to notify us about the correct size for
+  // extension contents.
+  void ResizeDueToAutoResize(const gfx::Size& new_size);
+
+  // Method for the ExtensionHost to notify us when the RenderViewHost has a
+  // connection.
+  void RenderViewCreated();
+
+  content::RenderViewHost* render_view_host() const;
+
+ private:
   void CreateWidgetHostView();
 
   Browser* browser_;
@@ -51,7 +64,7 @@ class ExtensionViewGtk : public ExtensionView {
   SkBitmap pending_background_;
 
   // This view's container.
-  ExtensionViewContainer* container_;
+  Container* container_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionViewGtk);
 };

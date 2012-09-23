@@ -9,7 +9,6 @@
 #include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_infobar_delegate.h"
-#include "chrome/browser/extensions/extension_view.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/ui/browser_finder.h"
 #import "chrome/browser/ui/cocoa/animatable_view.h"
@@ -178,7 +177,7 @@ class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver,
   [self removeButtons];
 
   extensionView_ = delegate_->AsExtensionInfoBarDelegate()->extension_host()->
-      GetExtensionView()->GetNativeView();
+      view()->native_view();
 
   // Add the extension's RenderWidgetHostView to the view hierarchy of the
   // InfoBar and make sure to place it below the Close button.

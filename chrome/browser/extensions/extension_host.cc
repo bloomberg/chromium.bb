@@ -19,7 +19,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
-#include "chrome/browser/extensions/extension_view.h"
 #include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -170,20 +169,22 @@ ExtensionHost::~ExtensionHost() {
   ProcessCreationQueue::GetInstance()->Remove(this);
 }
 
-void ExtensionHost::SetExtensionView(ExtensionView* view) {
-  extension_view_.reset(view);
-}
-
-const ExtensionView* ExtensionHost::GetExtensionView() const {
-  return extension_view_.get();
-}
-
-ExtensionView* ExtensionHost::GetExtensionView() {
-  return extension_view_.get();
-}
-
 void ExtensionHost::CreateView(Browser* browser) {
-  extension_view_.reset(ExtensionView::Create(this, browser));
+#if defined(TOOLKIT_VIEWS)
+  view_.reset(new ExtensionViewViews(this, browser));
+  // We own |view_|, so don't auto delete when it's removed from the view
+  // hierarchy.
+  view_->set_owned_by_client();
+#elif defined(OS_MACOSX)
+  view_.reset(new ExtensionViewMac(this, browser));
+  view_->Init();
+#elif defined(TOOLKIT_GTK)
+  view_.reset(new ExtensionViewGtk(this, browser));
+  view_->Init();
+#else
+  // TODO(port)
+  NOTREACHED();
+#endif
 }
 
 WebContents* ExtensionHost::GetAssociatedWebContents() const {
@@ -233,8 +234,8 @@ void ExtensionHost::CreateRenderViewNow() {
 
 extensions::WindowController*
 ExtensionHost::GetExtensionWindowController() const {
-  return GetExtensionView() && GetExtensionView()->GetBrowser() ?
-      GetExtensionView()->GetBrowser()->extension_window_controller() : NULL;
+  return view() && view()->browser() ?
+      view()->browser()->extension_window_controller() : NULL;
 }
 
 const GURL& ExtensionHost::GetURL() const {
@@ -295,8 +296,8 @@ void ExtensionHost::Observe(int type,
 
 void ExtensionHost::ResizeDueToAutoResize(WebContents* source,
                                           const gfx::Size& new_size) {
-  if (GetExtensionView())
-    GetExtensionView()->ResizeDueToAutoResize(new_size);
+  if (view())
+    view()->ResizeDueToAutoResize(new_size);
 }
 
 void ExtensionHost::RenderViewGone(base::TerminationStatus status) {
@@ -342,8 +343,8 @@ void ExtensionHost::DidStopLoading(content::RenderViewHost* render_view_host) {
       extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_INFOBAR ||
       extension_host_type_ == chrome::VIEW_TYPE_PANEL) {
 #if defined(TOOLKIT_VIEWS) || defined(OS_MACOSX)
-    if (GetExtensionView())
-      GetExtensionView()->DidStopLoading();
+    if (view())
+      view()->DidStopLoading();
 #endif
   }
   if (notify) {
@@ -412,9 +413,9 @@ void ExtensionHost::OnStartDownload(
     content::WebContents* source, content::DownloadItem* download) {
   // If |source| is in the context of a Browser, show the DownloadShelf on that
   // Browser.
-  if (!GetExtensionView() || !GetExtensionView()->GetBrowser())
+  if (!view() || !view()->browser())
     return;
-  static_cast<content::WebContentsDelegate*>(GetExtensionView()->GetBrowser())->
+  static_cast<content::WebContentsDelegate*>(view()->browser())->
     OnStartDownload(source, download);
 }
 
@@ -424,13 +425,12 @@ void ExtensionHost::WebIntentDispatch(
 #if !defined(OS_ANDROID)
   scoped_ptr<content::WebIntentsDispatcher> dispatcher(intents_dispatcher);
 
-  Browser* browser = GetExtensionView() ? GetExtensionView()->GetBrowser()
+  Browser* browser = view() ? view()->browser()
       : browser::FindBrowserWithWebContents(web_contents);
 
-  // For background scripts/pages, there will be no GetExtensionView(). In this
-  // case, we want to treat the intent as a browser-initiated one and deliver it
-  // into the current browser. It probably came from a context menu click or
-  // similar.
+  // For background scripts/pages, there will be no view(). In this case, we
+  // want to treat the intent as a browser-initiated one and deliver it into the
+  // current browser. It probably came from a context menu click or similar.
   if (!browser)
     browser = web_intents::GetBrowserForBackgroundWebIntentDelivery(profile());
 
@@ -468,8 +468,7 @@ WebContents* ExtensionHost::OpenURLFromTab(WebContents* source,
     case OFF_THE_RECORD: {
       // Only allow these from hosts that are bound to a browser (e.g. popups).
       // Otherwise they are not driven by a user gesture.
-      Browser* browser = GetExtensionView() ?
-          GetExtensionView()->GetBrowser() : NULL;
+      Browser* browser = view() ? view()->browser() : NULL;
       return browser ? browser->OpenURL(params) : NULL;
     }
     default:
@@ -489,8 +488,7 @@ bool ExtensionHost::PreHandleKeyboardEvent(WebContents* source,
   }
 
   // Handle higher priority browser shortcuts such as Ctrl-w.
-  Browser* browser = GetExtensionView() ?
-      GetExtensionView()->GetBrowser() : NULL;
+  Browser* browser = view() ? view()->browser() : NULL;
   if (browser)
     return browser->PreHandleKeyboardEvent(source, event, is_keyboard_shortcut);
 
@@ -552,8 +550,7 @@ void ExtensionHost::OnDecrementLazyKeepaliveCount() {
 void ExtensionHost::UnhandledKeyboardEvent(
     WebContents* source,
     const content::NativeWebKeyboardEvent& event) {
-  Browser* browser = GetExtensionView() ?
-      GetExtensionView()->GetBrowser() : NULL;
+  Browser* browser = view() ? view()->browser() : NULL;
   if (browser) {
     // Handle lower priority browser shortcuts such as Ctrl-f.
     return browser->HandleKeyboardEvent(source, event);
@@ -563,8 +560,8 @@ void ExtensionHost::UnhandledKeyboardEvent(
     // ExtensionViewViews to handle acceleratos. The view's FocusManager does
     // not know anything about Browser accelerators, but might know others such
     // as Ash's.
-    if (GetExtensionView())
-      GetExtensionView()->HandleKeyboardEvent(event);
+    if (view())
+      view()->HandleKeyboardEvent(event);
 #endif
   }
 }
@@ -572,8 +569,8 @@ void ExtensionHost::UnhandledKeyboardEvent(
 void ExtensionHost::RenderViewCreated(RenderViewHost* render_view_host) {
   render_view_host_ = render_view_host;
 
-  if (GetExtensionView())
-    GetExtensionView()->RenderViewCreated();
+  if (view())
+    view()->RenderViewCreated();
 
   // If the host is bound to a window, then extract its id. Extensions hosted
   // in ExternalTabContainer objects may not have an associated window.

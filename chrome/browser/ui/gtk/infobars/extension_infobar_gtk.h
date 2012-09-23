@@ -8,12 +8,13 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/extension_infobar_delegate.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
+#include "chrome/browser/ui/gtk/extensions/extension_view_gtk.h"
 #include "chrome/browser/ui/gtk/infobars/infobar_gtk.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "ui/gfx/gtk_util.h"
 
 class ExtensionResource;
-class ExtensionView;
+class ExtensionViewGtk;
 class MenuGtk;
 
 class ExtensionInfoBarGtk : public InfoBarGtk,
@@ -66,7 +67,7 @@ class ExtensionInfoBarGtk : public InfoBarGtk,
 
   ExtensionInfoBarDelegate* delegate_;
 
-  ExtensionView* view_;
+  ExtensionViewGtk* view_;
 
   // The button that activates the extension popup menu. Parent of |icon_|.
   GtkWidget* button_;

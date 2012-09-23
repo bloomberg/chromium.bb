@@ -6,25 +6,19 @@
 #define CHROME_BROWSER_UI_ANDROID_EXTENSIONS_EXTENSION_VIEW_ANDROID_H_
 
 #include "base/basictypes.h"
-#include "base/compiler_specific.h"
-#include "chrome/browser/extensions/extension_view.h"
+#include "ui/gfx/size.h"
 
-class ExtensionViewAndroid : public ExtensionView {
+class Browser;
+
+class ExtensionViewAndroid {
  public:
-  ExtensionViewAndroid();
-  virtual ~ExtensionViewAndroid();
+  Browser* browser() const { return NULL; }
+
+  void ResizeDueToAutoResize(const gfx::Size& new_size);
+  void RenderViewCreated();
 
  private:
-  // Overridden from ExtensionView:
-  virtual Browser* GetBrowser() OVERRIDE;
-  virtual const Browser* GetBrowser() const OVERRIDE;
-  virtual gfx::NativeView GetNativeView() OVERRIDE;
-  virtual content::RenderViewHost* GetRenderViewHost() const OVERRIDE;
-  virtual void SetContainer(ExtensionViewContainer* container) OVERRIDE;
-  virtual void ResizeDueToAutoResize(const gfx::Size& new_size) OVERRIDE;
-  virtual void RenderViewCreated() OVERRIDE;
-  virtual void DidStopLoading() OVERRIDE;
-  virtual void WindowFrameChanged() OVERRIDE;
+  ExtensionViewAndroid() { }
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionViewAndroid);
 };
