@@ -391,6 +391,12 @@ void OmxVideoDecodeAccelerator::ReusePictureBuffer(int32 picture_buffer_id) {
                "Picture id", picture_buffer_id);
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
+  // During port-flushing, do not call OMX FillThisBuffer.
+  if (current_state_change_ == RESETTING) {
+    queued_picture_buffer_ids_.push_back(picture_buffer_id);
+    return;
+  }
+
   RETURN_ON_FAILURE(CanFillBuffer(), "Can't fill buffer", ILLEGAL_STATE,);
 
   OutputPictureById::iterator it = pictures_.find(picture_buffer_id);
@@ -812,6 +818,14 @@ void OmxVideoDecodeAccelerator::OnOutputPortDisabled() {
 void OmxVideoDecodeAccelerator::OnOutputPortEnabled() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
+  if (current_state_change_ == RESETTING) {
+    for (OutputPictureById::iterator it = pictures_.begin();
+         it != pictures_.end(); ++it) {
+      queued_picture_buffer_ids_.push_back(it->first);
+    }
+    return;
+  }
+
   if (!CanFillBuffer()) {
     StopOnError(ILLEGAL_STATE);
     return;
@@ -1140,7 +1154,7 @@ bool OmxVideoDecodeAccelerator::CanFillBuffer() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   const CurrentStateChange csc = current_state_change_;
   const OMX_STATETYPE cs = client_state_;
-  return (csc != DESTROYING && csc != ERRORING) &&
+  return (csc != DESTROYING && csc != ERRORING && csc != RESETTING) &&
       (cs == OMX_StateIdle || cs == OMX_StateExecuting || cs == OMX_StatePause);
 }
 
