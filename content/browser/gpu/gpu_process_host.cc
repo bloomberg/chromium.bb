@@ -834,6 +834,7 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
 #endif
     switches::kGpuNoContextLost,
     switches::kGpuStartupDialog,
+    switches::kGpuSwitching,
     switches::kLoggingLevel,
     switches::kNoSandbox,
     switches::kTestGLLib,

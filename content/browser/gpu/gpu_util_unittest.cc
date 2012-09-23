@@ -4,6 +4,7 @@
 
 #include "content/browser/gpu/gpu_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gl/gl_switches.h"
 
 using content::GpuFeatureType;
 
@@ -88,13 +89,32 @@ TEST(GpuUtilsTest, GpuFeatureTypeToString) {
 
 TEST(GpuUtilsTest, GpuSwitchingOptionFromString) {
   // Test StringToGpuSwitchingOption.
-  EXPECT_EQ(gpu_util::StringToGpuSwitchingOption("automatic"),
-            content::GPU_SWITCHING_AUTOMATIC);
-  EXPECT_EQ(gpu_util::StringToGpuSwitchingOption("force_discrete"),
-            content::GPU_SWITCHING_FORCE_DISCRETE);
-  EXPECT_EQ(gpu_util::StringToGpuSwitchingOption("force_integrated"),
-            content::GPU_SWITCHING_FORCE_INTEGRATED);
+  EXPECT_EQ(gpu_util::StringToGpuSwitchingOption(
+                switches::kGpuSwitchingOptionNameAutomatic),
+            content::GPU_SWITCHING_OPTION_AUTOMATIC);
+  EXPECT_EQ(gpu_util::StringToGpuSwitchingOption(
+                switches::kGpuSwitchingOptionNameForceDiscrete),
+            content::GPU_SWITCHING_OPTION_FORCE_DISCRETE);
+  EXPECT_EQ(gpu_util::StringToGpuSwitchingOption(
+                switches::kGpuSwitchingOptionNameForceIntegrated),
+            content::GPU_SWITCHING_OPTION_FORCE_INTEGRATED);
   EXPECT_EQ(gpu_util::StringToGpuSwitchingOption("xxx"),
-            content::GPU_SWITCHING_UNKNOWN);
+            content::GPU_SWITCHING_OPTION_UNKNOWN);
+}
+
+TEST(GpuUtilsTest, GpuSwitchingOptionToString) {
+  // Test GpuSwitchingOptionToString.
+  EXPECT_STREQ(
+      gpu_util::GpuSwitchingOptionToString(
+          content::GPU_SWITCHING_OPTION_AUTOMATIC).c_str(),
+      switches::kGpuSwitchingOptionNameAutomatic);
+  EXPECT_STREQ(
+      gpu_util::GpuSwitchingOptionToString(
+          content::GPU_SWITCHING_OPTION_FORCE_DISCRETE).c_str(),
+      switches::kGpuSwitchingOptionNameForceDiscrete);
+  EXPECT_STREQ(
+      gpu_util::GpuSwitchingOptionToString(
+          content::GPU_SWITCHING_OPTION_FORCE_INTEGRATED).c_str(),
+      switches::kGpuSwitchingOptionNameForceIntegrated);
 }
 

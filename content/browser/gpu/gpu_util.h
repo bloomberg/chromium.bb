@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/common/gpu_feature_type.h"
+#include "content/public/common/gpu_switching_option.h"
 
 class GpuBlacklist;
 
@@ -31,6 +32,10 @@ CONTENT_EXPORT std::string GpuFeatureTypeToString(
 // unknown name is input (case-sensitive).
 CONTENT_EXPORT content::GpuSwitchingOption StringToGpuSwitchingOption(
     const std::string& switching_string);
+
+// Gets a string version of a GpuSwitchingOption.
+CONTENT_EXPORT std::string GpuSwitchingOptionToString(
+    content::GpuSwitchingOption option);
 
 // Send UMA histograms about the enabled features.
 CONTENT_EXPORT void UpdateStats(

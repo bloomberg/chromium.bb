@@ -51,6 +51,7 @@
     'public/common/gpu_memory_stats.cc',
     'public/common/gpu_memory_stats.h',
     'public/common/gpu_performance_stats.h',
+    'public/common/gpu_switching_option.h',
     'public/common/injection_test_mac.h',
     'public/common/injection_test_win.h',
     'public/common/javascript_message_type.h',
