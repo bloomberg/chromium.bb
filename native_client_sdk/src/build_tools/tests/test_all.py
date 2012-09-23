@@ -7,7 +7,7 @@ import sys
 import unittest
 
 TEST_MODULES = [
-    'test_auto_update_sdktools',
+    'test_sdktools',
     'test_update_nacl_manifest'
 ]
 

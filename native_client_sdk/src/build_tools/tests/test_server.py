@@ -4,6 +4,7 @@
 
 import multiprocessing
 import os
+import SimpleHTTPServer
 
 
 class LocalHTTPServer(object):
@@ -37,6 +38,11 @@ class LocalHTTPServer(object):
     return 'http://localhost:%d/%s' % (self.port, rel_url)
 
 
+class QuietHTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
+  def log_message(self, msg_format, *args):
+    pass
+
+
 def _HTTPServerProcess(conn, serve_dir):
   """Run a local httpserver with a randomly-chosen port.
 
@@ -50,11 +56,9 @@ def _HTTPServerProcess(conn, serve_dir):
        http://localhost:<port>/path/to/filename.
   """
   import BaseHTTPServer
-  import SimpleHTTPServer
 
   os.chdir(serve_dir)
-  httpd = BaseHTTPServer.HTTPServer(('', 0),
-                                    SimpleHTTPServer.SimpleHTTPRequestHandler)
+  httpd = BaseHTTPServer.HTTPServer(('', 0), QuietHTTPRequestHandler)
   conn.send(httpd.server_address[1])  # the chosen port number
   httpd.timeout = 0.5  # seconds
   running = True

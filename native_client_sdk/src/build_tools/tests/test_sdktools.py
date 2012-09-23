@@ -13,34 +13,39 @@ import unittest
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 BUILD_TOOLS_DIR = os.path.dirname(SCRIPT_DIR)
+TOOLS_DIR = os.path.join(os.path.dirname(BUILD_TOOLS_DIR), 'tools')
 
-sys.path.append(BUILD_TOOLS_DIR)
-import buildbot_common
+sys.path.extend([BUILD_TOOLS_DIR, TOOLS_DIR])
 import build_utils
-import build_updater
 import getos
 import manifest_util
+import oshelpers
 
 
 MANIFEST_BASENAME = 'naclsdk_manifest2.json'
 
+# Attribute '' defined outside __init__
+# pylint: disable=W0201
 
-class TestAutoUpdateSdkTools(unittest.TestCase):
-  def setUp(self):
-    self.basedir = tempfile.mkdtemp()
+class SdkToolsTestCase(unittest.TestCase):
+  def tearDown(self):
+    if self.server:
+      self.server.Shutdown()
+    oshelpers.Remove(['-rf', self.basedir])
+
+  def SetupDefault(self):
+    self.SetupWithBaseDirPrefix('sdktools')
+
+  def SetupWithBaseDirPrefix(self, basedir_prefix):
+    self.basedir = tempfile.mkdtemp(prefix=basedir_prefix)
     # We have to make sure that we build our updaters with a version that is at
     # least as large as the version in the sdk_tools bundle. If not, update
     # tests may fail because the "current" version (according to the sdk_cache)
     # is greater than the version we are attempting to update to.
     self.current_revision = self._GetSdkToolsBundleRevision()
-    build_updater.BuildUpdater(self.basedir, self.current_revision)
+    self._BuildUpdater(self.basedir, self.current_revision)
     self._LoadCacheManifest()
     self.server = test_server.LocalHTTPServer(self.basedir)
-
-  def tearDown(self):
-    if self.server:
-      self.server.Shutdown()
-    buildbot_common.RemoveDir(self.basedir)
 
   def _GetSdkToolsBundleRevision(self):
     """Get the sdk_tools bundle revision.
@@ -68,6 +73,16 @@ class TestAutoUpdateSdkTools(unittest.TestCase):
     with open(os.path.join(self.basedir, MANIFEST_BASENAME), 'w') as stream:
       stream.write(self.manifest.GetDataAsString())
 
+  def _BuildUpdater(self, out_dir, revision=None):
+    build_updater_py = os.path.join(BUILD_TOOLS_DIR, 'build_updater.py')
+    cmd = [sys.executable, build_updater_py, '-o', out_dir]
+    if revision:
+      cmd.extend(['-r', str(revision)])
+
+    process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+    _, _ = process.communicate()
+    self.assertEqual(process.returncode, 0)
+
   def _BuildUpdaterArchive(self, rel_path, revision):
     """Build a new sdk_tools bundle.
 
@@ -78,7 +93,7 @@ class TestAutoUpdateSdkTools(unittest.TestCase):
       A manifest_util.Archive() that points to this new bundle on the local
       server.
     """
-    build_updater.BuildUpdater(os.path.join(self.basedir, rel_path), revision)
+    self._BuildUpdater(os.path.join(self.basedir, rel_path), revision)
 
     new_sdk_tools_tgz = os.path.join(self.basedir, rel_path, 'sdk_tools.tgz')
     with open(new_sdk_tools_tgz, 'rb') as sdk_tools_stream:
@@ -108,18 +123,27 @@ class TestAutoUpdateSdkTools(unittest.TestCase):
     self.assertTrue(match is not None)
     return int(match.group(1))
 
+
+class TestSdkTools(SdkToolsTestCase):
+  def testPathHasSpaces(self):
+    """Test that running naclsdk from a path with spaces works."""
+    self.SetupWithBaseDirPrefix('sdk tools')
+    self._WriteManifest()
+    self._RunAndExtractRevision()
+
+
+class TestAutoUpdateSdkTools(SdkToolsTestCase):
+  def setUp(self):
+    self.SetupDefault()
+
   def testNoUpdate(self):
-    """If the current revision is the newest, the shell script will run
-    normally.
-    """
+    """Test that running naclsdk with current revision does nothing."""
     self._WriteManifest()
     revision = self._RunAndExtractRevision()
     self.assertEqual(revision, self.current_revision)
 
   def testUpdate(self):
-    """Create a new bundle with a bumped revision number.
-    When we run the shell script, we should see the new revision number.
-    """
+    """Test that running naclsdk with a new revision will auto-update."""
     new_revision = self.current_revision + 1
     archive = self._BuildUpdaterArchive('new', new_revision)
     self.sdk_tools_bundle.AddArchive(archive)
@@ -130,7 +154,9 @@ class TestAutoUpdateSdkTools(unittest.TestCase):
     self.assertEqual(revision, new_revision)
 
   def testManualUpdateIsIgnored(self):
-    """If the sdk_tools bundle was updated normally (i.e. the old way), it would
+    """Test that attempting to manually update sdk_tools is ignored.
+
+    If the sdk_tools bundle was updated normally (i.e. the old way), it would
     leave a sdk_tools_update folder that would then be copied over on a
     subsequent run. This test ensures that there is no folder made.
     """

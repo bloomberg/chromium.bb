@@ -155,9 +155,13 @@ def main(args):
   parser = optparse.OptionParser()
   parser.add_option('-o', '--out', help='output directory',
       dest='out_dir', default='out')
+  parser.add_option('-r', '--revision', help='revision number of this updater',
+      dest='revision', default=None)
   options, args = parser.parse_args(args[1:])
 
-  BuildUpdater(options.out_dir)
+  if options.revision:
+    options.revision = int(options.revision)
+  BuildUpdater(options.out_dir, options.revision)
 
 
 if __name__ == '__main__':
