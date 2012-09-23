@@ -1513,6 +1513,7 @@ bool Extension::LoadCommands(string16* error) {
 bool Extension::LoadPlugins(string16* error) {
   if (!manifest_->HasKey(keys::kPlugins))
     return true;
+
   ListValue* list_value = NULL;
   if (!manifest_->GetList(keys::kPlugins, &list_value)) {
     *error = ASCIIToUTF16(errors::kInvalidPlugins);
@@ -1543,24 +1544,20 @@ bool Extension::LoadPlugins(string16* error) {
       }
     }
 
+    // We don't allow extensions to load NPAPI plugins on Chrome OS, or under
+    // Windows 8 Metro mode, but still parse the entries to display consistent
+    // error messages. If the extension actually requires the plugins then
+    // LoadRequirements will prevent it loading.
 #if defined(OS_CHROMEOS)
-    // We don't allow extension plugins to run on Chrome OS. We still
-    // parse the manifest entry so that error messages are consistently
-    // displayed across platforms.
-#else
-#if defined(OS_WIN)
-    // Like Chrome OS, we don't support NPAPI plugins in Windows 8 metro mode
-    // but in this case we want to fail with an error.
+    continue;
+#elif defined(OS_WIN)
     if (base::win::IsMetroProcess()) {
-      *error = l10n_util::GetStringUTF16(
-          IDS_EXTENSION_INSTALL_PLUGIN_NOT_SUPPORTED);
-      return false;
+      continue;
     }
 #endif  // defined(OS_WIN).
     plugins_.push_back(PluginInfo());
     plugins_.back().path = path().Append(FilePath::FromUTF8Unsafe(path_str));
     plugins_.back().is_public = is_public;
-#endif  // defined(OS_CHROMEOS).
   }
   return true;
 }
@@ -1688,9 +1685,11 @@ bool Extension::LoadSandboxedPages(string16* error) {
 }
 
 bool Extension::LoadRequirements(string16* error) {
-  // If the extension has plugins, then |requirements_.npapi| defaults to true.
-  if (plugins_.size() > 0)
-    requirements_.npapi = true;
+  // Before parsing requirements from the manifest, automatically default the
+  // NPAPI plugin requirement based on whether it includes NPAPI plugins.
+  ListValue* list_value = NULL;
+  requirements_.npapi =
+    manifest_->GetList(keys::kPlugins, &list_value) && !list_value->empty();
 
   if (!manifest_->HasKey(keys::kRequirements))
     return true;
