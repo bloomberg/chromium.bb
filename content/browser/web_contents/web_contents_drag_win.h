@@ -12,12 +12,12 @@
 #include "base/threading/platform_thread.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
 
 class DragDropThread;
+class SkBitmap;
 class WebDragDest;
 class WebDragSource;
 struct WebDropData;

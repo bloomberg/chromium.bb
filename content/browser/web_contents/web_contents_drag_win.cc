@@ -25,6 +25,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_drag_dest_delegate.h"
 #include "net/base/net_util.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard_util_win.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/dragdrop/drag_utils.h"
