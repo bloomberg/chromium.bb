@@ -30,13 +30,23 @@ class TestOsutils(cros_test_lib.TempDirTestCase):
 
   def testSafeUnlink(self):
     """Test unlinking files work (existing or not)."""
-    file = os.path.join(self.tempdir, 'foo')
-    open(file, 'w').close()
-    self.assertTrue(os.path.exists(file))
-    self.assertTrue(osutils.SafeUnlink(file))
-    self.assertFalse(os.path.exists(file))
-    self.assertFalse(osutils.SafeUnlink(file))
-    self.assertFalse(os.path.exists(file))
+    def f(dirname, sudo=False):
+      dirname = os.path.join(self.tempdir, dirname)
+      path = os.path.join(dirname, 'foon')
+      os.makedirs(dirname)
+      open(path, 'w').close()
+      self.assertTrue(os.path.exists(path))
+      if sudo:
+        cros_build_lib.SudoRunCommand(
+            ['chown', 'root:root', '-R', '--', dirname], print_cmd=False)
+        self.assertRaises(EnvironmentError, os.unlink, path)
+      self.assertTrue(osutils.SafeUnlink(path, sudo=sudo))
+      self.assertFalse(os.path.exists(path))
+      self.assertFalse(osutils.SafeUnlink(path))
+      self.assertFalse(os.path.exists(path))
+
+    f("nonsudo", False)
+    f("sudo", True)
 
   def testSafeMakedirs(self):
     """Test creating directory trees work (existing or not)."""

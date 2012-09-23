@@ -60,11 +60,21 @@ def ReadFile(path, mode='r'):
     return f.read()
 
 
-def SafeUnlink(path):
+def SafeUnlink(path, sudo=False):
   """Unlink a file from disk, ignoring if it doesn't exist.
 
   Returns True if the file existed and was removed, False if it didn't exist.
   """
+  if sudo:
+    try:
+      cros_build_lib.SudoRunCommand(
+          ['rm', '--',  path], print_cmd=False, redirect_stderr=True)
+      return True
+    except cros_build_lib.RunCommandError:
+      if os.path.exists(path):
+        # Technically racey, but oh well; very hard to actually hit...
+        raise
+      return False
   try:
     os.unlink(path)
     return True

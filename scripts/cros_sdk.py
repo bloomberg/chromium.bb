@@ -20,8 +20,8 @@ from chromite.lib import sudo
 cros_build_lib.STRICT_SUDO = True
 
 
-DEFAULT_URL = 'https://commondatastorage.googleapis.com/chromiumos-sdk/'
-SDK_SUFFIXES = ['.tbz2', '.tar.xz']
+DEFAULT_URL = 'https://commondatastorage.googleapis.com/chromiumos-sdk'
+COMPRESSION_PREFERENCE = ('bz2', 'xz')
 
 SRC_ROOT = os.path.realpath(constants.SOURCE_ROOT)
 OVERLAY_DIR = os.path.join(SRC_ROOT, 'src/third_party/chromiumos-overlay')
@@ -33,13 +33,8 @@ MAKE_CHROOT = [os.path.join(SRC_ROOT, 'src/scripts/sdk_lib/make_chroot.sh')]
 ENTER_CHROOT = [os.path.join(SRC_ROOT, 'src/scripts/sdk_lib/enter_chroot.sh')]
 
 # We need these tools to run. Very common tools (tar,..) are ommited.
-NEEDED_TOOLS = ['curl']
+NEEDED_TOOLS = ('curl',)
 
-def GetHostArch():
-  """Returns a string for the host architecture"""
-  out = cros_build_lib.RunCommand(['uname', '-m'],
-      redirect_stdout=True, print_cmd=False).output
-  return out.rstrip('\n')
 
 def CheckPrerequisites(needed_tools):
   """Verifies that the required tools are present on the system.
@@ -64,22 +59,32 @@ def CheckPrerequisites(needed_tools):
   return missing
 
 
-def GetLatestVersion():
+def GetSdkConfig():
   """Extracts latest version from chromiumos-overlay."""
-  sdk_file = open(SDK_VERSION_FILE)
-  buf = sdk_file.readline().rstrip('\n').split('=')
-  if buf[0] != 'SDK_LATEST_VERSION':
-    raise Exception('Malformed version file')
-  return buf[1].strip('"')
+  d = {}
+  with open(SDK_VERSION_FILE) as f:
+    for raw_line in f:
+      line = raw_line.split('#')[0].strip()
+      if not line:
+        continue
+      chunks = line.split('=', 1)
+      if len(chunks) != 2:
+        raise Exception('Malformed version file; line %r' % raw_line)
+      d[chunks[0]] = chunks[1].strip().strip('"')
+  return d
 
 
-def GetArchStageTarballs(tarballArch, version):
+def GetArchStageTarballs(version):
   """Returns the URL for a given arch/version"""
-  D = { 'x86_64': 'cros-sdk-' }
-  try:
-    return [DEFAULT_URL + D[tarballArch] + version + x for x in SDK_SUFFIXES]
-  except KeyError:
-    raise SystemExit('Unsupported arch: %s' % (tarballArch,))
+  extension = {'bz2':'tbz2', 'xz':'tar.xz'}
+  return ['%s/cros-sdk-%s.%s'
+          % (DEFAULT_URL, version, extension[compressor])
+          for compressor in COMPRESSION_PREFERENCE]
+
+
+def GetStage3Urls(version):
+  return ['%s/stage3-amd64-%s.tar.%s' % (DEFAULT_URL, version, ext)
+          for ext in COMPRESSION_PREFERENCE]
 
 
 def FetchRemoteTarballs(storage_dir, urls):
@@ -91,125 +96,75 @@ def FetchRemoteTarballs(storage_dir, urls):
   Returns:
     Full path to the downloaded file
   """
-  def RemoteTarballExists(url):
-    """Tests if a remote tarball exists."""
-    # We also use this for "local" tarballs using file:// urls. Those will
-    # fail the -I check, so just check the file locally instead.
-    if url.startswith('file://'):
-      return os.path.exists(url.replace('file://', ''))
 
-    result = cros_build_lib.RunCurl(['-I', url],
-                                    redirect_stdout=True, redirect_stderr=True,
-                                    print_cmd=False)
-    # We must walk the output to find the string '200 OK' for use cases where
-    # a proxy is involved and may have pushed down the actual header.
-    for header in result.output.splitlines():
-      if header.find('200 OK') != -1:
-        return 1
-    return 0
-
-
-  url = None
+  # Note we track content length ourselves since certain versions of curl
+  # fail if asked to resume a complete file.
+  # pylint: disable=C0301,W0631
+  # https://sourceforge.net/tracker/?func=detail&atid=100976&aid=3482927&group_id=976
   for url in urls:
+    # http://www.logilab.org/ticket/8766
+    # pylint: disable=E1101
+    parsed = urlparse.urlparse(url)
+    tarball_name = os.path.basename(parsed.path)
+    if parsed.scheme in ('', 'file'):
+      if os.path.exists(parsed.path):
+        return parsed.path
+      continue
+    content_length = 0
     print 'Attempting download: %s' % url
-    if RemoteTarballExists(url):
+    result = cros_build_lib.RunCurl(
+          ['-I', url], redirect_stdout=True, redirect_stderr=True,
+          print_cmd=False)
+    successful = False
+    for header in result.output.splitlines():
+      # We must walk the output to find the string '200 OK' for use cases where
+      # a proxy is involved and may have pushed down the actual header.
+      if header.find('200 OK') != -1:
+        successful = True
+      elif header.lower().startswith("content-length:"):
+        content_length = int(header.split(":", 1)[-1].strip())
+        if successful:
+          break
+    if successful:
       break
   else:
     raise Exception('No valid URLs found!')
 
-  # pylint: disable=E1101
-  tarball_name = os.path.basename(urlparse.urlparse(url).path)
   tarball_dest = os.path.join(storage_dir, tarball_name)
+  current_size = 0
+  if os.path.exists(tarball_dest):
+    current_size = os.path.getsize(tarball_dest)
+    if current_size > content_length:
+      osutils.SafeUnlink(tarball_dest, sudo=True)
+      current_size = 0
 
-  # Cleanup old tarballs.
-  files_to_delete = [f for f in os.listdir(storage_dir) if f != tarball_name]
-  if files_to_delete:
-    print 'Cleaning up old tarballs: ' + str(files_to_delete)
-    for f in files_to_delete:
-      f_path = os.path.join(storage_dir, f)
-      # Only delete regular files that belong to us.
-      if os.path.isfile(f_path) and os.stat(f_path).st_uid == os.getuid():
-        os.remove(f_path)
+  if current_size < content_length:
+    cros_build_lib.RunCurl(
+        ['-f', '-L', '-y', '30', '-C', '-', '--output', tarball_dest, url],
+        print_cmd=False)
 
-  curl_opts = ['-f', '-L', '-y', '30', '--output', tarball_dest]
-  if not url.startswith('file://') and os.path.exists(tarball_dest):
-    # Only resume for remote URLs. If the file is local, there's no
-    # real speedup, and using the same filename for different files
-    # locally will cause issues.
-    curl_opts.extend(['-C', '-'])
+  # Cleanup old tarballs now since we've successfull fetched; only cleanup
+  # the tarballs for our prefix, or unknown ones.
+  ignored_prefix = ('stage3-' if tarball_name.startswith('cros-sdk-')
+                    else 'cros-sdk-')
+  for filename in os.listdir(storage_dir):
+    if filename == tarball_name or filename.startswith(ignored_prefix):
+      continue
 
-    # Additionally, certain versions of curl incorrectly fail if
-    # told to resume a file that is fully downloaded, thus do a
-    # check on our own.
-    # see:
-    # pylint: disable=C0301
-    # https://sourceforge.net/tracker/?func=detail&atid=100976&aid=3482927&group_id=976
-    result = cros_build_lib.RunCurl(['-I', url],
-                                    redirect_stdout=True,
-                                    redirect_stderr=True,
-                                    print_cmd=False)
+    print 'Cleaning up old tarball: %s' % (filename,)
+    osutils.SafeUnlink(os.path.join(storage_dir, filename), sudo=True)
 
-    for x in result.output.splitlines():
-      if x.lower().startswith("content-length:"):
-        length = int(x.split(":", 1)[-1].strip())
-        if length == os.path.getsize(tarball_dest):
-          # Fully fetched; bypass invoking curl, since it can screw up handling
-          # of this (>=7.21.4 and up).
-          return tarball_dest
-        break
-  curl_opts.append(url)
-  cros_build_lib.RunCurl(curl_opts)
   return tarball_dest
 
 
-def BootstrapChroot(chroot_path, cache_dir, stage_url, replace):
-  """Builds a new chroot from source"""
-  cmd = MAKE_CHROOT + ['--chroot', chroot_path,
-                       '--nousepkg',
-                       '--cache_dir', cache_dir]
-
-  stage = None
-  if stage_url:
-    stage = FetchRemoteTarballs(os.path.join(cache_dir, 'sdks'),
-                                [stage_url])
-
-  if stage:
-    cmd.extend(['--stage3_path', stage])
-
-  if replace:
-    cmd.append('--replace')
-
-  try:
-    cros_build_lib.RunCommand(cmd, print_cmd=False)
-  except cros_build_lib.RunCommandError:
-    raise SystemExit('Running %r failed!' % cmd)
-
-
-def CreateChroot(sdk_url, cache_dir, sdk_version, chroot_path,
-                 replace, nousepkg):
+def CreateChroot(chroot_path, sdk_tarball, cache_dir, nousepkg=False):
   """Creates a new chroot from a given SDK"""
 
-  # Based on selections, fetch the tarball
-  if sdk_url:
-    urls = [sdk_url]
-  else:
-    arch = GetHostArch()
-    urls = GetArchStageTarballs(arch, sdk_version)
-
-  sdk = FetchRemoteTarballs(os.path.join(cache_dir, 'sdks'), urls)
-
-  # TODO(zbehan): Unpack and install
-  # For now, we simply call make_chroot on the prebuilt chromeos-sdk.
-  # make_chroot provides a variety of hacks to make the chroot useable.
-  # These should all be eliminated/minimised, after which, we can change
-  # this to just unpacking the sdk.
-  cmd = MAKE_CHROOT + ['--stage3_path', sdk,
+  cmd = MAKE_CHROOT + ['--stage3_path', sdk_tarball,
                        '--chroot', chroot_path,
                        '--cache_dir', cache_dir]
   if nousepkg:
     cmd.append('--nousepkg')
-  if replace:
-    cmd.append('--replace')
 
   try:
     cros_build_lib.RunCommand(cmd, print_cmd=False)
@@ -270,7 +225,10 @@ Action taken is the following:
 --download          .. Just download a chroot (enter if combined with --enter)
 --delete            .. Removes a chroot
 """
-  sdk_latest_version = GetLatestVersion()
+  conf = GetSdkConfig()
+  sdk_latest_version = conf.get('SDK_LATEST_VERSION', '<unknown>')
+  bootstrap_latest_version = conf.get('BOOTSTRAP_LATEST_VERSION', '<unknown>')
+
   parser = commandline.OptionParser(usage, caching=True)
   # Actions:
   parser.add_option('--bootstrap',
@@ -315,14 +273,22 @@ Action taken is the following:
                     dest='sdk_url', default=None,
                     help=('''Use sdk tarball located at this url.
                              Use file:// for local files.'''))
-  parser.add_option('-v', '--version',
-                    dest='sdk_version', default=None,
-                    help=('Use this sdk version [%s]' % sdk_latest_version))
+  parser.add_option('--sdk-version', default=None,
+                    help='Use this sdk version.  For prebuilt, current is %r'
+                         ', for bootstrapping its %r.'
+                          % (sdk_latest_version, bootstrap_latest_version))
   (options, remaining_arguments) = parser.parse_args(argv)
 
   # Some sanity checks first, before we ask for sudo credentials.
   if cros_build_lib.IsInsideChroot():
     parser.error("This needs to be ran outside the chroot")
+
+  host = os.uname()[4]
+
+  if host != 'x86_64':
+    parser.error(
+        "cros_sdk is currently only supported on x86_64; you're running"
+        " %s.  Please find a x86_64 machine." % (host,))
 
   missing = CheckPrerequisites(NEEDED_TOOLS)
   if missing:
@@ -349,23 +315,20 @@ Action taken is the following:
     (options.enter or options.download or options.bootstrap):
     parser.error("--delete cannot be combined with --enter, "
                  "--download or --bootstrap")
-  # NOTE: --delete is a true hater, it doesn't like other options either, but
-  # those will hardly lead to confusion. Nobody can expect to pass --version to
-  # delete and actually change something.
-
-  if options.bootstrap and options.download:
-    parser.error("Either --bootstrap or --download, not both")
-
-  # Bootstrap will start off from a non-selectable stage3 tarball. Attempts to
-  # select sdk by version are confusing. Warn and exit. We can still specify a
-  # tarball by path or URL though.
-  if options.bootstrap and options.sdk_version:
-    parser.error("Cannot use --version when bootstrapping")
 
   if not options.sdk_version:
-    sdk_version = sdk_latest_version
+    sdk_version = (bootstrap_latest_version if options.bootstrap
+                   else sdk_latest_version)
   else:
     sdk_version = options.sdk_version
+
+  # Based on selections, fetch the tarball.
+  if options.sdk_url:
+    urls = [options.sdk_url]
+  elif options.bootstrap:
+    urls = GetStage3Urls(sdk_version)
+  else:
+    urls = GetArchStageTarballs(sdk_version)
 
   if options.delete and not os.path.exists(options.chroot):
     print "Not doing anything. The chroot you want to remove doesn't exist."
@@ -378,9 +341,16 @@ Action taken is the following:
     with cgroups.SimpleContainChildren('cros_sdk'):
       _CreateLockFile(lock_path)
       with locking.FileLock(lock_path, 'chroot lock') as lock:
-        if options.delete:
-          lock.write_lock()
-          DeleteChroot(options.chroot)
+
+        if os.path.exists(options.chroot):
+          if options.delete or options.replace:
+            lock.write_lock()
+            DeleteChroot(options.chroot)
+            if options.delete:
+              return 0
+          elif not options.enter and not options.download:
+            print "Chroot already exists. Run with --replace to re-create."
+        elif options.delete:
           return 0
 
         sdk_cache = os.path.join(options.cache_dir, 'sdks')
@@ -391,7 +361,6 @@ Action taken is the following:
           if not os.path.exists(src):
             osutils.SafeMakedirs(target)
             continue
-
           lock.write_lock(
               "Upgrade to %r needed but chroot is locked; please exit "
               "all instances so this upgrade can finish." % src)
@@ -413,21 +382,15 @@ Action taken is the following:
             # Wipe and continue.
             osutils.RmDir(src, sudo=True)
 
-        # Print a suggestion for replacement, but not if running just --enter.
-        if os.path.exists(options.chroot) and not options.replace and \
-            (options.bootstrap or options.download):
-          print "Chroot already exists. Run with --replace to re-create."
-
-        # Chroot doesn't exist or asked to replace.
-        if not os.path.exists(options.chroot) or options.replace:
+        if not os.path.exists(options.chroot) or options.download:
           lock.write_lock()
-          if options.bootstrap:
-            BootstrapChroot(options.chroot, options.cache_dir,
-                            options.sdk_url, options.replace)
-          else:
-            CreateChroot(options.sdk_url, options.cache_dir,
-                         sdk_version, options.chroot, options.replace,
-                         options.nousepkg)
+          sdk_tarball = FetchRemoteTarballs(sdk_cache, urls)
+          if options.download:
+            # Nothing further to do.
+            return 0
+          CreateChroot(options.chroot, sdk_tarball, options.cache_dir,
+                       nousepkg=(options.bootstrap or options.nousepkg))
+
         if options.enter:
           lock.read_lock()
           EnterChroot(options.chroot, options.cache_dir, options.chrome_root,
