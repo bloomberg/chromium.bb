@@ -4,9 +4,9 @@
 
 #include "chrome/browser/chromeos/extensions/power/power_api_manager.h"
 
-#include "chrome/browser/chromeos/power/power_state_override.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
+#include "chromeos/power/power_state_override.h"
 #include "content/public/browser/notification_service.h"
 
 namespace extensions {

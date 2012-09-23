@@ -124,6 +124,8 @@
         'display/output_configurator.h',
         'network/network_sms_handler.cc',
         'network/network_sms_handler.h',
+        'power/power_state_override.cc',
+        'power/power_state_override.h',
       ],
       'link_settings': {
         'libraries': [
@@ -209,27 +211,27 @@
       ],
     },
     {
-        'target_name': 'chromeos_test_support_without_gmock',
-        'type': 'static_library',
-        'dependencies': [
-          '../build/linux/system.gyp:dbus',
-          'chromeos',
-        ],
-        'sources': [
-          'dbus/mock_dbus_thread_manager_without_gmock.cc',
-          'dbus/mock_dbus_thread_manager_without_gmock.h',
-          'dbus/ibus/mock_ibus_client.cc',
-          'dbus/ibus/mock_ibus_client.h',
-          'dbus/ibus/mock_ibus_input_context_client.cc',
-          'dbus/ibus/mock_ibus_input_context_client.h',
-          'dbus/ibus/mock_ibus_engine_factory_service.cc',
-          'dbus/ibus/mock_ibus_engine_factory_service.h',
-          'dbus/ibus/mock_ibus_engine_service.cc',
-          'dbus/ibus/mock_ibus_engine_service.h',
-        ],
-        'include_dirs': [
-          '..',
-        ],
+      'target_name': 'chromeos_test_support_without_gmock',
+      'type': 'static_library',
+      'dependencies': [
+        '../build/linux/system.gyp:dbus',
+        'chromeos',
+      ],
+      'sources': [
+        'dbus/mock_dbus_thread_manager_without_gmock.cc',
+        'dbus/mock_dbus_thread_manager_without_gmock.h',
+        'dbus/ibus/mock_ibus_client.cc',
+        'dbus/ibus/mock_ibus_client.h',
+        'dbus/ibus/mock_ibus_input_context_client.cc',
+        'dbus/ibus/mock_ibus_input_context_client.h',
+        'dbus/ibus/mock_ibus_engine_factory_service.cc',
+        'dbus/ibus/mock_ibus_engine_factory_service.h',
+        'dbus/ibus/mock_ibus_engine_service.cc',
+        'dbus/ibus/mock_ibus_engine_service.h',
+      ],
+      'include_dirs': [
+        '..',
+      ],
     },
     {
       'target_name': 'chromeos_unittests',
@@ -267,6 +269,7 @@
         'dbus/introspectable_client_unittest.cc',
         'dbus/modem_messaging_client_unittest.cc',
         'network/network_sms_handler_unittest.cc',
+        'power/power_state_override_unittest.cc',
       ],
       'include_dirs': [
         '..',

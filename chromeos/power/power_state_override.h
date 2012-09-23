@@ -2,18 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_POWER_POWER_STATE_OVERRIDE_H_
-#define CHROME_BROWSER_CHROMEOS_POWER_POWER_STATE_OVERRIDE_H_
+#ifndef CHROMEOS_POWER_POWER_STATE_OVERRIDE_H_
+#define CHROMEOS_POWER_POWER_STATE_OVERRIDE_H_
 
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer.h"
+#include "chromeos/chromeos_export.h"
 
 namespace chromeos {
 
 // This class overrides the current power state on the machine, disabling
 // a set of power management features.
-class PowerStateOverride {
+class CHROMEOS_EXPORT PowerStateOverride {
  public:
   enum Mode {
     // Blocks the screen from being dimmed or blanked due to user inactivity.
@@ -55,4 +56,4 @@ class PowerStateOverride {
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_POWER_POWER_STATE_OVERRIDE_H_
+#endif  // CHROMEOS_POWER_POWER_STATE_OVERRIDE_H_

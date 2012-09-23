@@ -2,15 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/power/power_state_override.h"
+#include "chromeos/power/power_state_override.h"
 
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/time.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
-
-using chromeos::PowerManagerClient;
 
 namespace {
 

@@ -525,8 +525,6 @@
         'browser/chromeos/power/power_button_controller_delegate_chromeos.h',
         'browser/chromeos/power/power_button_observer.cc',
         'browser/chromeos/power/power_button_observer.h',
-        'browser/chromeos/power/power_state_override.cc',
-        'browser/chromeos/power/power_state_override.h',
         'browser/chromeos/power/resume_observer.cc',
         'browser/chromeos/power/resume_observer.h',
         'browser/chromeos/power/screen_dimming_observer.cc',

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/power/power_state_override.h"
+#include "chromeos/power/power_state_override.h"
 
 #include "base/message_loop.h"
 #include "chromeos/dbus/mock_power_manager_client.h"

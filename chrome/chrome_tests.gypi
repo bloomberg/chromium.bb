@@ -1172,7 +1172,6 @@
         'browser/chromeos/network_message_observer_unittest.cc',
         'browser/chromeos/offline/offline_load_page_unittest.cc',
         'browser/chromeos/oom_priority_manager_unittest.cc',
-        'browser/chromeos/power/power_state_override_unittest.cc',
         'browser/chromeos/preferences_unittest.cc',
         'browser/chromeos/process_proxy/process_output_watcher_unittest.cc',
         'browser/chromeos/proxy_config_service_impl_unittest.cc',
