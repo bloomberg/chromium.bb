@@ -14,8 +14,9 @@ std::string Simplify(const char* title) {
 
 TEST(PrintBackendTest, SimplifyDocumentTitle) {
   EXPECT_STREQ("", Simplify("").c_str());
-  EXPECT_STREQ("Document wi...oooong name",
-               Simplify("Document with very looooooooooong name").c_str());
+  EXPECT_STREQ("Long string. Long string...ng string. Long string.",
+               Simplify("Long string. Long string. Long string. Long string. "
+                        "Long string. Long string. Long string.").c_str());
   EXPECT_STREQ("Control Characters",
                Simplify("C\ron\ntrol Charac\15ters").c_str());
   EXPECT_STREQ("", Simplify("\n\r\n\r\t\r").c_str());
