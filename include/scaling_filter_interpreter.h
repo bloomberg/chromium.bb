@@ -36,12 +36,17 @@ namespace gestures {
 // Outgoing gesture objects will be scaled in transit to what the screen
 // actually uses.
 
-// The pressure is converted (based on properties) to surface area in square
-// mm. The two properties allow a configuration file to specify a linear
-// relationship between pressure and surface area.
+// This interpreter can be configured to compute surface area in square mm
+// from pressure data or from touch major and minor, as some hardware prefers
+// reporting pressure data but some other touch major and minor.
+//
+// When the pressure is converted (based on properties) to surface area, the
+// two properties allow a configuration file to specify a linear relationship
+// between pressure and surface area.
 
 class ScalingFilterInterpreter : public FilterInterpreter {
   FRIEND_TEST(ScalingFilterInterpreterTest, SimpleTest);
+  FRIEND_TEST(ScalingFilterInterpreterTest, TouchMajorAndMinorTest);
  public:
   // Takes ownership of |next|:
   ScalingFilterInterpreter(PropRegistry* prop_reg, Interpreter* next,
@@ -66,18 +71,28 @@ class ScalingFilterInterpreter : public FilterInterpreter {
 
   float screen_x_scale_, screen_y_scale_;
 
+  // When orientation_scale_ = 0, no orientation is provided from kernel.
   float orientation_scale_;
 
   // Output surface area (sq. mm) =
-  // input pressure * pressure_scale_ + pressure_translate_;
+  // if surface_area_from_pressure_
+  //   input pressure * pressure_scale_ + pressure_translate_
+  // else
+  //   if input touch_major != 0 and input touch_minor != 0
+  //     pi / 4 * output touch_major * output touch_minor
+  //   else if input touch_major != 0
+  //     pi / 4 * output touch_major^2
+  //   else
+  //     0
+  BoolProperty surface_area_from_pressure_;
+
+  // Touchpad device output bias (pixels).
+  DoubleProperty tp_x_bias_;
+  DoubleProperty tp_y_bias_;
+
   DoubleProperty pressure_scale_;
   DoubleProperty pressure_translate_;
   DoubleProperty pressure_threshold_;
-
-  // Output touch width (mm) = input * scale + translate.
-  // If input is 0, we skip this all together.
-  DoubleProperty touch_major_scale_;
-  DoubleProperty touch_major_translate_;
 };
 
 }  // namespace gestures

@@ -97,6 +97,15 @@ bool ActivityReplay::ParseProperties(DictionaryValue* dict,
   for (::set<Property*>::const_iterator it = props.begin(), e = props.end();
        it != e; ++it) {
     const char* key = (*it)->name();
+
+    // TODO(clchiou): This is just a emporary workaround for property changes.
+    // I will work out a solution for this kind of changes.
+    if (!strcmp(key, "Compute Surface Area from Pressure") ||
+        !strcmp(key, "Touchpad Device Output Bias on X-Axis") ||
+        !strcmp(key, "Touchpad Device Output Bias on Y-Axis")) {
+      continue;
+    }
+
     if (!honor_props.empty() && !SetContainsValue(honor_props, string(key)))
       continue;
     Value* value = NULL;

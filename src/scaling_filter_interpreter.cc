@@ -25,11 +25,13 @@ ScalingFilterInterpreter::ScalingFilterInterpreter(PropRegistry* prop_reg,
       screen_x_scale_(1.0),
       screen_y_scale_(1.0),
       orientation_scale_(1.0),
+      surface_area_from_pressure_(prop_reg,
+                                  "Compute Surface Area from Pressure", true),
+      tp_x_bias_(prop_reg, "Touchpad Device Output Bias on X-Axis", 0.0),
+      tp_y_bias_(prop_reg, "Touchpad Device Output Bias on Y-Axis", 0.0),
       pressure_scale_(prop_reg, "Pressure Calibration Slope", 1.0),
       pressure_translate_(prop_reg, "Pressure Calibration Offset", 0.0),
-      pressure_threshold_(prop_reg, "Pressure Minimum Threshold", 0.0),
-      touch_major_scale_(prop_reg, "Touch Major Calibration Slope", 1.0),
-      touch_major_translate_(prop_reg, "Touch Major Calibration Offset", 0.0) {
+      pressure_threshold_(prop_reg, "Pressure Minimum Threshold", 0.0) {
   InitName();
 }
 
@@ -74,16 +76,17 @@ void ScalingFilterInterpreter::FilterLowPressure(HardwareState* hwstate) {
 }
 
 void ScalingFilterInterpreter::ScaleHardwareState(HardwareState* hwstate) {
-  // Drop the small fingers, i.e. low pressures.
-  FilterLowPressure(hwstate);
+  if (surface_area_from_pressure_.val_) {
+    // Drop the small fingers, i.e. low pressures.
+    FilterLowPressure(hwstate);
+  }
 
   for (short i = 0; i < hwstate->finger_cnt; i++) {
+    float cos_2_orit = 0.0, sin_2_orit = 0.0, rx_2 = 0.0, ry_2 = 0.0;
     hwstate->fingers[i].position_x *= tp_x_scale_;
     hwstate->fingers[i].position_x += tp_x_translate_;
     hwstate->fingers[i].position_y *= tp_y_scale_;
     hwstate->fingers[i].position_y += tp_y_translate_;
-    hwstate->fingers[i].pressure *= pressure_scale_.val_;
-    hwstate->fingers[i].pressure += pressure_translate_.val_;
 
     // TODO(clchiou): Output orientation is computed on a pixel-unit circle,
     // and it is only equal to the orientation computed on a mm-unit circle
@@ -91,11 +94,52 @@ void ScalingFilterInterpreter::ScaleHardwareState(HardwareState* hwstate) {
     // latter, fix this!
     hwstate->fingers[i].orientation *= orientation_scale_;
 
-    if (hwstate->fingers[i].touch_major) {
-      hwstate->fingers[i].touch_major *= touch_major_scale_.val_;
-      hwstate->fingers[i].touch_major += touch_major_translate_.val_;
+    if (hwstate->fingers[i].touch_major || hwstate->fingers[i].touch_minor) {
+      cos_2_orit = cosf(hwstate->fingers[i].orientation);
+      cos_2_orit *= cos_2_orit;
+      sin_2_orit = sinf(hwstate->fingers[i].orientation);
+      sin_2_orit *= sin_2_orit;
+      rx_2 = tp_x_scale_ * tp_x_scale_;
+      ry_2 = tp_y_scale_ * tp_y_scale_;
     }
-    // TODO(adlr): scale other fields
+    if (hwstate->fingers[i].touch_major) {
+      float bias = tp_x_bias_.val_ * sin_2_orit + tp_y_bias_.val_ * cos_2_orit;
+      hwstate->fingers[i].touch_major =
+          fabsf(hwstate->fingers[i].touch_major - bias) *
+          sqrtf(rx_2 * sin_2_orit + ry_2 * cos_2_orit);
+    }
+    if (hwstate->fingers[i].touch_minor) {
+      float bias = tp_x_bias_.val_ * cos_2_orit + tp_y_bias_.val_ * sin_2_orit;
+      hwstate->fingers[i].touch_minor =
+          fabsf(hwstate->fingers[i].touch_minor - bias) *
+          sqrtf(rx_2 * cos_2_orit + ry_2 * sin_2_orit);
+    }
+
+    // After calibration, touch_major could be smaller than touch_minor.
+    // If so, swap them here and update orientation.
+    if (orientation_scale_ &&
+        hwstate->fingers[i].touch_major < hwstate->fingers[i].touch_minor) {
+      std::swap(hwstate->fingers[i].touch_major,
+                hwstate->fingers[i].touch_minor);
+      if (hwstate->fingers[i].orientation > 0.0)
+        hwstate->fingers[i].orientation -= M_PI_2;
+      else
+        hwstate->fingers[i].orientation += M_PI_2;
+    }
+
+    if (surface_area_from_pressure_.val_) {
+      hwstate->fingers[i].pressure *= pressure_scale_.val_;
+      hwstate->fingers[i].pressure += pressure_translate_.val_;
+    } else {
+      if (hwstate->fingers[i].touch_major && hwstate->fingers[i].touch_minor)
+        hwstate->fingers[i].pressure = M_PI_4 *
+            hwstate->fingers[i].touch_major * hwstate->fingers[i].touch_minor;
+      else if (hwstate->fingers[i].touch_major)
+        hwstate->fingers[i].pressure = M_PI_4 *
+            hwstate->fingers[i].touch_major * hwstate->fingers[i].touch_major;
+      else
+        hwstate->fingers[i].pressure = 0;
+    }
   }
 }
 
@@ -129,8 +173,24 @@ void ScalingFilterInterpreter::SetHardwarePropertiesImpl(
   screen_x_scale_ = hw_props.screen_x_dpi / 25.4;
   screen_y_scale_ = hw_props.screen_y_dpi / 25.4;
 
-  orientation_scale_ =
-      M_PI / (hw_props.orientation_maximum - hw_props.orientation_minimum + 1);
+  if (hw_props.orientation_maximum)
+    orientation_scale_ =
+        M_PI / (hw_props.orientation_maximum -
+                hw_props.orientation_minimum + 1);
+  else
+    orientation_scale_ = 0.0;  // no orientation is provided
+
+  float friendly_orientation_minimum;
+  float friendly_orientation_maximum;
+  if (orientation_scale_) {
+    friendly_orientation_minimum =
+        orientation_scale_ * hw_props.orientation_minimum;
+    friendly_orientation_maximum =
+        orientation_scale_ * hw_props.orientation_maximum;
+  } else {
+    friendly_orientation_minimum = 0.0;
+    friendly_orientation_maximum = 0.0;
+  }
 
   // Make fake idealized hardware properties to report to next_.
   HardwareProperties friendly_props = {
@@ -142,8 +202,8 @@ void ScalingFilterInterpreter::SetHardwarePropertiesImpl(
     1.0,  // Y pixels/mm
     25.4,  // screen dpi x
     25.4,  // screen dpi y
-    orientation_scale_ * hw_props.orientation_minimum,  // radians
-    orientation_scale_ * hw_props.orientation_maximum,  // radians
+    friendly_orientation_minimum,  // radians
+    friendly_orientation_maximum,  // radians
     hw_props.max_finger_cnt,
     hw_props.max_touch_cnt,
     hw_props.supports_t5r2,

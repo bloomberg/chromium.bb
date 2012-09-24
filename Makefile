@@ -8,7 +8,6 @@ OBJDIR = obj
 SO_OBJECTS=\
 	$(OBJDIR)/accel_filter_interpreter.o \
 	$(OBJDIR)/activity_log.o \
-	$(OBJDIR)/apple_trackpad_filter_interpreter.o \
 	$(OBJDIR)/box_filter_interpreter.o \
 	$(OBJDIR)/click_wiggle_filter_interpreter.o \
 	$(OBJDIR)/filter_interpreter.o \
@@ -38,7 +37,6 @@ TEST_OBJECTS=\
 	$(OBJDIR)/accel_filter_interpreter_unittest.o \
 	$(OBJDIR)/activity_log_unittest.o \
 	$(OBJDIR)/activity_replay_unittest.o \
-	$(OBJDIR)/apple_trackpad_filter_interpreter_unittest.o \
 	$(OBJDIR)/box_filter_interpreter_unittest.o \
 	$(OBJDIR)/click_wiggle_filter_interpreter_unittest.o \
 	$(OBJDIR)/fling_stop_filter_interpreter_unittest.o \

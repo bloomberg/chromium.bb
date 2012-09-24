@@ -9,7 +9,6 @@
 #include <base/stringprintf.h>
 
 #include "gestures/include/accel_filter_interpreter.h"
-#include "gestures/include/apple_trackpad_filter_interpreter.h"
 #include "gestures/include/box_filter_interpreter.h"
 #include "gestures/include/click_wiggle_filter_interpreter.h"
 #include "gestures/include/finger_metrics.h"
@@ -292,8 +291,6 @@ GestureInterpreter::GestureInterpreter(int version)
                                              tracer_.get());
   temp = new Cr48ProfileSensorFilterInterpreter(prop_reg_.get(), temp,
                                                 tracer_.get());
-  temp = new AppleTrackpadFilterInterpreter(prop_reg_.get(), temp,
-                                            tracer_.get());
   temp = loggingFilter_ = new LoggingFilterInterpreter(prop_reg_.get(), temp,
                                                        tracer_.get());
   interpreter_.reset(temp);
