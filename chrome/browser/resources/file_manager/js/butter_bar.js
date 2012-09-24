@@ -35,6 +35,12 @@ function ButterBar(dialogDom, copyManager, metadataCache) {
 }
 
 /**
+ * Name of action which should be displayed as an 'x' button instead of
+ * link with text.
+ */
+ButterBar.ACTION_X = '--action--x--';
+
+/**
  * @return {boolean} True if visible.
  * @private
  */
@@ -68,6 +74,11 @@ ButterBar.prototype.show = function(message, opt_options) {
         callback();
         return false;
       }.bind(null, opt_options.actions[label]));
+      if (label == ButterBar.ACTION_X) {
+        link.className = 'x';
+      } else {
+        link.textContent = label;
+      }
       actions.appendChild(link);
     }
     actions.hidden = false;
@@ -222,7 +233,7 @@ ButterBar.prototype.showProgress_ = function() {
   if (this.isVisible_()) {
     this.update_(progressString, options);
   } else {
-    options.actions[str('CANCEL_LABEL')] =
+    options.actions[ButterBar.ACTION_X] =
         this.copyManager_.requestCancel.bind(this.copyManager_);
     this.show(progressString, options);
   }
@@ -330,11 +341,9 @@ ButterBar.prototype.onDelete_ = function(event) {
         title = strf('DELETED_MESSAGE', fileName);
       }
 
-      this.show(title, {
-        // TODO: show the link 'undo' instead of X sign.
-        actions: {'Undo': this.undoDelete_.bind(this)},
-        timeout: 0
-      });
+      var actions = {};
+      actions[str('UNDO_DELETE')] = this.undoDelete_.bind(this);
+      this.show(title, { actions: actions, timeout: 0 });
       break;
 
     case 'CANCELLED':

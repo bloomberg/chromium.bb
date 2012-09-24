@@ -666,6 +666,7 @@ chrome.fileBrowserPrivate = {
 
       DELETED_MESSAGE: 'Deleted $1',
       DELETED_MESSAGE_PLURAL: 'Deleted $1 items',
+      UNDO_DELETE: 'Undo',
 
       UNKNOWN_FILESYSTEM_WARNING: 'This device cannot be opened because its' +
           ' filesystem was not recognized.',

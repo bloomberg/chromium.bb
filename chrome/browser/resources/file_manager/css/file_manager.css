@@ -96,7 +96,7 @@ input[type='submit'][disabled]:hover {
 }
 
 #butter-bar {
-  -webkit-box-align: end;
+  -webkit-box-align: center;
   -webkit-box-orient: horizontal;
   -webkit-transition: opacity 300ms;
   background-color: #e3e3e3;
@@ -124,13 +124,20 @@ input[type='submit'][disabled]:hover {
 }
 
 #butter-bar .actions {
+  -webkit-box-align: center;
   -webkit-box-orient: horizontal;
   -webkit-box-pack: end;
+  -webkit-margin-start: 6px;
   display: -webkit-box;
   height: 20px;
 }
 
 #butter-bar .actions a {
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+#butter-bar .actions a.x {
   background: center center no-repeat;
   background-image: -webkit-image-set(
     url('../images/files/ui/close_bar.png') 1x,
