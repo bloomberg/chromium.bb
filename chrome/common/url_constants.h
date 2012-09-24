@@ -332,6 +332,9 @@ extern const char kKillReasonURL[];
 // "Learn more" URL for the Privacy section under Options.
 extern const char kPrivacyLearnMoreURL[];
 
+// "Learn more" URL for the "Do not track" setting in the privacy section.
+extern const char kDoNotTrackLearnMoreURL[];
+
 // "Learn more" URL for the Continue where I left off startup option under
 // Options.
 extern const char kSessionRestoreLearnMoreURL[];

@@ -420,6 +420,13 @@ const char kPrivacyLearnMoreURL[] =
     "https://support.google.com/chrome/?p=settings_privacy";
 #endif
 
+const char kDoNotTrackLearnMoreURL[] =
+#if defined(OS_CHROMEOS)
+    "https://support.google.com/chromeos/?p=settings_do_not_track";
+#else
+    "https://support.google.com/chrome/?p=settings_do_not_track";
+#endif
+
 const char kSessionRestoreLearnMoreURL[] =
     "https://support.google.com/chrome/?p=settings_reopen_pages";
 
