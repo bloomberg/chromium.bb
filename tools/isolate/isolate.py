@@ -333,6 +333,21 @@ def upload_hash_content_to_blobstore(generate_upload_url, params,
                              content_type=content_type)
 
 
+class UploadRemote(run_test_from_archive.Remote):
+  @staticmethod
+  def get_file_handler(base_url):
+    def upload_file(hash_data, hash_key):
+      params = {'hash_key': hash_key}
+      if len(hash_data) > MIN_SIZE_FOR_DIRECT_BLOBSTORE:
+        upload_hash_content_to_blobstore(
+            base_url.rstrip('/') + '/content/generate_blobstore_url',
+            params, hash_data)
+      else:
+        upload_hash_content(
+            base_url.rstrip('/') + '/content/store', params, hash_data)
+    return upload_file
+
+
 def upload_sha1_tree(base_url, indir, infiles):
   """Uploads the given tree to the given url.
 
@@ -346,13 +361,11 @@ def upload_sha1_tree(base_url, indir, infiles):
   logging.info('upload tree(base_url=%s, indir=%s, files=%d)' %
                (base_url, indir, len(infiles)))
 
-  contains_hash_url = base_url.rstrip('/') + '/content/contains'
-  generate_upload_url = base_url.rstrip('/') + '/content/generate_blobstore_url'
-  upload_hash_url = base_url.rstrip('/') + '/content/store'
-
-  # TODO(csharp): Get this code to upload in parallel, similiar to how
-  # run_test_from_achive.py downloads in parallel (should probably reuse
-  # that code here, reworking if necessary).
+  # Generate the list of files that need to be uploaded (since some may already
+  # be on the server.
+  base_url = base_url.rstrip('/')
+  contains_hash_url = base_url + '/content/contains'
+  to_upload = []
   for relfile, metadata in infiles.iteritems():
     if 'link' in metadata:
       # Skip links when uploading.
@@ -369,34 +382,29 @@ def upload_sha1_tree(base_url, indir, infiles):
       # If we encounter any error checking if the file is already on the server,
       # assume it isn't present.
       pass
+    to_upload.append((relfile, metadata))
 
+  # Upload the required files.
+  remote_uploader = run_test_from_archive.Remote(base_url)
+  for relfile, metadata in to_upload:
     # TODO(csharp): Fix crbug.com/150823 and enable the touched logic again.
     # if metadata.get('touched_only') == True:
     #   hash_data = ''
     infile = os.path.join(indir, relfile)
     with open(infile, 'rb') as f:
       hash_data = f.read()
+    remote_uploader.add_item(run_test_from_archive.Remote.MED,
+                             hash_data,
+                             metadata['sha-1'])
 
-    response = None
-    for attempt in range(MAX_UPLOAD_ATTEMPTS):
-      try:
-        logging.debug('Attempting to upload hash key, %s, to %s',
-                      metadata['sha-1'], upload_hash_url)
-
-        params = {'hash_key': metadata['sha-1']}
-        if len(hash_data) > MIN_SIZE_FOR_DIRECT_BLOBSTORE:
-          response = upload_hash_content_to_blobstore(generate_upload_url,
-                                                      params, hash_data)
-        else:
-          response = upload_hash_content(upload_hash_url, params, hash_data)
-        break
-      except urllib2.URLError as e:
-        logging.error('Failed to upload hash key, %s, on attempt %d.\n%s',
-                      metadata['sha-1'], attempt + 1, e)
-
-    if not response:
-      raise run_test_from_archive.MappingError('Unable to upload hash key, %s.',
-                                               metadata['sha-1'])
+  exception = remote_uploader.next_exception()
+  if exception:
+    while exception:
+      logging.error('Error uploading file to server:\n%s', exception[1])
+      exception = remote_uploader.next_exception()
+    raise run_test_from_archive.MappingError(
+        'Encountered errors uploading hash contents to server. See logs for '
+        'exact failures')
 
 
 def process_input(filepath, prevdict, level, read_only):

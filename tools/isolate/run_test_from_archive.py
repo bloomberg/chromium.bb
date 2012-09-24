@@ -290,7 +290,10 @@ class Profiler(object):
 
 
 class Remote(object):
-  """Priority based worker queue to fetch files from a content-address server.
+  """Priority based worker queue to fetch or upload files from a
+  content-address server. Any function may be given as the fetcher/upload,
+  as long as it takes two inputs (the item contents, and their relative
+  destination).
 
   Supports local file system, CIFS or http remotes.
 
@@ -304,13 +307,16 @@ class Remote(object):
   INTERNAL_PRIORITY_BITS = (1<<8) - 1
   RETRIES = 5
 
-  def __init__(self, file_or_url):
-    # Function to fetch a remote object.
-    self._do_item = self._get_remote_fetcher(file_or_url)
+  def __init__(self, destination_root):
+    # Function to fetch a remote object or upload to a remote location..
+    self._do_item = self.get_file_handler(destination_root)
     # Contains tuple(priority, index, obj, destination).
     self._queue = Queue.PriorityQueue()
     # Contains tuple(priority, index, obj).
     self._done = Queue.PriorityQueue()
+
+    # Contains generated exceptions that haven't been handled yet.
+    self._exceptions = Queue.Queue()
 
     # To keep FIFO ordering in self._queue. It is assumed xrange's iterator is
     # thread-safe.
@@ -327,7 +333,19 @@ class Remote(object):
     for _ in range(self.INITIAL_WORKERS):
       self._add_worker()
 
-  def fetch_item(self, priority, obj, dest):
+  def join(self):
+    """Blocks until the queue is empty."""
+    self._queue.join()
+
+  def next_exception(self):
+    """Returns the next unhandled exception, or None if there is
+    no exception."""
+    try:
+      return self._exceptions.get_nowait()
+    except Queue.Empty:
+      return None
+
+  def add_item(self, priority, obj, dest):
     """Retrieves an object from the remote data store.
 
     The smaller |priority| gets fetched first.
@@ -335,17 +353,17 @@ class Remote(object):
     Thread-safe.
     """
     assert (priority & self.INTERNAL_PRIORITY_BITS) == 0
-    self._fetch(priority, obj, dest)
+    self._add_to_queue(priority, obj, dest)
 
   def get_result(self):
     """Returns the next file that was successfully fetched."""
     r = self._done.get()
-    if r[0] == '-1':
+    if r[0] == -1:
       # It's an exception.
       raise r[2][0], r[2][1], r[2][2]
     return r[2]
 
-  def _fetch(self, priority, obj, dest):
+  def _add_to_queue(self, priority, obj, dest):
     with self._ready_lock:
       start_new_worker = not self._ready
     self._queue.put((priority, self._next_index(), obj, dest))
@@ -361,6 +379,13 @@ class Remote(object):
       self._workers.append(worker)
     worker.daemon = True
     worker.start()
+
+  def _step_done(self, result):
+    """Worker helper function"""
+    self._done.put(result)
+    self._queue.task_done()
+    if result[0] == -1:
+      self._exceptions.put(sys.exc_info())
 
   def _run(self):
     """Worker thread loop."""
@@ -380,18 +405,19 @@ class Remote(object):
       except IOError:
         # Retry a few times, lowering the priority.
         if (priority & self.INTERNAL_PRIORITY_BITS) < self.RETRIES:
-          self._fetch(priority + 1, obj, dest)
+          self._add_to_queue(priority + 1, obj, dest)
+          self._queue.task_done()
           continue
         # Transfers the exception back. It has maximum priority.
-        self._done.put((-1, 0, sys.exc_info()))
+        self._step_done((-1, 0, sys.exc_info()))
       except:
         # Transfers the exception back. It has maximum priority.
-        self._done.put((-1, 0, sys.exc_info()))
+        self._step_done((-1, 0, sys.exc_info()))
       else:
-        self._done.put((priority, index, obj))
+        self._step_done((priority, index, obj))
 
   @staticmethod
-  def _get_remote_fetcher(file_or_url):
+  def get_file_handler(file_or_url):
     """Returns a object to retrieve objects from a remote."""
     if re.match(r'^https?://.+$', file_or_url):
       file_or_url = file_or_url.rstrip('/') + '/'
@@ -572,7 +598,7 @@ class Cache(object):
       if item in self._pending_queue:
         # Already pending. The same object could be referenced multiple times.
         return
-      self.remote.fetch_item(priority, item, path)
+      self.remote.add_item(priority, item, path)
       self._pending_queue.add(item)
     else:
       if index != len(self.state) - 1:
