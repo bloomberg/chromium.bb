@@ -13,6 +13,7 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 
 using WebKit::WebGraphicsContext3D;
+using WebKit::WebCompositorSoftwareOutputDevice;
 
 //------------------------------------------------------------------------------
 
@@ -28,12 +29,14 @@ IPC::ForwardingMessageFilter* CompositorOutputSurface::CreateFilter(
 
 CompositorOutputSurface::CompositorOutputSurface(
     int32 routing_id,
-    WebGraphicsContext3D* context3D)
+    WebGraphicsContext3D* context3D,
+    WebCompositorSoftwareOutputDevice* software_device)
     : output_surface_filter_(
-          RenderThreadImpl::current()->compositor_output_surface_filter())
-    , client_(NULL)
-    , routing_id_(routing_id)
-    , context3D_(context3D) {
+          RenderThreadImpl::current()->compositor_output_surface_filter()),
+      client_(NULL),
+      routing_id_(routing_id),
+      context3D_(context3D),
+      software_device_(software_device) {
   DCHECK(output_surface_filter_);
   capabilities_.hasParentCompositor = false;
   DetachFromThread();
@@ -56,8 +59,10 @@ bool CompositorOutputSurface::bindToClient(
     WebKit::WebCompositorOutputSurfaceClient* client) {
   DCHECK(CalledOnValidThread());
   DCHECK(!client_);
-  if (!context3D_->makeContextCurrent())
-    return false;
+  if (context3D_.get()) {
+    if (!context3D_->makeContextCurrent())
+      return false;
+  }
 
   client_ = client;
 
@@ -72,6 +77,11 @@ bool CompositorOutputSurface::bindToClient(
 WebGraphicsContext3D* CompositorOutputSurface::context3D() const {
   DCHECK(CalledOnValidThread());
   return context3D_.get();
+}
+
+WebCompositorSoftwareOutputDevice* CompositorOutputSurface::softwareDevice()
+    const {
+  return software_device_.get();
 }
 
 void CompositorOutputSurface::sendFrameToParentCompositor(

@@ -115,6 +115,7 @@ extern const char kEnableRendererSideMixing[];
 extern const char kEnableSSLCachedInfo[];
 extern const char kEnableSandboxLogging[];
 extern const char kEnableSeccompSandbox[];
+CONTENT_EXPORT extern const char kEnableSoftwareCompositingGLAdapter[];
 CONTENT_EXPORT extern const char kEnableSmoothScrolling[];
 CONTENT_EXPORT extern const char kEnableStatsTable[];
 extern const char kEnableStrictSiteIsolation[];

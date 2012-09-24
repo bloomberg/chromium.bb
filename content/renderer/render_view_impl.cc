@@ -74,6 +74,7 @@
 #include "content/renderer/geolocation_dispatcher.h"
 #include "content/renderer/gpu/compositor_thread.h"
 #include "content/renderer/gpu/compositor_output_surface.h"
+#include "content/renderer/gpu/compositor_software_output_device_gl_adapter.h"
 #include "content/renderer/idle_user_detector.h"
 #include "content/renderer/input_tag_speech_dispatcher.h"
 #include "content/renderer/java/java_bridge_dispatcher.h"
@@ -1888,9 +1889,6 @@ WebStorageNamespace* RenderViewImpl::createSessionStorageNamespace(
 }
 
 WebKit::WebCompositorOutputSurface* RenderViewImpl::createOutputSurface() {
-  // TODO(aelias): if force-software-mode is on, create an output surface
-  // without a 3D context.
-
   // Explicitly disable antialiasing for the compositor. As of the time of
   // this writing, the only platform that supported antialiasing for the
   // compositor was Mac OS X, because the on-screen OpenGL context creation
@@ -1908,7 +1906,15 @@ WebKit::WebCompositorOutputSurface* RenderViewImpl::createOutputSurface() {
   if (!context)
     return NULL;
 
-  return new CompositorOutputSurface(routing_id(), context);
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kEnableSoftwareCompositingGLAdapter)) {
+      // In the absence of a software-based delegating renderer, use this
+      // stopgap adapter class to present the software renderer output using a
+      // 3d context.
+      return new CompositorOutputSurface(routing_id(), NULL,
+          new CompositorSoftwareOutputDeviceGLAdapter(context));
+  } else
+      return new CompositorOutputSurface(routing_id(), context, NULL);
 }
 
 void RenderViewImpl::didAddMessageToConsole(

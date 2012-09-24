@@ -12,6 +12,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "base/time.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebCompositorOutputSurface.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebCompositorSoftwareOutputDevice.h"
 
 namespace base {
   class TaskRunner;
@@ -33,7 +34,8 @@ class CompositorOutputSurface
       base::TaskRunner* target_task_runner);
 
   CompositorOutputSurface(int32 routing_id,
-                          WebKit::WebGraphicsContext3D* context3d);
+                          WebKit::WebGraphicsContext3D* context3d,
+                          WebKit::WebCompositorSoftwareOutputDevice* software);
   virtual ~CompositorOutputSurface();
 
   // WebCompositorOutputSurface implementation.
@@ -41,6 +43,7 @@ class CompositorOutputSurface
       WebKit::WebCompositorOutputSurfaceClient* client) OVERRIDE;
   virtual const Capabilities& capabilities() const OVERRIDE;
   virtual WebKit::WebGraphicsContext3D* context3D() const OVERRIDE;
+  virtual WebKit::WebCompositorSoftwareOutputDevice* softwareDevice() const;
   virtual void sendFrameToParentCompositor(
       const WebKit::WebCompositorFrame&) OVERRIDE;
 
@@ -54,7 +57,7 @@ class CompositorOutputSurface
   int routing_id_;
   Capabilities capabilities_;
   scoped_ptr<WebKit::WebGraphicsContext3D> context3D_;
+  scoped_ptr<WebKit::WebCompositorSoftwareOutputDevice> software_device_;
 };
 
 #endif  // CONTENT_RENDERER_GPU_COMPOSITOR_OUTPUT_SURFACE_H_
-
