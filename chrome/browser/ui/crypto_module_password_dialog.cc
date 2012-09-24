@@ -16,12 +16,14 @@
 
 using content::BrowserThread;
 
+namespace chrome {
+
 namespace {
 
 class CryptoModuleBlockingDialogDelegate
     : public crypto::CryptoModuleBlockingPasswordDelegate {
  public:
-  CryptoModuleBlockingDialogDelegate(browser::CryptoModulePasswordReason reason,
+  CryptoModuleBlockingDialogDelegate(CryptoModulePasswordReason reason,
                                      const std::string& server)
       : event_(false, false),
         reason_(reason),
@@ -77,22 +79,20 @@ class CryptoModuleBlockingDialogDelegate
   }
 
   base::WaitableEvent event_;
-  browser::CryptoModulePasswordReason reason_;
+  CryptoModulePasswordReason reason_;
   std::string server_;
   std::string password_;
   bool cancelled_;
 
   DISALLOW_COPY_AND_ASSIGN(CryptoModuleBlockingDialogDelegate);
 };
+
 }  // namespace
 
-namespace browser {
-
 crypto::CryptoModuleBlockingPasswordDelegate*
-    NewCryptoModuleBlockingDialogDelegate(
-        CryptoModulePasswordReason reason,
-        const std::string& server) {
+    NewCryptoModuleBlockingDialogDelegate(CryptoModulePasswordReason reason,
+                                          const std::string& server) {
   return new CryptoModuleBlockingDialogDelegate(reason, server);
 }
 
-}  // namespace browser
+}  // namespace chrome

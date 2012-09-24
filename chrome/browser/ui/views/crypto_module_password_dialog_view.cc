@@ -15,7 +15,7 @@
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 
-namespace browser {
+namespace chrome {
 
 ////////////////////////////////////////////////////////////////////////////////
 // CryptoModulePasswordDialogView, public:
@@ -90,27 +90,27 @@ void CryptoModulePasswordDialogView::Init(const std::string& server,
   const string16& server16 = UTF8ToUTF16(server);
   const string16& slot16 = UTF8ToUTF16(slot_name);
   switch (reason) {
-    case browser::kCryptoModulePasswordKeygen:
+    case chrome::kCryptoModulePasswordKeygen:
       text = l10n_util::GetStringFUTF8(
           IDS_CRYPTO_MODULE_AUTH_DIALOG_TEXT_KEYGEN, slot16, server16);
       break;
-    case browser::kCryptoModulePasswordCertEnrollment:
+    case chrome::kCryptoModulePasswordCertEnrollment:
       text = l10n_util::GetStringFUTF8(
           IDS_CRYPTO_MODULE_AUTH_DIALOG_TEXT_CERT_ENROLLMENT, slot16, server16);
       break;
-    case browser::kCryptoModulePasswordClientAuth:
+    case chrome::kCryptoModulePasswordClientAuth:
       text = l10n_util::GetStringFUTF8(
           IDS_CRYPTO_MODULE_AUTH_DIALOG_TEXT_CLIENT_AUTH, slot16, server16);
       break;
-    case browser::kCryptoModulePasswordListCerts:
+    case chrome::kCryptoModulePasswordListCerts:
       text = l10n_util::GetStringFUTF8(
           IDS_CRYPTO_MODULE_AUTH_DIALOG_TEXT_LIST_CERTS, slot16);
       break;
-    case browser::kCryptoModulePasswordCertImport:
+    case chrome::kCryptoModulePasswordCertImport:
       text = l10n_util::GetStringFUTF8(
           IDS_CRYPTO_MODULE_AUTH_DIALOG_TEXT_CERT_IMPORT, slot16);
       break;
-    case browser::kCryptoModulePasswordCertExport:
+    case chrome::kCryptoModulePasswordCertExport:
       text = l10n_util::GetStringFUTF8(
           IDS_CRYPTO_MODULE_AUTH_DIALOG_TEXT_CERT_EXPORT, slot16);
       break;
@@ -163,4 +163,4 @@ void ShowCryptoModulePasswordDialog(
   views::Widget::CreateWindow(dialog)->Show();
 }
 
-}  // namespace browser
+}  // namespace chrome

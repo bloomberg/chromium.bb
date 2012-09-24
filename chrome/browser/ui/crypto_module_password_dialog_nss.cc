@@ -32,7 +32,7 @@ bool ShouldShowDialog(const net::CryptoModule* module) {
 class SlotUnlocker {
  public:
   SlotUnlocker(const net::CryptoModuleList& modules,
-               browser::CryptoModulePasswordReason reason,
+               chrome::CryptoModulePasswordReason reason,
                const std::string& host,
                const base::Closure& callback);
 
@@ -44,14 +44,14 @@ class SlotUnlocker {
 
   size_t current_;
   net::CryptoModuleList modules_;
-  browser::CryptoModulePasswordReason reason_;
+  chrome::CryptoModulePasswordReason reason_;
   std::string host_;
   base::Closure callback_;
   PRBool retry_;
 };
 
 SlotUnlocker::SlotUnlocker(const net::CryptoModuleList& modules,
-                           browser::CryptoModulePasswordReason reason,
+                           chrome::CryptoModulePasswordReason reason,
                            const std::string& host,
                            const base::Closure& callback)
     : current_(0),
@@ -133,10 +133,10 @@ void SlotUnlocker::Done() {
 
 }  // namespace
 
-namespace browser {
+namespace chrome {
 
 void UnlockSlotsIfNecessary(const net::CryptoModuleList& modules,
-                            browser::CryptoModulePasswordReason reason,
+                            chrome::CryptoModulePasswordReason reason,
                             const std::string& host,
                             const base::Closure& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -150,7 +150,7 @@ void UnlockSlotsIfNecessary(const net::CryptoModuleList& modules,
 }
 
 void UnlockCertSlotIfNecessary(net::X509Certificate* cert,
-                               browser::CryptoModulePasswordReason reason,
+                               chrome::CryptoModulePasswordReason reason,
                                const std::string& host,
                                const base::Closure& callback) {
   net::CryptoModuleList modules;
@@ -159,4 +159,4 @@ void UnlockCertSlotIfNecessary(net::X509Certificate* cert,
   UnlockSlotsIfNecessary(modules, reason, host, callback);
 }
 
-}  // namespace browser
+}  // namespace chrome

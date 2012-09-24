@@ -35,9 +35,9 @@ void CertificateManagerModel::Refresh() {
   net::CryptoModuleList modules;
   cert_db_->ListModules(&modules, false);
   VLOG(1) << "refresh waiting for unlocking...";
-  browser::UnlockSlotsIfNecessary(
+  chrome::UnlockSlotsIfNecessary(
       modules,
-      browser::kCryptoModulePasswordListCerts,
+      chrome::kCryptoModulePasswordListCerts,
       "",  // unused.
       base::Bind(&CertificateManagerModel::RefreshSlotsUnlocked,
                  base::Unretained(this)));

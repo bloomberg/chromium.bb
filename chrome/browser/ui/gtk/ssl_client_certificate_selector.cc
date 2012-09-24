@@ -364,9 +364,9 @@ void SSLClientCertificateSelector::OnOkClicked(GtkWidget* button) {
   // ourself before the Unlocked callback gets called.
   StopObserving();
 
-  browser::UnlockCertSlotIfNecessary(
+  chrome::UnlockCertSlotIfNecessary(
       cert,
-      browser::kCryptoModulePasswordClientAuth,
+      chrome::kCryptoModulePasswordClientAuth,
       cert_request_info()->host_and_port,
       base::Bind(&SSLClientCertificateSelector::Unlocked,
                  base::Unretained(this)));

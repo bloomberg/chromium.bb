@@ -18,7 +18,7 @@ class Label;
 class Textfield;
 }
 
-namespace browser {
+namespace chrome {
 
 class CryptoModulePasswordDialogView : public views::DialogDelegateView,
                                        public views::TextfieldController {
@@ -54,7 +54,7 @@ class CryptoModulePasswordDialogView : public views::DialogDelegateView,
   // Initialize views and layout.
   void Init(const std::string& server,
             const std::string& slot_name,
-            browser::CryptoModulePasswordReason reason);
+            CryptoModulePasswordReason reason);
 
   views::Label* title_label_;
   views::Label* reason_label_;
@@ -66,6 +66,6 @@ class CryptoModulePasswordDialogView : public views::DialogDelegateView,
   DISALLOW_COPY_AND_ASSIGN(CryptoModulePasswordDialogView);
 };
 
-}  // namespace browser
+}  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_VIEWS_CRYPTO_MODULE_PASSWORD_DIALOG_VIEW_H_

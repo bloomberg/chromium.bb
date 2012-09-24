@@ -12,7 +12,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/controls/textfield/textfield.h"
 
-namespace browser {
+namespace chrome {
 
 class CryptoModulePasswordDialogViewTest : public testing::Test {
  public:
@@ -48,4 +48,4 @@ TEST_F(CryptoModulePasswordDialogViewTest, TestAccept) {
   EXPECT_EQ(empty, dialog_->password_entry_->text());
 }
 
-}  // namespace browser
+}  // namespace chrome

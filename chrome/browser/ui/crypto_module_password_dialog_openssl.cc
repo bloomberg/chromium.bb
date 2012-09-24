@@ -6,10 +6,10 @@
 
 #include "base/logging.h"
 
-namespace browser {
+namespace chrome {
 
 void UnlockSlotsIfNecessary(const net::CryptoModuleList& modules,
-                            browser::CryptoModulePasswordReason reason,
+                            CryptoModulePasswordReason reason,
                             const std::string& host,
                             const base::Closure& callback) {
   // TODO(bulach): implement me.
@@ -17,11 +17,11 @@ void UnlockSlotsIfNecessary(const net::CryptoModuleList& modules,
 }
 
 void UnlockCertSlotIfNecessary(net::X509Certificate* cert,
-                               browser::CryptoModulePasswordReason reason,
+                               CryptoModulePasswordReason reason,
                                const std::string& host,
                                const base::Closure& callback) {
   // TODO(bulach): implement me.
   NOTREACHED();
 }
 
-}  // namespace browser
+}  // namespace chrome

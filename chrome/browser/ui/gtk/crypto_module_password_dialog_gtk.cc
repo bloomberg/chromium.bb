@@ -24,9 +24,9 @@ class CryptoModulePasswordDialog {
   CryptoModulePasswordDialog(
       const std::string& slot_name,
       bool retry,
-      browser::CryptoModulePasswordReason reason,
+      chrome::CryptoModulePasswordReason reason,
       const std::string& server,
-      const browser::CryptoModulePasswordCallback& callback);
+      const chrome::CryptoModulePasswordCallback& callback);
 
   ~CryptoModulePasswordDialog() {}
 
@@ -36,7 +36,7 @@ class CryptoModulePasswordDialog {
   CHROMEGTK_CALLBACK_1(CryptoModulePasswordDialog, void, OnResponse, int);
   CHROMEGTK_CALLBACK_0(CryptoModulePasswordDialog, void, OnWindowDestroy);
 
-  browser::CryptoModulePasswordCallback callback_;
+  chrome::CryptoModulePasswordCallback callback_;
 
   GtkWidget* dialog_;
   GtkWidget* password_entry_;
@@ -47,9 +47,9 @@ class CryptoModulePasswordDialog {
 CryptoModulePasswordDialog::CryptoModulePasswordDialog(
     const std::string& slot_name,
     bool retry,
-    browser::CryptoModulePasswordReason reason,
+    chrome::CryptoModulePasswordReason reason,
     const std::string& server,
-    const browser::CryptoModulePasswordCallback& callback)
+    const chrome::CryptoModulePasswordCallback& callback)
     : callback_(callback) {
   dialog_ = gtk_dialog_new_with_buttons(
       l10n_util::GetStringUTF8(IDS_CRYPTO_MODULE_AUTH_DIALOG_TITLE).c_str(),
@@ -72,27 +72,27 @@ CryptoModulePasswordDialog::CryptoModulePasswordDialog(
   const string16& server16 = UTF8ToUTF16(server);
   const string16& slot16 = UTF8ToUTF16(slot_name);
   switch (reason) {
-    case browser::kCryptoModulePasswordKeygen:
+    case chrome::kCryptoModulePasswordKeygen:
       text = l10n_util::GetStringFUTF8(
           IDS_CRYPTO_MODULE_AUTH_DIALOG_TEXT_KEYGEN, slot16, server16);
       break;
-    case browser::kCryptoModulePasswordCertEnrollment:
+    case chrome::kCryptoModulePasswordCertEnrollment:
       text = l10n_util::GetStringFUTF8(
           IDS_CRYPTO_MODULE_AUTH_DIALOG_TEXT_CERT_ENROLLMENT, slot16, server16);
       break;
-    case browser::kCryptoModulePasswordClientAuth:
+    case chrome::kCryptoModulePasswordClientAuth:
       text = l10n_util::GetStringFUTF8(
           IDS_CRYPTO_MODULE_AUTH_DIALOG_TEXT_CLIENT_AUTH, slot16, server16);
       break;
-    case browser::kCryptoModulePasswordListCerts:
+    case chrome::kCryptoModulePasswordListCerts:
       text = l10n_util::GetStringFUTF8(
           IDS_CRYPTO_MODULE_AUTH_DIALOG_TEXT_LIST_CERTS, slot16);
       break;
-    case browser::kCryptoModulePasswordCertImport:
+    case chrome::kCryptoModulePasswordCertImport:
       text = l10n_util::GetStringFUTF8(
           IDS_CRYPTO_MODULE_AUTH_DIALOG_TEXT_CERT_IMPORT, slot16);
       break;
-    case browser::kCryptoModulePasswordCertExport:
+    case chrome::kCryptoModulePasswordCertExport:
       text = l10n_util::GetStringFUTF8(
           IDS_CRYPTO_MODULE_AUTH_DIALOG_TEXT_CERT_EXPORT, slot16);
       break;
@@ -150,7 +150,7 @@ void CryptoModulePasswordDialog::OnWindowDestroy(GtkWidget* widget) {
 
 }  // namespace
 
-namespace browser {
+namespace chrome {
 
 void ShowCryptoModulePasswordDialog(
     const std::string& slot_name,
@@ -162,4 +162,4 @@ void ShowCryptoModulePasswordDialog(
                                   callback))->Show();
 }
 
-}  // namespace browser
+}  // namespace chrome

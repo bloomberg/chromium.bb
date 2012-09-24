@@ -1683,8 +1683,8 @@ const wchar_t* ChromeContentBrowserClient::GetResourceDllName() {
 crypto::CryptoModuleBlockingPasswordDelegate*
     ChromeContentBrowserClient::GetCryptoPasswordDelegate(
         const GURL& url) {
-  return browser::NewCryptoModuleBlockingDialogDelegate(
-      browser::kCryptoModulePasswordKeygen, url.host());
+  return chrome::NewCryptoModuleBlockingDialogDelegate(
+      chrome::kCryptoModulePasswordKeygen, url.host());
 }
 #endif
 
