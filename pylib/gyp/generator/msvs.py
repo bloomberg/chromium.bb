@@ -1124,6 +1124,8 @@ def _GetLibraries(spec):
   unique_libraries_list = []
   for entry in reversed(libraries):
     library = re.sub('^\-l', '', entry)
+    if not os.path.splitext(library)[1]:
+      library += '.lib'
     if library not in found:
       found.add(library)
       unique_libraries_list.append(library)
