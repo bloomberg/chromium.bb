@@ -547,6 +547,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   brightness_observer_.reset();
   media_transfer_protocol_device_observer_.reset();
   output_observer_.reset();
+  power_state_override_.reset();
 
   // The XInput2 event listener needs to be shut down earlier than when
   // Singletons are finally destroyed in AtExitManager.
