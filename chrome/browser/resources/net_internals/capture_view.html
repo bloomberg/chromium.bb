@@ -1,17 +1,21 @@
 <div id=capture-view-tab-content class=content-box>
   <h2>Capture options</h2>
 
+  <p>
   <input id=capture-view-limit-checkbox type=checkbox>
   <label for='capture-view-limit-checkbox'>
     Discard old data under memory pressure.
     <i>(If you capture all events for a long time, it is possible to exhaust memory and crash. Throwing out older data avoids this problem.)</i>
   </label>
+  </p>
 
+  <p>
   <input id=capture-view-byte-logging-checkbox type=checkbox>
   <label for='capture-view-byte-logging-checkbox'>
     Include the actual bytes sent/received.
     <i>(This will result in huge log files, and can expose sensitive data)</i>
   </label>
+  </p>
 
   <ul>
     <li>
