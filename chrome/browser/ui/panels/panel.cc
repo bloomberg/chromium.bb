@@ -8,6 +8,7 @@
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -215,6 +216,10 @@ void Panel::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_COPY, true);
   command_updater_.UpdateCommandEnabled(IDC_CUT, true);
   command_updater_.UpdateCommandEnabled(IDC_PASTE, true);
+
+  // DevTools
+  command_updater_.UpdateCommandEnabled(IDC_DEV_TOOLS, true);
+  command_updater_.UpdateCommandEnabled(IDC_DEV_TOOLS_CONSOLE, true);
 }
 
 void Panel::OnNativePanelClosed() {
@@ -601,6 +606,22 @@ void Panel::ExecuteCommandWithDisposition(int id,
       break;
     case IDC_ZOOM_MINUS:
       panel_host_->Zoom(content::PAGE_ZOOM_OUT);
+      break;
+
+    // DevTools
+    case IDC_DEV_TOOLS:
+      content::RecordAction(UserMetricsAction("DevTools_ToggleWindow"));
+      DevToolsWindow::ToggleDevToolsWindow(
+          GetWebContents()->GetRenderViewHost(),
+          true,
+          DEVTOOLS_TOGGLE_ACTION_SHOW);
+      break;
+    case IDC_DEV_TOOLS_CONSOLE:
+      content::RecordAction(UserMetricsAction("DevTools_ToggleConsole"));
+      DevToolsWindow::ToggleDevToolsWindow(
+          GetWebContents()->GetRenderViewHost(),
+          true,
+          DEVTOOLS_TOGGLE_ACTION_SHOW_CONSOLE);
       break;
 
     default:

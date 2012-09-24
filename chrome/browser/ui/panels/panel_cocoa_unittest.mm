@@ -306,6 +306,9 @@ TEST_F(PanelCocoaTest, MenuItems) {
   NSMenuItem* presentation_menu_item =
       CreateMenuItem(menu, IDC_PRESENTATION_MODE);
   NSMenuItem* sync_menu_item = CreateMenuItem(menu, IDC_SHOW_SYNC_SETUP);
+  NSMenuItem* dev_tools_item = CreateMenuItem(menu, IDC_DEV_TOOLS);
+  NSMenuItem* dev_tools_console_item =
+      CreateMenuItem(menu, IDC_DEV_TOOLS_CONSOLE);
 
   PanelCocoa* native_window = static_cast<PanelCocoa*>(panel->native_panel());
   PanelWindowControllerCocoa* panel_controller = native_window->controller_;
@@ -322,6 +325,8 @@ TEST_F(PanelCocoaTest, MenuItems) {
   EXPECT_FALSE([fullscreen_menu_item isEnabled]);
   EXPECT_FALSE([presentation_menu_item isEnabled]);
   EXPECT_FALSE([sync_menu_item isEnabled]);
+  EXPECT_TRUE([dev_tools_item isEnabled]);
+  EXPECT_TRUE([dev_tools_console_item isEnabled]);
 
   // Verify that commandDispatch on an invalid menu item does not crash.
   [NSApp sendAction:[sync_menu_item action]

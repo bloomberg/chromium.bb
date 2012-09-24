@@ -119,6 +119,13 @@ const struct AcceleratorMapping {
   { GDK_c, IDC_COPY, GDK_CONTROL_MASK },
   { GDK_x, IDC_CUT, GDK_CONTROL_MASK },
   { GDK_v, IDC_PASTE, GDK_CONTROL_MASK },
+
+  // Dev tools.
+  { GDK_i, IDC_DEV_TOOLS,
+    GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK) },
+  { GDK_j, IDC_DEV_TOOLS_CONSOLE,
+    GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK) },
+
 };
 
 // Table of accelerator mappings to command ids.
