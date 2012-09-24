@@ -19,6 +19,7 @@
 #include "ash/wm/window_properties.h"
 #include "grit/ash_resources.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_observer.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
@@ -81,21 +82,25 @@ class Launcher::DelegateView : public views::WidgetDelegate,
   DISALLOW_COPY_AND_ASSIGN(DelegateView);
 };
 
-// Class used to slightly dim shelf items when maximized and visible.
-class DimmerView : public views::View, public views::WidgetDelegate {
+// Class used to slightly dim shelf items when maximized and visible. It also
+// makes sure the widget changes size to always be of the same size as the
+// shelf.
+class DimmerView : public views::WidgetDelegateView,
+                   public aura::WindowObserver {
  public:
-  DimmerView() {}
-  ~DimmerView() {}
-
-  // views::WidgetDelegateView overrides:
-  virtual views::Widget* GetWidget() OVERRIDE {
-    return View::GetWidget();
-  }
-  virtual const views::Widget* GetWidget() const OVERRIDE {
-    return View::GetWidget();
+  explicit DimmerView(views::Widget* launcher)
+      : launcher_(launcher) {
+    launcher_->GetNativeWindow()->AddObserver(this);
   }
 
-  void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE {
+  ~DimmerView() {
+    if (launcher_)
+      launcher_->GetNativeWindow()->RemoveObserver(this);
+  }
+
+ private:
+  // views::View overrides:
+  virtual void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE {
     SkPaint paint;
     static const gfx::ImageSkia* launcher_background = NULL;
     if (!launcher_background) {
@@ -111,7 +116,23 @@ class DimmerView : public views::View, public views::WidgetDelegate {
         false,
         paint);
   }
-   DISALLOW_COPY_AND_ASSIGN(DimmerView);
+
+  // aura::WindowObserver overrides:
+  virtual void OnWindowBoundsChanged(aura::Window* window,
+                                     const gfx::Rect& old_bounds,
+                                     const gfx::Rect& new_bounds) OVERRIDE {
+    CHECK_EQ(window, launcher_->GetNativeWindow());
+    GetWidget()->SetBounds(launcher_->GetWindowBoundsInScreen());
+  }
+
+  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE {
+    CHECK_EQ(window, launcher_->GetNativeWindow());
+    launcher_->GetNativeWindow()->RemoveObserver(this);
+    launcher_ = NULL;
+  }
+
+  views::Widget* launcher_;
+  DISALLOW_COPY_AND_ASSIGN(DimmerView);
 };
 
 Launcher::DelegateView::DelegateView(Launcher* launcher)
@@ -242,30 +263,29 @@ void Launcher::SetDimsShelf(bool value) {
   if (value == (dimmer_.get() != NULL))
     return;
 
-  if (value) {
-    dimmer_.reset(new views::Widget);
-    views::Widget::InitParams params(
-        views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-    params.transparent = true;
-    params.can_activate = false;
-    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    params.parent = Shell::GetContainer(
-        window_container_->GetRootWindow(),
-        ash::internal::kShellWindowId_LauncherContainer);
-    params.accept_events = false;
-    dimmer_->Init(params);
-    dimmer_->GetNativeWindow()->SetName("LauncherDimmer");
-    gfx::Size pref =
-        static_cast<views::View*>(launcher_view_)->GetPreferredSize();
-    dimmer_->SetBounds(widget_->GetWindowBoundsInScreen());
-    // The launcher should not take focus when it is initially shown.
-    dimmer_->set_focus_on_creation(false);
-    dimmer_->SetContentsView(new DimmerView);
-    dimmer_->GetNativeView()->SetName("LauncherDimmerView");
-    dimmer_->Show();
-  } else {
-    dimmer_.reset(NULL);
+  if (!value) {
+    dimmer_.reset();
+    return;
   }
+
+  dimmer_.reset(new views::Widget);
+  views::Widget::InitParams params(
+      views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  params.transparent = true;
+  params.can_activate = false;
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.parent = Shell::GetContainer(
+      window_container_->GetRootWindow(),
+      ash::internal::kShellWindowId_LauncherContainer);
+  params.accept_events = false;
+  dimmer_->Init(params);
+  dimmer_->GetNativeWindow()->SetName("LauncherDimmer");
+  dimmer_->SetBounds(widget_->GetWindowBoundsInScreen());
+  // The launcher should not take focus when it is initially shown.
+  dimmer_->set_focus_on_creation(false);
+  dimmer_->SetContentsView(new DimmerView(widget_.get()));
+  dimmer_->GetNativeView()->SetName("LauncherDimmerView");
+  dimmer_->Show();
 }
 
 bool Launcher::GetDimsShelf() const {

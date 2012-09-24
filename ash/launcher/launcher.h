@@ -103,6 +103,8 @@ class ASH_EXPORT Launcher  {
   LauncherModel* model() { return model_.get(); }
   views::Widget* widget() { return widget_.get(); }
 
+  views::Widget* GetDimmerWidgetForTest() { return dimmer_.get(); }
+
   aura::Window* window_container() { return window_container_; }
 
  private:

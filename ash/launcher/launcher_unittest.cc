@@ -33,6 +33,24 @@ TEST_F(LauncherTest, SetStatusSize) {
   EXPECT_EQ(total_width - total_width / 2, launcher_view->width());
 }
 
+// Tests that the dimmer widget resizes itself as appropriate.
+TEST_F(LauncherTest, DimmerSize) {
+  Launcher* launcher = Shell::GetInstance()->launcher();
+  launcher->SetDimsShelf(true);
+
+  gfx::Size launcher_size =
+      launcher->widget()->GetWindowBoundsInScreen().size();
+  EXPECT_EQ(
+      launcher->widget()->GetWindowBoundsInScreen().ToString(),
+      launcher->GetDimmerWidgetForTest()->GetWindowBoundsInScreen().ToString());
+
+  launcher->widget()->SetSize(
+      gfx::Size(launcher_size.width() / 2, launcher_size.height() + 10));
+  EXPECT_EQ(
+      launcher->widget()->GetWindowBoundsInScreen().ToString(),
+      launcher->GetDimmerWidgetForTest()->GetWindowBoundsInScreen().ToString());
+}
+
 // Confirm that launching a browser gets the appropriate state reflected in
 // its button.
 TEST_F(LauncherTest, OpenBrowser) {
