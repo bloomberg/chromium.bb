@@ -489,26 +489,6 @@ class DebugStubTest(unittest.TestCase):
       reply = connection.RspRequest('s')
       AssertReplySignal(reply, NACL_SIGTRAP)
 
-  def test_software_single_step(self):
-    if sys.platform == 'darwin':
-      # TODO(mseaborn): Make this work on Mac OS X (and enable it) by
-      # removing this test's use of the int3 instruction.
-      return
-    # We want this test to work on ARM. As we can't skip past trap instruction
-    # on ARM, we'll step from initial breakpoint to the first trap instruction.
-    # We can use any test that has initial breakpoint and trap instruction on
-    # the same thread.
-    with LaunchDebugStub('test_breakpoint') as connection:
-      # We stopped on initial breakpoint. Ask for stop reply.
-      reply = connection.RspRequest('?')
-      AssertReplySignal(reply, NACL_SIGTRAP)
-      tid = ParseThreadStopReply(reply)['thread_id']
-
-      # Continue one thread.
-      # Check we stopped on the same thread.
-      reply = connection.RspRequest('vCont;c:%x' % tid)
-      self.assertEqual(reply, 'T05thread:%x;' % tid)
-
 
 class DebugStubBreakpointTest(unittest.TestCase):
 
