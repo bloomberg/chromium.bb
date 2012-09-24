@@ -60,6 +60,9 @@ lou_translate (const char *tableList, const widechar
 {
   int k;
   int goodTrans = 1;
+  if (tableList == NULL || inbufx == NULL || inlen == NULL || outbuf ==
+      NULL || outlen == NULL)
+    return 0;
   if ((modex & otherTrans))
     return other_translate (tableList, inbufx,
 			    inlen, outbuf, outlen,
@@ -1960,7 +1963,8 @@ lou_hyphenate (const char *tableList, const widechar
   int wordStart;
   int wordEnd;
   table = lou_getTable (tableList);
-  if (table == NULL || table->hyphenStatesArray == 0 || inlen >= HYPHSTRING)
+  if (table == NULL || inbuf == NULL || hyphens
+      == NULL || table->hyphenStatesArray == 0 || inlen >= HYPHSTRING)
     return 0;
   if (mode != 0)
     {
@@ -2058,6 +2062,8 @@ lou_dotsToChar (const char *tableList, widechar * inbuf, widechar * outbuf,
 {
   int k;
   widechar dots;
+  if (tableList == NULL || inbuf == NULL || outbuf == NULL)
+    return 0;
   if ((mode & otherTrans))
     return other_dotsToChar (tableList, inbuf, outbuf, length, mode);
   table = lou_getTable (tableList);
@@ -2078,6 +2084,8 @@ lou_charToDots (const char *tableList, const widechar * inbuf, widechar *
 		outbuf, int length, int mode)
 {
   int k;
+  if (tableList == NULL || inbuf == NULL || outbuf == NULL)
+    return 0;
   if ((mode & otherTrans))
     return other_charToDots (tableList, inbuf, outbuf, length, mode);
 

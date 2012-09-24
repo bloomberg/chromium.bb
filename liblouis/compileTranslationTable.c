@@ -140,11 +140,14 @@ lou_getProgramPath (void)
 */
 
 static char dataPath[MAXSTRING];
-static char *dataPathPtr = NULL;
+static char *dataPathPtr;
 
 char *EXPORT_CALL
 lou_setDataPath (char *path)
 {
+  dataPathPtr = NULL;
+  if (path == NULL)
+    return NULL;
   strcpy (dataPath, path);
   dataPathPtr = dataPath;
   return dataPathPtr;
@@ -4445,6 +4448,8 @@ lou_readCharFromFile (const char *fileName, int *mode)
 * ASCII8*/
   int ch;
   static FileInfo nested;
+  if (fileName == NULL)
+    return 0;
   if (*mode == 1)
     {
       *mode = 0;
@@ -4604,6 +4609,8 @@ compileString (const char *inString)
 /* This function can be used to make changes to tables on the fly. */
   int k;
   FileInfo nested;
+  if (inString == NULL)
+    return 0;
   nested.fileName = inString;
   nested.encoding = noEncoding;
   nested.lineNumber = 1;
