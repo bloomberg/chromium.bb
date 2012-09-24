@@ -849,14 +849,6 @@ void OmxVideoDecodeAccelerator::OnOutputPortEnabled() {
 void OmxVideoDecodeAccelerator::FillBufferDoneTask(
     OMX_BUFFERHEADERTYPE* buffer) {
 
-  // If we are destroying and then get a fillbuffer callback, calling into any
-  // openmax function will put us in error mode, so bail now. In the RESETTING
-  // case we still need to enqueue the picture ids but have to avoid giving
-  // them to the client (this is handled below).
-  if (current_state_change_ == DESTROYING ||
-      current_state_change_ == ERRORING)
-    return;
-
   media::Picture* picture =
       reinterpret_cast<media::Picture*>(buffer->pAppPrivate);
   int picture_buffer_id = picture ? picture->picture_buffer_id() : -1;
@@ -866,6 +858,14 @@ void OmxVideoDecodeAccelerator::FillBufferDoneTask(
   DCHECK_EQ(message_loop_, MessageLoop::current());
   DCHECK_GT(output_buffers_at_component_, 0);
   --output_buffers_at_component_;
+
+  // If we are destroying and then get a fillbuffer callback, calling into any
+  // openmax function will put us in error mode, so bail now. In the RESETTING
+  // case we still need to enqueue the picture ids but have to avoid giving
+  // them to the client (this is handled below).
+  if (current_state_change_ == DESTROYING ||
+      current_state_change_ == ERRORING)
+    return;
 
   if (fake_output_buffers_.size() && fake_output_buffers_.count(buffer)) {
     size_t erased = fake_output_buffers_.erase(buffer);
