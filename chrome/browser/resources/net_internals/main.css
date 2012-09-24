@@ -10,6 +10,10 @@
   box-sizing: border-box;
 }
 
+ul {
+  padding-left: 2em;
+}
+
 /* This class is used to create the splitter widget in
    ResizbleVerticalSplitView */
 .vertical-splitter {
