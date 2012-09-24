@@ -135,6 +135,8 @@ class ExtensionActionIconFactoryBridge
       forButtonState:image_button_cell::kHoverState];
     [cell setImageID:IDR_BROWSER_ACTION_P
       forButtonState:image_button_cell::kPressedState];
+    [cell setImageID:IDR_BROWSER_ACTION
+      forButtonState:image_button_cell::kDisabledState];
 
     [self setTitle:@""];
     [self setButtonType:NSMomentaryChangeButton];
@@ -255,7 +257,7 @@ class ExtensionActionIconFactoryBridge
   [[self cell] setTabId:tabId_];
 
   bool enabled = extension_->browser_action()->GetIsVisible(tabId_);
-  [self setEnabled:enabled ? YES : NO];
+  [self setEnabled:enabled];
 
   [self setNeedsDisplay:YES];
 }
@@ -309,6 +311,7 @@ class ExtensionActionIconFactoryBridge
 - (void)drawWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
   gfx::ScopedNSGraphicsContextSaveGState scopedGState;
   [super drawWithFrame:cellFrame inView:controlView];
+  bool enabled = extensionAction_->GetIsVisible(tabId_);
   const NSSize imageSize = self.image.size;
   const NSRect imageRect =
       NSMakeRect(std::floor((NSWidth(cellFrame) - imageSize.width) / 2.0),
@@ -317,7 +320,7 @@ class ExtensionActionIconFactoryBridge
   [self.image drawInRect:imageRect
                 fromRect:NSZeroRect
                operation:NSCompositeSourceOver
-                fraction:1.0
+                fraction:enabled ? 1.0 : 0.4
           respectFlipped:YES
                    hints:nil];
 
