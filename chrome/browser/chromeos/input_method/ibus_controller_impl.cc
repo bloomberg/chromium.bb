@@ -314,10 +314,10 @@ std::string Spacer(int n) {
   return std::string(n, ' ');
 }
 
+std::string PrintPropList(IBusPropList *prop_list, int tree_level);
+
 // Debug print function.
 std::string PrintProp(IBusProperty *prop, int tree_level) {
-  std::string PrintPropList(IBusPropList *prop_list, int tree_level);
-
   if (!prop)
     return "";
 
