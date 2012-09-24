@@ -136,7 +136,7 @@ void PpapiDispatcher::Unregister(uint32 plugin_dispatcher_id) {
 }
 
 bool PpapiDispatcher::SendToBrowser(IPC::Message* msg) {
-  Send(msg);
+  return Send(msg);
 }
 
 IPC::Sender* PpapiDispatcher::GetBrowserSender() {
