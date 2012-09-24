@@ -424,6 +424,13 @@ FileManager.prototype = {
 
     this.summarizeSelection_();
 
+    var sortField =
+        window.localStorage['sort-field-' + this.dialogType_] ||
+        'modificationTime';
+    var sortDirection =
+        window.localStorage['sort-direction-' + this.dialogType_] || 'desc';
+    this.directoryModel_.sortFileList(sortField, sortDirection);
+
     this.setupCurrentDirectory_(true /* page loading */);
 
     var stateChangeHandler =
@@ -433,13 +440,6 @@ FileManager.prototype = {
     chrome.fileBrowserPrivate.onNetworkConnectionChanged.addListener(
         stateChangeHandler);
     stateChangeHandler();
-
-    var sortField =
-        window.localStorage['sort-field-' + this.dialogType_] ||
-        'modificationTime';
-    var sortDirection =
-        window.localStorage['sort-direction-' + this.dialogType_] || 'desc';
-    this.directoryModel_.sortFileList(sortField, sortDirection);
 
     this.refocus();
 
