@@ -2511,8 +2511,17 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
 
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
 #if defined(OS_ANDROID)
-  // TODO(qinmin): upstream the implementation of getting WebGraphicsContext3D
-  // and GpuChannelHost here to replace the NULL params.
+  WebGraphicsContext3D* resource_context =
+      GetWebView()->sharedGraphicsContext3D();
+
+  GpuChannelHost* gpu_channel_host =
+      RenderThreadImpl::current()->EstablishGpuChannelSync(
+          content::CAUSE_FOR_GPU_LAUNCH_VIDEODECODEACCELERATOR_INITIALIZE);
+  if (!gpu_channel_host) {
+    LOG(ERROR) << "Failed to establish GPU channel for media player";
+    return NULL;
+  }
+
   if (cmd_line->HasSwitch(switches::kMediaPlayerInRenderProcess)) {
     if (!media_bridge_manager_.get()) {
       media_bridge_manager_.reset(
@@ -2525,7 +2534,7 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
         media_player_manager_.get(),
         media_bridge_manager_.get(),
         new content::StreamTextureFactoryImpl(
-            NULL, NULL, routing_id_),
+            resource_context, gpu_channel_host, routing_id_),
         cmd_line->HasSwitch(switches::kDisableMediaHistoryLogging));
   }
   if (!media_player_proxy_) {
@@ -2538,7 +2547,7 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
       media_player_manager_.get(),
       media_player_proxy_,
       new content::StreamTextureFactoryImpl(
-          NULL, NULL, routing_id_));
+          resource_context, gpu_channel_host, routing_id_));
 #endif
 
   media::MessageLoopFactory* message_loop_factory =
