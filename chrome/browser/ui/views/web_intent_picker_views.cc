@@ -410,8 +410,8 @@ gfx::Size SuggestedExtensionsLayout::GetPreferredSize(views::View* host) {
 // A view for each row in the IntentsView. It displays information
 // for both installed and suggested intent handlers.
 class IntentRowView : public views::View,
-                                   public views::ButtonListener,
-                                   public views::LinkListener {
+                      public views::ButtonListener,
+                      public views::LinkListener {
  public:
   enum ActionType {
     ACTION_UNKNOWN,
@@ -1300,12 +1300,20 @@ void WebIntentPickerViews::ShowAvailableServices() {
 
   // Row with "more suggestions" link.
   grid_layout->StartRow(0, kFullWidthColumnSet);
+  views::View* more_view = new views::View();
+  more_view->SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0,
+                           views::kRelatedControlHorizontalSpacing));
+  views::ImageView* icon = new views::ImageView();
+  icon->SetImage(rb.GetImageNamed(IDR_WEBSTORE_ICON_16).ToImageSkia());
+  more_view->AddChildView(icon);
   more_suggestions_link_ = new views::Link(
     l10n_util::GetStringUTF16(IDS_FIND_MORE_INTENT_HANDLER_MESSAGE));
   more_suggestions_link_->SetDisabledColor(kDisabledLinkColor);
   more_suggestions_link_->set_listener(this);
-  grid_layout->AddView(more_suggestions_link_, 1, 1, GridLayout::LEADING,
-                       GridLayout::CENTER);
+  more_view->AddChildView(more_suggestions_link_);
+  grid_layout->AddView(more_view, 1, 1,
+                       GridLayout::LEADING, GridLayout::CENTER);
   contents_->Layout();
 }
 
