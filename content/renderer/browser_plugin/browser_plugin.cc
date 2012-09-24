@@ -9,6 +9,7 @@
 #if defined (OS_WIN)
 #include "base/sys_info.h"
 #endif
+#include "base/utf_string_conversions.h"
 #include "content/common/browser_plugin_messages.h"
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/content_renderer_client.h"
@@ -42,7 +43,10 @@ namespace content {
 namespace {
 const char kCrashEventName[] = "crash";
 const char kNavigationEventName[] = "navigation";
+const char* kPartitionAttribute = "partition";
+const char* kPersistPrefix = "persist:";
 const char* kSrcAttribute = "src";
+
 }
 
 BrowserPlugin::BrowserPlugin(
@@ -59,13 +63,12 @@ BrowserPlugin::BrowserPlugin(
       resize_pending_(false),
       navigate_src_sent_(false),
       parent_frame_(frame->identifier()),
-      process_id_(-1) {
+      process_id_(-1),
+      persist_storage_(false) {
   BrowserPluginManager::Get()->AddBrowserPlugin(instance_id, this);
   bindings_.reset(new BrowserPluginBindings(this));
 
-  std::string src;
-  if (ParseSrcAttribute(params, &src))
-    SetSrcAttribute(src);
+  ParseAttributes(params);
 }
 
 BrowserPlugin::~BrowserPlugin() {
@@ -109,24 +112,73 @@ void BrowserPlugin::SetSrcAttribute(const std::string& src) {
     // resize works correctly for all cases (e.g. The embedder can reset the
     // guest's |src| to empty value, resize and then set the |src| to a
     // non-empty value).
+    // Additionally, once this instance has navigated, the storage partition
+    // cannot be changed, so this value is used for enforcing this.
     navigate_src_sent_ = true;
   }
   src_ = src;
   guest_crashed_ = false;
 }
 
-bool BrowserPlugin::ParseSrcAttribute(
-    const WebKit::WebPluginParams& params,
-    std::string* src) {
+std::string BrowserPlugin::GetPartitionAttribute() const {
+  std::string value;
+  if (persist_storage_)
+    value.append(kPersistPrefix);
+
+  value.append(storage_partition_id_);
+  return value;
+}
+
+bool BrowserPlugin::SetPartitionAttribute(const std::string& partition_id,
+                                          std::string& error_message) {
+  if (navigate_src_sent_) {
+    error_message =
+      "The object has already navigated, so its partition cannot be changed.";
+    return false;
+  }
+
+  std::string input = partition_id;
+
+  // Since the "persist:" prefix is in ASCII, StartsWith will work fine on
+  // UTF-8 encoded |partition_id|. If the prefix is a match, we can safely
+  // remove the prefix without splicing in the middle of a multi-byte codepoint.
+  // We can use the rest of the string as UTF-8 encoded one.
+  if (StartsWithASCII(input, kPersistPrefix, true)) {
+    size_t index = input.find(":");
+    CHECK(index != std::string::npos);
+    // It is safe to do index + 1, since we tested for the full prefix above.
+    input = input.substr(index + 1);
+    if (input.empty()) {
+      error_message = "Invalid empty partition attribute.";
+      return false;
+    }
+    persist_storage_ = true;
+  } else {
+    persist_storage_ = false;
+  }
+
+  storage_partition_id_ = input;
+  return true;
+}
+
+void BrowserPlugin::ParseAttributes(const WebKit::WebPluginParams& params) {
+  std::string src;
+
   // Get the src attribute from the attributes vector
   for (unsigned i = 0; i < params.attributeNames.size(); ++i) {
     std::string attributeName = params.attributeNames[i].utf8();
     if (LowerCaseEqualsASCII(attributeName, kSrcAttribute)) {
-      *src = params.attributeValues[i].utf8();
-      return true;
+      src = params.attributeValues[i].utf8();
+    } else if (LowerCaseEqualsASCII(attributeName, kPartitionAttribute)) {
+      std::string error;
+      SetPartitionAttribute(params.attributeValues[i].utf8(), error);
     }
   }
-  return false;
+
+  // Set the 'src' attribute last, as it will set the has_navigated_ flag to
+  // true, which prevents changing the 'partition' attribute.
+  if (!src.empty())
+    SetSrcAttribute(src);
 }
 
 float BrowserPlugin::GetDeviceScaleFactor() const {

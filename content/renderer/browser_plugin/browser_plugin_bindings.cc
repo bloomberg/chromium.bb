@@ -40,6 +40,7 @@ namespace {
 
 const char kAddEventListener[] = "addEventListener";
 const char kGetProcessId[] = "getProcessId";
+const char kPartitionAttribute[] = "partition";
 const char kReloadMethod[] = "reload";
 const char kRemoveEventListener[] = "removeEventListener";
 const char kSrcAttribute[] = "src";
@@ -72,6 +73,10 @@ bool IdentifierIsGetProcessID(NPIdentifier identifier) {
 
 bool IdentifierIsSrcAttribute(NPIdentifier identifier) {
   return WebBindings::getStringIdentifier(kSrcAttribute) == identifier;
+}
+
+bool IdentifierIsPartitionAttribute(NPIdentifier identifier) {
+  return WebBindings::getStringIdentifier(kPartitionAttribute) == identifier;
 }
 
 std::string StringFromNPVariant(const NPVariant& variant) {
@@ -207,7 +212,8 @@ bool BrowserPluginBindingsInvokeDefault(NPObject* np_obj,
 }
 
 bool BrowserPluginBindingsHasProperty(NPObject* np_obj, NPIdentifier name) {
-  return IdentifierIsSrcAttribute(name);
+  return IdentifierIsSrcAttribute(name) ||
+      IdentifierIsPartitionAttribute(name);
 }
 
 bool BrowserPluginBindingsGetProperty(NPObject* np_obj, NPIdentifier name,
@@ -215,16 +221,27 @@ bool BrowserPluginBindingsGetProperty(NPObject* np_obj, NPIdentifier name,
   if (!np_obj)
     return false;
 
+  if (!result)
+    return false;
+
   if (IdentifierIsAddEventListener(name) ||
       IdentifierIsRemoveEventListener(name))
     return false;
 
+  // All attributes from here on rely on the bindings, so retrieve it once and
+  // return on failure.
+  BrowserPluginBindings* bindings = GetBindings(np_obj);
+  if (!bindings)
+    return false;
+
   if (IdentifierIsSrcAttribute(name)) {
-    BrowserPluginBindings* bindings = GetBindings(np_obj);
-    if (!bindings)
-      return false;
     std::string src = bindings->instance()->GetSrcAttribute();
     return StringToNPVariant(src, result);
+  }
+
+  if (IdentifierIsPartitionAttribute(name)) {
+    std::string partition_id = bindings->instance()->GetPartitionAttribute();
+    return StringToNPVariant(partition_id, result);
   }
 
   return false;
@@ -234,15 +251,33 @@ bool BrowserPluginBindingsSetProperty(NPObject* np_obj, NPIdentifier name,
                                       const NPVariant* variant) {
   if (!np_obj)
     return false;
+  if (!variant)
+    return false;
+
+  // All attributes from here on rely on the bindings, so retrieve it once and
+  // return on failure.
+  BrowserPluginBindings* bindings = GetBindings(np_obj);
+  if (!bindings)
+    return false;
 
   if (IdentifierIsSrcAttribute(name)) {
     std::string src = StringFromNPVariant(*variant);
-    BrowserPluginBindings* bindings = GetBindings(np_obj);
-    if (!bindings)
-      return false;
     bindings->instance()->SetSrcAttribute(src);
     return true;
   }
+
+  if (IdentifierIsPartitionAttribute(name)) {
+    std::string partition_id = StringFromNPVariant(*variant);
+    std::string error_message;
+    if (!bindings->instance()->SetPartitionAttribute(partition_id,
+                                                     error_message)) {
+      WebBindings::setException(
+          np_obj, static_cast<const NPUTF8 *>(error_message.c_str()));
+      return false;
+    }
+    return true;
+  }
+
   return false;
 }
 

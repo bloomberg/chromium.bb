@@ -25,6 +25,17 @@ const char kHTMLForBrowserPluginObject[] =
   "<object id='browserplugin' width='640px' height='480px'"
   "  src='foo' type='%s'>";
 
+const char kHTMLForSourcelessPluginObject[] =
+  "<object id='browserplugin' width='640px' height='480px' type='%s'>";
+
+const char kHTMLForPartitionedPluginObject[] =
+  "<object id='browserplugin' width='640px' height='480px'"
+  "  src='foo' type='%s' partition='someid'>";
+
+const char kHTMLForPartitionedPersistedPluginObject[] =
+  "<object id='browserplugin' width='640px' height='480px'"
+  "  src='foo' type='%s' partition='persist:someid'>";
+
 std::string GetHTMLForBrowserPluginObject() {
   return StringPrintf(kHTMLForBrowserPluginObject,
                       content::kBrowserPluginNewMimeType);
@@ -353,6 +364,106 @@ TEST_F(BrowserPluginTest, ReloadMethod) {
   ExecuteJavaScript(kCallReload);
   EXPECT_TRUE(browser_plugin_manager()->sink().GetUniqueMessageMatching(
       BrowserPluginHostMsg_Reload::ID));
+}
+
+
+// Verify that the 'partition' attribute on the browser plugin is parsed
+// correctly.
+TEST_F(BrowserPluginTest, PartitionAttribute) {
+  std::string html = StringPrintf(kHTMLForPartitionedPluginObject,
+                                  content::kBrowserPluginNewMimeType);
+  LoadHTML(html.c_str());
+  std::string partition_value = ExecuteScriptAndReturnString(
+      "document.getElementById('browserplugin').partition");
+  EXPECT_STREQ("someid", partition_value.c_str());
+
+  html = StringPrintf(kHTMLForPartitionedPersistedPluginObject,
+                      content::kBrowserPluginNewMimeType);
+  LoadHTML(html.c_str());
+  partition_value = ExecuteScriptAndReturnString(
+      "document.getElementById('browserplugin').partition");
+  EXPECT_STREQ("persist:someid", partition_value.c_str());
+
+  // Verify that once HTML has defined a source and partition, we cannot change
+  // the partition anymore.
+  ExecuteJavaScript(
+      "try {"
+      "  document.getElementById('browserplugin').partition = 'foo';"
+      "  document.title = 'success';"
+      "} catch (e) { document.title = e.message; }");
+  std::string title = ExecuteScriptAndReturnString("document.title");
+  EXPECT_STREQ(
+      "The object has already navigated, so its partition cannot be changed.",
+      title.c_str());
+
+  // Load a browser tag without 'src' defined.
+  html = StringPrintf(kHTMLForSourcelessPluginObject,
+                      content::kBrowserPluginNewMimeType);
+  LoadHTML(html.c_str());
+
+  // Ensure we don't parse just "persist:" string and return exception.
+  ExecuteJavaScript(
+      "try {"
+      "  document.getElementById('browserplugin').partition = 'persist:';"
+      "  document.title = 'success';"
+      "} catch (e) { document.title = e.message; }");
+  title = ExecuteScriptAndReturnString("document.title");
+  EXPECT_STREQ("Invalid empty partition attribute.", title.c_str());
+}
+
+// Test to verify that after the first navigation, the partition attribute
+// cannot be modified.
+TEST_F(BrowserPluginTest, ImmutableAttributesAfterNavigation) {
+  std::string html = StringPrintf(kHTMLForSourcelessPluginObject,
+                                  content::kBrowserPluginNewMimeType);
+  LoadHTML(html.c_str());
+
+  ExecuteJavaScript(
+      "document.getElementById('browserplugin').partition = 'storage'");
+  std::string partition_value = ExecuteScriptAndReturnString(
+      "document.getElementById('browserplugin').partition");
+  EXPECT_STREQ("storage", partition_value.c_str());
+
+  std::string src_value = ExecuteScriptAndReturnString(
+      "document.getElementById('browserplugin').src");
+  EXPECT_STREQ("", src_value.c_str());
+
+  ExecuteJavaScript("document.getElementById('browserplugin').src = 'bar'");
+  {
+    const IPC::Message* msg =
+        browser_plugin_manager()->sink().GetUniqueMessageMatching(
+            BrowserPluginHostMsg_NavigateGuest::ID);
+    ASSERT_TRUE(msg);
+
+    int instance_id;
+    long long frame_id;
+    std::string src;
+    gfx::Size size;
+    BrowserPluginHostMsg_NavigateGuest::Read(
+        msg,
+        &instance_id,
+        &frame_id,
+        &src,
+        &size);
+    EXPECT_STREQ("bar", src.c_str());
+  }
+
+  // Setting the partition should throw an exception and the value should not
+  // change.
+  ExecuteJavaScript(
+      "try {"
+      "  document.getElementById('browserplugin').partition = 'someid';"
+      "  document.title = 'success';"
+      "} catch (e) { document.title = e.message; }");
+
+  std::string title = ExecuteScriptAndReturnString("document.title");
+  EXPECT_STREQ(
+      "The object has already navigated, so its partition cannot be changed.",
+      title.c_str());
+
+  partition_value = ExecuteScriptAndReturnString(
+      "document.getElementById('browserplugin').partition");
+  EXPECT_STREQ("storage", partition_value.c_str());
 }
 
 }  // namespace content
