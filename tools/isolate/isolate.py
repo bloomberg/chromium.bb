@@ -1320,7 +1320,7 @@ class SavedState(Flattenable):
 
 class CompleteState(object):
   """Contains all the state to run the task at hand."""
-  def __init__(self, result_file, result, saved_state, out_dir):
+  def __init__(self, result_file, result, saved_state):
     super(CompleteState, self).__init__()
     self.result_file = result_file
     # Contains the data that will be used by run_test_from_archive.py
@@ -1328,17 +1328,15 @@ class CompleteState(object):
     # Contains the data to ease developer's use-case but that is not strictly
     # necessary.
     self.saved_state = saved_state
-    self.out_dir = out_dir
 
   @classmethod
-  def load_files(cls, result_file, out_dir):
+  def load_files(cls, result_file):
     """Loads state from disk."""
     assert os.path.isabs(result_file), result_file
     return cls(
         result_file,
         Result.load_file(result_file),
-        SavedState.load_file(result_to_state(result_file)),
-        out_dir)
+        SavedState.load_file(result_to_state(result_file)))
 
   def load_isolate(self, isolate_file, variables):
     """Updates self.result and self.saved_state with information loaded from a
@@ -1457,11 +1455,11 @@ def load_complete_state(options, level):
   if options.result:
     # Load the previous state if it was present. Namely, "foo.result" and
     # "foo.state".
-    complete_state = CompleteState.load_files(options.result, options.outdir)
+    complete_state = CompleteState.load_files(options.result)
   else:
     # Constructs a dummy object that cannot be saved. Useful for temporary
     # commands like 'run'.
-    complete_state = CompleteState(None, Result(), SavedState(), options.outdir)
+    complete_state = CompleteState(None, Result(), SavedState())
   options.isolate = options.isolate or complete_state.saved_state.isolate_file
   if not options.isolate:
     raise ExecutionError('A .isolate file is required.')
