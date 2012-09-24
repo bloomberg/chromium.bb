@@ -113,6 +113,10 @@ WebUILoginDisplayHost::WebUILoginDisplayHost(const gfx::Rect& background_bounds)
   if (!WizardController::IsOobeCompleted())
     initialize_webui_hidden_ = false;
 
+  // There is no wallpaper for KioskMode, don't initialize the webui hidden.
+  if (chromeos::KioskModeSettings::Get()->IsKioskModeEnabled())
+    initialize_webui_hidden_ = false;
+
   if (waiting_for_wallpaper_load_) {
     registrar_.Add(this, chrome::NOTIFICATION_WALLPAPER_ANIMATION_FINISHED,
                    content::NotificationService::AllSources());
