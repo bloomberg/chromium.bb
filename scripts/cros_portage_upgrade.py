@@ -89,10 +89,18 @@ class PInfo(object):
 class Upgrader(object):
   """A class to perform various tasks related to updating Portage packages."""
 
-  PORTAGE_GIT_URL = constants.GIT_HTTP_URL + '/chromiumos/overlays/portage.git'
+  PORTAGE_GIT_URL = '%s/chromiumos/overlays/portage.git' % (
+      constants.GIT_HTTP_TESTING_URL)
   ORIGIN_GENTOO = 'origin/gentoo'
-  UPSTREAM_TMP_REPO = '/tmp/cros_portage_upgrade-gentoo-portage'
+
   UPSTREAM_OVERLAY_NAME = 'portage'
+  UPSTREAM_TMP_REPO = os.environ.get(constants.SHARED_CACHE_ENVVAR)
+  if UPSTREAM_TMP_REPO is not None:
+    UPSTREAM_TMP_REPO = '%s/cros_portage_upgrade' % UPSTREAM_TMP_REPO
+  else:
+    UPSTREAM_TMP_REPO = '/tmp'
+  UPSTREAM_TMP_REPO += '/' + UPSTREAM_OVERLAY_NAME
+
   STABLE_OVERLAY_NAME = 'portage-stable'
   CROS_OVERLAY_NAME = 'chromiumos-overlay'
   CATEGORIES_FILE = 'profiles/categories'
@@ -133,7 +141,6 @@ class Upgrader(object):
                '_upgrade_cnt',  # Num pkg upgrades in this run (all boards)
                '_upgrade_deep', # Boolean indicating upgrade_deep requested
                '_upstream',     # User-provided path to upstream repo
-               '_upstream_git', # Path to local upstream portage repo
                '_upstream_repo',# Path to upstream portage repo
                '_unstable_ok',  # Boolean to allow unstable upstream also
                '_verbose',      # Boolean
@@ -153,8 +160,8 @@ class Upgrader(object):
     self._upstream_repo = options.upstream
     if not self._upstream_repo:
       self._upstream_repo = self.UPSTREAM_TMP_REPO
-    self._upstream_git = os.path.join(options.srcroot, 'third_party',
-                                      self.UPSTREAM_OVERLAY_NAME, '.git')
+    # This can exist in two spots; the tree, or the cache.
+
     self._cros_overlay = os.path.join(options.srcroot, 'third_party',
                                       self.CROS_OVERLAY_NAME)
 
@@ -1499,24 +1506,32 @@ class Upgrader(object):
 
   def PrepareToRun(self):
     """Checkout upstream gentoo if necessary, and any other prep steps."""
+
     if not self._upstream:
+      if not os.path.exists(os.path.join(
+          self._upstream_repo, '.git', 'shallow')):
+        osutils.RmDir(self._upstream_repo, ignore_missing=True)
+
       if os.path.exists(self._upstream_repo):
-        # Previously created upstream cache can be re-used.  Just update it.
+        # Recheck the pathway; it's possible in switching off alternates,
+        # this was converted down to a depth=1 repo.
+
         oper.Notice('Updating previously created upstream cache at %s.' %
                     self._upstream_repo)
+        self._RunGit(self._upstream_repo, ['remote', 'set-url', 'origin',
+                                           self.PORTAGE_GIT_URL])
         self._RunGit(self._upstream_repo, ['remote', 'update'])
         self._RunGit(self._upstream_repo, ['checkout', self.ORIGIN_GENTOO],
                      redirect_stdout=True, combine_stdout_stderr=True)
       else:
+        root = os.path.dirname(self._upstream_repo)
+        osutils.SafeMakedirs(root)
         # Create local copy of upstream gentoo.
         oper.Notice('Cloning origin/gentoo at %s as upstream reference.' %
                     self._upstream_repo)
-        root = os.path.dirname(self._upstream_repo)
         name = os.path.basename(self._upstream_repo)
         args = ['clone', '--branch', os.path.basename(self.ORIGIN_GENTOO)]
-        if os.path.exists(self._upstream_git):
-          args += ['--reference', self._upstream_git]
-        args += [self.PORTAGE_GIT_URL, name]
+        args += ['--depth', '1', self.PORTAGE_GIT_URL, name]
         self._RunGit(root, args)
 
         # Create a README file to explain its presence.
