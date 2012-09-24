@@ -29,8 +29,6 @@ public:
     virtual ~ScrollbarLayerChromium();
 
     // LayerChromium interface
-    virtual bool needsContentsScale() const OVERRIDE;
-    virtual IntSize contentBounds() const OVERRIDE;
     virtual void setTexturePriorities(const CCPriorityCalculator&) OVERRIDE;
     virtual void update(CCTextureUpdateQueue&, const CCOcclusionTracker*, CCRenderingStats&) OVERRIDE;
     virtual void setLayerTreeHost(CCLayerTreeHost*) OVERRIDE;
