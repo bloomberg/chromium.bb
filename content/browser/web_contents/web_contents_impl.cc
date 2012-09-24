@@ -365,6 +365,12 @@ WebContentsImpl::WebContentsImpl(
 WebContentsImpl::~WebContentsImpl() {
   is_being_destroyed_ = true;
 
+  for (std::set<RenderWidgetHostImpl*>::iterator iter =
+           created_widgets_.begin(); iter != created_widgets_.end(); ++iter) {
+    (*iter)->DetachDelegate();
+  }
+  created_widgets_.clear();
+
   // Clear out any JavaScript state.
   if (dialog_creator_)
     dialog_creator_->ResetJavaScriptState(this);
@@ -1194,6 +1200,19 @@ void WebContentsImpl::LostCapture() {
     delegate_->LostCapture();
 }
 
+void WebContentsImpl::RenderWidgetDeleted(
+    RenderWidgetHostImpl* render_widget_host) {
+  if (is_being_destroyed_) {
+    // |created_widgets_| might have been destroyed.
+    return;
+  }
+
+  std::set<RenderWidgetHostImpl*>::iterator iter =
+      created_widgets_.find(render_widget_host);
+  if (iter != created_widgets_.end())
+    created_widgets_.erase(iter);
+}
+
 bool WebContentsImpl::PreHandleKeyboardEvent(
     const NativeWebKeyboardEvent& event,
     bool* is_keyboard_shortcut) {
@@ -1356,6 +1375,8 @@ void WebContentsImpl::CreateNewWidget(int route_id,
   content::RenderProcessHost* process = GetRenderProcessHost();
   RenderWidgetHostImpl* widget_host =
       new RenderWidgetHostImpl(this, process, route_id);
+  created_widgets_.insert(widget_host);
+
   RenderWidgetHostViewPort* widget_view =
       RenderWidgetHostViewPort::CreateViewForWidget(widget_host);
   if (!is_fullscreen) {

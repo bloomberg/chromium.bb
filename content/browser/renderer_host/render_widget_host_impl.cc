@@ -185,6 +185,9 @@ RenderWidgetHostImpl::~RenderWidgetHostImpl() {
   surface_id_ = 0;
 
   process_->Release(routing_id_);
+
+  if (delegate_)
+    delegate_->RenderWidgetDeleted(this);
 }
 
 // static
@@ -969,10 +972,6 @@ void RenderWidgetHostImpl::ForwardKeyboardEvent(
 
     bool is_keyboard_shortcut = false;
     // Only pre-handle the key event if it's not handled by the input method.
-    // A delegate_ of NULL seems impossible but crash reports show that it
-    // can happen (see http://crbug.com/134465). This doesn't seem to happen
-    // with Chrome 22 and later, so checking the delegate_ here can be removed
-    // once Chrome 22 goes to stable..
     if (delegate_ && !key_event.skip_in_browser) {
       // We need to set |suppress_next_char_events_| to true if
       // PreHandleKeyboardEvent() returns true, but |this| may already be
@@ -1849,7 +1848,7 @@ void RenderWidgetHostImpl::ProcessKeyboardEventAck(int type, bool processed) {
     // We only send unprocessed key event upwards if we are not hidden,
     // because the user has moved away from us and no longer expect any effect
     // of this key event.
-    if (!processed && !is_hidden_ && !front_item.skip_in_browser) {
+    if (delegate_ && !processed && !is_hidden_ && !front_item.skip_in_browser) {
       delegate_->HandleKeyboardEvent(front_item);
 
       // WARNING: This RenderWidgetHostImpl can be deallocated at this point
@@ -2058,6 +2057,10 @@ void RenderWidgetHostImpl::DelayedAutoResized() {
     return;
 
   OnRenderAutoResized(new_size);
+}
+
+void RenderWidgetHostImpl::DetachDelegate() {
+  delegate_ = NULL;
 }
 
 }  // namespace content
