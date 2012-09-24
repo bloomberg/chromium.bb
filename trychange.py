@@ -836,6 +836,13 @@ def TryChange(argv,
       # If no bot is specified, either the default pool will be selected or the
       # try server will refuse the job. Either case we don't need to interfere.
 
+    if any('triggered' in b.split(':', 1)[0] for b in options.bot):
+      print >> sys.stderr, (
+          'ERROR You are trying to send a job to a triggered bot.  This type of'
+          ' bot requires an\ninitial job from a parent (usually a builder).  '
+          'Instead send your job to the parent.\nBot list: %s' % options.bot)
+      return 1
+
     if options.print_bots:
       print 'Bots which would be used:'
       for bot in options.bot:

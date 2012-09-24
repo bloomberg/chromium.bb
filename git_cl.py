@@ -1591,6 +1591,14 @@ def CMDtry(parser, args):
       (b, forced_tests) for b, t in builders_and_tests.iteritems()
       if t != ['compile'])
 
+  if any('triggered' in b for b in builders_and_tests):
+    print >> sys.stderr, (
+        'ERROR You are trying to send a job to a triggered bot.  This type of'
+        ' bot requires an\ninitial job from a parent (usually a builder).  '
+        'Instead send your job to the parent.\n'
+        'Bot list: %s' % builders_and_tests)
+    return 1
+
   patchset = cl.GetPatchset()
   if not cl.GetPatchset():
     patchset = cl.GetMostRecentPatchset(cl.GetIssue())
