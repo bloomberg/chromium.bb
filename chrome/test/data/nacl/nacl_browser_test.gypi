@@ -27,6 +27,7 @@
       'nmf_glibc': '>(nacl_glibc_out_dir)/>(nexe_target).nmf',
     },
     'dependencies': [
+       '<(DEPTH)/native_client/src/untrusted/nacl/nacl.gyp:nacl_lib',
        '<(DEPTH)/ppapi/ppapi_untrusted.gyp:ppapi_cpp_lib',
        '<(DEPTH)/ppapi/native_client/native_client.gyp:ppapi_lib',
     ],
@@ -129,11 +130,17 @@
                 'target_conditions': [
                   ['enable_x86_64==1', {
                     'inputs': ['>(out_glibc64)'],
-                    'action': ['--library-path=>(libdir_glibc64)'],
+                    'action': [
+                      '--library-path=>(libdir_glibc64)',
+                      '--library-path=<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib64',
+                    ],
                   }],
                   ['enable_x86_32==1', {
                     'inputs': ['>(out_glibc32)'],
-                    'action': ['--library-path=>(libdir_glibc32)'],
+                    'action': [
+                      '--library-path=>(libdir_glibc32)',
+                      '--library-path=<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib32',
+                    ],
                   }],
                   # TODO(ncbray) handle arm case.  We don't have ARM glibc yet.
                 ],

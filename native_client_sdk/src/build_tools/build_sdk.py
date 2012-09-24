@@ -351,6 +351,130 @@ def InstallHeaders(tc_dst_inc, pepper_ver, tc_name):
           os.path.join(tc_dst_inc, 'ppapi'))
 
 
+def MakeNinjaRelPath(path):
+  return os.path.join(os.path.relpath(OUT_DIR, SRC_DIR), path)
+
+
+def GypNinjaBuild_X86(pepperdir, platform, toolchains):
+  build_dir = 'gypbuild'
+  GypNinjaBuild_X86_Nacl(platform, build_dir)
+  GypNinjaBuild_X86_Chrome(build_dir)
+
+  ninja_out_dir = os.path.join(OUT_DIR, build_dir, 'Release')
+  # src_file, dst_file, is_host_exe?
+  tools_files = [
+    ('sel_ldr', 'sel_ldr_x86_32', True),
+    ('ncval_x86_32', 'ncval_x86_32', True),
+    ('irt_core_newlib_x32.nexe', 'irt_core_newlib_x32.nexe', False),
+    ('irt_core_newlib_x64.nexe', 'irt_core_newlib_x64.nexe', False),
+  ]
+  if platform != 'mac':
+    # Mac doesn't build 64-bit binaries.
+    tools_files.append(('sel_ldr64', 'sel_ldr_x86_64', True))
+    tools_files.append(('ncval_x86_64', 'ncval_x86_64', True))
+
+  if platform == 'linux':
+    tools_files.append(('nacl_helper_bootstrap',
+                        'nacl_helper_bootstrap_x86_32', True))
+    tools_files.append(('nacl_helper_bootstrap64',
+                        'nacl_helper_bootstrap_x86_64', True))
+
+  buildbot_common.MakeDir(os.path.join(pepperdir, 'tools'))
+  for src, dst, host_exe in tools_files:
+    if platform == 'win' and host_exe:
+      src += '.exe'
+      dst += '.exe'
+
+    buildbot_common.CopyFile(
+        os.path.join(ninja_out_dir, src),
+        os.path.join(pepperdir, 'tools', dst))
+
+  for tc in set(toolchains) & set(['newlib', 'glibc']):
+    for bits in '32', '64':
+      tc_dir = 'tc_' + tc
+      lib_dir = 'lib' + bits
+      src_dir = os.path.join(ninja_out_dir, 'gen', tc_dir, lib_dir)
+      tcpath = os.path.join(pepperdir, 'toolchain',
+                            '%s_x86_%s' % (platform, tc))
+      dst_dir = GetToolchainNaClLib(tc, tcpath, 'x86', bits)
+
+      buildbot_common.MakeDir(dst_dir)
+      buildbot_common.CopyDir(os.path.join(src_dir, '*.a'), dst_dir)
+      if tc == 'newlib':
+        buildbot_common.CopyDir(os.path.join(src_dir, '*.o'), dst_dir)
+        # TODO(binji) crt1.o for newlib/32 is installed to a subdirectory for
+        # some reason. Can this be fixed in the gyp script?
+        if bits == '32':
+          buildbot_common.CopyFile(os.path.join(src_dir, '32', 'crt1.o'),
+                                   dst_dir)
+
+      if tc == 'glibc':
+        buildbot_common.CopyDir(os.path.join(src_dir, '*.so'), dst_dir)
+
+
+def GypNinjaBuild_X86_Nacl(platform, rel_out_dir):
+  gyp_py = os.path.join(NACL_DIR, 'build', 'gyp_nacl')
+  nacl_core_sdk_gyp = os.path.join(NACL_DIR, 'build', 'nacl_core_sdk.gyp')
+  all_gyp = os.path.join(NACL_DIR, 'build', 'all.gyp')
+
+  out_dir = MakeNinjaRelPath(rel_out_dir)
+  GypNinjaBuild('ia32', gyp_py, nacl_core_sdk_gyp, 'nacl_core_sdk', out_dir)
+  GypNinjaBuild('ia32', gyp_py, all_gyp, 'ncval_x86_32', out_dir)
+
+  if platform == 'win':
+    NinjaBuild('sel_ldr64', out_dir)
+    NinjaBuild('ncval_x86_64', out_dir)
+  elif platform == 'linux':
+    out_dir_64 = MakeNinjaRelPath(rel_out_dir + '_64')
+    GypNinjaBuild('x64', gyp_py, nacl_core_sdk_gyp, 'sel_ldr', out_dir_64)
+    GypNinjaBuild('x64', gyp_py, all_gyp, 'ncval_x86_64', out_dir_64)
+
+    # We only need sel_ldr and ncval_x86_64 from the 64-bit out directory.
+    # sel_ldr needs to be renamed, so we'll call it sel_ldr64.
+    files_to_copy = [
+      ('sel_ldr', 'sel_ldr64'),
+      ('ncval_x86_64', 'ncval_x86_64'),
+    ]
+    files_to_copy.append(('nacl_helper_bootstrap', 'nacl_helper_bootstrap64'))
+
+    for src, dst in files_to_copy:
+      buildbot_common.CopyFile(
+          os.path.join(SRC_DIR, out_dir_64, 'Release', src),
+          os.path.join(SRC_DIR, out_dir, 'Release', dst))
+
+
+def GypNinjaBuild_X86_Chrome(rel_out_dir):
+  gyp_py = os.path.join(SRC_DIR, 'build', 'gyp_chromium')
+
+  out_dir = MakeNinjaRelPath(rel_out_dir)
+  gyp_file = os.path.join(SRC_DIR, 'ppapi', 'ppapi_untrusted.gyp')
+  targets = ['ppapi_cpp_lib', 'ppapi_gles2_lib']
+  GypNinjaBuild('ia32', gyp_py, gyp_file, targets, out_dir)
+
+  gyp_file = os.path.join(
+      SRC_DIR, 'ppapi', 'native_client', 'native_client.gyp')
+  GypNinjaBuild('ia32', gyp_py, gyp_file, 'ppapi_lib', out_dir)
+
+
+def GypNinjaBuild(arch, gyp_py_script, gyp_file, targets, out_dir):
+  gyp_env = copy.copy(os.environ)
+  gyp_env['GYP_GENERATORS'] = 'ninja'
+  gyp_env['GYP_DEFINES'] = 'target_arch=%s' % (arch,)
+  gyp_generator_flags = ['-G', 'output_dir=%s' % (out_dir,)]
+  buildbot_common.Run(
+      [sys.executable, gyp_py_script, gyp_file] + gyp_generator_flags,
+      cwd=SRC_DIR,
+      env=gyp_env)
+  NinjaBuild(targets, out_dir)
+
+
+def NinjaBuild(targets, out_dir):
+  if type(targets) is not list:
+    targets = [targets]
+  out_config_dir = os.path.join(out_dir, 'Release')
+  buildbot_common.Run(['ninja', '-C', out_config_dir] + targets, cwd=SRC_DIR)
+
+
 def BuildStepBuildToolchains(pepperdir, platform, arch, pepper_ver, toolchains):
   buildbot_common.BuildStep('SDK Items')
 
@@ -361,24 +485,15 @@ def BuildStepBuildToolchains(pepperdir, platform, arch, pepper_ver, toolchains):
 
   # Run scons TC build steps
   if arch == 'x86':
+    if set(toolchains) & set(['newlib', 'glibc']):
+      GypNinjaBuild_X86(pepperdir, platform, toolchains)
+
     if 'newlib' in toolchains:
-      buildbot_common.Run(
-          GetBuildArgs('newlib', newlibdir, pepperdir, 'x86', '32'),
-          cwd=NACL_DIR, shell=(platform=='win'))
-      buildbot_common.Run(
-          GetBuildArgs('newlib', newlibdir, pepperdir, 'x86', '64'),
-          cwd=NACL_DIR, shell=(platform=='win'))
       InstallHeaders(GetToolchainNaClInclude('newlib', newlibdir, 'x86'),
                      pepper_ver,
                      'newlib')
 
     if 'glibc' in toolchains:
-      buildbot_common.Run(
-          GetBuildArgs('glibc', glibcdir, pepperdir, 'x86', '32'),
-          cwd=NACL_DIR, shell=(platform=='win'))
-      buildbot_common.Run(
-          GetBuildArgs('glibc', glibcdir, pepperdir, 'x86', '64'),
-          cwd=NACL_DIR, shell=(platform=='win'))
       InstallHeaders(GetToolchainNaClInclude('glibc', glibcdir, 'x86'),
                      pepper_ver,
                      'glibc')
@@ -417,12 +532,6 @@ def BuildStepCopyBuildHelpers(pepperdir, platform):
     buildbot_common.BuildStep('Add MAKE')
     http_download.HttpDownload(GSTORE + MAKE,
                                os.path.join(pepperdir, 'tools' ,'make.exe'))
-    rename_list = ['ncval_x86_32', 'ncval_x86_64',
-                   'sel_ldr_x86_32', 'sel_ldr_x86_64']
-    for name in rename_list:
-      src = os.path.join(pepperdir, 'tools', name)
-      dst = os.path.join(pepperdir, 'tools', name + '.exe')
-      buildbot_common.Move(src, dst)
 
 
 EXAMPLE_LIST = [

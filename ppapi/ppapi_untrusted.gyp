@@ -17,6 +17,7 @@
       'type': 'none',
       'variables': {
         'nlib_target': 'libppapi_cpp.a',
+        'nso_target': 'libppapi_cpp.so',
         'build_glibc': 1,
         'build_newlib': 1,
         'sources': [
@@ -34,6 +35,7 @@
       'type': 'none',
       'variables': {
         'nlib_target': 'libppapi_gles2.a',
+        'nso_target': 'libppapi_gles2.so',
         'build_glibc': 1,
         'build_newlib': 1,
         'include_dirs': [
@@ -53,6 +55,7 @@
       'target_name': 'ppapi_nacl_tests',
       'type': 'none',
       'dependencies': [
+         '<(DEPTH)/native_client/src/untrusted/nacl/nacl.gyp:nacl_lib',
          'ppapi_cpp_lib',
          'native_client/native_client.gyp:ppapi_lib',
       ],
@@ -140,6 +143,8 @@
               '--objdump=>(nacl_objdump)',
               '--library-path=>(libdir_glibc64)',
               '--library-path=>(libdir_glibc32)',
+              '--library-path=<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib32',
+              '--library-path=<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib64',
               '--output=>(nmf_glibc)',
               '--stage-dependencies=<(PRODUCT_DIR)',
               '--toolchain=glibc',
