@@ -63,9 +63,12 @@ class AnalyzerResultMap:
       for (k, value) in test_info_map.iteritems():
         self.result_map['whole'][k] = value
         if 'te_info' in value:
-          # Don't count SLOW PASS tests as failures.
+          # Don't count SLOW PASS or WONTFIX tests as failures.
           if any([True for x in value['te_info'] if set(x.keys()) ==
-                 set(['SLOW', 'PASS', 'Bugs', 'Comments'])]):
+                 set(['SLOW', 'PASS', 'Bugs', 'Comments']) or 'WONTFIX' in x]):
+            continue
+          # Ignore failures on the ANDROID platform.
+          if value['te_info']['Platforms'] == ['ANDROID']:
             continue
           if any([True for x in value['te_info'] if 'SKIP' in x]):
             self.result_map['skip'][k] = value

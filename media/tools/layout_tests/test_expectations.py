@@ -18,17 +18,11 @@ DEFAULT_TEST_EXPECTATION_LOCATION = (
 # webkit-layout-tests#TOC-Test-Expectations
 # <decision> ::== [SKIP] [WONTFIX] [SLOW]
 DECISION_NAMES = ['SKIP', 'WONTFIX', 'SLOW']
-# <platform> ::== [GPU] [CPU] [WIN] [LINUX] [MAC]
-PLATFORM_NAMES = ['GPU', 'CPU', 'WIN', 'LINUX', 'MAC']
 # <config> ::== RELEASE | DEBUG
 CONFIG_NAMES = ['RELEASE', 'DEBUG']
-# <EXPECTATION_NAMES> ::== \
-#   [FAIL] [PASS] [CRASH] [TIMEOUT] [IMAGE] [TEXT] [IMAGE+TEXT]
-EXPECTATION_NAMES = ['FAIL', 'PASS', 'CRASH',
-                     'TIMEOUT', 'IMAGE', 'TEXT',
-                     'IMAGE+TEXT']
-ALL_TE_KEYWORDS = (DECISION_NAMES + PLATFORM_NAMES + CONFIG_NAMES +
-                   EXPECTATION_NAMES)
+# Only hard code keywords we don't expect to change.  Determine the rest from
+# the format of the status line.
+KNOWN_TE_KEYWORDS = DECISION_NAMES + CONFIG_NAMES
 
 
 class TestExpectations(object):
@@ -144,7 +138,7 @@ class TestExpectations(object):
       # Remove the inline comments to avoid the case where keywords are in
       # inline comments.
       line = line[0:line.rindex('//')]
-    for name in ALL_TE_KEYWORDS:
+    for name in KNOWN_TE_KEYWORDS:
       if name in line:
         test_expectation_info[name] = True
     test_expectation_info['Comments'] = comment_prefix + inline_comments
@@ -152,4 +146,14 @@ class TestExpectations(object):
     bugs = re.findall(r'BUG\w+', line)
     if bugs:
       test_expectation_info['Bugs'] = bugs
+    # Platforms should be the first tags to the left of the " : " after the BUG
+    # information and known keywords have been removed.
+    test_expectation_info['Platforms'] = [
+        x for x in line.split(' : ')[0].split(' ') if x and x not in bugs and
+        x not in KNOWN_TE_KEYWORDS]
+    # Test expectations should be all the keywords to the right of " = "
+    test_expectation = [x for x in line.split(' = ')[-1].split(' ') if x]
+    # Dump keywords into test expectations dictionary.
+    for name in test_expectation_info['Platforms'] + test_expectation:
+      test_expectation_info[name] = True
     return test_expectation_info

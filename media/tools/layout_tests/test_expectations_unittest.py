@@ -14,7 +14,8 @@ class TestTestExpectations(unittest.TestCase):
     line = 'BUGCR86714 MAC GPU : media/video-zoom.html = CRASH IMAGE'
     comments = 'Comments'
     expected_map = {'CRASH': True, 'IMAGE': True, 'Bugs': ['BUGCR86714'],
-                    'Comments': 'Comments', 'MAC': True, 'GPU': True}
+                    'Comments': 'Comments', 'MAC': True, 'GPU': True,
+                    'Platforms': ['MAC', 'GPU']}
     self.assertEquals(TestExpectations.ParseLine(line, comments),
                       expected_map)
 
@@ -22,7 +23,8 @@ class TestTestExpectations(unittest.TestCase):
     line = 'BUGCR86714 MAC GPU : media/video-zoom.html = CRASH IMAGE // foo'
     comments = 'Comments'
     expected_map = {'CRASH': True, 'IMAGE': True, 'Bugs': ['BUGCR86714'],
-                    'Comments': 'Comments foo', 'MAC': True, 'GPU': True}
+                    'Comments': 'Comments foo', 'MAC': True, 'GPU': True,
+                    'Platforms': ['MAC', 'GPU']}
     self.assertEquals(TestExpectations.ParseLine(line, comments),
                       expected_map)
 
@@ -30,7 +32,8 @@ class TestTestExpectations(unittest.TestCase):
     line = 'BUGCR86714 MAC : media/video-zoom.html = CRASH IMAGE // GPU'
     comments = 'Comments'
     expected_map = {'CRASH': True, 'IMAGE': True, 'Bugs': ['BUGCR86714'],
-                    'Comments': 'Comments GPU', 'MAC': True}
+                    'Comments': 'Comments GPU', 'MAC': True,
+                    'Platforms': ['MAC']}
     self.assertEquals(TestExpectations.ParseLine(line, comments),
                       expected_map)
 
