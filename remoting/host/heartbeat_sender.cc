@@ -13,6 +13,7 @@
 #include "base/string_number_conversions.h"
 #include "base/time.h"
 #include "remoting/base/constants.h"
+#include "remoting/host/constants.h"
 #include "remoting/host/server_log_entry.h"
 #include "remoting/jingle_glue/iq_sender.h"
 #include "remoting/jingle_glue/signal_strategy.h"

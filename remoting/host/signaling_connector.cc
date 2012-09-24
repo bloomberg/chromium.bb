@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "net/url_request/url_fetcher.h"
 #include "remoting/host/chromoting_host_context.h"
+#include "remoting/host/constants.h"
 #include "remoting/host/dns_blackhole_checker.h"
 #include "remoting/host/url_request_context.h"
 
