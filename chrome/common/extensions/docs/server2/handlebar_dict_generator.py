@@ -112,6 +112,7 @@ class HandlebarDictGenerator(object):
       'name': self._StripPrefix(event.name),
       'description': self._FormatDescription(event.description),
       'parameters': map(self._GenerateProperty, event.params),
+      'callback': self._GenerateCallback(event.callback),
       'conditions': [GetLinkToRefType(self._namespace.name, c)
                      for c in event.conditions],
       'actions': [GetLinkToRefType(self._namespace.name, a)
@@ -119,6 +120,8 @@ class HandlebarDictGenerator(object):
       'filters': map(self._GenerateProperty, event.filters),
       'supportsRules': event.supports_rules
     }
+    if event_dict['callback']:
+      event_dict['parameters'].append(event_dict['callback'])
     if len(event_dict['parameters']) > 0:
       event_dict['parameters'][-1]['last'] = True
     return event_dict

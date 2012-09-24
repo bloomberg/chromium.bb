@@ -134,6 +134,7 @@
   ],
   "events": [
     {
+      "callback": null,
       "name": "EventA",
       "parameters": [
         {

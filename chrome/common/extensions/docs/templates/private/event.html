@@ -28,6 +28,9 @@
       <dl>
         {{#parameters}}{{+partials.parameter_full}}{{/}}
       </dl>
+      {{?callback}}
+      {{+partials.callback}}
+      {{/callback}}
     {{/parameters}}
     {{?filters}}
       <h4>Filters</h4>
