@@ -345,7 +345,8 @@ ShellWindowViews::ShellWindowViews(ShellWindow* shell_window,
   extension_keybinding_registry_.reset(
       new ExtensionKeybindingRegistryViews(shell_window_->profile(),
           window_->GetFocusManager(),
-          extensions::ExtensionKeybindingRegistry::PLATFORM_APPS_ONLY));
+          extensions::ExtensionKeybindingRegistry::PLATFORM_APPS_ONLY,
+          shell_window_));
 
   OnViewWasResized();
 

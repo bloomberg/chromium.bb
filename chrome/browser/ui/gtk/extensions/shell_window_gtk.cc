@@ -114,9 +114,11 @@ ShellWindowGtk::ShellWindowGtk(ShellWindow* shell_window,
   }
 
   // Add the keybinding registry.
-  extension_keybinding_registry_.reset(
-      new ExtensionKeybindingRegistryGtk(shell_window_->profile(), window_,
-          extensions::ExtensionKeybindingRegistry::PLATFORM_APPS_ONLY));
+  extension_keybinding_registry_.reset(new ExtensionKeybindingRegistryGtk(
+      shell_window_->profile(),
+      window_,
+      extensions::ExtensionKeybindingRegistry::PLATFORM_APPS_ONLY,
+      shell_window_));
 
   ui::ActiveWindowWatcherX::AddObserver(this);
 }

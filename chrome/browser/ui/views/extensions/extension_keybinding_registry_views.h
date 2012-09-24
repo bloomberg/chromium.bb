@@ -34,7 +34,8 @@ class ExtensionKeybindingRegistryViews
  public:
   ExtensionKeybindingRegistryViews(Profile* profile,
                                    views::FocusManager* focus_manager,
-                                   ExtensionFilter extension_filter);
+                                   ExtensionFilter extension_filter,
+                                   Delegate* delegate);
   virtual ~ExtensionKeybindingRegistryViews();
 
   // Overridden from ui::AcceleratorTarget.

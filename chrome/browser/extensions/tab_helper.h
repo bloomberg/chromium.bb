@@ -8,7 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "chrome/browser/extensions/active_tab_permission_manager.h"
+#include "chrome/browser/extensions/active_tab_permission_granter.h"
 #include "chrome/browser/extensions/app_notify_channel_setup.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
@@ -103,8 +103,8 @@ class TabHelper : public content::WebContentsObserver,
     return location_bar_controller_.get();
   }
 
-  ActiveTabPermissionManager* active_tab_permission_manager() {
-    return active_tab_permission_manager_.get();
+  ActiveTabPermissionGranter* active_tab_permission_granter() {
+    return active_tab_permission_granter_.get();
   }
 
   // Sets a non-extension app icon associated with WebContents and fires an
@@ -217,7 +217,7 @@ class TabHelper : public content::WebContentsObserver,
 
   scoped_ptr<LocationBarController> location_bar_controller_;
 
-  scoped_ptr<ActiveTabPermissionManager> active_tab_permission_manager_;
+  scoped_ptr<ActiveTabPermissionGranter> active_tab_permission_granter_;
 
   DISALLOW_COPY_AND_ASSIGN(TabHelper);
 };

@@ -35,7 +35,8 @@ class ExtensionKeybindingRegistryCocoa
  public:
   ExtensionKeybindingRegistryCocoa(Profile* profile,
                                    gfx::NativeWindow window,
-                                   ExtensionFilter extension_filter);
+                                   ExtensionFilter extension_filter,
+                                   Delegate* delegate);
   virtual ~ExtensionKeybindingRegistryCocoa();
 
   static void set_shortcut_handling_suspended(bool suspended) {

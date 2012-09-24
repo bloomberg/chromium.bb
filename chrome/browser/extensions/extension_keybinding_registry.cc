@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/extension_keybinding_registry.h"
 
+#include "chrome/browser/extensions/active_tab_permission_granter.h"
+#include "chrome/browser/extensions/browser_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
@@ -14,8 +16,10 @@
 namespace extensions {
 
 ExtensionKeybindingRegistry::ExtensionKeybindingRegistry(
-    Profile* profile, ExtensionFilter extension_filter)
-    : profile_(profile), extension_filter_(extension_filter) {
+    Profile* profile, ExtensionFilter extension_filter, Delegate* delegate)
+    : profile_(profile),
+      extension_filter_(extension_filter),
+      delegate_(delegate) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(profile->GetOriginalProfile()));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
@@ -46,6 +50,27 @@ bool ExtensionKeybindingRegistry::ShouldIgnoreCommand(
   return command == extension_manifest_values::kPageActionCommandEvent ||
          command == extension_manifest_values::kBrowserActionCommandEvent ||
          command == extension_manifest_values::kScriptBadgeCommandEvent;
+}
+
+void ExtensionKeybindingRegistry::CommandExecuted(
+    const std::string& extension_id, const std::string& command) {
+  ExtensionService* service =
+      ExtensionSystem::Get(profile_)->extension_service();
+
+  const Extension* extension = service->extensions()->GetByID(extension_id);
+  if (!extension)
+    return;
+
+  // Grant before sending the event so that the permission is granted before
+  // the extension acts on the command.
+  ActiveTabPermissionGranter* granter =
+      delegate_->GetActiveTabPermissionGranter();
+  if (granter)
+    granter->GrantIfRequested(extension);
+
+  service->browser_event_router()->CommandExecuted(profile_,
+                                                   extension_id,
+                                                   command);
 }
 
 void ExtensionKeybindingRegistry::Observe(

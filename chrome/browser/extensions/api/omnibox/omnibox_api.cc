@@ -85,7 +85,7 @@ void ExtensionOmniboxEventRouter::OnInputEntered(
           GetByID(extension_id);
   CHECK(extension);
   extensions::TabHelper::FromWebContents(tab_contents->web_contents())->
-      active_tab_permission_manager()->GrantIfRequested(extension);
+      active_tab_permission_granter()->GrantIfRequested(extension);
 
   scoped_ptr<ListValue> args(new ListValue());
   args->Set(0, Value::CreateStringValue(input));

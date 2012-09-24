@@ -5,9 +5,7 @@
   "background": {
     "scripts": ["background.js"]
   },
-  "permissions": [
-    "tabs", "http://*/*"
-  ],
+  "permissions": ["activeTab"],
   "browser_action": {
     "default_title": "Make this page green"
   },

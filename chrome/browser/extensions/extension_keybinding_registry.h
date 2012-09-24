@@ -17,6 +17,7 @@ class Profile;
 
 namespace extensions {
 
+class ActiveTabPermissionGranter;
 class Extension;
 
 // The ExtensionKeybindingRegistry is a class that handles the cross-platform
@@ -24,15 +25,24 @@ class Extension;
 // implementation details for each platform.
 class ExtensionKeybindingRegistry : public content::NotificationObserver {
  public:
-   enum ExtensionFilter {
-     ALL_EXTENSIONS,
-     PLATFORM_APPS_ONLY
-   };
+  enum ExtensionFilter {
+    ALL_EXTENSIONS,
+    PLATFORM_APPS_ONLY
+  };
 
-   // If |extension_filter| is not ALL_EXTENSIONS, only keybindings by
+  class Delegate {
+   public:
+    // Gets the ActiveTabPermissionGranter for the active tab, if any.
+    // If there is no active tab then returns NULL.
+    virtual ActiveTabPermissionGranter* GetActiveTabPermissionGranter() = 0;
+  };
+
+  // If |extension_filter| is not ALL_EXTENSIONS, only keybindings by
   // by extensions that match the filter will be registered.
   ExtensionKeybindingRegistry(Profile* profile,
-                              ExtensionFilter extension_filter);
+                              ExtensionFilter extension_filter,
+                              Delegate* delegate);
+
   virtual ~ExtensionKeybindingRegistry();
 
   // Enables/Disables general shortcut handing in Chrome. Implemented in
@@ -64,6 +74,10 @@ class ExtensionKeybindingRegistry : public content::NotificationObserver {
   // commands are currently ignored, since they are handled elsewhere.
   bool ShouldIgnoreCommand(const std::string& command) const;
 
+  // Notifies appropriate parties that a command has been executed.
+  void CommandExecuted(const std::string& extension_id,
+                       const std::string& command);
+
  private:
   // Returns true if the |extension| matches our extension filter.
   bool ExtensionMatchesFilter(const extensions::Extension* extension);
@@ -76,6 +90,9 @@ class ExtensionKeybindingRegistry : public content::NotificationObserver {
 
   // What extensions to register keybindings for.
   ExtensionFilter extension_filter_;
+
+  // Weak pointer to our delegate. Not owned by us. Must outlive this class.
+  Delegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionKeybindingRegistry);
 };

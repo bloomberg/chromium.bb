@@ -37,7 +37,8 @@ class ExtensionKeybindingRegistryGtk
  public:
   ExtensionKeybindingRegistryGtk(Profile* profile,
                                  gfx::NativeWindow window,
-                                 ExtensionFilter extension_filter);
+                                 ExtensionFilter extension_filter,
+                                 Delegate* delegate);
   virtual ~ExtensionKeybindingRegistryGtk();
 
   static void set_shortcut_handling_suspended(bool suspended) {

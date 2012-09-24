@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_ACTIVE_TAB_PERMISSION_MANAGER_H_
-#define CHROME_BROWSER_EXTENSIONS_ACTIVE_TAB_PERMISSION_MANAGER_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_ACTIVE_TAB_PERMISSION_GRANTER_H_
+#define CHROME_BROWSER_EXTENSIONS_ACTIVE_TAB_PERMISSION_GRANTER_H_
 
 #include <set>
 #include <string>
@@ -26,13 +26,13 @@ class Extension;
 
 // Responsible for granting and revoking tab-specific permissions to extensions
 // with the activeTab permission.
-class ActiveTabPermissionManager : public content::WebContentsObserver,
+class ActiveTabPermissionGranter : public content::WebContentsObserver,
                                    public content::NotificationObserver {
  public:
-  ActiveTabPermissionManager(content::WebContents* web_contents,
+  ActiveTabPermissionGranter(content::WebContents* web_contents,
                              int tab_id,
                              Profile* profile);
-  virtual ~ActiveTabPermissionManager();
+  virtual ~ActiveTabPermissionGranter();
 
   // If |extension| has the activeTab permission, grants tab-specific
   // permissions to it until the next page navigation or refresh.
@@ -72,9 +72,9 @@ class ActiveTabPermissionManager : public content::WebContentsObserver,
   // Listen to extension unloaded notifications.
   content::NotificationRegistrar registrar_;
 
-  DISALLOW_COPY_AND_ASSIGN(ActiveTabPermissionManager);
+  DISALLOW_COPY_AND_ASSIGN(ActiveTabPermissionGranter);
 };
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_ACTIVE_TAB_PERMISSION_MANAGER_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_ACTIVE_TAB_PERMISSION_GRANTER_H_

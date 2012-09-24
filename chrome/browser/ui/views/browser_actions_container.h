@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_BROWSER_ACTIONS_CONTAINER_H_
 #define CHROME_BROWSER_UI_VIEWS_BROWSER_ACTIONS_CONTAINER_H_
 
+#include "chrome/browser/extensions/extension_keybinding_registry.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/ui/views/browser_action_view.h"
 #include "chrome/browser/ui/views/extensions/browser_action_overflow_menu_controller.h"
@@ -21,6 +22,12 @@
 #include "ui/views/widget/widget_observer.h"
 
 class BrowserActionButton;
+class ExtensionKeybindingRegistryViews;
+class ExtensionPopup;
+
+namespace extensions {
+class ActiveTabPermissionGranter;
+}
 
 namespace ui {
 class SlideAnimation;
@@ -110,7 +117,8 @@ class BrowserActionsContainer
       public ExtensionToolbarModel::Observer,
       public BrowserActionOverflowMenuController::Observer,
       public views::WidgetObserver,
-      public BrowserActionView::Delegate {
+      public BrowserActionView::Delegate,
+      public extensions::ExtensionKeybindingRegistry::Delegate {
  public:
   BrowserActionsContainer(Browser* browser, views::View* owner_view);
   virtual ~BrowserActionsContainer();
@@ -197,6 +205,10 @@ class BrowserActionsContainer
   virtual void OnBrowserActionExecuted(BrowserActionButton* button) OVERRIDE;
   virtual void OnBrowserActionVisibilityChanged() OVERRIDE;
   virtual gfx::Point GetViewContentOffset() const OVERRIDE;
+
+  // Overridden from extension::ExtensionKeybindingRegistry::Delegate:
+  virtual extensions::ActiveTabPermissionGranter*
+      GetActiveTabPermissionGranter() OVERRIDE;
 
   // Moves a browser action with |id| to |new_index|.
   void MoveBrowserAction(const std::string& extension_id, size_t new_index);
@@ -337,9 +349,6 @@ class BrowserActionsContainer
   // own lifetime so that it can stay alive during drag and drop operations.
   BrowserActionOverflowMenuController* overflow_menu_;
 
-  // The class that registers for keyboard shortcuts for extension commands.
-  ExtensionKeybindingRegistryViews extension_keybinding_registry_;
-
   // The animation that happens when the container snaps to place.
   scoped_ptr<ui::SlideAnimation> resize_animation_;
 
@@ -357,6 +366,9 @@ class BrowserActionsContainer
 
   // The x position for where to draw the drop indicator. -1 if no indicator.
   int drop_indicator_position_;
+
+  // The class that registers for keyboard shortcuts for extension commands.
+  scoped_ptr<ExtensionKeybindingRegistryViews> extension_keybinding_registry_;
 
   base::WeakPtrFactory<BrowserActionsContainer> task_factory_;
 

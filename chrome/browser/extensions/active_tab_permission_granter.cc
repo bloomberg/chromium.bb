@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/active_tab_permission_manager.h"
+#include "chrome/browser/extensions/active_tab_permission_granter.h"
 
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -25,7 +25,7 @@ using content::WebContentsObserver;
 
 namespace extensions {
 
-ActiveTabPermissionManager::ActiveTabPermissionManager(
+ActiveTabPermissionGranter::ActiveTabPermissionGranter(
     content::WebContents* web_contents, int tab_id, Profile* profile)
     : WebContentsObserver(web_contents), tab_id_(tab_id) {
   registrar_.Add(this,
@@ -33,9 +33,9 @@ ActiveTabPermissionManager::ActiveTabPermissionManager(
                  content::Source<Profile>(profile));
 }
 
-ActiveTabPermissionManager::~ActiveTabPermissionManager() {}
+ActiveTabPermissionGranter::~ActiveTabPermissionGranter() {}
 
-void ActiveTabPermissionManager::GrantIfRequested(const Extension* extension) {
+void ActiveTabPermissionGranter::GrantIfRequested(const Extension* extension) {
   if (!extension->HasAPIPermission(extensions::APIPermission::kActiveTab))
     return;
 
@@ -64,11 +64,11 @@ void ActiveTabPermissionManager::GrantIfRequested(const Extension* extension) {
                                                      new_hosts));
 }
 
-bool ActiveTabPermissionManager::IsGranted(const Extension* extension) {
+bool ActiveTabPermissionGranter::IsGranted(const Extension* extension) {
   return granted_extensions_.Contains(extension->id());
 }
 
-void ActiveTabPermissionManager::DidNavigateMainFrame(
+void ActiveTabPermissionGranter::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
   if (details.is_in_page)
@@ -77,12 +77,12 @@ void ActiveTabPermissionManager::DidNavigateMainFrame(
   ClearActiveExtensionsAndNotify();
 }
 
-void ActiveTabPermissionManager::WebContentsDestroyed(
+void ActiveTabPermissionGranter::WebContentsDestroyed(
     content::WebContents* web_contents) {
   ClearActiveExtensionsAndNotify();
 }
 
-void ActiveTabPermissionManager::Observe(
+void ActiveTabPermissionGranter::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
@@ -94,7 +94,7 @@ void ActiveTabPermissionManager::Observe(
   granted_extensions_.Remove(extension->id());
 }
 
-void ActiveTabPermissionManager::ClearActiveExtensionsAndNotify() {
+void ActiveTabPermissionGranter::ClearActiveExtensionsAndNotify() {
   if (granted_extensions_.is_empty())
     return;
 
@@ -110,7 +110,7 @@ void ActiveTabPermissionManager::ClearActiveExtensionsAndNotify() {
   granted_extensions_.Clear();
 }
 
-int32 ActiveTabPermissionManager::GetPageID() {
+int32 ActiveTabPermissionGranter::GetPageID() {
   return web_contents()->GetController().GetActiveEntry()->GetPageID();
 }
 

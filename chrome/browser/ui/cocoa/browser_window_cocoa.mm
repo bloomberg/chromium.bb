@@ -13,6 +13,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/download/download_shelf.h"
+#include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -617,6 +618,17 @@ void BrowserWindowCocoa::Observe(int type,
       NOTREACHED();  // we don't ask for anything else!
       break;
   }
+}
+
+extensions::ActiveTabPermissionGranter*
+    BrowserWindowCocoa::GetActiveTabPermissionGranter() {
+  TabContents* tab_contents =
+      browser_->tab_strip_model()->GetActiveTabContents();
+  if (!tab_contents)
+    return NULL;
+  extensions::TabHelper* tab_helper =
+      extensions::TabHelper::FromWebContents(tab_contents->web_contents());
+  return tab_helper ? tab_helper->active_tab_permission_granter() : NULL;
 }
 
 void BrowserWindowCocoa::DestroyBrowser() {

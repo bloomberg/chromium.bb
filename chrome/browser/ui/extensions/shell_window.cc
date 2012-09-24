@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/shell_window_geometry_cache.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
+#include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/intents/web_intents_util.h"
@@ -427,6 +428,12 @@ void ShellWindow::Observe(int type,
 
 extensions::WindowController*
 ShellWindow::GetExtensionWindowController() const {
+  return NULL;
+}
+
+extensions::ActiveTabPermissionGranter*
+    ShellWindow::GetActiveTabPermissionGranter() {
+  // Shell windows don't support the activeTab permission.
   return NULL;
 }
 

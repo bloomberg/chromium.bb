@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/extensions/active_tab_permission_granter.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"
+#include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -17,6 +19,8 @@
 #include "content/public/test/browser_test_utils.h"
 
 using content::WebContents;
+
+namespace extensions {
 
 class CommandsApiTest : public ExtensionApiTest {
  public:
@@ -51,7 +55,7 @@ class ScriptBadgesCommandsApiTest : public ExtensionApiTest {
 IN_PROC_BROWSER_TEST_F(CommandsApiTest, Basic) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(RunExtensionTest("keybinding/basics")) << message_;
-  const extensions::Extension* extension = GetSingleLoadedExtension();
+  const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension) << message_;
 
   // Load this extension, which uses the same keybindings but sets the page
@@ -66,15 +70,26 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, Basic) {
   ui_test_utils::NavigateToURL(browser(),
       test_server()->GetURL("files/extensions/test_file.txt"));
 
+  // activeTab shouldn't have been granted yet.
+  TabContents* tab = chrome::GetActiveTabContents(browser());
+  ASSERT_TRUE(tab);
+
+  ActiveTabPermissionGranter* granter =
+      TabHelper::FromWebContents(tab->web_contents())->
+          active_tab_permission_granter();
+  EXPECT_FALSE(granter->IsGranted(extension));
+
   // Activate the shortcut (Ctrl+Shift+F).
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
       browser(), ui::VKEY_F, true, true, false, false));
 
+  // activeTab should now be granted.
+  EXPECT_TRUE(granter->IsGranted(extension));
+
   // Verify the command worked.
-  WebContents* tab = chrome::GetActiveWebContents(browser());
   bool result = false;
   ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-      tab->GetRenderViewHost(), L"",
+      tab->web_contents()->GetRenderViewHost(), L"",
       L"setInterval(function(){"
       L"  if(document.body.bgColor == 'red'){"
       L"    window.domAutomationController.send(true)}}, 100)",
@@ -87,7 +102,7 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, Basic) {
 
   result = false;
   ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-      tab->GetRenderViewHost(), L"",
+      tab->web_contents()->GetRenderViewHost(), L"",
       L"setInterval(function(){"
       L"  if(document.body.bgColor == 'blue'){"
       L"    window.domAutomationController.send(true)}}, 100)",
@@ -98,7 +113,7 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, Basic) {
 IN_PROC_BROWSER_TEST_F(CommandsApiTest, PageAction) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(RunExtensionTest("keybinding/page_action")) << message_;
-  const extensions::Extension* extension = GetSingleLoadedExtension();
+  const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension) << message_;
 
   {
@@ -144,7 +159,7 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, PageAction) {
 IN_PROC_BROWSER_TEST_F(ScriptBadgesCommandsApiTest, ScriptBadge_DISABLED) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(RunExtensionTest("keybinding/script_badge")) << message_;
-  const extensions::Extension* extension = GetSingleLoadedExtension();
+  const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension) << message_;
 
   {
@@ -164,3 +179,4 @@ IN_PROC_BROWSER_TEST_F(ScriptBadgesCommandsApiTest, ScriptBadge_DISABLED) {
   }
 }
 
+}  // extensions

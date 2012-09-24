@@ -76,7 +76,7 @@ LocationBarController::Action ScriptBadgeController::OnClicked(
     case 1:    // left
     case 2: {  // middle
       extensions::TabHelper::FromWebContents(web_contents())->
-          active_tab_permission_manager()->GrantIfRequested(extension);
+          active_tab_permission_granter()->GrantIfRequested(extension);
 
       TabContents* tab_contents = TabContents::FromWebContents(web_contents());
       // Even if clicking the badge doesn't immediately cause the extension to

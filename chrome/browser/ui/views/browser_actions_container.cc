@@ -4,8 +4,10 @@
 
 #include "chrome/browser/ui/views/browser_actions_container.h"
 
+#include "base/compiler_specific.h"
 #include "base/stl_util.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
@@ -15,6 +17,7 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/browser_action_view.h"
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
+#include "chrome/browser/ui/views/extensions/extension_keybinding_registry_views.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
 #include "chrome/common/pref_names.h"
@@ -68,9 +71,6 @@ BrowserActionsContainer::BrowserActionsContainer(Browser* browser,
       container_width_(0),
       chevron_(NULL),
       overflow_menu_(NULL),
-      extension_keybinding_registry_(browser->profile(),
-          owner_view->GetFocusManager(),
-          extensions::ExtensionKeybindingRegistry::ALL_EXTENSIONS),
       suppress_chevron_(false),
       resize_amount_(0),
       animation_target_size_(0),
@@ -83,6 +83,12 @@ BrowserActionsContainer::BrowserActionsContainer(Browser* browser,
     model_ = profile_->GetExtensionService()->toolbar_model();
     model_->AddObserver(this);
   }
+
+  extension_keybinding_registry_.reset(new ExtensionKeybindingRegistryViews(
+      browser->profile(),
+      owner_view->GetFocusManager(),
+      extensions::ExtensionKeybindingRegistry::ALL_EXTENSIONS,
+      this)),
 
   resize_animation_.reset(new ui::SlideAnimation(this));
   resize_area_ = new views::ResizeArea(this);
@@ -482,6 +488,15 @@ void BrowserActionsContainer::OnBrowserActionVisibilityChanged() {
 
 gfx::Point BrowserActionsContainer::GetViewContentOffset() const {
   return gfx::Point(0, ToolbarView::kVertSpacing);
+}
+
+extensions::ActiveTabPermissionGranter*
+    BrowserActionsContainer::GetActiveTabPermissionGranter() {
+  content::WebContents* web_contents = chrome::GetActiveWebContents(browser_);
+  if (!web_contents)
+    return NULL;
+  return extensions::TabHelper::FromWebContents(web_contents)->
+      active_tab_permission_granter();
 }
 
 void BrowserActionsContainer::MoveBrowserAction(const std::string& extension_id,

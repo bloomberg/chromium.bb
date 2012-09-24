@@ -6,7 +6,6 @@
 
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/api/commands/command_service_factory.h"
-#include "chrome/browser/extensions/browser_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
@@ -23,8 +22,9 @@ bool ExtensionKeybindingRegistryGtk::shortcut_handling_suspended_ = false;
 ExtensionKeybindingRegistryGtk::ExtensionKeybindingRegistryGtk(
     Profile* profile,
     gfx::NativeWindow window,
-    ExtensionFilter extension_filter)
-    : ExtensionKeybindingRegistry(profile, extension_filter),
+    ExtensionFilter extension_filter,
+    Delegate* delegate)
+    : ExtensionKeybindingRegistry(profile, extension_filter, delegate),
       profile_(profile),
       window_(window),
       accel_group_(NULL) {
@@ -170,16 +170,12 @@ gboolean ExtensionKeybindingRegistryGtk::OnGtkAccelerator(
     GdkModifierType modifier) {
   ui::AcceleratorGtk accelerator(keyval, modifier);
 
-  ExtensionService* service = profile_->GetExtensionService();
-
   EventTargets::iterator it = event_targets_.find(accelerator);
   if (it == event_targets_.end()) {
     NOTREACHED();  // Shouldn't get this event for something not registered.
     return FALSE;
   }
 
-  service->browser_event_router()->CommandExecuted(
-      profile_, it->second.first, it->second.second);
-
+  CommandExecuted(it->second.first, it->second.second);
   return TRUE;
 }

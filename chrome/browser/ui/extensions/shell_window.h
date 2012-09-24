@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
+#include "chrome/browser/extensions/extension_keybinding_registry.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/base_window.h"
@@ -41,7 +42,8 @@ class ShellWindow : public content::NotificationObserver,
                     public content::WebContentsDelegate,
                     public content::WebContentsObserver,
                     public ExtensionFunctionDispatcher::Delegate,
-                    public ImageLoadingTracker::Observer  {
+                    public ImageLoadingTracker::Observer,
+                    public extensions::ExtensionKeybindingRegistry::Delegate {
  public:
   struct CreateParams {
     enum Frame {
@@ -172,6 +174,10 @@ class ShellWindow : public content::NotificationObserver,
   virtual void OnImageLoaded(const gfx::Image& image,
                              const std::string& extension_id,
                              int index) OVERRIDE;
+
+  // extensions::ExtensionKeybindingRegistry::Delegate implementation.
+  virtual extensions::ActiveTabPermissionGranter*
+      GetActiveTabPermissionGranter() OVERRIDE;
 
   Profile* profile_;  // weak pointer - owned by ProfileManager.
   // weak pointer - owned by ExtensionService.

@@ -6,7 +6,6 @@
 
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/api/commands/command_service_factory.h"
-#include "chrome/browser/extensions/browser_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
@@ -28,8 +27,9 @@ bool ExtensionKeybindingRegistryCocoa::shortcut_handling_suspended_ = false;
 ExtensionKeybindingRegistryCocoa::ExtensionKeybindingRegistryCocoa(
     Profile* profile,
     gfx::NativeWindow window,
-    ExtensionFilter extension_filter)
-    : ExtensionKeybindingRegistry(profile, extension_filter),
+    ExtensionFilter extension_filter,
+    Delegate* delegate)
+    : ExtensionKeybindingRegistry(profile, extension_filter, delegate),
       profile_(profile),
       window_(window) {
   Init();
@@ -62,9 +62,7 @@ bool ExtensionKeybindingRegistryCocoa::ProcessKeyEvent(
   } else {
     // Not handled by using notifications. Route it through the Browser Event
     // Router.
-    ExtensionService* service = profile_->GetExtensionService();
-    service->browser_event_router()->CommandExecuted(
-        profile_, extension_id, command_name);
+    CommandExecuted(extension_id, command_name);
     return true;
   }
 

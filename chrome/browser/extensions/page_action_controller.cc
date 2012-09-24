@@ -54,7 +54,7 @@ LocationBarController::Action PageActionController::OnClicked(
   int tab_id = ExtensionTabUtil::GetTabId(web_contents());
 
   extensions::TabHelper::FromWebContents(web_contents())->
-      active_tab_permission_manager()->GrantIfRequested(extension);
+      active_tab_permission_granter()->GrantIfRequested(extension);
 
   switch (mouse_button) {
     case 1:  // left

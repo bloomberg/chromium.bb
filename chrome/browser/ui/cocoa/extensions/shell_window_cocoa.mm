@@ -224,9 +224,11 @@ ShellWindowCocoa::ShellWindowCocoa(ShellWindow* shell_window,
   [[window_controller_ window] setDelegate:window_controller_];
   [window_controller_ setShellWindow:this];
 
-  extension_keybinding_registry_.reset(
-      new ExtensionKeybindingRegistryCocoa(shell_window_->profile(), window,
-          extensions::ExtensionKeybindingRegistry::PLATFORM_APPS_ONLY));
+  extension_keybinding_registry_.reset(new ExtensionKeybindingRegistryCocoa(
+      shell_window_->profile(),
+      window,
+      extensions::ExtensionKeybindingRegistry::PLATFORM_APPS_ONLY,
+      shell_window));
 }
 
 void ShellWindowCocoa::InstallView() {

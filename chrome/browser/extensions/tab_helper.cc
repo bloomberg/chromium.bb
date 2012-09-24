@@ -66,7 +66,7 @@ TabHelper::TabHelper(content::WebContents* web_contents)
   // The ActiveTabPermissionManager requires a session ID; ensure this
   // WebContents has one.
   SessionTabHelper::CreateForWebContents(web_contents);
-  active_tab_permission_manager_.reset(new ActiveTabPermissionManager(
+  active_tab_permission_granter_.reset(new ActiveTabPermissionGranter(
       web_contents,
       SessionID::IdForTab(web_contents),
       Profile::FromBrowserContext(web_contents->GetBrowserContext())));

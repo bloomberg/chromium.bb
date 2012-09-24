@@ -122,7 +122,7 @@ ExtensionToolbarModel::Action ExtensionToolbarModel::ExecuteBrowserAction(
     return ACTION_NONE;
 
   extensions::TabHelper::FromWebContents(tab_contents->web_contents())->
-      active_tab_permission_manager()->GrantIfRequested(extension);
+      active_tab_permission_granter()->GrantIfRequested(extension);
 
   if (browser_action->HasPopup(tab_id)) {
     if (popup_url_out)

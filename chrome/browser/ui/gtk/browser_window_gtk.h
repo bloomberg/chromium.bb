@@ -15,6 +15,7 @@
 #include "base/timer.h"
 #include "build/build_config.h"
 #include "chrome/browser/api/prefs/pref_member.h"
+#include "chrome/browser/extensions/extension_keybinding_registry.h"
 #include "chrome/browser/infobars/infobar_container.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
@@ -45,6 +46,7 @@ class PasswordGenerator;
 }
 
 namespace extensions {
+class ActiveTabPermissionGranter;
 class Extension;
 }
 
@@ -52,11 +54,13 @@ class Extension;
 // Cross-platform code will interact with this object when
 // it needs to manipulate the window.
 
-class BrowserWindowGtk : public BrowserWindow,
-                         public content::NotificationObserver,
-                         public TabStripModelObserver,
-                         public ui::ActiveWindowWatcherXObserver,
-                         public InfoBarContainer::Delegate {
+class BrowserWindowGtk
+    : public BrowserWindow,
+      public content::NotificationObserver,
+      public TabStripModelObserver,
+      public ui::ActiveWindowWatcherXObserver,
+      public InfoBarContainer::Delegate,
+      public extensions::ExtensionKeybindingRegistry::Delegate {
  public:
   explicit BrowserWindowGtk(Browser* browser);
   virtual ~BrowserWindowGtk();
@@ -192,6 +196,10 @@ class BrowserWindowGtk : public BrowserWindow,
   virtual SkColor GetInfoBarSeparatorColor() const OVERRIDE;
   virtual void InfoBarContainerStateChanged(bool is_animating) OVERRIDE;
   virtual bool DrawInfoBarArrows(int* x) const OVERRIDE;
+
+  // Overridden from ExtensionKeybindingRegistry::Delegate:
+  virtual extensions::ActiveTabPermissionGranter*
+      GetActiveTabPermissionGranter() OVERRIDE;
 
   // Accessor for the tab strip.
   TabStripGtk* tabstrip() const { return tabstrip_.get(); }
