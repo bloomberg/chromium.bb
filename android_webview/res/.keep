@@ -1,0 +1,2 @@
+The APK build rule from build/java_apk.gypi that we use requires a res/ folder
+(even an empty one) to work.
