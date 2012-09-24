@@ -60,11 +60,11 @@ bool LoadStore2RegisterImm12OpTesterCase0
 
 // Neutral case:
 // 
-//    = Store2RegisterImm12Op {'constraints': & ~cccc010100101101tttt000000000100 }
+//    = Store2RegisterImm12Op {'constraints': & inst(31:0)=~xxxx010100101101xxxx000000000100 }
 //
 // Representaive case:
 // 
-//    = Store2RegisterImm12Op {constraints: & ~cccc010100101101tttt000000000100 }
+//    = Store2RegisterImm12Op {constraints: & constraint(31:0)=~xxxx010100101101xxxx000000000100 }
 class LoadStore2RegisterImm12OpTesterCase1
     : public LoadStore2RegisterImm12OpTester {
  public:
@@ -113,12 +113,12 @@ class Store2RegisterImm12OpRnNotRtOnWritebackTester_Case0
 
 // Neutral case:
 // 
-//    = Store2RegisterImm12Op {'constraints': & ~cccc010100101101tttt000000000100 ,
+//    = Store2RegisterImm12Op {'constraints': & inst(31:0)=~xxxx010100101101xxxx000000000100 ,
 //     'rule': 'Str_Rule_194_A1_P384'}
 //
 // Representative case:
 // 
-//    = Store2RegisterImm12Op {constraints: & ~cccc010100101101tttt000000000100 ,
+//    = Store2RegisterImm12Op {constraints: & constraint(31:0)=~xxxx010100101101xxxx000000000100 ,
 //     rule: Str_Rule_194_A1_P384}
 class Store2RegisterImm12OpTester_Case1
     : public LoadStore2RegisterImm12OpTesterCase1 {
@@ -157,13 +157,13 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // 
-//    = Store2RegisterImm12Op => StoreBasedImmedMemory {'constraints': & ~cccc010100101101tttt000000000100 ,
+//    = Store2RegisterImm12Op => StoreBasedImmedMemory {'constraints': & inst(31:0)=~xxxx010100101101xxxx000000000100 ,
 //     'pattern': 'cccc010pu0w0nnnnttttiiiiiiiiiiii',
 //     'rule': 'Str_Rule_194_A1_P384'}
 //
 // Representative case:
 // 
-//    = Store2RegisterImm12Op => StoreBasedImmedMemory {constraints: & ~cccc010100101101tttt000000000100 ,
+//    = Store2RegisterImm12Op => StoreBasedImmedMemory {constraints: & constraint(31:0)=~xxxx010100101101xxxx000000000100 ,
 //     pattern: cccc010pu0w0nnnnttttiiiiiiiiiiii,
 //     rule: Str_Rule_194_A1_P384}
 TEST_F(Arm32DecoderStateTests,

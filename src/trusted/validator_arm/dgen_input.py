@@ -20,7 +20,7 @@ action_option  ::= (action_rule |
                     action_safety |
                     action_arch |
                     action_other) ';'
-action_options_deprecated ::= (id (word (rule_restrict id?)?)?)?
+action_options_deprecated ::= (id (word (rule_restrict_deprecated id?)?)?)?
 action_other   ::= word ':=' bit_expr
 action_pattern ::= 'pattern' ':=' word rule_restrict?
 action_safety  ::= 'safety' ':=' safety_check ('&' safety_check)*
@@ -52,7 +52,7 @@ classdef       ::= 'class' word ':' word
 decoder        ::= id ('=>' id)?
 decoder_action ::= '=" (decoder (fields? action_option* |
                                  action_options_deprecated arch?)
-                       | '*' int action_option*)
+                       | '*' (int | id) action_option*)
 decoder_method ::= '->' id
 default_row    ::= 'else' ':' action
 fields         ::= '{' column (',' column)* '}'
@@ -65,10 +65,11 @@ parenthesized_exp ::= '(' (word | punctuation)+ ')'
 pat_row        ::= pattern+ action
 pattern        ::= bitpattern | '-' | '"'
 row            ::= '|' (pat_row | default_row)
-rule_restrict  ::= ('&' bitpattern)* ('&' 'other' ':' id)?
+rule_restrict  ::= ('&' bit_expr)* ('&' 'other' ':' id)?
+rule_restrict_deprecated ::= ('&' bitpattern)* ('&' 'other' ':' id)?
 safety_check   ::= id | bit_expr1 ('=>' id)?     # note: single id only at end.
 table          ::= table_desc table_actions header row+ footer
-table_actions  ::= ( ('*' int decoder fields? action_options*)+ footer)?
+table_actions  ::= ( ('*' (int | id) decoder fields? action_options*)+ footer)?
 table_desc     ::= '+' '-' '-' id citation?
 
 Note that action_options_deprecated is deprecated, and one should generate
@@ -511,7 +512,7 @@ class Parser(object):
   def _decoder_action(self, starred_actions):
     """decoder_action ::= '=" (decoder (fields? action_option* |
                                         action_options_deprecated arch?)
-                              | '*' int action_option*)
+                              | '*' (int | id) action_option*)
     """
     self._read_token('=')
     if self._next_token().kind == '*':
@@ -530,7 +531,7 @@ class Parser(object):
     else:
       context.define('rule', self._read_id_or_none(True))
       context.define('pattern', self._read_id_or_none(False))
-      self._rule_restrict(context)
+      self._rule_restrict_deprecated(context)
       other_restrictions = self._read_id_or_none(True)
       if other_restrictions:
         context.define('safety', [other_restrictions])
@@ -539,11 +540,14 @@ class Parser(object):
     return action
 
   def _decoder_action_extend(self, starred_actions):
-    """'*' int action_option*
+    """'*' (int | id) action_option*
 
        Helper function to _decoder_action."""
     self._read_token('*')
-    index = self._int()
+    if self._is_int():
+      index = self._int()
+    else:
+      index = self._id()
     indexed_action = starred_actions.get(index)
     if not indexed_action:
       self._unexpected("Can't find decoder action *%s" % index)
@@ -711,6 +715,22 @@ class Parser(object):
       return self._pat_row(table, starred_actions, last_patterns, last_action)
 
   def _rule_restrict(self, context):
+    """ rule_restrict  ::= ('&' bit_expr)* ('&' 'other' ':' id)? """
+
+    restrictions = context.find('constraints')
+    if not restrictions:
+      context.define('constraints', dgen_core.RuleRestrictions())
+    while self._next_token().kind == '&':
+      self._read_token('&')
+      if self._next_token().kind == 'other':
+        self._read_token('other')
+        self._read_token(':')
+        restrictions.safety = self._id()
+        return
+      else:
+        restrictions.add(self._bit_expr(context))
+
+  def _rule_restrict_deprecated(self, context):
     """ rule_restrict  ::= ('&' bitpattern)* ('&' 'other' ':' id)? """
 
     restrictions = context.find('constraints')
@@ -724,7 +744,9 @@ class Parser(object):
         restrictions.safety = self._id()
         return
       else:
-        restrictions.add(self._bitpattern32())
+        restrictions.add(
+            dgen_core.BitPattern.parse(self._bitpattern32(),
+                                       dgen_core.BitField('constraint', 31, 0)))
 
   def _safety_check(self, context):
     """safety_check   ::= id | bit_expr ('=>' id)?
@@ -756,13 +778,16 @@ class Parser(object):
     self._footer()
 
   def _table_actions(self):
-    """table_actions ::= ( ('*' int decoder fields? action_options*)+
+    """table_actions ::= ( ('*' (int | id) decoder fields? action_options*)+
                            footer)?"""
     starred_actions = {}
     if self._next_token().kind != '*': return starred_actions
     while self._next_token().kind == '*':
       self._read_token('*')
-      index = self._int()
+      if self._is_int():
+        index = self._int()
+      else:
+        index = self._id()
 
       (baseline, actual) = self._decoder()
       action = dgen_core.DecoderAction(baseline, actual)

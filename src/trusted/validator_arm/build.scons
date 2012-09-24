@@ -121,7 +121,7 @@ GEN_LIST = [_gen_file(x) for x in (GEN_TEST_LIST + GEN_OTHER_LIST)]
 # Adds the (NEON) turned off tables to the list of generator command
 # line arguments.
 if TURNED_OFF_TABLES:
-  GEN_CL_ARGS += GEN_CL_ARGS + ''.join(
+  GEN_CL_ARGS = GEN_CL_ARGS + ''.join(
       [' --table_remove=' + tbl for tbl in TURNED_OFF_TABLES])
 
 generate = False

@@ -30,6 +30,7 @@ static nacl_arm_dec::SafetyLevel Int2SafetyLevel(uint32_t index) {
     nacl_arm_dec::DEPRECATED,
     nacl_arm_dec::FORBIDDEN,
     nacl_arm_dec::FORBIDDEN_OPERANDS,
+    nacl_arm_dec::DECODER_ERROR,
     nacl_arm_dec::MAY_BE_SAFE,
   };
   return (index < NACL_ARRAY_SIZE(Int2SafetyLevelMap))
@@ -174,6 +175,9 @@ static const char* SafetyLevelFormatDirective[nacl_arm_dec::MAY_BE_SAFE] = {
   // FORBIDDEN_OPERANDS - This instruction's operands are forbidden by
   // our SFI model.
   "Instruction has operand(s) forbidden by Native Client.",
+  // DECODER_ERROR - This instruction was incorrectly decoded, and
+  // should have been a different instruciton.
+  "Instruction decoded incorrectly by NativeClient.",
 };
 
 // Error message to print for each type of ValidatorProblem. See

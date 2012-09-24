@@ -308,28 +308,6 @@ const ClassDecoder& Arm32DecoderState::decode_data_processing_immediate(
      const Instruction inst) const
 {
   UNREFERENCED_PARAMETER(inst);
-  if ((inst.Bits() & 0x01F00000) == 0x00400000 /* op(24:20)=00100 */ &&
-      (inst.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16)=1111 */) {
-    return Defs12To15_instance_;
-  }
-
-  if ((inst.Bits() & 0x01F00000) == 0x00500000 /* op(24:20)=00101 */ &&
-      (inst.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16)=1111 */ &&
-      (inst.Bits() & 0x0000F000) == 0x0000F000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx */) {
-    return Forbidden_instance_;
-  }
-
-  if ((inst.Bits() & 0x01F00000) == 0x00800000 /* op(24:20)=01000 */ &&
-      (inst.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16)=1111 */) {
-    return Defs12To15_instance_;
-  }
-
-  if ((inst.Bits() & 0x01F00000) == 0x00900000 /* op(24:20)=01001 */ &&
-      (inst.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16)=1111 */ &&
-      (inst.Bits() & 0x0000F000) == 0x0000F000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx */) {
-    return Forbidden_instance_;
-  }
-
   if ((inst.Bits() & 0x01F00000) == 0x01100000 /* op(24:20)=10001 */ &&
       (inst.Bits() & 0x0000F000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx */) {
     return TestIfAddressMasked_instance_;
@@ -345,24 +323,6 @@ const ClassDecoder& Arm32DecoderState::decode_data_processing_immediate(
     return DontCareInst_instance_;
   }
 
-  if ((inst.Bits() & 0x01E00000) == 0x00400000 /* op(24:20)=0010x */ &&
-      (inst.Bits() & 0x000F0000) != 0x000F0000 /* Rn(19:16)=~1111 */) {
-    return Defs12To15_instance_;
-  }
-
-  if ((inst.Bits() & 0x01E00000) == 0x00800000 /* op(24:20)=0100x */ &&
-      (inst.Bits() & 0x000F0000) != 0x000F0000 /* Rn(19:16)=~1111 */) {
-    return Defs12To15_instance_;
-  }
-
-  if ((inst.Bits() & 0x01E00000) == 0x00A00000 /* op(24:20)=0101x */) {
-    return Defs12To15_instance_;
-  }
-
-  if ((inst.Bits() & 0x01E00000) == 0x00C00000 /* op(24:20)=0110x */) {
-    return Defs12To15_instance_;
-  }
-
   if ((inst.Bits() & 0x01E00000) == 0x01800000 /* op(24:20)=1100x */) {
     return Defs12To15_instance_;
   }
@@ -371,16 +331,12 @@ const ClassDecoder& Arm32DecoderState::decode_data_processing_immediate(
     return MaskAddress_instance_;
   }
 
-  if ((inst.Bits() & 0x01600000) == 0x00600000 /* op(24:20)=0x11x */) {
-    return Defs12To15_instance_;
-  }
-
   if ((inst.Bits() & 0x01A00000) == 0x01A00000 /* op(24:20)=11x1x */ &&
       (inst.Bits() & 0x000F0000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */) {
     return Defs12To15_instance_;
   }
 
-  if ((inst.Bits() & 0x01C00000) == 0x00000000 /* op(24:20)=000xx */) {
+  if ((inst.Bits() & 0x01000000) == 0x00000000 /* op(24:20)=0xxxx */) {
     return Defs12To15_instance_;
   }
 

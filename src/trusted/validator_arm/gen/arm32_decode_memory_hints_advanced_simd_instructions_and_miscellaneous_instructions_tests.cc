@@ -437,11 +437,11 @@ bool PreloadRegisterImm12OpTesterCase12
 
 // Neutral case:
 // inst(26:20)=101x001 & inst(19:16)=~1111 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = PreloadRegisterImm12Op {'constraints': & ~xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx }
+//    = PreloadRegisterImm12Op {'constraints': & inst(31:0)=~xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx }
 //
 // Representaive case:
 // op1(26:20)=101x001 & Rn(19:16)=~1111 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = PreloadRegisterImm12Op {constraints: & ~xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx }
+//    = PreloadRegisterImm12Op {constraints: & constraint(31:0)=~xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx }
 class PreloadRegisterImm12OpTesterCase13
     : public PreloadRegisterImm12OpTester {
  public:
@@ -503,11 +503,11 @@ bool UnsafeUncondDecoderTesterCase14
 
 // Neutral case:
 // inst(26:20)=101x101 & inst(19:16)=~1111 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = PreloadRegisterImm12Op {'constraints': & ~xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx }
+//    = PreloadRegisterImm12Op {'constraints': & inst(31:0)=~xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx }
 //
 // Representaive case:
 // op1(26:20)=101x101 & Rn(19:16)=~1111 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = PreloadRegisterImm12Op {constraints: & ~xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx }
+//    = PreloadRegisterImm12Op {constraints: & constraint(31:0)=~xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx }
 class PreloadRegisterImm12OpTesterCase15
     : public PreloadRegisterImm12OpTester {
  public:
@@ -1027,12 +1027,12 @@ class PreloadRegisterImm12OpTester_Case12
 
 // Neutral case:
 // inst(26:20)=101x001 & inst(19:16)=~1111 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = PreloadRegisterImm12Op {'constraints': & ~xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx ,
+//    = PreloadRegisterImm12Op {'constraints': & inst(31:0)=~xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx ,
 //     'rule': 'Pldw_Rule_117_A1_P236'}
 //
 // Representative case:
 // op1(26:20)=101x001 & Rn(19:16)=~1111 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = PreloadRegisterImm12Op {constraints: & ~xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx ,
+//    = PreloadRegisterImm12Op {constraints: & constraint(31:0)=~xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx ,
 //     rule: Pldw_Rule_117_A1_P236}
 class PreloadRegisterImm12OpTester_Case13
     : public PreloadRegisterImm12OpTesterCase13 {
@@ -1063,12 +1063,12 @@ class UnpredictableUncondDecoderTester_Case14
 
 // Neutral case:
 // inst(26:20)=101x101 & inst(19:16)=~1111 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = PreloadRegisterImm12Op {'constraints': & ~xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx ,
+//    = PreloadRegisterImm12Op {'constraints': & inst(31:0)=~xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx ,
 //     'rule': 'Pld_Rule_117_A1_P236'}
 //
 // Representative case:
 // op1(26:20)=101x101 & Rn(19:16)=~1111 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = PreloadRegisterImm12Op {constraints: & ~xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx ,
+//    = PreloadRegisterImm12Op {constraints: & constraint(31:0)=~xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx ,
 //     rule: Pld_Rule_117_A1_P236}
 class PreloadRegisterImm12OpTester_Case15
     : public PreloadRegisterImm12OpTesterCase15 {
@@ -1475,13 +1475,13 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(26:20)=101x001 & inst(19:16)=~1111 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = PreloadRegisterImm12Op => DontCareInst {'constraints': & ~xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx ,
+//    = PreloadRegisterImm12Op => DontCareInst {'constraints': & inst(31:0)=~xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx ,
 //     'pattern': '11110101u001nnnn1111iiiiiiiiiiii',
 //     'rule': 'Pldw_Rule_117_A1_P236'}
 //
 // Representative case:
 // op1(26:20)=101x001 & Rn(19:16)=~1111 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = PreloadRegisterImm12Op => DontCareInst {constraints: & ~xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx ,
+//    = PreloadRegisterImm12Op => DontCareInst {constraints: & constraint(31:0)=~xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx ,
 //     pattern: 11110101u001nnnn1111iiiiiiiiiiii,
 //     rule: Pldw_Rule_117_A1_P236}
 TEST_F(Arm32DecoderStateTests,
@@ -1513,13 +1513,13 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(26:20)=101x101 & inst(19:16)=~1111 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = PreloadRegisterImm12Op => DontCareInst {'constraints': & ~xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx ,
+//    = PreloadRegisterImm12Op => DontCareInst {'constraints': & inst(31:0)=~xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx ,
 //     'pattern': '11110101u101nnnn1111iiiiiiiiiiii',
 //     'rule': 'Pld_Rule_117_A1_P236'}
 //
 // Representative case:
 // op1(26:20)=101x101 & Rn(19:16)=~1111 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = PreloadRegisterImm12Op => DontCareInst {constraints: & ~xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx ,
+//    = PreloadRegisterImm12Op => DontCareInst {constraints: & constraint(31:0)=~xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx ,
 //     pattern: 11110101u101nnnn1111iiiiiiiiiiii,
 //     rule: Pld_Rule_117_A1_P236}
 TEST_F(Arm32DecoderStateTests,

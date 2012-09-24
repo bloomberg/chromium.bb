@@ -183,13 +183,6 @@ BASE_TESTER='%(decoder_base)sTester%(base_test_case)s'
 BASE_BASE_TESTER='%(decoder_base)sTester%(qualifier)s'
 DECODER_TESTER='%(baseline)sTester_%(test_case)s'
 
-def _negated_constraint(constraint):
-  """Returns the negated pattern for the pattern text passed in."""
-  if constraint[0] == '~':
-    return constraint[1:]
-  else:
-    return '~' + constraint
-
 def _safety_to_check(safety):
   return [s for s in safety if not isinstance(s, str)]
 
@@ -831,7 +824,6 @@ def _install_row_cases(row, values):
   constraint_rows_map = values.get('constraint_rows')
   if constraint_rows_map:
     base_row = _filter_test_row(row, with_rules=False)
-    base_index = constraint_rows_map[dgen_core.neutral_repr(base_row)]
     values['base_test_case'] = (
         'Case%s' % constraint_rows_map[dgen_core.neutral_repr(base_row)])
   else:
@@ -921,10 +913,7 @@ def _generate_constraint_testers(decoder, values, out):
         out.write(PATTERN_CONSTRAINT_RESTRICTIONS_HEADER)
         for c in action.constraints().restrictions:
           out.write(CONSTRAINT_CHECK %
-                    dgen_core.BitPattern.parse(
-                        _negated_constraint(c),
-                        dgen_core.BitField('constraint', 31, 0))
-                    .to_commented_bool())
+                    c.negate().to_commented_bool())
       out.write(CONSTRAINT_TESTER_CLASS_FOOTER % values)
     if safety_to_check:
       out.write(SAFETY_TESTER_HEADER % values)
@@ -979,9 +968,9 @@ def _index_neutral_map(values):
      number of compares to find the index, speeding up code
      generation.
      """
-  map = {}
+  lookup_map = {}
   index = 0
   for v in values:
-    map[dgen_core.neutral_repr(v)] = index
+    lookup_map[dgen_core.neutral_repr(v)] = index
     index += 1
-  return map
+  return lookup_map

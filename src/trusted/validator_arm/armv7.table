@@ -105,8 +105,8 @@
 #
 # base: The register used as the base for the effective address
 #       for reads and writes.
-# target: The register use to compute an indirect branch,
-#       if defined (defaults to None).
+# clear_bits: True implies that the masked bits are cleared.
+#       (defaults to false). Corresponds to virtual clear_bits.
 # defs: The set of registers defined. (missing implies {}).
 # imm_defs: The set of registers that are set through
 #       immediate indexed addressing writeback, where the
@@ -120,10 +120,12 @@
 # relative_offset: Defines the constant offset used in a direct
 #       relative branch.
 # safety: How safety is defined for the class (missing implies true).
+# sets_Z_if_clear_bits: True implies that it sets the Z (condition)
+#       bit if mask bits are cleared. (defaults to false).
+#       Corresponds to defining virtual sets_Z_if_clear_bits.
+# target: The register use to compute an indirect branch,
+#       if defined (defaults to None).
 # uses: The set of registers  used. (missing imlies {})
-#
-# TODO(karl): How do we model class decoder virtuals clear_bits
-#    and sets_Z_if_bits_clear.
 ##############################################################
 
 ##############################################################
@@ -389,110 +391,102 @@ class UnpredictableUncondDecoder : UnsafeUncondDecoder
 # TestIfAddressMasked and MaskAddress. These two instructions are the
 # ones that we allow testing/setting of bits to mask data addresses
 # appropriately.
+*B2R Binary2RegisterImmediateOp => Defs12To15
+   { cond(31:28), S(20), Rn(19:16), Rd(15:12), imm12(11:0) }
+   setflags := S=1; imm32 := ARMExpandImm_C(imm12);
+   defs := {Rd, NZCV if setflags else None};   
+   safety := (Rd=1111 & S=1) => DECODER_ERROR &  # ARM
+             Rd=1111 => FORBIDDEN_OPERANDS;  # NaCl
+   uses := {Rn};
+*B2R_MASK MaskedBinary2RegisterImmediateOp => MaskAddress
+   # Note: This instruction is used to mask memory addresses. Otherwise,
+   # it would be the same as *B2R.
+   { cond(31:28), S(20), Rn(19:16), Rd(15:12), imm12(11:0) }
+   setflags := S=1; imm32 := ARMExpandImm_C(imm12);
+   defs := {Rd, NZCV if setflags else None};
+   safety := (Rd=1111 & S=1) => DECODER_ERROR &  # ARM
+             Rd=1111 => FORBIDDEN_OPERANDS;  # NaCl
+   uses := {Rn};
+   clears_bits := true;
+*B2R_ADDSUB Binary2RegisterImmediateOp => Defs12To15
+   # Note: This is a variant of *B2R instructions, that is used
+   # to define add and subtract, and have additional decoding error
+   # safety checks.
+   { cond(31:28), S(20), Rn(19:16), Rd(15:12), imm12(11:0) }
+   setflags := S=1; imm32 := ARMExpandImm_C(imm12);
+   defs := {Rd, NZCV if setflags else None}; 
+   safety := (Rd=1111 & S=1) => DECODER_ERROR &  # ARM
+             (Rn=1111 & S=0) => DECODER_ERROR &
+             Rd=1111 => FORBIDDEN_OPERANDS;  # NaCl
+   uses := {Rn};
+*TEST BinaryRegisterImmediateTest => DontCareInst
+   { cond(31:28), Rn(19:16), imm12(11:0) }
+   imm32 := AMRExpandImm_C(imm12);
+   defs := {NZCV};
+   uses := {Rn};
+*TEST_MASK MaskedBinaryRegisterImmediateTest => TestIfAddressMasked
+   # Note: This instruction is used to test if the immediate value
+   # appropriately (data address) masks the value in Rn. Otherwise,
+   # it would be the same as *TEST above.
+   { cond(31:28), Rn(19:16), imm12(11:0) }
+   imm32 := AMRExpandImm_C(imm12);
+   defs := {NZCV};
+   uses := {Rn};
+   sets_Z_if_bits_clear := true;
+*U1R_U Unary1RegisterImmediateOp => Defs12To15
+   { cond(31:28), U(23), Rd(15:12), imm12(11:0) }
+   # Note: Bit U isn't defined in ARM manual, but adding for simplicity.
+   imm32 := ARMExpandImm(imm12); add := U=1;
+   defs := {Rd};
+   safety := Rd=1111 => FORBIDDEN_OPERANDS;      # NaCl
+   uses := {Pc};
+*U1R_S Unary1RegisterImmediateOp => Defs12To15
+   { cond(31:28), S(20), Rd(15:12), imm12(11:0) }
+   setflags := S=1; imm32 := ARMExpandImm(imm12);
+   defs := {Rd, NZCV if setflags else None};
+   safety := (Rd=1111 & S=1) => DECODER_ERROR &  # ARM
+             Rd=1111 => FORBIDDEN_OPERANDS;  # NaCl
++--
 | op(24:20) Rn(19:16)
-| 0000x      -        = Binary2RegisterImmediateOp
-                           => Defs12To15
-                           And_Rule_11_A1_P34
-                           cccc0010000snnnnddddiiiiiiiiiiii NotRdIsPcAndS
-| 0001x      -        = Binary2RegisterImmediateOp
-                           => Defs12To15
-                           Eor_Rule_44_A1_P94
-                           cccc0010001snnnnddddiiiiiiiiiiii NotRdIsPcAndS
-| 0010x      ~1111    = Binary2RegisterImmediateOp
-                           => Defs12To15
-                           Sub_Rule_212_A1_P420
-                           cccc0010010snnnnddddiiiiiiiiiiii
-                           NeitherRdIsPcAndSNorRnIsPcAndNotS
-                        # Note: Table says that op=0010x for ADR, but
-                        # patterns for ADR do not match (page A8-32).
-                        # Causes parsing conflicts with SUB (previous
-                        # row). Added restriction to ADR that bit 20
-                        # (updates flags register) must be 0 (rather than
-                        # x), to match what is on A8.6.10 (page A8-32).
-                        # Note that this also matches restrictions of
-                        # A8.6.212 (page A8-420).
-| 00100      1111     = Unary1RegisterImmediateOp
-                           => Defs12To15
-                           Adr_Rule_10_A2_P32
-                           cccc001001001111ddddiiiiiiiiiiii
-| 00101      1111     = ForbiddenCondDecoder => Forbidden
-                           Subs_Pc_Lr_and_related_instructions_Rule_A1a
-                           cccc00100101nnnn1111iiiiiiiiiiii
-| 0011x      -        = Binary2RegisterImmediateOp
-                           => Defs12To15
-                           Rsb_Rule_142_A1_P284
-                           cccc0010011snnnnddddiiiiiiiiiiii NotRdIsPcAndS
-| 0100x      ~1111    = Binary2RegisterImmediateOp
-                           => Defs12To15
-                           Add_Rule_5_A1_P22
-                           cccc0010100snnnnddddiiiiiiiiiiii
-                           NeitherRdIsPcAndSNorRnIsPcAndNotS
-                        # Note: Table says that op=0100x for ADR, but
-                        # patterns for ADR do not match (page A8-32).
-                        # Causes parsing conflicts with ADD (previous
-                        # row). Added restriction to ADR that bit 20
-                        # (updates flags register) must be 0 (rather than
-                        # x), to match what is on A8.6.10 (page A8-32).
-                        # Note that this also matches restrictions of
-                        # A8.6.5 (page A8-22).
-| 01000      1111     = Unary1RegisterImmediateOp
-                           => Defs12To15
-                           Adr_Rule_10_A1_P32
-                           cccc001010001111ddddiiiiiiiiiiii
-| 01001      1111     = ForbiddenCondDecoder => Forbidden
-                           Subs_Pc_Lr_and_related_instructions_Rule_A1b
-                           cccc00101001nnnn1111iiiiiiiiiiii
-| 0101x      -        = Binary2RegisterImmediateOp
-                           => Defs12To15
-                           Adc_Rule_6_A1_P14
-                           cccc0010101snnnnddddiiiiiiiiiiii NotRdIsPcAndS
-| 0110x      -        = Binary2RegisterImmediateOp
-                           => Defs12To15
-                           Sbc_Rule_151_A1_P302
-                           cccc0010110snnnnddddiiiiiiiiiiii NotRdIsPcAndS
-| 0111x      -        = Binary2RegisterImmediateOp
-                           => Defs12To15
-                           Rsc_Rule_145_A1_P290
-                           cccc0010111snnnnddddiiiiiiiiiiii NotRdIsPcAndS
+| 0000x      -        = *B2R pattern := cccc0010000snnnnddddiiiiiiiiiiii;
+                        rule := AND_immediate_A1;
+| 0001x      -        = *B2R pattern := cccc0010001snnnnddddiiiiiiiiiiii;
+                        rule := EOR_immediate_A1;
+| 0010x      ~1111    = *B2R_ADDSUB pattern := cccc0010010snnnnddddiiiiiiiiiiii;
+                        rule := SUB_immediate_A1;
+| 0010x      1111     = *U1R_U pattern := cccc001001001111ddddiiiiiiiiiiii;
+                        rule := ADR_A2;
+| 0011x      -        = *B2R pattern := cccc0010011snnnnddddiiiiiiiiiiii;
+                        rule := RSB_immediate_A1;
+| 0100x      ~1111    = *B2R_ADDSUB pattern := cccc0010100snnnnddddiiiiiiiiiiii;
+                        rule := ADD_immediate_A1;
+| 0100x      1111     = *U1R_U pattern := cccc001010001111ddddiiiiiiiiiiii;
+                        rule := ADR_A1;
+| 0101x      -        = *B2R pattern := cccc0010101snnnnddddiiiiiiiiiiii;
+                        rule := ADC_immediate_A1;
+| 0110x      -        = *B2R pattern := cccc0010110snnnnddddiiiiiiiiiiii;
+                        rule := SBC_immediate_A1;
+| 0111x      -        = *B2R pattern := cccc0010111snnnnddddiiiiiiiiiiii;
+                        rule := RSC_immediate_A1;
 # TODO(jfb) op==10xx0 should be unreachable from here:
 #           the previous table should handle it.
-                        # Note: Following instruction is used to test
-                        # if the immediate value appropriately (data address)
-                        # masks the value in Rn.
-| 10001      -        = MaskedBinaryRegisterImmediateTest
-                           => TestIfAddressMasked
-                           Tst_Rule_230_A1_P454
-                           cccc00110001nnnn0000iiiiiiiiiiii
-| 10011      -        = BinaryRegisterImmediateTest
-                           => DontCareInst
-                           Teq_Rule_227_A1_P448
-                           cccc00110011nnnn0000iiiiiiiiiiii
-| 10101      -        = BinaryRegisterImmediateTest
-                           => DontCareInst
-                           Cmp_Rule_35_A1_P80
-                           cccc00110101nnnn0000iiiiiiiiiiii
-| 10111      -        = BinaryRegisterImmediateTest
-                           => DontCareInst
-                           Cmn_Rule_32_A1_P74
-                           cccc00110111nnnn0000iiiiiiiiiiii
-| 1100x      -        = Binary2RegisterImmediateOp
-                           => Defs12To15
-                           Orr_Rule_113_A1_P228
-                           cccc0011100snnnnddddiiiiiiiiiiii NotRdIsPcAndS
-| 1101x      -        = Unary1RegisterImmediateOp
-                           => Defs12To15
-                           Mov_Rule_96_A1_P194
-                           cccc0011101s0000ddddiiiiiiiiiiii NotRdIsPcAndS
-                        # Note: The following instruction is used to mask
-                        # memory addresses.
-| 1110x      -        = MaskedBinary2RegisterImmediateOp
-                           => MaskAddress
-                           Bic_Rule_19_A1_P50
-                           cccc0011110snnnnddddiiiiiiiiiiii NotRdIsPcAndS
-| 1111x      -        = Unary1RegisterImmediateOp
-                           => Defs12To15
-                           Mvn_Rule_106_A1_P214
-                           cccc0011111s0000ddddiiiiiiiiiiii NotRdIsPcAndS
+| 10001      -        = *TEST_MASK pattern := cccc00110001nnnn0000iiiiiiiiiiii;
+                        rule := TST_immediate_A1;
+| 10011      -        = *TEST pattern := cccc00110011nnnn0000iiiiiiiiiiii;
+                        rule := TEQ_immediate_A1;
+| 10101      -        = *TEST pattern := cccc00110101nnnn0000iiiiiiiiiiii;
+                        rule := CMP_immediate_A1;
+| 10111      -        = *TEST pattern := cccc00110111nnnn0000iiiiiiiiiiii;
+                        rule := CMN_immediate_A1;
+| 1100x      -        = *B2R pattern := cccc0011100snnnnddddiiiiiiiiiiii
+                                      & not (Rd=1111 & S=1);
+                        rule := ORR_immediate_A1;
+| 1101x      -        = *U1R_S pattern := cccc0011101s0000ddddiiiiiiiiiiii;
+                        rule := MOV_immediate_A1;
+| 1110x      -        = *B2R_MASK pattern := cccc0011110snnnnddddiiiiiiiiiiii;
+                        rule := BIC_immediate_A1;
+| 1111x      -        = *U1R_S pattern := cccc0011111s0000ddddiiiiiiiiiiii;
+                        rule := MVN_immediate_A1;
 +--
 
 # Note: in all of these cases there's a currently unhandled restriction:

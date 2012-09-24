@@ -42,6 +42,11 @@ enum SafetyLevel {
   // This instruction's operands are forbidden by our SFI model.
   FORBIDDEN_OPERANDS,
 
+  // This instruction was decoded incorrectly, because it should have decoded
+  // as a different instruction. This value should never occur, unless there
+  // is a bug in our decoder tables (in file armv7.table).
+  DECODER_ERROR,
+
   // This instruction may be safe in untrusted code: in isolation it contains
   // nothing scary, but the validator may overrule this during global analysis.
   MAY_BE_SAFE

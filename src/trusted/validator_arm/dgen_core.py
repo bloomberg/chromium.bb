@@ -29,7 +29,8 @@ def neutral_repr(value):
      merge rows/actions of the table.
      """
   if (isinstance(value, BitExpr) or isinstance(value, SymbolTable) or
-      isinstance(value, Row) or isinstance(value, DecoderAction)):
+      isinstance(value, Row) or isinstance(value, DecoderAction) or
+      isinstance(value, RuleRestrictions)):
     return value.neutral_repr()
   elif isinstance(value, list):
     return [ neutral_repr(v) for v in value ]
@@ -748,7 +749,7 @@ class SafetyAction(BitExpr):
     # be kept in sync with that file (see type SafetyLevel).
     if action not in ['UNKNOWN', 'UNDEFINED', 'NOT_IMPLEMENTED',
                       'UNPREDICTABLE', 'DEPRECATED', 'FORBIDDEN',
-                      'FORBIDDEN_OPERANDS', 'MAY_BE_SAFE']:
+                      'FORBIDDEN_OPERANDS', 'DECODER_ERROR', 'MAY_BE_SAFE']:
       raise Exception("Safety action %s => %s not understood" %
                       (test, action))
     self._test = test
@@ -1234,9 +1235,6 @@ class RuleRestrictions(object):
     self.restrictions = restrictions[:]
     self.other = other
 
-  def __hash__(self):
-    return sum([hash(r) for r in self.restrictions]) + hash(self.other)
-
   def IsEmpty(self):
     return not self.restrictions and not self.other
 
@@ -1248,16 +1246,28 @@ class RuleRestrictions(object):
     rep = ''
     if self.restrictions:
       for r in self.restrictions:
-        rep += '& ' + r
+        rep += '& %s' % r
       rep += ' '
     if self.other:
       rep += ('& other: %s' % self.other)
     return rep
 
+  def neutral_repr(self):
+    """Returns a normalized neutral representation of the rule restrictions."""
+    rep = ''
+    if self.restrictions:
+      for r in self.restrictions:
+        rep += '& %s' % neutral_repr(r)
+      rep += ' '
+    if self.other:
+      rep += ('& other: %s' % self.other)
+    return rep
+
+  def __hash__(self):
+    return hash(self.neutral_repr())
+
   def __cmp__(self, v):
-    value = cmp(self.other, v.other)
-    if value != 0: return value
-    return cmp(self.restrictions, v.restrictions)
+    return cmp(self.neutral_repr(), neutral_repr(v))
 
 TABLE_FORMAT="""
 Table %s
