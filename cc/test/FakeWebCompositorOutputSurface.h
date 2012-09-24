@@ -5,6 +5,7 @@
 #ifndef FakeWebCompositorOutputSurface_h
 #define FakeWebCompositorOutputSurface_h
 
+#include "FakeWebCompositorSoftwareOutputDevice.h"
 #include <public/WebCompositorOutputSurface.h>
 #include <public/WebGraphicsContext3D.h>
 #include <wtf/OwnPtr.h>
@@ -19,9 +20,15 @@ public:
         return adoptPtr(new FakeWebCompositorOutputSurface(context3D));
     }
 
+    static inline PassOwnPtr<FakeWebCompositorOutputSurface> createSoftware(PassOwnPtr<WebCompositorSoftwareOutputDevice> softwareDevice)
+    {
+        return adoptPtr(new FakeWebCompositorOutputSurface(softwareDevice));
+    }
 
     virtual bool bindToClient(WebCompositorOutputSurfaceClient* client) OVERRIDE
     {
+        if (!m_context3D)
+            return true;
         ASSERT(client);
         if (!m_context3D->makeContextCurrent())
             return false;
@@ -38,6 +45,10 @@ public:
     {
         return m_context3D.get();
     }
+    virtual WebCompositorSoftwareOutputDevice* softwareDevice() const OVERRIDE
+    {
+        return m_softwareDevice.get();
+    }
 
     virtual void sendFrameToParentCompositor(const WebCompositorFrame&) OVERRIDE
     {
@@ -49,7 +60,13 @@ private:
         m_context3D = context3D;
     }
 
+    explicit FakeWebCompositorOutputSurface(PassOwnPtr<WebCompositorSoftwareOutputDevice> softwareDevice)
+    {
+        m_softwareDevice = softwareDevice;
+    }
+
     OwnPtr<WebGraphicsContext3D> m_context3D;
+    OwnPtr<WebCompositorSoftwareOutputDevice> m_softwareDevice;
     Capabilities m_capabilities;
     WebCompositorOutputSurfaceClient* m_client;
 };

@@ -22,6 +22,7 @@
 #include "CCPrioritizedTextureManager.h"
 #include "CCRenderPassDrawQuad.h"
 #include "CCRendererGL.h"
+#include "CCRendererSoftware.h"
 #include "CCRenderingStats.h"
 #include "CCScrollbarAnimationController.h"
 #include "CCScrollbarLayerImpl.h"
@@ -714,18 +715,16 @@ bool CCLayerTreeHostImpl::initializeRenderer(PassOwnPtr<CCGraphicsContext> conte
     if (!context->bindToClient(this))
         return false;
 
-    WebKit::WebGraphicsContext3D* context3d = context->context3D();
-
-    if (!context3d) {
-        // FIXME: Implement this path for software compositing.
-        return false;
-    }
-
     OwnPtr<CCGraphicsContext> contextRef(context);
     OwnPtr<CCResourceProvider> resourceProvider = CCResourceProvider::create(contextRef.get());
-    OwnPtr<CCRendererGL> renderer;
-    if (resourceProvider.get())
-        renderer = CCRendererGL::create(this, resourceProvider.get());
+
+    OwnPtr<CCRenderer> renderer;
+    if (resourceProvider.get()) {
+        if (contextRef->context3D())
+            renderer = CCRendererGL::create(this, resourceProvider.get());
+        else if (contextRef->softwareDevice())
+            renderer = CCRendererSoftware::create(this, resourceProvider.get(), contextRef->softwareDevice());
+    }
 
     // Since we now have a new context/renderer, we cannot continue to use the old
     // resources (i.e. renderSurfaces and texture IDs).

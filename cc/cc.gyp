@@ -101,6 +101,8 @@
       'CCRenderer.h',
       'CCRendererGL.cpp',
       'CCRendererGL.h',
+      'CCRendererSoftware.cpp',
+      'CCRendererSoftware.h',
       'CCRenderingStats.h',
       'CCResourceProvider.cpp',
       'CCResourceProvider.h',

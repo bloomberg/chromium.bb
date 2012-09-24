@@ -86,6 +86,7 @@ protected:
     virtual void drawQuad(DrawingFrame&, const CCDrawQuad*) OVERRIDE;
     virtual void beginDrawingFrame(DrawingFrame&) OVERRIDE;
     virtual void finishDrawingFrame(DrawingFrame&) OVERRIDE;
+    virtual bool flippedFramebuffer() const OVERRIDE;
 
 private:
     static void toGLMatrix(float*, const WebKit::WebTransformationMatrix&);

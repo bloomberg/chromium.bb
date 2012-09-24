@@ -88,6 +88,7 @@ protected:
     virtual void drawQuad(DrawingFrame&, const CCDrawQuad*) = 0;
     virtual void beginDrawingFrame(DrawingFrame&) = 0;
     virtual void finishDrawingFrame(DrawingFrame&) = 0;
+    virtual bool flippedFramebuffer() const = 0;
 
     HashMap<CCRenderPass::Id, OwnPtr<CachedTexture> > m_renderPassTextures;
     CCResourceProvider* m_resourceProvider;

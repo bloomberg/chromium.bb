@@ -943,6 +943,11 @@ void CCRendererGL::finishDrawingFrame(DrawingFrame& frame)
     GLC(m_context, m_context->disable(GraphicsContext3D::BLEND));
 }
 
+bool CCRendererGL::flippedFramebuffer() const
+{
+    return true;
+}
+
 void CCRendererGL::toGLMatrix(float* flattened, const WebTransformationMatrix& m)
 {
     flattened[0] = m.m11();

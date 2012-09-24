@@ -452,11 +452,9 @@ bool CCResourceProvider::initialize()
     ASSERT(CCProxy::isImplThread());
     WebGraphicsContext3D* context3d = m_context->context3D();
     if (!context3d) {
-        m_maxTextureSize = INT_MAX;
+        m_maxTextureSize = INT_MAX / 2;
         m_textureUploader = UnthrottledTextureUploader::create();
-
-        // FIXME: Implement this path for software compositing.
-        return false;
+        return true;
     }
     if (!context3d->makeContextCurrent())
         return false;

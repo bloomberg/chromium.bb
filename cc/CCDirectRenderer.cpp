@@ -213,7 +213,7 @@ bool CCDirectRenderer::useRenderPass(DrawingFrame& frame, const CCRenderPass* re
 
     if (renderPass == frame.rootRenderPass) {
         bindFramebufferToOutputSurface(frame);
-        initializeMatrices(frame, renderPass->outputRect(), true);
+        initializeMatrices(frame, renderPass->outputRect(), flippedFramebuffer());
         setDrawViewportSize(renderPass->outputRect().size());
         return true;
     }
