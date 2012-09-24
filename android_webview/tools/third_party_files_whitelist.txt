@@ -39,8 +39,6 @@ chrome/app/chromium_strings.grd
 chrome/app/generated_resources.grd
 # String 'copyright' used in resources.
 chrome/app/google_chrome_strings.grd
-# String 'copyright' used in resources.
-chrome/app/theme/chromium/BRANDING
 # Copyright Netscape Communications Corporation; MPL, GPL v2 or LGPL v2
 # license. This third-party code is taken from Mozilla, the license for which
 # we already pick up from third_party/npapi/.
