@@ -80,7 +80,8 @@ void PasswordManager::SetFormHasGeneratedPassword(const PasswordForm& form) {
   for (ScopedVector<PasswordFormManager>::iterator iter =
            pending_login_managers_.begin();
        iter != pending_login_managers_.end(); ++iter) {
-    if ((*iter)->DoesManage(form)) {
+    if ((*iter)->DoesManage(
+        form, PasswordFormManager::ACTION_MATCH_REQUIRED)) {
       (*iter)->SetHasGeneratedPassword();
       return;
     }
@@ -114,22 +115,36 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
     return;
 
   scoped_ptr<PasswordFormManager> manager;
+  ScopedVector<PasswordFormManager>::iterator matched_manager_it =
+      pending_login_managers_.end();
   for (ScopedVector<PasswordFormManager>::iterator iter =
            pending_login_managers_.begin();
        iter != pending_login_managers_.end(); ++iter) {
-    if ((*iter)->DoesManage(form)) {
-      // Transfer ownership of the manager from |pending_login_managers_| to
-      // |manager|.
-      manager.reset(*iter);
-      pending_login_managers_.weak_erase(iter);
+    // If we find a manager that exactly matches the submitted form including
+    // the action URL, exit the loop.
+    if ((*iter)->DoesManage(
+        form, PasswordFormManager::ACTION_MATCH_REQUIRED)) {
+      matched_manager_it = iter;
       break;
+    // If the current manager matches the submitted form excluding the action
+    // URL, remember it as a candidate and continue searching for an exact
+    // match.
+    } else if ((*iter)->DoesManage(
+        form, PasswordFormManager::ACTION_MATCH_NOT_REQUIRED)) {
+      matched_manager_it = iter;
     }
   }
   // If we didn't find a manager, this means a form was submitted without
   // first loading the page containing the form. Don't offer to save
   // passwords in this case.
-  if (!manager.get())
+  if (matched_manager_it != pending_login_managers_.end()) {
+    // Transfer ownership of the manager from |pending_login_managers_| to
+    // |manager|.
+    manager.reset(*matched_manager_it);
+    pending_login_managers_.weak_erase(matched_manager_it);
+  } else {
     return;
+  }
 
   // If we found a manager but it didn't finish matching yet, the user has
   // tried to submit credentials before we had time to even find matching
@@ -219,7 +234,8 @@ void PasswordManager::OnPasswordFormsRendered(
   // First, check for a failed login attempt.
   for (std::vector<PasswordForm>::const_iterator iter = visible_forms.begin();
        iter != visible_forms.end(); ++iter) {
-    if (provisional_save_manager_->DoesManage(*iter)) {
+    if (provisional_save_manager_->DoesManage(
+        *iter, PasswordFormManager::ACTION_MATCH_REQUIRED)) {
       // The form trying to be saved has immediately re-appeared. Assume login
       // failure and abort this save, by clearing provisional_save_manager_.
       provisional_save_manager_->SubmitFailed();

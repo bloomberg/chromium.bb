@@ -39,8 +39,15 @@ class PasswordFormManager : public PasswordStoreConsumer {
                       bool ssl_valid);
   virtual ~PasswordFormManager();
 
-  // Compare basic data of observed_form_ with argument.
-  bool DoesManage(const webkit::forms::PasswordForm& form) const;
+  enum ActionMatch {
+    ACTION_MATCH_REQUIRED,
+    ACTION_MATCH_NOT_REQUIRED
+  };
+
+  // Compare basic data of observed_form_ with argument. Only check the action
+  // URL when action match is required.
+  bool DoesManage(const webkit::forms::PasswordForm& form,
+                  ActionMatch action_match) const;
 
   // Retrieves potential matching logins from the database.
   void FetchMatchingLoginsFromPasswordStore();

@@ -163,6 +163,8 @@ TEST_F(PasswordFormManagerTest, TestNewLogin) {
             GetPendingCredentials(manager)->origin.spec());
   EXPECT_EQ(observed_form()->signon_realm,
             GetPendingCredentials(manager)->signon_realm);
+  EXPECT_EQ(observed_form()->action,
+              GetPendingCredentials(manager)->action);
   EXPECT_TRUE(GetPendingCredentials(manager)->preferred);
   EXPECT_EQ(saved_match()->password_value,
             GetPendingCredentials(manager)->password_value);
@@ -267,6 +269,43 @@ TEST_F(PasswordFormManagerTest, TestEmptyAction) {
   // We bless our saved PasswordForm entry with the action URL of the
   // observed form.
   EXPECT_EQ(observed_form()->action,
+            GetPendingCredentials(manager.get())->action);
+}
+
+TEST_F(PasswordFormManagerTest, TestUpdateAction) {
+  scoped_ptr<PasswordFormManager> manager(new PasswordFormManager(
+      profile(), NULL, NULL, *observed_form(), false));
+
+  SimulateMatchingPhase(manager.get(), true);
+  // User logs in with the autofilled username / password from saved_match.
+  PasswordForm login = *observed_form();
+  login.username_value = saved_match()->username_value;
+  login.password_value = saved_match()->password_value;
+
+  manager->ProvisionallySave(login);
+  EXPECT_FALSE(manager->IsNewLogin());
+  // The observed action URL is different from the previously saved one, and
+  // is the same as the one that would be submitted on successful login.
+  EXPECT_NE(observed_form()->action, saved_match()->action);
+  EXPECT_EQ(observed_form()->action,
+            GetPendingCredentials(manager.get())->action);
+}
+
+TEST_F(PasswordFormManagerTest, TestDynamicAction) {
+  scoped_ptr<PasswordFormManager> manager(new PasswordFormManager(
+      profile(), NULL, NULL, *observed_form(), false));
+
+  SimulateMatchingPhase(manager.get(), false);
+  PasswordForm login(*observed_form());
+  // The submitted action URL is different from the one observed on page load.
+  GURL new_action = GURL("http://www.google.com/new_action");
+  login.action = new_action;
+
+  manager->ProvisionallySave(login);
+  EXPECT_TRUE(manager->IsNewLogin());
+  // Check that the provisionally saved action URL is the same as the submitted
+  // action URL, not the one observed on page load.
+  EXPECT_EQ(new_action,
             GetPendingCredentials(manager.get())->action);
 }
 

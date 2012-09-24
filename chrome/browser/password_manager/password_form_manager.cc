@@ -58,7 +58,8 @@ int PasswordFormManager::GetActionsTaken() {
 };
 
 // TODO(timsteele): use a hash of some sort in the future?
-bool PasswordFormManager::DoesManage(const PasswordForm& form) const {
+bool PasswordFormManager::DoesManage(const PasswordForm& form,
+                                     ActionMatch action_match) const {
   if (form.scheme != PasswordForm::SCHEME_HTML)
       return observed_form_.signon_realm == form.signon_realm;
 
@@ -69,10 +70,14 @@ bool PasswordFormManager::DoesManage(const PasswordForm& form) const {
     return false;
   }
 
-  // The action URL must also match, but the form is allowed to have an empty
-  // action URL (See bug 1107719).
-  if (form.action.is_valid() && (form.action != observed_form_.action))
-    return false;
+  // When action match is required, the action URL must match, but
+  // the form is allowed to have an empty action URL (See bug 1107719).
+  // Otherwise ignore action URL, this is to allow saving password form with
+  // dynamically changed action URL (See bug 27246).
+  if (form.action.is_valid() && (form.action != observed_form_.action)) {
+    if (action_match == ACTION_MATCH_REQUIRED)
+      return false;
+  }
 
   // If this is a replay of the same form in the case a user entered an invalid
   // password, the origin of the new form may equal the action of the "first"
@@ -171,7 +176,7 @@ bool PasswordFormManager::HasValidPasswordForm() {
 
 void PasswordFormManager::ProvisionallySave(const PasswordForm& credentials) {
   DCHECK_EQ(state_, POST_MATCHING_PHASE);
-  DCHECK(DoesManage(credentials));
+  DCHECK(DoesManage(credentials, ACTION_MATCH_NOT_REQUIRED));
 
   // Make sure the important fields stay the same as the initially observed or
   // autofilled ones, as they may have changed if the user experienced a login
@@ -183,11 +188,6 @@ void PasswordFormManager::ProvisionallySave(const PasswordForm& credentials) {
     // The user signed in with a login we autofilled.
     pending_credentials_ = *it->second;
     is_new_login_ = false;
-    // If the user selected credentials we autofilled from a PasswordForm
-    // that contained no action URL (IE6/7 imported passwords, for example),
-    // bless it with the action URL from the observed form. See bug 1107719.
-    if (pending_credentials_.action.is_empty())
-      pending_credentials_.action = observed_form_.action;
 
     // Check to see if we're using a known username but a new password.
     if (pending_credentials_.password_value != credentials.password_value)
@@ -198,6 +198,13 @@ void PasswordFormManager::ProvisionallySave(const PasswordForm& credentials) {
     pending_credentials_ = observed_form_;
     pending_credentials_.username_value = credentials.username_value;
   }
+
+  pending_credentials_.action = credentials.action;
+  // If the user selected credentials we autofilled from a PasswordForm
+  // that contained no action URL (IE6/7 imported passwords, for example),
+  // bless it with the action URL from the observed form. See bug 1107719.
+  if (pending_credentials_.action.is_empty())
+    pending_credentials_.action = observed_form_.action;
 
   pending_credentials_.password_value = credentials.password_value;
   pending_credentials_.preferred = credentials.preferred;
