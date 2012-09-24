@@ -152,8 +152,6 @@ void DraggedTabView::PaintDetachedView(gfx::Canvas* canvas) {
   for (size_t i = 0; i < renderers_.size(); ++i)
     renderers_[i]->Paint(&scale_canvas);
 
-  SkIRect subset;
-  subset.set(0, 0, ps.width(), ps.height());
   SkBitmap mipmap = scale_canvas.ExtractImageRep().sk_bitmap();
   mipmap.buildMipMap(true);
 
@@ -170,12 +168,7 @@ void DraggedTabView::PaintDetachedView(gfx::Canvas* canvas) {
   paint.setAntiAlias(true);
   bitmap_shader->unref();
 
-  SkRect rc;
-  rc.fLeft = 0;
-  rc.fTop = 0;
-  rc.fRight = SkIntToScalar(ps.width());
-  rc.fBottom = SkIntToScalar(ps.height());
-  canvas->sk_canvas()->drawRect(rc, paint);
+  canvas->DrawRect(gfx::Rect(ps), paint);
 }
 
 void DraggedTabView::PaintFocusRect(gfx::Canvas* canvas) {
