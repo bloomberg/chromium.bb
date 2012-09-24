@@ -824,6 +824,11 @@ public class ContentViewCore implements MotionEventDelegate {
         setAccessibilityState(false);
     }
 
+    @CalledByNative
+    private void onWebPreferencesUpdated() {
+        // TODO(nileshagrawal): Implement this.
+    }
+
     /**
      * @see View#onCreateInputConnection(EditorInfo)
      */

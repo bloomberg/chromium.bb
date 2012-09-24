@@ -22,15 +22,16 @@ class WebContents;
 // public interface used by native code outside of the content module.
 class ContentViewCore {
  public:
+  static ContentViewCore* Create(
+      JNIEnv* env, jobject obj, WebContents* web_contents);
+  static ContentViewCore* GetNativeContentViewCore(JNIEnv* env, jobject obj);
+
   virtual void Destroy(JNIEnv* env, jobject obj) = 0;
   virtual WebContents* GetWebContents() const = 0;
   virtual base::android::ScopedJavaLocalRef<jobject> GetJavaObject() = 0;
   virtual ui::WindowAndroid* GetWindowAndroid() = 0;
   virtual void LoadUrl(NavigationController::LoadURLParams& params) = 0;
-
-  static ContentViewCore* Create(
-      JNIEnv* env, jobject obj, WebContents* web_contents);
-  static ContentViewCore* GetNativeContentViewCore(JNIEnv* env, jobject obj);
+  virtual void OnWebPreferencesUpdated() = 0;
  protected:
   virtual ~ContentViewCore() {};
 };

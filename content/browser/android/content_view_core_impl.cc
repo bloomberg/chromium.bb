@@ -156,8 +156,6 @@ void ContentViewCoreImpl::Observe(int type,
       break;
     }
   }
-
-  // TODO(jrg)
 }
 
 void ContentViewCoreImpl::InitJNI(JNIEnv* env, jobject obj) {
@@ -175,6 +173,13 @@ RenderWidgetHostViewAndroid*
 ScopedJavaLocalRef<jobject> ContentViewCoreImpl::GetJavaObject() {
   JNIEnv* env = AttachCurrentThread();
   return java_ref_.get(env);
+}
+
+void ContentViewCoreImpl::OnWebPreferencesUpdated() {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (!obj.is_null())
+    Java_ContentViewCore_onWebPreferencesUpdated(env, obj.obj());
 }
 
 // ----------------------------------------------------------------------------

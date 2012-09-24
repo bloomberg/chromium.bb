@@ -47,6 +47,7 @@ class ContentViewCoreImpl : public ContentViewCore,
   virtual WebContents* GetWebContents() const OVERRIDE;
   virtual ui::WindowAndroid* GetWindowAndroid() OVERRIDE;
   virtual void LoadUrl(NavigationController::LoadURLParams& params) OVERRIDE;
+  virtual void OnWebPreferencesUpdated() OVERRIDE;
 
   // --------------------------------------------------------------------------
   // Methods called from Java via JNI
