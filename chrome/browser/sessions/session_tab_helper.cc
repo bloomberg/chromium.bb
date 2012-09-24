@@ -26,19 +26,6 @@ SessionTabHelper::~SessionTabHelper() {
 void SessionTabHelper::SetWindowID(const SessionID& id) {
   window_id_ = id;
 
-  // TODO(avi): Right now this needs to only fire when a WebContents is a tab,
-  // otherwise things crash <http://crbug.com/151794>. Why? What is the meaning
-  // of "TAB_PARENTED"? Perhaps something else ought to fire this notification?
-  // Perhaps TabStripModel? Who fires the other NOTIFICATION_TAB_*
-  // notifications?
-  TabContents* tab = TabContents::FromWebContents(web_contents());
-  if (tab) {
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_TAB_PARENTED,
-        content::Source<content::WebContents>(web_contents()),
-        content::NotificationService::NoDetails());
-  }
-
   // Extension code in the renderer holds the ID of the window that hosts it.
   // Notify it that the window ID changed.
   web_contents()->GetRenderViewHost()->Send(

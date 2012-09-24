@@ -1012,6 +1012,11 @@ void Browser::TabInsertedAt(TabContents* contents,
       SessionTabHelper::FromWebContents(contents->web_contents());
   session_tab_helper->SetWindowID(session_id());
 
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_TAB_PARENTED,
+      content::Source<content::WebContents>(contents->web_contents()),
+      content::NotificationService::NoDetails());
+
   SyncHistoryWithTabs(index);
 
   // Make sure the loading state is updated correctly, otherwise the throbber
