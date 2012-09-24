@@ -20,15 +20,6 @@ class WebContents;
 // Native side of the ContentViewCore.java, which is the primary way of
 // communicating with the native Chromium code on Android.  This is a
 // public interface used by native code outside of the content module.
-//
-// TODO(jrg): downstream, this class derives from
-// base::SupportsWeakPtr<ContentViewCore>.  Issues raised in
-// http://codereview.chromium.org/10536066/ make us want to rethink
-// ownership issues.
-// FOR THE MERGE (downstream), re-add derivation from
-// base::SupportsWeakPtr<ContentViewCore> to keep everything else working
-// until this issue is resolved.
-// http://b/6666045
 class ContentViewCore {
  public:
   virtual void Destroy(JNIEnv* env, jobject obj) = 0;
