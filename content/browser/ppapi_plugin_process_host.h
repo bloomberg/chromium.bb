@@ -125,6 +125,7 @@ class PpapiPluginProcessHost : public content::BrowserChildProcessHostDelegate,
 
   virtual void OnProcessLaunched() OVERRIDE;
 
+  virtual void OnProcessCrashed(int exit_code) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
   virtual void OnChannelError() OVERRIDE;
