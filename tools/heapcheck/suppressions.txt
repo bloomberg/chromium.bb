@@ -1530,9 +1530,8 @@
    fun:WebCore::FrameLoader::dispatchDidClearWindowObjectInWorld
    fun:WebCore::V8DOMWindowShell::initializeIfNeeded
 }
-
 {
-   bug_v8_2345
+   bug_151907
    Heapcheck:Leak
    fun:v8::internal::SkipList::Update
    fun:v8::internal::PagedSpace::AllocateRaw
@@ -1544,5 +1543,4 @@
    fun:v8::InitializeHelper
    fun:v8::V8::Initialize
    fun:WebKit::initialize
-   fun:content::UnitTestTestSuite::UnitTestTestSuite
 }
