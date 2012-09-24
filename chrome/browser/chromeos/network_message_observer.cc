@@ -25,7 +25,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/time_format.h"
 #include "grit/generated_resources.h"
-#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
@@ -47,29 +46,20 @@ class NetworkMessageNotification : public ash::NetworkTrayDelegate {
   NetworkMessageNotification(Profile* profile,
                              ash::NetworkObserver::MessageType error_type)
       : error_type_(error_type) {
-    std::string id;
-    int icon_id = 0;
     switch (error_type) {
       case ash::NetworkObserver::ERROR_CONNECT_FAILED:
-        id = "network_connection.chromeos";
-        icon_id = IDR_NOTIFICATION_NETWORK_FAILED;
         title_ = l10n_util::GetStringUTF16(IDS_NETWORK_CONNECTION_ERROR_TITLE);
         break;
       case ash::NetworkObserver::MESSAGE_DATA_LOW:
-        id = "network_low_data.chromeos";
-        icon_id = IDR_NOTIFICATION_BARS_CRITICAL;
         title_ = l10n_util::GetStringUTF16(IDS_NETWORK_LOW_DATA_TITLE);
         break;
       case ash::NetworkObserver::MESSAGE_DATA_NONE:
-        id = "network_no_data.chromeos";
-        icon_id = IDR_NOTIFICATION_BARS_EMPTY;
         title_ = l10n_util::GetStringUTF16(IDS_NETWORK_OUT_OF_DATA_TITLE);
         break;
       case ash::NetworkObserver::MESSAGE_DATA_PROMO:
         NOTREACHED();
         break;
     }
-    DCHECK(!id.empty());
   }
 
   // Overridden from ash::NetworkTrayDelegate:
