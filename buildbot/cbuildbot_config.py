@@ -563,6 +563,7 @@ chromium_pfq = _config(
   overlays=constants.PUBLIC_OVERLAYS,
   manifest_version=True,
   chrome_rev=constants.CHROME_REV_LATEST,
+  upload_hw_test_artifacts=True,
 )
 
 # TODO(davidjames): Convert this to an external config once the unified master
@@ -602,7 +603,6 @@ chrome_pfq = internal_chromium_pfq.derive(
   #useflags=official['useflags'] + ['pgo_generate'],
   chroot_replace=True,
   #hw_tests=['PGO_record'],
-  #upload_hw_test_artifacts=True,
   hw_tests_num=1,
   hw_tests_pool=constants.HWTEST_CHROME_PFQ_POOL,
   hw_tests_timeout=90*60,
