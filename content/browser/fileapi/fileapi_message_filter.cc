@@ -260,7 +260,7 @@ void FileAPIMessageFilter::OnCopy(
 
   FileSystemOperation* operation = GetNewOperation(src_url, request_id);
   if (!operation)
-    return
+    return;
   operation->Copy(
       src_url, dest_url,
       base::Bind(&FileAPIMessageFilter::DidFinish, this, request_id));
