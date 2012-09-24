@@ -114,10 +114,6 @@ def Test(options, info):
 
   ncval = [options.ncval, '--hex_text=-', '--max_errors=-1']
   if options.bits == '32':
-    # TODO(shcherbina): no tests read snval
-    if 'snval' in info:
-      del info['snval']
-
     for ext, options in GetX8632Combinations():
       RunCommandOnHex(ext, ncval + options)
   elif options.bits == '64':
@@ -125,10 +121,6 @@ def Test(options, info):
       RunCommandOnHex(ext, ncval + options)
 
     RunCommandOnHex('sval', ncval + ['--stubout'])
-
-    # TODO(shcherbina): no tests read ndis
-    if 'ndis' in info:
-      del info['ndis']
   else:
     raise AssertionError('Unknown architecture: %r' % options.bits)
 

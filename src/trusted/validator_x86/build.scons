@@ -23,9 +23,6 @@ if not env.Bit('target_x86'): Return()
 # Defines which test sets tests should be added to.
 STANDARD_TESTS = ['small_tests', 'validator_tests']
 
-# Define which test sets modeling test should be added to
-MODELING_TESTS = STANDARD_TESTS + ['validator_modeling']
-
 # TODO(bradchen): eliminate need for the following line
 env.FilterOut(CCFLAGS=['-Wextra', '-Wswitch-enum', '-Wsign-compare'])
 
@@ -73,16 +70,15 @@ def __GoldenBases(ext):
 def __BaseTestFile(base, ext):
   return test_env.File(TESTDATA_SUBARCH_DIR + base + '.' + ext)
 
-# Generates the corresponding test name from the given base.
-def __BaseTestName(test, base, ext):
-  return test + '_' + base + '_' + ext
-
 # Generates the corresponding output file from the given base.
 def __OutTestFile(test, base, ext):
   return test + '_' + base + '.' + ext + '.out'
 
 def __AddTest(test, test_env, base, ext, command, groups):
-  test_env.AddNodeToTestSuite(command, groups, __BaseTestName(test, base, ext))
+  test_env.AddNodeToTestSuite(
+      command,
+      groups,
+      'run_%s_%s_%s_test' % (test, base, ext))
 
 
 # The following are common library components that use elements
@@ -239,146 +235,6 @@ if env.Bit('target_x86_32'):
         )
     __AddTest(test, test_env, base, ext, node, ['large_tests'])
 
-# Run tests using ncdis on test files.
-def __AddNcDisTests(validator_decoder):
-  test = 'ncdis_hex'
-  options = ['--hex_text=-']
-  if validator_decoder:
-    ext = 'vdis'
-    options.append('--validator_decoder')
-  else:
-    ext = 'dis'
-    options.append('--full_decoder')
-  for base in __GoldenBases(ext):
-    node_dis = test_env.CommandTest(
-        __OutTestFile(test, base, ext),
-        [ncdis] + options,
-        stdin = __BaseTestFile(base, 'hex'),
-        stdout_golden = __BaseTestFile(base, ext))
-    __AddTest(test, test_env, base, ext, node_dis, STANDARD_TESTS)
-
-for validator_decoder in [False, True]:
-  __AddNcDisTests(validator_decoder)
-
-# Run tests using ncval on test files. Assume that write sandbox
-# tests use extension 'val' while read/write sandbox tests use extension
-# 'rval'. Assumes that a suffix of 0 on the extension implies no CPUID flags
-# set. Otherwise, assume that test is run with all CPUID flags set.
-def __AddNcvalSfiTests(test_readwrite, test_cpuid_all, detailed,
-                       test_annotate, validator_decoder):
-  if env.Bit('target_x86_64'):
-    test = 'ncval64_hex'
-    options = ['--hex_text=-', '--max_errors=-1']
-    if test_readwrite:
-      ext = 'rval'
-      options.append('--readwrite_sfi')
-    else:
-      ext = 'val'
-      options.append('--write_sfi')
-    if (detailed):
-      ext += 'd'
-      options.append('--detailed')
-    else:
-      options.append('--detailed=false')
-    if test_cpuid_all:
-      options.append('--cpuid-all')
-    else:
-      ext = ext + '0'
-      options.append('--cpuid-none')
-    if test_annotate:
-      ext += 'a'
-      options.append('--annotate');
-    else:
-      options.append('--annotate=false');
-    if validator_decoder:
-      ext = "vd-" + ext
-      options.append('--validator_decoder')
-    for base in __GoldenBases(ext):
-      command = [ncval] + options
-      node_val = test_env.CommandTest(
-          __OutTestFile(test, base, ext),
-          command,
-          stdin = __BaseTestFile(base, 'hex'),
-          stdout_golden = __BaseTestFile(base, ext))
-      __AddTest(test, test_env, base, ext, node_val,
-                STANDARD_TESTS + ['validator_tests'])
-
-for read_write in [False, True]:
-  for cpu_features_all in [False, True]:
-    for detailed in [False, True]:
-      for annotate in [False, True]:
-        for validator_decoder in [False, True]:
-          __AddNcvalSfiTests(read_write, cpu_features_all, detailed,
-                             annotate, validator_decoder)
-
-# Run segment sandboxing tests using ncval on test files.
-def __AddNcvalSegmentTests(test_cpuid_all, test_stats, detailed):
-  if env.Bit('target_x86_32'):
-    options = ['--hex_text=-',
-               '--max_errors=-1']
-    ext = 'nval'
-    if (detailed):
-      ext += 'd'
-      options.append('--detailed')
-    else:
-      options.append('--detailed=false')
-    if (test_stats):
-      ext += 's'
-      options.append('--stats')
-    if test_cpuid_all:
-      options.append('--cpuid-all')
-    else:
-      ext += '0'
-      options.append('--cpuid-none')
-    test = 'ncval32_hex'
-    for base in __GoldenBases(ext):
-      command = [ncval] + options
-      node_val = test_env.CommandTest(
-          __OutTestFile(test, base, ext),
-          command,
-          stdin = __BaseTestFile(base, 'hex'),
-          stdout_golden = __BaseTestFile(base, ext))
-      __AddTest(test, test_env, base, ext, node_val,
-                STANDARD_TESTS)
-
-for cpu_features_all in [False, True]:
-  for test_stats in [False, True]:
-    for detailed in [False, True]:
-      __AddNcvalSegmentTests(cpu_features_all, test_stats, detailed)
-
-# Run tests for stubout on test files. The input file uses extension hex.
-def __AddNcValStuboutTests():
-  test = 'ncval_stubout'
-  options = ['--hex_text=-', '--stubout']
-  ext = 'sval'
-  for base in __GoldenBases(ext):
-    command = [ncval] + options
-    node_stubout = test_env.CommandTest(
-        __OutTestFile(test, base, ext),
-        command,
-        stdin = __BaseTestFile(base, 'hex'),
-        stdout_golden = __BaseTestFile(base, ext))
-    __AddTest(test, test_env, base, ext, node_stubout,
-              STANDARD_TESTS)
-
-__AddNcValStuboutTests()
-
-# Run test to show that --max_errors=-1 works in 32 bit mode.
-def __AddNegMaxErrors():
-  if env.Bit('target_x86_32'):
-    test = 'neg_max_errs'
-    base = 'ret'
-    ext = 'nval'
-    node_val = test_env.CommandTest(
-        __OutTestFile(test, base, ext),
-        [ncval, '--max_errors=-1', '--hex_text=-'],
-        stdin = __BaseTestFile(base, 'hex'),
-        stdout_golden = __BaseTestFile(base, ext))
-    __AddTest(test, test_env, base, ext, node_val,
-              STANDARD_TESTS)
-
-__AddNegMaxErrors()
-
 if test_env.Bit('target_x86_64'):
   node = test_env.CommandTest('ncval_hello_x32.out',
                               [ncval,
@@ -404,5 +260,5 @@ testdata_tests = env.AutoDepsCommand(
 
 env.AddNodeToTestSuite(
     testdata_tests,
-    ['small_tests'],
+    STANDARD_TESTS,
     node_name='run_x86_validator_testdata_tests')
