@@ -40,7 +40,7 @@ class CsvBenchmarkResults(page_test.PageTestResults):
     if not self.field_names:
       self.field_names = results.keys()
       self.field_names.sort()
-      results_writer.writerow(['url'] + self.field_names)
+      self._results_writer.writerow(['url'] + self.field_names)
 
     row = [page.url]
     for name in self.field_names:
