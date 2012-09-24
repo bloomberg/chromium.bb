@@ -164,6 +164,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     // and icon should not be rendered, and that the client area should be
     // equivalent to the window area.
     bool remove_standard_frame;
+    // Only used by ShellWindow on Windows. Specifies that the default icon of
+    // packaged app should be the system default icon.
+    bool use_system_default_icon;
     // Whether the widget should be maximized or minimized.
     ui::WindowShowState show_state;
     // Should the widget be double buffered? Default is false.

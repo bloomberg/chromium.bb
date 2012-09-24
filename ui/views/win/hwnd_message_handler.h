@@ -148,6 +148,10 @@ class VIEWS_EXPORT HWNDMessageHandler : public ui::WindowImpl,
     remove_standard_frame_ = remove_standard_frame;
   }
 
+  void set_use_system_default_icon(bool use_system_default_icon) {
+    use_sytem_default_icon_ = use_system_default_icon;
+  }
+
  private:
   typedef std::set<DWORD> TouchIDs;
 
@@ -364,6 +368,8 @@ class VIEWS_EXPORT HWNDMessageHandler : public ui::WindowImpl,
   base::WeakPtrFactory<HWNDMessageHandler> close_widget_factory_;
 
   bool remove_standard_frame_;
+
+  bool use_sytem_default_icon_;
 
   // Whether the focus should be restored next time we get enabled.  Needed to
   // restore focus correctly when Windows modal dialogs are displayed.

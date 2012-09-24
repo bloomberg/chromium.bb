@@ -898,6 +898,8 @@ void HWNDMessageHandler::DispatchKeyEventPostIME(const ui::KeyEvent& key) {
 // HWNDMessageHandler, ui::WindowImpl overrides:
 
 HICON HWNDMessageHandler::GetDefaultWindowIcon() const {
+  if (use_sytem_default_icon_)
+    return NULL;
   return ViewsDelegate::views_delegate ?
       ViewsDelegate::views_delegate->GetDefaultWindowIcon() : NULL;
 }

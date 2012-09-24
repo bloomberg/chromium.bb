@@ -938,6 +938,7 @@ void NativeWidgetWin::SetInitParams(const Widget::InitParams& params) {
 
   has_non_client_view_ = Widget::RequiresNonClientView(params.type);
   message_handler_->set_remove_standard_frame(params.remove_standard_frame);
+  message_handler_->set_use_system_default_icon(params.use_system_default_icon);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -28,6 +28,7 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/layout/grid_layout.h"
+#include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
 
@@ -323,6 +324,7 @@ ShellWindowViews::ShellWindowViews(ShellWindow* shell_window,
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.delegate = this;
   params.remove_standard_frame = true;
+  params.use_system_default_icon = true;
   minimum_size_ = win_params.minimum_size;
   maximum_size_ = win_params.maximum_size;
   window_->Init(params);
