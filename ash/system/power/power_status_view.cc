@@ -103,36 +103,28 @@ void PowerStatusView::UpdateText() {
 }
 
 void PowerStatusView::UpdateTextForDefaultView() {
-  int hour = 0;
-  int min = 0;
-  if (!supply_status_.is_calculating_battery_time) {
-    // TODO(jennyz): Due to crosbug.com/31633, averaged_battery_time_to_empty
-    // from PowerSupplyStatus object can contain garbage data for the first
-    // call in a crOS session. Until this bug is fixed, use
-    // supply_status_.battery_seconds_to_empty to render battery time.
-    // Change back to use averaged_battery_time_to_empty to display in UI
-    // once crosbug.com/31633 is fixed.
-    base::TimeDelta time = base::TimeDelta::FromSeconds(
-        supply_status_.averaged_battery_time_to_empty);
-    hour = time.InHours();
-    min = (time - base::TimeDelta::FromHours(hour)).InMinutes();
-  }
-
   if (supply_status_.line_power_on && supply_status_.battery_is_full) {
     time_status_label_->SetText(
         ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
             IDS_ASH_STATUS_TRAY_BATTERY_FULL));
+  } else if (supply_status_.is_calculating_battery_time ||
+             supply_status_.battery_percentage < 0.0f) {
+    time_status_label_->SetText(
+        ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
+            IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING));
   } else {
     string16 battery_percentage = l10n_util::GetStringFUTF16(
         IDS_ASH_STATUS_TRAY_BATTERY_PERCENT_ONLY,
         base::IntToString16(
             static_cast<int>(supply_status_.battery_percentage)));
     string16 battery_time = string16();
-    if (supply_status_.is_calculating_battery_time) {
-      battery_time =
-          ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
-              IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING);
-    } else if (hour || min){
+    int hour = 0;
+    int min = 0;
+    base::TimeDelta time = base::TimeDelta::FromSeconds(
+        supply_status_.averaged_battery_time_to_empty);
+    hour = time.InHours();
+    min = (time - base::TimeDelta::FromHours(hour)).InMinutes();
+    if (hour || min) {
       string16 minute = min < 10 ?
           ASCIIToUTF16("0") + base::IntToString16(min) :
           base::IntToString16(min);
@@ -166,11 +158,17 @@ void PowerStatusView::UpdateTextForNotificationView() {
         ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
             IDS_ASH_STATUS_TRAY_BATTERY_FULL));
   } else {
-    status_label_->SetText(
-        l10n_util::GetStringFUTF16(
-            IDS_ASH_STATUS_TRAY_BATTERY_PERCENT,
-            base::IntToString16(
-                static_cast<int>(supply_status_.battery_percentage))));
+    if (supply_status_.battery_percentage < 0.0f) {
+        status_label_->SetText(
+            ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
+                IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING));
+    } else {
+      status_label_->SetText(
+          l10n_util::GetStringFUTF16(
+              IDS_ASH_STATUS_TRAY_BATTERY_PERCENT,
+              base::IntToString16(
+                  static_cast<int>(supply_status_.battery_percentage))));
+    }
   }
 
   if (supply_status_.is_calculating_battery_time) {
