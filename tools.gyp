@@ -151,6 +151,7 @@
           'destination': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/include/nacl',
           # Alphabetical order in dst dir for easier verification.
           'files': [
+            '<(DEPTH)/native_client/src/untrusted/irt/irt.h',
             '<(DEPTH)/native_client/src/shared/platform/nacl_check.h',
             '<(DEPTH)/native_client/src/untrusted/nacl/nacl_dyncode.h',
             '<(DEPTH)/native_client/src/shared/imc/nacl_imc_c.h',
@@ -175,6 +176,7 @@
           # Alphabetical order in dst dir for easier verification.
           'destination': '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/include/nacl',
           'files': [
+            '<(DEPTH)/native_client/src/untrusted/irt/irt.h',
             '<(DEPTH)/native_client/src/shared/platform/nacl_check.h',
             '<(DEPTH)/native_client/src/shared/imc/nacl_imc.h',
             '<(DEPTH)/native_client/src/include/nacl/nacl_inttypes.h',
