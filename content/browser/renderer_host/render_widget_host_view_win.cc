@@ -1818,7 +1818,11 @@ LRESULT RenderWidgetHostViewWin::OnMouseEvent(UINT message, WPARAM wparam,
       case WM_RBUTTONDOWN:
         // Finish the ongoing composition whenever a mouse click happens.
         // It matches IE's behavior.
-        ime_input_.CleanupComposition(m_hWnd);
+        if (base::win::IsTsfAwareRequired()) {
+          ui::TsfBridge::GetInstance()->CancelComposition();
+        } else {
+          ime_input_.CleanupComposition(m_hWnd);
+        }
         // Fall through.
       case WM_MOUSEMOVE:
       case WM_MOUSELEAVE: {
