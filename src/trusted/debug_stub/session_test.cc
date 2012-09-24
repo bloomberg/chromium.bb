@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2010 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include <assert.h>
@@ -11,6 +11,7 @@
 
 #include <string>
 #include <sstream>
+#include <vector>
 
 #include "native_client/src/trusted/debug_stub/platform.h"
 #include "native_client/src/trusted/debug_stub/session.h"
@@ -193,16 +194,8 @@ int TestSession() {
 
   // Create a "loopback" session by using the same
   // FIFO for ingress and egress.
-  Session cli;
-  Session srv;
-
-  if (cli.Init(NULL)) {
-    printf("Initializing with NULL did not fail.\n");
-    errs++;
-  }
-
-  cli.Init(new TestTransport(&vec, &vec));
-  srv.Init(new TestTransport(&vec, &vec));
+  Session cli(new TestTransport(&vec, &vec));
+  Session srv(new TestTransport(&vec, &vec));
 
   // Check, Set,Clear,Get flags.
   cli.ClearFlags(static_cast<uint32_t>(-1));
@@ -234,8 +227,7 @@ int TestSession() {
   const char tx[] = { "$1234#ca+" };
   const char rx[] = { "+$OK#9a" };
   GoldenTransport gold(rx, tx, 2);
-  Session uni;
-  uni.Init(&gold);
+  Session uni(&gold);
 
   pktOut.Clear();
   pktOut.AddString(str);
@@ -267,8 +259,7 @@ int TestSession() {
 
   // Check that a failed read/write reports DC
   DCSocketTransport dctrans;
-  Session dctest;
-  dctest.Init(&dctrans);
+  Session dctest(&dctrans);
   if (!dctest.Connected()) {
     printf("Expecting dctest to be connected.\n");
     errs++;

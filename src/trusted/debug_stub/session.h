@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2010 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 
@@ -42,7 +42,7 @@ class Packet;
 // Note that the Session object is not thread-safe.
 class Session {
  public:
-  Session();
+  explicit Session(port::ITransport *transport);
   virtual ~Session();
 
   enum {
@@ -54,7 +54,6 @@ class Session {
   };
 
  public:
-  virtual bool Init(port::ITransport *transport);
   virtual void SetFlags(uint32_t flags);
   virtual void ClearFlags(uint32_t flags);
   virtual uint32_t GetFlags();
@@ -62,10 +61,14 @@ class Session {
   virtual bool SendPacketOnly(Packet *packet);
   virtual bool SendPacket(Packet *packet);
   virtual bool GetPacket(Packet *packet);
-  virtual bool DataAvailable();
+  // Is there any data available right now.
+  virtual bool IsDataAvailable();
   virtual bool Connected();
 
  protected:
+  // Wait until data is available or timeout is reached.
+  // Returns true if data is available, false if timeout is reached.
+  virtual bool WaitForData();
   virtual bool GetChar(char *ch);
   virtual bool SendStream(const char *str);
 

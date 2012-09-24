@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2010 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include <assert.h>
@@ -26,23 +26,14 @@ int const kSessionTimeoutMs = 1000;
 
 namespace gdb_rsp {
 
-Session::Session()
-  : io_(NULL),
+Session::Session(ITransport *transport)
+  : io_(transport),
     flags_(0),
     seq_(0),
-    connected_(false) {
+    connected_(true) {
 }
 
 Session::~Session() {
-}
-
-
-bool Session::Init(port::ITransport *transport) {
-  if (NULL == transport) return false;
-
-  connected_ = true;
-  io_ = transport;
-  return true;
 }
 
 void Session::SetFlags(uint32_t flags) {
@@ -57,9 +48,11 @@ uint32_t Session::GetFlags() {
   return flags_;
 }
 
-bool Session::DataAvailable() {
-  assert(io_);
+bool Session::IsDataAvailable() {
+  return io_->ReadWaitWithTimeout(0);
+}
 
+bool Session::WaitForData() {
   return io_->ReadWaitWithTimeout(kSessionTimeoutMs);
 }
 
@@ -68,10 +61,8 @@ bool Session::Connected() {
 }
 
 bool Session::GetChar(char *ch) {
-  assert(io_);
-
   // Attempt to select this IO for reading.
-  if (DataAvailable() == false) return false;
+  if (WaitForData() == false) return false;
 
   int32_t len = io_->Read(ch, 1);
 
@@ -158,8 +149,6 @@ bool Session::SendStream(const char *out) {
   int32_t len = static_cast<int32_t>(strlen(out));
   int32_t sent = 0;
 
-  assert(io_);
-
   while (sent < len) {
     const char *cur = &out[sent];
     int32_t tx = io_->Write(cur, len - sent);
@@ -181,14 +170,9 @@ bool Session::SendStream(const char *out) {
 
 // Attempt to receive a packet
 bool Session::GetPacket(Packet *pkt) {
-  assert(io_);
-
   char run_xsum, fin_xsum, ch;
   std::string in;
   int has_seq, offs;
-
-  // If nothing is waiting, return false
-  if (!io_->ReadWaitWithTimeout(kSessionTimeoutMs)) return false;
 
   // Toss characters until we see a start of command
   do {
@@ -201,7 +185,7 @@ bool Session::GetPacket(Packet *pkt) {
   offs    = 0;
 
   // If nothing is waiting, return NONE
-  if (!io_->ReadWaitWithTimeout(kSessionTimeoutMs)) return false;
+  if (!WaitForData()) return false;
 
   // Clear the stream
   pkt->Clear();

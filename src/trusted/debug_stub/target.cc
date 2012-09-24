@@ -283,7 +283,7 @@ void Target::Run(Session *ses) {
       // (internal) initial breakpoint is still registered or where
       // the initial thread is suspended in NaClStartThreadInApp()
       // before executing its first untrusted instruction.
-      if (!initial_breakpoint_seen || !ses->DataAvailable()) {
+      if (!initial_breakpoint_seen || !ses->IsDataAvailable()) {
         // No input from GDB.  Nothing to do, so try again.
         continue;
       }

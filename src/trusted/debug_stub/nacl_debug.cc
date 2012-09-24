@@ -82,8 +82,7 @@ void WINAPI NaClStubThread(void *thread_arg) {
     if (NULL == trans.get()) continue;
 
     // Create a new session for this connection
-    Session ses;
-    ses.Init(trans.get());
+    Session ses(trans.get());
     ses.SetFlags(Session::DEBUG_MASK);
 
     // Run this session for as long as it lasts
