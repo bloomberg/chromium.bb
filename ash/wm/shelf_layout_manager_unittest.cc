@@ -726,6 +726,20 @@ TEST_F(ShelfLayoutManagerTest, GestureDrag) {
   EXPECT_EQ(bounds_noshelf.ToString(), window->bounds().ToString());
   EXPECT_EQ(shelf_hidden.ToString(),
             shelf->launcher_widget()->GetWindowBoundsInScreen().ToString());
+
+  // Make the window fullscreen.
+  widget->SetFullscreen(true);
+  gfx::Rect bounds_fullscreen = window->bounds();
+  EXPECT_TRUE(widget->IsFullscreen());
+  EXPECT_NE(bounds_noshelf.ToString(), bounds_fullscreen.ToString());
+  EXPECT_EQ(ShelfLayoutManager::HIDDEN, shelf->visibility_state());
+
+  // Swipe-up. This should not change anything.
+  generator.GestureScrollSequence(end, start,
+      base::TimeDelta::FromMilliseconds(10), 1);
+  EXPECT_EQ(ShelfLayoutManager::HIDDEN, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
+  EXPECT_EQ(bounds_fullscreen.ToString(), window->bounds().ToString());
 }
 
 TEST_F(ShelfLayoutManagerTest, GestureRevealsTrayBubble) {

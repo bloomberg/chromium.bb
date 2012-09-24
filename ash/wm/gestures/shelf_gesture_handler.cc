@@ -10,6 +10,7 @@
 #include "ash/wm/gestures/tray_gesture_handler.h"
 #include "ash/wm/shelf_layout_manager.h"
 #include "ash/wm/shelf_types.h"
+#include "ash/wm/window_util.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -33,6 +34,11 @@ bool ShelfGestureHandler::ProcessGestureEvent(const ui::GestureEvent& event) {
     // The gestures are disabled in the lock/login screen.
     return false;
   }
+
+  // The gesture are disabled for fullscreen windows.
+  aura::Window* active = wm::GetActiveWindow();
+  if (active && wm::IsWindowFullscreen(active))
+    return false;
 
   ShelfLayoutManager* shelf = shell->shelf();
   if (event.type() == ui::ET_GESTURE_SCROLL_BEGIN) {
