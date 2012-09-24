@@ -62,7 +62,7 @@
         "status": "out_of_date"
       },
       {
-        "version": "10.7.2",
+        "version": "10.7",
         "status": "requires_authorization",
         "comment": "Java SE 7u7"
       }
