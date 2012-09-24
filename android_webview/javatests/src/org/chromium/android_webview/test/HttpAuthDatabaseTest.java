@@ -5,11 +5,10 @@
 package org.chromium.android_webview.test;
 
 import android.test.AndroidTestCase;
-import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.android_webview.HttpAuthDatabase;
-import org.chromium.base.test.Feature;
+import org.chromium.base.test.util.Feature;
 
 /**
  * Test suite for HttpAuthDatabase.

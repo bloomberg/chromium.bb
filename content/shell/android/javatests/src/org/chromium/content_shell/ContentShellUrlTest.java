@@ -4,11 +4,9 @@
 
 package org.chromium.content_shell;
 
-import android.app.Activity;
-import android.test.ActivityInstrumentationTestCase2;
 import android.test.suitebuilder.annotation.SmallTest;
 
-import org.chromium.base.test.Feature;
+import org.chromium.base.test.util.Feature;
 
 /**
  * Example test that just starts the content shell.

@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.testshell;
 
-import org.chromium.base.test.DisabledTest;
+import org.chromium.base.test.util.DisabledTest;
 
 public class ChromiumTestShellUrlTest extends ChromiumTestShellTestBase {
     // URL used for base tests.

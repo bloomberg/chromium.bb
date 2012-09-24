@@ -4,10 +4,7 @@
 
 package org.chromium.chrome.testshell;
 
-import org.chromium.base.test.DisabledTest;
-
-import org.chromium.chrome.testshell.ChromiumTestShellActivity;
-import org.chromium.chrome.testshell.ChromiumTestShellTestBase;
+import org.chromium.base.test.util.DisabledTest;
 
 // TODO(dtrainor): Once some other tests are integrated to this directory remove this.
 public class DummyIntegrationTest extends ChromiumTestShellTestBase {

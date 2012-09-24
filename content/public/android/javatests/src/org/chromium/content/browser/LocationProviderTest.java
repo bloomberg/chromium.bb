@@ -4,13 +4,12 @@
 
 package org.chromium.content.browser;
 
-import android.os.Looper;
 import android.test.UiThreadTest;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ActivityStatus;
-import org.chromium.base.test.Feature;
+import org.chromium.base.test.util.Feature;
 
 /**
  * Test suite for LocationProvider.

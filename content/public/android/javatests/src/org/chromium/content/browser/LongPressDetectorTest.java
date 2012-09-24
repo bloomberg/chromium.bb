@@ -4,20 +4,18 @@
 
 package org.chromium.content.browser;
 
-import android.content.Context;
 import android.os.SystemClock;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.LargeTest;
 import android.test.suitebuilder.annotation.SmallTest;
-import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ViewConfiguration;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import org.chromium.base.test.Feature;
-import org.chromium.base.test.ScalableTimeout;
+import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.ScalableTimeout;
 
 /**
  * Test suite for LongPressDetector.

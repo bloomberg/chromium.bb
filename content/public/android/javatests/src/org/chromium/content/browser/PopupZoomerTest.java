@@ -9,14 +9,13 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
 import android.os.SystemClock;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.view.MotionEvent;
 import android.view.View;
 
-import org.chromium.base.test.Feature;
+import org.chromium.base.test.util.Feature;
 
 /**
  * Tests for PopupZoomer.

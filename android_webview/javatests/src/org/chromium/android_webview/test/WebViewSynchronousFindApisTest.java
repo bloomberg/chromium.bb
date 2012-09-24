@@ -6,7 +6,7 @@ package org.chromium.android_webview.test;
 
 import android.test.suitebuilder.annotation.SmallTest;
 
-import org.chromium.base.test.Feature;
+import org.chromium.base.test.util.Feature;
 
 /**
  * Tests the synchronous find-in-page APIs in WebView.

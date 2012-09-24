@@ -9,7 +9,7 @@ import android.webkit.ValueCallback;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.Feature;
+import org.chromium.base.test.util.Feature;
 
 import java.io.File;
 import java.util.concurrent.Semaphore;

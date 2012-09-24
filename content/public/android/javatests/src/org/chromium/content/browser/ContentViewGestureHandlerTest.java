@@ -8,19 +8,14 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.test.InstrumentationTestCase;
-import android.test.suitebuilder.annotation.LargeTest;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
-import android.view.ViewConfiguration;
-import android.view.GestureDetector.OnGestureListener;
 
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
-import org.chromium.base.test.Feature;
-import org.chromium.base.test.ScalableTimeout;
+import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.ContentViewGestureHandler.MotionEventDelegate;
 
 /**

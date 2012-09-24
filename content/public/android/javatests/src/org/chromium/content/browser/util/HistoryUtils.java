@@ -6,7 +6,7 @@ package org.chromium.content.browser.util;
 
 import android.app.Instrumentation;
 
-import org.chromium.base.test.InstrumentationUtils;
+import org.chromium.base.test.util.InstrumentationUtils;
 import org.chromium.content.browser.ContentViewCore;
 
 import java.util.concurrent.Callable;

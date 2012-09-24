@@ -4,16 +4,10 @@
 
 package org.chromium.android_webview.test;
 
-import android.content.Context;
 import android.test.suitebuilder.annotation.SmallTest;
-import android.test.suitebuilder.annotation.Smoke;
 
-import org.chromium.base.test.Feature;
-import org.chromium.android_webview.AwContents;
-import org.chromium.android_webview.AwWebContentsDelegate;
+import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.ContentViewCore;
-
-import java.util.concurrent.Callable;
 
 /**
  * Test suite for loadUrl().

@@ -7,20 +7,15 @@ package org.chromium.android_webview.test;
 import android.content.Context;
 import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
-import android.test.suitebuilder.annotation.Smoke;
 
-import org.chromium.base.test.Feature;
-import org.chromium.base.test.TestFileUtil;
-import org.chromium.base.test.UrlUtils;
-import org.chromium.android_webview.AwContents;
-import org.chromium.android_webview.AwContentsClient;
-import org.chromium.android_webview.test.TestContentProvider;
+import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.TestFileUtil;
+import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.ContentSettings;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.util.CallbackHelper;
 import org.chromium.content.browser.util.HistoryUtils;
 
-import java.util.concurrent.Callable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
