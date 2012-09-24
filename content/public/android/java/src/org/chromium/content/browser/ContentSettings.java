@@ -5,6 +5,7 @@
 package org.chromium.content.browser;
 
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.webkit.WebSettings.PluginState;
 import android.webkit.WebView;
@@ -61,7 +62,7 @@ public class ContentSettings {
     private static final int MAXIMUM_FONT_SIZE = 72;
 
     // Private settings so we don't have to go into native code to
-    // retrieve the values. After setXXX, sendSyncMessageLocked() needs to be called.
+    // retrieve the values. After setXXX, mEventHandler.syncSettingsLocked() needs to be called.
     //
     // TODO(mnaganov): populate with the complete set of legacy WebView settings.
 
@@ -115,6 +116,7 @@ public class ContentSettings {
                                     synchronized (mContentSettingsLock) {
                                         nativeSyncToNative(mNativeContentSettings);
                                         mIsSyncMessagePending = false;
+                                        mContentSettingsLock.notify();
                                     }
                                     break;
                                 case UPDATE_UA:
@@ -145,9 +147,34 @@ public class ContentSettings {
                     };
         }
 
-        private void sendSyncMessageLocked() {
+        private void syncSettingsLocked() {
             assert Thread.holdsLock(mContentSettingsLock);
-            mHandler.sendMessage(Message.obtain(null, SYNC));
+            if (mContentViewCore.isPersonalityView()) {
+                if (Looper.myLooper() == mHandler.getLooper()) {
+                    nativeSyncToNative(mNativeContentSettings);
+                } else {
+                    // We're being called on a background thread, so post a message.
+                    if (mIsSyncMessagePending) {
+                        return;
+                    }
+                    mIsSyncMessagePending = true;
+                    mHandler.sendMessage(Message.obtain(null, SYNC));
+                    // When used in PERSONALITY_VIEW mode, we must block
+                    // until the settings have been sync'd to native to
+                    // ensure that they have taken effect.
+                    try {
+                        while (mIsSyncMessagePending) {
+                            mContentSettingsLock.wait();
+                        }
+                    } catch (InterruptedException e) {}
+                }
+            } else {
+                if (mIsSyncMessagePending) {
+                    return;
+                }
+                mIsSyncMessagePending = true;
+                mHandler.sendMessage(Message.obtain(null, SYNC));
+            }
         }
 
         private void sendUpdateUaMessageLocked() {
@@ -330,7 +357,7 @@ public class ContentSettings {
         synchronized (mContentSettingsLock) {
             if (mAllowFileUrlAccess != allow) {
                 mAllowFileUrlAccess = allow;
-                sendSyncMessageLocked();
+                mEventHandler.syncSettingsLocked();
             }
         }
     }
@@ -356,7 +383,7 @@ public class ContentSettings {
         synchronized (mContentSettingsLock) {
             if (mAllowContentUrlAccess != allow) {
                 mAllowContentUrlAccess = allow;
-                sendSyncMessageLocked();
+                mEventHandler.syncSettingsLocked();
             }
         }
     }
@@ -389,7 +416,7 @@ public class ContentSettings {
         synchronized (mContentSettingsLock) {
             if (!mStandardFontFamily.equals(font)) {
                 mStandardFontFamily = font;
-                sendSyncMessageLocked();
+                mEventHandler.syncSettingsLocked();
             }
         }
     }
@@ -413,7 +440,7 @@ public class ContentSettings {
         synchronized (mContentSettingsLock) {
             if (!mFixedFontFamily.equals(font)) {
                 mFixedFontFamily = font;
-                sendSyncMessageLocked();
+                mEventHandler.syncSettingsLocked();
             }
         }
     }
@@ -437,7 +464,7 @@ public class ContentSettings {
         synchronized (mContentSettingsLock) {
             if (!mSansSerifFontFamily.equals(font)) {
                 mSansSerifFontFamily = font;
-                sendSyncMessageLocked();
+                mEventHandler.syncSettingsLocked();
             }
         }
     }
@@ -461,7 +488,7 @@ public class ContentSettings {
         synchronized (mContentSettingsLock) {
             if (!mSerifFontFamily.equals(font)) {
                 mSerifFontFamily = font;
-                sendSyncMessageLocked();
+                mEventHandler.syncSettingsLocked();
             }
         }
     }
@@ -485,7 +512,7 @@ public class ContentSettings {
         synchronized (mContentSettingsLock) {
             if (!mCursiveFontFamily.equals(font)) {
                 mCursiveFontFamily = font;
-                sendSyncMessageLocked();
+                mEventHandler.syncSettingsLocked();
             }
         }
     }
@@ -509,7 +536,7 @@ public class ContentSettings {
         synchronized (mContentSettingsLock) {
             if (!mFantasyFontFamily.equals(font)) {
                 mFantasyFontFamily = font;
-                sendSyncMessageLocked();
+                mEventHandler.syncSettingsLocked();
             }
         }
     }
@@ -535,7 +562,7 @@ public class ContentSettings {
             size = clipFontSize(size);
             if (mMinimumFontSize != size) {
                 mMinimumFontSize = size;
-                sendSyncMessageLocked();
+                mEventHandler.syncSettingsLocked();
             }
         }
     }
@@ -561,7 +588,7 @@ public class ContentSettings {
             size = clipFontSize(size);
             if (mMinimumLogicalFontSize != size) {
                 mMinimumLogicalFontSize = size;
-                sendSyncMessageLocked();
+                mEventHandler.syncSettingsLocked();
             }
         }
     }
@@ -587,7 +614,7 @@ public class ContentSettings {
             size = clipFontSize(size);
             if (mDefaultFontSize != size) {
                 mDefaultFontSize = size;
-                sendSyncMessageLocked();
+                mEventHandler.syncSettingsLocked();
             }
         }
     }
@@ -613,7 +640,7 @@ public class ContentSettings {
             size = clipFontSize(size);
             if (mDefaultFixedFontSize != size) {
                 mDefaultFixedFontSize = size;
-                sendSyncMessageLocked();
+                mEventHandler.syncSettingsLocked();
             }
         }
     }
@@ -638,7 +665,7 @@ public class ContentSettings {
         synchronized (mContentSettingsLock) {
             if (mJavaScriptEnabled != flag) {
                 mJavaScriptEnabled = flag;
-                sendSyncMessageLocked();
+                mEventHandler.syncSettingsLocked();
             }
         }
     }
@@ -663,7 +690,7 @@ public class ContentSettings {
         synchronized (mContentSettingsLock) {
             if (mAllowUniversalAccessFromFileURLs != flag) {
                 mAllowUniversalAccessFromFileURLs = flag;
-                sendSyncMessageLocked();
+                mEventHandler.syncSettingsLocked();
             }
         }
     }
@@ -689,7 +716,7 @@ public class ContentSettings {
         synchronized (mContentSettingsLock) {
             if (mAllowFileAccessFromFileURLs != flag) {
                 mAllowFileAccessFromFileURLs = flag;
-                sendSyncMessageLocked();
+                mEventHandler.syncSettingsLocked();
             }
         }
     }
@@ -703,7 +730,7 @@ public class ContentSettings {
         synchronized (mContentSettingsLock) {
             if (mLoadsImagesAutomatically != flag) {
                 mLoadsImagesAutomatically = flag;
-                sendSyncMessageLocked();
+                mEventHandler.syncSettingsLocked();
             }
         }
     }
@@ -783,7 +810,7 @@ public class ContentSettings {
         synchronized (mContentSettingsLock) {
             if (mPluginState != state) {
                 mPluginState = state;
-                sendSyncMessageLocked();
+                mEventHandler.syncSettingsLocked();
             }
         }
     }
@@ -845,7 +872,7 @@ public class ContentSettings {
         synchronized (mContentSettingsLock) {
             if (mJavaScriptCanOpenWindowsAutomatically != flag) {
                 mJavaScriptCanOpenWindowsAutomatically = flag;
-                sendSyncMessageLocked();
+                mEventHandler.syncSettingsLocked();
             }
         }
     }
@@ -872,7 +899,7 @@ public class ContentSettings {
         synchronized (mContentSettingsLock) {
             if (mDomStorageEnabled != flag) {
                 mDomStorageEnabled = flag;
-                sendSyncMessageLocked();
+                mEventHandler.syncSettingsLocked();
             }
         }
     }
@@ -898,7 +925,7 @@ public class ContentSettings {
         synchronized (mContentSettingsLock) {
             if (!mDefaultTextEncoding.equals(encoding)) {
                 mDefaultTextEncoding = encoding;
-                sendSyncMessageLocked();
+                mEventHandler.syncSettingsLocked();
             }
         }
     }
@@ -922,22 +949,16 @@ public class ContentSettings {
         return size;
     }
 
-    void sendSyncMessage() {
+    /**
+     * Synchronize java side and native side settings. When ContentView
+     * is running in PERSONALITY_VIEW mode, this needs to be done after
+     * any java side setting is changed to sync them to native. In
+     * PERSONALITY_CHROME mode, this needs to be called whenever native
+     * settings are changed to sync them to java.
+     */
+    void syncSettings() {
         synchronized (mContentSettingsLock) {
-            sendSyncMessageLocked();
-        }
-    }
-
-    // Send a synchronization message to handle syncing the native settings.
-    // When the ContentView is in the PERSONALITY_VIEW role, called from setter
-    // methods.  When the ContentView is in the PERSONALITY_CHROME role, called
-    // from ContentView on Chrome preferences updates.
-    private void sendSyncMessageLocked() {
-        assert Thread.holdsLock(mContentSettingsLock);
-        // Only post if a sync is not pending
-        if (!mIsSyncMessagePending) {
-            mIsSyncMessagePending = true;
-            mEventHandler.sendSyncMessageLocked();
+            mEventHandler.syncSettingsLocked();
         }
     }
 
