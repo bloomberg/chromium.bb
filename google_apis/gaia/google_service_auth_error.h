@@ -77,6 +77,9 @@ class GoogleServiceAuthError {
     // The user has provided a HOSTED account, when this service requires
     // a GOOGLE account.
     HOSTED_NOT_ALLOWED = 10,
+
+    // The number of known error states.
+    NUM_STATES = 11,
   };
 
   // Additional data for CAPTCHA_REQUIRED errors.

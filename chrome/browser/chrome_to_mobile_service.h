@@ -76,7 +76,9 @@ class ChromeToMobileService : public ProfileKeyedService,
     BAD_SEND_ERROR,         // The cloud print send response was errorCode!=407.
     BAD_SEND_AUTH,          // The cloud print send request failed (auth).
     BAD_SEND_OTHER,         // The cloud print send request failed (other).
-    NUM_METRICS
+    SEARCH_SUCCESS,         // Cloud print responded with success on search.
+    SEARCH_ERROR,           // Cloud print responded with failure on search.
+    NUM_METRICS,
   };
 
   // The supported mobile device operating systems.

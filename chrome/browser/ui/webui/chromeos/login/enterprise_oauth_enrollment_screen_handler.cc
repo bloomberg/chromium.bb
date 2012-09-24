@@ -182,6 +182,8 @@ void EnterpriseOAuthEnrollmentScreenHandler::ShowAuthError(
       LOG(WARNING) << "Network error " << error.state();
       ShowEnrollmentError(NETWORK_ERROR);
       return;
+    case GoogleServiceAuthError::NUM_STATES:
+      break;
   }
   UMAFailure(policy::kMetricEnrollmentOtherFailed);
   NOTREACHED();
