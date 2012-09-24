@@ -26,8 +26,6 @@
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/plugin_service_filter.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/common/content_switches.h"
@@ -171,14 +169,6 @@ void PluginServiceImpl::Init() {
   path = command_line->GetSwitchValuePath(switches::kExtraPluginDir);
   if (!path.empty())
     plugin_list_->AddExtraPluginDir(path);
-
-
-#if defined(OS_MACOSX)
-  // We need to know when the browser comes forward so we can bring modal plugin
-  // windows forward too.
-  registrar_.Add(this, content::NOTIFICATION_APP_ACTIVATED,
-                 content::NotificationService::AllSources());
-#endif
 }
 
 void PluginServiceImpl::StartWatchingPlugins() {
@@ -585,19 +575,6 @@ void PluginServiceImpl::OnWaitableEventSignaled(
 #endif  // defined(OS_WIN)
 }
 
-void PluginServiceImpl::Observe(int type,
-                                const content::NotificationSource& source,
-                                const content::NotificationDetails& details) {
-#if defined(OS_MACOSX)
-  if (type == content::NOTIFICATION_APP_ACTIVATED) {
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::Bind(&NotifyPluginsOfActivation));
-    return;
-  }
-#endif
-  NOTREACHED();
-}
-
 void PluginServiceImpl::RegisterPepperPlugins() {
   // TODO(abarth): It seems like the PepperPluginRegistry should do this work.
   PepperPluginRegistry::ComputeList(&ppapi_plugins_);
@@ -725,6 +702,13 @@ void PluginServiceImpl::SetPluginListForTesting(
     webkit::npapi::PluginList* plugin_list) {
   plugin_list_ = plugin_list;
 }
+
+#if defined(OS_MACOSX)
+void PluginServiceImpl::AppActivated() {
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            base::Bind(&NotifyPluginsOfActivation));
+}
+#endif
 
 void PluginServiceImpl::RegisterInternalPlugin(
     const webkit::WebPluginInfo& info,

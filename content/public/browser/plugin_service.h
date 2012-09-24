@@ -140,6 +140,12 @@ class PluginService {
 
   virtual void SetPluginListForTesting(
       webkit::npapi::PluginList* plugin_list) = 0;
+
+#if defined(OS_MACOSX)
+  // Called when the application is made active so that modal plugin windows can
+  // be made forward too.
+  virtual void AppActivated() = 0;
+#endif
 };
 
 }  // namespace content

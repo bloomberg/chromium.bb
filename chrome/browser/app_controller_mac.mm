@@ -70,6 +70,7 @@
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/plugin_service.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -610,10 +611,7 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
 // This is called after profiles have been loaded and preferences registered.
 // It is safe to access the default profile here.
 - (void)applicationDidBecomeActive:(NSNotification*)notify {
-  content::NotificationService::current()->Notify(
-      content::NOTIFICATION_APP_ACTIVATED,
-      content::NotificationService::AllSources(),
-      content::NotificationService::NoDetails());
+  content::PluginService::GetInstance()->AppActivated();
 }
 
 // Helper function for populating and displaying the in progress downloads at

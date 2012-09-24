@@ -23,8 +23,6 @@
 #include "content/browser/plugin_process_host.h"
 #include "content/browser/ppapi_plugin_process_host.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/plugin_service.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel_handle.h"
@@ -70,8 +68,7 @@ struct PluginServiceFilterParams {
 
 class CONTENT_EXPORT PluginServiceImpl
     : NON_EXPORTED_BASE(public content::PluginService),
-      public base::WaitableEventWatcher::Delegate,
-      public content::NotificationObserver {
+      public base::WaitableEventWatcher::Delegate {
  public:
   // Returns the PluginServiceImpl singleton.
   static PluginServiceImpl* GetInstance();
@@ -118,6 +115,9 @@ class CONTENT_EXPORT PluginServiceImpl
   virtual webkit::npapi::PluginList* GetPluginList() OVERRIDE;
   virtual void SetPluginListForTesting(
       webkit::npapi::PluginList* plugin_list) OVERRIDE;
+#if defined(OS_MACOSX)
+  virtual void AppActivated() OVERRIDE;
+#endif
 
   // Returns the plugin process host corresponding to the plugin process that
   // has been started by this service. This will start a process to host the
@@ -164,11 +164,6 @@ class CONTENT_EXPORT PluginServiceImpl
   // base::WaitableEventWatcher::Delegate implementation.
   virtual void OnWaitableEventSignaled(
       base::WaitableEvent* waitable_event) OVERRIDE;
-
-  // content::NotificationObserver implementation
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
 
   // Returns the plugin process host corresponding to the plugin process that
   // has been started by this service. Returns NULL if no process has been
@@ -221,8 +216,6 @@ class CONTENT_EXPORT PluginServiceImpl
 
   // The plugin list instance.
   webkit::npapi::PluginList* plugin_list_;
-
-  content::NotificationRegistrar registrar_;
 
 #if defined(OS_WIN)
   // Registry keys for getting notifications when new plugins are installed.

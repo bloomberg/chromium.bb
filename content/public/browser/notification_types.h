@@ -8,6 +8,9 @@
 // This file describes various types used to describe and filter notifications
 // that pass through the NotificationService.
 //
+// Only notifications that are fired from the content module should be here. We
+// should never have a notification that is fired by the embedder and listened
+// to by content.
 namespace content {
 
 enum NotificationType {
@@ -147,12 +150,6 @@ enum NotificationType {
   NOTIFICATION_SSL_INTERNAL_STATE_CHANGED,
 
   // Application-wide ----------------------------------------------------------
-
-#if defined(OS_MACOSX)
-  // This message is sent when the application is made active (Mac OS X only
-  // at present). No source or details are passed.
-  NOTIFICATION_APP_ACTIVATED,
-#endif
 
   // This message is sent when the application is terminating (the last
   // browser window has shutdown as part of an explicit user-initiated exit,
