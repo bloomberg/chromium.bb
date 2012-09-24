@@ -213,6 +213,8 @@ const AcceleratorAction kActionsAllowedAtLoginOrLockScreen[] = {
   DISABLE_CAPS_LOCK,
   KEYBOARD_BRIGHTNESS_DOWN,
   KEYBOARD_BRIGHTNESS_UP,
+  MAGNIFY_SCREEN_ZOOM_IN,  // Control+F7
+  MAGNIFY_SCREEN_ZOOM_OUT,  // Control+F6
   NEXT_IME,
   PREVIOUS_IME,
   SWITCH_IME,  // Switch to another IME depending on the accelerator.
