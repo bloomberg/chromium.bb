@@ -741,6 +741,10 @@ static size_t memoryUsageMB() {
   v8::V8::GetHeapStatistics(&stat);
   return mem_usage + (static_cast<uint64_t>(stat.total_heap_size()) >> 20);
 }
+#elif defined(OS_MACOSX)
+static size_t memoryUsageMB() {
+  return CurrentProcessMetrics()->GetWorkingSetSize() >> 20;
+}
 #else
 static size_t memoryUsageMB() {
   return CurrentProcessMetrics()->GetPagefileUsage() >> 20;
