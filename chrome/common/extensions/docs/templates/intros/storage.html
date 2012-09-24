@@ -16,6 +16,8 @@ with the following key differences:
   <li>A user's extension settings can be persisted
   even when using
   <a href="manifest.html#incognito">split incognito behavior</a>.</li>
+  <li>It's asynchronous with bulk read and write operations, and therefore
+  faster than the blocking and serial <code>localStorage API</code>.
   <li>User data can be stored as objects
   (the <code>localStorage API</code> stores data in strings).</li>
 </ul>
