@@ -1483,8 +1483,7 @@ protected:
     }
 };
 
-// Test is flaky on xp bots. http://crbug.com/148906.
-// ALL_CCOCCLUSIONTRACKER_TEST(CCOcclusionTrackerTestViewportRectOverChild);
+ALL_CCOCCLUSIONTRACKER_TEST(CCOcclusionTrackerTestViewportRectOverChild);
 
 template<class Types, bool opaqueLayers>
 class CCOcclusionTrackerTestLayerClipRectPartlyOverChild : public CCOcclusionTrackerTest<Types, opaqueLayers> {
