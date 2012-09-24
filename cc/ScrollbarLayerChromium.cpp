@@ -131,6 +131,16 @@ private:
     WebKit::WebScrollbar::ScrollbarPart m_trackPart;
 };
 
+bool ScrollbarLayerChromium::needsContentsScale() const
+{
+    return true;
+}
+
+IntSize ScrollbarLayerChromium::contentBounds() const
+{
+    return IntSize(lroundf(bounds().width() * contentsScale()), lroundf(bounds().height() * contentsScale()));
+}
+
 class ScrollbarThumbPainter : public LayerPainterChromium {
     WTF_MAKE_NONCOPYABLE(ScrollbarThumbPainter);
 public:
@@ -213,8 +223,10 @@ void ScrollbarLayerChromium::updatePart(LayerTextureUpdater* painter, LayerTextu
         return;
 
     // Paint and upload the entire part.
+    float widthScale = static_cast<float>(contentBounds().width()) / bounds().width();
+    float heightScale = static_cast<float>(contentBounds().height()) / bounds().height();
     IntRect paintedOpaqueRect;
-    painter->prepareToUpdate(rect, rect.size(), 1, 1, paintedOpaqueRect, stats);
+    painter->prepareToUpdate(rect, rect.size(), widthScale, heightScale, paintedOpaqueRect, stats);
     texture->prepareRect(rect, stats);
 
     IntSize destOffset(0, 0);
@@ -240,8 +252,8 @@ void ScrollbarLayerChromium::setTexturePriorities(const CCPriorityCalculator&)
         m_foreTrack->texture()->setRequestPriority(CCPriorityCalculator::uiPriority(drawsToRoot));
     }
     if (m_thumb) {
-        WebKit::WebRect thumbRect = m_geometry->thumbRect(m_scrollbar.get());
-        m_thumb->texture()->setDimensions(IntSize(thumbRect.width, thumbRect.height), m_textureFormat);
+        IntSize thumbSize = layerRectToContentRect(m_geometry->thumbRect(m_scrollbar.get())).size();
+        m_thumb->texture()->setDimensions(thumbSize, m_textureFormat);
         m_thumb->texture()->setRequestPriority(CCPriorityCalculator::uiPriority(drawsToRoot));
     }
 }
@@ -254,14 +266,14 @@ void ScrollbarLayerChromium::update(CCTextureUpdateQueue& queue, const CCOcclusi
     createTextureUpdaterIfNeeded();
 
     IntPoint scrollbarOrigin(m_scrollbar->location().x, m_scrollbar->location().y);
-    IntRect contentRect(scrollbarOrigin, contentBounds());
+    IntRect contentRect = layerRectToContentRect(WebKit::WebRect(scrollbarOrigin.x(), scrollbarOrigin.y(), bounds().width(), bounds().height()));
     updatePart(m_backTrackUpdater.get(), m_backTrack.get(), contentRect, queue, stats);
     if (m_foreTrack && m_foreTrackUpdater)
         updatePart(m_foreTrackUpdater.get(), m_foreTrack.get(), contentRect, queue, stats);
 
     // Consider the thumb to be at the origin when painting.
     WebKit::WebRect thumbRect = m_geometry->thumbRect(m_scrollbar.get());
-    IntRect originThumbRect = IntRect(0, 0, thumbRect.width, thumbRect.height);
+    IntRect originThumbRect = layerRectToContentRect(WebKit::WebRect(0, 0, thumbRect.width, thumbRect.height));
     if (!originThumbRect.isEmpty())
         updatePart(m_thumbUpdater.get(), m_thumb.get(), originThumbRect, queue, stats);
 }

@@ -232,6 +232,7 @@ public:
     void setContentsScale(float);
 
     // When true, the layer's contents are not scaled by the current page scale factor.
+    // setBoundsContainPageScale recursively sets the value on all child layers.
     void setBoundsContainPageScale(bool);
     bool boundsContainPageScale() const { return m_boundsContainPageScale; }
 
@@ -272,6 +273,8 @@ protected:
     LayerChromium();
 
     void setNeedsCommit();
+
+    IntRect layerRectToContentRect(const WebKit::WebRect& layerRect);
 
     // This flag is set when layer need repainting/updating.
     bool m_needsDisplay;

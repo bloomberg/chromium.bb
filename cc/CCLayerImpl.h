@@ -262,6 +262,8 @@ protected:
 
     void appendDebugBorderQuad(CCQuadSink&, const CCSharedQuadState*, CCAppendQuadsData&) const;
 
+    IntRect layerRectToContentRect(const WebKit::WebRect& layerRect);
+
     virtual void dumpLayerProperties(std::string*, int indent) const;
     static std::string indentString(int indent);
 

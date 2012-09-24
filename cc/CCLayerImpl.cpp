@@ -224,6 +224,15 @@ CCInputHandlerClient::ScrollStatus CCLayerImpl::tryScroll(const IntPoint& viewpo
     return CCInputHandlerClient::ScrollStarted;
 }
 
+IntRect CCLayerImpl::layerRectToContentRect(const WebKit::WebRect& layerRect)
+{
+    float widthScale = static_cast<float>(contentBounds().width()) / bounds().width();
+    float heightScale = static_cast<float>(contentBounds().height()) / bounds().height();
+    FloatRect contentRect(layerRect.x, layerRect.y, layerRect.width, layerRect.height);
+    contentRect.scale(widthScale, heightScale);
+    return enclosingIntRect(contentRect);
+}
+
 std::string CCLayerImpl::indentString(int indent)
 {
     std::string str;

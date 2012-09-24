@@ -116,6 +116,15 @@ void LayerChromium::setNeedsCommit()
         m_layerTreeHost->setNeedsCommit();
 }
 
+IntRect LayerChromium::layerRectToContentRect(const WebKit::WebRect& layerRect)
+{
+    float widthScale = static_cast<float>(contentBounds().width()) / bounds().width();
+    float heightScale = static_cast<float>(contentBounds().height()) / bounds().height();
+    FloatRect contentRect(layerRect.x, layerRect.y, layerRect.width, layerRect.height);
+    contentRect.scale(widthScale, heightScale);
+    return enclosingIntRect(contentRect);
+}
+
 void LayerChromium::setParent(LayerChromium* layer)
 {
     ASSERT(!layer || !layer->hasAncestor(this));
@@ -622,6 +631,9 @@ void LayerChromium::setContentsScale(float contentsScale)
 
 void LayerChromium::setBoundsContainPageScale(bool boundsContainPageScale)
 {
+    for (size_t i = 0; i < m_children.size(); ++i)
+        m_children[i]->setBoundsContainPageScale(boundsContainPageScale);
+
     if (boundsContainPageScale == m_boundsContainPageScale)
         return;
 
