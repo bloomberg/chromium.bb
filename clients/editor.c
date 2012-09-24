@@ -346,10 +346,14 @@ text_model_locale(void *data,
 }
 
 static void
-text_model_activated(void *data,
-		     struct text_model *text_model)
+text_model_enter(void *data,
+		 struct text_model *text_model,
+		 struct wl_surface *surface)
 {
 	struct text_entry *entry = data;
+
+	if (surface != window_get_wl_surface(entry->window))
+		return;
 
 	entry->active = 1;
 
@@ -357,8 +361,8 @@ text_model_activated(void *data,
 }
 
 static void
-text_model_deactivated(void *data,
-		       struct text_model *text_model)
+text_model_leave(void *data,
+		 struct text_model *text_model)
 {
 	struct text_entry *entry = data;
 
@@ -376,8 +380,8 @@ static const struct text_model_listener text_model_listener = {
 	text_model_selection_replacement,
 	text_model_direction,
 	text_model_locale,
-	text_model_activated,
-	text_model_deactivated
+	text_model_enter,
+	text_model_leave
 };
 
 static struct text_entry*

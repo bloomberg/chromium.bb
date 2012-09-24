@@ -90,7 +90,7 @@ deactivate_text_model(struct text_model *text_model,
 		input_method->model = NULL;
 		input_method->context = NULL;
 		wl_signal_emit(&ec->hide_input_panel_signal, ec);
-		text_model_send_deactivated(&text_model->resource);
+		text_model_send_leave(&text_model->resource);
 	}
 }
 
@@ -157,7 +157,7 @@ text_model_activate(struct wl_client *client,
 
 	wl_signal_emit(&ec->show_input_panel_signal, ec);
 
-	text_model_send_activated(&text_model->resource);
+	text_model_send_enter(&text_model->resource, &text_model->surface->resource);
 }
 
 static void

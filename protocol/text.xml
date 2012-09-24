@@ -127,14 +127,15 @@
     <event name="selection_replacement"/>
     <event name="direction"/>
     <event name="locale"/>
-    <event name="activated">
-      <description summary="activated event">
+    <event name="enter">
+      <description summary="enter event">
         Notify the model when it is activated. Typically in response to an
         activate request.
       </description>
+      <arg name="surface" type="object" interface="wl_surface"/>
     </event>
-    <event name="deactivated">
-      <description summary="deactivated event">
+    <event name="leave">
+      <description summary="leave event">
         Notify the model when it is deactivated. Either in response to a
         deactivate request or when the assigned surface lost focus or was
         destroyed.
