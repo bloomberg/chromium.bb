@@ -82,22 +82,19 @@ const CGFloat kPermissionsHeadlineSpacing = 2;
 const CGFloat kPermissionPopUpXSpacing = 3;
 
 // The extra space to the left of the first tab in the tab strip.
-const CGFloat kTabStripXPadding = kFramePadding - 1;
+const CGFloat kTabStripXPadding = kFramePadding;
 
 // The amount of space between the visual borders of adjacent tabs.
 const CGFloat kTabSpacing = 4;
 
-// The extra width outside the hit rect used by the visual borders of the tab.
-const CGFloat kTabBorderExtraWidth = 16;
+// The amount of space above the tab strip.
+const CGFloat kTabStripTopSpacing = 14;
 
-// The height of the clickable area of the tab strip.
-const CGFloat kTabHeight = 27;
-
-// The height of the background image for the tab strip.
-const CGFloat kTabStripHeight = 44;
+// The height of the clickable area of the tab.
+const CGFloat kTabHeight = 28;
 
 // The amount of space above tab labels.
-const CGFloat kTabLabelTopPadding = 20;
+const CGFloat kTabLabelTopPadding = 6;
 
 // The amount of padding to leave on either side of the tab label.
 const CGFloat kTabLabelXPadding = 12;
@@ -127,7 +124,10 @@ NSColor* IdentityVerifiedTextColor() {
 
 @interface WebsiteSettingsTabSegmentedCell : NSSegmentedCell {
  @private
-  scoped_nsobject<NSImage> tabBackgroundImage_;
+  scoped_nsobject<NSImage> tabstripCenterImage_;
+  scoped_nsobject<NSImage> tabstripLeftImage_;
+  scoped_nsobject<NSImage> tabstripRightImage_;
+
   scoped_nsobject<NSImage> tabCenterImage_;
   scoped_nsobject<NSImage> tabLeftImage_;
   scoped_nsobject<NSImage> tabRightImage_;
@@ -142,14 +142,19 @@ NSColor* IdentityVerifiedTextColor() {
 - (id)init {
   if ((self = [super init])) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    tabBackgroundImage_.reset(rb.GetNativeImageNamed(
-        IDR_WEBSITE_SETTINGS_TAB_BACKGROUND).CopyNSImage());
+    tabstripCenterImage_.reset(rb.GetNativeImageNamed(
+        IDR_WEBSITE_SETTINGS_TABSTRIP_CENTER).CopyNSImage());
+    tabstripLeftImage_.reset(rb.GetNativeImageNamed(
+        IDR_WEBSITE_SETTINGS_TABSTRIP_LEFT).CopyNSImage());
+    tabstripRightImage_.reset(rb.GetNativeImageNamed(
+        IDR_WEBSITE_SETTINGS_TABSTRIP_RIGHT).CopyNSImage());
+
     tabCenterImage_.reset(
-        rb.GetNativeImageNamed(IDR_WEBSITE_SETTINGS_TAB_CENTER).CopyNSImage());
+        rb.GetNativeImageNamed(IDR_WEBSITE_SETTINGS_TAB_CENTER2).CopyNSImage());
     tabLeftImage_.reset(
-        rb.GetNativeImageNamed(IDR_WEBSITE_SETTINGS_TAB_LEFT).CopyNSImage());
+        rb.GetNativeImageNamed(IDR_WEBSITE_SETTINGS_TAB_LEFT2).CopyNSImage());
     tabRightImage_.reset(
-        rb.GetNativeImageNamed(IDR_WEBSITE_SETTINGS_TAB_RIGHT).CopyNSImage());
+        rb.GetNativeImageNamed(IDR_WEBSITE_SETTINGS_TAB_RIGHT2).CopyNSImage());
   }
   return self;
 }
@@ -173,14 +178,12 @@ NSColor* IdentityVerifiedTextColor() {
 }
 
 - (void)drawWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
-  // Draw the tab for the selected segment. The drawing area is slightly
-  // larger than the hit rect for the tab.
-  NSRect tabRect = [self hitRectForSegment:[self selectedSegment]];
-  tabRect.origin.x -= kTabBorderExtraWidth;
-  tabRect.size.width += 2 * kTabBorderExtraWidth;
+  CGFloat tabstripHeight = [tabCenterImage_ size].height;
 
+  // Draw the tab for the selected segment.
+  NSRect tabRect = [self hitRectForSegment:[self selectedSegment]];
   tabRect.origin.y = 0;
-  tabRect.size.height = kTabStripHeight;
+  tabRect.size.height = tabstripHeight;
 
   NSDrawThreePartImage(tabRect,
                        tabLeftImage_,
@@ -192,11 +195,11 @@ NSColor* IdentityVerifiedTextColor() {
                        /*flipped=*/ YES);
 
   // Draw the background to the left of the selected tab.
-  NSRect backgroundRect = NSMakeRect(0, 0, NSMinX(tabRect), kTabStripHeight);
+  NSRect backgroundRect = NSMakeRect(0, 0, NSMinX(tabRect), tabstripHeight);
   NSDrawThreePartImage(backgroundRect,
                        nil,
-                       tabBackgroundImage_,
-                       nil,
+                       tabstripCenterImage_,
+                       tabstripLeftImage_,
                        /*vertical=*/ NO,
                        NSCompositeSourceOver,
                        1,
@@ -206,8 +209,8 @@ NSColor* IdentityVerifiedTextColor() {
   backgroundRect.origin.x = NSMaxX(tabRect);
   backgroundRect.size.width = kWindowWidth - NSMaxX(tabRect);
   NSDrawThreePartImage(backgroundRect,
-                       nil,
-                       tabBackgroundImage_,
+                       tabstripRightImage_,
+                       tabstripCenterImage_,
                        nil,
                        /*vertical=*/ NO,
                        NSCompositeSourceOver,
@@ -230,7 +233,10 @@ NSColor* IdentityVerifiedTextColor() {
 // Return the hit rect (i.e., the visual bounds of the tab) for
 // the given segment.
 - (NSRect)hitRectForSegment:(NSInteger)segment {
-  NSRect rect = NSMakeRect(0, kTabStripHeight - kTabHeight,
+  CGFloat tabstripHeight = [tabCenterImage_ size].height;
+  DCHECK_GT(tabstripHeight, kTabHeight);
+
+  NSRect rect = NSMakeRect(0, tabstripHeight - kTabHeight,
                            [self widthForSegment:segment], kTabHeight);
   for (NSInteger i = 0; i < segment; ++i) {
     rect.origin.x += [self widthForSegment:i];
@@ -272,7 +278,15 @@ NSColor* IdentityVerifiedTextColor() {
 // segmented control. Otherwise, clicks on the lower part of a tab will be
 // ignored.
 - (NSSize)cellSizeForBounds:(NSRect)aRect {
-  return NSMakeSize([super cellSizeForBounds:aRect].width, NSHeight(aRect));
+  return NSMakeSize([super cellSizeForBounds:aRect].width,
+                    [tabstripCenterImage_ size].height);
+}
+
+// Returns the minimum size required to display this cell.
+// It should always be exactly as tall as the tabstrip background image.
+- (NSSize)cellSize {
+  return NSMakeSize([super cellSize].width,
+                    [tabstripCenterImage_ size].height);
 }
 @end
 
@@ -389,11 +403,13 @@ NSColor* IdentityVerifiedTextColor() {
 
   // Create the tab view and its two tabs.
 
-  NSRect initialFrame = NSMakeRect(0, 0, kWindowWidth, kTabStripHeight);
+  scoped_nsobject<WebsiteSettingsTabSegmentedCell> cell(
+      [[WebsiteSettingsTabSegmentedCell alloc] init]);
+  CGFloat tabstripHeight = [cell cellSize].height;
+  NSRect tabstripFrame = NSMakeRect(0, 0, kWindowWidth, tabstripHeight);
   segmentedControl_.reset(
-      [[NSSegmentedControl alloc] initWithFrame:initialFrame]);
-  [segmentedControl_ setCell:
-      [[[WebsiteSettingsTabSegmentedCell alloc] init] autorelease]];
+      [[NSSegmentedControl alloc] initWithFrame:tabstripFrame]);
+  [segmentedControl_ setCell:cell];
   [segmentedControl_ setSegmentCount:WebsiteSettingsUI::NUM_TAB_IDS];
   [segmentedControl_ setTarget:self];
   [segmentedControl_ setAction:@selector(tabSelected:)];
@@ -649,8 +665,8 @@ NSColor* IdentityVerifiedTextColor() {
 
   // Adjust the tab view size and place it below the identity status.
 
-  yPos = [self setYPositionOfView:segmentedControl_
-                               to:NSMaxY([identityStatusField_ frame])];
+  yPos = NSMaxY([identityStatusField_ frame]) + kTabStripTopSpacing;
+  yPos = [self setYPositionOfView:segmentedControl_ to:yPos];
 
   NSRect tabViewFrame = [tabView_ frame];
   tabViewFrame.origin.y = yPos;
