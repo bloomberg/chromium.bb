@@ -337,10 +337,12 @@ void ChromeToMobileService::Shutdown() {
 }
 
 void ChromeToMobileService::OnURLFetchComplete(const net::URLFetcher* source) {
-  if (source->GetURL() == GetSearchURL(cloud_print_url_))
+  if (source->GetOriginalURL() == GetSearchURL(cloud_print_url_))
     HandleSearchResponse(source);
-  else
+  else if (source->GetOriginalURL() == GetSubmitURL(cloud_print_url_))
     HandleSubmitResponse(source);
+  else
+    NOTREACHED();
 
   // Remove the URLFetcher from the ScopedVector; this deletes the URLFetcher.
   for (ScopedVector<net::URLFetcher>::iterator it = url_fetchers_.begin();
@@ -596,7 +598,7 @@ void ChromeToMobileService::RequestDeviceSearch() {
 void ChromeToMobileService::HandleSearchResponse(
     const net::URLFetcher* source) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  DCHECK_EQ(source->GetURL(), GetSearchURL(cloud_print_url_));
+  DCHECK_EQ(source->GetOriginalURL(), GetSearchURL(cloud_print_url_));
 
   ListValue mobiles;
   std::string data;
@@ -657,6 +659,8 @@ void ChromeToMobileService::HandleSearchResponse(
 void ChromeToMobileService::HandleSubmitResponse(
     const net::URLFetcher* source) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_EQ(source->GetOriginalURL(), GetSubmitURL(cloud_print_url_));
+
   // Get the success value from the cloud print server response data.
   std::string data;
   bool success = false;
