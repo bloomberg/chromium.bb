@@ -747,17 +747,19 @@ void SavePackage::Finish() {
                  file_manager_,
                  save_ids));
 
-  // Hack to avoid touching download_ after user cancel.
-  // TODO(rdsmith/benjhayden): Integrate canceling on DownloadItem
-  // with SavePackage flow.
-  if (download_ && download_->IsInProgress()) {
-    if (save_type_ != content::SAVE_PAGE_TYPE_AS_MHTML) {
-      download_->OnAllDataSaved(all_save_items_count_,
-                                DownloadItem::kEmptyFileHash);
+  if (download_) {
+    // Hack to avoid touching download_ after user cancel.
+    // TODO(rdsmith/benjhayden): Integrate canceling on DownloadItem
+    // with SavePackage flow.
+    if (download_->IsInProgress()) {
+      if (save_type_ != content::SAVE_PAGE_TYPE_AS_MHTML) {
+        download_->OnAllDataSaved(all_save_items_count_,
+                                  DownloadItem::kEmptyFileHash);
+      }
+      download_->MarkAsComplete();
     }
-    download_->MarkAsComplete();
+    FinalizeDownloadEntry();
   }
-  FinalizeDownloadEntry();
 }
 
 // Called for updating end state.
