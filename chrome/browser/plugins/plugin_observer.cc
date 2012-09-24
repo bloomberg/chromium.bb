@@ -46,6 +46,8 @@ using content::PluginService;
 using content::Referrer;
 using content::WebContents;
 
+int PluginObserver::kUserDataKey;
+
 namespace {
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
@@ -55,7 +57,7 @@ namespace {
 class ConfirmInstallDialogDelegate : public TabModalConfirmDialogDelegate,
                                      public WeakPluginInstallerObserver {
  public:
-  ConfirmInstallDialogDelegate(TabContents* tab_contents,
+  ConfirmInstallDialogDelegate(content::WebContents* web_contents,
                                PluginInstaller* installer);
 
   // TabModalConfirmDialogDelegate methods:
@@ -70,15 +72,15 @@ class ConfirmInstallDialogDelegate : public TabModalConfirmDialogDelegate,
   virtual void OnlyWeakObserversLeft() OVERRIDE;
 
  private:
-  TabContents* tab_contents_;
+  content::WebContents* web_contents_;
 };
 
 ConfirmInstallDialogDelegate::ConfirmInstallDialogDelegate(
-    TabContents* tab_contents,
+    content::WebContents* web_contents,
     PluginInstaller* installer)
-    : TabModalConfirmDialogDelegate(tab_contents->web_contents()),
+    : TabModalConfirmDialogDelegate(web_contents),
       WeakPluginInstallerObserver(installer),
-      tab_contents_(tab_contents) {
+      web_contents_(web_contents) {
 }
 
 string16 ConfirmInstallDialogDelegate::GetTitle() {
@@ -97,7 +99,7 @@ string16 ConfirmInstallDialogDelegate::GetAcceptButtonTitle() {
 }
 
 void ConfirmInstallDialogDelegate::OnAccepted() {
-  installer()->StartInstalling(tab_contents_);
+  installer()->StartInstalling(TabContents::FromWebContents(web_contents_));
 }
 
 void ConfirmInstallDialogDelegate::OnCanceled() {
@@ -164,10 +166,9 @@ class PluginObserver::PluginPlaceholderHost : public PluginInstallerObserver {
 };
 #endif  // defined(ENABLE_PLUGIN_INSTALLATION)
 
-PluginObserver::PluginObserver(TabContents* tab_contents)
-    : content::WebContentsObserver(tab_contents->web_contents()),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
-      tab_contents_(tab_contents) {
+PluginObserver::PluginObserver(content::WebContents* web_contents)
+    : content::WebContentsObserver(web_contents),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
 
 PluginObserver::~PluginObserver() {
@@ -183,7 +184,8 @@ void PluginObserver::PluginCrashed(const FilePath& plugin_path) {
       PluginService::GetInstance()->GetPluginDisplayNameByPath(plugin_path);
   gfx::Image* icon = &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       IDR_INFOBAR_PLUGIN_CRASHED);
-  InfoBarTabHelper* infobar_helper = tab_contents_->infobar_tab_helper();
+  TabContents* tab_contents = TabContents::FromWebContents(web_contents());
+  InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
   infobar_helper->AddInfoBar(
       new SimpleAlertInfoBarDelegate(
           infobar_helper,
@@ -218,11 +220,12 @@ bool PluginObserver::OnMessageReceived(const IPC::Message& message) {
 void PluginObserver::OnBlockedUnauthorizedPlugin(
     const string16& name,
     const std::string& identifier) {
-  InfoBarTabHelper* infobar_helper = tab_contents_->infobar_tab_helper();
+  TabContents* tab_contents = TabContents::FromWebContents(web_contents());
+  InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
   infobar_helper->AddInfoBar(
       new UnauthorizedPluginInfoBarDelegate(
           infobar_helper,
-          tab_contents_->profile()->GetHostContentSettingsMap(),
+          tab_contents->profile()->GetHostContentSettingsMap(),
           name, identifier));
 }
 
@@ -249,7 +252,8 @@ void PluginObserver::FindPluginToUpdate(int placeholder_id,
                     << identifier;
   plugin_placeholders_[placeholder_id] =
       new PluginPlaceholderHost(this, placeholder_id, installer);
-  InfoBarTabHelper* infobar_helper = tab_contents_->infobar_tab_helper();
+  TabContents* tab_contents = TabContents::FromWebContents(web_contents());
+  InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
   infobar_helper->AddInfoBar(
       OutdatedPluginInfoBarDelegate::Create(this, installer));
 }
@@ -273,7 +277,8 @@ void PluginObserver::FindMissingPlugin(int placeholder_id,
 
   plugin_placeholders_[placeholder_id] =
       new PluginPlaceholderHost(this, placeholder_id, installer);
-  InfoBarTabHelper* infobar_helper = tab_contents_->infobar_tab_helper();
+  TabContents* tab_contents = TabContents::FromWebContents(web_contents());
+  InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
   InfoBarDelegate* delegate;
 #if !defined(OS_WIN)
   delegate = PluginInstallerInfoBarDelegate::Create(
@@ -297,8 +302,8 @@ void PluginObserver::InstallMissingPlugin(PluginInstaller* installer) {
     installer->OpenDownloadURL(web_contents());
   } else {
     chrome::ShowTabModalConfirmDialog(
-        new ConfirmInstallDialogDelegate(tab_contents_, installer),
-        tab_contents_);
+        new ConfirmInstallDialogDelegate(web_contents(), installer),
+        TabContents::FromWebContents(web_contents()));
   }
 }
 
@@ -326,7 +331,8 @@ void PluginObserver::OnCouldNotLoadPlugin(const FilePath& plugin_path) {
   g_browser_process->metrics_service()->LogPluginLoadingError(plugin_path);
   string16 plugin_name =
       PluginService::GetInstance()->GetPluginDisplayNameByPath(plugin_path);
-  InfoBarTabHelper* infobar_helper = tab_contents_->infobar_tab_helper();
+  TabContents* tab_contents = TabContents::FromWebContents(web_contents());
+  InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
   infobar_helper->AddInfoBar(new SimpleAlertInfoBarDelegate(
       infobar_helper,
       &ResourceBundle::GetSharedInstance().GetNativeImageNamed(

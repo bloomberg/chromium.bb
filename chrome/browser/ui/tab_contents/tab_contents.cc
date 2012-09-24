@@ -142,6 +142,7 @@ TabContents::TabContents(WebContents* contents)
   password_manager_delegate_.reset(new PasswordManagerDelegateImpl(this));
   password_manager_.reset(
       new PasswordManager(contents, password_manager_delegate_.get()));
+  PluginObserver::CreateForWebContents(contents);
   prefs_tab_helper_.reset(new PrefsTabHelper(contents));
   prerender_tab_helper_.reset(new prerender::PrerenderTabHelper(this));
   SearchEngineTabHelper::CreateForWebContents(contents);
@@ -171,7 +172,6 @@ TabContents::TabContents(WebContents* contents)
   external_protocol_observer_.reset(new ExternalProtocolObserver(contents));
   navigation_metrics_recorder_.reset(new NavigationMetricsRecorder(contents));
   pepper_broker_observer_.reset(new PepperBrokerObserver(contents));
-  plugin_observer_.reset(new PluginObserver(this));
   safe_browsing_tab_observer_.reset(
       new safe_browsing::SafeBrowsingTabObserver(this));
 

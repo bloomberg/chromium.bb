@@ -177,7 +177,8 @@ OutdatedPluginInfoBarDelegate::OutdatedPluginInfoBarDelegate(
     PluginInstaller* installer,
     const string16& message)
     : PluginInfoBarDelegate(
-          InfoBarService::FromTabContents(observer->tab_contents()),
+          InfoBarService::FromTabContents(
+              TabContents::FromWebContents(observer->web_contents())),
           installer->name(),
           installer->identifier()),
       WeakPluginInstallerObserver(installer),
@@ -234,7 +235,8 @@ bool OutdatedPluginInfoBarDelegate::Accept() {
   if (installer()->url_for_display()) {
     installer()->OpenDownloadURL(web_contents);
   } else {
-    installer()->StartInstalling(observer_->tab_contents());
+    installer()->StartInstalling(
+        TabContents::FromWebContents(observer_->web_contents()));
   }
   return false;
 }

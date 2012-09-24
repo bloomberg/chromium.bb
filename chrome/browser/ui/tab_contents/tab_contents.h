@@ -41,7 +41,6 @@ class PanelHost;
 class PasswordManager;
 class PasswordManagerDelegate;
 class PepperBrokerObserver;
-class PluginObserver;
 class PrefsTabHelper;
 class Profile;
 class ShellWindow;
@@ -281,7 +280,6 @@ class TabContents : public content::WebContentsObserver {
   scoped_ptr<ExternalProtocolObserver> external_protocol_observer_;
   scoped_ptr<NavigationMetricsRecorder> navigation_metrics_recorder_;
   scoped_ptr<PepperBrokerObserver> pepper_broker_observer_;
-  scoped_ptr<PluginObserver> plugin_observer_;
   scoped_ptr<safe_browsing::SafeBrowsingTabObserver>
       safe_browsing_tab_observer_;
 

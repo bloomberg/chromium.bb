@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PLUGINS_PLUGIN_OBSERVER_H_
 
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/tab_contents/web_contents_user_data.h"
 #include "content/public/browser/web_contents_observer.h"
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
@@ -15,16 +16,19 @@
 class GURL;
 class InfoBarDelegate;
 class PluginFinder;
-class TabContents;
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
 class PluginInstaller;
 class PluginPlaceholderHost;
 #endif
 
-class PluginObserver : public content::WebContentsObserver {
+namespace content {
+class WebContents;
+}
+
+class PluginObserver : public content::WebContentsObserver,
+                       public WebContentsUserData<PluginObserver> {
  public:
-  explicit PluginObserver(TabContents* tab_contents);
   virtual ~PluginObserver();
 
   // content::WebContentsObserver implementation.
@@ -35,9 +39,14 @@ class PluginObserver : public content::WebContentsObserver {
   void InstallMissingPlugin(PluginInstaller* installer);
 #endif
 
-  TabContents* tab_contents() { return tab_contents_; }
+  // Make public the web_contents() accessor that is protected in the parent.
+  using content::WebContentsObserver::web_contents;
 
  private:
+  explicit PluginObserver(content::WebContents* web_contents);
+  static int kUserDataKey;
+  friend class WebContentsUserData<PluginObserver>;
+
   class PluginPlaceholderHost;
 
   void OnBlockedUnauthorizedPlugin(const string16& name,
@@ -59,8 +68,6 @@ class PluginObserver : public content::WebContentsObserver {
   void OnCouldNotLoadPlugin(const FilePath& plugin_path);
 
   base::WeakPtrFactory<PluginObserver> weak_ptr_factory_;
-
-  TabContents* tab_contents_;
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
   // Stores all PluginPlaceholderHosts, keyed by their routing ID.
