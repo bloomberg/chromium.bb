@@ -135,6 +135,7 @@ const struct NaClValidatorInterface *NaClValidatorCreate_x86_32();
 const struct NaClValidatorInterface *NaClDfaValidatorCreate_x86_32();
 const struct NaClValidatorInterface *NaClDfaValidatorCreate_x86_64();
 const struct NaClValidatorInterface *NaClValidatorCreateArm();
+const struct NaClValidatorInterface *NaClValidatorCreateMips();
 
 /* Applies the validator, as used in a command-line tool to report issues.
  * Note: This is intentionally separated from ApplyValidator, since it need

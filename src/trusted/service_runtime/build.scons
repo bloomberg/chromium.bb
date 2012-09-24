@@ -137,6 +137,18 @@ elif env.Bit('build_arm'):
     ldr_inputs += [
       'arch/arm/tramp_arm.S',
     ]
+elif env.Bit('build_mips32'):
+  ldr_inputs += [
+    'arch/mips/nacl_app.c',
+    'arch/mips/nacl_switch_to_app_mips.c',
+    'arch/mips/sel_rt.c',
+    'arch/mips/nacl_tls.c',
+    'arch/mips/sel_ldr_mips.c',
+    'arch/mips/sel_addrspace_mips.c',
+    'arch/mips/nacl_switch.S',
+    'arch/mips/nacl_syscall.S',
+    'arch/mips/tramp_mips.S',
+  ]
 
 if env.Bit('windows'):
   ldr_inputs += [
@@ -180,6 +192,10 @@ elif env.Bit('linux'):
     ldr_inputs += [
       'linux/arm/sel_segments.c',
     ]
+  elif env.Bit('build_mips32'):
+    ldr_inputs += [
+      'linux/mips/sel_segments.c',
+    ]
 
 
 # -------------------------------------------------------------
@@ -217,8 +233,7 @@ if env.Bit('linux'):
   if env.Bit('target_arm'):
     ldr_inputs += ['linux/nacl_signal_arm.c']
   elif env.Bit('target_mips32'):
-    # TODO(petarj): Add support for MIPS.
-    pass
+    ldr_inputs += ['linux/nacl_signal_mips.c']
   elif env.Bit('target_x86_32'):
     ldr_inputs += ['linux/nacl_signal_32.c']
   elif env.Bit('target_x86_64'):
@@ -398,6 +413,9 @@ if env.Bit('linux') and not env.Bit('built_elsewhere'):
     reserve_top = '0x40000000'
   elif env.Bit('target_arm'):
     ld_emul = 'armelf_linux_eabi'
+    reserve_top = '0x40002000'
+  elif env.Bit('target_mips32'):
+    ld_emul = 'elf32ltsmip'
     reserve_top = '0x40002000'
 
   bootstrap_obj = bootstrap_env.ComponentObject('linux/nacl_bootstrap.c')
@@ -618,6 +636,7 @@ env.AddNodeToTestSuite(node, ['small_tests'], 'run_nacl_resource_test')
 if env.Bit('posix'):
   if (not env.Bit('coverage_enabled') and
       not env.Bit('target_arm') and
+      not env.Bit('target_mips32') and
       not env.IsRunningUnderValgrind()):
     nacl_signal_exe = env.ComponentProgram(
         'nacl_signal_unittest', 'nacl_signal_unittest.c',

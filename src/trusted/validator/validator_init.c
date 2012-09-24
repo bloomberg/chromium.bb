@@ -18,6 +18,8 @@ void EmitExperimentalValidatorWarning() {
 const struct NaClValidatorInterface *NaClCreateValidator() {
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
   return NaClValidatorCreateArm();
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips
+  return NaClValidatorCreateMips();
 #elif NACL_ARCH(NACL_TARGET_ARCH) == NACL_x86
 # if NACL_TARGET_SUBARCH == 64
 #  if defined(NACL_VALIDATOR_RAGEL)

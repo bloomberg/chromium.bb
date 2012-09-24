@@ -77,7 +77,8 @@ void NaClSignalContextGetCurrentThread(const struct NaClSignalContext *sigCtx,
   *is_untrusted = (NaClGetGlobalCs() != sigCtx->cs);
   *result_thread = nacl_thread[sigCtx->gs >> 3];
 #elif (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64) || \
-      NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
+      NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm || \
+      NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips
   uint32_t current_thread_index = NaClTlsGetIdx();
   if (NACL_TLS_INDEX_INVALID == current_thread_index) {
     *is_untrusted = 0;

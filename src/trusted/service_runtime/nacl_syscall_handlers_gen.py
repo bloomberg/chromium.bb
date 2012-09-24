@@ -83,6 +83,8 @@ ARG_REGISTERS = {
     # more untrusted stack space / memory/cache bandwidth, but we had
     # to save these arguments somewhere, either in a processor context
     # or on-stack, anyway.
+    'mips-32': [],
+    # 'mips-32': [ 'a0',  'a1',  'a2',  'a3'],
     }
 
 # Our syscall handling code, in nacl_syscall.S, always pushes the

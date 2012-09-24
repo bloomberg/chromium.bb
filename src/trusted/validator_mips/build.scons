@@ -57,6 +57,11 @@ if env.Bit('linux'):
                         'validator.cc',
                         'gen/decode.cc'])
 
+  env.ComponentLibrary('ncvalidate_mips',
+                       ['ncvalidate.cc'],
+                       LIBS=['mips_validator_core',
+                             '${OPTIONAL_COVERAGE_LIBS}'])
+
   ncval = env.ComponentProgram(
       'mips-ncval-core',
       ['ncval.cc'],

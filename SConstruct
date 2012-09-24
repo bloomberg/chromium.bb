@@ -2263,6 +2263,40 @@ def SetupLinuxEnvArm(env):
   # get_plugin_dirname.cc has a dependency on dladdr
   env.Append(LIBS=['dl'])
 
+def SetupLinuxEnvMips(env):
+  jail = '${SCONSTRUCT_DIR}/toolchain/linux_mips-trusted'
+  if env.Bit('built_elsewhere'):
+    def FakeInstall(dest, source, env):
+      print 'Not installing', dest
+      # Replace build commands with no-ops
+    env.Replace(CC='true', CXX='true', LD='true',
+                AR='true', RANLIB='true', INSTALL=FakeInstall)
+    # Allow emulation on x86 hosts for testing built_elsewhere flag
+    if not platform.machine().startswith('mips'):
+      env.Replace(EMULATOR=jail + '/run_under_qemu_mips32')
+  else:
+    tc_dir = os.path.join(os.getcwd(), 'toolchain', 'linux_mips-trusted',
+                          'mips-release', 'bin')
+    if not which(os.path.join(tc_dir, 'mips-linux-gnu-gcc')):
+      print ("\nERRROR: MIPS trusted TC is not installed - try running:\n"
+             "tools/trusted_cross_toolchains/trusted-toolchain-creator"
+             ".mipsel.squeeze.sh trusted_sdk")
+      sys.exit(-1)
+    env.Replace(CC=os.path.join(tc_dir, 'mips-linux-gnu-gcc'),
+                CXX=os.path.join(tc_dir, 'mips-linux-gnu-g++'),
+                LD=os.path.join(tc_dir, 'mips-linux-gnu-ld'),
+                EMULATOR=os.path.join(jail,
+                                      'run_under_qemu_mips32'),
+                ASFLAGS=[],
+                LIBPATH=['${LIB_DIR}',
+                         jail + '/mips-release/mips-linux-gnu/libc/el/usr/lib'],
+                LINKFLAGS=['-EL', '-T',
+                    os.path.join(jail, 'ld_script_mips_trusted')]
+                )
+
+    env.Append(LIBS=['rt', 'dl', 'pthread'],
+                     CCFLAGS=['-EL', '-Wl, -EL', '-march=mips32r2'])
+
 def MakeLinuxEnv():
   linux_env = MakeUnixLikeEnv().Clone(
       BUILD_TYPE = '${OPTIMIZATION_LEVEL}-linux',
@@ -2301,8 +2335,7 @@ def MakeLinuxEnv():
   elif linux_env.Bit('build_arm'):
     SetupLinuxEnvArm(linux_env)
   elif linux_env.Bit('build_mips32'):
-    # TODO(petarj): Add support for MIPS.
-    pass
+    SetupLinuxEnvMips(linux_env)
   else:
     Banner('Strange platform: %s' % GetPlatform())
 
@@ -2319,7 +2352,7 @@ def MakeLinuxEnv():
       )
   # The ARM toolchain has a linker that doesn't handle the code its
   # compiler generates under -fPIE.
-  if linux_env.Bit('build_arm'):
+  if linux_env.Bit('build_arm') or linux_env.Bit('build_mips32'):
     linux_env.Prepend(CCFLAGS=['-fPIC'])
     # TODO(mcgrathr): Temporarily punt _FORTIFY_SOURCE for ARM because
     # it causes a libc dependency newer than the old bots have installed.

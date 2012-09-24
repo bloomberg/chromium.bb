@@ -128,6 +128,7 @@ SECTIONS {
    */
   /DISCARD/ : {
     *(.iplt)
+    *(.reginfo)
     *(.rel*)
     *(.igot.plt)
   }

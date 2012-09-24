@@ -49,6 +49,8 @@
  * 0 is a valid user address.)
  */
 
+#include "native_client/src/trusted/service_runtime/arch/sel_ldr_arch.h"
+
 static INLINE uintptr_t NaClUserToSysAddrNullOkay(struct NaClApp  *nap,
                                                   uintptr_t       uaddr) {
   if (((uintptr_t) 1U << nap->addr_bits <= uaddr)) {
@@ -188,6 +190,9 @@ static INLINE uintptr_t NaClSandboxCodeAddr(struct NaClApp *nap,
   addr |= 0xf;
 # endif  /* defined(NACL_TARGET_ARM_THUMB2_MODE) */
   return addr;
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips
+  UNREFERENCED_PARAMETER(nap);
+  return addr & NACL_CONTROL_FLOW_MASK;
 #else
 # error "What architecture are we on?!?"
 #endif

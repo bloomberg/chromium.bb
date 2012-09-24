@@ -252,6 +252,25 @@
  */
 # define NACL_CALLEE_SAVE_LIST {r4, r5, r6, r7, r8, r9, r10, fp, sp}
 
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips
+
+#undef  NACL_KERN_STACK_SIZE        // Mips needs 128k pthread stack size
+#define NACL_KERN_STACK_SIZE        (128 << 10)
+
+#define NACL_BLOCK_SHIFT            4
+
+/* 16-byte bundles, 256MB code segment*/
+# define NACL_CONTROL_FLOW_MASK     0x0FFFFFF0
+# define NACL_DATA_FLOW_MASK        0x3FFFFFFF
+# define NACL_USERRET_FIX           (0x4)
+# define NACL_SYSARGS_FIX           (NACL_USERRET_FIX + 0x4)
+# define NACL_SYSCALLRET_FIX        (NACL_USERRET_FIX + 0x4)
+# define NACL_STACK_ALIGN_MASK      (0x7)
+# define NACL_STACK_GETS_ARG        (0)
+# define NACL_STACK_PAD_BELOW_ALIGN (0)
+# define NACL_STACK_RED_ZONE        (0)
+/* 16 byte bundles */
+
 #else /* NACL_ARCH(NACL_BUILD_ARCH) */
 
 # error Unknown platform!

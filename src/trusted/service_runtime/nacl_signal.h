@@ -27,6 +27,8 @@
   #endif
 #elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
   #include "native_client/src/trusted/service_runtime/arch/arm/nacl_signal_arm.h"
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips
+  #include "native_client/src/trusted/service_runtime/arch/mips/nacl_signal_mips.h"
 #else
   #error Unknown platform!
 #endif

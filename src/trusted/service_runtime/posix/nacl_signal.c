@@ -46,7 +46,10 @@
 
 static int s_Signals[] = {
 #if NACL_LINUX
+# if NACL_ARCH(NACL_BUILD_ARCH) != NACL_mips
+  /* This signal does not exist on MIPS. */
   SIGSTKFLT,
+# endif
   NACL_THREAD_SUSPEND_SIGNAL,
 #endif
   SIGINT, SIGQUIT, SIGILL, SIGTRAP, SIGBUS, SIGFPE, SIGSEGV
@@ -258,6 +261,12 @@ static int DispatchToUntrustedHandler(struct NaClAppThread *natp,
   frame->context.frame_ptr = regs->r11;
   regs->lr = kReturnAddr;
   regs->r0 = context_user_addr;  /* Argument 1 */
+  regs->prog_ctr = NaClUserToSys(nap, nap->exception_handler);
+  regs->stack_ptr = NaClUserToSys(nap, new_stack_ptr);
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips
+  frame->context.frame_ptr = regs->frame_ptr;
+  regs->return_addr = kReturnAddr;
+  regs->a0 = context_user_addr;
   regs->prog_ctr = NaClUserToSys(nap, nap->exception_handler);
   regs->stack_ptr = NaClUserToSys(nap, new_stack_ptr);
 #else

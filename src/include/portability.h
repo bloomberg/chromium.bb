@@ -81,6 +81,8 @@
 #define NACL_HOST_WORDSIZE 32
 #elif defined(__ARMEL__)
 #define NACL_HOST_WORDSIZE 32
+#elif defined(__mips__)
+#define NACL_HOST_WORDSIZE 32
 #elif defined(__pnacl__)
 #define NACL_HOST_WORDSIZE 32
 #else

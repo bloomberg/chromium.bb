@@ -76,6 +76,9 @@ if env.Bit('build_arm'):
   # Compile ARM primitives for checking VFP/vector features.
   pql_inputs += ['arch/arm/nacl_qualify_fpu.c']
 
+if env.Bit('build_mips32'):
+  # Compile Mips primitives for checking XN functionality
+  pql_inputs += ['arch/mips/nacl_dep_qualify_arch.c']
 
 # ----------------------------------------------------------
 #

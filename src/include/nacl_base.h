@@ -11,6 +11,16 @@
 #define NATIVE_CLIENT_SRC_INCLUDE_NACL_BASE_H_ 1
 
 /*
+ * The following part is necessary for Mips because Mips compilers by default
+ * preprocess "mips" string and replace it with character '1'. To allow using
+ * "NACL_mips" macro, we need to undefine "mips" macro.
+ */
+
+#ifdef mips
+# undef mips
+#endif
+
+/*
  * putting extern "C" { } in header files make emacs want to indent
  * everything, which looks odd.  rather than putting in fancy syntax
  * recognition in c-mode, we just use the following macros.
@@ -59,6 +69,7 @@
  */
 #define NACL_x86  1
 #define NACL_arm  2
+#define NACL_mips 3
 
 /*****************************************************************************
  * Architecture name encodings.

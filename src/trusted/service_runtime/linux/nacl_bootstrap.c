@@ -264,6 +264,8 @@ static ElfW(Addr) load_elf_file(const char *filename,
     case EM_X86_64:
 #elif defined(__arm__)
     case EM_ARM:
+#elif defined(__mips__)
+    case EM_MIPS:
 #else
 # error "Don't know the e_machine value for this architecture!"
 #endif
@@ -665,6 +667,24 @@ asm(".pushsection \".text\",\"ax\",%progbits\n"
     "bl do_load\n"
     "mov sp, r4\n"              /* Restore the saved SP.  */
     "blx r0\n"                  /* Jump to the entry point.  */
+    ".popsection"
+    );
+#elif defined(__mips__)
+asm(".pushsection \".text\",\"ax\",%progbits\n"
+    ".globl _start\n"
+    ".type _start,@function\n"
+    "_start:\n"
+    ".set noreorder\n"
+    "addiu $fp, $zero, 0\n"
+    "addiu $ra, $zero, 0\n"
+    "addiu $s8, $sp,   0\n"     /* Save starting SP in s8.  */
+    "addiu $a0, $sp,   0\n"
+    "addiu $sp, $sp, -16\n"
+    "jal   do_load\n"
+    "nop\n"
+    "addiu $sp, $s8,  0\n"      /* Restore the saved SP.  */
+    "jr    $v0\n"               /* Jump to the entry point.  */
+    "nop\n"
     ".popsection"
     );
 #else

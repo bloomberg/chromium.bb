@@ -104,6 +104,8 @@ static const struct NaClPhdrChecks nacl_phdr_check_data[] = {
 # endif
 #elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
 # define EM_EXPECTED_BY_NACL EM_ARM
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips
+# define EM_EXPECTED_BY_NACL EM_MIPS
 #else
 # error "Unknown platform!"
 #endif

@@ -36,6 +36,12 @@ static INLINE void NaClWriteMemoryBarrier() {
    */
 }
 
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips
+
+static INLINE void NaClWriteMemoryBarrier() {
+  __asm__ __volatile__("sync" : : : "memory");
+}
+
 #else
 
 #error "Define for other architectures"

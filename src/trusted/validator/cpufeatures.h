@@ -19,6 +19,11 @@ typedef NaClCPUFeaturesX86 NaClCPUFeatures;
 #include "native_client/src/trusted/validator_arm/cpuid_arm.h"
 typedef NaClCPUFeaturesArm NaClCPUFeatures;
 
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips
+
+#include "native_client/src/trusted/validator_mips/cpuid_mips.h"
+typedef NaClCPUFeaturesMips NaClCPUFeatures;
+
 #else
 
 #error Unknown platform!

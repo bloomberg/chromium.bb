@@ -19,6 +19,8 @@
 #include "native_client/src/trusted/service_runtime/arch/x86/sel_ldr_x86.h"
 #elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
 #include "native_client/src/trusted/service_runtime/arch/arm/sel_ldr_arm.h"
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips
+#include "native_client/src/trusted/service_runtime/arch/mips/sel_ldr_mips.h"
 #else
 #error Unknown platform!
 #endif

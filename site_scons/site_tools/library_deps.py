@@ -186,6 +186,14 @@ PLATFORM_LIBRARY_DEPENDENCIES = {
             'arm_validator_core',
             ],
         },
+    'mips32': {
+        'ncvalidate_mips': [
+            'mips_validator_core',
+            ],
+        'validators': [
+            'ncvalidate_mips',
+            ],
+        },
     }
 
 
@@ -217,7 +225,7 @@ def AddLibDeps(env, platform, libraries):
         PLATFORM_LIBRARY_DEPENDENCIES.get(platform, {}).get(library, []))
     if env['NACL_BUILD_FAMILY'] != 'TRUSTED':
       ret.extend(UNTRUSTED_LIBRARY_DEPENDENCIES.get(library, []))
-    if library == 'validators' and not env.Bit('target_arm'):
+    if library == 'validators' and env.Bit('target_x86'):
       if env.Bit('validator_ragel'):
         ret.append(env.NaClTargetArchSuffix('dfa_validate_caller'))
       else:

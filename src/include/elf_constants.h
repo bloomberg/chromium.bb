@@ -68,7 +68,7 @@ EXTERN_C_BEGIN
 #define EM_68K          4   /* motorola 68000 */
 #define EM_88K          5   /* motorola 88000 */
 #define EM_860          7   /* intel 80860 */
-#define EM_MIPS         9   /* mips rs3000 big-endian */
+#define EM_MIPS         8   /* mips rs3000 */
 #define EM_MIPS_RS4_BE  10  /* mips rs4000 big-endian */
 #define EM_LORESERVED   11
 #define EM_HIRESERVED   16
