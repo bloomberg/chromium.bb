@@ -207,6 +207,7 @@ class Builder(object):
                            'WINDOWS' in define or
                            'WINVER' in define)]
     options += ['-D' + define for define in define_list]
+    options.append('-Werror')
     self.compile_options = options + ['-I' + name for name in self.inc_paths]
 
   def BuildLinkOptions(self, options):
