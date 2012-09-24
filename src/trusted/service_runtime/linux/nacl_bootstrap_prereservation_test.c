@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "native_client/src/include/nacl_assert.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/trusted/service_runtime/sel_addrspace.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
@@ -24,15 +25,15 @@ size_t GetProcSysVmMmapMinAddr() {
    */
   fp = fopen("/proc/sys/vm/mmap_min_addr", "r");
   CHECK(fp != NULL);
-  if (fgets(buf, sizeof(buf), fp) &&
-      sscanf(buf, "%zu", &min_addr) == 1) {
-    /*
-     * Sometimes, mmap_min_addr is not page-aligned, but we can only map on page
-     * boundaries.  Thus, the minimum address is the first page boundary above
-     * vm.mmap_min_addr.
-     */
-    min_addr = NaClRoundPage(min_addr);
-  }
+  CHECK(fgets(buf, sizeof(buf), fp) == buf);
+  NaClLog(LOG_INFO, "/proc/sys/vm/mmap_min_addr contains: %s", buf);
+  CHECK(sscanf(buf, "%zu", &min_addr) == 1);
+  /*
+   * Sometimes, mmap_min_addr is not page-aligned, but we can only map on page
+   * boundaries.  Thus, the minimum address is the first page boundary above
+   * vm.mmap_min_addr.
+   */
+  min_addr = NaClRoundPage(min_addr);
   fclose(fp);
   return min_addr;
 }
@@ -54,6 +55,7 @@ size_t FindMinUnreservedAddress() {
   while (fgets(buf, sizeof(buf), fp)) {
     size_t start;
     size_t end;
+    NaClLog(LOG_INFO, "Read line from /proc/self/maps: %s", buf);
     result = sscanf(buf, "%zx-%zx %*4[-rwxp] %*8x %*2x:%*2x %*16x", &start,
                     &end);
     if (result != 2 || start != last_end)
@@ -71,13 +73,12 @@ size_t FindMinUnreservedAddress() {
  * command line option.
  */
 int main(int argc, char **argv) {
-  int match;
-
   NaClHandleBootstrapArgs(&argc, &argv);
 
   /* On Linux x86-64, there is no prereserved memory. */
-  if (g_prereserved_sandbox_size == 0) {
-    printf("no prereserved sandbox memory\n");
+  if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64) {
+    printf("We expect there to be no prereserved sandbox memory\n");
+    ASSERT_EQ(g_prereserved_sandbox_size, 0);
     return 0;
   }
 
@@ -86,7 +87,7 @@ int main(int argc, char **argv) {
    * first address which is not reserved in the address space.  If this
    * is the case, then enough memory was reserved.
    */
-  match = (g_prereserved_sandbox_size <= FindMinUnreservedAddress());
-  printf("%sable to reserve the right amount of memory\n", match ? "" : "not ");
-  return !match;
+  ASSERT_LE(g_prereserved_sandbox_size, FindMinUnreservedAddress());
+  printf("Found the right amount of prereserved memory\n");
+  return 0;
 }
