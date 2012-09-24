@@ -143,16 +143,11 @@
             '<@(_outputs)',
           ],
         },
+      ],
+      'copies': [
         {
-          'action_name': 'copy_pak_files',
-          'inputs': [ '<@(input_pak_files)' ],
-          'outputs': [ '<@(copied_pak_files)' ],
-          'action': [
-            'cp',
-            '<@(input_pak_files)',
-            '-t',
-            '<(PRODUCT_DIR)/android_webview/assets/',
-          ],
+          'destination': '<(PRODUCT_DIR)/android_webview/assets',
+          'files': [ '<@(input_pak_files)' ]
         },
       ],
       'includes': [ '../build/java_apk.gypi' ],
