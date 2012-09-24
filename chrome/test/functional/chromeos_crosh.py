@@ -97,6 +97,78 @@ class CroshTest(pyauto.PyUITest):
     self.WaitForHtermText(text='chronos@localhost',
         msg='Could not find "chronos@localhost" in shell output.')
 
+  def testConnectToAnotherhost(self):
+    """Test ssh to another host."""
+    test_utils.OpenCroshVerification(self)
+
+    # Verify crosh prompt.
+    self.WaitForHtermText(text='crosh> ',
+        msg='Could not find "crosh> " prompt')
+    self.assertTrue(
+        self.GetHtermRowsText(start=0, end=2).endswith('crosh> '),
+        msg='Could not find "crosh> " prompt')
+
+    # Ssh to another host: chronos@localhost.
+    self.SendKeysToHterm(r'ssh chronos@localhost\n')
+    self.WaitForHtermText(text='Password',
+        msg='Could not find "Password" in shell output.')
+    self.SendKeysToHterm(r'test0000\n')
+    self.WaitForHtermText(text='chronos@localhost',
+        msg='Could not find "chronos@localhost" in shell output.')
+
+  def testTabSwitching(self):
+    """Test tab can be switched in crosh."""
+    test_utils.OpenCroshVerification(self)
+
+    # Open 6 tabs
+    for x in xrange(3):
+      self.AppendTab(self.GetHttpURLForDataPath('title2.html'))
+      self.assertEqual('Title Of Awesomeness', self.GetActiveTabTitle(),
+                       msg='Unable to navigate to title2.html and '
+                           'verify tab title.')
+      self.OpenCrosh()
+    self.assertEqual(7, len(self.GetBrowserInfo()['windows'][0]['tabs']))
+
+    # Select tab 5
+    self.ApplyAccelerator(pyauto.IDC_SELECT_TAB_4)
+    self.assertEqual('crosh', self.GetActiveTabTitle(),
+                     msg='Unable to naviage to crosh.')
+
+    # Run a crosh command.
+    self.SendKeysToHterm('help\\n', tab_index=4, windex=0)
+    self.WaitForHtermText(text='help_advanced', tab_index=4, windex=0,
+        msg='Could not find "help_advanced" in help output.')
+
+  def testLargefileCrosh(self):
+    """Test large file is displayed in crosh."""
+    test_utils.OpenCroshVerification(self)
+
+    # Verify crosh prompt.
+    self.WaitForHtermText(text='crosh> ',
+        msg='Could not find "crosh> " prompt')
+    self.assertTrue(
+        self.GetHtermRowsText(start=0, end=2).endswith('crosh> '),
+        msg='Could not find "crosh> " prompt')
+
+    # Login to localhost.
+    self.SendKeysToHterm(r'ssh chronos@localhost\n')
+    self.WaitForHtermText(text='Password',
+        msg='Could not find "Password" in shell output.')
+    self.SendKeysToHterm(r'test0000\n')
+    self.WaitForHtermText(text='chronos@localhost',
+        msg='Could not find "chronos@localhost" in shell output.')
+
+    # Create a file with 140 characters per line, 50000 lines.
+    bigfn = '/tmp/bigfile.txt'
+    with open(bigfn, 'w') as file:
+        file.write(('0' * 140 + '\n') * 50000 + 'complete\n')
+
+    # Cat a large file.
+    self.SendKeysToHterm(r'cat %s\n' % bigfn)
+    self.WaitForHtermText(text='complete',
+        msg='Could not find "complete" in shell output.')
+    os.remove(bigfn)
+
 
 if __name__ == '__main__':
   pyauto_functional.Main()
