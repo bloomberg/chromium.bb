@@ -82,6 +82,7 @@ public class AwContents {
               nativeGetWebContents(mNativeAwContents), nativeWindow,
               isAccessFromFileURLsGrantedByDefault);
       mContentViewCore.setContentViewClient(contentsClient);
+      mContentsClient.installWebContentsObserver(mContentViewCore);
     }
 
     public ContentViewCore getContentViewCore() {

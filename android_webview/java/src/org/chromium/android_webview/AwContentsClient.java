@@ -30,6 +30,8 @@ public abstract class AwContentsClient extends ContentViewClient {
     private final WebContentsDelegateAdapter mWebContentsDelegateAdapter =
             new WebContentsDelegateAdapter();
 
+    private AwWebContentsObserver mWebContentsObserver;
+
     //--------------------------------------------------------------------------------------------
     //                        Adapter for WebContentsDelegate methods.
     //--------------------------------------------------------------------------------------------
@@ -104,8 +106,8 @@ public abstract class AwContentsClient extends ContentViewClient {
         }
     }
 
-    class WebContentsObserverAdapter extends WebContentsObserverAndroid {
-        public WebContentsObserverAdapter(ContentViewCore contentViewCore) {
+    class AwWebContentsObserver extends WebContentsObserverAndroid {
+        public AwWebContentsObserver(ContentViewCore contentViewCore) {
             super(contentViewCore);
         }
 
@@ -125,6 +127,11 @@ public abstract class AwContentsClient extends ContentViewClient {
             AwContentsClient.this.onReceivedError(
                     ErrorCodeConversionHelper.convertErrorCode(errorCode), description, failingUrl);
         }
+    }
+
+    void installWebContentsObserver(ContentViewCore contentViewCore) {
+        assert mWebContentsObserver == null;
+        mWebContentsObserver = new AwWebContentsObserver(contentViewCore);
     }
 
     final AwWebContentsDelegate getWebContentsDelegate()  {
