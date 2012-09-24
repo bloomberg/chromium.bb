@@ -992,6 +992,7 @@ FileManager.prototype = {
     var renderFunction = this.table_.getRenderFunction();
     this.table_.setRenderFunction(function(entry, parent) {
       var item = renderFunction(entry, parent);
+      this.updateGeneralItemStyle_(item, entry);
       this.updateGDataStyle_(
           item, entry, this.metadataCache_.getCached(entry, 'gdata'));
       return item;
@@ -1567,6 +1568,7 @@ FileManager.prototype = {
       bottom.classList.add('show-checkbox');
     }
 
+    this.updateGeneralItemStyle_(li, entry);
     this.updateGDataStyle_(
         li, entry, this.metadataCache_.getCached(entry, 'gdata'));
   };
@@ -1681,6 +1683,15 @@ FileManager.prototype = {
       if (url)
         iconDiv.style.backgroundImage = 'url(' + url + ')';
     }
+  };
+
+  /**
+   * Updates the list item style foe the entry.
+   * @param {ListItem} listItem List item.
+   * @param {Entry} entry The entry.
+   */
+  FileManager.prototype.updateGeneralItemStyle_ = function(listItem, entry) {
+    listItem.classList.add(entry.isDirectory ? 'directory' : 'file');
   };
 
   /**
