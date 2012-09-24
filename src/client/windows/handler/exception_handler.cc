@@ -982,7 +982,7 @@ bool ExceptionHandler::WriteMinidumpWithExceptionForProcess(
 
       // The explicit comparison to TRUE avoids a warning (C4800).
       success = (minidump_write_dump_(process,
-                                      GetCurrentProcessId(),
+                                      GetProcessId(process),
                                       dump_file,
                                       dump_type_,
                                       exinfo ? &except_info : NULL,
