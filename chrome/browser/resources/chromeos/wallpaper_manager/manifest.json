@@ -19,7 +19,7 @@
   "app": {
     "launch": {
       "container": "panel",
-      "width": 580,
+      "width": 550,
       "height": 440,
       "local_path": "main.html"
     }

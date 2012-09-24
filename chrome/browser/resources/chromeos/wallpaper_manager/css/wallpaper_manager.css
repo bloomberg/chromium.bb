@@ -85,6 +85,10 @@ body {
 .image-picker {
   -webkit-box-flex: 1;
   display: -webkit-box;
+  /* Set line height to 100% to remove the extra vertical margin between two
+   * rows of thumbnails.
+   */
+  line-height: 100%;
   outline: none;
   overflow-y: auto;
 }
@@ -97,11 +101,8 @@ body {
 }
 
 .image-picker [role=listitem] {
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  border-radius: 4px;
   height: 68px;
   margin: 1px;
-  padding: 2px;
   width: 108px;
 }
 
@@ -115,9 +116,10 @@ body {
   width: 108px;
 }
 
-.image-picker [selected][lead] {
+.image-picker [selected][lead] img {
   border: 2px solid rgb(0, 102, 204);
-  padding: 1px;
+  height: 64px;
+  width: 104px;
 }
 
 #wallpaper-attribute {
