@@ -18,6 +18,7 @@
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/website_settings/website_settings_utils.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/cert_store.h"
 #include "content/public/browser/page_navigator.h"
@@ -1137,8 +1138,7 @@ void WebsiteSettingsUIBridge::Show(gfx::NativeWindow parent,
                                    TabContents* tab_contents,
                                    const GURL& url,
                                    const content::SSLStatus& ssl) {
-  bool is_internal_page = url.SchemeIs(chrome::kChromeInternalScheme) ||
-                          url.SchemeIs(chrome::kChromeUIScheme);
+  bool is_internal_page = InternalChromePage(url);
 
   // Create the bridge. This will be owned by the bubble controller.
   WebsiteSettingsUIBridge* bridge = new WebsiteSettingsUIBridge();
