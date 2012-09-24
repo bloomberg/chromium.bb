@@ -26,6 +26,8 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
                           nacl_reg_t                tls_idx) {
   /*
    * This is set by NaClTlsAllocate before we get here, so don't wipe it.
+   * TODO(mseaborn): Clean this up to avoid these awkward ordering issues.
+   * See http://code.google.com/p/nativeclient/issues/detail?id=3041
    */
   uint32_t r9 = ntcp->r9;
 

@@ -103,7 +103,7 @@ static void NaClThreadIdxFree(uint32_t i) {
  * actually launches.
  */
 uint32_t NaClTlsAllocate(struct NaClAppThread *natp) {
-  UNREFERENCED_PARAMETER(natp);
+  NaClTlsChange(natp);
 
   return NaClThreadIdxAllocate();
 }
@@ -122,7 +122,7 @@ void NaClTlsFree(struct NaClAppThread *natp) {
 }
 
 void NaClTlsChange(struct NaClAppThread *natp) {
-  nacl_tls[NaClGetThreadIdx(natp)] = natp->tls_values.tls1;
+  natp->user.tls1 = natp->tls_values.tls1;
 }
 
 uint32_t NaClGetThreadIdx(struct NaClAppThread *natp) {

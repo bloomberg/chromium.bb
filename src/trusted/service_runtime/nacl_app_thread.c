@@ -41,7 +41,6 @@ void WINAPI NaClThreadLauncher(void *state) {
 #if NACL_WINDOWS
   nacl_thread_ids[thread_idx] = GetCurrentThreadId();
 #endif
-  nacl_tls[thread_idx] = natp->tls_values.tls1;
 
   /*
    * We have to hold the threads_mu lock until after thread_num field

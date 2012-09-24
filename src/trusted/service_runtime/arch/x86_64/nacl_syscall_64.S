@@ -220,9 +220,9 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallThreadCaptureFault):
 
 DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClGetTlsFastPath):
         get_tls
-        leaq    IDENTIFIER(nacl_tls)(%rip), %rdx
-        leaq    (%rdx,%rax,4), %rdx
-        movl    0x0(%rdx), %eax
+        leaq    IDENTIFIER(nacl_user)(%rip), %rdx
+        movq    (%rdx,%rax,8), %rdx
+        movl    NACL_THREAD_CONTEXT_OFFSET_TLS1(%rdx), %eax
         /* sandbox the return, straight off the untrusted stack */
         movq    0x8(%rsp), %rcx
         addq    $0x10, %rsp
@@ -230,10 +230,11 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClGetTlsFastPath):
         andl    $0xffffffe0, %ecx
         addq    %r15, %rcx
         /*
-         * Set %rdx to zero so that we do not leak nacl_tls[thread_id]
-         * address.  This also resets flags.  Resetting flags to fixed
-         * values by doing this last simplifies testing that we do not
-         * leak any information via flags.
+         * Set %rdx to zero so that we do not leak the address of the
+         * NaClThreadContext struct.  This also resets flags.
+         * Resetting flags to fixed values by doing this last
+         * simplifies testing that we do not leak any information via
+         * flags.
          */
         xorl    %edx, %edx
         jmp     *%rcx

@@ -67,6 +67,10 @@ struct NaClThreadContext {
   /*          0xa6 */
   uint64_t    trusted_stack_ptr;
   /*          0xa8 */
+  uint32_t    tls1;
+  /*          0xb0 */
+  uint32_t    align_padding;
+  /*          0xb4 */
 };
 
 #endif /* !defined(__ASSEMBLER__) */
@@ -95,6 +99,8 @@ struct NaClThreadContext {
 #define NACL_THREAD_CONTEXT_OFFSET_FCW           0xa4
 #define NACL_THREAD_CONTEXT_OFFSET_SYS_FCW       0xa6
 #define NACL_THREAD_CONTEXT_OFFSET_TRUSTED_STACK_PTR 0xa8
+#define NACL_THREAD_CONTEXT_OFFSET_TLS1          0xb0
+#define NACL_THREAD_CONTEXT_OFFSET_ALIGN_PADDING 0xb4
 
 #if !defined(__ASSEMBLER__)
 
@@ -136,6 +142,8 @@ static INLINE void NaClThreadContextOffsetCheck(void) {
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_SYS_FCW, sys_fcw);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_TRUSTED_STACK_PTR,
                    trusted_stack_ptr);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_TLS1, tls1);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_ALIGN_PADDING, align_padding);
   CHECK(offset == sizeof(struct NaClThreadContext));
 
 #undef NACL_CHECK_FIELD

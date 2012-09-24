@@ -50,11 +50,6 @@ __declspec(dllexport) extern uint32_t nacl_thread_ids[NACL_THREAD_MAX];
 
 extern struct NaClAppThread     *nacl_thread[NACL_THREAD_MAX];
 
-/*
- * TLS base used by nacl_tls_get.  User addresss.
- */
-extern uint32_t                 nacl_tls[NACL_THREAD_MAX];
-
 void  NaClGlobalModuleInit(void);
 void  NaClGlobalModuleFini(void);
 

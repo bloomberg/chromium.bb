@@ -20,7 +20,6 @@
 
 struct NaClThreadContext    *nacl_user[NACL_THREAD_MAX] = {NULL};
 struct NaClAppThread        *nacl_thread[NACL_THREAD_MAX] = {NULL};
-uint32_t                    nacl_tls[NACL_THREAD_MAX] = {0};
 #if NACL_WINDOWS
 uint32_t                    nacl_thread_ids[NACL_THREAD_MAX] = {0};
 #endif
