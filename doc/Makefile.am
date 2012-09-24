@@ -1,1 +1,1 @@
-SUBDIRS = Wayland
+SUBDIRS = Wayland man

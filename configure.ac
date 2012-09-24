@@ -88,6 +88,7 @@ AC_CONFIG_FILES([Makefile
 		 cursor/wayland-cursor-uninstalled.pc
 		 doc/Makefile
 		 doc/Wayland/Makefile
+		 doc/man/Makefile
 		 src/Makefile
 		 src/wayland-server-uninstalled.pc
 		 src/wayland-client-uninstalled.pc

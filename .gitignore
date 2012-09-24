@@ -6,6 +6,8 @@
 *.pc
 *.so
 *.swp
+*.3
+*.7
 *~
 .libs
 cscope.out
