@@ -385,6 +385,7 @@ void DetachToOwnWindowStep2(DetachToBrowserTabDragControllerTest* test) {
 // Drags from browser to separate window and releases mouse.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
                        DetachToOwnWindow) {
+  const gfx::Rect initial_bounds(browser()->window()->GetBounds());
   // Add another tab.
   AddTabAndResetBrowser(browser());
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
@@ -414,6 +415,10 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
 
   EXPECT_EQ("0", IDString(new_browser->tab_strip_model()));
   EXPECT_EQ("1", IDString(browser()->tab_strip_model()));
+
+  // The bounds of the initial window should not have changed.
+  EXPECT_EQ(initial_bounds.ToString(),
+            browser()->window()->GetBounds().ToString());
 }
 
 // Deletes a tab being dragged before the user moved enough to start a drag.
