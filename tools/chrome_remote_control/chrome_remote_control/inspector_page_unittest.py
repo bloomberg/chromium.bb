@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 from chrome_remote_control import tab_test_case
 
-class TabPageTest(tab_test_case.TabTestCase):
+class InspectorPageTest(tab_test_case.TabTestCase):
   def testPageNavigateToNormalUrl(self):
     self._tab.page.Navigate('http://www.google.com')
     self._tab.WaitForDocumentReadyStateToBeComplete()

@@ -1,9 +1,9 @@
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-from chrome_remote_control import tab_console
-from chrome_remote_control import tab_page
-from chrome_remote_control import tab_runtime
+from chrome_remote_control import inspector_console
+from chrome_remote_control import inspector_page
+from chrome_remote_control import inspector_runtime
 from chrome_remote_control import util
 
 DEFAULT_TAB_TIMEOUT = 60
@@ -22,9 +22,9 @@ class Tab(object):
   def __init__(self, browser, inspector_backend):
     self._browser = browser
     self._inspector_backend = inspector_backend
-    self._page = tab_page.TabPage(self._inspector_backend)
-    self._runtime = tab_runtime.TabRuntime(self._inspector_backend)
-    self._console = tab_console.TabConsole(self._inspector_backend)
+    self._page = inspector_page.InspectorPage(self._inspector_backend)
+    self._runtime = inspector_runtime.InspectorRuntime(self._inspector_backend)
+    self._console = inspector_console.InspectorConsole(self._inspector_backend)
 
   def __del__(self):
     self.Close()

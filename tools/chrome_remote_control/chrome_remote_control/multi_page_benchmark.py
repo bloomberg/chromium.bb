@@ -11,14 +11,49 @@ from chrome_remote_control import browser_finder
 from chrome_remote_control import browser_options
 from chrome_remote_control import page_runner
 from chrome_remote_control import page_set
+from chrome_remote_control import page_test
 from chrome_remote_control import util
 
-class MeasurementFailure(Exception):
+class MeasurementFailure(page_test.Failure):
   """Exception that can be thrown from MeasurePage to indicate an undesired but
   designed-for problem."""
   pass
 
-class MultiPageBenchmark(object):
+class BenchmarkResults(page_test.PageTestResults):
+  def __init__(self):
+    super(BenchmarkResults, self).__init__()
+    self.page_results = []
+
+  def AddPageResults(self, page, results):
+    self.page_results.append({'page': page,
+                              'results': results})
+
+class CsvBenchmarkResults(page_test.PageTestResults):
+  def __init__(self, results_writer):
+    super(CsvBenchmarkResults, self).__init__()
+    self._results_writer = results_writer
+    self.field_names = None
+
+  def AddPageResults(self, page, results):
+    assert 'url' not in results
+
+    if not self.field_names:
+      self.field_names = results.keys()
+      self.field_names.sort()
+      results_writer.writerow(['url'] + self.field_names)
+
+    row = [page.url]
+    for name in self.field_names:
+      # If this assertion pops, your MeasurePage is returning inconsistent
+      # results! You must return the same dict keys every time!
+      assert name in results, """MeasurePage returned inconsistent results! You
+must return the same dict keys every time."""
+      row.append(results[name])
+    self._results_writer.writerow(row)
+
+
+# TODO(nduca): Rename to page_benchmark
+class MultiPageBenchmark(page_test.PageTest):
   """Glue code for running a benchmark across a set of pages.
 
   To use this, subclass from the benchmark and override MeasurePage. For
@@ -34,6 +69,7 @@ class MultiPageBenchmark(object):
          multi_page_benchmark.Main(BodyChildElementBenchmark())
 
   All benchmarks should include a unit test!
+
      TODO(nduca): Add explanation of how to write the unit test.
 
   To add test-specific options:
@@ -47,23 +83,12 @@ class MultiPageBenchmark(object):
               'document.querySelector('%s').children.length')
            return {'child_count': child_count}
   """
-
   def __init__(self):
-    self.options = None
-    self.page_failures = []
-    self.field_names = None
+    super(MultiPageBenchmark, self).__init__('_RunTest')
 
-  def AddOptions(self, parser):
-    """Override to expose command-line options for this benchmark.
-
-    The provided parser is an optparse.OptionParser instance and accepts all
-    normal results. The parsed options are available in MeasurePage as
-    self.options."""
-    pass
-
-  def CustomizeBrowserOptions(self, options):
-    """Override to add test-specific options to the BrowserOptions object"""
-    pass
+  def _RunTest(self, page, tab, results):
+    page_results = self.MeasurePage(page, tab)
+    results.AddPageResults(page, page_results)
 
   def MeasurePage(self, page, tab):
     """Override to actually measure the page's performance.
@@ -89,62 +114,6 @@ class MultiPageBenchmark(object):
     """
     raise NotImplementedError()
 
-  def Run(self, results_writer, browser, options, ps):
-    """Runs the actual benchmark, starting the browser using outputting results
-    to results_writer.
-
-    If args is not specified, sys.argv[1:] is used.
-    """
-    self.options = options
-    self.field_names = None
-
-    pr = page_runner.PageRunner(ps)
-    with browser.ConnectToNthTab(0) as tab:
-      for page in ps.pages:
-        self._RunPage(results_writer, pr, page, tab)
-    pr.Close()
-
-    self.options = None
-    self.field_names = None
-
-  def _RunPage(self, results_writer, pr, page, tab):
-    logging.debug('Running test on %s' % page.url)
-    try:
-      try:
-        pr.PreparePage(page, tab)
-        results = self.MeasurePage(page, tab)
-      except MeasurementFailure, ex:
-        logging.info('%s: %s', ex, page.url)
-        raise
-      except util.TimeoutException, ex:
-        logging.warning('Timed out while running %s', page.url)
-        raise
-      except Exception, ex:
-        logging.error('Unexpected failure while running %s: %s',
-                        page.url, traceback.format_exc())
-        raise
-      finally:
-        pr.CleanUpPage()
-    except Exception, ex:
-      self.page_failures.append({'page': page, 'exception': ex,
-                                 'trace': traceback.format_exc()})
-      return
-
-    assert 'url' not in results
-
-    if not self.field_names:
-      self.field_names = results.keys()
-      self.field_names.sort()
-      results_writer.writerow(['url'] + self.field_names)
-
-    row = [page.url]
-    for name in self.field_names:
-      # If this assertion pops, your MeasurePage is returning inconsistent
-      # results! You must return the same dict keys every time!
-      assert name in results
-      row.append(results[name])
-    results_writer.writerow(row)
-
 
 def Main(benchmark, args=None):
   """Turns a MultiPageBenchmark into a command-line program.
@@ -163,10 +132,6 @@ def Main(benchmark, args=None):
         [os.path.relpath(f) for f in page_sets.GetAllPageSetFilenames()]))
     sys.exit(1)
 
-  if not os.path.exists(args[0]):
-    sys.stderr.write('Pageset %s does not exist\n' % args[0])
-    sys.exit(1)
-
   ps = page_set.PageSet.FromFile(args[0])
 
   benchmark.CustomizeBrowserOptions(options)
@@ -177,10 +142,11 @@ def Main(benchmark, args=None):
       'Use --browser=list to figure out which are available.\n')
     sys.exit(1)
 
-  with possible_browser.Create() as browser:
-    benchmark.Run(csv.writer(sys.stdout), browser, options, ps)
+  results = CsvBenchmarkResults(csv.writer(sys.stdout))
+  with page_runner.PageRunner(ps) as runner:
+    runner.Run(options, possible_browser, benchmark, results)
 
-  if len(benchmark.page_failures):
+  if len(results.page_failures):
     logging.warning('Failed pages: %s', '\n'.join(
-        [failure['page'].url for failure in benchmark.page_failures]))
-  return len(benchmark.page_failures)
+        [failure['page'].url for failure in results.page_failures]))
+  return max(255, len(results.page_failures))

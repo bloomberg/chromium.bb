@@ -6,7 +6,7 @@ import logging
 
 from chrome_remote_control import util
 
-class TabPage(object):
+class InspectorPage(object):
   def __init__(self, inspector_backend):
     self._inspector_backend = inspector_backend
     self._inspector_backend.RegisterDomain(

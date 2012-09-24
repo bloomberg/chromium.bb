@@ -4,7 +4,7 @@
 import json
 import logging
 
-class TabConsole(object):
+class InspectorConsole(object):
   def __init__(self, inspector_backend):
     self._inspector_backend = inspector_backend
     self._inspector_backend.RegisterDomain(

@@ -6,6 +6,8 @@ import unittest
 
 from chrome_remote_control import browser_finder
 from chrome_remote_control import browser_options
+from chrome_remote_control import multi_page_benchmark
+from chrome_remote_control import page_runner
 from chrome_remote_control import page_set
 
 class MultiPageBenchmarkUnitTestBase(unittest.TestCase):
@@ -30,12 +32,6 @@ class MultiPageBenchmarkUnitTestBase(unittest.TestCase):
 
   def RunBenchmark(self, benchmark, ps):
     """Runs a benchmark against a pageset, returning the rows its outputs."""
-    rows = []
-    class LocalWriter(object):
-      @staticmethod
-      def writerow(row):
-        rows.append(row)
-
     assert browser_options.options_for_unittests
     options = (
       browser_options.options_for_unittests.Copy())
@@ -50,6 +46,8 @@ class MultiPageBenchmarkUnitTestBase(unittest.TestCase):
     benchmark.CustomizeBrowserOptions(options)
     self.CustomizeOptionsForTest(options)
     possible_browser = browser_finder.FindBrowser(options)
-    with possible_browser.Create() as browser:
-      benchmark.Run(LocalWriter(), browser, options, ps)
-    return rows
+
+    results = multi_page_benchmark.BenchmarkResults()
+    with page_runner.PageRunner(ps) as runner:
+      runner.Run(options, possible_browser, benchmark, results)
+    return results

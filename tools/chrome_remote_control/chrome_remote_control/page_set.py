@@ -4,9 +4,12 @@
 import json
 
 class Page(object):
-  def __init__(self, url, **attributes):
+  def __init__(self, url, attributes={}):
     self.url = url
+    self.interactions = 'scroll'
+    self.credentials = None
     self.wait_time_after_navigate = 2
+    self.scroll_is_infinite = False
 
     for k, v in attributes.iteritems():
       setattr(self, k, v)
@@ -32,7 +35,7 @@ class PageSet(object):
     page_set = cls(data['description'], file_path)
     for page_attributes in data['pages']:
       url = page_attributes.pop('url')
-      page = Page(url, **page_attributes)
+      page = Page(url, page_attributes)
       page_set.pages.append(page)
     return page_set
 
