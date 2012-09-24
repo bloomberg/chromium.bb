@@ -340,9 +340,12 @@ void TrayUser::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
 }
 
 void TrayUser::OnUserUpdate() {
-  avatar_->SetImage(
-      ash::Shell::GetInstance()->tray_delegate()->GetUserImage(),
-      gfx::Size(kUserIconSize, kUserIconSize));
+  // Check for null to avoid crbug.com/150944.
+  if (avatar_) {
+    avatar_->SetImage(
+        ash::Shell::GetInstance()->tray_delegate()->GetUserImage(),
+        gfx::Size(kUserIconSize, kUserIconSize));
+  }
 }
 
 }  // namespace internal
