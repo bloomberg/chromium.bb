@@ -44,20 +44,6 @@
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
-#if defined(USE_ASH)
-#include "ash/ash_switches.h"
-#include "base/command_line.h"
-
-namespace {
-
-bool IsAshNotifyEnabled() {
-  return !CommandLine::ForCurrentProcess()->HasSwitch(
-      ash::switches::kAshNotifyDisabled);
-}
-
-}  // namespace
-#endif
-
 using content::BrowserThread;
 using content::RenderViewHost;
 using content::WebContents;
@@ -242,15 +228,13 @@ std::string DesktopNotificationService::AddNotification(
     NotificationDelegate* delegate,
     Profile* profile) {
 #if defined(USE_ASH)
-  if (IsAshNotifyEnabled()) {
-    // For Ash create a non-HTML notification with |icon_url|.
-    Notification notification(GURL(), icon_url, title, message,
-                              WebKit::WebTextDirectionDefault,
-                              string16(), replace_id, delegate);
-    g_browser_process->notification_ui_manager()->Add(notification, profile);
-    return notification.notification_id();
-  }
-#endif
+  // For Ash create a non-HTML notification with |icon_url|.
+  Notification notification(GURL(), icon_url, title, message,
+                            WebKit::WebTextDirectionDefault,
+                            string16(), replace_id, delegate);
+  g_browser_process->notification_ui_manager()->Add(notification, profile);
+  return notification.notification_id();
+#else
   // Generate a data URL embedding the icon URL, title, and message.
   GURL content_url(CreateDataUrl(
       icon_url, title, message, WebKit::WebTextDirectionDefault));
@@ -258,6 +242,7 @@ std::string DesktopNotificationService::AddNotification(
       GURL(), content_url, string16(), replace_id, delegate);
   g_browser_process->notification_ui_manager()->Add(notification, profile);
   return notification.notification_id();
+#endif
 }
 
 // static
@@ -270,20 +255,19 @@ std::string DesktopNotificationService::AddIconNotification(
     NotificationDelegate* delegate,
     Profile* profile) {
 #if defined(USE_ASH)
-  if (IsAshNotifyEnabled()) {
-    // For Ash create a non-HTML notification with |icon|.
-    Notification notification(GURL(), icon, title, message,
-                              WebKit::WebTextDirectionDefault,
-                              string16(), replace_id, delegate);
-    g_browser_process->notification_ui_manager()->Add(notification, profile);
-    return notification.notification_id();
-  }
-#endif
+  // For Ash create a non-HTML notification with |icon|.
+  Notification notification(GURL(), icon, title, message,
+                            WebKit::WebTextDirectionDefault,
+                            string16(), replace_id, delegate);
+  g_browser_process->notification_ui_manager()->Add(notification, profile);
+  return notification.notification_id();
+#else
   GURL icon_url;
   if (!icon.isNull())
     icon_url = GURL(web_ui_util::GetImageDataUrl(icon));
   return AddNotification(
       origin_url, title, message, icon_url, replace_id, delegate, profile);
+#endif
 }
 
 // static

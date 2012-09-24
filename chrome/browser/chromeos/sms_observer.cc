@@ -4,14 +4,11 @@
 
 #include "chrome/browser/chromeos/sms_observer.h"
 
-#include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/system/network/sms_observer.h"
 #include "ash/system/tray/system_tray.h"
-#include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/notifications/system_notification.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -108,19 +105,6 @@ void SmsObserver::OnNewMessage(const std::string& modem_device_path,
   // "Message Waiting Indication" to filter out such messages.
   if (message.text.empty())
     return;
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          ash::switches::kAshNotifyDisabled)) {
-    SystemNotification note(
-        profile_,
-        "incoming _sms.chromeos",
-        IDR_NOTIFICATION_SMS,
-        l10n_util::GetStringFUTF16(
-            IDS_SMS_NOTIFICATION_TITLE, UTF8ToUTF16(message.number)));
-
-    note.Show(UTF8ToUTF16(message.text), true, false);
-    return;
-  }
 
   // Add an Ash SMS notification. TODO(stevenjb): Replace this code with
   // NetworkSmsHandler when fixed: crbug.com/133416.

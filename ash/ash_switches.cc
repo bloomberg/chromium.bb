@@ -31,9 +31,6 @@ const char kAshEnableAdvancedGestures[] = "ash-enable-advanced-gestures";
 // Enables the Oak tree viewer.
 const char kAshEnableOak[] = "ash-enable-oak";
 
-// Disable using Ash notifications.
-const char kAshNotifyDisabled[] = "ash-notify-disabled";
-
 // Specifies the layout mode and offsets for the secondary display for
 // testing. The format is "<t|r|b|l>,<offset>" where t=TOP, r=RIGHT,
 // b=BOTTOM and L=LEFT. For example, 'r,-100' means the secondary display

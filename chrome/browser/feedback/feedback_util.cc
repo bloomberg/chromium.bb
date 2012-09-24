@@ -37,10 +37,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "unicode/locid.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/notifications/system_notification.h"
-#endif
-
 using content::WebContents;
 
 namespace {

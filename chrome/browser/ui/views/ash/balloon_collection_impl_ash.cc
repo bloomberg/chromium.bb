@@ -4,10 +4,8 @@
 
 #include "chrome/browser/ui/views/ash/balloon_collection_impl_ash.h"
 
-#include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
-#include "base/command_line.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
@@ -20,39 +18,24 @@
 #include "chrome/browser/ui/views/notifications/balloon_view_host.h"
 #include "chrome/browser/ui/views/notifications/balloon_view_views.h"
 
-namespace {
-
-bool IsAshNotifyEnabled() {
-  return !CommandLine::ForCurrentProcess()->HasSwitch(
-      ash::switches::kAshNotifyDisabled);
-}
-
-}  // namespace
-
 BalloonCollectionImplAsh::BalloonCollectionImplAsh() {
-  if (IsAshNotifyEnabled()) {
-    ash::Shell::GetInstance()->status_area_widget()->
-        web_notification_tray()->SetDelegate(this);
-  }
+  ash::Shell::GetInstance()->status_area_widget()->
+      web_notification_tray()->SetDelegate(this);
 }
 
 BalloonCollectionImplAsh::~BalloonCollectionImplAsh() {
 }
 
 bool BalloonCollectionImplAsh::HasSpace() const {
-  if (!IsAshNotifyEnabled())
-    return BalloonCollectionImpl::HasSpace();
   return true;  // Overflow is handled by ash::WebNotificationTray.
 }
 
 void BalloonCollectionImplAsh::Add(const Notification& notification,
                                    Profile* profile) {
-  if (IsAshNotifyEnabled()) {
-    if (notification.is_html())
-      return;  // HTML notifications are not supported in Ash.
-    if (notification.title().empty() && notification.body().empty())
-      return;  // Empty notification, don't show.
-  }
+  if (notification.is_html())
+    return;  // HTML notifications are not supported in Ash.
+  if (notification.title().empty() && notification.body().empty())
+    return;  // Empty notification, don't show.
   return BalloonCollectionImpl::Add(notification, profile);
 }
 
@@ -120,19 +103,6 @@ bool BalloonCollectionImplAsh::AddWebUIMessageCallback(
 #endif
 }
 
-void BalloonCollectionImplAsh::AddSystemNotification(
-    const Notification& notification,
-    Profile* profile,
-    bool sticky) {
-  system_notifications_.insert(notification.notification_id());
-
-  // Add balloons to the front of the stack. This ensures that system
-  // notifications will always be displayed. NOTE: This has the side effect
-  // that system notifications are displayed in inverse order, with the most
-  // recent notification always at the front of the list.
-  AddImpl(notification, profile, true /* add to front*/);
-}
-
 bool BalloonCollectionImplAsh::UpdateNotification(
     const Notification& notification) {
   Balloon* balloon = base().FindBalloon(notification);
@@ -150,18 +120,8 @@ bool BalloonCollectionImplAsh::UpdateAndShowNotification(
 Balloon* BalloonCollectionImplAsh::MakeBalloon(
     const Notification& notification, Profile* profile) {
   Balloon* balloon = new Balloon(notification, profile, this);
-  if (!IsAshNotifyEnabled()) {
-    ::BalloonViewImpl* balloon_view = new ::BalloonViewImpl(this);
-    if (system_notifications_.find(notification.notification_id()) !=
-        system_notifications_.end())
-      balloon_view->set_enable_web_ui(true);
-    balloon->set_view(balloon_view);
-    gfx::Size size(layout().min_balloon_width(), layout().min_balloon_height());
-    balloon->set_content_size(size);
-  } else {
-    BalloonViewAsh* balloon_view = new BalloonViewAsh(this);
-    balloon->set_view(balloon_view);
-  }
+  BalloonViewAsh* balloon_view = new BalloonViewAsh(this);
+  balloon->set_view(balloon_view);
   return balloon;
 }
 
@@ -176,11 +136,7 @@ const extensions::Extension* BalloonCollectionImplAsh::GetBalloonExtension(
       ExtensionURLInfo(origin));
 }
 
-// For now, only use BalloonCollectionImplAsh on ChromeOS, until
-// system_notifications_ is replaced with status area notifications.
-#if defined(OS_CHROMEOS)
 // static
 BalloonCollection* BalloonCollection::Create() {
   return new BalloonCollectionImplAsh();
 }
-#endif

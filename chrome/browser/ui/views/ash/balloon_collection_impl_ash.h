@@ -11,8 +11,8 @@
 #include "chrome/browser/chromeos/notifications/balloon_view_host_chromeos.h"  // MessageCallback
 #include "chrome/browser/notifications/balloon_collection_impl.h"
 
-// Wrapper on top of ::BalloonCollectionImpl to provide an interface for
-// chromeos::SystemNotification.
+// Wrapper on top of ::BalloonCollectionImpl to provide integration between
+// the Chrome notification UI and Ash notifications (ash::WebNotificationTray).
 class BalloonCollectionImplAsh : public BalloonCollectionImpl,
                                  public ash::WebNotificationTray::Delegate {
  public:
@@ -42,13 +42,6 @@ class BalloonCollectionImplAsh : public BalloonCollectionImpl,
       const std::string& message,
       const chromeos::BalloonViewHost::MessageCallback& callback);
 
-  // Adds a new system notification.
-  // |sticky| is ignored in the Ash implementation; desktop notifications
-  // are always sticky (i.e. they need to be dismissed explicitly).
-  void AddSystemNotification(const Notification& notification,
-                             Profile* profile,
-                             bool sticky);
-
   // Updates the notification's content. It uses
   // NotificationDelegate::id() to check the equality of notifications.
   // Returns true if the notification has been updated. False if
@@ -68,10 +61,6 @@ class BalloonCollectionImplAsh : public BalloonCollectionImpl,
   const extensions::Extension* GetBalloonExtension(Balloon* balloon);
 
  private:
-  // Set of unique ids associated with system notifications, used by
-  // MakeBalloon to determine whether or not to enable Web UI.
-  std::set<std::string> system_notifications_;
-
   DISALLOW_COPY_AND_ASSIGN(BalloonCollectionImplAsh);
 };
 

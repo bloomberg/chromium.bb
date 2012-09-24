@@ -4,15 +4,12 @@
 
 #include "chrome/browser/chromeos/profile_startup.h"
 
-#include "ash/ash_switches.h"
-#include "base/command_line.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/enterprise_extension_observer.h"
 #include "chrome/browser/chromeos/gview_request_interceptor.h"
 #include "chrome/browser/chromeos/network_message_observer.h"
-#include "chrome/browser/chromeos/power/low_battery_observer.h"
 #include "chrome/browser/chromeos/sms_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -33,14 +30,6 @@ void ProfileStartup(Profile* profile, bool process_startup) {
   if (process_startup) {
     // These observers are singletons. They are never deleted but the pointers
     // are kept in a statics so that they are not reported as leaks.
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-            ash::switches::kAshNotifyDisabled)) {
-      static chromeos::LowBatteryObserver* low_battery_observer =
-          new chromeos::LowBatteryObserver(profile);
-      chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
-          low_battery_observer);
-    }
-
     static chromeos::NetworkMessageObserver* network_message_observer =
         new chromeos::NetworkMessageObserver(profile);
     chromeos::CrosLibrary::Get()->GetNetworkLibrary()->

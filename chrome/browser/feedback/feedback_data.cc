@@ -7,10 +7,6 @@
 #include "chrome/browser/feedback/feedback_util.h"
 #include "content/public/browser/browser_thread.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/notifications/system_notification.h"
-#endif
-
 using content::BrowserThread;
 
 FeedbackData::FeedbackData()

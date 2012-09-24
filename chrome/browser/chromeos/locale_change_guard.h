@@ -12,7 +12,7 @@
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/notifications/system_notification.h"
+#include "base/string16.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
@@ -60,7 +60,6 @@ class LocaleChangeGuard : public content::NotificationObserver,
   std::string from_locale_;
   std::string to_locale_;
   Profile* profile_;
-  scoped_ptr<chromeos::SystemNotification> note_;
   bool reverted_;
   content::NotificationRegistrar registrar_;
 

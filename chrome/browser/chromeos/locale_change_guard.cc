@@ -4,11 +4,9 @@
 
 #include "chrome/browser/chromeos/locale_change_guard.h"
 
-#include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
@@ -57,7 +55,6 @@ class LocaleChangeGuard::Delegate : public NotificationDelegate {
 
 LocaleChangeGuard::LocaleChangeGuard(Profile* profile)
     : profile_(profile),
-      note_(NULL),
       reverted_(false) {
   DCHECK(profile_);
   registrar_.Add(this, chrome::NOTIFICATION_OWNERSHIP_STATUS_CHANGED,
@@ -137,11 +134,6 @@ void LocaleChangeGuard::Observe(int type,
 }
 
 void LocaleChangeGuard::Check() {
-  if (note_ != NULL) {
-    // Somehow we are invoked more than once. Once is enough.
-    return;
-  }
-
   std::string cur_locale = g_browser_process->GetApplicationLocale();
   if (cur_locale.empty()) {
     NOTREACHED();
@@ -177,24 +169,8 @@ void LocaleChangeGuard::Check() {
     PrepareChangingLocale(from_locale, to_locale);
   }
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          ash::switches::kAshNotifyDisabled)) {
-    ash::Shell::GetInstance()->system_tray()->locale_observer()->
-        OnLocaleChanged(this, cur_locale, from_locale_, to_locale_);
-    return;
-  }
-
-  note_.reset(new chromeos::SystemNotification(
-      profile_,
-      new Delegate(this),
-      IDR_NOTIFICATION_LOCALE_CHANGE,
-      title_text_));
-  note_->Show(
-      message_text_, revert_link_text_,
-      base::Bind(&LocaleChangeGuard::RevertLocaleChangeCallback,
-                 AsWeakPtr()),
-                 true,  // urgent
-                 false);  // non-sticky
+  ash::Shell::GetInstance()->system_tray()->locale_observer()->
+      OnLocaleChanged(this, cur_locale, from_locale_, to_locale_);
 }
 
 void LocaleChangeGuard::AcceptLocaleChange() {
