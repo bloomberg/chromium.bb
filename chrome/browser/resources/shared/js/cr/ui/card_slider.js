@@ -185,15 +185,30 @@ cr.define('cr.ui', function() {
       this.cards_ = cards;
 
       this.updateCardWidths_();
-
-      // Mark all cards as hidden for accessibility. The selected card will
-      // be marked visible during selectCard().
-      for (var i = 0; i < cards.length; i++) {
-        this.cards_[i].setAttribute('aria-hidden', true);
-      }
+      this.updateSelectedCardAttributes_();
 
       // Jump to the given card index.
-      this.selectCard(index);
+      this.selectCard(index, false, false, true);
+    },
+
+    /**
+     * Ensures that for all cards:
+     * - if the card is the current card, then it has 'selected-card' in its
+     *   classList, and is visible for accessibility
+     * - if the card is not the selected card, then it does not have
+     *   'selected-card' in its classList, and is invisible for accessibility.
+     * @private
+     */
+    updateSelectedCardAttributes_: function() {
+      for (var i = 0; i < this.cards_.length; i++) {
+        if (i == this.currentCard_) {
+          this.cards_[i].classList.add('selected-card');
+          this.cards_[i].removeAttribute('aria-hidden');
+        } else {
+          this.cards_[i].classList.remove('selected-card');
+          this.cards_[i].setAttribute('aria-hidden', true);
+        }
+      }
     },
 
     /**
@@ -356,9 +371,7 @@ cr.define('cr.ui', function() {
       this.cards_ = Array.prototype.concat.call(
           this.cards_.slice(0, index), card, this.cards_.slice(index));
 
-      // Mark the new card as hidden for accessibility. This will be corrected
-      // during selectCard() if this is the selected card.
-      card.setAttribute('aria-hidden', true);
+      this.updateSelectedCardAttributes_();
 
       if (this.currentCard_ == -1)
         this.currentCard_ = 0;
@@ -481,13 +494,8 @@ cr.define('cr.ui', function() {
         isChangingCard = true;
 
       if (isChangingCard) {
-        if (previousCard) {
-          previousCard.classList.remove('selected-card');
-          previousCard.setAttribute('aria-hidden', true);
-        }
         this.currentCard_ = newCardIndex;
-        this.currentCardValue.classList.add('selected-card');
-        this.currentCardValue.setAttribute('aria-hidden', false);
+        this.updateSelectedCardAttributes_();
       }
 
       var willTransitionHappen = this.transformToCurrentCard_(opt_animate);
