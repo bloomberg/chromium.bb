@@ -4,6 +4,7 @@
 
 package org.chromium.media;
 
+import android.content.Context;
 import android.media.MediaPlayer;
 
 import org.chromium.base.CalledByNative;
@@ -83,8 +84,16 @@ class MediaPlayerListener implements MediaPlayer.OnPreparedListener,
     }
 
     @CalledByNative
-    private static MediaPlayerListener create(int nativeMediaPlayerListener) {
-        return new MediaPlayerListener(nativeMediaPlayerListener);
+    private static void create(int nativeMediaPlayerListener,
+            Context context, MediaPlayer mediaPlayer) {
+        MediaPlayerListener listener = new MediaPlayerListener(nativeMediaPlayerListener);
+        mediaPlayer.setOnBufferingUpdateListener(listener);
+        mediaPlayer.setOnCompletionListener(listener);
+        mediaPlayer.setOnErrorListener(listener);
+        mediaPlayer.setOnPreparedListener(listener);
+        mediaPlayer.setOnSeekCompleteListener(listener);
+        mediaPlayer.setOnVideoSizeChangedListener(listener);
+        mediaPlayer.setWakeMode(context, android.os.PowerManager.FULL_WAKE_LOCK);
     }
 
     /**

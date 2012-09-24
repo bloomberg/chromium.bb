@@ -8,11 +8,14 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 
+#include "media/base/android/media_player_bridge.h"
 #include "media/base/android/media_player_listener.h"
 
 namespace media {
 
 static base::android::RegistrationMethod kMediaRegisteredMethods[] = {
+  { "MediaPlayerBridge",
+    MediaPlayerBridge::RegisterMediaPlayerBridge },
   { "MediaPlayerListener",
     MediaPlayerListener::RegisterMediaPlayerListener },
 };

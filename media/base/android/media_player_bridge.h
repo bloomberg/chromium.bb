@@ -62,6 +62,8 @@ class MediaPlayerBridge {
   // current time.
   typedef base::Callback<void(int, base::TimeDelta)> TimeUpdateCB;
 
+  static bool RegisterMediaPlayerBridge(JNIEnv* env);
+
   // Construct a MediaPlayerBridge object with all the needed media player
   // callbacks. This object needs to call |manager|'s RequestMediaResources()
   // before decoding the media stream. This allows |manager| to track

@@ -31,14 +31,13 @@ MediaPlayerListener::MediaPlayerListener(
 
 MediaPlayerListener::~MediaPlayerListener() {}
 
-ScopedJavaLocalRef<jobject> MediaPlayerListener::CreateMediaPlayerListener() {
+void MediaPlayerListener::CreateMediaPlayerListener(
+    jobject context, jobject media_player) {
   JNIEnv* env = AttachCurrentThread();
   CHECK(env);
 
-  ScopedJavaLocalRef<jobject> j_listener(
-      Java_MediaPlayerListener_create(env, reinterpret_cast<intptr_t>(this)));
-  DCHECK(!j_listener.is_null());
-  return j_listener;
+  Java_MediaPlayerListener_create(
+      env, reinterpret_cast<intptr_t>(this), context, media_player);
 }
 
 void MediaPlayerListener::OnMediaError(

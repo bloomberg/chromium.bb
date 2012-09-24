@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/stringprintf.h"
 #include "base/message_loop_proxy.h"
+#include "jni/MediaPlayerBridge_jni.h"
 #include "media/base/android/cookie_getter.h"
 #include "media/base/android/media_player_bridge_manager.h"
 
@@ -26,9 +27,6 @@ using base::android::ScopedJavaLocalRef;
 static const jint kPauseAvailable = 1;
 static const jint kSeekBackwardAvailable = 2;
 static const jint kSeekForwardAvailable = 3;
-
-// This needs to be kept in sync with android.os.PowerManager
-static const int kAndroidFullWakeLock = 26;
 
 // Time update happens every 250ms.
 static const int kTimeUpdateInterval = 250;
@@ -98,41 +96,14 @@ void MediaPlayerBridge::InitializePlayer() {
                                       j_media_player_class_,
                                       "<init>",
                                       "()V");
-  ScopedJavaLocalRef<jobject> tmp(env,
-      env->NewObject(j_media_player_class_.obj(), constructor));
+  ScopedJavaLocalRef<jobject> tmp(
+      env, env->NewObject(j_media_player_class_.obj(), constructor));
   j_media_player_.Reset(tmp);
-
-  ScopedJavaLocalRef<jobject> j_listener(
-      listener_.CreateMediaPlayerListener());
-
-  // Set it as the various listeners.
-  const char* listeners[] = {
-      "OnBufferingUpdateListener",
-      "OnCompletionListener",
-      "OnErrorListener",
-      "OnPreparedListener",
-      "OnSeekCompleteListener",
-      "OnVideoSizeChangedListener",
-  };
-  for (unsigned int i = 0; i < arraysize(listeners); ++i) {
-    std::string signature = StringPrintf("(Landroid/media/MediaPlayer$%s;)V",
-                                         listeners[i]);
-    std::string method_name = StringPrintf("set%s", listeners[i]);
-    jmethodID method = GetMethodID(env,
-                                   j_media_player_class_,
-                                   method_name.c_str(),
-                                   signature.c_str());
-    env->CallVoidMethod(j_media_player_.obj(), method, j_listener.obj());
-    CheckException(env);
-  }
 
   jobject j_context = base::android::GetApplicationContext();
   DCHECK(j_context);
-  jmethodID method = GetMethodID(env, j_media_player_class_,
-      "setWakeMode", "(Landroid/content/Context;I)V");
-  env->CallVoidMethod(j_media_player_.obj(), method, j_context,
-      kAndroidFullWakeLock);
-  CheckException(env);
+
+  listener_.CreateMediaPlayerListener(j_context, j_media_player_.obj());
 }
 
 void MediaPlayerBridge::SetVideoSurface(jobject surface) {
@@ -171,53 +142,15 @@ void MediaPlayerBridge::GetCookiesCallback(const std::string& cookies) {
 
   // Create a Java String for the URL.
   ScopedJavaLocalRef<jstring> j_url_string = ConvertUTF8ToJavaString(env, url_);
-
-  // Create the android.net.Uri object.
-  ScopedJavaLocalRef<jclass> cls(GetClass(env, "android/net/Uri"));
-  jmethodID method = GetStaticMethodID(env, cls,
-      "parse", "(Ljava/lang/String;)Landroid/net/Uri;");
-  ScopedJavaLocalRef<jobject> j_uri(env,
-      env->CallStaticObjectMethod(cls.obj(), method, j_url_string.obj()));
-
-  // Create the java.util.Map.
-  cls.Reset(GetClass(env, "java/util/HashMap"));
-  jmethodID constructor = GetMethodID(env, cls, "<init>", "()V");
-  ScopedJavaLocalRef<jobject> j_map(env,
-      env->NewObject(cls.obj(), constructor));
-  jmethodID put_method = GetMethodID(env, cls, "put",
-      "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
-
-  // Construct headers that needs to be sent with the url.
-  HeadersMap headers;
-  // For incognito mode, we need a header to hide url log.
-  if (hide_url_log_)
-    headers.insert(std::make_pair("x-hide-urls-from-log", "true"));
-  // If cookies are present, add them in the header.
-  if (!cookies_.empty())
-    headers.insert(std::make_pair("Cookie", cookies_));
-
-  // Fill the Map with the headers.
-  for (HeadersMap::const_iterator iter = headers.begin();
-       iter != headers.end(); ++iter) {
-    ScopedJavaLocalRef<jstring> key = ConvertUTF8ToJavaString(env, iter->first);
-    ScopedJavaLocalRef<jstring> value =
-        ConvertUTF8ToJavaString(env, iter->second);
-    ScopedJavaLocalRef<jobject> result(env,
-        env->CallObjectMethod(j_map.obj(), put_method, key.obj(), value.obj()));
-  }
+  ScopedJavaLocalRef<jstring> j_cookies = ConvertUTF8ToJavaString(
+      env, cookies_);
 
   jobject j_context = base::android::GetApplicationContext();
   DCHECK(j_context);
 
-  // Finally- Call the setDataSource method.
-  jmethodID set_data_source =
-      GetMethodID(env, j_media_player_class_, "setDataSource",
-      "(Landroid/content/Context;Landroid/net/Uri;Ljava/util/Map;)V");
-  env->CallVoidMethod(j_media_player_.obj(), set_data_source, j_context,
-                      j_uri.obj(), j_map.obj());
-  bool is_data_source_set_ = !base::android::ClearException(env);
-
-  if (is_data_source_set_) {
+  if (Java_MediaPlayerBridge_setDataSource(
+      env, j_media_player_.obj(), j_context, j_url_string.obj(),
+      j_cookies.obj(), hide_url_log_)) {
     if (manager_)
       manager_->RequestMediaResources(this);
     CallVoidMethod("prepareAsync");
@@ -474,6 +407,12 @@ int MediaPlayerBridge::CallIntMethod(std::string method_name) {
   jint j_result = env->CallIntMethod(j_media_player_.obj(), method);
   CheckException(env);
   return j_result;
+}
+
+bool MediaPlayerBridge::RegisterMediaPlayerBridge(JNIEnv* env) {
+  bool ret = RegisterNativesImpl(env);
+  DCHECK(g_MediaPlayerBridge_clazz);
+  return ret;
 }
 
 }  // namespace media

@@ -42,7 +42,7 @@ class MediaPlayerListener {
   void OnMediaPrepared(JNIEnv* /* env */, jobject /* obj */);
 
   // Create a Java MediaPlayerListener object.
-  base::android::ScopedJavaLocalRef<jobject> CreateMediaPlayerListener();
+  void CreateMediaPlayerListener(jobject context, jobject media_player);
 
   // Register MediaPlayerListener in the system library loader.
   static bool RegisterMediaPlayerListener(JNIEnv* env);
