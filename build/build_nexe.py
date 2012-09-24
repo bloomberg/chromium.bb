@@ -491,6 +491,9 @@ def Main(argv):
     source_list_handle.close()
     files = files + source_list
 
+  # Fix slash style to insulate invoked toolchains.
+  options.toolpath = os.path.normpath(options.toolpath)
+
   build = Builder(options)
   objs = []
   for filename in files:
