@@ -843,6 +843,7 @@ void RenderWidgetHostViewMac::CopyFromCompositingSurface(
   if (!output->initialize(
       dst_pixel_size.width(), dst_pixel_size.height(), true))
     return;
+  scoped_callback_runner.Release();
 
   // Convert |src_subrect| from the views coordinate (upper-left origin) into
   // the OpenGL coordinate (lower-left origin).
@@ -850,12 +851,11 @@ void RenderWidgetHostViewMac::CopyFromCompositingSurface(
   src_gl_subrect.set_y(GetViewBounds().height() - src_subrect.bottom());
 
   gfx::Rect src_pixel_gl_subrect = src_gl_subrect.Scale(scale);
-  const bool result = compositing_iosurface_->CopyTo(
+  compositing_iosurface_->CopyTo(
       src_pixel_gl_subrect,
       dst_pixel_size,
-      output->getTopDevice()->accessBitmap(true).getPixels());
-  scoped_callback_runner.Release();
-  callback.Run(result);
+      output->getTopDevice()->accessBitmap(true).getPixels(),
+      callback);
 }
 
 // Sets whether or not to accept first responder status.

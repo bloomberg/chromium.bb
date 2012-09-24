@@ -9,6 +9,7 @@
 
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
+#include "base/message_loop.h"
 #include "base/threading/platform_thread.h"
 #include "content/common/content_constants_internal.h"
 #include "content/public/browser/browser_thread.h"
@@ -105,6 +106,19 @@ GLuint CreateProgramGLSL(const char* vertex_shader_str,
   return program;
 }
 
+bool HasAppleFenceExtension() {
+  static bool initialized_has_fence = false;
+  static bool has_fence = false;
+
+  if (!initialized_has_fence) {
+    has_fence =
+        strstr(reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS)),
+               "GL_APPLE_fence") != NULL;
+    initialized_has_fence = true;
+  }
+  return has_fence;
+}
+
 }  // namespace
 
 CVReturn DisplayLinkCallback(CVDisplayLinkRef display_link,
@@ -117,6 +131,13 @@ CVReturn DisplayLinkCallback(CVDisplayLinkRef display_link,
       static_cast<CompositingIOSurfaceMac*>(context);
   surface->DisplayLinkTick(display_link, output_time);
   return kCVReturnSuccess;
+}
+
+CompositingIOSurfaceMac::CopyContext::CopyContext() {
+  Reset();
+}
+
+CompositingIOSurfaceMac::CopyContext::~CopyContext() {
 }
 
 CompositingIOSurfaceMac* CompositingIOSurfaceMac::Create() {
@@ -269,7 +290,10 @@ void CompositingIOSurfaceMac::GetVSyncParameters(base::TimeTicks* timebase,
 
 CompositingIOSurfaceMac::~CompositingIOSurfaceMac() {
   CVDisplayLinkRelease(display_link_);
-  UnrefIOSurface();
+  CGLSetCurrentContext(cglContext_);
+  CleanupResourcesForCopy();
+  UnrefIOSurfaceWithContextCurrent();
+  CGLSetCurrentContext(0);
 }
 
 void CompositingIOSurfaceMac::SetIOSurface(uint64 io_surface_handle,
@@ -385,79 +409,120 @@ void CompositingIOSurfaceMac::DrawIOSurface(NSView* view, float scale_factor) {
     RateLimitDraws();
 }
 
-bool CompositingIOSurfaceMac::CopyTo(
+void CompositingIOSurfaceMac::CopyTo(
       const gfx::Rect& src_pixel_subrect,
       const gfx::Size& dst_pixel_size,
-      void* out) {
-  if (!MapIOSurfaceToTexture(io_surface_handle_))
-    return false;
+      void* out,
+      const base::Callback<void(bool)>& callback) {
+  if (copy_context_.started) {
+    callback.Run(false);
+    return;
+  }
 
   CGLSetCurrentContext(cglContext_);
-  GLuint target = GL_TEXTURE_RECTANGLE_ARB;
+  if (!MapIOSurfaceToTexture(io_surface_handle_)) {
+    CGLSetCurrentContext(0);
+    callback.Run(false);
+    return;
+  }
 
-  GLuint dst_texture = 0;
-  glGenTextures(1, &dst_texture); CHECK_GL_ERROR();
-  glBindTexture(target, dst_texture); CHECK_GL_ERROR();
+  TRACE_EVENT0("browser", "CompositingIOSurfaceMac::CopyTo()");
 
-  GLuint dst_framebuffer = 0;
-  glGenFramebuffersEXT(1, &dst_framebuffer); CHECK_GL_ERROR();
-  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, dst_framebuffer); CHECK_GL_ERROR();
+  copy_context_.started = true;
+  copy_context_.src_rect = src_pixel_subrect;
+  copy_context_.dest_size = dst_pixel_size;
+  copy_context_.out_buf = out;
+  copy_context_.callback = callback;
 
-  glTexImage2D(target,
+  const bool use_fence = HasAppleFenceExtension();
+  if (use_fence) {
+    glGenFencesAPPLE(1, &copy_context_.fence); CHECK_GL_ERROR();
+    copy_context_.use_fence = true;
+    copy_context_.cycles_elapsed = 0;
+  }
+
+  // Create an offscreen framebuffer.
+  // This is used to render and scale a subrect of IOSurface.
+  const GLenum kTarget = GL_TEXTURE_RECTANGLE_ARB;
+  const int dest_width = copy_context_.dest_size.width();
+  const int dest_height = copy_context_.dest_size.height();
+
+  glGenTextures(1, &copy_context_.frame_buffer_texture); CHECK_GL_ERROR();
+  glBindTexture(kTarget, copy_context_.frame_buffer_texture); CHECK_GL_ERROR();
+  glGenFramebuffersEXT(1, &copy_context_.frame_buffer); CHECK_GL_ERROR();
+  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, copy_context_.frame_buffer);
+  CHECK_GL_ERROR();
+
+  glTexImage2D(kTarget,
                0,
                GL_RGBA,
-               dst_pixel_size.width(),
-               dst_pixel_size.height(),
+               dest_width,
+               dest_height,
                0,
                GL_BGRA,
                GL_UNSIGNED_INT_8_8_8_8_REV,
                NULL); CHECK_GL_ERROR();
   glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT,
                             GL_COLOR_ATTACHMENT0_EXT,
-                            target,
-                            dst_texture,
+                            kTarget,
+                            copy_context_.frame_buffer_texture,
                             0); CHECK_GL_ERROR();
-  glBindTexture(target, 0); CHECK_GL_ERROR();
 
-  glViewport(0, 0, dst_pixel_size.width(), dst_pixel_size.height());
+  glViewport(0, 0, dest_width, dest_height); CHECK_GL_ERROR();
+  glMatrixMode(GL_PROJECTION); CHECK_GL_ERROR();
+  glLoadIdentity(); CHECK_GL_ERROR();
+  glOrtho(0, dest_width, 0, dest_height, -1, 1); CHECK_GL_ERROR();
+  glMatrixMode(GL_MODELVIEW); CHECK_GL_ERROR();
+  glLoadIdentity(); CHECK_GL_ERROR();
 
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-  glOrtho(0, dst_pixel_size.width(), 0, dst_pixel_size.height(), -1, 1);
-  glMatrixMode(GL_MODELVIEW);
-  glLoadIdentity();
+  glDisable(GL_DEPTH_TEST); CHECK_GL_ERROR();
+  glDisable(GL_BLEND); CHECK_GL_ERROR();
 
-  glDisable(GL_DEPTH_TEST);
-  glDisable(GL_BLEND);
+  glUseProgram(shader_program_blit_rgb_); CHECK_GL_ERROR();
 
-  glUseProgram(shader_program_blit_rgb_);
-
-  int texture_unit = 0;
-  glUniform1i(blit_rgb_sampler_location_, texture_unit);
-  glActiveTexture(GL_TEXTURE0 + texture_unit);
-  glBindTexture(GL_TEXTURE_RECTANGLE_ARB, texture_);
+  const int kTextureUnit = 0;
+  glUniform1i(blit_rgb_sampler_location_, kTextureUnit); CHECK_GL_ERROR();
+  glActiveTexture(GL_TEXTURE0 + kTextureUnit); CHECK_GL_ERROR();
+  glBindTexture(kTarget, texture_); CHECK_GL_ERROR();
+  glTexParameterf(kTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR); CHECK_GL_ERROR();
+  glTexParameterf(kTarget, GL_TEXTURE_MAG_FILTER, GL_NEAREST); CHECK_GL_ERROR();
 
   SurfaceQuad quad;
-  quad.set_rect(0.0f, 0.0f, dst_pixel_size.width(), dst_pixel_size.height());
-  quad.set_texcoord_rect(src_pixel_subrect.x(), src_pixel_subrect.y(),
-                         src_pixel_subrect.right(), src_pixel_subrect.bottom());
+  quad.set_rect(0.0f, 0.0f, dest_width, dest_height); CHECK_GL_ERROR();
+  quad.set_texcoord_rect(
+      copy_context_.src_rect.x(), copy_context_.src_rect.y(),
+      copy_context_.src_rect.right(), copy_context_.src_rect.bottom());
   DrawQuad(quad);
 
-  glBindTexture(GL_TEXTURE_RECTANGLE_ARB, 0); CHECK_GL_ERROR();
-  glUseProgram(0);
+  glBindTexture(kTarget, 0); CHECK_GL_ERROR();
+  glUseProgram(0); CHECK_GL_ERROR();
 
-  CGLFlushDrawable(cglContext_);
+  // Copy the offscreen framebuffer to a PBO.
+  glGenBuffersARB(1, &copy_context_.pixel_buffer); CHECK_GL_ERROR();
+  glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, copy_context_.pixel_buffer);
+  CHECK_GL_ERROR();
+  glBufferDataARB(GL_PIXEL_PACK_BUFFER_ARB,
+                  dest_width * dest_height * 4,
+                  NULL, GL_STREAM_READ_ARB); CHECK_GL_ERROR();
+  glReadPixels(0, 0, dest_width, dest_height, GL_BGRA,
+               GL_UNSIGNED_INT_8_8_8_8_REV, 0); CHECK_GL_ERROR();
 
-  glReadPixels(0, 0, dst_pixel_size.width(), dst_pixel_size.height(),
-               GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, out);
-
+  glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, 0); CHECK_GL_ERROR();
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0); CHECK_GL_ERROR();
 
-  glDeleteFramebuffersEXT(1, &dst_framebuffer);
-  glDeleteTextures(1, &dst_texture);
-
+  if (use_fence) {
+    glSetFenceAPPLE(copy_context_.fence); CHECK_GL_ERROR();
+  }
+  glFlush(); CHECK_GL_ERROR();
   CGLSetCurrentContext(0);
-  return true;
+
+  // 20ms is an estimate assuming most hardware can complete asynchronous
+  // readback within this time limit. The timer will keep running until
+  // operation is completed.
+  const int kIntervalMilliseconds = 20;
+  copy_timer_.Start(FROM_HERE,
+                    base::TimeDelta::FromMilliseconds(kIntervalMilliseconds),
+                    this, &CompositingIOSurfaceMac::FinishCopy);
 }
 
 bool CompositingIOSurfaceMac::MapIOSurfaceToTexture(
@@ -615,6 +680,59 @@ void CompositingIOSurfaceMac::StartOrContinueDisplayLink() {
 void CompositingIOSurfaceMac::StopDisplayLink() {
   if (CVDisplayLinkIsRunning(display_link_))
     CVDisplayLinkStop(display_link_);
+}
+
+void CompositingIOSurfaceMac::FinishCopy() {
+  CHECK(copy_context_.started);
+  TRACE_EVENT0("browser", "CompositingIOSurfaceMac::FinishCopy()");
+
+  CGLSetCurrentContext(cglContext_);
+
+  if (copy_context_.use_fence) {
+    bool copy_completed = glTestFenceAPPLE(copy_context_.fence);
+    CHECK_GL_ERROR();
+
+    // Allow 1s for the operation to complete.
+    const int kRetryCycles = 50;
+
+    if (!copy_completed && copy_context_.cycles_elapsed < kRetryCycles) {
+      ++copy_context_.cycles_elapsed;
+      CGLSetCurrentContext(0);
+      return;
+    }
+  }
+  copy_timer_.Stop();
+
+  glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, copy_context_.pixel_buffer);
+  CHECK_GL_ERROR();
+
+  void* buf = glMapBuffer(GL_PIXEL_PACK_BUFFER_ARB, GL_READ_ONLY_ARB);
+  CHECK_GL_ERROR();
+
+  if (buf) {
+    memcpy(copy_context_.out_buf, buf, copy_context_.dest_size.GetArea() * 4);
+    glUnmapBufferARB(GL_PIXEL_PACK_BUFFER_ARB); CHECK_GL_ERROR();
+  }
+  glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, 0); CHECK_GL_ERROR();
+
+  base::Callback<void(bool)> callback = copy_context_.callback;
+  CleanupResourcesForCopy();
+  CGLSetCurrentContext(0);
+
+  callback.Run(buf != NULL);
+}
+
+void CompositingIOSurfaceMac::CleanupResourcesForCopy() {
+  if (!copy_context_.started)
+    return;
+
+  glDeleteFramebuffersEXT(1, &copy_context_.frame_buffer); CHECK_GL_ERROR();
+  glDeleteTextures(1, &copy_context_.frame_buffer_texture); CHECK_GL_ERROR();
+  glDeleteBuffers(1, &copy_context_.pixel_buffer); CHECK_GL_ERROR();
+  if (copy_context_.use_fence) {
+    glDeleteFencesAPPLE(1, &copy_context_.fence); CHECK_GL_ERROR();
+  }
+  copy_context_.Reset();
 }
 
 }  // namespace content
