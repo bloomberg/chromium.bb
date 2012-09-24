@@ -37,7 +37,6 @@
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/config_file_watcher.h"
-#include "remoting/host/constants.h"
 #include "remoting/host/config_file_watcher.h"
 #include "remoting/host/desktop_environment_factory.h"
 #include "remoting/host/dns_blackhole_checker.h"
@@ -45,6 +44,7 @@
 #include "remoting/host/heartbeat_sender.h"
 #include "remoting/host/host_config.h"
 #include "remoting/host/host_event_logger.h"
+#include "remoting/host/host_exit_codes.h"
 #include "remoting/host/host_user_interface.h"
 #include "remoting/host/json_host_config.h"
 #include "remoting/host/log_to_server.h"
@@ -198,10 +198,10 @@ class HostProcess
     // the first configuration update. Otherwise, post a task to create new
     // authenticator factory in case PIN has changed.
     if (policy_watcher_.get() == NULL) {
-#if defined(OS_MACOSX) || defined(OS_WIN)
       bool want_user_interface = true;
-
-#if defined(OS_MACOSX)
+#if defined(OS_LINUX)
+      want_user_interface = false;
+#elif defined(OS_MACOSX)
       // Don't try to display any UI on top of the system's login screen as this
       // is rejected by the Window Server on OS X 10.7.4, and prevents the
       // capturer from working (http://crbug.com/140984).
@@ -209,15 +209,12 @@ class HostProcess
       // TODO(lambroslambrou): Use a better technique of detecting whether we're
       // running in the LoginWindow context, and refactor this into a separate
       // function to be used here and in CurtainMode::ActivateCurtain().
-      if (getuid() == 0) {
-        want_user_interface = false;
-      }
+      want_user_interface = getuid() != 0;
 #endif  // OS_MACOSX
 
       if (want_user_interface) {
         host_user_interface_.reset(new HostUserInterface(context_.get()));
       }
-#endif  // OS_MACOSX || OS_WIN
 
       StartWatchingPolicy();
     } else {
@@ -240,7 +237,6 @@ class HostProcess
 
   void StartWatchingConfigChanges() {
 #if !defined(REMOTING_MULTI_PROCESS)
-
     // Start watching the host configuration file.
     config_watcher_.reset(new ConfigFileWatcher(context_->ui_task_runner(),
                                                 context_->file_task_runner(),
@@ -249,13 +245,13 @@ class HostProcess
 #endif  // !defined(REMOTING_MULTI_PROCESS)
   }
 
-#if defined(OS_POSIX)
   void ListenForShutdownSignal() {
+#if defined(OS_POSIX)
     remoting::RegisterSignalHandler(
         SIGTERM,
         base::Bind(&HostProcess::SigTermHandler, base::Unretained(this)));
-  }
 #endif  // OS_POSIX
+  }
 
   void CreateAuthenticatorFactory() {
     DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
@@ -298,12 +294,10 @@ class HostProcess
       return;
     }
 
-#if defined(OS_POSIX)
     context_->network_task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&HostProcess::ListenForShutdownSignal,
                    base::Unretained(this)));
-#endif  // OS_POSIX
 
     StartWatchingConfigChanges();
   }
@@ -314,15 +308,10 @@ class HostProcess
   void ShutdownHostProcess() {
     DCHECK(context_->ui_task_runner()->BelongsToCurrentThread());
 
-#if !defined(REMOTING_MULTI_PROCESS)
     config_watcher_.reset();
-#endif  // !defined(REMOTING_MULTI_PROCESS)
 
     daemon_channel_.reset();
-
-#if defined(OS_MACOSX) || defined(OS_WIN)
     host_user_interface_.reset();
-#endif
 
     if (policy_watcher_.get()) {
       base::WaitableEvent done_event(true, false);
@@ -581,13 +570,11 @@ class HostProcess
         new LogToServer(host_, ServerLogEntry::ME2ME, signal_strategy_.get()));
     host_event_logger_ = HostEventLogger::Create(host_, kApplicationName);
 
-#if defined(OS_MACOSX) || defined(OS_WIN)
     if (host_user_interface_.get()) {
       host_user_interface_->Start(
           host_, base::Bind(&HostProcess::OnDisconnectRequested,
                             base::Unretained(this)));
     }
-#endif
 
     host_->Start(xmpp_login_);
 
@@ -675,10 +662,8 @@ class HostProcess
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
 
   JsonHostConfig config_;
-#if !defined(REMOTING_MULTI_PROCESS)
   FilePath host_config_path_;
   scoped_ptr<ConfigFileWatcher> config_watcher_;
-#endif  // !defined(REMOTING_MULTI_PROCESS)
 
   std::string host_id_;
   HostKeyPair key_pair_;
@@ -704,9 +689,7 @@ class HostProcess
   scoped_ptr<LogToServer> log_to_server_;
   scoped_ptr<HostEventLogger> host_event_logger_;
 
-#if defined(OS_MACOSX) || defined(OS_WIN)
   scoped_ptr<HostUserInterface> host_user_interface_;
-#endif
 
   scoped_refptr<ChromotingHost> host_;
 

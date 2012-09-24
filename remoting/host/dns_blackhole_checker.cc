@@ -7,7 +7,6 @@
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_fetcher.h"
 #include "remoting/host/chromoting_host_context.h"
-#include "remoting/host/constants.h"
 
 namespace remoting {
 
