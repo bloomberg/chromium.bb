@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.PointF;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.ResultReceiver;
@@ -153,6 +154,18 @@ public class ContentViewCore implements MotionEventDelegate {
 
     private ContentViewGestureHandler mContentViewGestureHandler;
     private ZoomManager mZoomManager;
+
+    // Currently ContentView's scrolling is handled by the native side. We keep a cached copy of the
+    // scroll offset and content size so that we can display the scrollbar correctly. In the future,
+    // we may switch to tile rendering and handle the scrolling in the Java level.
+
+    // Cached scroll offset from the native
+    private int mNativeScrollX;
+    private int mNativeScrollY;
+
+    // Cached content size from the native
+    private int mContentWidth;
+    private int mContentHeight;
 
     // Cached page scale factor from native
     private float mNativePageScaleFactor = 1.0f;
@@ -381,6 +394,7 @@ public class ContentViewCore implements MotionEventDelegate {
         mZoomManager.updateMultiTouchSupport();
         mContentViewGestureHandler = new ContentViewGestureHandler(mContext, this, mZoomManager);
 
+        mNativeScrollX = mNativeScrollY = 0;
         initPopupZoomer(mContext);
         mImeAdapter = createImeAdapter(mContext);
         mKeyboardConnected = mContainerView.getResources().getConfiguration().keyboard
@@ -548,6 +562,20 @@ public class ContentViewCore implements MotionEventDelegate {
 
     public int getHeight() {
         return mContainerView.getHeight();
+    }
+
+    /**
+     * @see android.webkit.WebView#getContentHeight()
+     */
+    public int getContentHeight() {
+        return (int) (mContentHeight / mNativePageScaleFactor);
+    }
+
+    /**
+     * @see android.webkit.WebView#getContentWidth()
+     */
+    public int getContentWidth() {
+        return (int) (mContentWidth / mNativePageScaleFactor);
     }
 
     /**
@@ -839,6 +867,84 @@ public class ContentViewCore implements MotionEventDelegate {
         TraceEvent.end();
     }
 
+    /**
+     * @see View#onSizeChanged(int, int, int, int)
+     */
+    @SuppressWarnings("javadoc")
+    public void onSizeChanged(int w, int h, int ow, int oh) {
+        mPopupZoomer.hide(false);
+        // Update the content size to make sure it is at least the View size
+        if (mContentWidth < w) mContentWidth = w;
+        if (mContentHeight < h) mContentHeight = h;
+    }
+
+    /**
+     * @see View#dispatchKeyEvent(KeyEvent)
+     */
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        if (mImeAdapter != null &&
+                !mImeAdapter.isNativeImeAdapterAttached() && mNativeContentViewCore != 0) {
+            mImeAdapter.attach(nativeGetNativeImeAdapter(mNativeContentViewCore));
+        }
+        // The key handling logic is kind of confusing here.
+        // The purpose of shouldOverrideKeyEvent() is to filter out some keys that is critical
+        // to browser function but useless in renderer process (for example, the back button),
+        // so the browser can still respond to these keys in a timely manner when the renderer
+        // process is busy/blocked/busted. mImeAdapter.dispatchKeyEvent() forwards the key event
+        // to the renderer process. If mImeAdapter is bypassed or is not interested to the event,
+        // fall back to the default dispatcher to propagate the event to sub-views.
+        return (!getContentViewClient().shouldOverrideKeyEvent(event)
+                && mImeAdapter.dispatchKeyEvent(event))
+                || mContainerViewInternals.super_dispatchKeyEvent(event);
+    }
+
+    /**
+     * @see View#scrollTo(int, int)
+     */
+    public void scrollTo(int x, int y) {
+        if (mNativeContentViewCore == 0) return;
+        int dx = x - mNativeScrollX, dy = y - mNativeScrollY;
+        if (dx != 0 || dy != 0) {
+            long time = System.currentTimeMillis();
+            nativeScrollBegin(mNativeContentViewCore, time, mNativeScrollX, mNativeScrollY);
+            nativeScrollBy(mNativeContentViewCore, time, mNativeScrollX, mNativeScrollY,
+                    dx, dy);
+            nativeScrollEnd(mNativeContentViewCore, time);
+        }
+    }
+
+    /**
+     * @see View#computeHorizontalScrollOffset()
+     */
+    @SuppressWarnings("javadoc")
+    public int computeHorizontalScrollOffset() {
+        return mNativeScrollX;
+    }
+
+    /**
+     * @see View#computeHorizontalScrollRange()
+     */
+    @SuppressWarnings("javadoc")
+    public int computeHorizontalScrollRange() {
+        return mContentWidth;
+    }
+
+    /**
+     * @see View#computeVerticalScrollOffset()
+     */
+    @SuppressWarnings("javadoc")
+    public int computeVerticalScrollOffset() {
+        return mNativeScrollY;
+    }
+
+    /**
+     * @see View#computeVerticalScrollRange()
+     */
+    @SuppressWarnings("javadoc")
+    public int computeVerticalScrollRange() {
+        return mContentHeight;
+    }
+
     // End FrameLayout overrides.
 
     /**
@@ -1037,6 +1143,36 @@ public class ContentViewCore implements MotionEventDelegate {
     public boolean isCrashed() {
         if (mNativeContentViewCore == 0) return false;
         return nativeCrashed(mNativeContentViewCore);
+    }
+
+    @SuppressWarnings("unused")
+    @CalledByNative
+    private void updateContentSize(int width, int height) {
+        if (mContentWidth != width || mContentHeight != height) {
+            mPopupZoomer.hide(true);
+        }
+        // Make sure the content size is at least the View size
+        mContentWidth = Math.max(width, getWidth());
+        mContentHeight = Math.max(height, getHeight());
+    }
+
+    @SuppressWarnings("unused")
+    @CalledByNative
+    private void updateScrollOffsetAndPageScaleFactor(int x, int y, float scale) {
+        if (mNativeScrollX == x && mNativeScrollY == y && mNativePageScaleFactor == scale) return;
+
+        mContainerViewInternals.onScrollChanged(x, y, mNativeScrollX, mNativeScrollY);
+
+        // This function should be called back from native as soon
+        // as the scroll is applied to the backbuffer.  We should only
+        // update mNativeScrollX/Y here for consistency.
+        mNativeScrollX = x;
+        mNativeScrollY = y;
+        mNativePageScaleFactor = scale;
+
+        mPopupZoomer.hide(true);
+
+        mZoomManager.updateZoomControls();
     }
 
     // The following methods are called by native through jni
@@ -1310,6 +1446,42 @@ public class ContentViewCore implements MotionEventDelegate {
      */
     public void setAccessibilityState(boolean state) {
         mAccessibilityInjector.setScriptEnabled(state);
+    }
+
+    /**
+     * @See android.webkit.WebView#pageDown(boolean)
+     */
+    public boolean pageDown(boolean bottom) {
+        if (computeVerticalScrollOffset() >= mContentHeight - getHeight()) {
+            // We seem to already be at the bottom of the page, so no scrolling will occur.
+            return false;
+        }
+
+        if (bottom) {
+            scrollTo(computeHorizontalScrollOffset(), mContentHeight - getHeight());
+        } else {
+            dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_PAGE_DOWN));
+            dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_PAGE_DOWN));
+        }
+        return true;
+    }
+
+    /**
+     * @See android.webkit.WebView#pageUp(boolean)
+     */
+    public boolean pageUp(boolean top) {
+        if (computeVerticalScrollOffset() == 0) {
+            // We seem to already be at the top of the page, so no scrolling will occur.
+            return false;
+        }
+
+        if (top) {
+            scrollTo(computeHorizontalScrollOffset(), 0);
+        } else {
+            dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_PAGE_UP));
+            dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_PAGE_UP));
+        }
+        return true;
     }
 
     /**

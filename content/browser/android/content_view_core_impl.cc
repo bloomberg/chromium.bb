@@ -571,6 +571,24 @@ void ContentViewCoreImpl::OnTabCrashed(const base::ProcessHandle handle) {
   NOTIMPLEMENTED() << "not upstreamed yet";
 }
 
+void ContentViewCoreImpl::UpdateContentSize(int width, int height) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+  Java_ContentViewCore_updateContentSize(env, obj.obj(), width, height);
+}
+
+void ContentViewCoreImpl::UpdateScrollOffsetAndPageScaleFactor(int x, int y,
+                                                               float scale) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+  Java_ContentViewCore_updateScrollOffsetAndPageScaleFactor(env, obj.obj(), x,
+                                                            y, scale);
+}
+
 void ContentViewCoreImpl::ImeUpdateAdapter(int native_ime_adapter,
                                            int text_input_type,
                                            const std::string& text,

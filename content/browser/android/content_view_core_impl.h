@@ -146,6 +146,8 @@ class ContentViewCoreImpl : public ContentViewCore,
                            bool multiple);
 
   void OnTabCrashed(const base::ProcessHandle handle);
+  void UpdateContentSize(int width, int height);
+  void UpdateScrollOffsetAndPageScaleFactor(int x, int y, float scale);
   void ImeUpdateAdapter(int native_ime_adapter, int text_input_type,
                         const std::string& text,
                         int selection_start, int selection_end,
