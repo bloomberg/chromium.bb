@@ -44,6 +44,7 @@ int CursorShapeFromNative(gfx::NativeCursor native_cursor) {
       // TODO(jamescook): Need cursors for these.  crbug.com/111650
       return XC_left_ptr;
 
+#if defined(OS_CHROMEOS)
     case ui::kCursorNull:
     case ui::kCursorPointer:
     case ui::kCursorNoDrop:
@@ -75,9 +76,53 @@ int CursorShapeFromNative(gfx::NativeCursor native_cursor) {
     case ui::kCursorVerticalText:
     case ui::kCursorZoomIn:
     case ui::kCursorZoomOut:
-      NOTREACHED() << "Cursor (" << native_cursor.native_type() << ") should "
-                   << "have an image asset.";
+      // In some environments, the image assets are not set (e.g. in
+      // content-browsertests, content-shell etc.).
       return XC_left_ptr;
+#else  // defined(OS_CHROMEOS)
+    case ui::kCursorNull:
+      return XC_left_ptr;
+    case ui::kCursorPointer:
+      return XC_left_ptr;
+    case ui::kCursorCross:
+      return XC_crosshair;
+    case ui::kCursorHand:
+      return XC_hand2;
+    case ui::kCursorIBeam:
+      return XC_xterm;
+    case ui::kCursorWait:
+      return XC_watch;
+    case ui::kCursorHelp:
+      return XC_question_arrow;
+    case ui::kCursorEastResize:
+      return XC_right_side;
+    case ui::kCursorNorthResize:
+      return XC_top_side;
+    case ui::kCursorNorthEastResize:
+      return XC_top_right_corner;
+    case ui::kCursorNorthWestResize:
+      return XC_top_left_corner;
+    case ui::kCursorSouthResize:
+      return XC_bottom_side;
+    case ui::kCursorSouthEastResize:
+      return XC_bottom_right_corner;
+    case ui::kCursorSouthWestResize:
+      return XC_bottom_left_corner;
+    case ui::kCursorWestResize:
+      return XC_left_side;
+    case ui::kCursorNorthSouthResize:
+      return XC_sb_v_double_arrow;
+    case ui::kCursorEastWestResize:
+      return XC_sb_h_double_arrow;
+    case ui::kCursorNorthEastSouthWestResize:
+    case ui::kCursorNorthWestSouthEastResize:
+      // There isn't really a useful cursor available for these.
+      return XC_left_ptr;
+    case ui::kCursorColumnResize:
+      return XC_sb_h_double_arrow;
+    case ui::kCursorRowResize:
+      return XC_sb_v_double_arrow;
+#endif  // defined(OS_CHROMEOS)
     case ui::kCursorCustom:
       NOTREACHED();
       return XC_left_ptr;
@@ -196,8 +241,11 @@ bool CursorLoaderX11::IsImageCursor(gfx::NativeCursor native_cursor) {
   int type = native_cursor.native_type();
   if (animated_cursors_.count(type))
     return animated_cursors_[type].first;
-  DCHECK(cursors_.find(type) != cursors_.end());
-  return cursors_[type];
+
+  ImageCursorMap::iterator find = cursors_.find(type);
+  if (find != cursors_.end())
+    return cursors_[type];
+  return ui::GetXCursor(CursorShapeFromNative(native_cursor));
 }
 
 }

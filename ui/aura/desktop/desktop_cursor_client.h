@@ -6,9 +6,13 @@
 #define UI_AURA_DESKTOP_DESKTOP_CURSOR_CLIENT_H_
 
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/aura/aura_export.h"
-
 #include "ui/aura/client/cursor_client.h"
+
+namespace ui {
+class CursorLoader;
+}
 
 namespace aura {
 class RootWindow;
@@ -28,6 +32,7 @@ class AURA_EXPORT DesktopCursorClient : public client::CursorClient {
 
  private:
   aura::RootWindow* root_window_;
+  scoped_ptr<ui::CursorLoader> cursor_loader_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopCursorClient);
 };

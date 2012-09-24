@@ -5,17 +5,20 @@
 #include "ui/aura/desktop/desktop_cursor_client.h"
 
 #include "ui/aura/root_window.h"
+#include "ui/base/cursor/cursor_loader.h"
 
 namespace aura {
 
 DesktopCursorClient::DesktopCursorClient(aura::RootWindow* window)
-    : root_window_(window) {
+    : root_window_(window),
+      cursor_loader_(ui::CursorLoader::Create()) {
 }
 
 DesktopCursorClient::~DesktopCursorClient() {
 }
 
 void DesktopCursorClient::SetCursor(gfx::NativeCursor cursor) {
+  cursor_loader_->SetPlatformCursor(&cursor);
   root_window_->SetCursor(cursor);
 }
 
@@ -28,7 +31,8 @@ bool DesktopCursorClient::IsCursorVisible() const {
 }
 
 void DesktopCursorClient::SetDeviceScaleFactor(float device_scale_factor) {
-  // TODO(ben|erg): Use the device scale factor set here for the cursor.
+  cursor_loader_->UnloadAll();
+  cursor_loader_->set_device_scale_factor(device_scale_factor);
 }
 
 }  // namespace aura
