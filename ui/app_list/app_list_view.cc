@@ -110,6 +110,11 @@ void AppListView::SetBubbleArrowLocation(
   GetBubbleFrameView()->SchedulePaint();
 }
 
+void AppListView::SetAnchorPoint(const gfx::Point& anchor_point) {
+  set_anchor_point(anchor_point);
+  SizeToContents();  // Repositions view relative to the anchor.
+}
+
 void AppListView::Close() {
   if (delegate_.get())
     delegate_->Close();

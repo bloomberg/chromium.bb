@@ -14,10 +14,17 @@
 #include "ui/app_list/pagination_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/win/shell.h"
+#include "ui/gfx/display.h"
+#include "ui/gfx/screen.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
+
+// Offset from the cursor to the point of the bubble arrow. It looks weird
+// if the arrow comes up right on top of the cursor, so it is offset by this
+// amount.
+static const int kAnchorOffset = 25;
 
 class AppListControllerWin : public AppListController {
  public:
@@ -93,6 +100,61 @@ class AppListResources {
   DISALLOW_COPY_AND_ASSIGN(AppListResources);
 };
 
+void GetArrowLocationAndUpdateAnchor(const gfx::Rect& work_area,
+                                     int min_space_x,
+                                     int min_space_y,
+                                     views::BubbleBorder::ArrowLocation* arrow,
+                                     gfx::Point* anchor) {
+  // Prefer the bottom as it is the most natural position.
+  if (anchor->y() - work_area.y() >= min_space_y) {
+    *arrow = views::BubbleBorder::BOTTOM_LEFT;
+    anchor->Offset(0, -kAnchorOffset);
+    return;
+  }
+
+  // The view won't fit above the cursor. Will it fit below?
+  if (work_area.bottom() - anchor->y() >= min_space_y) {
+    *arrow = views::BubbleBorder::TOP_LEFT;
+    anchor->Offset(0, kAnchorOffset);
+    return;
+  }
+
+  // As the view won't fit above or below, try on the right.
+  if (work_area.right() - anchor->x() >= min_space_x) {
+    *arrow = views::BubbleBorder::LEFT_TOP;
+    anchor->Offset(kAnchorOffset, 0);
+    return;
+  }
+
+  *arrow = views::BubbleBorder::RIGHT_TOP;
+  anchor->Offset(-kAnchorOffset, 0);
+}
+
+void UpdateArrowPositionAndAnchorPoint(app_list::AppListView* view) {
+  static const int kArrowSize = 10;
+  static const int kPadding = 20;
+
+  gfx::Size preferred = view->GetPreferredSize();
+  // Add the size of the arrow to the space needed, as the preferred size is
+  // of the view excluding the arrow.
+  int min_space_x = preferred.width() + kAnchorOffset + kPadding + kArrowSize;
+  int min_space_y = preferred.height() + kAnchorOffset + kPadding + kArrowSize;
+
+  // TODO(benwells): Make sure the app list does not appear underneath
+  // the task bar.
+  gfx::Point anchor = view->anchor_point();
+  gfx::Display display = gfx::Screen::GetDisplayNearestPoint(anchor);
+  const gfx::Rect& display_rect = display.work_area();
+  views::BubbleBorder::ArrowLocation arrow;
+  GetArrowLocationAndUpdateAnchor(display.work_area(),
+                                  min_space_x,
+                                  min_space_y,
+                                  &arrow,
+                                  &anchor);
+  view->SetBubbleArrowLocation(arrow);
+  view->SetAnchorPoint(anchor);
+}
+
 base::LazyInstance<AppListResources>::Leaky g_app_list_resources =
     LAZY_INSTANCE_INITIALIZER;
 
@@ -102,25 +164,24 @@ namespace app_list_controller {
 
 void ShowAppList() {
 #if !defined(USE_AURA)
-  static const wchar_t app_list_id[] = L"ChromeAppList";
-  // TODO(benwells): Remove these constants and orient the view around the
-  // cursor position.
-  static const int default_anchor_x = 500;
-  static const int default_anchor_y = 750;
+  static const wchar_t kAppListId[] = L"ChromeAppList";
 
   // The controller will be owned by the view delegate, and the delegate is
   // owned by the app list view. The app list view manages it's own lifetime.
   app_list::AppListView* view = new app_list::AppListView(
       new AppListViewDelegate(new AppListControllerWin()));
+  gfx::Point cursor = gfx::Screen::GetCursorScreenPoint();
   view->InitAsBubble(
       GetDesktopWindow(),
       g_app_list_resources.Get().pagination_model(),
       NULL,
-      gfx::Point(default_anchor_x, default_anchor_y),
+      cursor,
       views::BubbleBorder::BOTTOM_LEFT);
+
+  UpdateArrowPositionAndAnchorPoint(view);
   view->Show();
   view->GetWidget()->GetTopLevelWidget()->UpdateWindowIcon();
-  ui::win::SetAppIdForWindow(app_list_id,
+  ui::win::SetAppIdForWindow(kAppListId,
       view->GetWidget()->GetTopLevelWidget()->GetNativeWindow());
 #endif
 }

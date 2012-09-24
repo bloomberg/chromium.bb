@@ -62,6 +62,9 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   View* anchor_view() const { return anchor_view_; }
   Widget* anchor_widget() const { return anchor_widget_; }
 
+  // The anchor point is used in the absence of an anchor view.
+  const gfx::Point& anchor_point() const { return anchor_point_; }
+
   BubbleBorder::ArrowLocation arrow_location() const { return arrow_location_; }
   void set_arrow_location(BubbleBorder::ArrowLocation arrow_location) {
     arrow_location_ = arrow_location;
@@ -128,8 +131,8 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   // calling CreateBubble or Show.
   void set_anchor_view(View* anchor_view) { anchor_view_ = anchor_view; }
 
-  // Sets the anchor point used in the absence of an anchor view. This
-  // (or set_anchor_view) must be set before calling CreateBubble or Show.
+  // The anchor point or anchor view must be set before calling CreateBubble or
+  // Show.
   void set_anchor_point(gfx::Point anchor_point) {
     anchor_point_ = anchor_point;
   }

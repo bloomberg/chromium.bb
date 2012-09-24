@@ -41,6 +41,8 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
   void SetBubbleArrowLocation(
       views::BubbleBorder::ArrowLocation arrow_location);
 
+  void SetAnchorPoint(const gfx::Point& anchor_point);
+
   void Close();
 
   void UpdateBounds();
