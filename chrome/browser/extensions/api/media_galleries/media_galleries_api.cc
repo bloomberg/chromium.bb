@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
 #include "base/stl_util.h"
 #include "base/values.h"
@@ -114,7 +115,8 @@ void MediaGalleriesGetMediaFileSystemsFunction::ReturnGalleries(
   std::set<std::string> file_system_names;
   base::ListValue* list = new base::ListValue();
   for (size_t i = 0; i < filesystems.size(); i++) {
-    base::DictionaryValue* file_system_dict_value = new base::DictionaryValue();
+    scoped_ptr<base::DictionaryValue> file_system_dict_value(
+        new base::DictionaryValue());
 
     // Send the file system id so the renderer can create a valid FileSystem
     // object.
@@ -130,7 +132,7 @@ void MediaGalleriesGetMediaFileSystemsFunction::ReturnGalleries(
     file_system_dict_value->SetWithoutPathExpansion(
         "name", Value::CreateStringValue(filesystems[i].name));
 
-    list->Append(file_system_dict_value);
+    list->Append(file_system_dict_value.release());
 
     if (!filesystems[i].path.empty() &&
         MediaGalleriesPermission::HasReadAccess(*GetExtension())) {
