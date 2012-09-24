@@ -512,6 +512,7 @@ void MenuGtk::BuildSubmenuFromModel(ui::MenuModel* model, GtkWidget* menu) {
       // We will populate the submenu on demand when shown.
       g_signal_connect(submenu, "show", G_CALLBACK(OnSubMenuShowThunk), this);
       g_signal_connect(submenu, "hide", G_CALLBACK(OnSubMenuHiddenThunk), this);
+      connect_to_activate = false;
     }
 
     ui::AcceleratorGtk accelerator;
@@ -602,15 +603,6 @@ void MenuGtk::OnMenuItemActivated(GtkWidget* menu_item) {
     return;
 
   ui::MenuModel* model = ModelForMenuItem(GTK_MENU_ITEM(menu_item));
-
-  GtkWidget* submenu = gtk_menu_item_get_submenu(GTK_MENU_ITEM(menu_item));
-  if (submenu) {
-    // We receive activation messages when highlighting a menu that has a
-    // submenu. We build submenus on show, and tear them down on hide, to
-    // allow submenu models to be constructed and destroyed on demand. So,
-    // there's nothing further to do here in that case.
-    return;
-  }
 
   // The activate signal is sent to radio items as they get deselected;
   // ignore it in this case.
@@ -760,13 +752,25 @@ gboolean MenuGtk::OnMenuFocusOut(GtkWidget* widget, GdkEventFocus* event) {
 void MenuGtk::OnSubMenuShow(GtkWidget* submenu) {
   GtkWidget* menu_item = static_cast<GtkWidget*>(
       g_object_get_data(G_OBJECT(submenu), "menu-item"));
-
+  // TODO(mdm): Figure out why this can sometimes be NULL. See bug 131974.
+  CHECK(menu_item);
   // Notify the submenu model that the menu will be shown.
   ui::MenuModel* submenu_model = static_cast<ui::MenuModel*>(
       g_object_get_data(G_OBJECT(menu_item), "submenu-model"));
-  // TODO(mdm): Figure out why this can sometimes be NULL. See bug 131974.
+  // We're extra cautious here, and bail out if the submenu model is NULL. In
+  // some cases we clear it out from a parent menu; we shouldn't ever show the
+  // menu after that, but we play it safe since we're dealing with wacky
+  // injected libraries that toy with our menus. (See comments below.)
   if (!submenu_model)
     return;
+
+  // If the submenu is already built, then return right away. This means we
+  // recently showed this submenu, and have not yet processed the fact that it
+  // was hidden before being shown again.
+  if (g_object_get_data(G_OBJECT(submenu), "submenu-built"))
+    return;
+  g_object_set_data(G_OBJECT(submenu), "submenu-built", GINT_TO_POINTER(1));
+
   submenu_model->MenuWillShow();
 
   // Actually build the submenu and attach it to the parent menu item.
@@ -781,32 +785,65 @@ void MenuGtk::OnSubMenuHidden(GtkWidget* submenu) {
   // Increase the reference count of the old submenu, and schedule it to be
   // deleted later. We get this hide notification before we've processed menu
   // activations, so if we were to delete the submenu now, we might lose the
-  // activation. Note that we disconnect it from the parent menu item below.
+  // activation. This also lets us reuse the menu if it is shown again before
+  // it gets deleted; in that case, OnSubMenuHiddenCallback() just decrements
+  // the reference count again. Note that the delay is just an optimization; we
+  // could use PostTask() and this would still work correctly.
   g_object_ref(G_OBJECT(submenu));
-  MessageLoop::current()->PostTask(
+  MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&MenuGtk::OnSubMenuHiddenCallback, submenu));
-
-  // Build a new submenu, which will be populated when it is next shown.
-  GtkWidget* menu_item = static_cast<GtkWidget*>(
-      g_object_get_data(G_OBJECT(submenu), "menu-item"));
-  submenu = gtk_menu_new();
-  g_object_set_data(G_OBJECT(submenu), "menu-item", menu_item);
-  gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), submenu);
-  g_signal_connect(submenu, "show", G_CALLBACK(OnSubMenuShowThunk), this);
-  g_signal_connect(submenu, "hide", G_CALLBACK(OnSubMenuHiddenThunk), this);
+      base::Bind(&MenuGtk::OnSubMenuHiddenCallback, submenu),
+      base::TimeDelta::FromSeconds(2));
 }
+
+namespace {
+
+// Remove all descendant submenu-model data pointers.
+void RemoveSubMenuModels(GtkWidget* menu_item, void* unused) {
+  if (!GTK_IS_MENU_ITEM(menu_item))
+    return;
+  g_object_steal_data(G_OBJECT(menu_item), "submenu-model");
+  GtkWidget* submenu = gtk_menu_item_get_submenu(GTK_MENU_ITEM(menu_item));
+  if (submenu)
+    gtk_container_foreach(GTK_CONTAINER(submenu), RemoveSubMenuModels, NULL);
+}
+
+}  // namespace
 
 // static
 void MenuGtk::OnSubMenuHiddenCallback(GtkWidget* submenu) {
-  // Notify the submenu model that the menu has been hidden.
-  GtkWidget* menu_item = static_cast<GtkWidget*>(
-      g_object_get_data(G_OBJECT(submenu), "menu-item"));
-  ui::MenuModel* submenu_model = static_cast<ui::MenuModel*>(
-      g_object_get_data(G_OBJECT(menu_item), "submenu-model"));
-  // TODO(mdm): Figure out why this can sometimes be NULL. See bug 124110.
-  if (submenu_model)
-    submenu_model->MenuClosed();
+  if (!gtk_widget_get_visible(submenu)) {
+    // Remove all the children of this menu, clearing out their submenu-model
+    // pointers in case they have pending calls to OnSubMenuHiddenCallback().
+    // (Normally that won't happen: we'd have hidden them first, and so they'd
+    // have already been deleted. But in some cases [e.g. on Ubuntu 12.04],
+    // GTK menu operations may be hooked to allow external applications to
+    // mirror the menu structure, and the hooks may show and hide menus in
+    // order to trigger exactly the kind of dynamic menu building we're doing.
+    // The result is that we see show and hide events in strange orders.)
+    GList* children = gtk_container_get_children(GTK_CONTAINER(submenu));
+    for (GList* child = children; child; child = g_list_next(child)) {
+      RemoveSubMenuModels(GTK_WIDGET(child->data), NULL);
+      gtk_container_remove(GTK_CONTAINER(submenu), GTK_WIDGET(child->data));
+    }
+    g_list_free(children);
+
+    // Clear out the bit that says the menu is built.
+    // We'll rebuild it next time it is shown.
+    g_object_steal_data(G_OBJECT(submenu), "submenu-built");
+
+    // Notify the submenu model that the menu has been hidden. This may cause
+    // it to delete descendant submenu models, which is why we cleared those
+    // pointers out above.
+    GtkWidget* menu_item = static_cast<GtkWidget*>(
+        g_object_get_data(G_OBJECT(submenu), "menu-item"));
+    // TODO(mdm): Figure out why this can sometimes be NULL. See bug 124110.
+    CHECK(menu_item);
+    ui::MenuModel* submenu_model = static_cast<ui::MenuModel*>(
+        g_object_get_data(G_OBJECT(menu_item), "submenu-model"));
+    if (submenu_model)
+      submenu_model->MenuClosed();
+  }
 
   // Remove the reference we grabbed in OnSubMenuHidden() above.
   g_object_unref(G_OBJECT(submenu));
