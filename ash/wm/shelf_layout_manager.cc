@@ -167,7 +167,7 @@ class ShelfLayoutManager::UpdateShelfObserver
 ShelfLayoutManager::ShelfLayoutManager(views::Widget* status)
     : root_window_(Shell::GetPrimaryRootWindow()),
       in_layout_(false),
-      auto_hide_behavior_(SHELF_AUTO_HIDE_BEHAVIOR_NEVER),
+      auto_hide_behavior_(SHELF_AUTO_HIDE_BEHAVIOR_DEFAULT),
       alignment_(SHELF_ALIGNMENT_BOTTOM),
       launcher_(NULL),
       status_(status),
@@ -289,8 +289,8 @@ void ShelfLayoutManager::UpdateVisibilityState() {
         break;
 
       case WORKSPACE_WINDOW_STATE_MAXIMIZED:
-          SetState(auto_hide_behavior_ == SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS ?
-                   AUTO_HIDE : VISIBLE);
+        SetState(auto_hide_behavior_ != SHELF_AUTO_HIDE_BEHAVIOR_NEVER ?
+                 AUTO_HIDE : VISIBLE);
         break;
 
       case WORKSPACE_WINDOW_STATE_WINDOW_OVERLAPS_SHELF:
@@ -489,7 +489,8 @@ ShelfLayoutManager::TargetBounds::TargetBounds() : opacity(0.0f) {}
 gfx::Rect ShelfLayoutManager::GetMaximizedWindowBounds(
     aura::Window* window) {
   gfx::Rect bounds(ScreenAsh::GetDisplayBoundsInParent(window));
-  if (auto_hide_behavior_ == SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS) {
+  if (auto_hide_behavior_ == SHELF_AUTO_HIDE_BEHAVIOR_DEFAULT ||
+      auto_hide_behavior_ == SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS) {
     AdjustBoundsBasedOnAlignment(kAutoHideSize, &bounds);
     return bounds;
   }

@@ -22,8 +22,6 @@ typedef test::AshTestBase ScreenAshTest;
 #if !defined(OS_WIN)
 TEST_F(ScreenAshTest, Bounds) {
   UpdateDisplay("600x600,500x500");
-  Shell::GetInstance()->SetShelfAutoHideBehavior(
-      ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
 
   views::Widget* primary =
       views::Widget::CreateWindowWithBounds(NULL, gfx::Rect(10, 10, 100, 100));
@@ -41,7 +39,7 @@ TEST_F(ScreenAshTest, Bounds) {
                 secondary->GetNativeView()).ToString());
 
   // Unmaximized work area bounds
-  EXPECT_EQ("0,0 600x597",
+  EXPECT_EQ("0,0 600x552",
             ScreenAsh::GetUnmaximizedWorkAreaBoundsInParent(
                 primary->GetNativeView()).ToString());
   EXPECT_EQ("0,0 500x500",
@@ -57,7 +55,7 @@ TEST_F(ScreenAshTest, Bounds) {
                 secondary->GetNativeView()).ToString());
 
   // Work area bounds
-  EXPECT_EQ("0,0 600x597",
+  EXPECT_EQ("0,0 600x552",
             ScreenAsh::GetDisplayWorkAreaBoundsInParent(
                 primary->GetNativeView()).ToString());
   EXPECT_EQ("0,0 500x500",

@@ -303,7 +303,6 @@ TEST_F(ShelfLayoutManagerTest, AutoHide) {
   generator.MoveMouseTo(0, 0);
 
   ShelfLayoutManager* shelf = GetShelfLayoutManager();
-  shelf->SetAutoHideBehavior(ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.bounds = gfx::Rect(0, 0, 200, 200);
@@ -367,7 +366,6 @@ TEST_F(ShelfLayoutManagerTest, VisibleWhenLockScreenShowing) {
   generator.MoveMouseTo(0, 0);
 
   ShelfLayoutManager* shelf = GetShelfLayoutManager();
-  shelf->SetAutoHideBehavior(ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.bounds = gfx::Rect(0, 0, 200, 200);
@@ -428,9 +426,17 @@ TEST_F(ShelfLayoutManagerTest, SetAutoHideBehavior) {
   aura::Window* window = widget->GetNativeWindow();
   gfx::Rect display_bounds(
       gfx::Screen::GetDisplayNearestWindow(window).bounds());
+  EXPECT_EQ(display_bounds.bottom() - ShelfLayoutManager::kAutoHideSize,
+            shelf->GetMaximizedWindowBounds(window).bottom());
+  EXPECT_EQ(ShelfLayoutManager::VISIBLE, shelf->visibility_state());
 
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(display_bounds.bottom() - ShelfLayoutManager::kAutoHideSize,
+            shelf->GetMaximizedWindowBounds(window).bottom());
+
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_DEFAULT);
+  EXPECT_EQ(ShelfLayoutManager::VISIBLE, shelf->visibility_state());
   EXPECT_EQ(display_bounds.bottom() - ShelfLayoutManager::kAutoHideSize,
             shelf->GetMaximizedWindowBounds(window).bottom());
 
@@ -497,7 +503,7 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfVisibleState) {
   Shell* shell = Shell::GetInstance();
   ShelfLayoutManager* shelf = Shell::GetInstance()->shelf();
   shelf->LayoutShelf();
-  shell->SetShelfAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
+  shell->SetShelfAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_DEFAULT);
 
   // Create a normal unmaximized windowm shelf should be visible.
   aura::Window* window = CreateTestWindow();
@@ -524,7 +530,7 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfAutoHideState) {
   Shell* shell = Shell::GetInstance();
   ShelfLayoutManager* shelf = Shell::GetInstance()->shelf();
   shelf->LayoutShelf();
-  shell->SetShelfAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  shell->SetShelfAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_DEFAULT);
 
   // Create a window and show it in maximized state.
   aura::Window* window = CreateTestWindow();
