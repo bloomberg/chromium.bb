@@ -598,7 +598,13 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, History) {
           << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, CrossProcess) {
+// http://crbug.com/152000
+#if defined(OS_WIN)
+#define MAYBE_CrossProcess DISABLED_CrossProcess
+#else
+#define MAYBE_CrossProcess CrossProcess
+#endif
+IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_CrossProcess) {
   LoadExtension(test_data_dir_.AppendASCII("webnavigation").AppendASCII("app"));
   LoadExtension(test_data_dir_.AppendASCII("webnavigation"));
 
