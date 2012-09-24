@@ -615,7 +615,8 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_extra_load_store_instruc
 
   if ((inst.Bits() & 0x00000060) == 0x00000020 /* op2(6:5)=01 */ &&
       (inst.Bits() & 0x00500000) == 0x00500000 /* op1(24:20)=xx1x1 */ &&
-      (inst.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16)=1111 */)
+      (inst.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16)=1111 */ &&
+      (inst.Bits() & 0x01200000) == 0x01000000 /* $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx */)
     return Load2RegisterImm8Op_Ldrh_Rule_75_A1_P154_instance_;
 
   if ((inst.Bits() & 0x00000060) == 0x00000040 /* op2(6:5)=10 */ &&
@@ -635,7 +636,8 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_extra_load_store_instruc
 
   if ((inst.Bits() & 0x00000060) == 0x00000040 /* op2(6:5)=10 */ &&
       (inst.Bits() & 0x00500000) == 0x00400000 /* op1(24:20)=xx1x0 */ &&
-      (inst.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16)=1111 */)
+      (inst.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16)=1111 */ &&
+      (inst.Bits() & 0x01200000) == 0x01000000 /* $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx */)
     return Load2RegisterImm8DoubleOp_Ldrd_Rule_67_A1_P138_instance_;
 
   if ((inst.Bits() & 0x00000060) == 0x00000040 /* op2(6:5)=10 */ &&
@@ -645,7 +647,8 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_extra_load_store_instruc
 
   if ((inst.Bits() & 0x00000060) == 0x00000040 /* op2(6:5)=10 */ &&
       (inst.Bits() & 0x00500000) == 0x00500000 /* op1(24:20)=xx1x1 */ &&
-      (inst.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16)=1111 */)
+      (inst.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16)=1111 */ &&
+      (inst.Bits() & 0x01200000) == 0x01000000 /* $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx */)
     return Load2RegisterImm8Op_ldrsb_Rule_79_A1_162_instance_;
 
   if ((inst.Bits() & 0x00000060) == 0x00000060 /* op2(6:5)=11 */ &&
@@ -669,7 +672,8 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_extra_load_store_instruc
 
   if ((inst.Bits() & 0x00000060) == 0x00000060 /* op2(6:5)=11 */ &&
       (inst.Bits() & 0x00500000) == 0x00500000 /* op1(24:20)=xx1x1 */ &&
-      (inst.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16)=1111 */)
+      (inst.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16)=1111 */ &&
+      (inst.Bits() & 0x01200000) == 0x01000000 /* $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx */)
     return Load2RegisterImm8Op_Ldrsh_Rule_83_A1_P170_instance_;
 
   // Catch any attempt to fall through...

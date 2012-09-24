@@ -1076,14 +1076,10 @@ class BitPattern(BitExpr):
             # this pattern succeeds.
             return 'match'
           else:
-            # Consistent with negation.
-            if mask == pattern.mask:
-              # Matched all bits. pattern matches.
-              return 'match'
-            else:
-              # Only some bits matched. Hence, we can draw no conclusions other
-              # than consistent.
-              return 'consistent'
+            # Consistent with negation. For now, we don't try any harder,
+            # since it is not needed to add rule patterns to decoder table
+            # rows.
+            return 'consistent'
       else:
         # self match on negation.
         negated_self = self.copy()

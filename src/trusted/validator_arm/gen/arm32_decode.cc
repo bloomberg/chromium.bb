@@ -467,12 +467,28 @@ const ClassDecoder& Arm32DecoderState::decode_extra_load_store_instructions(
   }
 
   if ((inst.Bits() & 0x00000060) == 0x00000040 /* op2(6:5)=10 */ &&
-      (inst.Bits() & 0x00500000) == 0x00400000 /* op1(24:20)=xx1x0 */) {
+      (inst.Bits() & 0x00500000) == 0x00400000 /* op1(24:20)=xx1x0 */ &&
+      (inst.Bits() & 0x000F0000) != 0x000F0000 /* Rn(19:16)=~1111 */) {
     return LoadBasedImmedMemoryDouble_instance_;
   }
 
   if ((inst.Bits() & 0x00000060) == 0x00000040 /* op2(6:5)=10 */ &&
-      (inst.Bits() & 0x00500000) == 0x00500000 /* op1(24:20)=xx1x1 */) {
+      (inst.Bits() & 0x00500000) == 0x00400000 /* op1(24:20)=xx1x0 */ &&
+      (inst.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16)=1111 */ &&
+      (inst.Bits() & 0x01200000) == 0x01000000 /* $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx */) {
+    return LoadBasedImmedMemoryDouble_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000060) == 0x00000040 /* op2(6:5)=10 */ &&
+      (inst.Bits() & 0x00500000) == 0x00500000 /* op1(24:20)=xx1x1 */ &&
+      (inst.Bits() & 0x000F0000) != 0x000F0000 /* Rn(19:16)=~1111 */) {
+    return LoadBasedImmedMemory_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000060) == 0x00000040 /* op2(6:5)=10 */ &&
+      (inst.Bits() & 0x00500000) == 0x00500000 /* op1(24:20)=xx1x1 */ &&
+      (inst.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16)=1111 */ &&
+      (inst.Bits() & 0x01200000) == 0x01000000 /* $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx */) {
     return LoadBasedImmedMemory_instance_;
   }
 
@@ -494,7 +510,15 @@ const ClassDecoder& Arm32DecoderState::decode_extra_load_store_instructions(
   }
 
   if ((inst.Bits() & 0x00000020) == 0x00000020 /* op2(6:5)=x1 */ &&
-      (inst.Bits() & 0x00500000) == 0x00500000 /* op1(24:20)=xx1x1 */) {
+      (inst.Bits() & 0x00500000) == 0x00500000 /* op1(24:20)=xx1x1 */ &&
+      (inst.Bits() & 0x000F0000) != 0x000F0000 /* Rn(19:16)=~1111 */) {
+    return LoadBasedImmedMemory_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000020) == 0x00000020 /* op2(6:5)=x1 */ &&
+      (inst.Bits() & 0x00500000) == 0x00500000 /* op1(24:20)=xx1x1 */ &&
+      (inst.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16)=1111 */ &&
+      (inst.Bits() & 0x01200000) == 0x01000000 /* $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx */) {
     return LoadBasedImmedMemory_instance_;
   }
 

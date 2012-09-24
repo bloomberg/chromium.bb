@@ -154,11 +154,11 @@ bool LoadStore2RegisterImm8OpTesterCase3
 }
 
 // Neutral case:
-// inst(6:5)=01 & inst(24:20)=xx1x1 & inst(19:16)=1111
+// inst(6:5)=01 & inst(24:20)=xx1x1 & inst(19:16)=1111 & inst(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
 //    = Load2RegisterImm8Op {'constraints': }
 //
 // Representaive case:
-// op2(6:5)=01 & op1(24:20)=xx1x1 & Rn(19:16)=1111
+// op2(6:5)=01 & op1(24:20)=xx1x1 & Rn(19:16)=1111 & $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
 //    = Load2RegisterImm8Op {constraints: }
 class LoadStore2RegisterImm8OpTesterCase4
     : public LoadStore2RegisterImm8OpTester {
@@ -179,6 +179,7 @@ bool LoadStore2RegisterImm8OpTesterCase4
   if ((inst.Bits() & 0x00000060) != 0x00000020 /* op2(6:5)=~01 */) return false;
   if ((inst.Bits() & 0x00500000) != 0x00500000 /* op1(24:20)=~xx1x1 */) return false;
   if ((inst.Bits() & 0x000F0000) != 0x000F0000 /* Rn(19:16)=~1111 */) return false;
+  if ((inst.Bits() & 0x01200000) != 0x01000000 /* $pattern(31:0)=~xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx */) return false;
 
   // Check other preconditions defined for the base decoder.
   return LoadStore2RegisterImm8OpTester::
@@ -282,11 +283,11 @@ bool LoadStore2RegisterImm8DoubleOpTesterCase7
 }
 
 // Neutral case:
-// inst(6:5)=10 & inst(24:20)=xx1x0 & inst(19:16)=1111
+// inst(6:5)=10 & inst(24:20)=xx1x0 & inst(19:16)=1111 & inst(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
 //    = Load2RegisterImm8DoubleOp {'constraints': }
 //
 // Representaive case:
-// op2(6:5)=10 & op1(24:20)=xx1x0 & Rn(19:16)=1111
+// op2(6:5)=10 & op1(24:20)=xx1x0 & Rn(19:16)=1111 & $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
 //    = Load2RegisterImm8DoubleOp {constraints: }
 class LoadStore2RegisterImm8DoubleOpTesterCase8
     : public LoadStore2RegisterImm8DoubleOpTester {
@@ -307,6 +308,7 @@ bool LoadStore2RegisterImm8DoubleOpTesterCase8
   if ((inst.Bits() & 0x00000060) != 0x00000040 /* op2(6:5)=~10 */) return false;
   if ((inst.Bits() & 0x00500000) != 0x00400000 /* op1(24:20)=~xx1x0 */) return false;
   if ((inst.Bits() & 0x000F0000) != 0x000F0000 /* Rn(19:16)=~1111 */) return false;
+  if ((inst.Bits() & 0x01200000) != 0x01000000 /* $pattern(31:0)=~xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx */) return false;
 
   // Check other preconditions defined for the base decoder.
   return LoadStore2RegisterImm8DoubleOpTester::
@@ -346,11 +348,11 @@ bool LoadStore2RegisterImm8OpTesterCase9
 }
 
 // Neutral case:
-// inst(6:5)=10 & inst(24:20)=xx1x1 & inst(19:16)=1111
+// inst(6:5)=10 & inst(24:20)=xx1x1 & inst(19:16)=1111 & inst(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
 //    = Load2RegisterImm8Op {'constraints': }
 //
 // Representaive case:
-// op2(6:5)=10 & op1(24:20)=xx1x1 & Rn(19:16)=1111
+// op2(6:5)=10 & op1(24:20)=xx1x1 & Rn(19:16)=1111 & $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
 //    = Load2RegisterImm8Op {constraints: }
 class LoadStore2RegisterImm8OpTesterCase10
     : public LoadStore2RegisterImm8OpTester {
@@ -371,6 +373,7 @@ bool LoadStore2RegisterImm8OpTesterCase10
   if ((inst.Bits() & 0x00000060) != 0x00000040 /* op2(6:5)=~10 */) return false;
   if ((inst.Bits() & 0x00500000) != 0x00500000 /* op1(24:20)=~xx1x1 */) return false;
   if ((inst.Bits() & 0x000F0000) != 0x000F0000 /* Rn(19:16)=~1111 */) return false;
+  if ((inst.Bits() & 0x01200000) != 0x01000000 /* $pattern(31:0)=~xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx */) return false;
 
   // Check other preconditions defined for the base decoder.
   return LoadStore2RegisterImm8OpTester::
@@ -505,11 +508,11 @@ bool LoadStore2RegisterImm8OpTesterCase14
 }
 
 // Neutral case:
-// inst(6:5)=11 & inst(24:20)=xx1x1 & inst(19:16)=1111
+// inst(6:5)=11 & inst(24:20)=xx1x1 & inst(19:16)=1111 & inst(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
 //    = Load2RegisterImm8Op {'constraints': }
 //
 // Representaive case:
-// op2(6:5)=11 & op1(24:20)=xx1x1 & Rn(19:16)=1111
+// op2(6:5)=11 & op1(24:20)=xx1x1 & Rn(19:16)=1111 & $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
 //    = Load2RegisterImm8Op {constraints: }
 class LoadStore2RegisterImm8OpTesterCase15
     : public LoadStore2RegisterImm8OpTester {
@@ -530,6 +533,7 @@ bool LoadStore2RegisterImm8OpTesterCase15
   if ((inst.Bits() & 0x00000060) != 0x00000060 /* op2(6:5)=~11 */) return false;
   if ((inst.Bits() & 0x00500000) != 0x00500000 /* op1(24:20)=~xx1x1 */) return false;
   if ((inst.Bits() & 0x000F0000) != 0x000F0000 /* Rn(19:16)=~1111 */) return false;
+  if ((inst.Bits() & 0x01200000) != 0x01000000 /* $pattern(31:0)=~xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx */) return false;
 
   // Check other preconditions defined for the base decoder.
   return LoadStore2RegisterImm8OpTester::
@@ -614,12 +618,12 @@ class Load2RegisterImm8OpTester_Case3
 };
 
 // Neutral case:
-// inst(6:5)=01 & inst(24:20)=xx1x1 & inst(19:16)=1111
+// inst(6:5)=01 & inst(24:20)=xx1x1 & inst(19:16)=1111 & inst(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
 //    = Load2RegisterImm8Op {'constraints': ,
 //     'rule': 'Ldrh_Rule_75_A1_P154'}
 //
 // Representative case:
-// op2(6:5)=01 & op1(24:20)=xx1x1 & Rn(19:16)=1111
+// op2(6:5)=01 & op1(24:20)=xx1x1 & Rn(19:16)=1111 & $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
 //    = Load2RegisterImm8Op {constraints: ,
 //     rule: Ldrh_Rule_75_A1_P154}
 class Load2RegisterImm8OpTester_Case4
@@ -686,12 +690,12 @@ class Load2RegisterImm8DoubleOpTester_Case7
 };
 
 // Neutral case:
-// inst(6:5)=10 & inst(24:20)=xx1x0 & inst(19:16)=1111
+// inst(6:5)=10 & inst(24:20)=xx1x0 & inst(19:16)=1111 & inst(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
 //    = Load2RegisterImm8DoubleOp {'constraints': ,
 //     'rule': 'Ldrd_Rule_67_A1_P138'}
 //
 // Representative case:
-// op2(6:5)=10 & op1(24:20)=xx1x0 & Rn(19:16)=1111
+// op2(6:5)=10 & op1(24:20)=xx1x0 & Rn(19:16)=1111 & $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
 //    = Load2RegisterImm8DoubleOp {constraints: ,
 //     rule: Ldrd_Rule_67_A1_P138}
 class Load2RegisterImm8DoubleOpTester_Case8
@@ -722,12 +726,12 @@ class Load2RegisterImm8OpTester_Case9
 };
 
 // Neutral case:
-// inst(6:5)=10 & inst(24:20)=xx1x1 & inst(19:16)=1111
+// inst(6:5)=10 & inst(24:20)=xx1x1 & inst(19:16)=1111 & inst(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
 //    = Load2RegisterImm8Op {'constraints': ,
 //     'rule': 'ldrsb_Rule_79_A1_162'}
 //
 // Representative case:
-// op2(6:5)=10 & op1(24:20)=xx1x1 & Rn(19:16)=1111
+// op2(6:5)=10 & op1(24:20)=xx1x1 & Rn(19:16)=1111 & $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
 //    = Load2RegisterImm8Op {constraints: ,
 //     rule: ldrsb_Rule_79_A1_162}
 class Load2RegisterImm8OpTester_Case10
@@ -812,12 +816,12 @@ class Load2RegisterImm8OpTester_Case14
 };
 
 // Neutral case:
-// inst(6:5)=11 & inst(24:20)=xx1x1 & inst(19:16)=1111
+// inst(6:5)=11 & inst(24:20)=xx1x1 & inst(19:16)=1111 & inst(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
 //    = Load2RegisterImm8Op {'constraints': ,
 //     'rule': 'Ldrsh_Rule_83_A1_P170'}
 //
 // Representative case:
-// op2(6:5)=11 & op1(24:20)=xx1x1 & Rn(19:16)=1111
+// op2(6:5)=11 & op1(24:20)=xx1x1 & Rn(19:16)=1111 & $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
 //    = Load2RegisterImm8Op {constraints: ,
 //     rule: Ldrsh_Rule_83_A1_P170}
 class Load2RegisterImm8OpTester_Case15
@@ -915,13 +919,13 @@ TEST_F(Arm32DecoderStateTests,
 }
 
 // Neutral case:
-// inst(6:5)=01 & inst(24:20)=xx1x1 & inst(19:16)=1111
+// inst(6:5)=01 & inst(24:20)=xx1x1 & inst(19:16)=1111 & inst(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
 //    = Load2RegisterImm8Op => LoadBasedImmedMemory {'constraints': ,
 //     'pattern': 'cccc0001u1011111ttttiiii1011iiii',
 //     'rule': 'Ldrh_Rule_75_A1_P154'}
 //
 // Representative case:
-// op2(6:5)=01 & op1(24:20)=xx1x1 & Rn(19:16)=1111
+// op2(6:5)=01 & op1(24:20)=xx1x1 & Rn(19:16)=1111 & $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
 //    = Load2RegisterImm8Op => LoadBasedImmedMemory {constraints: ,
 //     pattern: cccc0001u1011111ttttiiii1011iiii,
 //     rule: Ldrh_Rule_75_A1_P154}
@@ -991,13 +995,13 @@ TEST_F(Arm32DecoderStateTests,
 }
 
 // Neutral case:
-// inst(6:5)=10 & inst(24:20)=xx1x0 & inst(19:16)=1111
+// inst(6:5)=10 & inst(24:20)=xx1x0 & inst(19:16)=1111 & inst(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
 //    = Load2RegisterImm8DoubleOp => LoadBasedImmedMemoryDouble {'constraints': ,
 //     'pattern': 'cccc0001u1001111ttttiiii1101iiii',
 //     'rule': 'Ldrd_Rule_67_A1_P138'}
 //
 // Representative case:
-// op2(6:5)=10 & op1(24:20)=xx1x0 & Rn(19:16)=1111
+// op2(6:5)=10 & op1(24:20)=xx1x0 & Rn(19:16)=1111 & $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
 //    = Load2RegisterImm8DoubleOp => LoadBasedImmedMemoryDouble {constraints: ,
 //     pattern: cccc0001u1001111ttttiiii1101iiii,
 //     rule: Ldrd_Rule_67_A1_P138}
@@ -1029,13 +1033,13 @@ TEST_F(Arm32DecoderStateTests,
 }
 
 // Neutral case:
-// inst(6:5)=10 & inst(24:20)=xx1x1 & inst(19:16)=1111
+// inst(6:5)=10 & inst(24:20)=xx1x1 & inst(19:16)=1111 & inst(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
 //    = Load2RegisterImm8Op => LoadBasedImmedMemory {'constraints': ,
 //     'pattern': 'cccc0001u1011111ttttiiii1101iiii',
 //     'rule': 'ldrsb_Rule_79_A1_162'}
 //
 // Representative case:
-// op2(6:5)=10 & op1(24:20)=xx1x1 & Rn(19:16)=1111
+// op2(6:5)=10 & op1(24:20)=xx1x1 & Rn(19:16)=1111 & $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
 //    = Load2RegisterImm8Op => LoadBasedImmedMemory {constraints: ,
 //     pattern: cccc0001u1011111ttttiiii1101iiii,
 //     rule: ldrsb_Rule_79_A1_162}
@@ -1124,13 +1128,13 @@ TEST_F(Arm32DecoderStateTests,
 }
 
 // Neutral case:
-// inst(6:5)=11 & inst(24:20)=xx1x1 & inst(19:16)=1111
+// inst(6:5)=11 & inst(24:20)=xx1x1 & inst(19:16)=1111 & inst(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
 //    = Load2RegisterImm8Op => LoadBasedImmedMemory {'constraints': ,
 //     'pattern': 'cccc0001u1011111ttttiiii1111iiii',
 //     'rule': 'Ldrsh_Rule_83_A1_P170'}
 //
 // Representative case:
-// op2(6:5)=11 & op1(24:20)=xx1x1 & Rn(19:16)=1111
+// op2(6:5)=11 & op1(24:20)=xx1x1 & Rn(19:16)=1111 & $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
 //    = Load2RegisterImm8Op => LoadBasedImmedMemory {constraints: ,
 //     pattern: cccc0001u1011111ttttiiii1111iiii,
 //     rule: Ldrsh_Rule_83_A1_P170}
