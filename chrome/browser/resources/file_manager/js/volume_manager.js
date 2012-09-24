@@ -289,14 +289,13 @@ VolumeManager.prototype.mountGData = function(successCallback, errorCallback) {
 };
 
 /**
- * @param {string} fullPath Path to the archive file.
+ * @param {string} fileUrl File url to the archive file.
  * @param {Function} successCallback Success callback.
  * @param {Function} errorCallback Error callback.
  */
-VolumeManager.prototype.mountArchive = function(fullPath, successCallback,
+VolumeManager.prototype.mountArchive = function(fileUrl, successCallback,
                                                 errorCallback) {
-  this.mount_(util.makeFilesystemUrl(fullPath),
-      'file', successCallback, errorCallback);
+  this.mount_(fileUrl, 'file', successCallback, errorCallback);
 };
 
 /**

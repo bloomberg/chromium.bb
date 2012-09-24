@@ -333,21 +333,18 @@ FileTasks.prototype.mountArchives_ = function(urls) {
 
   fm.resolveSelectResults_(urls, function(urls) {
     for (var index = 0; index < urls.length; ++index) {
-      var path = util.extractFilePath(urls[index]);
-      if (!path)
-        continue;
-
-      fm.volumeManager_.mountArchive(path, function(mountPath) {
+      fm.volumeManager_.mountArchive(urls[index], function(mountPath) {
         console.log('Mounted at: ', mountPath);
         tracker.stop();
         if (!tracker.hasChanged)
           fm.directoryModel_.changeDirectory(mountPath);
-      }, function(error) {
+      }, function(url, error) {
+        var path = util.extractFilePath(url);
         tracker.stop();
         var namePos = path.lastIndexOf('/');
         fm.alert.show(strf('ARCHIVE_MOUNT_FAILED',
                            path.substr(namePos + 1), error));
-      });
+      }.bind(null, urls[index]));
     }
   });
 };
