@@ -6,23 +6,12 @@
 
 #include <android/bitmap.h>
 
-#include "base/android/jni_android.h"
 #include "base/logging.h"
+#include "jni/BitmapHelper_jni.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/size.h"
 
 using base::android::AttachCurrentThread;
-using base::android::GetClass;
-using base::android::GetMethodID;
-using base::android::GetStaticFieldID;
-using base::android::GetStaticMethodID;
-using base::android::ScopedJavaLocalRef;
-
-namespace {
-static jclass g_AndroidBitmap_clazz = NULL;
-static jmethodID g_AndroidBitmap_createBitmap_method = NULL;
-static jobject g_BitmapConfig_ARGB8888 = NULL;
-}  // anonymous namespace
 
 namespace gfx {
 
@@ -32,6 +21,13 @@ JavaBitmap::JavaBitmap(jobject bitmap)
   int err = AndroidBitmap_lockPixels(AttachCurrentThread(), bitmap_, &pixels_);
   DCHECK(!err);
   DCHECK(pixels_);
+
+  AndroidBitmapInfo info;
+  err = AndroidBitmap_getInfo(AttachCurrentThread(), bitmap_, &info);
+  DCHECK(!err);
+  size_ = gfx::Size(info.width, info.height);
+  format_ = info.format;
+  stride_ = info.stride;
 }
 
 JavaBitmap::~JavaBitmap() {
@@ -39,48 +35,13 @@ JavaBitmap::~JavaBitmap() {
   DCHECK(!err);
 }
 
-gfx::Size JavaBitmap::Size() const {
-  AndroidBitmapInfo info;
-  int err = AndroidBitmap_getInfo(AttachCurrentThread(), bitmap_, &info);
-  DCHECK(!err);
-  return gfx::Size(info.width, info.height);
-}
-
-int JavaBitmap::Format() const {
-  AndroidBitmapInfo info;
-  int err = AndroidBitmap_getInfo(AttachCurrentThread(), bitmap_, &info);
-  DCHECK(!err);
-  return info.format;
-}
-
-uint32_t JavaBitmap::Stride() const {
-  AndroidBitmapInfo info;
-  int err = AndroidBitmap_getInfo(AttachCurrentThread(), bitmap_, &info);
-  DCHECK(!err);
-  return info.stride;
-}
-
 void RegisterBitmapAndroid(JNIEnv* env) {
-  g_AndroidBitmap_clazz = reinterpret_cast<jclass>(env->NewGlobalRef(
-      base::android::GetUnscopedClass(env, "android/graphics/Bitmap")));
-  ScopedJavaLocalRef<jclass> bitmapConfig_clazz = base::android::GetClass(
-      env, "android/graphics/Bitmap$Config");
-  g_AndroidBitmap_createBitmap_method = GetStaticMethodID(env,
-      g_AndroidBitmap_clazz, "createBitmap",
-      "(IILandroid/graphics/Bitmap$Config;)Landroid/graphics/Bitmap;");
-  jfieldID argb_8888_id = GetStaticFieldID(env, bitmapConfig_clazz, "ARGB_8888",
-      "Landroid/graphics/Bitmap$Config;");
-  g_BitmapConfig_ARGB8888 = reinterpret_cast<jobject>(env->NewGlobalRef(
-      env->GetStaticObjectField(bitmapConfig_clazz.obj(), argb_8888_id)));
+  ui::RegisterNativesImpl(env);
 }
 
 ScopedJavaLocalRef<jobject> CreateJavaBitmap(const gfx::Size& size) {
-  DCHECK(g_AndroidBitmap_clazz);
-  JNIEnv* env = AttachCurrentThread();
-  jobject bitmap_object = env->CallStaticObjectMethod(g_AndroidBitmap_clazz,
-        g_AndroidBitmap_createBitmap_method, size.width(), size.height(),
-        g_BitmapConfig_ARGB8888);
-  return ScopedJavaLocalRef<jobject>(env, bitmap_object);
+  return ui::Java_BitmapHelper_createBitmap(AttachCurrentThread(),
+      size.width(), size.height());
 }
 
 ScopedJavaLocalRef<jobject> ConvertToJavaBitmap(const SkBitmap* skbitmap) {
@@ -96,6 +57,37 @@ ScopedJavaLocalRef<jobject> ConvertToJavaBitmap(const SkBitmap* skbitmap) {
   memcpy(dst_pixels, src_pixels, skbitmap->getSize());
 
   return jbitmap;
+}
+
+static ScopedJavaLocalRef<jobject> CreateJavaBitmapFromResource(
+    const char* name) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> jname(env, env->NewStringUTF(name));
+  return ui::Java_BitmapHelper_decodeDrawableResource(env, jname.obj());
+}
+
+static SkBitmap ConvertToSkBitmap(ScopedJavaLocalRef<jobject> jbitmap) {
+  JavaBitmap src_lock(jbitmap.obj());
+  DCHECK_EQ(src_lock.format(), ANDROID_BITMAP_FORMAT_RGBA_8888);
+
+  gfx::Size src_size = src_lock.size();
+
+  SkBitmap skbitmap;
+  skbitmap.setConfig(SkBitmap::kARGB_8888_Config,
+      src_size.width(), src_size.height(), src_lock.stride());
+  skbitmap.allocPixels();
+  SkAutoLockPixels dst_lock(skbitmap);
+
+  void* src_pixels = src_lock.pixels();
+  void* dst_pixels = skbitmap.getPixels();
+
+  memcpy(dst_pixels, src_pixels, skbitmap.getSize());
+
+  return skbitmap;
+}
+
+SkBitmap CreateSkBitmapFromResource(const char* name) {
+  return ConvertToSkBitmap(CreateJavaBitmapFromResource(name));
 }
 
 }  //  namespace gfx

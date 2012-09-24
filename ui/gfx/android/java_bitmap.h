@@ -20,15 +20,18 @@ UI_EXPORT class JavaBitmap {
   explicit JavaBitmap(jobject bitmap);
   ~JavaBitmap();
 
-  void* pixels() { return pixels_; }
-  gfx::Size Size() const;
+  inline void* pixels() { return pixels_; }
+  inline const gfx::Size& size() const { return size_; }
   // Formats are in android/bitmap.h; e.g. ANDROID_BITMAP_FORMAT_RGBA_8888
-  int Format() const;
-  uint32_t Stride() const;
+  inline int format() const { return format_; }
+  inline uint32_t stride() const { return stride_; }
 
  private:
   jobject bitmap_;
   void* pixels_;
+  gfx::Size size_;
+  int format_;
+  uint32_t stride_;
 
   DISALLOW_COPY_AND_ASSIGN(JavaBitmap);
 };
@@ -38,6 +41,8 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaBitmap(
 
 base::android::ScopedJavaLocalRef<jobject> ConvertToJavaBitmap(
     const SkBitmap* skbitmap);
+
+SkBitmap CreateSkBitmapFromResource(const char* name);
 
 }  // namespace gfx
 
