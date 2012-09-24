@@ -205,6 +205,10 @@ void TabStripModel::ReplaceNavigationControllerAt(
 
 TabContents* TabStripModel::DiscardTabContentsAt(int index) {
   DCHECK(ContainsIndex(index));
+  // Do not discard active tab.
+  if (active_index() == index)
+    return NULL;
+
   TabContents* null_contents = TabContents::Factory::CreateTabContents(
       WebContents::Create(profile(),
                           NULL /* site_instance */,

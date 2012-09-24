@@ -230,8 +230,8 @@ bool OomPriorityManager::DiscardTabById(int64 target_web_contents_id) {
     Browser* browser = *browser_iterator;
     TabStripModel* model = browser->tab_strip_model();
     for (int idx = 0; idx < model->count(); idx++) {
-      // Can't discard tabs that are already discarded.
-      if (model->IsTabDiscarded(idx))
+      // Can't discard tabs that are already discarded or active.
+      if (model->IsTabDiscarded(idx) || (model->active_index() == idx))
         continue;
       WebContents* web_contents = model->GetTabContentsAt(idx)->web_contents();
       int64 web_contents_id = IdFromTabContents(web_contents);

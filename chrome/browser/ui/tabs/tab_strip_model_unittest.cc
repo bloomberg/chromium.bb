@@ -2205,12 +2205,11 @@ TEST_F(TabStripModelTest, DiscardTabContentsAt) {
   EXPECT_FALSE(tabstrip.IsTabDiscarded(0));
   EXPECT_FALSE(tabstrip.IsTabDiscarded(1));
 
-  // Discarding the active tab should not crash.
-  TabContents* null_contents3 = tabstrip.DiscardTabContentsAt(0);
+  // Don't discard active tab.
+  tabstrip.DiscardTabContentsAt(0);
   ASSERT_EQ(2, tabstrip.count());
-  EXPECT_TRUE(tabstrip.IsTabDiscarded(0));
+  EXPECT_FALSE(tabstrip.IsTabDiscarded(0));
   EXPECT_FALSE(tabstrip.IsTabDiscarded(1));
-  ASSERT_EQ(null_contents3, tabstrip.GetTabContentsAt(0));
 
   tabstrip.CloseAllTabs();
 }
