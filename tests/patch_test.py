@@ -82,13 +82,13 @@ class PatchTest(unittest.TestCase):
     p = patch.FilePatchDiff('git_cl/git-cl', GIT.MODE_EXE, [])
     self._check_patch(
         p, 'git_cl/git-cl', GIT.MODE_EXE, is_git_diff=True, patchlevel=1,
-        svn_properties=[('svn:executable', '*')], nb_hunks=0)
+        svn_properties=[('svn:executable', '.')], nb_hunks=0)
 
   def testFilePatchDiffHeaderModeIndex(self):
     p = patch.FilePatchDiff('git_cl/git-cl', GIT.MODE_EXE_JUNK, [])
     self._check_patch(
         p, 'git_cl/git-cl', GIT.MODE_EXE_JUNK, is_git_diff=True, patchlevel=1,
-        svn_properties=[('svn:executable', '*')], nb_hunks=0)
+        svn_properties=[('svn:executable', '.')], nb_hunks=0)
 
   def testFilePatchDiffHeaderNotExecutable(self):
     p = patch.FilePatchDiff(
@@ -332,7 +332,7 @@ class PatchTest(unittest.TestCase):
         is_new=True,
         is_git_diff=True,
         patchlevel=1,
-        svn_properties=[('svn:executable', '*')],
+        svn_properties=[('svn:executable', '.')],
         nb_hunks=1)
 
   def testGitNewMode(self):

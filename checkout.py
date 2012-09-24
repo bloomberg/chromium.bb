@@ -366,9 +366,12 @@ class SvnCheckout(CheckoutBase, SvnMixIn):
             if fnmatch.fnmatch(p.filename, prop):
               for value in values.split(';'):
                 if '=' not in value:
-                  params = [value, '*']
+                  params = [value, '.']
                 else:
                   params = value.split('=', 1)
+                if params[1] == '*':
+                  # Works around crbug.com/150960 on Windows.
+                  params[1] = '.'
                 stdout += self._check_output_svn(
                     ['propset'] + params + [p.filename], credentials=False)
         for post in post_processors:

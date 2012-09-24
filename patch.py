@@ -405,7 +405,7 @@ class FilePatchDiff(FilePatchBase):
       mode = match.group(2)
       # Only look at owner ACL for executable.
       if bool(int(mode[4]) & 1):
-        self.svn_properties.append(('svn:executable', '*'))
+        self.svn_properties.append(('svn:executable', '.'))
       elif not self.source_filename and self.is_new:
         # It's a new file, not from a rename/copy, then there's no property to
         # delete.
