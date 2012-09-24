@@ -7,6 +7,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/public/browser/notification_service.h"
@@ -25,10 +26,18 @@ SessionTabHelper::~SessionTabHelper() {
 void SessionTabHelper::SetWindowID(const SessionID& id) {
   window_id_ = id;
 
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_TAB_PARENTED,
-      content::Source<content::WebContents>(web_contents()),
-      content::NotificationService::NoDetails());
+  // TODO(avi): Right now this needs to only fire when a WebContents is a tab,
+  // otherwise things crash <http://crbug.com/151794>. Why? What is the meaning
+  // of "TAB_PARENTED"? Perhaps something else ought to fire this notification?
+  // Perhaps TabStripModel? Who fires the other NOTIFICATION_TAB_*
+  // notifications?
+  TabContents* tab = TabContents::FromWebContents(web_contents());
+  if (tab) {
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_TAB_PARENTED,
+        content::Source<content::WebContents>(web_contents()),
+        content::NotificationService::NoDetails());
+  }
 
   // Extension code in the renderer holds the ID of the window that hosts it.
   // Notify it that the window ID changed.
