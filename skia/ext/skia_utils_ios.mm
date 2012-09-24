@@ -47,6 +47,12 @@ SkBitmap UIImageToSkBitmap(UIImage* image, CGSize size, bool is_opaque) {
   if (!context)
     return bitmap;
 
+  // We need to invert the y-axis of the canvas so that Core Graphics drawing
+  // happens right-side up. Skia has an upper-left origin and CG has a lower-
+  // left one.
+  CGContextScaleCTM(context, 1.0, -1.0);
+  CGContextTranslateCTM(context, 0, -size.height);
+
   // UIGraphicsPushContext be called from the main thread.
   // TODO(rohitrao): We can use CG to make this thread safe, but the mac code
   // calls setCurrentContext, so it's similarly limited to the main thread.

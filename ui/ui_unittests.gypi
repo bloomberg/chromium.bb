@@ -65,6 +65,7 @@
         'gfx/image/image_unittest.cc',
         'gfx/image/image_unittest_util.cc',
         'gfx/image/image_unittest_util.h',
+        'gfx/image/image_unittest_util_ios.mm',
         'gfx/image/image_unittest_util_mac.mm',
         'gfx/insets_unittest.cc',
       ],
