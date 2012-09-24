@@ -495,47 +495,62 @@ class UnpredictableUncondDecoder : UnsafeUncondDecoder
 #         if ArchVersion() < 6 && ((dhi == n) || (dlo == n)) then Unpredictable.
 #       Revisit if we want to support chips before v6.
 +-- multiply_and_multiply_accumulate (See Section A5.2.5)
+*MUL Binary3RegisterOpAltA => Defs16To19CondsDontCareRdRmRnNotPc
+   { cond(31:28), S(20), Rd(19:16), Rm(11:8), Rn(3:0) }
+   setflags := S=1;
+   defs := {Rd, NZCV if setflags else None};
+   safety := Pc in {Rd, Rn, Rm} => UNPREDICTABLE &            # ARM
+             (ArchVersion() < 6 & Rd == Rn) => UNPREDICTABLE;
+   uses := {Rm, Rn};
+*MLS Binary4RegisterDualOp => Defs16To19CondsDontCareRdRaRmRnNotPc
+   { cond(31:28), Rd(19:16), Ra(15:12), Rm(11:8), Rn(3:0) }
+   defs := {Rd};
+   safety := Pc in {Rd, Rn, Rm, Ra} => UNPREDICTABLE;         # ARM
+   uses := {Rn, Rm, Ra};
+   arch := v6T2;
+*MLA Binary4RegisterDualOp => Defs16To19CondsDontCareRdRaRmRnNotPc
+   { cond(31:28), S(20), Rd(19:16), Ra(15:12), Rm(11:8), Rn(3:0) }
+   setflags := S=1;
+   defs := {Rd, NZCV if setflags else None};
+   safety := Pc in {Rd, Rn, Rm, Ra} => UNPREDICTABLE &        # ARM
+             (ArchVersion() < 6 & Rd == Rn) => UNPREDICTABLE;
+   uses := {Rn, Rm, Ra};
+*UMAAL Binary4RegisterDualResult => Defs12To19CondsDontCareRdRmRnNotPc
+   { cond(31:28), RdHi(19:16), RdLo(15:12), Rm(11:8), Rn(3:0) }
+   defs := {RdLo, RdHi};
+   safety := Pc in {RdLo, RdHi, Rn, Rm} => UNPREDICTABLE &     # ARM
+             RdHi == RdLo => UNPREDICTABLE;
+   uses := {RdLo, RdHi, Rn, Rm};
+*MULL Binary4RegisterDualResult => Defs12To19CondsDontCareRdRmRnNotPc
+   { cond(31:28), S(20), RdHi(19:16), RdLo(15:12), Rm(11:8), Rn(3:0) }
+   setflags := S=1;
+   defs := {RdLo, RdHi, NZCV if setflags else None};
+   safety := Pc in {RdLo, RdHi, Rn, Rm} => UNPREDICTABLE &     # ARM
+             RdHi == RdLo => UNPREDICTABLE &
+             (ArchVersion() < 6 & (RdHi == Rn | RdLo == Rn)) => UNPREDICTABLE;
+   uses := {Rn, Rm};
+*MLAL Binary4RegisterDualResult => Defs12To19CondsDontCareRdRmRnNotPc
+   { cond(31:28), S(20), RdHi(19:16), RdLo(15:12), Rm(11:8), Rn(3:0) }
+   setflags := S=1;
+   defs := {RdLo, RdHi, NZCV if setflags else None};
+   safety := Pc in {RdLo, RdHi, Rn, Rm} => UNPREDICTABLE &     # ARM
+             RdHi == RdLo => UNPREDICTABLE &
+             (ArchVersion() < 6 & (RdHi == Rn | RdLo == Rn)) => UNPREDICTABLE;
+   uses := {RdLo, RdHi, Rn, Rm};
++--
 | op(23:20)
-| 000x      = Binary3RegisterOpAltA
-                 => Defs16To19CondsDontCareRdRmRnNotPc
-                 Mul_Rule_105_A1_P212
-                 cccc0000000sdddd0000mmmm1001nnnn RegsNotPc
-| 001x      = Binary4RegisterDualOp
-                 => Defs16To19CondsDontCareRdRaRmRnNotPc
-                 Mla_Rule_94_A1_P190
-                 cccc0000001sddddaaaammmm1001nnnn RegsNotPc
-| 0100      = Binary4RegisterDualResult
-                 => Defs12To19CondsDontCareRdRmRnNotPc
-                 Umaal_Rule_244_A1_P482
-                 cccc00000100hhhhllllmmmm1001nnnn RegsNotPc (v6)
-| 0101      = UndefinedCondDecoder
-                 => Undefined
-                 Undefined_A5_2_5_0101
-                 cccc00000101xxxxxxxxxxxx1001xxxx
-| 0110      = Binary4RegisterDualOp
-                 => Defs16To19CondsDontCareRdRaRmRnNotPc
-                 Mls_Rule_95_A1_P192
-                 cccc00000110ddddaaaammmm1001nnnn RegsNotPc (v6T2)
-| 0111      = UndefinedCondDecoder
-                 => Undefined
-                 Undefined_A5_2_5_0111
-                 cccc00000111xxxxxxxxxxxx1001xxxx
-| 100x      = Binary4RegisterDualResult
-                 => Defs12To19CondsDontCareRdRmRnNotPc
-                 Umull_Rule_246_A1_P486
-                 cccc0000100shhhhllllmmmm1001nnnn RegsNotPc
-| 101x      = Binary4RegisterDualResult
-                 => Defs12To19CondsDontCareRdRmRnNotPc
-                 Umlal_Rule_245_A1_P484
-                 cccc0000101shhhhllllmmmm1001nnnn RegsNotPc
-| 110x      = Binary4RegisterDualResult
-                 => Defs12To19CondsDontCareRdRmRnNotPc
-                 Smull_Rule_179_A1_P356
-                 cccc0000110shhhhllllmmmm1001nnnn RegsNotPc
-| 111x      = Binary4RegisterDualResult
-                 => Defs12To19CondsDontCareRdRmRnNotPc
-                 Smlal_Rule_168_A1_P334
-                 cccc0000111shhhhllllmmmm1001nnnn RegsNotPc
+| 000x      = *MUL pattern := cccc0000000sdddd0000mmmm1001nnnn; rule := MUL_A1;
+| 001x      = *MLA pattern := cccc0000001sddddaaaammmm1001nnnn; rule := MLA_A1;
+| 0100      = *UMAAL pattern := cccc00000100hhhhllllmmmm1001nnnn; rule := UMAAL_A1;
+| 0101      = UndefinedCondDecoder => Undefined # No rule defined in table.
+              pattern := cccc00000101xxxxxxxxxxxx1001xxxx;
+| 0110      = *MLS pattern := cccc00000110ddddaaaammmm1001nnnn; rule := MLS_A1;
+| 0111      = UndefinedCondDecoder => Undefined # No rule defined in table.
+              pattern := cccc00000111xxxxxxxxxxxx1001xxxx;
+| 100x      = *MULL pattern := cccc0000100shhhhllllmmmm1001nnnn; rule := UMULL_A1;
+| 101x      = *MLAL pattern := cccc0000101shhhhllllmmmm1001nnnn; rule := UMLAL_A1;
+| 110x      = *MULL pattern := cccc0000110shhhhllllmmmm1001nnnn; rule := SMULL_A1;
+| 111x      = *MLAL pattern := cccc0000111shhhhllllmmmm1001nnnn; rule := SMLAL_A1;
 +--
 
 # None of the instructions in the following table set NZCV flags,

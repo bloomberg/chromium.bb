@@ -41,6 +41,14 @@ namespace nacl_arm_dec {
 
 class RegisterList;
 
+// Defines the architecture version of the ARM processor. Currently assumes
+// always 7.
+// TODO(karl): Generalize this to handle multiple versions, once we know how
+//             to do this.
+inline uint32_t ArchVersion() {
+  return 7;
+}
+
 // A (POD) value class that names a single register.  We could use a typedef
 // for this, but it introduces some ambiguity problems because of the
 // implicit conversion to/from int.

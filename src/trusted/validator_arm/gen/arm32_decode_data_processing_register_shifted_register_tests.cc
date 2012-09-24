@@ -66,7 +66,7 @@ bool Binary3RegisterShiftedTestTesterCase0
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Binary3RegisterShiftedTestTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x00070000) >> 16)))) || (((15) == ((inst.Bits() & 0x00000007)))) || (((15) == (((inst.Bits() & 0x00000700) >> 8))))) /* Pc in {Rn,Rm,Rs} => UNPREDICTABLE */);
+  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == ((inst.Bits() & 0x0000000F)))) || (((15) == (((inst.Bits() & 0x00000F00) >> 8))))) /* Pc in {Rn,Rm,Rs} => UNPREDICTABLE */);
   return true;
 }
 
@@ -110,7 +110,7 @@ bool Binary3RegisterShiftedTestTesterCase1
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Binary3RegisterShiftedTestTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x00070000) >> 16)))) || (((15) == ((inst.Bits() & 0x00000007)))) || (((15) == (((inst.Bits() & 0x00000700) >> 8))))) /* Pc in {Rn,Rm,Rs} => UNPREDICTABLE */);
+  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == ((inst.Bits() & 0x0000000F)))) || (((15) == (((inst.Bits() & 0x00000F00) >> 8))))) /* Pc in {Rn,Rm,Rs} => UNPREDICTABLE */);
   return true;
 }
 
@@ -154,7 +154,7 @@ bool Binary3RegisterShiftedTestTesterCase2
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Binary3RegisterShiftedTestTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x00070000) >> 16)))) || (((15) == ((inst.Bits() & 0x00000007)))) || (((15) == (((inst.Bits() & 0x00000700) >> 8))))) /* Pc in {Rn,Rm,Rs} => UNPREDICTABLE */);
+  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == ((inst.Bits() & 0x0000000F)))) || (((15) == (((inst.Bits() & 0x00000F00) >> 8))))) /* Pc in {Rn,Rm,Rs} => UNPREDICTABLE */);
   return true;
 }
 
@@ -198,7 +198,7 @@ bool Binary3RegisterShiftedTestTesterCase3
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Binary3RegisterShiftedTestTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x00070000) >> 16)))) || (((15) == ((inst.Bits() & 0x00000007)))) || (((15) == (((inst.Bits() & 0x00000700) >> 8))))) /* Pc in {Rn,Rm,Rs} => UNPREDICTABLE */);
+  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == ((inst.Bits() & 0x0000000F)))) || (((15) == (((inst.Bits() & 0x00000F00) >> 8))))) /* Pc in {Rn,Rm,Rs} => UNPREDICTABLE */);
   return true;
 }
 
@@ -241,7 +241,7 @@ bool Binary4RegisterShiftedOpTesterCase4
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Binary4RegisterShiftedOpTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x00070000) >> 16)))) || (((15) == (((inst.Bits() & 0x00007000) >> 12)))) || (((15) == (((inst.Bits() & 0x00000700) >> 8)))) || (((15) == ((inst.Bits() & 0x00000007))))) /* Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE */);
+  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == (((inst.Bits() & 0x00000F00) >> 8)))) || (((15) == ((inst.Bits() & 0x0000000F))))) /* Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE */);
   return true;
 }
 
@@ -284,7 +284,7 @@ bool Binary4RegisterShiftedOpTesterCase5
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Binary4RegisterShiftedOpTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x00070000) >> 16)))) || (((15) == (((inst.Bits() & 0x00007000) >> 12)))) || (((15) == (((inst.Bits() & 0x00000700) >> 8)))) || (((15) == ((inst.Bits() & 0x00000007))))) /* Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE */);
+  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == (((inst.Bits() & 0x00000F00) >> 8)))) || (((15) == ((inst.Bits() & 0x0000000F))))) /* Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE */);
   return true;
 }
 
@@ -327,7 +327,7 @@ bool Binary4RegisterShiftedOpTesterCase6
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Binary4RegisterShiftedOpTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x00070000) >> 16)))) || (((15) == (((inst.Bits() & 0x00007000) >> 12)))) || (((15) == (((inst.Bits() & 0x00000700) >> 8)))) || (((15) == ((inst.Bits() & 0x00000007))))) /* Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE */);
+  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == (((inst.Bits() & 0x00000F00) >> 8)))) || (((15) == ((inst.Bits() & 0x0000000F))))) /* Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE */);
   return true;
 }
 
@@ -370,7 +370,7 @@ bool Binary4RegisterShiftedOpTesterCase7
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Binary4RegisterShiftedOpTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x00070000) >> 16)))) || (((15) == (((inst.Bits() & 0x00007000) >> 12)))) || (((15) == (((inst.Bits() & 0x00000700) >> 8)))) || (((15) == ((inst.Bits() & 0x00000007))))) /* Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE */);
+  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == (((inst.Bits() & 0x00000F00) >> 8)))) || (((15) == ((inst.Bits() & 0x0000000F))))) /* Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE */);
   return true;
 }
 
@@ -413,7 +413,7 @@ bool Binary4RegisterShiftedOpTesterCase8
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Binary4RegisterShiftedOpTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x00070000) >> 16)))) || (((15) == (((inst.Bits() & 0x00007000) >> 12)))) || (((15) == (((inst.Bits() & 0x00000700) >> 8)))) || (((15) == ((inst.Bits() & 0x00000007))))) /* Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE */);
+  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == (((inst.Bits() & 0x00000F00) >> 8)))) || (((15) == ((inst.Bits() & 0x0000000F))))) /* Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE */);
   return true;
 }
 
@@ -456,7 +456,7 @@ bool Binary4RegisterShiftedOpTesterCase9
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Binary4RegisterShiftedOpTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x00070000) >> 16)))) || (((15) == (((inst.Bits() & 0x00007000) >> 12)))) || (((15) == (((inst.Bits() & 0x00000700) >> 8)))) || (((15) == ((inst.Bits() & 0x00000007))))) /* Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE */);
+  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == (((inst.Bits() & 0x00000F00) >> 8)))) || (((15) == ((inst.Bits() & 0x0000000F))))) /* Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE */);
   return true;
 }
 
@@ -499,7 +499,7 @@ bool Binary4RegisterShiftedOpTesterCase10
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Binary4RegisterShiftedOpTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x00070000) >> 16)))) || (((15) == (((inst.Bits() & 0x00007000) >> 12)))) || (((15) == (((inst.Bits() & 0x00000700) >> 8)))) || (((15) == ((inst.Bits() & 0x00000007))))) /* Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE */);
+  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == (((inst.Bits() & 0x00000F00) >> 8)))) || (((15) == ((inst.Bits() & 0x0000000F))))) /* Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE */);
   return true;
 }
 
@@ -542,7 +542,7 @@ bool Binary4RegisterShiftedOpTesterCase11
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Binary4RegisterShiftedOpTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x00070000) >> 16)))) || (((15) == (((inst.Bits() & 0x00007000) >> 12)))) || (((15) == (((inst.Bits() & 0x00000700) >> 8)))) || (((15) == ((inst.Bits() & 0x00000007))))) /* Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE */);
+  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == (((inst.Bits() & 0x00000F00) >> 8)))) || (((15) == ((inst.Bits() & 0x0000000F))))) /* Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE */);
   return true;
 }
 
@@ -585,7 +585,7 @@ bool Binary4RegisterShiftedOpTesterCase12
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Binary4RegisterShiftedOpTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x00070000) >> 16)))) || (((15) == (((inst.Bits() & 0x00007000) >> 12)))) || (((15) == (((inst.Bits() & 0x00000700) >> 8)))) || (((15) == ((inst.Bits() & 0x00000007))))) /* Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE */);
+  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == (((inst.Bits() & 0x00000F00) >> 8)))) || (((15) == ((inst.Bits() & 0x0000000F))))) /* Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE */);
   return true;
 }
 
@@ -630,7 +630,7 @@ bool Binary3RegisterOpTesterCase13
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Binary3RegisterOpTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x00007000) >> 12)))) || (((15) == ((inst.Bits() & 0x00000007)))) || (((15) == (((inst.Bits() & 0x00000700) >> 8))))) /* Pc in {Rd,Rn,Rm} => UNPREDICTABLE */);
+  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == ((inst.Bits() & 0x0000000F)))) || (((15) == (((inst.Bits() & 0x00000F00) >> 8))))) /* Pc in {Rd,Rn,Rm} => UNPREDICTABLE */);
   return true;
 }
 
@@ -675,7 +675,7 @@ bool Binary3RegisterOpTesterCase14
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Binary3RegisterOpTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x00007000) >> 12)))) || (((15) == ((inst.Bits() & 0x00000007)))) || (((15) == (((inst.Bits() & 0x00000700) >> 8))))) /* Pc in {Rd,Rn,Rm} => UNPREDICTABLE */);
+  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == ((inst.Bits() & 0x0000000F)))) || (((15) == (((inst.Bits() & 0x00000F00) >> 8))))) /* Pc in {Rd,Rn,Rm} => UNPREDICTABLE */);
   return true;
 }
 
@@ -720,7 +720,7 @@ bool Binary3RegisterOpTesterCase15
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Binary3RegisterOpTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x00007000) >> 12)))) || (((15) == ((inst.Bits() & 0x00000007)))) || (((15) == (((inst.Bits() & 0x00000700) >> 8))))) /* Pc in {Rd,Rn,Rm} => UNPREDICTABLE */);
+  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == ((inst.Bits() & 0x0000000F)))) || (((15) == (((inst.Bits() & 0x00000F00) >> 8))))) /* Pc in {Rd,Rn,Rm} => UNPREDICTABLE */);
   return true;
 }
 
@@ -765,7 +765,7 @@ bool Binary3RegisterOpTesterCase16
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Binary3RegisterOpTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x00007000) >> 12)))) || (((15) == ((inst.Bits() & 0x00000007)))) || (((15) == (((inst.Bits() & 0x00000700) >> 8))))) /* Pc in {Rd,Rn,Rm} => UNPREDICTABLE */);
+  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == ((inst.Bits() & 0x0000000F)))) || (((15) == (((inst.Bits() & 0x00000F00) >> 8))))) /* Pc in {Rd,Rn,Rm} => UNPREDICTABLE */);
   return true;
 }
 
@@ -808,7 +808,7 @@ bool Binary4RegisterShiftedOpTesterCase17
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Binary4RegisterShiftedOpTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x00070000) >> 16)))) || (((15) == (((inst.Bits() & 0x00007000) >> 12)))) || (((15) == (((inst.Bits() & 0x00000700) >> 8)))) || (((15) == ((inst.Bits() & 0x00000007))))) /* Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE */);
+  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == (((inst.Bits() & 0x00000F00) >> 8)))) || (((15) == ((inst.Bits() & 0x0000000F))))) /* Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE */);
   return true;
 }
 
@@ -852,7 +852,7 @@ bool Unary3RegisterShiftedOpTesterCase18
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Unary3RegisterShiftedOpTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x00007000) >> 12)))) || (((15) == ((inst.Bits() & 0x00000007)))) || (((15) == (((inst.Bits() & 0x00000700) >> 8))))) /* Pc in {Rd,Rm,Rs} => UNPREDICTABLE */);
+  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == ((inst.Bits() & 0x0000000F)))) || (((15) == (((inst.Bits() & 0x00000F00) >> 8))))) /* Pc in {Rd,Rm,Rs} => UNPREDICTABLE */);
   return true;
 }
 

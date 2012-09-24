@@ -244,7 +244,7 @@ class CompareExp(BitExpr):
     return self._args[:]
 
   def negate(self):
-    return CompareExp(_NEGATED_COMPARE_OP[self.op],
+    return CompareExp(_NEGATED_COMPARE_OP[self._op],
                       self._args[0], self._args[1])
 
   def to_bool(self, options={}):
@@ -419,16 +419,16 @@ class FunctionCall(BitExpr):
     raise Exception('to_bitfield not defined for %s' % self)
 
   def to_bool(self, options={}):
-    return self._to_call(options)
+    return self._to_call(self._add_namespace_option(options))
 
   def to_register(self, options={}):
-    return self._to_call(options)
+    return self._to_call(self._add_namespace_option(options))
 
   def to_register_list(self, options={}):
-    return self._to_call(options)
+    return self._to_call(self._add_namespace_option(options))
 
   def to_uint32(self, options={}):
-    return self._to_call(options)
+    return self._to_call(self._add_namespace_option(options))
 
   def __repr__(self):
     return "%s(%s)" % (self._name,
@@ -440,8 +440,15 @@ class FunctionCall(BitExpr):
 
   def _to_call(self, options={}):
     """Generates a call to the external function."""
-    return '%s(%s)' % (self._name,
+    namespace = (('%s::' % options.get('namespace'))
+                 if options.get('namespace') else '')
+    return '%s(%s)' % ('%s%s' % (namespace, self._name),
                        ', '.join([a.to_uint32(options) for a in self._args]))
+
+  def _add_namespace_option(self, options):
+    if not options.get('namespace'):
+      options['namespace'] = 'nacl_arm_dec'
+    return options
 
 class InSet(BitExpr):
   """Abstract class defining set containment."""
@@ -681,7 +688,7 @@ class BitField(BitExpr):
 
   def mask(self):
     mask = 0
-    for i in range(1, self.num_bits()):
+    for i in range(0, self.num_bits()):
       mask = (mask << 1) + 1
     mask = mask << self._lo
     return mask
