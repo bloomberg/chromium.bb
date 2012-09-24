@@ -18,8 +18,13 @@ namespace aura {
 // explicitly by Remove(), or implicitly when the window is destroyed.
 class AURA_EXPORT WindowTracker : public WindowObserver {
  public:
+  typedef std::set<Window*> Windows;
+
   WindowTracker();
   virtual ~WindowTracker();
+
+  // Returns the set of windows being observed.
+  const std::set<Window*>& windows() const { return windows_; }
 
   // Adds |window| to the set of Windows being tracked.
   void Add(Window* window);
@@ -35,8 +40,6 @@ class AURA_EXPORT WindowTracker : public WindowObserver {
   virtual void OnWindowDestroying(Window* window) OVERRIDE;
 
  private:
-  typedef std::set<Window*> Windows;
-
   Windows windows_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTracker);

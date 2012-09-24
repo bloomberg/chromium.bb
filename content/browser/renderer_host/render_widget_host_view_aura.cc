@@ -37,6 +37,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
+#include "ui/aura/window_tracker.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/events/event.h"
 #include "ui/base/gestures/gesture_recognizer.h"
@@ -192,7 +193,7 @@ class RenderWidgetHostViewAura::WindowObserver : public aura::WindowObserver {
   explicit WindowObserver(RenderWidgetHostViewAura* view) : view_(view) {}
   virtual ~WindowObserver() {}
 
-    // Overridden from aura::WindowObserver:
+  // Overridden from aura::WindowObserver:
   virtual void OnWindowRemovingFromRootWindow(aura::Window* window) OVERRIDE {
     view_->RemovingFromRootWindow();
   }
@@ -323,6 +324,10 @@ void RenderWidgetHostViewAura::InitAsFullscreen(
   if (reference_host_view) {
     aura::Window* reference_window =
         static_cast<RenderWidgetHostViewAura*>(reference_host_view)->window_;
+    if (reference_window) {
+      host_tracker_.reset(new aura::WindowTracker);
+      host_tracker_->Add(reference_window);
+    }
     gfx::Display display =
         gfx::Screen::GetDisplayNearestWindow(reference_window);
     aura::client::StackingClient* stacking_client =
@@ -1428,6 +1433,12 @@ ui::EventResult RenderWidgetHostViewAura::OnKeyEvent(ui::KeyEvent* event) {
 
   // We need to handle the Escape key for Pepper Flash.
   if (is_fullscreen_ && event->key_code() == ui::VKEY_ESCAPE) {
+    // Focus the window we were created from.
+    if (host_tracker_.get() && !host_tracker_->windows().empty()) {
+      aura::Window* host = *(host_tracker_->windows().begin());
+      if (host->GetFocusManager())
+        host->Focus();
+    }
     if (!in_shutdown_) {
       in_shutdown_ = true;
       host_->Shutdown();

@@ -24,6 +24,7 @@
 
 namespace aura {
 class CompositorLock;
+class WindowTracker;
 }
 
 namespace gfx {
@@ -387,6 +388,10 @@ class RenderWidgetHostViewAura
 
   // This lock is for waiting for a front surface to become available to draw.
   scoped_refptr<aura::CompositorLock> released_front_lock_;
+
+  // Used to track the state of the window we're created from. Only used when
+  // created fullscreen.
+  scoped_ptr<aura::WindowTracker> host_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAura);
 };
