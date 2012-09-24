@@ -412,6 +412,12 @@
       '-execute_javascript.ExecuteJavascriptTest.testExecuteJavascriptInExtension',
       # crbug.com/132285
       '-special_tabs.SpecialTabsTest.testSpecialURLTabs',
+      # crbug.com/145006
+      '-about_plugins_ui.ChromeAboutPluginsUITest.testEnableAndDisableFlashPlugin',
+      # crbug.com/151972
+      '-extensions.ExtensionsTest.testGetExtensionPermissions',
+      # crbug.com/151973
+      '-prefs_ui.PrefsUITest.testInitialLineEntryInIncognitoUI',
     ],
 
     'win': [
