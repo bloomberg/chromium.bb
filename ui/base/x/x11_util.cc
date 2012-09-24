@@ -14,6 +14,7 @@
 
 #include <list>
 #include <map>
+#include <utility>
 #include <vector>
 
 #include <X11/extensions/Xrandr.h>
@@ -167,7 +168,7 @@ unsigned int XKeyEventKeyCode(ui::KeyboardCode key_code,
 // A process wide singleton that manages the usage of X cursors.
 class XCursorCache {
  public:
-   XCursorCache() {}
+  XCursorCache() {}
   ~XCursorCache() {
     Clear();
   }
@@ -353,9 +354,14 @@ static SharedMemorySupport DoQuerySharedMemorySupport(Display* dpy) {
 #endif
 
   // Next we probe to see if shared memory will really work
-  int shmkey = shmget(IPC_PRIVATE, 1, 0666);
-  if (shmkey == -1)
+  int shmkey = shmget(IPC_PRIVATE, 1, 0600);
+  if (shmkey == -1) {
+    LOG(WARNING) << "Failed to get shared memory segment.";
     return SHARED_MEMORY_NONE;
+  } else {
+    VLOG(1) << "Got shared memory segment " << shmkey;
+  }
+
   void* address = shmat(shmkey, NULL, 0);
   // Mark the shared memory region for deletion
   shmctl(shmkey, IPC_RMID, NULL);
@@ -366,12 +372,20 @@ static SharedMemorySupport DoQuerySharedMemorySupport(Display* dpy) {
 
   gdk_error_trap_push();
   bool result = XShmAttach(dpy, &shminfo);
+  if (result)
+    VLOG(1) << "X got shared memory segment " << shmkey;
+  else
+    LOG(WARNING) << "X failed to attach to shared memory segment " << shmkey;
   XSync(dpy, False);
   if (gdk_error_trap_pop())
     result = false;
   shmdt(address);
-  if (!result)
+  if (!result) {
+    LOG(WARNING) << "X failed to attach to shared memory segment " << shmkey;
     return SHARED_MEMORY_NONE;
+  }
+
+  VLOG(1) << "X attached to shared memory segment " << shmkey;
 
   XShmDetach(dpy, &shminfo);
   return pixmaps_supported ? SHARED_MEMORY_PIXMAP : SHARED_MEMORY_PUTIMAGE;
@@ -902,8 +916,13 @@ XSharedMemoryId AttachSharedMemory(Display* display, int shared_memory_key) {
   // This function is only called if QuerySharedMemorySupport returned true. In
   // which case we've already succeeded in having the X server attach to one of
   // our shared memory segments.
-  if (!XShmAttach(display, &shminfo))
+  if (!XShmAttach(display, &shminfo)) {
+    LOG(WARNING) << "X failed to attach to shared memory segment "
+                 << shminfo.shmid;
     NOTREACHED();
+  } else {
+    VLOG(1) << "X attached to shared memory segment " << shminfo.shmid;
+  }
 
   return shminfo.shmseg;
 }
@@ -1554,7 +1573,7 @@ void LogErrorEventDescription(Display* dpy,
     XFreeExtensionList(ext_list);
   }
 
-  LOG(ERROR) 
+  LOG(ERROR)
       << "X Error detected: "
       << "serial " << error_event.serial << ", "
       << "error_code " << static_cast<int>(error_event.error_code)

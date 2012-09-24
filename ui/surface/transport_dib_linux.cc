@@ -39,14 +39,13 @@ TransportDIB::~TransportDIB() {
 
 // static
 TransportDIB* TransportDIB::Create(size_t size, uint32 sequence_num) {
-  // We use a mode of 0666 since the X server won't attach to memory which is
-  // 0600 since it can't know if it (as a root process) is being asked to map
-  // someone else's private shared memory region.
-  const int shmkey = shmget(IPC_PRIVATE, size, 0666);
+  const int shmkey = shmget(IPC_PRIVATE, size, 0600);
   if (shmkey == -1) {
     DLOG(ERROR) << "Failed to create SysV shared memory region"
                 << " errno:" << errno;
     return NULL;
+  } else {
+    VLOG(1) << "Created SysV shared memory region " << shmkey;
   }
 
   void* address = shmat(shmkey, NULL /* desired address */, 0 /* flags */);

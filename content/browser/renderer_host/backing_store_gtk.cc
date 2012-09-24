@@ -519,10 +519,14 @@ bool BackingStoreGtk::CopyFromBackingStore(const gfx::Rect& rect,
       return false;
     }
     shminfo.shmid = shmget(IPC_PRIVATE, image->bytes_per_line * image->height,
-                           IPC_CREAT|0666);
+                           IPC_CREAT|0600);
     if (shminfo.shmid == -1) {
       XDestroyImage(image);
+      LOG(WARNING) << "Failed to get shared memory segment. "
+                      "Performance may be degraded.";
       return false;
+    } else {
+      VLOG(1) << "Got shared memory segment " << shminfo.shmid;
     }
 
     void* mapped_memory = shmat(shminfo.shmid, NULL, SHM_RDONLY);
@@ -537,9 +541,14 @@ bool BackingStoreGtk::CopyFromBackingStore(const gfx::Rect& rect,
         !XShmGetImage(display_, pixmap_, image, rect.x(), rect.y(),
                       AllPlanes)) {
       DestroySharedImage(display_, image, &shminfo);
+      LOG(WARNING) << "X failed to get shared memory segment. "
+                      "Performance may be degraded.";
       return false;
     }
+
+    VLOG(1) << "Using X shared memory segment " << shminfo.shmid;
   } else {
+    LOG(WARNING) << "Not using X shared memory.";
     // Non-shared memory case just copy the image from the server.
     image = XGetImage(display_, pixmap_,
                       rect.x(), rect.y(), width, height,
