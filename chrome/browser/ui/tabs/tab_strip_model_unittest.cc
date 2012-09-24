@@ -267,9 +267,7 @@ class MockTabStripModelObserver : public TabStripModelObserver {
   explicit MockTabStripModelObserver(TabStripModel* model)
       : empty_(true),
         model_(model) {}
-  virtual ~MockTabStripModelObserver() {
-    STLDeleteContainerPointers(states_.begin(), states_.end());
-  }
+  virtual ~MockTabStripModelObserver() {}
 
   enum TabStripModelObserverAction {
     INSERT,
@@ -310,27 +308,20 @@ class MockTabStripModelObserver : public TabStripModelObserver {
     return static_cast<int>(states_.size());
   }
 
-  State* GetStateAt(int index) const {
+  State GetStateAt(int index) const {
     DCHECK(index >= 0 && index < GetStateCount());
     return states_[index];
   }
 
   bool StateEquals(int index, const State& state) {
-    State* s = GetStateAt(index);
-    EXPECT_EQ(state.src_contents, s->src_contents);
-    EXPECT_EQ(state.dst_contents, s->dst_contents);
-    EXPECT_EQ(state.src_index, s->src_index);
-    EXPECT_EQ(state.dst_index, s->dst_index);
-    EXPECT_EQ(state.user_gesture, s->user_gesture);
-    EXPECT_EQ(state.foreground, s->foreground);
-    EXPECT_EQ(state.action, s->action);
-    return (s->src_contents == state.src_contents &&
-            s->dst_contents == state.dst_contents &&
-            s->src_index == state.src_index &&
-            s->dst_index == state.dst_index &&
-            s->user_gesture == state.user_gesture &&
-            s->foreground == state.foreground &&
-            s->action == state.action);
+    State s = GetStateAt(index);
+    return (s.src_contents == state.src_contents &&
+            s.dst_contents == state.dst_contents &&
+            s.src_index == state.src_index &&
+            s.dst_index == state.dst_index &&
+            s.user_gesture == state.user_gesture &&
+            s.foreground == state.foreground &&
+            s.action == state.action);
   }
 
   // TabStripModelObserver implementation:
@@ -338,66 +329,63 @@ class MockTabStripModelObserver : public TabStripModelObserver {
                              int index,
                              bool foreground) {
     empty_ = false;
-    State* s = new State(contents, index, INSERT);
-    s->foreground = foreground;
+    State s(contents, index, INSERT);
+    s.foreground = foreground;
     states_.push_back(s);
   }
   virtual void ActiveTabChanged(TabContents* old_contents,
                                 TabContents* new_contents,
                                 int index,
                                 bool user_gesture) {
-    State* s = new State(new_contents, index, ACTIVATE);
-    s->src_contents = old_contents;
-    s->user_gesture = user_gesture;
+    State s(new_contents, index, ACTIVATE);
+    s.src_contents = old_contents;
+    s.user_gesture = user_gesture;
     states_.push_back(s);
   }
   virtual void TabSelectionChanged(TabStripModel* tab_strip_model,
                                    const TabStripSelectionModel& old_model) {
-    State* s = new State(model()->GetActiveTabContents(),
-                         model()->active_index(),
-                         SELECT);
-    s->src_contents = model()->GetTabContentsAt(old_model.active());
-    s->src_index = old_model.active();
+    State s(model()->GetActiveTabContents(), model()->active_index(), SELECT);
+    s.src_contents = model()->GetTabContentsAt(old_model.active());
+    s.src_index = old_model.active();
     states_.push_back(s);
   }
   virtual void TabMoved(TabContents* contents, int from_index, int to_index) {
-    State* s = new State(contents, to_index, MOVE);
-    s->src_index = from_index;
+    State s(contents, to_index, MOVE);
+    s.src_index = from_index;
     states_.push_back(s);
   }
 
   virtual void TabClosingAt(TabStripModel* tab_strip_model,
                             TabContents* contents,
                             int index) {
-    states_.push_back(new State(contents, index, CLOSE));
+    states_.push_back(State(contents, index, CLOSE));
   }
   virtual void TabDetachedAt(TabContents* contents, int index) {
-    states_.push_back(new State(contents, index, DETACH));
+    states_.push_back(State(contents, index, DETACH));
   }
   virtual void TabDeactivated(TabContents* contents) {
-    states_.push_back(new State(contents, model()->active_index(), DEACTIVATE));
+    states_.push_back(State(contents, model()->active_index(), DEACTIVATE));
   }
   virtual void TabChangedAt(TabContents* contents, int index,
                             TabChangeType change_type) {
-    states_.push_back(new State(contents, index, CHANGE));
+    states_.push_back(State(contents, index, CHANGE));
   }
   virtual void TabReplacedAt(TabStripModel* tab_strip_model,
                              TabContents* old_contents,
                              TabContents* new_contents,
                              int index) {
-    State* s = new State(new_contents, index, REPLACED);
-    s ->src_contents = old_contents;
+    State s(new_contents, index, REPLACED);
+    s.src_contents = old_contents;
     states_.push_back(s);
   }
   virtual void TabPinnedStateChanged(TabContents* contents, int index) {
-    states_.push_back(new State(contents, index, PINNED));
+    states_.push_back(State(contents, index, PINNED));
   }
   virtual void TabStripEmpty() {
     empty_ = true;
   }
 
   void ClearStates() {
-    STLDeleteContainerPointers(states_.begin(), states_.end());
     states_.clear();
   }
 
@@ -405,7 +393,7 @@ class MockTabStripModelObserver : public TabStripModelObserver {
   TabStripModel* model() { return model_; }
 
  private:
-  std::vector<State*> states_;
+  std::vector<State> states_;
 
   bool empty_;
   TabStripModel* model_;
@@ -2325,7 +2313,7 @@ TEST_F(TabStripModelTest, MultipleSelection) {
   // Selection and active tab change.
   strip.ActivateTabAt(3, true);
   ASSERT_EQ(2, observer.GetStateCount());
-  ASSERT_EQ(observer.GetStateAt(0)->action,
+  ASSERT_EQ(observer.GetStateAt(0).action,
             MockTabStripModelObserver::ACTIVATE);
   MockTabStripModelObserver::State s1(contents3, 3,
       MockTabStripModelObserver::SELECT);
@@ -2335,9 +2323,9 @@ TEST_F(TabStripModelTest, MultipleSelection) {
   // Adding all tabs to selection, active tab is now at 0.
   strip.ExtendSelectionTo(0);
   ASSERT_EQ(3, observer.GetStateCount());
-  ASSERT_EQ(observer.GetStateAt(0)->action,
+  ASSERT_EQ(observer.GetStateAt(0).action,
             MockTabStripModelObserver::DEACTIVATE);
-  ASSERT_EQ(observer.GetStateAt(1)->action,
+  ASSERT_EQ(observer.GetStateAt(1).action,
             MockTabStripModelObserver::ACTIVATE);
   MockTabStripModelObserver::State s2(contents0, 0,
       MockTabStripModelObserver::SELECT);
@@ -2352,11 +2340,11 @@ TEST_F(TabStripModelTest, MultipleSelection) {
   EXPECT_EQ(3U, strip.selection_model().size());
   EXPECT_EQ(4, strip.count());
   ASSERT_EQ(3, observer.GetStateCount());
-  ASSERT_EQ(observer.GetStateAt(0)->action,
+  ASSERT_EQ(observer.GetStateAt(0).action,
             MockTabStripModelObserver::DEACTIVATE);
-  ASSERT_EQ(observer.GetStateAt(1)->action,
+  ASSERT_EQ(observer.GetStateAt(1).action,
             MockTabStripModelObserver::ACTIVATE);
-  ASSERT_EQ(observer.GetStateAt(2)->action,
+  ASSERT_EQ(observer.GetStateAt(2).action,
             MockTabStripModelObserver::SELECT);
   observer.ClearStates();
 
@@ -2366,11 +2354,11 @@ TEST_F(TabStripModelTest, MultipleSelection) {
   EXPECT_EQ(4U, strip.selection_model().size());
   EXPECT_EQ(4, strip.count());
   ASSERT_EQ(3, observer.GetStateCount());
-  ASSERT_EQ(observer.GetStateAt(0)->action,
+  ASSERT_EQ(observer.GetStateAt(0).action,
             MockTabStripModelObserver::DEACTIVATE);
-  ASSERT_EQ(observer.GetStateAt(1)->action,
+  ASSERT_EQ(observer.GetStateAt(1).action,
             MockTabStripModelObserver::ACTIVATE);
-  ASSERT_EQ(observer.GetStateAt(2)->action,
+  ASSERT_EQ(observer.GetStateAt(2).action,
             MockTabStripModelObserver::SELECT);
   observer.ClearStates();
 
@@ -2378,11 +2366,11 @@ TEST_F(TabStripModelTest, MultipleSelection) {
   strip.CloseTabContentsAt(1, TabStripModel::CLOSE_NONE);
   EXPECT_EQ(3, strip.count());
   ASSERT_EQ(3, observer.GetStateCount());
-  ASSERT_EQ(observer.GetStateAt(0)->action,
+  ASSERT_EQ(observer.GetStateAt(0).action,
             MockTabStripModelObserver::CLOSE);
-  ASSERT_EQ(observer.GetStateAt(1)->action,
+  ASSERT_EQ(observer.GetStateAt(1).action,
             MockTabStripModelObserver::DETACH);
-  ASSERT_EQ(observer.GetStateAt(2)->action,
+  ASSERT_EQ(observer.GetStateAt(2).action,
             MockTabStripModelObserver::SELECT);
   observer.ClearStates();
 
@@ -2390,22 +2378,22 @@ TEST_F(TabStripModelTest, MultipleSelection) {
   strip.CloseTabContentsAt(0, TabStripModel::CLOSE_NONE);
   EXPECT_EQ(2, strip.count());
   ASSERT_EQ(5, observer.GetStateCount());
-  ASSERT_EQ(observer.GetStateAt(0)->action,
+  ASSERT_EQ(observer.GetStateAt(0).action,
             MockTabStripModelObserver::CLOSE);
-  ASSERT_EQ(observer.GetStateAt(1)->action,
+  ASSERT_EQ(observer.GetStateAt(1).action,
             MockTabStripModelObserver::DETACH);
-  ASSERT_EQ(observer.GetStateAt(2)->action,
+  ASSERT_EQ(observer.GetStateAt(2).action,
             MockTabStripModelObserver::DEACTIVATE);
-  ASSERT_EQ(observer.GetStateAt(3)->action,
+  ASSERT_EQ(observer.GetStateAt(3).action,
             MockTabStripModelObserver::ACTIVATE);
-  ASSERT_EQ(observer.GetStateAt(4)->action,
+  ASSERT_EQ(observer.GetStateAt(4).action,
             MockTabStripModelObserver::SELECT);
   observer.ClearStates();
 
   // Active tab is at 0, deselecting all but the active tab.
   strip.ToggleSelectionAt(1);
   ASSERT_EQ(1, observer.GetStateCount());
-  ASSERT_EQ(observer.GetStateAt(0)->action,
+  ASSERT_EQ(observer.GetStateAt(0).action,
             MockTabStripModelObserver::SELECT);
   observer.ClearStates();
 
