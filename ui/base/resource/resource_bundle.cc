@@ -42,20 +42,6 @@ const int kLargeFontSizeDelta = 8;
 
 ResourceBundle* g_shared_instance_ = NULL;
 
-// Returns the actual scale factor of |bitmap| given the image representations
-// which have already been added to |image|.
-// TODO(pkotwicz): Remove this once we are no longer loading 1x resources
-// as part of non 1x data packs.
-ui::ScaleFactor GetActualScaleFactor(const gfx::ImageSkia& image,
-                                     const SkBitmap& bitmap,
-                                     ui::ScaleFactor data_pack_scale_factor) {
-  if (image.isNull())
-    return data_pack_scale_factor;
-
-  return ui::GetScaleFactorFromScale(
-      static_cast<float>(bitmap.width()) / image.width());
-}
-
 bool ShouldHighlightMissingScaledResources() {
   return CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kHighlightMissingScaledResources);
