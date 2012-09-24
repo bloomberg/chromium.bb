@@ -499,6 +499,26 @@ class Cluster {
                 uint64 timecode,  // timecode units (absolute)
                 bool is_key);
 
+  // Writes a frame of metadata to the output medium; returns true on
+  // success.
+  // Inputs:
+  //   frame: Pointer to the data
+  //   length: Length of the data
+  //   track_number: Track to add the data to. Value returned by Add track
+  //                 functions.  The range of allowed values is [1, 126].
+  //   timecode:     Absolute (not relative to cluster) timestamp of the
+  //                 metadata frame, expressed in timecode units.
+  //   duration:     Duration of metadata frame, in timecode units.
+  //
+  // The metadata frame is written as a block group, with a duration
+  // sub-element but no reference time sub-elements (indicating that
+  // it is considered a keyframe, per Matroska semantics).
+  bool AddMetadata(const uint8* frame,
+                   uint64 length,
+                   uint64 track_number,
+                   uint64 timecode,  // timecode units (absolute)
+                   uint64 duration);  // timecode units
+
   // Increments the size of the cluster's data in bytes.
   void AddPayloadSize(uint64 size);
 
@@ -524,7 +544,7 @@ class Cluster {
                                int64 timecode,
                                uint64 generic_arg);
 
-  //  Used to implement AddFrame.
+  //  Used to implement AddFrame and AddMetadata.
   bool DoWriteBlock(const uint8* frame,
                     uint64 length,
                     uint64 track_number,
@@ -699,6 +719,26 @@ class Segment {
                 uint64 track_number,
                 uint64 timestamp_ns,
                 bool is_key);
+
+  // Writes a frame of metadata to the output medium; returns true on
+  // success.
+  // Inputs:
+  //   frame: Pointer to the data
+  //   length: Length of the data
+  //   track_number: Track to add the data to. Value returned by Add track
+  //                 functions.
+  //   timecode:     Absolute timestamp of the metadata frame, expressed
+  //                 in nanosecond units.
+  //   duration:     Duration of metadata frame, in nanosecond units.
+  //
+  // The metadata frame is written as a block group, with a duration
+  // sub-element but no reference time sub-elements (indicating that
+  // it is considered a keyframe, per Matroska semantics).
+  bool AddMetadata(const uint8* frame,
+                   uint64 length,
+                   uint64 track_number,
+                   uint64 timestamp_ns,
+                   uint64 duration_ns);
 
   // Adds a video track to the segment. Returns the number of the track on
   // success, 0 on error. |number| is the number to use for the video track.

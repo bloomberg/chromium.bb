@@ -1045,6 +1045,19 @@ bool Cluster::AddFrame(const uint8* frame,
                       &WriteSimpleBlock);
 }
 
+bool Cluster::AddMetadata(const uint8* frame,
+                          uint64 length,
+                          uint64 track_number,
+                          uint64 abs_timecode,
+                          uint64 duration_timecode) {
+  return DoWriteBlock(frame,
+                      length,
+                      track_number,
+                      abs_timecode,
+                      duration_timecode,
+                      &WriteMetadataBlock);
+}
+
 void Cluster::AddPayloadSize(uint64 size) {
   payload_size_ += size;
 }
@@ -1723,6 +1736,49 @@ bool Segment::AddFrame(const uint8* frame,
 
   if (timestamp > last_timestamp_)
     last_timestamp_ = timestamp;
+
+  return true;
+}
+
+bool Segment::AddMetadata(const uint8* frame,
+                          uint64 length,
+                          uint64 track_number,
+                          uint64 timestamp_ns,
+                          uint64 duration_ns) {
+  if (!frame)
+    return false;
+
+  if (!CheckHeaderInfo())
+    return false;
+
+  // Check for non-monotonically increasing timestamps.
+  if (timestamp_ns < last_timestamp_)
+    return false;
+
+  if (!DoNewClusterProcessing(track_number, timestamp_ns, true))
+    return false;
+
+  if (cluster_list_size_ < 1)
+    return false;
+
+  Cluster* const cluster = cluster_list_[cluster_list_size_-1];
+
+  if (!cluster)
+    return false;
+
+  const uint64 timecode_scale = segment_info_.timecode_scale();
+  const uint64 abs_timecode = timestamp_ns / timecode_scale;
+  const uint64 duration_timecode = duration_ns / timecode_scale;
+
+  if (!cluster->AddMetadata(frame,
+                            length,
+                            track_number,
+                            abs_timecode,
+                            duration_timecode))
+    return false;
+
+  if (timestamp_ns > last_timestamp_)
+    last_timestamp_ = timestamp_ns;
 
   return true;
 }
