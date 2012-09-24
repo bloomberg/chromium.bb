@@ -53,6 +53,25 @@
       "revision": 1
     },
     {
+      "name": "vs_addin",
+      "description": "Visual Studio Add-In for building and debugging NaCl applications",
+      "stability": "dev",
+      "recommended": "no",
+      "version": 0,
+      "repath": "vs_addin",
+      "archives": [
+        {
+          "url": "https://commondatastorage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/sdk/1419/vs_addin.tgz",
+          "checksum": {
+            "sha1": "95542982245c7ae42d267930079f48247c2ea916"
+          },
+          "host_os": "win",
+          "size": 902700
+        }
+      ],
+      "revision": 1419
+    },
+    {
       "name": "pepper_16",
       "description": "Chrome 16 bundle, revision 1398",
       "stability": "post_stable",
