@@ -6,7 +6,10 @@
 
 #include "base/compiler_specific.h"
 #include "sync/syncable/directory.h"
+#include "sync/syncable/mutable_entry.h"
+#include "sync/syncable/write_transaction.h"
 #include "sync/test/engine/test_directory_setter_upper.h"
+#include "sync/test/engine/test_id_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -41,6 +44,33 @@ UserShare* TestUserShare::user_share() {
 
 SyncEncryptionHandler* TestUserShare::encryption_handler() {
   return dir_maker_->encryption_handler();
+}
+
+/* static */
+bool TestUserShare::CreateRoot(ModelType model_type, UserShare* user_share) {
+  syncer::syncable::Directory* directory = user_share->directory.get();
+
+  std::string tag_name = syncer::ModelTypeToRootTag(model_type);
+
+  syncable::WriteTransaction wtrans(FROM_HERE, syncable::UNITTEST, directory);
+  syncable::MutableEntry node(&wtrans,
+                              syncable::CREATE,
+                              wtrans.root_id(),
+                              tag_name);
+  node.Put(syncable::UNIQUE_SERVER_TAG, tag_name);
+  node.Put(syncable::IS_DIR, true);
+  node.Put(syncable::SERVER_IS_DIR, false);
+  node.Put(syncable::IS_UNSYNCED, false);
+  node.Put(syncable::IS_UNAPPLIED_UPDATE, false);
+  node.Put(syncable::SERVER_VERSION, 20);
+  node.Put(syncable::BASE_VERSION, 20);
+  node.Put(syncable::IS_DEL, false);
+  node.Put(syncable::ID, syncer::TestIdFactory::MakeServer(tag_name));
+  sync_pb::EntitySpecifics specifics;
+  syncer::AddDefaultFieldValue(model_type, &specifics);
+  node.Put(syncable::SPECIFICS, specifics);
+
+  return true;
 }
 
 }  // namespace syncer

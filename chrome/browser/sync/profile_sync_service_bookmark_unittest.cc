@@ -22,7 +22,6 @@
 #include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/sync/abstract_profile_sync_service_test.h"
 #include "chrome/browser/sync/glue/bookmark_change_processor.h"
 #include "chrome/browser/sync/glue/bookmark_model_associator.h"
 #include "chrome/browser/sync/glue/data_type_error_handler.h"
@@ -38,7 +37,6 @@
 #include "sync/internal_api/public/write_node.h"
 #include "sync/internal_api/public/write_transaction.h"
 #include "sync/syncable/mutable_entry.h"  // TODO(tim): Remove. Bug 131130.
-#include "sync/test/engine/test_id_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -81,24 +79,19 @@ class TestBookmarkModelAssociator : public BookmarkModelAssociator {
       uber_root.InitByRootLookup();
 
       syncer::ReadNode root(&trans);
-      root_exists = root.InitByTagLookup(
-          ProfileSyncServiceTestHelper::GetTagForType(type)) ==
-              BaseNode::INIT_OK;
+      root_exists = (root.InitByTagLookup(syncer::ModelTypeToRootTag(type)) ==
+                     BaseNode::INIT_OK);
     }
 
     if (!root_exists) {
-      bool created = ProfileSyncServiceTestHelper::CreateRoot(
-          type,
-          user_share_,
-          &id_factory_);
-      if (!created)
+      if (!syncer::TestUserShare::CreateRoot(type, user_share_))
         return false;
     }
 
     syncer::WriteTransaction trans(FROM_HERE, user_share_);
     syncer::ReadNode root(&trans);
     EXPECT_EQ(BaseNode::INIT_OK, root.InitByTagLookup(
-        ProfileSyncServiceTestHelper::GetTagForType(type)));
+        syncer::ModelTypeToRootTag(type)));
 
     // First, try to find a node with the title among the root's children.
     // This will be the case if we are testing model persistence, and
@@ -136,7 +129,6 @@ class TestBookmarkModelAssociator : public BookmarkModelAssociator {
 
  private:
   syncer::UserShare* user_share_;
-  syncer::TestIdFactory id_factory_;
 };
 
 namespace {

@@ -42,11 +42,11 @@
 #include "sync/internal_api/public/change_record.h"
 #include "sync/internal_api/public/read_node.h"
 #include "sync/internal_api/public/read_transaction.h"
+#include "sync/internal_api/public/test/test_user_share.h"
 #include "sync/internal_api/public/write_node.h"
 #include "sync/internal_api/public/write_transaction.h"
 #include "sync/protocol/session_specifics.pb.h"
 #include "sync/protocol/sync.pb.h"
-#include "sync/test/engine/test_id_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ui_base_types.h"
@@ -161,8 +161,6 @@ class ProfileSyncServiceSessionTest
         notified_of_update_(false),
         notified_of_refresh_(false) {}
   ProfileSyncService* sync_service() { return sync_service_.get(); }
-
-  TestIdFactory* ids() { return sync_service_->id_factory(); }
 
  protected:
   virtual TestingProfile* CreateProfile() OVERRIDE {
@@ -289,8 +287,8 @@ class CreateRootHelper {
 
  private:
   void CreateRootCallback(ProfileSyncServiceSessionTest* test) {
-    success_ = ProfileSyncServiceTestHelper::CreateRoot(
-        syncer::SESSIONS, test->sync_service()->GetUserShare(), test->ids());
+    success_ = syncer::TestUserShare::CreateRoot(
+        syncer::SESSIONS, test->sync_service()->GetUserShare());
   }
 
   base::Closure callback_;
