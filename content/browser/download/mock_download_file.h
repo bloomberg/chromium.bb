@@ -32,7 +32,7 @@ class MockDownloadFile : virtual public content::DownloadFile {
   MOCK_METHOD3(Rename, void(const FilePath& full_path,
                             bool overwrite_existing_file,
                             const RenameCompletionCallback& callback));
-  MOCK_METHOD0(Detach, void());
+  MOCK_METHOD1(Detach, void(base::Closure));
   MOCK_METHOD0(Cancel, void());
   MOCK_METHOD0(Finish, void());
   MOCK_METHOD0(AnnotateWithSourceInformation, void());

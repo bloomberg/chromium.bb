@@ -207,6 +207,34 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   virtual void SetDbHandle(int64 handle);
 
  private:
+  // Fine grained states of a download.
+  enum DownloadInternalState {
+    // Unless otherwise specified, state transitions are linear forward
+    // in this list.
+
+    // Includes both before and after file name determination.
+    // TODO(rdsmith): Put in state variable for file name determination.
+    IN_PROGRESS_INTERNAL,
+
+    // Between commit point (dispatch of download file release) and
+    // completed.  Embedder may be opening the file in this state.
+    COMPLETING_INTERNAL,
+
+    // After embedder has had a chance to auto-open.  User may now open
+    // or auto-open based on extension.
+    COMPLETE_INTERNAL,
+
+    // User has cancelled the download.
+    // Only incoming transition IN_PROGRESS->
+    CANCELLED_INTERNAL,
+
+    // An error has interrupted the download.
+    // Only incoming transition IN_PROGRESS->
+    INTERRUPTED_INTERNAL,
+
+    MAX_DOWNLOAD_INTERNAL_STATE,
+  };
+
   // Normal progression of a download ------------------------------------------
 
   // These are listed in approximately chronological order.  There are also
@@ -249,12 +277,21 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
                         const std::string& final_hash);
 
   // Call to transition state; all state transitions should go through this.
-  void TransitionTo(DownloadState new_state);
+  void TransitionTo(DownloadInternalState new_state);
 
   // Set the |danger_type_| and invoke obserers if necessary.
   void SetDangerType(content::DownloadDangerType danger_type);
 
   void SetFullPath(const FilePath& new_path);
+
+  // Mapping between internal and external states.
+  static DownloadState InternalToExternalState(
+      DownloadInternalState internal_state);
+  static DownloadInternalState ExternalToInternalState(
+      DownloadState external_state);
+
+  // Debugging routines --------------------------------------------------------
+  static const char* DebugDownloadStateString(DownloadInternalState state);
 
   // The handle to the request information.  Used for operations outside the
   // download system.
@@ -353,7 +390,7 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   base::TimeTicks start_tick_;
 
   // The current state of this download.
-  DownloadState state_;
+  DownloadInternalState state_;
 
   // Current danger type for the download.
   content::DownloadDangerType danger_type_;

@@ -13,6 +13,7 @@
 #include "content/browser/download/byte_stream.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_interrupt_reasons_impl.h"
+#include "content/browser/download/download_file_factory.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/mock_download_file.h"
 #include "content/public/browser/download_id.h"
@@ -48,8 +49,7 @@ class TestDownloadManager : public MockDownloadManager {
   ~TestDownloadManager() {}
 };
 
-class MockDownloadFileFactory :
-    public DownloadFileManager::DownloadFileFactory {
+class MockDownloadFileFactory : public content::DownloadFileFactory {
 
  public:
   MockDownloadFileFactory() {}
@@ -184,8 +184,10 @@ class DownloadFileManagerTest : public testing::Test {
 
   // Create a download item on the DFM.
   // |info| is the information needed to create a new download file.
-  // |id| is the download ID of the new download file.
   void CreateDownloadFile(scoped_ptr<DownloadCreateInfo> info) {
+    // Anything that isn't DOWNLOAD_INTERRUPT_REASON_NONE.
+    last_reason_ = content::DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED;
+
     // Mostly null out args; they'll be passed to MockDownloadFileFactory
     // to be ignored anyway.
     download_file_manager_->CreateDownloadFile(
@@ -195,8 +197,6 @@ class DownloadFileManagerTest : public testing::Test {
                    // The test jig will outlive all download files.
                    base::Unretained(this)));
 
-    // Anything that isn't DOWNLOAD_INTERRUPT_REASON_NONE.
-    last_reason_ = content::DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED;
     ProcessAllPendingMessages();
     EXPECT_EQ(content::DOWNLOAD_INTERRUPT_REASON_NONE, last_reason_);
   }
@@ -237,9 +237,7 @@ class DownloadFileManagerTest : public testing::Test {
     MockDownloadFile* file = download_file_factory_->GetExistingFile(id);
     ASSERT_TRUE(file != NULL);
 
-    EXPECT_CALL(*file, AnnotateWithSourceInformation())
-        .WillOnce(Return());
-    EXPECT_CALL(*file, Detach())
+    EXPECT_CALL(*file, Detach(_))
         .WillOnce(Return());
     int num_downloads = download_file_manager_->NumberOfActiveDownloads();
     EXPECT_LT(0, num_downloads);

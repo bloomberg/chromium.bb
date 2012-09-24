@@ -106,14 +106,23 @@ base::Value* ItemInterruptedCallback(content::DownloadInterruptReason reason,
   return dict;
 }
 
-base::Value* ItemFinishedCallback(int64 bytes_so_far,
-                                  const std::string* final_hash,
-                                  net::NetLog::LogLevel /* log_level */) {
+base::Value* ItemCompletingCallback(int64 bytes_so_far,
+                                    const std::string* final_hash,
+                                    net::NetLog::LogLevel /* log_level */) {
   DictionaryValue* dict = new DictionaryValue();
 
   dict->SetString("bytes_so_far", base::Int64ToString(bytes_so_far));
   dict->SetString("final_hash",
                   base::HexEncode(final_hash->data(), final_hash->size()));
+
+  return dict;
+}
+
+base::Value* ItemFinishedCallback(bool auto_opened,
+                                  net::NetLog::LogLevel /* log_level */) {
+  DictionaryValue* dict = new DictionaryValue();
+
+  dict->SetString("auto_opened", auto_opened ? "yes" : "no");
 
   return dict;
 }

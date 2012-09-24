@@ -46,9 +46,13 @@ base::Value* ItemInterruptedCallback(content::DownloadInterruptReason reason,
                                      const std::string* hash_state,
                                      net::NetLog::LogLevel log_level);
 
+// Returns NetLog parameters when a DownloadItem is completing.
+base::Value* ItemCompletingCallback(int64 bytes_so_far,
+                                    const std::string* final_hash,
+                                    net::NetLog::LogLevel log_level);
+
 // Returns NetLog parameters when a DownloadItem is finished.
-base::Value* ItemFinishedCallback(int64 bytes_so_far,
-                                  const std::string* final_hash,
+base::Value* ItemFinishedCallback(bool auto_opened,
                                   net::NetLog::LogLevel log_level);
 
 // Returns NetLog parameters when a DownloadItem is canceled.

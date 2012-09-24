@@ -31,43 +31,10 @@ using content::DownloadFile;
 using content::DownloadId;
 using content::DownloadManager;
 
-namespace {
-
-class DownloadFileFactoryImpl
-    : public DownloadFileManager::DownloadFileFactory {
- public:
-  DownloadFileFactoryImpl() {}
-
-  virtual content::DownloadFile* CreateFile(
-      DownloadCreateInfo* info,
-      scoped_ptr<content::ByteStreamReader> stream,
-      DownloadManager* download_manager,
-      bool calculate_hash,
-      const net::BoundNetLog& bound_net_log) OVERRIDE;
-};
-
-DownloadFile* DownloadFileFactoryImpl::CreateFile(
-    DownloadCreateInfo* info,
-    scoped_ptr<content::ByteStreamReader> stream,
-    DownloadManager* download_manager,
-    bool calculate_hash,
-    const net::BoundNetLog& bound_net_log) {
-  return new DownloadFileImpl(
-      info, stream.Pass(), new DownloadRequestHandle(info->request_handle),
-      download_manager, calculate_hash,
-      scoped_ptr<content::PowerSaveBlocker>(
-          new content::PowerSaveBlocker(
-              content::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
-              "Download in progress")).Pass(),
-      bound_net_log);
-}
-
-}  // namespace
-
-DownloadFileManager::DownloadFileManager(DownloadFileFactory* factory)
+DownloadFileManager::DownloadFileManager(content::DownloadFileFactory* factory)
     : download_file_factory_(factory) {
   if (download_file_factory_ == NULL)
-    download_file_factory_.reset(new DownloadFileFactoryImpl);
+    download_file_factory_.reset(new content::DownloadFileFactory);
 }
 
 DownloadFileManager::~DownloadFileManager() {
@@ -147,20 +114,9 @@ void DownloadFileManager::CompleteDownload(
            << " id = " << global_id
            << " download_file = " << download_file->DebugString();
 
-  // Done here on Windows so that anti-virus scanners invoked by
-  // the attachment service actually see the data; see
-  // http://crbug.com/127999.
-  // Done here for mac because we only want to do this once; see
-  // http://crbug.com/13120 for details.
-  // Other platforms don't currently do source annotation.
-  download_file->AnnotateWithSourceInformation();
-
-  download_file->Detach();
+  download_file->Detach(callback);
 
   EraseDownload(global_id);
-
-  // Notify our caller we've let it go.
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback);
 }
 
 void DownloadFileManager::OnDownloadManagerShutdown(DownloadManager* manager) {

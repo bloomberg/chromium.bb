@@ -50,6 +50,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
 #include "content/browser/download/download_file.h"
+#include "content/browser/download/download_file_factory.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/download_id.h"
 #include "content/public/browser/download_interrupt_reasons.h"
@@ -85,22 +86,10 @@ class CONTENT_EXPORT DownloadFileManager
   typedef content::DownloadFile::RenameCompletionCallback
       RenameCompletionCallback;
 
-  class DownloadFileFactory {
-   public:
-    virtual ~DownloadFileFactory() {}
-
-    virtual content::DownloadFile* CreateFile(
-        DownloadCreateInfo* info,
-        scoped_ptr<content::ByteStreamReader> stream,
-        content::DownloadManager* download_manager,
-        bool calculate_hash,
-        const net::BoundNetLog& bound_net_log) = 0;
-  };
-
   // Takes ownership of the factory.
   // Passing in a NULL for |factory| will cause a default
   // |DownloadFileFactory| to be used.
-  explicit DownloadFileManager(DownloadFileFactory* factory);
+  explicit DownloadFileManager(content::DownloadFileFactory* factory);
 
   // Create a download file and record it in the download file manager.
   virtual void CreateDownloadFile(
@@ -139,11 +128,12 @@ class CONTENT_EXPORT DownloadFileManager
   // Primarily for testing.
   virtual int NumberOfActiveDownloads() const;
 
-  void SetFileFactoryForTesting(scoped_ptr<DownloadFileFactory> file_factory) {
+  void SetFileFactoryForTesting(
+      scoped_ptr<content::DownloadFileFactory> file_factory) {
     download_file_factory_.reset(file_factory.release());
   }
 
-  DownloadFileFactory* GetFileFactoryForTesting() const {
+  content::DownloadFileFactory* GetFileFactoryForTesting() const {
     return download_file_factory_.get();  // Explicitly NOT a scoped_ptr.
   }
 
@@ -172,7 +162,7 @@ class CONTENT_EXPORT DownloadFileManager
   // A map of all in progress downloads.  It owns the download files.
   DownloadFileMap downloads_;
 
-  scoped_ptr<DownloadFileFactory> download_file_factory_;
+  scoped_ptr<content::DownloadFileFactory> download_file_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadFileManager);
 };

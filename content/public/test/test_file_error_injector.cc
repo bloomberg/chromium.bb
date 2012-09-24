@@ -65,12 +65,15 @@ class DownloadFileWithErrors: public DownloadFileImpl {
       content::TestFileErrorInjector::FileOperationCode code,
       content::DownloadInterruptReason original_error);
 
-  // Used in place of original rename callback to intercept with
-  // ShouldReturnError.
-  void RenameErrorCallback(
-    const RenameCompletionCallback& original_callback,
-    content::DownloadInterruptReason original_error,
-    const FilePath& path_result);
+  // Determine whether to overwrite an operation with the given code
+  // with a substitute error; if returns true, |*original_error| is
+  // written with the error to use for overwriting.
+  // NOTE: This routine changes state; specifically, it increases the
+  // operations counts for the specified code.  It should only be called
+  // once per operation.
+  bool OverwriteError(
+    content::TestFileErrorInjector::FileOperationCode code,
+    content::DownloadInterruptReason* output_error);
 
   // Source URL for the file being downloaded.
   GURL source_url_;
@@ -85,6 +88,18 @@ class DownloadFileWithErrors: public DownloadFileImpl {
   // Callback for destruction.
   DestructionCallback destruction_callback_;
 };
+
+static void RenameErrorCallback(
+    const content::DownloadFile::RenameCompletionCallback original_callback,
+    content::DownloadInterruptReason overwrite_error,
+    content::DownloadInterruptReason original_error,
+    const FilePath& path_result) {
+  original_callback.Run(
+      overwrite_error,
+      overwrite_error == content::DOWNLOAD_INTERRUPT_REASON_NONE ?
+      path_result : FilePath());
+}
+
 
 DownloadFileWithErrors::DownloadFileWithErrors(
     const DownloadCreateInfo* info,
@@ -115,8 +130,8 @@ DownloadFileWithErrors::~DownloadFileWithErrors() {
 
 content::DownloadInterruptReason DownloadFileWithErrors::Initialize() {
   return ShouldReturnError(
-          content::TestFileErrorInjector::FILE_OPERATION_INITIALIZE,
-          DownloadFileImpl::Initialize());
+      content::TestFileErrorInjector::FILE_OPERATION_INITIALIZE,
+      DownloadFileImpl::Initialize());
 }
 
 content::DownloadInterruptReason DownloadFileWithErrors::AppendDataToFile(
@@ -130,48 +145,42 @@ void DownloadFileWithErrors::Rename(
     const FilePath& full_path,
     bool overwrite_existing_file,
     const RenameCompletionCallback& callback) {
-  DownloadFileImpl::Rename(
-      full_path, overwrite_existing_file,
-      base::Bind(&DownloadFileWithErrors::RenameErrorCallback,
-                 // Unretained since this'll only be called from
-                 // the DownloadFileImpl slice of the same object.
-                 base::Unretained(this), callback));
+  content::DownloadInterruptReason error_to_return =
+      content::DOWNLOAD_INTERRUPT_REASON_NONE;
+  RenameCompletionCallback callback_to_use = callback;
+
+  // Replace callback if the error needs to be overwritten.
+  if (OverwriteError(
+          content::TestFileErrorInjector::FILE_OPERATION_RENAME,
+          &error_to_return)) {
+    callback_to_use = base::Bind(&RenameErrorCallback, callback,
+                                 error_to_return);
+  }
+
+  DownloadFileImpl::Rename(full_path, overwrite_existing_file, callback_to_use);
+}
+
+bool DownloadFileWithErrors::OverwriteError(
+    content::TestFileErrorInjector::FileOperationCode code,
+    content::DownloadInterruptReason* output_error) {
+  int counter = operation_counter_[code]++;
+
+  if (code != error_info_.code)
+    return false;
+
+  if (counter != error_info_.operation_instance)
+    return false;
+
+  *output_error = error_info_.error;
+  return true;
 }
 
 content::DownloadInterruptReason DownloadFileWithErrors::ShouldReturnError(
     content::TestFileErrorInjector::FileOperationCode code,
     content::DownloadInterruptReason original_error) {
-  int counter = operation_counter_[code];
-  ++operation_counter_[code];
-
-  if (code != error_info_.code)
-    return original_error;
-
-  if (counter != error_info_.operation_instance)
-    return original_error;
-
-  VLOG(1) << " " << __FUNCTION__ << "()"
-          << " url = '" << source_url_.spec() << "'"
-          << " code = " << content::TestFileErrorInjector::DebugString(code)
-          << " (" << code << ")"
-          << " counter = " << counter
-          << " original_error = "
-          << content::InterruptReasonDebugString(original_error)
-          << " (" << original_error << ")"
-          << " new error = "
-          << content::InterruptReasonDebugString(error_info_.error)
-          << " (" << error_info_.error << ")";
-
-  return error_info_.error;
-}
-
-void DownloadFileWithErrors::RenameErrorCallback(
-    const RenameCompletionCallback& original_callback,
-    content::DownloadInterruptReason original_error,
-    const FilePath& path_result) {
-  original_callback.Run(ShouldReturnError(
-      content::TestFileErrorInjector::FILE_OPERATION_RENAME,
-      original_error), path_result);
+  content::DownloadInterruptReason output_error = original_error;
+  OverwriteError(code, &output_error);
+  return output_error;
 }
 
 }  // namespace
@@ -179,8 +188,7 @@ void DownloadFileWithErrors::RenameErrorCallback(
 namespace content {
 
 // A factory for constructing DownloadFiles that inject errors.
-class DownloadFileWithErrorsFactory
-    : public DownloadFileManager::DownloadFileFactory {
+class DownloadFileWithErrorsFactory : public content::DownloadFileFactory {
  public:
 
   DownloadFileWithErrorsFactory(
@@ -298,7 +306,7 @@ void TestFileErrorInjector::AddFactory(
   DCHECK(download_file_manager);
 
   // Convert to base class pointer, for GCC.
-  scoped_ptr<DownloadFileManager::DownloadFileFactory> plain_factory(
+  scoped_ptr<content::DownloadFileFactory> plain_factory(
       factory.release());
 
   download_file_manager->SetFileFactoryForTesting(plain_factory.Pass());
@@ -344,11 +352,11 @@ void TestFileErrorInjector::InjectErrorsOnFileThread(
   DownloadFileManager* download_file_manager = GetDownloadFileManager();
   DCHECK(download_file_manager);
 
-  DownloadFileManager::DownloadFileFactory* file_factory =
+  content::DownloadFileFactory* file_factory =
       download_file_manager->GetFileFactoryForTesting();
 
   // Validate that we still have the same factory.
-  DCHECK_EQ(static_cast<DownloadFileManager::DownloadFileFactory*>(factory),
+  DCHECK_EQ(static_cast<content::DownloadFileFactory*>(factory),
             file_factory);
 
   // We want to replace all existing injection errors.

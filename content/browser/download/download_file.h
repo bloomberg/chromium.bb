@@ -28,15 +28,15 @@ class CONTENT_EXPORT DownloadFile {
   // DOWNLOAD_INTERRUPT_REASON_NONE and |path| the path the rename
   // was done to.  On a failed rename, |reason| will contain the
   // error.
-  typedef base::Callback<void(content::DownloadInterruptReason reason,
+  typedef base::Callback<void(DownloadInterruptReason reason,
                               const FilePath& path)> RenameCompletionCallback;
 
   virtual ~DownloadFile() {}
 
-  // If calculate_hash is true, sha256 hash will be calculated.
   // Returns DOWNLOAD_INTERRUPT_REASON_NONE on success, or a network
-  // error code on failure.
-  virtual DownloadInterruptReason Initialize() = 0;
+  // error code on failure.  Upon completion, |callback| will be
+  // called on the UI thread as per the comment above.
+  virtual content::DownloadInterruptReason Initialize() = 0;
 
   // Rename the download file to |full_path|.  If that file exists and
   // |overwrite_existing_file| is false, |full_path| will be uniquified by
@@ -48,7 +48,8 @@ class CONTENT_EXPORT DownloadFile {
                       const RenameCompletionCallback& callback) = 0;
 
   // Detach the file so it is not deleted on destruction.
-  virtual void Detach() = 0;
+  // |callback| will be called on the UI thread after detach.
+  virtual void Detach(base::Closure callback) = 0;
 
   // Abort the download and automatically close the file.
   virtual void Cancel() = 0;

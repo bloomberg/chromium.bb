@@ -67,8 +67,7 @@ class MockRequestHandle : public DownloadRequestHandleInterface {
   MOCK_CONST_METHOD0(DebugString, std::string());
 };
 
-class MockDownloadFileFactory
-    : public DownloadFileManager::DownloadFileFactory {
+class MockDownloadFileFactory : public content::DownloadFileFactory {
  public:
   content::DownloadFile* CreateFile(
       DownloadCreateInfo* info,

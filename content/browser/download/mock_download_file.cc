@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/browser/download/mock_download_file.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 using ::testing::_;
 using ::testing::Return;

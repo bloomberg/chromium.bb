@@ -60,17 +60,20 @@ DownloadFileImpl::~DownloadFileImpl() {
 }
 
 content::DownloadInterruptReason DownloadFileImpl::Initialize() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
   update_timer_.reset(new base::RepeatingTimer<DownloadFileImpl>());
-  net::Error result = file_.Initialize(default_download_directory_);
-  if (result != net::OK) {
+  net::Error net_result = file_.Initialize(default_download_directory_);
+  if (net_result != net::OK) {
     return content::ConvertNetErrorToInterruptReason(
-        result, content::DOWNLOAD_INTERRUPT_FROM_DISK);
+        net_result, content::DOWNLOAD_INTERRUPT_FROM_DISK);
   }
 
   stream_reader_->RegisterCallback(
       base::Bind(&DownloadFileImpl::StreamActive, weak_factory_.GetWeakPtr()));
 
   download_start_ = base::TimeTicks::Now();
+
   // Initial pull from the straw.
   StreamActive();
 
@@ -126,8 +129,17 @@ void DownloadFileImpl::Rename(const FilePath& full_path,
       base::Bind(callback, reason, new_path));
 }
 
-void DownloadFileImpl::Detach() {
+void DownloadFileImpl::Detach(base::Closure callback) {
+  // Doing the annotation here leaves a small window during
+  // which the file has the final name but hasn't been marked with the
+  // Mark Of The Web.  However, it allows anti-virus scanners on Windows
+  // to actually see the data (http://crbug.com/127999), and the Window
+  // is pretty small (round trip to the UI thread).
+  AnnotateWithSourceInformation();
+
   file_.Detach();
+
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback);
 }
 
 void DownloadFileImpl::Cancel() {
