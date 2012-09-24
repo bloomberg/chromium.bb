@@ -26,6 +26,8 @@ const int kButtonCornerRadius = 2;
 
 const int kButtonHoverSize = 28;
 
+const int kBackgroundOffset = (48 - kButtonHoverSize) / 2;
+
 void RotateCounterclockwise(ui::Transform* transform) {
   transform->matrix().set3x3(0, -1, 0,
                              1,  0, 0,
@@ -65,8 +67,20 @@ void OverflowButton::SetShelfAlignment(ShelfAlignment alignment) {
 }
 
 void OverflowButton::PaintBackground(gfx::Canvas* canvas, int alpha) {
-  gfx::Rect rect(GetContentsBounds());
-  rect = rect.Center(gfx::Size(kButtonHoverSize, kButtonHoverSize));
+  gfx::Rect bounds(GetContentsBounds());
+  gfx::Rect rect(0, 0, kButtonHoverSize, kButtonHoverSize);
+
+  // Nudge the background a little to line up right.
+  if (alignment_ == SHELF_ALIGNMENT_BOTTOM) {
+    rect.set_origin(gfx::Point(
+        bounds.x() + ((bounds.width() - kButtonHoverSize) / 2) - 1,
+        bounds.y() + kBackgroundOffset - 1));
+
+  } else {
+    rect.set_origin(gfx::Point(
+        bounds.x() + kBackgroundOffset - 1,
+        bounds.y() + ((bounds.height() - kButtonHoverSize) / 2) - 1));
+  }
 
   SkPaint paint;
   paint.setAntiAlias(true);
@@ -90,20 +104,23 @@ void OverflowButton::OnPaint(gfx::Canvas* canvas) {
     PaintBackground(canvas, kButtonHoverAlpha);
   }
 
+  if (height() < kButtonHoverSize)
+    return;
+
   ui::Transform transform;
 
   switch (alignment_) {
     case SHELF_ALIGNMENT_BOTTOM:
       // Shift 1 pixel left to align with overflow bubble tip.
-      transform.ConcatTranslate(-1, 0);
+      transform.ConcatTranslate(-1, kBackgroundOffset);
       break;
     case SHELF_ALIGNMENT_LEFT:
       RotateClockwise(&transform);
-      transform.ConcatTranslate(width(), -1);
+      transform.ConcatTranslate(kBackgroundOffset, -1);
       break;
     case SHELF_ALIGNMENT_RIGHT:
       RotateCounterclockwise(&transform);
-      transform.ConcatTranslate(0, height());
+      transform.ConcatTranslate(kBackgroundOffset, height());
       break;
   }
 
@@ -111,10 +128,15 @@ void OverflowButton::OnPaint(gfx::Canvas* canvas) {
   canvas->Transform(transform);
 
   gfx::Rect rect(GetContentsBounds());
-  canvas->DrawImageInt(*image_,
-                       rect.x() + (rect.width() - image_->width()) / 2,
-                       rect.y() + (rect.height() - image_->height()) / 2);
-
+  if (alignment_ == SHELF_ALIGNMENT_BOTTOM) {
+    canvas->DrawImageInt(*image_,
+                         rect.x() + (rect.width() - image_->width()) / 2,
+                         kButtonHoverSize - image_->height());
+  } else {
+    canvas->DrawImageInt(*image_,
+                         kButtonHoverSize - image_->width(),
+                         rect.y() + (rect.height() - image_->height()) / 2);
+  }
   canvas->Restore();
 }
 

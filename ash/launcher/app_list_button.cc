@@ -25,7 +25,7 @@ namespace {
 
 const int kAnimationDurationInMs = 600;
 const float kAnimationOpacity[] = { 1.0f, 0.4f, 1.0f };
-const int kImageOffsetY = 8;
+const int kImageOffsetY = 7;
 }  // namespace
 
 AppListButton::AppListButton(views::ButtonListener* listener,
