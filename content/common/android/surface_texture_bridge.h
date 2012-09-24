@@ -47,8 +47,7 @@ class SurfaceTextureBridge {
  private:
   const int texture_id_;
 
-  // Java SurfaceTexture class and instance.
-  base::android::ScopedJavaGlobalRef<jclass> j_class_;
+  // Java SurfaceTexture instance.
   base::android::ScopedJavaGlobalRef<jobject> j_surface_texture_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceTextureBridge);

@@ -7,6 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/logging.h"
 #include "content/common/android/surface_texture_listener.h"
+#include "jni/SurfaceTexture_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::CheckException;
@@ -14,17 +15,28 @@ using base::android::GetClass;
 using base::android::GetMethodID;
 using base::android::ScopedJavaLocalRef;
 
+namespace {
+bool g_jni_initialized = false;
+
+void RegisterNativesIfNeeded(JNIEnv* env) {
+  if (!g_jni_initialized) {
+    JNI_SurfaceTexture::RegisterNativesImpl(env);
+    g_jni_initialized = true;
+  }
+}
+}  // namespace
+
 namespace content {
 
 SurfaceTextureBridge::SurfaceTextureBridge(int texture_id)
     : texture_id_(texture_id) {
   JNIEnv* env = AttachCurrentThread();
   CHECK(env);
+  RegisterNativesIfNeeded(env);
 
-  j_class_.Reset(GetClass(env, "android/graphics/SurfaceTexture"));
-  jmethodID constructor = GetMethodID(env, j_class_, "<init>", "(I)V");
-  ScopedJavaLocalRef<jobject> tmp(env,
-      env->NewObject(j_class_.obj(), constructor, texture_id));
+  ScopedJavaLocalRef<jobject> tmp(
+      JNI_SurfaceTexture::Java_SurfaceTexture_Constructor(
+          env, texture_id));
   DCHECK(!tmp.is_null());
   j_surface_texture_.Reset(tmp);
 }
@@ -34,17 +46,12 @@ SurfaceTextureBridge::~SurfaceTextureBridge() {
   CHECK(env);
 
   // Release the listener.
-  const char* method_signature =
-      "(Landroid/graphics/SurfaceTexture$OnFrameAvailableListener;)V";
-  jmethodID method = GetMethodID(env, j_class_, "setOnFrameAvailableListener",
-                                 method_signature);
-  env->CallVoidMethod(j_surface_texture_.obj(), method, NULL);
-  CheckException(env);
+  JNI_SurfaceTexture::Java_SurfaceTexture_setOnFrameAvailableListener(
+      env, j_surface_texture_.obj(), NULL);
 
   // Release graphics memory.
-  jmethodID release = GetMethodID(env, j_class_, "release", "()V");
-  env->CallVoidMethod(j_surface_texture_.obj(), release);
-  CheckException(env);
+  JNI_SurfaceTexture::Java_SurfaceTexture_release(
+      env, j_surface_texture_.obj());
 }
 
 void SurfaceTextureBridge::SetFrameAvailableCallback(
@@ -54,26 +61,22 @@ void SurfaceTextureBridge::SetFrameAvailableCallback(
 
   // Since the listener is owned by the Java SurfaceTexture object, setting
   // a new listener here will release an existing one at the same time.
-  ScopedJavaLocalRef<jobject> j_listener(env,
+  ScopedJavaLocalRef<jobject> j_listener(
+      env,
       SurfaceTextureListener::CreateSurfaceTextureListener(env, callback));
   DCHECK(!j_listener.is_null());
 
   // Set it as the onFrameAvailableListener for our SurfaceTexture instance.
-  const char* method_signature =
-      "(Landroid/graphics/SurfaceTexture$OnFrameAvailableListener;)V";
-  jmethodID method = GetMethodID(env, j_class_, "setOnFrameAvailableListener",
-                                 method_signature);
-  env->CallVoidMethod(j_surface_texture_.obj(), method, j_listener.obj());
-  CheckException(env);
+  JNI_SurfaceTexture::Java_SurfaceTexture_setOnFrameAvailableListener(
+      env, j_surface_texture_.obj(), j_listener.obj());
 }
 
 void SurfaceTextureBridge::UpdateTexImage() {
   JNIEnv* env = AttachCurrentThread();
   CHECK(env);
 
-  jmethodID method = GetMethodID(env, j_class_, "updateTexImage", "()V");
-  env->CallVoidMethod(j_surface_texture_.obj(), method);
-  CheckException(env);
+  JNI_SurfaceTexture::Java_SurfaceTexture_updateTexImage(
+      env, j_surface_texture_.obj());
 }
 
 void SurfaceTextureBridge::GetTransformMatrix(float mtx[16]) {
@@ -81,9 +84,8 @@ void SurfaceTextureBridge::GetTransformMatrix(float mtx[16]) {
   CHECK(env);
 
   ScopedJavaLocalRef<jfloatArray> jmatrix(env, env->NewFloatArray(16));
-  jmethodID method = GetMethodID(env, j_class_, "getTransformMatrix", "([F)V");
-  env->CallVoidMethod(j_surface_texture_.obj(), method, jmatrix.obj());
-  CheckException(env);
+  JNI_SurfaceTexture::Java_SurfaceTexture_getTransformMatrix(
+      env, j_surface_texture_.obj(), jmatrix.obj());
 
   jboolean is_copy;
   jfloat* elements = env->GetFloatArrayElements(jmatrix.obj(), &is_copy);
@@ -97,11 +99,9 @@ void SurfaceTextureBridge::SetDefaultBufferSize(int width, int height) {
   JNIEnv* env = AttachCurrentThread();
   CHECK(env);
 
-  jmethodID method = GetMethodID(env, j_class_,
-                                 "setDefaultBufferSize", "(II)V");
-  env->CallVoidMethod(j_surface_texture_.obj(), method,
-                      static_cast<jint>(width), static_cast<jint>(height));
-  CheckException(env);
+  JNI_SurfaceTexture::Java_SurfaceTexture_setDefaultBufferSize(
+      env, j_surface_texture_.obj(), static_cast<jint>(width),
+      static_cast<jint>(height));
 }
 
 }  // namespace content
