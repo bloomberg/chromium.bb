@@ -1,1 +1,0 @@
- 0:	f0 0f c7 c8         	cmpxchg8b %ecx

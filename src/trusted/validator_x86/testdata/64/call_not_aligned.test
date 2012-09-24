@@ -1,0 +1,89 @@
+@hex:
+  # Model case where the call is not aligned so that the return address
+  # is aligned (32 bytes).
+  90 90 90 90 90 90 e8 00 00 00 00 90 90 90 90 90  90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90
+  
+  
+@val:
+  VALIDATOR: 0000000000000006: e8 00 00 00 00                               call 0xb
+  VALIDATOR: WARNING: Bad call alignment, return pc = b
+  VALIDATOR: Checking jump targets: 0 to 21
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@rval:
+  VALIDATOR: 0000000000000006: e8 00 00 00 00                               call 0xb
+  VALIDATOR: WARNING: Bad call alignment, return pc = b
+  VALIDATOR: Checking jump targets: 0 to 21
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@rvald:
+  VALIDATOR: 0000000000000006: e8 00 00 00 00                               call 0xb
+  VALIDATOR: WARNING: Bad call alignment, return pc = b
+  VALIDATOR: Checking block alignment and jump targets: 0 to 21
+  *** <input> is safe ***
+@vd-rval:
+  VALIDATOR: 0000000000000006: e8 00 00 00 00                               call 0xb
+  VALIDATOR: WARNING: Bad call alignment, return pc = b
+  VALIDATOR: Checking jump targets: 0 to 21
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@dis:
+  0000000000000000: 90                                           nop
+  0000000000000001: 90                                           nop
+  0000000000000002: 90                                           nop
+  0000000000000003: 90                                           nop
+  0000000000000004: 90                                           nop
+  0000000000000005: 90                                           nop
+  0000000000000006: e8 00 00 00 00                               call 0xb
+  000000000000000b: 90                                           nop
+  000000000000000c: 90                                           nop
+  000000000000000d: 90                                           nop
+  000000000000000e: 90                                           nop
+  000000000000000f: 90                                           nop
+  0000000000000010: 90                                           nop
+  0000000000000011: 90                                           nop
+  0000000000000012: 90                                           nop
+  0000000000000013: 90                                           nop
+  0000000000000014: 90                                           nop
+  0000000000000015: 90                                           nop
+  0000000000000016: 90                                           nop
+  0000000000000017: 90                                           nop
+  0000000000000018: 90                                           nop
+  0000000000000019: 90                                           nop
+  000000000000001a: 90                                           nop
+  000000000000001b: 90                                           nop
+  000000000000001c: 90                                           nop
+  000000000000001d: 90                                           nop
+  000000000000001e: 90                                           nop
+  000000000000001f: 90                                           nop
+  0000000000000020: 90                                           nop
+@vdis:
+  0000000000000000: 90                                           [P] dontcare
+  0000000000000001: 90                                           [P] dontcare
+  0000000000000002: 90                                           [P] dontcare
+  0000000000000003: 90                                           [P] dontcare
+  0000000000000004: 90                                           [P] dontcare
+  0000000000000005: 90                                           [P] dontcare
+  0000000000000006: e8 00 00 00 00                               call 0xb
+  000000000000000b: 90                                           [P] dontcare
+  000000000000000c: 90                                           [P] dontcare
+  000000000000000d: 90                                           [P] dontcare
+  000000000000000e: 90                                           [P] dontcare
+  000000000000000f: 90                                           [P] dontcare
+  0000000000000010: 90                                           [P] dontcare
+  0000000000000011: 90                                           [P] dontcare
+  0000000000000012: 90                                           [P] dontcare
+  0000000000000013: 90                                           [P] dontcare
+  0000000000000014: 90                                           [P] dontcare
+  0000000000000015: 90                                           [P] dontcare
+  0000000000000016: 90                                           [P] dontcare
+  0000000000000017: 90                                           [P] dontcare
+  0000000000000018: 90                                           [P] dontcare
+  0000000000000019: 90                                           [P] dontcare
+  000000000000001a: 90                                           [P] dontcare
+  000000000000001b: 90                                           [P] dontcare
+  000000000000001c: 90                                           [P] dontcare
+  000000000000001d: 90                                           [P] dontcare
+  000000000000001e: 90                                           [P] dontcare
+  000000000000001f: 90                                           [P] dontcare
+  0000000000000020: 90                                           [P] dontcare

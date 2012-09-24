@@ -1,0 +1,58 @@
+@hex:
+  # Sample stubout code, with multiple stubouts.
+  #
+  # add %ds:[%eax], %al
+  00 00
+  # ret
+  c3
+  # add %eax, %eax
+  01 c0
+  # Too many prefix bytes
+  66 66 66 66 00 00
+  # nop
+  90
+  # lea %esi, %ds:[%esi+%esp*1]
+  8d 74 26 00
+  # Too many prefix bytes
+  66 66 66 66 00 00
+@nval:
+  VALIDATOR: 2: ret instruction (not allowed)
+  VALIDATOR: 2: Illegal instruction
+  VALIDATOR: 5: Bad prefix usage
+  VALIDATOR: 10: Bad prefix usage
+  *** <input> IS UNSAFE ***
+@snval:
+  D: STUBBED OUT as follows:
+   0:	00 00               	add [%eax], %eax
+   2:	f4                  	hlt
+   3:	01 c0               	add %eax, %eax
+   5:	f4                  	hlt
+   6:	f4                  	hlt
+   7:	f4                  	hlt
+   8:	f4                  	hlt
+   9:	f4                  	hlt
+   a:	f4                  	hlt
+   b:	90                  	nop
+   c:	8d 74 26 00         	lea %esi, 0x0[%esi]
+   10:	f4                  	hlt
+   11:	f4                  	hlt
+   12:	f4                  	hlt
+   13:	f4                  	hlt
+   14:	f4                  	hlt
+   15:	f4                  	hlt
+@dis:
+  00000000: 00 00                                        add %ds:[%eax], %al
+  00000002: c3                                           ret
+  00000003: 01 c0                                        add %eax, %eax
+  00000005: 66 66 66 66 00 00                            add %ds:[%eax], %al
+  0000000b: 90                                           nop
+  0000000c: 8d 74 26 00                                  lea %esi, %ds:[%esi+%esp*1]
+  00000010: 66 66 66 66 00 00                            add %ds:[%eax], %al
+@vdis:
+   0:	00 00               	add [%eax], %eax
+   2:	c3                  	ret
+   3:	01 c0               	add %eax, %eax
+   5:	66 66 66 66 00 00   	add [%eax], %eax
+   b:	90                  	nop
+   c:	8d 74 26 00         	lea %esi, 0x0[%esi]
+   10:	66 66 66 66 00 00   	add [%eax], %eax

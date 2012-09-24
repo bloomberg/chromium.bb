@@ -1,0 +1,23 @@
+@hex:
+  # Show that just computing an address, using LEA, doesn't cause an error.
+  #   lea %ecx, [%rcx+%rax*8]
+  8d 0c c1
+@val:
+  VALIDATOR: Checking jump targets: 0 to 3
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@rval:
+  VALIDATOR: Checking jump targets: 0 to 3
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@rvald:
+  VALIDATOR: Checking block alignment and jump targets: 0 to 3
+  *** <input> is safe ***
+@vd-rval:
+  VALIDATOR: Checking jump targets: 0 to 3
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@dis:
+  0000000000000000: 8d 0c c1                                     lea %ecx, [%rcx+%rax*8]
+@vdis:
+  0000000000000000: 8d 0c c1                                     lea %ecx, [%rcx+%rax*8]

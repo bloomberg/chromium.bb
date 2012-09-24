@@ -1,0 +1,32 @@
+@hex:
+  # Models a jump to the begining of an atomic instruction sequence.
+  EB 00
+  83 e2 e0
+  4c 01 fa
+  ff e2
+  
+@val:
+  VALIDATOR: Checking jump targets: 0 to a
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@rval:
+  VALIDATOR: Checking jump targets: 0 to a
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@rvald:
+  VALIDATOR: Checking block alignment and jump targets: 0 to a
+  *** <input> is safe ***
+@vd-rval:
+  VALIDATOR: Checking jump targets: 0 to a
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@dis:
+  0000000000000000: eb 00                                        jmp 0x2
+  0000000000000002: 83 e2 e0                                     and %edx, 0xe0
+  0000000000000005: 4c 01 fa                                     add %rdx, %r15
+  0000000000000008: ff e2                                        jmp %rdx
+@vdis:
+  0000000000000000: eb 00                                        [P] dontcarejump %rip (s), 0x2 (u)
+  0000000000000002: 83 e2 e0                                     and %edx, 0xe0
+  0000000000000005: 4c 01 fa                                     add %rdx, %r15
+  0000000000000008: ff e2                                        [P] dontcarejump %rip (s), %rdx (u)

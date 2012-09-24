@@ -1,0 +1,7 @@
+@hex:
+  # Test if we recognize tzcnt as a bsf with REP prefix.
+  f3 0f bc c3
+@nval:
+  *** <input> is safe ***
+@vdis:
+   0:	f3 0f bc c3         	tzcnt %eax, %eax

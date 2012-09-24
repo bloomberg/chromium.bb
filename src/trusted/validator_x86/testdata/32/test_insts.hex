@@ -1,9 +1,0 @@
-# Test sample x86 32-bit instructions.
-#    push %ebp
-#    lea %esi, %ds[%esi+%esp*1]
-#    mov %eax, 0x55667788
-#    mov %ax, 0x7788
-#    mov %al, [0x11223344]
-
-55 8d 74 26 00 b8 88 77 66 55
-66 b8 88 77 a0 44 33 22 11

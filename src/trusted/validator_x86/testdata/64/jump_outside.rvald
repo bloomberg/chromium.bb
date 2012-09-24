@@ -1,4 +1,0 @@
-VALIDATOR: 0000000000000005: e9 17 00 00 00                               jmp 0x21
-VALIDATOR: ERROR: Instruction jumps to bad address
-VALIDATOR: Checking block alignment and jump targets: 0 to a
-*** <input> IS UNSAFE ***

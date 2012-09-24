@@ -1,2 +1,0 @@
-# Show that we report rdmsr as an illegal instruction.
-0f 32

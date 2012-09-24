@@ -1,0 +1,35 @@
+@hex:
+  # Models a jump into the middle of an instruction.
+  EB 02
+  83 e2 e0
+@val:
+  VALIDATOR: Checking jump targets: 0 to 5
+  VALIDATOR: ERROR: 4: Bad jump target
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rval:
+  VALIDATOR: Checking jump targets: 0 to 5
+  VALIDATOR: ERROR: 4: Bad jump target
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rvala:
+  VALIDATOR: Checking jump targets: 0 to 5
+  VALIDATOR: 4: Bad jump target
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rvald:
+  VALIDATOR: Checking block alignment and jump targets: 0 to 5
+  VALIDATOR: 0000000000000000: eb 02                                        jmp 0x4
+  VALIDATOR: ERROR: Doesn't jump to instruction address
+  *** <input> IS UNSAFE ***
+@vd-rval:
+  VALIDATOR: Checking jump targets: 0 to 5
+  VALIDATOR: ERROR: 4: Bad jump target
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: eb 02                                        jmp 0x4
+  0000000000000002: 83 e2 e0                                     and %edx, 0xe0
+@vdis:
+  0000000000000000: eb 02                                        [P] dontcarejump %rip (s), 0x4 (u)
+  0000000000000002: 83 e2 e0                                     and %edx, 0xe0

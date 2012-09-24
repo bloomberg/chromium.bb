@@ -1,0 +1,17 @@
+@hex:
+  # Doesn't disassemble correctly
+  # 16-bit instructions
+  # mov %ax, (%bx)
+  67 66 89 07
+  # mov %ax, (%bp)
+  67 66 89 46 00
+@nval:
+  VALIDATOR: 0: Bad prefix usage
+  VALIDATOR: 4: Bad prefix usage
+  *** <input> IS UNSAFE ***
+@dis:
+  00000000: 67 66 89 07                                  mov *NaClIllegal*, %ax
+  00000004: 67 66 89 46 00                               mov *NaClIllegal*, %ax
+@vdis:
+   0:	67 66 89 07         	mov *NaClIllegal*, %eax
+   4:	67 66 89 46 00      	mov *NaClIllegal*, %eax

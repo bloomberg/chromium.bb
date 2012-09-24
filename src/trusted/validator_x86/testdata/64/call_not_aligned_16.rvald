@@ -1,4 +1,0 @@
-VALIDATOR: 000000000000000b: e8 00 00 00 00                               call 0x10
-VALIDATOR: WARNING: Bad call alignment, return pc = 10
-VALIDATOR: Checking block alignment and jump targets: 0 to 21
-*** <input> is safe ***

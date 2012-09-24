@@ -1,0 +1,77 @@
+@hex:
+  # Make sure we recognize instruction "and %ah 0xf7" as an and.
+  80 e4 f7 90 90 90 90 90 90 90 90 90 90 90 90
+  90 90 90 90 90 90 90 90 90 90 90 90 90 90 90
+@val:
+  VALIDATOR: Checking jump targets: 0 to 1e
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@rval:
+  VALIDATOR: Checking jump targets: 0 to 1e
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@rvald:
+  VALIDATOR: Checking block alignment and jump targets: 0 to 1e
+  *** <input> is safe ***
+@vd-rval:
+  VALIDATOR: Checking jump targets: 0 to 1e
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@dis:
+  0000000000000000: 80 e4 f7                                     and %ah, 0xf7
+  0000000000000003: 90                                           nop
+  0000000000000004: 90                                           nop
+  0000000000000005: 90                                           nop
+  0000000000000006: 90                                           nop
+  0000000000000007: 90                                           nop
+  0000000000000008: 90                                           nop
+  0000000000000009: 90                                           nop
+  000000000000000a: 90                                           nop
+  000000000000000b: 90                                           nop
+  000000000000000c: 90                                           nop
+  000000000000000d: 90                                           nop
+  000000000000000e: 90                                           nop
+  000000000000000f: 90                                           nop
+  0000000000000010: 90                                           nop
+  0000000000000011: 90                                           nop
+  0000000000000012: 90                                           nop
+  0000000000000013: 90                                           nop
+  0000000000000014: 90                                           nop
+  0000000000000015: 90                                           nop
+  0000000000000016: 90                                           nop
+  0000000000000017: 90                                           nop
+  0000000000000018: 90                                           nop
+  0000000000000019: 90                                           nop
+  000000000000001a: 90                                           nop
+  000000000000001b: 90                                           nop
+  000000000000001c: 90                                           nop
+  000000000000001d: 90                                           nop
+@vdis:
+  0000000000000000: 80 e4 f7                                     and %ah, 0xf7
+  0000000000000003: 90                                           [P] dontcare
+  0000000000000004: 90                                           [P] dontcare
+  0000000000000005: 90                                           [P] dontcare
+  0000000000000006: 90                                           [P] dontcare
+  0000000000000007: 90                                           [P] dontcare
+  0000000000000008: 90                                           [P] dontcare
+  0000000000000009: 90                                           [P] dontcare
+  000000000000000a: 90                                           [P] dontcare
+  000000000000000b: 90                                           [P] dontcare
+  000000000000000c: 90                                           [P] dontcare
+  000000000000000d: 90                                           [P] dontcare
+  000000000000000e: 90                                           [P] dontcare
+  000000000000000f: 90                                           [P] dontcare
+  0000000000000010: 90                                           [P] dontcare
+  0000000000000011: 90                                           [P] dontcare
+  0000000000000012: 90                                           [P] dontcare
+  0000000000000013: 90                                           [P] dontcare
+  0000000000000014: 90                                           [P] dontcare
+  0000000000000015: 90                                           [P] dontcare
+  0000000000000016: 90                                           [P] dontcare
+  0000000000000017: 90                                           [P] dontcare
+  0000000000000018: 90                                           [P] dontcare
+  0000000000000019: 90                                           [P] dontcare
+  000000000000001a: 90                                           [P] dontcare
+  000000000000001b: 90                                           [P] dontcare
+  000000000000001c: 90                                           [P] dontcare
+  000000000000001d: 90                                           [P] dontcare

@@ -1,0 +1,30 @@
+@hex:
+  # Test that we catch the assignment to rbp in a pop.
+  5D
+@val:
+  VALIDATOR: 0000000000000000: 5d                                           pop %rbp
+  VALIDATOR: ERROR: Illegal change to register RBP
+  VALIDATOR: Checking jump targets: 0 to 1
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rval:
+  VALIDATOR: 0000000000000000: 5d                                           pop %rbp
+  VALIDATOR: ERROR: Illegal change to register RBP
+  VALIDATOR: Checking jump targets: 0 to 1
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rvald:
+  VALIDATOR: 0000000000000000: 5d                                           pop %rbp
+  VALIDATOR: ERROR: Illegal change to register RBP
+  VALIDATOR: Checking block alignment and jump targets: 0 to 1
+  *** <input> IS UNSAFE ***
+@vd-rval:
+  VALIDATOR: 0000000000000000: 5d                                           pop %rbp
+  VALIDATOR: ERROR: Illegal change to register RBP
+  VALIDATOR: Checking jump targets: 0 to 1
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 5d                                           pop %rbp
+@vdis:
+  0000000000000000: 5d                                           pop %rbp

@@ -1,0 +1,13 @@
+@hex:
+  # Subtract a 32-bit bounded value from esp and then update rsp.
+  # 0000000000000000: 81 ec 20 00 00 00                            sub %esp, 0x20
+  # 0000000000000006: 4c 01 fc                                     add %rsp, %r15
+  81 ec 20 00 00 00
+  4c 01 fc
+@rval:
+  VALIDATOR: Checking jump targets: 0 to 9
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@dis:
+  0000000000000000: 81 ec 20 00 00 00                            sub %esp, 0x20
+  0000000000000006: 4c 01 fc                                     add %rsp, %r15

@@ -1,0 +1,204 @@
+@hex:
+  # Note: sequences of ordinary nops (90 90 90 ...) are added
+  # for bundle alignemnt.
+  
+  # Recommended nops
+  90
+  66 90
+  0F 1F 00
+  0F 1F 40 00
+  0F 1F 44 00 00
+  66 0F 1F 44 00 00
+  0F 1F 80 00 00 00 00
+  90 90 90 90
+  0F 1F 84 00 00 00 00 00
+  66 0F 1F 84 00 00 00 00 00
+  # Large nops
+  66 2E 0F 1F 84 00 00 00 00 00
+  90 90 90 90 90
+  66 66 2E 0F 1F 84 00 00 00 00 00
+  66 66 66 2E 0F 1F 84 00 00 00 00 00
+  90 90 90 90 90 90 90 90 90
+  66 66 66 66 2E 0F 1F 84 00 00 00 00 00
+  66 66 66 66 66 2E 0F 1F 84 00 00 00 00 00
+  66 66 66 66 66 66 2E 0F 1F 84 00 00 00 00 00
+  
+  # Illegal nops
+  66 66 90
+  66 66 66 90
+  3E 0F 1F 84 00 00 00 00 00
+  90 90 90 90 90 90
+  66 3E 0F 1F 84 00 00 00 00 00
+  66 66 0F 1F 84 00 00 00 00 00
+  
+@rval:
+  VALIDATOR: 000000000000008a: 66 66 90                                     xchg %ax, %ax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 000000000000008a: 66 66 90                                     xchg %ax, %ax
+  VALIDATOR: ERROR: Duplicating a prefix byte is not allowed by Native Client
+  VALIDATOR: 000000000000008d: 66 66 66 90                                  xchg %ax, %ax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 000000000000008d: 66 66 66 90                                  xchg %ax, %ax
+  VALIDATOR: ERROR: Duplicating a prefix byte is not allowed by Native Client
+  VALIDATOR: 0000000000000091: 3e 0f 1f 84 00 00 00 00 00                   nop
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 00000000000000a0: 66 3e 0f 1f 84 00 00 00 00 00                nop
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 00000000000000a0: 66 3e 0f 1f 84 00 00 00 00 00                nop
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 00000000000000a0: 66 3e 0f 1f 84 00 00 00 00 00                nop
+  VALIDATOR: ERROR: Use of DATA16 (66) prefix for instruction not allowed by Native Client
+  VALIDATOR: 00000000000000aa: 66 66 0f 1f 84 00 00 00 00 00                nop
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 00000000000000aa: 66 66 0f 1f 84 00 00 00 00 00                nop
+  VALIDATOR: ERROR: Use of DATA16 (66) prefix for instruction not allowed by Native Client
+  VALIDATOR: 00000000000000aa: 66 66 0f 1f 84 00 00 00 00 00                nop
+  VALIDATOR: ERROR: Duplicating a prefix byte is not allowed by Native Client
+  VALIDATOR: Checking jump targets: 0 to b4
+  VALIDATOR: Checking that basic blocks are aligned
+  VALIDATOR: ERROR: 80: Bad basic block alignment.
+  *** <input> IS UNSAFE ***
+@rvald:
+  VALIDATOR: 000000000000008a: 66 66 90                                     xchg %ax, %ax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 000000000000008a: 66 66 90                                     xchg %ax, %ax
+  VALIDATOR: ERROR: Duplicating a prefix byte is not allowed by Native Client
+  VALIDATOR: 000000000000008d: 66 66 66 90                                  xchg %ax, %ax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 000000000000008d: 66 66 66 90                                  xchg %ax, %ax
+  VALIDATOR: ERROR: Duplicating a prefix byte is not allowed by Native Client
+  VALIDATOR: 0000000000000091: 3e 0f 1f 84 00 00 00 00 00                   nop
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 00000000000000a0: 66 3e 0f 1f 84 00 00 00 00 00                nop
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 00000000000000a0: 66 3e 0f 1f 84 00 00 00 00 00                nop
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 00000000000000a0: 66 3e 0f 1f 84 00 00 00 00 00                nop
+  VALIDATOR: ERROR: Use of DATA16 (66) prefix for instruction not allowed by Native Client
+  VALIDATOR: 00000000000000aa: 66 66 0f 1f 84 00 00 00 00 00                nop
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 00000000000000aa: 66 66 0f 1f 84 00 00 00 00 00                nop
+  VALIDATOR: ERROR: Use of DATA16 (66) prefix for instruction not allowed by Native Client
+  VALIDATOR: 00000000000000aa: 66 66 0f 1f 84 00 00 00 00 00                nop
+  VALIDATOR: ERROR: Duplicating a prefix byte is not allowed by Native Client
+  VALIDATOR: Checking block alignment and jump targets: 0 to b4
+  VALIDATOR: 000000000000007b: 66 66 66 66 66 66 2e 0f 1f 84 00 00 00 00 00 nop
+  VALIDATOR: ERROR: Instruction crosses basic block alignment
+  *** <input> IS UNSAFE ***
+@vd-rval:
+  VALIDATOR: 000000000000008a: 66 66 90                                     [P] dontcare %ax (suz), %ax (suz)
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 000000000000008a: 66 66 90                                     [P] dontcare %ax (suz), %ax (suz)
+  VALIDATOR: ERROR: Duplicating a prefix byte is not allowed by Native Client
+  VALIDATOR: 000000000000008d: 66 66 66 90                                  [P] dontcare %ax (suz), %ax (suz)
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 000000000000008d: 66 66 66 90                                  [P] dontcare %ax (suz), %ax (suz)
+  VALIDATOR: ERROR: Duplicating a prefix byte is not allowed by Native Client
+  VALIDATOR: 0000000000000091: 3e 0f 1f 84 00 00 00 00 00                   [P] dontcare
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 00000000000000a0: 66 3e 0f 1f 84 00 00 00 00 00                [P] dontcare
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 00000000000000a0: 66 3e 0f 1f 84 00 00 00 00 00                [P] dontcare
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 00000000000000a0: 66 3e 0f 1f 84 00 00 00 00 00                [P] dontcare
+  VALIDATOR: ERROR: Use of DATA16 (66) prefix for instruction not allowed by Native Client
+  VALIDATOR: 00000000000000aa: 66 66 0f 1f 84 00 00 00 00 00                [P] dontcare
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 00000000000000aa: 66 66 0f 1f 84 00 00 00 00 00                [P] dontcare
+  VALIDATOR: ERROR: Use of DATA16 (66) prefix for instruction not allowed by Native Client
+  VALIDATOR: 00000000000000aa: 66 66 0f 1f 84 00 00 00 00 00                [P] dontcare
+  VALIDATOR: ERROR: Duplicating a prefix byte is not allowed by Native Client
+  VALIDATOR: Checking jump targets: 0 to b4
+  VALIDATOR: Checking that basic blocks are aligned
+  VALIDATOR: ERROR: 80: Bad basic block alignment.
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 90                                           nop
+  0000000000000001: 66 90                                        nop
+  0000000000000003: 0f 1f 00                                     nop
+  0000000000000006: 0f 1f 40 00                                  nop
+  000000000000000a: 0f 1f 44 00 00                               nop
+  000000000000000f: 66 0f 1f 44 00 00                            nop
+  0000000000000015: 0f 1f 80 00 00 00 00                         nop
+  000000000000001c: 90                                           nop
+  000000000000001d: 90                                           nop
+  000000000000001e: 90                                           nop
+  000000000000001f: 90                                           nop
+  0000000000000020: 0f 1f 84 00 00 00 00 00                      nop
+  0000000000000028: 66 0f 1f 84 00 00 00 00 00                   nop
+  0000000000000031: 66 2e 0f 1f 84 00 00 00 00 00                nop
+  000000000000003b: 90                                           nop
+  000000000000003c: 90                                           nop
+  000000000000003d: 90                                           nop
+  000000000000003e: 90                                           nop
+  000000000000003f: 90                                           nop
+  0000000000000040: 66 66 2e 0f 1f 84 00 00 00 00 00             nop
+  000000000000004b: 66 66 66 2e 0f 1f 84 00 00 00 00 00          nop
+  0000000000000057: 90                                           nop
+  0000000000000058: 90                                           nop
+  0000000000000059: 90                                           nop
+  000000000000005a: 90                                           nop
+  000000000000005b: 90                                           nop
+  000000000000005c: 90                                           nop
+  000000000000005d: 90                                           nop
+  000000000000005e: 90                                           nop
+  000000000000005f: 90                                           nop
+  0000000000000060: 66 66 66 66 2e 0f 1f 84 00 00 00 00 00       nop
+  000000000000006d: 66 66 66 66 66 2e 0f 1f 84 00 00 00 00 00    nop
+  000000000000007b: 66 66 66 66 66 66 2e 0f 1f 84 00 00 00 00 00 nop
+  000000000000008a: 66 66 90                                     xchg %ax, %ax
+  000000000000008d: 66 66 66 90                                  xchg %ax, %ax
+  0000000000000091: 3e 0f 1f 84 00 00 00 00 00                   nop
+  000000000000009a: 90                                           nop
+  000000000000009b: 90                                           nop
+  000000000000009c: 90                                           nop
+  000000000000009d: 90                                           nop
+  000000000000009e: 90                                           nop
+  000000000000009f: 90                                           nop
+  00000000000000a0: 66 3e 0f 1f 84 00 00 00 00 00                nop
+  00000000000000aa: 66 66 0f 1f 84 00 00 00 00 00                nop
+@vdis:
+  0000000000000000: 90                                           [P] dontcare
+  0000000000000001: 66 90                                        [P] dontcare
+  0000000000000003: 0f 1f 00                                     [P] dontcare
+  0000000000000006: 0f 1f 40 00                                  [P] dontcare
+  000000000000000a: 0f 1f 44 00 00                               [P] dontcare
+  000000000000000f: 66 0f 1f 44 00 00                            [P] dontcare
+  0000000000000015: 0f 1f 80 00 00 00 00                         [P] dontcare
+  000000000000001c: 90                                           [P] dontcare
+  000000000000001d: 90                                           [P] dontcare
+  000000000000001e: 90                                           [P] dontcare
+  000000000000001f: 90                                           [P] dontcare
+  0000000000000020: 0f 1f 84 00 00 00 00 00                      [P] dontcare
+  0000000000000028: 66 0f 1f 84 00 00 00 00 00                   [P] dontcare
+  0000000000000031: 66 2e 0f 1f 84 00 00 00 00 00                [P] dontcare
+  000000000000003b: 90                                           [P] dontcare
+  000000000000003c: 90                                           [P] dontcare
+  000000000000003d: 90                                           [P] dontcare
+  000000000000003e: 90                                           [P] dontcare
+  000000000000003f: 90                                           [P] dontcare
+  0000000000000040: 66 66 2e 0f 1f 84 00 00 00 00 00             [P] dontcare
+  000000000000004b: 66 66 66 2e 0f 1f 84 00 00 00 00 00          [P] dontcare
+  0000000000000057: 90                                           [P] dontcare
+  0000000000000058: 90                                           [P] dontcare
+  0000000000000059: 90                                           [P] dontcare
+  000000000000005a: 90                                           [P] dontcare
+  000000000000005b: 90                                           [P] dontcare
+  000000000000005c: 90                                           [P] dontcare
+  000000000000005d: 90                                           [P] dontcare
+  000000000000005e: 90                                           [P] dontcare
+  000000000000005f: 90                                           [P] dontcare
+  0000000000000060: 66 66 66 66 2e 0f 1f 84 00 00 00 00 00       [P] dontcare
+  000000000000006d: 66 66 66 66 66 2e 0f 1f 84 00 00 00 00 00    [P] dontcare
+  000000000000007b: 66 66 66 66 66 66 2e 0f 1f 84 00 00 00 00 00 [P] dontcare
+  000000000000008a: 66 66 90                                     [P] dontcare %ax (suz), %ax (suz)
+  000000000000008d: 66 66 66 90                                  [P] dontcare %ax (suz), %ax (suz)
+  0000000000000091: 3e 0f 1f 84 00 00 00 00 00                   [P] dontcare
+  000000000000009a: 90                                           [P] dontcare
+  000000000000009b: 90                                           [P] dontcare
+  000000000000009c: 90                                           [P] dontcare
+  000000000000009d: 90                                           [P] dontcare
+  000000000000009e: 90                                           [P] dontcare
+  000000000000009f: 90                                           [P] dontcare
+  00000000000000a0: 66 3e 0f 1f 84 00 00 00 00 00                [P] dontcare
+  00000000000000aa: 66 66 0f 1f 84 00 00 00 00 00                [P] dontcare

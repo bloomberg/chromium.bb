@@ -1,0 +1,63 @@
+@hex:
+  # 3DNow! instructions
+  # pi2fd %mm0,%mm1
+  0f 0f c8 0d
+  # pfcmpeq %mm0,%mm1
+  0f 0f c8 b0
+  # pfacc %mm0,%mm1
+  0f 0f c8 ae
+  # pfrcp %mm0,%mm1
+  0f 0f c8 96
+  # pfrcpit2 %mm0,%mm1
+  0f 0f c8 b6
+  # pavgusb %mm0,%mm1
+  0f 0f c8 bf
+  # pmulhrw %mm0,%mm1
+  0f 0f c8 b7
+  # femms
+  0f 0e
+  # prefetchw (%rsp)
+  0f 0d 0c 24
+  # pfpnacc %mm0,%mm1
+  0f 0f c8 8e
+  # pswapd %mm0,%mm1
+  0f 0f c8 bb
+@rval:
+  VALIDATOR: Checking jump targets: 0 to 2a
+  VALIDATOR: Checking that basic blocks are aligned
+  VALIDATOR: ERROR: 20: Bad basic block alignment.
+  *** <input> IS UNSAFE ***
+@rvald:
+  VALIDATOR: Checking block alignment and jump targets: 0 to 2a
+  VALIDATOR: 000000000000001e: 0f 0d 0c 24                                  prefetch_modified [%rsp]
+  VALIDATOR: ERROR: Instruction crosses basic block alignment
+  *** <input> IS UNSAFE ***
+@vd-rval:
+  VALIDATOR: Checking jump targets: 0 to 2a
+  VALIDATOR: Checking that basic blocks are aligned
+  VALIDATOR: ERROR: 20: Bad basic block alignment.
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 0f 0f c8 0d                                  pi2fd %mmx1, %mmx0
+  0000000000000004: 0f 0f c8 b0                                  pfcmpeq %mmx1, %mmx0
+  0000000000000008: 0f 0f c8 ae                                  pfacc %mmx1, %mmx0
+  000000000000000c: 0f 0f c8 96                                  pfrcp %mmx1, %mmx0
+  0000000000000010: 0f 0f c8 b6                                  pfrcpit2 %mmx1, %mmx0
+  0000000000000014: 0f 0f c8 bf                                  pavgusb %mmx1, %mmx0
+  0000000000000018: 0f 0f c8 b7                                  pmulhrw %mmx1, %mmx0
+  000000000000001c: 0f 0e                                        femms
+  000000000000001e: 0f 0d 0c 24                                  prefetch_modified [%rsp]
+  0000000000000022: 0f 0f c8 8e                                  pfpnacc %mmx1, %mmx0
+  0000000000000026: 0f 0f c8 bb                                  pswapd %mmx1, %mmx0
+@vdis:
+  0000000000000000: 0f 0f c8 0d                                  [P] dontcare %mmx0 (u)
+  0000000000000004: 0f 0f c8 b0                                  [P] dontcare %mmx0 (u)
+  0000000000000008: 0f 0f c8 ae                                  [P] dontcare %mmx0 (u)
+  000000000000000c: 0f 0f c8 96                                  [P] dontcare %mmx0 (u)
+  0000000000000010: 0f 0f c8 b6                                  [P] dontcare %mmx0 (u)
+  0000000000000014: 0f 0f c8 bf                                  [P] dontcare %mmx0 (u)
+  0000000000000018: 0f 0f c8 b7                                  [P] dontcare %mmx0 (u)
+  000000000000001c: 0f 0e                                        [P] dontcare
+  000000000000001e: 0f 0d 0c 24                                  [P] dontcare [%rsp]
+  0000000000000022: 0f 0f c8 8e                                  [P] dontcare %mmx0 (u)
+  0000000000000026: 0f 0f c8 bb                                  [P] dontcare %mmx0 (u)

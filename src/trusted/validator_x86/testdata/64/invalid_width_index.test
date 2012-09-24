@@ -1,0 +1,34 @@
+@hex:
+  # Invalid and store, because the index isn't 32 zero extended bits.
+  66 83 e1 e0
+  49 89 44 CF 36
+  
+@val:
+  VALIDATOR: 0000000000000004: 49 89 44 cf 36                               mov [%r15+%rcx*8+0x36], %rax
+  VALIDATOR: ERROR: Invalid index register in memory offset
+  VALIDATOR: Checking jump targets: 0 to 9
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rval:
+  VALIDATOR: 0000000000000004: 49 89 44 cf 36                               mov [%r15+%rcx*8+0x36], %rax
+  VALIDATOR: ERROR: Invalid index register in memory offset
+  VALIDATOR: Checking jump targets: 0 to 9
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rvald:
+  VALIDATOR: 0000000000000004: 49 89 44 cf 36                               mov [%r15+%rcx*8+0x36], %rax
+  VALIDATOR: ERROR: Invalid index register in memory offset
+  VALIDATOR: Checking block alignment and jump targets: 0 to 9
+  *** <input> IS UNSAFE ***
+@vd-rval:
+  VALIDATOR: 0000000000000004: 49 89 44 cf 36                               mov [%r15+%rcx*8+0x36], %rax
+  VALIDATOR: ERROR: Invalid index register in memory offset
+  VALIDATOR: Checking jump targets: 0 to 9
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 66 83 e1 e0                                  and %cx, 0xe0
+  0000000000000004: 49 89 44 cf 36                               mov [%r15+%rcx*8+0x36], %rax
+@vdis:
+  0000000000000000: 66 83 e1 e0                                  and %cx, 0xe0
+  0000000000000004: 49 89 44 cf 36                               mov [%r15+%rcx*8+0x36], %rax

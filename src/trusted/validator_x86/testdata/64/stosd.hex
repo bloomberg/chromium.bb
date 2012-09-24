@@ -1,7 +1,0 @@
-# Show an example of a valid (implicit) reference to a segment register.
-#   mov %edi, %edi
-#   lea %rdi, [%r15+%rdi*1]
-#   stosd
-89 ff
-49 8d 3c 3f
-ab

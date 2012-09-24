@@ -1,9 +1,0 @@
-# mov %ebx, %ebx
-# cmpxchg %eax, %nacl:(%r15, %rbx)
-89 DB 41 0F B1 04 1F
-# mov %ebx, %ebx
-# cmpxchg8b %nacl:(%r15, %rbx)
-89 DB 41 0F C7 0C 1F
-# mov %ebx, %ebx
-# cmpxchg16b %nacl:(%r15, %rbx)
-89 DB 49 0F C7 0C 1F

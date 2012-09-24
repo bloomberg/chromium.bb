@@ -1,0 +1,42 @@
+@hex:
+  # Complain about instruction where REX byte is not last.
+  # Use instruction: lock cmpxchg16b (%rax)
+  # Start by showing we accept  when REX is last.
+  f0 48 0f c7 08
+  # Now show that we don't accept when REX is not last.
+  48 f0 0f c7 08
+@rval:
+  VALIDATOR: 0000000000000000: f0 48 0f c7 08                               cmpxchg16b [%rax]
+  VALIDATOR: ERROR: Invalid base register in memory offset
+  VALIDATOR: 0000000000000005: 48 f0 0f c7 08                               cmpxchg16b [%rax]
+  VALIDATOR: ERROR: REX prefix byte must appear last
+  VALIDATOR: 0000000000000005: 48 f0 0f c7 08                               cmpxchg16b [%rax]
+  VALIDATOR: ERROR: Invalid base register in memory offset
+  VALIDATOR: Checking jump targets: 0 to a
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rvald:
+  VALIDATOR: 0000000000000000: f0 48 0f c7 08                               cmpxchg16b [%rax]
+  VALIDATOR: ERROR: Invalid base register in memory offset
+  VALIDATOR: 0000000000000005: 48 f0 0f c7 08                               cmpxchg16b [%rax]
+  VALIDATOR: ERROR: REX prefix byte must appear last
+  VALIDATOR: 0000000000000005: 48 f0 0f c7 08                               cmpxchg16b [%rax]
+  VALIDATOR: ERROR: Invalid base register in memory offset
+  VALIDATOR: Checking block alignment and jump targets: 0 to a
+  *** <input> IS UNSAFE ***
+@vd-rval:
+  VALIDATOR: 0000000000000000: f0 48 0f c7 08                               [P] dontcare %rdx (su), %eax (su), [%rax] (su)
+  VALIDATOR: ERROR: Invalid base register in memory offset
+  VALIDATOR: 0000000000000005: 48 f0 0f c7 08                               [P] dontcare %rdx (su), %eax (su), [%rax] (su)
+  VALIDATOR: ERROR: REX prefix byte must appear last
+  VALIDATOR: 0000000000000005: 48 f0 0f c7 08                               [P] dontcare %rdx (su), %eax (su), [%rax] (su)
+  VALIDATOR: ERROR: Invalid base register in memory offset
+  VALIDATOR: Checking jump targets: 0 to a
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: f0 48 0f c7 08                               cmpxchg16b [%rax]
+  0000000000000005: 48 f0 0f c7 08                               cmpxchg16b [%rax]
+@vdis:
+  0000000000000000: f0 48 0f c7 08                               [P] dontcare %rdx (su), %eax (su), [%rax] (su)
+  0000000000000005: 48 f0 0f c7 08                               [P] dontcare %rdx (su), %eax (su), [%rax] (su)

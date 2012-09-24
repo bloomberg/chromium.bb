@@ -1,0 +1,46 @@
+@hex:
+  # hello_rip.c example from Mark Dowd.
+  # Issue 390
+  
+  # mov    $0x12345678,%eax
+  b8 78 56 34 12
+  
+  # addr32 mov %rax,0x61e0cf(%eip)  63e420 <_end+0x3da70>
+  67 48 89 05 cf e0 61 00
+@val:
+  VALIDATOR: 0000000000000005: 67 48 89 05 cf e0 61 00                      mov [%rip+0x61e0cf], %rax
+  VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
+  VALIDATOR: 0000000000000005: 67 48 89 05 cf e0 61 00                      mov [%rip+0x61e0cf], %rax
+  VALIDATOR: ERROR: Assignment to non-64 bit memory address
+  VALIDATOR: Checking jump targets: 0 to d
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rval:
+  VALIDATOR: 0000000000000005: 67 48 89 05 cf e0 61 00                      mov [%rip+0x61e0cf], %rax
+  VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
+  VALIDATOR: 0000000000000005: 67 48 89 05 cf e0 61 00                      mov [%rip+0x61e0cf], %rax
+  VALIDATOR: ERROR: Assignment to non-64 bit memory address
+  VALIDATOR: Checking jump targets: 0 to d
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rvald:
+  VALIDATOR: 0000000000000005: 67 48 89 05 cf e0 61 00                      mov [%rip+0x61e0cf], %rax
+  VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
+  VALIDATOR: 0000000000000005: 67 48 89 05 cf e0 61 00                      mov [%rip+0x61e0cf], %rax
+  VALIDATOR: ERROR: Assignment to non-64 bit memory address
+  VALIDATOR: Checking block alignment and jump targets: 0 to d
+  *** <input> IS UNSAFE ***
+@vd-rval:
+  VALIDATOR: 0000000000000005: 67 48 89 05 cf e0 61 00                      mov [%rip+0x61e0cf], %rax
+  VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
+  VALIDATOR: 0000000000000005: 67 48 89 05 cf e0 61 00                      mov [%rip+0x61e0cf], %rax
+  VALIDATOR: ERROR: Assignment to non-64 bit memory address
+  VALIDATOR: Checking jump targets: 0 to d
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: b8 78 56 34 12                               mov %eax, 0x12345678
+  0000000000000005: 67 48 89 05 cf e0 61 00                      mov [%rip+0x61e0cf], %rax
+@vdis:
+  0000000000000000: b8 78 56 34 12                               mov %eax, 0x12345678
+  0000000000000005: 67 48 89 05 cf e0 61 00                      mov [%rip+0x61e0cf], %rax

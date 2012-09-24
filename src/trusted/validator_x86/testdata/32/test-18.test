@@ -1,0 +1,57 @@
+@hex:
+  # loop branch into overlapping instruction.
+  bb 90 40 cd 80 85 c0 e1 f8 f4
+  
+@nval:
+  VALIDATOR: 7: Illegal instruction
+  *** <input> IS UNSAFE ***
+@nvals:
+  VALIDATOR: 7: Illegal instruction
+  *** <input> IS UNSAFE ***
+  
+  Opcode Histogram;
+  1	0x85	1	0xbb	1	0xe1	1	0xf4	
+  Analysis Summary:
+  4 Checked instructions
+  0 checked jump targets
+  0 calls/jumps need dynamic checking (0.00%)
+  
+  Problems:
+  1 illegal instructions
+  0 bad jump targets
+  0 illegal unprotected indirect jumps (including ret)
+  0 instruction alignment defects
+  0 segmentation errors
+  0 bad prefix
+  0 bad instruction length
+  0 internal errors
+@nvalds:
+  VALIDATOR: 7: Illegal instruction
+  *** <input> IS UNSAFE ***
+  
+  Opcode Histogram;
+  1	0x85	1	0xbb	1	0xe1	1	0xf4	
+  Analysis Summary:
+  4 Checked instructions
+  0 checked jump targets
+  0 calls/jumps need dynamic checking (0.00%)
+  
+  Problems:
+  1 illegal instructions
+  0 bad jump targets
+  0 illegal unprotected indirect jumps (including ret)
+  0 instruction alignment defects
+  0 segmentation errors
+  0 bad prefix
+  0 bad instruction length
+  0 internal errors
+@dis:
+  00000000: bb 90 40 cd 80                               mov %ebx, 0x80cd4090
+  00000005: 85 c0                                        test %eax, %eax
+  00000007: e1 f8                                        loope 0x1
+  00000009: f4                                           hlt
+@vdis:
+   0:	bb 90 40 cd 80      	mov %ebx, 0xffffffff80cd4090
+   5:	85 c0               	test %eax, %eax
+   7:	e1 f8               	loope 0x1
+   9:	f4                  	hlt

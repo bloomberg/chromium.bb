@@ -1,7 +1,0 @@
-# Sample call code translation (i.e. sandboxed call address), where the return address is
-# also properly block aligned.
-90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90
-90 90 90 90 90 90 90 90
-83 e0 e0
-4c 01 f8
-ff d0

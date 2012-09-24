@@ -1,8 +1,0 @@
- 0:	3c 25               	cmp %al, 0x25
- 2:	90                  	nop
- 3:	90                  	nop
- 4:	90                  	nop
- 5:	90                  	nop
- 6:	90                  	nop
- 7:	90                  	nop
- 8:	f4                  	hlt

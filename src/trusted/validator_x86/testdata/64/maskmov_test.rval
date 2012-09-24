@@ -1,5 +1,0 @@
-VALIDATOR: 000000000000000f: 0f f7 d1                                     maskmovq %mmx2, %mmx1
-VALIDATOR: ERROR: Segment memory reference not allowed
-VALIDATOR: Checking jump targets: 0 to 12
-VALIDATOR: Checking that basic blocks are aligned
-*** <input> IS UNSAFE ***

@@ -1,3 +1,0 @@
- 0:	7e 03               	jle 0x5
- 2:	83 e0 e0            	and %esp, 0xffffffffffffffe0
- 5:	ff d0               	call * %edx

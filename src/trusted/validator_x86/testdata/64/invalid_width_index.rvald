@@ -1,4 +1,0 @@
-VALIDATOR: 0000000000000004: 49 89 44 cf 36                               mov [%r15+%rcx*8+0x36], %rax
-VALIDATOR: ERROR: Invalid index register in memory offset
-VALIDATOR: Checking block alignment and jump targets: 0 to 9
-*** <input> IS UNSAFE ***

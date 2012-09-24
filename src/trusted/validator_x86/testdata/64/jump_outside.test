@@ -1,0 +1,30 @@
+@hex:
+  # direct aligned jump outside of code
+  # jmp $20
+  E9 1B 00 00 00
+  # direct unaligned jump outside of code
+  # jmp $21
+  E9 17 00 00 00
+@rval:
+  VALIDATOR: 0000000000000005: e9 17 00 00 00                               jmp 0x21
+  VALIDATOR: ERROR: Instruction jumps to bad address
+  VALIDATOR: Checking jump targets: 0 to a
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rvald:
+  VALIDATOR: 0000000000000005: e9 17 00 00 00                               jmp 0x21
+  VALIDATOR: ERROR: Instruction jumps to bad address
+  VALIDATOR: Checking block alignment and jump targets: 0 to a
+  *** <input> IS UNSAFE ***
+@vd-rval:
+  VALIDATOR: 0000000000000005: e9 17 00 00 00                               [P] dontcarejump %rip (s), 0x21 (u)
+  VALIDATOR: ERROR: Instruction jumps to bad address
+  VALIDATOR: Checking jump targets: 0 to a
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: e9 1b 00 00 00                               jmp 0x20
+  0000000000000005: e9 17 00 00 00                               jmp 0x21
+@vdis:
+  0000000000000000: e9 1b 00 00 00                               [P] dontcarejump %rip (s), 0x20 (u)
+  0000000000000005: e9 17 00 00 00                               [P] dontcarejump %rip (s), 0x21 (u)

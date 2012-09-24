@@ -1,2 +1,0 @@
-# Check that the start address of the segment is 32 byte aligned.
-90

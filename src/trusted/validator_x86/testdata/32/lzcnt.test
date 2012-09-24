@@ -1,0 +1,7 @@
+@hex:
+  # Test if we recognize lzcnt as a bsr with REP prefix.
+  f3 0f bd c3
+@nval:
+  *** <input> is safe ***
+@vdis:
+   0:	f3 0f bd c3         	lzcnt %eax, %eax

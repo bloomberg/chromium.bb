@@ -1,2 +1,0 @@
-0000000000000000: f0 48 0f c7 08                               [P] dontcare %rdx (su), %eax (su), [%rax] (su)
-0000000000000005: 48 f0 0f c7 08                               [P] dontcare %rdx (su), %eax (su), [%rax] (su)

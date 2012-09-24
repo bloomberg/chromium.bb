@@ -1,9 +1,0 @@
-# Sample hex code for a return.
-#   pop %r11
-#   and %r11d, 0xe0
-#   add %r11, %r15
-#   jmp %r11
-41 5b
-41 83 e3 e0
-4d 01 fb
-41 ff e3

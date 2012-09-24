@@ -1,5 +1,0 @@
-VALIDATOR: 000000000000001b: e8 21 fd fd ff                               call 0xfffffffffffdfd41
-VALIDATOR: ERROR: Instruction jumps to bad address
-VALIDATOR: Checking jump targets: 0 to 20
-VALIDATOR: Checking that basic blocks are aligned
-*** <input> IS UNSAFE ***

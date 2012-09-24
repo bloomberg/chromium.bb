@@ -1,9 +1,0 @@
- 0:	c1 f9 1f            	sar %edi, 0x1f
- 3:	89 4d e4            	mov 0xffffffe4[%ebp], %ecx
- 6:	90                  	nop
- 7:	90                  	nop
- 8:	90                  	nop
- 9:	90                  	nop
- a:	90                  	nop
- b:	90                  	nop
- c:	f4                  	hlt

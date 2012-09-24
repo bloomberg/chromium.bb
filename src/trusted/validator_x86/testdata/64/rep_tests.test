@@ -1,0 +1,188 @@
+@hex:
+  # This file does some simple tests to see if we recognize when the REP/REPNE (F2 F3)
+  # prefix bytes are allowed.
+  
+  # The following is an example of an instruction without the REP/REPNE prefix.
+  #  add %al, %al
+  00 c0
+  
+  # The following is the same instruction with an illegal REP prefix.
+  f3 00 c0
+  
+  # The following is the same instruction with an illegal REPNE prefix.
+  f2 00 c0
+  
+  # The following is an example of a multibyte instruction explicitly requiring
+  # a REP prefix.
+  #   movss %xmm0, [%rdx]
+  f3 0f 10 02
+  
+  # The following is an example of a multibyte instruction explicitly requiring
+  # a REPNE prefix.
+  #   movsd [%rsp+0x10], %xmm2
+  f2 0f 11 54 24 10
+  
+  # The following is an example of an instruction that can get a REP prefix.
+  #    insb
+  6c
+  
+  # The same instrucition with a REP prefix.
+  f3 6c
+  
+  # The same instruction with a REPNE prefix.
+  f2 6c
+  
+  # The following is an example of an instruction that can get a REP/REPNE prefix.
+  #    cmpsb
+  a6
+  
+  # The same instruction with a REP prefix.
+  f3 a6
+  
+  # The same instruction with a REPNE prefix
+  f2 a6
+@rval:
+  VALIDATOR: 0000000000000002: f3 00 c0                                     add %al, %al
+  VALIDATOR: ERROR: Use of REP (F3) prefix for instruction not allowed by Native Client
+  VALIDATOR: 0000000000000005: f2 00 c0                                     add %al, %al
+  VALIDATOR: ERROR: Use of REPNE (F2) prefix for instruction not allowed by Native Client
+  VALIDATOR: 0000000000000008: f3 0f 10 02                                  movss %xmm0, [%rdx]
+  VALIDATOR: ERROR: Invalid base register in memory offset
+  VALIDATOR: 0000000000000012: 6c                                           insb
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000012: 6c                                           insb
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 0000000000000013: f3 6c                                        insb
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000013: f3 6c                                        insb
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 0000000000000015: f2 6c                                        insb
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000015: f2 6c                                        insb
+  VALIDATOR: ERROR: Use of REPNE (F2) prefix for instruction not allowed by Native Client
+  VALIDATOR: 0000000000000015: f2 6c                                        insb
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 0000000000000017: a6                                           cmpsb [%rdi], [%rsi]
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 0000000000000017: a6                                           cmpsb [%rdi], [%rsi]
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 0000000000000018: f3 a6                                        cmpsb [%rdi], [%rsi]
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 0000000000000018: f3 a6                                        cmpsb [%rdi], [%rsi]
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 000000000000001a: f2 a6                                        cmpsb [%rdi], [%rsi]
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 000000000000001a: f2 a6                                        cmpsb [%rdi], [%rsi]
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: Checking jump targets: 0 to 1c
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rvala:
+  VALIDATOR: 2: Use of REP (F3) prefix for instruction not allowed by Native Client
+  VALIDATOR: 5: Use of REPNE (F2) prefix for instruction not allowed by Native Client
+  VALIDATOR: 8: Invalid base register in memory offset
+  VALIDATOR: 12: This instruction has been marked illegal by Native Client
+  VALIDATOR: 12: Segment memory reference not allowed
+  VALIDATOR: 13: This instruction has been marked illegal by Native Client
+  VALIDATOR: 13: Segment memory reference not allowed
+  VALIDATOR: 15: This instruction has been marked illegal by Native Client
+  VALIDATOR: 15: Use of REPNE (F2) prefix for instruction not allowed by Native Client
+  VALIDATOR: 15: Segment memory reference not allowed
+  VALIDATOR: 17: Segment memory reference not allowed
+  VALIDATOR: 17: Segment memory reference not allowed
+  VALIDATOR: 18: Segment memory reference not allowed
+  VALIDATOR: 18: Segment memory reference not allowed
+  VALIDATOR: 1a: Segment memory reference not allowed
+  VALIDATOR: 1a: Segment memory reference not allowed
+  VALIDATOR: Checking jump targets: 0 to 1c
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rvald:
+  VALIDATOR: 0000000000000002: f3 00 c0                                     add %al, %al
+  VALIDATOR: ERROR: Use of REP (F3) prefix for instruction not allowed by Native Client
+  VALIDATOR: 0000000000000005: f2 00 c0                                     add %al, %al
+  VALIDATOR: ERROR: Use of REPNE (F2) prefix for instruction not allowed by Native Client
+  VALIDATOR: 0000000000000008: f3 0f 10 02                                  movss %xmm0, [%rdx]
+  VALIDATOR: ERROR: Invalid base register in memory offset
+  VALIDATOR: 0000000000000012: 6c                                           insb
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000012: 6c                                           insb
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 0000000000000013: f3 6c                                        insb
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000013: f3 6c                                        insb
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 0000000000000015: f2 6c                                        insb
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000015: f2 6c                                        insb
+  VALIDATOR: ERROR: Use of REPNE (F2) prefix for instruction not allowed by Native Client
+  VALIDATOR: 0000000000000015: f2 6c                                        insb
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 0000000000000017: a6                                           cmpsb [%rdi], [%rsi]
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 0000000000000017: a6                                           cmpsb [%rdi], [%rsi]
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 0000000000000018: f3 a6                                        cmpsb [%rdi], [%rsi]
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 0000000000000018: f3 a6                                        cmpsb [%rdi], [%rsi]
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 000000000000001a: f2 a6                                        cmpsb [%rdi], [%rsi]
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 000000000000001a: f2 a6                                        cmpsb [%rdi], [%rsi]
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: Checking block alignment and jump targets: 0 to 1c
+  *** <input> IS UNSAFE ***
+@vd-rval:
+  VALIDATOR: 0000000000000002: f3 00 c0                                     add %al, %al
+  VALIDATOR: ERROR: Use of REP (F3) prefix for instruction not allowed by Native Client
+  VALIDATOR: 0000000000000005: f2 00 c0                                     add %al, %al
+  VALIDATOR: ERROR: Use of REPNE (F2) prefix for instruction not allowed by Native Client
+  VALIDATOR: 0000000000000008: f3 0f 10 02                                  [P] dontcare [%rdx] (u)
+  VALIDATOR: ERROR: Invalid base register in memory offset
+  VALIDATOR: 0000000000000012: 6c                                           [P] dontcare(illegal)
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000013: f3 6c                                        [P] dontcare(illegal)
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000015: f2 6c                                        [P] dontcare(illegal)
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000015: f2 6c                                        [P] dontcare(illegal)
+  VALIDATOR: ERROR: Use of REPNE (F2) prefix for instruction not allowed by Native Client
+  VALIDATOR: 0000000000000017: a6                                           [P] dontcare [%rdi] (u), [%rsi] (u)
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 0000000000000017: a6                                           [P] dontcare [%rdi] (u), [%rsi] (u)
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 0000000000000018: f3 a6                                        [P] dontcare [%rdi] (u), [%rsi] (u)
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 0000000000000018: f3 a6                                        [P] dontcare [%rdi] (u), [%rsi] (u)
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 000000000000001a: f2 a6                                        [P] dontcare [%rdi] (u), [%rsi] (u)
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 000000000000001a: f2 a6                                        [P] dontcare [%rdi] (u), [%rsi] (u)
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: Checking jump targets: 0 to 1c
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 00 c0                                        add %al, %al
+  0000000000000002: f3 00 c0                                     add %al, %al
+  0000000000000005: f2 00 c0                                     add %al, %al
+  0000000000000008: f3 0f 10 02                                  movss %xmm0, [%rdx]
+  000000000000000c: f2 0f 11 54 24 10                            movsd [%rsp+0x10], %xmm2
+  0000000000000012: 6c                                           insb
+  0000000000000013: f3 6c                                        insb
+  0000000000000015: f2 6c                                        insb
+  0000000000000017: a6                                           cmpsb [%rdi], [%rsi]
+  0000000000000018: f3 a6                                        cmpsb [%rdi], [%rsi]
+  000000000000001a: f2 a6                                        cmpsb [%rdi], [%rsi]
+@vdis:
+  0000000000000000: 00 c0                                        add %al, %al
+  0000000000000002: f3 00 c0                                     add %al, %al
+  0000000000000005: f2 00 c0                                     add %al, %al
+  0000000000000008: f3 0f 10 02                                  [P] dontcare [%rdx] (u)
+  000000000000000c: f2 0f 11 54 24 10                            [P] dontcare [%rsp+0x10] (s)
+  0000000000000012: 6c                                           [P] dontcare(illegal)
+  0000000000000013: f3 6c                                        [P] dontcare(illegal)
+  0000000000000015: f2 6c                                        [P] dontcare(illegal)
+  0000000000000017: a6                                           [P] dontcare [%rdi] (u), [%rsi] (u)
+  0000000000000018: f3 a6                                        [P] dontcare [%rdi] (u), [%rsi] (u)
+  000000000000001a: f2 a6                                        [P] dontcare [%rdi] (u), [%rsi] (u)

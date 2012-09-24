@@ -1,2 +1,0 @@
-# Show that we report wrmsr as an illegal instruction.
-0f 30

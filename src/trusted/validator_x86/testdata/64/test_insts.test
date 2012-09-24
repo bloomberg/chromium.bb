@@ -1,0 +1,25 @@
+@hex:
+  # This is an example of a code segment that begins at address 0.
+  b8 88 77 66 55 41 b8 44 33 22 11
+  66 b8 88 77 a0 88 77 66 55 44 33 22 11
+@rval:
+  VALIDATOR: 000000000000000f: a0 88 77 66 55 44 33 22 11                   mov %al, [0x1122334455667788]
+  VALIDATOR: ERROR: No base register specified in memory offset
+  VALIDATOR: Checking jump targets: 0 to 18
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: b8 88 77 66 55                               mov %eax, 0x55667788
+  0000000000000005: 41 b8 44 33 22 11                            mov %r8d, 0x11223344
+  000000000000000b: 66 b8 88 77                                  mov %ax, 0x7788
+  000000000000000f: a0 88 77 66 55 44 33 22 11                   mov %al, [0x1122334455667788]
+@vdis:
+  0000000000000000: b8 88 77 66 55                               mov %eax, 0x55667788
+  0000000000000005: 41 b8 44 33 22 11                            mov %r8d, 0x11223344
+  000000000000000b: 66 b8 88 77                                  mov %ax, 0x7788
+  000000000000000f: a0 88 77 66 55 44 33 22 11                   mov %al, [0x1122334455667788]
+@ndis:
+   0:	b8 88 77 66 55      	mov %eax, 0x55667788
+   5:	41 b8 44 33 22 11   	mov %eax, 0x11223344
+   b:	66 b8 88 77         	mov %eax, 0x7788
+   f:	a0 88 77 66 55 44 33 22 11	mov %al, [0x1122334455667788]

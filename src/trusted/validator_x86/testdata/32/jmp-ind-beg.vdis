@@ -1,2 +1,0 @@
- 0:	ff e0               	jmp * %esp
- 2:	90                  	nop

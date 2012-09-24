@@ -1,4 +1,0 @@
-# Example of a valid store which only uses a base register.
-#   mov [%rsp+0x36], %rax
-48 89 44 24 36
-

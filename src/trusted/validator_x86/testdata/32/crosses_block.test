@@ -1,0 +1,45 @@
+@hex:
+  # Example code where atomic instruction sequence crosses block alignment.
+  90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90
+  90 90 90 90 90 90 90 90 90 90 90 90 90
+  83 e0 e0
+  ff d0
+@nval:
+  VALIDATOR: 20: Bad basic block alignment
+  *** <input> IS UNSAFE ***
+@nvald:
+  VALIDATOR: 20: Instruction begins basic block, but in middle of nacl pattern
+  
+  *** <input> IS UNSAFE ***
+@dis:
+  00000000: 90                                           nop
+  00000001: 90                                           nop
+  00000002: 90                                           nop
+  00000003: 90                                           nop
+  00000004: 90                                           nop
+  00000005: 90                                           nop
+  00000006: 90                                           nop
+  00000007: 90                                           nop
+  00000008: 90                                           nop
+  00000009: 90                                           nop
+  0000000a: 90                                           nop
+  0000000b: 90                                           nop
+  0000000c: 90                                           nop
+  0000000d: 90                                           nop
+  0000000e: 90                                           nop
+  0000000f: 90                                           nop
+  00000010: 90                                           nop
+  00000011: 90                                           nop
+  00000012: 90                                           nop
+  00000013: 90                                           nop
+  00000014: 90                                           nop
+  00000015: 90                                           nop
+  00000016: 90                                           nop
+  00000017: 90                                           nop
+  00000018: 90                                           nop
+  00000019: 90                                           nop
+  0000001a: 90                                           nop
+  0000001b: 90                                           nop
+  0000001c: 90                                           nop
+  0000001d: 83 e0 e0                                     and %eax, 0xe0
+  00000020: ff d0                                        call %eax

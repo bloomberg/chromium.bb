@@ -1,0 +1,99 @@
+@hex:
+  # Show that atomic sequences can't cross block boundaries.
+  # Example:
+  #   mov %ebp, %r11d
+  #   add %rbp, %r15"
+  # where add is in new block.
+  90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90
+  90 90 90 90 90 90 90 90 90 90 90 90 90
+  44 89 dd 4c 01 fd
+  
+@val:
+  VALIDATOR: Checking jump targets: 0 to 23
+  VALIDATOR: Checking that basic blocks are aligned
+  VALIDATOR: ERROR: 20: Bad basic block alignment.
+  *** <input> IS UNSAFE ***
+@rval:
+  VALIDATOR: Checking jump targets: 0 to 23
+  VALIDATOR: Checking that basic blocks are aligned
+  VALIDATOR: ERROR: 20: Bad basic block alignment.
+  *** <input> IS UNSAFE ***
+@rvala:
+  VALIDATOR: Checking jump targets: 0 to 23
+  VALIDATOR: Checking that basic blocks are aligned
+  VALIDATOR: 20: Bad basic block alignment.
+  *** <input> IS UNSAFE ***
+@rvald:
+  VALIDATOR: Checking block alignment and jump targets: 0 to 23
+  VALIDATOR: 0000000000000020: 4c 01 fd                                     add %rbp, %r15
+  VALIDATOR: ERROR: Instruction begins basic block, but in middle of nacl pattern
+  *** <input> IS UNSAFE ***
+@vd-rval:
+  VALIDATOR: Checking jump targets: 0 to 23
+  VALIDATOR: Checking that basic blocks are aligned
+  VALIDATOR: ERROR: 20: Bad basic block alignment.
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 90                                           nop
+  0000000000000001: 90                                           nop
+  0000000000000002: 90                                           nop
+  0000000000000003: 90                                           nop
+  0000000000000004: 90                                           nop
+  0000000000000005: 90                                           nop
+  0000000000000006: 90                                           nop
+  0000000000000007: 90                                           nop
+  0000000000000008: 90                                           nop
+  0000000000000009: 90                                           nop
+  000000000000000a: 90                                           nop
+  000000000000000b: 90                                           nop
+  000000000000000c: 90                                           nop
+  000000000000000d: 90                                           nop
+  000000000000000e: 90                                           nop
+  000000000000000f: 90                                           nop
+  0000000000000010: 90                                           nop
+  0000000000000011: 90                                           nop
+  0000000000000012: 90                                           nop
+  0000000000000013: 90                                           nop
+  0000000000000014: 90                                           nop
+  0000000000000015: 90                                           nop
+  0000000000000016: 90                                           nop
+  0000000000000017: 90                                           nop
+  0000000000000018: 90                                           nop
+  0000000000000019: 90                                           nop
+  000000000000001a: 90                                           nop
+  000000000000001b: 90                                           nop
+  000000000000001c: 90                                           nop
+  000000000000001d: 44 89 dd                                     mov %ebp, %r11d
+  0000000000000020: 4c 01 fd                                     add %rbp, %r15
+@vdis:
+  0000000000000000: 90                                           [P] dontcare
+  0000000000000001: 90                                           [P] dontcare
+  0000000000000002: 90                                           [P] dontcare
+  0000000000000003: 90                                           [P] dontcare
+  0000000000000004: 90                                           [P] dontcare
+  0000000000000005: 90                                           [P] dontcare
+  0000000000000006: 90                                           [P] dontcare
+  0000000000000007: 90                                           [P] dontcare
+  0000000000000008: 90                                           [P] dontcare
+  0000000000000009: 90                                           [P] dontcare
+  000000000000000a: 90                                           [P] dontcare
+  000000000000000b: 90                                           [P] dontcare
+  000000000000000c: 90                                           [P] dontcare
+  000000000000000d: 90                                           [P] dontcare
+  000000000000000e: 90                                           [P] dontcare
+  000000000000000f: 90                                           [P] dontcare
+  0000000000000010: 90                                           [P] dontcare
+  0000000000000011: 90                                           [P] dontcare
+  0000000000000012: 90                                           [P] dontcare
+  0000000000000013: 90                                           [P] dontcare
+  0000000000000014: 90                                           [P] dontcare
+  0000000000000015: 90                                           [P] dontcare
+  0000000000000016: 90                                           [P] dontcare
+  0000000000000017: 90                                           [P] dontcare
+  0000000000000018: 90                                           [P] dontcare
+  0000000000000019: 90                                           [P] dontcare
+  000000000000001a: 90                                           [P] dontcare
+  000000000000001b: 90                                           [P] dontcare
+  000000000000001c: 90                                           [P] dontcare
+  000000000000001d: 44 89 dd                                     mov %ebp, %r11d
+  0000000000000020: 4c 01 fd                                     add %rbp, %r15

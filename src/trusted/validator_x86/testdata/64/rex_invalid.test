@@ -1,0 +1,29 @@
+@hex:
+  # mov %rax,%rax
+  # test that we accept rex prefixes with bits which are not used by
+  # the command.
+  48 89 C0
+  47 89 C0
+  46 89 C0
+  45 89 C0
+  44 89 C0
+  43 89 C0
+  42 89 C0
+  41 89 C0
+  40 89 C0
+  4F 89 C0
+@rval:
+  VALIDATOR: Checking jump targets: 0 to 1e
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@dis:
+  0000000000000000: 48 89 c0                                     mov %rax, %rax
+  0000000000000003: 47 89 c0                                     mov %r8d, %r8d
+  0000000000000006: 46 89 c0                                     mov %eax, %r8d
+  0000000000000009: 45 89 c0                                     mov %r8d, %r8d
+  000000000000000c: 44 89 c0                                     mov %eax, %r8d
+  000000000000000f: 43 89 c0                                     mov %r8d, %eax
+  0000000000000012: 42 89 c0                                     mov %eax, %eax
+  0000000000000015: 41 89 c0                                     mov %r8d, %eax
+  0000000000000018: 40 89 c0                                     mov %eax, %eax
+  000000000000001b: 4f 89 c0                                     mov %r8, %r8

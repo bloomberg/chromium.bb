@@ -1,5 +1,0 @@
-# Test that we accept prefix "66 0f" but not "0f 66".o
-#    lock addw $0x1,(%eax) -- good order.
-66 f0 83 00 01
-#    lock addw $0x1,(%eax) -- bad order.
-f0 66 83 00 01

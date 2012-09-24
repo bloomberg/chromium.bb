@@ -1,0 +1,15 @@
+@hex:
+  # Test if we fill in (zero) for memory overflow of instruction:
+  # 00000000: 03 1d 20 00 00 00              add %ebx, 0x20
+  03 1d 20 00
+@nval:
+  6 > 4 (read overflow of 2 bytes)
+  ErrorSegmentation
+  VALIDATOR: 0: Bad basic block alignment
+  *** <input> IS UNSAFE ***
+@dis:
+  00000000: 03 1d                                        invalid
+  00000002: 20 00                                        and %ds:[%eax], %al
+@vdis:
+  6 > 4 (read overflow of 2 bytes)
+  ErrorSegmentation

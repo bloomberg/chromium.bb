@@ -1,0 +1,31 @@
+@hex:
+  # Sample test to see if we recognize multiple REX prefixes (40 and 41 below).
+  # Instruction is: add %r11d, %eax
+  40 41 01 C3
+@val:
+  VALIDATOR: 0000000000000000: 40 41 01 c3                                  add %r11d, %eax
+  VALIDATOR: ERROR: Multiple use of REX prefix not allowed
+  VALIDATOR: Checking jump targets: 0 to 4
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rval:
+  VALIDATOR: 0000000000000000: 40 41 01 c3                                  add %r11d, %eax
+  VALIDATOR: ERROR: Multiple use of REX prefix not allowed
+  VALIDATOR: Checking jump targets: 0 to 4
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rvald:
+  VALIDATOR: 0000000000000000: 40 41 01 c3                                  add %r11d, %eax
+  VALIDATOR: ERROR: Multiple use of REX prefix not allowed
+  VALIDATOR: Checking block alignment and jump targets: 0 to 4
+  *** <input> IS UNSAFE ***
+@vd-rval:
+  VALIDATOR: 0000000000000000: 40 41 01 c3                                  add %r11d, %eax
+  VALIDATOR: ERROR: Multiple use of REX prefix not allowed
+  VALIDATOR: Checking jump targets: 0 to 4
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 40 41 01 c3                                  add %r11d, %eax
+@vdis:
+  0000000000000000: 40 41 01 c3                                  add %r11d, %eax

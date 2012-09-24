@@ -1,0 +1,47 @@
+@hex:
+  # test 15: invalid instruction
+  90 0f ae 21
+  90 90 90 90 90 90 f4
+@nval:
+  VALIDATOR: 1: Illegal instruction
+  *** <input> IS UNSAFE ***
+@nvals:
+  VALIDATOR: 1: Illegal instruction
+  *** <input> IS UNSAFE ***
+  
+  Opcode Histogram;
+  1	0x0f	7	0x90	1	0xf4	
+  Analysis Summary:
+  9 Checked instructions
+  0 checked jump targets
+  0 calls/jumps need dynamic checking (0.00%)
+  
+  Problems:
+  1 illegal instructions
+  0 bad jump targets
+  0 illegal unprotected indirect jumps (including ret)
+  0 instruction alignment defects
+  0 segmentation errors
+  0 bad prefix
+  0 bad instruction length
+  0 internal errors
+@dis:
+  00000000: 90                                           nop
+  00000001: 0f ae 21                                     invalid
+  00000004: 90                                           nop
+  00000005: 90                                           nop
+  00000006: 90                                           nop
+  00000007: 90                                           nop
+  00000008: 90                                           nop
+  00000009: 90                                           nop
+  0000000a: f4                                           hlt
+@vdis:
+   0:	90                  	nop
+   1:	0f ae 21            	invalid [%ecx]
+   4:	90                  	nop
+   5:	90                  	nop
+   6:	90                  	nop
+   7:	90                  	nop
+   8:	90                  	nop
+   9:	90                  	nop
+   a:	f4                  	hlt

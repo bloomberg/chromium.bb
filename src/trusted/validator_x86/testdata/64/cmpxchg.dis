@@ -1,6 +1,0 @@
-0000000000000000: 89 db                                        mov %ebx, %ebx
-0000000000000002: 41 0f b1 04 1f                               cmpxchg [%r15+%rbx*1], %eax
-0000000000000007: 89 db                                        mov %ebx, %ebx
-0000000000000009: 41 0f c7 0c 1f                               cmpxchg8b [%r15+%rbx*1]
-000000000000000e: 89 db                                        mov %ebx, %ebx
-0000000000000010: 49 0f c7 0c 1f                               cmpxchg16b [%r15+%rbx*1]

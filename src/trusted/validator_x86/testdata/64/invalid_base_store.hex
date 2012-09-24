@@ -1,4 +1,0 @@
-# Invalid base in memory offset, even though index register is properly defined,
-# because base isn't R15, RBP, or RSP.
-83 e1 e0
-49 89 44 CD 36

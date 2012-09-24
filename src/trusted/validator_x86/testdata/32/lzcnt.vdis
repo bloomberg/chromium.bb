@@ -1,1 +1,0 @@
- 0:	f3 0f bd c3         	lzcnt %eax, %eax

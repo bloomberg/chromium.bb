@@ -1,5 +1,0 @@
-# Sample of using lea solution (instead of add) to update rbp.
-#    mov %ebp, %ecx
-#    lea %rbp, [%rbp+%r15*1]
-89 cd
-4a 8d 6c 3d 00

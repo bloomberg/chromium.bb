@@ -1,0 +1,66 @@
+@hex:
+  # test 1: a first very simple test with an illegal inst.
+  55
+  89 e5
+  83 ec 08
+  e8 81 00 00 00
+  e8 d3 00 00 00
+  e8 f3 04 00 00
+  c9
+  c3
+  00 00 f4
+  
+@nval:
+  VALIDATOR: 6: JUMP TARGET out of range
+  VALIDATOR: b: JUMP TARGET out of range
+  VALIDATOR: 10: JUMP TARGET out of range
+  VALIDATOR: 16: ret instruction (not allowed)
+  VALIDATOR: 16: Illegal instruction
+  *** <input> IS UNSAFE ***
+@nvals:
+  VALIDATOR: 6: JUMP TARGET out of range
+  VALIDATOR: b: JUMP TARGET out of range
+  VALIDATOR: 10: JUMP TARGET out of range
+  VALIDATOR: 16: ret instruction (not allowed)
+  VALIDATOR: 16: Illegal instruction
+  *** <input> IS UNSAFE ***
+  
+  Opcode Histogram;
+  1	0x00	1	0x55	1	0x83	1	0x89	
+  1	0xc3	1	0xc9	3	0xe8	1	0xf4	
+  Analysis Summary:
+  10 Checked instructions
+  3 checked jump targets
+  0 calls/jumps need dynamic checking (0.00%)
+  
+  Problems:
+  1 illegal instructions
+  3 bad jump targets
+  1 illegal unprotected indirect jumps (including ret)
+  0 instruction alignment defects
+  0 segmentation errors
+  0 bad prefix
+  0 bad instruction length
+  0 internal errors
+@dis:
+  00000000: 55                                           push %ebp
+  00000001: 89 e5                                        mov %ebp, %esp
+  00000003: 83 ec 08                                     sub %esp, 0x8
+  00000006: e8 81 00 00 00                               call 0x8c
+  0000000b: e8 d3 00 00 00                               call 0xe3
+  00000010: e8 f3 04 00 00                               call 0x508
+  00000015: c9                                           leave
+  00000016: c3                                           ret
+  00000017: 00 00                                        add %ds:[%eax], %al
+  00000019: f4                                           hlt
+@vdis:
+   0:	55                  	push %ebp
+   1:	89 e5               	mov %esp, %esp
+   3:	83 ec 08            	sub %ebp, 0x8
+   6:	e8 81 00 00 00      	call 0x8c
+   b:	e8 d3 00 00 00      	call 0xe3
+   10:	e8 f3 04 00 00      	call 0x508
+   15:	c9                  	leave
+   16:	c3                  	ret
+   17:	00 00               	add [%eax], %eax
+   19:	f4                  	hlt

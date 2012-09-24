@@ -1,0 +1,23 @@
+@hex:
+  # Sample test to see if we don't complain about a single REX prefix.
+  # That is, validate: add %r11d, %eax
+  41 01 C3
+@val:
+  VALIDATOR: Checking jump targets: 0 to 3
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@rval:
+  VALIDATOR: Checking jump targets: 0 to 3
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@rvald:
+  VALIDATOR: Checking block alignment and jump targets: 0 to 3
+  *** <input> is safe ***
+@vd-rval:
+  VALIDATOR: Checking jump targets: 0 to 3
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@dis:
+  0000000000000000: 41 01 c3                                     add %r11d, %eax
+@vdis:
+  0000000000000000: 41 01 c3                                     add %r11d, %eax

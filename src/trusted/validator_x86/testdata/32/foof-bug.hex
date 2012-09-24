@@ -1,3 +1,0 @@
-# Test how we handle the F00F bug 
-# (http://en.wikipedia.org/wiki/Pentium_F00F_bug).
-f0 0f c7 c8

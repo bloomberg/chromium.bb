@@ -1,4 +1,0 @@
-VALIDATOR: 000000000000000f: 41 ff e1                                     jmp %r9
-VALIDATOR: ERROR: Invalid indirect jump
-VALIDATOR: Checking block alignment and jump targets: 0 to 12
-*** <input> IS UNSAFE ***

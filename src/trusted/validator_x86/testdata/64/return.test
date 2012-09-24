@@ -1,0 +1,35 @@
+@hex:
+  # Sample hex code for a return.
+  #   pop %r11
+  #   and %r11d, 0xe0
+  #   add %r11, %r15
+  #   jmp %r11
+  41 5b
+  41 83 e3 e0
+  4d 01 fb
+  41 ff e3
+@val:
+  VALIDATOR: Checking jump targets: 0 to c
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@rval:
+  VALIDATOR: Checking jump targets: 0 to c
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@rvald:
+  VALIDATOR: Checking block alignment and jump targets: 0 to c
+  *** <input> is safe ***
+@vd-rval:
+  VALIDATOR: Checking jump targets: 0 to c
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@dis:
+  0000000000000000: 41 5b                                        pop %r11
+  0000000000000002: 41 83 e3 e0                                  and %r11d, 0xe0
+  0000000000000006: 4d 01 fb                                     add %r11, %r15
+  0000000000000009: 41 ff e3                                     jmp %r11
+@vdis:
+  0000000000000000: 41 5b                                        pop %r11
+  0000000000000002: 41 83 e3 e0                                  and %r11d, 0xe0
+  0000000000000006: 4d 01 fb                                     add %r11, %r15
+  0000000000000009: 41 ff e3                                     [P] dontcarejump %rip (s), %r11 (u)

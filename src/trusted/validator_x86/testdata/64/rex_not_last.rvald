@@ -1,8 +1,0 @@
-VALIDATOR: 0000000000000000: f0 48 0f c7 08                               cmpxchg16b [%rax]
-VALIDATOR: ERROR: Invalid base register in memory offset
-VALIDATOR: 0000000000000005: 48 f0 0f c7 08                               cmpxchg16b [%rax]
-VALIDATOR: ERROR: REX prefix byte must appear last
-VALIDATOR: 0000000000000005: 48 f0 0f c7 08                               cmpxchg16b [%rax]
-VALIDATOR: ERROR: Invalid base register in memory offset
-VALIDATOR: Checking block alignment and jump targets: 0 to a
-*** <input> IS UNSAFE ***

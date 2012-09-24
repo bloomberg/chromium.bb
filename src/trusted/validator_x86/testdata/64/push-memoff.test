@@ -1,0 +1,25 @@
+@hex:
+  # Verify that the validator doesn't report a set for a push (nativeclient issue 369).
+  89 ff
+  41 ff 74 3f 20
+@val:
+  VALIDATOR: Checking jump targets: 0 to 7
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@rval:
+  VALIDATOR: Checking jump targets: 0 to 7
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@rvald:
+  VALIDATOR: Checking block alignment and jump targets: 0 to 7
+  *** <input> is safe ***
+@vd-rval:
+  VALIDATOR: Checking jump targets: 0 to 7
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@dis:
+  0000000000000000: 89 ff                                        mov %edi, %edi
+  0000000000000002: 41 ff 74 3f 20                               push [%r15+%rdi*1+0x20]
+@vdis:
+  0000000000000000: 89 ff                                        mov %edi, %edi
+  0000000000000002: 41 ff 74 3f 20                               push [%r15+%rdi*1+0x20]

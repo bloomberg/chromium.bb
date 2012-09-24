@@ -1,0 +1,11 @@
+@hex:
+  # Example instruction using a 48-bit far pointer.
+  9a 01 02 03 04 05 06
+  
+@nval:
+  VALIDATOR: 0: Illegal instruction
+  *** <input> IS UNSAFE ***
+@dis:
+  00000000: 9a 01 02 03 04 05 06                         call 0x60504030201
+@vdis:
+   0:	9a 01 02 03 04 05 06	lcall $A

@@ -1,7 +1,0 @@
-# Sample of updating subregisters of protected registers rsp, rbp, and r15
-# 66 29 c4                                     sub %sp, %ax
-# 66 29 c5                                     sub %bp, %ax
-# 47 29 c7                                     sub %r15d, %r8d
-66 29 c4
-66 29 c5
-47 29 c7

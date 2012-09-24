@@ -1,0 +1,161 @@
+@hex:
+  # lock add %r15w, (%rsp)
+  66 F0 44 01 3C 24
+  F0 66 44 01 3C 24
+  # fs mov %ax,%r8w
+  64 66 41 89 C0
+  66 64 41 89 C0
+  # mov %edi,%edi
+  # lea (%r15,%rdi),%rdi
+  # 0x66 rep stos %rax,%es:(%rdi)
+  89 FF
+  49 8D 3C 3F
+  66 F3 48 AB
+  89 FF
+  49 8D 3C 3F
+  F3 66 48 AB
+  # 66 nop
+  66 90
+  # 66 66 nop
+  66 66 90
+  # 66 66 66 nop
+  66 66 66 90
+  # white-listed nop
+  66 66 66 2E 0F 1F 84 00 00 00 00 00
+@rval:
+  VALIDATOR: 000000000000000c: 64 66 41 89 c0                               mov %r8w, %ax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 000000000000000c: 64 66 41 89 c0                               mov %r8w, %ax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000011: 66 64 41 89 c0                               mov %r8w, %ax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 0000000000000011: 66 64 41 89 c0                               mov %r8w, %ax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 000000000000001c: 66 f3 48 ab                                  invalid
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 000000000000001c: 66 f3 48 ab                                  invalid
+  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
+  VALIDATOR: 000000000000001c: 66 f3 48 ab                                  invalid
+  VALIDATOR: ERROR: Use of REP (F3) prefix for instruction not allowed by Native Client
+  VALIDATOR: 000000000000001c: 66 f3 48 ab                                  invalid
+  VALIDATOR: ERROR: Use of DATA16 (66) prefix for instruction not allowed by Native Client
+  VALIDATOR: 0000000000000026: f3 66 48 ab                                  invalid
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 0000000000000026: f3 66 48 ab                                  invalid
+  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
+  VALIDATOR: 0000000000000026: f3 66 48 ab                                  invalid
+  VALIDATOR: ERROR: Use of REP (F3) prefix for instruction not allowed by Native Client
+  VALIDATOR: 0000000000000026: f3 66 48 ab                                  invalid
+  VALIDATOR: ERROR: Use of DATA16 (66) prefix for instruction not allowed by Native Client
+  VALIDATOR: 000000000000002c: 66 66 90                                     xchg %ax, %ax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 000000000000002c: 66 66 90                                     xchg %ax, %ax
+  VALIDATOR: ERROR: Duplicating a prefix byte is not allowed by Native Client
+  VALIDATOR: 000000000000002f: 66 66 66 90                                  xchg %ax, %ax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 000000000000002f: 66 66 66 90                                  xchg %ax, %ax
+  VALIDATOR: ERROR: Duplicating a prefix byte is not allowed by Native Client
+  VALIDATOR: Checking jump targets: 0 to 3f
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rvald:
+  VALIDATOR: 000000000000000c: 64 66 41 89 c0                               mov %r8w, %ax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 000000000000000c: 64 66 41 89 c0                               mov %r8w, %ax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000011: 66 64 41 89 c0                               mov %r8w, %ax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 0000000000000011: 66 64 41 89 c0                               mov %r8w, %ax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 000000000000001c: 66 f3 48 ab                                  invalid
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 000000000000001c: 66 f3 48 ab                                  invalid
+  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
+  VALIDATOR: 000000000000001c: 66 f3 48 ab                                  invalid
+  VALIDATOR: ERROR: Use of REP (F3) prefix for instruction not allowed by Native Client
+  VALIDATOR: 000000000000001c: 66 f3 48 ab                                  invalid
+  VALIDATOR: ERROR: Use of DATA16 (66) prefix for instruction not allowed by Native Client
+  VALIDATOR: 0000000000000026: f3 66 48 ab                                  invalid
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 0000000000000026: f3 66 48 ab                                  invalid
+  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
+  VALIDATOR: 0000000000000026: f3 66 48 ab                                  invalid
+  VALIDATOR: ERROR: Use of REP (F3) prefix for instruction not allowed by Native Client
+  VALIDATOR: 0000000000000026: f3 66 48 ab                                  invalid
+  VALIDATOR: ERROR: Use of DATA16 (66) prefix for instruction not allowed by Native Client
+  VALIDATOR: 000000000000002c: 66 66 90                                     xchg %ax, %ax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 000000000000002c: 66 66 90                                     xchg %ax, %ax
+  VALIDATOR: ERROR: Duplicating a prefix byte is not allowed by Native Client
+  VALIDATOR: 000000000000002f: 66 66 66 90                                  xchg %ax, %ax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 000000000000002f: 66 66 66 90                                  xchg %ax, %ax
+  VALIDATOR: ERROR: Duplicating a prefix byte is not allowed by Native Client
+  VALIDATOR: Checking block alignment and jump targets: 0 to 3f
+  *** <input> IS UNSAFE ***
+@vd-rval:
+  VALIDATOR: 000000000000000c: 64 66 41 89 c0                               mov %r8w, %ax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 000000000000000c: 64 66 41 89 c0                               mov %r8w, %ax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000011: 66 64 41 89 c0                               mov %r8w, %ax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 0000000000000011: 66 64 41 89 c0                               mov %r8w, %ax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 000000000000001c: 66 f3 48 ab                                  invalid
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 000000000000001c: 66 f3 48 ab                                  invalid
+  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
+  VALIDATOR: 000000000000001c: 66 f3 48 ab                                  invalid
+  VALIDATOR: ERROR: Use of REP (F3) prefix for instruction not allowed by Native Client
+  VALIDATOR: 000000000000001c: 66 f3 48 ab                                  invalid
+  VALIDATOR: ERROR: Use of DATA16 (66) prefix for instruction not allowed by Native Client
+  VALIDATOR: 0000000000000026: f3 66 48 ab                                  invalid
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 0000000000000026: f3 66 48 ab                                  invalid
+  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
+  VALIDATOR: 0000000000000026: f3 66 48 ab                                  invalid
+  VALIDATOR: ERROR: Use of REP (F3) prefix for instruction not allowed by Native Client
+  VALIDATOR: 0000000000000026: f3 66 48 ab                                  invalid
+  VALIDATOR: ERROR: Use of DATA16 (66) prefix for instruction not allowed by Native Client
+  VALIDATOR: 000000000000002c: 66 66 90                                     [P] dontcare %ax (suz), %ax (suz)
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 000000000000002c: 66 66 90                                     [P] dontcare %ax (suz), %ax (suz)
+  VALIDATOR: ERROR: Duplicating a prefix byte is not allowed by Native Client
+  VALIDATOR: 000000000000002f: 66 66 66 90                                  [P] dontcare %ax (suz), %ax (suz)
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 000000000000002f: 66 66 66 90                                  [P] dontcare %ax (suz), %ax (suz)
+  VALIDATOR: ERROR: Duplicating a prefix byte is not allowed by Native Client
+  VALIDATOR: Checking jump targets: 0 to 3f
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 66 f0 44 01 3c 24                            add [%rsp], %r15w
+  0000000000000006: f0 66 44 01 3c 24                            add [%rsp], %r15w
+  000000000000000c: 64 66 41 89 c0                               mov %r8w, %ax
+  0000000000000011: 66 64 41 89 c0                               mov %r8w, %ax
+  0000000000000016: 89 ff                                        mov %edi, %edi
+  0000000000000018: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+  000000000000001c: 66 f3 48 ab                                  invalid
+  0000000000000020: 89 ff                                        mov %edi, %edi
+  0000000000000022: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+  0000000000000026: f3 66 48 ab                                  invalid
+  000000000000002a: 66 90                                        nop
+  000000000000002c: 66 66 90                                     xchg %ax, %ax
+  000000000000002f: 66 66 66 90                                  xchg %ax, %ax
+  0000000000000033: 66 66 66 2e 0f 1f 84 00 00 00 00 00          nop
+@vdis:
+  0000000000000000: 66 f0 44 01 3c 24                            add [%rsp], %r15w
+  0000000000000006: f0 66 44 01 3c 24                            add [%rsp], %r15w
+  000000000000000c: 64 66 41 89 c0                               mov %r8w, %ax
+  0000000000000011: 66 64 41 89 c0                               mov %r8w, %ax
+  0000000000000016: 89 ff                                        mov %edi, %edi
+  0000000000000018: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+  000000000000001c: 66 f3 48 ab                                  invalid
+  0000000000000020: 89 ff                                        mov %edi, %edi
+  0000000000000022: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+  0000000000000026: f3 66 48 ab                                  invalid
+  000000000000002a: 66 90                                        [P] dontcare
+  000000000000002c: 66 66 90                                     [P] dontcare %ax (suz), %ax (suz)
+  000000000000002f: 66 66 66 90                                  [P] dontcare %ax (suz), %ax (suz)
+  0000000000000033: 66 66 66 2e 0f 1f 84 00 00 00 00 00          [P] dontcare

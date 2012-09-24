@@ -1,0 +1,9 @@
+@hex:
+  # Test if we recognize lzcnt as a bsr with REP prefix.
+  f3 0f bd c3
+@rval:
+  VALIDATOR: Checking jump targets: 0 to 4
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@dis:
+  0000000000000000: f3 0f bd c3                                  lzcnt %eax, %ebx

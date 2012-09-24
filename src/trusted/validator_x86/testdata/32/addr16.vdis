@@ -1,2 +1,0 @@
- 0:	67 66 89 07         	mov *NaClIllegal*, %eax
- 4:	67 66 89 46 00      	mov *NaClIllegal*, %eax

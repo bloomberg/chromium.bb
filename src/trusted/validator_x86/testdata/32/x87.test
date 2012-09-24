@@ -1,0 +1,13 @@
+@hex:
+  # Sample x87 instruction
+  # dc c1                                        fadd %st1, %st0
+  dc c1
+@nval:
+  *** <input> is safe ***
+@nval0:
+  Some instructions were replaced with HLTs.
+  *** <input> is safe ***
+@dis:
+  00000000: dc c1                                        fadd %st1, %st0
+@vdis:
+   0:	dc c1               	fadd

@@ -1,0 +1,133 @@
+@hex:
+  # xchg %esp,%ebp
+  87 e5
+  90
+  
+  # xchg %rsp,%rbp
+  48 87 e5
+  
+  # lea (%rbp),%esp
+  # add %r15,%rsp
+  8d 65 00
+  4c 01 fc
+  
+  # xor %esp,%ebp
+  # lea (%r15,%rbp,1),%rbp
+  31 e5
+  49 8d 2c 2f
+  
+  # xor %ebp,%esp
+  # lea (%rsp,%r15,1),%rsp
+  31 ec
+  4a 8d 24 3c
+  
+  # xor %esp,%ebp
+  # lea (%rbp,%r15,1),%rbp
+  31 e5
+  4a 8d 6c 3d 00
+  
+  # Nop for bundle alignment.
+  90
+  
+  # mov %eax,%eax
+  # lea (%r15,%rax,1),%rsp
+  89 c0
+  49 8d 24 07
+  
+  # mov %eax,%eax
+  # lea (%rax,%r15,1),%rsp
+  89 c0
+  4a 8d 24 38
+@rval:
+  VALIDATOR: 0000000000000000: 87 e5                                        xchg %ebp, %esp
+  VALIDATOR: ERROR: Illegal assignment to ESP
+  VALIDATOR: 0000000000000000: 87 e5                                        xchg %ebp, %esp
+  VALIDATOR: ERROR: Illegal assignment to EBP
+  VALIDATOR: 0000000000000003: 48 87 e5                                     xchg %rbp, %rsp
+  VALIDATOR: ERROR: Illegal change to register RBP
+  VALIDATOR: 0000000000000003: 48 87 e5                                     xchg %rbp, %rsp
+  VALIDATOR: ERROR: Illegal assignment to RSP
+  VALIDATOR: 000000000000000e: 49 8d 2c 2f                                  lea %rbp, [%r15+%rbp*1]
+  VALIDATOR: ERROR: Illegal change to register RBP
+  VALIDATOR: 000000000000000c: 31 e5                                        xor %ebp, %esp
+  VALIDATOR: ERROR: Illegal assignment to EBP
+  VALIDATOR: 0000000000000022: 49 8d 24 07                                  lea %rsp, [%r15+%rax*1]
+  VALIDATOR: ERROR: Illegal assignment to RSP
+  VALIDATOR: 0000000000000028: 4a 8d 24 38                                  lea %rsp, [%rax+%r15*1]
+  VALIDATOR: ERROR: Illegal assignment to RSP
+  VALIDATOR: Checking jump targets: 0 to 2c
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rvald:
+  VALIDATOR: 0000000000000000: 87 e5                                        xchg %ebp, %esp
+  VALIDATOR: ERROR: Illegal assignment to ESP
+  VALIDATOR: 0000000000000000: 87 e5                                        xchg %ebp, %esp
+  VALIDATOR: ERROR: Illegal assignment to EBP
+  VALIDATOR: 0000000000000003: 48 87 e5                                     xchg %rbp, %rsp
+  VALIDATOR: ERROR: Illegal change to register RBP
+  VALIDATOR: 0000000000000003: 48 87 e5                                     xchg %rbp, %rsp
+  VALIDATOR: ERROR: Illegal assignment to RSP
+  VALIDATOR: 000000000000000e: 49 8d 2c 2f                                  lea %rbp, [%r15+%rbp*1]
+  VALIDATOR: ERROR: Illegal change to register RBP
+  VALIDATOR: 000000000000000c: 31 e5                                        xor %ebp, %esp
+  VALIDATOR: ERROR: Illegal assignment to EBP
+  VALIDATOR: 0000000000000022: 49 8d 24 07                                  lea %rsp, [%r15+%rax*1]
+  VALIDATOR: ERROR: Illegal assignment to RSP
+  VALIDATOR: 0000000000000028: 4a 8d 24 38                                  lea %rsp, [%rax+%r15*1]
+  VALIDATOR: ERROR: Illegal assignment to RSP
+  VALIDATOR: Checking block alignment and jump targets: 0 to 2c
+  *** <input> IS UNSAFE ***
+@vd-rval:
+  VALIDATOR: 0000000000000000: 87 e5                                        [P] dontcare %ebp (suz), %esp (suz)
+  VALIDATOR: ERROR: Illegal assignment to ESP
+  VALIDATOR: 0000000000000000: 87 e5                                        [P] dontcare %ebp (suz), %esp (suz)
+  VALIDATOR: ERROR: Illegal assignment to EBP
+  VALIDATOR: 0000000000000003: 48 87 e5                                     [P] dontcare %rbp (suz), %rsp (suz)
+  VALIDATOR: ERROR: Illegal change to register RBP
+  VALIDATOR: 0000000000000003: 48 87 e5                                     [P] dontcare %rbp (suz), %rsp (suz)
+  VALIDATOR: ERROR: Illegal assignment to RSP
+  VALIDATOR: 000000000000000e: 49 8d 2c 2f                                  lea %rbp, [%r15+%rbp*1]
+  VALIDATOR: ERROR: Illegal change to register RBP
+  VALIDATOR: 000000000000000c: 31 e5                                        [P] dontcare %ebp (suz), %esp (u)
+  VALIDATOR: ERROR: Illegal assignment to EBP
+  VALIDATOR: 0000000000000022: 49 8d 24 07                                  lea %rsp, [%r15+%rax*1]
+  VALIDATOR: ERROR: Illegal assignment to RSP
+  VALIDATOR: 0000000000000028: 4a 8d 24 38                                  lea %rsp, [%rax+%r15*1]
+  VALIDATOR: ERROR: Illegal assignment to RSP
+  VALIDATOR: Checking jump targets: 0 to 2c
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 87 e5                                        xchg %ebp, %esp
+  0000000000000002: 90                                           nop
+  0000000000000003: 48 87 e5                                     xchg %rbp, %rsp
+  0000000000000006: 8d 65 00                                     lea %esp, [%rbp]
+  0000000000000009: 4c 01 fc                                     add %rsp, %r15
+  000000000000000c: 31 e5                                        xor %ebp, %esp
+  000000000000000e: 49 8d 2c 2f                                  lea %rbp, [%r15+%rbp*1]
+  0000000000000012: 31 ec                                        xor %esp, %ebp
+  0000000000000014: 4a 8d 24 3c                                  lea %rsp, [%rsp+%r15*1]
+  0000000000000018: 31 e5                                        xor %ebp, %esp
+  000000000000001a: 4a 8d 6c 3d 00                               lea %rbp, [%rbp+%r15*1]
+  000000000000001f: 90                                           nop
+  0000000000000020: 89 c0                                        mov %eax, %eax
+  0000000000000022: 49 8d 24 07                                  lea %rsp, [%r15+%rax*1]
+  0000000000000026: 89 c0                                        mov %eax, %eax
+  0000000000000028: 4a 8d 24 38                                  lea %rsp, [%rax+%r15*1]
+@vdis:
+  0000000000000000: 87 e5                                        [P] dontcare %ebp (suz), %esp (suz)
+  0000000000000002: 90                                           [P] dontcare
+  0000000000000003: 48 87 e5                                     [P] dontcare %rbp (suz), %rsp (suz)
+  0000000000000006: 8d 65 00                                     lea %esp, [%rbp]
+  0000000000000009: 4c 01 fc                                     add %rsp, %r15
+  000000000000000c: 31 e5                                        [P] dontcare %ebp (suz), %esp (u)
+  000000000000000e: 49 8d 2c 2f                                  lea %rbp, [%r15+%rbp*1]
+  0000000000000012: 31 ec                                        [P] dontcare %esp (suz), %ebp (u)
+  0000000000000014: 4a 8d 24 3c                                  lea %rsp, [%rsp+%r15*1]
+  0000000000000018: 31 e5                                        [P] dontcare %ebp (suz), %esp (u)
+  000000000000001a: 4a 8d 6c 3d 00                               lea %rbp, [%rbp+%r15*1]
+  000000000000001f: 90                                           [P] dontcare
+  0000000000000020: 89 c0                                        mov %eax, %eax
+  0000000000000022: 49 8d 24 07                                  lea %rsp, [%r15+%rax*1]
+  0000000000000026: 89 c0                                        mov %eax, %eax
+  0000000000000028: 4a 8d 24 38                                  lea %rsp, [%rax+%r15*1]

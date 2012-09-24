@@ -1,6 +1,0 @@
-# Doesn't disassemble correctly
-# 16-bit instructions
-# mov %ax, (%bx)
-67 66 89 07
-# mov %ax, (%bp)
-67 66 89 46 00

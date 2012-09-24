@@ -1,3 +1,0 @@
-# Show that "add %rsp, %r15" doesn't work without proper previous instruction.
-# See test lea-add-rsp.dis for an example of a proper previous instruction.
-4c 01 fc

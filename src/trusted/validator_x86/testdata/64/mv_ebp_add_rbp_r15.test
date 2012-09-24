@@ -1,0 +1,31 @@
+@hex:
+  # Check that we handle sequence when not crossing block boundaries:
+  #   mov %ebp, %r11d
+  #   add %rbp, %r15"
+  # Note: Instruction sequence used in mv_ebp_add_crossing.hex to show problems
+  # when crossing block boundaries.
+  44 89 dd 4c 01 fd
+  
+  
+  
+@val:
+  VALIDATOR: Checking jump targets: 0 to 6
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@rval:
+  VALIDATOR: Checking jump targets: 0 to 6
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@rvald:
+  VALIDATOR: Checking block alignment and jump targets: 0 to 6
+  *** <input> is safe ***
+@vd-rval:
+  VALIDATOR: Checking jump targets: 0 to 6
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@dis:
+  0000000000000000: 44 89 dd                                     mov %ebp, %r11d
+  0000000000000003: 4c 01 fd                                     add %rbp, %r15
+@vdis:
+  0000000000000000: 44 89 dd                                     mov %ebp, %r11d
+  0000000000000003: 4c 01 fd                                     add %rbp, %r15

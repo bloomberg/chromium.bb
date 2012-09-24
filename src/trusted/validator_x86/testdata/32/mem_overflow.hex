@@ -1,3 +1,0 @@
-# Test if we fill in (zero) for memory overflow of instruction:
-# 00000000: 03 1d 20 00 00 00              add %ebx, 0x20
-03 1d 20 00

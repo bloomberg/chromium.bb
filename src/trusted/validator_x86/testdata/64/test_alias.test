@@ -1,0 +1,36 @@
+@hex:
+  
+  # For background, see:
+  # http://code.google.com/p/nativeclient/issues/detail?id=2574
+  
+  # "f6 /0" encoding of TEST.  This is what assemblers generate.
+  f6 c3 00
+  
+  # "f6 /1" encoding of TEST.  This is an alias encoding, which we
+  # should disallow on the grounds of minimalism.
+  f6 cb 00
+  
+  # The same applies to the "f7" versions of TEST.
+  f7 c3 00 00 00 00
+  f7 cb 00 00 00 00
+@val:
+  VALIDATOR: 0000000000000003: f6 cb 00                                     test %bl, 0x0
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 000000000000000c: f7 cb 00 00 00 00                            test %ebx, 0x0
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: Checking jump targets: 0 to 12
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rval:
+  VALIDATOR: 0000000000000003: f6 cb 00                                     test %bl, 0x0
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 000000000000000c: f7 cb 00 00 00 00                            test %ebx, 0x0
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: Checking jump targets: 0 to 12
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: f6 c3 00                                     test %bl, 0x0
+  0000000000000003: f6 cb 00                                     test %bl, 0x0
+  0000000000000006: f7 c3 00 00 00 00                            test %ebx, 0x0
+  000000000000000c: f7 cb 00 00 00 00                            test %ebx, 0x0

@@ -1,0 +1,39 @@
+@hex:
+  # Test legal bit commands
+  # btw $0x1,(%esp)
+  66 0f ba 24 24 01
+  90 90 90 90 90
+  # btl $0x1,(%esp)
+  0f ba 24 24 01
+  # btrl $0x1,(%esp)
+  0f ba 34 24 01
+  # btsl $0x1,(%esp)
+  0f ba 2c 24 01
+  # btcl $0x1,(%esp)
+  0f ba 3c 24 01
+@nval:
+  VALIDATOR: 0: Undefined instruction
+  VALIDATOR: b: Illegal instruction
+  VALIDATOR: 10: Illegal instruction
+  VALIDATOR: 15: Illegal instruction
+  VALIDATOR: 1a: Illegal instruction
+  *** <input> IS UNSAFE ***
+@dis:
+  00000000: 66 0f ba 24 24 01                            bt %ds:[%esp+%esp*1], 0x1
+  00000006: 90                                           nop
+  00000007: 90                                           nop
+  00000008: 90                                           nop
+  00000009: 90                                           nop
+  0000000a: 90                                           nop
+  0000000b: 0f ba 24 24 01                               bt %ds:[%esp+%esp*1], 0x1
+  00000010: 0f ba 34 24 01                               btr %ds:[%esp+%esp*1], 0x1
+  00000015: 0f ba 2c 24 01                               bts %ds:[%esp+%esp*1], 0x1
+  0000001a: 0f ba 3c 24 01                               btc %ds:[%esp+%esp*1], 0x1
+@vdis:
+   0:	66 0f ba            	undefined
+   3:	24 24               	and %al, 0x24
+   5:	01 90 90 90 90 90   	add 0x90909090[%eax], %edx
+   b:	0f ba 24 24 01      	bt [%esp], 0x1
+   10:	0f ba 34 24 01      	btr [%esp], 0x1
+   15:	0f ba 2c 24 01      	bts [%esp], 0x1
+   1a:	0f ba 3c 24 01      	btc [%esp], 0x1

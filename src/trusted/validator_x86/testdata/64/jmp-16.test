@@ -1,0 +1,14 @@
+@hex:
+  # Sample of using a 16-bit indirect jump.
+  # Note: x86-64 instructions don't define a 32-bit case, and
+  # so it is not tested here. 64-bit cases alreay are tested elsewhere!
+  # 0000000000000000: 66 ff e0                                     jmp %ax
+  66 ff e0
+@rval:
+  VALIDATOR: 0000000000000000: 66 ff e0                                     jmp %ax
+  VALIDATOR: ERROR: Invalid indirect jump
+  VALIDATOR: Checking jump targets: 0 to 3
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 66 ff e0                                     jmp %ax

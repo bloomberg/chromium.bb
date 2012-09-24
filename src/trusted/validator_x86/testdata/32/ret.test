@@ -1,0 +1,11 @@
+@hex:
+  # Test that we don't allow the 'ret' instruction.
+  c3
+@nval:
+  VALIDATOR: 0: ret instruction (not allowed)
+  VALIDATOR: 0: Illegal instruction
+  *** <input> IS UNSAFE ***
+@dis:
+  00000000: c3                                           ret
+@vdis:
+   0:	c3                  	ret

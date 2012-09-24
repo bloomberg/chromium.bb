@@ -1,0 +1,37 @@
+@hex:
+  # Model a case where an indirect jump is inproperly masked (mask wrong value).
+  83 e2 f0
+  4D 8D 0C 17
+  41 FF E1
+  
+@val:
+  VALIDATOR: 0000000000000007: 41 ff e1                                     jmp %r9
+  VALIDATOR: ERROR: Invalid indirect jump
+  VALIDATOR: Checking jump targets: 0 to a
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rval:
+  VALIDATOR: 0000000000000007: 41 ff e1                                     jmp %r9
+  VALIDATOR: ERROR: Invalid indirect jump
+  VALIDATOR: Checking jump targets: 0 to a
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rvald:
+  VALIDATOR: 0000000000000007: 41 ff e1                                     jmp %r9
+  VALIDATOR: ERROR: Invalid indirect jump
+  VALIDATOR: Checking block alignment and jump targets: 0 to a
+  *** <input> IS UNSAFE ***
+@vd-rval:
+  VALIDATOR: 0000000000000007: 41 ff e1                                     [P] dontcarejump %rip (s), %r9 (u)
+  VALIDATOR: ERROR: Invalid indirect jump
+  VALIDATOR: Checking jump targets: 0 to a
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 83 e2 f0                                     and %edx, 0xf0
+  0000000000000003: 4d 8d 0c 17                                  lea %r9, [%r15+%rdx*1]
+  0000000000000007: 41 ff e1                                     jmp %r9
+@vdis:
+  0000000000000000: 83 e2 f0                                     and %edx, 0xf0
+  0000000000000003: 4d 8d 0c 17                                  lea %r9, [%r15+%rdx*1]
+  0000000000000007: 41 ff e1                                     [P] dontcarejump %rip (s), %r9 (u)

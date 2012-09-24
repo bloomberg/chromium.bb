@@ -1,2 +1,0 @@
-#  Show that we do accept the case of rip relative addressing, if 64 bit address.
-ff 05 a4 76 39 00

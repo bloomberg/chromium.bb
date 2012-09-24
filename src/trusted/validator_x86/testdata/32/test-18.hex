@@ -1,3 +1,0 @@
-# loop branch into overlapping instruction.
-bb 90 40 cd 80 85 c0 e1 f8 f4
-

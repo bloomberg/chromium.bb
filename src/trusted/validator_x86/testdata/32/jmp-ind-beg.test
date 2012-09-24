@@ -1,0 +1,14 @@
+@hex:
+  # Jump indirect at beginning of instruction sequence.
+  ff e0
+  90
+  
+@nval:
+  VALIDATOR: 0: Unsafe indirect jump
+  *** <input> IS UNSAFE ***
+@dis:
+  00000000: ff e0                                        jmp %eax
+  00000002: 90                                           nop
+@vdis:
+   0:	ff e0               	jmp * %esp
+   2:	90                  	nop

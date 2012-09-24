@@ -1,7 +1,0 @@
-# This file tests how we handle a 32-bit direct jumps.
-#
-# Define direct (32-bit) jump
-e9 01 00 00 00
-
-# Padding so that there is a valid target for the jump
-90 90

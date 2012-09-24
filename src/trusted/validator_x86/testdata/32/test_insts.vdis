@@ -1,5 +1,0 @@
- 0:	55                  	push %ebp
- 1:	8d 74 26 00         	lea %esi, 0x0[%esi]
- 5:	b8 88 77 66 55      	mov %eax, 0x55667788
- a:	66 b8 88 77         	mov %eax, 0x7788
- e:	a0 44 33 22 11      	mov %al, [0x11223344]

@@ -1,4 +1,0 @@
-VALIDATOR: Checking block alignment and jump targets: 0 to 5
-VALIDATOR: 0000000000000000: eb 02                                        jmp 0x4
-VALIDATOR: ERROR: Doesn't jump to instruction address
-*** <input> IS UNSAFE ***

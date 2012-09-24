@@ -1,0 +1,801 @@
+@hex:
+  # 2 prefixes of the same type
+  # lock lock add %eax,(%rsp)
+  F0 F0 01 04 24
+  # mov %edi,%edi
+  # lea (%r15,%rdi),%rdi
+  # rep rep stos %eax,%es:(%rdi)
+  89 FF
+  49 8D 3C 3F
+  F3 F3 AB
+  # mov %edi,%edi
+  # lea (%r15,%rdi),%rdi
+  # repne rep stos %eax,%es:(%rdi)
+  89 FF
+  49 8D 3C 3F
+  F2 F3 AB
+  # mov %edi,%edi
+  # lea (%r15,%rdi),%rdi
+  # rep repne scas %es:(%rdi),%al
+  89 FF
+  49 8D 3C 3F
+  F3 F2 AE
+  # fs gs mov %eax,%eax
+  64 65 89 C0
+  # 0x66 mov %ax,%ax
+  66 66 89 C0
+  # 0x67 mov %eax,(%esp)
+  67 67 89 04 24
+  # rex rex jmp $
+  40 40 EB FD
+  
+  # 2 prefixes of different type
+  # lock add %eax, %ss:(%rsp)
+  36 F0 01 04 24
+  F0 36 01 04 24
+  
+  # Nops for bundle alignment.
+  90 90 90
+  
+  # mov %edi,%edi
+  # lea (%r15,%rdi),%rdi
+  # es rep stos %eax,%es:(%rdi)
+  89 FF
+  49 8D 3C 3F
+  26 F3 AB
+  89 FF
+  49 8D 3C 3F
+  F3 26 AB
+  # lock add %ax, (%rsp)
+  66 F0 01 04 24
+  F0 66 01 04 24
+  # Doesn't validate due to bug.
+  # mov %edi,%edi
+  # lea (%r15,%rdi),%rdi
+  # rep stosw %ax,%es:(%rdi)
+  89 FF
+  49 8D 3C 3F
+  66 F3 AB
+  89 FF
+  49 8D 3C 3F
+  F3 66 AB
+  # lock add %eax, (%esp)
+  67 F0 01 04 24
+  F0 67 01 04 24
+  
+  # Nop for bundle alignment.
+  90
+  
+  # rep stos %eax, %es:(%edi)
+  89 FF
+  49 8D 3C 3F
+  67 F3 AB
+  89 FF
+  49 8D 3C 3F
+  F3 67 AB
+  # lock add %rax, (%rsp)
+  f0 48 01 04 24
+  48 f0 01 04 24
+  # mov %edi,%edi
+  # lea (%r15,%rdi),%rdi
+  # rep stos %rax,%es:(%rdi)
+  89 FF
+  49 8D 3C 3F
+  F3 48 AB
+  # fs mov %ax,%ax
+  64 66 89 C0
+  66 64 89 C0
+  # fs add %eax, (%esp)
+  67 64 01 04 24
+  64 67 01 04 24
+  # fs mov %rax,%rax
+  64 48 89 C0
+  48 64 89 C0
+  # add %ax, (%esp)
+  66 67 01 04 24
+  67 66 01 04 24
+  # mov %r15l, (%rsp)
+  66 44 89 3C 24
+  44 66 89 3C 24
+  # mov %r15, (%esp)
+  67 4C 89 3C 24
+  4C 67 89 3C 24
+  
+  # 2 prefixes when one is mandatory
+  # fs phaddw %xmm0,%xmm1
+  64 66 0F 38 01 C8
+  # fs addsd %xmm0,%xmm1
+  64 F2 0F 58 C8
+  # 0x66 phaddw %xmm0,%xmm1
+  66 66 0F 38 01 C8
+  # 0x66 addsd %xmm0,%xmm1
+  66 F2 0F 58 C8
+  # phaddw (%esp), %xmm0
+  67 66 0f 38 01 04 24
+  # addsd (%esp), %xmm0
+  67 f2 0f 58 04 24
+  # mov %eax,%eax
+  # phaddw (%r15,%rax),%xmm0
+  89 C0
+  66 41 0F 38 01 04 07
+  89 C0
+  41 66 0F 38 01 04 07
+  # mov %eax,%eax
+  # addsd (%r15,%rax),%xmm0
+  89 C0
+  F2 41 0F 58 04 07
+  89 C0
+  41 F2 0F 58 04 07
+@rval:
+  VALIDATOR: 0000000000000000: f0 f0 01 04 24                               add [%rsp], %eax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 0000000000000000: f0 f0 01 04 24                               add [%rsp], %eax
+  VALIDATOR: ERROR: Duplicating a prefix byte is not allowed by Native Client
+  VALIDATOR: 000000000000000b: f3 f3 ab                                     stosd [%rdi]
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 000000000000000b: f3 f3 ab                                     stosd [%rdi]
+  VALIDATOR: ERROR: Duplicating a prefix byte is not allowed by Native Client
+  VALIDATOR: 0000000000000014: f2 f3 ab                                     stosd [%rdi]
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 0000000000000014: f2 f3 ab                                     stosd [%rdi]
+  VALIDATOR: ERROR: Use of REPNE (F2) prefix for instruction not allowed by Native Client
+  VALIDATOR: 000000000000001d: f3 f2 ae                                     scasb [%rdi]
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 0000000000000020: 64 65 89 c0                                  mov %eax, %eax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 0000000000000020: 64 65 89 c0                                  mov %eax, %eax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000020: 64 65 89 c0                                  mov %eax, %eax
+  VALIDATOR: ERROR: Specifying different segment registers using prefix bytes is not allowed by Native Client
+  VALIDATOR: 0000000000000024: 66 66 89 c0                                  mov %ax, %ax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 0000000000000024: 66 66 89 c0                                  mov %ax, %ax
+  VALIDATOR: ERROR: Duplicating a prefix byte is not allowed by Native Client
+  VALIDATOR: 0000000000000028: 67 67 89 04 24                               mov [%esp], %eax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 0000000000000028: 67 67 89 04 24                               mov [%esp], %eax
+  VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
+  VALIDATOR: 0000000000000028: 67 67 89 04 24                               mov [%esp], %eax
+  VALIDATOR: ERROR: Duplicating a prefix byte is not allowed by Native Client
+  VALIDATOR: 0000000000000028: 67 67 89 04 24                               mov [%esp], %eax
+  VALIDATOR: ERROR: Assignment to non-64 bit memory address
+  VALIDATOR: 000000000000002d: 40 40 eb fd                                  jmp 0x2e
+  VALIDATOR: ERROR: Multiple use of REX prefix not allowed
+  VALIDATOR: 0000000000000031: 36 f0 01 04 24                               add [%rsp], %eax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 0000000000000031: 36 f0 01 04 24                               add [%rsp], %eax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000036: f0 36 01 04 24                               add [%rsp], %eax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 0000000000000036: f0 36 01 04 24                               add [%rsp], %eax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000044: 26 f3 ab                                     stosd [%rdi]
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 0000000000000044: 26 f3 ab                                     stosd [%rdi]
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 000000000000004d: f3 26 ab                                     stosd [%rdi]
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 000000000000004d: f3 26 ab                                     stosd [%rdi]
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000060: 66 f3 ab                                     stosw [%rdi]
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 0000000000000069: f3 66 ab                                     stosw [%rdi]
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 000000000000006c: 67 f0 01 04 24                               add [%esp], %eax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 000000000000006c: 67 f0 01 04 24                               add [%esp], %eax
+  VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
+  VALIDATOR: 000000000000006c: 67 f0 01 04 24                               add [%esp], %eax
+  VALIDATOR: ERROR: Assignment to non-64 bit memory address
+  VALIDATOR: 0000000000000071: f0 67 01 04 24                               add [%esp], %eax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 0000000000000071: f0 67 01 04 24                               add [%esp], %eax
+  VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
+  VALIDATOR: 0000000000000071: f0 67 01 04 24                               add [%esp], %eax
+  VALIDATOR: ERROR: Assignment to non-64 bit memory address
+  VALIDATOR: 000000000000007d: 67 f3 ab                                     stosd [%edi]
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 000000000000007d: 67 f3 ab                                     stosd [%edi]
+  VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
+  VALIDATOR: 000000000000007d: 67 f3 ab                                     stosd [%edi]
+  VALIDATOR: ERROR: Assignment to non-64 bit segment address
+  VALIDATOR: 0000000000000086: f3 67 ab                                     stosd [%edi]
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 0000000000000086: f3 67 ab                                     stosd [%edi]
+  VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
+  VALIDATOR: 0000000000000086: f3 67 ab                                     stosd [%edi]
+  VALIDATOR: ERROR: Assignment to non-64 bit segment address
+  VALIDATOR: 000000000000008e: 48 f0 01 04 24                               add [%rsp], %rax
+  VALIDATOR: ERROR: REX prefix byte must appear last
+  VALIDATOR: 000000000000009c: 64 66 89 c0                                  mov %ax, %ax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 000000000000009c: 64 66 89 c0                                  mov %ax, %ax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 00000000000000a0: 66 64 89 c0                                  mov %ax, %ax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 00000000000000a0: 66 64 89 c0                                  mov %ax, %ax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 00000000000000a4: 67 64 01 04 24                               add %fs:[%esp], %eax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 00000000000000a4: 67 64 01 04 24                               add %fs:[%esp], %eax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 00000000000000a4: 67 64 01 04 24                               add %fs:[%esp], %eax
+  VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
+  VALIDATOR: 00000000000000a4: 67 64 01 04 24                               add %fs:[%esp], %eax
+  VALIDATOR: ERROR: Assignment to non-64 bit segment address
+  VALIDATOR: 00000000000000a9: 64 67 01 04 24                               add %fs:[%esp], %eax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 00000000000000a9: 64 67 01 04 24                               add %fs:[%esp], %eax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 00000000000000a9: 64 67 01 04 24                               add %fs:[%esp], %eax
+  VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
+  VALIDATOR: 00000000000000a9: 64 67 01 04 24                               add %fs:[%esp], %eax
+  VALIDATOR: ERROR: Assignment to non-64 bit segment address
+  VALIDATOR: 00000000000000ae: 64 48 89 c0                                  mov %rax, %rax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 00000000000000b2: 48 64 89 c0                                  mov %rax, %rax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 00000000000000b2: 48 64 89 c0                                  mov %rax, %rax
+  VALIDATOR: ERROR: REX prefix byte must appear last
+  VALIDATOR: 00000000000000b6: 66 67 01 04 24                               add [%esp], %ax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 00000000000000b6: 66 67 01 04 24                               add [%esp], %ax
+  VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
+  VALIDATOR: 00000000000000b6: 66 67 01 04 24                               add [%esp], %ax
+  VALIDATOR: ERROR: Assignment to non-64 bit memory address
+  VALIDATOR: 00000000000000bb: 67 66 01 04 24                               add [%esp], %ax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 00000000000000bb: 67 66 01 04 24                               add [%esp], %ax
+  VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
+  VALIDATOR: 00000000000000bb: 67 66 01 04 24                               add [%esp], %ax
+  VALIDATOR: ERROR: Assignment to non-64 bit memory address
+  VALIDATOR: 00000000000000c5: 44 66 89 3c 24                               mov [%rsp], %r15w
+  VALIDATOR: ERROR: REX prefix byte must appear last
+  VALIDATOR: 00000000000000ca: 67 4c 89 3c 24                               mov [%esp], %r15
+  VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
+  VALIDATOR: 00000000000000ca: 67 4c 89 3c 24                               mov [%esp], %r15
+  VALIDATOR: ERROR: Assignment to non-64 bit memory address
+  VALIDATOR: 00000000000000cf: 4c 67 89 3c 24                               mov [%esp], %r15
+  VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
+  VALIDATOR: 00000000000000cf: 4c 67 89 3c 24                               mov [%esp], %r15
+  VALIDATOR: ERROR: REX prefix byte must appear last
+  VALIDATOR: 00000000000000cf: 4c 67 89 3c 24                               mov [%esp], %r15
+  VALIDATOR: ERROR: Assignment to non-64 bit memory address
+  VALIDATOR: 00000000000000d4: 64 66 0f 38 01 c8                            phaddw %xmm1, %xmm0
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 00000000000000d4: 64 66 0f 38 01 c8                            phaddw %xmm1, %xmm0
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 00000000000000da: 64 f2 0f 58 c8                               addsd %xmm1, %xmm0
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 00000000000000da: 64 f2 0f 58 c8                               addsd %xmm1, %xmm0
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 00000000000000df: 66 66 0f 38 01 c8                            phaddw %xmm1, %xmm0
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 00000000000000df: 66 66 0f 38 01 c8                            phaddw %xmm1, %xmm0
+  VALIDATOR: ERROR: Duplicating a prefix byte is not allowed by Native Client
+  VALIDATOR: 00000000000000e5: 66 f2 0f 58 c8                               addsd %xmm1, %xmm0
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 00000000000000e5: 66 f2 0f 58 c8                               addsd %xmm1, %xmm0
+  VALIDATOR: ERROR: Use of DATA16 (66) prefix for instruction not allowed by Native Client
+  VALIDATOR: 00000000000000ea: 67 66 0f 38 01 04 24                         phaddw %xmm0, [%esp]
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 00000000000000ea: 67 66 0f 38 01 04 24                         phaddw %xmm0, [%esp]
+  VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
+  VALIDATOR: 00000000000000ea: 67 66 0f 38 01 04 24                         phaddw %xmm0, [%esp]
+  VALIDATOR: ERROR: Assignment to non-64 bit memory address
+  VALIDATOR: 00000000000000f1: 67 f2 0f 58 04 24                            addsd %xmm0, [%esp]
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 00000000000000f1: 67 f2 0f 58 04 24                            addsd %xmm0, [%esp]
+  VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
+  VALIDATOR: 00000000000000f1: 67 f2 0f 58 04 24                            addsd %xmm0, [%esp]
+  VALIDATOR: ERROR: Assignment to non-64 bit memory address
+  VALIDATOR: 0000000000000102: 41 66 0f 38 01 04 07                         phaddw %xmm0, [%r15+%rax*1]
+  VALIDATOR: ERROR: REX prefix byte must appear last
+  VALIDATOR: 0000000000000113: 41 f2 0f 58 04 07                            addsd %xmm0, [%r15+%rax*1]
+  VALIDATOR: ERROR: REX prefix byte must appear last
+  VALIDATOR: Checking jump targets: 0 to 119
+  VALIDATOR: ERROR: 2e: Bad jump target
+  VALIDATOR: Checking that basic blocks are aligned
+  VALIDATOR: ERROR: 40: Bad basic block alignment.
+  VALIDATOR: ERROR: 60: Bad basic block alignment.
+  VALIDATOR: ERROR: e0: Bad basic block alignment.
+  *** <input> IS UNSAFE ***
+@rvald:
+  VALIDATOR: 0000000000000000: f0 f0 01 04 24                               add [%rsp], %eax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 0000000000000000: f0 f0 01 04 24                               add [%rsp], %eax
+  VALIDATOR: ERROR: Duplicating a prefix byte is not allowed by Native Client
+  VALIDATOR: 000000000000000b: f3 f3 ab                                     stosd [%rdi]
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 000000000000000b: f3 f3 ab                                     stosd [%rdi]
+  VALIDATOR: ERROR: Duplicating a prefix byte is not allowed by Native Client
+  VALIDATOR: 0000000000000014: f2 f3 ab                                     stosd [%rdi]
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 0000000000000014: f2 f3 ab                                     stosd [%rdi]
+  VALIDATOR: ERROR: Use of REPNE (F2) prefix for instruction not allowed by Native Client
+  VALIDATOR: 000000000000001d: f3 f2 ae                                     scasb [%rdi]
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 0000000000000020: 64 65 89 c0                                  mov %eax, %eax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 0000000000000020: 64 65 89 c0                                  mov %eax, %eax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000020: 64 65 89 c0                                  mov %eax, %eax
+  VALIDATOR: ERROR: Specifying different segment registers using prefix bytes is not allowed by Native Client
+  VALIDATOR: 0000000000000024: 66 66 89 c0                                  mov %ax, %ax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 0000000000000024: 66 66 89 c0                                  mov %ax, %ax
+  VALIDATOR: ERROR: Duplicating a prefix byte is not allowed by Native Client
+  VALIDATOR: 0000000000000028: 67 67 89 04 24                               mov [%esp], %eax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 0000000000000028: 67 67 89 04 24                               mov [%esp], %eax
+  VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
+  VALIDATOR: 0000000000000028: 67 67 89 04 24                               mov [%esp], %eax
+  VALIDATOR: ERROR: Duplicating a prefix byte is not allowed by Native Client
+  VALIDATOR: 0000000000000028: 67 67 89 04 24                               mov [%esp], %eax
+  VALIDATOR: ERROR: Assignment to non-64 bit memory address
+  VALIDATOR: 000000000000002d: 40 40 eb fd                                  jmp 0x2e
+  VALIDATOR: ERROR: Multiple use of REX prefix not allowed
+  VALIDATOR: 0000000000000031: 36 f0 01 04 24                               add [%rsp], %eax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 0000000000000031: 36 f0 01 04 24                               add [%rsp], %eax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000036: f0 36 01 04 24                               add [%rsp], %eax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 0000000000000036: f0 36 01 04 24                               add [%rsp], %eax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000044: 26 f3 ab                                     stosd [%rdi]
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 0000000000000044: 26 f3 ab                                     stosd [%rdi]
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 000000000000004d: f3 26 ab                                     stosd [%rdi]
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 000000000000004d: f3 26 ab                                     stosd [%rdi]
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000060: 66 f3 ab                                     stosw [%rdi]
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 0000000000000069: f3 66 ab                                     stosw [%rdi]
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 000000000000006c: 67 f0 01 04 24                               add [%esp], %eax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 000000000000006c: 67 f0 01 04 24                               add [%esp], %eax
+  VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
+  VALIDATOR: 000000000000006c: 67 f0 01 04 24                               add [%esp], %eax
+  VALIDATOR: ERROR: Assignment to non-64 bit memory address
+  VALIDATOR: 0000000000000071: f0 67 01 04 24                               add [%esp], %eax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 0000000000000071: f0 67 01 04 24                               add [%esp], %eax
+  VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
+  VALIDATOR: 0000000000000071: f0 67 01 04 24                               add [%esp], %eax
+  VALIDATOR: ERROR: Assignment to non-64 bit memory address
+  VALIDATOR: 000000000000007d: 67 f3 ab                                     stosd [%edi]
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 000000000000007d: 67 f3 ab                                     stosd [%edi]
+  VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
+  VALIDATOR: 000000000000007d: 67 f3 ab                                     stosd [%edi]
+  VALIDATOR: ERROR: Assignment to non-64 bit segment address
+  VALIDATOR: 0000000000000086: f3 67 ab                                     stosd [%edi]
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 0000000000000086: f3 67 ab                                     stosd [%edi]
+  VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
+  VALIDATOR: 0000000000000086: f3 67 ab                                     stosd [%edi]
+  VALIDATOR: ERROR: Assignment to non-64 bit segment address
+  VALIDATOR: 000000000000008e: 48 f0 01 04 24                               add [%rsp], %rax
+  VALIDATOR: ERROR: REX prefix byte must appear last
+  VALIDATOR: 000000000000009c: 64 66 89 c0                                  mov %ax, %ax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 000000000000009c: 64 66 89 c0                                  mov %ax, %ax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 00000000000000a0: 66 64 89 c0                                  mov %ax, %ax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 00000000000000a0: 66 64 89 c0                                  mov %ax, %ax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 00000000000000a4: 67 64 01 04 24                               add %fs:[%esp], %eax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 00000000000000a4: 67 64 01 04 24                               add %fs:[%esp], %eax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 00000000000000a4: 67 64 01 04 24                               add %fs:[%esp], %eax
+  VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
+  VALIDATOR: 00000000000000a4: 67 64 01 04 24                               add %fs:[%esp], %eax
+  VALIDATOR: ERROR: Assignment to non-64 bit segment address
+  VALIDATOR: 00000000000000a9: 64 67 01 04 24                               add %fs:[%esp], %eax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 00000000000000a9: 64 67 01 04 24                               add %fs:[%esp], %eax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 00000000000000a9: 64 67 01 04 24                               add %fs:[%esp], %eax
+  VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
+  VALIDATOR: 00000000000000a9: 64 67 01 04 24                               add %fs:[%esp], %eax
+  VALIDATOR: ERROR: Assignment to non-64 bit segment address
+  VALIDATOR: 00000000000000ae: 64 48 89 c0                                  mov %rax, %rax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 00000000000000b2: 48 64 89 c0                                  mov %rax, %rax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 00000000000000b2: 48 64 89 c0                                  mov %rax, %rax
+  VALIDATOR: ERROR: REX prefix byte must appear last
+  VALIDATOR: 00000000000000b6: 66 67 01 04 24                               add [%esp], %ax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 00000000000000b6: 66 67 01 04 24                               add [%esp], %ax
+  VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
+  VALIDATOR: 00000000000000b6: 66 67 01 04 24                               add [%esp], %ax
+  VALIDATOR: ERROR: Assignment to non-64 bit memory address
+  VALIDATOR: 00000000000000bb: 67 66 01 04 24                               add [%esp], %ax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 00000000000000bb: 67 66 01 04 24                               add [%esp], %ax
+  VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
+  VALIDATOR: 00000000000000bb: 67 66 01 04 24                               add [%esp], %ax
+  VALIDATOR: ERROR: Assignment to non-64 bit memory address
+  VALIDATOR: 00000000000000c5: 44 66 89 3c 24                               mov [%rsp], %r15w
+  VALIDATOR: ERROR: REX prefix byte must appear last
+  VALIDATOR: 00000000000000ca: 67 4c 89 3c 24                               mov [%esp], %r15
+  VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
+  VALIDATOR: 00000000000000ca: 67 4c 89 3c 24                               mov [%esp], %r15
+  VALIDATOR: ERROR: Assignment to non-64 bit memory address
+  VALIDATOR: 00000000000000cf: 4c 67 89 3c 24                               mov [%esp], %r15
+  VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
+  VALIDATOR: 00000000000000cf: 4c 67 89 3c 24                               mov [%esp], %r15
+  VALIDATOR: ERROR: REX prefix byte must appear last
+  VALIDATOR: 00000000000000cf: 4c 67 89 3c 24                               mov [%esp], %r15
+  VALIDATOR: ERROR: Assignment to non-64 bit memory address
+  VALIDATOR: 00000000000000d4: 64 66 0f 38 01 c8                            phaddw %xmm1, %xmm0
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 00000000000000d4: 64 66 0f 38 01 c8                            phaddw %xmm1, %xmm0
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 00000000000000da: 64 f2 0f 58 c8                               addsd %xmm1, %xmm0
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 00000000000000da: 64 f2 0f 58 c8                               addsd %xmm1, %xmm0
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 00000000000000df: 66 66 0f 38 01 c8                            phaddw %xmm1, %xmm0
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 00000000000000df: 66 66 0f 38 01 c8                            phaddw %xmm1, %xmm0
+  VALIDATOR: ERROR: Duplicating a prefix byte is not allowed by Native Client
+  VALIDATOR: 00000000000000e5: 66 f2 0f 58 c8                               addsd %xmm1, %xmm0
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 00000000000000e5: 66 f2 0f 58 c8                               addsd %xmm1, %xmm0
+  VALIDATOR: ERROR: Use of DATA16 (66) prefix for instruction not allowed by Native Client
+  VALIDATOR: 00000000000000ea: 67 66 0f 38 01 04 24                         phaddw %xmm0, [%esp]
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 00000000000000ea: 67 66 0f 38 01 04 24                         phaddw %xmm0, [%esp]
+  VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
+  VALIDATOR: 00000000000000ea: 67 66 0f 38 01 04 24                         phaddw %xmm0, [%esp]
+  VALIDATOR: ERROR: Assignment to non-64 bit memory address
+  VALIDATOR: 00000000000000f1: 67 f2 0f 58 04 24                            addsd %xmm0, [%esp]
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 00000000000000f1: 67 f2 0f 58 04 24                            addsd %xmm0, [%esp]
+  VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
+  VALIDATOR: 00000000000000f1: 67 f2 0f 58 04 24                            addsd %xmm0, [%esp]
+  VALIDATOR: ERROR: Assignment to non-64 bit memory address
+  VALIDATOR: 0000000000000102: 41 66 0f 38 01 04 07                         phaddw %xmm0, [%r15+%rax*1]
+  VALIDATOR: ERROR: REX prefix byte must appear last
+  VALIDATOR: 0000000000000113: 41 f2 0f 58 04 07                            addsd %xmm0, [%r15+%rax*1]
+  VALIDATOR: ERROR: REX prefix byte must appear last
+  VALIDATOR: Checking block alignment and jump targets: 0 to 119
+  VALIDATOR: 000000000000002d: 40 40 eb fd                                  jmp 0x2e
+  VALIDATOR: ERROR: Doesn't jump to instruction address
+  VALIDATOR: 0000000000000040: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+  VALIDATOR: ERROR: Instruction begins basic block, but in middle of nacl pattern
+  VALIDATOR: 0000000000000060: 66 f3 ab                                     stosw [%rdi]
+  VALIDATOR: ERROR: Instruction begins basic block, but in middle of nacl pattern
+  VALIDATOR: 00000000000000df: 66 66 0f 38 01 c8                            phaddw %xmm1, %xmm0
+  VALIDATOR: ERROR: Instruction crosses basic block alignment
+  *** <input> IS UNSAFE ***
+@vd-rval:
+  VALIDATOR: 0000000000000000: f0 f0 01 04 24                               add [%rsp], %eax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 0000000000000000: f0 f0 01 04 24                               add [%rsp], %eax
+  VALIDATOR: ERROR: Duplicating a prefix byte is not allowed by Native Client
+  VALIDATOR: 000000000000000b: f3 f3 ab                                     [P] dontcare [%rdi] (s), %eax (u)
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 000000000000000b: f3 f3 ab                                     [P] dontcare [%rdi] (s), %eax (u)
+  VALIDATOR: ERROR: Duplicating a prefix byte is not allowed by Native Client
+  VALIDATOR: 0000000000000014: f2 f3 ab                                     [P] dontcare [%rdi] (s), %eax (u)
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 0000000000000014: f2 f3 ab                                     [P] dontcare [%rdi] (s), %eax (u)
+  VALIDATOR: ERROR: Use of REPNE (F2) prefix for instruction not allowed by Native Client
+  VALIDATOR: 000000000000001d: f3 f2 ae                                     [P] dontcare %al (u), [%rdi] (u)
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 0000000000000020: 64 65 89 c0                                  mov %eax, %eax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 0000000000000020: 64 65 89 c0                                  mov %eax, %eax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000020: 64 65 89 c0                                  mov %eax, %eax
+  VALIDATOR: ERROR: Specifying different segment registers using prefix bytes is not allowed by Native Client
+  VALIDATOR: 0000000000000024: 66 66 89 c0                                  mov %ax, %ax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 0000000000000024: 66 66 89 c0                                  mov %ax, %ax
+  VALIDATOR: ERROR: Duplicating a prefix byte is not allowed by Native Client
+  VALIDATOR: 0000000000000028: 67 67 89 04 24                               mov [%esp], %eax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 0000000000000028: 67 67 89 04 24                               mov [%esp], %eax
+  VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
+  VALIDATOR: 0000000000000028: 67 67 89 04 24                               mov [%esp], %eax
+  VALIDATOR: ERROR: Duplicating a prefix byte is not allowed by Native Client
+  VALIDATOR: 0000000000000028: 67 67 89 04 24                               mov [%esp], %eax
+  VALIDATOR: ERROR: Assignment to non-64 bit memory address
+  VALIDATOR: 000000000000002d: 40 40 eb fd                                  [P] dontcarejump %rip (s), 0x2e (u)
+  VALIDATOR: ERROR: Multiple use of REX prefix not allowed
+  VALIDATOR: 0000000000000031: 36 f0 01 04 24                               add [%rsp], %eax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 0000000000000031: 36 f0 01 04 24                               add [%rsp], %eax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000036: f0 36 01 04 24                               add [%rsp], %eax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 0000000000000036: f0 36 01 04 24                               add [%rsp], %eax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000044: 26 f3 ab                                     [P] dontcare [%rdi] (s), %eax (u)
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 0000000000000044: 26 f3 ab                                     [P] dontcare [%rdi] (s), %eax (u)
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 000000000000004d: f3 26 ab                                     [P] dontcare [%rdi] (s), %eax (u)
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 000000000000004d: f3 26 ab                                     [P] dontcare [%rdi] (s), %eax (u)
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000060: 66 f3 ab                                     [P] dontcare [%rdi] (s), %ax (u)
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 0000000000000069: f3 66 ab                                     [P] dontcare [%rdi] (s), %ax (u)
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 000000000000006c: 67 f0 01 04 24                               add [%esp], %eax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 000000000000006c: 67 f0 01 04 24                               add [%esp], %eax
+  VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
+  VALIDATOR: 000000000000006c: 67 f0 01 04 24                               add [%esp], %eax
+  VALIDATOR: ERROR: Assignment to non-64 bit memory address
+  VALIDATOR: 0000000000000071: f0 67 01 04 24                               add [%esp], %eax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 0000000000000071: f0 67 01 04 24                               add [%esp], %eax
+  VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
+  VALIDATOR: 0000000000000071: f0 67 01 04 24                               add [%esp], %eax
+  VALIDATOR: ERROR: Assignment to non-64 bit memory address
+  VALIDATOR: 000000000000007d: 67 f3 ab                                     [P] dontcare [%edi] (s), %eax (u)
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 000000000000007d: 67 f3 ab                                     [P] dontcare [%edi] (s), %eax (u)
+  VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
+  VALIDATOR: 000000000000007d: 67 f3 ab                                     [P] dontcare [%edi] (s), %eax (u)
+  VALIDATOR: ERROR: Assignment to non-64 bit segment address
+  VALIDATOR: 0000000000000086: f3 67 ab                                     [P] dontcare [%edi] (s), %eax (u)
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 0000000000000086: f3 67 ab                                     [P] dontcare [%edi] (s), %eax (u)
+  VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
+  VALIDATOR: 0000000000000086: f3 67 ab                                     [P] dontcare [%edi] (s), %eax (u)
+  VALIDATOR: ERROR: Assignment to non-64 bit segment address
+  VALIDATOR: 000000000000008e: 48 f0 01 04 24                               add [%rsp], %rax
+  VALIDATOR: ERROR: REX prefix byte must appear last
+  VALIDATOR: 000000000000009c: 64 66 89 c0                                  mov %ax, %ax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 000000000000009c: 64 66 89 c0                                  mov %ax, %ax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 00000000000000a0: 66 64 89 c0                                  mov %ax, %ax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 00000000000000a0: 66 64 89 c0                                  mov %ax, %ax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 00000000000000a4: 67 64 01 04 24                               add %fs:[%esp], %eax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 00000000000000a4: 67 64 01 04 24                               add %fs:[%esp], %eax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 00000000000000a4: 67 64 01 04 24                               add %fs:[%esp], %eax
+  VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
+  VALIDATOR: 00000000000000a4: 67 64 01 04 24                               add %fs:[%esp], %eax
+  VALIDATOR: ERROR: Assignment to non-64 bit segment address
+  VALIDATOR: 00000000000000a9: 64 67 01 04 24                               add %fs:[%esp], %eax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 00000000000000a9: 64 67 01 04 24                               add %fs:[%esp], %eax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 00000000000000a9: 64 67 01 04 24                               add %fs:[%esp], %eax
+  VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
+  VALIDATOR: 00000000000000a9: 64 67 01 04 24                               add %fs:[%esp], %eax
+  VALIDATOR: ERROR: Assignment to non-64 bit segment address
+  VALIDATOR: 00000000000000ae: 64 48 89 c0                                  mov %rax, %rax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 00000000000000b2: 48 64 89 c0                                  mov %rax, %rax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 00000000000000b2: 48 64 89 c0                                  mov %rax, %rax
+  VALIDATOR: ERROR: REX prefix byte must appear last
+  VALIDATOR: 00000000000000b6: 66 67 01 04 24                               add [%esp], %ax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 00000000000000b6: 66 67 01 04 24                               add [%esp], %ax
+  VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
+  VALIDATOR: 00000000000000b6: 66 67 01 04 24                               add [%esp], %ax
+  VALIDATOR: ERROR: Assignment to non-64 bit memory address
+  VALIDATOR: 00000000000000bb: 67 66 01 04 24                               add [%esp], %ax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 00000000000000bb: 67 66 01 04 24                               add [%esp], %ax
+  VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
+  VALIDATOR: 00000000000000bb: 67 66 01 04 24                               add [%esp], %ax
+  VALIDATOR: ERROR: Assignment to non-64 bit memory address
+  VALIDATOR: 00000000000000c5: 44 66 89 3c 24                               mov [%rsp], %r15w
+  VALIDATOR: ERROR: REX prefix byte must appear last
+  VALIDATOR: 00000000000000ca: 67 4c 89 3c 24                               mov [%esp], %r15
+  VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
+  VALIDATOR: 00000000000000ca: 67 4c 89 3c 24                               mov [%esp], %r15
+  VALIDATOR: ERROR: Assignment to non-64 bit memory address
+  VALIDATOR: 00000000000000cf: 4c 67 89 3c 24                               mov [%esp], %r15
+  VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
+  VALIDATOR: 00000000000000cf: 4c 67 89 3c 24                               mov [%esp], %r15
+  VALIDATOR: ERROR: REX prefix byte must appear last
+  VALIDATOR: 00000000000000cf: 4c 67 89 3c 24                               mov [%esp], %r15
+  VALIDATOR: ERROR: Assignment to non-64 bit memory address
+  VALIDATOR: 00000000000000d4: 64 66 0f 38 01 c8                            [P] dontcare %xmm0 (u)
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 00000000000000d4: 64 66 0f 38 01 c8                            [P] dontcare %xmm0 (u)
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 00000000000000da: 64 f2 0f 58 c8                               [P] dontcare %xmm0 (u)
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 00000000000000da: 64 f2 0f 58 c8                               [P] dontcare %xmm0 (u)
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 00000000000000df: 66 66 0f 38 01 c8                            [P] dontcare %xmm0 (u)
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 00000000000000df: 66 66 0f 38 01 c8                            [P] dontcare %xmm0 (u)
+  VALIDATOR: ERROR: Duplicating a prefix byte is not allowed by Native Client
+  VALIDATOR: 00000000000000e5: 66 f2 0f 58 c8                               [P] dontcare %xmm0 (u)
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 00000000000000e5: 66 f2 0f 58 c8                               [P] dontcare %xmm0 (u)
+  VALIDATOR: ERROR: Use of DATA16 (66) prefix for instruction not allowed by Native Client
+  VALIDATOR: 00000000000000ea: 67 66 0f 38 01 04 24                         [P] dontcare [%esp] (u)
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 00000000000000ea: 67 66 0f 38 01 04 24                         [P] dontcare [%esp] (u)
+  VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
+  VALIDATOR: 00000000000000ea: 67 66 0f 38 01 04 24                         [P] dontcare [%esp] (u)
+  VALIDATOR: ERROR: Assignment to non-64 bit memory address
+  VALIDATOR: 00000000000000f1: 67 f2 0f 58 04 24                            [P] dontcare [%esp] (u)
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 00000000000000f1: 67 f2 0f 58 04 24                            [P] dontcare [%esp] (u)
+  VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
+  VALIDATOR: 00000000000000f1: 67 f2 0f 58 04 24                            [P] dontcare [%esp] (u)
+  VALIDATOR: ERROR: Assignment to non-64 bit memory address
+  VALIDATOR: 0000000000000102: 41 66 0f 38 01 04 07                         [P] dontcare [%r15+%rax*1] (u)
+  VALIDATOR: ERROR: REX prefix byte must appear last
+  VALIDATOR: 0000000000000113: 41 f2 0f 58 04 07                            [P] dontcare [%r15+%rax*1] (u)
+  VALIDATOR: ERROR: REX prefix byte must appear last
+  VALIDATOR: Checking jump targets: 0 to 119
+  VALIDATOR: ERROR: 2e: Bad jump target
+  VALIDATOR: Checking that basic blocks are aligned
+  VALIDATOR: ERROR: 40: Bad basic block alignment.
+  VALIDATOR: ERROR: 60: Bad basic block alignment.
+  VALIDATOR: ERROR: e0: Bad basic block alignment.
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: f0 f0 01 04 24                               add [%rsp], %eax
+  0000000000000005: 89 ff                                        mov %edi, %edi
+  0000000000000007: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+  000000000000000b: f3 f3 ab                                     stosd [%rdi]
+  000000000000000e: 89 ff                                        mov %edi, %edi
+  0000000000000010: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+  0000000000000014: f2 f3 ab                                     stosd [%rdi]
+  0000000000000017: 89 ff                                        mov %edi, %edi
+  0000000000000019: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+  000000000000001d: f3 f2 ae                                     scasb [%rdi]
+  0000000000000020: 64 65 89 c0                                  mov %eax, %eax
+  0000000000000024: 66 66 89 c0                                  mov %ax, %ax
+  0000000000000028: 67 67 89 04 24                               mov [%esp], %eax
+  000000000000002d: 40 40 eb fd                                  jmp 0x2e
+  0000000000000031: 36 f0 01 04 24                               add [%rsp], %eax
+  0000000000000036: f0 36 01 04 24                               add [%rsp], %eax
+  000000000000003b: 90                                           nop
+  000000000000003c: 90                                           nop
+  000000000000003d: 90                                           nop
+  000000000000003e: 89 ff                                        mov %edi, %edi
+  0000000000000040: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+  0000000000000044: 26 f3 ab                                     stosd [%rdi]
+  0000000000000047: 89 ff                                        mov %edi, %edi
+  0000000000000049: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+  000000000000004d: f3 26 ab                                     stosd [%rdi]
+  0000000000000050: 66 f0 01 04 24                               add [%rsp], %ax
+  0000000000000055: f0 66 01 04 24                               add [%rsp], %ax
+  000000000000005a: 89 ff                                        mov %edi, %edi
+  000000000000005c: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+  0000000000000060: 66 f3 ab                                     stosw [%rdi]
+  0000000000000063: 89 ff                                        mov %edi, %edi
+  0000000000000065: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+  0000000000000069: f3 66 ab                                     stosw [%rdi]
+  000000000000006c: 67 f0 01 04 24                               add [%esp], %eax
+  0000000000000071: f0 67 01 04 24                               add [%esp], %eax
+  0000000000000076: 90                                           nop
+  0000000000000077: 89 ff                                        mov %edi, %edi
+  0000000000000079: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+  000000000000007d: 67 f3 ab                                     stosd [%edi]
+  0000000000000080: 89 ff                                        mov %edi, %edi
+  0000000000000082: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+  0000000000000086: f3 67 ab                                     stosd [%edi]
+  0000000000000089: f0 48 01 04 24                               add [%rsp], %rax
+  000000000000008e: 48 f0 01 04 24                               add [%rsp], %rax
+  0000000000000093: 89 ff                                        mov %edi, %edi
+  0000000000000095: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+  0000000000000099: f3 48 ab                                     stosq [%rdi]
+  000000000000009c: 64 66 89 c0                                  mov %ax, %ax
+  00000000000000a0: 66 64 89 c0                                  mov %ax, %ax
+  00000000000000a4: 67 64 01 04 24                               add %fs:[%esp], %eax
+  00000000000000a9: 64 67 01 04 24                               add %fs:[%esp], %eax
+  00000000000000ae: 64 48 89 c0                                  mov %rax, %rax
+  00000000000000b2: 48 64 89 c0                                  mov %rax, %rax
+  00000000000000b6: 66 67 01 04 24                               add [%esp], %ax
+  00000000000000bb: 67 66 01 04 24                               add [%esp], %ax
+  00000000000000c0: 66 44 89 3c 24                               mov [%rsp], %r15w
+  00000000000000c5: 44 66 89 3c 24                               mov [%rsp], %r15w
+  00000000000000ca: 67 4c 89 3c 24                               mov [%esp], %r15
+  00000000000000cf: 4c 67 89 3c 24                               mov [%esp], %r15
+  00000000000000d4: 64 66 0f 38 01 c8                            phaddw %xmm1, %xmm0
+  00000000000000da: 64 f2 0f 58 c8                               addsd %xmm1, %xmm0
+  00000000000000df: 66 66 0f 38 01 c8                            phaddw %xmm1, %xmm0
+  00000000000000e5: 66 f2 0f 58 c8                               addsd %xmm1, %xmm0
+  00000000000000ea: 67 66 0f 38 01 04 24                         phaddw %xmm0, [%esp]
+  00000000000000f1: 67 f2 0f 58 04 24                            addsd %xmm0, [%esp]
+  00000000000000f7: 89 c0                                        mov %eax, %eax
+  00000000000000f9: 66 41 0f 38 01 04 07                         phaddw %xmm0, [%r15+%rax*1]
+  0000000000000100: 89 c0                                        mov %eax, %eax
+  0000000000000102: 41 66 0f 38 01 04 07                         phaddw %xmm0, [%r15+%rax*1]
+  0000000000000109: 89 c0                                        mov %eax, %eax
+  000000000000010b: f2 41 0f 58 04 07                            addsd %xmm0, [%r15+%rax*1]
+  0000000000000111: 89 c0                                        mov %eax, %eax
+  0000000000000113: 41 f2 0f 58 04 07                            addsd %xmm0, [%r15+%rax*1]
+@vdis:
+  0000000000000000: f0 f0 01 04 24                               add [%rsp], %eax
+  0000000000000005: 89 ff                                        mov %edi, %edi
+  0000000000000007: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+  000000000000000b: f3 f3 ab                                     [P] dontcare [%rdi] (s), %eax (u)
+  000000000000000e: 89 ff                                        mov %edi, %edi
+  0000000000000010: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+  0000000000000014: f2 f3 ab                                     [P] dontcare [%rdi] (s), %eax (u)
+  0000000000000017: 89 ff                                        mov %edi, %edi
+  0000000000000019: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+  000000000000001d: f3 f2 ae                                     [P] dontcare %al (u), [%rdi] (u)
+  0000000000000020: 64 65 89 c0                                  mov %eax, %eax
+  0000000000000024: 66 66 89 c0                                  mov %ax, %ax
+  0000000000000028: 67 67 89 04 24                               mov [%esp], %eax
+  000000000000002d: 40 40 eb fd                                  [P] dontcarejump %rip (s), 0x2e (u)
+  0000000000000031: 36 f0 01 04 24                               add [%rsp], %eax
+  0000000000000036: f0 36 01 04 24                               add [%rsp], %eax
+  000000000000003b: 90                                           [P] dontcare
+  000000000000003c: 90                                           [P] dontcare
+  000000000000003d: 90                                           [P] dontcare
+  000000000000003e: 89 ff                                        mov %edi, %edi
+  0000000000000040: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+  0000000000000044: 26 f3 ab                                     [P] dontcare [%rdi] (s), %eax (u)
+  0000000000000047: 89 ff                                        mov %edi, %edi
+  0000000000000049: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+  000000000000004d: f3 26 ab                                     [P] dontcare [%rdi] (s), %eax (u)
+  0000000000000050: 66 f0 01 04 24                               add [%rsp], %ax
+  0000000000000055: f0 66 01 04 24                               add [%rsp], %ax
+  000000000000005a: 89 ff                                        mov %edi, %edi
+  000000000000005c: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+  0000000000000060: 66 f3 ab                                     [P] dontcare [%rdi] (s), %ax (u)
+  0000000000000063: 89 ff                                        mov %edi, %edi
+  0000000000000065: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+  0000000000000069: f3 66 ab                                     [P] dontcare [%rdi] (s), %ax (u)
+  000000000000006c: 67 f0 01 04 24                               add [%esp], %eax
+  0000000000000071: f0 67 01 04 24                               add [%esp], %eax
+  0000000000000076: 90                                           [P] dontcare
+  0000000000000077: 89 ff                                        mov %edi, %edi
+  0000000000000079: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+  000000000000007d: 67 f3 ab                                     [P] dontcare [%edi] (s), %eax (u)
+  0000000000000080: 89 ff                                        mov %edi, %edi
+  0000000000000082: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+  0000000000000086: f3 67 ab                                     [P] dontcare [%edi] (s), %eax (u)
+  0000000000000089: f0 48 01 04 24                               add [%rsp], %rax
+  000000000000008e: 48 f0 01 04 24                               add [%rsp], %rax
+  0000000000000093: 89 ff                                        mov %edi, %edi
+  0000000000000095: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+  0000000000000099: f3 48 ab                                     [P] dontcare [%rdi] (s), %rax (u)
+  000000000000009c: 64 66 89 c0                                  mov %ax, %ax
+  00000000000000a0: 66 64 89 c0                                  mov %ax, %ax
+  00000000000000a4: 67 64 01 04 24                               add %fs:[%esp], %eax
+  00000000000000a9: 64 67 01 04 24                               add %fs:[%esp], %eax
+  00000000000000ae: 64 48 89 c0                                  mov %rax, %rax
+  00000000000000b2: 48 64 89 c0                                  mov %rax, %rax
+  00000000000000b6: 66 67 01 04 24                               add [%esp], %ax
+  00000000000000bb: 67 66 01 04 24                               add [%esp], %ax
+  00000000000000c0: 66 44 89 3c 24                               mov [%rsp], %r15w
+  00000000000000c5: 44 66 89 3c 24                               mov [%rsp], %r15w
+  00000000000000ca: 67 4c 89 3c 24                               mov [%esp], %r15
+  00000000000000cf: 4c 67 89 3c 24                               mov [%esp], %r15
+  00000000000000d4: 64 66 0f 38 01 c8                            [P] dontcare %xmm0 (u)
+  00000000000000da: 64 f2 0f 58 c8                               [P] dontcare %xmm0 (u)
+  00000000000000df: 66 66 0f 38 01 c8                            [P] dontcare %xmm0 (u)
+  00000000000000e5: 66 f2 0f 58 c8                               [P] dontcare %xmm0 (u)
+  00000000000000ea: 67 66 0f 38 01 04 24                         [P] dontcare [%esp] (u)
+  00000000000000f1: 67 f2 0f 58 04 24                            [P] dontcare [%esp] (u)
+  00000000000000f7: 89 c0                                        mov %eax, %eax
+  00000000000000f9: 66 41 0f 38 01 04 07                         [P] dontcare [%r15+%rax*1] (u)
+  0000000000000100: 89 c0                                        mov %eax, %eax
+  0000000000000102: 41 66 0f 38 01 04 07                         [P] dontcare [%r15+%rax*1] (u)
+  0000000000000109: 89 c0                                        mov %eax, %eax
+  000000000000010b: f2 41 0f 58 04 07                            [P] dontcare [%r15+%rax*1] (u)
+  0000000000000111: 89 c0                                        mov %eax, %eax
+  0000000000000113: 41 f2 0f 58 04 07                            [P] dontcare [%r15+%rax*1] (u)

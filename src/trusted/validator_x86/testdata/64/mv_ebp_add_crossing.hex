@@ -1,9 +1,0 @@
-# Show that atomic sequences can't cross block boundaries.
-# Example:
-#   mov %ebp, %r11d
-#   add %rbp, %r15"
-# where add is in new block.
-90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90
-90 90 90 90 90 90 90 90 90 90 90 90 90
-44 89 dd 4c 01 fd
-

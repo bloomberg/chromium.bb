@@ -1,0 +1,37 @@
+@hex:
+  # Example of an instruction marked illegal by native client.
+  #    ret
+  c3
+@val:
+  VALIDATOR: 0000000000000000: c3                                           ret
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000000: c3                                           ret
+  VALIDATOR: ERROR: Illegal assignment to RSP
+  VALIDATOR: Checking jump targets: 0 to 1
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rval:
+  VALIDATOR: 0000000000000000: c3                                           ret
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000000: c3                                           ret
+  VALIDATOR: ERROR: Illegal assignment to RSP
+  VALIDATOR: Checking jump targets: 0 to 1
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rvald:
+  VALIDATOR: 0000000000000000: c3                                           ret
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000000: c3                                           ret
+  VALIDATOR: ERROR: Illegal assignment to RSP
+  VALIDATOR: Checking block alignment and jump targets: 0 to 1
+  *** <input> IS UNSAFE ***
+@vd-rval:
+  VALIDATOR: 0000000000000000: c3                                           [P] dontcare(illegal)
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: Checking jump targets: 0 to 1
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: c3                                           ret
+@vdis:
+  0000000000000000: c3                                           [P] dontcare(illegal)

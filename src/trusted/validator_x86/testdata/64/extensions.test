@@ -1,0 +1,109 @@
+@hex:
+  # check commands from various extensions
+  # fcmovb %st(1),%st
+  DA C1
+  # rdtsc
+  0F 31
+  # MMX or SSE2
+  # psrlw $1, %mm0
+  0F 71 D0 01
+  # MMX or SSE2
+  # psrlw $1, %xmm0
+  66 0F 71 D0 01
+  # SSE 3
+  # addsubpd %xmm0,%xmm1
+  66 0F D0 C8
+  # SSE 4.1
+  # pminsb %xmm0,%xmm1
+  66 0F 38 38 C8
+  # SSE 4.2
+  # pcmpgtq %xmm0,%xmm1
+  66 0F 38 37 C8
+  # SSE 4A
+  # nops
+  # movl %eax,%eax
+  # movntsd %xmm0,(%r15,%rax,1)
+  90 90 90 90 90
+  89 C0
+  F2 41 0F 2B 04 07
+  # popcnt %rax,%rax
+  F3 48 0F B8 C0
+  # lzcnt  %rax,%rax
+  F3 48 0F BD C0
+  # movl %eax,%eax
+  # movbe  %rax,(%r15,%rax,1)
+  89 C0
+  49 0f 38 f1 04 07
+  # SSSE3
+  # nop
+  # psignb %xmm0,%xmm1
+  90
+  66 0F 38 08 C8
+  # 3DNow
+  # pi2fd  %mm0,%mm1
+  0F 0F C8 0D
+  # Extended 3DNow
+  # pf2iw  %mm0,%mm1
+  0F 0F C8 1C
+  # SSE2x
+  # psrldq $1,%xmm0
+  66 0F 73 D8 01
+@rval:
+  VALIDATOR: Checking jump targets: 0 to 4d
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@rvald:
+  VALIDATOR: Checking block alignment and jump targets: 0 to 4d
+  *** <input> is safe ***
+@vd-rval:
+  VALIDATOR: Checking jump targets: 0 to 4d
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@dis:
+  0000000000000000: da c1                                        fcmovb %st0, %st1
+  0000000000000002: 0f 31                                        rdtsc
+  0000000000000004: 0f 71 d0 01                                  psrlw %mmx0, 0x1
+  0000000000000008: 66 0f 71 d0 01                               psrlw %xmm0, 0x1
+  000000000000000d: 66 0f d0 c8                                  addsubpd %xmm1, %xmm0
+  0000000000000011: 66 0f 38 38 c8                               pminsb %xmm1, %xmm0
+  0000000000000016: 66 0f 38 37 c8                               pcmpgtq %xmm1, %xmm0
+  000000000000001b: 90                                           nop
+  000000000000001c: 90                                           nop
+  000000000000001d: 90                                           nop
+  000000000000001e: 90                                           nop
+  000000000000001f: 90                                           nop
+  0000000000000020: 89 c0                                        mov %eax, %eax
+  0000000000000022: f2 41 0f 2b 04 07                            movntsd [%r15+%rax*1], %xmm0
+  0000000000000028: f3 48 0f b8 c0                               popcnt %rax, %rax
+  000000000000002d: f3 48 0f bd c0                               lzcnt %rax, %rax
+  0000000000000032: 89 c0                                        mov %eax, %eax
+  0000000000000034: 49 0f 38 f1 04 07                            movbe [%r15+%rax*1], %rax
+  000000000000003a: 90                                           nop
+  000000000000003b: 66 0f 38 08 c8                               psignb %xmm1, %xmm0
+  0000000000000040: 0f 0f c8 0d                                  pi2fd %mmx1, %mmx0
+  0000000000000044: 0f 0f c8 1c                                  pf2iw %mmx1, %mmx0
+  0000000000000048: 66 0f 73 d8 01                               psrldq %xmm0, 0x1
+@vdis:
+  0000000000000000: da c1                                        [P] dontcare
+  0000000000000002: 0f 31                                        [P] dontcare %eax (s), %edx (s)
+  0000000000000004: 0f 71 d0 01                                  [P] dontcare %mmx0 (su), 0x1 (u)
+  0000000000000008: 66 0f 71 d0 01                               [P] dontcare %xmm0 (su), 0x1 (u)
+  000000000000000d: 66 0f d0 c8                                  [P] dontcare %xmm0 (u)
+  0000000000000011: 66 0f 38 38 c8                               [P] dontcare %xmm0 (u)
+  0000000000000016: 66 0f 38 37 c8                               [P] dontcare %xmm0 (u)
+  000000000000001b: 90                                           [P] dontcare
+  000000000000001c: 90                                           [P] dontcare
+  000000000000001d: 90                                           [P] dontcare
+  000000000000001e: 90                                           [P] dontcare
+  000000000000001f: 90                                           [P] dontcare
+  0000000000000020: 89 c0                                        mov %eax, %eax
+  0000000000000022: f2 41 0f 2b 04 07                            [P] dontcare [%r15+%rax*1] (s)
+  0000000000000028: f3 48 0f b8 c0                               [P] dontcare %rax (s), %rax (u)
+  000000000000002d: f3 48 0f bd c0                               [P] dontcare %rax (s), %rax (u)
+  0000000000000032: 89 c0                                        mov %eax, %eax
+  0000000000000034: 49 0f 38 f1 04 07                            [P] dontcare [%r15+%rax*1] (s), %rax (u)
+  000000000000003a: 90                                           [P] dontcare
+  000000000000003b: 66 0f 38 08 c8                               [P] dontcare %xmm0 (u)
+  0000000000000040: 0f 0f c8 0d                                  [P] dontcare %mmx0 (u)
+  0000000000000044: 0f 0f c8 1c                                  [P] dontcare %mmx0 (u)
+  0000000000000048: 66 0f 73 d8 01                               [P] dontcare %xmm0 (su), 0x1 (u)

@@ -1,5 +1,0 @@
-VALIDATOR: 000000000000000f: 41 ff e1                                     [P] dontcarejump %rip (s), %r9 (u)
-VALIDATOR: ERROR: Invalid indirect jump
-VALIDATOR: Checking jump targets: 0 to 12
-VALIDATOR: Checking that basic blocks are aligned
-*** <input> IS UNSAFE ***

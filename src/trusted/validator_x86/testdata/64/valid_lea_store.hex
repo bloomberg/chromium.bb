@@ -1,6 +1,0 @@
-# Sample valid (sandboxed) store using an lea.
-#   lea %ecx, [%rcx+%rax*8]
-#   mov [%r15+%rcx*8+0x36], %rax
-8D 0C C1
-49 89 44 CF 36
-

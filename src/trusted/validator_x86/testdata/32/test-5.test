@@ -1,0 +1,333 @@
+@hex:
+  # test 5: a big chunk of code whose origin is not clear.
+  8d 4c 24 04
+  83 e4 f0
+  ff 71 fc
+  55
+  89 e5
+  51
+  66 90
+  83 ec 24
+  89 4d e8
+  c7 45 f4 0a 00 00 00
+  8b 45 e8
+  83 38 01
+  7f 2b
+  8b 55 e8
+  8b 42 04
+  8b 00
+  8d 76 00
+  89 44 24 04
+  c7 04 24 54 14 00 08
+  e8 c0 02 00 00
+  c7 04 24 01 00 00 00
+  8d 74 26 00
+  e8 c0 01 00 00
+  8b 55 e8
+  8b 42 04
+  83 c0 04
+  8b 00
+  89 04 24
+  66 90
+  8d 74 26 00
+  8d bc 27 00 00 00 00
+  e8 90 09 00 00
+  89 45 f8
+  8b 45 e8
+  83 38 02
+  7e 25
+  8b 55 e8
+  66 90
+  8b 42 04
+  83 c0 08
+  8b 00
+  89 04 24
+  e8 70 09 00 00
+  89 45 f4
+  8d b6 00 00 00 00
+  8d bc 27 00 00 00 00
+  8b 45 f4
+  a3 28 2f 00 08
+  eb 26
+  8d b6 00 00 00 00
+  c7 44 24 08 03 00 00 00
+  c7 44 24 04 01 00 00 00
+  8b 45 f4
+  89 04 24
+  90
+  8d 74 26 00
+  e8 20 00 00 00
+  83 7d f8 00
+  0f 9f c0
+  83 6d f8 01
+  84 c0
+  8d 76 00
+  75 ce
+  c7 04 24 00 00 00 00
+  66 90
+  e8 20 01 00 00
+  55
+  89 e5
+  83 ec 1c
+  83 7d 08 01
+  75 44
+  8b 55 0c
+  90
+  8b 04 95 24 2f 00 08
+  83 e8 01
+  8d b6 00 00 00 00
+  89 04 95 24 2f 00 08
+  8b 55 10
+  8d b6 00 00 00 00
+  8b 04 95 24 2f 00 08
+  83 c0 01
+  8d b6 00 00 00 00
+  89 04 95 24 2f 00 08
+  00 00
+  8d b4 26 00 00 00 00
+  8b 45 10
+  8b 55 0c
+  01 c2
+  b8 06 00 00 00
+  29 d0
+  f4
+@nval:
+  VALIDATOR: 4b: JUMP TARGET out of range
+  VALIDATOR: eb: JUMP TARGET out of range
+  *** <input> IS UNSAFE ***
+@nvals:
+  VALIDATOR: 4b: JUMP TARGET out of range
+  VALIDATOR: eb: JUMP TARGET out of range
+  *** <input> IS UNSAFE ***
+  
+  Opcode Histogram;
+  1	0x00	1	0x01	1	0x0f	1	0x29	
+  1	0x51	2	0x55	2	0x75	1	0x7e	
+  1	0x7f	12	0x83	1	0x84	11	0x89	
+  19	0x8b	14	0x8d	6	0x90	1	0xa3	
+  1	0xb8	6	0xc7	6	0xe8	1	0xeb	
+  1	0xf4	1	0xff	
+  Analysis Summary:
+  91 Checked instructions
+  17 checked jump targets
+  0 calls/jumps need dynamic checking (0.00%)
+  
+  Problems:
+  0 illegal instructions
+  2 bad jump targets
+  0 illegal unprotected indirect jumps (including ret)
+  0 instruction alignment defects
+  0 segmentation errors
+  0 bad prefix
+  0 bad instruction length
+  0 internal errors
+@nvalds:
+  VALIDATOR: 4b: JUMP TARGET out of range
+  VALIDATOR: eb: JUMP TARGET out of range
+  *** <input> IS UNSAFE ***
+  
+  Opcode Histogram;
+  1	0x00	1	0x01	1	0x0f	1	0x29	
+  1	0x51	2	0x55	2	0x75	1	0x7e	
+  1	0x7f	12	0x83	1	0x84	11	0x89	
+  19	0x8b	14	0x8d	6	0x90	1	0xa3	
+  1	0xb8	6	0xc7	6	0xe8	1	0xeb	
+  1	0xf4	1	0xff	
+  Analysis Summary:
+  91 Checked instructions
+  11 checked jump targets
+  0 calls/jumps need dynamic checking (0.00%)
+  
+  Problems:
+  0 illegal instructions
+  2 bad jump targets
+  0 illegal unprotected indirect jumps (including ret)
+  0 instruction alignment defects
+  0 segmentation errors
+  0 bad prefix
+  0 bad instruction length
+  0 internal errors
+@dis:
+  00000000: 8d 4c 24 04                                  lea %ecx, %ds:[%esp+%esp*1+0x4]
+  00000004: 83 e4 f0                                     and %esp, 0xf0
+  00000007: ff 71 fc                                     push %ds:[%ecx-0x4]
+  0000000a: 55                                           push %ebp
+  0000000b: 89 e5                                        mov %ebp, %esp
+  0000000d: 51                                           push %ecx
+  0000000e: 66 90                                        nop
+  00000010: 83 ec 24                                     sub %esp, 0x24
+  00000013: 89 4d e8                                     mov %ss:[%ebp-0x18], %ecx
+  00000016: c7 45 f4 0a 00 00 00                         mov %ss:[%ebp-0xc], 0xa
+  0000001d: 8b 45 e8                                     mov %eax, %ss:[%ebp-0x18]
+  00000020: 83 38 01                                     cmp %ds:[%eax], 0x1
+  00000023: 7f 2b                                        jnle 0x50
+  00000025: 8b 55 e8                                     mov %edx, %ss:[%ebp-0x18]
+  00000028: 8b 42 04                                     mov %eax, %ds:[%edx+0x4]
+  0000002b: 8b 00                                        mov %eax, %ds:[%eax]
+  0000002d: 8d 76 00                                     lea %esi, %ds:[%esi]
+  00000030: 89 44 24 04                                  mov %ds:[%esp+%esp*1+0x4], %eax
+  00000034: c7 04 24 54 14 00 08                         mov %ds:[%esp+%esp*1], 0x8001454
+  0000003b: e8 c0 02 00 00                               call 0x300
+  00000040: c7 04 24 01 00 00 00                         mov %ds:[%esp+%esp*1], 0x1
+  00000047: 8d 74 26 00                                  lea %esi, %ds:[%esi+%esp*1]
+  0000004b: e8 c0 01 00 00                               call 0x210
+  00000050: 8b 55 e8                                     mov %edx, %ss:[%ebp-0x18]
+  00000053: 8b 42 04                                     mov %eax, %ds:[%edx+0x4]
+  00000056: 83 c0 04                                     add %eax, 0x4
+  00000059: 8b 00                                        mov %eax, %ds:[%eax]
+  0000005b: 89 04 24                                     mov %ds:[%esp+%esp*1], %eax
+  0000005e: 66 90                                        nop
+  00000060: 8d 74 26 00                                  lea %esi, %ds:[%esi+%esp*1]
+  00000064: 8d bc 27 00 00 00 00                         lea %edi, %ds:[%edi+%esp*1]
+  0000006b: e8 90 09 00 00                               call 0xa00
+  00000070: 89 45 f8                                     mov %ss:[%ebp-0x8], %eax
+  00000073: 8b 45 e8                                     mov %eax, %ss:[%ebp-0x18]
+  00000076: 83 38 02                                     cmp %ds:[%eax], 0x2
+  00000079: 7e 25                                        jle 0xa0
+  0000007b: 8b 55 e8                                     mov %edx, %ss:[%ebp-0x18]
+  0000007e: 66 90                                        nop
+  00000080: 8b 42 04                                     mov %eax, %ds:[%edx+0x4]
+  00000083: 83 c0 08                                     add %eax, 0x8
+  00000086: 8b 00                                        mov %eax, %ds:[%eax]
+  00000088: 89 04 24                                     mov %ds:[%esp+%esp*1], %eax
+  0000008b: e8 70 09 00 00                               call 0xa00
+  00000090: 89 45 f4                                     mov %ss:[%ebp-0xc], %eax
+  00000093: 8d b6 00 00 00 00                            lea %esi, %ds:[%esi]
+  00000099: 8d bc 27 00 00 00 00                         lea %edi, %ds:[%edi+%esp*1]
+  000000a0: 8b 45 f4                                     mov %eax, %ss:[%ebp-0xc]
+  000000a3: a3 28 2f 00 08                               mov [0x8002f28], %eax
+  000000a8: eb 26                                        jmp 0xd0
+  000000aa: 8d b6 00 00 00 00                            lea %esi, %ds:[%esi]
+  000000b0: c7 44 24 08 03 00 00 00                      mov %ds:[%esp+%esp*1+0x8], 0x3
+  000000b8: c7 44 24 04 01 00 00 00                      mov %ds:[%esp+%esp*1+0x4], 0x1
+  000000c0: 8b 45 f4                                     mov %eax, %ss:[%ebp-0xc]
+  000000c3: 89 04 24                                     mov %ds:[%esp+%esp*1], %eax
+  000000c6: 90                                           nop
+  000000c7: 8d 74 26 00                                  lea %esi, %ds:[%esi+%esp*1]
+  000000cb: e8 20 00 00 00                               call 0xf0
+  000000d0: 83 7d f8 00                                  cmp %ss:[%ebp-0x8], 0x0
+  000000d4: 0f 9f c0                                     setnle %al
+  000000d7: 83 6d f8 01                                  sub %ss:[%ebp-0x8], 0x1
+  000000db: 84 c0                                        test %al, %al
+  000000dd: 8d 76 00                                     lea %esi, %ds:[%esi]
+  000000e0: 75 ce                                        jnz 0xb0
+  000000e2: c7 04 24 00 00 00 00                         mov %ds:[%esp+%esp*1], 0x0
+  000000e9: 66 90                                        nop
+  000000eb: e8 20 01 00 00                               call 0x210
+  000000f0: 55                                           push %ebp
+  000000f1: 89 e5                                        mov %ebp, %esp
+  000000f3: 83 ec 1c                                     sub %esp, 0x1c
+  000000f6: 83 7d 08 01                                  cmp %ss:[%ebp+0x8], 0x1
+  000000fa: 75 44                                        jnz 0x140
+  000000fc: 8b 55 0c                                     mov %edx, %ss:[%ebp+0xc]
+  000000ff: 90                                           nop
+  00000100: 8b 04 95 24 2f 00 08                         mov %eax, %ds:[%edx*4+0x8002f24]
+  00000107: 83 e8 01                                     sub %eax, 0x1
+  0000010a: 8d b6 00 00 00 00                            lea %esi, %ds:[%esi]
+  00000110: 89 04 95 24 2f 00 08                         mov %ds:[%edx*4+0x8002f24], %eax
+  00000117: 8b 55 10                                     mov %edx, %ss:[%ebp+0x10]
+  0000011a: 8d b6 00 00 00 00                            lea %esi, %ds:[%esi]
+  00000120: 8b 04 95 24 2f 00 08                         mov %eax, %ds:[%edx*4+0x8002f24]
+  00000127: 83 c0 01                                     add %eax, 0x1
+  0000012a: 8d b6 00 00 00 00                            lea %esi, %ds:[%esi]
+  00000130: 89 04 95 24 2f 00 08                         mov %ds:[%edx*4+0x8002f24], %eax
+  00000137: 00 00                                        add %ds:[%eax], %al
+  00000139: 8d b4 26 00 00 00 00                         lea %esi, %ds:[%esi+%esp*1]
+  00000140: 8b 45 10                                     mov %eax, %ss:[%ebp+0x10]
+  00000143: 8b 55 0c                                     mov %edx, %ss:[%ebp+0xc]
+  00000146: 01 c2                                        add %edx, %eax
+  00000148: b8 06 00 00 00                               mov %eax, 0x6
+  0000014d: 29 d0                                        sub %eax, %edx
+  0000014f: f4                                           hlt
+@vdis:
+   0:	8d 4c 24 04         	lea %ecx, 0x4[%esp]
+   4:	83 e4 f0            	and %esp, 0xfffffffffffffff0
+   7:	ff 71 fc            	push 0xfffffffc[%ecx]
+   a:	55                  	push %ebp
+   b:	89 e5               	mov %esp, %esp
+   d:	51                  	push %ecx
+   e:	66 90               	nop
+   10:	83 ec 24            	sub %ebp, 0x24
+   13:	89 4d e8            	mov 0xffffffe8[%ebp], %ecx
+   16:	c7 45 f4 0a 00 00 00	mov 0xfffffff4[%ebp], 0xa
+   1d:	8b 45 e8            	mov %eax, 0xffffffe8[%ebp]
+   20:	83 38 01            	cmp [%eax], 0x1
+   23:	7f 2b               	jg 0x50
+   25:	8b 55 e8            	mov %edx, 0xffffffe8[%ebp]
+   28:	8b 42 04            	mov %eax, 0x4[%edx]
+   2b:	8b 00               	mov %eax, [%eax]
+   2d:	8d 76 00            	lea %esi, 0x0[%esi]
+   30:	89 44 24 04         	mov 0x4[%esp], %eax
+   34:	c7 04 24 54 14 00 08	mov [%esp], 0x8001454
+   3b:	e8 c0 02 00 00      	call 0x300
+   40:	c7 04 24 01 00 00 00	mov [%esp], 0x1
+   47:	8d 74 26 00         	lea %esi, 0x0[%esi]
+   4b:	e8 c0 01 00 00      	call 0x210
+   50:	8b 55 e8            	mov %edx, 0xffffffe8[%ebp]
+   53:	8b 42 04            	mov %eax, 0x4[%edx]
+   56:	83 c0 04            	add %eax, 0x4
+   59:	8b 00               	mov %eax, [%eax]
+   5b:	89 04 24            	mov [%esp], %eax
+   5e:	66 90               	nop
+   60:	8d 74 26 00         	lea %esi, 0x0[%esi]
+   64:	8d bc 27 00 00 00 00	lea %edi, 0x0[%edi]
+   6b:	e8 90 09 00 00      	call 0xa00
+   70:	89 45 f8            	mov 0xfffffff8[%ebp], %eax
+   73:	8b 45 e8            	mov %eax, 0xffffffe8[%ebp]
+   76:	83 38 02            	cmp [%eax], 0x2
+   79:	7e 25               	jle 0xa0
+   7b:	8b 55 e8            	mov %edx, 0xffffffe8[%ebp]
+   7e:	66 90               	nop
+   80:	8b 42 04            	mov %eax, 0x4[%edx]
+   83:	83 c0 08            	add %eax, 0x8
+   86:	8b 00               	mov %eax, [%eax]
+   88:	89 04 24            	mov [%esp], %eax
+   8b:	e8 70 09 00 00      	call 0xa00
+   90:	89 45 f4            	mov 0xfffffff4[%ebp], %eax
+   93:	8d b6 00 00 00 00   	lea %esi, 0x0[%esi]
+   99:	8d bc 27 00 00 00 00	lea %edi, 0x0[%edi]
+   a0:	8b 45 f4            	mov %eax, 0xfffffff4[%ebp]
+   a3:	a3 28 2f 00 08      	mov [0x8002f28], %eax
+   a8:	eb 26               	jmp 0xd0
+   aa:	8d b6 00 00 00 00   	lea %esi, 0x0[%esi]
+   b0:	c7 44 24 08 03 00 00 00	mov 0x8[%esp], 0x3
+   b8:	c7 44 24 04 01 00 00 00	mov 0x4[%esp], 0x1
+   c0:	8b 45 f4            	mov %eax, 0xfffffff4[%ebp]
+   c3:	89 04 24            	mov [%esp], %eax
+   c6:	90                  	nop
+   c7:	8d 74 26 00         	lea %esi, 0x0[%esi]
+   cb:	e8 20 00 00 00      	call 0xf0
+   d0:	83 7d f8 00         	cmp 0xfffffff8[%ebp], 0x0
+   d4:	0f 9f c0            	setg %eax
+   d7:	83 6d f8 01         	sub 0xfffffff8[%ebp], 0x1
+   db:	84 c0               	test %eax, %eax
+   dd:	8d 76 00            	lea %esi, 0x0[%esi]
+   e0:	75 ce               	jnz 0xb0
+   e2:	c7 04 24 00 00 00 00	mov [%esp], 0x0
+   e9:	66 90               	nop
+   eb:	e8 20 01 00 00      	call 0x210
+   f0:	55                  	push %ebp
+   f1:	89 e5               	mov %esp, %esp
+   f3:	83 ec 1c            	sub %ebp, 0x1c
+   f6:	83 7d 08 01         	cmp 0x8[%ebp], 0x1
+   fa:	75 44               	jnz 0x140
+   fc:	8b 55 0c            	mov %edx, 0xc[%ebp]
+   ff:	90                  	nop
+   100:	8b 04 95 24 2f 00 08	mov %eax, [%ebp + 4 * %edx]
+   107:	83 e8 01            	sub %ebp, 0x1
+   10a:	8d b6 00 00 00 00   	lea %esi, 0x0[%esi]
+   110:	89 04 95 24 2f 00 08	mov [%ebp + 4 * %edx], %eax
+   117:	8b 55 10            	mov %edx, 0x10[%ebp]
+   11a:	8d b6 00 00 00 00   	lea %esi, 0x0[%esi]
+   120:	8b 04 95 24 2f 00 08	mov %eax, [%ebp + 4 * %edx]
+   127:	83 c0 01            	add %eax, 0x1
+   12a:	8d b6 00 00 00 00   	lea %esi, 0x0[%esi]
+   130:	89 04 95 24 2f 00 08	mov [%ebp + 4 * %edx], %eax
+   137:	00 00               	add [%eax], %eax
+   139:	8d b4 26 00 00 00 00	lea %esi, 0x0[%esi]
+   140:	8b 45 10            	mov %eax, 0x10[%ebp]
+   143:	8b 55 0c            	mov %edx, 0xc[%ebp]
+   146:	01 c2               	add %eax, %eax
+   148:	b8 06 00 00 00      	mov %eax, 0x6
+   14d:	29 d0               	sub %edx, %edx
+   14f:	f4                  	hlt

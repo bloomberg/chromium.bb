@@ -1,0 +1,12 @@
+@hex:
+  # Tests that we recognize instructions with 3 bytes of immediate.
+  # Note: The instruction isn't decoded correctly, but it doesn't matter
+  # since the instruction is NaCl illegal.
+  c8 01 02 03
+@nval:
+  VALIDATOR: 0: Illegal instruction
+  *** <input> IS UNSAFE ***
+@dis:
+  00000000: c8 01 02 03                                  enter 0x201, 0x3
+@vdis:
+   0:	c8 01 02 03         	enter 0x30201, 0x30201

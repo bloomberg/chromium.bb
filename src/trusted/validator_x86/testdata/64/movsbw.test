@@ -1,0 +1,23 @@
+@hex:
+  # Test movsbw instruction.
+  # movsbw %al,%ax
+  66 0f be c0
+  # movsbw (%rsp),%ax
+  66 0f be 04 24
+@rval:
+  VALIDATOR: Checking jump targets: 0 to 9
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@rvald:
+  VALIDATOR: Checking block alignment and jump targets: 0 to 9
+  *** <input> is safe ***
+@vd-rval:
+  VALIDATOR: Checking jump targets: 0 to 9
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@dis:
+  0000000000000000: 66 0f be c0                                  movsx %ax, %al
+  0000000000000004: 66 0f be 04 24                               movsx %ax, [%rsp]
+@vdis:
+  0000000000000000: 66 0f be c0                                  [P] dontcare %ax (sz), %al (u)
+  0000000000000004: 66 0f be 04 24                               [P] dontcare %ax (sz), [%rsp] (u)

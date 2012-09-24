@@ -1,8 +1,0 @@
- 0:	c6 44 05 d6 00      	mov 0xffffffd6[0xffffffd6], 0x0
- 5:	90                  	nop
- 6:	90                  	nop
- 7:	90                  	nop
- 8:	90                  	nop
- 9:	90                  	nop
- a:	90                  	nop
- b:	f4                  	hlt

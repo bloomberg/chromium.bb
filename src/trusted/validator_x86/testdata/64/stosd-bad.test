@@ -1,0 +1,37 @@
+@hex:
+  # Show an example of an invalid (implicit) reference to a segment register
+  # (in this case missing a 32-bit zero extending operation before the LEA):
+  #
+  #   lea %rdi, [%r15+%rdi*1]
+  #   stosd
+  49 8d 3c 3f
+  ab
+@val:
+  VALIDATOR: 0000000000000004: ab                                           stosd [%rdi]
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: Checking jump targets: 0 to 5
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rval:
+  VALIDATOR: 0000000000000004: ab                                           stosd [%rdi]
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: Checking jump targets: 0 to 5
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rvald:
+  VALIDATOR: 0000000000000004: ab                                           stosd [%rdi]
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: Checking block alignment and jump targets: 0 to 5
+  *** <input> IS UNSAFE ***
+@vd-rval:
+  VALIDATOR: 0000000000000004: ab                                           [P] dontcare [%rdi] (s), %eax (u)
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: Checking jump targets: 0 to 5
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+  0000000000000004: ab                                           stosd [%rdi]
+@vdis:
+  0000000000000000: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+  0000000000000004: ab                                           [P] dontcare [%rdi] (s), %eax (u)

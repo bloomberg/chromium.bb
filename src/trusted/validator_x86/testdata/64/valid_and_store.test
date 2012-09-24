@@ -1,0 +1,29 @@
+@hex:
+  # Sample valid (write sandboxed) store using an and mask.
+  #   and %ecx, 0xe0
+  #   mov [%r15+%rcx*8+0x36], %rax
+  83 e1 e0
+  49 89 44 CF 36
+  
+  
+@val:
+  VALIDATOR: Checking jump targets: 0 to 8
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@rval:
+  VALIDATOR: Checking jump targets: 0 to 8
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@rvald:
+  VALIDATOR: Checking block alignment and jump targets: 0 to 8
+  *** <input> is safe ***
+@vd-rval:
+  VALIDATOR: Checking jump targets: 0 to 8
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@dis:
+  0000000000000000: 83 e1 e0                                     and %ecx, 0xe0
+  0000000000000003: 49 89 44 cf 36                               mov [%r15+%rcx*8+0x36], %rax
+@vdis:
+  0000000000000000: 83 e1 e0                                     and %ecx, 0xe0
+  0000000000000003: 49 89 44 cf 36                               mov [%r15+%rcx*8+0x36], %rax

@@ -1,0 +1,22 @@
+@hex:
+  # Jump forwards a long way, potentially outside of the sandbox's address space.
+  e9 fb ff ff 3f
+@val:
+  VALIDATOR: Checking jump targets: 0 to 5
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@rval:
+  VALIDATOR: Checking jump targets: 0 to 5
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@rvald:
+  VALIDATOR: Checking block alignment and jump targets: 0 to 5
+  *** <input> is safe ***
+@vd-rval:
+  VALIDATOR: Checking jump targets: 0 to 5
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@dis:
+  0000000000000000: e9 fb ff ff 3f                               jmp 0x40000000
+@vdis:
+  0000000000000000: e9 fb ff ff 3f                               [P] dontcarejump %rip (s), 0x40000000 (u)

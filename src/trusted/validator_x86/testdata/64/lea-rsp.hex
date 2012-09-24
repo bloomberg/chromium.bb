@@ -1,2 +1,0 @@
-# Sample invalid sequence for updating rsp (nativeclient issue 259) using lea.
-48 8d 65 e0

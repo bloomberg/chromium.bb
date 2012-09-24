@@ -1,0 +1,18 @@
+@hex:
+  # ud2
+  0F 0B
+@rval:
+  VALIDATOR: Checking jump targets: 0 to 2
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@rvald:
+  VALIDATOR: Checking block alignment and jump targets: 0 to 2
+  *** <input> is safe ***
+@vd-rval:
+  VALIDATOR: Checking jump targets: 0 to 2
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@dis:
+  0000000000000000: 0f 0b                                        ud2
+@vdis:
+  0000000000000000: 0f 0b                                        [P] dontcare

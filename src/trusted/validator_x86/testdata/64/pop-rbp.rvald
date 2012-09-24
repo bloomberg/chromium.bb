@@ -1,4 +1,0 @@
-VALIDATOR: 0000000000000000: 5d                                           pop %rbp
-VALIDATOR: ERROR: Illegal change to register RBP
-VALIDATOR: Checking block alignment and jump targets: 0 to 1
-*** <input> IS UNSAFE ***

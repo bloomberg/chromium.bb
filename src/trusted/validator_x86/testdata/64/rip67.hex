@@ -1,8 +1,0 @@
-# hello_rip.c example from Mark Dowd.
-# Issue 390
-
-# mov    $0x12345678,%eax
-b8 78 56 34 12
-
-# addr32 mov %rax,0x61e0cf(%eip)  63e420 <_end+0x3da70>
-67 48 89 05 cf e0 61 00

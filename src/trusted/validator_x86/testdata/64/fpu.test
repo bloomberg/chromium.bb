@@ -1,0 +1,179 @@
+@hex:
+  # Load floating point value.
+  # mov %eax,%eax
+  # fld (%r15,%rax)
+  89 C0
+  41 D9 04 07
+  # mov %eax,%eax
+  # fldl (%r15,%rax)
+  89 C0
+  41 DD 04 07
+  # mov %eax,%eax
+  # fldt (%r15,%rax)
+  89 C0
+  41 DB 2C 07
+  
+  # Load integer value.
+  # mov %eax,%eax
+  # fildl (%r15,%rax)
+  89 C0
+  41 DB 04 07
+  # mov %eax,%eax
+  # fildq (%r15,%rax)
+  89 C0
+  41 DF 2C 07
+  
+  # Store floating point value.
+  # mov %eax,%eax
+  # fsts (%r15,%rax)
+  89 C0
+  41 D9 14 07
+  # mov %eax,%eax
+  # fstl (%r15,%rax)
+  89 C0
+  41 DD 14 07
+  # mov %eax,%eax
+  # fstps (%r15,%rax)
+  89 C0
+  41 D9 1C 07
+  # mov %eax,%eax
+  # fstpl (%r15,%rax)
+  89 C0
+  41 DD 1C 07
+  # mov %eax,%eax
+  # fstpt (%r15,%rax)
+  89 C0
+  41 DB 3C 07
+  
+  # Store integer value
+  # mov %eax,%eax
+  # fists (%r15,%rax)
+  89 C0
+  41 DF 14 07
+  # mov %eax,%eax
+  # fistl (%r15,%rax)
+  89 C0
+  41 DB 14 07
+  # mov %eax,%eax
+  # fistp (%r15,%rax)
+  89 C0
+  41 DF 1C 07
+  # mov %eax,%eax
+  # fistpl (%r15,%rax)
+  89 C0
+  41 DB 1C 07
+  # mov %eax,%eax
+  # fistpq (%r15,%rax)
+  89 C0
+  41 DF 3C 07
+  
+  # Basic arithmetic
+  # fadd %st(1),%st(0)
+  D8 C1
+  # faddp %st(0),%st(1)
+  DE C1
+  # mov %eax,%eax
+  # fadds (%r15,%rax)
+  89 C0
+  41 D8 04 07
+  # mov %eax,%eax
+  # faddl (%r15,%rax)
+  89 C0
+  41 DC 04 07
+@rval:
+  VALIDATOR: Checking jump targets: 0 to 6a
+  VALIDATOR: Checking that basic blocks are aligned
+  VALIDATOR: ERROR: 20: Bad basic block alignment.
+  VALIDATOR: ERROR: 40: Bad basic block alignment.
+  VALIDATOR: ERROR: 60: Bad basic block alignment.
+  *** <input> IS UNSAFE ***
+@rvald:
+  VALIDATOR: Checking block alignment and jump targets: 0 to 6a
+  VALIDATOR: 0000000000000020: 41 d9 14 07                                  fst [%r15+%rax*1], %st0
+  VALIDATOR: ERROR: Instruction begins basic block, but in middle of nacl pattern
+  VALIDATOR: 000000000000003e: 41 df 14 07                                  fist [%r15+%rax*1], %st0
+  VALIDATOR: ERROR: Instruction crosses basic block alignment
+  VALIDATOR: 0000000000000060: 41 d8 04 07                                  fadd %st0, [%r15+%rax*1]
+  VALIDATOR: ERROR: Instruction begins basic block, but in middle of nacl pattern
+  *** <input> IS UNSAFE ***
+@vd-rval:
+  VALIDATOR: Checking jump targets: 0 to 6a
+  VALIDATOR: Checking that basic blocks are aligned
+  VALIDATOR: ERROR: 20: Bad basic block alignment.
+  VALIDATOR: ERROR: 40: Bad basic block alignment.
+  VALIDATOR: ERROR: 60: Bad basic block alignment.
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 89 c0                                        mov %eax, %eax
+  0000000000000002: 41 d9 04 07                                  fld %st0, [%r15+%rax*1]
+  0000000000000006: 89 c0                                        mov %eax, %eax
+  0000000000000008: 41 dd 04 07                                  fld %st0, [%r15+%rax*1]
+  000000000000000c: 89 c0                                        mov %eax, %eax
+  000000000000000e: 41 db 2c 07                                  fld %st0, [%r15+%rax*1]
+  0000000000000012: 89 c0                                        mov %eax, %eax
+  0000000000000014: 41 db 04 07                                  fild %st0, [%r15+%rax*1]
+  0000000000000018: 89 c0                                        mov %eax, %eax
+  000000000000001a: 41 df 2c 07                                  fild %st0, [%r15+%rax*1]
+  000000000000001e: 89 c0                                        mov %eax, %eax
+  0000000000000020: 41 d9 14 07                                  fst [%r15+%rax*1], %st0
+  0000000000000024: 89 c0                                        mov %eax, %eax
+  0000000000000026: 41 dd 14 07                                  fst [%r15+%rax*1], %st0
+  000000000000002a: 89 c0                                        mov %eax, %eax
+  000000000000002c: 41 d9 1c 07                                  fstp [%r15+%rax*1], %st0
+  0000000000000030: 89 c0                                        mov %eax, %eax
+  0000000000000032: 41 dd 1c 07                                  fstp [%r15+%rax*1], %st0
+  0000000000000036: 89 c0                                        mov %eax, %eax
+  0000000000000038: 41 db 3c 07                                  fstp [%r15+%rax*1], %st0
+  000000000000003c: 89 c0                                        mov %eax, %eax
+  000000000000003e: 41 df 14 07                                  fist [%r15+%rax*1], %st0
+  0000000000000042: 89 c0                                        mov %eax, %eax
+  0000000000000044: 41 db 14 07                                  fist [%r15+%rax*1], %st0
+  0000000000000048: 89 c0                                        mov %eax, %eax
+  000000000000004a: 41 df 1c 07                                  fistp [%r15+%rax*1], %st0
+  000000000000004e: 89 c0                                        mov %eax, %eax
+  0000000000000050: 41 db 1c 07                                  fistp [%r15+%rax*1], %st0
+  0000000000000054: 89 c0                                        mov %eax, %eax
+  0000000000000056: 41 df 3c 07                                  fistp [%r15+%rax*1], %st0
+  000000000000005a: d8 c1                                        fadd %st0, %st1
+  000000000000005c: de c1                                        faddp %st1, %st0
+  000000000000005e: 89 c0                                        mov %eax, %eax
+  0000000000000060: 41 d8 04 07                                  fadd %st0, [%r15+%rax*1]
+  0000000000000064: 89 c0                                        mov %eax, %eax
+  0000000000000066: 41 dc 04 07                                  fadd %st0, [%r15+%rax*1]
+@vdis:
+  0000000000000000: 89 c0                                        mov %eax, %eax
+  0000000000000002: 41 d9 04 07                                  [P] dontcare [%r15+%rax*1] (u)
+  0000000000000006: 89 c0                                        mov %eax, %eax
+  0000000000000008: 41 dd 04 07                                  [P] dontcare [%r15+%rax*1] (u)
+  000000000000000c: 89 c0                                        mov %eax, %eax
+  000000000000000e: 41 db 2c 07                                  [P] dontcare [%r15+%rax*1] (u)
+  0000000000000012: 89 c0                                        mov %eax, %eax
+  0000000000000014: 41 db 04 07                                  [P] dontcare [%r15+%rax*1] (u)
+  0000000000000018: 89 c0                                        mov %eax, %eax
+  000000000000001a: 41 df 2c 07                                  [P] dontcare [%r15+%rax*1] (u)
+  000000000000001e: 89 c0                                        mov %eax, %eax
+  0000000000000020: 41 d9 14 07                                  [P] dontcare [%r15+%rax*1] (s)
+  0000000000000024: 89 c0                                        mov %eax, %eax
+  0000000000000026: 41 dd 14 07                                  [P] dontcare [%r15+%rax*1] (s)
+  000000000000002a: 89 c0                                        mov %eax, %eax
+  000000000000002c: 41 d9 1c 07                                  [P] dontcare [%r15+%rax*1] (s)
+  0000000000000030: 89 c0                                        mov %eax, %eax
+  0000000000000032: 41 dd 1c 07                                  [P] dontcare [%r15+%rax*1] (s)
+  0000000000000036: 89 c0                                        mov %eax, %eax
+  0000000000000038: 41 db 3c 07                                  [P] dontcare [%r15+%rax*1] (s)
+  000000000000003c: 89 c0                                        mov %eax, %eax
+  000000000000003e: 41 df 14 07                                  [P] dontcare [%r15+%rax*1] (s)
+  0000000000000042: 89 c0                                        mov %eax, %eax
+  0000000000000044: 41 db 14 07                                  [P] dontcare [%r15+%rax*1] (s)
+  0000000000000048: 89 c0                                        mov %eax, %eax
+  000000000000004a: 41 df 1c 07                                  [P] dontcare [%r15+%rax*1] (s)
+  000000000000004e: 89 c0                                        mov %eax, %eax
+  0000000000000050: 41 db 1c 07                                  [P] dontcare [%r15+%rax*1] (s)
+  0000000000000054: 89 c0                                        mov %eax, %eax
+  0000000000000056: 41 df 3c 07                                  [P] dontcare [%r15+%rax*1] (s)
+  000000000000005a: d8 c1                                        [P] dontcare
+  000000000000005c: de c1                                        [P] dontcare
+  000000000000005e: 89 c0                                        mov %eax, %eax
+  0000000000000060: 41 d8 04 07                                  [P] dontcare [%r15+%rax*1] (u)
+  0000000000000064: 89 c0                                        mov %eax, %eax
+  0000000000000066: 41 dc 04 07                                  [P] dontcare [%r15+%rax*1] (u)

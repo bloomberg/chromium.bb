@@ -1,0 +1,27 @@
+@hex:
+  # lds    (%eax),%eax
+  C5 00
+  # les    (%eax),%eax
+  C4 00
+  # lfs    (%eax),%eax
+  0F B4 00
+  # lgs    (%eax),%eax
+  0F B5 00
+  # lss    (%eax),%eax
+  0F B2 00
+  # lfs    (%eax),%ebx
+  0F B4 18
+  # lgs    (%eax),%ebx
+  0F B5 18
+  # lss    (%eax),%ebx
+  0F B2 18
+@nval:
+  VALIDATOR: 0: Illegal instruction
+  VALIDATOR: 2: Illegal instruction
+  VALIDATOR: 4: Illegal instruction
+  VALIDATOR: 7: Illegal instruction
+  VALIDATOR: a: Illegal instruction
+  VALIDATOR: d: Illegal instruction
+  VALIDATOR: 10: Illegal instruction
+  VALIDATOR: 13: Illegal instruction
+  *** <input> IS UNSAFE ***

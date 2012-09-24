@@ -1,0 +1,79 @@
+@hex:
+  # Sample call code translation (i.e. sandboxed call address), where the return address is
+  # also properly block aligned.
+  90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90
+  90 90 90 90 90 90 90 90
+  83 e0 e0
+  4c 01 f8
+  ff d0
+@val:
+  VALIDATOR: Checking jump targets: 0 to 20
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@rval:
+  VALIDATOR: Checking jump targets: 0 to 20
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@rvald:
+  VALIDATOR: Checking block alignment and jump targets: 0 to 20
+  *** <input> is safe ***
+@vd-rval:
+  VALIDATOR: Checking jump targets: 0 to 20
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@dis:
+  0000000000000000: 90                                           nop
+  0000000000000001: 90                                           nop
+  0000000000000002: 90                                           nop
+  0000000000000003: 90                                           nop
+  0000000000000004: 90                                           nop
+  0000000000000005: 90                                           nop
+  0000000000000006: 90                                           nop
+  0000000000000007: 90                                           nop
+  0000000000000008: 90                                           nop
+  0000000000000009: 90                                           nop
+  000000000000000a: 90                                           nop
+  000000000000000b: 90                                           nop
+  000000000000000c: 90                                           nop
+  000000000000000d: 90                                           nop
+  000000000000000e: 90                                           nop
+  000000000000000f: 90                                           nop
+  0000000000000010: 90                                           nop
+  0000000000000011: 90                                           nop
+  0000000000000012: 90                                           nop
+  0000000000000013: 90                                           nop
+  0000000000000014: 90                                           nop
+  0000000000000015: 90                                           nop
+  0000000000000016: 90                                           nop
+  0000000000000017: 90                                           nop
+  0000000000000018: 83 e0 e0                                     and %eax, 0xe0
+  000000000000001b: 4c 01 f8                                     add %rax, %r15
+  000000000000001e: ff d0                                        call %rax
+@vdis:
+  0000000000000000: 90                                           [P] dontcare
+  0000000000000001: 90                                           [P] dontcare
+  0000000000000002: 90                                           [P] dontcare
+  0000000000000003: 90                                           [P] dontcare
+  0000000000000004: 90                                           [P] dontcare
+  0000000000000005: 90                                           [P] dontcare
+  0000000000000006: 90                                           [P] dontcare
+  0000000000000007: 90                                           [P] dontcare
+  0000000000000008: 90                                           [P] dontcare
+  0000000000000009: 90                                           [P] dontcare
+  000000000000000a: 90                                           [P] dontcare
+  000000000000000b: 90                                           [P] dontcare
+  000000000000000c: 90                                           [P] dontcare
+  000000000000000d: 90                                           [P] dontcare
+  000000000000000e: 90                                           [P] dontcare
+  000000000000000f: 90                                           [P] dontcare
+  0000000000000010: 90                                           [P] dontcare
+  0000000000000011: 90                                           [P] dontcare
+  0000000000000012: 90                                           [P] dontcare
+  0000000000000013: 90                                           [P] dontcare
+  0000000000000014: 90                                           [P] dontcare
+  0000000000000015: 90                                           [P] dontcare
+  0000000000000016: 90                                           [P] dontcare
+  0000000000000017: 90                                           [P] dontcare
+  0000000000000018: 83 e0 e0                                     and %eax, 0xe0
+  000000000000001b: 4c 01 f8                                     add %rax, %r15
+  000000000000001e: ff d0                                        call %rax

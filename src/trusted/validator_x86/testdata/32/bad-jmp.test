@@ -1,0 +1,52 @@
+@hex:
+  # Example of jumping to the middle of an instruction.
+  7f ff f4
+@nval:
+  VALIDATOR: 1: Bad jump target
+  *** <input> IS UNSAFE ***
+@nvals:
+  VALIDATOR: 1: Bad jump target
+  *** <input> IS UNSAFE ***
+  
+  Opcode Histogram;
+  1	0x7f	1	0xf4	
+  Analysis Summary:
+  2 Checked instructions
+  2 checked jump targets
+  0 calls/jumps need dynamic checking (0.00%)
+  
+  Problems:
+  0 illegal instructions
+  1 bad jump targets
+  0 illegal unprotected indirect jumps (including ret)
+  0 instruction alignment defects
+  0 segmentation errors
+  0 bad prefix
+  0 bad instruction length
+  0 internal errors
+@nvalds:
+  VALIDATOR: 0: Doesn't jump to instruction address
+  *** <input> IS UNSAFE ***
+  
+  Opcode Histogram;
+  1	0x7f	1	0xf4	
+  Analysis Summary:
+  2 Checked instructions
+  1 checked jump targets
+  0 calls/jumps need dynamic checking (0.00%)
+  
+  Problems:
+  0 illegal instructions
+  1 bad jump targets
+  0 illegal unprotected indirect jumps (including ret)
+  0 instruction alignment defects
+  0 segmentation errors
+  0 bad prefix
+  0 bad instruction length
+  0 internal errors
+@dis:
+  00000000: 7f ff                                        jnle 0x1
+  00000002: f4                                           hlt
+@vdis:
+   0:	7f ff               	jg 0x1
+   2:	f4                  	hlt

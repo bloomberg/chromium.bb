@@ -1,0 +1,32 @@
+@hex:
+  # Invalid base register in memory offset, since it isn't R15, RBP, or RSP.
+  48 89 43 36
+  
+  
+@val:
+  VALIDATOR: 0000000000000000: 48 89 43 36                                  mov [%rbx+0x36], %rax
+  VALIDATOR: ERROR: Invalid base register in memory offset
+  VALIDATOR: Checking jump targets: 0 to 4
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rval:
+  VALIDATOR: 0000000000000000: 48 89 43 36                                  mov [%rbx+0x36], %rax
+  VALIDATOR: ERROR: Invalid base register in memory offset
+  VALIDATOR: Checking jump targets: 0 to 4
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rvald:
+  VALIDATOR: 0000000000000000: 48 89 43 36                                  mov [%rbx+0x36], %rax
+  VALIDATOR: ERROR: Invalid base register in memory offset
+  VALIDATOR: Checking block alignment and jump targets: 0 to 4
+  *** <input> IS UNSAFE ***
+@vd-rval:
+  VALIDATOR: 0000000000000000: 48 89 43 36                                  mov [%rbx+0x36], %rax
+  VALIDATOR: ERROR: Invalid base register in memory offset
+  VALIDATOR: Checking jump targets: 0 to 4
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 48 89 43 36                                  mov [%rbx+0x36], %rax
+@vdis:
+  0000000000000000: 48 89 43 36                                  mov [%rbx+0x36], %rax

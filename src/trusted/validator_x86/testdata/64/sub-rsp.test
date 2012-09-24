@@ -1,0 +1,31 @@
+@hex:
+  # Sample invalid sequence for updating rsp (nativeclient issue 259) using sub
+  #   sub %rsp, %rax
+  48 29 c4
+@val:
+  VALIDATOR: 0000000000000000: 48 29 c4                                     sub %rsp, %rax
+  VALIDATOR: ERROR: Illegal assignment to RSP
+  VALIDATOR: Checking jump targets: 0 to 3
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rval:
+  VALIDATOR: 0000000000000000: 48 29 c4                                     sub %rsp, %rax
+  VALIDATOR: ERROR: Illegal assignment to RSP
+  VALIDATOR: Checking jump targets: 0 to 3
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rvald:
+  VALIDATOR: 0000000000000000: 48 29 c4                                     sub %rsp, %rax
+  VALIDATOR: ERROR: Illegal assignment to RSP
+  VALIDATOR: Checking block alignment and jump targets: 0 to 3
+  *** <input> IS UNSAFE ***
+@vd-rval:
+  VALIDATOR: 0000000000000000: 48 29 c4                                     sub %rsp, %rax
+  VALIDATOR: ERROR: Illegal assignment to RSP
+  VALIDATOR: Checking jump targets: 0 to 3
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 48 29 c4                                     sub %rsp, %rax
+@vdis:
+  0000000000000000: 48 29 c4                                     sub %rsp, %rax

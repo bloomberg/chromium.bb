@@ -1,4 +1,0 @@
-# Model a call to address zero, aligned to the end of a 32-byte block.
-90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90
-90 90 90 90 90 90 90 90 90 90 90
-e8 20 fd fd ff

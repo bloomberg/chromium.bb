@@ -1,4 +1,0 @@
-# Test to see if we can validate predefined nop instructions.
-66 66 2e 0f 1f 84 00 00 00 00 00
-00 00
-66 0f 1f 44 00 00

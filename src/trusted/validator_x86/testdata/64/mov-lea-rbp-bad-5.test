@@ -1,0 +1,55 @@
+@hex:
+  # Bad example of using lea solution (instead of add) to update rbp.
+  # That is where we use rsp in address instead of rbp.
+  # That is, apply a mov to non 32-bit register rbp
+  #    mov %rbp, %rcx
+  #    lea %rbp, [%rsp+%r15*1]
+  48 89 cd
+  4a 8d 2c 3c
+@val:
+  VALIDATOR: 0000000000000000: 48 89 cd                                     mov %rbp, %rcx
+  VALIDATOR: ERROR: Illegal change to register RBP
+  VALIDATOR: 0000000000000003: 4a 8d 2c 3c                                  lea %rbp, [%rsp+%r15*1]
+  VALIDATOR: ERROR: Illegal change to register RBP
+  VALIDATOR: Checking jump targets: 0 to 7
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rval:
+  VALIDATOR: 0000000000000000: 48 89 cd                                     mov %rbp, %rcx
+  VALIDATOR: ERROR: Illegal change to register RBP
+  VALIDATOR: 0000000000000003: 4a 8d 2c 3c                                  lea %rbp, [%rsp+%r15*1]
+  VALIDATOR: ERROR: Illegal change to register RBP
+  VALIDATOR: Checking jump targets: 0 to 7
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rvald:
+  VALIDATOR: 0000000000000000: 48 89 cd                                     mov %rbp, %rcx
+  VALIDATOR: ERROR: Illegal change to register RBP
+  VALIDATOR: 0000000000000003: 4a 8d 2c 3c                                  lea %rbp, [%rsp+%r15*1]
+  VALIDATOR: ERROR: Illegal change to register RBP
+  VALIDATOR: Checking block alignment and jump targets: 0 to 7
+  *** <input> IS UNSAFE ***
+@vd-rval:
+  VALIDATOR: 0000000000000000: 48 89 cd                                     mov %rbp, %rcx
+  VALIDATOR: ERROR: Illegal change to register RBP
+  VALIDATOR: 0000000000000003: 4a 8d 2c 3c                                  lea %rbp, [%rsp+%r15*1]
+  VALIDATOR: ERROR: Illegal change to register RBP
+  VALIDATOR: Checking jump targets: 0 to 7
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@sval:
+  Some instructions were replaced with HLTs.
+  STUBBED OUT as follows:
+  0000000000000000: f4                                           hlt
+  0000000000000001: f4                                           hlt
+  0000000000000002: f4                                           hlt
+  0000000000000003: f4                                           hlt
+  0000000000000004: f4                                           hlt
+  0000000000000005: f4                                           hlt
+  0000000000000006: f4                                           hlt
+@dis:
+  0000000000000000: 48 89 cd                                     mov %rbp, %rcx
+  0000000000000003: 4a 8d 2c 3c                                  lea %rbp, [%rsp+%r15*1]
+@vdis:
+  0000000000000000: 48 89 cd                                     mov %rbp, %rcx
+  0000000000000003: 4a 8d 2c 3c                                  lea %rbp, [%rsp+%r15*1]

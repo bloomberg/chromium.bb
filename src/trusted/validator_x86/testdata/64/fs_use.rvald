@@ -1,6 +1,0 @@
-VALIDATOR: 0000000000000000: 64 41 8b 07                                  mov %eax, %fs:[%r15]
-VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-VALIDATOR: 0000000000000000: 64 41 8b 07                                  mov %eax, %fs:[%r15]
-VALIDATOR: ERROR: Segment memory reference not allowed
-VALIDATOR: Checking block alignment and jump targets: 0 to 4
-*** <input> IS UNSAFE ***

@@ -1,0 +1,31 @@
+@hex:
+  # Test that we don't accept "mov %ebp, %r11d" if not followed by an "add %rbp %r15"
+  44 89 dd
+  
+@val:
+  VALIDATOR: 0000000000000000: 44 89 dd                                     mov %ebp, %r11d
+  VALIDATOR: ERROR: Illegal assignment to EBP
+  VALIDATOR: Checking jump targets: 0 to 3
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rval:
+  VALIDATOR: 0000000000000000: 44 89 dd                                     mov %ebp, %r11d
+  VALIDATOR: ERROR: Illegal assignment to EBP
+  VALIDATOR: Checking jump targets: 0 to 3
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rvald:
+  VALIDATOR: 0000000000000000: 44 89 dd                                     mov %ebp, %r11d
+  VALIDATOR: ERROR: Illegal assignment to EBP
+  VALIDATOR: Checking block alignment and jump targets: 0 to 3
+  *** <input> IS UNSAFE ***
+@vd-rval:
+  VALIDATOR: 0000000000000000: 44 89 dd                                     mov %ebp, %r11d
+  VALIDATOR: ERROR: Illegal assignment to EBP
+  VALIDATOR: Checking jump targets: 0 to 3
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 44 89 dd                                     mov %ebp, %r11d
+@vdis:
+  0000000000000000: 44 89 dd                                     mov %ebp, %r11d

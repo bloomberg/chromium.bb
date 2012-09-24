@@ -1,3 +1,0 @@
-# An example of a RIP relative address.
-#   mov [%rip+0x3a7fe5], 0x1
-C6 05 E5 7F 3A 00 01

@@ -1,0 +1,38 @@
+@hex:
+  # Example of a 32-bit segment address assignment.
+  67 ab
+@val:
+  VALIDATOR: 0000000000000000: 67 ab                                        stosd [%edi]
+  VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
+  VALIDATOR: 0000000000000000: 67 ab                                        stosd [%edi]
+  VALIDATOR: ERROR: Assignment to non-64 bit segment address
+  VALIDATOR: Checking jump targets: 0 to 2
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rval:
+  VALIDATOR: 0000000000000000: 67 ab                                        stosd [%edi]
+  VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
+  VALIDATOR: 0000000000000000: 67 ab                                        stosd [%edi]
+  VALIDATOR: ERROR: Assignment to non-64 bit segment address
+  VALIDATOR: Checking jump targets: 0 to 2
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rvald:
+  VALIDATOR: 0000000000000000: 67 ab                                        stosd [%edi]
+  VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
+  VALIDATOR: 0000000000000000: 67 ab                                        stosd [%edi]
+  VALIDATOR: ERROR: Assignment to non-64 bit segment address
+  VALIDATOR: Checking block alignment and jump targets: 0 to 2
+  *** <input> IS UNSAFE ***
+@vd-rval:
+  VALIDATOR: 0000000000000000: 67 ab                                        [P] dontcare [%edi] (s), %eax (u)
+  VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
+  VALIDATOR: 0000000000000000: 67 ab                                        [P] dontcare [%edi] (s), %eax (u)
+  VALIDATOR: ERROR: Assignment to non-64 bit segment address
+  VALIDATOR: Checking jump targets: 0 to 2
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 67 ab                                        stosd [%edi]
+@vdis:
+  0000000000000000: 67 ab                                        [P] dontcare [%edi] (s), %eax (u)

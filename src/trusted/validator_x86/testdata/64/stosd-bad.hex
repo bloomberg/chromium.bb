@@ -1,7 +1,0 @@
-# Show an example of an invalid (implicit) reference to a segment register
-# (in this case missing a 32-bit zero extending operation before the LEA):
-#
-#   lea %rdi, [%r15+%rdi*1]
-#   stosd
-49 8d 3c 3f
-ab

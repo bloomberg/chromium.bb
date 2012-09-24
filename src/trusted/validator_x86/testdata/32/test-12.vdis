@@ -1,8 +1,0 @@
- 0:	66 0f be 04 10      	movsx %eax, [%eax + %edx]
- 5:	90                  	nop
- 6:	90                  	nop
- 7:	90                  	nop
- 8:	90                  	nop
- 9:	90                  	nop
- a:	90                  	nop
- b:	f4                  	hlt

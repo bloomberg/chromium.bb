@@ -1,0 +1,48 @@
+@hex:
+  # Example of using multiple prefixes that are illegal. In this case the CS
+  # and GS semgment prefixes. Instruction is:
+  #       add %al, %al
+  2e 36 00 c0
+@val:
+  VALIDATOR: 0000000000000000: 2e 36 00 c0                                  add %al, %al
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 0000000000000000: 2e 36 00 c0                                  add %al, %al
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000000: 2e 36 00 c0                                  add %al, %al
+  VALIDATOR: ERROR: Specifying different segment registers using prefix bytes is not allowed by Native Client
+  VALIDATOR: Checking jump targets: 0 to 4
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rval:
+  VALIDATOR: 0000000000000000: 2e 36 00 c0                                  add %al, %al
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 0000000000000000: 2e 36 00 c0                                  add %al, %al
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000000: 2e 36 00 c0                                  add %al, %al
+  VALIDATOR: ERROR: Specifying different segment registers using prefix bytes is not allowed by Native Client
+  VALIDATOR: Checking jump targets: 0 to 4
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rvald:
+  VALIDATOR: 0000000000000000: 2e 36 00 c0                                  add %al, %al
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 0000000000000000: 2e 36 00 c0                                  add %al, %al
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000000: 2e 36 00 c0                                  add %al, %al
+  VALIDATOR: ERROR: Specifying different segment registers using prefix bytes is not allowed by Native Client
+  VALIDATOR: Checking block alignment and jump targets: 0 to 4
+  *** <input> IS UNSAFE ***
+@vd-rval:
+  VALIDATOR: 0000000000000000: 2e 36 00 c0                                  add %al, %al
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 0000000000000000: 2e 36 00 c0                                  add %al, %al
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000000: 2e 36 00 c0                                  add %al, %al
+  VALIDATOR: ERROR: Specifying different segment registers using prefix bytes is not allowed by Native Client
+  VALIDATOR: Checking jump targets: 0 to 4
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 2e 36 00 c0                                  add %al, %al
+@vdis:
+  0000000000000000: 2e 36 00 c0                                  add %al, %al

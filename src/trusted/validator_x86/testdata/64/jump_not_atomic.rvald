@@ -1,4 +1,0 @@
-VALIDATOR: Checking block alignment and jump targets: 0 to a
-VALIDATOR: 0000000000000000: eb 03                                        jmp 0x5
-VALIDATOR: ERROR: Jumps into middle of nacl pattern
-*** <input> IS UNSAFE ***

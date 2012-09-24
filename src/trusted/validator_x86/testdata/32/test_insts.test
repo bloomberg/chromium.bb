@@ -1,0 +1,24 @@
+@hex:
+  # Test sample x86 32-bit instructions.
+  #    push %ebp
+  #    lea %esi, %ds[%esi+%esp*1]
+  #    mov %eax, 0x55667788
+  #    mov %ax, 0x7788
+  #    mov %al, [0x11223344]
+  
+  55 8d 74 26 00 b8 88 77 66 55
+  66 b8 88 77 a0 44 33 22 11
+@nval:
+  *** <input> is safe ***
+@dis:
+  00000000: 55                                           push %ebp
+  00000001: 8d 74 26 00                                  lea %esi, %ds:[%esi+%esp*1]
+  00000005: b8 88 77 66 55                               mov %eax, 0x55667788
+  0000000a: 66 b8 88 77                                  mov %ax, 0x7788
+  0000000e: a0 44 33 22 11                               mov %al, [0x11223344]
+@vdis:
+   0:	55                  	push %ebp
+   1:	8d 74 26 00         	lea %esi, 0x0[%esi]
+   5:	b8 88 77 66 55      	mov %eax, 0x55667788
+   a:	66 b8 88 77         	mov %eax, 0x7788
+   e:	a0 44 33 22 11      	mov %al, [0x11223344]

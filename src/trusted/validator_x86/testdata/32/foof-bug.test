@@ -1,0 +1,11 @@
+@hex:
+  # Test how we handle the F00F bug 
+  # (http://en.wikipedia.org/wiki/Pentium_F00F_bug).
+  f0 0f c7 c8
+@nval:
+  VALIDATOR: 0: Illegal instruction
+  *** <input> IS UNSAFE ***
+@dis:
+  00000000: f0 0f c7 c8                                  invalid
+@vdis:
+   0:	f0 0f c7 c8         	cmpxchg8b %ecx

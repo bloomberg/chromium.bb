@@ -1,7 +1,0 @@
-# Bad example of using lea solution (instead of add) to update rbp.
-# That is, we use a value other than one for the scale associated with the
-# base register r15.
-#    mov %ebp, %ecx
-#    lea %rbp, [%rbp+%r15*2]
-89 cd
-4a 8d 6c 7d 00

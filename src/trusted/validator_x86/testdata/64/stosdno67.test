@@ -1,0 +1,30 @@
+@hex:
+  # Example of a 64-bit segment address assignment.
+  ab
+@val:
+  VALIDATOR: 0000000000000000: ab                                           stosd [%rdi]
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: Checking jump targets: 0 to 1
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rval:
+  VALIDATOR: 0000000000000000: ab                                           stosd [%rdi]
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: Checking jump targets: 0 to 1
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rvald:
+  VALIDATOR: 0000000000000000: ab                                           stosd [%rdi]
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: Checking block alignment and jump targets: 0 to 1
+  *** <input> IS UNSAFE ***
+@vd-rval:
+  VALIDATOR: 0000000000000000: ab                                           [P] dontcare [%rdi] (s), %eax (u)
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: Checking jump targets: 0 to 1
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: ab                                           stosd [%rdi]
+@vdis:
+  0000000000000000: ab                                           [P] dontcare [%rdi] (s), %eax (u)

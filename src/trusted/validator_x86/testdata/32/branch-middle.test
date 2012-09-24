@@ -1,0 +1,56 @@
+@hex:
+  # Tests whether we note a branch into the middle of a nacl pattern.
+  7e 03
+  83 e0 e0
+  ff d0
+@nval:
+  VALIDATOR: 5: Bad jump target
+  *** <input> IS UNSAFE ***
+@nvals:
+  VALIDATOR: 5: Bad jump target
+  *** <input> IS UNSAFE ***
+  
+  Opcode Histogram;
+  1	0x7e	1	0x83	1	0xff	
+  Analysis Summary:
+  3 Checked instructions
+  3 checked jump targets
+  1 calls/jumps need dynamic checking (33.33%)
+  
+  Problems:
+  0 illegal instructions
+  1 bad jump targets
+  0 illegal unprotected indirect jumps (including ret)
+  0 instruction alignment defects
+  0 segmentation errors
+  0 bad prefix
+  0 bad instruction length
+  0 internal errors
+@nvalds:
+  VALIDATOR: 0: Jumps into middle of nacl pattern
+  *** <input> IS UNSAFE ***
+  
+  Opcode Histogram;
+  1	0x7e	1	0x83	1	0xff	
+  Analysis Summary:
+  3 Checked instructions
+  2 checked jump targets
+  1 calls/jumps need dynamic checking (33.33%)
+  
+  Problems:
+  0 illegal instructions
+  1 bad jump targets
+  0 illegal unprotected indirect jumps (including ret)
+  0 instruction alignment defects
+  0 segmentation errors
+  0 bad prefix
+  0 bad instruction length
+  0 internal errors
+@dis:
+  00000000: 7e 03                                        jle 0x5
+  00000002: 83 e0 e0                                     and %eax, 0xe0
+  00000005: ff d0                                        call %eax
+@vdis:
+   0:	7e 03               	jle 0x5
+   2:	83 e0 e0            	and %esp, 0xffffffffffffffe0
+   5:	ff d0               	call * %edx

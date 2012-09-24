@@ -1,6 +1,0 @@
-VALIDATOR: 6: JUMP TARGET out of range
-VALIDATOR: b: JUMP TARGET out of range
-VALIDATOR: 10: JUMP TARGET out of range
-VALIDATOR: 16: ret instruction (not allowed)
-VALIDATOR: 16: Illegal instruction
-*** <input> IS UNSAFE ***

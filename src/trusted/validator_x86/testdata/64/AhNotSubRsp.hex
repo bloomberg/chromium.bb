@@ -1,3 +1,0 @@
-# Make sure we recognize instruction "and %ah 0xf7" as an and.
-80 e4 f7 90 90 90 90 90 90 90 90 90 90 90 90
-90 90 90 90 90 90 90 90 90 90 90 90 90 90 90

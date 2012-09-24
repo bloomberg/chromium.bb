@@ -1,0 +1,351 @@
+@hex:
+  # Counts halt instructions.
+  90
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+  f4
+@rval:
+  VALIDATOR: Checking jump targets: 0 to 20
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@rvald:
+  VALIDATOR: Checking block alignment and jump targets: 0 to 20
+  *** <input> is safe ***
+@vd-rval:
+  VALIDATOR: Checking jump targets: 0 to 20
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@dis:
+  0000000000000000: 90                                           nop
+  0000000000000001: f4                                           hlt
+  0000000000000002: f4                                           hlt
+  0000000000000003: f4                                           hlt
+  0000000000000004: f4                                           hlt
+  0000000000000005: f4                                           hlt
+  0000000000000006: f4                                           hlt
+  0000000000000007: f4                                           hlt
+  0000000000000008: f4                                           hlt
+  0000000000000009: f4                                           hlt
+  000000000000000a: f4                                           hlt
+  000000000000000b: f4                                           hlt
+  000000000000000c: f4                                           hlt
+  000000000000000d: f4                                           hlt
+  000000000000000e: f4                                           hlt
+  000000000000000f: f4                                           hlt
+  0000000000000010: f4                                           hlt
+  0000000000000011: f4                                           hlt
+  0000000000000012: f4                                           hlt
+  0000000000000013: f4                                           hlt
+  0000000000000014: f4                                           hlt
+  0000000000000015: f4                                           hlt
+  0000000000000016: f4                                           hlt
+  0000000000000017: f4                                           hlt
+  0000000000000018: f4                                           hlt
+  0000000000000019: f4                                           hlt
+  000000000000001a: f4                                           hlt
+  000000000000001b: f4                                           hlt
+  000000000000001c: f4                                           hlt
+  000000000000001d: f4                                           hlt
+  000000000000001e: f4                                           hlt
+  000000000000001f: f4                                           hlt
+  0000000000000020: f4                                           hlt
+  0000000000000021: f4                                           hlt
+  0000000000000022: f4                                           hlt
+  0000000000000023: f4                                           hlt
+  0000000000000024: f4                                           hlt
+  0000000000000025: f4                                           hlt
+  0000000000000026: f4                                           hlt
+  0000000000000027: f4                                           hlt
+  0000000000000028: f4                                           hlt
+  0000000000000029: f4                                           hlt
+  000000000000002a: f4                                           hlt
+  000000000000002b: f4                                           hlt
+  000000000000002c: f4                                           hlt
+  000000000000002d: f4                                           hlt
+  000000000000002e: f4                                           hlt
+  000000000000002f: f4                                           hlt
+  0000000000000030: f4                                           hlt
+  0000000000000031: f4                                           hlt
+  0000000000000032: f4                                           hlt
+  0000000000000033: f4                                           hlt
+  0000000000000034: f4                                           hlt
+  0000000000000035: f4                                           hlt
+  0000000000000036: f4                                           hlt
+  0000000000000037: f4                                           hlt
+  0000000000000038: f4                                           hlt
+  0000000000000039: f4                                           hlt
+  000000000000003a: f4                                           hlt
+  000000000000003b: f4                                           hlt
+  000000000000003c: f4                                           hlt
+  000000000000003d: f4                                           hlt
+  000000000000003e: f4                                           hlt
+  000000000000003f: f4                                           hlt
+  0000000000000040: f4                                           hlt
+  0000000000000041: f4                                           hlt
+  0000000000000042: f4                                           hlt
+  0000000000000043: f4                                           hlt
+  0000000000000044: f4                                           hlt
+  0000000000000045: f4                                           hlt
+  0000000000000046: f4                                           hlt
+  0000000000000047: f4                                           hlt
+  0000000000000048: f4                                           hlt
+  0000000000000049: f4                                           hlt
+  000000000000004a: f4                                           hlt
+  000000000000004b: f4                                           hlt
+  000000000000004c: f4                                           hlt
+  000000000000004d: f4                                           hlt
+  000000000000004e: f4                                           hlt
+  000000000000004f: f4                                           hlt
+  0000000000000050: f4                                           hlt
+  0000000000000051: f4                                           hlt
+  0000000000000052: f4                                           hlt
+  0000000000000053: f4                                           hlt
+  0000000000000054: f4                                           hlt
+  0000000000000055: f4                                           hlt
+  0000000000000056: f4                                           hlt
+  0000000000000057: f4                                           hlt
+  0000000000000058: f4                                           hlt
+  0000000000000059: f4                                           hlt
+  000000000000005a: f4                                           hlt
+  000000000000005b: f4                                           hlt
+  000000000000005c: f4                                           hlt
+  000000000000005d: f4                                           hlt
+  000000000000005e: f4                                           hlt
+  000000000000005f: f4                                           hlt
+  0000000000000060: f4                                           hlt
+  0000000000000061: f4                                           hlt
+  0000000000000062: f4                                           hlt
+  0000000000000063: f4                                           hlt
+  0000000000000064: f4                                           hlt
+  0000000000000065: f4                                           hlt
+  0000000000000066: f4                                           hlt
+  0000000000000067: f4                                           hlt
+  0000000000000068: f4                                           hlt
+  0000000000000069: f4                                           hlt
+  000000000000006a: f4                                           hlt
+  000000000000006b: f4                                           hlt
+  000000000000006c: f4                                           hlt
+  000000000000006d: f4                                           hlt
+  000000000000006e: f4                                           hlt
+  000000000000006f: f4                                           hlt
+@vdis:
+  0000000000000000: 90                                           [P] dontcare
+  0000000000000001: f4                                           [P] dontcare
+  0000000000000002: f4                                           [P] dontcare
+  0000000000000003: f4                                           [P] dontcare
+  0000000000000004: f4                                           [P] dontcare
+  0000000000000005: f4                                           [P] dontcare
+  0000000000000006: f4                                           [P] dontcare
+  0000000000000007: f4                                           [P] dontcare
+  0000000000000008: f4                                           [P] dontcare
+  0000000000000009: f4                                           [P] dontcare
+  000000000000000a: f4                                           [P] dontcare
+  000000000000000b: f4                                           [P] dontcare
+  000000000000000c: f4                                           [P] dontcare
+  000000000000000d: f4                                           [P] dontcare
+  000000000000000e: f4                                           [P] dontcare
+  000000000000000f: f4                                           [P] dontcare
+  0000000000000010: f4                                           [P] dontcare
+  0000000000000011: f4                                           [P] dontcare
+  0000000000000012: f4                                           [P] dontcare
+  0000000000000013: f4                                           [P] dontcare
+  0000000000000014: f4                                           [P] dontcare
+  0000000000000015: f4                                           [P] dontcare
+  0000000000000016: f4                                           [P] dontcare
+  0000000000000017: f4                                           [P] dontcare
+  0000000000000018: f4                                           [P] dontcare
+  0000000000000019: f4                                           [P] dontcare
+  000000000000001a: f4                                           [P] dontcare
+  000000000000001b: f4                                           [P] dontcare
+  000000000000001c: f4                                           [P] dontcare
+  000000000000001d: f4                                           [P] dontcare
+  000000000000001e: f4                                           [P] dontcare
+  000000000000001f: f4                                           [P] dontcare
+  0000000000000020: f4                                           [P] dontcare
+  0000000000000021: f4                                           [P] dontcare
+  0000000000000022: f4                                           [P] dontcare
+  0000000000000023: f4                                           [P] dontcare
+  0000000000000024: f4                                           [P] dontcare
+  0000000000000025: f4                                           [P] dontcare
+  0000000000000026: f4                                           [P] dontcare
+  0000000000000027: f4                                           [P] dontcare
+  0000000000000028: f4                                           [P] dontcare
+  0000000000000029: f4                                           [P] dontcare
+  000000000000002a: f4                                           [P] dontcare
+  000000000000002b: f4                                           [P] dontcare
+  000000000000002c: f4                                           [P] dontcare
+  000000000000002d: f4                                           [P] dontcare
+  000000000000002e: f4                                           [P] dontcare
+  000000000000002f: f4                                           [P] dontcare
+  0000000000000030: f4                                           [P] dontcare
+  0000000000000031: f4                                           [P] dontcare
+  0000000000000032: f4                                           [P] dontcare
+  0000000000000033: f4                                           [P] dontcare
+  0000000000000034: f4                                           [P] dontcare
+  0000000000000035: f4                                           [P] dontcare
+  0000000000000036: f4                                           [P] dontcare
+  0000000000000037: f4                                           [P] dontcare
+  0000000000000038: f4                                           [P] dontcare
+  0000000000000039: f4                                           [P] dontcare
+  000000000000003a: f4                                           [P] dontcare
+  000000000000003b: f4                                           [P] dontcare
+  000000000000003c: f4                                           [P] dontcare
+  000000000000003d: f4                                           [P] dontcare
+  000000000000003e: f4                                           [P] dontcare
+  000000000000003f: f4                                           [P] dontcare
+  0000000000000040: f4                                           [P] dontcare
+  0000000000000041: f4                                           [P] dontcare
+  0000000000000042: f4                                           [P] dontcare
+  0000000000000043: f4                                           [P] dontcare
+  0000000000000044: f4                                           [P] dontcare
+  0000000000000045: f4                                           [P] dontcare
+  0000000000000046: f4                                           [P] dontcare
+  0000000000000047: f4                                           [P] dontcare
+  0000000000000048: f4                                           [P] dontcare
+  0000000000000049: f4                                           [P] dontcare
+  000000000000004a: f4                                           [P] dontcare
+  000000000000004b: f4                                           [P] dontcare
+  000000000000004c: f4                                           [P] dontcare
+  000000000000004d: f4                                           [P] dontcare
+  000000000000004e: f4                                           [P] dontcare
+  000000000000004f: f4                                           [P] dontcare
+  0000000000000050: f4                                           [P] dontcare
+  0000000000000051: f4                                           [P] dontcare
+  0000000000000052: f4                                           [P] dontcare
+  0000000000000053: f4                                           [P] dontcare
+  0000000000000054: f4                                           [P] dontcare
+  0000000000000055: f4                                           [P] dontcare
+  0000000000000056: f4                                           [P] dontcare
+  0000000000000057: f4                                           [P] dontcare
+  0000000000000058: f4                                           [P] dontcare
+  0000000000000059: f4                                           [P] dontcare
+  000000000000005a: f4                                           [P] dontcare
+  000000000000005b: f4                                           [P] dontcare
+  000000000000005c: f4                                           [P] dontcare
+  000000000000005d: f4                                           [P] dontcare
+  000000000000005e: f4                                           [P] dontcare
+  000000000000005f: f4                                           [P] dontcare
+  0000000000000060: f4                                           [P] dontcare
+  0000000000000061: f4                                           [P] dontcare
+  0000000000000062: f4                                           [P] dontcare
+  0000000000000063: f4                                           [P] dontcare
+  0000000000000064: f4                                           [P] dontcare
+  0000000000000065: f4                                           [P] dontcare
+  0000000000000066: f4                                           [P] dontcare
+  0000000000000067: f4                                           [P] dontcare
+  0000000000000068: f4                                           [P] dontcare
+  0000000000000069: f4                                           [P] dontcare
+  000000000000006a: f4                                           [P] dontcare
+  000000000000006b: f4                                           [P] dontcare
+  000000000000006c: f4                                           [P] dontcare
+  000000000000006d: f4                                           [P] dontcare
+  000000000000006e: f4                                           [P] dontcare
+  000000000000006f: f4                                           [P] dontcare

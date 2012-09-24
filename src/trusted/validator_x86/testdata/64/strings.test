@@ -1,0 +1,232 @@
+@hex:
+  # Test string operations with 1 memory operand
+  # mov %edi,%edi
+  # lea (%r15,%rdi,1),%rdi
+  # scas %es:(%rdi),%al
+  89 ff
+  49 8d 3c 3f
+  ae
+  
+  # add %edi,%edi
+  # lea (%r15,%rdi,1),%rdi
+  # scas %es:(%rdi),%al
+  01 ff
+  49 8d 3c 3f
+  ae
+  
+  # mov %edi,%edi
+  # add %r15,%rdi
+  # scas %es:(%rdi),%al
+  89 ff
+  4c 01 ff
+  ae
+  
+  # mov %edi,%edi
+  # lea (%rdi,%r15,1),%rdi
+  # scas %es:(%rdi),%al
+  89 ff
+  4a 8d 3c 3f
+  ae
+  
+  # Test string operations with 2 memory operands.
+  # mov %esi,%esi
+  # add %r15,%rsi
+  # mov %edi,%edi
+  # add %r15,%rdi
+  # movsl %ds:(%rsi),%es:(%rdi)
+  89 f6
+  4c 01 fe
+  89 ff
+  4c 01 ff
+  a5
+  
+  # mov %esi,%esi
+  # add %r15,%rsi
+  # mov %edi,%edi
+  # add %r15,%rdi
+  # cmpsl %es:(%rdi),%ds:(%rsi)
+  89 f6
+  4c 01 fe
+  89 ff
+  4c 01 ff
+  a7
+  
+  # mov %esi,%esi
+  # lea (%r15,%rsi),%rsi
+  # mov %edi,%edi
+  # lea (%r15,%rdi),%rdi
+  # cmpsl %es:(%rdi),%ds:(%rsi)
+  89 f6
+  49 8d 34 37
+  89 ff
+  49 8d 3c 3f
+  a7
+  
+  # mov %edi,%edi
+  # lea (%r15,%rdi),%rdi
+  # mov %esi,%esi
+  # lea (%r15,%rsi),%rsi
+  # cmpsl %es:(%rdi),%ds:(%rsi)
+  89 ff
+  49 8d 3c 3f
+  89 f6
+  49 8d 34 37
+  a7
+  
+  # add %esi,%esi
+  # lea (%r15,%rsi,1),%rsi
+  # add %edi,%edi
+  # lea (%r15,%rdi,1),%rdi
+  # cmpsl %es:(%rdi),%ds:(%rsi)
+  01 f6
+  49 8d 34 37
+  01 ff
+  49 8d 3c 3f
+  a7
+@rval:
+  VALIDATOR: 000000000000000d: ae                                           scasb [%rdi]
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 0000000000000013: ae                                           scasb [%rdi]
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 000000000000001a: ae                                           scasb [%rdi]
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 0000000000000025: a5                                           movsd [%rdi], [%rsi]
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 0000000000000025: a5                                           movsd [%rdi], [%rsi]
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 0000000000000030: a7                                           cmpsd [%rdi], [%rsi]
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 0000000000000030: a7                                           cmpsd [%rdi], [%rsi]
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 000000000000004a: a7                                           cmpsd [%rdi], [%rsi]
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 0000000000000057: a7                                           cmpsd [%rdi], [%rsi]
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 0000000000000057: a7                                           cmpsd [%rdi], [%rsi]
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: Checking jump targets: 0 to 58
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rvald:
+  VALIDATOR: 000000000000000d: ae                                           scasb [%rdi]
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 0000000000000013: ae                                           scasb [%rdi]
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 000000000000001a: ae                                           scasb [%rdi]
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 0000000000000025: a5                                           movsd [%rdi], [%rsi]
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 0000000000000025: a5                                           movsd [%rdi], [%rsi]
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 0000000000000030: a7                                           cmpsd [%rdi], [%rsi]
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 0000000000000030: a7                                           cmpsd [%rdi], [%rsi]
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 000000000000004a: a7                                           cmpsd [%rdi], [%rsi]
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 0000000000000057: a7                                           cmpsd [%rdi], [%rsi]
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 0000000000000057: a7                                           cmpsd [%rdi], [%rsi]
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: Checking block alignment and jump targets: 0 to 58
+  *** <input> IS UNSAFE ***
+@vd-rval:
+  VALIDATOR: 000000000000000d: ae                                           [P] dontcare %al (u), [%rdi] (u)
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 0000000000000013: ae                                           [P] dontcare %al (u), [%rdi] (u)
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 000000000000001a: ae                                           [P] dontcare %al (u), [%rdi] (u)
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 0000000000000025: a5                                           [P] dontcare [%rdi] (s), [%rsi] (u)
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 0000000000000025: a5                                           [P] dontcare [%rdi] (s), [%rsi] (u)
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 0000000000000030: a7                                           [P] dontcare [%rdi] (u), [%rsi] (u)
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 0000000000000030: a7                                           [P] dontcare [%rdi] (u), [%rsi] (u)
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 000000000000004a: a7                                           [P] dontcare [%rdi] (u), [%rsi] (u)
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 0000000000000057: a7                                           [P] dontcare [%rdi] (u), [%rsi] (u)
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 0000000000000057: a7                                           [P] dontcare [%rdi] (u), [%rsi] (u)
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: Checking jump targets: 0 to 58
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 89 ff                                        mov %edi, %edi
+  0000000000000002: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+  0000000000000006: ae                                           scasb [%rdi]
+  0000000000000007: 01 ff                                        add %edi, %edi
+  0000000000000009: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+  000000000000000d: ae                                           scasb [%rdi]
+  000000000000000e: 89 ff                                        mov %edi, %edi
+  0000000000000010: 4c 01 ff                                     add %rdi, %r15
+  0000000000000013: ae                                           scasb [%rdi]
+  0000000000000014: 89 ff                                        mov %edi, %edi
+  0000000000000016: 4a 8d 3c 3f                                  lea %rdi, [%rdi+%r15*1]
+  000000000000001a: ae                                           scasb [%rdi]
+  000000000000001b: 89 f6                                        mov %esi, %esi
+  000000000000001d: 4c 01 fe                                     add %rsi, %r15
+  0000000000000020: 89 ff                                        mov %edi, %edi
+  0000000000000022: 4c 01 ff                                     add %rdi, %r15
+  0000000000000025: a5                                           movsd [%rdi], [%rsi]
+  0000000000000026: 89 f6                                        mov %esi, %esi
+  0000000000000028: 4c 01 fe                                     add %rsi, %r15
+  000000000000002b: 89 ff                                        mov %edi, %edi
+  000000000000002d: 4c 01 ff                                     add %rdi, %r15
+  0000000000000030: a7                                           cmpsd [%rdi], [%rsi]
+  0000000000000031: 89 f6                                        mov %esi, %esi
+  0000000000000033: 49 8d 34 37                                  lea %rsi, [%r15+%rsi*1]
+  0000000000000037: 89 ff                                        mov %edi, %edi
+  0000000000000039: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+  000000000000003d: a7                                           cmpsd [%rdi], [%rsi]
+  000000000000003e: 89 ff                                        mov %edi, %edi
+  0000000000000040: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+  0000000000000044: 89 f6                                        mov %esi, %esi
+  0000000000000046: 49 8d 34 37                                  lea %rsi, [%r15+%rsi*1]
+  000000000000004a: a7                                           cmpsd [%rdi], [%rsi]
+  000000000000004b: 01 f6                                        add %esi, %esi
+  000000000000004d: 49 8d 34 37                                  lea %rsi, [%r15+%rsi*1]
+  0000000000000051: 01 ff                                        add %edi, %edi
+  0000000000000053: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+  0000000000000057: a7                                           cmpsd [%rdi], [%rsi]
+@vdis:
+  0000000000000000: 89 ff                                        mov %edi, %edi
+  0000000000000002: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+  0000000000000006: ae                                           [P] dontcare %al (u), [%rdi] (u)
+  0000000000000007: 01 ff                                        add %edi, %edi
+  0000000000000009: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+  000000000000000d: ae                                           [P] dontcare %al (u), [%rdi] (u)
+  000000000000000e: 89 ff                                        mov %edi, %edi
+  0000000000000010: 4c 01 ff                                     add %rdi, %r15
+  0000000000000013: ae                                           [P] dontcare %al (u), [%rdi] (u)
+  0000000000000014: 89 ff                                        mov %edi, %edi
+  0000000000000016: 4a 8d 3c 3f                                  lea %rdi, [%rdi+%r15*1]
+  000000000000001a: ae                                           [P] dontcare %al (u), [%rdi] (u)
+  000000000000001b: 89 f6                                        mov %esi, %esi
+  000000000000001d: 4c 01 fe                                     add %rsi, %r15
+  0000000000000020: 89 ff                                        mov %edi, %edi
+  0000000000000022: 4c 01 ff                                     add %rdi, %r15
+  0000000000000025: a5                                           [P] dontcare [%rdi] (s), [%rsi] (u)
+  0000000000000026: 89 f6                                        mov %esi, %esi
+  0000000000000028: 4c 01 fe                                     add %rsi, %r15
+  000000000000002b: 89 ff                                        mov %edi, %edi
+  000000000000002d: 4c 01 ff                                     add %rdi, %r15
+  0000000000000030: a7                                           [P] dontcare [%rdi] (u), [%rsi] (u)
+  0000000000000031: 89 f6                                        mov %esi, %esi
+  0000000000000033: 49 8d 34 37                                  lea %rsi, [%r15+%rsi*1]
+  0000000000000037: 89 ff                                        mov %edi, %edi
+  0000000000000039: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+  000000000000003d: a7                                           [P] dontcare [%rdi] (u), [%rsi] (u)
+  000000000000003e: 89 ff                                        mov %edi, %edi
+  0000000000000040: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+  0000000000000044: 89 f6                                        mov %esi, %esi
+  0000000000000046: 49 8d 34 37                                  lea %rsi, [%r15+%rsi*1]
+  000000000000004a: a7                                           [P] dontcare [%rdi] (u), [%rsi] (u)
+  000000000000004b: 01 f6                                        add %esi, %esi
+  000000000000004d: 49 8d 34 37                                  lea %rsi, [%r15+%rsi*1]
+  0000000000000051: 01 ff                                        add %edi, %edi
+  0000000000000053: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+  0000000000000057: a7                                           [P] dontcare [%rdi] (u), [%rsi] (u)

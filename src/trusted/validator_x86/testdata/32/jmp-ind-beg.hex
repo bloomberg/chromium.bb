@@ -1,4 +1,0 @@
-# Jump indirect at beginning of instruction sequence.
-ff e0
-90
-

@@ -1,3 +1,0 @@
-# Test that we don't accept "mov %ebp, %r11d" if not followed by an "add %rbp %r15"
-44 89 dd
-

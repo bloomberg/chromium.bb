@@ -1,7 +1,0 @@
-VALIDATOR: 0000000000000002: 4a 8d 6c 35 00                               lea %rbp, [%rbp+%r14*1]
-VALIDATOR: ERROR: Illegal change to register RBP
-VALIDATOR: 0000000000000000: 89 cd                                        mov %ebp, %ecx
-VALIDATOR: ERROR: Illegal assignment to EBP
-VALIDATOR: Checking jump targets: 0 to 7
-VALIDATOR: Checking that basic blocks are aligned
-*** <input> IS UNSAFE ***

@@ -1,0 +1,51 @@
+@hex:
+  # Test MMX instructions
+  # emms
+  0f 77
+  # movq %mm0,%mm1
+  0f 6f c8
+  # packsswb %mm0,%mm1
+  0f 63 c8
+  # paddsb %mm0,%mm1
+  0f ec c8
+  # pcmpeqb %mm0,%mm1
+  0f 74 c8
+  # pmaddwd %mm0,%mm1
+  0f f5 c8
+  # psrad %mm0,%mm1
+  0f e2 c8
+  # punpckhbw %mm0,%mm1
+  0f 68 c8
+  # pxor %mm0,%mm1
+  0f ef c8
+@rval:
+  VALIDATOR: Checking jump targets: 0 to 1a
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@rvald:
+  VALIDATOR: Checking block alignment and jump targets: 0 to 1a
+  *** <input> is safe ***
+@vd-rval:
+  VALIDATOR: Checking jump targets: 0 to 1a
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@dis:
+  0000000000000000: 0f 77                                        emms
+  0000000000000002: 0f 6f c8                                     movq %mmx1, %mmx0
+  0000000000000005: 0f 63 c8                                     packsswb %mmx1, %mmx0
+  0000000000000008: 0f ec c8                                     paddsb %mmx1, %mmx0
+  000000000000000b: 0f 74 c8                                     pcmpeqb %mmx1, %mmx0
+  000000000000000e: 0f f5 c8                                     pmaddwd %mmx1, %mmx0
+  0000000000000011: 0f e2 c8                                     psrad %mmx1, %mmx0
+  0000000000000014: 0f 68 c8                                     punpckhbw %mmx1, %mmx0
+  0000000000000017: 0f ef c8                                     pxor %mmx1, %mmx0
+@vdis:
+  0000000000000000: 0f 77                                        [P] dontcare
+  0000000000000002: 0f 6f c8                                     [P] dontcare %mmx0 (u)
+  0000000000000005: 0f 63 c8                                     [P] dontcare %mmx0 (u)
+  0000000000000008: 0f ec c8                                     [P] dontcare %mmx0 (u)
+  000000000000000b: 0f 74 c8                                     [P] dontcare %mmx0 (u)
+  000000000000000e: 0f f5 c8                                     [P] dontcare %mmx0 (u)
+  0000000000000011: 0f e2 c8                                     [P] dontcare %mmx0 (u)
+  0000000000000014: 0f 68 c8                                     [P] dontcare %mmx0 (u)
+  0000000000000017: 0f ef c8                                     [P] dontcare %mmx0 (u)

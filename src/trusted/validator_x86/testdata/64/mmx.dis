@@ -1,9 +1,0 @@
-0000000000000000: 0f 77                                        emms
-0000000000000002: 0f 6f c8                                     movq %mmx1, %mmx0
-0000000000000005: 0f 63 c8                                     packsswb %mmx1, %mmx0
-0000000000000008: 0f ec c8                                     paddsb %mmx1, %mmx0
-000000000000000b: 0f 74 c8                                     pcmpeqb %mmx1, %mmx0
-000000000000000e: 0f f5 c8                                     pmaddwd %mmx1, %mmx0
-0000000000000011: 0f e2 c8                                     psrad %mmx1, %mmx0
-0000000000000014: 0f 68 c8                                     punpckhbw %mmx1, %mmx0
-0000000000000017: 0f ef c8                                     pxor %mmx1, %mmx0

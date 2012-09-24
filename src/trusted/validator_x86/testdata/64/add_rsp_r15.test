@@ -1,0 +1,31 @@
+@hex:
+  # Show that "add %rsp, %r15" doesn't work without proper previous instruction.
+  # See test lea-add-rsp.dis for an example of a proper previous instruction.
+  4c 01 fc
+@val:
+  VALIDATOR: 0000000000000000: 4c 01 fc                                     add %rsp, %r15
+  VALIDATOR: ERROR: Illegal assignment to RSP
+  VALIDATOR: Checking jump targets: 0 to 3
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rval:
+  VALIDATOR: 0000000000000000: 4c 01 fc                                     add %rsp, %r15
+  VALIDATOR: ERROR: Illegal assignment to RSP
+  VALIDATOR: Checking jump targets: 0 to 3
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rvald:
+  VALIDATOR: 0000000000000000: 4c 01 fc                                     add %rsp, %r15
+  VALIDATOR: ERROR: Illegal assignment to RSP
+  VALIDATOR: Checking block alignment and jump targets: 0 to 3
+  *** <input> IS UNSAFE ***
+@vd-rval:
+  VALIDATOR: 0000000000000000: 4c 01 fc                                     add %rsp, %r15
+  VALIDATOR: ERROR: Illegal assignment to RSP
+  VALIDATOR: Checking jump targets: 0 to 3
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 4c 01 fc                                     add %rsp, %r15
+@vdis:
+  0000000000000000: 4c 01 fc                                     add %rsp, %r15

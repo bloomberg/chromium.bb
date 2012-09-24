@@ -1,0 +1,31 @@
+@hex:
+  # An example of a valid add instruction for which NACL doesn't allow a 66 prefix.
+  #    add %al, %al
+  66 00 c0
+@val:
+  VALIDATOR: 0000000000000000: 66 00 c0                                     add %al, %al
+  VALIDATOR: ERROR: Use of DATA16 (66) prefix for instruction not allowed by Native Client
+  VALIDATOR: Checking jump targets: 0 to 3
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rval:
+  VALIDATOR: 0000000000000000: 66 00 c0                                     add %al, %al
+  VALIDATOR: ERROR: Use of DATA16 (66) prefix for instruction not allowed by Native Client
+  VALIDATOR: Checking jump targets: 0 to 3
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rvald:
+  VALIDATOR: 0000000000000000: 66 00 c0                                     add %al, %al
+  VALIDATOR: ERROR: Use of DATA16 (66) prefix for instruction not allowed by Native Client
+  VALIDATOR: Checking block alignment and jump targets: 0 to 3
+  *** <input> IS UNSAFE ***
+@vd-rval:
+  VALIDATOR: 0000000000000000: 66 00 c0                                     add %al, %al
+  VALIDATOR: ERROR: Use of DATA16 (66) prefix for instruction not allowed by Native Client
+  VALIDATOR: Checking jump targets: 0 to 3
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 66 00 c0                                     add %al, %al
+@vdis:
+  0000000000000000: 66 00 c0                                     add %al, %al

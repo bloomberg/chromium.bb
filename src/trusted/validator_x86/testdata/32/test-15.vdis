@@ -1,9 +1,0 @@
- 0:	90                  	nop
- 1:	0f ae 21            	invalid [%ecx]
- 4:	90                  	nop
- 5:	90                  	nop
- 6:	90                  	nop
- 7:	90                  	nop
- 8:	90                  	nop
- 9:	90                  	nop
- a:	f4                  	hlt

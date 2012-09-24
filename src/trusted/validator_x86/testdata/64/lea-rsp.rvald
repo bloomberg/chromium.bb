@@ -1,4 +1,0 @@
-VALIDATOR: 0000000000000000: 48 8d 65 e0                                  lea %rsp, [%rbp-0x20]
-VALIDATOR: ERROR: Illegal assignment to RSP
-VALIDATOR: Checking block alignment and jump targets: 0 to 4
-*** <input> IS UNSAFE ***

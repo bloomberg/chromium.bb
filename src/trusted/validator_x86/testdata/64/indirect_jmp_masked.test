@@ -1,0 +1,54 @@
+@hex:
+  # Model a case where an indirect jump is properly masked.
+  # and %edx, 0xe0
+  83 e2 e0
+  # add %rdx, %r15
+  4c 01 fa
+  # jmp %rdx
+  ff e2
+  #
+  # Model a case where an indirect jump is no longer properly masked.
+  # and %edx, 0xe0
+  83 e2 e0
+  # lea %r9, [%r15+%rdx*1]
+  4D 8D 0C 17
+  # jmp %r9
+  41 FF E1
+  
+@val:
+  VALIDATOR: 000000000000000f: 41 ff e1                                     jmp %r9
+  VALIDATOR: ERROR: Invalid indirect jump
+  VALIDATOR: Checking jump targets: 0 to 12
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rval:
+  VALIDATOR: 000000000000000f: 41 ff e1                                     jmp %r9
+  VALIDATOR: ERROR: Invalid indirect jump
+  VALIDATOR: Checking jump targets: 0 to 12
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rvald:
+  VALIDATOR: 000000000000000f: 41 ff e1                                     jmp %r9
+  VALIDATOR: ERROR: Invalid indirect jump
+  VALIDATOR: Checking block alignment and jump targets: 0 to 12
+  *** <input> IS UNSAFE ***
+@vd-rval:
+  VALIDATOR: 000000000000000f: 41 ff e1                                     [P] dontcarejump %rip (s), %r9 (u)
+  VALIDATOR: ERROR: Invalid indirect jump
+  VALIDATOR: Checking jump targets: 0 to 12
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 83 e2 e0                                     and %edx, 0xe0
+  0000000000000003: 4c 01 fa                                     add %rdx, %r15
+  0000000000000006: ff e2                                        jmp %rdx
+  0000000000000008: 83 e2 e0                                     and %edx, 0xe0
+  000000000000000b: 4d 8d 0c 17                                  lea %r9, [%r15+%rdx*1]
+  000000000000000f: 41 ff e1                                     jmp %r9
+@vdis:
+  0000000000000000: 83 e2 e0                                     and %edx, 0xe0
+  0000000000000003: 4c 01 fa                                     add %rdx, %r15
+  0000000000000006: ff e2                                        [P] dontcarejump %rip (s), %rdx (u)
+  0000000000000008: 83 e2 e0                                     and %edx, 0xe0
+  000000000000000b: 4d 8d 0c 17                                  lea %r9, [%r15+%rdx*1]
+  000000000000000f: 41 ff e1                                     [P] dontcarejump %rip (s), %r9 (u)

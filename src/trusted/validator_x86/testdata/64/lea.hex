@@ -1,3 +1,0 @@
-# Show that just computing an address, using LEA, doesn't cause an error.
-#   lea %ecx, [%rcx+%rax*8]
-8d 0c c1

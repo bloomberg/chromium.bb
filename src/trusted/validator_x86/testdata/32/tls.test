@@ -1,0 +1,62 @@
+@hex:
+  # Test TLS access commands.
+  # mov %gs:0, %eax
+  65 a1 00 00 00 00
+  # AFAIK it's open question whether # writes to gs:... should be allowed.
+  # Currently RDFA rejects.
+  # mov %eax, %gs:0
+  65 a3 00 00 00 00
+  # Forbidden
+  # mov %gs:0, %ax
+  65 66 a1 00 00 00 00
+  # mov %ax, %gs:0
+  65 66 a3 00 00 00 00
+  
+  # Invalid access to TLS
+  # mov %fs:0, %eax
+  64 a1 00 00 00 00
+  # mov %eax, %fs:0
+  64 a3 00 00 00 00
+  # mov %fs:0, %ax
+  64 66 a1 00 00 00 00
+  # mov %ax, %fs:0
+  64 66 a3 00 00 00 00
+  
+  # AFAIK it's open question whether writes to gs:... should be allowed.
+  # Currently RDFA rejects.
+  65 8B 00
+  
+  # Forbidden
+  # lock add %gs:0x0,%eax
+  65 F0 03 05 00 00 00 00
+@nval:
+  VALIDATOR: c: Bad prefix usage
+  VALIDATOR: 13: Bad prefix usage
+  VALIDATOR: 1a: Bad prefix usage
+  VALIDATOR: 20: Bad prefix usage
+  VALIDATOR: 26: Bad prefix usage
+  VALIDATOR: 2d: Bad prefix usage
+  VALIDATOR: 37: Bad prefix usage
+  *** <input> IS UNSAFE ***
+@dis:
+  00000000: 65 a1 00 00 00 00                            mov %eax, %gs:[0x0]
+  00000006: 65 a3 00 00 00 00                            mov %gs:[0x0], %eax
+  0000000c: 65 66 a1 00 00 00 00                         mov %ax, %gs:[0x0]
+  00000013: 65 66 a3 00 00 00 00                         mov %gs:[0x0], %ax
+  0000001a: 64 a1 00 00 00 00                            mov %eax, %fs:[0x0]
+  00000020: 64 a3 00 00 00 00                            mov %fs:[0x0], %eax
+  00000026: 64 66 a1 00 00 00 00                         mov %ax, %fs:[0x0]
+  0000002d: 64 66 a3 00 00 00 00                         mov %fs:[0x0], %ax
+  00000034: 65 8b 00                                     mov %eax, %gs:[%eax]
+  00000037: 65 f0 03 05 00 00 00 00                      invalid %eax, 0x0
+@vdis:
+   0:	65 a1 00 00 00 00   	mov %eax, [0x0]
+   6:	65 a3 00 00 00 00   	mov [0x0], %eax
+   c:	65 66 a1 00 00 00 00	mov %eax, [0x0]
+   13:	65 66 a3 00 00 00 00	mov [0x0], %eax
+   1a:	64 a1 00 00 00 00   	mov %eax, [0x0]
+   20:	64 a3 00 00 00 00   	mov [0x0], %eax
+   26:	64 66 a1 00 00 00 00	mov %eax, [0x0]
+   2d:	64 66 a3 00 00 00 00	mov [0x0], %eax
+   34:	65 8b 00            	mov %eax, gs:[%eax]
+   37:	65 f0 03 05 00 00 00 00	add %eax, gs:[0x0]

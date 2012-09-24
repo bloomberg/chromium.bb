@@ -1,6 +1,0 @@
-# Models a jump to the begining of an atomic instruction sequence.
-EB 00
-83 e2 e0
-4c 01 fa
-ff e2
-

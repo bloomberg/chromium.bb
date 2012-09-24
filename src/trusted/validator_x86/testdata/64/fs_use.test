@@ -1,0 +1,36 @@
+@hex:
+  # Example of use of segment register fs as a use, for instruction:  mov %eax, %fs[%r15]
+  64 41 8b 07
+@val:
+  VALIDATOR: 0000000000000000: 64 41 8b 07                                  mov %eax, %fs:[%r15]
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: Checking jump targets: 0 to 4
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rval:
+  VALIDATOR: 0000000000000000: 64 41 8b 07                                  mov %eax, %fs:[%r15]
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000000: 64 41 8b 07                                  mov %eax, %fs:[%r15]
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: Checking jump targets: 0 to 4
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rvald:
+  VALIDATOR: 0000000000000000: 64 41 8b 07                                  mov %eax, %fs:[%r15]
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000000: 64 41 8b 07                                  mov %eax, %fs:[%r15]
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: Checking block alignment and jump targets: 0 to 4
+  *** <input> IS UNSAFE ***
+@vd-rval:
+  VALIDATOR: 0000000000000000: 64 41 8b 07                                  mov %eax, %fs:[%r15]
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000000: 64 41 8b 07                                  mov %eax, %fs:[%r15]
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: Checking jump targets: 0 to 4
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 64 41 8b 07                                  mov %eax, %fs:[%r15]
+@vdis:
+  0000000000000000: 64 41 8b 07                                  mov %eax, %fs:[%r15]

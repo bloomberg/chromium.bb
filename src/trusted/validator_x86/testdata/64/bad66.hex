@@ -1,3 +1,0 @@
-# An example of a valid add instruction for which NACL doesn't allow a 66 prefix.
-#    add %al, %al
-66 00 c0

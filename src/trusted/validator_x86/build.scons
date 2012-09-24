@@ -4,8 +4,10 @@
 # found in the LICENSE file.
 
 
+import glob
 import os
 import sys
+
 Import('env')
 
 #
@@ -42,6 +44,9 @@ val_src_dir = '$MAIN_DIR/src/trusted/validator_x86'
 # that we are compiling in the test environment (rather than for the TCB).
 test_env = env.Clone();
 test_env.Append(CCFLAGS=['-DNACL_TRUSTED_BUT_NOT_TCB'])
+
+# TODO(shcherbina): remove dead test running code (tests moved to
+# testscripts/run_tests.py and *.test files)
 
 # ======================================================================
 # Helper functions for getting automated tests from the corresponding
@@ -382,3 +387,22 @@ if test_env.Bit('target_x86_64'):
                                                      'testdata/x86_64',
                                                      'hello_x32.nexe'))])
   env.AddNodeToTestSuite(node, STANDARD_TESTS, 'run_ncval_hello_x32_test')
+
+bits = env.get('TARGET_SUBARCH')
+assert bits in ['32', '64']
+
+tests_mask = '${MAIN_DIR}/src/trusted/validator_x86/testdata/%s/*.test' % bits
+
+testdata_tests = env.AutoDepsCommand(
+    'x86_validator_testdata_tests.out',
+    ['${PYTHON}',
+     env.File('testscripts/run_tests.py'),
+     '--ncval', ncval,
+     '--ncdis', ncdis,
+     '--bits', bits,
+     tests_mask])
+
+env.AddNodeToTestSuite(
+    testdata_tests,
+    ['small_tests'],
+    node_name='run_x86_validator_testdata_tests')

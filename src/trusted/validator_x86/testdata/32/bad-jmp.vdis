@@ -1,2 +1,0 @@
- 0:	7f ff               	jg 0x1
- 2:	f4                  	hlt

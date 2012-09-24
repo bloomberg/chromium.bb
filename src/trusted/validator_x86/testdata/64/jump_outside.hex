@@ -1,6 +1,0 @@
-# direct aligned jump outside of code
-# jmp $20
-E9 1B 00 00 00
-# direct unaligned jump outside of code
-# jmp $21
-E9 17 00 00 00

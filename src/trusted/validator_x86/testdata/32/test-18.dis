@@ -1,4 +1,0 @@
-00000000: bb 90 40 cd 80                               mov %ebx, 0x80cd4090
-00000005: 85 c0                                        test %eax, %eax
-00000007: e1 f8                                        loope 0x1
-00000009: f4                                           hlt

@@ -1,0 +1,44 @@
+@hex:
+  # Bad example of using lea solution (instead of add) to update rbp.
+  # That is where we use r14 instead of r15 for the base register.
+  #    mov %ebp, %ecx
+  #    lea %rbp, [%rbp+%r14*1]
+  89 cd
+  4a 8d 6c 35 00
+@val:
+  VALIDATOR: 0000000000000002: 4a 8d 6c 35 00                               lea %rbp, [%rbp+%r14*1]
+  VALIDATOR: ERROR: Illegal change to register RBP
+  VALIDATOR: 0000000000000000: 89 cd                                        mov %ebp, %ecx
+  VALIDATOR: ERROR: Illegal assignment to EBP
+  VALIDATOR: Checking jump targets: 0 to 7
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rval:
+  VALIDATOR: 0000000000000002: 4a 8d 6c 35 00                               lea %rbp, [%rbp+%r14*1]
+  VALIDATOR: ERROR: Illegal change to register RBP
+  VALIDATOR: 0000000000000000: 89 cd                                        mov %ebp, %ecx
+  VALIDATOR: ERROR: Illegal assignment to EBP
+  VALIDATOR: Checking jump targets: 0 to 7
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rvald:
+  VALIDATOR: 0000000000000002: 4a 8d 6c 35 00                               lea %rbp, [%rbp+%r14*1]
+  VALIDATOR: ERROR: Illegal change to register RBP
+  VALIDATOR: 0000000000000000: 89 cd                                        mov %ebp, %ecx
+  VALIDATOR: ERROR: Illegal assignment to EBP
+  VALIDATOR: Checking block alignment and jump targets: 0 to 7
+  *** <input> IS UNSAFE ***
+@vd-rval:
+  VALIDATOR: 0000000000000002: 4a 8d 6c 35 00                               lea %rbp, [%rbp+%r14*1]
+  VALIDATOR: ERROR: Illegal change to register RBP
+  VALIDATOR: 0000000000000000: 89 cd                                        mov %ebp, %ecx
+  VALIDATOR: ERROR: Illegal assignment to EBP
+  VALIDATOR: Checking jump targets: 0 to 7
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 89 cd                                        mov %ebp, %ecx
+  0000000000000002: 4a 8d 6c 35 00                               lea %rbp, [%rbp+%r14*1]
+@vdis:
+  0000000000000000: 89 cd                                        mov %ebp, %ecx
+  0000000000000002: 4a 8d 6c 35 00                               lea %rbp, [%rbp+%r14*1]

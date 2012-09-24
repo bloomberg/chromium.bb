@@ -1,6 +1,0 @@
-# Complain about instruction where REX byte is not last.
-# Use instruction: lock cmpxchg16b (%rax)
-# Start by showing we accept  when REX is last.
-f0 48 0f c7 08
-# Now show that we don't accept when REX is not last.
-48 f0 0f c7 08

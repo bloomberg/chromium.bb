@@ -1,0 +1,15 @@
+@hex:
+  # Test to see if we can validate predefined nop instructions.
+  66 66 2e 0f 1f 84 00 00 00 00 00
+  00 00
+  66 0f 1f 44 00 00
+@nval:
+  *** <input> is safe ***
+@dis:
+  00000000: 66 66 2e 0f 1f 84 00 00 00 00 00             nop
+  0000000b: 00 00                                        add %ds:[%eax], %al
+  0000000d: 66 0f 1f 44 00 00                            nop
+@vdis:
+   0:	66 66 2e 0f 1f 84 00 00 00 00 00	nop
+   b:	00 00               	add [%eax], %eax
+   d:	66 0f 1f 44 00 00   	nop

@@ -1,9 +1,0 @@
-# This file tests how we handle a 16-bit conditional direct jump. In particular,
-# it tests whether we actually disallow prefix 66 on direct jumps.
-#
-# Define direct (16-bit) conditional jump, which NaCl doesn't allow
-66 0f 84 05 00
-
-# Padding in case the parser of the previous instruction recognizes
-# the wrong byte length for the jump constant.
-90 90 90

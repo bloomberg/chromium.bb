@@ -1,0 +1,23 @@
+@hex:
+  # An example of a RIP relative address.
+  #   mov [%rip+0x3a7fe5], 0x1
+  C6 05 E5 7F 3A 00 01
+@val:
+  VALIDATOR: Checking jump targets: 0 to 7
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@rval:
+  VALIDATOR: Checking jump targets: 0 to 7
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@rvald:
+  VALIDATOR: Checking block alignment and jump targets: 0 to 7
+  *** <input> is safe ***
+@vd-rval:
+  VALIDATOR: Checking jump targets: 0 to 7
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@dis:
+  0000000000000000: c6 05 e5 7f 3a 00 01                         mov [%rip+0x3a7fe5], 0x1
+@vdis:
+  0000000000000000: c6 05 e5 7f 3a 00 01                         mov [%rip+0x3a7fe5], 0x1

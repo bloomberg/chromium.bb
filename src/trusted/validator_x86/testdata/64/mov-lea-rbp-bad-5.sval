@@ -1,9 +1,0 @@
-Some instructions were replaced with HLTs.
-STUBBED OUT as follows:
-0000000000000000: f4                                           hlt
-0000000000000001: f4                                           hlt
-0000000000000002: f4                                           hlt
-0000000000000003: f4                                           hlt
-0000000000000004: f4                                           hlt
-0000000000000005: f4                                           hlt
-0000000000000006: f4                                           hlt

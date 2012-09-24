@@ -1,0 +1,13 @@
+@hex:
+  # We should disallow a two-byte instruction with a cs prefix.
+  0f 1f 84 00 00 00 00 00
+  2e 0f 1f 84 00 00 00 00 00
+@nval:
+  VALIDATOR: 8: Bad prefix usage
+  *** <input> IS UNSAFE ***
+@dis:
+  00000000: 0f 1f 84 00 00 00 00 00                      nop
+  00000008: 2e 0f 1f 84 00 00 00 00 00                   nop
+@vdis:
+   0:	0f 1f 84 00 00 00 00 00	nop
+   8:	2e 0f 1f 84 00 00 00 00 00	nop

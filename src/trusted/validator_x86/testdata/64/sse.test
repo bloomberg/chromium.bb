@@ -1,0 +1,424 @@
+@hex:
+  # Test SSE instructions
+  # SSE
+  # addps %xmm0,%xmm1
+  0f 58 c8
+  # subss %xmm0,%xmm1
+  f3 0f 5c c8
+  # pmaxsw %xmm0,%xmm1
+  66 0f ee c8
+  # pminub %xmm0,%xmm1
+  66 0f da c8
+  # pinsrw $0x1,%eax,%xmm0
+  66 0f c4 c0 01
+  # pmovmskb %xmm0,%eax
+  66 0f d7 c0
+  # pmulhuw %xmm0,%xmm1
+  66 0f e4 c8
+  # comiss %xmm0,%xmm1
+  0f 2f c8
+  
+  # Nop for bundle alignment.
+  90
+  
+  # cvtps2pi %xmm1,%mm0
+  0f 2d c1
+  # ldmxcsr (%rsp)
+  0f ae 14 24
+  # stmxcsr (%rsp)
+  0f ae 1c 24
+  # movaps %xmm0,%xmm1
+  0f 28 c8
+  # movmskps %xmm1,%eax
+  0f 50 c1
+  # movntps %xmm0,(%rsp)
+  0f 2b 04 24
+  # shufps $0x1,%xmm0,%xmm1
+  0f c6 c8 01
+  # unpcklps %xmm0,%xmm1
+  0f 14 c8
+  # sfence
+  0f ae f8
+  # prefetcht2 (%rsp)
+  0f 18 1c 24
+  
+  # SSE2
+  # addpd %xmm0,%xmm1
+  66 0f 58 c8
+  # maxsd %xmm0,%xmm1
+  f2 0f 5f c8
+  # cmpeqpd %xmm0,%xmm1
+  66 0f c2 c8 00
+  # comisd %xmm0,%xmm1
+  66 0f 2f c8
+  # cvtpd2dq %xmm0,%xmm1
+  f2 0f e6 c8
+  # movapd %xmm0,%xmm1
+  66 0f 28 c8
+  # movmskpd %xmm0,%eax
+  66 0f 50 c0
+  # shufpd $0x1,%xmm0,%xmm1
+  66 0f c6 c8 01
+  # unpckhpd %xmm0,%xmm1
+  66 0f 15 c8
+  # movdq2q %xmm0,%mm1
+  f2 0f d6 c8
+  # movdqa %xmm0,%xmm1
+  66 0f 6f c8
+  # paddq %xmm0,%xmm1
+  66 0f d4 c8
+  # psrldq $0x1,%xmm0
+  66 0f 73 d8 01
+  # pshufd $0x1,%xmm0,%xmm1
+  66 0f 70 c8 01
+  
+  # Nop for bundle alignment.
+  90
+  
+  # punpcklqdq %xmm0,%xmm1
+  66 0f 6c c8
+  
+  # SSE 3
+  # addsubpd %xmm0,%xmm1
+  66 0f d0 c8
+  # haddps %xmm0,%xmm1
+  f2 0f 7c c8
+  # movshdup %xmm0,%xmm1
+  f3 0f 16 c8
+  
+  # SSSE3
+  # psignb %xmm0,%xmm1
+  66 0f 38 08 c8
+  # pshufb %xmm0,%xmm1
+  66 0f 38 00 c8
+  # pmaddubsw %xmm0,%xmm1
+  66 0f 38 04 c8
+  # phaddd %xmm0,%xmm1
+  66 0f 38 02 c8
+  # palignr $0x1,%xmm0,%xmm1
+  66 0f 3a 0f c8 01
+  
+  # SSE41
+  # mpsadbw $0x1,%xmm0,%xmm1
+  66 0f 3a 42 c8 01
+  # phminposuw %xmm0,%xmm1
+  66 0f 38 41 c8
+  # dppd $0x1,%xmm0,%xmm1
+  66 0f 3a 41 c8 01
+  # blendvpd %xmm0,%xmm0,%xmm1
+  66 0f 38 15 c8
+  # pmaxuw %xmm0,%xmm1
+  66 0f 38 3e c8
+  # insertps $0x1,%xmm0,%xmm1
+  66 0f 3a 21 c8 01
+  # pmovsxwq %xmm0,%xmm1
+  66 0f 38 24 c8
+  # ptest %xmm0,%xmm1
+  66 0f 38 17 c8
+  # packusdw %xmm0,%xmm1
+  66 0f 38 2b c8
+  # movntdqa (%rsp),%xmm0
+  66 0f 38 2a 04 24
+  
+  # SSE4a
+  # popcnt %rax,%rax
+  f3 48 0f b8 c0
+  # lzcnt %rax,%rax
+  f3 48 0f bd c0
+  # extrq $0x1,$0x2,%xmm0
+  66 0f 78 c0 02 01
+  # movntss %xmm0,(%rsp)
+  f3 0f 2b 04 24
+  
+  # SSE42
+  # crc32b %al,%rax
+  f2 48 0f 38 f0 c0
+  
+  # Nops for bundle alignment.
+  90 90 90 90 90
+  
+  # pcmpistri $0x1,%xmm0,%xmm1
+  66 0f 3a 63 c8 01
+  # pcmpgtq %xmm0,%xmm1
+  66 0f 38 37 c8
+  
+  # AVX FMA
+  # vfmaddpd %xmm0,%xmm1,%xmm2,%xmm3
+  c4 e3 f1 69 d8 20
+  90 90 90
+  
+  # AES
+  # aesenc %xmm0,%xmm1
+  66 0f 38 dc c8
+  90 90 90
+  # aeskeygenassist $0x1,%xmm0,%xmm1
+  66 0f 3a df c8 01
+  90 90
+  # aesimc %xmm0,%xmm1
+  66 0f 38 db c8
+  90 90 90
+@rval:
+  VALIDATOR: 00000000000000ea: 66 0f 78 c0 02 01                            extrq %xmm0, 0x2, 0x1
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 000000000000010b: c4                                           invalid
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 000000000000010b: c4                                           invalid
+  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
+  VALIDATOR: 0000000000000114: 66 0f 38 dc                                  invalid
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000114: 66 0f 38 dc                                  invalid
+  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
+  VALIDATOR: 0000000000000118: c8 90 90 90                                  enter 0x9090, 0x90
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000118: c8 90 90 90                                  enter 0x9090, 0x90
+  VALIDATOR: ERROR: Illegal assignment to RSP
+  VALIDATOR: 0000000000000118: c8 90 90 90                                  enter 0x9090, 0x90
+  VALIDATOR: ERROR: Illegal change to register RBP
+  VALIDATOR: 000000000000011c: 66 0f 3a df                                  invalid
+  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
+  VALIDATOR: 000000000000011c: 66 0f 3a df                                  invalid
+  VALIDATOR: ERROR: Use of DATA16 (66) prefix for instruction not allowed by Native Client
+  VALIDATOR: 0000000000000120: c8 01 90 90                                  enter 0x9001, 0x90
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000120: c8 01 90 90                                  enter 0x9001, 0x90
+  VALIDATOR: ERROR: Illegal assignment to RSP
+  VALIDATOR: 0000000000000120: c8 01 90 90                                  enter 0x9001, 0x90
+  VALIDATOR: ERROR: Illegal change to register RBP
+  VALIDATOR: 0000000000000124: 66 0f 38 db                                  invalid
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000124: 66 0f 38 db                                  invalid
+  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
+  VALIDATOR: 0000000000000128: c8 90 90 90                                  enter 0x9090, 0x90
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000128: c8 90 90 90                                  enter 0x9090, 0x90
+  VALIDATOR: ERROR: Illegal assignment to RSP
+  VALIDATOR: 0000000000000128: c8 90 90 90                                  enter 0x9090, 0x90
+  VALIDATOR: ERROR: Illegal change to register RBP
+  VALIDATOR: Checking jump targets: 0 to 12c
+  VALIDATOR: Checking that basic blocks are aligned
+  VALIDATOR: ERROR: 40: Bad basic block alignment.
+  VALIDATOR: ERROR: a0: Bad basic block alignment.
+  *** <input> IS UNSAFE ***
+@rvald:
+  VALIDATOR: 00000000000000ea: 66 0f 78 c0 02 01                            extrq %xmm0, 0x2, 0x1
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 000000000000010b: c4                                           invalid
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 000000000000010b: c4                                           invalid
+  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
+  VALIDATOR: 0000000000000114: 66 0f 38 dc                                  invalid
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000114: 66 0f 38 dc                                  invalid
+  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
+  VALIDATOR: 0000000000000118: c8 90 90 90                                  enter 0x9090, 0x90
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000118: c8 90 90 90                                  enter 0x9090, 0x90
+  VALIDATOR: ERROR: Illegal assignment to RSP
+  VALIDATOR: 0000000000000118: c8 90 90 90                                  enter 0x9090, 0x90
+  VALIDATOR: ERROR: Illegal change to register RBP
+  VALIDATOR: 000000000000011c: 66 0f 3a df                                  invalid
+  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
+  VALIDATOR: 000000000000011c: 66 0f 3a df                                  invalid
+  VALIDATOR: ERROR: Use of DATA16 (66) prefix for instruction not allowed by Native Client
+  VALIDATOR: 0000000000000120: c8 01 90 90                                  enter 0x9001, 0x90
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000120: c8 01 90 90                                  enter 0x9001, 0x90
+  VALIDATOR: ERROR: Illegal assignment to RSP
+  VALIDATOR: 0000000000000120: c8 01 90 90                                  enter 0x9001, 0x90
+  VALIDATOR: ERROR: Illegal change to register RBP
+  VALIDATOR: 0000000000000124: 66 0f 38 db                                  invalid
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000124: 66 0f 38 db                                  invalid
+  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
+  VALIDATOR: 0000000000000128: c8 90 90 90                                  enter 0x9090, 0x90
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000128: c8 90 90 90                                  enter 0x9090, 0x90
+  VALIDATOR: ERROR: Illegal assignment to RSP
+  VALIDATOR: 0000000000000128: c8 90 90 90                                  enter 0x9090, 0x90
+  VALIDATOR: ERROR: Illegal change to register RBP
+  VALIDATOR: Checking block alignment and jump targets: 0 to 12c
+  VALIDATOR: 000000000000003f: 0f 18 1c 24                                  prefetcht2 [%rsp]
+  VALIDATOR: ERROR: Instruction crosses basic block alignment
+  VALIDATOR: 000000000000009f: 66 0f 38 02 c8                               phaddd %xmm1, %xmm0
+  VALIDATOR: ERROR: Instruction crosses basic block alignment
+  *** <input> IS UNSAFE ***
+@vd-rval:
+  VALIDATOR: 00000000000000ea: 66 0f 78 c0 02 01                            [P] dontcare(illegal)
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 000000000000010b: c4                                           invalid
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 000000000000010b: c4                                           invalid
+  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
+  VALIDATOR: 0000000000000114: 66 0f 38 dc                                  invalid
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000114: 66 0f 38 dc                                  invalid
+  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
+  VALIDATOR: 0000000000000118: c8 90 90 90                                  [P] dontcare(illegal)
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 000000000000011c: 66 0f 3a df                                  invalid
+  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
+  VALIDATOR: 000000000000011c: 66 0f 3a df                                  invalid
+  VALIDATOR: ERROR: Use of DATA16 (66) prefix for instruction not allowed by Native Client
+  VALIDATOR: 0000000000000120: c8 01 90 90                                  [P] dontcare(illegal)
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000124: 66 0f 38 db                                  invalid
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000124: 66 0f 38 db                                  invalid
+  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
+  VALIDATOR: 0000000000000128: c8 90 90 90                                  [P] dontcare(illegal)
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: Checking jump targets: 0 to 12c
+  VALIDATOR: Checking that basic blocks are aligned
+  VALIDATOR: ERROR: 40: Bad basic block alignment.
+  VALIDATOR: ERROR: a0: Bad basic block alignment.
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 0f 58 c8                                     addps %xmm1, %xmm0
+  0000000000000003: f3 0f 5c c8                                  subss %xmm1, %xmm0
+  0000000000000007: 66 0f ee c8                                  pmaxsw %xmm1, %xmm0
+  000000000000000b: 66 0f da c8                                  pminub %xmm1, %xmm0
+  000000000000000f: 66 0f c4 c0 01                               pinsrw %xmm0, %eax, 0x1
+  0000000000000014: 66 0f d7 c0                                  pmovmskb %eax, %xmm0
+  0000000000000018: 66 0f e4 c8                                  pmulhuw %xmm1, %xmm0
+  000000000000001c: 0f 2f c8                                     comiss %xmm1, %xmm0
+  000000000000001f: 90                                           nop
+  0000000000000020: 0f 2d c1                                     cvtps2pi %mmx0, %xmm1
+  0000000000000023: 0f ae 14 24                                  ldmxcsr [%rsp]
+  0000000000000027: 0f ae 1c 24                                  stmxcsr [%rsp]
+  000000000000002b: 0f 28 c8                                     movaps %xmm1, %xmm0
+  000000000000002e: 0f 50 c1                                     movmskps %eax, %xmm1
+  0000000000000031: 0f 2b 04 24                                  movntps [%rsp], %xmm0
+  0000000000000035: 0f c6 c8 01                                  shufps %xmm1, %xmm0, 0x1
+  0000000000000039: 0f 14 c8                                     unpcklps %xmm1, %xmm0
+  000000000000003c: 0f ae f8                                     sfence
+  000000000000003f: 0f 18 1c 24                                  prefetcht2 [%rsp]
+  0000000000000043: 66 0f 58 c8                                  addpd %xmm1, %xmm0
+  0000000000000047: f2 0f 5f c8                                  maxsd %xmm1, %xmm0
+  000000000000004b: 66 0f c2 c8 00                               cmppd %xmm1, %xmm0, 0x0
+  0000000000000050: 66 0f 2f c8                                  comisd %xmm1, %xmm0
+  0000000000000054: f2 0f e6 c8                                  cvtpd2dq %xmm1, %xmm0
+  0000000000000058: 66 0f 28 c8                                  movapd %xmm1, %xmm0
+  000000000000005c: 66 0f 50 c0                                  movmskpd %eax, %xmm0
+  0000000000000060: 66 0f c6 c8 01                               shufpd %xmm1, %xmm0, 0x1
+  0000000000000065: 66 0f 15 c8                                  unpckhpd %xmm1, %xmm0
+  0000000000000069: f2 0f d6 c8                                  movdq2q %mmx1, %xmm0
+  000000000000006d: 66 0f 6f c8                                  movdqa %xmm1, %xmm0
+  0000000000000071: 66 0f d4 c8                                  paddq %xmm1, %xmm0
+  0000000000000075: 66 0f 73 d8 01                               psrldq %xmm0, 0x1
+  000000000000007a: 66 0f 70 c8 01                               pshufd %xmm1, %xmm0, 0x1
+  000000000000007f: 90                                           nop
+  0000000000000080: 66 0f 6c c8                                  punpcklqdq %xmm1, %xmm0
+  0000000000000084: 66 0f d0 c8                                  addsubpd %xmm1, %xmm0
+  0000000000000088: f2 0f 7c c8                                  haddps %xmm1, %xmm0
+  000000000000008c: f3 0f 16 c8                                  movshdup %xmm1, %xmm0
+  0000000000000090: 66 0f 38 08 c8                               psignb %xmm1, %xmm0
+  0000000000000095: 66 0f 38 00 c8                               pshufb %xmm1, %xmm0
+  000000000000009a: 66 0f 38 04 c8                               pmaddubsw %xmm1, %xmm0
+  000000000000009f: 66 0f 38 02 c8                               phaddd %xmm1, %xmm0
+  00000000000000a4: 66 0f 3a 0f c8 01                            palignr %xmm1, %xmm0, 0x1
+  00000000000000aa: 66 0f 3a 42 c8 01                            mpsadbw %xmm1, %xmm0, 0x1
+  00000000000000b0: 66 0f 38 41 c8                               phminposuw %xmm1, %xmm0
+  00000000000000b5: 66 0f 3a 41 c8 01                            dppd %xmm1, %xmm0, 0x1
+  00000000000000bb: 66 0f 38 15 c8                               blendvpd %xmm1, %xmm0, %xmm0
+  00000000000000c0: 66 0f 38 3e c8                               pmaxuw %xmm1, %xmm0
+  00000000000000c5: 66 0f 3a 21 c8 01                            insertps %xmm1, %xmm0, 0x1
+  00000000000000cb: 66 0f 38 24 c8                               pmovsxwq %xmm1, %xmm0
+  00000000000000d0: 66 0f 38 17 c8                               ptest %xmm1, %xmm0
+  00000000000000d5: 66 0f 38 2b c8                               packusdw %xmm1, %xmm0
+  00000000000000da: 66 0f 38 2a 04 24                            movntdqa %xmm0, [%rsp]
+  00000000000000e0: f3 48 0f b8 c0                               popcnt %rax, %rax
+  00000000000000e5: f3 48 0f bd c0                               lzcnt %rax, %rax
+  00000000000000ea: 66 0f 78 c0 02 01                            extrq %xmm0, 0x2, 0x1
+  00000000000000f0: f3 0f 2b 04 24                               movntss [%rsp], %xmm0
+  00000000000000f5: f2 48 0f 38 f0 c0                            crc32 %eax, %al
+  00000000000000fb: 90                                           nop
+  00000000000000fc: 90                                           nop
+  00000000000000fd: 90                                           nop
+  00000000000000fe: 90                                           nop
+  00000000000000ff: 90                                           nop
+  0000000000000100: 66 0f 3a 63 c8 01                            pcmpistri %xmm1, %xmm0, 0x1
+  0000000000000106: 66 0f 38 37 c8                               pcmpgtq %xmm1, %xmm0
+  000000000000010b: c4                                           invalid
+  000000000000010c: e3 f1                                        jrcxz 0xff
+  000000000000010e: 69 d8 20 90 90 90                            imul %ebx, %eax, 0x90909020
+  0000000000000114: 66 0f 38 dc                                  invalid
+  0000000000000118: c8 90 90 90                                  enter 0x9090, 0x90
+  000000000000011c: 66 0f 3a df                                  invalid
+  0000000000000120: c8 01 90 90                                  enter 0x9001, 0x90
+  0000000000000124: 66 0f 38 db                                  invalid
+  0000000000000128: c8 90 90 90                                  enter 0x9090, 0x90
+@vdis:
+  0000000000000000: 0f 58 c8                                     [P] dontcare %xmm0 (u)
+  0000000000000003: f3 0f 5c c8                                  [P] dontcare %xmm0 (u)
+  0000000000000007: 66 0f ee c8                                  [P] dontcare %xmm0 (u)
+  000000000000000b: 66 0f da c8                                  [P] dontcare %xmm0 (u)
+  000000000000000f: 66 0f c4 c0 01                               [P] dontcare %eax (u), 0x1 (u)
+  0000000000000014: 66 0f d7 c0                                  [P] dontcare %eax (s), %xmm0 (u)
+  0000000000000018: 66 0f e4 c8                                  [P] dontcare %xmm0 (u)
+  000000000000001c: 0f 2f c8                                     [P] dontcare %xmm0 (u)
+  000000000000001f: 90                                           [P] dontcare
+  0000000000000020: 0f 2d c1                                     [P] dontcare %xmm1 (u)
+  0000000000000023: 0f ae 14 24                                  [P] dontcare [%rsp] (u)
+  0000000000000027: 0f ae 1c 24                                  [P] dontcare [%rsp] (s)
+  000000000000002b: 0f 28 c8                                     [P] dontcare %xmm0 (u)
+  000000000000002e: 0f 50 c1                                     [P] dontcare %eax (s), %xmm1 (u)
+  0000000000000031: 0f 2b 04 24                                  [P] dontcare [%rsp] (s)
+  0000000000000035: 0f c6 c8 01                                  [P] dontcare %xmm0 (u), 0x1 (u)
+  0000000000000039: 0f 14 c8                                     [P] dontcare %xmm0 (u)
+  000000000000003c: 0f ae f8                                     [P] dontcare
+  000000000000003f: 0f 18 1c 24                                  [P] dontcare [%rsp]
+  0000000000000043: 66 0f 58 c8                                  [P] dontcare %xmm0 (u)
+  0000000000000047: f2 0f 5f c8                                  [P] dontcare %xmm0 (u)
+  000000000000004b: 66 0f c2 c8 00                               [P] dontcare %xmm0 (u), 0x0 (u)
+  0000000000000050: 66 0f 2f c8                                  [P] dontcare %xmm0 (u)
+  0000000000000054: f2 0f e6 c8                                  [P] dontcare %xmm0 (u)
+  0000000000000058: 66 0f 28 c8                                  [P] dontcare %xmm0 (u)
+  000000000000005c: 66 0f 50 c0                                  [P] dontcare %eax (s), %xmm0 (u)
+  0000000000000060: 66 0f c6 c8 01                               [P] dontcare %xmm0 (u), 0x1 (u)
+  0000000000000065: 66 0f 15 c8                                  [P] dontcare %xmm0 (u)
+  0000000000000069: f2 0f d6 c8                                  [P] dontcare %xmm0 (u)
+  000000000000006d: 66 0f 6f c8                                  [P] dontcare %xmm0 (u)
+  0000000000000071: 66 0f d4 c8                                  [P] dontcare %xmm0 (u)
+  0000000000000075: 66 0f 73 d8 01                               [P] dontcare %xmm0 (su), 0x1 (u)
+  000000000000007a: 66 0f 70 c8 01                               [P] dontcare %xmm0 (u), 0x1 (u)
+  000000000000007f: 90                                           [P] dontcare
+  0000000000000080: 66 0f 6c c8                                  [P] dontcare %xmm0 (u)
+  0000000000000084: 66 0f d0 c8                                  [P] dontcare %xmm0 (u)
+  0000000000000088: f2 0f 7c c8                                  [P] dontcare %xmm0 (u)
+  000000000000008c: f3 0f 16 c8                                  [P] dontcare %xmm0 (u)
+  0000000000000090: 66 0f 38 08 c8                               [P] dontcare %xmm0 (u)
+  0000000000000095: 66 0f 38 00 c8                               [P] dontcare %xmm0 (u)
+  000000000000009a: 66 0f 38 04 c8                               [P] dontcare %xmm0 (u)
+  000000000000009f: 66 0f 38 02 c8                               [P] dontcare %xmm0 (u)
+  00000000000000a4: 66 0f 3a 0f c8 01                            [P] dontcare %xmm0 (u), 0x1 (u)
+  00000000000000aa: 66 0f 3a 42 c8 01                            [P] dontcare %xmm0 (u), 0x1 (u)
+  00000000000000b0: 66 0f 38 41 c8                               [P] dontcare %xmm0 (u)
+  00000000000000b5: 66 0f 3a 41 c8 01                            [P] dontcare %xmm0 (u), 0x1 (u)
+  00000000000000bb: 66 0f 38 15 c8                               [P] dontcare %xmm0 (u)
+  00000000000000c0: 66 0f 38 3e c8                               [P] dontcare %xmm0 (u)
+  00000000000000c5: 66 0f 3a 21 c8 01                            [P] dontcare %xmm0 (u), 0x1 (u)
+  00000000000000cb: 66 0f 38 24 c8                               [P] dontcare %xmm0 (u)
+  00000000000000d0: 66 0f 38 17 c8                               [P] dontcare %xmm0 (u)
+  00000000000000d5: 66 0f 38 2b c8                               [P] dontcare %xmm0 (u)
+  00000000000000da: 66 0f 38 2a 04 24                            [P] dontcare [%rsp] (u)
+  00000000000000e0: f3 48 0f b8 c0                               [P] dontcare %rax (s), %rax (u)
+  00000000000000e5: f3 48 0f bd c0                               [P] dontcare %rax (s), %rax (u)
+  00000000000000ea: 66 0f 78 c0 02 01                            [P] dontcare(illegal)
+  00000000000000f0: f3 0f 2b 04 24                               [P] dontcare [%rsp] (s)
+  00000000000000f5: f2 48 0f 38 f0 c0                            [P] dontcare %eax (su), %al (u)
+  00000000000000fb: 90                                           [P] dontcare
+  00000000000000fc: 90                                           [P] dontcare
+  00000000000000fd: 90                                           [P] dontcare
+  00000000000000fe: 90                                           [P] dontcare
+  00000000000000ff: 90                                           [P] dontcare
+  0000000000000100: 66 0f 3a 63 c8 01                            [P] dontcare %ecx (s), %xmm0 (u), 0x1 (u)
+  0000000000000106: 66 0f 38 37 c8                               [P] dontcare %xmm0 (u)
+  000000000000010b: c4                                           invalid
+  000000000000010c: e3 f1                                        [P] dontcarecondjump %rip (s), %rcx (u), 0xff (u)
+  000000000000010e: 69 d8 20 90 90 90                            [P] dontcare %ebx (sz), %eax (u), 0x90909020 (u)
+  0000000000000114: 66 0f 38 dc                                  invalid
+  0000000000000118: c8 90 90 90                                  [P] dontcare(illegal)
+  000000000000011c: 66 0f 3a df                                  invalid
+  0000000000000120: c8 01 90 90                                  [P] dontcare(illegal)
+  0000000000000124: 66 0f 38 db                                  invalid
+  0000000000000128: c8 90 90 90                                  [P] dontcare(illegal)

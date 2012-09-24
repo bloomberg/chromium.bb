@@ -1,5 +1,0 @@
-# Test movsbw instruction.
-# movsbw %al,%ax
-66 0f be c0
-# movsbw (%rsp),%ax
-66 0f be 04 24

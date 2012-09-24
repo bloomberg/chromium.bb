@@ -1,3 +1,0 @@
-# This is an example of a code segment that begins at address 0.
-b8 88 77 66 55 41 b8 44 33 22 11
-66 b8 88 77 a0 88 77 66 55 44 33 22 11

@@ -1,9 +1,0 @@
-VALIDATOR: 0000000000000000: 0f 73 ff                                     invalid
-VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-VALIDATOR: 0000000000000000: 0f 73 ff                                     invalid
-VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
-VALIDATOR: 0000000000000003: 00 66 0f                                     add [%rsi+0xf], %ah
-VALIDATOR: ERROR: Invalid base register in memory offset
-VALIDATOR: Checking jump targets: 0 to b
-VALIDATOR: Checking that basic blocks are aligned
-*** <input> IS UNSAFE ***

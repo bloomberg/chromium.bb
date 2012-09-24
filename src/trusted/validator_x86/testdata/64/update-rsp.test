@@ -1,0 +1,27 @@
+@hex:
+  # Sample of updating rps
+  #   sub %esp, 0x8
+  #   add %rsp, %r15
+  83 ec 08
+  4c 01 fc
+@val:
+  VALIDATOR: Checking jump targets: 0 to 6
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@rval:
+  VALIDATOR: Checking jump targets: 0 to 6
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@rvald:
+  VALIDATOR: Checking block alignment and jump targets: 0 to 6
+  *** <input> is safe ***
+@vd-rval:
+  VALIDATOR: Checking jump targets: 0 to 6
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@dis:
+  0000000000000000: 83 ec 08                                     sub %esp, 0x8
+  0000000000000003: 4c 01 fc                                     add %rsp, %r15
+@vdis:
+  0000000000000000: 83 ec 08                                     sub %esp, 0x8
+  0000000000000003: 4c 01 fc                                     add %rsp, %r15

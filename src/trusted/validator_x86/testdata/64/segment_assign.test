@@ -1,0 +1,40 @@
+@hex:
+  # Example of assigning a value to a segment register, which should be illegal.
+  8e 00
+@val:
+  VALIDATOR: 0000000000000000: 8e 00                                        mov %es, [%rax]
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000000: 8e 00                                        mov %es, [%rax]
+  VALIDATOR: ERROR: Illegal assignment to segment register RegES
+  VALIDATOR: Checking jump targets: 0 to 2
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rval:
+  VALIDATOR: 0000000000000000: 8e 00                                        mov %es, [%rax]
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000000: 8e 00                                        mov %es, [%rax]
+  VALIDATOR: ERROR: Illegal assignment to segment register RegES
+  VALIDATOR: 0000000000000000: 8e 00                                        mov %es, [%rax]
+  VALIDATOR: ERROR: Invalid base register in memory offset
+  VALIDATOR: Checking jump targets: 0 to 2
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rvald:
+  VALIDATOR: 0000000000000000: 8e 00                                        mov %es, [%rax]
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000000: 8e 00                                        mov %es, [%rax]
+  VALIDATOR: ERROR: Illegal assignment to segment register RegES
+  VALIDATOR: 0000000000000000: 8e 00                                        mov %es, [%rax]
+  VALIDATOR: ERROR: Invalid base register in memory offset
+  VALIDATOR: Checking block alignment and jump targets: 0 to 2
+  *** <input> IS UNSAFE ***
+@vd-rval:
+  VALIDATOR: 0000000000000000: 8e 00                                        [P] dontcare(illegal)
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: Checking jump targets: 0 to 2
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 8e 00                                        mov %es, [%rax]
+@vdis:
+  0000000000000000: 8e 00                                        [P] dontcare(illegal)
