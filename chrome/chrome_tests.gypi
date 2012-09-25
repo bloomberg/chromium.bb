@@ -1089,6 +1089,7 @@
         'browser/chromeos/bluetooth/bluetooth_service_record_unittest.cc',
         'browser/chromeos/bluetooth/bluetooth_utils_unittest.cc',
         'browser/chromeos/bluetooth/bluetooth_adapter_unittest.cc',
+        'browser/chromeos/bluetooth/bluetooth_adapter_devices_unittest.cc',
         'browser/chromeos/bluetooth/test/mock_bluetooth_adapter.cc',
         'browser/chromeos/bluetooth/test/mock_bluetooth_adapter.h',
         'browser/chromeos/contacts/contact_database_unittest.cc',
