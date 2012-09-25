@@ -731,11 +731,26 @@ SlideMode.prototype.onKeyDown = function(event) {
   var keyID = util.getKeyModifiers(event) + event.keyIdentifier;
 
   if (this.isSlideshowOn_()) {
-    if (keyID == 'U+001B')  // Escape exits the slideshow.
-      this.toggleSlideshow(0 /* interval ignored */, event);
-    else  // Any other key pauses/resumes the slideshow.
-      this.toggleSlideshowPause_();
-    return true;
+    switch (keyID) {
+      case 'U+001B':  // Escape exits the slideshow.
+        this.toggleSlideshow(0 /* interval ignored */, event);
+        break;
+
+      case 'Up':
+      case 'Down':
+      case 'Left':
+      case 'Right':
+        if (this.slideShowPaused_) {
+          this.selectNext(keyID == 'Up' || keyID == 'Left' ? -1 : 1);
+        } else {
+          this.toggleSlideshowPause_();
+        }
+        break;
+
+      default:  // Any other key pauses/resumes the slideshow.
+        this.toggleSlideshowPause_();
+    }
+    return true;  // Consume all keystrokes in the slideshow mode.
   }
 
   if (this.isEditing() && this.editor_.onKeyDown(event))
@@ -929,6 +944,11 @@ SlideMode.SLIDESHOW_INTERVAL = 5000;
 SlideMode.SLIDESHOW_INTERVAL_FIRST = 1000;
 
 /**
+ * Empirically determined duration of the fullscreen toggle animation.
+ */
+SlideMode.FULLSCREEN_TOGGLE_DELAY = 500;
+
+/**
  * @return {boolean} True if the slideshow is on.
  * @private
  */
@@ -972,23 +992,39 @@ SlideMode.prototype.toggleSlideshow = function(opt_interval, opt_event) {
       this.slideShowButton_, 'pressed', this.isSlideshowOn_());
 
   if (this.isSlideshowOn_()) {
-    this.scheduleNextSlide_(opt_interval);
-    Gallery.getFileBrowserPrivate().isFullscreen(function(fullscreen) {
-      this.fullscreenBeforeSlideshow_ = fullscreen;
-      if (!fullscreen)
-        Gallery.toggleFullscreen();
+    this.fullscreenBeforeSlideshow_ = false;
+    chrome.windows.getCurrent(function(info) {
+      if (info.state == 'maximized') {
+        this.resumeSlideshow_(opt_interval);
+        return;  // Do not go fullscreen if already maximized.
+      }
+      // Wait until the zoom animation from the mosaic mode is done.
+      setTimeout(function() {
+        Gallery.getFileBrowserPrivate().isFullscreen(function(fullscreen) {
+          this.fullscreenBeforeSlideshow_ = fullscreen;
+          if (!fullscreen) {
+            Gallery.toggleFullscreen();
+            opt_interval = (opt_interval || SlideMode.SLIDESHOW_INTERVAL) +
+                SlideMode.FULLSCREEN_TOGGLE_DELAY;
+          }
+          this.resumeSlideshow_(opt_interval);
+        }.bind(this));
+      }.bind(this), ImageView.ZOOM_ANIMATION_DURATION);
     }.bind(this));
   } else {
     this.pauseSlideshow_();
     Gallery.getFileBrowserPrivate().isFullscreen(function(fullscreen) {
       // Do not restore fullscreen if we exited fullscreen while in slideshow.
-      if (!this.fullscreenBeforeSlideshow_ && fullscreen)
+      var toggleModeDelay = 0;
+      if (!this.fullscreenBeforeSlideshow_ && fullscreen) {
         Gallery.toggleFullscreen();
+        toggleModeDelay = SlideMode.FULLSCREEN_TOGGLE_DELAY;
+      }
+      if (this.leaveAfterSlideshow_) {
+        this.leaveAfterSlideshow_ = false;
+        setTimeout(this.toggleMode_.bind(this), toggleModeDelay);
+      }
     }.bind(this));
-    if (this.leaveAfterSlideshow_) {
-      this.leaveAfterSlideshow_ = false;
-      this.toggleMode_();
-    }
   }
 };
 
@@ -997,11 +1033,10 @@ SlideMode.prototype.toggleSlideshow = function(opt_interval, opt_event) {
  * @private
  */
 SlideMode.prototype.toggleSlideshowPause_ = function() {
-  // We cannot rely this.slideShowTimeout_ value as it can be null
-  // even when not paused.
-  if (this.slideShowPaused_)
-    this.scheduleNextSlide_(SlideMode.SLIDESHOW_INTERVAL_FIRST);
-  else {
+  if (this.slideShowPaused_) {
+    this.resumeSlideshow_(SlideMode.SLIDESHOW_INTERVAL_FIRST);
+    this.prompt_.hide();
+  } else {
     this.pauseSlideshow_();
     this.prompt_.show('slideshow_paused', 3000);
   }
@@ -1012,7 +1047,9 @@ SlideMode.prototype.toggleSlideshowPause_ = function() {
  * @private
  */
 SlideMode.prototype.scheduleNextSlide_ = function(opt_interval) {
-  this.slideShowPaused_ = false;
+  if (this.slideShowPaused_)
+    return;
+
   if (this.slideShowTimeout_)
     clearTimeout(this.slideShowTimeout_);
 
@@ -1021,6 +1058,16 @@ SlideMode.prototype.scheduleNextSlide_ = function(opt_interval) {
         this.selectNext(1);
       }.bind(this),
       opt_interval || SlideMode.SLIDESHOW_INTERVAL);
+};
+
+/**
+ * Resume the slideshow.
+ * @param {number} opt_interval Slideshow interval in ms.
+ * @private
+ */
+SlideMode.prototype.resumeSlideshow_ = function(opt_interval) {
+  this.slideShowPaused_ = false;
+  this.scheduleNextSlide_(opt_interval);
 };
 
 /**
