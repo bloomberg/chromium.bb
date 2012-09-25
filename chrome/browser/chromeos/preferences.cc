@@ -37,17 +37,6 @@
 #include "unicode/timezone.h"
 
 namespace chromeos {
-namespace {
-
-// TODO(achuith): Use a cmd-line flag + use flags for this instead.
-bool IsLumpy() {
-  std::string board;
-  system::StatisticsProvider::GetInstance()->GetMachineStatistic(
-      "CHROMEOS_RELEASE_BOARD", &board);
-  return StartsWithASCII(board, "lumpy", false);
-}
-
-}  // namespace
 
 static const char kFallbackInputMethodLocale[] = "en-US";
 
@@ -77,9 +66,8 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
     hardware_keyboard_id = "xkb:us::eng";  // only for testing.
   }
 
-  const bool enable_tap_to_click_default = IsLumpy();
   prefs->RegisterBooleanPref(prefs::kTapToClickEnabled,
-                             enable_tap_to_click_default,
+                             true,
                              PrefService::SYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kEnableTouchpadThreeFingerClick,
                              false,
