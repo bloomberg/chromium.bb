@@ -366,6 +366,8 @@ std::string MakeUserAgentForSyncApi() {
   user_agent += "WIN ";
 #elif defined(OS_CHROMEOS)
   user_agent += "CROS ";
+#elif defined(OS_ANDROID)
+  user_agent += "ANDROID ";
 #elif defined(OS_LINUX)
   user_agent += "LINUX ";
 #elif defined(OS_FREEBSD)
