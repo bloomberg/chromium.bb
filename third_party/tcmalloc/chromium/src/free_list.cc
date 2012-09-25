@@ -82,10 +82,11 @@ void EnsureNonLoop(void* node, void* next) {
 
 inline void* MaskPtr(void* p) {
   // Maximize ASLR entropy and guarantee the result is an invalid address.
-  const uintptr_t q = ~(reinterpret_cast<intptr_t>(TCMalloc_SystemAlloc) >> 13);
+  const uintptr_t mask = ~(reinterpret_cast<uintptr_t>(TCMalloc_SystemAlloc)
+                           >> 13) | 1;
   // Do not mask NULL pointers, otherwise we could leak address state.
   if (p)
-    return reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(p) ^ q);
+    return reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(p) ^ mask);
   return p;
 }
 
