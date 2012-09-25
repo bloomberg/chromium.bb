@@ -176,9 +176,14 @@ static const struct Executables {
   { "wsh", AllowOnUserGesture },
   { "xbap", Dangerous },
 #elif defined(OS_MACOSX)
-  // TODO(thakis): Figure out what makes sense here -- crbug.com/19096
-  { "app", AllowOnUserGesture },
-  { "dmg", AllowOnUserGesture },
+  { "bash", AllowOnUserGesture },
+  { "command", AllowOnUserGesture },
+  { "csh", AllowOnUserGesture },
+  { "ksh", AllowOnUserGesture },
+  { "pkg", AllowOnUserGesture },
+  { "sh", AllowOnUserGesture },
+  { "shar", AllowOnUserGesture },
+  { "tcsh", AllowOnUserGesture },
 #elif defined(OS_POSIX)
   // TODO(estade): lengthen this list.
   { "bash", AllowOnUserGesture },
@@ -188,6 +193,7 @@ static const struct Executables {
   { "ksh", AllowOnUserGesture },
   { "rpm", AllowOnUserGesture },
   { "sh", AllowOnUserGesture },
+  { "shar", AllowOnUserGesture },
   { "tcsh", AllowOnUserGesture },
 #endif
 };
