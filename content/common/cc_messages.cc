@@ -5,6 +5,9 @@
 #include "content/common/cc_messages.h"
 
 #include "content/public/common/common_param_traits.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebData.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebFilterOperations.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebTransformationMatrix.h"
 
 namespace IPC {
 
@@ -32,6 +35,176 @@ bool ParamTraits<WebKit::WebData>::Read(
 void ParamTraits<WebKit::WebData>::Log(const param_type& p, std::string* l) {
   l->append("(WebData of size ");
   LogParam(p.size(), l);
+  l->append(")");
+}
+
+void ParamTraits<WebKit::WebFilterOperation>::Write(
+    Message* m, const param_type& p) {
+  WriteParam(m, p.type());
+  switch (p.type()) {
+    case WebKit::WebFilterOperation::FilterTypeGrayscale:
+    case WebKit::WebFilterOperation::FilterTypeSepia:
+    case WebKit::WebFilterOperation::FilterTypeSaturate:
+    case WebKit::WebFilterOperation::FilterTypeHueRotate:
+    case WebKit::WebFilterOperation::FilterTypeInvert:
+    case WebKit::WebFilterOperation::FilterTypeBrightness:
+    case WebKit::WebFilterOperation::FilterTypeContrast:
+    case WebKit::WebFilterOperation::FilterTypeOpacity:
+    case WebKit::WebFilterOperation::FilterTypeBlur:
+      WriteParam(m, p.amount());
+      break;
+    case WebKit::WebFilterOperation::FilterTypeDropShadow:
+      WriteParam(m, p.dropShadowOffset());
+      WriteParam(m, p.amount());
+      WriteParam(m, p.dropShadowColor());
+      break;
+    case WebKit::WebFilterOperation::FilterTypeColorMatrix:
+      for (int i = 0; i < 20; ++i)
+        WriteParam(m, p.matrix()[i]);
+      break;
+    case WebKit::WebFilterOperation::FilterTypeZoom:
+      WriteParam(m, p.zoomRect());
+      WriteParam(m, p.amount());
+      break;
+  }
+}
+
+bool ParamTraits<WebKit::WebFilterOperation>::Read(
+    const Message* m, PickleIterator* iter, param_type* r) {
+  WebKit::WebFilterOperation::FilterType type;
+  float amount;
+  WebKit::WebPoint dropShadowOffset;
+  WebKit::WebColor dropShadowColor;
+  SkScalar matrix[20];
+  WebKit::WebRect zoomRect;
+
+  if (!ReadParam(m, iter, &type))
+    return false;
+  r->setType(type);
+
+  bool success = false;
+  switch (type) {
+    case WebKit::WebFilterOperation::FilterTypeGrayscale:
+    case WebKit::WebFilterOperation::FilterTypeSepia:
+    case WebKit::WebFilterOperation::FilterTypeSaturate:
+    case WebKit::WebFilterOperation::FilterTypeHueRotate:
+    case WebKit::WebFilterOperation::FilterTypeInvert:
+    case WebKit::WebFilterOperation::FilterTypeBrightness:
+    case WebKit::WebFilterOperation::FilterTypeContrast:
+    case WebKit::WebFilterOperation::FilterTypeOpacity:
+    case WebKit::WebFilterOperation::FilterTypeBlur:
+      if (ReadParam(m, iter, &amount)) {
+        r->setAmount(amount);
+        success = true;
+      }
+      break;
+    case WebKit::WebFilterOperation::FilterTypeDropShadow:
+      if (ReadParam(m, iter, &dropShadowOffset) &&
+          ReadParam(m, iter, &amount) &&
+          ReadParam(m, iter, &dropShadowColor)) {
+        r->setDropShadowOffset(dropShadowOffset);
+        r->setAmount(amount);
+        r->setDropShadowColor(dropShadowColor);
+        success = true;
+      }
+      break;
+    case WebKit::WebFilterOperation::FilterTypeColorMatrix: {
+      int i;
+      for (i = 0; i < 20; ++i) {
+        if (!ReadParam(m, iter, &matrix[i]))
+          break;
+      }
+      if (i == 20) {
+        r->setMatrix(matrix);
+        success = true;
+      }
+      break;
+    }
+    case WebKit::WebFilterOperation::FilterTypeZoom:
+      if (ReadParam(m, iter, &zoomRect) &&
+          ReadParam(m, iter, &amount)) {
+        r->setZoomRect(zoomRect);
+        r->setAmount(amount);
+        success = true;
+      }
+      break;
+  }
+  return success;
+}
+
+void ParamTraits<WebKit::WebFilterOperation>::Log(
+    const param_type& p, std::string* l) {
+  l->append("(");
+  LogParam(static_cast<unsigned>(p.type()), l);
+  l->append(", ");
+
+  switch (p.type()) {
+    case WebKit::WebFilterOperation::FilterTypeGrayscale:
+    case WebKit::WebFilterOperation::FilterTypeSepia:
+    case WebKit::WebFilterOperation::FilterTypeSaturate:
+    case WebKit::WebFilterOperation::FilterTypeHueRotate:
+    case WebKit::WebFilterOperation::FilterTypeInvert:
+    case WebKit::WebFilterOperation::FilterTypeBrightness:
+    case WebKit::WebFilterOperation::FilterTypeContrast:
+    case WebKit::WebFilterOperation::FilterTypeOpacity:
+    case WebKit::WebFilterOperation::FilterTypeBlur:
+      LogParam(p.amount(), l);
+      break;
+    case WebKit::WebFilterOperation::FilterTypeDropShadow:
+      LogParam(p.dropShadowOffset(), l);
+      l->append(", ");
+      LogParam(p.amount(), l);
+      l->append(", ");
+      LogParam(p.dropShadowColor(), l);
+      break;
+    case WebKit::WebFilterOperation::FilterTypeColorMatrix:
+      for (int i = 0; i < 20; ++i) {
+        if (i)
+          l->append(", ");
+        LogParam(p.matrix()[i], l);
+      }
+      break;
+    case WebKit::WebFilterOperation::FilterTypeZoom:
+      LogParam(p.zoomRect(), l);
+      l->append(", ");
+      LogParam(p.amount(), l);
+      break;
+  }
+  l->append(")");
+}
+
+void ParamTraits<WebKit::WebFilterOperations>::Write(
+    Message* m, const param_type& p) {
+  WriteParam(m, p.size());
+  for (std::size_t i = 0; i < p.size(); ++i) {
+    WriteParam(m, p.at(i));
+  }
+}
+
+bool ParamTraits<WebKit::WebFilterOperations>::Read(
+    const Message* m, PickleIterator* iter, param_type* r) {
+  size_t count;
+  if (!ReadParam(m, iter, &count))
+    return false;
+
+  for (std::size_t i = 0; i < count; ++i) {
+    WebKit::WebFilterOperation op =
+        WebKit::WebFilterOperation::createEmptyFilter();
+    if (!ReadParam(m, iter, &op))
+      return false;
+    r->append(op);
+  }
+  return true;
+}
+
+void ParamTraits<WebKit::WebFilterOperations>::Log(
+    const param_type& p, std::string* l) {
+  l->append("(");
+  for (std::size_t i = 0; i < p.size(); ++i) {
+    if (i)
+      l->append(", ");
+    LogParam(p.at(i), l);
+  }
   l->append(")");
 }
 
