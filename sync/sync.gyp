@@ -826,46 +826,49 @@
         }],
       ],
     },
-
-    # A tool to listen to sync notifications and print them out.
-    {
-      'target_name': 'sync_listen_notifications',
-      'type': 'executable',
-      'dependencies': [
-        '../base/base.gyp:base',
-        '../jingle/jingle.gyp:notifier',
-        '../net/net.gyp:net',
-        '../net/net.gyp:net_test_support',
-        'sync',
-        'sync_notifier',
-      ],
-      'sources': [
-        'tools/sync_listen_notifications.cc',
-      ],
-    },
-
-    # A standalone command-line sync client.
-    {
-      'target_name': 'sync_client',
-      'type': 'executable',
-      'defines': [
-        'SYNC_TEST',
-      ],
-      'dependencies': [
-        '../base/base.gyp:base',
-        '../jingle/jingle.gyp:notifier',
-        '../net/net.gyp:net',
-        '../net/net.gyp:net_test_support',
-        'sync',
-        'sync_notifier',
-        'syncapi_core',
-      ],
-      'sources': [
-        'tools/sync_client.cc',
-      ],
-    },
   ],
   'conditions': [
+    ['OS != "ios"', {
+      'targets': [
+        # A tool to listen to sync notifications and print them out.
+        {
+          'target_name': 'sync_listen_notifications',
+          'type': 'executable',
+          'dependencies': [
+            '../base/base.gyp:base',
+            '../jingle/jingle.gyp:notifier',
+            '../net/net.gyp:net',
+            '../net/net.gyp:net_test_support',
+            'sync',
+            'sync_notifier',
+          ],
+          'sources': [
+            'tools/sync_listen_notifications.cc',
+          ],
+        },
+
+        # A standalone command-line sync client.
+        {
+          'target_name': 'sync_client',
+          'type': 'executable',
+          'defines': [
+            'SYNC_TEST',
+          ],
+          'dependencies': [
+            '../base/base.gyp:base',
+            '../jingle/jingle.gyp:notifier',
+            '../net/net.gyp:net',
+            '../net/net.gyp:net_test_support',
+            'sync',
+            'sync_notifier',
+            'syncapi_core',
+          ],
+          'sources': [
+            'tools/sync_client.cc',
+          ],
+        },
+      ],
+    }],
     # Special target to wrap a gtest_target_type==shared_library
     # sync_unit_tests into an android apk for execution.
     ['OS == "android" and gtest_target_type == "shared_library"', {
