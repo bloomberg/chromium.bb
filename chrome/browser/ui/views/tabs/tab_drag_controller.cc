@@ -1922,8 +1922,6 @@ Browser* TabDragController::CreateBrowserForDrag(
     const gfx::Point& point_in_screen,
     gfx::Point* drag_offset,
     std::vector<gfx::Rect>* drag_bounds) {
-  Browser* browser = new Browser(
-      Browser::CreateParams(drag_data_[0].contents->profile()));
   gfx::Point center(0, source->height() / 2);
   views::View::ConvertPointToWidget(source, &center);
   gfx::Rect new_bounds(source->GetWidget()->GetWindowBoundsInScreen());
@@ -1951,8 +1949,10 @@ Browser* TabDragController::CreateBrowserForDrag(
 
   *drag_offset = point_in_screen.Subtract(new_bounds.origin());
 
+  Browser::CreateParams create_params(drag_data_[0].contents->profile());
+  create_params.initial_bounds = new_bounds;
+  Browser* browser = new Browser(create_params);
   SetTrackedByWorkspace(browser->window()->GetNativeWindow(), false);
-  browser->window()->SetBounds(new_bounds);
   return browser;
 }
 
