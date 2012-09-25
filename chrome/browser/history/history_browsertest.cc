@@ -476,7 +476,7 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, SubmitFormAddsTargetPage) {
 // Verify history shortcut opens only one history tab per window.  Also, make
 // sure that existing history tab is activated.
 IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, OneHistoryTabPerWindow) {
-  GURL history_url("chrome://chrome/history/");
+  GURL history_url(chrome::kChromeUIHistoryURL);
 
   // Even after navigate completes, the currently-active tab title is
   // 'Loading...' for a brief time while the history page loads.

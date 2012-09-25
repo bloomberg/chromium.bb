@@ -923,11 +923,21 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
     update_virtual_url = new_entry->update_virtual_url_with_url();
   } else {
     new_entry = new NavigationEntryImpl;
+
+    // Find out whether the new entry needs to update its virtual URL on URL
+    // change and set up the entry accordingly. This is needed to correctly
+    // update the virtual URL when replaceState is called after a pushState.
+    GURL url = params.url;
+    bool needs_update = false;
+    BrowserURLHandlerImpl::GetInstance()->RewriteURLIfNecessary(
+        &url, browser_context_, &needs_update);
+    new_entry->set_update_virtual_url_with_url(needs_update);
+
     // When navigating to a new page, give the browser URL handler a chance to
     // update the virtual URL based on the new URL. For example, this is needed
     // to show chrome://bookmarks/#1 when the bookmarks webui extension changes
     // the URL.
-    update_virtual_url = true;
+    update_virtual_url = needs_update;
   }
 
   new_entry->SetURL(params.url);

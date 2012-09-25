@@ -170,8 +170,63 @@ const char* kPredefinedAllowedSocketOrigins[] = {
   "jdfhpkjeckflbbleddjlpimecpbjdeep"   // see crbug.com/142514
 };
 
+// Returns a copy of the given url with its host set to given host and path set
+// to given path. Other parts of the url will be the same.
+GURL ReplaceURLHostAndPath(const GURL& url,
+                           const std::string& host,
+                           const std::string& path) {
+  url_canon::Replacements<char> replacements;
+  replacements.SetHost(host.c_str(),
+                       url_parse::Component(0, host.length()));
+  replacements.SetPath(path.c_str(),
+                       url_parse::Component(0, path.length()));
+  return url.ReplaceComponents(replacements);
+}
+
+// Maps "foo://bar/baz/" to "foo://chrome/bar/baz/".
+GURL AddUberHost(const GURL& url) {
+  const std::string uber_host = chrome::kChromeUIUberHost;
+  const std::string new_path = url.host() + url.path();
+
+  return ReplaceURLHostAndPath(url, uber_host, new_path);
+}
+
+// If url->host() is "chrome", changes the url from "foo://chrome/bar/" to
+// "foo://bar/" and returns true. Otherwise returns false.
+bool RemoveUberHost(GURL* url) {
+  if (url->host() != chrome::kChromeUIUberHost)
+    return false;
+
+  const std::string old_path = url->path();
+
+  const std::string::size_type separator = old_path.find('/', 1);
+  std::string new_host;
+  std::string new_path;
+  if (separator == std::string::npos) {
+    new_host = old_path.empty() ? old_path : old_path.substr(1);
+  } else {
+    new_host = old_path.substr(1, separator - 1);
+    new_path = old_path.substr(separator);
+  }
+
+  *url = ReplaceURLHostAndPath(*url, new_host, new_path);
+
+  return true;
+}
+
 // Handles rewriting Web UI URLs.
 bool HandleWebUI(GURL* url, content::BrowserContext* browser_context) {
+  // Do not handle special URLs such as "about:foo"
+  if (!url->host().empty()) {
+    const GURL chrome_url = AddUberHost(*url);
+
+    // Handle valid "chrome://chrome/foo" URLs so the reverse handler will
+    // be called.
+    if (ChromeWebUIControllerFactory::GetInstance()->UseWebUIForURL(
+            browser_context, chrome_url))
+      return true;
+  }
+
   if (!ChromeWebUIControllerFactory::GetInstance()->UseWebUIForURL(
           browser_context, *url))
     return false;
@@ -200,6 +255,15 @@ bool HandleWebUI(GURL* url, content::BrowserContext* browser_context) {
   }
 
   return true;
+}
+
+// Reverse URL handler for Web UI. Maps "chrome://chrome/foo/" to
+// "chrome://foo/".
+bool HandleWebUIReverse(GURL* url, content::BrowserContext* browser_context) {
+  if (!url->is_valid() || !url->SchemeIs(chrome::kChromeUIScheme))
+    return false;
+
+  return RemoveUberHost(url);
 }
 
 // Used by the GetPrivilegeRequiredByUrl() and GetProcessPrivilege() functions
@@ -1576,8 +1640,7 @@ void ChromeContentBrowserClient::BrowserURLHandlerCreated(
   handler->AddHandlerPair(&WillHandleBrowserAboutURL,
                           BrowserURLHandler::null_handler());
   // chrome: & friends.
-  handler->AddHandlerPair(&HandleWebUI,
-                          BrowserURLHandler::null_handler());
+  handler->AddHandlerPair(&HandleWebUI, &HandleWebUIReverse);
 }
 
 void ChromeContentBrowserClient::ClearCache(RenderViewHost* rvh) {
