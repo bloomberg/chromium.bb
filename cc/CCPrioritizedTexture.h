@@ -93,7 +93,7 @@ private:
 
         CCPrioritizedTexture* owner() { return m_owner; }
         bool hadOwnerAtLastPriorityUpdate() const { return m_ownerExistedAtLastPriorityUpdate; }
-        bool requestPriorityAtLastPriorityUpdate() const { return m_priorityAtLastPriorityUpdate; }
+        int requestPriorityAtLastPriorityUpdate() const { return m_priorityAtLastPriorityUpdate; }
         bool wasAbovePriorityCutoffAtLastPriorityUpdate() const { return m_wasAbovePriorityCutoffAtLastPriorityUpdate; }
 
         void deleteResource(CCResourceProvider*);
