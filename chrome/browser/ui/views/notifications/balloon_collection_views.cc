@@ -107,7 +107,7 @@ void BalloonCollectionImpl::SetPositionPreference(
   PositionBalloons(true);
 }
 
-#if !defined(USE_ASH)
+#if !defined(OS_CHROMEOS)
 // static
 BalloonCollection* BalloonCollection::Create() {
   return new BalloonCollectionImpl();

@@ -136,7 +136,9 @@ const extensions::Extension* BalloonCollectionImplAsh::GetBalloonExtension(
       ExtensionURLInfo(origin));
 }
 
+#if defined(OS_CHROMEOS)
 // static
 BalloonCollection* BalloonCollection::Create() {
   return new BalloonCollectionImplAsh();
 }
+#endif
