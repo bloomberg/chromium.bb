@@ -27,7 +27,7 @@ def AssertEquals(x, y):
 
 
 def DecodeHex(data):
-  assert len(data) % 2 == 0
+  assert len(data) % 2 == 0, data
   return ''.join([chr(int(data[index * 2 : (index + 1) * 2], 16))
                   for index in xrange(len(data) / 2)])
 
@@ -172,7 +172,7 @@ def GetSymbols():
   proc = subprocess.Popen([NM_TOOL, '--format=posix', nexe_filename],
                           stdout=subprocess.PIPE)
   for line in proc.stdout:
-    match = re.match('(\S+) [TtWwB] ([0-9a-fA-F]+)', line)
+    match = re.match('(\S+) [TtWwBD] ([0-9a-fA-F]+)', line)
     if match is not None:
       name = match.group(1)
       addr = int(match.group(2), 16)
@@ -310,25 +310,6 @@ class DebugStubTest(unittest.TestCase):
       regs = DecodeRegs(connection.RspRequest('g'))
       self.assertEquals(regs[reg_name], old_value)
 
-  # Test that we can read from memory by reading from the stack.
-  # This check corresponds to the last instruction of debugger_test.c
-  def CheckReadMemory(self, connection):
-    registers = DecodeRegs(connection.RspRequest('g'))
-    stack_addr = registers[SP_REG[ARCH]]
-    stack_val = ReadUint32(connection, stack_addr)
-    self.assertEquals(stack_val, 0x4bb00ccc)
-
-    # On x86-64, for reading/writing memory, the debug stub accepts
-    # untrusted addresses with or without the %r15 sandbox base
-    # address added, because GDB uses both.
-    # TODO(eaeltsin): Fix GDB to not use addresses with %r15 added,
-    # and only test this memory access with stack_addr masked as
-    # below.
-    if ARCH == 'x86-64':
-      stack_addr &= 0xffffffff
-      stack_val = ReadUint32(connection, stack_addr)
-      self.assertEquals(stack_val, 0x4bb00ccc)
-
   # Test that reading from an unreadable address gives a sensible error.
   def CheckReadMemoryAtInvalidAddr(self, connection):
     mem_addr = 0
@@ -351,8 +332,6 @@ class DebugStubTest(unittest.TestCase):
       self.CheckReadRegisters(connection)
       self.CheckWriteRegisters(connection)
       self.CheckReadOnlyRegisters(connection)
-      self.CheckReadMemory(connection)
-      self.CheckReadMemoryAtInvalidAddr(connection)
 
   def test_breakpoint(self):
     if sys.platform == 'darwin':
@@ -382,6 +361,40 @@ class DebugStubTest(unittest.TestCase):
         self.assertEquals(reply, breakpoint_instruction)
       else:
         raise AssertionError('Unknown architecture')
+
+  def test_reading_and_writing_memory(self):
+    # Any arguments to the nexe would work here because we do not run
+    # the executable beyond the initial breakpoint.
+    with LaunchDebugStub('test_getting_registers') as connection:
+      mem_addr = GetSymbols()['g_example_var']
+      # Check reading memory.
+      expected_data = 'some_debug_stub_test_data\0'
+      reply = connection.RspRequest('m%x,%x' % (mem_addr, len(expected_data)))
+      self.assertEquals(DecodeHex(reply), expected_data)
+
+      # On x86-64, for reading/writing memory, the debug stub accepts
+      # untrusted addresses with or without the %r15 sandbox base
+      # address added, because GDB uses both.
+      # TODO(eaeltsin): Fix GDB to not use addresses with %r15 added,
+      # and change the expected result in the check below.
+      if ARCH == 'x86-64':
+        registers = DecodeRegs(connection.RspRequest('g'))
+        sandbox_base_addr = registers['r15']
+        reply = connection.RspRequest('m%x,%x' % (sandbox_base_addr + mem_addr,
+                                                  len(expected_data)))
+        self.assertEquals(DecodeHex(reply), expected_data)
+
+      # Check writing memory.
+      new_data = 'replacement_data\0'
+      assert len(new_data) < len(expected_data)
+      reply = connection.RspRequest('M%x,%x:%s' % (mem_addr, len(new_data),
+                                                   EncodeHex(new_data)))
+      self.assertEquals(reply, 'OK')
+      # Check that we can read back what we wrote.
+      reply = connection.RspRequest('m%x,%x' % (mem_addr, len(new_data)))
+      self.assertEquals(DecodeHex(reply), new_data)
+
+      self.CheckReadMemoryAtInvalidAddr(connection)
 
   def test_exit_code(self):
     with LaunchDebugStub('test_exit_code') as connection:

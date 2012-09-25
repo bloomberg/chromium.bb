@@ -12,6 +12,9 @@
 #include "native_client/src/include/nacl_assert.h"
 
 
+/* This variable is used for testing memory accesses. */
+char g_example_var[] = "some_debug_stub_test_data";
+
 volatile uint32_t g_main_thread_var = 0;
 volatile uint32_t g_child_thread_var = 0;
 
@@ -21,13 +24,9 @@ void set_registers_and_stop() {
    * We set most registers to fixed values before faulting, so that we
    * can test that the debug stub successfully returns the same
    * values.
-   *
-   * Additionally, we push a value onto the stack in order to test
-   * memory accesses.
    */
 #if defined(__i386__)
-  __asm__("push $0x4bb00ccc\n"
-          "mov $0x11000022, %eax\n"
+  __asm__("mov $0x11000022, %eax\n"
           "mov $0x22000033, %ebx\n"
           "mov $0x33000044, %ecx\n"
           "mov $0x44000055, %edx\n"
@@ -40,8 +39,7 @@ void set_registers_and_stop() {
    * Note that we cannot assign arbitrary test values to %r15, %rsp
    * and %rbp in the x86-64 sandbox.
    */
-  __asm__("push $0x4bb00ccc\n"
-          "mov $0x1100000000000022, %rax\n"
+  __asm__("mov $0x1100000000000022, %rax\n"
           "mov $0x2200000000000033, %rbx\n"
           "mov $0x3300000000000044, %rcx\n"
           "mov $0x4400000000000055, %rdx\n"
@@ -60,10 +58,7 @@ void set_registers_and_stop() {
    * Note that we cannot assign arbitrary test values to r9 ($tp),
    * r13 (sp), and r15 (pc) in the ARM sandbox.
    */
-  __asm__("movw r0, #0x0ccc\n"
-          "movt r0, #0x4bb0\n"
-          "push {r0}\n"
-          "mov r0, #0x00000001\n"
+  __asm__("mov r0, #0x00000001\n"
           "mov r1, #0x10000002\n"
           "mov r2, #0x20000003\n"
           "mov r3, #0x30000004\n"
