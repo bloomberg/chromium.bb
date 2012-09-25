@@ -48,8 +48,8 @@ void ZoomBubbleGtk::Show(GtkWidget* anchor,
     // If the bubble is already showing but its |auto_close_| value is not equal
     // to |auto_close|, the bubble's focus properties must change, so the
     // current bubble must be closed and a new one created.
-    if (g_bubble)
-      g_bubble->Close();
+    Close();
+    DCHECK(!g_bubble);
 
     g_bubble = new ZoomBubbleGtk(anchor, tab_contents, auto_close);
   }

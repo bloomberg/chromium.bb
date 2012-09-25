@@ -176,6 +176,8 @@ class BubbleGtk : public content::NotificationObserver {
                        GdkEventConfigure*);
   CHROMEGTK_CALLBACK_1(BubbleGtk, gboolean, OnToplevelUnmap, GdkEvent*);
   CHROMEGTK_CALLBACK_1(BubbleGtk, void, OnAnchorAllocate, GtkAllocation*);
+  CHROMEGTK_CALLBACK_0(BubbleGtk, void, OnAnchorDestroy);
+  CHROMEGTK_CALLBACK_0(BubbleGtk, void, OnToplevelDestroy);
 
   // The caller supplied delegate, can be NULL.
   BubbleDelegateGtk* delegate_;

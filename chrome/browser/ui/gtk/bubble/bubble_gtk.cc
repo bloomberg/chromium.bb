@@ -190,16 +190,15 @@ void BubbleGtk::Init(GtkWidget* anchor_widget,
     signals_.Connect(anchor_widget_, "size-allocate",
                      G_CALLBACK(OnAnchorAllocateThunk), this);
     signals_.Connect(anchor_widget_, "destroy",
-                     G_CALLBACK(gtk_widget_destroyed), &anchor_widget_);
+                     G_CALLBACK(OnAnchorDestroyThunk), this);
   }
 
   signals_.Connect(toplevel_window_, "configure-event",
                    G_CALLBACK(OnToplevelConfigureThunk), this);
   signals_.Connect(toplevel_window_, "unmap-event",
                    G_CALLBACK(OnToplevelUnmapThunk), this);
-  // Set |toplevel_window_| to NULL if it gets destroyed.
-  signals_.Connect(toplevel_window_, "destroy",
-                   G_CALLBACK(gtk_widget_destroyed), &toplevel_window_);
+  signals_.Connect(window_, "destroy",
+                   G_CALLBACK(OnToplevelDestroyThunk), this);
 
   gtk_widget_show_all(window_);
 
@@ -690,4 +689,16 @@ void BubbleGtk::OnAnchorAllocate(GtkWidget* widget,
                                  GtkAllocation* allocation) {
   if (!UpdateArrowLocation(false))
     MoveWindow();
+}
+
+void BubbleGtk::OnAnchorDestroy(GtkWidget* widget) {
+  anchor_widget_ = NULL;
+  Close();
+  // |this| is deleted.
+}
+
+void BubbleGtk::OnToplevelDestroy(GtkWidget* widget) {
+  toplevel_window_ = NULL;
+  Close();
+  // |this| is deleted.
 }
