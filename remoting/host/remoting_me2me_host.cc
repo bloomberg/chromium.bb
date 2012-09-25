@@ -422,15 +422,17 @@ class HostProcess
                              &bool_value)) {
       OnNatPolicyUpdate(bool_value);
     }
-    if (policies->GetBoolean(
-            policy_hack::PolicyWatcher::kHostRequireCurtainPolicyName,
-            &bool_value)) {
-      OnCurtainPolicyUpdate(bool_value);
-    }
     if (policies->GetString(
             policy_hack::PolicyWatcher::kHostTalkGadgetPrefixPolicyName,
             &string_value)) {
       OnHostTalkGadgetPrefixPolicyUpdate(string_value);
+    }
+    // TODO(rmsousa): This must be called last. crbug.com/146716 includes a
+    // refactoring to remove this requirement.
+    if (policies->GetBoolean(
+            policy_hack::PolicyWatcher::kHostRequireCurtainPolicyName,
+            &bool_value)) {
+      OnCurtainPolicyUpdate(bool_value);
     }
   }
 
@@ -601,9 +603,14 @@ class HostProcess
   // Invoked when the user uses the Disconnect windows to terminate
   // the sessions.
   void OnDisconnectRequested() {
-    DCHECK(context_->ui_task_runner()->BelongsToCurrentThread());
-
-    host_->DisconnectAllClients();
+    if (!context_->network_task_runner()->BelongsToCurrentThread()) {
+      context_->network_task_runner()->PostTask(FROM_HERE, base::Bind(
+          &HostProcess::OnDisconnectRequested, base::Unretained(this)));
+      return;
+    }
+    if (host_) {
+      host_->DisconnectAllClients();
+    }
   }
 
   void RestartHost() {
