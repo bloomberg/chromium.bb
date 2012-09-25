@@ -45,7 +45,7 @@
 
     <request name="sync">
       <description summary="asynchronous roundtrip">
-	The sync request asks the server to invoke the 'done' request
+	The sync request asks the server to emit the 'done' event
 	on the provided wl_callback object.  Since requests are
 	handled in-order, this can be used as a barrier to ensure all
 	previous requests have been handled.
