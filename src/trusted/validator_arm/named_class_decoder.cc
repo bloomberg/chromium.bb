@@ -28,8 +28,8 @@ base_address_register(nacl_arm_dec::Instruction i) const {
   return wrapped_decoder_.base_address_register(i);
 }
 
-bool NamedClassDecoder::offset_is_immediate(nacl_arm_dec::Instruction i) const {
-  return wrapped_decoder_.offset_is_immediate(i);
+bool NamedClassDecoder::is_literal_load(nacl_arm_dec::Instruction i) const {
+  return wrapped_decoder_.is_literal_load(i);
 }
 
 nacl_arm_dec::Register NamedClassDecoder::

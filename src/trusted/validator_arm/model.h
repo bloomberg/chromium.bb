@@ -239,6 +239,9 @@ static const int kArm32InstSize = 32;
 // The number of bits in a word of a THUMB instruction.
 static const int kThumbWordSize = 16;
 
+// BKPT #0x7777 is used as literal pool head.
+static const uint32_t kLiteralPoolHeadInstruction = 0xE1277777;
+
 
 // Models an instruction, either a 32-bit ARM instruction of unspecified type,
 // or one word (16-bit) and two word (32-bit) THUMB instructions.

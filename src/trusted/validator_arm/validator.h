@@ -228,7 +228,6 @@ class DecodedInstruction {
   DecodedInstruction(uint32_t vaddr, nacl_arm_dec::Instruction inst,
       const nacl_arm_dec::ClassDecoder& decoder);
 
-  // We permit the default copy ctor and assignment operator.
   uint32_t addr() const { return vaddr_; }
 
   // 'this' dominates 'other', where 'this' is the instruction
@@ -306,6 +305,9 @@ class DecodedInstruction {
   }
 
   uint32_t branch_target() const {
+    // branch_target_offset takes care of adding 8 to the instruction's
+    // immediate: the ARM manual states that "PC reads as the address of
+    // the current instruction plus 8".
     return vaddr_ + decoder_->branch_target_offset(inst_);
   }
 
@@ -313,8 +315,8 @@ class DecodedInstruction {
     return decoder_->base_address_register(inst_);
   }
 
-  bool offset_is_immediate() const {
-    return decoder_->offset_is_immediate(inst_);
+  bool is_literal_load() const {
+    return decoder_->is_literal_load(inst_);
   }
 
   bool clears_bits(uint32_t mask) const {
@@ -362,7 +364,8 @@ class DecodedInstruction {
 
   nacl_arm_dec::SafetyLevel safety_;
   nacl_arm_dec::RegisterList defs_;
-  DecodedInstruction& operator=(const DecodedInstruction&);
+
+  NACL_DISALLOW_COPY_AND_ASSIGN(DecodedInstruction);
 };
 
 // Describes a memory region that contains executable code.  Note that the code

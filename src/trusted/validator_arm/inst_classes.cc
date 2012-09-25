@@ -74,7 +74,7 @@ Register ClassDecoder::base_address_register(Instruction i) const {
   return kRegisterNone;
 }
 
-bool ClassDecoder::offset_is_immediate(Instruction i) const {
+bool ClassDecoder::is_literal_load(Instruction i) const {
   UNREFERENCED_PARAMETER(i);
   return false;
 }
@@ -142,4 +142,4 @@ RegisterList CoprocessorOp::defs(Instruction i) const {
   return RegisterList();
 }
 
-}  // namespace
+}  // namespace nacl_arm_dec

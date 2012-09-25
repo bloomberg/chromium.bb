@@ -46,7 +46,7 @@ class ActualVsBaselineTester : public Arm32DecoderTester {
   void CheckDefs();
   void CheckImmediateAddressingDefs();
   void CheckBaseAddressRegister();
-  void CheckOffsetIsImmediate();
+  void CheckIsLiteralLoad();
   void CheckBranchTargetRegister();
   void CheckIsRelativeBranch();
   void CheckBranchTargetOffset();
@@ -68,6 +68,6 @@ class ActualVsBaselineTester : public Arm32DecoderTester {
   NACL_DISALLOW_COPY_AND_ASSIGN(ActualVsBaselineTester);
 };
 
-}  // namespace
+}  // namespace nacl_arm_test
 
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_ARM_ACTUAL_VS_BASELINE_H_

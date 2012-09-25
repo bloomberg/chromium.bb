@@ -1053,14 +1053,14 @@ class BitPattern(BitExpr):
           of the following values:
 
           'match' - All specified bits in this match the corresponding bits in
-                  the given pattern.
+          the given pattern.
           'conflicts' - There are bits in this pattern that conflict with the
-                  given pattern. Hence, there is no way this pattern will
-                  succeed for instructions matching the given pattern.
+          given pattern. Hence, there is no way this pattern will
+          succeed for instructions matching the given pattern.
           'consistent' - The specified bits in this pattern neither match,
-                  nor conflicts with the unmatched pattern. No conclusions
-                  can be drawn from the overlapping bits of this and the
-                  given pattern.
+          nor conflicts with the unmatched pattern. No conclusions
+          can be drawn from the overlapping bits of this and the
+          given pattern.
           """
       if self.is_equal_op():
         # Compute the significant bits that overlap between this pattern and

@@ -60,7 +60,7 @@ void ActualVsBaselineTester::ProcessMatch() {
   CheckDefs();
   CheckImmediateAddressingDefs();
   CheckBaseAddressRegister();
-  CheckOffsetIsImmediate();
+  CheckIsLiteralLoad();
   CheckBranchTargetRegister();
   CheckIsRelativeBranch();
   CheckBranchTargetOffset();
@@ -130,9 +130,9 @@ void ActualVsBaselineTester::CheckBaseAddressRegister() {
           actual_decoder_.base_address_register(inst_)));
 }
 
-void ActualVsBaselineTester::CheckOffsetIsImmediate() {
-  EXPECT_EQ(baseline_decoder_.offset_is_immediate(inst_),
-            actual_decoder_.offset_is_immediate(inst_));
+void ActualVsBaselineTester::CheckIsLiteralLoad() {
+  EXPECT_EQ(baseline_decoder_.is_literal_load(inst_),
+            actual_decoder_.is_literal_load(inst_));
 }
 
 void ActualVsBaselineTester::CheckBranchTargetRegister() {
@@ -191,4 +191,4 @@ void ActualVsBaselineTester::CheckSetsZIfBitsClear() {
   }
 }
 
-}  // namespace
+}  // namespace nacl_arm_test

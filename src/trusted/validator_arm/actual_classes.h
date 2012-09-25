@@ -527,7 +527,7 @@ class LoadBasedImmedMemory : public LoadBasedMemoryWithWriteBack {
  public:
   LoadBasedImmedMemory() {}
   virtual RegisterList immediate_addressing_defs(Instruction i) const;
-  virtual bool offset_is_immediate(Instruction i) const;
+  virtual bool is_literal_load(Instruction i) const;
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(LoadBasedImmedMemory);

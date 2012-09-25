@@ -266,8 +266,7 @@ static void check_loadstore_mask(
     return;
   }
 
-  if (second.base_address_register().Equals(kRegisterPc)
-      && second.offset_is_immediate()) {
+  if (second.is_literal_load()) {
     // PC + immediate addressing is always safe.
     match_data->match_ = PATTERN_SAFE;
     match_data->is_single_instruction_pattern_ = true;
@@ -727,7 +726,7 @@ bool SfiValidator::validate_fallthrough(const CodeSegment& segment,
   // Initialize the previous instruction to a scary BKPT, so patterns all fail.
   DecodedInstruction pred(
       0,  // Virtual address 0, which will be in a different bundle;
-      Instruction(0xE1277777),  // The literal-pool-header BKPT instruction;
+      Instruction(nacl_arm_dec::kLiteralPoolHeadInstruction),
       initial_decoder);  // and ensure that it decodes as Forbidden.
 
   for (uint32_t va = segment.begin_addr(); va != segment.end_addr(); va += 4) {

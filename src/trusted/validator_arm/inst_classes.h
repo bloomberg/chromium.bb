@@ -593,11 +593,10 @@ class ClassDecoder {
   // It is stubbed to return nonsense.
   virtual Register base_address_register(Instruction i) const;
 
-  // Checks whether the instruction computes its read or write address as
-  // base address + immediate.
+  // Checks whether the instruction is a PC-relative load + immediate.
   //
   // It is stubbed to return false.
-  virtual bool offset_is_immediate(Instruction i) const;
+  virtual bool is_literal_load(Instruction i) const;
 
   // For indirect branch instructions, returns the register being moved into
   // r15.  Otherwise, reports kRegisterNone.

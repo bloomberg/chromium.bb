@@ -372,9 +372,9 @@ immediate_addressing_defs(const Instruction i) const {
   return RegisterList(HasWriteBack(i) ? n.reg(i) : kRegisterNone);
 }
 
-bool LoadBasedImmedMemory::offset_is_immediate(Instruction i) const {
+bool LoadBasedImmedMemory::is_literal_load(Instruction i) const {
   UNREFERENCED_PARAMETER(i);
-  return true;
+  return base_address_register(i).Equals(kRegisterPc);
 }
 
 SafetyLevel LoadBasedImmedMemoryDouble::safety(const Instruction i) const {
@@ -542,9 +542,7 @@ SafetyLevel Breakpoint::safety(Instruction i) const {
 }
 
 bool Breakpoint::is_literal_pool_head(const Instruction i) const {
-  return i.GetCondition() == Instruction::AL
-      && i.Bits(19, 8) == 0x777
-      && i.Bits(3, 0) == 0x7;
+  return i.Bits(31, 0) == kLiteralPoolHeadInstruction;
 }
 
 SafetyLevel PackSatRev::safety(const Instruction i) const {
@@ -772,7 +770,9 @@ RegisterList Branch::defs(const Instruction i) const {
 int32_t Branch::branch_target_offset(const Instruction i) const {
   // Sign extend and shift left 2:
   int32_t offset = (int32_t)(i.Bits(23, 0) << 8) >> 6;
-  return offset + 8;  // because r15 reads as 8 bytes ahead
+  // The ARM manual states that "PC reads as the address ofthe current
+  // instruction plus 8".
+  return offset + 8;
 }
 
 // Unary1RegisterSet
@@ -836,7 +836,8 @@ bool Unary1RegisterBitRangeMsbGeLsb
     return false;
   }
   else if (width == 32) {
-    return mask == 0;
+    // Clears everything.
+    return true;
   } else {
     uint32_t bit_mask = (((1 << width) - 1) << lsbit);
     return (bit_mask & mask) == mask;

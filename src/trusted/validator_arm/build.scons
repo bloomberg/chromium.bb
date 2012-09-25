@@ -236,20 +236,42 @@ gtest_env.ComponentLibrary('decoder_test_tools',
                             'named_class_decoder.cc',
                             'gen/arm32_decode_named.cc']);
 
+gtest_env.ComponentLibrary('arm_validator_tester',
+                           ['validator_tests.cc'])
+
 # Do NOT name this program 'validator_tests' because this is the same name as
 # a test suite, and scons will run that test suite if it ever builds
 # a program of the same name.
-validator_tests_exe = gtest_env.ComponentProgram('arm_validator_tests',
-                               ['validator_tests.cc'],
-                               EXTRA_LIBS=['arm_validator_core',
+validator_tests_exe = gtest_env.ComponentProgram(
+                               'arm_validator_small_tests',
+                               ['validator_small_tests.cc'],
+                               EXTRA_LIBS=['arm_validator_tester',
+                                           'arm_validator_core',
                                            'arm_validator_reporters'])
 
-test_node = gtest_env.CommandTest(
-    'validator_tests.out',
+validator_small_test_node = gtest_env.CommandTest(
+    'validator_small_tests.out',
     command=[validator_tests_exe])
 
-gtest_env.AddNodeToTestSuite(test_node, ['small_tests', 'validator_tests'],
-    'run_arm_validator_tests')
+gtest_env.AddNodeToTestSuite(validator_small_test_node,
+    ['small_tests', 'validator_tests'],
+    'run_arm_validator_small_tests')
+
+validator_huge_tests_exe = gtest_env.ComponentProgram(
+                               'arm_validator_huge_tests',
+                               ['validator_huge_tests.cc'],
+                               EXTRA_LIBS=['arm_validator_tester',
+                                           'arm_validator_core',
+                                           'arm_validator_reporters'])
+
+validator_huge_test_node = gtest_env.CommandTest(
+    'validator_huge_tests.out',
+    command=[validator_huge_tests_exe],
+    size='huge')
+
+gtest_env.AddNodeToTestSuite(validator_huge_test_node,
+    ['huge_tests', 'validator_tests'],
+    'run_arm_validator_huge_tests')
 
 # Test ARM (32-bit) instruction decoding.
 for tbl in GEN_TABLES:

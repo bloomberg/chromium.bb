@@ -44,7 +44,7 @@ class NamedClassDecoder : public nacl_arm_dec::ClassDecoder {
   immediate_addressing_defs(nacl_arm_dec::Instruction i) const;
   virtual nacl_arm_dec::Register
   base_address_register(nacl_arm_dec::Instruction i) const;
-  virtual bool offset_is_immediate(nacl_arm_dec::Instruction i) const;
+  virtual bool is_literal_load(nacl_arm_dec::Instruction i) const;
   virtual nacl_arm_dec::Register
   branch_target_register(nacl_arm_dec::Instruction i) const;
   virtual bool is_relative_branch(nacl_arm_dec::Instruction i) const;
@@ -60,6 +60,6 @@ class NamedClassDecoder : public nacl_arm_dec::ClassDecoder {
   const char* name_;
 };
 
-}  // namespace
+}  // namespace nacl_arm_test
 
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_ARM_NAMED_CLASS_DECODER_H_

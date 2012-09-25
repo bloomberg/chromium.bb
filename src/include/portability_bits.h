@@ -25,8 +25,11 @@
     - http://gcc.gnu.org/onlinedocs/gcc/Other-Builtins.html
 
   TODO(jfb) Add other bit functions like clz/ctz.
+
+  TODO(jfb) Fix this header.
  */
 
+#include <stdint.h>
 #include "native_client/src/include/nacl_compiler_annotations.h"
 #include "native_client/src/include/nacl_macros.h"
 

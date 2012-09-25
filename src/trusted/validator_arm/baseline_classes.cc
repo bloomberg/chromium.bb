@@ -94,11 +94,9 @@ SafetyLevel BreakPointAndConstantPoolHead::safety(const Instruction i) const {
       ? MAY_BE_SAFE
       : UNPREDICTABLE;
 }
-
 bool BreakPointAndConstantPoolHead::
 is_literal_pool_head(const Instruction i) const {
-  return i.GetCondition() == Instruction::AL &&
-      value(i) == 0x7777;
+  return i.Bits(31, 0) == kLiteralPoolHeadInstruction;
 }
 
 // BranchToRegister
@@ -412,9 +410,9 @@ RegisterList Load2RegisterImm8Op::defs(Instruction i) const {
   return immediate_addressing_defs(i).Add(t.reg(i));
 }
 
-bool Load2RegisterImm8Op::offset_is_immediate(Instruction i) const {
+bool Load2RegisterImm8Op::is_literal_load(Instruction i) const {
   UNREFERENCED_PARAMETER(i);
-  return true;
+  return base_address_register(i).Equals(kRegisterPc);
 }
 
 // Store2RegisterImm8Op
@@ -452,9 +450,9 @@ RegisterList Load2RegisterImm8DoubleOp::defs(Instruction i) const {
   return immediate_addressing_defs(i).Add(t.reg(i)).Add(t2.reg(i));
 }
 
-bool Load2RegisterImm8DoubleOp::offset_is_immediate(Instruction i) const {
+bool Load2RegisterImm8DoubleOp::is_literal_load(Instruction i) const {
   UNREFERENCED_PARAMETER(i);
-  return true;
+  return base_address_register(i).Equals(kRegisterPc);
 }
 
 // Store2RegisterImm8DoubleOp
@@ -538,9 +536,9 @@ RegisterList Load2RegisterImm12Op::defs(Instruction i) const {
   return immediate_addressing_defs(i).Add(t.reg(i));
 }
 
-bool Load2RegisterImm12Op::offset_is_immediate(Instruction i) const {
+bool Load2RegisterImm12Op::is_literal_load(Instruction i) const {
   UNREFERENCED_PARAMETER(i);
-  return true;
+  return base_address_register(i).Equals(kRegisterPc);
 }
 
 // Store2RegisterImm12Op
@@ -678,6 +676,10 @@ immediate_addressing_defs(const Instruction i) const {
 }
 
 // LoadVectorRegisterList
+bool LoadVectorRegisterList::is_literal_load(Instruction i) const {
+  UNREFERENCED_PARAMETER(i);
+  return base_address_register(i).Equals(kRegisterPc);
+}
 
 // StoreVectorRegisterList
 SafetyLevel StoreVectorRegisterList::safety(const Instruction i) const {
@@ -687,12 +689,12 @@ SafetyLevel StoreVectorRegisterList::safety(const Instruction i) const {
 }
 
 // LoadStoreVectorRegister
-bool LoadStoreVectorRegister::offset_is_immediate(Instruction i) const {
-  UNREFERENCED_PARAMETER(i);
-  return true;
-}
 
 // LoadVectorRegister
+bool LoadVectorRegister::is_literal_load(Instruction i) const {
+  UNREFERENCED_PARAMETER(i);
+  return base_address_register(i).Equals(kRegisterPc);
+}
 
 // StoreVectorRegister
 SafetyLevel StoreVectorRegister::safety(const Instruction i) const {

@@ -284,7 +284,7 @@ class BranchImmediate24 : public ClassDecoder {
 };
 
 // Defines a break point, which is also used to act as a constant pool header
-// if the constant is 0x7777.
+// if the constant is the special pool head value.
 class BreakPointAndConstantPoolHead : public Immediate16Use {
  public:
   BreakPointAndConstantPoolHead() {}
@@ -719,7 +719,7 @@ class Load2RegisterImm8Op : public LoadStore2RegisterImm8Op {
   Load2RegisterImm8Op() : LoadStore2RegisterImm8Op(true) {
   }
   virtual RegisterList defs(Instruction i) const;
-  virtual bool offset_is_immediate(Instruction i) const;
+  virtual bool is_literal_load(Instruction i) const;
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Load2RegisterImm8Op);
@@ -764,7 +764,7 @@ class Load2RegisterImm8DoubleOp
   Load2RegisterImm8DoubleOp() : LoadStore2RegisterImm8DoubleOp(true) {
   }
   virtual RegisterList defs(Instruction i) const;
-  virtual bool offset_is_immediate(Instruction i) const;
+  virtual bool is_literal_load(Instruction i) const;
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Load2RegisterImm8DoubleOp);
@@ -940,7 +940,7 @@ class Load2RegisterImm12Op : public LoadStore2RegisterImm12Op {
   Load2RegisterImm12Op() : LoadStore2RegisterImm12Op(true) {
   }
   virtual RegisterList defs(Instruction i) const;
-  virtual bool offset_is_immediate(Instruction i) const;
+  virtual bool is_literal_load(Instruction i) const;
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Load2RegisterImm12Op);
@@ -1101,6 +1101,7 @@ class LoadStoreVectorRegisterList : public LoadStoreVectorOp {
 class LoadVectorRegisterList : public LoadStoreVectorRegisterList {
  public:
   LoadVectorRegisterList() {}
+  virtual bool is_literal_load(Instruction i) const;
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(LoadVectorRegisterList);
@@ -1129,7 +1130,6 @@ class StoreVectorRegisterList : public LoadStoreVectorRegisterList {
 class LoadStoreVectorRegister : public LoadStoreVectorOp {
  public:
   LoadStoreVectorRegister() {}
-  virtual bool offset_is_immediate(Instruction i) const;
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(LoadStoreVectorRegister);
@@ -1139,6 +1139,7 @@ class LoadStoreVectorRegister : public LoadStoreVectorOp {
 class LoadVectorRegister : public LoadStoreVectorRegister {
  public:
   LoadVectorRegister() {}
+  virtual bool is_literal_load(Instruction i) const;
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(LoadVectorRegister);
