@@ -76,7 +76,7 @@ WebContentsViewDelegate* ShellContentBrowserClient::GetWebContentsViewDelegate(
 #if defined(OS_ANDROID)
 void ShellContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
     const CommandLine& command_line,
-    base::GlobalDescriptors::Mapping* mappings) {
+    std::vector<content::FileDescriptorInfo>* mappings) {
   int flags = base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ;
   FilePath pak_file;
   DCHECK(PathService::Get(base::DIR_ANDROID_APP_DATA, &pak_file));
@@ -89,8 +89,9 @@ void ShellContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
     NOTREACHED() << "Failed to open file when creating renderer process: "
                  << "content_shell.pak";
   }
-  mappings->push_back(std::pair<base::GlobalDescriptors::Key, int>(
-      kShellPakDescriptor, f));
+  mappings->push_back(
+      content::FileDescriptorInfo(kShellPakDescriptor,
+                                  base::FileDescriptor(f, true)));
 }
 #endif
 

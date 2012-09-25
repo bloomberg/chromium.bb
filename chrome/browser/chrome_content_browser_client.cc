@@ -136,10 +136,12 @@
 #include "chrome/browser/ui/crypto_module_password_dialog.h"
 #endif
 
+using base::FileDescriptor;
 using content::AccessTokenStore;
 using content::BrowserThread;
 using content::BrowserURLHandler;
 using content::ChildProcessSecurityPolicy;
+using content::FileDescriptorInfo;
 using content::QuotaPermissionContext;
 using content::RenderViewHost;
 using content::SiteInstance;
@@ -1664,11 +1666,12 @@ bool ChromeContentBrowserClient::AllowPepperPrivateFileAPI() {
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
     const CommandLine& command_line,
-    base::GlobalDescriptors::Mapping* mappings) {
+    std::vector<FileDescriptorInfo>* mappings) {
   int crash_signal_fd = GetCrashSignalFD(command_line);
   if (crash_signal_fd >= 0) {
-    mappings->push_back(std::pair<base::GlobalDescriptors::Key, int>(
-        kCrashDumpSignal, crash_signal_fd));
+    mappings->push_back(FileDescriptorInfo(kCrashDumpSignal,
+                                           FileDescriptor(crash_signal_fd,
+                                                          false)));
   }
 }
 #endif  // defined(OS_POSIX) && !defined(OS_MACOSX)

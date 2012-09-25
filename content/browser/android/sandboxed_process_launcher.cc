@@ -13,7 +13,6 @@
 using base::android::AttachCurrentThread;
 using base::android::ToJavaArrayOfStrings;
 using base::android::ScopedJavaLocalRef;
-using base::GlobalDescriptors;
 using content::StartSandboxedProcessCallback;
 
 namespace content {
@@ -37,8 +36,7 @@ static void OnSandboxedProcessStarted(JNIEnv*,
 
 void StartSandboxedProcess(
     const CommandLine::StringVector& argv,
-    int ipc_fd,
-    const GlobalDescriptors::Mapping& files_to_register,
+    const std::vector<content::FileDescriptorInfo>& files_to_register,
     const StartSandboxedProcessCallback& callback) {
   JNIEnv* env = AttachCurrentThread();
   DCHECK(env);
@@ -46,24 +44,40 @@ void StartSandboxedProcess(
   // Create the Command line String[]
   ScopedJavaLocalRef<jobjectArray> j_argv = ToJavaArrayOfStrings(env, argv);
 
-  ScopedJavaLocalRef<jintArray> j_file_to_register_id_files(env,
-      env->NewIntArray(files_to_register.size() * 2));
-  scoped_array<jint> file_to_register_id_files(
-      new jint[files_to_register.size() * 2]);
-  for (size_t i = 0; i < files_to_register.size(); ++i) {
-    const GlobalDescriptors::KeyFDPair& id_file = files_to_register[i];
-    file_to_register_id_files[2 * i] = id_file.first;
-    file_to_register_id_files[(2 * i) + 1] = id_file.second;
+  size_t file_count = files_to_register.size();
+  DCHECK(file_count > 0);
+
+  ScopedJavaLocalRef<jintArray> j_file_ids(env, env->NewIntArray(file_count));
+  base::android::CheckException(env);
+  jint* file_ids = env->GetIntArrayElements(j_file_ids.obj(), NULL);
+  base::android::CheckException(env);
+  ScopedJavaLocalRef<jintArray> j_file_fds(env, env->NewIntArray(file_count));
+  base::android::CheckException(env);
+  jint* file_fds = env->GetIntArrayElements(j_file_fds.obj(), NULL);
+  base::android::CheckException(env);
+  ScopedJavaLocalRef<jbooleanArray> j_file_auto_close(
+      env, env->NewBooleanArray(file_count));
+  base::android::CheckException(env);
+  jboolean* file_auto_close =
+      env->GetBooleanArrayElements(j_file_auto_close.obj(), NULL);
+  base::android::CheckException(env);
+  for (size_t i = 0; i < file_count; ++i) {
+    const content::FileDescriptorInfo& fd_info = files_to_register[i];
+    file_ids[i] = fd_info.id;
+    file_fds[i] = fd_info.fd.fd;
+    file_auto_close[i] = fd_info.fd.auto_close;
   }
-  env->SetIntArrayRegion(j_file_to_register_id_files.obj(),
-                         0, files_to_register.size() * 2,
-                         file_to_register_id_files.get());
+  env->ReleaseIntArrayElements(j_file_ids.obj(), file_ids, 0);
+  env->ReleaseIntArrayElements(j_file_fds.obj(), file_fds, 0);
+  env->ReleaseBooleanArrayElements(j_file_auto_close.obj(), file_auto_close, 0);
+
   Java_SandboxedProcessLauncher_start(env,
-          base::android::GetApplicationContext(),
-          static_cast<jobjectArray>(j_argv.obj()),
-          static_cast<jint>(ipc_fd),
-          j_file_to_register_id_files.obj(),
-          reinterpret_cast<jint>(new StartSandboxedProcessCallback(callback)));
+      base::android::GetApplicationContext(),
+      j_argv.obj(),
+      j_file_ids.obj(),
+      j_file_fds.obj(),
+      j_file_auto_close.obj(),
+      reinterpret_cast<jint>(new StartSandboxedProcessCallback(callback)));
 }
 
 void StopSandboxedProcess(base::ProcessHandle handle) {

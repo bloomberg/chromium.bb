@@ -207,7 +207,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   virtual void GetAdditionalMappedFilesForChildProcess(
       const CommandLine& command_line,
-      base::GlobalDescriptors::Mapping* mappings) OVERRIDE;
+      std::vector<content::FileDescriptorInfo>* mappings) OVERRIDE;
 #endif
 #if defined(OS_WIN)
   virtual const wchar_t* GetResourceDllName() OVERRIDE;

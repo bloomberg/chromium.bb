@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "content/public/browser/file_descriptor_info.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/window_container_type.h"
 #include "net/cookies/canonical_cookie.h"
@@ -453,7 +454,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // a child process.
   virtual void GetAdditionalMappedFilesForChildProcess(
       const CommandLine& command_line,
-      base::GlobalDescriptors::Mapping* mappings) {}
+      std::vector<FileDescriptorInfo>* mappings) {}
 #endif
 
 #if defined(OS_WIN)

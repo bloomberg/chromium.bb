@@ -8,9 +8,9 @@
 #include <string>
 #include <vector>
 
-#include "base/global_descriptors_posix.h"
 #include "base/process_util.h"
 #include "base/synchronization/lock.h"
+#include "content/public/browser/file_descriptor_info.h"
 #include "content/public/browser/zygote_host_linux.h"
 
 template<typename Type>
@@ -27,7 +27,7 @@ class CONTENT_EXPORT ZygoteHostImpl : public content::ZygoteHost {
   // Returns its pid on success, otherwise
   // base::kNullProcessHandle;
   pid_t ForkRequest(const std::vector<std::string>& command_line,
-                    const base::GlobalDescriptors::Mapping& mapping,
+                    const std::vector<content::FileDescriptorInfo>& mapping,
                     const std::string& process_type);
   void EnsureProcessTerminated(pid_t process);
 

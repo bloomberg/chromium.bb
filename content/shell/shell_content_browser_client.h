@@ -38,7 +38,7 @@ class ShellContentBrowserClient : public ContentBrowserClient {
 #if defined(OS_ANDROID)
   virtual void GetAdditionalMappedFilesForChildProcess(
       const CommandLine& command_line,
-      base::GlobalDescriptors::Mapping* mappings) OVERRIDE;
+      std::vector<content::FileDescriptorInfo>* mappings) OVERRIDE;
 #endif
 
   ShellBrowserContext* browser_context();

@@ -161,16 +161,26 @@ public class SandboxedProcessLauncher {
      *
      * @param context Context used to obtain the application context.
      * @param commandLine The sandboxed process command line argv.
-     * @param ipcFd File descriptor used to set up IPC.
+     * @param file_ids The ID that should be used when mapping files in the created process.
+     * @param file_fds The file descriptors that should be mapped in the created process.
+     * @param file_auto_close Whether the file descriptors should be closed once they were passed to
+     * the created process.
      * @param clientContext Arbitrary parameter used by the client to distinguish this connection.
      */
     @CalledByNative
     static void start(
             Context context,
             final String[] commandLine,
-            int ipcFd,
-            int[] fileToRegisterIdFds,
+            int[] fileIds,
+            int[] fileFds,
+            boolean[] fileAutoClose,
             final int clientContext) {
+        assert fileIds.length == fileFds.length && fileFds.length == fileAutoClose.length;
+        FileDescriptorInfo[] filesToBeMapped = new FileDescriptorInfo[fileFds.length];
+        for (int i = 0; i < fileFds.length; i++) {
+            filesToBeMapped[i] =
+                    new FileDescriptorInfo(fileIds[i], fileFds[i], fileAutoClose[i]);
+        }
         assert clientContext != 0;
         SandboxedProcessConnection allocatedConnection;
         synchronized (SandboxedProcessLauncher.class) {
@@ -201,8 +211,7 @@ public class SandboxedProcessLauncher {
                 nativeOnSandboxedProcessStarted(clientContext, pid);
             }
         };
-        connection.setupConnection(commandLine, ipcFd, fileToRegisterIdFds, createCallback(),
-                onConnect);
+        connection.setupConnection(commandLine, filesToBeMapped, createCallback(), onConnect);
     }
 
     /**

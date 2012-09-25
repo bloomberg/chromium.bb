@@ -75,6 +75,7 @@
     'public/browser/download_url_parameters.h',
     'public/browser/favicon_status.cc',
     'public/browser/favicon_status.h',
+    'public/browser/file_descriptor_info.h',
     'public/browser/font_list_async.h',
     'public/browser/geolocation.h',
     'public/browser/geolocation_permission_context.h',

@@ -50,22 +50,18 @@ class SurfaceTexturePeerSandboxedImpl : public content::SurfaceTexturePeer {
 
 // Chrome actually uses the renderer code path for all of its sandboxed
 // processes such as renderers, plugins, etc.
-void InternalInitSandboxedProcess(int ipc_fd,
-                                  const std::vector<int>& extra_file_ids,
-                                  const std::vector<int>& extra_file_fds,
+void InternalInitSandboxedProcess(const std::vector<int>& file_ids,
+                                  const std::vector<int>& file_fds,
                                   JNIEnv* env,
                                   jclass clazz,
                                   jobject context,
                                   jobject service) {
-  // Set up the IPC file descriptor mapping.
-  base::GlobalDescriptors::GetInstance()->Set(kPrimaryIPCChannel, ipc_fd);
-  // Register the extra file descriptors.
-  // This usually include the crash dump signals and resource related files.
-  DCHECK(extra_file_fds.size() == extra_file_ids.size());
-  for (size_t i = 0; i < extra_file_ids.size(); ++i) {
-    base::GlobalDescriptors::GetInstance()->Set(extra_file_ids[i],
-                                                extra_file_fds[i]);
-  }
+  // Register the file descriptors.
+  // This includes the IPC channel, the crash dump signals and resource related
+  // files.
+  DCHECK(file_fds.size() == file_ids.size());
+  for (size_t i = 0; i < file_ids.size(); ++i)
+    base::GlobalDescriptors::GetInstance()->Set(file_ids[i], file_fds[i]);
 
   content::SurfaceTexturePeer::InitInstance(
       new SurfaceTexturePeerSandboxedImpl(service));
@@ -80,17 +76,15 @@ void InitSandboxedProcess(JNIEnv* env,
                           jclass clazz,
                           jobject context,
                           jobject service,
-                          jint ipc_fd,
-                          jintArray j_extra_file_ids,
-                          jintArray j_extra_file_fds) {
-  std::vector<int> extra_file_ids;
-  std::vector<int> extra_file_fds;
-  JavaIntArrayToIntVector(env, j_extra_file_ids, &extra_file_ids);
-  JavaIntArrayToIntVector(env, j_extra_file_fds, &extra_file_fds);
+                          jintArray j_file_ids,
+                          jintArray j_file_fds) {
+  std::vector<int> file_ids;
+  std::vector<int> file_fds;
+  JavaIntArrayToIntVector(env, j_file_ids, &file_ids);
+  JavaIntArrayToIntVector(env, j_file_fds, &file_fds);
 
-  InternalInitSandboxedProcess(static_cast<int>(ipc_fd),
-                               extra_file_ids, extra_file_fds,
-                               env, clazz, context, service);
+  InternalInitSandboxedProcess(
+      file_ids, file_fds, env, clazz, context, service);
 }
 
 void ExitSandboxedProcess(JNIEnv* env, jclass clazz) {

@@ -166,28 +166,31 @@ class ChildProcessLauncher::Context
 #elif defined(OS_ANDROID)
     std::string process_type =
         cmd_line->GetSwitchValueASCII(switches::kProcessType);
-    base::GlobalDescriptors::Mapping files_to_register;
-    files_to_register.push_back(std::pair<base::GlobalDescriptors::Key, int>(
-        kPrimaryIPCChannel, ipcfd));
+    std::vector<content::FileDescriptorInfo> files_to_register;
+    files_to_register.push_back(
+        content::FileDescriptorInfo(kPrimaryIPCChannel,
+                                    base::FileDescriptor(ipcfd, false)));
+
     content::GetContentClient()->browser()->
         GetAdditionalMappedFilesForChildProcess(*cmd_line, &files_to_register);
 
-    content::StartSandboxedProcess(cmd_line->argv(),
-        ipcfd, files_to_register,
+    content::StartSandboxedProcess(cmd_line->argv(), files_to_register,
         base::Bind(&ChildProcessLauncher::Context::OnSandboxedProcessStarted,
                    this_object, client_thread_id));
 
 #elif defined(OS_POSIX)
     base::ProcessHandle handle = base::kNullProcessHandle;
-    // We need to close the client end of the IPC channel
-    // to reliably detect child termination.
+    // We need to close the client end of the IPC channel to reliably detect
+    // child termination.
     file_util::ScopedFD ipcfd_closer(&ipcfd);
 
     std::string process_type =
         cmd_line->GetSwitchValueASCII(switches::kProcessType);
-    base::GlobalDescriptors::Mapping files_to_register;
-    files_to_register.push_back(std::pair<base::GlobalDescriptors::Key, int>(
-        kPrimaryIPCChannel, ipcfd));
+    std::vector<content::FileDescriptorInfo> files_to_register;
+    files_to_register.push_back(
+        content::FileDescriptorInfo(kPrimaryIPCChannel,
+                                    base::FileDescriptor(ipcfd, false)));
+
 #if !defined(OS_MACOSX)
     content::GetContentClient()->browser()->
         GetAdditionalMappedFilesForChildProcess(*cmd_line, &files_to_register);
@@ -201,12 +204,12 @@ class ChildProcessLauncher::Context
     {
       // Convert FD mapping to FileHandleMappingVector
       base::FileHandleMappingVector fds_to_map;
-      for (size_t i = 0; i < files_to_register.size(); ++i) {
-        const base::GlobalDescriptors::KeyFDPair& id_file =
-            files_to_register[i];
+      for (std::vector<content::FileDescriptorInfo>::const_iterator
+           i = files_to_register.begin(); i != files_to_register.end(); ++i) {
+        const content::FileDescriptorInfo& fd_info = *i;
         fds_to_map.push_back(std::make_pair(
-            id_file.second,
-            id_file.first + base::GlobalDescriptors::kBaseDescriptor));
+            fd_info.fd.fd,
+            fd_info.id + base::GlobalDescriptors::kBaseDescriptor));
       }
 
 #if !defined(OS_MACOSX)

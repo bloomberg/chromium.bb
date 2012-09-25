@@ -9,9 +9,9 @@
 
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/global_descriptors_posix.h"
 #include "base/platform_file.h"
 #include "base/process.h"
+#include "content/public/browser/file_descriptor_info.h"
 
 namespace content {
 
@@ -22,8 +22,7 @@ typedef base::Callback<void(base::ProcessHandle)> StartSandboxedProcessCallback;
 // retuned if the process could not be created.
 void StartSandboxedProcess(
     const CommandLine::StringVector& argv,
-    int ipc_fd,
-    const base::GlobalDescriptors::Mapping& files_to_register,
+    const std::vector<FileDescriptorInfo>& files_to_register,
     const StartSandboxedProcessCallback& callback);
 
 // Stops a sandboxed process based on the handle returned form

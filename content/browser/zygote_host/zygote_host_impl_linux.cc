@@ -16,6 +16,7 @@
 #include "base/file_util.h"
 #include "base/linux_util.h"
 #include "base/logging.h"
+#include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
@@ -238,7 +239,7 @@ ssize_t ZygoteHostImpl::ReadReply(void* buf, size_t buf_len) {
 
 pid_t ZygoteHostImpl::ForkRequest(
     const std::vector<std::string>& argv,
-    const base::GlobalDescriptors::Mapping& mapping,
+    const std::vector<content::FileDescriptorInfo>& mapping,
     const std::string& process_type) {
   DCHECK(init_);
   Pickle pickle;
@@ -253,10 +254,20 @@ pid_t ZygoteHostImpl::ForkRequest(
   pickle.WriteInt(mapping.size());
 
   std::vector<int> fds;
-  for (base::GlobalDescriptors::Mapping::const_iterator
+  // Scoped pointers cannot be stored in containers, so we have to use a
+  // linked_ptr.
+  std::vector<linked_ptr<file_util::ScopedFD> > autodelete_fds;
+  for (std::vector<content::FileDescriptorInfo>::const_iterator
        i = mapping.begin(); i != mapping.end(); ++i) {
-    pickle.WriteUInt32(i->first);
-    fds.push_back(i->second);
+    pickle.WriteUInt32(i->id);
+    fds.push_back(i->fd.fd);
+    if (i->fd.auto_close) {
+      // Auto-close means we need to close the FDs after they habe been passed
+      // to the other process.
+      linked_ptr<file_util::ScopedFD> ptr(
+          new file_util::ScopedFD(&(fds.back())));
+      autodelete_fds.push_back(ptr);
+    }
   }
 
   pid_t pid;

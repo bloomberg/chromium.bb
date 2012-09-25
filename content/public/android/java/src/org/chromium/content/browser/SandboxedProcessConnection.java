@@ -36,8 +36,7 @@ public class SandboxedProcessConnection implements ServiceConnection {
             "com.google.android.apps.chrome.extra.sandbox_command_line";
     public static final String EXTRA_NATIVE_LIBRARY_NAME =
             "com.google.android.apps.chrome.extra.sandbox_native_library_name";
-    // Note the FD may only be passed in the connection bundle.
-    public static final String EXTRA_IPC_FD = "com.google.android.apps.chrome.extra.sandbox_ipcFd";
+    // Note the FDs may only be passed in the connection bundle.
     public static final String EXTRA_FILES_PREFIX =
             "com.google.android.apps.chrome.extra.sandbox_extraFile_";
     public static final String EXTRA_FILES_ID_SUFFIX = "_id";
@@ -61,20 +60,17 @@ public class SandboxedProcessConnection implements ServiceConnection {
 
     private static class ConnectionParams {
         final String[] mCommandLine;
-        final int mIpcFd;
-        final int[] mExtraFileIdsAndFds;
+        final FileDescriptorInfo[] mFilesToBeMapped;
         final ISandboxedProcessCallback mCallback;
         final Runnable mOnConnectionCallback;
 
         ConnectionParams(
                 String[] commandLine,
-                int ipcFd,
-                int[] idsAndFds,
+                FileDescriptorInfo[] filesToBeMapped,
                 ISandboxedProcessCallback callback,
                 Runnable onConnectionCallback) {
             mCommandLine = commandLine;
-            mIpcFd = ipcFd;
-            mExtraFileIdsAndFds = idsAndFds;
+            mFilesToBeMapped = filesToBeMapped;
             mCallback = callback;
             mOnConnectionCallback = onConnectionCallback;
         }
@@ -139,21 +135,18 @@ public class SandboxedProcessConnection implements ServiceConnection {
      *
      * This establishes the parameters that were not already supplied in bind.
      * @param commandLine (Optional) will be ignored if the command line was already sent in bind()
-     * @param ipcFd The file descriptor that will be used by the sandbox process for IPC.
-     * @param fileToRegisterIdFds (Optional)  a list of pair of IDs and FDs that should be
-     *                            registered
+     * @param fileToBeMapped a list of file descriptors that should be registered
      * @param callback Used for status updates regarding this process connection.
      * @param onConnectionCallback will be run when the connection is setup and ready to use.
      */
     synchronized void setupConnection(
             String[] commandLine,
-            int ipcFd,
-            int[] fileToRegisterIdFds,
+            FileDescriptorInfo[] filesToBeMapped,
             ISandboxedProcessCallback callback,
             Runnable onConnectionCallback) {
         TraceEvent.begin();
         assert mConnectionParams == null;
-        mConnectionParams = new ConnectionParams(commandLine, ipcFd, fileToRegisterIdFds, callback,
+        mConnectionParams = new ConnectionParams(commandLine, filesToBeMapped, callback,
                 onConnectionCallback);
         if (mServiceConnectComplete) {
             doConnectionSetup();
@@ -213,43 +206,43 @@ public class SandboxedProcessConnection implements ServiceConnection {
         if (onConnectionCallback == null) {
             unbind();
         } else if (mService != null) {
-            ParcelFileDescriptor ipcFdParcel;
-            try {
-                ipcFdParcel = ParcelFileDescriptor.fromFd(mConnectionParams.mIpcFd);
-            } catch(IOException e) {
-                Log.e(TAG, "Invalid IPC FD, aborting connection.", e);
-                return;
-            }
             Bundle bundle = new Bundle();
             bundle.putStringArray(EXTRA_COMMAND_LINE, mConnectionParams.mCommandLine);
-            bundle.putParcelable(EXTRA_IPC_FD, ipcFdParcel);
 
-            int[] idsAndFds = mConnectionParams.mExtraFileIdsAndFds;
-            assert idsAndFds.length % 2 == 0;
-            int pairLength = idsAndFds.length / 2;
-            for (int i = 0; i < pairLength; i++) {
+            FileDescriptorInfo[] fileInfos = mConnectionParams.mFilesToBeMapped;
+            ParcelFileDescriptor[] parcelFiles = new ParcelFileDescriptor[fileInfos.length];
+            for (int i = 0; i < fileInfos.length; i++) {
                 String idName = EXTRA_FILES_PREFIX + i + EXTRA_FILES_ID_SUFFIX;
                 String fdName = EXTRA_FILES_PREFIX + i + EXTRA_FILES_FD_SUFFIX;
-                ParcelFileDescriptor parcelFile;
-                try {
-                    parcelFile = ParcelFileDescriptor.fromFd(idsAndFds[(2 * i) + 1]);
-                    bundle.putParcelable(fdName, parcelFile);
-                    bundle.putInt(idName, idsAndFds[2 * i]);
-                } catch (IOException e) {
-                    Log.e(TAG, "Invalid extra file FD: id=" + idsAndFds[ 2 * i] + " fd="
-                          + idsAndFds[(2 * i) + 1]);
+                if (fileInfos[i].mAutoClose) {
+                    // Adopt the FD, it will be closed when we close the ParcelFileDescriptor.
+                    parcelFiles[i] = ParcelFileDescriptor.adoptFd(fileInfos[i].mFd);
+                } else {
+                    try {
+                        parcelFiles[i] = ParcelFileDescriptor.fromFd(fileInfos[i].mFd);
+                    } catch(IOException e) {
+                        Log.e(TAG,
+                              "Invalid FD provided for process connection, aborting connection.",
+                              e);
+                        return;
+                    }
+
                 }
+                bundle.putParcelable(fdName, parcelFiles[i]);
+                bundle.putInt(idName, fileInfos[i].mId);
             }
             try {
                 mPID = mService.setupConnection(bundle, mConnectionParams.mCallback);
             } catch (android.os.RemoteException re) {
                 Log.e(TAG, "Failed to setup connection.", re);
             }
+            // We proactivley close the FDs rather than wait for GC & finalizer.
             try {
-                // We proactivley close now rather than wait for GC & finalizer.
-                ipcFdParcel.close();
+                for (ParcelFileDescriptor parcelFile : parcelFiles) {
+                    if (parcelFile != null) parcelFile.close();
+                }
             } catch (IOException ioe) {
-                Log.w(TAG, "Failed to close IPC FD.", ioe);
+                Log.w(TAG, "Failed to close FD.", ioe);
             }
         }
         mConnectionParams = null;

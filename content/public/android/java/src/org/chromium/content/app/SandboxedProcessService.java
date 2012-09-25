@@ -47,10 +47,9 @@ public class SandboxedProcessService extends Service {
     // Parameters received via IPC, only accessed while holding the mSandboxMainThread monitor.
     private String mNativeLibraryName;  // Must be passed in via the bind command.
     private String[] mCommandLineParams;
-    private ParcelFileDescriptor mIPCFd;
     // Pairs IDs and file descriptors that should be registered natively.
-    private ArrayList<Integer> mExtraFileIds;
-    private ArrayList<ParcelFileDescriptor> mExtraFileFds;
+    private ArrayList<Integer> mFileIds;
+    private ArrayList<ParcelFileDescriptor> mFileFds;
 
     private static Context sContext = null;
     private boolean mLibraryInitialized = false;
@@ -70,9 +69,8 @@ public class SandboxedProcessService extends Service {
                 }
                 // We must have received the command line by now
                 assert mCommandLineParams != null;
-                mIPCFd = args.getParcelable(SandboxedProcessConnection.EXTRA_IPC_FD);
-                mExtraFileIds = new ArrayList<Integer>();
-                mExtraFileFds = new ArrayList<ParcelFileDescriptor>();
+                mFileIds = new ArrayList<Integer>();
+                mFileFds = new ArrayList<ParcelFileDescriptor>();
                 for (int i = 0;; i++) {
                     String fdName = SandboxedProcessConnection.EXTRA_FILES_PREFIX + i
                             + SandboxedProcessConnection.EXTRA_FILES_FD_SUFFIX;
@@ -81,10 +79,10 @@ public class SandboxedProcessService extends Service {
                         // End of the file list.
                         break;
                     }
-                    mExtraFileFds.add(parcel);
+                    mFileFds.add(parcel);
                     String idName = SandboxedProcessConnection.EXTRA_FILES_PREFIX + i
                             + SandboxedProcessConnection.EXTRA_FILES_ID_SUFFIX;
-                    mExtraFileIds.add(args.getInt(idName));
+                    mFileIds.add(args.getInt(idName));
                 }
                 mSandboxMainThread.notifyAll();
             }
@@ -127,21 +125,20 @@ public class SandboxedProcessService extends Service {
                     synchronized (mSandboxMainThread) {
                         mLibraryInitialized = true;
                         mSandboxMainThread.notifyAll();
-                        while (mIPCFd == null) {
+                        while (mFileIds == null) {
                             mSandboxMainThread.wait();
                         }
                     }
-                    assert mExtraFileIds.size() == mExtraFileFds.size();
-                    int[] extraFileIds = new int[mExtraFileIds.size()];
-                    int[] extraFileFds = new int[mExtraFileFds.size()];
-                    for (int i = 0; i < mExtraFileIds.size(); ++i) {
-                        extraFileIds[i] = mExtraFileIds.get(i);
-                        extraFileFds[i] = mExtraFileFds.get(i).detachFd();
+                    assert mFileIds.size() == mFileFds.size();
+                    int[] fileIds = new int[mFileIds.size()];
+                    int[] fileFds = new int[mFileFds.size()];
+                    for (int i = 0; i < mFileIds.size(); ++i) {
+                        fileIds[i] = mFileIds.get(i);
+                        fileFds[i] = mFileFds.get(i).detachFd();
                     }
                     ContentMain.initApplicationContext(sContext.getApplicationContext());
                     nativeInitSandboxedProcess(sContext.getApplicationContext(),
-                            SandboxedProcessService.this, mIPCFd.detachFd(),
-                            extraFileIds, extraFileFds);
+                            SandboxedProcessService.this, fileIds, fileFds);
                     ContentMain.start();
                     nativeExitSandboxedProcess();
                 } catch (InterruptedException e) {
@@ -246,14 +243,12 @@ public class SandboxedProcessService extends Service {
      *
      * @param applicationContext The Application Context of the current process.
      * @param service The current SandboxedProcessService object.
-     * @param ipcFd File descriptor to use for ipc.
-     * @param extraFileIds (Optional) A list of pair of file IDs that should be registered for
-     *                     access by the renderer.
-     * @param extraFileFds (Optional) A list of pair of file descriptors that should be registered
-     *                     for access by the renderer.
+     * @param fileIds A list of file IDs that should be registered for access by the renderer.
+     * @param fileFds A list of file descriptors that should be registered for access by the
+     * renderer.
      */
     private static native void nativeInitSandboxedProcess(Context applicationContext,
-            SandboxedProcessService service, int ipcFd, int[] extraFileIds, int[] extraFileFds);
+            SandboxedProcessService service, int[] extraFileIds, int[] extraFileFds);
 
     /**
      * Force the sandboxed process to exit.
