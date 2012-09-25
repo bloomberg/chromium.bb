@@ -10,6 +10,7 @@ import optparse
 import os
 import re
 import shutil
+import struct
 import subprocess
 import sys
 import urllib
@@ -22,10 +23,12 @@ except ImportError:
 NeededMatcher = re.compile('^ *NEEDED *([^ ]+)\n$')
 FormatMatcher = re.compile('^(.+):\\s*file format (.+)\n$')
 
-FORMAT_ARCH_MAP = {
+OBJDUMP_ARCH_MAP = {
     # Names returned by Linux's objdump:
     'elf64-x86-64': 'x86-64',
     'elf32-i386': 'x86-32',
+    'elf32-little': 'arm',
+    'elf32-littlearm': 'arm',
     # Names returned by x86_64-nacl-objdump:
     'elf64-nacl': 'x86-64',
     'elf32-nacl': 'x86-32',
@@ -34,13 +37,9 @@ FORMAT_ARCH_MAP = {
 ARCH_LOCATION = {
     'x86-32': 'lib32',
     'x86-64': 'lib64',
+    'arm': 'lib',
 }
 
-NAME_ARCH_MAP = {
-    '32.nexe': 'x86-32',
-    '64.nexe': 'x86-64',
-    'arm.nexe': 'arm'
-}
 
 # These constants are used within nmf files.
 RUNNABLE_LD = 'runnable-ld.so'  # Name of the dynamic loader
@@ -54,6 +53,7 @@ FILES_KEY = 'files'  # Key of the files section in an nmf file
 LD_NACL_MAP = {
     'x86-32': 'ld-nacl-x86-32.so.1',
     'x86-64': 'ld-nacl-x86-64.so.1',
+    'arm': None,
 }
 
 
@@ -89,16 +89,53 @@ class ArchFile(object):
   '''Simple structure containing information about
 
   Attributes:
-    arch: Architecture of this file (e.g., x86-32)
-    filename: name of this file
+    name: Name of this file
     path: Full path to this file on the build system
+    arch: Architecture of this file (e.g., x86-32)
     url: Relative path to file in the staged web directory.
         Used for specifying the "url" attribute in the nmf file.'''
-  def __init__(self, arch, name, path='', url=None):
-    self.arch = arch
+
+  def __init__(self, name, path, url, arch=None):
     self.name = name
     self.path = path
-    self.url = url or '/'.join([arch, name])
+    self.url = url
+    self.arch = arch
+    if arch is None:
+      self._ReadElfHeader()
+
+  def _ReadElfHeader(self):
+    """Determine architecture of nexe by reading elf header."""
+    # From elf.h:
+    # typedef struct
+    # {
+    #   unsigned char e_ident[EI_NIDENT]; /* Magic number and other info */
+    #   Elf64_Half e_type; /* Object file type */
+    #   Elf64_Half e_machine; /* Architecture */
+    #   ...
+    # } Elf32_Ehdr;
+    elf_header_format = '16s2H'
+    elf_header_size = struct.calcsize(elf_header_format)
+
+    with open(self.path, 'rb') as f:
+      header = f.read(elf_header_size)
+
+    header = struct.unpack(elf_header_format, header)
+    e_ident, _, e_machine = header
+
+    elf_magic = '\x7fELF'
+    if e_ident[:4] != elf_magic:
+      raise Error("Not a valid NaCL executable: %s" % self.path)
+
+    e_machine_mapping = {
+      3 : 'x86-32',
+      40 : 'arm',
+      62 : 'x86-64'
+    }
+    if e_machine not in e_machine_mapping:
+      raise Error("Unknown machine type: %s" % e_machine)
+
+    # set arch based on the machine type in the elf header
+    self.arch = e_machine_mapping[e_machine]
 
   def __repr__(self):
     return "<ArchFile %s>" % self.path
@@ -116,7 +153,7 @@ class NmfUtils(object):
     needed: A dict with key=filename and value=ArchFile (see GetNeeded)
   '''
 
-  def __init__(self, main_files=None, objdump='x86_64-nacl-objdump',
+  def __init__(self, main_files=None, objdump=None,
                lib_path=None, extra_files=None, lib_prefix=None,
                toolchain=None, remap=None):
     '''Constructor
@@ -139,7 +176,7 @@ class NmfUtils(object):
     self.extra_files = extra_files or []
     self.lib_path = lib_path or []
     self.manifest = None
-    self.needed = None
+    self.needed = {}
     self.lib_prefix = lib_prefix or []
     self.toolchain = toolchain
     self.remap = remap or {}
@@ -163,6 +200,8 @@ class NmfUtils(object):
       needed: A set of strings formatted as "arch/name".  Example:
           set(['x86-32/libc.so', 'x86-64/libgcc.so'])
     '''
+    if not self.objdump:
+      raise Error("No objdump executable specified (see --help for more info)")
     DebugPrint("GleanFromObjdump(%s)" % ([self.objdump, '-p'] + files.keys()))
     proc = subprocess.Popen([self.objdump, '-p'] + files.keys(),
                             stdout=subprocess.PIPE,
@@ -176,7 +215,7 @@ class NmfUtils(object):
       matched = FormatMatcher.match(line)
       if matched is not None:
         filename = matched.group(1)
-        arch = FORMAT_ARCH_MAP[matched.group(2)]
+        arch = OBJDUMP_ARCH_MAP[matched.group(2)]
         if files[filename] is None or arch in files[filename]:
           name = os.path.basename(filename)
           input_info[filename] = ArchFile(
@@ -224,6 +263,7 @@ class NmfUtils(object):
 
     runnable = (self.toolchain != 'newlib' and self.toolchain != 'pnacl')
     DebugPrint('GetNeeded(%s)' % self.main_files)
+
     if runnable:
       examined = set()
       all_files, unexamined = self.GleanFromObjdump(
@@ -242,22 +282,21 @@ class NmfUtils(object):
         all_files.update(new_files)
         examined |= unexamined
         unexamined = needed - examined
+
       # With the runnable-ld.so scheme we have today, the proper name of
       # the dynamic linker should be excluded from the list of files.
-      ldso = [LD_NACL_MAP[arch] for arch in set(FORMAT_ARCH_MAP.values())]
+      ldso = [LD_NACL_MAP[arch] for arch in set(OBJDUMP_ARCH_MAP.values())]
       for name, arch_map in all_files.items():
         if arch_map.name in ldso:
           del all_files[name]
+
       self.needed = all_files
     else:
-      need = {}
       for filename in self.main_files:
-        arch = filename.split('_')[-1]
-        arch = NAME_ARCH_MAP[arch]
         url = os.path.split(filename)[1]
-        need[filename] = ArchFile(arch=arch, name=os.path.basename(filename),
-                                  path=filename, url=url)
-      self.needed = need
+        archfile = ArchFile(name=os.path.basename(filename),
+                            path=filename, url=url)
+        self.needed[filename] = archfile
 
     return self.needed
 
@@ -370,7 +409,7 @@ def Main(argv):
   parser.add_option('-o', '--output', dest='output',
                     help='Write manifest file to FILE (default is stdout)',
                     metavar='FILE')
-  parser.add_option('-D', '--objdump', dest='objdump', default='objdump',
+  parser.add_option('-D', '--objdump', dest='objdump',
                     help='Use TOOL as the "objdump" tool to run',
                     metavar='TOOL')
   parser.add_option('-L', '--library-path', dest='lib_path',
