@@ -508,8 +508,9 @@
     'browser/plugin_process_host_mac.cc',
     'browser/plugin_service_impl.cc',
     'browser/plugin_service_impl.h',
-    'browser/power_save_blocker_android.cc',
     'browser/power_save_blocker.h',
+    'browser/power_save_blocker_android.cc',
+    'browser/power_save_blocker_chromeos.cc',
     'browser/power_save_blocker_linux.cc',
     'browser/power_save_blocker_mac.cc',
     'browser/power_save_blocker_win.cc',
@@ -1005,6 +1006,7 @@
         '../build/linux/system.gyp:dbus-glib',
       ],
       'sources!': [
+        'browser/power_save_blocker_linux.cc',
         'browser/renderer_host/gtk_key_bindings_handler.cc',
         'browser/renderer_host/gtk_key_bindings_handler.h',
       ],
