@@ -4,7 +4,11 @@
 
 #include "chrome/browser/ui/views/toolbar_view.h"
 
+#include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/browser_command_controller.h"
@@ -21,15 +25,17 @@ class ToolbarViewTest : public InProcessBrowserTest {
  public:
   ToolbarViewTest() {}
 
+  void RunToolbarCycleFocusTest(Browser* browser);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ToolbarViewTest);
 };
 
-IN_PROC_BROWSER_TEST_F(ToolbarViewTest, ToolbarCycleFocus) {
-  gfx::NativeWindow window = browser()->window()->GetNativeWindow();
+void ToolbarViewTest::RunToolbarCycleFocusTest(Browser* browser) {
+  gfx::NativeWindow window = browser->window()->GetNativeWindow();
   views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
   views::FocusManager* focus_manager = widget->GetFocusManager();
-  CommandUpdater* updater = browser()->command_controller()->command_updater();
+  CommandUpdater* updater = browser->command_controller()->command_updater();
 
   // Send focus to the toolbar as if the user pressed Alt+Shift+T.
   updater->ExecuteCommand(IDC_FOCUS_TOOLBAR);
@@ -80,6 +86,26 @@ IN_PROC_BROWSER_TEST_F(ToolbarViewTest, ToolbarCycleFocus) {
   size_t count = ids.size();
   for (size_t i = 0; i < count - 1; i++)
     EXPECT_EQ(ids[i], reverse_ids[count - 2 - i]);
+}
+
+IN_PROC_BROWSER_TEST_F(ToolbarViewTest, ToolbarCycleFocus) {
+  RunToolbarCycleFocusTest(browser());
+}
+
+IN_PROC_BROWSER_TEST_F(ToolbarViewTest, ToolbarCycleFocusWithBookmarkBar) {
+  CommandUpdater* updater = browser()->command_controller()->command_updater();
+  updater->ExecuteCommand(IDC_SHOW_BOOKMARK_BAR);
+
+  BookmarkModel* model =
+      BookmarkModelFactory::GetForProfile(browser()->profile());
+  bookmark_utils::AddIfNotBookmarked(
+      model, GURL("http://foo.com"), ASCIIToUTF16("Foo"));
+
+  // We want to specifically test the case where the bookmark bar is
+  // already showing when a window opens, so create a second browser
+  // window with the same profile.
+  Browser* second_browser = CreateBrowser(browser()->profile());
+  RunToolbarCycleFocusTest(second_browser);
 }
 
 }  // namespace

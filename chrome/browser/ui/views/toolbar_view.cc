@@ -306,11 +306,6 @@ void ToolbarView::Init(views::View* location_bar_parent,
   AddChildView(browser_actions_);
   AddChildView(app_menu_);
 
-  // Put the location bar container between the home button and browser
-  // actions when doing a focus search.
-  home_->SetNextFocusableView(location_bar_container_);
-  location_bar_container_->SetNextFocusableView(browser_actions_);
-
   location_bar_->Init(popup_parent_view);
   show_home_button_.Init(prefs::kShowHomeButton,
                          browser_->profile()->GetPrefs(), this);
@@ -449,6 +444,14 @@ void ToolbarView::LayoutForSearch() {
 bool ToolbarView::SetPaneFocus(views::View* initial_focus) {
   if (!AccessiblePaneView::SetPaneFocus(initial_focus))
     return false;
+
+  // Put the location bar container between the home button and browser
+  // actions when doing a focus search. This needs to be done here rather
+  // than during initialization, because the location bar container might
+  // get siblings added to it after initialization of this view, which
+  // breaks our override.
+  home_->SetNextFocusableView(location_bar_container_);
+  location_bar_container_->SetNextFocusableView(browser_actions_);
 
   location_bar_->SetShowFocusRect(true);
   return true;
