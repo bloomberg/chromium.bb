@@ -747,12 +747,12 @@ class OptionParserWithTestSharding(OptionParserWithLogging):
 
     group = optparse.OptionGroup(self, 'Which shard to run')
     group.add_option(
-        '-i', '--index',
+        '-I', '--index',
         type='int',
         default=as_digit(os.environ.get('GTEST_SHARD_INDEX', ''), None),
         help='Shard index to run')
     group.add_option(
-        '-s', '--shards',
+        '-S', '--shards',
         type='int',
         default=as_digit(os.environ.get('GTEST_TOTAL_SHARDS', ''), None),
         help='Total number of shards to calculate from the --index to run')

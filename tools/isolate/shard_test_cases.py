@@ -29,12 +29,12 @@ def main():
   parser = optparse.OptionParser(usage='%prog <options> [gtest]')
   parser.disable_interspersed_args()
   parser.add_option(
-      '-i', '--index',
+      '-I', '--index',
       type='int',
       default=os.environ.get('GTEST_SHARD_INDEX'),
       help='Shard index to run')
   parser.add_option(
-      '-s', '--shards',
+      '-S', '--shards',
       type='int',
       default=os.environ.get('GTEST_TOTAL_SHARDS'),
       help='Total number of shards to calculate from the --index to run')
