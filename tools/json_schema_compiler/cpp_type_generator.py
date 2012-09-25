@@ -6,6 +6,7 @@ from code import Code
 from model import PropertyType
 import any_helper
 import cpp_util
+import operator
 import schema_util
 
 class CppTypeGenerator(object):
@@ -98,20 +99,15 @@ class CppTypeGenerator(object):
     """Gets the enum value in the given model.Property indicating no value has
     been set.
     """
-    prop_name = prop.unix_name
-    if (self.IsEnumRef(prop)):
-      prop_name = self.GetCompiledType(prop).upper()
-    return '%s_NONE' % prop_name.upper()
+    return '%s_NONE' % self.GetReferencedProperty(prop).unix_name.upper()
 
   def GetEnumValue(self, prop, enum_value):
     """Gets the enum value of the given model.Property of the given type.
 
     e.g VAR_STRING
     """
-    prop_name = prop.unix_name.upper()
-    if (self.IsEnumRef(prop)):
-      prop_name = self.GetCompiledType(prop).upper()
-    return '%s_%s' % (prop_name, cpp_util.Classname(enum_value.upper()))
+    return '%s_%s' % (self.GetReferencedProperty(prop).unix_name.upper(),
+                      cpp_util.Classname(enum_value.upper()))
 
   def GetChoicesEnumType(self, prop):
     """Gets the type of the enum for the given model.Property.
@@ -209,7 +205,7 @@ class CppTypeGenerator(object):
     c = Code()
     namespace_type_dependencies = self._NamespaceTypeDependencies()
     for namespace in sorted(namespace_type_dependencies.keys(),
-                            key=lambda ns: ns.name):
+                            key=operator.attrgetter('name')):
       c.Append('namespace %s {' % namespace.name)
       for type_ in sorted(namespace_type_dependencies[namespace],
                           key=schema_util.StripSchemaNamespace):
@@ -222,7 +218,8 @@ class CppTypeGenerator(object):
             'name': type_name,
             'item_type': self.GetType(namespace.types[type_].item_type,
                                       wrap_optional=True)})
-        else:
+        # Enums cannot be forward declared.
+        elif namespace.types[type_].type_ != PropertyType.ENUM:
           c.Append('struct %s;' % type_name)
       c.Append('}')
     c.Concat(self.GetNamespaceStart())

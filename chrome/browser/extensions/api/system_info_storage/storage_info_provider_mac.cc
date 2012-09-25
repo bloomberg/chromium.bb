@@ -79,7 +79,8 @@ bool StorageInfoProviderMac::QueryUnitInfo(const std::string& id,
     type = dev_path_to_type_map_[volume_dev].empty() ?
         systeminfo::kStorageTypeUnknown : dev_path_to_type_map_[volume_dev];
   }
-  info->type = type;
+  info->type =
+      api::experimental_system_info_storage::FromStorageUnitTypeString(type);
   // TODO(joshuagl): we're reporting different values than Disk Utility.
   // Is there an alternative API to get this information that doesn't use
   // statfs? NSFileManager's attributesOfFileSystemForPath uses statfs.

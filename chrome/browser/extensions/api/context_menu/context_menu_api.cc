@@ -75,6 +75,8 @@ extensions::MenuItem::ContextList GetContexts(
       case PropertyWithEnumT::CONTEXTS_ELEMENT_FRAME:
         contexts.Add(extensions::MenuItem::FRAME);
         break;
+      case PropertyWithEnumT::CONTEXTS_ELEMENT_NONE:
+        NOTREACHED();
     }
   }
   return contexts;
@@ -243,6 +245,8 @@ bool UpdateContextMenuFunction::RunImpl() {
     case Update::Params::ID_INTEGER:
       item_id.uid = *params->id_integer;
       break;
+    case Update::Params::ID_NONE:
+      NOTREACHED();
   }
 
   ExtensionService* service = profile()->GetExtensionService();
@@ -344,6 +348,9 @@ bool RemoveContextMenuFunction::RunImpl() {
       break;
     case Remove::Params::MENU_ITEM_ID_INTEGER:
       id.uid = *params->menu_item_id_integer;
+      break;
+    case Remove::Params::MENU_ITEM_ID_NONE:
+      NOTREACHED();
   }
 
   MenuItem* item = manager->GetItemById(id);

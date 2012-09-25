@@ -28,9 +28,6 @@ const char kBytesWrittenKey[] = "bytesWritten";
 const char kDataKey[] = "data";
 const char kResultCodeKey[] = "resultCode";
 const char kSocketIdKey[] = "socketId";
-const char kTCPOption[] = "tcp";
-const char kUDPOption[] = "udp";
-const char kUnknown[] = "unknown";
 
 const char kSocketNotFoundError[] = "Socket not found";
 const char kSocketTypeInvalidError[] = "Socket type is not supported";
@@ -120,14 +117,18 @@ bool SocketCreateFunction::Prepare() {
   params_ = api::socket::Create::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
 
-  if (params_->type == kTCPOption) {
-    socket_type_ = kSocketTypeTCP;
-  } else if (params_->type == kUDPOption) {
-    socket_type_ = kSocketTypeUDP;
-  } else {
-    error_ = kSocketTypeInvalidError;
-    return false;
+  switch (params_->type) {
+    case extensions::api::socket::SOCKET_SOCKET_TYPE_TCP:
+      socket_type_ = kSocketTypeTCP;
+      break;
+    case extensions::api::socket::SOCKET_SOCKET_TYPE_UDP:
+      socket_type_ = kSocketTypeUDP;
+      break;
+    case extensions::api::socket::SOCKET_SOCKET_TYPE_NONE:
+      NOTREACHED();
+      break;
   }
+
   if (params_->options.get()) {
     scoped_ptr<DictionaryValue> options = params_->options->ToValue();
     src_id_ = ExtractSrcId(options.get());
@@ -534,18 +535,10 @@ void SocketGetInfoFunction::Work() {
   if (socket) {
     // This represents what we know about the socket, and does not call through
     // to the system.
-    switch (socket->GetSocketType()) {
-      case Socket::TYPE_TCP:
-        info.socket_type = kTCPOption;
-        break;
-      case Socket::TYPE_UDP:
-        info.socket_type = kUDPOption;
-        break;
-      default:
-        NOTREACHED() << "Unknown socket type.";
-        info.socket_type = kUnknown;
-        break;
-    }
+    if (socket->GetSocketType() == Socket::TYPE_TCP)
+      info.socket_type = extensions::api::socket::SOCKET_SOCKET_TYPE_TCP;
+    else
+      info.socket_type = extensions::api::socket::SOCKET_SOCKET_TYPE_UDP;
     info.connected = socket->IsConnected();
 
     // Grab the peer address as known by the OS. This and the call below will

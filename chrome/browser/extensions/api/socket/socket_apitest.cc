@@ -93,22 +93,6 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketTCPCreateGood) {
   ASSERT_TRUE(socketId > 0);
 }
 
-IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketCreateBad) {
-  scoped_refptr<extensions::SocketCreateFunction> socket_create_function(
-      new extensions::SocketCreateFunction());
-  scoped_refptr<Extension> empty_extension(utils::CreateEmptyExtension());
-
-  socket_create_function->set_extension(empty_extension.get());
-  socket_create_function->set_has_callback(true);
-
-  // TODO(miket): this test currently passes only because of artificial code
-  // that doesn't run in production. Fix this when we're able to.
-  utils::RunFunctionAndReturnError(
-      socket_create_function,
-      "[\"xxxx\"]",
-      browser(), utils::NONE);
-}
-
 IN_PROC_BROWSER_TEST_F(SocketApiTest, GetNetworkList) {
   scoped_refptr<extensions::SocketGetNetworkListFunction> socket_function(
       new extensions::SocketGetNetworkListFunction());

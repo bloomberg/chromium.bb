@@ -33,10 +33,10 @@ TEST(JsonSchemaCompilerEnumsTest, EnumsAsTypes) {
     scoped_ptr<TakesEnumAsType::Params> params(
         TakesEnumAsType::Params::Create(args));
     ASSERT_TRUE(params.get());
-    EXPECT_EQ(ENUMERATION_ONE, params->enumeration);
+    EXPECT_EQ(ENUMS_ENUMERATION_ONE, params->enumeration);
 
     EXPECT_TRUE(args.Equals(ReturnsEnumAsType::Results::Create(
-        ENUMERATION_ONE).get()));
+        ENUMS_ENUMERATION_ONE).get()));
   }
   {
     HasEnumeration enumeration;

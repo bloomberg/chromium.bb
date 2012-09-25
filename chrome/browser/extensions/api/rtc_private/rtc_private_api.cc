@@ -46,27 +46,20 @@ const char kNameIntentField[] = "name";
 const char kPhoneIntentField[] = "phone";
 const char kEmailIntentField[] = "email";
 
-// Returns string representation of intent action.
-const char* GetLaunchAction(RtcPrivateEventRouter::LaunchAction action) {
-  const char* action_str = kActivateAction;
+// Returns the ActionType of intent action.
+api::rtc_private::ActionType GetLaunchAction(
+    RtcPrivateEventRouter::LaunchAction action) {
   switch (action) {
     case RtcPrivateEventRouter::LAUNCH_ACTIVATE:
-      action_str = kActivateAction;
-      break;
+      return api::rtc_private::RTC_PRIVATE_ACTION_TYPE_NONE;
     case RtcPrivateEventRouter::LAUNCH_CHAT:
-      action_str = kChatAction;
-      break;
+      return api::rtc_private::RTC_PRIVATE_ACTION_TYPE_CHAT;
     case RtcPrivateEventRouter::LAUNCH_VOICE:
-      action_str = kVoiceAction;
-      break;
+      return api::rtc_private::RTC_PRIVATE_ACTION_TYPE_VOICE;
     case RtcPrivateEventRouter::LAUNCH_VIDEO:
-      action_str = kVideoAction;
-      break;
-    default:
-      NOTREACHED() << "Unknown action " << action;
-      break;
+      return api::rtc_private::RTC_PRIVATE_ACTION_TYPE_VIDEO;
   }
-  return action_str;
+  return api::rtc_private::RTC_PRIVATE_ACTION_TYPE_NONE;
 }
 
 // Creates JSON payload string for contact web intent data.

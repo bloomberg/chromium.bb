@@ -74,11 +74,6 @@ TEST_F(SocketUnitTest, Create) {
         new SocketCreateFunction(), "[\"tcp\"]"));
     ASSERT_TRUE(result.get());
   }
-  {
-    std::string error = RunFunctionAndReturnError(
-        new SocketCreateFunction(), "[\"nonexistent-socket-type\"]");
-    ASSERT_FALSE(error.empty()) << "Expected error. Got nothing instead.";
-  }
 }
 
 }  // namespace extensions

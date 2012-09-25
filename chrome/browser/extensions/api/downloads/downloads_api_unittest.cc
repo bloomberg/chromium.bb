@@ -1207,14 +1207,6 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   EXPECT_STREQ(download_extension_errors::kInvalidFilterError,
       error.c_str());
   error = RunFunctionAndReturnError(
-      new DownloadsSearchFunction(), "[{\"danger\": \"goat\"}]");
-  EXPECT_STREQ(download_extension_errors::kInvalidDangerTypeError,
-      error.c_str());
-  error = RunFunctionAndReturnError(
-      new DownloadsSearchFunction(), "[{\"state\": \"goat\"}]");
-  EXPECT_STREQ(download_extension_errors::kInvalidStateError,
-      error.c_str());
-  error = RunFunctionAndReturnError(
       new DownloadsSearchFunction(), "[{\"orderBy\": \"goat\"}]");
   EXPECT_STREQ(download_extension_errors::kInvalidOrderByError,
       error.c_str());

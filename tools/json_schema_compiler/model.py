@@ -79,13 +79,13 @@ class Type(object):
       self.item_type = Property(self, name + "Element", json['items'],
                                 from_json=True,
                                 from_client=True)
-    elif json.get('type') == 'string':
-      self.type_ = PropertyType.STRING
     elif 'enum' in json:
       self.enum_values = []
       for value in json['enum']:
         self.enum_values.append(value)
       self.type_ = PropertyType.ENUM
+    elif json.get('type') == 'string':
+      self.type_ = PropertyType.STRING
     else:
       if not (
           'properties' in json or
@@ -95,6 +95,7 @@ class Type(object):
         raise ParseException(self, name + " has no properties or functions")
       self.type_ = PropertyType.OBJECT
     self.name = name
+    self.unix_name = UnixName(self.name)
     self.description = json.get('description')
     self.from_json = True
     self.from_client = True

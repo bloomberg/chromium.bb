@@ -120,7 +120,7 @@ class CppTypeGeneratorTest(unittest.TestCase):
                       'typedef std::vector<int> ColorArray;\n'
                       '}\n'
                       'namespace fontSettings {\n'
-                      'typedef std::string ScriptCode;\n'
+                      'typedef std::string FakeStringType;\n'
                       '}\n'
                       'namespace dependency_tester {\n'
                       '}  // dependency_tester',
@@ -154,7 +154,8 @@ class CppTypeGeneratorTest(unittest.TestCase):
                                self.font_settings.unix_name)
     self.assertEquals(
         'std::string',
-        manager.GetType(self.font_settings.types['fontSettings.ScriptCode']))
+        manager.GetType(
+            self.font_settings.types['fontSettings.FakeStringType']))
 
   def testArrayAsType(self):
     manager = CppTypeGenerator('', self.browser_action,

@@ -135,8 +135,7 @@ class HGenerator(object):
     """
     c = Code()
     c.Sblock('enum %s {' % enum_name)
-    if prop.optional:
-      c.Append(self._cpp_type_generator.GetEnumNoneValue(prop) + ',')
+    c.Append(self._cpp_type_generator.GetEnumNoneValue(prop) + ',')
     for value in values:
       c.Append(self._cpp_type_generator.GetEnumValue(prop, value) + ',')
     (c.Eblock('};')
@@ -193,12 +192,16 @@ class HGenerator(object):
       if type_.description:
         c.Comment(type_.description)
       c.Sblock('enum %(classname)s {')
+      c.Append('%s,' % self._cpp_type_generator.GetEnumNoneValue(type_))
       for value in type_.enum_values:
-        c.Append('%s_%s,' % (classname.upper(), value.upper()))
+        c.Append('%s,' % self._cpp_type_generator.GetEnumValue(type_, value))
       (c.Eblock('};')
         .Append()
         .Append('scoped_ptr<base::Value> CreateEnumValue(%s %s);' %
                 (classname, classname.lower()))
+        .Append('std::string ToString(%s enum_param);' % classname)
+        .Append('%s From%sString(const std::string& enum_string);' %
+            (classname, classname))
       )
     else:
       if type_.description:
@@ -312,12 +315,19 @@ class HGenerator(object):
             prop.enum_values))
         create_enum_value = ('scoped_ptr<base::Value> CreateEnumValue(%s %s);' %
                             (enum_name, prop.unix_name))
+        enum_to_string = 'std::string ToString(%s enum_param);' % enum_name
+        enum_from_string = ('%s From%sString(const std::string& enum_string);' %
+            (enum_name, enum_name))
         # If the property is from the UI then we're in a struct so this function
         # should be static. If it's from the client, then we're just in a
         # namespace so we can't have the static keyword.
         if prop.from_json:
-          create_enum_value = 'static ' + create_enum_value
-        c.Append(create_enum_value)
+          create_enum_value = 'static %s' % create_enum_value
+          enum_to_string = 'static %s' % enum_to_string
+          enum_from_string = 'static %s' % enum_from_string
+        (c.Append(create_enum_value)
+          .Append(enum_to_string)
+          .Append(enum_from_string))
     return c
 
   def _GeneratePrivatePropertyStructures(self, props):

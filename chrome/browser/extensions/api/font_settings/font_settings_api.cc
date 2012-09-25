@@ -59,11 +59,15 @@ const char kWebKitFontPrefPrefix[] = "webkit.webprefs.fonts.";
 
 // Gets the font name preference path for |generic_family| and |script|. If
 // |script| is NULL, uses prefs::kWebKitCommonScript.
-std::string GetFontNamePrefPath(const std::string& generic_family,
-                                const std::string* script) {
+std::string GetFontNamePrefPath(fonts::GenericFamily generic_family_enum,
+                                fonts::ScriptCode script_enum) {
+  std::string script = fonts::ToString(script_enum);
+  if (script.empty())
+    script = prefs::kWebKitCommonScript;
+  std::string generic_family = fonts::ToString(generic_family_enum);
   return StringPrintf(kWebKitFontPrefFormat,
                       generic_family.c_str(),
-                      script ? script->c_str() : prefs::kWebKitCommonScript);
+                      script.c_str());
 }
 
 // Extracts the generic family and script from font name pref path |pref_path|.
@@ -251,7 +255,7 @@ bool ClearFontFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   std::string pref_path = GetFontNamePrefPath(params->details.generic_family,
-                                              params->details.script.get());
+                                              params->details.script);
 
   // Ensure |pref_path| really is for a registered per-script font pref.
   EXTENSION_FUNCTION_VALIDATE(
@@ -270,7 +274,8 @@ bool GetFontFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   std::string pref_path = GetFontNamePrefPath(params->details.generic_family,
-                                              params->details.script.get());
+                                              params->details.script);
+
   PrefService* prefs = profile_->GetPrefs();
   const PrefService::Preference* pref =
       prefs->FindPreference(pref_path.c_str());
@@ -307,7 +312,8 @@ bool SetFontFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   std::string pref_path = GetFontNamePrefPath(params->details.generic_family,
-                                              params->details.script.get());
+                                              params->details.script);
+
   // Ensure |pref_path| really is for a registered font pref.
   EXTENSION_FUNCTION_VALIDATE(
       profile_->GetPrefs()->FindPreference(pref_path.c_str()));

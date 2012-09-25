@@ -4,7 +4,7 @@
     "types": [
       {
         "id": "Enumeration",
-        "enum": ["none", "one", "two", "three"]
+        "enum": ["one", "two", "three"]
       },
       {
         "id": "EnumType",

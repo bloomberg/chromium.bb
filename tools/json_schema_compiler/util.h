@@ -44,6 +44,17 @@ bool GetItemFromList(const ListValue& from, int index, linked_ptr<T>* out) {
   return true;
 }
 
+// This is used for getting an enum out of a ListValue, which will happen if an
+// array of enums is a parameter to a function.
+template<class T>
+bool GetItemFromList(const ListValue& from, int index, T* out) {
+  int value;
+  if (!from.GetInteger(index, &value))
+    return false;
+  *out = static_cast<T>(value);
+  return true;
+}
+
 // Populates |out| with |list|. Returns false if there is no list at the
 // specified key or if the list has anything other than |T|.
 template <class T>

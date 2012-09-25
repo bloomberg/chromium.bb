@@ -21,7 +21,7 @@
                 "$ref": "browserAction.ColorArray"
               },
               "scriptCode": {
-                "$ref": "fontSettings.ScriptCode"
+                "$ref": "fontSettings.FakeStringType"
               }
             }
           }

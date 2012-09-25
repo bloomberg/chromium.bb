@@ -109,27 +109,27 @@ class CCGenerator(object):
             self._GenerateFunction(
                 cpp_namespace + '::' + cpp_util.Classname(function.name),
                 function))
-          .Append()
-        )
+          .Append())
     elif type_.type_ == PropertyType.OBJECT:
       (c.Concat(self._GeneratePropertyFunctions(
           cpp_namespace, type_.properties.values()))
         .Sblock('%(namespace)s::%(classname)s()')
         .Concat(self._GenerateInitializersAndBody(type_))
         .Eblock('%(namespace)s::~%(classname)s() {}')
-        .Append()
-      )
+        .Append())
       if type_.from_json:
         (c.Concat(self._GenerateTypePopulate(cpp_namespace, type_))
-          .Append()
-        )
+          .Append())
       if type_.from_client:
         (c.Concat(self._GenerateTypeToValue(cpp_namespace, type_))
-          .Append()
-        )
+          .Append())
     elif self._cpp_type_generator.IsEnumOrEnumRef(type_):
-      c.Concat(self._GenerateCreateEnumTypeValue(cpp_namespace, type_))
-      c.Append()
+      (c.Concat(self._GenerateCreateEnumTypeValue(cpp_namespace, type_))
+        .Append()
+        .Concat(self._GenerateEnumFromString(cpp_namespace, type_))
+        .Append()
+        .Concat(self._GenerateEnumToString(cpp_namespace, type_))
+        .Append())
     c.Substitute({'classname': classname, 'namespace': cpp_namespace})
 
     return c
@@ -220,12 +220,14 @@ class CCGenerator(object):
     c.Append('const base::Value* %(value_var)s = NULL;')
     if prop.optional:
       (c.Sblock(
-          'if (%(src)s->GetWithoutPathExpansion("%(key)s", &%(value_var)s)) {'
-        )
+          'if (%(src)s->GetWithoutPathExpansion("%(key)s", &%(value_var)s)) {')
         .Concat(self._GeneratePopulatePropertyFromValue(
-            prop, value_var, dst, 'false'))
-        .Eblock('}')
-      )
+            prop, value_var, dst, 'false')))
+      if self._cpp_type_generator.IsEnumOrEnumRef(prop):
+        (c.Append('} else {')
+          .Append('%%(dst)s->%%(name)s = %s;' %
+              self._cpp_type_generator.GetEnumNoneValue(prop)))
+      c.Eblock('}')
     else:
       (c.Append(
           'if (!%(src)s->GetWithoutPathExpansion("%(key)s", &%(value_var)s))')
@@ -234,7 +236,13 @@ class CCGenerator(object):
             prop, value_var, dst, 'false'))
       )
     c.Append()
-    c.Substitute({'value_var': value_var, 'key': prop.name, 'src': src})
+    c.Substitute({
+      'value_var': value_var,
+      'key': prop.name,
+      'src': src,
+      'dst': dst,
+      'name': prop.unix_name
+    })
     return c
 
   def _GenerateTypeToValue(self, cpp_namespace, type_):
@@ -343,7 +351,7 @@ class CCGenerator(object):
         vardot = var + '.'
       return '%sDeepCopy()' % vardot
     elif self._cpp_type_generator.IsEnumOrEnumRef(prop):
-      return 'CreateEnumValue(%s).release()' % var
+      return 'base::Value::CreateStringValue(ToString(%s))' % var
     elif prop.type_ == PropertyType.BINARY:
       if prop.optional:
         vardot = var + '->'
@@ -648,11 +656,7 @@ class CCGenerator(object):
       c.Append('%(dst)s->%(name)s' + accessor + 'push_back(enum_temp);')
       c.Eblock('}')
 
-  def _GenerateStringToEnumConversion(self,
-                                      c,
-                                      prop,
-                                      value_var,
-                                      enum_temp):
+  def _GenerateStringToEnumConversion(self, c, prop, value_var, enum_temp):
     """Appends code that converts a string to an enum.
     Leaves failure_value unsubstituted.
 
@@ -661,23 +665,16 @@ class CCGenerator(object):
     value_var: the string value that is being converted.
     enum_temp: the name used to store the temporary enum value.
     """
-    (c.Append('%s %s;' % (self._cpp_type_generator.GetCompiledType(prop),
-                          enum_temp))
-      .Append('std::string enum_as_string;')
+    (c.Append('std::string enum_as_string;')
       .Append('if (!%s->GetAsString(&enum_as_string))' % value_var)
       .Append('  return %(failure_value)s;')
-    )
-    for i, enum_value in enumerate(
-          self._cpp_type_generator.GetReferencedProperty(prop).enum_values):
-      (c.Append(
-          ('if' if i == 0 else 'else if') +
-          '(enum_as_string == "%s")' % enum_value)
-        .Append('  ' + enum_temp + ' = %s;' % (
-            self._cpp_type_generator.GetEnumValue(prop, enum_value)))
-      )
-    (c.Append('else')
-      .Append('  return %(failure_value)s;')
-    )
+      .Append('%(type)s %(enum)s = From%(type)sString(enum_as_string);' % {
+        'type': self._cpp_type_generator.GetCompiledType(prop),
+        'enum': enum_temp
+      })
+      .Append('if (%s == %s)' %
+        (enum_temp, self._cpp_type_generator.GetEnumNoneValue(prop)))
+     .Append('  return %(failure_value)s;'))
 
   def _GeneratePropertyFunctions(self, param_namespace, params):
     """Generate the functions for structures generated by a property such as
@@ -699,8 +696,16 @@ class CCGenerator(object):
         if param.from_client:
           c.Concat(self._GenerateGetChoiceValue(param_namespace, param))
       elif param.type_ == PropertyType.ENUM:
-        c.Concat(self._GenerateCreateEnumValue(param_namespace, param))
-        c.Append()
+        (c.Concat(self._GenerateCreateEnumValue(param_namespace, param))
+          .Append()
+          .Concat(self._GenerateEnumFromString(param_namespace,
+                                               param,
+                                               use_namespace=True))
+          .Append()
+          .Concat(self._GenerateEnumToString(param_namespace,
+                                             param,
+                                             use_namespace=True))
+          .Append())
     return c
 
   def _GenerateGetChoiceValue(self, cpp_namespace, prop):
@@ -711,18 +716,15 @@ class CCGenerator(object):
     (c.Sblock('scoped_ptr<base::Value> '
               '%(cpp_namespace)s::Get%(choice)sChoiceValue() const {')
       .Sblock('switch (%s_type) {' % prop.unix_name)
-    )
-    if prop.optional:
-      c.Concat(self._GenerateReturnCase(
+      .Concat(self._GenerateReturnCase(
           self._cpp_type_generator.GetEnumNoneValue(prop),
-          'scoped_ptr<base::Value>()'))
+          'scoped_ptr<base::Value>()')))
     for choice in self._cpp_type_generator.ExpandParams([prop]):
       c.Concat(self._GenerateReturnCase(
           self._cpp_type_generator.GetEnumValue(prop, choice.type_.name),
           'make_scoped_ptr<base::Value>(%s)' %
               self._CreateValueFromProperty(choice, choice.unix_name)))
     (c.Eblock('}')
-      .Append('NOTREACHED();')
       .Append('return scoped_ptr<base::Value>();')
       .Eblock('}')
       .Append()
@@ -739,21 +741,76 @@ class CCGenerator(object):
     """
     c = Code()
     classname = cpp_util.Classname(schema_util.StripSchemaNamespace(prop.name))
-    c.Sblock('scoped_ptr<base::Value> CreateEnumValue(%s %s) {' % (
-        classname, classname.lower()))
-    c.Sblock('switch (%s) {' % classname.lower())
+    (c.Sblock('scoped_ptr<base::Value> CreateEnumValue(%s %s) {' %
+        (classname, classname.lower()))
+      .Append('std::string enum_temp = ToString(%s);' % classname.lower())
+      .Append('if (enum_temp.empty())')
+      .Append('  return scoped_ptr<base::Value>();')
+      .Append('return scoped_ptr<base::Value>('
+              'base::Value::CreateStringValue(enum_temp));')
+      .Eblock('}'))
+    return c
 
+  def _GenerateEnumToString(self, cpp_namespace, prop, use_namespace=False):
+    """Generates ToString() which gets the string representation of an enum.
+    """
+    c = Code()
+    classname = cpp_util.Classname(schema_util.StripSchemaNamespace(prop.name))
+    if use_namespace:
+      namespace = '%s::' % cpp_namespace
+    else:
+      namespace = ''
+
+    (c.Append('// static')
+      .Sblock('std::string %(namespace)sToString(%(class)s enum_param) {'))
     enum_prop = self._cpp_type_generator.GetReferencedProperty(prop)
+    c.Sblock('switch (enum_param) {')
     for enum_value in enum_prop.enum_values:
       c.Concat(self._GenerateReturnCase(
-          '%s_%s' % (classname.upper(), enum_value.upper()),
-          'scoped_ptr<base::Value>(base::Value::CreateStringValue("%s"))' %
-          enum_value))
-    (c.Eblock('}')
-      .Append('NOTREACHED();')
-      .Append('return scoped_ptr<base::Value>();')
+          self._cpp_type_generator.GetEnumValue(prop, enum_value),
+          '"%s"' % enum_value))
+    (c.Append('case %s:' % self._cpp_type_generator.GetEnumNoneValue(prop))
+      .Append('  return "";')
       .Eblock('}')
-    )
+      .Append('return "";')
+      .Eblock('}')
+      .Substitute({
+        'namespace': namespace,
+        'class': classname
+      }))
+    return c
+
+  def _GenerateEnumFromString(self, cpp_namespace, prop, use_namespace=False):
+    """Generates FromClassNameString() which gets an enum from its string
+    representation.
+    """
+    c = Code()
+    classname = cpp_util.Classname(schema_util.StripSchemaNamespace(prop.name))
+    if use_namespace:
+      namespace = '%s::' % cpp_namespace
+    else:
+      namespace = ''
+
+    (c.Append('// static')
+      .Sblock('%(namespace)s%(class)s'
+              ' %(namespace)sFrom%(class)sString('
+              'const std::string& enum_string) {'))
+    enum_prop = self._cpp_type_generator.GetReferencedProperty(prop)
+    for i, enum_value in enumerate(
+          self._cpp_type_generator.GetReferencedProperty(prop).enum_values):
+      # This is broken up into all ifs with no else ifs because we get
+      # "fatal error C1061: compiler limit : blocks nested too deeply"
+      # on Windows.
+      (c.Append('if (enum_string == "%s")' % enum_value)
+        .Append('  return %s;' %
+            self._cpp_type_generator.GetEnumValue(prop, enum_value)))
+    (c.Append('return %s;' %
+        self._cpp_type_generator.GetEnumNoneValue(prop))
+      .Eblock('}')
+      .Substitute({
+        'namespace': namespace,
+        'class': classname
+      }))
     return c
 
   # TODO(chebert): This is basically the same as GenerateCreateEnumTypeValue().
@@ -764,29 +821,20 @@ class CCGenerator(object):
     representation of an enum.
     """
     c = Code()
-    c.Append('// static')
-    c.Sblock('scoped_ptr<base::Value> %(cpp_namespace)s::CreateEnumValue('
+    (c.Append('// static')
+      .Sblock('scoped_ptr<base::Value> %(cpp_namespace)s::CreateEnumValue('
              '%(arg)s) {')
-    c.Sblock('switch (%s) {' % prop.unix_name)
-    if prop.optional:
-      c.Concat(self._GenerateReturnCase(
-          self._cpp_type_generator.GetEnumNoneValue(prop),
-          'scoped_ptr<base::Value>()'))
-    for enum_value in prop.enum_values:
-      c.Concat(self._GenerateReturnCase(
-          self._cpp_type_generator.GetEnumValue(prop, enum_value),
-          'scoped_ptr<base::Value>(base::Value::CreateStringValue("%s"))' %
-          enum_value))
-    (c.Eblock('}')
-      .Append('NOTREACHED();')
-      .Append('return scoped_ptr<base::Value>();')
+      .Append('std::string enum_temp = ToString(%s);' % prop.unix_name)
+      .Append('if (enum_temp.empty())')
+      .Append('  return scoped_ptr<base::Value>();')
+      .Append('return scoped_ptr<base::Value>('
+              'base::Value::CreateStringValue(enum_temp));')
       .Eblock('}')
       .Substitute({
         'cpp_namespace': cpp_namespace,
         'arg': cpp_util.GetParameterDeclaration(
             prop, self._cpp_type_generator.GetType(prop))
-      })
-    )
+      }))
     return c
 
   def _GenerateReturnCase(self, case_value, return_value):

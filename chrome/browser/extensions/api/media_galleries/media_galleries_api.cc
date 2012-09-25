@@ -73,24 +73,34 @@ bool MediaGalleriesGetMediaFileSystemsFunction::RunImpl() {
   scoped_ptr<GetMediaFileSystems::Params> params(
       GetMediaFileSystems::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
-  MediaGalleries::GetMediaFileSystemsInteractivity interactive = "no";
-  if (params->details.get() && params->details->interactive.get())
-    interactive = *params->details->interactive;
-
-  if (interactive == "yes") {
-    ShowDialog();
-    return true;
-  } else if (interactive == "if_needed") {
-    MediaFileSystemRegistry::GetInstance()->GetMediaFileSystemsForExtension(
-        render_view_host(), GetExtension(), base::Bind(
-            &MediaGalleriesGetMediaFileSystemsFunction::ShowDialogIfNoGalleries,
-            this));
-    return true;
-  } else if (interactive == "no") {
-    GetAndReturnGalleries();
-    return true;
+  MediaGalleries::GetMediaFileSystemsInteractivity interactive =
+      MediaGalleries::MEDIA_GALLERIES_GET_MEDIA_FILE_SYSTEMS_INTERACTIVITY_NO;
+  if (params->details.get() && params->details->interactive != MediaGalleries::
+         MEDIA_GALLERIES_GET_MEDIA_FILE_SYSTEMS_INTERACTIVITY_NONE) {
+    interactive = params->details->interactive;
   }
 
+  switch (interactive) {
+    case MediaGalleries::
+        MEDIA_GALLERIES_GET_MEDIA_FILE_SYSTEMS_INTERACTIVITY_YES:
+      ShowDialog();
+      return true;
+    case MediaGalleries::
+        MEDIA_GALLERIES_GET_MEDIA_FILE_SYSTEMS_INTERACTIVITY_IF_NEEDED:
+      MediaFileSystemRegistry::GetInstance()->GetMediaFileSystemsForExtension(
+          render_view_host(), GetExtension(), base::Bind(
+              &MediaGalleriesGetMediaFileSystemsFunction::
+                  ShowDialogIfNoGalleries,
+              this));
+      return true;
+    case MediaGalleries::
+        MEDIA_GALLERIES_GET_MEDIA_FILE_SYSTEMS_INTERACTIVITY_NO:
+      GetAndReturnGalleries();
+      return true;
+    case MediaGalleries::
+        MEDIA_GALLERIES_GET_MEDIA_FILE_SYSTEMS_INTERACTIVITY_NONE:
+      NOTREACHED();
+  }
   error_ = kInvalidInteractive;
   return false;
 }

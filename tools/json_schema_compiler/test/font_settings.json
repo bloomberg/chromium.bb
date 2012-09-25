@@ -22,14 +22,9 @@
         }
       },
       {
-        "id": "ScriptCode",
+        "id": "FakeStringType",
         "type": "string",
-        "enum": [ "Arab", "Armn", "Beng", "Cans", "Cher", "Cyrl", "Deva", "Ethi", "Geor",
-                  "Grek", "Gujr", "Guru", "Hang", "Hans", "Hant", "Hebr", "Hrkt", "Knda",
-                  "Khmr", "Laoo", "Mlym", "Mong", "Mymr", "Orya", "Sinh", "Taml", "Telu",
-                  "Thaa", "Thai", "Tibt", "Yiii"
-                ],
-        "description": "An ISO 15924 script code."
+        "description": "Used to test a string type."
       },
       {
         "id": "GenericFamily",
@@ -54,7 +49,7 @@
             "type": "object",
             "properties": {
               "script": {
-                "$ref": "ScriptCode",
+                "$ref": "FakeStringType",
                 "description": "The script for which the font should be cleared. If omitted, the global script font setting is cleared.",
                 "optional": true
               },
@@ -81,7 +76,7 @@
             "type": "object",
             "properties": {
               "script": {
-                "$ref": "ScriptCode",
+                "$ref": "FakeStringType",
                 "description": "The script for which the font should be retrieved. If omitted, the font for the global script is retrieved.",
                 "optional": true
               },
@@ -119,7 +114,7 @@
             "type": "object",
             "properties": {
               "script": {
-                "$ref": "ScriptCode",
+                "$ref": "FakeStringType",
                 "description": "The script code which the font should be set. If omitted, the font for the global script is set.",
                 "optional": true
               },
@@ -454,7 +449,7 @@
             "properties": {
               "fontName": { "type": "string" },
               "script": {
-                "$ref": "ScriptCode",
+                "$ref": "FakeStringType",
                 "description": "The script code for which the font setting has changed. If omitted, the global script font setting has changed.",
                 "optional": true
               },
