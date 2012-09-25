@@ -101,6 +101,7 @@ void ExtractIMEInfo(const input_method::InputMethodDescriptor& ime,
                     ash::IMEInfo* info) {
   info->id = ime.id();
   info->name = util.GetInputMethodLongName(ime);
+  info->medium_name = util.GetInputMethodMediumName(ime);
   info->short_name = util.GetInputMethodShortName(ime);
   info->third_party = ime.third_party();
 }

@@ -112,11 +112,6 @@ TEST_F(InputMethodUtilTest, GetInputMethodShortNameTest) {
               util_.GetInputMethodShortName(desc));
   }
   {
-    InputMethodDescriptor desc = GetDesc("zinnia-japanese", "us", "ja");
-    EXPECT_EQ(UTF8ToUTF16("\xe6\x89\x8b"),
-              util_.GetInputMethodShortName(desc));
-  }
-  {
     InputMethodDescriptor desc = GetDesc("pinyin", "us", "zh-CN");
     EXPECT_EQ(UTF8ToUTF16("\xe6\x8b\xbc"),
               util_.GetInputMethodShortName(desc));
@@ -140,6 +135,50 @@ TEST_F(InputMethodUtilTest, GetInputMethodShortNameTest) {
     InputMethodDescriptor desc = GetDesc("m17n:zh:quick", "us", "zh-TW");
     EXPECT_EQ(UTF8ToUTF16("\xe9\x80\x9f"),
               util_.GetInputMethodShortName(desc));
+  }
+}
+
+TEST_F(InputMethodUtilTest, GetInputMethodMediumNameTest) {
+  {
+    // input methods with medium name equal to short name
+    const char * input_method_id[] = {
+      "xkb:us:altgr-intl:eng",
+      "xkb:us:dvorak:eng",
+      "xkb:us:intl:eng",
+      "xkb:us:colemak:eng",
+      "english-m",
+      "xkb:de:neo:ger",
+      "xkb:es:cat:cat",
+      "xkb:gb:dvorak:eng",
+    };
+    const int len = ARRAYSIZE_UNSAFE(input_method_id);
+    for (int i=0; i<len; ++i) {
+      InputMethodDescriptor desc = GetDesc(input_method_id[i], "", "");
+      string16 medium_name = util_.GetInputMethodMediumName(desc);
+      string16 short_name = util_.GetInputMethodShortName(desc);
+      EXPECT_EQ(medium_name,short_name);
+    }
+  }
+  {
+    // input methods with medium name not equal to short name
+    const char * input_method_id[] = {
+      "m17n:zh:cangjie",
+      "m17n:zh:quick",
+      "mozc",
+      "mozc-chewing",
+      "mozc-dv",
+      "mozc-hangul",
+      "mozc-jp",
+      "pinyin",
+      "pinyin-dv",
+    };
+    const int len = ARRAYSIZE_UNSAFE(input_method_id);
+    for (int i=0; i<len; ++i) {
+      InputMethodDescriptor desc = GetDesc(input_method_id[i], "", "");
+      string16 medium_name = util_.GetInputMethodMediumName(desc);
+      string16 short_name = util_.GetInputMethodShortName(desc);
+      EXPECT_NE(medium_name,short_name);
+    }
   }
 }
 

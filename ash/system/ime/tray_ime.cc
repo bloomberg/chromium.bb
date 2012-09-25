@@ -219,7 +219,7 @@ class IMENotificationView : public TrayNotificationView {
     return new views::Label(
         l10n_util::GetStringFUTF16(
             IDS_ASH_STATUS_TRAY_IME_TURNED_ON_BUBBLE,
-            current.short_name));
+            current.medium_name));
   }
 
 

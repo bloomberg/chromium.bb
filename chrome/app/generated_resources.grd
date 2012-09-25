@@ -14205,6 +14205,18 @@ Press any key to continue exploring.
       <message name="IDS_LANGUAGE_SELECTION_SELECT" desc="Label for language selection dropdown">
         Select your language:
       </message>
+      <message name="IDS_LANGUAGES_MEDIUM_LEN_NAME_CHINESE_SIMPLIFIED" desc="Medium length name for the input method for simplified Chinese which is shown following the text: Your input method has changed to...">
+        Simplified Chinese
+      </message>
+      <message name="IDS_LANGUAGES_MEDIUM_LEN_NAME_CHINESE_TRADITIONAL" desc="Medium length name for the input method for traditional Chinese which is show following the text: Your input method has changed to...">
+       Traditional Chinese
+      </message>
+      <message name="IDS_LANGUAGES_MEDIUM_LEN_NAME_JAPANESE" desc="Medium length name for the input method for Japanese which is show following the text: Your input method has changed to...">
+        Japanese
+      </message>
+      <message name="IDS_LANGUAGES_MEDIUM_LEN_NAME_KOREAN" desc="Medium length name for the input method for Korean which is show following the text: Your input method has changed to...">
+        Korean
+      </message>
       <message name="IDS_KEYBOARD_SELECTION_SELECT" desc="Label for keyboard selection dropdown">
         Select your keyboard:
       </message>

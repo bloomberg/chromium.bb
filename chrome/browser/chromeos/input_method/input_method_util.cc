@@ -46,7 +46,6 @@ const struct {
   { "mozc", "\xe3\x81\x82" },  // U+3042, Japanese Hiragana letter A in UTF-8.
   { "mozc-dv", "\xe3\x81\x82" },
   { "mozc-jp", "\xe3\x81\x82" },
-  { "zinnia-japanese", "\xe6\x89\x8b" },  // U+624B, "hand"
   // For simplified Chinese input methods
   { "pinyin", "\xe6\x8b\xbc" },  // U+62FC
   { "pinyin-dv", "\xe6\x8b\xbc" },
@@ -60,6 +59,28 @@ const struct {
 
 const size_t kMappingFromIdToIndicatorTextLen =
     ARRAYSIZE_UNSAFE(kMappingFromIdToIndicatorText);
+
+// A mapping from an input method id to a resource id for a
+// medium length language indicator.
+// For those languages that want to display a slightly longer text in the
+// "Your input method has changed to..." bubble than in the status tray.
+// If an entry is not found in this table the short name is used.
+const struct {
+  const char* input_method_id;
+  const int resource_id;
+} kMappingImeIdToMediumLenNameResourceId[] = {
+  { "m17n:zh:cangjie", IDS_LANGUAGES_MEDIUM_LEN_NAME_CHINESE_TRADITIONAL },
+  { "m17n:zh:quick", IDS_LANGUAGES_MEDIUM_LEN_NAME_CHINESE_TRADITIONAL },
+  { "mozc", IDS_LANGUAGES_MEDIUM_LEN_NAME_JAPANESE },
+  { "mozc-chewing", IDS_LANGUAGES_MEDIUM_LEN_NAME_CHINESE_TRADITIONAL },
+  { "mozc-dv", IDS_LANGUAGES_MEDIUM_LEN_NAME_JAPANESE },
+  { "mozc-hangul", IDS_LANGUAGES_MEDIUM_LEN_NAME_KOREAN },
+  { "mozc-jp", IDS_LANGUAGES_MEDIUM_LEN_NAME_JAPANESE },
+  { "pinyin", IDS_LANGUAGES_MEDIUM_LEN_NAME_CHINESE_SIMPLIFIED },
+  { "pinyin-dv", IDS_LANGUAGES_MEDIUM_LEN_NAME_CHINESE_SIMPLIFIED },
+};
+const size_t kMappingImeIdToMediumLenNameResourceIdLen =
+    ARRAYSIZE_UNSAFE(kMappingImeIdToMediumLenNameResourceId);
 
 string16 GetLanguageName(const std::string& language_code) {
   const string16 language_name = l10n_util::GetDisplayNameForLocale(
@@ -423,6 +444,21 @@ string16 InputMethodUtil::GetInputMethodShortName(
   }
   DCHECK(!text.empty());
   return text;
+}
+
+string16 InputMethodUtil::GetInputMethodMediumName(
+    const InputMethodDescriptor& input_method) const {
+  // For the "Your input method has changed to..." bubble. In most cases
+  // it uses the same name as the short name, unless found in a table
+  // for medium length names.
+  for (size_t i = 0; i < kMappingImeIdToMediumLenNameResourceIdLen; ++i) {
+    if (kMappingImeIdToMediumLenNameResourceId[i].input_method_id ==
+        input_method.id()) {
+      return l10n_util::GetStringUTF16(
+          kMappingImeIdToMediumLenNameResourceId[i].resource_id);
+    }
+  }
+  return GetInputMethodShortName(input_method);
 }
 
 string16 InputMethodUtil::GetInputMethodLongName(
