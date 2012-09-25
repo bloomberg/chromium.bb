@@ -27,11 +27,15 @@ var gFingerprints = [];
 function startDetection(videoElementId, canvasId, width, height) {
   var video = document.getElementById(videoElementId);
   var canvas = document.getElementById(canvasId);
+  var NUM_FINGERPRINTS_TO_SAVE = 5;
 
   setInterval(function() {
     var context = canvas.getContext('2d');
     captureFrame_(video, context, width, height);
     gFingerprints.push(fingerprint_(context, width, height));
+    if (gFingerprints.length > NUM_FINGERPRINTS_TO_SAVE) {
+      gFingerprints.shift();
+    }
   }, 100);
 
   returnToTest('ok-started');
@@ -44,10 +48,11 @@ function startDetection(videoElementId, canvasId, width, height) {
  *                  video-not-playing.
  */
 function isVideoPlaying() {
-  // We assume here that no video = no video data at all reaches the video tag.
+  // Video is considered to be playing if at least one finger print has changed
+  // since the oldest fingerprint.
   // Even small blips in the pixel data will cause this check to pass.
-  for (var i = 0; i < gFingerprints.length; i++) {
-    if (gFingerprints[i] > 0) {
+  if (gFingerprints.length > 1) {
+    if (!allElementsEqualTo_(gFingerprints, gFingerprints[0])) {
       returnToTest('video-playing');
       return;
     }
@@ -56,6 +61,18 @@ function isVideoPlaying() {
 }
 
 // Internals.
+
+/** @private */
+function allElementsEqualTo_(elements, element_to_compare) {
+  if (elements.length == 0)
+    return false;
+  for (var i = 0; i < elements.length; i++) {
+    if (elements[i] != element_to_compare) {
+      return false;
+    }
+  }
+  return true;
+}
 
 /** @private */
 function captureFrame_(video, canvasContext, width, height) {
