@@ -36,6 +36,8 @@
 #include "chrome/browser/hang_monitor/hang_crash_dump_win.h"
 #endif
 
+int HungPluginTabHelper::kUserDataKey;
+
 namespace {
 
 // Delay in seconds before re-showing the hung plugin message. This will be

@@ -31,7 +31,6 @@ class FindBackendTestContentsCreator;
 class FindTabHelper;
 class GeolocationPermissionContextTests;
 class HistoryTabHelper;
-class HungPluginTabHelper;
 class InfoBarControllerContentsCreator;
 class InfoBarTabHelper;
 class InstantLoader;
@@ -182,9 +181,6 @@ class TabContents : public content::WebContentsObserver {
   FaviconTabHelper* favicon_tab_helper() { return favicon_tab_helper_.get(); }
   FindTabHelper* find_tab_helper() { return find_tab_helper_.get(); }
   HistoryTabHelper* history_tab_helper() { return history_tab_helper_.get(); }
-  HungPluginTabHelper* hung_plugin_tab_helper() {
-    return hung_plugin_tab_helper_.get();
-  }
   InfoBarTabHelper* infobar_tab_helper() { return infobar_tab_helper_.get(); }
 
   PasswordManager* password_manager() { return password_manager_.get(); }
@@ -248,7 +244,6 @@ class TabContents : public content::WebContentsObserver {
   scoped_ptr<FaviconTabHelper> favicon_tab_helper_;
   scoped_ptr<FindTabHelper> find_tab_helper_;
   scoped_ptr<HistoryTabHelper> history_tab_helper_;
-  scoped_ptr<HungPluginTabHelper> hung_plugin_tab_helper_;
   scoped_ptr<InfoBarTabHelper> infobar_tab_helper_;
 
   // PasswordManager and its delegate. The delegate must outlive the manager,

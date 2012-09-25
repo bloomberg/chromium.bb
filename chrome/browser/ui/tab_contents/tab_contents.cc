@@ -136,7 +136,7 @@ TabContents::TabContents(WebContents* contents)
   favicon_tab_helper_.reset(new FaviconTabHelper(contents));
   find_tab_helper_.reset(new FindTabHelper(contents));
   history_tab_helper_.reset(new HistoryTabHelper(contents));
-  hung_plugin_tab_helper_.reset(new HungPluginTabHelper(contents));
+  HungPluginTabHelper::CreateForWebContents(contents);
   infobar_tab_helper_.reset(new InfoBarTabHelper(contents));
   MetroPinTabHelper::CreateForWebContents(contents);
   password_manager_delegate_.reset(new PasswordManagerDelegateImpl(this));
