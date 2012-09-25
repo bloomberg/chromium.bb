@@ -11,7 +11,6 @@
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
-#include "base/metrics/histogram.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/proto/trials_seed.pb.h"
@@ -100,12 +99,19 @@ GURL GetVariationsServerURL() {
 VariationsService::VariationsService()
     : variations_server_url_(GetVariationsServerURL()),
       create_trials_from_seed_called_(false),
-      was_offline_during_last_request_attempt_(false) {
-  net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
+      resource_request_allowed_notifier_(
+          new ResourceRequestAllowedNotifier) {
+  resource_request_allowed_notifier_->Init(this);
+}
+
+VariationsService::VariationsService(ResourceRequestAllowedNotifier* notifier)
+    : variations_server_url_(GetVariationsServerURL()),
+      create_trials_from_seed_called_(false),
+      resource_request_allowed_notifier_(notifier) {
+  resource_request_allowed_notifier_->Init(this);
 }
 
 VariationsService::~VariationsService() {
-  net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
 }
 
 bool VariationsService::CreateTrialsFromSeed(PrefService* local_prefs) {
@@ -151,18 +157,18 @@ void VariationsService::StartRepeatedVariationsSeedFetch() {
                this, &VariationsService::FetchVariationsSeed);
 }
 
-void VariationsService::FetchVariationsSeed() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+// static
+void VariationsService::RegisterPrefs(PrefService* prefs) {
+  prefs->RegisterStringPref(prefs::kVariationsSeed, std::string());
+  prefs->RegisterInt64Pref(prefs::kVariationsSeedDate,
+                           base::Time().ToInternalValue());
+}
 
-  was_offline_during_last_request_attempt_ =
-      net::NetworkChangeNotifier::IsOffline();
-  UMA_HISTOGRAM_BOOLEAN("Variations.NetworkAvailability",
-                        !was_offline_during_last_request_attempt_);
-  if (was_offline_during_last_request_attempt_) {
-    DVLOG(1) << "Network was offline.";
-    return;
-  }
+void VariationsService::SetCreateTrialsFromSeedCalledForTesting(bool called) {
+  create_trials_from_seed_called_ = called;
+}
 
+void VariationsService::DoActualFetch() {
   pending_seed_request_.reset(net::URLFetcher::Create(
       variations_server_url_, net::URLFetcher::GET, this));
   pending_seed_request_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
@@ -177,16 +183,15 @@ void VariationsService::FetchVariationsSeed() {
   pending_seed_request_->Start();
 }
 
-void VariationsService::SetWasOfflineDuringLastRequestAttemptForTesting(
-    bool offline) {
-  was_offline_during_last_request_attempt_ = offline;
-}
+void VariationsService::FetchVariationsSeed() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-// static
-void VariationsService::RegisterPrefs(PrefService* prefs) {
-  prefs->RegisterStringPref(prefs::kVariationsSeed, std::string());
-  prefs->RegisterInt64Pref(prefs::kVariationsSeedDate,
-                           base::Time().ToInternalValue());
+  if (!resource_request_allowed_notifier_->ResourceRequestsAllowed()) {
+    DVLOG(1) << "Resource requests were not allowed. Waiting for notification.";
+    return;
+  }
+
+  DoActualFetch();
 }
 
 void VariationsService::OnURLFetchComplete(const net::URLFetcher* source) {
@@ -216,24 +221,17 @@ void VariationsService::OnURLFetchComplete(const net::URLFetcher* source) {
   StoreSeedData(seed_data, response_date, g_browser_process->local_state());
 }
 
-void VariationsService::OnConnectionTypeChanged(
-    net::NetworkChangeNotifier::ConnectionType type) {
-  // If the connection type is back online, start a request if the last request
-  // failed due to being offline.
-  if (was_offline_during_last_request_attempt_ &&
-      type != net::NetworkChangeNotifier::CONNECTION_NONE) {
-    VLOG(1) << "Retrying fetch due to network reconnect.";
-    FetchVariationsSeed();
-
-    // Since FetchVariationsSeed was explicitly called here, reset the timer to
-    // avoid retrying for a full period.
-    // net::NetworkChangeNotifier::IsOffline may be inconsistent with |type|, so
-    // we check if FetchVariationsSeed set
-    // |was_offline_during_last_request_attempt_| to true before we reset the
-    // timer.
-    if (!was_offline_during_last_request_attempt_ && timer_.IsRunning())
-      timer_.Reset();
-  }
+void VariationsService::OnResourceRequestsAllowed() {
+  // Note that this only attempts to fetch the seed at most once per period
+  // (kSeedFetchPeriodHours). This works because
+  // |resource_request_allowed_notifier_| only calls this method if an
+  // attempt was made earlier that fails (which implies that the period had
+  // elapsed). After a successful attempt is made, the notifier will know not
+  // to call this method again until another failed attempt occurs.
+  DVLOG(1) << "Retrying fetch.";
+  DoActualFetch();
+  if (timer_.IsRunning())
+    timer_.Reset();
 }
 
 bool VariationsService::StoreSeedData(const std::string& seed_data,

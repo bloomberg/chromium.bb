@@ -46,6 +46,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -462,6 +463,12 @@ void WizardController::OnEulaAccepted() {
   MarkEulaAccepted();
   bool enabled =
       OptionsUtil::ResolveMetricsReportingEnabled(usage_statistics_reporting_);
+
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_WIZARD_EULA_ACCEPTED,
+      content::NotificationSource(content::Source<WizardController>(this)),
+      content::NotificationService::NoDetails());
+
   CrosSettings::Get()->SetBoolean(kStatsReportingPref, enabled);
   if (enabled) {
 #if defined(USE_LINUX_BREAKPAD)

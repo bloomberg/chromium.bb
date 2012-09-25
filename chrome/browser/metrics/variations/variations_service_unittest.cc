@@ -5,9 +5,11 @@
 #include "base/base64.h"
 #include "base/string_split.h"
 #include "chrome/browser/metrics/proto/study.pb.h"
+#include "chrome/browser/metrics/variations/resource_request_allowed_notifier_test_util.h"
 #include "chrome/browser/metrics/variations/variations_service.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -19,16 +21,20 @@ namespace {
 // A test class used to validate expected functionality in VariationsService.
 class TestVariationsService : public VariationsService {
  public:
-  TestVariationsService() : VariationsService(),
-                            fetch_attempted_(false) {
+  explicit TestVariationsService(TestRequestAllowedNotifier* test_notifier)
+      : VariationsService(test_notifier),
+        fetch_attempted_(false) {
+    // Set this so StartRepeatedVariationsSeedFetch can be called in tests.
+    SetCreateTrialsFromSeedCalledForTesting(true);
   }
-  virtual ~TestVariationsService() {}
+
+  virtual ~TestVariationsService() {
+  }
 
   bool fetch_attempted() const { return fetch_attempted_; }
-  void SetFetchAttempted(bool attempted) { fetch_attempted_ = attempted; }
 
  protected:
-  virtual void FetchVariationsSeed() OVERRIDE {
+  virtual void DoActualFetch() OVERRIDE {
     fetch_attempted_ = true;
   }
 
@@ -36,32 +42,6 @@ class TestVariationsService : public VariationsService {
   bool fetch_attempted_;
 
   DISALLOW_COPY_AND_ASSIGN(TestVariationsService);
-};
-
-// Override NetworkChangeNotifier to simulate connection type changes for tests.
-class TestNetworkChangeNotifier : public net::NetworkChangeNotifier {
- public:
-  TestNetworkChangeNotifier()
-    : net::NetworkChangeNotifier(),
-      connection_type_to_return_(
-          net::NetworkChangeNotifier::CONNECTION_UNKNOWN) {
-  }
-
-  void SimulateNetworkConnectionChange(
-      net::NetworkChangeNotifier::ConnectionType type) {
-    connection_type_to_return_ = type;
-    net::NetworkChangeNotifier::NotifyObserversOfConnectionTypeChange();
-    MessageLoop::current()->RunAllPending();
-  }
-
- private:
-  virtual ConnectionType GetCurrentConnectionType() const OVERRIDE {
-    return connection_type_to_return_;
-  }
-
-  net::NetworkChangeNotifier::ConnectionType connection_type_to_return_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestNetworkChangeNotifier);
 };
 
 // Converts |time| to Study proto format.
@@ -85,36 +65,6 @@ TrialsSeed CreateTestSeed() {
 }
 
 }  // namespace
-
-// A test fixture class for VariationsService tests that require network state
-// simulations.
-class VariationsServiceNetworkTest : public testing::Test {
- public:
-  VariationsServiceNetworkTest()
-    : ui_thread(content::BrowserThread::UI, &message_loop) { }
-  ~VariationsServiceNetworkTest() { }
-
-  void SetWasOfflineDuringLastRequestAttempt(bool offline) {
-    test_service.SetWasOfflineDuringLastRequestAttemptForTesting(offline);
-  }
-
-  void SimulateNetworkConnectionChange(
-      net::NetworkChangeNotifier::ConnectionType type) {
-    notifier.SimulateNetworkConnectionChange(type);
-  }
-
-  bool fetch_attempted() const {
-    return test_service.fetch_attempted();
-  }
-
- private:
-  MessageLoopForUI message_loop;
-  content::TestBrowserThread ui_thread;
-  TestNetworkChangeNotifier notifier;
-  TestVariationsService test_service;
-
-  DISALLOW_COPY_AND_ASSIGN(VariationsServiceNetworkTest);
-};
 
 TEST(VariationsServiceTest, CheckStudyChannel) {
   const chrome::VersionInfo::Channel channels[] = {
@@ -401,7 +351,7 @@ TEST(VariationsServiceTest, LoadSeed) {
   ASSERT_TRUE(base::Base64Encode(serialized_seed, &base64_serialized_seed));
   pref_service.SetString(prefs::kVariationsSeed, base64_serialized_seed);
 
-  VariationsService variations_service;
+  TestVariationsService variations_service(new TestRequestAllowedNotifier);
   TrialsSeed loaded_seed;
   EXPECT_TRUE(
       variations_service.LoadTrialsSeedFromPref(&pref_service, &loaded_seed));
@@ -435,7 +385,7 @@ TEST(VariationsServiceTest, StoreSeed) {
 
   TrialsSeed seed = CreateTestSeed();
 
-  VariationsService variations_service;
+  TestVariationsService variations_service(new TestRequestAllowedNotifier);
   std::string serialized_seed;
   seed.SerializeToString(&serialized_seed);
   EXPECT_TRUE(
@@ -534,53 +484,38 @@ TEST(VariationsServiceTest, ValidateStudy) {
   EXPECT_FALSE(valid);
 }
 
-TEST_F(VariationsServiceNetworkTest, DoNotFetchIfOffline) {
-  SetWasOfflineDuringLastRequestAttempt(true);
-  SimulateNetworkConnectionChange(net::NetworkChangeNotifier::CONNECTION_NONE);
-  EXPECT_FALSE(fetch_attempted());
+TEST(VariationsServiceTest, RequestsInitiallyNotAllowed) {
+  MessageLoopForUI message_loop;
+  content::TestBrowserThread ui_thread(content::BrowserThread::UI,
+                                       &message_loop);
+
+  // Pass ownership to TestVariationsService, but keep a weak pointer to
+  // manipulate it for this test.
+  TestRequestAllowedNotifier* test_notifier = new TestRequestAllowedNotifier;
+  TestVariationsService test_service(test_notifier);
+
+  // Force the notifier to initially disallow requests.
+  test_notifier->SetRequestsAllowedOverride(false);
+  test_service.StartRepeatedVariationsSeedFetch();
+  EXPECT_FALSE(test_service.fetch_attempted());
+
+  test_notifier->NotifyObserver();
+  EXPECT_TRUE(test_service.fetch_attempted());
 }
 
-TEST_F(VariationsServiceNetworkTest, DoNotFetchIfOnlineToOnline) {
-  SetWasOfflineDuringLastRequestAttempt(false);
-  SimulateNetworkConnectionChange(
-      net::NetworkChangeNotifier::CONNECTION_ETHERNET);
-  EXPECT_FALSE(fetch_attempted());
-}
+TEST(VariationsServiceTest, RequestsInitiallyAllowed) {
+  MessageLoopForUI message_loop;
+  content::TestBrowserThread ui_thread(content::BrowserThread::UI,
+                                       &message_loop);
 
-TEST_F(VariationsServiceNetworkTest, FetchOnReconnect) {
-  SetWasOfflineDuringLastRequestAttempt(true);
-  SimulateNetworkConnectionChange(
-      net::NetworkChangeNotifier::CONNECTION_ETHERNET);
-  EXPECT_TRUE(fetch_attempted());
-}
+  // Pass ownership to TestVariationsService, but keep a weak pointer to
+  // manipulate it for this test.
+  TestRequestAllowedNotifier* test_notifier = new TestRequestAllowedNotifier;
+  TestVariationsService test_service(test_notifier);
 
-TEST_F(VariationsServiceNetworkTest, NoFetchOnWardriving) {
-  SetWasOfflineDuringLastRequestAttempt(false);
-  SimulateNetworkConnectionChange(
-      net::NetworkChangeNotifier::CONNECTION_WIFI);
-  EXPECT_FALSE(fetch_attempted());
-  SimulateNetworkConnectionChange(
-      net::NetworkChangeNotifier::CONNECTION_3G);
-  EXPECT_FALSE(fetch_attempted());
-  SimulateNetworkConnectionChange(
-      net::NetworkChangeNotifier::CONNECTION_4G);
-  EXPECT_FALSE(fetch_attempted());
-  SimulateNetworkConnectionChange(
-      net::NetworkChangeNotifier::CONNECTION_WIFI);
-  EXPECT_FALSE(fetch_attempted());
-}
-
-TEST_F(VariationsServiceNetworkTest, NoFetchOnFlakyConnection) {
-  SetWasOfflineDuringLastRequestAttempt(false);
-  SimulateNetworkConnectionChange(
-      net::NetworkChangeNotifier::CONNECTION_WIFI);
-  EXPECT_FALSE(fetch_attempted());
-  SimulateNetworkConnectionChange(
-      net::NetworkChangeNotifier::CONNECTION_NONE);
-  EXPECT_FALSE(fetch_attempted());
-  SimulateNetworkConnectionChange(
-      net::NetworkChangeNotifier::CONNECTION_WIFI);
-  EXPECT_FALSE(fetch_attempted());
+  test_notifier->SetRequestsAllowedOverride(true);
+  test_service.StartRepeatedVariationsSeedFetch();
+  EXPECT_TRUE(test_service.fetch_attempted());
 }
 
 }  // namespace chrome_variations

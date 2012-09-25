@@ -1028,6 +1028,8 @@
         'browser/metrics/tracking_synchronizer.cc',
         'browser/metrics/tracking_synchronizer.h',
         'browser/metrics/tracking_synchronizer_observer.h',
+        'browser/metrics/variations/resource_request_allowed_notifier.cc',
+        'browser/metrics/variations/resource_request_allowed_notifier.h',
         'browser/metrics/variations/variations_service.cc',
         'browser/metrics/variations/variations_service.h',
         'browser/native_window_notification_source.h',

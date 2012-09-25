@@ -1402,9 +1402,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     RecordPreReadExperimentTime("Startup.BrowserOpenTabs",
                                 base::TimeTicks::Now() - browser_open_start);
 
-    // TODO(mad): Move this call in a proper place on CrOS.
-    // http://crosbug.com/17687
-#if !defined(OS_CHROMEOS)
     // If we're running tests (ui_task is non-null), then we don't want to
     // call FetchLanguageListFromTranslateServer or
     // StartRepeatedVariationsSeedFetch.
@@ -1412,13 +1409,15 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
       // Request new variations seed information from server.
       browser_process_->variations_service()->
           StartRepeatedVariationsSeedFetch();
-
+#if !defined(OS_CHROMEOS)
+      // TODO(mad): Move this call in a proper place on CrOS.
+      // http://crosbug.com/17687
       if (translate_manager_ != NULL) {
         translate_manager_->FetchLanguageListFromTranslateServer(
             profile_->GetPrefs());
       }
-    }
 #endif
+    }
 
     run_message_loop_ = true;
   } else {

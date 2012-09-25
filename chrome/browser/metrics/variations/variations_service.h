@@ -15,9 +15,9 @@
 #include "base/timer.h"
 #include "chrome/browser/metrics/proto/study.pb.h"
 #include "chrome/browser/metrics/proto/trials_seed.pb.h"
+#include "chrome/browser/metrics/variations/resource_request_allowed_notifier.h"
 #include "chrome/common/chrome_version_info.h"
 #include "googleurl/src/gurl.h"
-#include "net/base/network_change_notifier.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
 class PrefService;
@@ -28,9 +28,14 @@ namespace chrome_variations {
 // new seed data from the variations server.
 class VariationsService
     : public net::URLFetcherDelegate,
-      public net::NetworkChangeNotifier::ConnectionTypeObserver{
+      public ResourceRequestAllowedNotifier::Observer {
  public:
   VariationsService();
+
+  // This constructor exists for injecting a mock notifier. It is meant for
+  // testing only. This instance will take ownership of |notifier|.
+  explicit VariationsService(ResourceRequestAllowedNotifier* notifier);
+
   virtual ~VariationsService();
 
   // Creates field trials based on Variations Seed loaded from local prefs. If
@@ -43,17 +48,16 @@ class VariationsService
   // |CreateTrialsFromSeed|.
   void StartRepeatedVariationsSeedFetch();
 
-  // Starts the fetching process once, where |OnURLFetchComplete| is called with
-  // the response. If the network is down at the time, sets a flag to retry when
-  // the network is back online. This is virtual so it can be overriden for
-  // testing.
-  virtual void FetchVariationsSeed();
-
-  // Exposed for testing.
-  void SetWasOfflineDuringLastRequestAttemptForTesting(bool offline);
-
   // Register Variations related prefs in Local State.
   static void RegisterPrefs(PrefService* prefs);
+
+  // Exposed for testing.
+  void SetCreateTrialsFromSeedCalledForTesting(bool called);
+
+ protected:
+  // Starts the fetching process once, where |OnURLFetchComplete| is called with
+  // the response.
+  virtual void DoActualFetch();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, CheckStudyChannel);
@@ -70,12 +74,15 @@ class VariationsService
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, StoreSeed);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, ValidateStudy);
 
+  // Checks if prerequisites for fetching the Variations seed are met, and if
+  // so, performs the actual fetch using |DoActualFetch|.
+  void FetchVariationsSeed();
+
   // net::URLFetcherDelegate implementation:
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
-  // net::NetworkChangeNotifier::ConnectionTypeObserver implementation.
-  virtual void OnConnectionTypeChanged(
-      net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
+  // ResourceRequestAllowedNotifier::Observer implementation:
+  virtual void OnResourceRequestsAllowed() OVERRIDE;
 
   // Store the given seed data to the given local prefs. Note that |seed_data|
   // is assumed to be the raw serialized protobuf data stored in a string. It
@@ -146,14 +153,14 @@ class VariationsService
   // it gets called prior to |StartRepeatedVariationsSeedFetch|.
   bool create_trials_from_seed_called_;
 
-  // Tracks whether or not the last seed request attempt failed due to being
-  // offline.
-  bool was_offline_during_last_request_attempt_;
-
   // The timer used to repeatedly ping the server. Keep this as an instance
   // member so if VariationsService goes out of scope, the timer is
   // automatically canceled.
   base::RepeatingTimer<VariationsService> timer_;
+
+  // Helper class used to tell this service if it's allowed to make network
+  // resource requests.
+  scoped_ptr<ResourceRequestAllowedNotifier> resource_request_allowed_notifier_;
 };
 
 }  // namespace chrome_variations

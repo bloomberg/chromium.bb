@@ -1029,6 +1029,10 @@ enum NotificationType {
   // First paint event after this fires NOTIFICATION_LOGIN_WEBUI_VISIBLE.
   NOTIFICATION_WIZARD_FIRST_SCREEN_SHOWN,
 
+  // Sent when the EULA has been accepted in the first-run wizard. This is never
+  // sent if the EULA was already accepted at startup.
+  NOTIFICATION_WIZARD_EULA_ACCEPTED,
+
   // Sent when the specific part of login WebUI is considered to be visible.
   // That moment is tracked as the first paint event after one of the:
   // 1. NOTIFICATION_LOGIN_USER_IMAGES_LOADED
