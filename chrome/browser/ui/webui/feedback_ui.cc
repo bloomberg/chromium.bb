@@ -76,9 +76,6 @@ using ui::WebDialogUI;
 
 namespace {
 
-const char kScreenshotBaseUrl[] = "chrome://screenshots/";
-const char kCurrentScreenshotUrl[] = "chrome://screenshots/current";
-
 const char kCategoryTagParameter[] = "categoryTag=";
 const char kDescriptionParameter[] = "description=";
 const char kSessionIDParameter[] = "session_id=";
@@ -86,16 +83,10 @@ const char kTabIndexParameter[] = "tab_index=";
 const char kCustomPageUrlParameter[] = "customPageUrl=";
 
 #if defined(OS_CHROMEOS)
-const char kSavedScreenshotsUrl[] = "chrome://screenshots/saved/";
-const char kScreenshotPrefix[] = "Screenshot ";
-const char kScreenshotSuffix[] = ".png";
 
 const char kTimestampParameter[] = "timestamp=";
 
 const size_t kMaxSavedScreenshots = 2;
-#endif
-
-#if defined(OS_CHROMEOS)
 size_t kMaxNumScanFiles = 1000;
 
 // Compare two screenshot filepaths, which include the screenshot timestamp
@@ -135,8 +126,10 @@ void ReadDirectoryCallback(size_t max_saved,
   std::vector<gdata::DriveEntryProto> screenshot_entries;
   for (size_t i = 0; i < max_scan; ++i) {
     const gdata::DriveEntryProto& entry = (*entries)[i];
-    if (StartsWithASCII(entry.base_name(), kScreenshotPrefix, true) &&
-        EndsWith(entry.base_name(), kScreenshotSuffix, true)) {
+    if (StartsWithASCII(entry.base_name(),
+                        ScreenshotSource::kScreenshotPrefix, true) &&
+        EndsWith(entry.base_name(),
+                 ScreenshotSource::kScreenshotSuffix, true)) {
       screenshot_entries.push_back(entry);
     }
   }
@@ -149,7 +142,9 @@ void ReadDirectoryCallback(size_t max_saved,
   for (size_t i = 0; i < sort_size; ++i) {
     const gdata::DriveEntryProto& entry = screenshot_entries[i];
     saved_screenshots->push_back(
-        std::string(kSavedScreenshotsUrl) + entry.resource_id());
+        std::string(ScreenshotSource::kScreenshotUrlRoot) +
+        std::string(ScreenshotSource::kScreenshotSaved) +
+        entry.resource_id());
   }
   callback.Run();
 }
@@ -548,7 +543,9 @@ void FeedbackHandler::HandleGetDialogDefaults(const ListValue*) {
 }
 
 void FeedbackHandler::HandleRefreshCurrentScreenshot(const ListValue*) {
-  std::string current_screenshot(kCurrentScreenshotUrl);
+  std::string current_screenshot(
+          std::string(ScreenshotSource::kScreenshotUrlRoot) +
+          std::string(ScreenshotSource::kScreenshotCurrent));
   StringValue screenshot(current_screenshot);
   web_ui()->CallJavascriptFunction("setupCurrentScreenshot", screenshot);
 }
@@ -621,7 +618,7 @@ void FeedbackHandler::HandleSendReport(const ListValue* list_value) {
   (*i++)->GetAsString(&user_email);
   std::string screenshot_path;
   (*i++)->GetAsString(&screenshot_path);
-  screenshot_path.erase(0, strlen(kScreenshotBaseUrl));
+  screenshot_path.erase(0, strlen(ScreenshotSource::kScreenshotUrlRoot));
 
   // Get the image to send in the report.
   ScreenshotDataPtr image_ptr;
@@ -732,7 +729,8 @@ void FeedbackUI::GetMostRecentScreenshots(
     std::vector<std::string>* saved_screenshots,
     size_t max_saved) {
   std::string pattern =
-      std::string(kScreenshotPrefix) + "*" + kScreenshotSuffix;
+      std::string(ScreenshotSource::kScreenshotPrefix) + "*" +
+                  ScreenshotSource::kScreenshotSuffix;
   file_util::FileEnumerator screenshots(filepath, false,
                                         file_util::FileEnumerator::FILES,
                                         pattern);
@@ -750,7 +748,9 @@ void FeedbackUI::GetMostRecentScreenshots(
                     screenshot_filepaths.end(),
                     ScreenshotTimestampComp);
   for (size_t i = 0; i < sort_size; ++i)
-    saved_screenshots->push_back(std::string(kSavedScreenshotsUrl) +
-                                   screenshot_filepaths[i]);
+    saved_screenshots->push_back(
+                    std::string(ScreenshotSource::kScreenshotUrlRoot) +
+                    std::string(ScreenshotSource::kScreenshotSaved) +
+                    screenshot_filepaths[i]);
 }
 #endif
