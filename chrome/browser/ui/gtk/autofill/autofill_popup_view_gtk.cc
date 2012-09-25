@@ -61,9 +61,6 @@ const int kDeleteIconWidth = 16;
 // Height of the delete icon in pixels.
 const int kDeleteIconHeight = 16;
 
-// Size difference between value text and label text in pixels.
-const int kLabelFontSizeDelta = -2;
-
 gfx::Rect GetWindowRect(GdkWindow* window) {
   return gfx::Rect(gdk_window_get_width(window),
                    gdk_window_get_height(window));
@@ -107,8 +104,6 @@ AutofillPopupViewGtk::AutofillPopupViewGtk(
                    G_CALLBACK(HandleMotionThunk), this);
   g_signal_connect(window_, "button-release-event",
                    G_CALLBACK(HandleButtonReleaseThunk), this);
-
-  label_font_ = value_font_.DeriveFont(kLabelFontSizeDelta);
 
   // Cache the layout so we don't have to create it for every expose.
   layout_ = gtk_widget_create_pango_layout(window_, NULL);
@@ -314,13 +309,13 @@ void AutofillPopupViewGtk::DrawAutofillEntry(cairo_t* cairo_context,
   }
 
   // Draw the value.
-  SetLayoutText(autofill_values()[index], value_font_, kValueTextColor);
-  int value_text_width = value_font_.GetStringWidth(autofill_values()[index]);
+  SetLayoutText(autofill_values()[index], value_font(), kValueTextColor);
+  int value_text_width = value_font().GetStringWidth(autofill_values()[index]);
 
   // Center the text within the line.
   int value_content_y = std::max(
       entry_rect.y(),
-      entry_rect.y() + ((kRowHeight - value_font_.GetHeight()) / 2));
+      entry_rect.y() + ((kRowHeight - value_font().GetHeight()) / 2));
 
   bool is_rtl = base::i18n::IsRTL();
   cairo_save(cairo_context);
@@ -379,14 +374,14 @@ void AutofillPopupViewGtk::DrawAutofillEntry(cairo_t* cairo_context,
   }
 
   // Draw the label text.
-  SetLayoutText(autofill_labels()[index], label_font_, kLabelTextColor);
+  SetLayoutText(autofill_labels()[index], label_font(), kLabelTextColor);
   x_align_left +=
-      is_rtl ? 0 : -label_font_.GetStringWidth(autofill_labels()[index]);
+      is_rtl ? 0 : -label_font().GetStringWidth(autofill_labels()[index]);
 
   // Center the text within the line.
   int label_content_y = std::max(
       entry_rect.y(),
-      entry_rect.y() + ((kRowHeight - label_font_.GetHeight()) / 2));
+      entry_rect.y() + ((kRowHeight - label_font().GetHeight()) / 2));
 
   cairo_save(cairo_context);
   cairo_move_to(cairo_context, x_align_left, label_content_y);
@@ -428,9 +423,9 @@ int AutofillPopupViewGtk::GetPopupRequiredWidth() {
   DCHECK_EQ(autofill_values().size(), autofill_labels().size());
   for (size_t i = 0; i < autofill_values().size(); ++i) {
     int row_size = kEndPadding +
-        value_font_.GetStringWidth(autofill_values()[i]) +
+        value_font().GetStringWidth(autofill_values()[i]) +
         kLabelPadding +
-        label_font_.GetStringWidth(autofill_labels()[i]);
+        label_font().GetStringWidth(autofill_labels()[i]);
 
     // Add the Autofill icon size, if required.
     if (!autofill_icons()[i].empty())

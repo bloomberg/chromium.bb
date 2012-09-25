@@ -22,6 +22,9 @@ namespace {
 // Used to indicate that no line is currently selected by the user.
 const int kNoSelection = -1;
 
+// Size difference between value text and label text in pixels.
+const int kLabelFontSizeDelta = -2;
+
 struct DataResource {
   const char* name;
   int id;
@@ -56,6 +59,8 @@ AutofillPopupView::AutofillPopupView(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::Source<content::NavigationController>(
           &(web_contents->GetController())));
+
+  label_font_ = value_font_.DeriveFont(kLabelFontSizeDelta);
 }
 
 AutofillPopupView::~AutofillPopupView() {}

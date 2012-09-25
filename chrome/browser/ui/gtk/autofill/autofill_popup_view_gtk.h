@@ -12,7 +12,6 @@
 #include "content/public/browser/keyboard_listener.h"
 #include "ui/base/glib/glib_integers.h"
 #include "ui/base/gtk/gtk_signal.h"
-#include "ui/gfx/font.h"
 
 class GtkThemeService;
 class Profile;
@@ -102,10 +101,6 @@ class AutofillPopupViewGtk : public AutofillPopupView,
   GtkWidget* window_;  // Strong reference.
   PangoLayout* layout_;  // Strong reference
   GtkThemeService* theme_service_;
-
-  // The fonts for the popup text.
-  gfx::Font value_font_;
-  gfx::Font label_font_;
 
   // The size of the popup.
   gfx::Rect bounds_;

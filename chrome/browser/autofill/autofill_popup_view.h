@@ -11,6 +11,7 @@
 #include "base/string16.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_observer.h"
+#include "ui/gfx/font.h"
 #include "ui/gfx/rect.h"
 
 namespace content {
@@ -70,6 +71,9 @@ class AutofillPopupView : public content::NotificationObserver {
     return autofill_unique_ids_;
   }
 
+  const gfx::Font& label_font() const { return label_font_; }
+  const gfx::Font& value_font() const { return value_font_; }
+
   int selected_line() const { return selected_line_; }
 
   // Change which line is currently selected by the user.
@@ -122,6 +126,10 @@ class AutofillPopupView : public content::NotificationObserver {
   std::vector<string16> autofill_labels_;
   std::vector<string16> autofill_icons_;
   std::vector<int> autofill_unique_ids_;
+
+  // The fonts for the popup text.
+  gfx::Font value_font_;
+  gfx::Font label_font_;
 
   // The line that is currently selected by the user.
   // |kNoSelection| indicates that no line is currently selected.
