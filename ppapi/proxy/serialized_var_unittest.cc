@@ -201,7 +201,7 @@ TEST_F(SerializedVarTest, PluginReceiveInput) {
 
 // Tests the case that the plugin receives the same vars twice as an input
 // parameter (not passing ownership) within a vector.
-TEST_F(SerializedVarTest, PluginVectorReceiveInput) {
+TEST_F(SerializedVarTest, DISABLED_PluginVectorReceiveInput) {
   ProxyAutoLock lock;
   PP_Var host_object = MakeObjectVar(0x31337);
 
