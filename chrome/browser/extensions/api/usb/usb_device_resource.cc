@@ -187,7 +187,7 @@ void UsbDeviceResource::ControlTransfer(const ControlTransferInfo& transfer) {
   device_->ControlTransfer(direction, request_type, recipient, transfer.request,
                            transfer.value, transfer.index, buffer, size, 0,
                            base::Bind(&UsbDeviceResource::TransferComplete,
-                                      base::Unretained(this), buffer, size));
+                                      base::Unretained(this)));
 }
 
 void UsbDeviceResource::InterruptTransfer(const GenericTransferInfo& transfer) {
@@ -203,7 +203,7 @@ void UsbDeviceResource::InterruptTransfer(const GenericTransferInfo& transfer) {
 
   device_->InterruptTransfer(direction, transfer.endpoint, buffer, size, 0,
                              base::Bind(&UsbDeviceResource::TransferComplete,
-                                        base::Unretained(this), buffer, size));
+                                        base::Unretained(this)));
 }
 
 void UsbDeviceResource::BulkTransfer(const GenericTransferInfo& transfer) {
@@ -219,7 +219,7 @@ void UsbDeviceResource::BulkTransfer(const GenericTransferInfo& transfer) {
 
   device_->BulkTransfer(direction, transfer.endpoint, buffer, size, 0,
                         base::Bind(&UsbDeviceResource::TransferComplete,
-                                   base::Unretained(this), buffer, size));
+                                   base::Unretained(this)));
 }
 
 void UsbDeviceResource::IsochronousTransfer(
@@ -239,19 +239,16 @@ void UsbDeviceResource::IsochronousTransfer(
 
   device_->IsochronousTransfer(direction, generic_transfer.endpoint, buffer,
       size, transfer.packets, transfer.packet_length, 0, base::Bind(
-          &UsbDeviceResource::TransferComplete, base::Unretained(this), buffer,
-          size));
+          &UsbDeviceResource::TransferComplete, base::Unretained(this)));
 }
 
-void UsbDeviceResource::TransferComplete(net::IOBuffer* buffer,
-                                         const size_t length,
-                                         UsbTransferStatus status) {
-  if (buffer) {
-    base::BinaryValue* const response_buffer =
-        base::BinaryValue::CreateWithCopiedBuffer(buffer->data(), length);
-    event_notifier()->OnTransferComplete(status,
-        ConvertTransferStatusToErrorString(status), response_buffer);
-  }
+void UsbDeviceResource::TransferComplete(UsbTransferStatus status,
+                                         scoped_refptr<net::IOBuffer> buffer,
+                                         size_t length) {
+  base::BinaryValue* response_buffer =
+      base::BinaryValue::CreateWithCopiedBuffer(buffer->data(), length);
+  event_notifier()->OnTransferComplete(status,
+      ConvertTransferStatusToErrorString(status), response_buffer);
 }
 
 }  // namespace extensions

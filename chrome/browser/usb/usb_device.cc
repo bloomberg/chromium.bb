@@ -115,9 +115,21 @@ void UsbDevice::TransferComplete(PlatformUsbTransferHandle handle) {
   // TODO(gdk): Handle device disconnect.
   DCHECK(ContainsKey(transfers_, handle)) << "Missing transfer completed";
   Transfer* const transfer = &transfers_[handle];
-  if (transfer->buffer.get()) {
-    transfer->callback.Run(ConvertTransferStatus(handle->status));
+
+  // If the transfer is a control transfer we do not expose the control transfer
+  // setup header to the caller, this logic strips off the header from the
+  // buffer before invoking the callback provided with the transfer with it.
+  scoped_refptr<net::IOBuffer> buffer = transfer->buffer;
+  if (transfer->control_transfer) {
+    scoped_refptr<net::IOBuffer> resized_buffer = new net::IOBuffer(
+        handle->actual_length - LIBUSB_CONTROL_SETUP_SIZE);
+    memcpy(resized_buffer->data(), buffer->data() + LIBUSB_CONTROL_SETUP_SIZE,
+           handle->actual_length - LIBUSB_CONTROL_SETUP_SIZE);
+    buffer = resized_buffer;
   }
+
+  transfer->callback.Run(ConvertTransferStatus(handle->status), buffer,
+                         handle->actual_length);
 
   transfers_.erase(handle);
   libusb_free_transfer(handle);
@@ -130,8 +142,9 @@ void UsbDevice::ControlTransfer(const TransferDirection direction,
     const UsbTransferCallback& callback) {
   CheckDevice();
 
+  const size_t resized_length = LIBUSB_CONTROL_SETUP_SIZE + length;
   scoped_refptr<net::IOBuffer> resized_buffer(new net::IOBufferWithSize(
-      LIBUSB_CONTROL_SETUP_SIZE + length));
+      resized_length));
   memcpy(resized_buffer->data() + LIBUSB_CONTROL_SETUP_SIZE, buffer->data(),
          length);
 
@@ -143,7 +156,7 @@ void UsbDevice::ControlTransfer(const TransferDirection direction,
   libusb_fill_control_transfer(transfer, handle_, reinterpret_cast<uint8*>(
       resized_buffer->data()), reinterpret_cast<libusb_transfer_cb_fn>(
           &HandleTransferCompletion), this, timeout);
-  SubmitTransfer(transfer, resized_buffer, callback);
+  SubmitTransfer(transfer, true, resized_buffer, resized_length, callback);
 }
 
 void UsbDevice::BulkTransfer(const TransferDirection direction,
@@ -157,7 +170,7 @@ void UsbDevice::BulkTransfer(const TransferDirection direction,
       reinterpret_cast<uint8*>(buffer->data()), length,
       reinterpret_cast<libusb_transfer_cb_fn>(&HandleTransferCompletion), this,
       timeout);
-  SubmitTransfer(transfer, buffer, callback);
+  SubmitTransfer(transfer, false, buffer, length, callback);
 }
 
 void UsbDevice::InterruptTransfer(const TransferDirection direction,
@@ -171,7 +184,7 @@ void UsbDevice::InterruptTransfer(const TransferDirection direction,
       reinterpret_cast<uint8*>(buffer->data()), length,
       reinterpret_cast<libusb_transfer_cb_fn>(&HandleTransferCompletion), this,
       timeout);
-  SubmitTransfer(transfer, buffer, callback);
+  SubmitTransfer(transfer, false, buffer, length, callback);
 }
 
 void UsbDevice::IsochronousTransfer(const TransferDirection direction,
@@ -182,7 +195,7 @@ void UsbDevice::IsochronousTransfer(const TransferDirection direction,
 
   const uint64 total_length = packets * packet_length;
   if (total_length > length) {
-    callback.Run(USB_TRANSFER_LENGTH_SHORT);
+    callback.Run(USB_TRANSFER_LENGTH_SHORT, NULL, 0);
     return;
   }
 
@@ -194,7 +207,7 @@ void UsbDevice::IsochronousTransfer(const TransferDirection direction,
       timeout);
   libusb_set_iso_packet_lengths(transfer, packet_length);
 
-  SubmitTransfer(transfer, buffer, callback);
+  SubmitTransfer(transfer, false, buffer, length, callback);
 }
 
 void UsbDevice::CheckDevice() {
@@ -202,16 +215,19 @@ void UsbDevice::CheckDevice() {
 }
 
 void UsbDevice::SubmitTransfer(PlatformUsbTransferHandle handle,
+                               bool control_transfer,
                                net::IOBuffer* buffer,
+                               const size_t length,
                                const UsbTransferCallback& callback) {
-  libusb_submit_transfer(handle);
-
   Transfer transfer;
+  transfer.control_transfer = control_transfer;
   transfer.buffer = buffer;
+  transfer.length = length;
   transfer.callback = callback;
 
   {
     base::AutoLock lock(lock_);
     transfers_[handle] = transfer;
+    libusb_submit_transfer(handle);
   }
 }
