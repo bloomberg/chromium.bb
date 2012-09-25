@@ -19,7 +19,7 @@
 // them.
 typedef std::pair<scoped_ptr<base::SharedMemory>, int32> SharedMemoryAndId;
 
-enum { kNumPictureBuffers = 4 };
+enum { kNumPictureBuffers = 8 };
 
 void* omx_handle = NULL;
 
