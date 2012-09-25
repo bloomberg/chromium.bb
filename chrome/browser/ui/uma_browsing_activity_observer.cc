@@ -30,7 +30,7 @@ void UMABrowsingActivityObserver::Init() {
 UMABrowsingActivityObserver::UMABrowsingActivityObserver() {
   registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                   content::NotificationService::AllSources());
-  registrar_.Add(this, content::NOTIFICATION_APP_TERMINATING,
+  registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
                   content::NotificationService::AllSources());
 }
 
@@ -49,7 +49,7 @@ void UMABrowsingActivityObserver::Observe(
 
     LogRenderProcessHostCount();
     LogBrowserTabCount();
-  } else if (type == content::NOTIFICATION_APP_TERMINATING) {
+  } else if (type == chrome::NOTIFICATION_APP_TERMINATING) {
     delete g_instance;
     g_instance = NULL;
   }

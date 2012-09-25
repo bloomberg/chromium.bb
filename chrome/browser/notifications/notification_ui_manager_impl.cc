@@ -49,7 +49,7 @@ class QueuedNotification {
 NotificationUIManagerImpl::NotificationUIManagerImpl(PrefService* local_state)
     : balloon_collection_(NULL),
       is_user_active_(true) {
-  registrar_.Add(this, content::NOTIFICATION_APP_TERMINATING,
+  registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllSources());
   position_pref_.Init(prefs::kDesktopNotificationPosition, local_state, this);
 #if defined(OS_MACOSX)
@@ -231,7 +231,7 @@ void NotificationUIManagerImpl::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (type == content::NOTIFICATION_APP_TERMINATING) {
+  if (type == chrome::NOTIFICATION_APP_TERMINATING) {
     CancelAll();
   } else if (type == chrome::NOTIFICATION_PREF_CHANGED) {
     std::string* name = content::Details<std::string>(details).ptr();

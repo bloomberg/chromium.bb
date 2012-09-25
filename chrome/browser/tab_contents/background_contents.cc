@@ -37,7 +37,7 @@ BackgroundContents::BackgroundContents(SiteInstance* site_instance,
   content::WebContentsObserver::Observe(web_contents_.get());
 
   // Close ourselves when the application is shutting down.
-  registrar_.Add(this, content::NOTIFICATION_APP_TERMINATING,
+  registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllSources());
 
   // Register for our parent profile to shutdown, so we can shut ourselves down
@@ -123,7 +123,7 @@ void BackgroundContents::Observe(int type,
   // background pages are closed when the last referencing frame is closed.
   switch (type) {
     case chrome::NOTIFICATION_PROFILE_DESTROYED:
-    case content::NOTIFICATION_APP_TERMINATING: {
+    case chrome::NOTIFICATION_APP_TERMINATING: {
       delete this;
       break;
     }

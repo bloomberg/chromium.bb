@@ -220,7 +220,7 @@ TEST(BrowserStateMonitorTest, TestObserveAppTerminating) {
   monitor.SetPrefServiceForTesting(&prefs);
 
   EXPECT_EQ(1, mock_manager.set_state_count_);
-  monitor.Observe(content::NOTIFICATION_APP_TERMINATING,
+  monitor.Observe(chrome::NOTIFICATION_APP_TERMINATING,
                   content::NotificationService::AllSources(),
                   content::NotificationService::NoDetails());
 

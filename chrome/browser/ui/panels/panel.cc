@@ -183,7 +183,7 @@ void Panel::Initialize(Profile* profile, const GURL& url,
   // Close when the extension is unloaded or the browser is exiting.
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  content::Source<Profile>(profile));
-  registrar_.Add(this, content::NOTIFICATION_APP_TERMINATING,
+  registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  content::Source<ThemeService>(
@@ -651,7 +651,7 @@ void Panel::Observe(int type,
               details)->extension->id() == extension_id())
         Close();
       break;
-    case content::NOTIFICATION_APP_TERMINATING:
+    case chrome::NOTIFICATION_APP_TERMINATING:
       Close();
       break;
     case chrome::NOTIFICATION_BROWSER_THEME_CHANGED:

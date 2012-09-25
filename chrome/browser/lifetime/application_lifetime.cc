@@ -103,7 +103,7 @@ void NotifyAppTerminating() {
     return;
   notified = true;
   content::NotificationService::current()->Notify(
-      content::NOTIFICATION_APP_TERMINATING,
+      chrome::NOTIFICATION_APP_TERMINATING,
       content::NotificationService::AllSources(),
       content::NotificationService::NoDetails());
 }

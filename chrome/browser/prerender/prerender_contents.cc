@@ -349,7 +349,7 @@ void PrerenderContents::StartPrerendering(
       prerender_manager_);
 
   // Close ourselves when the application is shutting down.
-  notification_registrar_.Add(this, content::NOTIFICATION_APP_TERMINATING,
+  notification_registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
                               content::NotificationService::AllSources());
 
   // Register for our parent profile to shutdown, so we can shut ourselves down
@@ -441,7 +441,7 @@ void PrerenderContents::Observe(int type,
       Destroy(FINAL_STATUS_PROFILE_DESTROYED);
       return;
 
-    case content::NOTIFICATION_APP_TERMINATING:
+    case chrome::NOTIFICATION_APP_TERMINATING:
       Destroy(FINAL_STATUS_APP_TERMINATING);
       return;
 

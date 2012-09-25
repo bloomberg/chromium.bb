@@ -88,6 +88,13 @@ enum NotificationType {
 
   // Application-wide ----------------------------------------------------------
 
+  // This message is sent when the application is terminating (the last
+  // browser window has shutdown as part of an explicit user-initiated exit,
+  // or the user closed the last browser window on Windows/Linux and there are
+  // no BackgroundContents keeping the browser running). No source or details
+  // are passed.
+  NOTIFICATION_APP_TERMINATING,
+
 #if defined(OS_MACOSX)
   // This notification is sent when the app has no key window, such as when
   // all windows are closed but the app is still active. No source or details

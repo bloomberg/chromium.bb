@@ -42,7 +42,7 @@ BrowserStateMonitor::BrowserStateMonitor(InputMethodManager* manager)
   // We should not use ALL_BROWSERS_CLOSING here since logout might be cancelled
   // by JavaScript after ALL_BROWSERS_CLOSING is sent (crosbug.com/11055).
   notification_registrar_.Add(this,
-                              content::NOTIFICATION_APP_TERMINATING,
+                              chrome::NOTIFICATION_APP_TERMINATING,
                               content::NotificationService::AllSources());
 
   manager_->SetState(state_);
@@ -123,7 +123,7 @@ void BrowserStateMonitor::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case content::NOTIFICATION_APP_TERMINATING: {
+    case chrome::NOTIFICATION_APP_TERMINATING: {
       SetState(InputMethodManager::STATE_TERMINATING);
       break;
     }

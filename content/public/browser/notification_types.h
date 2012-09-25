@@ -149,15 +149,6 @@ enum NotificationType {
   // controller associated with the state change.
   NOTIFICATION_SSL_INTERNAL_STATE_CHANGED,
 
-  // Application-wide ----------------------------------------------------------
-
-  // This message is sent when the application is terminating (the last
-  // browser window has shutdown as part of an explicit user-initiated exit,
-  // or the user closed the last browser window on Windows/Linux and there are
-  // no BackgroundContents keeping the browser running). No source or details
-  // are passed.
-  NOTIFICATION_APP_TERMINATING,
-
   // Devtools ------------------------------------------------------------------
 
   // Indicates that a devtools agent has attached to a client. The source is

@@ -7,10 +7,10 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_nsobject.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 
 namespace {
@@ -33,7 +33,7 @@ const NSTimeInterval kMinimumTimeInterval =
 class AppNotificationBridge : public content::NotificationObserver {
  public:
   explicit AppNotificationBridge(InfoBubbleWindow* owner) : owner_(owner) {
-    registrar_.Add(this, content::NOTIFICATION_APP_TERMINATING,
+    registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
                    content::NotificationService::AllSources());
   }
 
@@ -42,7 +42,7 @@ class AppNotificationBridge : public content::NotificationObserver {
                const content::NotificationSource& source,
                const content::NotificationDetails& details) {
     switch (type) {
-      case content::NOTIFICATION_APP_TERMINATING:
+      case chrome::NOTIFICATION_APP_TERMINATING:
         [owner_ appIsTerminating];
         break;
       default:

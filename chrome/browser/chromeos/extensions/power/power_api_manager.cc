@@ -35,7 +35,7 @@ void PowerApiManager::Observe(int type,
         content::Details<extensions::UnloadedExtensionInfo>(details)->
             extension->id());
     UpdatePowerSettings();
-  } else if (type == content::NOTIFICATION_APP_TERMINATING) {
+  } else if (type == chrome::NOTIFICATION_APP_TERMINATING) {
     // If the Chrome app is terminating, ensure we release our power overrides.
     power_state_override_.reset(NULL);
   } else {
@@ -47,7 +47,7 @@ PowerApiManager::PowerApiManager()
     : power_state_override_(NULL) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                   content::NotificationService::AllSources());
-  registrar_.Add(this, content::NOTIFICATION_APP_TERMINATING,
+  registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllSources());
   UpdatePowerSettings();
 }

@@ -156,7 +156,7 @@ void ShellWindow::Init(const GURL& url,
   // Close when the browser is exiting.
   // TODO(mihaip): we probably don't want this in the long run (when platform
   // apps are no longer tied to the browser process).
-  registrar_.Add(this, content::NOTIFICATION_APP_TERMINATING,
+  registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllSources());
 
   // Automatically dismiss all infobars.
@@ -418,7 +418,7 @@ void ShellWindow::Observe(int type,
         native_window_->Close();
       break;
     }
-    case content::NOTIFICATION_APP_TERMINATING:
+    case chrome::NOTIFICATION_APP_TERMINATING:
       native_window_->Close();
       break;
     default:
