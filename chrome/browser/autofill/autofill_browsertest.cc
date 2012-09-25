@@ -421,8 +421,14 @@ class AutofillTest : public InProcessBrowserTest {
   net::TestURLFetcherFactory url_fetcher_factory_;
 };
 
+// http://crbug.com/150084
+#if defined(OS_MACOSX)
+#define MAYBE_BasicFormFill BasicFormFill
+#else
+#define MAYBE_BasicFormFill DISABLED_BasicFormFill
+#endif
 // Test that basic form fill is working.
-IN_PROC_BROWSER_TEST_F(AutofillTest, BasicFormFill) {
+IN_PROC_BROWSER_TEST_F(AutofillTest, MAYBE_BasicFormFill) {
   CreateTestProfile();
 
   // Load the test page.
@@ -433,8 +439,14 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, BasicFormFill) {
   TryBasicFormFill();
 }
 
+// http://crbug.com/150084
+#if defined(OS_MACOSX)
+#define MAYBE_AutofillViaDownArrow AutofillViaDownArrow
+#else
+#define MAYBE_AutofillViaDownArrow DISABLED_AutofillViaDownArrow
+#endif
 // Test that form filling can be initiated by pressing the down arrow.
-IN_PROC_BROWSER_TEST_F(AutofillTest, AutofillViaDownArrow) {
+IN_PROC_BROWSER_TEST_F(AutofillTest, MAYBE_AutofillViaDownArrow) {
   CreateTestProfile();
 
   // Load the test page.
@@ -463,8 +475,14 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, AutofillViaDownArrow) {
   ExpectFilledTestForm();
 }
 
+// http://crbug.com/150084
+#if defined(OS_MACOSX)
+#define MAYBE_OnChangeAfterAutofill OnChangeAfterAutofill
+#else
+#define MAYBE_OnChangeAfterAutofill DISABLED_OnChangeAfterAutofill
+#endif
 // Test that a JavaScript onchange event is fired after auto-filling a form.
-IN_PROC_BROWSER_TEST_F(AutofillTest, OnChangeAfterAutofill) {
+IN_PROC_BROWSER_TEST_F(AutofillTest, MAYBE_OnChangeAfterAutofill) {
   CreateTestProfile();
 
   const char* kOnChangeScript =
@@ -548,7 +566,8 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, OnChangeAfterAutofill) {
 }
 
 // Test that we can autofill forms distinguished only by their |id| attribute.
-IN_PROC_BROWSER_TEST_F(AutofillTest, AutofillFormsDistinguishedById) {
+// DISABLED: http://crbug.com/150084
+IN_PROC_BROWSER_TEST_F(AutofillTest, DISABLED_AutofillFormsDistinguishedById) {
   CreateTestProfile();
 
   // Load the test page.
@@ -574,7 +593,8 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, AutofillFormsDistinguishedById) {
 // In the wild, the repeated fields are typically either email fields
 // (duplicated for "confirmation"); or variants that are hot-swapped via
 // JavaScript, with only one actually visible at any given time.
-IN_PROC_BROWSER_TEST_F(AutofillTest, AutofillFormWithRepeatedField) {
+// DISABLED: http://crbug.com/150084
+IN_PROC_BROWSER_TEST_F(AutofillTest, DISABLED_AutofillFormWithRepeatedField) {
   CreateTestProfile();
 
   // Load the test page.
@@ -619,13 +639,13 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, AutofillFormWithRepeatedField) {
   ExpectFieldValue(L"state_freeform", "");
 }
 
-#if defined(OS_WIN)
-// Has been observed to fail on windows.  crbug.com/100062
-#define MAYBE_AutofillFormWithNonAutofillableField \
-    DISABLED_AutofillFormWithNonAutofillableField
-#else
+// http://crbug.com/150084
+#if defined(OS_MAC)
 #define MAYBE_AutofillFormWithNonAutofillableField \
     AutofillFormWithNonAutofillableField
+#else
+#define MAYBE_AutofillFormWithNonAutofillableField \
+    DISABLED_AutofillFormWithNonAutofillableField
 #endif
 
 // Test that we properly autofill forms with non-autofillable fields.
@@ -674,7 +694,8 @@ IN_PROC_BROWSER_TEST_F(AutofillTest,
 }
 
 // Test that we can Autofill dynamically generated forms.
-IN_PROC_BROWSER_TEST_F(AutofillTest, DynamicFormFill) {
+// DISABLED: http://crbug.com/150084
+IN_PROC_BROWSER_TEST_F(AutofillTest, DISABLED_DynamicFormFill) {
   CreateTestProfile();
 
   // Load the test page.
@@ -765,11 +786,11 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, DynamicFormFill) {
 // Test that form filling works after reloading the current page.
 // This test brought to you by http://crbug.com/69204
 #if defined(OS_MACOSX)
-// Sometimes times out on Mac: http://crbug.com/81451
-// Currently enabled for logging.
+// Now flaky on everything but mac.
+// http://crbug.com/150084
 #define MAYBE_AutofillAfterReload AutofillAfterReload
 #else
-#define MAYBE_AutofillAfterReload AutofillAfterReload
+#define MAYBE_AutofillAfterReload DISABLED_AutofillAfterReload
 #endif
 IN_PROC_BROWSER_TEST_F(AutofillTest, MAYBE_AutofillAfterReload) {
   LOG(WARNING) << "Creating test profile.";
@@ -793,13 +814,8 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, MAYBE_AutofillAfterReload) {
   TryBasicFormFill();
 }
 
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
-// Test that autofill works after page translation.
-// http://crbug.com/81451
+// DISABLED: http://crbug.com/150084
 IN_PROC_BROWSER_TEST_F(AutofillTest, DISABLED_AutofillAfterTranslate) {
-#else
-IN_PROC_BROWSER_TEST_F(AutofillTest, AutofillAfterTranslate) {
-#endif
   CreateTestProfile();
 
   GURL url(std::string(kDataURIPrefix) +
@@ -1089,11 +1105,17 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, ProfilesNotAggregatedWithInvalidEmail) {
   ASSERT_TRUE(personal_data_manager()->profiles().empty());
 }
 
+// http://crbug.com/150084
+#if defined(OS_MACOSX)
+#define MAYBE_ComparePhoneNumbers ComparePhoneNumbers
+#else
+#define MAYBE_ComparePhoneNumbers DISABLED_ComparePhoneNumbers
+#endif
 // Test phone fields parse correctly from a given profile.
 // The high level key presses execute the following: Select the first text
 // field, invoke the autofill popup list, select the first profile within the
 // list, and commit to the profile to populate the form.
-IN_PROC_BROWSER_TEST_F(AutofillTest, ComparePhoneNumbers) {
+IN_PROC_BROWSER_TEST_F(AutofillTest, MAYBE_ComparePhoneNumbers) {
   ASSERT_TRUE(test_server()->Start());
 
   AutofillProfile profile;
@@ -1132,7 +1154,9 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, ComparePhoneNumbers) {
 // Test profile is saved if phone number is valid in selected country.
 // The data file contains two profiles with valid phone numbers and two
 // profiles with invalid phone numbers from their respective country.
-IN_PROC_BROWSER_TEST_F(AutofillTest, ProfileSavedWithValidCountryPhone) {
+// DISABLED: http://crbug.com/150084
+IN_PROC_BROWSER_TEST_F(AutofillTest,
+                       DISABLED_ProfileSavedWithValidCountryPhone) {
   ASSERT_TRUE(test_server()->Start());
   std::vector<FormMap> profiles;
 
@@ -1233,8 +1257,14 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, CCInfoNotStoredWhenAutocompleteOff) {
                 chrome::GetActiveTabContents(browser()))->GetInfoBarCount());
 }
 
+// http://crbug.com/150084
+#if defined(OS_MACOSX)
+#define MAYBE_NoAutofillForReadOnlyFields NoAutofillForReadOnlyFields
+#else
+#define MAYBE_NoAutofillForReadOnlyFields DISABLED_NoAutofillForReadOnlyFields
+#endif
 // Test that Autofill does not fill in read-only fields.
-IN_PROC_BROWSER_TEST_F(AutofillTest, NoAutofillForReadOnlyFields) {
+IN_PROC_BROWSER_TEST_F(AutofillTest, MAYBE_NoAutofillForReadOnlyFields) {
   ASSERT_TRUE(test_server()->Start());
 
   std::string addr_line1("1234 H St.");
@@ -1259,12 +1289,18 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, NoAutofillForReadOnlyFields) {
   ExpectFieldValue(L"address", addr_line1);
 }
 
+// http://crbug.com/150084
+#if defined(OS_MACOSX)
+#define MAYBE_FormFillableOnReset FormFillableOnReset
+#else
+#define MAYBE_FormFillableOnReset DISABLED_FormFillableOnReset
+#endif
 // Test form is fillable from a profile after form was reset.
 // Steps:
 //   1. Fill form using a saved profile.
 //   2. Reset the form.
 //   3. Fill form using a saved profile.
-IN_PROC_BROWSER_TEST_F(AutofillTest, FormFillableOnReset) {
+IN_PROC_BROWSER_TEST_F(AutofillTest, MAYBE_FormFillableOnReset) {
   ASSERT_TRUE(test_server()->Start());
 
   CreateTestProfile();
@@ -1290,8 +1326,16 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, FormFillableOnReset) {
   ExpectFieldValue(L"PHONE_HOME_WHOLE_NUMBER", "5125551234");
 }
 
+// http://crbug.com/150084
+#if defined(OS_MACOSX)
+#define MAYBE_DistinguishMiddleInitialWithinName \
+    DistinguishMiddleInitialWithinName
+#else
+#define MAYBE_DistinguishMiddleInitialWithinName \
+    DISABLED_DistinguishMiddleInitialWithinName
+#endif
 // Test Autofill distinguishes a middle initial in a name.
-IN_PROC_BROWSER_TEST_F(AutofillTest, DistinguishMiddleInitialWithinName) {
+IN_PROC_BROWSER_TEST_F(AutofillTest, MAYBE_DistinguishMiddleInitialWithinName) {
   ASSERT_TRUE(test_server()->Start());
 
   CreateTestProfile();
@@ -1304,9 +1348,18 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, DistinguishMiddleInitialWithinName) {
   ExpectFieldValue(L"NAME_MIDDLE", "C");
 }
 
+// http://crbug.com/150084
+#if defined(OS_MACOSX)
+#define MAYBE_MultipleEmailFilledByOneUserGesture \
+    MultipleEmailFilledByOneUserGesture
+#else
+#define MAYBE_MultipleEmailFilledByOneUserGesture \
+    DISABLED_MultipleEmailFilledByOneUserGesture
+#endif
 // Test forms with multiple email addresses are filled properly.
 // Entire form should be filled with one user gesture.
-IN_PROC_BROWSER_TEST_F(AutofillTest, MultipleEmailFilledByOneUserGesture) {
+IN_PROC_BROWSER_TEST_F(AutofillTest,
+                       MAYBE_MultipleEmailFilledByOneUserGesture) {
   ASSERT_TRUE(test_server()->Start());
 
   std::string email("bsmith@gmail.com");
@@ -1345,12 +1398,17 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, ProfileWithEmailInOtherFieldNotSaved) {
   ASSERT_EQ(0u, personal_data_manager()->profiles().size());
 }
 
+// http://crbug.com/150084
+#if defined(OS_MACOSX)
+#define MAYBE_FormFillLatencyAfterSubmit FormFillLatencyAfterSubmit
+#else
+#define MAYBE_FormFillLatencyAfterSubmit DISABLED_FormFillLatencyAfterSubmit
+#endif
 // Test latency time on form submit with lots of stored Autofill profiles.
 // This test verifies when a profile is selected from the Autofill dictionary
 // that consists of thousands of profiles, the form does not hang after being
 // submitted.
-// crbug.com/150084
-IN_PROC_BROWSER_TEST_F(AutofillTest, FLAKY_FormFillLatencyAfterSubmit) {
+IN_PROC_BROWSER_TEST_F(AutofillTest, MAYBE_FormFillLatencyAfterSubmit) {
   ASSERT_TRUE(test_server()->Start());
 
   std::vector<std::string> cities;
@@ -1414,7 +1472,9 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, FLAKY_FormFillLatencyAfterSubmit) {
 // 'Address Line 1' and 'City' data match. When two profiles are merged, any
 // remaining address fields are expected to be overwritten. Any non-address
 // fields should accumulate multi-valued data.
-IN_PROC_BROWSER_TEST_F(AutofillTest, MergeAggregatedProfilesWithSameAddress) {
+// DISABLED: http://crbug.com/150084
+IN_PROC_BROWSER_TEST_F(AutofillTest,
+                       DISABLED_MergeAggregatedProfilesWithSameAddress) {
   AggregateProfilesIntoAutofillPrefs("dataset_2.txt");
 
   ASSERT_EQ(3u, personal_data_manager()->profiles().size());
@@ -1424,24 +1484,19 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, MergeAggregatedProfilesWithSameAddress) {
 // Mininum address values needed during aggregation are: address line 1, city,
 // state, and zip code.
 // Profiles are merged when data for address line 1 and city match.
-IN_PROC_BROWSER_TEST_F(AutofillTest, ProfilesNotMergedWhenNoMinAddressData) {
+// DISABLED: http://crbug.com/150084
+IN_PROC_BROWSER_TEST_F(AutofillTest,
+                       DISABLED_ProfilesNotMergedWhenNoMinAddressData) {
   AggregateProfilesIntoAutofillPrefs("dataset_no_address.txt");
 
   ASSERT_EQ(0u, personal_data_manager()->profiles().size());
 }
 
-#if defined(OS_LINUX)
-// Has been observed to fail on linux.  crbug.com/146688
-#define MAYBE_MergeAggregatedDuplicatedProfiles \
-    DISABLED_MergeAggregatedDuplicatedProfiles
-#else
-#define MAYBE_MergeAggregatedDuplicatedProfiles \
-    MergeAggregatedDuplicatedProfiles
-#endif
-
 // Test Autofill ability to merge duplicate profiles and throw away junk.
 // TODO(isherman): this looks redundant, consider removing.
-IN_PROC_BROWSER_TEST_F(AutofillTest, MAYBE_MergeAggregatedDuplicatedProfiles) {
+// DISABLED: http://crbug.com/150084
+IN_PROC_BROWSER_TEST_F(AutofillTest,
+                       DISABLED_MergeAggregatedDuplicatedProfiles) {
   int num_of_profiles =
       AggregateProfilesIntoAutofillPrefs("dataset_no_address.txt");
 
