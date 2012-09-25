@@ -1763,8 +1763,9 @@ void Browser::URLStarredChanged(content::WebContents* web_contents,
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, ZoomObserver implementation:
 
-void Browser::OnZoomChanged(TabContents* source, bool can_show_bubble) {
-  if (source == chrome::GetActiveTabContents(this)) {
+void Browser::OnZoomChanged(content::WebContents* source,
+                            bool can_show_bubble) {
+  if (source == chrome::GetActiveWebContents(this)) {
     // Only show the zoom bubble for zoom changes in the active window.
     window_->ZoomChangedForActiveTab(can_show_bubble && window_->IsActive());
   }

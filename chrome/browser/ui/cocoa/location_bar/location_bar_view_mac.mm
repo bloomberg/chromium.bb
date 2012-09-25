@@ -54,6 +54,7 @@
 #include "chrome/browser/ui/omnibox/location_bar_util.h"
 #import "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -766,7 +767,9 @@ void LocationBarViewMac::UpdateZoomDecoration() {
   if (!tab_contents)
     return;
 
-  zoom_decoration_->Update(tab_contents->zoom_controller());
+  ZoomController* zoom_controller =
+      ZoomController::FromWebContents(tab_contents->web_contents());
+  zoom_decoration_->Update(zoom_controller);
 }
 
 void LocationBarViewMac::UpdateStarDecorationVisibility() {

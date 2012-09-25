@@ -17,13 +17,16 @@
 #include "content/public/common/page_zoom.h"
 #include "grit/theme_resources.h"
 
-ZoomController::ZoomController(TabContents* tab_contents)
-    : content::WebContentsObserver(tab_contents->web_contents()),
+int ZoomController::kUserDataKey;
+
+ZoomController::ZoomController(content::WebContents* web_contents)
+    : content::WebContentsObserver(web_contents),
       zoom_percent_(100),
-      tab_contents_(tab_contents),
       observer_(NULL) {
   default_zoom_level_.Init(prefs::kDefaultZoomLevel,
-                           tab_contents->profile()->GetPrefs(), this);
+                           Profile::FromBrowserContext(
+                               web_contents->GetBrowserContext())->GetPrefs(),
+                           this);
   registrar_.Add(this, content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
                  content::NotificationService::AllBrowserContextsAndSources());
 
@@ -36,13 +39,13 @@ ZoomController::~ZoomController() {
 }
 
 bool ZoomController::IsAtDefaultZoom() const {
-  return content::ZoomValuesEqual(tab_contents_->web_contents()->GetZoomLevel(),
+  return content::ZoomValuesEqual(web_contents()->GetZoomLevel(),
                                   default_zoom_level_.GetValue());
 }
 
 int ZoomController::GetResourceForZoomLevel() const {
   DCHECK(!IsAtDefaultZoom());
-  double zoom = tab_contents_->web_contents()->GetZoomLevel();
+  double zoom = web_contents()->GetZoomLevel();
   return zoom > default_zoom_level_.GetValue() ? IDR_ZOOM_PLUS : IDR_ZOOM_MINUS;
 }
 
@@ -74,8 +77,8 @@ void ZoomController::Observe(int type,
 
 void ZoomController::UpdateState(bool can_show_bubble) {
   bool dummy;
-  zoom_percent_ = tab_contents_->web_contents()->GetZoomPercent(&dummy, &dummy);
+  zoom_percent_ = web_contents()->GetZoomPercent(&dummy, &dummy);
 
   if (observer_)
-    observer_->OnZoomChanged(tab_contents_, can_show_bubble);
+    observer_->OnZoomChanged(web_contents(), can_show_bubble);
 }

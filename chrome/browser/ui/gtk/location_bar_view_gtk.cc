@@ -1571,7 +1571,8 @@ void LocationBarViewGtk::UpdateZoomIcon() {
   if (!zoom_.get() || !tab_contents)
     return;
 
-  ZoomController* zoom_controller = tab_contents->zoom_controller();
+  ZoomController* zoom_controller =
+      ZoomController::FromWebContents(tab_contents->web_contents());
   if (!zoom_controller || zoom_controller->IsAtDefaultZoom() ||
       toolbar_model_->input_in_progress()) {
     gtk_widget_hide(zoom_.get());

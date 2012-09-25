@@ -151,7 +151,7 @@ TabContents::TabContents(WebContents* contents)
   SSLTabHelper::CreateForWebContents(contents);
   synced_tab_delegate_.reset(new TabContentsSyncedTabDelegate(this));
   translate_tab_helper_.reset(new TranslateTabHelper(contents));
-  zoom_controller_.reset(new ZoomController(this));
+  ZoomController::CreateForWebContents(contents);
 
 #if defined(ENABLE_AUTOMATION)
   automation_tab_helper_.reset(new AutomationTabHelper(contents));

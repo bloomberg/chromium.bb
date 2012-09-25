@@ -50,5 +50,5 @@ void Browser::SetAsDelegate(WebContents* web_contents, Browser* delegate) {
   tab->constrained_window_tab_helper()->set_delegate(delegate);
   CoreTabHelper::FromWebContents(web_contents)->set_delegate(delegate);
   SearchEngineTabHelper::FromWebContents(web_contents)->set_delegate(delegate);
-  tab->zoom_controller()->set_observer(delegate);
+  ZoomController::FromWebContents(web_contents)->set_observer(delegate);
 }

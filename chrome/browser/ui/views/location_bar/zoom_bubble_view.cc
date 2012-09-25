@@ -84,7 +84,9 @@ ZoomBubbleView::~ZoomBubbleView() {
 }
 
 void ZoomBubbleView::Refresh() {
-  int zoom_percent = tab_contents_->zoom_controller()->zoom_percent();
+  ZoomController* zoom_controller =
+      ZoomController::FromWebContents(tab_contents_->web_contents());
+  int zoom_percent = zoom_controller->zoom_percent();
   label_->SetText(
       l10n_util::GetStringFUTF16Int(IDS_TOOLTIP_ZOOM, zoom_percent));
   StartTimerIfNecessary();
@@ -130,7 +132,9 @@ void ZoomBubbleView::Init() {
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical,
       0, 0, views::kRelatedControlVerticalSpacing));
 
-  int zoom_percent = tab_contents_->zoom_controller()->zoom_percent();
+  ZoomController* zoom_controller =
+      ZoomController::FromWebContents(tab_contents_->web_contents());
+  int zoom_percent = zoom_controller->zoom_percent();
   label_ = new views::Label(
       l10n_util::GetStringFUTF16Int(IDS_TOOLTIP_ZOOM, zoom_percent));
   gfx::Font font = label_->font().DeriveFont(kPercentageFontIncrease);

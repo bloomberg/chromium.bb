@@ -672,7 +672,7 @@ class Browser : public TabStripModelObserver,
                                  bool starred) OVERRIDE;
 
   // Overridden from ZoomObserver:
-  virtual void OnZoomChanged(TabContents* source,
+  virtual void OnZoomChanged(content::WebContents* source,
                              bool can_show_bubble) OVERRIDE;
 
   // Overridden from SelectFileDialog::Listener:

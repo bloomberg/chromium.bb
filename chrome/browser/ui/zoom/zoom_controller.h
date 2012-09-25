@@ -8,18 +8,22 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/api/prefs/pref_member.h"
+#include "chrome/browser/tab_contents/web_contents_user_data.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 
-class TabContents;
 class ZoomObserver;
+
+namespace content {
+class WebContents;
+}
 
 // Per-tab class to manage the Omnibox zoom icon.
 class ZoomController : public content::NotificationObserver,
-                       public content::WebContentsObserver {
+                       public content::WebContentsObserver,
+                       public WebContentsUserData<ZoomController> {
  public:
-  explicit ZoomController(TabContents* tab_contents);
   virtual ~ZoomController();
 
   int zoom_percent() const { return zoom_percent_; }
@@ -33,6 +37,10 @@ class ZoomController : public content::NotificationObserver,
   void set_observer(ZoomObserver* observer) { observer_ = observer; }
 
  private:
+  explicit ZoomController(content::WebContents* web_contents);
+  static int kUserDataKey;
+  friend class WebContentsUserData<ZoomController>;
+
   // content::WebContentsObserver overrides:
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
@@ -58,9 +66,6 @@ class ZoomController : public content::NotificationObserver,
 
   // Used to access the default zoom level preference.
   DoublePrefMember default_zoom_level_;
-
-  // TabContents that owns this instance.
-  TabContents* tab_contents_;
 
   // Observer receiving notifications on state changes.
   ZoomObserver* observer_;

@@ -56,6 +56,7 @@
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_views.h"
 #include "chrome/browser/ui/webui/instant_ui.h"
+#include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension_switch_utils.h"
 #include "chrome/common/pref_names.h"
@@ -586,8 +587,12 @@ void LocationBarView::ZoomChangedForActiveTab(bool can_show_bubble) {
 void LocationBarView::RefreshZoomView() {
   DCHECK(zoom_view_);
   TabContents* tab_contents = GetTabContents();
-  if (tab_contents)
-    zoom_view_->Update(tab_contents->zoom_controller());
+  if (!tab_contents)
+    return;
+
+  ZoomController* zoom_controller =
+      ZoomController::FromWebContents(tab_contents->web_contents());
+  zoom_view_->Update(zoom_controller);
 }
 
 void LocationBarView::ShowChromeToMobileBubble() {

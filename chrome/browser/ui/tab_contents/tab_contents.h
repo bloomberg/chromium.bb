@@ -58,7 +58,6 @@ class WebIntentPickerCocoa;
 class WebIntentPickerController;
 class WebIntentPickerGtk;
 class WebUITestContentsCreator;
-class ZoomController;
 
 namespace browser_sync {
 class SyncedTabDelegate;
@@ -211,10 +210,6 @@ class TabContents : public content::WebContentsObserver {
     return web_intent_picker_controller_.get();
   }
 
-  ZoomController* zoom_controller() {
-    return zoom_controller_.get();
-  }
-
   // Overrides -----------------------------------------------------------------
 
   // content::WebContentsObserver overrides:
@@ -265,8 +260,6 @@ class TabContents : public content::WebContentsObserver {
 
   // Handles displaying a web intents picker to the user.
   scoped_ptr<WebIntentPickerController> web_intent_picker_controller_;
-
-  scoped_ptr<ZoomController> zoom_controller_;
 
   // Per-tab observers ---------------------------------------------------------
   // (These provide no API for callers; objects that need to exist 1:1 with tabs
