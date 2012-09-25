@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cmath>
 
+#include "ash/ash_switches.h"
 #include "ash/launcher/launcher.h"
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
@@ -16,6 +17,7 @@
 #include "ash/wm/window_animations.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/auto_reset.h"
+#include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/event_filter.h"
@@ -43,6 +45,12 @@ const int kNotificationBubbleGapHeight = 6;
 
 ui::Layer* GetLayer(views::Widget* widget) {
   return widget->GetNativeView()->layer();
+}
+
+bool IsDraggingTrayEnabled() {
+  static bool dragging_tray_allowed = CommandLine::ForCurrentProcess()->
+      HasSwitch(ash::switches::kAshEnableTrayDragging);
+  return dragging_tray_allowed;
 }
 
 }  // namespace
@@ -368,7 +376,8 @@ ShelfLayoutManager::DragState ShelfLayoutManager::UpdateGestureDrag(
           GetPreferredSize().height();
 
     if (min_height < launcher_widget()->GetWindowBoundsInScreen().height() &&
-        gesture.root_location().x() >= status_->GetWindowBoundsInScreen().x())
+        gesture.root_location().x() >= status_->GetWindowBoundsInScreen().x() &&
+        IsDraggingTrayEnabled())
       return DRAG_TRAY;
   }
 

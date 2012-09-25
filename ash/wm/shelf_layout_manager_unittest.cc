@@ -6,6 +6,7 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/accelerators/accelerator_table.h"
+#include "ash/ash_switches.h"
 #include "ash/focus_cycler.h"
 #include "ash/launcher/launcher.h"
 #include "ash/screen_ash.h"
@@ -17,6 +18,7 @@
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_util.h"
+#include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
@@ -168,6 +170,12 @@ class ShelfLayoutManagerTest : public ash::test::AshTestBase {
     return window;
   }
 
+  // Overridden from AshTestBase:
+  virtual void SetUp() OVERRIDE {
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        ash::switches::kAshEnableTrayDragging);
+    test::AshTestBase::SetUp();
+  }
  private:
   DISALLOW_COPY_AND_ASSIGN(ShelfLayoutManagerTest);
 };
