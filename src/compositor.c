@@ -327,6 +327,83 @@ weston_surface_damage_below(struct weston_surface *surface)
 	pixman_region32_fini(&damage);
 }
 
+static struct wl_resource *
+find_resource_for_client(struct wl_list *list, struct wl_client *client)
+{
+        struct wl_resource *r;
+
+        wl_list_for_each(r, list, link) {
+                if (r->client == client)
+                        return r;
+        }
+
+        return NULL;
+}
+
+static void
+weston_surface_update_output_mask(struct weston_surface *es, uint32_t mask)
+{
+	uint32_t different = es->output_mask ^ mask;
+	uint32_t entered = mask & different;
+	uint32_t left = es->output_mask & different;
+	struct weston_output *output;
+	struct wl_resource *resource = NULL;
+	struct wl_client *client = es->surface.resource.client;
+
+	es->output_mask = mask;
+	if (es->surface.resource.client == NULL)
+		return;
+	if (different == 0)
+		return;
+
+	wl_list_for_each(output, &es->compositor->output_list, link) {
+		if (1 << output->id & different)
+			resource =
+				find_resource_for_client(&output->resource_list,
+							 client);
+		if (resource == NULL)
+			continue;
+		if (1 << output->id & entered)
+			wl_surface_send_enter(&es->surface.resource, resource);
+		if (1 << output->id & left)
+			wl_surface_send_leave(&es->surface.resource, resource);
+	}
+}
+
+static void
+weston_surface_assign_output(struct weston_surface *es)
+{
+	struct weston_compositor *ec = es->compositor;
+	struct weston_output *output, *new_output;
+	pixman_region32_t region;
+	uint32_t max, area, mask;
+	pixman_box32_t *e;
+
+	new_output = NULL;
+	max = 0;
+	mask = 0;
+	pixman_region32_init(&region);
+	wl_list_for_each(output, &ec->output_list, link) {
+		pixman_region32_intersect(&region, &es->transform.boundingbox,
+					  &output->region);
+
+		e = pixman_region32_extents(&region);
+		area = (e->x2 - e->x1) * (e->y2 - e->y1);
+
+		if (area > 0)
+			mask |= 1 << output->id;
+
+		if (area >= max) {
+			new_output = output;
+			max = area;
+		}
+	}
+	pixman_region32_fini(&region);
+
+	es->output = new_output;
+	weston_surface_update_output_mask(es, mask);
+}
+
 static void
 surface_compute_bbox(struct weston_surface *surface, int32_t sx, int32_t sy,
 		     int32_t width, int32_t height,
@@ -1042,83 +1119,6 @@ static void
 surface_destroy(struct wl_client *client, struct wl_resource *resource)
 {
 	wl_resource_destroy(resource);
-}
-
-static struct wl_resource *
-find_resource_for_client(struct wl_list *list, struct wl_client *client)
-{
-        struct wl_resource *r;
-
-        wl_list_for_each(r, list, link) {
-                if (r->client == client)
-                        return r;
-        }
-
-        return NULL;
-}
-
-static void
-weston_surface_update_output_mask(struct weston_surface *es, uint32_t mask)
-{
-	uint32_t different = es->output_mask ^ mask;
-	uint32_t entered = mask & different;
-	uint32_t left = es->output_mask & different;
-	struct weston_output *output;
-	struct wl_resource *resource = NULL;
-	struct wl_client *client = es->surface.resource.client;
-
-	es->output_mask = mask;
-	if (es->surface.resource.client == NULL)
-		return;
-	if (different == 0)
-		return;
-
-	wl_list_for_each(output, &es->compositor->output_list, link) {
-		if (1 << output->id & different)
-			resource =
-				find_resource_for_client(&output->resource_list,
-							 client);
-		if (resource == NULL)
-			continue;
-		if (1 << output->id & entered)
-			wl_surface_send_enter(&es->surface.resource, resource);
-		if (1 << output->id & left)
-			wl_surface_send_leave(&es->surface.resource, resource);
-	}
-}
-
-WL_EXPORT void
-weston_surface_assign_output(struct weston_surface *es)
-{
-	struct weston_compositor *ec = es->compositor;
-	struct weston_output *output, *new_output;
-	pixman_region32_t region;
-	uint32_t max, area, mask;
-	pixman_box32_t *e;
-
-	new_output = NULL;
-	max = 0;
-	mask = 0;
-	pixman_region32_init(&region);
-	wl_list_for_each(output, &ec->output_list, link) {
-		pixman_region32_intersect(&region, &es->transform.boundingbox,
-					  &output->region);
-
-		e = pixman_region32_extents(&region);
-		area = (e->x2 - e->x1) * (e->y2 - e->y1);
-
-		if (area > 0)
-			mask |= 1 << output->id;
-
-		if (area >= max) {
-			new_output = output;
-			max = area;
-		}
-	}
-	pixman_region32_fini(&region);
-
-	es->output = new_output;
-	weston_surface_update_output_mask(es, mask);
 }
 
 static void
