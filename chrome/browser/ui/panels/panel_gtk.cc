@@ -840,6 +840,10 @@ void PanelGtk::UpdatePanelTitleBar() {
   string16 title = panel_->GetWindowTitle();
   gtk_window_set_title(window_, UTF16ToUTF8(title).c_str());
   titlebar_->UpdateTitleAndIcon();
+
+  gfx::Image app_icon = panel_->app_icon();
+  if (!app_icon.IsEmpty())
+    gtk_util::SetWindowIcon(window_, panel_->profile(), app_icon.ToGdkPixbuf());
 }
 
 void PanelGtk::UpdatePanelLoadingAnimations(bool should_animate) {

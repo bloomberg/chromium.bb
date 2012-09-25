@@ -537,6 +537,14 @@ string16 PanelView::GetWindowTitle() const {
   return panel_->GetWindowTitle();
 }
 
+gfx::ImageSkia PanelView::GetWindowAppIcon() {
+  gfx::Image app_icon = panel_->app_icon();
+  if (app_icon.IsEmpty())
+    return GetWindowIcon();
+  else
+    return *app_icon.ToImageSkia();
+}
+
 gfx::ImageSkia PanelView::GetWindowIcon() {
   gfx::Image icon = panel_->GetCurrentPageIcon();
   return icon.IsEmpty() ? gfx::ImageSkia() : *icon.ToImageSkia();
