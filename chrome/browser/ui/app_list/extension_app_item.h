@@ -19,6 +19,7 @@ class Profile;
 class SkBitmap;
 
 namespace extensions {
+class ContextMenuMatcher;
 class Extension;
 }
 
@@ -76,6 +77,7 @@ class ExtensionAppItem : public ChromeAppListItem,
 
   scoped_ptr<extensions::IconImage> icon_;
   scoped_ptr<ui::SimpleMenuModel> context_menu_model_;
+  scoped_ptr<extensions::ContextMenuMatcher> extension_menu_items_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionAppItem);
 };

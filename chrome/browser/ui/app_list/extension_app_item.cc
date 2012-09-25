@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/app_list/extension_app_item.h"
 
 #include "base/utf_string_conversions.h"
+#include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/extensions/context_menu_matcher.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_sorting.h"
@@ -20,6 +22,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
+#include "content/public/common/context_menu_params.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -125,6 +128,10 @@ ExtensionSorting* GetExtensionSorting(Profile* profile) {
   return profile->GetExtensionService()->extension_prefs()->extension_sorting();
 }
 
+bool MenuItemHasLauncherContext(const extensions::MenuItem* item) {
+  return item->contexts().Contains(extensions::MenuItem::LAUNCHER);
+}
+
 }  // namespace
 
 ExtensionAppItem::ExtensionAppItem(Profile* profile,
@@ -227,6 +234,9 @@ bool ExtensionAppItem::IsCommandIdChecked(int command_id) const {
   if (command_id >= LAUNCH_TYPE_START && command_id < LAUNCH_TYPE_LAST) {
     return static_cast<int>(GetExtensionLaunchType(profile_, extension_id_)) +
         LAUNCH_TYPE_START == command_id;
+  } else if (command_id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
+             command_id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST) {
+    return extension_menu_items_->IsCommandIdChecked(command_id);
   }
   return false;
 }
@@ -247,6 +257,9 @@ bool ExtensionAppItem::IsCommandIdEnabled(int command_id) const {
   } else if (command_id == DETAILS) {
     const Extension* extension = GetExtension();
     return extension && extension->from_webstore();
+  } else if (command_id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
+             command_id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST) {
+    return extension_menu_items_->IsCommandIdEnabled(command_id);
   }
   return true;
 }
@@ -277,6 +290,10 @@ void ExtensionAppItem::ExecuteCommand(int command_id) {
     StartExtensionUninstall();
   } else if (command_id == DETAILS) {
     ShowExtensionDetails();
+  } else if (command_id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
+             command_id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST) {
+    extension_menu_items_->ExecuteCommand(command_id,
+                                          content::ContextMenuParams());
   }
 }
 
@@ -307,9 +324,16 @@ ui::MenuModel* ExtensionAppItem::GetContextMenuModel() {
 
   if (!context_menu_model_.get()) {
     context_menu_model_.reset(new ui::SimpleMenuModel(this));
+    extension_menu_items_.reset(new extensions::ContextMenuMatcher(
+        profile_, this, context_menu_model_.get(),
+        base::Bind(MenuItemHasLauncherContext)));
+
     context_menu_model_->AddItem(LAUNCH, UTF8ToUTF16(title()));
     // Talk extension isn't an app and so doesn't support most launch options.
     if (!IsTalkExtension()) {
+      int index = 0;
+      extension_menu_items_->AppendExtensionItems(extension_id_, string16(),
+                                                  &index);
       context_menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
       context_menu_model_->AddItemWithStringId(
           TOGGLE_PIN,

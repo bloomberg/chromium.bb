@@ -8,9 +8,14 @@
 #include "ash/launcher/launcher_alignment_menu.h"
 #include "ash/launcher/launcher_types.h"
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/base/models/simple_menu_model.h"
 
 class ChromeLauncherController;
+
+namespace extensions {
+class ContextMenuMatcher;
+}
 
 // Context menu shown for a launcher item.
 class LauncherContextMenu : public ui::SimpleMenuModel,
@@ -57,6 +62,8 @@ class LauncherContextMenu : public ui::SimpleMenuModel,
   ash::LauncherItem item_;
 
   ash::LauncherAlignmentMenu alignment_menu_;
+
+  scoped_ptr<extensions::ContextMenuMatcher> extension_items_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherContextMenu);
 };

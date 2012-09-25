@@ -44,7 +44,8 @@
           },
           "pageUrl": {
             "type": "string",
-            "description": "The URL of the page where the menu item was clicked."
+            "optional": true,
+            "description": "The URL of the page where the menu item was clicked. This property is not set if the click occured in a context where there is no current page, such as in a launcher context menu."
           },
           "frameUrl": {
             "type": "string",
@@ -115,7 +116,7 @@
                 "type": "array",
                 "items": {
                   "type": "string",
-                  "enum": ["all", "page", "frame", "selection", "link", "editable", "image", "video", "audio"]
+                  "enum": ["all", "page", "frame", "selection", "link", "editable", "image", "video", "audio", "launcher"]
                 },
                 "minItems": 1,
                 "optional": true,
@@ -209,7 +210,7 @@
                 "type": "array",
                 "items": {
                   "type": "string",
-                  "enum": ["all", "page", "frame", "selection", "link", "editable", "image", "video", "audio"]
+                  "enum": ["all", "page", "frame", "selection", "link", "editable", "image", "video", "audio", "launcher"]
                 },
                 "minItems": 1,
                 "optional": true
