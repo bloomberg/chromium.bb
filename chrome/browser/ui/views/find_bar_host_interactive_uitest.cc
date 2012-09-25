@@ -219,10 +219,16 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_FocusRestoreOnTabSwitch) {
                                            location_bar_focus_view_id_));
 }
 
+// Flaky on XP: http://crbug.com/152100
+#if defined(OS_WIN)
+#define MAYBE_PrepopulateRespectBlank DISABLED_PrepopulateRespectBlank
+#else
+#define MAYBE_PrepopulateRespectBlank PrepopulateRespectBlank
+#endif
 // This tests that whenever you clear values from the Find box and close it that
 // it respects that and doesn't show you the last search, as reported in bug:
 // http://crbug.com/40121.
-IN_PROC_BROWSER_TEST_F(FindInPageTest, PrepopulateRespectBlank) {
+IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_PrepopulateRespectBlank) {
 #if defined(OS_MACOSX)
   // FindInPage on Mac doesn't use prepopulated values. Search there is global.
   return;
