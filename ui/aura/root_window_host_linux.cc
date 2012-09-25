@@ -497,11 +497,13 @@ bool RootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
         if (client) {
           gfx::Point p = gfx::Screen::GetCursorScreenPoint();
           client->ConvertPointFromScreen(root, &p);
-          if (root->ContainsPoint(p)) {
+          // TODO(oshima): Make sure the pointer is on one of root windows.
+          if (root->ContainsPoint(p))
             root->ConvertPointToNativeScreen(&p);
-            XWarpPointer(
-                xdisplay_, None, x_root_window_, 0, 0, 0, 0, p.x(), p.y());
-          }
+          else
+            p.SetPoint(0, 0);
+          XWarpPointer(
+              xdisplay_, None, x_root_window_, 0, 0, 0, 0, p.x(), p.y());
         }
         ConfineCursorToRootWindow();
       }

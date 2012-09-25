@@ -90,12 +90,9 @@ void DisplayOptionsHandler::OnDisplayRemoved(const gfx::Display& old_display) {
 }
 
 void DisplayOptionsHandler::UpdateDisplaySectionVisibility() {
-  chromeos::OutputState output_state =
-      ash::Shell::GetInstance()->output_configurator()->output_state();
-  base::FundamentalValue show_options(
-      output_state != chromeos::STATE_INVALID &&
-      output_state != chromeos::STATE_HEADLESS &&
-      output_state != chromeos::STATE_SINGLE);
+  // TODO(oshima): Temporarily disable the display options.
+  // crbug.com/152003.
+  base::FundamentalValue show_options(false);
   web_ui()->CallJavascriptFunction(
       "options.BrowserOptions.showDisplayOptions", show_options);
 }
