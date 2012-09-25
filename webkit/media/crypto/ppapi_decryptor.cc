@@ -97,7 +97,7 @@ void PpapiDecryptor::Decrypt(
     decrypt_cb.Run(kError, NULL);
 }
 
-void PpapiDecryptor::Stop() {
+void PpapiDecryptor::CancelDecrypt() {
 }
 
 void PpapiDecryptor::ReportFailureToCallPlugin(const std::string& key_system,

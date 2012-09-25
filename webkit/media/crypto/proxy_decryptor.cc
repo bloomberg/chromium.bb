@@ -166,14 +166,14 @@ void ProxyDecryptor::Decrypt(
       base::MessageLoopProxy::current(), encrypted, decrypt_cb));
 }
 
-void ProxyDecryptor::Stop() {
+void ProxyDecryptor::CancelDecrypt() {
   DVLOG(1) << "Stop()";
 
   std::vector<base::Closure> closures_to_run;
   {
     base::AutoLock auto_lock(lock_);
     if (decryptor_.get())
-      decryptor_->Stop();
+      decryptor_->CancelDecrypt();
     stopped_ = true;
     std::swap(pending_decrypt_closures_, closures_to_run);
   }

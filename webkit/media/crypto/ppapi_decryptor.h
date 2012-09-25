@@ -50,7 +50,7 @@ class PpapiDecryptor : public media::Decryptor {
                                 const std::string& session_id) OVERRIDE;
   virtual void Decrypt(const scoped_refptr<media::DecoderBuffer>& encrypted,
                        const DecryptCB& decrypt_cb) OVERRIDE;
-  virtual void Stop() OVERRIDE;
+  virtual void CancelDecrypt() OVERRIDE;
 
  private:
   void ReportFailureToCallPlugin(const std::string& key_system,
