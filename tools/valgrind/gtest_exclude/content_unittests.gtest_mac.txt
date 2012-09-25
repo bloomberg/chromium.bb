@@ -8,3 +8,4 @@ WebRTCAudioDeviceTest.FullDuplexAudioWithAGC
 # Fail/crash, see http://crbug.com/151939
 WebDragDestTest.URL
 WebDragDestTest.Data
+WebDragSourceMacTest.DragInvalidlyEscapedBookmarklet
