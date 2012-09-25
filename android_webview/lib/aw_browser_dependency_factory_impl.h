@@ -31,8 +31,6 @@ class AwBrowserDependencyFactoryImpl : public AwBrowserDependencyFactory {
   virtual content::WebContents* CreateWebContents(bool incognito) OVERRIDE;
   virtual AwContentsContainer* CreateContentsContainer(
       content::WebContents* contents) OVERRIDE;
-  virtual content::JavaScriptDialogCreator* GetJavaScriptDialogCreator()
-      OVERRIDE;
 
  private:
   void InitializeNetworkDelegateOnIOThread(
@@ -51,4 +49,3 @@ class AwBrowserDependencyFactoryImpl : public AwBrowserDependencyFactory {
 }  // namespace android_webview
 
 #endif  // ANDROID_WEBVIEW_LIB_BROWSER_DELEGATE_IMPL_H_
-

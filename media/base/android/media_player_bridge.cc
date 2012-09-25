@@ -276,7 +276,7 @@ void MediaPlayerBridge::OnMediaError(int error_type) {
 
 void MediaPlayerBridge::OnVideoSizeChanged(int width, int height) {
   width_ = width;
-  height_ = height_;
+  height_ = height;
   video_size_changed_cb_.Run(player_id_, width, height);
 }
 

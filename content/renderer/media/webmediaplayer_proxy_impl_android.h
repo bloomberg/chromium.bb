@@ -32,7 +32,7 @@ class WebMediaPlayerProxyImplAndroid
       webkit_media::WebMediaPlayerManagerAndroid* manager);
   virtual ~WebMediaPlayerProxyImplAndroid();
 
-  bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
   // Methods inherited from WebMediaPlayerProxyAndroid.
   virtual void Initialize(int player_id, const std::string& url,

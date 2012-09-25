@@ -14,7 +14,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/app_modal_dialogs/javascript_dialog_creator.h"
 #include "content/public/browser/web_contents.h"
 #include "ipc/ipc_message.h"
 #include "net/url_request/url_request_context.h"
@@ -100,11 +99,6 @@ WebContents* AwBrowserDependencyFactoryImpl::CreateWebContents(bool incognito) {
 AwContentsContainer* AwBrowserDependencyFactoryImpl::CreateContentsContainer(
     content::WebContents* contents) {
   return new WebContentsWrapper(contents);
-}
-
-content::JavaScriptDialogCreator*
-    AwBrowserDependencyFactoryImpl::GetJavaScriptDialogCreator() {
-  return GetJavaScriptDialogCreatorInstance();
 }
 
 }  // namespace android_webview

@@ -34,7 +34,6 @@ class CookieGetterTask
  public:
   CookieGetterTask(BrowserContext* browser_context,
                    int renderer_id, int routing_id);
-  virtual ~CookieGetterTask();
 
   // Called by CookieGetterImpl to start getting cookies for a URL.
   void RequestCookies(
@@ -42,6 +41,9 @@ class CookieGetterTask
       const media::CookieGetter::GetCookieCB& callback);
 
  private:
+  friend class base::RefCountedThreadSafe<CookieGetterTask>;
+  virtual ~CookieGetterTask();
+
   void CheckPolicyForCookies(
       const GURL& url, const GURL& first_party_for_cookies,
       const media::CookieGetter::GetCookieCB& callback,
