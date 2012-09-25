@@ -334,7 +334,8 @@ bool ExtensionWebUI::HandleChromeURLOverrideReverse(
     return false;
 
   // Find the reverse mapping based on the given URL. For example this maps the
-  // internal URL chrome-extension://eemcgdkndhakfknomggombfjeno/main.html#1 to
+  // internal URL
+  // chrome-extension://eemcgdkfndhakfknompkggombfjjjeno/main.html#1 to
   // chrome://bookmarks/#1 for display in the omnibox.
   for (DictionaryValue::key_iterator it = overrides->begin_keys(),
        end = overrides->end_keys(); it != end; ++it) {
