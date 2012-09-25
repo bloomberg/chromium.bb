@@ -4,6 +4,7 @@
 
 #include "chrome/browser/browser_about_handler.h"
 
+#include <algorithm>
 #include <string>
 
 #include "base/command_line.h"
@@ -19,7 +20,7 @@ namespace {
 
 // Add paths here to be included in chrome://chrome-urls (about:about).
 // These paths will also be suggested by BuiltinProvider.
-const char* const kChromePaths[] = {
+const char* const kPaths[] = {
   chrome::kChromeUIAppCacheInternalsHost,
   chrome::kChromeUIBlobInternalsHost,
   chrome::kChromeUICacheHost,
@@ -173,9 +174,7 @@ bool HandleNonNavigationAboutURL(const GURL& url) {
 }
 
 std::vector<std::string> ChromePaths() {
-  std::vector<std::string> paths;
-  paths.reserve(arraysize(kChromePaths));
-  for (size_t i = 0; i < arraysize(kChromePaths); i++)
-    paths.push_back(kChromePaths[i]);
+  std::vector<std::string> paths(kPaths, kPaths + arraysize(kPaths));
+  std::sort(paths.begin(), paths.end());
   return paths;
 }
