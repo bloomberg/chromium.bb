@@ -55,7 +55,6 @@ class WebDialogGtk;
 class WebDialogWindowControllerTabContentsCreator;
 class WebIntentInlineDispositionBrowserTest;
 class WebIntentPickerCocoa;
-class WebIntentPickerController;
 class WebIntentPickerGtk;
 class WebUITestContentsCreator;
 
@@ -206,10 +205,6 @@ class TabContents : public content::WebContentsObserver {
     return translate_tab_helper_.get();
   }
 
-  WebIntentPickerController* web_intent_picker_controller() {
-    return web_intent_picker_controller_.get();
-  }
-
   // Overrides -----------------------------------------------------------------
 
   // content::WebContentsObserver overrides:
@@ -257,9 +252,6 @@ class TabContents : public content::WebContentsObserver {
 
   scoped_ptr<ThumbnailGenerator> thumbnail_generator_;
   scoped_ptr<TranslateTabHelper> translate_tab_helper_;
-
-  // Handles displaying a web intents picker to the user.
-  scoped_ptr<WebIntentPickerController> web_intent_picker_controller_;
 
   // Per-tab observers ---------------------------------------------------------
   // (These provide no API for callers; objects that need to exist 1:1 with tabs

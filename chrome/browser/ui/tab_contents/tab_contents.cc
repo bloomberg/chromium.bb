@@ -166,7 +166,7 @@ TabContents::TabContents(WebContents* contents)
     OmniboxSearchHint::CreateForWebContents(contents);
   PDFTabHelper::CreateForWebContents(contents);
   SadTabHelper::CreateForWebContents(contents);
-  web_intent_picker_controller_.reset(new WebIntentPickerController(this));
+  WebIntentPickerController::CreateForWebContents(contents);
 #endif
 
   external_protocol_observer_.reset(new ExternalProtocolObserver(contents));

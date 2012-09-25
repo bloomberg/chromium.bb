@@ -909,9 +909,10 @@ class WebIntentPickerViews : public views::ButtonListener,
 };
 
 // static
-WebIntentPicker* WebIntentPicker::Create(TabContents* tab_contents,
+WebIntentPicker* WebIntentPicker::Create(content::WebContents* web_contents,
                                          WebIntentPickerDelegate* delegate,
                                          WebIntentPickerModel* model) {
+  TabContents* tab_contents = TabContents::FromWebContents(web_contents);
   return new WebIntentPickerViews(tab_contents, delegate, model);
 }
 

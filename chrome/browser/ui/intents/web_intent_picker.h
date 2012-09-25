@@ -12,7 +12,6 @@
 #include "base/string16.h"
 #include "ui/gfx/size.h"
 
-class TabContents;
 class WebIntentPickerDelegate;
 class WebIntentPickerModel;
 
@@ -35,7 +34,7 @@ class WebIntentPicker {
 
   // Platform specific factory function. This function will automatically show
   // the picker.
-  static WebIntentPicker* Create(TabContents* tab_contents,
+  static WebIntentPicker* Create(content::WebContents* web_contents,
                                  WebIntentPickerDelegate* delegate,
                                  WebIntentPickerModel* model);
 

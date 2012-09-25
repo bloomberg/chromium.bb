@@ -241,8 +241,8 @@ class WebIntentPickerControllerBrowserTest : public InProcessBrowserTest {
         GetBrowser()->profile(), Profile::EXPLICIT_ACCESS);
     favicon_service_ = FaviconServiceFactory::GetForProfile(
         GetBrowser()->profile(), Profile::EXPLICIT_ACCESS);
-    controller_ = chrome::GetActiveTabContents(GetBrowser())->
-        web_intent_picker_controller();
+    controller_ = WebIntentPickerController::FromWebContents(
+        chrome::GetActiveWebContents(GetBrowser()));
 
     SetupMockPicker();
     controller_->set_model_observer(&picker_);
@@ -369,7 +369,8 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest, ChooseService) {
             chrome::GetActiveWebContents(browser())->GetURL());
 
   EXPECT_TRUE(GetWindowDispositionTarget(
-      chrome::GetActiveTabContents(browser())->web_intent_picker_controller()));
+      WebIntentPickerController::FromWebContents(
+          chrome::GetActiveWebContents(browser()))));
 
   EXPECT_TRUE(dispatcher.dispatched_);
 

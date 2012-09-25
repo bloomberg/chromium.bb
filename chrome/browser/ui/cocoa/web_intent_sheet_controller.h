@@ -11,6 +11,7 @@
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 #include "chrome/browser/ui/intents/web_intent_picker.h"
 
+class TabContents;
 class WebIntentPickerCocoa;
 class WebIntentPickerModel;
 

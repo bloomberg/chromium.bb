@@ -23,10 +23,12 @@ WebIntentsButtonView::WebIntentsButtonView(LocationBarView* parent,
 }
 
 void WebIntentsButtonView::Update(TabContents* tab_contents) {
-  if (!tab_contents ||
-      !tab_contents->web_intent_picker_controller() ||
-      !tab_contents->web_intent_picker_controller()->
-          ShowLocationBarPickerTool()) {
+  WebIntentPickerController* web_intent_picker_controller =
+      tab_contents ? WebIntentPickerController::FromWebContents(
+                         tab_contents->web_contents())
+                   : NULL;
+  if (!web_intent_picker_controller ||
+      !web_intent_picker_controller->ShowLocationBarPickerTool()) {
     SetVisible(false);
     return;
   }
@@ -47,7 +49,8 @@ void WebIntentsButtonView::OnClick(LocationBarView* parent) {
   if (!tab_contents)
     return;
 
-  tab_contents->web_intent_picker_controller()->LocationBarPickerToolClicked();
+  WebIntentPickerController::FromWebContents(tab_contents->web_contents())->
+      LocationBarPickerToolClicked();
 }
 
 int WebIntentsButtonView::GetTextAnimationSize(double state, int text_size) {

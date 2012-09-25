@@ -193,9 +193,10 @@ void WaitingDialog::Init() {
   throbber->Start();
 }
 // static
-WebIntentPicker* WebIntentPicker::Create(TabContents* tab_contents,
+WebIntentPicker* WebIntentPicker::Create(content::WebContents* web_contents,
                                          WebIntentPickerDelegate* delegate,
                                          WebIntentPickerModel* model) {
+  TabContents* tab_contents = TabContents::FromWebContents(web_contents);
   return new WebIntentPickerGtk(tab_contents, delegate, model);
 }
 

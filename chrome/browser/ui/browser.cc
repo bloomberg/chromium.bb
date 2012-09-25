@@ -1654,10 +1654,10 @@ void Browser::WebIntentDispatch(
     // active web contents.
     web_contents = chrome::GetActiveWebContents(this);
   }
-  TabContents* tab_contents = TabContents::FromWebContents(web_contents);
-  tab_contents->web_intent_picker_controller()->SetIntentsDispatcher(
-      intents_dispatcher);
-  tab_contents->web_intent_picker_controller()->ShowDialog(
+  WebIntentPickerController* web_intent_picker_controller =
+      WebIntentPickerController::FromWebContents(web_contents);
+  web_intent_picker_controller->SetIntentsDispatcher(intents_dispatcher);
+  web_intent_picker_controller->ShowDialog(
       intents_dispatcher->GetIntent().action,
       intents_dispatcher->GetIntent().type);
 }

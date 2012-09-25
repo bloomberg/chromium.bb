@@ -153,11 +153,12 @@ bool WebIntentsButtonDecoration::AcceptsMousePress() {
 bool WebIntentsButtonDecoration::OnMousePressed(NSRect frame) {
   // Get host. This should be shared on linux/win/osx medium-term.
   Browser* browser = browser::GetLastActiveBrowser();
-  TabContents* tabContents = chrome::GetActiveTabContents(browser);
-  if (!tabContents)
+  content::WebContents* web_contents = chrome::GetActiveWebContents(browser);
+  if (!web_contents)
     return true;
 
-  tabContents->web_intent_picker_controller()->LocationBarPickerToolClicked();
+  WebIntentPickerController::FromWebContents(web_contents)->
+      LocationBarPickerToolClicked();
   return true;
 }
 
@@ -212,9 +213,9 @@ void WebIntentsButtonDecoration::DrawInFrame(
 }
 
 void WebIntentsButtonDecoration::Update(TabContents* tab_contents) {
-  WebIntentPickerController* intentsController =
-      tab_contents->web_intent_picker_controller();
-  SetVisible(intentsController->ShowLocationBarPickerTool());
+  WebIntentPickerController* intents_controller =
+      WebIntentPickerController::FromWebContents(tab_contents->web_contents());
+  SetVisible(intents_controller->ShowLocationBarPickerTool());
 
   if (IsVisible()) {
     if (!ranAnimation_ && !animation_) {

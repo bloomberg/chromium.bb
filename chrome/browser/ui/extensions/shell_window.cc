@@ -353,9 +353,10 @@ void ShellWindow::WebIntentDispatch(
   if (!web_intents::IsWebIntentsEnabledForProfile(profile_))
     return;
 
-  contents_->web_intent_picker_controller()->SetIntentsDispatcher(
-      intents_dispatcher);
-  contents_->web_intent_picker_controller()->ShowDialog(
+  WebIntentPickerController* web_intent_picker_controller =
+      WebIntentPickerController::FromWebContents(contents_->web_contents());
+  web_intent_picker_controller->SetIntentsDispatcher(intents_dispatcher);
+  web_intent_picker_controller->ShowDialog(
       intents_dispatcher->GetIntent().action,
       intents_dispatcher->GetIntent().type);
 }

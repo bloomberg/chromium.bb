@@ -17,6 +17,7 @@
 #include "chrome/browser/intents/cws_intents_registry.h"
 #include "chrome/browser/intents/web_intents_registry.h"
 #include "chrome/browser/intents/web_intents_reporting.h"
+#include "chrome/browser/tab_contents/web_contents_user_data.h"
 #include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -27,7 +28,7 @@
 class Browser;
 struct DefaultWebIntentService;
 class GURL;
-class TabContents;
+class Profile;
 class WebIntentPicker;
 class WebIntentPickerModel;
 
@@ -45,7 +46,8 @@ struct WebIntentServiceData;
 class WebIntentPickerController
     : public content::NotificationObserver,
       public WebIntentPickerDelegate,
-      public extensions::WebstoreInstaller::Delegate {
+      public extensions::WebstoreInstaller::Delegate,
+      public WebContentsUserData<WebIntentPickerController> {
  public:
 
   // The various states that the UI may be in. Public for testing.
@@ -66,7 +68,6 @@ class WebIntentPickerController
     kPickerEventAsyncDataComplete,  // Data from registry and CWS has arrived.
   };
 
-  explicit WebIntentPickerController(TabContents* tab_contents);
   virtual ~WebIntentPickerController();
 
   // Sets the intent data and return pathway handler object for which
@@ -118,6 +119,10 @@ class WebIntentPickerController
                                          const std::string& error) OVERRIDE;
 
  private:
+  explicit WebIntentPickerController(content::WebContents* web_contents);
+  static int kUserDataKey;
+  friend class WebContentsUserData<WebIntentPickerController>;
+
   friend class WebIntentPickerControllerTest;
   friend class WebIntentPickerControllerBrowserTest;
   friend class WebIntentPickerControllerIncognitoBrowserTest;
@@ -246,8 +251,11 @@ class WebIntentPickerController
 
   WebIntentPickerState dialog_state_;  // Current state of the dialog.
 
-  // A weak pointer to the tab contents that the picker is displayed on.
-  TabContents* tab_contents_;
+  // A weak pointer to the web contents that the picker is displayed on.
+  content::WebContents* web_contents_;
+
+  // A weak pointer to the profile for the web contents.
+  Profile* profile_;
 
   // A notification registrar, listening for notifications when the tab closes
   // to close the picker ui.

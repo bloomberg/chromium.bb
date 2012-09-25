@@ -340,12 +340,13 @@ class WebIntentsButtonViewGtk : public LocationBarViewGtk::PageToolViewGtk {
   DISALLOW_COPY_AND_ASSIGN(WebIntentsButtonViewGtk);
 };
 
-void WebIntentsButtonViewGtk::Update(
-    TabContents* tab_contents) {
-  if (!tab_contents ||
-      !tab_contents->web_intent_picker_controller() ||
-      !tab_contents->web_intent_picker_controller()->
-           ShowLocationBarPickerTool()) {
+void WebIntentsButtonViewGtk::Update(TabContents* tab_contents) {
+  WebIntentPickerController* web_intent_picker_controller =
+      tab_contents ? WebIntentPickerController::FromWebContents(
+                         tab_contents->web_contents())
+                   : NULL;
+  if (!web_intent_picker_controller ||
+      !web_intent_picker_controller->ShowLocationBarPickerTool()) {
     gtk_widget_hide(widget());
     return;
   }
@@ -365,7 +366,8 @@ void WebIntentsButtonViewGtk::OnClick(GtkWidget* sender) {
   if (!tab_contents)
     return;
 
-  tab_contents->web_intent_picker_controller()->LocationBarPickerToolClicked();
+  WebIntentPickerController::FromWebContents(tab_contents->web_contents())->
+      LocationBarPickerToolClicked();
 }
 
 GdkColor WebIntentsButtonViewGtk::button_border_color() const {

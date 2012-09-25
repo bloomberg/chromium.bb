@@ -49,9 +49,10 @@ TEST_F(WebIntentsButtonDecorationTest, IdentifiesWebIntentService) {
   webkit_glue::WebIntentData data;
   content::WebIntentsDispatcher* dispatcher =
       content::WebIntentsDispatcher::Create(data);
-  SetWindowDispositionSource(
-      contents->web_intent_picker_controller(),
-      contents->web_contents(), dispatcher);
+  WebIntentPickerController* web_intent_picker_controller =
+      WebIntentPickerController::FromWebContents(contents->web_contents());
+  SetWindowDispositionSource(web_intent_picker_controller,
+                             contents->web_contents(), dispatcher);
   SetRanAnimation();
 
   decoration_.Update(contents.get());
