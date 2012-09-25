@@ -76,23 +76,24 @@ class APIDataSource(object):
     self._idl_names_cache = idl_names_cache
     self._samples = samples
 
+  def _GetPermsFromFile(self, filename):
+    try:
+      perms = self._permissions_cache.GetFromFile('%s/%s' %
+          (self._base_path, filename))
+      return dict((model.UnixName(k), v) for k, v in perms.iteritems())
+    except FileNotFoundError:
+      return {}
+
   def _GetFeature(self, path):
     # Remove 'experimental_' from path name to match the keys in
     # _permissions_features.json.
-    path = path.replace('experimental_', '')
-    try:
-      perms = self._permissions_cache.GetFromFile(
-          self._base_path + '/_permission_features.json')
-    except FileNotFoundError:
-      return None
-    perms = dict((model.UnixName(k), v) for k, v in perms.iteritems())
-    api_perms = perms.get(path, None)
-    if api_perms is None:
-      return None
-    if api_perms['channel'] == 'dev':
-      api_perms['dev'] = True
-    elif api_perms['channel'] == 'beta':
-      api_perms['beta'] = True
+    path = model.UnixName(path.replace('experimental_', ''))
+    for filename in ['_permission_features.json', '_manifest_features.json']:
+      api_perms = self._GetPermsFromFile(filename).get(path, None)
+      if api_perms is not None:
+        break
+    if api_perms and api_perms['channel'] in ('trunk', 'dev', 'beta'):
+      api_perms[api_perms['channel']] = True
     return api_perms
 
   def _GenerateHandlebarContext(self, handlebar, path):

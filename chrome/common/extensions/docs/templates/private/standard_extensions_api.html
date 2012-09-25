@@ -11,6 +11,7 @@
       {{+partials.extensions_sidenav}}
       <div id="gc-pagecontent">
         <h1 class="page_title">chrome.{{api.name}}</h1>
+        {{?api.permissions.trunk}}{{+partials.warning_trunk}}{{/}}
         {{?api.permissions.dev}}{{+partials.warning_dev}}{{/}}
         {{?api.permissions.beta}}{{+partials.warning_beta}}{{/}}
         {{?intro.toc}}
