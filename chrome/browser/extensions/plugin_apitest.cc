@@ -88,12 +88,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
   }
   ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       tab->GetRenderViewHost(), L"", L"testPluginWorks()", &result));
-  // We don't allow extension plugins to run on ChromeOS.
-#if defined(OS_CHROMEOS)
-  EXPECT_FALSE(result);
-#else
-  EXPECT_TRUE(result);
-#endif
+    // We don't allow extension plugins to run on ChromeOS.
+  #if defined(OS_CHROMEOS)
+    EXPECT_FALSE(result);
+  #else
+    EXPECT_TRUE(result);
+  #endif
 }
 
 // Tests that private extension plugins are only visible to the extension.
@@ -135,7 +135,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PluginPrivate) {
       CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_BLOCK);
   ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       tab->GetRenderViewHost(), L"", L"testPluginWorks()", &result));
-  // We don't allow extension plugins to run on ChromeOS.
 #if defined(OS_CHROMEOS)
   EXPECT_FALSE(result);
 #else

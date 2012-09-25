@@ -26,6 +26,7 @@ class Value;
 }
 
 class GURL;
+class ExtensionPermissionSet;
 
 namespace extensions {
 

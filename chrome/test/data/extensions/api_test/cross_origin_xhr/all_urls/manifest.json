@@ -14,10 +14,5 @@
   "permissions": [ "<all_urls>" ],
   "plugins": [
     {"path": "plugin.dll", "public": true}
-  ],
-  "requirements": {
-    "plugins": {
-      "npapi": false
-    }
-  }
+  ]
 }

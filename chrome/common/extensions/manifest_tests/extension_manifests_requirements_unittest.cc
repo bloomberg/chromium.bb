@@ -66,24 +66,15 @@ TEST_F(ExtensionManifestTest, RequirementsNpapiDefault) {
   ASSERT_TRUE(extension.get());
   EXPECT_EQ(extension->requirements().webgl, false);
   EXPECT_EQ(extension->requirements().css3d, false);
-  EXPECT_EQ(extension->requirements().npapi, true);
-
-  extension = LoadAndExpectSuccess(
-      "requirements_npapi_empty_plugins_empty.json");
-  ASSERT_TRUE(extension.get());
-  EXPECT_EQ(extension->requirements().webgl, false);
-  EXPECT_EQ(extension->requirements().css3d, false);
+#if defined(OS_CHROMEOS)
   EXPECT_EQ(extension->requirements().npapi, false);
+#else
+  EXPECT_EQ(extension->requirements().npapi, true);
+#endif  // defined(OS_CHROMEOS)
 
   extension = LoadAndExpectSuccess("requirements_npapi.json");
   ASSERT_TRUE(extension.get());
   EXPECT_EQ(extension->requirements().webgl, false);
   EXPECT_EQ(extension->requirements().css3d, false);
   EXPECT_EQ(extension->requirements().npapi, false);
-
-  extension = LoadAndExpectSuccess("requirements_npapi_plugins_empty.json");
-  ASSERT_TRUE(extension.get());
-  EXPECT_EQ(extension->requirements().webgl, false);
-  EXPECT_EQ(extension->requirements().css3d, false);
-  EXPECT_EQ(extension->requirements().npapi, true);
 }
