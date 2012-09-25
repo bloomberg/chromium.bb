@@ -341,7 +341,7 @@ void RenderViewHostManager::ShouldClosePage(
   } else {
     // Non-cross site transition means closing the entire tab.
     bool proceed_to_fire_unload;
-    delegate_->BeforeUnloadFiredFromRenderManager(proceed,
+    delegate_->BeforeUnloadFiredFromRenderManager(proceed, proceed_time,
                                                   &proceed_to_fire_unload);
 
     if (proceed_to_fire_unload) {

@@ -59,7 +59,8 @@ class CONTENT_EXPORT RenderViewHostManager
     virtual bool CreateRenderViewForRenderManager(
         content::RenderViewHost* render_view_host, int opener_route_id) = 0;
     virtual void BeforeUnloadFiredFromRenderManager(
-        bool proceed, bool* proceed_to_fire_unload) = 0;
+        bool proceed, const base::TimeTicks& proceed_time,
+        bool* proceed_to_fire_unload) = 0;
     virtual void RenderViewGoneFromRenderManager(
         content::RenderViewHost* render_view_host) = 0;
     virtual void UpdateRenderViewSizeForRenderManager() = 0;

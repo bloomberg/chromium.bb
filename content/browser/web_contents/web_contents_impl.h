@@ -444,7 +444,7 @@ class CONTENT_EXPORT WebContentsImpl
   virtual bool CreateRenderViewForRenderManager(
       content::RenderViewHost* render_view_host, int opener_route_id) OVERRIDE;
   virtual void BeforeUnloadFiredFromRenderManager(
-      bool proceed,
+      bool proceed, const base::TimeTicks& proceed_time,
       bool* proceed_to_fire_unload) OVERRIDE;
   virtual void RenderViewGoneFromRenderManager(
       content::RenderViewHost* render_view_host) OVERRIDE;
@@ -823,6 +823,9 @@ class CONTENT_EXPORT WebContentsImpl
 
   // The time that we started to close this WebContents.
   base::TimeTicks close_start_time_;
+
+  // The time when onbeforeunload ended.
+  base::TimeTicks before_unload_end_time_;
 
   // The time that this tab was last selected.
   base::TimeTicks last_selected_time_;

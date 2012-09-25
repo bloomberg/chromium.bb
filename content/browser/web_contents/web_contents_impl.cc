@@ -399,8 +399,12 @@ WebContentsImpl::~WebContentsImpl() {
 
   // OnCloseStarted isn't called in unit tests.
   if (!close_start_time_.is_null()) {
-    UMA_HISTOGRAM_TIMES("Tab.Close",
-        base::TimeTicks::Now() - close_start_time_);
+    base::TimeTicks now = base::TimeTicks::Now();
+    base::TimeTicks unload_start_time = close_start_time_;
+    if (!before_unload_end_time_.is_null())
+      unload_start_time = before_unload_end_time_;
+    UMA_HISTOGRAM_TIMES("Tab.Close", now - close_start_time_);
+    UMA_HISTOGRAM_TIMES("Tab.Close.UnloadTime", now - unload_start_time);
   }
 
   FOR_EACH_OBSERVER(WebContentsObserver,
@@ -3201,8 +3205,9 @@ void WebContentsImpl::WorkerCrashed() {
 }
 
 void WebContentsImpl::BeforeUnloadFiredFromRenderManager(
-    bool proceed,
+    bool proceed, const base::TimeTicks& proceed_time,
     bool* proceed_to_fire_unload) {
+  before_unload_end_time_ = proceed_time;
   if (delegate_)
     delegate_->BeforeUnloadFired(this, proceed, proceed_to_fire_unload);
 }
@@ -3324,6 +3329,7 @@ void WebContentsImpl::OnDialogClosed(RenderViewHost* rvh,
     controller_.DiscardNonCommittedEntries();
 
     close_start_time_ = base::TimeTicks();
+    before_unload_end_time_ = base::TimeTicks();
   }
   is_showing_before_unload_dialog_ = false;
   static_cast<RenderViewHostImpl*>(
