@@ -52,7 +52,9 @@
 ----------------------------------------------------------------------------- */
 
 .debug #card-slider-frame {
-  bottom: 0;
+  /* We need to use |important| to override the bottom value that was set using
+   * JavaScript. This CSS rule will be used only when in debugging mode. */
+  bottom: 0 !important;
   height: 95%;
   position: absolute;
   text-align: center;
