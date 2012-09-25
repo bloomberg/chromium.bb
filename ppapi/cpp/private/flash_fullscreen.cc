@@ -32,23 +32,39 @@ FlashFullscreen::~FlashFullscreen() {
 }
 
 bool FlashFullscreen::IsFullscreen() {
-  return has_interface<PPB_FlashFullscreen_0_1>() &&
-      get_interface<PPB_FlashFullscreen_0_1>()->IsFullscreen(
-          instance_.pp_instance());
+  if (has_interface<PPB_FlashFullscreen_1_0>()) {
+    return PP_ToBool(get_interface<PPB_FlashFullscreen_1_0>()->IsFullscreen(
+        instance_.pp_instance()));
+  }
+  if (has_interface<PPB_FlashFullscreen_0_1>()) {
+    return PP_ToBool(get_interface<PPB_FlashFullscreen_0_1>()->IsFullscreen(
+        instance_.pp_instance()));
+  }
+  return false;
 }
 
 bool FlashFullscreen::SetFullscreen(bool fullscreen) {
-  if (!has_interface<PPB_FlashFullscreen_0_1>())
-    return false;
-  return PP_ToBool(get_interface<PPB_FlashFullscreen_0_1>()->SetFullscreen(
-      instance_.pp_instance(), PP_FromBool(fullscreen)));
+  if (has_interface<PPB_FlashFullscreen_1_0>()) {
+    return PP_ToBool(get_interface<PPB_FlashFullscreen_1_0>()->SetFullscreen(
+        instance_.pp_instance(), PP_FromBool(fullscreen)));
+  }
+  if (has_interface<PPB_FlashFullscreen_0_1>()) {
+    return PP_ToBool(get_interface<PPB_FlashFullscreen_0_1>()->SetFullscreen(
+        instance_.pp_instance(), PP_FromBool(fullscreen)));
+  }
+  return false;
 }
 
 bool FlashFullscreen::GetScreenSize(Size* size) {
-  if (!has_interface<PPB_FlashFullscreen_0_1>())
-    return false;
-  return PP_ToBool(get_interface<PPB_FlashFullscreen_0_1>()->GetScreenSize(
-      instance_.pp_instance(), &size->pp_size()));
+  if (has_interface<PPB_FlashFullscreen_1_0>()) {
+    return PP_ToBool(get_interface<PPB_FlashFullscreen_1_0>()->GetScreenSize(
+        instance_.pp_instance(), &size->pp_size()));
+  }
+  if (has_interface<PPB_FlashFullscreen_0_1>()) {
+    return PP_ToBool(get_interface<PPB_FlashFullscreen_0_1>()->GetScreenSize(
+        instance_.pp_instance(), &size->pp_size()));
+  }
+  return false;
 }
 
 bool FlashFullscreen::MustRecreateContexts() {
