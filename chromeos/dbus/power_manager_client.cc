@@ -250,7 +250,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
 
   virtual void RequestPowerStateOverrides(
       uint32 request_id,
-      uint32 duration,
+      base::TimeDelta duration,
       int overrides,
       const PowerStateRequestIdCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(power_manager::kPowerManagerInterface,
@@ -259,7 +259,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
 
     PowerStateControl protobuf;
     protobuf.set_request_id(request_id);
-    protobuf.set_duration(duration);
+    protobuf.set_duration(duration.InSeconds());
     protobuf.set_disable_idle_dim(overrides & DISABLE_IDLE_DIM);
     protobuf.set_disable_idle_blank(overrides & DISABLE_IDLE_BLANK);
     protobuf.set_disable_idle_suspend(overrides & DISABLE_IDLE_SUSPEND);
@@ -621,7 +621,7 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
       bool is_fullscreen) OVERRIDE {}
   virtual void RequestPowerStateOverrides(
       uint32 request_id,
-      uint32 duration,
+      base::TimeDelta duration,
       int overrides,
       const PowerStateRequestIdCallback& callback) OVERRIDE {
     // Mimic the behavior of power manager w.r.t. the request_id.

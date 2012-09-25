@@ -37,7 +37,7 @@ class MockPowerManagerClient : public PowerManagerClient {
   MOCK_METHOD2(NotifyVideoActivity, void(const base::TimeTicks&, bool));
   MOCK_METHOD4(RequestPowerStateOverrides,
                void(uint32,
-                    uint32,
+                    base::TimeDelta,
                     int,
                     const PowerStateRequestIdCallback&));
   MOCK_METHOD1(CancelPowerStateOverrides, void(uint32));

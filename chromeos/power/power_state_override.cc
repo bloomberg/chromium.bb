@@ -70,7 +70,8 @@ void PowerStateOverride::CallRequestPowerStateOverrides() {
   if (power_manager) {
     power_manager->RequestPowerStateOverrides(
         request_id_,
-        kHeartbeatTimeInSecs + kRequestSlackInSecs,
+        base::TimeDelta::FromSeconds(
+            kHeartbeatTimeInSecs + kRequestSlackInSecs),
         override_types_,
         base::Bind(&PowerStateOverride::SetRequestId,
                    weak_ptr_factory_.GetWeakPtr()));

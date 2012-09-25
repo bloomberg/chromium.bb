@@ -15,9 +15,6 @@
 
 #include "chromeos/dbus/power_supply_status.h"
 
-namespace base {
-class TimeTicks;
-}
 namespace dbus {
 class Bus;
 }
@@ -89,10 +86,10 @@ class CHROMEOS_EXPORT PowerManagerClient {
   };
 
   enum PowerStateOverrideType {
-    DISABLE_IDLE_DIM = 1,  // Disable screen dimming on idle.
-    DISABLE_IDLE_BLANK = 2,  // Disable screen blanking on idle.
-    DISABLE_IDLE_SUSPEND = 3,  // Disable suspend on idle.
-    DISABLE_IDLE_LID_SUSPEND = 4,  // Disable suspend on lid closed.
+    DISABLE_IDLE_DIM         = 1 << 0,  // Disable screen dimming on idle.
+    DISABLE_IDLE_BLANK       = 1 << 1,  // Disable screen blanking on idle.
+    DISABLE_IDLE_SUSPEND     = 1 << 2,  // Disable suspend on idle.
+    DISABLE_IDLE_LID_SUSPEND = 1 << 3,  // Disable suspend on lid closed.
   };
 
   // Adds and removes the observer.
@@ -157,16 +154,16 @@ class CHROMEOS_EXPORT PowerManagerClient {
       bool is_fullscreen) = 0;
 
   // Override the current power state on the machine. The overrides will be
-  // applied to the request ID specified. To specify a new request; use 0 as
-  // the request id and the method will call the provided callback with the
-  // new request ID for use with further calls.
-  // The overrides parameter will & out the PowerStateOverrideType types to
-  // allow specific selection of overrides. For example, to override just dim
-  // and suspending but leaving blanking in, set overrides to,
-  // DISABLE_IDLE_DIM | DISABLE_IDLE_SUSPEND.
+  // applied to the request ID specified. To specify a new request; use 0 as the
+  // request id and the method will call the provided callback with the new
+  // request ID for use with further calls.  |duration| will be rounded down to
+  // the nearest second.  The overrides parameter will & out the
+  // PowerStateOverrideType types to allow specific selection of overrides. For
+  // example, to override just dim and suspending but leaving blanking in, set
+  // overrides to, DISABLE_IDLE_DIM | DISABLE_IDLE_SUSPEND.
   virtual void RequestPowerStateOverrides(
       uint32 request_id,
-      uint32 duration,
+      base::TimeDelta duration,
       int overrides,
       const PowerStateRequestIdCallback& callback) = 0;
 
