@@ -1306,14 +1306,6 @@ void RenderWidgetHostViewWin::OnDestroy() {
 
 void RenderWidgetHostViewWin::OnPaint(HDC unused_dc) {
   TRACE_EVENT0("browser", "RenderWidgetHostViewWin::OnPaint");
-
-  // Grab the region to paint before creation of paint_dc since it clears the
-  // damage region.
-  base::win::ScopedGDIObject<HRGN> damage_region(CreateRectRgn(0, 0, 0, 0));
-  GetUpdateRgn(damage_region, FALSE);
-
-  CPaintDC paint_dc(m_hWnd);
-
   if (!render_widget_host_)
     return;
 
@@ -1324,6 +1316,9 @@ void RenderWidgetHostViewWin::OnPaint(HDC unused_dc) {
   // do here is clear borders during resize.
   if (compositor_host_window_ &&
       render_widget_host_->is_accelerated_compositing_active()) {
+    // We initialize paint_dc here so that BeginPaint()/EndPaint()
+    // get called to validate the region.
+    CPaintDC paint_dc(m_hWnd);
     RECT host_rect, child_rect;
     GetClientRect(&host_rect);
     if (::GetClientRect(compositor_host_window_, &child_rect) &&
@@ -1332,12 +1327,6 @@ void RenderWidgetHostViewWin::OnPaint(HDC unused_dc) {
       paint_dc.FillRect(&host_rect,
           reinterpret_cast<HBRUSH>(GetStockObject(WHITE_BRUSH)));
     }
-    return;
-  }
-
-  if (accelerated_surface_.get() &&
-      render_widget_host_->is_accelerated_compositing_active()) {
-    AcceleratedPaint(paint_dc.m_hDC);
     return;
   }
 
@@ -1350,14 +1339,27 @@ void RenderWidgetHostViewWin::OnPaint(HDC unused_dc) {
   // changes and repaint them.
   about_to_validate_and_paint_ = false;
 
+  // Grab the region to paint before creation of paint_dc since it clears the
+  // damage region.
+  base::win::ScopedGDIObject<HRGN> damage_region(CreateRectRgn(0, 0, 0, 0));
+  GetUpdateRgn(damage_region, FALSE);
+
   if (compositor_host_window_ && hide_compositor_window_at_next_paint_) {
     ::ShowWindow(compositor_host_window_, SW_HIDE);
     hide_compositor_window_at_next_paint_ = false;
   }
 
+  CPaintDC paint_dc(m_hWnd);
+
   gfx::Rect damaged_rect(paint_dc.m_ps.rcPaint);
   if (damaged_rect.IsEmpty())
     return;
+
+  if (accelerated_surface_.get() &&
+      render_widget_host_->is_accelerated_compositing_active()) {
+    AcceleratedPaint(paint_dc.m_hDC);
+    return;
+  }
 
   if (backing_store) {
     gfx::Rect bitmap_rect(gfx::Point(), backing_store->size());
