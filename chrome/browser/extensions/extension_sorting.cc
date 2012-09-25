@@ -4,6 +4,9 @@
 
 #include "chrome/browser/extensions/extension_sorting.h"
 
+#include <algorithm>
+#include <vector>
+
 #include "chrome/browser/extensions/extension_scoped_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -28,11 +31,22 @@ const char kPrefPageOrdinal[] = "page_ordinal";
 
 }  // namespace
 
+////////////////////////////////////////////////////////////////////////////////
+// ExtensionSorting::AppOrdinals
+
+ExtensionSorting::AppOrdinals::AppOrdinals() {}
+
+ExtensionSorting::AppOrdinals::~AppOrdinals() {}
+
+////////////////////////////////////////////////////////////////////////////////
+// ExtensionSorting
+
 ExtensionSorting::ExtensionSorting(ExtensionScopedPrefs* extension_scoped_prefs,
                                    PrefService* pref_service)
     : extension_scoped_prefs_(extension_scoped_prefs),
       pref_service_(pref_service),
       extension_service_(NULL) {
+  CreateDefaultOrdinals();
 }
 
 ExtensionSorting::~ExtensionSorting() {
@@ -202,24 +216,31 @@ void ExtensionSorting::FixNTPOrdinalCollisions() {
       content::NotificationService::NoDetails());
 }
 
-void ExtensionSorting::EnsureValidOrdinals(const std::string& extension_id) {
+void ExtensionSorting::EnsureValidOrdinals(
+    const std::string& extension_id,
+    const syncer::StringOrdinal& suggested_page) {
   syncer::StringOrdinal page_ordinal = GetPageOrdinal(extension_id);
   if (!page_ordinal.IsValid()) {
-    // The webstore app should always start be on the first page.
-    page_ordinal = extension_id == extension_misc::kWebStoreAppId ?
-        CreateFirstAppPageOrdinal() :
-        GetNaturalAppPageOrdinal();
+    if (suggested_page.IsValid()) {
+      page_ordinal = suggested_page;
+    } else if (!GetDefaultOrdinals(extension_id, &page_ordinal, NULL) ||
+        !page_ordinal.IsValid()) {
+      page_ordinal = GetNaturalAppPageOrdinal();
+    }
+
     SetPageOrdinal(extension_id, page_ordinal);
   }
 
   syncer::StringOrdinal app_launch_ordinal = GetAppLaunchOrdinal(extension_id);
   if (!app_launch_ordinal.IsValid()) {
-    // The webstore app should always start in the position.
-    app_launch_ordinal = extension_id == extension_misc::kWebStoreAppId ?
-        CreateFirstAppLaunchOrdinal(page_ordinal) :
-        CreateNextAppLaunchOrdinal(page_ordinal);
-    SetAppLaunchOrdinal(extension_id,
-                        app_launch_ordinal);
+    // If using default app launcher ordinal, make sure there is no collision.
+    if (GetDefaultOrdinals(extension_id, NULL, &app_launch_ordinal) &&
+        app_launch_ordinal.IsValid())
+      app_launch_ordinal = ResolveCollision(page_ordinal, app_launch_ordinal);
+    else
+      app_launch_ordinal = CreateNextAppLaunchOrdinal(page_ordinal);
+
+    SetAppLaunchOrdinal(extension_id, app_launch_ordinal);
   }
 }
 
@@ -515,3 +536,86 @@ void ExtensionSorting::SyncIfNeeded(const std::string& extension_id) {
     }
   }
 }
+
+void ExtensionSorting::CreateDefaultOrdinals() {
+  // The following defines the default order of apps.
+#if defined(OS_CHROMEOS)
+  const char* kDefaultAppOrder[] = {
+    extension_misc::kChromeAppId,
+    extension_misc::kWebStoreAppId,
+    "coobgpohoikkiipiblmjeljniedjpjpf",  // Search
+    "blpcfgokakmgnkcojhhkbfbldkacnbeo",  // Youtube
+    "pjkljhegncpnkpknbcohdijeoejaedia",  // Gmail
+    "ejjicmeblgpmajnghnpcppodonldlgfn",  // Calendar
+    "kjebfhglflhjjjiceimfkgicifkhjlnm",  // Scratchpad
+    "lneaknkopdijkpnocmklfnjbeapigfbh",  // Google Maps
+    "apdfllckaahabafndbhieahigkjlhalf",  // Drive
+    "aohghmighlieiainnegkcijnfilokake",  // Docs
+    "felcaaldnbdncclmgdcncolpebgiejap",  // Sheets
+    "aapocclcgogkmnckokdopfmhonfmgoek",  // Slides
+    "dlppkpafhbajpcmmoheippocdidnckmm",  // Google+
+    "kbpgddbgniojgndnhlkjbkpknjhppkbk",  // Google+ Hangouts
+    "hhaomjibdihmijegdhdafkllkbggdgoj",  // Files
+    "hkhhlkdconhgemhegnplaldnmnmkaemd",  // Tips & Tricks
+    "icppfcnhkcmnfdhfhphakoifcfokfdhg",  // Play Music
+    "mmimngoggfoobjdlefbcabngfnmieonb",  // Play Books
+    "fppdphmgcddhjeddoeghpjefkdlccljb",  // Play Movies
+    "fobcpibfeplaikcclojfdhfdmbbeofai",  // Games
+    "joodangkbfjnajiiifokapkpmhfnpleo",  // Calculator
+    "cmbmjjimlbmpkonhnfabflhampihgnea",  // Camera
+    "gbchcmhmhahfdphkhkmpfmihenigjmpp",  // Chrome Remote Desktop
+  };
+#else
+  const char* kDefaultAppOrder[] = {
+    extension_misc::kWebStoreAppId,
+  };
+#endif
+
+  syncer::StringOrdinal page_ordinal = CreateFirstAppPageOrdinal();
+  syncer::StringOrdinal app_launch_ordinal =
+      CreateFirstAppLaunchOrdinal(page_ordinal);
+  for (size_t i = 0; i < arraysize(kDefaultAppOrder); ++i) {
+    const std::string extension_id = kDefaultAppOrder[i];
+    default_ordinals_[extension_id].page_ordinal = page_ordinal;
+    default_ordinals_[extension_id].app_launch_ordinal = app_launch_ordinal;
+    app_launch_ordinal = app_launch_ordinal.CreateAfter();
+  }
+}
+
+bool ExtensionSorting::GetDefaultOrdinals(
+    const std::string& extension_id,
+    syncer::StringOrdinal* page_ordinal,
+    syncer::StringOrdinal* app_launch_ordinal) const {
+  AppOrdinalsMap::const_iterator it = default_ordinals_.find(extension_id);
+  if (it == default_ordinals_.end())
+    return false;
+
+  if (page_ordinal)
+    *page_ordinal = it->second.page_ordinal;
+  if (app_launch_ordinal)
+    *app_launch_ordinal = it->second.app_launch_ordinal;
+  return true;
+}
+
+syncer::StringOrdinal ExtensionSorting::ResolveCollision(
+    const syncer::StringOrdinal& page_ordinal,
+    const syncer::StringOrdinal& app_launch_ordinal) const {
+  DCHECK(page_ordinal.IsValid() && app_launch_ordinal.IsValid());
+
+  PageOrdinalMap::const_iterator page_it = ntp_ordinal_map_.find(page_ordinal);
+  if (page_it == ntp_ordinal_map_.end())
+    return app_launch_ordinal;
+
+  const AppLaunchOrdinalMap& page = page_it->second;
+  AppLaunchOrdinalMap::const_iterator app_it = page.find(app_launch_ordinal);
+  if (app_it == page.end())
+    return app_launch_ordinal;
+
+  // If there is no next after the collision, returns the next ordinal.
+  if (++app_it == page.end())
+    return app_launch_ordinal.CreateAfter();
+
+  // Otherwise, returns the ordinal between the collision and the next ordinal.
+  return app_launch_ordinal.CreateBetween(app_it->first);
+}
+

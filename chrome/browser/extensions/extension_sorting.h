@@ -37,8 +37,10 @@ class ExtensionSorting {
   void FixNTPOrdinalCollisions();
 
   // This ensures that the extension has valid ordinals, and if it doesn't then
-  // properly initialize them.
-  void EnsureValidOrdinals(const std::string& extension_id);
+  // properly initialize them. |suggested_page| will be used if it is valid and
+  // the extension has no valid user-set page ordinal.
+  void EnsureValidOrdinals(const std::string& extension_id,
+                           const syncer::StringOrdinal& suggested_page);
 
   // Updates the app launcher value for the moved extension so that it is now
   // located after the given predecessor and before the successor.
@@ -101,6 +103,7 @@ class ExtensionSorting {
 
  private:
   // Unit tests.
+  friend class ExtensionSortingDefaultOrdinalsBase;
   friend class ExtensionSortingGetMinOrMaxAppLaunchOrdinalsOnPage;
   friend class ExtensionSortingInitializeWithNoApps;
   friend class ExtensionSortingPageOrdinalMapping;
@@ -108,6 +111,16 @@ class ExtensionSorting {
   // An enum used by GetMinOrMaxAppLaunchOrdinalsOnPage to specify which
   // value should be returned.
   enum AppLaunchOrdinalReturn {MIN_ORDINAL, MAX_ORDINAL};
+
+  // Maps an app id to its ordinals.
+  struct AppOrdinals {
+    AppOrdinals();
+    ~AppOrdinals();
+
+    syncer::StringOrdinal page_ordinal;
+    syncer::StringOrdinal app_launch_ordinal;
+  };
+  typedef std::map<std::string, AppOrdinals> AppOrdinalsMap;
 
   // This function returns the lowest ordinal on |page_ordinal| if
   // |return_value| == AppLaunchOrdinalReturn::MIN_ORDINAL, otherwise it returns
@@ -149,6 +162,23 @@ class ExtensionSorting {
   // extension is not an application.
   void SyncIfNeeded(const std::string& extension_id);
 
+  // Creates the default ordinals.
+  void CreateDefaultOrdinals();
+
+  // Gets the default ordinals for |extension_id|. Returns false if no default
+  // ordinals for |extension_id| is defined. Otherwise, returns true and
+  // ordinals is updated with corresponding ordinals.
+  bool GetDefaultOrdinals(const std::string& extension_id,
+                          syncer::StringOrdinal* page_ordinal,
+                          syncer::StringOrdinal* app_launch_ordinal) const;
+
+  // Returns |app_launch_ordinal| if it has no collision in the page specified
+  // by |page_ordinal|. Otherwise, returns an ordinal after |app_launch_ordinal|
+  // that has no conflict.
+  syncer::StringOrdinal ResolveCollision(
+      const syncer::StringOrdinal& page_ordinal,
+      const syncer::StringOrdinal& app_launch_ordinal) const;
+
   ExtensionScopedPrefs* extension_scoped_prefs_;  // Weak, owns this instance.
   PrefService* pref_service_;  // Weak.
   ExtensionServiceInterface* extension_service_;  // Weak.
@@ -171,6 +201,9 @@ class ExtensionSorting {
       syncer::StringOrdinal, AppLaunchOrdinalMap,
     syncer::StringOrdinal::LessThanFn> PageOrdinalMap;
   PageOrdinalMap ntp_ordinal_map_;
+
+  // Defines the default ordinals.
+  AppOrdinalsMap default_ordinals_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionSorting);
 };

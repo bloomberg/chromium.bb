@@ -663,7 +663,7 @@ bool ExtensionPrefs::IsAppNotificationDisabled(
 }
 
 void ExtensionPrefs::SetAppNotificationDisabled(
-   const std::string& extension_id, bool value) {
+    const std::string& extension_id, bool value) {
   DCHECK(Extension::IdIsValid(extension_id));
   UpdateExtensionPref(extension_id, kPrefAppNotificationDisbaled,
                       Value::CreateBooleanValue(value));
@@ -1480,15 +1480,8 @@ void ExtensionPrefs::OnExtensionInstalled(
   // Clear state that may be registered from a previous install.
   extension_dict->Remove(kRegisteredEvents, NULL);
 
-  if (extension->is_app()) {
-    syncer::StringOrdinal new_page_ordinal = page_ordinal.IsValid() ?
-        page_ordinal : extension_sorting_->GetNaturalAppPageOrdinal();
-    if (!extension_sorting_->GetPageOrdinal(id).IsValid())
-      extension_sorting_->SetPageOrdinal(id, new_page_ordinal);
-    if (!extension_sorting_->GetAppLaunchOrdinal(id).IsValid())
-      extension_sorting_->SetAppLaunchOrdinal(
-          id, extension_sorting_->CreateNextAppLaunchOrdinal(new_page_ordinal));
-  }
+  if (extension->ShouldDisplayInLauncher())
+    extension_sorting_->EnsureValidOrdinals(extension->id(), page_ordinal);
 
   extension_pref_value_map_->RegisterExtension(
       id, install_time, initial_state == Extension::ENABLED);

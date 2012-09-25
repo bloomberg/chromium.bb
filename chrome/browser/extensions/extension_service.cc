@@ -1971,8 +1971,10 @@ void ExtensionService::AddExtension(const Extension* extension) {
 
   // All apps that are displayed in the launcher are ordered by their ordinals
   // so we must ensure they have valid ordinals.
-  if (extension->ShouldDisplayInLauncher())
-    extension_prefs_->extension_sorting()->EnsureValidOrdinals(extension->id());
+  if (extension->ShouldDisplayInLauncher()) {
+    extension_prefs_->extension_sorting()->EnsureValidOrdinals(
+        extension->id(), syncer::StringOrdinal());
+  }
 
   extensions_.Insert(scoped_extension);
   SyncExtensionChangeIfNeeded(*extension);
