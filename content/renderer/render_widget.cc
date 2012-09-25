@@ -1321,9 +1321,14 @@ WebRect RenderWidget::windowRect() {
   if (pending_window_rect_count_)
     return pending_window_rect_;
 
+#if defined(OS_ANDROID)
+  // Short circuit of the sync RPC call.
+  return gfx::Rect(size_);
+#else
   gfx::Rect rect;
   Send(new ViewHostMsg_GetWindowRect(routing_id_, host_window_, &rect));
   return rect;
+#endif
 }
 
 void RenderWidget::setToolTipText(const WebKit::WebString& text,
@@ -1355,9 +1360,14 @@ WebRect RenderWidget::rootWindowRect() {
     return pending_window_rect_;
   }
 
+#if defined(OS_ANDROID)
+  // Short circuit of the sync RPC call.
+  return gfx::Rect(size_);
+#else
   gfx::Rect rect;
   Send(new ViewHostMsg_GetRootWindowRect(routing_id_, host_window_, &rect));
   return rect;
+#endif
 }
 
 WebRect RenderWidget::windowResizerRect() {
