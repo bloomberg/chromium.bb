@@ -89,9 +89,8 @@ bool IsGDataAvailable(Profile* profile) {
 }
 
 bool IsDriveV2ApiEnabled() {
-  static bool enabled = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableDriveV2Api);
-  return enabled;
+  // TODO(kochi): Re-enable this. crbug.com/152230
+  return false;
 }
 
 base::PlatformFileError DriveFileErrorToPlatformError(
