@@ -263,15 +263,11 @@ void CheckResizeMethodShouldAverageGrid(
     bool* method_passed) {
   *method_passed = false;
 
-  // TODO(evannier): The math inside image_operations.cc is incorrect is off
-  // by half a pixel. As a result, the calculated distances become extremely
-  // large. Once the fix is in to correct this half pixel issue, most of these
-  // values can become a lot tighter.
   const TestedPixel tested_pixels[] = {
     // Corners
-    { 0,          0,           59.0f, "Top left corner"  },
+    { 0,          0,           2.3f, "Top left corner"  },
     { 0,          dest_h - 1,  2.3f, "Bottom left corner" },
-    { dest_w - 1, 0,           7.1f, "Top right corner" },
+    { dest_w - 1, 0,           2.3f, "Top right corner" },
     { dest_w - 1, dest_h - 1,  2.3f, "Bottom right corner" },
     // Middle points of each side
     { dest_w / 2, 0,           1.0f, "Top middle" },
@@ -406,18 +402,11 @@ TEST(ImageOperations, Halve) {
       // offset that comes into play due to considering the coordinates
       // of the center of the pixels. So x * 2 is a simplification
       // of ((x+0.5) * 2 - 1) and (x * 2 + 1) is really (x + 0.5) * 2.
-      // TODO(evannier): for now these stay broken because of the half pixel
-      // issue mentioned inside image_operations.cc. The code should read:
-      // int first_x = x * 2;
-      // int last_x = std::min(src_w - 1, x * 2 + 1);
+      int first_x = x * 2;
+      int last_x = std::min(src_w - 1, x * 2 + 1);
 
-      // int first_y = y * 2;
-      // int last_y = std::min(src_h - 1, y * 2 + 1);
-      int first_x = std::max(0, x * 2 - 1);
-      int last_x = std::min(src_w - 1, x * 2);
-
-      int first_y = std::max(0, y * 2 - 1);
-      int last_y = std::min(src_h - 1, y * 2);
+      int first_y = y * 2;
+      int last_y = std::min(src_h - 1, y * 2 + 1);
 
       const uint32_t expected_color = AveragePixel(src,
                                                    first_x, last_x,
