@@ -15,7 +15,7 @@ import org.chromium.android_webview.JsPromptResultReceiver;
 import org.chromium.android_webview.JsResultReceiver;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.ContentViewCore;
-import org.chromium.content.browser.util.CallbackHelper;
+import org.chromium.content.browser.test.util.CallbackHelper;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 

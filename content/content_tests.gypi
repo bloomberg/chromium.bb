@@ -878,6 +878,21 @@
           'includes': [ '../build/java.gypi' ],
         },
         {
+          'target_name': 'content_java_test_support',
+          'type': 'none',
+          'dependencies': [
+            '../base/base.gyp:base',
+            '../base/base.gyp:base_java_test_support',
+            'content_common',
+            'content_java',
+          ],
+          'variables': {
+            'package_name': 'content_java_test_support',
+            'java_in_dir': '../content/public/test/android/javatests',
+          },
+          'includes': [ '../build/java.gypi' ],
+        },
+        {
           'target_name': 'content_shell_test_apk',
           'type': 'none',
           'dependencies': [

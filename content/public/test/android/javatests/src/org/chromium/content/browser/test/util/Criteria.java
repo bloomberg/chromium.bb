@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.browser.util;
+package org.chromium.content.browser.test.util;
 
 /**
  * Provides a means for validating whether some condition/criteria has been met.

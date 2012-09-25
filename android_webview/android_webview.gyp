@@ -162,7 +162,7 @@
         '../chrome/chrome_resources.gyp:packed_extra_resources',
         '../chrome/chrome_resources.gyp:packed_resources',
         '../content/content.gyp:content_java',
-        '../content/content.gyp:content_javatests',
+        '../content/content.gyp:content_java_test_support',
         '../media/media.gyp:media_java',
         '../net/net.gyp:net_java',
         '../ui/ui.gyp:ui_java',

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.browser.util;
+package org.chromium.content.browser.test.util;
 
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.WebContentsObserverAndroid;
-import org.chromium.content.browser.util.TestCallbackHelperContainer.OnPageFinishedHelper;
-import org.chromium.content.browser.util.TestCallbackHelperContainer.OnPageStartedHelper;
-import org.chromium.content.browser.util.TestCallbackHelperContainer.OnReceivedErrorHelper;
+import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageFinishedHelper;
+import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageStartedHelper;
+import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnReceivedErrorHelper;
 
 /**
  * The default WebContentsObserverAndroid used by ContentView tests. The below callbacks can be

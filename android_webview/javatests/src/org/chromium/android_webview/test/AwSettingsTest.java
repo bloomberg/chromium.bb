@@ -13,8 +13,8 @@ import org.chromium.base.test.util.TestFileUtil;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.ContentSettings;
 import org.chromium.content.browser.ContentViewCore;
-import org.chromium.content.browser.util.CallbackHelper;
-import org.chromium.content.browser.util.HistoryUtils;
+import org.chromium.content.browser.test.util.CallbackHelper;
+import org.chromium.content.browser.test.util.HistoryUtils;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

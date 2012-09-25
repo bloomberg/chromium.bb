@@ -7,31 +7,25 @@ package org.chromium.android_webview.test;
 import android.app.Instrumentation;
 import android.content.Context;
 import android.test.ActivityInstrumentationTestCase2;
-import android.view.View;
 
 import junit.framework.Assert;
 
-import org.chromium.android_webview.AndroidWebViewUtil;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsClient;
 import org.chromium.content.browser.ContentSettings;
 import org.chromium.content.browser.ContentView;
-import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.LoadUrlParams;
-import org.chromium.content.browser.util.CallbackHelper;
-import org.chromium.content.browser.util.TestCallbackHelperContainer;
+import org.chromium.content.browser.test.util.CallbackHelper;
+import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.ui.gfx.ActivityNativeWindow;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 /**
  * A base class for android_webview tests.
