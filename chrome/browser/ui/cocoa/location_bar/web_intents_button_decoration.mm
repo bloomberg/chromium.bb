@@ -177,7 +177,7 @@ CGFloat WebIntentsButtonDecoration::GetWidthForSpace(CGFloat width) {
     case kNoAnimation:
       return preferredWidth;
     case kOpening:
-      return preferredWidth + textWidth_ * progress;
+      return preferredWidth + (textWidth_ * progress);
     case kOpen:
       return preferredWidth + textWidth_;
   }
@@ -186,6 +186,7 @@ CGFloat WebIntentsButtonDecoration::GetWidthForSpace(CGFloat width) {
 void WebIntentsButtonDecoration::DrawInFrame(
     NSRect frame, NSView* control_view) {
   if ([animation_ animationState] == kOpening) {
+    gfx::ScopedNSGraphicsContextSaveGState scopedGState;
     NSRectClip(frame);
     frame = NSInsetRect(frame, 0.0, kBubbleYInset);
     NSDrawThreePartImage(frame,
@@ -195,7 +196,7 @@ void WebIntentsButtonDecoration::DrawInFrame(
                          NO,  // NO=horizontal layout
                          NSCompositeSourceOver,
                          1.0,
-                         NO);  // don't use flipped coordinates
+                         YES);  // use flipped coordinates
 
     // Draw the text, clipped to fit on the right. While handling clipping,
     // NSAttributedString's drawInRect: won't draw a word if it doesn't fit
