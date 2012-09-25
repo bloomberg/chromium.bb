@@ -7,8 +7,14 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
@@ -63,12 +69,22 @@ void ResetScreenHandler::GetLocalizedStrings(
           IDS_RESET_SCREEN_WARNING_MSG,
           l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
   localized_strings->SetString(
-      "resetWarningDetails",
-      l10n_util::GetStringUTF16(IDS_RESET_SCREEN_WARNING_DETAILS));
-  localized_strings->SetString(
       "cancelButton", l10n_util::GetStringUTF16(IDS_CANCEL));
-  localized_strings->SetString(
-      "resetButton", l10n_util::GetStringUTF16(IDS_RESET_SCREEN_RESET));
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kFirstBoot)) {
+    localized_strings->SetString(
+        "resetWarningDetails",
+        l10n_util::GetStringUTF16(IDS_RESET_SCREEN_WARNING_DETAILS));
+    localized_strings->SetString(
+        "resetButton", l10n_util::GetStringUTF16(IDS_RESET_SCREEN_RESET));
+  } else {
+    localized_strings->SetString(
+        "resetWarningDetails",
+        l10n_util::GetStringFUTF16(
+            IDS_OPTIONS_FACTORY_RESET_WARNING,
+            l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
+    localized_strings->SetString(
+        "resetButton", l10n_util::GetStringUTF16(IDS_RELAUNCH_BUTTON));
+  }
 }
 
 void ResetScreenHandler::Initialize() {
@@ -94,9 +110,17 @@ void ResetScreenHandler::HandleOnCancel(const base::ListValue* args) {
 }
 
 void ResetScreenHandler::HandleOnReset(const base::ListValue* args) {
-  chromeos::SessionManagerClient* session_manager =
-      chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
-  session_manager->StartDeviceWipe();
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kFirstBoot)) {
+    chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->
+        StartDeviceWipe();
+  } else {
+    PrefService* prefs = g_browser_process->local_state();
+    prefs->SetBoolean(prefs::kFactoryResetRequested, true);
+    prefs->CommitPendingWrite();
+
+    chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
+        RequestRestart();
+  }
 }
 
 }  // namespace chromeos
