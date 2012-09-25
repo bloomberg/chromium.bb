@@ -375,8 +375,8 @@ void GpuCommandBufferStub::OnInitialize(
         this,
         handle_);
   } else {
-    surface_ = gfx::GLSurface::CreateOffscreenGLSurface(software_,
-                                                        gfx::Size(1, 1));
+    GpuChannelManager* manager = channel_->gpu_channel_manager();
+    surface_ = manager->GetDefaultOffscreenSurface();
   }
 
   if (!surface_.get()) {

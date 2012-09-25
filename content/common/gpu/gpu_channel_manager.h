@@ -17,6 +17,7 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gl/gl_surface.h"
 
 namespace base {
 class WaitableEvent;
@@ -92,6 +93,8 @@ class GpuChannelManager : public IPC::Listener,
 
   SyncPointManager* sync_point_manager() { return sync_point_manager_; }
 
+  gfx::GLSurface* GetDefaultOffscreenSurface();
+
  private:
   // Message handlers.
   void OnEstablishChannel(int client_id, bool share_context);
@@ -123,6 +126,7 @@ class GpuChannelManager : public IPC::Listener,
   GpuWatchdog* watchdog_;
   scoped_refptr<SyncPointManager> sync_point_manager_;
   scoped_ptr<gpu::gles2::ProgramCache> program_cache_;
+  scoped_refptr<gfx::GLSurface> default_offscreen_surface_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuChannelManager);
 };

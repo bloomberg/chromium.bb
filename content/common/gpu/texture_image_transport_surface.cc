@@ -88,7 +88,7 @@ bool TextureImageTransportSurface::Initialize() {
         texture.info, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   }
 
-  surface_ = gfx::GLSurface::CreateOffscreenGLSurface(false, gfx::Size(1, 1));
+  surface_ = manager->GetDefaultOffscreenSurface();
   if (!surface_.get())
     return false;
 
@@ -108,10 +108,8 @@ void TextureImageTransportSurface::Destroy() {
     ReleaseParentStub();
   }
 
-  if (surface_.get()) {
-    surface_->Destroy();
+  if (surface_.get())
     surface_ = NULL;
-  }
 
   helper_->Destroy();
 }
@@ -348,7 +346,7 @@ void* TextureImageTransportSurface::GetHandle() {
 }
 
 unsigned TextureImageTransportSurface::GetFormat() {
-  return surface_ ? surface_->GetFormat() : 0;
+  return surface_.get() ? surface_->GetFormat() : 0;
 }
 
 void TextureImageTransportSurface::OnSetFrontSurfaceIsProtected(
