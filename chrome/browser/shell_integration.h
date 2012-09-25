@@ -33,6 +33,14 @@ class ShellIntegration {
   // (only for the current user). Returns false if this operation fails.
   static bool SetAsDefaultProtocolClient(const std::string& protocol);
 
+  // Initiates an OS shell flow which (if followed by the user) should set
+  // Chrome as the default handler for |protocol|. Returns false if the flow
+  // cannot be initialized, if it is not supported (introduced for Windows 8)
+  // or if the user cancels the operation. This is a blocking call and requires
+  // a FILE thread.
+  static bool SetAsDefaultProtocolClientInteractive(
+      const std::string& protocol);
+
   // In Windows 8 a browser can be made default-in-metro only in an interactive
   // flow. We will distinguish between two types of permissions here to avoid
   // forcing the user into UI interaction when this should not be done.

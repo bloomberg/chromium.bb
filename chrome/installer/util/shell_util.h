@@ -313,6 +313,18 @@ class ShellUtil {
                                               const string16& chrome_exe,
                                               const string16& protocol);
 
+  // Shows to the user a system dialog where Chrome can be set as the
+  // default handler for the given protocol. This is intended for Windows 8
+  // and above only. This is a blocking call.
+  //
+  // |dist| gives the type of browser distribution currently in use.
+  // |chrome_exe| The chrome.exe path to register as default browser.
+  // |protocol| is the protocol being registered.
+  static bool ShowMakeChromeDefaultProtocolClientSystemUI(
+      BrowserDistribution* dist,
+      const string16& chrome_exe,
+      const string16& protocol);
+
   // Registers Chrome as a potential default browser and handler for filetypes
   // and protocols.
   // If Chrome is already registered, this method is a no-op.

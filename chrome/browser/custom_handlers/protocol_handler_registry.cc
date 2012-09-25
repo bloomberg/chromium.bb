@@ -243,6 +243,11 @@ void ProtocolHandlerRegistry::DefaultClientObserver::SetDefaultWebClientUIState(
   }
 }
 
+bool ProtocolHandlerRegistry::DefaultClientObserver::
+    IsInteractiveSetDefaultPermitted() {
+  return true;
+}
+
 void ProtocolHandlerRegistry::DefaultClientObserver::SetWorker(
     ShellIntegration::DefaultProtocolClientWorker* worker) {
   worker_ = worker;

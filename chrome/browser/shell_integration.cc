@@ -97,6 +97,12 @@ CommandLine ShellIntegration::CommandLineArgsForLauncher(
 bool ShellIntegration::SetAsDefaultBrowserInteractive() {
   return false;
 }
+
+// static
+bool ShellIntegration::SetAsDefaultProtocolClientInteractive(
+    const std::string& protocol) {
+  return false;
+}
 #endif
 
 bool ShellIntegration::DefaultWebClientObserver::IsOwnedByWorker() {
@@ -264,5 +270,20 @@ ShellIntegration::DefaultProtocolClientWorker::CheckIsDefault() {
 
 bool ShellIntegration::DefaultProtocolClientWorker::SetAsDefault(
     bool interactive_permitted) {
-  return ShellIntegration::SetAsDefaultProtocolClient(protocol_);
+  bool result = false;
+  switch (ShellIntegration::CanSetAsDefaultProtocolClient()) {
+    case ShellIntegration::SET_DEFAULT_UNATTENDED:
+      result = ShellIntegration::SetAsDefaultProtocolClient(protocol_);
+      break;
+    case ShellIntegration::SET_DEFAULT_INTERACTIVE:
+      if (interactive_permitted) {
+        result = ShellIntegration::SetAsDefaultProtocolClientInteractive(
+            protocol_);
+      }
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  return result;
 }

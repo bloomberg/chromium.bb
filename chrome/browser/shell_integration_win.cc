@@ -430,7 +430,7 @@ bool ShellIntegration::SetAsDefaultProtocolClient(const std::string& protocol) {
     return false;
   }
 
-  string16 wprotocol = UTF8ToUTF16(protocol);
+  string16 wprotocol(UTF8ToUTF16(protocol));
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   if (!ShellUtil::MakeChromeDefaultProtocolClient(dist, chrome_exe.value(),
         wprotocol)) {
@@ -456,7 +456,27 @@ bool ShellIntegration::SetAsDefaultBrowserInteractive() {
     return false;
   }
 
-  VLOG(1) << "Set-as-default Windows UI triggered.";
+  VLOG(1) << "Set-default-browser Windows UI completed.";
+  return true;
+}
+
+bool ShellIntegration::SetAsDefaultProtocolClientInteractive(
+    const std::string& protocol) {
+  FilePath chrome_exe;
+  if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
+    NOTREACHED() << "Error getting app exe path";
+    return false;
+  }
+
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  string16 wprotocol(UTF8ToUTF16(protocol));
+  if (!ShellUtil::ShowMakeChromeDefaultProtocolClientSystemUI(
+          dist, chrome_exe.value(), wprotocol)) {
+    LOG(ERROR) << "Failed to launch the set-default-client Windows UI.";
+    return false;
+  }
+
+  VLOG(1) << "Set-default-client Windows UI completed.";
   return true;
 }
 
