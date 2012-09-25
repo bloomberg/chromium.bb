@@ -134,8 +134,8 @@ void SaveProtoOnBlockingPool(const FilePath& path,
 }
 
 bool UseLevelDB() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kUseLevelDBForGData);
+  // TODO(achuith): Re-enable this.
+  return false;
 }
 
 // Run params->feed_load_callback with |error|.
