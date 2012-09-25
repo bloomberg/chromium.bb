@@ -68,7 +68,8 @@ class PageRunner(object):
   def PreparePage(self, page, tab):
     parsed_url = urlparse.urlparse(page.url)
     if parsed_url[0] == 'file':
-      path = os.path.join(self.page_set.file_path, parsed_url[2])
+      path = os.path.join(os.path.dirname(self.page_set.file_path),
+                          parsed_url[1])
       dirname, filename = os.path.split(path)
       if self._server and self._server.path != dirname:
         self._server.Close()
