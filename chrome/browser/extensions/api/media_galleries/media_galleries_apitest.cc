@@ -93,13 +93,26 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, NoGalleries) {
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MediaGalleriesRead) {
+// Flaky on WinXP - crbug.com/152185.
+#if defined(OS_WIN)
+#define MAYBE_MediaGalleriesRead DISABLED_MediaGalleriesRead
+#else
+#define MAYBE_MediaGalleriesRead MediaGalleriesRead
+#endif  // defined(OS_WIN)
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_MediaGalleriesRead) {
   EnsurePictureDirectoryExists picture_directory;
   ASSERT_TRUE(RunPlatformAppTest("api_test/media_galleries/read_access"))
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MediaGalleriesNoAccess) {
+// Flaky on WinXP - crbug.com/152185.
+#if defined(OS_WIN)
+#define MAYBE_MediaGalleriesNoAccess DISABLED_MediaGalleriesNoAccess
+#else
+#define MAYBE_MediaGalleriesNoAccess MediaGalleriesNoAccess
+#endif  // defined(OS_WIN)
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
+                       MAYBE_MediaGalleriesNoAccess) {
   EnsurePictureDirectoryExists picture_directory;
   ASSERT_TRUE(RunPlatformAppTest("api_test/media_galleries/no_access"))
       << message_;
