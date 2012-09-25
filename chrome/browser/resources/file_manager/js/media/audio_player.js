@@ -479,9 +479,10 @@ AudioPlayer.TrackInfo.prototype.setMetadata = function(
     }.bind(this);
     this.img_.src = metadata.thumbnail.url;
   }
-  this.title_.textContent = metadata.media.title || this.getDefaultTitle();
-  this.artist_.textContent =
-      error || metadata.media.artist || this.getDefaultArtist();
+  this.title_.textContent = (metadata.media && metadata.media.title) ||
+      this.getDefaultTitle();
+  this.artist_.textContent = error ||
+      (metadata.media && metadata.media.artist) || this.getDefaultArtist();
 };
 
 /**
