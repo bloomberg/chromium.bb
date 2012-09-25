@@ -62,7 +62,7 @@ class Packet {
 
   // Store a number up to 64 bits, with preceeding zeros removed.  Since
   // zeros can be removed, the width of this number is unknown, and always
-  // followed by NUL or a seperator (non hex digit).
+  // followed by NUL or a separator (non hex digit).
   void AddNumberSep(uint64_t val, char sep);
 
   // Add a raw string.  This is dangerous since the other side may incorrectly
@@ -77,17 +77,17 @@ class Packet {
   // Retrieve a single character if available
   bool GetRawChar(char *ch);
 
-  // Retreive "len" ASCII character pairs.
+  // Retrieve "len" ASCII character pairs.
   bool GetBlock(void *ptr, uint32_t len);
 
-  // Retreive a 8, 16, 32, or 64 bit word as pairs of hex digits.  These
+  // Retrieve a 8, 16, 32, or 64 bit word as pairs of hex digits.  These
   // functions will always consume bits/4 characters from the stream.
   bool GetWord8(uint8_t *val);
   bool GetWord16(uint16_t *val);
   bool GetWord32(uint32_t *val);
   bool GetWord64(uint64_t *val);
 
-  // Retreive a number and the seperator.  If SEP is null, the seperator is
+  // Retrieve a number and the separator.  If SEP is null, the separator is
   // consumed but thrown away.
   bool GetNumberSep(uint64_t *val, char *sep);
 

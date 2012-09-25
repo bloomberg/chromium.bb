@@ -317,7 +317,7 @@ bool Packet::GetHexString(string* str) {
   char ch;
   if (EndOfPacket()) return false;
 
-  // Pull values until we hit a seperator
+  // Pull values until we hit a separator
   str->clear();
   while (GetRawChar(&ch)) {
     if (NibbleToInt(ch, NULL)) {
@@ -354,7 +354,7 @@ bool Packet::GetHexStringCB(void *ctx, StrFunc_t cb) {
     return false;
   }
 
-  // Pull values until we hit a seperator
+  // Pull values until we hit a separator
   while (GetRawChar(&ch)) {
     if (NibbleToInt(ch, NULL)) {
       out += ch;
