@@ -1598,6 +1598,8 @@ public class ContentViewCore implements MotionEventDelegate {
 
     private native int nativeGetNativeImeAdapter(int nativeContentViewCoreImpl);
 
+    private native int nativeGetCurrentRenderProcessId(int nativeContentViewCoreImpl);
+
     private native void nativeAddJavascriptInterface(int nativeContentViewCoreImpl, Object object,
                                                      String name, boolean requireAnnotation);
 

@@ -9,6 +9,7 @@
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/json/json_writer.h"
+#include "base/logging.h"
 #include "content/browser/android/load_url_params.h"
 #include "content/browser/android/touch_point.h"
 #include "content/browser/renderer_host/java/java_bound_object.h"
@@ -256,6 +257,17 @@ void ContentViewCoreImpl::LoadUrl(
   }
 
   LoadUrl(params);
+}
+
+jint ContentViewCoreImpl::GetCurrentRenderProcessId(JNIEnv* env, jobject obj) {
+  RenderViewHost* host = web_contents_->GetRenderViewHost();
+  DCHECK(host);
+  RenderProcessHost* render_process = host->GetProcess();
+  DCHECK(render_process);
+  if (render_process->HasConnection())
+    return render_process->GetHandle();
+  else
+    return 0;
 }
 
 ScopedJavaLocalRef<jstring> ContentViewCoreImpl::GetURL(
