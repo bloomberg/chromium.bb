@@ -3029,7 +3029,7 @@ shell_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy)
 	}
 }
 
-static int launch_desktop_shell_process(struct desktop_shell *shell);
+static void launch_desktop_shell_process(void *data);
 
 static void
 desktop_shell_sigchld(struct weston_process *process, int status)
@@ -3058,9 +3058,10 @@ desktop_shell_sigchld(struct weston_process *process, int status)
 	launch_desktop_shell_process(shell);
 }
 
-static int
-launch_desktop_shell_process(struct desktop_shell *shell)
+static void
+launch_desktop_shell_process(void *data)
 {
+	struct desktop_shell *shell = data;
 	const char *shell_exe = LIBEXECDIR "/weston-desktop-shell";
 
 	shell->child.client = weston_client_launch(shell->compositor,
@@ -3069,8 +3070,7 @@ launch_desktop_shell_process(struct desktop_shell *shell)
 						 desktop_shell_sigchld);
 
 	if (!shell->child.client)
-		return -1;
-	return 0;
+		weston_log("not able to start %s\n", shell_exe);
 }
 
 static void
@@ -3698,6 +3698,7 @@ module_init(struct weston_compositor *ec)
 	struct desktop_shell *shell;
 	struct workspace **pws;
 	unsigned int i;
+	struct wl_event_loop *loop;
 
 	shell = malloc(sizeof *shell);
 	if (shell == NULL)
@@ -3775,8 +3776,9 @@ module_init(struct weston_compositor *ec)
 		return -1;
 
 	shell->child.deathstamp = weston_compositor_get_time();
-	if (launch_desktop_shell_process(shell) != 0)
-		return -1;
+
+	loop = wl_display_get_event_loop(ec->wl_display);
+	wl_event_loop_add_idle(loop, launch_desktop_shell_process, shell);
 
 	wl_list_for_each(seat, &ec->seat_list, link)
 		create_pointer_focus_listener(seat);
