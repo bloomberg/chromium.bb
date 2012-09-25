@@ -91,8 +91,11 @@ bool Target::AddBreakpoint(uint32_t user_address) {
   if (breakpoint_map_.find(user_address) != breakpoint_map_.end())
     return false;
 
-  uintptr_t sysaddr = NaClUserToSysAddr(nap_, user_address);
+  uintptr_t sysaddr = NaClUserToSysAddrRange(nap_, user_address, bp->size_);
   if (sysaddr == kNaClBadAddress)
+    return false;
+  // We allow setting breakpoints in the code area but not the data area.
+  if (user_address + bp->size_ > nap_->dynamic_text_end)
     return false;
 
   // We add the breakpoint by overwriting the start of an instruction
@@ -205,23 +208,6 @@ void Target::EraseBreakpointsFromCopyOfMemory(uint32_t user_address,
       memcpy(dest, src, copy_size);
     }
   }
-}
-
-bool Target::DoesRangeOverlapBreakpoint(uint32_t user_address, uint32_t size) {
-  uint32_t user_end = user_address + size;
-  const Abi::BPDef *bp = abi_->GetBreakpointDef();
-  for (BreakpointMap_t::iterator iter = breakpoint_map_.begin();
-       iter != breakpoint_map_.end();
-       ++iter) {
-    uint32_t breakpoint_address = iter->first;
-    uint32_t breakpoint_end = breakpoint_address + bp->size_;
-
-    uint32_t overlap_start = std::max(user_address, breakpoint_address);
-    uint32_t overlap_end = std::min(user_end, breakpoint_end);
-    if (overlap_start < overlap_end)
-      return true;
-  }
-  return false;
 }
 
 void Target::Run(Session *ses) {
@@ -572,9 +558,8 @@ bool Target::ProcessPacket(Packet* pktIn, Packet* pktOut) {
           break;
         }
         len = static_cast<uint32_t>(wlen);
-        // To avoid getting into an inconsistent state, we disallow
-        // overwriting locations where we have inserted breakpoints.
-        if (DoesRangeOverlapBreakpoint((uint32_t) user_addr, len)) {
+        // We disallow the debugger from modifying code.
+        if (user_addr < nap_->dynamic_text_end) {
           err = FAILED;
           break;
         }
