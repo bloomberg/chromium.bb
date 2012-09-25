@@ -64,11 +64,6 @@ static const SkColor kBackgroundColorNoMatch = SkColorSetRGB(255, 102, 102);
 // number brings the width on a "regular fonts" system to about 300px.
 static const int kDefaultCharWidth = 43;
 
-#if defined(OS_CHROMEOS)
-// The background color of the find box.
-static const SkColor kFindBoxBackgroundColor = SkColorSetARGB(0, 255, 255, 255);
-#endif
-
 ////////////////////////////////////////////////////////////////////////////////
 // FindBarView, public:
 
@@ -91,12 +86,6 @@ FindBarView::FindBarView(FindBarHost* host)
   find_text_->set_default_width_in_chars(kDefaultCharWidth);
   find_text_->SetController(this);
   find_text_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_FIND));
-
-#if defined(OS_CHROMEOS)
-  // Use a transparent background on ChromeOS as the theme image for the find
-  // box uses a partially transparent background.
-  find_text_->SetBackgroundColor(kFindBoxBackgroundColor);
-#endif
 
   AddChildView(find_text_);
 
@@ -146,21 +135,12 @@ FindBarView::FindBarView(FindBarHost* host)
   close_button_ = new views::ImageButton(this);
   close_button_->set_tag(CLOSE_TAG);
   close_button_->set_focusable(true);
-#if defined(OS_CHROMEOS)
   close_button_->SetImage(views::CustomButton::BS_NORMAL,
                           rb.GetImageSkiaNamed(IDR_TAB_CLOSE));
   close_button_->SetImage(views::CustomButton::BS_HOT,
                           rb.GetImageSkiaNamed(IDR_TAB_CLOSE_H));
   close_button_->SetImage(views::CustomButton::BS_PUSHED,
                           rb.GetImageSkiaNamed(IDR_TAB_CLOSE_P));
-#else
-  close_button_->SetImage(views::CustomButton::BS_NORMAL,
-                          rb.GetImageSkiaNamed(IDR_CLOSE_BAR));
-  close_button_->SetImage(views::CustomButton::BS_HOT,
-                          rb.GetImageSkiaNamed(IDR_CLOSE_BAR_H));
-  close_button_->SetImage(views::CustomButton::BS_PUSHED,
-                          rb.GetImageSkiaNamed(IDR_CLOSE_BAR_P));
-#endif
   close_button_->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_FIND_IN_PAGE_CLOSE_TOOLTIP));
   close_button_->SetAccessibleName(
@@ -514,16 +494,9 @@ FindBarHost* FindBarView::find_bar_host() const {
 void FindBarView::OnThemeChanged() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   if (GetThemeProvider()) {
-#if defined(OS_CHROMEOS)
     close_button_->SetBackground(
         GetThemeProvider()->GetColor(ThemeService::COLOR_TAB_TEXT),
         rb.GetImageSkiaNamed(IDR_TAB_CLOSE),
         rb.GetImageSkiaNamed(IDR_TAB_CLOSE_MASK));
-#else
-    close_button_->SetBackground(
-        GetThemeProvider()->GetColor(ThemeService::COLOR_TAB_TEXT),
-        rb.GetImageSkiaNamed(IDR_CLOSE_BAR),
-        rb.GetImageSkiaNamed(IDR_CLOSE_BAR_MASK));
-#endif
   }
 }

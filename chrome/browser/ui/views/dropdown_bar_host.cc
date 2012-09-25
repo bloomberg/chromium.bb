@@ -237,9 +237,9 @@ void DropdownBarHost::UpdateWindowEdges(const gfx::Rect& new_pos) {
   // window. Basically, it encompasses only the visible pixels of the
   // concatenated find_dlg_LMR_bg images (where LMR = [left | middle | right]).
   const Path::Point polygon[] = {
-      {0, 0}, {0, 1}, {2, 3}, {2, h - 3}, {4, h - 1},
+      {1, 0}, {3, 2}, {3, h - 2}, {4, h - 1},
         {4, h}, {w+0, h},
-      {w+0, h - 1}, {w+1, h - 1}, {w+3, h - 3}, {w+3, 3}, {w+6, 0}
+      {w+2, h - 1}, {w+3, h - 2}, {w+3, 2}, {w+5, 0}
   };
 
   // Find the largest x and y value in the polygon.
@@ -278,10 +278,10 @@ void DropdownBarHost::UpdateWindowEdges(const gfx::Rect& new_pos) {
     // curved edges that the view will draw to make it look like grows out of
     // the toolbar.
     Path::Point left_curve[] = {
-      {0, y+0}, {0, y+1}, {2, y+3}, {2, y+0}, {0, y+0}
+      {1, y+0}, {3, y+2}, {3, y+0}, {1, y+0}
     };
     Path::Point right_curve[] = {
-      {w+3, y+3}, {w+6, y+0}, {w+3, y+0}, {w+3, y+3}
+      {w+3, y+2}, {w+5, y+0}, {w+3, y+0}, {w+3, y+2}
     };
 
     // Combine the region for the curve on the left with our main region.
