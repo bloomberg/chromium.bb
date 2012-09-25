@@ -638,9 +638,8 @@ void ChromeDownloadManagerDelegate::CheckDownloadUrlDone(
     const content::DownloadTargetCallback& callback,
     DownloadProtectionService::DownloadCheckResult result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DownloadItem* download =
-      download_manager_->GetActiveDownloadItem(download_id);
-  if (!download)
+  DownloadItem* download = download_manager_->GetDownload(download_id);
+  if (!download || (download->GetState() != DownloadItem::IN_PROGRESS))
     return;
 
   VLOG(2) << __FUNCTION__ << "() download = " << download->DebugString(false)
@@ -658,8 +657,8 @@ void ChromeDownloadManagerDelegate::CheckDownloadUrlDone(
 void ChromeDownloadManagerDelegate::CheckClientDownloadDone(
     int32 download_id,
     DownloadProtectionService::DownloadCheckResult result) {
-  DownloadItem* item = download_manager_->GetActiveDownloadItem(download_id);
-  if (!item)
+  DownloadItem* item = download_manager_->GetDownload(download_id);
+  if (!item || (item->GetState() != DownloadItem::IN_PROGRESS))
     return;
 
   VLOG(2) << __FUNCTION__ << "() download = " << item->DebugString(false)
@@ -716,8 +715,8 @@ void ChromeDownloadManagerDelegate::CheckVisitedReferrerBeforeDone(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   DownloadItem* download =
-      download_manager_->GetActiveDownloadItem(download_id);
-  if (!download)
+      download_manager_->GetDownload(download_id);
+  if (!download || (download->GetState() != DownloadItem::IN_PROGRESS))
     return;
 
   bool should_prompt = (download->GetTargetDisposition() ==
@@ -827,8 +826,8 @@ void ChromeDownloadManagerDelegate::SubstituteDriveDownloadPathCallback(
     const FilePath& suggested_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DownloadItem* download =
-      download_manager_->GetActiveDownloadItem(download_id);
-  if (!download)
+      download_manager_->GetDownload(download_id);
+  if (!download || (download->GetState() != DownloadItem::IN_PROGRESS))
     return;
 
   GetReservedPath(
@@ -849,8 +848,8 @@ void ChromeDownloadManagerDelegate::OnPathReservationAvailable(
     bool reserved_path_verified) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DownloadItem* download =
-      download_manager_->GetActiveDownloadItem(download_id);
-  if (!download)
+      download_manager_->GetDownload(download_id);
+  if (!download || (download->GetState() != DownloadItem::IN_PROGRESS))
     return;
   if (should_prompt || !reserved_path_verified) {
     // If the target path could not be verified then the path was non-existant,
@@ -876,8 +875,8 @@ void ChromeDownloadManagerDelegate::OnTargetPathDetermined(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   FilePath intermediate_path;
   DownloadItem* download =
-      download_manager_->GetActiveDownloadItem(download_id);
-  if (!download)
+      download_manager_->GetDownload(download_id);
+  if (!download || (download->GetState() != DownloadItem::IN_PROGRESS))
     return;
 
   // If |target_path| is empty, then that means that the user wants to cancel

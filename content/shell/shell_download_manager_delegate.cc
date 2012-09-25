@@ -124,9 +124,8 @@ void ShellDownloadManagerDelegate::ChooseDownloadPath(
     const DownloadTargetCallback& callback,
     const FilePath& suggested_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DownloadItem* item =
-      download_manager_->GetActiveDownloadItem(download_id);
-  if (!item)
+  DownloadItem* item = download_manager_->GetDownload(download_id);
+  if (!item || (item->GetState() != DownloadItem::IN_PROGRESS))
     return;
 
   FilePath result;

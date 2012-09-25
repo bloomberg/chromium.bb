@@ -230,8 +230,13 @@ void PluginInstaller::DownloadStarted(
     DownloadError(msg);
     return;
   }
-  DownloadItem* download_item =
-      dlm->GetActiveDownloadItem(download_id.local());
+  DownloadItem* download_item = dlm->GetDownload(download_id.local());
+  // TODO(benjhayden): DCHECK(item && item->IsInProgress()) after figuring out
+  // why DownloadStarted may get net:OK but an invalid id.
+  if (!download_item) {
+    DownloadError("Download not found");
+    return;
+  }
   download_item->SetOpenWhenComplete(true);
   download_item->AddObserver(this);
 }

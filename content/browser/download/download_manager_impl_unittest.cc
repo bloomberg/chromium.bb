@@ -585,7 +585,7 @@ TEST_F(DownloadManagerTest, StartDownload) {
   int32 local_id(5);                    // Random value
   FilePath download_path(FILE_PATH_LITERAL("download/path"));
 
-  EXPECT_FALSE(download_manager_->GetActiveDownloadItem(local_id));
+  EXPECT_FALSE(download_manager_->GetDownload(local_id));
 
   EXPECT_CALL(GetMockObserver(), OnDownloadCreated(download_manager_.get(), _))
       .WillOnce(Return());
@@ -604,7 +604,7 @@ TEST_F(DownloadManagerTest, StartDownload) {
       download_manager_.get(), true, _, _));
 
   download_manager_->StartDownload(info.Pass(), stream.Pass());
-  EXPECT_TRUE(download_manager_->GetActiveDownloadItem(local_id));
+  EXPECT_TRUE(download_manager_->GetDownload(local_id));
 }
 
 // Do the results of an OnDownloadInterrupted get passed through properly
@@ -621,55 +621,5 @@ TEST_F(DownloadManagerTest, OnDownloadInterrupted) {
 
   EXPECT_CALL(item, Interrupt(reason));
   download_manager_->OnDownloadInterrupted(download_id, reason);
-  EXPECT_EQ(&item, download_manager_->GetActiveDownloadItem(download_id));
-}
-
-// Does DownloadStopped remove Download from appropriate queues?
-// This test tests non-persisted downloads.
-TEST_F(DownloadManagerTest, OnDownloadStopped_NonPersisted) {
-  EXPECT_CALL(GetMockObserver(), OnDownloadCreated(download_manager_.get(), _))
-      .WillOnce(Return());
-  // Put a mock we have a handle to on the download manager.
-  MockDownloadItemImpl& item(AddItemToManager());
-
-  EXPECT_CALL(item, IsPersisted())
-      .WillRepeatedly(Return(false));
-  EXPECT_CALL(item, GetState())
-      .WillRepeatedly(Return(DownloadItem::CANCELLED));
-  EXPECT_CALL(item, GetDbHandle())
-      .WillRepeatedly(Return(DownloadItem::kUninitializedHandle));
-
-  EXPECT_CALL(item, OffThreadCancel());
-  DownloadStopped(&item);
-  // TODO(rdsmith): Confirm that the download item is no longer on the
-  // active list by calling download_manager_->GetActiveDownloadItem(id).
-  // Currently, the item is left on the active list for rendez-vous with
-  // the history system :-{.
-}
-
-// Does DownloadStopped remove Download from appropriate queues?
-// This test tests persisted downloads.
-TEST_F(DownloadManagerTest, OnDownloadStopped_Persisted) {
-  EXPECT_CALL(GetMockObserver(), OnDownloadCreated(download_manager_.get(), _))
-      .WillOnce(Return());
-  // Put a mock we have a handle to on the download manager.
-  MockDownloadItemImpl& item(AddItemToManager());
-  int download_id = item.GetId();
-  int64 db_handle = 0x7;
-  EXPECT_CALL(GetMockObserver(), ModelChanged(download_manager_.get()))
-      .WillOnce(Return());
-  AddItemToHistory(item, db_handle);
-
-  EXPECT_CALL(item, IsPersisted())
-      .WillRepeatedly(Return(true));
-  EXPECT_CALL(GetMockDownloadManagerDelegate(),
-              UpdateItemInPersistentStore(&item));
-  EXPECT_CALL(item, GetState())
-      .WillRepeatedly(Return(DownloadItem::CANCELLED));
-  EXPECT_CALL(item, GetDbHandle())
-      .WillRepeatedly(Return(db_handle));
-
-  EXPECT_CALL(item, OffThreadCancel());
-  DownloadStopped(&item);
-  EXPECT_EQ(NULL, download_manager_->GetActiveDownloadItem(download_id));
+  EXPECT_EQ(&item, download_manager_->GetDownload(download_id));
 }

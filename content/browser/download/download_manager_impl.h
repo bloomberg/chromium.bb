@@ -81,11 +81,9 @@ class CONTENT_EXPORT DownloadManagerImpl
   virtual int InProgressCount() const OVERRIDE;
   virtual content::BrowserContext* GetBrowserContext() const OVERRIDE;
   virtual void CheckForHistoryFilesRemoval() OVERRIDE;
-  virtual content::DownloadItem* GetDownloadItem(int id) OVERRIDE;
   virtual content::DownloadItem* GetDownload(int id) OVERRIDE;
   virtual void SavePageDownloadFinished(
       content::DownloadItem* download) OVERRIDE;
-  virtual content::DownloadItem* GetActiveDownloadItem(int id) OVERRIDE;
 
  private:
   typedef std::set<content::DownloadItem*> DownloadSet;

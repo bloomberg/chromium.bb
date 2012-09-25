@@ -302,7 +302,11 @@ void DownloadItemImpl::UpdateObservers() {
 
 void DownloadItemImpl::DangerousDownloadValidated() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_EQ(IN_PROGRESS, GetState());
   DCHECK_EQ(DANGEROUS, GetSafetyState());
+
+  if (GetState() != IN_PROGRESS)
+    return;
 
   UMA_HISTOGRAM_ENUMERATION("Download.DangerousDownloadValidated",
                             GetDangerType(),

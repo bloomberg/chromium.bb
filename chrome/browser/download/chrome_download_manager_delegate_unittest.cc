@@ -31,16 +31,17 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::DownloadItem;
-using safe_browsing::DownloadProtectionService;
 using ::testing::AtMost;
 using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::ReturnPointee;
 using ::testing::ReturnRef;
 using ::testing::ReturnRefOfCopy;
+using ::testing::SetArgPointee;
 using ::testing::WithArg;
 using ::testing::_;
+using content::DownloadItem;
+using safe_browsing::DownloadProtectionService;
 
 namespace {
 
@@ -293,6 +294,9 @@ ChromeDownloadManagerDelegateTest::ChromeDownloadManagerDelegateTest()
       ui_thread_(content::BrowserThread::UI, &message_loop_),
       file_thread_(content::BrowserThread::FILE, &message_loop_),
       download_manager_(new content::MockDownloadManager) {
+  EXPECT_CALL(*download_manager_, GetAllDownloads(_)).WillRepeatedly(Return());
+  EXPECT_CALL(*download_manager_, AddObserver(_)).WillRepeatedly(Return());
+  EXPECT_CALL(*download_manager_, RemoveObserver(_)).WillRepeatedly(Return());
 }
 
 void ChromeDownloadManagerDelegateTest::SetUp() {
@@ -317,6 +321,9 @@ void ChromeDownloadManagerDelegateTest::TearDown() {
 void ChromeDownloadManagerDelegateTest::VerifyAndClearExpectations() {
   ::testing::Mock::VerifyAndClearExpectations(delegate_);
   ::testing::Mock::VerifyAndClearExpectations(download_manager_);
+  EXPECT_CALL(*download_manager_, RemoveObserver(_)).WillRepeatedly(Return());
+  EXPECT_CALL(*download_manager_, GetAllDownloads(_))
+      .WillRepeatedly(Return());
 }
 
 content::MockDownloadItem*
@@ -341,7 +348,11 @@ content::MockDownloadItem*
       .WillByDefault(Return(contents()));
   EXPECT_CALL(*item, GetId())
       .WillRepeatedly(Return(id));
-  EXPECT_CALL(*download_manager_, GetActiveDownloadItem(id))
+  EXPECT_CALL(*item, GetState())
+      .WillRepeatedly(Return(DownloadItem::IN_PROGRESS));
+  EXPECT_CALL(*item, AddObserver(_)).WillRepeatedly(Return());
+  EXPECT_CALL(*item, RemoveObserver(_)).WillRepeatedly(Return());
+  EXPECT_CALL(*download_manager_, GetDownload(id))
       .WillRepeatedly(Return(item));
   return item;
 }
@@ -376,6 +387,10 @@ void ChromeDownloadManagerDelegateTest::RunTestCaseWithDownloadItem(
       .WillRepeatedly(ReturnRef(forced_file_path));
   EXPECT_CALL(*item, GetMimeType())
       .WillRepeatedly(Return(test_case.mime_type));
+  std::vector<DownloadItem*> items;
+  items.push_back(item);
+  EXPECT_CALL(*download_manager_, GetAllDownloads(_))
+      .WillRepeatedly(SetArgPointee<0>(items));
 
 #if defined(ENABLE_SAFE_BROWSING)
   // Results of SafeBrowsing URL check.

@@ -190,20 +190,12 @@ class CONTENT_EXPORT DownloadManager
   // finish asynchronously after this method returns.
   virtual void CheckForHistoryFilesRemoval() = 0;
 
-  // Get the download item from the history map.  Useful after the item has
-  // been removed from the active map, or was retrieved from the history DB.
-  virtual DownloadItem* GetDownloadItem(int id) = 0;
-
   // Get the download item for |id| if present, no matter what type of download
   // it is or state it's in.
   virtual DownloadItem* GetDownload(int id) = 0;
 
   // Called when Save Page download is done.
   virtual void SavePageDownloadFinished(DownloadItem* download) = 0;
-
-  // Get the download item from the active map.  Useful when the item is not
-  // yet in the history map.
-  virtual DownloadItem* GetActiveDownloadItem(int id) = 0;
 
  protected:
   virtual ~DownloadManager() {}

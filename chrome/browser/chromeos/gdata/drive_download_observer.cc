@@ -246,7 +246,7 @@ void DriveDownloadObserver::SubstituteDriveDownloadPath(Profile* profile,
 // static
 void DriveDownloadObserver::SetDownloadParams(const FilePath& drive_path,
                                               DownloadItem* download) {
-  if (!download)
+  if (!download || (download->GetState() != DownloadItem::IN_PROGRESS))
     return;
 
   if (util::IsUnderDriveMountPoint(drive_path)) {

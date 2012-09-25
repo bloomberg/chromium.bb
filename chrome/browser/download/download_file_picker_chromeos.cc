@@ -54,8 +54,7 @@ void DownloadFilePickerChromeOS::FileSelectedWithExtraInfo(
   RecordFileSelected(path);
 
   if (download_manager_) {
-    content::DownloadItem* download =
-        download_manager_->GetActiveDownloadItem(download_id_);
+    DownloadItem* download = download_manager_->GetDownload(download_id_);
     gdata::DriveDownloadObserver::SubstituteDriveDownloadPath(
         NULL, path, download,
         base::Bind(&DownloadFilePickerChromeOS::OnFileSelected,

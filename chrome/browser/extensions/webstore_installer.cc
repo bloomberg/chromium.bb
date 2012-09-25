@@ -282,6 +282,8 @@ void WebstoreInstaller::OnDownloadStarted(DownloadId id, net::Error error) {
   if (!download_manager)
     return;
   download_item_ = download_manager->GetDownload(id.local());
+  // TODO(benjhayden): DCHECK(item && item->IsInProgress()) after investigating
+  // the relationship between net::OK and invalid id.
   if (download_item_) {
     download_item_->AddObserver(this);
     if (approval_.get())

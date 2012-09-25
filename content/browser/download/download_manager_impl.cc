@@ -927,11 +927,6 @@ void DownloadManagerImpl::NotifyModelChanged() {
   FOR_EACH_OBSERVER(Observer, observers_, ModelChanged(this));
 }
 
-DownloadItem* DownloadManagerImpl::GetDownloadItem(int download_id) {
-  DownloadItem* download = GetDownload(download_id);
-  return (download && download->IsPersisted()) ? download : NULL;
-}
-
 DownloadItem* DownloadManagerImpl::GetDownload(int download_id) {
   return ContainsKey(downloads_, download_id) ? downloads_[download_id] : NULL;
 }
@@ -941,12 +936,6 @@ void DownloadManagerImpl::GetAllDownloads(DownloadVector* downloads) {
        it != downloads_.end(); ++it) {
     downloads->push_back(it->second);
   }
-}
-
-DownloadItem* DownloadManagerImpl::GetActiveDownloadItem(int download_id) {
-  if (ContainsKey(active_downloads_, download_id))
-    return active_downloads_[download_id];
-  return NULL;
 }
 
 // Confirm that everything in all maps is also in |downloads_|, and that

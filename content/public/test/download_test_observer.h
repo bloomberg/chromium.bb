@@ -89,7 +89,8 @@ class DownloadTestObserver : public DownloadManager::Observer,
   virtual void OnDownloadDestroyed(DownloadItem* download) OVERRIDE;
 
   // DownloadManager::Observer
-  virtual void ModelChanged(DownloadManager* manager) OVERRIDE;
+  virtual void OnDownloadCreated(
+      DownloadManager* manager, DownloadItem* item) OVERRIDE;
 
   size_t NumDangerousDownloadsSeen() const;
 
