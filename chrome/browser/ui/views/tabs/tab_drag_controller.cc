@@ -95,17 +95,11 @@ class DockView : public views::View {
   }
 
   virtual void OnPaintBackground(gfx::Canvas* canvas) {
-    SkRect outer_rect = { SkIntToScalar(0), SkIntToScalar(0),
-                          SkIntToScalar(width()),
-                          SkIntToScalar(height()) };
-
     // Fill the background rect.
     SkPaint paint;
     paint.setColor(SkColorSetRGB(108, 108, 108));
     paint.setStyle(SkPaint::kFill_Style);
-    canvas->sk_canvas()->drawRoundRect(
-        outer_rect, SkIntToScalar(kRoundedRectRadius),
-        SkIntToScalar(kRoundedRectRadius), paint);
+    canvas->DrawRoundRect(GetLocalBounds(), kRoundedRectRadius, paint);
 
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
