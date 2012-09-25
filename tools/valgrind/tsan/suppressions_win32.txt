@@ -97,7 +97,6 @@
   bug_93932b
   ThreadSanitizer:Race
   ...
-  fun:ff_mpeg4video_split
   fun:avcodec_close
   fun:media::FFmpegVideoDecoder::ReleaseFFmpegResources
 }
