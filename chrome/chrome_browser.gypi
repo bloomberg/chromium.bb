@@ -1237,6 +1237,8 @@
         'browser/plugins/plugin_infobar_delegates.h',
         'browser/plugins/plugin_installer_observer.cc',
         'browser/plugins/plugin_installer_observer.h',
+        'browser/plugins/plugin_metadata.cc',
+        'browser/plugins/plugin_metadata.h',
         'browser/plugins/plugin_observer.cc',
         'browser/plugins/plugin_observer.h',
         'browser/plugins/plugin_prefs.cc',
@@ -2675,7 +2677,8 @@
         }],
         ['enable_plugin_installation==0', {
           'sources!': [
-            # TODO(ibraaaa): Return plugin_installer.{h/cc}.
+            'browser/plugins/plugin_installer.cc',
+            'browser/plugins/plugin_installer.h',
             'browser/plugins/plugin_installer_observer.cc',
             'browser/plugins/plugin_installer_observer.h',
           ],

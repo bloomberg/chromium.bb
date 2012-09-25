@@ -49,7 +49,6 @@ class PluginInfoMessageFilter : public content::BrowserMessageFilter {
     void DecidePluginStatus(
         const GetPluginInfo_Params& params,
         const webkit::WebPluginInfo& plugin,
-        PluginFinder* plugin_finder,
         ChromeViewHostMsg_GetPluginInfo_Status* status,
         std::string* group_identifier,
         string16* group_name) const;

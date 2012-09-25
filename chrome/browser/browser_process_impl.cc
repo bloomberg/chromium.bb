@@ -42,6 +42,7 @@
 #include "chrome/browser/net/crl_set_fetcher.h"
 #include "chrome/browser/net/sdch_dictionary_fetcher.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
+#include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/policy_service.h"
 #include "chrome/browser/prefs/browser_prefs.h"
@@ -791,6 +792,9 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
 
   if (local_state_->IsManagedPreference(prefs::kDefaultBrowserSettingEnabled))
     ApplyDefaultBrowserPolicy();
+
+  // Triggers initialization of the singleton instance on UI thread.
+  PluginFinder::GetInstance()->Init();
 }
 
 void BrowserProcessImpl::CreateIconManager() {

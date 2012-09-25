@@ -9,13 +9,16 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/plugins/plugin_installer.h"
+#include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/plugins/plugin_prefs_factory.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
@@ -108,54 +111,45 @@ void PluginPrefs::SetPluginListForTesting(
 }
 
 void PluginPrefs::EnablePluginGroup(bool enabled, const string16& group_name) {
-  PluginFinder::Get(
-      base::Bind(&PluginPrefs::GetPluginFinderForEnablePluginGroup,
-                 this, enabled, group_name));
-}
-
-void PluginPrefs::GetPluginFinderForEnablePluginGroup(
-    bool enabled,
-    const string16& group_name,
-    PluginFinder* finder) {
   PluginService::GetInstance()->GetPlugins(
       base::Bind(&PluginPrefs::EnablePluginGroupInternal,
-                 this, enabled, group_name, finder));
+                 this, enabled, group_name));
 }
 
 void PluginPrefs::EnablePluginGroupInternal(
     bool enabled,
     const string16& group_name,
-    PluginFinder* finder,
     const std::vector<webkit::WebPluginInfo>& plugins) {
   base::AutoLock auto_lock(lock_);
+  PluginFinder* finder = PluginFinder::GetInstance();
 
   // Set the desired state for the group.
   plugin_group_state_[group_name] = enabled;
 
   // Update the state for all plug-ins in the group.
   for (size_t i = 0; i < plugins.size(); ++i) {
-    PluginInstaller* installer = finder->GetPluginInstaller(plugins[i]);
-    if (group_name != installer->name())
+    PluginMetadata* plugin = finder->GetPluginMetadata(plugins[i]);
+    if (group_name != plugin->name())
       continue;
     plugin_state_.Set(plugins[i].path, enabled);
   }
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      base::Bind(&PluginPrefs::OnUpdatePreferences, this, plugins, finder));
+      base::Bind(&PluginPrefs::OnUpdatePreferences, this, plugins));
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
       base::Bind(&PluginPrefs::NotifyPluginStatusChanged, this));
 }
 
-void PluginPrefs::EnablePluginIfPossibleCallback(
+void PluginPrefs::EnablePlugin(
     bool enabled, const FilePath& path,
-    const base::Callback<void(bool)>& callback,
-    PluginFinder* finder) {
+    const base::Callback<void(bool)>& callback) {
+  PluginFinder* finder = PluginFinder::GetInstance();
   webkit::WebPluginInfo plugin;
   bool can_enable = true;
   if (PluginService::GetInstance()->GetPluginInfoByPath(path, &plugin)) {
-    PluginInstaller* installer = finder->GetPluginInstaller(plugin);
+    PluginMetadata* plugin_metadata = finder->GetPluginMetadata(plugin);
     PolicyStatus plugin_status = PolicyStatusForPlugin(plugin.name);
-    PolicyStatus group_status = PolicyStatusForPlugin(installer->name());
+    PolicyStatus group_status = PolicyStatusForPlugin(plugin_metadata->name());
     if (enabled) {
       if (plugin_status == POLICY_DISABLED || group_status == POLICY_DISABLED)
         can_enable = false;
@@ -168,20 +162,14 @@ void PluginPrefs::EnablePluginIfPossibleCallback(
   }
 
   if (!can_enable) {
-    callback.Run(false);
+    MessageLoop::current()->PostTask(FROM_HERE,
+                                     base::Bind(callback, false));
     return;
   }
 
   PluginService::GetInstance()->GetPlugins(
       base::Bind(&PluginPrefs::EnablePluginInternal, this,
                  enabled, path, finder, callback));
-}
-
-void PluginPrefs::EnablePlugin(
-    bool enabled, const FilePath& path,
-    const base::Callback<void(bool)>& callback) {
-  PluginFinder::Get(base::Bind(&PluginPrefs::EnablePluginIfPossibleCallback,
-                               this, enabled, path, callback));
 }
 
 void PluginPrefs::EnablePluginInternal(
@@ -199,10 +187,10 @@ void PluginPrefs::EnablePluginInternal(
   string16 group_name;
   for (size_t i = 0; i < plugins.size(); ++i) {
     if (plugins[i].path == path) {
-      PluginInstaller* installer =
-          plugin_finder->GetPluginInstaller(plugins[i]);
+      PluginMetadata* plugin_metadata =
+          plugin_finder->GetPluginMetadata(plugins[i]);
       // set the group name for this plug-in.
-      group_name = installer->name();
+      group_name = plugin_metadata->name();
       DCHECK_EQ(enabled, IsPluginEnabled(plugins[i]));
       break;
     }
@@ -210,9 +198,10 @@ void PluginPrefs::EnablePluginInternal(
 
   bool all_disabled = true;
   for (size_t i = 0; i < plugins.size(); ++i) {
-    PluginInstaller* installer = plugin_finder->GetPluginInstaller(plugins[i]);
-    DCHECK(!installer->name().empty());
-    if (group_name == installer->name()) {
+    PluginMetadata* plugin_metadata =
+        plugin_finder->GetPluginMetadata(plugins[i]);
+    DCHECK(!plugin_metadata->name().empty());
+    if (group_name == plugin_metadata->name()) {
       all_disabled = all_disabled && !IsPluginEnabled(plugins[i]);
     }
   }
@@ -224,8 +213,7 @@ void PluginPrefs::EnablePluginInternal(
   }
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      base::Bind(&PluginPrefs::OnUpdatePreferences, this,
-                 plugins, plugin_finder));
+      base::Bind(&PluginPrefs::OnUpdatePreferences, this, plugins));
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
       base::Bind(&PluginPrefs::NotifyPluginStatusChanged, this));
   callback.Run(true);
@@ -246,9 +234,8 @@ PluginPrefs::PolicyStatus PluginPrefs::PolicyStatusForPlugin(
 }
 
 bool PluginPrefs::IsPluginEnabled(const webkit::WebPluginInfo& plugin) const {
-  scoped_ptr<webkit::npapi::PluginGroup> group(
-      GetPluginList()->GetPluginGroup(plugin));
-  string16 group_name = group->GetGroupName();
+  PluginFinder* finder = PluginFinder::GetInstance();
+  string16 group_name = finder->GetPluginMetadata(plugin)->name();
 
   // Check if the plug-in or its group is enabled by policy.
   PolicyStatus plugin_status = PolicyStatusForPlugin(plugin.name);
@@ -591,27 +578,20 @@ webkit::npapi::PluginList* PluginPrefs::GetPluginList() const {
 }
 
 void PluginPrefs::GetPreferencesDataOnFileThread() {
-  PluginFinder::Get(
-      base::Bind(&PluginPrefs::GetPluginFinderForGetPreferencesDataOnFileThread,
-                 this));
-}
-
-void PluginPrefs::GetPluginFinderForGetPreferencesDataOnFileThread(
-    PluginFinder* finder) {
   std::vector<webkit::WebPluginInfo> plugins;
   webkit::npapi::PluginList* plugin_list = GetPluginList();
   plugin_list->GetPluginsNoRefresh(&plugins);
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      base::Bind(&PluginPrefs::OnUpdatePreferences, this, plugins, finder));
+      base::Bind(&PluginPrefs::OnUpdatePreferences, this, plugins));
 }
 
 void PluginPrefs::OnUpdatePreferences(
-    const std::vector<webkit::WebPluginInfo>& plugins,
-    PluginFinder* finder) {
+    const std::vector<webkit::WebPluginInfo>& plugins) {
   if (!prefs_)
     return;
 
+  PluginFinder* finder = PluginFinder::GetInstance();
   ListPrefUpdate update(prefs_, prefs::kPluginsPluginsList);
   ListValue* plugins_list = update.Get();
   plugins_list->Clear();
@@ -634,9 +614,9 @@ void PluginPrefs::OnUpdatePreferences(
     summary->SetBoolean("enabled", enabled);
     plugins_list->Append(summary);
 
-    PluginInstaller* installer = finder->GetPluginInstaller(plugins[i]);
+    PluginMetadata* plugin_metadata = finder->GetPluginMetadata(plugins[i]);
     // Insert into a set of all group names.
-    group_names.insert(installer->name());
+    group_names.insert(plugin_metadata->name());
   }
 
   // Add the plug-in groups.

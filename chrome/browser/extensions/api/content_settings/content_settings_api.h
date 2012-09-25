@@ -65,10 +65,9 @@ class GetResourceIdentifiersFunction : public AsyncExtensionFunction {
   FRIEND_TEST_ALL_PREFIXES(ExtensionApiTest,
                            ContentSettingsGetResourceIdentifiers);
 
-  // Callback method that gets executed when both |finder| and |plugins|
+  // Callback method that gets executed when |plugins|
   // are asynchronously fetched.
-  void OnGotPlugins(const std::vector<webkit::WebPluginInfo>& plugins,
-                    PluginFinder* finder);
+  void OnGotPlugins(const std::vector<webkit::WebPluginInfo>& plugins);
 
   // Used to override the global plugin list in tests.
   static void SetPluginsForTesting(

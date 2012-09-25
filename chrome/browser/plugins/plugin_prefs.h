@@ -132,7 +132,6 @@ class PluginPrefs : public RefcountedProfileKeyedService,
   void EnablePluginGroupInternal(
       bool enabled,
       const string16& group_name,
-      PluginFinder* plugin_finder,
       const std::vector<webkit::WebPluginInfo>& plugins);
   void EnablePluginInternal(
       bool enabled,
@@ -146,8 +145,7 @@ class PluginPrefs : public RefcountedProfileKeyedService,
   void GetPreferencesDataOnFileThread();
 
   // Called on the UI thread with the plugin data to save the preferences.
-  void OnUpdatePreferences(const std::vector<webkit::WebPluginInfo>& plugins,
-                           PluginFinder* finder);
+  void OnUpdatePreferences(const std::vector<webkit::WebPluginInfo>& plugins);
 
   // Sends the notification that plugin data has changed.
   void NotifyPluginStatusChanged();
@@ -158,23 +156,6 @@ class PluginPrefs : public RefcountedProfileKeyedService,
   // Checks if |name| matches any of the patterns in |pattern_set|.
   static bool IsStringMatchedInSet(const string16& name,
                                    const std::set<string16>& pattern_set);
-
-  // Callback method called by 'EnablePlugin' method.
-  // It performs the logic to check if a plug-in can be enabled.
-  void EnablePluginIfPossibleCallback(
-      bool enabled, const FilePath& path,
-      const base::Callback<void(bool)>& canEnableCallback,
-      PluginFinder* finder);
-
-  // Callback method that takes in the asynchronously created
-  // plug-in finder instance. It is called by 'EnablePluginGroup'.
-  void GetPluginFinderForEnablePluginGroup(bool enabled,
-                                           const string16& group_name,
-                                           PluginFinder* finder);
-
-  // Callback method that takes in the asynchronously created plug-in finder
-  // instance. It is called by 'GetPreferencesDataOnFileThread'.
-  void GetPluginFinderForGetPreferencesDataOnFileThread(PluginFinder* finder);
 
   // Guards access to the following data structures.
   mutable base::Lock lock_;

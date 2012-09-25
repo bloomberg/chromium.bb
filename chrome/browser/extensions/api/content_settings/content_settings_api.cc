@@ -259,32 +259,30 @@ bool GetResourceIdentifiersFunction::RunImpl() {
   }
 
   if (!g_testing_plugins_) {
-    PluginFinder::GetPluginsAndPluginFinder(
+    PluginService::GetInstance()->GetPlugins(
         base::Bind(&GetResourceIdentifiersFunction::OnGotPlugins, this));
   } else {
-    PluginFinder::Get(
-        base::Bind(&GetResourceIdentifiersFunction::OnGotPlugins, this,
-                   *g_testing_plugins_));
+    OnGotPlugins(*g_testing_plugins_);
   }
   return true;
 }
 
 void GetResourceIdentifiersFunction::OnGotPlugins(
-    const std::vector<webkit::WebPluginInfo>& plugins,
-    PluginFinder* finder) {
+    const std::vector<webkit::WebPluginInfo>& plugins) {
+  PluginFinder* finder = PluginFinder::GetInstance();
   std::set<std::string> group_identifiers;
   ListValue* list = new ListValue();
   for (std::vector<webkit::WebPluginInfo>::const_iterator it = plugins.begin();
        it != plugins.end(); ++it) {
-    PluginInstaller* installer = finder->GetPluginInstaller(*it);
-    const std::string& group_identifier = installer->identifier();
+    PluginMetadata* plugin_metadata = finder->GetPluginMetadata(*it);
+    const std::string& group_identifier = plugin_metadata->identifier();
     if (group_identifiers.find(group_identifier) != group_identifiers.end())
       continue;
 
     group_identifiers.insert(group_identifier);
     DictionaryValue* dict = new DictionaryValue();
     dict->SetString(keys::kIdKey, group_identifier);
-    dict->SetString(keys::kDescriptionKey, installer->name());
+    dict->SetString(keys::kDescriptionKey, plugin_metadata->name());
     list->Append(dict);
   }
   SetResult(list);

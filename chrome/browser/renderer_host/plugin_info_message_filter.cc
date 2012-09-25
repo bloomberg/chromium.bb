@@ -10,7 +10,7 @@
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/plugins/plugin_finder.h"
-#include "chrome/browser/plugins/plugin_installer.h"
+#include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_content_client.h"
@@ -118,18 +118,8 @@ void PluginInfoMessageFilter::PluginsLoaded(
     return;
   }
 
-  PluginFinder::Get(base::Bind(&PluginInfoMessageFilter::GotPluginFinder, this,
-                               params, reply_msg, output));
-}
-
-void PluginInfoMessageFilter::GotPluginFinder(
-    const GetPluginInfo_Params& params,
-    IPC::Message* reply_msg,
-    ChromeViewHostMsg_GetPluginInfo_Output output,
-    PluginFinder* plugin_finder) {
-  context_.DecidePluginStatus(params, output.plugin, plugin_finder,
-                              &output.status, &output.group_identifier,
-                              &output.group_name);
+  context_.DecidePluginStatus(params, output.plugin, &output.status,
+                              &output.group_identifier, &output.group_name);
   ChromeViewHostMsg_GetPluginInfo::WriteReplyParams(reply_msg, output);
   Send(reply_msg);
 }
@@ -137,13 +127,13 @@ void PluginInfoMessageFilter::GotPluginFinder(
 void PluginInfoMessageFilter::Context::DecidePluginStatus(
     const GetPluginInfo_Params& params,
     const WebPluginInfo& plugin,
-    PluginFinder* plugin_finder,
     ChromeViewHostMsg_GetPluginInfo_Status* status,
     std::string* group_identifier,
     string16* group_name) const {
-  PluginInstaller* installer = plugin_finder->GetPluginInstaller(plugin);
-  *group_name = installer->name();
-  *group_identifier = installer->identifier();
+  PluginMetadata* plugin_metadata =
+      PluginFinder::GetInstance()->GetPluginMetadata(plugin);
+  *group_name = plugin_metadata->name();
+  *group_identifier = plugin_metadata->identifier();
 
   ContentSetting plugin_setting = CONTENT_SETTING_DEFAULT;
   bool uses_default_content_setting = true;
@@ -155,10 +145,10 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
   DCHECK(plugin_setting != CONTENT_SETTING_DEFAULT);
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
-  PluginInstaller::SecurityStatus plugin_status =
-      installer->GetSecurityStatus(plugin);
+  PluginMetadata::SecurityStatus plugin_status =
+      plugin_metadata->GetSecurityStatus(plugin);
   // Check if the plug-in is outdated.
-  if (plugin_status == PluginInstaller::SECURITY_STATUS_OUT_OF_DATE &&
+  if (plugin_status == PluginMetadata::SECURITY_STATUS_OUT_OF_DATE &&
       !allow_outdated_plugins_.GetValue()) {
     if (allow_outdated_plugins_.IsManaged()) {
       status->value =
@@ -171,7 +161,7 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
 
   // Check if the plug-in requires authorization.
   if (plugin_status ==
-          PluginInstaller::SECURITY_STATUS_REQUIRES_AUTHORIZATION &&
+          PluginMetadata::SECURITY_STATUS_REQUIRES_AUTHORIZATION &&
       plugin.type != WebPluginInfo::PLUGIN_TYPE_PEPPER_IN_PROCESS &&
       plugin.type != WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS &&
       !always_authorize_plugins_.GetValue() &&

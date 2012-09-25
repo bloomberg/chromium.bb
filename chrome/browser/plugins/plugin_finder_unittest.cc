@@ -5,12 +5,11 @@
 #include "chrome/browser/plugins/plugin_finder.h"
 
 #include "base/values.h"
-#include "chrome/browser/plugins/plugin_installer.h"
+#include "chrome/browser/plugins/plugin_metadata.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 
 using base::DictionaryValue;
-using webkit::npapi::PluginGroup;
 using webkit::npapi::PluginList;
 
 TEST(PluginFinderTest, JsonSyntax) {
@@ -50,9 +49,9 @@ TEST(PluginFinderTest, JsonSyntax) {
       EXPECT_TRUE(version_dict->GetString("version", &dummy_str));
       std::string status_str;
       EXPECT_TRUE(version_dict->GetString("status", &status_str));
-      PluginInstaller::SecurityStatus status =
-          PluginInstaller::SECURITY_STATUS_UP_TO_DATE;
-      EXPECT_TRUE(PluginInstaller::ParseSecurityStatus(status_str, &status))
+      PluginMetadata::SecurityStatus status =
+          PluginMetadata::SECURITY_STATUS_UP_TO_DATE;
+      EXPECT_TRUE(PluginMetadata::ParseSecurityStatus(status_str, &status))
           << "Invalid security status \"" << status_str << "\"";
     }
   }

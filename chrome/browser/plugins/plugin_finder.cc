@@ -22,6 +22,10 @@
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
+#if defined(ENABLE_PLUGIN_INSTALLATION)
+#include "chrome/browser/plugins/plugin_installer.h"
+#endif
+
 using base::DictionaryValue;
 using content::PluginService;
 
@@ -50,76 +54,9 @@ static string16 GetGroupName(const webkit::WebPluginInfo& plugin) {
 #endif
 }
 
-// A callback barrier used to enforce the execution of a callback function
-// only when two different asynchronous callbacks are done execution.
-// The first asynchronous callback gets a PluginFinder instance and the
-// second asynchronous callback gets a list of plugins.
-class PluginFinderCallbackBarrier
-    : public base::RefCountedThreadSafe<PluginFinderCallbackBarrier> {
- public:
-  typedef base::Callback<void(const PluginFinder::PluginVector&)>
-      PluginsCallback;
-
-  explicit PluginFinderCallbackBarrier(
-      const PluginFinder::CombinedCallback& callback)
-      : callback_(callback),
-        finder_(NULL) {
-    DCHECK(!callback_.is_null());
-  }
-
-  base::Callback<void(PluginFinder*)> CreatePluginFinderCallback() {
-    return base::Bind(&PluginFinderCallbackBarrier::GotPluginFinder, this);
-  }
-
-  PluginsCallback CreatePluginsCallback() {
-    return base::Bind(&PluginFinderCallbackBarrier::GotPlugins, this);
-  }
-
- private:
-  friend class base::RefCountedThreadSafe<PluginFinderCallbackBarrier>;
-
-  ~PluginFinderCallbackBarrier() {
-    DCHECK(callback_.is_null());
-  }
-
-  void GotPlugins(const PluginFinder::PluginVector& plugins) {
-    plugins_.reset(new PluginFinder::PluginVector(plugins));
-    MaybeRunCallback();
-  }
-
-  void GotPluginFinder(PluginFinder* finder) {
-    finder_ = finder;
-    MaybeRunCallback();
-  }
-
-  // Executes the callback only when both asynchronous methods have finished
-  // their executions. This is identified by having non-null values in both
-  // |finder_| and |plugins_|.
-  void MaybeRunCallback() {
-    if (!finder_ || !plugins_.get())
-      return;
-
-    callback_.Run(*plugins_, finder_);
-    callback_.Reset();
-  }
-
-  PluginFinder::CombinedCallback callback_;
-  PluginFinder* finder_;
-  scoped_ptr<PluginFinder::PluginVector> plugins_;
-};
-
 }  // namespace
 
-// static
-void PluginFinder::GetPluginsAndPluginFinder(
-    const PluginFinder::CombinedCallback& cb) {
-  scoped_refptr<PluginFinderCallbackBarrier> barrier =
-      new PluginFinderCallbackBarrier(cb);
-
-  PluginFinder::Get(barrier->CreatePluginFinderCallback());
-  PluginService::GetInstance()->GetPlugins(barrier->CreatePluginsCallback());
-}
-
+// TODO(ibraaaa): DELETE. http://crbug.com/124396
 // static
 void PluginFinder::Get(const base::Callback<void(PluginFinder*)>& cb) {
   // At a later point we might want to do intialization here that needs to be
@@ -134,9 +71,31 @@ PluginFinder* PluginFinder::GetInstance() {
   return Singleton<PluginFinder>::get();
 }
 
-PluginFinder::PluginFinder() : plugin_list_(LoadPluginList()) {
+PluginFinder::PluginFinder() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+}
+
+// TODO(ibraaaa): initialize |plugin_list_| from Local State.
+// http://crbug.com/124396
+void PluginFinder::Init() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  plugin_list_.reset(LoadPluginList());
   if (!plugin_list_.get())
     plugin_list_.reset(new DictionaryValue());
+
+  for (DictionaryValue::Iterator plugin_it(*plugin_list_);
+      plugin_it.HasNext(); plugin_it.Advance()) {
+    DictionaryValue* plugin = NULL;
+    const std::string& identifier = plugin_it.key();
+    if (plugin_list_->GetDictionaryWithoutPathExpansion(identifier, &plugin)) {
+      PluginMetadata* metadata = CreatePluginMetadata(identifier, plugin);
+      identifier_plugin_[identifier] = metadata;
+
+#if defined(ENABLE_PLUGIN_INSTALLATION)
+      installers_[identifier] = new PluginInstaller(metadata);
+#endif
+    }
+  }
 }
 
 // static
@@ -164,9 +123,13 @@ DictionaryValue* PluginFinder::LoadPluginList() {
 }
 
 PluginFinder::~PluginFinder() {
+#if defined(ENABLE_PLUGIN_INSTALLATION)
   STLDeleteValues(&installers_);
+#endif
+  STLDeleteValues(&identifier_plugin_);
 }
 
+#if defined(ENABLE_PLUGIN_INSTALLATION)
 PluginInstaller* PluginFinder::FindPlugin(const std::string& mime_type,
                                           const std::string& language) {
   if (g_browser_process->local_state()->GetBoolean(prefs::kDisablePluginFinder))
@@ -192,11 +155,13 @@ PluginInstaller* PluginFinder::FindPlugin(const std::string& mime_type,
       DCHECK(success);
       if (mime_type_str == mime_type) {
         std::string identifier = plugin_it.key();
-        std::map<std::string, PluginInstaller*>::const_iterator installer =
-            installers_.find(identifier);
-        if (installer != installers_.end())
+        {
+          base::AutoLock lock(mutex_);
+          std::map<std::string, PluginInstaller*>::const_iterator installer =
+              installers_.find(identifier);
+          DCHECK(installer != installers_.end());
           return installer->second;
-        return CreateInstaller(identifier, plugin);
+        }
       }
     }
   }
@@ -205,20 +170,31 @@ PluginInstaller* PluginFinder::FindPlugin(const std::string& mime_type,
 
 PluginInstaller* PluginFinder::FindPluginWithIdentifier(
     const std::string& identifier) {
+  base::AutoLock lock(mutex_);
   std::map<std::string, PluginInstaller*>::const_iterator it =
       installers_.find(identifier);
   if (it != installers_.end())
     return it->second;
-  DictionaryValue* plugin = NULL;
-  if (plugin_list_->GetDictionaryWithoutPathExpansion(identifier, &plugin))
-    return CreateInstaller(identifier, plugin);
+
+  return NULL;
+}
+#endif
+
+PluginMetadata* PluginFinder::FindPluginMetadataWithIdentifier(
+    const std::string& identifier) {
+  base::AutoLock lock(mutex_);
+  std::map<std::string, PluginMetadata*>::const_iterator it =
+      identifier_plugin_.find(identifier);
+  if (it != identifier_plugin_.end())
+    return it->second;
+
   return NULL;
 }
 
-PluginInstaller* PluginFinder::CreateInstaller(
+PluginMetadata* PluginFinder::CreatePluginMetadata(
     const std::string& identifier,
     const DictionaryValue* plugin_dict) {
-  DCHECK(!installers_[identifier]);
+  DCHECK(!identifier_plugin_[identifier]);
   std::string url;
   bool success = plugin_dict->GetString("url", &url);
   std::string help_url;
@@ -232,12 +208,12 @@ PluginInstaller* PluginFinder::CreateInstaller(
   success = plugin_dict->GetString("group_name_matcher", &group_name_matcher);
   DCHECK(success);
 
-  PluginInstaller* installer = new PluginInstaller(identifier,
-                                                   name,
-                                                   display_url,
-                                                   GURL(url),
-                                                   GURL(help_url),
-                                                   group_name_matcher);
+  PluginMetadata* plugin = new PluginMetadata(identifier,
+                                              name,
+                                              display_url,
+                                              GURL(url),
+                                              GURL(help_url),
+                                              group_name_matcher);
   const ListValue* versions = NULL;
   if (plugin_dict->GetList("versions", &versions)) {
     for (ListValue::const_iterator it = versions->begin();
@@ -253,47 +229,42 @@ PluginInstaller* PluginFinder::CreateInstaller(
       std::string status_str;
       success = version_dict->GetString("status", &status_str);
       DCHECK(success);
-      PluginInstaller::SecurityStatus status =
-          PluginInstaller::SECURITY_STATUS_UP_TO_DATE;
-      success = PluginInstaller::ParseSecurityStatus(status_str, &status);
+      PluginMetadata::SecurityStatus status =
+          PluginMetadata::SECURITY_STATUS_UP_TO_DATE;
+      success = PluginMetadata::ParseSecurityStatus(status_str, &status);
       DCHECK(success);
-      installer->AddVersion(Version(version), status);
+      plugin->AddVersion(Version(version), status);
     }
   }
 
-  installers_[identifier] = installer;
-  return installer;
+  return plugin;
 }
 
-PluginInstaller* PluginFinder::GetPluginInstaller(
+PluginMetadata* PluginFinder::GetPluginMetadata(
     const webkit::WebPluginInfo& plugin) {
-  if (name_installers_.find(plugin.name) != name_installers_.end())
-    return name_installers_[plugin.name];
+  base::AutoLock lock(mutex_);
+  if (name_plugin_.find(plugin.name) != name_plugin_.end())
+    return name_plugin_[plugin.name];
 
-  for (DictionaryValue::Iterator plugin_it(*plugin_list_);
-       plugin_it.HasNext(); plugin_it.Advance()) {
-    // This method triggers the lazy initialization for all PluginInstallers.
-    FindPluginWithIdentifier(plugin_it.key());
-  }
-
-  // Use the group name matcher to find the plug-in installer we want.
-  for (std::map<std::string, PluginInstaller*>::const_iterator it =
-      installers_.begin(); it != installers_.end(); ++it) {
+  // Use the group name matcher to find the plug-in metadata we want.
+  for (std::map<std::string, PluginMetadata*>::const_iterator it =
+      identifier_plugin_.begin(); it != identifier_plugin_.end(); ++it) {
     if (!it->second->MatchesPlugin(plugin))
       continue;
 
-    name_installers_[plugin.name] = it->second;
+    name_plugin_[plugin.name] = it->second;
     return it->second;
   }
 
-  // The plug-in installer was not found, create a dummy one holding
+  // The plug-in metadata was not found, create a dummy one holding
   // the name, identifier and group name only.
   std::string identifier = GetIdentifier(plugin);
-  PluginInstaller* installer = new PluginInstaller(identifier,
-                                                   GetGroupName(plugin),
-                                                   false, GURL(), GURL(),
-                                                   GetGroupName(plugin));
-  installers_[identifier] = installer;
-  name_installers_[plugin.name] = installer;
-  return installer;
+  PluginMetadata* metadata = new PluginMetadata(identifier,
+                                                GetGroupName(plugin),
+                                                false, GURL(), GURL(),
+                                                GetGroupName(plugin));
+
+  name_plugin_[plugin.name] = metadata;
+  identifier_plugin_[identifier] = metadata;
+  return metadata;
 }

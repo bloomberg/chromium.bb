@@ -13,7 +13,7 @@
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/plugins/plugin_finder.h"
-#include "chrome/browser/plugins/plugin_installer.h"
+#include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -291,12 +291,11 @@ PDFUnsupportedFeaturePromptDelegate::PDFUnsupportedFeaturePromptDelegate(
   reader_webplugininfo_ = *reader;
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
-  PluginInstaller* installer =
-      plugin_finder->FindPluginWithIdentifier("adobe-reader");
+  PluginMetadata* plugin_metadata =
+      plugin_finder->GetPluginMetadata(reader_webplugininfo_);
 
-  reader_vulnerable_ =
-      installer->GetSecurityStatus(*reader) !=
-          PluginInstaller::SECURITY_STATUS_UP_TO_DATE;
+  reader_vulnerable_ = plugin_metadata->GetSecurityStatus(*reader) !=
+                       PluginMetadata::SECURITY_STATUS_UP_TO_DATE;
 #else
   NOTREACHED();
 #endif
@@ -365,7 +364,6 @@ void PDFUnsupportedFeaturePromptDelegate::Cancel() {
 
 void GotPluginsCallback(int process_id,
                         int routing_id,
-                        PluginFinder* plugin_finder,
                         const std::vector<webkit::WebPluginInfo>& plugins) {
   WebContents* web_contents =
       tab_util::GetWebContentsByID(process_id, routing_id);
@@ -385,9 +383,11 @@ void GotPluginsCallback(int process_id,
   }
 
   const webkit::WebPluginInfo* reader = NULL;
+  PluginFinder* plugin_finder = PluginFinder::GetInstance();
   for (size_t i = 0; i < plugins.size(); ++i) {
-    PluginInstaller* installer = plugin_finder->GetPluginInstaller(plugins[i]);
-    if (reader_group_name == installer->name()) {
+    PluginMetadata* plugin_metadata =
+        plugin_finder->GetPluginMetadata(plugins[i]);
+    if (reader_group_name == plugin_metadata->name()) {
       DCHECK(!reader);
       reader = &plugins[i];
     }
@@ -399,21 +399,13 @@ void GotPluginsCallback(int process_id,
   pdf_tab_helper->ShowOpenInReaderPrompt(prompt.Pass());
 }
 
-void GotPluginFinderCallback(int process_id,
-                             int routing_id,
-                             PluginFinder* plugin_finder) {
-  PluginService::GetInstance()->GetPlugins(
-      base::Bind(&GotPluginsCallback, process_id, routing_id,
-                 base::Unretained(plugin_finder)));
-}
-
 }  // namespace
 
 void PDFHasUnsupportedFeature(content::WebContents* web_contents) {
 #if defined(OS_WIN) && defined(ENABLE_PLUGIN_INSTALLATION)
   // Only works for Windows for now.  For Mac, we'll have to launch the file
   // externally since Adobe Reader doesn't work inside Chrome.
-  PluginFinder::Get(base::Bind(&GotPluginFinderCallback,
+  PluginService::GetInstance()->GetPlugins(base::Bind(&GotPluginsCallback,
       web_contents->GetRenderProcessHost()->GetID(),
       web_contents->GetRenderViewHost()->GetRoutingID()));
 #endif
