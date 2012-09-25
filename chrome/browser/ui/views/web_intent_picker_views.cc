@@ -474,6 +474,9 @@ class IntentRowView : public views::View,
  private:
   IntentRowView(ActionType type, size_t tag);
 
+  // Gets the proper message string associated with |type_|.
+  string16 GetActionButtonMessage();
+
   // Identifier for the suggested extension displayed in this row.
   string16 extension_id_;
 
@@ -536,20 +539,17 @@ IntentRowView* IntentRowView::CreateHandlerRow(
                                         WebIntentPicker::kTitleLinkMaxWidth,
                                         ui::ELIDE_AT_END);
 
-  int message_id = 0;
   const gfx::ImageSkia* icon = NULL;
   StarsView* stars = NULL;
   views::Label* label = NULL;
   IntentRowView* view;
   if (service != NULL) {
     view = new IntentRowView(ACTION_INVOKE, tag);
-    message_id = IDS_INTENT_PICKER_SELECT_INTENT;
     icon = service->favicon.ToImageSkia();
     label = new views::Label(elided_title);
   } else {
     view = new IntentRowView(ACTION_INSTALL, tag);
     view->extension_id_ = extension->id;
-    message_id = IDS_INTENT_PICKER_INSTALL_EXTENSION;
     icon = extension->icon.ToImageSkia();
     views::Link* link = new views::Link(elided_title);
     link->set_listener(view);
@@ -557,7 +557,6 @@ IntentRowView* IntentRowView::CreateHandlerRow(
     stars = new StarsView(extension->average_rating);
   }
 
-  DCHECK(message_id > 0);
   view->delegate_ = delegate;
 
   view->SetLayoutManager(new SuggestedExtensionsLayout);
@@ -576,7 +575,7 @@ IntentRowView* IntentRowView::CreateHandlerRow(
   }
 
   view->install_button_ = new ThrobberNativeTextButton(
-      view, l10n_util::GetStringUTF16(message_id));
+      view, view->GetActionButtonMessage());
   view->install_button_->set_preferred_width(preferred_width);
   view->AddChildView(view->install_button_);
 
@@ -612,8 +611,7 @@ void IntentRowView::StartThrobber() {
 
 void IntentRowView::StopThrobber() {
   install_button_->StopThrobber();
-  install_button_->SetText(
-      l10n_util::GetStringUTF16(IDS_INTENT_PICKER_INSTALL_EXTENSION));
+  install_button_->SetText(GetActionButtonMessage());
 }
 
 void IntentRowView::OnEnabledChanged() {
@@ -629,6 +627,19 @@ void IntentRowView::PaintChildren(gfx::Canvas* canvas) {
   View::PaintChildren(canvas);
   if (!enabled())
     canvas->FillRect(GetLocalBounds(), kHalfOpacityWhite);
+}
+
+string16 IntentRowView::GetActionButtonMessage() {
+  int message_id = 0;
+
+  if (type_ == ACTION_INVOKE)
+    message_id = IDS_INTENT_PICKER_SELECT_INTENT;
+  else  if (type_ == ACTION_INSTALL)
+    message_id = IDS_INTENT_PICKER_INSTALL_EXTENSION;
+  else
+    NOTREACHED();
+
+  return l10n_util::GetStringUTF16(message_id);
 }
 
 // IntentsView -----------------------------------------------------
