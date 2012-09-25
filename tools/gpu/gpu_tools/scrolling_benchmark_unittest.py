@@ -20,21 +20,6 @@ class ScrollingBenchmarkUnitTest(
     self.assertTrue('dropped_percent' in results0)
     self.assertTrue('mean_frame_time_ms' in results0)
 
-  def testScrollingWithoutGpuBenchmarkingExtension(self):
-    ps = self.CreatePageSetFromFileInUnittestDataDir('scrollable_page.html')
-
-    benchmark = scrolling_benchmark.ScrollingBenchmark()
-    benchmark.use_gpu_benchmarking_extension = False
-
-    all_results = self.RunBenchmark(benchmark, ps)
-
-    self.assertEqual(0, len(all_results.page_failures))
-    self.assertEqual(1, len(all_results.page_results))
-    results0 = all_results.page_results[0]['results']
-
-    self.assertTrue('dropped_percent' in results0)
-    self.assertTrue('mean_frame_time_ms' in results0)
-
   def testCalcResultsFromRAFRenderStats(self):
     rendering_stats = {'droppedFrameCount': 5,
                        'totalTimeInSeconds': 1,
@@ -60,3 +45,24 @@ class ScrollingBenchmarkUnitTest(
     res = scrolling_benchmark.CalcScrollResults(rendering_stats)
     self.assertEquals(0, res['dropped_percent'])
     self.assertAlmostEquals(1000/60.0, res['mean_frame_time_ms'], 2)
+
+class ScrollingBenchmarkWithoutGpuBenchmarkingUnitTest(
+  multi_page_benchmark_unittest_base.MultiPageBenchmarkUnitTestBase):
+
+  def CustomizeOptionsForTest(self, options):
+    options.no_gpu_benchmarking_extension = True
+
+  def testScrollingWithoutGpuBenchmarkingExtension(self):
+    ps = self.CreatePageSetFromFileInUnittestDataDir('scrollable_page.html')
+
+    benchmark = scrolling_benchmark.ScrollingBenchmark()
+    benchmark.use_gpu_benchmarking_extension = False
+
+    all_results = self.RunBenchmark(benchmark, ps)
+
+    self.assertEqual(0, len(all_results.page_failures))
+    self.assertEqual(1, len(all_results.page_results))
+    results0 = all_results.page_results[0]['results']
+
+    self.assertTrue('dropped_percent' in results0)
+    self.assertTrue('mean_frame_time_ms' in results0)

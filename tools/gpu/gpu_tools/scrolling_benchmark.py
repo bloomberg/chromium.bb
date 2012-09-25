@@ -29,9 +29,11 @@ def CalcScrollResults(rendering_stats_deltas):
 class ScrollingBenchmark(multi_page_benchmark.MultiPageBenchmark):
   def __init__(self):
     super(ScrollingBenchmark, self).__init__()
-    self.use_gpu_benchmarking_extension = True
 
   def AddOptions(self, parser):
+    parser.add_option('--no-gpu-benchmarking-extension', action='store_true',
+        dest='no_gpu_benchmarking_extension',
+        help='Disable the chrome.gpuBenchmarking extension.')
     parser.add_option('--report-all-results', dest='report_all_results',
                       action='store_true',
                       help='Reports all data collected, not just FPS')
@@ -62,7 +64,7 @@ class ScrollingBenchmark(multi_page_benchmark.MultiPageBenchmark):
     return rendering_stats_deltas
 
   def CustomizeBrowserOptions(self, options):
-    if self.use_gpu_benchmarking_extension:
+    if not options.no_gpu_benchmarking_extension:
       options.extra_browser_args.append('--enable-gpu-benchmarking')
 
   def MeasurePage(self, _, tab):
