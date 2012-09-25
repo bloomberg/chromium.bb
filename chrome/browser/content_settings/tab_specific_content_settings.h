@@ -288,8 +288,8 @@ class TabSpecificContentSettings : public content::WebContentsObserver,
   // Notifies all registered |SiteDataObserver|s.
   void NotifySiteDataObservers();
 
-  // All currently registered |SiteDataObserver|.
-  ObserverList<SiteDataObserver, true> observer_list_;
+  // All currently registered |SiteDataObserver|s.
+  ObserverList<SiteDataObserver> observer_list_;
 
   // Stores which content setting types actually have blocked content.
   bool content_blocked_[CONTENT_SETTINGS_NUM_TYPES];
