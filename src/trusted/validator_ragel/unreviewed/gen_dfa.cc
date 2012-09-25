@@ -411,13 +411,26 @@ std::string::const_iterator FindTheEndOfLine(std::string::const_iterator it,
 // current mode (some instructions are only supported in ia32 mode or x86-64
 // mode, some are excluded from validator's reduced DFA).
 bool IsSupportedInstruction(const Instruction& instruction) {
-  return ((!instruction.has_flag("ia32") || ia32_mode) &&
-          (!instruction.has_flag("amd64") || !ia32_mode) &&
-          (!instruction.has_flag("nacl-ia32-forbidden") || !ia32_mode ||
-           enabled(kNaClForbidden)) &&
-          (!instruction.has_flag("nacl-amd64-forbidden") || ia32_mode ||
-           enabled(kNaClForbidden)) &&
-          (!instruction.has_flag("nacl-forbidden") || enabled(kNaClForbidden)));
+  // This is “ia32”-exclusive instruction and we are in not “ia32” mode.
+  if (instruction.has_flag("ia32") && !ia32_mode)
+    return false;
+  // This is “amd64”-exclusive instruction and we are in not in “amd4” mode.
+  if (instruction.has_flag("amd64") && ia32_mode)
+    return false;
+  // If “nacl-forbidden” mode is not activated then we are done with checks.
+  if (enabled(kNaClForbidden))
+    return true;
+  // “nacl-forbidden” instructions are not available with “nacl-forbidden” flag.
+  if (instruction.has_flag("nacl-forbidden"))
+    return false;
+  // “nacl-ia32-forbidden” instructions are not available in “ia32” mode.
+  if (instruction.has_flag("nacl-ia32-forbidden") && ia32_mode)
+    return false;
+  // “nacl-amd64-forbidden” instructions are not available in “amd64” mode.
+  if (instruction.has_flag("nacl-amd64-forbidden") && !ia32_mode)
+    return false;
+  // No special flags, instruction is allowed.
+  return true;
 }
 
 // parse_instructions parses the given *.def file and adds instruction
