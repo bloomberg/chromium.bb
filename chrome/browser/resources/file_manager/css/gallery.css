@@ -1115,18 +1115,21 @@ body {
 }
 
 .mosaic-tile {
+  /* Tile's zoom factor is animated on hover. We apply the transform to
+  the entire tile so that the image outline is included into the animation. */
+  -webkit-transition: -webkit-transform 150ms linear;
   position: absolute;
 }
 
 /* Mosaic tile's opacity is controlled by |visible| attribute which changes
    separately from .gallery[mode] */
-.mosaic:not([visible]) .mosaic-tile {
+.mosaic:not([visible]) .mosaic-tile .img-border {
   opacity: 0;
 }
 
 /* Animate tile's opacity, except for the selected tile which should show/hide
   instantly (this looks better when zooming to/from the slide mode). */
-.mosaic-tile:not([selected]) {
+.mosaic-tile:not([selected]) .img-border {
   -webkit-transition: opacity 350ms linear;
 }
 
@@ -1148,6 +1151,10 @@ body {
 /* Selected and hover state are only visible when zoom transition is over. */
 .mosaic[visible='normal'] .mosaic-tile[selected] .img-border {
   outline-color: rgb(51, 153, 255);
+}
+
+.mosaic[visible='normal'].hover-visible .mosaic-tile:hover {
+  -webkit-transform: scale(1.05);
 }
 
 .mosaic[visible='normal'].hover-visible
