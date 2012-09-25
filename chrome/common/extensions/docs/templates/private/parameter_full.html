@@ -4,7 +4,9 @@
   <dd>
     <dl>
       {{#properties}}
-        {{^additional_properties}}{{+partials.property}}{{/}}
+        {{^additional_properties}}
+        {{+partials.parameter_full}}
+        {{/additional_properties}}
       {{/}}
     </dl>
   </dd>
