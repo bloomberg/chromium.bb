@@ -13,6 +13,7 @@
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/autocomplete/autocomplete_field_trial.h"
 #include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/history/history.h"
@@ -231,7 +232,11 @@ HistoryURLProvider::HistoryURLProvider(AutocompleteProviderListener* listener,
                                        Profile* profile)
     : HistoryProvider(listener, profile,
           AutocompleteProvider::TYPE_HISTORY_URL),
-      params_(NULL) {
+      params_(NULL),
+      cull_redirects_(
+          !AutocompleteFieldTrial::InHUPCullRedirectsFieldTrial() ||
+          !AutocompleteFieldTrial::
+              InHUPCullRedirectsFieldTrialExperimentGroup()) {
 }
 
 // static
@@ -426,10 +431,16 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
     relevance = std::max(relevance, it->relevance);
   }
 
-  // Remove redirects and trim list to size.  We want to provide up to
-  // kMaxMatches results plus the What You Typed result, if it was added to
-  // |history_matches| above.
-  CullRedirects(backend, &history_matches, kMaxMatches + exact_suggestion);
+  if (cull_redirects_) {
+    // Remove redirects and trim list to size.  We want to provide up to
+    // kMaxMatches results plus the What You Typed result, if it was added to
+    // |history_matches| above.
+    CullRedirects(backend, &history_matches, kMaxMatches + exact_suggestion);
+  } else {
+    // Simply trim the list to size.
+    if (history_matches.size() > kMaxMatches + exact_suggestion)
+      history_matches.resize(kMaxMatches + exact_suggestion);
+  }
 
   // Convert the history matches to autocomplete matches.
   for (size_t i = first_match; i < history_matches.size(); ++i) {

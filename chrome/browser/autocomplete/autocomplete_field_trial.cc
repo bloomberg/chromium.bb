@@ -18,6 +18,7 @@ static const char kDisallowInlineHQPFieldTrialName[] =
     "OmniboxDisallowInlineHQP";
 static const char kSuggestFieldTrialName[] = "OmniboxSearchSuggest";
 static const char kHQPNewScoringFieldTrialName[] = "OmniboxHQPNewScoring";
+static const char kHUPCullRedirectsFieldTrialName[] = "OmniboxHUPCullRedirects";
 
 // Field trial experiment probabilities.
 
@@ -38,6 +39,12 @@ const base::FieldTrial::Probability kHQPNewScoringFieldTrialDivisor = 100;
 const base::FieldTrial::Probability
     kHQPNewScoringFieldTrialExperimentFraction = 25;
 
+// For HistoryURL provider cull redirects field trial, put 25% ( = 25/100 )
+// of the users in the don't-cull-redirects experiment group.
+const base::FieldTrial::Probability kHUPCullRedirectsFieldTrialDivisor = 100;
+const base::FieldTrial::Probability
+    kHUPCullRedirectsFieldTrialExperimentFraction = 25;
+
 // Field trial IDs.
 // Though they are not literally "const", they are set only once, in
 // Activate() below.
@@ -48,6 +55,9 @@ int disallow_inline_hqp_experiment_group = 0;
 
 // Field trial ID for the History Quick Provider new scoring experiment group.
 int hqp_new_scoring_experiment_group = 0;
+
+// Field trial ID for the HistoryURL provider cull redirects experiment group.
+int hup_dont_cull_redirects_experiment_group = 0;
 
 }
 
@@ -110,6 +120,17 @@ void AutocompleteFieldTrial::Activate() {
     trial->UseOneTimeRandomization();
   hqp_new_scoring_experiment_group = trial->AppendGroup("NewScoring",
       kHQPNewScoringFieldTrialExperimentFraction);
+
+  // Create the HistoryURL provider cull redirects field trial.
+  // Make it expire on March 1, 2013.
+  trial = base::FieldTrialList::FactoryGetFieldTrial(
+      kHUPCullRedirectsFieldTrialName, kHUPCullRedirectsFieldTrialDivisor,
+      "Standard", 2013, 3, 1, NULL);
+  if (base::FieldTrialList::IsOneTimeRandomizationEnabled())
+    trial->UseOneTimeRandomization();
+  hup_dont_cull_redirects_experiment_group =
+      trial->AppendGroup("DontCullRedirects",
+                         kHUPCullRedirectsFieldTrialExperimentFraction);
 }
 
 bool AutocompleteFieldTrial::InDisallowInlineHQPFieldTrial() {
@@ -163,4 +184,18 @@ bool AutocompleteFieldTrial::InHQPNewScoringFieldTrialExperimentGroup() {
   const int group = base::FieldTrialList::FindValue(
       kHQPNewScoringFieldTrialName);
   return group == hqp_new_scoring_experiment_group;
+}
+
+bool AutocompleteFieldTrial::InHUPCullRedirectsFieldTrial() {
+  return base::FieldTrialList::TrialExists(kHUPCullRedirectsFieldTrialName);
+}
+
+bool AutocompleteFieldTrial::InHUPCullRedirectsFieldTrialExperimentGroup() {
+  if (!base::FieldTrialList::TrialExists(kHUPCullRedirectsFieldTrialName))
+    return false;
+
+  // Return true if we're in the experiment group.
+  const int group = base::FieldTrialList::FindValue(
+      kHUPCullRedirectsFieldTrialName);
+  return group == hup_dont_cull_redirects_experiment_group;
 }

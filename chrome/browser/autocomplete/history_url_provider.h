@@ -145,6 +145,7 @@ class HistoryURLProvider : public HistoryProvider {
     : HistoryProvider(listener, profile,
           AutocompleteProvider::TYPE_HISTORY_URL),
       params_(NULL),
+      cull_redirects_(true),
       languages_(languages) {}
 #endif
 
@@ -279,6 +280,13 @@ class HistoryURLProvider : public HistoryProvider {
   // parameter itself is freed once it's no longer needed.  The only reason we
   // keep this member is so we can set the cancel bit on it.
   HistoryURLProviderParams* params_;
+
+  // If true, HistoryURL provider should lookup and cull redirects.  If
+  // false, it returns matches that may be redirects to each other and
+  // simply hopes the default AutoCompleteController behavior to remove
+  // URLs that are likely duplicates (http://google.com <->
+  // https://www.google.com/, etc.) will do a good enough job.
+  bool cull_redirects_;
 
   // Only used by unittests; if non-empty, overrides accept-languages in the
   // profile's pref system.

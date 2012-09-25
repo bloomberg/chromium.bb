@@ -65,6 +65,17 @@ class AutocompleteFieldTrial {
   // break information).
   static bool InHQPNewScoringFieldTrialExperimentGroup();
 
+  // ---------------------------------------------------------
+  // For the HistoryURL provider disable culling redirects field trial.
+
+  // Returns whether the user is in any group for this field trial.
+  // (Should always be true unless initialization went wrong..)
+  static bool InHUPCullRedirectsFieldTrial();
+
+  // Returns whether we should disable culling of redirects in
+  // HistoryURL provider.
+  static bool InHUPCullRedirectsFieldTrialExperimentGroup();
+
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(AutocompleteFieldTrial);
 };
