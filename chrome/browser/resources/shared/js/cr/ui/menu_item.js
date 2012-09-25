@@ -40,6 +40,8 @@ cr.define('cr.ui', function() {
       // the appearance of this element.
       this.classList.add('custom-appearance');
 
+      this.setAttribute('role', 'menuitem');
+
       var iconUrl;
       if ((iconUrl = this.getAttribute('icon')))
         this.iconUrl = iconUrl;
@@ -183,8 +185,11 @@ cr.define('cr.ui', function() {
         // Store |contextElement| since it'll be removed by {Menu} on handling
         // 'activate' event.
         var contextElement = this.parentNode.contextElement;
+        var activationEvent = cr.doc.createEvent('Event');
+        activationEvent.initEvent('activate', true, true);
+        activationEvent.originalEvent = e;
         // Dispatch command event followed by executing the command object.
-        if (cr.dispatchSimpleEvent(this, 'activate', true, true)) {
+        if (this.dispatchEvent(activationEvent)) {
           var command = this.command;
           if (command)
             command.execute(contextElement);

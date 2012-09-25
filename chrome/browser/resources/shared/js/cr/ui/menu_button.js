@@ -93,14 +93,19 @@ cr.define('cr.ui', function() {
           this.handleKeyDown(e);
           // If the menu is visible we let it handle all the keyboard events.
           if (this.isMenuShown() && e.currentTarget == this.ownerDocument) {
-            this.menu.handleKeyDown(e);
-            e.preventDefault();
-            e.stopPropagation();
+            if (this.menu.handleKeyDown(e)) {
+              e.preventDefault();
+              e.stopPropagation();
+            }
           }
           break;
 
+        case 'focusin':
+          if (!this.contains(e.target) && !this.menu.contains(e.target))
+            this.hideMenu();
+          break;
+
         case 'activate':
-        case 'blur':
         case 'resize':
           this.hideMenu();
           break;
@@ -120,13 +125,14 @@ cr.define('cr.ui', function() {
         this.menu.hidden = false;
 
         this.setAttribute('menu-shown', '');
+        this.menu.focusSelectedItem();
 
         // when the menu is shown we steal all keyboard events.
         var doc = this.ownerDocument;
         var win = doc.defaultView;
         this.showingEvents_.add(doc, 'keydown', this, true);
         this.showingEvents_.add(doc, 'mousedown', this, true);
-        this.showingEvents_.add(doc, 'blur', this, true);
+        this.showingEvents_.add(doc, 'focusin', this, true);
         this.showingEvents_.add(win, 'resize', this);
         this.showingEvents_.add(this.menu, 'activate', this);
         this.positionMenu_();
@@ -145,7 +151,7 @@ cr.define('cr.ui', function() {
       this.menu.hidden = true;
 
       this.showingEvents_.removeAll();
-      this.menu.selectedIndex = -1;
+      this.focus();
     },
 
     /**
@@ -180,6 +186,7 @@ cr.define('cr.ui', function() {
           break;
         case 'Esc':
         case 'U+001B': // Maybe this is remote desktop playing a prank?
+        case 'U+0009': // Tab
           this.hideMenu();
           break;
       }

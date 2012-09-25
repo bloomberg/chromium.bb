@@ -90,19 +90,27 @@ cr.define('ntp', function() {
         a.textContent = data.title;
       }
 
-      function onClick(e) {
+      function onActivated(e) {
         ntp.logTimeToClick('RecentlyClosed');
         chrome.send('recordAppLaunchByURL',
                     [encodeURIComponent(data.url),
                      ntp.APP_LAUNCH.NTP_RECENTLY_CLOSED]);
         var index = Array.prototype.indexOf.call(a.parentNode.children, a);
-        chrome.send('reopenTab', [data.sessionId, index,
-            e.button, e.altKey, e.ctrlKey, e.metaKey, e.shiftKey]);
-        // We are likely deleted by this point!
+        var orig = e.originalEvent;
+        var params = [data.sessionId,
+                      index,
+                      orig.type == 'click' ? orig.button : 0,
+                      orig.altKey,
+                      orig.ctrlKey,
+                      orig.metaKey,
+                      orig.shiftKey];
+        chrome.send('reopenTab', params);
 
+        // We are likely deleted by this point!
+        e.stopPropagation();
         e.preventDefault();
       }
-      a.addEventListener('click', onClick);
+      a.addEventListener('activate', onActivated);
 
       this.menu.appendChild(a);
       cr.ui.decorate(a, MenuItem);
