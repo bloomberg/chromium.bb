@@ -253,6 +253,14 @@ scoped_ptr<DictionaryValue> ConstructAboutInformation(
   IntSyncStat committed_count(section_that_cycle, "Committed Count");
   IntSyncStat entries(section_that_cycle, "Entries");
 
+  ListValue* section_nudge_info = AddSection(
+      stats_list, "Nudge Source Counters");
+  IntSyncStat nudge_source_notification(
+      section_nudge_info, "Server Invalidations");
+  IntSyncStat nudge_source_local(section_nudge_info, "Local Changes");
+  IntSyncStat nudge_source_continuation(section_nudge_info, "Continuations");
+  IntSyncStat nudge_source_local_refresh(section_nudge_info, "Local Refreshes");
+
   // This list of sections belongs in the 'details' field of the returned
   // message.
   about_info->Set("details", stats_list);
@@ -357,6 +365,13 @@ scoped_ptr<DictionaryValue> ConstructAboutInformation(
     server_conflicts.SetValue(full_status.server_conflicts);
     committed_items.SetValue(full_status.committed_count);
     updates_remaining.SetValue(full_status.updates_available);
+  }
+
+  if (is_status_valid) {
+    nudge_source_notification.SetValue(full_status.nudge_source_notification);
+    nudge_source_local.SetValue(full_status.nudge_source_local);
+    nudge_source_continuation.SetValue(full_status.nudge_source_continuation);
+    nudge_source_local_refresh.SetValue(full_status.nudge_source_local_refresh);
   }
 
   if (snapshot.is_initialized()) {

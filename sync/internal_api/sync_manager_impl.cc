@@ -979,6 +979,7 @@ void SyncManagerImpl::RequestNudgeForDataTypes(
   base::TimeDelta nudge_delay = NudgeStrategy::GetNudgeDelayTimeDelta(
       types.First().Get(),
       this);
+  allstatus_.IncrementNudgeCounter(NUDGE_SOURCE_LOCAL);
   scheduler_->ScheduleNudgeAsync(nudge_delay,
                                  NUDGE_SOURCE_LOCAL,
                                  types,
@@ -1273,11 +1274,13 @@ void SyncManagerImpl::OnIncomingInvalidation(
   const ModelTypeStateMap& type_state_map =
       ObjectIdStateMapToModelTypeStateMap(id_state_map);
   if (source == LOCAL_INVALIDATION) {
+    allstatus_.IncrementNudgeCounter(NUDGE_SOURCE_LOCAL_REFRESH);
     scheduler_->ScheduleNudgeWithStatesAsync(
         TimeDelta::FromMilliseconds(kSyncRefreshDelayMsec),
         NUDGE_SOURCE_LOCAL_REFRESH,
         type_state_map, FROM_HERE);
   } else if (!type_state_map.empty()) {
+    allstatus_.IncrementNudgeCounter(NUDGE_SOURCE_NOTIFICATION);
     scheduler_->ScheduleNudgeWithStatesAsync(
         TimeDelta::FromMilliseconds(kSyncSchedulerDelayMsec),
         NUDGE_SOURCE_NOTIFICATION,

@@ -174,6 +174,29 @@ void AllStatus::SetUniqueId(const std::string& guid) {
   status_.unique_id = guid;
 }
 
+void AllStatus::IncrementNudgeCounter(NudgeSource source) {
+  ScopedStatusLock lock(this);
+  switch(source) {
+    case NUDGE_SOURCE_LOCAL_REFRESH:
+      status_.nudge_source_local_refresh++;
+      return;
+    case NUDGE_SOURCE_LOCAL:
+      status_.nudge_source_local++;
+      return;
+    case NUDGE_SOURCE_NOTIFICATION:
+      status_.nudge_source_notification++;
+      return;
+    case NUDGE_SOURCE_CONTINUATION:
+      status_.nudge_source_continuation++;
+      return;
+    case NUDGE_SOURCE_UNKNOWN:
+      break;
+  }
+  // If we're here, the source is most likely
+  // NUDGE_SOURCE_UNKNOWN. That shouldn't happen.
+  NOTREACHED();
+}
+
 ScopedStatusLock::ScopedStatusLock(AllStatus* allstatus)
     : allstatus_(allstatus) {
   allstatus->mutex_.Acquire();
