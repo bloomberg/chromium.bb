@@ -80,13 +80,14 @@ only lowercase.
 
 import os
 import optparse
+import re
 import subprocess
 import sys
 import copy
 
 import cpp_checker
 import java_checker
-from results import NormalResultsFormatter, TemporaryRulesFormatter
+import results
 from rules import Rule, Rules
 
 
@@ -110,12 +111,24 @@ def NormalizePath(path):
   return path.lower().replace('\\', '/')
 
 
+def _IsTestFile(filename):
+  """Does a rudimentary check to try to skip test files; this could be
+  improved but is good enough for now.
+  """
+  return re.match('(test|mock|dummy)_.*|.*_[a-z]*test\.(cc|mm|java)', filename)
+
+
 class DepsChecker(object):
   """Parses include_rules from DEPS files and can verify files in the
   source tree against them.
   """
 
-  def __init__(self, base_directory=None, verbose=False, being_tested=False):
+  def __init__(self,
+               base_directory=None,
+               verbose=False,
+               being_tested=False,
+               ignore_temp_rules=False,
+               skip_tests=False):
     """Creates a new DepsChecker.
 
     Args:
@@ -124,14 +137,16 @@ class DepsChecker(object):
       being_tested: Set to true to ignore the DEPS file at tools/checkdeps/DEPS.
     """
     self.base_directory = base_directory
+    self.verbose = verbose
+    self._under_test = being_tested
+    self._ignore_temp_rules = ignore_temp_rules
+    self._skip_tests = skip_tests
+
     if not base_directory:
       self.base_directory = os.path.abspath(
         os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', '..'))
 
-    self.verbose = verbose
-    self.results_formatter = NormalResultsFormatter(verbose)
-
-    self._under_test = being_tested
+    self.results_formatter = results.NormalResultsFormatter(verbose)
 
     self.git_source_directories = set()
     self._AddGitSourceDirectories()
@@ -179,7 +194,16 @@ class DepsChecker(object):
                       ' for\n  %s and base dir\n  %s' %
                       (cur_dir, self.base_directory))
 
-    def AddRuleWithDescription(rule_str, dependee_regexp=None):
+    def ApplyOneRule(rule_str, dependee_regexp=None):
+      """Deduces a sensible description for the rule being added, and
+      adds the rule with its description to |rules|.
+
+      If we are ignoring temporary rules, this function does nothing
+      for rules beginning with the Rule.TEMP_ALLOW character.
+      """
+      if self._ignore_temp_rules and rule_str.startswith(Rule.TEMP_ALLOW):
+        return
+
       rule_block_name = 'include_rules'
       if dependee_regexp:
         rule_block_name = 'specific_include_rules'
@@ -191,12 +215,12 @@ class DepsChecker(object):
 
     # Apply the additional explicit rules.
     for (_, rule_str) in enumerate(includes):
-      AddRuleWithDescription(rule_str)
+      ApplyOneRule(rule_str)
 
     # Finally, apply the specific rules.
     for regexp, specific_rules in specific_includes.iteritems():
       for rule_str in specific_rules:
-        AddRuleWithDescription(rule_str, regexp)
+        ApplyOneRule(rule_str, regexp)
 
     return rules
 
@@ -358,7 +382,8 @@ class DepsChecker(object):
       if os.path.isdir(full_name):
         dirs_to_check.append(full_name)
       elif os.path.splitext(full_name)[1] in checkers:
-        files_to_check.append(full_name)
+        if not self._skip_tests or not _IsTestFile(cur):
+          files_to_check.append(full_name)
 
     # First check all files in this directory.
     for cur in files_to_check:
@@ -397,7 +422,7 @@ class DepsChecker(object):
           if violation:
             rule_type = violation.violated_rule.allow
             if rule_type != Rule.ALLOW:
-              violation_text = NormalResultsFormatter.FormatViolation(
+              violation_text = results.NormalResultsFormatter.FormatViolation(
                   violation, self.verbose)
               problems.append((file_path, rule_type, violation_text))
     return problems
@@ -424,9 +449,11 @@ class DepsChecker(object):
 def PrintUsage():
   print """Usage: python checkdeps.py [--root <root>] [tocheck]
 
-  --root   Specifies the repository root. This defaults to "../../.." relative
-           to the script file. This will be correct given the normal location
-           of the script in "<root>/tools/checkdeps".
+  --root ROOT Specifies the repository root. This defaults to "../../.."
+              relative to the script file. This will be correct given the
+              normal location of the script in "<root>/tools/checkdeps".
+
+  --(others)  There are a few lesser-used options; run with --help to show them.
 
   tocheck  Specifies the directory, relative to root, to check. This defaults
            to "." so it checks everything.
@@ -438,18 +465,39 @@ Examples:
 
 def main():
   option_parser = optparse.OptionParser()
-  option_parser.add_option('', '--root', default='', dest='base_directory',
-                           help='Specifies the repository root. This defaults '
-                           'to "../../.." relative to the script file, which '
-                           'will normally be the repository root.')
-  option_parser.add_option('', '--temprules', action='store_true',
-                           default=False, help='Print rules to temporarily '
-                           'allow files that fail dependency checking.')
-  option_parser.add_option('-v', '--verbose', action='store_true',
-                           default=False, help='Print debug logging')
+  option_parser.add_option(
+      '', '--root',
+      default='', dest='base_directory',
+      help='Specifies the repository root. This defaults '
+           'to "../../.." relative to the script file, which '
+           'will normally be the repository root.')
+  option_parser.add_option(
+      '', '--ignore-temp-rules',
+      action='store_true', dest='ignore_temp_rules', default=False,
+      help='Ignore !-prefixed (temporary) rules.')
+  option_parser.add_option(
+      '', '--generate-temp-rules',
+      action='store_true', dest='generate_temp_rules', default=False,
+      help='Print rules to temporarily allow files that fail '
+           'dependency checking.')
+  option_parser.add_option(
+      '', '--count-violations',
+      action='store_true', dest='count_violations', default=False,
+      help='Count #includes in violation of intended rules.')
+  option_parser.add_option(
+      '', '--skip-tests',
+      action='store_true', dest='skip_tests', default=False,
+      help='Skip checking test files (best effort).')
+  option_parser.add_option(
+      '-v', '--verbose',
+      action='store_true', default=False,
+      help='Print debug logging')
   options, args = option_parser.parse_args()
 
-  deps_checker = DepsChecker(options.base_directory, verbose=options.verbose)
+  deps_checker = DepsChecker(options.base_directory,
+                             verbose=options.verbose,
+                             ignore_temp_rules=options.ignore_temp_rules,
+                             skip_tests=options.skip_tests)
 
   # Figure out which directory we have to check.
   start_dir = deps_checker.base_directory
@@ -458,16 +506,19 @@ def main():
     # base directory.
     start_dir = os.path.abspath(
         os.path.join(deps_checker.base_directory, args[0]))
-  elif len(args) >= 2:
-    # More than one argument, we don't handle this.
+  elif len(args) >= 2 or (options.generate_temp_rules and
+                          options.count_violations):
+    # More than one argument, or incompatible flags, we don't handle this.
     PrintUsage()
     return 1
 
   print 'Using base directory:', deps_checker.base_directory
   print 'Checking:', start_dir
 
-  if options.temprules:
-    deps_checker.results_formatter = TemporaryRulesFormatter()
+  if options.generate_temp_rules:
+    deps_checker.results_formatter = results.TemporaryRulesFormatter()
+  elif options.count_violations:
+    deps_checker.results_formatter = results.CountViolationsFormatter()
   deps_checker.CheckDirectory(start_dir)
   return deps_checker.Report()
 

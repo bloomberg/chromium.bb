@@ -117,3 +117,24 @@ class TemporaryRulesFormatter(ResultsFormatter):
   def PrintResults(self):
     for result in self.GetResults():
       print result
+
+
+class CountViolationsFormatter(ResultsFormatter):
+  """A results formatter that produces a number, the count of #include
+  statements that are in violation of the dependency rules.
+
+  Note that you normally want to instantiate DepsChecker with
+  ignore_temp_rules=True when you use this formatter.
+  """
+
+  def __init__(self):
+    self.count = 0
+
+  def AddError(self, dependee_status):
+    self.count += len(dependee_status.violations)
+
+  def GetResults(self):
+    return '%d' % self.count
+
+  def PrintResults(self):
+    print self.count
