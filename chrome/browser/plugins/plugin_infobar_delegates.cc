@@ -9,7 +9,6 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/plugins/plugin_observer.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
@@ -155,7 +154,7 @@ bool UnauthorizedPluginInfoBarDelegate::LinkClicked(
 // OutdatedPluginInfoBarDelegate ----------------------------------------------
 
 InfoBarDelegate* OutdatedPluginInfoBarDelegate::Create(
-    PluginObserver* observer,
+    content::WebContents* web_contents,
     PluginInstaller* installer) {
   string16 message;
   switch (installer->state()) {
@@ -169,20 +168,19 @@ InfoBarDelegate* OutdatedPluginInfoBarDelegate::Create(
       break;
   }
   return new OutdatedPluginInfoBarDelegate(
-      observer, installer, message);
+      web_contents, installer, message);
 }
 
 OutdatedPluginInfoBarDelegate::OutdatedPluginInfoBarDelegate(
-    PluginObserver* observer,
+    content::WebContents* web_contents,
     PluginInstaller* installer,
     const string16& message)
     : PluginInfoBarDelegate(
           InfoBarService::FromTabContents(
-              TabContents::FromWebContents(observer->web_contents())),
+              TabContents::FromWebContents(web_contents)),
           installer->name(),
           installer->identifier()),
       WeakPluginInstallerObserver(installer),
-      observer_(observer),
       message_(message) {
   content::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Shown"));
   std::string name = UTF16ToUTF8(installer->name());
@@ -236,7 +234,7 @@ bool OutdatedPluginInfoBarDelegate::Accept() {
     installer()->OpenDownloadURL(web_contents);
   } else {
     installer()->StartInstalling(
-        TabContents::FromWebContents(observer_->web_contents()));
+        TabContents::FromWebContents(web_contents));
   }
   return false;
 }

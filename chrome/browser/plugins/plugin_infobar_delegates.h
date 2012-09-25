@@ -15,7 +15,10 @@
 
 class InfoBarService;
 class HostContentSettingsMap;
-class PluginObserver;
+
+namespace content {
+class WebContents;
+}
 
 // Base class for blocked plug-in infobars.
 class PluginInfoBarDelegate : public ConfirmInfoBarDelegate {
@@ -76,11 +79,11 @@ class UnauthorizedPluginInfoBarDelegate : public PluginInfoBarDelegate {
 class OutdatedPluginInfoBarDelegate : public PluginInfoBarDelegate,
                                       public WeakPluginInstallerObserver {
  public:
-  static InfoBarDelegate* Create(PluginObserver* observer,
+  static InfoBarDelegate* Create(content::WebContents* web_contents,
                                  PluginInstaller* installer);
 
  private:
-  OutdatedPluginInfoBarDelegate(PluginObserver* observer,
+  OutdatedPluginInfoBarDelegate(content::WebContents* web_contents,
                                 PluginInstaller* installer,
                                 const string16& message);
   virtual ~OutdatedPluginInfoBarDelegate();
@@ -106,10 +109,6 @@ class OutdatedPluginInfoBarDelegate : public PluginInfoBarDelegate,
   // Replaces this infobar with one showing |message|. The new infobar will
   // not have any buttons (and not call the callback).
   void ReplaceWithInfoBar(const string16& message);
-
-  // Has the same lifetime as TabContents, which owns us
-  // (transitively via InfoBarService).
-  PluginObserver* observer_;
 
   string16 message_;
 

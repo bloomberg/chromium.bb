@@ -35,13 +35,6 @@ class PluginObserver : public content::WebContentsObserver,
   virtual void PluginCrashed(const FilePath& plugin_path) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
-#if defined(ENABLE_PLUGIN_INSTALLATION)
-  void InstallMissingPlugin(PluginInstaller* installer);
-#endif
-
-  // Make public the web_contents() accessor that is protected in the parent.
-  using content::WebContentsObserver::web_contents;
-
  private:
   explicit PluginObserver(content::WebContents* web_contents);
   static int kUserDataKey;
@@ -49,6 +42,11 @@ class PluginObserver : public content::WebContentsObserver,
 
   class PluginPlaceholderHost;
 
+#if defined(ENABLE_PLUGIN_INSTALLATION)
+  void InstallMissingPlugin(PluginInstaller* installer);
+#endif
+
+  // Message handlers:
   void OnBlockedUnauthorizedPlugin(const string16& name,
                                    const std::string& identifier);
   void OnBlockedOutdatedPlugin(int placeholder_id,

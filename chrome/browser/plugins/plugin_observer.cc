@@ -255,7 +255,7 @@ void PluginObserver::FindPluginToUpdate(int placeholder_id,
   TabContents* tab_contents = TabContents::FromWebContents(web_contents());
   InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
   infobar_helper->AddInfoBar(
-      OutdatedPluginInfoBarDelegate::Create(this, installer));
+      OutdatedPluginInfoBarDelegate::Create(web_contents(), installer));
 }
 
 void PluginObserver::OnFindMissingPlugin(int placeholder_id,
