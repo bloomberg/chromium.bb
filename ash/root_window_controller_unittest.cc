@@ -92,6 +92,8 @@ typedef test::AshTestBase RootWindowControllerTest;
 TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
   UpdateDisplay("600x600,500x500");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  ash::Shell::GetInstance()->SetShelfAutoHideBehavior(
+      ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
 
   views::Widget* normal = CreateTestWidget(gfx::Rect(650, 10, 100, 100));
   EXPECT_EQ(root_windows[1], normal->GetNativeView()->GetRootWindow());
@@ -147,7 +149,7 @@ TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
   EXPECT_EQ("50,10 100x100",
             normal->GetNativeView()->GetBoundsInRootWindow().ToString());
 
-  // Maximized area on primary display has 2px (given as
+  // Maximized area on primary display has 3px (given as
   // kAutoHideSize in shelf_layout_manager.cc) inset at the bottom.
   EXPECT_EQ(root_windows[0], maximized->GetNativeView()->GetRootWindow());
   EXPECT_EQ("0,0 600x597",

@@ -29,29 +29,25 @@ TEST_F(LauncherContextMenuTest, ToggleAutoHide) {
   wm::ActivateWindow(window.get());
 
   Shell* shell = Shell::GetInstance();
-  // If the auto-hide behavior isn't DEFAULT, the rest of the tests don't make
-  // sense.
-  EXPECT_EQ(ash::SHELF_AUTO_HIDE_BEHAVIOR_DEFAULT,
-            shell->GetShelfAutoHideBehavior());
-  EXPECT_FALSE(LauncherContextMenu::IsAutoHideMenuHideChecked());
-  shell->SetShelfAutoHideBehavior(
-      LauncherContextMenu::GetToggledAutoHideBehavior());
+  shell->SetShelfAutoHideBehavior(ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   EXPECT_EQ(ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS,
             shell->GetShelfAutoHideBehavior());
-  shell->SetShelfAutoHideBehavior(
-      LauncherContextMenu::GetToggledAutoHideBehavior());
-  EXPECT_EQ(ash::SHELF_AUTO_HIDE_BEHAVIOR_DEFAULT,
-            shell->GetShelfAutoHideBehavior());
-
-  window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
   EXPECT_TRUE(LauncherContextMenu::IsAutoHideMenuHideChecked());
   shell->SetShelfAutoHideBehavior(
       LauncherContextMenu::GetToggledAutoHideBehavior());
   EXPECT_EQ(ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER,
             shell->GetShelfAutoHideBehavior());
+
+  window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
+  EXPECT_FALSE(LauncherContextMenu::IsAutoHideMenuHideChecked());
   shell->SetShelfAutoHideBehavior(
       LauncherContextMenu::GetToggledAutoHideBehavior());
-  EXPECT_EQ(ash::SHELF_AUTO_HIDE_BEHAVIOR_DEFAULT,
+  EXPECT_EQ(ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS,
+            shell->GetShelfAutoHideBehavior());
+  EXPECT_TRUE(LauncherContextMenu::IsAutoHideMenuHideChecked());
+  shell->SetShelfAutoHideBehavior(
+      LauncherContextMenu::GetToggledAutoHideBehavior());
+  EXPECT_EQ(ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER,
             shell->GetShelfAutoHideBehavior());
 }
 

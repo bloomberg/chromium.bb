@@ -21,7 +21,6 @@ extern const char kPinnedAppsPrefAppIDPath[];
 
 // Values used for prefs::kShelfAutoHideBehavior.
 extern const char kShelfAutoHideBehaviorAlways[];
-extern const char kShelfAutoHideBehaviorDefault[];
 extern const char kShelfAutoHideBehaviorNever[];
 
 // Values used for prefs::kShelfAlignment.
