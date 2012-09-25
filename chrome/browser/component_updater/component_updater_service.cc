@@ -33,6 +33,7 @@
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
+#include "net/url_request/url_request_status.h"
 
 using content::BrowserThread;
 using content::UtilityProcessHost;

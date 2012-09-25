@@ -29,6 +29,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_log.h"
+#include "net/base/net_util.h"
 #include "webkit/glue/resource_loader_bridge.h"
 
 using base::TimeTicks;

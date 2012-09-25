@@ -344,7 +344,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnMetadata(
   WebIDBMetadata web_metadata = idb_database->metadata();
   metadata->name = web_metadata.name;
   metadata->version = web_metadata.version;
-  metadata->intVersion = web_metadata.intVersion;
+  metadata->int_version = web_metadata.intVersion;
 
   for (size_t i = 0; i < web_metadata.objectStores.size(); ++i) {
     const WebIDBMetadata::ObjectStore& web_store_metadata =

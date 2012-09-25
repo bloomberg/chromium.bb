@@ -15,7 +15,6 @@
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/page_type.h"
 #include "content/public/common/security_style.h"
-#include "content/public/common/webkit_param_traits.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
@@ -194,7 +193,14 @@ struct ContextMenuModel {
 
 namespace IPC {
 
-// Traits for ContextMenuModel structure to pack/unpack.
+template <>
+struct ParamTraits<AutomationMouseEvent> {
+  typedef AutomationMouseEvent param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* p);
+  static void Log(const param_type& p, std::string* l);
+};
+
 template <>
 struct ParamTraits<ContextMenuModel> {
   typedef ContextMenuModel param_type;
@@ -203,12 +209,19 @@ struct ParamTraits<ContextMenuModel> {
   static void Log(const param_type& p, std::string* l);
 };
 
-// Traits for AutomationMouseEvent structure to pack/unpack.
 template <>
-struct ParamTraits<AutomationMouseEvent> {
-  typedef AutomationMouseEvent param_type;
+struct ParamTraits<scoped_refptr<net::UploadData> > {
+  typedef scoped_refptr<net::UploadData> param_type;
   static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* p);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct ParamTraits<net::URLRequestStatus> {
+  typedef net::URLRequestStatus param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 

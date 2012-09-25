@@ -16,7 +16,6 @@
 using webkit::forms::FormData;
 using WebKit::WebFrame;
 using WebKit::WebString;
-using WebKit::WebTextDirection;
 using WebKit::WebURLError;
 
 typedef ChromeRenderViewTest FormAutocompleteTest;

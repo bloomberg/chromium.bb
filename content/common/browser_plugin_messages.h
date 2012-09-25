@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/process.h"
 #include "content/common/content_export.h"
+#include "content/common/content_param_traits.h"
 #include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"

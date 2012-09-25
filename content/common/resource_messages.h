@@ -6,10 +6,66 @@
 
 // Multiply-included message file, hence no include guard.
 #include "base/shared_memory.h"
+#include "content/common/content_param_traits_macros.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/resource_response.h"
 #include "ipc/ipc_message_macros.h"
 #include "webkit/glue/resource_request_body.h"
+
+#ifndef CONTENT_COMMON_RESOURCE_MESSAGES_H_
+#define CONTENT_COMMON_RESOURCE_MESSAGES_H_
+
+namespace webkit_glue {
+struct ResourceDevToolsInfo;
+struct ResourceLoadTimingInfo;
+}
+
+namespace IPC {
+
+template <>
+struct ParamTraits<scoped_refptr<net::HttpResponseHeaders> > {
+  typedef scoped_refptr<net::HttpResponseHeaders> param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct CONTENT_EXPORT ParamTraits<webkit_base::DataElement> {
+  typedef webkit_base::DataElement param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct ParamTraits<scoped_refptr<webkit_glue::ResourceDevToolsInfo> > {
+  typedef scoped_refptr<webkit_glue::ResourceDevToolsInfo> param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct ParamTraits<webkit_glue::ResourceLoadTimingInfo> {
+  typedef webkit_glue::ResourceLoadTimingInfo param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct ParamTraits<scoped_refptr<webkit_glue::ResourceRequestBody> > {
+  typedef scoped_refptr<webkit_glue::ResourceRequestBody> param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+}  // namespace IPC
+
+#endif  // CONTENT_COMMON_RESOURCE_MESSAGES_H_
+
 
 #define IPC_MESSAGE_START ResourceMsgStart
 #undef IPC_MESSAGE_EXPORT

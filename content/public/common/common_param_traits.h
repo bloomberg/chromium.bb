@@ -19,11 +19,8 @@
 #include "content/public/common/common_param_traits_macros.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_utils.h"
-#include "net/base/ip_endpoint.h"
-#include "net/url_request/url_request_status.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/surface/transport_dib.h"
-#include "webkit/base/data_element.h"
 
 class SkBitmap;
 
@@ -39,17 +36,7 @@ class Size;
 }  // namespace gfx
 
 namespace net {
-class HttpResponseHeaders;
 class HostPortPair;
-class UploadData;
-}
-
-namespace ui {
-class Range;
-}
-
-namespace webkit_glue {
-class ResourceRequestBody;
 }
 
 namespace IPC {
@@ -62,60 +49,11 @@ struct CONTENT_EXPORT ParamTraits<GURL> {
   static void Log(const param_type& p, std::string* l);
 };
 
-template <>
-struct CONTENT_EXPORT ParamTraits<net::URLRequestStatus> {
-  typedef net::URLRequestStatus param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct CONTENT_EXPORT ParamTraits<scoped_refptr<net::UploadData> > {
-  typedef scoped_refptr<net::UploadData> param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct CONTENT_EXPORT ParamTraits<scoped_refptr<
-    webkit_glue::ResourceRequestBody> > {
-  typedef scoped_refptr<webkit_glue::ResourceRequestBody> param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct CONTENT_EXPORT ParamTraits<webkit_base::DataElement> {
-  typedef webkit_base::DataElement param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
 template<>
 struct CONTENT_EXPORT ParamTraits<net::HostPortPair> {
   typedef net::HostPortPair param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<scoped_refptr<net::HttpResponseHeaders> > {
-  typedef scoped_refptr<net::HttpResponseHeaders> param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<net::IPEndPoint> {
-  typedef net::IPEndPoint param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* p);
   static void Log(const param_type& p, std::string* l);
 };
 
@@ -189,14 +127,6 @@ struct ParamTraits<gfx::NativeWindow> {
   static void Log(const param_type& p, std::string* l) {
     l->append("<gfx::NativeWindow>");
   }
-};
-
-template <>
-struct CONTENT_EXPORT ParamTraits<ui::Range> {
-  typedef ui::Range param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
-  static void Log(const param_type& p, std::string* l);
 };
 
 #if defined(OS_WIN)

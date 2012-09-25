@@ -51,7 +51,7 @@ WebIDBMetadata RendererWebIDBDatabaseImpl::metadata() const {
   WebIDBMetadata web_metadata;
   web_metadata.name = idb_metadata.name;
   web_metadata.version = idb_metadata.version;
-  web_metadata.intVersion = idb_metadata.intVersion;
+  web_metadata.intVersion = idb_metadata.int_version;
   web_metadata.objectStores = WebVector<WebIDBMetadata::ObjectStore>(
       idb_metadata.object_stores.size());
 

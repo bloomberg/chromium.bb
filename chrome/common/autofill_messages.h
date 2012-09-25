@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/time.h"
-#include "content/public/common/webkit_param_traits.h"
+#include "chrome/common/common_param_traits_macros.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
 #include "ui/gfx/rect.h"

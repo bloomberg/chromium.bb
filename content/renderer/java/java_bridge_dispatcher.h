@@ -5,11 +5,15 @@
 #ifndef CONTENT_RENDERER_JAVA_JAVA_BRIDGE_DISPATCHER_H_
 #define CONTENT_RENDERER_JAVA_JAVA_BRIDGE_DISPATCHER_H_
 
-#include "content/public/common/webkit_param_traits.h"
+#include <map>
+
+#include "base/memory/ref_counted.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "ipc/ipc_channel_handle.h"
+#include "third_party/npapi/bindings/npruntime.h"
 
 class JavaBridgeChannel;
+struct NPVariant_Param;
 
 // This class handles injecting Java objects into the main frame of a
 // RenderView. The 'add' and 'remove' messages received from the browser
