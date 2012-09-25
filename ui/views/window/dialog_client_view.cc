@@ -259,7 +259,8 @@ bool DialogClientView::CanClose() {
   DialogDelegate* dd = GetDialogDelegate();
   int buttons = dd->GetDialogButtons();
   bool close = true;
-  if (buttons & ui::DIALOG_BUTTON_CANCEL)
+  if ((buttons & ui::DIALOG_BUTTON_CANCEL) ||
+      (buttons == ui::DIALOG_BUTTON_NONE))
     close = dd->Cancel();
   else if (buttons & ui::DIALOG_BUTTON_OK)
     close = dd->Accept(true);

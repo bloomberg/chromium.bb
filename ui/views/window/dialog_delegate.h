@@ -74,11 +74,11 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   // max(extra_view preferred height, buttons preferred height).
   virtual bool GetSizeExtraViewHeightToButtons();
 
-  // For Dialog boxes, if there is a "Cancel" button, this is called when the
-  // user presses the "Cancel" button or the Close button on the window or
-  // in the system menu, or presses the Esc key. This function should return
-  // true if the window can be closed after it returns, or false if it must
-  // remain open.
+  // For Dialog boxes, if there is a "Cancel" button or no dialog button at all,
+  // this is called when the user presses the "Cancel" button or the Close
+  // button on the window or in the system menu, or presses the Esc key.
+  // This function should return true if the window can be closed after it
+  // returns, or false if it must remain open.
   virtual bool Cancel();
 
   // For Dialog boxes, this is called when the user presses the "OK" button,

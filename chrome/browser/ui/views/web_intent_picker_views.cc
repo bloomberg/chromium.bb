@@ -783,6 +783,7 @@ class WebIntentPickerViews : public views::ButtonListener,
   virtual const views::Widget* GetWidget() const OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;
   virtual int GetDialogButtons() const OVERRIDE;
+  virtual bool Cancel() OVERRIDE;
 
   // LinkListener implementation.
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
@@ -901,6 +902,9 @@ class WebIntentPickerViews : public views::ButtonListener,
   // from then on always true.
   bool use_close_button_;
 
+  // Signals if the picker can be closed. False during extension install.
+  bool can_close_;
+
   DISALLOW_COPY_AND_ASSIGN(WebIntentPickerViews);
 };
 
@@ -925,7 +929,8 @@ WebIntentPickerViews::WebIntentPickerViews(TabContents* tab_contents,
       more_suggestions_link_(NULL),
       choose_another_service_link_(NULL),
       waiting_view_(NULL),
-      displaying_web_contents_(false) {
+      displaying_web_contents_(false),
+      can_close_(true) {
   use_close_button_ = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableFramelessConstrainedDialogs);
 
@@ -970,6 +975,10 @@ int WebIntentPickerViews::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_NONE;
 }
 
+bool WebIntentPickerViews::Cancel() {
+  return can_close_;
+}
+
 void WebIntentPickerViews::LinkClicked(views::Link* source, int event_flags) {
   if (source == more_suggestions_link_) {
     delegate_->OnSuggestionsLinkClicked(
@@ -997,11 +1006,13 @@ void WebIntentPickerViews::SetActionString(const string16& action) {
 }
 
 void WebIntentPickerViews::OnExtensionInstallSuccess(const std::string& id) {
+  can_close_ = true;
 }
 
 void WebIntentPickerViews::OnExtensionInstallFailure(const std::string& id) {
   extensions_->StopThrobber();
   more_suggestions_link_->SetEnabled(true);
+  can_close_ = true;
   contents_->Layout();
   SizeToContents();
 
@@ -1193,6 +1204,7 @@ void WebIntentPickerViews::OnInlineDisposition(
 
 void WebIntentPickerViews::OnExtensionInstallClicked(
     const string16& extension_id) {
+  can_close_ = false;
   extensions_->StartThrobber(extension_id);
   more_suggestions_link_->SetEnabled(false);
   contents_->Layout();
