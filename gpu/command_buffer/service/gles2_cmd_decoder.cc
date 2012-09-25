@@ -1537,7 +1537,6 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   bool back_buffer_has_stencil_;
 
   bool teximage2d_faster_than_texsubimage2d_;
-  bool bufferdata_faster_than_buffersubdata_;
 
   // The last error message set.
   std::string last_error_;
@@ -1991,7 +1990,6 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       back_buffer_has_depth_(false),
       back_buffer_has_stencil_(false),
       teximage2d_faster_than_texsubimage2d_(true),
-      bufferdata_faster_than_buffersubdata_(true),
       log_message_count_(0),
       current_decoder_error_(error::kNoError),
       use_shader_translator_(true),
@@ -2039,10 +2037,9 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
     use_shader_translator_ = false;
   }
 
-  // TODO(gman): Consider setting these based on GPU and/or driver.
+  // TODO(gman): Consider setting this based on GPU and/or driver.
   if (IsAngle()) {
     teximage2d_faster_than_texsubimage2d_ = false;
-    bufferdata_faster_than_buffersubdata_ = false;
   }
 }
 
@@ -6860,19 +6857,14 @@ void GLES2DecoderImpl::DoBufferData(
     data = zero.get();
   }
 
-  if (!bufferdata_faster_than_buffersubdata_ &&
-      size == info->size() && usage == info->usage()) {
-    glBufferSubData(target, 0, size, data);
-    info->SetRange(0, size, data);
-    return;
-  }
-
   CopyRealGLErrorsToWrapper();
   glBufferData(target, size, data, usage);
   GLenum error = PeekGLError();
   if (error == GL_NO_ERROR) {
     buffer_manager()->SetInfo(info, size, usage);
     info->SetRange(0, size, data);
+  } else {
+    buffer_manager()->SetInfo(info, 0, usage);
   }
 }
 
@@ -6917,11 +6909,6 @@ void GLES2DecoderImpl::DoBufferSubData(
   }
   if (!info->SetRange(offset, size, data)) {
     SetGLError(GL_INVALID_VALUE, "glBufferSubData", "out of range");
-    return;
-  }
-  if (bufferdata_faster_than_buffersubdata_ &&
-      offset == 0 && size == info->size()) {
-    glBufferData(target, size, data, info->usage());
     return;
   }
   glBufferSubData(target, offset, size, data);
