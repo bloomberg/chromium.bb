@@ -96,7 +96,8 @@ class ExtensionWebstorePrivateApiTest : public ExtensionApiTest {
   void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
-        switches::kAppsGalleryURL, "http://www.example.com");
+        switches::kAppsGalleryURL,
+        "http://www.example.com/files/extensions/api_test");
     command_line->AppendSwitchASCII(
         switches::kAppsGalleryInstallAutoConfirmForTests, "accept");
   }
@@ -261,8 +262,9 @@ class ExtensionWebstoreGetWebGLStatusTest : public InProcessBrowserTest {
   }
 };
 
-// Test case for webstore origin frame blocking.
-IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, FLAKY_FrameBlocked) {
+// Test cases for webstore origin frame blocking.
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
+                       FrameWebstorePageBlocked) {
   content::WebContents* contents = chrome::GetActiveWebContents(browser());
   string16 expected_title = UTF8ToUTF16("PASS: about:blank");
   string16 failure_title = UTF8ToUTF16("FAIL");
@@ -270,6 +272,20 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, FLAKY_FrameBlocked) {
   watcher.AlsoWaitForTitle(failure_title);
   GURL url = test_server()->GetURL(
       "files/extensions/api_test/webstore_private/noframe.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+  string16 final_title = watcher.WaitAndGetTitle();
+  EXPECT_EQ(expected_title, final_title);
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
+                       FrameErrorPageBlocked) {
+  content::WebContents* contents = chrome::GetActiveWebContents(browser());
+  string16 expected_title = UTF8ToUTF16("PASS: about:blank");
+  string16 failure_title = UTF8ToUTF16("FAIL");
+  content::TitleWatcher watcher(contents, expected_title);
+  watcher.AlsoWaitForTitle(failure_title);
+  GURL url = test_server()->GetURL(
+      "files/extensions/api_test/webstore_private/noframe2.html");
   ui_test_utils::NavigateToURL(browser(), url);
   string16 final_title = watcher.WaitAndGetTitle();
   EXPECT_EQ(expected_title, final_title);
