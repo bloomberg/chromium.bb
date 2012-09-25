@@ -116,8 +116,6 @@ def _CheckLicenseHeaders(directory_list, whitelisted_files):
   directory_list.append('remoting/appengine/')
   # Histogram tools, doesn't exist in the snapshot
   directory_list.append('tools/histograms/')
-  # Ignore clang builders.
-  directory_list.append('third_party/llvm-build/')
 
   # Exclude files under listed directories and some known offenders.
   offending_files = []
@@ -175,6 +173,8 @@ def _FindThirdPartyDirs():
     os.path.join('third_party', 'bidichecker'),
     # Isn't checked out on clients
     os.path.join('third_party', 'gles2_conform'),
+    # The llvm-build doesn't exist for non-clang builder
+    os.path.join('third_party', 'llvm-build'),
   ]
   return licenses.FindThirdPartyDirs(prune_paths)
 
