@@ -440,7 +440,11 @@ def process_input(filepath, prevdict, level, read_only):
   #   return out
 
   if level >= STATS_ONLY:
-    filestats = os.lstat(filepath)
+    try:
+      filestats = os.lstat(filepath)
+    except OSError:
+      # The file is not present.
+      raise run_test_from_archive.MappingError('%s is missing' % filepath)
     is_link = stat.S_ISLNK(filestats.st_mode)
     if get_flavor() != 'win':
       # Ignore file mode on Windows since it's not really useful there.
