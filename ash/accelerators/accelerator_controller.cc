@@ -487,7 +487,6 @@ bool AcceleratorController::PerformAction(int action,
     case RESTORE_TAB:
       return HandleRestoreTab();
     case TAKE_SCREENSHOT:
-    case TAKE_SCREENSHOT_BY_PRTSCN_KEY:
       if (screenshot_delegate_.get() &&
           screenshot_delegate_->CanTakeScreenshot()) {
         screenshot_delegate_->HandleTakeScreenshotForAllRootWindows();
@@ -564,7 +563,6 @@ bool AcceleratorController::PerformAction(int action,
             shell->system_tray()->GetWidget());
       break;
     case SHOW_KEYBOARD_OVERLAY:
-    case SHOW_KEYBOARD_OVERLAY_BY_F14_KEY:
       ash::Shell::GetInstance()->delegate()->ShowKeyboardOverlay();
       return true;
     case SHOW_OAK:

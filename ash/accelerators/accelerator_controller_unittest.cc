@@ -992,17 +992,7 @@ TEST_F(AcceleratorControllerTest, ReservedAccelerators) {
       ui::Accelerator(ui::VKEY_TAB, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN)));
 #if defined(OS_CHROMEOS)
   EXPECT_TRUE(GetController()->IsReservedAccelerator(
-      ui::Accelerator(ui::VKEY_F5, ui::EF_NONE)));
-  EXPECT_TRUE(GetController()->IsReservedAccelerator(
-      ui::Accelerator(ui::VKEY_F6, ui::EF_NONE)));
-  EXPECT_TRUE(GetController()->IsReservedAccelerator(
-      ui::Accelerator(ui::VKEY_F7, ui::EF_NONE)));
-  EXPECT_TRUE(GetController()->IsReservedAccelerator(
-      ui::Accelerator(ui::VKEY_F8, ui::EF_NONE)));
-  EXPECT_TRUE(GetController()->IsReservedAccelerator(
-      ui::Accelerator(ui::VKEY_F9, ui::EF_NONE)));
-  EXPECT_TRUE(GetController()->IsReservedAccelerator(
-      ui::Accelerator(ui::VKEY_F10, ui::EF_NONE)));
+      ui::Accelerator(ui::VKEY_POWER, ui::EF_NONE)));
 #endif
   // Others are not reserved.
   EXPECT_FALSE(GetController()->IsReservedAccelerator(
