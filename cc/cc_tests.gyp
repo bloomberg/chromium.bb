@@ -7,6 +7,7 @@
     'chromium_code': 0,
     'use_libcc_for_compositor%': 0,
     'cc_tests_source_files': [
+      'hash_pair_unittest.cc',
       'CCActiveAnimationTest.cpp',
       'CCDamageTrackerTest.cpp',
       'CCDelayBasedTimeSourceTest.cpp',
