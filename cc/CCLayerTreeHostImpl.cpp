@@ -712,38 +712,41 @@ void CCLayerTreeHostImpl::setVisible(bool visible)
 
 bool CCLayerTreeHostImpl::initializeRenderer(PassOwnPtr<CCGraphicsContext> context)
 {
-    if (!context->bindToClient(this))
-        return false;
-
-    OwnPtr<CCGraphicsContext> contextRef(context);
-    OwnPtr<CCResourceProvider> resourceProvider = CCResourceProvider::create(contextRef.get());
-
-    OwnPtr<CCRenderer> renderer;
-    if (resourceProvider.get()) {
-        if (contextRef->context3D())
-            renderer = CCRendererGL::create(this, resourceProvider.get());
-        else if (contextRef->softwareDevice())
-            renderer = CCRendererSoftware::create(this, resourceProvider.get(), contextRef->softwareDevice());
-    }
-
-    // Since we now have a new context/renderer, we cannot continue to use the old
-    // resources (i.e. renderSurfaces and texture IDs).
+    // Since we will create a new resource provider, we cannot continue to use
+    // the old resources (i.e. renderSurfaces and texture IDs). Clear them
+    // before we destroy the old resource provider.
     if (m_rootLayerImpl) {
         clearRenderSurfaces();
         sendDidLoseContextRecursive(m_rootLayerImpl.get());
     }
+    // Note: order is important here.
+    m_renderer.clear();
+    m_resourceProvider.clear();
+    m_context.clear();
 
-    m_renderer = renderer.release();
+    if (!context->bindToClient(this))
+        return false;
+
+    OwnPtr<CCResourceProvider> resourceProvider = CCResourceProvider::create(context.get());
+    if (!resourceProvider)
+        return false;
+
+    if (context->context3D())
+        m_renderer = CCRendererGL::create(this, resourceProvider.get());
+    else if (context->softwareDevice())
+        m_renderer = CCRendererSoftware::create(this, resourceProvider.get(), context->softwareDevice());
+    if (!m_renderer)
+        return false;
+
     m_resourceProvider = resourceProvider.release();
-    if (m_renderer)
-        m_context = contextRef.release();
+    m_context = context;
 
-    if (!m_visible && m_renderer)
-         m_renderer->setVisible(m_visible);
+    if (!m_visible)
+        m_renderer->setVisible(m_visible);
 
     m_client->onCanDrawStateChanged(canDraw());
 
-    return m_renderer;
+    return true;
 }
 
 void CCLayerTreeHostImpl::setContentsTexturesPurged()

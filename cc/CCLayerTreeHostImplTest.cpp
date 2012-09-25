@@ -2280,6 +2280,53 @@ TEST_F(CCLayerTreeHostImplTest, finishAllRenderingAfterContextLost)
     m_hostImpl->finishAllRendering();
 }
 
+class FakeWebGraphicsContext3DMakeCurrentFailsEventually : public FakeWebGraphicsContext3D {
+public:
+    explicit FakeWebGraphicsContext3DMakeCurrentFailsEventually(unsigned succeedCount) : m_succeedCount(succeedCount) { }
+    virtual bool makeContextCurrent() {
+        if (!m_succeedCount)
+            return false;
+        --m_succeedCount;
+        return true;
+    }
+
+private:
+    unsigned m_succeedCount;
+};
+
+TEST_F(CCLayerTreeHostImplTest, contextLostDuringInitialize)
+{
+    CCLayerTreeSettings settings;
+    m_hostImpl = CCLayerTreeHostImpl::create(settings, this);
+
+    // Initialize into a known successful state.
+    EXPECT_TRUE(m_hostImpl->initializeRenderer(createContext()));
+    EXPECT_TRUE(m_hostImpl->context());
+    EXPECT_TRUE(m_hostImpl->renderer());
+    EXPECT_TRUE(m_hostImpl->resourceProvider());
+
+    // We will make the context get lost after a numer of makeContextCurrent
+    // calls. The exact number of calls to make it succeed is dependent on the
+    // implementation and doesn't really matter (i.e. can be changed to make the
+    // tests pass after some refactoring).
+    const unsigned kMakeCurrentSuccessesNeededForSuccessfulInitialization = 3;
+
+    for (unsigned i = 0; i < kMakeCurrentSuccessesNeededForSuccessfulInitialization; ++i) {
+        // The context will get lost during initialization, we shouldn't crash. We
+        // should also be in a consistent state.
+        EXPECT_FALSE(m_hostImpl->initializeRenderer(FakeWebCompositorOutputSurface::create(adoptPtr(new FakeWebGraphicsContext3DMakeCurrentFailsEventually(i)))));
+        EXPECT_EQ(0, m_hostImpl->context());
+        EXPECT_EQ(0, m_hostImpl->renderer());
+        EXPECT_EQ(0, m_hostImpl->resourceProvider());
+        EXPECT_TRUE(m_hostImpl->initializeRenderer(createContext()));
+    }
+
+    EXPECT_TRUE(m_hostImpl->initializeRenderer(FakeWebCompositorOutputSurface::create(adoptPtr(new FakeWebGraphicsContext3DMakeCurrentFailsEventually(kMakeCurrentSuccessesNeededForSuccessfulInitialization)))));
+    EXPECT_TRUE(m_hostImpl->context());
+    EXPECT_TRUE(m_hostImpl->renderer());
+    EXPECT_TRUE(m_hostImpl->resourceProvider());
+}
+
 // Fake WebGraphicsContext3D that will cause a failure if trying to use a
 // resource that wasn't created by it (resources created by
 // FakeWebGraphicsContext3D have an id of 1).
