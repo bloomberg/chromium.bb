@@ -33,6 +33,10 @@
 #include "content/public/common/sandbox_init.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "content/common/gpu/stream_texture_manager_android.h"
+#endif
+
 namespace {
 
 // The GpuCommandBufferMemoryTracker class provides a bridge between the
@@ -447,6 +451,10 @@ void GpuCommandBufferStub::OnInitialize(
         base::Bind(&GpuCommandBufferStub::OnCommandProcessed,
                    base::Unretained(this)));
   }
+
+#if defined(OS_ANDROID)
+  decoder_->SetStreamTextureManager(channel_->stream_texture_manager());
+#endif
 
   if (parent_stub_for_initialization_) {
     decoder_->SetParent(parent_stub_for_initialization_->decoder_.get(),

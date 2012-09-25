@@ -125,6 +125,12 @@ class GpuChannel : public IPC::Listener,
   void SetPreemptByCounter(
       scoped_refptr<gpu::RefCountedCounter> preempt_by_counter);
 
+#if defined(OS_ANDROID)
+  content::StreamTextureManagerAndroid* stream_texture_manager() {
+    return stream_texture_manager_.get();
+  }
+#endif
+
  protected:
   virtual ~GpuChannel();
 
