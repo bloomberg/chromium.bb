@@ -250,10 +250,8 @@ gfx::Rect AppNonClientFrameViewAura::GetControlBounds() const {
   if (!control_view_)
     return gfx::Rect();
   gfx::Size preferred = control_view_->GetPreferredSize();
-  gfx::Point location(width() - preferred.width(), 0);
-  ConvertPointToWidget(this, &location);
   return gfx::Rect(
-      location.x(), location.y(),
+      width() - preferred.width(), 0,
       preferred.width(), preferred.height());
 }
 
