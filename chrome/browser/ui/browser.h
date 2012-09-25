@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/constrained_window_tab_helper_delegate.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "chrome/browser/ui/search/search_model_observer.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper_delegate.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
@@ -65,6 +66,7 @@ class BrowserCommandController;
 class BrowserInstantController;
 class UnloadController;
 namespace search {
+struct Mode;
 class SearchDelegate;
 class SearchModel;
 }
@@ -104,7 +106,8 @@ class Browser : public TabStripModelObserver,
                 public ZoomObserver,
                 public content::PageNavigator,
                 public content::NotificationObserver,
-                public ui::SelectFileDialog::Listener {
+                public ui::SelectFileDialog::Listener,
+                public chrome::search::SearchModelObserver {
  public:
   // SessionService::WindowType mirrors these values.  If you add to this
   // enum, look at SessionService::WindowType to see if it needs to be
@@ -688,6 +691,10 @@ class Browser : public TabStripModelObserver,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // Overridden from chrome::search::SearchModelObserver:
+  virtual void ModeChanged(const chrome::search::Mode& old_mode,
+                           const chrome::search::Mode& new_mode) OVERRIDE;
 
   // Command and state updating ///////////////////////////////////////////////
 

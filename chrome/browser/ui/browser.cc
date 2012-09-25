@@ -125,6 +125,7 @@
 #include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/search/search_delegate.h"
 #include "chrome/browser/ui/search/search_model.h"
+#include "chrome/browser/ui/search/search_types.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/status_bubble.h"
 #include "chrome/browser/ui/sync/browser_synced_window_delegate.h"
@@ -456,12 +457,15 @@ Browser::Browser(const CreateParams& params)
   }
 
   fullscreen_controller_.reset(new FullscreenController(this));
+  search_model_->AddObserver(this);
 }
 
 Browser::~Browser() {
   // The tab strip should not have any tabs at this point.
   if (!browser_shutdown::ShuttingDownWithoutClosingBrowsers())
     DCHECK(tab_strip_model_->empty());
+
+  search_model_->RemoveObserver(this);
   tab_strip_model_->RemoveObserver(this);
 
   BrowserList::RemoveBrowser(this);
@@ -1901,6 +1905,11 @@ void Browser::Observe(int type,
     default:
       NOTREACHED() << "Got a notification we didn't register for.";
   }
+}
+
+void Browser::ModeChanged(const chrome::search::Mode& old_mode,
+                          const chrome::search::Mode& new_mode) {
+  UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TAB_STATE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
