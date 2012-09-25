@@ -722,7 +722,7 @@ bool InstantController::GetInstantURL(const TemplateURL* template_url,
   if (command_line->HasSwitch(switches::kInstantURL)) {
     *instant_url = command_line->GetSwitchValueASCII(switches::kInstantURL);
     MaybeSetRefFromURL(tab_url, instant_url);
-    return true;
+    return template_url != NULL;
   }
 
   if (!template_url)
