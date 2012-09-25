@@ -1870,11 +1870,20 @@ FileManager.prototype = {
     // TODO(dgozman): refresh content metadata only when modificationTime
     // changed.
     this.metadataCache_.clear(entries, 'filesystem|thumbnail|media');
-    this.metadataCache_.get(entries, 'filesystem|thumbnail', null);
+    this.metadataCache_.get(entries, 'filesystem', null);
     if (this.isOnGData()) {
       this.metadataCache_.clear(entries, 'gdata');
       this.metadataCache_.get(entries, 'gdata', null);
     }
+
+    var visibleItems = this.currentList_.items;
+    var visibleEntries = [];
+    for (var i = 0; i < visibleItems.length; i++) {
+      var index = this.currentList_.getIndexOfListItem(visibleItems[i]);
+      var entry = this.directoryModel_.getFileList().item(index);
+      visibleEntries.push(entry);
+    }
+    this.metadataCache_.get(visibleEntries, 'thumbnail', null);
   };
 
   FileManager.prototype.dailyUpdateModificationTime_ = function() {
