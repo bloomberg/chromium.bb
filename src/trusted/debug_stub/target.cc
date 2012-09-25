@@ -374,19 +374,16 @@ bool Target::GetNextThreadId(uint32_t *id) {
 }
 
 
-uint64_t Target::UserToSysAddr(uint64_t addr) {
+uint64_t Target::AdjustUserAddr(uint64_t addr) {
   // On x86-64, GDB sometimes uses memory addresses with the %r15
   // sandbox base included, so we must accept these addresses.
   // TODO(eaeltsin): Fix GDB to not use addresses with %r15 added.
   if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64 &&
       NaClIsUserAddr(nap_, (uintptr_t) addr)) {
-    return addr;
+    return NaClSysToUser(nap_, (uintptr_t) addr);
   }
   // Otherwise, we expect an untrusted address.
-  if (addr != (uint32_t) addr) {
-    return kNaClBadAddress;
-  }
-  return NaClUserToSysAddr(nap_, (uintptr_t) addr);
+  return addr;
 }
 
 bool Target::ProcessPacket(Packet* pktIn, Packet* pktOut) {
@@ -518,7 +515,9 @@ bool Target::ProcessPacket(Packet* pktIn, Packet* pktOut) {
           err = BAD_FORMAT;
           break;
         }
-        uint64_t sys_addr = UserToSysAddr(user_addr);
+        user_addr = AdjustUserAddr(user_addr);
+        uint64_t sys_addr = NaClUserToSysAddrRange(nap_, (uintptr_t) user_addr,
+                                                   (size_t) wlen);
         if (sys_addr == kNaClBadAddress) {
           err = FAILED;
           break;
@@ -552,7 +551,9 @@ bool Target::ProcessPacket(Packet* pktIn, Packet* pktOut) {
           err = BAD_FORMAT;
           break;
         }
-        uint64_t sys_addr = UserToSysAddr(user_addr);
+        user_addr = AdjustUserAddr(user_addr);
+        uint64_t sys_addr = NaClUserToSysAddrRange(nap_, (uintptr_t) user_addr,
+                                                   (size_t) wlen);
         if (sys_addr == kNaClBadAddress) {
           err = FAILED;
           break;

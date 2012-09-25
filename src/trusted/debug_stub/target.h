@@ -80,7 +80,7 @@ class Target {
   void Exit(int err_code);
 
  protected:
-  uint64_t UserToSysAddr(uint64_t addr);
+  uint64_t AdjustUserAddr(uint64_t addr);
 
   // This function always succeedes, since all errors
   // are reported as an error string of "E<##>" where
