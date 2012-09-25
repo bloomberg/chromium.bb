@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_icon_image.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
+#include "sync/api/string_ordinal.h"
 #include "ui/base/models/simple_menu_model.h"
 
 class AppListController;
@@ -35,9 +36,10 @@ class ExtensionAppItem : public ChromeAppListItem,
   // no longer exists.
   const extensions::Extension* GetExtension() const;
 
-  const std::string& extension_id() const {
-    return extension_id_;
-  }
+  syncer::StringOrdinal GetPageOrdinal() const;
+  syncer::StringOrdinal GetAppLaunchOrdinal() const;
+
+  const std::string& extension_id() const { return extension_id_; }
 
  private:
   // Returns true if this item represents a version of the Talk extension.

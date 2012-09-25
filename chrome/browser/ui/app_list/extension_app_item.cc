@@ -7,6 +7,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_sorting.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/extensions/management_policy.h"
@@ -120,6 +121,10 @@ bool IsExtensionEnabled(Profile* profile, const std::string& extension_id) {
       !service->GetTerminatedExtension(extension_id);
 }
 
+ExtensionSorting* GetExtensionSorting(Profile* profile) {
+  return profile->GetExtensionService()->extension_prefs()->extension_sorting();
+}
+
 }  // namespace
 
 ExtensionAppItem::ExtensionAppItem(Profile* profile,
@@ -140,6 +145,14 @@ const Extension* ExtensionAppItem::GetExtension() const {
   const Extension* extension =
     profile_->GetExtensionService()->GetInstalledExtension(extension_id_);
   return extension;
+}
+
+syncer::StringOrdinal ExtensionAppItem::GetPageOrdinal() const {
+  return GetExtensionSorting(profile_)->GetPageOrdinal(extension_id_);
+}
+
+syncer::StringOrdinal ExtensionAppItem::GetAppLaunchOrdinal() const {
+  return GetExtensionSorting(profile_)->GetAppLaunchOrdinal(extension_id_);
 }
 
 bool ExtensionAppItem::IsTalkExtension() const {

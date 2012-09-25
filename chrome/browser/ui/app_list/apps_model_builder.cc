@@ -4,51 +4,32 @@
 
 #include "chrome/browser/ui/app_list/apps_model_builder.h"
 
-#include "base/i18n/case_conversion.h"
-#include "base/utf_string_conversions.h"
-#include "chrome/browser/browser_process.h"
+#include <algorithm>
+#include <vector>
+
+#include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/extension_app_item.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/notification_service.h"
-#include "ui/base/l10n/l10n_util_collator.h"
 
 using extensions::Extension;
 
 namespace {
 
-// TODO(benwells): Get the list of special apps from the controller.
-const char* kSpecialApps[] = {
-  extension_misc::kChromeAppId,
-  extension_misc::kWebStoreAppId,
-};
+typedef std::vector<ExtensionAppItem*> Apps;
 
-// ModelItemSortData provides a string key to sort with
-// l10n_util::StringComparator.
-struct ModelItemSortData {
-  explicit ModelItemSortData(app_list::AppListItemModel* app)
-      : app(app),
-        key(base::i18n::ToLower(UTF8ToUTF16(app->title()))) {
-  }
+bool AppPrecedes(const ExtensionAppItem* app1, const ExtensionAppItem* app2) {
+  const syncer::StringOrdinal& page1 = app1->GetPageOrdinal();
+  const syncer::StringOrdinal& page2 = app2->GetPageOrdinal();
+  if (page1.LessThan(page2))
+    return true;
 
-  // Needed by StringComparator<Element> in SortVectorWithStringKey, which uses
-  // this method to get a key to sort.
-  const string16& GetStringKey() const {
-    return key;
-  }
-
-  app_list::AppListItemModel* app;
-  string16 key;
-};
-
-// Returns true if given |extension_id| is listed in kSpecialApps.
-bool IsSpecialApp(const std::string& extension_id) {
-  for (size_t i = 0; i < arraysize(kSpecialApps); ++i) {
-    if (extension_id == kSpecialApps[i])
-      return true;
-  }
+  if (page1.Equals(page2))
+    return app1->GetAppLaunchOrdinal().LessThan(app2->GetAppLaunchOrdinal());
 
   return false;
 }
@@ -60,14 +41,21 @@ AppsModelBuilder::AppsModelBuilder(Profile* profile,
                                    AppListController* controller)
     : profile_(profile),
       controller_(controller),
-      model_(model),
-      special_apps_count_(0) {
+      model_(model) {
+  extensions::ExtensionPrefs* extension_prefs =
+      profile_->GetExtensionService()->extension_prefs();
+
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
       content::Source<Profile>(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
       content::Source<Profile>(profile_));
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LAUNCHER_REORDERED,
+      content::Source<ExtensionSorting>(extension_prefs->extension_sorting()));
   registrar_.Add(this, chrome::NOTIFICATION_APP_INSTALLED_TO_APPLIST,
       content::Source<Profile>(profile_));
+
+  pref_change_registrar_.Init(extension_prefs->pref_service());
+  pref_change_registrar_.Add(extensions::ExtensionPrefs::kExtensionsPref, this);
 }
 
 AppsModelBuilder::~AppsModelBuilder() {
@@ -75,71 +63,22 @@ AppsModelBuilder::~AppsModelBuilder() {
 
 void AppsModelBuilder::Build() {
   DCHECK(model_ && model_->item_count() == 0);
-  CreateSpecialApps();
 
-  Apps apps;
-  GetExtensionApps(&apps);
-
-  SortAndPopulateModel(apps);
+  PopulateApps();
   HighlightApp();
 }
 
-void AppsModelBuilder::SortAndPopulateModel(const Apps& apps) {
-  // Just return if there is nothing to populate.
-  if (apps.empty())
-    return;
-
-  // Sort apps case insensitive alphabetically.
-  std::vector<ModelItemSortData> sorted;
-  for (Apps::const_iterator it = apps.begin(); it != apps.end(); ++it)
-    sorted.push_back(ModelItemSortData(*it));
-
-  l10n_util::SortVectorWithStringKey(g_browser_process->GetApplicationLocale(),
-                                     &sorted,
-                                     false /* needs_stable_sort */);
-  for (std::vector<ModelItemSortData>::const_iterator it = sorted.begin();
-       it != sorted.end();
-       ++it) {
-    model_->Add(it->app);
-  }
-}
-
-void AppsModelBuilder::InsertItemByTitle(app_list::AppListItemModel* app) {
-  DCHECK(model_);
-
-  icu::Locale locale(g_browser_process->GetApplicationLocale().c_str());
-  UErrorCode error = U_ZERO_ERROR;
-  scoped_ptr<icu::Collator> collator(
-      icu::Collator::createInstance(locale, error));
-  if (U_FAILURE(error))
-    collator.reset();
-
-  l10n_util::StringComparator<string16> c(collator.get());
-  ModelItemSortData data(app);
-  for (size_t i = special_apps_count_; i < model_->item_count(); ++i) {
-    ModelItemSortData current(model_->GetItemAt(i));
-    if (!c(current.key, data.key)) {
-      model_->AddAt(i, app);
-      return;
-    }
-  }
-  model_->Add(app);
-}
-
-void AppsModelBuilder::GetExtensionApps(Apps* apps) {
-  DCHECK(profile_);
+void AppsModelBuilder::PopulateApps() {
   ExtensionService* service = profile_->GetExtensionService();
   if (!service)
     return;
 
-  // Get extension apps.
+  Apps apps;
   const ExtensionSet* extensions = service->extensions();
   for (ExtensionSet::const_iterator app = extensions->begin();
        app != extensions->end(); ++app) {
-    if ((*app)->ShouldDisplayInLauncher() &&
-        !IsSpecialApp((*app)->id())) {
-      apps->push_back(new ExtensionAppItem(profile_, *app, controller_));
-    }
+    if ((*app)->ShouldDisplayInLauncher())
+      apps.push_back(new ExtensionAppItem(profile_, *app, controller_));
   }
 
 #if defined(OS_CHROMEOS)
@@ -156,44 +95,84 @@ void AppsModelBuilder::GetExtensionApps(Apps* apps) {
     const Extension* talk = service->GetExtensionById(
         kTalkIds[i], false /*include_disabled*/);
     if (talk) {
-      apps->push_back(new ExtensionAppItem(profile_, talk, controller_));
+      apps.push_back(new ExtensionAppItem(profile_, talk, controller_));
       break;
     }
   }
 #endif  // OS_CHROMEOS
+
+  if (apps.empty())
+    return;
+
+  std::sort(apps.begin(), apps.end(), &AppPrecedes);
+
+  for (Apps::const_iterator it = apps.begin();
+       it != apps.end();
+       ++it) {
+    model_->Add(*it);
+  }
 }
 
-void AppsModelBuilder::CreateSpecialApps() {
-  DCHECK(model_ && model_->item_count() == 0);
+void AppsModelBuilder::ResortApps() {
+  Apps apps;
+  for (size_t i = 0; i < model_->item_count(); ++i)
+    apps.push_back(GetAppAt(i));
 
-  bool is_guest_session = Profile::IsGuestSession();
-  ExtensionService* service = profile_->GetExtensionService();
-  DCHECK(service);
-  for (size_t i = 0; i < arraysize(kSpecialApps); ++i) {
-    const std::string extension_id(kSpecialApps[i]);
-    if (is_guest_session && extension_id == extension_misc::kWebStoreAppId)
-      continue;
+  if (apps.empty())
+    return;
 
-    const Extension* extension = service->GetInstalledExtension(extension_id);
-    if (!extension)
-      continue;
+  std::sort(apps.begin(), apps.end(), &AppPrecedes);
 
-    model_->Add(new ExtensionAppItem(profile_, extension, controller_));
+  // Adjusts the order of apps as needed in |model_| based on |apps|.
+  for (size_t i = 0; i < apps.size(); ++i) {
+    ExtensionAppItem* app_item = apps[i];
+
+    const size_t insert_index = i;
+
+    bool found = false;
+    size_t index = 0;
+
+    // Finds |app_item| in remaining unsorted part in |model_|.
+    for (size_t j = insert_index; j < model_->item_count(); ++j) {
+      if (GetAppAt(j) == app_item) {
+        found = true;
+        index = j;
+        break;
+      }
+    }
+
+    if (found) {
+      if (index != insert_index) {
+        model_->RemoveAt(index);
+        model_->AddAt(insert_index, app_item);
+      }
+    } else {
+      NOTREACHED();
+    }
   }
+}
 
-  special_apps_count_ = model_->item_count();
+void AppsModelBuilder::InsertApp(ExtensionAppItem* app) {
+  DCHECK(model_);
+
+  size_t start = 0;
+  size_t end = model_->item_count();
+  while (start < end) {
+    size_t mid = (start + end) / 2;
+
+    if (AppPrecedes(GetAppAt(mid), app))
+      start = mid + 1;
+    else
+      end = mid;
+  }
+  model_->AddAt(start, app);
 }
 
 int AppsModelBuilder::FindApp(const std::string& app_id) {
   DCHECK(model_);
-  for (size_t i = special_apps_count_; i < model_->item_count(); ++i) {
-    ChromeAppListItem* app =
-        static_cast<ChromeAppListItem*>(model_->GetItemAt(i));
-    if (app->type() != ChromeAppListItem::TYPE_APP)
-      continue;
 
-    ExtensionAppItem* extension_item = static_cast<ExtensionAppItem*>(app);
-    if (extension_item->extension_id() == app_id)
+  for (size_t i = 0; i < model_->item_count(); ++i) {
+    if (GetAppAt(i)->extension_id() == app_id)
       return i;
   }
 
@@ -213,6 +192,15 @@ void AppsModelBuilder::HighlightApp() {
   highlight_app_id_.clear();
 }
 
+ExtensionAppItem* AppsModelBuilder::GetAppAt(size_t index) {
+  DCHECK_LT(index, model_->item_count());
+  ChromeAppListItem* item =
+      static_cast<ChromeAppListItem*>(model_->GetItemAt(index));
+  DCHECK_EQ(item->type(), ChromeAppListItem::TYPE_APP);
+
+  return static_cast<ExtensionAppItem*>(item);
+}
+
 void AppsModelBuilder::Observe(int type,
                                const content::NotificationSource& source,
                                const content::NotificationDetails& details) {
@@ -226,7 +214,7 @@ void AppsModelBuilder::Observe(int type,
       if (FindApp(extension->id()) != -1)
         return;
 
-      InsertItemByTitle(new ExtensionAppItem(profile_, extension, controller_));
+      InsertApp(new ExtensionAppItem(profile_, extension, controller_));
       HighlightApp();
       break;
     }
@@ -239,9 +227,17 @@ void AppsModelBuilder::Observe(int type,
         model_->DeleteAt(index);
       break;
     }
+    case chrome::NOTIFICATION_EXTENSION_LAUNCHER_REORDERED: {
+      ResortApps();
+      break;
+    }
     case chrome::NOTIFICATION_APP_INSTALLED_TO_APPLIST: {
       highlight_app_id_ = *content::Details<const std::string>(details).ptr();
       HighlightApp();
+      break;
+    }
+    case chrome::NOTIFICATION_PREF_CHANGED: {
+      ResortApps();
       break;
     }
     default:
