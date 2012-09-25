@@ -38,7 +38,10 @@ enum TouchStatusInternal {
                       // been processed.
 
   TSI_PROCESSED,      // The touch-event should affect gesture-recognition only
-                      // if the touch-event has been processed.
+                      // if the touch-event has been processed. For example,,
+                      // this means that a JavaScript touch handler called
+                      // |preventDefault| on the associated touch event
+                      // or was processed by an aura-window or views-view.
 
   TSI_ALWAYS          // The touch-event should always affect gesture
                       // recognition.
@@ -88,6 +91,9 @@ enum EdgeStateSignatureType {
   // Ignore processed touch-move events until gesture-scroll starts.
   GST_PENDING_SYNTHETIC_CLICK_FIRST_MOVED =
       G(GS_PENDING_SYNTHETIC_CLICK, 0, TS_MOVED, TSI_NOT_PROCESSED),
+
+  GST_PENDING_SYNTHETIC_CLICK_FIRST_MOVED_PROCESSED =
+      G(GS_PENDING_SYNTHETIC_CLICK, 0, TS_MOVED, TSI_PROCESSED),
 
   GST_PENDING_SYNTHETIC_CLICK_FIRST_STATIONARY =
       G(GS_PENDING_SYNTHETIC_CLICK, 0, TS_STATIONARY, TSI_NOT_PROCESSED),
@@ -214,6 +220,7 @@ EdgeStateSignatureType Signature(GestureState gesture_state,
     case GST_PENDING_SYNTHETIC_CLICK_FIRST_RELEASED:
     case GST_PENDING_SYNTHETIC_CLICK_FIRST_RELEASED_HANDLED:
     case GST_PENDING_SYNTHETIC_CLICK_FIRST_MOVED:
+    case GST_PENDING_SYNTHETIC_CLICK_FIRST_MOVED_PROCESSED:
     case GST_PENDING_SYNTHETIC_CLICK_FIRST_STATIONARY:
     case GST_PENDING_SYNTHETIC_CLICK_FIRST_CANCELLED:
     case GST_PENDING_SYNTHETIC_CLICK_SECOND_PRESSED:
@@ -274,10 +281,6 @@ unsigned int ComputeTouchBitmask(const GesturePoint* points) {
 }
 
 float CalibrateFlingVelocity(float velocity) {
-  // TODO(sad|rjkroege): fling-curve is currently configured to work well with
-  // touchpad scroll-events. This curve needs to be adjusted to work correctly
-  // with both touchpad and touchscreen. Until then, scale quadratically.
-  // http://crbug.com/120154
   const float velocity_scaling  =
       GestureConfiguration::touchscreen_fling_acceleration_adjustment();
   return velocity_scaling * velocity;
@@ -380,6 +383,9 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
         if (ScrollUpdate(event, point, gestures.get()))
           point.UpdateForScroll();
       }
+      break;
+    case GST_PENDING_SYNTHETIC_CLICK_FIRST_MOVED_PROCESSED:
+      point.UpdateForScroll();
       break;
     case GST_PENDING_SYNTHETIC_CLICK_FIRST_RELEASED_HANDLED:
     case GST_PENDING_SYNTHETIC_CLICK_FIRST_CANCELLED:
@@ -703,9 +709,15 @@ void GestureSequence::AppendScrollGestureEnd(const GesturePoint& point,
 void GestureSequence::AppendScrollGestureUpdate(GesturePoint& point,
                                                 const gfx::Point& location,
                                                 Gestures* gestures) {
-  gfx::Point current_center = bounding_box_.CenterPoint();
-  int dx = current_center.x() - bounding_box_last_center_.x();
-  int dy = current_center.y() - bounding_box_last_center_.y();
+  float dx, dy;
+  if (point_count_ == 1) {
+    dx = point.x_delta();
+    dy = point.y_delta();
+  } else {
+    gfx::Point current_center = bounding_box_.CenterPoint();
+    dx = current_center.x() - bounding_box_last_center_.x();
+    dy = current_center.y() - bounding_box_last_center_.y();
+  }
   if (scroll_type_ == ST_HORIZONTAL)
     dy = 0;
   else if (scroll_type_ == ST_VERTICAL)

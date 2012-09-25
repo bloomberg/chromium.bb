@@ -2621,12 +2621,12 @@ TEST_F(GestureRecognizerTest, GestureEventScrollTouchMoveConsumed) {
   EXPECT_FALSE(delegate->scroll_end());
   EXPECT_EQ(29, delegate->scroll_x());
   EXPECT_EQ(29, delegate->scroll_y());
-  EXPECT_EQ(gfx::Point(1, 1).ToString(),
+  EXPECT_EQ(gfx::Point(30, 30).ToString(),
             delegate->scroll_begin_position().ToString());
 
   // Start consuming touch-move events again. However, since gesture-scroll has
   // already started, the touch-move events should still result in scroll-update
-  // gesturs.
+  // gestures.
   delegate->set_consume_touch_move(true);
 
   // Move some more to generate a few more scroll updates.
@@ -2852,6 +2852,60 @@ TEST_F(GestureRecognizerTest, BoundingBoxRadiusChange) {
   EXPECT_FALSE(delegate->tap_cancel());
   EXPECT_FALSE(delegate->scroll_update());
   EXPECT_FALSE(delegate->pinch_update());
+
+  delegate->Reset();
+}
+
+// Checks that slow scrolls deliver the correct deltas.
+// In particular, fix for http;//crbug.com/150573.
+TEST_F(GestureRecognizerTest, NoDriftInScroll) {
+  ui::GestureConfiguration::set_max_touch_move_in_pixels_for_click(3);
+  ui::GestureConfiguration::set_min_scroll_delta_squared(9);
+  scoped_ptr<GestureEventConsumeDelegate> delegate(
+      new GestureEventConsumeDelegate());
+  const int kWindowWidth = 234;
+  const int kWindowHeight = 345;
+  const int kTouchId = 5;
+  gfx::Rect bounds(100, 200, kWindowWidth, kWindowHeight);
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      delegate.get(), -1234, bounds, NULL));
+
+  ui::TouchEvent press1(
+      ui::ET_TOUCH_PRESSED, gfx::Point(101, 208), kTouchId, GetTime());
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press1);
+  EXPECT_TRUE(delegate->begin());
+
+  delegate->Reset();
+
+  ui::TouchEvent move1(ui::ET_TOUCH_MOVED, gfx::Point(101, 206), kTouchId,
+      press1.time_stamp() + base::TimeDelta::FromMilliseconds(40));
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&move1);
+  EXPECT_FALSE(delegate->scroll_begin());
+
+  delegate->Reset();
+
+  ui::TouchEvent move2(ui::ET_TOUCH_MOVED, gfx::Point(101, 204), kTouchId,
+      press1.time_stamp() + base::TimeDelta::FromMilliseconds(40));
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&move2);
+  EXPECT_TRUE(delegate->tap_cancel());
+  EXPECT_TRUE(delegate->scroll_begin());
+  EXPECT_TRUE(delegate->scroll_update());
+  EXPECT_EQ(-4, delegate->scroll_y());
+
+  delegate->Reset();
+
+  ui::TouchEvent move3(ui::ET_TOUCH_MOVED, gfx::Point(101, 204), kTouchId,
+      press1.time_stamp() + base::TimeDelta::FromMilliseconds(40));
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&move3);
+  EXPECT_FALSE(delegate->scroll_update());
+
+  delegate->Reset();
+
+  ui::TouchEvent move4(ui::ET_TOUCH_MOVED, gfx::Point(101, 203), kTouchId,
+      press1.time_stamp() + base::TimeDelta::FromMilliseconds(40));
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&move4);
+  EXPECT_TRUE(delegate->scroll_update());
+  EXPECT_EQ(-1, delegate->scroll_y());
 
   delegate->Reset();
 }
