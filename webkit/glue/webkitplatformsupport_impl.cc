@@ -199,6 +199,8 @@ static int ToMessageID(WebLocalizedString::Name name) {
       return IDS_FORM_FILE_MULTIPLE_UPLOAD;
     case WebLocalizedString::OtherColorLabel:
       return IDS_FORM_OTHER_COLOR_LABEL;
+      case WebLocalizedString::OtherDateLabel:
+        return IDS_FORM_OTHER_DATE_LABEL;
     case WebLocalizedString::ResetButtonDefaultLabel:
       return IDS_FORM_RESET_LABEL;
     case WebLocalizedString::SearchableIndexIntroduction:

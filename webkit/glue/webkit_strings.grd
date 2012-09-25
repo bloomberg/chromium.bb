@@ -261,6 +261,9 @@ below:
       <message name="IDS_FORM_OTHER_COLOR_LABEL" desc="Label for button that opens a full color chooser so the user can choose colors other than the ones in the list.">
         Other...
       </message>
+      <message name="IDS_FORM_OTHER_DATE_LABEL" desc="Label for button that opens a full calendar picker so the user can choose dates other than the ones in the list." meaning="for date label">
+        Other...
+      </message>
 
       <message name="IDS_RECENT_SEARCHES_NONE" desc="Label for only item in menu that appears when clicking on the search field image, when no searches have been performed">
         No recent searches
