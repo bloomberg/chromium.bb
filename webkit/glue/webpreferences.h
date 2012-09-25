@@ -116,6 +116,10 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   bool fullscreen_enabled;
   bool allow_displaying_insecure_content;
   bool allow_running_insecure_content;
+#if defined(OS_ANDROID)
+  float font_scale_factor;
+  bool force_enable_zoom;
+#endif
   bool password_echo_enabled;
   bool should_print_backgrounds;
   bool enable_scroll_animator;

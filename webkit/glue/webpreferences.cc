@@ -99,6 +99,10 @@ WebPreferences::WebPreferences()
       fullscreen_enabled(false),
       allow_displaying_insecure_content(true),
       allow_running_insecure_content(false),
+#if defined(OS_ANDROID)
+      font_scale_factor(1.0f),
+      force_enable_zoom(false),
+#endif
       password_echo_enabled(false),
       should_print_backgrounds(false),
       enable_scroll_animator(false),
@@ -390,6 +394,10 @@ void WebPreferences::Apply(WebView* web_view) const {
   settings->setFullScreenEnabled(fullscreen_enabled);
   settings->setAllowDisplayOfInsecureContent(allow_displaying_insecure_content);
   settings->setAllowRunningOfInsecureContent(allow_running_insecure_content);
+#if defined(OS_ANDROID)
+  settings->setTextAutosizingFontScaleFactor(font_scale_factor);
+  web_view->setIgnoreViewportTagMaximumScale(force_enable_zoom);
+#endif
   settings->setPasswordEchoEnabled(password_echo_enabled);
   settings->setShouldPrintBackgrounds(should_print_backgrounds);
   settings->setEnableScrollAnimator(enable_scroll_animator);

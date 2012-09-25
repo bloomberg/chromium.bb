@@ -101,6 +101,10 @@ const char* kPrefsToObserve[] = {
   prefs::kWebKitAllowRunningInsecureContent,
   prefs::kWebKitDefaultFixedFontSize,
   prefs::kWebKitDefaultFontSize,
+#if defined(OS_ANDROID)
+  prefs::kWebKitFontScaleFactor,
+  prefs::kWebKitForceEnableZoom,
+#endif
   prefs::kWebKitJavascriptEnabled,
   prefs::kWebKitJavaEnabled,
   prefs::kWebKitLoadsImagesAutomatically,
@@ -432,6 +436,14 @@ void PrefsTabHelper::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kEnableReferrers,
                              true,
                              PrefService::UNSYNCABLE_PREF);
+#if defined(OS_ANDROID)
+  prefs->RegisterDoublePref(prefs::kWebKitFontScaleFactor,
+                            pref_defaults.font_scale_factor,
+                            PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kWebKitForceEnableZoom,
+                             pref_defaults.force_enable_zoom,
+                             PrefService::UNSYNCABLE_PREF);
+#endif
 
 #if !defined(OS_MACOSX)
   prefs->RegisterLocalizedStringPref(prefs::kAcceptLanguages,

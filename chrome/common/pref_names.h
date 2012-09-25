@@ -134,6 +134,10 @@ extern const char kWebKitJavaEnabled[];
 extern const char kWebkitTabsToLinks[];
 extern const char kWebKitAllowDisplayingInsecureContent[];
 extern const char kWebKitAllowRunningInsecureContent[];
+#if defined(OS_ANDROID)
+extern const char kWebKitFontScaleFactor[];
+extern const char kWebKitForceEnableZoom[];
+#endif
 extern const char kPasswordManagerEnabled[];
 extern const char kPasswordManagerAllowShowPasswords[];
 extern const char kPasswordGenerationEnabled[];
