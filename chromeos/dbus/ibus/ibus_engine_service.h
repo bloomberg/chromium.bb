@@ -27,7 +27,7 @@ class IBusText;
 typedef ScopedVector<IBusProperty> IBusPropertyList;
 }  // namespace
 
-// A interface to handle the engine client method call.
+// A interface to handle the engine handler method call.
 class CHROMEOS_EXPORT IBusEngineHandlerInterface {
  public:
   typedef base::Callback<void (bool consumed)> KeyEventDoneCallback;
@@ -130,8 +130,12 @@ class CHROMEOS_EXPORT IBusEngineService {
 
   virtual ~IBusEngineService();
 
-  // Initializes the engine client. This class takes the ownership of |handler|.
-  virtual void Initialize(IBusEngineHandlerInterface* handler) = 0;
+  // Sets a new IBus engine handler and old handler will be overridden.
+  // This class doesn't take the ownership of |handler|.
+  virtual void SetEngine(IBusEngineHandlerInterface* handler) = 0;
+
+  // Unsets the current IBus engine hanlder.
+  virtual void UnsetEngine() = 0;
 
   // Emits RegisterProperties signal.
   virtual void RegisterProperties(

@@ -24,6 +24,7 @@ class IBusEngineServiceImpl : public IBusEngineService {
   IBusEngineServiceImpl(dbus::Bus* bus,
                         const dbus::ObjectPath& object_path)
       : bus_(bus),
+        engine_handler_(NULL),
         object_path_(object_path),
         weak_ptr_factory_(this) {
     exported_object_ = bus->GetExportedObject(object_path_);
@@ -130,12 +131,15 @@ class IBusEngineServiceImpl : public IBusEngineService {
   }
 
   // IBusEngineService override.
-  virtual void Initialize(IBusEngineHandlerInterface* handler) OVERRIDE {
-    if (engine_handler_.get() == NULL) {
-      engine_handler_.reset(handler);
-    } else {
-      LOG(ERROR) << "Already initialized.";
-    }
+  virtual void SetEngine(IBusEngineHandlerInterface* handler) OVERRIDE {
+    DVLOG_IF(1, engine_handler_ != NULL) << "Replace engine.";
+    engine_handler_ = handler;
+  }
+
+  // IBusEngineService override.
+  virtual void UnsetEngine() OVERRIDE {
+    LOG_IF(ERROR, engine_handler_ == NULL) << "There is no engine.";
+    engine_handler_ = NULL;
   }
 
   // IBusEngineService override.
@@ -225,7 +229,8 @@ class IBusEngineServiceImpl : public IBusEngineService {
   // Handles FocusIn method call from ibus-daemon.
   void FocusIn(dbus::MethodCall* method_call,
                dbus::ExportedObject::ResponseSender response_sender) {
-    DCHECK(engine_handler_.get());
+    if (engine_handler_ == NULL)
+      return;
     engine_handler_->FocusIn();
     dbus::Response* response = dbus::Response::FromMethodCall(method_call);
     response_sender.Run(response);
@@ -234,7 +239,8 @@ class IBusEngineServiceImpl : public IBusEngineService {
   // Handles FocusOut method call from ibus-daemon.
   void FocusOut(dbus::MethodCall* method_call,
                 dbus::ExportedObject::ResponseSender response_sender) {
-    DCHECK(engine_handler_.get());
+    if (engine_handler_ == NULL)
+      return;
     engine_handler_->FocusOut();
     dbus::Response* response = dbus::Response::FromMethodCall(method_call);
     response_sender.Run(response);
@@ -243,7 +249,8 @@ class IBusEngineServiceImpl : public IBusEngineService {
   // Handles Enable method call from ibus-daemon.
   void Enable(dbus::MethodCall* method_call,
               dbus::ExportedObject::ResponseSender response_sender) {
-    DCHECK(engine_handler_.get());
+    if (engine_handler_ == NULL)
+      return;
     engine_handler_->Enable();
     dbus::Response* response = dbus::Response::FromMethodCall(method_call);
     response_sender.Run(response);
@@ -252,7 +259,8 @@ class IBusEngineServiceImpl : public IBusEngineService {
   // Handles Disable method call from ibus-daemon.
   void Disable(dbus::MethodCall* method_call,
                dbus::ExportedObject::ResponseSender response_sender) {
-    DCHECK(engine_handler_.get());
+    if (engine_handler_ == NULL)
+      return;
     engine_handler_->Disable();
     dbus::Response* response = dbus::Response::FromMethodCall(method_call);
     response_sender.Run(response);
@@ -261,6 +269,8 @@ class IBusEngineServiceImpl : public IBusEngineService {
   // Handles PropertyActivate method call from ibus-daemon.
   void PropertyActivate(dbus::MethodCall* method_call,
                         dbus::ExportedObject::ResponseSender response_sender) {
+    if (engine_handler_ == NULL)
+      return;
     dbus::MessageReader reader(method_call);
     std::string property_name;
     if (!reader.PopString(&property_name)) {
@@ -274,7 +284,6 @@ class IBusEngineServiceImpl : public IBusEngineService {
                    << method_call->ToString();
       return;
     }
-    DCHECK(engine_handler_.get());
     engine_handler_->PropertyActivate(
         property_name,
         static_cast<IBusEngineHandlerInterface::IBusPropertyState>(
@@ -286,6 +295,8 @@ class IBusEngineServiceImpl : public IBusEngineService {
   // Handles PropertyShow method call from ibus-daemon.
   void PropertyShow(dbus::MethodCall* method_call,
                     dbus::ExportedObject::ResponseSender response_sender) {
+    if (engine_handler_ == NULL)
+      return;
     dbus::MessageReader reader(method_call);
     std::string property_name;
     if (!reader.PopString(&property_name)) {
@@ -293,7 +304,6 @@ class IBusEngineServiceImpl : public IBusEngineService {
                    << method_call->ToString();
       return;
     }
-    DCHECK(engine_handler_.get());
     engine_handler_->PropertyShow(property_name);
     dbus::Response* response = dbus::Response::FromMethodCall(method_call);
     response_sender.Run(response);
@@ -302,6 +312,8 @@ class IBusEngineServiceImpl : public IBusEngineService {
   // Handles PropertyHide method call from ibus-daemon.
   void PropertyHide(dbus::MethodCall* method_call,
                     dbus::ExportedObject::ResponseSender response_sender) {
+    if (engine_handler_ == NULL)
+      return;
     dbus::MessageReader reader(method_call);
     std::string property_name;
     if (!reader.PopString(&property_name)) {
@@ -309,7 +321,6 @@ class IBusEngineServiceImpl : public IBusEngineService {
                    << method_call->ToString();
       return;
     }
-    DCHECK(engine_handler_.get());
     engine_handler_->PropertyHide(property_name);
     dbus::Response* response = dbus::Response::FromMethodCall(method_call);
     response_sender.Run(response);
@@ -318,6 +329,8 @@ class IBusEngineServiceImpl : public IBusEngineService {
   // Handles SetCapability method call from ibus-daemon.
   void SetCapability(dbus::MethodCall* method_call,
                      dbus::ExportedObject::ResponseSender response_sender) {
+    if (engine_handler_ == NULL)
+      return;
     dbus::MessageReader reader(method_call);
     uint32 capability = 0;
     if (!reader.PopUint32(&capability)) {
@@ -325,7 +338,6 @@ class IBusEngineServiceImpl : public IBusEngineService {
                    << method_call->ToString();
       return;
     }
-    DCHECK(engine_handler_.get());
     engine_handler_->SetCapability(
         static_cast<IBusEngineHandlerInterface::IBusCapability>(capability));
     dbus::Response* response = dbus::Response::FromMethodCall(method_call);
@@ -334,7 +346,8 @@ class IBusEngineServiceImpl : public IBusEngineService {
 
   void Reset(dbus::MethodCall* method_call,
              dbus::ExportedObject::ResponseSender response_sender) {
-    DCHECK(engine_handler_.get());
+    if (engine_handler_ == NULL)
+      return;
     engine_handler_->Reset();
     dbus::Response* response = dbus::Response::FromMethodCall(method_call);
     response_sender.Run(response);
@@ -343,6 +356,8 @@ class IBusEngineServiceImpl : public IBusEngineService {
   // Handles ProcessKeyEvent method call from ibus-daemon.
   void ProcessKeyEvent(dbus::MethodCall* method_call,
                        dbus::ExportedObject::ResponseSender response_sender) {
+    if (engine_handler_ == NULL)
+      return;
     dbus::MessageReader reader(method_call);
     uint32 keysym = 0;
     if (!reader.PopUint32(&keysym)) {
@@ -362,7 +377,6 @@ class IBusEngineServiceImpl : public IBusEngineService {
                    << method_call->ToString();
       return;
     }
-    DCHECK(engine_handler_.get());
     engine_handler_->ProcessKeyEvent(
         keysym, keycode, state,
         base::Bind(&IBusEngineServiceImpl::KeyEventDone,
@@ -375,6 +389,8 @@ class IBusEngineServiceImpl : public IBusEngineService {
   void KeyEventDone(dbus::Response* response,
                     const dbus::ExportedObject::ResponseSender& response_sender,
                     bool consume) {
+    if (engine_handler_ == NULL)
+      return;
     dbus::MessageWriter writer(response);
     writer.AppendBool(consume);
     response_sender.Run(response);
@@ -383,6 +399,8 @@ class IBusEngineServiceImpl : public IBusEngineService {
   // Handles CandidateClicked method call from ibus-daemon.
   void CandidateClicked(dbus::MethodCall* method_call,
                         dbus::ExportedObject::ResponseSender response_sender) {
+    if (engine_handler_ == NULL)
+      return;
     dbus::MessageReader reader(method_call);
     uint32 index = 0;
     if (!reader.PopUint32(&index)) {
@@ -402,7 +420,6 @@ class IBusEngineServiceImpl : public IBusEngineService {
                    << method_call->ToString();
       return;
     }
-    DCHECK(engine_handler_.get());
     engine_handler_->CandidateClicked(
         index,
         static_cast<IBusEngineHandlerInterface::IBusMouseButton>(button),
@@ -415,6 +432,8 @@ class IBusEngineServiceImpl : public IBusEngineService {
   void SetSurroundingText(
       dbus::MethodCall* method_call,
       dbus::ExportedObject::ResponseSender response_sender) {
+    if (engine_handler_ == NULL)
+      return;
     dbus::MessageReader reader(method_call);
     std::string text;
     if (!reader.PopString(&text)) {
@@ -435,7 +454,6 @@ class IBusEngineServiceImpl : public IBusEngineService {
       return;
     }
 
-    DCHECK(engine_handler_.get());
     engine_handler_->SetSurroundingText(text, cursor_pos, anchor_pos);
     dbus::Response* response = dbus::Response::FromMethodCall(method_call);
     response_sender.Run(response);
@@ -453,7 +471,7 @@ class IBusEngineServiceImpl : public IBusEngineService {
   dbus::Bus* bus_;
 
   // All incoming method calls are passed on to the |engine_handler_|.
-  scoped_ptr<IBusEngineHandlerInterface> engine_handler_;
+  IBusEngineHandlerInterface* engine_handler_;
 
   dbus::ObjectPath object_path_;
   scoped_refptr<dbus::ExportedObject> exported_object_;
@@ -467,7 +485,8 @@ class IBusEngineServiceStubImpl : public IBusEngineService {
   IBusEngineServiceStubImpl() {}
   virtual ~IBusEngineServiceStubImpl() {}
   // IBusEngineService overrides.
-  virtual void Initialize(IBusEngineHandlerInterface* handler) OVERRIDE {}
+  virtual void SetEngine(IBusEngineHandlerInterface* handler) OVERRIDE {}
+  virtual void UnsetEngine() OVERRIDE {}
   virtual void RegisterProperties(
       const ibus::IBusPropertyList& property_list) OVERRIDE {}
   virtual void UpdatePreedit(const ibus::IBusText& ibus_text,

@@ -55,6 +55,12 @@ InputMethodEngineIBus::InputMethodEngineIBus()
       weak_ptr_factory_(this) {
 }
 
+InputMethodEngineIBus::~InputMethodEngineIBus() {
+  GetCurrentService()->UnsetEngine();
+  input_method::InputMethodManager::GetInstance()->
+      RemoveInputMethodExtension(ibus_id_);
+}
+
 void InputMethodEngineIBus::Initialize(
     InputMethodEngine::Observer* observer,
     const char* engine_name,
@@ -108,9 +114,6 @@ void InputMethodEngineIBus::Initialize(
   // to ibus-daemon, OnConnected callback will register component instead.
   if (IsConnected())
     RegisterComponent();
-}
-
-InputMethodEngineIBus::~InputMethodEngineIBus() {
 }
 
 bool InputMethodEngineIBus::SetComposition(
@@ -571,7 +574,7 @@ void InputMethodEngineIBus::CreateEngineHandler(
   current_object_path_++;
   object_path_ = dbus::ObjectPath(kObjectPathPrefix +
                                   base::IntToString(current_object_path_));
-  GetCurrentService()->Initialize(this);
+  GetCurrentService()->SetEngine(this);
   sender.Run(object_path_);
 }
 

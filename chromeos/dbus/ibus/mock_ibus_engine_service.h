@@ -16,7 +16,8 @@ class MockIBusEngineService : public IBusEngineService {
   virtual ~MockIBusEngineService();
 
   // IBusEngineService overrides.
-  virtual void Initialize(IBusEngineHandlerInterface* handler) OVERRIDE;
+  virtual void SetEngine(IBusEngineHandlerInterface* handler) OVERRIDE;
+  virtual void UnsetEngine() OVERRIDE;
   virtual void RegisterProperties(
       const ibus::IBusPropertyList& property_list) OVERRIDE;
   virtual void UpdatePreedit(const ibus::IBusText& ibus_text,
