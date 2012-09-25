@@ -828,6 +828,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, History) {
 IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_NewWindowDismissesInstant) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant("instant.html"));
   EXPECT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+  base::RunLoop().RunUntilIdle();
   SetOmniboxTextAndWaitForInstantToShow("search");
 
   Browser* previous_window = browser();
