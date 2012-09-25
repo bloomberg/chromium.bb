@@ -9,7 +9,6 @@
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/cpp/resource.h"
 
-
 /// @file
 /// This file defines the interface for establishing an
 /// audio configuration resource within the browser.
@@ -20,7 +19,7 @@ class InstanceHandle;
 
 /// A 16 bit stereo AudioConfig resource. Refer to the
 /// <a href="/native-client/{{pepperversion}}/devguide/coding/audio">Audio
-/// </a> chapter in the Developer's Guide for information on using this
+/// </a>chapter in the Developer's Guide for information on using this
 /// interface.
 ///
 /// A single sample frame on a stereo device means one value for the left
