@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_PERFORMANCE_MONITOR_WEB_UI_HANDLER_H_
-#define CHROME_BROWSER_UI_WEBUI_PERFORMANCE_MONITOR_WEB_UI_HANDLER_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_PERFORMANCE_MONITOR_PERFORMANCE_MONITOR_HANDLER_H_
+#define CHROME_BROWSER_UI_WEBUI_PERFORMANCE_MONITOR_PERFORMANCE_MONITOR_HANDLER_H_
 
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
@@ -20,13 +20,14 @@ namespace performance_monitor {
 // This class handles messages to and from the performance monitor page.
 // Incoming calls are handled by the Handle* functions and callbacks are made
 // from ReturnResults functions.
-class WebUIHandler : public content::WebUIMessageHandler,
-                     public base::SupportsWeakPtr<WebUIHandler> {
+class PerformanceMonitorHandler
+    : public content::WebUIMessageHandler,
+      public base::SupportsWeakPtr<PerformanceMonitorHandler> {
  public:
-  WebUIHandler();
+  PerformanceMonitorHandler();
 
  private:
-  virtual ~WebUIHandler();
+  virtual ~PerformanceMonitorHandler();
 
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE;
@@ -55,9 +56,9 @@ class WebUIHandler : public content::WebUIMessageHandler,
   // time resolution which defines the spacing of metric samples returned.
   void HandleGetMetric(const base::ListValue* args);
 
-  DISALLOW_COPY_AND_ASSIGN(WebUIHandler);
+  DISALLOW_COPY_AND_ASSIGN(PerformanceMonitorHandler);
 };
 
 }  // namespace performance_monitor
 
-#endif  // CHROME_BROWSER_UI_WEBUI_PERFORMANCE_MONITOR_WEB_UI_HANDLER_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_PERFORMANCE_MONITOR_PERFORMANCE_MONITOR_HANDLER_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/performance_monitor/web_ui_handler.h"
+#include "chrome/browser/ui/webui/performance_monitor/performance_monitor_handler.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -332,45 +332,46 @@ void DoGetMetric(DictionaryValue* results,
 
 }  // namespace
 
-WebUIHandler::WebUIHandler() {
+PerformanceMonitorHandler::PerformanceMonitorHandler() {
   // If we are not running the --run-performance-monitor flag, we will not have
   // started PerformanceMonitor.
   if (!PerformanceMonitor::initialized())
     PerformanceMonitor::GetInstance()->Start();
 }
 
-WebUIHandler::~WebUIHandler() {}
+PerformanceMonitorHandler::~PerformanceMonitorHandler() {}
 
-void WebUIHandler::RegisterMessages() {
+void PerformanceMonitorHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "getActiveIntervals",
-      base::Bind(&WebUIHandler::HandleGetActiveIntervals,
+      base::Bind(&PerformanceMonitorHandler::HandleGetActiveIntervals,
                  AsWeakPtr()));
   web_ui()->RegisterMessageCallback(
       "getEventTypes",
-      base::Bind(&WebUIHandler::HandleGetEventTypes,
+      base::Bind(&PerformanceMonitorHandler::HandleGetEventTypes,
                  AsWeakPtr()));
   web_ui()->RegisterMessageCallback(
       "getEvents",
-      base::Bind(&WebUIHandler::HandleGetEvents,
+      base::Bind(&PerformanceMonitorHandler::HandleGetEvents,
                  AsWeakPtr()));
   web_ui()->RegisterMessageCallback(
       "getMetricTypes",
-      base::Bind(&WebUIHandler::HandleGetMetricTypes,
+      base::Bind(&PerformanceMonitorHandler::HandleGetMetricTypes,
                  AsWeakPtr()));
   web_ui()->RegisterMessageCallback(
       "getMetric",
-      base::Bind(&WebUIHandler::HandleGetMetric,
+      base::Bind(&PerformanceMonitorHandler::HandleGetMetric,
                  AsWeakPtr()));
 }
 
-void WebUIHandler::ReturnResults(const std::string& function,
+void PerformanceMonitorHandler::ReturnResults(const std::string& function,
                                  const Value* results) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   web_ui()->CallJavascriptFunction(function, *results);
 }
 
-void WebUIHandler::HandleGetActiveIntervals(const ListValue* args) {
+void PerformanceMonitorHandler::HandleGetActiveIntervals(
+    const ListValue* args) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   CHECK_EQ(2u, args->GetSize());
   double double_time = 0.0;
@@ -383,12 +384,12 @@ void WebUIHandler::HandleGetActiveIntervals(const ListValue* args) {
   util::PostTaskToDatabaseThreadAndReply(
       FROM_HERE,
       base::Bind(&DoGetActiveIntervals, results, start, end),
-      base::Bind(&WebUIHandler::ReturnResults, AsWeakPtr(),
+      base::Bind(&PerformanceMonitorHandler::ReturnResults, AsWeakPtr(),
                  "PerformanceMonitor.getActiveIntervalsCallback",
                  base::Owned(results)));
 }
 
-void WebUIHandler::HandleGetEventTypes(const ListValue* args) {
+void PerformanceMonitorHandler::HandleGetEventTypes(const ListValue* args) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   CHECK_EQ(0u, args->GetSize());
   ListValue results;
@@ -398,7 +399,7 @@ void WebUIHandler::HandleGetEventTypes(const ListValue* args) {
   ReturnResults("PerformanceMonitor.getEventTypesCallback", &results);
 }
 
-void WebUIHandler::HandleGetEvents(const ListValue* args) {
+void PerformanceMonitorHandler::HandleGetEvents(const ListValue* args) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   CHECK_EQ(3u, args->GetSize());
   double event = 0;
@@ -419,12 +420,12 @@ void WebUIHandler::HandleGetEvents(const ListValue* args) {
   util::PostTaskToDatabaseThreadAndReply(
       FROM_HERE,
       base::Bind(&DoGetEvents, events, event_type, start, end),
-      base::Bind(&WebUIHandler::ReturnResults, AsWeakPtr(),
+      base::Bind(&PerformanceMonitorHandler::ReturnResults, AsWeakPtr(),
                  "PerformanceMonitor.getEventsCallback",
                  base::Owned(results)));
 }
 
-void WebUIHandler::HandleGetMetricTypes(const ListValue* args) {
+void PerformanceMonitorHandler::HandleGetMetricTypes(const ListValue* args) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   CHECK_EQ(0u, args->GetSize());
   ListValue results;
@@ -434,7 +435,7 @@ void WebUIHandler::HandleGetMetricTypes(const ListValue* args) {
   ReturnResults("PerformanceMonitor.getMetricTypesCallback", &results);
 }
 
-void WebUIHandler::HandleGetMetric(const ListValue* args) {
+void PerformanceMonitorHandler::HandleGetMetric(const ListValue* args) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   CHECK_EQ(4u, args->GetSize());
   double metric = 0;
@@ -457,7 +458,7 @@ void WebUIHandler::HandleGetMetric(const ListValue* args) {
       FROM_HERE,
       base::Bind(&DoGetMetric, results, metric_type,
                  start, end, resolution),
-      base::Bind(&WebUIHandler::ReturnResults, AsWeakPtr(),
+      base::Bind(&PerformanceMonitorHandler::ReturnResults, AsWeakPtr(),
                  "PerformanceMonitor.getMetricCallback",
                  base::Owned(results)));
 }
