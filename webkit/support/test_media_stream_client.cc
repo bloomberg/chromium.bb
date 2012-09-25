@@ -8,11 +8,11 @@
 #include "media/base/message_loop_factory.h"
 #include "media/base/pipeline.h"
 #include "media/filters/video_frame_generator.h"
-
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaStreamRegistry.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamComponent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamDescriptor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
+#include "webkit/media/simple_video_frame_provider.h"
 
 using namespace WebKit;
 
@@ -35,6 +35,29 @@ bool IsMockMediaStreamWithVideo(const WebURL& url) {
 }  // namespace
 
 namespace webkit_support {
+
+TestMediaStreamClient::TestMediaStreamClient() {}
+
+TestMediaStreamClient::~TestMediaStreamClient() {}
+
+bool TestMediaStreamClient::IsMediaStream(const GURL& url) {
+  return IsMockMediaStreamWithVideo(url);
+}
+
+scoped_refptr<webkit_media::VideoFrameProvider>
+TestMediaStreamClient::GetVideoFrameProvider(
+    const GURL& url,
+    const base::Closure& error_cb,
+    const webkit_media::VideoFrameProvider::RepaintCB& repaint_cb) {
+  if (!IsMockMediaStreamWithVideo(url))
+    return NULL;
+
+  return new webkit_media::SimpleVideoFrameProvider(
+      gfx::Size(kVideoCaptureWidth, kVideoCaptureHeight),
+      base::TimeDelta::FromMilliseconds(kVideoCaptureFrameDurationMs),
+      error_cb,
+      repaint_cb);
+}
 
 scoped_refptr<media::VideoDecoder> TestMediaStreamClient::GetVideoDecoder(
     const GURL& url, media::MessageLoopFactory* message_loop_factory) {

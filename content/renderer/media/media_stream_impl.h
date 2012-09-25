@@ -61,6 +61,11 @@ class CONTENT_EXPORT MediaStreamImpl
       const WebKit::WebUserMediaRequest& user_media_request) OVERRIDE;
 
   // webkit_media::MediaStreamClient implementation.
+  virtual bool IsMediaStream(const GURL& url) OVERRIDE;
+  virtual scoped_refptr<webkit_media::VideoFrameProvider> GetVideoFrameProvider(
+      const GURL& url,
+      const base::Closure& error_cb,
+      const webkit_media::VideoFrameProvider::RepaintCB& repaint_cb) OVERRIDE;
   virtual scoped_refptr<media::VideoDecoder> GetVideoDecoder(
       const GURL& url,
       media::MessageLoopFactory* message_loop_factory) OVERRIDE;
@@ -123,6 +128,16 @@ class CONTENT_EXPORT MediaStreamImpl
   typedef std::map<std::string, WebKit::WebFrame*> LocalNativeStreamMap;
   typedef scoped_refptr<webrtc::LocalMediaStreamInterface> LocalNativeStreamPtr;
 
+  scoped_refptr<webkit_media::VideoFrameProvider>
+  CreateLocalVideoFrameProvider(
+      webrtc::MediaStreamInterface* stream,
+      const base::Closure& error_cb,
+      const webkit_media::VideoFrameProvider::RepaintCB& repaint_cb);
+  scoped_refptr<webkit_media::VideoFrameProvider>
+  CreateRemoteVideoFrameProvider(
+      webrtc::MediaStreamInterface* stream,
+      const base::Closure& error_cb,
+      const webkit_media::VideoFrameProvider::RepaintCB& repaint_cb);
   scoped_refptr<media::VideoDecoder> CreateLocalVideoDecoder(
       webrtc::MediaStreamInterface* stream,
       media::MessageLoopFactory* message_loop_factory);

@@ -802,6 +802,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableGpuBenchmarking,
     switches::kEnableLogging,
     switches::kDisableMediaSource,
+    switches::kEnableWebMediaPlayerMS,
     switches::kEnablePartialSwap,
     switches::kEnablePerTilePainting,
     switches::kEnableRendererSideMixing,

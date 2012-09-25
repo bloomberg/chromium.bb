@@ -11,11 +11,13 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "content/renderer/media/capture_video_decoder.h"
+#include "content/renderer/media/local_video_capture.h"
 #include "content/renderer/media/media_stream_extra_data.h"
 #include "content/renderer/media/media_stream_source_extra_data.h"
 #include "content/renderer/media/media_stream_dependency_factory.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
 #include "content/renderer/media/rtc_video_decoder.h"
+#include "content/renderer/media/rtc_video_renderer.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "content/renderer/media/webrtc_uma_histograms.h"
 #include "media/base/message_loop_factory.h"
@@ -141,6 +143,50 @@ void MediaStreamImpl::cancelUserMediaRequest(
 WebKit::WebMediaStreamDescriptor MediaStreamImpl::GetMediaStream(
     const GURL& url) {
   return WebKit::WebMediaStreamRegistry::lookupMediaStreamDescriptor(url);
+}
+
+bool MediaStreamImpl::IsMediaStream(const GURL& url) {
+  DCHECK(CalledOnValidThread());
+  WebKit::WebMediaStreamDescriptor descriptor(GetMediaStream(url));
+
+  if (descriptor.isNull() || !descriptor.extraData())
+    return false;  // This is not a valid stream.
+
+  MediaStreamExtraData* extra_data =
+      static_cast<MediaStreamExtraData*>(descriptor.extraData());
+  webrtc::MediaStreamInterface* stream = extra_data->local_stream();
+  if (stream && stream->video_tracks() && stream->video_tracks()->count() > 0)
+    return true;
+  stream = extra_data->remote_stream();
+  if (stream && stream->video_tracks() && stream->video_tracks()->count() > 0)
+    return true;
+  return false;
+}
+
+scoped_refptr<webkit_media::VideoFrameProvider>
+MediaStreamImpl::GetVideoFrameProvider(
+    const GURL& url,
+    const base::Closure& error_cb,
+    const webkit_media::VideoFrameProvider::RepaintCB& repaint_cb) {
+  DCHECK(CalledOnValidThread());
+  WebKit::WebMediaStreamDescriptor descriptor(GetMediaStream(url));
+
+  if (descriptor.isNull() || !descriptor.extraData())
+    return NULL;  // This is not a valid stream.
+
+  DVLOG(1) << "MediaStreamImpl::GetVideoFrameProvider stream:"
+           << UTF16ToUTF8(descriptor.label());
+
+  MediaStreamExtraData* extra_data =
+      static_cast<MediaStreamExtraData*>(descriptor.extraData());
+  if (extra_data->local_stream())
+    return CreateLocalVideoFrameProvider(extra_data->local_stream(),
+                                         error_cb, repaint_cb);
+  if (extra_data->remote_stream())
+    return CreateRemoteVideoFrameProvider(extra_data->remote_stream(),
+                                          error_cb, repaint_cb);
+  NOTREACHED();
+  return NULL;
 }
 
 scoped_refptr<media::VideoDecoder> MediaStreamImpl::GetVideoDecoder(
@@ -305,6 +351,52 @@ void MediaStreamImpl::FrameWillClose(WebKit::WebFrame* frame) {
       ++it;
     }
   }
+}
+
+scoped_refptr<webkit_media::VideoFrameProvider>
+MediaStreamImpl::CreateLocalVideoFrameProvider(
+    webrtc::MediaStreamInterface* stream,
+    const base::Closure& error_cb,
+    const webkit_media::VideoFrameProvider::RepaintCB& repaint_cb) {
+  if (!stream->video_tracks() || stream->video_tracks()->count() == 0)
+    return NULL;
+
+  int video_session_id =
+      media_stream_dispatcher_->video_session_id(stream->label(), 0);
+  media::VideoCaptureCapability capability;
+  capability.width = kVideoCaptureWidth;
+  capability.height = kVideoCaptureHeight;
+  capability.frame_rate = kVideoCaptureFramePerSecond;
+  capability.color = media::VideoCaptureCapability::kI420;
+  capability.expected_capture_delay = 0;
+  capability.interlaced = false;
+
+  DVLOG(1) << "MediaStreamImpl::CreateLocalVideoFrameProvider video_session_id:"
+           << video_session_id;
+
+  return new content::LocalVideoCapture(
+      video_session_id,
+      vc_manager_.get(),
+      capability,
+      error_cb,
+      repaint_cb);
+}
+
+scoped_refptr<webkit_media::VideoFrameProvider>
+MediaStreamImpl::CreateRemoteVideoFrameProvider(
+    webrtc::MediaStreamInterface* stream,
+    const base::Closure& error_cb,
+    const webkit_media::VideoFrameProvider::RepaintCB& repaint_cb) {
+  if (!stream->video_tracks() || stream->video_tracks()->count() == 0)
+    return NULL;
+
+  DVLOG(1) << "MediaStreamImpl::CreateRemoteVideoFrameProvider label:"
+           << stream->label();
+
+  return new content::RTCVideoRenderer(
+      stream->video_tracks()->at(0),
+      error_cb,
+      repaint_cb);
 }
 
 scoped_refptr<media::VideoDecoder> MediaStreamImpl::CreateLocalVideoDecoder(

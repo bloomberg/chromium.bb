@@ -194,6 +194,7 @@
 #include "webkit/glue/weburlresponse_extradata_impl.h"
 #include "webkit/gpu/webgraphicscontext3d_in_process_impl.h"
 #include "webkit/media/webmediaplayer_impl.h"
+#include "webkit/media/webmediaplayer_ms.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/npapi/webplugin_delegate.h"
 #include "webkit/plugins/npapi/webplugin_delegate_impl.h"
@@ -2577,8 +2578,7 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
   }
 
   WebGraphicsContext3DCommandBufferImpl* context3d = NULL;
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableAcceleratedVideoDecode))
+  if (!cmd_line->HasSwitch(switches::kDisableAcceleratedVideoDecode))
     context3d = RenderThreadImpl::current()->GetGpuVDAContext3D();
   if (context3d) {
     scoped_refptr<base::MessageLoopProxy> factories_loop =
@@ -2604,6 +2604,16 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
           audio_source_provider, message_loop_factory, media_stream_impl_,
           render_media_log);
   if (!media_player) {
+    // TODO(wjia): when all patches related to WebMediaPlayerMS have been
+    // landed, remove the switch. Refer to crbug.com/142988.
+    if (cmd_line->HasSwitch(switches::kEnableWebMediaPlayerMS)) {
+      EnsureMediaStreamImpl();
+      if (media_stream_impl_ && media_stream_impl_->IsMediaStream(url)) {
+        return new webkit_media::WebMediaPlayerMS(
+            frame, client, AsWeakPtr(), media_stream_impl_, render_media_log);
+      }
+    }
+
     media_player = new webkit_media::WebMediaPlayerImpl(
         frame, client, AsWeakPtr(), collection, audio_source_provider,
         audio_source_provider, message_loop_factory, media_stream_impl_,

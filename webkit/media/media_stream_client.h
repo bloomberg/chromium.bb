@@ -5,7 +5,9 @@
 #ifndef WEBKIT_MEDIA_MEDIA_STREAM_CLIENT_H_
 #define WEBKIT_MEDIA_MEDIA_STREAM_CLIENT_H_
 
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "webkit/media/video_frame_provider.h"
 
 class GURL;
 
@@ -20,6 +22,14 @@ namespace webkit_media {
 // the media stream.
 class MediaStreamClient {
  public:
+  // Check if the |url| is derived from a media stream object.
+  virtual bool IsMediaStream(const GURL& url) = 0;
+
+  virtual scoped_refptr<VideoFrameProvider> GetVideoFrameProvider(
+      const GURL& url,
+      const base::Closure& error_cb,
+      const VideoFrameProvider::RepaintCB& repaint_cb) = 0;
+
   virtual scoped_refptr<media::VideoDecoder> GetVideoDecoder(
       const GURL& url,
       media::MessageLoopFactory* message_loop_factory) = 0;

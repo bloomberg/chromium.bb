@@ -61,7 +61,9 @@
 #include "webkit/media/android/webmediaplayer_in_process_android.h"
 #include "webkit/media/android/webmediaplayer_manager_android.h"
 #endif
+#include "webkit/media/media_stream_client.h"
 #include "webkit/media/webmediaplayer_impl.h"
+#include "webkit/media/webmediaplayer_ms.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/npapi/webplugin_impl.h"
 #include "webkit/plugins/npapi/webplugin_page_delegate.h"
@@ -412,6 +414,15 @@ WebKit::WebMediaPlayer* CreateMediaPlayer(
 
   scoped_ptr<media::FilterCollection> collection(
       new media::FilterCollection());
+
+  if (media_stream_client && media_stream_client->IsMediaStream(url)) {
+    return new webkit_media::WebMediaPlayerMS(
+        frame,
+        client,
+        base::WeakPtr<webkit_media::WebMediaPlayerDelegate>(),
+        media_stream_client,
+        new media::MediaLog());
+  }
 
   return new webkit_media::WebMediaPlayerImpl(
       frame,
