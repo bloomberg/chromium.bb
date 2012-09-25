@@ -65,71 +65,51 @@ void TabContentsContainerGtk::Init() {
 }
 
 void TabContentsContainerGtk::SetTab(TabContents* tab) {
-  HideTab(tab_);
-  if (tab_) {
-    registrar_.Remove(this, chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                      content::Source<TabContents>(tab_));
-  }
+  if (tab_ == tab)
+    return;
+
+  if (tab_)
+    HideTab(tab_);
 
   tab_ = tab;
 
-  if (tab_ == preview_) {
-    // If the preview contents is becoming the new permanent tab contents, we
-    // just reassign some pointers.
-    preview_ = NULL;
-  } else if (tab_) {
-    // Otherwise we actually have to add it to the widget hierarchy.
-    PackTab(tab);
-    registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                   content::Source<TabContents>(tab_));
+  if (tab_) {
+    // If the preview is becoming the new permanent tab, we just reassign some
+    // pointers. Otherwise, we have to actually add it to the widget hierarchy.
+    if (tab_ == preview_)
+      preview_ = NULL;
+    else
+      PackTab(tab_);
+
+    // Make sure that the tab is below the find bar. Sometimes the content
+    // native view will be null.
+    GtkWidget* widget = tab_->web_contents()->GetContentNativeView();
+    if (widget) {
+      GdkWindow* content_gdk_window = gtk_widget_get_window(widget);
+      if (content_gdk_window)
+        gdk_window_lower(content_gdk_window);
+    }
   }
 }
 
-TabContents* TabContentsContainerGtk::GetVisibleTab() {
-  return preview_ ? preview_ : tab_;
-}
-
 void TabContentsContainerGtk::SetPreview(TabContents* preview) {
-  if (preview_)
-    RemovePreview();
-  else
-    HideTab(tab_);
+  if (preview_ == preview)
+    return;
+
+  if (preview_) {
+    HideTab(preview_);
+    GtkWidget* preview_widget = preview_->web_contents()->GetNativeView();
+    if (preview_widget)
+      gtk_container_remove(GTK_CONTAINER(expanded_), preview_widget);
+  }
 
   preview_ = preview;
 
-  PackTab(preview);
-  registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                 content::Source<TabContents>(preview_));
-}
-
-void TabContentsContainerGtk::RemovePreview() {
-  if (!preview_)
-    return;
-
-  HideTab(preview_);
-
-  GtkWidget* preview_widget = preview_->web_contents()->GetNativeView();
-  if (preview_widget)
-    gtk_container_remove(GTK_CONTAINER(expanded_), preview_widget);
-
-  registrar_.Remove(this, chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                    content::Source<TabContents>(preview_));
-  preview_ = NULL;
-}
-
-void TabContentsContainerGtk::PopPreview() {
-  if (!preview_)
-    return;
-
-  RemovePreview();
-
-  PackTab(tab_);
+  if (preview_)
+    PackTab(preview_);
 }
 
 void TabContentsContainerGtk::PackTab(TabContents* tab) {
-  if (!tab)
-    return;
-
   gfx::NativeView widget = tab->web_contents()->GetNativeView();
   if (widget) {
     if (gtk_widget_get_parent(widget) != expanded_)
@@ -137,27 +117,19 @@ void TabContentsContainerGtk::PackTab(TabContents* tab) {
     gtk_widget_show(widget);
   }
 
-  // We need to make sure that we are below the findbar.
-  // Sometimes the content native view will be null.
-  if (tab->web_contents()->GetContentNativeView()) {
-    GdkWindow* content_gdk_window = gtk_widget_get_window(
-        tab->web_contents()->GetContentNativeView());
-    if (content_gdk_window)
-      gdk_window_lower(content_gdk_window);
-  }
-
   tab->web_contents()->WasShown();
+  registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED,
+                 content::Source<TabContents>(tab));
 }
 
 void TabContentsContainerGtk::HideTab(TabContents* tab) {
-  if (!tab)
-    return;
-
   gfx::NativeView widget = tab->web_contents()->GetNativeView();
   if (widget)
     gtk_widget_hide(widget);
 
   tab->web_contents()->WasHidden();
+  registrar_.Remove(this, chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED,
+                    content::Source<TabContents>(tab));
 }
 
 void TabContentsContainerGtk::DetachTab(TabContents* tab) {
@@ -187,7 +159,7 @@ void TabContentsContainerGtk::WebContentsDestroyed(WebContents* contents) {
   // Sometimes, a WebContents is destroyed before we know about it. This allows
   // us to clean up our state in case this happens.
   if (preview_ && contents == preview_->web_contents())
-    PopPreview();
+    SetPreview(NULL);
   else if (tab_ && contents == tab_->web_contents())
     SetTab(NULL);
   else

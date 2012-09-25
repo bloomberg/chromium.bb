@@ -78,24 +78,12 @@ bool BrowserInstantController::OpenInstant(WindowOpenDisposition disposition) {
 // BrowserInstantController, InstantControllerDelegate implementation:
 
 void BrowserInstantController::ShowInstant(int height, InstantSizeUnits units) {
-  // Call ShowInstant() first, before WasShown(), so that the preview is added
-  // to the window hierarchy before it's painted. http://crbug.com/145568
-  TabContents* preview = instant_->GetPreviewContents();
-  browser_->window()->ShowInstant(preview, height, units);
-
-  // TODO(beng): Investigate if we can avoid this and instead rely on the
-  //             visibility of the WebContentsView.
-  preview->web_contents()->WasShown();
-  chrome::GetActiveWebContents(browser_)->WasHidden();
+  browser_->window()->ShowInstant(instant_->GetPreviewContents(),
+                                  height, units);
 }
 
 void BrowserInstantController::HideInstant() {
   browser_->window()->HideInstant();
-
-  if (chrome::GetActiveWebContents(browser_))
-    chrome::GetActiveWebContents(browser_)->WasShown();
-  if (TabContents* preview = instant_->GetPreviewContents())
-    preview->web_contents()->WasHidden();
 }
 
 void BrowserInstantController::CommitInstant(TabContents* preview) {

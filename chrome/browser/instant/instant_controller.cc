@@ -386,8 +386,8 @@ TabContents* InstantController::ReleasePreviewContents(InstantCommitType type) {
   // still be on the stack. So, schedule a destruction for later.
   MessageLoop::current()->DeleteSoon(FROM_HERE, loader_.release());
 
-  // This call is here to hide the preview and reset view state. It won't
-  // actually delete |loader_| because it was just released to DeleteSoon().
+  // This call is here to reset view state. It won't actually delete |loader_|
+  // because it was just released to DeleteSoon().
   DeleteLoader();
 
   return preview;
@@ -658,15 +658,17 @@ void InstantController::MaybeOnStaleLoader() {
 }
 
 void InstantController::DeleteLoader() {
+  last_active_tab_ = NULL;
   last_full_text_.clear();
   last_user_text_.clear();
   last_verbatim_ = false;
   last_suggestion_ = InstantSuggestion();
   last_transition_type_ = content::PAGE_TRANSITION_LINK;
   last_match_was_search_ = false;
+  is_showing_ = false;
+  loader_processed_last_update_ = false;
   last_omnibox_bounds_ = gfx::Rect();
   url_for_history_ = GURL();
-  Hide();
   if (GetPreviewContents())
     AddPreviewUsageForHistogram(mode_, PREVIEW_DELETED);
   loader_.reset();

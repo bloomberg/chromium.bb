@@ -694,7 +694,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, PageVisibility) {
 
   // Type a query and wait for Instant to show.
   SetOmniboxTextAndWaitForInstantToShow("query");
-  EXPECT_TRUE(CheckVisibilityIs(active_tab, false));
+  EXPECT_TRUE(CheckVisibilityIs(active_tab, true));
   EXPECT_TRUE(CheckVisibilityIs(preview_tab, true));
 
   // Deleting the omnibox text should hide the preview.
@@ -704,7 +704,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, PageVisibility) {
 
   // Typing a query should show the preview again.
   SetOmniboxTextAndWaitForInstantToShow("query");
-  EXPECT_TRUE(CheckVisibilityIs(active_tab, false));
+  EXPECT_TRUE(CheckVisibilityIs(active_tab, true));
   EXPECT_TRUE(CheckVisibilityIs(preview_tab, true));
 
   // Commit the preview.
@@ -817,15 +817,8 @@ IN_PROC_BROWSER_TEST_F(InstantTest, History) {
   EXPECT_EQ(ASCIIToUTF16("search"), queries[0]);
 }
 
-#if defined(OS_WIN)
-// On Windows, NewEmptyWindow() fails the "GetBackingStore called while hidden"
-// CHECK(). TODO(sreeram): Fix it.
-#define MAYBE_NewWindowDismissesInstant DISABLED_NewWindowDismissesInstant
-#else
-#define MAYBE_NewWindowDismissesInstant NewWindowDismissesInstant
-#endif
 // Test that creating a new window hides any currently showing Instant preview.
-IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_NewWindowDismissesInstant) {
+IN_PROC_BROWSER_TEST_F(InstantTest, NewWindowDismissesInstant) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant("instant.html"));
   EXPECT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   base::RunLoop().RunUntilIdle();

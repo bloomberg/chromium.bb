@@ -33,9 +33,9 @@ using content::WebContents;
   NSView* previewView = previewContents_->GetNativeView();
   [previewView setFrame:[[self view] bounds]];
 
-  // Hide the active container and add the preview contents.
-  [activeContainer_ setHidden:YES];
+  // Add the preview contents.
   [[self view] addSubview:previewView];
+  previewContents_->WasShown();
 }
 
 - (void)hidePreview {
@@ -43,10 +43,9 @@ using content::WebContents;
   if (!previewContents_)
     return;
 
-  // Remove the preview contents and reshow the active container.
+  // Remove the preview contents.
   [previewContents_->GetNativeView() removeFromSuperview];
-  [activeContainer_ setHidden:NO];
-
+  previewContents_->WasHidden();
   previewContents_ = nil;
 }
 

@@ -36,13 +36,11 @@ class TabContentsContainerGtk : public content::NotificationObserver,
   void SetTab(TabContents* tab);
   TabContents* tab() const { return tab_; }
 
-  // Returns the TabContents currently displayed.
-  TabContents* GetVisibleTab();
-
+  void SetPreview(TabContents* preview);
   bool HasPreview() const { return preview_ != NULL; }
 
-  void SetPreview(TabContents* preview);
-  void PopPreview();
+  // Returns the TabContents currently displayed.
+  TabContents* GetVisibleTab() const { return preview_ ? preview_ : tab_; }
 
   // Remove the tab from the hierarchy.
   void DetachTab(TabContents* tab);
@@ -74,9 +72,6 @@ class TabContentsContainerGtk : public content::NotificationObserver,
 
   // Stops showing |tab|.
   void HideTab(TabContents* tab);
-
-  // Removes |preview_|.
-  void RemovePreview();
 
   // Handle focus traversal on the tab contents container. Focus should not
   // traverse to the preview contents.
