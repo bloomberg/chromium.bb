@@ -56,8 +56,8 @@ class QuotaInternalsProxy
 
   // Called on IO Thread by QuotaManager as callback.
   void DidGetAvailableSpace(quota::QuotaStatusCode status, int64 space);
-  void DidGetGlobalQuota(quota::QuotaStatusCode status,
-                         quota::StorageType type,
+  void DidGetGlobalQuota(quota::StorageType type,
+                         quota::QuotaStatusCode status,
                          int64 quota);
   void DidGetGlobalUsage(quota::StorageType type,
                          int64 usage,

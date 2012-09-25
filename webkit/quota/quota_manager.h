@@ -173,10 +173,10 @@ class QuotaManager : public QuotaTaskObserver,
                                        const QuotaCallback& callback);
 
   void GetPersistentHostQuota(const std::string& host,
-                              const HostQuotaCallback& callback);
+                              const QuotaCallback& callback);
   void SetPersistentHostQuota(const std::string& host,
                               int64 new_quota,
-                              const HostQuotaCallback& callback);
+                              const QuotaCallback& callback);
   void GetGlobalUsage(StorageType type, const GlobalUsageCallback& callback);
   void GetHostUsage(const std::string& host, StorageType type,
                     const UsageCallback& callback);
@@ -334,12 +334,12 @@ class QuotaManager : public QuotaTaskObserver,
   void DidSetTemporaryGlobalOverrideQuota(const QuotaCallback& callback,
                                           const int64* new_quota,
                                           bool success);
-  void DidGetPersistentHostQuota(const HostQuotaCallback& callback,
+  void DidGetPersistentHostQuota(const QuotaCallback& callback,
                                  const std::string& host,
                                  const int64* quota,
                                  bool success);
   void DidSetPersistentHostQuota(const std::string& host,
-                                 const HostQuotaCallback& callback,
+                                 const QuotaCallback& callback,
                                  const int64* new_quota,
                                  bool success);
   void DidInitialize(int64* temporary_quota_override,
@@ -348,7 +348,6 @@ class QuotaManager : public QuotaTaskObserver,
   void DidGetLRUOrigin(const GURL* origin,
                        bool success);
   void DidGetInitialTemporaryGlobalQuota(QuotaStatusCode status,
-                                         StorageType type,
                                          int64 quota_unused);
   void DidInitializeTemporaryOriginsInfo(bool success);
   void DidGetAvailableSpace(const AvailableSpaceCallback& callback,

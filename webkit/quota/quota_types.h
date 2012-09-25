@@ -43,13 +43,8 @@ typedef std::vector<UsageInfo> UsageInfoEntries;
 typedef base::Callback<void(StorageType status,
                             int64 usage,
                             int64 unlimited_usage)> GlobalUsageCallback;
-typedef base::Callback<void(QuotaStatusCode status,
-                            StorageType type,
-                            int64 quota)> QuotaCallback;
+typedef base::Callback<void(QuotaStatusCode status, int64 quota)> QuotaCallback;
 typedef base::Callback<void(int64 usage)> UsageCallback;
-// TODO(calvinlo): Merge HostQuotaCallback and QuotaCallback
-typedef base::Callback<void(QuotaStatusCode status,
-                            int64 quota)> HostQuotaCallback;
 typedef base::Callback<void(QuotaStatusCode, int64)> AvailableSpaceCallback;
 typedef base::Callback<void(QuotaStatusCode)> StatusCallback;
 typedef base::Callback<void(const std::set<GURL>& origins,

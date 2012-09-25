@@ -38,7 +38,7 @@ void QuotaInternalsProxy::RequestInfo(
 
   quota_manager_->GetTemporaryGlobalQuota(
       base::Bind(&QuotaInternalsProxy::DidGetGlobalQuota,
-                 weak_factory_.GetWeakPtr()));
+                 weak_factory_.GetWeakPtr(), quota::kStorageTypeTemporary));
 
   quota_manager_->GetGlobalUsage(
       quota::kStorageTypeTemporary,
@@ -93,8 +93,8 @@ void QuotaInternalsProxy::DidGetAvailableSpace(quota::QuotaStatusCode status,
     ReportAvailableSpace(space);
 }
 
-void QuotaInternalsProxy::DidGetGlobalQuota(quota::QuotaStatusCode status,
-                                            quota::StorageType type,
+void QuotaInternalsProxy::DidGetGlobalQuota(quota::StorageType type,
+                                            quota::QuotaStatusCode status,
                                             int64 quota) {
   if (status == quota::kQuotaStatusOk) {
     GlobalStorageInfo info(type);

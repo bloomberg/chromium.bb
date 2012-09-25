@@ -191,10 +191,9 @@ void CallGetUsageAndQuotaCallback(
 
 void CallQuotaCallback(
     const QuotaCallback& callback,
-    StorageType type,
     QuotaStatusCode status,
     const QuotaAndUsage& quota_and_usage) {
-  callback.Run(status, type, quota_and_usage.quota);
+  callback.Run(status, quota_and_usage.quota);
 }
 
 // This class is for posting GetUsage/GetQuota tasks, gathering
@@ -359,7 +358,7 @@ class QuotaManager::UsageAndQuotaDispatcherTask : public QuotaTask {
     return base::Bind(&UsageAndQuotaDispatcherTask::DidGetHostUsage,
                       weak_factory_.GetWeakPtr(), host(), type());
   }
-  HostQuotaCallback NewWaitableHostQuotaCallback() {
+  QuotaCallback NewWaitableHostQuotaCallback() {
     ++waiting_callbacks_;
     return base::Bind(&UsageAndQuotaDispatcherTask::DidGetHostQuota,
                       weak_factory_.GetWeakPtr(), host(), type());
@@ -975,13 +974,12 @@ void QuotaManager::GetAvailableSpace(const AvailableSpaceCallback& callback) {
 
 void QuotaManager::GetTemporaryGlobalQuota(const QuotaCallback& callback) {
   if (temporary_quota_override_ > 0) {
-    callback.Run(kQuotaStatusOk, kStorageTypeTemporary,
-                 temporary_quota_override_);
+    callback.Run(kQuotaStatusOk, temporary_quota_override_);
     return;
   }
   GetUsageAndQuotaInternal(
       GURL(), kStorageTypeTemporary, true /* global */,
-      base::Bind(&CallQuotaCallback, callback, kStorageTypeTemporary));
+      base::Bind(&CallQuotaCallback, callback));
 }
 
 void QuotaManager::SetTemporaryGlobalOverrideQuota(
@@ -990,15 +988,13 @@ void QuotaManager::SetTemporaryGlobalOverrideQuota(
 
   if (new_quota < 0) {
     if (!callback.is_null())
-      callback.Run(kQuotaErrorInvalidModification,
-                   kStorageTypeTemporary, -1);
+      callback.Run(kQuotaErrorInvalidModification, -1);
     return;
   }
 
   if (db_disabled_) {
     if (callback.is_null())
-      callback.Run(kQuotaErrorInvalidAccess,
-                   kStorageTypeTemporary, -1);
+      callback.Run(kQuotaErrorInvalidAccess, -1);
     return;
   }
 
@@ -1014,7 +1010,7 @@ void QuotaManager::SetTemporaryGlobalOverrideQuota(
 }
 
 void QuotaManager::GetPersistentHostQuota(const std::string& host,
-                                          const HostQuotaCallback& callback) {
+                                          const QuotaCallback& callback) {
   LazyInitialize();
   if (host.empty()) {
     // This could happen if we are called on file:///.
@@ -1039,7 +1035,7 @@ void QuotaManager::GetPersistentHostQuota(const std::string& host,
 
 void QuotaManager::SetPersistentHostQuota(const std::string& host,
                                           int64 new_quota,
-                                          const HostQuotaCallback& callback) {
+                                          const QuotaCallback& callback) {
   LazyInitialize();
   if (host.empty()) {
     // This could happen if we are called on file:///.
@@ -1492,10 +1488,10 @@ void QuotaManager::DidSetTemporaryGlobalOverrideQuota(
   if (callback.is_null())
     return;
 
-  callback.Run(status, kStorageTypeTemporary, *new_quota);
+  callback.Run(status, *new_quota);
 }
 
-void QuotaManager::DidGetPersistentHostQuota(const HostQuotaCallback& callback,
+void QuotaManager::DidGetPersistentHostQuota(const QuotaCallback& callback,
                                              const std::string& host,
                                              const int64* quota,
                                              bool success) {
@@ -1504,7 +1500,7 @@ void QuotaManager::DidGetPersistentHostQuota(const HostQuotaCallback& callback,
 }
 
 void QuotaManager::DidSetPersistentHostQuota(const std::string& host,
-                                             const HostQuotaCallback& callback,
+                                             const QuotaCallback& callback,
                                              const int64* new_quota,
                                              bool success) {
   DidDatabaseWork(success);
@@ -1557,9 +1553,7 @@ void QuotaManager::DidGetLRUOrigin(const GURL* origin,
 }
 
 void QuotaManager::DidGetInitialTemporaryGlobalQuota(
-    QuotaStatusCode status, StorageType type, int64 quota_unused) {
-  DCHECK_EQ(type, kStorageTypeTemporary);
-
+    QuotaStatusCode status, int64 quota_unused) {
   if (eviction_disabled_)
     return;
 

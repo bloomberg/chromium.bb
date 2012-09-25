@@ -108,7 +108,7 @@ class QuotaManagerTest : public testing::Test {
     quota_ = -1;
     quota_manager_->GetTemporaryGlobalQuota(
         base::Bind(&QuotaManagerTest::DidGetQuota,
-                   weak_factory_.GetWeakPtr()));
+                   weak_factory_.GetWeakPtr(), quota::kStorageTypeTemporary));
   }
 
   void SetTemporaryGlobalQuota(int64 new_quota) {
@@ -117,7 +117,7 @@ class QuotaManagerTest : public testing::Test {
     quota_manager_->SetTemporaryGlobalOverrideQuota(
         new_quota,
         base::Bind(&QuotaManagerTest::DidGetQuota,
-                   weak_factory_.GetWeakPtr()));
+                   weak_factory_.GetWeakPtr(), quota::kStorageTypeTemporary));
   }
 
   void GetPersistentHostQuota(const std::string& host) {
@@ -295,8 +295,8 @@ class QuotaManagerTest : public testing::Test {
     quota_ = quota;
   }
 
-  void DidGetQuota(QuotaStatusCode status,
-                   StorageType type,
+  void DidGetQuota(StorageType type,
+                   QuotaStatusCode status,
                    int64 quota) {
     quota_status_ = status;
     type_ = type;
