@@ -325,13 +325,14 @@ string16 TimeFormat::RelativeDate(
     const Time* optional_midnight_today) {
   Time midnight_today = optional_midnight_today ? *optional_midnight_today :
       Time::Now().LocalMidnight();
-
-  // Filter out "today" and "yesterday"
-  if (time >= midnight_today)
+  TimeDelta day = TimeDelta::FromMicroseconds(Time::kMicrosecondsPerDay);
+  Time tomorrow = midnight_today + day;
+  Time yesterday = midnight_today - day;
+  if (time >= tomorrow)
+    return string16();
+  else if (time >= midnight_today)
     return l10n_util::GetStringUTF16(IDS_PAST_TIME_TODAY);
-  else if (time >= midnight_today -
-                   TimeDelta::FromMicroseconds(Time::kMicrosecondsPerDay))
+  else if (time >= yesterday)
     return l10n_util::GetStringUTF16(IDS_PAST_TIME_YESTERDAY);
-
   return string16();
 }

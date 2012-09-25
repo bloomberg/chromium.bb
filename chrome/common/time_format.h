@@ -31,7 +31,8 @@ class TimeFormat {
   static string16 TimeRemainingShort(const base::TimeDelta& delta);
 
   // For displaying a relative time in the past.  This method returns either
-  // "Today", "Yesterday", or an empty string if it's older than that.
+  // "Today", "Yesterday", or an empty string if it's older than that.  Returns
+  // the empty string for days in the future.
   //
   // TODO(brettw): This should be able to handle days in the future like
   //    "Tomorrow".

@@ -104,8 +104,13 @@ Downloads.prototype.updated = function(download) {
     } else {
       this.node_.appendChild(this.downloads_[id].node);
     }
-    this.updateDateDisplay_();
   }
+  // Download.prototype.update may change its nodeSince_ and nodeDate_, so
+  // update all the date displays.
+  // TODO(benjhayden) Only do this if its nodeSince_ or nodeDate_ actually did
+  // change since this may touch 150 elements and Downloads.prototype.updated
+  // may be called 150 times.
+  this.updateDateDisplay_();
 };
 
 /**
