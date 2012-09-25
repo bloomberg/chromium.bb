@@ -6637,7 +6637,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         
         <!-- Natural scroll Notifications -->
         <message name="IDS_NATURAL_SCROLL_NOTIFICATION_MESSAGE" desc="Text of the natural scroll notification saying that natural scroll is now default.">
-          Scrolling just changed directions! Simple scrolling lets you use your touchpad the same way you use a touch screen. You can always change it back in settings.
+          Scrolling just changed directions! Simple scrolling lets you use your touchpad the same way you use a touch screen. Click here to change it back.
         </message>        
 
         <!-- about:system strings -->
