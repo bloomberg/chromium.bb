@@ -5,6 +5,7 @@
 // TODO(eroman): put these methods into a namespace.
 
 var printLogEntriesAsText;
+var searchLogEntriesForText;
 var proxySettingsToString;
 var stripCookiesAndLoginInfo;
 
@@ -26,12 +27,39 @@ function canCollapseBeginWithEnd(beginEntry) {
  */
 printLogEntriesAsText = function(logEntries, parent, privacyStripping,
                                  logCreationTime) {
+  var tablePrinter = createTablePrinter(logEntries, privacyStripping,
+                                        logCreationTime);
+
+  // Format the table for fixed-width text.
+  tablePrinter.toText(0, parent);
+}
+
+/**
+ * Searches the table that would be output by printLogEntriesAsText for
+ * |searchString|.  Returns true if |searchString| would appear entirely within
+ * any field in the table.  |searchString| must be lowercase.
+ *
+ * Seperate function from printLogEntriesAsText since TablePrinter.toText
+ * modifies the DOM.
+ */
+searchLogEntriesForText = function(searchString, logEntries, privacyStripping) {
+  var tablePrinter =
+      createTablePrinter(logEntries, privacyStripping, undefined);
+
+  // Format the table for fixed-width text.
+  return tablePrinter.search(searchString);
+}
+
+/**
+ * Creates a TablePrinter for use by the above two functions.
+ */
+function createTablePrinter(logEntries, privacyStripping, logCreationTime) {
   var entries = LogGroupEntry.createArrayFrom(logEntries);
   var tablePrinter = new TablePrinter();
   var parameterOutputter = new ParameterOutputter(tablePrinter);
 
   if (entries.length == 0)
-    return;
+    return tablePrinter;
 
   var startTime = timeutil.convertTimeTicksToTime(entries[0].orig.time);
 
@@ -81,8 +109,7 @@ printLogEntriesAsText = function(logEntries, parent, privacyStripping,
     addRowWithTime(tablePrinter, logCreationTime, startTime);
   }
 
-  // Format the table for fixed-width text.
-  tablePrinter.toText(0, parent);
+  return tablePrinter;
 }
 
 /**

@@ -111,6 +111,27 @@ var TablePrinter = (function() {
     },
 
     /**
+     * Returns true if searchString can be found entirely within a cell.
+     * Case insensitive.
+     *
+     * @param {string} string String to search for, must be lowercase.
+     * @return {boolean} True if some cell contains searchString.
+     */
+    search: function(searchString) {
+      var numColumns = this.getNumColumns();
+      for (var r = 0; r < this.rows_.length; ++r) {
+        for (var c = 0; c < numColumns; ++c) {
+          var cell = this.getCell_(r, c);
+          if (!cell)
+            continue;
+          if (cell.text.toLowerCase().indexOf(searchString) != -1)
+            return true;
+        }
+      }
+      return false;
+    },
+
+    /**
      * Prints a formatted text representation of the table data to the
      * node |parent|.  |spacing| indicates number of extra spaces, if any,
      * to add between columns.

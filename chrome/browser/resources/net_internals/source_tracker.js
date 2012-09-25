@@ -156,7 +156,7 @@ var SourceTracker = (function() {
      * privacy stripping changes:
      *
      *   observer.onSourceEntriesUpdated(sourceEntries)
-     *   ovserver.onAllSourceEntriesDeleted()
+     *   observer.onAllSourceEntriesDeleted()
      *   observer.onPrivacyStrippingChanged()
      */
     addSourceEntryObserver: function(observer) {

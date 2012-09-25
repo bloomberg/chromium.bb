@@ -177,8 +177,13 @@ var SourceRow = (function() {
 
       // Check source type, if needed.
       if (filter.type) {
+        var i;
         var sourceType = this.sourceEntry_.getSourceTypeString().toLowerCase();
-        if (filter.type.indexOf(sourceType) == -1)
+        for (i = 0; i < filter.type.length; ++i) {
+          if (sourceType.search(filter.type[i]) != -1)
+            break;
+        }
+        if (i == filter.type.length)
           return false;
       }
 
@@ -200,8 +205,10 @@ var SourceRow = (function() {
       if (sourceType.toLowerCase().indexOf(filter.text) != -1)
         return true;
 
-      var entryText = JSON.stringify(this.sourceEntry_.getLogEntries());
-      return entryText.toLowerCase().indexOf(filter.text) != -1;
+      return searchLogEntriesForText(
+          filter.text,
+          this.sourceEntry_.getLogEntries(),
+          SourceTracker.getInstance().getPrivacyStripping());
     },
 
     isSelected: function() {
