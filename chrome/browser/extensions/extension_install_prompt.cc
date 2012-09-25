@@ -494,7 +494,7 @@ void ExtensionInstallPrompt::FetchOAuthIssueAdviceIfNeeded() {
     return;
   }
 
-  Profile* profile = install_ui_->profile();
+  Profile* profile = install_ui_->profile()->GetOriginalProfile();
   TokenService* token_service = TokenServiceFactory::GetForProfile(profile);
 
   token_flow_.reset(new OAuth2MintTokenFlow(
