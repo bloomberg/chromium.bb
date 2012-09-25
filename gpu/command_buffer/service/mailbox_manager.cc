@@ -77,7 +77,6 @@ void MailboxManager::DestroyOwnedTextures(TextureManager* owner,
     TextureDefinitionMap::iterator current_it = it;
     ++it;
     if (current_it->second.owner == owner) {
-      NOTREACHED();
       GLuint service_id = current_it->second.definition->ReleaseServiceId();
       if (have_context)
         glDeleteTextures(1, &service_id);

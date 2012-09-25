@@ -170,7 +170,6 @@ class GPU_EXPORT TextureManager {
     }
 
     void SetImmutable(bool immutable) {
-      DCHECK(!immutable_);
       immutable_ = immutable;
     }
 

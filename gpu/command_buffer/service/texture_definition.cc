@@ -29,9 +29,11 @@ TextureDefinition::LevelInfo::LevelInfo(GLenum target,
 
 TextureDefinition::TextureDefinition(GLenum target,
                                      GLuint service_id,
+                                     bool immutable,
                                      const LevelInfos& level_infos)
     : target_(target),
       service_id_(service_id),
+      immutable_(immutable),
       level_infos_(level_infos) {
 }
 
