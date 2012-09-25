@@ -95,6 +95,13 @@ void Profile::RegisterUserPrefs(PrefService* prefs) {
                             "",
                             PrefService::UNSYNCABLE_PREF);
 #endif
+
+#if defined(OS_ANDROID)
+  prefs->RegisterBooleanPref(prefs::kDevToolsRemoteEnabled,
+                             false,
+                             PrefService::UNSYNCABLE_PREF);
+#endif
+
 }
 
 

@@ -541,11 +541,14 @@ extern const char kNtpWebStoreEnabled[];
 extern const char kNtpAppPageNames[];
 
 extern const char kDevToolsDisabled[];
-extern const char kDevToolsOpenDocked[];
 extern const char kDevToolsDockSide[];
-extern const char kDevToolsHSplitLocation[];
-extern const char kDevToolsVSplitLocation[];
 extern const char kDevToolsEditedFiles[];
+extern const char kDevToolsHSplitLocation[];
+extern const char kDevToolsOpenDocked[];
+#if defined(OS_ANDROID)
+extern const char kDevToolsRemoteEnabled[];
+#endif
+extern const char kDevToolsVSplitLocation[];
 
 extern const char kSyncLastSyncedTime[];
 extern const char kSyncHasSetupCompleted[];

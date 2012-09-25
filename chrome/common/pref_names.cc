@@ -1549,20 +1549,25 @@ const char kNtpAppPageNames[] = "ntp.app_page_names";
 
 const char kDevToolsDisabled[] = "devtools.disabled";
 
-// A boolean specifying whether dev tools window should be opened docked.
-const char kDevToolsOpenDocked[] = "devtools.open_docked";
-
 // A string specifying the dock location (either 'bottom' or 'right').
 const char kDevToolsDockSide[] = "devtools.dock_side";
+
+// Maps of files edited locally using DevTools.
+const char kDevToolsEditedFiles[] = "devtools.edited_files";
 
 // Integer location of the horizontal split bar in the browser view.
 const char kDevToolsHSplitLocation[] = "devtools.split_location";
 
+// A boolean specifying whether dev tools window should be opened docked.
+const char kDevToolsOpenDocked[] = "devtools.open_docked";
+
+#if defined(OS_ANDROID)
+// A boolean specifying whether remote dev tools debugging is enabled.
+const char kDevToolsRemoteEnabled[] = "devtools.remote_enabled";
+#endif
+
 // Integer location of the vertical split bar in the browser view.
 const char kDevToolsVSplitLocation[] = "devtools.v_split_location";
-
-// Maps of files edited locally using DevTools.
-const char kDevToolsEditedFiles[] = "devtools.edited_files";
 
 // 64-bit integer serialization of the base::Time when the last sync occurred.
 const char kSyncLastSyncedTime[] = "sync.last_synced_time";
