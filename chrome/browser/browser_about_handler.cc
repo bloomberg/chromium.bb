@@ -23,40 +23,41 @@ namespace {
 const char* const kPaths[] = {
   chrome::kChromeUIAppCacheInternalsHost,
   chrome::kChromeUIBlobInternalsHost,
+  chrome::kChromeUIBookmarksHost,
   chrome::kChromeUICacheHost,
   chrome::kChromeUIChromeURLsHost,
   chrome::kChromeUICrashesHost,
   chrome::kChromeUICreditsHost,
   chrome::kChromeUIDNSHost,
+  chrome::kChromeUIDownloadsHost,
+  chrome::kChromeUIExtensionsHost,
+  chrome::kChromeUIFlagsHost,
+  chrome::kChromeUIFlashHost,
   chrome::kChromeUIGpuInternalsHost,
   chrome::kChromeUIHistoryHost,
   chrome::kChromeUIIPCHost,
+  chrome::kChromeUIInspectHost,
   chrome::kChromeUIMediaInternalsHost,
   chrome::kChromeUIMemoryHost,
+  chrome::kChromeUINaClHost,
   chrome::kChromeUINetInternalsHost,
   chrome::kChromeUINetworkViewCacheHost,
   chrome::kChromeUINewTabHost,
   chrome::kChromeUIOmniboxHost,
+  chrome::kChromeUIPluginsHost,
+  chrome::kChromeUIPolicyHost,
   chrome::kChromeUIPredictorsHost,
   chrome::kChromeUIProfilerHost,
   chrome::kChromeUIQuotaInternalsHost,
+  chrome::kChromeUISettingsHost,
   chrome::kChromeUIStatsHost,
   chrome::kChromeUISyncInternalsHost,
-  chrome::kChromeUITermsHost,
-  chrome::kChromeUIVersionHost,
-#if defined(OS_ANDROID)
-  chrome::kChromeUIWelcomeHost,
-#else
-  chrome::kChromeUIBookmarksHost,
-  chrome::kChromeUIDownloadsHost,
-  // TODO(dfalcantara): Enable after http://crbug.com/143146 is fixed.
-  chrome::kChromeUIFlagsHost,
-  chrome::kChromeUIFlashHost,
-  chrome::kChromeUIInspectHost,
-  chrome::kChromeUIPluginsHost,
-  chrome::kChromeUISettingsHost,
-  chrome::kChromeUITracingHost,
+#if defined(OS_CHROMEOS)
+  chrome::kChromeUITaskManagerHost,
 #endif
+  chrome::kChromeUITermsHost,
+  chrome::kChromeUITracingHost,
+  chrome::kChromeUIVersionHost,
 #if defined(OS_WIN)
   chrome::kChromeUIConflictsHost,
 #endif
@@ -78,17 +79,7 @@ const char* const kPaths[] = {
   chrome::kChromeUIOSCreditsHost,
   chrome::kChromeUIProxySettingsHost,
   chrome::kChromeUISystemInfoHost,
-  chrome::kChromeUITaskManagerHost,
   chrome::kChromeUIWallpaperHost,
-#endif
-#if !defined(DISABLE_NACL)
-  chrome::kChromeUINaClHost,
-#endif
-#if defined(ENABLE_CONFIGURATION_POLICY)
-  chrome::kChromeUIPolicyHost,
-#endif
-#if defined(ENABLE_EXTENSIONS)
-  chrome::kChromeUIExtensionsHost,
 #endif
 #if defined(ENABLE_PRINTING)
   chrome::kChromeUIPrintHost,
