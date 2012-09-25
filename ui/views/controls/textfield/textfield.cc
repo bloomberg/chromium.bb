@@ -407,6 +407,12 @@ bool Textfield::OnKeyReleased(const ui::KeyEvent& e) {
   return native_wrapper_ && native_wrapper_->HandleKeyReleased(e);
 }
 
+bool Textfield::OnMouseDragged(const ui::MouseEvent& e) {
+  if (!e.IsOnlyRightMouseButton())
+    return View::OnMouseDragged(e);
+  return true;
+}
+
 void Textfield::OnFocus() {
   if (native_wrapper_)
     native_wrapper_->HandleFocus();

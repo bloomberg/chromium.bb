@@ -244,6 +244,7 @@ class VIEWS_EXPORT Textfield : public View {
   virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
   virtual bool OnKeyPressed(const ui::KeyEvent& e) OVERRIDE;
   virtual bool OnKeyReleased(const ui::KeyEvent& e) OVERRIDE;
+  virtual bool OnMouseDragged(const ui::MouseEvent& e) OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
