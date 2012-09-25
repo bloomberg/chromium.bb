@@ -139,6 +139,10 @@ void SearchResultListView::ListItemsRemoved(size_t start, size_t count) {
   ScheduleUpdate();
 }
 
+void SearchResultListView::ListItemMoved(size_t index, size_t target_index) {
+  NOTREACHED();
+}
+
 void SearchResultListView::ListItemsChanged(size_t start, size_t count) {
   ScheduleUpdate();
 }

@@ -325,6 +325,10 @@ void AppsGridView::ListItemsRemoved(size_t start, size_t count) {
   SchedulePaint();
 }
 
+void AppsGridView::ListItemMoved(size_t index, size_t target_index) {
+  NOTREACHED();
+}
+
 void AppsGridView::ListItemsChanged(size_t start, size_t count) {
   NOTREACHED();
 }

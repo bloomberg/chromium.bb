@@ -20,6 +20,10 @@ class UI_EXPORT ListModelObserver {
   // removal.
   virtual void ListItemsRemoved(size_t start, size_t count) = 0;
 
+  // Invoked after an item has been moved. See ListModel::Move() for details
+  // of the arguments.
+  virtual void ListItemMoved(size_t index, size_t target_index) = 0;
+
   // Invoked after items has been changed.
   virtual void ListItemsChanged(size_t start, size_t count) = 0;
 

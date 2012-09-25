@@ -62,6 +62,21 @@ class ListModel {
     NotifyItemsRemoved(0, to_be_deleted.size());
   }
 
+  // Moves the item at |index| to |target_index|. |target_index| is in terms
+  // of the model *after* the item at |index| is removed.
+  void Move(size_t index, size_t target_index) {
+    DCHECK_LT(index, item_count());
+    DCHECK_LT(target_index, item_count());
+
+    if (index == target_index)
+      return;
+
+    ItemType* item = items_[index];
+    items_.weak_erase(items_.begin() + index);
+    items_.insert(items_.begin() + target_index, item);
+    NotifyItemMoved(index, target_index);
+  }
+
   void AddObserver(ListModelObserver* observer) {
     observers_.AddObserver(observer);
   }
@@ -80,6 +95,12 @@ class ListModel {
     FOR_EACH_OBSERVER(ListModelObserver,
                       observers_,
                       ListItemsRemoved(start, count));
+  }
+
+  void NotifyItemMoved(size_t index, size_t target_index) {
+    FOR_EACH_OBSERVER(ListModelObserver,
+                      observers_,
+                      ListItemMoved(index, target_index));
   }
 
   void NotifyItemsChanged(size_t start, size_t count) {

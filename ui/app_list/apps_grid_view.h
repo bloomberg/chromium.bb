@@ -73,6 +73,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Overridden from ListModelObserver:
   virtual void ListItemsAdded(size_t start, size_t count) OVERRIDE;
   virtual void ListItemsRemoved(size_t start, size_t count) OVERRIDE;
+  virtual void ListItemMoved(size_t index, size_t target_index) OVERRIDE;
   virtual void ListItemsChanged(size_t start, size_t count) OVERRIDE;
 
   // Overridden from PaginationModelObserver:
