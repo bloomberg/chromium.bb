@@ -14,15 +14,19 @@
       'type': 'shared_library',
       'dependencies': [
         'chrome_android_core',
+        'chromium_testshell_jni_headers',
       ],
       'sources': [
         'android/testshell/chrome_main_delegate_testshell_android.cc',
         'android/testshell/chrome_main_delegate_testshell_android.h',
+        'android/testshell/tab_manager.cc',
+        'android/testshell/tab_manager.h',
         'android/testshell/testshell_entry_point.cc',
         'android/testshell/testshell_stubs.cc',
       ],
       'include_dirs': [
         '<(SHARED_INTERMEDIATE_DIR)/android',
+        '<(SHARED_INTERMEDIATE_DIR)/chromium_testshell',
         '../skia/config',
       ],
       'conditions': [
@@ -67,6 +71,17 @@
         },
       ],
       'includes': [ '../build/java_apk.gypi', ],
+    },
+    {
+      'target_name': 'chromium_testshell_jni_headers',
+      'type': 'none',
+      'sources': [
+        'android/testshell/java/src/org/chromium/chrome/testshell/TabManager.java',
+      ],
+      'variables': {
+        'jni_gen_dir': 'chromium_testshell',
+      },
+      'includes': [ '../build/jni_generator.gypi' ],
     },
     {
       'target_name': 'chrome_android_core',

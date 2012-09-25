@@ -5,6 +5,12 @@
 #include "chrome/android/testshell/chrome_main_delegate_testshell_android.h"
 
 #include "base/android/jni_android.h"
+#include "base/android/jni_registrar.h"
+#include "chrome/android/testshell/tab_manager.h"
+
+static base::android::RegistrationMethod kRegistrationMethods[] = {
+    { "TabManager", chrome::RegisterTabManager },
+};
 
 ChromeMainDelegateTestShellAndroid::ChromeMainDelegateTestShellAndroid() {
 }
@@ -14,5 +20,10 @@ ChromeMainDelegateTestShellAndroid::~ChromeMainDelegateTestShellAndroid() {
 
 bool ChromeMainDelegateTestShellAndroid::RegisterApplicationNativeMethods(
     JNIEnv* env) {
-  return ChromeMainDelegateAndroid::RegisterApplicationNativeMethods(env);
+  if (!ChromeMainDelegateAndroid::RegisterApplicationNativeMethods(env))
+    return false;
+
+  return base::android::RegisterNativeMethods(env,
+                                              kRegistrationMethods,
+                                              arraysize(kRegistrationMethods));
 }

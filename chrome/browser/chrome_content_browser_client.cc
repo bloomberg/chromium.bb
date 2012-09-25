@@ -851,10 +851,12 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
     if (process) {
       Profile* profile = Profile::FromBrowserContext(
           process->GetBrowserContext());
-      extensions::ProcessMap* process_map =
-          profile->GetExtensionService()->process_map();
-      if (process_map && process_map->Contains(process->GetID()))
-        command_line->AppendSwitch(switches::kExtensionProcess);
+      if (profile->GetExtensionService()) {
+        extensions::ProcessMap* process_map =
+            profile->GetExtensionService()->process_map();
+        if (process_map && process_map->Contains(process->GetID()))
+          command_line->AppendSwitch(switches::kExtensionProcess);
+      }
 
       PrefService* prefs = profile->GetPrefs();
       // Currently this pref is only registered if applied via a policy.

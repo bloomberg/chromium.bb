@@ -139,6 +139,8 @@
         'browser/android/provider/run_on_ui_thread_blocking.h',
         'browser/android/tab_android.cc',
         'browser/android/tab_android.h',
+        'browser/android/tab_base_android_impl.cc',
+        'browser/android/tab_base_android_impl.h',
         'browser/api/bookmarks/bookmark_service.h',
         'browser/api/infobars/confirm_infobar_delegate.cc',
         'browser/api/infobars/confirm_infobar_delegate.h',
@@ -2830,6 +2832,7 @@
             'android/java/src/org/chromium/chrome/browser/IntentHelper.java',
             'android/java/src/org/chromium/chrome/browser/JavascriptAppModalDialog.java',
             'android/java/src/org/chromium/chrome/browser/ProcessUtils.java',
+            'android/java/src/org/chromium/chrome/browser/TabBase.java',
             'android/java/src/org/chromium/chrome/browser/database/SQLiteCursor.java',
           ],
           'variables': {
