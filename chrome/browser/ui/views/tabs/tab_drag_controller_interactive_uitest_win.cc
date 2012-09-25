@@ -328,11 +328,14 @@ IN_PROC_BROWSER_TEST_F(TabDragControllerTest,
   gfx::Point tab_0_center(
       GetCenterInScreenCoordinates(tab_strip->tab_at(0)));
   ASSERT_TRUE(ui_test_utils::SendMouseMoveSync(tab_0_center));
+  VLOG(ERROR) << "1";
   ASSERT_TRUE(ui_test_utils::SendMouseEventsSync(
                   ui_controls::LEFT, ui_controls::DOWN));
+  VLOG(ERROR) << "2";
   ASSERT_TRUE(ui_test_utils::SendMouseMoveSync(
                   gfx::Point(tab_0_center.x(),
                              tab_0_center.y() + tab_strip->height() + 20)));
+  VLOG(ERROR) << "3";
   ASSERT_TRUE(tab_strip->IsDragSessionActive());
   ASSERT_FALSE(tab_strip2->IsDragSessionActive());
   ASSERT_TRUE(TabDragController::IsActive());
@@ -342,6 +345,7 @@ IN_PROC_BROWSER_TEST_F(TabDragControllerTest,
   gfx::Point target_point(tab_strip2->width() - 1,
                           tab_strip2->height() / 2);
   views::View::ConvertPointToScreen(tab_strip2, &target_point);
+  VLOG(ERROR) << "4";
   ASSERT_TRUE(ui_controls::SendMouseMove(target_point.x(), target_point.y()));
 
   ASSERT_TRUE(tab_strip->IsDragSessionActive());
@@ -349,9 +353,11 @@ IN_PROC_BROWSER_TEST_F(TabDragControllerTest,
   ASSERT_EQ(2u, BrowserList::size());
 
   // Cancel the drag.
+  VLOG(ERROR) << "5";
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
       browser2, ui::VKEY_ESCAPE, false, false, false, false));
 
+  VLOG(ERROR) << "6";
   ASSERT_FALSE(tab_strip->IsDragSessionActive());
   ASSERT_FALSE(tab_strip2->IsDragSessionActive());
   ASSERT_FALSE(TabDragController::IsActive());
