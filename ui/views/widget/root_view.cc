@@ -469,8 +469,14 @@ ui::EventResult RootView::OnGestureEvent(const ui::GestureEvent& event) {
     ui::EventResult status = handler->ProcessGestureEvent(handler_event);
 
     if (event.type() == ui::ET_GESTURE_END &&
-        event.details().touch_points() <= 1)
-      gesture_handler_ = NULL;
+        event.details().touch_points() <= 1) {
+      // In case a drag was in progress, reset all the handlers. Otherwise, just
+      // reset the gesture handler.
+      if (gesture_handler_ == mouse_pressed_handler_)
+        SetMouseHandler(NULL);
+      else
+        gesture_handler_ = NULL;
+    }
 
     if (scroll_gesture_handler_ && (event.type() == ui::ET_GESTURE_SCROLL_END ||
                                     event.type() == ui::ET_SCROLL_FLING_START))

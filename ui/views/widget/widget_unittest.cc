@@ -74,11 +74,13 @@ class MouseView : public View {
   MouseView()
       : View(),
         entered_(0),
-        exited_(0) {
+        exited_(0),
+        pressed_(0) {
   }
   virtual ~MouseView() {}
 
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE {
+    pressed_++;
     return true;
   }
 
@@ -104,11 +106,35 @@ class MouseView : public View {
     return i;
   }
 
+  int pressed() const { return pressed_; }
+
  private:
   int entered_;
   int exited_;
 
+  int pressed_;
+
   DISALLOW_COPY_AND_ASSIGN(MouseView);
+};
+
+// A view that does a capture on gesture-begin events.
+class GestureCaptureView : public View {
+ public:
+  GestureCaptureView() {}
+  virtual ~GestureCaptureView() {}
+
+ private:
+  // Overridden from View:
+  virtual ui::EventResult OnGestureEvent(
+      const ui::GestureEvent& event) OVERRIDE {
+    if (event.type() == ui::ET_GESTURE_BEGIN) {
+      GetWidget()->SetCapture(this);
+      return ui::ER_CONSUMED;
+    }
+    return ui::ER_UNHANDLED;
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(GestureCaptureView);
 };
 
 typedef ViewsTestBase WidgetTest;
@@ -898,6 +924,54 @@ TEST_F(WidgetTest, ExitFullscreenRestoreState) {
   EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED, GetWidgetShowState(toplevel));
 
   // Clean up.
+  toplevel->Close();
+  RunPendingMessages();
+}
+
+TEST_F(WidgetTest, ResetCaptureOnGestureEnd) {
+  Widget* toplevel = CreateTopLevelPlatformWidget();
+  View* container = new View;
+  toplevel->SetContentsView(container);
+
+  View* gesture = new GestureCaptureView;
+  gesture->SetBounds(0, 0, 30, 30);
+  container->AddChildView(gesture);
+
+  MouseView* mouse = new MouseView;
+  mouse->SetBounds(30, 0, 30, 30);
+  container->AddChildView(mouse);
+
+  toplevel->SetSize(gfx::Size(100, 100));
+  toplevel->Show();
+
+  // Start a gesture on |gesture|.
+  ui::GestureEvent begin(ui::ET_GESTURE_BEGIN,
+      15, 15, 0, base::TimeDelta(),
+      ui::GestureEventDetails(ui::ET_GESTURE_BEGIN, 0, 0), 1);
+  ui::GestureEvent end(ui::ET_GESTURE_END,
+      15, 15, 0, base::TimeDelta(),
+      ui::GestureEventDetails(ui::ET_GESTURE_END, 0, 0), 1);
+  toplevel->OnGestureEvent(begin);
+
+  // Now try to click on |mouse|. Since |gesture| will have capture, |mouse|
+  // will not receive the event.
+  gfx::Point click_location(45, 15);
+  ui::MouseEvent press(ui::ET_MOUSE_PRESSED, click_location, click_location,
+      ui::EF_LEFT_MOUSE_BUTTON);
+  ui::MouseEvent release(ui::ET_MOUSE_RELEASED, click_location, click_location,
+      ui::EF_LEFT_MOUSE_BUTTON);
+
+  toplevel->OnMouseEvent(press);
+  toplevel->OnMouseEvent(release);
+  EXPECT_EQ(0, mouse->pressed());
+
+  // The end of the gesture should release the capture, and pressing on |mouse|
+  // should now reach |mouse|.
+  toplevel->OnGestureEvent(end);
+  toplevel->OnMouseEvent(press);
+  toplevel->OnMouseEvent(release);
+  EXPECT_EQ(1, mouse->pressed());
+
   toplevel->Close();
   RunPendingMessages();
 }
