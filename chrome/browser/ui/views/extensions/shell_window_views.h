@@ -75,6 +75,7 @@ class ShellWindowViews : public NativeShellWindow,
       const gfx::Point& location) OVERRIDE;
   virtual gfx::ImageSkia GetWindowAppIcon() OVERRIDE;
   virtual gfx::ImageSkia GetWindowIcon() OVERRIDE;
+  virtual bool ShouldShowWindowTitle() const OVERRIDE;
 
  protected:
   // views::View implementation.

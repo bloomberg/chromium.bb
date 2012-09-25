@@ -601,6 +601,10 @@ gfx::ImageSkia ShellWindowViews::GetWindowIcon() {
   return gfx::ImageSkia();
 }
 
+bool ShellWindowViews::ShouldShowWindowTitle() const {
+  return false;
+}
+
 void ShellWindowViews::Layout() {
   DCHECK(web_view_);
   web_view_->SetBounds(0, 0, width(), height());
