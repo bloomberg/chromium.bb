@@ -50,10 +50,10 @@ class WebIntentPickerSheetControllerTest : public CocoaTest {
 
     NSArray* views = [[flip_views objectAtIndex:0] subviews];
 
-    // 4 subviews - header view, intents list, CWS link, close button.
+    // 5 subviews - header view, intents list, CWS link, CWS icon, close button.
     // intents list is not added if there are no rows.
     NSUInteger view_offset = row_count ? 1U : 0U;
-    ASSERT_EQ(3U + view_offset, [views count]);
+    ASSERT_EQ(4U + view_offset, [views count]);
 
     ASSERT_TRUE([[views objectAtIndex:0] isKindOfClass:[NSView class]]);
     CheckHeader([views objectAtIndex:0]);
@@ -61,8 +61,10 @@ class WebIntentPickerSheetControllerTest : public CocoaTest {
       ASSERT_TRUE([[views objectAtIndex:1] isKindOfClass:[NSView class]]);
     }
     ASSERT_TRUE([[views objectAtIndex:1 + view_offset] isKindOfClass:
-                 [NSButton class]]);
+                 [NSImageView class]]);
     ASSERT_TRUE([[views objectAtIndex:2 + view_offset] isKindOfClass:
+                 [NSButton class]]);
+    ASSERT_TRUE([[views objectAtIndex:3 + view_offset] isKindOfClass:
         [HoverCloseButton class]]);
 
     // Verify the close button
@@ -71,7 +73,7 @@ class WebIntentPickerSheetControllerTest : public CocoaTest {
 
     // Verify the Chrome Web Store button.
     NSButton* button = static_cast<NSButton*>(
-        [views objectAtIndex:1 + view_offset]);
+        [views objectAtIndex:2 + view_offset]);
     EXPECT_TRUE([[button cell] isKindOfClass:[HyperlinkButtonCell class]]);
     CheckButton(button, @selector(showChromeWebStore:));
   }

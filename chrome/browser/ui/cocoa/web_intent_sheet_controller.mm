@@ -854,17 +854,29 @@ const CGFloat kAddButtonWidth = 128.0;
 // Returns the y position delta for the next offset.
 - (CGFloat)addCwsButtonToSubviews:(NSMutableArray*)subviews
                          atOffset:(CGFloat)offset {
-  NSRect frame =
-      NSMakeRect(WebIntentPicker::kContentAreaBorder, offset, 100, 10);
-  NSString* string =
-      l10n_util::GetNSStringWithFixup(IDS_FIND_MORE_INTENT_HANDLER_MESSAGE);
-  scoped_nsobject<NSButton> button(CreateHyperlinkButton(string,frame));
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  NSImage* iconImage = rb.GetNativeImageNamed(IDR_WEBSTORE_ICON_16).ToNSImage();
+  NSRect imageFrame;
+  imageFrame.origin = NSMakePoint(WebIntentPicker::kContentAreaBorder, offset);
+  imageFrame.size = [iconImage size];
+  scoped_nsobject<NSImageView> iconView(
+      [[NSImageView alloc] initWithFrame:imageFrame]);
+  [iconView setImage:iconImage];
+  [iconView setImageFrameStyle:NSImageFrameNone];
+
+  const CGFloat kCWSIconPadding = 4.0;  // Same spacing as for service options.
+  NSRect frame = NSMakeRect(WebIntentPicker::kContentAreaBorder +
+                            NSWidth(imageFrame) + kCWSIconPadding,
+                            offset, 100, 10);
+  NSString* string = l10n_util::GetNSStringWithFixup(
+      IDS_FIND_MORE_INTENT_HANDLER_MESSAGE);
+  scoped_nsobject<NSButton> button(CreateHyperlinkButton(string, frame));
   [button setTarget:self];
   [button setAction:@selector(showChromeWebStore:)];
-  [subviews addObject:button.get()];
+  [subviews addObjectsFromArray:@[iconView, button]];
 
   // Call size-to-fit to fixup for the localized string.
-  [GTMUILocalizerAndLayoutTweaker sizeToFitView:button.get()];
+  [GTMUILocalizerAndLayoutTweaker sizeToFitView:button];
 
   return NSHeight([button frame]);
 }
