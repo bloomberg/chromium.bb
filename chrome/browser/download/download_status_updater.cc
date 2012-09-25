@@ -60,7 +60,7 @@ bool DownloadStatusUpdater::GetProgress(float* progress,
   int64 received_bytes = 0;
   int64 total_bytes = 0;
 
-  for (std::vector<HyperbolicDownloadItemNotifier*>::const_iterator it =
+  for (std::vector<AllDownloadItemNotifier*>::const_iterator it =
        notifiers_.begin(); it != notifiers_.end(); ++it) {
     if ((*it)->GetManager()) {
       content::DownloadManager::DownloadVector items;
@@ -87,7 +87,7 @@ bool DownloadStatusUpdater::GetProgress(float* progress,
 }
 
 void DownloadStatusUpdater::AddManager(content::DownloadManager* manager) {
-  notifiers_.push_back(new HyperbolicDownloadItemNotifier(manager, this));
+  notifiers_.push_back(new AllDownloadItemNotifier(manager, this));
   content::DownloadManager::DownloadVector items;
   manager->GetAllDownloads(&items);
   for (content::DownloadManager::DownloadVector::const_iterator

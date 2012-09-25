@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/download/hyperbolic_download_item_notifier.h"
+#include "chrome/browser/download/all_download_item_notifier.h"
 
-HyperbolicDownloadItemNotifier::HyperbolicDownloadItemNotifier(
+AllDownloadItemNotifier::AllDownloadItemNotifier(
     content::DownloadManager* manager,
-    HyperbolicDownloadItemNotifier::Observer* observer)
+    AllDownloadItemNotifier::Observer* observer)
     : manager_(manager),
       observer_(observer) {
   DCHECK(observer_);
@@ -21,7 +21,7 @@ HyperbolicDownloadItemNotifier::HyperbolicDownloadItemNotifier(
   }
 }
 
-HyperbolicDownloadItemNotifier::~HyperbolicDownloadItemNotifier() {
+AllDownloadItemNotifier::~AllDownloadItemNotifier() {
   if (manager_)
     manager_->RemoveObserver(this);
   for (std::set<content::DownloadItem*>::const_iterator it =
@@ -32,14 +32,14 @@ HyperbolicDownloadItemNotifier::~HyperbolicDownloadItemNotifier() {
   observing_.clear();
 }
 
-void HyperbolicDownloadItemNotifier::ManagerGoingDown(
+void AllDownloadItemNotifier::ManagerGoingDown(
     content::DownloadManager* manager) {
   DCHECK_EQ(manager_, manager);
   manager_->RemoveObserver(this);
   manager_ = NULL;
 }
 
-void HyperbolicDownloadItemNotifier::OnDownloadCreated(
+void AllDownloadItemNotifier::OnDownloadCreated(
     content::DownloadManager* manager,
     content::DownloadItem* item) {
   item->AddObserver(this);
@@ -47,22 +47,22 @@ void HyperbolicDownloadItemNotifier::OnDownloadCreated(
   observer_->OnDownloadCreated(manager, item);
 }
 
-void HyperbolicDownloadItemNotifier::OnDownloadUpdated(
+void AllDownloadItemNotifier::OnDownloadUpdated(
     content::DownloadItem* item) {
   observer_->OnDownloadUpdated(manager_, item);
 }
 
-void HyperbolicDownloadItemNotifier::OnDownloadOpened(
+void AllDownloadItemNotifier::OnDownloadOpened(
     content::DownloadItem* item) {
   observer_->OnDownloadOpened(manager_, item);
 }
 
-void HyperbolicDownloadItemNotifier::OnDownloadRemoved(
+void AllDownloadItemNotifier::OnDownloadRemoved(
     content::DownloadItem* item) {
   observer_->OnDownloadRemoved(manager_, item);
 }
 
-void HyperbolicDownloadItemNotifier::OnDownloadDestroyed(
+void AllDownloadItemNotifier::OnDownloadDestroyed(
     content::DownloadItem* item) {
   item->RemoveObserver(this);
   observing_.erase(item);

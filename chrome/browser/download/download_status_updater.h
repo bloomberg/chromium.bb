@@ -8,13 +8,13 @@
 #include <set>
 
 #include "base/basictypes.h"
-#include "chrome/browser/download/hyperbolic_download_item_notifier.h"
+#include "chrome/browser/download/all_download_item_notifier.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 
 // Keeps track of download progress for the entire browser.
 class DownloadStatusUpdater
-  : public HyperbolicDownloadItemNotifier::Observer {
+  : public AllDownloadItemNotifier::Observer {
  public:
   DownloadStatusUpdater();
   virtual ~DownloadStatusUpdater();
@@ -32,7 +32,7 @@ class DownloadStatusUpdater
   // manager when the manager is shutdown.
   void AddManager(content::DownloadManager* manager);
 
-  // HyperbolicDownloadItemNotifier::Observer
+  // AllDownloadItemNotifier::Observer
   virtual void OnDownloadCreated(
       content::DownloadManager* manager, content::DownloadItem* item) OVERRIDE;
   virtual void OnDownloadUpdated(
@@ -46,7 +46,7 @@ class DownloadStatusUpdater
   virtual void UpdateAppIconDownloadProgress(content::DownloadItem* download);
 
  private:
-  std::vector<HyperbolicDownloadItemNotifier*> notifiers_;
+  std::vector<AllDownloadItemNotifier*> notifiers_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadStatusUpdater);
 };

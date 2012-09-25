@@ -2,27 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_DOWNLOAD_HYPERBOLIC_DOWNLOAD_ITEM_NOTIFIER_H_
-#define CHROME_BROWSER_DOWNLOAD_HYPERBOLIC_DOWNLOAD_ITEM_NOTIFIER_H_
+#ifndef CHROME_BROWSER_DOWNLOAD_ALL_DOWNLOAD_ITEM_NOTIFIER_H_
+#define CHROME_BROWSER_DOWNLOAD_ALL_DOWNLOAD_ITEM_NOTIFIER_H_
 
 #include <set>
 
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_item.h"
 
-// HyperbolicDownloadItemNotifier observes ALL the DownloadItems on a given
+// AllDownloadItemNotifier observes ALL the DownloadItems on a given
 // DownloadManager.
 // Clients should use GetManager() instead of storing their own pointer to the
 // manager so that they can be sensitive to managers that have gone down.
 
 // Example Usage:
-// class AndAHalf : public HyperbolicDownloadItemNotifier::Observer {
+// class DownloadSystemConsumer : public AllDownloadItemNotifier::Observer {
 //  public:
-//   AndAHalf(content::DownloadManager* original_manager,
+//   DownloadSystemConsumer(content::DownloadManager* original_manager,
 //            content::DownloadManager* incognito_manager)
-//     : ALLOW_THIS_IN_INITIALIZATION_LIST(original_hyperbole_(
+//     : ALLOW_THIS_IN_INITIALIZATION_LIST(original_notifier_(
 //           original_manager, this)),
-//       ALLOW_THIS_IN_INITIALIZATION_LIST(incognito_hyperbole_(
+//       ALLOW_THIS_IN_INITIALIZATION_LIST(incognito_notifier_(
 //           incognito_manager, this)) {
 //   }
 //
@@ -30,11 +30,11 @@
 //     content::DownloadManager* manager, content::DownloadItem* item) { ... }
 //
 //  private:
-//   HyperbolicDownloadItemNotifier original_hyperbole_;
-//   HyperbolicDownloadItemNotifier incognito_hyperbole_;
+//   AllDownloadItemNotifier original_notifier_;
+//   AllDownloadItemNotifier incognito_notifier_;
 // };
 
-class HyperbolicDownloadItemNotifier
+class AllDownloadItemNotifier
   : public content::DownloadManager::Observer,
     public content::DownloadItem::Observer {
  public:
@@ -59,10 +59,10 @@ class HyperbolicDownloadItemNotifier
     DISALLOW_COPY_AND_ASSIGN(Observer);
   };
 
-  HyperbolicDownloadItemNotifier(content::DownloadManager* manager,
+  AllDownloadItemNotifier(content::DownloadManager* manager,
                                  Observer* observer);
 
-  virtual ~HyperbolicDownloadItemNotifier();
+  virtual ~AllDownloadItemNotifier();
 
   // Returns NULL if the manager has gone down.
   content::DownloadManager* GetManager() const { return manager_; }
@@ -80,10 +80,10 @@ class HyperbolicDownloadItemNotifier
   virtual void OnDownloadDestroyed(content::DownloadItem* item) OVERRIDE;
 
   content::DownloadManager* manager_;
-  HyperbolicDownloadItemNotifier::Observer* observer_;
+  AllDownloadItemNotifier::Observer* observer_;
   std::set<content::DownloadItem*> observing_;
 
-  DISALLOW_COPY_AND_ASSIGN(HyperbolicDownloadItemNotifier);
+  DISALLOW_COPY_AND_ASSIGN(AllDownloadItemNotifier);
 };
 
-#endif  // CHROME_BROWSER_DOWNLOAD_HYPERBOLIC_DOWNLOAD_ITEM_NOTIFIER_H_
+#endif  // CHROME_BROWSER_DOWNLOAD_ALL_DOWNLOAD_ITEM_NOTIFIER_H_

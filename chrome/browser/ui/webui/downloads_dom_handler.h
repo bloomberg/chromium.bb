@@ -10,7 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/download/hyperbolic_download_item_notifier.h"
+#include "chrome/browser/download/all_download_item_notifier.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -26,7 +26,7 @@ class WebContents;
 // The handler for Javascript messages related to the "downloads" view,
 // also observes changes to the download manager.
 class DownloadsDOMHandler : public content::WebUIMessageHandler,
-                            public HyperbolicDownloadItemNotifier::Observer {
+                            public AllDownloadItemNotifier::Observer {
  public:
   explicit DownloadsDOMHandler(content::DownloadManager* dlm);
   virtual ~DownloadsDOMHandler();
@@ -36,7 +36,7 @@ class DownloadsDOMHandler : public content::WebUIMessageHandler,
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE;
 
-  // HyperbolicDownloadItemNotifier::Observer interface
+  // AllDownloadItemNotifier::Observer interface
   virtual void OnDownloadCreated(
       content::DownloadManager* manager,
       content::DownloadItem* download_item) OVERRIDE;
@@ -126,11 +126,11 @@ class DownloadsDOMHandler : public content::WebUIMessageHandler,
   string16 search_text_;
 
   // Notifies OnDownload*() and provides safe access to the DownloadManager.
-  HyperbolicDownloadItemNotifier main_notifier_;
+  AllDownloadItemNotifier main_notifier_;
 
   // If |main_notifier_| observes an incognito profile, then this observes the
   // DownloadManager for the original profile; otherwise, this is NULL.
-  scoped_ptr<HyperbolicDownloadItemNotifier> original_notifier_;
+  scoped_ptr<AllDownloadItemNotifier> original_notifier_;
 
   // Whether a call to SendCurrentDownloads() is currently scheduled.
   bool update_scheduled_;

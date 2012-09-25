@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/download/hyperbolic_download_item_notifier.h"
+#include "chrome/browser/download/all_download_item_notifier.h"
 
 #include "content/public/test/mock_download_item.h"
 #include "content/public/test/mock_download_manager.h"
@@ -15,7 +15,7 @@ using testing::_;
 
 namespace {
 
-class MockNotifierObserver : public HyperbolicDownloadItemNotifier::Observer {
+class MockNotifierObserver : public AllDownloadItemNotifier::Observer {
  public:
   MockNotifierObserver() {
   }
@@ -34,13 +34,13 @@ class MockNotifierObserver : public HyperbolicDownloadItemNotifier::Observer {
   DISALLOW_COPY_AND_ASSIGN(MockNotifierObserver);
 };
 
-class HyperbolicDownloadItemNotifierTest : public testing::Test {
+class AllDownloadItemNotifierTest : public testing::Test {
  public:
-  HyperbolicDownloadItemNotifierTest()
+  AllDownloadItemNotifierTest()
     : download_manager_(new content::MockDownloadManager) {
   }
 
-  virtual ~HyperbolicDownloadItemNotifierTest() {}
+  virtual ~AllDownloadItemNotifierTest() {}
 
   content::MockDownloadManager& manager() {
     return *download_manager_.get();
@@ -60,7 +60,7 @@ class HyperbolicDownloadItemNotifierTest : public testing::Test {
 
   void SetNotifier() {
     EXPECT_CALL(*download_manager_.get(), AddObserver(_));
-    notifier_.reset(new HyperbolicDownloadItemNotifier(
+    notifier_.reset(new AllDownloadItemNotifier(
         download_manager_.get(), &observer_));
   }
 
@@ -71,16 +71,16 @@ class HyperbolicDownloadItemNotifierTest : public testing::Test {
  private:
   NiceMock<content::MockDownloadItem> item_;
   scoped_refptr<content::MockDownloadManager> download_manager_;
-  scoped_ptr<HyperbolicDownloadItemNotifier> notifier_;
+  scoped_ptr<AllDownloadItemNotifier> notifier_;
   NiceMock<MockNotifierObserver> observer_;
 
-  DISALLOW_COPY_AND_ASSIGN(HyperbolicDownloadItemNotifierTest);
+  DISALLOW_COPY_AND_ASSIGN(AllDownloadItemNotifierTest);
 };
 
 }  // namespace
 
-TEST_F(HyperbolicDownloadItemNotifierTest,
-    HyperbolicDownloadItemNotifierTest_0) {
+TEST_F(AllDownloadItemNotifierTest,
+    AllDownloadItemNotifierTest_0) {
   content::DownloadManager::DownloadVector items;
   items.push_back(&item());
   EXPECT_CALL(manager(), GetAllDownloads(_))
@@ -102,8 +102,8 @@ TEST_F(HyperbolicDownloadItemNotifierTest,
   ClearNotifier();
 }
 
-TEST_F(HyperbolicDownloadItemNotifierTest,
-    HyperbolicDownloadItemNotifierTest_1) {
+TEST_F(AllDownloadItemNotifierTest,
+    AllDownloadItemNotifierTest_1) {
   EXPECT_CALL(manager(), GetAllDownloads(_));
   SetNotifier();
 

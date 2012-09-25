@@ -214,7 +214,7 @@ DownloadsDOMHandler::DownloadsDOMHandler(content::DownloadManager* dlm)
   ChromeURLDataManager::AddDataSource(profile, new FileIconSource());
 
   if (profile->IsOffTheRecord()) {
-    original_notifier_.reset(new HyperbolicDownloadItemNotifier(
+    original_notifier_.reset(new AllDownloadItemNotifier(
         BrowserContext::GetDownloadManager(profile->GetOriginalProfile()),
         this));
   }

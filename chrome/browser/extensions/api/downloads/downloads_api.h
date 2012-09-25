@@ -13,7 +13,7 @@
 #include "base/memory/singleton.h"
 #include "base/string16.h"
 #include "base/values.h"
-#include "chrome/browser/download/hyperbolic_download_item_notifier.h"
+#include "chrome/browser/download/all_download_item_notifier.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "content/public/browser/download_id.h"
 #include "content/public/browser/download_item.h"
@@ -214,13 +214,13 @@ class DownloadsGetFileIconFunction : public AsyncExtensionFunction {
 // Observes a single DownloadManager and many DownloadItems and dispatches
 // onCreated and onErased events.
 class ExtensionDownloadsEventRouter
-  : public HyperbolicDownloadItemNotifier::Observer {
+  : public AllDownloadItemNotifier::Observer {
  public:
   explicit ExtensionDownloadsEventRouter(
       Profile* profile, content::DownloadManager* manager);
   virtual ~ExtensionDownloadsEventRouter();
 
-  // HyperbolicDownloadItemNotifier::Observer interface
+  // AllDownloadItemNotifier::Observer interface
   virtual void OnDownloadCreated(
       content::DownloadManager* manager,
       content::DownloadItem* download_item) OVERRIDE;
@@ -241,7 +241,7 @@ class ExtensionDownloadsEventRouter
   void DispatchEvent(const char* event_name, base::Value* json_arg);
 
   Profile* profile_;
-  HyperbolicDownloadItemNotifier notifier_;
+  AllDownloadItemNotifier notifier_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionDownloadsEventRouter);
 };
