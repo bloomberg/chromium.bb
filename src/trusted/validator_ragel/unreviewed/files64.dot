@@ -13,6 +13,7 @@ digraph files64 {
 	byte_machines_py [label="byte_machines.py" style="filled" fillcolor="lightgray"];
 	parse_instruction_rl [label="parse_instruction.rl" style="filled" fillcolor="lightgray"];
 	validator_x86_64_rl [label="validator_x86_64.rl" style="filled" fillcolor="lightgray"];
+	decoder_internal_h [label="decoder_internal.h" style="filled" fillcolor="lightgray"];
 	validator_internal_h [label="validator_internal.h" style="filled" fillcolor="lightgray"];
 	node [shape="invtrapezium"];
 	gen_dfa [label="gen_dfa" style="filled" fillcolor="gray"];
@@ -36,6 +37,7 @@ digraph files64 {
 	ragel -> validator_x86_64_c [color="black:black"];
 	validator_x86_64_instruction_consts_c -> gcc [color="black:black" weight="2"];
 	validator_x86_64_c -> gcc [color="black:black"];
+	decoder_internal_h -> gcc [color="black:black"];
 	validator_internal_h -> gcc [color="black:black"];
 	gcc -> validator_x86_64_o [color="black:black"];
 }
