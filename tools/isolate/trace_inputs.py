@@ -701,10 +701,11 @@ class Results(object):
       assert not path.endswith(os.path.sep), path
       super(Results.Directory, self).__init__(
           root, path + os.path.sep, tainted, size, nb_files)
-      # In that case, it's not a cache, it's an actual value that is never
-      # modified and represents the total size of the files contained in this
-      # directory.
-      assert size
+      # For a Directory instance, self.size is not a cache, it's an actual value
+      # that is never modified and represents the total size of the files
+      # contained in this directory. It is possible that the directory is empty
+      # so that size == 0; this happens if there's only an invalid symlink in
+      # it.
 
     def flatten(self):
       out = super(Results.Directory, self).flatten()
@@ -3108,22 +3109,38 @@ def CMDread(args):
   api = get_api()
   def blacklist(f):
     return any(re.match(b, f) for b in options.blacklist)
-  results = load_trace(options.log, options.root_dir, api, blacklist)
-  simplified = extract_directories(options.root_dir, results.files, blacklist)
-  simplified = [f.replace_variables(variables) for f in simplified]
+  data = api.parse_log(options.log, blacklist)
+  # Process each trace.
+  output_as_json = []
+  for item in data:
+    if 'exception' in item:
+      print >> sys.stderr, (
+          'Trace %s: Got an exception: %s' % (item['trace'], item['exception']))
+      continue
+    results = item['results']
+    if options.root_dir:
+      results = results.strip_root(options.root_dir)
+
+    if options.json:
+      output_as_json.append(results.flatten())
+    else:
+      simplified = extract_directories(
+          options.root_dir, results.files, blacklist)
+      simplified = [f.replace_variables(variables) for f in simplified]
+      if len(data) > 1:
+        print('Trace: %s' % item['trace'])
+      print('Total: %d' % len(results.files))
+      print('Non existent: %d' % len(results.non_existent))
+      for f in results.non_existent:
+        print('  %s' % f.path)
+      print(
+          'Interesting: %d reduced to %d' % (
+              len(results.existent), len(simplified)))
+      for f in simplified:
+        print('  %s' % f.path)
 
   if options.json:
-    write_json(sys.stdout, results.flatten(), False)
-  else:
-    print('Total: %d' % len(results.files))
-    print('Non existent: %d' % len(results.non_existent))
-    for f in results.non_existent:
-      print('  %s' % f.path)
-    print(
-        'Interesting: %d reduced to %d' % (
-            len(results.existent), len(simplified)))
-    for f in simplified:
-      print('  %s' % f.path)
+    write_json(sys.stdout, output_as_json, False)
   return 0
 
 

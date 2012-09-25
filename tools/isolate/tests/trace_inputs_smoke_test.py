@@ -230,6 +230,9 @@ class TraceInputs(TraceInputsBase):
         ],
         cwd=ROOT_DIR)
     actual_json = json.loads(actual_text)
+    self.assertEquals(list, actual_json.__class__)
+    self.assertEquals(1, len(actual_json))
+    actual_json = actual_json[0]
     # Removes the pids.
     self.assertTrue(actual_json['root'].pop('pid'))
     self.assertTrue(actual_json['root']['children'][0].pop('pid'))
