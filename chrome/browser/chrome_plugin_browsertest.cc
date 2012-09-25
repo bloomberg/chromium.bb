@@ -200,8 +200,8 @@ IN_PROC_BROWSER_TEST_F(ChromePluginTest, InstalledPlugins) {
     "Chrome PDF Viewer",
     "Shockwave Flash",
     "Native Client",
-#if defined(OS_CHROMEOS)
     "Chrome Remote Desktop Viewer",
+#if defined(OS_CHROMEOS)
     "Google Talk Plugin",
     "Google Talk Plugin Video Accelerator",
     "Netflix",
