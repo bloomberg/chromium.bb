@@ -43,13 +43,13 @@ class CloudPrintHelpers {
                                    const std::string& oauth_client_id,
                                    const std::string& proxy_id);
 
-  // Generates an MD5 hash of the contents of a string map.
-  static std::string GenerateHashOfStringMap(
-      const std::map<std::string, std::string>& string_map);
-  static void GenerateMultipartPostDataForPrinterTags(
-      const std::map<std::string, std::string>& printer_tags,
-      const std::string& mime_boundary,
-      std::string* post_data);
+  // Returns an MD5 hash for printer tags.
+  static std::string GetHashOfPrinterTags(
+      const printing::PrinterBasicInfo& printer);
+  // Returns an post data for printer tags.
+  static std::string GetPostDataForPrinterTags(
+      const printing::PrinterBasicInfo& printer_info,
+      const std::string& mime_boundary);
 
   // Returns true is tags indicate a dry run (test) job.
   static bool IsDryRunJob(const std::vector<std::string>& tags);

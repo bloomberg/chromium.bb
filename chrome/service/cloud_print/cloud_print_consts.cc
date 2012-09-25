@@ -31,6 +31,13 @@ const char kOAuthCodeValue[] = "authorization_code";
 const char kProxyTagPrefix[] = "__cp__";
 const char kTagsHashTagName[] = "__cp__tagshash";
 const char kTagDryRunFlag[] = "__cp__dry_run";
+// Don't need prefixes. They will be added on submit.
+const char kChromeVersionTagName[] = "chrome_version";
+const char kSystemNameTagName[] = "system_name";
+const char kSystemVersionTagName[] = "system_version";
+
+extern const char kChromeVersionTagName[];
+extern const char kOsTagName[];
 
 const char kCloudPrintGaiaServiceId[] = "cloudprint";
 const char kProxyAuthUserAgent[] = "ChromiumBrowser";

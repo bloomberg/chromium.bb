@@ -534,11 +534,8 @@ void CloudPrintConnector::OnReceivePrinterCaps(
   cloud_print::AddMultipartValueForUpload(kPrinterStatusValue,
       base::StringPrintf("%d", info.printer_status),
       mime_boundary, std::string(), &post_data);
-  // Add printer options as tags.
-  CloudPrintHelpers::GenerateMultipartPostDataForPrinterTags(info.options,
-                                                             mime_boundary,
-                                                             &post_data);
-
+  post_data += CloudPrintHelpers::GetPostDataForPrinterTags(info,
+                                                            mime_boundary);
   cloud_print::AddMultipartValueForUpload(kPrinterCapsValue,
       caps_and_defaults.printer_capabilities, mime_boundary,
       caps_and_defaults.caps_mime_type, &post_data);

@@ -890,19 +890,6 @@ std::string PrintSystemWin::GetSupportedMimeTypes() {
 }
 
 
-std::string PrintSystem::GenerateProxyId() {
-  GUID proxy_id = {0};
-  HRESULT hr = UuidCreate(&proxy_id);
-  DCHECK(SUCCEEDED(hr));
-  wchar_t* proxy_id_as_string = NULL;
-  UuidToString(&proxy_id, reinterpret_cast<RPC_WSTR *>(&proxy_id_as_string));
-  DCHECK(proxy_id_as_string);
-  std::string ret;
-  WideToUTF8(proxy_id_as_string, wcslen(proxy_id_as_string), &ret);
-  RpcStringFree(reinterpret_cast<RPC_WSTR *>(&proxy_id_as_string));
-  return ret;
-}
-
 scoped_refptr<PrintSystem> PrintSystem::CreateInstance(
     const base::DictionaryValue* print_system_settings) {
   return new PrintSystemWin;

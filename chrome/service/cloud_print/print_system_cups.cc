@@ -727,15 +727,6 @@ std::string PrintSystemCUPS::GetSupportedMimeTypes() {
   return supported_mime_types_;
 }
 
-std::string PrintSystem::GenerateProxyId() {
-  // TODO(gene): This code should generate a unique id for proxy. ID should be
-  // unique for this user. Rand may return the same number. We'll need to change
-  // this in the future.
-  std::string id("CP_PROXY_");
-  id += base::Uint64ToString(base::RandUint64());
-  return id;
-}
-
 scoped_refptr<PrintSystem> PrintSystem::CreateInstance(
     const DictionaryValue* print_system_settings) {
   return new PrintSystemCUPS(print_system_settings);

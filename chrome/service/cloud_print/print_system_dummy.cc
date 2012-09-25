@@ -12,11 +12,6 @@
 
 namespace cloud_print {
 
-std::string PrintSystem::GenerateProxyId() {
-  NOTREACHED();
-  return std::string();
-}
-
 scoped_refptr<PrintSystem> PrintSystem::CreateInstance(
     const base::DictionaryValue* print_system_settings) {
   NOTREACHED();
@@ -25,3 +20,4 @@ scoped_refptr<PrintSystem> PrintSystem::CreateInstance(
 }  // namespace cloud_print
 
 #endif  // CP_PRINT_SYSTEM_AVAILABLE
+

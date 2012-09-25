@@ -620,13 +620,12 @@ void PrinterJobHandler::OnReceivePrinterCaps(
                << ", printer name: " << printer_name;
   }
 
-  std::string tags_hash =
-      CloudPrintHelpers::GenerateHashOfStringMap(printer_info.options);
+  std::string tags_hash = CloudPrintHelpers::GetHashOfPrinterTags(printer_info);
   if (tags_hash != printer_info_cloud_.tags_hash) {
     printer_info_cloud_.tags_hash = tags_hash;
-    CloudPrintHelpers::GenerateMultipartPostDataForPrinterTags(
-        printer_info.options, mime_boundary, &post_data);
-    // Remove all the exising proxy tags.
+    post_data += CloudPrintHelpers::GetPostDataForPrinterTags(printer_info,
+                                                              mime_boundary);
+    // Remove all the existing proxy tags.
     std::string cp_tag_wildcard(kProxyTagPrefix);
     cp_tag_wildcard += ".*";
     cloud_print::AddMultipartValueForUpload(kPrinterRemoveTagValue,

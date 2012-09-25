@@ -9,11 +9,40 @@
 #include "base/rand_util.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/sys_info.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/cloud_print/cloud_print_helpers.h"
 #include "chrome/service/cloud_print/cloud_print_consts.h"
 #include "chrome/service/cloud_print/cloud_print_token_store.h"
 #include "chrome/service/service_process.h"
+
+namespace {
+
+typedef std::map<std::string, std::string> PrinterTags;
+
+void GetPrinterTags(const printing::PrinterBasicInfo& printer,
+                    PrinterTags* printer_tags) {
+  *printer_tags = printer.options;
+  chrome::VersionInfo version_info;
+  DCHECK(version_info.is_valid());
+  (*printer_tags)[kChromeVersionTagName] = version_info.CreateVersionString();
+  using base::SysInfo;
+  (*printer_tags)[kSystemNameTagName] = SysInfo::OperatingSystemName();
+  (*printer_tags)[kSystemVersionTagName] = SysInfo::OperatingSystemVersion();
+}
+
+std::string HashPrinterTags(const PrinterTags& strings) {
+  std::string values_list;
+  PrinterTags::const_iterator it;
+  for (it = strings.begin(); it != strings.end(); ++it) {
+    values_list.append(it->first);
+    values_list.append(it->second);
+  }
+  return base::MD5String(values_list);
+}
+
+}  // namespace
 
 std::string StringFromJobStatus(cloud_print::PrintJobStatus status) {
   std::string ret;
@@ -159,53 +188,48 @@ GURL CloudPrintHelpers::GetUrlForGetAuthCode(const GURL& cloud_print_server_url,
   return cloud_print_server_url.ReplaceComponents(replacements);
 }
 
-std::string CloudPrintHelpers::GenerateHashOfStringMap(
-    const std::map<std::string, std::string>& string_map) {
+std::string CloudPrintHelpers::GetHashOfPrinterTags(
+    const printing::PrinterBasicInfo& printer) {
+  PrinterTags printer_tags;
+  GetPrinterTags(printer, &printer_tags);
   std::string values_list;
-  std::map<std::string, std::string>::const_iterator it;
-  for (it = string_map.begin(); it != string_map.end(); ++it) {
+  for (PrinterTags::const_iterator it = printer_tags.begin();
+      it != printer_tags.end(); ++it) {
     values_list.append(it->first);
     values_list.append(it->second);
   }
   return base::MD5String(values_list);
 }
 
-void CloudPrintHelpers::GenerateMultipartPostDataForPrinterTags(
-    const std::map<std::string, std::string>& printer_tags,
-    const std::string& mime_boundary,
-    std::string* post_data) {
-  // We do not use the GenerateHashOfStringMap to compute the hash because that
-  // method iterates through the map again. Since we are already iterating here
-  // we just compute it on the fly.
-  // Also, in some cases, the code that calls this has already computed the
-  // hash. We could take in the precomputed hash as an argument but that just
-  // makes the code more complicated.
-  std::string tags_list;
-  std::map<std::string, std::string>::const_iterator it;
-  for (it = printer_tags.begin(); it != printer_tags.end(); ++it) {
+std::string CloudPrintHelpers::GetPostDataForPrinterTags(
+    const printing::PrinterBasicInfo& printer,
+    const std::string& mime_boundary) {
+  PrinterTags printer_tags;
+  GetPrinterTags(printer, &printer_tags);
+  std::string post_data;
+  for (PrinterTags::const_iterator it = printer_tags.begin();
+      it != printer_tags.end(); ++it) {
     // TODO(gene) Escape '=' char from name. Warning for now.
     if (it->first.find('=') != std::string::npos) {
       LOG(WARNING) <<
           "CP_PROXY: Printer option name contains '=' character";
       NOTREACHED();
     }
-    tags_list.append(it->first);
-    tags_list.append(it->second);
-
     // All our tags have a special prefix to identify them as such.
     std::string msg(kProxyTagPrefix);
     msg += it->first;
     msg += "=";
     msg += it->second;
     cloud_print::AddMultipartValueForUpload(kPrinterTagValue, msg,
-        mime_boundary, std::string(), post_data);
+        mime_boundary, std::string(), &post_data);
   }
-  std::string tags_hash = base::MD5String(tags_list);
   std::string tags_hash_msg(kTagsHashTagName);
   tags_hash_msg += "=";
-  tags_hash_msg += tags_hash;
+  tags_hash_msg += HashPrinterTags(printer_tags);
   cloud_print::AddMultipartValueForUpload(kPrinterTagValue, tags_hash_msg,
-      mime_boundary, std::string(), post_data);
+                                          mime_boundary, std::string(),
+                                          &post_data);
+  return post_data;
 }
 
 bool CloudPrintHelpers::IsDryRunJob(const std::vector<std::string>& tags) {
