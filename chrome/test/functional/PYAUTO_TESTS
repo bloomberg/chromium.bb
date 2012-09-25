@@ -505,6 +505,8 @@
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
       '-perf.HTML5BenchmarkTest',  # crbug.com/134476
+      '-perf.LiveWebappLoadTest.testNewTabGmail',  # crbug.com/136554
+      '-perf.ScrollTest.testGmailScroll',  # crbug.com/136554
       '-perf.WebGLTest.testWebGLField',  # crbug.com/132797
 
       # ===========================
