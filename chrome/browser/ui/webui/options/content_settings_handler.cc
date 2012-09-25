@@ -426,7 +426,9 @@ void ContentSettingsHandler::GetLocalizedValues(
     { "mediaStreamAsk", IDS_MEDIA_STREAM_ASK_RADIO },
     { "mediaStreamBlock", IDS_MEDIA_STREAM_BLOCK_RADIO },
     // PPAPI broker filter.
-    { "ppapi_broker_tab_label", IDS_PPAPI_BROKER_TAB_LABEL },
+    // TODO(bauerb): Use IDS_PPAPI_BROKER_HEADER.
+    { "ppapi-broker_header", IDS_PPAPI_BROKER_TAB_LABEL },
+    { "ppapiBrokerTabLabel", IDS_PPAPI_BROKER_TAB_LABEL },
     { "ppapi_broker_allow", IDS_PPAPI_BROKER_ALLOW_RADIO },
     { "ppapi_broker_ask", IDS_PPAPI_BROKER_ASK_RADIO },
     { "ppapi_broker_block", IDS_PPAPI_BROKER_BLOCK_RADIO },
@@ -460,6 +462,8 @@ void ContentSettingsHandler::GetLocalizedValues(
                 IDS_PEPPER_FLASH_CAMERAMIC_TAB_LABEL);
   RegisterTitle(localized_strings, "media-stream",
                 IDS_MEDIA_STREAM_TAB_LABEL);
+  RegisterTitle(localized_strings, "ppapi-broker",
+                IDS_PPAPI_BROKER_TAB_LABEL);
 
   Profile* profile = Profile::FromWebUI(web_ui());
   localized_strings->SetBoolean(
