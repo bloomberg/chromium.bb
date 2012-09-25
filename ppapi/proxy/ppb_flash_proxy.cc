@@ -243,7 +243,9 @@ double PPB_Flash_Proxy::GetLocalTimeZoneOffset(PP_Instance instance,
     return s_local_offset;
 
   s_last_updated = now.ToInternalValue();
-#if defined(OS_LINUX)
+  // TODO(shess): Figure out why OSX needs the access, the sandbox
+  // warmup should handle it.  http://crbug.com/149006
+#if defined(OS_LINUX) || defined(OS_MACOSX)
   // On Linux localtime needs access to the filesystem, which is prohibited
   // by the sandbox. It would be better to go directly to the browser process
   // for this message rather than proxy it through some instance in a renderer.
