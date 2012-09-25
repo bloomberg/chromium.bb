@@ -15,7 +15,8 @@
 #include "googleurl/src/gurl.h"
 #include "grit/webkit_resources.h"
 #include "net/android/network_library.h"
-#include "media/base/android/media_player_listener.h"
+#include "net/android/net_jni_registrar.h"
+#include "media/base/android/media_jni_registrar.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/support/test_webkit_platform_support.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
@@ -46,8 +47,13 @@ void BeforeInitialize(bool unit_test_mode) {
   JNIEnv* env = base::android::AttachCurrentThread();
   net::android::RegisterNetworkLibrary(env);
 
-  if (!unit_test_mode)
-    media::MediaPlayerListener::RegisterMediaPlayerListener(env);
+  // Chromium binaries will register their Jni bindings through the library
+  // loader that is part of content/. WebKit uses a different path, so the
+  // bindings have to be initialized separately as well.
+  if (!unit_test_mode) {
+    media::RegisterJni(env);
+    net::android::RegisterJni(env);
+  }
 }
 
 void AfterInitialize(bool unit_test_mode) {
