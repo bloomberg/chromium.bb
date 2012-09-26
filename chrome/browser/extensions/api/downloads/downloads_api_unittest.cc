@@ -1983,8 +1983,16 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 // to interrupted, and test that that state transition is detectable by an
 // onChanged event listener.  TODO(benjhayden): Test other sources of
 // interruptions such as server death.
+// Crashes on ChromeOS only.  http://crbug.com/152429
+#if defined(OS_CHROMEOS)
+#define MAYBE_DownloadExtensionTest_Download_Cancel \
+    DISABLED_DownloadExtensionTest_Download_Cancel
+#else
+#define MAYBE_DownloadExtensionTest_Download_Cancel \
+    DownloadExtensionTest_Download_Cancel
+#endif
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
-                       DownloadExtensionTest_Download_Cancel) {
+                       MAYBE_DownloadExtensionTest_Download_Cancel) {
   LoadExtension("downloads_split");
   CHECK(StartTestServer());
   std::string download_url = test_server()->GetURL(
