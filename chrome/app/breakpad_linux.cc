@@ -56,7 +56,7 @@
 #endif
 
 #if defined(ADDRESS_SANITIZER)
-#include <ucontext.h> // for getcontext().
+#include <ucontext.h>  // for getcontext().
 #endif
 
 #if defined(OS_ANDROID)
@@ -142,7 +142,7 @@ unsigned my_uint64_len(uint64_t i) {
   return len;
 }
 
-// uint64_t version of my_itos() from
+// uint64_t version of my_uitos() from
 // breakpad/src/common/linux/linux_libc_support.h. Convert a non-negative
 // integer to a string (not null-terminated).
 void my_uint64tos(char* output, uint64_t i, unsigned i_len) {
@@ -304,8 +304,8 @@ void MimeWriter::AddPairDataInChunks(const char* msg_type,
 
   while (msg_length) {
     char num[16];
-    const unsigned num_len = my_int_len(++i);
-    my_itos(num, i, num_len);
+    const unsigned num_len = my_uint_len(++i);
+    my_uitos(num, i, num_len);
 
     size_t chunk_len = std::min(chunk_size, msg_length);
 
@@ -685,14 +685,14 @@ void LoadDataFromFile(google_breakpad::PageAllocator& allocator,
 void HandleCrashDump(const BreakpadInfo& info) {
   int dumpfd;
   size_t dump_size;
-  uint8_t *dump_data;
+  uint8_t* dump_data;
   google_breakpad::PageAllocator allocator;
   LoadDataFromFile(allocator, info, info.filename,
                    &dumpfd, &dump_data, &dump_size);
 #if defined(ADDRESS_SANITIZER)
   int logfd;
   size_t log_size;
-  uint8_t *log_data;
+  uint8_t* log_data;
   // Load the AddressSanitizer log into log_data.
   LoadDataFromFile(allocator, info, info.log_filename,
                    &logfd, &log_data, &log_size);
