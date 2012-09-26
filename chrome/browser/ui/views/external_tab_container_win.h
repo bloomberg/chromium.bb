@@ -90,6 +90,7 @@ class ExternalTabContainerWin : public ExternalTabContainer,
   virtual gfx::NativeView GetExternalTabNativeView() const OVERRIDE;
   virtual void SetTabHandle(int handle) OVERRIDE;
   virtual int GetTabHandle() const OVERRIDE;
+  virtual bool ExecuteContextMenuCommand(int command) OVERRIDE;
   virtual void RunUnloadHandlers(IPC::Message* reply_message) OVERRIDE;
   virtual void ProcessUnhandledAccelerator(const MSG& msg) OVERRIDE;
   virtual void FocusThroughTabTraversal(bool reverse,
@@ -125,7 +126,6 @@ class ExternalTabContainerWin : public ExternalTabContainer,
   virtual void UpdateTargetURL(content::WebContents* source, int32 page_id,
                                const GURL& url) OVERRIDE;
   virtual void ContentsZoomChange(bool zoom_in) OVERRIDE;
-  virtual gfx::NativeWindow GetFrameNativeWindow() OVERRIDE;
   virtual void WebContentsCreated(content::WebContents* source_contents,
                                   int64 source_frame_id,
                                   const GURL& target_url,
@@ -144,7 +144,6 @@ class ExternalTabContainerWin : public ExternalTabContainer,
   virtual bool OnGoToEntryOffset(int offset) OVERRIDE;
   virtual bool HandleContextMenu(
       const content::ContextMenuParams& params) OVERRIDE;
-  virtual bool ExecuteContextMenuCommand(int command) OVERRIDE;
   virtual void BeforeUnloadFired(content::WebContents* tab,
                                  bool proceed,
                                  bool* proceed_to_fire_unload) OVERRIDE;

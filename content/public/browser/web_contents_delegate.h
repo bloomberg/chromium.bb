@@ -231,9 +231,6 @@ class CONTENT_EXPORT WebContentsDelegate {
   // Returns true if the context menu operation was handled by the delegate.
   virtual bool HandleContextMenu(const content::ContextMenuParams& params);
 
-  // Returns true if the context menu command was handled
-  virtual bool ExecuteContextMenuCommand(int command);
-
   // Opens source view for given WebContents that is navigated to the given
   // page url.
   virtual void ViewSourceForTab(WebContents* source, const GURL& page_url);
@@ -275,9 +272,6 @@ class CONTENT_EXPORT WebContentsDelegate {
   // Allows delegate to override navigation to the history entries.
   // Returns true to allow WebContents to continue with the default processing.
   virtual bool OnGoToEntryOffset(int offset);
-
-  // Returns the native window framing the view containing the WebContents.
-  virtual gfx::NativeWindow GetFrameNativeWindow();
 
   // Allows delegate to control whether a WebContents will be created. Returns
   // true to allow the creation. Default is to allow it. In cases where the

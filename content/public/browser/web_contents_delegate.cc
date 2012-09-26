@@ -76,10 +76,6 @@ bool WebContentsDelegate::HandleContextMenu(
   return false;
 }
 
-bool WebContentsDelegate::ExecuteContextMenuCommand(int command) {
-  return false;
-}
-
 void WebContentsDelegate::ViewSourceForTab(WebContents* source,
                                            const GURL& page_url) {
   // Fall back implementation based entirely on the view-source scheme.
@@ -112,10 +108,6 @@ bool WebContentsDelegate::PreHandleKeyboardEvent(
 
 bool WebContentsDelegate::OnGoToEntryOffset(int offset) {
   return true;
-}
-
-gfx::NativeWindow WebContentsDelegate::GetFrameNativeWindow() {
-  return NULL;
 }
 
 bool WebContentsDelegate::ShouldCreateWebContents(

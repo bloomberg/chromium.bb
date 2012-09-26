@@ -89,6 +89,9 @@ class ExternalTabContainer : public base::RefCounted<ExternalTabContainer> {
   virtual void SetTabHandle(int handle) = 0;
   virtual int GetTabHandle() const = 0;
 
+  // Returns true if the context menu command was handled
+  virtual bool ExecuteContextMenuCommand(int command) = 0;
+
  protected:
   virtual ~ExternalTabContainer() {}
 

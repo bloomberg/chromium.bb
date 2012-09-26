@@ -331,6 +331,26 @@ int ExternalTabContainerWin::GetTabHandle() const {
   return tab_handle_;
 }
 
+bool ExternalTabContainerWin::ExecuteContextMenuCommand(int command) {
+  if (!external_context_menu_.get()) {
+    NOTREACHED();
+    return false;
+  }
+
+  switch (command) {
+    case IDS_CONTENT_CONTEXT_SAVEAUDIOAS:
+    case IDS_CONTENT_CONTEXT_SAVEVIDEOAS:
+    case IDS_CONTENT_CONTEXT_SAVEIMAGEAS:
+    case IDS_CONTENT_CONTEXT_SAVELINKAS: {
+      NOTREACHED();  // Should be handled in host.
+      break;
+    }
+  }
+
+  external_context_menu_->ExecuteCommand(command);
+  return true;
+}
+
 void ExternalTabContainerWin::RunUnloadHandlers(IPC::Message* reply_message) {
   if (!automation_) {
     delete reply_message;
@@ -595,10 +615,6 @@ void ExternalTabContainerWin::UpdateTargetURL(WebContents* source,
 void ExternalTabContainerWin::ContentsZoomChange(bool zoom_in) {
 }
 
-gfx::NativeWindow ExternalTabContainerWin::GetFrameNativeWindow() {
-  return GetNativeView();
-}
-
 bool ExternalTabContainerWin::TakeFocus(content::WebContents* source,
                                         bool reverse) {
   if (automation_) {
@@ -711,26 +727,6 @@ bool ExternalTabContainerWin::HandleContextMenu(
   return true;
 }
 
-bool ExternalTabContainerWin::ExecuteContextMenuCommand(int command) {
-  if (!external_context_menu_.get()) {
-    NOTREACHED();
-    return false;
-  }
-
-  switch (command) {
-    case IDS_CONTENT_CONTEXT_SAVEAUDIOAS:
-    case IDS_CONTENT_CONTEXT_SAVEVIDEOAS:
-    case IDS_CONTENT_CONTEXT_SAVEIMAGEAS:
-    case IDS_CONTENT_CONTEXT_SAVELINKAS: {
-      NOTREACHED();  // Should be handled in host.
-      break;
-    }
-  }
-
-  external_context_menu_->ExecuteCommand(command);
-  return true;
-}
-
 bool ExternalTabContainerWin::PreHandleKeyboardEvent(
     content::WebContents* source,
     const NativeWebKeyboardEvent& event,
@@ -772,7 +768,7 @@ void ExternalTabContainerWin::BeforeUnloadFired(WebContents* tab,
 
 void ExternalTabContainerWin::ShowRepostFormWarningDialog(WebContents* source) {
   TabModalConfirmDialog::Create(new RepostFormWarningController(source),
-                                TabContents::FromWebContents(source));
+                                    TabContents::FromWebContents(source));
 }
 
 void ExternalTabContainerWin::RunFileChooser(
