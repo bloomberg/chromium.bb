@@ -131,9 +131,7 @@ def EncodeRegs(regs):
 
 def PopenDebugStub(test):
   gdb_rsp.EnsurePortIsAvailable()
-  # Double '-c' turns off validation. This is needed because the test is using
-  # instructions that do not validate, for example, 'int3'.
-  return subprocess.Popen(SEL_LDR_COMMAND + ['-c', '-c', '-g', test])
+  return subprocess.Popen(SEL_LDR_COMMAND + ['-g', test])
 
 
 def KillProcess(process):
@@ -341,35 +339,6 @@ class DebugStubTest(unittest.TestCase):
       self.CheckReadRegisters(connection)
       self.CheckWriteRegisters(connection)
       self.CheckReadOnlyRegisters(connection)
-
-  def test_breakpoint(self):
-    if sys.platform == 'darwin':
-      # TODO(mseaborn): Make this work on Mac OS X (and enable it) by
-      # removing this test's use of the int3 instruction.
-      return
-    with LaunchDebugStub('test_breakpoint') as connection:
-      # Continue until breakpoint.
-      reply = connection.RspRequest('c')
-      AssertReplySignal(reply, NACL_SIGTRAP)
-
-      ip = DecodeRegs(connection.RspRequest('g'))[IP_REG[ARCH]]
-
-      if ARCH == 'x86-32' or ARCH == 'x86-64':
-        # Check ip points after the int3 instruction.
-        reply = connection.RspRequest('m%x,%x' % (ip - 1, 1))
-        self.assertEquals(reply, 'cc')
-        # Continue until exit.
-        reply = connection.RspRequest('c')
-        self.assertEquals(reply, 'W00')
-      elif ARCH == 'arm':
-        # Check pc points to the "bkpt 0x7777" instruction.  We do not
-        # skip past these instructions because the sandbox uses them
-        # as "halt" instructions, and skipping past them is unsafe.
-        breakpoint_instruction = EncodeHex(struct.pack('I', 0xe1277777))
-        reply = connection.RspRequest('m%x,%x' % (ip, 4))
-        self.assertEquals(reply, breakpoint_instruction)
-      else:
-        raise AssertionError('Unknown architecture')
 
   def test_reading_and_writing_memory(self):
     # Any arguments to the nexe would work here because we do not run

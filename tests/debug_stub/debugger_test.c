@@ -102,29 +102,6 @@ void set_registers_and_stop() {
 #endif
 }
 
-void test_breakpoint() {
-#if defined(__i386__) || defined(__x86_64__)
-  /*
-   * In this bundle int3 (0xcc) is surrounded by instructions that have no
-   * 0xcc in their encodings, thus int3 can be located unambiguously.
-   */
-  __asm__(".align 32\n"
-          "nop\n"
-          "nop\n"
-          "int3\n"
-          "nop\n"
-          "nop\n");
-#elif defined(__arm__)
-  __asm__(".p2align 4\n"
-          "nop\n"
-          "bkpt 0x7777\n"
-          "nop\n"
-          "nop\n");
-#else
-# error Update test_breakpoint for other architectures
-#endif
-}
-
 /*
  * The test sets a breakpoint on this function, so for that to work
  * this function must not be inlined.
@@ -238,10 +215,6 @@ int main(int argc, char **argv) {
   }
   if (strcmp(argv[1], "test_setting_breakpoint") == 0) {
     breakpoint_target_func();
-    return 0;
-  }
-  if (strcmp(argv[1], "test_breakpoint") == 0) {
-    test_breakpoint();
     return 0;
   }
   if (strcmp(argv[1], "test_exit_code") == 0) {
