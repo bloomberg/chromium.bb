@@ -372,14 +372,24 @@ bool SessionModelAssociator::AssociateTab(const SyncedTabDelegate& tab,
   return WriteTabContentsToSyncModel(tab_link, error);
 }
 
+// static
+GURL SessionModelAssociator::GetCurrentVirtualURL(
+    const SyncedTabDelegate& tab_delegate) {
+  GURL new_url;
+  const int current_index = tab_delegate.GetCurrentEntryIndex();
+  const int pending_index = tab_delegate.GetPendingEntryIndex();
+  const NavigationEntry* current_entry =
+      (current_index == pending_index) ?
+      tab_delegate.GetPendingEntry() :
+      tab_delegate.GetEntryAtIndex(current_index);
+  return current_entry->GetVirtualURL();
+}
+
 bool SessionModelAssociator::WriteTabContentsToSyncModel(
     TabLink* tab_link,
     syncer::SyncError* error) {
   DCHECK(CalledOnValidThread());
-  const SyncedTabDelegate& tab = *(tab_link->tab());
-  const SyncedWindowDelegate& window =
-      *SyncedWindowDelegate::FindSyncedWindowDelegateWithId(
-          tab.GetWindowId());
+  const SyncedTabDelegate& tab_delegate = *(tab_link->tab());
   int64 sync_id = tab_link->sync_id();
   GURL old_tab_url = tab_link->url();
 
@@ -387,13 +397,14 @@ bool SessionModelAssociator::WriteTabContentsToSyncModel(
   // is a new tab, session_tab will be a blank/newly created SessionTab object.
   SessionTab* session_tab =
       synced_session_tracker_.GetTab(GetCurrentMachineTag(),
-                                     tab.GetSessionId());
+                                     tab_delegate.GetSessionId());
 
-  // We build a clean session tab specifics directly from the tab data.
-  sync_pb::SessionTab tab_s;
+  base::Time now = base::Time::Now();
+  UpdateSessionTabFromDelegate(tab_delegate, now, now, session_tab);
 
-  GURL new_url;
-  AssociateTabContents(window, tab, session_tab, &tab_s, &new_url);
+  const GURL new_url = GetCurrentVirtualURL(tab_delegate);
+  DVLOG(1) << "Local tab " << tab_delegate.GetSessionId()
+           << " now has URL " << new_url.spec();
 
   // Trigger the favicon load if needed. We do this before opening the write
   // transaction to avoid jank.
@@ -418,6 +429,7 @@ bool SessionModelAssociator::WriteTabContentsToSyncModel(
     return false;
   }
 
+  sync_pb::SessionTab tab_s = session_tab->ToSyncData();
   sync_pb::SessionSpecifics specifics = tab_node.GetSessionSpecifics();
   if (new_url == old_tab_url) {
     // Load the old specifics and copy over the favicon data if needed.
@@ -438,106 +450,98 @@ bool SessionModelAssociator::WriteTabContentsToSyncModel(
   return true;
 }
 
-// Builds |sync_tab| by combining data from |prev_tab| and |new_tab|. Updates
-// |prev_tab| to reflect the newest version.
-// Timestamps are chosen from either |prev_tab| or base::Time::Now() based on
-// the following rules:
-// 1. If a navigation exists in both |new_tab| and |prev_tab|, as determined
-//    by the unique id, and the navigation didn't just become the current
-//    navigation, we preserve the old timestamp.
+// Updates |session_tab| by combining existing data and new data from
+// |tab_delegate|.
+//
+// Timestamps are chosen from either |session_tab| or
+// |default_navigation_timestamp| based on the following rules:
+// 1. If a navigation exists in both |tab_delegate| and |session_tab|,
+//    as determined by the unique id, and the navigation didn't just
+//    become the current navigation, we preserve the old timestamp.
 // 2. If the navigation exists in both but just become the current navigation
 //    (e.g. the user went back in history to this navigation), we update the
-//    timestamp to Now().
-// 3. All new navigations not present in |prev_tab| have their timestamps set to
-//    Now().
-void SessionModelAssociator::AssociateTabContents(
-    const SyncedWindowDelegate& window,
-    const SyncedTabDelegate& new_tab,
-    SessionTab* prev_tab,
-    sync_pb::SessionTab* sync_tab,
-    GURL* new_url) {
-  DCHECK(prev_tab);
-  DCHECK(sync_tab);
-  DCHECK(new_url);
-  SessionID::id_type tab_id = new_tab.GetSessionId();
-  sync_tab->set_tab_id(tab_id);
-  sync_tab->set_window_id(new_tab.GetWindowId());
-  const int current_index = new_tab.GetCurrentEntryIndex();
-  sync_tab->set_current_navigation_index(current_index);
+//    timestamp to |default_navigation_timestamp|.
+// 3. All new navigations not present in |session_tab| have their
+//    timestamps set to |default_navigation_timestamp| (if they're the
+//    current one) or nulled out (if not).
+//
+// static
+void SessionModelAssociator::UpdateSessionTabFromDelegate(
+    const SyncedTabDelegate& tab_delegate,
+    base::Time mtime,
+    base::Time default_navigation_timestamp,
+    SessionTab* session_tab) {
+  DCHECK(session_tab);
+  session_tab->window_id.set_id(tab_delegate.GetWindowId());
+  session_tab->tab_id.set_id(tab_delegate.GetSessionId());
+  session_tab->tab_visual_index = 0;
+  session_tab->current_navigation_index = tab_delegate.GetCurrentEntryIndex();
+  session_tab->pinned = tab_delegate.IsPinned();
+  session_tab->extension_app_id = tab_delegate.GetExtensionAppId();
+  session_tab->user_agent_override.clear();
+  session_tab->timestamp = mtime;
+  const int current_index = tab_delegate.GetCurrentEntryIndex();
+  const int pending_index = tab_delegate.GetPendingEntryIndex();
   const int min_index = std::max(0,
                                  current_index - kMaxSyncNavigationCount);
   const int max_index = std::min(current_index + kMaxSyncNavigationCount,
-                                 new_tab.GetEntryCount());
-  const int pending_index = new_tab.GetPendingEntryIndex();
-  sync_tab->set_pinned(window.IsTabPinned(&new_tab));
-  if (new_tab.HasExtensionAppId()) {
-    sync_tab->set_extension_app_id(new_tab.GetExtensionAppId());
-  }
-
-  sync_tab->mutable_navigation()->Clear();
+                                 tab_delegate.GetEntryCount());
+  std::vector<TabNavigation> previous_navigations;
+  previous_navigations.swap(session_tab->navigations);
   std::vector<TabNavigation>::const_iterator prev_nav_iter =
-      prev_tab->navigations.begin();
+      previous_navigations.begin();
   for (int i = min_index; i < max_index; ++i) {
     const NavigationEntry* entry = (i == pending_index) ?
-       new_tab.GetPendingEntry() : new_tab.GetEntryAtIndex(i);
+       tab_delegate.GetPendingEntry() : tab_delegate.GetEntryAtIndex(i);
     DCHECK(entry);
     if (i == min_index) {
       // Find the location of the first navigation within the previous list of
       // navigations. We only need to do this once, as all subsequent
       // navigations are either contiguous or completely new.
-      for (;prev_nav_iter != prev_tab->navigations.end();
+      for (;prev_nav_iter != previous_navigations.end();
            ++prev_nav_iter) {
         if (prev_nav_iter->unique_id() == entry->GetUniqueID())
           break;
       }
     }
     if (entry->GetVirtualURL().is_valid()) {
-      if (i == current_index) {
-        *new_url = GURL(entry->GetVirtualURL().spec());
-        DVLOG(1) << "Associating local tab " << new_tab.GetSessionId()
-                 << " with url " << new_url->spec() << " and title "
-                 << entry->GetTitle();
-
-      }
-      sync_pb::TabNavigation* sync_nav = sync_tab->add_navigation();
-      const TabNavigation& navigation =
-          TabNavigation::FromNavigationEntry(i, *entry, base::Time::Now());
-      *sync_nav = navigation.ToSyncData();
-
+      // TODO(akalin): Remove this logic once we have a timestamp in
+      // NavigationEntry (since we can just use those directly).
+      base::Time timestamp;
       // If this navigation is an old one, reuse the old timestamp. Otherwise we
       // leave the timestamp as the current time.
-      if (prev_nav_iter != prev_tab->navigations.end() &&
+      if (prev_nav_iter != previous_navigations.end() &&
           prev_nav_iter->unique_id() == entry->GetUniqueID()) {
-        // Check that we haven't gone back/foward in the nav stack to this page
+        // Check that we haven't gone back/forward in the nav stack to this page
         // (if so, we want to refresh the timestamp).
-        if (!(current_index != prev_tab->current_navigation_index &&
+        if (!(current_index != session_tab->current_navigation_index &&
               current_index == i)) {
-          sync_nav->set_timestamp(
-              syncer::TimeToProtoTime(prev_nav_iter->timestamp()));
-          DVLOG(2) << "Nav to " << sync_nav->virtual_url() << " already known, "
-                   << "reusing old timestamp " << sync_nav->timestamp();
+          timestamp = prev_nav_iter->timestamp();
+          DVLOG(2) << "Nav to " << entry->GetVirtualURL()
+                   << " already known, reusing old timestamp "
+                   << timestamp.ToInternalValue();
         }
         // Even if the user went back in their history, they may have skipped
         // over navigations, so the subsequent navigation entries may need their
         // old timestamps preserved.
         ++prev_nav_iter;
-      } else if (current_index != i &&
-                 prev_tab->navigations.empty()) {
+      } else if (current_index != i && previous_navigations.empty()) {
         // If this is a new tab, and has more than one navigation, we don't
         // actually want to assign the current timestamp to other navigations.
         // Override the timestamp to 0 in that case.
         // Note: this is primarily to handle restoring sessions at restart,
         // opening recently closed tabs, or opening tabs from other devices.
         // Only the current navigation should have a timestamp in those cases.
-        sync_nav->set_timestamp(0);
+        timestamp = base::Time();
+      } else {
+        timestamp = default_navigation_timestamp;
       }
+
+      session_tab->navigations.push_back(
+          TabNavigation::FromNavigationEntry(i, *entry, timestamp));
     }
   }
-
-  // Now update our local version with the newest data.
-  PopulateSessionTabFromSpecifics(*sync_tab,
-                                  base::Time::Now(),
-                                  prev_tab);
+  session_tab->session_storage_persistent_id.clear();
 }
 
 void SessionModelAssociator::LoadFaviconForTab(TabLink* tab_link) {
@@ -970,7 +974,7 @@ void SessionModelAssociator::AssociateForeignSpecifics(
     }
 
     // Update SessionTab based on protobuf.
-    PopulateSessionTabFromSpecifics(tab_s, modification_time, tab);
+    tab->SetFromSyncData(tab_s, modification_time);
 
     // Loads the tab favicon, increments the usage counter, and updates
     // synced_favicon_pages_.
@@ -1038,7 +1042,7 @@ bool SessionModelAssociator::DisassociateForeignSession(
 // Static
 void SessionModelAssociator::PopulateSessionHeaderFromSpecifics(
     const sync_pb::SessionHeader& header_specifics,
-    const base::Time& mtime,
+    base::Time mtime,
     SyncedSession* session_header) {
   if (header_specifics.has_client_name()) {
     session_header->session_name = header_specifics.client_name();
@@ -1077,7 +1081,7 @@ void SessionModelAssociator::PopulateSessionHeaderFromSpecifics(
 void SessionModelAssociator::PopulateSessionWindowFromSpecifics(
     const std::string& session_tag,
     const sync_pb::SessionWindow& specifics,
-    const base::Time& mtime,
+    base::Time mtime,
     SessionWindow* session_window,
     SyncedSessionTracker* tracker) {
   if (specifics.has_window_id())
@@ -1100,33 +1104,6 @@ void SessionModelAssociator::PopulateSessionWindowFromSpecifics(
                             session_window->window_id.id(),
                             tab_id,
                             i);
-  }
-}
-
-// Static
-void SessionModelAssociator::PopulateSessionTabFromSpecifics(
-    const sync_pb::SessionTab& specifics,
-    const base::Time& mtime,
-    SessionTab* tab) {
-  DCHECK_EQ(tab->tab_id.id(), specifics.tab_id());
-  if (specifics.has_tab_id())
-    tab->tab_id.set_id(specifics.tab_id());
-  if (specifics.has_window_id())
-    tab->window_id.set_id(specifics.window_id());
-  if (specifics.has_tab_visual_index())
-    tab->tab_visual_index = specifics.tab_visual_index();
-  if (specifics.has_current_navigation_index())
-    tab->current_navigation_index = specifics.current_navigation_index();
-  if (specifics.has_pinned())
-    tab->pinned = specifics.pinned();
-  if (specifics.has_extension_app_id())
-    tab->extension_app_id = specifics.extension_app_id();
-  tab->timestamp = mtime;
-  // Cleared in case we reuse a pre-existing SyncedSessionTab object.
-  tab->navigations.clear();
-  for (int i = 0; i < specifics.navigation_size(); ++i) {
-    tab->navigations.push_back(
-        TabNavigation::FromSyncData(i, specifics.navigation(i)));
   }
 }
 

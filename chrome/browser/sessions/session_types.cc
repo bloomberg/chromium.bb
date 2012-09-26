@@ -54,27 +54,27 @@ TabNavigation TabNavigation::FromNavigationEntry(
 
 TabNavigation TabNavigation::FromSyncData(
     int index,
-    const sync_pb::TabNavigation& specifics) {
+    const sync_pb::TabNavigation& sync_data) {
   TabNavigation navigation;
   navigation.index_ = index;
-  if (specifics.has_unique_id()) {
-    navigation.unique_id_ = specifics.unique_id();
+  if (sync_data.has_unique_id()) {
+    navigation.unique_id_ = sync_data.unique_id();
   }
-  if (specifics.has_referrer()) {
+  if (sync_data.has_referrer()) {
     navigation.referrer_ =
-        content::Referrer(GURL(specifics.referrer()),
+        content::Referrer(GURL(sync_data.referrer()),
                           WebKit::WebReferrerPolicyDefault);
   }
-  if (specifics.has_virtual_url())
-    navigation.virtual_url_ = GURL(specifics.virtual_url());
-  if (specifics.has_title())
-    navigation.title_ = UTF8ToUTF16(specifics.title());
-  if (specifics.has_state())
-    navigation.content_state_ = specifics.state();
+  if (sync_data.has_virtual_url())
+    navigation.virtual_url_ = GURL(sync_data.virtual_url());
+  if (sync_data.has_title())
+    navigation.title_ = UTF8ToUTF16(sync_data.title());
+  if (sync_data.has_state())
+    navigation.content_state_ = sync_data.state();
   navigation.transition_type_ = content::PAGE_TRANSITION_LINK;
-  if (specifics.has_page_transition() ||
-      specifics.has_navigation_qualifier()) {
-    switch (specifics.page_transition()) {
+  if (sync_data.has_page_transition() ||
+      sync_data.has_navigation_qualifier()) {
+    switch (sync_data.page_transition()) {
       case sync_pb::SyncEnums_PageTransition_LINK:
         navigation.transition_type_ = content::PAGE_TRANSITION_LINK;
         break;
@@ -116,7 +116,7 @@ TabNavigation TabNavigation::FromSyncData(
         navigation.transition_type_ = content::PAGE_TRANSITION_CHAIN_END;
         break;
       default:
-        switch (specifics.navigation_qualifier()) {
+        switch (sync_data.navigation_qualifier()) {
           case sync_pb::SyncEnums_PageTransitionQualifier_CLIENT_REDIRECT:
             navigation.transition_type_ =
                 content::PAGE_TRANSITION_CLIENT_REDIRECT;
@@ -130,8 +130,8 @@ TabNavigation TabNavigation::FromSyncData(
         }
     }
   }
-  if (specifics.has_timestamp()) {
-    navigation.timestamp_ = syncer::ProtoTimeToTime(specifics.timestamp());
+  if (sync_data.has_timestamp()) {
+    navigation.timestamp_ = syncer::ProtoTimeToTime(sync_data.timestamp());
   }
   return navigation;
 }
@@ -429,6 +429,39 @@ SessionTab::SessionTab()
 }
 
 SessionTab::~SessionTab() {
+}
+
+void SessionTab::SetFromSyncData(const sync_pb::SessionTab& sync_data,
+                                 base::Time timestamp) {
+  window_id.set_id(sync_data.window_id());
+  tab_id.set_id(sync_data.tab_id());
+  tab_visual_index = sync_data.tab_visual_index();
+  current_navigation_index = sync_data.current_navigation_index();
+  pinned = sync_data.pinned();
+  extension_app_id = sync_data.extension_app_id();
+  user_agent_override.clear();
+  this->timestamp = timestamp;
+  navigations.clear();
+  for (int i = 0; i < sync_data.navigation_size(); ++i) {
+    navigations.push_back(
+        TabNavigation::FromSyncData(i, sync_data.navigation(i)));
+  }
+  session_storage_persistent_id.clear();
+}
+
+sync_pb::SessionTab SessionTab::ToSyncData() const {
+  sync_pb::SessionTab sync_data;
+  sync_data.set_tab_id(tab_id.id());
+  sync_data.set_window_id(window_id.id());
+  sync_data.set_tab_visual_index(tab_visual_index);
+  sync_data.set_current_navigation_index(current_navigation_index);
+  sync_data.set_pinned(pinned);
+  sync_data.set_extension_app_id(extension_app_id);
+  for (std::vector<TabNavigation>::const_iterator it = navigations.begin();
+       it != navigations.end(); ++it) {
+    *sync_data.add_navigation() = it->ToSyncData();
+  }
+  return sync_data;
 }
 
 // SessionWindow ---------------------------------------------------------------

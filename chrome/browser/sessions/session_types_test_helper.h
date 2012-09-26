@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/time.h"
 #include "content/public/common/page_transition_types.h"
 
 class GURL;
@@ -55,6 +56,8 @@ struct SessionTypesTestHelper {
 
   static void SetIsOverridingUserAgent(TabNavigation* navigation,
                                        bool is_overriding_user_agent);
+
+  static void SetTimestamp(TabNavigation* navigation, base::Time timestamp);
 };
 
 #endif  // CHROME_BROWSER_SESSIONS_SESSION_TYPES_TEST_HELPER_H_

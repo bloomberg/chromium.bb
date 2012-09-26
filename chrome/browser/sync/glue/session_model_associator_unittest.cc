@@ -7,7 +7,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/string_number_conversions.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sessions/session_types_test_helper.h"
 #include "chrome/browser/sync/glue/session_model_associator.h"
@@ -21,6 +20,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/test/test_browser_thread.h"
+#include "googleurl/src/gurl.h"
 #include "sync/protocol/session_specifics.pb.h"
 #include "sync/util/time.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -29,12 +29,13 @@
 using content::BrowserThread;
 using testing::NiceMock;
 using testing::Return;
+using testing::StrictMock;
 using testing::_;
 
 namespace browser_sync {
 
 class SyncSessionModelAssociatorTest : public testing::Test {
- public:
+ protected:
   SyncSessionModelAssociatorTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
         sync_service_(&profile_),
@@ -57,25 +58,33 @@ class SyncSessionModelAssociatorTest : public testing::Test {
     model_associator_.DecrementAndCleanFaviconForURL(url);
   }
 
-  void AssociateTabContents(const SyncedWindowDelegate& window,
-                            const SyncedTabDelegate& new_tab,
-                            SessionTab* prev_tab,
-                            sync_pb::SessionTab* sync_tab,
-                            GURL* new_url) {
-    model_associator_.AssociateTabContents(window,
-                                           new_tab,
-                                           prev_tab,
-                                           sync_tab,
-                                           new_url);
+  static GURL GetCurrentVirtualURL(const SyncedTabDelegate& tab_delegate) {
+    return SessionModelAssociator::GetCurrentVirtualURL(tab_delegate);
   }
 
- protected:
+  static void UpdateSessionTabFromDelegate(
+      const SyncedTabDelegate& tab_delegate,
+      base::Time mtime,
+      base::Time default_navigation_timestamp,
+      SessionTab* session_tab) {
+    SessionModelAssociator::UpdateSessionTabFromDelegate(
+        tab_delegate,
+        mtime,
+        default_navigation_timestamp,
+        session_tab);
+  }
+
+ private:
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   NiceMock<ProfileMock> profile_;
   NiceMock<ProfileSyncServiceMock> sync_service_;
+
+ protected:
   SessionModelAssociator model_associator_;
 };
+
+namespace {
 
 TEST_F(SyncSessionModelAssociatorTest, SessionWindowHasNoTabsToSync) {
   SessionWindow win;
@@ -117,6 +126,8 @@ TEST_F(SyncSessionModelAssociatorTest,
   ASSERT_FALSE(ShouldSyncSessionTab(tab));
 }
 
+}  // namespace
+
 TEST_F(SyncSessionModelAssociatorTest, PopulateSessionHeader) {
   sync_pb::SessionHeader header_s;
   header_s.set_client_name("Client 1");
@@ -148,43 +159,6 @@ TEST_F(SyncSessionModelAssociatorTest, PopulateSessionWindow) {
   ASSERT_EQ(1, session->windows[0]->type);
   ASSERT_EQ(1U, tracker.num_synced_sessions());
   ASSERT_EQ(1U, tracker.num_synced_tabs(std::string("tag")));
-}
-
-TEST_F(SyncSessionModelAssociatorTest, PopulateSessionTab) {
-  sync_pb::SessionTab tab_s;
-  tab_s.set_tab_id(5);
-  tab_s.set_tab_visual_index(13);
-  tab_s.set_current_navigation_index(3);
-  tab_s.set_pinned(true);
-  tab_s.set_extension_app_id("app_id");
-  for (int i = 0; i < 5; ++i) {
-    sync_pb::TabNavigation* navigation = tab_s.add_navigation();
-    navigation->set_virtual_url("http://foo/" + base::IntToString(i));
-    navigation->set_referrer("referrer");
-    navigation->set_title("title");
-    navigation->set_page_transition(sync_pb::SyncEnums_PageTransition_TYPED);
-  }
-
-  SessionTab tab;
-  tab.tab_id.set_id(5);  // Expected to be set by the SyncedSessionTracker.
-  SessionModelAssociator::PopulateSessionTabFromSpecifics(
-      tab_s, base::Time(), &tab);
-  ASSERT_EQ(5, tab.tab_id.id());
-  ASSERT_EQ(13, tab.tab_visual_index);
-  ASSERT_EQ(3, tab.current_navigation_index);
-  ASSERT_TRUE(tab.pinned);
-  ASSERT_EQ("app_id", tab.extension_app_id);
-  ASSERT_EQ(5u, tab.navigations.size());
-  for (int i = 0; i < 5; ++i) {
-    ASSERT_EQ(i, tab.navigations[i].index());
-    ASSERT_EQ(GURL("referrer"),
-              SessionTypesTestHelper::GetReferrer(tab.navigations[i]).url);
-    ASSERT_EQ(string16(ASCIIToUTF16("title")), tab.navigations[i].title());
-    ASSERT_EQ(content::PAGE_TRANSITION_TYPED,
-              SessionTypesTestHelper::GetTransitionType(tab.navigations[i]));
-    ASSERT_EQ(GURL("http://foo/" + base::IntToString(i)),
-              tab.navigations[i].virtual_url());
-  }
 }
 
 TEST_F(SyncSessionModelAssociatorTest, TabNodePool) {
@@ -237,23 +211,6 @@ TEST_F(SyncSessionModelAssociatorTest, TabNodePool) {
 
 namespace {
 
-class SyncedWindowDelegateMock : public SyncedWindowDelegate {
- public:
-  SyncedWindowDelegateMock() {}
-  virtual ~SyncedWindowDelegateMock() {}
-  MOCK_CONST_METHOD0(HasWindow, bool());
-  MOCK_CONST_METHOD0(GetSessionId, SessionID::id_type());
-  MOCK_CONST_METHOD0(GetTabCount, int());
-  MOCK_CONST_METHOD0(GetActiveIndex, int());
-  MOCK_CONST_METHOD0(IsApp, bool());
-  MOCK_CONST_METHOD0(IsTypeTabbed, bool());
-  MOCK_CONST_METHOD0(IsTypePopup, bool());
-  MOCK_CONST_METHOD1(IsTabPinned, bool(const SyncedTabDelegate* tab));
-  MOCK_CONST_METHOD1(GetTabAt, SyncedTabDelegate*(int index));
-  MOCK_CONST_METHOD1(GetTabIdAt, SessionID::id_type(int index));
-  MOCK_CONST_METHOD0(IsSessionRestoreInProgress, bool());
-};
-
 class SyncedTabDelegateMock : public SyncedTabDelegate {
  public:
   SyncedTabDelegateMock() {}
@@ -263,14 +220,14 @@ class SyncedTabDelegateMock : public SyncedTabDelegate {
   MOCK_CONST_METHOD0(GetSessionId, SessionID::id_type());
   MOCK_CONST_METHOD0(IsBeingDestroyed, bool());
   MOCK_CONST_METHOD0(profile, Profile*());
-  MOCK_CONST_METHOD0(HasExtensionAppId, bool());
-  MOCK_CONST_METHOD0(GetExtensionAppId, const std::string&());
+  MOCK_CONST_METHOD0(GetExtensionAppId, std::string());
   MOCK_CONST_METHOD0(GetCurrentEntryIndex, int());
   MOCK_CONST_METHOD0(GetEntryCount, int());
   MOCK_CONST_METHOD0(GetPendingEntryIndex, int());
   MOCK_CONST_METHOD0(GetPendingEntry, content::NavigationEntry*());
   MOCK_CONST_METHOD1(GetEntryAtIndex, content::NavigationEntry*(int i));
   MOCK_CONST_METHOD0(GetActiveEntry, content::NavigationEntry*());
+  MOCK_CONST_METHOD0(IsPinned, bool());
 };
 
 class SyncRefreshListener : public content::NotificationObserver {
@@ -294,8 +251,6 @@ class SyncRefreshListener : public content::NotificationObserver {
   bool notified_of_refresh_;
   content::NotificationRegistrar registrar_;
 };
-
-}  // namespace.
 
 // Test that AttemptSessionsDataRefresh() triggers the
 // NOTIFICATION_SYNC_REFRESH_LOCAL notification.
@@ -562,12 +517,46 @@ TEST_F(SyncSessionModelAssociatorTest, FaviconCleanup) {
   EXPECT_EQ(0U, NumFavicons());
 }
 
-// Ensure new tabs have the current timestamp set for the current navigation,
-// while other navigations have timestamp zero.
-TEST_F(SyncSessionModelAssociatorTest, AssociateNewTab) {
-  NiceMock<SyncedWindowDelegateMock> window_mock;
-  EXPECT_CALL(window_mock, IsTabPinned(_)).WillRepeatedly(Return(false));
+// TODO(akalin): We should really use a fake for SyncedTabDelegate.
 
+// Make sure GetCurrentVirtualURL() returns the virtual URL of the pending
+// entry if the current entry is pending.
+TEST_F(SyncSessionModelAssociatorTest, GetCurrentVirtualURLPending) {
+  StrictMock<SyncedTabDelegateMock> tab_mock;
+  scoped_ptr<content::NavigationEntry> entry(
+      content::NavigationEntry::Create());
+  entry->SetVirtualURL(GURL("http://www.google.com"));
+  EXPECT_CALL(tab_mock, GetCurrentEntryIndex()).WillOnce(Return(0));
+  EXPECT_CALL(tab_mock, GetPendingEntryIndex()).WillOnce(Return(0));
+  EXPECT_CALL(tab_mock, GetPendingEntry()).WillOnce(Return(entry.get()));
+  EXPECT_EQ(entry->GetVirtualURL(), GetCurrentVirtualURL(tab_mock));
+}
+
+// Make sure GetCurrentVirtualURL() returns the virtual URL of the current
+// entry if the current entry is non-pending.
+TEST_F(SyncSessionModelAssociatorTest, GetCurrentVirtualURLNonPending) {
+  StrictMock<SyncedTabDelegateMock> tab_mock;
+  scoped_ptr<content::NavigationEntry> entry(
+      content::NavigationEntry::Create());
+  entry->SetVirtualURL(GURL("http://www.google.com"));
+  EXPECT_CALL(tab_mock, GetCurrentEntryIndex()).WillOnce(Return(0));
+  EXPECT_CALL(tab_mock, GetPendingEntryIndex()).WillOnce(Return(-1));
+  EXPECT_CALL(tab_mock, GetEntryAtIndex(0)).WillOnce(Return(entry.get()));
+  EXPECT_EQ(entry->GetVirtualURL(), GetCurrentVirtualURL(tab_mock));
+}
+
+const base::Time kTime1 = base::Time::FromInternalValue(100);
+const base::Time kTime2 = base::Time::FromInternalValue(105);
+const base::Time kTime3 = base::Time::FromInternalValue(110);
+const base::Time kTime4 = base::Time::FromInternalValue(120);
+const base::Time kTime5 = base::Time::FromInternalValue(150);
+const base::Time kTime6 = base::Time::FromInternalValue(200);
+const base::Time kTime7 = base::Time::FromInternalValue(500);
+const base::Time kTime8 = base::Time::FromInternalValue(1000);
+
+// Ensure new tabs have the current timestamp set for the current
+// navigation, while other navigations have null timestamps.
+TEST_F(SyncSessionModelAssociatorTest, UpdateNewTab) {
   // Create a tab with three valid entries.
   NiceMock<SyncedTabDelegateMock> tab_mock;
   EXPECT_CALL(tab_mock, GetSessionId()).WillRepeatedly(Return(0));
@@ -590,34 +579,33 @@ TEST_F(SyncSessionModelAssociatorTest, AssociateNewTab) {
   EXPECT_CALL(tab_mock, GetEntryCount()).WillRepeatedly(Return(3));
   EXPECT_CALL(tab_mock, GetPendingEntryIndex()).WillRepeatedly(Return(-1));
 
-  // This tab is new, so prev_tab is the default SyncedSessionTab object.
-  SessionTab prev_tab;
-  prev_tab.tab_id.set_id(0);
+  SessionTab session_tab;
+  UpdateSessionTabFromDelegate(tab_mock, kTime1, kTime2, &session_tab);
 
-  sync_pb::SessionTab sync_tab;
-  GURL new_url;
-  int64 now = syncer::TimeToProtoTime(base::Time::Now());
-  AssociateTabContents(window_mock, tab_mock, &prev_tab, &sync_tab, &new_url);
-
-  EXPECT_EQ(new_url, entry3->GetVirtualURL());
-  ASSERT_EQ(3, sync_tab.navigation_size());
-  EXPECT_EQ(entry1->GetVirtualURL().spec(),
-            sync_tab.navigation(0).virtual_url());
-  EXPECT_EQ(entry2->GetVirtualURL().spec(),
-            sync_tab.navigation(1).virtual_url());
-  EXPECT_EQ(entry3->GetVirtualURL().spec(),
-            sync_tab.navigation(2).virtual_url());
-  EXPECT_EQ(2, sync_tab.current_navigation_index());
-  EXPECT_LE(0, sync_tab.navigation(0).timestamp());
-  EXPECT_LE(0, sync_tab.navigation(1).timestamp());
-  EXPECT_LE(now, sync_tab.navigation(2).timestamp());
+  EXPECT_EQ(0, session_tab.window_id.id());
+  EXPECT_EQ(0, session_tab.tab_id.id());
+  EXPECT_EQ(0, session_tab.tab_visual_index);
+  EXPECT_EQ(2, session_tab.current_navigation_index);
+  EXPECT_FALSE(session_tab.pinned);
+  EXPECT_TRUE(session_tab.extension_app_id.empty());
+  EXPECT_TRUE(session_tab.user_agent_override.empty());
+  EXPECT_EQ(kTime1, session_tab.timestamp);
+  ASSERT_EQ(3u, session_tab.navigations.size());
+  EXPECT_EQ(entry1->GetVirtualURL(),
+            session_tab.navigations[0].virtual_url());
+  EXPECT_EQ(entry2->GetVirtualURL(),
+            session_tab.navigations[1].virtual_url());
+  EXPECT_EQ(entry3->GetVirtualURL(),
+            session_tab.navigations[2].virtual_url());
+  EXPECT_EQ(2, session_tab.current_navigation_index);
+  EXPECT_TRUE(session_tab.navigations[0].timestamp().is_null());
+  EXPECT_TRUE(session_tab.navigations[1].timestamp().is_null());
+  EXPECT_EQ(kTime2, session_tab.navigations[2].timestamp());
+  EXPECT_TRUE(session_tab.session_storage_persistent_id.empty());
 }
 
 // Ensure we preserve old timestamps when the entries don't change.
-TEST_F(SyncSessionModelAssociatorTest, AssociateExistingTab) {
-  NiceMock<SyncedWindowDelegateMock> window_mock;
-  EXPECT_CALL(window_mock, IsTabPinned(_)).WillRepeatedly(Return(false));
-
+TEST_F(SyncSessionModelAssociatorTest, UpdateExistingTab) {
   // Create a tab with three valid entries.
   NiceMock<SyncedTabDelegateMock> tab_mock;
   EXPECT_CALL(tab_mock, GetSessionId()).WillRepeatedly(Return(0));
@@ -639,44 +627,37 @@ TEST_F(SyncSessionModelAssociatorTest, AssociateExistingTab) {
       Return(entry3.get()));
   EXPECT_CALL(tab_mock, GetEntryCount()).WillRepeatedly(Return(3));
   EXPECT_CALL(tab_mock, GetPendingEntryIndex()).WillRepeatedly(Return(-1));
+  EXPECT_CALL(tab_mock, IsPinned()).WillRepeatedly(Return(true));
 
-  // This tab is new, so prev_tab is the default SyncedSessionTab object.
-  SessionTab prev_tab;
-  prev_tab.tab_id.set_id(0);
+  // The initial UpdateSessionTabFromDelegate call builds the session_tab.
+  SessionTab session_tab;
+  UpdateSessionTabFromDelegate(tab_mock, kTime1, kTime2, &session_tab);
 
-  // The initial AssociateTabContents call builds the prev_tab.
-  sync_pb::SessionTab sync_tab;
-  GURL new_url;
-  AssociateTabContents(window_mock, tab_mock, &prev_tab, &sync_tab, &new_url);
-
-  ASSERT_EQ(3u, prev_tab.navigations.size());
+  // Tweak the timestamps a bit.
+  ASSERT_EQ(3u, session_tab.navigations.size());
+  SessionTypesTestHelper::SetTimestamp(&session_tab.navigations[0], kTime3);
+  SessionTypesTestHelper::SetTimestamp(&session_tab.navigations[1], kTime4);
+  SessionTypesTestHelper::SetTimestamp(&session_tab.navigations[2], kTime5);
 
   // Now re-associate with the same data.
-  AssociateTabContents(window_mock, tab_mock, &prev_tab, &sync_tab, &new_url);
+  UpdateSessionTabFromDelegate(tab_mock, kTime3, kTime4, &session_tab);
 
-  EXPECT_EQ(new_url, entry3->GetVirtualURL());
-  ASSERT_EQ(3, sync_tab.navigation_size());
-  EXPECT_EQ(entry1->GetVirtualURL().spec(),
-            sync_tab.navigation(0).virtual_url());
-  EXPECT_EQ(entry2->GetVirtualURL().spec(),
-            sync_tab.navigation(1).virtual_url());
-  EXPECT_EQ(entry3->GetVirtualURL().spec(),
-            sync_tab.navigation(2).virtual_url());
-  EXPECT_EQ(2, sync_tab.current_navigation_index());
-  EXPECT_EQ(syncer::TimeToProtoTime(prev_tab.navigations[0].timestamp()),
-            sync_tab.navigation(0).timestamp());
-  EXPECT_EQ(syncer::TimeToProtoTime(prev_tab.navigations[1].timestamp()),
-            sync_tab.navigation(1).timestamp());
-  EXPECT_EQ(syncer::TimeToProtoTime(prev_tab.navigations[2].timestamp()),
-            sync_tab.navigation(2).timestamp());
-  EXPECT_EQ(3U, prev_tab.navigations.size());
+  EXPECT_TRUE(session_tab.pinned);
+  EXPECT_EQ(kTime3, session_tab.timestamp);
+  EXPECT_EQ(entry1->GetVirtualURL(),
+            session_tab.navigations[0].virtual_url());
+  EXPECT_EQ(entry2->GetVirtualURL(),
+            session_tab.navigations[1].virtual_url());
+  EXPECT_EQ(entry3->GetVirtualURL(),
+            session_tab.navigations[2].virtual_url());
+  EXPECT_EQ(2, session_tab.current_navigation_index);
+  EXPECT_EQ(kTime3, session_tab.navigations[0].timestamp());
+  EXPECT_EQ(kTime4, session_tab.navigations[1].timestamp());
+  EXPECT_EQ(kTime5, session_tab.navigations[2].timestamp());
 }
 
 // Ensure we add a fresh timestamp for new entries appended to the end.
-TEST_F(SyncSessionModelAssociatorTest, AssociateAppendedTab) {
-    NiceMock<SyncedWindowDelegateMock> window_mock;
-  EXPECT_CALL(window_mock, IsTabPinned(_)).WillRepeatedly(Return(false));
-
+TEST_F(SyncSessionModelAssociatorTest, UpdateAppendedTab) {
   // Create a tab with three valid entries.
   NiceMock<SyncedTabDelegateMock> tab_mock;
   EXPECT_CALL(tab_mock, GetSessionId()).WillRepeatedly(Return(0));
@@ -699,16 +680,9 @@ TEST_F(SyncSessionModelAssociatorTest, AssociateAppendedTab) {
   EXPECT_CALL(tab_mock, GetEntryCount()).WillRepeatedly(Return(3));
   EXPECT_CALL(tab_mock, GetPendingEntryIndex()).WillRepeatedly(Return(-1));
 
-  // This tab is new, so prev_tab is the default SyncedSessionTab object.
-  SessionTab prev_tab;
-  prev_tab.tab_id.set_id(0);
-
-  // The initial AssociateTabContents call builds the prev_tab.
-  sync_pb::SessionTab sync_tab;
-  GURL new_url;
-  AssociateTabContents(window_mock, tab_mock, &prev_tab, &sync_tab, &new_url);
-
-  ASSERT_EQ(3u, prev_tab.navigations.size());
+  // The initial UpdateSessionTabFromDelegate call builds the session_tab.
+  SessionTab session_tab;
+  UpdateSessionTabFromDelegate(tab_mock, kTime1, kTime2, &session_tab);
 
   // Add a new entry and change the current navigation index.
   scoped_ptr<content::NavigationEntry> entry4(
@@ -719,40 +693,29 @@ TEST_F(SyncSessionModelAssociatorTest, AssociateAppendedTab) {
   EXPECT_CALL(tab_mock, GetEntryCount()).WillRepeatedly(Return(4));
   EXPECT_CALL(tab_mock, GetCurrentEntryIndex()).WillRepeatedly(Return(3));
 
-  // The new entry should have a timestamp later than this.
-  int64 now = syncer::TimeToProtoTime(base::Time::Now());
-
   // Now re-associate with the new version.
-  AssociateTabContents(window_mock, tab_mock, &prev_tab, &sync_tab, &new_url);
+  UpdateSessionTabFromDelegate(tab_mock, kTime3, kTime4, &session_tab);
 
-  EXPECT_EQ(new_url, entry4->GetVirtualURL());
-  ASSERT_EQ(4, sync_tab.navigation_size());
-  EXPECT_EQ(entry1->GetVirtualURL().spec(),
-            sync_tab.navigation(0).virtual_url());
-  EXPECT_EQ(entry2->GetVirtualURL().spec(),
-            sync_tab.navigation(1).virtual_url());
-  EXPECT_EQ(entry3->GetVirtualURL().spec(),
-            sync_tab.navigation(2).virtual_url());
-  EXPECT_EQ(entry4->GetVirtualURL().spec(),
-            sync_tab.navigation(3).virtual_url());
-  EXPECT_EQ(3, sync_tab.current_navigation_index());
-  EXPECT_EQ(syncer::TimeToProtoTime(prev_tab.navigations[0].timestamp()),
-            sync_tab.navigation(0).timestamp());
-  EXPECT_EQ(syncer::TimeToProtoTime(prev_tab.navigations[1].timestamp()),
-            sync_tab.navigation(1).timestamp());
-  EXPECT_EQ(syncer::TimeToProtoTime(prev_tab.navigations[2].timestamp()),
-            sync_tab.navigation(2).timestamp());
-  EXPECT_LE(now, sync_tab.navigation(3).timestamp());
-  EXPECT_EQ(4U, prev_tab.navigations.size());
+  ASSERT_EQ(4u, session_tab.navigations.size());
+  EXPECT_EQ(entry1->GetVirtualURL(),
+            session_tab.navigations[0].virtual_url());
+  EXPECT_EQ(entry2->GetVirtualURL(),
+            session_tab.navigations[1].virtual_url());
+  EXPECT_EQ(entry3->GetVirtualURL(),
+            session_tab.navigations[2].virtual_url());
+  EXPECT_EQ(entry4->GetVirtualURL(),
+            session_tab.navigations[3].virtual_url());
+  EXPECT_EQ(3, session_tab.current_navigation_index);
+  EXPECT_TRUE(session_tab.navigations[0].timestamp().is_null());
+  EXPECT_TRUE(session_tab.navigations[1].timestamp().is_null());
+  EXPECT_EQ(kTime2, session_tab.navigations[2].timestamp());
+  EXPECT_EQ(kTime4, session_tab.navigations[3].timestamp());
 }
 
 // We shouldn't get confused when old/new entries from the previous tab have
 // been pruned in the new tab. Timestamps for old entries we move back to in the
 // navigation stack should be refreshed.
-TEST_F(SyncSessionModelAssociatorTest, AssociatePrunedTab) {
-    NiceMock<SyncedWindowDelegateMock> window_mock;
-  EXPECT_CALL(window_mock, IsTabPinned(_)).WillRepeatedly(Return(false));
-
+TEST_F(SyncSessionModelAssociatorTest, UpdatePrunedTab) {
   // Create a tab with four valid entries.
   NiceMock<SyncedTabDelegateMock> tab_mock;
   EXPECT_CALL(tab_mock, GetSessionId()).WillRepeatedly(Return(0));
@@ -780,16 +743,9 @@ TEST_F(SyncSessionModelAssociatorTest, AssociatePrunedTab) {
   EXPECT_CALL(tab_mock, GetEntryCount()).WillRepeatedly(Return(4));
   EXPECT_CALL(tab_mock, GetPendingEntryIndex()).WillRepeatedly(Return(-1));
 
-  // This tab is new, so prev_tab is the default SyncedSessionTab object.
-  SessionTab prev_tab;
-  prev_tab.tab_id.set_id(0);
-
-  // The initial AssociateTabContents call builds the prev_tab.
-  sync_pb::SessionTab sync_tab;
-  GURL new_url;
-  AssociateTabContents(window_mock, tab_mock, &prev_tab, &sync_tab, &new_url);
-
-  ASSERT_EQ(4u, prev_tab.navigations.size());
+  // The initial UpdateSessionTabFromDelegate call builds the session_tab.
+  SessionTab session_tab;
+  UpdateSessionTabFromDelegate(tab_mock, kTime1, kTime2, &session_tab);
 
   // Reset new tab to have the oldest entry pruned, the current navigation
   // set to entry3, and a new entry added in place of entry4.
@@ -807,28 +763,31 @@ TEST_F(SyncSessionModelAssociatorTest, AssociatePrunedTab) {
   EXPECT_CALL(tab_mock, GetEntryCount()).WillRepeatedly(Return(3));
   EXPECT_CALL(tab_mock, GetPendingEntryIndex()).WillRepeatedly(Return(-1));
 
-  // The new entry should have a timestamp later than this.
-  int64 now = syncer::TimeToProtoTime(base::Time::Now());
+  // Tweak the timestamps a bit.
+  ASSERT_EQ(4u, session_tab.navigations.size());
+  SessionTypesTestHelper::SetTimestamp(&session_tab.navigations[0], kTime3);
+  SessionTypesTestHelper::SetTimestamp(&session_tab.navigations[1], kTime4);
+  SessionTypesTestHelper::SetTimestamp(&session_tab.navigations[2], kTime5);
+  SessionTypesTestHelper::SetTimestamp(&session_tab.navigations[3], kTime6);
 
   // Now re-associate with the new version.
-  AssociateTabContents(window_mock, tab_mock, &prev_tab, &sync_tab, &new_url);
+  UpdateSessionTabFromDelegate(tab_mock, kTime7, kTime8, &session_tab);
 
-  // Only entry2's timestamp should be preserved. The new entry should have a
-  // new timestamp.
-  EXPECT_EQ(new_url, entry3->GetVirtualURL());
-  ASSERT_EQ(3, sync_tab.navigation_size());
-  EXPECT_EQ(entry2->GetVirtualURL().spec(),
-            sync_tab.navigation(0).virtual_url());
-  EXPECT_EQ(entry3->GetVirtualURL().spec(),
-            sync_tab.navigation(1).virtual_url());
-  EXPECT_EQ(entry5->GetVirtualURL().spec(),
-            sync_tab.navigation(2).virtual_url());
-  EXPECT_EQ(1, sync_tab.current_navigation_index());
-  EXPECT_EQ(syncer::TimeToProtoTime(prev_tab.navigations[0].timestamp()),
-            sync_tab.navigation(0).timestamp());
-  EXPECT_LE(now, sync_tab.navigation(1).timestamp());
-  EXPECT_LE(now, sync_tab.navigation(2).timestamp());
-  EXPECT_EQ(3U, prev_tab.navigations.size());
+  // Only entry2's and entry3's timestamps should be preserved. The new
+  // entry should have a new timestamp.
+  ASSERT_EQ(3u, session_tab.navigations.size());
+  EXPECT_EQ(entry2->GetVirtualURL(),
+            session_tab.navigations[0].virtual_url());
+  EXPECT_EQ(entry3->GetVirtualURL(),
+            session_tab.navigations[1].virtual_url());
+  EXPECT_EQ(entry5->GetVirtualURL(),
+            session_tab.navigations[2].virtual_url());
+  EXPECT_EQ(1, session_tab.current_navigation_index);
+  EXPECT_EQ(kTime4, session_tab.navigations[0].timestamp());
+  EXPECT_EQ(kTime5, session_tab.navigations[1].timestamp());
+  EXPECT_EQ(kTime8, session_tab.navigations[2].timestamp());
 }
+
+}  // namespace
 
 }  // namespace browser_sync

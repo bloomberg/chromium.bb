@@ -90,3 +90,9 @@ void SessionTypesTestHelper::SetIsOverridingUserAgent(
     bool is_overriding_user_agent) {
   navigation->is_overriding_user_agent_ = is_overriding_user_agent;
 }
+
+void SessionTypesTestHelper::SetTimestamp(
+    TabNavigation* navigation,
+    base::Time timestamp) {
+  navigation->timestamp_ = timestamp;
+}

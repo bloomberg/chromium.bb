@@ -22,14 +22,14 @@ class TabContentsSyncedTabDelegate
   virtual SessionID::id_type GetSessionId() const OVERRIDE;
   virtual bool IsBeingDestroyed() const OVERRIDE;
   virtual Profile* profile() const OVERRIDE;
-  virtual bool HasExtensionAppId() const OVERRIDE;
-  virtual const std::string& GetExtensionAppId() const OVERRIDE;
+  virtual std::string GetExtensionAppId() const OVERRIDE;
   virtual int GetCurrentEntryIndex() const OVERRIDE;
   virtual int GetEntryCount() const OVERRIDE;
   virtual int GetPendingEntryIndex() const OVERRIDE;
   virtual content::NavigationEntry* GetPendingEntry() const OVERRIDE;
   virtual content::NavigationEntry* GetEntryAtIndex(int i) const OVERRIDE;
   virtual content::NavigationEntry* GetActiveEntry() const OVERRIDE;
+  virtual bool IsPinned() const OVERRIDE;
 
  private:
   TabContents* tab_contents_;

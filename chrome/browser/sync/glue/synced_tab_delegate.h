@@ -32,8 +32,7 @@ class SyncedTabDelegate {
 
   // Method derived from TabContents.
 
-  virtual bool HasExtensionAppId() const = 0;
-  virtual const std::string& GetExtensionAppId() const = 0;
+  virtual std::string GetExtensionAppId() const = 0;
 
   // Method from NavigationController
 
@@ -43,6 +42,8 @@ class SyncedTabDelegate {
   virtual content::NavigationEntry* GetPendingEntry() const = 0;
   virtual content::NavigationEntry* GetEntryAtIndex(int i) const = 0;
   virtual content::NavigationEntry* GetActiveEntry() const = 0;
+
+  virtual bool IsPinned() const = 0;
 };
 
 }  // namespace browser_sync

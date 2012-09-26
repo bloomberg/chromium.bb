@@ -4,8 +4,10 @@
 
 #include "chrome/browser/ui/sync/tab_contents_synced_tab_delegate.h"
 
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
+#include "chrome/browser/sync/glue/synced_window_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/navigation_controller.h"
@@ -38,16 +40,11 @@ Profile* TabContentsSyncedTabDelegate::profile() const {
   return tab_contents_->profile();
 }
 
-bool TabContentsSyncedTabDelegate::HasExtensionAppId() const {
-  return !!(extensions::TabHelper::FromWebContents(
-      tab_contents_->web_contents())->extension_app());
-}
-
-const std::string& TabContentsSyncedTabDelegate::GetExtensionAppId()
-    const {
-  DCHECK(HasExtensionAppId());
-  return extensions::TabHelper::FromWebContents(tab_contents_->web_contents())->
-      extension_app()->id();
+std::string TabContentsSyncedTabDelegate::GetExtensionAppId() const {
+  const scoped_refptr<const extensions::Extension> extension_app(
+      extensions::TabHelper::FromWebContents(
+          tab_contents_->web_contents())->extension_app());
+  return (extension_app.get() ? extension_app->id() : "");
 }
 
 int TabContentsSyncedTabDelegate::GetCurrentEntryIndex() const {
@@ -74,4 +71,12 @@ NavigationEntry* TabContentsSyncedTabDelegate::GetEntryAtIndex(int i)
 
 NavigationEntry* TabContentsSyncedTabDelegate::GetActiveEntry() const {
   return tab_contents_->web_contents()->GetController().GetActiveEntry();
+}
+
+bool TabContentsSyncedTabDelegate::IsPinned() const {
+  const browser_sync::SyncedWindowDelegate* window =
+      browser_sync::SyncedWindowDelegate::FindSyncedWindowDelegateWithId(
+          GetWindowId());
+  // We might not have a parent window, e.g. Developer Tools.
+  return window ? window->IsTabPinned(this) : false;
 }

@@ -29,6 +29,7 @@
 #include "chrome/browser/sync/glue/synced_session_tracker.h"
 #include "chrome/browser/sync/glue/synced_tab_delegate.h"
 #include "chrome/browser/sync/glue/synced_window_delegate.h"
+#include "googleurl/src/gurl.h"
 #include "sync/internal_api/public/base/model_type.h"
 
 class Prefservice;
@@ -403,6 +404,9 @@ class SessionModelAssociator
                                        syncer::WriteTransaction* trans,
                                        syncer::SyncError* error);
 
+  // Return the virtual URL of the current tab, even if it's pending.
+  static GURL GetCurrentVirtualURL(const SyncedTabDelegate& tab_delegate);
+
   // Fills a tab sync node with data from a WebContents object. Updates
   // |tab_link| with the current url if it's valid and triggers a favicon
   // load if the url has changed.
@@ -415,16 +419,16 @@ class SessionModelAssociator
   // if no page is found to be referring to the favicon anymore.
   void DecrementAndCleanFaviconForURL(const std::string& page_url);
 
-  // Helper method to build sync's tab specifics from a newly modified
-  // tab, window, and the locally stored previous tab data. After completing,
-  // |prev_tab| will be updated to reflect the current data, |sync_tab| will
-  // be filled with the tab data (preserving old timestamps as necessary), and
-  // |new_url| will be the tab's current url.
-  void AssociateTabContents(const SyncedWindowDelegate& window,
-                            const SyncedTabDelegate& new_tab,
-                            SessionTab* prev_tab,
-                            sync_pb::SessionTab* sync_tab,
-                            GURL* new_url);
+  // Helper method to update the given session tab from the given
+  // delegate (preserving old timestamps as necessary).
+  //
+  // TODO(akalin): Remove |default_navigation_timestamp| once we have
+  // a timestamp in NavigationEntry.
+  static void UpdateSessionTabFromDelegate(
+      const SyncedTabDelegate& tab_delegate,
+      base::Time mtime,
+      base::Time default_navigation_timestamp,
+      SessionTab* session_tab);
 
   // Load the favicon for the tab specified by |tab_link|. Will cancel any
   // outstanding request for this tab. OnFaviconDataAvailable(..) will be called
@@ -441,7 +445,7 @@ class SessionModelAssociator
   // provided.
   static void PopulateSessionHeaderFromSpecifics(
     const sync_pb::SessionHeader& header_specifics,
-    const base::Time& mtime,
+    base::Time mtime,
     SyncedSession* session_header);
 
   // Used to populate a session window from the session specifics window
@@ -449,14 +453,9 @@ class SessionModelAssociator
   static void PopulateSessionWindowFromSpecifics(
       const std::string& foreign_session_tag,
       const sync_pb::SessionWindow& window,
-      const base::Time& mtime,
+      base::Time mtime,
       SessionWindow* session_window,
       SyncedSessionTracker* tracker);
-
-  // Used to populate a session tab from the session specifics tab provided.
-  static void PopulateSessionTabFromSpecifics(const sync_pb::SessionTab& tab,
-                                              const base::Time& mtime,
-                                              SessionTab* session_tab);
 
   // Helper method to load the favicon data from the tab specifics. If the
   // favicon is valid, stores the favicon data and increments the usage counter

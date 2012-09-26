@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SESSIONS_SESSION_TYPES_H_
 #define CHROME_BROWSER_SESSIONS_SESSION_TYPES_H_
 
+#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -58,7 +59,7 @@ class TabNavigation {
   // contain all TabNavigation fields.
   static TabNavigation FromSyncData(
       int index,
-      const sync_pb::TabNavigation& specifics);
+      const sync_pb::TabNavigation& sync_data);
 
   // Note that not all TabNavigation fields are preserved.
   void WriteToPickle(Pickle* pickle) const;
@@ -130,7 +131,7 @@ class TabNavigation {
 // SessionTab corresponds to a NavigationController.
 struct SessionTab {
   SessionTab();
-  virtual ~SessionTab();
+  ~SessionTab();
 
   // Since the current_navigation_index can be larger than the index for number
   // of navigations in the current sessions (chrome://newtab is not stored), we
@@ -140,6 +141,20 @@ struct SessionTab {
     return std::max(0, std::min(current_navigation_index,
                                 static_cast<int>(navigations.size() - 1)));
   }
+
+  // Set all the fields of this object from the given sync data and
+  // timestamp.  Uses TabNavigation::FromSyncData to fill
+  // |navigations|.  Note that the sync protocol buffer doesn't
+  // contain all TabNavigation fields.
+  void SetFromSyncData(const sync_pb::SessionTab& sync_data,
+                       base::Time timestamp);
+
+  // Convert this object into its sync protocol buffer equivalent.
+  // Uses TabNavigation::ToSyncData to convert |navigations|.  Note
+  // that the protocol buffer doesn't contain all TabNavigation
+  // fields, and that the returned protocol buffer doesn't have any
+  // favicon data.
+  sync_pb::SessionTab ToSyncData() const;
 
   // Unique id of the window.
   SessionID window_id;
