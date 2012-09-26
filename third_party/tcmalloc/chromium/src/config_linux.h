@@ -213,7 +213,14 @@
 #define PACKAGE_VERSION "1.7"
 
 /* How to access the PC from a struct ucontext */
+/* TODO(asharif): configure.ac should be changed such that this define gets
+ * generated automatically. That change should go to upstream and then pulled
+ * back here. */
+#if defined(__arm__)
+#define PC_FROM_UCONTEXT uc_mcontext.arm_pc
+#else
 #define PC_FROM_UCONTEXT uc_mcontext.gregs[REG_RIP]
+#endif
 
 /* Always the empty-string on non-windows systems. On windows, should be
    "__declspec(dllexport)". This way, when we compile the dll, we export our
