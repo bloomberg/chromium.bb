@@ -8,13 +8,21 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "content/public/renderer/render_view_observer.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebPermissionClient.h"
+
+namespace WebKit {
+
+class WebURL;
+
+}  // namespace WebKit
 
 namespace android_webview {
 
 // Render process side of AwRenderViewHostExt, this provides cross-process
 // implementation of miscellaneous WebView functions that we need to poke
 // WebKit directly to implement (and that aren't needed in the chrome app).
-class AwRenderViewExt : public content::RenderViewObserver {
+class AwRenderViewExt : public content::RenderViewObserver,
+                        public WebKit::WebPermissionClient {
  public:
   static void RenderViewCreated(content::RenderView* render_view);
 
@@ -26,6 +34,11 @@ class AwRenderViewExt : public content::RenderViewObserver {
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   void OnDocumentHasImagesRequest(int id);
+
+  // WebKit::WebPermissionClient implementation.
+  virtual bool allowImage(WebKit::WebFrame* frame,
+                          bool enabledPerSettings,
+                          const WebKit::WebURL& imageURL);
 
   DISALLOW_COPY_AND_ASSIGN(AwRenderViewExt);
 };

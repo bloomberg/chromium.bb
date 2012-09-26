@@ -7,6 +7,7 @@ package org.chromium.android_webview.test;
 import android.content.Context;
 import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
+import android.util.Pair;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.TestFileUtil;
@@ -14,10 +15,15 @@ import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.ContentSettings;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.CallbackHelper;
+import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.HistoryUtils;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.ArrayList;
+import java.util.List;
+
 
 /**
  * A test suite for ContentSettings class. The key objective is to verify that each
@@ -25,6 +31,8 @@ import java.util.regex.Pattern;
  * application.
  */
 public class AwSettingsTest extends AndroidWebViewTestBase {
+    private static final int CHECK_INTERVAL = 100;
+
     private static final boolean ENABLED = true;
     private static final boolean DISABLED = false;
 
@@ -1333,5 +1341,85 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
 
     private String createContentUrl(final String target) {
         return TestContentProvider.createContentUrl(target);
+    }
+
+    private final String IMAGE_DATA = "iVBORw0KGgoAAA" +
+        "ANSUhEUgAAAAEAAAABCAAAAAA6fptVAAAAAXNSR0IArs4c6QAAAA1JREFUCB0BAgD9/wAAAAIAAc3j" +
+        "0SsAAAAASUVORK5CYII=";
+
+    private final String DATA_URL_IMAGE_HTML = "<html>" +
+        "<head><script>function updateTitle(){" +
+        "document.title=document.getElementById('img').naturalHeight;}</script></head>" +
+        "<body onload='updateTitle()'>" +
+        "<img id='img' onload='updateTitle()' src='data:image/png;base64," + IMAGE_DATA +
+        "'></body></html>";
+
+    @SmallTest
+    @Feature({"Android-WebView", "Preferences"})
+    public void testBlockNetworkImagesDoesNotBlockDataUrlImage() throws Throwable {
+        final TestAwContentsClient contentClient = new TestAwContentsClient();
+        final ContentViewCore contentView =
+                createAwTestContainerViewOnMainSync(false, contentClient).getContentViewCore();
+        final ContentSettings settings = getContentSettingsOnUiThread(contentView);
+
+        settings.setJavaScriptEnabled(true);
+
+        settings.setImagesEnabled(false);
+        loadDataSync(contentView,
+                     contentClient.getOnPageFinishedHelper(),
+                     DATA_URL_IMAGE_HTML,
+                     "text/html",
+                     false);
+        assertEquals("1", getTitleOnUiThread(contentView));
+    }
+
+    @SmallTest
+    @Feature({"Android-WebView", "Preferences"})
+    public void testBlockNetworkImagesBlocksNetworkImageAndReloadInPlace() throws Throwable {
+        final TestAwContentsClient contentClient = new TestAwContentsClient();
+        final ContentViewCore contentView =
+                createAwTestContainerViewOnMainSync(false, contentClient).getContentViewCore();
+        final ContentSettings settings = getContentSettingsOnUiThread(contentView);
+        settings.setJavaScriptEnabled(true);
+
+        TestWebServer webServer = null;
+        try {
+            webServer = new TestWebServer(false);
+            List<Pair<String, String>> imageHeaders = new ArrayList<Pair<String, String>>();
+            imageHeaders.add(Pair.create("Content-Type", "image/png"));
+            final String imagePath = "/image.png";
+            webServer.setResponseBase64(imagePath, IMAGE_DATA, imageHeaders);
+
+            final String pagePath = "/html_image.html";
+            final String httpUrlImageHtml = "<html>" +
+                "<head><script>" +
+                "function updateTitle(){" +
+                "document.title=document.getElementById('img').naturalHeight;}" +
+                "</script></head>" +
+                "<body onload='updateTitle()'>" +
+                "<img id='img' onload='updateTitle()' src='" + imagePath +
+                "'></body></html>";
+            final String httpImageUrl = webServer.setResponse(pagePath, httpUrlImageHtml, null);
+
+            settings.setImagesEnabled(false);
+            loadUrlSync(contentView, contentClient.getOnPageFinishedHelper(), httpImageUrl);
+            assertEquals("0", getTitleOnUiThread(contentView));
+
+            settings.setImagesEnabled(true);
+            assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+                @Override
+                public boolean isSatisfied() {
+                    try {
+                        return "0".equals(getTitleOnUiThread(contentView));
+                    } catch (Throwable t) {
+                        t.printStackTrace();
+                        fail("Failed to getTitleOnUIThread: " + t.toString());
+                        return false;
+                    }
+                }
+            }, WAIT_TIMEOUT_SECONDS * 1000, CHECK_INTERVAL));
+        } finally {
+            if (webServer != null) webServer.shutdown();
+        }
     }
 }

@@ -65,6 +65,8 @@ struct ContentSettings::FieldIds {
         GetFieldID(env, clazz, "mDefaultFixedFontSize", "I");
     load_images_automatically =
         GetFieldID(env, clazz, "mLoadsImagesAutomatically", "Z");
+    images_enabled =
+        GetFieldID(env, clazz, "mImagesEnabled", "Z");
     java_script_enabled =
         GetFieldID(env, clazz, "mJavaScriptEnabled", "Z");
     allow_universal_access_from_file_urls =
@@ -95,6 +97,7 @@ struct ContentSettings::FieldIds {
   jfieldID default_font_size;
   jfieldID default_fixed_font_size;
   jfieldID load_images_automatically;
+  jfieldID images_enabled;
   jfieldID java_script_enabled;
   jfieldID allow_universal_access_from_file_urls;
   jfieldID allow_file_access_from_file_urls;
@@ -197,6 +200,11 @@ void ContentSettings::SyncFromNativeImpl() {
   CheckException(env);
 
   env->SetBooleanField(
+      obj,
+      field_ids_->images_enabled, prefs.images_enabled);
+  CheckException(env);
+
+  env->SetBooleanField(
       obj, field_ids_->java_script_enabled, prefs.javascript_enabled);
   CheckException(env);
 
@@ -293,6 +301,9 @@ void ContentSettings::SyncToNativeImpl() {
 
   prefs.loads_images_automatically =
       env->GetBooleanField(obj, field_ids_->load_images_automatically);
+
+  prefs.images_enabled =
+      env->GetBooleanField(obj, field_ids_->images_enabled);
 
   prefs.javascript_enabled =
       env->GetBooleanField(obj, field_ids_->java_script_enabled);

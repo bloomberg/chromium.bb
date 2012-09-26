@@ -15,7 +15,7 @@ import org.apache.http.HttpStatus;
 import org.apache.http.HttpVersion;
 import org.apache.http.RequestLine;
 import org.apache.http.StatusLine;
-import org.apache.http.entity.StringEntity;
+import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.DefaultHttpServerConnection;
 import org.apache.http.impl.cookie.DateUtils;
 import org.apache.http.message.BasicHttpResponse;
@@ -26,7 +26,6 @@ import org.apache.http.params.HttpParams;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -72,11 +71,11 @@ public class TestWebServer {
     private boolean mSsl;
 
     private static class Response {
-        final String mResponseStr;
+        final byte[] mResponseData;
         final List<Pair<String, String>> mResponseHeaders;
 
-        Response(String responseStr, List<Pair<String, String>> responseHeaders) {
-            mResponseStr = responseStr;
+        Response(byte[] resposneData, List<Pair<String, String>> responseHeaders) {
+            mResponseData = resposneData;
             mResponseHeaders = responseHeaders == null ?
                     new ArrayList<Pair<String, String>>() : responseHeaders;
         }
@@ -146,16 +145,37 @@ public class TestWebServer {
      * in (with the option to specify additional headers).
      *
      * @param requestPath The path to respond to.
-     * @param resposneString The response body that will be returned.
+     * @param responseString The response body that will be returned.
      * @param responseHeaders Any additional headers that should be returned along with the
      *                        response (null is acceptable).
      * @return The full URL including the path that should be requested to get the expected
      *         response.
      */
     public String setResponse(
-            String requestPath, String resposneString,
+            String requestPath, String responseString,
             List<Pair<String, String>> responseHeaders) {
-        mResponseMap.put(requestPath, new Response(resposneString, responseHeaders));
+        mResponseMap.put(requestPath, new Response(responseString.getBytes(), responseHeaders));
+        return mServerUri + requestPath;
+    }
+
+    /**
+     * Sets a base64 encoded response to be returned when a particular request path is passed
+     * in (with the option to specify additional headers).
+     *
+     * @param requestPath The path to respond to.
+     * @param base64EncodedResponse The response body that is base64 encoded. The actual server
+     *                              response will the decoded binary form.
+     * @param responseHeaders Any additional headers that should be returned along with the
+     *                        response (null is acceptable).
+     * @return The full URL including the path that should be requested to get the expected
+     *         response.
+     */
+    public String setResponseBase64(
+            String requestPath, String base64EncodedResponse,
+            List<Pair<String, String>> responseHeaders) {
+        mResponseMap.put(requestPath,
+                new Response(Base64.decode(base64EncodedResponse, Base64.DEFAULT),
+                responseHeaders));
         return mServerUri + requestPath;
     }
 
@@ -234,7 +254,7 @@ public class TestWebServer {
             httpResponse = createResponse(HttpStatus.SC_NOT_FOUND);
         } else {
             httpResponse = createResponse(HttpStatus.SC_OK);
-            httpResponse.setEntity(createEntity(response.mResponseStr));
+            httpResponse.setEntity(createEntity(response.mResponseData));
             for (Pair<String, String> header : response.mResponseHeaders) {
                 httpResponse.addHeader(header.first, header.second);
             }
@@ -272,7 +292,7 @@ public class TestWebServer {
             buf.append("</title></head><body>");
             buf.append(reason);
             buf.append("</body></html>");
-            response.setEntity(createEntity(buf.toString()));
+            response.setEntity(createEntity(buf.toString().getBytes()));
         }
         return response;
     }
@@ -280,15 +300,10 @@ public class TestWebServer {
     /**
      * Create a string entity for the given content.
      */
-    private StringEntity createEntity(String content) {
-        try {
-            StringEntity entity = new StringEntity(content);
-            entity.setContentType("text/html");
-            return entity;
-        } catch (UnsupportedEncodingException e) {
-            Log.w(TAG, e);
-        }
-        return null;
+    private ByteArrayEntity createEntity(byte[] data) {
+        ByteArrayEntity entity = new ByteArrayEntity(data);
+        entity.setContentType("text/html");
+        return entity;
     }
 
     private static class ServerThread extends Thread {

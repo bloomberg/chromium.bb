@@ -80,6 +80,7 @@ public class ContentSettings {
     private int mDefaultFontSize = 16;
     private int mDefaultFixedFontSize = 13;
     private boolean mLoadsImagesAutomatically = true;
+    private boolean mImagesEnabled = true;
     private boolean mJavaScriptEnabled = false;
     private boolean mAllowUniversalAccessFromFileURLs = false;
     private boolean mAllowFileAccessFromFileURLs = false;
@@ -723,6 +724,8 @@ public class ContentSettings {
 
     /**
      * Tell the WebView to load image resources automatically.
+     * Note that setting this flag to false this does not block image loads
+     * from WebCore cache.
      * @param flag True if the WebView should load images automatically.
      */
     public void setLoadsImagesAutomatically(boolean flag) {
@@ -743,6 +746,34 @@ public class ContentSettings {
     public boolean getLoadsImagesAutomatically() {
         synchronized (mContentSettingsLock) {
             return mLoadsImagesAutomatically;
+        }
+    }
+
+    /**
+     * Sets whether images are enabled for this WebView. Setting this from
+     * false to true will reload the blocked images in place.
+     * Note that unlike {@link #setLoadsImagesAutomatically}, setting this
+     * flag to false this will block image loads from WebCore cache as well.
+     * The default is true.
+     * @param flag whether the WebView should enable images.
+     */
+    public void setImagesEnabled(boolean flag) {
+        assert mCanModifySettings;
+        synchronized (mContentSettingsLock) {
+            if (mImagesEnabled != flag) {
+                mImagesEnabled = flag;
+                mEventHandler.syncSettingsLocked();
+            }
+        }
+    }
+
+    /**
+     * Gets whether images are enabled for this WebView.
+     * @return true if the WebView has images eanbled
+     */
+    public boolean getImagesEnabled() {
+        synchronized (mContentSettingsLock) {
+            return mImagesEnabled;
         }
     }
 
