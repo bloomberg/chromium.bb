@@ -996,7 +996,8 @@ const char kParentProfile[]                 = "parent-profile";
 // usage, and will also store information about events which may be of interest,
 // such as extension-related occurrences and crashes. Optionally, this may be
 // run with an integer value representing the interval between the timed
-// metric gatherings (if invalid or not provided, the default interval is used).
+// metric gatherings, measured in seconds (if invalid or not provided, the
+// default interval is used).
 const char kPerformanceMonitorGathering[]  = "performance-monitor-gathering";
 
 // Read previously recorded data from the cache. Only cached data is read.
