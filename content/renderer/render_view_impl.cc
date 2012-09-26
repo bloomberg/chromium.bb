@@ -2636,10 +2636,6 @@ WebCookieJar* RenderViewImpl::cookieJar(WebFrame* frame) {
 }
 
 void RenderViewImpl::didCreateFrame(WebFrame* parent, WebFrame* child) {
-  if (is_loading_) {
-    pending_frame_tree_update_ = true;
-    return;
-  }
   if (!updating_frame_tree_)
     SendUpdatedFrameTree(NULL);
 }
