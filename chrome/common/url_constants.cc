@@ -427,9 +427,6 @@ const char kDoNotTrackLearnMoreURL[] =
     "https://support.google.com/chrome/?p=settings_do_not_track";
 #endif
 
-const char kSessionRestoreLearnMoreURL[] =
-    "https://support.google.com/chrome/?p=settings_reopen_pages";
-
 const char kChromiumProjectURL[] = "http://code.google.com/chromium/";
 
 const char kLearnMoreReportingURL[] =
