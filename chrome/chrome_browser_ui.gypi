@@ -2370,6 +2370,8 @@
             'browser/ui/webui/extensions/extension_settings_handler.cc',
             'browser/ui/webui/extensions/extension_settings_handler.h',
             'browser/ui/webui/extensions/install_extension_handler.cc',
+            'browser/ui/webui/inspect_ui.cc',
+            'browser/ui/webui/inspect_ui.h',
             'browser/ui/webui/ntp/app_launcher_handler.cc',
             'browser/ui/webui/ntp/app_launcher_handler.h',
             'browser/ui/webui/ntp/ntp_resource_cache.cc',
