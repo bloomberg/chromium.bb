@@ -851,7 +851,7 @@ void PrintPreviewHandler::SelectFile(const FilePath& default_filename) {
   select_file_dialog_->SelectFile(
       ui::SelectFileDialog::SELECT_SAVEAS_FILE,
       string16(),
-      GetStickySettings()->save_path()->Append(default_filename),
+      sticky_settings->save_path()->Append(default_filename),
       &file_type_info,
       0,
       FILE_PATH_LITERAL(""),
@@ -884,7 +884,10 @@ void PrintPreviewHandler::ShowSystemDialog() {
 void PrintPreviewHandler::FileSelected(const FilePath& path,
                                        int index, void* params) {
   // Updating |save_path_| to the newly selected folder.
-  GetStickySettings()->StoreSavePath(path.DirName());
+  printing::StickySettings* sticky_settings = GetStickySettings();
+  sticky_settings->StoreSavePath(path.DirName());
+  sticky_settings->SaveInPrefs(Profile::FromBrowserContext(
+      preview_web_contents()->GetBrowserContext())->GetPrefs());
 
   PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
       web_ui()->GetController());
