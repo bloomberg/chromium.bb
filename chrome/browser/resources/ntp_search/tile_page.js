@@ -17,25 +17,25 @@ cr.define('ntp', function() {
   var BOTTOM_PANEL_MIN_PADDING_BOTTOM = 16;
 
   /**
-   * Bottom Panel's minimum padding top.
-   * @type {number}
-   * @const
-   */
-  var BOTTOM_PANEL_MIN_PADDING_TOP = 32;
-
-  /**
    * The height required to show 2 rows of Tiles in the Bottom Panel.
    * @type {number}
    * @const
    */
-  var HEIGHT_FOR_TWO_ROWS = 262;
+  var HEIGHT_FOR_TWO_ROWS = 800;
+
+  /**
+   * The height required to show 1 row of Tiles with extra bottom padding.
+   * @type {number}
+   * @const
+   */
+  var HEIGHT_FOR_ONE_TALL_ROW = 700;
 
   /**
    * The height required to show the Bottom Panel.
    * @type {number}
    * @const
    */
-  var HEIGHT_FOR_BOTTOM_PANEL = 157;
+  var HEIGHT_FOR_BOTTOM_PANEL = 520;
 
   /**
    * The Bottom Panel width required to show 5 cols of Tiles, which is used
@@ -72,6 +72,20 @@ cr.define('ntp', function() {
    * @const
    */
   var MIN_BOTTOM_PANEL_CONTENT_WIDTH = 200;
+
+  /**
+   * The height of the TabBar.
+   * @type {number}
+   * @const
+   */
+  var TAB_BAR_HEIGHT = 34;
+
+  /**
+   * The height of the NTP's Upper Section.
+   * @type {number}
+   * @const
+   */
+  var UPPER_SECTION_HEIGHT = 34;
 
   //----------------------------------------------------------------------------
   // Tile
@@ -651,18 +665,17 @@ cr.define('ntp', function() {
 
       // Height logic
 
-      var windowHeight = cr.doc.documentElement.clientHeight;
+      var windowHeight = cr.doc.documentElement.clientHeight +
+          UPPER_SECTION_HEIGHT + TAB_BAR_HEIGHT;
 
-      this.showBottomPanel_(windowHeight >= (BOTTOM_PANEL_MIN_PADDING_TOP +
-          HEIGHT_FOR_BOTTOM_PANEL + BOTTOM_PANEL_MIN_PADDING_BOTTOM));
+      this.showBottomPanel_(windowHeight >= HEIGHT_FOR_BOTTOM_PANEL);
 
       // If the number of visible rows has changed, then we need to resize the
       // grid and animate the affected rows. We also need to keep track of
       // whether the number of visible rows has changed because we might have
       // to render the grid when the number of columns hasn't changed.
       var numberOfRowsHasChanged = false;
-      var numOfVisibleRows = windowHeight > (BOTTOM_PANEL_MIN_PADDING_TOP +
-          HEIGHT_FOR_TWO_ROWS + BOTTOM_PANEL_MIN_PADDING_BOTTOM) ? 2 : 1;
+      var numOfVisibleRows = windowHeight >= HEIGHT_FOR_TWO_ROWS ? 2 : 1;
 
       if (numOfVisibleRows != this.numOfVisibleRows_) {
         this.numOfVisibleRows_ = numOfVisibleRows;
@@ -680,21 +693,18 @@ cr.define('ntp', function() {
 
       // Calculate the size of the bottom padding.
       var paddingBottom;
-      if (numOfVisibleRows == 1) {
+      if (windowHeight < HEIGHT_FOR_ONE_TALL_ROW) {
         paddingBottom = BOTTOM_PANEL_MIN_PADDING_BOTTOM;
-      } else if (numOfVisibleRows == 2) {
-        var paddingTop = Math.round((windowHeight - HEIGHT_FOR_TWO_ROWS) / 2);
-        paddingTop = Math.max(paddingTop, BOTTOM_PANEL_MIN_PADDING_TOP);
-        paddingBottom = windowHeight - paddingTop - HEIGHT_FOR_TWO_ROWS;
+      } else if (windowHeight < HEIGHT_FOR_TWO_ROWS) {
+        paddingBottom = BOTTOM_PANEL_MIN_PADDING_BOTTOM +
+            Math.round((windowHeight - HEIGHT_FOR_ONE_TALL_ROW) / 2);
+      } else if (windowHeight >= HEIGHT_FOR_TWO_ROWS) {
+        paddingBottom = BOTTOM_PANEL_MIN_PADDING_BOTTOM +
+            Math.round((windowHeight - HEIGHT_FOR_TWO_ROWS) / 2);
       }
 
-      // We don't have to set the padding when the number of rows hasn't
-      // changed and the number of visible rows is equal to 1 because the
-      // padding will always be the same.
-      if (numberOfRowsHasChanged || numOfVisibleRows == 2) {
-        var cardSliderFrame = $('card-slider-frame');
-        cardSliderFrame.style.bottom = paddingBottom + 'px';
-      }
+      var cardSliderFrame = $('card-slider-frame');
+      cardSliderFrame.style.bottom = paddingBottom + 'px';
 
       // Width logic
 
