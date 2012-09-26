@@ -133,6 +133,7 @@ TabContents::TabContents(WebContents* contents)
   CoreTabHelper::CreateForWebContents(contents);
   extensions::TabHelper::CreateForWebContents(contents);
   extensions::WebNavigationTabObserver::CreateForWebContents(contents);
+  ExternalProtocolObserver::CreateForWebContents(contents);
   favicon_tab_helper_.reset(new FaviconTabHelper(contents));
   find_tab_helper_.reset(new FindTabHelper(contents));
   history_tab_helper_.reset(new HistoryTabHelper(contents));
@@ -169,7 +170,6 @@ TabContents::TabContents(WebContents* contents)
   WebIntentPickerController::CreateForWebContents(contents);
 #endif
 
-  external_protocol_observer_.reset(new ExternalProtocolObserver(contents));
   navigation_metrics_recorder_.reset(new NavigationMetricsRecorder(contents));
   pepper_broker_observer_.reset(new PepperBrokerObserver(contents));
   safe_browsing_tab_observer_.reset(

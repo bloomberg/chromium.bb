@@ -25,7 +25,6 @@ class ChromeWebContentsHandler;
 class ConstrainedWebDialogDelegateBase;
 class ConstrainedWindowTabHelper;
 class ExtensionTabUtil;
-class ExternalProtocolObserver;
 class ExternalTabContainerWin;
 class FaviconTabHelper;
 class FindBackendTestContentsCreator;
@@ -259,7 +258,6 @@ class TabContents : public content::WebContentsObserver {
   // (These provide no API for callers; objects that need to exist 1:1 with tabs
   // and silently do their thing live here.)
 
-  scoped_ptr<ExternalProtocolObserver> external_protocol_observer_;
   scoped_ptr<NavigationMetricsRecorder> navigation_metrics_recorder_;
   scoped_ptr<PepperBrokerObserver> pepper_broker_observer_;
   scoped_ptr<safe_browsing::SafeBrowsingTabObserver>
