@@ -12,8 +12,7 @@ import subprocess
 import sys
 import tempfile
 
-from parse_proc_maps import parse_proc_maps
-from util import executable_condition
+from proc_maps import ProcMaps
 
 
 def _dump_command_result(command, output_dir_path, basename, suffix, log):
@@ -88,11 +87,11 @@ def prepare_symbol_info(maps_path, output_dir_path=None, loglevel=logging.WARN):
   shutil.copyfile(maps_path, os.path.join(output_dir_path, 'maps'))
 
   with open(maps_path, mode='r') as f:
-    maps = parse_proc_maps(f)
+    maps = ProcMaps.load(f)
 
   log.debug('Listing up symbols.')
   files = {}
-  for entry in maps.iter(executable_condition):
+  for entry in maps.iter(ProcMaps.executable):
     log.debug('  %016x-%016x +%06x %s' % (
         entry.begin, entry.end, entry.offset, entry.name))
     nm_filename = _dump_command_result(
@@ -101,7 +100,7 @@ def prepare_symbol_info(maps_path, output_dir_path=None, loglevel=logging.WARN):
     if not nm_filename:
       continue
     readelf_e_filename = _dump_command_result(
-        'readelf -e %s' % entry.name,
+        'readelf -eW %s' % entry.name,
         output_dir_path, os.path.basename(entry.name), '.readelf-e', log)
     if not readelf_e_filename:
       continue

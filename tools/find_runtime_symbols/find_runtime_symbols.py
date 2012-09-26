@@ -3,36 +3,34 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import json
 import logging
 import os
 import re
 import sys
 
-from static_symbols import StaticSymbols
-from util import executable_condition
+from static_symbols import StaticSymbolsInFile
+from proc_maps import ProcMaps
 
 
-def _determine_symbol_name(address, symbol):
-  if symbol:
-    return symbol.name
-  else:
-    return '0x%016x' % address
+_MAPS_FILENAME = 'maps'
+_FILES_FILENAME = 'files.json'
 
 
 class _ListOutput(object):
   def __init__(self, result):
     self.result = result
 
-  def output(self, address, symbol=None):
-    self.result.append(_determine_symbol_name(address, symbol))
+  def output(self, address, symbol):
+    self.result.append(symbol)
 
 
 class _DictOutput(object):
   def __init__(self, result):
     self.result = result
 
-  def output(self, address, symbol=None):
-    self.result[address] = _determine_symbol_name(address, symbol)
+  def output(self, address, symbol):
+    self.result[address] = symbol
 
 
 class _FileOutput(object):
@@ -40,36 +38,115 @@ class _FileOutput(object):
     self.result = result
     self.with_address = with_address
 
-  def output(self, address, symbol=None):
-    symbol_name = _determine_symbol_name(address, symbol)
+  def output(self, address, symbol):
     if self.with_address:
-      self.result.write('%016x %s\n' % (address, symbol_name))
+      self.result.write('%016x %s\n' % (address, symbol))
     else:
-      self.result.write('%s\n' % symbol_name)
+      self.result.write('%s\n' % symbol)
 
 
-def _find_runtime_symbols(static_symbols, addresses, outputter):
-  maps = static_symbols.maps
-  symbol_tables = static_symbols.procedure_boundaries
+class RuntimeSymbolsInProcess(object):
+  def __init__(self):
+    self._maps = None
+    self._static_symbols_in_filse = {}
 
-  for address in addresses:
-    if isinstance(address, str):
-      address = int(address, 16)
-    is_found = False
-    for entry in maps.iter(executable_condition):
-      if entry.begin <= address < entry.end:
-        if entry.name in symbol_tables:
-          found = symbol_tables[entry.name].find_procedure(
-              address - (entry.begin - entry.offset))
-          outputter.output(address, found)
+  def find_procedure(self, runtime_address):
+    for vma in self._maps.iter(ProcMaps.executable):
+      if vma.begin <= runtime_address < vma.end:
+        static_symbols = self._static_symbols_in_filse.get(vma.name)
+        if static_symbols:
+          return static_symbols.find_procedure_by_runtime_address(
+              runtime_address, vma)
         else:
-          outputter.output(address)
-        is_found = True
-        break
-    if not is_found:
-      outputter.output(address)
+          return None
+    return None
 
-  return 0
+  def find_typeinfo(self, runtime_address):
+    for vma in self._maps.iter(ProcMaps.constants):
+      if vma.begin <= runtime_address < vma.end:
+        static_symbols = self._static_symbols_in_filse.get(vma.name)
+        if static_symbols:
+          return static_symbols.find_typeinfo_by_runtime_address(
+              runtime_address, vma)
+        else:
+          return None
+    return None
+
+  @staticmethod
+  def load(prepared_data_dir):
+    symbols_in_process = RuntimeSymbolsInProcess()
+
+    with open(os.path.join(prepared_data_dir, _MAPS_FILENAME), mode='r') as f:
+      symbols_in_process._maps = ProcMaps.load(f)
+    with open(os.path.join(prepared_data_dir, _FILES_FILENAME), mode='r') as f:
+      files = json.load(f)
+
+    for vma in symbols_in_process._maps.iter(ProcMaps.executable_and_constants):
+      file_entry = files.get(vma.name)
+      if not file_entry:
+        continue
+
+      static_symbols = StaticSymbolsInFile(vma.name)
+
+      nm_entry = file_entry.get('nm')
+      if nm_entry and nm_entry['format'] == 'bsd':
+        with open(os.path.join(prepared_data_dir, nm_entry['file']), 'r') as f:
+          static_symbols.load_nm_bsd(f, nm_entry['mangled'])
+
+      readelf_entry = file_entry.get('readelf-e')
+      if readelf_entry:
+        with open(os.path.join(prepared_data_dir, readelf_entry['file']),
+                  'r') as f:
+          static_symbols.load_readelf_ew(f)
+
+      symbols_in_process._static_symbols_in_filse[vma.name] = static_symbols
+
+    return symbols_in_process
+
+
+def _find_runtime_symbols(symbols_in_process, addresses, outputter):
+  for address in addresses:
+    if isinstance(address, basestring):
+      address = int(address, 16)
+    found = symbols_in_process.find_procedure(address)
+    if found:
+      outputter.output(address, found.name)
+    else:
+      outputter.output(address, '0x%016x' % address)
+
+
+def _find_runtime_typeinfo_symbols(symbols_in_process, addresses, outputter):
+  for address in addresses:
+    if isinstance(address, basestring):
+      address = int(address, 16)
+    if address == 0:
+      outputter.output(address, 'no typeinfo')
+    else:
+      found = symbols_in_process.find_typeinfo(address)
+      if found:
+        if found.startswith('typeinfo for '):
+          outputter.output(address, found[13:])
+        else:
+          outputter.output(address, found)
+      else:
+        outputter.output(address, '0x%016x' % address)
+
+
+def find_runtime_typeinfo_symbols_list(static_symbols, addresses):
+  result = []
+  _find_runtime_typeinfo_symbols(static_symbols, addresses, _ListOutput(result))
+  return result
+
+
+def find_runtime_typeinfo_symbols_dict(static_symbols, addresses):
+  result = {}
+  _find_runtime_typeinfo_symbols(static_symbols, addresses, _DictOutput(result))
+  return result
+
+
+def find_runtime_typeinfo_symbols_file(static_symbols, addresses, f):
+  _find_runtime_typeinfo_symbols(
+      static_symbols, addresses, _FileOutput(f, False))
 
 
 def find_runtime_symbols_list(static_symbols, addresses):
@@ -113,7 +190,7 @@ def main():
     log.warn("Not a directory: %s" % prepared_data_dir)
     return 1
 
-  static_symbols = StaticSymbols.load(prepared_data_dir)
+  symbols_in_process = RuntimeSymbolsInProcess.load(prepared_data_dir)
   return find_runtime_symbols_file(static_symbols, sys.stdin, sys.stdout)
 
 

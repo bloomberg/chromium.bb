@@ -3,18 +3,18 @@
 # found in the LICENSE file.
 
 import bisect
-import json
 import os
 import re
 import sys
-
-from parse_proc_maps import parse_proc_maps
-from util import executable_condition
 
 
 _ARGUMENT_TYPE_PATTERN = re.compile('\([^()]*\)(\s*const)?')
 _TEMPLATE_ARGUMENT_PATTERN = re.compile('<[^<>]*>')
 _LEADING_TYPE_PATTERN = re.compile('^.*\s+(\w+::)')
+_READELF_SECTION_HEADER_PATTER = re.compile(
+    '^\s*\[\s*(Nr|\d+)\]\s+(|\S+)\s+([A-Z_]+)\s+([0-9a-f]+)\s+'
+    '([0-9a-f]+)\s+([0-9a-f]+)\s+([0-9]+)\s+([WAXMSILGxOop]*)\s+'
+    '([0-9]+)\s+([0-9]+)\s+([0-9]+)')
 
 
 class ParsingException(Exception):
@@ -22,64 +22,42 @@ class ParsingException(Exception):
     return repr(self.args[0])
 
 
-class StaticSymbols(object):
-  """Represents static symbol information."""
+class AddressMapping(object):
+  def __init__(self):
+    self._symbol_map = {}
 
-  def __init__(self, maps, procedure_boundaries):
-    self.maps = maps
-    self.procedure_boundaries = procedure_boundaries
+  def append(self, start, entry):
+    self._symbol_map[start] = entry
 
-  # TODO(dmikurube): It will be deprecated.
-  @staticmethod
-  def _load_nm(prepared_data_dir, maps_filename, nm_json_filename):
-    with open(os.path.join(prepared_data_dir, maps_filename), mode='r') as f:
-      maps = parse_proc_maps(f)
-    with open(os.path.join(prepared_data_dir, nm_json_filename), mode='r') as f:
-      nm_files = json.load(f)
-
-    symbol_tables = {}
-    for entry in maps.iter(executable_condition):
-      if nm_files.has_key(entry.name):
-        if nm_files[entry.name]['format'] == 'bsd':
-          with open(os.path.join(prepared_data_dir,
-                                 nm_files[entry.name]['file']), mode='r') as f:
-            symbol_tables[entry.name] = _get_static_symbols_from_nm_bsd(
-                f, nm_files[entry.name]['mangled'])
-
-    return StaticSymbols(maps, symbol_tables)
-
-  @staticmethod
-  def _load_files(prepared_data_dir, maps_filename, files_filename):
-    with open(os.path.join(prepared_data_dir, maps_filename), mode='r') as f:
-      maps = parse_proc_maps(f)
-    with open(os.path.join(prepared_data_dir, files_filename), mode='r') as f:
-      files = json.load(f)
-
-    symbol_tables = {}
-    for entry in maps.iter(executable_condition):
-      if entry.name in files:
-        if 'nm' in files[entry.name]:
-          nm_entry = files[entry.name]['nm']
-          if nm_entry['format'] == 'bsd':
-            with open(os.path.join(prepared_data_dir, nm_entry['file']),
-                      mode='r') as f:
-              symbol_tables[entry.name] = _get_static_symbols_from_nm_bsd(
-                  f, nm_entry['mangled'])
-        if 'readelf-e' in files:
-          readelf_entry = files[entry.name]['readelf-e']
-          # TODO(dmikurube) Implement it.
-
-    return StaticSymbols(maps, symbol_tables)
-
-  @staticmethod
-  def load(prepared_data_dir):
-    if os.path.exists(os.path.join(prepared_data_dir, 'nm.json')):
-      return StaticSymbols._load_nm(prepared_data_dir, 'maps', 'nm.json')
-    else:
-      return StaticSymbols._load_files(prepared_data_dir, 'maps', 'files.json')
+  def find(self, address):
+    return self._symbol_map.get(address)
 
 
-class ProcedureBoundary(object):
+class RangeAddressMapping(AddressMapping):
+  def __init__(self):
+    AddressMapping.__init__(self)
+    self._sorted_start_list = []
+    self._is_sorted = True
+
+  def append(self, start, entry):
+    if self._sorted_start_list:
+      if self._sorted_start_list[-1] > start:
+        self._is_sorted = False
+      elif self._sorted_start_list[-1] == start:
+        return
+    self._sorted_start_list.append(start)
+    self._symbol_map[start] = entry
+
+  def find(self, address):
+    if not self._is_sorted:
+      self._sorted_start_list.sort()
+      self._is_sorted = True
+    found_index = bisect.bisect_left(self._sorted_start_list, address)
+    found_start_address = self._sorted_start_list[found_index - 1]
+    return self._symbol_map[found_start_address]
+
+
+class Procedure(object):
   """A class for a procedure symbol and an address range for the symbol."""
 
   def __init__(self, start, end, name):
@@ -87,113 +65,199 @@ class ProcedureBoundary(object):
     self.end = end
     self.name = name
 
+  def __eq__(self, other):
+    return (self.start == other.start and
+            self.end == other.end and
+            self.name == other.name)
 
-class ProcedureBoundaryTable(object):
-  """A class of a set of ProcedureBoundary."""
+  def __ne__(self, other):
+    return not self.__eq__(other)
 
-  def __init__(self):
-    self.sorted_value_list = []
-    self.dictionary = {}
-    self.sorted = True
-
-  def append(self, entry):
-    if self.sorted_value_list:
-      if self.sorted_value_list[-1] > entry.start:
-        self.sorted = False
-      elif self.sorted_value_list[-1] == entry.start:
-        return
-    self.sorted_value_list.append(entry.start)
-    self.dictionary[entry.start] = entry
-
-  def find_procedure(self, address):
-    if not self.sorted:
-      self.sorted_value_list.sort()
-      self.sorted = True
-    found_index = bisect.bisect_left(self.sorted_value_list, address)
-    found_start_address = self.sorted_value_list[found_index - 1]
-    return self.dictionary[found_start_address]
+  def __str__(self):
+    return '%x-%x: %s' % (self.start, self.end, self.name)
 
 
-def _get_short_function_name(function):
-  while True:
-    function, number = _ARGUMENT_TYPE_PATTERN.subn('', function)
-    if not number:
-      break
-  while True:
-    function, number = _TEMPLATE_ARGUMENT_PATTERN.subn('', function)
-    if not number:
-      break
-  return _LEADING_TYPE_PATTERN.sub('\g<1>', function)
+class ElfSection(object):
+  """A class for an elf section header."""
+
+  def __init__(
+      self, number, name, stype, address, offset, size, es, flg, lk, inf, al):
+    self.number = number
+    self.name = name
+    self.stype = stype
+    self.address = address
+    self.offset = offset
+    self.size = size
+    self.es = es
+    self.flg = flg
+    self.lk = lk
+    self.inf = inf
+    self.al = al
+
+  def __eq__(self, other):
+    return (self.number == other.number and
+            self.name == other.name and
+            self.stype == other.stype and
+            self.address == other.address and
+            self.offset == other.offset and
+            self.size == other.size and
+            self.es == other.es and
+            self.flg == other.flg and
+            self.lk == other.lk and
+            self.inf == other.inf and
+            self.al == other.al)
+
+  def __ne__(self, other):
+    return not self.__eq__(other)
+
+  def __str__(self):
+    return '%x+%x(%x) %s' % (self.address, self.size, self.offset, self.name)
 
 
-def _parse_nm_bsd_line(line):
-  if line[8] == ' ':
-    return line[0:8], line[9], line[11:]
-  elif line[16] == ' ':
-    return line[0:16], line[17], line[19:]
-  raise ParsingException('Invalid nm output.')
+class StaticSymbolsInFile(object):
+  """Represents static symbol information in a binary file."""
 
+  def __init__(self, my_name):
+    self.my_name = my_name
+    self._elf_sections = []
+    self._procedures = RangeAddressMapping()
+    self._typeinfos = AddressMapping()
 
-def _get_static_symbols_from_nm_bsd(f, mangled=False):
-  """Gets procedure boundaries from a result of nm -n --format bsd.
+  def _append_elf_section(self, elf_section):
+    self._elf_sections.append(elf_section)
 
-  Args:
-      f: A file object containing a result of nm.  It must be sorted and
-          in BSD-style.  (Use "[eu-]nm -n --format bsd")
+  def _append_procedure(self, start, procedure):
+    self._procedures.append(start, procedure)
 
-  Returns:
-      A result ProcedureBoundaryTable object.
-  """
-  symbol_table = ProcedureBoundaryTable()
+  def _append_typeinfo(self, start, typeinfo):
+    self._typeinfos.append(start, typeinfo)
 
-  last_start = 0
-  routine = ''
+  def _find_symbol_by_runtime_address(self, address, vma, target):
+    if not (vma.begin <= address < vma.end):
+      return None
 
-  for line in f:
-    sym_value, sym_type, sym_name = _parse_nm_bsd_line(line)
+    if vma.name != self.my_name:
+      return None
 
-    if sym_value[0] == ' ':
-      continue
+    file_offset = address - (vma.begin - vma.offset)
+    elf_address = None
+    for section in self._elf_sections:
+      if section.offset <= file_offset < (section.offset + section.size):
+        elf_address = section.address + file_offset - section.offset
+    if not elf_address:
+      return None
 
-    start_val = int(sym_value, 16)
+    return target.find(elf_address)
 
-    # It's possible for two symbols to share the same address, if
-    # one is a zero-length variable (like __start_google_malloc) or
-    # one symbol is a weak alias to another (like __libc_malloc).
-    # In such cases, we want to ignore all values except for the
-    # actual symbol, which in nm-speak has type "T".  The logic
-    # below does this, though it's a bit tricky: what happens when
-    # we have a series of lines with the same address, is the first
-    # one gets queued up to be processed.  However, it won't
-    # *actually* be processed until later, when we read a line with
-    # a different address.  That means that as long as we're reading
-    # lines with the same address, we have a chance to replace that
-    # item in the queue, which we do whenever we see a 'T' entry --
-    # that is, a line with type 'T'.  If we never see a 'T' entry,
-    # we'll just go ahead and process the first entry (which never
-    # got touched in the queue), and ignore the others.
-    if start_val == last_start and (sym_type == 't' or sym_type == 'T'):
-      # We are the 'T' symbol at this address, replace previous symbol.
+  def find_procedure_by_runtime_address(self, address, vma):
+    return self._find_symbol_by_runtime_address(address, vma, self._procedures)
+
+  def find_typeinfo_by_runtime_address(self, address, vma):
+    return self._find_symbol_by_runtime_address(address, vma, self._typeinfos)
+
+  def load_readelf_ew(self, f):
+    found_header = False
+    for line in f:
+      if line.rstrip() == 'Section Headers:':
+        found_header = True
+        break
+    if not found_header:
+      return None
+
+    for line in f:
+      line = line.rstrip()
+      matched = _READELF_SECTION_HEADER_PATTER.match(line)
+      if matched:
+        self._append_elf_section(ElfSection(
+            int(matched.group(1), 10), # number
+            matched.group(2), # name
+            matched.group(3), # stype
+            int(matched.group(4), 16), # address
+            int(matched.group(5), 16), # offset
+            int(matched.group(6), 16), # size
+            matched.group(7), # es
+            matched.group(8), # flg
+            matched.group(9), # lk
+            matched.group(10), # inf
+            matched.group(11) # al
+            ))
+      else:
+        if line in ('Key to Flags:', 'Program Headers:'):
+          break
+
+  def _parse_nm_bsd_line(self, line):
+    if line[8] == ' ':
+      return line[0:8], line[9], line[11:]
+    elif line[16] == ' ':
+      return line[0:16], line[17], line[19:]
+    raise ParsingException('Invalid nm output.')
+
+  def _get_short_function_name(self, function):
+    while True:
+      function, number = _ARGUMENT_TYPE_PATTERN.subn('', function)
+      if not number:
+        break
+    while True:
+      function, number = _TEMPLATE_ARGUMENT_PATTERN.subn('', function)
+      if not number:
+        break
+    return _LEADING_TYPE_PATTERN.sub('\g<1>', function)
+
+  def load_nm_bsd(self, f, mangled=False):
+    last_start = 0
+    routine = ''
+
+    for line in f:
+      line = line.rstrip()
+      sym_value, sym_type, sym_name = self._parse_nm_bsd_line(line)
+
+      if sym_value[0] == ' ':
+        continue
+
+      start_val = int(sym_value, 16)
+
+      if (sym_type in ('r', 'R', 'D', 'U', 'd', 'V') and
+          (not mangled and sym_name.startswith('typeinfo'))):
+        self._append_typeinfo(start_val, sym_name)
+
+      # It's possible for two symbols to share the same address, if
+      # one is a zero-length variable (like __start_google_malloc) or
+      # one symbol is a weak alias to another (like __libc_malloc).
+      # In such cases, we want to ignore all values except for the
+      # actual symbol, which in nm-speak has type "T".  The logic
+      # below does this, though it's a bit tricky: what happens when
+      # we have a series of lines with the same address, is the first
+      # one gets queued up to be processed.  However, it won't
+      # *actually* be processed until later, when we read a line with
+      # a different address.  That means that as long as we're reading
+      # lines with the same address, we have a chance to replace that
+      # item in the queue, which we do whenever we see a 'T' entry --
+      # that is, a line with type 'T'.  If we never see a 'T' entry,
+      # we'll just go ahead and process the first entry (which never
+      # got touched in the queue), and ignore the others.
+      if start_val == last_start and (sym_type == 't' or sym_type == 'T'):
+        # We are the 'T' symbol at this address, replace previous symbol.
+        routine = sym_name
+        continue
+      elif start_val == last_start:
+        # We're not the 'T' symbol at this address, so ignore us.
+        continue
+
+      # Tag this routine with the starting address in case the image
+      # has multiple occurrences of this routine.  We use a syntax
+      # that resembles template paramters that are automatically
+      # stripped out by ShortFunctionName()
+      sym_name += "<%016x>" % start_val
+
+      if not mangled:
+        routine = self._get_short_function_name(routine)
+      self._append_procedure(
+          last_start, Procedure(last_start, start_val, routine))
+
+      last_start = start_val
       routine = sym_name
-      continue
-    elif start_val == last_start:
-      # We're not the 'T' symbol at this address, so ignore us.
-      continue
-
-    # Tag this routine with the starting address in case the image
-    # has multiple occurrences of this routine.  We use a syntax
-    # that resembles template paramters that are automatically
-    # stripped out by ShortFunctionName()
-    sym_name += "<%016x>" % start_val
 
     if not mangled:
-      routine = _get_short_function_name(routine)
-    symbol_table.append(ProcedureBoundary(last_start, start_val, routine))
-
-    last_start = start_val
-    routine = sym_name
-
-  if not mangled:
-    routine = _get_short_function_name(routine)
-  symbol_table.append(ProcedureBoundary(last_start, last_start, routine))
-  return symbol_table
+      routine = self._get_short_function_name(routine)
+    self._append_procedure(
+        last_start, Procedure(last_start, last_start, routine))

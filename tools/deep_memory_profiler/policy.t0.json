@@ -13,16 +13,15 @@
     "nonprofiled-stack",
     "nonprofiled-other",
     "no-bucket",
-    "mmap-v8-heap-newspace",
-    "mmap-v8-heap-coderange",
-    "mmap-v8-heap-pagedspace",
-    "mmap-v8-other",
+    "mmap-v8",
     "mmap-catch-all",
-    "tc-v8",
-    "tc-skia",
-    "tc-webkit-catch-all",
-    "tc-unknown-string",
-    "tc-catch-all",
+    "tc-std-string",
+    "tc-WTF-String",
+    "tc-no-typeinfo-StringImpl",
+    "tc-Skia",
+    "tc-WebCore-Style",
+    "tc-no-typeinfo-other",
+    "tc-other",
     "tc-unused",
     "UNTIL_HERE_FOR_TOTAL",
     "total-exclude-profiler",
@@ -103,22 +102,7 @@
       "allocator": "optional"
     },
     {
-      "name": "mmap-v8-heap-newspace",
-      "stacktrace": ".*v8::internal::NewSpace::SetUp.*",
-      "allocator": "mmap"
-    },
-    {
-      "name": "mmap-v8-heap-coderange",
-      "stacktrace": ".*v8::internal::CodeRange::SetUp.*",
-      "allocator": "mmap"
-    },
-    {
-      "name": "mmap-v8-heap-pagedspace",
-      "stacktrace": ".*v8::internal::PagedSpace::AllocateRaw.*",
-      "allocator": "mmap"
-    },
-    {
-      "name": "mmap-v8-other",
+      "name": "mmap-v8",
       "stacktrace": ".*v8::.*",
       "allocator": "mmap"
     },
@@ -128,28 +112,45 @@
       "allocator": "mmap"
     },
     {
-      "name": "tc-v8",
-      "stacktrace": ".*v8::.*",
-      "allocator": "malloc"
-    },
-    {
-      "name": "tc-skia",
-      "stacktrace": ".*Sk[A-Za-z_]+::.*",
-      "allocator": "malloc"
-    },
-    {
-      "name": "tc-webkit-catch-all",
-      "stacktrace": ".*(WTF::|WebCore::|WebKit::).*",
-      "allocator": "malloc"
-    },
-    {
-      "name": "tc-unknown-string",
-      "stacktrace": ".*std::basic_string::_Rep::_S_create.*",
-      "allocator": "malloc"
-    },
-    {
-      "name": "tc-catch-all",
+      "name": "tc-std-string",
       "stacktrace": ".*",
+      "typeinfo": "std::basic_string.*",
+      "allocator": "malloc"
+    },
+    {
+      "name": "tc-WTF-String",
+      "stacktrace": ".*",
+      "typeinfo": "WTF::String.*",
+      "allocator": "malloc"
+    },
+    {
+      "name": "tc-no-typeinfo-StringImpl",
+      "stacktrace": ".*WTF::StringImpl::getData16SlowCase.*",
+      "typeinfo": "no typeinfo",
+      "allocator": "malloc"
+    },
+    {
+      "name": "tc-Skia",
+      "stacktrace": ".*",
+      "typeinfo": "(skia::|SkGlyph).*",
+      "allocator": "malloc"
+    },
+    {
+      "name": "tc-WebCore-Style",
+      "stacktrace": ".*",
+      "typeinfo": "WebCore::Style.*",
+      "allocator": "malloc"
+    },
+    {
+      "name": "tc-no-typeinfo-other",
+      "stacktrace": ".*",
+      "typeinfo": "no typeinfo",
+      "allocator": "malloc"
+    },
+    {
+      "name": "tc-other",
+      "stacktrace": ".*",
+      "typeinfo": ".*",
       "allocator": "malloc"
     },
     {
@@ -193,5 +194,5 @@
       "allocator": "optional"
     }
   ],
-  "version": "POLICY_DEEP_3"
+  "version": "POLICY_DEEP_4"
 }

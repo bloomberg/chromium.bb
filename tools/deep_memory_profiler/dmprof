@@ -22,8 +22,9 @@ FIND_RUNTIME_SYMBOLS_PATH = os.path.join(
 sys.path.append(FIND_RUNTIME_SYMBOLS_PATH)
 
 from find_runtime_symbols import find_runtime_symbols_list
+from find_runtime_symbols import find_runtime_typeinfo_symbols_list
+from find_runtime_symbols import RuntimeSymbolsInProcess
 from prepare_symbol_info import prepare_symbol_info
-from static_symbols import StaticSymbols
 
 BUCKET_ID = 5
 VIRTUAL = 0
@@ -81,6 +82,9 @@ POLICY_DEEP_2 = 'POLICY_DEEP_2'
 # POLICY_DEEP_3 is in JSON format.
 POLICY_DEEP_3 = 'POLICY_DEEP_3'
 
+# POLICY_DEEP_3 contains typeinfo.
+POLICY_DEEP_4 = 'POLICY_DEEP_4'
+
 
 class EmptyDumpException(Exception):
   def __init__(self, value):
@@ -119,27 +123,33 @@ class DelayedStaticSymbols(object):
     if keep:
       self.prepared_data_dir = prefix + '.pre'
     self.loaded_static_symbols = None
+    self.loaded_symbols_in_process = None
 
   def get(self):
-    if not self.loaded_static_symbols:
+    if not self.loaded_symbols_in_process:
       if not self.keep:
         self.prepared_data_dir = tempfile.mkdtemp()
       try:
         prepare_symbol_info(self.maps_path, self.prepared_data_dir)
-        self.loaded_static_symbols = StaticSymbols.load(self.prepared_data_dir)
+        self.loaded_symbols_in_process = RuntimeSymbolsInProcess.load(
+            self.prepared_data_dir)
       finally:
         if not self.keep:
           shutil.rmtree(self.prepared_data_dir)
-    return self.loaded_static_symbols
+    return self.loaded_symbols_in_process
 
 
 class Rule(object):
   """Represents one matching rule in a policy file."""
 
-  def __init__(self, name, mmap, stacktrace_pattern):
+  def __init__(self, name, mmap, stacktrace_pattern, typeinfo_pattern=None):
     self.name = name
     self.mmap = mmap
     self.stacktrace_pattern = re.compile(stacktrace_pattern + r'\Z')
+    if typeinfo_pattern:
+      self.typeinfo_pattern = re.compile(typeinfo_pattern + r'\Z')
+    else:
+      self.typeinfo_pattern = None
 
 
 class Policy(object):
@@ -171,9 +181,14 @@ def get_component(rule_list, bucket, symbols):
     return bucket.component_cache
 
   stacktrace = ''.join(symbols[a] + ' ' for a in bucket.stacktrace).strip()
+  typeinfo = bucket.typeinfo_symbol
+  if typeinfo.startswith('0x'):
+    typeinfo = bucket.typename
 
   for rule in rule_list:
-    if bucket.mmap == rule.mmap and rule.stacktrace_pattern.match(stacktrace):
+    if (bucket.mmap == rule.mmap and
+        rule.stacktrace_pattern.match(stacktrace) and
+        (not rule.typeinfo_pattern or rule.typeinfo_pattern.match(typeinfo))):
       bucket.component_cache = rule.name
       return rule.name
 
@@ -183,9 +198,12 @@ def get_component(rule_list, bucket, symbols):
 class Bucket(object):
   """Represents a bucket, which is a unit of memory classification."""
 
-  def __init__(self, stacktrace, mmap):
+  def __init__(self, stacktrace, mmap, typeinfo, typename):
     self.stacktrace = stacktrace
     self.mmap = mmap
+    self.typeinfo = typeinfo
+    self.typeinfo_symbol = typename
+    self.typename = typename
     self.component_cache = ''
 
   def clear_component_cache(self):
@@ -563,13 +581,17 @@ class Dump(object):
 
   @staticmethod
   def accumulate_size_for_expand(stacktrace_lines, rule_list, buckets,
-                                 component_name, depth, sizes, symbols):
+                                 component_name, depth, sizes, symbols,
+                                 typeinfo_symbols):
     for line in stacktrace_lines:
       words = line.split()
       bucket = buckets.get(int(words[BUCKET_ID]))
       component_match = get_component(rule_list, bucket, symbols)
       if component_match == component_name:
         stacktrace_sequence = ''
+        if bucket.typeinfo:
+          stacktrace_sequence += '(type=%s)' % typeinfo_symbols[bucket.typeinfo]
+          stacktrace_sequence += ' (type.name=%s) ' % bucket.typename
         for address in bucket.stacktrace[0 : min(len(bucket.stacktrace),
                                                  1 + depth)]:
           stacktrace_sequence += symbols[address] + ' '
@@ -577,7 +599,9 @@ class Dump(object):
           sizes[stacktrace_sequence] = 0
         sizes[stacktrace_sequence] += int(words[COMMITTED])
 
-  def expand(self, rule_list, buckets, component_name, depth, symbols):
+  def expand(
+      self, rule_list, buckets, component_name, depth, symbols,
+      typeinfo_symbols):
     """Prints all stacktraces in a given component of given depth.
 
     Args:
@@ -591,7 +615,7 @@ class Dump(object):
 
     self.accumulate_size_for_expand(
         self.stacktrace_lines, rule_list, buckets, component_name,
-        depth, sizes, symbols)
+        depth, sizes, symbols, typeinfo_symbols)
 
     sorted_sizes_list = sorted(
         sizes.iteritems(), key=(lambda x: x[1]), reverse=True)
@@ -603,7 +627,8 @@ class Dump(object):
 
 
 def update_symbols(
-    symbol_path, delayed_static_symbols, appeared_addresses, symbols):
+    symbol_path, delayed_static_symbols, appeared_addresses,
+    parameter_find_runtime_symbols_list, symbols):
   """Updates address/symbol mapping on memory and in a .symbol cache file.
 
   It reads cached address/symbol mapping from a .symbol file if it exists.
@@ -620,6 +645,7 @@ def update_symbols(
       symbol_path: A string representing a path for a .symbol file.
       delayed_static_symbols: A DelayedStaticSymbols object.
       appeared_addresses: A list of known addresses.
+      parameter_find_runtime_symbols_list: A function to find symbols.
       symbols: A dict mapping runtime addresses to symbol names.
   """
   with open(symbol_path, mode='a+') as symbol_f:
@@ -643,9 +669,12 @@ def update_symbols(
     else:
       sys.stderr.write('  %d addresses unresolved.\n' %
                        len(unresolved_addresses))
-      static_symbols = delayed_static_symbols.get()
-      symbol_list = find_runtime_symbols_list(
-          static_symbols, unresolved_addresses)
+
+      sys.stderr.write('  Loading symbols\n')
+      symbols_in_process = delayed_static_symbols.get()
+      symbol_list = parameter_find_runtime_symbols_list(
+          symbols_in_process, unresolved_addresses)
+      sys.stderr.write('  Loaded\n')
 
       for address, symbol in zip(unresolved_addresses, symbol_list):
         if not symbol:
@@ -727,8 +756,13 @@ def parse_policy_json(policy_path):
 
   rules = []
   for rule in policy['rules']:
-    rules.append(Rule(
-        rule['name'], rule['allocator'] == 'mmap', rule['stacktrace']))
+    if 'typeinfo' in rule:
+      rules.append(Rule(
+          rule['name'], rule['allocator'] == 'mmap', rule['stacktrace'],
+          rule['typeinfo']))
+    else:
+      rules.append(Rule(
+          rule['name'], rule['allocator'] == 'mmap', rule['stacktrace']))
   return Policy(rules, policy['version'], policy['components'])
 
 
@@ -739,6 +773,7 @@ def find_prefix(path):
 def load_buckets(prefix):
   # Reading buckets
   sys.stderr.write('Loading bucket files.\n')
+  appeared_typeinfo_addresses = set()
   buckets = {}
   bucket_count = 0
   n = 0
@@ -753,11 +788,26 @@ def load_buckets(prefix):
     with open(buckets_path, 'r') as buckets_f:
       for line in buckets_f:
         words = line.split()
-        stacktrace = [int(address, 16) for address in words[2:]]
-        buckets[int(words[0])] = Bucket(stacktrace, words[1] == 'mmap')
+        typeinfo = None
+        typename = ''
+        stacktrace_begin = 2
+        for index, word in enumerate(words):
+          if index < 2:
+            continue
+          if word[0] == 't':
+            typeinfo = int(word[1:], 16)
+            appeared_typeinfo_addresses.add(typeinfo)
+          elif word[0] == 'n':
+            typename = word[1:]
+          else:
+            stacktrace_begin = index
+            break
+        stacktrace = [int(address, 16) for address in words[stacktrace_begin:]]
+        buckets[int(words[0])] = Bucket(
+            stacktrace, words[1] == 'mmap', typeinfo, typename)
     n += 1
 
-  return buckets
+  return buckets, appeared_typeinfo_addresses
 
 
 def determine_dump_path_list(dump_path, prefix):
@@ -812,13 +862,24 @@ def load_dumps(dump_path_list, buckets):
 
 
 def load_and_update_symbol_cache(
-    prefix, appeared_addresses, delayed_static_symbols):
+    prefix, appeared_addresses, appeared_typeinfo_addresses,
+    delayed_static_symbols):
   symbol_path = prefix + '.symbols'
   sys.stderr.write('Loading and updating symbol cache: "%s".\n' % symbol_path)
   symbols = {}
   update_symbols(
-      symbol_path, delayed_static_symbols, appeared_addresses, symbols)
-  return symbols
+      symbol_path, delayed_static_symbols, appeared_addresses,
+      find_runtime_symbols_list, symbols)
+
+  typeinfo_symbol_path = prefix + '.tsymbols'
+  sys.stderr.write('Loading and updating typeinfo symbol cache: "%s".\n' %
+                   typeinfo_symbol_path)
+  typeinfo_symbols = {}
+  update_symbols(
+      typeinfo_symbol_path, delayed_static_symbols, appeared_typeinfo_addresses,
+      find_runtime_typeinfo_symbols_list, typeinfo_symbols)
+
+  return symbols, typeinfo_symbols
 
 
 def load_default_policies():
@@ -870,23 +931,37 @@ def load_policies(options_policy):
 
 def load_basic_files_with_multiple_dumps(dump_path, keep):
   prefix = find_prefix(dump_path)
-  buckets = load_buckets(prefix)
+  buckets, appeared_typeinfo_addresses = load_buckets(prefix)
   dumps, appeared_addresses = load_dumps(
       determine_dump_path_list(dump_path, prefix), buckets)
   delayed_static_symbols = DelayedStaticSymbols(prefix, keep)
-  symbols = load_and_update_symbol_cache(
-      prefix, appeared_addresses, delayed_static_symbols)
-  return buckets, dumps, appeared_addresses, delayed_static_symbols, symbols
+  symbols, typeinfo_symbols = load_and_update_symbol_cache(
+      prefix, appeared_addresses, appeared_typeinfo_addresses,
+      delayed_static_symbols)
+  for bucket in buckets:
+    if buckets[bucket].typeinfo != None:
+      buckets[bucket].typeinfo_symbol = typeinfo_symbols[
+          buckets[bucket].typeinfo]
+
+  return (buckets, dumps, appeared_addresses, appeared_typeinfo_addresses,
+          delayed_static_symbols, symbols, typeinfo_symbols)
 
 
 def load_basic_files_with_single_dump(dump_path, keep):
   prefix = find_prefix(dump_path)
-  buckets = load_buckets(prefix)
+  buckets, appeared_typeinfo_addresses = load_buckets(prefix)
   dump, appeared_addresses = load_dump(dump_path, buckets)
   delayed_static_symbols = DelayedStaticSymbols(prefix, keep)
-  symbols = load_and_update_symbol_cache(
-      prefix, appeared_addresses, delayed_static_symbols)
-  return buckets, dump, appeared_addresses, delayed_static_symbols, symbols
+  symbols, typeinfo_symbols = load_and_update_symbol_cache(
+      prefix, appeared_addresses, appeared_typeinfo_addresses,
+      delayed_static_symbols)
+  for bucket in buckets:
+    if buckets[bucket].typeinfo != None:
+      buckets[bucket].typeinfo_symbol = typeinfo_symbols[
+          buckets[bucket].typeinfo]
+
+  return (buckets, dump, appeared_addresses, appeared_typeinfo_addresses,
+          delayed_static_symbols, symbols, typeinfo_symbols)
 
 
 def do_stacktrace(sys_argv):
@@ -901,8 +976,9 @@ def do_stacktrace(sys_argv):
 
   dump_path = args[1]
 
-  buckets, dump, appeared_addresses, delayed_static_symbols, symbols = (
-      load_basic_files_with_single_dump(dump_path, options.keep))
+  (buckets, dump, appeared_addresses, appeared_typeinfo_addresses,
+   delayed_static_symbols, symbols, typeinfo_symbols) = (
+       load_basic_files_with_single_dump(dump_path, options.keep))
 
   dump.print_stacktrace(buckets, symbols)
 
@@ -923,8 +999,10 @@ def do_csv(sys_argv):
 
   dump_path = args[1]
 
-  buckets, dumps, appeared_addresses, delayed_static_symbols, symbols = (
-      load_basic_files_with_multiple_dumps(dump_path, options.keep))
+  (buckets, dumps, appeared_addresses, appeared_typeinfo_addresses,
+   delayed_static_symbols, symbols, typeinfo_symbols) = (
+       load_basic_files_with_multiple_dumps(dump_path, options.keep))
+
   policies = load_policies(options.policy)
 
   max_components = 0
@@ -972,8 +1050,9 @@ def do_json(sys_argv):
 
   dump_path = args[1]
 
-  buckets, dumps, appeared_addresses, delayed_static_symbols, symbols = (
-      load_basic_files_with_multiple_dumps(dump_path, options.keep))
+  (buckets, dumps, appeared_addresses, appeared_typeinfo_addresses,
+   delayed_static_symbols, symbols, typeinfo_symbols) = (
+       load_basic_files_with_multiple_dumps(dump_path, options.keep))
   policies = load_policies(options.policy)
 
   json_base = {
@@ -1020,8 +1099,9 @@ def do_list(sys_argv):
 
   dump_path = args[1]
 
-  buckets, dumps, appeared_addresses, delayed_static_symbols, symbols = (
-      load_basic_files_with_multiple_dumps(dump_path, options.keep))
+  (buckets, dumps, appeared_addresses, appeared_typeinfo_addresses,
+   delayed_static_symbols, symbols, typeinfo_symbols) = (
+       load_basic_files_with_multiple_dumps(dump_path, options.keep))
   policies = load_policies(options.policy)
 
   for policy in sorted(policies):
@@ -1059,13 +1139,15 @@ def do_expand(sys_argv):
   component_name = args[3]
   depth = args[4]
 
-  buckets, dump, appeared_addresses, delayed_static_symbols, symbols = (
-      load_basic_files_with_single_dump(dump_path, options.keep))
+  (buckets, dump, appeared_addresses, appeared_typeinfo_addresses,
+   delayed_static_symbols, symbols, typeinfo_symbols) = (
+       load_basic_files_with_single_dump(dump_path, options.keep))
   policies = load_policies(target_policy)
 
   rule_list = policies[target_policy].rules
 
-  dump.expand(rule_list, buckets, component_name, int(depth), symbols)
+  dump.expand(rule_list, buckets, component_name, int(depth), symbols,
+              typeinfo_symbols)
 
   return 0
 
@@ -1086,8 +1168,9 @@ def do_pprof(sys_argv):
   target_policy = args[2]
   component = options.component
 
-  buckets, dump, appeared_addresses, delayed_static_symbols, symbols = (
-      load_basic_files_with_single_dump(dump_path, options.keep))
+  (buckets, dump, appeared_addresses, appeared_typeinfo_addresses,
+   delayed_static_symbols, symbols, typeinfo_symbols) = (
+       load_basic_files_with_single_dump(dump_path, options.keep))
   policies = load_policies(target_policy)
 
   rule_list = policies[target_policy].rules

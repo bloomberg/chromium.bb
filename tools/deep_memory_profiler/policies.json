@@ -10,5 +10,9 @@
   "l2": {
     "file": "policy.l2.json",
     "format": "json"
+  },
+  "t0": {
+    "file": "policy.t0.json",
+    "format": "json"
   }
 }

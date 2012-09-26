@@ -2,7 +2,7 @@
   "components": [
     "second",
     "mmap-profiler",
-    "mmap-allocated-type",
+    "mmap-type-profiler",
     "mmap-tcmalloc",
     "FROM_HERE_FOR_TOTAL",
     "mustbezero",
@@ -76,8 +76,8 @@
       "allocator": "mmap"
     },
     {
-      "name": "mmap-allocated-type",
-      "stacktrace": ".*(AllocatedTypeMalloc).*",
+      "name": "mmap-type-profiler",
+      "stacktrace": ".*(TypeProfilerMalloc).*",
       "allocator": "mmap"
     },
     {

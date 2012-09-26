@@ -446,15 +446,28 @@ void DeepHeapProfile::AddIntegerToHashValue(
 // ignored in usual Chromium runs.  Another hash function can be tried in an
 // easy way in future.
 DeepHeapProfile::DeepBucket* DeepHeapProfile::GetDeepBucket(
-    Bucket* bucket, bool is_mmap, DeepBucket **table) {
+    Bucket* bucket, bool is_mmap,
+#if defined(TYPE_PROFILING)
+    const std::type_info* type,
+#endif
+    DeepBucket **table) {
   // Make hash-value
   uintptr_t h = 0;
 
   AddIntegerToHashValue(reinterpret_cast<uintptr_t>(bucket), &h);
-  if (is_mmap)
+  if (is_mmap) {
     AddIntegerToHashValue(1, &h);
-  else
+  } else {
     AddIntegerToHashValue(0, &h);
+  }
+
+#if defined(TYPE_PROFILING)
+  if (type == NULL) {
+    AddIntegerToHashValue(0, &h);
+  } else {
+    AddIntegerToHashValue(reinterpret_cast<uintptr_t>(type->name()), &h);
+  }
+#endif
 
   h += h << 3;
   h ^= h >> 11;
@@ -472,6 +485,9 @@ DeepHeapProfile::DeepBucket* DeepHeapProfile::GetDeepBucket(
       reinterpret_cast<DeepBucket*>(heap_profile_->alloc_(sizeof(DeepBucket)));
   memset(db, 0, sizeof(*db));
   db->bucket         = bucket;
+#if defined(TYPE_PROFILING)
+  db->type           = type;
+#endif
   db->committed_size = 0;
   db->is_mmap        = is_mmap;
   db->id             = (bucket_id_++);
@@ -532,7 +548,11 @@ void DeepHeapProfile::RecordAlloc(const void* pointer,
       address, address + alloc_value->bytes - 1);
 
   DeepBucket* deep_bucket = deep_profile->GetDeepBucket(
-      alloc_value->bucket(), /* is_mmap */ false, deep_profile->deep_table_);
+      alloc_value->bucket(), /* is_mmap */ false,
+#if defined(TYPE_PROFILING)
+      LookupType(pointer),
+#endif
+      deep_profile->deep_table_);
   deep_bucket->committed_size += committed;
   deep_profile->stats_.profiled_malloc.AddToVirtualBytes(alloc_value->bytes);
   deep_profile->stats_.profiled_malloc.AddToCommittedBytes(committed);
@@ -546,7 +566,11 @@ void DeepHeapProfile::RecordMMap(const void* pointer,
       address, address + alloc_value->bytes - 1);
 
   DeepBucket* deep_bucket = deep_profile->GetDeepBucket(
-      alloc_value->bucket(), /* is_mmap */ true, deep_profile->deep_table_);
+      alloc_value->bucket(), /* is_mmap */ true,
+#if defined(TYPE_PROFILING)
+      NULL,
+#endif
+      deep_profile->deep_table_);
   deep_bucket->committed_size += committed;
   deep_profile->stats_.profiled_mmap.AddToVirtualBytes(alloc_value->bytes);
   deep_profile->stats_.profiled_mmap.AddToCommittedBytes(committed);
@@ -593,6 +617,28 @@ int DeepHeapProfile::FillBucketForBucketFile(const DeepBucket* deep_bucket,
     return used_in_buffer;
   }
   used_in_buffer += printed;
+
+#if defined(TYPE_PROFILING)
+  printed = snprintf(buffer + used_in_buffer, buffer_size - used_in_buffer,
+                     " t0x%" PRIxPTR,
+                     reinterpret_cast<uintptr_t>(deep_bucket->type));
+  if (IsPrintedStringValid(printed, buffer_size, used_in_buffer)) {
+    return used_in_buffer;
+  }
+  used_in_buffer += printed;
+
+  if (deep_bucket->type == NULL) {
+    printed = snprintf(buffer + used_in_buffer, buffer_size - used_in_buffer,
+                       " nno_typeinfo");
+  } else {
+    printed = snprintf(buffer + used_in_buffer, buffer_size - used_in_buffer,
+                       " n%s", deep_bucket->type->name());
+  }
+  if (IsPrintedStringValid(printed, buffer_size, used_in_buffer)) {
+    return used_in_buffer;
+  }
+  used_in_buffer += printed;
+#endif
 
   for (int depth = 0; depth < bucket->depth; depth++) {
     printed = snprintf(buffer + used_in_buffer, buffer_size - used_in_buffer,

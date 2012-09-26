@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -60,45 +59,43 @@ class ProcMaps(object):
     for index in self._sorted_indexes:
       yield self._dictionary[index]
 
+  @staticmethod
+  def load(f):
+    table = ProcMaps()
+    for line in f:
+      matched = _MAPS_PATTERN.match(line)
+      if matched:
+        table.append(ProcMapsEntry(
+            int(matched.group(1), 16),  # begin
+            int(matched.group(2), 16),  # end
+            matched.group(3),           # readable
+            matched.group(4),           # writable
+            matched.group(5),           # executable
+            matched.group(6),           # private
+            int(matched.group(7), 16),  # offset
+            matched.group(8),           # major
+            matched.group(9),           # minor
+            int(matched.group(10), 10), # inode
+            matched.group(11)           # name
+            ))
 
-def parse_proc_maps(f):
-  table = ProcMaps()
-  for line in f:
-    matched = _MAPS_PATTERN.match(line)
-    if matched:
-      table.append(ProcMapsEntry(
-          int(matched.group(1), 16),  # begin
-          int(matched.group(2), 16),  # end
-          matched.group(3),           # readable
-          matched.group(4),           # writable
-          matched.group(5),           # executable
-          matched.group(6),           # private
-          int(matched.group(7), 16),  # offset
-          matched.group(8),           # major
-          matched.group(9),           # minor
-          int(matched.group(10), 10), # inode
-          matched.group(11)           # name
-          ))
+    return table
 
-  return table
+  @staticmethod
+  def constants(entry):
+    return (entry.writable == '-' and entry.executable == '-' and re.match(
+        '\S+(\.(so|dll|dylib|bundle)|chrome)((\.\d+)+\w*(\.\d+){0,3})?',
+        entry.name))
 
+  @staticmethod
+  def executable(entry):
+    return (entry.executable == 'x' and re.match(
+        '\S+(\.(so|dll|dylib|bundle)|chrome)((\.\d+)+\w*(\.\d+){0,3})?',
+        entry.name))
 
-def main():
-  if len(sys.argv) < 2:
-    sys.stderr.write("""Usage:
-%s /path/to/maps
-""" % sys.argv[0])
-    return 1
-
-  with open(sys.argv[1], mode='r') as f:
-    maps = parse_proc_maps(f)
-
-  for entry in maps:
-    print "%016x-%016x +%06x %s" % (
-        entry.begin, entry.end, entry.offset, entry.name)
-
-  return 0
-
-
-if __name__ == '__main__':
-  sys.exit(main())
+  @staticmethod
+  def executable_and_constants(entry):
+    return (((entry.writable == '-' and entry.executable == '-') or
+             entry.executable == 'x') and re.match(
+        '\S+(\.(so|dll|dylib|bundle)|chrome)((\.\d+)+\w*(\.\d+){0,3})?',
+        entry.name))

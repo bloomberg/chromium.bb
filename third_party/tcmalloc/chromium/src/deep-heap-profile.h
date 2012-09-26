@@ -26,6 +26,10 @@
 
 #include "config.h"
 
+#if defined(TYPE_PROFILING)
+#include <typeinfo>
+#endif
+
 #if defined(__linux__)
 #define DEEP_HEAP_PROFILE 1
 #endif
@@ -87,6 +91,9 @@ class DeepHeapProfile {
 #ifdef DEEP_HEAP_PROFILE
   struct DeepBucket {
     Bucket*     bucket;
+#if defined(TYPE_PROFILING)
+    const std::type_info* type;
+#endif
     size_t      committed_size;
     bool        is_mmap;
     int         id;         // Unique ID of the bucket.
@@ -211,7 +218,11 @@ class DeepHeapProfile {
 
   // Get the DeepBucket object corresponding to the given |bucket|.
   // DeepBucket is an extension to Bucket which is declared above.
-  DeepBucket* GetDeepBucket(Bucket* bucket, bool is_mmap, DeepBucket** table);
+  DeepBucket* GetDeepBucket(Bucket* bucket, bool is_mmap,
+#if defined(TYPE_PROFILING)
+      const std::type_info* type,
+#endif
+      DeepBucket** table);
 
   // Reset committed_size member variables in DeepBucket objects to 0.
   void ResetCommittedSize(DeepBucket** deep_table);
