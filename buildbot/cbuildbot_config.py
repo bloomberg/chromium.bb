@@ -30,8 +30,8 @@ CONFIG_TYPE_DUMP_ORDER = (
     'pre-flight-branch',
     'factory',
     'firmware',
-    'toolchain',
-    'toolchain_minor',
+    'toolchain-major',
+    'toolchain-minor',
     'asan',
     'refresh-packages',
 )
@@ -519,7 +519,7 @@ official = _config(
 
 SDK_TEST_BOARDS = ['amd64-generic', 'daisy', 'x86-generic']
 
-full.add_config('chromiumos-sdk',
+_cros_sdk = full.add_config('chromiumos-sdk',
   # The amd64-host has to be last as that is when the toolchains
   # are bundled up for inclusion in the sdk.
   boards=['x86-generic', 'arm-generic', 'amd64-generic', 'amd64-host'],
@@ -710,36 +710,17 @@ full.add_config('stumpy-full',
   boards=['stumpy'],
 )
 
-_toolchain = \
-    full.derive(latest_toolchain=True, prebuilts=False,
-                gcc_githash='gcc.gnu.org/branches/google/main',
-                trybot_list=False,
-                use_sdk=False,
-                description='Test upstream google gcc (main branch)',)
-
-_toolchain.add_config('x86-generic-toolchain',
-  boards=['x86-generic', 'amd64-host'],
+_toolchain_major = _cros_sdk.add_config('toolchain-major',
+  latest_toolchain=True,
+  gcc_githash='gcc.gnu.org/branches/google/main',
+  description='Test next major toolchain revision',
 )
 
-_toolchain.add_config('arm-tegra2-seaboard-toolchain', arm,
-  boards=['tegra2_seaboard', 'amd64-host'],
+_toolchain_minor = _cros_sdk.add_config('toolchain-minor',
+  latest_toolchain=True,
+  gcc_githash='gcc.gnu.org/branches/google/gcc-4_7-mobile',
+  description='Test next minor toolchain revision',
 )
-
-_toolchain_minor = \
-    full.derive(latest_toolchain=True, prebuilts=False,
-                gcc_githash='gcc.gnu.org/branches/google/gcc-4_7-mobile',
-                trybot_list=False,
-                use_sdk=False,
-                description='Test upstream google gcc (4.7.x)',)
-
-_toolchain_minor.add_config('x86-generic-toolchain_minor',
-  boards=['x86-generic', 'amd64-host'],
-)
-
-_toolchain_minor.add_config('arm-tegra2-seaboard-toolchain_minor', arm,
-  boards=['tegra2_seaboard', 'amd64-host'],
-)
-
 
 full.add_config('amd64-generic-full',
   boards=['amd64-generic'],
@@ -870,35 +851,18 @@ internal_incremental.add_config('mario-incremental',
   boards=['x86-mario'],
 )
 
-_internal_toolchain = _toolchain.derive(internal, official,
+_toolchain_major.add_config('internal-toolchain-major', internal, official,
   use_lkgm=True,
   useflags=['chrome_internal'],
   build_tests=True,
-  description=_toolchain['description'] + ' (internal)',
+  description=_toolchain_major['description'] + ' (internal)',
 )
 
-_internal_toolchain.add_config('x86-alex-toolchain',
-  boards=['x86-alex', 'amd64-host'],
-)
-
-_internal_toolchain.add_config('arm-tegra2_kaen-toolchain',
-  arm,
-  boards=['tegra2_kaen', 'amd64-host'],
-)
-
-_internal_toolchain_minor = _toolchain_minor.derive(internal, official,
+_toolchain_minor.add_config('internal-toolchain-minor', internal, official,
   use_lkgm=True,
   useflags=['chrome_internal'],
   build_tests=True,
-)
-
-_internal_toolchain_minor.add_config('x86-alex-toolchain_minor',
-  boards=['x86-alex', 'amd64-host'],
-)
-
-_internal_toolchain_minor.add_config('arm-tegra2_kaen-toolchain_minor',
-  arm,
-  boards=['tegra2_kaen', 'amd64-host'],
+  description=_toolchain_minor['description'] + ' (internal)',
 )
 
 _release = full.derive(official, internal,
