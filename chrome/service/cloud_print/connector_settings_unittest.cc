@@ -27,6 +27,11 @@ const char kServiceStateContent[] =
     "      'robot_refresh_token': '123',"
     "      'service_url': 'http://cp.google.com',"
     "      'xmpp_auth_token': 'xmp token',"
+    "      'connect_new_printers': false,"
+    "      'printer_blacklist': ["
+    "         'prn1',"
+    "         'prn2'"
+    "       ],"
     "      'print_system_settings': {"
     "         'delete_on_enum_fail' : true"
     "       }"
@@ -77,6 +82,8 @@ TEST_F(ConnectorSettingsTest, InitFromEmpty) {
     EXPECT_FALSE(settings.proxy_id().empty());
     EXPECT_FALSE(settings.delete_on_enum_fail());
     EXPECT_EQ(NULL, settings.print_system_settings());
+    EXPECT_TRUE(settings.connect_new_printers());
+    EXPECT_FALSE(settings.IsPrinterBlacklisted("prn1"));
   }
 }
 
@@ -89,6 +96,9 @@ TEST_F(ConnectorSettingsTest, InitFromFile) {
   EXPECT_FALSE(settings.proxy_id().empty());
   EXPECT_TRUE(settings.delete_on_enum_fail());
   EXPECT_TRUE(settings.print_system_settings());
+  EXPECT_FALSE(settings.connect_new_printers());
+  EXPECT_FALSE(settings.IsPrinterBlacklisted("prn0"));
+  EXPECT_TRUE(settings.IsPrinterBlacklisted("prn1"));
 }
 
 TEST_F(ConnectorSettingsTest, CopyFrom) {
@@ -104,5 +114,7 @@ TEST_F(ConnectorSettingsTest, CopyFrom) {
   EXPECT_EQ(settings1.delete_on_enum_fail(), settings2.delete_on_enum_fail());
   EXPECT_EQ(settings1.print_system_settings()->size(),
             settings2.print_system_settings()->size());
+  EXPECT_EQ(settings1.connect_new_printers(), settings2.connect_new_printers());
+  EXPECT_TRUE(settings2.IsPrinterBlacklisted("prn1"));
 }
 

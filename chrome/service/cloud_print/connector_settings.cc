@@ -18,7 +18,8 @@ const char kDeleteOnEnumFail[] = "delete_on_enum_fail";
 }  // namespace
 
 ConnectorSettings::ConnectorSettings()
-  : delete_on_enum_fail_(false) {
+    : delete_on_enum_fail_(false),
+      connect_new_printers_(true) {
 }
 
 ConnectorSettings::~ConnectorSettings() {
@@ -52,12 +53,30 @@ void ConnectorSettings::InitFrom(ServiceProcessPrefs* prefs) {
     server_url_ = GURL(kDefaultCloudPrintServerUrl);
   }
   DCHECK(server_url_.is_valid());
+
+  connect_new_printers_ = prefs->GetBoolean(
+      prefs::kCloudPrintConnectNewPrinters, true);
+  const base::ListValue* printers = prefs->GetList(
+      prefs::kCloudPrintPrinterBlacklist);
+  if (printers) {
+    for (size_t i = 0; i < printers->GetSize(); ++i) {
+      std::string printer;
+      if (printers->GetString(i, &printer))
+        printer_blacklist_.insert(printer);
+    }
+  }
 }
+
+bool ConnectorSettings::IsPrinterBlacklisted(const std::string& name) const {
+  return printer_blacklist_.find(name) != printer_blacklist_.end();
+};
 
 void ConnectorSettings::CopyFrom(const ConnectorSettings& source) {
   server_url_ = source.server_url();
   proxy_id_ = source.proxy_id();
   delete_on_enum_fail_ = source.delete_on_enum_fail();
+  connect_new_printers_ = source.connect_new_printers();
+  printer_blacklist_ = source.printer_blacklist_;
   if (source.print_system_settings())
     print_system_settings_.reset(source.print_system_settings()->DeepCopy());
 }

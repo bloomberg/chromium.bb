@@ -24,9 +24,9 @@
 // CloudPrintConnector will notify client over Client interface.
 class CloudPrintConnector
     : public base::RefCountedThreadSafe<CloudPrintConnector>,
-      public cloud_print::PrintServerWatcherDelegate,
-      public PrinterJobHandlerDelegate,
-      public CloudPrintURLFetcherDelegate {
+      private cloud_print::PrintServerWatcherDelegate,
+      private PrinterJobHandlerDelegate,
+      private CloudPrintURLFetcherDelegate {
  public:
   class Client {
    public:
@@ -44,31 +44,9 @@ class CloudPrintConnector
   // Return list of printer ids registered with CloudPrint.
   void GetPrinterIds(std::list<std::string>* printer_ids);
 
-  // Register printer from the list.
-  void RegisterPrinters(const printing::PrinterList& printers);
-
   // Check for jobs for specific printer. If printer id is empty
   // jobs will be checked for all available printers.
   void CheckForJobs(const std::string& reason, const std::string& printer_id);
-
-  // cloud_print::PrintServerWatcherDelegate implementation
-  virtual void OnPrinterAdded() OVERRIDE;
-  // PrinterJobHandler::Delegate implementation
-  virtual void OnPrinterDeleted(const std::string& printer_name) OVERRIDE;
-  virtual void OnAuthError() OVERRIDE;
-
-  // CloudPrintURLFetcher::Delegate implementation.
-  virtual CloudPrintURLFetcher::ResponseAction HandleRawData(
-      const net::URLFetcher* source,
-      const GURL& url,
-      const std::string& data) OVERRIDE;
-  virtual CloudPrintURLFetcher::ResponseAction HandleJSONData(
-      const net::URLFetcher* source,
-      const GURL& url,
-      base::DictionaryValue* json_data,
-      bool succeeded) OVERRIDE;
-  virtual CloudPrintURLFetcher::ResponseAction OnRequestAuthError() OVERRIDE;
-  virtual std::string GetAuthHeader() OVERRIDE;
 
  private:
   friend class base::RefCountedThreadSafe<CloudPrintConnector>;
@@ -100,6 +78,24 @@ class CloudPrintConnector
   };
 
   virtual ~CloudPrintConnector();
+  // cloud_print::PrintServerWatcherDelegate implementation
+  virtual void OnPrinterAdded() OVERRIDE;
+  // PrinterJobHandler::Delegate implementation
+  virtual void OnPrinterDeleted(const std::string& printer_name) OVERRIDE;
+  virtual void OnAuthError() OVERRIDE;
+
+  // CloudPrintURLFetcher::Delegate implementation.
+  virtual CloudPrintURLFetcher::ResponseAction HandleRawData(
+      const net::URLFetcher* source,
+      const GURL& url,
+      const std::string& data) OVERRIDE;
+  virtual CloudPrintURLFetcher::ResponseAction HandleJSONData(
+      const net::URLFetcher* source,
+      const GURL& url,
+      base::DictionaryValue* json_data,
+      bool succeeded) OVERRIDE;
+  virtual CloudPrintURLFetcher::ResponseAction OnRequestAuthError() OVERRIDE;
+  virtual std::string GetAuthHeader() OVERRIDE;
 
   // Begin response handlers
   CloudPrintURLFetcher::ResponseAction HandlePrinterListResponse(
@@ -154,6 +150,9 @@ class CloudPrintConnector
       bool succeeded,
       const std::string& printer_name,
       const printing::PrinterCapsAndDefaults& caps_and_defaults);
+
+  // Register printer from the list.
+  void RegisterPrinters(const printing::PrinterList& printers);
 
   bool IsSamePrinter(const std::string& name1, const std::string& name2) const;
   bool InitPrintSystem();

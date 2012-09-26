@@ -1884,6 +1884,10 @@ const char kCloudPrintPrintSystemSettings[] =
 const char kCloudPrintEnableJobPoll[] = "cloud_print.enable_job_poll";
 const char kCloudPrintRobotRefreshToken[] = "cloud_print.robot_refresh_token";
 const char kCloudPrintRobotEmail[] = "cloud_print.robot_email";
+// A boolean indicating whether we should connect to cloud print new printers.
+const char kCloudPrintConnectNewPrinters[] = "cloud_print.connect_new_printers";
+// List of printers which should not be connected.
+const char kCloudPrintPrinterBlacklist[] = "cloud_print.printer_blacklist";
 // Indicates whether the Mac Virtual driver is enabled.
 const char kVirtualPrinterDriverEnabled[] = "cloud_print.enable_virtual_driver";
 // A boolean indicating whether submitting jobs to Google Cloud Print is

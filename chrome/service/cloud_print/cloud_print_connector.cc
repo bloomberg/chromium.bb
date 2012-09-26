@@ -88,11 +88,12 @@ void CloudPrintConnector::GetPrinterIds(std::list<std::string>* printer_ids) {
 
 void CloudPrintConnector::RegisterPrinters(
     const printing::PrinterList& printers) {
-  if (!IsRunning())
+  if (!settings_.connect_new_printers() || !IsRunning())
     return;
   printing::PrinterList::const_iterator it;
   for (it = printers.begin(); it != printers.end(); ++it) {
-    AddPendingRegisterTask(*it);
+    if (!settings_.IsPrinterBlacklisted(it->printer_name))
+      AddPendingRegisterTask(*it);
   }
 }
 
@@ -208,19 +209,23 @@ CloudPrintConnector::HandlePrinterListResponse(
       if (printer_list->GetDictionary(index, &printer_data)) {
         std::string printer_name;
         printer_data->GetString(kNameValue, &printer_name);
-        if (RemovePrinterFromList(printer_name, &local_printers)) {
+        std::string printer_id;
+        printer_data->GetString(kIdValue, &printer_id);
+        if (settings_.IsPrinterBlacklisted(printer_name)) {
+          VLOG(1) << "CP_CONNECTOR: Deleting " << printer_name <<
+              " id: " << printer_id << " as blacklisted";
+          AddPendingDeleteTask(printer_id);
+        } else if (RemovePrinterFromList(printer_name, &local_printers)) {
           InitJobHandlerForPrinter(printer_data);
         } else {
           // Cloud printer is not found on the local system.
-          std::string printer_id;
-          printer_data->GetString(kIdValue, &printer_id);
           if (full_list || settings_.delete_on_enum_fail()) {
             // Delete if we get the full list of printers or
             // |delete_on_enum_fail_| is set.
             VLOG(1) << "CP_CONNECTOR: Deleting " << printer_name <<
-              " id: " << printer_id <<
-              " full_list: " << full_list <<
-              " delete_on_enum_fail: " << settings_.delete_on_enum_fail();
+                " id: " << printer_id <<
+                " full_list: " << full_list <<
+                " delete_on_enum_fail: " << settings_.delete_on_enum_fail();
             AddPendingDeleteTask(printer_id);
           } else {
             LOG(ERROR) << "CP_CONNECTOR: Printer: " << printer_name <<
@@ -237,12 +242,8 @@ CloudPrintConnector::HandlePrinterListResponse(
   }
 
   request_ = NULL;
-  if (!local_printers.empty()) {
-    // In the future we might want to notify frontend about available printers
-    // and let user choose which printers to register.
-    // Here is a good place to notify client about available printers.
-    RegisterPrinters(local_printers);
-  }
+
+  RegisterPrinters(local_printers);
   ContinuePendingTaskProcessing();  // Continue processing background tasks.
   return CloudPrintURLFetcher::STOP_PROCESSING;
 }
