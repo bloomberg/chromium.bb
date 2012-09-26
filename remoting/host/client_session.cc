@@ -70,10 +70,11 @@ ClientSession::ClientSession(
 
 void ClientSession::NotifyClientDimensions(
     const protocol::ClientDimensions& dimensions) {
-  // TODO(wez): Use the dimensions, e.g. to resize the host desktop to match.
   if (dimensions.has_width() && dimensions.has_height()) {
     VLOG(1) << "Received ClientDimensions (width="
             << dimensions.width() << ", height=" << dimensions.height() << ")";
+    event_handler_->OnClientDimensionsChanged(
+        this, SkISize::Make(dimensions.width(), dimensions.height()));
   }
 }
 

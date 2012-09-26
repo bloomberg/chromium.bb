@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "third_party/skia/include/core/SkRect.h"
+
 namespace net {
 class IPEndPoint;
 }  // namespace net
@@ -43,6 +45,10 @@ class HostStatusObserver {
   virtual void OnClientRouteChange(const std::string& jid,
                                    const std::string& channel_name,
                                    const protocol::TransportRoute& route) {}
+
+  // Called when the client view dimensions change.
+  virtual void OnClientDimensionsChanged(const std::string& jid,
+                                         const SkISize& size) {}
 
   // Called when hosting is started for an account.
   virtual void OnStart(const std::string& xmpp_login) {}

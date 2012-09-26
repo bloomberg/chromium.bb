@@ -23,6 +23,7 @@
 #include "remoting/protocol/input_filter.h"
 #include "remoting/protocol/input_stub.h"
 #include "third_party/skia/include/core/SkPoint.h"
+#include "third_party/skia/include/core/SkSize.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -74,6 +75,11 @@ class ClientSession
         ClientSession* client,
         const std::string& channel_name,
         const protocol::TransportRoute& route) = 0;
+
+    // Called when the initial client dimensions are received, and when they
+    // change.
+    virtual void OnClientDimensionsChanged(ClientSession* client,
+                                           const SkISize& size) = 0;
 
    protected:
     virtual ~EventHandler() {}

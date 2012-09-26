@@ -256,6 +256,13 @@ void ChromotingHost::OnSessionRouteChange(
                                         route));
 }
 
+void ChromotingHost::OnClientDimensionsChanged(ClientSession* session,
+                                               const SkISize& size) {
+  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
+  FOR_EACH_OBSERVER(HostStatusObserver, status_observers_,
+                    OnClientDimensionsChanged(session->client_jid(), size));
+}
+
 void ChromotingHost::OnSessionManagerReady() {
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
   // Don't need to do anything here, just wait for incoming

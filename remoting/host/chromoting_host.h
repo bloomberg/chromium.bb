@@ -20,6 +20,7 @@
 #include "remoting/protocol/authenticator.h"
 #include "remoting/protocol/session_manager.h"
 #include "remoting/protocol/connection_to_client.h"
+#include "third_party/skia/include/core/SkSize.h"
 
 namespace remoting {
 
@@ -115,6 +116,8 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
       ClientSession* session,
       const std::string& channel_name,
       const protocol::TransportRoute& route) OVERRIDE;
+  virtual void OnClientDimensionsChanged(ClientSession* session,
+                                         const SkISize& size) OVERRIDE;
 
   // SessionManager::Listener implementation.
   virtual void OnSessionManagerReady() OVERRIDE;

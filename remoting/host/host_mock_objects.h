@@ -112,6 +112,8 @@ class MockClientSessionEventHandler : public ClientSession::EventHandler {
       ClientSession* client,
       const std::string& channel_name,
       const protocol::TransportRoute& route));
+  MOCK_METHOD2(OnClientDimensionsChanged, void(ClientSession* client,
+                                               const SkISize& size));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockClientSessionEventHandler);
