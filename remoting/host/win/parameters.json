@@ -11,6 +11,12 @@
     "WixUIExtension.dll",
     "WixUtilExtension.dll"
   ],
+  "sign": [
+    "remoting_desktop.exe",
+    "remoting_host_controller.exe",
+    "remoting_me2me_host.exe",
+    "remoting_service.exe"
+  ],
   "source": "chromoting.wxs",
   "bind_path": "files",
   "light": {

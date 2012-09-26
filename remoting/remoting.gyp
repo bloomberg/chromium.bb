@@ -735,50 +735,6 @@
           ],
         },  # end of target 'remoting_host_installation'
 
-        # The 'remoting_host_installation_unittest' target is used to make sure
-        # that the code signing job (running outside of Chromium tree) will be
-        # able to unpack and re-assemble the installation successfully.
-        #
-        # *** If this target fails to compile the code signing job will fail
-        # too, breaking the official build. ***
-        #
-        # N.B. The command lines passed to the WiX tools here should be in sync
-        # with the code signing script.
-        {
-          'target_name': 'remoting_host_installation_unittest',
-          'type': 'none',
-          'dependencies': [
-            'remoting_host_installation',
-          ],
-          'sources': [
-            '<(PRODUCT_DIR)/chromoting.msi',
-          ],
-          'outputs': [
-            '<(INTERMEDIATE_DIR)/chromoting-test.msi',
-          ],
-          'rules': [
-            {
-              'rule_name': 'dark_and_candle_and_light',
-              'extension': 'msi',
-              'inputs': [
-                'tools/dark_and_candle_and_light.py',
-              ],
-              'outputs': [
-                '<(INTERMEDIATE_DIR)/chromoting-test.msi',
-              ],
-              'msvs_cygwin_shell': 0,
-              'action': [
-                'python',
-                'tools/dark_and_candle_and_light.py',
-                '--wix_path', '<(wix_path)',
-                '--input', '<(RULE_INPUT_PATH)',
-                '--intermediate_dir', '<(INTERMEDIATE_DIR)/installation',
-                '--output', '<@(_outputs)',
-              ],
-              'message': 'Unpacking and repacking to <@(_outputs)',
-            },
-          ],
-        },  # end of target 'remoting_host_installation_unittest'
         {
           'target_name': 'remoting_me2me_host_archive',
           'type': 'none',
