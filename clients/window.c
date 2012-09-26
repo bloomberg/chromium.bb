@@ -1498,6 +1498,7 @@ frame_button_button_handler(struct widget *widget,
 {
 	struct frame_button *frame_button = data;
 	struct window *window = widget->window;
+	int was_pressed = (frame_button->state == FRAME_BUTTON_ACTIVE);
 
 	if (button != BTN_LEFT)
 		return;
@@ -1515,6 +1516,9 @@ frame_button_button_handler(struct widget *widget,
 		widget_schedule_redraw(frame_button->widget);
 		break;
 	}
+
+	if (!was_pressed)
+		return;
 
 	switch (frame_button->type) {
 	case FRAME_BUTTON_CLOSE:
@@ -1534,6 +1538,33 @@ frame_button_button_handler(struct widget *widget,
 		/* Unknown operation */
 		break;
 	}
+}
+
+static int
+frame_button_motion_handler(struct widget *widget,
+                            struct input *input, uint32_t time,
+                            float x, float y, void *data)
+{
+	struct frame_button *frame_button = data;
+	enum frame_button_pointer previous_button_state = frame_button->state;
+
+	/* only track state for a pressed button */
+	if (input->grab != widget)
+		return CURSOR_LEFT_PTR;
+
+	if (x > widget->allocation.x &&
+	    x < (widget->allocation.x + widget->allocation.width) &&
+	    y > widget->allocation.y &&
+	    y < (widget->allocation.y + widget->allocation.height)) {
+		frame_button->state = FRAME_BUTTON_ACTIVE;
+	} else {
+		frame_button->state = FRAME_BUTTON_DEFAULT;
+	}
+
+	if (frame_button->state != previous_button_state)
+		widget_schedule_redraw(frame_button->widget);
+
+	return CURSOR_LEFT_PTR;
 }
 
 static void
@@ -1612,6 +1643,7 @@ frame_button_create(struct frame *frame, void *data, enum frame_button_action ty
 	widget_set_enter_handler(frame_button->widget, frame_button_enter_handler);
 	widget_set_leave_handler(frame_button->widget, frame_button_leave_handler);
 	widget_set_button_handler(frame_button->widget, frame_button_button_handler);
+	widget_set_motion_handler(frame_button->widget, frame_button_motion_handler);
 	return frame_button->widget;
 }
 
