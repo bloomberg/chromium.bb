@@ -509,13 +509,23 @@ void InstantController::SetSuggestions(
     last_match_was_search_ = suggestion.type == INSTANT_SUGGESTION_SEARCH;
     delegate_->SetSuggestedText(suggestion.text, suggestion.behavior);
   } else {
-    string16 suggestion_lower = base::i18n::ToLower(suggestion.text);
-    string16 user_text_lower = base::i18n::ToLower(last_user_text_);
-    if (user_text_lower.size() >= suggestion_lower.size() ||
-        suggestion_lower.compare(0, user_text_lower.size(), user_text_lower))
-      suggestion.text.clear();
-    else
+    // Match case-sensitively first, to preserve suggestion case if possible.
+    // If that fails, match case-insensitively. http://crbug.com/150728
+    if (last_user_text_.size() < suggestion.text.size() &&
+        !suggestion.text.compare(0, last_user_text_.size(), last_user_text_)) {
       suggestion.text.erase(0, last_user_text_.size());
+    } else {
+      string16 suggestion_lower = base::i18n::ToLower(suggestion.text);
+      string16 user_text_lower = base::i18n::ToLower(last_user_text_);
+      if (user_text_lower.size() < suggestion_lower.size() &&
+          !suggestion_lower.compare(0, user_text_lower.size(),
+                                    user_text_lower)) {
+        suggestion.text.assign(suggestion_lower, user_text_lower.size(),
+            suggestion_lower.size() - user_text_lower.size());
+      } else {
+        suggestion.text.clear();
+      }
+    }
 
     last_suggestion_ = suggestion;
     if (!last_verbatim_)
