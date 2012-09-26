@@ -142,7 +142,7 @@ class UsbDevice : public base::RefCounted<UsbDevice> {
   base::Lock lock_;
   std::map<PlatformUsbTransferHandle, Transfer> transfers_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(UsbDevice);
+  DISALLOW_COPY_AND_ASSIGN(UsbDevice);
 };
 
 #endif  // CHROME_BROWSER_USB_USB_DEVICE_H_

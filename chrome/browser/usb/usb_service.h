@@ -58,7 +58,7 @@ class UsbService : public ProfileKeyedService {
       DeviceMap;
   DeviceMap devices_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(UsbService);
+  DISALLOW_COPY_AND_ASSIGN(UsbService);
 };
 
 #endif  // CHROME_BROWSER_USB_USB_SERVICE_H_
