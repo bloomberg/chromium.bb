@@ -12,21 +12,35 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/test_utils.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
+#include "ui/gfx/screen.h"
 
 using aura::Window;
 
 namespace {
 
-bool HasChildWindowNamed(Window* window, const char* name) {
+Window* GetChildWindowNamed(Window* window, const char* name) {
   for (size_t i = 0; i < window->children().size(); ++i) {
     Window* child = window->children()[i];
     if (child->name() == name)
-      return true;
+      return child;
   }
-  return false;
+  return NULL;
+}
+
+bool HasChildWindowNamed(Window* window, const char* name) {
+  return GetChildWindowNamed(window, name) != NULL;
+}
+
+void MaximizeWindow(aura::Window* window) {
+  window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
+}
+
+void MinimizeWindow(aura::Window* window) {
+  window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
 }
 
 }  // namespace
@@ -128,4 +142,38 @@ IN_PROC_BROWSER_TEST_F(AppNonClientFrameViewAuraTest, SnapLeftClosesControls) {
   // Control window is gone.
   EXPECT_FALSE(HasChildWindowNamed(
       native_window, AppNonClientFrameViewAura::kControlWindowName));
+}
+
+// Ensure that the controls are at the proper locations.
+IN_PROC_BROWSER_TEST_F(AppNonClientFrameViewAuraTest, ControlsAtRightSide) {
+  const gfx::Rect work_area = gfx::Screen::GetPrimaryDisplay().work_area();
+
+  aura::RootWindow* root_window = GetRootWindow();
+  aura::test::EventGenerator eg(root_window);
+  aura::Window* native_window = app_browser()->window()->GetNativeWindow();
+
+  // Control window exists.
+  aura::Window* window = GetChildWindowNamed(
+      native_window, AppNonClientFrameViewAura::kControlWindowName);
+
+  ASSERT_TRUE(window);
+  gfx::Rect rect = window->bounds();
+  EXPECT_EQ(work_area.right(), rect.right());
+  EXPECT_EQ(work_area.y(), rect.y());
+
+  MinimizeWindow(native_window);
+  content::RunAllPendingInMessageLoop();
+  window = GetChildWindowNamed(
+      native_window, AppNonClientFrameViewAura::kControlWindowName);
+  EXPECT_FALSE(window);
+  MaximizeWindow(native_window);
+  content::RunAllPendingInMessageLoop();
+
+  // Control window exists.
+  aura::Window* window_after = GetChildWindowNamed(
+      native_window, AppNonClientFrameViewAura::kControlWindowName);
+  ASSERT_TRUE(window_after);
+  gfx::Rect rect_after = window_after->bounds();
+  EXPECT_EQ(work_area.right(), rect_after.right());
+  EXPECT_EQ(work_area.y(), rect_after.y());
 }
