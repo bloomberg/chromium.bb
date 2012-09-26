@@ -72,7 +72,7 @@ cr.define('cr.ui.table', function() {
 
     renderFunction_: function(dataItem, table) {
       var cm = table.columnModel;
-      var listItem = new ListItem({label: ''});
+      var listItem = List.prototype.createItem.call(table.list, '');
 
       listItem.className = 'table-row';
 
