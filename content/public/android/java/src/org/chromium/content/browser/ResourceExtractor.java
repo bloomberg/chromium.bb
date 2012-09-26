@@ -133,6 +133,13 @@ public class ResourceExtractor {
                         while ((count = is.read(buffer, 0, BUFFER_SIZE)) != -1) {
                             os.write(buffer, 0, count);
                         }
+                        os.flush();
+
+                        // Ensure something reasonable was written.
+                        if (output.length() == 0) {
+                            throw new IOException(file + " extracted with 0 length!");
+                        }
+
                         filenames.add(file);
                     } finally {
                         try {
@@ -147,6 +154,10 @@ public class ResourceExtractor {
                     }
                 }
             } catch (IOException e) {
+                // TODO(benm): See crbug/152413.
+                // Try to recover here, can we try again after deleting files instead of
+                // returning null? It might be useful to gather UMA here too to track if
+                // this happens with regularity.
                 Log.w(LOGTAG, "Exception unpacking required pak resources: " + e.getMessage());
                 deleteFiles(mContext);
                 return null;
