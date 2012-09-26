@@ -32,6 +32,11 @@ void SetupInstantFieldTrials() {
   trial->AppendGroup(experiment_one_group_name, group_probability);
   trial->AppendGroup(experiment_two_group_name, group_probability);
 
+  // Since this is a dummy trial and no feature code is requesting the group,
+  // group() has be to called explicitly to ensure the default group is
+  // selected.
+  trial->group();
+
   // Setup Google Variation IDs for each group in the field trial so Google
   // servers are aware of the variants.
   chrome_variations::AssociateGoogleVariationID(trial_name, default_group_name,
