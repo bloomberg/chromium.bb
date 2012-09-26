@@ -79,6 +79,12 @@ static bool MatchesQuery(const string16& query, const DownloadItem& item) {
       query, path, NULL, NULL);
 }
 
+static int64 GetStartTimeMsEpoch(const DownloadItem& item) {
+  return (item.GetStartTime() - base::Time::UnixEpoch()).InMilliseconds();
+}
+
+// TODO(benjhayden) These timestamps don't fit in int32, and base::Value doesn't
+// support int64. Use ISO 8601 date-time strings instead.
 static int GetStartTime(const DownloadItem& item) {
   return (item.GetStartTime() - base::Time::UnixEpoch()).InMilliseconds();
 }
@@ -342,7 +348,7 @@ void DownloadQuery::AddSorter(DownloadQuery::SortType type,
                               DownloadQuery::SortDirection direction) {
   switch (type) {
     case SORT_START_TIME:
-      sorters_.push_back(Sorter::Build<int>(direction, &GetStartTime));
+      sorters_.push_back(Sorter::Build<int64>(direction, &GetStartTimeMsEpoch));
       break;
     case SORT_URL:
       sorters_.push_back(Sorter::Build<std::string>(direction, &GetUrl));
