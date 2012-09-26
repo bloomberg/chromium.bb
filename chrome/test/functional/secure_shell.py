@@ -98,7 +98,7 @@ class SecureShellTest(pyauto.PyUITest):
 
     # Type 'exit' and close the tab
     self.SendKeysToHterm('exit\\n', tab_index=1)
-    self.WaitForHtermText('completed with exit code 0', tab_index=1,
+    self.WaitForHtermText('exited with status code 0', tab_index=1,
         msg='Did not get correct exit message')
 
 
