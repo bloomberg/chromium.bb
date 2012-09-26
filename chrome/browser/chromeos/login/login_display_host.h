@@ -36,6 +36,9 @@ class LoginDisplayHost {
   // Returns corresponding widget.
   virtual views::Widget* GetWidget() const = 0;
 
+  // Called when browsing session starts before creating initial browser.
+  virtual void BeforeSessionStart() = 0;
+
   // Called when browsing session starts so
   // LoginDisplayHost instance may delete itself.
   virtual void OnSessionStart() = 0;

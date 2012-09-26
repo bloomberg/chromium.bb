@@ -408,8 +408,10 @@ void LoginUtilsImpl::DoBrowserLaunch(Profile* profile,
   if (browser_shutdown::IsTryingToQuit())
     return;
 
-  if (login_host)
+  if (login_host) {
     login_host->SetStatusAreaVisible(true);
+    login_host->BeforeSessionStart();
+  }
 
   BootTimesLoader::Get()->AddLoginTimeMarker("BrowserLaunched", false);
 

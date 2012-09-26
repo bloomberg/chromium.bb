@@ -42,6 +42,7 @@ class BaseLoginDisplayHost : public LoginDisplayHost,
   }
 
   // LoginDisplayHost implementation:
+  virtual void BeforeSessionStart() OVERRIDE;
   virtual void OnSessionStart() OVERRIDE;
   virtual void OnCompleteLogin() OVERRIDE;
   virtual void StartWizard(
@@ -110,6 +111,9 @@ class BaseLoginDisplayHost : public LoginDisplayHost,
 
   // Whether progress bar is shown on the OOBE page.
   bool oobe_progress_bar_visible_;
+
+  // True if session start is in progress.
+  bool session_starting_;
 
   DISALLOW_COPY_AND_ASSIGN(BaseLoginDisplayHost);
 };
