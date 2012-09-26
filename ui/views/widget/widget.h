@@ -604,7 +604,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // with it. TYPE_CONTROL and TYPE_TOOLTIP is not considered top level.
   bool is_top_level() const { return is_top_level_; }
 
-  // Returns the work are bounds of the screen the Widget belongs to.
+  // Returns the work area bounds of the screen the Widget belongs to.
   gfx::Rect GetWorkAreaBoundsInScreen() const;
 
   // Notification that our owner is closing.

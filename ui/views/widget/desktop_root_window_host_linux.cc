@@ -65,6 +65,9 @@ DesktopRootWindowHostLinux::DesktopRootWindowHostLinux(
       window_mapped_(false),
       focus_when_shown_(false),
       has_capture_(false),
+      cursor_loader_(),
+      current_cursor_(ui::kCursorNull),
+      cursor_shown_(true),
       native_widget_delegate_(native_widget_delegate) {
 }
 
@@ -111,8 +114,7 @@ void DesktopRootWindowHostLinux::InitX11Window(
   XSelectInput(xdisplay_, xwindow_, event_mask);
   XFlush(xdisplay_);
 
-  // TODO(erg): Something about an invisible cursor here? Don't think I need
-  // it, but this is where it was.
+  invisible_cursor_ = ui::CreateInvisibleCursor();
 
   // TODO(erg): We currently only request window deletion events. We also
   // should listen for activation events and anything else that GTK+ listens
@@ -174,6 +176,14 @@ void DesktopRootWindowHostLinux::InitRootWindow(
   dispatcher_client_.reset(new aura::DesktopDispatcherClient);
   aura::client::SetDispatcherClient(root_window_.get(),
                                     dispatcher_client_.get());
+
+  // The cursor client is a curious thing; it proxies some, but not all, calls
+  // to our SetCursor() method. We require all calls to go through a route that
+  // uses a CursorLoader, which includes all the ones in views:: internal.
+  //
+  // TODO(erg): This is a code smell. I suspect that I'm working around the
+  // CursorClient's interface being plain wrong.
+  aura::client::SetCursorClient(root_window_.get(), this);
 
   // No event filter for aura::Env. Create CompoundEvnetFilter per RootWindow.
   root_window_event_filter_ = new aura::shared::CompoundEventFilter;
@@ -309,9 +319,14 @@ gfx::Rect DesktopRootWindowHostLinux::GetWindowBoundsInScreen() const {
 }
 
 gfx::Rect DesktopRootWindowHostLinux::GetClientAreaBoundsInScreen() const {
-  NOTIMPLEMENTED();
-  // TODO(erg): This is wrong, but would require looking at the actual views
-  // hierarchy to do correctly.
+  // TODO(erg): The NativeWidgetAura version returns |bounds_|, claiming its
+  // needed for View::ConvertPointToScreen() to work
+  // correctly. DesktopRootWindowHostWin::GetClientAreaBoundsInScreen() just
+  // asks windows what it thinks the client rect is.
+  //
+  // Attempts to calculate the rect by asking the NonClientFrameView what it
+  // thought its GetBoundsForClientView() were broke combobox drop down
+  // placement.
   return bounds_;
 }
 
@@ -322,7 +337,14 @@ gfx::Rect DesktopRootWindowHostLinux::GetRestoredBounds() const {
 }
 
 gfx::Rect DesktopRootWindowHostLinux::GetWorkAreaBoundsInScreen() const {
-  // TODO(erg):
+  std::vector<int> value;
+  if (ui::GetIntArrayProperty(x_root_window_, "_NET_WORKAREA", &value) &&
+      value.size() >= 4) {
+    return gfx::Rect(value[0], value[1], value[2], value[3]);
+  }
+
+  // TODO(erg): As a fallback, we should return the bounds for the current
+  // monitor. However, that's pretty difficult and requires futzing with XRR.
   NOTIMPLEMENTED();
   return gfx::Rect();
 }
@@ -371,6 +393,10 @@ bool DesktopRootWindowHostLinux::IsMaximized() const {
 
 bool DesktopRootWindowHostLinux::IsMinimized() const {
   return HasWMSpecProperty("_NET_WM_STATE_HIDDEN");
+}
+
+void DesktopRootWindowHostLinux::SetCursorInternal(gfx::NativeCursor cursor) {
+  XDefineCursor(xdisplay_, xwindow_, cursor.platform());
 }
 
 bool DesktopRootWindowHostLinux::HasCapture() const {
@@ -565,11 +591,21 @@ void DesktopRootWindowHostLinux::ReleaseCapture() {
 }
 
 void DesktopRootWindowHostLinux::SetCursor(gfx::NativeCursor cursor) {
-  NOTIMPLEMENTED();
+  cursor_loader_.SetPlatformCursor(&cursor);
+
+  if (cursor == current_cursor_)
+    return;
+  current_cursor_ = cursor;
+
+  if (cursor_shown_)
+    SetCursorInternal(cursor);
 }
 
 void DesktopRootWindowHostLinux::ShowCursor(bool show) {
-  NOTIMPLEMENTED();
+  if (show == cursor_shown_)
+    return;
+  cursor_shown_ = show;
+  SetCursorInternal(show ? current_cursor_ : invisible_cursor_);
 }
 
 bool DesktopRootWindowHostLinux::QueryMouseLocation(
@@ -660,6 +696,19 @@ void DesktopRootWindowHostLinux::OnDeviceScaleFactorChanged(
 }
 
 void DesktopRootWindowHostLinux::PrepareForShutdown() {
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// DesktopRootWindowHostLinux, aura::CursorClient implementation:
+
+bool DesktopRootWindowHostLinux::IsCursorVisible() const {
+  return cursor_shown_;
+}
+
+void DesktopRootWindowHostLinux::SetDeviceScaleFactor(
+    float device_scale_factor) {
+  cursor_loader_.UnloadAll();
+  cursor_loader_.set_device_scale_factor(device_scale_factor);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

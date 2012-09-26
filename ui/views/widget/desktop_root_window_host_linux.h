@@ -11,8 +11,10 @@
 #undef RootWindow
 
 #include "base/basictypes.h"
+#include "ui/aura/client/cursor_client.h"
 #include "ui/aura/root_window_host.h"
 #include "ui/gfx/rect.h"
+#include "ui/base/cursor/cursor_loader_x11.h"
 #include "ui/base/x/x11_atom_cache.h"
 #include "ui/views/widget/desktop_root_window_host.h"
 
@@ -32,6 +34,7 @@ class X11WindowEventFilter;
 
 class DesktopRootWindowHostLinux : public DesktopRootWindowHost,
                                    public aura::RootWindowHost,
+                                   public aura::client::CursorClient,
                                    public MessageLoop::Dispatcher {
  public:
   DesktopRootWindowHostLinux(
@@ -59,6 +62,10 @@ class DesktopRootWindowHostLinux : public DesktopRootWindowHost,
 
   // Checks if the window manager has set a specific state.
   bool HasWMSpecProperty(const char* property) const;
+
+  // Sets the cursor on |xwindow_| to |cursor|.  Does not check or update
+  // |current_cursor_|.
+  void SetCursorInternal(gfx::NativeCursor cursor);
 
   // Overridden from DesktopRootWindowHost:
   virtual void Init(aura::Window* content_window,
@@ -137,7 +144,12 @@ class DesktopRootWindowHostLinux : public DesktopRootWindowHost,
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;
   virtual void PrepareForShutdown() OVERRIDE;
 
-  // Overridden from Dispatcher overrides:
+  // Overridden from aura::CursorClient:
+  // Note: other methods are just set on aura::RootWindowHost:
+  virtual bool IsCursorVisible() const OVERRIDE;
+  virtual void SetDeviceScaleFactor(float device_scale_factor) OVERRIDE;
+
+  // Overridden from Dispatcher:
   virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
 
   // X11 things
@@ -170,6 +182,18 @@ class DesktopRootWindowHostLinux : public DesktopRootWindowHost,
   scoped_ptr<DesktopCaptureClient> capture_client_;
   scoped_ptr<aura::DesktopActivationClient> activation_client_;
   scoped_ptr<aura::DesktopDispatcherClient> dispatcher_client_;
+
+  // Translates custom bitmaps provided by the webpage into X11 cursors.
+  ui::CursorLoaderX11 cursor_loader_;
+
+  // Current Aura cursor.
+  gfx::NativeCursor current_cursor_;
+
+  // Is the cursor currently shown?
+  bool cursor_shown_;
+
+  // The invisible cursor.
+  ::Cursor invisible_cursor_;
 
   // Toplevel event filter which dispatches to other event filters.
   aura::shared::CompoundEventFilter* root_window_event_filter_;
