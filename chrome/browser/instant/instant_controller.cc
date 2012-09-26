@@ -549,7 +549,10 @@ void InstantController::SetInstantPreviewHeight(InstantLoader* loader,
                                                 int height,
                                                 InstantSizeUnits units) {
   DCHECK_EQ(loader_.get(), loader);
-  if (loader_ != loader || mode_ != EXTENDED)
+  // TODO(samarth): we need to relax the IsOutOfDate() check to support cases
+  // where we may want to show the overlay even if the overlay does not reflect
+  // what the user has typed (e.g. doodle).
+  if (loader_ != loader || mode_ != EXTENDED || IsOutOfDate())
     return;
 
   Show(height, units);
