@@ -127,8 +127,9 @@ class SchemaBundleGenerator(object):
       namespace = self._model.namespaces[api.get('namespace')]
       # JSON parsing code expects lists of schemas, so dump a singleton list.
       json_content = json.dumps([api], indent=2)
-      # Escape all double-quotes. Ignore already-escaped double-quotes.
-      json_content = re.sub('(?<!\\\\)"', '\\"', json_content)
+      # Escape all double-quotes and backslashes. For this to output a valid
+      # JSON C string, we need to escape \ and ".
+      json_content = json_content.replace('\\', '\\\\').replace('"', '\\"')
       lines = json_content.split('\n')
       c.Append('(*schemas)["%s"] = ' % namespace.name)
       for index, line in enumerate(lines):

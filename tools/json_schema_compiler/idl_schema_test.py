@@ -59,7 +59,7 @@ class IdlSchemaTest(unittest.TestCase):
   def testLegalValues(self):
     self.assertEquals({
         'x': {'name': 'x', 'type': 'integer', 'enum': [1,2],
-              'description': 'This comment tests \\\"double-quotes\\\".'},
+              'description': 'This comment tests "double-quotes".'},
         'y': {'name': 'y', 'type': 'string'}},
       getType(self.idl_basics, 'idl_basics.MyType1')['properties'])
 
@@ -103,8 +103,8 @@ class IdlSchemaTest(unittest.TestCase):
           '$ref': 'idl_basics.MyType1'}],
         func['parameters'])
     func = getFunction(schema, 'function4')
-    self.assertEquals(('This tests if \\\"double-quotes\\\" are escaped '
-                       'correctly.'),
+    self.assertEquals(('This tests if "double-quotes" are escaped correctly.'
+                       '<br/><br/> It also tests a comment with two newlines.'),
                       func['description'])
 
 if __name__ == '__main__':

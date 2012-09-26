@@ -39,6 +39,8 @@
     static void function3(MyType1 arg);
 
     // This tests if "double-quotes" are escaped correctly.
+    //
+    // It also tests a comment with two newlines.
     static void function4(Callback1 cb);
     static void function5(Callback2 cb);
     static void function6(Callback3 cb);

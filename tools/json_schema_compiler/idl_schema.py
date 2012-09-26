@@ -56,10 +56,6 @@ def ProcessComment(comment):
       }
     )
   '''
-
-  # Escape double quotes.
-  comment = comment.replace('"', '\\"');
-
   # Find all the parameter comments of the form '|name|: comment'.
   parameter_starts = list(re.finditer(r'\n *\|([^|]*)\| *: *', comment))
 
@@ -67,7 +63,12 @@ def ProcessComment(comment):
   first_parameter_location = (parameter_starts[0].start()
                               if parameter_starts else len(comment))
   parent_comment = comment[:first_parameter_location]
-  parent_comment = parent_comment.replace('\n', '').strip()
+
+  # We replace \n\n with <br/><br/> here and below, because the documentation
+  # needs to know where the newlines should be, and this is easier than
+  # escaping \n.
+  parent_comment = (parent_comment.strip().replace('\n\n', '<br/><br/>')
+                                          .replace('\n', ''))
 
   params = {}
   for (cur_param, next_param) in itertools.izip_longest(parameter_starts,
@@ -78,8 +79,9 @@ def ProcessComment(comment):
     # beginning of the next parameter's introduction.
     param_comment_start = cur_param.end()
     param_comment_end = next_param.start() if next_param else len(comment)
-    params[param_name] = comment[param_comment_start:param_comment_end
-                                 ].replace('\n', '').strip()
+    params[param_name] = (comment[param_comment_start:param_comment_end
+                                  ].strip().replace('\n\n', '<br/><br/>')
+                                           .replace('\n', ''))
   return (parent_comment, params)
 
 class Callspec(object):
