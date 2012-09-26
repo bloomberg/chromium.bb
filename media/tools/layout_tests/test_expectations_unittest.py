@@ -11,51 +11,31 @@ from test_expectations import TestExpectations
 class TestTestExpectations(unittest.TestCase):
 
   def testParseLine(self):
-    line = 'BUGCR86714 MAC GPU : media/video-zoom.html = CRASH IMAGE'
-    comments = 'Comments'
+    line = ('crbug.com/86714 [ Mac Gpu ] media/video-zoom.html [ Crash '
+            'ImageOnlyFailure ]')
     expected_map = {'CRASH': True, 'IMAGE': True, 'Bugs': ['BUGCR86714'],
-                    'Comments': 'Comments', 'MAC': True, 'GPU': True,
-                    'Platforms': ['MAC', 'GPU']}
-    self.assertEquals(TestExpectations.ParseLine(line, comments),
-                      expected_map)
+                    'Comments': '', 'MAC': True, 'Gpu': True,
+                    'Platforms': ['MAC', 'Gpu']}
+    self.assertEquals(TestExpectations.ParseLine(line),
+                      ('media/video-zoom.html', expected_map))
 
   def testParseLineWithLineComments(self):
-    line = 'BUGCR86714 MAC GPU : media/video-zoom.html = CRASH IMAGE // foo'
-    comments = 'Comments'
+    line = ('crbug.com/86714 [ Mac Gpu ] media/video-zoom.html [ Crash '
+            'ImageOnlyFailure ] # foo')
     expected_map = {'CRASH': True, 'IMAGE': True, 'Bugs': ['BUGCR86714'],
-                    'Comments': 'Comments foo', 'MAC': True, 'GPU': True,
-                    'Platforms': ['MAC', 'GPU']}
-    self.assertEquals(TestExpectations.ParseLine(line, comments),
-                      expected_map)
+                    'Comments': ' foo', 'MAC': True, 'Gpu': True,
+                    'Platforms': ['MAC', 'Gpu']}
+    self.assertEquals(TestExpectations.ParseLine(line),
+                      ('media/video-zoom.html', expected_map))
 
   def testParseLineWithLineGPUComments(self):
-    line = 'BUGCR86714 MAC : media/video-zoom.html = CRASH IMAGE // GPU'
-    comments = 'Comments'
+    line = ('crbug.com/86714 [ Mac ] media/video-zoom.html [ Crash '
+            'ImageOnlyFailure ] # Gpu')
     expected_map = {'CRASH': True, 'IMAGE': True, 'Bugs': ['BUGCR86714'],
-                    'Comments': 'Comments GPU', 'MAC': True,
+                    'Comments': ' Gpu', 'MAC': True,
                     'Platforms': ['MAC']}
-    self.assertEquals(TestExpectations.ParseLine(line, comments),
-                      expected_map)
-
-  def testExtractTestOrDirectoryName(self):
-    line = ('BUGWK58013 MAC GPU : compositing/scaling/'
-            'tiled-layer-recursion.html = CRASH')
-    self.assertEquals(TestExpectations.ExtractTestOrDirectoryName(line),
-                      'compositing/scaling/tiled-layer-recursion.html')
-
-  def testExtractTestOrDirectoryNameWithSvg(self):
-    line = 'BUGWK43668 SKIP : media/track/x.svg = TIMEOUT'
-    self.assertEquals(TestExpectations.ExtractTestOrDirectoryName(line),
-                      'media/track/x.svg')
-
-  def testExtractTestOrDirectoryNameWithDirName(self):
-    line = 'BUGWK43668 SKIP : media/track/ = TIMEOUT'
-    self.assertEquals(TestExpectations.ExtractTestOrDirectoryName(line),
-                      'media/track/')
-
-  def testExtractTestOrDirectoryNameWithException(self):
-    self.assertRaises(ValueError,
-                      TestExpectations.ExtractTestOrDirectoryName, 'Foo')
+    self.assertEquals(TestExpectations.ParseLine(line),
+                      ('media/video-zoom.html', expected_map))
 
 
 if __name__ == '__main__':

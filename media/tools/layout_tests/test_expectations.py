@@ -4,8 +4,9 @@
 
 """A module to analyze test expectations for Webkit layout tests."""
 
-import re
 import urllib2
+
+from webkitpy.layout_tests.models.test_expectations import *
 
 # Default Webkit SVN location for chromium test expectation file.
 # TODO(imasaki): support multiple test expectations files.
@@ -14,8 +15,7 @@ DEFAULT_TEST_EXPECTATION_LOCATION = (
     'LayoutTests/platform/chromium/TestExpectations')
 
 # The following is from test expectation syntax. The detail can be found in
-# http://www.chromium.org/developers/testing/
-# webkit-layout-tests#TOC-Test-Expectations
+# http://www.chromium.org/developers/testing/webkit-layout-tests#TOC-Test-Expectations
 # <decision> ::== [SKIP] [WONTFIX] [SLOW]
 DECISION_NAMES = ['SKIP', 'WONTFIX', 'SLOW']
 # <config> ::== RELEASE | DEBUG
@@ -28,35 +28,31 @@ KNOWN_TE_KEYWORDS = DECISION_NAMES + CONFIG_NAMES
 class TestExpectations(object):
   """A class to model the content of test expectation file for analysis.
 
-  The raw test expectation file can be found in
-  |DEFAULT_TEST_EXPECTATION_LOCATION|.
-  It is necessary to parse this file and store meaningful information for
-  the analysis (joining with existing layout tests using a test name).
-  Instance variable |all_test_expectation_info| is used.
-  A test name such as 'media/video-source-type.html' is used for the key
-  to store information. However, a test name can appear multiple times in
-  the test expectation file. So, the map should keep all the occurrence
-  information. For example, the current test expectation file has the following
-  two entries:
-  BUGWK58587 LINUX DEBUG GPU : media/video-zoom.html = IMAGE
-  BUGCR86714 MAC GPU : media/video-zoom.html = CRASH IMAGE
-  In this case, all_test_expectation_info['media/video-zoom.html'] will have
-  a list with two elements, each of which is the map of the test expectation
-  information.
+  This class retrieves the TestExpectations file via HTTP from WebKit and uses
+  the WebKit layout test processor to process each line.
+
+  The resulting dictionary is stored in |all_test_expectation_info| and looks
+  like:
+
+    {'<test name>': [{'<modifier0>': True, '<modifier1>': True, ...,
+                     'Platforms: ['<platform0>', ... ], 'Bugs': ['....']}]}
+
+  Duplicate keys are merged (though technically they shouldn't exist).
+
+  Example:
+    crbug.com/145590 [ Android ] \
+        platform/chromium/media/video-frame-size-change.html [ Timeout ]
+    webkit.org/b/84724 [ SnowLeopard ] \
+        platform/chromium/media/video-frame-size-change.html \
+        [ ImageOnlyFailure Pass ]
+
+  {'platform/chromium/media/video-frame-size-change.html': [{'IMAGE': True,
+   'Bugs': ['BUGWK84724', 'BUGCR145590'], 'Comments': '',
+   'Platforms': ['SNOWLEOPARD', 'ANDROID'], 'TIMEOUT': True, 'PASS': True}]}
   """
 
   def __init__(self, url=DEFAULT_TEST_EXPECTATION_LOCATION):
     """Read the test expectation file from the specified URL and parse it.
-
-    All parsed information is stored into instance variable
-    |all_test_expectation_info|, which is a dictionary mapping a string test
-    name to a list of dictionaries containing test expectation entry
-    information. An example of such dictionary:
-      {'media/video-zoom.html': [{'LINUX': True, 'DEBUG': True ....},
-                                 {'MAC': True, 'GPU': True     ....}]
-    which is produced from the lines:
-      BUGCR86714 MAC GPU : media/video-zoom.html = CRASH IMAGE
-      BUGCR86714 LINUX DEBUG : media/video-zoom.html = IMAGE
 
     Args:
       url: A URL string for the test expectation file.
@@ -69,91 +65,57 @@ class TestExpectations(object):
     if resp.code != 200:
       raise NameError('Test expectation file does not exist in %s' % url)
     # Start parsing each line.
-    comments = ''
     for line in resp.read().split('\n'):
-      if line.startswith('//'):
-        # Comments can be multiple lines.
-        comments += line.replace('//', '')
-      elif not line:
-        comments = ''
+      line = line.strip()
+      # Skip comments.
+      if line.startswith('#'):
+        continue
+      testname, te_info = self.ParseLine(line)
+      if not testname or not te_info:
+        continue
+      if testname in self.all_test_expectation_info:
+        # Merge keys if entry already exists.
+        for k in te_info.keys():
+          if (isinstance(te_info[k], list) and
+              k in self.all_test_expectation_info[testname]):
+            self.all_test_expectation_info[testname][0][k] += te_info[k]
+          else:
+            self.all_test_expectation_info[testname][0][k] = te_info[k]
       else:
-        test_expectation_info = self.ParseLine(line, comments)
-        testname = TestExpectations.ExtractTestOrDirectoryName(line)
-        if not testname in self.all_test_expectation_info:
-          self.all_test_expectation_info[testname] = []
-        # This is a list for multiple entries.
-        self.all_test_expectation_info[testname].append(test_expectation_info)
+        self.all_test_expectation_info[testname] = [te_info]
 
   @staticmethod
-  def ExtractTestOrDirectoryName(line):
-    """Extract either a test name or a directory name from each line.
-
-    Please note the name in the test expectation entry can be test name or
-    directory: Such examples are:
-      BUGWK43668 SKIP : media/track/ = TIMEOUT
-
-    Args:
-      line: a line in the test expectation file.
+  def ParseLine(line):
+    """Parses the provided line using WebKit's TextExpecations parser.
 
     Returns:
-      a test name or directory name string. Returns '' if no match.
-
-    Raises:
-      ValueError when there is no test name match.
-    """
-    # First try to find test name ending with .html.
-    matches = re.search(r':\s+(\S+(.html|.svg))', line)
-    # Next try to find directory name.
-    if matches:
-      return matches.group(1)
-    matches = re.search(r':\s+(\S+)', line)
-    if matches:
-      return matches.group(1)
-    else:
-      raise ValueError('test or dictionary name cannot be found in the line')
-
-  @staticmethod
-  def ParseLine(line, comment_prefix):
-    """Parse each line in test expectation and update test expectation info.
-
-      This function checks for each entry from |ALL_TE_KEYWORDS| in the current
-      line and stores it in the test expectation info map if found. Comment
-      and bug information is also stored in the map.
-
-    Args:
-      line: a line in the test expectation file. For example,
-          "BUGCR86714 MAC GPU : media/video-zoom.html = CRASH IMAGE"
-      comment_prefix: comments from the test expectation file occurring just
-          before the current line being parsed.
-
-    Returns:
-      a dictionary containing test expectation info, including comment and bug
-          info.
+      Tuple of test name, test expectations dictionary.  See class documentation
+      for the format of the dictionary
     """
     test_expectation_info = {}
-     # Store comments.
-    inline_comments = ''
-    if '//' in line:
-      inline_comments = line[line.rindex('//') + 2:]
-      # Remove the inline comments to avoid the case where keywords are in
-      # inline comments.
-      line = line[0:line.rindex('//')]
-    for name in KNOWN_TE_KEYWORDS:
-      if name in line:
-        test_expectation_info[name] = True
-    test_expectation_info['Comments'] = comment_prefix + inline_comments
-    # Store bug informations.
-    bugs = re.findall(r'BUG\w+', line)
-    if bugs:
-      test_expectation_info['Bugs'] = bugs
-    # Platforms should be the first tags to the left of the " : " after the BUG
-    # information and known keywords have been removed.
-    test_expectation_info['Platforms'] = [
-        x for x in line.split(' : ')[0].split(' ') if x and x not in bugs and
-        x not in KNOWN_TE_KEYWORDS]
-    # Test expectations should be all the keywords to the right of " = "
-    test_expectation = [x for x in line.split(' = ')[-1].split(' ') if x]
-    # Dump keywords into test expectations dictionary.
-    for name in test_expectation_info['Platforms'] + test_expectation:
-      test_expectation_info[name] = True
-    return test_expectation_info
+    parsed = TestExpectationParser._tokenize_line('TestExpectations', line, 0)
+    if parsed.is_invalid():
+      return None, None
+
+    test_expectation_info['Comments'] = parsed.comment or ''
+
+    # Split the modifiers dictionary into the format we want.
+    remaining_modifiers = list(parsed.modifiers)
+    test_expectation_info['Bugs'] = []
+    for m in parsed.modifiers:
+      if m.startswith('BUG'):
+        test_expectation_info['Bugs'].append(m)
+        remaining_modifiers.remove(m)
+      elif m in KNOWN_TE_KEYWORDS:
+        test_expectation_info[m] = True
+        remaining_modifiers.remove(m)
+
+    # The modifiers left over should all be platform names.
+    test_expectation_info['Platforms'] = list(remaining_modifiers)
+
+    # Shovel the expectations and modifiers in as "<key>: True" entries.  Ugly,
+    # but required by the rest of the pipeline for parsing.
+    for m in parsed.expectations + remaining_modifiers:
+      test_expectation_info[m] = True
+
+    return parsed.name, test_expectation_info

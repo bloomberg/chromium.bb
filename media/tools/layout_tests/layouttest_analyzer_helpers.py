@@ -53,7 +53,7 @@ class AnalyzerResultMap:
           which is a list of test expectation information map. The key of the
           test expectation information map is test expectation keywords such
           as "SKIP" and other keywords (for full list of keywords, please
-          refer to |test_expectaions.ALL_TE_KEYWORDS|).
+          refer to |test_expectations.ALL_TE_KEYWORDS|).
     """
     self.result_map = {}
     self.result_map['whole'] = {}
@@ -63,12 +63,10 @@ class AnalyzerResultMap:
       for (k, value) in test_info_map.iteritems():
         self.result_map['whole'][k] = value
         if 'te_info' in value:
-          # Don't count SLOW PASS or WONTFIX tests as failures.
+          # Don't count SLOW PASS, WONTFIX, or ANDROID tests as failures.
           if any([True for x in value['te_info'] if set(x.keys()) ==
-                 set(['SLOW', 'PASS', 'Bugs', 'Comments']) or 'WONTFIX' in x]):
-            continue
-          # Ignore failures on the ANDROID platform.
-          if value['te_info']['Platforms'] == ['ANDROID']:
+                  set(['SLOW', 'PASS', 'Bugs', 'Comments', 'Platforms']) or
+                  'WONTFIX' in x or x['Platforms'] == ['ANDROID']]):
             continue
           if any([True for x in value['te_info'] if 'SKIP' in x]):
             self.result_map['skip'][k] = value
@@ -243,7 +241,8 @@ class AnalyzerResultMap:
                             'flakiness_dashboard.html#%stests=%s') % (
                                 gpu_link, test_name)
           return_str += '<li><a href="%s">%s</a> (%s) </li>' % (
-              dashboard_link, test_name, ' '.join(te_info.keys()))
+              dashboard_link, test_name, ' '.join(
+                  [key for key in te_info.keys() if key != 'Platforms']))
         return_str += '</ul>\n'
     return return_str
 
@@ -370,8 +369,7 @@ def SendStatusEmail(prev_time, analyzer_result_map, diff_map,
   subject = 'Layout Test Analyzer Result %s(%s): %s' % (change_str,
                                                         test_group_name,
                                                         localtime)
-  # TODO(imasaki): remove my name from here.
-  SendEmail('imasaki@chromium.org', [receiver_email_address],
+  SendEmail('no-reply@chromium.org', [receiver_email_address],
             subject, email_content + appended_text_to_email)
 
 
