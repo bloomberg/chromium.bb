@@ -201,7 +201,11 @@ void WorkspaceManager2::SetActiveWorkspaceByWindow(Window* window) {
   if (workspace != active_workspace_) {
     // If the window persists across all workspaces, move it to the current
     // workspace.
-    if (GetPersistsAcrossAllWorkspaces(window) && !IsMaximized(window))
+    // A popup which was first maximized, is minimized and getts restored has
+    // to go through the SetActiveWorkspace since it persists across workspaces
+    // and is not (yet) maximized (see crbug.com/151698).
+    if (GetPersistsAcrossAllWorkspaces(window) && !IsMaximized(window) &&
+        !(wm::IsWindowMinimized(window) && WillRestoreMaximized(window)))
       ReparentWindow(window, active_workspace_->window(), NULL);
     else
       SetActiveWorkspace(workspace, ANIMATE_OLD_AND_NEW);
