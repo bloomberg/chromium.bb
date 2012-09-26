@@ -498,8 +498,9 @@ void WebContentsViewAura::OnBoundsChanged(const gfx::Rect& old_bounds,
     if (window_->children()[i]->GetProperty(
             aura::client::kConstrainedWindowKey)) {
       gfx::Rect bounds = window_->children()[i]->bounds();
-      bounds.Offset((new_bounds.width() - old_bounds.width()) / 2,
-                    (new_bounds.height() - old_bounds.height()) / 2);
+      bounds.set_origin(
+          gfx::Point((new_bounds.width() - bounds.width()) / 2,
+                     (new_bounds.height() - bounds.height()) / 2));
       window_->children()[i]->SetBounds(bounds);
     }
   }

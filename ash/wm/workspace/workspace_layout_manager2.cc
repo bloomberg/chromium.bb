@@ -53,6 +53,20 @@ void ResetBoundsIfNecessary(const BoundsMap& bounds_map, aura::Window* window) {
     ResetBoundsIfNecessary(bounds_map, window->children()[i]);
 }
 
+// Resets |window|s bounds from |bounds_map| if |window| is marked as a
+// constrained window. Recusively invokes this for all children.
+// TODO(sky): this should key off window type.
+void ResetConstrainedWindowBoundsIfNecessary(const BoundsMap& bounds_map,
+                                             aura::Window* window) {
+  if (window->GetProperty(aura::client::kConstrainedWindowKey)) {
+    BoundsMap::const_iterator i = bounds_map.find(window);
+    if (i != bounds_map.end())
+      window->SetBounds(i->second);
+  }
+  for (size_t i = 0; i < window->children().size(); ++i)
+    ResetConstrainedWindowBoundsIfNecessary(bounds_map, window->children()[i]);
+}
+
 }  // namespace
 
 WorkspaceLayoutManager2::WorkspaceLayoutManager2(Workspace2* workspace)
@@ -176,6 +190,9 @@ void WorkspaceLayoutManager2::OnWindowPropertyChanged(Window* window,
           new_state != ui::SHOW_STATE_MINIMIZED))) {
       BuildWindowBoundsMap(window, &bounds_map);
       cloned_layer = wm::RecreateWindowLayers(window, false);
+      // Constrained windows don't get their bounds reset when we update the
+      // window bounds. Leaving them empty is unexpected, so we reset them now.
+      ResetConstrainedWindowBoundsIfNecessary(bounds_map, window);
     }
     UpdateBoundsFromShowState(window);
 
