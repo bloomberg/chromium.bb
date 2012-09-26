@@ -239,7 +239,28 @@ class Instruction {
     bool read;
     bool write;
     bool implicit;
+    Operand(char type_, const std::string& size_, bool enabled_,
+            bool read_, bool write_, bool implicit_) :
+      type(type_),
+      size(size_),
+      enabled(enabled_),
+      read(read_),
+      write(write_),
+      implicit(implicit_) {
+    }
+    Operand() {
+    }
   };
+
+  Instruction(const std::string& name,
+              const std::vector<Operand>& operands,
+              const std::vector<std::string>& opcodes,
+              const std::set<std::string>& flags) :
+      name_(name),
+      operands_(operands),
+      opcodes_(opcodes),
+      flags_(flags) {
+  }
 
   const std::string& name(void) const {
     return name_;
@@ -298,6 +319,7 @@ class Instruction {
   }
 
   friend void ParseDefFile(const char*);
+  Instruction() {}
 };
 
 std::vector<Instruction> instructions;
@@ -463,51 +485,39 @@ void ParseDefFile(const char* filename) {
     for (std::vector<std::string>::reverse_iterator string = operation.rbegin();
          string != operation.rend() - 1; ++string) {
       Instruction::Operand operand;
-      operand.enabled  = true;
-      operand.implicit = false;
       // Most times we can determine whether operand is used for reading or
       // writing using its position and number of operands (default case in this
       // switch).  In a few exceptions we add read/write annotations that
       // override default behavior. All such annotations are created by hand.
       switch (string->at(0)) {
         case '\'':
-          operand.type  = string->at(1);
-          operand.size  = string->substr(2);
-          operand.read  = false;
-          operand.write = false;
+          operand = Instruction::Operand(string->at(1), string->substr(2),
+                                         true, false, false, false);
           break;
         case '=':
-          operand.type  = string->at(1);
-          operand.size  = string->substr(2);
-          operand.read  = true;
-          operand.write = false;
+          operand = Instruction::Operand(string->at(1), string->substr(2),
+                                         true, true, false, false);
           break;
         case '!':
-          operand.type  = string->at(1);
-          operand.size  = string->substr(2);
-          operand.read  = false;
-          operand.write = true;
+          operand = Instruction::Operand(string->at(1), string->substr(2),
+                                         true, false, true, false);
           break;
         case '&':
-          operand.type  = string->at(1);
-          operand.size  = string->substr(2);
-          operand.read  = true;
-          operand.write = true;
+          operand = Instruction::Operand(string->at(1), string->substr(2),
+                                         true, true, true, false);
           break;
         default:
-          operand.type  = string->at(0);
-          operand.size  = string->substr(1);
           if (string == operation.rbegin()) {
             if (operation.size() <= 3) {
-              operand.read  = true;
-              operand.write = true;
+              operand = Instruction::Operand(string->at(0), string->substr(1),
+                                             true, true, true, false);
             } else {
-              operand.read  = false;
-              operand.write = true;
+              operand = Instruction::Operand(string->at(0), string->substr(1),
+                                             true, false, true, false);
             }
           } else {
-            operand.read  = true;
-            operand.write = false;
+              operand = Instruction::Operand(string->at(0), string->substr(1),
+                                             true, true, false, false);
           }
           break;
       }
@@ -978,15 +988,18 @@ bool IsModRMRMIsUsed(const MarkedInstruction& instruction) {
 
 bool first_delimiter = true;
 
+#define FIRST_LINE_PREFIX "\n    ("
+#define SUBSEQUENT_LINES_PREFIX ") |\n    ("
+
 // PrintOperatorDelimiter is a simple function: it starts a “ragel line”.
 //
 // When it's called for a first time it just starts a line, in all other
 // cases it first finishes the previous line with “(”.
 void PrintOperatorDelimiter(void) {
   if (first_delimiter)
-    fprintf(out_file, "\n    (");
+    fprintf(out_file, FIRST_LINE_PREFIX);
   else
-    fprintf(out_file, ") |\n    (");
+    fprintf(out_file, SUBSEQUENT_LINES_PREFIX);
   first_delimiter = false;
 }
 
@@ -2113,6 +2126,351 @@ void PrintOneInstructionDefinition(void) {
   }
 }
 
+#ifndef NDEBUG
+// We only run tests if we build gen_dfa in debug mode.  It may be good idea to
+// disable optimized builds altogether: it's fast enough even in debug mode and
+// speed is of no issue here.
+
+// Compare “file” contents with “expected_output” contents.
+void CompareFileOutput(FILE* file, const char* expected_output) {
+  size_t pos = 0;
+  size_t count;
+  char buf[1024];
+  fflush(file);
+  fseek(file, 0, SEEK_SET);
+  while ((count = fread(buf, 1, sizeof buf, file)) > 0) {
+    assert(strncmp(expected_output + pos, buf, count) == 0);
+    pos += count;
+  }
+  assert(expected_output[pos] == '\0');
+  fclose(file);
+}
+
+// Run “text_func”, compare output to “out_file” and “const_file” with etalons.
+void CompareFileOutput(const char* expected_output_file,
+                       const char* expected_const_file,
+                       void (*test_func)(void)) {
+  out_file = tmpfile();
+  const_file = tmpfile();
+
+  test_func();
+
+  CompareFileOutput(const_file, expected_const_file);
+  const_file = stdout;
+
+  CompareFileOutput(out_file, expected_output_file);
+  out_file = stdout;
+}
+
+
+// Run full generation stack. We want to test some cases end-to-end but we
+// don't go overboard with this testing so we are testing couple of exceptional
+// cases and one “typical” instruction:
+//  • “xchg %reg, %ax/%eax/%rax” vs “nop”: there are special rules WRT this one
+//    as described in “NOP in 64-Bit Mode” appendix.
+//  • “maskmovq/maskmovdqu/vmaskmovdqu”: these are non-trival and they are
+//    encoded with some small changes in validator_x86_64.rl and we want to keep
+//    these different versions synchronized
+//  * “div !I =R": to check handling of differently-sized operands.
+
+// nop
+void test_fullstack_mode_nop(void) {
+  std::vector<MarkedInstruction::Operand> operands;
+  std::vector<std::string> opcodes;
+  std::set<std::string> flags;
+
+  opcodes.push_back("0x90");
+  instructions.push_back(Instruction("nop", operands, opcodes, flags));
+
+  CompareFileOutput(
+    FIRST_LINE_PREFIX
+    "0x90 >begin_opcode @end_opcode @instruction_nop @operands_count_is_0",
+    "",
+    PrintOneInstructionDefinition);
+
+  ia32_mode = false;
+  CompareFileOutput(
+    SUBSEQUENT_LINES_PREFIX
+    "REX_RXB? "
+    "0x90 >begin_opcode @end_opcode @instruction_nop @operands_count_is_0"
+    SUBSEQUENT_LINES_PREFIX
+    "REXW_RXB "
+    "0x90 >begin_opcode @end_opcode @instruction_nop @operands_count_is_0",
+    "",
+    PrintOneInstructionDefinition);
+}
+
+// xchg &av rv
+void test_fullstack_mode_xchg(void) {
+  std::vector<MarkedInstruction::Operand> operands;
+  std::vector<std::string> opcodes;
+  std::set<std::string> flags;
+
+  operands.push_back(Instruction::Operand('a', "v", true, true, true, false));
+  operands.push_back(Instruction::Operand('r', "v", true, true, true, false));
+  opcodes.push_back("0x90");
+  instructions.push_back(Instruction("xchg", operands, opcodes, flags));
+
+  CompareFileOutput(
+    FIRST_LINE_PREFIX
+    "((data16 (0x90|0x91|0x92|0x93|0x94|0x95|0x96|0x97) "
+    ">begin_opcode @operand1_from_opcode @end_opcode "
+    "@instruction_xchg @operands_count_is_2 "
+    "@operand0_16bit @operand0_rax @operand1_16bit "
+    "@operand0_readwrite @operand1_readwrite) - (0x90|0x48 0x90))"
+    SUBSEQUENT_LINES_PREFIX
+    "(((0x90|0x91|0x92|0x93|0x94|0x95|0x96|0x97) "
+    ">begin_opcode @operand1_from_opcode @end_opcode "
+    "@instruction_xchg @operands_count_is_2 "
+    "@operand0_32bit @operand0_rax @operand1_32bit "
+    "@operand0_readwrite @operand1_readwrite) - (0x90|0x48 0x90))",
+    "",
+    PrintOneInstructionDefinition);
+
+  ia32_mode = false;
+  CompareFileOutput(
+    SUBSEQUENT_LINES_PREFIX
+    "((data16 REX_RXB? (0x90|0x91|0x92|0x93|0x94|0x95|0x96|0x97) "
+    ">begin_opcode @operand1_from_opcode @end_opcode "
+    "@instruction_xchg @operands_count_is_2 "
+    "@operand0_16bit @operand0_rax @operand1_16bit "
+    "@operand0_readwrite @operand1_readwrite) - (0x90|0x48 0x90))"
+    SUBSEQUENT_LINES_PREFIX
+    "((REX_RXB? (0x90|0x91|0x92|0x93|0x94|0x95|0x96|0x97) "
+    ">begin_opcode @operand1_from_opcode @end_opcode "
+    "@instruction_xchg @operands_count_is_2 "
+    "@operand0_32bit @operand0_rax @operand1_32bit "
+    "@operand0_readwrite @operand1_readwrite) - (0x90|0x48 0x90))"
+    SUBSEQUENT_LINES_PREFIX
+    "((REXW_RXB (0x90|0x91|0x92|0x93|0x94|0x95|0x96|0x97) "
+    ">begin_opcode @operand1_from_opcode @end_opcode "
+    "@instruction_xchg @operands_count_is_2 "
+    "@operand0_64bit @operand0_rax @operand1_64bit "
+    "@operand0_readwrite @operand1_readwrite) - (0x90|0x48 0x90))"
+    SUBSEQUENT_LINES_PREFIX
+    "((data16 REXW_RXB (0x90|0x91|0x92|0x93|0x94|0x95|0x96|0x97) "
+    ">begin_opcode @operand1_from_opcode @end_opcode "
+    "@instruction_xchg @operands_count_is_2 "
+    "@operand0_64bit @operand0_rax @operand1_64bit "
+    "@operand0_readwrite @operand1_readwrite) - (0x90|0x48 0x90))",
+    "",
+    PrintOneInstructionDefinition);
+}
+
+// maskmovq Nq Pq, 0x0f 0xf7
+void test_fullstack_mode_maskmovq(void) {
+  std::vector<MarkedInstruction::Operand> operands;
+  std::vector<std::string> opcodes;
+  std::set<std::string> flags;
+
+  operands.push_back(Instruction::Operand('P', "q", true, true, true, false));
+  operands.push_back(Instruction::Operand('N', "q", true, true, false, false));
+  opcodes.push_back("0x0f");
+  opcodes.push_back("0xf7");
+  instructions.push_back(Instruction("maskmovq", operands, opcodes, flags));
+
+  CompareFileOutput(
+    FIRST_LINE_PREFIX
+    "(0x0f 0xf7) >begin_opcode @end_opcode @instruction_maskmovq "
+    "@operands_count_is_2 @operand0_mmx @operand1_mmx "
+    "@operand0_readwrite @operand1_read "
+    "modrm_registers @operand0_from_modrm_reg @operand1_from_modrm_rm",
+    "",
+    PrintOneInstructionDefinition);
+
+  ia32_mode = false;
+  CompareFileOutput(
+    SUBSEQUENT_LINES_PREFIX
+    "REX_RXB? (0x0f 0xf7) >begin_opcode @end_opcode @instruction_maskmovq "
+    "@operands_count_is_2 @operand0_mmx @operand1_mmx "
+    "@operand0_readwrite @operand1_read modrm_registers "
+    "@operand0_from_modrm_reg @operand1_from_modrm_rm"
+    SUBSEQUENT_LINES_PREFIX
+    "REXW_RXB (0x0f 0xf7) >begin_opcode @end_opcode @instruction_maskmovq "
+    "@operands_count_is_2 @operand0_mmx @operand1_mmx "
+    "@operand0_readwrite @operand1_read modrm_registers "
+    "@operand0_from_modrm_reg @operand1_from_modrm_rm",
+    "",
+    PrintOneInstructionDefinition);
+}
+
+// maskmovdqu Upb Vpb, 0x66 0x0f 0xf7
+void test_fullstack_mode_maskmovdqu(void) {
+  std::vector<MarkedInstruction::Operand> operands;
+  std::vector<std::string> opcodes;
+  std::set<std::string> flags;
+
+  operands.push_back(Instruction::Operand('V', "pb", true, true, true, false));
+  operands.push_back(Instruction::Operand('U', "pb", true, true, false, false));
+  opcodes.push_back("0x66");
+  opcodes.push_back("0x0f");
+  opcodes.push_back("0xf7");
+  instructions.push_back(Instruction("maskmovdqu", operands, opcodes, flags));
+
+  CompareFileOutput(
+    FIRST_LINE_PREFIX
+    "0x66 (0x0f 0xf7) >begin_opcode @end_opcode @not_data16_prefix "
+    "@instruction_maskmovdqu @operands_count_is_2 "
+    "@operand0_xmm @operand1_xmm @operand0_readwrite @operand1_read "
+    "modrm_registers @operand0_from_modrm_reg @operand1_from_modrm_rm",
+    "",
+    PrintOneInstructionDefinition);
+
+  ia32_mode = false;
+  CompareFileOutput(
+    SUBSEQUENT_LINES_PREFIX
+    "0x66 REX_RXB? (0x0f 0xf7) >begin_opcode @end_opcode @not_data16_prefix "
+    "@instruction_maskmovdqu @operands_count_is_2 @operand0_xmm @operand1_xmm "
+    "@operand0_readwrite @operand1_read modrm_registers "
+    "@operand0_from_modrm_reg @operand1_from_modrm_rm"
+    SUBSEQUENT_LINES_PREFIX
+    "0x66 REXW_RXB (0x0f 0xf7) >begin_opcode @end_opcode @not_data16_prefix "
+    "@instruction_maskmovdqu @operands_count_is_2 @operand0_xmm @operand1_xmm "
+    "@operand0_readwrite @operand1_read modrm_registers "
+    "@operand0_from_modrm_reg @operand1_from_modrm_rm",
+    "",
+    PrintOneInstructionDefinition);
+}
+
+// vmaskmovdqu Upb Vpb, 0xc4 RXB.00001 x.1111.0.01 0xf7
+void test_fullstack_mode_vmaskmovdqu(void) {
+  std::vector<MarkedInstruction::Operand> operands;
+  std::vector<std::string> opcodes;
+  std::set<std::string> flags;
+
+  operands.push_back(Instruction::Operand('V', "pb", true, true, true, false));
+  operands.push_back(Instruction::Operand('U', "pb", true, true, false, false));
+  opcodes.push_back("0xc4");
+  opcodes.push_back("RXB.00001");
+  opcodes.push_back("x.1111.0.01");
+  opcodes.push_back("0xf7");
+  instructions.push_back(Instruction("vmaskmovdqu", operands, opcodes, flags));
+
+  CompareFileOutput(
+    FIRST_LINE_PREFIX
+    "(((0xc4 (VEX_NONE & VEX_map00001)  b_0_1111_0_01 @vex_prefix3) | "
+    "(0xc5  b_1_1111_0_01 @vex_prefix_short)) 0xf7) >begin_opcode @end_opcode "
+    "@instruction_vmaskmovdqu @operands_count_is_2 @operand0_xmm @operand1_xmm "
+    "@operand0_readwrite @operand1_read "
+    "modrm_registers @operand0_from_modrm_reg @operand1_from_modrm_rm",
+    "",
+    PrintOneInstructionDefinition);
+
+  ia32_mode = false;
+  CompareFileOutput(
+    SUBSEQUENT_LINES_PREFIX
+    "(((0xc4 (VEX_RB & VEX_map00001)  b_0_1111_0_01 @vex_prefix3) | "
+    "(0xc5  b_X_1111_0_01 @vex_prefix_short)) 0xf7) >begin_opcode @end_opcode "
+    "@instruction_vmaskmovdqu @operands_count_is_2 @operand0_xmm @operand1_xmm "
+    "@operand0_readwrite @operand1_read "
+    "modrm_registers @operand0_from_modrm_reg @operand1_from_modrm_rm"
+    SUBSEQUENT_LINES_PREFIX
+    "(((0xc4 (VEX_RB & VEX_map00001)  b_0_1111_0_01 @vex_prefix3) | "
+    "(0xc5  b_X_1111_0_01 @vex_prefix_short)) 0xf7) >begin_opcode @end_opcode "
+    "@instruction_vmaskmovdqu @operands_count_is_2 @operand0_xmm @operand1_xmm "
+    "@operand0_readwrite @operand1_read "
+    "modrm_registers @operand0_from_modrm_reg @operand1_from_modrm_rm",
+    "",
+    PrintOneInstructionDefinition);
+}
+
+// div !I =R, 0xf6 /6
+void test_fullstack_mode_div(void) {
+  std::vector<MarkedInstruction::Operand> operands;
+  std::vector<std::string> opcodes;
+  std::set<std::string> flags;
+
+  operands.push_back(Instruction::Operand('R', "", true, true, false, false));
+  operands.push_back(Instruction::Operand('I', "", true, false, true, false));
+  opcodes.push_back("0xf6");
+  opcodes.push_back("/6");
+  instructions.push_back(Instruction("div", operands, opcodes, flags));
+
+  CompareFileOutput(
+    FIRST_LINE_PREFIX
+    "0xf6 >begin_opcode (opcode_6 @end_opcode @instruction_div "
+    "@operands_count_is_2 @operand0_8bit @operand1_8bit @operand1_immediate "
+    "@operand0_read @operand1_write any* & "
+    "modrm_registers @operand0_from_modrm_rm) imm8"
+    SUBSEQUENT_LINES_PREFIX
+    "data16 0xf7 >begin_opcode (opcode_6 @end_opcode @instruction_div "
+    "@operands_count_is_2 @operand0_16bit @operand1_16bit @operand1_immediate "
+    "@operand0_read @operand1_write any* & "
+    "modrm_registers @operand0_from_modrm_rm) imm16"
+    SUBSEQUENT_LINES_PREFIX
+    "0xf7 >begin_opcode (opcode_6 @end_opcode @instruction_div "
+    "@operands_count_is_2 @operand0_32bit @operand1_32bit @operand1_immediate "
+    "@operand0_read @operand1_write any* & "
+    "modrm_registers @operand0_from_modrm_rm) imm32",
+    "",
+    PrintOneInstructionDefinition);
+
+  ia32_mode = false;
+  CompareFileOutput(
+    SUBSEQUENT_LINES_PREFIX
+    "REX_RXB? 0xf6 >begin_opcode (opcode_6 @end_opcode @instruction_div "
+    "@operands_count_is_2 @operand0_8bit @operand1_8bit @operand1_immediate "
+    "@operand0_read @operand1_write any* & "
+    "modrm_registers @operand0_from_modrm_rm) imm8"
+    SUBSEQUENT_LINES_PREFIX
+    "REXW_RXB 0xf6 >begin_opcode (opcode_6 @end_opcode @instruction_div "
+    "@operands_count_is_2 @operand0_8bit @operand1_8bit @operand1_immediate "
+    "@operand0_read @operand1_write any* & "
+    "modrm_registers @operand0_from_modrm_rm) imm8"
+    SUBSEQUENT_LINES_PREFIX
+    "data16 REX_RXB? 0xf7 >begin_opcode (opcode_6 @end_opcode @instruction_div "
+    "@operands_count_is_2 @operand0_16bit @operand1_16bit @operand1_immediate "
+    "@operand0_read @operand1_write any* & "
+    "modrm_registers @operand0_from_modrm_rm) imm16"
+    SUBSEQUENT_LINES_PREFIX
+    "REX_RXB? 0xf7 >begin_opcode (opcode_6 @end_opcode @instruction_div "
+    "@operands_count_is_2 @operand0_32bit @operand1_32bit @operand1_immediate "
+    "@operand0_read @operand1_write any* & "
+    "modrm_registers @operand0_from_modrm_rm) imm32"
+    SUBSEQUENT_LINES_PREFIX
+    "REXW_RXB 0xf7 >begin_opcode (opcode_6 @end_opcode @instruction_div "
+    "@operands_count_is_2 @operand0_64bit @operand1_32bit @operand1_immediate "
+    "@operand0_read @operand1_write any* & "
+    "modrm_registers @operand0_from_modrm_rm) imm32"
+    SUBSEQUENT_LINES_PREFIX
+    "data16 REXW_RXB 0xf7 >begin_opcode (opcode_6 @end_opcode @instruction_div "
+    "@operands_count_is_2 @operand0_64bit @operand1_32bit @operand1_immediate "
+    "@operand0_read @operand1_write any* & "
+    "modrm_registers @operand0_from_modrm_rm) imm32",
+    "",
+    PrintOneInstructionDefinition);
+}
+
+void RunTest(const char *test_name, void (*test_func)(void)) {
+  printf("Running %s...\n", test_name);
+  test_func();
+
+  // Return all the global variables back to pristine state.  Note: we are
+  // returning *everything* back even if some variables are not touched by
+  // tests.
+  instruction_names.clear();
+  instructions.clear();
+  ia32_mode = true;
+  memset(disabled_actions, 0, sizeof(disabled_actions));
+  first_delimiter = true;
+  out_file = stdout;
+  const_file = stdout;
+  out_file_name = NULL;
+  const_file_name = NULL;
+}
+
+#define RUN_TEST(test_func) (RunTest(#test_func, test_func))
+
+void TestMain() {
+  RUN_TEST(test_fullstack_mode_nop);
+  RUN_TEST(test_fullstack_mode_xchg);
+  RUN_TEST(test_fullstack_mode_maskmovq);
+  RUN_TEST(test_fullstack_mode_maskmovdqu);
+  RUN_TEST(test_fullstack_mode_vmaskmovdqu);
+  RUN_TEST(test_fullstack_mode_div);
+}
+#endif /* NDEBUG */
+
 } // namespace
 
 int main(int argc, char* argv[]) {
@@ -2123,6 +2481,11 @@ int main(int argc, char* argv[]) {
 
   current_dir_name = get_current_dir_name();
   size_t current_dir_name_len = strlen(current_dir_name);
+
+#ifndef NDEBUG
+  // Run self-test before doing anything else.
+  TestMain();
+#endif
 
   for (;;) {
     int option_index;
