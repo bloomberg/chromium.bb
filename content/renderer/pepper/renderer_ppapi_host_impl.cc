@@ -79,6 +79,19 @@ RendererPpapiHostImpl* RendererPpapiHostImpl::CreateOnModuleForInProcess(
   return result;
 }
 
+// static
+RendererPpapiHostImpl* RendererPpapiHostImpl::GetForPPInstance(
+    PP_Instance pp_instance) {
+  PluginInstance* instance = HostGlobals::Get()->GetInstance(pp_instance);
+  if (!instance)
+    return NULL;
+
+  // All modules created by content will have their embedders state be the
+  // host impl.
+  return static_cast<RendererPpapiHostImpl*>(
+      instance->module()->GetEmbedderState());
+}
+
 scoped_ptr< ::ppapi::thunk::ResourceCreationAPI>
 RendererPpapiHostImpl::CreateInProcessResourceCreationAPI(
     webkit::ppapi::PluginInstance* instance) {

@@ -489,6 +489,8 @@ PluginInstance::~PluginInstance() {
   if (original_module_.get())
     original_module_->InstanceDeleted(this);
 
+  // This should be last since some of the above "instance deleted" calls will
+  // want to look up in the global map to get info off of our object.
   HostGlobals::Get()->InstanceDeleted(pp_instance_);
 }
 

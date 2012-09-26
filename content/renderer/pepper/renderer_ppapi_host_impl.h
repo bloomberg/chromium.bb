@@ -61,6 +61,10 @@ class RendererPpapiHostImpl
       webkit::ppapi::PluginModule* module,
       const ppapi::PpapiPermissions& permissions);
 
+  // Returns the RendererPpapiHostImpl associated with the given PP_Instance,
+  // or NULL if the instance is invalid.
+  static RendererPpapiHostImpl* GetForPPInstance(PP_Instance pp_instance);
+
   // Returns the router that we use for in-process IPC emulation (see the
   // pepper_in_process_router.h for more). This will be NULL when the plugin
   // is running out-of-process.

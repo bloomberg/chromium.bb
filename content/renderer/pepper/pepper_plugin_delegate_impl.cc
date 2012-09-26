@@ -112,8 +112,7 @@ class HostDispatcherWrapper
                         int plugin_child_id,
                         const ppapi::PpapiPermissions& perms)
       : module_(module),
-        /*TODO(brettw) bug 149850 put this back.
-          plugin_child_id_(plugin_child_id),*/
+        plugin_child_id_(plugin_child_id),
         permissions_(perms) {
   }
   virtual ~HostDispatcherWrapper() {}
@@ -156,21 +155,32 @@ class HostDispatcherWrapper
   virtual void AddInstance(PP_Instance instance) {
     ppapi::proxy::HostDispatcher::SetForInstance(instance, dispatcher_.get());
 
-    /* TODO(brettw) bug 149850 put this back with crash fix.
-    render_view_->Send(new ViewHostMsg_DidCreateOutOfProcessPepperInstance(
-        plugin_child_id_,
-        instance,
-        render_view_->routing_id()));
-    */
+    RendererPpapiHostImpl* host =
+        RendererPpapiHostImpl::GetForPPInstance(instance);
+    // TODO(brettw) remove this null check when the old-style pepper-based
+    // browser tag is removed from this file. Getting this notification should
+    // always give us an instance we can find in the map otherwise, but that
+    // isn't true for browser tag support.
+    if (host) {
+      RenderView* render_view = host->GetRenderViewForInstance(instance);
+      render_view->Send(new ViewHostMsg_DidCreateOutOfProcessPepperInstance(
+          plugin_child_id_,
+          instance,
+          render_view->GetRoutingID()));
+    }
   }
   virtual void RemoveInstance(PP_Instance instance) {
     ppapi::proxy::HostDispatcher::RemoveForInstance(instance);
 
-    /* TODO(brettw) bug 149850 put this back with crash fix.
-    render_view_->Send(new ViewHostMsg_DidDeleteOutOfProcessPepperInstance(
-        plugin_child_id_,
-        instance));
-    */
+    RendererPpapiHostImpl* host =
+        RendererPpapiHostImpl::GetForPPInstance(instance);
+    // TODO(brettw) remove null check as described in AddInstance.
+    if (host) {
+      RenderView* render_view = host->GetRenderViewForInstance(instance);
+      render_view->Send(new ViewHostMsg_DidDeleteOutOfProcessPepperInstance(
+          plugin_child_id_,
+          instance));
+    }
   }
 
   ppapi::proxy::HostDispatcher* dispatcher() { return dispatcher_.get(); }
@@ -181,8 +191,7 @@ class HostDispatcherWrapper
   // ID that the browser process uses to idetify the child process for the
   // plugin. This isn't directly useful from our process (the renderer) except
   // in messages to the browser to disambiguate plugins.
-  // TODO(brettw) bug 149850 put this back with crash fix.
-  //int plugin_child_id_;
+  int plugin_child_id_;
 
   ppapi::PpapiPermissions permissions_;
 
