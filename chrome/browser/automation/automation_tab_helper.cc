@@ -14,6 +14,8 @@
 
 using content::WebContents;
 
+int AutomationTabHelper::kUserDataKey;
+
 TabEventObserver::TabEventObserver() { }
 
 TabEventObserver::~TabEventObserver() {

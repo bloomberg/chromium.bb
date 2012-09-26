@@ -1785,8 +1785,10 @@ PageSnapshotTaker::PageSnapshotTaker(AutomationProvider* automation,
 PageSnapshotTaker::~PageSnapshotTaker() {}
 
 void PageSnapshotTaker::Start() {
-  StartObserving(tab_contents_->automation_tab_helper());
-  tab_contents_->automation_tab_helper()->SnapshotEntirePage();
+  AutomationTabHelper* automation_tab_helper =
+      AutomationTabHelper::FromWebContents(tab_contents_->web_contents());
+  StartObserving(automation_tab_helper);
+  automation_tab_helper->SnapshotEntirePage();
 }
 
 void PageSnapshotTaker::OnSnapshotEntirePageACK(
@@ -2361,10 +2363,12 @@ AllViewsStoppedLoadingObserver::AllViewsStoppedLoadingObserver(
        ++iter) {
     Browser* browser = *iter;
     for (int i = 0; i < browser->tab_count(); ++i) {
-      TabContents* tab_contents = chrome::GetTabContentsAt(browser, i);
-      StartObserving(tab_contents->automation_tab_helper());
-      if (tab_contents->automation_tab_helper()->has_pending_loads())
-        pending_tabs_.insert(tab_contents->web_contents());
+      WebContents* web_contents = chrome::GetWebContentsAt(browser, i);
+      AutomationTabHelper* automation_tab_helper =
+          AutomationTabHelper::FromWebContents(web_contents);
+      StartObserving(automation_tab_helper);
+      if (automation_tab_helper->has_pending_loads())
+        pending_tabs_.insert(web_contents);
     }
   }
   CheckIfNoMorePendingLoads();

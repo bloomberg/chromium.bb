@@ -4199,8 +4199,9 @@ void TestingAutomationProvider::HeapProfilerDump(
       return;
     }
 
-    TabContents* tab_contents = TabContents::FromWebContents(web_contents);
-    tab_contents->automation_tab_helper()->HeapProfilerDump(reason_string);
+    AutomationTabHelper* automation_tab_helper =
+        AutomationTabHelper::FromWebContents(web_contents);
+    automation_tab_helper->HeapProfilerDump(reason_string);
     reply.SendSuccess(NULL);
     return;
   }

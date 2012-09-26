@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/observer_list.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/tab_contents/web_contents_user_data.h"
 #include "content/public/browser/web_contents_observer.h"
 
 class AutomationTabHelper;
@@ -76,9 +77,9 @@ class TabEventObserver {
 // from the renderer. Broadcasts tab events to |TabEventObserver|s.
 class AutomationTabHelper
     : public content::WebContentsObserver,
-      public base::SupportsWeakPtr<AutomationTabHelper> {
+      public base::SupportsWeakPtr<AutomationTabHelper>,
+      public WebContentsUserData<AutomationTabHelper> {
  public:
-  explicit AutomationTabHelper(content::WebContents* web_contents);
   virtual ~AutomationTabHelper();
 
   void AddObserver(TabEventObserver* observer);
@@ -97,6 +98,10 @@ class AutomationTabHelper
   bool has_pending_loads() const;
 
  private:
+  explicit AutomationTabHelper(content::WebContents* web_contents);
+  static int kUserDataKey;
+  friend class WebContentsUserData<AutomationTabHelper>;
+
   friend class AutomationTabHelperTest;
 
   void OnSnapshotEntirePageACK(

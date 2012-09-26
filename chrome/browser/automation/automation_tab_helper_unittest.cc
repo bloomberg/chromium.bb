@@ -39,7 +39,7 @@ class AutomationTabHelperTest : public TabContentsTestHarness {
   }
 
   void TabContentsDestroyed() {
-    tab_helper()->WebContentsDestroyed(tab_contents()->web_contents());
+    tab_helper()->WebContentsDestroyed(web_contents());
   }
 
   void WillPerformClientRedirect(int64 frame_id) {
@@ -51,7 +51,7 @@ class AutomationTabHelperTest : public TabContentsTestHarness {
   }
 
   AutomationTabHelper* tab_helper() {
-    return tab_contents()->automation_tab_helper();
+    return AutomationTabHelper::FromWebContents(web_contents());
   }
 
   content::TestBrowserThread browser_thread_;

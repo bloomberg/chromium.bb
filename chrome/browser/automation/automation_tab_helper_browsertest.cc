@@ -104,7 +104,8 @@ class AutomationTabHelperBrowserTest : public InProcessBrowserTest {
 
   // Returns the |AutomationTabHelper| for the first browser's first tab.
   AutomationTabHelper* tab_helper() {
-    return chrome::GetTabContentsAt(browser(), 0)->automation_tab_helper();
+    return AutomationTabHelper::FromWebContents(
+        chrome::GetWebContentsAt(browser(), 0));
   }
 
  protected:

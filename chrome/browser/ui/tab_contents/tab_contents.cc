@@ -156,7 +156,7 @@ TabContents::TabContents(WebContents* contents)
   ZoomController::CreateForWebContents(contents);
 
 #if defined(ENABLE_AUTOMATION)
-  automation_tab_helper_.reset(new AutomationTabHelper(contents));
+  AutomationTabHelper::CreateForWebContents(contents);
 #endif
 
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)

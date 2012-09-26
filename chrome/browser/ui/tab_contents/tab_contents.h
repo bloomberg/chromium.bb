@@ -15,7 +15,6 @@
 class AutocompleteHistoryManager;
 class AutofillExternalDelegate;
 class AutofillManager;
-class AutomationTabHelper;
 class BasePanelBrowserTest;
 class Browser;
 class BrowserCommandsTabContentsCreator;
@@ -167,11 +166,6 @@ class TabContents : public content::WebContentsObserver {
 
   AutofillManager* autofill_manager() { return autofill_manager_.get(); }
 
-  // Used only for testing/automation.
-  AutomationTabHelper* automation_tab_helper() {
-    return automation_tab_helper_.get();
-  }
-
   ConstrainedWindowTabHelper* constrained_window_tab_helper() {
     return constrained_window_tab_helper_.get();
   }
@@ -229,7 +223,6 @@ class TabContents : public content::WebContentsObserver {
   scoped_refptr<AutofillManager> autofill_manager_;
   scoped_ptr<TabAutofillManagerDelegate> autofill_delegate_;
   scoped_ptr<AutofillExternalDelegate> autofill_external_delegate_;
-  scoped_ptr<AutomationTabHelper> automation_tab_helper_;
   scoped_ptr<ConstrainedWindowTabHelper> constrained_window_tab_helper_;
   scoped_ptr<FaviconTabHelper> favicon_tab_helper_;
   scoped_ptr<FindTabHelper> find_tab_helper_;
