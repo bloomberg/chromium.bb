@@ -77,7 +77,7 @@ class MapsGLEnduranceTest : public InProcessBrowserTest {
     gfx::Rect new_bounds = GetNewTabContainerBounds(tab_container_size);
     browser()->window()->SetBounds(new_bounds);
 
-    ui_test_utils::DOMMessageQueue message_queue;
+    content::DOMMessageQueue message_queue;
     ui_test_utils::NavigateToURL(browser(), GURL(url));
 
     // Wait for notification that the test completed.

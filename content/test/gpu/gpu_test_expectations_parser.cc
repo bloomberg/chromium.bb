@@ -12,6 +12,7 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "content/public/common/content_paths.h"
 
 namespace {
 
@@ -499,11 +500,9 @@ bool GPUTestExpectationsParser::GetExpectationsPath(
   bool rt = true;
   switch (profile) {
     case kWebGLConformanceTest:
-      rt = PathService::Get(base::DIR_SOURCE_ROOT, path);
+      rt = PathService::Get(content::DIR_TEST_DATA, path);
       if (rt) {
-        *path = path->Append(FILE_PATH_LITERAL("chrome"))
-            .Append(FILE_PATH_LITERAL("test"))
-            .Append(FILE_PATH_LITERAL("gpu"))
+        *path = path->Append(FILE_PATH_LITERAL("gpu"))
             .Append(FILE_PATH_LITERAL(
                 "webgl_conformance_test_expectations.txt"));
         rt = file_util::PathExists(*path);

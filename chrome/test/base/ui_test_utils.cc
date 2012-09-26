@@ -609,44 +609,6 @@ Browser* BrowserAddedObserver::WaitForSingleNewBrowser() {
   return GetBrowserNotInSet(original_browsers_);
 }
 
-DOMMessageQueue::DOMMessageQueue() : waiting_for_message_(false) {
-  registrar_.Add(this, content::NOTIFICATION_DOM_OPERATION_RESPONSE,
-                 content::NotificationService::AllSources());
-}
-
-DOMMessageQueue::~DOMMessageQueue() {}
-
-void DOMMessageQueue::Observe(int type,
-                              const content::NotificationSource& source,
-                              const content::NotificationDetails& details) {
-  content::Details<DomOperationNotificationDetails> dom_op_details(details);
-  content::Source<RenderViewHost> sender(source);
-  message_queue_.push(dom_op_details->json);
-  if (waiting_for_message_) {
-    waiting_for_message_ = false;
-    message_loop_runner_->Quit();
-  }
-}
-
-void DOMMessageQueue::ClearQueue() {
-  message_queue_ = std::queue<std::string>();
-}
-
-bool DOMMessageQueue::WaitForMessage(std::string* message) {
-  if (message_queue_.empty()) {
-    waiting_for_message_ = true;
-    // This will be quit when a new message comes in.
-    message_loop_runner_ = new content::MessageLoopRunner;
-    message_loop_runner_->Run();
-  }
-  // The queue should not be empty, unless we were quit because of a timeout.
-  if (message_queue_.empty())
-    return false;
-  if (message)
-    *message = message_queue_.front();
-  return true;
-}
-
 // Coordinates taking snapshots of a |RenderWidget|.
 class SnapshotTaker {
  public:

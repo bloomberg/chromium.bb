@@ -20,6 +20,7 @@
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/gpu_info.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/test/gpu/gpu_test_config.h"
 #include "content/test/gpu/test_switches.h"
 #include "net/base/net_util.h"
@@ -93,7 +94,7 @@ class GpuFeatureTest : public InProcessBrowserTest {
     ASSERT_TRUE(file_util::PathExists(test_path))
         << "Missing test file: " << test_path.value();
 
-    ui_test_utils::DOMMessageQueue message_queue;
+    content::DOMMessageQueue message_queue;
     if (new_tab) {
       ui_test_utils::NavigateToURLWithDisposition(
           browser(), net::FilePathToFileURL(test_path),

@@ -361,37 +361,6 @@ void HideNativeWindow(gfx::NativeWindow window);
 // Show and focus a native window. Returns true on success.
 bool ShowAndFocusNativeWindow(gfx::NativeWindow window) WARN_UNUSED_RESULT;
 
-// Watches for responses from the DOMAutomationController and keeps them in a
-// queue. Useful for waiting for a message to be received.
-class DOMMessageQueue : public content::NotificationObserver {
- public:
-  // Constructs a DOMMessageQueue and begins listening for messages from the
-  // DOMAutomationController. Do not construct this until the browser has
-  // started.
-  DOMMessageQueue();
-  virtual ~DOMMessageQueue();
-
-  // Removes all messages in the message queue.
-  void ClearQueue();
-
-  // Wait for the next message to arrive. |message| will be set to the next
-  // message, if not null. Returns true on success.
-  bool WaitForMessage(std::string* message) WARN_UNUSED_RESULT;
-
-  // Overridden content::NotificationObserver methods.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
- private:
-  content::NotificationRegistrar registrar_;
-  std::queue<std::string> message_queue_;
-  bool waiting_for_message_;
-  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(DOMMessageQueue);
-};
-
 // Takes a snapshot of the given render widget, rendered at |page_size|. The
 // snapshot is set to |bitmap|. Returns true on success.
 bool TakeRenderWidgetSnapshot(content::RenderWidgetHost* rwh,

@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_TEST_BROWSER_TEST_UTILS_H_
 #define CONTENT_PUBLIC_TEST_BROWSER_TEST_UTILS_H_
 
+#include <queue>
 #include <string>
 #include <vector>
 
@@ -210,6 +211,37 @@ class TestWebSocketServer {
   bool secure_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWebSocketServer);
+};
+
+// Watches for responses from the DOMAutomationController and keeps them in a
+// queue. Useful for waiting for a message to be received.
+class DOMMessageQueue : public NotificationObserver {
+ public:
+  // Constructs a DOMMessageQueue and begins listening for messages from the
+  // DOMAutomationController. Do not construct this until the browser has
+  // started.
+  DOMMessageQueue();
+  virtual ~DOMMessageQueue();
+
+  // Removes all messages in the message queue.
+  void ClearQueue();
+
+  // Wait for the next message to arrive. |message| will be set to the next
+  // message, if not null. Returns true on success.
+  bool WaitForMessage(std::string* message) WARN_UNUSED_RESULT;
+
+  // Overridden NotificationObserver methods.
+  virtual void Observe(int type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) OVERRIDE;
+
+ private:
+  NotificationRegistrar registrar_;
+  std::queue<std::string> message_queue_;
+  bool waiting_for_message_;
+  scoped_refptr<MessageLoopRunner> message_loop_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(DOMMessageQueue);
 };
 
 }  // namespace content

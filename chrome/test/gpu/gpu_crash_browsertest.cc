@@ -47,7 +47,7 @@ class GPUCrashTest : public InProcessBrowserTest {
 
 // Currently Kill times out on GPU bots: http://crbug.com/101513
 IN_PROC_BROWSER_TEST_F(GPUCrashTest, DISABLED_Kill) {
-  ui_test_utils::DOMMessageQueue message_queue;
+  content::DOMMessageQueue message_queue;
 
   ui_test_utils::NavigateToURL(
       browser(),
@@ -62,7 +62,7 @@ IN_PROC_BROWSER_TEST_F(GPUCrashTest, DISABLED_Kill) {
 
 
 IN_PROC_BROWSER_TEST_F(GPUCrashTest, WebkitLoseContext) {
-  ui_test_utils::DOMMessageQueue message_queue;
+  content::DOMMessageQueue message_queue;
 
   ui_test_utils::NavigateToURL(
       browser(),

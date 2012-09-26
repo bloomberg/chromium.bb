@@ -25,6 +25,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/test/gpu/gpu_test_config.h"
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -432,7 +433,7 @@ void LatencyTest::RunTestInternal(const std::string& test_url,
   }
 
   // Wait for message indicating the test has finished running.
-  ui_test_utils::DOMMessageQueue message_queue;
+  content::DOMMessageQueue message_queue;
   ASSERT_TRUE(message_queue.WaitForMessage(NULL));
 
   timer_.Stop();

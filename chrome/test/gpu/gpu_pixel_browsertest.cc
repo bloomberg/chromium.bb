@@ -169,7 +169,7 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
 
     ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
 
-    ui_test_utils::DOMMessageQueue message_queue;
+    content::DOMMessageQueue message_queue;
     ui_test_utils::NavigateToURL(browser(), net::FilePathToFileURL(url));
 
     // Wait for notification that page is loaded.

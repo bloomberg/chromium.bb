@@ -5,19 +5,21 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/common/chrome_paths.h"
-#include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/ui_test_utils.h"
+#include "base/utf_string_conversions.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/shell/shell.h"
+#include "content/test/content_browser_test.h"
+#include "content/test/content_browser_test_utils.h"
 #include "content/test/gpu/gpu_test_config.h"
 #include "content/test/gpu/gpu_test_expectations_parser.h"
 #include "net/base/net_util.h"
 
-namespace {
+namespace content {
 
-class WebGLConformanceTests : public InProcessBrowserTest {
+class WebGLConformanceTests : public ContentBrowserTest {
  public:
   WebGLConformanceTests() {}
 
@@ -36,7 +38,7 @@ class WebGLConformanceTests : public InProcessBrowserTest {
     ASSERT_TRUE(file_util::DirectoryExists(webgl_conformance_path))
         << "Missing conformance tests: " << webgl_conformance_path.value();
 
-    PathService::Get(chrome::DIR_TEST_DATA, &test_path_);
+    PathService::Get(DIR_TEST_DATA, &test_path_);
     test_path_ = test_path_.Append(FILE_PATH_LITERAL("gpu"));
     test_path_ = test_path_.Append(FILE_PATH_LITERAL("webgl_conformance.html"));
 
@@ -59,14 +61,13 @@ class WebGLConformanceTests : public InProcessBrowserTest {
       return;
     }
 
-    content::DOMMessageQueue message_queue;
-    ui_test_utils::NavigateToURL(browser(), net::FilePathToFileURL(test_path_));
-    ui_test_utils::NavigateToURL(
-        browser(), GURL("javascript:start('" + url + "');"));
+    DOMMessageQueue message_queue;
+    NavigateToURL(shell(), net::FilePathToFileURL(test_path_));
 
     std::string message;
-    // Wait for message indicating the test has finished running.
+    NavigateToURL(shell(), GURL("javascript:start('" + url + "');"));
     ASSERT_TRUE(message_queue.WaitForMessage(&message));
+
     EXPECT_STREQ("\"SUCCESS\"", message.c_str()) << message;
   }
 
@@ -77,7 +78,7 @@ class WebGLConformanceTests : public InProcessBrowserTest {
 };
 
 #define CONFORMANCE_TEST(name, url) \
-IN_PROC_BROWSER_TEST_F(WebGLConformanceTests, name) { \
+IN_PROC_BROWSER_TEST_F(WebGLConformanceTests, MANUAL_##name) { \
   RunTest(url); \
 }
 
@@ -86,4 +87,4 @@ IN_PROC_BROWSER_TEST_F(WebGLConformanceTests, name) { \
 // See: generate_webgl_conformance_test_list.py
 #include "webgl_conformance_test_list_autogen.h"
 
-}  // namespace
+}  // namespace content

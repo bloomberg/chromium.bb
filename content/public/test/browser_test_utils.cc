@@ -17,6 +17,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/dom_operation_notification_details.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -567,6 +568,44 @@ TestWebSocketServer::~TestWebSocketServer() {
   if (process_group_id_ != base::kNullProcessHandle)
     base::KillProcessGroup(process_group_id_);
 #endif
+}
+
+DOMMessageQueue::DOMMessageQueue() : waiting_for_message_(false) {
+  registrar_.Add(this, NOTIFICATION_DOM_OPERATION_RESPONSE,
+                 NotificationService::AllSources());
+}
+
+DOMMessageQueue::~DOMMessageQueue() {}
+
+void DOMMessageQueue::Observe(int type,
+                              const NotificationSource& source,
+                              const NotificationDetails& details) {
+  Details<DomOperationNotificationDetails> dom_op_details(details);
+  Source<RenderViewHost> sender(source);
+  message_queue_.push(dom_op_details->json);
+  if (waiting_for_message_) {
+    waiting_for_message_ = false;
+    message_loop_runner_->Quit();
+  }
+}
+
+void DOMMessageQueue::ClearQueue() {
+  message_queue_ = std::queue<std::string>();
+}
+
+bool DOMMessageQueue::WaitForMessage(std::string* message) {
+  if (message_queue_.empty()) {
+    waiting_for_message_ = true;
+    // This will be quit when a new message comes in.
+    message_loop_runner_ = new MessageLoopRunner;
+    message_loop_runner_->Run();
+  }
+  // The queue should not be empty, unless we were quit because of a timeout.
+  if (message_queue_.empty())
+    return false;
+  if (message)
+    *message = message_queue_.front();
+  return true;
 }
 
 }  // namespace content

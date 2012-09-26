@@ -616,12 +616,16 @@
             '../skia/skia.gyp:skia',
             '../testing/gmock.gyp:gmock',
             '../testing/gtest.gyp:gtest',
+            '../third_party/mesa/mesa.gyp:osmesa',
             '../ui/ui.gyp:ui',
             '../webkit/support/webkit_support.gyp:forms',
             '../webkit/support/webkit_support.gyp:glue',
           ],
           'include_dirs': [
             '..',
+          ],
+          'includes': [
+            'browser/gpu/test_support_gpu.gypi',
           ],
           'defines': [
             'HAS_OUT_OF_PROC_TEST_RUNNER',
@@ -650,6 +654,8 @@
             'browser/download/save_package_browsertest.cc',
             'browser/fileapi/blob_layout_browsertest.cc',
             'browser/fileapi/file_system_browsertest.cc',
+            'browser/gpu/webgl_conformance_tests.cc',
+            'browser/gpu/webgl_conformance_test_list_autogen.h',
             'browser/in_process_webkit/indexed_db_browsertest.cc',
             'browser/in_process_webkit/indexed_db_layout_browsertest.cc',
             'browser/media_browsertest.cc',
