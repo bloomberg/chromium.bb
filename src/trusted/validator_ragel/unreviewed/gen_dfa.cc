@@ -592,15 +592,6 @@ void PrintConsts(void) {
     }
     fprintf(const_file, " */\n};\n");
   }
-  if (enabled(kParseOperands)) {
-    fprintf(const_file, "static const uint8_t index_registers[] = {\n"
-"  REG_RAX, REG_RCX, REG_RDX, REG_RBX,\n"
-"  REG_RIZ, REG_RBP, REG_RSI, REG_RDI,\n"
-"  REG_R8,  REG_R9,  REG_R10, REG_R11,\n"
-"  REG_R12, REG_R13, REG_R14, REG_R15\n"
-"};\n"
-"");
-  }
 }
 
 // ToCIdentifier generates action name by replacing all characters except
@@ -2221,8 +2212,7 @@ int main(int argc, char* argv[]) {
   }
 
   if ((out_file_name || const_file_name) &&
-      (enabled(kInstructionName) ||
-      enabled(kParseOperands))) {
+      enabled(kInstructionName)) {
     size_t const_name_len = 0;
     if (out_file_name && !const_file_name) {
       const_name_len = strlen(out_file_name) + 10;

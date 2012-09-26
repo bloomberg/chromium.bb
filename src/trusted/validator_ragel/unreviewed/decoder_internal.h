@@ -84,4 +84,12 @@ static FORCEINLINE uint8_t RegisterFromIS4(uint8_t is4) {
   return is4 >> 4;
 }
 
+static const uint8_t index_registers[] = {
+  /* Note how REG_RIZ falls out of the pattern. */
+  REG_RAX, REG_RCX, REG_RDX, REG_RBX,
+  REG_RIZ, REG_RBP, REG_RSI, REG_RDI,
+  REG_R8,  REG_R9,  REG_R10, REG_R11,
+  REG_R12, REG_R13, REG_R14, REG_R15
+};
+
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_RAGEL_DECODER_INTERNAL_H_ */

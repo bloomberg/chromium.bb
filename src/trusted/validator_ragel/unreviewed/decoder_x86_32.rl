@@ -13,7 +13,7 @@
 #include "native_client/src/shared/utils/types.h"
 #include "native_client/src/trusted/validator_ragel/unreviewed/decoder_internal.h"
 
-#include "native_client/src/trusted/validator_ragel/gen/decoder_x86_32_instruction_consts.c"
+#include "native_client/src/trusted/validator_ragel/gen/decoder_x86_32_instruction_consts.h"
 
 %%{
   machine x86_32_decoder;

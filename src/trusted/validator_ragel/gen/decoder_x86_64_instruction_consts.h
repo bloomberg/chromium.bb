@@ -1,4 +1,4 @@
-/* native_client/src/trusted/validator_ragel/gen/decoder_x86_64_instruction_consts.c
+/* native_client/src/trusted/validator_ragel/gen/decoder_x86_64_instruction_consts.h
  * THIS FILE IS AUTO-GENERATED. DO NOT EDIT.
  * Compiled for x86-64 mode.
  */
@@ -890,10 +890,4 @@ static const char instruction_names[] = {
   0x78, 0x73, 0x61, 0x76, 0x65, 0x6f, 0x70, 0x74, '\0',  /* xsaveopt */
   0x78, 0x73, 0x61, 0x76, 0x65, 0x6f, 0x70, 0x74, 0x36, 0x34, '\0',  /* xsaveopt64 */
   0x78, 0x73, 0x65, 0x74, 0x62, 0x76, '\0',  /* xsetbv */
-};
-static const uint8_t index_registers[] = {
-  REG_RAX, REG_RCX, REG_RDX, REG_RBX,
-  REG_RIZ, REG_RBP, REG_RSI, REG_RDI,
-  REG_R8,  REG_R9,  REG_R10, REG_R11,
-  REG_R12, REG_R13, REG_R14, REG_R15
 };

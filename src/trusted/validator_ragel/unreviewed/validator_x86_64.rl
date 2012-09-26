@@ -13,8 +13,6 @@
 
 #include "native_client/src/trusted/validator_ragel/unreviewed/validator_internal.h"
 
-#include "native_client/src/trusted/validator_ragel/gen/validator_x86_64_instruction_consts.c"
-
 %%{
   machine x86_64_validator;
   alphtype unsigned char;

@@ -126,7 +126,7 @@ if generate:
     #  file is not changed _consts.c is guaranteed to be the same (reverse
     #  is not true).
 
-    const_file = '%s/%s_x86_%s_instruction_consts.c' % (
+    const_file = '%s/%s_x86_%s_instruction_consts.h' % (
         val_src_dir, automaton, bits)
 
     env.Command(
