@@ -11,6 +11,7 @@
 #include "CCQuadSink.h"
 #include "CCRenderPass.h"
 #include "CCRenderPassDrawQuad.h"
+#include "CCRenderPassTestCommon.h"
 #include "CCSettings.h"
 #include "CCSingleThreadProxy.h" // For DebugScopedSetImplThread
 #include "CCSolidColorDrawQuad.h"
@@ -61,17 +62,6 @@ protected:
     CCLayerTreeSettings m_settings;
 };
 
-class CCTestRenderPass : public CCRenderPass {
-public:
-    static PassOwnPtr<CCTestRenderPass> create(CCRenderPass::Id id, IntRect outputRect, const WebTransformationMatrix& rootTransform) { return adoptPtr(new CCTestRenderPass(id, outputRect, rootTransform)); }
-
-    void appendQuad(PassOwnPtr<CCDrawQuad> quad) { m_quadList.append(quad); }
-
-protected:
-    CCTestRenderPass(CCRenderPass::Id id, IntRect outputRect, const WebTransformationMatrix& rootTransform) : CCRenderPass(id, outputRect, rootTransform) { }
-};
-
-
 TEST_F(CCRendererSoftwareTest, solidColorQuad)
 {
     IntSize outerSize(100, 100);
@@ -85,7 +75,7 @@ TEST_F(CCRendererSoftwareTest, solidColorQuad)
 
     OwnPtr<CCSharedQuadState> sharedQuadState = CCSharedQuadState::create(WebTransformationMatrix(), outerRect, outerRect, 1.0, true);
     CCRenderPass::Id rootRenderPassId = CCRenderPass::Id(1, 1);
-    OwnPtr<CCRenderPass> rootRenderPass = CCTestRenderPass::create(rootRenderPassId, outerRect, WebTransformationMatrix());
+    scoped_ptr<CCRenderPass> rootRenderPass = CCTestRenderPass::create(rootRenderPassId, outerRect, WebTransformationMatrix());
     CCTestRenderPass* testRenderPass = static_cast<CCTestRenderPass*>(rootRenderPass.get());
     OwnPtr<CCDrawQuad> outerQuad = CCSolidColorDrawQuad::create(sharedQuadState.get(), outerRect, SK_ColorYELLOW);
     OwnPtr<CCDrawQuad> innerQuad = CCSolidColorDrawQuad::create(sharedQuadState.get(), innerRect, SK_ColorCYAN);
@@ -95,7 +85,7 @@ TEST_F(CCRendererSoftwareTest, solidColorQuad)
     CCRenderPassList list;
     CCRenderPassIdHashMap hashmap;
     list.append(rootRenderPass.get());
-    hashmap.add(rootRenderPassId, rootRenderPass.release());
+    hashmap.add(rootRenderPassId, rootRenderPass.Pass());
     renderer()->drawFrame(list, hashmap);
 
     OwnArrayPtr<SkColor> pixels = adoptArrayPtr(new SkColor[deviceViewportSize().width() * deviceViewportSize().height()]);
@@ -137,7 +127,7 @@ TEST_F(CCRendererSoftwareTest, tileQuad)
 
     OwnPtr<CCSharedQuadState> sharedQuadState = CCSharedQuadState::create(WebTransformationMatrix(), outerRect, outerRect, 1.0, true);
     CCRenderPass::Id rootRenderPassId = CCRenderPass::Id(1, 1);
-    OwnPtr<CCRenderPass> rootRenderPass = CCTestRenderPass::create(rootRenderPassId, IntRect(IntPoint(), deviceViewportSize()), WebTransformationMatrix());
+    scoped_ptr<CCRenderPass> rootRenderPass = CCTestRenderPass::create(rootRenderPassId, IntRect(IntPoint(), deviceViewportSize()), WebTransformationMatrix());
     CCTestRenderPass* testRenderPass = static_cast<CCTestRenderPass*>(rootRenderPass.get());
     OwnPtr<CCDrawQuad> outerQuad = CCTileDrawQuad::create(sharedQuadState.get(), outerRect, outerRect, resourceYellow, IntPoint(), outerSize, 0, false, false, false, false, false);
     OwnPtr<CCDrawQuad> innerQuad = CCTileDrawQuad::create(sharedQuadState.get(), innerRect, innerRect, resourceCyan, IntPoint(), innerSize, 0, false, false, false, false, false);
@@ -147,7 +137,7 @@ TEST_F(CCRendererSoftwareTest, tileQuad)
     CCRenderPassList list;
     CCRenderPassIdHashMap hashmap;
     list.append(rootRenderPass.get());
-    hashmap.add(rootRenderPassId, rootRenderPass.release());
+    hashmap.add(rootRenderPassId, rootRenderPass.Pass());
     renderer()->drawFrame(list, hashmap);
 
     OwnArrayPtr<SkColor> pixels = adoptArrayPtr(new SkColor[deviceViewportSize().width() * deviceViewportSize().height()]);

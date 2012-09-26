@@ -17,9 +17,9 @@ using WebKit::WebTransformationMatrix;
 
 namespace cc {
 
-PassOwnPtr<CCRenderPass> CCRenderPass::create(Id id, IntRect outputRect, const WebKit::WebTransformationMatrix& transformToRootTarget)
+scoped_ptr<CCRenderPass> CCRenderPass::create(Id id, IntRect outputRect, const WebKit::WebTransformationMatrix& transformToRootTarget)
 {
-    return adoptPtr(new CCRenderPass(id, outputRect, transformToRootTarget));
+    return scoped_ptr<CCRenderPass>(new CCRenderPass(id, outputRect, transformToRootTarget));
 }
 
 CCRenderPass::CCRenderPass(Id id, IntRect outputRect, const WebKit::WebTransformationMatrix& transformToRootTarget)
@@ -37,17 +37,17 @@ CCRenderPass::~CCRenderPass()
 {
 }
 
-PassOwnPtr<CCRenderPass> CCRenderPass::copy(Id newId) const
+scoped_ptr<CCRenderPass> CCRenderPass::copy(Id newId) const
 {
     ASSERT(newId != m_id);
 
-    OwnPtr<CCRenderPass> copyPass(create(newId, m_outputRect, m_transformToRootTarget));
+    scoped_ptr<CCRenderPass> copyPass(create(newId, m_outputRect, m_transformToRootTarget));
     copyPass->setDamageRect(m_damageRect);
     copyPass->setHasTransparentBackground(m_hasTransparentBackground);
     copyPass->setHasOcclusionFromOutsideTargetSurface(m_hasOcclusionFromOutsideTargetSurface);
     copyPass->setFilters(m_filters);
     copyPass->setBackgroundFilters(m_backgroundFilters);
-    return copyPass.release();
+    return copyPass.Pass();
 }
 
 void CCRenderPass::appendQuadsForLayer(CCLayerImpl* layer, CCOcclusionTrackerImpl* occlusionTracker, CCAppendQuadsData& appendQuadsData)
