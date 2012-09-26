@@ -5,7 +5,7 @@
 #ifndef CCRenderPassSink_h
 #define CCRenderPassSink_h
 
-#include "base/memory/scoped_ptr.h"
+#include <wtf/PassOwnPtr.h>
 
 namespace cc {
 
@@ -13,7 +13,7 @@ class CCRenderPass;
 
 class CCRenderPassSink {
 public:
-    virtual void appendRenderPass(scoped_ptr<CCRenderPass>) = 0;
+    virtual void appendRenderPass(PassOwnPtr<CCRenderPass>) = 0;
 };
 
 }

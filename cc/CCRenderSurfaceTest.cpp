@@ -13,7 +13,6 @@
 #include "CCSingleThreadProxy.h"
 #include "MockCCQuadCuller.h"
 #include "cc/own_ptr_vector.h"
-#include "cc/scoped_ptr_vector.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <public/WebTransformationMatrix.h>
@@ -120,12 +119,13 @@ TEST(CCRenderSurfaceTest, sanityCheckSurfaceCreatesCorrectSharedQuadState)
 
 class TestCCRenderPassSink : public CCRenderPassSink {
 public:
-    virtual void appendRenderPass(scoped_ptr<CCRenderPass> renderPass) OVERRIDE { m_renderPasses.append(renderPass.Pass()); }
+    virtual void appendRenderPass(PassOwnPtr<CCRenderPass> renderPass) OVERRIDE { m_renderPasses.append(renderPass); }
 
-    const ScopedPtrVector<CCRenderPass>& renderPasses() const { return m_renderPasses; }
+    const OwnPtrVector<CCRenderPass>& renderPasses() const { return m_renderPasses; }
 
 private:
-    ScopedPtrVector<CCRenderPass> m_renderPasses;
+    OwnPtrVector<CCRenderPass> m_renderPasses;
+
 };
 
 TEST(CCRenderSurfaceTest, sanityCheckSurfaceCreatesCorrectRenderPass)

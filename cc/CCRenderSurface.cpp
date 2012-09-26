@@ -191,11 +191,11 @@ void CCRenderSurface::appendRenderPasses(CCRenderPassSink& passSink)
     for (size_t i = 0; i < m_contributingDelegatedRenderPassLayerList.size(); ++i)
         m_contributingDelegatedRenderPassLayerList[i]->appendContributingRenderPasses(passSink);
 
-    scoped_ptr<CCRenderPass> pass = CCRenderPass::create(renderPassId(), m_contentRect, m_screenSpaceTransform);
+    OwnPtr<CCRenderPass> pass = CCRenderPass::create(renderPassId(), m_contentRect, m_screenSpaceTransform);
     pass->setDamageRect(m_damageTracker->currentDamageRect());
     pass->setFilters(m_owningLayer->filters());
     pass->setBackgroundFilters(m_owningLayer->backgroundFilters());
-    passSink.appendRenderPass(pass.Pass());
+    passSink.appendRenderPass(pass.release());
 }
 
 void CCRenderSurface::appendQuads(CCQuadSink& quadSink, CCAppendQuadsData& appendQuadsData, bool forReplica, CCRenderPass::Id renderPassId)

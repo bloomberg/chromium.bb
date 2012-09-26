@@ -63,9 +63,9 @@ public:
     {
         m_rootLayer->createRenderSurface();
         CCRenderPass::Id renderPassId = m_rootLayer->renderSurface()->renderPassId();
-        scoped_ptr<CCRenderPass> rootRenderPass = CCRenderPass::create(renderPassId, IntRect(), WebTransformationMatrix());
+        OwnPtr<CCRenderPass> rootRenderPass = CCRenderPass::create(renderPassId, IntRect(), WebTransformationMatrix());
         m_renderPassesInDrawOrder.append(rootRenderPass.get());
-        m_renderPasses.set(renderPassId, rootRenderPass.Pass());
+        m_renderPasses.set(renderPassId, rootRenderPass.release());
     }
 
     // CCRendererClient methods.

@@ -41,7 +41,7 @@ bool CCDelegatedRendererLayerImpl::hasContributingDelegatedRenderPasses() const
     return m_renderPassesInDrawOrder.size() > 1;
 }
 
-void CCDelegatedRendererLayerImpl::setRenderPasses(ScopedPtrVector<CCRenderPass>& renderPassesInDrawOrder)
+void CCDelegatedRendererLayerImpl::setRenderPasses(OwnPtrVector<CCRenderPass>& renderPassesInDrawOrder)
 {
     FloatRect oldRootDamage;
     if (!m_renderPassesInDrawOrder.isEmpty())
@@ -50,7 +50,7 @@ void CCDelegatedRendererLayerImpl::setRenderPasses(ScopedPtrVector<CCRenderPass>
     clearRenderPasses();
 
     for (size_t i = 0; i < renderPassesInDrawOrder.size(); ++i) {
-        m_renderPassesIndexById.insert(std::pair<CCRenderPass::Id, int>(renderPassesInDrawOrder[i]->id(), i));
+        m_renderPassesIndexById.set(renderPassesInDrawOrder[i]->id(), i);
         m_renderPassesInDrawOrder.append(renderPassesInDrawOrder.take(i));
     }
     renderPassesInDrawOrder.clear();
@@ -88,9 +88,7 @@ CCRenderPass::Id CCDelegatedRendererLayerImpl::nextContributingRenderPassId(CCRe
 
 CCRenderPass::Id CCDelegatedRendererLayerImpl::convertDelegatedRenderPassId(CCRenderPass::Id delegatedRenderPassId) const
 {
-    base::hash_map<CCRenderPass::Id, int>::const_iterator it = m_renderPassesIndexById.find(delegatedRenderPassId);
-    ASSERT(it != m_renderPassesIndexById.end());
-    unsigned delegatedRenderPassIndex = it->second;
+    unsigned delegatedRenderPassIndex = m_renderPassesIndexById.get(delegatedRenderPassId);
     return CCRenderPass::Id(id(), indexToId(delegatedRenderPassIndex));
 }
 

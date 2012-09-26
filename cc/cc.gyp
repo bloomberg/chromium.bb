@@ -8,9 +8,6 @@
     'use_libcc_for_compositor%': 0,
     'cc_source_files': [
       'hash_pair.h',
-      'own_ptr_vector.h',
-      'scoped_ptr_hash_map.h',
-      'scoped_ptr_vector.h',
       'BitmapCanvasLayerTextureUpdater.cpp',
       'BitmapCanvasLayerTextureUpdater.h',
       'BitmapSkPictureCanvasLayerTextureUpdater.cpp',

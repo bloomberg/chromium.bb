@@ -46,7 +46,7 @@ TEST(CCRenderPassTest, copyShouldBeIdenticalExceptIdAndQuads)
     IntRect outputRect(45, 22, 120, 13);
     WebTransformationMatrix transformToRoot(1, 0.5, 0.5, -0.5, -1, 0);
 
-    scoped_ptr<CCRenderPass> pass = CCRenderPass::create(id, outputRect, transformToRoot);
+    OwnPtr<CCRenderPass> pass(CCRenderPass::create(id, outputRect, transformToRoot));
 
     IntRect damageRect(56, 123, 19, 43);
     bool hasTransparentBackground = true;
@@ -70,7 +70,7 @@ TEST(CCRenderPassTest, copyShouldBeIdenticalExceptIdAndQuads)
 
     CCRenderPass::Id newId(63, 4);
 
-    scoped_ptr<CCRenderPass> copy = pass->copy(newId);
+    OwnPtr<CCRenderPass> copy(pass->copy(newId));
     EXPECT_EQ(newId, copy->id());
     EXPECT_RECT_EQ(pass->outputRect(), copy->outputRect());
     EXPECT_EQ(pass->transformToRootTarget(), copy->transformToRootTarget());

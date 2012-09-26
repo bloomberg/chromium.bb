@@ -76,7 +76,7 @@ public:
         CCLayerList willDrawLayers;
 
         // CCRenderPassSink implementation.
-        virtual void appendRenderPass(scoped_ptr<CCRenderPass>) OVERRIDE;
+        virtual void appendRenderPass(PassOwnPtr<CCRenderPass>) OVERRIDE;
     };
 
     // Virtual for testing.

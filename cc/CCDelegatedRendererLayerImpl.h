@@ -6,7 +6,6 @@
 #define CCDelegatedRendererLayerImpl_h
 
 #include "CCLayerImpl.h"
-#include "cc/scoped_ptr_vector.h"
 
 namespace cc {
 
@@ -19,7 +18,7 @@ public:
     virtual bool hasContributingDelegatedRenderPasses() const OVERRIDE;
 
     // This gives ownership of the RenderPasses to the layer.
-    void setRenderPasses(ScopedPtrVector<CCRenderPass>&);
+    void setRenderPasses(OwnPtrVector<CCRenderPass>&);
     void clearRenderPasses();
 
     virtual void didLoseContext() OVERRIDE;
@@ -41,8 +40,8 @@ private:
 
     virtual const char* layerTypeAsString() const OVERRIDE;
 
-    ScopedPtrVector<CCRenderPass> m_renderPassesInDrawOrder;
-    base::hash_map<CCRenderPass::Id, int> m_renderPassesIndexById;
+    OwnPtrVector<CCRenderPass> m_renderPassesInDrawOrder;
+    HashMap<CCRenderPass::Id, int> m_renderPassesIndexById;
 };
 
 }
