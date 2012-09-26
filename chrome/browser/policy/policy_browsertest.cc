@@ -992,11 +992,11 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, HomepageLocation) {
   PolicyMap policies;
   policies.Set(key::kHomepageLocation, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER,
-               base::Value::CreateStringValue(chrome::kChromeUIBookmarksURL));
+               base::Value::CreateStringValue(chrome::kChromeUICreditsURL));
   provider_.UpdateChromePolicy(policies);
   EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_HOME));
   content::WaitForLoadStop(contents);
-  EXPECT_EQ(GURL(chrome::kChromeUIBookmarksURL), contents->GetURL());
+  EXPECT_EQ(GURL(chrome::kChromeUICreditsURL), contents->GetURL());
 
   policies.Set(key::kHomepageIsNewTabPage, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true));
