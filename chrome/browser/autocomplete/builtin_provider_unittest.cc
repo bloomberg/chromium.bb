@@ -143,12 +143,12 @@ TEST_F(BuiltinProviderTest, ChromeURLs) {
 
   // This makes assumptions about the chrome URLs listed by the BuiltinProvider.
   // Currently they are derived from ChromePaths() in browser_about_handler.cc.
-  const string16 kHostE = ASCIIToUTF16(chrome::kChromeUIExtensionsHost);
-  const GURL kURLE = GURL(kChrome + kSeparator3 + kHostE);
-  const string16 kHostF1 = ASCIIToUTF16(chrome::kChromeUIFlagsHost);
-  const string16 kHostF2 = ASCIIToUTF16(chrome::kChromeUIFlashHost);
-  const GURL kURLF1 = GURL(kChrome + kSeparator3 + kHostF1);
-  const GURL kURLF2 = GURL(kChrome + kSeparator3 + kHostF2);
+  const string16 kHostA = ASCIIToUTF16(chrome::kChromeUIAppCacheInternalsHost);
+  const GURL kURLA = GURL(kChrome + kSeparator3 + kHostA);
+  const string16 kHostM1 = ASCIIToUTF16(chrome::kChromeUIMediaInternalsHost);
+  const string16 kHostM2 = ASCIIToUTF16(chrome::kChromeUIMemoryHost);
+  const GURL kURLM1 = GURL(kChrome + kSeparator3 + kHostM1);
+  const GURL kURLM2 = GURL(kChrome + kSeparator3 + kHostM2);
 
   test_data<GURL> chrome_url_cases[] = {
     // Typing an about URL with an unknown host should give nothing.
@@ -162,44 +162,44 @@ TEST_F(BuiltinProviderTest, ChromeURLs) {
     {kChrome + kSeparator3 + ASCIIToUTF16("host"), 0, {}},
 
     // Typing an about URL for a unique host should provide that full URL.
-    {kAbout + kSeparator1 + kHostE.substr(0, 1),                   1, {kURLE}},
-    {kAbout + kSeparator2 + kHostE.substr(0, 2),                   1, {kURLE}},
-    {kAbout + kSeparator3 + kHostE.substr(0, kHostE.length() - 1), 1, {kURLE}},
-    {kAbout + kSeparator1 + kHostE,                                1, {kURLE}},
-    {kAbout + kSeparator2 + kHostE,                                1, {kURLE}},
-    {kAbout + kSeparator3 + kHostE,                                1, {kURLE}},
+    {kAbout + kSeparator1 + kHostA.substr(0, 1),                   1, {kURLA}},
+    {kAbout + kSeparator2 + kHostA.substr(0, 2),                   1, {kURLA}},
+    {kAbout + kSeparator3 + kHostA.substr(0, kHostA.length() - 1), 1, {kURLA}},
+    {kAbout + kSeparator1 + kHostA,                                1, {kURLA}},
+    {kAbout + kSeparator2 + kHostA,                                1, {kURLA}},
+    {kAbout + kSeparator3 + kHostA,                                1, {kURLA}},
 
     // Typing a chrome URL for a unique host should provide that full URL.
-    {kChrome + kSeparator1 + kHostE.substr(0, 1),                   1, {kURLE}},
-    {kChrome + kSeparator2 + kHostE.substr(0, 2),                   1, {kURLE}},
-    {kChrome + kSeparator3 + kHostE.substr(0, kHostE.length() - 1), 1, {kURLE}},
-    {kChrome + kSeparator1 + kHostE,                                1, {kURLE}},
-    {kChrome + kSeparator2 + kHostE,                                1, {kURLE}},
-    {kChrome + kSeparator3 + kHostE,                                1, {kURLE}},
+    {kChrome + kSeparator1 + kHostA.substr(0, 1),                   1, {kURLA}},
+    {kChrome + kSeparator2 + kHostA.substr(0, 2),                   1, {kURLA}},
+    {kChrome + kSeparator3 + kHostA.substr(0, kHostA.length() - 1), 1, {kURLA}},
+    {kChrome + kSeparator1 + kHostA,                                1, {kURLA}},
+    {kChrome + kSeparator2 + kHostA,                                1, {kURLA}},
+    {kChrome + kSeparator3 + kHostA,                                1, {kURLA}},
 
     // Typing an about URL with a non-unique host should provide matching URLs.
-    {kAbout + kSeparator1 + kHostF1.substr(0, 1), 2, {kURLF1, kURLF2}},
-    {kAbout + kSeparator2 + kHostF1.substr(0, 2), 2, {kURLF1, kURLF2}},
-    {kAbout + kSeparator3 + kHostF2.substr(0, 3), 2, {kURLF1, kURLF2}},
-    {kAbout + kSeparator3 + kHostF1.substr(0, 4), 1, {kURLF1}},
-    {kAbout + kSeparator3 + kHostF2.substr(0, 4), 1, {kURLF2}},
-    {kAbout + kSeparator3 + kHostF1,              1, {kURLF1}},
-    {kAbout + kSeparator2 + kHostF2,              1, {kURLF2}},
+    {kAbout + kSeparator1 + kHostM1.substr(0, 1), 2, {kURLM1, kURLM2}},
+    {kAbout + kSeparator2 + kHostM1.substr(0, 2), 2, {kURLM1, kURLM2}},
+    {kAbout + kSeparator3 + kHostM1.substr(0, 3), 1, {kURLM1}},
+    {kAbout + kSeparator3 + kHostM2.substr(0, 3), 1, {kURLM2}},
+    {kAbout + kSeparator3 + kHostM1,              1, {kURLM1}},
+    {kAbout + kSeparator2 + kHostM2,              1, {kURLM2}},
 
     // Typing a chrome URL with a non-unique host should provide matching URLs.
-    {kChrome + kSeparator1 + kHostF1.substr(0, 1), 2, {kURLF1, kURLF2}},
-    {kChrome + kSeparator2 + kHostF1.substr(0, 2), 2, {kURLF1, kURLF2}},
-    {kChrome + kSeparator3 + kHostF2.substr(0, 3), 2, {kURLF1, kURLF2}},
-    {kChrome + kSeparator3 + kHostF1.substr(0, 4), 1, {kURLF1}},
-    {kChrome + kSeparator3 + kHostF2.substr(0, 4), 1, {kURLF2}},
-    {kChrome + kSeparator3 + kHostF1,              1, {kURLF1}},
-    {kChrome + kSeparator2 + kHostF2,              1, {kURLF2}},
+    {kChrome + kSeparator1 + kHostM1.substr(0, 1), 2, {kURLM1, kURLM2}},
+    {kChrome + kSeparator2 + kHostM1.substr(0, 2), 2, {kURLM1, kURLM2}},
+    {kChrome + kSeparator3 + kHostM1.substr(0, 3), 1, {kURLM1}},
+    {kChrome + kSeparator3 + kHostM2.substr(0, 3), 1, {kURLM2}},
+    {kChrome + kSeparator3 + kHostM1,              1, {kURLM1}},
+    {kChrome + kSeparator2 + kHostM2,              1, {kURLM2}},
   };
 
   RunTest<GURL>(chrome_url_cases, arraysize(chrome_url_cases),
                 &AutocompleteMatch::destination_url);
 }
 
+#if !defined(OS_ANDROID)
+// Disabled on Android where we use native UI instead of chrome://settings.
 TEST_F(BuiltinProviderTest, ChromeSettingsSubpages) {
   // This makes assumptions about the chrome URLs listed by the BuiltinProvider.
   // Currently they are derived from ChromePaths() in browser_about_handler.cc.
@@ -228,3 +228,4 @@ TEST_F(BuiltinProviderTest, ChromeSettingsSubpages) {
   RunTest<GURL>(settings_subpage_cases, arraysize(settings_subpage_cases),
                 &AutocompleteMatch::destination_url);
 }
+#endif
