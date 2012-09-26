@@ -310,8 +310,17 @@ gfx::Rect SearchViewController::GetNTPOmniboxBounds(views::View* destination) {
   if (!is_ntp_state(state_))
     return gfx::Rect();
 
-  const float kNTPPageWidthRatio = 0.73f;
-  int omnibox_width = kNTPPageWidthRatio * ntp_container_->bounds().width();
+  const int kOmniboxWidthMax = 742;
+  const int kOmniboxWidthMin = 200;
+  const int kOmniboxWidthPadding = 80;
+  int omnibox_width = ntp_container_->bounds().width() -
+      2 * kOmniboxWidthPadding;
+  if (omnibox_width > kOmniboxWidthMax) {
+    omnibox_width = kOmniboxWidthMax;
+  } else if (omnibox_width < kOmniboxWidthMin) {
+    omnibox_width = kOmniboxWidthMin;
+  }
+
   int omnibox_x = (ntp_container_->bounds().width() - omnibox_width) / 2;
   gfx::Point omnibox_origin(omnibox_x,
                             GetLogoView()->bounds().bottom() +
