@@ -4452,6 +4452,13 @@
           },
           'msvs_disabled_warnings': [4211],
           'conditions': [
+            # Disable the type profiler. _POSIX_C_SOURCE and _XOPEN_SOURCE
+            # conflict between <Python.h> and <typeinfo>.
+            ['OS=="linux" and clang_type_profiler==1', {
+              'cflags_cc!': [
+                '-fintercept-allocation-functions',
+              ],
+            }],
             ['os_posix == 1 and OS!="mac"', {
               'include_dirs': [
                 '..',
