@@ -23,11 +23,6 @@ class UI_EXPORT EventDispatcher {
   // case the event can no longer be dispatched to the target).
   virtual bool CanDispatchToTarget(EventTarget* target) = 0;
 
-  // Allows the subclass to add additional event handlers to the dispatch
-  // sequence.
-  virtual void ProcessPreTargetList(EventHandlerList* list) = 0;
-  virtual void ProcessPostTargetList(EventHandlerList* list) = 0;
-
   template<class T>
   int ProcessEvent(EventTarget* target, T* event) {
     if (!target || !target->CanAcceptEvents())
@@ -38,7 +33,6 @@ class UI_EXPORT EventDispatcher {
 
     EventHandlerList list;
     target->GetPreTargetHandlers(&list);
-    ProcessPreTargetList(&list);
     dispatch_helper.set_phase(EP_PRETARGET);
     int result = DispatchEventToEventHandlers(list, event);
     if (result & ER_CONSUMED)
@@ -62,7 +56,6 @@ class UI_EXPORT EventDispatcher {
 
     list.clear();
     target->GetPostTargetHandlers(&list);
-    ProcessPostTargetList(&list);
     dispatch_helper.set_phase(EP_POSTTARGET);
     result |= DispatchEventToEventHandlers(list, event);
     return result;

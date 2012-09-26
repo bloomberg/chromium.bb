@@ -310,8 +310,6 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
 
   // Overridden from ui::EventDispatcher.
   virtual bool CanDispatchToTarget(EventTarget* target) OVERRIDE;
-  virtual void ProcessPreTargetList(ui::EventHandlerList* list) OVERRIDE;
-  virtual void ProcessPostTargetList(ui::EventHandlerList* list) OVERRIDE;
 
   // Overridden from ui::GestureEventHelper.
   virtual bool DispatchLongPressGestureEvent(ui::GestureEvent* event) OVERRIDE;

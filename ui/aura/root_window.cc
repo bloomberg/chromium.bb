@@ -809,12 +809,6 @@ bool RootWindow::CanDispatchToTarget(ui::EventTarget* target) {
   return event_dispatch_target_ == target;
 }
 
-void RootWindow::ProcessPreTargetList(ui::EventHandlerList* list) {
-}
-
-void RootWindow::ProcessPostTargetList(ui::EventHandlerList* list) {
-}
-
 bool RootWindow::DispatchLongPressGestureEvent(ui::GestureEvent* event) {
   return DispatchGestureEvent(event);
 }

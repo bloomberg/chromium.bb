@@ -48,18 +48,31 @@ class TestEventHandler : public EventHandler {
   TestEventHandler(int id)
       : id_(id),
         event_result_(ER_UNHANDLED),
-        expected_phase_(EP_PREDISPATCH) {
+        expect_pre_target_(false),
+        expect_post_target_(false),
+        received_pre_target_(false) {
   }
 
   virtual ~TestEventHandler() {}
 
   void ReceivedEvent(Event* event) {
-    EXPECT_EQ(expected_phase_, event->phase());
     static_cast<TestTarget*>(event->target())->AddHandlerId(id_);
+    if (event->phase() == ui::EP_POSTTARGET) {
+      EXPECT_TRUE(expect_post_target_);
+      if (expect_pre_target_)
+        EXPECT_TRUE(received_pre_target_);
+    } else if (event->phase() == ui::EP_PRETARGET) {
+      EXPECT_TRUE(expect_pre_target_);
+      received_pre_target_ = true;
+    } else {
+      NOTREACHED();
+    }
   }
 
   void set_event_result(EventResult result) { event_result_ = result; }
-  void set_expected_phase(EventPhase phase) { expected_phase_ = phase; }
+
+  void set_expect_pre_target(bool expect) { expect_pre_target_ = expect; }
+  void set_expect_post_target(bool expect) { expect_post_target_ = expect; }
 
  private:
   // Overridden from EventHandler:
@@ -90,7 +103,9 @@ class TestEventHandler : public EventHandler {
 
   int id_;
   EventResult event_result_;
-  EventPhase expected_phase_;
+  bool expect_pre_target_;
+  bool expect_post_target_;
+  bool received_pre_target_;
 
   DISALLOW_COPY_AND_ASSIGN(TestEventHandler);
 };
@@ -104,18 +119,6 @@ class TestEventDispatcher : public EventDispatcher {
   // Overridden from EventDispatcher:
   virtual bool CanDispatchToTarget(EventTarget* target) OVERRIDE {
     return true;
-  }
-
-  virtual void ProcessPreTargetList(EventHandlerList* list) OVERRIDE {
-    for (EventHandlerList::iterator i = list->begin(); i != list->end(); ++i) {
-      static_cast<TestEventHandler*>(*i)->set_expected_phase(EP_PRETARGET);
-    }
-  }
-
-  virtual void ProcessPostTargetList(EventHandlerList* list) OVERRIDE {
-    for (EventHandlerList::iterator i = list->begin(); i != list->end(); ++i) {
-      static_cast<TestEventHandler*>(*i)->set_expected_phase(EP_POSTTARGET);
-    }
   }
 
   DISALLOW_COPY_AND_ASSIGN(TestEventDispatcher);
@@ -137,11 +140,21 @@ TEST(EventDispatcherTest, EventDispatchOrder) {
   child.AddPreTargetHandler(&h3);
   child.AddPreTargetHandler(&h4);
 
+  h1.set_expect_pre_target(true);
+  h2.set_expect_pre_target(true);
+  h3.set_expect_pre_target(true);
+  h4.set_expect_pre_target(true);
+
   child.AddPostTargetHandler(&h5);
   child.AddPostTargetHandler(&h6);
 
   parent.AddPostTargetHandler(&h7);
   parent.AddPostTargetHandler(&h8);
+
+  h5.set_expect_post_target(true);
+  h6.set_expect_post_target(true);
+  h7.set_expect_post_target(true);
+  h8.set_expect_post_target(true);
 
   MouseEvent mouse(ui::ET_MOUSE_MOVED, gfx::Point(3, 4),
       gfx::Point(3, 4), 0);
@@ -198,6 +211,30 @@ TEST(EventDispatcherTest, EventDispatchOrder) {
   EXPECT_EQ(
       std::vector<int>(exp, exp + sizeof(exp) / sizeof(int)),
       child.handler_list());
+}
+
+// Tests that the event-phases are correct.
+TEST(EventDispatcherTest, EventDispatchPhase) {
+  TestEventDispatcher dispatcher;
+  TestTarget target;
+
+  TestEventHandler handler(11);
+
+  target.AddPreTargetHandler(&handler);
+  target.AddPostTargetHandler(&handler);
+  handler.set_expect_pre_target(true);
+  handler.set_expect_post_target(true);
+
+  MouseEvent mouse(ui::ET_MOUSE_MOVED, gfx::Point(3, 4),
+      gfx::Point(3, 4), 0);
+  Event::DispatcherApi event_mod(&mouse);
+  int result = dispatcher.ProcessEvent(&target, &mouse);
+  EXPECT_EQ(ER_UNHANDLED, result);
+
+  int handlers[] = { 11, 11 };
+  EXPECT_EQ(
+      std::vector<int>(handlers, handlers + sizeof(handlers) / sizeof(int)),
+      target.handler_list());
 }
 
 }  // namespace ui
