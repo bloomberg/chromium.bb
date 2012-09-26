@@ -193,8 +193,12 @@ class KeylessLoginRequiredException(LoginException):
   pass
 
 class CrOSInterface(object): # pylint: disable=R0923
-  def __init__(self, hostname):
+  def __init__(self, hostname, ssh_identity = None):
     self._hostname = hostname
+    self._ssh_identity = None
+
+    if ssh_identity:
+      self._ssh_identity = os.path.abspath(os.path.expanduser(ssh_identity))
 
   @property
   def hostname(self):
@@ -203,12 +207,14 @@ class CrOSInterface(object): # pylint: disable=R0923
   def FormSSHCommandLine(self, args, extra_ssh_args=None):
     full_args = ['ssh',
                  '-o ConnectTimeout=5',
-                 '-o ForwardAgent=no',
                  '-o ForwardX11=no',
                  '-o ForwardX11Trusted=no',
-                 '-o KbdInteractiveAuthentication=no',
                  '-o StrictHostKeyChecking=yes',
+                 '-o KbdInteractiveAuthentication=no',
+                 '-o PreferredAuthentications=publickey',
                  '-n']
+    if self._ssh_identity is not None:
+      full_args.extend(['-i', self._ssh_identity])
     if extra_ssh_args:
       full_args.extend(extra_ssh_args)
     full_args.append('root@%s' % self._hostname)
@@ -228,6 +234,9 @@ class CrOSInterface(object): # pylint: disable=R0923
             self._hostname)
       if 'Operation timed out' in stderr:
         raise LoginException('Timed out while logging into %s' % self._hostname)
+      if 'Permission denied (publickey,keyboard-interactive)' in stderr:
+        raise KeylessLoginRequiredException(
+          'Need to set up ssh auth for %s' % self._hostname)
       raise LoginException('While logging into %s, got %s' % (
           self._hostname, stderr))
     if stdout != 'root\n':
@@ -252,26 +261,39 @@ class CrOSInterface(object): # pylint: disable=R0923
     with tempfile.NamedTemporaryFile() as f:
       f.write(text)
       f.flush()
-      stdout, stderr = GetAllCmdOutput([
-          'scp',
-          '-o ConnectTimeout=5',
-          '-o KbdInteractiveAuthentication=no',
-          '-o StrictHostKeyChecking=yes',
-          os.path.abspath(f.name),
-          'root@%s:%s' % (self._hostname, remote_filename)])
+      args = ['scp',
+              '-o ConnectTimeout=5',
+              '-o KbdInteractiveAuthentication=no',
+              '-o PreferredAuthentications=publickey',
+              '-o StrictHostKeyChecking=yes' ]
+
+      if self._ssh_identity:
+        args.extend(['-i', self._ssh_identity])
+
+      args.extend([os.path.abspath(f.name),
+                   'root@%s:%s' % (self._hostname, remote_filename)])
+
+      stdout, stderr = GetAllCmdOutput(args)
       if stderr != '':
         assert 'No such file or directory' in stderr
         raise OSError
 
   def GetFileContents(self, filename):
     with tempfile.NamedTemporaryFile() as f:
-      stdout, stderr = GetAllCmdOutput([
-          'scp',
-          '-o ConnectTimeout=5',
-          '-o KbdInteractiveAuthentication=no',
-          '-o StrictHostKeyChecking=yes',
-          'root@%s:%s' % (self._hostname, filename),
-          os.path.abspath(f.name)])
+      args = ['scp',
+              '-o ConnectTimeout=5',
+              '-o KbdInteractiveAuthentication=no',
+              '-o PreferredAuthentications=publickey',
+              '-o StrictHostKeyChecking=yes' ]
+
+      if self._ssh_identity:
+        args.extend(['-i', self._ssh_identity])
+
+      args.extend(['root@%s:%s' % (self._hostname, filename),
+                   os.path.abspath(f.name)])
+
+      stdout, stderr = GetAllCmdOutput(args)
+
       if stderr != '':
         assert 'No such file or directory' in stderr
         raise OSError

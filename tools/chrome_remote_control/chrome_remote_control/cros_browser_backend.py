@@ -129,7 +129,8 @@ class CrOSBrowserBackend(browser_backend.BrowserBackend):
 
   def CreateForwarder(self, host_port):
     assert self._cri
-    return SSHReverseForwarder(self._cri, host_port)
+    return SSHReverseForwarder(self._cri,
+                               host_port)
 
 class SSHReverseForwarder(object):
   def __init__(self, cri, host_port):

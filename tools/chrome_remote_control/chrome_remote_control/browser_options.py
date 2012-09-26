@@ -19,6 +19,7 @@ class BrowserOptions(optparse.Values):
     self.browser_executable = None
     self.chrome_root = None
     self.android_device = None
+    self.cros_ssh_identity = None
 
     self.dont_override_profile = False
     self.extra_browser_args = []
@@ -61,6 +62,10 @@ class BrowserOptions(optparse.Values):
         default=os.getenv('REMOTE'),
         help='The IP address of a remote ChromeOS device to use. ' +
              'Defaults to $REMOTE from environment variable if set.')
+    group.add_option('--identity',
+        dest='cros_ssh_identity',
+        default=None,
+        help='The identity file to use when ssh\'ing into the ChromeOS device')
     parser.add_option_group(group)
 
     # Browser options

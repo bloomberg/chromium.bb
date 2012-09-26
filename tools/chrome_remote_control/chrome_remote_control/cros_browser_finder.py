@@ -40,7 +40,8 @@ def FindAllAvailableBrowsers(options,
   if not cros_interface.HasSSH():
     logging.debug('ssh not found. Cannot talk to CrOS devices.')
     return []
-  cri = cros_interface.CrOSInterface(options.cros_remote)
+  cri = cros_interface.CrOSInterface(options.cros_remote,
+                                     options.cros_ssh_identity)
 
   # Check ssh
   try:
@@ -49,8 +50,11 @@ def FindAllAvailableBrowsers(options,
     if isinstance(ex, cros_interface.KeylessLoginRequiredException):
       logging.warn('Could not ssh into %s. Your device must be configured',
                       options.cros_remote)
-      logging.warn('to allow passwordless login as root. For a developer-mode')
-      logging.warn('device, the steps are:')
+      logging.warn('to allow passwordless login as root.')
+      logging.warn('For a test-build device, pass this to your script:')
+      logging.warn('   --identity $(CHROMITE)/ssh_keys/id_testing:')
+      logging.warn('')
+      logging.warn('For a developer-mode device, the steps are:')
       logging.warn(' - Ensure you have an id_rsa.pub (etc) on this computer')
       logging.warn(' - On the chromebook:')
       logging.warn('   -  Control-Alt-T; shell; sudo -s')
