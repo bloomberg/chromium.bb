@@ -731,13 +731,9 @@ bool AcceleratorController::PerformAction(int action,
 
 void AcceleratorController::SetBrightnessControlDelegate(
     scoped_ptr<BrightnessControlDelegate> brightness_control_delegate) {
-  internal::MultiDisplayManager* display_manager =
-      static_cast<internal::MultiDisplayManager*>(
-          aura::Env::GetInstance()->display_manager());
-  // Install brightness control delegate only when internal
-  // display exists.
-  if (display_manager->HasInternalDisplay())
-    brightness_control_delegate_.swap(brightness_control_delegate);
+  // TODO(oshima): Show brightness control regardless of display type
+  // temporarily. crbug.com/152003.
+  brightness_control_delegate_.swap(brightness_control_delegate);
 }
 
 void AcceleratorController::SetImeControlDelegate(
