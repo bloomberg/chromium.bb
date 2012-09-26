@@ -37,7 +37,16 @@ function createPeerConnection(stun_server) {
   try {
     peerConnection = new webkitRTCPeerConnection(servers, null);
   } catch (exception) {
-    failTest('Failed to create peer connection: ' + exception);
+    // TODO(phoglund): Remove once the URI-requiring revisions are gone.
+    debug('Failed to create connection: maybe we need to fall ' +
+          'back to the old API?');
+    servers = {iceServers:[{uri:"stun:" + stun_server}]};
+    try {
+      peerConnection = new webkitRTCPeerConnection(servers, null);
+      debug('Yeah, we could use the old API.');
+    } catch (exception) {
+      failTest('Failed to create peer connection: ' + exception);
+    }
   }
   peerConnection.onaddstream = addStreamCallback_;
   peerConnection.onremovestream = removeStreamCallback_;
