@@ -30,6 +30,7 @@ ACTION(DeleteDataBuffer) {
 
 ACTION_P2(CaptureStopped, decoder, vc_impl) {
   decoder->OnStopped(vc_impl);
+  decoder->OnRemoved(vc_impl);
 }
 
 MATCHER_P2(HasSize, width, height, "") {

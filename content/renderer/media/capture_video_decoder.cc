@@ -87,7 +87,10 @@ void CaptureVideoDecoder::OnError(media::VideoCapture* capture,
 }
 
 void CaptureVideoDecoder::OnRemoved(media::VideoCapture* capture) {
-  NOTIMPLEMENTED();
+  message_loop_proxy_->PostTask(
+      FROM_HERE,
+      base::Bind(&CaptureVideoDecoder::OnRemovedOnDecoderThread,
+                 this, capture));
 }
 
 void CaptureVideoDecoder::OnBufferReady(
@@ -124,6 +127,7 @@ void CaptureVideoDecoder::InitializeOnDecoderThread(
   status_cb.Run(media::PIPELINE_OK);
   state_ = kNormal;
   capture_engine_->StartCapture(this, capability_);
+  AddRef();  // Will be balanced in OnRemoved().
 }
 
 void CaptureVideoDecoder::ReadOnDecoderThread(const ReadCB& read_cb) {
@@ -165,7 +169,14 @@ void CaptureVideoDecoder::OnStoppedOnDecoderThread(
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
   if (!pending_stop_cb_.is_null())
     base::ResetAndReturn(&pending_stop_cb_).Run();
+}
+
+void CaptureVideoDecoder::OnRemovedOnDecoderThread(
+    media::VideoCapture* capture) {
+  DVLOG(1) << "OnRemovedOnDecoderThread";
+  DCHECK(message_loop_proxy_->BelongsToCurrentThread());
   vc_manager_->RemoveDevice(video_stream_id_, this);
+  Release();  // Balance the AddRef() in InitializeOnDecoderThread().
 }
 
 void CaptureVideoDecoder::OnPausedOnDecoderThread(

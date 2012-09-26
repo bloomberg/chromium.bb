@@ -76,6 +76,7 @@ class CONTENT_EXPORT CaptureVideoDecoder
   void PrepareForShutdownHackOnDecoderThread();
 
   void OnStoppedOnDecoderThread(media::VideoCapture* capture);
+  void OnRemovedOnDecoderThread(media::VideoCapture* capture);
   void OnPausedOnDecoderThread(media::VideoCapture* capture);
   void OnBufferReadyOnDecoderThread(
       media::VideoCapture* capture,
