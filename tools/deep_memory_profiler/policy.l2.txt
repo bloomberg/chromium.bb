@@ -1,7 +1,8 @@
 heap profile policy: POLICY_DEEP_2
-# Read policy.README for description of this file.
+# Read README.policy for description of this file.
 second                          optional        optional
 mmap-profiler                   mmap    .*(ProfilerMalloc|MemoryRegionMap::).*
+mmap-type-profiler              mmap    .*(TypeProfilerMalloc).*
 mmap-tcmalloc                   mmap    .*(DoAllocWithArena|SbrkSysAllocator::Alloc|MmapSysAllocator::Alloc|LowLevelAlloc::Alloc|LowLevelAlloc::AllocWithArena).*
 FROM_HERE_FOR_TOTAL             optional        optional
 mustbezero                      optional        optional

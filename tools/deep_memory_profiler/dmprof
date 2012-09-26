@@ -550,7 +550,8 @@ class Dump(object):
           sum(self.counters[i] for i in removed))
     if 'total-exclude-profiler' in sizes:
       sizes['total-exclude-profiler'] = (
-          self.counters['total_committed'] - sizes['mmap-profiler'])
+          self.counters['total_committed'] -
+          (sizes['mmap-profiler'] + sizes['mmap-type-profiler']))
     if 'hour' in sizes:
       sizes['hour'] = (self.dump_time - first_dump_time) / 60.0 / 60.0
     if 'minute' in sizes:
