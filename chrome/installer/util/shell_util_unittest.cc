@@ -45,22 +45,20 @@ class ShellUtilShortcutTest : public testing::Test {
   ScopedTempDir fake_common_desktop_;
 };
 
-// Returns the status of a call to base::win::VerifyShorcut for the properties
-// passed in.
+// Calls base::win::ValidateShortcut for the properties passed in.
 // TODO(gab): This is only temporary while waiting for my upcoming CL that will
 // massively refactor the shell_util shortcut methods' interface (i.e. I didn't
 // want to adapt every test here for this half-changed state as they will change
 // again very soon).
-base::win::VerifyShortcutStatus VerifyChromeShortcut(
-    const FilePath& exe_path,
-    const FilePath& shortcut_path,
-    const string16& description,
-    int icon_index) {
+void ValidateChromeShortcut(const FilePath& exe_path,
+                            const FilePath& shortcut_path,
+                            const string16& description,
+                            int icon_index) {
   base::win::ShortcutProperties expected_properties;
   expected_properties.set_target(exe_path);
   expected_properties.set_description(description);
   expected_properties.set_icon(exe_path, icon_index);
-  return base::win::VerifyShortcut(shortcut_path, expected_properties);
+  base::win::ValidateShortcut(shortcut_path, expected_properties);
 }
 
 }
@@ -86,8 +84,7 @@ TEST_F(ShellUtilShortcutTest, UpdateChromeShortcut) {
       exe_path.value(),
       dist_->GetIconIndex(),
       ShellUtil::SHORTCUT_CREATE_ALWAYS));
-  EXPECT_EQ(base::win::VERIFY_SHORTCUT_SUCCESS,
-            VerifyChromeShortcut(exe_path, shortcut_path, description, 0));
+  ValidateChromeShortcut(exe_path, shortcut_path, description, 0);
 
   // Now specify an icon index in master prefs and make sure it works.
   FilePath prefs_path = temp_dir_.path().AppendASCII(
@@ -112,8 +109,7 @@ TEST_F(ShellUtilShortcutTest, UpdateChromeShortcut) {
       exe_path.value(),
       dist_->GetIconIndex(),
       ShellUtil::SHORTCUT_CREATE_ALWAYS));
-  EXPECT_EQ(base::win::VERIFY_SHORTCUT_SUCCESS,
-            VerifyChromeShortcut(exe_path, shortcut_path, description, 1));
+  ValidateChromeShortcut(exe_path, shortcut_path, description, 1);
 
   // Now change only description to update shortcut and make sure icon index
   // doesn't change.
@@ -126,8 +122,7 @@ TEST_F(ShellUtilShortcutTest, UpdateChromeShortcut) {
                                               exe_path.value(),
                                               dist_->GetIconIndex(),
                                               ShellUtil::SHORTCUT_NO_OPTIONS));
-  EXPECT_EQ(base::win::VERIFY_SHORTCUT_SUCCESS,
-            VerifyChromeShortcut(exe_path, shortcut_path, description2, 1));
+  ValidateChromeShortcut(exe_path, shortcut_path, description2, 1);
 }
 
 TEST_F(ShellUtilShortcutTest, CreateChromeDesktopShortcut) {
@@ -180,8 +175,7 @@ TEST_F(ShellUtilShortcutTest, CreateChromeDesktopShortcut) {
       dist_->GetIconIndex(),
       ShellUtil::CURRENT_USER,
       ShellUtil::SHORTCUT_CREATE_ALWAYS));
-  EXPECT_EQ(base::win::VERIFY_SHORTCUT_SUCCESS,
-            VerifyChromeShortcut(exe_path, user_shortcut_path, description, 0));
+  ValidateChromeShortcut(exe_path, user_shortcut_path, description, 0);
   EXPECT_TRUE(ShellUtil::RemoveChromeDesktopShortcut(
       dist_,
       ShellUtil::CURRENT_USER,
@@ -198,9 +192,7 @@ TEST_F(ShellUtilShortcutTest, CreateChromeDesktopShortcut) {
       dist_->GetIconIndex(),
       ShellUtil::SYSTEM_LEVEL,
       ShellUtil::SHORTCUT_CREATE_ALWAYS));
-  EXPECT_EQ(base::win::VERIFY_SHORTCUT_SUCCESS,
-            VerifyChromeShortcut(
-                exe_path, system_shortcut_path, description, 0));
+  ValidateChromeShortcut(exe_path, system_shortcut_path, description, 0);
   EXPECT_TRUE(ShellUtil::RemoveChromeDesktopShortcut(
       dist_,
       ShellUtil::SYSTEM_LEVEL,
@@ -228,9 +220,7 @@ TEST_F(ShellUtilShortcutTest, CreateChromeDesktopShortcut) {
       dist_->GetIconIndex(),
       ShellUtil::CURRENT_USER,
       ShellUtil::SHORTCUT_CREATE_ALWAYS));
-  EXPECT_EQ(base::win::VERIFY_SHORTCUT_SUCCESS,
-            VerifyChromeShortcut(
-                exe_path, system_shortcut_path, description, 0));
+  ValidateChromeShortcut(exe_path, system_shortcut_path, description, 0);
   EXPECT_FALSE(file_util::PathExists(user_shortcut_path));
   EXPECT_TRUE(ShellUtil::RemoveChromeDesktopShortcut(
       dist_,
@@ -259,11 +249,8 @@ TEST_F(ShellUtilShortcutTest, CreateChromeDesktopShortcut) {
       dist_->GetIconIndex(),
       ShellUtil::SYSTEM_LEVEL,
       ShellUtil::SHORTCUT_CREATE_ALWAYS));
-  EXPECT_EQ(base::win::VERIFY_SHORTCUT_SUCCESS,
-            VerifyChromeShortcut(exe_path, user_shortcut_path, description, 0));
-  EXPECT_EQ(base::win::VERIFY_SHORTCUT_SUCCESS,
-            VerifyChromeShortcut(
-                exe_path, system_shortcut_path, description, 0));
+  ValidateChromeShortcut(exe_path, user_shortcut_path, description, 0);
+  ValidateChromeShortcut(exe_path, system_shortcut_path, description, 0);
   EXPECT_TRUE(ShellUtil::RemoveChromeDesktopShortcut(
       dist_,
       ShellUtil::CURRENT_USER,
@@ -285,9 +272,8 @@ TEST_F(ShellUtilShortcutTest, CreateChromeDesktopShortcut) {
       dist_->GetIconIndex(),
       ShellUtil::CURRENT_USER,
       ShellUtil::SHORTCUT_CREATE_ALWAYS));
-  EXPECT_EQ(base::win::VERIFY_SHORTCUT_SUCCESS,
-            VerifyChromeShortcut(
-                exe_path, default_profile_shortcut_path, description, 0));
+  ValidateChromeShortcut(exe_path, default_profile_shortcut_path, description,
+                         0);
   EXPECT_TRUE(ShellUtil::CreateChromeDesktopShortcut(
       dist_,
       exe_path.value(),
@@ -298,9 +284,8 @@ TEST_F(ShellUtilShortcutTest, CreateChromeDesktopShortcut) {
       dist_->GetIconIndex(),
       ShellUtil::CURRENT_USER,
       ShellUtil::SHORTCUT_CREATE_ALWAYS));
-  EXPECT_EQ(base::win::VERIFY_SHORTCUT_SUCCESS,
-            VerifyChromeShortcut(
-                exe_path, second_profile_shortcut_path, description, 0));
+  ValidateChromeShortcut(exe_path, second_profile_shortcut_path, description,
+                         0);
   std::vector<string16> profile_names;
   profile_names.push_back(default_profile_shortcut_name);
   profile_names.push_back(second_profile_shortcut_name);
