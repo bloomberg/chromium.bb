@@ -271,13 +271,15 @@ void RemoteFileSystemOperation::DidReadDirectory(
 void RemoteFileSystemOperation::DidWrite(
     base::PlatformFileError rv,
     int64 bytes,
-    bool complete) {
+    FileWriterDelegate::WriteProgressStatus write_status) {
   if (write_callback_.is_null()) {
     // If cancelled, callback is already invoked and set to null in Cancel().
     // We must not call it twice. Just shut down this operation object.
     delete this;
     return;
   }
+
+  bool complete = (write_status != FileWriterDelegate::SUCCESS_IO_PENDING);
   write_callback_.Run(rv, bytes, complete);
   if (rv != base::PLATFORM_FILE_OK || complete) {
     // Other Did*'s doesn't have "delete this", because it is automatic since

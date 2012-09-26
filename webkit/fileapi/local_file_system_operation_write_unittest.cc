@@ -24,6 +24,7 @@
 #include "webkit/fileapi/local_file_system_operation.h"
 #include "webkit/fileapi/local_file_system_test_helper.h"
 #include "webkit/fileapi/local_file_util.h"
+#include "webkit/fileapi/mock_file_change_observer.h"
 #include "webkit/quota/quota_manager.h"
 
 using quota::QuotaManager;
@@ -76,7 +77,9 @@ class LocalFileSystemOperationWriteTest
         status_(base::PLATFORM_FILE_OK),
         cancel_status_(base::PLATFORM_FILE_ERROR_FAILED),
         bytes_written_(0),
-        complete_(false) {}
+        complete_(false) {
+    change_observers_ = MockFileChangeObserver::CreateList(&change_observer_);
+  }
 
   LocalFileSystemOperation* operation();
 
@@ -94,6 +97,14 @@ class LocalFileSystemOperationWriteTest
   virtual void TearDown();
 
  protected:
+  const ChangeObserverList& change_observers() const {
+    return change_observers_;
+  }
+
+  MockFileChangeObserver* change_observer() {
+    return &change_observer_;
+  }
+
   FileSystemURL URLForPath(const FilePath& path) const {
     return test_helper_.CreateURL(path);
   }
@@ -147,6 +158,10 @@ class LocalFileSystemOperationWriteTest
   bool complete_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalFileSystemOperationWriteTest);
+
+ private:
+  MockFileChangeObserver change_observer_;
+  ChangeObserverList change_observers_;
 };
 
 namespace {
@@ -222,7 +237,9 @@ void LocalFileSystemOperationWriteTest::TearDown() {
 }
 
 LocalFileSystemOperation* LocalFileSystemOperationWriteTest::operation() {
-  return test_helper_.NewOperation();
+  LocalFileSystemOperation* operation = test_helper_.NewOperation();
+  operation->operation_context()->set_change_observers(change_observers());
+  return operation;
 }
 
 TEST_F(LocalFileSystemOperationWriteTest, TestWriteSuccess) {
@@ -243,6 +260,8 @@ TEST_F(LocalFileSystemOperationWriteTest, TestWriteSuccess) {
   EXPECT_EQ(14, bytes_written());
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
   EXPECT_TRUE(complete());
+
+  EXPECT_EQ(1, change_observer()->get_and_reset_modify_file_count());
 }
 
 TEST_F(LocalFileSystemOperationWriteTest, TestWriteZero) {
@@ -262,6 +281,8 @@ TEST_F(LocalFileSystemOperationWriteTest, TestWriteZero) {
   EXPECT_EQ(0, bytes_written());
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
   EXPECT_TRUE(complete());
+
+  EXPECT_EQ(1, change_observer()->get_and_reset_modify_file_count());
 }
 
 TEST_F(LocalFileSystemOperationWriteTest, TestWriteInvalidBlobUrl) {
@@ -274,6 +295,8 @@ TEST_F(LocalFileSystemOperationWriteTest, TestWriteInvalidBlobUrl) {
   EXPECT_EQ(0, bytes_written());
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_FAILED, status());
   EXPECT_TRUE(complete());
+
+  EXPECT_EQ(0, change_observer()->get_and_reset_modify_file_count());
 }
 
 TEST_F(LocalFileSystemOperationWriteTest, TestWriteInvalidFile) {
@@ -295,6 +318,8 @@ TEST_F(LocalFileSystemOperationWriteTest, TestWriteInvalidFile) {
   EXPECT_EQ(0, bytes_written());
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, status());
   EXPECT_TRUE(complete());
+
+  EXPECT_EQ(1, change_observer()->get_and_reset_modify_file_count());
 }
 
 TEST_F(LocalFileSystemOperationWriteTest, TestWriteDir) {
@@ -325,6 +350,8 @@ TEST_F(LocalFileSystemOperationWriteTest, TestWriteDir) {
               status() == base::PLATFORM_FILE_ERROR_ACCESS_DENIED ||
               status() == base::PLATFORM_FILE_ERROR_FAILED);
   EXPECT_TRUE(complete());
+
+  EXPECT_EQ(1, change_observer()->get_and_reset_modify_file_count());
 }
 
 TEST_F(LocalFileSystemOperationWriteTest, TestWriteFailureByQuota) {
@@ -346,6 +373,8 @@ TEST_F(LocalFileSystemOperationWriteTest, TestWriteFailureByQuota) {
   EXPECT_EQ(10, bytes_written());
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NO_SPACE, status());
   EXPECT_TRUE(complete());
+
+  EXPECT_EQ(1, change_observer()->get_and_reset_modify_file_count());
 }
 
 TEST_F(LocalFileSystemOperationWriteTest, TestImmediateCancelSuccessfulWrite) {
@@ -374,6 +403,8 @@ TEST_F(LocalFileSystemOperationWriteTest, TestImmediateCancelSuccessfulWrite) {
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_ABORT, status());
   EXPECT_EQ(base::PLATFORM_FILE_OK, cancel_status());
   EXPECT_TRUE(complete());
+
+  EXPECT_EQ(0, change_observer()->get_and_reset_modify_file_count());
 }
 
 TEST_F(LocalFileSystemOperationWriteTest, TestImmediateCancelFailingWrite) {
@@ -403,6 +434,8 @@ TEST_F(LocalFileSystemOperationWriteTest, TestImmediateCancelFailingWrite) {
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_ABORT, status());
   EXPECT_EQ(base::PLATFORM_FILE_OK, cancel_status());
   EXPECT_TRUE(complete());
+
+  EXPECT_EQ(0, change_observer()->get_and_reset_modify_file_count());
 }
 
 // TODO(ericu,dmikurube,kinuko): Add more tests for cancel cases.

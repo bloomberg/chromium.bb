@@ -314,7 +314,7 @@ void LocalFileSystemOperation::Write(
   DCHECK(blob_url.is_valid());
   file_writer_delegate_.reset(new FileWriterDelegate(
       base::Bind(&LocalFileSystemOperation::DidWrite,
-                 weak_factory_.GetWeakPtr()),
+                 weak_factory_.GetWeakPtr(), url),
       writer.Pass()));
 
   set_write_callback(callback);
@@ -677,15 +677,24 @@ void LocalFileSystemOperation::DidReadDirectory(
 }
 
 void LocalFileSystemOperation::DidWrite(
+    const FileSystemURL& url,
     base::PlatformFileError rv,
     int64 bytes,
-    bool complete) {
+    FileWriterDelegate::WriteProgressStatus write_status) {
   if (write_callback_.is_null()) {
     // If cancelled, callback is already invoked and set to null in Cancel().
     // We must not call it twice. Just shut down this operation object.
     delete this;
     return;
   }
+
+  const bool complete = (
+      write_status != FileWriterDelegate::SUCCESS_IO_PENDING);
+  if (complete && write_status != FileWriterDelegate::ERROR_WRITE_NOT_STARTED) {
+    operation_context_->change_observers()->Notify(
+        &FileChangeObserver::OnModifyFile, MakeTuple(url));
+  }
+
   write_callback_.Run(rv, bytes, complete);
   if (complete || rv != base::PLATFORM_FILE_OK)
     delete this;

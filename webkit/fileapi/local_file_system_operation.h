@@ -20,6 +20,7 @@
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_url.h"
+#include "webkit/fileapi/file_writer_delegate.h"
 #include "webkit/fileapi/fileapi_export.h"
 #include "webkit/quota/quota_manager.h"
 
@@ -214,9 +215,10 @@ class FILEAPI_EXPORT LocalFileSystemOperation
                         base::PlatformFileError rv,
                         const std::vector<base::FileUtilProxy::Entry>& entries,
                         bool has_more);
-  void DidWrite(base::PlatformFileError rv,
+  void DidWrite(const FileSystemURL& url,
+                base::PlatformFileError rv,
                 int64 bytes,
-                bool complete);
+                FileWriterDelegate::WriteProgressStatus write_status);
   void DidTouchFile(const StatusCallback& callback,
                     base::PlatformFileError rv);
   void DidOpenFile(const OpenFileCallback& callback,

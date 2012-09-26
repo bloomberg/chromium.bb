@@ -38,10 +38,11 @@ base::PlatformFileError NetErrorToPlatformFileError(int error) {
 }  // namespace
 
 FileWriterDelegate::FileWriterDelegate(
-    const FileSystemOperation::WriteCallback& write_callback,
+    const DelegateWriteCallback& write_callback,
     scoped_ptr<FileStreamWriter> file_stream_writer)
     : write_callback_(write_callback),
       file_stream_writer_(file_stream_writer.Pass()),
+      writing_started_(false),
       bytes_written_backlog_(0),
       bytes_written_(0),
       bytes_read_(0),
@@ -145,6 +146,7 @@ void FileWriterDelegate::OnDataReceived(int bytes_read) {
 }
 
 void FileWriterDelegate::Write() {
+  writing_started_ = true;
   int64 bytes_to_write = bytes_read_ - bytes_written_;
   int write_response =
       file_stream_writer_->Write(cursor_,
@@ -174,13 +176,18 @@ void FileWriterDelegate::OnDataWritten(int write_response) {
   }
 }
 
+FileWriterDelegate::WriteProgressStatus
+FileWriterDelegate::GetCompletionStatusOnError() const {
+  return writing_started_ ? ERROR_WRITE_STARTED : ERROR_WRITE_NOT_STARTED;
+}
+
 void FileWriterDelegate::OnError(base::PlatformFileError error) {
   if (request_.get()) {
     request_->set_delegate(NULL);
     request_->Cancel();
   }
 
-  write_callback_.Run(error, 0, true);
+  write_callback_.Run(error, 0, GetCompletionStatusOnError());
 }
 
 void FileWriterDelegate::OnProgress(int bytes_written, bool done) {
@@ -193,15 +200,17 @@ void FileWriterDelegate::OnProgress(int bytes_written, bool done) {
     bytes_written += bytes_written_backlog_;
     last_progress_event_time_ = currentTime;
     bytes_written_backlog_ = 0;
-    write_callback_.Run(
-        base::PLATFORM_FILE_OK, bytes_written, done);
+
+    WriteProgressStatus status = done ? SUCCESS_COMPLETED : SUCCESS_IO_PENDING;
+    write_callback_.Run(base::PLATFORM_FILE_OK, bytes_written, status);
     return;
   }
   bytes_written_backlog_ += bytes_written;
 }
 
 void FileWriterDelegate::OnWriteCancelled(int status) {
-  write_callback_.Run(base::PLATFORM_FILE_ERROR_ABORT, 0, true);
+  write_callback_.Run(base::PLATFORM_FILE_ERROR_ABORT, 0,
+                      GetCompletionStatusOnError());
 }
 
 }  // namespace fileapi

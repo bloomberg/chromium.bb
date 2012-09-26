@@ -7,6 +7,7 @@
 
 #include "webkit/chromeos/fileapi/remote_file_system_proxy.h"
 #include "webkit/fileapi/file_system_operation.h"
+#include "webkit/fileapi/file_writer_delegate.h"
 
 namespace base {
 class Value;
@@ -22,6 +23,7 @@ namespace chromeos {
 // FileSystemOperation implementation for local file systems.
 class RemoteFileSystemOperation : public fileapi::FileSystemOperation {
  public:
+  typedef fileapi::FileWriterDelegate FileWriterDelegate;
   virtual ~RemoteFileSystemOperation();
 
   // FileSystemOperation overrides.
@@ -102,7 +104,7 @@ class RemoteFileSystemOperation : public fileapi::FileSystemOperation {
       bool has_more);
   void DidWrite(base::PlatformFileError result,
                 int64 bytes,
-                bool complete);
+                FileWriterDelegate::WriteProgressStatus write_status);
   void DidFinishFileOperation(const StatusCallback& callback,
                               base::PlatformFileError rv);
   void DidCreateSnapshotFile(
