@@ -835,6 +835,9 @@ class WebIntentPickerViews : public views::ButtonListener,
   // Resize the constrained window to the size of its contents.
   void SizeToContents();
 
+  // Clear the contents of the picker.
+  void ClearContents();
+
   // Returns the service selection question text used in the title
   // of the picker.
   const string16 GetActionTitle();
@@ -1032,8 +1035,7 @@ void WebIntentPickerViews::OnPendingAsyncCompleted() {
 }
 
 void WebIntentPickerViews::ShowNoServicesMessage() {
-  contents_->RemoveAllChildViews(true);
-  more_suggestions_link_ = NULL;
+  ClearContents();
 
   views::GridLayout* grid_layout = new views::GridLayout(contents_);
   contents_->SetLayoutManager(grid_layout);
@@ -1073,8 +1075,7 @@ void WebIntentPickerViews::OnInlineDispositionWebContentsLoaded(
     return;
 
   // Replace the picker with the inline disposition.
-  contents_->RemoveAllChildViews(true);
-  more_suggestions_link_ = NULL;
+  ClearContents();
 
   views::GridLayout* grid_layout = new views::GridLayout(contents_);
   contents_->SetLayoutManager(grid_layout);
@@ -1228,7 +1229,7 @@ void WebIntentPickerViews::OnActionButtonClicked(
 
 void WebIntentPickerViews::UpdateContents() {
   if (model_ && model_->IsWaitingForSuggestions()) {
-    contents_->RemoveAllChildViews(true);
+    ClearContents();
     contents_->SetLayoutManager(new views::FillLayout());
     waiting_view_ = new WaitingView(this, use_close_button_);
     contents_->AddChildView(waiting_view_);
@@ -1251,14 +1252,13 @@ const string16 WebIntentPickerViews::GetActionTitle() {
 }
 
 void WebIntentPickerViews::ShowAvailableServices() {
-  DCHECK(contents_);
   enum {
     kHeaderRowColumnSet,  // Column set for header layout.
     kFullWidthColumnSet,  // Column set with a single full-width column.
     kIndentedFullWidthColumnSet,  // Single full-width column, indented.
   };
 
-  contents_->RemoveAllChildViews(true);
+  ClearContents();
   displaying_web_contents_ = false;
 
   extensions_ = new IntentsView(model_, this);
@@ -1363,4 +1363,18 @@ void WebIntentPickerViews::SizeToContents() {
   gfx::Rect new_window_bounds = window_->non_client_view()->frame_view()->
       GetWindowBoundsForClientBounds(client_bounds);
   window_->CenterWindow(new_window_bounds.size());
+}
+
+void WebIntentPickerViews::ClearContents() {
+  DCHECK(contents_);
+  // The call RemoveAllChildViews(true) deletes all children of |contents|. If
+  // we do not set our weak pointers to NULL, then they will continue to point
+  // to where the deleted objects used to be, i.e. unitialized memory. This
+  // would cause hard-to-explain crashes.
+  contents_->RemoveAllChildViews(true);
+  action_label_ = NULL;
+  suggestions_label_ = NULL;
+  extensions_ = NULL;
+  more_suggestions_link_ = NULL;
+  choose_another_service_link_ = NULL;
 }
