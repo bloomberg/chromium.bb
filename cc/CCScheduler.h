@@ -100,6 +100,7 @@ private:
     OwnPtr<CCFrameRateController> m_frameRateController;
     CCSchedulerStateMachine m_stateMachine;
     bool m_updateResourcesCompletePending;
+    bool m_insideProcessScheduledActions;
 };
 
 }
