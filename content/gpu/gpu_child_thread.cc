@@ -148,15 +148,6 @@ void GpuChildThread::OnInitialize() {
   enable_watchdog = false;
 #endif
 
-  // Disable the watchdog for Windows. It tends to abort when the GPU process
-  // is not hung but still taking a long time to do something. Instead, the
-  // browser process displays a dialog when it notices that the child window
-  // is hung giving the user an opportunity to terminate it. This is the
-  // same mechanism used to abort hung plugins.
-#if defined(OS_WIN)
-  enable_watchdog = false;
-#endif
-
   // Start the GPU watchdog only after anything that is expected to be time
   // consuming has completed, otherwise the process is liable to be aborted.
   if (enable_watchdog) {
