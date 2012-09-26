@@ -122,7 +122,7 @@ extern const char kDisableSyncSearchEngines[];
 extern const char kDisableSyncThemes[];
 extern const char kDisableSyncTypedUrls[];
 extern const char kDisableTranslate[];
-extern const char kDisableTLSChannelID[];
+extern const char kEnableTLSChannelID[];
 extern const char kDisableWebResources[];
 extern const char kDisableWebsiteSettings[];
 extern const char kDisableZeroBrowsersOpenForTests[];

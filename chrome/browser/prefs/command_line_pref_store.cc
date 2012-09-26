@@ -49,7 +49,7 @@ const CommandLinePrefStore::BooleanSwitchToPreferenceMapEntry
         prefs::kWebKitAllowDisplayingInsecureContent, false },
       { switches::kAllowCrossOriginAuthPrompt,
         prefs::kAllowCrossOriginAuthPrompt, true },
-      { switches::kDisableTLSChannelID, prefs::kEnableOriginBoundCerts, false },
+      { switches::kEnableTLSChannelID, prefs::kEnableOriginBoundCerts, true },
       { switches::kDisableSSLFalseStart, prefs::kDisableSSLRecordSplitting,
           true },
       { switches::kEnableMemoryInfo, prefs::kEnableMemoryInfo, true },

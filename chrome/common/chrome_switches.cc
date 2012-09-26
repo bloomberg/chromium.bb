@@ -422,8 +422,8 @@ const char kDisableSyncTypedUrls[]          = "disable-sync-typed-urls";
 // disable translate with the preference.
 const char kDisableTranslate[]              = "disable-translate";
 
-// Disables TLS Channel ID extension.
-const char kDisableTLSChannelID[]           = "disable-tls-channel-id";
+// Enable TLS Channel ID extension.
+const char kEnableTLSChannelID[]            = "enable-tls-channel-id";
 
 // Disables the backend service for web resources.
 const char kDisableWebResources[]           = "disable-web-resources";
