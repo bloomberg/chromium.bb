@@ -17,8 +17,8 @@
 #include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/browser/plugins/plugin_infobar_delegates.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/plugin_service.h"
@@ -301,7 +301,7 @@ void PluginObserver::InstallMissingPlugin(PluginInstaller* installer) {
   if (installer->url_for_display()) {
     installer->OpenDownloadURL(web_contents());
   } else {
-    chrome::ShowTabModalConfirmDialog(
+    TabModalConfirmDialog::Create(
         new ConfirmInstallDialogDelegate(web_contents(), installer),
         TabContents::FromWebContents(web_contents()));
   }

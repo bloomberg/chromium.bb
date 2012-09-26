@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_TAB_MODAL_CONFIRM_DIALOG_VIEWS_H_
 #define CHROME_BROWSER_UI_VIEWS_TAB_MODAL_CONFIRM_DIALOG_VIEWS_H_
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
+#include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/window/dialog_delegate.h"
-
-class TabContents;
-class TabModalConfirmDialogDelegate;
 
 namespace views {
 class MessageBoxView;
@@ -20,7 +20,8 @@ class MessageBoxView;
 // To display the dialog, allocate this object on the heap. It will open the
 // dialog from its constructor and then delete itself when the user dismisses
 // the dialog.
-class TabModalConfirmDialogViews : public views::DialogDelegate {
+class TabModalConfirmDialogViews : public TabModalConfirmDialog,
+                                   public views::DialogDelegate {
  public:
   TabModalConfirmDialogViews(TabModalConfirmDialogDelegate* delegate,
                              TabContents* tab_contents);
@@ -39,6 +40,10 @@ class TabModalConfirmDialogViews : public views::DialogDelegate {
 
  private:
   virtual ~TabModalConfirmDialogViews();
+
+  // TabModalConfirmDialog:
+  virtual void AcceptTabModalDialog() OVERRIDE;
+  virtual void CancelTabModalDialog() OVERRIDE;
 
   scoped_ptr<TabModalConfirmDialogDelegate> delegate_;
 

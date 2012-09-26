@@ -9,6 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/cocoa/constrained_window_mac.h"
+#include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 
 @class ConstrainedWindowAlert;
 class TabContents;
@@ -20,16 +21,21 @@ class TabModalConfirmDialogDelegate;
 // dialog from its constructor and then delete itself when the user dismisses
 // the dialog.
 class TabModalConfirmDialogMac
-    : public ConstrainedWindowMacDelegateSystemSheet {
+    : public TabModalConfirmDialog,
+      public ConstrainedWindowMacDelegateSystemSheet {
  public:
   TabModalConfirmDialogMac(TabModalConfirmDialogDelegate* delegate,
                            TabContents* tab_contents);
 
-  // ConstrainedWindowDelegateMacSystemSheet methods:
+  // ConstrainedWindowDelegateMacSystemSheet:
   virtual void DeleteDelegate() OVERRIDE;
 
  private:
   virtual ~TabModalConfirmDialogMac();
+
+  // TabModalConfirmDialog:
+  virtual void AcceptTabModalDialog() OVERRIDE;
+  virtual void CancelTabModalDialog() OVERRIDE;
 
   scoped_ptr<TabModalConfirmDialogDelegate> delegate_;
 
@@ -40,13 +46,17 @@ class TabModalConfirmDialogMac
 
 // This class is the same as TabModalConfirmDialogMac except that it uses
 // the new constrained window look and feel.
-class TabModalConfirmDialogMac2 {
+class TabModalConfirmDialogMac2 : public TabModalConfirmDialog {
  public:
   TabModalConfirmDialogMac2(TabModalConfirmDialogDelegate* delegate,
                             TabContents* tab_contents);
 
  private:
-  ~TabModalConfirmDialogMac2();
+  virtual ~TabModalConfirmDialogMac2();
+
+  // TabModalConfirmDialog:
+  virtual void AcceptTabModalDialog() OVERRIDE;
+  virtual void CancelTabModalDialog() OVERRIDE;
 
   scoped_ptr<TabModalConfirmDialogDelegate> delegate_;
   scoped_nsobject<ConstrainedWindowAlert> alert_;

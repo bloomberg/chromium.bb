@@ -14,7 +14,6 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/constrained_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
@@ -32,15 +31,12 @@
 using content::WebContents;
 using content::WebUIMessageHandler;
 
-namespace chrome {
-
-// Declared in browser_dialogs.h so others don't have to depend on our header.
-void ShowTabModalConfirmDialog(TabModalConfirmDialogDelegate* delegate,
-                               TabContents* tab_contents) {
-  new TabModalConfirmDialogWebUI(delegate, tab_contents);
+// static
+TabModalConfirmDialog* TabModalConfirmDialog::Create(
+    TabModalConfirmDialogDelegate* delegate,
+    TabContents* tab_contents) {
+  return new TabModalConfirmDialogWebUI(delegate, tab_contents);
 }
-
-}  // namespace chrome
 
 const int kDialogWidth = 400;
 const int kDialogHeight = 120;
@@ -62,8 +58,6 @@ TabModalConfirmDialogWebUI::TabModalConfirmDialogWebUI(
                                      tab_contents);
   delegate_->set_window(constrained_web_dialog_delegate_->window());
 }
-
-TabModalConfirmDialogWebUI::~TabModalConfirmDialogWebUI() {}
 
 ui::ModalType TabModalConfirmDialogWebUI::GetDialogModalType() const {
   return ui::MODAL_TYPE_WINDOW;
@@ -116,4 +110,12 @@ void TabModalConfirmDialogWebUI::OnCloseContents(WebContents* source,
 
 bool TabModalConfirmDialogWebUI::ShouldShowDialogTitle() const {
   return true;
+}
+
+TabModalConfirmDialogWebUI::~TabModalConfirmDialogWebUI() {}
+
+void TabModalConfirmDialogWebUI::AcceptTabModalDialog() {
+}
+
+void TabModalConfirmDialogWebUI::CancelTabModalDialog() {
 }

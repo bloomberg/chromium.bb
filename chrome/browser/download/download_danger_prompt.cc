@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_danger_type.h"
@@ -151,6 +151,6 @@ DownloadDangerPrompt* DownloadDangerPrompt::Create(
   DownloadDangerPromptImpl* prompt =
       new DownloadDangerPromptImpl(item, tab_contents, accepted, canceled);
   // |prompt| will be deleted when the dialog is done.
-  chrome::ShowTabModalConfirmDialog(prompt, tab_contents);
+  TabModalConfirmDialog::Create(prompt, tab_contents);
   return prompt;
 }

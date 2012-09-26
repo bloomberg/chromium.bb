@@ -30,9 +30,9 @@
 #include "chrome/browser/ui/app_modal_dialogs/javascript_dialog_creator.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
 #include "chrome/browser/ui/views/tab_contents/render_view_context_menu_win.h"
 #include "chrome/common/automation_messages.h"
@@ -771,8 +771,8 @@ void ExternalTabContainerWin::BeforeUnloadFired(WebContents* tab,
 }
 
 void ExternalTabContainerWin::ShowRepostFormWarningDialog(WebContents* source) {
-  chrome::ShowTabModalConfirmDialog(new RepostFormWarningController(source),
-                                    TabContents::FromWebContents(source));
+  TabModalConfirmDialog::Create(new RepostFormWarningController(source),
+                                TabContents::FromWebContents(source));
 }
 
 void ExternalTabContainerWin::RunFileChooser(

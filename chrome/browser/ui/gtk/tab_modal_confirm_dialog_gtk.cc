@@ -16,15 +16,11 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
 
-namespace chrome {
-
-// Declared in browser_dialogs.h so others don't have to depend on our header.
-void ShowTabModalConfirmDialog(TabModalConfirmDialogDelegate* delegate,
-                               TabContents* tab_contents) {
-  new TabModalConfirmDialogGtk(delegate, tab_contents);
+TabModalConfirmDialog* TabModalConfirmDialog::Create(
+    TabModalConfirmDialogDelegate* delegate,
+    TabContents* tab_contents) {
+  return new TabModalConfirmDialogGtk(delegate, tab_contents);
 }
-
-}  // namespace chrome
 
 TabModalConfirmDialogGtk::TabModalConfirmDialogGtk(
     TabModalConfirmDialogDelegate* delegate,
@@ -92,6 +88,14 @@ void TabModalConfirmDialogGtk::DeleteDelegate() {
 
 TabModalConfirmDialogGtk::~TabModalConfirmDialogGtk() {
   gtk_widget_destroy(dialog_);
+}
+
+void TabModalConfirmDialogGtk::AcceptTabModalDialog() {
+  OnAccept(NULL);
+}
+
+void TabModalConfirmDialogGtk::CancelTabModalDialog() {
+  OnCancel(NULL);
 }
 
 void TabModalConfirmDialogGtk::OnAccept(GtkWidget* widget) {

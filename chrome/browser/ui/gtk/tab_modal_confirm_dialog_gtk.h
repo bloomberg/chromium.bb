@@ -9,6 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 #include "chrome/browser/ui/gtk/constrained_window_gtk.h"
 #include "ui/base/gtk/gtk_signal.h"
 
@@ -20,12 +21,13 @@ class TabModalConfirmDialogDelegate;
 // To display the dialog, allocate this object on the heap. It will open the
 // dialog from its constructor and then delete itself when the user dismisses
 // the dialog.
-class TabModalConfirmDialogGtk : public ConstrainedWindowGtkDelegate {
+class TabModalConfirmDialogGtk : public TabModalConfirmDialog,
+                                 public ConstrainedWindowGtkDelegate {
  public:
   TabModalConfirmDialogGtk(TabModalConfirmDialogDelegate* delegate,
                            TabContents* tab_contents);
 
-  // ConstrainedWindowGtkDelegate methods
+  // ConstrainedWindowGtkDelegate:
   virtual GtkWidget* GetWidgetRoot() OVERRIDE;
   virtual GtkWidget* GetFocusWidget() OVERRIDE;
   virtual void DeleteDelegate() OVERRIDE;
@@ -35,7 +37,11 @@ class TabModalConfirmDialogGtk : public ConstrainedWindowGtkDelegate {
 
   virtual ~TabModalConfirmDialogGtk();
 
-  // Callbacks
+  // TabModalConfirmDialog:
+  virtual void AcceptTabModalDialog() OVERRIDE;
+  virtual void CancelTabModalDialog() OVERRIDE;
+
+  // Callbacks:
   CHROMEGTK_CALLBACK_0(TabModalConfirmDialogGtk, void, OnAccept);
   CHROMEGTK_CALLBACK_0(TabModalConfirmDialogGtk, void, OnCancel);
 

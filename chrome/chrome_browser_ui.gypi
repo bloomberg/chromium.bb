@@ -1208,6 +1208,7 @@
         'browser/ui/tab_contents/tab_contents.h',
         'browser/ui/tab_contents/tab_contents_iterator.cc',
         'browser/ui/tab_contents/tab_contents_iterator.h',
+        'browser/ui/tab_modal_confirm_dialog.h',
         'browser/ui/tab_modal_confirm_dialog_delegate.cc',
         'browser/ui/tab_modal_confirm_dialog_delegate.h',
         'browser/ui/tabs/dock_info.cc',

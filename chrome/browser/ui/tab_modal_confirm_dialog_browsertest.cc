@@ -41,8 +41,8 @@ TabModalConfirmDialogTest::TabModalConfirmDialogTest()
 void TabModalConfirmDialogTest::SetUpOnMainThread() {
   delegate_ = new MockTabModalConfirmDialogDelegate(
       chrome::GetActiveWebContents(browser()));
-  dialog_ = CreateTestDialog(delegate_,
-                             chrome::GetActiveTabContents(browser()));
+  dialog_ = TabModalConfirmDialog::Create(
+      delegate_, chrome::GetActiveTabContents(browser()));
   content::RunAllPendingInMessageLoop();
 }
 
@@ -51,37 +51,14 @@ void TabModalConfirmDialogTest::CleanUpOnMainThread() {
   ::testing::Mock::VerifyAndClearExpectations(delegate_);
 }
 
-// On Mac OS, these methods need to be compiled as Objective-C++, so they're in
-// a separate file.
-#if !defined(OS_MACOSX)
-TabModalConfirmDialog* TabModalConfirmDialogTest::CreateTestDialog(
-    TabModalConfirmDialogDelegate* delegate, TabContents* tab_contents) {
-  return new TabModalConfirmDialog(delegate, tab_contents);
-}
-
-void TabModalConfirmDialogTest::CloseDialog(bool accept) {
-#if defined(TOOLKIT_GTK)
-  if (accept)
-    dialog_->OnAccept(NULL);
-  else
-    dialog_->OnCancel(NULL);
-#else
-  if (accept)
-    dialog_->GetDialogClientView()->AcceptWindow();
-  else
-    dialog_->GetDialogClientView()->CancelWindow();
-#endif
-}
-#endif  // !defined(OS_MACOSX)
-
 IN_PROC_BROWSER_TEST_F(TabModalConfirmDialogTest, Accept) {
   EXPECT_CALL(*delegate_, OnAccepted());
-  CloseDialog(true);
+  dialog_->AcceptTabModalDialog();
 }
 
 IN_PROC_BROWSER_TEST_F(TabModalConfirmDialogTest, Cancel) {
   EXPECT_CALL(*delegate_, OnCanceled());
-  CloseDialog(false);
+  dialog_->CancelTabModalDialog();
 }
 
 IN_PROC_BROWSER_TEST_F(TabModalConfirmDialogTest, CancelSelf) {

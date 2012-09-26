@@ -16,6 +16,19 @@
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/gfx/image/image.h"
 
+// static
+TabModalConfirmDialog* TabModalConfirmDialog::Create(
+    TabModalConfirmDialogDelegate* delegate,
+    TabContents* tab_contents) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableFramelessConstrainedDialogs)) {
+    // Deletes itself when closed.
+    return new TabModalConfirmDialogMac2(delegate, tab_contents);
+  }
+  // Deletes itself when closed.
+  return new TabModalConfirmDialogMac(delegate, tab_contents);
+}
+
 // The delegate of the NSAlert used to display the dialog. Forwards the alert's
 // completion event to the C++ class |TabModalConfirmDialogDelegate|.
 @interface TabModalConfirmDialogMacBridge : NSObject {
@@ -46,23 +59,6 @@
 }
 @end
 
-namespace chrome {
-
-// Declared in browser_dialogs.h so others don't have to depend on our header.
-void ShowTabModalConfirmDialog(TabModalConfirmDialogDelegate* delegate,
-                               TabContents* tab_contents) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableFramelessConstrainedDialogs)) {
-    // Deletes itself when closed.
-    new TabModalConfirmDialogMac2(delegate, tab_contents);
-  } else {
-    // Deletes itself when closed.
-    new TabModalConfirmDialogMac(delegate, tab_contents);
-  }
-}
-
-}  // namespace chrome
-
 TabModalConfirmDialogMac::TabModalConfirmDialogMac(
     TabModalConfirmDialogDelegate* delegate,
     TabContents* tab_contents)
@@ -90,11 +86,7 @@ TabModalConfirmDialogMac::TabModalConfirmDialogMac(
 }
 
 TabModalConfirmDialogMac::~TabModalConfirmDialogMac() {
-  NSWindow* window = [(NSAlert*)sheet() window];
-  if (window && is_sheet_open()) {
-    [NSApp endSheet:window
-         returnCode:NSAlertSecondButtonReturn];
-  }
+  CancelTabModalDialog();
 }
 
 // "DeleteDelegate" refers to this class being a ConstrainedWindow delegate
@@ -102,6 +94,23 @@ TabModalConfirmDialogMac::~TabModalConfirmDialogMac() {
 void TabModalConfirmDialogMac::DeleteDelegate() {
   delete this;
 }
+
+void TabModalConfirmDialogMac::AcceptTabModalDialog() {
+  NSWindow* window = [(NSAlert*)sheet() window];
+  if (window && is_sheet_open()) {
+    [NSApp endSheet:window
+         returnCode:NSAlertFirstButtonReturn];
+  }
+}
+
+void TabModalConfirmDialogMac::CancelTabModalDialog() {
+  NSWindow* window = [(NSAlert*)sheet() window];
+  if (window && is_sheet_open()) {
+    [NSApp endSheet:window
+      returnCode:NSAlertSecondButtonReturn];
+  }
+}
+
 
 @interface TabModalConfirmDialogMacBridge2 : NSObject {
   TabModalConfirmDialogDelegate* delegate_;  // weak
@@ -159,4 +168,10 @@ TabModalConfirmDialogMac2::TabModalConfirmDialogMac2(
 }
 
 TabModalConfirmDialogMac2::~TabModalConfirmDialogMac2() {
+}
+
+void TabModalConfirmDialogMac2::AcceptTabModalDialog() {
+}
+
+void TabModalConfirmDialogMac2::CancelTabModalDialog() {
 }

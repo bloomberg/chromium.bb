@@ -10,11 +10,10 @@
 #endif
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
-
-class TabContents;
-class TabModalConfirmDialogDelegate;
 
 namespace ui {
 class ConstrainedWebDialogDelegate;
@@ -25,7 +24,8 @@ class ConstrainedWebDialogDelegate;
 // To display the dialog, allocate this object on the heap. It will open the
 // dialog from its constructor and then delete itself when the user dismisses
 // the dialog.
-class TabModalConfirmDialogWebUI : public ui::WebDialogDelegate {
+class TabModalConfirmDialogWebUI : public TabModalConfirmDialog,
+                                   public ui::WebDialogDelegate {
  public:
   TabModalConfirmDialogWebUI(
       TabModalConfirmDialogDelegate* dialog_delegate,
@@ -50,6 +50,10 @@ class TabModalConfirmDialogWebUI : public ui::WebDialogDelegate {
 
  private:
   virtual ~TabModalConfirmDialogWebUI();
+
+  // TabModalConfirmDialog:
+  virtual void AcceptTabModalDialog() OVERRIDE;
+  virtual void CancelTabModalDialog() OVERRIDE;
 
   scoped_ptr<TabModalConfirmDialogDelegate> delegate_;
 

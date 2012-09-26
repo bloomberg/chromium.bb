@@ -3050,7 +3050,6 @@
         'browser/ui/panels/panel_view_browsertest.cc',
         'browser/ui/prefs/prefs_tab_helper_browsertest.cc',
         'browser/ui/startup/startup_browser_creator_browsertest.cc',
-        'browser/ui/tab_modal_confirm_dialog_browsertest_mac.mm',
         'browser/ui/tab_modal_confirm_dialog_browsertest.cc',
         'browser/ui/tab_modal_confirm_dialog_browsertest.h',
         'browser/ui/views/ash/browser_non_client_frame_view_ash_browsertest.cc',

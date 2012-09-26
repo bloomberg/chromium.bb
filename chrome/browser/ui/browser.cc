@@ -131,6 +131,7 @@
 #include "chrome/browser/ui/sync/browser_synced_window_delegate.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 #include "chrome/browser/ui/tabs/dock_info.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -1484,8 +1485,8 @@ void Browser::ViewSourceForFrame(WebContents* source,
 }
 
 void Browser::ShowRepostFormWarningDialog(WebContents* source) {
-  chrome::ShowTabModalConfirmDialog(new RepostFormWarningController(source),
-                                    TabContents::FromWebContents(source));
+  TabModalConfirmDialog::Create(new RepostFormWarningController(source),
+                                TabContents::FromWebContents(source));
 }
 
 bool Browser::ShouldCreateWebContents(
