@@ -136,6 +136,12 @@ cr.define('ntp', function() {
     recentlyClosedPage: undefined,
 
     /**
+     * The Devices page.
+     * @type {!Element|undefined}
+     */
+    otherDevicesPage: undefined,
+
+    /**
      * The 'dots-list' element.
      * @type {!Element|undefined}
      */
@@ -262,6 +268,12 @@ cr.define('ntp', function() {
       if (typeof ntp.RecentlyClosedPage != 'undefined' &&
           page instanceof ntp.RecentlyClosedPage) {
         this.recentlyClosedPage = page;
+      }
+
+      // Remember special OtherDevicesPage.
+      if (typeof ntp.OtherDevicesPage != 'undefined' &&
+          page instanceof ntp.OtherDevicesPage) {
+        this.otherDevicesPage = page;
       }
 
       // Make a deep copy of the dot template to add a new one.
@@ -505,6 +517,10 @@ cr.define('ntp', function() {
           if (this.recentlyClosedPage)
             this.cardSlider.selectCardByValue(this.recentlyClosedPage);
           break;
+        case loadTimeData.getInteger('other_devices_page_id'):
+          if (this.otherDevicesPage)
+            this.cardSlider.selectCardByValue(this.otherDevicesPage);
+          break;
       }
     },
 
@@ -538,6 +554,9 @@ cr.define('ntp', function() {
         } else if (page.classList.contains('recently-closed-page')) {
           this.setShownPage_(
               loadTimeData.getInteger('recently_closed_page_id'), 0);
+        } else if (page.classList.contains('other-devices-page')) {
+          this.setShownPage_(
+              loadTimeData.getInteger('other_devices_page_id'), 0);
         } else {
           console.error('unknown page selected');
         }
@@ -689,6 +708,10 @@ cr.define('ntp', function() {
     newTabView.appendTilePage(recentlyClosed,
                               loadTimeData.getString('recentlyclosed'));
     chrome.send('getRecentlyClosedTabs');
+
+    var devices = new ntp.OtherDevicesPage();
+    newTabView.appendTilePage(devices, loadTimeData.getString('otherSessions'));
+    chrome.send('getForeignSessions');
 
     if (loadTimeData.getString('login_status_message')) {
       loginBubble = new cr.ui.Bubble;
@@ -999,8 +1022,7 @@ cr.define('ntp', function() {
   }
 
   function setForeignSessions(sessionList, isTabSyncEnabled) {
-    // TODO(jeremycho): Support this once the Devices page is implemented.
-    console.warn('setForeignSessions not implemented.');
+    return newTabView.otherDevicesPage.setData(sessionList, isTabSyncEnabled);
   }
 
   function getAppsCallback() {

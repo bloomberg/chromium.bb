@@ -250,6 +250,7 @@ chrome.mock && chrome.mock({
     'closedwindowmultiple': '$1 Tabs',
     'closedwindowsingle': '1 Tab',
     'collapseSessionMenuItemText': 'Collapse list',
+    'other_devices_page_id': 6144,
     'expandSessionMenuItemText': 'Expand list',
     'fontfamily': 'DejaVu Sans, Arial, sans-serif',
     'fontsize': '75%',
