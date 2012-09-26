@@ -1198,6 +1198,20 @@ static void NaClSecureChannelStartModuleRpc(struct NaClSrpcRpc     *rpc,
   out_args[0]->u.ival = status;
   rpc->result = NACL_SRPC_RESULT_OK;
 
+  /*
+   * When reverse setup is being used, we have to block and wait for reverse
+   * channel to become initialized before we can proceed with start module.
+   */
+  NaClXMutexLock(&nap->mu);
+  if (NACL_REVERSE_CHANNEL_UNINITIALIZED !=
+      nap->reverse_channel_initialization_state) {
+    while (NACL_REVERSE_CHANNEL_INITIALIZED !=
+           nap->reverse_channel_initialization_state) {
+      NaClXCondVarWait(&nap->cv, &nap->mu);
+    }
+  }
+  NaClXMutexUnlock(&nap->mu);
+
   NaClLog(4, "NaClSecureChannelStartModuleRpc running closure\n");
   (*done->Run)(done);
   /*
@@ -1720,7 +1734,6 @@ struct NaClSimpleRevClientVtbl const kNaClSecureReverseClientVtbl = {
     NaClSecureReverseClientDtor,
   },
 };
-
 
 void NaClSecureCommandChannel(struct NaClApp *nap) {
   struct NaClSecureService *secure_command_server;
