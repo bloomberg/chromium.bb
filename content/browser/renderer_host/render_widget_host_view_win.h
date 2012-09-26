@@ -505,6 +505,7 @@ class RenderWidgetHostViewWin
   // Stores the current text input type received by TextInputStateChanged()
   // method.
   ui::TextInputType text_input_type_;
+  bool can_compose_inline_;
 
   ScopedVector<ui::ViewProp> props_;
 

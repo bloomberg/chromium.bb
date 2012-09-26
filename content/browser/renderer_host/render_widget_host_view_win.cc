@@ -476,6 +476,7 @@ RenderWidgetHostViewWin::RenderWidgetHostViewWin(RenderWidgetHost* widget)
       weak_factory_(this),
       is_loading_(false),
       text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
+      can_compose_inline_(true),
       is_fullscreen_(false),
       ignore_mouse_movement_(true),
       composition_range_(ui::Range::InvalidRange()),
@@ -762,12 +763,10 @@ void RenderWidgetHostViewWin::SetIsLoading(bool is_loading) {
 
 void RenderWidgetHostViewWin::TextInputStateChanged(
     const ViewHostMsg_TextInputState_Params& params) {
-  // TODO(kinaba): currently, can_compose_inline is ignored and always treated
-  // as true. We need to support "can_compose_inline=false" for PPAPI plugins
-  // that may want to avoid drawing composition-text by themselves and pass
-  // the responsibility to the browser.
-  if (text_input_type_ != params.type) {
+  if (text_input_type_ != params.type ||
+      can_compose_inline_ != params.can_compose_inline) {
     text_input_type_ = params.type;
+    can_compose_inline_ = params.can_compose_inline;
     UpdateIMEState();
   }
 }
@@ -1673,10 +1672,12 @@ LRESULT RenderWidgetHostViewWin::OnImeStartComposition(
   // Reset the composition status and create IME windows.
   ime_input_.CreateImeWindow(m_hWnd);
   ime_input_.ResetComposition(m_hWnd);
-  // We have to prevent WTL from calling ::DefWindowProc() because the function
+  // When the focus is on an element that does not draw composition by itself
+  // (i.e., PPAPI plugin not handling IME), let IME to draw the text. Otherwise
+  // we have to prevent WTL from calling ::DefWindowProc() because the function
   // calls ::ImmSetCompositionWindow() and ::ImmSetCandidateWindow() to
   // over-write the position of IME windows.
-  handled = TRUE;
+  handled = (can_compose_inline_ ? TRUE : FALSE);
   return 0;
 }
 
@@ -1725,6 +1726,14 @@ LRESULT RenderWidgetHostViewWin::OnImeComposition(
   // We have to prevent WTL from calling ::DefWindowProc() because we do not
   // want for the IMM (Input Method Manager) to send WM_IME_CHAR messages.
   handled = TRUE;
+  if (!can_compose_inline_) {
+    // When the focus is on an element that does not draw composition by itself
+    // (i.e., PPAPI plugin not handling IME), let IME to draw the text, which
+    // is the default behavior of DefWindowProc. Note, however, even in this
+    // case we don't want GCS_RESULTSTR to be converted to WM_IME_CHAR messages.
+    // Thus we explicitly drop the flag.
+    return ::DefWindowProc(m_hWnd, message, wparam, lparam & ~GCS_RESULTSTR);
+  }
   return 0;
 }
 
@@ -3056,6 +3065,7 @@ void RenderWidgetHostViewWin::UpdateIMEState() {
   if (text_input_type_ != ui::TEXT_INPUT_TYPE_NONE &&
       text_input_type_ != ui::TEXT_INPUT_TYPE_PASSWORD) {
     ime_input_.EnableIME(m_hWnd);
+    ime_input_.SetUseCompositionWindow(!can_compose_inline_);
   } else {
     ime_input_.DisableIME(m_hWnd);
   }

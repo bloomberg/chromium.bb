@@ -227,6 +227,9 @@ class UI_EXPORT ImeInput {
   //     This rectangle is used for controlling the positions of IME windows.
   void UpdateCaretRect(HWND window_handle, const gfx::Rect& caret_rect);
 
+  // Updates the setting whether we want IME to render composition text.
+  void SetUseCompositionWindow(bool use_composition_window);
+
   // Returns the current input language id.
   LANGID input_language_id() const { return input_language_id_; }
 
@@ -304,6 +307,9 @@ class UI_EXPORT ImeInput {
 
   // The rectangle of the input caret retrieved from a renderer process.
   gfx::Rect caret_rect_;
+
+  // Indicates whether or not we want IME to render composition text.
+  bool use_composition_window_;
 
   DISALLOW_COPY_AND_ASSIGN(ImeInput);
 };
