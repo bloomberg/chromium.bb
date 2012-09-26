@@ -17,6 +17,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/installer/util/util_constants.h"
 #include "win8/delegate_execute/chrome_util.h"
 
 // CommandExecuteImpl is resposible for activating chrome in Windows 8. The
@@ -201,7 +202,8 @@ STDMETHODIMP CommandExecuteImpl::Execute() {
   string16 app_id = delegate_execute::GetAppId(chrome_exe_);
 
   DWORD pid = 0;
-  if (launch_scheme_ == INTERNET_SCHEME_FILE) {
+  if (launch_scheme_ == INTERNET_SCHEME_FILE &&
+      display_name_.find(installer::kChromeExe) != string16::npos) {
     AtlTrace("Activating for file\n");
     hr = activation_manager->ActivateApplication(app_id.c_str(),
                                                  verb_.c_str(),
@@ -342,7 +344,7 @@ HRESULT CommandExecuteImpl::LaunchDesktopChrome() {
       // should honor it. For e.g. If the user clicks on a html file when
       // chrome is the default we should treat it as a parameter to be passed
       // to chrome.
-      if (display_name.find(L"chrome.exe") != string16::npos)
+      if (display_name.find(installer::kChromeExe) != string16::npos)
         display_name.clear();
       break;
 
