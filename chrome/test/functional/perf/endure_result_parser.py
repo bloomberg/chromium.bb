@@ -112,15 +112,14 @@ def WriteToDataFile(new_line, existing_lines, revision, data_file):
   os.chmod(data_file, 0755)
 
 
-def OutputPerfData(revision, graph_name, description, value, units, units_x,
-                   dest_dir):
+def OutputPerfData(revision, graph_name, values, units, units_x, dest_dir):
   """Outputs perf data to a local text file to be graphed.
 
   Args:
     revision: The string revision number associated with the perf data.
     graph_name: The string name of the graph on which to plot the data.
-    description: A string description of the perf value to be graphed.
-    value: Either a single data value to be graphed, or a list of 2-tuples
+    values: A dict which maps a description to a value.  A value is either a
+        single data value to be graphed, or a list of 2-tuples
         representing (x, y) points to be graphed for long-running tests.
     units: The string description for the y-axis units on the graph.
     units_x: The string description for the x-axis units on the graph.  Should
@@ -160,17 +159,16 @@ def OutputPerfData(revision, graph_name, description, value, units, units_x,
     with open(data_file, 'r') as f:
       existing_lines = f.readlines()
   existing_lines = map(lambda x: x.strip(), existing_lines)
-  if units_x:
-    points = []
-    for point in value:
-      points.append([str(point[0]), str(point[1])])
-    new_traces = {
-      description: points
-    }
-  else:
-    new_traces = {
-      description: [str(value), str(0.0)]
-    }
+  new_traces = {}
+  for description in values:
+    value = values[description]
+    if units_x:
+      points = []
+      for point in value:
+        points.append([str(point[0]), str(point[1])])
+      new_traces[description] = points
+    else:
+      new_traces[description] = [str(value), str(0.0)]
   new_line = {
     'traces': new_traces,
     'rev': revision
@@ -179,13 +177,13 @@ def OutputPerfData(revision, graph_name, description, value, units, units_x,
   WriteToDataFile(new_line, existing_lines, revision, data_file)
 
 
-def OutputEventData(revision, description, event_list, dest_dir):
+def OutputEventData(revision, event_dict, dest_dir):
   """Outputs event data to a local text file to be graphed.
 
   Args:
     revision: The string revision number associated with the event data.
-    description: A string description of the event values to be graphed.
-    event_list: An array of tuples representing event data to be graphed.
+    event_dict: A dict which maps a description to an array of tuples
+        representing event data to be graphed.
     dest_dir: The name of the destination directory to which to write.
   """
   data_file_name = '_EVENT_-summary.dat'
@@ -196,12 +194,13 @@ def OutputEventData(revision, description, event_list, dest_dir):
       existing_lines = f.readlines()
   existing_lines = map(lambda x: x.strip(), existing_lines)
 
-  value_list = []
-  for event_time, event_data in event_list:
-    value_list.append([str(event_time), event_data])
-  new_events = {
-    description: value_list
-  }
+  new_events = {}
+  for description in event_dict:
+    event_list = event_dict[description]
+    value_list = []
+    for event_time, event_data in event_list:
+      value_list.append([str(event_time), event_data])
+    new_events[description] = value_list
 
   new_line = {
     'rev': revision,
@@ -339,16 +338,26 @@ def UpdatePerfDataForSlaveAndBuild(slave_info, build_num):
     # results, keep just one if more than one is specified.
     perf_data = {}  # Maps a graph-line key to a perf data dictionary.
     for data in perf_data_raw:
-      key = data['graph_name'] + '|' + data['description']
+      key_graph = data['graph_name']
+      key_description = data['description']
+      if not key_graph in perf_data:
+        perf_data[key_graph] = {
+          'graph_name': data['graph_name'],
+          'value': {},
+          'units': data['units'],
+          'units_x': data['units_x'],
+          'webapp_name': data['webapp_name'],
+          'test_name': data['test_name'],
+        }
       if data['graph_name'] != '_EVENT_' and not data['units_x']:
         # Short-running test result.
-        perf_data[key] = data
+        perf_data[key_graph]['value'][key_description] = data['value']
       else:
         # Long-running test result or event.
-        if key in perf_data:
-          perf_data[key]['value'] += data['value']
+        if key_description in perf_data[key_graph]['value']:
+          perf_data[key_graph]['value'][key_description] += data['value']
         else:
-          perf_data[key] = data
+          perf_data[key_graph]['value'][key_description] = data['value']
 
     # Finally, for each graph-line in |perf_data|, update the associated local
     # graph data files if necessary.
@@ -364,11 +373,10 @@ def UpdatePerfDataForSlaveAndBuild(slave_info, build_num):
       SetupBaseGraphDirIfNeeded(perf_data_dict['webapp_name'],
                                 perf_data_dict['test_name'], dest_dir)
       if perf_data_dict['graph_name'] == '_EVENT_':
-        OutputEventData(revision, perf_data_dict['description'],
-                        perf_data_dict['value'], dest_dir)
+        OutputEventData(revision, perf_data_dict['value'], dest_dir)
       else:
         OutputPerfData(revision, perf_data_dict['graph_name'],
-                       perf_data_dict['description'], perf_data_dict['value'],
+                       perf_data_dict['value'],
                        perf_data_dict['units'], perf_data_dict['units_x'],
                        dest_dir)
 
