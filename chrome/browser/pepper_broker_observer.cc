@@ -30,6 +30,8 @@ using content::OpenURLParams;
 using content::Referrer;
 using content::WebContents;
 
+int PepperBrokerObserver::kUserDataKey;
+
 namespace {
 
 // The URL for the "learn more" article about the PPAPI broker.

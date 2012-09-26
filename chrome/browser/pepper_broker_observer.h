@@ -5,12 +5,18 @@
 #ifndef CHROME_BROWSER_PEPPER_BROKER_OBSERVER_H_
 #define CHROME_BROWSER_PEPPER_BROKER_OBSERVER_H_
 
+#include "chrome/browser/tab_contents/web_contents_user_data.h"
 #include "content/public/browser/web_contents_observer.h"
 
-class PepperBrokerObserver : public content::WebContentsObserver {
+class PepperBrokerObserver : public content::WebContentsObserver,
+                             public WebContentsUserData<PepperBrokerObserver> {
  public:
-  explicit PepperBrokerObserver(content::WebContents* web_contents);
   virtual ~PepperBrokerObserver();
+
+ private:
+  explicit PepperBrokerObserver(content::WebContents* web_contents);
+  static int kUserDataKey;
+  friend class WebContentsUserData<PepperBrokerObserver>;
 
   virtual bool RequestPpapiBrokerPermission(
       content::WebContents* web_contents,
@@ -18,7 +24,6 @@ class PepperBrokerObserver : public content::WebContentsObserver {
       const FilePath& plugin_path,
       const base::Callback<void(bool)>& callback) OVERRIDE;
 
- private:
   DISALLOW_COPY_AND_ASSIGN(PepperBrokerObserver);
 };
 

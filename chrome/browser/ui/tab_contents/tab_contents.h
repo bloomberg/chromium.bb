@@ -39,7 +39,6 @@ class OffscreenTabContentsCreator;
 class PanelHost;
 class PasswordManager;
 class PasswordManagerDelegate;
-class PepperBrokerObserver;
 class PrefsTabHelper;
 class Profile;
 class ShellWindow;
@@ -259,7 +258,6 @@ class TabContents : public content::WebContentsObserver {
   // and silently do their thing live here.)
 
   scoped_ptr<NavigationMetricsRecorder> navigation_metrics_recorder_;
-  scoped_ptr<PepperBrokerObserver> pepper_broker_observer_;
   scoped_ptr<safe_browsing::SafeBrowsingTabObserver>
       safe_browsing_tab_observer_;
 

@@ -143,6 +143,7 @@ TabContents::TabContents(WebContents* contents)
   password_manager_delegate_.reset(new PasswordManagerDelegateImpl(this));
   password_manager_.reset(
       new PasswordManager(contents, password_manager_delegate_.get()));
+  PepperBrokerObserver::CreateForWebContents(contents);
   PluginObserver::CreateForWebContents(contents);
   prefs_tab_helper_.reset(new PrefsTabHelper(contents));
   prerender_tab_helper_.reset(new prerender::PrerenderTabHelper(this));
@@ -171,7 +172,6 @@ TabContents::TabContents(WebContents* contents)
 #endif
 
   navigation_metrics_recorder_.reset(new NavigationMetricsRecorder(contents));
-  pepper_broker_observer_.reset(new PepperBrokerObserver(contents));
   safe_browsing_tab_observer_.reset(
       new safe_browsing::SafeBrowsingTabObserver(this));
 
