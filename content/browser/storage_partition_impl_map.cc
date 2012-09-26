@@ -266,12 +266,15 @@ void StoragePartitionImplMap::PostCreateInitialization(
             make_scoped_refptr(partition->GetFileSystemContext()),
             make_scoped_refptr(
                 ChromeBlobStorageContext::GetFor(browser_context_))));
-
-    // We do not call InitializeURLRequestContext() for media contexts because,
-    // other than the HTTP cache, the media contexts share the same backing
-    // objects as their associated "normal" request context.  Thus, the previous
-    // call serves to initialize the media request context for this storage
-    // partition as well.
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(
+            &InitializeURLRequestContext,
+            make_scoped_refptr(partition->GetMediaURLRequestContext()),
+            make_scoped_refptr(partition->GetAppCacheService()),
+            make_scoped_refptr(partition->GetFileSystemContext()),
+            make_scoped_refptr(
+                ChromeBlobStorageContext::GetFor(browser_context_))));
   }
 }
 
