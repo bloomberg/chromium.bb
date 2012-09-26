@@ -511,20 +511,6 @@ bool RootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
         delegate_->OnHostResized(bounds.size());
       if (origin_changed)
         delegate_->OnHostMoved(bounds_.origin());
-      // TODO(oshima): Clear the root when the window is moved or
-      // resized while the extended desktop is disabled.
-      // crbug.com/152003.
-      if (base::chromeos::IsRunningOnChromeOS()) {
-        XGCValues gc_values = {0};
-        gc_values.foreground = BlackPixel(xdisplay_, DefaultScreen(xdisplay_));
-        GC gc = XCreateGC(xdisplay_, x_root_window_, GCForeground, &gc_values);
-        XFillRectangle(xdisplay_, x_root_window_, gc,
-                       x_root_bounds_.x(),
-                       x_root_bounds_.y(),
-                       x_root_bounds_.width(),
-                       x_root_bounds_.height());
-        XFreeGC(xdisplay_, gc);
-      }
       break;
     }
     case GenericEvent:
