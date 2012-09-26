@@ -21,4 +21,8 @@ NACL_BROWSER_TEST_F(NaClBrowserTest, ExitStatus, {
       "pm_exit_status_test.html?trigger=exitneg2&expected_exit=254"));
 })
 
+NACL_BROWSER_TEST_F(NaClBrowserTest, PPAPICore, {
+  RunNaClIntegrationTest(FILE_PATH_LITERAL("ppapi_ppb_core.html"));
+})
+
 }  // namespace anonymous

@@ -50,5 +50,48 @@
         ],
       },
     },
+    # Legacy NaCl PPAPI interface tests being here.
+    {
+      'target_name': 'ppapi_test_lib',
+      'type': 'none',
+      'variables': {
+        'nlib_target': 'libppapi_test_lib.a',
+        'nso_target': 'libppapi_test_lib.so',
+        'build_newlib': 1,
+        'build_glibc': 1,
+        'sources': [
+          # TODO(ncbray) move these files once SCons no longer depends on them.
+          '../../../../ppapi/native_client/tests/ppapi_test_lib/get_browser_interface.cc',
+          '../../../../ppapi/native_client/tests/ppapi_test_lib/internal_utils.cc',
+          '../../../../ppapi/native_client/tests/ppapi_test_lib/module_instance.cc',
+          '../../../../ppapi/native_client/tests/ppapi_test_lib/testable_callback.cc',
+          '../../../../ppapi/native_client/tests/ppapi_test_lib/test_interface.cc',
+        ]
+      },
+    },
+    {
+      'target_name': 'ppapi_ppb_core',
+      'type': 'none',
+      'variables': {
+        'nexe_target': 'ppapi_ppb_core',
+        'build_newlib': 1,
+        'build_glibc': 1,
+        'link_flags': [
+          '-lppapi',
+          '-lppapi_test_lib',
+          '-lplatform',
+          '-lgio',
+        ],
+        'sources': [
+          'ppapi/ppb_core/ppapi_ppb_core.cc',
+        ],
+        'test_files': [
+          'ppapi/ppb_core/ppapi_ppb_core.html',
+        ],
+      },
+      'dependencies': [
+        'ppapi_test_lib',
+      ],
+    },
   ],
 }
