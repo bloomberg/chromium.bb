@@ -819,10 +819,10 @@ void Panel::UpdateAppIcon() {
   app_icon_loader_.reset(new ImageLoadingTracker(this));
   app_icon_loader_->LoadImage(
       extension,
-      extension->GetIconResource(extension_misc::EXTENSION_ICON_SMALLISH,
+      extension->GetIconResource(extension_misc::EXTENSION_ICON_SMALL,
                                  ExtensionIconSet::MATCH_BIGGER),
-      gfx::Size(extension_misc::EXTENSION_ICON_SMALLISH,
-                extension_misc::EXTENSION_ICON_SMALLISH),
+      gfx::Size(extension_misc::EXTENSION_ICON_SMALL,
+                extension_misc::EXTENSION_ICON_SMALL),
       ImageLoadingTracker::CACHE);
 }
 
