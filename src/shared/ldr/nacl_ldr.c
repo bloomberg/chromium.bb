@@ -54,7 +54,7 @@ static int ImcConnectAddr(NaClSrpcImcDescType desc,
 
 int NaClLdrSetupCommandChannel(NaClSrpcImcDescType     socket_addr,
                                struct NaClSrpcChannel  *command_channel) {
-  NaClSrpcImcDescType   command_desc;
+  NaClSrpcImcDescType   command_desc = kInvalidDesc;
   int                   retval;
 
   NaClLog(4,
@@ -205,7 +205,7 @@ int NaClLdrStartModule(struct NaClSrpcChannel *command_channel) {
 
 int NaClLdrSetupUntrustedChannel(NaClSrpcImcDescType     socket_addr,
                                  struct NaClSrpcChannel  *untrusted_channel) {
-  NaClSrpcImcDescType   untrusted_desc;
+  NaClSrpcImcDescType   untrusted_desc = kInvalidDesc;
   int                   retval;
 
   NaClLog(4,
