@@ -302,12 +302,16 @@ void EventExecutorLinux::InitMouseButtonMap() {
   }
   XFreeDeviceList(devices);
 
-  if (!device_found)
-    LOG(ERROR) << "Cannot find XTest device.";
+  if (!device_found) {
+    LOG(INFO) << "Cannot find XTest device.";
+    return;
+  }
 
   XDevice* device = XOpenDevice(display_, device_id);
-  if (!device)
+  if (!device) {
     LOG(ERROR) << "Cannot open XTest device.";
+    return;
+  }
 
   int num_device_buttons = XGetDeviceButtonMapping(display_, device, NULL, 0);
   scoped_array<unsigned char> button_mapping(new unsigned char[num_buttons]);
