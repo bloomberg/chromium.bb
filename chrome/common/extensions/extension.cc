@@ -2431,7 +2431,7 @@ bool Extension::LoadScriptBadge(string16* error) {
 
   for (size_t i = 0; i < extension_misc::kNumScriptBadgeIconSizes; i++) {
     std::string path = icons().Get(extension_misc::kScriptBadgeIconSizes[i],
-                                   ExtensionIconSet::MATCH_EXACTLY);
+                                   ExtensionIconSet::MATCH_BIGGER);
     if (!path.empty())
       icon_set->Add(extension_misc::kScriptBadgeIconSizes[i], path);
   }

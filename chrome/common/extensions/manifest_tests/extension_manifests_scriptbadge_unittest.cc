@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/common/extensions/extension_action.h"
+#include "chrome/common/extensions/extension_builder.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
@@ -13,7 +14,9 @@
 
 namespace errors = extension_manifest_errors;
 namespace switch_utils = extensions::switch_utils;
+using extensions::DictionaryBuilder;
 using extensions::Extension;
+using extensions::ExtensionBuilder;
 
 namespace {
 
@@ -29,7 +32,21 @@ std::vector<Extension::InstallWarning> StripMissingFlagWarning(
 
 TEST_F(ExtensionManifestTest, ScriptBadgeBasic) {
   scoped_refptr<Extension> extension(
-      LoadAndExpectSuccess("script_badge_basic.json"));
+      ExtensionBuilder()
+      .SetManifest(DictionaryBuilder()
+                   .Set("manifest_version", 2)
+                   .Set("name", "my extension")
+                   .Set("version", "1.0.0.0")
+                   .Set("description",
+                        "Check that a simple script_badge section parses")
+                   .Set("icons", DictionaryBuilder()
+                        .Set("16", "icon16.png")
+                        .Set("32", "icon32.png")
+                        .Set("19", "icon19.png")
+                        .Set("48", "icon48.png"))
+                   .Set("script_badge", DictionaryBuilder()
+                        .Set("default_popup", "popup.html")))
+      .Build());
   ASSERT_TRUE(extension.get());
   ASSERT_TRUE(extension->script_badge());
   EXPECT_THAT(StripMissingFlagWarning(extension->install_warnings()),
@@ -57,7 +74,19 @@ TEST_F(ExtensionManifestTest, ScriptBadgeBasic) {
 
 TEST_F(ExtensionManifestTest, ScriptBadgeExplicitTitleAndIconsIgnored) {
   scoped_refptr<Extension> extension(
-      LoadAndExpectSuccess("script_badge_title_icons_ignored.json"));
+      ExtensionBuilder()
+      .SetManifest(DictionaryBuilder()
+                   .Set("manifest_version", 2)
+                   .Set("name", "my extension")
+                   .Set("version", "1.0.0.0")
+                   .Set("description",
+                        "Check that a simple script_badge section parses")
+                   .Set("icons", DictionaryBuilder()
+                        .Set("16", "icon16.png"))
+                   .Set("script_badge", DictionaryBuilder()
+                        .Set("default_title", "Other Extension")
+                        .Set("default_icon", "malicious.png")))
+      .Build());
   ASSERT_TRUE(extension.get());
   ASSERT_TRUE(extension->script_badge());
 
@@ -85,15 +114,31 @@ TEST_F(ExtensionManifestTest, ScriptBadgeExplicitTitleAndIconsIgnored) {
 
 TEST_F(ExtensionManifestTest, ScriptBadgeIconFallsBackToPuzzlePiece) {
   scoped_refptr<Extension> extension(
-      LoadAndExpectSuccess("script_badge_only_use_icon16.json"));
+      ExtensionBuilder()
+      .SetManifest(DictionaryBuilder()
+                   .Set("manifest_version", 2)
+                   .Set("name", "my extension")
+                   .Set("version", "1.0.0.0")
+                   .Set("description",
+                        "Check that a simple script_badge section parses")
+                   .Set("icons", DictionaryBuilder()
+                        .Set("128", "icon128.png")))
+      .Build());
   ASSERT_TRUE(extension.get());
   ASSERT_TRUE(extension->script_badge());
   EXPECT_THAT(extension->install_warnings(),
               testing::ElementsAre(/*empty*/));
 
-  EXPECT_FALSE(extension->script_badge()->default_icon())
-      << "Should not fall back to the 64px icon.";
-  EXPECT_EQ(NULL, extension->script_badge()->default_icon());
+  const ExtensionIconSet* const default_icon =
+      extension->script_badge()->default_icon();
+  ASSERT_TRUE(default_icon) << "Should fall back to the 128px icon.";
+  EXPECT_EQ(2u, default_icon->map().size());
+  EXPECT_EQ("icon128.png",
+            default_icon->Get(extension_misc::EXTENSION_ICON_BITTY,
+                              ExtensionIconSet::MATCH_EXACTLY));
+  EXPECT_EQ("icon128.png",
+            default_icon->Get(2 * extension_misc::EXTENSION_ICON_BITTY,
+                              ExtensionIconSet::MATCH_EXACTLY));
 }
 
 }  // namespace
