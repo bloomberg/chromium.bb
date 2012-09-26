@@ -8,11 +8,13 @@ Import('env')
 
 if not env.Bit('linux'): Return()
 
-env.Append(
-  # TODO(cbiffle): give everyone else these warnings too.
-  # TODO(karl): Why does -fno-rtti cause linking issues.
-  # CXXFLAGS='-Weffc++ -Woverloaded-virtual -fno-rtti -fomit-frame-pointer',
-  CXXFLAGS='-Weffc++ -Woverloaded-virtual -fomit-frame-pointer',
+# Android compiler cannot compile NDK C++ headers with these.
+if not env.Bit('android'):
+  env.Append(
+      # TODO(cbiffle): give everyone else these warnings too.
+      # TODO(karl): Why does -fno-rtti cause linking issues.
+      # CXXFLAGS='-Weffc++ -Woverloaded-virtual -fno-rtti -fomit-frame-pointer',
+      CXXFLAGS='-Weffc++ -Woverloaded-virtual -fomit-frame-pointer',
 )
 
 # ------------------------------------------------------------------
@@ -177,10 +179,10 @@ env.ComponentLibrary('arm_validator_reporters',
 ncval = env.ComponentProgram(
     'arm-ncval-core',
     ['ncval.cc'],
-    LIBS=['arm_validator_reporters',
-          'arm_validator_core',
-          env.NaClTargetArchSuffix('ncfileutils'),
-          '${OPTIONAL_COVERAGE_LIBS}'])
+    EXTRA_LIBS=['arm_validator_reporters',
+                'arm_validator_core',
+                env.NaClTargetArchSuffix('ncfileutils'),
+                '${OPTIONAL_COVERAGE_LIBS}'])
 
 env.SDKInstallBin('ncval', ncval, target='arm')
 
@@ -191,8 +193,8 @@ gtest_env.Append(CCFLAGS=['-DNACL_TRUSTED_BUT_NOT_TCB'])
 
 gtest_env.ComponentProgram('address_set_test_binary',
                            ['address_set_test.cc'],
-                           LIBS=['arm_validator_core',
-                                 '${OPTIONAL_COVERAGE_LIBS}'])
+                           EXTRA_LIBS=['arm_validator_core',
+                                       '${OPTIONAL_COVERAGE_LIBS}'])
 
 address_set_test = gtest_env.Command(target='address_set_test.out',
                                      source=['address_set_test_binary'],

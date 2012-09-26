@@ -252,7 +252,7 @@ DescWrapper* DescWrapperFactory::ImportSyncSocketHandle(NaClHandle handle) {
   return MakeGenericCleanup(reinterpret_cast<struct NaClDesc*>(desc));
 }
 
-#if NACL_LINUX
+#if NACL_LINUX && !NACL_ANDROID
 DescWrapper* DescWrapperFactory::ImportSysvShm(int key, size_t size) {
   if (NACL_ABI_SIZE_T_MAX - NACL_PAGESIZE + 1 <= size) {
     // Avoid overflow when rounding to the nearest 4K and casting to

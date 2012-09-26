@@ -18,13 +18,14 @@ pql_inputs = [];
 if env.Bit('windows'):
   pql_inputs += ['win/nacl_os_qualify.c',
                  'win/nacl_dep_qualify.c']
-elif env.Bit('mac'):
-  pql_inputs += ['osx/nacl_os_qualify.c',
-                 'posix/nacl_dep_qualify.c']
-elif env.Bit('linux'):
-  pql_inputs += ['linux/nacl_os_qualify.c',
-                 'linux/sysv_shm_and_mmap.c',
-                 'posix/nacl_dep_qualify.c']
+else:
+  pql_inputs += ['posix/nacl_dep_qualify.c']
+  if env.Bit('mac'):
+    pql_inputs += ['osx/nacl_os_qualify.c']
+  elif env.Bit('linux'):
+    pql_inputs += ['linux/nacl_os_qualify.c']
+    if not env.Bit('android'):
+      pql_inputs += ['linux/sysv_shm_and_mmap.c']
 
 # Convert a library name into a target specific libary name
 def TargetLib(env, name):

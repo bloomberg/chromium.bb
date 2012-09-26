@@ -30,7 +30,10 @@
  */
 
 DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
-
+#if NACL_DANGEROUS_USE_PTHREAD_GETSPECIFIC_ON_ANDROID
+  push {lr}
+  bl  NaClTlsGetIdx
+#else
   /*
    * Load the __thread variable's offset into r3.  We're quite sure that
    * our offsets will be small and so this could fit into an immediate
@@ -56,6 +59,7 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
    */
   mrc  p15, 0, r0, c13, c0, 3
   ldr  r0, [r0, r3]
+#endif /* !NACL_DANGEROUS_USE_PTHREAD_GETSPECIFIC_ON_ANDROID */
 
 #ifdef __PIC__
   ldr  r3, .L.GOT
@@ -99,6 +103,12 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallThreadCaptureFault):
   NACL_HALT
 
   .balign 4
+#if NACL_DANGEROUS_USE_PTHREAD_GETSPECIFIC_ON_ANDROID && defined(__PIC__)
+.L.GOT:
+  .word  _GLOBAL_OFFSET_TABLE_ - (.LPIC1 + 8)
+.L.nacl_user:
+  .word  nacl_user(GOT)
+#else
 #ifdef __PIC__
 .L.gNaClThreadIdxPIC:
   .word  gNaClThreadIdx(gottpoff) + (. - .LPIC0 - 8)
@@ -110,3 +120,5 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallThreadCaptureFault):
 .L.gNaClThreadIdx:
   .word  gNaClThreadIdx(tpoff)
 #endif
+
+#endif /* !NACL_DANGEROUS_USE_PTHREAD_GETSPECIFIC_ON_ANDROID */

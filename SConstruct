@@ -325,6 +325,9 @@ def SetUpArgumentBits(env):
     desc='Use the zero-address-based x86-64 sandbox model instead of '
       'the r15-based model.')
 
+  BitFromArgument(env, 'android', default=False,
+                  desc='Build for Android target')
+
   #########################################################################
   # EXPERIMENTAL
   # This is for generating a testing library for use within private test
@@ -692,7 +695,7 @@ tests_to_disable_qemu = set([
     # not be marked as 'broken' because then they would not get built as part
     # of a test target (e.g. small_tests) with do_not_run_tests=1. They
     # should be skipped instead, so that they build but do not run.
-    # TODO(dschuff) some of these tests appear to work with the new QMEU.
+    # TODO(dschuff) some of these tests appear to work with the new QEMU.
     # find out which
     # http://code.google.com/p/nativeclient/issues/detail?id=2437
     # Note, for now these tests disable both the irt and non-irt variants
@@ -2092,6 +2095,7 @@ def MakeWindowsEnv():
           ['NACL_WINDOWS', '1'],
           ['NACL_OSX', '0'],
           ['NACL_LINUX', '0'],
+          ['NACL_ANDROID', '0'],
           ['_WIN32_WINNT', '0x0501'],
           ['__STDC_LIMIT_MACROS', '1'],
           ['NOMINMAX', '1'],
@@ -2199,6 +2203,7 @@ def MakeMacEnv():
       CPPDEFINES = [['NACL_WINDOWS', '0'],
                     ['NACL_OSX', '1'],
                     ['NACL_LINUX', '0'],
+                    ['NACL_ANDROID', '0'],
                     # defining _DARWIN_C_SOURCE breaks 10.4
                     #['_DARWIN_C_SOURCE', '1'],
                     #['__STDC_LIMIT_MACROS', '1']
@@ -2252,8 +2257,9 @@ def SetupLinuxEnvArm(env):
                 )
     env.Prepend(CCFLAGS=['-march=armv7-a',
                          '-marm',   # force arm32
-                         '-isystem', jail + '/usr/include',
                          ])
+    if not env.Bit('android'):
+      env.Prepend(CCFLAGS=['-isystem', jail + '/usr/include'])
     # /usr/lib makes sense for most configuration except this one
     # No ARM compatible libs can be found there.
     # So this just makes the command lines longer and sometimes results
@@ -2262,6 +2268,73 @@ def SetupLinuxEnvArm(env):
 
   # get_plugin_dirname.cc has a dependency on dladdr
   env.Append(LIBS=['dl'])
+
+def SetupAndroidEnv(env):
+  env.FilterOut(CPPDEFINES=[['NACL_ANDROID', '0']])
+  env.Prepend(CPPDEFINES=[['NACL_ANDROID', '1']])
+  ndk = os.environ.get('ANDROID_NDK_ROOT')
+  sdk = os.environ.get('ANDROID_SDK_ROOT')
+  tc = os.environ.get('ANDROID_TOOLCHAIN')
+  ndk_target = 'arm-linux-androideabi'
+  ndk_version = '4.4.3'
+  if not ndk or not sdk:
+    print 'Please define ANDROID_NDK_ROOT and ANDROID_SDK_ROOT'
+    sys.exit(-1)
+  if not tc:
+    tc = '%s/toolchains/%s-%s/prebuilt/linux-x86/bin/' \
+            % (ndk, ndk_target, ndk_version)
+  tc_prefix = '%s/%s-' % (tc, ndk_target)
+  platform_prefix = ndk + '/platforms/android-14/arch-arm'
+  stl_path =  ndk + '/sources/cxx-stl/gnu-libstdc++'
+  env.Replace(CC=tc_prefix + 'gcc',
+              CXX=tc_prefix + 'g++',
+              LD=tc_prefix + 'g++',
+              EMULATOR=sdk + '/tools/emulator',
+              LIBPATH=['${LIB_DIR}',
+                       stl_path + '/libs/armeabi-v7a',
+                       platform_prefix + '/usr/lib',
+                       ],
+              LIBS=['gnustl_static', # Yes, that stdc++.
+                    'supc++',
+                    'c',
+                    'm',
+                    'gcc',
+                    # Second time, to have mutual libgcc<->libc deps resolved.
+                    'c',
+                    ],
+              )
+  env.Append(CCFLAGS=['--sysroot='+ platform_prefix,
+                      '-isystem='+ platform_prefix + '/usr/include',
+                      '-DANDROID',
+                      '-D__ANDROID__',
+                      '-mfloat-abi=softfp',
+                      # Due to bogus warnings on uintptr_t formats.
+                      '-Wno-format',
+                      ],
+             CXXFLAGS=['-I' + stl_path + '/include',
+                       '-I' + stl_path + '/libs/armeabi/include',
+                       '-std=gnu++0x',
+                       '-fno-exceptions',
+                       ],
+             LINKFLAGS=['-Wl,-rpath-link=' + platform_prefix + '/usr/lib',
+                        '-Wl,-Ttext-segment,0x50000000',
+                        '-static',
+                        '-nostdlib',
+                        '-L%s/../lib/gcc/%s/%s' \
+                          % (tc, ndk_target, ndk_version),
+                        # Note that we have to use crtbegin_static.o
+                        # if compile -static, and crtbegin_dynamic.o
+                        # otherwise. Also, this apporach skips
+                        # all static initializers invocations.
+                        # TODO(olonho): implement proper static
+                        # initializers solution.
+                        platform_prefix + '/usr/lib/crtbegin_static.o',
+                        platform_prefix + '/usr/lib/crtend_android.o',
+                        ],
+             )
+  # As we want static binary, not PIE.
+  env.FilterOut(LINKFLAGS=['-pie'])
+  return env
 
 def SetupLinuxEnvMips(env):
   jail = '${SCONSTRUCT_DIR}/toolchain/linux_mips-trusted'
@@ -2297,6 +2370,7 @@ def SetupLinuxEnvMips(env):
     env.Append(LIBS=['rt', 'dl', 'pthread'],
                      CCFLAGS=['-EL', '-Wl, -EL', '-march=mips32r2'])
 
+
 def MakeLinuxEnv():
   linux_env = MakeUnixLikeEnv().Clone(
       BUILD_TYPE = '${OPTIMIZATION_LEVEL}-linux',
@@ -2313,6 +2387,7 @@ def MakeLinuxEnv():
       CPPDEFINES = [['NACL_WINDOWS', '0'],
                     ['NACL_OSX', '0'],
                     ['NACL_LINUX', '1'],
+                    ['NACL_ANDROID', '0'],
                     ['_BSD_SOURCE', '1'],
                     ['_POSIX_C_SOURCE', '199506'],
                     ['_XOPEN_SOURCE', '600'],
@@ -2363,6 +2438,9 @@ def MakeLinuxEnv():
   # We always want to use the same flags for .S as for .c because
   # code-generation flags affect the predefines we might test there.
   linux_env.Replace(ASFLAGS=['${CCFLAGS}'])
+
+  if linux_env.Bit('android'):
+    SetupAndroidEnv(linux_env)
 
   return linux_env
 

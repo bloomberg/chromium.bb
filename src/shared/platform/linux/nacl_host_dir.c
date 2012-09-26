@@ -48,7 +48,7 @@ int getdents(unsigned int fd, struct dirent* dirp, unsigned int count);
 #else
 # include <sys/syscall.h>
 int getdents(unsigned int fd, struct dirent* dirp, unsigned int count) {
-  return syscall(SYS_getdents, fd, dirp, count);
+  return syscall(__NR_getdents, fd, dirp, count);
 }
 #endif
 

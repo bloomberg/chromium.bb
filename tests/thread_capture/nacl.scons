@@ -9,7 +9,7 @@ capture_nexe = env.ComponentProgram('nacl_thread_capture_test',
                                     'nacl_thread_capture_test.c',
                                     EXTRA_LIBS=['${NONIRT_LIBS}'])
 
-if 'TRUSTED_ENV' not in env:
+if 'TRUSTED_ENV' not in env or env.Bit('android'):
   Return()
 
 trusted_env = env['TRUSTED_ENV']

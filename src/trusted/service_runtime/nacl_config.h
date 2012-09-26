@@ -277,5 +277,14 @@
 
 #endif /* NACL_ARCH(NACL_BUILD_ARCH) */
 
+/*
+ * Android linker doesn't support __thread variables - for development purposes
+ * one could enable using unsafe pthread API for TLS, before real fix based on
+ * trusted R9-based TLS pool appears.
+ * TODO(olonho): remove when issue
+ * http://code.google.com/p/nativeclient/issues/detail?id=2933
+ * gets fixed.
+ */
+#define NACL_DANGEROUS_USE_PTHREAD_GETSPECIFIC_ON_ANDROID NACL_ANDROID
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_NACL_CONFIG_H_ */

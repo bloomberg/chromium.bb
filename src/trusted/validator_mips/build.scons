@@ -22,9 +22,11 @@ if env.Bit('linux'):
   def _val_dir(filename):
     return '%s/%s' % (COMMON_VAL_DIR, filename)
 
-  env.Append(
-    CXXFLAGS='-Weffc++ -Woverloaded-virtual -fno-rtti -fomit-frame-pointer',
-  )
+  # Android compiler cannot compile NDK C++ headers with these.
+  if not env.Bit('android'):
+    env.Append(
+        CXXFLAGS='-Weffc++ -Woverloaded-virtual -fno-rtti -fomit-frame-pointer',
+        )
 
   GEN_LIST = [_gen_file('decode.cc')]
 
@@ -65,9 +67,9 @@ if env.Bit('linux'):
   ncval = env.ComponentProgram(
       'mips-ncval-core',
       ['ncval.cc'],
-      LIBS=['mips_validator_core',
-            env.NaClTargetArchSuffix('ncfileutils'),
-            '${OPTIONAL_COVERAGE_LIBS}'])
+      EXTRA_LIBS=['mips_validator_core',
+                  env.NaClTargetArchSuffix('ncfileutils'),
+                  '${OPTIONAL_COVERAGE_LIBS}'])
 
   env.SDKInstallBin('ncval', ncval, target='mips32')
 
@@ -75,8 +77,8 @@ if env.Bit('linux'):
 
   address_exe = gtest_env.ComponentProgram('mips_address_set_test_binary',
                        ['address_set_test.cc'],
-                       LIBS=['mips_validator_core', 'gtest', 'pthread',
-                             '${OPTIONAL_COVERAGE_LIBS}'])
+                       EXTRA_LIBS=['mips_validator_core', 'gtest', 'pthread',
+                                   '${OPTIONAL_COVERAGE_LIBS}'])
 
   address_set_test = gtest_env.CommandTest('mips_address_set_test.out',
                                            command=[address_exe])

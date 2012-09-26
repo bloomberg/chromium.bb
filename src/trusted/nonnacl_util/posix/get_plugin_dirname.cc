@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2008 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 
@@ -26,6 +26,12 @@ namespace nacl {
 
 // First, try looking a symbol up in the dynamic loader's records.
 static void PathFromSymbol(char* buffer, size_t len, void* sym) {
+#if NACL_ANDROID
+  UNREFERENCED_PARAMETER(sym);
+  // We do not have dladdr() on Android.
+  if (len > 0)
+    buffer[0] = '\0';
+#else
   Dl_info info;
 
   if (0 != dladdr(sym, &info)) {
@@ -33,6 +39,7 @@ static void PathFromSymbol(char* buffer, size_t len, void* sym) {
   } else {
     buffer[0] = '\0';
   }
+#endif
 }
 
 // Path of the current executable

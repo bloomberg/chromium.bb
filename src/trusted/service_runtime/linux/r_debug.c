@@ -4,8 +4,12 @@
  * found in the LICENSE file.
  */
 
+#if !NACL_ANDROID
 #include <link.h>
+#endif
 #include <stdlib.h>
+
+#include "native_client/src/trusted/service_runtime/linux/android_compat.h"
 
 /*
  * If we are started by the bootstrap program rather than in the
@@ -28,6 +32,10 @@
  */
 
 void NaClHandleRDebug(const char *switch_value, char *argv0) {
+#if NACL_ANDROID
+  UNREFERENCED_PARAMETER(switch_value);
+  UNREFERENCED_PARAMETER(argv0);
+#else
   char *endp = NULL;
   uintptr_t r_debug_addr = strtoul(switch_value, &endp, 0);
   if (r_debug_addr != 0 && *endp == '\0') {
@@ -49,4 +57,5 @@ void NaClHandleRDebug(const char *switch_value, char *argv0) {
     if (l->l_name[0] == '\0')
       l->l_name = argv0;
   }
+#endif
 }

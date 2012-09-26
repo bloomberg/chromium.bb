@@ -374,6 +374,7 @@
         ],
         'defines': [
           'NACL_LINUX=1',
+          'NACL_ANDROID=0',
           'NACL_OSX=0',
           'NACL_WINDOWS=0',
           '_BSD_SOURCE=1',
@@ -647,6 +648,7 @@
         ],
         'defines': [
           'NACL_LINUX=0',
+          'NACL_ANDROID=0',
           'NACL_OSX=1',
           'NACL_WINDOWS=0',
         ],
@@ -703,6 +705,7 @@
           '__STDC_LIMIT_MACROS=1',
 
           'NACL_LINUX=0',
+          'NACL_ANDROID=0',
           'NACL_OSX=0',
           'NACL_WINDOWS=1'
         ],

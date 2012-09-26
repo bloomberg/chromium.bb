@@ -51,18 +51,12 @@ nrd_lib_inputs = [
 ]
 
 if env.Bit('windows'):
-  nrd_lib_inputs += [
-      'win/nacl_desc.c',
-  ]
-elif env.Bit('mac'):
-  nrd_lib_inputs += [
-      'posix/nacl_desc.c',
-  ]
+  nrd_lib_inputs += ['win/nacl_desc.c']
 else:
-  nrd_lib_inputs += [
-      'linux/nacl_desc_sysv_shm.c',
-      'posix/nacl_desc.c',
-  ]
+  nrd_lib_inputs += ['posix/nacl_desc.c']
+
+if env.Bit('linux') and not env.Bit('android'):
+  nrd_lib_inputs += ['linux/nacl_desc_sysv_shm.c']
 
 if env.Bit('windows'):
   nrd_lib_inputs += [

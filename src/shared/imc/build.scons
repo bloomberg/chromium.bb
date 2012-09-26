@@ -6,7 +6,7 @@
 
 Import('env')
 
-if env.Bit('linux'):
+if env.Bit('linux') and not env.Bit('android'):
     env.Append(LIBS=['rt'])
 
 nacl_imc_inputs = [

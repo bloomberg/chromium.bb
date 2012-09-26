@@ -54,7 +54,16 @@ int NaClOsIsSupported() {
     return 0;
   }
 #endif
+
+#if NACL_ANDROID
+  /*
+   * Android has no System V shared memory API, so we don't need qualification
+   * checks for that.
+   */
+  return 1;
+#else
   return !NaClPlatformQualifySysVShmAndMmapHasProblems();
+#endif
 }
 
 

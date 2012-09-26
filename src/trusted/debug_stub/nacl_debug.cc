@@ -100,9 +100,7 @@ static void ThreadExitHook(struct NaClAppThread *natp) throw() {
 
 static void ProcessExitHook(int ErrCode) throw() {
   g_target->Exit(ErrCode);
-  try {
-    NaClDebugStubFini();
-  } DBG_CATCH_ALL
+  NaClDebugStubFini();
 }
 
 static const struct NaClDebugCallbacks debug_callbacks = {

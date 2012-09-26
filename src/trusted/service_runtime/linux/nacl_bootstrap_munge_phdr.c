@@ -27,11 +27,11 @@ int main(int argc, char **argv) {
   GElf_Phdr phdr;
   GElf_Phdr *ph;
 
-  if (argc != 3)
-    error(1, 0, "Usage: %s FILENAME SEGMENT_NUMBER", argv[0]);
+  if (argc != 2)
+    error(1, 0, "Usage: %s FILENAME", argv[0]);
 
   file = argv[1];
-  segment = atoi(argv[2]);
+  segment = 2;
 
   fd = open(file, O_RDWR);
   if (fd < 0)

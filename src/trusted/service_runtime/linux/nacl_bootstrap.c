@@ -18,13 +18,19 @@
  * any of the setup it might expect.
  */
 
+#if !NACL_ANDROID
 #include <elf.h>
+#endif
 #include <fcntl.h>
 #include <limits.h>
+#if !NACL_ANDROID
 #include <link.h>
+#endif
 #include <stddef.h>
 #include <stdint.h>
 #include <sys/mman.h>
+
+#include "native_client/src/trusted/service_runtime/linux/android_compat.h"
 
 /*
  * Get inline functions for system calls.
@@ -699,4 +705,29 @@ asm(".pushsection \".text\",\"ax\",%progbits\n"
 int raise(int sig) {
   return sys_kill(sys_getpid(), sig);
 }
+
+#if NACL_ANDROID
+/*
+ * .. along with few other functions.
+ */
+
+/* Used by _Unwind_GetTextRelBase() and _Unwind_GetDataRelBase() in libgcc.a. */
+void abort(void) {
+  sys_kill(sys_getpid(), SIGABRT);
+  while (1) {}
+}
+
+/* Used by unwind_phase2_forced() in libgcc.a. */
+void* memcpy(void* dest, const void* src, size_t n) {
+  size_t i;
+  for (i = 0; i < n; i++)
+    ((uint8_t*) dest)[i] = ((const uint8_t*) src)[i];
+  return dest;
+}
+
+/* Used by get_eit_entry() (unwinder) in libgcc.a. */
+void __exidx_start() {}
+void __exidx_end() {}
+
+#endif
 #endif
