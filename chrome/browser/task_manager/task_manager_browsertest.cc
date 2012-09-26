@@ -67,12 +67,10 @@ class TaskManagerBrowserTest : public ExtensionBrowserTest {
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionBrowserTest::SetUpCommandLine(command_line);
 
-    // Do not prelaunch the GPU process and disable accelerated compositing
-    // for these tests as the GPU process will show up in task manager but
-    // whether it appears before or after the new tab renderer process is not
-    // well defined.
+    // Do not prelaunch the GPU process for these tests because it will show
+    // up in task manager but whether it appears before or after the new tab
+    // renderer process is not well defined.
     command_line->AppendSwitch(switches::kDisableGpuProcessPrelaunch);
-    command_line->AppendSwitch(switches::kDisableAcceleratedCompositing);
   }
 };
 

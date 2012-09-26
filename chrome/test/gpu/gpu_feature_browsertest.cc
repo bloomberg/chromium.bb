@@ -41,15 +41,16 @@ using trace_analyzer::TraceEventVector;
 
 namespace {
 
-const char kSwapBuffersEvent[] = "SwapBuffers";
-const char kAcceleratedCanvasCreationEvent[] = "Canvas2DLayerBridgeCreation";
-const char kWebGLCreationEvent[] = "DrawingBufferCreation";
+typedef uint32 GpuResultFlags;
+#define EXPECT_NO_GPU_SWAP_BUFFERS    GpuResultFlags(1<<0)
+// Expect a SwapBuffers to occur (see gles2_cmd_decoder.cc).
+#define EXPECT_GPU_SWAP_BUFFERS       GpuResultFlags(1<<1)
 
 class GpuFeatureTest : public InProcessBrowserTest {
  public:
   GpuFeatureTest() : trace_categories_("test_gpu"), gpu_enabled_(false) {}
 
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() {
     FilePath test_dir;
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_dir));
     gpu_test_dir_ = test_dir.AppendASCII("gpu");
@@ -109,10 +110,7 @@ class GpuFeatureTest : public InProcessBrowserTest {
       EXPECT_STREQ(expected_reply, result.c_str());
   }
 
-  // Open the URL and check the trace stream for the given event.
-  void RunEventTest(const FilePath& url,
-                    const char* event_name = NULL,
-                    bool event_expected = false) {
+  void RunTest(const FilePath& url, GpuResultFlags expectations) {
 #if defined(OS_LINUX) && !defined(NDEBUG)
     // Bypass tests on GPU Linux Debug bots.
     if (gpu_enabled_)
@@ -135,16 +133,16 @@ class GpuFeatureTest : public InProcessBrowserTest {
     analyzer_->AssociateBeginEndEvents();
     TraceEventVector events;
 
-    if (!event_name)
-      return;
+    if (expectations & EXPECT_NO_GPU_SWAP_BUFFERS) {
+      EXPECT_EQ(analyzer_->FindEvents(Query::EventNameIs("SwapBuffers"),
+                                      &events), size_t(0));
+    }
 
-    size_t event_count =
-        analyzer_->FindEvents(Query::EventNameIs(event_name), &events);
-
-    if (event_expected)
-      EXPECT_GT(event_count, 0U);
-    else
-      EXPECT_EQ(event_count, 0U);
+    // Check for swap buffers if expected:
+    if (expectations & EXPECT_GPU_SWAP_BUFFERS) {
+      EXPECT_GT(analyzer_->FindEvents(Query::EventNameIs("SwapBuffers"),
+                                      &events), size_t(0));
+    }
   }
 
   // Trigger a resize of the chrome window, and use tracing to wait for the
@@ -180,7 +178,7 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, AcceleratedCompositingAllowed) {
   EXPECT_EQ(type, 0);
 
   const FilePath url(FILE_PATH_LITERAL("feature_compositing.html"));
-  RunEventTest(url, kSwapBuffersEvent, true);
+  RunTest(url, EXPECT_GPU_SWAP_BUFFERS);
 }
 
 // Flash Stage3D may be blacklisted for other reasons on XP, so ignore it.
@@ -193,11 +191,8 @@ GpuFeatureType IgnoreGpuFeatures(GpuFeatureType type) {
   return type;
 }
 
-class AcceleratedCompositingBlockedTest : public GpuFeatureTest {
- public:
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    GpuFeatureTest::SetUpInProcessBrowserTestFixture();
-    const std::string json_blacklist =
+IN_PROC_BROWSER_TEST_F(GpuFeatureTest, AcceleratedCompositingBlocked) {
+  const std::string json_blacklist =
       "{\n"
       "  \"name\": \"gpu blacklist\",\n"
       "  \"version\": \"1.0\",\n"
@@ -210,20 +205,14 @@ class AcceleratedCompositingBlockedTest : public GpuFeatureTest {
       "    }\n"
       "  ]\n"
       "}";
-    SetupBlacklist(json_blacklist);
-  }
-};
-
-IN_PROC_BROWSER_TEST_F(AcceleratedCompositingBlockedTest,
-    AcceleratedCompositingBlocked) {
+  SetupBlacklist(json_blacklist);
   GpuFeatureType type =
       GpuDataManager::GetInstance()->GetBlacklistedFeatures();
   type = IgnoreGpuFeatures(type);
-
   EXPECT_EQ(type, content::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING);
 
   const FilePath url(FILE_PATH_LITERAL("feature_compositing.html"));
-  RunEventTest(url, kSwapBuffersEvent, false);
+  RunTest(url, EXPECT_NO_GPU_SWAP_BUFFERS);
 }
 
 class AcceleratedCompositingTest : public GpuFeatureTest {
@@ -237,7 +226,7 @@ class AcceleratedCompositingTest : public GpuFeatureTest {
 IN_PROC_BROWSER_TEST_F(AcceleratedCompositingTest,
                        AcceleratedCompositingDisabled) {
   const FilePath url(FILE_PATH_LITERAL("feature_compositing.html"));
-  RunEventTest(url, kSwapBuffersEvent, false);
+  RunTest(url, EXPECT_NO_GPU_SWAP_BUFFERS);
 }
 
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest, WebGLAllowed) {
@@ -246,7 +235,7 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, WebGLAllowed) {
   EXPECT_EQ(type, 0);
 
   const FilePath url(FILE_PATH_LITERAL("feature_webgl.html"));
-  RunEventTest(url, kWebGLCreationEvent, true);
+  RunTest(url, EXPECT_GPU_SWAP_BUFFERS);
 }
 
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest, WebGLBlocked) {
@@ -270,7 +259,7 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, WebGLBlocked) {
   EXPECT_EQ(type, content::GPU_FEATURE_TYPE_WEBGL);
 
   const FilePath url(FILE_PATH_LITERAL("feature_webgl.html"));
-  RunEventTest(url, kWebGLCreationEvent, false);
+  RunTest(url, EXPECT_NO_GPU_SWAP_BUFFERS);
 }
 
 class WebGLTest : public GpuFeatureTest {
@@ -286,7 +275,7 @@ class WebGLTest : public GpuFeatureTest {
 
 IN_PROC_BROWSER_TEST_F(WebGLTest, WebGLDisabled) {
   const FilePath url(FILE_PATH_LITERAL("feature_webgl.html"));
-  RunEventTest(url, kWebGLCreationEvent, false);
+  RunTest(url, EXPECT_NO_GPU_SWAP_BUFFERS);
 }
 
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest, MultisamplingAllowed) {
@@ -367,7 +356,7 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, Canvas2DAllowed) {
   EXPECT_EQ(type, 0);
 
   const FilePath url(FILE_PATH_LITERAL("feature_canvas2d.html"));
-  RunEventTest(url, kAcceleratedCanvasCreationEvent, true);
+  RunTest(url, EXPECT_GPU_SWAP_BUFFERS);
 }
 
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest, Canvas2DBlocked) {
@@ -391,7 +380,7 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, Canvas2DBlocked) {
   EXPECT_EQ(type, content::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS);
 
   const FilePath url(FILE_PATH_LITERAL("feature_canvas2d.html"));
-  RunEventTest(url, kAcceleratedCanvasCreationEvent, false);
+  RunTest(url, EXPECT_NO_GPU_SWAP_BUFFERS);
 }
 
 class Canvas2DDisabledTest : public GpuFeatureTest {
@@ -404,7 +393,7 @@ class Canvas2DDisabledTest : public GpuFeatureTest {
 
 IN_PROC_BROWSER_TEST_F(Canvas2DDisabledTest, Canvas2DDisabled) {
   const FilePath url(FILE_PATH_LITERAL("feature_canvas2d.html"));
-  RunEventTest(url, kAcceleratedCanvasCreationEvent, false);
+  RunTest(url, EXPECT_NO_GPU_SWAP_BUFFERS);
 }
 
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest,
@@ -429,13 +418,13 @@ class ThreadedCompositorTest : public GpuFeatureTest {
 // disabled in http://crbug.com/123503
 IN_PROC_BROWSER_TEST_F(ThreadedCompositorTest, ThreadedCompositor) {
   const FilePath url(FILE_PATH_LITERAL("feature_compositing.html"));
-  RunEventTest(url, kSwapBuffersEvent, true);
+  RunTest(url, EXPECT_GPU_SWAP_BUFFERS);
 }
 
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest, RafNoDamage) {
   trace_categories_ = "-test_*";
   const FilePath url(FILE_PATH_LITERAL("feature_raf_no_damage.html"));
-  RunEventTest(url);
+  RunTest(url, GpuResultFlags(0));
 
   if (!analyzer_.get())
     return;

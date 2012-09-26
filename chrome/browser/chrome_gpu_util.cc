@@ -71,12 +71,6 @@ bool ShouldRunCompositingFieldTrial() {
   return false;
 #endif
 
-// Necessary for linux_chromeos build since it defines both OS_LINUX
-// and OS_CHROMEOS .
-#if defined(OS_CHROMEOS)
-  return false;
-#endif
-
 #if defined(OS_WIN)
   // Don't run the trial on Windows XP.
   if (base::win::GetVersion() < base::win::VERSION_VISTA)
@@ -112,44 +106,42 @@ void InitializeCompositingFieldTrial() {
   }
 
   const base::FieldTrial::Probability kDivisor = 3;
-  // Note: This field trial should be removed once we're comfortable with
-  // turning force compositing mode and threaded compositing on all relevant
-  // platforms (see crbug.com/149991).
   scoped_refptr<base::FieldTrial> trial(
     base::FieldTrialList::FactoryGetFieldTrial(
         content::kGpuCompositingFieldTrialName, kDivisor,
-        "disable", 2013, 12, 31, NULL));
+        "disable", 2012, 12, 31, NULL));
 
   // Produce the same result on every run of this client.
   trial->UseOneTimeRandomization();
 
-  // Note: The static field trial probabilities set here can be overwritten
-  // at runtime by Finch. Changing these static values won't have an effect
-  // if a Finch study is active.
   base::FieldTrial::Probability force_compositing_mode_probability = 0;
   base::FieldTrial::Probability threaded_compositing_probability = 0;
 
-  // Threaded compositing mode isn't feature complete on mac or linux yet:
-  // http://crbug.com/133602 for mac
-  // http://crbug.com/140866 for linux
-
-#if defined(OS_WIN)
-  // threaded-compositing turned on by default on Windows.
-  // (Windows XP is excluded explicitly in ShouldRunCompositingFieldTrial)
-  threaded_compositing_probability = 3;
-#elif defined(OS_MACOSX)
-  // force-compositing-mode turned on by default on mac.
-  force_compositing_mode_probability = 3;
-#elif defined(OS_LINUX)
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  if (channel != chrome::VersionInfo::CHANNEL_STABLE &&
-      channel != chrome::VersionInfo::CHANNEL_BETA) {
-    // On channels < beta, force-compositing-mode and
+  if (channel == chrome::VersionInfo::CHANNEL_STABLE ||
+      channel == chrome::VersionInfo::CHANNEL_BETA) {
+    // Stable and Beta channels: Non-threaded force-compositing-mode on by
+    // default (mac and windows only).
+#if defined(OS_WIN) || defined(OS_MACOSX)
+    force_compositing_mode_probability = 3;
+#endif
+  } else if (channel == chrome::VersionInfo::CHANNEL_DEV ||
+             channel == chrome::VersionInfo::CHANNEL_CANARY) {
+    // Dev and Canary channels: force-compositing-mode and
     // threaded-compositing on with 1/3 probability each.
     force_compositing_mode_probability = 1;
-    threaded_compositing_probability = 1;
-  }
+
+#if defined(OS_MACOSX) || defined(OS_LINUX)
+    // Threaded compositing mode isn't feature complete on mac or linux yet:
+    // http://crbug.com/133602 for mac
+    // http://crbug.com/140866 for linux
+    threaded_compositing_probability = 0;
+#else
+    if (!CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kDisableThreadedCompositing))
+        threaded_compositing_probability = 1;
 #endif
+  }
 
   int force_compositing_group = trial->AppendGroup(
       content::kGpuCompositingFieldTrialForceCompositingEnabledName,
