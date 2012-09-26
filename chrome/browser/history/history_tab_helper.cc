@@ -9,6 +9,10 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/top_sites.h"
+#include "chrome/browser/instant/instant_loader.h"
+#include "chrome/browser/prerender/prerender_contents.h"
+#include "chrome/browser/prerender/prerender_manager.h"
+#include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/navigation_details.h"
@@ -19,6 +23,11 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/frame_navigate_params.h"
+
+#if !defined(OS_ANDROID)
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
+#endif
 
 using content::NavigationEntry;
 using content::WebContents;
@@ -105,10 +114,32 @@ void HistoryTabHelper::DidNavigateAnyFrame(
   // the WebContents' URL getter does.
   const history::HistoryAddPageArgs& add_page_args =
       CreateHistoryAddPageArgs(web_contents()->GetURL(), details, params);
-  if (!web_contents()->GetDelegate() ||
-      !web_contents()->GetDelegate()->ShouldAddNavigationToHistory(
-          add_page_args, details.type))
+
+  prerender::PrerenderManager* prerender_manager =
+      prerender::PrerenderManagerFactory::GetForProfile(
+          Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
+  if (prerender_manager) {
+    prerender::PrerenderContents* prerender_contents =
+        prerender_manager->GetPrerenderContents(web_contents());
+    if (prerender_contents) {
+      prerender_contents->DidNavigate(add_page_args);
+      return;
+    }
+  }
+
+  InstantLoader* instant_loader =
+      InstantLoader::FromWebContents(web_contents());
+  if (instant_loader) {
+    instant_loader->DidNavigate(add_page_args);
     return;
+  }
+
+#if !defined(OS_ANDROID)
+  // Don't update history if this web contents isn't associatd with a tab.
+  Browser* browser = browser::FindBrowserWithWebContents(web_contents());
+  if (!browser || browser->is_app())
+    return;
+#endif
 
   UpdateHistoryForNavigation(add_page_args);
 }

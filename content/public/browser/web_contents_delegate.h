@@ -49,10 +49,6 @@ class Rect;
 class Size;
 }
 
-namespace history {
-struct HistoryAddPageArgs;
-}
-
 namespace webkit_glue {
 struct WebIntentData;
 struct WebIntentServiceData;
@@ -159,10 +155,6 @@ class CONTENT_EXPORT WebContentsDelegate {
 
   // Request the delegate to change the zoom level of the current tab.
   virtual void ContentsZoomChange(bool zoom_in) {}
-
-  // Check whether this contents is inside a window dedicated to running a web
-  // application.
-  virtual bool IsApplication() const;
 
   // Check whether this contents is permitted to load data URLs in WebUI mode.
   // This is normally disallowed for security.
@@ -283,12 +275,6 @@ class CONTENT_EXPORT WebContentsDelegate {
   // Allows delegate to override navigation to the history entries.
   // Returns true to allow WebContents to continue with the default processing.
   virtual bool OnGoToEntryOffset(int offset);
-
-  // Returns whether this WebContents should add the specified navigation to
-  // history.
-  virtual bool ShouldAddNavigationToHistory(
-      const history::HistoryAddPageArgs& add_page_args,
-      NavigationType navigation_type);
 
   // Returns the native window framing the view containing the WebContents.
   virtual gfx::NativeWindow GetFrameNativeWindow();

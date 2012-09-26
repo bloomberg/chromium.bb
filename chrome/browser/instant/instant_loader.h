@@ -38,6 +38,9 @@ class Rect;
 // and autocomplete suggestions) between the page and the delegate.
 class InstantLoader : public content::NotificationObserver {
  public:
+  // Returns the Instant loader for |web_contents| if it's used for Instant.
+  static InstantLoader* FromWebContents(content::WebContents* web_contents);
+
   // Creates a new empty WebContents. Use Init() to actually load |instant_url|.
   // |tab_contents| is the page the preview will be shown on top of and
   // potentially replace. |instant_url| is typically the instant_url field of
@@ -69,6 +72,11 @@ class InstantLoader : public content::NotificationObserver {
   // Tells the preview page that the user pressed the up or down key. |count|
   // is a repeat count, negative for moving up, positive for moving down.
   void OnUpOrDownKeyPressed(int count);
+
+  // Called by the history tab helper with the information that it would have
+  // added to the history service had this web contents not been used for
+  // Instant.
+  void DidNavigate(const history::HistoryAddPageArgs& add_page_args);
 
   // Releases the preview TabContents passing ownership to the caller. This
   // should be called when the preview is committed. Notifies the page but not

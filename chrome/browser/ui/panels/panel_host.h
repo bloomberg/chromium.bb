@@ -68,7 +68,6 @@ class PanelHost : public content::WebContentsDelegate,
   virtual bool IsPopupOrPanel(
       const content::WebContents* source) const OVERRIDE;
   virtual void ContentsZoomChange(bool zoom_in) OVERRIDE;
-  virtual bool IsApplication() const OVERRIDE;
   virtual bool HandleContextMenu(
       const content::ContextMenuParams& params) OVERRIDE;
   virtual void HandleKeyboardEvent(

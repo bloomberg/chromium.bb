@@ -1393,10 +1393,6 @@ bool Browser::TakeFocus(content::WebContents* source,
   return false;
 }
 
-bool Browser::IsApplication() const {
-  return is_app();
-}
-
 gfx::Rect Browser::GetRootWindowResizerRect() const {
   return window_->GetRootWindowResizerRect();
 }
@@ -1480,13 +1476,6 @@ void Browser::ViewSourceForFrame(WebContents* source,
 void Browser::ShowRepostFormWarningDialog(WebContents* source) {
   chrome::ShowTabModalConfirmDialog(new RepostFormWarningController(source),
                                     TabContents::FromWebContents(source));
-}
-
-bool Browser::ShouldAddNavigationToHistory(
-    const history::HistoryAddPageArgs& add_page_args,
-    content::NavigationType navigation_type) {
-  // Don't update history if running as app.
-  return !IsApplication();
 }
 
 bool Browser::ShouldCreateWebContents(

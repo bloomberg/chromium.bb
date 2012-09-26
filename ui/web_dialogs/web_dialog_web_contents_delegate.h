@@ -65,9 +65,6 @@ class WEB_DIALOGS_EXPORT WebDialogWebContentsDelegate
                               bool* was_blocked) OVERRIDE;
   virtual bool IsPopupOrPanel(
       const content::WebContents* source) const OVERRIDE;
-  virtual bool ShouldAddNavigationToHistory(
-      const history::HistoryAddPageArgs& add_page_args,
-      content::NavigationType navigation_type) OVERRIDE;
 
  private:
   // Weak pointer.  Always an original profile.

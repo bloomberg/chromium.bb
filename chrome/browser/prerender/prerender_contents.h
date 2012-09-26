@@ -34,6 +34,10 @@ class SessionStorageNamespace;
 class WebContents;
 }
 
+namespace history {
+struct HistoryAddPageArgs;
+}
+
 namespace prerender {
 
 class PrerenderHandle;
@@ -204,6 +208,11 @@ class PrerenderContents : public content::NotificationObserver,
   // Sets the final status, calls OnDestroy and adds |this| to the
   // PrerenderManager's pending deletes list.
   void Destroy(FinalStatus reason);
+
+  // Called by the history tab helper with the information that it woudl have
+  // added to the history service had this web contents not been used for
+  // prerendering.
+  void DidNavigate(const history::HistoryAddPageArgs& add_page_args);
 
   // Applies all the URL history encountered during prerendering to the
   // new tab.
@@ -382,6 +391,11 @@ class PrerenderContents : public content::NotificationObserver,
 
   // The size of the WebView from the launching page.
   gfx::Size size_;
+
+  typedef std::vector<history::HistoryAddPageArgs> AddPageVector;
+
+  // Caches pages to be added to the history.
+  AddPageVector add_page_vector_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderContents);
 };

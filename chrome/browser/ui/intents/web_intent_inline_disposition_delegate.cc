@@ -42,12 +42,6 @@ bool WebIntentInlineDispositionDelegate::IsPopupOrPanel(
   return true;
 }
 
-bool WebIntentInlineDispositionDelegate::ShouldAddNavigationToHistory(
-    const history::HistoryAddPageArgs& add_page_args,
-    content::NavigationType navigation_type) {
-  return false;
-}
-
 content::WebContents* WebIntentInlineDispositionDelegate::OpenURLFromTab(
     content::WebContents* source, const content::OpenURLParams& params) {
   DCHECK(source);  // Can only be invoked from inline disposition.

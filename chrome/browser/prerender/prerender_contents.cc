@@ -104,13 +104,6 @@ class PrerenderContents::TabContentsDelegateImpl
     return NULL;
   }
 
-  virtual bool ShouldAddNavigationToHistory(
-      const history::HistoryAddPageArgs& add_page_args,
-      content::NavigationType navigation_type) OVERRIDE {
-    add_page_vector_.push_back(add_page_args);
-    return false;
-  }
-
   virtual bool CanDownload(RenderViewHost* render_view_host,
                            int request_id,
                            const std::string& request_method) OVERRIDE {
@@ -170,19 +163,7 @@ class PrerenderContents::TabContentsDelegateImpl
     prerender_contents_->Destroy(FINAL_STATUS_REGISTER_PROTOCOL_HANDLER);
   }
 
-  // Commits the History of Pages to the given TabContents.
-  void CommitHistory(TabContents* tab) {
-    for (size_t i = 0; i < add_page_vector_.size(); ++i)
-      tab->history_tab_helper()->UpdateHistoryForNavigation(
-          add_page_vector_[i]);
-  }
-
  private:
-  typedef std::vector<history::HistoryAddPageArgs> AddPageVector;
-
-  // Caches pages to be added to the history.
-  AddPageVector add_page_vector_;
-
   PrerenderContents* prerender_contents_;
 };
 
@@ -697,9 +678,14 @@ const RenderViewHost* PrerenderContents::GetRenderViewHost() const {
   return prerender_contents_->web_contents()->GetRenderViewHost();
 }
 
+void PrerenderContents::DidNavigate(
+    const history::HistoryAddPageArgs& add_page_args) {
+  add_page_vector_.push_back(add_page_args);
+}
+
 void PrerenderContents::CommitHistory(TabContents* tab) {
-  if (tab_contents_delegate_.get())
-    tab_contents_delegate_->CommitHistory(tab);
+  for (size_t i = 0; i < add_page_vector_.size(); ++i)
+    tab->history_tab_helper()->UpdateHistoryForNavigation(add_page_vector_[i]);
 }
 
 Value* PrerenderContents::GetAsValue() const {

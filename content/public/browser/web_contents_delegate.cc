@@ -29,8 +29,6 @@ bool WebContentsDelegate::IsPopupOrPanel(const WebContents* source) const {
   return false;
 }
 
-bool WebContentsDelegate::IsApplication() const { return false; }
-
 bool WebContentsDelegate::CanLoadDataURLsInWebUI() const { return false; }
 
 gfx::Rect WebContentsDelegate::GetRootWindowResizerRect() const {
@@ -113,12 +111,6 @@ bool WebContentsDelegate::PreHandleKeyboardEvent(
 }
 
 bool WebContentsDelegate::OnGoToEntryOffset(int offset) {
-  return true;
-}
-
-bool WebContentsDelegate::ShouldAddNavigationToHistory(
-    const history::HistoryAddPageArgs& add_page_args,
-    NavigationType navigation_type) {
   return true;
 }
 

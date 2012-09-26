@@ -24,9 +24,6 @@ class WebPageScreen : public content::WebContentsDelegate {
 
  protected:
   // content::WebContentsDelegate implementation:
-  virtual bool ShouldAddNavigationToHistory(
-      const history::HistoryAddPageArgs& add_page_args,
-      content::NavigationType navigation_type) OVERRIDE;
   virtual bool HandleContextMenu(
       const content::ContextMenuParams& params) OVERRIDE;
 

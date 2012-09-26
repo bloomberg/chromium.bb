@@ -55,10 +55,4 @@ bool WebDialogWebContentsDelegate::IsPopupOrPanel(
   return true;
 }
 
-bool WebDialogWebContentsDelegate::ShouldAddNavigationToHistory(
-    const history::HistoryAddPageArgs& add_page_args,
-    content::NavigationType navigation_type) {
-  return false;
-}
-
 }  // namespace ui

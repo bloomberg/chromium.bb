@@ -560,7 +560,6 @@ class Browser : public TabStripModelObserver,
   virtual void ContentsZoomChange(bool zoom_in) OVERRIDE;
   virtual void WebContentsFocused(content::WebContents* content) OVERRIDE;
   virtual bool TakeFocus(content::WebContents* source, bool reverse) OVERRIDE;
-  virtual bool IsApplication() const OVERRIDE;
   virtual gfx::Rect GetRootWindowResizerRect() const OVERRIDE;
   virtual void BeforeUnloadFired(content::WebContents* source,
                                  bool proceed,
@@ -578,9 +577,6 @@ class Browser : public TabStripModelObserver,
       const std::string& frame_content_state) OVERRIDE;
   virtual void ShowRepostFormWarningDialog(
       content::WebContents* source) OVERRIDE;
-  virtual bool ShouldAddNavigationToHistory(
-      const history::HistoryAddPageArgs& add_page_args,
-      content::NavigationType navigation_type) OVERRIDE;
   virtual bool ShouldCreateWebContents(
       content::WebContents* web_contents,
       int route_id,

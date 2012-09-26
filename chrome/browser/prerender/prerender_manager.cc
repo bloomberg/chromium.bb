@@ -600,21 +600,11 @@ bool PrerenderManager::IsNoUseGroup() {
   return GetMode() == PRERENDER_MODE_EXPERIMENT_NO_USE_GROUP;
 }
 
-// static
 bool PrerenderManager::IsWebContentsPrerendering(
     WebContents* web_contents) const {
   DCHECK(CalledOnValidThread());
-  for (std::list<linked_ptr<PrerenderData> >::const_iterator it =
-           active_prerender_list_.begin();
-       it != active_prerender_list_.end();
-       ++it) {
-    TabContents* prerender_tab_contents =
-        it->get()->contents_->prerender_contents();
-    if (prerender_tab_contents &&
-        prerender_tab_contents->web_contents() == web_contents) {
-      return true;
-    }
-  }
+  if (GetPrerenderContents(web_contents))
+    return true;
 
   // Also look through the pending-deletion list.
   for (std::list<PrerenderContents*>::const_iterator it =
@@ -628,6 +618,23 @@ bool PrerenderManager::IsWebContentsPrerendering(
   }
 
   return false;
+}
+
+PrerenderContents* PrerenderManager::GetPrerenderContents(
+    content::WebContents* web_contents) const {
+  DCHECK(CalledOnValidThread());
+  for (std::list<linked_ptr<PrerenderData> >::const_iterator it =
+           active_prerender_list_.begin();
+       it != active_prerender_list_.end();
+       ++it) {
+    TabContents* prerender_tab_contents =
+        it->get()->contents_->prerender_contents();
+    if (prerender_tab_contents &&
+        prerender_tab_contents->web_contents() == web_contents) {
+      return it->get()->contents_;
+    }
+  }
+  return NULL;
 }
 
 void PrerenderManager::MarkWebContentsAsPrerendered(WebContents* web_contents) {

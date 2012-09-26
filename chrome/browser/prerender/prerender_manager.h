@@ -182,6 +182,11 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // is prerendering a page.
   bool IsWebContentsPrerendering(content::WebContents* web_contents) const;
 
+  // Returns the PrerenderContents object for the given web_contents if it's
+  // used for an active prerender page, otherwise returns NULL.
+  PrerenderContents* GetPrerenderContents(
+      content::WebContents* web_contents) const;
+
   // Maintaining and querying the set of WebContents belonging to this
   // PrerenderManager that are currently showing prerendered pages.
   void MarkWebContentsAsPrerendered(content::WebContents* web_contents);

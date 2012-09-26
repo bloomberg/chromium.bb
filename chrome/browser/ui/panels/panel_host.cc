@@ -171,10 +171,6 @@ void PanelHost::ContentsZoomChange(bool zoom_in) {
   Zoom(zoom_in ? content::PAGE_ZOOM_IN : content::PAGE_ZOOM_OUT);
 }
 
-bool PanelHost::IsApplication() const {
-  return true;
-}
-
 bool PanelHost::HandleContextMenu(const content::ContextMenuParams& params) {
   return true;  // Disallow context menu.
 }

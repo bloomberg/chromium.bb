@@ -1603,7 +1603,7 @@ IN_PROC_BROWSER_TEST_F(AppModeTest, EnableAppModeTest) {
   // Test that an application browser window loads correctly.
 
   // Verify the browser is in application mode.
-  EXPECT_TRUE(browser()->IsApplication());
+  EXPECT_TRUE(browser()->is_app());
 }
 
 // Confirm about:version contains some expected content.

@@ -66,8 +66,6 @@ TEST_F(WebDialogWebContentsDelegateTest, DoNothingMethodsTest) {
   history::HistoryAddPageArgs should_add_args(
           GURL(), base::Time::Now(), 0, 0, GURL(), history::RedirectList(),
           content::PAGE_TRANSITION_TYPED, history::SOURCE_SYNCED, false);
-  EXPECT_FALSE(test_web_contents_delegate_->ShouldAddNavigationToHistory(
-                   should_add_args, content::NAVIGATION_TYPE_NEW_PAGE));
   test_web_contents_delegate_->NavigationStateChanged(NULL, 0);
   test_web_contents_delegate_->ActivateContents(NULL);
   test_web_contents_delegate_->LoadingStateChanged(NULL);

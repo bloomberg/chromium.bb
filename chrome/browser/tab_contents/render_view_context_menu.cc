@@ -1488,17 +1488,18 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
   }
 
   switch (id) {
-    case IDC_CONTENT_CONTEXT_OPENLINKNEWTAB:
+    case IDC_CONTENT_CONTEXT_OPENLINKNEWTAB: {
+      Browser* browser =
+          browser::FindBrowserWithWebContents(source_web_contents_);
       OpenURL(
           params_.link_url,
           params_.frame_url.is_empty() ? params_.page_url : params_.frame_url,
           params_.frame_id,
-          source_web_contents_->GetDelegate() &&
-              source_web_contents_->GetDelegate()->IsApplication() ?
+          !browser || browser->is_app() ?
                   NEW_FOREGROUND_TAB : NEW_BACKGROUND_TAB,
           content::PAGE_TRANSITION_LINK);
       break;
-
+    }
     case IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW:
       OpenURL(
           params_.link_url,

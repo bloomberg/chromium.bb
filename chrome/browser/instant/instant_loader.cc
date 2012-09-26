@@ -5,7 +5,6 @@
 #include "chrome/browser/instant/instant_loader.h"
 
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
-#include "chrome/browser/history/history_types.h"
 #include "chrome/browser/instant/instant_loader_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
@@ -23,6 +22,24 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+
+namespace {
+
+int kUserDataKey;
+
+class InstantLoaderUserData : public base::SupportsUserData::Data {
+ public:
+  explicit InstantLoaderUserData(InstantLoader* loader) : loader_(loader) {}
+  virtual ~InstantLoaderUserData() {}
+
+  InstantLoader* loader() const { return loader_; }
+
+ private:
+  InstantLoader* loader_;
+  DISALLOW_COPY_AND_ASSIGN(InstantLoaderUserData);
+};
+
+}
 
 // WebContentsDelegateImpl -----------------------------------------------------
 
@@ -59,9 +76,6 @@ class InstantLoader::WebContentsDelegateImpl
   virtual void HandleGestureEnd() OVERRIDE;
   virtual void DragEnded() OVERRIDE;
   virtual bool OnGoToEntryOffset(int offset) OVERRIDE;
-  virtual bool ShouldAddNavigationToHistory(
-      const history::HistoryAddPageArgs& add_page_args,
-      content::NavigationType navigation_type) OVERRIDE;
 
   // content::WebContentsObserver:
   virtual void DidFinishLoad(
@@ -166,13 +180,6 @@ void InstantLoader::WebContentsDelegateImpl::DragEnded() {
 }
 
 bool InstantLoader::WebContentsDelegateImpl::OnGoToEntryOffset(int offset) {
-  return false;
-}
-
-bool InstantLoader::WebContentsDelegateImpl::ShouldAddNavigationToHistory(
-    const history::HistoryAddPageArgs& add_page_args,
-    content::NavigationType navigation_type) {
-  loader_->last_navigation_ = add_page_args;
   return false;
 }
 
@@ -281,6 +288,14 @@ void InstantLoader::WebContentsDelegateImpl
 
 // InstantLoader ---------------------------------------------------------------
 
+// static
+InstantLoader* InstantLoader::FromWebContents(
+    content::WebContents* web_contents) {
+  InstantLoaderUserData* data = static_cast<InstantLoaderUserData*>(
+      web_contents->GetUserData(&kUserDataKey));
+  return data ? data->loader() : NULL;
+}
+
 InstantLoader::InstantLoader(InstantLoaderDelegate* delegate,
                              const std::string& instant_url,
                              const TabContents* tab_contents)
@@ -340,6 +355,11 @@ void InstantLoader::OnUpOrDownKeyPressed(int count) {
                                                           count));
 }
 
+void InstantLoader::DidNavigate(
+    const history::HistoryAddPageArgs& add_page_args) {
+  last_navigation_ = add_page_args;
+}
+
 TabContents* InstantLoader::ReleasePreviewContents(InstantCommitType type,
                                                    const string16& text) {
   content::RenderViewHost* rvh =
@@ -349,6 +369,7 @@ TabContents* InstantLoader::ReleasePreviewContents(InstantCommitType type,
   else
     rvh->Send(new ChromeViewMsg_SearchBoxCancel(rvh->GetRoutingID(), text));
   CleanupPreviewContents();
+  preview_contents_->web_contents()->RemoveUserData(&kUserDataKey);
   return preview_contents_.release();
 }
 
@@ -372,6 +393,7 @@ void InstantLoader::Observe(int type,
 
 void InstantLoader::SetupPreviewContents() {
   content::WebContents* new_contents = preview_contents_->web_contents();
+  new_contents->SetUserData(&kUserDataKey, new InstantLoaderUserData(this));
   preview_delegate_.reset(new WebContentsDelegateImpl(this));
   WebContentsDelegateImpl* new_delegate = preview_delegate_.get();
   new_contents->SetDelegate(new_delegate);
