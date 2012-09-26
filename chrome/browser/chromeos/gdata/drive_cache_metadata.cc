@@ -8,6 +8,7 @@
 
 #include "base/callback.h"
 #include "base/file_util.h"
+#include "base/metrics/histogram.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/chromeos/gdata/drive.pb.h"
 #include "chrome/browser/chromeos/gdata/drive_file_system_util.h"
@@ -15,6 +16,13 @@
 namespace gdata {
 
 namespace {
+
+enum DBOpenStatus {
+  DB_OPEN_SUCCESS,
+  DB_OPEN_FAILURE_CORRUPTION,
+  DB_OPEN_FAILURE_OTHER,
+  DB_OPEN_MAX_VALUE,
+};
 
 // A map table of resource ID to file path.
 typedef std::map<std::string, FilePath> ResourceIdToFilePathMap;
@@ -466,8 +474,11 @@ void DriveCacheMetadataDB::Initialize(
 
   // Delete the db and scan the physical cache. This will fix a corrupt db, but
   // perhaps not other causes of failed DB::Open.
+  DBOpenStatus uma_status = DB_OPEN_SUCCESS;
   if (!db_status.ok()) {
-    DVLOG(1) << "Detected corrupt db";
+    LOG(WARNING) << "Cache db failed to open: " << db_status.ToString();
+    uma_status = db_status.IsCorruption() ?
+                 DB_OPEN_FAILURE_CORRUPTION : DB_OPEN_FAILURE_OTHER;
     const bool deleted = file_util::Delete(db_path, true);
     DCHECK(deleted);
     db_status = leveldb::DB::Open(options, db_path.value(), &level_db);
@@ -478,6 +489,9 @@ void DriveCacheMetadataDB::Initialize(
   }
   DCHECK(level_db);
   level_db_.reset(level_db);
+
+  UMA_HISTOGRAM_ENUMERATION(
+      "Drive.CacheDBOpenStatus", uma_status, DB_OPEN_MAX_VALUE);
 
   // We scan the cache directories to initialize the cache database if we
   // were previously using the cache map.
