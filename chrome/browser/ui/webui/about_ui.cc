@@ -16,15 +16,12 @@
 #include "base/file_util.h"
 #include "base/i18n/number_formatting.h"
 #include "base/json/json_writer.h"
-#include "base/memory/ref_counted_memory.h"
 #include "base/memory/singleton.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/metrics/stats_table.h"
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
 #include "base/string_piece.h"
-#include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/threading/thread.h"
@@ -37,25 +34,19 @@
 #include "chrome/browser/memory_details.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/url_fixer_upper.h"
-#include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/jstemplate_builder.h"
-#include "chrome/common/metrics/variations/variations_util.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_ui.h"
-#include "content/public/browser/web_ui_message_handler.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/process_type.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -69,10 +60,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "v8/include/v8.h"
-#include "webkit/glue/webkit_glue.h"
-#include "webkit/plugins/webplugininfo.h"
-#include "webkit/user_agent/user_agent_util.h"
 
 #if defined(ENABLE_THEMES)
 #include "chrome/browser/ui/webui/theme_source.h"
@@ -93,7 +80,6 @@
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/oom_priority_manager.h"
-#include "chrome/browser/chromeos/version_loader.h"
 #endif
 
 #if defined(USE_ASH)
@@ -104,7 +90,6 @@
 using base::Time;
 using base::TimeDelta;
 using content::BrowserThread;
-using content::PluginService;
 using content::WebContents;
 
 namespace {
@@ -113,7 +98,6 @@ const char kCreditsJsPath[] = "credits.js";
 const char kMemoryJsPath[] = "memory.js";
 const char kStatsJsPath[] = "stats.js";
 const char kStringsJsPath[] = "strings.js";
-const char kVersionJsPath[] = "version.js";
 
 // When you type about:memory, it actually loads this intermediate URL that
 // redirects you to the final page. This avoids the problem where typing
@@ -156,34 +140,6 @@ class AboutMemoryHandler : public MemoryDetails {
 };
 
 #if defined(OS_CHROMEOS)
-// ChromeOSAboutVersionHandler is responsible for loading the Chrome OS
-// version.
-// ChromeOSAboutVersionHandler handles deleting itself once the version has
-// been obtained and AboutUIHTMLSource notified.
-class ChromeOSAboutVersionHandler {
- public:
-  ChromeOSAboutVersionHandler(AboutUIHTMLSource* source, int request_id);
-
-  // Callback from chromeos::VersionLoader giving the version.
-  void OnVersion(chromeos::VersionLoader::Handle handle,
-                 const std::string& version);
-
- private:
-  // Where the results are fed to.
-  scoped_refptr<AboutUIHTMLSource> source_;
-
-  // ID identifying the request.
-  int request_id_;
-
-  // Handles asynchronously loading the version.
-  chromeos::VersionLoader loader_;
-
-  // Used to request the version.
-  CancelableRequestConsumer consumer_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeOSAboutVersionHandler);
-};
-
 class ChromeOSTermsHandler
     : public base::RefCountedThreadSafe<ChromeOSTermsHandler> {
  public:
@@ -1006,137 +962,6 @@ std::string AboutSandbox() {
 }
 #endif
 
-std::string AboutVersionStaticContent(const std::string& query) {
-  return ResourceBundle::GetSharedInstance().GetRawDataResource(
-      query ==  kVersionJsPath ?
-      IDR_ABOUT_VERSION_JS :
-      IDR_ABOUT_VERSION_HTML, ui::SCALE_FACTOR_NONE).as_string();
-}
-
-std::string AboutVersionStrings(DictionaryValue* localized_strings,
-                                Profile* profile) {
-  DCHECK(profile);
-  localized_strings->SetString("title",
-      l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_TITLE));
-  chrome::VersionInfo version_info;
-
-  localized_strings->SetString("name",
-      l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
-  localized_strings->SetString("version", version_info.Version());
-  // Bug 79458: Need to evaluate the use of getting the version string on
-  // this thread.
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
-  localized_strings->SetString("version_modifier",
-                               chrome::VersionInfo::GetVersionStringModifier());
-  localized_strings->SetString("os_name",
-                               l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_OS));
-  localized_strings->SetString("platform",
-                               l10n_util::GetStringUTF16(IDS_PLATFORM_LABEL));
-  localized_strings->SetString("os_type", version_info.OSType());
-  localized_strings->SetString("webkit_version",
-                               webkit_glue::GetWebKitVersion());
-  localized_strings->SetString("js_engine", "V8");
-  localized_strings->SetString("js_version", v8::V8::GetVersion());
-
-#if !defined(OS_ANDROID)
-  // Obtain the version of the first enabled Flash plugin.
-  std::vector<webkit::WebPluginInfo> info_array;
-  PluginService::GetInstance()->GetPluginInfoArray(
-      GURL(), "application/x-shockwave-flash", false, &info_array, NULL);
-  string16 flash_version =
-      l10n_util::GetStringUTF16(IDS_PLUGINS_DISABLED_PLUGIN);
-  PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(profile);
-  if (plugin_prefs) {
-    for (size_t i = 0; i < info_array.size(); ++i) {
-      if (plugin_prefs->IsPluginEnabled(info_array[i])) {
-        flash_version = info_array[i].version;
-        break;
-      }
-    }
-  }
-  localized_strings->SetString("flash_plugin", "Flash");
-  localized_strings->SetString("flash_version", flash_version);
-#endif
-  localized_strings->SetString("company",
-      l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_COMPANY_NAME));
-  localized_strings->SetString("copyright",
-      l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_COPYRIGHT));
-  localized_strings->SetString("cl", version_info.LastChange());
-  localized_strings->SetString("official",
-      l10n_util::GetStringUTF16(
-          version_info.IsOfficialBuild() ?
-              IDS_ABOUT_VERSION_OFFICIAL
-            : IDS_ABOUT_VERSION_UNOFFICIAL));
-  localized_strings->SetString("user_agent_name",
-      l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_USER_AGENT));
-  localized_strings->SetString("useragent", content::GetUserAgent(GURL()));
-  localized_strings->SetString("command_line_name",
-      l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_COMMAND_LINE));
-
-#if defined(OS_WIN)
-  localized_strings->SetString("command_line",
-      WideToUTF16(CommandLine::ForCurrentProcess()->GetCommandLineString()));
-#elif defined(OS_POSIX)
-  std::string command_line = "";
-  typedef std::vector<std::string> ArgvList;
-  const ArgvList& argv = CommandLine::ForCurrentProcess()->argv();
-  for (ArgvList::const_iterator iter = argv.begin(); iter != argv.end(); iter++)
-    command_line += " " + *iter;
-  // TODO(viettrungluu): |command_line| could really have any encoding, whereas
-  // below we assumes it's UTF-8.
-  localized_strings->SetString("command_line", command_line);
-#endif
-
-  // Allow IO temporarily based on allow_io (defined above)
-  // since the following operation will complete quickly
-  localized_strings->SetString("executable_path_name",
-      l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_EXECUTABLE_PATH));
-  FilePath executable_path = CommandLine::ForCurrentProcess()->GetProgram();
-  if (file_util::AbsolutePath(&executable_path)) {
-    localized_strings->SetString("executable_path", executable_path.value());
-  } else {
-    localized_strings->SetString("executable_path",
-        l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_PATH_NOTFOUND));
-  }
-  localized_strings->SetString("profile_path_name",
-      l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_PROFILE_PATH));
-  if (profile) {
-    FilePath profile_path = profile->GetPath();
-    if (file_util::AbsolutePath(&profile_path)) {
-      localized_strings->SetString("profile_path", profile_path.value());
-    } else {
-      localized_strings->SetString("profile_path",
-          l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_PATH_NOTFOUND));
-    }
-  } else {
-    localized_strings->SetString("profile_path",
-        l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_PATH_NOTFOUND));
-  }
-  ChromeWebUIDataSource::SetFontAndTextDirection(localized_strings);
-
-  localized_strings->SetString("variations_name",
-      l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_VARIATIONS));
-
-  std::string data;
-  jstemplate_builder::AppendJsonJS(localized_strings, &data);
-  return data;
-}
-
-// Used as a callback for PluginService::GetPlugins().
-void HandleAboutVersionStrings(AboutUIHTMLSource* source,
-                               int request_id,
-                               const std::vector<webkit::WebPluginInfo>&) {
-#if defined(OS_CHROMEOS)
-  new ChromeOSAboutVersionHandler(source, request_id);
-#else
-  DictionaryValue localized_strings;
-  localized_strings.SetString("os_version", "");
-  source->FinishDataRequest(
-      AboutVersionStrings(&localized_strings, source->profile()),
-      request_id);
-#endif
-}
-
 // AboutMemoryHandler ----------------------------------------------------------
 
 // Helper for AboutMemory to bind results from a ProcessMetrics object
@@ -1181,7 +1006,6 @@ void AboutMemoryHandler::AppendProcess(ListValue* child_data,
   for (size_t i = 0; i < info->titles.size(); ++i)
     titles->Append(new StringValue(info->titles[i]));
 }
-
 
 void AboutMemoryHandler::OnDetailsAvailable() {
   // the root of the JSON hierarchy for about:memory jstemplate
@@ -1267,99 +1091,6 @@ void AboutMemoryHandler::OnDetailsAvailable() {
   source_->FinishDataRequest(data, request_id_);
 }
 
-#if defined(OS_CHROMEOS)
-// ChromeOSAboutVersionHandler  -----------------------------------------------
-
-ChromeOSAboutVersionHandler::ChromeOSAboutVersionHandler(
-    AboutUIHTMLSource* source,
-    int request_id)
-    : source_(source),
-      request_id_(request_id) {
-  loader_.GetVersion(&consumer_,
-                     base::Bind(&ChromeOSAboutVersionHandler::OnVersion,
-                                base::Unretained(this)),
-                     chromeos::VersionLoader::VERSION_FULL);
-}
-
-void ChromeOSAboutVersionHandler::OnVersion(
-    chromeos::VersionLoader::Handle handle,
-    const std::string& version) {
-  DictionaryValue localized_strings;
-  localized_strings.SetString("os_version", version);
-  source_->FinishDataRequest(AboutVersionStrings(
-      &localized_strings, source_->profile()), request_id_);
-
-  // CancelableRequestProvider isn't happy when it's deleted and servicing a
-  // task, so we delay the deletion.
-  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
-}
-
-#endif
-
-class VersionDOMHandler : public content::WebUIMessageHandler {
- public:
-  VersionDOMHandler();
-  virtual ~VersionDOMHandler();
-
-  // content::WebUIMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE;
-
-  // Callback for the "requestVariationsList" message. This requests the list of
-  // variations from the client and sends it to the frontend.
-  void HandleRequestVariationsList(const ListValue* args);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(VersionDOMHandler);
-};
-
-VersionDOMHandler::VersionDOMHandler() {
-}
-
-VersionDOMHandler::~VersionDOMHandler() {
-}
-
-void VersionDOMHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
-      "requestVariationsList",
-      base::Bind(&VersionDOMHandler::HandleRequestVariationsList,
-      base::Unretained(this)));
-}
-
-void VersionDOMHandler::HandleRequestVariationsList(const ListValue* args) {
-  scoped_ptr<ListValue> variations_list(new ListValue());
-  std::vector<std::string> variations;
-#if !defined(NDEBUG)
-  std::string variation_state;
-  base::FieldTrialList::StatesToString(&variation_state);
-
-  std::vector<std::string> tokens;
-  base::SplitString(variation_state,
-                    base::FieldTrialList::kPersistentStringSeparator,
-                    &tokens);
-  // Since StatesToString appends a separator at the end, SplitString will
-  // append an extra empty string in the vector. Drop it. There should
-  // always be an even number of tokens left.
-  tokens.pop_back();
-  DCHECK_EQ(0U, tokens.size() % 2);
-  for (size_t i = 0; i < tokens.size(); i += 2)
-    variations.push_back(tokens[i] + ":" + tokens[i + 1]);
-#else
-  // In release mode, display the hashes only.
-  std::vector<string16> selected_groups;
-  chrome_variations::GetFieldTrialSelectedGroupIdsAsStrings(&selected_groups);
-  for (size_t i = 0; i < selected_groups.size(); ++i)
-    variations.push_back(UTF16ToASCII(selected_groups[i]));
-#endif
-
-  for (std::vector<std::string>::const_iterator it = variations.begin();
-      it != variations.end(); ++it) {
-    variations_list->Append(Value::CreateStringValue(*it));
-  }
-
-  web_ui()->CallJavascriptFunction("returnVariationsList",
-                                   *variations_list.release());
-}
-
 }  // namespace
 
 // AboutUIHTMLSource ----------------------------------------------------------
@@ -1425,17 +1156,6 @@ void AboutUIHTMLSource::StartDataRequest(const std::string& path,
 #else
     response = l10n_util::GetStringUTF8(IDS_TERMS_HTML);
 #endif
-  } else if (host == chrome::kChromeUIVersionHost) {
-    if (path == kStringsJsPath) {
-      // The Flash version information is needed on this page, so make sure
-      // the plugins are loaded.
-      PluginService::GetInstance()->GetPlugins(
-          base::Bind(&HandleAboutVersionStrings,
-                     make_scoped_refptr(this), request_id));
-      return;
-    } else {
-      response = AboutVersionStaticContent(path);
-    }
   }
 
   FinishDataRequest(response, request_id);
@@ -1451,7 +1171,6 @@ std::string AboutUIHTMLSource::GetMimeType(const std::string& path) const {
   if (path == kCreditsJsPath ||
       path == kStatsJsPath   ||
       path == kStringsJsPath ||
-      path == kVersionJsPath ||
       path == kMemoryJsPath) {
     return "application/javascript";
   }
@@ -1467,8 +1186,6 @@ AboutUI::AboutUI(content::WebUI* web_ui, const std::string& name)
   ThemeSource* theme = new ThemeSource(profile);
   ChromeURLDataManager::AddDataSource(profile, theme);
 #endif
-
-  web_ui->AddMessageHandler(new VersionDOMHandler());
 
   ChromeURLDataManager::DataSource* source =
       new AboutUIHTMLSource(name, profile);

@@ -21,10 +21,14 @@ class ChromeWebUIDataSource : public ChromeURLDataManager::DataSource {
   explicit ChromeWebUIDataSource(const std::string& source_name);
   ChromeWebUIDataSource(const std::string& source_name, MessageLoop* loop);
 
-  // Adds a string and its equivalent to our dictionary.
+  // Adds a string keyed to its name to our dictionary.
   void AddString(const std::string& name, const string16& value);
 
-  // Adds a name and its equivaled localized string to our dictionary.
+  // Adds a string keyed to its name to our dictionary.
+  void AddString(const std::string& name, const std::string& value);
+
+  // Adds a localized string with resource |ids| keyed to its name to our
+  // dictionary.
   void AddLocalizedString(const std::string& name, int ids);
 
   // Add strings from |localized_strings| to our dictionary.

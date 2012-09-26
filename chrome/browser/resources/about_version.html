@@ -14,6 +14,8 @@ about:version template page
 <if expr="pp_ifdef('android')">
     <link rel="stylesheet" href="about_version_android.css">
 </if>
+    <script src="chrome://resources/js/cr.js"></script>
+    <script src="chrome://resources/js/load_time_data.js"></script>
     <script src="chrome://resources/js/parse_html_subset.js"></script>
     <script src="chrome://resources/js/util.js"></script>
     <script src="chrome://version/version.js"></script>
@@ -34,22 +36,35 @@ about:version template page
       </div>
       <table id="inner" cellpadding="0" cellspacing="0" border="0">
         <tr><td class="label" valign="top" id="name" i18n-content="name"></td>
-          <td class="version" id="version"><span i18n-content="version"></span> (<span i18n-content="official"></span> <span i18n-content="cl"></span>) <span i18n-content="version_modifier"></span></td>
+          <td class="version" id="version">
+            <span i18n-content="version"></span>
+            (<span i18n-content="official">
+            </span> <span i18n-content="cl"></span>)
+            <span i18n-content="version_modifier"></span>
+          </td>
         </tr>
 <if expr="not pp_ifdef('chromeos')">
         <tr><td class="label" valign="top" i18n-content="os_name"></td>
-          <td class="version" id="os_type"><span i18n-content="os_type"></span> <span i18n-content="os_version"></span></td>
+          <td class="version" id="os_type">
+            <span i18n-content="os_type"></span>
+            <span id="os_version" i18n-content="os_version"></span>
+          </td>
 </if>
 <if expr="pp_ifdef('chromeos')">
         <tr><td class="label" valign="top" i18n-content="platform"></td>
-          <td class="version" id="os_type"><span i18n-content="os_version"></span></td>
+          <td class="version" id="os_type">
+            <span id="os_version" i18n-content="os_version"></span>
+          </td>
 </if>
         </tr>
         <tr><td class="label" valign="top">WebKit</td>
           <td class="version" id="webkit_version" i18n-content="webkit_version"></td>
         </tr>
         <tr><td class="label" valign="top">JavaScript</td>
-          <td class="version" id="js_engine"><span i18n-content="js_engine"></span> <span i18n-content="js_version"></span></td>
+          <td class="version" id="js_engine">
+            <span i18n-content="js_engine"></span>
+            <span i18n-content="js_version"></span>
+          </td>
         </tr>
 <if expr="not pp_ifdef('android')">
         <tr><td class="label" valign="top" i18n-content="flash_plugin"></td>
@@ -74,9 +89,7 @@ about:version template page
         </tr>
       </table>
     </div>
-    <script src="chrome://resources/js/i18n_template.js"></script>
-    <script src="chrome://resources/js/i18n_process.js"></script>
-    <script src="chrome://resources/js/jstemplate_compiled.js"></script>
+    <script src="chrome://resources/js/i18n_template2.js"></script>
   </body>
 
 </html>

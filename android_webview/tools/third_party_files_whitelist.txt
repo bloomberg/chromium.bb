@@ -98,7 +98,7 @@ chrome/browser/resources/help/help.html
 # String 'copyright' used in code.
 chrome/browser/resources/shared/css/about_version.css
 # String 'copyright' used in code.
-chrome/browser/ui/webui/about_ui.cc
+chrome/browser/ui/webui/version_ui.cc
 # String 'copyright' used in code.
 chrome/browser/ui/webui/help/help_handler.cc
 # Copyright Google Inc; no license. Example code only.
