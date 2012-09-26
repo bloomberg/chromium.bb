@@ -1400,9 +1400,6 @@ const char kEnableTouchpadThreeFingerClick[]
 // Skips OAuth part of ChromeOS login process.
 const char kSkipOAuthLogin[]                = "skip-oauth-login";
 
-// Use level db for drive metadata storage.
-const char kUseLevelDBForGData[]            = "use-leveldb-for-gdata";
-
 // Enables the redirection of viewable document requests to the Google Document
 // Viewer.
 const char kEnableGView[]                   = "enable-gview";

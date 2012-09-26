@@ -796,13 +796,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableDriveV2Api),
   },
   {
-    "use-leveldb-for-gdata",
-    IDS_FLAGS_USE_LEVELDB_FOR_GDATA_NAME,
-    IDS_FLAGS_USE_LEVELDB_FOR_GDATA_DESCRIPTION,
-    kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kUseLevelDBForGData),
-  },
-  {
     "disable-html5-camera",
     IDS_FLAGS_DISABLE_HTML5_CAMERA,
     IDS_FLAGS_DISABLE_HTML5_CAMERA_DESCRIPTION,
