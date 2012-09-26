@@ -9,7 +9,8 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/features/feature.h"
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, NativeMessageBasic) {
+// Missing some chrome/test/data files after revert of revert. crbug.com/142915.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_NativeMessageBasic) {
   // Override the user data dir to point to our native app.
   extensions::Feature::ScopedCurrentChannel
       current_channel(chrome::VersionInfo::CHANNEL_DEV);
