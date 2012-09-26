@@ -5,33 +5,16 @@
 
 import glob
 import optparse
-import re
 import subprocess
 import sys
+
+import test_format
 
 
 def AssertEquals(actual, expected):
   if actual != expected:
     raise AssertionError('\nEXPECTED:\n"""\n%s"""\n\nACTUAL:\n"""\n%s"""'
                          % (expected, actual))
-
-
-def ParseTestFile(filename):
-  fh = open(filename, 'r')
-  fields = {}
-  current_field = None
-  for line in fh:
-    if line.startswith('  '):
-      assert current_field is not None, line
-      fields[current_field].append(line[2:])
-    else:
-      match = re.match('@(\S+):$', line)
-      if match is None:
-        raise Exception('Bad line: %r' % line)
-      current_field = match.group(1)
-      assert current_field not in fields, current_field
-      fields[current_field] = []
-  return dict((key, ''.join(value)) for key, value in fields.iteritems())
 
 
 def GetX8632Combinations():
@@ -92,7 +75,11 @@ def GetX8664Combinations():
             yield ext, options
 
 
-def Test(options, info):
+def Test(options, test_filename):
+  print 'Testing %s...' % test_filename
+
+  items_list = test_format.LoadTestFile(test_filename)
+  info = dict(items_list)
   handled_fields = set(['hex'])
 
   def RunCommandOnHex(field, command):
@@ -106,7 +93,12 @@ def Test(options, info):
       # Remove the carriage return characters that we get on Windows.
       stdout = stdout.replace('\r', '')
       print '  Checking %r field...' % field
-      AssertEquals(stdout, info[field])
+      if options.update:
+        if stdout != info[field]:
+          print '  Updating %r field...' % field
+          info[field] = stdout
+      else:
+        AssertEquals(stdout, info[field])
 
   ncdis = [options.ncdis, '--hex_text=-']
   RunCommandOnHex('dis', ncdis + ['--full_decoder'])
@@ -114,11 +106,11 @@ def Test(options, info):
 
   ncval = [options.ncval, '--hex_text=-', '--max_errors=-1']
   if options.bits == '32':
-    for ext, options in GetX8632Combinations():
-      RunCommandOnHex(ext, ncval + options)
+    for ext, ncval_options in GetX8632Combinations():
+      RunCommandOnHex(ext, ncval + ncval_options)
   elif options.bits == '64':
-    for ext, options in GetX8664Combinations():
-      RunCommandOnHex(ext, ncval + options)
+    for ext, ncval_options in GetX8664Combinations():
+      RunCommandOnHex(ext, ncval + ncval_options)
 
     RunCommandOnHex('sval', ncval + ['--stubout'])
   else:
@@ -127,6 +119,11 @@ def Test(options, info):
   unhandled = set(info.keys()).difference(handled_fields)
   if unhandled:
     raise AssertionError('Unhandled fields: %r' % sorted(unhandled))
+
+  if options.update:
+    # Preserve the ordering of the fields when writing the updated file.
+    items_list = [(field, info[field]) for field, _ in items_list]
+    test_format.SaveTestFile(items_list, test_filename)
 
 
 def main(args):
@@ -137,6 +134,10 @@ def main(args):
                     help='Path to the ncdis disassembler executable')
   parser.add_option('--bits',
                     help='The subarchitecture to run tests against: 32 or 64')
+  parser.add_option('--update',
+                    default=False,
+                    action='store_true',
+                    help='Regenerate golden fields instead of testing')
   options, args = parser.parse_args()
   if options.bits is None:
     parser.error('--bits argument missing')
@@ -149,8 +150,7 @@ def main(args):
       raise AssertionError(
           '%r matched no files, which was probably not intended' % glob_expr)
     for test_file in test_files:
-      print 'Testing %s...' % test_file
-      Test(options, ParseTestFile(test_file))
+      Test(options, test_file)
       processed += 1
   print '%s test files were processed.' % processed
 
