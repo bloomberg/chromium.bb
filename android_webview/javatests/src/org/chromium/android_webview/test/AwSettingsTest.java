@@ -387,9 +387,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         }
 
         private String getData() {
-            return "<html>" +
-                    "<body onload='document.writeln(document.title=navigator.userAgent)'></body>" +
-                    "</html>";
+            return "<html><body onload='document.title=navigator.userAgent'></body></html>";
         }
     }
 
