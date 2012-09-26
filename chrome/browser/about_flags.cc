@@ -789,13 +789,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kDisableNewWallpaperUI)
   },
   {
-    "enable-drive-v2-api",
-    IDS_FLAGS_ENABLE_DRIVE_V2_API,
-    IDS_FLAGS_ENABLE_DRIVE_V2_API_DESCRIPTION,
-    kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kEnableDriveV2Api),
-  },
-  {
     "disable-html5-camera",
     IDS_FLAGS_DISABLE_HTML5_CAMERA,
     IDS_FLAGS_DISABLE_HTML5_CAMERA_DESCRIPTION,

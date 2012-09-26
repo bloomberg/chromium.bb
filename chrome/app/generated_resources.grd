@@ -6306,12 +6306,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_ALLOW_TOUCHPAD_THREE_FINGER_CLICK_DESCRIPTION" desc="Description for the flag to enable touchpad three finger click as middle button.">
           Enables touchpad three-finger-click as middle button.
         </message>
-        <message name="IDS_FLAGS_ENABLE_DRIVE_V2_API" desc="Name for the flag to enable Drive V2 API.">
-          Enable Drive V2 API.
-        </message>
-        <message name="IDS_FLAGS_ENABLE_DRIVE_V2_API_DESCRIPTION" desc="Description for the flag to enable Drive V2 API.">
-          Enables to use Drive V2 API for accessing Google Drive folder.
-        </message>
         <message name="IDS_FLAGS_DISABLE_HTML5_CAMERA" desc="Name for the flag to disable new camera WebUI.">
           Disable HTML5 camera in WebUI.
         </message>
