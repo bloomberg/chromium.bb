@@ -324,13 +324,23 @@ var filters = {
   url: [{urlContains: getGmailUrl().replace(/^https?\:\/\//, '')}]
 };
 
-chrome.webNavigation.onDOMContentLoaded.addListener(function(changeInfo) {
-  if (changeInfo.url && isGmailUrl(changeInfo.url)) {
-    console.log('Recognized Gmail navigation to: ' + changeInfo.url + '.' +
+function onNavigate(details) {
+  if (details.url && isGmailUrl(details.url)) {
+    console.log('Recognized Gmail navigation to: ' + details.url + '.' +
                 'Refreshing count...');
     startRequest({scheduleRequest:false, showLoadingAnimation:false});
   }
-}, filters);
+}
+if (chrome.webNavigation && chrome.webNavigation.onDOMContentLoaded &&
+    chrome.webNavigation.onReferenceFragmentUpdated) {
+  chrome.webNavigation.onDOMContentLoaded.addListener(onNavigate, filters);
+  chrome.webNavigation.onReferenceFragmentUpdated.addListener(
+      onNavigate, filters);
+} else {
+  chrome.tabs.onUpdated.addListener(function(_, details) {
+    onNavigate(details);
+  });
+}
 
 chrome.browserAction.onClicked.addListener(goToInbox);
 
