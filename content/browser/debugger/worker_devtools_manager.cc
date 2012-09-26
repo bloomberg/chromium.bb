@@ -170,6 +170,7 @@ class WorkerDevToolsManager::DetachedClientHosts {
         agent,
         WebKit::WebDevToolsAgent::disconnectEventAsText().utf8());
     int cookie = DevToolsManagerImpl::GetInstance()->DetachClientHost(agent);
+    agent->WorkerDestroyed();
     if (cookie == -1) {
       RemovePendingWorkerData(id);
       return;
