@@ -1464,6 +1464,12 @@ ui::EventResult RenderWidgetHostViewAura::OnKeyEvent(ui::KeyEvent* event) {
 ui::EventResult RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
   TRACE_EVENT0("browser", "RenderWidgetHostViewAura::OnMouseEvent");
   if (mouse_locked_) {
+    // Hide the cursor if someone else has shown it.
+    aura::client::CursorClient* cursor_client =
+        aura::client::GetCursorClient(window_->GetRootWindow());
+    if (cursor_client && cursor_client->IsCursorVisible())
+      cursor_client->ShowCursor(false);
+
     WebKit::WebMouseEvent mouse_event = MakeWebMouseEvent(event);
     gfx::Point center(gfx::Rect(window_->bounds().size()).CenterPoint());
 

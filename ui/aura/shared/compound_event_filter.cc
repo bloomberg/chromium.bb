@@ -37,7 +37,7 @@ Window* GetActiveWindow(Window* window) {
 ////////////////////////////////////////////////////////////////////////////////
 // CompoundEventFilter, public:
 
-CompoundEventFilter::CompoundEventFilter() : update_cursor_visibility_(true) {
+CompoundEventFilter::CompoundEventFilter() : cursor_hidden_by_filter_(false) {
 }
 
 CompoundEventFilter::~CompoundEventFilter() {
@@ -147,11 +147,19 @@ ui::TouchStatus CompoundEventFilter::FilterTouchEvent(
 void CompoundEventFilter::SetCursorVisibilityOnEvent(aura::Window* target,
                                                      ui::Event* event,
                                                      bool show) {
-  if (update_cursor_visibility_ && !(event->flags() & ui::EF_IS_SYNTHESIZED)) {
+  if (!(event->flags() & ui::EF_IS_SYNTHESIZED)) {
     client::CursorClient* client =
         client::GetCursorClient(target->GetRootWindow());
-    if (client)
-      client->ShowCursor(show);
+    if (client) {
+      if (show && cursor_hidden_by_filter_) {
+        cursor_hidden_by_filter_ = false;
+        client->ShowCursor(true);
+      } else if (client->IsCursorVisible() && !show &&
+                 !cursor_hidden_by_filter_) {
+        cursor_hidden_by_filter_ = true;
+        client->ShowCursor(false);
+      }
+    }
   }
 }
 

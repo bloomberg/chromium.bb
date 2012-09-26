@@ -295,8 +295,6 @@ void MagnificationControllerImpl::OnMouseMove(const gfx::Point& location) {
       int y_diff = origin_.y() - window_rect.y();
       // If the magnified region is moved, hides the mouse cursor and moves it.
       if (x_diff != 0 || y_diff != 0) {
-        ash::Shell::GetInstance()->
-            env_filter()->set_update_cursor_visibility(false);
         root_window_->ShowCursor(false);
         mouse.set_x(mouse.x() - (origin_.x() - window_rect.x()));
         mouse.set_y(mouse.y() - (origin_.y() - window_rect.y()));

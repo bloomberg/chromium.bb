@@ -322,7 +322,6 @@ void PowerButtonController::OnAppTerminating() {
   if (!shutting_down_) {
     shutting_down_ = true;
     Shell* shell = ash::Shell::GetInstance();
-    shell->env_filter()->set_update_cursor_visibility(false);
     shell->cursor_manager()->ShowCursor(false);
     ShowBlackLayer();
     StartAnimation(GetAllContainersMask(), ANIMATION_HIDE);
@@ -554,7 +553,6 @@ void PowerButtonController::StartShutdownAnimationAndRequestShutdown() {
   shutting_down_ = true;
 
   Shell* shell = ash::Shell::GetInstance();
-  shell->env_filter()->set_update_cursor_visibility(false);
   shell->cursor_manager()->ShowCursor(false);
 
   ShowBlackLayer();

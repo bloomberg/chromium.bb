@@ -589,8 +589,6 @@ TEST_F(WindowManagerTest, UpdateCursorVisibility) {
   scoped_ptr<aura::Window> window(aura::test::CreateTestWindow(
       SK_ColorWHITE, -1, gfx::Rect(0, 0, 500, 500), NULL));
 
-  aura::shared::CompoundEventFilter* env_filter =
-      Shell::GetInstance()->env_filter();
   ash::CursorManager* cursor_manager =
       ash::Shell::GetInstance()->cursor_manager();
 
@@ -601,7 +599,6 @@ TEST_F(WindowManagerTest, UpdateCursorVisibility) {
   ui::TouchEvent touch_pressed2(
       ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), 1, getTime());
 
-  env_filter->set_update_cursor_visibility(true);
   root_window->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse_moved);
   EXPECT_TRUE(cursor_manager->cursor_visible());
   root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&touch_pressed1);
@@ -609,12 +606,23 @@ TEST_F(WindowManagerTest, UpdateCursorVisibility) {
   root_window->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse_moved);
   EXPECT_TRUE(cursor_manager->cursor_visible());
 
-  env_filter->set_update_cursor_visibility(false);
+  // If someone else made cursor invisible keep it invisible even after it
+  // received mouse events.
   cursor_manager->ShowCursor(false);
   root_window->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse_moved);
   EXPECT_FALSE(cursor_manager->cursor_visible());
-  cursor_manager->ShowCursor(true);
   root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&touch_pressed2);
+  EXPECT_FALSE(cursor_manager->cursor_visible());
+  root_window->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse_moved);
+  EXPECT_FALSE(cursor_manager->cursor_visible());
+
+  // Back to normal.
+  cursor_manager->ShowCursor(true);
+  root_window->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse_moved);
+  EXPECT_TRUE(cursor_manager->cursor_visible());
+  root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&touch_pressed2);
+  EXPECT_FALSE(cursor_manager->cursor_visible());
+  root_window->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse_moved);
   EXPECT_TRUE(cursor_manager->cursor_visible());
 }
 

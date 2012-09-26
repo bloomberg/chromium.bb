@@ -40,10 +40,6 @@ class AURA_EXPORT CompoundEventFilter : public EventFilter {
   // Returns the cursor for the specified component.
   static gfx::NativeCursor CursorForWindowComponent(int window_component);
 
-  void set_update_cursor_visibility(bool update) {
-    update_cursor_visibility_ = update;
-  }
-
   // Adds/removes additional event filters. This does not take ownership of
   // the EventFilter.
   // NOTE: EventFilters are deprecated. Use env::AddPreTargetEventHandler etc.
@@ -62,7 +58,11 @@ class AURA_EXPORT CompoundEventFilter : public EventFilter {
   ui::TouchStatus FilterTouchEvent(Window* target, ui::TouchEvent* event);
 
   // Sets the visibility of the cursor if the event is not synthesized and
-  // |update_cursor_visibility_| is true.
+  // 1) it's hiding (show=false) when the cursor is currently shown, or
+  // 2) it's showing (show=true) if the cursor is previously hidden
+  //    by this event filter (see |cursor_hidden_by_filter_|),
+  // so that it doesn't change the cursor visibility if the cursor was
+  // intentionally hidden by other components.
   void SetCursorVisibilityOnEvent(aura::Window* target,
                                   ui::Event* event,
                                   bool show);
@@ -80,9 +80,8 @@ class AURA_EXPORT CompoundEventFilter : public EventFilter {
   // Additional event filters that pre-handles events.
   ObserverList<EventFilter, true> filters_;
 
-  // Should we show the mouse cursor when we see mouse movement and hide it when
-  // we see a touch event?
-  bool update_cursor_visibility_;
+  // True if the cursur was hidden by the filter.
+  bool cursor_hidden_by_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(CompoundEventFilter);
 };

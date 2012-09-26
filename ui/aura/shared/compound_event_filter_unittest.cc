@@ -23,7 +23,7 @@ base::TimeDelta GetTime() {
 
 class TestVisibleClient : public aura::client::CursorClient {
  public:
-  TestVisibleClient() : visible_(false) {}
+  TestVisibleClient() : visible_(true) {}
   virtual ~TestVisibleClient() {}
 
   virtual void SetCursor(gfx::NativeCursor cursor) OVERRIDE {
