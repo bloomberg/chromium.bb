@@ -10,11 +10,11 @@
 #include "CCSharedQuadState.h"
 #include "FloatRect.h"
 #include "SkColor.h"
+#include "cc/hash_pair.h"
 #include "cc/own_ptr_vector.h"
+#include "cc/scoped_ptr_hash_map.h"
 #include <public/WebFilterOperations.h>
 #include <public/WebTransformationMatrix.h>
-#include <wtf/HashMap.h>
-#include <wtf/PassOwnPtr.h>
 #include <wtf/Vector.h>
 
 namespace cc {
@@ -58,10 +58,10 @@ public:
         bool operator<(const Id& other) const { return layerId < other.layerId || (layerId == other.layerId && index < other.index); }
     };
 
-    static PassOwnPtr<CCRenderPass> create(Id, IntRect outputRect, const WebKit::WebTransformationMatrix& transformToRootTarget);
+    static scoped_ptr<CCRenderPass> create(Id, IntRect outputRect, const WebKit::WebTransformationMatrix& transformToRootTarget);
 
     // A shallow copy of the render pass, which does not include its quads.
-    PassOwnPtr<CCRenderPass> copy(Id newId) const;
+    scoped_ptr<CCRenderPass> copy(Id newId) const;
 
     void appendQuadsForLayer(CCLayerImpl*, CCOcclusionTrackerImpl*, CCAppendQuadsData&);
     void appendQuadsForRenderSurfaceLayer(CCLayerImpl*, const CCRenderPass* contributingRenderPass, CCOcclusionTrackerImpl*, CCAppendQuadsData&);
@@ -109,27 +109,27 @@ protected:
 
 } // namespace cc
 
-namespace WTF {
-template<> struct HashTraits<cc::CCRenderPass::Id> : GenericHashTraits<cc::CCRenderPass::Id> {
-    static const bool emptyValueIsZero = false;
-    static const bool needsDestruction = false;
-    static cc::CCRenderPass::Id emptyValue() { return cc::CCRenderPass::Id(0, 0); }
-    static void constructDeletedValue(cc::CCRenderPass::Id& slot) { slot = cc::CCRenderPass::Id(-1, -1); }
-    static bool isDeletedValue(cc::CCRenderPass::Id value) { return value.layerId == -1 && value.index == -1; }
+namespace BASE_HASH_NAMESPACE {
+#if defined(COMPILER_MSVC)
+template<>
+inline size_t hash_value<cc::CCRenderPass::Id>(const cc::CCRenderPass::Id& key) {
+    return hash_value<std::pair<int, int> >(std::pair<int, int>(key.layerId, key.index));
+}
+#elif defined(COMPILER_GCC)
+template<>
+struct hash<cc::CCRenderPass::Id> {
+    size_t operator()(cc::CCRenderPass::Id key) const {
+        return hash<std::pair<int, int> >()(std::pair<int, int>(key.layerId, key.index));
+    }
 };
-template<> struct IntHash<cc::CCRenderPass::Id> {
-    static unsigned hash(const cc::CCRenderPass::Id& key) { return PairHash<int, int>::hash(std::make_pair(key.layerId, key.index)); }
-    static bool equal(const cc::CCRenderPass::Id& a, const cc::CCRenderPass::Id& b) { return a == b; }
-    static const bool safeToCompareToEmptyOrDeleted = true;
-};
-template<> struct DefaultHash<cc::CCRenderPass::Id> {
-    typedef IntHash<cc::CCRenderPass::Id> Hash;
-};
-} // namespace WTF
+#else
+#error define a hash function for your compiler
+#endif // COMPILER
+}
 
 namespace cc {
 typedef Vector<CCRenderPass*> CCRenderPassList;
-typedef HashMap<CCRenderPass::Id, OwnPtr<CCRenderPass> > CCRenderPassIdHashMap;
+typedef ScopedPtrHashMap<CCRenderPass::Id, CCRenderPass> CCRenderPassIdHashMap;
 } // namespace cc
 
 #endif

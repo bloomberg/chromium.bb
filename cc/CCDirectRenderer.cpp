@@ -8,6 +8,7 @@
 
 #include "CCMathUtil.h"
 #include <public/WebTransformationMatrix.h>
+#include <vector>
 
 using WebKit::WebTransformationMatrix;
 
@@ -114,34 +115,23 @@ CCDirectRenderer::~CCDirectRenderer()
 
 void CCDirectRenderer::decideRenderPassAllocationsForFrame(const CCRenderPassList& renderPassesInDrawOrder)
 {
-    HashMap<CCRenderPass::Id, const CCRenderPass*> renderPassesInFrame;
+    base::hash_map<CCRenderPass::Id, const CCRenderPass*> renderPassesInFrame;
     for (size_t i = 0; i < renderPassesInDrawOrder.size(); ++i)
-        renderPassesInFrame.set(renderPassesInDrawOrder[i]->id(), renderPassesInDrawOrder[i]);
+        renderPassesInFrame.insert(std::pair<CCRenderPass::Id, const CCRenderPass*>(renderPassesInDrawOrder[i]->id(), renderPassesInDrawOrder[i]));
 
-    Vector<CCRenderPass::Id> passesToDelete;
-    HashMap<CCRenderPass::Id, OwnPtr<CachedTexture> >::const_iterator passIterator;
+    std::vector<CCRenderPass::Id> passesToDelete;
+    ScopedPtrHashMap<CCRenderPass::Id, CachedTexture>::const_iterator passIterator;
     for (passIterator = m_renderPassTextures.begin(); passIterator != m_renderPassTextures.end(); ++passIterator) {
-#if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
-        const CCRenderPass* renderPassInFrame = renderPassesInFrame.get(passIterator->key);
-#else
-        const CCRenderPass* renderPassInFrame = renderPassesInFrame.get(passIterator->first);
-#endif
-        if (!renderPassInFrame) {
-#if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
-            passesToDelete.append(passIterator->key);
-#else
-            passesToDelete.append(passIterator->first);
-#endif
+        base::hash_map<CCRenderPass::Id, const CCRenderPass*>::const_iterator it = renderPassesInFrame.find(passIterator->first);
+        if (it == renderPassesInFrame.end()) {
+            passesToDelete.push_back(passIterator->first);
             continue;
         }
 
+        const CCRenderPass* renderPassInFrame = it->second;
         const IntSize& requiredSize = renderPassTextureSize(renderPassInFrame);
         GC3Denum requiredFormat = renderPassTextureFormat(renderPassInFrame);
-#if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
-        CachedTexture* texture = passIterator->value.get();
-#else
-        CachedTexture* texture = passIterator->second.get();
-#endif
+        CachedTexture* texture = passIterator->second;
         ASSERT(texture);
 
         if (texture->id() && (texture->size() != requiredSize || texture->format() != requiredFormat))
@@ -150,12 +140,12 @@ void CCDirectRenderer::decideRenderPassAllocationsForFrame(const CCRenderPassLis
 
     // Delete RenderPass textures from the previous frame that will not be used again.
     for (size_t i = 0; i < passesToDelete.size(); ++i)
-        m_renderPassTextures.remove(passesToDelete[i]);
+        m_renderPassTextures.erase(passesToDelete[i]);
 
     for (size_t i = 0; i < renderPassesInDrawOrder.size(); ++i) {
         if (!m_renderPassTextures.contains(renderPassesInDrawOrder[i]->id())) {
-            OwnPtr<CachedTexture> texture = CachedTexture::create(m_resourceProvider);
-            m_renderPassTextures.set(renderPassesInDrawOrder[i]->id(), texture.release());
+          scoped_ptr<CachedTexture> texture = CachedTexture::create(m_resourceProvider);
+            m_renderPassTextures.set(renderPassesInDrawOrder[i]->id(), texture.Pass());
         }
     }
 }

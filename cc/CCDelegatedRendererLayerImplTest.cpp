@@ -18,6 +18,7 @@
 #include "FakeWebCompositorOutputSurface.h"
 #include "FakeWebGraphicsContext3D.h"
 #include "MockCCQuadCuller.h"
+#include "cc/scoped_ptr_vector.h"
 #include <gtest/gtest.h>
 #include <public/WebTransformationMatrix.h>
 
@@ -64,11 +65,11 @@ protected:
     OwnPtr<CCLayerTreeHostImpl> m_hostImpl;
 };
 
-static CCTestRenderPass* addRenderPass(OwnPtrVector<CCRenderPass>& passList, CCRenderPass::Id id, IntRect outputRect, WebTransformationMatrix rootTransform)
+static CCTestRenderPass* addRenderPass(ScopedPtrVector<CCRenderPass>& passList, CCRenderPass::Id id, IntRect outputRect, WebTransformationMatrix rootTransform)
 {
-    OwnPtr<CCRenderPass> pass(CCRenderPass::create(id, outputRect, rootTransform));
+    scoped_ptr<CCRenderPass> pass(CCRenderPass::create(id, outputRect, rootTransform));
     CCTestRenderPass* testPass = static_cast<CCTestRenderPass*>(pass.get());
-    passList.append(pass.release());
+    passList.append(pass.Pass());
     return testPass;
 }
 
@@ -126,7 +127,7 @@ public:
         transform.translate(1, 1);
         delegatedRendererLayer->setTransform(transform);
 
-        OwnPtrVector<CCRenderPass> delegatedRenderPasses;
+        ScopedPtrVector<CCRenderPass> delegatedRenderPasses;
         CCTestRenderPass* pass1 = addRenderPass(delegatedRenderPasses, CCRenderPass::Id(9, 6), IntRect(6, 6, 6, 6), WebTransformationMatrix());
         addQuad(pass1, IntRect(0, 0, 6, 6), 33u);
         CCTestRenderPass* pass2 = addRenderPass(delegatedRenderPasses, CCRenderPass::Id(9, 7), IntRect(7, 7, 7, 7), WebTransformationMatrix());

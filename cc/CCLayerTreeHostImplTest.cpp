@@ -2530,18 +2530,18 @@ protected:
     }
 };
 
-static inline PassOwnPtr<CCRenderPass> createRenderPassWithResource(CCResourceProvider* provider)
+static inline scoped_ptr<CCRenderPass> createRenderPassWithResource(CCResourceProvider* provider)
 {
     CCResourceProvider::ResourceId resourceId = provider->createResource(0, IntSize(1, 1), GraphicsContext3D::RGBA, CCResourceProvider::TextureUsageAny);
 
-    OwnPtr<CCRenderPass> pass = CCRenderPass::create(CCRenderPass::Id(1, 1), IntRect(0, 0, 1, 1), WebTransformationMatrix());
+    scoped_ptr<CCRenderPass> pass = CCRenderPass::create(CCRenderPass::Id(1, 1), IntRect(0, 0, 1, 1), WebTransformationMatrix());
     OwnPtr<CCSharedQuadState> sharedState = CCSharedQuadState::create(WebTransformationMatrix(), IntRect(0, 0, 1, 1), IntRect(0, 0, 1, 1), 1, false);
     OwnPtr<CCTextureDrawQuad> quad = CCTextureDrawQuad::create(sharedState.get(), IntRect(0, 0, 1, 1), resourceId, false, FloatRect(0, 0, 1, 1), false);
 
     static_cast<CCTestRenderPass*>(pass.get())->appendSharedQuadState(sharedState.release());
     static_cast<CCTestRenderPass*>(pass.get())->appendQuad(quad.release());
 
-    return pass.release();
+    return pass.Pass();
 }
 
 TEST_F(CCLayerTreeHostImplTest, dontUseOldResourcesAfterLostContext)
@@ -2642,7 +2642,7 @@ TEST_F(CCLayerTreeHostImplTest, dontUseOldResourcesAfterLostContext)
     delegatedRendererLayer->setContentBounds(IntSize(10, 10));
     delegatedRendererLayer->setDrawsContent(true);
     delegatedRendererLayer->setLayerTreeHostImpl(m_hostImpl.get());
-    OwnPtrVector<CCRenderPass> passList;
+    ScopedPtrVector<CCRenderPass> passList;
     passList.append(createRenderPassWithResource(m_hostImpl->resourceProvider()));
     delegatedRendererLayer->setRenderPasses(passList);
     EXPECT_TRUE(passList.isEmpty());
@@ -3923,36 +3923,8 @@ TEST_F(CCLayerTreeHostImplTest, releaseContentsTextureShouldTriggerCommit)
     EXPECT_TRUE(m_didRequestCommit);
 }
 
-struct RenderPassCacheEntry {
-    mutable OwnPtr<CCRenderPass> renderPassPtr;
-    CCRenderPass* renderPass;
-
-    RenderPassCacheEntry(PassOwnPtr<CCRenderPass> r)
-        : renderPassPtr(r),
-          renderPass(renderPassPtr.get())
-    {
-    }
-
-    RenderPassCacheEntry()
-    {
-    }
-
-    RenderPassCacheEntry(const RenderPassCacheEntry& entry)
-        : renderPassPtr(entry.renderPassPtr.release()),
-          renderPass(entry.renderPass)
-    {
-    }
-
-    RenderPassCacheEntry& operator=(const RenderPassCacheEntry& entry)
-    {
-        renderPassPtr = entry.renderPassPtr.release();
-        renderPass = entry.renderPass;
-        return *this;
-    }
-};
-
 struct RenderPassRemovalTestData : public CCLayerTreeHostImpl::FrameData {
-    std::map<CCRenderPass::Id, RenderPassCacheEntry> renderPassCache;
+    ScopedPtrHashMap<CCRenderPass::Id, CCRenderPass> renderPassCache;
     OwnPtr<CCSharedQuadState> sharedQuadState;
 };
 
@@ -3968,9 +3940,9 @@ public:
     }
 
     void clearCachedTextures() { m_textures.clear(); }
-    void setHaveCachedResourcesForRenderPassId(CCRenderPass::Id id) { m_textures.add(id); }
+    void setHaveCachedResourcesForRenderPassId(CCRenderPass::Id id) { m_textures.insert(id); }
 
-    virtual bool haveCachedResourcesForRenderPassId(CCRenderPass::Id id) const OVERRIDE { return m_textures.contains(id); }
+    virtual bool haveCachedResourcesForRenderPassId(CCRenderPass::Id id) const OVERRIDE { return m_textures.count(id); }
 
     // CCRendererClient implementation.
     virtual const IntSize& deviceViewportSize() const OVERRIDE { return m_viewportSize; }
@@ -3987,7 +3959,7 @@ protected:
 private:
     CCLayerTreeSettings m_settings;
     IntSize m_viewportSize;
-    HashSet<CCRenderPass::Id> m_textures;
+    base::hash_set<CCRenderPass::Id> m_textures;
 };
 
 static void configureRenderPassTestData(const char* testScript, RenderPassRemovalTestData& testData, CCTestRenderer* renderer)
@@ -4001,8 +3973,7 @@ static void configureRenderPassTestData(const char* testScript, RenderPassRemova
 
     // Pre-create root pass
     CCRenderPass::Id rootRenderPassId = CCRenderPass::Id(testScript[0], testScript[1]);
-    OwnPtr<CCRenderPass> rootRenderPass = CCRenderPass::create(rootRenderPassId, IntRect(), WebTransformationMatrix());
-    testData.renderPassCache.insert(std::pair<CCRenderPass::Id, RenderPassCacheEntry>(rootRenderPassId, RenderPassCacheEntry(rootRenderPass.release())));
+    testData.renderPassCache.add(rootRenderPassId, CCRenderPass::create(rootRenderPassId, IntRect(), WebTransformationMatrix()));
     while (*currentChar) {
         int layerId = *currentChar;
         currentChar++;
@@ -4012,13 +3983,11 @@ static void configureRenderPassTestData(const char* testScript, RenderPassRemova
 
         CCRenderPass::Id renderPassId = CCRenderPass::Id(layerId, index);
 
-        OwnPtr<CCRenderPass> renderPass;
-
         bool isReplica = false;
-        if (!testData.renderPassCache[renderPassId].renderPassPtr.get())
+        if (!testData.renderPassCache.contains(renderPassId))
             isReplica = true;
 
-        renderPass = testData.renderPassCache[renderPassId].renderPassPtr.release();
+        scoped_ptr<CCRenderPass> renderPass = testData.renderPassCache.take(renderPassId);
 
         // Cycle through quad data and create all quads
         while (*currentChar && *currentChar != '\n') {
@@ -4061,8 +4030,7 @@ static void configureRenderPassTestData(const char* testScript, RenderPassRemova
                     if (hasTexture)
                         renderer->setHaveCachedResourcesForRenderPassId(newRenderPassId);
 
-                    OwnPtr<CCRenderPass> renderPass = CCTestRenderPass::create(newRenderPassId, IntRect(), WebTransformationMatrix());
-                    testData.renderPassCache.insert(std::pair<CCRenderPass::Id, RenderPassCacheEntry>(newRenderPassId, RenderPassCacheEntry(renderPass.release())));
+                    testData.renderPassCache.add(newRenderPassId, CCTestRenderPass::create(newRenderPassId, IntRect(), WebTransformationMatrix()));
                 }
 
                 IntRect quadRect = IntRect(0, 0, 1, 1);
@@ -4072,7 +4040,7 @@ static void configureRenderPassTestData(const char* testScript, RenderPassRemova
             }
         }
         testData.renderPasses.insert(0, renderPass.get());
-        testData.renderPassesById.add(renderPassId, renderPass.release());
+        testData.renderPassesById.add(renderPassId, renderPass.Pass());
         if (*currentChar)
             currentChar++;
     }

@@ -50,7 +50,7 @@ protected:
     class CachedTexture : public CCScopedTexture {
         WTF_MAKE_NONCOPYABLE(CachedTexture);
     public:
-        static PassOwnPtr<CachedTexture> create(CCResourceProvider* resourceProvider) { return adoptPtr(new CachedTexture(resourceProvider)); }
+        static scoped_ptr<CachedTexture> create(CCResourceProvider* resourceProvider) { return scoped_ptr<CachedTexture>(new CachedTexture(resourceProvider)); }
         virtual ~CachedTexture() { }
 
         bool isComplete() const { return m_isComplete; }
@@ -90,7 +90,7 @@ protected:
     virtual void finishDrawingFrame(DrawingFrame&) = 0;
     virtual bool flippedFramebuffer() const = 0;
 
-    HashMap<CCRenderPass::Id, OwnPtr<CachedTexture> > m_renderPassTextures;
+    ScopedPtrHashMap<CCRenderPass::Id, CachedTexture> m_renderPassTextures;
     CCResourceProvider* m_resourceProvider;
 };
 
