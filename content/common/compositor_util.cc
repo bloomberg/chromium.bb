@@ -18,8 +18,13 @@ bool IsThreadedCompositingEnabled() {
 #endif
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kEnableThreadedCompositing) &&
-      !command_line.HasSwitch(switches::kDisableThreadedCompositing))
+
+  // Command line switches take precedence over field trials.
+  if (command_line.HasSwitch(switches::kDisableForceCompositingMode) ||
+      command_line.HasSwitch(switches::kDisableThreadedCompositing))
+    return false;
+
+  if (command_line.HasSwitch(switches::kEnableThreadedCompositing))
     return true;
 
   base::FieldTrial* trial =
@@ -36,8 +41,12 @@ bool IsForceCompositingModeEnabled() {
 #endif
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kForceCompositingMode) &&
-      !command_line.HasSwitch(switches::kDisableForceCompositingMode))
+
+  // Command line switches take precedence over field trials.
+  if (command_line.HasSwitch(switches::kDisableForceCompositingMode))
+    return false;
+
+  if (command_line.HasSwitch(switches::kForceCompositingMode))
     return true;
 
   base::FieldTrial* trial =
