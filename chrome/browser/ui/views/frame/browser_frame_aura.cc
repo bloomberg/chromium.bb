@@ -62,11 +62,7 @@ class BrowserFrameAura::WindowPropertyWatcher : public aura::WindowObserver {
       // window's bounds are updated. The window maximize/restore animations
       // clone the window's layers and rely on the subsequent layout to set
       // the layer sizes.
-      // If the window is minimized, the frame view needs to be updated via
-      // an OnBoundsChanged event so that the frame will change its size
-      // properly.
-      browser_frame_->non_client_view()->UpdateFrame(
-          old_state == ui::SHOW_STATE_MINIMIZED);
+      browser_frame_->non_client_view()->UpdateFrame(false);
     }
   }
 

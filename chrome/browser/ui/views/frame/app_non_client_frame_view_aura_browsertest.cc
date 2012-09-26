@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/window_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -16,23 +15,18 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
-#include "ui/gfx/screen.h"
 
 using aura::Window;
 
 namespace {
 
-Window* GetChildWindowNamed(Window* window, const char* name) {
+bool HasChildWindowNamed(Window* window, const char* name) {
   for (size_t i = 0; i < window->children().size(); ++i) {
     Window* child = window->children()[i];
     if (child->name() == name)
-      return child;
+      return true;
   }
-  return NULL;
-}
-
-bool HasChildWindowNamed(Window* window, const char* name) {
-  return GetChildWindowNamed(window, name) != NULL;
+  return false;
 }
 
 }  // namespace
@@ -134,38 +128,4 @@ IN_PROC_BROWSER_TEST_F(AppNonClientFrameViewAuraTest, SnapLeftClosesControls) {
   // Control window is gone.
   EXPECT_FALSE(HasChildWindowNamed(
       native_window, AppNonClientFrameViewAura::kControlWindowName));
-}
-
-// Ensure that the controls are at the proper locations.
-IN_PROC_BROWSER_TEST_F(AppNonClientFrameViewAuraTest, ControlsAtRightSide) {
-  const gfx::Rect work_area = gfx::Screen::GetPrimaryDisplay().work_area();
-
-  aura::RootWindow* root_window = GetRootWindow();
-  aura::test::EventGenerator eg(root_window);
-  aura::Window* native_window = app_browser()->window()->GetNativeWindow();
-
-  // Control window exists.
-  aura::Window* window = GetChildWindowNamed(
-      native_window, AppNonClientFrameViewAura::kControlWindowName);
-
-  ASSERT_TRUE(window);
-  gfx::Rect rect = window->bounds();
-  EXPECT_EQ(work_area.right(), rect.right());
-  EXPECT_EQ(work_area.y(), rect.y());
-
-  ash::wm::MinimizeWindow(native_window);
-  content::RunAllPendingInMessageLoop();
-  window = GetChildWindowNamed(
-      native_window, AppNonClientFrameViewAura::kControlWindowName);
-  EXPECT_FALSE(window);
-  ash::wm::MaximizeWindow(native_window);
-  content::RunAllPendingInMessageLoop();
-
-  // Control window exists.
-  aura::Window* window_after = GetChildWindowNamed(
-      native_window, AppNonClientFrameViewAura::kControlWindowName);
-  ASSERT_TRUE(window_after);
-  gfx::Rect rect_after = window_after->bounds();
-  EXPECT_EQ(work_area.right(), rect_after.right());
-  EXPECT_EQ(work_area.y(), rect_after.y());
 }
