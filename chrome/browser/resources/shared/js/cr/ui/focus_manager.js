@@ -66,11 +66,14 @@ cr.define('cr.ui', function() {
           focusableDiv,
           NodeFilter.SHOW_ELEMENT,
           { acceptNode: function(node) {
+              var style = window.getComputedStyle(node);
               // Reject all hidden nodes. FILTER_REJECT also rejects these
               // nodes' children, so non-hidden elements that are descendants of
               // hidden <div>s will correctly be rejected.
-              if (node.hidden)
+              if (node.hidden || style.display == 'none' ||
+                  style.visibility == 'hidden') {
                 return NodeFilter.FILTER_REJECT;
+              }
 
               // Skip nodes that cannot receive focus. FILTER_SKIP does not
               // cause this node's children also to be skipped.
@@ -91,25 +94,17 @@ cr.define('cr.ui', function() {
     },
 
     /**
-     * Retrieves the page's focusable elements and, if there are any, focuses
-     * the first one.
+     * Dispatches an 'elementFocused' event to notify an element that it has
+     * received focus. When focus wraps around within the a page, only the
+     * element that has focus after the wrapping receives an 'elementFocused'
+     * event. This differs from the native 'focus' event which is received by
+     * an element outside the page first, followed by a 'focus' on an element
+     * within the page after the FocusManager has intervened.
+     * @param {Element} element The element that has received focus.
      * @private
      */
-    focusFirstElement_: function() {
-      var focusableElements = this.getFocusableElements_();
-      if (focusableElements.length != 0)
-        focusableElements[0].focus();
-    },
-
-    /**
-     * Retrieves the page's focusable elements and, if there are any, focuses
-     * the last one.
-     * @private
-     */
-    focusLastElement_: function() {
-      var focusableElements = this.getFocusableElements_();
-      if (focusableElements.length != 0)
-        focusableElements[focusableElements.length - 1].focus();
+    dispatchFocusEvent_: function(element) {
+      cr.dispatchSimpleEvent(element, 'elementFocused', true, false);
     },
 
     /**
@@ -122,10 +117,13 @@ cr.define('cr.ui', function() {
       // current dialog. In this case, loop around and try to focus the last
       // element of the dialog; otherwise, try to focus the first element of the
       // dialog.
-      if (this.focusDirBackwards_)
-        this.focusLastElement_();
-      else
-        this.focusFirstElement_();
+      var focusableElements = this.getFocusableElements_();
+      var element = this.focusDirBackwards_ ? focusableElements.pop() :
+                                              focusableElements.shift();
+      if (element) {
+        element.focus();
+        this.dispatchFocusEvent_(element);
+      }
     },
 
     /**
@@ -143,13 +141,16 @@ cr.define('cr.ui', function() {
     onDocumentFocus_: function(event) {
       // If the element being focused is a descendant of the currently visible
       // page, focus is valid.
-      if (this.isDescendantOf_(this.getFocusParent(), event.target))
+      if (this.isDescendantOf_(this.getFocusParent(), event.target)) {
+        this.dispatchFocusEvent_(event.target);
         return;
+      }
 
       // The target of the focus event is not in the topmost visible page and
       // should not be focused.
       event.target.blur();
 
+      // Attempt to wrap around focus within the current page.
       this.setFocus_();
     },
 

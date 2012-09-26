@@ -22,44 +22,24 @@ cr.define('options', function() {
      */
     decorate: function() {
       var self = this;
-      var doc = self.ownerDocument;
-
-      // Create the details and summary elements.
-      var detailsContainer = doc.createElement('details');
-      detailsContainer.appendChild(doc.createElement('summary'));
-
-      // This should really create a div element, but that breaks :hover. See
-      // https://bugs.webkit.org/show_bug.cgi?id=72957
-      var bubbleContainer = doc.createElement('p');
-      bubbleContainer.className = 'controlled-setting-bubble';
-      detailsContainer.appendChild(bubbleContainer);
-
-      self.appendChild(detailsContainer);
-      self.addEventListener('click', self.show_);
 
       // If there is a pref, track its controlledBy property in order to be able
       // to bring up the correct bubble.
-      if (this.hasAttribute('pref')) {
-        Preferences.getInstance().addEventListener(
-            this.getAttribute('pref'),
+      if (this.pref) {
+        Preferences.getInstance().addEventListener(this.pref,
             function(event) {
-              if (event.value) {
-                var controlledBy = event.value.controlledBy;
-                self.controlledBy = controlledBy ? controlledBy : null;
-              }
+              var controlledBy = event.value.controlledBy;
+              self.controlledBy = controlledBy ? controlledBy : null;
+              OptionsPage.hideBubble();
             });
-
-        self.resetHandler(self.clearAssociatedPref_);
+        this.resetHandler = this.clearAssociatedPref_;
       }
-    },
 
-
-    /**
-     * Closes the bubble.
-     */
-    close: function() {
-      this.querySelector('details').removeAttribute('open');
-      this.ownerDocument.removeEventListener('click', this.closeHandler_, true);
+      this.tabIndex = 0;
+      this.setAttribute('role', 'button');
+      this.addEventListener('click', this);
+      this.addEventListener('keydown', this);
+      this.addEventListener('mousedown', this);
     },
 
     /**
@@ -72,89 +52,140 @@ cr.define('options', function() {
     },
 
     /**
+     * Whether the indicator is currently showing a bubble.
+     * @type {boolean}
+     */
+    get showingBubble() {
+      return !!this.showingBubble_;
+    },
+    set showingBubble(showing) {
+      if (showing)
+        this.classList.add('showing-bubble');
+      else
+        this.classList.remove('showing-bubble');
+      this.showingBubble_ = showing;
+    },
+
+    /**
      * Clears the preference associated with this indicator.
      * @private
      */
     clearAssociatedPref_: function() {
-      Preferences.clearPref(this.getAttribute('pref'), this.dialogPref);
+      Preferences.clearPref(this.pref, this.dialogPref);
     },
 
     /**
-     * Constructs the bubble DOM tree and shows it.
+     * Handle mouse and keyboard events, allowing the user to open and close a
+     * bubble with further information.
+     * @param {Event} event Mouse or keyboard event.
+     */
+    handleEvent: function(event) {
+      switch (event.type) {
+        // Toggle the bubble on left click. Let any other clicks propagate.
+        case 'click':
+          if (event.button != 0)
+            return;
+          break;
+        // Toggle the bubble when <Return> or <Space> is pressed. Let any other
+        // key presses propagate.
+        case 'keydown':
+          switch (event.keyCode) {
+            case 13:  // Return.
+            case 32:  // Space.
+              break;
+            default:
+              return;
+          }
+          break;
+        // Blur focus when a mouse button is pressed, matching the behavior of
+        // other Web UI elements.
+        case 'mousedown':
+          if (document.activeElement)
+            document.activeElement.blur();
+          event.preventDefault();
+          return;
+      }
+      this.toggleBubble_();
+      event.preventDefault();
+      event.stopPropagation();
+    },
+
+    /**
+     * Open or close a bubble with further information about the pref.
      * @private
      */
-    show_: function() {
-      var self = this;
-      var doc = self.ownerDocument;
+    toggleBubble_: function() {
+      if (this.showingBubble) {
+        OptionsPage.hideBubble();
+      } else {
+        var self = this;
 
-      // Clear out the old bubble contents.
-      var bubbleContainer = this.querySelector('.controlled-setting-bubble');
-      if (bubbleContainer) {
-        while (bubbleContainer.hasChildNodes())
-          bubbleContainer.removeChild(bubbleContainer.lastChild);
+        // Work out the popup text.
+        defaultStrings = {
+          'policy': loadTimeData.getString('controlledSettingPolicy'),
+          'extension': loadTimeData.getString('controlledSettingExtension'),
+          'recommended': loadTimeData.getString('controlledSettingRecommended'),
+        };
+
+        // No controller, no popup.
+        if (!this.controlledBy || !(this.controlledBy in defaultStrings))
+          return;
+
+        var text = defaultStrings[this.controlledBy];
+
+        // Apply text overrides.
+        if (this.hasAttribute('text' + this.controlledBy))
+          text = this.getAttribute('text' + this.controlledBy);
+
+        // Create the DOM tree.
+        var content = document.createElement('div');
+        content.className = 'controlled-setting-bubble-content';
+        content.setAttribute('controlled-by', this.controlledBy);
+        content.textContent = text;
+
+        if (this.controlledBy == 'recommended' && this.resetHandler_) {
+          var container = document.createElement('div');
+          var action = document.createElement('button');
+          action.classList.add('link-button');
+          action.classList.add('controlled-setting-bubble-action');
+          action.textContent =
+              loadTimeData.getString('controlledSettingApplyRecommendation');
+          action.addEventListener('click', function(event) {
+            self.resetHandler_();
+          });
+          container.appendChild(action);
+          content.appendChild(container);
+        }
+
+        OptionsPage.showBubble(content, this);
       }
-
-      // Work out the bubble text.
-      defaultStrings = {
-        policy: loadTimeData.getString('controlledSettingPolicy'),
-        extension: loadTimeData.getString('controlledSettingExtension'),
-        recommended: loadTimeData.getString('controlledSettingRecommended'),
-      };
-
-      // No controller, no bubble.
-      if (!self.controlledBy || !self.controlledBy in defaultStrings)
-        return;
-
-      var text = defaultStrings[self.controlledBy];
-
-      // Apply text overrides.
-      if (self.hasAttribute('text' + self.controlledBy))
-        text = self.getAttribute('text' + self.controlledBy);
-
-      // Create the DOM tree.
-      var bubbleText = doc.createElement('p');
-      bubbleText.className = 'controlled-setting-bubble-text';
-      bubbleText.textContent = text;
-
-      if (self.controlledBy == 'recommended' && self.resetHandler_) {
-        var container = doc.createElement('div');
-        var action = doc.createElement('button');
-        action.classList.add('link-button');
-        action.classList.add('controlled-setting-bubble-action');
-        action.textContent =
-            loadTimeData.getString('controlledSettingApplyRecommendation');
-        action.addEventListener(
-            'click',
-            function(event) { self.resetHandler_(); });
-        container.appendChild(action);
-        bubbleText.appendChild(container);
-      }
-
-      bubbleContainer.appendChild(bubbleText);
-
-      // One-time bubble-closing event handler.
-      self.closeHandler_ = this.close.bind(this);
-      doc.addEventListener('click', self.closeHandler_, true);
-    }
+    },
   };
 
   /**
-   * The controlling entity of the setting. Can take the values "policy",
-   * "extension", "recommended" or be unset.
+   * The name of the associated preference.
+   * @type {string}
    */
-  cr.defineProperty(ControlledSettingIndicator, 'controlledBy',
-                    cr.PropertyKind.ATTR,
-                    ControlledSettingIndicator.prototype.close);
+  cr.defineProperty(ControlledSettingIndicator, 'pref', cr.PropertyKind.ATTR);
 
   /**
-   * A special preference type specific to dialogs. Changes take effect in the
-   * settings UI immediately but are only actually committed when the user
-   * confirms the dialog. If the user cancels the dialog instead, the changes
-   * are rolled back in the settings UI and never committed.
+   * Whether this indicator is part of a dialog. If so, changes made to the
+   * associated preference take effect in the settings UI immediately but are
+   * only actually committed when the user confirms the dialog. If the user
+   * cancels the dialog instead, the changes are rolled back in the settings UI
+   * and never committed.
    * @type {boolean}
    */
   cr.defineProperty(ControlledSettingIndicator, 'dialogPref',
                     cr.PropertyKind.BOOL_ATTR);
+
+  /**
+   * Whether the associated preference is controlled by a source other than the
+   * user's setting (can be 'policy', 'extension', 'recommended' or unset).
+   * @type {string}
+   */
+  cr.defineProperty(ControlledSettingIndicator, 'controlledBy',
+                    cr.PropertyKind.ATTR);
 
   // Export.
   return {

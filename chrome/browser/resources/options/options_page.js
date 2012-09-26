@@ -27,6 +27,7 @@ cr.define('options', function() {
   /**
    * This is the absolute difference maintained between standard and
    * fixed-width font sizes. Refer http://crbug.com/91922.
+   * @const
    */
   OptionsPage.SIZE_DIFFERENCE_FIXED_STANDARD = 3;
 
@@ -81,6 +82,9 @@ cr.define('options', function() {
                                         opt_propertyBag) {
     // If |opt_propertyBag| is non-truthy, homogenize to object.
     opt_propertyBag = opt_propertyBag || {};
+
+    // If a bubble is currently being shown, hide it.
+    this.hideBubble();
 
     // Find the currently visible root-level page.
     var rootPage = null;
@@ -376,6 +380,41 @@ cr.define('options', function() {
   OptionsPage.getTopmostVisiblePage = function() {
     // Check overlays first since they're top-most if visible.
     return this.getVisibleOverlay_() || this.getTopmostVisibleNonOverlayPage_();
+  };
+
+  /**
+   * Returns the currently visible bubble, or null if no bubble is visible.
+   * @return {OptionsBubble} The bubble currently being shown.
+   */
+  OptionsPage.getVisibleBubble = function() {
+    var bubble = OptionsPage.bubble_;
+    return bubble && !bubble.hidden ? bubble : null;
+  };
+
+  /**
+   * Shows an informational bubble displaying |content| and pointing at the
+   * |anchor| element. If |content| has focusable elements, they join the
+   * current page's tab order as siblings of |anchor|.
+   * @param {HTMLDivElement} content The content of the bubble.
+   * @param {HTMLElement} anchor The element at which the bubble points.
+   */
+  OptionsPage.showBubble = function(content, anchor) {
+    OptionsPage.hideBubble();
+
+    var bubble = new options.OptionsBubble;
+    bubble.anchorNode = anchor;
+    bubble.arrowLocation = cr.ui.ArrowLocation.TOP_END;
+    bubble.content = content;
+    bubble.show();
+    OptionsPage.bubble_ = bubble;
+  };
+
+  /**
+   * Hides the currently visible bubble, if any.
+   */
+  OptionsPage.hideBubble = function() {
+    if (OptionsPage.bubble_)
+      OptionsPage.bubble_.hide();
   };
 
   /**

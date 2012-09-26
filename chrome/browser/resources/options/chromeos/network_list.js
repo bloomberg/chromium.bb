@@ -7,6 +7,7 @@ cr.define('options.network', function() {
   var ArrayDataModel = cr.ui.ArrayDataModel;
   var List = cr.ui.List;
   var ListItem = cr.ui.ListItem;
+  var ListSingleSelectionModel = cr.ui.ListSingleSelectionModel;
   var Menu = cr.ui.Menu;
   var MenuItem = cr.ui.MenuItem;
   var ControlledSettingIndicator = options.ControlledSettingIndicator;
@@ -289,9 +290,8 @@ cr.define('options.network', function() {
 
     /**
      * Retrieves the ID for the menu.
-     * @private
      */
-    getMenuName_: function() {
+    getMenuName: function() {
       return this.data_.key + '-network-menu';
     },
 
@@ -302,7 +302,7 @@ cr.define('options.network', function() {
     createMenu: function() {
       if (this.data.menu) {
         var menu = this.ownerDocument.createElement('div');
-        menu.id = this.getMenuName_();
+        menu.id = this.getMenuName();
         menu.className = 'network-menu';
         menu.hidden = true;
         Menu.decorate(menu);
@@ -331,7 +331,7 @@ cr.define('options.network', function() {
       var rescan = !activeMenu_ && this.data_.key == 'wifi';
       if (!this.menu_) {
         rebuild = true;
-        var existing = $(this.getMenuName_());
+        var existing = $(this.getMenuName());
         if (existing) {
           if (this.updateMenu())
             return;
@@ -341,7 +341,7 @@ cr.define('options.network', function() {
         this.menu_.addEventListener('mousedown', function(e) {
           // Prevent blurring of list, which would close the menu.
           e.preventDefault();
-        }, true);
+        });
         var parent = $('network-menus');
         if (existing)
           parent.replaceChild(this.menu_, existing);
@@ -349,7 +349,7 @@ cr.define('options.network', function() {
           parent.appendChild(this.menu_);
       }
       var top = this.offsetTop + this.clientHeight;
-      var menuId = this.getMenuName_();
+      var menuId = this.getMenuName();
       if (menuId != activeMenu_ || rebuild) {
         closeMenu_();
         activeMenu_ = menuId;
@@ -414,7 +414,7 @@ cr.define('options.network', function() {
       if (policyManaged)
         this.showManagedNetworkIndicator();
 
-      if (activeMenu_ == this.getMenuName_()) {
+      if (activeMenu_ == this.getMenuName()) {
         // Menu is already showing and needs to be updated. Explicitly calling
         // show menu will force the existing menu to be replaced.  The call
         // is deferred in order to ensure that position of this element has
@@ -431,7 +431,7 @@ cr.define('options.network', function() {
      */
     createMenu: function() {
       var menu = this.ownerDocument.createElement('div');
-      menu.id = this.getMenuName_();
+      menu.id = this.getMenuName();
       menu.className = 'network-menu';
       menu.hidden = true;
       Menu.decorate(menu);
@@ -564,7 +564,7 @@ cr.define('options.network', function() {
      * entries from jumping around after an update.
      */
     canUpdateMenu: function() {
-      return this.data_.key == 'wifi' && activeMenu_ == this.getMenuName_();
+      return this.data_.key == 'wifi' && activeMenu_ == this.getMenuName();
     },
 
     /**
@@ -579,7 +579,7 @@ cr.define('options.network', function() {
     updateMenu: function() {
       if (!this.canUpdateMenu())
         return false;
-      var oldMenu = $(this.getMenuName_());
+      var oldMenu = $(this.getMenuName());
       var group = oldMenu.getElementsByClassName('network-menu-group')[0];
       if (!group)
         return false;
@@ -757,8 +757,11 @@ cr.define('options.network', function() {
       List.prototype.decorate.call(this);
       this.startBatchUpdates();
       this.autoExpands = true;
-      this.addEventListener('blur', this.onBlur_);
       this.dataModel = new ArrayDataModel([]);
+      this.selectionModel = new ListSingleSelectionModel();
+      this.addEventListener('blur', this.onBlur_.bind(this));
+      this.selectionModel.addEventListener('change',
+                                           this.onSelectionChange_.bind(this));
 
       // Wi-Fi control is always visible.
       this.update({key: 'wifi', networkList: []});
@@ -800,6 +803,29 @@ cr.define('options.network', function() {
     onBlur_: function() {
       this.selectionModel.unselectAll();
       closeMenu_();
+    },
+
+    /**
+     * Close bubble and menu when a different list item is selected.
+     * @param {Event} event Event detailing the selection change.
+     * @private
+     */
+    onSelectionChange_: function(event) {
+      OptionsPage.hideBubble();
+      // A list item may temporarily become unselected while it is constructing
+      // its menu. The menu should therefore only be closed if a different item
+      // is selected, not when the menu's owner item is deselected.
+      if (activeMenu_) {
+        for (var i = 0; i < event.changes.length; ++i) {
+          if (event.changes[i].selected) {
+            var item = this.dataModel.item(event.changes[i].index);
+            if (!item.getMenuName || item.getMenuName() != activeMenu_) {
+              closeMenu_();
+              return;
+            }
+          }
+        }
+      }
     },
 
     /**
@@ -991,7 +1017,7 @@ cr.define('options.network', function() {
    * @constructor
    */
   function ManagedNetworkIndicator() {
-    var el = cr.doc.createElement('div');
+    var el = cr.doc.createElement('span');
     el.__proto__ = ManagedNetworkIndicator.prototype;
     el.decorate();
     return el;
@@ -1007,16 +1033,39 @@ cr.define('options.network', function() {
       var policyLabel = loadTimeData.getString('managedNetwork');
       this.setAttribute('textPolicy', policyLabel);
       this.className = 'controlled-setting-indicator';
-      // The default popup clips to the bounds of the list of networks in the
-      // drop-down because it has enforced size constraints with auto-
-      // scrolling. Use a tooltip in place of the bubble popup until the
-      // clipping issues are resolved.
-      this.setAttribute('title', policyLabel);
-      this.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-      });
-    }
+      this.removeAttribute('tabindex');
+    },
+
+    /** @inheritDoc */
+    handleEvent: function(event) {
+      // Prevent focus blurring as that would close any currently open menu.
+      if (event.type == 'mousedown')
+        return;
+      ControlledSettingIndicator.prototype.handleEvent.call(this, event);
+    },
+
+    /**
+     * Handle mouse events received by the bubble, preventing focus blurring as
+     * that would close any currently open menu and preventing propagation to
+     * any elements located behind the bubble.
+     * @param {Event} Mouse event.
+     */
+    stopEvent: function(event) {
+      event.preventDefault();
+      event.stopPropagation();
+    },
+
+    /** @inheritDoc */
+    toggleBubble_: function() {
+      if (activeMenu_ && !$(activeMenu_).contains(this))
+        closeMenu_();
+      ControlledSettingIndicator.prototype.toggleBubble_.call(this);
+      if (this.showingBubble) {
+        var bubble = OptionsPage.getVisibleBubble();
+        bubble.addEventListener('mousedown', this.stopEvent);
+        bubble.addEventListener('click', this.stopEvent);
+      }
+    },
   };
 
   /**

@@ -452,131 +452,82 @@ html:not([enablePepperFlashSettings]) .pepper-flash-settings {
   display: none;
 }
 
+/* Bubble. */
+
+.options-bubble {
+  position: fixed;
+}
+
 /* Controlled setting indicator and bubble. */
+
 .controlled-setting-indicator {
-  display: inline-block;
-  /* Establish a containing block for absolutely positioning the bubble. */
-  position: relative;
-  vertical-align: text-bottom;
-}
-
-.controlled-setting-indicator[controlled-by] summary {
-  background-size: contain;
-  height: 16px;
-  width: 16px;
-}
-
-.controlled-setting-indicator summary::-webkit-details-marker {
   display: none;
 }
 
-.controlled-setting-indicator[controlled-by='policy'] summary {
+.controlled-setting-indicator[controlled-by] {
+  background-size: 16px;
+  display: inline-block;
+  height: 16px;
+  vertical-align: text-bottom;
+  width: 16px;
+}
+
+.controlled-setting-indicator[controlled-by='policy'] {
   background-image:
       url('chrome://theme/IDR_CONTROLLED_SETTING_MANDATORY_GRAY');
-  background-size: 16px;
 }
 
-.controlled-setting-indicator[controlled-by='policy'] summary:hover {
+.controlled-setting-indicator[controlled-by='policy']:-webkit-any(:hover,
+    .showing-bubble) {
   background-image:
       url('chrome://theme/IDR_CONTROLLED_SETTING_MANDATORY');
-  background-size: 16px;
 }
 
-.controlled-setting-indicator[controlled-by='extension'] summary {
+.controlled-setting-indicator[controlled-by='extension'] {
   background-image:
       url('chrome://theme/IDR_CONTROLLED_SETTING_EXTENSION_GRAY');
-  background-size: 16px;
 }
 
-.controlled-setting-indicator[controlled-by='extension'] summary:hover {
+.controlled-setting-indicator[controlled-by='extension']:-webkit-any(:hover,
+    .showing-bubble) {
   background-image:
       url('chrome://theme/IDR_CONTROLLED_SETTING_EXTENSION');
-  background-size: 16px;
 }
 
-.controlled-setting-indicator[controlled-by='recommended'] summary {
+.controlled-setting-indicator[controlled-by='recommended'] {
   background-image:
       url('chrome://theme/IDR_CONTROLLED_SETTING_RECOMMENDED_GRAY');
-  background-size: 16px;
 }
 
-.controlled-setting-indicator[controlled-by='recommended'] summary:hover {
+.controlled-setting-indicator[controlled-by='recommended']:-webkit-any(:hover,
+    .showing-bubble) {
   background-image:
       url('chrome://theme/IDR_CONTROLLED_SETTING_RECOMMENDED');
-  background-size: 16px;
 }
 
-.controlled-setting-bubble {
-  -webkit-margin-start: -20px;
-  background-color: white;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-shadow: 0 2px 2px #ddd;
-  margin-top: 10px;
-  padding: 10px;
-  position: absolute;
-  top: 50%;
-  z-index: 10;
-}
-
-html[dir='ltr'] .controlled-setting-bubble {
-  left: 50%;
-}
-
-html[dir='rtl'] .controlled-setting-bubble {
-  right: 50%;
-}
-
-.controlled-setting-bubble::before {
-  -webkit-margin-start: 4px;
-  border-color: #ccc transparent;
-  border-style: solid;
-  border-width: 0 5px 5px;
-  content: '';
-  position: absolute;
-  top: -5px;
-}
-
-.controlled-setting-bubble::after {
-  -webkit-margin-start: 5px;
-  border-color: white transparent;
-  border-style: solid;
-  border-width: 0 4px 4px;
-  content: '';
-  position: absolute;
-  top: -4px;
-}
-
-.controlled-setting-bubble-text {
+.controlled-setting-bubble-content {
   -webkit-padding-start: 30px;
   background-repeat: no-repeat;
-  margin: 0;
+  background-size: 22px;
   min-height: 32px;
-  min-width: 200px;
 }
 
-.controlled-setting-indicator[controlled-by='policy']
-    .controlled-setting-bubble-text {
+.controlled-setting-bubble-content[controlled-by='policy'] {
   background-image:
       url('chrome://theme/IDR_CONTROLLED_SETTING_MANDATORY_LARGE');
-  background-size: 22px;
 }
 
-.controlled-setting-indicator[controlled-by='extension']
-    .controlled-setting-bubble-text {
+.controlled-setting-bubble-content[controlled-by='extension'] {
   background-image:
       url('chrome://theme/IDR_CONTROLLED_SETTING_EXTENSION_LARGE');
-  background-size: 22px;
 }
 
-.controlled-setting-indicator[controlled-by='recommended']
-    .controlled-setting-bubble-text {
+.controlled-setting-bubble-content[controlled-by='recommended'] {
   background-image:
       url('chrome://theme/IDR_CONTROLLED_SETTING_RECOMMENDED_LARGE');
-  background-size: 22px;
 }
 
-html[dir='rtl'] .controlled-setting-bubble-text {
+html[dir='rtl'] .controlled-setting-bubble-content {
   background-position: right top;
 }
 

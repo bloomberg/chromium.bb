@@ -241,11 +241,7 @@ list:not([disabled]) > .network-group[selected] {
 
 .network-group > .controlled-setting-indicator,
 .network-menu-item > .controlled-setting-indicator {
-  -webkit-box-flex: 0;
   -webkit-margin-end: 5px;
-  display: block;
-  height: 16px;
-  width: 16px;
 }
 
 .network-options-button:hover {

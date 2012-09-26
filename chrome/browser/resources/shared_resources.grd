@@ -43,6 +43,8 @@ without changes to the corresponding grd file. -->
                  file="shared/css/about_memory.css" type="chrome_html" />
       <structure name="IDR_SHARED_CSS_ALERT_OVERLAY"
                  file="shared/css/alert_overlay.css" type="chrome_html" />
+      <structure name="IDR_SHARED_CSS_BUBBLE"
+                 file="shared/css/bubble.css" type="chrome_html" />
       <structure name="IDR_SHARED_CSS_DIALOGS"
                  file="shared/css/dialogs.css" type="chrome_html" />
       <structure name="IDR_SHARED_CSS_LIST"
@@ -95,6 +97,8 @@ without changes to the corresponding grd file. -->
       <structure name="IDR_SHARED_JS_CR_UI_AUTOCOMPLETE_LIST"
                  file="shared/js/cr/ui/autocomplete_list.js"
                  type="chrome_html" />
+      <structure name="IDR_SHARED_JS_CR_UI_BUBBLE"
+                 file="shared/js/cr/ui/bubble.js" type="chrome_html" />
       <structure name="IDR_SHARED_JS_CR_UI_CARD_SLIDER"
                  file="shared/js/cr/ui/card_slider.js" type="chrome_html" />
       <structure name="IDR_SHARED_JS_CR_UI_COMMAND"

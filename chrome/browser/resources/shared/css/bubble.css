@@ -5,6 +5,7 @@
 
 .bubble {
   position: absolute;
+  white-space: normal;
   /* Height is dynamic, width fixed. */
   width: 300px;
   z-index: 9999;
