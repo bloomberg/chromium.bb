@@ -27,7 +27,6 @@
   // Note: sendRequest is deprecated.
   chromeHidden.kRequestChannel = "chrome.extension.sendRequest";
   chromeHidden.kMessageChannel = "chrome.extension.sendMessage";
-  chromeHidden.kNativeMessageChannel = "chrome.extension.sendNativeMessage";
 
   // Map of port IDs to port object.
   var ports = {};
@@ -258,10 +257,9 @@
   // Shared implementation used by tabs.sendMessage and extension.sendMessage.
   chromeHidden.Port.sendMessageImpl = function(port, request,
                                                responseCallback) {
-    if (port.name != chromeHidden.kNativeMessageChannel)
-      port.postMessage(request);
+    port.postMessage(request);
 
-    if (port.name != chromeHidden.kRequestChannel && !responseCallback) {
+    if (port.name == chromeHidden.kMessageChannel && !responseCallback) {
       // TODO(mpcomplete): Do this for the old sendRequest API too, after
       // verifying it doesn't break anything.
       // Go ahead and disconnect immediately if the sender is not expecting
