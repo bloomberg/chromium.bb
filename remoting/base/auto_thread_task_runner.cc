@@ -40,20 +40,14 @@ bool AutoThreadTaskRunner::PostDelayedTask(
     const tracked_objects::Location& from_here,
     const base::Closure& task,
     base::TimeDelta delay) {
-  // CHECK() makes sure that |task_runner_| is still running, - the assumption
-  // made by |AutoThreadTaskRunner| owners.
-  CHECK(task_runner_->PostDelayedTask(from_here, task, delay));
-  return true;
+  return task_runner_->PostDelayedTask(from_here, task, delay);
 }
 
 bool AutoThreadTaskRunner::PostNonNestableDelayedTask(
     const tracked_objects::Location& from_here,
     const base::Closure& task,
     base::TimeDelta delay) {
-  // CHECK() makes sure that |task_runner_| is still running, - the assumption
-  // made by |AutoThreadTaskRunner| owners.
-  CHECK(task_runner_->PostNonNestableDelayedTask(from_here, task, delay));
-  return true;
+  return task_runner_->PostNonNestableDelayedTask(from_here, task, delay);
 }
 
 bool AutoThreadTaskRunner::RunsTasksOnCurrentThread() const {
