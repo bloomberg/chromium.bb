@@ -18,8 +18,8 @@ const SkColor kSuggestBackgroundColor = SkColorSetRGB(0xEF, 0xEF, 0xEF);
 
 const int kOmniboxFontSize = 16;
 const int kLogoYPosition = 130;
-const int kLogoBottomGap = 20;
-const int kNTPOmniboxHeight = 40;
+const int kLogoBottomGap = 24;
+const int kNTPOmniboxHeight = 44;
 const int kOmniboxBottomGap = 4;
 const int kSearchResultsHeight = 122;
 
