@@ -725,7 +725,11 @@ bool ChromeContentRendererClient::RunIdleHandlerWhenWidgetsHidden() {
 bool ChromeContentRendererClient::AllowPopup(const GURL& creator) {
   extensions::ChromeV8Context* current_context =
       extension_dispatcher_->v8_context_set().GetCurrent();
-  return current_context && current_context->extension();
+  return current_context && current_context->extension() &&
+      (current_context->context_type() ==
+       extensions::Feature::BLESSED_EXTENSION_CONTEXT ||
+       current_context->context_type() ==
+       extensions::Feature::CONTENT_SCRIPT_CONTEXT);
 }
 
 bool ChromeContentRendererClient::ShouldFork(WebFrame* frame,

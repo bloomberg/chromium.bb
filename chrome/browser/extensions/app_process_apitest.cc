@@ -7,6 +7,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/process_map.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -115,6 +116,16 @@ class AppApiTest : public ExtensionApiTest {
     LOG(INFO) << "WindowOpenHelper 1.";
     OpenWindow(tab2, base_url.Resolve("path2/empty.html"), true, NULL);
     LOG(INFO) << "End of test.";
+  }
+};
+
+// Omits the disable-popup-blocking flag so we can cover that case.
+class BlockedAppApiTest : public AppApiTest {
+ protected:
+  void SetUpCommandLine(CommandLine* command_line) {
+    ExtensionApiTest::SetUpCommandLine(command_line);
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kAllowHTTPBackgroundPage);
   }
 };
 
@@ -453,8 +464,8 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, OpenAppFromIframe) {
   ASSERT_TRUE(app);
 
   content::WindowedNotificationObserver popup_observer(
-        content::NOTIFICATION_RENDER_VIEW_HOST_CREATED,
-        content::NotificationService::AllSources());
+      content::NOTIFICATION_RENDER_VIEW_HOST_CREATED,
+      content::NotificationService::AllSources());
   ui_test_utils::NavigateToURL(browser(),
                                base_url.Resolve("path3/container.html"));
   EXPECT_FALSE(process_map->Contains(
@@ -465,6 +476,33 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, OpenAppFromIframe) {
   RenderViewHost* popup_host =
       content::Source<RenderViewHost>(popup_observer.source()).ptr();
   EXPECT_TRUE(process_map->Contains(popup_host->GetProcess()->GetID()));
+}
+
+// Similar to the previous test, but ensure that popup blocking bypass
+// isn't granted to the iframe.  See crbug.com/117446.
+IN_PROC_BROWSER_TEST_F(BlockedAppApiTest, OpenAppFromIframe) {
+  host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(test_server()->Start());
+
+  // Load app and start URL (not in the app).
+  const Extension* app =
+      LoadExtension(test_data_dir_.AppendASCII("app_process"));
+  ASSERT_TRUE(app);
+
+  content::WindowedNotificationObserver blocker_observer(
+      chrome::NOTIFICATION_CONTENT_BLOCKED_STATE_CHANGED,
+      content::NotificationService::AllSources());
+  ui_test_utils::NavigateToURL(
+      browser(), GetTestBaseURL("app_process").Resolve("path3/container.html"));
+
+  blocker_observer.Wait();
+
+  WebContents* tab = chrome::GetActiveWebContents(browser());
+  BlockedContentTabHelper* blocked_content_tab_helper =
+      BlockedContentTabHelper::FromWebContents(tab);
+  std::vector<WebContents*> blocked_contents;
+  blocked_content_tab_helper->GetBlockedContents(&blocked_contents);
+  EXPECT_EQ(blocked_contents.size(), 1u);
 }
 
 // Tests that if an extension launches an app via chrome.tabs.create with an URL
