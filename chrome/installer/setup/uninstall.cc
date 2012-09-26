@@ -642,7 +642,7 @@ void RemoveFiletypeRegistration(const InstallerState& installer_state,
     for (const wchar_t* const* filetype = &ShellUtil::kFileAssociations[0];
          *filetype != NULL; ++filetype) {
       if (InstallUtil::DeleteRegistryValueIf(
-              root, (classes_path + *filetype).c_str(), L"",
+              root, (classes_path + *filetype).c_str(), NULL,
               prog_id_pred) == InstallUtil::DELETED) {
         cleared_assocs.push_back(*filetype);
       }
@@ -730,12 +730,12 @@ bool DeleteChromeRegistrationKeys(const InstallerState& installer_state,
           .append(1, L'\\')
           .append(client_name);
       open_key.assign(client_key).append(ShellUtil::kRegShellOpen);
-      if (InstallUtil::DeleteRegistryKeyIf(root, client_key, open_key, L"",
+      if (InstallUtil::DeleteRegistryKeyIf(root, client_key, open_key, NULL,
               open_command_pred) != InstallUtil::NOT_FOUND) {
         // Delete the default value of SOFTWARE\Clients\StartMenuInternet if it
         // references this Chrome (i.e., if it was made the default browser).
         InstallUtil::DeleteRegistryValueIf(
-            root, ShellUtil::kRegStartMenuInternet, L"",
+            root, ShellUtil::kRegStartMenuInternet, NULL,
             InstallUtil::ValueEquals(client_name));
         // Also delete the value for the default user if we're operating in
         // HKLM.
@@ -744,7 +744,7 @@ bool DeleteChromeRegistrationKeys(const InstallerState& installer_state,
               HKEY_USERS,
               string16(L".DEFAULT\\").append(
                   ShellUtil::kRegStartMenuInternet).c_str(),
-              L"", InstallUtil::ValueEquals(client_name));
+              NULL, InstallUtil::ValueEquals(client_name));
         }
       }
     }
@@ -798,7 +798,7 @@ bool DeleteChromeRegistrationKeys(const InstallerState& installer_state,
   // being processed; the iteration above will have no hits since registration
   // lives in HKLM.
   InstallUtil::DeleteRegistryValueIf(
-      root, ShellUtil::kRegStartMenuInternet, L"",
+      root, ShellUtil::kRegStartMenuInternet, NULL,
       InstallUtil::ValueEquals(dist->GetBaseAppName() + browser_entry_suffix));
 
   // Delete each protocol association if it references this Chrome.
@@ -814,7 +814,7 @@ bool DeleteChromeRegistrationKeys(const InstallerState& installer_state,
     parent_key.resize(base_length);
     parent_key.append(*proto);
     child_key.assign(parent_key).append(ShellUtil::kRegShellOpen);
-    InstallUtil::DeleteRegistryKeyIf(root, parent_key, child_key, L"",
+    InstallUtil::DeleteRegistryKeyIf(root, parent_key, child_key, NULL,
                                      open_command_pred);
   }
 

@@ -130,8 +130,8 @@ class InstallUtil {
 
   // Deletes the key |key_to_delete_path| under |root_key| iff the value
   // |value_name| in the key |key_to_test_path| under |root_key| satisfies
-  // |predicate|.  |value_name| must be an empty string to test the key's
-  // default value.
+  // |predicate|.  |value_name| may be either NULL or an empty string to test
+  // the key's default value.
   static ConditionalDeleteResult DeleteRegistryKeyIf(
       HKEY root_key,
       const string16& key_to_delete_path,
@@ -140,8 +140,8 @@ class InstallUtil {
       const RegistryValuePredicate& predicate);
 
   // Deletes the value |value_name| in the key |key_path| under |root_key| iff
-  // its current value satisfies |predicate|.  |value_name| must be an empty
-  // string to test the key's default value.
+  // its current value satisfies |predicate|.  |value_name| may be either NULL
+  // or an empty string to test/delete the key's default value.
   static ConditionalDeleteResult DeleteRegistryValueIf(
       HKEY root_key,
       const wchar_t* key_path,

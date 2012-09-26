@@ -423,7 +423,6 @@ InstallUtil::ConditionalDeleteResult InstallUtil::DeleteRegistryKeyIf(
     const wchar_t* value_name,
     const RegistryValuePredicate& predicate) {
   DCHECK(root_key);
-  DCHECK(value_name);
   ConditionalDeleteResult delete_result = NOT_FOUND;
   RegKey key;
   string16 actual_value;
@@ -446,7 +445,6 @@ InstallUtil::ConditionalDeleteResult InstallUtil::DeleteRegistryValueIf(
     const RegistryValuePredicate& predicate) {
   DCHECK(root_key);
   DCHECK(key_path);
-  DCHECK(value_name);
   ConditionalDeleteResult delete_result = NOT_FOUND;
   RegKey key;
   string16 actual_value;
@@ -456,7 +454,8 @@ InstallUtil::ConditionalDeleteResult InstallUtil::DeleteRegistryValueIf(
       predicate.Evaluate(actual_value)) {
     LONG result = key.DeleteValue(value_name);
     if (result != ERROR_SUCCESS) {
-      LOG(ERROR) << "Failed to delete registry value: " << value_name
+      LOG(ERROR) << "Failed to delete registry value: "
+                 << (value_name ? value_name : L"(Default)")
                  << " error: " << result;
       delete_result = DELETE_FAILED;
     }

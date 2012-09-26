@@ -258,6 +258,22 @@ TEST_F(InstallUtilTest, DeleteRegistryKeyIf) {
       EXPECT_FALSE(RegKey(root, parent_key_path.c_str(),
                           KEY_QUERY_VALUE).Valid());
     }
+
+    // Default value exists and matches: delete.
+    {
+      MockRegistryValuePredicate pred;
+
+      EXPECT_CALL(pred, Evaluate(StrEq(value))).WillOnce(Return(true));
+      ASSERT_EQ(ERROR_SUCCESS,
+                RegKey(root, child_key_path.c_str(),
+                       KEY_SET_VALUE).WriteValue(NULL, value));
+      EXPECT_EQ(InstallUtil::DELETED,
+                InstallUtil::DeleteRegistryKeyIf(root, parent_key_path,
+                                                 child_key_path, NULL,
+                                                 pred));
+      EXPECT_FALSE(RegKey(root, parent_key_path.c_str(),
+                          KEY_QUERY_VALUE).Valid());
+    }
   }
 }
 
@@ -330,7 +346,7 @@ TEST_F(InstallUtilTest, DeleteRegistryValueIf) {
   {
     RegistryOverrideManager override_manager;
     override_manager.OverrideRegistry(root, L"root_key");
-    // Default value matches: delete.
+    // Default value matches: delete using empty string.
     {
       MockRegistryValuePredicate pred;
 
@@ -341,6 +357,26 @@ TEST_F(InstallUtilTest, DeleteRegistryValueIf) {
       EXPECT_EQ(InstallUtil::DELETED,
                 InstallUtil::DeleteRegistryValueIf(root, key_path.c_str(), L"",
                                                    pred));
+      EXPECT_TRUE(RegKey(root, key_path.c_str(), KEY_QUERY_VALUE).Valid());
+      EXPECT_FALSE(RegKey(root, key_path.c_str(),
+                          KEY_QUERY_VALUE).HasValue(L""));
+    }
+  }
+
+  {
+    RegistryOverrideManager override_manager;
+    override_manager.OverrideRegistry(root, L"root_key");
+    // Default value matches: delete using NULL.
+    {
+      MockRegistryValuePredicate pred;
+
+      EXPECT_CALL(pred, Evaluate(StrEq(value))).WillOnce(Return(true));
+      ASSERT_EQ(ERROR_SUCCESS,
+                RegKey(root, key_path.c_str(),
+                       KEY_SET_VALUE).WriteValue(L"", value));
+      EXPECT_EQ(InstallUtil::DELETED,
+                InstallUtil::DeleteRegistryValueIf(root, key_path.c_str(),
+                                                   NULL, pred));
       EXPECT_TRUE(RegKey(root, key_path.c_str(), KEY_QUERY_VALUE).Valid());
       EXPECT_FALSE(RegKey(root, key_path.c_str(),
                           KEY_QUERY_VALUE).HasValue(L""));
