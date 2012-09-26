@@ -53,19 +53,12 @@ class TabBaseAndroidImpl : public TabAndroid {
       const content::ContextMenuParams& params,
       const base::Callback<void(int)>& callback) OVERRIDE;
 
-  virtual void ShowSelectFileDialog(
-      const base::android::ScopedJavaLocalRef<jobject>& select_file) OVERRIDE;
-
   virtual void AddShortcutToBookmark(const GURL& url,
                                      const string16& title,
                                      const SkBitmap& skbitmap,
                                      int r_value,
                                      int g_value,
                                      int b_value) OVERRIDE;
-
-  // Called when the common ExternalProtocolHandler wants to
-  // run the external protocol dialog.
-  virtual void RunExternalProtocolDialog(const GURL& url) OVERRIDE;
 
   // Register the Tab's native methods through JNI.
   static bool RegisterTabBaseAndroidImpl(JNIEnv* env);

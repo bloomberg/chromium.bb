@@ -87,18 +87,9 @@ void TabBaseAndroidImpl::ShowCustomContextMenu(
   NOTIMPLEMENTED();
 }
 
-void TabBaseAndroidImpl::ShowSelectFileDialog(
-    const base::android::ScopedJavaLocalRef<jobject>& select_file) {
-  NOTIMPLEMENTED();
-}
-
 void TabBaseAndroidImpl::AddShortcutToBookmark(
     const GURL& url, const string16& title, const SkBitmap& skbitmap,
     int r_value, int g_value, int b_value) {
-  NOTIMPLEMENTED();
-}
-
-void TabBaseAndroidImpl::RunExternalProtocolDialog(const GURL& url) {
   NOTIMPLEMENTED();
 }
 
