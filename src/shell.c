@@ -2763,6 +2763,7 @@ show_input_panels(struct wl_listener *listener, void *data)
 		ws = surface->surface;
 		wl_list_insert(&shell->input_panel_layer.surface_list,
 			       &ws->layer_link);
+		ws->geometry.dirty = 1;
 		weston_surface_update_transform(ws);
 		weston_surface_damage(ws);
 		weston_slide_run(ws, ws->geometry.height, 0, NULL, NULL);
