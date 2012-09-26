@@ -222,6 +222,7 @@ static bool DoneCallbackRaiseSIGKILL(const MinidumpDescriptor& descriptor,
                                      void* context,
                                      bool succeeded) {
   raise(SIGKILL);
+  return true;
 }
 
 static bool FilterCallbackReturnFalse(void* context) {
