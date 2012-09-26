@@ -36,8 +36,6 @@
           'shared_impl/platform_file.h',
           'shared_impl/ppapi_globals.cc',
           'shared_impl/ppapi_globals.h',
-          'shared_impl/ppapi_message_tracker.cc',
-          'shared_impl/ppapi_message_tracker.h',
           'shared_impl/ppapi_permissions.cc',
           'shared_impl/ppapi_permissions.h',
           'shared_impl/ppapi_preferences.cc',

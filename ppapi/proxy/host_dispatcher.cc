@@ -13,7 +13,6 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/resource_creation_proxy.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
-#include "ppapi/shared_impl/ppapi_message_tracker.h"
 
 namespace ppapi {
 namespace proxy {
@@ -132,8 +131,6 @@ bool HostDispatcher::IsPlugin() const {
 }
 
 bool HostDispatcher::Send(IPC::Message* msg) {
-  ScopedTrackPpapiMessage track_ppapi_message;
-
   TRACE_EVENT2("ppapi proxy", "HostDispatcher::Send",
                "Class", IPC_MESSAGE_ID_CLASS(msg->type()),
                "Line", IPC_MESSAGE_ID_LINE(msg->type()));
@@ -172,8 +169,6 @@ bool HostDispatcher::Send(IPC::Message* msg) {
 }
 
 bool HostDispatcher::OnMessageReceived(const IPC::Message& msg) {
-  ScopedTrackPpapiMessage track_ppapi_message;
-
   TRACE_EVENT2("ppapi proxy", "HostDispatcher::OnMessageReceived",
                "Class", IPC_MESSAGE_ID_CLASS(msg.type()),
                "Line", IPC_MESSAGE_ID_LINE(msg.type()));

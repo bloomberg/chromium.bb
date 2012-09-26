@@ -130,6 +130,22 @@ InjectDumpProcessWithoutCrash(HANDLE process) {
                             0, 0, NULL);
 }
 
+// The following two functions do exactly the same thing as the two above. But
+// we want the signatures to be different so that we can easily track them in
+// crash reports.
+// TODO(yzshen): Remove when enough information is collected and the hang rate
+// of pepper/renderer processes is reduced.
+DWORD WINAPI DumpForHangDebuggingThread(void*) {
+  DumpProcessWithoutCrash();
+  return 0;
+}
+
+extern "C" HANDLE __declspec(dllexport) __cdecl
+InjectDumpForHangDebugging(HANDLE process) {
+  return CreateRemoteThread(process, NULL, 0, DumpForHangDebuggingThread,
+                            0, 0, NULL);
+}
+
 // Reduces the size of the string |str| to a max of 64 chars. Required because
 // breakpad's CustomInfoEntry raises an invalid_parameter error if the string
 // we want to set is longer.

@@ -16,10 +16,6 @@ include_rules = [
   "+ppapi/host",
   "+ppapi/proxy",
   "+ppapi/shared_impl/api_id.h",
-  # Provide debug info for detecting inter-process pepper deadlocks.
-  # TODO(yzshen): Remove when enough information is collected and the hang rate
-  # of pepper/renderer processes is reduced.
-  "+ppapi/shared_impl/ppapi_message_tracker.h",
   # Defines some types that are marshalled over IPC.
   "+ppapi/shared_impl/ppp_flash_browser_operations_shared.h",
   "+rlz",

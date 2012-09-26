@@ -67,11 +67,15 @@ class OwnedHandleVector {
   DISALLOW_COPY_AND_ASSIGN(OwnedHandleVector);
 };
 
+void DumpBrowserInBlockingPool() {
+  CrashDumpForHangDebugging(::GetCurrentProcess());
+}
+
 void DumpRenderersInBlockingPool(OwnedHandleVector* renderer_handles) {
   for (std::vector<HANDLE>::const_iterator iter =
            renderer_handles->data().begin();
        iter != renderer_handles->data().end(); ++iter) {
-    CrashDumpIfProcessHandlingPepper(*iter);
+    CrashDumpForHangDebugging(*iter);
   }
 }
 
@@ -316,7 +320,10 @@ void HungPluginTabHelper::KillPlugin(int child_id) {
       // due to our crash dump uploading restrictions. So we just don't generate
       // renderer crash dumps in that case.
       if (renderer_handles->data().size() > 0 &&
-          renderer_handles->data().size() < 8) {
+          renderer_handles->data().size() < 4) {
+        content::BrowserThread::PostBlockingPoolSequencedTask(
+            kDumpChildProcessesSequenceName, FROM_HERE,
+            base::Bind(&DumpBrowserInBlockingPool));
         content::BrowserThread::PostBlockingPoolSequencedTask(
             kDumpChildProcessesSequenceName, FROM_HERE,
             base::Bind(&DumpRenderersInBlockingPool,
