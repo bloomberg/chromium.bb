@@ -9,7 +9,7 @@
 #include "GraphicsTypes3D.h"
 #include "IntPoint.h"
 #include "IntSize.h"
-#include <wtf/PassOwnPtr.h>
+#include "base/memory/scoped_ptr.h"
 
 namespace cc {
 
@@ -17,7 +17,7 @@ namespace cc {
 
 class CCTileDrawQuad : public CCDrawQuad {
 public:
-    static PassOwnPtr<CCTileDrawQuad> create(const CCSharedQuadState*, const IntRect& quadRect, const IntRect& opaqueRect, unsigned resourceId, const IntPoint& textureOffset, const IntSize& textureSize, GC3Dint textureFilter, bool swizzleContents, bool leftEdgeAA, bool topEdgeAA, bool rightEdgeAA, bool bottomEdgeAA);
+    static scoped_ptr<CCTileDrawQuad> create(const CCSharedQuadState*, const IntRect& quadRect, const IntRect& opaqueRect, unsigned resourceId, const IntPoint& textureOffset, const IntSize& textureSize, GC3Dint textureFilter, bool swizzleContents, bool leftEdgeAA, bool topEdgeAA, bool rightEdgeAA, bool bottomEdgeAA);
 
     unsigned resourceId() const { return m_resourceId; }
     IntPoint textureOffset() const { return m_textureOffset; }

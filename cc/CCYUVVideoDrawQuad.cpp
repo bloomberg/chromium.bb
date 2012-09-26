@@ -8,9 +8,9 @@
 
 namespace cc {
 
-PassOwnPtr<CCYUVVideoDrawQuad> CCYUVVideoDrawQuad::create(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, const CCVideoLayerImpl::FramePlane& yPlane, const CCVideoLayerImpl::FramePlane& uPlane, const CCVideoLayerImpl::FramePlane& vPlane)
+scoped_ptr<CCYUVVideoDrawQuad> CCYUVVideoDrawQuad::create(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, const CCVideoLayerImpl::FramePlane& yPlane, const CCVideoLayerImpl::FramePlane& uPlane, const CCVideoLayerImpl::FramePlane& vPlane)
 {
-    return adoptPtr(new CCYUVVideoDrawQuad(sharedQuadState, quadRect, yPlane, uPlane, vPlane));
+    return scoped_ptr<CCYUVVideoDrawQuad>(new CCYUVVideoDrawQuad(sharedQuadState, quadRect, yPlane, uPlane, vPlane));
 }
 
 CCYUVVideoDrawQuad::CCYUVVideoDrawQuad(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, const CCVideoLayerImpl::FramePlane& yPlane, const CCVideoLayerImpl::FramePlane& uPlane, const CCVideoLayerImpl::FramePlane& vPlane)

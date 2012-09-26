@@ -8,9 +8,9 @@
 
 namespace cc {
 
-PassOwnPtr<CCDebugBorderDrawQuad> CCDebugBorderDrawQuad::create(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, SkColor color, int width)
+scoped_ptr<CCDebugBorderDrawQuad> CCDebugBorderDrawQuad::create(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, SkColor color, int width)
 {
-    return adoptPtr(new CCDebugBorderDrawQuad(sharedQuadState, quadRect, color, width));
+    return scoped_ptr<CCDebugBorderDrawQuad>(new CCDebugBorderDrawQuad(sharedQuadState, quadRect, color, width));
 }
 
 CCDebugBorderDrawQuad::CCDebugBorderDrawQuad(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, SkColor color, int width)

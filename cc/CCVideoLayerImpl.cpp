@@ -175,8 +175,8 @@ void CCVideoLayerImpl::appendQuads(CCQuadSink& quadSink, CCAppendQuadsData& appe
         const FramePlane& yPlane = m_framePlanes[WebKit::WebVideoFrame::yPlane];
         const FramePlane& uPlane = m_framePlanes[WebKit::WebVideoFrame::uPlane];
         const FramePlane& vPlane = m_framePlanes[WebKit::WebVideoFrame::vPlane];
-        OwnPtr<CCYUVVideoDrawQuad> yuvVideoQuad = CCYUVVideoDrawQuad::create(sharedQuadState, quadRect, yPlane, uPlane, vPlane);
-        quadSink.append(yuvVideoQuad.release(), appendQuadsData);
+        scoped_ptr<CCYUVVideoDrawQuad> yuvVideoQuad = CCYUVVideoDrawQuad::create(sharedQuadState, quadRect, yPlane, uPlane, vPlane);
+        quadSink.append(yuvVideoQuad.PassAs<CCDrawQuad>(), appendQuadsData);
         break;
     }
     case GraphicsContext3D::RGBA: {
@@ -187,8 +187,8 @@ void CCVideoLayerImpl::appendQuads(CCQuadSink& quadSink, CCAppendQuadsData& appe
         bool premultipliedAlpha = true;
         FloatRect uvRect(0, 0, widthScaleFactor, 1);
         bool flipped = false;
-        OwnPtr<CCTextureDrawQuad> textureQuad = CCTextureDrawQuad::create(sharedQuadState, quadRect, plane.resourceId, premultipliedAlpha, uvRect, flipped);
-        quadSink.append(textureQuad.release(), appendQuadsData);
+        scoped_ptr<CCTextureDrawQuad> textureQuad = CCTextureDrawQuad::create(sharedQuadState, quadRect, plane.resourceId, premultipliedAlpha, uvRect, flipped);
+        quadSink.append(textureQuad.PassAs<CCDrawQuad>(), appendQuadsData);
         break;
     }
     case GraphicsContext3D::TEXTURE_2D: {
@@ -196,20 +196,20 @@ void CCVideoLayerImpl::appendQuads(CCQuadSink& quadSink, CCAppendQuadsData& appe
         bool premultipliedAlpha = true;
         FloatRect uvRect(0, 0, 1, 1);
         bool flipped = false;
-        OwnPtr<CCTextureDrawQuad> textureQuad = CCTextureDrawQuad::create(sharedQuadState, quadRect, m_externalTextureResource, premultipliedAlpha, uvRect, flipped);
-        quadSink.append(textureQuad.release(), appendQuadsData);
+        scoped_ptr<CCTextureDrawQuad> textureQuad = CCTextureDrawQuad::create(sharedQuadState, quadRect, m_externalTextureResource, premultipliedAlpha, uvRect, flipped);
+        quadSink.append(textureQuad.PassAs<CCDrawQuad>(), appendQuadsData);
         break;
     }
     case Extensions3D::TEXTURE_RECTANGLE_ARB: {
         IntSize textureSize(m_frame->width(), m_frame->height()); 
-        OwnPtr<CCIOSurfaceDrawQuad> ioSurfaceQuad = CCIOSurfaceDrawQuad::create(sharedQuadState, quadRect, textureSize, m_frame->textureId(), CCIOSurfaceDrawQuad::Unflipped);
-        quadSink.append(ioSurfaceQuad.release(), appendQuadsData);
+        scoped_ptr<CCIOSurfaceDrawQuad> ioSurfaceQuad = CCIOSurfaceDrawQuad::create(sharedQuadState, quadRect, textureSize, m_frame->textureId(), CCIOSurfaceDrawQuad::Unflipped);
+        quadSink.append(ioSurfaceQuad.PassAs<CCDrawQuad>(), appendQuadsData);
         break;
     }
     case Extensions3DChromium::GL_TEXTURE_EXTERNAL_OES: {
         // StreamTexture hardware decoder.
-        OwnPtr<CCStreamVideoDrawQuad> streamVideoQuad = CCStreamVideoDrawQuad::create(sharedQuadState, quadRect, m_frame->textureId(), m_streamTextureMatrix);
-        quadSink.append(streamVideoQuad.release(), appendQuadsData);
+        scoped_ptr<CCStreamVideoDrawQuad> streamVideoQuad = CCStreamVideoDrawQuad::create(sharedQuadState, quadRect, m_frame->textureId(), m_streamTextureMatrix);
+        quadSink.append(streamVideoQuad.PassAs<CCDrawQuad>(), appendQuadsData);
         break;
     }
     default:

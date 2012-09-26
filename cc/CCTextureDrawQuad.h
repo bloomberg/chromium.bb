@@ -7,7 +7,7 @@
 
 #include "CCDrawQuad.h"
 #include "FloatRect.h"
-#include <wtf/PassOwnPtr.h>
+#include "base/memory/scoped_ptr.h"
 
 namespace cc {
 
@@ -15,7 +15,7 @@ namespace cc {
 
 class CCTextureDrawQuad : public CCDrawQuad {
 public:
-    static PassOwnPtr<CCTextureDrawQuad> create(const CCSharedQuadState*, const IntRect&, unsigned resourceId, bool premultipliedAlpha, const FloatRect& uvRect, bool flipped);
+    static scoped_ptr<CCTextureDrawQuad> create(const CCSharedQuadState*, const IntRect&, unsigned resourceId, bool premultipliedAlpha, const FloatRect& uvRect, bool flipped);
     FloatRect uvRect() const { return m_uvRect; }
 
     unsigned resourceId() const { return m_resourceId; }

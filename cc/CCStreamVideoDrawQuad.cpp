@@ -8,9 +8,9 @@
 
 namespace cc {
 
-PassOwnPtr<CCStreamVideoDrawQuad> CCStreamVideoDrawQuad::create(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, unsigned textureId, const WebKit::WebTransformationMatrix& matrix)
+scoped_ptr<CCStreamVideoDrawQuad> CCStreamVideoDrawQuad::create(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, unsigned textureId, const WebKit::WebTransformationMatrix& matrix)
 {
-    return adoptPtr(new CCStreamVideoDrawQuad(sharedQuadState, quadRect, textureId, matrix));
+    return scoped_ptr<CCStreamVideoDrawQuad>(new CCStreamVideoDrawQuad(sharedQuadState, quadRect, textureId, matrix));
 }
 
 CCStreamVideoDrawQuad::CCStreamVideoDrawQuad(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, unsigned textureId, const WebKit::WebTransformationMatrix& matrix)

@@ -8,9 +8,9 @@
 
 namespace cc {
 
-PassOwnPtr<CCSolidColorDrawQuad> CCSolidColorDrawQuad::create(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, SkColor color)
+scoped_ptr<CCSolidColorDrawQuad> CCSolidColorDrawQuad::create(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, SkColor color)
 {
-    return adoptPtr(new CCSolidColorDrawQuad(sharedQuadState, quadRect, color));
+    return scoped_ptr<CCSolidColorDrawQuad>(new CCSolidColorDrawQuad(sharedQuadState, quadRect, color));
 }
 
 CCSolidColorDrawQuad::CCSolidColorDrawQuad(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, SkColor color)

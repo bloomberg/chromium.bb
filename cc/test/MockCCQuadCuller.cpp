@@ -24,23 +24,21 @@ MockCCQuadCuller::~MockCCQuadCuller()
 {
 }
 
-bool MockCCQuadCuller::append(PassOwnPtr<CCDrawQuad> newQuad, CCAppendQuadsData&)
+bool MockCCQuadCuller::append(scoped_ptr<CCDrawQuad> drawQuad, CCAppendQuadsData&)
 {
-    OwnPtr<CCDrawQuad> drawQuad = newQuad;
     if (!drawQuad->quadRect().isEmpty()) {
-        m_activeQuadList.append(drawQuad.release());
+        m_activeQuadList.append(drawQuad.Pass());
         return true;
     }
     return false;
 }
 
-CCSharedQuadState* MockCCQuadCuller::useSharedQuadState(PassOwnPtr<CCSharedQuadState> passSharedQuadState)
+CCSharedQuadState* MockCCQuadCuller::useSharedQuadState(scoped_ptr<CCSharedQuadState> sharedQuadState)
 {
-    OwnPtr<CCSharedQuadState> sharedQuadState(passSharedQuadState);
     sharedQuadState->id = m_activeSharedQuadStateList.size();
 
     CCSharedQuadState* rawPtr = sharedQuadState.get();
-    m_activeSharedQuadStateList.append(sharedQuadState.release());
+    m_activeSharedQuadStateList.append(sharedQuadState.Pass());
     return rawPtr;
 }
 

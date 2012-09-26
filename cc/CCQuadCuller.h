@@ -20,8 +20,8 @@ public:
     virtual ~CCQuadCuller() { }
 
     // CCQuadSink implementation.
-    virtual CCSharedQuadState* useSharedQuadState(PassOwnPtr<CCSharedQuadState>) OVERRIDE;
-    virtual bool append(PassOwnPtr<CCDrawQuad>, CCAppendQuadsData&) OVERRIDE;
+    virtual CCSharedQuadState* useSharedQuadState(scoped_ptr<CCSharedQuadState>) OVERRIDE;
+    virtual bool append(scoped_ptr<CCDrawQuad>, CCAppendQuadsData&) OVERRIDE;
 
 private:
     CCQuadList& m_quadList;

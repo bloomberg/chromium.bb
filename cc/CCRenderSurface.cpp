@@ -205,14 +205,14 @@ void CCRenderSurface::appendQuads(CCQuadSink& quadSink, CCAppendQuadsData& appen
     IntRect clippedRectInTarget = computeClippedRectInTarget(m_owningLayer);
     bool isOpaque = false;
     const WebTransformationMatrix& drawTransform = forReplica ? m_replicaDrawTransform : m_drawTransform;
-    CCSharedQuadState* sharedQuadState = quadSink.useSharedQuadState(CCSharedQuadState::create(drawTransform, m_contentRect, clippedRectInTarget, m_drawOpacity, isOpaque));
+    CCSharedQuadState* sharedQuadState = quadSink.useSharedQuadState(CCSharedQuadState::create(drawTransform, m_contentRect, clippedRectInTarget, m_drawOpacity, isOpaque).Pass());
 
     if (m_owningLayer->hasDebugBorders()) {
         int red = forReplica ? debugReplicaBorderColorRed : debugSurfaceBorderColorRed;
         int green = forReplica ?  debugReplicaBorderColorGreen : debugSurfaceBorderColorGreen;
         int blue = forReplica ? debugReplicaBorderColorBlue : debugSurfaceBorderColorBlue;
         SkColor color = SkColorSetARGB(debugSurfaceBorderAlpha, red, green, blue);
-        quadSink.append(CCDebugBorderDrawQuad::create(sharedQuadState, contentRect(), color, debugSurfaceBorderWidth), appendQuadsData);
+        quadSink.append(CCDebugBorderDrawQuad::create(sharedQuadState, contentRect(), color, debugSurfaceBorderWidth).PassAs<CCDrawQuad>(), appendQuadsData);
     }
 
     // FIXME: By using the same RenderSurface for both the content and its reflection,
@@ -246,7 +246,7 @@ void CCRenderSurface::appendQuads(CCQuadSink& quadSink, CCAppendQuadsData& appen
     IntRect contentsChangedSinceLastFrame = contentsChanged() ? m_contentRect : IntRect();
 
     quadSink.append(CCRenderPassDrawQuad::create(sharedQuadState, contentRect(), renderPassId, forReplica, maskResourceId, contentsChangedSinceLastFrame,
-                                                 maskTexCoordScaleX, maskTexCoordScaleY, maskTexCoordOffsetX, maskTexCoordOffsetY), appendQuadsData);
+                                                 maskTexCoordScaleX, maskTexCoordScaleY, maskTexCoordOffsetX, maskTexCoordOffsetY).PassAs<CCDrawQuad>(), appendQuadsData);
 }
 
 }

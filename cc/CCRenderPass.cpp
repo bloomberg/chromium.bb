@@ -99,7 +99,7 @@ void CCRenderPass::appendQuadsToFillScreen(CCLayerImpl* rootLayer, SkColor scree
         // The root layer transform is composed of translations and scales only, no perspective, so mapping is sufficient.
         IntRect layerRect = CCMathUtil::mapClippedRect(transformToLayerSpace, cc::IntRect(fillRects[i]));
         // Skip the quad culler and just append the quads directly to avoid occlusion checks.
-        m_quadList.append(CCSolidColorDrawQuad::create(sharedQuadState, layerRect, screenBackgroundColor));
+        m_quadList.append(CCSolidColorDrawQuad::create(sharedQuadState, layerRect, screenBackgroundColor).PassAs<CCDrawQuad>());
     }
 }
 

@@ -34,10 +34,10 @@ TEST(CCDrawQuadTest, copySharedQuadState)
     bool opaque = true;
     int id = 3;
 
-    OwnPtr<CCSharedQuadState> state(CCSharedQuadState::create(quadTransform, visibleContentRect, clippedRectInTarget, opacity, opaque));
+    scoped_ptr<CCSharedQuadState> state(CCSharedQuadState::create(quadTransform, visibleContentRect, clippedRectInTarget, opacity, opaque));
     state->id = id;
 
-    OwnPtr<CCSharedQuadState> copy(state->copy());
+    scoped_ptr<CCSharedQuadState> copy(state->copy());
     EXPECT_EQ(id, copy->id);
     EXPECT_EQ(quadTransform, copy->quadTransform);
     EXPECT_RECT_EQ(visibleContentRect, copy->visibleContentRect);
@@ -46,7 +46,7 @@ TEST(CCDrawQuadTest, copySharedQuadState)
     EXPECT_EQ(opaque, copy->opaque);
 }
 
-PassOwnPtr<CCSharedQuadState> createSharedQuadState()
+scoped_ptr<CCSharedQuadState> createSharedQuadState()
 {
     WebTransformationMatrix quadTransform(1, 0.5, 0, 1, 0.5, 0);
     IntRect visibleContentRect(10, 12, 14, 16);
@@ -55,9 +55,9 @@ PassOwnPtr<CCSharedQuadState> createSharedQuadState()
     bool opaque = false;
     int id = 3;
 
-    OwnPtr<CCSharedQuadState> state(CCSharedQuadState::create(quadTransform, visibleContentRect, clippedRectInTarget, opacity, opaque));
+    scoped_ptr<CCSharedQuadState> state(CCSharedQuadState::create(quadTransform, visibleContentRect, clippedRectInTarget, opacity, opaque));
     state->id = id;
-    return state.release();
+    return state.Pass();
 }
 
 void compareDrawQuad(CCDrawQuad* quad, CCDrawQuad* copy, CCSharedQuadState* copySharedState)
@@ -78,8 +78,8 @@ void compareDrawQuad(CCDrawQuad* quad, CCDrawQuad* copy, CCSharedQuadState* copy
 }
 
 #define CREATE_SHARED_STATE() \
-    OwnPtr<CCSharedQuadState> sharedState(createSharedQuadState()); \
-    OwnPtr<CCSharedQuadState> copySharedState(sharedState->copy()); \
+    scoped_ptr<CCSharedQuadState> sharedState(createSharedQuadState()); \
+    scoped_ptr<CCSharedQuadState> copySharedState(sharedState->copy()); \
     copySharedState->id = 5;
 
 #define QUAD_DATA \
@@ -88,75 +88,75 @@ void compareDrawQuad(CCDrawQuad* quad, CCDrawQuad* copy, CCSharedQuadState* copy
 
 #define SETUP_AND_COPY_QUAD(Type, quad) \
     quad->setQuadVisibleRect(quadVisibleRect); \
-    OwnPtr<CCDrawQuad> copy(quad->copy(copySharedState.get())); \
+    scoped_ptr<CCDrawQuad> copy(quad->copy(copySharedState.get())); \
     compareDrawQuad(quad.get(), copy.get(), copySharedState.get()); \
     const Type* copyQuad = Type::materialCast(copy.get());
 
 #define SETUP_AND_COPY_QUAD_1(Type, quad, a) \
     quad->setQuadVisibleRect(quadVisibleRect); \
-    OwnPtr<CCDrawQuad> copy(quad->copy(copySharedState.get(), a));    \
+    scoped_ptr<CCDrawQuad> copy(quad->copy(copySharedState.get(), a));    \
     compareDrawQuad(quad.get(), copy.get(), copySharedState.get()); \
     const Type* copyQuad = Type::materialCast(copy.get());
 
 #define CREATE_QUAD_0(Type) \
     QUAD_DATA \
-    OwnPtr<Type> quad(Type::create(sharedState.get(), quadRect)); \
+    scoped_ptr<Type> quad(Type::create(sharedState.get(), quadRect)); \
     SETUP_AND_COPY_QUAD(Type, quad); \
     UNUSED_PARAM(copyQuad);
 
 #define CREATE_QUAD_1(Type, a) \
     QUAD_DATA \
-    OwnPtr<Type> quad(Type::create(sharedState.get(), quadRect, a)); \
+    scoped_ptr<Type> quad(Type::create(sharedState.get(), quadRect, a)); \
     SETUP_AND_COPY_QUAD(Type, quad);
 
 #define CREATE_QUAD_2(Type, a, b) \
     QUAD_DATA \
-    OwnPtr<Type> quad(Type::create(sharedState.get(), quadRect, a, b)); \
+    scoped_ptr<Type> quad(Type::create(sharedState.get(), quadRect, a, b)); \
     SETUP_AND_COPY_QUAD(Type, quad);
 
 #define CREATE_QUAD_3(Type, a, b, c) \
     QUAD_DATA \
-    OwnPtr<Type> quad(Type::create(sharedState.get(), quadRect, a, b, c)); \
+    scoped_ptr<Type> quad(Type::create(sharedState.get(), quadRect, a, b, c)); \
     SETUP_AND_COPY_QUAD(Type, quad);
 
 #define CREATE_QUAD_4(Type, a, b, c, d) \
     QUAD_DATA \
-    OwnPtr<Type> quad(Type::create(sharedState.get(), quadRect, a, b, c, d)); \
+    scoped_ptr<Type> quad(Type::create(sharedState.get(), quadRect, a, b, c, d)); \
     SETUP_AND_COPY_QUAD(Type, quad);
 
 #define CREATE_QUAD_5(Type, a, b, c, d, e) \
     QUAD_DATA \
-    OwnPtr<Type> quad(Type::create(sharedState.get(), quadRect, a, b, c, d, e)); \
+    scoped_ptr<Type> quad(Type::create(sharedState.get(), quadRect, a, b, c, d, e)); \
     SETUP_AND_COPY_QUAD(Type, quad);
 
 #define CREATE_QUAD_6(Type, a, b, c, d, e, f) \
     QUAD_DATA \
-    OwnPtr<Type> quad(Type::create(sharedState.get(), quadRect, a, b, c, d, e, f)); \
+    scoped_ptr<Type> quad(Type::create(sharedState.get(), quadRect, a, b, c, d, e, f)); \
     SETUP_AND_COPY_QUAD(Type, quad);
 
 #define CREATE_QUAD_7(Type, a, b, c, d, e, f, g) \
     QUAD_DATA \
-    OwnPtr<Type> quad(Type::create(sharedState.get(), quadRect, a, b, c, d, e, f, g)); \
+    scoped_ptr<Type> quad(Type::create(sharedState.get(), quadRect, a, b, c, d, e, f, g)); \
     SETUP_AND_COPY_QUAD(Type, quad);
 
 #define CREATE_QUAD_8(Type, a, b, c, d, e, f, g, h) \
     QUAD_DATA \
-    OwnPtr<Type> quad(Type::create(sharedState.get(), quadRect, a, b, c, d, e, f, g, h)); \
+    scoped_ptr<Type> quad(Type::create(sharedState.get(), quadRect, a, b, c, d, e, f, g, h)); \
     SETUP_AND_COPY_QUAD(Type, quad);
 
 #define CREATE_QUAD_8_1(Type, a, b, c, d, e, f, g, h, copyA) \
     QUAD_DATA \
-    OwnPtr<Type> quad(Type::create(sharedState.get(), quadRect, a, b, c, d, e, f, g, h)); \
+    scoped_ptr<Type> quad(Type::create(sharedState.get(), quadRect, a, b, c, d, e, f, g, h)); \
     SETUP_AND_COPY_QUAD_1(Type, quad, copyA);
 
 #define CREATE_QUAD_9(Type, a, b, c, d, e, f, g, h, i) \
     QUAD_DATA \
-    OwnPtr<Type> quad(Type::create(sharedState.get(), quadRect, a, b, c, d, e, f, g, h, i)); \
+    scoped_ptr<Type> quad(Type::create(sharedState.get(), quadRect, a, b, c, d, e, f, g, h, i)); \
     SETUP_AND_COPY_QUAD(Type, quad);
 
 #define CREATE_QUAD_10(Type, a, b, c, d, e, f, g, h, i, j) \
     QUAD_DATA \
-    OwnPtr<Type> quad(Type::create(sharedState.get(), quadRect, a, b, c, d, e, f, g, h, i, j)); \
+    scoped_ptr<Type> quad(Type::create(sharedState.get(), quadRect, a, b, c, d, e, f, g, h, i, j)); \
     SETUP_AND_COPY_QUAD(Type, quad);
 
 TEST(CCDrawQuadTest, copyCheckerboardDrawQuad)

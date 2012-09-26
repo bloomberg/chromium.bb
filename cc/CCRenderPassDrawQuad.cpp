@@ -8,9 +8,9 @@
 
 namespace cc {
 
-PassOwnPtr<CCRenderPassDrawQuad> CCRenderPassDrawQuad::create(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, CCRenderPass::Id renderPassId, bool isReplica, const CCResourceProvider::ResourceId maskResourceId, const IntRect& contentsChangedSinceLastFrame, float maskTexCoordScaleX, float maskTexCoordScaleY, float maskTexCoordOffsetX, float maskTexCoordOffsetY)
+scoped_ptr<CCRenderPassDrawQuad> CCRenderPassDrawQuad::create(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, CCRenderPass::Id renderPassId, bool isReplica, const CCResourceProvider::ResourceId maskResourceId, const IntRect& contentsChangedSinceLastFrame, float maskTexCoordScaleX, float maskTexCoordScaleY, float maskTexCoordOffsetX, float maskTexCoordOffsetY)
 {
-    return adoptPtr(new CCRenderPassDrawQuad(sharedQuadState, quadRect, renderPassId, isReplica, maskResourceId, contentsChangedSinceLastFrame, maskTexCoordScaleX, maskTexCoordScaleY, maskTexCoordOffsetX, maskTexCoordOffsetY));
+    return scoped_ptr<CCRenderPassDrawQuad>(new CCRenderPassDrawQuad(sharedQuadState, quadRect, renderPassId, isReplica, maskResourceId, contentsChangedSinceLastFrame, maskTexCoordScaleX, maskTexCoordScaleY, maskTexCoordOffsetX, maskTexCoordOffsetY));
 }
 
 CCRenderPassDrawQuad::CCRenderPassDrawQuad(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, CCRenderPass::Id renderPassId, bool isReplica, CCResourceProvider::ResourceId maskResourceId, const IntRect& contentsChangedSinceLastFrame, float maskTexCoordScaleX, float maskTexCoordScaleY, float maskTexCoordOffsetX, float maskTexCoordOffsetY)
@@ -34,17 +34,17 @@ const CCRenderPassDrawQuad* CCRenderPassDrawQuad::materialCast(const CCDrawQuad*
     return static_cast<const CCRenderPassDrawQuad*>(quad);
 }
 
-PassOwnPtr<CCRenderPassDrawQuad> CCRenderPassDrawQuad::copy(const CCSharedQuadState* copiedSharedQuadState, CCRenderPass::Id copiedRenderPassId) const
+scoped_ptr<CCRenderPassDrawQuad> CCRenderPassDrawQuad::copy(const CCSharedQuadState* copiedSharedQuadState, CCRenderPass::Id copiedRenderPassId) const
 {
     unsigned bytes = size();
     ASSERT(bytes);
 
-    OwnPtr<CCRenderPassDrawQuad> copyQuad(adoptPtr(reinterpret_cast<CCRenderPassDrawQuad*>(new char[bytes])));
+    scoped_ptr<CCRenderPassDrawQuad> copyQuad(reinterpret_cast<CCRenderPassDrawQuad*>(new char[bytes]));
     memcpy(copyQuad.get(), this, bytes);
     copyQuad->setSharedQuadState(copiedSharedQuadState);
     copyQuad->m_renderPassId = copiedRenderPassId;
 
-    return copyQuad.release();
+    return copyQuad.Pass();
 }
 
 }

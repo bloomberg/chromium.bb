@@ -6,8 +6,8 @@
 #define CCSharedQuadState_h
 
 #include "IntRect.h"
+#include "base/memory/scoped_ptr.h"
 #include <public/WebTransformationMatrix.h>
-#include <wtf/PassOwnPtr.h>
 
 namespace cc {
 
@@ -22,10 +22,10 @@ struct CCSharedQuadState {
     float opacity;
     bool opaque;
 
-    static PassOwnPtr<CCSharedQuadState> create(const WebKit::WebTransformationMatrix& quadTransform, const IntRect& visibleContentRect, const IntRect& clippedRectInTarget, float opacity, bool opaque);
+    static scoped_ptr<CCSharedQuadState> create(const WebKit::WebTransformationMatrix& quadTransform, const IntRect& visibleContentRect, const IntRect& clippedRectInTarget, float opacity, bool opaque);
     CCSharedQuadState(const WebKit::WebTransformationMatrix& quadTransform, const IntRect& visibleContentRect, const IntRect& clippedRectInTarget, float opacity, bool opaque);
 
-    PassOwnPtr<CCSharedQuadState> copy() const;
+    scoped_ptr<CCSharedQuadState> copy() const;
 };
 
 }

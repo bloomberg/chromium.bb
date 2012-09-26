@@ -7,7 +7,7 @@
 
 #include "CCDrawQuad.h"
 #include "IntSize.h"
-#include <wtf/PassOwnPtr.h>
+#include "base/memory/scoped_ptr.h"
 
 namespace cc {
 
@@ -20,7 +20,7 @@ public:
       Unflipped
     };
 
-    static PassOwnPtr<CCIOSurfaceDrawQuad> create(const CCSharedQuadState*, const IntRect&, const IntSize& ioSurfaceSize, unsigned ioSurfaceTextureId, Orientation);
+    static scoped_ptr<CCIOSurfaceDrawQuad> create(const CCSharedQuadState*, const IntRect&, const IntSize& ioSurfaceSize, unsigned ioSurfaceTextureId, Orientation);
 
     IntSize ioSurfaceSize() const { return m_ioSurfaceSize; }
     unsigned ioSurfaceTextureId() const { return m_ioSurfaceTextureId; }

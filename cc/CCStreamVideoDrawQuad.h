@@ -6,9 +6,8 @@
 #define CCStreamVideoDrawQuad_h
 
 #include "CCDrawQuad.h"
+#include "base/memory/scoped_ptr.h"
 #include <public/WebTransformationMatrix.h>
-
-#include <wtf/PassOwnPtr.h>
 
 namespace cc {
 
@@ -16,7 +15,7 @@ namespace cc {
 
 class CCStreamVideoDrawQuad : public CCDrawQuad {
 public:
-    static PassOwnPtr<CCStreamVideoDrawQuad> create(const CCSharedQuadState*, const IntRect&, unsigned textureId, const WebKit::WebTransformationMatrix&);
+    static scoped_ptr<CCStreamVideoDrawQuad> create(const CCSharedQuadState*, const IntRect&, unsigned textureId, const WebKit::WebTransformationMatrix&);
 
     unsigned textureId() const { return m_textureId; }
     const WebKit::WebTransformationMatrix& matrix() const { return m_matrix; }

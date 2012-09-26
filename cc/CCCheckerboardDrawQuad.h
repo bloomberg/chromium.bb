@@ -6,7 +6,7 @@
 #define CCCheckerboardDrawQuad_h
 
 #include "CCDrawQuad.h"
-#include <wtf/PassOwnPtr.h>
+#include "base/memory/scoped_ptr.h"
 
 namespace cc {
 
@@ -14,7 +14,7 @@ namespace cc {
 
 class CCCheckerboardDrawQuad : public CCDrawQuad {
 public:
-    static PassOwnPtr<CCCheckerboardDrawQuad> create(const CCSharedQuadState*, const IntRect&);
+    static scoped_ptr<CCCheckerboardDrawQuad> create(const CCSharedQuadState*, const IntRect&);
 
     static const CCCheckerboardDrawQuad* materialCast(const CCDrawQuad*);
 private:

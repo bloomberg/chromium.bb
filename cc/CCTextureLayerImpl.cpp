@@ -46,7 +46,7 @@ void CCTextureLayerImpl::appendQuads(CCQuadSink& quadSink, CCAppendQuadsData& ap
     appendDebugBorderQuad(quadSink, sharedQuadState, appendQuadsData);
 
     IntRect quadRect(IntPoint(), contentBounds());
-    quadSink.append(CCTextureDrawQuad::create(sharedQuadState, quadRect, m_externalTextureResource, m_premultipliedAlpha, m_uvRect, m_flipped), appendQuadsData);
+    quadSink.append(CCTextureDrawQuad::create(sharedQuadState, quadRect, m_externalTextureResource, m_premultipliedAlpha, m_uvRect, m_flipped).PassAs<CCDrawQuad>(), appendQuadsData);
 }
 
 void CCTextureLayerImpl::didDraw(CCResourceProvider* resourceProvider)

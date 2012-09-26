@@ -78,9 +78,9 @@ static CCSolidColorDrawQuad* addQuad(CCTestRenderPass* pass, IntRect rect, SkCol
     MockCCQuadCuller quadSink(pass->quadList(), pass->sharedQuadStateList());
     CCAppendQuadsData data(pass->id());
     CCSharedQuadState* sharedState = quadSink.useSharedQuadState(CCSharedQuadState::create(WebTransformationMatrix(), rect, rect, 1, false));
-    OwnPtr<CCSolidColorDrawQuad> quad(CCSolidColorDrawQuad::create(sharedState, rect, color));
+    scoped_ptr<CCSolidColorDrawQuad> quad = CCSolidColorDrawQuad::create(sharedState, rect, color);
     CCSolidColorDrawQuad* quadPtr = quad.get();
-    quadSink.append(quad.release(), data);
+    quadSink.append(quad.PassAs<CCDrawQuad>(), data);
     return quadPtr;
 }
 
@@ -90,8 +90,8 @@ static void addRenderPassQuad(CCTestRenderPass* toPass, CCTestRenderPass* contri
     CCAppendQuadsData data(toPass->id());
     IntRect outputRect = contributingPass->outputRect();
     CCSharedQuadState* sharedState = quadSink.useSharedQuadState(CCSharedQuadState::create(WebTransformationMatrix(), outputRect, outputRect, 1, false));
-    OwnPtr<CCRenderPassDrawQuad> quad(CCRenderPassDrawQuad::create(sharedState, outputRect, contributingPass->id(), false, 0, outputRect, 0, 0, 0, 0));
-    quadSink.append(quad.release(), data);
+    scoped_ptr<CCRenderPassDrawQuad> quad = CCRenderPassDrawQuad::create(sharedState, outputRect, contributingPass->id(), false, 0, outputRect, 0, 0, 0, 0);
+    quadSink.append(quad.PassAs<CCDrawQuad>(), data);
 }
 
 class CCDelegatedRendererLayerImplTestSimple : public CCDelegatedRendererLayerImplTest {

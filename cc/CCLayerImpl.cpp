@@ -122,7 +122,7 @@ bool CCLayerImpl::descendantDrawsContent()
     return false;
 }
 
-PassOwnPtr<CCSharedQuadState> CCLayerImpl::createSharedQuadState() const
+scoped_ptr<CCSharedQuadState> CCLayerImpl::createSharedQuadState() const
 {
     return CCSharedQuadState::create(m_drawTransform, m_visibleContentRect, m_drawableContentRect, m_drawOpacity, m_opaque);
 }
@@ -150,7 +150,7 @@ void CCLayerImpl::appendDebugBorderQuad(CCQuadSink& quadList, const CCSharedQuad
         return;
 
     IntRect contentRect(IntPoint(), contentBounds());
-    quadList.append(CCDebugBorderDrawQuad::create(sharedQuadState, contentRect, debugBorderColor(), debugBorderWidth()), appendQuadsData);
+    quadList.append(CCDebugBorderDrawQuad::create(sharedQuadState, contentRect, debugBorderColor(), debugBorderWidth()).PassAs<CCDrawQuad>(), appendQuadsData);
 }
 
 bool CCLayerImpl::hasContributingDelegatedRenderPasses() const

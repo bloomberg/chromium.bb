@@ -160,7 +160,7 @@ void CCDelegatedRendererLayerImpl::appendRenderPassQuads(CCQuadSink& quadSink, C
             copiedSharedQuadState->opacity *= drawOpacity();
         }
 
-        OwnPtr<CCDrawQuad> copyQuad;
+        scoped_ptr<CCDrawQuad> copyQuad;
         if (quad->material() != CCDrawQuad::RenderPass)
             copyQuad = quad->copy(copiedSharedQuadState);
         else {
@@ -168,11 +168,11 @@ void CCDelegatedRendererLayerImpl::appendRenderPassQuads(CCQuadSink& quadSink, C
             CCRenderPass::Id contributingRenderPassId = convertDelegatedRenderPassId(contributingDelegatedRenderPassId);
             ASSERT(contributingRenderPassId != appendQuadsData.renderPassId);
 
-            copyQuad = CCRenderPassDrawQuad::materialCast(quad)->copy(copiedSharedQuadState, contributingRenderPassId);
+            copyQuad = CCRenderPassDrawQuad::materialCast(quad)->copy(copiedSharedQuadState, contributingRenderPassId).PassAs<CCDrawQuad>();
         }
-        ASSERT(copyQuad);
+        ASSERT(copyQuad.get());
 
-        quadSink.append(copyQuad.release(), appendQuadsData);
+        quadSink.append(copyQuad.Pass(), appendQuadsData);
     }
 }
 

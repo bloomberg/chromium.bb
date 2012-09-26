@@ -59,7 +59,7 @@ public:
     // looking at the material type).
     unsigned size() const;
 
-    PassOwnPtr<CCDrawQuad> copy(const CCSharedQuadState* copiedSharedQuadState) const;
+    scoped_ptr<CCDrawQuad> copy(const CCSharedQuadState* copiedSharedQuadState) const;
 
     const CCSharedQuadState* sharedQuadState() const { return m_sharedQuadState; }
     int sharedQuadStateId() const { return m_sharedQuadStateId; }

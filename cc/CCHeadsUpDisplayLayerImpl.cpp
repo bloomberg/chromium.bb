@@ -80,7 +80,7 @@ void CCHeadsUpDisplayLayerImpl::appendQuads(CCQuadSink& quadSink, CCAppendQuadsD
     bool premultipliedAlpha = true;
     FloatRect uvRect(0, 0, 1, 1);
     bool flipped = false;
-    quadSink.append(CCTextureDrawQuad::create(sharedQuadState, quadRect, m_hudTexture->id(), premultipliedAlpha, uvRect, flipped), appendQuadsData);
+    quadSink.append(CCTextureDrawQuad::create(sharedQuadState, quadRect, m_hudTexture->id(), premultipliedAlpha, uvRect, flipped).PassAs<CCDrawQuad>(), appendQuadsData);
 }
 
 void CCHeadsUpDisplayLayerImpl::updateHudTexture(CCResourceProvider* resourceProvider)

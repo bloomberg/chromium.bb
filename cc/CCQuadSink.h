@@ -5,7 +5,7 @@
 #ifndef CCQuadSink_h
 #define CCQuadSink_h
 
-#include <wtf/PassOwnPtr.h>
+#include "base/memory/scoped_ptr.h"
 
 namespace cc {
 
@@ -20,10 +20,10 @@ public:
 
     // Call this to add a SharedQuadState before appending quads that refer to it. Returns a pointer
     // to the given SharedQuadState for convenience, that can be set on the quads to append.
-    virtual CCSharedQuadState* useSharedQuadState(PassOwnPtr<CCSharedQuadState>) = 0;
+    virtual CCSharedQuadState* useSharedQuadState(scoped_ptr<CCSharedQuadState>) = 0;
 
     // Returns true if the quad is added to the list, and false if the quad is entirely culled.
-    virtual bool append(PassOwnPtr<CCDrawQuad> passDrawQuad, CCAppendQuadsData&) = 0;
+    virtual bool append(scoped_ptr<CCDrawQuad> passDrawQuad, CCAppendQuadsData&) = 0;
 };
 
 }

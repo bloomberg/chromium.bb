@@ -9,7 +9,7 @@
 #include "CCQuadSink.h"
 #include "CCRenderPass.h"
 #include "IntRect.h"
-#include <wtf/PassOwnPtr.h>
+#include "base/memory/scoped_ptr.h"
 
 namespace cc {
 
@@ -20,9 +20,9 @@ public:
 
     MockCCQuadCuller(CCQuadList& externalQuadList, CCSharedQuadStateList& externalSharedQuadStateList);
 
-    virtual bool append(PassOwnPtr<CCDrawQuad> newQuad, CCAppendQuadsData&) OVERRIDE;
+    virtual bool append(scoped_ptr<CCDrawQuad> newQuad, CCAppendQuadsData&) OVERRIDE;
 
-    virtual CCSharedQuadState* useSharedQuadState(PassOwnPtr<CCSharedQuadState> passSharedQuadState) OVERRIDE;
+    virtual CCSharedQuadState* useSharedQuadState(scoped_ptr<CCSharedQuadState> passSharedQuadState) OVERRIDE;
 
     const CCQuadList& quadList() const { return m_activeQuadList; };
     const CCSharedQuadStateList& sharedQuadStateList() const { return m_activeSharedQuadStateList; };

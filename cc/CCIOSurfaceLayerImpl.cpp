@@ -81,7 +81,7 @@ void CCIOSurfaceLayerImpl::appendQuads(CCQuadSink& quadSink, CCAppendQuadsData& 
     appendDebugBorderQuad(quadSink, sharedQuadState, appendQuadsData);
 
     IntRect quadRect(IntPoint(), contentBounds());
-    quadSink.append(CCIOSurfaceDrawQuad::create(sharedQuadState, quadRect, m_ioSurfaceSize, m_ioSurfaceTextureId, CCIOSurfaceDrawQuad::Flipped), appendQuadsData);
+    quadSink.append(CCIOSurfaceDrawQuad::create(sharedQuadState, quadRect, m_ioSurfaceSize, m_ioSurfaceTextureId, CCIOSurfaceDrawQuad::Flipped).PassAs<CCDrawQuad>(), appendQuadsData);
 }
 
 void CCIOSurfaceLayerImpl::dumpLayerProperties(std::string* str, int indent) const

@@ -39,7 +39,7 @@ void CCSolidColorLayerImpl::appendQuads(CCQuadSink& quadSink, CCAppendQuadsData&
     for (int x = 0; x < width; x += m_tileSize) {
         for (int y = 0; y < height; y += m_tileSize) {
             IntRect solidTileRect(x, y, min(width - x, m_tileSize), min(height - y, m_tileSize));
-            quadSink.append(CCSolidColorDrawQuad::create(sharedQuadState, solidTileRect, backgroundColor()), appendQuadsData);
+            quadSink.append(CCSolidColorDrawQuad::create(sharedQuadState, solidTileRect, backgroundColor()).PassAs<CCDrawQuad>(), appendQuadsData);
         }
     }
 }

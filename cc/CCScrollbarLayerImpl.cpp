@@ -91,9 +91,9 @@ void CCScrollbarLayerImpl::appendQuads(CCQuadSink& quadSink, CCAppendQuadsData& 
         thumbRect = WebRect();
 
     if (m_thumbResourceId && !thumbRect.isEmpty()) {
-        OwnPtr<CCTextureDrawQuad> quad = CCTextureDrawQuad::create(sharedQuadState, layerRectToContentRect(thumbRect), m_thumbResourceId, premultipledAlpha, uvRect, flipped);
+        scoped_ptr<CCTextureDrawQuad> quad = CCTextureDrawQuad::create(sharedQuadState, layerRectToContentRect(thumbRect), m_thumbResourceId, premultipledAlpha, uvRect, flipped);
         quad->setNeedsBlending();
-        quadSink.append(quad.release(), appendQuadsData);
+        quadSink.append(quad.PassAs<CCDrawQuad>(), appendQuadsData);
     }
 
     if (!m_backTrackResourceId)
@@ -101,12 +101,12 @@ void CCScrollbarLayerImpl::appendQuads(CCQuadSink& quadSink, CCAppendQuadsData& 
 
     // We only paint the track in two parts if we were given a texture for the forward track part.
     if (m_foreTrackResourceId && !foreTrackRect.isEmpty())
-        quadSink.append(CCTextureDrawQuad::create(sharedQuadState, layerRectToContentRect(foreTrackRect), m_foreTrackResourceId, premultipledAlpha, toUVRect(foreTrackRect, boundsRect), flipped), appendQuadsData);
+        quadSink.append(CCTextureDrawQuad::create(sharedQuadState, layerRectToContentRect(foreTrackRect), m_foreTrackResourceId, premultipledAlpha, toUVRect(foreTrackRect, boundsRect), flipped).PassAs<CCDrawQuad>(), appendQuadsData);
 
     // Order matters here: since the back track texture is being drawn to the entire contents rect, we must append it after the thumb and
     // fore track quads. The back track texture contains (and displays) the buttons.
     if (!contentBoundsRect.isEmpty())
-        quadSink.append(CCTextureDrawQuad::create(sharedQuadState, IntRect(contentBoundsRect), m_backTrackResourceId, premultipledAlpha, uvRect, flipped), appendQuadsData);
+        quadSink.append(CCTextureDrawQuad::create(sharedQuadState, IntRect(contentBoundsRect), m_backTrackResourceId, premultipledAlpha, uvRect, flipped).PassAs<CCDrawQuad>(), appendQuadsData);
 }
 
 void CCScrollbarLayerImpl::didLoseContext()

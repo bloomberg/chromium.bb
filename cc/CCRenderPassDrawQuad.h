@@ -9,14 +9,14 @@
 #include "CCRenderPass.h"
 #include "CCResourceProvider.h"
 #include "IntRect.h"
-#include <wtf/PassOwnPtr.h>
+#include "base/memory/scoped_ptr.h"
 
 namespace cc {
 
 class CCRenderPassDrawQuad : public CCDrawQuad {
     WTF_MAKE_NONCOPYABLE(CCRenderPassDrawQuad);
 public:
-    static PassOwnPtr<CCRenderPassDrawQuad> create(const CCSharedQuadState*, const IntRect&, CCRenderPass::Id renderPassId, bool isReplica, CCResourceProvider::ResourceId maskResourceId, const IntRect& contentsChangedSinceLastFrame, float maskTexCoordScaleX, float maskTexCoordScaleY, float maskTexCoordOffsetX, float maskTexCoordOffsetY);
+    static scoped_ptr<CCRenderPassDrawQuad> create(const CCSharedQuadState*, const IntRect&, CCRenderPass::Id renderPassId, bool isReplica, CCResourceProvider::ResourceId maskResourceId, const IntRect& contentsChangedSinceLastFrame, float maskTexCoordScaleX, float maskTexCoordScaleY, float maskTexCoordOffsetX, float maskTexCoordOffsetY);
 
     CCRenderPass::Id renderPassId() const { return m_renderPassId; }
     bool isReplica() const { return m_isReplica; }
@@ -29,7 +29,7 @@ public:
     float maskTexCoordOffsetX() const { return m_maskTexCoordOffsetX; }
     float maskTexCoordOffsetY() const { return m_maskTexCoordOffsetY; }
 
-    PassOwnPtr<CCRenderPassDrawQuad> copy(const CCSharedQuadState* copiedSharedQuadState, CCRenderPass::Id copiedRenderPassId) const;
+    scoped_ptr<CCRenderPassDrawQuad> copy(const CCSharedQuadState* copiedSharedQuadState, CCRenderPass::Id copiedRenderPassId) const;
 
 private:
     CCRenderPassDrawQuad(const CCSharedQuadState*, const IntRect&, CCRenderPass::Id renderPassId, bool isReplica, CCResourceProvider::ResourceId maskResourceId, const IntRect& contentsChangedSinceLastFrame, float maskTexCoordScaleX, float maskTexCoordScaleY, float maskTexCoordOffsetX, float maskTexCoordOffsetY);

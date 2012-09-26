@@ -7,7 +7,7 @@
 
 #include "CCDrawQuad.h"
 #include "SkColor.h"
-#include <wtf/PassOwnPtr.h>
+#include "base/memory/scoped_ptr.h"
 
 namespace cc {
 
@@ -15,7 +15,7 @@ namespace cc {
 
 class CCSolidColorDrawQuad : public CCDrawQuad {
 public:
-    static PassOwnPtr<CCSolidColorDrawQuad> create(const CCSharedQuadState*, const IntRect&, SkColor);
+    static scoped_ptr<CCSolidColorDrawQuad> create(const CCSharedQuadState*, const IntRect&, SkColor);
 
     SkColor color() const { return m_color; };
 

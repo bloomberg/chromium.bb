@@ -1409,11 +1409,11 @@ public:
             opaqueRect = m_opaqueContentRect;
 
         CCSharedQuadState* sharedQuadState = quadSink.useSharedQuadState(createSharedQuadState());
-        OwnPtr<CCDrawQuad> testBlendingDrawQuad = CCTileDrawQuad::create(sharedQuadState, m_quadRect, opaqueRect, m_resourceId, IntPoint(), IntSize(1, 1), 0, false, false, false, false, false);
+        scoped_ptr<CCTileDrawQuad> testBlendingDrawQuad = CCTileDrawQuad::create(sharedQuadState, m_quadRect, opaqueRect, m_resourceId, IntPoint(), IntSize(1, 1), 0, false, false, false, false, false);
         testBlendingDrawQuad->setQuadVisibleRect(m_quadVisibleRect);
         EXPECT_EQ(m_blend, testBlendingDrawQuad->needsBlending());
         EXPECT_EQ(m_hasRenderSurface, !!renderSurface());
-        quadSink.append(testBlendingDrawQuad.release(), appendQuadsData);
+        quadSink.append(testBlendingDrawQuad.PassAs<CCDrawQuad>(), appendQuadsData);
     }
 
     void setExpectation(bool blend, bool hasRenderSurface)
@@ -1938,8 +1938,8 @@ public:
 
         SkColor gray = SkColorSetRGB(100, 100, 100);
         IntRect quadRect(IntPoint(0, 0), contentBounds());
-        OwnPtr<CCDrawQuad> myQuad = CCSolidColorDrawQuad::create(sharedQuadState, quadRect, gray);
-        quadSink.append(myQuad.release(), appendQuadsData);
+        scoped_ptr<CCSolidColorDrawQuad> myQuad = CCSolidColorDrawQuad::create(sharedQuadState, quadRect, gray);
+        quadSink.append(myQuad.PassAs<CCDrawQuad>(), appendQuadsData);
     }
 
 private:
@@ -2535,11 +2535,11 @@ static inline scoped_ptr<CCRenderPass> createRenderPassWithResource(CCResourcePr
     CCResourceProvider::ResourceId resourceId = provider->createResource(0, IntSize(1, 1), GraphicsContext3D::RGBA, CCResourceProvider::TextureUsageAny);
 
     scoped_ptr<CCRenderPass> pass = CCRenderPass::create(CCRenderPass::Id(1, 1), IntRect(0, 0, 1, 1), WebTransformationMatrix());
-    OwnPtr<CCSharedQuadState> sharedState = CCSharedQuadState::create(WebTransformationMatrix(), IntRect(0, 0, 1, 1), IntRect(0, 0, 1, 1), 1, false);
-    OwnPtr<CCTextureDrawQuad> quad = CCTextureDrawQuad::create(sharedState.get(), IntRect(0, 0, 1, 1), resourceId, false, FloatRect(0, 0, 1, 1), false);
+    scoped_ptr<CCSharedQuadState> sharedState = CCSharedQuadState::create(WebTransformationMatrix(), IntRect(0, 0, 1, 1), IntRect(0, 0, 1, 1), 1, false);
+    scoped_ptr<CCTextureDrawQuad> quad = CCTextureDrawQuad::create(sharedState.get(), IntRect(0, 0, 1, 1), resourceId, false, FloatRect(0, 0, 1, 1), false);
 
-    static_cast<CCTestRenderPass*>(pass.get())->appendSharedQuadState(sharedState.release());
-    static_cast<CCTestRenderPass*>(pass.get())->appendQuad(quad.release());
+    static_cast<CCTestRenderPass*>(pass.get())->appendSharedQuadState(sharedState.Pass());
+    static_cast<CCTestRenderPass*>(pass.get())->appendQuad(quad.PassAs<CCDrawQuad>());
 
     return pass.Pass();
 }
@@ -3925,7 +3925,7 @@ TEST_F(CCLayerTreeHostImplTest, releaseContentsTextureShouldTriggerCommit)
 
 struct RenderPassRemovalTestData : public CCLayerTreeHostImpl::FrameData {
     ScopedPtrHashMap<CCRenderPass::Id, CCRenderPass> renderPassCache;
-    OwnPtr<CCSharedQuadState> sharedQuadState;
+    scoped_ptr<CCSharedQuadState> sharedQuadState;
 };
 
 class CCTestRenderer : public CCRendererGL, public CCRendererClient {
@@ -3993,9 +3993,9 @@ static void configureRenderPassTestData(const char* testScript, RenderPassRemova
         while (*currentChar && *currentChar != '\n') {
             if (*currentChar == 's') {
                 // Solid color draw quad
-                OwnPtr<CCDrawQuad> quad = CCSolidColorDrawQuad::create(testData.sharedQuadState.get(), IntRect(0, 0, 10, 10), SK_ColorWHITE);
+                scoped_ptr<CCSolidColorDrawQuad> quad = CCSolidColorDrawQuad::create(testData.sharedQuadState.get(), IntRect(0, 0, 10, 10), SK_ColorWHITE);
                 
-                static_cast<CCTestRenderPass*>(renderPass.get())->appendQuad(quad.release());
+                static_cast<CCTestRenderPass*>(renderPass.get())->appendQuad(quad.PassAs<CCDrawQuad>());
                 currentChar++;
             } else if ((*currentChar >= 'A') && (*currentChar <= 'Z')) {
                 // RenderPass draw quad
@@ -4035,8 +4035,8 @@ static void configureRenderPassTestData(const char* testScript, RenderPassRemova
 
                 IntRect quadRect = IntRect(0, 0, 1, 1);
                 IntRect contentsChangedRect = contentsChanged ? quadRect : IntRect();
-                OwnPtr<CCRenderPassDrawQuad> quad = CCRenderPassDrawQuad::create(testData.sharedQuadState.get(), quadRect, newRenderPassId, isReplica, 1, contentsChangedRect, 1, 1, 0, 0);
-                static_cast<CCTestRenderPass*>(renderPass.get())->appendQuad(quad.release());
+                scoped_ptr<CCRenderPassDrawQuad> quad = CCRenderPassDrawQuad::create(testData.sharedQuadState.get(), quadRect, newRenderPassId, isReplica, 1, contentsChangedRect, 1, 1, 0, 0);
+                static_cast<CCTestRenderPass*>(renderPass.get())->appendQuad(quad.PassAs<CCDrawQuad>());
             }
         }
         testData.renderPasses.insert(0, renderPass.get());

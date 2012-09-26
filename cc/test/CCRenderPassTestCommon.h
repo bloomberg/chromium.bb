@@ -6,7 +6,6 @@
 #define CCRenderPassTestCommon_h
 
 #include "CCRenderPass.h"
-#include <wtf/PassOwnPtr.h>
 
 namespace WebKitTests {
 
@@ -15,8 +14,8 @@ public:
     cc::CCQuadList& quadList() { return m_quadList; }
     cc::CCSharedQuadStateList& sharedQuadStateList() { return m_sharedQuadStateList; }
 
-    void appendQuad(PassOwnPtr<cc::CCDrawQuad> quad) { m_quadList.append(quad); }
-    void appendSharedQuadState(PassOwnPtr<cc::CCSharedQuadState> state) { m_sharedQuadStateList.append(state); }
+    void appendQuad(scoped_ptr<cc::CCDrawQuad> quad) { m_quadList.append(quad.Pass()); }
+    void appendSharedQuadState(scoped_ptr<cc::CCSharedQuadState> state) { m_sharedQuadStateList.append(state.Pass()); }
 };
 
 } //namespace WebKitTests
