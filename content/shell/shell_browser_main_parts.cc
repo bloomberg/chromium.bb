@@ -29,6 +29,10 @@
 #include "net/android/network_change_notifier_factory_android.h"
 #endif
 
+#if defined(USE_AURA) && defined(USE_X11)
+#include "ui/base/touch/touch_factory.h"
+#endif
+
 namespace content {
 
 namespace {
@@ -79,6 +83,9 @@ ShellBrowserMainParts::~ShellBrowserMainParts() {
 
 #if !defined(OS_MACOSX)
 void ShellBrowserMainParts::PreMainMessageLoopStart() {
+#if defined(USE_AURA) && defined(USE_X11)
+  ui::TouchFactory::SetTouchDeviceListFromCommandLine();
+#endif
 }
 #endif
 
