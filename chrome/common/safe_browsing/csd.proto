@@ -17,7 +17,7 @@ package safe_browsing;
 
 message ClientPhishingRequest {
   // URL that the client visited.  The CGI parameters are stripped by the
-  // client.  This field is ONLY set for UMA-enabled users.
+  // client.
   optional string url = 1;
 
   // A 5-byte SHA-256 hash prefix of the URL.  Before hashing the URL is
@@ -66,6 +66,8 @@ message ClientPhishingRequest {
   // where the referrer uses HTTPs.
   // OBSOLETE: Use feature 'Referrer=<referrer>' instead.
   optional string OBSOLETE_referrer_url = 9;
+
+  // Field 11 is only used on the server.
 }
 
 message ClientPhishingResponse {
@@ -138,6 +140,7 @@ message ClientDownloadRequest {
     message Element {
       // DER-encoded X.509 representation of the certificate.
       optional bytes certificate = 1;
+      // Fields 2 - 7 are only used on the server.
     }
     repeated Element element = 1;
   }
@@ -158,6 +161,8 @@ message ClientDownloadRequest {
   // True if the download was user initiated.
   optional bool user_initiated = 6;
 
+  // Fields 7 and 8 are only used on the server.
+
   // Name of the file where the download would be stored if the
   // download completes.  E.g., "bla.exe".
   optional string file_basename = 9;
@@ -175,6 +180,8 @@ message ClientDownloadRequest {
 
   // Locale of the device, eg en, en_US.
   optional string locale = 11;
+
+  // Field 12 is only used on the server.
 }
 
 message ClientDownloadResponse {
@@ -200,4 +207,38 @@ message ClientDownloadResponse {
     optional string url = 2;
   }
   optional MoreInfo more_info = 2;
+
+  // An arbitrary token that should be sent along for further server requests.
+  optional bytes token = 3;
+}
+
+// The following protocol buffer holds the feedback report gathered
+// from the user regarding the download.
+message ClientDownloadReport {
+  // The information of user who provided the feedback.
+  // This is going to be useful for handling appeals.
+  message UserInformation {
+    optional string email = 1;
+  }
+
+  enum Reason {
+    SHARE = 0;
+    FALSE_POSITIVE = 1;
+    APPEAL = 2;
+  }
+
+  // The type of feedback for this report.
+  optional Reason reason = 1;
+
+  // The original download ping
+  optional ClientDownloadRequest download_request = 2;
+
+  // Stores the information of the user who provided the feedback.
+  optional UserInformation user_information = 3;
+
+  // Unstructed comments provided by the user.
+  optional bytes comment = 4;
+
+  // The original download response sent from the verdict server.
+  optional ClientDownloadResponse download_response = 5;
 }
