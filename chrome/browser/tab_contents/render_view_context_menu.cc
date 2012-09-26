@@ -227,6 +227,8 @@ bool ShouldShowTranslateItem(const GURL& page_url) {
 }  // namespace
 
 // static
+const size_t RenderViewContextMenu::kMaxExtensionItemTitleLength = 75;
+// static
 const size_t RenderViewContextMenu::kMaxSelectionTextLength = 50;
 
 // static
@@ -251,8 +253,6 @@ RenderViewContextMenu::RenderViewContextMenu(
       source_web_contents_(web_contents),
       profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
       ALLOW_THIS_IN_INITIALIZER_LIST(menu_model_(this)),
-      extension_items_(profile_, this, &menu_model_,
-                    base::Bind(MenuItemMatchesParams, params_)),
       external_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(speech_input_submenu_model_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(protocol_handler_submenu_model_(this)),
@@ -338,21 +338,177 @@ static const GURL& GetDocumentURL(const content::ContextMenuParams& params) {
   return params.frame_url.is_empty() ? params.page_url : params.frame_url;
 }
 
+// Given a list of items, returns the ones that match given the contents
+// of |params| and the profile.
 // static
-bool RenderViewContextMenu::MenuItemMatchesParams(
+MenuItem::List RenderViewContextMenu::GetRelevantExtensionItems(
+    const MenuItem::List& items,
     const content::ContextMenuParams& params,
-    const extensions::MenuItem* item) {
-  bool match = ExtensionContextAndPatternMatch(params, item->contexts(),
-                                               item->target_url_patterns());
-  if (!match)
-    return false;
+    Profile* profile,
+    bool can_cross_incognito) {
+  MenuItem::List result;
+  for (MenuItem::List::const_iterator i = items.begin();
+       i != items.end(); ++i) {
+    const MenuItem* item = *i;
 
-  const GURL& document_url = GetDocumentURL(params);
-  return ExtensionPatternMatch(item->document_url_patterns(), document_url);
+    if (!ExtensionContextAndPatternMatch(params, item->contexts(),
+        item->target_url_patterns()))
+      continue;
+
+    const GURL& document_url = GetDocumentURL(params);
+    if (!ExtensionPatternMatch(item->document_url_patterns(), document_url))
+      continue;
+
+    if (item->id().incognito == profile->IsOffTheRecord() ||
+        can_cross_incognito)
+      result.push_back(*i);
+  }
+  return result;
+}
+
+void RenderViewContextMenu::AppendExtensionItems(
+    const std::string& extension_id, int* index) {
+  ExtensionService* service = profile_->GetExtensionService();
+  MenuManager* manager = service->menu_manager();
+  const Extension* extension = service->GetExtensionById(extension_id, false);
+  DCHECK_GE(*index, 0);
+  int max_index =
+      IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST - IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST;
+  if (!extension || *index >= max_index)
+    return;
+
+  // Find matching items.
+  const MenuItem::List* all_items = manager->MenuItems(extension_id);
+  if (!all_items || all_items->empty())
+    return;
+  bool can_cross_incognito = service->CanCrossIncognito(extension);
+  MenuItem::List items =
+      GetRelevantExtensionItems(*all_items, params_, profile_,
+                                can_cross_incognito);
+  if (items.empty())
+    return;
+
+  // If this is the first extension-provided menu item, and there are other
+  // items in the menu, add a separator.
+  if (*index == 0 && menu_model_.GetItemCount())
+    menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+
+  // Extensions (other than platform apps) are only allowed one top-level slot
+  // (and it can't be a radio or checkbox item because we are going to put the
+  // extension icon next to it).
+  // If they have more than that, we automatically push them into a submenu.
+  if (extension->is_platform_app()) {
+    RecursivelyAppendExtensionItems(items, can_cross_incognito, &menu_model_,
+                                    index);
+  } else {
+    int menu_id = IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST + (*index)++;
+    string16 title;
+    MenuItem::List submenu_items;
+
+    if (items.size() > 1 || items[0]->type() != MenuItem::NORMAL) {
+      title = UTF8ToUTF16(extension->name());
+      submenu_items = items;
+    } else {
+      MenuItem* item = items[0];
+      extension_item_map_[menu_id] = item->id();
+      title = item->TitleWithReplacement(PrintableSelectionText(),
+                                       kMaxExtensionItemTitleLength);
+      submenu_items = GetRelevantExtensionItems(item->children(), params_,
+                                              profile_, can_cross_incognito);
+    }
+
+    // Now add our item(s) to the menu_model_.
+    if (submenu_items.empty()) {
+      menu_model_.AddItem(menu_id, title);
+    } else {
+      ui::SimpleMenuModel* submenu = new ui::SimpleMenuModel(this);
+      extension_menu_models_.push_back(submenu);
+      menu_model_.AddSubMenu(menu_id, title, submenu);
+      RecursivelyAppendExtensionItems(submenu_items, can_cross_incognito,
+                                      submenu, index);
+    }
+    SetExtensionIcon(extension_id);
+  }
+}
+
+void RenderViewContextMenu::RecursivelyAppendExtensionItems(
+    const MenuItem::List& items,
+    bool can_cross_incognito,
+    ui::SimpleMenuModel* menu_model,
+    int* index) {
+  string16 selection_text = PrintableSelectionText();
+  MenuItem::Type last_type = MenuItem::NORMAL;
+  int radio_group_id = 1;
+
+  for (MenuItem::List::const_iterator i = items.begin();
+       i != items.end(); ++i) {
+    MenuItem* item = *i;
+
+    // If last item was of type radio but the current one isn't, auto-insert
+    // a separator.  The converse case is handled below.
+    if (last_type == MenuItem::RADIO &&
+        item->type() != MenuItem::RADIO) {
+      menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
+      last_type = MenuItem::SEPARATOR;
+    }
+
+    int menu_id = IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST + (*index)++;
+    if (menu_id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST)
+      return;
+    extension_item_map_[menu_id] = item->id();
+    string16 title = item->TitleWithReplacement(selection_text,
+                                                kMaxExtensionItemTitleLength);
+    if (item->type() == MenuItem::NORMAL) {
+      MenuItem::List children =
+          GetRelevantExtensionItems(item->children(), params_,
+                                    profile_, can_cross_incognito);
+      if (children.empty()) {
+        menu_model->AddItem(menu_id, title);
+      } else {
+        ui::SimpleMenuModel* submenu = new ui::SimpleMenuModel(this);
+        extension_menu_models_.push_back(submenu);
+        menu_model->AddSubMenu(menu_id, title, submenu);
+        RecursivelyAppendExtensionItems(children, can_cross_incognito,
+                                        submenu, index);
+      }
+    } else if (item->type() == MenuItem::CHECKBOX) {
+      menu_model->AddCheckItem(menu_id, title);
+    } else if (item->type() == MenuItem::RADIO) {
+      if (i != items.begin() &&
+          last_type != MenuItem::RADIO) {
+        radio_group_id++;
+
+        // Auto-append a separator if needed.
+        if (last_type != MenuItem::SEPARATOR)
+          menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
+      }
+
+      menu_model->AddRadioItem(menu_id, title, radio_group_id);
+    } else if (item->type() == MenuItem::SEPARATOR) {
+      if (i != items.begin() && last_type != MenuItem::SEPARATOR) {
+        menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
+      }
+    }
+    last_type = item->type();
+  }
+}
+
+void RenderViewContextMenu::SetExtensionIcon(const std::string& extension_id) {
+  ExtensionService* service = profile_->GetExtensionService();
+  MenuManager* menu_manager = service->menu_manager();
+
+  int index = menu_model_.GetItemCount() - 1;
+  DCHECK_GE(index, 0);
+
+  const SkBitmap& icon = menu_manager->GetIconForExtension(extension_id);
+  DCHECK(icon.width() == gfx::kFaviconSize);
+  DCHECK(icon.height() == gfx::kFaviconSize);
+
+  menu_model_.SetIcon(index, gfx::Image(icon));
 }
 
 void RenderViewContextMenu::AppendAllExtensionItems() {
-  extension_items_.Clear();
+  extension_item_map_.clear();
   ExtensionService* service = profile_->GetExtensionService();
   if (!service)
     return;  // In unit-tests, we may not have an ExtensionService.
@@ -381,8 +537,7 @@ void RenderViewContextMenu::AppendAllExtensionItems() {
   std::vector<std::pair<std::string, std::string> >::const_iterator i;
   for (i = sorted_ids.begin();
        i != sorted_ids.end(); ++i) {
-    extension_items_.AppendExtensionItems(i->second, PrintableSelectionText(),
-                                       &index);
+    AppendExtensionItems(i->second, &index);
   }
   UMA_HISTOGRAM_TIMES("Extensions.ContextMenus_BuildTime",
                       base::TimeTicks::Now() - begin);
@@ -513,8 +668,7 @@ void RenderViewContextMenu::AppendPlatformAppItems() {
     AppendCopyItem();
 
   int index = 0;
-  extension_items_.AppendExtensionItems(platform_app->id(),
-                                     PrintableSelectionText(), &index);
+  AppendExtensionItems(platform_app->id(), &index);
 
   // Add dev tools for unpacked extensions.
   if (platform_app->location() == Extension::LOAD) {
@@ -905,6 +1059,18 @@ void RenderViewContextMenu::AppendProtocolHandlerSubMenu() {
 void RenderViewContextMenu::AppendPlatformEditableItems() {
 }
 
+MenuItem* RenderViewContextMenu::GetExtensionMenuItem(int id) const {
+  MenuManager* manager = profile_->GetExtensionService()->menu_manager();
+  std::map<int, MenuItem::Id>::const_iterator i =
+      extension_item_map_.find(id);
+  if (i != extension_item_map_.end()) {
+    MenuItem* item = manager->GetItemById(i->second);
+    if (item)
+      return item;
+  }
+  return NULL;
+}
+
 // Menu delegate functions -----------------------------------------------------
 
 bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
@@ -944,7 +1110,11 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
   // Extension items.
   if (id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
       id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST) {
-    return extension_items_.IsCommandIdEnabled(id);
+    MenuItem* item = GetExtensionMenuItem(id);
+    // If this is the parent menu item, it is always enabled.
+    if (!item)
+      return true;
+    return item->enabled();
   }
 
   if (id >= IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_FIRST &&
@@ -1241,7 +1411,11 @@ bool RenderViewContextMenu::IsCommandIdChecked(int id) const {
   // Extension items.
   if (id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
       id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST) {
-    return extension_items_.IsCommandIdChecked(id);
+    MenuItem* item = GetExtensionMenuItem(id);
+    if (item)
+      return item->checked();
+    else
+      return false;
   }
 
 #if defined(ENABLE_INPUT_SPEECH)
@@ -1282,7 +1456,13 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
   // Process extension menu items.
   if (id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
       id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST) {
-    extension_items_.ExecuteCommand(id, params_);
+    MenuManager* manager = profile_->GetExtensionService()->menu_manager();
+    std::map<int, MenuItem::Id>::const_iterator i =
+        extension_item_map_.find(id);
+    if (i != extension_item_map_.end()) {
+      manager->ExecuteCommand(profile_, source_web_contents_, params_,
+                              i->second);
+    }
     return;
   }
 

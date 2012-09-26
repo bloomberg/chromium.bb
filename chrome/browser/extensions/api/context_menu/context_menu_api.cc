@@ -75,9 +75,6 @@ extensions::MenuItem::ContextList GetContexts(
       case PropertyWithEnumT::CONTEXTS_ELEMENT_FRAME:
         contexts.Add(extensions::MenuItem::FRAME);
         break;
-      case PropertyWithEnumT::CONTEXTS_ELEMENT_LAUNCHER:
-        contexts.Add(extensions::MenuItem::LAUNCHER);
-        break;
       case PropertyWithEnumT::CONTEXTS_ELEMENT_NONE:
         NOTREACHED();
     }

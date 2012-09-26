@@ -404,13 +404,6 @@ ash::LauncherID ChromeLauncherController::GetLauncherIDForAppID(
   return 0;
 }
 
-std::string ChromeLauncherController::GetAppIDForLauncherID(
-    ash::LauncherID id) {
-  DCHECK(id_to_item_controller_map_.find(id) !=
-      id_to_item_controller_map_.end());
-  return id_to_item_controller_map_[id]->app_id();
-}
-
 void ChromeLauncherController::SetAppImage(const std::string& id,
                                            const gfx::ImageSkia& image) {
   // TODO: need to get this working for shortcuts.

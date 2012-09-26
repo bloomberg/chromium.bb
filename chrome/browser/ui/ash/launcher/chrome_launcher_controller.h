@@ -167,7 +167,6 @@ class ChromeLauncherController
   std::string GetAppID(TabContents* tab);
 
   ash::LauncherID GetLauncherIDForAppID(const std::string& app_id);
-  std::string GetAppIDForLauncherID(ash::LauncherID id);
 
   // Sets the image for an app tab. This is intended to be invoked from the
   // AppIconLoader.

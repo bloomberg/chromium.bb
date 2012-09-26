@@ -7,31 +7,18 @@
 #include "ash/launcher/launcher_context_menu.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
-#include "chrome/browser/extensions/context_menu_matcher.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/common/chrome_switches.h"
-#include "content/public/common/context_menu_params.h"
 #include "grit/ash_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-
-namespace {
-
-bool MenuItemHasLauncherContext(const extensions::MenuItem* item) {
-  return item->contexts().Contains(extensions::MenuItem::LAUNCHER);
-}
-
-}  // namespace
 
 LauncherContextMenu::LauncherContextMenu(ChromeLauncherController* controller,
                                          const ash::LauncherItem* item)
     : ui::SimpleMenuModel(NULL),
       controller_(controller),
-      item_(item ? *item : ash::LauncherItem()),
-      extension_items_(new extensions::ContextMenuMatcher(
-          controller->profile(), this, this,
-          base::Bind(MenuItemHasLauncherContext))) {
+      item_(item ? *item : ash::LauncherItem()) {
   set_delegate(this);
 
   if (is_valid_item()) {
@@ -80,14 +67,6 @@ LauncherContextMenu::LauncherContextMenu(ChromeLauncherController* controller,
     }
     AddSeparator(ui::NORMAL_SEPARATOR);
   }
-  std::string app_id = controller->GetAppIDForLauncherID(item_.id);
-  if (!app_id.empty()) {
-    int index = 0;
-    extension_items_->AppendExtensionItems(
-        app_id, string16(), &index);
-    if (index > 0)
-      AddSeparator(ui::NORMAL_SEPARATOR);
-  }
   AddCheckItemWithStringId(
       MENU_AUTO_HIDE, ash::LauncherContextMenu::GetAutoHideResourceStringId());
   if (CommandLine::ForCurrentProcess()->HasSwitch(
@@ -118,7 +97,7 @@ bool LauncherContextMenu::IsCommandIdChecked(int command_id) const {
     case MENU_AUTO_HIDE:
       return ash::LauncherContextMenu::IsAutoHideMenuHideChecked();
     default:
-      return extension_items_->IsCommandIdChecked(command_id);
+      return false;
   }
 }
 
@@ -128,7 +107,7 @@ bool LauncherContextMenu::IsCommandIdEnabled(int command_id) const {
       return item_.type == ash::TYPE_PLATFORM_APP ||
           controller_->IsPinnable(item_.id);
     default:
-      return extension_items_->IsCommandIdEnabled(command_id);
+      return true;
   }
 }
 
@@ -177,8 +156,5 @@ void LauncherContextMenu::ExecuteCommand(int command_id) {
       break;
     case MENU_ALIGNMENT_MENU:
       break;
-    default:
-      extension_items_->ExecuteCommand(command_id,
-                                       content::ContextMenuParams());
   }
 }
