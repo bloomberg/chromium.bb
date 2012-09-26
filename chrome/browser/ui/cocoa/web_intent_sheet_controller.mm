@@ -764,6 +764,13 @@ const CGFloat kAddButtonWidth = 128.0;
 - (void)setInlineDispositionFrameSize:(NSSize)inlineContentSize {
   DCHECK(contents_);
 
+  // Make sure inline content size is never shrunk. Also, preserve
+  // origin - see http://crbug.com/150914 for details.
+  inlineContentSize = NSMakeSize(
+      std::max(NSWidth(contentFrame_), inlineContentSize.width),
+      std::max(NSHeight(contentFrame_), inlineContentSize.height));
+  contentFrame_.size = inlineContentSize;
+
   NSView* webContentView = contents_->web_contents()->GetNativeView();
 
   // Compute container size to fit all elements, including padding.
@@ -777,7 +784,8 @@ const CGFloat kAddButtonWidth = 128.0;
       std::max(CGFloat(WebIntentPicker::kWindowWidth), containerSize.width);
 
   // Resize web contents.
-  [webContentView setFrameSize:inlineContentSize];
+  [webContentView setFrame:contentFrame_];
+
   [self setContainerSize:containerSize];
 }
 
@@ -937,13 +945,16 @@ const CGFloat kAddButtonWidth = 128.0;
 
   // Determine a good size for the inline disposition window.
   gfx::Size size = WebIntentPicker::GetMinInlineDispositionSize();
-  NSRect frame = NSMakeRect(
-      WebIntentPicker::kContentAreaBorder, offset, size.width(), size.height());
+  contentFrame_ = NSMakeRect(
+      WebIntentPicker::kContentAreaBorder,
+      offset,
+      std::max(NSWidth(contentFrame_), CGFloat(size.width())),
+      std::max(NSHeight(contentFrame_), CGFloat(size.height())));
 
-  [contents_->web_contents()->GetNativeView() setFrame:frame];
+  [contents_->web_contents()->GetNativeView() setFrame:contentFrame_];
   [subviews addObject:contents_->web_contents()->GetNativeView()];
 
-  return NSHeight(frame);
+  return NSHeight(contentFrame_);
 }
 
 - (CGFloat)addAnotherServiceLinkToSubviews:(NSMutableArray*)subviews

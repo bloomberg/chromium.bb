@@ -29,6 +29,9 @@ class WebIntentPickerModel;
   // Inline disposition tab contents. Weak reference.
   TabContents* contents_;
 
+  // Frame size for inline disposition contents.
+  NSRect contentFrame_;
+
   // The intent picker data to be rendered. Weak reference.
   WebIntentPickerModel* model_;
 
