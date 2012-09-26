@@ -8,7 +8,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
+#include "base/scoped_temp_dir.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/fileapi/isolated_context.h"
 #include "webkit/fileapi/syncable/local_file_change_tracker.h"
 #include "webkit/fileapi/syncable/local_file_sync_status.h"
 
@@ -24,6 +26,8 @@ const char kURL2[] = "filesystem:http://foo.com/test/foo.txt";
 const char kURL3[] = "filesystem:http://foo.com/test/bar";
 const char kURL4[] = "filesystem:http://foo.com/temporary/dir a";
 
+const char kExternalFileSystemID[] = "drive";
+
 FileSystemURL URL(const char* spec) {
   return FileSystemURL(GURL(spec));
 }
@@ -33,9 +37,19 @@ FileSystemURL URL(const char* spec) {
 class LocalFileChangeTrackerTest : public testing::Test {
  public:
   LocalFileChangeTrackerTest()
-      : sync_status_(new LocalFileSyncStatus),
-        change_tracker_(new LocalFileChangeTracker(
-            sync_status_.get(), base::MessageLoopProxy::current())) {}
+      : sync_status_(new LocalFileSyncStatus) {}
+
+  virtual void SetUp() OVERRIDE {
+    EXPECT_TRUE(data_dir_.CreateUniqueTempDir());
+    change_tracker_.reset(new LocalFileChangeTracker(
+        sync_status_.get(),
+        data_dir_.path(),
+        base::MessageLoopProxy::current()));
+    IsolatedContext::GetInstance()->RegisterExternalFileSystem(
+        kExternalFileSystemID,
+        kFileSystemTypeSyncable,
+        FilePath());
+  }
 
  protected:
   LocalFileSyncStatus* sync_status() const {
@@ -44,6 +58,16 @@ class LocalFileChangeTrackerTest : public testing::Test {
 
   LocalFileChangeTracker* change_tracker() const {
     return change_tracker_.get();
+  }
+
+  std::string SerializeExternalFileSystemURL(const FileSystemURL& url) {
+    return change_tracker_->SerializeExternalFileSystemURL(url);
+  }
+
+  bool DeserializeExternalFileSystemURL(
+      const std::string& serialized_url, FileSystemURL* url) {
+    return change_tracker_->DeserializeExternalFileSystemURL(
+        serialized_url, url);
   }
 
   void VerifyChange(const FileSystemURL& url,
@@ -73,6 +97,7 @@ class LocalFileChangeTrackerTest : public testing::Test {
   }
 
  private:
+  ScopedTempDir data_dir_;
   MessageLoop message_loop_;
   scoped_ptr<LocalFileSyncStatus> sync_status_;
   scoped_ptr<LocalFileChangeTracker> change_tracker_;
@@ -113,5 +138,28 @@ TEST_F(LocalFileChangeTrackerTest, GetChanges) {
                FileChange(FileChange::FILE_CHANGE_UPDATE,
                           FileChange::FILE_TYPE_FILE));
 }
+
+TEST_F(LocalFileChangeTrackerTest, SerializeExternalFileSystemURL) {
+  const std::string kFileSystemRootURI = "filesystem:http://foo.com/external/";
+
+#if defined(FILE_PATH_USES_WIN_SEPARATORS)
+  const std::string kRelativePath = "dir a\\file";
+#else
+  const std::string kRelativePath = "dir a/file";
+#endif  // FILE_PATH_USES_WIN_SEPARATORS
+
+  const std::string kExternalFileSystemURL =
+      kFileSystemRootURI + kExternalFileSystemID + "/" + kRelativePath;
+  const FileSystemURL url = FileSystemURL(GURL(kExternalFileSystemURL));
+
+  const std::string serialized = SerializeExternalFileSystemURL(url);
+  EXPECT_EQ(kExternalFileSystemURL, serialized);
+
+  FileSystemURL deserialized;
+  EXPECT_TRUE(DeserializeExternalFileSystemURL(serialized, &deserialized));
+  EXPECT_EQ(url, deserialized);
+}
+
+// TODO(nhiroki): add unittests to ensure the database works successfully.
 
 }  // namespace fileapi

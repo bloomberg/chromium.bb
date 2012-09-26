@@ -6,6 +6,7 @@
 #define WEBKIT_FILEAPI_SYNCABLE_LOCAL_FILE_CHANGE_TRACKER_H_
 
 #include <map>
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -41,6 +42,7 @@ class FILEAPI_EXPORT LocalFileChangeTracker
   // (So that we can make sure DB operations are done before actual update
   // happens)
   LocalFileChangeTracker(LocalFileSyncStatus* sync_status,
+                         const FilePath& profile_path,
                          base::SequencedTaskRunner* file_task_runner);
   virtual ~LocalFileChangeTracker();
 
@@ -75,11 +77,18 @@ class FILEAPI_EXPORT LocalFileChangeTracker
   void CollectLastDirtyChanges(FileChangeMap* changes);
 
  private:
+  class TrackerDB;
+  friend class LocalFileChangeTrackerTest;
+
   void RecordChange(const FileSystemURL& url, const FileChange& change);
 
   // Database related methods.
   void MarkDirtyOnDatabase(const FileSystemURL& url);
   void ClearDirtyOnDatabase(const FileSystemURL& url);
+
+  std::string SerializeExternalFileSystemURL(const FileSystemURL& url);
+  bool DeserializeExternalFileSystemURL(
+      const std::string& serialized_url, FileSystemURL* url);
 
   // Not owned; this must have the same lifetime with us (both owned
   // by FileSystemContext).
@@ -88,6 +97,8 @@ class FILEAPI_EXPORT LocalFileChangeTracker
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
 
   FileChangeMap changes_;
+
+  scoped_ptr<TrackerDB> tracker_db_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalFileChangeTracker);
 };
