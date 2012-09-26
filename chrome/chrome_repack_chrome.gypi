@@ -10,7 +10,6 @@
       '<(SHARED_INTERMEDIATE_DIR)/content/content_resources.pak',
       '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.pak',
       '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.pak',
-      '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources_100_percent.pak',
     ],
     'conditions': [
       ['enable_extensions==1', {
