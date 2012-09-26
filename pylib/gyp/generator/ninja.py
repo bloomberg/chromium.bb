@@ -12,7 +12,6 @@ import gyp
 import gyp.common
 import gyp.msvs_emulation
 import gyp.MSVSVersion
-import gyp.system_test
 import gyp.xcode_emulation
 
 from gyp.common import GetEnvironFallback

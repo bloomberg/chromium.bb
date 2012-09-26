@@ -27,7 +27,6 @@ import sys
 import subprocess
 import gyp
 import gyp.common
-import gyp.system_test
 import gyp.xcode_emulation
 from gyp.common import GetEnvironFallback
 
@@ -126,7 +125,7 @@ SPACE_REPLACEMENT = '?'
 
 LINK_COMMANDS_LINUX = """\
 quiet_cmd_alink = AR($(TOOLSET)) $@
-cmd_alink = rm -f $@ && $(AR.$(TOOLSET)) $(ARFLAGS.$(TOOLSET)) $@ $(filter %.o,$^)
+cmd_alink = rm -f $@ && $(AR.$(TOOLSET)) crsT $@ $(filter %.o,$^)
 
 # Due to circular dependencies between libraries :(, we wrap the
 # special "figure out circular dependencies" flags around the entire
@@ -177,7 +176,7 @@ cmd_solink_module = $(LINK.$(TOOLSET)) -shared $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSE
 
 LINK_COMMANDS_ANDROID = """\
 quiet_cmd_alink = AR($(TOOLSET)) $@
-cmd_alink = rm -f $@ && $(AR.$(TOOLSET)) $(ARFLAGS.$(TOOLSET)) $@ $(filter %.o,$^)
+cmd_alink = rm -f $@ && $(AR.$(TOOLSET)) crsT $@ $(filter %.o,$^)
 
 # Due to circular dependencies between libraries :(, we wrap the
 # special "figure out circular dependencies" flags around the entire
@@ -263,10 +262,7 @@ CXXFLAGS.target ?= $(CXXFLAGS)
 LINK.target ?= %(LINK.target)s
 LDFLAGS.target ?= $(LDFLAGS)
 AR.target ?= $(AR)
-ARFLAGS.target ?= %(ARFLAGS.target)s
 
-# N.B.: the logic of which commands to run should match the computation done
-# in gyp's make.py where ARFLAGS.host etc. is computed.
 # TODO(evan): move all cross-compilation logic to gyp-time so we don't need
 # to replicate this environment fallback in make as well.
 CC.host ?= %(CC.host)s
@@ -276,7 +272,6 @@ CXXFLAGS.host ?=
 LINK.host ?= %(LINK.host)s
 LDFLAGS.host ?=
 AR.host ?= %(AR.host)s
-ARFLAGS.host := %(ARFLAGS.host)s
 
 # Define a dir function that can handle spaces.
 # http://www.gnu.org/software/make/manual/make.html#Syntax-of-Functions
@@ -1902,41 +1897,6 @@ def WriteAutoRegenerationRule(params, root_makefile, makefile_name,
                      build_files_args)})
 
 
-def RunSystemTests(flavor):
-  """Run tests against the system to compute default settings for commands.
-
-  Returns:
-    dictionary of settings matching the block of command-lines used in
-    SHARED_HEADER.  E.g. the dictionary will contain a ARFLAGS.target
-    key for the default ARFLAGS for the target ar command.
-  """
-  # Compute flags used for building static archives.
-  # N.B.: this fallback logic should match the logic in SHARED_HEADER.
-  # See comment there for more details.
-  ar_target = GetEnvironFallback(('AR_target', 'AR'), 'ar')
-  cc_target = GetEnvironFallback(('CC_target', 'CC'), 'cc')
-  arflags_target = 'crs'
-  # ar -T enables thin archives on Linux. OS X's ar supports a -T flag, but it
-  # does something useless (it limits filenames in the archive to 15 chars).
-  if flavor != 'mac' and gyp.system_test.TestArSupportsT(ar_command=ar_target,
-                                                         cc_command=cc_target):
-    arflags_target = 'crsT'
-
-  ar_host = os.environ.get('AR_host', 'ar')
-  cc_host = os.environ.get('CC_host', 'gcc')
-  arflags_host = 'crs'
-  # It feels redundant to compute this again given that most builds aren't
-  # cross-compiles, but due to quirks of history CC_host defaults to 'gcc'
-  # while CC_target defaults to 'cc', so the commands really are different
-  # even though they're nearly guaranteed to run the same code underneath.
-  if flavor != 'mac' and gyp.system_test.TestArSupportsT(ar_command=ar_host,
-                                                         cc_command=cc_host):
-    arflags_host = 'crsT'
-
-  return { 'ARFLAGS.target': arflags_target,
-           'ARFLAGS.host': arflags_host }
-
-
 def PerformBuild(data, configurations, params):
   options = params['options']
   for config in configurations:
@@ -2028,7 +1988,6 @@ def GenerateOutput(target_list, target_dicts, data, params):
         'flock': 'lockf',
     })
 
-  header_params.update(RunSystemTests(flavor))
   header_params.update({
     'CC.target':   GetEnvironFallback(('CC_target', 'CC'), '$(CC)'),
     'AR.target':   GetEnvironFallback(('AR_target', 'AR'), '$(AR)'),
