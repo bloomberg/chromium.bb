@@ -63,22 +63,36 @@ using gdb_rsp::Target;
 
 
 static Target *g_target = NULL;
+static SocketBinding *g_socket_binding = NULL;
 
-void WINAPI NaClStubThread(void *thread_arg) {
-  SocketBinding *socket_binding = static_cast<SocketBinding*>(thread_arg);
-  if (socket_binding == NULL) {
+int NaClDebugBindSocket() {
+  if (g_socket_binding == NULL) {
+    NaClDebugStubInit();
     const char *addr = "127.0.0.1:4014";
-    socket_binding = SocketBinding::Bind(addr);
-    if (socket_binding == NULL) {
+    g_socket_binding = SocketBinding::Bind(addr);
+    if (g_socket_binding == NULL) {
       NaClLog(LOG_ERROR, "NaClStubThread: Failed to bind TCP port '%s'\n",
               addr);
-      return;
+      return 0;
     }
   }
+  return 1;
+}
 
+void NaClDebugSetBoundSocket(NaClSocketHandle bound_socket) {
+  CHECK(g_socket_binding == NULL);
+  g_socket_binding = new SocketBinding(bound_socket);
+}
+
+void WINAPI NaClStubThread(void *thread_arg) {
+  UNREFERENCED_PARAMETER(thread_arg);
+
+  if (!NaClDebugBindSocket()) {
+    return;
+  }
   while (1) {
     // Wait for a connection.
-    nacl::scoped_ptr<ITransport> trans(socket_binding->AcceptConnection());
+    nacl::scoped_ptr<ITransport> trans(g_socket_binding->AcceptConnection());
     if (NULL == trans.get()) continue;
 
     // Create a new session for this connection
@@ -113,14 +127,12 @@ static const struct NaClDebugCallbacks debug_callbacks = {
  * This function is implemented for the service runtime.  The service runtime
  * declares the function so it does not need to be declared in our header.
  */
-int NaClDebugInit(struct NaClApp *nap,
-                  NaClSocketHandle debug_stub_server_bound_socket_fd) {
+int NaClDebugInit(struct NaClApp *nap) {
   if (!NaClFaultedThreadQueueEnable(nap)) {
     NaClLog(LOG_ERROR, "NaClDebugInit: Failed to initialize fault handling\n");
     return 0;
   }
   nap->debug_stub_callbacks = &debug_callbacks;
-  NaClDebugStubInit();
 
   CHECK(g_target == NULL);
   g_target = new Target(nap);
@@ -131,12 +143,7 @@ int NaClDebugInit(struct NaClApp *nap,
   CHECK(thread != NULL);
 
   NaClLog(LOG_WARNING, "nacl_debug(%d) : Debugging started.\n", __LINE__);
-  SocketBinding *socket_binding = NULL;
-  if (debug_stub_server_bound_socket_fd != NACL_INVALID_SOCKET) {
-    socket_binding = new SocketBinding(debug_stub_server_bound_socket_fd);
-  }
-  CHECK(NaClThreadCtor(thread, NaClStubThread, socket_binding,
-                       NACL_KERN_STACK_SIZE));
+  CHECK(NaClThreadCtor(thread, NaClStubThread, NULL, NACL_KERN_STACK_SIZE));
 
   return 1;
 }

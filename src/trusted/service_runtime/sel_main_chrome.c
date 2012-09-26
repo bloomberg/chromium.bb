@@ -337,14 +337,13 @@ void NaClChromeMainStart(struct NaClChromeMainArgs *args) {
 
   if (args->enable_debug_stub) {
 #if NACL_LINUX || NACL_OSX
-    if (!NaClDebugInit(nap, args->debug_stub_server_bound_socket_fd)) {
-      goto done;
-    }
-#else
-    if (!NaClDebugInit(nap, NACL_INVALID_SOCKET)) {
-      goto done;
+    if (args->debug_stub_server_bound_socket_fd != NACL_INVALID_SOCKET) {
+      NaClDebugSetBoundSocket(args->debug_stub_server_bound_socket_fd);
     }
 #endif
+    if (!NaClDebugInit(nap)) {
+      goto done;
+    }
   }
 
   free(args);

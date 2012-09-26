@@ -13,11 +13,26 @@
 EXTERN_C_BEGIN
 
 /*
+ * NaClDebugBindSocket() may be called to tell the debug stub to bind
+ * its default TCP port to listen on.  This may need to be called
+ * before enabling an outer sandbox; otherwise, NaClDebugInit() calls
+ * it.  The function returns whether it was successful.
+ */
+int NaClDebugBindSocket(void);
+
+/*
+ * NaClDebugSetBoundSocket() takes a socket descriptor that has
+ * already had bind() and listen() called on it.  This tells the debug
+ * stub to use the given descriptor rather than trying to bind() the
+ * default TCP port.
+ */
+void NaClDebugSetBoundSocket(NaClSocketHandle bound_socket);
+
+/*
  * Enables the debug stub.  If this is called, we do not guarantee
  * security to the same extent that we normally would.
  */
-int NaClDebugInit(struct NaClApp *nap,
-                  NaClSocketHandle debug_stub_server_socket);
+int NaClDebugInit(struct NaClApp *nap);
 
 EXTERN_C_END
 

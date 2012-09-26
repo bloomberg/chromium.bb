@@ -15,14 +15,6 @@ test_prog = env.ComponentProgram(
 sel_ldr_command = env.AddBootstrap(env.GetSelLdr(), ['-f', test_prog])
 
 is_broken = not env.Bit('nacl_static_link')
-extra_test_args = []
-if env.Bit('host_mac'):
-  # "-a" has the side effect of disabling the Mac outer sandbox, which
-  # does not yet work with the debug stub because the debug stub does
-  # bind() after the outer sandbox has been enabled.
-  # TODO(mseaborn): Clean up the debug stub's initialisation so that
-  # this workaround is not needed.
-  sel_ldr_command.append('-a')
 
 if env.Bit('build_arm'):
   # Use the system's 'nm' tool.  The NaCl toolchain will not be
@@ -37,7 +29,6 @@ else:
 node = env.CommandTest(
     'debug_stub_test.out',
     command=(['${PYTHON}', env.File('debug_stub_test.py'), '-v']
-             + extra_test_args
              + ['--', env.get('TARGET_FULLARCH'), nm_tool] + sel_ldr_command))
 # This test is in "large_tests" because it binds a fixed TCP port and
 # so will not coexist gracefully with other instances of the same test

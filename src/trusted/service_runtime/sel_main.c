@@ -687,6 +687,20 @@ int NaClPostTestInjectionMain(int  argc,
 
 #if NACL_OSX
   /*
+   * Tell the debug stub to bind a TCP port before enabling the outer
+   * sandbox.  This is only needed on Mac OS X since that is the only
+   * platform where we have an outer sandbox in standalone sel_ldr.
+   * In principle this call should work on all platforms, but Windows
+   * XP seems to have some problems when we do bind()/listen() on a
+   * separate thread from accept().
+   */
+  if (enable_debug_stub) {
+    if (!NaClDebugBindSocket()) {
+      exit(1);
+    }
+  }
+
+  /*
    * Enable the outer sandbox on Mac.  Do this as soon as possible.
    *
    * This must come after NaClWaitForLoadModuleStatus(), which waits
@@ -848,7 +862,7 @@ int NaClPostTestInjectionMain(int  argc,
     goto done;
   }
   if (enable_debug_stub) {
-    if (!NaClDebugInit(nap, NACL_INVALID_SOCKET)) {
+    if (!NaClDebugInit(nap)) {
       goto done;
     }
   }
