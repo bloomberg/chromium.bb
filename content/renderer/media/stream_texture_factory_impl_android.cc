@@ -127,9 +127,7 @@ unsigned StreamTextureFactoryImpl::CreateStreamTexture(unsigned* texture_id) {
   unsigned stream_id = 0;
   if (context_->makeContextCurrent()) {
     *texture_id = context_->createTexture();
-    // TODO(qinmin): upstream the implementation of
-    // WebGraphicsContext::createStreamTextureCHROMIUM().
-    // stream_id = context_->createStreamTextureCHROMIUM(*texture_id);
+    stream_id = context_->createStreamTextureCHROMIUM(*texture_id);
     context_->flush();
   }
   return stream_id;
@@ -137,9 +135,7 @@ unsigned StreamTextureFactoryImpl::CreateStreamTexture(unsigned* texture_id) {
 
 void StreamTextureFactoryImpl::DestroyStreamTexture(unsigned texture_id) {
   if (context_->makeContextCurrent()) {
-    // TODO(qinmin): upstream the implementation of
-    // WebGraphicsContext::destroyStreamTextureCHROMIUM().
-    // context_->destroyStreamTextureCHROMIUM(texture_id);
+    context_->destroyStreamTextureCHROMIUM(texture_id);
     context_->deleteTexture(texture_id);
     context_->flush();
   }
