@@ -382,6 +382,12 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
             std::string());
 
     values->SetString(
+        "factoryResetWarning",
+        l10n_util::GetStringFUTF16(
+            IDS_OPTIONS_FACTORY_RESET_WARNING,
+            l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
+
+    values->SetString(
         "factoryResetDescription",
         l10n_util::GetStringFUTF16(
             IDS_OPTIONS_FACTORY_RESET_DESCRIPTION,
