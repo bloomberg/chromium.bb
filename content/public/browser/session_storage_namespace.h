@@ -29,6 +29,8 @@ class SessionStorageNamespace
   // session restore.
   virtual void SetShouldPersist(bool should_persist) = 0;
 
+  virtual bool should_persist() const = 0;
+
  protected:
   friend class base::RefCountedThreadSafe<SessionStorageNamespace>;
   virtual ~SessionStorageNamespace() {}

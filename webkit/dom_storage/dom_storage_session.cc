@@ -40,6 +40,10 @@ void DomStorageSession::SetShouldPersist(bool should_persist) {
   should_persist_ = should_persist;
 }
 
+bool DomStorageSession::should_persist() const {
+  return should_persist_;
+}
+
 bool DomStorageSession::IsFromContext(DomStorageContext* context) {
   return context_.get() == context;
 }

@@ -1031,12 +1031,20 @@ void Browser::TabInsertedAt(TabContents* contents,
 
   registrar_.Add(this, content::NOTIFICATION_INTERSTITIAL_DETACHED,
                  content::Source<WebContents>(contents->web_contents()));
+  SessionService* session_service =
+      SessionServiceFactory::GetForProfile(profile_);
+  if (session_service)
+    session_service->TabInserted(contents->web_contents());
 }
 
 void Browser::TabClosingAt(TabStripModel* tab_strip_model,
                            TabContents* contents,
                            int index) {
   fullscreen_controller_->OnTabClosing(contents->web_contents());
+  SessionService* session_service =
+      SessionServiceFactory::GetForProfile(profile_);
+  if (session_service)
+    session_service->TabClosing(contents->web_contents());
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_CLOSING,
       content::Source<NavigationController>(
@@ -1146,6 +1154,10 @@ void Browser::TabReplacedAt(TabStripModel* tab_strip_model,
                             TabContents* new_contents,
                             int index) {
   TabDetachedAtImpl(old_contents, index, DETACH_TYPE_REPLACE);
+  SessionService* session_service =
+      SessionServiceFactory::GetForProfile(profile_);
+  if (session_service)
+    session_service->TabClosing(old_contents->web_contents());
   TabInsertedAt(new_contents, index, (index == active_index()));
 
   int entry_count =
@@ -1158,8 +1170,6 @@ void Browser::TabReplacedAt(TabStripModel* tab_strip_model,
         entry_count - 1);
   }
 
-  SessionService* session_service =
-      SessionServiceFactory::GetForProfile(profile());
   if (session_service) {
     // The new_contents may end up with a different navigation stack. Force
     // the session service to update itself.

@@ -28,6 +28,7 @@ struct SessionWindow;
 
 namespace content {
 class NavigationEntry;
+class WebContents;
 }
 
 // SessionService ------------------------------------------------------------
@@ -122,6 +123,12 @@ class SessionService : public BaseSessionService,
 
   // Notification a window has finished closing.
   void WindowClosed(const SessionID& window_id);
+
+  // Called when a tab is inserted.
+  void TabInserted(content::WebContents* contents);
+
+  // Called when a tab is closing.
+  void TabClosing(content::WebContents* contents);
 
   // Sets the type of window. In order for the contents of a window to be
   // tracked SetWindowType must be invoked with a type we track

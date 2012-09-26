@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -133,6 +134,7 @@ class TabContents : public content::WebContentsObserver {
     friend class WebIntentPickerCocoa;
     friend class WebIntentPickerGtk;
     friend class WebUITestContentsCreator;
+    FRIEND_TEST_ALL_PREFIXES(SessionRestoreTest, SessionStorageAfterTabReplace);
 
     static TabContents* CreateTabContents(content::WebContents* contents);
     static TabContents* CloneTabContents(TabContents* contents);

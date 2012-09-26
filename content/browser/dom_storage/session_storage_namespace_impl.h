@@ -39,6 +39,7 @@ class SessionStorageNamespaceImpl
   virtual int64 id() const OVERRIDE;
   virtual const std::string& persistent_id() const OVERRIDE;
   virtual void SetShouldPersist(bool should_persist) OVERRIDE;
+  virtual bool should_persist() const OVERRIDE;
 
   SessionStorageNamespaceImpl* Clone();
   bool IsFromContext(DOMStorageContextImpl* context);
