@@ -6178,3 +6178,10 @@
    fun:_ZN7WebCore21RenderLayerCompositor21enableCompositingModeEb
    fun:_ZN7WebCore21RenderLayerCompositor13updateBackingEPNS_11RenderLayerENS0_24CompositingChangeRepaintE
 }
+{
+   bug_152445
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7fileapi22LocalFileChangeTrackerC1EPNS_19LocalFileSyncStatusERK8FilePathPN4base19SequencedTaskRunnerE
+   fun:_ZN7fileapi26LocalFileChangeTrackerTest5SetUpEv
+}
