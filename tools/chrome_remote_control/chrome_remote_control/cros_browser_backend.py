@@ -43,6 +43,13 @@ class CrOSBrowserBackend(browser_backend.BrowserBackend):
     args = ['/opt/google/chrome/chrome',
             '--no-first-run',
             '--aura-host-window-use-fullscreen',
+            '--force-compositing-mode',
+            '--enable-smooth-scrolling',
+            '--enable-threaded-compositing',
+            '--enable-per-tile-painting',
+            '--enable-gpu--sandboxing',
+            '--allow-webui-compositing',
+            '--enable-accelerated-layers',
             '--remote-debugging-port=%i' % remote_port]
 
     if not is_content_shell:
