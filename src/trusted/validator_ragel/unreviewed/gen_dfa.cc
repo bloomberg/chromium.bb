@@ -712,8 +712,8 @@ class MarkedInstruction : public Instruction {
         static const char* prefix_bytes[] = {
           "0x66", "data16",
           "0xf0", "lock",
-          "0xf2", "repnz",
-          "0xf3", "repz",
+          "0xf2", "repnz", "rep",
+          "0xf3", "repz", "condrep", "branch_hint"
         };
         if (find_if(prefix_bytes, prefix_bytes + NACL_ARRAY_SIZE(prefix_bytes),
                     bind1st(std::equal_to<std::string>(), *opcodes_.begin())) ==
@@ -1706,7 +1706,7 @@ void PrintOneSizeDefinitionModRMMemory(const MarkedInstruction& instruction) {
         }
       }
     }
-    fprintf(out_file, " . any* &%s", modes[mode].mode);
+    fprintf(out_file, " any* &%s", modes[mode].mode);
     if (enabled(kCheckAccess) &&
         !adjusted_instruction.has_flag("no_memory_access"))
       fprintf(out_file, " @check_access");
