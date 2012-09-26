@@ -334,7 +334,7 @@ class WebContents : public PageNavigator,
 
   // Gets the zoom percent for this tab.
   virtual int GetZoomPercent(bool* enable_increment,
-                             bool* enable_decrement) = 0;
+                             bool* enable_decrement) const = 0;
 
   // Opens view-source tab for this contents.
   virtual void ViewSource() = 0;

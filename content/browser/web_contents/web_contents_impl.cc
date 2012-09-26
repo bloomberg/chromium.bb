@@ -1833,7 +1833,7 @@ double WebContentsImpl::GetZoomLevel() const {
 }
 
 int WebContentsImpl::GetZoomPercent(bool* enable_increment,
-                                    bool* enable_decrement) {
+                                    bool* enable_decrement) const {
   *enable_decrement = *enable_increment = false;
   // Calculate the zoom percent from the factor. Round up to the nearest whole
   // number.

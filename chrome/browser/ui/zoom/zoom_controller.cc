@@ -10,12 +10,14 @@
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
+#include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_zoom.h"
 #include "grit/theme_resources.h"
+#include "net/base/net_util.h"
 
 int ZoomController::kUserDataKey;
 
@@ -23,14 +25,16 @@ ZoomController::ZoomController(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       zoom_percent_(100),
       observer_(NULL) {
-  default_zoom_level_.Init(prefs::kDefaultZoomLevel,
-                           Profile::FromBrowserContext(
-                               web_contents->GetBrowserContext())->GetPrefs(),
-                           this);
-  registrar_.Add(this, content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
-                 content::NotificationService::AllBrowserContextsAndSources());
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  default_zoom_level_.Init(prefs::kDefaultZoomLevel, profile->GetPrefs(), this);
 
-  UpdateState(false);
+  content::HostZoomMap* zoom_map =
+      content::HostZoomMap::GetForBrowserContext(profile);
+  registrar_.Add(this, content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
+                 content::Source<content::HostZoomMap>(zoom_map));
+
+  UpdateState(std::string());
 }
 
 ZoomController::~ZoomController() {
@@ -54,7 +58,7 @@ void ZoomController::DidNavigateMainFrame(
     const content::FrameNavigateParams& params) {
   // If the main frame's content has changed, the new page may have a different
   // zoom level from the old one.
-  UpdateState(false);
+  UpdateState(std::string());
 }
 
 void ZoomController::Observe(int type,
@@ -64,21 +68,26 @@ void ZoomController::Observe(int type,
     case chrome::NOTIFICATION_PREF_CHANGED: {
       std::string* pref_name = content::Details<std::string>(details).ptr();
       DCHECK(pref_name && *pref_name == prefs::kDefaultZoomLevel);
-      UpdateState(false);
+      UpdateState(std::string());
       break;
     }
     case content::NOTIFICATION_ZOOM_LEVEL_CHANGED:
-      UpdateState(!content::Details<std::string>(details)->empty());
+      UpdateState(*content::Details<std::string>(details).ptr());
       break;
     default:
       NOTREACHED();
   }
 }
 
-void ZoomController::UpdateState(bool can_show_bubble) {
+void ZoomController::UpdateState(const std::string& host) {
+  if (!host.empty() &&
+      host != net::GetHostOrSpecFromURL(web_contents()->GetURL())) {
+    return;
+  }
+
   bool dummy;
   zoom_percent_ = web_contents()->GetZoomPercent(&dummy, &dummy);
 
   if (observer_)
-    observer_->OnZoomChanged(web_contents(), can_show_bubble);
+    observer_->OnZoomChanged(web_contents(), !host.empty());
 }

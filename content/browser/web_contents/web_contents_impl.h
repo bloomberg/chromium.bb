@@ -255,7 +255,7 @@ class CONTENT_EXPORT WebContentsImpl
   virtual bool GetClosedByUserGesture() const OVERRIDE;
   virtual double GetZoomLevel() const OVERRIDE;
   virtual int GetZoomPercent(bool* enable_increment,
-                             bool* enable_decrement) OVERRIDE;
+                             bool* enable_decrement) const OVERRIDE;
   virtual void ViewSource() OVERRIDE;
   virtual void ViewFrameSource(const GURL& url,
                                const std::string& content_state) OVERRIDE;
