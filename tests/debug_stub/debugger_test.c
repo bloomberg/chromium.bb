@@ -10,6 +10,7 @@
 #include <string.h>
 
 #include "native_client/src/include/nacl_assert.h"
+#include "native_client/tests/common/register_set.h"
 
 
 /* This variable is used for testing memory accesses. */
@@ -19,59 +20,83 @@ volatile uint32_t g_main_thread_var = 0;
 volatile uint32_t g_child_thread_var = 0;
 
 
+/*
+ * Inline assembly is not allowed to define symbols (in case it gets
+ * instantiated multiple times), so we must define this symbol using
+ * top-level assembly.
+ */
+#if defined(__i386__) || defined(__x86_64__)
+__asm__(".pushsection .text, \"ax\", @progbits\n"
+        "fault_addr:\n"
+        "hlt\n"
+        ".popsection\n");
+#elif defined(__arm__)
+__asm__(".pushsection .text, \"ax\", %progbits\n"
+        "fault_addr:\n"
+        "bkpt 0x7777\n"
+        ".popsection\n");
+#else
+# error Update fault_addr for other architectures
+#endif
+
 void set_registers_and_stop() {
+  struct NaClSignalContext regs;
+  memset(&regs, 0, sizeof(regs));
+
   /*
    * We set most registers to fixed values before faulting, so that we
    * can test that the debug stub successfully returns the same
    * values.
    */
 #if defined(__i386__)
-  __asm__("mov $0x11000022, %eax\n"
-          "mov $0x22000033, %ebx\n"
-          "mov $0x33000044, %ecx\n"
-          "mov $0x44000055, %edx\n"
-          "mov $0x55000066, %esi\n"
-          "mov $0x66000077, %edi\n"
-          "mov $0x77000088, %ebp\n"
-          "hlt\n");
+  regs.eax = 0x11000022;
+  regs.ebx = 0x22000033;
+  regs.ecx = 0x33000044;
+  regs.edx = 0x44000055;
+  regs.esi = 0x55000066;
+  regs.edi = 0x66000077;
+  regs.ebp = 0x77000088;
+  regs.stack_ptr = 0x88000099;
+  ASM_WITH_REGS(&regs, "jmp fault_addr\n");
 #elif defined(__x86_64__)
+  regs.rax = 0x1100000000000022;
+  regs.rbx = 0x2200000000000033;
+  regs.rcx = 0x3300000000000044;
+  regs.rdx = 0x4400000000000055;
+  regs.rsi = 0x5500000000000066;
+  regs.rdi = 0x6600000000000077;
+  regs.r8  = 0x7700000000000088;
+  regs.r9  = 0x8800000000000099;
+  regs.r10 = 0x99000000000000aa;
+  regs.r11 = 0xaa000000000000bb;
+  regs.r12 = 0xbb000000000000cc;
+  regs.r13 = 0xcc000000000000dd;
+  regs.r14 = 0xdd000000000000ee;
   /*
-   * Note that we cannot assign arbitrary test values to %r15, %rsp
-   * and %rbp in the x86-64 sandbox.
+   * These stack pointer test values need to be 32-bit, since the r15
+   * base address gets added to them.
    */
-  __asm__("mov $0x1100000000000022, %rax\n"
-          "mov $0x2200000000000033, %rbx\n"
-          "mov $0x3300000000000044, %rcx\n"
-          "mov $0x4400000000000055, %rdx\n"
-          "mov $0x5500000000000066, %rsi\n"
-          "mov $0x6600000000000077, %rdi\n"
-          "mov $0x7700000000000088, %r8\n"
-          "mov $0x8800000000000099, %r9\n"
-          "mov $0x99000000000000aa, %r10\n"
-          "mov $0xaa000000000000bb, %r11\n"
-          "mov $0xbb000000000000cc, %r12\n"
-          "mov $0xcc000000000000dd, %r13\n"
-          "mov $0xdd000000000000ee, %r14\n"
-          "hlt\n");
+  regs.stack_ptr = 0x12300321;
+  regs.rbp = 0x23400432;
+  ASM_WITH_REGS(&regs, "jmp fault_addr\n");
 #elif defined(__arm__)
-  /*
-   * Note that we cannot assign arbitrary test values to r9 ($tp),
-   * r13 (sp), and r15 (pc) in the ARM sandbox.
-   */
-  __asm__("mov r0, #0x00000001\n"
-          "mov r1, #0x10000002\n"
-          "mov r2, #0x20000003\n"
-          "mov r3, #0x30000004\n"
-          "mov r4, #0x40000005\n"
-          "mov r5, #0x50000006\n"
-          "mov r6, #0x60000007\n"
-          "mov r7, #0x70000008\n"
-          "mov r8, #0x80000009\n"
-          "mov r10, #0xa000000b\n"
-          "mov r11, #0xb000000c\n"
-          "mov r12, #0xc000000d\n"
-          "mov r14, #0xe000000f\n"
-          "bkpt 0x7777\n");
+  regs.r0 = 0x00000001;
+  regs.r1 = 0x10000002;
+  regs.r2 = 0x20000003;
+  regs.r3 = 0x30000004;
+  regs.r4 = 0x40000005;
+  regs.r5 = 0x50000006;
+  regs.r6 = 0x60000007;
+  regs.r7 = 0x70000008;
+  regs.r8 = 0x80000009;
+  /* Skip r9, which is read-only for untrusted code. */
+  regs.r10 = 0xa000000b;
+  regs.r11 = 0xb000000c;
+  regs.r12 = 0xc000000d;
+  /* stack_ptr's test value must be within the sandbox address space. */
+  regs.stack_ptr = 0x12345678;
+  regs.lr = 0xe000000f;
+  ASM_WITH_REGS(&regs, "b fault_addr\n");
 #else
 # error Update set_registers_and_stop for other architectures
 #endif

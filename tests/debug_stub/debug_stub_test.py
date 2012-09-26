@@ -225,6 +225,7 @@ class DebugStubTest(unittest.TestCase):
       self.assertEquals(registers['esi'], 0x55000066)
       self.assertEquals(registers['edi'], 0x66000077)
       self.assertEquals(registers['ebp'], 0x77000088)
+      self.assertEquals(registers['esp'], 0x88000099)
     elif ARCH == 'x86-64':
       self.assertEquals(registers['rax'], 0x1100000000000022)
       self.assertEquals(registers['rbx'], 0x2200000000000033)
@@ -239,6 +240,8 @@ class DebugStubTest(unittest.TestCase):
       self.assertEquals(registers['r12'], 0xbb000000000000cc)
       self.assertEquals(registers['r13'], 0xcc000000000000dd)
       self.assertEquals(registers['r14'], 0xdd000000000000ee)
+      self.assertEquals(registers['rsp'], registers['r15'] + 0x12300321)
+      self.assertEquals(registers['rbp'], registers['r15'] + 0x23400432)
     elif ARCH == 'arm':
       self.assertEquals(registers['r0'], 0x00000001)
       self.assertEquals(registers['r1'], 0x10000002)
@@ -252,9 +255,15 @@ class DebugStubTest(unittest.TestCase):
       self.assertEquals(registers['r10'], 0xa000000b)
       self.assertEquals(registers['r11'], 0xb000000c)
       self.assertEquals(registers['r12'], 0xc000000d)
+      self.assertEquals(registers['r13'], 0x12345678)
       self.assertEquals(registers['r14'], 0xe000000f)
     else:
       raise AssertionError('Unknown architecture')
+
+    expected_fault_addr = GetSymbols()['fault_addr']
+    if ARCH == 'x86-64':
+      expected_fault_addr += registers['r15']
+    self.assertEquals(registers[IP_REG[ARCH]], expected_fault_addr)
 
   # Test that we can write registers.
   def CheckWriteRegisters(self, connection):
