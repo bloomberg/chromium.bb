@@ -85,7 +85,7 @@ cr.define('ntp', function() {
    * @type {number}
    * @const
    */
-  var UPPER_SECTION_HEIGHT = 34;
+  var UPPER_SECTION_HEIGHT = 289;
 
   //----------------------------------------------------------------------------
   // Tile
