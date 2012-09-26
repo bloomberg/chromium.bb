@@ -174,7 +174,7 @@ def main():
     default_variables.append(('EXECUTABLE_SUFFIX', '.exe'))
   else:
     default_variables.append(('EXECUTABLE_SUFFIX', ''))
-  parser = run_test_cases.OptionParserWithTestShardingAndFiltering(
+  parser = run_test_cases.OptionParserTestCases(
       usage='%prog <options> [gtest]',
       description=sys.modules['__main__'].__doc__)
   parser.format_description = lambda *_: parser.description
@@ -200,15 +200,6 @@ def main():
   parser.add_option(
       '-o', '--out',
       help='output file, defaults to <executable>.test_cases')
-  parser.add_option(
-      '-j', '--jobs',
-      type='int',
-      help='number of parallel jobs')
-  parser.add_option(
-      '-t', '--timeout',
-      default=120,
-      type='int',
-      help='number of parallel jobs')
   options, args = parser.parse_args()
 
   if len(args) != 1:
@@ -234,17 +225,7 @@ def main():
   if not options.out:
     options.out = '%s.test_cases' % executable
 
-  # First, grab the test cases.
-  if options.test_case_file:
-    with open(options.test_case_file, 'r') as f:
-      test_cases = filter(None, f.read().splitlines())
-  else:
-    test_cases = run_test_cases.get_test_cases(
-        executable,
-        options.whitelist,
-        options.blacklist,
-        options.index,
-        options.shards)
+  test_cases = parser.process_gtest_options(executable, options)
 
   # Then run them.
   return trace_test_cases(

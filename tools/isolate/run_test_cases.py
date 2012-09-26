@@ -812,22 +812,41 @@ class OptionParserWithTestShardingAndFiltering(OptionParserWithTestSharding):
 
     return options, args
 
+  @staticmethod
+  def process_gtest_options(executable, options):
+    """Grabs the test cases."""
+    if options.test_case_file:
+      with open(options.test_case_file, 'r') as f:
+        return sorted(filter(None, f.read().splitlines()))
+    else:
+      return get_test_cases(
+          executable,
+          options.whitelist,
+          options.blacklist,
+          options.index,
+          options.shards)
+
+
+class OptionParserTestCases(OptionParserWithTestShardingAndFiltering):
+  def __init__(self, *args, **kwargs):
+    OptionParserWithTestShardingAndFiltering.__init__(self, *args, **kwargs)
+    self.add_option(
+        '-j', '--jobs',
+        type='int',
+        default=num_processors(),
+        help='number of parallel jobs; default=%default')
+    self.add_option(
+        '-t', '--timeout',
+        type='int',
+        default=120,
+        help='Timeout for a single test case, in seconds default:%default')
+
 
 def main(argv):
   """CLI frontend to validate arguments."""
-  parser = OptionParserWithTestShardingAndFiltering(
+  parser = OptionParserTestCases(
       usage='%prog <options> [gtest]',
       verbose=int(os.environ.get('ISOLATE_DEBUG', 0)))
-  parser.add_option(
-      '-j', '--jobs',
-      type='int',
-      default=num_processors(),
-      help='number of parallel jobs; default=%default')
-  parser.add_option(
-      '-t', '--timeout',
-      type='int',
-      default=120,
-      help='Timeout for a single test case, in seconds default:%default')
   parser.add_option(
       '--run-all',
       action='store_true',
@@ -858,18 +877,7 @@ def main(argv):
   if not os.path.isfile(executable):
     parser.error('"%s" doesn\'t exist.' % executable)
 
-  # Grab the test cases.
-  if options.test_case_file:
-    with open(options.test_case_file, 'r') as f:
-      test_cases = filter(None, f.read().splitlines())
-  else:
-    test_cases = get_test_cases(
-        executable,
-        options.whitelist,
-        options.blacklist,
-        options.index,
-        options.shards)
-
+  test_cases = parser.process_gtest_options(executable, options)
   if not test_cases:
     # If test_cases is None then there was a problem generating the tests to
     # run, so this should be considered a failure.
