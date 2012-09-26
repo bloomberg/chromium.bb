@@ -869,21 +869,6 @@
     ['OS == "android"', {
       'targets': [
         {
-          'target_name': 'content_javatests',
-          'type': 'none',
-          'dependencies': [
-            '../base/base.gyp:base',
-            '../base/base.gyp:base_java_test_support',
-            'content_common',
-            'content_java',
-          ],
-          'variables': {
-            'package_name': 'content_javatests',
-            'java_in_dir': '../content/public/android/javatests',
-          },
-          'includes': [ '../build/java.gypi' ],
-        },
-        {
           'target_name': 'content_java_test_support',
           'type': 'none',
           'dependencies': [
@@ -903,7 +888,7 @@
           'type': 'none',
           'dependencies': [
             'content_java',
-            'content_javatests',
+            'content_java_test_support',
             'content_shell_apk',
             '../base/base.gyp:base_java',
             '../base/base.gyp:base_java_test_support',
@@ -916,8 +901,9 @@
           'variables': {
             'package_name': 'content_shell_test',
             'apk_name': 'ContentShellTest',
-            'java_in_dir': 'shell/android/javatests',
+            'java_in_dir': '../content/shell/android/javatests',
             'resource_dir': '../res',
+            'additional_input_paths': ['<!@(find ../content/public/android/javatests/src -name "*.java")',],
           },
           'includes': [ '../build/java_apk.gypi' ],
         },
