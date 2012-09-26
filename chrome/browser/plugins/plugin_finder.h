@@ -37,9 +37,6 @@ class PluginFinder {
   // It should be called on the UI thread.
   void Init();
 
-  // TODO(ibraaaa): DELETE. http://crbug.com/124396
-  static void Get(const base::Callback<void(PluginFinder*)>& cb);
-
 #if defined(ENABLE_PLUGIN_INSTALLATION)
   // Finds a plug-in for the given MIME type and language (specified as an IETF
   // language tag, i.e. en-US) and returns the PluginInstaller for the plug-in,
@@ -51,9 +48,8 @@ class PluginFinder {
   PluginInstaller* FindPluginWithIdentifier(const std::string& identifier);
 #endif
 
-  // Returns the plug-in metadata with the given identifier.
-  PluginMetadata* FindPluginMetadataWithIdentifier(
-      const std::string& identifier);
+  // Returns the plug-in name with the given identifier.
+  string16 FindPluginNameWithIdentifier(const std::string& identifier);
 
   // Gets plug-in metadata using |plugin|.
   PluginMetadata* GetPluginMetadata(const webkit::WebPluginInfo& plugin);

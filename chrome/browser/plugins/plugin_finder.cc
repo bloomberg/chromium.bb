@@ -12,7 +12,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/plugins/plugin_installer.h"
+#include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
@@ -55,14 +55,6 @@ static string16 GetGroupName(const webkit::WebPluginInfo& plugin) {
 }
 
 }  // namespace
-
-// TODO(ibraaaa): DELETE. http://crbug.com/124396
-// static
-void PluginFinder::Get(const base::Callback<void(PluginFinder*)>& cb) {
-  // At a later point we might want to do intialization here that needs to be
-  // done asynchronously, like loading the plug-in list from disk or from a URL.
-  MessageLoop::current()->PostTask(FROM_HERE, base::Bind(cb, GetInstance()));
-}
 
 // static
 PluginFinder* PluginFinder::GetInstance() {
@@ -180,15 +172,16 @@ PluginInstaller* PluginFinder::FindPluginWithIdentifier(
 }
 #endif
 
-PluginMetadata* PluginFinder::FindPluginMetadataWithIdentifier(
+string16 PluginFinder::FindPluginNameWithIdentifier(
     const std::string& identifier) {
   base::AutoLock lock(mutex_);
   std::map<std::string, PluginMetadata*>::const_iterator it =
       identifier_plugin_.find(identifier);
+  string16 name;
   if (it != identifier_plugin_.end())
-    return it->second;
+    name = it->second->name();
 
-  return NULL;
+  return name.empty() ? UTF8ToUTF16(identifier) : name;
 }
 
 PluginMetadata* PluginFinder::CreatePluginMetadata(

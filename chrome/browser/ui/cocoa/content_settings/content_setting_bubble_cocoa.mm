@@ -9,6 +9,8 @@
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/plugins/plugin_finder.h"
+#include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #import "chrome/browser/ui/cocoa/hyperlink_button_cell.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
@@ -247,12 +249,11 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
     frame.size.height -= delta;
     [[self window] setFrame:frame display:NO];
   } else {
+    PluginFinder* finder = PluginFinder::GetInstance();
     for (std::set<std::string>::iterator it = plugins.begin();
          it != plugins.end(); ++it) {
-      NSString* name = SysUTF16ToNSString(
-          PluginService::GetInstance()->GetPluginGroupName(*it));
-      if ([name length] == 0)
-        name = base::SysUTF8ToNSString(*it);
+      NSString* name =
+          SysUTF16ToNSString(finder->FindPluginNameWithIdentifier(*it));
       [pluginArray addObject:name];
     }
     [blockedResourcesField_

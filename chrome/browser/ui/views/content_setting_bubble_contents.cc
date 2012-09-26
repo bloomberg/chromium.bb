@@ -11,6 +11,8 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/plugins/plugin_finder.h"
+#include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
 #include "content/public/browser/notification_source.h"
@@ -152,11 +154,10 @@ void ContentSettingBubbleContents::Init() {
   if (!plugins.empty()) {
     if (!bubble_content_empty)
       layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+    PluginFinder* finder = PluginFinder::GetInstance();
     for (std::set<std::string>::const_iterator i(plugins.begin());
          i != plugins.end(); ++i) {
-      string16 name = PluginService::GetInstance()->GetPluginGroupName(*i);
-      if (name.empty())
-        name = UTF8ToUTF16(*i);
+      string16 name = finder->FindPluginNameWithIdentifier(*i);
       layout->StartRow(0, single_column_set_id);
       layout->AddView(new views::Label(name));
       bubble_content_empty = false;

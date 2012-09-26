@@ -7,6 +7,8 @@
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
+#include "chrome/browser/plugins/plugin_finder.h"
+#include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
@@ -21,7 +23,6 @@
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "webkit/plugins/npapi/plugin_group.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/webplugininfo.h"
 
@@ -98,10 +99,10 @@ string16 PepperBrokerInfoBarDelegate::GetMessageText() const {
   webkit::WebPluginInfo plugin;
   bool success = plugin_service->GetPluginInfoByPath(plugin_path_, &plugin);
   DCHECK(success);
-  scoped_ptr<webkit::npapi::PluginGroup> plugin_group(
-      plugin_service->GetPluginList()->GetPluginGroup(plugin));
+  PluginMetadata* plugin_metadata =
+      PluginFinder::GetInstance()->GetPluginMetadata(plugin);
   return l10n_util::GetStringFUTF16(IDS_PEPPER_BROKER_MESSAGE,
-                                    plugin_group->GetGroupName(),
+                                    plugin_metadata->name(),
                                     net::FormatUrl(url_.GetOrigin(),
                                                    languages_));
 }

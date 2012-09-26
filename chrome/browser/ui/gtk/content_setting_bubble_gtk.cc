@@ -11,6 +11,8 @@
 #include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/plugins/plugin_finder.h"
+#include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
@@ -108,13 +110,10 @@ void ContentSettingBubbleGtk::BuildBubble() {
   if (!plugins.empty()) {
     GtkWidget* list_content = gtk_vbox_new(FALSE, ui::kControlSpacing);
 
+    PluginFinder* finder = PluginFinder::GetInstance();
     for (std::set<std::string>::const_iterator it = plugins.begin();
         it != plugins.end(); ++it) {
-      std::string name = UTF16ToUTF8(
-          PluginService::GetInstance()->GetPluginGroupName(*it));
-      if (name.empty())
-        name = *it;
-
+      std::string name = UTF16ToUTF8(finder->FindPluginNameWithIdentifier(*it));
       GtkWidget* label = theme_provider->BuildLabel(
           BuildElidedText(name).c_str(), ui::kGdkBlack);
       GtkWidget* label_box = gtk_hbox_new(FALSE, 0);

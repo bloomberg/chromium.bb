@@ -54,12 +54,6 @@ class PluginObserver : public content::WebContentsObserver,
 #if defined(ENABLE_PLUGIN_INSTALLATION)
   void OnFindMissingPlugin(int placeholder_id, const std::string& mime_type);
 
-  void FindMissingPlugin(int placeholder_id,
-                         const std::string& mime_type,
-                         PluginFinder* plugin_finder);
-  void FindPluginToUpdate(int placeholder_id,
-                          const std::string& identifier,
-                          PluginFinder* plugin_finder);
   void OnRemovePluginPlaceholderHost(int placeholder_id);
 #endif
   void OnOpenAboutPlugins();
