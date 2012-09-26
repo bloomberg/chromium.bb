@@ -10,8 +10,6 @@ var wallpaperManager;
 function init() {
   window.addEventListener('load',
       windowStateManager.saveStates.bind(windowStateManager));
-  window.addEventListener('focus',
-      windowStateManager.saveStates.bind(windowStateManager));
   window.addEventListener('unload',
       windowStateManager.restoreStates.bind(windowStateManager));
   WallpaperManager.initStrings(function() {
