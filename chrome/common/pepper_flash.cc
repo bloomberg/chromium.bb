@@ -70,17 +70,7 @@ bool ConductingPepperFlashFieldTrial() {
 #if defined(OS_WIN)
   return true;
 #elif defined(OS_MACOSX)
-  // Returning |true| here puts PepperFlash in the plugin list, by
-  // default after the built-in NPAPI Flash.  Returning |true| from
-  // IsPepperFlashEnabledByDefault() puts PepperFlash above NPAPI
-  // Flash.
-  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  if (channel == chrome::VersionInfo::CHANNEL_CANARY ||
-      channel == chrome::VersionInfo::CHANNEL_DEV)
-    return true;
-
-  // TODO(shess): Don't expose for other channels, yet.
-  return false;
+  return true;
 #else
   return false;
 #endif
@@ -96,14 +86,7 @@ bool IsPepperFlashEnabledByDefault() {
   // For Linux, always try to use it (availability is checked elsewhere).
   return true;
 #elif defined(OS_MACOSX)
-  // PepperFlash is the default for CANARY and DEV.
-  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  if (channel == chrome::VersionInfo::CHANNEL_CANARY ||
-      channel == chrome::VersionInfo::CHANNEL_DEV)
-    return true;
-
-  // PepperFlash is opt-in on any other channels where it is exposed.
-  return false;
+  return true;
 #else
   return false;
 #endif
