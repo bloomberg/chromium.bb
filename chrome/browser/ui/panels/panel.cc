@@ -221,6 +221,8 @@ void Panel::InitCommandState() {
 }
 
 void Panel::OnNativePanelClosed() {
+  app_icon_loader_.reset();
+  registrar_.RemoveAll();
   manager()->OnPanelClosed(this);
   DCHECK(!panel_strip_);
 }

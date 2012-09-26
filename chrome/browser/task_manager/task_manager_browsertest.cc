@@ -123,8 +123,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeTabContentsChanges) {
 // Panels differently for Ash.
 #define MAYBE_NoticePanelChanges FAILS_NoticePanelChanges
 #else
-// Fails everywhere, see http://crbug.com/151010.
-#define MAYBE_NoticePanelChanges FAILS_NoticePanelChanges
+#define MAYBE_NoticePanelChanges NoticePanelChanges
 #endif
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, MAYBE_NoticePanelChanges) {
   EXPECT_EQ(0, model()->ResourceCount());
