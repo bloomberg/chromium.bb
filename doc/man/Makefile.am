@@ -9,15 +9,17 @@ MANPAGES = \
 MANPAGES_ALIASES = \
 	wl_display_connect_to_fd.3
 
-wl_display_connect_to_fd.3: wl_display_connect.3
-
 XML_FILES = \
 	${patsubst %.1,%.xml,${patsubst %.3,%.xml,${patsubst %.5,%.xml,${patsubst %.7,%.xml,$(MANPAGES)}}}}
-CLEANFILES = $(MANPAGES) $(MANPAGES_ALIASES)
-EXTRA_DIST = $(MANPAGES) $(MANPAGES_ALIASES) $(XML_FILES)
-man_MANS = $(MANPAGES) $(MANPAGES_ALIASES)
+CLEANFILES =
+EXTRA_DIST =
+man_MANS =
 
 if HAVE_XSLTPROC
+
+CLEANFILES += $(MANPAGES) $(MANPAGES_ALIASES)
+EXTRA_DIST += $(MANPAGES) $(MANPAGES_ALIASES) $(XML_FILES)
+man_MANS += $(MANPAGES) $(MANPAGES_ALIASES)
 
 XSLTPROC_FLAGS = \
 	--stringparam man.authors.section.enabled 0 \
@@ -41,5 +43,7 @@ XSLTPROC_PROCESS_MAN = \
 
 %.7: %.xml
 	$(XSLTPROC_PROCESS_MAN)
+
+wl_display_connect_to_fd.3: wl_display_connect.3
 
 endif # HAVE_XSLTPROC
