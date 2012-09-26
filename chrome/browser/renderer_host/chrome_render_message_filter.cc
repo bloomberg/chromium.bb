@@ -89,6 +89,8 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_OpenChannelToExtension,
                         OnOpenChannelToExtension)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_OpenChannelToTab, OnOpenChannelToTab)
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_OpenChannelToNativeApp,
+                        OnOpenChannelToNativeApp)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ExtensionHostMsg_GetMessageBundle,
                                     OnGetExtensionMessageBundle)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_AddListener, OnExtensionAddListener)
@@ -299,6 +301,40 @@ void ChromeRenderMessageFilter::OpenChannelToExtensionOnUIThread(
       OpenChannelToExtension(
           source_process_id, source_routing_id, receiver_port_id,
           source_extension_id, target_extension_id, channel_name);
+}
+
+void ChromeRenderMessageFilter::OnOpenChannelToNativeApp(
+    int routing_id, const std::string& source_extension_id,
+    const std::string& native_app_name,
+    const std::string& channel_name,
+    const std::string& connect_message, int* port_id) {
+  int port2_id;
+  extensions::MessageService::AllocatePortIdPair(port_id, &port2_id);
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&ChromeRenderMessageFilter::OpenChannelToNativeAppOnUIThread,
+                 this,
+                 routing_id,
+                 port2_id,
+                 source_extension_id,
+                 native_app_name,
+                 channel_name,
+                 connect_message));
+}
+
+void ChromeRenderMessageFilter::OpenChannelToNativeAppOnUIThread(
+    int source_routing_id,
+    int receiver_port_id,
+    const std::string& source_extension_id,
+    const std::string& native_app_name,
+    const std::string& channel_name,
+    const std::string& connect_message) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  extensions::ExtensionSystem::Get(profile_)->message_service()->
+      OpenChannelToNativeApp(
+          render_process_id_, source_routing_id, receiver_port_id,
+          source_extension_id, native_app_name, channel_name, connect_message);
 }
 
 void ChromeRenderMessageFilter::OnOpenChannelToTab(

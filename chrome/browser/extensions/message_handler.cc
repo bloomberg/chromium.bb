@@ -4,8 +4,8 @@
 
 #include "chrome/browser/extensions/message_handler.h"
 
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/api/messaging/message_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/extensions/extension_messages.h"
@@ -49,7 +49,7 @@ void MessageHandler::OnPostMessage(int port_id,
   MessageService* message_service =
       ExtensionSystem::Get(profile)->message_service();
   if (message_service) {
-    message_service->PostMessageFromRenderer(port_id, message);
+    message_service->PostMessage(port_id, message);
   }
 }
 

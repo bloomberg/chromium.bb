@@ -21,6 +21,9 @@ class ExtensionCustomBindings : public ChromeV8Extension {
   // Creates a new messaging channel to the given extension.
   static v8::Handle<v8::Value> OpenChannelToExtension(
       const v8::Arguments& args);
+
+  static v8::Handle<v8::Value> OpenChannelToNativeApp(
+      const v8::Arguments& args);
 };
 
 }  // namespace extensions
