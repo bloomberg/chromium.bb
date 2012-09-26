@@ -629,6 +629,55 @@ void PrintNameActions(void) {
             ToCIdentifier(pair->first).c_str(), pair->second);
 }
 
+// ExpandRegisterOpcode expands opcode for the instruction which embeds number
+// of register in its opcode.
+//
+// The string sequence [“0xd8”, “0xf8”, "/", "0x10"] is rewritten to be
+// [“0xd8”, “(0xf8|0xf9|0xfa|0xfb|0xfc|0xfd|0xfe|0xff)”, "/", "0x10"].
+//
+// Only one byte is changed and this is the last “regular” byte (i.e. not a
+// MobR/M opcode extension or opcode-in-immediate byte).
+//
+// Note that this function modifies the opcode vector directly.
+void ExpandRegisterByte(const std::string& name,
+                        std::vector<std::string>* opcodes) {
+  std::vector<std::string>::reverse_iterator modifiable_opcode =
+    opcodes->rbegin();
+  for (std::vector<std::string>::iterator opcode = opcodes->begin();
+       opcode != opcodes->end(); opcode++)
+    if ((*opcode->begin()) == '/') {
+      modifiable_opcode = std::vector<std::string>::reverse_iterator(opcode);
+      if (modifiable_opcode == opcodes->rend()) {
+        fprintf(stderr, "%s: error - can not use 'r' operand in "
+                        "instruction '%s'", short_program_name, name.c_str());
+        exit(1);
+      }
+      break;
+    }
+  // Note that we need to output eight possibilities and separate them with
+  // seven “|” separators thus we handle first case separately.
+  size_t start_position;
+  if ((*(modifiable_opcode->rbegin())) == '0') {
+    start_position = 1;
+  } else if (*(modifiable_opcode->rbegin()) == '8') {
+    start_position = 9;
+  } else {
+    fprintf(stderr, "%s: error - can not use 'r' operand in "
+                    "instruction '%s'", short_program_name, name.c_str());
+    exit(1);
+  }
+  std::string saved_modifiable_opcode = *modifiable_opcode;
+  (*modifiable_opcode) = "(";
+  modifiable_opcode->append(saved_modifiable_opcode);
+  for (size_t position = start_position; position < start_position + 7;
+       ++position) {
+    modifiable_opcode->push_back('|');
+    (*(saved_modifiable_opcode.rbegin())) = "0123456789abcdef"[position];
+    modifiable_opcode->append(saved_modifiable_opcode);
+  }
+  modifiable_opcode->push_back(')');
+}
+
 class MarkedInstruction : public Instruction {
  public:
   explicit MarkedInstruction(const Instruction& instruction_) :
@@ -655,49 +704,11 @@ class MarkedInstruction : public Instruction {
     for (std::vector<Operand>::const_iterator operand = operands_.begin();
          operand != operands_.end(); ++operand)
       if (operand->type == 'r') {
-        std::vector<std::string>::reverse_iterator opcode = opcodes_.rbegin();
-        for (; opcode != opcodes_.rend(); ++opcode) {
-          if (opcode->find('/') == opcode->npos) {
-          std::string saved_opcode = *opcode;
-            switch (*(opcode->rbegin())) {
-              case '0':
-                (*opcode) = "(";
-                opcode->append(saved_opcode);
-                for (char c = '1'; c <= '7'; ++c) {
-                  opcode->push_back('|');
-                  (*(saved_opcode.rbegin())) = c;
-                  opcode->append(saved_opcode);
-                }
-                opcode->push_back(')');
-                break;
-              case '8':
-                (*opcode) = "(";
-                opcode->append(saved_opcode);
-                static const char cc[] = {'9', 'a', 'b', 'c', 'd', 'e', 'f'};
-                for (size_t c = 0; c < NACL_ARRAY_SIZE(cc); ++c) {
-                  opcode->push_back('|');
-                  (*(saved_opcode.rbegin())) = cc[c];
-                  opcode->append(saved_opcode);
-                }
-                opcode->push_back(')');
-                break;
-              default:
-                fprintf(stderr, "%s: error - can not use 'r' operand in "
-                  "instruction '%s'", short_program_name, name_.c_str());
-                exit(1);
-            }
-            // x87 and MMX registers are not extended in x86-64 mode: there are
-            // only 8 of them.  But only x87 operands use opcode to specify
-            // register number.
-            if (operand->size != "7") rex_.b = true;
-            break;
-          }
-        }
-        if (opcode == opcodes_.rend()) {
-          fprintf(stderr, "%s: error - can not use 'r' operand in "
-            "instruction '%s'", short_program_name, name_.c_str());
-          exit(1);
-        }
+        ExpandRegisterByte(name_, &opcodes_);
+        // x87 and MMX registers are not extended in x86-64 mode: there are
+        // only 8 of them.  But only x87 operands use opcode to specify
+        // register number.
+        if (operand->size != "7") rex_.b = true;
         break;
       }
     // Some 'opcodes' include prefixes, move them there.
