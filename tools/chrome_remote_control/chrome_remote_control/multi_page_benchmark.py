@@ -5,14 +5,12 @@ import csv
 import logging
 import os
 import sys
-import traceback
 
 from chrome_remote_control import browser_finder
 from chrome_remote_control import browser_options
 from chrome_remote_control import page_runner
 from chrome_remote_control import page_set
 from chrome_remote_control import page_test
-from chrome_remote_control import util
 
 class MeasurementFailure(page_test.Failure):
   """Exception that can be thrown from MeasurePage to indicate an undesired but
@@ -127,7 +125,7 @@ def Main(benchmark, args=None):
 
   if len(args) != 1:
     parser.print_usage()
-    import page_sets
+    import page_sets # pylint: disable=F0401
     sys.stderr.write('Available pagesets:\n%s\n\n' % ',\n'.join(
         [os.path.relpath(f) for f in page_sets.GetAllPageSetFilenames()]))
     sys.exit(1)

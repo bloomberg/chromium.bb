@@ -32,7 +32,7 @@ def Main(args):
   browser_to_create = chrome_remote_control.FindBrowser(options)
   if not browser_to_create:
     sys.stderr.write("No browser found! Supported types: %s" %
-        chrome_remote_control.GetAllAvailableBrowserTypes())
+        chrome_remote_control.GetAllAvailableBrowserTypes(options))
     return 255
   with browser_to_create.Create() as b:
     with b.ConnectToNthTab(0) as tab:

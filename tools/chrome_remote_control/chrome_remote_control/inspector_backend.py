@@ -45,7 +45,7 @@ class InspectorBackend(object):
     if domain_name in self._domain_handlers:
       try:
         self._domain_handlers[domain_name][0](res)
-      except:
+      except Exception:
         import traceback
         traceback.print_exc()
 
@@ -74,7 +74,7 @@ class InspectorBackend(object):
         if domain_name in self._domain_handlers:
           try:
             self._domain_handlers[domain_name][0](res)
-          except:
+          except Exception:
             import traceback
             traceback.print_exc()
         else:

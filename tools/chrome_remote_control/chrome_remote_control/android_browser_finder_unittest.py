@@ -6,8 +6,8 @@ import unittest
 
 from chrome_remote_control import android_browser_finder
 from chrome_remote_control import browser_options
-
-from system_stub import *
+from chrome_remote_control.system_stub import PopenStub
+from chrome_remote_control.system_stub import SubprocessModuleStub
 
 # adb not even found
 # android_browser_finder not returning
@@ -36,13 +36,13 @@ class ADBCommandsModuleStub(object):
       return ADBCommandsStub(self, device)
     self.ADBCommands = ADBCommandsStubConstructor
 
-  def IsAndroidSupported(self):
+  def IsAndroidSupported(self): # pylint: disable=R0201
     return True
 
   def GetAttachedDevices(self):
     return self.attached_devices
 
-  def HasForwarder(self, adb):
+  def HasForwarder(self, adb): # pylint: disable=W0613,R0201
     return True
 
 class AndroidBrowserFinderTest(unittest.TestCase):
@@ -50,7 +50,7 @@ class AndroidBrowserFinderTest(unittest.TestCase):
     options = browser_options.BrowserOptions()
 
     subprocess_stub = SubprocessModuleStub()
-    def NoADB(*args, **kargs):
+    def NoADB(*args, **kargs): # pylint: disable=W0613
       raise OSError('not found')
     subprocess_stub.Popen_hook = NoADB
     browsers = android_browser_finder.FindAllAvailableBrowsers(

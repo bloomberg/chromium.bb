@@ -5,12 +5,12 @@
 import logging
 import os
 import re
-import socket
 import subprocess
 import sys
 import time
 import tempfile
-import util
+
+from chrome_remote_control import util
 
 _next_remote_port = 9224
 
@@ -63,9 +63,9 @@ class DeviceSideProcess(object):
                cri,
                device_side_args,
                prevent_output=True,
-               extra_ssh_args=[],
+               extra_ssh_args=None,
                leave_ssh_alive=False,
-               env={},
+               env=None,
                login_shell=False):
 
     # Init members first so that Close will always succeed.
@@ -79,9 +79,9 @@ class DeviceSideProcess(object):
       out = sys.stderr
 
     cri.GetCmdOutput(['rm', '-rf', '/tmp/cros_interface_remote_device_pid'])
-    env_str = ' '.join(['%s=%s' % (k,v) for k,v in env.items()])
     cmd_str = ' '.join(device_side_args)
-    if env_str:
+    if env:
+      env_str = ' '.join(['%s=%s' % (k, v) for k, v in env.items()])
       cmd = env_str + ' ' + cmd_str
     else:
       cmd = cmd_str
@@ -93,8 +93,8 @@ class DeviceSideProcess(object):
     if login_shell:
       cmdline.append('-l')
     cmdline.append('/tmp/cros_interface_remote_device_bootstrap.sh')
-    proc =subprocess.Popen(
-      cri._FormSSHCommandLine(cmdline,
+    proc = subprocess.Popen(
+      cri.FormSSHCommandLine(cmdline,
                               extra_ssh_args=extra_ssh_args),
       stdout=out,
       stderr=out,
@@ -130,7 +130,7 @@ class DeviceSideProcess(object):
     if self.IsAlive():
       # Try to politely shutdown, first.
       if try_sigint_first:
-        stdout, stder = self._cri._GetAllCmdOutput(
+        self._cri.GetAllCmdOutput(
           ['kill', '-INT', str(self._pid)])
         try:
           self.Wait(timeout=0.5)
@@ -138,10 +138,10 @@ class DeviceSideProcess(object):
           pass
 
       if self.IsAlive():
-        stdout, stder = self._cri._GetAllCmdOutput(
+        self._cri.GetAllCmdOutput(
           ['kill', '-KILL', str(self._pid)])
         try:
-          self.Wait(timeout=1)
+          self.Wait(timeout=5)
         except util.TimeoutException:
           pass
 
@@ -192,11 +192,15 @@ class LoginException(Exception):
 class KeylessLoginRequiredException(LoginException):
   pass
 
-class CrOSInterface(object):
+class CrOSInterface(object): # pylint: disable=R0923
   def __init__(self, hostname):
     self._hostname = hostname
 
-  def _FormSSHCommandLine(self, args, extra_ssh_args=[]):
+  @property
+  def hostname(self):
+    return self._hostname
+
+  def FormSSHCommandLine(self, args, extra_ssh_args=None):
     full_args = ['ssh',
                  '-o ConnectTimeout=5',
                  '-o ForwardAgent=no',
@@ -205,17 +209,17 @@ class CrOSInterface(object):
                  '-o KbdInteractiveAuthentication=no',
                  '-o StrictHostKeyChecking=yes',
                  '-n']
-    if len(extra_ssh_args):
+    if extra_ssh_args:
       full_args.extend(extra_ssh_args)
     full_args.append('root@%s' % self._hostname)
     full_args.extend(args)
     return full_args
 
-  def _GetAllCmdOutput(self, args, cwd=None):
-    return GetAllCmdOutput(self._FormSSHCommandLine(args), cwd)
+  def GetAllCmdOutput(self, args, cwd=None):
+    return GetAllCmdOutput(self.FormSSHCommandLine(args), cwd)
 
   def TryLogin(self):
-    stdout, stderr = self._GetAllCmdOutput(['echo', '$USER'])
+    stdout, stderr = self.GetAllCmdOutput(['echo', '$USER'])
 
     if stderr != '':
       if 'Host key verification failed' in stderr:
@@ -225,14 +229,14 @@ class CrOSInterface(object):
       if 'Operation timed out' in stderr:
         raise LoginException('Timed out while logging into %s' % self._hostname)
       raise LoginException('While logging into %s, got %s' % (
-          self._hostname,stderr.strip()))
+          self._hostname, stderr))
     if stdout != 'root\n':
       raise LoginException(
         'Logged into %s, expected $USER=root, but got %s.' % (
           self._hostname, stdout))
 
   def FileExistsOnDevice(self, file_name):
-    stdout, stderr = self._GetAllCmdOutput([
+    stdout, stderr = self.GetAllCmdOutput([
         'if', 'test', '-a', file_name, ';',
         'then', 'echo', '1', ';',
         'fi'
@@ -276,13 +280,13 @@ class CrOSInterface(object):
         return f2.read()
 
   def ListProcesses(self):
-    stdout, stderr = self._GetAllCmdOutput([
+    stdout, stderr = self.GetAllCmdOutput([
         '/bin/ps', '--no-headers',
         '-A',
         '-o', 'pid,args'])
     assert stderr == ''
     procs = []
-    for l in stdout.split('\n'):
+    for l in stdout.split('\n'): # pylint: disable=E1103
       if l == '':
         continue
       m = re.match('^\s*(\d+)\s+(.+)', l, re.DOTALL)
@@ -301,13 +305,13 @@ class CrOSInterface(object):
     return len(kills) - 2
 
   def IsServiceRunning(self, service_name):
-    stdout, stderr = self._GetAllCmdOutput([
+    stdout, stderr = self.GetAllCmdOutput([
         'status', service_name])
     assert stderr == ''
     return 'running, process' in stdout
 
   def GetCmdOutput(self, args):
-    stdout, stderr = self._GetAllCmdOutput(args)
+    stdout, stderr = self.GetAllCmdOutput(args)
     assert stderr == ''
     return stdout
 

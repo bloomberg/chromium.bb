@@ -1,6 +1,8 @@
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+"""Finds desktop browsers that can be controlled by chrome_remote_control."""
+
 import logging
 import os as real_os
 import sys as real_sys
@@ -9,8 +11,6 @@ import subprocess as real_subprocess
 from chrome_remote_control import browser
 from chrome_remote_control import desktop_browser_backend
 from chrome_remote_control import possible_browser
-
-"""Finds desktop browsers that can be controlled by chrome_remote_control."""
 
 ALL_BROWSER_TYPES = ','.join([
     'exact',

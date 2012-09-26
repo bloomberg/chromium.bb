@@ -7,9 +7,9 @@
 # a bit.
 import unittest
 
-import browser_options
-import cros_interface
-import run_tests
+from chrome_remote_control import browser_options
+from chrome_remote_control import cros_interface
+from chrome_remote_control import run_tests
 
 class CrOSInterfaceTest(unittest.TestCase):
   @run_tests.RequiresBrowserOfType('cros-chrome')
@@ -59,7 +59,7 @@ class CrOSInterfaceTest(unittest.TestCase):
     self.assertFalse(cri.FileExistsOnDevice('/etc/sdlfsdjflskfjsflj'))
 
   @run_tests.RequiresBrowserOfType('cros-chrome')
-  def testGetFileContents(self):
+  def testGetFileContents(self): # pylint: disable=R0201
     remote = browser_options.options_for_unittests.cros_remote
     cri = cros_interface.CrOSInterface(remote)
     hosts = cri.GetFileContents('/etc/hosts')
@@ -74,13 +74,13 @@ class CrOSInterfaceTest(unittest.TestCase):
       lambda: cri.GetFileContents('/tmp/209fuslfskjf/dfsfsf'))
 
   @run_tests.RequiresBrowserOfType('cros-chrome')
-  def testListProcesses(self):
+  def testListProcesses(self): # pylint: disable=R0201
     remote = browser_options.options_for_unittests.cros_remote
     cri = cros_interface.CrOSInterface(remote)
 
     with cros_interface.DeviceSideProcess(
         cri,
-        ['sleep', '11']) as sleep:
+        ['sleep', '11']):
       procs = cri.ListProcesses()
       sleeps = [x for x in procs
                 if x[1] == 'sleep 11']

@@ -1,12 +1,14 @@
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-import os as real_os
 import unittest
 
 from chrome_remote_control import browser_options
 from chrome_remote_control import desktop_browser_finder
-from chrome_remote_control.system_stub import *
+from chrome_remote_control.system_stub import (
+  OSModuleStub,
+  SysModuleStub
+  )
 
 # This file verifies the logic for finding a browser instance on all platforms
 # at once. It does so by providing stubs for the OS/sys/subprocess primitives
@@ -82,10 +84,10 @@ class LinuxFindTest(FindTestBase):
     self._files.append('../../../out/Release/content_shell')
     self._files.append('../../../out/Debug/content_shell')
 
-    self._has_google_chrome_on_path = False
+    self.has_google_chrome_on_path = False
     this = self
-    def call_hook(*args, **kwargs):
-      if this._has_google_chrome_on_path:
+    def call_hook(*args, **kwargs): # pylint: disable=W0613
+      if this.has_google_chrome_on_path:
         return 0
       raise OSError('Not found')
     self._subprocess_stub.call_hook = call_hook
@@ -102,14 +104,14 @@ class LinuxFindTest(FindTestBase):
     self.assertTrue('exact' in self.DoFindAllTypes())
 
   def testFindUsingDefaults(self):
-    self._has_google_chrome_on_path = True
+    self.has_google_chrome_on_path = True
     self.assertTrue('release' in self.DoFindAllTypes())
 
     del self._files[1]
-    self._has_google_chrome_on_path = True
+    self.has_google_chrome_on_path = True
     self.assertTrue('system' in self.DoFindAllTypes())
 
-    self._has_google_chrome_on_path = False
+    self.has_google_chrome_on_path = False
     del self._files[1]
     self.assertEquals(['content-shell-debug', 'content-shell-release'],
                       self.DoFindAllTypes())

@@ -1,18 +1,15 @@
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-import os as real_os
-import sys as real_sys
-import subprocess as real_subprocess
-import logging
-import re
-
-import browser
-import possible_browser
-import cros_browser_backend
-import cros_interface as real_cros_interface
-
 """Finds android browsers that can be controlled by chrome_remote_control."""
+
+import logging
+
+from chrome_remote_control import browser
+from chrome_remote_control import possible_browser
+from chrome_remote_control import cros_browser_backend
+from chrome_remote_control import (
+  cros_interface as real_cros_interface)
 
 ALL_BROWSER_TYPES = ','.join([
     'cros-chrome',
@@ -34,7 +31,6 @@ class PossibleCrOSBrowser(possible_browser.PossibleBrowser):
     return browser.Browser(backend)
 
 def FindAllAvailableBrowsers(options,
-                             subprocess = real_subprocess,
                              cros_interface = real_cros_interface):
   """Finds all the desktop browsers available on this machine."""
   if options.cros_remote == None:
@@ -72,6 +68,6 @@ def FindAllAvailableBrowsers(options,
     return []
 
   if not cri.FileExistsOnDevice('/opt/google/chrome/chrome'):
-    logging.warn('Could not find a chrome on ' % self._hostname)
+    logging.warn('Could not find a chrome on ' % cri.hostname)
 
   return [PossibleCrOSBrowser('cros-chrome', options, False, cri)]

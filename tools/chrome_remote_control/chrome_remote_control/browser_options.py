@@ -24,6 +24,8 @@ class BrowserOptions(optparse.Values):
     self.extra_browser_args = []
     self.show_stdout = False
 
+    self.cros_remote = None
+
     self.verbosity = 0
 
   def Copy(self):
@@ -85,10 +87,10 @@ class BrowserOptions(optparse.Values):
     def ParseArgs(args=None):
       defaults = parser.get_default_values()
       for k, v in defaults.__dict__.items():
-        if k in self.__dict__:
+        if k in self.__dict__ and self.__dict__[k] != None:
           continue
         self.__dict__[k] = v
-      ret = real_parse(args, self)
+      ret = real_parse(args, self) # pylint: disable=E1121
 
       if self.verbosity >= 2:
         logging.basicConfig(level=logging.DEBUG)
@@ -108,17 +110,16 @@ class BrowserOptions(optparse.Values):
         sys.stderr.write('Available browsers:\n')
         sys.stdout.write('  %s\n' % '\n  '.join(types))
         sys.exit(1)
-      if self.extra_browser_args_as_string:
-        tmp = shlex.split(self.extra_browser_args_as_string)
+      if self.extra_browser_args_as_string: # pylint: disable=E1101
+        tmp = shlex.split(
+          self.extra_browser_args_as_string) # pylint: disable=E1101
         self.extra_browser_args.extend(tmp)
         delattr(self, 'extra_browser_args_as_string')
       return ret
     parser.parse_args = ParseArgs
     return parser
 
-"""
-This global variable can be set to a BrowserOptions object by the test harness
-to allow multiple unit tests to use a specific browser, in face of multiple
-options.
-"""
+# This global variable can be set to a BrowserOptions object by the test harness
+# to allow multiple unit tests to use a specific browser, in face of multiple
+# options.
 options_for_unittests = None

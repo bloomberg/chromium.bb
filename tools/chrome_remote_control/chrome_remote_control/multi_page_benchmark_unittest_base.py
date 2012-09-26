@@ -20,9 +20,12 @@ class MultiPageBenchmarkUnitTestBase(unittest.TestCase):
   def CreatePageSetFromFileInUnittestDataDir(self, test_filename):
     path = os.path.join(self.unittest_data_dir, test_filename)
     self.assertTrue(os.path.exists(path))
-    page = page_set.Page('file://%s' % path)
 
-    ps = page_set.PageSet()
+    page = page_set.Page('file://%s' % test_filename)
+
+    ps = page_set.PageSet(description='',
+                          file_path=os.path.join(self.unittest_data_dir,
+                                                 'test_pageset.json'))
     ps.pages.append(page)
     return ps
 

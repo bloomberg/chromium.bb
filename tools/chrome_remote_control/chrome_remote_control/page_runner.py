@@ -69,7 +69,7 @@ class PageRunner(object):
     parsed_url = urlparse.urlparse(page.url)
     if parsed_url[0] == 'file':
       path = os.path.join(os.path.dirname(self.page_set.file_path),
-                          parsed_url[1])
+                          parsed_url.netloc) # pylint: disable=E1101
       dirname, filename = os.path.split(path)
       if self._server and self._server.path != dirname:
         self._server.Close()

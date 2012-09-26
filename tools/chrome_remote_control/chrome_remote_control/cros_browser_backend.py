@@ -1,24 +1,13 @@
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-import json
 import logging
-import shutil
 import socket
 import subprocess
-import tempfile
 import time
-import urllib2
 
-import adb_commands
-import browser_backend
-import browser_finder
-import cros_interface
-import inspector_backend
-
-def ConstructDefaultArgsFromTheSessionManager(self, cri):
-  # TODO(nduca): Fill this in with something
-  pass
+from chrome_remote_control import browser_backend
+from chrome_remote_control import cros_interface
 
 class CrOSBrowserBackend(browser_backend.BrowserBackend):
   """The backend for controlling a browser instance running on CrOS.
@@ -29,6 +18,7 @@ class CrOSBrowserBackend(browser_backend.BrowserBackend):
     self._options = options
     assert not is_content_shell
     self._cri = cri
+    self._browser_type = browser_type
 
     tmp = socket.socket()
     tmp.bind(('', 0))
@@ -149,9 +139,9 @@ class SSHReverseForwarder(object):
     # is idiotic.
     self._remote_port = cri.GetRemotePort()
     self._proc = subprocess.Popen(
-      cri._FormSSHCommandLine(['sleep', '99999999999'],
-                              ['-R%i:localhost:%i' %
-                               (self._remote_port, host_port)]),
+      cri.FormSSHCommandLine(['sleep', '99999999999'],
+                             ['-R%i:localhost:%i' %
+                              (self._remote_port, host_port)]),
       stdout=subprocess.PIPE,
       stderr=subprocess.PIPE,
       stdin=subprocess.PIPE,

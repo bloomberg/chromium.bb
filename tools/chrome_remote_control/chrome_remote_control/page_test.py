@@ -1,12 +1,6 @@
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-import csv
-import logging
-import os
-import sys
-import traceback
-
 class Failure(Exception):
   """Exception that can be thrown from MultiPageBenchmark to indicate an
   undesired but designed-for problem."""
@@ -19,17 +13,18 @@ class PageTestResults(object):
   def AddFailure(self, page, exception, trace):
     self.page_failures.append({'page': page,
                                'exception': exception,
-                               'trace': traceback.format_exc()})
+                               'trace': trace})
 
 class PageTest(object):
   """A class styled on unittest.TestCase for creating page-specific tests."""
 
   def __init__(self, test_method_name):
+    self.options = None
     try:
       self._test_method = getattr(self, test_method_name)
     except AttributeError:
       raise ValueError, 'No such method %s.%s' % (
-        self.__class_, test_method_name)
+        self.__class_, test_method_name) # pylint: disable=E1101
 
   def AddOptions(self, parser):
     """Override to expose command-line options for this benchmark.
@@ -47,6 +42,5 @@ class PageTest(object):
     self.options = options
     try:
       self._test_method(page, tab, results)
-      pass
     finally:
       self.options = None

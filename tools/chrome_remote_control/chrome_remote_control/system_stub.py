@@ -1,14 +1,13 @@
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-import os as real_os
-import sys as real_sys
-import subprocess as real_subprocess
-
 """Provides stubs for os, sys and subprocess for testing
 
 This test allows one to test code that itself uses os, sys, and subprocess.
 """
+import os as real_os
+import subprocess as real_subprocess
+
 class SysModuleStub(object):
   def __init__(self):
     self.platform = ''
@@ -27,7 +26,7 @@ class OSPathModuleStub(object):
     else:
       return real_os.path.join(*args)
 
-  def dirname(self, filename):
+  def dirname(self, filename): # pylint: disable=R0201
     return real_os.path.dirname(filename)
 
 class OSModuleStub(object):
@@ -56,7 +55,6 @@ class SubprocessModuleStub(object):
   def __init__(self):
     self.Popen_hook = None
     self.Popen_result = None
-    import subprocess as real_subprocess
     self.PIPE = real_subprocess.PIPE
 
   def Popen(self, *args, **kwargs):

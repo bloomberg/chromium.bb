@@ -45,7 +45,10 @@ class BrowserBackend(object):
     else:
       req = urllib2.urlopen('http://localhost:%i/json' % self._port)
     data = req.read()
-    return json.loads(data)
+    all_contexts = json.loads(data)
+    tabs = [ctx for ctx in all_contexts
+            if not ctx['url'].startswith('chrome-extension://')]
+    return tabs
 
   @property
   def num_tabs(self):

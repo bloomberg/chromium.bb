@@ -5,18 +5,19 @@ import json
 import urlparse
 
 class Page(object):
-  def __init__(self, url, attributes={}):
+  def __init__(self, url, attributes=None):
     self.url = url
     parsed_url = urlparse.urlparse(url)
-    if parsed_url.scheme == None:
+    if parsed_url.scheme == None: # pylint: disable=E1101
       raise Exception('urls must be fully qualified: %s' % url)
     self.interactions = 'scroll'
     self.credentials = None
     self.wait_time_after_navigate = 2
     self.scroll_is_infinite = False
 
-    for k, v in attributes.iteritems():
-      setattr(self, k, v)
+    if attributes:
+      for k, v in attributes.iteritems():
+        setattr(self, k, v)
 
   def __str__(self):
     return self.url

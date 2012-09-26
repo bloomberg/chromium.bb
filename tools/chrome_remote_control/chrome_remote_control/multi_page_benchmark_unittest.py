@@ -16,8 +16,19 @@ class BenchThatHasDefaults(multi_page_benchmark.MultiPageBenchmark):
     assert self.options.x == 3
     return {'x': 7}
 
+class BenchForBlank(multi_page_benchmark.MultiPageBenchmark):
+  def MeasurePage(self, page, tab):
+    contents = tab.runtime.Evaluate('document.body.textContent')
+    assert contents.strip() == 'Hello world'
+
 class MultiPageBenchmarkUnitTest(
   multi_page_benchmark_unittest_base.MultiPageBenchmarkUnitTestBase):
+
+  def testGotToBlank(self):
+    ps = self.CreatePageSetFromFileInUnittestDataDir('blank.html')
+    benchmark = BenchForBlank()
+    all_results = self.RunBenchmark(benchmark, ps)
+    self.assertEquals(0, len(all_results.page_failures))
 
   def testFailure(self):
     ps = self.CreatePageSetFromFileInUnittestDataDir('blank.html')

@@ -1,11 +1,10 @@
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-import os
-import sys
-
 """Brings in Chrome Android's android_commands module, which itself is a
 thin(ish) wrapper around adb."""
+import os
+import sys
 
 # This is currently a thin wrapper around Chrome Android's
 # build scripts, located in chrome/build/android. This file exists mainly to
@@ -17,10 +16,11 @@ sys.path.append(
         os.path.join(os.path.dirname(__file__),
                      '../../../build/android')))
 try:
-  from pylib import android_commands as real_android_commands
-  from pylib import forwarder
-  from pylib import valgrind_tools
-except:
+  from pylib import ( # pylint: disable=F0401
+    android_commands as real_android_commands)
+  from pylib import forwarder # pylint: disable=F0401
+  from pylib import valgrind_tools # pylint: disable=F0401
+except Exception:
   real_android_commands = None
 
 def IsAndroidSupported():
@@ -39,8 +39,11 @@ class ADBCommands(object):
   def __init__(self, device):
     self._adb = real_android_commands.AndroidCommands(device)
 
+  def Adb(self):
+    return self._adb
+
   def Forward(self, local, remote):
-    ret = self._adb._adb.SendCommand('forward %s %s' % (local, remote))
+    ret = self._adb.Adb().SendCommand('forward %s %s' % (local, remote))
     assert ret == ''
 
   def RunShellCommand(self, command, timeout_time=20, log_result=False):
@@ -118,11 +121,11 @@ class ADBCommands(object):
     return self._adb.IsRootEnabled()
 
 def HasForwarder(adb):
-  return adb.FileExistsOnDevice(forwarder.Forwarder._FORWARDER_PATH)
+  return adb.FileExistsOnDevice('/data/local/tmp/forwarder')
 
 def HowToInstallForwarder():
   return 'adb push out/$BUILD_TYPE/forwarder %s' % (
-    forwarder.Forwarder._FORWARDER_PATH)
+    '/data/local/tmp/forwarder')
 
 class Forwarder(object):
   def __init__(self, adb, host_port):
@@ -143,16 +146,16 @@ class Forwarder(object):
     # To do this, we monkey patch adb.PushIfNeeded to a noop.
     #
     # TODO(nduca): Fix build.android.pylib.Forwarder to not need this.
-    real_push_if_needed = adb._adb.PushIfNeeded
+    real_push_if_needed = adb.Adb().PushIfNeeded
     def FakePush(_, device_path):
       assert adb.FileExistsOnDevice(device_path)
     try:
-      adb._adb.PushIfNeeded = FakePush
+      adb.Adb().PushIfNeeded = FakePush
       self._forwarder = forwarder.Forwarder(
-        adb._adb, port_pairs,
+        adb.Adb(), port_pairs,
         tool, 'localhost', 'unused')
     finally:
-      adb._adb.PushIfNeeded = real_push_if_needed
+      adb.Adb().PushIfNeeded = real_push_if_needed
     self._device_port = self._forwarder.DevicePortForHostPort(self._host_port)
 
   @property

@@ -1,13 +1,13 @@
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+"""Finds browsers that can be controlled by chrome_remote_control."""
+
 import logging
 
 from chrome_remote_control import android_browser_finder
 from chrome_remote_control import cros_browser_finder
 from chrome_remote_control import desktop_browser_finder
-
-"""Finds browsers that can be controlled by chrome_remote_control."""
 
 ALL_BROWSER_TYPES = (
     desktop_browser_finder.ALL_BROWSER_TYPES + ',' +
