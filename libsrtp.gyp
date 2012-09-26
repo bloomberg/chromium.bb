@@ -47,6 +47,20 @@
           'SIZEOF_UNSIGNED_LONG_LONG=8',
         ],
       }],
+      ['target_arch=="mipsel"', {
+        'defines': [
+          'CPU_RISC',
+          'HAVE_INT16_T',
+          'HAVE_INT32_T',
+          'HAVE_INT8_T',
+          'HAVE_UINT16_T',
+          'HAVE_UINT32_T',
+          'HAVE_UINT64_T',
+          'HAVE_UINT8_T',
+          'SIZEOF_UNSIGNED_LONG=4',
+          'SIZEOF_UNSIGNED_LONG_LONG=8',
+        ],
+      }],
       ['OS!="win"', {
         'defines': [
           'HAVE_STDINT_H',
@@ -91,6 +105,20 @@
         }],
         ['target_arch=="arm"', {
           'defines': [
+            'HAVE_INT16_T',
+            'HAVE_INT32_T',
+            'HAVE_INT8_T',
+            'HAVE_UINT16_T',
+            'HAVE_UINT32_T',
+            'HAVE_UINT64_T',
+            'HAVE_UINT8_T',
+            'SIZEOF_UNSIGNED_LONG=4',
+            'SIZEOF_UNSIGNED_LONG_LONG=8',
+          ],
+        }],
+        ['target_arch=="mipsel"', {
+          'defines': [
+            'CPU_RISC',
             'HAVE_INT16_T',
             'HAVE_INT32_T',
             'HAVE_INT8_T',
