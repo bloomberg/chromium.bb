@@ -4,6 +4,8 @@
 
 #include "content/shell/shell_browser_main.h"
 
+#include <iostream>
+
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -72,8 +74,8 @@ int ShellBrowserMain(const content::MainFunctionParams& parameters) {
 
     char test_string[2048];
 #if defined(OS_ANDROID)
-    puts("#READY");
-    fflush(stdout);
+    std::cout << "#READY\n";
+    std::cout.flush();
 #endif
 
     while (fgets(test_string, sizeof(test_string), stdin)) {
@@ -95,9 +97,6 @@ int ShellBrowserMain(const content::MainFunctionParams& parameters) {
       }
 
       main_runner_->Run();
-
-      fflush(stdout);
-      fflush(stderr);
 
       if (!content::WebKitTestController::Get()->ResetAfterLayoutTest())
         break;

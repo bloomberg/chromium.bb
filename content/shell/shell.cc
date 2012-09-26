@@ -224,7 +224,7 @@ bool Shell::AddMessageToConsole(WebContents* source,
   if (line_no)
     buffer += base::StringPrintf("line %d: ", line_no);
   buffer += UTF16ToUTF8(message);
-  WebKitTestController::Get()->printer().AddMessage(buffer);
+  WebKitTestController::Get()->printer()->AddMessage(buffer);
   return true;
 }
 

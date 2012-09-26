@@ -9,17 +9,6 @@ class AudioLayoutTest : public InProcessBrowserLayoutTest {
   AudioLayoutTest() : InProcessBrowserLayoutTest(
       FilePath(), FilePath().AppendASCII("media")) {
   }
-  virtual ~AudioLayoutTest() {}
-
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    InProcessBrowserLayoutTest::SetUpInProcessBrowserTestFixture();
-    AddResourceForLayoutTest(FilePath().AppendASCII("media"),
-                             FilePath().AppendASCII("content"));
-    AddResourceForLayoutTest(FilePath().AppendASCII("media"),
-                             FilePath().AppendASCII("media-file.js"));
-    AddResourceForLayoutTest(FilePath().AppendASCII("media"),
-                             FilePath().AppendASCII("video-test.js"));
-  }
 };
 
 IN_PROC_BROWSER_TEST_F(AudioLayoutTest, AudioConstructorPreload) {

@@ -9,7 +9,9 @@ var eventSender = eventSender || {};
 var textInputController = textInputController || {};
 
 (function() {
+  native function GetWorkerThreadCount();
   native function NotifyDone();
+  native function OverridePreference();
   native function SetDumpAsText();
   native function SetDumpChildFramesAsText();
   native function SetPrinting();
@@ -29,6 +31,12 @@ var textInputController = textInputController || {};
   }
 
   var TestRunner = function() {
+    Object.defineProperty(this,
+                          "workerThreadCount",
+                          {value: GetWorkerThreadCount});
+    Object.defineProperty(this,
+                          "overridePreference",
+                          {value: OverridePreference});
     Object.defineProperty(this, "notifyDone", {value: NotifyDone});
     Object.defineProperty(this, "dumpAsText", {value: SetDumpAsText});
     Object.defineProperty(this,

@@ -10,11 +10,13 @@
 #include "grit/shell_resources.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebWorkerInfo.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
 using WebKit::WebFrame;
 using WebKit::WebView;
+using WebKit::WebWorkerInfo;
 
 namespace content {
 
@@ -99,6 +101,20 @@ v8::Handle<v8::Value> SetWaitUntilDone(const v8::Arguments& args) {
   return v8::Undefined();
 }
 
+v8::Handle<v8::Value> GetWorkerThreadCount(const v8::Arguments& args) {
+  RenderView* view = GetCurrentRenderView();
+  if (!view)
+    return v8::Undefined();
+
+  return v8::Integer::NewFromUnsigned(WebWorkerInfo::dedicatedWorkerCount());
+}
+
+v8::Handle<v8::Value> OverridePreference(const v8::Arguments& args) {
+  // Not implemented, but playing nicely for now, so we can run
+  // layout_browsertests.
+  return v8::Undefined();
+}
+
 v8::Handle<v8::Value> NotImplemented(const v8::Arguments& args) {
   RenderView* view = GetCurrentRenderView();
   if (!view)
@@ -146,6 +162,10 @@ WebKitTestRunnerBindings::GetNativeFunction(v8::Handle<v8::String> name) {
   }
   if (name->Equals(v8::String::New("SetWaitUntilDone")))
     return v8::FunctionTemplate::New(SetWaitUntilDone);
+  if (name->Equals(v8::String::New("GetWorkerThreadCount")))
+    return v8::FunctionTemplate::New(GetWorkerThreadCount);
+  if (name->Equals(v8::String::New("OverridePreference")))
+    return v8::FunctionTemplate::New(OverridePreference);
   if (name->Equals(v8::String::New("NotImplemented")))
     return v8::FunctionTemplate::New(NotImplemented);
 

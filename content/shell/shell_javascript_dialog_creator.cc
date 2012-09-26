@@ -32,13 +32,13 @@ void ShellJavaScriptDialogCreator::RunJavaScriptDialog(
     const DialogClosedCallback& callback,
     bool* did_suppress_message) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)) {
-    WebKitTestResultPrinter& printer = WebKitTestController::Get()->printer();
+    WebKitTestResultPrinter* printer = WebKitTestController::Get()->printer();
     if (javascript_message_type == JAVASCRIPT_MESSAGE_TYPE_ALERT) {
-      printer.AddMessage(std::string("ALERT: ") + UTF16ToUTF8(message_text));
+      printer->AddMessage(std::string("ALERT: ") + UTF16ToUTF8(message_text));
     } else if (javascript_message_type == JAVASCRIPT_MESSAGE_TYPE_CONFIRM) {
-      printer.AddMessage(std::string("CONFIRM: ") + UTF16ToUTF8(message_text));
+      printer->AddMessage(std::string("CONFIRM: ") + UTF16ToUTF8(message_text));
     } else {  // JAVASCRIPT_MESSAGE_TYPE_PROMPT
-      printer.AddMessage(std::string("PROMPT: ") + UTF16ToUTF8(message_text) +
+      printer->AddMessage(std::string("PROMPT: ") + UTF16ToUTF8(message_text) +
                          "default text: " + UTF16ToUTF8(default_prompt_text));
     }
     callback.Run(true, string16());
@@ -86,8 +86,8 @@ void ShellJavaScriptDialogCreator::RunBeforeUnloadDialog(
     bool is_reload,
     const DialogClosedCallback& callback) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)) {
-    WebKitTestResultPrinter& printer = WebKitTestController::Get()->printer();
-    printer.AddMessage(
+    WebKitTestResultPrinter* printer = WebKitTestController::Get()->printer();
+    printer->AddMessage(
         std::string("CONFIRM NAVIGATION: ") + UTF16ToUTF8(message_text));
     WebKitTestController* controller = WebKitTestController::Get();
     callback.Run(

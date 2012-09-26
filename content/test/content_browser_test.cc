@@ -93,8 +93,10 @@ void ContentBrowserTest::TearDown() {
 }
 
 void ContentBrowserTest::RunTestOnMainThreadLoop() {
-  CHECK_EQ(Shell::windows().size(), 1u);
-  shell_ = Shell::windows()[0];
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)) {
+    CHECK_EQ(Shell::windows().size(), 1u);
+    shell_ = Shell::windows()[0];
+  }
 
 #if defined(OS_MACOSX)
   // On Mac, without the following autorelease pool, code which is directly

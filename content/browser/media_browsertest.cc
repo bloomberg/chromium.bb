@@ -169,26 +169,11 @@ class MediaLayoutTest : public InProcessBrowserLayoutTest {
   virtual ~MediaLayoutTest() {}
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    InProcessBrowserLayoutTest::SetUpCommandLine(command_line);
     // TODO(dalecurtis): Not all Buildbots have viable audio devices, so disable
     // audio to prevent tests from hanging; e.g., a device which is hardware
     // muted.  See http://crbug.com/120749
     command_line->AppendSwitch(switches::kDisableAudio);
-  }
-
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    InProcessBrowserLayoutTest::SetUpInProcessBrowserTestFixture();
-    AddResourceForLayoutTest(FilePath().AppendASCII("media"),
-                             FilePath().AppendASCII("content"));
-    AddResourceForLayoutTest(FilePath().AppendASCII("media"),
-                             FilePath().AppendASCII("media-file.js"));
-    AddResourceForLayoutTest(FilePath().AppendASCII("media"),
-                             FilePath().AppendASCII("media-fullscreen.js"));
-    AddResourceForLayoutTest(FilePath().AppendASCII("media"),
-                             FilePath().AppendASCII("video-paint-test.js"));
-    AddResourceForLayoutTest(FilePath().AppendASCII("media"),
-                             FilePath().AppendASCII("video-played.js"));
-    AddResourceForLayoutTest(FilePath().AppendASCII("media"),
-                             FilePath().AppendASCII("video-test.js"));
   }
 };
 

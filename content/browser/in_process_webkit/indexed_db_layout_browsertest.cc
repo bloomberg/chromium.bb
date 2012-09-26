@@ -10,13 +10,6 @@ class IndexedDBLayoutTest : public InProcessBrowserLayoutTest {
       FilePath(), FilePath().AppendASCII("storage").AppendASCII("indexeddb")) {
   }
 
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    InProcessBrowserLayoutTest::SetUpInProcessBrowserTestFixture();
-    AddResourceForLayoutTest(
-        FilePath().AppendASCII("fast").AppendASCII("js"),
-        FilePath().AppendASCII("resources"));
-  }
-
   void RunLayoutTests(const char* file_names[]) {
     for (size_t i = 0; file_names[i]; i++)
       RunLayoutTest(file_names[i]);

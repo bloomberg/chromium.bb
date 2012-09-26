@@ -5,6 +5,7 @@
 #ifndef CONTENT_SHELL_WEBKIT_TEST_RUNNER_HOST_H_
 #define CONTENT_SHELL_WEBKIT_TEST_RUNNER_HOST_H_
 
+#include <ostream>
 #include <string>
 
 #include "base/cancelable_callback.h"
@@ -20,13 +21,16 @@ class Shell;
 
 class WebKitTestResultPrinter {
  public:
-  WebKitTestResultPrinter();
+  WebKitTestResultPrinter(std::ostream* output, std::ostream* error);
   ~WebKitTestResultPrinter();
 
   void reset() {
     state_ = BEFORE_TEST;
   }
   bool in_text_block() const { return state_ == IN_TEXT_BLOCK; }
+  void set_capture_text_only(bool capture_text_only) {
+    capture_text_only_ = capture_text_only;
+  }
 
   void PrintTextHeader();
   void PrintTextBlock(const std::string& block);
@@ -48,6 +52,10 @@ class WebKitTestResultPrinter {
     AFTER_TEST
   };
   State state_;
+  bool capture_text_only_;
+
+  std::ostream* output_;
+  std::ostream* error_;
 
   DISALLOW_COPY_AND_ASSIGN(WebKitTestResultPrinter);
 };
@@ -69,7 +77,10 @@ class WebKitTestController : public base::NonThreadSafe,
 
   void RendererUnresponsive();
 
-  WebKitTestResultPrinter& printer() { return printer_; }
+  WebKitTestResultPrinter* printer() { return printer_.get(); }
+  void set_printer(WebKitTestResultPrinter* printer) {
+    printer_.reset(printer);
+  }
 
   // Interface for WebKitTestRunnerHost.
   void NotifyDone();
@@ -111,7 +122,7 @@ class WebKitTestController : public base::NonThreadSafe,
   void OnImageDump(const std::string& actual_pixel_hash, const SkBitmap& image);
   void OnTextDump(const std::string& dump);
 
-  WebKitTestResultPrinter printer_;
+  scoped_ptr<WebKitTestResultPrinter> printer_;
 
   Shell* main_window_;
 

@@ -32,12 +32,6 @@ class WorkerLayoutTest : public InProcessBrowserLayoutTest {
   WorkerLayoutTest() : InProcessBrowserLayoutTest(
       FilePath(), FilePath().AppendASCII("fast").AppendASCII("workers")) {
   }
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    InProcessBrowserLayoutTest::SetUpInProcessBrowserTestFixture();
-    AddResourceForLayoutTest(
-        FilePath().AppendASCII("fast").AppendASCII("js"),
-        FilePath().AppendASCII("resources"));
-  }
 };
 
 // Crashy, http://crbug.com/35965.
@@ -133,12 +127,6 @@ class MessagePortTest : public InProcessBrowserLayoutTest {
   MessagePortTest() : InProcessBrowserLayoutTest(
       FilePath(), FilePath().AppendASCII("fast").AppendASCII("events")) {
   }
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    InProcessBrowserLayoutTest::SetUpInProcessBrowserTestFixture();
-    AddResourceForLayoutTest(
-        FilePath().AppendASCII("fast").AppendASCII("js"),
-        FilePath().AppendASCII("resources"));
-  }
 };
 
 // Flaky, http://crbug.com/34996.
@@ -175,12 +163,6 @@ class WorkerHttpLayoutTest : public InProcessBrowserLayoutTest {
       FilePath().AppendASCII("workers"),
       8000) {
   }
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    InProcessBrowserLayoutTest::SetUpInProcessBrowserTestFixture();
-    AddResourceForLayoutTest(
-        FilePath().AppendASCII("http").AppendASCII("tests"),
-        FilePath().AppendASCII("resources"));
-  }
 };
 
 // http://crbug.com/16934
@@ -208,17 +190,13 @@ class WorkerXHRHttpLayoutTest : public InProcessBrowserLayoutTest {
       FilePath().AppendASCII("xmlhttprequest").AppendASCII("workers"),
       -1) {
   }
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    InProcessBrowserLayoutTest::SetUpInProcessBrowserTestFixture();
-    AddResourceForLayoutTest(
-        FilePath().AppendASCII("http").AppendASCII("tests"),
-        FilePath().AppendASCII("workers").AppendASCII("resources"));
-  }
 };
 
 IN_PROC_BROWSER_TEST_F(WorkerXHRHttpLayoutTest, Tests) {
   static const char* kLayoutTestFiles[] = {
-    "abort-exception-assert.html",
+    // worker thread count never drops to zero.
+    // http://crbug.com/150565
+    // "abort-exception-assert.html",
 #if defined(OS_WIN)
     // Fails on the mac (and linux?):
     // http://code.google.com/p/chromium/issues/detail?id=22599
