@@ -111,7 +111,8 @@ class CanvasPaintT : public T {
     const int height = ps_.rcPaint.bottom - ps_.rcPaint.top;
     if (!canvas->initialize(width, height, opaque, NULL)) {
       // Cause a deliberate crash;
-      *(char*) 0 = 0;
+      __debugbreak();
+      _exit(1);
     }
     canvas->clear(SkColorSetARGB(0, 0, 0, 0));
 
