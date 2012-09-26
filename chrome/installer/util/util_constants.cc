@@ -155,6 +155,9 @@ const char kVerboseLogging[] = "verbose-logging";
 // Show the embedded EULA dialog.
 const char kShowEula[] = "show-eula";
 
+// Show the embedded EULA dialog, relaunch metro Chrome on acceptance.
+const char kShowEulaForMetro[] = "show-eula-for-metro";
+
 // Use the alternate desktop shortcut name.
 const char kAltDesktopShortcut[] = "alt-desktop-shortcut";
 
@@ -189,6 +192,7 @@ const wchar_t kCmdQuickEnableApplicationHost[] =
     L"quick-enable-application-host";
 const wchar_t kCmdQuickEnableCf[] = L"quick-enable-cf";
 const wchar_t kDelegateExecuteExe[] = L"delegate_execute.exe";
+const char kEULASentinelFile[] = "EULA Accepted";
 const wchar_t kGoogleChromeInstallSubDir1[] = L"Google";
 const wchar_t kGoogleChromeInstallSubDir2[] = L"Chrome";
 const wchar_t kInstallBinaryDir[] = L"Application";

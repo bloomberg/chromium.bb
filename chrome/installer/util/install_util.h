@@ -98,6 +98,13 @@ class InstallUtil {
   static bool HasDelegateExecuteHandler(BrowserDistribution* dist,
                                         const string16& chrome_exe);
 
+  // Populates |path| with the path to |file| in the sentinel directory. This is
+  // the application directory for user-level installs, and the default user
+  // data dir for system-level installs. Returns false on error.
+  static bool GetSentinelFilePath(const char* file,
+                                  BrowserDistribution* dist,
+                                  FilePath* path);
+
   // Deletes the registry key at path key_path under the key given by root_key.
   static bool DeleteRegistryKey(HKEY root_key, const string16& key_path);
 

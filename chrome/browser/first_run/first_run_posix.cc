@@ -127,22 +127,23 @@ int ImportNow(Profile* profile, const CommandLine& cmdline) {
   return internal::ImportBookmarkFromFileIfNeeded(profile, cmdline);
 }
 
-bool ProcessMasterPreferences(const FilePath& user_data_dir,
-                              MasterPrefs* out_prefs) {
+ProcessMasterPreferencesResult ProcessMasterPreferences(
+    const FilePath& user_data_dir,
+    MasterPrefs* out_prefs) {
   DCHECK(!user_data_dir.empty());
 
   FilePath master_prefs_path;
   scoped_ptr<installer::MasterPreferences>
       install_prefs(internal::LoadMasterPrefs(&master_prefs_path));
   if (!install_prefs.get())
-    return true;
+    return SHOW_FIRST_RUN;
 
   out_prefs->new_tabs = install_prefs->GetFirstRunTabs();
 
   internal::SetRLZPref(out_prefs, install_prefs.get());
 
   if (!internal::CopyPrefFile(user_data_dir, master_prefs_path))
-    return true;
+    return SHOW_FIRST_RUN;
 
   internal::SetupMasterPrefsFromInstallPrefs(out_prefs,
       install_prefs.get());
@@ -152,7 +153,7 @@ bool ProcessMasterPreferences(const FilePath& user_data_dir,
   // Note we are skipping all other master preferences if skip-first-run-ui
   // is *not* specified. (That is, we continue only if skipping first run ui.)
   if (!internal::SkipFirstRunUI(install_prefs.get()))
-    return true;
+    return SHOW_FIRST_RUN;
 
   // From here on we won't show first run so we need to do the work to show the
   // bubble anyway, unless it's already been explicitly suppressed.
@@ -162,13 +163,13 @@ bool ProcessMasterPreferences(const FilePath& user_data_dir,
   // proceed because ImportSettings will launch the importer process which
   // would end up here if the sentinel is not present.
   if (!CreateSentinel())
-    return false;
+    return SKIP_FIRST_RUN;
 
   internal::SetShowWelcomePagePrefIfNeeded(install_prefs.get());
   internal::SetImportPreferencesAndLaunchImport(out_prefs, install_prefs.get());
   internal::SetDefaultBrowser(install_prefs.get());
 
-  return false;
+  return SKIP_FIRST_RUN;
 }
 
 

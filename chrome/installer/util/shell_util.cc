@@ -216,7 +216,9 @@ class RegistryEntry {
     string16 delegate_command(ShellUtil::GetChromeDelegateCommand(chrome_exe));
     // For user-level installs: entries for the app id and DelegateExecute verb
     // handler will be in HKCU; thus we do not need a suffix on those entries.
-    string16 app_id(ShellUtil::GetBrowserModelId(dist, chrome_exe));
+    string16 app_id(
+        ShellUtil::GetBrowserModelId(
+            dist, InstallUtil::IsPerUserInstall(chrome_exe.c_str())));
     string16 delegate_guid;
     // TODO(grt): remove HasDelegateExecuteHandler when the exe is ever-present;
     // see also install_worker.cc's AddDelegateExecuteWorkItems.
@@ -752,13 +754,16 @@ void RemoveBadWindows8RegistrationIfNeeded(
        !IsChromeMetroSupported())) {
     // There's no need to rollback, so forgo the usual work item lists and just
     // remove the values from the registry.
-    const HKEY root_key = InstallUtil::IsPerUserInstall(chrome_exe.c_str()) ?
-        HKEY_CURRENT_USER : HKEY_LOCAL_MACHINE;
+    bool is_per_user_install =
+        InstallUtil::IsPerUserInstall(chrome_exe.c_str());
+    const HKEY root_key = is_per_user_install ? HKEY_CURRENT_USER :
+                                                HKEY_LOCAL_MACHINE;
     // Use the current installation's suffix, not the about-to-be-installed
     // suffix.
     const string16 installation_suffix(
         ShellUtil::GetCurrentInstallationSuffix(dist, chrome_exe));
-    const string16 app_id(ShellUtil::GetBrowserModelId(dist, chrome_exe));
+    const string16 app_id(ShellUtil::GetBrowserModelId(dist,
+                                                       is_per_user_install));
 
     // <root hkey>\Software\Classes\<app_id>
     string16 key(ShellUtil::kRegClasses);
@@ -1206,11 +1211,10 @@ string16 ShellUtil::GetApplicationName(BrowserDistribution* dist,
 }
 
 string16 ShellUtil::GetBrowserModelId(BrowserDistribution* dist,
-                                      const string16& chrome_exe) {
+                                      bool is_per_user_install) {
   string16 app_id(dist->GetBaseAppId());
   string16 suffix;
-  if (InstallUtil::IsPerUserInstall(chrome_exe.c_str()) &&
-      !GetUserSpecificRegistrySuffix(&suffix)) {
+  if (is_per_user_install && !GetUserSpecificRegistrySuffix(&suffix)) {
     NOTREACHED();
   }
   // There is only one component (i.e. the suffixed appid) in this case, but it
@@ -1644,7 +1648,8 @@ void ShellUtil::RemoveChromeStartScreenShortcuts(BrowserDistribution* dist,
   }
 
   app_shortcuts_path = app_shortcuts_path.Append(
-      GetBrowserModelId(dist, chrome_exe));
+      GetBrowserModelId(dist,
+                        InstallUtil::IsPerUserInstall(chrome_exe.c_str())));
   if (!file_util::DirectoryExists(app_shortcuts_path)) {
     VLOG(1) << "No start screen shortcuts to delete.";
     return;
@@ -1675,7 +1680,9 @@ bool ShellUtil::UpdateChromeShortcut(BrowserDistribution* dist,
                  &icon_index);
   }
 
-  const string16 app_id(GetBrowserModelId(dist, chrome_exe));
+  const string16 app_id(
+      GetBrowserModelId(dist,
+                        InstallUtil::IsPerUserInstall(chrome_exe.c_str())));
   const bool is_dual_mode = ((options & ShellUtil::SHORTCUT_DUAL_MODE) != 0);
   const base::win::ShortcutOperation operation =
       (options & ShellUtil::SHORTCUT_CREATE_ALWAYS) != 0 ?

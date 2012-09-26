@@ -821,8 +821,14 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   // is initialized.
   first_run_ui_bypass_ = false;  // True to skip first run UI.
   if (is_first_run_) {
-    first_run_ui_bypass_ = !first_run::ProcessMasterPreferences(
-        user_data_dir_, master_prefs_.get());
+    first_run::ProcessMasterPreferencesResult pmp_result =
+        first_run::ProcessMasterPreferences(user_data_dir_,
+                                            master_prefs_.get());
+    if (pmp_result == first_run::EULA_EXIT_NOW)
+      return chrome::RESULT_CODE_EULA_REFUSED;
+
+    first_run_ui_bypass_ = (pmp_result == first_run::SKIP_FIRST_RUN);
+
     AddFirstRunNewTabs(browser_creator_.get(), master_prefs_->new_tabs);
 
     // If we are running in App mode, we do not want to show the importer

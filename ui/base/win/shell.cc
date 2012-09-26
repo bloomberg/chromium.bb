@@ -58,12 +58,15 @@ bool OpenItemWithExternalApp(const string16& full_path) {
 
 bool OpenAnyViaShell(const string16& full_path,
                      const string16& directory,
+                     const string16& args,
                      DWORD mask) {
   SHELLEXECUTEINFO sei = { sizeof(sei) };
   sei.fMask = mask;
   sei.nShow = SW_SHOWNORMAL;
   sei.lpFile = full_path.c_str();
   sei.lpDirectory = directory.c_str();
+  if (!args.empty())
+    sei.lpParameters = args.c_str();
 
   if (::ShellExecuteExW(&sei))
     return true;
@@ -73,12 +76,13 @@ bool OpenAnyViaShell(const string16& full_path,
 }
 
 bool OpenItemViaShell(const FilePath& full_path) {
-  return OpenAnyViaShell(full_path.value(), full_path.DirName().value(), 0);
+  return OpenAnyViaShell(full_path.value(), full_path.DirName().value(),
+                         string16(), 0);
 }
 
 bool OpenItemViaShellNoZoneCheck(const FilePath& full_path) {
-  return OpenAnyViaShell(full_path.value(), string16(),
-      SEE_MASK_NOZONECHECKS | SEE_MASK_FLAG_DDEWAIT);
+  return OpenAnyViaShell(full_path.value(), string16(), string16(),
+                         SEE_MASK_NOZONECHECKS | SEE_MASK_FLAG_DDEWAIT);
 }
 
 void SetAppIdForWindow(const string16& app_id, HWND hwnd) {

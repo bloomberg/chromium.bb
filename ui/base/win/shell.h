@@ -31,6 +31,7 @@ UI_EXPORT bool OpenItemViaShellNoZoneCheck(const FilePath& full_path);
 // registered for the item, it behaves the same as OpenItemViaShell.
 UI_EXPORT bool OpenAnyViaShell(const string16& full_path,
                                const string16& directory,
+                               const string16& args,
                                DWORD mask);
 
 // Ask the user, via the Windows "Open With" dialog, for an application to use

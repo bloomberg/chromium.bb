@@ -260,7 +260,7 @@ class ShellUtil {
   // to other registration entries which are suffixed as described in
   // GetCurrentInstallationSuffix() above).
   static string16 GetBrowserModelId(BrowserDistribution* dist,
-                                    const string16& chrome_exe);
+                                    bool is_per_user_install);
 
   // Returns an AppUserModelId composed of each member of |components| separated
   // by dots.

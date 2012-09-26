@@ -21,6 +21,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/win/registry.h"
+#include "base/win/scoped_comptr.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
@@ -1031,6 +1032,40 @@ installer::InstallStatus ShowEULADialog(const string16& inner_frame) {
   return installer::EULA_ACCEPTED;
 }
 
+// Creates the sentinel indicating that the EULA was required and has been
+// accepted.
+bool CreateEULASentinel(BrowserDistribution* dist) {
+  FilePath eula_sentinel;
+  if (!InstallUtil::GetSentinelFilePath(installer::kEULASentinelFile,
+                                        dist, &eula_sentinel)) {
+    return false;
+  }
+  return file_util::WriteFile(eula_sentinel, "", 0) != -1;
+}
+
+void ActivateMetroChrome() {
+  // Check to see if we're per-user or not. Need to do this since we may
+  // not have been invoked with --system-level even for a machine install.
+  wchar_t exe_path[MAX_PATH * 2] = {};
+  GetModuleFileName(NULL, exe_path, arraysize(exe_path));
+  bool is_per_user_install = InstallUtil::IsPerUserInstall(exe_path);
+
+  string16 app_model_id =
+      ShellUtil::GetBrowserModelId(BrowserDistribution::GetDistribution(),
+                                   is_per_user_install);
+
+  base::win::ScopedComPtr<IApplicationActivationManager> activator;
+  HRESULT hr = activator.CreateInstance(CLSID_ApplicationActivationManager);
+  if (SUCCEEDED(hr)) {
+    DWORD pid = 0;
+    hr = activator->ActivateApplication(
+        app_model_id.c_str(), L"open", AO_NONE, &pid);
+  }
+
+  LOG_IF(ERROR, FAILED(hr)) << "Tried and failed to launch Metro Chrome. "
+                            << "hr=" << std::hex << hr;
+}
+
 // This method processes any command line options that make setup.exe do
 // various tasks other than installation (renaming chrome.exe, showing eula
 // among others). This function returns true if any such command line option
@@ -1090,9 +1125,15 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
     string16 inner_frame =
         cmd_line.GetSwitchValueNative(installer::switches::kShowEula);
     *exit_code = ShowEULADialog(inner_frame);
+
     if (installer::EULA_REJECTED != *exit_code) {
-      GoogleUpdateSettings::SetEULAConsent(
-          original_state, BrowserDistribution::GetDistribution(), true);
+      if (GoogleUpdateSettings::SetEULAConsent(
+              original_state, BrowserDistribution::GetDistribution(), true)) {
+        CreateEULASentinel(BrowserDistribution::GetDistribution());
+      }
+      // For a metro-originated launch, we now need to launch back into metro.
+      if (cmd_line.HasSwitch(installer::switches::kShowEulaForMetro))
+        ActivateMetroChrome();
     }
   } else if (cmd_line.HasSwitch(
       installer::switches::kConfigureUserSettings)) {

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/first_run/first_run.h"
 
+#include <shellapi.h>
 #include <shlobj.h>
 #include <windows.h>
 
@@ -15,6 +16,7 @@
 #include "base/string_split.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/metro.h"
 #include "base/win/object_watcher.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/browser_process.h"
@@ -52,10 +54,9 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/base/win/shell.h"
 
 namespace {
-
-const char kEULASentinelFile[] = "EULA Accepted";
 
 // Helper class that performs delayed first-run tasks that need more of the
 // chrome infrastructure to be up and running before they can be attempted.
@@ -144,53 +145,61 @@ void PlatformSetup(Profile* profile) {
     CreateChromeQuickLaunchShortcut();
 }
 
-// Launches the setup exe with the given parameter/value on the command-line,
-// waits for its termination, returns its exit code in |*ret_code|, and
-// returns true if the exit code is valid.
-bool LaunchSetupWithParam(const std::string& param,
-                          const FilePath::StringType& value,
-                          int* ret_code) {
-  FilePath exe_path;
-  if (!PathService::Get(base::DIR_MODULE, &exe_path))
+// Launches the setup exe with the given parameter/value on the command-line.
+// For non-metro Windows, it waits for its termination, returns its exit code
+// in |*ret_code|, and returns true if the exit code is valid.
+// For metro Windows, it launches setup via ShellExecuteEx and returns in order
+// to bounce the user back to the desktop, then returns immediately.
+bool LaunchSetupForEula(const FilePath::StringType& value, int* ret_code) {
+  FilePath exe_dir;
+  if (!PathService::Get(base::DIR_MODULE, &exe_dir))
     return false;
-  exe_path = exe_path.Append(installer::kInstallerDir);
-  exe_path = exe_path.Append(installer::kSetupExe);
+  exe_dir = exe_dir.Append(installer::kInstallerDir);
+  FilePath exe_path = exe_dir.Append(installer::kSetupExe);
   base::ProcessHandle ph;
-  CommandLine cl(exe_path);
-  cl.AppendSwitchNative(param, value);
+
+  CommandLine cl(CommandLine::NO_PROGRAM);
+  cl.AppendSwitchNative(installer::switches::kShowEula, value);
 
   CommandLine* browser_command_line = CommandLine::ForCurrentProcess();
   if (browser_command_line->HasSwitch(switches::kChromeFrame)) {
     cl.AppendSwitch(switches::kChromeFrame);
   }
 
-  // TODO(evan): should this use options.wait = true?
-  if (!base::LaunchProcess(cl, base::LaunchOptions(), &ph))
-    return false;
-  DWORD wr = ::WaitForSingleObject(ph, INFINITE);
-  if (wr != WAIT_OBJECT_0)
-    return false;
-  return (TRUE == ::GetExitCodeProcess(ph, reinterpret_cast<DWORD*>(ret_code)));
-}
+  if (base::win::IsMetroProcess()) {
+    cl.AppendSwitch(installer::switches::kShowEulaForMetro);
 
-// Populates |path| with the path to |file| in the sentinel directory. This is
-// the application directory for user-level installs, and the default user data
-// dir for system-level installs. Returns false on error.
-bool GetSentinelFilePath(const char* file, FilePath* path) {
-  FilePath exe_path;
-  if (!PathService::Get(base::DIR_EXE, &exe_path))
+    // This obscure use of the 'log usage' mask for windows 8 is documented here
+    // http://go.microsoft.com/fwlink/?LinkID=243079. It causes the desktop
+    // process to receive focus. Pass SEE_MASK_FLAG_NO_UI to avoid hangs if an
+    // error occurs since the UI can't be shown from a metro process.
+    ui::win::OpenAnyViaShell(exe_path.value(),
+                             exe_dir.value(),
+                             cl.GetCommandLineString(),
+                             SEE_MASK_FLAG_LOG_USAGE | SEE_MASK_FLAG_NO_UI);
     return false;
-  if (InstallUtil::IsPerUserInstall(exe_path.value().c_str()))
-    *path = exe_path;
-  else if (!PathService::Get(chrome::DIR_USER_DATA, path))
-    return false;
+  } else {
+    base::LaunchOptions launch_options;
+    launch_options.wait = true;
+    CommandLine setup_path(exe_path);
+    setup_path.AppendArguments(cl, false);
 
-  *path = path->AppendASCII(file);
-  return true;
+    DWORD exit_code = 0;
+    if (!base::LaunchProcess(setup_path, launch_options, &ph) ||
+        !::GetExitCodeProcess(ph, &exit_code)) {
+      return false;
+    }
+
+    *ret_code = exit_code;
+    return true;
+  }
 }
 
 bool GetEULASentinelFilePath(FilePath* path) {
-  return GetSentinelFilePath(kEULASentinelFile, path);
+  return InstallUtil::GetSentinelFilePath(
+      installer::kEULASentinelFile,
+      BrowserDistribution::GetDistribution(),
+      path);
 }
 
 // Returns true if the EULA is required but has not been accepted by this user.
@@ -234,7 +243,10 @@ bool CreateEULASentinel() {
   return file_util::WriteFile(eula_sentinel, "", 0) != -1;
 }
 
-void ShowPostInstallEULAIfNeeded(installer::MasterPreferences* install_prefs) {
+// Shows the EULA dialog if required. Returns true if the EULA is accepted,
+// returns false if the EULA has not been accepted, in which case the browser
+// should exit.
+bool ShowPostInstallEULAIfNeeded(installer::MasterPreferences* install_prefs) {
   if (IsEULANotAccepted(install_prefs)) {
     // Show the post-installation EULA. This is done by setup.exe and the
     // result determines if we continue or not. We wait here until the user
@@ -245,14 +257,14 @@ void ShowPostInstallEULAIfNeeded(installer::MasterPreferences* install_prefs) {
     FilePath inner_html;
     if (WriteEULAtoTempFile(&inner_html)) {
       int retcode = 0;
-      if (!LaunchSetupWithParam(installer::switches::kShowEula,
-                                inner_html.value(), &retcode) ||
+      if (!LaunchSetupForEula(inner_html.value(), &retcode) ||
           (retcode != installer::EULA_ACCEPTED &&
            retcode != installer::EULA_ACCEPTED_OPT_IN)) {
-        LOG(WARNING) << "EULA rejected. Fast exit.";
-        ::ExitProcess(1);
+        LOG(WARNING) << "EULA flow requires fast exit.";
+        return false;
       }
       CreateEULASentinel();
+
       if (retcode == installer::EULA_ACCEPTED) {
         VLOG(1) << "EULA : no collection";
         GoogleUpdateSettings::SetCollectStatsConsent(false);
@@ -262,6 +274,7 @@ void ShowPostInstallEULAIfNeeded(installer::MasterPreferences* install_prefs) {
       }
     }
   }
+  return true;
 }
 
 // Installs a task to do an extensions update check once the extensions system
@@ -498,7 +511,10 @@ bool ImportSettings(Profile* profile,
 }
 
 bool GetFirstRunSentinelFilePath(FilePath* path) {
-  return GetSentinelFilePath(kSentinelFile, path);
+  return InstallUtil::GetSentinelFilePath(
+      kSentinelFile,
+      BrowserDistribution::GetDistribution(),
+      path);
 }
 
 void SetImportPreferencesAndLaunchImport(
@@ -590,23 +606,26 @@ FilePath MasterPrefsPath() {
   return master_prefs.AppendASCII(installer::kDefaultMasterPrefs);
 }
 
-bool ProcessMasterPreferences(const FilePath& user_data_dir,
-                              MasterPrefs* out_prefs) {
+ProcessMasterPreferencesResult ProcessMasterPreferences(
+    const FilePath& user_data_dir,
+    MasterPrefs* out_prefs) {
   DCHECK(!user_data_dir.empty());
 
   FilePath master_prefs_path;
   scoped_ptr<installer::MasterPreferences>
       install_prefs(internal::LoadMasterPrefs(&master_prefs_path));
   if (!install_prefs.get())
-    return true;
+    return SHOW_FIRST_RUN;
 
   out_prefs->new_tabs = install_prefs->GetFirstRunTabs();
 
   internal::SetRLZPref(out_prefs, install_prefs.get());
-  ShowPostInstallEULAIfNeeded(install_prefs.get());
+
+  if (!ShowPostInstallEULAIfNeeded(install_prefs.get()))
+    return EULA_EXIT_NOW;
 
   if (!internal::CopyPrefFile(user_data_dir, master_prefs_path))
-    return true;
+    return SHOW_FIRST_RUN;
 
   DoDelayedInstallExtensionsIfNeeded(install_prefs.get());
 
@@ -618,19 +637,19 @@ bool ProcessMasterPreferences(const FilePath& user_data_dir,
   // Note we are skipping all other master preferences if skip-first-run-ui
   // is *not* specified. (That is, we continue only if skipping first run ui.)
   if (!internal::SkipFirstRunUI(install_prefs.get()))
-    return true;
+    return SHOW_FIRST_RUN;
 
   // We need to be able to create the first run sentinel or else we cannot
   // proceed because ImportSettings will launch the importer process which
   // would end up here if the sentinel is not present.
   if (!CreateSentinel())
-    return false;
+    return SKIP_FIRST_RUN;
 
   internal::SetShowWelcomePagePrefIfNeeded(install_prefs.get());
   internal::SetImportPreferencesAndLaunchImport(out_prefs, install_prefs.get());
   internal::SetDefaultBrowser(install_prefs.get());
 
-  return false;
+  return SKIP_FIRST_RUN;
 }
 
 }  // namespace first_run

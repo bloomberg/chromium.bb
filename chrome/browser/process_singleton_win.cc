@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/installer/util/browser_distribution.h"
+#include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/wmi.h"
 #include "content/public/common/result_codes.h"
@@ -133,7 +134,8 @@ bool ActivateMetroChrome() {
     return false;
   }
   string16 app_id = ShellUtil::GetBrowserModelId(
-      BrowserDistribution::GetDistribution(), chrome_exe.value());
+      BrowserDistribution::GetDistribution(),
+      InstallUtil::IsPerUserInstall(chrome_exe.value().c_str()));
   if (app_id.empty()) {
     NOTREACHED() << "Failed to get chrome app user model id.";
     return false;

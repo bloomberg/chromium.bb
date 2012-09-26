@@ -38,14 +38,6 @@ const GoogleUpdateSettings::UpdatePolicy kGoogleUpdateDefaultUpdatePolicy =
     GoogleUpdateSettings::UPDATES_DISABLED;
 #endif
 
-// An list of search results in increasing order of desirability.
-enum EulaSearchResult {
-  NO_SETTING,
-  FOUND_CLIENT_STATE,
-  FOUND_OPPOSITE_SETTING,
-  FOUND_SAME_SETTING
-};
-
 bool ReadGoogleUpdateStrKey(const wchar_t* const name, std::wstring* value) {
   // The registry functions below will end up going to disk.  Do this on another
   // thread to avoid slowing the IO thread.  http://crbug.com/62121
@@ -106,20 +98,6 @@ bool RemoveGoogleUpdateStrKey(const wchar_t* const name) {
   if (!key.HasValue(name))
     return true;
   return (key.DeleteValue(name) == ERROR_SUCCESS);
-}
-
-EulaSearchResult HasEULASetting(HKEY root, const std::wstring& state_key,
-                                bool setting) {
-  RegKey key;
-  DWORD previous_value = setting ? 1 : 0;
-  if (key.Open(root, state_key.c_str(), KEY_QUERY_VALUE) != ERROR_SUCCESS)
-    return NO_SETTING;
-  if (key.ReadValueDW(google_update::kRegEULAAceptedField,
-                      &previous_value) != ERROR_SUCCESS)
-    return FOUND_CLIENT_STATE;
-
-  return ((previous_value != 0) == setting) ?
-      FOUND_SAME_SETTING : FOUND_OPPOSITE_SETTING;
 }
 
 bool GetChromeChannelInternal(bool system_install,

@@ -293,7 +293,8 @@ bool GetExpectedAppId(const FilePath& chrome_exe,
         command_line.GetSwitchValueASCII(switches::kAppId)));
   } else {
     BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-    app_name = ShellUtil::GetBrowserModelId(dist, chrome_exe.value());
+    app_name = ShellUtil::GetBrowserModelId(
+        dist, InstallUtil::IsPerUserInstall(chrome_exe.value().c_str()));
   }
 
   expected_app_id->assign(
@@ -558,7 +559,9 @@ string16 ShellIntegration::GetChromiumModelIdForProfile(
     return dist->GetBaseAppId();
   }
   return GetAppModelIdForProfile(
-      ShellUtil::GetBrowserModelId(dist, chrome_exe.value()), profile_path);
+      ShellUtil::GetBrowserModelId(
+           dist, InstallUtil::IsPerUserInstall(chrome_exe.value().c_str())),
+      profile_path);
 }
 
 string16 ShellIntegration::GetChromiumIconPath() {

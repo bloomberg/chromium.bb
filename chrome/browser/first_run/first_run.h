@@ -38,6 +38,12 @@ enum FirstRunBubbleMetric {
   NUM_FIRST_RUN_BUBBLE_METRICS
 };
 
+enum ProcessMasterPreferencesResult {
+  SHOW_FIRST_RUN = 0,           // Should show the first run flow.
+  SKIP_FIRST_RUN,               // Should skip the first run flow.
+  EULA_EXIT_NOW,                // Should immediately exit due to EULA flow.
+};
+
 // See ProcessMasterPreferences for more info about this structure.
 struct MasterPrefs {
   MasterPrefs();
@@ -107,17 +113,18 @@ FilePath MasterPrefsPath();
 // 'Default\Preferences' file. This function locates this file from a standard
 // location and processes it so it becomes the default preferences in the
 // profile pointed to by |user_data_dir|. After processing the file, the
-// function returns true if and only if showing the first run dialog is
-// needed. The detailed settings in the preference file are reported via
-// |preference_details|.
+// function returns a value from the ProcessMasterPreferencesResult enum,
+// indicating whether the first run flow should be shown, skipped, or whether
+// the browser should exit.
 //
 // This function destroys any existing prefs file and it is meant to be
 // invoked only on first run.
 //
 // See chrome/installer/util/master_preferences.h for a description of
 // 'master_preferences' file.
-bool ProcessMasterPreferences(const FilePath& user_data_dir,
-                              MasterPrefs* out_prefs);
+ProcessMasterPreferencesResult ProcessMasterPreferences(
+    const FilePath& user_data_dir,
+    MasterPrefs* out_prefs);
 
 // Show the first run search engine bubble at the first appropriate opportunity.
 // This bubble may be delayed by other UI, like global errors and sync promos.
