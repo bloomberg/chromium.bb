@@ -1,0 +1,15 @@
+{
+  "name": "test extension",
+  "version": "0.1",
+  "manifest_version": 2,
+  "description": "Test extension that is used to test panel icon support.",
+  "background": {
+    "page": "test.html"
+  },
+  "icons": {
+    "128": "128.png",
+    "32": "32.png",
+    "24": "24.png"
+  },
+  "permissions": ["tabs"]
+}
