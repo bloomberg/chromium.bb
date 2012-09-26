@@ -15821,6 +15821,7 @@ var keyboardOverlayData = {
     'forward<>CTRL': 'keyboardOverlayFocusNextPane',
     'maximize<>ALT': 'keyboardOverlaySwapPrimaryMonitor',
     'maximize<>CTRL': 'keyboardOverlayMirrorMonitors',
+    'maximize<>SHIFT': 'keyboardOverlayFullscreen',
     'g<>CTRL': 'keyboardOverlayFindTextAgain',
     'g<>CTRL<>SHIFT': 'keyboardOverlayFindPreviousText',
     'h<>CTRL': 'keyboardOverlayHistory',
