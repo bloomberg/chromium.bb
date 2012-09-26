@@ -25,10 +25,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/extensions/api/rtc_private/rtc_private_api.h"
-#endif
-
 using extensions::Extension;
 
 namespace {
@@ -155,14 +151,6 @@ syncer::StringOrdinal ExtensionAppItem::GetAppLaunchOrdinal() const {
   return GetExtensionSorting(profile_)->GetAppLaunchOrdinal(extension_id_);
 }
 
-bool ExtensionAppItem::IsTalkExtension() const {
-  // Test most likely version first.
-  return extension_id_ == extension_misc::kTalkExtensionId ||
-      extension_id_ == extension_misc::kTalkBetaExtensionId ||
-      extension_id_ == extension_misc::kTalkAlphaExtensionId ||
-      extension_id_ == extension_misc::kTalkDebugExtensionId;
-}
-
 void ExtensionAppItem::LoadImage(const Extension* extension) {
   icon_.reset(new extensions::IconImage(
       extension,
@@ -285,18 +273,6 @@ void ExtensionAppItem::Activate(int event_flags) {
   if (!extension)
     return;
 
-#if defined(OS_CHROMEOS)
-  // Talk extension isn't an app, send special rtcPrivate API message to
-  // activate it.
-  if (IsTalkExtension()) {
-    extensions::RtcPrivateEventRouter::DispatchLaunchEvent(
-        profile_,
-        extensions::RtcPrivateEventRouter::LAUNCH_ACTIVATE,
-        NULL /*contact*/);
-    return;
-  }
-#endif  // OS_CHROMEOS
-
   controller_->ActivateApp(profile_, extension->id(), event_flags);
 }
 
@@ -308,30 +284,27 @@ ui::MenuModel* ExtensionAppItem::GetContextMenuModel() {
   if (!context_menu_model_.get()) {
     context_menu_model_.reset(new ui::SimpleMenuModel(this));
     context_menu_model_->AddItem(LAUNCH, UTF8ToUTF16(title()));
-    // Talk extension isn't an app and so doesn't support most launch options.
-    if (!IsTalkExtension()) {
-      context_menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
-      context_menu_model_->AddItemWithStringId(
-          TOGGLE_PIN,
-          controller_->IsAppPinned(extension_id_) ?
-              IDS_APP_LIST_CONTEXT_MENU_UNPIN :
-              IDS_APP_LIST_CONTEXT_MENU_PIN);
-      context_menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
-      context_menu_model_->AddCheckItemWithStringId(
-          LAUNCH_TYPE_REGULAR_TAB,
-          IDS_APP_CONTEXT_MENU_OPEN_REGULAR);
-      context_menu_model_->AddCheckItemWithStringId(
-          LAUNCH_TYPE_PINNED_TAB,
-          IDS_APP_CONTEXT_MENU_OPEN_PINNED);
-      context_menu_model_->AddCheckItemWithStringId(
-          LAUNCH_TYPE_WINDOW,
-          IDS_APP_CONTEXT_MENU_OPEN_WINDOW);
-      // Even though the launch type is Full Screen it is more accurately
-      // described as Maximized in Ash.
-      context_menu_model_->AddCheckItemWithStringId(
-          LAUNCH_TYPE_FULLSCREEN,
-          IDS_APP_CONTEXT_MENU_OPEN_MAXIMIZED);
-    }
+    context_menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
+    context_menu_model_->AddItemWithStringId(
+        TOGGLE_PIN,
+        controller_->IsAppPinned(extension_id_) ?
+            IDS_APP_LIST_CONTEXT_MENU_UNPIN :
+            IDS_APP_LIST_CONTEXT_MENU_PIN);
+    context_menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
+    context_menu_model_->AddCheckItemWithStringId(
+        LAUNCH_TYPE_REGULAR_TAB,
+        IDS_APP_CONTEXT_MENU_OPEN_REGULAR);
+    context_menu_model_->AddCheckItemWithStringId(
+        LAUNCH_TYPE_PINNED_TAB,
+        IDS_APP_CONTEXT_MENU_OPEN_PINNED);
+    context_menu_model_->AddCheckItemWithStringId(
+        LAUNCH_TYPE_WINDOW,
+        IDS_APP_CONTEXT_MENU_OPEN_WINDOW);
+    // Even though the launch type is Full Screen it is more accurately
+    // described as Maximized in Ash.
+    context_menu_model_->AddCheckItemWithStringId(
+        LAUNCH_TYPE_FULLSCREEN,
+        IDS_APP_CONTEXT_MENU_OPEN_MAXIMIZED);
     context_menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
     context_menu_model_->AddItemWithStringId(OPTIONS, IDS_NEW_TAB_APP_OPTIONS);
     context_menu_model_->AddItemWithStringId(DETAILS, IDS_NEW_TAB_APP_DETAILS);
