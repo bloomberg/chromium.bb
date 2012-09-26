@@ -48,6 +48,10 @@ void DesktopBackgroundWidgetController::SetBounds(gfx::Rect bounds) {
 void DesktopBackgroundWidgetController::Reparent(aura::RootWindow* root_window,
                                                  int src_container,
                                                  int dest_container) {
+  // Ensure that something will be reparented. Otherwise we might get into a
+  // state where the screen is unlocked but the user's windows and launcher
+  // are still hidden.  See crbug.com/149043
+  CHECK(widget_ || layer_.get());
   if (widget_) {
     views::Widget::ReparentNativeView(widget_->GetNativeView(),
         root_window->GetChildById(dest_container));

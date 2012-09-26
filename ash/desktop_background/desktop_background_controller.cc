@@ -347,6 +347,7 @@ void DesktopBackgroundController::InstallComponentForAllWindows() {
 
 void DesktopBackgroundController::ReparentBackgroundWidgets(int src_container,
                                                             int dst_container) {
+  bool reparented = false;
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   for (Shell::RootWindowList::iterator iter = root_windows.begin();
     iter != root_windows.end(); ++iter) {
@@ -364,8 +365,15 @@ void DesktopBackgroundController::ReparentBackgroundWidgets(int src_container,
       component->Reparent(root_window,
                           src_container,
                           dst_container);
+      reparented = true;
     }
   }
+  // If we didn't reparent the desktop background then either the screen is
+  // unlocked and the user's windows are hidden, or the screen is locked and
+  // the user's windows are visible. Either case is bad, and the first case
+  // is happening in the field.  Check if this location is the cause.
+  // See crbug.com/149043
+  CHECK(reparented);
 }
 
 int DesktopBackgroundController::GetBackgroundContainerId(bool locked) {
