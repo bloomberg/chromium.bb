@@ -1307,7 +1307,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     extensions::StartupHelper helper;
     if (helper.InstallFromWebstore(parsed_command_line(), profile_))
       return content::RESULT_CODE_NORMAL_EXIT;
-    return chrome::RESULT_CODE_INSTALL_FROM_WEBSTORE_ERROR;
+    return chrome::RESULT_CODE_INSTALL_FROM_WEBSTORE_ERROR_2;
   }
 
 
