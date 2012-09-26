@@ -109,6 +109,9 @@ class SelLdrLauncherBase {
                                      NaClSrpcChannel* out_app_chan);
 
   // Returns the socket address used to connect to the sel_ldr.
+  DescWrapper* secure_socket_addr() const { return secure_socket_addr_.get(); }
+
+  // Returns the socket address used to connect to the module.
   DescWrapper* socket_addr() const { return socket_addr_.get(); }
 
   // Wraps a raw NaClDesc descriptor.  If NULL is returned, caller retains
@@ -135,6 +138,7 @@ class SelLdrLauncherBase {
   scoped_ptr<DescWrapperFactory> factory_;
   scoped_ptr<DescWrapper> bootstrap_socket_;
   // The socket address returned from sel_ldr for connects.
+  scoped_ptr<DescWrapper> secure_socket_addr_;
   scoped_ptr<DescWrapper> socket_addr_;
 };
 

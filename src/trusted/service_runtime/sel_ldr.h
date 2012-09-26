@@ -47,6 +47,8 @@
 #include "native_client/src/trusted/service_runtime/nacl_kernel_service.h"
 #include "native_client/src/trusted/service_runtime/nacl_resource.h"
 
+#include "native_client/src/trusted/service_runtime/nacl_secure_service.h"
+
 #include "native_client/src/trusted/service_runtime/sel_mem.h"
 #include "native_client/src/trusted/service_runtime/sel_util.h"
 #include "native_client/src/trusted/service_runtime/sel_rt.h"
@@ -70,8 +72,6 @@ struct NaClDesc;  /* see native_client/src/trusted/desc/nacl_desc_base.h */
 struct NaClDynamicRegion;
 struct NaClManifestProxy;
 struct NaClReverseQuotaInterface;
-struct NaClSecureService;
-struct NaClSecureReverseService;
 struct NaClSignalContext;
 struct NaClThreadInterface;  /* see sel_ldr_thread_interface.h */
 struct NaClValidationCache;
@@ -206,6 +206,9 @@ struct NaClApp {
    */
   struct NaClDesc           *service_port;
   struct NaClDesc           *service_address;
+
+  struct NaClDesc           *secure_service_port;
+  struct NaClDesc           *secure_service_address;
 
   struct NaClDesc           *bootstrap_channel;
 
@@ -600,14 +603,6 @@ void NaClSetUpBootstrapChannel(struct NaClApp  *nap,
                                NaClHandle      inherited_desc);
 
 void NaClSecureCommandChannel(struct NaClApp  *nap);
-
-int NaClSecureReverseClientInsertHandler(
-    struct NaClSecureReverseClient  *self,
-    void                            (*handler)(
-        void                                   *handler_state,
-        struct NaClThreadInterface             *thread_if,
-        struct NaClDesc                        *new_conn),
-    void                            *handler_state) NACL_WUR;
 
 NaClErrorCode NaClWaitForLoadModuleStatus(struct NaClApp *nap) NACL_WUR;
 

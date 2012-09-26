@@ -16,6 +16,7 @@ namespace nacl {
 SelLdrLauncherBase::SelLdrLauncherBase()
   : channel_(kInvalidHandle),
     bootstrap_socket_(NULL),
+    secure_socket_addr_(NULL),
     socket_addr_(NULL) {
 }
 
@@ -47,11 +48,12 @@ bool SelLdrLauncherBase::RetrieveSockAddr() {
   if (0 != bootstrap_socket_->RecvMsg(&header, 0, NULL)) {
     return false;
   }
-  // Check that there was exactly one descriptor passed.
-  if (1 != header.ndescv_length) {
+  // Check that there were exactly two descriptors passed.
+  if (2 != header.ndescv_length) {
     return false;
   }
-  socket_addr_.reset(descs[0]);
+  secure_socket_addr_.reset(descs[0]);
+  socket_addr_.reset(descs[1]);
 
   return true;
 }
@@ -76,8 +78,8 @@ bool SelLdrLauncherBase::SetupCommand(NaClSrpcChannel* command) {
             "getting sel_ldr socket address failed\n");
     return false;
   }
-  // The first connection goes to the trusted command channel.
-  scoped_ptr<DescWrapper> command_desc(socket_addr_->Connect());
+  // Connect to the trusted command channel.
+  scoped_ptr<DescWrapper> command_desc(secure_socket_addr_->Connect());
   if (command_desc == NULL) {
     NaClLog(0, "SelLdrLauncher::SetupCommand: Connect failed\n");
     return false;
@@ -166,7 +168,7 @@ bool SelLdrLauncherBase::StartModule(NaClSrpcChannel* command) {
 }
 
 bool SelLdrLauncherBase::SetupAppChannel(NaClSrpcChannel* out_app_chan) {
-  // The second connection goes to the untrusted service itself.
+  // Connect to the untrusted service itself.
   scoped_ptr<DescWrapper> untrusted_desc(socket_addr_->Connect());
   if (untrusted_desc == NULL) {
     NaClLog(4, "SelLdrLauncher::StartModuleAndSetupAppChannel: "

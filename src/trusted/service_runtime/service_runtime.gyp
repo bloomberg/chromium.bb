@@ -48,6 +48,7 @@
           'nacl_kernel_service.c',
           'nacl_resource.c',
           'nacl_reverse_quota_interface.c',
+          'nacl_secure_service.c',
           'nacl_signal_common.c',
           'nacl_stack_safety.c',
           'nacl_syscall_common.c',

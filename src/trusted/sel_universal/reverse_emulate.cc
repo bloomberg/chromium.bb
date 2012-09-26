@@ -231,7 +231,7 @@ int ReverseEmulate::CreateProcess(nacl::DescWrapper** out_sock_addr) {
             "ReverseEmulate::CreateProcess: failed to obtain socket addr\n");
     return -NACL_ABI_EAGAIN;
   }
-  *out_sock_addr = launcher.socket_addr();
+  *out_sock_addr = launcher.secure_socket_addr();
 
   return 0;
 }

@@ -16,7 +16,7 @@
 #include "native_client/src/trusted/reverse_service/reverse_control_rpc.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_name_service.h"
-#include "native_client/src/trusted/service_runtime/sel_ldr.h"
+#include "native_client/src/trusted/service_runtime/nacl_secure_service.h"
 
 static void NaClManifestWaitForChannel_yield_mu(
     struct NaClManifestProxyConnection *self) {
@@ -350,9 +350,10 @@ int NaClManifestProxyConnectionFactory(
             "NaClManifestProxyConnectionFactory invoked w/o reverse channel\n");
   }
   NaClLog(4, "NaClManifestProxyConnectionFactory: inserting handler\n");
-  if (!NaClSecureReverseClientInsertHandler(nap->reverse_client,
-                                            NaClManifestReverseClientCallback,
-                                            (void *) mconn)) {
+  if (!(*NACL_VTBL(NaClSecureReverseClient, nap->reverse_client)->
+        InsertHandler)(nap->reverse_client,
+                       NaClManifestReverseClientCallback,
+                       (void *) mconn)) {
     NaClLog(LOG_FATAL,
             ("NaClManifestProxyConnectionFactory:"
              " NaClSecureReverseClientInsertHandler failed\n"));
