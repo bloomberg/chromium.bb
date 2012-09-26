@@ -9,7 +9,9 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "net/base/net_errors.h"
 #include "net/socket/stream_socket.h"
 #include "remoting/protocol/util.h"
@@ -364,7 +366,7 @@ ChannelMultiplexer::ChannelMultiplexer(ChannelFactory* factory,
     : base_channel_factory_(factory),
       base_channel_name_(base_channel_name),
       next_channel_id_(0),
-      destroyed_flag_(NULL) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
 }
 
 ChannelMultiplexer::~ChannelMultiplexer() {
@@ -374,9 +376,6 @@ ChannelMultiplexer::~ChannelMultiplexer() {
   // Cancel creation of the base channel if it hasn't finished.
   if (base_channel_factory_)
     base_channel_factory_->CancelChannelCreation(base_channel_name_);
-
-  if (destroyed_flag_)
-    *destroyed_flag_ = true;
 }
 
 void ChannelMultiplexer::CreateStreamChannel(
@@ -425,30 +424,37 @@ void ChannelMultiplexer::OnBaseChannelReady(
   base_channel_factory_ = NULL;
   base_channel_ = socket.Pass();
 
-  if (!base_channel_.get()) {
-    // Notify all callers that we can't create any channels.
-    for (std::list<PendingChannel>::iterator it = pending_channels_.begin();
-         it != pending_channels_.end(); ++it) {
-      it->callback.Run(scoped_ptr<net::StreamSocket>());
-    }
-    pending_channels_.clear();
+  if (base_channel_.get()) {
+    // Initialize reader and writer.
+    reader_.Init(base_channel_.get(),
+                 base::Bind(&ChannelMultiplexer::OnIncomingPacket,
+                            base::Unretained(this)));
+    writer_.Init(base_channel_.get(),
+                 base::Bind(&ChannelMultiplexer::OnWriteFailed,
+                            base::Unretained(this)));
+  }
+
+  DoCreatePendingChannels();
+}
+
+void ChannelMultiplexer::DoCreatePendingChannels() {
+  if (pending_channels_.empty())
     return;
-  }
 
-  // Initialize reader and writer.
-  reader_.Init(base_channel_.get(),
-               base::Bind(&ChannelMultiplexer::OnIncomingPacket,
-                          base::Unretained(this)));
-  writer_.Init(base_channel_.get(),
-               base::Bind(&ChannelMultiplexer::OnWriteFailed,
-                          base::Unretained(this)));
+  // Every time this function is called it connects a single channel and posts a
+  // separate task to connect other channels. This is necessary because the
+  // callback may destroy the multiplexer or somehow else modify
+  // |pending_channels_| list (e.g. call CancelChannelCreation()).
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&ChannelMultiplexer::DoCreatePendingChannels,
+                            weak_factory_.GetWeakPtr()));
 
-  // Now create all pending channels.
-  for (std::list<PendingChannel>::iterator it = pending_channels_.begin();
-       it != pending_channels_.end(); ++it) {
-    it->callback.Run(GetOrCreateChannel(it->name)->CreateSocket());
-  }
-  pending_channels_.clear();
+  PendingChannel c = pending_channels_.front();
+  pending_channels_.erase(pending_channels_.begin());
+  scoped_ptr<net::StreamSocket> socket;
+  if (base_channel_.get())
+    socket = GetOrCreateChannel(c.name)->CreateSocket();
+  c.callback.Run(socket.Pass());
 }
 
 ChannelMultiplexer::MuxChannel* ChannelMultiplexer::GetOrCreateChannel(
@@ -467,15 +473,19 @@ ChannelMultiplexer::MuxChannel* ChannelMultiplexer::GetOrCreateChannel(
 
 
 void ChannelMultiplexer::OnWriteFailed(int error) {
-  bool destroyed = false;
-  destroyed_flag_ = &destroyed;
   for (std::map<std::string, MuxChannel*>::iterator it = channels_.begin();
        it != channels_.end(); ++it) {
-    it->second->OnWriteFailed();
-    if (destroyed)
-      return;
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&ChannelMultiplexer::NotifyWriteFailed,
+                              weak_factory_.GetWeakPtr(), it->second->name()));
   }
-  destroyed_flag_ = NULL;
+}
+
+void ChannelMultiplexer::NotifyWriteFailed(const std::string& name) {
+  std::map<std::string, MuxChannel*>::iterator it = channels_.find(name);
+  if (it != channels_.end()) {
+    it->second->OnWriteFailed();
+  }
 }
 
 void ChannelMultiplexer::OnIncomingPacket(scoped_ptr<MultiplexPacket> packet,

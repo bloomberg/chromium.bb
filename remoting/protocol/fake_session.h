@@ -155,8 +155,8 @@ class FakeSession : public Session,
 
   EventHandler* event_handler() { return event_handler_; }
 
-  void set_message_loop(MessageLoop* message_loop) {
-    message_loop_ = message_loop;
+  void set_async_creation(bool async_creation) {
+    async_creation_ = async_creation;
   }
 
   void set_error(ErrorCode error) { error_ = error; }
@@ -179,17 +179,27 @@ class FakeSession : public Session,
 
   // ChannelFactory interface.
   virtual void CreateStreamChannel(
-      const std::string& name, const StreamChannelCallback& callback) OVERRIDE;
+      const std::string& name,
+      const StreamChannelCallback& callback) OVERRIDE;
   virtual void CreateDatagramChannel(
       const std::string& name,
       const DatagramChannelCallback& callback) OVERRIDE;
   virtual void CancelChannelCreation(const std::string& name) OVERRIDE;
 
  public:
+  void NotifyStreamChannelCallback(
+      const std::string& name,
+      const StreamChannelCallback& callback);
+  void NotifyDatagramChannelCallback(
+      const std::string& name,
+      const DatagramChannelCallback& callback);
+
   EventHandler* event_handler_;
   scoped_ptr<const CandidateSessionConfig> candidate_config_;
   SessionConfig config_;
   MessageLoop* message_loop_;
+
+  bool async_creation_;
 
   std::map<std::string, FakeSocket*> stream_channels_;
   std::map<std::string, FakeUdpSocket*> datagram_channels_;
@@ -198,6 +208,8 @@ class FakeSession : public Session,
 
   ErrorCode error_;
   bool closed_;
+
+  base::WeakPtrFactory<FakeSession> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSession);
 };

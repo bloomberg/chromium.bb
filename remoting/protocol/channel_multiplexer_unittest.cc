@@ -28,6 +28,10 @@ const int kMessageSize = 1024;
 const int kMessages = 100;
 const char kMuxChannelName[] = "mux";
 
+const char kTestChannelName[] = "test";
+const char kTestChannelName2[] = "test2";
+
+
 void QuitCurrentThread() {
   MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
 }
@@ -35,6 +39,14 @@ void QuitCurrentThread() {
 class MockSocketCallback {
  public:
   MOCK_METHOD1(OnDone, void(int result));
+};
+
+class MockConnectCallback {
+ public:
+  MOCK_METHOD1(OnConnectedPtr, void(net::StreamSocket* socket));
+  void OnConnected(scoped_ptr<net::StreamSocket> socket) {
+    OnConnectedPtr(socket.release());
+  }
 };
 
 }  // namespace
@@ -48,6 +60,11 @@ class ChannelMultiplexerTest : public testing::Test {
     client_socket2_.reset();
     host_mux_.reset();
     client_mux_.reset();
+  }
+
+  void DeleteAfterSessionFail() {
+    host_mux_->CancelChannelCreation(kTestChannelName2);
+    DeleteAll();
   }
 
  protected:
@@ -126,7 +143,8 @@ class ChannelMultiplexerTest : public testing::Test {
 TEST_F(ChannelMultiplexerTest, OneChannel) {
   scoped_ptr<net::StreamSocket> host_socket;
   scoped_ptr<net::StreamSocket> client_socket;
-  ASSERT_NO_FATAL_FAILURE(CreateChannel("test", &host_socket, &client_socket));
+  ASSERT_NO_FATAL_FAILURE(
+      CreateChannel(kTestChannelName, &host_socket, &client_socket));
 
   ConnectSockets();
 
@@ -141,12 +159,12 @@ TEST_F(ChannelMultiplexerTest, TwoChannels) {
   scoped_ptr<net::StreamSocket> host_socket1_;
   scoped_ptr<net::StreamSocket> client_socket1_;
   ASSERT_NO_FATAL_FAILURE(
-      CreateChannel("test", &host_socket1_, &client_socket1_));
+      CreateChannel(kTestChannelName, &host_socket1_, &client_socket1_));
 
   scoped_ptr<net::StreamSocket> host_socket2_;
   scoped_ptr<net::StreamSocket> client_socket2_;
   ASSERT_NO_FATAL_FAILURE(
-      CreateChannel("ch2", &host_socket2_, &client_socket2_));
+      CreateChannel(kTestChannelName2, &host_socket2_, &client_socket2_));
 
   ConnectSockets();
 
@@ -168,12 +186,12 @@ TEST_F(ChannelMultiplexerTest, FourChannels) {
   scoped_ptr<net::StreamSocket> host_socket1_;
   scoped_ptr<net::StreamSocket> client_socket1_;
   ASSERT_NO_FATAL_FAILURE(
-      CreateChannel("test", &host_socket1_, &client_socket1_));
+      CreateChannel(kTestChannelName, &host_socket1_, &client_socket1_));
 
   scoped_ptr<net::StreamSocket> host_socket2_;
   scoped_ptr<net::StreamSocket> client_socket2_;
   ASSERT_NO_FATAL_FAILURE(
-      CreateChannel("ch2", &host_socket2_, &client_socket2_));
+      CreateChannel(kTestChannelName2, &host_socket2_, &client_socket2_));
 
   scoped_ptr<net::StreamSocket> host_socket3;
   scoped_ptr<net::StreamSocket> client_socket3;
@@ -209,16 +227,16 @@ TEST_F(ChannelMultiplexerTest, FourChannels) {
   tester4.CheckResults();
 }
 
-TEST_F(ChannelMultiplexerTest, SyncFail) {
+TEST_F(ChannelMultiplexerTest, WriteFailSync) {
   scoped_ptr<net::StreamSocket> host_socket1_;
   scoped_ptr<net::StreamSocket> client_socket1_;
   ASSERT_NO_FATAL_FAILURE(
-      CreateChannel("test", &host_socket1_, &client_socket1_));
+      CreateChannel(kTestChannelName, &host_socket1_, &client_socket1_));
 
   scoped_ptr<net::StreamSocket> host_socket2_;
   scoped_ptr<net::StreamSocket> client_socket2_;
   ASSERT_NO_FATAL_FAILURE(
-      CreateChannel("ch2", &host_socket2_, &client_socket2_));
+      CreateChannel(kTestChannelName2, &host_socket2_, &client_socket2_));
 
   ConnectSockets();
 
@@ -245,12 +263,12 @@ TEST_F(ChannelMultiplexerTest, SyncFail) {
   message_loop_.RunAllPending();
 }
 
-TEST_F(ChannelMultiplexerTest, AsyncFail) {
+TEST_F(ChannelMultiplexerTest, WriteFailAsync) {
   ASSERT_NO_FATAL_FAILURE(
-      CreateChannel("test", &host_socket1_, &client_socket1_));
+      CreateChannel(kTestChannelName, &host_socket1_, &client_socket1_));
 
   ASSERT_NO_FATAL_FAILURE(
-      CreateChannel("ch2", &host_socket2_, &client_socket2_));
+      CreateChannel(kTestChannelName2, &host_socket2_, &client_socket2_));
 
   ConnectSockets();
 
@@ -278,9 +296,9 @@ TEST_F(ChannelMultiplexerTest, AsyncFail) {
 
 TEST_F(ChannelMultiplexerTest, DeleteWhenFailed) {
   ASSERT_NO_FATAL_FAILURE(
-      CreateChannel("test", &host_socket1_, &client_socket1_));
+      CreateChannel(kTestChannelName, &host_socket1_, &client_socket1_));
   ASSERT_NO_FATAL_FAILURE(
-      CreateChannel("ch2", &host_socket2_, &client_socket2_));
+      CreateChannel(kTestChannelName2, &host_socket2_, &client_socket2_));
 
   ConnectSockets();
 
@@ -312,6 +330,28 @@ TEST_F(ChannelMultiplexerTest, DeleteWhenFailed) {
 
   // Check that the sockets were destroyed.
   EXPECT_FALSE(host_mux_.get());
+}
+
+TEST_F(ChannelMultiplexerTest, SessionFail) {
+  host_session_.set_async_creation(true);
+  host_session_.set_error(AUTHENTICATION_FAILED);
+
+  MockConnectCallback cb1;
+  MockConnectCallback cb2;
+
+  host_mux_->CreateStreamChannel(kTestChannelName, base::Bind(
+      &MockConnectCallback::OnConnected, base::Unretained(&cb1)));
+  host_mux_->CreateStreamChannel(kTestChannelName2, base::Bind(
+      &MockConnectCallback::OnConnected, base::Unretained(&cb2)));
+
+  EXPECT_CALL(cb1, OnConnectedPtr(NULL))
+      .Times(AtMost(1))
+      .WillOnce(InvokeWithoutArgs(
+          this, &ChannelMultiplexerTest::DeleteAfterSessionFail));
+  EXPECT_CALL(cb2, OnConnectedPtr(_))
+      .Times(0);
+
+  message_loop_.RunAllPending();
 }
 
 }  // namespace protocol

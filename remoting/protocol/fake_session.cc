@@ -284,10 +284,12 @@ FakeSession::FakeSession()
     : event_handler_(NULL),
       candidate_config_(CandidateSessionConfig::CreateDefault()),
       config_(SessionConfig::GetDefault()),
-      message_loop_(NULL),
+      message_loop_(MessageLoop::current()),
+      async_creation_(false),
       jid_(kTestJid),
       error_(OK),
-      closed_(false) {
+      closed_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
 }
 
 FakeSession::~FakeSession() { }
@@ -337,20 +339,60 @@ void FakeSession::Close() {
 }
 
 void FakeSession::CreateStreamChannel(
-    const std::string& name, const StreamChannelCallback& callback) {
-  scoped_ptr<FakeSocket> channel(new FakeSocket());
-  stream_channels_[name] = channel.get();
-  callback.Run(channel.PassAs<net::StreamSocket>());
+    const std::string& name,
+    const StreamChannelCallback& callback) {
+  scoped_ptr<FakeSocket> channel;
+  // If we are in the error state then we put NULL in the channels list, so that
+  // NotifyStreamChannelCallback() still calls the callback.
+  if (error_ == OK)
+    channel.reset(new FakeSocket());
+  stream_channels_[name] = channel.release();
+
+  if (async_creation_) {
+    message_loop_->PostTask(FROM_HERE, base::Bind(
+        &FakeSession::NotifyStreamChannelCallback, weak_factory_.GetWeakPtr(),
+        name, callback));
+  } else {
+    NotifyStreamChannelCallback(name, callback);
+  }
+}
+
+void FakeSession::NotifyStreamChannelCallback(
+    const std::string& name,
+    const StreamChannelCallback& callback) {
+  if (stream_channels_.find(name) != stream_channels_.end())
+    callback.Run(scoped_ptr<net::StreamSocket>(stream_channels_[name]));
 }
 
 void FakeSession::CreateDatagramChannel(
-    const std::string& name, const DatagramChannelCallback& callback) {
-  scoped_ptr<FakeUdpSocket> channel(new FakeUdpSocket());
-  datagram_channels_[name] = channel.get();
-  callback.Run(channel.PassAs<net::Socket>());
+    const std::string& name,
+    const DatagramChannelCallback& callback) {
+  scoped_ptr<FakeUdpSocket> channel;
+  // If we are in the error state then we put NULL in the channels list, so that
+  // NotifyStreamChannelCallback() still calls the callback.
+  if (error_ == OK)
+    channel.reset(new FakeUdpSocket());
+  datagram_channels_[name] = channel.release();
+
+  if (async_creation_) {
+    message_loop_->PostTask(FROM_HERE, base::Bind(
+        &FakeSession::NotifyDatagramChannelCallback, weak_factory_.GetWeakPtr(),
+        name, callback));
+  } else {
+    NotifyDatagramChannelCallback(name, callback);
+  }
+}
+
+void FakeSession::NotifyDatagramChannelCallback(
+    const std::string& name,
+    const DatagramChannelCallback& callback) {
+  if (datagram_channels_.find(name) != datagram_channels_.end())
+    callback.Run(scoped_ptr<net::Socket>(datagram_channels_[name]));
 }
 
 void FakeSession::CancelChannelCreation(const std::string& name) {
+  stream_channels_.erase(name);
+  datagram_channels_.erase(name);
 }
 
 }  // namespace protocol

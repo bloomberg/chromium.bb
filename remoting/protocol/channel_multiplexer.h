@@ -5,6 +5,7 @@
 #ifndef REMOTING_PROTOCOL_CHANNEL_MULTIPLEXER_H_
 #define REMOTING_PROTOCOL_CHANNEL_MULTIPLEXER_H_
 
+#include "base/memory/weak_ptr.h"
 #include "remoting/proto/mux.pb.h"
 #include "remoting/protocol/buffered_socket_writer.h"
 #include "remoting/protocol/channel_factory.h"
@@ -40,11 +41,19 @@ class ChannelMultiplexer : public ChannelFactory {
   // Callback for |base_channel_| creation.
   void OnBaseChannelReady(scoped_ptr<net::StreamSocket> socket);
 
+  // Helper to create channels asynchronously.
+  void DoCreatePendingChannels();
+
   // Helper method used to create channels.
   MuxChannel* GetOrCreateChannel(const std::string& name);
 
-  // Callbacks for |writer_| and |reader_|.
+  // Error handling callback for |writer_|.
   void OnWriteFailed(int error);
+
+  // Failed write notifier, queued asynchronously by OnWriteFailed().
+  void NotifyWriteFailed(const std::string& name);
+
+  // Callback for |reader_;
   void OnIncomingPacket(scoped_ptr<MultiplexPacket> packet,
                         const base::Closure& done_task);
 
@@ -75,8 +84,7 @@ class ChannelMultiplexer : public ChannelFactory {
   BufferedSocketWriter writer_;
   ProtobufMessageReader<MultiplexPacket> reader_;
 
-  // Flag used by OnWriteFailed() to detect when the multiplexer is destroyed.
-  bool* destroyed_flag_;
+  base::WeakPtrFactory<ChannelMultiplexer> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChannelMultiplexer);
 };

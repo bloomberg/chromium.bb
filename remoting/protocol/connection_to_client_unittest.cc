@@ -27,7 +27,6 @@ class ConnectionToClientTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
     session_ = new FakeSession();
-    session_->set_message_loop(&message_loop_);
 
     // Allocate a ClientConnection object with the mock objects.
     viewer_.reset(new ConnectionToClient(session_));
