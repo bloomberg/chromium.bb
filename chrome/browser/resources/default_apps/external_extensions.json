@@ -22,6 +22,10 @@
   "apdfllckaahabafndbhieahigkjlhalf" : {
     "external_crx": "drive.crx",
     "external_version": "6.2"
+  },
+  "aohghmighlieiainnegkcijnfilokake" : {
+    "external_crx": "docs.crx",
+    "external_version": "0.0.0.6"
   }
 }
 
