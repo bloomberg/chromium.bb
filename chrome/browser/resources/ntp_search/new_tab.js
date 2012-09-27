@@ -16,6 +16,18 @@
 cr.define('ntp', function() {
   'use strict';
 
+  var APP_LAUNCH = {
+    // The histogram buckets (keep in sync with extension_constants.h).
+    NTP_APPS_MAXIMIZED: 0,
+    NTP_APPS_COLLAPSED: 1,
+    NTP_APPS_MENU: 2,
+    NTP_MOST_VISITED: 3,
+    NTP_RECENTLY_CLOSED: 4,
+    NTP_APP_RE_ENABLE: 16,
+    NTP_WEBSTORE_FOOTER: 18,
+    NTP_WEBSTORE_PLUS_ICON: 19,
+  };
+
   /**
    * NewTabView instance.
    * @type {!Object|undefined}
@@ -1043,6 +1055,7 @@ cr.define('ntp', function() {
 
   // Return an object with all the exports
   return {
+    APP_LAUNCH: APP_LAUNCH,
     appAdded: appAdded,
     appMoved: appMoved,
     appRemoved: appRemoved,

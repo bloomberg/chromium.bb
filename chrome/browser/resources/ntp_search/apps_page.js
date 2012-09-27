@@ -5,18 +5,6 @@
 cr.define('ntp', function() {
   'use strict';
 
-  var APP_LAUNCH = {
-    // The histogram buckets (keep in sync with extension_constants.h).
-    NTP_APPS_MAXIMIZED: 0,
-    NTP_APPS_COLLAPSED: 1,
-    NTP_APPS_MENU: 2,
-    NTP_MOST_VISITED: 3,
-    NTP_RECENTLY_CLOSED: 4,
-    NTP_APP_RE_ENABLE: 16,
-    NTP_WEBSTORE_FOOTER: 18,
-    NTP_WEBSTORE_PLUS_ICON: 19,
-  };
-
   // Histogram buckets for UMA tracking of where a DnD drop came from.
   var DRAG_SOURCE = {
     SAME_APPS_PANE: 0,
@@ -883,7 +871,6 @@ cr.define('ntp', function() {
   }
 
   return {
-    APP_LAUNCH: APP_LAUNCH,
     appNotificationChanged: appNotificationChanged,
     AppsPage: AppsPage,
     launchAppAfterEnable: launchAppAfterEnable,
