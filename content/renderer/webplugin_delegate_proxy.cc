@@ -76,7 +76,7 @@ namespace {
 
 class ScopedLogLevel {
  public:
-  ScopedLogLevel(int level);
+  explicit ScopedLogLevel(int level);
   ~ScopedLogLevel();
 
  private:
@@ -382,8 +382,7 @@ bool WebPluginDelegateProxy::Initialize(
   params.arg_values = arg_values;
   params.host_render_view_routing_id = render_view_->routing_id();
 
-  bool flash =
-      LowerCaseEqualsASCII(mime_type_, "application/x-shockwave-flash");
+  bool flash = LowerCaseEqualsASCII(mime_type_, kFlashPluginSwfMimeType);
   bool silverlight =
       StartsWithASCII(mime_type_, "application/x-silverlight", false);
   for (size_t i = 0; i < arg_names.size(); ++i) {

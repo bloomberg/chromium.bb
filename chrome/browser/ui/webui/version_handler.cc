@@ -18,6 +18,7 @@
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "webkit/plugins/plugin_constants.h"
 
 namespace {
 
@@ -132,7 +133,7 @@ void VersionHandler::OnGotPlugins(
   // Obtain the version of the first enabled Flash plugin.
   std::vector<webkit::WebPluginInfo> info_array;
   content::PluginService::GetInstance()->GetPluginInfoArray(
-      GURL(), "application/x-shockwave-flash", false, &info_array, NULL);
+      GURL(), kFlashPluginSwfMimeType, false, &info_array, NULL);
   string16 flash_version =
       l10n_util::GetStringUTF16(IDS_PLUGINS_DISABLED_PLUGIN);
   PluginPrefs* plugin_prefs =

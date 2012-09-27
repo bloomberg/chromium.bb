@@ -4,6 +4,8 @@
 
 #include "content/browser/plugin_data_remover_impl.h"
 
+#include <limits>
+
 #include "base/bind.h"
 #include "base/metrics/histogram.h"
 #include "base/sequenced_task_runner_helpers.h"
@@ -20,12 +22,12 @@
 #include "content/public/common/pepper_plugin_info.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "webkit/plugins/npapi/plugin_utils.h"
+#include "webkit/plugins/plugin_constants.h"
 
 namespace content {
 
 namespace {
 
-const char kFlashMimeType[] = "application/x-shockwave-flash";
 // The minimum Flash Player version that implements NPP_ClearSiteData.
 const char kMinFlashVersion[] = "10.3";
 const int64 kRemovalTimeoutMs = 10000;
@@ -44,7 +46,7 @@ void PluginDataRemover::GetSupportedPlugins(
   bool allow_wildcard = false;
   std::vector<webkit::WebPluginInfo> plugins;
   PluginService::GetInstance()->GetPluginInfoArray(
-      GURL(), kFlashMimeType, allow_wildcard, &plugins, NULL);
+      GURL(), kFlashPluginSwfMimeType, allow_wildcard, &plugins, NULL);
   Version min_version(kMinFlashVersion);
   for (std::vector<webkit::WebPluginInfo>::iterator it = plugins.begin();
        it != plugins.end(); ++it) {
@@ -293,7 +295,7 @@ class PluginDataRemoverImpl::Context
 
 
 PluginDataRemoverImpl::PluginDataRemoverImpl(BrowserContext* browser_context)
-    : mime_type_(kFlashMimeType),
+    : mime_type_(kFlashPluginSwfMimeType),
       browser_context_(browser_context) {
 }
 

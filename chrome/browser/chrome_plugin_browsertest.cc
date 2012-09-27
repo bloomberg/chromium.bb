@@ -20,6 +20,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/net_util.h"
+#include "webkit/plugins/plugin_constants.h"
 #include "webkit/plugins/webplugininfo.h"
 
 using content::BrowserThread;
@@ -61,7 +62,7 @@ class ChromePluginTest : public InProcessBrowserTest {
     std::vector<webkit::WebPluginInfo> plugins = GetPlugins();
     for (std::vector<webkit::WebPluginInfo>::const_iterator it =
            plugins.begin(); it != plugins.end(); ++it) {
-      if (it->name == ASCIIToUTF16("Shockwave Flash"))
+      if (it->name == ASCIIToUTF16(kFlashPluginName))
         return it->path;
     }
     return FilePath();

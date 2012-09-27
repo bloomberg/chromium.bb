@@ -41,6 +41,7 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "webkit/plugins/plugin_constants.h"
 #include "webkit/plugins/webplugininfo.h"
 
 #if defined(OS_WIN)
@@ -54,6 +55,8 @@ using content::WebContents;
 using content::WebUIMessageHandler;
 
 namespace {
+
+const char kFlashPlugin[] = "Flash plugin";
 
 ChromeWebUIDataSource* CreateFlashUIHTMLSource() {
   ChromeWebUIDataSource* source =
@@ -267,10 +270,10 @@ void FlashDOMHandler::MaybeRespondToPage() {
   // Obtain the version of the Flash plugins.
   std::vector<webkit::WebPluginInfo> info_array;
   PluginService::GetInstance()->GetPluginInfoArray(
-      GURL(), "application/x-shockwave-flash", false, &info_array, NULL);
+      GURL(), kFlashPluginSwfMimeType, false, &info_array, NULL);
   string16 flash_version;
   if (info_array.empty()) {
-    AddPair(list, ASCIIToUTF16("Flash plugin"), "Disabled");
+    AddPair(list, ASCIIToUTF16(kFlashPlugin), "Disabled");
   } else {
     PluginPrefs* plugin_prefs =
         PluginPrefs::GetForProfile(Profile::FromWebUI(web_ui()));
@@ -280,7 +283,7 @@ void FlashDOMHandler::MaybeRespondToPage() {
                         info_array[i].path.LossyDisplayName();
         if (i != 0)
           flash_version += ASCIIToUTF16(" (not used)");
-        AddPair(list, ASCIIToUTF16("Flash plugin"), flash_version);
+        AddPair(list, ASCIIToUTF16(kFlashPlugin), flash_version);
       }
     }
   }

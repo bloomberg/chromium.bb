@@ -44,6 +44,10 @@
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/webview_plugin.h"
 
+#if defined(ENABLE_MOBILE_YOUTUBE_PLUGIN)
+#include "webkit/plugins/plugin_constants.h"
+#endif
+
 using content::RenderThread;
 using content::RenderView;
 using WebKit::WebContextMenuData;
@@ -630,6 +634,6 @@ bool PluginPlaceholder::IsYouTubeURL(const GURL& url,
       EndsWith(host, "youtube-nocookie.com", true);
 
   return is_youtube && IsValidYouTubeVideo(url.path()) &&
-      LowerCaseEqualsASCII(mime_type, "application/x-shockwave-flash");
+      LowerCaseEqualsASCII(mime_type, kFlashPluginSwfMimeType);
 }
 #endif

@@ -37,7 +37,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -94,6 +93,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/plugins/npapi/plugin_utils.h"
+#include "webkit/plugins/plugin_constants.h"
 #include "webkit/plugins/webplugininfo.h"
 
 #if defined(OS_CHROMEOS)
@@ -265,7 +265,7 @@ const webkit::WebPluginInfo* GetFlashPlugin(
     const std::vector<webkit::WebPluginInfo>& plugins) {
   const webkit::WebPluginInfo* flash = NULL;
   for (size_t i = 0; i < plugins.size(); ++i) {
-    if (plugins[i].name == ASCIIToUTF16("Shockwave Flash")) {
+    if (plugins[i].name == ASCIIToUTF16(kFlashPluginName)) {
       flash = &plugins[i];
       break;
     }
@@ -780,7 +780,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, EnabledPlugins) {
   EXPECT_TRUE(SetPluginEnabled(plugin_prefs, flash, false));
   EXPECT_FALSE(plugin_prefs->IsPluginEnabled(*flash));
   base::ListValue plugin_list;
-  plugin_list.Append(base::Value::CreateStringValue("Shockwave Flash"));
+  plugin_list.Append(base::Value::CreateStringValue(kFlashPluginName));
   PolicyMap policies;
   policies.Set(key::kEnabledPlugins, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, plugin_list.DeepCopy());
