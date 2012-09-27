@@ -8,6 +8,7 @@
 #include "base/message_loop.h"
 #include "base/stl_util.h"
 #include "base/values.h"
+#include "chromeos/dbus/shill_property_changed_observer.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -23,12 +24,19 @@ class ShillProfileClientImpl : public ShillProfileClient {
  public:
   explicit ShillProfileClientImpl(dbus::Bus* bus);
 
-  // ShillProfileClient overrides:
-  virtual void SetPropertyChangedHandler(
+  /////////////////////////////////////
+  // ShillProfileClient overrides.
+  virtual void AddPropertyChangedObserver(
       const dbus::ObjectPath& profile_path,
-      const PropertyChangedHandler& handler) OVERRIDE;
-  virtual void ResetPropertyChangedHandler(
-      const dbus::ObjectPath& profile_path) OVERRIDE;
+      ShillPropertyChangedObserver* observer) OVERRIDE {
+    GetHelper(profile_path)->AddPropertyChangedObserver(observer);
+  }
+
+  virtual void RemovePropertyChangedObserver(
+      const dbus::ObjectPath& profile_path,
+      ShillPropertyChangedObserver* observer) OVERRIDE {
+    GetHelper(profile_path)->RemovePropertyChangedObserver(observer);
+  }
   virtual void GetProperties(const dbus::ObjectPath& profile_path,
                              const DictionaryValueCallback& callback) OVERRIDE;
   virtual void GetEntry(const dbus::ObjectPath& profile_path,
@@ -71,17 +79,6 @@ ShillClientHelper* ShillProfileClientImpl::GetHelper(
   return helper;
 }
 
-void ShillProfileClientImpl::SetPropertyChangedHandler(
-    const dbus::ObjectPath& profile_path,
-    const PropertyChangedHandler& handler) {
-  GetHelper(profile_path)->SetPropertyChangedHandler(handler);
-}
-
-void ShillProfileClientImpl::ResetPropertyChangedHandler(
-    const dbus::ObjectPath& profile_path) {
-  GetHelper(profile_path)->ResetPropertyChangedHandler();
-}
-
 void ShillProfileClientImpl::GetProperties(
     const dbus::ObjectPath& profile_path,
     const DictionaryValueCallback& callback) {
@@ -119,14 +116,15 @@ class ShillProfileClientStubImpl : public ShillProfileClient {
 
   virtual ~ShillProfileClientStubImpl() {}
 
-  // ShillProfileClient override.
-  virtual void SetPropertyChangedHandler(
+  //////////////////////////////////////
+  // ShillProfileClient overrides.
+  virtual void AddPropertyChangedObserver(
       const dbus::ObjectPath& profile_path,
-      const PropertyChangedHandler& handler) OVERRIDE {}
+      ShillPropertyChangedObserver* observer) OVERRIDE {}
 
-  // ShillProfileClient override.
-  virtual void ResetPropertyChangedHandler(
-      const dbus::ObjectPath& profile_path) OVERRIDE {}
+  virtual void RemovePropertyChangedObserver(
+      const dbus::ObjectPath& profile_path,
+      ShillPropertyChangedObserver* observer) OVERRIDE {}
 
   // ShillProfileClient override.
   virtual void GetProperties(const dbus::ObjectPath& profile_path,
@@ -138,7 +136,6 @@ class ShillProfileClientStubImpl : public ShillProfileClient {
                    callback));
   }
 
-  // ShillProfileClient override.
   virtual void GetEntry(const dbus::ObjectPath& profile_path,
                         const std::string& entry_path,
                         const DictionaryValueCallback& callback) OVERRIDE {
@@ -149,7 +146,6 @@ class ShillProfileClientStubImpl : public ShillProfileClient {
                    callback));
   }
 
-  // ShillProfileClient override.
   virtual void DeleteEntry(const dbus::ObjectPath& profile_path,
                            const std::string& entry_path,
                            const VoidDBusMethodCallback& callback) OVERRIDE {

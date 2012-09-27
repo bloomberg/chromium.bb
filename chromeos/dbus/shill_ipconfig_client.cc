@@ -8,6 +8,7 @@
 #include "base/message_loop.h"
 #include "base/stl_util.h"
 #include "base/values.h"
+#include "chromeos/dbus/shill_property_changed_observer.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -24,12 +25,19 @@ class ShillIPConfigClientImpl : public ShillIPConfigClient {
  public:
   explicit ShillIPConfigClientImpl(dbus::Bus* bus);
 
-  // ShillIPConfigClient overrides:
-  virtual void SetPropertyChangedHandler(
+  ////////////////////////////////////
+  // ShillIPConfigClient overrides.
+  virtual void AddPropertyChangedObserver(
       const dbus::ObjectPath& ipconfig_path,
-      const PropertyChangedHandler& handler) OVERRIDE;
-  virtual void ResetPropertyChangedHandler(
-      const dbus::ObjectPath& ipconfig_path) OVERRIDE;
+      ShillPropertyChangedObserver* observer) OVERRIDE {
+    GetHelper(ipconfig_path)->AddPropertyChangedObserver(observer);
+  }
+
+  virtual void RemovePropertyChangedObserver(
+      const dbus::ObjectPath& ipconfig_path,
+      ShillPropertyChangedObserver* observer) OVERRIDE {
+    GetHelper(ipconfig_path)->RemovePropertyChangedObserver(observer);
+  }
   virtual void Refresh(const dbus::ObjectPath& ipconfig_path,
                        const VoidDBusMethodCallback& callback) OVERRIDE;
   virtual void GetProperties(const dbus::ObjectPath& ipconfig_path,
@@ -76,17 +84,6 @@ class ShillIPConfigClientImpl : public ShillIPConfigClient {
 ShillIPConfigClientImpl::ShillIPConfigClientImpl(dbus::Bus* bus)
     : bus_(bus),
       helpers_deleter_(&helpers_) {
-}
-
-void ShillIPConfigClientImpl::SetPropertyChangedHandler(
-    const dbus::ObjectPath& ipconfig_path,
-    const PropertyChangedHandler& handler) {
-  GetHelper(ipconfig_path)->SetPropertyChangedHandler(handler);
-}
-
-void ShillIPConfigClientImpl::ResetPropertyChangedHandler(
-    const dbus::ObjectPath& ipconfig_path) {
-  GetHelper(ipconfig_path)->ResetPropertyChangedHandler();
 }
 
 void ShillIPConfigClientImpl::GetProperties(
@@ -190,12 +187,12 @@ class ShillIPConfigClientStubImpl : public ShillIPConfigClient {
 
   ///////////////////////////////////////////////
   // ShillIPConfigClient overrides:
-  virtual void SetPropertyChangedHandler(
+  virtual void AddPropertyChangedObserver(
       const dbus::ObjectPath& ipconfig_path,
-      const PropertyChangedHandler& handler) OVERRIDE {}
-
-  virtual void ResetPropertyChangedHandler(
-      const dbus::ObjectPath& ipconfig_path) OVERRIDE {}
+      ShillPropertyChangedObserver* observer) OVERRIDE {}
+  virtual void RemovePropertyChangedObserver(
+      const dbus::ObjectPath& ipconfig_path,
+      ShillPropertyChangedObserver* observer) OVERRIDE {}
 
   virtual void Refresh(const dbus::ObjectPath& ipconfig_path,
                        const VoidDBusMethodCallback& callback) OVERRIDE {}

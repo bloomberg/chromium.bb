@@ -30,6 +30,30 @@ void RunTask(const tracked_objects::Location& from_here,
 
 }  // namespace
 
+ValueMatcher::ValueMatcher(const base::Value& value)
+  : expected_value_(value.DeepCopy()) {}
+
+bool ValueMatcher::MatchAndExplain(const base::Value& value,
+                             MatchResultListener* listener) const {
+  return expected_value_->Equals(&value);
+}
+
+void ValueMatcher::DescribeTo(::std::ostream* os) const {
+  std::string expected_value_str;
+  base::JSONWriter::WriteWithOptions(expected_value_.get(),
+                                     base::JSONWriter::OPTIONS_PRETTY_PRINT,
+                                     &expected_value_str);
+  *os << "value equals " << expected_value_str;
+}
+
+void ValueMatcher::DescribeNegationTo(::std::ostream* os) const {
+  std::string expected_value_str;
+  base::JSONWriter::WriteWithOptions(expected_value_.get(),
+                                     base::JSONWriter::OPTIONS_PRETTY_PRINT,
+                                     &expected_value_str);
+  *os << "value does not equal " << expected_value_str;
+}
+
 ShillClientUnittestBase::MockClosure::MockClosure() {}
 
 ShillClientUnittestBase::MockClosure::~MockClosure() {}
@@ -42,6 +66,12 @@ base::Closure ShillClientUnittestBase::MockClosure::GetCallback() {
 ShillClientUnittestBase::MockErrorCallback::MockErrorCallback() {}
 
 ShillClientUnittestBase::MockErrorCallback::~MockErrorCallback() {}
+
+ShillClientUnittestBase::MockPropertyChangeObserver::
+  MockPropertyChangeObserver() {}
+
+ShillClientUnittestBase::MockPropertyChangeObserver::
+  ~MockPropertyChangeObserver() {}
 
 ShillClientHelper::ErrorCallback
 ShillClientUnittestBase::MockErrorCallback::GetCallback() {

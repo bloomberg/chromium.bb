@@ -7,6 +7,7 @@
 
 #include "base/values.h"
 #include "chromeos/dbus/shill_device_client.h"
+#include "chromeos/dbus/shill_property_changed_observer.h"
 #include "dbus/object_path.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -17,11 +18,12 @@ class MockShillDeviceClient : public ShillDeviceClient {
   MockShillDeviceClient();
   virtual ~MockShillDeviceClient();
 
-  MOCK_METHOD2(SetPropertyChangedHandler,
+  MOCK_METHOD2(AddPropertyChangedObserver,
                void(const dbus::ObjectPath& device_path,
-                    const PropertyChangedHandler& handler));
-  MOCK_METHOD1(ResetPropertyChangedHandler,
-               void(const dbus::ObjectPath& device_path));
+                    ShillPropertyChangedObserver* observer));
+  MOCK_METHOD2(RemovePropertyChangedObserver,
+               void(const dbus::ObjectPath& device_path,
+                    ShillPropertyChangedObserver* observer));
   MOCK_METHOD2(GetProperties, void(const dbus::ObjectPath& device_path,
                                    const DictionaryValueCallback& callback));
   MOCK_METHOD1(CallGetPropertiesAndBlock,

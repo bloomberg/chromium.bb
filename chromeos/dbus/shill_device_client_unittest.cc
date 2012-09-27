@@ -12,6 +12,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
+using testing::_;
+using testing::ByRef;
+
 namespace chromeos {
 
 namespace {
@@ -81,16 +84,32 @@ TEST_F(ShillDeviceClientTest, PropertyChanged) {
 
   // Set expectations.
   const base::FundamentalValue value(kValue);
-  client_->SetPropertyChangedHandler(
+  MockPropertyChangeObserver observer;
+  EXPECT_CALL(observer,
+              OnPropertyChanged(
+                  flimflam::kCellularAllowRoamingProperty,
+                  ValueEq(ByRef(value)))).Times(1);
+
+  // Add the observer
+  client_->AddPropertyChangedObserver(
       dbus::ObjectPath(kExampleDevicePath),
-      base::Bind(&ExpectPropertyChanged,
-                 flimflam::kCellularAllowRoamingProperty,
-                 &value));
+      &observer);
+
   // Run the signal callback.
   SendPropertyChangedSignal(&signal);
 
-  // Reset the handler.
-  client_->ResetPropertyChangedHandler(dbus::ObjectPath(kExampleDevicePath));
+  // Remove the observer.
+  client_->RemovePropertyChangedObserver(
+      dbus::ObjectPath(kExampleDevicePath),
+      &observer);
+
+  EXPECT_CALL(observer,
+              OnPropertyChanged(
+                  flimflam::kCellularAllowRoamingProperty,
+                  ValueEq(ByRef(value)))).Times(0);
+
+  // Run the signal callback again and make sure the observer isn't called.
+  SendPropertyChangedSignal(&signal);
 }
 
 TEST_F(ShillDeviceClientTest, GetProperties) {

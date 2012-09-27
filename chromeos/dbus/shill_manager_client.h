@@ -21,6 +21,8 @@ class Bus;
 
 namespace chromeos {
 
+class ShillPropertyChangedObserver;
+
 // ShillManagerClient is used to communicate with the Shill Manager
 // service.  All methods should be called from the origin thread which
 // initializes the DBusThreadManager instance.
@@ -34,14 +36,15 @@ class CHROMEOS_EXPORT ShillManagerClient {
   // Factory function, creates a new instance which is owned by the caller.
   // For normal usage, access the singleton via DBusThreadManager::Get().
   static ShillManagerClient* Create(DBusClientImplementationType type,
-                                       dbus::Bus* bus);
+                                    dbus::Bus* bus);
 
-  // Sets PropertyChanged signal handler.
-  virtual void SetPropertyChangedHandler(
-      const PropertyChangedHandler& handler) = 0;
+  // Adds a property changed |observer|.
+  virtual void AddPropertyChangedObserver(
+      ShillPropertyChangedObserver* observer) = 0;
 
-  // Resets PropertyChanged signal handler.
-  virtual void ResetPropertyChangedHandler() = 0;
+  // Removes a property changed |observer|.
+  virtual void RemovePropertyChangedObserver(
+      ShillPropertyChangedObserver* observer) = 0;
 
   // Calls GetProperties method.
   // |callback| is called after the method call succeeds.

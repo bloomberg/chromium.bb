@@ -12,10 +12,16 @@
 #include "base/message_loop.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/shill_client_helper.h"
+#include "chromeos/dbus/shill_property_changed_observer.h"
 #include "dbus/mock_bus.h"
 #include "dbus/mock_object_proxy.h"
 #include "dbus/object_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using ::testing::MatcherInterface;
+using ::testing::MatchResultListener;
+using ::testing::Matcher;
+using ::testing::MakeMatcher;
 
 namespace base {
 
@@ -31,6 +37,25 @@ class MessageReader;
 }  // namespace dbus
 
 namespace chromeos {
+
+// A gmock matcher for base::Value types, so we can match them in expectations.
+class ValueMatcher : public MatcherInterface<const base::Value&> {
+ public:
+  explicit ValueMatcher(const base::Value& value);
+
+  // MatcherInterface overrides.
+  virtual bool MatchAndExplain(const base::Value& value,
+                               MatchResultListener* listener) const OVERRIDE;
+  virtual void DescribeTo(::std::ostream* os) const OVERRIDE;
+  virtual void DescribeNegationTo(::std::ostream* os) const OVERRIDE;
+
+ private:
+  scoped_ptr<base::Value> expected_value_;
+};
+
+inline Matcher<const base::Value&> ValueEq(const base::Value& expected_value) {
+  return MakeMatcher(new ValueMatcher(expected_value));
+}
 
 // A class to provide functionalities needed for testing Shill D-Bus clients.
 class ShillClientUnittestBase : public testing::Test {
@@ -52,6 +77,16 @@ class ShillClientUnittestBase : public testing::Test {
     MOCK_METHOD2(Run, void(const std::string& error_name,
                            const std::string& error_mesage));
     ShillClientHelper::ErrorCallback GetCallback();
+  };
+
+  // A mock PropertyChangedObserver that can be used to check expected values.
+  class MockPropertyChangeObserver
+      : public ShillPropertyChangedObserver {
+   public:
+    MockPropertyChangeObserver();
+    ~MockPropertyChangeObserver();
+    MOCK_METHOD2(OnPropertyChanged, void(const std::string& name,
+                                         const base::Value& value));
   };
 
   explicit ShillClientUnittestBase(const std::string& interface_name,

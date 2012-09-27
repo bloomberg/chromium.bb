@@ -8,6 +8,7 @@
 #include "base/message_loop.h"
 #include "base/stl_util.h"
 #include "base/values.h"
+#include "chromeos/dbus/shill_property_changed_observer.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -29,15 +30,16 @@ class ShillDeviceClientImpl : public ShillDeviceClient {
 
   ///////////////////////////////////////
   // ShillDeviceClient overrides.
-  virtual void SetPropertyChangedHandler(
+  virtual void AddPropertyChangedObserver(
       const dbus::ObjectPath& device_path,
-      const PropertyChangedHandler& handler) OVERRIDE {
-    GetHelper(device_path)->SetPropertyChangedHandler(handler);
+      ShillPropertyChangedObserver* observer) OVERRIDE {
+    GetHelper(device_path)->AddPropertyChangedObserver(observer);
   }
 
-  virtual void ResetPropertyChangedHandler(
-      const dbus::ObjectPath& device_path) OVERRIDE {
-    GetHelper(device_path)->ResetPropertyChangedHandler();
+  virtual void RemovePropertyChangedObserver(
+      const dbus::ObjectPath& device_path,
+      ShillPropertyChangedObserver* observer) OVERRIDE {
+    GetHelper(device_path)->RemovePropertyChangedObserver(observer);
   }
 
   virtual void GetProperties(const dbus::ObjectPath& device_path,
@@ -247,38 +249,35 @@ class ShillDeviceClientStubImpl : public ShillDeviceClient {
 
   virtual ~ShillDeviceClientStubImpl() {}
 
-  // ShillDeviceClient override.
-  virtual void SetPropertyChangedHandler(
+  ///////////////////////////////////
+  // ShillDeviceClient overrides.
+  virtual void AddPropertyChangedObserver(
       const dbus::ObjectPath& device_path,
-      const PropertyChangedHandler& handler) OVERRIDE {}
+      ShillPropertyChangedObserver* observer) OVERRIDE {}
 
-  // ShillDeviceClient override.
-  virtual void ResetPropertyChangedHandler(
-      const dbus::ObjectPath& device_path) OVERRIDE {}
+  virtual void RemovePropertyChangedObserver(
+      const dbus::ObjectPath& device_path,
+      ShillPropertyChangedObserver* observer) OVERRIDE {}
 
-  // ShillDeviceClient override.
   virtual void GetProperties(const dbus::ObjectPath& device_path,
                              const DictionaryValueCallback& callback) OVERRIDE {
     MessageLoop::current()->PostTask(
         FROM_HERE,
-        base::Bind(&ShillDeviceClientStubImpl::PassStubDevicePrperties,
+        base::Bind(&ShillDeviceClientStubImpl::PassStubDeviceProperties,
                    weak_ptr_factory_.GetWeakPtr(),
                    device_path, callback));
   }
 
-  // ShillDeviceClient override.
   virtual base::DictionaryValue* CallGetPropertiesAndBlock(
       const dbus::ObjectPath& device_path) OVERRIDE {
     return new base::DictionaryValue;
   }
 
-  // ShillProfileClient override.
   virtual void ProposeScan(const dbus::ObjectPath& device_path,
                            const VoidDBusMethodCallback& callback) OVERRIDE {
     PostVoidCallback(callback, DBUS_METHOD_CALL_SUCCESS);
   }
 
-  // ShillDeviceClient override.
   virtual void SetProperty(const dbus::ObjectPath& device_path,
                            const std::string& name,
                            const base::Value& value,
@@ -292,7 +291,6 @@ class ShillDeviceClientStubImpl : public ShillDeviceClient {
     PostVoidCallback(callback, DBUS_METHOD_CALL_SUCCESS);
   }
 
-  // ShillDeviceClient override.
   virtual void ClearProperty(const dbus::ObjectPath& device_path,
                              const std::string& name,
                              const VoidDBusMethodCallback& callback) OVERRIDE {
@@ -305,7 +303,6 @@ class ShillDeviceClientStubImpl : public ShillDeviceClient {
     PostVoidCallback(callback, DBUS_METHOD_CALL_SUCCESS);
   }
 
-  // ShillDeviceClient override.
   virtual void AddIPConfig(
       const dbus::ObjectPath& device_path,
       const std::string& method,
@@ -316,14 +313,12 @@ class ShillDeviceClientStubImpl : public ShillDeviceClient {
                                                 dbus::ObjectPath()));
   }
 
-  // ShillDeviceClient override.
   virtual dbus::ObjectPath CallAddIPConfigAndBlock(
       const dbus::ObjectPath& device_path,
       const std::string& method) OVERRIDE {
     return dbus::ObjectPath();
   }
 
-  // ShillDeviceClient override.
   virtual void RequirePin(const dbus::ObjectPath& device_path,
                           const std::string& pin,
                           bool require,
@@ -332,7 +327,6 @@ class ShillDeviceClientStubImpl : public ShillDeviceClient {
     MessageLoop::current()->PostTask(FROM_HERE, callback);
   }
 
-  // ShillDeviceClient override.
   virtual void EnterPin(const dbus::ObjectPath& device_path,
                         const std::string& pin,
                         const base::Closure& callback,
@@ -340,7 +334,6 @@ class ShillDeviceClientStubImpl : public ShillDeviceClient {
     MessageLoop::current()->PostTask(FROM_HERE, callback);
   }
 
-  // ShillDeviceClient override.
   virtual void UnblockPin(const dbus::ObjectPath& device_path,
                           const std::string& puk,
                           const std::string& pin,
@@ -349,7 +342,6 @@ class ShillDeviceClientStubImpl : public ShillDeviceClient {
     MessageLoop::current()->PostTask(FROM_HERE, callback);
   }
 
-  // ShillDeviceClient override.
   virtual void ChangePin(const dbus::ObjectPath& device_path,
                          const std::string& old_pin,
                          const std::string& new_pin,
@@ -358,7 +350,6 @@ class ShillDeviceClientStubImpl : public ShillDeviceClient {
     MessageLoop::current()->PostTask(FROM_HERE, callback);
   }
 
-  // ShillDeviceClient override.
   virtual void Register(const dbus::ObjectPath& device_path,
                         const std::string& network_id,
                         const base::Closure& callback,
@@ -375,7 +366,7 @@ class ShillDeviceClientStubImpl : public ShillDeviceClient {
   }
 
  private:
-  void PassStubDevicePrperties(const dbus::ObjectPath& device_path,
+  void PassStubDeviceProperties(const dbus::ObjectPath& device_path,
                                const DictionaryValueCallback& callback) const {
     const base::DictionaryValue* device_properties = NULL;
     if (!stub_devices_.GetDictionary(device_path.value(), &device_properties)) {

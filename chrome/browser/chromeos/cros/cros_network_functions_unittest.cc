@@ -312,16 +312,17 @@ TEST_F(CrosNetworkFunctionsTest, CrosMonitorNetworkManagerProperties) {
   const int kValue = 42;
   const base::FundamentalValue value(kValue);
   // Start monitoring.
-  ShillClientHelper::PropertyChangedHandler handler;
-  EXPECT_CALL(*mock_manager_client_, SetPropertyChangedHandler(_))
-      .WillOnce(SaveArg<0>(&handler));
+  ShillPropertyChangedObserver* observer = NULL;
+  EXPECT_CALL(*mock_manager_client_, AddPropertyChangedObserver(_))
+      .WillOnce(SaveArg<0>(&observer));
   CrosNetworkWatcher* watcher = CrosMonitorNetworkManagerProperties(
       MockNetworkPropertiesWatcherCallback::CreateCallback(
           flimflam::kFlimflamServicePath, key, value));
   // Call callback.
-  handler.Run(key, value);
+  observer->OnPropertyChanged(key, value);
   // Stop monitoring.
-  EXPECT_CALL(*mock_manager_client_, ResetPropertyChangedHandler()).Times(1);
+  EXPECT_CALL(*mock_manager_client_,
+              RemovePropertyChangedObserver(_)).Times(1);
   delete watcher;
 }
 
@@ -331,19 +332,19 @@ TEST_F(CrosNetworkFunctionsTest, CrosMonitorNetworkServiceProperties) {
   const int kValue = 42;
   const base::FundamentalValue value(kValue);
   // Start monitoring.
-  ShillClientHelper::PropertyChangedHandler handler;
-  EXPECT_CALL(*mock_service_client_, SetPropertyChangedHandler(path, _))
-      .WillOnce(SaveArg<1>(&handler));
+  ShillPropertyChangedObserver* observer = NULL;
+  EXPECT_CALL(*mock_service_client_, AddPropertyChangedObserver(path, _))
+      .WillOnce(SaveArg<1>(&observer));
   NetworkPropertiesWatcherCallback callback =
       MockNetworkPropertiesWatcherCallback::CreateCallback(path.value(),
                                                            key, value);
   CrosNetworkWatcher* watcher = CrosMonitorNetworkServiceProperties(
       callback, path.value());
   // Call callback.
-  handler.Run(key, value);
+  observer->OnPropertyChanged(key, value);
   // Stop monitoring.
   EXPECT_CALL(*mock_service_client_,
-              ResetPropertyChangedHandler(path)).Times(1);
+              RemovePropertyChangedObserver(path, _)).Times(1);
   delete watcher;
 }
 
@@ -353,19 +354,19 @@ TEST_F(CrosNetworkFunctionsTest, CrosMonitorNetworkDeviceProperties) {
   const int kValue = 42;
   const base::FundamentalValue value(kValue);
   // Start monitoring.
-  ShillClientHelper::PropertyChangedHandler handler;
-  EXPECT_CALL(*mock_device_client_, SetPropertyChangedHandler(path, _))
-      .WillOnce(SaveArg<1>(&handler));
+  ShillPropertyChangedObserver* observer = NULL;
+  EXPECT_CALL(*mock_device_client_, AddPropertyChangedObserver(path, _))
+      .WillOnce(SaveArg<1>(&observer));
   NetworkPropertiesWatcherCallback callback =
       MockNetworkPropertiesWatcherCallback::CreateCallback(path.value(),
                                                            key, value);
   CrosNetworkWatcher* watcher = CrosMonitorNetworkDeviceProperties(
       callback, path.value());
   // Call callback.
-  handler.Run(key, value);
+  observer->OnPropertyChanged(key, value);
   // Stop monitoring.
   EXPECT_CALL(*mock_device_client_,
-              ResetPropertyChangedHandler(path)).Times(1);
+              RemovePropertyChangedObserver(path, _)).Times(1);
   delete watcher;
 }
 

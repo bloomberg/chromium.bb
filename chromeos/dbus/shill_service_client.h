@@ -46,14 +46,15 @@ class CHROMEOS_EXPORT ShillServiceClient {
   static ShillServiceClient* Create(DBusClientImplementationType type,
                                        dbus::Bus* bus);
 
-  // Sets PropertyChanged signal handler.
-  virtual void SetPropertyChangedHandler(
+  // Adds a property changed |observer| to the service at |service_path|.
+  virtual void AddPropertyChangedObserver(
       const dbus::ObjectPath& service_path,
-      const PropertyChangedHandler& handler) = 0;
+      ShillPropertyChangedObserver* observer) = 0;
 
-  // Resets PropertyChanged signal handler.
-  virtual void ResetPropertyChangedHandler(
-      const dbus::ObjectPath& service_path) = 0;
+  // Removes a property changed |observer| to the service at |service_path|.
+  virtual void RemovePropertyChangedObserver(
+      const dbus::ObjectPath& service_path,
+      ShillPropertyChangedObserver* observer) = 0;
 
   // Calls GetProperties method.
   // |callback| is called after the method call succeeds.

@@ -8,6 +8,7 @@
 #include "base/message_loop.h"
 #include "base/stl_util.h"
 #include "base/values.h"
+#include "chromeos/dbus/shill_property_changed_observer.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -27,20 +28,20 @@ class ShillNetworkClientImpl : public ShillNetworkClient {
         helpers_deleter_(&helpers_) {
   }
 
-  // ShillNetworkClient override.
-  virtual void SetPropertyChangedHandler(
+  //////////////////////////////////////
+  // ShillNetworkClient overrides.
+  virtual void AddPropertyChangedObserver(
       const dbus::ObjectPath& network_path,
-      const PropertyChangedHandler& handler) OVERRIDE {
-    GetHelper(network_path)->SetPropertyChangedHandler(handler);
+      ShillPropertyChangedObserver* observer) OVERRIDE {
+    GetHelper(network_path)->AddPropertyChangedObserver(observer);
   }
 
-  // ShillNetworkClient override.
-  virtual void ResetPropertyChangedHandler(
-      const dbus::ObjectPath& network_path) OVERRIDE {
-    GetHelper(network_path)->ResetPropertyChangedHandler();
+  virtual void RemovePropertyChangedObserver(
+      const dbus::ObjectPath& network_path,
+      ShillPropertyChangedObserver* observer) OVERRIDE {
+    GetHelper(network_path)->RemovePropertyChangedObserver(observer);
   }
 
-  // ShillNetworkClient override.
   virtual void GetProperties(const dbus::ObjectPath& network_path,
                              const DictionaryValueCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(flimflam::kFlimflamNetworkInterface,
@@ -48,7 +49,6 @@ class ShillNetworkClientImpl : public ShillNetworkClient {
     GetHelper(network_path)->CallDictionaryValueMethod(&method_call, callback);
   }
 
-  // ShillNetworkClient override.
   virtual base::DictionaryValue* CallGetPropertiesAndBlock(
       const dbus::ObjectPath& network_path) OVERRIDE {
     dbus::MethodCall method_call(flimflam::kFlimflamNetworkInterface,
@@ -89,16 +89,16 @@ class ShillNetworkClientStubImpl : public ShillNetworkClient {
 
   virtual ~ShillNetworkClientStubImpl() {}
 
-  // ShillNetworkClient override.
-  virtual void SetPropertyChangedHandler(
+  /////////////////////////////////////
+  // ShillNetworkClient overrides.
+  virtual void AddPropertyChangedObserver(
       const dbus::ObjectPath& network_path,
-      const PropertyChangedHandler& handler) OVERRIDE {}
+      ShillPropertyChangedObserver* observer) OVERRIDE {}
 
-  // ShillNetworkClient override.
-  virtual void ResetPropertyChangedHandler(
-      const dbus::ObjectPath& network_path) OVERRIDE {}
+  virtual void RemovePropertyChangedObserver(
+      const dbus::ObjectPath& network_path,
+      ShillPropertyChangedObserver* observer) OVERRIDE {}
 
-  // ShillNetworkClient override.
   virtual void GetProperties(const dbus::ObjectPath& network_path,
                              const DictionaryValueCallback& callback) OVERRIDE {
     MessageLoop::current()->PostTask(
@@ -108,7 +108,6 @@ class ShillNetworkClientStubImpl : public ShillNetworkClient {
                    callback));
   }
 
-  // ShillNetworkClient override.
   virtual base::DictionaryValue* CallGetPropertiesAndBlock(
       const dbus::ObjectPath& network_path) OVERRIDE {
     return new base::DictionaryValue;

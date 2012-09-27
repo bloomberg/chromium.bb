@@ -29,6 +29,8 @@ class ObjectPath;
 
 namespace chromeos {
 
+class ShillPropertyChangedObserver;
+
 // ShillProfileClient is used to communicate with the Shill Profile
 // service.  All methods should be called from the origin thread which
 // initializes the DBusThreadManager instance.
@@ -44,14 +46,15 @@ class CHROMEOS_EXPORT ShillProfileClient {
   static ShillProfileClient* Create(DBusClientImplementationType type,
                                        dbus::Bus* bus);
 
-  // Sets PropertyChanged signal handler.
-  virtual void SetPropertyChangedHandler(
+  // Adds a property changed |observer| for the profile at |profile_path|.
+  virtual void AddPropertyChangedObserver(
       const dbus::ObjectPath& profile_path,
-      const PropertyChangedHandler& handler) = 0;
+      ShillPropertyChangedObserver* observer) = 0;
 
-  // Resets PropertyChanged signal handler.
-  virtual void ResetPropertyChangedHandler(
-      const dbus::ObjectPath& profile_path) = 0;
+  // Removes a property changed |observer| for the profile at |profile_path|.
+  virtual void RemovePropertyChangedObserver(
+      const dbus::ObjectPath& profile_path,
+      ShillPropertyChangedObserver* observer) = 0;
 
   // Calls GetProperties method.
   // |callback| is called after the method call succeeds.

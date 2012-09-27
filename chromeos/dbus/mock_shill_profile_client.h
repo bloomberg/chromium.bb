@@ -7,21 +7,25 @@
 
 #include "base/values.h"
 #include "chromeos/dbus/shill_profile_client.h"
+#include "chromeos/dbus/shill_property_changed_observer.h"
 #include "dbus/object_path.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace chromeos {
+
+class ShillPropertyChangedObserver;
 
 class MockShillProfileClient : public ShillProfileClient {
  public:
   MockShillProfileClient();
   virtual ~MockShillProfileClient();
 
-  MOCK_METHOD2(SetPropertyChangedHandler,
+  MOCK_METHOD2(AddPropertyChangedObserver,
                void(const dbus::ObjectPath& profile_path,
-                    const PropertyChangedHandler& handler));
-  MOCK_METHOD1(ResetPropertyChangedHandler,
-               void(const dbus::ObjectPath& profile_path));
+                    ShillPropertyChangedObserver* observer));
+  MOCK_METHOD2(RemovePropertyChangedObserver,
+               void(const dbus::ObjectPath& profile_path,
+                    ShillPropertyChangedObserver* observer));
   MOCK_METHOD2(GetProperties, void(const dbus::ObjectPath& profile_path,
                                    const DictionaryValueCallback& callback));
   MOCK_METHOD3(GetEntry, void(const dbus::ObjectPath& profile_path,

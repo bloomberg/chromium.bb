@@ -12,6 +12,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
+using testing::_;
+using testing::ByRef;
+
 namespace chromeos {
 
 namespace {
@@ -131,14 +134,25 @@ TEST_F(ShillManagerClientTest, PropertyChanged) {
   dbus::AppendBasicTypeValueData(&writer, kOfflineMode);
 
   // Set expectations.
-  client_->SetPropertyChangedHandler(base::Bind(&ExpectPropertyChanged,
-                                                flimflam::kOfflineModeProperty,
-                                                &kOfflineMode));
+  MockPropertyChangeObserver observer;
+  EXPECT_CALL(observer,
+              OnPropertyChanged(flimflam::kOfflineModeProperty,
+                                ValueEq(ByRef(kOfflineMode)))).Times(1);
+
+  // Add the observer
+  client_->AddPropertyChangedObserver(&observer);
+
   // Run the signal callback.
   SendPropertyChangedSignal(&signal);
 
-  // Reset the handler.
-  client_->ResetPropertyChangedHandler();
+  // Remove the observer.
+  client_->RemovePropertyChangedObserver(&observer);
+
+  // Make sure it's not called anymore.
+  EXPECT_CALL(observer, OnPropertyChanged(_, _)).Times(0);
+
+  // Run the signal callback again and make sure the observer isn't called.
+  SendPropertyChangedSignal(&signal);
 }
 
 TEST_F(ShillManagerClientTest, GetProperties) {

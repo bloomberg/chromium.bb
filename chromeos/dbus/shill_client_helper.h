@@ -10,8 +10,10 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "chromeos/dbus/blocking_method_caller.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
+#include "chromeos/dbus/shill_property_changed_observer.h"
 
 namespace base {
 
@@ -47,12 +49,12 @@ class ShillClientHelper {
       DBusMethodCallStatus call_status,
       const base::DictionaryValue& result)> DictionaryValueCallback;
 
-  // A callback to handle responses for methods with DictionaryValue reuslts.
+  // A callback to handle responses for methods with DictionaryValue results.
   // This is used by CallDictionaryValueMethodWithErrorCallback.
   typedef base::Callback<void(const base::DictionaryValue& result
                               )> DictionaryValueCallbackWithoutStatus;
 
-  // A callback to handle erros for method call.
+  // A callback to handle errors for method call.
   typedef base::Callback<void(const std::string& error_name,
                               const std::string& error_message)> ErrorCallback;
 
@@ -60,11 +62,11 @@ class ShillClientHelper {
 
   virtual ~ShillClientHelper();
 
-  // Sets PropertyChanged signal handler.
-  void SetPropertyChangedHandler(const PropertyChangedHandler& handler);
+  // Adds an |observer| of the PropertyChanged signal.
+  void AddPropertyChangedObserver(ShillPropertyChangedObserver* observer);
 
-  // Resets PropertyChanged signal handler.
-  void ResetPropertyChangedHandler();
+  // Removes an |observer| of the PropertyChanged signal.
+  void RemovePropertyChangedObserver(ShillPropertyChangedObserver* observer);
 
   // Starts monitoring PropertyChanged signal.
   void MonitorPropertyChanged(const std::string& interface_name);
@@ -150,6 +152,7 @@ class ShillClientHelper {
   BlockingMethodCaller blocking_method_caller_;
   dbus::ObjectProxy* proxy_;
   PropertyChangedHandler property_changed_handler_;
+  ObserverList<ShillPropertyChangedObserver> observer_list_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

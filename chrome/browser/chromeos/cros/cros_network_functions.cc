@@ -17,6 +17,7 @@
 #include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/dbus/shill_network_client.h"
 #include "chromeos/dbus/shill_profile_client.h"
+#include "chromeos/dbus/shill_property_changed_observer.h"
 #include "chromeos/dbus/shill_service_client.h"
 #include "dbus/object_path.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -26,56 +27,84 @@ namespace chromeos {
 namespace {
 
 // Class to watch network manager's properties without Libcros.
-class NetworkManagerPropertiesWatcher : public CrosNetworkWatcher {
+class NetworkManagerPropertiesWatcher
+    : public CrosNetworkWatcher,
+      public ShillPropertyChangedObserver {
  public:
   NetworkManagerPropertiesWatcher(
-      const NetworkPropertiesWatcherCallback& callback) {
+      const NetworkPropertiesWatcherCallback& callback)
+    : callback_(callback) {
     DBusThreadManager::Get()->GetShillManagerClient()->
-        SetPropertyChangedHandler(base::Bind(callback,
-                                             flimflam::kFlimflamServicePath));
+        AddPropertyChangedObserver(this);
   }
+
   virtual ~NetworkManagerPropertiesWatcher() {
     DBusThreadManager::Get()->GetShillManagerClient()->
-        ResetPropertyChangedHandler();
+        RemovePropertyChangedObserver(this);
   }
+
+  virtual void OnPropertyChanged(const std::string& name,
+                                 const base::Value& value) {
+    callback_.Run(flimflam::kFlimflamServicePath, name, value);
+  }
+ private:
+  NetworkPropertiesWatcherCallback callback_;
 };
 
 // Class to watch network service's properties without Libcros.
-class NetworkServicePropertiesWatcher : public CrosNetworkWatcher {
+class NetworkServicePropertiesWatcher
+    : public CrosNetworkWatcher,
+      public ShillPropertyChangedObserver {
  public:
   NetworkServicePropertiesWatcher(
       const NetworkPropertiesWatcherCallback& callback,
-      const std::string& service_path) : service_path_(service_path) {
+      const std::string& service_path) : service_path_(service_path),
+                                         callback_(callback) {
     DBusThreadManager::Get()->GetShillServiceClient()->
-        SetPropertyChangedHandler(dbus::ObjectPath(service_path),
-                                  base::Bind(callback, service_path));
+        AddPropertyChangedObserver(dbus::ObjectPath(service_path), this);
   }
+
   virtual ~NetworkServicePropertiesWatcher() {
     DBusThreadManager::Get()->GetShillServiceClient()->
-        ResetPropertyChangedHandler(dbus::ObjectPath(service_path_));
+        RemovePropertyChangedObserver(dbus::ObjectPath(service_path_), this);
+  }
+
+  virtual void OnPropertyChanged(const std::string& name,
+                                 const base::Value& value) {
+    callback_.Run(service_path_, name, value);
   }
 
  private:
   std::string service_path_;
+  NetworkPropertiesWatcherCallback callback_;
 };
 
 // Class to watch network device's properties without Libcros.
-class NetworkDevicePropertiesWatcher : public CrosNetworkWatcher {
+class NetworkDevicePropertiesWatcher
+    : public CrosNetworkWatcher,
+      public ShillPropertyChangedObserver {
  public:
   NetworkDevicePropertiesWatcher(
       const NetworkPropertiesWatcherCallback& callback,
-      const std::string& device_path) : device_path_(device_path) {
+      const std::string& device_path) : device_path_(device_path),
+                                        callback_(callback) {
     DBusThreadManager::Get()->GetShillDeviceClient()->
-        SetPropertyChangedHandler(dbus::ObjectPath(device_path),
-                                  base::Bind(callback, device_path));
+        AddPropertyChangedObserver(dbus::ObjectPath(device_path), this);
   }
+
   virtual ~NetworkDevicePropertiesWatcher() {
     DBusThreadManager::Get()->GetShillDeviceClient()->
-        ResetPropertyChangedHandler(dbus::ObjectPath(device_path_));
+        RemovePropertyChangedObserver(dbus::ObjectPath(device_path_), this);
+  }
+
+  virtual void OnPropertyChanged(const std::string& name,
+                                 const base::Value& value) {
+    callback_.Run(device_path_, name, value);
   }
 
  private:
   std::string device_path_;
+  NetworkPropertiesWatcherCallback callback_;
 };
 
 // Converts a string to a CellularDataPlanType.

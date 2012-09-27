@@ -8,6 +8,7 @@
 #include "base/chromeos/chromeos_version.h"
 #include "base/message_loop.h"
 #include "base/values.h"
+#include "chromeos/dbus/shill_property_changed_observer.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -57,14 +58,16 @@ class ShillManagerClientImpl : public ShillManagerClient {
     helper_.MonitorPropertyChanged(flimflam::kFlimflamManagerInterface);
   }
 
-  // ShillManagerClient overrides:
-  virtual void SetPropertyChangedHandler(
-      const PropertyChangedHandler& handler) OVERRIDE {
-    helper_.SetPropertyChangedHandler(handler);
+  ////////////////////////////////////
+  // ShillManagerClient overrides.
+  virtual void AddPropertyChangedObserver(
+      ShillPropertyChangedObserver* observer) OVERRIDE {
+    helper_.AddPropertyChangedObserver(observer);
   }
 
-  virtual void ResetPropertyChangedHandler() OVERRIDE {
-    helper_.ResetPropertyChangedHandler();
+  virtual void RemovePropertyChangedObserver(
+      ShillPropertyChangedObserver* observer) OVERRIDE {
+    helper_.RemovePropertyChangedObserver(observer);
   }
 
   virtual void GetProperties(const DictionaryValueCallback& callback) OVERRIDE {
@@ -163,12 +166,13 @@ class ShillManagerClientStubImpl : public ShillManagerClient {
 
   virtual ~ShillManagerClientStubImpl() {}
 
-  // ShillManagerClient override.
-  virtual void SetPropertyChangedHandler(
-      const PropertyChangedHandler& handler) OVERRIDE {}
+  //////////////////////////////////
+  // ShillManagerClient overrides.
+  virtual void AddPropertyChangedObserver(
+      ShillPropertyChangedObserver* observer) OVERRIDE {}
 
-  // ShillManagerClient override.
-  virtual void ResetPropertyChangedHandler() OVERRIDE {}
+  virtual void RemovePropertyChangedObserver(
+      ShillPropertyChangedObserver* observer) OVERRIDE {}
 
   // ShillManagerClient override.
   virtual void GetProperties(const DictionaryValueCallback& callback) OVERRIDE {
