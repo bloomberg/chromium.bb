@@ -207,6 +207,14 @@ class CompositingIOSurfaceMac {
   void StartOrContinueDisplayLink();
   void StopDisplayLink();
 
+  // Two implementations of CopyTo() in synchronous and asynchronous mode.
+  bool SynchronousCopyTo(const gfx::Rect& src_pixel_subrect,
+                         const gfx::Size& dst_pixel_size,
+                         void* out);
+  bool AsynchronousCopyTo(const gfx::Rect& src_pixel_subrect,
+                          const gfx::Size& dst_pixel_size,
+                          void* out,
+                          const base::Callback<void(bool)>& callback);
   void FinishCopy();
   void CleanupResourcesForCopy();
 
