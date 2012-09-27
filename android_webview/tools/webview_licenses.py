@@ -88,6 +88,8 @@ def _CheckLicenseHeaders(directory_list, whitelisted_files):
 
   args = ['grep',
           '-rPlI',
+          '--exclude', '*.orig',
+          '--exclude', '*.rej',
           '--exclude-dir', 'third_party',
           '--exclude-dir', 'out',
           '--exclude-dir', '.git',
