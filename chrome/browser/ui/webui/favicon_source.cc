@@ -66,7 +66,8 @@ void FaviconSource::StartDataRequest(const std::string& path,
         web_ui_util::ParseScaleFactor(scale_str, &scale_factor);
         prefix_length = slash + 1;
     }
-    // TODO : Change GetFavicon to support combination of IconType.
+    // TODO(michaelbai): Change GetRawFavicon to support combination of
+    // IconType.
     handle = favicon_service->GetRawFavicon(
         GURL(path.substr(prefix_length)),
         history::FAVICON,
@@ -82,8 +83,8 @@ void FaviconSource::StartDataRequest(const std::string& path,
       size_t scale_delimiter = path.find("@", 5);
       std::string size = path.substr(5, slash - 5);
       pixel_size = atoi(size.c_str());
-      CHECK(pixel_size == 32 || pixel_size == 16) <<
-          "only 32x32 and 16x16 icons are supported";
+      DCHECK(pixel_size == 64 || pixel_size == 32 || pixel_size == 16) <<
+          "only 64x64, 32x32 and 16x16 icons are supported";
       // Optional scale factor.
       if (scale_delimiter != std::string::npos && scale_delimiter < slash) {
         std::string scale_str = path.substr(scale_delimiter + 1,
@@ -172,23 +173,30 @@ void FaviconSource::OnFaviconDataAvailable(
 }
 
 void FaviconSource::SendDefaultResponse(const IconRequest& icon_request) {
-  base::RefCountedMemory* bytes = NULL;
-  ui::ScaleFactor scale_factor = icon_request.scale_factor;
-
-  if (icon_request.pixel_size == 32) {
-    if (!default_favicon_large_.get()) {
-      default_favicon_large_ =
-          ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
-              IDR_DEFAULT_LARGE_FAVICON, scale_factor);
-    }
-    bytes = default_favicon_large_;
-  } else {
-    if (!default_favicon_.get()) {
-      default_favicon_ =
-          ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
-              IDR_DEFAULT_FAVICON, scale_factor);
-    }
-    bytes = default_favicon_;
+  int favicon_index;
+  int resource_id;
+  switch (icon_request.pixel_size) {
+    case 64:
+      favicon_index = SIZE_64;
+      resource_id = IDR_DEFAULT_FAVICON_64;
+      break;
+    case 32:
+      favicon_index = SIZE_32;
+      resource_id = IDR_DEFAULT_FAVICON_32;
+      break;
+    default:
+      favicon_index = SIZE_16;
+      resource_id = IDR_DEFAULT_FAVICON;
+      break;
   }
-  SendResponse(icon_request.request_id, bytes);
+  base::RefCountedMemory* default_favicon = default_favicons_[favicon_index];
+
+  if (!default_favicon) {
+    ui::ScaleFactor scale_factor = icon_request.scale_factor;
+    default_favicon = ResourceBundle::GetSharedInstance()
+        .LoadDataResourceBytes(resource_id, scale_factor);
+    default_favicons_[favicon_index] = default_favicon;
+  }
+
+  SendResponse(icon_request.request_id, default_favicon);
 }

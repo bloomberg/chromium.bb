@@ -51,6 +51,13 @@ class FaviconSource : public ChromeURLDataManager::DataSource {
   Profile* profile_;
 
  private:
+  // Defines the allowed pixel sizes for requested favicons.
+  enum IconSize {
+    SIZE_16,
+    SIZE_32,
+    SIZE_64,
+    NUM_SIZES
+  };
 
   struct IconRequest {
     IconRequest()
@@ -80,12 +87,9 @@ class FaviconSource : public ChromeURLDataManager::DataSource {
 
   CancelableRequestConsumerTSimple<IconRequest> cancelable_consumer_;
 
-  // Raw PNG representation of the favicon to show when the favicon
-  // database doesn't have a favicon for a webpage.
-  // 16x16
-  scoped_refptr<base::RefCountedMemory> default_favicon_;
-  // 32x32
-  scoped_refptr<base::RefCountedMemory> default_favicon_large_;
+  // Raw PNG representations of favicons of each size to show when the favicon
+  // database doesn't have a favicon for a webpage. Indexed by IconSize values.
+  scoped_refptr<base::RefCountedMemory> default_favicons_[NUM_SIZES];
 
   // The history::IconTypes of icon that this FaviconSource handles.
   int icon_types_;

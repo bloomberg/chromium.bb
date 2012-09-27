@@ -93,7 +93,8 @@
       <structure type="chrome_scaled_image" name="IDR_CONTENT_LEFT_SIDE" file="content_left_side.png" />
       <structure type="chrome_scaled_image" name="IDR_CONTENT_RIGHT_SIDE" file="content_right_side.png" />
       <structure type="chrome_scaled_image" name="IDR_DEFAULT_FAVICON" file="default_favicon.png" />
-      <structure type="chrome_scaled_image" name="IDR_DEFAULT_LARGE_FAVICON" file="default_large_favicon.png" />
+      <structure type="chrome_scaled_image" name="IDR_DEFAULT_FAVICON_32" file="default_favicon_32.png" />
+      <structure type="chrome_scaled_image" name="IDR_DEFAULT_FAVICON_64" file="default_favicon_64.png" />
       <structure type="chrome_scaled_image" name="IDR_FOLDER_CLOSED" file="common/folder_closed.png" />
       <structure type="chrome_scaled_image" name="IDR_FOLDER_CLOSED_RTL" file="common/folder_closed_rtl.png" />
       <structure type="chrome_scaled_image" name="IDR_FOLDER_OPEN" file="common/folder_open.png" />
