@@ -380,6 +380,12 @@ class TouchEventFromWebTouchPoint : public ui::TouchEvent {
   DISALLOW_COPY_AND_ASSIGN(TouchEventFromWebTouchPoint);
 };
 
+bool ShouldSendPinchGesture() {
+  static bool pinch_allowed =
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnablePinch);
+  return pinch_allowed;
+}
+
 }  // namespace
 
 const wchar_t kRenderWidgetHostHWNDClass[] = L"Chrome_RenderWidgetHostHWND";
@@ -2784,6 +2790,15 @@ bool RenderWidgetHostViewWin::ForwardGestureEventToRenderer(
     ui::GestureEvent* gesture) {
   if (!render_widget_host_)
     return false;
+
+  // Pinch gestures are disabled by default on windows desktop. See
+  // crbug.com/128477 and crbug.com/148816
+  if ((gesture->type() == ui::ET_GESTURE_PINCH_BEGIN ||
+      gesture->type() == ui::ET_GESTURE_PINCH_UPDATE ||
+      gesture->type() == ui::ET_GESTURE_PINCH_END) &&
+      !ShouldSendPinchGesture()) {
+    return true;
+  }
 
   WebKit::WebGestureEvent web_gesture = CreateWebGestureEvent(m_hWnd, *gesture);
   if (web_gesture.type == WebKit::WebGestureEvent::Undefined)
