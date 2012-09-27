@@ -9,6 +9,7 @@
 #include "chrome/app/breakpad_field_trial_win.h"
 #include "chrome/app/breakpad_win.h"
 #include "chrome/common/child_process_logging.h"
+#include "chrome/common/metrics/variations/variations_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using breakpad_win::g_custom_entries;
@@ -24,24 +25,29 @@ class ChromeAppBreakpadTest : public testing::Test {
  protected:
   typedef std::vector<string16> Experiments;
   void ValidateExperimentChunks(const Experiments& experiments) {
-    testing::SetExperimentList(experiments);
+    std::vector<string16> chunks;
+    chrome_variations::GenerateVariationChunks(experiments, &chunks);
+    testing::SetExperimentChunks(chunks, experiments.size());
     EXPECT_STREQ(base::StringPrintf(L"%d", experiments.size()).c_str(),
                  (*g_custom_entries)[g_num_of_experiments_offset].value);
     // We make a copy of the array that we empty as we find the experiments.
     Experiments experiments_left(experiments);
     for (int i = 0; i < kMaxReportedVariationChunks; ++i) {
+      const google_breakpad::CustomInfoEntry& entry =
+          (*g_custom_entries)[g_experiment_chunks_offset + i];
       EXPECT_STREQ(base::StringPrintf(L"experiment-chunk-%i", i + 1).c_str(),
-                   (*g_custom_entries)[g_experiment_chunks_offset + i].name);
+                   entry.name);
+      // An empty value should only appear when |experiments_left| is empty.
+      if (wcslen(entry.value) == 0)
+        EXPECT_TRUE(experiments_left.empty());
       if (experiments_left.empty()) {
         // All other slots should be empty.
-        EXPECT_STREQ(
-            L"", (*g_custom_entries)[g_experiment_chunks_offset + i].value);
+        EXPECT_STREQ(L"", entry.value);
       } else {
         // We can't guarantee the order, so we must search for them all.
         Experiments::const_iterator experiment = experiments_left.begin();
         while (experiment != experiments_left.end()) {
-          if (wcsstr((*g_custom_entries)[g_experiment_chunks_offset + i].value,
-                     experiment->c_str())) {
+          if (wcsstr(entry.value, experiment->c_str())) {
             experiment = experiments_left.erase(experiment);
           } else {
             ++experiment;

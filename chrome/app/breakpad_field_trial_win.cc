@@ -12,66 +12,47 @@
 #include "chrome/app/breakpad_win.h"
 #include "chrome/common/child_process_logging.h"
 
-// Note that this is suffixed with "2" due to a parameter change that was made
-// to the predecessor "SetExperimentList()". If the signature changes again, use
-// a new name.
-extern "C" void __declspec(dllexport) __cdecl SetExperimentList2(
-      const wchar_t** experiment_strings, size_t experiment_strings_size) {
-  // Make sure we were initialized before we start writing data
+// Sets the breakpad experiment chunks for crash reporting. |chunks| is an
+// array of C strings of size |chunk_size| containing the values to set, where
+// each entry may contain multiple experiment tuples, with the total number of
+// experiments indicated by |experiments_chunks|.
+// Note that this is suffixed with "3" due to parameter changes that were made
+// to the predecessor functions. If the signature changes again, use a new name.
+extern "C" void __declspec(dllexport) __cdecl SetExperimentList3(
+      const wchar_t** chunks,
+      size_t chunks_size,
+      size_t experiments_count) {
+  // Make sure the offset was initialized before storing the data.
   if (breakpad_win::g_experiment_chunks_offset == 0)
     return;
 
-  size_t num_chunks = 0;
-  size_t current_experiment = 0;
-  string16 current_chunk(google_breakpad::CustomInfoEntry::kValueMaxLength, 0);
-  while (current_experiment < experiment_strings_size &&
-         num_chunks < kMaxReportedVariationChunks) {
-    // Check if we have enough room to add another experiment to the current
-    // chunk string. If not, we commit the current chunk string and start over.
-    if (current_chunk.size() + wcslen(experiment_strings[current_experiment]) >
-        google_breakpad::CustomInfoEntry::kValueMaxLength) {
-      base::wcslcpy(
-          (*breakpad_win::g_custom_entries)[
-              breakpad_win::g_experiment_chunks_offset + num_chunks].value,
-          current_chunk.c_str(),
-          current_chunk.size() + 1);  // This must include the NULL termination.
-      ++num_chunks;
-      current_chunk = experiment_strings[current_experiment];
-    } else {
-      if (!current_chunk.empty())
-        current_chunk += L",";
-      current_chunk += experiment_strings[current_experiment];
-    }
-    ++current_experiment;
+  // Store up to |kMaxReportedVariationChunks| chunks.
+  const size_t number_of_chunks_to_report =
+      std::min(chunks_size, kMaxReportedVariationChunks);
+  for (size_t i = 0; i < number_of_chunks_to_report; ++i) {
+    const size_t entry_index = breakpad_win::g_experiment_chunks_offset + i;
+    (*breakpad_win::g_custom_entries)[entry_index].set_value(chunks[i]);
   }
 
-  // Commit the last chunk that didn't get big enough yet.
-  if (!current_chunk.empty() && num_chunks < kMaxReportedVariationChunks) {
-    base::wcslcpy(
-        (*breakpad_win::g_custom_entries)[
-            breakpad_win::g_experiment_chunks_offset + num_chunks].value,
-        current_chunk.c_str(),
-        current_chunk.size() + 1);  // This must include the NULL termination.
-  }
-
-  // Make note of the total number of experiments,
-  // even if it's > kMaxReportedVariationChunks. This is useful when
+  // Make note of the total number of experiments, which may be greater than
+  // what was able to fit in |kMaxReportedVariationChunks|. This is useful when
   // correlating stability with the number of experiments running
   // simultaneously.
   base::wcslcpy(
       (*breakpad_win::g_custom_entries)[
           breakpad_win::g_num_of_experiments_offset].value,
       base::StringPrintf(
-          L"%d", static_cast<int>(experiment_strings_size)).c_str(),
+          L"%d", static_cast<int>(experiments_count)).c_str(),
       google_breakpad::CustomInfoEntry::kValueMaxLength);
 }
 
 namespace testing {
 
-void SetExperimentList(const std::vector<string16>& experiment_strings) {
+void SetExperimentChunks(const std::vector<string16>& chunks,
+                         size_t experiments_count) {
   std::vector<const wchar_t*> cstrings;
-  StringVectorToCStringVector(experiment_strings, &cstrings);
-  ::SetExperimentList2(&cstrings[0], cstrings.size());
+  StringVectorToCStringVector(chunks, &cstrings);
+  ::SetExperimentList3(&cstrings[0], cstrings.size(), experiments_count);
 }
 
 }  // namespace testing
