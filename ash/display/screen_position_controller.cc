@@ -18,6 +18,7 @@
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window_tracker.h"
+#include "ui/compositor/dip_util.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
 
@@ -81,7 +82,9 @@ void ScreenPositionController::ConvertNativePointToScreen(
     aura::Window* window,
     gfx::Point* point) {
   std::pair<aura::RootWindow*, gfx::Point> pair =
-      wm::GetRootWindowRelativeToWindow(window, *point);
+      wm::GetRootWindowRelativeToWindow(
+          window,
+          ui::ConvertPointToDIP(window->GetRootWindow()->layer(), *point));
   *point = pair.second;
   ConvertPointToScreen(pair.first, point);
 }

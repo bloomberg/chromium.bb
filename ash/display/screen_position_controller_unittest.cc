@@ -17,8 +17,10 @@
 // TOD(mazda): UpdateDisplay does not work properly on Win.
 // Fix this and enable tests.
 #define MAYBE_ConvertNativePointToScreen DISABLED_ConvertNativePointToScreen
+#define MAYBE_ConvertNativePointToScreenHiDPI DISABLED_ConvertNativePointToScreenHiDPI
 #else
 #define MAYBE_ConvertNativePointToScreen ConvertNativePointToScreen
+#define MAYBE_ConvertNativePointToScreenHiDPI ConvertNativePointToScreenHiDPI
 #endif
 
 namespace ash {
@@ -156,6 +158,35 @@ TEST_F(ScreenPositionControllerTest, MAYBE_ConvertNativePointToScreen) {
   EXPECT_EQ("350,150", ConvertNativePointToScreen(250, 250));
   // The point is on the primary root window.
   EXPECT_EQ("150,100", ConvertNativePointToScreen(50, -400));
+}
+
+TEST_F(ScreenPositionControllerTest, MAYBE_ConvertNativePointToScreenHiDPI) {
+  UpdateDisplay("100+100-200x200*2,100+500-200x200");
+
+  Shell::RootWindowList root_windows =
+      Shell::GetInstance()->GetAllRootWindows();
+  EXPECT_EQ("100,100", root_windows[0]->GetHostOrigin().ToString());
+  EXPECT_EQ("200x200", root_windows[0]->GetHostSize().ToString());
+  EXPECT_EQ("100,500", root_windows[1]->GetHostOrigin().ToString());
+  EXPECT_EQ("200x200", root_windows[1]->GetHostSize().ToString());
+
+  ash::DisplayController* display_controller =
+      ash::Shell::GetInstance()->display_controller();
+  // Put |window_| to the primary 2x display.
+  window_->SetBoundsInScreen(gfx::Rect(20, 20, 50, 50),
+                             display_controller->GetPrimaryDisplay());
+  // (30, 30) means the native coordinate, so the point is still on the primary
+  // root window.  Since it's 2x, the specified native point was halved.
+  EXPECT_EQ("35,35", ConvertNativePointToScreen(30, 30));
+  // Similar to above but the point is out of the all root windows.
+  EXPECT_EQ("220,220", ConvertNativePointToScreen(400, 400));
+  // Similar to above but the point is on the secondary display.
+  EXPECT_EQ("120,35", ConvertNativePointToScreen(200, 30));
+  // At the edge but still in the primary display.  Remaining of the primary
+  // display is (50, 50) but adding ~100 since it's 2x-display.
+  EXPECT_EQ("99,99", ConvertNativePointToScreen(159, 159));
+  // At the edge of the secondary display.
+  EXPECT_EQ("100,100", ConvertNativePointToScreen(160, 160));
 }
 
 }  // namespace test

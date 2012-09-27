@@ -32,6 +32,7 @@
 #include "ui/base/view_prop.h"
 #include "ui/base/x/valuators.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/compositor/dip_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/screen.h"
@@ -1016,6 +1017,9 @@ void RootWindowHostLinux::TranslateAndDispatchMouseEvent(
     gfx::Point location(event->location());
     screen_position_client->ConvertNativePointToScreen(root, &location);
     screen_position_client->ConvertPointFromScreen(root, &location);
+    // |delegate_|'s OnHoustMouseEvent expects native coordinates relative to
+    // root.
+    location = ui::ConvertPointToPixel(root->layer(), location);
     event->set_location(location);
     event->set_root_location(location);
   }
