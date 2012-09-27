@@ -60,13 +60,10 @@ HistoryTabHelper::CreateHistoryAddPageArgs(
     const GURL& virtual_url,
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
-  // TODO(akalin): Use the timestamp from details.entry when it
-  // becomes available.
-  const base::Time time = base::Time::Now();
   history::HistoryAddPageArgs add_page_args(
-          params.url, time, web_contents(), params.page_id,
-          params.referrer.url, params.redirects, params.transition,
-          history::SOURCE_BROWSED, details.did_replace_entry);
+      params.url, details.entry->GetTimestamp(), web_contents(),
+      params.page_id, params.referrer.url, params.redirects,
+      params.transition, history::SOURCE_BROWSED, details.did_replace_entry);
   if (content::PageTransitionIsMainFrame(params.transition) &&
       virtual_url != params.url) {
     // Hack on the "virtual" URL so that it will appear in history. For some

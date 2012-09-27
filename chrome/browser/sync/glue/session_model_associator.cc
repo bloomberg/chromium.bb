@@ -399,8 +399,7 @@ bool SessionModelAssociator::WriteTabContentsToSyncModel(
       synced_session_tracker_.GetTab(GetCurrentMachineTag(),
                                      tab_delegate.GetSessionId());
 
-  base::Time now = base::Time::Now();
-  UpdateSessionTabFromDelegate(tab_delegate, now, now, session_tab);
+  SetSessionTabFromDelegate(tab_delegate, base::Time::Now(), session_tab);
 
   const GURL new_url = GetCurrentVirtualURL(tab_delegate);
   DVLOG(1) << "Local tab " << tab_delegate.GetSessionId()
@@ -450,26 +449,10 @@ bool SessionModelAssociator::WriteTabContentsToSyncModel(
   return true;
 }
 
-// Updates |session_tab| by combining existing data and new data from
-// |tab_delegate|.
-//
-// Timestamps are chosen from either |session_tab| or
-// |default_navigation_timestamp| based on the following rules:
-// 1. If a navigation exists in both |tab_delegate| and |session_tab|,
-//    as determined by the unique id, and the navigation didn't just
-//    become the current navigation, we preserve the old timestamp.
-// 2. If the navigation exists in both but just become the current navigation
-//    (e.g. the user went back in history to this navigation), we update the
-//    timestamp to |default_navigation_timestamp|.
-// 3. All new navigations not present in |session_tab| have their
-//    timestamps set to |default_navigation_timestamp| (if they're the
-//    current one) or nulled out (if not).
-//
 // static
-void SessionModelAssociator::UpdateSessionTabFromDelegate(
+void SessionModelAssociator::SetSessionTabFromDelegate(
     const SyncedTabDelegate& tab_delegate,
     base::Time mtime,
-    base::Time default_navigation_timestamp,
     SessionTab* session_tab) {
   DCHECK(session_tab);
   session_tab->window_id.set_id(tab_delegate.GetWindowId());
@@ -486,59 +469,14 @@ void SessionModelAssociator::UpdateSessionTabFromDelegate(
                                  current_index - kMaxSyncNavigationCount);
   const int max_index = std::min(current_index + kMaxSyncNavigationCount,
                                  tab_delegate.GetEntryCount());
-  std::vector<TabNavigation> previous_navigations;
-  previous_navigations.swap(session_tab->navigations);
-  std::vector<TabNavigation>::const_iterator prev_nav_iter =
-      previous_navigations.begin();
+  session_tab->navigations.clear();
   for (int i = min_index; i < max_index; ++i) {
     const NavigationEntry* entry = (i == pending_index) ?
        tab_delegate.GetPendingEntry() : tab_delegate.GetEntryAtIndex(i);
     DCHECK(entry);
-    if (i == min_index) {
-      // Find the location of the first navigation within the previous list of
-      // navigations. We only need to do this once, as all subsequent
-      // navigations are either contiguous or completely new.
-      for (;prev_nav_iter != previous_navigations.end();
-           ++prev_nav_iter) {
-        if (prev_nav_iter->unique_id() == entry->GetUniqueID())
-          break;
-      }
-    }
     if (entry->GetVirtualURL().is_valid()) {
-      // TODO(akalin): Remove this logic once we have a timestamp in
-      // NavigationEntry (since we can just use those directly).
-      base::Time timestamp;
-      // If this navigation is an old one, reuse the old timestamp. Otherwise we
-      // leave the timestamp as the current time.
-      if (prev_nav_iter != previous_navigations.end() &&
-          prev_nav_iter->unique_id() == entry->GetUniqueID()) {
-        // Check that we haven't gone back/forward in the nav stack to this page
-        // (if so, we want to refresh the timestamp).
-        if (!(current_index != session_tab->current_navigation_index &&
-              current_index == i)) {
-          timestamp = prev_nav_iter->timestamp();
-          DVLOG(2) << "Nav to " << entry->GetVirtualURL()
-                   << " already known, reusing old timestamp "
-                   << timestamp.ToInternalValue();
-        }
-        // Even if the user went back in their history, they may have skipped
-        // over navigations, so the subsequent navigation entries may need their
-        // old timestamps preserved.
-        ++prev_nav_iter;
-      } else if (current_index != i && previous_navigations.empty()) {
-        // If this is a new tab, and has more than one navigation, we don't
-        // actually want to assign the current timestamp to other navigations.
-        // Override the timestamp to 0 in that case.
-        // Note: this is primarily to handle restoring sessions at restart,
-        // opening recently closed tabs, or opening tabs from other devices.
-        // Only the current navigation should have a timestamp in those cases.
-        timestamp = base::Time();
-      } else {
-        timestamp = default_navigation_timestamp;
-      }
-
       session_tab->navigations.push_back(
-          TabNavigation::FromNavigationEntry(i, *entry, timestamp));
+          TabNavigation::FromNavigationEntry(i, *entry));
     }
   }
   session_tab->session_storage_persistent_id.clear();

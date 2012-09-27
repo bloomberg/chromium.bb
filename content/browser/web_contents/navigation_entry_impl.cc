@@ -255,4 +255,12 @@ bool NavigationEntryImpl::GetIsOverridingUserAgent() const {
   return is_overriding_user_agent_;
 }
 
+void NavigationEntryImpl::SetTimestamp(base::Time timestamp) {
+  timestamp_ = timestamp;
+}
+
+base::Time NavigationEntryImpl::GetTimestamp() const {
+  return timestamp_;
+}
+
 }  // namespace content

@@ -59,6 +59,7 @@ scoped_ptr<content::NavigationEntry> MakeNavigationEntryForTest() {
   navigation_entry->SetPostID(kPostID);
   navigation_entry->SetOriginalRequestURL(kOriginalRequestURL);
   navigation_entry->SetIsOverridingUserAgent(kIsOverridingUserAgent);
+  navigation_entry->SetTimestamp(kTimestamp);
   return navigation_entry.Pass();
 }
 
@@ -96,7 +97,7 @@ TEST(TabNavigationTest, DefaultInitializer) {
   EXPECT_EQ(-1, SessionTypesTestHelper::GetPostID(navigation));
   EXPECT_EQ(GURL(), SessionTypesTestHelper::GetOriginalRequestURL(navigation));
   EXPECT_FALSE(SessionTypesTestHelper::GetIsOverridingUserAgent(navigation));
-  EXPECT_EQ(base::Time(), navigation.timestamp());
+  EXPECT_TRUE(navigation.timestamp().is_null());
 }
 
 // Create a TabNavigation from a NavigationEntry.  All its fields
@@ -106,8 +107,7 @@ TEST(TabNavigationTest, FromNavigationEntry) {
       MakeNavigationEntryForTest());
 
   const TabNavigation& navigation =
-      TabNavigation::FromNavigationEntry(
-          kIndex, *navigation_entry, kTimestamp);
+      TabNavigation::FromNavigationEntry(kIndex, *navigation_entry);
 
   EXPECT_EQ(kIndex, navigation.index());
 
@@ -154,7 +154,7 @@ TEST(TabNavigationTest, FromSyncData) {
   EXPECT_EQ(-1, SessionTypesTestHelper::GetPostID(navigation));
   EXPECT_EQ(GURL(), SessionTypesTestHelper::GetOriginalRequestURL(navigation));
   EXPECT_FALSE(SessionTypesTestHelper::GetIsOverridingUserAgent(navigation));
-  EXPECT_EQ(kTimestamp, navigation.timestamp());
+  EXPECT_TRUE(navigation.timestamp().is_null());
 }
 
 // Create a TabNavigation, pickle it, then create another one by
@@ -162,8 +162,7 @@ TEST(TabNavigationTest, FromSyncData) {
 // that aren't pickled, which should be set to default values.
 TEST(TabNavigationTest, Pickle) {
   const TabNavigation& old_navigation =
-      TabNavigation::FromNavigationEntry(
-          kIndex, *MakeNavigationEntryForTest(), kTimestamp);
+      TabNavigation::FromNavigationEntry(kIndex, *MakeNavigationEntryForTest());
 
   Pickle pickle;
   old_navigation.WriteToPickle(&pickle);
@@ -191,7 +190,7 @@ TEST(TabNavigationTest, Pickle) {
             SessionTypesTestHelper::GetOriginalRequestURL(new_navigation));
   EXPECT_EQ(kIsOverridingUserAgent,
             SessionTypesTestHelper::GetIsOverridingUserAgent(new_navigation));
-  EXPECT_EQ(base::Time(), new_navigation.timestamp());
+  EXPECT_EQ(kTimestamp, new_navigation.timestamp());
 }
 
 // Create a NavigationEntry, then create another one by converting to
@@ -203,8 +202,7 @@ TEST(TabNavigationTest, ToNavigationEntry) {
       MakeNavigationEntryForTest());
 
   const TabNavigation& navigation =
-      TabNavigation::FromNavigationEntry(
-          kIndex, *old_navigation_entry, kTimestamp);
+      TabNavigation::FromNavigationEntry(kIndex, *old_navigation_entry);
 
   const scoped_ptr<content::NavigationEntry> new_navigation_entry(
       navigation.ToNavigationEntry(kPageID, NULL));
@@ -233,8 +231,7 @@ TEST(TabNavigationTest, ToSyncData) {
       MakeNavigationEntryForTest());
 
   const TabNavigation& navigation =
-      TabNavigation::FromNavigationEntry(
-          kIndex, *navigation_entry, kTimestamp);
+      TabNavigation::FromNavigationEntry(kIndex, *navigation_entry);
 
   const sync_pb::TabNavigation sync_data = navigation.ToSyncData();
 
@@ -269,8 +266,7 @@ TEST(TabNavigationTest, TransitionTypes) {
 
       navigation_entry->SetTransitionType(transition);
       const TabNavigation& navigation =
-          TabNavigation::FromNavigationEntry(
-              kIndex, *navigation_entry, kTimestamp);
+          TabNavigation::FromNavigationEntry(kIndex, *navigation_entry);
       const sync_pb::TabNavigation& sync_data = navigation.ToSyncData();
       const TabNavigation& constructed_nav =
           TabNavigation::FromSyncData(kIndex, sync_data);

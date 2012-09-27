@@ -69,6 +69,8 @@ class CONTENT_EXPORT NavigationEntryImpl
   virtual const GURL& GetOriginalRequestURL() const OVERRIDE;
   virtual void SetIsOverridingUserAgent(bool override) OVERRIDE;
   virtual bool GetIsOverridingUserAgent() const OVERRIDE;
+  virtual void SetTimestamp(base::Time timestamp) OVERRIDE;
+  virtual base::Time GetTimestamp() const OVERRIDE;
 
   void set_unique_id(int unique_id) {
     unique_id_ = unique_id;
@@ -188,6 +190,7 @@ class CONTENT_EXPORT NavigationEntryImpl
   RestoreType restore_type_;
   GURL original_request_url_;
   bool is_overriding_user_agent_;
+  base::Time timestamp_;
 
   // This member is not persisted with session restore because it is transient.
   // If the post request succeeds, this field is cleared since the same
