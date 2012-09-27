@@ -714,7 +714,10 @@ def generate_simplified(
     match = EXECUTABLE.match(f)
     if match:
       return match.group(1) + '<(EXECUTABLE_SUFFIX)'
-    if LOG_FILE.match(f):
+
+    # Blacklist logs and 'First Run' in the PRODUCT_DIR. First Run is not
+    # created by the compile, but by the test itself.
+    if LOG_FILE.match(f) or f == '<(PRODUCT_DIR)/First Run':
       return None
 
     if sys.platform == 'darwin':
