@@ -134,6 +134,7 @@ bool AppWindowCreateFunction::RunImpl() {
   result->Set("viewId", base::Value::CreateIntegerValue(view_id));
   result->Set("injectTitlebar",
       base::Value::CreateBooleanValue(inject_html_titlebar));
+  result->Set("id", base::Value::CreateStringValue(shell_window->window_key()));
   SetResult(result);
   return true;
 }

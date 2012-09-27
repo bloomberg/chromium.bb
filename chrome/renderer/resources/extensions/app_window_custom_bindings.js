@@ -12,26 +12,57 @@ var GetView = appWindowNatives.GetView;
 
 chromeHidden.registerCustomHook('app.window', function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
-  apiFunctions.setCustomCallback('create', function(name, request, result) {
-    var view = null;
-    if (result.viewId) {
-      view = GetView(result.viewId, result.injectTitlebar);
+  apiFunctions.setCustomCallback('create',
+                                 function(name, request, windowParams) {
+    if (!windowParams.viewId) {
+      // Create failed? If given a callback, trigger it with an undefined
+      // object.
+      if (request.callback) {
+        request.callback()
+        delete request.callback;
+      }
+      return;
     }
+
+    var view = GetView(windowParams.viewId, windowParams.injectTitlebar);
+
+    // Initialize appWindowData in the newly created JS context
+    view.chrome.app.window.initializeAppWindow(windowParams);
+
     if (request.callback) {
       request.callback(view.chrome.app.window.current());
       delete request.callback;
     }
-  })
-  var AppWindow = function() {};
-  forEach(chromeHidden.internalAPIs.app.currentWindowInternal, function(fn) {
-    AppWindow.prototype[fn] =
-        chromeHidden.internalAPIs.app.currentWindowInternal[fn];
   });
-  AppWindow.prototype.moveTo = window.moveTo.bind(window);
-  AppWindow.prototype.resizeTo = window.resizeTo.bind(window);
-  AppWindow.prototype.contentWindow = window;
 
   apiFunctions.setHandleRequest('current', function() {
-    return new AppWindow;
-  })
+    if (!chromeHidden.currentAppWindow) {
+      console.error('chrome.app.window.current() is null -- window not ' +
+                    'created with chrome.app.window.create()');
+      return null;
+    }
+    return chromeHidden.currentAppWindow;
+  });
+
+  // This is an internal function, but needs to be bound with setHandleRequest
+  // because it is called from a different JS context
+  apiFunctions.setHandleRequest('initializeAppWindow', function(params) {
+    var AppWindow = function() {};
+    forEach(chromeHidden.internalAPIs.app.currentWindowInternal, function(fn) {
+      AppWindow.prototype[fn] =
+          chromeHidden.internalAPIs.app.currentWindowInternal[fn];
+    });
+    AppWindow.prototype.moveTo = window.moveTo.bind(window);
+    AppWindow.prototype.resizeTo = window.resizeTo.bind(window);
+    AppWindow.prototype.contentWindow = window;
+
+    Object.defineProperty(AppWindow.prototype, 'id', {get: function() {
+      return chromeHidden.appWindowData.id;
+    }});
+
+    chromeHidden.appWindowData = {
+      id: params.id || ''
+    };
+    chromeHidden.currentAppWindow = new AppWindow;
+  });
 });

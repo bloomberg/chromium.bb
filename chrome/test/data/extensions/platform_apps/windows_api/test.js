@@ -7,12 +7,36 @@ var callbackPass = chrome.test.callbackPass;
 chrome.app.runtime.onLaunched.addListener(function() {
   chrome.test.runTests([
    function testCreateWindow() {
-     chrome.app.window.create('test.html', {}, callbackPass(function (win) {
+     chrome.app.window.create('test.html',
+                              {id: 'testId'},
+                              callbackPass(function (win) {
        chrome.test.assertTrue(typeof win.contentWindow.window === 'object');
        chrome.test.assertEq('about:blank', win.contentWindow.location.href);
        chrome.test.assertEq('<html><head></head><body></body></html>',
            win.contentWindow.document.documentElement.outerHTML);
-     }))
+       var cw = win.contentWindow.chrome.app.window.current();
+       chrome.test.assertEq(cw, win);
+       chrome.test.assertEq('testId', cw.id);
+     }));
+   },
+
+   function testCreateMultiWindow() {
+     chrome.test.assertTrue(null === chrome.app.window.current());
+     chrome.app.window.create('test.html',
+                              {id: 'testId1'},
+                              callbackPass(function (win1) {
+      chrome.app.window.create('test.html',
+                                {id: 'testId2'},
+                                callbackPass(function (win2) {
+        var cw1 = win1.contentWindow.chrome.app.window.current();
+        var cw2 = win2.contentWindow.chrome.app.window.current();
+        chrome.test.assertEq('testId1', cw1.id);
+        chrome.test.assertEq('testId2', cw2.id);
+        chrome.test.assertTrue(cw1 === win1);
+        chrome.test.assertTrue(cw2 === win2);
+        chrome.test.assertFalse(cw1 === cw2);
+      }));
+     }));
    },
 
    function testUpdateWindowWidth() {

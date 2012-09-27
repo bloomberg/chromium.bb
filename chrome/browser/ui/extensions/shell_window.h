@@ -73,6 +73,7 @@ class ShellWindow : public content::NotificationObserver,
                              const GURL& url,
                              const CreateParams& params);
 
+  const std::string& window_key() const { return window_key_; }
   const SessionID& session_id() const { return session_id_; }
   const extensions::Extension* extension() const { return extension_; }
   TabContents* tab_contents() const { return contents_.get(); }
