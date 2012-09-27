@@ -15,6 +15,7 @@
 #include "base/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
+#include "base/message_loop_proxy.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
@@ -174,19 +175,6 @@ void OnGetEntryInfoForInsertDriveCachePathsPermissions(
       kReadOnlyFilePermissions));
 
   callback.Run();
-}
-
-void EnsureDirectoryExistsCallback(const base::Closure& callback,
-                                   DriveFileError error) {
-  if (error != gdata::DRIVE_FILE_OK &&
-      error != gdata::DRIVE_FILE_ERROR_EXISTS) {
-    LOG(ERROR) << "Failed to ensure the existence of the specified directory "
-               << "in Google Drive: " << error;
-    return;
-  }
-
-  if (!callback.is_null())
-    callback.Run();
 }
 
 }  // namespace
@@ -411,9 +399,10 @@ void PrepareWritableFileAndRun(Profile* profile,
 
 void EnsureDirectoryExists(Profile* profile,
                            const FilePath& directory,
-                           const base::Closure& callback) {
+                           const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(!callback.is_null());
   if (IsUnderDriveMountPoint(directory)) {
     DriveFileSystemInterface* file_system = GetDriveFileSystem(profile);
     DCHECK(file_system);
@@ -421,10 +410,10 @@ void EnsureDirectoryExists(Profile* profile,
         ExtractDrivePath(directory),
         true /* is_exclusive */,
         true /* is_recursive */,
-        base::Bind(&EnsureDirectoryExistsCallback, callback));
+        callback);
   } else {
-    if (!callback.is_null())
-      callback.Run();
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE, base::Bind(callback, DRIVE_FILE_OK));
   }
 }
 

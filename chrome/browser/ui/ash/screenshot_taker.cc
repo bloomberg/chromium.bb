@@ -82,6 +82,25 @@ void SaveScreenshotToDrive(scoped_refptr<base::RefCountedBytes> png_data,
   SaveScreenshotInternal(local_path, png_data);
 }
 
+void EnsureDirectoryExistsCallback(
+    Profile* profile,
+    const FilePath& screenshot_path,
+    scoped_refptr<base::RefCountedBytes> png_data,
+    gdata::DriveFileError error) {
+  // It is okay to fail with DRIVE_FILE_ERROR_EXISTS since anyway the directory
+  // of the target file exists.
+  if (error == gdata::DRIVE_FILE_OK ||
+      error == gdata::DRIVE_FILE_ERROR_EXISTS) {
+    gdata::util::PrepareWritableFileAndRun(
+        profile,
+        screenshot_path,
+        base::Bind(&SaveScreenshotToDrive, png_data));
+  } else {
+    LOG(ERROR) << "Failed to ensure the existence of the specified directory "
+               << "in Google Drive: " << error;
+  }
+}
+
 void PostSaveScreenshotTask(const FilePath& screenshot_path,
                             scoped_refptr<base::RefCountedBytes> png_data) {
   if (gdata::util::IsUnderDriveMountPoint(screenshot_path)) {
@@ -90,10 +109,10 @@ void PostSaveScreenshotTask(const FilePath& screenshot_path,
       gdata::util::EnsureDirectoryExists(
           profile,
           screenshot_path.DirName(),
-          base::Bind(&gdata::util::PrepareWritableFileAndRun,
+          base::Bind(&EnsureDirectoryExistsCallback,
                      profile,
                      screenshot_path,
-                     base::Bind(&SaveScreenshotToDrive, png_data)));
+                     png_data));
     }
   } else {
     content::BrowserThread::GetBlockingPool()->PostTask(

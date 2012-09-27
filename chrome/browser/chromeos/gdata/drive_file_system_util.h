@@ -11,6 +11,7 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/chromeos/gdata/drive_resource_metadata.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "googleurl/src/gurl.h"
 
@@ -117,7 +118,9 @@ void PrepareWritableFileAndRun(Profile* profile,
 
 // Ensures the existence of |directory| of '/special/drive/foo'.  This will
 // create |directory| and its ancestors if they don't exist.  |callback| is
-// invoked after making sure that |directory| exists.
+// invoked after making sure that |directory| exists.  |callback| should
+// interpret error codes of either DRIVE_FILE_OK or DRIVE_FILE_ERROR_EXISTS as
+// indicating that |directory| now exists.
 //
 // If |directory| is not a Drive path, it won't check the existence and just
 // runs |callback|.
@@ -125,7 +128,7 @@ void PrepareWritableFileAndRun(Profile* profile,
 // Must be called from UI/IO thread.
 void EnsureDirectoryExists(Profile* profile,
                            const FilePath& directory,
-                           const base::Closure& callback);
+                           const FileOperationCallback& callback);
 
 // Converts GData error code into file platform error code.
 DriveFileError GDataToDriveFileError(GDataErrorCode status);
