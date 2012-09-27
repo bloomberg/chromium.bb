@@ -7,10 +7,10 @@ import sys
 
 import chrome_remote_control.run_tests
 
-if __name__ == "__main__":
+if __name__ == '__main__':
   top_level_dir = os.path.abspath(
     os.path.dirname(__file__))
-  start_dir = "chrome_remote_control"
+  start_dir = 'chrome_remote_control'
   ret = chrome_remote_control.run_tests.Main(
     sys.argv[1:], start_dir, top_level_dir)
   sys.exit(ret)

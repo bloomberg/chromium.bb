@@ -13,4 +13,4 @@ class TabTest(tab_test_case.TabTestCase):
     self._tab.WaitForDocumentReadyStateToBeInteractiveOrBetter()
 
   def testTabBrowserIsRightBrowser(self):
-    self.assertEqual(self._tab.browser, self._browser)
+    self.assertIs(self._tab.browser, self._browser)

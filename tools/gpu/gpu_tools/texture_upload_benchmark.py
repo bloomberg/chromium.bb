@@ -8,13 +8,13 @@ class TextureUploadBenchmark(scrolling_benchmark.ScrollingBenchmark):
   def MeasurePage(self, _, tab):
     rendering_stats_deltas = self.ScrollPageFully(tab)
 
-    if (("totalCommitCount" not in rendering_stats_deltas)
-        or rendering_stats_deltas["totalCommitCount"] == 0) :
+    if (('totalCommitCount' not in rendering_stats_deltas)
+        or rendering_stats_deltas['totalCommitCount'] == 0) :
       averageCommitTimeMs = 0
     else :
       averageCommitTimeMs = (
-          1000 * rendering_stats_deltas["totalCommitTimeInSeconds"] /
-          rendering_stats_deltas["totalCommitCount"])
+          1000 * rendering_stats_deltas['totalCommitTimeInSeconds'] /
+          rendering_stats_deltas['totalCommitCount'])
 
     return {
       'texture_upload_count': rendering_stats_deltas['textureUploadCount'],
