@@ -1607,6 +1607,67 @@ TEST_F(GLES2ImplementationTest, PopGroupMarkerEXT) {
   gl_->PopGroupMarkerEXT();
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
+
+TEST_F(GLES2ImplementationTest, GenVertexArraysOES) {
+  GLuint ids[2] = { 0, };
+  struct Cmds {
+    GenVertexArraysOESImmediate gen;
+    GLuint data[2];
+  };
+  Cmds expected;
+  expected.gen.Init(arraysize(ids), &ids[0]);
+  expected.data[0] = kVertexArraysStartId;
+  expected.data[1] = kVertexArraysStartId + 1;
+  gl_->GenVertexArraysOES(arraysize(ids), &ids[0]);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+  EXPECT_EQ(kVertexArraysStartId, ids[0]);
+  EXPECT_EQ(kVertexArraysStartId + 1, ids[1]);
+}
+
+TEST_F(GLES2ImplementationTest, DeleteVertexArraysOES) {
+  GLuint ids[2] = { kVertexArraysStartId, kVertexArraysStartId + 1 };
+  struct Cmds {
+    DeleteVertexArraysOESImmediate del;
+    GLuint data[2];
+  };
+  Cmds expected;
+  expected.del.Init(arraysize(ids), &ids[0]);
+  expected.data[0] = kVertexArraysStartId;
+  expected.data[1] = kVertexArraysStartId + 1;
+  gl_->DeleteVertexArraysOES(arraysize(ids), &ids[0]);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
+TEST_F(GLES2ImplementationTest, IsVertexArrayOES) {
+  struct Cmds {
+    IsVertexArrayOES cmd;
+  };
+
+  typedef IsVertexArrayOES::Result Result;
+  Cmds expected;
+  ExpectedMemoryInfo result1 =
+      GetExpectedResultMemory(sizeof(IsVertexArrayOES::Result));
+  expected.cmd.Init(1, result1.id, result1.offset);
+
+  EXPECT_CALL(*command_buffer(), OnFlush())
+      .WillOnce(SetMemory(result1.ptr, uint32(1)))
+      .RetiresOnSaturation();
+
+  GLboolean result = gl_->IsVertexArrayOES(1);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+  EXPECT_TRUE(result);
+}
+
+TEST_F(GLES2ImplementationTest, BindVertexArrayOES) {
+  struct Cmds {
+    BindVertexArrayOES cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init(1);
+
+  gl_->BindVertexArrayOES(1);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
 // TODO: Implement unit test for GenSharedIdsCHROMIUM
 // TODO: Implement unit test for DeleteSharedIdsCHROMIUM
 // TODO: Implement unit test for RegisterSharedIdsCHROMIUM

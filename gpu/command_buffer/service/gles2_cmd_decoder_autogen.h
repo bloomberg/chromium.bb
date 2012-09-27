@@ -2646,6 +2646,95 @@ error::Error GLES2DecoderImpl::HandlePopGroupMarkerEXT(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleGenVertexArraysOES(
+    uint32 immediate_data_size, const gles2::GenVertexArraysOES& c) {
+  GLsizei n = static_cast<GLsizei>(c.n);
+  uint32 data_size;
+  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+    return error::kOutOfBounds;
+  }
+  GLuint* arrays = GetSharedMemoryAs<GLuint*>(
+      c.arrays_shm_id, c.arrays_shm_offset, data_size);
+  if (arrays == NULL) {
+    return error::kOutOfBounds;
+  }
+  if (!GenVertexArraysOESHelper(n, arrays)) {
+    return error::kInvalidArguments;
+  }
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleGenVertexArraysOESImmediate(
+    uint32 immediate_data_size, const gles2::GenVertexArraysOESImmediate& c) {
+  GLsizei n = static_cast<GLsizei>(c.n);
+  uint32 data_size;
+  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+    return error::kOutOfBounds;
+  }
+  GLuint* arrays = GetImmediateDataAs<GLuint*>(
+      c, data_size, immediate_data_size);
+  if (arrays == NULL) {
+    return error::kOutOfBounds;
+  }
+  if (!GenVertexArraysOESHelper(n, arrays)) {
+    return error::kInvalidArguments;
+  }
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleDeleteVertexArraysOES(
+    uint32 immediate_data_size, const gles2::DeleteVertexArraysOES& c) {
+  GLsizei n = static_cast<GLsizei>(c.n);
+  uint32 data_size;
+  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+    return error::kOutOfBounds;
+  }
+  const GLuint* arrays = GetSharedMemoryAs<const GLuint*>(
+      c.arrays_shm_id, c.arrays_shm_offset, data_size);
+  if (arrays == NULL) {
+    return error::kOutOfBounds;
+  }
+  DeleteVertexArraysOESHelper(n, arrays);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleDeleteVertexArraysOESImmediate(
+    uint32 immediate_data_size,
+    const gles2::DeleteVertexArraysOESImmediate& c) {
+  GLsizei n = static_cast<GLsizei>(c.n);
+  uint32 data_size;
+  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+    return error::kOutOfBounds;
+  }
+  const GLuint* arrays = GetImmediateDataAs<const GLuint*>(
+      c, data_size, immediate_data_size);
+  if (arrays == NULL) {
+    return error::kOutOfBounds;
+  }
+  DeleteVertexArraysOESHelper(n, arrays);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleIsVertexArrayOES(
+    uint32 immediate_data_size, const gles2::IsVertexArrayOES& c) {
+  GLuint array = c.array;
+  typedef IsVertexArrayOES::Result Result;
+  Result* result_dst = GetSharedMemoryAs<Result*>(
+      c.result_shm_id, c.result_shm_offset, sizeof(*result_dst));
+  if (!result_dst) {
+    return error::kOutOfBounds;
+  }
+  *result_dst = DoIsVertexArrayOES(array);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleBindVertexArrayOES(
+    uint32 immediate_data_size, const gles2::BindVertexArrayOES& c) {
+  GLuint array = c.array;
+  DoBindVertexArrayOES(array);
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderImpl::HandleGetMaxValueInBufferCHROMIUM(
     uint32 immediate_data_size, const gles2::GetMaxValueInBufferCHROMIUM& c) {
   GLuint buffer_id = c.buffer_id;

@@ -3457,6 +3457,106 @@ TEST_F(GLES2FormatTest, PopGroupMarkerEXT) {
       next_cmd, sizeof(cmd));
 }
 
+TEST_F(GLES2FormatTest, GenVertexArraysOES) {
+  GenVertexArraysOES& cmd = *GetBufferAs<GenVertexArraysOES>();
+  void* next_cmd = cmd.Set(
+      &cmd,
+      static_cast<GLsizei>(11),
+      static_cast<uint32>(12),
+      static_cast<uint32>(13));
+  EXPECT_EQ(static_cast<uint32>(GenVertexArraysOES::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLsizei>(11), cmd.n);
+  EXPECT_EQ(static_cast<uint32>(12), cmd.arrays_shm_id);
+  EXPECT_EQ(static_cast<uint32>(13), cmd.arrays_shm_offset);
+  CheckBytesWrittenMatchesExpectedSize(
+      next_cmd, sizeof(cmd));
+}
+
+TEST_F(GLES2FormatTest, GenVertexArraysOESImmediate) {
+  static GLuint ids[] = { 12, 23, 34, };
+  GenVertexArraysOESImmediate& cmd =
+      *GetBufferAs<GenVertexArraysOESImmediate>();
+  void* next_cmd = cmd.Set(
+      &cmd, static_cast<GLsizei>(arraysize(ids)), ids);
+  EXPECT_EQ(static_cast<uint32>(GenVertexArraysOESImmediate::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd) +
+            RoundSizeToMultipleOfEntries(cmd.n * 4u),
+            cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLsizei>(arraysize(ids)), cmd.n);
+  CheckBytesWrittenMatchesExpectedSize(
+      next_cmd, sizeof(cmd) +
+      RoundSizeToMultipleOfEntries(arraysize(ids) * 4u));
+  // TODO(gman): Check that ids were inserted;
+}
+
+TEST_F(GLES2FormatTest, DeleteVertexArraysOES) {
+  DeleteVertexArraysOES& cmd = *GetBufferAs<DeleteVertexArraysOES>();
+  void* next_cmd = cmd.Set(
+      &cmd,
+      static_cast<GLsizei>(11),
+      static_cast<uint32>(12),
+      static_cast<uint32>(13));
+  EXPECT_EQ(static_cast<uint32>(DeleteVertexArraysOES::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLsizei>(11), cmd.n);
+  EXPECT_EQ(static_cast<uint32>(12), cmd.arrays_shm_id);
+  EXPECT_EQ(static_cast<uint32>(13), cmd.arrays_shm_offset);
+  CheckBytesWrittenMatchesExpectedSize(
+      next_cmd, sizeof(cmd));
+}
+
+TEST_F(GLES2FormatTest, DeleteVertexArraysOESImmediate) {
+  static GLuint ids[] = { 12, 23, 34, };
+  DeleteVertexArraysOESImmediate& cmd =
+      *GetBufferAs<DeleteVertexArraysOESImmediate>();
+  void* next_cmd = cmd.Set(
+      &cmd, static_cast<GLsizei>(arraysize(ids)), ids);
+  EXPECT_EQ(static_cast<uint32>(DeleteVertexArraysOESImmediate::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd) +
+            RoundSizeToMultipleOfEntries(cmd.n * 4u),
+            cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLsizei>(arraysize(ids)), cmd.n);
+  CheckBytesWrittenMatchesExpectedSize(
+      next_cmd, sizeof(cmd) +
+      RoundSizeToMultipleOfEntries(arraysize(ids) * 4u));
+  // TODO(gman): Check that ids were inserted;
+}
+
+TEST_F(GLES2FormatTest, IsVertexArrayOES) {
+  IsVertexArrayOES& cmd = *GetBufferAs<IsVertexArrayOES>();
+  void* next_cmd = cmd.Set(
+      &cmd,
+      static_cast<GLuint>(11),
+      static_cast<uint32>(12),
+      static_cast<uint32>(13));
+  EXPECT_EQ(static_cast<uint32>(IsVertexArrayOES::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.array);
+  EXPECT_EQ(static_cast<uint32>(12), cmd.result_shm_id);
+  EXPECT_EQ(static_cast<uint32>(13), cmd.result_shm_offset);
+  CheckBytesWrittenMatchesExpectedSize(
+      next_cmd, sizeof(cmd));
+}
+
+TEST_F(GLES2FormatTest, BindVertexArrayOES) {
+  BindVertexArrayOES& cmd = *GetBufferAs<BindVertexArrayOES>();
+  void* next_cmd = cmd.Set(
+      &cmd,
+      static_cast<GLuint>(11));
+  EXPECT_EQ(static_cast<uint32>(BindVertexArrayOES::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.array);
+  CheckBytesWrittenMatchesExpectedSize(
+      next_cmd, sizeof(cmd));
+}
+
 TEST_F(GLES2FormatTest, SwapBuffers) {
   SwapBuffers& cmd = *GetBufferAs<SwapBuffers>();
   void* next_cmd = cmd.Set(

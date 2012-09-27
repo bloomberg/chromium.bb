@@ -19,6 +19,7 @@
 #include "gpu/command_buffer/service/shader_manager.h"
 #include "gpu/command_buffer/service/test_helper.h"
 #include "gpu/command_buffer/service/texture_manager.h"
+#include "gpu/command_buffer/service/vertex_array_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_context_stub.h"
 #include "ui/gl/gl_surface_stub.h"
@@ -122,6 +123,12 @@ class GLES2DecoderTestBase : public testing::Test {
 
   QueryManager::Query* GetQueryInfo(GLuint client_id) {
     return decoder_->GetQueryManager()->GetQuery(client_id);
+  }
+
+  // This name doesn't match the underlying function, but doing it this way
+  // prevents the need to special-case the unit test generation
+  VertexAttribManager* GetVertexArrayInfo(GLuint client_id) {
+    return decoder_->GetVertexArrayManager()->GetVertexAttribManager(client_id);
   }
 
   ProgramManager* program_manager() {
@@ -368,6 +375,7 @@ class GLES2DecoderTestBase : public testing::Test {
   static const GLuint kServiceShaderId = 306;
   static const GLuint kServiceElementBufferId = 308;
   static const GLuint kServiceQueryId = 309;
+  static const GLuint kServiceVertexArrayId = 310;
 
   static const int32 kSharedMemoryId = 401;
   static const size_t kSharedBufferSize = 2048;
@@ -460,6 +468,7 @@ class GLES2DecoderTestBase : public testing::Test {
   GLuint client_vertex_shader_id_;
   GLuint client_fragment_shader_id_;
   GLuint client_query_id_;
+  GLuint client_vertexarray_id_;
 
   uint32 shared_memory_id_;
   uint32 shared_memory_offset_;

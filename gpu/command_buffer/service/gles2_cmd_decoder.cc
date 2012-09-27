@@ -51,6 +51,7 @@
 #include "gpu/command_buffer/service/texture_definition.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
+#include "gpu/command_buffer/service/vertex_array_manager.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
@@ -510,6 +511,9 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   virtual gfx::GLContext* GetGLContext() { return context_.get(); }
   virtual ContextGroup* GetContextGroup() { return group_.get(); }
   virtual QueryManager* GetQueryManager() { return query_manager_.get(); }
+  virtual VertexArrayManager* GetVertexArrayManager() {
+    return vertex_array_manager_.get();
+  }
   virtual bool ProcessPendingQueries();
 
   virtual void SetGLError(
@@ -627,6 +631,8 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   void DeleteRenderbuffersHelper(GLsizei n, const GLuint* client_ids);
   bool GenQueriesEXTHelper(GLsizei n, const GLuint* client_ids);
   void DeleteQueriesEXTHelper(GLsizei n, const GLuint* client_ids);
+  bool GenVertexArraysOESHelper(GLsizei n, const GLuint* client_ids);
+  void DeleteVertexArraysOESHelper(GLsizei n, const GLuint* client_ids);
 
   // TODO(gman): Cache these pointers?
   BufferManager* buffer_manager() {
@@ -655,6 +661,10 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
 
   MailboxManager* mailbox_manager() {
     return group_->mailbox_manager();
+  }
+
+  VertexArrayManager* vertex_array_manager() {
+    return vertex_array_manager_.get();
   }
 
   bool IsOffscreenBufferMultisampled() const {
@@ -897,6 +907,24 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
     renderbuffer_manager()->RemoveRenderbufferInfo(client_id);
   }
 
+  // Gets the vertex attrib manager for the given vertex array.
+  VertexAttribManager* GetVertexAttribManager(GLuint client_id) {
+    VertexAttribManager* info =
+        vertex_array_manager()->GetVertexAttribManager(client_id);
+    return info;
+  }
+
+  // Removes the vertex attrib manager for the given vertex array.
+  void RemoveVertexAttribManager(GLuint client_id) {
+    vertex_array_manager()->RemoveVertexAttribManager(client_id);
+  }
+
+  // Creates a vertex attrib manager for the given vertex array.
+  void CreateVertexAttribManager(GLuint client_id, GLuint service_id) {
+    return vertex_array_manager()->CreateVertexAttribManager(
+      client_id, service_id, group_->max_vertex_attribs());
+  }
+
   void DoBindAttribLocation(GLuint client_id, GLuint index, const char* name);
   void DoBindUniformLocationCHROMIUM(
       GLuint client_id, GLint location, const char* name);
@@ -1002,6 +1030,9 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
 
   // Wrapper for glBindTexture since we need to track the current targets.
   void DoBindTexture(GLenum target, GLuint texture);
+
+  // Wrapper for glBindVertexArrayOES
+  void DoBindVertexArrayOES(GLuint array);
 
   // Wrapper for glBlitFramebufferEXT.
   void DoBlitFramebufferEXT(
@@ -1119,6 +1150,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   bool DoIsRenderbuffer(GLuint client_id);
   bool DoIsShader(GLuint client_id);
   bool DoIsTexture(GLuint client_id);
+  bool DoIsVertexArrayOES(GLuint client_id);
 
   // Wrapper for glLinkProgram
   void DoLinkProgram(GLuint program);
@@ -1246,9 +1278,11 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // Gets the buffer id for a given target.
   BufferManager::BufferInfo* GetBufferInfoForTarget(GLenum target) {
     DCHECK(target == GL_ARRAY_BUFFER || target == GL_ELEMENT_ARRAY_BUFFER);
-    BufferManager::BufferInfo* info = target == GL_ARRAY_BUFFER ?
-        bound_array_buffer_ : bound_element_array_buffer_;
-    return info;
+    if (target == GL_ARRAY_BUFFER) {
+      return bound_array_buffer_;
+    } else {
+      return vertex_attrib_manager_->element_array_buffer();
+    }
   }
 
   // Gets the texture id for a given target.
@@ -1432,12 +1466,11 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // glVertexAttribPointer.
   BufferManager::BufferInfo::Ref bound_array_buffer_;
 
-  // The currently bound element array buffer. If this is 0 it is illegal
-  // to call glDrawElements.
-  BufferManager::BufferInfo::Ref bound_element_array_buffer_;
-
   // Class that manages vertex attribs.
-  scoped_ptr<VertexAttribManager> vertex_attrib_manager_;
+  VertexAttribManager::Ref vertex_attrib_manager_;
+
+  // Default vertex attribs manager, used when no VAOs are bound.
+  VertexAttribManager::Ref default_vertex_attrib_manager_;
 
   // The buffer we bind to attrib 0 since OpenGL requires it (ES does not).
   GLuint attrib_0_buffer_id_;
@@ -1524,6 +1557,8 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
 
   scoped_ptr<QueryManager> query_manager_;
   QueryManager::Query::Ref current_query_;
+
+  scoped_ptr<VertexArrayManager> vertex_array_manager_;
 
   base::Callback<void(gfx::Size)> resize_callback_;
 
@@ -2088,10 +2123,13 @@ bool GLES2DecoderImpl::Initialize(
 
   disallowed_features_ = disallowed_features;
 
-  vertex_attrib_manager_.reset(new VertexAttribManager());
-  vertex_attrib_manager_->Initialize(group_->max_vertex_attribs());
+  default_vertex_attrib_manager_ = new VertexAttribManager();
+  default_vertex_attrib_manager_->Initialize(group_->max_vertex_attribs());
+
+  vertex_attrib_manager_ = default_vertex_attrib_manager_;
 
   query_manager_.reset(new QueryManager(this, feature_info_));
+  vertex_array_manager_.reset(new VertexArrayManager());
 
   util_.set_num_compressed_texture_formats(
       validators_->compressed_texture_format.GetValues().size());
@@ -2352,6 +2390,10 @@ bool GLES2DecoderImpl::Initialize(
   DoBindFramebuffer(GL_FRAMEBUFFER, 0);
   DoBindRenderbuffer(GL_RENDERBUFFER, 0);
 
+  if (feature_info_->feature_flags().native_vertex_array_object_) {
+    DoBindVertexArrayOES(0);
+  }
+
   // AMD and Intel drivers on Mac OS apparently get gl_PointCoord
   // backward from the spec and this setting makes them work
   // correctly. rdar://problem/11883495
@@ -2508,9 +2550,6 @@ void GLES2DecoderImpl::DeleteBuffersHelper(
       vertex_attrib_manager_->Unbind(buffer);
       if (bound_array_buffer_ == buffer) {
         bound_array_buffer_ = NULL;
-      }
-      if (bound_element_array_buffer_ == buffer) {
-        bound_element_array_buffer_ = NULL;
       }
       RemoveBufferInfo(client_ids[ii]);
     }
@@ -2877,10 +2916,10 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
   SetParent(NULL, 0);
 
   // Unbind everything.
-  vertex_attrib_manager_.reset();
+  vertex_attrib_manager_ = NULL;
+  default_vertex_attrib_manager_ = NULL;
   texture_units_.reset();
   bound_array_buffer_ = NULL;
-  bound_element_array_buffer_ = NULL;
   current_query_ = NULL;
   current_program_ = NULL;
   bound_read_framebuffer_ = NULL;
@@ -2948,6 +2987,11 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
   if (query_manager_.get()) {
     query_manager_->Destroy(have_context);
     query_manager_.reset();
+  }
+
+  if (vertex_array_manager_ .get()) {
+    vertex_array_manager_->Destroy(have_context);
+    vertex_array_manager_.reset();
   }
 
   if (group_) {
@@ -3372,7 +3416,7 @@ void GLES2DecoderImpl::DoBindBuffer(GLenum target, GLuint client_id) {
       bound_array_buffer_ = info;
       break;
     case GL_ELEMENT_ARRAY_BUFFER:
-      bound_element_array_buffer_ = info;
+      vertex_attrib_manager_->SetElementArrayBuffer(info);
       break;
     default:
       NOTREACHED();  // Validation should prevent us getting here.
@@ -3827,10 +3871,10 @@ bool GLES2DecoderImpl::GetHelper(
     case GL_ELEMENT_ARRAY_BUFFER_BINDING:
       *num_written = 1;
       if (params) {
-        if (bound_element_array_buffer_) {
+        if (vertex_attrib_manager_->element_array_buffer()) {
           GLuint client_id = 0;
           buffer_manager()->GetClientId(
-              bound_element_array_buffer_->service_id(),
+              vertex_attrib_manager_->element_array_buffer()->service_id(),
               &client_id);
           *params = client_id;
         } else {
@@ -5718,7 +5762,7 @@ error::Error GLES2DecoderImpl::DoDrawElements(
     GLsizei primcount) {
   if (ShouldDeferDraws())
     return error::kDeferCommandUntilLater;
-  if (!bound_element_array_buffer_) {
+  if (!vertex_attrib_manager_->element_array_buffer()) {
     SetGLError(GL_INVALID_OPERATION,
                function_name, "No element array buffer bound");
     return error::kNoError;
@@ -5754,7 +5798,7 @@ error::Error GLES2DecoderImpl::DoDrawElements(
   }
 
   GLuint max_vertex_accessed;
-  if (!bound_element_array_buffer_->GetMaxValueForRange(
+  if (!vertex_attrib_manager_->element_array_buffer()->GetMaxValueForRange(
       offset, count, type, &max_vertex_accessed)) {
     SetGLError(GL_INVALID_OPERATION,
                function_name, "range out of bounds for buffer");
@@ -6322,10 +6366,17 @@ void GLES2DecoderImpl::DoVertexAttrib4fv(GLuint index, const GLfloat* v) {
 
 error::Error GLES2DecoderImpl::HandleVertexAttribPointer(
     uint32 immediate_data_size, const gles2::VertexAttribPointer& c) {
+
   if (!bound_array_buffer_ || bound_array_buffer_->IsDeleted()) {
-    SetGLError(GL_INVALID_VALUE,
-               "glVertexAttribPointer", "no array buffer bound");
-    return error::kNoError;
+    if (vertex_attrib_manager_ == default_vertex_attrib_manager_) {
+      SetGLError(GL_INVALID_VALUE,
+                "glVertexAttribPointer", "no array buffer bound");
+      return error::kNoError;
+    } else if (c.offset != 0) {
+      SetGLError(GL_INVALID_VALUE,
+                "glVertexAttribPointer", "client side arrays are not allowed");
+      return error::kNoError;
+    }
   }
 
   GLuint indx = c.indx;
@@ -8728,6 +8779,89 @@ error::Error GLES2DecoderImpl::HandleEndQueryEXT(
 
   current_query_ = NULL;
   return error::kNoError;
+}
+
+bool GLES2DecoderImpl::GenVertexArraysOESHelper(
+    GLsizei n, const GLuint* client_ids) {
+
+  if (!feature_info_->feature_flags().native_vertex_array_object_) {
+    // TODO(bajones): Emulate if not present
+    SetGLError(GL_INVALID_OPERATION, "glGenVertexArraysOES", "not supported.");
+  }
+
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    if (GetVertexAttribManager(client_ids[ii])) {
+      return false;
+    }
+  }
+  scoped_array<GLuint> service_ids(new GLuint[n]);
+  glGenVertexArraysOES(n, service_ids.get());
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    CreateVertexAttribManager(client_ids[ii], service_ids[ii]);
+  }
+  return true;
+}
+
+void GLES2DecoderImpl::DeleteVertexArraysOESHelper(
+    GLsizei n, const GLuint* client_ids) {
+  if (!feature_info_->feature_flags().native_vertex_array_object_) {
+    // TODO(bajones): Emulate if not present
+    SetGLError(GL_INVALID_OPERATION,
+      "glDeleteVertexArraysOES", "not supported.");
+  }
+
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    VertexAttribManager* vao =
+        GetVertexAttribManager(client_ids[ii]);
+    if (vao && !vao->IsDeleted()) {
+      if (vertex_attrib_manager_ == vao) {
+        vertex_attrib_manager_ = default_vertex_attrib_manager_;
+      }
+      RemoveVertexAttribManager(client_ids[ii]);
+    }
+  }
+}
+
+void GLES2DecoderImpl::DoBindVertexArrayOES(GLuint client_id) {
+  if (!feature_info_->feature_flags().native_vertex_array_object_) {
+    // TODO(bajones): Emulate if not present
+    SetGLError(GL_INVALID_OPERATION, "glBindVertexArrayOES", "not supported.");
+  }
+
+  VertexAttribManager* vao = NULL;
+  GLuint service_id = 0;
+  if (client_id != 0) {
+    vao = GetVertexAttribManager(client_id);
+    if (!vao) {
+      // Unlike most Bind* methods, the spec explicitly states that VertexArray
+      // only allows names that have been previously generated. As such, we do
+      // not generate new names here.
+      SetGLError(GL_INVALID_OPERATION,
+          "glBindVertexArrayOES", ""
+          "bad vertex array id.");
+      current_decoder_error_ = error::kNoError;
+      return;
+    } else {
+      service_id = vao->service_id();
+    }
+
+    vertex_attrib_manager_ = vao;
+  } else {
+    vertex_attrib_manager_ = default_vertex_attrib_manager_;
+  }
+
+  glBindVertexArrayOES(service_id);
+}
+
+bool GLES2DecoderImpl::DoIsVertexArrayOES(GLuint client_id) {
+  if (!feature_info_->feature_flags().native_vertex_array_object_) {
+    // TODO(bajones): Emulate if not present
+    SetGLError(GL_INVALID_OPERATION, "glIsVertexArrayOES", "not supported.");
+  }
+
+  const VertexAttribManager* vao =
+      GetVertexAttribManager(client_id);
+  return vao && vao->IsValid() && !vao->IsDeleted();
 }
 
 error::Error GLES2DecoderImpl::HandleCreateStreamTextureCHROMIUM(

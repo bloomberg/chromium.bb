@@ -205,6 +205,7 @@
         'command_buffer/service/texture_manager_unittest.cc',
         'command_buffer/service/transfer_buffer_manager_unittest.cc',
         'command_buffer/service/vertex_attrib_manager_unittest.cc',
+        'command_buffer/service/vertex_array_manager_unittest.cc',
       ],
       'conditions': [
         ['OS == "android" and gtest_target_type == "shared_library"', {

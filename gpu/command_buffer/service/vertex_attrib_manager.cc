@@ -15,6 +15,7 @@
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "gpu/command_buffer/service/vertex_array_manager.h"
 
 namespace gpu {
 namespace gles2 {
@@ -63,13 +64,38 @@ bool VertexAttribManager::VertexAttribInfo::CanAccess(GLuint index) const {
 
 VertexAttribManager::VertexAttribManager()
     : max_vertex_attribs_(0),
-      num_fixed_attribs_(0) {
+      num_fixed_attribs_(0),
+      element_array_buffer_(NULL),
+      manager_(NULL),
+      deleted_(false),
+      service_id_(0) {
+}
+
+VertexAttribManager::VertexAttribManager(
+    VertexArrayManager* manager, GLuint service_id, uint32 num_vertex_attribs)
+    : max_vertex_attribs_(0),
+      num_fixed_attribs_(0),
+      element_array_buffer_(NULL),
+      manager_(manager),
+      deleted_(false),
+      service_id_(service_id) {
+  manager_->StartTracking(this);
+  Initialize(num_vertex_attribs, false);
 }
 
 VertexAttribManager::~VertexAttribManager() {
+  if (manager_) {
+    if (manager_->have_context_) {
+      GLuint id = service_id();
+      glDeleteVertexArraysOES(1, &id);
+    }
+    manager_->StopTracking(this);
+    manager_ = NULL;
+  }
 }
 
-void VertexAttribManager::Initialize(uint32 max_vertex_attribs) {
+void VertexAttribManager::Initialize(
+    uint32 max_vertex_attribs, bool init_attribs) {
   max_vertex_attribs_ = max_vertex_attribs;
   vertex_attrib_infos_.reset(
       new VertexAttribInfo[max_vertex_attribs]);
@@ -79,7 +105,8 @@ void VertexAttribManager::Initialize(uint32 max_vertex_attribs) {
   for (uint32 vv = 0; vv < max_vertex_attribs; ++vv) {
     vertex_attrib_infos_[vv].set_index(vv);
     vertex_attrib_infos_[vv].SetList(&disabled_vertex_attribs_);
-    if (!disable_workarounds) {
+
+    if (!disable_workarounds && init_attribs) {
       glVertexAttrib4f(vv, 0.0f, 0.0f, 0.0f, 1.0f);
     }
   }
@@ -98,6 +125,9 @@ bool VertexAttribManager::Enable(GLuint index, bool enable) {
 }
 
 void VertexAttribManager::Unbind(BufferManager::BufferInfo* buffer) {
+  if (element_array_buffer_ == buffer) {
+    element_array_buffer_ = NULL;
+  }
   for (uint32 vv = 0; vv < max_vertex_attribs_; ++vv) {
     vertex_attrib_infos_[vv].Unbind(buffer);
   }

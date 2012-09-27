@@ -161,6 +161,11 @@ GL_APICALL void         GL_APIENTRY glInsertEventMarkerEXT (GLsizei length, cons
 GL_APICALL void         GL_APIENTRY glPushGroupMarkerEXT (GLsizei length, const GLchar* marker);
 GL_APICALL void         GL_APIENTRY glPopGroupMarkerEXT (void);
 
+GL_APICALL void         GL_APIENTRY glGenVertexArraysOES (GLsizeiNotNegative n, GLuint* arrays);
+GL_APICALL void         GL_APIENTRY glDeleteVertexArraysOES (GLsizeiNotNegative n, const GLuint* arrays);
+GL_APICALL GLboolean    GL_APIENTRY glIsVertexArrayOES (GLidVertexArray array);
+GL_APICALL void         GL_APIENTRY glBindVertexArrayOES (GLidBindVertexArray array);
+
 // Non-GL commands.
 GL_APICALL void         GL_APIENTRY glSwapBuffers (void);
 GL_APICALL GLuint       GL_APIENTRY glGetMaxValueInBufferCHROMIUM (GLidBuffer buffer_id, GLsizei count, GLenumGetMaxIndexType type, GLuint offset);

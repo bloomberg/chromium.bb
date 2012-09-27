@@ -2442,6 +2442,13 @@ void GLES2Implementation::BindTextureHelper(GLenum target, GLuint texture) {
   GetIdHandler(id_namespaces::kTextures)->MarkAsUsedForBind(texture);
 }
 
+void GLES2Implementation::BindVertexArrayHelper(GLuint array) {
+  // TODO(gman): See note #1 above.
+  bound_vertex_array_id_ = array;
+
+  GetIdHandler(id_namespaces::kVertexArrays)->MarkAsUsedForBind(array);
+}
+
 #if defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
 bool GLES2Implementation::IsBufferReservedId(GLuint id) {
   for (size_t ii = 0; ii < arraysize(reserved_ids_); ++ii) {
@@ -2546,6 +2553,27 @@ void GLES2Implementation::DeleteTexturesHelper(
       }
     }
   }
+}
+
+void GLES2Implementation::DeleteVertexArraysOESHelper(
+    GLsizei n, const GLuint* arrays) {
+  if (!GetIdHandler(id_namespaces::kVertexArrays)->FreeIds(
+      this, n, arrays, &GLES2Implementation::DeleteVertexArraysOESStub)) {
+    SetGLError(
+        GL_INVALID_VALUE,
+        "glDeleteVertexArraysOES", "id not created by this context.");
+    return;
+  }
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    if (arrays[ii] == bound_vertex_array_id_) {
+      bound_vertex_array_id_ = 0;
+    }
+  }
+}
+
+void GLES2Implementation::DeleteVertexArraysOESStub(
+    GLsizei n, const GLuint* arrays) {
+  helper_->DeleteVertexArraysOESImmediate(n, arrays);
 }
 
 void GLES2Implementation::DeleteTexturesStub(

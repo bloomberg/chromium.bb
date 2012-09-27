@@ -1434,6 +1434,70 @@ void PushGroupMarkerEXT(GLsizei length, const GLchar* marker);
 
 void PopGroupMarkerEXT();
 
+void GenVertexArraysOES(GLsizei n, GLuint* arrays) {
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glGenVertexArraysOES(" << n << ", " << static_cast<const void*>(arrays) << ")");  // NOLINT
+  if (n < 0) {
+    SetGLError(GL_INVALID_VALUE, "glGenVertexArraysOES", "n < 0");
+    return;
+  }
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GetIdHandler(id_namespaces::kVertexArrays)->
+      MakeIds(this, 0, n, arrays);
+  helper_->GenVertexArraysOESImmediate(n, arrays);
+  GPU_CLIENT_LOG_CODE_BLOCK({
+    for (GLsizei i = 0; i < n; ++i) {
+      GPU_CLIENT_LOG("  " << i << ": " << arrays[i]);
+    }
+  });
+}
+
+void DeleteVertexArraysOES(GLsizei n, const GLuint* arrays) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glDeleteVertexArraysOES(" << n << ", " << static_cast<const void*>(arrays) << ")");  // NOLINT
+  GPU_CLIENT_LOG_CODE_BLOCK({
+    for (GLsizei i = 0; i < n; ++i) {
+      GPU_CLIENT_LOG("  " << i << ": " << arrays[i]);
+    }
+  });
+  GPU_CLIENT_DCHECK_CODE_BLOCK({
+    for (GLsizei i = 0; i < n; ++i) {
+      GPU_DCHECK(arrays[i] != 0);
+    }
+  });
+  if (n < 0) {
+    SetGLError(GL_INVALID_VALUE, "glDeleteVertexArraysOES", "n < 0");
+    return;
+  }
+  DeleteVertexArraysOESHelper(n, arrays);
+}
+
+GLboolean IsVertexArrayOES(GLuint array) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glIsVertexArrayOES(" << array << ")");  // NOLINT
+  typedef IsVertexArrayOES::Result Result;
+  Result* result = GetResultAs<Result*>();
+  if (!result) {
+    return GL_FALSE;
+  }
+  *result = 0;
+  helper_->IsVertexArrayOES(array, GetResultShmId(), GetResultShmOffset());
+  WaitForCmd();
+  GPU_CLIENT_LOG("returned " << *result);
+  return *result;
+}
+
+void BindVertexArrayOES(GLuint array) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glBindVertexArrayOES(" << array << ")");  // NOLINT
+  if (IsVertexArrayReservedId(array)) {
+    SetGLError(
+        GL_INVALID_OPERATION, "BindVertexArrayOES", "array reserved id");
+    return;
+  }
+  BindVertexArrayHelper(array);
+  helper_->BindVertexArrayOES(array);
+}
+
 void SwapBuffers();
 
 GLuint GetMaxValueInBufferCHROMIUM(

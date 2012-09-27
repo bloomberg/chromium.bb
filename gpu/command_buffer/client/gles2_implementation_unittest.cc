@@ -322,6 +322,7 @@ class GLES2ImplementationTest : public testing::Test {
   static const GLuint kRenderbuffersStartId = 1;
   static const GLuint kTexturesStartId = 1;
   static const GLuint kQueriesStartId = 1;
+  static const GLuint kVertexArraysStartId = 1;
 
   typedef MockTransferBuffer::ExpectedMemoryInfo ExpectedMemoryInfo;
 
@@ -522,6 +523,7 @@ const GLuint GLES2ImplementationTest::kProgramsAndShadersStartId;
 const GLuint GLES2ImplementationTest::kRenderbuffersStartId;
 const GLuint GLES2ImplementationTest::kTexturesStartId;
 const GLuint GLES2ImplementationTest::kQueriesStartId;
+const GLuint GLES2ImplementationTest::kVertexArraysStartId;
 #endif
 
 TEST_F(GLES2ImplementationTest, Basic) {
@@ -2622,6 +2624,33 @@ TEST_F(GLES2ImplementationTest, ErrorQuery) {
   EXPECT_TRUE(NoCommandsWritten());
   EXPECT_EQ(static_cast<GLuint>(GL_INVALID_ENUM), result);
 }
+
+#if !defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
+TEST_F(GLES2ImplementationTest, VertexArrays) {
+  const GLuint kAttribIndex1 = 1;
+  const GLint kNumComponents1 = 3;
+  const GLsizei kClientStride = 12;
+
+  GLuint id = 0;
+  gl_->GenVertexArraysOES(1, &id);
+  ClearCommands();
+
+  gl_->BindVertexArrayOES(id);
+
+  // Test that VertexAttribPointer cannot be called with a bound buffer of 0
+  // unless the offset is NULL
+  gl_->BindBuffer(GL_ARRAY_BUFFER, 0);
+
+  gl_->VertexAttribPointer(
+      kAttribIndex1, kNumComponents1, GL_FLOAT, GL_FALSE, kClientStride,
+      reinterpret_cast<const void*>(4));
+  EXPECT_EQ(GL_INVALID_OPERATION, CheckError());
+
+  gl_->VertexAttribPointer(
+      kAttribIndex1, kNumComponents1, GL_FLOAT, GL_FALSE, kClientStride, NULL);
+  EXPECT_EQ(GL_NO_ERROR, CheckError());
+}
+#endif
 
 #include "gpu/command_buffer/client/gles2_implementation_unittest_autogen.h"
 

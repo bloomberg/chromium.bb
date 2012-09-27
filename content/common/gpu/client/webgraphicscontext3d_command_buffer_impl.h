@@ -586,6 +586,12 @@ class WebGraphicsContext3DCommandBufferImpl
   virtual void pushGroupMarkerEXT(const WGC3Dchar* marker);
   virtual void popGroupMarkerEXT();
 
+  // GL_OES_vertex_array_object
+  virtual WebGLId createVertexArrayOES();
+  virtual void deleteVertexArrayOES(WebGLId array);
+  virtual WGC3Dboolean isVertexArrayOES(WebGLId array);
+  virtual void bindVertexArrayOES(WebGLId array);
+
  protected:
   virtual GrGLInterface* onCreateGrGLInterface();
 

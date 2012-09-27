@@ -130,6 +130,47 @@ class GLES2DecoderANGLEManualInitTest : public GLES2DecoderANGLETest {
   }
 };
 
+class GLES2DecoderVertexArraysOESTest : public GLES2DecoderWithShaderTest {
+ public:
+  GLES2DecoderVertexArraysOESTest() { }
+
+  bool vertex_array_deleted_manually_;
+
+  virtual void SetUp() {
+    InitDecoder(
+        "GL_OES_vertex_array_object",     // extensions
+        false,  // has alpha
+        false,  // has depth
+        false,  // has stencil
+        false,  // request alpha
+        false,  // request depth
+        false,  // request stencil
+        true);   // bind generates resource
+    SetupDefaultProgram();
+
+    EXPECT_CALL(*gl_, GenVertexArraysOES(_, _))
+        .WillOnce(SetArgumentPointee<1>(kServiceVertexArrayId))
+        .RetiresOnSaturation();
+    GenHelper<GenVertexArraysOESImmediate>(client_vertexarray_id_);
+
+    vertex_array_deleted_manually_ = false;
+  }
+
+  virtual void TearDown() {
+    // This should only be set if the test handled deletion of the vertex array
+    // itself. Necessary because vertex_array_objects are not sharable, and thus
+    // not managed in the ContextGroup, meaning they will be destroyed during
+    // test tear down
+    if (!vertex_array_deleted_manually_) {
+      EXPECT_CALL(*gl_, DeleteVertexArraysOES(1, _))
+        .Times(1)
+        .RetiresOnSaturation();
+    }
+
+    GLES2DecoderWithShaderTest::TearDown();
+  }
+};
+
 TEST_F(GLES2DecoderWithShaderTest, DrawArraysNoAttributesSucceeds) {
   SetupTexture();
   AddExpectationsForSimulatedAttrib0(kNumVertices, 0);
@@ -7417,6 +7458,145 @@ TEST_F(GLES2DecoderWithShaderTest, BindUniformLocationCHROMIUM) {
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
 
+TEST_F(GLES2DecoderVertexArraysOESTest, GenVertexArraysOESValidArgs) {
+  EXPECT_CALL(*gl_, GenVertexArraysOES(1, _))
+      .WillOnce(SetArgumentPointee<1>(kNewServiceId));
+  GetSharedMemoryAs<GLuint*>()[0] = kNewClientId;
+  SpecializedSetup<GenVertexArraysOES, 0>(true);
+  GenVertexArraysOES cmd;
+  cmd.Init(1, shared_memory_id_, shared_memory_offset_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_TRUE(GetVertexArrayInfo(kNewClientId) != NULL);
+  EXPECT_CALL(*gl_, DeleteVertexArraysOES(1, _))
+      .Times(1);
+}
+
+TEST_F(GLES2DecoderVertexArraysOESTest, GenVertexArraysOESInvalidArgs) {
+  EXPECT_CALL(*gl_, GenVertexArraysOES(_, _)).Times(0);
+  GetSharedMemoryAs<GLuint*>()[0] = client_vertexarray_id_;
+  SpecializedSetup<GenVertexArraysOES, 0>(false);
+  GenVertexArraysOES cmd;
+  cmd.Init(1, shared_memory_id_, shared_memory_offset_);
+  EXPECT_EQ(error::kInvalidArguments, ExecuteCmd(cmd));
+}
+
+TEST_F(GLES2DecoderVertexArraysOESTest, GenVertexArraysOESImmediateValidArgs) {
+  EXPECT_CALL(*gl_, GenVertexArraysOES(1, _))
+      .WillOnce(SetArgumentPointee<1>(kNewServiceId));
+  GenVertexArraysOESImmediate* cmd =
+      GetImmediateAs<GenVertexArraysOESImmediate>();
+  GLuint temp = kNewClientId;
+  SpecializedSetup<GenVertexArraysOESImmediate, 0>(true);
+  cmd->Init(1, &temp);
+  EXPECT_EQ(error::kNoError,
+            ExecuteImmediateCmd(*cmd, sizeof(temp)));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_TRUE(GetVertexArrayInfo(kNewClientId) != NULL);
+  EXPECT_CALL(*gl_, DeleteVertexArraysOES(1, _))
+      .Times(1);
+}
+
+TEST_F(GLES2DecoderVertexArraysOESTest,
+    GenVertexArraysOESImmediateInvalidArgs) {
+  EXPECT_CALL(*gl_, GenVertexArraysOES(_, _)).Times(0);
+  GenVertexArraysOESImmediate* cmd =
+      GetImmediateAs<GenVertexArraysOESImmediate>();
+  SpecializedSetup<GenVertexArraysOESImmediate, 0>(false);
+  cmd->Init(1, &client_vertexarray_id_);
+  EXPECT_EQ(error::kInvalidArguments,
+            ExecuteImmediateCmd(*cmd, sizeof(&client_vertexarray_id_)));
+}
+
+TEST_F(GLES2DecoderVertexArraysOESTest, DeleteVertexArraysOESValidArgs) {
+  EXPECT_CALL(
+      *gl_,
+      DeleteVertexArraysOES(1, Pointee(kServiceVertexArrayId)))
+      .Times(1);
+  GetSharedMemoryAs<GLuint*>()[0] = client_vertexarray_id_;
+  SpecializedSetup<DeleteVertexArraysOES, 0>(true);
+  DeleteVertexArraysOES cmd;
+  cmd.Init(1, shared_memory_id_, shared_memory_offset_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_TRUE(
+      GetVertexArrayInfo(client_vertexarray_id_) == NULL);
+  vertex_array_deleted_manually_ = true;
+}
+
+TEST_F(GLES2DecoderVertexArraysOESTest, DeleteVertexArraysOESInvalidArgs) {
+  GetSharedMemoryAs<GLuint*>()[0] = kInvalidClientId;
+  SpecializedSetup<DeleteVertexArraysOES, 0>(false);
+  DeleteVertexArraysOES cmd;
+  cmd.Init(1, shared_memory_id_, shared_memory_offset_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+}
+
+TEST_F(GLES2DecoderVertexArraysOESTest,
+    DeleteVertexArraysOESImmediateValidArgs) {
+  EXPECT_CALL(
+      *gl_,
+      DeleteVertexArraysOES(1, Pointee(kServiceVertexArrayId)))
+      .Times(1);
+  DeleteVertexArraysOESImmediate& cmd =
+      *GetImmediateAs<DeleteVertexArraysOESImmediate>();
+  SpecializedSetup<DeleteVertexArraysOESImmediate, 0>(true);
+  cmd.Init(1, &client_vertexarray_id_);
+  EXPECT_EQ(error::kNoError,
+            ExecuteImmediateCmd(cmd, sizeof(client_vertexarray_id_)));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_TRUE(
+      GetVertexArrayInfo(client_vertexarray_id_) == NULL);
+  vertex_array_deleted_manually_ = true;
+}
+
+TEST_F(GLES2DecoderVertexArraysOESTest,
+    DeleteVertexArraysOESImmediateInvalidArgs) {
+  DeleteVertexArraysOESImmediate& cmd =
+      *GetImmediateAs<DeleteVertexArraysOESImmediate>();
+  SpecializedSetup<DeleteVertexArraysOESImmediate, 0>(false);
+  GLuint temp = kInvalidClientId;
+  cmd.Init(1, &temp);
+  EXPECT_EQ(error::kNoError,
+            ExecuteImmediateCmd(cmd, sizeof(temp)));
+}
+
+TEST_F(GLES2DecoderVertexArraysOESTest, IsVertexArrayOESValidArgs) {
+  SpecializedSetup<IsVertexArrayOES, 0>(true);
+  IsVertexArrayOES cmd;
+  cmd.Init(client_vertexarray_id_, shared_memory_id_, shared_memory_offset_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_F(GLES2DecoderVertexArraysOESTest,
+    IsVertexArrayOESInvalidArgsBadSharedMemoryId) {
+  SpecializedSetup<IsVertexArrayOES, 0>(false);
+  IsVertexArrayOES cmd;
+  cmd.Init(
+      client_vertexarray_id_, kInvalidSharedMemoryId, shared_memory_offset_);
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
+  cmd.Init(
+      client_vertexarray_id_, shared_memory_id_, kInvalidSharedMemoryOffset);
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
+}
+
+TEST_F(GLES2DecoderVertexArraysOESTest, BindVertexArrayOESValidArgs) {
+  EXPECT_CALL(*gl_, BindVertexArrayOES(kServiceVertexArrayId));
+  SpecializedSetup<BindVertexArrayOES, 0>(true);
+  BindVertexArrayOES cmd;
+  cmd.Init(client_vertexarray_id_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_F(GLES2DecoderVertexArraysOESTest, BindVertexArrayOESValidArgsNewId) {
+  SpecializedSetup<BindVertexArrayOES, 0>(true);
+  BindVertexArrayOES cmd;
+  cmd.Init(kNewClientId);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+}
 
 // TODO(gman): Complete this test.
 // TEST_F(GLES2DecoderTest, CompressedTexImage2DGLError) {

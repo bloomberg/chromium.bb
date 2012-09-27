@@ -80,6 +80,7 @@ FeatureInfo::FeatureFlags::FeatureFlags()
       occlusion_query_boolean(false),
       use_arb_occlusion_query2_for_occlusion_query_boolean(false),
       use_arb_occlusion_query_for_occlusion_query_boolean(false),
+      native_vertex_array_object_(false),
       disable_workarounds(false),
       is_intel(false),
       is_nvidia(false),
@@ -341,6 +342,14 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
       validators_.pixel_type.AddValue(GL_UNSIGNED_INT_24_8);
     }
     validators_.render_buffer_format.AddValue(GL_DEPTH24_STENCIL8);
+  }
+
+  if (ext.Desire("GL_OES_vertex_array_object") &&
+      (ext.Have("GL_OES_vertex_array_object") ||
+       ext.Have("GL_ARB_vertex_array_object") ||
+       ext.Have("GL_APPLE_vertex_array_object"))) {
+    feature_flags_.native_vertex_array_object_ = true;
+    AddExtensionString("GL_OES_vertex_array_object");
   }
 
   bool enable_texture_format_bgra8888 = false;

@@ -645,6 +645,14 @@ class GL_EXPORT GLInterface {
 
   virtual void VertexAttribDivisorANGLE(GLuint index, GLuint divisor) = 0;
 
+  virtual void GenVertexArraysOES(GLsizei n, GLuint* arrays) = 0;
+
+  virtual void DeleteVertexArraysOES(GLsizei n, const GLuint* array) = 0;
+
+  virtual void BindVertexArrayOES(GLuint array) = 0;
+
+  virtual GLboolean IsVertexArrayOES(GLuint array) = 0;
+
  private:
   static GLInterface* interface_;
 };

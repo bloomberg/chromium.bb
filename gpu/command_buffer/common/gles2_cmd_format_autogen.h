@@ -8884,6 +8884,259 @@ COMPILE_ASSERT(sizeof(PopGroupMarkerEXT) == 4,
 COMPILE_ASSERT(offsetof(PopGroupMarkerEXT, header) == 0,
                OffsetOf_PopGroupMarkerEXT_header_not_0);
 
+struct GenVertexArraysOES {
+  typedef GenVertexArraysOES ValueType;
+  static const CommandId kCmdId = kGenVertexArraysOES;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(GLsizei _n, uint32 _arrays_shm_id, uint32 _arrays_shm_offset) {
+    SetHeader();
+    n = _n;
+    arrays_shm_id = _arrays_shm_id;
+    arrays_shm_offset = _arrays_shm_offset;
+  }
+
+  void* Set(
+      void* cmd, GLsizei _n, uint32 _arrays_shm_id,
+      uint32 _arrays_shm_offset) {
+    static_cast<ValueType*>(cmd)->Init(_n, _arrays_shm_id, _arrays_shm_offset);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  int32 n;
+  uint32 arrays_shm_id;
+  uint32 arrays_shm_offset;
+};
+
+COMPILE_ASSERT(sizeof(GenVertexArraysOES) == 16,
+               Sizeof_GenVertexArraysOES_is_not_16);
+COMPILE_ASSERT(offsetof(GenVertexArraysOES, header) == 0,
+               OffsetOf_GenVertexArraysOES_header_not_0);
+COMPILE_ASSERT(offsetof(GenVertexArraysOES, n) == 4,
+               OffsetOf_GenVertexArraysOES_n_not_4);
+COMPILE_ASSERT(offsetof(GenVertexArraysOES, arrays_shm_id) == 8,
+               OffsetOf_GenVertexArraysOES_arrays_shm_id_not_8);
+COMPILE_ASSERT(offsetof(GenVertexArraysOES, arrays_shm_offset) == 12,
+               OffsetOf_GenVertexArraysOES_arrays_shm_offset_not_12);
+
+struct GenVertexArraysOESImmediate {
+  typedef GenVertexArraysOESImmediate ValueType;
+  static const CommandId kCmdId = kGenVertexArraysOESImmediate;
+  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
+
+  static uint32 ComputeDataSize(GLsizei n) {
+    return static_cast<uint32>(sizeof(GLuint) * n);  // NOLINT
+  }
+
+  static uint32 ComputeSize(GLsizei n) {
+    return static_cast<uint32>(
+        sizeof(ValueType) + ComputeDataSize(n));  // NOLINT
+  }
+
+  void SetHeader(GLsizei n) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(n));
+  }
+
+  void Init(GLsizei _n, GLuint* _arrays) {
+    SetHeader(_n);
+    n = _n;
+    memcpy(ImmediateDataAddress(this),
+           _arrays, ComputeDataSize(_n));
+  }
+
+  void* Set(void* cmd, GLsizei _n, GLuint* _arrays) {
+    static_cast<ValueType*>(cmd)->Init(_n, _arrays);
+    const uint32 size = ComputeSize(_n);
+    return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
+  }
+
+  gpu::CommandHeader header;
+  int32 n;
+};
+
+COMPILE_ASSERT(sizeof(GenVertexArraysOESImmediate) == 8,
+               Sizeof_GenVertexArraysOESImmediate_is_not_8);
+COMPILE_ASSERT(offsetof(GenVertexArraysOESImmediate, header) == 0,
+               OffsetOf_GenVertexArraysOESImmediate_header_not_0);
+COMPILE_ASSERT(offsetof(GenVertexArraysOESImmediate, n) == 4,
+               OffsetOf_GenVertexArraysOESImmediate_n_not_4);
+
+struct DeleteVertexArraysOES {
+  typedef DeleteVertexArraysOES ValueType;
+  static const CommandId kCmdId = kDeleteVertexArraysOES;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(GLsizei _n, uint32 _arrays_shm_id, uint32 _arrays_shm_offset) {
+    SetHeader();
+    n = _n;
+    arrays_shm_id = _arrays_shm_id;
+    arrays_shm_offset = _arrays_shm_offset;
+  }
+
+  void* Set(
+      void* cmd, GLsizei _n, uint32 _arrays_shm_id,
+      uint32 _arrays_shm_offset) {
+    static_cast<ValueType*>(cmd)->Init(_n, _arrays_shm_id, _arrays_shm_offset);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  int32 n;
+  uint32 arrays_shm_id;
+  uint32 arrays_shm_offset;
+};
+
+COMPILE_ASSERT(sizeof(DeleteVertexArraysOES) == 16,
+               Sizeof_DeleteVertexArraysOES_is_not_16);
+COMPILE_ASSERT(offsetof(DeleteVertexArraysOES, header) == 0,
+               OffsetOf_DeleteVertexArraysOES_header_not_0);
+COMPILE_ASSERT(offsetof(DeleteVertexArraysOES, n) == 4,
+               OffsetOf_DeleteVertexArraysOES_n_not_4);
+COMPILE_ASSERT(offsetof(DeleteVertexArraysOES, arrays_shm_id) == 8,
+               OffsetOf_DeleteVertexArraysOES_arrays_shm_id_not_8);
+COMPILE_ASSERT(offsetof(DeleteVertexArraysOES, arrays_shm_offset) == 12,
+               OffsetOf_DeleteVertexArraysOES_arrays_shm_offset_not_12);
+
+struct DeleteVertexArraysOESImmediate {
+  typedef DeleteVertexArraysOESImmediate ValueType;
+  static const CommandId kCmdId = kDeleteVertexArraysOESImmediate;
+  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
+
+  static uint32 ComputeDataSize(GLsizei n) {
+    return static_cast<uint32>(sizeof(GLuint) * n);  // NOLINT
+  }
+
+  static uint32 ComputeSize(GLsizei n) {
+    return static_cast<uint32>(
+        sizeof(ValueType) + ComputeDataSize(n));  // NOLINT
+  }
+
+  void SetHeader(GLsizei n) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(n));
+  }
+
+  void Init(GLsizei _n, const GLuint* _arrays) {
+    SetHeader(_n);
+    n = _n;
+    memcpy(ImmediateDataAddress(this),
+           _arrays, ComputeDataSize(_n));
+  }
+
+  void* Set(void* cmd, GLsizei _n, const GLuint* _arrays) {
+    static_cast<ValueType*>(cmd)->Init(_n, _arrays);
+    const uint32 size = ComputeSize(_n);
+    return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
+  }
+
+  gpu::CommandHeader header;
+  int32 n;
+};
+
+COMPILE_ASSERT(sizeof(DeleteVertexArraysOESImmediate) == 8,
+               Sizeof_DeleteVertexArraysOESImmediate_is_not_8);
+COMPILE_ASSERT(offsetof(DeleteVertexArraysOESImmediate, header) == 0,
+               OffsetOf_DeleteVertexArraysOESImmediate_header_not_0);
+COMPILE_ASSERT(offsetof(DeleteVertexArraysOESImmediate, n) == 4,
+               OffsetOf_DeleteVertexArraysOESImmediate_n_not_4);
+
+struct IsVertexArrayOES {
+  typedef IsVertexArrayOES ValueType;
+  static const CommandId kCmdId = kIsVertexArrayOES;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  typedef uint32 Result;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(GLuint _array, uint32 _result_shm_id, uint32 _result_shm_offset) {
+    SetHeader();
+    array = _array;
+    result_shm_id = _result_shm_id;
+    result_shm_offset = _result_shm_offset;
+  }
+
+  void* Set(
+      void* cmd, GLuint _array, uint32 _result_shm_id,
+      uint32 _result_shm_offset) {
+    static_cast<ValueType*>(
+        cmd)->Init(_array, _result_shm_id, _result_shm_offset);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32 array;
+  uint32 result_shm_id;
+  uint32 result_shm_offset;
+};
+
+COMPILE_ASSERT(sizeof(IsVertexArrayOES) == 16,
+               Sizeof_IsVertexArrayOES_is_not_16);
+COMPILE_ASSERT(offsetof(IsVertexArrayOES, header) == 0,
+               OffsetOf_IsVertexArrayOES_header_not_0);
+COMPILE_ASSERT(offsetof(IsVertexArrayOES, array) == 4,
+               OffsetOf_IsVertexArrayOES_array_not_4);
+COMPILE_ASSERT(offsetof(IsVertexArrayOES, result_shm_id) == 8,
+               OffsetOf_IsVertexArrayOES_result_shm_id_not_8);
+COMPILE_ASSERT(offsetof(IsVertexArrayOES, result_shm_offset) == 12,
+               OffsetOf_IsVertexArrayOES_result_shm_offset_not_12);
+
+struct BindVertexArrayOES {
+  typedef BindVertexArrayOES ValueType;
+  static const CommandId kCmdId = kBindVertexArrayOES;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(GLuint _array) {
+    SetHeader();
+    array = _array;
+  }
+
+  void* Set(void* cmd, GLuint _array) {
+    static_cast<ValueType*>(cmd)->Init(_array);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32 array;
+};
+
+COMPILE_ASSERT(sizeof(BindVertexArrayOES) == 8,
+               Sizeof_BindVertexArrayOES_is_not_8);
+COMPILE_ASSERT(offsetof(BindVertexArrayOES, header) == 0,
+               OffsetOf_BindVertexArrayOES_header_not_0);
+COMPILE_ASSERT(offsetof(BindVertexArrayOES, array) == 4,
+               OffsetOf_BindVertexArrayOES_array_not_4);
+
 struct SwapBuffers {
   typedef SwapBuffers ValueType;
   static const CommandId kCmdId = kSwapBuffers;

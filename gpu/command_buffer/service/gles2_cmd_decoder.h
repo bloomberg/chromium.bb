@@ -29,6 +29,7 @@ namespace gles2 {
 class ContextGroup;
 class GLES2Util;
 class QueryManager;
+class VertexArrayManager;
 
 struct DisallowedFeatures {
   DisallowedFeatures()
@@ -136,6 +137,9 @@ class GPU_EXPORT GLES2Decoder : public CommonDecoder {
 
   // Gets the QueryManager for this context.
   virtual QueryManager* GetQueryManager() = 0;
+
+  // Gets the VertexArrayManager for this context.
+  virtual VertexArrayManager* GetVertexArrayManager() = 0;
 
   // Process any pending queries. Returns false if there are no pending queries.
   virtual bool ProcessPendingQueries() = 0;

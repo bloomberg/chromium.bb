@@ -38,6 +38,7 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool occlusion_query_boolean;
     bool use_arb_occlusion_query2_for_occlusion_query_boolean;
     bool use_arb_occlusion_query_for_occlusion_query_boolean;
+    bool native_vertex_array_object_;
     bool disable_workarounds;
     bool is_intel;
     bool is_nvidia;

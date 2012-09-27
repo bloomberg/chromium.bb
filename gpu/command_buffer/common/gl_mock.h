@@ -522,6 +522,14 @@ class MockGLInterface : public GLInterface {
       GLsizei primcount));
 
   MOCK_METHOD2(VertexAttribDivisorANGLE, void(GLuint index, GLuint divisor));
+
+  MOCK_METHOD2(GenVertexArraysOES, void(GLsizei n, GLuint* ids));
+
+  MOCK_METHOD2(DeleteVertexArraysOES, void(GLsizei n, const GLuint* ids));
+
+  MOCK_METHOD1(IsVertexArrayOES, GLboolean(GLuint id));
+
+  MOCK_METHOD1(BindVertexArrayOES, void(GLuint id));
 };
 
 }  // namespace gfx

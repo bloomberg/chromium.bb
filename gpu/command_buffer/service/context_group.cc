@@ -58,6 +58,7 @@ ContextGroup::ContextGroup(
   id_namespaces_[id_namespaces::kRenderbuffers].reset(new IdAllocator);
   id_namespaces_[id_namespaces::kTextures].reset(new IdAllocator);
   id_namespaces_[id_namespaces::kQueries].reset(new IdAllocator);
+  id_namespaces_[id_namespaces::kVertexArrays].reset(new IdAllocator);
 }
 
 static void GetIntegerv(GLenum pname, uint32* var) {

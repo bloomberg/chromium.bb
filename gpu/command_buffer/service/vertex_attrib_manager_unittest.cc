@@ -37,19 +37,19 @@ class VertexAttribManagerTest : public testing::Test {
           .RetiresOnSaturation();
     }
 
-    manager_.reset(new VertexAttribManager());
+    manager_ = new VertexAttribManager();
     manager_->Initialize(kNumVertexAttribs);
   }
 
   virtual void TearDown() {
-    manager_.reset();
+    manager_ = NULL;
     ::gfx::GLInterface::SetGLInterface(NULL);
     gl_.reset();
   }
 
   // Use StrictMock to make 100% sure we know how GL will be called.
   scoped_ptr< ::testing::StrictMock< ::gfx::MockGLInterface> > gl_;
-  scoped_ptr<VertexAttribManager> manager_;
+  VertexAttribManager::Ref manager_;
 };
 
 // GCC requires these declarations, but MSVC requires they not be present
@@ -131,7 +131,7 @@ TEST_F(VertexAttribManagerTest, SetAttribInfo) {
 
   // The VertexAttribManager must be destroyed before the BufferManager
   // so it releases its buffers.
-  manager_.reset();
+  manager_ = NULL;
   buffer_manager.Destroy(false);
 }
 
@@ -185,7 +185,7 @@ TEST_F(VertexAttribManagerTest, CanAccess) {
 
   // The VertexAttribManager must be destroyed before the BufferManager
   // so it releases its buffers.
-  manager_.reset();
+  manager_ = NULL;
   buffer_manager.Destroy(false);
 }
 
@@ -222,7 +222,7 @@ TEST_F(VertexAttribManagerTest, Unbind) {
 
   // The VertexAttribManager must be destroyed before the BufferManager
   // so it releases its buffers.
-  manager_.reset();
+  manager_ = NULL;
   buffer_manager.Destroy(false);
 }
 

@@ -1596,6 +1596,58 @@
     }
   }
 
+  void GenVertexArraysOES(
+      GLsizei n, uint32 arrays_shm_id, uint32 arrays_shm_offset) {
+    gles2::GenVertexArraysOES* c = GetCmdSpace<gles2::GenVertexArraysOES>();
+    if (c) {
+      c->Init(n, arrays_shm_id, arrays_shm_offset);
+    }
+  }
+
+  void GenVertexArraysOESImmediate(GLsizei n, GLuint* arrays) {
+    const uint32 size = gles2::GenVertexArraysOESImmediate::ComputeSize(n);
+    gles2::GenVertexArraysOESImmediate* c =
+        GetImmediateCmdSpaceTotalSize<gles2::GenVertexArraysOESImmediate>(
+            size);
+    if (c) {
+      c->Init(n, arrays);
+    }
+  }
+
+  void DeleteVertexArraysOES(
+      GLsizei n, uint32 arrays_shm_id, uint32 arrays_shm_offset) {
+    gles2::DeleteVertexArraysOES* c =
+        GetCmdSpace<gles2::DeleteVertexArraysOES>();
+    if (c) {
+      c->Init(n, arrays_shm_id, arrays_shm_offset);
+    }
+  }
+
+  void DeleteVertexArraysOESImmediate(GLsizei n, const GLuint* arrays) {
+    const uint32 size = gles2::DeleteVertexArraysOESImmediate::ComputeSize(n);
+    gles2::DeleteVertexArraysOESImmediate* c =
+        GetImmediateCmdSpaceTotalSize<gles2::DeleteVertexArraysOESImmediate>(
+            size);
+    if (c) {
+      c->Init(n, arrays);
+    }
+  }
+
+  void IsVertexArrayOES(
+      GLuint array, uint32 result_shm_id, uint32 result_shm_offset) {
+    gles2::IsVertexArrayOES* c = GetCmdSpace<gles2::IsVertexArrayOES>();
+    if (c) {
+      c->Init(array, result_shm_id, result_shm_offset);
+    }
+  }
+
+  void BindVertexArrayOES(GLuint array) {
+    gles2::BindVertexArrayOES* c = GetCmdSpace<gles2::BindVertexArrayOES>();
+    if (c) {
+      c->Init(array);
+    }
+  }
+
   void SwapBuffers() {
     gles2::SwapBuffers* c = GetCmdSpace<gles2::SwapBuffers>();
     if (c) {

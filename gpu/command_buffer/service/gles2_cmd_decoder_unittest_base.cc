@@ -47,7 +47,8 @@ GLES2DecoderTestBase::GLES2DecoderTestBase()
       client_element_buffer_id_(107),
       client_vertex_shader_id_(121),
       client_fragment_shader_id_(122),
-      client_query_id_(123) {
+      client_query_id_(123),
+      client_vertexarray_id_(124) {
   memset(immediate_buffer_, 0xEE, sizeof(immediate_buffer_));
 }
 
@@ -304,6 +305,12 @@ void GLES2DecoderTestBase::InitDecoder(
       .Times(1)
       .RetiresOnSaturation();
 
+  if (group_->feature_info()->feature_flags().native_vertex_array_object_) {
+    EXPECT_CALL(*gl_, BindVertexArrayOES(0))
+        .Times(1)
+        .RetiresOnSaturation();
+  }
+
   engine_.reset(new StrictMock<MockCommandBufferEngine>());
   Buffer buffer = engine_->GetSharedMemoryBuffer(kSharedMemoryId);
   shared_memory_offset_ = kSharedMemoryOffset;
@@ -367,8 +374,6 @@ void GLES2DecoderTestBase::InitDecoder(
 }
 
 void GLES2DecoderTestBase::TearDown() {
-  InSequence sequence;
-
   // All Tests should have read all their GLErrors before getting here.
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
@@ -1015,6 +1020,7 @@ const GLuint GLES2DecoderTestBase::kServiceProgramId;
 const GLuint GLES2DecoderTestBase::kServiceShaderId;
 const GLuint GLES2DecoderTestBase::kServiceElementBufferId;
 const GLuint GLES2DecoderTestBase::kServiceQueryId;
+const GLuint GLES2DecoderTestBase::kServiceVertexArrayId;
 
 const int32 GLES2DecoderTestBase::kSharedMemoryId;
 const size_t GLES2DecoderTestBase::kSharedBufferSize;

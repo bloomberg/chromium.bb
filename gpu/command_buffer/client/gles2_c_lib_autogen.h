@@ -553,6 +553,18 @@ void GLES2PushGroupMarkerEXT(GLsizei length, const GLchar* marker) {
 void GLES2PopGroupMarkerEXT() {
   gles2::GetGLContext()->PopGroupMarkerEXT();
 }
+void GLES2GenVertexArraysOES(GLsizei n, GLuint* arrays) {
+  gles2::GetGLContext()->GenVertexArraysOES(n, arrays);
+}
+void GLES2DeleteVertexArraysOES(GLsizei n, const GLuint* arrays) {
+  gles2::GetGLContext()->DeleteVertexArraysOES(n, arrays);
+}
+GLboolean GLES2IsVertexArrayOES(GLuint array) {
+  return gles2::GetGLContext()->IsVertexArrayOES(array);
+}
+void GLES2BindVertexArrayOES(GLuint array) {
+  gles2::GetGLContext()->BindVertexArrayOES(array);
+}
 void GLES2SwapBuffers() {
   gles2::GetGLContext()->SwapBuffers();
 }

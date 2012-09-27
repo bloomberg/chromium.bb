@@ -400,11 +400,13 @@ class GLES2_IMPL_EXPORT GLES2Implementation {
   bool IsFramebufferReservedId(GLuint id) { return false;  }
   bool IsRenderbufferReservedId(GLuint id) { return false; }
   bool IsTextureReservedId(GLuint id) { return false; }
+  bool IsVertexArrayReservedId(GLuint id) { return false; }
 
   void BindBufferHelper(GLenum target, GLuint texture);
   void BindFramebufferHelper(GLenum target, GLuint texture);
   void BindRenderbufferHelper(GLenum target, GLuint texture);
   void BindTextureHelper(GLenum target, GLuint texture);
+  void BindVertexArrayHelper(GLuint array);
 
   void DeleteBuffersHelper(GLsizei n, const GLuint* buffers);
   void DeleteFramebuffersHelper(GLsizei n, const GLuint* framebuffers);
@@ -413,6 +415,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation {
   bool DeleteProgramHelper(GLuint program);
   bool DeleteShaderHelper(GLuint shader);
   void DeleteQueriesEXTHelper(GLsizei n, const GLuint* textures);
+  void DeleteVertexArraysOESHelper(GLsizei n, const GLuint* arrays);
 
   void DeleteBuffersStub(GLsizei n, const GLuint* buffers);
   void DeleteFramebuffersStub(GLsizei n, const GLuint* framebuffers);
@@ -422,6 +425,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation {
   void DeleteShaderStub(GLsizei n, const GLuint* shaders);
   // TODO(gman): Remove this as queries are not shared.
   void DeleteQueriesStub(GLsizei n, const GLuint* queries);
+  void DeleteVertexArraysOESStub(GLsizei n, const GLuint* arrays);
 
   void BufferDataHelper(
       GLenum target, GLsizeiptr size, const void* data, GLenum usage);
@@ -533,6 +537,9 @@ class GLES2_IMPL_EXPORT GLES2Implementation {
   // Info for each vertex attribute saved so we can simulate client side
   // buffers.
   scoped_ptr<ClientSideBufferHelper> client_side_buffer_helper_;
+
+  // The currently bound vertex array object (VAO)
+  GLuint bound_vertex_array_id_;
 
   GLuint reserved_ids_[2];
 

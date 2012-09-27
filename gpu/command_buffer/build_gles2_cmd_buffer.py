@@ -1730,6 +1730,35 @@ _FUNCTION_INFO = {
     'expectation': False,
     'impl_func': False,
   },
+
+  'GenVertexArraysOES': {
+    'type': 'GENn',
+    'gl_test_func': 'glGenVertexArraysOES',
+    'resource_type': 'VertexArray',
+    'resource_types': 'VertexArrays',
+    'unit_test': False,
+  },
+  'BindVertexArrayOES': {
+    'type': 'Bind',
+    'gl_test_func': 'glBindVertexArrayOES',
+    'decoder_func': 'DoBindVertexArrayOES',
+    'gen_func': 'GenVertexArraysOES',
+    'unit_test': False,
+  },
+  'DeleteVertexArraysOES': {
+    'type': 'DELn',
+    'gl_test_func': 'glDeleteVertexArraysOES',
+    'resource_type': 'VertexArray',
+    'resource_types': 'VertexArrays',
+    'unit_test': False,
+  },
+  'IsVertexArrayOES': {
+    'type': 'Is',
+    'gl_test_func': 'glIsVertexArrayOES',
+    'decoder_func': 'DoIsVertexArrayOES',
+    'expectation': False,
+    'unit_test': False,
+  },
 }
 
 
@@ -2720,7 +2749,38 @@ class BindHandler(TypeHandler):
 
   def WriteServiceUnitTest(self, func, file):
     """Overrriden from TypeHandler."""
-    valid_test = """
+
+    if len(func.GetOriginalArgs()) == 1:
+      valid_test = """
+TEST_F(%(test_name)s, %(name)sValidArgs) {
+  EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s));
+  SpecializedSetup<%(name)s, 0>(true);
+  %(name)s cmd;
+  cmd.Init(%(args)s);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_F(%(test_name)s, %(name)sValidArgsNewId) {
+  EXPECT_CALL(*gl_, %(gl_func_name)s(kNewServiceId));
+  EXPECT_CALL(*gl_, %(gl_gen_func_name)s(1, _))
+     .WillOnce(SetArgumentPointee<1>(kNewServiceId));
+  SpecializedSetup<%(name)s, 0>(true);
+  %(name)s cmd;
+  cmd.Init(kNewClientId);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_TRUE(Get%(resource_type)sInfo(kNewClientId) != NULL);
+}
+"""
+      gen_func_names = {
+      }
+      self.WriteValidUnitTest(func, file, valid_test, {
+          'resource_type': func.GetOriginalArgs()[0].resource_type,
+          'gl_gen_func_name': func.GetInfo("gen_func"),
+      })
+    else:
+      valid_test = """
 TEST_F(%(test_name)s, %(name)sValidArgs) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s));
   SpecializedSetup<%(name)s, 0>(true);
@@ -2742,14 +2802,14 @@ TEST_F(%(test_name)s, %(name)sValidArgsNewId) {
   EXPECT_TRUE(Get%(resource_type)sInfo(kNewClientId) != NULL);
 }
 """
-    gen_func_names = {
-    }
-    self.WriteValidUnitTest(func, file, valid_test, {
-        'first_arg': func.GetOriginalArgs()[0].GetValidArg(func, 0, 0),
-        'first_gl_arg': func.GetOriginalArgs()[0].GetValidGLArg(func, 0, 0),
-        'resource_type': func.GetOriginalArgs()[1].resource_type,
-        'gl_gen_func_name': func.GetInfo("gen_func"),
-    })
+      gen_func_names = {
+      }
+      self.WriteValidUnitTest(func, file, valid_test, {
+          'first_arg': func.GetOriginalArgs()[0].GetValidArg(func, 0, 0),
+          'first_gl_arg': func.GetOriginalArgs()[0].GetValidGLArg(func, 0, 0),
+          'resource_type': func.GetOriginalArgs()[1].resource_type,
+          'gl_gen_func_name': func.GetInfo("gen_func"),
+      })
 
     invalid_test = """
 TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
@@ -2764,11 +2824,14 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
 
   def WriteGLES2ImplementationHeader(self, func, file):
     """Writes the GLES2 Implemention."""
+
     impl_func = func.GetInfo('impl_func')
     impl_decl = func.GetInfo('impl_decl')
+
     if (func.can_auto_generate and
-        (impl_func == None or impl_func == True) and
-        (impl_decl == None or impl_decl == True)):
+          (impl_func == None or impl_func == True) and
+          (impl_decl == None or impl_decl == True)):
+
       file.Write("%s %s(%s) {\n" %
                  (func.return_type, func.original_name,
                   func.MakeTypedOriginalArgString("")))
@@ -2777,6 +2840,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
       self.WriteClientGLCallLog(func, file)
       for arg in func.GetOriginalArgs():
         arg.WriteClientSideValidationCode(file, func)
+
       code = """  if (Is%(type)sReservedId(%(id)s)) {
     SetGLError(GL_INVALID_OPERATION, "%(name)s\", \"%(id)s reserved id");
     return;
@@ -2786,13 +2850,22 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
 }
 
 """
+      name_arg = None
+      if len(func.GetOriginalArgs()) == 1:
+        # Bind functions that have no target (like BindVertexArrayOES)
+        name_arg = func.GetOriginalArgs()[0]
+      else:
+        # Bind functions that have both a target and a name (like BindTexture)
+        name_arg = func.GetOriginalArgs()[1]
+
       file.Write(code % {
           'name': func.name,
           'arg_string': func.MakeOriginalArgString(""),
-          'id': func.GetOriginalArgs()[1].name,
-          'type': func.GetOriginalArgs()[1].resource_type,
-          'lc_type': func.GetOriginalArgs()[1].resource_type.lower(),
+          'id': name_arg.name,
+          'type': name_arg.resource_type,
+          'lc_type': name_arg.resource_type.lower(),
         })
+
     else:
       self.WriteGLES2ImplementationDeclaration(func, file)
 

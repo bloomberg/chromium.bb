@@ -84,6 +84,8 @@
     'command_buffer/service/texture_manager.cc',
     'command_buffer/service/transfer_buffer_manager.cc',
     'command_buffer/service/transfer_buffer_manager.h',
+    'command_buffer/service/vertex_array_manager.h',
+    'command_buffer/service/vertex_array_manager.cc',
     'command_buffer/service/vertex_attrib_manager.h',
     'command_buffer/service/vertex_attrib_manager.cc',
   ],

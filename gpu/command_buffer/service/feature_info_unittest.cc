@@ -746,6 +746,39 @@ TEST_F(FeatureInfoTest, InitializeARB_occlusion_query2) {
       ).use_arb_occlusion_query_for_occlusion_query_boolean);
 }
 
+TEST_F(FeatureInfoTest, InitializeOES_vertex_array_object) {
+  SetupInitExpectations("GL_OES_vertex_array_object");
+  info_->Initialize(NULL);
+  EXPECT_THAT(info_->extensions(),
+              HasSubstr("GL_OES_vertex_array_object"));
+  EXPECT_TRUE(info_->feature_flags().native_vertex_array_object_);
+}
+
+TEST_F(FeatureInfoTest, InitializeARB_vertex_array_object) {
+  SetupInitExpectations("GL_ARB_vertex_array_object");
+  info_->Initialize(NULL);
+  EXPECT_THAT(info_->extensions(),
+              HasSubstr("GL_OES_vertex_array_object"));
+  EXPECT_TRUE(info_->feature_flags().native_vertex_array_object_);
+}
+
+TEST_F(FeatureInfoTest, InitializeAPPLE_vertex_array_object) {
+  SetupInitExpectations("GL_APPLE_vertex_array_object");
+  info_->Initialize(NULL);
+  EXPECT_THAT(info_->extensions(),
+              HasSubstr("GL_OES_vertex_array_object"));
+  EXPECT_TRUE(info_->feature_flags().native_vertex_array_object_);
+}
+
+TEST_F(FeatureInfoTest, InitializeNo_vertex_array_object) {
+  SetupInitExpectations("");
+  info_->Initialize(NULL);
+  // Even if the native extensions are not available the implementation
+  // may still emulate the GL_OES_vertex_array_object functionality. In this
+  // scenario native_vertex_array_object must be false.
+  EXPECT_FALSE(info_->feature_flags().native_vertex_array_object_);
+}
+
 TEST_F(FeatureInfoTest, IsIntel) {
   SetupInitExpectationsWithVendor("", "iNTel", "");
   info_->Initialize(NULL);
