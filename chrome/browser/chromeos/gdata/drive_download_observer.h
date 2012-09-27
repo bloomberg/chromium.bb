@@ -53,10 +53,10 @@ class DriveDownloadObserver : public content::DownloadManager::Observer,
   // GetDrivePath may return an empty path in case SetDrivePath was not
   // previously called or there was some other internal error
   // (there is a DCHECK for this).
-  static FilePath GetDrivePath(content::DownloadItem* download);
+  static FilePath GetDrivePath(const content::DownloadItem* download);
 
   // Checks if there is a Drive upload associated with |download|
-  static bool IsDriveDownload(content::DownloadItem* download);
+  static bool IsDriveDownload(const content::DownloadItem* download);
 
   // Checks if |download| is ready to complete. Returns true if |download| has
   // no Drive upload associated with it or if the Drive upload has already
@@ -72,11 +72,11 @@ class DriveDownloadObserver : public content::DownloadManager::Observer,
       const base::Closure& complete_callback);
 
   // Returns the count of bytes confirmed as uploaded so far for |download|.
-  static int64 GetUploadedBytes(content::DownloadItem* download);
+  static int64 GetUploadedBytes(const content::DownloadItem* download);
 
   // Returns the progress of the upload of |download| as a percentage. If the
   // progress is unknown, returns -1.
-  static int PercentComplete(content::DownloadItem* download);
+  static int PercentComplete(const content::DownloadItem* download);
 
   // Create a temporary file |drive_tmp_download_path| in
   // |drive_tmp_download_dir|. Must be called on a thread that allows file

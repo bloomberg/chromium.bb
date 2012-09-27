@@ -45,7 +45,7 @@ class UploadingUserData : public DownloadCompletionBlocker {
   }
   virtual ~UploadingUserData() {}
 
-  DriveUploader* uploader() { return uploader_; }
+  DriveUploader* uploader() const { return uploader_; }
   void set_upload_id(int upload_id) { upload_id_ = upload_id; }
   int upload_id() const { return upload_id_; }
   void set_virtual_dir_path(const FilePath& path) { virtual_dir_path_ = path; }
@@ -53,7 +53,7 @@ class UploadingUserData : public DownloadCompletionBlocker {
   void set_entry(scoped_ptr<DocumentEntry> entry) { entry_ = entry.Pass(); }
   scoped_ptr<DocumentEntry> entry_passed() { return entry_.Pass(); }
   void set_overwrite(bool overwrite) { is_overwrite_ = overwrite; }
-  bool is_overwrite() { return is_overwrite_; }
+  bool is_overwrite() const { return is_overwrite_; }
   void set_resource_id(const std::string& resource_id) {
     resource_id_ = resource_id;
   }
@@ -91,9 +91,19 @@ UploadingUserData* GetUploadingUserData(DownloadItem* download) {
       download->GetUserData(&kUploadingKey));
 }
 
+const UploadingUserData* GetUploadingUserData(const DownloadItem* download) {
+  return static_cast<const UploadingUserData*>(
+      download->GetUserData(&kUploadingKey));
+}
+
 // Extracts DriveUserData* from |download|.
 DriveUserData* GetDriveUserData(DownloadItem* download) {
   return static_cast<DriveUserData*>(
+      download->GetUserData(&kGDataPathKey));
+}
+
+const DriveUserData* GetDriveUserData(const DownloadItem* download) {
+  return static_cast<const DriveUserData*>(
       download->GetUserData(&kGDataPathKey));
 }
 
@@ -266,8 +276,8 @@ void DriveDownloadObserver::SetDownloadParams(const FilePath& drive_path,
 }
 
 // static
-FilePath DriveDownloadObserver::GetDrivePath(DownloadItem* download) {
-  DriveUserData* data = GetDriveUserData(download);
+FilePath DriveDownloadObserver::GetDrivePath(const DownloadItem* download) {
+  const DriveUserData* data = GetDriveUserData(download);
   // If data is NULL, we've somehow lost the drive path selected by the file
   // picker.
   DCHECK(data);
@@ -275,7 +285,7 @@ FilePath DriveDownloadObserver::GetDrivePath(DownloadItem* download) {
 }
 
 // static
-bool DriveDownloadObserver::IsDriveDownload(DownloadItem* download) {
+bool DriveDownloadObserver::IsDriveDownload(const DownloadItem* download) {
   // We use the existence of the DriveUserData object in download as a
   // signal that this is a DriveDownload.
   return !!GetDriveUserData(download);
@@ -301,15 +311,15 @@ bool DriveDownloadObserver::IsReadyToComplete(
 }
 
 // static
-int64 DriveDownloadObserver::GetUploadedBytes(DownloadItem* download) {
-  UploadingUserData* upload_data = GetUploadingUserData(download);
+int64 DriveDownloadObserver::GetUploadedBytes(const DownloadItem* download) {
+  const UploadingUserData* upload_data = GetUploadingUserData(download);
   if (!upload_data || !upload_data->uploader())
     return 0;
   return upload_data->uploader()->GetUploadedBytes(upload_data->upload_id());
 }
 
 // static
-int DriveDownloadObserver::PercentComplete(DownloadItem* download) {
+int DriveDownloadObserver::PercentComplete(const DownloadItem* download) {
   // Progress is unknown until the upload starts.
   if (!GetUploadingUserData(download))
     return -1;

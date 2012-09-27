@@ -39,84 +39,11 @@ void DownloadItemModel::CancelTask() {
   download_->Cancel(true /* update history service */);
 }
 
-string16 DownloadItemModel::GetStatusText() {
-  int64 size = download_->GetReceivedBytes();
-  int64 total = download_->AllDataSaved() ? size : download_->GetTotalBytes();
-  bool is_drive = false;
-#if defined(OS_CHROMEOS)
-  is_drive = gdata::DriveDownloadObserver::IsDriveDownload(download_);
-  // For Drive downloads, the size is the count of bytes uploaded.
-  if (is_drive)
-    size = gdata::DriveDownloadObserver::GetUploadedBytes(download_);
-#endif
-
-  ui::DataUnits amount_units = ui::GetByteDisplayUnits(total);
-  string16 simple_size = ui::FormatBytesWithUnits(size, amount_units, false);
-
-  // In RTL locales, we render the text "size/total" in an RTL context. This
-  // is problematic since a string such as "123/456 MB" is displayed
-  // as "MB 123/456" because it ends with an LTR run. In order to solve this,
-  // we mark the total string as an LTR string if the UI layout is
-  // right-to-left so that the string "456 MB" is treated as an LTR run.
-  string16 simple_total = base::i18n::GetDisplayStringInLTRDirectionality(
-      ui::FormatBytesWithUnits(total, amount_units, true));
-
-  // TODO(asanka): Calculate a TimeRemaining() for Drive uploads.
-  TimeDelta remaining;
-  string16 simple_time;
-  if (download_->IsInProgress() && download_->IsPaused()) {
-    simple_time = l10n_util::GetStringUTF16(IDS_DOWNLOAD_PROGRESS_PAUSED);
-  } else if (!is_drive && download_->TimeRemaining(&remaining)) {
-    simple_time = download_->GetOpenWhenComplete() ?
-                      TimeFormat::TimeRemainingShort(remaining) :
-                      TimeFormat::TimeRemaining(remaining);
-  }
-
-  string16 size_text;
+string16 DownloadItemModel::GetStatusText() const {
   string16 status_text;
-  content::DownloadInterruptReason reason;
   switch (download_->GetState()) {
     case DownloadItem::IN_PROGRESS:
-#if defined(OS_CHROMEOS)
-      if (is_drive && size == 0) {
-        // We haven't started the upload yet. The download needs to progress
-        // further before we will see any upload progress. Show "Downloading..."
-        // until we start uploading.
-        status_text = l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_WAITING);
-        break;
-      }
-#endif
-      if (download_crx_util::IsExtensionDownload(*download_) &&
-          download_->AllDataSaved() &&
-          download_->GetState() == DownloadItem::IN_PROGRESS) {
-        // The download is a CRX (app, extension, theme, ...) and it is
-        // being unpacked and validated.
-        status_text = l10n_util::GetStringUTF16(
-            IDS_DOWNLOAD_STATUS_CRX_INSTALL_RUNNING);
-      } else if (download_->GetOpenWhenComplete()) {
-        if (simple_time.empty()) {
-          status_text =
-              l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_OPEN_WHEN_COMPLETE);
-        } else {
-          status_text = l10n_util::GetStringFUTF16(IDS_DOWNLOAD_STATUS_OPEN_IN,
-                                                   simple_time);
-        }
-      } else {
-        if (!simple_time.empty()) {
-          status_text = l10n_util::GetStringFUTF16(
-              IDS_DOWNLOAD_STATUS_IN_PROGRESS, simple_size, simple_total,
-              simple_time);
-        } else if (total > 0 && size > 0) {
-          status_text = l10n_util::GetStringFUTF16(
-              IDS_DOWNLOAD_STATUS_IN_PROGRESS_SIZES_ONLY,
-              simple_size, simple_total);
-        } else {
-          // Instead of displaying "0 B" we keep the "Starting..." string.
-          status_text = (size == 0)
-              ? l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_STARTING)
-              : ui::FormatBytes(size);
-        }
-      }
+      status_text = GetInProgressStatusString();
       break;
     case DownloadItem::COMPLETE:
       if (download_->GetFileExternallyRemoved()) {
@@ -128,20 +55,19 @@ string16 DownloadItemModel::GetStatusText() {
     case DownloadItem::CANCELLED:
       status_text = l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_CANCELLED);
       break;
-    case DownloadItem::INTERRUPTED:
-      reason = download_->GetLastReason();
-      status_text = InterruptReasonStatusMessage(reason);
-      if (total <= 0) {
-        size_text = ui::FormatBytes(size);
+    case DownloadItem::INTERRUPTED: {
+      content::DownloadInterruptReason reason = download_->GetLastReason();
+      if (reason != content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED) {
+        string16 interrupt_reason = InterruptReasonStatusMessage(reason);
+        string16 size_ratio = GetProgressSizesString();
+        status_text = l10n_util::GetStringFUTF16(
+            IDS_DOWNLOAD_STATUS_INTERRUPTED, size_ratio, interrupt_reason);
       } else {
-        size_text = l10n_util::GetStringFUTF16(IDS_DOWNLOAD_RECEIVED_SIZE,
-                                               simple_size,
-                                               simple_total);
+        // Same as DownloadItem::CANCELLED.
+        status_text = l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_CANCELLED);
       }
-      size_text = size_text + ASCIIToUTF16(" ");
-      if (reason != content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED)
-        status_text = size_text + status_text;
       break;
+    }
     default:
       NOTREACHED();
   }
@@ -167,14 +93,14 @@ int DownloadItemModel::PercentComplete() const {
 #if defined(OS_CHROMEOS)
   // For Drive uploads, progress is based on the number of bytes
   // uploaded. Progress is unknown until the upload starts.
-  if (gdata::DriveDownloadObserver::IsDriveDownload(download_))
+  if (IsDriveDownload())
     return gdata::DriveDownloadObserver::PercentComplete(download_);
 #endif
   return download_->PercentComplete();
 }
 
 string16 DownloadItemModel::GetWarningText(const gfx::Font& font,
-                                           int base_width) {
+                                           int base_width) const {
   // Should only be called if IsDangerous().
   DCHECK(IsDangerous());
   switch (download_->GetDangerType()) {
@@ -212,7 +138,7 @@ string16 DownloadItemModel::GetWarningText(const gfx::Font& font,
   return string16();
 }
 
-string16 DownloadItemModel::GetWarningConfirmButtonText() {
+string16 DownloadItemModel::GetWarningConfirmButtonText() const {
   // Should only be called if IsDangerous()
   DCHECK(IsDangerous());
   if (download_->GetDangerType() ==
@@ -224,7 +150,7 @@ string16 DownloadItemModel::GetWarningConfirmButtonText() {
   }
 }
 
-bool DownloadItemModel::IsMalicious() {
+bool DownloadItemModel::IsMalicious() const {
   if (!IsDangerous())
     return false;
   switch (download_->GetDangerType()) {
@@ -246,8 +172,114 @@ bool DownloadItemModel::IsMalicious() {
   return false;
 }
 
-bool DownloadItemModel::IsDangerous() {
+bool DownloadItemModel::IsDangerous() const {
   return download_->GetSafetyState() == DownloadItem::DANGEROUS;
+}
+
+int64 DownloadItemModel::GetTotalBytes() const {
+  return download_->AllDataSaved() ? download_->GetReceivedBytes() :
+                                     download_->GetTotalBytes();
+}
+
+int64 DownloadItemModel::GetCompletedBytes() const {
+#if defined(OS_CHROMEOS)
+  // For Drive downloads, the size is the count of bytes uploaded.
+  if (IsDriveDownload())
+    return gdata::DriveDownloadObserver::GetUploadedBytes(download_);
+#endif
+  return download_->GetReceivedBytes();
+}
+
+bool DownloadItemModel::IsDriveDownload() const {
+#if defined(OS_CHROMEOS)
+  return gdata::DriveDownloadObserver::IsDriveDownload(download_);
+#else
+  return false;
+#endif
+}
+
+string16 DownloadItemModel::GetProgressSizesString() const {
+  string16 size_ratio;
+  int64 size = GetCompletedBytes();
+  int64 total = GetTotalBytes();
+  if (total > 0) {
+    ui::DataUnits amount_units = ui::GetByteDisplayUnits(total);
+    string16 simple_size = ui::FormatBytesWithUnits(size, amount_units, false);
+
+    // In RTL locales, we render the text "size/total" in an RTL context. This
+    // is problematic since a string such as "123/456 MB" is displayed
+    // as "MB 123/456" because it ends with an LTR run. In order to solve this,
+    // we mark the total string as an LTR string if the UI layout is
+    // right-to-left so that the string "456 MB" is treated as an LTR run.
+    string16 simple_total = base::i18n::GetDisplayStringInLTRDirectionality(
+        ui::FormatBytesWithUnits(total, amount_units, true));
+    size_ratio = l10n_util::GetStringFUTF16(IDS_DOWNLOAD_STATUS_SIZES,
+                                            simple_size, simple_total);
+  } else {
+    size_ratio = ui::FormatBytes(size);
+  }
+  return size_ratio;
+}
+
+string16 DownloadItemModel::GetInProgressStatusString() const {
+  DCHECK(download_->IsInProgress());
+
+  TimeDelta time_remaining;
+  // time_remaining is only known if the download isn't paused and is not a
+  // Drive download.
+  // TODO(asanka): Calculate a TimeRemaining() for Drive uploads.
+  bool time_remaining_known = (!IsDriveDownload() && !download_->IsPaused() &&
+                               download_->TimeRemaining(&time_remaining));
+
+  // Indication of progress. (E.g.:"100/200 MB" or "100MB")
+  string16 size_ratio = GetProgressSizesString();
+
+  // The download is a CRX (app, extension, theme, ...) and it is being unpacked
+  // and validated.
+  if (download_->AllDataSaved() &&
+      download_crx_util::IsExtensionDownload(*download_)) {
+    return l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_CRX_INSTALL_RUNNING);
+  }
+
+  // A paused download: "100/120 MB, Paused"
+  if (download_->IsPaused()) {
+    return l10n_util::GetStringFUTF16(
+        IDS_DOWNLOAD_STATUS_IN_PROGRESS, size_ratio,
+        l10n_util::GetStringUTF16(IDS_DOWNLOAD_PROGRESS_PAUSED));
+  }
+
+  // A download scheduled to be opened when complete: "Opening in 10 secs"
+  if (download_->GetOpenWhenComplete()) {
+    if (!time_remaining_known)
+      return l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_OPEN_WHEN_COMPLETE);
+
+    return l10n_util::GetStringFUTF16(
+        IDS_DOWNLOAD_STATUS_OPEN_IN,
+        TimeFormat::TimeRemainingShort(time_remaining));
+  }
+
+  // In progress download with known time left: "100/120 MB, 10 secs left"
+  if (time_remaining_known) {
+    return l10n_util::GetStringFUTF16(
+        IDS_DOWNLOAD_STATUS_IN_PROGRESS, size_ratio,
+        TimeFormat::TimeRemaining(time_remaining));
+  }
+
+  // In progress download with no known time left and non-zero completed bytes:
+  // "100/120 MB" or "100 MB"
+  if (GetCompletedBytes() > 0)
+    return size_ratio;
+
+#if defined(OS_CHROMEOS)
+  // We haven't started the upload yet. The download needs to progress
+  // further before we will see any upload progress. Show "Downloading..."
+  // until we start uploading.
+  if (IsDriveDownload())
+    return l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_WAITING);
+#endif
+
+  // Instead of displaying "0 B" we say "Starting..."
+  return l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_STARTING);
 }
 
 // static
