@@ -45,11 +45,6 @@ list > * > .label {
   display: inline-block; /* We need to use inline-block here due to RTL. */
 }
 
-list > * > .label > input,
-list > * > .url > input {
-  line-height: 20px;
-}
-
 list > * > .url {
   -webkit-box-flex: 1;
   direction: ltr; /* URLs always read LTR */
@@ -134,25 +129,23 @@ list [editing] .url input {
   -webkit-padding-end: 3px;
   -webkit-padding-start: 3px;
   box-sizing: content-box;
-  /* Do not inherit the line-height */
   font-family: inherit;
   font-size: inherit;
   font-weight: inherit;
+  /* Do not inherit the line-height. */
+  line-height: normal;
   margin-bottom: 0;
   margin-top: 0;
-  max-width: 40%;
   min-height: 0;
-  padding-bottom: 0;
-  padding-top: 0;
   text-decoration: none;
+  vertical-align: baseline;
 }
 
 .tree-item [editing] input {
+  line-height: normal;
   margin: 0;
-  padding: 0;
-<if expr="is_macosx">
-  padding-top: 1px;
-</if>
+  min-height: 0;
+  padding: 3px 0;
 }
 
 <if expr="is_macosx">
@@ -169,12 +162,11 @@ list > [editing] {
 list [editing] .label,
 list [editing] .url,
 list [editing] > * {
-  display: inline;
   overflow: visible;
 }
 
 list [editing] .url {
-  -webkit-padding-start: 10px;
+  -webkit-padding-start: 5px;
 }
 
 /* end editing */
@@ -324,8 +316,6 @@ html[dir=rtl] .summary button {
   background-position: left center;
 }
 
-@media (pointer:coarse) {
-  menu > button {
-    line-height: 40px;
-  }
+menu > button {
+  line-height: 28px;
 }

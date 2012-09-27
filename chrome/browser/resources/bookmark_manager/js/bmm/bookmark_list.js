@@ -497,7 +497,7 @@ cr.define('bmm', function() {
         });
         labelInput.addEventListener('keydown', handleKeydown);
         labelInput.addEventListener('blur', handleBlur);
-        cr.ui.limitInputWidth(labelInput, this, 100);
+        cr.ui.limitInputWidth(labelInput, this, 100, 0.5);
         labelInput.focus();
         labelInput.select();
 
@@ -507,7 +507,7 @@ cr.define('bmm', function() {
           });
           urlInput.addEventListener('keydown', handleKeydown);
           urlInput.addEventListener('blur', handleBlur);
-          cr.ui.limitInputWidth(urlInput, this, 200);
+          cr.ui.limitInputWidth(urlInput, this, 200, 0.5);
         }
 
       } else {
