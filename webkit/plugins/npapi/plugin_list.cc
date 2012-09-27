@@ -16,9 +16,12 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/mime_util.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/plugins/npapi/plugin_constants_win.h"
 #include "webkit/plugins/npapi/plugin_lib.h"
 #include "webkit/plugins/plugin_switches.h"
+
+#if defined(OS_WIN)
+#include "webkit/plugins/npapi/plugin_constants_win.h"
+#endif
 
 namespace {
 
@@ -51,7 +54,7 @@ bool AllowMimeTypeMismatch(const std::string& orig_mime_type,
   return allow;
 }
 
-}
+}  // namespace
 
 namespace webkit {
 namespace npapi {

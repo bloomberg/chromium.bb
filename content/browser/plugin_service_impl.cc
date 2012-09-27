@@ -16,7 +16,6 @@
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "content/browser/plugin_loader_posix.h"
 #include "content/browser/ppapi_plugin_process_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -30,9 +29,16 @@
 #include "content/public/browser/resource_context.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
-#include "webkit/plugins/npapi/plugin_constants_win.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/webplugininfo.h"
+
+#if defined(OS_WIN)
+#include "webkit/plugins/npapi/plugin_constants_win.h"
+#endif
+
+#if defined(OS_POSIX)
+#include "content/browser/plugin_loader_posix.h"
+#endif
 
 #if defined(OS_POSIX) && !defined(OS_OPENBSD)
 using ::base::files::FilePathWatcher;
@@ -597,7 +603,7 @@ content::PepperPluginInfo* PluginServiceImpl::GetRegisteredPpapiPluginInfo(
 #if defined(OS_POSIX) && !defined(OS_OPENBSD)
 // static
 void PluginServiceImpl::RegisterFilePathWatcher(
-    FilePathWatcher *watcher,
+    FilePathWatcher* watcher,
     const FilePath& path,
     FilePathWatcher::Delegate* delegate) {
   bool result = watcher->Watch(path, delegate);

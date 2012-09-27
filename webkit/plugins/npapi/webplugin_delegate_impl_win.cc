@@ -10,13 +10,10 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
-#include "base/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/metrics/stats_counters.h"
-#include "base/string_number_conversions.h"
-#include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/synchronization/lock.h"
@@ -35,6 +32,7 @@
 #include "webkit/plugins/npapi/plugin_utils.h"
 #include "webkit/plugins/npapi/webplugin.h"
 #include "webkit/plugins/npapi/webplugin_ime_win.h"
+#include "webkit/plugins/plugin_constants.h"
 
 using WebKit::WebCursorInfo;
 using WebKit::WebKeyboardEvent;
@@ -394,7 +392,7 @@ BOOL WINAPI WebPluginDelegateImpl::VirtualFreePatch(LPVOID address,
 
 WebPluginDelegateImpl::WebPluginDelegateImpl(
     gfx::PluginWindowHandle containing_view,
-    PluginInstance *instance)
+    PluginInstance* instance)
     : parent_(containing_view),
       instance_(instance),
       quirks_(0),
@@ -424,7 +422,7 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
   std::wstring filename =
       StringToLowerASCII(plugin_info.path.BaseName().value());
 
-  if (instance_->mime_type() == "application/x-shockwave-flash" ||
+  if (instance_->mime_type() == kFlashPluginSwfMimeType ||
       filename == kFlashPlugin) {
     // Flash only requests windowless plugins if we return a Mozilla user
     // agent.
@@ -716,7 +714,7 @@ bool WebPluginDelegateImpl::WindowedCreatePlugin() {
       std::wstring plugin_name = plugin_lib->plugin_info().name;
       if (!plugin_name.empty()) {
         ATOM plugin_name_atom = GlobalAddAtomW(plugin_name.c_str());
-        DCHECK(0 != plugin_name_atom);
+        DCHECK_NE(0, plugin_name_atom);
         result = SetProp(windowed_handle_,
             kPluginNameAtomProperty,
             reinterpret_cast<HANDLE>(plugin_name_atom));
@@ -726,7 +724,7 @@ bool WebPluginDelegateImpl::WindowedCreatePlugin() {
       string16 plugin_version = plugin_lib->plugin_info().version;
       if (!plugin_version.empty()) {
         ATOM plugin_version_atom = GlobalAddAtomW(plugin_version.c_str());
-        DCHECK(0 != plugin_version_atom);
+        DCHECK_NE(0, plugin_version_atom);
         result = SetProp(windowed_handle_,
             kPluginVersionAtomProperty,
             reinterpret_cast<HANDLE>(plugin_version_atom));
@@ -1334,7 +1332,7 @@ bool WebPluginDelegateImpl::PlatformSetPluginHasFocus(bool focused) {
 }
 
 static bool NPEventFromWebMouseEvent(const WebMouseEvent& event,
-                                     NPEvent *np_event) {
+                                     NPEvent* np_event) {
   np_event->lParam = static_cast<uint32>(MAKELPARAM(event.windowX,
                                                    event.windowY));
   np_event->wParam = 0;
@@ -1389,7 +1387,7 @@ static bool NPEventFromWebMouseEvent(const WebMouseEvent& event,
 }
 
 static bool NPEventFromWebKeyboardEvent(const WebKeyboardEvent& event,
-                                        NPEvent *np_event) {
+                                        NPEvent* np_event) {
   np_event->wParam = event.windowsKeyCode;
 
   switch (event.type) {

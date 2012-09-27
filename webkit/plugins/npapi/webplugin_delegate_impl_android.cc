@@ -6,11 +6,8 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "webkit/plugins/npapi/plugin_instance.h"
 #include "webkit/plugins/npapi/webplugin.h"
-#include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebCursorInfo;
 using WebKit::WebInputEvent;

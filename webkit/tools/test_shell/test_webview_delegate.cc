@@ -80,6 +80,10 @@
 #include "webkit/tools/test_shell/drop_delegate.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "webkit/plugins/plugin_constants.h"
+#endif
+
 using appcache::WebApplicationCacheHostImpl;
 using WebKit::WebAccessibilityObject;
 using WebKit::WebApplicationCacheHost;
@@ -598,7 +602,7 @@ WebPlugin* TestWebViewDelegate::createPlugin(WebFrame* frame,
 #if defined(OS_MACOSX)
   if (!shell_->layout_test_mode()) {
     bool flash = LowerCaseEqualsASCII(params_copy.mimeType.utf8(),
-                                      "application/x-shockwave-flash");
+                                      kFlashPluginSwfMimeType);
     if (flash) {
       // Mac does not support windowed plugins. Force Flash plugins to use
       // windowless mode by setting the wmode="opaque" attribute.

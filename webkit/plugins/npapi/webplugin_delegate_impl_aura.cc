@@ -4,37 +4,17 @@
 
 #include "webkit/plugins/npapi/webplugin_delegate_impl.h"
 
-#include "base/basictypes.h"
-#include "base/file_util.h"
-#include "base/message_loop.h"
-#include "base/process_util.h"
-#include "base/metrics/stats_counters.h"
-#include "base/string_util.h"
-#include "skia/ext/platform_canvas.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
-#include "ui/gfx/blit.h"
-#include "webkit/plugins/npapi/gtk_plugin_container.h"
-#include "webkit/plugins/npapi/plugin_constants_win.h"
 #include "webkit/plugins/npapi/plugin_instance.h"
-#include "webkit/plugins/npapi/plugin_lib.h"
-#include "webkit/plugins/npapi/plugin_list.h"
-#include "webkit/plugins/npapi/plugin_stream_url.h"
-#include "webkit/plugins/npapi/webplugin.h"
-
-#include "third_party/npapi/bindings/npapi_x11.h"
 
 using WebKit::WebCursorInfo;
-using WebKit::WebKeyboardEvent;
 using WebKit::WebInputEvent;
-using WebKit::WebMouseEvent;
 
 namespace webkit {
 namespace npapi {
 
 WebPluginDelegateImpl::WebPluginDelegateImpl(
     gfx::PluginWindowHandle containing_view,
-    PluginInstance *instance) {
+    PluginInstance* instance) {
 }
 
 WebPluginDelegateImpl::~WebPluginDelegateImpl() {

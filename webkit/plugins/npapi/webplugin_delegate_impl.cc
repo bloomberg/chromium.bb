@@ -7,23 +7,18 @@
 #include <string>
 #include <vector>
 
-#include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/plugins/npapi/plugin_constants_win.h"
 #include "webkit/plugins/npapi/plugin_instance.h"
 #include "webkit/plugins/npapi/plugin_lib.h"
-#include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/npapi/plugin_stream_url.h"
 
 using WebKit::WebCursorInfo;
-using WebKit::WebKeyboardEvent;
 using WebKit::WebInputEvent;
-using WebKit::WebMouseEvent;
 
 namespace webkit {
 namespace npapi {

@@ -4,30 +4,20 @@
 
 #include "webkit/plugins/npapi/webplugin_delegate_impl.h"
 
-#include <string>
-#include <vector>
-
 #include <gtk/gtk.h>
 #include <gdk/gdkx.h>
 
-#include "base/basictypes.h"
-#include "base/file_util.h"
-#include "base/message_loop.h"
-#include "base/process_util.h"
+#include <string>
+#include <vector>
+
 #include "base/metrics/stats_counters.h"
-#include "base/string_util.h"
 #include "skia/ext/platform_canvas.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "ui/base/gtk/gtk_compat.h"
 #include "ui/gfx/blit.h"
-#include "webkit/plugins/npapi/gtk_plugin_container.h"
-#include "webkit/plugins/npapi/plugin_constants_win.h"
 #include "webkit/plugins/npapi/plugin_instance.h"
-#include "webkit/plugins/npapi/plugin_lib.h"
-#include "webkit/plugins/npapi/plugin_list.h"
-#include "webkit/plugins/npapi/plugin_stream_url.h"
 #include "webkit/plugins/npapi/webplugin.h"
+#include "webkit/plugins/plugin_constants.h"
 
 #include "third_party/npapi/bindings/npapi_x11.h"
 
@@ -41,7 +31,7 @@ namespace npapi {
 
 WebPluginDelegateImpl::WebPluginDelegateImpl(
     gfx::PluginWindowHandle containing_view,
-    PluginInstance *instance)
+    PluginInstance* instance)
     : windowed_handle_(0),
       windowed_did_set_window_(false),
       windowless_(false),
@@ -61,7 +51,7 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
       containing_view_has_focus_(true),
       creation_succeeded_(false) {
   memset(&window_, 0, sizeof(window_));
-  if (instance_->mime_type() == "application/x-shockwave-flash") {
+  if (instance_->mime_type() == kFlashPluginSwfMimeType) {
     // Flash is tied to Firefox's whacky behavior with windowless plugins. See
     // comments in WindowlessPaint.
     // TODO(viettrungluu): PLUGIN_QUIRK_WINDOWLESS_NO_RIGHT_CLICK: Don't allow
@@ -217,8 +207,6 @@ void WebPluginDelegateImpl::WindowedSetWindow() {
   window_.width = window_rect_.width();
   window_.x = window_rect_.x();
   window_.y = window_rect_.y();
-
-  //window_.window = windowed_handle_;
   window_.type = NPWindowTypeWindow;
 
   // Reset this flag before entering the instance in case of side-effects.
@@ -404,7 +392,7 @@ void WebPluginDelegateImpl::WindowlessPaint(cairo_t* context,
 
   // Construct the paint message, targeting the pixmap.
   NPEvent np_event = {0};
-  XGraphicsExposeEvent &event = np_event.xgraphicsexpose;
+  XGraphicsExposeEvent& event = np_event.xgraphicsexpose;
   event.type = GraphicsExpose;
   event.x = pixmap_draw_rect.x();
   event.y = pixmap_draw_rect.y();
@@ -505,7 +493,7 @@ void WebPluginDelegateImpl::WindowlessSetWindow() {
   DCHECK(instance()->windowless());
   // Mozilla docs say that this window param is not used for windowless
   // plugins; rather, the window is passed during the GraphicsExpose event.
-  DCHECK(window_.window == 0);
+  DCHECK_EQ(window_.window, static_cast<void*>(NULL));
 
   window_.clipRect.top = clip_rect_.y() + window_rect_.y();
   window_.clipRect.left = clip_rect_.x() + window_rect_.x();
@@ -543,7 +531,7 @@ bool WebPluginDelegateImpl::PlatformSetPluginHasFocus(bool focused) {
   DCHECK(instance()->windowless());
 
   NPEvent np_event = {0};
-  XFocusChangeEvent &event = np_event.xfocus;
+  XFocusChangeEvent& event = np_event.xfocus;
   event.type = focused ? FocusIn : FocusOut;
   event.display = GDK_DISPLAY();
   // Same values as Firefox. .serial and .window stay 0.
@@ -579,7 +567,7 @@ static int GetXModifierState(int modifiers) {
 
 static bool NPEventFromWebMouseEvent(const WebMouseEvent& event,
                                      Time timestamp,
-                                     NPEvent *np_event) {
+                                     NPEvent* np_event) {
   np_event->xany.display = GDK_DISPLAY();
   // NOTE: Firefox keeps xany.serial and xany.window as 0.
 
@@ -589,7 +577,7 @@ static bool NPEventFromWebMouseEvent(const WebMouseEvent& event,
   switch (event.type) {
     case WebInputEvent::MouseMove: {
       np_event->type = MotionNotify;
-      XMotionEvent &motion_event = np_event->xmotion;
+      XMotionEvent& motion_event = np_event->xmotion;
       motion_event.root = root;
       motion_event.time = timestamp;
       motion_event.x = event.x;
@@ -608,7 +596,7 @@ static bool NPEventFromWebMouseEvent(const WebMouseEvent& event,
       } else {
         np_event->type = LeaveNotify;
       }
-      XCrossingEvent &crossing_event = np_event->xcrossing;
+      XCrossingEvent& crossing_event = np_event->xcrossing;
       crossing_event.root = root;
       crossing_event.time = timestamp;
       crossing_event.x = event.x;
@@ -632,7 +620,7 @@ static bool NPEventFromWebMouseEvent(const WebMouseEvent& event,
       } else {
         np_event->type = ButtonRelease;
       }
-      XButtonEvent &button_event = np_event->xbutton;
+      XButtonEvent& button_event = np_event->xbutton;
       button_event.root = root;
       button_event.time = timestamp;
       button_event.x = event.x;
@@ -665,7 +653,7 @@ static bool NPEventFromWebMouseEvent(const WebMouseEvent& event,
 
 static bool NPEventFromWebKeyboardEvent(const WebKeyboardEvent& event,
                                         Time timestamp,
-                                        NPEvent *np_event) {
+                                        NPEvent* np_event) {
   np_event->xany.display = GDK_DISPLAY();
   // NOTE: Firefox keeps xany.serial and xany.window as 0.
 
@@ -680,7 +668,7 @@ static bool NPEventFromWebKeyboardEvent(const WebKeyboardEvent& event,
       NOTREACHED();
       return false;
   }
-  XKeyEvent &key_event = np_event->xkey;
+  XKeyEvent& key_event = np_event->xkey;
   key_event.send_event = False;
   key_event.display = GDK_DISPLAY();
   // NOTE: Firefox keeps xany.serial and xany.window as 0.

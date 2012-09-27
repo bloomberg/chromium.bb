@@ -4,7 +4,6 @@
 
 #include "content/common/npobject_stub.h"
 
-#include "base/command_line.h"
 #include "content/common/np_channel_base.h"
 #include "content/common/npobject_util.h"
 #include "content/common/plugin_messages.h"
@@ -13,8 +12,12 @@
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npruntime.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
-#include "webkit/plugins/npapi/plugin_constants_win.h"
 #include "webkit/plugins/npapi/plugin_host.h"
+
+#if defined(OS_WIN)
+#include "base/command_line.h"
+#include "webkit/plugins/npapi/plugin_constants_win.h"
+#endif
 
 using WebKit::WebBindings;
 

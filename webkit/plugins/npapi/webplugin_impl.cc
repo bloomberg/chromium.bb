@@ -9,8 +9,8 @@
 #include "base/memory/linked_ptr.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
-#include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
 #include "googleurl/src/url_util.h"
@@ -18,26 +18,26 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "skia/ext/platform_canvas.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCookieJar.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebData.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebHTTPBody.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebHTTPHeaderVisitor.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebKitPlatformSupport.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLError.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLLoaderClient.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLLoader.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLResponse.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebKitPlatformSupport.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginParams.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLError.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLLoader.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLLoaderClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLLoaderOptions.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/gfx/rect.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
@@ -46,6 +46,7 @@
 #include "webkit/plugins/npapi/plugin_instance.h"
 #include "webkit/plugins/npapi/webplugin_delegate.h"
 #include "webkit/plugins/npapi/webplugin_page_delegate.h"
+#include "webkit/plugins/plugin_constants.h"
 
 using appcache::WebApplicationCacheHostImpl;
 using WebKit::WebCanvas;
@@ -81,7 +82,6 @@ namespace npapi {
 
 namespace {
 
-const char kFlashMimeType[] = "application/x-shockwave-flash";
 const char kOctetStreamMimeType[] = "application/octet-stream";
 const char kHTMLMimeType[] = "text/html";
 const char kPlainTextMimeType[] = "text/plain";
@@ -165,7 +165,7 @@ class MultiPartResponseClient : public WebURLLoaderClient {
 
 class HeaderFlattener : public WebHTTPHeaderVisitor {
  public:
-  HeaderFlattener(std::string* buf) : buf_(buf) {
+  explicit HeaderFlattener(std::string* buf) : buf_(buf) {
   }
 
   virtual void visitHeader(const WebString& name, const WebString& value) {
@@ -608,7 +608,7 @@ WebPluginDelegate* WebPluginImpl::delegate() {
 
 bool WebPluginImpl::IsValidUrl(const GURL& url, Referrer referrer_flag) {
   if (referrer_flag == PLUGIN_SRC &&
-      mime_type_ == kFlashMimeType &&
+      mime_type_ == kFlashPluginSwfMimeType &&
       url.GetOrigin() != plugin_url_.GetOrigin()) {
     // Do url check to make sure that there are no @, ;, \ chars in between url
     // scheme and url path.
@@ -905,7 +905,7 @@ void WebPluginImpl::didReceiveResponse(WebURLLoader* loader,
 
   // Defend against content confusion by the Flash plug-in.
   if (client_info->is_plugin_src_load &&
-      mime_type_ == kFlashMimeType) {
+      mime_type_ == kFlashPluginSwfMimeType) {
     client_info->check_flash_version = true;
     std::string sniff =
         response.httpHeaderField("X-Content-Type-Options").utf8();
@@ -914,7 +914,7 @@ void WebPluginImpl::didReceiveResponse(WebURLLoader* loader,
     StringToLowerASCII(&sniff);
     StringToLowerASCII(&content_type);
     // TODO(cevans): remove when we no longer need these.
-    if (content_type.find(kFlashMimeType) != std::string::npos) {
+    if (content_type.find(kFlashPluginSwfMimeType) != std::string::npos) {
       UMA_HISTOGRAM_ENUMERATION(kPluginFlashMimeType,
                                 MIME_TYPE_OK,
                                 MIME_TYPE_NUM_EVENTS);
@@ -941,7 +941,7 @@ void WebPluginImpl::didReceiveResponse(WebURLLoader* loader,
     }
     if (sniff.find("nosniff") != std::string::npos &&
         !content_type.empty() &&
-        content_type.find(kFlashMimeType) == std::string::npos) {
+        content_type.find(kFlashPluginSwfMimeType) == std::string::npos) {
       loader->cancel();
       client_info->client->DidFail();
       return;

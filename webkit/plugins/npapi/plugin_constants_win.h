@@ -8,6 +8,10 @@
 #include "base/string16.h"
 #include "webkit/plugins/webkit_plugins_export.h"
 
+#if !defined(OS_WIN)
+#error "Windows-only header"
+#endif
+
 namespace webkit {
 namespace npapi {
 

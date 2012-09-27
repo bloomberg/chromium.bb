@@ -2,30 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <Cocoa/Cocoa.h>
-#import <QuartzCore/QuartzCore.h>
-
 #include "webkit/plugins/npapi/webplugin_delegate_impl.h"
 
-#include <string>
+#import <Cocoa/Cocoa.h>
+#import <QuartzCore/QuartzCore.h>
 #include <unistd.h>
-#include <set>
 
-#include "base/file_util.h"
+#include <set>
+#include <string>
+
 #include "base/mac/mac_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
 #include "base/metrics/stats_counters.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
 #include "base/sys_string_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
-#include "webkit/glue/webkit_glue.h"
 #include "webkit/plugins/npapi/plugin_instance.h"
 #include "webkit/plugins/npapi/plugin_lib.h"
-#include "webkit/plugins/npapi/plugin_list.h"
-#include "webkit/plugins/npapi/plugin_stream_url.h"
 #include "webkit/plugins/npapi/plugin_web_event_converter_mac.h"
 #include "webkit/plugins/npapi/webplugin.h"
 #include "webkit/plugins/npapi/webplugin_accelerated_surface_mac.h"
@@ -156,7 +151,7 @@ int ExternalDragTracker::WebEventButtonModifierMask() {
 
 WebPluginDelegateImpl::WebPluginDelegateImpl(
     gfx::PluginWindowHandle containing_view,
-    PluginInstance *instance)
+    PluginInstance* instance)
     : windowed_handle_(gfx::kNullPluginWindow),
       // all Mac plugins are "windowless" in the Windows/X11 sense
       windowless_(true),
