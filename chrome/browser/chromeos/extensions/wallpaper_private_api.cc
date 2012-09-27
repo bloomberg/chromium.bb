@@ -92,7 +92,6 @@ class WallpaperFunctionBase::WallpaperDecoder : public ImageDecoder::Delegate {
 
   void Cancel() {
     cancel_flag_.Set();
-    function_->SendResponse(false);
   }
 
   virtual void OnImageDecoded(const ImageDecoder* decoder,
@@ -100,6 +99,7 @@ class WallpaperFunctionBase::WallpaperDecoder : public ImageDecoder::Delegate {
     gfx::ImageSkia final_image(decoded_image);
     final_image.MakeThreadSafe();
     if (cancel_flag_.IsSet()) {
+      function_->OnFailureOrCancel();
       delete this;
       return;
     }
@@ -108,11 +108,7 @@ class WallpaperFunctionBase::WallpaperDecoder : public ImageDecoder::Delegate {
   }
 
   virtual void OnDecodeImageFailed(const ImageDecoder* decoder) OVERRIDE {
-    if (cancel_flag_.IsSet()) {
-      delete this;
-      return;
-    }
-    function_->OnFailure();
+    function_->OnFailureOrCancel();
     // TODO(bshe): Dispatches an encoding error event.
     delete this;
   }
@@ -168,13 +164,15 @@ bool WallpaperSetWallpaperFunction::RunImpl() {
 void WallpaperSetWallpaperFunction::OnWallpaperDecoded(
     const gfx::ImageSkia& wallpaper) {
   wallpaper_ = wallpaper;
+  // Set wallpaper_decoder_ to null since the decoding already finished.
+  wallpaper_decoder_ = NULL;
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&WallpaperSetWallpaperFunction::SaveToFile,
                  this));
 }
 
-void WallpaperSetWallpaperFunction::OnFailure() {
+void WallpaperSetWallpaperFunction::OnFailureOrCancel() {
   wallpaper_decoder_ = NULL;
   SendResponse(false);
 }
@@ -187,7 +185,7 @@ void WallpaperSetWallpaperFunction::SaveToFile() {
       !file_util::CreateDirectory(wallpaper_dir)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&WallpaperSetWallpaperFunction::OnFailure,
+        base::Bind(&WallpaperSetWallpaperFunction::OnFailureOrCancel,
                    this));
     return;
   }
@@ -213,7 +211,7 @@ void WallpaperSetWallpaperFunction::SaveToFile() {
   } else {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&WallpaperSetWallpaperFunction::OnFailure,
+        base::Bind(&WallpaperSetWallpaperFunction::OnFailureOrCancel,
                    this));
   }
 }
@@ -231,7 +229,6 @@ void WallpaperSetWallpaperFunction::SetDecodedWallpaper() {
       base::Time::Now().LocalMidnight()
   };
   wallpaper_manager->SetUserWallpaperInfo(email_, info, is_persistent);
-  wallpaper_decoder_ = NULL;
   SendResponse(true);
 }
 
@@ -278,7 +275,7 @@ void WallpaperSetCustomWallpaperFunction::OnWallpaperDecoded(
   SendResponse(true);
 }
 
-void WallpaperSetCustomWallpaperFunction::OnFailure() {
+void WallpaperSetCustomWallpaperFunction::OnFailureOrCancel() {
   wallpaper_decoder_ = NULL;
   SendResponse(false);
 }
