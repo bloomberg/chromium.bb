@@ -35,6 +35,7 @@ class PeerConnection;
 }
 
 namespace WebKit {
+class WebFrame;
 class WebMediaStreamDescriptor;
 class WebPeerConnection00Handler;
 class WebPeerConnection00HandlerClient;
@@ -87,6 +88,7 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
   virtual scoped_refptr<webrtc::PeerConnectionInterface>
       CreatePeerConnection(const webrtc::JsepInterface::IceServers& ice_servers,
                            const webrtc::MediaConstraintsInterface* constraints,
+                           WebKit::WebFrame* web_frame,
                            webrtc::PeerConnectionObserver* observer);
 
   // Creates a libjingle representation of a Session description. Used by a
@@ -127,12 +129,7 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
  private:
   // Creates and deletes |pc_factory_|, which in turn is used for
   // creating PeerConnection objects.
-  bool CreatePeerConnectionFactory(
-      talk_base::Thread* worker_thread,
-      talk_base::Thread* signaling_thread,
-      content::P2PSocketDispatcher* socket_dispatcher,
-      talk_base::NetworkManager* network_manager,
-      talk_base::PacketSocketFactory* socket_factory);
+  bool CreatePeerConnectionFactory();
   bool PeerConnectionFactoryCreated();
 
   void InitializeWorkerThread(talk_base::Thread** thread,

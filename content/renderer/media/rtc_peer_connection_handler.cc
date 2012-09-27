@@ -19,6 +19,7 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRTCSessionDescriptionRequest.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRTCVoidRequest.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURL.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 
 // Converter functions from  libjingle types to WebKit types.
 
@@ -154,7 +155,21 @@ class RTCMediaConstraints : public webrtc::MediaConstraintsInterface {
   explicit RTCMediaConstraints(
       const WebKit::WebMediaConstraints& constraints) {
   }
+  virtual const Constraints& GetMandatory() const OVERRIDE {
+    // TODO(perkj): Implement.
+    NOTIMPLEMENTED();
+    return mandatory_;
+  }
+  virtual const Constraints& GetOptional() const OVERRIDE {
+    // TODO(perkj): Implement.
+    NOTIMPLEMENTED();
+    return optional_;
+  }
   ~RTCMediaConstraints() {}
+
+ private:
+  Constraints mandatory_;
+  Constraints optional_;
 };
 
 RTCPeerConnectionHandler::RTCPeerConnectionHandler(
@@ -169,14 +184,40 @@ RTCPeerConnectionHandler::~RTCPeerConnectionHandler() {
 
 bool RTCPeerConnectionHandler::initialize(
     const WebKit::WebRTCConfiguration& server_configuration,
-    const WebKit::WebMediaConstraints& options ) {
+    const WebKit::WebMediaConstraints& options) {
+  webrtc::JsepInterface::IceServers servers;
+  GetNativeIceServers(server_configuration, &servers);
+
+  // TODO(perkj) use a frame provided by WebKit to
+  // RTCPeerConnectionHandler::initialize when the new WebKit version has been
+  // rolled.
+  WebKit::WebFrame* frame = WebKit::WebFrame::frameForCurrentContext();
+  if (!frame)  {
+    LOG(ERROR) << "frame is NULL";
+    return false;
+  }
+
+  RTCMediaConstraints constraints(options);
+  native_peer_connection_ =
+      dependency_factory_->CreatePeerConnection(
+          servers, &constraints, frame, this);
+  if (!native_peer_connection_) {
+    LOG(ERROR) << "Failed to initialize native PeerConnection.";
+    return false;
+  }
+  return true;
+}
+
+bool RTCPeerConnectionHandler::InitializeForTest(
+    const WebKit::WebRTCConfiguration& server_configuration,
+    const WebKit::WebMediaConstraints& options) {
   webrtc::JsepInterface::IceServers servers;
   GetNativeIceServers(server_configuration, &servers);
 
   RTCMediaConstraints constraints(options);
   native_peer_connection_ =
       dependency_factory_->CreatePeerConnection(
-          servers, &constraints, this);
+          servers, &constraints, NULL, this);
   if (!native_peer_connection_) {
     LOG(ERROR) << "Failed to initialize native PeerConnection.";
     return false;

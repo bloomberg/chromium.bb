@@ -26,6 +26,11 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
       MediaStreamDependencyFactory* dependency_factory);
   virtual ~RTCPeerConnectionHandler();
 
+  // Initialize method only used for unit test.
+  bool InitializeForTest(
+      const WebKit::WebRTCConfiguration& server_configuration,
+      const WebKit::WebMediaConstraints& options);
+
   // WebKit::WebRTCPeerConnectionHandler implementation
   virtual bool initialize(
       const WebKit::WebRTCConfiguration& server_configuration,

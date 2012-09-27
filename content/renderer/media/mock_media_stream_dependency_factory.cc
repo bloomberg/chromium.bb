@@ -275,6 +275,7 @@ scoped_refptr<webrtc::PeerConnectionInterface>
 MockMediaStreamDependencyFactory::CreatePeerConnection(
     const webrtc::JsepInterface::IceServers& ice_servers,
     const webrtc::MediaConstraintsInterface* constraints,
+    WebKit::WebFrame* frame,
     webrtc::PeerConnectionObserver* observer) {
   DCHECK(mock_pc_factory_created_);
   return new talk_base::RefCountedObject<webrtc::MockPeerConnectionImpl>(this);

@@ -79,6 +79,7 @@ class MockMediaStreamDependencyFactory : public MediaStreamDependencyFactory {
   virtual scoped_refptr<webrtc::PeerConnectionInterface>
       CreatePeerConnection(const webrtc::JsepInterface::IceServers& ice_servers,
                            const webrtc::MediaConstraintsInterface* constraints,
+                           WebKit::WebFrame* frame,
                            webrtc::PeerConnectionObserver* observer) OVERRIDE;
   virtual scoped_refptr<webrtc::LocalMediaStreamInterface>
       CreateLocalMediaStream(const std::string& label) OVERRIDE;

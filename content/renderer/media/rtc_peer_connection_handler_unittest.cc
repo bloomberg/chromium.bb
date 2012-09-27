@@ -56,20 +56,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
 
     WebKit::WebRTCConfiguration config;
     WebKit::WebMediaConstraints constraints;
-    EXPECT_TRUE(pc_handler_->initialize(config, constraints));
-
-    mock_peer_connection_ = pc_handler_->native_peer_connection();
-    ASSERT_TRUE(mock_peer_connection_);
-  }
-
-  void Initialize(const std::string& server, const std::string& password) {
-    WebKit::WebRTCConfiguration config;
-    WebKit::WebMediaConstraints constraints;
-
-    // TODO(perkj): Test that the parameters in |config| can be translated when
-    // a WebRTCConfiguration can be constructed. It's WebKit class and can't be
-    // initialized from a test.
-    EXPECT_TRUE(pc_handler_->initialize(config, constraints));
+    EXPECT_TRUE(pc_handler_->InitializeForTest(config, constraints));
 
     mock_peer_connection_ = pc_handler_->native_peer_connection();
     ASSERT_TRUE(mock_peer_connection_);
@@ -141,10 +128,6 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
   // Weak reference to the mocked native peer connection implementation.
   webrtc::MockPeerConnectionImpl* mock_peer_connection_;
 };
-
-TEST_F(RTCPeerConnectionHandlerTest, Initialize) {
-  Initialize("dummy", "dummy_pwd");
-}
 
 TEST_F(RTCPeerConnectionHandlerTest, CreateOffer) {
   WebKit::WebRTCSessionDescriptionRequest request;

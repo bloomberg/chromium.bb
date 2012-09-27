@@ -29,20 +29,18 @@ class P2PPortAllocatorFactory : public webrtc::PortAllocatorFactoryInterface {
   P2PPortAllocatorFactory(
       content::P2PSocketDispatcher* socket_dispatcher,
       talk_base::NetworkManager* network_manager,
-      talk_base::PacketSocketFactory* socket_factory)
+      talk_base::PacketSocketFactory* socket_factory,
+      WebKit::WebFrame* web_frame)
       : socket_dispatcher_(socket_dispatcher),
         network_manager_(network_manager),
-        socket_factory_(socket_factory) {
+        socket_factory_(socket_factory),
+        web_frame_(web_frame) {
   }
 
   virtual cricket::PortAllocator* CreatePortAllocator(
       const std::vector<StunConfiguration>& stun_servers,
       const std::vector<TurnConfiguration>& turn_configurations) OVERRIDE {
-    WebKit::WebFrame* web_frame = WebKit::WebFrame::frameForCurrentContext();
-    if (!web_frame) {
-      LOG(ERROR) << "WebFrame is NULL.";
-      return NULL;
-    }
+    CHECK(web_frame_);
     content::P2PPortAllocator::Config config;
     if (stun_servers.size() > 0) {
       config.stun_server = stun_servers[0].server.hostname();
@@ -55,7 +53,7 @@ class P2PPortAllocatorFactory : public webrtc::PortAllocatorFactoryInterface {
       config.relay_password = turn_configurations[0].password;
     }
 
-    return new content::P2PPortAllocator(web_frame,
+    return new content::P2PPortAllocator(web_frame_,
                                          socket_dispatcher_,
                                          network_manager_,
                                          socket_factory_,
@@ -71,6 +69,8 @@ class P2PPortAllocatorFactory : public webrtc::PortAllocatorFactoryInterface {
   // MediaStreamDependencyFactory.
   talk_base::NetworkManager* network_manager_;
   talk_base::PacketSocketFactory* socket_factory_;
+  // Raw ptr to the WebFrame that created the P2PPortAllocatorFactory.
+  WebKit::WebFrame* web_frame_;
 };
 
 MediaStreamDependencyFactory::MediaStreamDependencyFactory(
@@ -182,34 +182,22 @@ bool MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
 bool MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
     WebKit::WebMediaStreamDescriptor* description,
     const MediaStreamExtraData::StreamStopCallback& stream_stop) {
- if(!CreateNativeLocalMediaStream(description))
-   return false;
+  if (!CreateNativeLocalMediaStream(description))
+    return false;
 
- MediaStreamExtraData* extra_data =
-     static_cast<MediaStreamExtraData*>(description->extraData());
- extra_data->SetLocalStreamStopCallback(stream_stop);
- return true;
+  MediaStreamExtraData* extra_data =
+      static_cast<MediaStreamExtraData*>(description->extraData());
+  extra_data->SetLocalStreamStopCallback(stream_stop);
+  return true;
 }
 
-bool MediaStreamDependencyFactory::CreatePeerConnectionFactory(
-    talk_base::Thread* worker_thread,
-    talk_base::Thread* signaling_thread,
-    content::P2PSocketDispatcher* socket_dispatcher,
-    talk_base::NetworkManager* network_manager,
-    talk_base::PacketSocketFactory* socket_factory) {
+bool MediaStreamDependencyFactory::CreatePeerConnectionFactory() {
   if (!pc_factory_.get()) {
-    scoped_refptr<P2PPortAllocatorFactory> pa_factory =
-        new talk_base::RefCountedObject<P2PPortAllocatorFactory>(
-            socket_dispatcher,
-            network_manager,
-            socket_factory);
-
     DCHECK(!audio_device_);
     audio_device_ = new WebRtcAudioDeviceImpl();
     scoped_refptr<webrtc::PeerConnectionFactoryInterface> factory(
-        webrtc::CreatePeerConnectionFactory(worker_thread,
-                                            signaling_thread,
-                                            pa_factory.release(),
+        webrtc::CreatePeerConnectionFactory(worker_thread_,
+                                            signaling_thread_,
                                             audio_device_));
     if (factory.get())
       pc_factory_ = factory.release();
@@ -225,16 +213,31 @@ scoped_refptr<webrtc::PeerConnectionInterface>
 MediaStreamDependencyFactory::CreatePeerConnection(
     const std::string& config,
     webrtc::PeerConnectionObserver* observer) {
-  return pc_factory_->CreatePeerConnection(config, observer).get();
+  scoped_refptr<P2PPortAllocatorFactory> pa_factory =
+      new talk_base::RefCountedObject<P2PPortAllocatorFactory>(
+          p2p_socket_dispatcher_.get(),
+          network_manager_,
+          socket_factory_.get(),
+          WebKit::WebFrame::frameForCurrentContext());
+  return pc_factory_->CreatePeerConnection(config, pa_factory, observer).get();
 }
 
 scoped_refptr<webrtc::PeerConnectionInterface>
 MediaStreamDependencyFactory::CreatePeerConnection(
     const webrtc::JsepInterface::IceServers& ice_servers,
     const webrtc::MediaConstraintsInterface* constraints,
+    WebKit::WebFrame* web_frame,
     webrtc::PeerConnectionObserver* observer) {
+  CHECK(web_frame);
+  CHECK(observer);
+  scoped_refptr<P2PPortAllocatorFactory> pa_factory =
+        new talk_base::RefCountedObject<P2PPortAllocatorFactory>(
+            p2p_socket_dispatcher_.get(),
+            network_manager_,
+            socket_factory_.get(),
+            web_frame);
   return pc_factory_->CreatePeerConnection(
-      ice_servers, constraints, observer).get();
+      ice_servers, constraints, pa_factory, observer).get();
 }
 
 scoped_refptr<webrtc::LocalMediaStreamInterface>
@@ -307,7 +310,7 @@ void MediaStreamDependencyFactory::DeleteIpcNetworkManager() {
 
 bool MediaStreamDependencyFactory::EnsurePeerConnectionFactory() {
   DCHECK(CalledOnValidThread());
-  if(PeerConnectionFactoryCreated())
+  if (PeerConnectionFactoryCreated())
     return true;
 
   if (!signaling_thread_) {
@@ -349,12 +352,7 @@ bool MediaStreamDependencyFactory::EnsurePeerConnectionFactory() {
         new content::IpcPacketSocketFactory(p2p_socket_dispatcher_));
   }
 
-  if (!CreatePeerConnectionFactory(
-      worker_thread_,
-      signaling_thread_,
-      p2p_socket_dispatcher_,
-      network_manager_,
-      socket_factory_.get())) {
+  if (!CreatePeerConnectionFactory()) {
     LOG(ERROR) << "Could not create PeerConnection factory";
     return false;
   }
