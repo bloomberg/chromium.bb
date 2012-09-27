@@ -27,6 +27,7 @@ class TextureImageTransportSurface :
   // gfx::GLSurface implementation.
   virtual bool Initialize() OVERRIDE;
   virtual void Destroy() OVERRIDE;
+  virtual bool DeferDraws() OVERRIDE;
   virtual bool Resize(const gfx::Size& size) OVERRIDE;
   virtual bool IsOffscreen() OVERRIDE;
   virtual bool SwapBuffers() OVERRIDE;
@@ -113,6 +114,12 @@ class TextureImageTransportSurface :
   // The offscreen surface used to make the context current. However note that
   // the actual rendering is always redirected to an FBO.
   scoped_refptr<GLSurface> surface_;
+
+  // Whether a SwapBuffers is pending.
+  bool is_swap_buffers_pending_;
+
+  // Whether we unscheduled command buffer because of pending SwapBuffers.
+  bool did_unschedule_;
 
   DISALLOW_COPY_AND_ASSIGN(TextureImageTransportSurface);
 };

@@ -42,7 +42,9 @@ TextureImageTransportSurface::TextureImageTransportSurface(
         frontbuffer_is_protected_(true),
         protection_state_id_(0),
         handle_(handle),
-        parent_stub_(NULL) {
+        parent_stub_(NULL),
+        is_swap_buffers_pending_(false),
+        did_unschedule_(false) {
   helper_.reset(new ImageTransportHelper(this,
                                          manager,
                                          stub,
@@ -112,6 +114,20 @@ void TextureImageTransportSurface::Destroy() {
     surface_ = NULL;
 
   helper_->Destroy();
+}
+
+bool TextureImageTransportSurface::DeferDraws() {
+  // The command buffer hit a draw/clear command that could clobber the
+  // texture in use by the UI compositor. If a Swap is pending, abort
+  // processing of the command by returning true and unschedule until the Swap
+  // Ack arrives.
+  DCHECK(!did_unschedule_);
+  if (is_swap_buffers_pending_) {
+    did_unschedule_ = true;
+    helper_->SetScheduled(false);
+    return true;
+  }
+  return false;
 }
 
 bool TextureImageTransportSurface::Resize(const gfx::Size&) {
@@ -252,7 +268,9 @@ bool TextureImageTransportSurface::SwapBuffers() {
   params.protection_state_id = protection_state_id_;
   params.skip_ack = false;
   helper_->SendAcceleratedSurfaceBuffersSwapped(params);
-  helper_->SetScheduled(false);
+
+  DCHECK(!is_swap_buffers_pending_);
+  is_swap_buffers_pending_ = true;
   return true;
 }
 
@@ -321,7 +339,9 @@ bool TextureImageTransportSurface::PostSubBuffer(
   params.height = height;
   params.protection_state_id = protection_state_id_;
   helper_->SendAcceleratedSurfacePostSubBuffer(params);
-  helper_->SetScheduled(false);
+
+  DCHECK(!is_swap_buffers_pending_);
+  is_swap_buffers_pending_ = true;
   return true;
 }
 
@@ -381,6 +401,9 @@ void TextureImageTransportSurface::OnBufferPresented(uint32 sync_point) {
 }
 
 void TextureImageTransportSurface::BufferPresentedImpl() {
+  DCHECK(is_swap_buffers_pending_);
+  is_swap_buffers_pending_ = false;
+
   // We're relying on the fact that the parent context is
   // finished with it's context when it inserts the sync point that
   // triggers this callback.
@@ -399,7 +422,10 @@ void TextureImageTransportSurface::BufferPresentedImpl() {
 
   // Even if MakeCurrent fails, schedule anyway, to trigger the lost context
   // logic.
-  helper_->SetScheduled(true);
+  if (did_unschedule_) {
+    did_unschedule_ = false;
+    helper_->SetScheduled(true);
+  }
 }
 
 void TextureImageTransportSurface::OnResizeViewACK() {
