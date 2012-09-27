@@ -288,27 +288,43 @@ void RenderingHelperGL::Initialize(bool suppress_swap_to_display,
   static const float kVertices[] =
       { -1.f, 1.f, -1.f, -1.f, 1.f, 1.f, 1.f, -1.f, };
   static const float kTextureCoords[] = { 0, 1, 0, 0, 1, 1, 1, 0, };
+// On Windows the textures from Direct3D which renders them flipped.
+#if GL_VARIANT_GLX || defined(OS_WIN)
   static const char kVertexShader[] = STRINGIZE(
       varying vec2 interp_tc;
       attribute vec4 in_pos;
       attribute vec2 in_tc;
       void main() {
-#if GL_VARIANT_GLX
         interp_tc = vec2(in_tc.x, 1.0 - in_tc.y);
-#else  // EGL
-        interp_tc = in_tc;
-#endif
         gl_Position = in_pos;
       });
-  static const char kFragmentShader[] = STRINGIZE(
-#if GL_VARIANT_EGL
-      precision mediump float;
+#else
+  static const char kVertexShader[] = STRINGIZE(
+      varying vec2 interp_tc;
+      attribute vec4 in_pos;
+      attribute vec2 in_tc;
+      void main() {
+        interp_tc = in_tc;
+        gl_Position = in_pos;
+      });
 #endif
+
+#if GL_VARIANT_EGL
+  static const char kFragmentShader[] = STRINGIZE(
+      precision mediump float;
       varying vec2 interp_tc;
       uniform sampler2D tex;
       void main() {
         gl_FragColor = texture2D(tex, interp_tc);
       });
+#else
+  static const char kFragmentShader[] = STRINGIZE(
+      varying vec2 interp_tc;
+      uniform sampler2D tex;
+      void main() {
+        gl_FragColor = texture2D(tex, interp_tc);
+      });
+#endif
   GLuint program = glCreateProgram();
   CreateShader(program, GL_VERTEX_SHADER,
                kVertexShader, arraysize(kVertexShader));
