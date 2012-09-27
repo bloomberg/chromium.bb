@@ -169,10 +169,9 @@ bool ContentSecurityPolicyIsSandboxed(
       if (token == kAllowSameOriginToken)
         return false;
 
-      // Platform apps don't allow navigation (and have a separate windowing
-      // API that should be used for popups)
+      // Platform apps don't allow navigation.
       if (type == Extension::TYPE_PLATFORM_APP) {
-        if (token == kAllowTopNavigation || token == kAllowPopups)
+        if (token == kAllowTopNavigation)
           return false;
       }
     }

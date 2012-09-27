@@ -111,7 +111,7 @@ const char kDefaultPlatformAppContentSecurityPolicy[] =
     "media-src *;";
 
 const char kDefaultSandboxedPageContentSecurityPolicy[] =
-    "sandbox allow-scripts allow-forms";
+    "sandbox allow-scripts allow-forms allow-popups";
 
 // Converts a normal hexadecimal string into the alphabet used by extensions.
 // We use the characters 'a'-'p' instead of '0'-'f' to avoid ever having a
