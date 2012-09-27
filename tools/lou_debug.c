@@ -66,8 +66,14 @@ more.\n\n", stdout);
   -v, --version       display version information and exit\n", stdout);
 
   printf ("\n");
-  printf ("\
-Report bugs to <%s>.\n", PACKAGE_BUGREPORT);
+  printf ("Report bugs to %s.\n", PACKAGE_BUGREPORT);
+
+#ifdef PACKAGE_PACKAGER_BUG_REPORTS
+  printf ("Report %s bugs to: %s\n", PACKAGE_PACKAGER, PACKAGE_PACKAGER_BUG_REPORTS);
+#endif
+#ifdef PACKAGE_URL
+  printf ("%s home page: <%s>\n", PACKAGE_NAME, PACKAGE_URL);
+#endif
 }
 
 #define BUFSIZE 256
