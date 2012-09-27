@@ -99,10 +99,17 @@ int GetIndexOfSingletonTab(NavigateParams* params) {
       replacements.ClearQuery();
     }
 
-    if (CompareURLsWithReplacements(tab->web_contents()->GetURL(),
-                                    params->url, replacements) ||
-        CompareURLsWithReplacements(tab->web_contents()->GetURL(),
-                                    rewritten_url, replacements)) {
+    GURL tab_url = tab->web_contents()->GetURL();
+    GURL rewritten_tab_url = tab_url;
+    content::BrowserURLHandler::GetInstance()->RewriteURLIfNecessary(
+        &rewritten_tab_url,
+        params->browser->profile(),
+        &reverse_on_redirect);
+
+    if (CompareURLsWithReplacements(tab_url, params->url, replacements) ||
+        CompareURLsWithReplacements(rewritten_tab_url,
+                                    rewritten_url,
+                                    replacements)) {
       params->target_contents = tab;
       return tab_index;
     }
