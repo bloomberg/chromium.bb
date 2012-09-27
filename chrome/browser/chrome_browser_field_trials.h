@@ -68,6 +68,9 @@ class ChromeBrowserFieldTrials {
   // Sets up the InfiniteCache field trial.
   void SetUpInfiniteCacheFieldTrial();
 
+  // Sets up field trials for doing Cache Sensitivity Analysis.
+  void SetUpCacheSensitivityAnalysisFieldTrial();
+
   const CommandLine& parsed_command_line_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserFieldTrials);

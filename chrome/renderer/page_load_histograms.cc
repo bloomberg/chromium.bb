@@ -931,6 +931,18 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
                                                finish_all_loads,
                                                begin_to_finish_all_loads);
 
+  // Record histograms for cache sensitivity analysis.
+  static const bool cache_sensitivity_histogram =
+      base::FieldTrialList::TrialExists("CacheSensitivityAnalysis");
+  if (cache_sensitivity_histogram) {
+    PLT_HISTOGRAM(base::FieldTrial::MakeName(
+        "PLT.BeginToFinishDoc_CacheSensitivity", "CacheSensitivityAnalysis"),
+                  begin_to_finish_doc);
+    PLT_HISTOGRAM(base::FieldTrial::MakeName(
+        "PLT.BeginToFinish_CacheSensitivity", "CacheSensitivityAnalysis"),
+                  begin_to_finish_all_loads);
+  }
+
   // Since there are currently no guarantees that renderer histograms will be
   // sent to the browser, we initiate a PostTask here to be sure that we send
   // the histograms we generated.  Without this call, pages that don't have an

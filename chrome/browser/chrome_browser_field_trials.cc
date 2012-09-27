@@ -130,6 +130,7 @@ void ChromeBrowserFieldTrials::SetupFieldTrials(bool proxy_policy_is_set) {
   DisableNewTabFieldTrialIfNecesssary();
   SetUpSafeBrowsingInterstitialFieldTrial();
   SetUpInfiniteCacheFieldTrial();
+  SetUpCacheSensitivityAnalysisFieldTrial();
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
   OneClickSigninHelper::InitializeFieldTrial();
 #endif
@@ -564,4 +565,21 @@ void ChromeBrowserFieldTrials::SetUpInfiniteCacheFieldTrial() {
   trial->UseOneTimeRandomization();
   trial->AppendGroup("Yes", infinite_cache_probability);
   trial->AppendGroup("Control", infinite_cache_probability);
+}
+
+void ChromeBrowserFieldTrials::SetUpCacheSensitivityAnalysisFieldTrial() {
+  const base::FieldTrial::Probability kDivisor = 100;
+
+#if (defined(OS_ANDROID) || defined(OS_IOS))
+  base::FieldTrial::Probability sensitivity_analysis_probability = 0;
+#else
+  base::FieldTrial::Probability sensitivity_analysis_probability = 20;
+#endif
+
+  scoped_refptr<base::FieldTrial> trial(
+      base::FieldTrialList::FactoryGetFieldTrial("CacheSensitivityAnalysis",
+                                                 kDivisor, "No",
+                                                 2012, 12, 31, NULL));
+  trial->AppendGroup("Control", sensitivity_analysis_probability);
+  trial->AppendGroup("100", sensitivity_analysis_probability);
 }
