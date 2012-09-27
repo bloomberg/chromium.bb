@@ -48,8 +48,6 @@ const int kTitleLogoSpacing = 5;
 const int kTitleIconOffsetX = 4;
 // Space between window edge and title text, when there is no icon.
 const int kTitleNoIconOffsetX = 8;
-// Space between title text and top of window.
-const int kTitleOffsetY = 10;
 // Color for the title text.
 const SkColor kTitleTextColor = SkColorSetRGB(40, 40, 40);
 // Size of header/content separator line below the header image.
@@ -453,9 +451,10 @@ void FramePainter::PaintTitleBar(views::NonClientFrameView* view,
   views::WidgetDelegate* delegate = frame_->widget_delegate();
   if (delegate && delegate->ShouldShowWindowTitle()) {
     int title_x = GetTitleOffsetX();
-    int title_y = ui::LAYOUT_TOUCH == ui::GetDisplayLayout() ?
-        (view->GetBoundsForClientView().y() - title_font.GetHeight()) / 2
-        : kTitleOffsetY;
+    // Center the text in the middle of the caption - this way it adapts
+    // automatically to the caption height (which is given by the owner).
+    int title_y =
+        (view->GetBoundsForClientView().y() - title_font.GetHeight()) / 2;
     gfx::Rect title_bounds(
         title_x,
         std::max(0, title_y),
