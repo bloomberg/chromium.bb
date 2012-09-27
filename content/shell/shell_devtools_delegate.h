@@ -31,6 +31,7 @@ class ShellDevToolsDelegate : public DevToolsHttpHandlerDelegate {
   virtual std::string GetDiscoveryPageHTML() OVERRIDE;
   virtual bool BundlesFrontendResources() OVERRIDE;
   virtual std::string GetFrontendResourcesBaseURL() OVERRIDE;
+  virtual std::string GetPageThumbnailData(const GURL& url) OVERRIDE;
 
   DevToolsHttpHandler* devtools_http_handler() {
     return devtools_http_handler_;

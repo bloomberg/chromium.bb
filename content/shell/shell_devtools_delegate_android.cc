@@ -62,4 +62,8 @@ std::string ShellDevToolsDelegate::GetFrontendResourcesBaseURL() {
   return "";
 }
 
+std::string ShellDevToolsDelegate::GetPageThumbnailData(const GURL& url) {
+  return "";
+}
+
 }  // namespace content

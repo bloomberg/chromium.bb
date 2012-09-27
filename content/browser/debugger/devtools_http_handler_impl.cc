@@ -214,6 +214,16 @@ void DevToolsHttpHandlerImpl::OnHttpRequest(
                    connection_id,
                    info));
     return;
+  } else if (info.path.find("/thumb/") == 0) {
+    // Thumbnail request.
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&DevToolsHttpHandlerImpl::OnThumbnailRequestUI,
+                   this,
+                   connection_id,
+                   info));
+    return;
   }
 
   if (info.path == "" || info.path == "/") {
@@ -250,9 +260,6 @@ void DevToolsHttpHandlerImpl::OnHttpRequest(
     }
     std::string base_url = delegate_->GetFrontendResourcesBaseURL();
     request = request_context->CreateRequest(GURL(base_url + filename), this);
-  } else if (info.path.find("/thumb/") == 0) {
-    request = request_context->CreateRequest(
-        GURL("chrome:/" + info.path), this);
   } else {
     server_->Send404(connection_id);
     return;
@@ -435,6 +442,24 @@ void DevToolsHttpHandlerImpl::OnJsonRequestUI(
   std::string jsonp = info.path.substr(jsonp_pos + 7);
   response = StringPrintf("%s(%s);", jsonp.c_str(), response.c_str());
   Send200(connection_id, response, "text/javascript; charset=UTF-8");
+}
+
+void DevToolsHttpHandlerImpl::OnThumbnailRequestUI(
+    int connection_id,
+    const net::HttpServerRequestInfo& info) {
+  std::string prefix = "/thumb/";
+  size_t pos = info.path.find(prefix);
+  if (pos != 0) {
+    Send404(connection_id);
+    return;
+  }
+
+  std::string page_url = info.path.substr(prefix.length());
+  std::string data = delegate_->GetPageThumbnailData(GURL(page_url));
+  if (!data.empty())
+    Send200(connection_id, data, "image/png");
+  else
+    Send404(connection_id);
 }
 
 void DevToolsHttpHandlerImpl::OnWebSocketRequestUI(

@@ -6,6 +6,7 @@
 
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "content/public/browser/browser_thread.h"
@@ -54,4 +55,21 @@ bool BrowserListTabContentsProvider::BundlesFrontendResources() {
 
 std::string BrowserListTabContentsProvider::GetFrontendResourcesBaseURL() {
   return "chrome-devtools://devtools/";
+}
+
+std::string BrowserListTabContentsProvider::GetPageThumbnailData(
+    const GURL& url) {
+  for (BrowserList::const_iterator it = BrowserList::begin(),
+       end = BrowserList::end(); it != end; ++it) {
+    Profile* profile = (*it)->profile();
+    history::TopSites* top_sites = profile->GetTopSites();
+    if (!top_sites)
+      continue;
+    scoped_refptr<base::RefCountedMemory> data;
+    if (top_sites->GetPageThumbnail(url, &data))
+      return std::string(
+          reinterpret_cast<const char*>(data->front()), data->size());
+  }
+
+  return std::string();
 }
