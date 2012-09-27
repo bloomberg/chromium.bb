@@ -846,8 +846,10 @@ void ExternalTabContainerWin::DidFailProvisionalLoad(
     int error_code,
     const string16& error_description,
     content::RenderViewHost* render_view_host) {
-  automation_->Send(new AutomationMsg_NavigationFailed(
-      tab_handle_, error_code, validated_url));
+  if (automation_) {
+    automation_->Send(new AutomationMsg_NavigationFailed(
+        tab_handle_, error_code, validated_url));
+  }
   ignore_next_load_notification_ = true;
 }
 
@@ -1114,8 +1116,10 @@ void ExternalTabContainerWin::Navigate(const GURL& url, const GURL& referrer) {
 
 bool ExternalTabContainerWin::OnGoToEntryOffset(int offset) {
   if (load_requests_via_automation_) {
-    automation_->Send(new AutomationMsg_RequestGoToHistoryEntryOffset(
-        tab_handle_, offset));
+    if (automation_) {
+      automation_->Send(new AutomationMsg_RequestGoToHistoryEntryOffset(
+          tab_handle_, offset));
+    }
     return false;
   }
 
