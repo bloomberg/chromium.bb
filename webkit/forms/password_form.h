@@ -137,6 +137,16 @@ struct WEBKIT_FORMS_EXPORT PasswordForm {
   // When parsing an HTML form, this is not used.
   bool blacklisted_by_user;
 
+  // Enum to differentiate between manually filled forms and forms with auto
+  // generated passwords.
+  enum Type {
+    TYPE_MANUAL,
+    TYPE_GENERATED,
+  };
+
+  // The form type. Not used yet. Please see http://crbug.com/152422
+  Type type;
+
   PasswordForm();
   PasswordForm(const WebKit::WebPasswordFormData& web_password_form);
   ~PasswordForm();

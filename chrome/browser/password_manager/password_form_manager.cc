@@ -208,6 +208,9 @@ void PasswordFormManager::ProvisionallySave(const PasswordForm& credentials) {
 
   pending_credentials_.password_value = credentials.password_value;
   pending_credentials_.preferred = credentials.preferred;
+
+  if (has_generated_password_)
+    pending_credentials_.type = PasswordForm::TYPE_GENERATED;
 }
 
 void PasswordFormManager::Save() {

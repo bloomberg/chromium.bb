@@ -11,7 +11,8 @@ PasswordForm::PasswordForm()
     : scheme(SCHEME_HTML),
       ssl_valid(false),
       preferred(false),
-      blacklisted_by_user(false) {
+      blacklisted_by_user(false),
+      type(TYPE_MANUAL) {
 }
 
 PasswordForm::PasswordForm(const WebKit::WebPasswordFormData& web_password_form)
@@ -28,7 +29,8 @@ PasswordForm::PasswordForm(const WebKit::WebPasswordFormData& web_password_form)
       old_password_value(web_password_form.oldPasswordValue),
       ssl_valid(false),
       preferred(false),
-      blacklisted_by_user(false) {
+      blacklisted_by_user(false),
+      type(TYPE_MANUAL) {
 }
 
 PasswordForm::~PasswordForm() {
