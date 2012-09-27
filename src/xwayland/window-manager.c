@@ -102,6 +102,8 @@ struct weston_wm_window {
 	struct wl_event_source *repaint_source;
 	struct wl_event_source *configure_source;
 	int properties_dirty;
+	int pid;
+	char *machine;
 	char *class;
 	char *name;
 	struct weston_wm_window *transient_for;
@@ -300,7 +302,9 @@ weston_wm_window_read_properties(struct weston_wm_window *window)
 		{ wm->atom.wm_protocols, TYPE_WM_PROTOCOLS, F(protocols) },
 		{ wm->atom.net_wm_window_type, XCB_ATOM_ATOM, F(type) },
 		{ wm->atom.net_wm_name, XCB_ATOM_STRING, F(name) },
+		{ wm->atom.net_wm_pid, XCB_ATOM_CARDINAL, F(pid) },
 		{ wm->atom.motif_wm_hints, TYPE_MOTIF_WM_HINTS, 0 },
+		{ wm->atom.wm_client_machine, XCB_ATOM_WM_CLIENT_MACHINE, F(machine) },
 	};
 #undef F
 
@@ -338,6 +342,7 @@ weston_wm_window_read_properties(struct weston_wm_window *window)
 		p = ((char *) window + props[i].offset);
 
 		switch (props[i].type) {
+		case XCB_ATOM_WM_CLIENT_MACHINE:
 		case XCB_ATOM_STRING:
 			/* FIXME: We're using this for both string and
 			   utf8_string */
@@ -353,6 +358,7 @@ weston_wm_window_read_properties(struct weston_wm_window *window)
 			*(struct weston_wm_window **) p =
 				hash_table_lookup(wm->window_hash, *xid);
 			break;
+		case XCB_ATOM_CARDINAL:
 		case XCB_ATOM_ATOM:
 			atom = xcb_get_property_value(reply);
 			*(xcb_atom_t *) p = *atom;
@@ -475,6 +481,25 @@ weston_wm_handle_configure_notify(struct weston_wm *wm, xcb_generic_event_t *eve
 	weston_wm_window_get_child_position(window, &x, &y);
 	window->x = configure_notify->x - x;
 	window->y = configure_notify->y - y;
+}
+
+static void
+weston_wm_kill_client(struct wl_listener *listener, void *data)
+{
+	struct weston_surface *surface = data;
+	struct weston_wm_window *window = get_wm_window(surface);
+	char name[1024];
+
+	if (!window)
+		return;
+
+	gethostname(name, 1024);
+
+	/* this is only one heuristic to guess the PID of a client is valid,
+	 * assuming it's compliant with icccm and ewmh. Non-compliants and
+	 * remote applications of course fail. */
+	if (!strcmp(window->machine, name) && window->pid != 0)
+		kill(window->pid, SIGKILL);
 }
 
 static void
@@ -1232,7 +1257,9 @@ wxs_wm_get_resources(struct weston_wm *wm)
 		{ "WM_DELETE_WINDOW",	F(atom.wm_delete_window) },
 		{ "WM_STATE",		F(atom.wm_state) },
 		{ "WM_S0",		F(atom.wm_s0) },
+		{ "WM_CLIENT_MACHINE",	F(atom.wm_client_machine) },
 		{ "_NET_WM_NAME",	F(atom.net_wm_name) },
+		{ "_NET_WM_PID",	F(atom.net_wm_pid) },
 		{ "_NET_WM_ICON",	F(atom.net_wm_icon) },
 		{ "_NET_WM_STATE",	F(atom.net_wm_state) },
 		{ "_NET_WM_STATE_FULLSCREEN", F(atom.net_wm_state_fullscreen) },
@@ -1469,6 +1496,9 @@ weston_wm_create(struct weston_xserver *wxs)
 	wm->activate_listener.notify = weston_wm_window_activate;
 	wl_signal_add(&wxs->compositor->activate_signal,
 		      &wm->activate_listener);
+	wm->kill_listener.notify = weston_wm_kill_client;
+	wl_signal_add(&wxs->compositor->kill_signal,
+		      &wm->kill_listener);
 
 	weston_wm_create_cursors(wm);
 	weston_wm_window_set_cursor(wm, wm->screen->root, XWM_CURSOR_LEFT_PTR);
@@ -1488,6 +1518,7 @@ weston_wm_destroy(struct weston_wm *wm)
 	wl_event_source_remove(wm->source);
 	wl_list_remove(&wm->selection_listener.link);
 	wl_list_remove(&wm->activate_listener.link);
+	wl_list_remove(&wm->kill_listener.link);
 
 	free(wm);
 }

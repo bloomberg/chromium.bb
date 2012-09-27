@@ -63,6 +63,7 @@ struct weston_wm {
 	int last_cursor;
 	xcb_render_pictforminfo_t format_rgb, format_rgba;
 	struct wl_listener activate_listener;
+	struct wl_listener kill_listener;
 
 	xcb_window_t selection_window;
 	xcb_window_t selection_owner;
@@ -85,7 +86,9 @@ struct weston_wm {
 		xcb_atom_t		 wm_delete_window;
 		xcb_atom_t		 wm_state;
 		xcb_atom_t		 wm_s0;
+		xcb_atom_t		 wm_client_machine;
 		xcb_atom_t		 net_wm_name;
+		xcb_atom_t		 net_wm_pid;
 		xcb_atom_t		 net_wm_icon;
 		xcb_atom_t		 net_wm_state;
 		xcb_atom_t		 net_wm_state_fullscreen;
