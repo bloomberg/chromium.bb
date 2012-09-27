@@ -66,7 +66,12 @@ TabSpecificContentSettings::SiteDataObserver::SiteDataObserver(
 }
 
 TabSpecificContentSettings::SiteDataObserver::~SiteDataObserver() {
-  tab_specific_content_settings_->RemoveSiteDataObserver(this);
+  if (tab_specific_content_settings_)
+    tab_specific_content_settings_->RemoveSiteDataObserver(this);
+}
+
+void TabSpecificContentSettings::SiteDataObserver::ContentSettingsDestroyed() {
+  tab_specific_content_settings_ = NULL;
 }
 
 TabSpecificContentSettings::TabSpecificContentSettings(WebContents* tab)
@@ -89,6 +94,8 @@ TabSpecificContentSettings::TabSpecificContentSettings(WebContents* tab)
 }
 
 TabSpecificContentSettings::~TabSpecificContentSettings() {
+  FOR_EACH_OBSERVER(
+      SiteDataObserver, observer_list_, ContentSettingsDestroyed());
   g_tab_specific.Get().remove(this);
 }
 
@@ -543,5 +550,5 @@ void TabSpecificContentSettings::RemoveSiteDataObserver(
 }
 
 void TabSpecificContentSettings::NotifySiteDataObservers() {
-   FOR_EACH_OBSERVER(SiteDataObserver, observer_list_, OnSiteDataAccessed());
+  FOR_EACH_OBSERVER(SiteDataObserver, observer_list_, OnSiteDataAccessed());
 }

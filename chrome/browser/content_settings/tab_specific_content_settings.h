@@ -52,6 +52,10 @@ class TabSpecificContentSettings : public content::WebContentsObserver,
       return tab_specific_content_settings_;
     }
 
+    // Called when the TabSpecificContentSettings is destroyed; nulls out
+    // the local reference.
+    void ContentSettingsDestroyed();
+
    private:
     TabSpecificContentSettings* tab_specific_content_settings_;
 
