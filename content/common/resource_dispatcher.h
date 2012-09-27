@@ -90,6 +90,7 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
     base::TimeTicks response_start;
     base::TimeTicks completion_time;
     linked_ptr<base::SharedMemory> buffer;
+    int buffer_size;
   };
   typedef base::hash_map<int, PendingRequestInfo> PendingRequestList;
 

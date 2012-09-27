@@ -334,11 +334,15 @@ void ResourceDispatcher::OnSetDataBuffer(const IPC::Message& message,
     return;
 
   bool shm_valid = base::SharedMemory::IsHandleValid(shm_handle);
-  DCHECK((shm_valid && shm_size > 0) || (!shm_valid && !shm_size));
+  CHECK((shm_valid && shm_size > 0) || (!shm_valid && !shm_size));
 
   request_info->buffer.reset(
       new base::SharedMemory(shm_handle, true));  // read only
-  request_info->buffer->Map(shm_size);
+
+  bool ok = request_info->buffer->Map(shm_size);
+  CHECK(ok);
+
+  request_info->buffer_size = shm_size;
 }
 
 void ResourceDispatcher::OnReceivedData(const IPC::Message& message,
@@ -348,6 +352,9 @@ void ResourceDispatcher::OnReceivedData(const IPC::Message& message,
                                         int encoded_data_length) {
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   if (request_info && data_length > 0) {
+    CHECK(base::SharedMemory::IsHandleValid(request_info->buffer->handle()));
+    CHECK_GE(request_info->buffer_size, data_offset + data_length);
+
     base::TimeTicks time_start = base::TimeTicks::Now();
 
     request_info->peer->OnReceivedData(
@@ -432,6 +439,7 @@ void ResourceDispatcher::OnRequestComplete(
     return;
   request_info->completion_time = base::TimeTicks::Now();
   request_info->buffer.reset();
+  request_info->buffer_size = 0;
 
   ResourceLoaderBridge::Peer* peer = request_info->peer;
 
@@ -514,7 +522,8 @@ void ResourceDispatcher::SetDefersLoading(int request_id, bool value) {
 ResourceDispatcher::PendingRequestInfo::PendingRequestInfo()
     : peer(NULL),
       resource_type(ResourceType::SUB_RESOURCE),
-      is_deferred(false) {
+      is_deferred(false),
+      buffer_size(0) {
 }
 
 ResourceDispatcher::PendingRequestInfo::PendingRequestInfo(
