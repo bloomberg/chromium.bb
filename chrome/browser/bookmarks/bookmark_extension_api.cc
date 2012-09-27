@@ -18,6 +18,7 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/api/prefs/pref_service_base.h"
 #include "chrome/browser/bookmarks/bookmark_codec.h"
 #include "chrome/browser/bookmarks/bookmark_extension_api_constants.h"
 #include "chrome/browser/bookmarks/bookmark_extension_helpers.h"
@@ -30,7 +31,6 @@
 #include "chrome/browser/extensions/extensions_quota_service.h"
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/importer/importer_host.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -114,7 +114,8 @@ bool BookmarksFunction::GetBookmarkIdAsInt64(
 }
 
 bool BookmarksFunction::EditBookmarksEnabled() {
-  if (profile_->GetPrefs()->GetBoolean(prefs::kEditBookmarksEnabled))
+  PrefServiceBase* prefs = PrefServiceBase::FromBrowserContext(profile_);
+  if (prefs->GetBoolean(prefs::kEditBookmarksEnabled))
     return true;
   error_ = keys::kEditBookmarksDisabled;
   return false;
@@ -404,7 +405,8 @@ bool SearchBookmarksFunction::RunImpl() {
       bookmarks::Search::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  std::string lang = profile()->GetPrefs()->GetString(prefs::kAcceptLanguages);
+  PrefServiceBase* prefs = PrefServiceBase::FromBrowserContext(profile_);
+  std::string lang = prefs->GetString(prefs::kAcceptLanguages);
   std::vector<const BookmarkNode*> nodes;
   bookmark_utils::GetBookmarksContainingText(
       BookmarkModelFactory::GetForProfile(profile()),

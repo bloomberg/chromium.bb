@@ -18,7 +18,7 @@
 class BookmarkModel;
 class BookmarkNode;
 class Browser;
-class PrefService;
+class PrefServiceBase;
 class Profile;
 
 namespace content {
@@ -184,7 +184,7 @@ const BookmarkNode* ApplyEditsWithPossibleFolderChange(
 void ToggleWhenVisible(Profile* profile);
 
 // Register user preferences for BookmarksBar.
-void RegisterUserPrefs(PrefService* prefs);
+void RegisterUserPrefs(PrefServiceBase* prefs);
 
 // Fills in the URL and title for a bookmark of |web_contents|.
 void GetURLAndTitleToBookmark(content::WebContents* web_contents,

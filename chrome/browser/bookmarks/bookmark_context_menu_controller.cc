@@ -6,12 +6,12 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/api/prefs/pref_service_base.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -247,14 +247,16 @@ void BookmarkContextMenuController::ExecuteCommand(int id) {
 
 bool BookmarkContextMenuController::IsCommandIdChecked(int command_id) const {
   DCHECK(command_id == IDC_BOOKMARK_BAR_ALWAYS_SHOW);
-  return profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);
+  PrefServiceBase* prefs = PrefServiceBase::FromBrowserContext(profile_);
+  return prefs->GetBoolean(prefs::kShowBookmarkBar);
 }
 
 bool BookmarkContextMenuController::IsCommandIdEnabled(int command_id) const {
+  PrefServiceBase* prefs = PrefServiceBase::FromBrowserContext(profile_);
+
   bool is_root_node = selection_.size() == 1 &&
                       selection_[0]->parent() == model_->root_node();
-  bool can_edit =
-      profile_->GetPrefs()->GetBoolean(prefs::kEditBookmarksEnabled);
+  bool can_edit = prefs->GetBoolean(prefs::kEditBookmarksEnabled);
   IncognitoModePrefs::Availability incognito_avail =
       IncognitoModePrefs::GetAvailability(profile_->GetPrefs());
   switch (command_id) {
@@ -286,8 +288,7 @@ bool BookmarkContextMenuController::IsCommandIdEnabled(int command_id) const {
           parent_, selection_, NULL) != NULL;
 
     case IDC_BOOKMARK_BAR_ALWAYS_SHOW:
-      return !profile_->GetPrefs()->IsManagedPreference(
-          prefs::kShowBookmarkBar);
+      return !prefs->IsManagedPreference(prefs::kShowBookmarkBar);
 
     case IDC_COPY:
     case IDC_CUT:

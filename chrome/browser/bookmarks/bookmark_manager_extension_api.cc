@@ -9,6 +9,7 @@
 #include "base/json/json_writer.h"
 #include "base/string_number_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/api/prefs/pref_service_base.h"
 #include "chrome/browser/bookmarks/bookmark_extension_api_constants.h"
 #include "chrome/browser/bookmarks/bookmark_extension_helpers.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -18,7 +19,6 @@
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
@@ -498,8 +498,9 @@ bool GetSubtreeBookmarkManagerFunction::RunImpl() {
 }
 
 bool CanEditBookmarkManagerFunction::RunImpl() {
+  PrefServiceBase* prefs = PrefServiceBase::FromBrowserContext(profile_);
   SetResult(Value::CreateBooleanValue(
-      profile_->GetPrefs()->GetBoolean(prefs::kEditBookmarksEnabled)));
+      prefs->GetBoolean(prefs::kEditBookmarksEnabled)));
   return true;
 }
 

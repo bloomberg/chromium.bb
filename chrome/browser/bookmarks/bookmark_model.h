@@ -32,7 +32,6 @@ class BookmarkLoadDetails;
 class BookmarkModel;
 class BookmarkModelObserver;
 class BookmarkStorage;
-class PrefService;
 class Profile;
 
 namespace bookmark_utils {

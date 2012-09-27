@@ -6,9 +6,9 @@
 
 #include "base/string_number_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/api/prefs/pref_service_base.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 
 BookmarkExpandedStateTracker::BookmarkExpandedStateTracker(
@@ -34,7 +34,7 @@ BookmarkExpandedStateTracker::GetExpandedNodes() {
   if (!model->IsLoaded())
     return nodes;
 
-  PrefService* prefs = profile_->GetPrefs();
+  PrefServiceBase* prefs = PrefServiceBase::FromBrowserContext(profile_);
   if (!prefs)
     return nodes;
 
@@ -89,7 +89,8 @@ void BookmarkExpandedStateTracker::BookmarkNodeRemoved(
 }
 
 void BookmarkExpandedStateTracker::UpdatePrefs(const Nodes& nodes) {
-  if (!profile_->GetPrefs())
+  PrefServiceBase* prefs = PrefServiceBase::FromBrowserContext(profile_);
+  if (!prefs)
     return;
 
   ListValue values;
@@ -97,5 +98,6 @@ void BookmarkExpandedStateTracker::UpdatePrefs(const Nodes& nodes) {
     values.Set(values.GetSize(),
                new StringValue(base::Int64ToString((*i)->id())));
   }
-  profile_->GetPrefs()->Set(pref_path_, values);
+
+  prefs->Set(pref_path_, values);
 }

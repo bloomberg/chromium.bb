@@ -15,11 +15,11 @@
 #include "base/string_number_conversions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/api/prefs/pref_service_base.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/history/query_parser.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -224,8 +224,10 @@ int PreferredDropOperation(int source_operations, int operations) {
 }
 
 int BookmarkDragOperation(Profile* profile, const BookmarkNode* node) {
+  PrefServiceBase* prefs = PrefServiceBase::FromBrowserContext(profile);
+
   int move = ui::DragDropTypes::DRAG_MOVE;
-  if (!profile->GetPrefs()->GetBoolean(prefs::kEditBookmarksEnabled))
+  if (!prefs->GetBoolean(prefs::kEditBookmarksEnabled))
     move = 0;
   if (node->is_url()) {
     return ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_LINK | move;
@@ -592,20 +594,20 @@ const BookmarkNode* ApplyEditsWithPossibleFolderChange(
 
 // Formerly in BookmarkBarView.
 void ToggleWhenVisible(Profile* profile) {
-  PrefService* prefs = profile->GetPrefs();
+  PrefServiceBase* prefs = PrefServiceBase::FromBrowserContext(profile);
   const bool always_show = !prefs->GetBoolean(prefs::kShowBookmarkBar);
 
   // The user changed when the bookmark bar is shown, update the preferences.
   prefs->SetBoolean(prefs::kShowBookmarkBar, always_show);
 }
 
-void RegisterUserPrefs(PrefService* prefs) {
+void RegisterUserPrefs(PrefServiceBase* prefs) {
   prefs->RegisterBooleanPref(prefs::kShowBookmarkBar,
                              false,
-                             PrefService::SYNCABLE_PREF);
+                             PrefServiceBase::SYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kEditBookmarksEnabled,
                              true,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceBase::UNSYNCABLE_PREF);
 }
 
 void GetURLAndTitleToBookmark(WebContents* web_contents,
