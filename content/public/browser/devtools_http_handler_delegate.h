@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+#include "base/file_path.h"
+
 class GURL;
 
 namespace content {
@@ -25,9 +27,8 @@ class DevToolsHttpHandlerDelegate {
   // Returns true if and only if frontend resources are bundled.
   virtual bool BundlesFrontendResources() = 0;
 
-  // Returns URL that front-end files are available at, empty string if
-  // no internal server is available.
-  virtual std::string GetFrontendResourcesBaseURL() = 0;
+  // Returns path to the front-end files on the local filesystem for debugging.
+  virtual FilePath GetDebugFrontendDir() = 0;
 
   // Get a thumbnail for a given page. Returns non-empty string iff we have the
   // thumbnail.

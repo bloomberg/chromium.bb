@@ -16,7 +16,6 @@
 #include "content/public/browser/devtools_http_handler.h"
 #include "content/public/browser/devtools_http_handler_delegate.h"
 #include "net/server/http_server.h"
-#include "net/url_request/url_request.h"
 
 namespace net {
 class StreamListenSocketFactory;
@@ -31,8 +30,7 @@ class RenderViewHost;
 class DevToolsHttpHandlerImpl
     : public DevToolsHttpHandler,
       public base::RefCountedThreadSafe<DevToolsHttpHandlerImpl>,
-      public net::HttpServer::Delegate,
-      public net::URLRequest::Delegate {
+      public net::HttpServer::Delegate {
  private:
   struct PageInfo;
   typedef std::vector<PageInfo> PageList;
@@ -44,7 +42,6 @@ class DevToolsHttpHandlerImpl
   // Takes ownership over |socket_factory|.
   DevToolsHttpHandlerImpl(const net::StreamListenSocketFactory* socket_factory,
                           const std::string& frontend_url,
-                          net::URLRequestContextGetter* request_context_getter,
                           DevToolsHttpHandlerDelegate* delegate);
   virtual ~DevToolsHttpHandlerImpl();
   void Start();
@@ -74,15 +71,8 @@ class DevToolsHttpHandlerImpl
   void OnWebSocketMessageUI(int connection_id, const std::string& data);
   void OnCloseUI(int connection_id);
 
-  // net::URLRequest::Delegate implementation.
-  virtual void OnResponseStarted(net::URLRequest* request) OVERRIDE;
-  virtual void OnReadCompleted(net::URLRequest* request,
-                               int bytes_read) OVERRIDE;
-
   void Init();
   void TeardownAndRelease();
-  void Bind(net::URLRequest* request, int connection_id);
-  void RequestCompleted(net::URLRequest* request);
 
   void Send200(int connection_id,
                const std::string& data,
@@ -102,19 +92,9 @@ class DevToolsHttpHandlerImpl
   std::string overridden_frontend_url_;
   scoped_ptr<const net::StreamListenSocketFactory> socket_factory_;
   scoped_refptr<net::HttpServer> server_;
-  typedef std::map<net::URLRequest*, int>
-      RequestToSocketMap;
-  RequestToSocketMap request_to_connection_io_;
-  typedef std::map<int, std::set<net::URLRequest*> >
-      ConnectionToRequestsMap;
-  ConnectionToRequestsMap connection_to_requests_io_;
-  typedef std::map<net::URLRequest*, scoped_refptr<net::IOBuffer> >
-      BuffersMap;
-  BuffersMap request_to_buffer_io_;
   typedef std::map<int, content::DevToolsClientHost*>
       ConnectionToClientHostMap;
   ConnectionToClientHostMap connection_to_client_host_ui_;
-  net::URLRequestContextGetter* request_context_getter_;
   scoped_ptr<DevToolsHttpHandlerDelegate> delegate_;
   RenderViewHostBinding* binding_;
   scoped_ptr<RenderViewHostBinding> default_binding_;

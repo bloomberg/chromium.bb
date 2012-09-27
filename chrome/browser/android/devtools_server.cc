@@ -53,8 +53,8 @@ class DevToolsServerDelegate : public content::DevToolsHttpHandlerDelegate {
     return false;
   }
 
-  virtual std::string GetFrontendResourcesBaseURL() {
-    return "";
+  virtual FilePath GetDebugFrontendDir() {
+    return FilePath();
   }
 
   virtual std::string GetPageThumbnailData(const GURL& url) {
@@ -96,14 +96,12 @@ void DevToolsServer::Start() {
     return;
 
   chrome::VersionInfo version_info;
-  Profile* profile = ProfileManager::GetLastUsedProfile()->GetOriginalProfile();
 
   protocol_handler_ = content::DevToolsHttpHandler::Start(
       new net::UnixDomainSocketWithAbstractNamespaceFactory(
           kSocketName,
           base::Bind(&content::CanUserConnectToDevTools)),
       StringPrintf(kFrontEndURL, version_info.Version().c_str()),
-      profile->GetRequestContext(),
       new DevToolsServerDelegate());
 }
 

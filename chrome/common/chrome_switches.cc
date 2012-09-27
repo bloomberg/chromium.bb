@@ -223,10 +223,6 @@ const char kCrashOnLive[]                   = "crash-on-live";
 const char kCreateBrowserOnStartupForTests[] =
     "create-browser-on-startup-for-tests";
 
-// Path to the inspector files on disk (allows reloading of devtool files
-// without having to restart the browser).
-const char kDebugDevToolsFrontend[]         = "debug-devtools-frontend";
-
 // Enables a frame context menu item that toggles the frame in and out of glass
 // mode (Windows Vista and up only).
 const char kDebugEnableFrameToggle[]        = "debug-enable-frame-toggle";

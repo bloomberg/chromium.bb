@@ -13,14 +13,10 @@
 
 namespace content {
 
-ShellDevToolsDelegate::ShellDevToolsDelegate(
-    int port,
-    net::URLRequestContextGetter* context_getter)
-    : context_getter_(context_getter) {
+ShellDevToolsDelegate::ShellDevToolsDelegate(int port) {
   devtools_http_handler_ = DevToolsHttpHandler::Start(
       new net::TCPListenSocketFactory("127.0.0.1", port),
       "",
-      context_getter_,
       this);
 }
 
@@ -42,10 +38,9 @@ bool ShellDevToolsDelegate::BundlesFrontendResources() {
   return true;
 }
 
-std::string ShellDevToolsDelegate::GetFrontendResourcesBaseURL() {
-  return "";
+FilePath ShellDevToolsDelegate::GetDebugFrontendDir() {
+  return FilePath();
 }
-
 
 std::string ShellDevToolsDelegate::GetPageThumbnailData(const GURL& url) {
   return "";

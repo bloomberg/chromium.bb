@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/file_util.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -35,9 +36,8 @@
 #include "grit/devtools_resources_map.h"
 #include "net/base/escape.h"
 #include "net/base/io_buffer.h"
+#include "net/base/ip_endpoint.h"
 #include "net/server/http_server_request_info.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "ui/base/layout.h"
 
 namespace content {
@@ -131,12 +131,10 @@ int DevToolsHttpHandler::GetFrontendResourceId(const std::string& name) {
 DevToolsHttpHandler* DevToolsHttpHandler::Start(
     const net::StreamListenSocketFactory* socket_factory,
     const std::string& frontend_url,
-    net::URLRequestContextGetter* request_context_getter,
     DevToolsHttpHandlerDelegate* delegate) {
   DevToolsHttpHandlerImpl* http_handler =
       new DevToolsHttpHandlerImpl(socket_factory,
                                   frontend_url,
-                                  request_context_getter,
                                   delegate);
   http_handler->Start();
   return http_handler;
@@ -232,41 +230,33 @@ void DevToolsHttpHandlerImpl::OnHttpRequest(
     return;
   }
 
-  // Proxy static files from chrome-devtools://devtools/*.
-  net::URLRequestContext* request_context =
-      request_context_getter_->GetURLRequestContext();
-  if (!request_context) {
+  if (info.path.find("/devtools/") != 0) {
     server_->Send404(connection_id);
     return;
   }
 
-  net::URLRequest* request;
+  std::string filename = PathWithoutParams(info.path.substr(10));
+  std::string mime_type = GetMimeType(filename);
 
-  if (info.path.find("/devtools/") == 0) {
-    // Serve front-end files from resource bundle.
-    std::string filename = PathWithoutParams(info.path.substr(10));
-
-    if (delegate_->BundlesFrontendResources()) {
-      int resource_id = DevToolsHttpHandler::GetFrontendResourceId(filename);
-      if (resource_id != -1) {
-        base::StringPiece data =
-            content::GetContentClient()->GetDataResource(
-                resource_id, ui::SCALE_FACTOR_NONE);
-        server_->Send200(connection_id,
-                         data.as_string(),
-                         GetMimeType(filename));
-      }
+  FilePath frontend_dir = delegate_->GetDebugFrontendDir();
+  if (!frontend_dir.empty()) {
+    FilePath path = frontend_dir.AppendASCII(filename);
+    std::string data;
+    file_util::ReadFileToString(path, &data);
+    server_->Send200(connection_id, data, mime_type);
+    return;
+  }
+  if (delegate_->BundlesFrontendResources()) {
+    int resource_id = DevToolsHttpHandler::GetFrontendResourceId(filename);
+    if (resource_id != -1) {
+      base::StringPiece data =
+          content::GetContentClient()->GetDataResource(
+              resource_id, ui::SCALE_FACTOR_NONE);
+      server_->Send200(connection_id, data.as_string(), mime_type);
       return;
     }
-    std::string base_url = delegate_->GetFrontendResourcesBaseURL();
-    request = request_context->CreateRequest(GURL(base_url + filename), this);
-  } else {
-    server_->Send404(connection_id);
-    return;
   }
-
-  Bind(request, connection_id);
-  request->Start();
+  server_->Send404(connection_id);
 }
 
 void DevToolsHttpHandlerImpl::OnWebSocketRequest(
@@ -296,21 +286,6 @@ void DevToolsHttpHandlerImpl::OnWebSocketMessage(
 }
 
 void DevToolsHttpHandlerImpl::OnClose(int connection_id) {
-  ConnectionToRequestsMap::iterator it =
-      connection_to_requests_io_.find(connection_id);
-  if (it != connection_to_requests_io_.end()) {
-    // Dispose delegating socket.
-    for (std::set<net::URLRequest*>::iterator it2 = it->second.begin();
-         it2 != it->second.end(); ++it2) {
-      net::URLRequest* request = *it2;
-      request->Cancel();
-      request_to_connection_io_.erase(request);
-      request_to_buffer_io_.erase(request);
-      delete request;
-    }
-    connection_to_requests_io_.erase(connection_id);
-  }
-
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
@@ -521,72 +496,12 @@ void DevToolsHttpHandlerImpl::OnCloseUI(int connection_id) {
   }
 }
 
-void DevToolsHttpHandlerImpl::OnResponseStarted(net::URLRequest* request) {
-  RequestToSocketMap::iterator it = request_to_connection_io_.find(request);
-  if (it == request_to_connection_io_.end())
-    return;
-
-  int connection_id = it->second;
-
-  std::string content_type;
-  request->GetMimeType(&content_type);
-
-  if (request->status().is_success()) {
-    server_->Send(connection_id,
-                  base::StringPrintf("HTTP/1.1 200 OK\r\n"
-                                     "Content-Type:%s\r\n"
-                                     "Transfer-Encoding: chunked\r\n"
-                                     "\r\n",
-                                     content_type.c_str()));
-  } else {
-    server_->Send404(connection_id);
-  }
-
-  int bytes_read = 0;
-  // Some servers may treat HEAD requests as GET requests.  To free up the
-  // network connection as soon as possible, signal that the request has
-  // completed immediately, without trying to read any data back (all we care
-  // about is the response code and headers, which we already have).
-  net::IOBuffer* buffer = request_to_buffer_io_[request].get();
-  if (request->status().is_success())
-    request->Read(buffer, kBufferSize, &bytes_read);
-  OnReadCompleted(request, bytes_read);
-}
-
-void DevToolsHttpHandlerImpl::OnReadCompleted(net::URLRequest* request,
-                                                  int bytes_read) {
-  RequestToSocketMap::iterator it = request_to_connection_io_.find(request);
-  if (it == request_to_connection_io_.end())
-    return;
-
-  int connection_id = it->second;
-
-  net::IOBuffer* buffer = request_to_buffer_io_[request].get();
-  do {
-    if (!request->status().is_success() || bytes_read <= 0)
-      break;
-    std::string chunk_size = base::StringPrintf("%X\r\n", bytes_read);
-    server_->Send(connection_id, chunk_size);
-    server_->Send(connection_id, buffer->data(), bytes_read);
-    server_->Send(connection_id, "\r\n");
-  } while (request->Read(buffer, kBufferSize, &bytes_read));
-
-
-  // See comments re: HEAD requests in OnResponseStarted().
-  if (!request->status().is_io_pending()) {
-    server_->Send(connection_id, "0\r\n\r\n");
-    RequestCompleted(request);
-  }
-}
-
 DevToolsHttpHandlerImpl::DevToolsHttpHandlerImpl(
     const net::StreamListenSocketFactory* socket_factory,
     const std::string& frontend_url,
-    net::URLRequestContextGetter* request_context_getter,
     DevToolsHttpHandlerDelegate* delegate)
     : overridden_frontend_url_(frontend_url),
       socket_factory_(socket_factory),
-      request_context_getter_(request_context_getter),
       delegate_(delegate) {
   if (overridden_frontend_url_.empty())
       overridden_frontend_url_ = "/devtools/devtools.html";
@@ -604,38 +519,10 @@ void DevToolsHttpHandlerImpl::Init() {
 // Run on I/O thread
 void DevToolsHttpHandlerImpl::TeardownAndRelease() {
   server_ = NULL;
+
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&DevToolsHttpHandlerImpl::Release, this));
-}
-
-void DevToolsHttpHandlerImpl::Bind(net::URLRequest* request,
-                                       int connection_id) {
-  request_to_connection_io_[request] = connection_id;
-  ConnectionToRequestsMap::iterator it =
-      connection_to_requests_io_.find(connection_id);
-  if (it == connection_to_requests_io_.end()) {
-    std::pair<int, std::set<net::URLRequest*> > value(
-        connection_id,
-        std::set<net::URLRequest*>());
-    it = connection_to_requests_io_.insert(value).first;
-  }
-  it->second.insert(request);
-  request_to_buffer_io_[request] = new net::IOBuffer(kBufferSize);
-}
-
-void DevToolsHttpHandlerImpl::RequestCompleted(net::URLRequest* request) {
-  RequestToSocketMap::iterator it = request_to_connection_io_.find(request);
-  if (it == request_to_connection_io_.end())
-    return;
-
-  int connection_id = it->second;
-  request_to_connection_io_.erase(request);
-  ConnectionToRequestsMap::iterator it2 =
-      connection_to_requests_io_.find(connection_id);
-  it2->second.erase(request);
-  request_to_buffer_io_.erase(request);
-  delete request;
 }
 
 void DevToolsHttpHandlerImpl::Send200(int connection_id,

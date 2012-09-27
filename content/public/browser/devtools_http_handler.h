@@ -47,7 +47,6 @@ class DevToolsHttpHandler {
   CONTENT_EXPORT static DevToolsHttpHandler* Start(
       const net::StreamListenSocketFactory* socket_factory,
       const std::string& frontend_url,
-      net::URLRequestContextGetter* request_context_getter,
       DevToolsHttpHandlerDelegate* delegate);
 
   // Called from the main thread in order to stop protocol handler.

@@ -222,6 +222,11 @@
             'browser/debugger/remote_debugging_server.cc',
           ],
         }],
+        ['debug_devtools==1', {
+          'defines': [
+            'DEBUG_DEVTOOLS=1',
+           ],
+        }],
       ],
     },
     {
