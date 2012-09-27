@@ -227,8 +227,6 @@ void SetFrameWindowInternal(HWND hwnd) {
   if (index == globals.host_windows.end()) {
     globals.host_windows.push_front(std::make_pair(hwnd, false));
     AdjustFrameWindowStyleForMetro(hwnd);
-  } else {
-    SetForegroundWindow(hwnd);
   }
 }
 
@@ -912,8 +910,6 @@ HRESULT ChromeAppView::OnActivate(winapp::Core::ICoreApplicationView*,
       NOTREACHED() << "thread creation failed.";
       return E_UNEXPECTED;
     }
-
-    ::AttachThreadInput(chrome_ui_thread_id, globals.main_thread_id, TRUE);
   }
 
   if (RegisterHotKey(globals.core_window, kFlipWindowsHotKeyId,
