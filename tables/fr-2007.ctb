@@ -72,16 +72,11 @@ punctuation , 2		COMMA
 punctuation - 36		HYPHEN-MINUS
 punctuation . 256		FULL STOP
 punctuation / 34		SOLIDUS
-digit 0 3456		DIGIT ZERO
-digit 1 16		DIGIT ONE
-digit 2 126		DIGIT TWO
-digit 3 146		DIGIT THREE
-digit 4 1456		DIGIT FOUR
-digit 5 156		DIGIT FIVE
-digit 6 1246		DIGIT SIX
-digit 7 12456		DIGIT SEVEN
-digit 8 1256		DIGIT EIGHT
-digit 9 246		DIGIT NINE
+
+# override zero
+digit 0 3456
+include digits6DotsPlusDot6.uti
+
 punctuation : 25		COLON
 punctuation ; 23		SEMICOLON
 punctuation < 238		LESS-THAN SIGN
