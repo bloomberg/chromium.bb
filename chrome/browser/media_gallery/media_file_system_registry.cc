@@ -67,24 +67,6 @@ struct InvalidatedGalleriesInfo {
   std::set<MediaGalleryPrefId> pref_ids;
 };
 
-// Registers and returns the file system id for the mass storage device
-// specified by |device_id| and |path|.
-std::string RegisterFileSystemForMassStorage(std::string device_id,
-                                             const FilePath& path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(MediaStorageUtil::IsMassStorageDevice(device_id));
-
-  IsolatedContext* isolated_context = IsolatedContext::GetInstance();
-  // Sanity checks for |path|.
-  CHECK(path.IsAbsolute());
-  CHECK(!path.ReferencesParent());
-  std::string fs_name(extension_misc::kMediaFileSystemPathPart);
-  const std::string fsid = isolated_context->RegisterFileSystemForPath(
-      fileapi::kFileSystemTypeNativeMedia, path, &fs_name);
-  CHECK(!fsid.empty());
-  return fsid;
-}
-
 // Make a JSON string out of |name| and |id|. The |id| makes the combined name
 // unique. The JSON string should not contain any slashes.
 std::string MakeJSONFileSystemName(const string16& name,
@@ -184,9 +166,9 @@ class ExtensionGalleriesHost
  public:
   // |no_references_callback| is called when the last RenderViewHost reference
   // goes away. RenderViewHost references are added through ReferenceFromRVH().
-  ExtensionGalleriesHost(MediaFileSystemRegistry* registry,
+  ExtensionGalleriesHost(MediaFileSystemContext* file_system_context,
                          const base::Closure& no_references_callback)
-      : registry_(registry),
+      : file_system_context_(file_system_context),
         no_references_callback_(no_references_callback) {
   }
 
@@ -217,9 +199,7 @@ class ExtensionGalleriesHost
     if (gallery == pref_id_map_.end())
       return;
 
-    IsolatedContext* isolated_context = IsolatedContext::GetInstance();
-    isolated_context->RevokeFileSystem(gallery->second.fsid);
-
+    file_system_context_->RevokeFileSystem(gallery->second.fsid);
     pref_id_map_.erase(gallery);
 
 #if defined(SUPPORT_MEDIA_FILESYSTEM)
@@ -337,11 +317,12 @@ class ExtensionGalleriesHost
 
       std::string fsid;
       if (MediaStorageUtil::IsMassStorageDevice(device_id)) {
-        fsid = RegisterFileSystemForMassStorage(device_id, path);
+        fsid = file_system_context_->RegisterFileSystemForMassStorage(
+            device_id, path);
       } else {
 #if defined(SUPPORT_MEDIA_FILESYSTEM)
         scoped_refptr<ScopedMediaDeviceMapEntry> mtp_device_host;
-        fsid = registry_->RegisterFileSystemForMtpDevice(
+        fsid = file_system_context_->RegisterFileSystemForMtpDevice(
             device_id, path, &mtp_device_host);
         DCHECK(mtp_device_host.get());
         media_device_map_references_[pref_id] = mtp_device_host;
@@ -424,11 +405,10 @@ class ExtensionGalleriesHost
     }
 
     if (rph_refs_.empty()) {
-      IsolatedContext* isolated_context = IsolatedContext::GetInstance();
       for (PrefIdFsInfoMap::const_iterator it = pref_id_map_.begin();
            it != pref_id_map_.end();
            ++it) {
-        isolated_context->RevokeFileSystem(it->second.fsid);
+        file_system_context_->RevokeFileSystem(it->second.fsid);
       }
       pref_id_map_.clear();
 
@@ -440,9 +420,9 @@ class ExtensionGalleriesHost
     }
   }
 
-  // MediaFileSystemRegistry owns |this|, so it is safe to store a raw pointer
-  // to it.
-  MediaFileSystemRegistry* registry_;
+  // MediaFileSystemRegistry owns |this| and |file_system_context_|, so it's
+  // safe to store a raw pointer.
+  MediaFileSystemContext* file_system_context_;
 
   // A callback to call when the last RVH reference goes away.
   base::Closure no_references_callback_;
@@ -503,7 +483,7 @@ void MediaFileSystemRegistry::GetMediaFileSystemsForExtension(
 
   if (!extension_host) {
     extension_host = new ExtensionGalleriesHost(
-        this,
+        file_system_context_.get(),
         base::Bind(&MediaFileSystemRegistry::OnExtensionGalleriesHostEmpty,
                    base::Unretained(this), profile, extension->id()));
     extension_hosts_map_[profile][extension->id()] = extension_host;
@@ -583,7 +563,64 @@ void MediaFileSystemRegistry::OnRemovableStorageDetached(
  * Private methods
  ******************/
 
-MediaFileSystemRegistry::MediaFileSystemRegistry() {
+class MediaFileSystemRegistry::MediaFileSystemContextImpl
+    : public MediaFileSystemContext {
+ public:
+  explicit MediaFileSystemContextImpl(MediaFileSystemRegistry* registry)
+      : registry_(registry) {
+    DCHECK(registry_);  // Suppresses unused warning on Android.
+  }
+  virtual ~MediaFileSystemContextImpl() {}
+
+  // Registers and returns the file system id for the mass storage device
+  // specified by |device_id| and |path|.
+  virtual std::string RegisterFileSystemForMassStorage(
+      const std::string& device_id, const FilePath& path) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK(MediaStorageUtil::IsMassStorageDevice(device_id));
+
+    // Sanity checks for |path|.
+    CHECK(path.IsAbsolute());
+    CHECK(!path.ReferencesParent());
+    std::string fs_name(extension_misc::kMediaFileSystemPathPart);
+    const std::string fsid =
+        IsolatedContext::GetInstance()->RegisterFileSystemForPath(
+            fileapi::kFileSystemTypeNativeMedia, path, &fs_name);
+    CHECK(!fsid.empty());
+    return fsid;
+  }
+
+#if defined(SUPPORT_MEDIA_FILESYSTEM)
+  virtual std::string RegisterFileSystemForMtpDevice(
+      const std::string& device_id, const FilePath& path,
+      scoped_refptr<ScopedMediaDeviceMapEntry>* entry) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK(!MediaStorageUtil::IsMassStorageDevice(device_id));
+
+    // Sanity checks for |path|.
+    CHECK(path.IsAbsolute());
+    CHECK(!path.ReferencesParent());
+    std::string fs_name(extension_misc::kMediaFileSystemPathPart);
+    const std::string fsid =
+        IsolatedContext::GetInstance()->RegisterFileSystemForPath(
+            fileapi::kFileSystemTypeDeviceMedia, path, &fs_name);
+    CHECK(!fsid.empty());
+    DCHECK(entry);
+    *entry = registry_->GetOrCreateScopedMediaDeviceMapEntry(path.value());
+    return fsid;
+  }
+#endif
+
+  virtual void RevokeFileSystem(const std::string& fsid) {
+    IsolatedContext::GetInstance()->RevokeFileSystem(fsid);
+  }
+
+ private:
+  MediaFileSystemRegistry* registry_;
+};
+
+MediaFileSystemRegistry::MediaFileSystemRegistry()
+    : file_system_context_(new MediaFileSystemContextImpl(this)) {
   // SystemMonitor may be NULL in unit tests.
   SystemMonitor* system_monitor = SystemMonitor::Get();
   if (system_monitor)
@@ -598,25 +635,6 @@ MediaFileSystemRegistry::~MediaFileSystemRegistry() {
 }
 
 #if defined(SUPPORT_MEDIA_FILESYSTEM)
-std::string MediaFileSystemRegistry::RegisterFileSystemForMtpDevice(
-    const std::string& device_id, const FilePath& path,
-    scoped_refptr<ScopedMediaDeviceMapEntry>* entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!MediaStorageUtil::IsMassStorageDevice(device_id));
-
-  // Sanity checks for |path|.
-  CHECK(path.IsAbsolute());
-  CHECK(!path.ReferencesParent());
-  std::string fs_name(extension_misc::kMediaFileSystemPathPart);
-  IsolatedContext* isolated_context = IsolatedContext::GetInstance();
-  const std::string fsid = isolated_context->RegisterFileSystemForPath(
-      fileapi::kFileSystemTypeDeviceMedia, path, &fs_name);
-  CHECK(!fsid.empty());
-  DCHECK(entry);
-  *entry = GetOrCreateScopedMediaDeviceMapEntry(path.value());
-  return fsid;
-}
-
 ScopedMediaDeviceMapEntry*
 MediaFileSystemRegistry::GetOrCreateScopedMediaDeviceMapEntry(
     const FilePath::StringType& device_location) {

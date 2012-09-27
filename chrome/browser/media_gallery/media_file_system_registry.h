@@ -52,6 +52,28 @@ struct MediaFileSystemInfo {
   std::string fsid;
 };
 
+class MediaFileSystemContext {
+ public:
+  virtual ~MediaFileSystemContext() {}
+
+  // Register a media file system (filtered to media files) for |path| and
+  // return the new file system id.
+  virtual std::string RegisterFileSystemForMassStorage(
+      const std::string& device_id, const FilePath& path) = 0;
+
+#if defined(SUPPORT_MEDIA_FILESYSTEM)
+  // Registers and returns the file system id for the mtp or ptp device
+  // specified by |device_id| and |path|. Updates |entry| with the corresponding
+  // ScopedMediaDeviceMapEntry object.
+  virtual std::string RegisterFileSystemForMtpDevice(
+      const std::string& device_id, const FilePath& path,
+      scoped_refptr<ScopedMediaDeviceMapEntry>* entry) = 0;
+#endif
+
+  // Revoke the passed |fsid|.
+  virtual void RevokeFileSystem(const std::string& fsid) = 0;
+};
+
 typedef base::Callback<void(const std::vector<MediaFileSystemInfo>&)>
     MediaFileSystemsCallback;
 
@@ -68,15 +90,6 @@ class MediaFileSystemRegistry
       const extensions::Extension* extension,
       const MediaFileSystemsCallback& callback);
 
-#if defined(SUPPORT_MEDIA_FILESYSTEM)
-  // Registers and returns the file system id for the mtp or ptp device
-  // specified by |device_id| and |path|. Updates |entry| with the corresponding
-  // ScopedMediaDeviceMapEntry object.
-  std::string RegisterFileSystemForMtpDevice(
-      const std::string& device_id, const FilePath& path,
-      scoped_refptr<ScopedMediaDeviceMapEntry>* entry);
-#endif
-
   // base::SystemMonitor::DevicesChangedObserver implementation.
   virtual void OnRemovableStorageAttached(
       const std::string& id, const string16& name,
@@ -85,6 +98,7 @@ class MediaFileSystemRegistry
 
  private:
   friend struct base::DefaultLazyInstanceTraits<MediaFileSystemRegistry>;
+  class MediaFileSystemContextImpl;
 
   // Map an extension to the ExtensionGalleriesHost.
   typedef std::map<std::string /*extension_id*/,
@@ -130,6 +144,8 @@ class MediaFileSystemRegistry
   // Only accessed on the UI thread.
   MTPDeviceDelegateMap mtp_delegate_map_;
 #endif
+
+  scoped_ptr<MediaFileSystemContext> file_system_context_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaFileSystemRegistry);
 };
