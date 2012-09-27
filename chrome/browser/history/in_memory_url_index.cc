@@ -170,6 +170,10 @@ ScoredHistoryMatches InMemoryURLIndex::HistoryItemsForTerms(
 
 // Updating --------------------------------------------------------------------
 
+void InMemoryURLIndex::DeleteURL(const GURL& url) {
+  private_data_->DeleteURL(url);
+}
+
 void InMemoryURLIndex::Observe(int notification_type,
                                const content::NotificationSource& source,
                                const content::NotificationDetails& details) {

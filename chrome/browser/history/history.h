@@ -256,7 +256,7 @@ class HistoryService : public CancelableRequestProvider,
    public:
     // Indicates that a URL is available. There will be exactly one call for
     // every URL in history.
-    virtual void OnURL(const GURL& url) = 0;
+    virtual void OnURL(const history::URLRow& url_row) = 0;
 
     // Indicates we are done iterating over URLs. Once called, there will be no
     // more callbacks made. This call is guaranteed to occur, even if there are
@@ -1062,6 +1062,7 @@ class HistoryService : public CancelableRequestProvider,
   // A cache of the user-typed URLs kept in memory that is used by the
   // autocomplete system. This will be NULL until the database has been created
   // on the background thread.
+  // TODO(mrossetti): Consider changing ownership. See http://crbug.com/138321
   scoped_ptr<history::InMemoryHistoryBackend> in_memory_backend_;
 
   // The profile, may be null when testing.
@@ -1084,6 +1085,8 @@ class HistoryService : public CancelableRequestProvider,
   bool needs_top_sites_migration_;
 
   // The index used for quick history lookups.
+  // TODO(mrossetti): Move in_memory_url_index out of history_service.
+  // See http://crbug.com/138321
   scoped_ptr<history::InMemoryURLIndex> in_memory_url_index_;
 
   scoped_refptr<ObserverListThreadSafe<history::VisitDatabaseObserver> >

@@ -150,7 +150,7 @@ class VisitedLinkMaster::TableBuilder
   void DisownMaster();
 
   // HistoryService::URLEnumerator
-  virtual void OnURL(const GURL& url);
+  virtual void OnURL(const history::URLRow& url_row);
   virtual void OnComplete(bool succeed);
 
  private:
@@ -956,7 +956,8 @@ void VisitedLinkMaster::TableBuilder::DisownMaster() {
   master_ = NULL;
 }
 
-void VisitedLinkMaster::TableBuilder::OnURL(const GURL& url) {
+void VisitedLinkMaster::TableBuilder::OnURL(const history::URLRow& url_row) {
+  const GURL& url(url_row.url());
   if (!url.is_empty()) {
     fingerprints_.push_back(VisitedLinkMaster::ComputeURLFingerprint(
         url.spec().data(), url.spec().length(), salt_));

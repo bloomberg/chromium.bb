@@ -23,6 +23,10 @@ class HistoryProvider : public AutocompleteProvider {
                   AutocompleteProvider::Type type);
   virtual ~HistoryProvider();
 
+  // Finds and removes the match from the current collection of matches and
+  // backing data.
+  void DeleteMatchFromMatches(const AutocompleteMatch& match);
+
   // Fixes up user URL input to make it more possible to match against.  Among
   // many other things, this takes care of the following:
   // * Prepending file:// to file URLs

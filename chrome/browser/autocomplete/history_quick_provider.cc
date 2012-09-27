@@ -148,8 +148,13 @@ void HistoryQuickProvider::Start(const AutocompleteInput& input,
   }
 }
 
-// TODO(mrossetti): Implement this function. (Will happen in next CL.)
-void HistoryQuickProvider::DeleteMatch(const AutocompleteMatch& match) {}
+void HistoryQuickProvider::DeleteMatch(const AutocompleteMatch& match) {
+  DCHECK(match.deletable);
+  DCHECK(match.destination_url.is_valid());
+  // Delete the match from the InMemoryURLIndex.
+  GetIndex()->DeleteURL(match.destination_url);
+  DeleteMatchFromMatches(match);
+}
 
 HistoryQuickProvider::~HistoryQuickProvider() {}
 

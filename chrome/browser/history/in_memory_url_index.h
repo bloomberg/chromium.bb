@@ -45,9 +45,9 @@ namespace imui = in_memory_url_index;
 
 class HistoryDatabase;
 class URLIndexPrivateData;
-struct URLVisitedDetails;
-struct URLsModifiedDetails;
 struct URLsDeletedDetails;
+struct URLsModifiedDetails;
+struct URLVisitedDetails;
 
 // The URL history source.
 // Holds portions of the URL database in memory in an indexed form.  Used to
@@ -119,6 +119,9 @@ class InMemoryURLIndex : public content::NotificationObserver,
   // URLIndexPrivateData class. For a complete description of this function
   // refer to that class.
   ScoredHistoryMatches HistoryItemsForTerms(const string16& term_string);
+
+  // Deletes the index entry, if any, for the given |url|.
+  void DeleteURL(const GURL& url);
 
   // Sets the optional observers for completion of restoral and saving of the
   // index's private data.

@@ -84,7 +84,7 @@ class HistoryQuickProviderTest : public testing::Test,
         file_thread_(BrowserThread::FILE, &message_loop_) {}
 
   // AutocompleteProviderListener:
-  virtual void OnProviderUpdate(bool updated_matches) OVERRIDE;
+  virtual void OnProviderUpdate(bool updated_matches) OVERRIDE {}
 
  protected:
   class SetShouldContain : public std::unary_function<const std::string&,
@@ -128,7 +128,6 @@ class HistoryQuickProviderTest : public testing::Test,
 
   ACMatches ac_matches_;  // The resulting matches after running RunTest.
 
- private:
   scoped_refptr<HistoryQuickProvider> provider_;
 };
 
@@ -157,10 +156,6 @@ bool HistoryQuickProviderTest::UpdateURL(const history::URLRow& row) {
   DCHECK(private_data);
   return private_data->UpdateURL(row, index->languages_,
                                  index->scheme_whitelist_);
-}
-
-void HistoryQuickProviderTest::OnProviderUpdate(bool updated_matches) {
-  MessageLoop::current()->Quit();
 }
 
 void HistoryQuickProviderTest::GetTestData(size_t* data_count,
@@ -236,10 +231,11 @@ void HistoryQuickProviderTest::RunTest(const string16 text,
       << " unexpected results, one of which was: '"
       << *(leftovers.begin()) << "'.";
 
-  // We always expect to get at least one result.
-  ASSERT_FALSE(ac_matches_.empty());
-  int best_score = ac_matches_.begin()->relevance + 1;
+  if (expected_urls.empty())
+    return;
+
   // Verify that we got the results in the order expected.
+  int best_score = ac_matches_.begin()->relevance + 1;
   int i = 0;
   std::vector<std::string>::const_iterator expected = expected_urls.begin();
   for (ACMatches::const_iterator actual = ac_matches_.begin();
@@ -429,6 +425,20 @@ TEST_F(HistoryQuickProviderTest, Spans) {
   EXPECT_EQ(3U, spans_b[2].offset);
   EXPECT_EQ(ACMatchClassification::MATCH | ACMatchClassification::URL,
             spans_b[2].style);
+}
+
+TEST_F(HistoryQuickProviderTest, DeleteMatch) {
+  std::vector<std::string> expected_urls;
+  expected_urls.push_back("http://slashdot.org/favorite_page.html");
+  // Fill up ac_matches_; we don't really care about the test yet.
+  RunTest(ASCIIToUTF16("slashdot"), expected_urls, true,
+          ASCIIToUTF16("slashdot.org/favorite_page.html"));
+  EXPECT_EQ(1U, ac_matches_.size());
+  provider_->DeleteMatch(ac_matches_[0]);
+  // Verify it's no longer an indexed visit.
+  expected_urls.clear();
+  RunTest(ASCIIToUTF16("slashdot"), expected_urls, true,
+          ASCIIToUTF16("NONE EXPECTED"));
 }
 
 // HQPOrderingTest -------------------------------------------------------------

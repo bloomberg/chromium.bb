@@ -998,7 +998,7 @@ void HistoryBackend::IterateURLs(HistoryService::URLEnumerator* iterator) {
     if (db_->InitURLEnumeratorForEverything(&e)) {
       URLRow info;
       while (e.GetNextURL(&info)) {
-        iterator->OnURL(info.url());
+        iterator->OnURL(info);
       }
       iterator->OnComplete(true);  // Success.
       return;
