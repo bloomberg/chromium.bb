@@ -61,7 +61,7 @@ EXTRA_ENV = {
 
   'OPT_LEVEL'   : '0',
   'CC_FLAGS'    : '-O${OPT_LEVEL} -fno-common ${PTHREAD ? -pthread} ' +
-                  '-nostdinc -DNACL_LINUX=1 ${BIAS_%BIAS%} ' +
+                  '-nostdinc ${BIAS_%BIAS%} ' +
                   # BUG: http://code.google.com/p/nativeclient/issues/detail?id=2345
                   # it would be better to detect asm use inside clang
                   # as some uses of asm are borderline legit, e.g.
