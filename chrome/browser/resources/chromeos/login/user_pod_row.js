@@ -258,11 +258,10 @@ cr.define('login', function() {
      * Whether Gaia signin is required for this user.
      */
     get needGaiaSignin() {
-      // Gaia signin is performed if we are using gaia extenstion for signin,
-      // the user has an invalid oauth token and device is online and the
-      // user is not currently signed in (i.e. not the lock screen).
+      // Gaia signin is performed if the user has an invalid oauth token and is
+      // not currently signed in (i.e. not the lock screen).
       return this.user.oauthTokenStatus != OAuthTokenStatus.VALID &&
-             window.navigator.onLine && !this.user.signedIn;
+          !this.user.signedIn;
     },
 
     /**
@@ -329,12 +328,6 @@ cr.define('login', function() {
     activate: function() {
       if (!this.signinButtonElement.hidden) {
         // Switch to Gaia signin.
-        if (!this.needGaiaSignin) {
-          // Network may go offline in time period between the pod is focused
-          // and the button is pressed, in which case fallback to offline login.
-          this.focusInput();
-          return false;
-        }
         this.showSigninUI();
       } else if (!this.passwordElement.value) {
         return false;
