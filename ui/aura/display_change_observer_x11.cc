@@ -130,6 +130,12 @@ void DisplayChangeObserverX11::NotifyDisplayChange() {
       LOG(WARNING) << "Crtc not found for output: output=" << o;
       continue;
     }
+    // TODO(oshima): Temporarily ignore all displays other than
+    // primary, which has y = 0 to disable extended desktop.
+    // crbug.com/152003.
+    if (crtc_info->y != 0)
+      continue;
+
     XRRModeInfo* mode = FindMode(screen_resources, crtc_info->mode);
     if (!mode) {
       LOG(WARNING) << "Could not find a mode for the output: output=" << o;
@@ -165,6 +171,10 @@ void DisplayChangeObserverX11::NotifyDisplayChange() {
 
     y_coords.insert(crtc_info->y);
     XRRFreeOutputInfo(output_info);
+
+    // TODO(oshima): There is only one display in m23.
+    // Set the id to 0. crbug.com/152003.
+    displays.back().set_id(0);
   }
 
   // Free all allocated resources.
