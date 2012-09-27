@@ -2590,9 +2590,12 @@ bool PluginInstance::ResetAsProxied(scoped_refptr<PluginModule> module) {
   // Clear all PPP interfaces we may have cached.
   plugin_find_interface_ = NULL;
   plugin_input_event_interface_ = NULL;
+  checked_for_plugin_input_event_interface_ = false;
   plugin_messaging_interface_ = NULL;
+  checked_for_plugin_messaging_interface_ = false;
   plugin_mouse_lock_interface_ = NULL;
   plugin_pdf_interface_ = NULL;
+  checked_for_plugin_pdf_interface_ = false;
   plugin_private_interface_ = NULL;
   plugin_selection_interface_ = NULL;
   plugin_textinput_interface_ = NULL;

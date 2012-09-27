@@ -620,6 +620,7 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   scoped_ptr< ::ppapi::thunk::ResourceCreationAPI> resource_creation_;
 
   // The plugin-provided interfaces.
+  // When adding PPP interfaces, make sure to reset them in ResetAsProxied.
   const PPP_ContentDecryptor_Private* plugin_decryption_interface_;
   const PPP_Find_Dev* plugin_find_interface_;
   const PPP_InputEvent* plugin_input_event_interface_;
@@ -633,6 +634,7 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
 
   // Flags indicating whether we have asked this plugin instance for the
   // corresponding interfaces, so that we can ask only once.
+  // When adding flags, make sure to reset them in ResetAsProxied.
   bool checked_for_plugin_input_event_interface_;
   bool checked_for_plugin_messaging_interface_;
   bool checked_for_plugin_pdf_interface_;
