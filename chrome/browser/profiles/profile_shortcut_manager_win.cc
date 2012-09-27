@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "base/string16.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/app_icon_win.h"
@@ -172,6 +173,7 @@ class ProfileShortcutManagerWin : public ProfileShortcutManager,
 
   virtual void CreateProfileShortcut(const FilePath& profile_path) OVERRIDE;
 
+  // ProfileInfoCacheObserver:
   virtual void OnProfileAdded(const FilePath& profile_path) OVERRIDE;
   virtual void OnProfileWillBeRemoved(const FilePath& profile_path) OVERRIDE;
   virtual void OnProfileWasRemoved(const FilePath& profile_path,
@@ -188,7 +190,10 @@ class ProfileShortcutManagerWin : public ProfileShortcutManager,
   FilePath GetOtherProfilePath(const FilePath& profile_path);
   void UpdateShortcutForProfileAtPath(const FilePath& profile_path,
                                       bool create_always);
+
   ProfileManager* profile_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(ProfileShortcutManagerWin);
 };
 
 // static
@@ -304,7 +309,6 @@ void ProfileShortcutManagerWin::StartProfileShortcutNameChange(
   }
 }
 
-// Gets the other profile path in the cache when there are two profiles.
 FilePath ProfileShortcutManagerWin::GetOtherProfilePath(
     const FilePath& profile_path) {
   DCHECK_EQ(2U, profile_manager_->GetProfileInfoCache().GetNumberOfProfiles());
@@ -368,4 +372,3 @@ void ProfileShortcutManagerWin::UpdateShortcutForProfileAtPath(
   profile_manager_->GetProfileInfoCache().SetShortcutNameOfProfileAtIndex(
       profile_index, new_shortcut_appended_name);
 }
-

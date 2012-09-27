@@ -15,6 +15,9 @@ class ProfileShortcutManager {
  public:
   virtual ~ProfileShortcutManager();
 
+  // Create a profile shortcut for the profile with path |profile_path|, plus
+  // update the original profile shortcut if |profile_path| is the second
+  // profile created.
   virtual void CreateProfileShortcut(const FilePath& profile_path) = 0;
 
   static bool IsFeatureEnabled();
