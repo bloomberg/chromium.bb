@@ -37,12 +37,9 @@ scoped_ptr<ResourceHost> ContentRendererPepperHostFactory::CreateResourceHost(
   // TODO(brettw) when we support any public or private interfaces, put them in
   // a separate switch above.
 
-  // TODO(brettw) bug 147507: put back this dev check and remove the log! This
-  // was removed to fix issue 138902 where the permissions for bundled Flash
-  // (but not Flash that you specify on the command line, making it difficult
-  // to test) are incorrect.
-  LOG(INFO) << "ContentRendererPepperHostFactory::CreateResourceHost "
-            << "permissions = " << GetPermissions().GetBits();
+  // TODO(brettw) put back this dev check! This was removed to fix issue 138902
+  // where the permissions for bundled Flash (but not Flash that you specify
+  // on the command line, making it difficult to test) are incorrect.
   /*if (GetPermissions().HasPermission(ppapi::PERMISSION_DEV))*/ {
     switch (message.type()) {
       case PpapiHostMsg_FileChooser_Create::ID:

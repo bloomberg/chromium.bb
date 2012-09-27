@@ -4,7 +4,6 @@
 
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
 
-#include "base/logging.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 #include "ipc/ipc_message_macros.h"
@@ -18,11 +17,6 @@ BrowserPpapiHostImpl::BrowserPpapiHostImpl(
       plugin_process_handle_(base::kNullProcessHandle) {
   ppapi_host_.AddHostFactoryFilter(scoped_ptr<ppapi::host::HostFactory>(
       new ContentBrowserPepperHostFactory(this)));
-
-  // TODO(brettw) bug 147507: Remove this log statement when we figure out why
-  // permissions aren't hooked up properly.
-  LOG(INFO) << "BrowserPpapiHostImpl::BrowserPpapiHostImpl "
-            << "permissions = " << permissions.GetBits();
 }
 
 BrowserPpapiHostImpl::~BrowserPpapiHostImpl() {

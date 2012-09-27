@@ -40,10 +40,6 @@ class PPAPI_SHARED_EXPORT PpapiPermissions {
 
   bool HasPermission(Permission perm) const;
 
-  // TODO(brettw) bug 147507: Remove this when we fix the permissions bug
-  // (this was added for logging).
-  uint32 GetBits() const { return permissions_; }
-
  private:
   uint32 permissions_;
 
