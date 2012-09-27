@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
+#include "chrome/browser/ui/views/location_bar/touchable_location_bar_view.h"
 #include "ui/views/controls/image_view.h"
 
 namespace views {
@@ -18,7 +19,8 @@ class MouseEvent;
 class ZoomController;
 
 // View for the zoom icon in the Omnibox.
-class ZoomView : public views::ImageView {
+class ZoomView : public views::ImageView,
+                 public TouchableLocationBarView {
  public:
   // Constructor for ZoomView. Clicking on the ZoomView shows a ZoomBubbleView,
   // which requires the current TabContents. Because the current TabContents
@@ -38,9 +40,18 @@ class ZoomView : public views::ImageView {
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
   virtual bool GetTooltipText(const gfx::Point& p,
                               string16* tooltip) const OVERRIDE;
+  virtual ui::EventResult OnGestureEvent(
+      const ui::GestureEvent& event) OVERRIDE;
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
+
+  // TouchableLocationBarView.
+  virtual int GetBuiltInHorizontalPadding() const OVERRIDE;
+
+  // Helper method to show and focus the zoom bubble associated with this
+  // widget.
+  void ActivateBubble();
 
   // Toolbar model used to test whether location bar input is in progress.
   ToolbarModel* toolbar_model_;

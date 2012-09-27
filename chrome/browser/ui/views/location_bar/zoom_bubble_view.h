@@ -23,7 +23,11 @@ class ZoomBubbleView : public views::BubbleDelegateView,
   static void ShowBubble(views::View* anchor_view,
                          TabContents* tab_contents,
                          bool auto_close);
+
+  // Closes the showing bubble (if one exists).
   static void CloseBubble();
+
+  // Whether the zoom bubble is currently showing.
   static bool IsShowing();
 
  private:
@@ -45,6 +49,8 @@ class ZoomBubbleView : public views::BubbleDelegateView,
   void StopTimer();
 
   // views::View method.
+  virtual ui::EventResult OnGestureEvent(
+      const ui::GestureEvent& event) OVERRIDE;
   virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
 

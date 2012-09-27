@@ -47,8 +47,7 @@ void ZoomBubbleView::ShowBubble(views::View* anchor_view,
     // If the bubble is already showing but its |auto_close_| value is not equal
     // to |auto_close|, the bubble's focus properties must change, so the
     // current bubble must be closed and a new one created.
-    if (zoom_bubble_)
-      zoom_bubble_->Close();
+    CloseBubble();
 
     zoom_bubble_ = new ZoomBubbleView(anchor_view, tab_contents, auto_close);
     views::BubbleDelegateView::CreateBubble(zoom_bubble_);
@@ -113,6 +112,19 @@ void ZoomBubbleView::StartTimerIfNecessary() {
 void ZoomBubbleView::StopTimer() {
   timer_.Stop();
 }
+
+ui::EventResult ZoomBubbleView::OnGestureEvent(const ui::GestureEvent& event) {
+  if (!zoom_bubble_ || !zoom_bubble_->auto_close_ ||
+      event.type() != ui::ET_GESTURE_TAP) {
+    return ui::ER_UNHANDLED;
+  }
+
+  // If an auto-closing bubble was tapped, show a non-auto-closing bubble in
+  // its place.
+  ShowBubble(zoom_bubble_->anchor_view(), zoom_bubble_->tab_contents_, false);
+  return ui::ER_CONSUMED;
+}
+
 
 void ZoomBubbleView::OnMouseEntered(const ui::MouseEvent& event) {
   StopTimer();

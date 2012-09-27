@@ -22,6 +22,7 @@ ZoomView::ZoomView(ToolbarModel* toolbar_model,
       location_bar_delegate_(location_bar_delegate) {
   set_accessibility_focusable(true);
   Update(NULL);
+  TouchableLocationBarView::Init(this);
 }
 
 ZoomView::~ZoomView() {
@@ -52,16 +53,22 @@ bool ZoomView::GetTooltipText(const gfx::Point& p, string16* tooltip) const {
   return !ZoomBubbleView::IsShowing() && ImageView::GetTooltipText(p, tooltip);
 }
 
+ui::EventResult ZoomView::OnGestureEvent(const ui::GestureEvent& event) {
+  if (event.type() != ui::ET_GESTURE_TAP)
+    return ui::ER_UNHANDLED;
+
+  ActivateBubble();
+  return ui::ER_CONSUMED;
+}
+
 bool ZoomView::OnMousePressed(const ui::MouseEvent& event) {
   // Do nothing until mouse is released.
   return true;
 }
 
 void ZoomView::OnMouseReleased(const ui::MouseEvent& event) {
-  if (event.IsOnlyLeftMouseButton() && HitTestPoint(event.location())) {
-    ZoomBubbleView::ShowBubble(
-        this, location_bar_delegate_->GetTabContents(), false);
-  }
+  if (event.IsOnlyLeftMouseButton() && HitTestPoint(event.location()))
+    ActivateBubble();
 }
 
 bool ZoomView::OnKeyPressed(const ui::KeyEvent& event) {
@@ -70,7 +77,15 @@ bool ZoomView::OnKeyPressed(const ui::KeyEvent& event) {
     return false;
   }
 
+  ActivateBubble();
+  return true;
+}
+
+int ZoomView::GetBuiltInHorizontalPadding() const {
+  return GetBuiltInHorizontalPaddingImpl();
+}
+
+void ZoomView::ActivateBubble() {
   ZoomBubbleView::ShowBubble(
       this, location_bar_delegate_->GetTabContents(), false);
-  return true;
 }
