@@ -112,10 +112,6 @@
         'browser/accessibility/invert_bubble_prefs.h',
         'browser/alternate_nav_url_fetcher.cc',
         'browser/alternate_nav_url_fetcher.h',
-        'browser/android/android_protocol_adapter.cc',
-        'browser/android/android_protocol_adapter.h',
-        'browser/android/android_stream_reader_url_request_job.cc',
-        'browser/android/android_stream_reader_url_request_job.h',
         'browser/android/chrome_jni_registrar.cc',
         'browser/android/chrome_jni_registrar.h',
         'browser/android/chrome_startup_flags.cc',
@@ -2814,20 +2810,9 @@
     ['OS == "android"', {
       'targets': [
         {
-          'target_name': 'android_jar_jni_headers',
-          'type': 'none',
-          'variables': {
-            'jni_gen_dir': 'chrome',
-            'input_java_class': 'java/io/InputStream.class',
-            'input_jar_file': '<(android_sdk)/android.jar',
-          },
-          'includes': [ '../build/jar_file_jni_generator.gypi' ],
-        },
-        {
           'target_name': 'chrome_browser_jni_headers',
           'type': 'none',
           'sources': [
-            'android/java/src/org/chromium/chrome/browser/AndroidProtocolAdapter.java',
             'android/java/src/org/chromium/chrome/browser/ChromeBrowserProvider.java',
             'android/java/src/org/chromium/chrome/browser/ChromeHttpAuthHandler.java',
             'android/java/src/org/chromium/chrome/browser/ChromeWebContentsDelegateAndroid.java',
@@ -2842,9 +2827,6 @@
             'jni_gen_dir': 'chrome',
           },
           'includes': [ '../build/jni_generator.gypi' ],
-          'dependencies': [
-            'android_jar_jni_headers',
-          ],
         },
       ],
      },

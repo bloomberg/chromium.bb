@@ -26,6 +26,8 @@
         'common/android_webview_message_generator.h',
         'common/render_view_messages.cc',
         'common/render_view_messages.h',
+        'common/url_constants.cc',
+        'common/url_constants.h',
         'browser/aw_cookie_access_policy.cc',
         'browser/aw_cookie_access_policy.h',
         'browser/aw_http_auth_handler_base.cc',

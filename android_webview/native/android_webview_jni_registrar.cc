@@ -4,6 +4,8 @@
 
 #include "android_webview/native/android_webview_jni_registrar.h"
 
+#include "android_webview/native/android_protocol_handler.h"
+#include "android_webview/native/android_stream_reader_url_request_job.h"
 #include "android_webview/native/android_web_view_util.h"
 #include "android_webview/native/aw_contents.h"
 #include "android_webview/native/aw_contents_io_thread_client.h"
@@ -17,6 +19,9 @@
 namespace android_webview {
 
 static base::android::RegistrationMethod kWebViewRegisteredMethods[] = {
+  { "AndroidProtocolHandler", RegisterAndroidProtocolHandler },
+  { "AndroidStreamReaderUrlRequestJob",
+      RegisterAndroidStreamReaderUrlRequestJob },
   { "AndroidWebViewUtil", RegisterAndroidWebViewUtil },
   { "AwContents", RegisterAwContents },
   { "AwContentsIoThreadClient", RegisterAwContentsIoThreadClient},

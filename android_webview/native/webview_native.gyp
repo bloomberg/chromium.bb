@@ -20,6 +20,10 @@
         '<(SHARED_INTERMEDIATE_DIR)/android_webview',
       ],
       'sources': [
+        'android_protocol_handler.cc',
+        'android_protocol_handler.h',
+        'android_stream_reader_url_request_job.cc',
+        'android_stream_reader_url_request_job.h',
         'android_web_view_util.cc',
         'android_web_view_util.h',
         'android_webview_jni_registrar.cc',
@@ -46,9 +50,20 @@
       ],
     },
     {
+      'target_name': 'android_jar_jni_headers',
+      'type': 'none',
+      'variables': {
+        'jni_gen_dir': 'android_webview',
+        'input_java_class': 'java/io/InputStream.class',
+        'input_jar_file': '<(android_sdk)/android.jar',
+      },
+      'includes': [ '../../build/jar_file_jni_generator.gypi' ],
+    },
+    {
       'target_name': 'android_webview_native_jni',
       'type': 'none',
       'sources': [
+          '../java/src/org/chromium/android_webview/AndroidProtocolHandler.java',
           '../java/src/org/chromium/android_webview/AndroidWebViewUtil.java',
           '../java/src/org/chromium/android_webview/AwContents.java',
           '../java/src/org/chromium/android_webview/AwContentsIoThreadClient.java',
@@ -61,6 +76,9 @@
         'jni_gen_dir': 'android_webview',
       },
       'includes': [ '../../build/jni_generator.gypi' ],
+      'dependencies': [
+        'android_jar_jni_headers',
+      ],
     },
   ],
 }

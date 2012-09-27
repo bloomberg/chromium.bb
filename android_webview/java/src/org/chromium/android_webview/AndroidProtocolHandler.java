@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser;
+package org.chromium.android_webview;
 
 import android.content.Context;
 import android.content.res.AssetManager;
@@ -19,10 +19,10 @@ import org.chromium.base.CalledByNativeUnchecked;
 
 /**
  * Implements the Java side of Android URL protocol jobs.
- * See android_protocol_adapter.cc.
+ * See android_protocol_handler.cc.
  */
-public class AndroidProtocolAdapter {
-    private static final String TAG = "AndroidProtocolAdapter";
+public class AndroidProtocolHandler {
+    private static final String TAG = "AndroidProtocolHandler";
 
     // Supported URL schemes. This needs to be kept in sync with
     // clank/native/framework/chrome/url_request_android_job.cc.

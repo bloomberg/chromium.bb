@@ -13,12 +13,6 @@ const char kCrosScheme[] = "cros";
 const char kDriveScheme[] = "drive";
 #endif
 
-#if defined(OS_ANDROID)
-const char kContentScheme[] = "content";
-const char kAndroidAssetPath[] = "/android_asset/";
-const char kAndroidResourcePath[] = "/android_res/";
-#endif
-
 const char kAboutPluginsURL[] = "about:plugins";
 const char kAboutVersionURL[] = "about:version";
 

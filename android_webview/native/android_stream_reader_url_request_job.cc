@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/android_stream_reader_url_request_job.h"
+#include "android_webview/native/android_stream_reader_url_request_job.h"
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
@@ -38,6 +38,10 @@ const int kBufferSize = 4096;
 
 } // namespace
 
+bool RegisterAndroidStreamReaderUrlRequestJob(JNIEnv* env) {
+  return JNI_InputStream::RegisterNativesImpl(env);
+}
+
 AndroidStreamReaderURLRequestJob::AndroidStreamReaderURLRequestJob(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate,
@@ -48,10 +52,6 @@ AndroidStreamReaderURLRequestJob::AndroidStreamReaderURLRequestJob(
 }
 
 AndroidStreamReaderURLRequestJob::~AndroidStreamReaderURLRequestJob() {
-}
-
-bool AndroidStreamReaderURLRequestJob::InitJNIBindings(JNIEnv* env) {
-  return JNI_InputStream::RegisterNativesImpl(env);
 }
 
 void AndroidStreamReaderURLRequestJob::Start() {

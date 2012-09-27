@@ -36,12 +36,12 @@ class AwBrowserDependencyFactoryImpl : public AwBrowserDependencyFactory {
   void InitializeNetworkDelegateOnIOThread(
       net::URLRequestContextGetter* normal_context,
       net::URLRequestContextGetter* incognito_context);
-  void EnsureNetworkDelegateInitialized();
+  void EnsureContextDependentHooksInitialized();
 
   // Constructed and assigned on the IO thread.
   scoped_ptr<AwNetworkDelegate> network_delegate_;
   // Set on the UI thread.
-  bool initialized_network_delegate_;
+  bool context_dependent_hooks_initialized_;
 
   DISALLOW_COPY_AND_ASSIGN(AwBrowserDependencyFactoryImpl);
 };

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_ANDROID_STREAM_READER_URL_REQUEST_JOB_H_
-#define CHROME_BROWSER_ANDROID_ANDROID_STREAM_READER_URL_REQUEST_JOB_H_
+#ifndef ANDROID_WEBVIEW_NATIVE_ANDROID_STREAM_READER_URL_REQUEST_JOB_H_
+#define ANDROID_WEBVIEW_NATIVE_ANDROID_STREAM_READER_URL_REQUEST_JOB_H_
 
 #include "base/android/scoped_java_ref.h"
 #include "base/memory/scoped_ptr.h"
@@ -48,9 +48,6 @@ class AndroidStreamReaderURLRequestJob : public net::URLRequestJob {
       net::NetworkDelegate* network_delegate,
       scoped_ptr<Delegate> delegate);
 
-  // Register JNI methods.
-  static bool InitJNIBindings(JNIEnv* env);
-
   // URLRequestJob:
   virtual void Start() OVERRIDE;
   virtual bool ReadRawData(net::IOBuffer* buf,
@@ -79,4 +76,6 @@ class AndroidStreamReaderURLRequestJob : public net::URLRequestJob {
   DISALLOW_COPY_AND_ASSIGN(AndroidStreamReaderURLRequestJob);
 };
 
-#endif  // CHROME_BROWSER_ANDROID_ANDROID_STREAM_READER_URL_REQUEST_JOB_H_
+bool RegisterAndroidStreamReaderUrlRequestJob(JNIEnv* env);
+
+#endif  // ANDROID_WEBVIEW_NATIVE_ANDROID_STREAM_READER_URL_REQUEST_JOB_H_

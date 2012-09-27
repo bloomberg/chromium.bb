@@ -402,13 +402,6 @@ extern const char kExtensionResourceScheme[];
 extern const char kDriveScheme[];
 #endif
 
-#if defined(OS_ANDROID)
-extern const char kContentScheme[];
-// Special Android file paths.
-extern const char kAndroidAssetPath[];
-extern const char kAndroidResourcePath[];
-#endif
-
 #if defined(OS_CHROMEOS)
 // "Learn more" URL for the Cloud Print section under Options.
 extern const char kCloudPrintLearnMoreURL[];

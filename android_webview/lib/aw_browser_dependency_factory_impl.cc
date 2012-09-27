@@ -6,6 +6,7 @@
 
 // TODO(joth): Componentize or remove chrome/... dependencies.
 #include "android_webview/browser/net/aw_network_delegate.h"
+#include "android_webview/native/android_protocol_handler.h"
 #include "android_webview/native/aw_contents_container.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -47,7 +48,9 @@ class WebContentsWrapper : public AwContentsContainer {
 
 }  // namespace
 
-AwBrowserDependencyFactoryImpl::AwBrowserDependencyFactoryImpl() {}
+AwBrowserDependencyFactoryImpl::AwBrowserDependencyFactoryImpl()
+    : context_dependent_hooks_initialized_(false) {
+}
 
 AwBrowserDependencyFactoryImpl::~AwBrowserDependencyFactoryImpl() {}
 
@@ -69,11 +72,12 @@ void AwBrowserDependencyFactoryImpl::InitializeNetworkDelegateOnIOThread(
       network_delegate_.get());
 }
 
-void AwBrowserDependencyFactoryImpl::EnsureNetworkDelegateInitialized() {
-  if (initialized_network_delegate_)
+void AwBrowserDependencyFactoryImpl::EnsureContextDependentHooksInitialized()
+{
+  if (context_dependent_hooks_initialized_)
     return;
-  initialized_network_delegate_ = true;
   Profile* profile = g_browser_process->profile_manager()->GetDefaultProfile();
+  context_dependent_hooks_initialized_ = true;
   profile->GetRequestContext()->GetNetworkTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(
@@ -82,11 +86,14 @@ void AwBrowserDependencyFactoryImpl::EnsureNetworkDelegateInitialized() {
           make_scoped_refptr(profile->GetRequestContext()),
           make_scoped_refptr(
               profile->GetOffTheRecordProfile()->GetRequestContext())));
+
+  net::URLRequestContextGetter* context_getter = profile->GetRequestContext();
+  AndroidProtocolHandler::RegisterProtocols(context_getter);
 }
 
 content::BrowserContext* AwBrowserDependencyFactoryImpl::GetBrowserContext(
     bool incognito) {
-  EnsureNetworkDelegateInitialized();
+  EnsureContextDependentHooksInitialized();
   Profile* profile = g_browser_process->profile_manager()->GetDefaultProfile();
   return incognito ? profile->GetOffTheRecordProfile() : profile;
 }

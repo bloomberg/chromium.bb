@@ -4,16 +4,17 @@
 
 // URL request job for reading from resources and assets.
 
-#include "chrome/browser/android/android_protocol_adapter.h"
+#include "android_webview/native/android_protocol_handler.h"
 
+#include "android_webview/common/url_constants.h"
+#include "android_webview/native/android_stream_reader_url_request_job.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_helper.h"
 #include "base/android/jni_string.h"
 #include "base/string_util.h"
-#include "chrome/browser/android/android_stream_reader_url_request_job.h"
-#include "chrome/common/url_constants.h"
+#include "content/public/common/url_constants.h"
 #include "googleurl/src/gurl.h"
-#include "jni/AndroidProtocolAdapter_jni.h"
+#include "jni/AndroidProtocolHandler_jni.h"
 #include "net/base/io_buffer.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_errors.h"
@@ -90,17 +91,12 @@ class AssetFileProtocolInterceptor :
 
 } // namespace
 
-static bool InitJNIBindings(JNIEnv* env) {
-  return RegisterNativesImpl(env) &&
-      AndroidStreamReaderURLRequestJob::InitJNIBindings(env);
-}
-
 // static
-net::URLRequestJob* AndroidProtocolAdapter::Factory(
+net::URLRequestJob* AndroidProtocolHandler::Factory(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate,
     const std::string& scheme) {
-  DCHECK(scheme == chrome::kContentScheme);
+  DCHECK(scheme == android_webview::kContentScheme);
   return new AndroidStreamReaderURLRequestJob(
       request,
       network_delegate,
@@ -116,25 +112,22 @@ static void AddFileSchemeInterceptorOnIOThread(
           new AssetFileProtocolInterceptor());
 }
 
-// static
-void AndroidProtocolAdapter::RegisterProtocols(
-    JNIEnv* env, net::URLRequestContextGetter* context_getter) {
-  DCHECK(env);
-  if (!InitJNIBindings(env)) {
-    // Must not fail.
-    NOTREACHED();
-  }
+bool RegisterAndroidProtocolHandler(JNIEnv* env) {
+  return RegisterNativesImpl(env);
+}
 
+// static
+void AndroidProtocolHandler::RegisterProtocols(
+    net::URLRequestContextGetter* context_getter) {
   // Register content://. Note that even though a scheme is
   // registered here, it cannot be used by child processes until access to it is
   // granted via ChildProcessSecurityPolicy::GrantScheme(). This is done in
   // RenderViewHost.
-  //
   // TODO(mnaganov): Convert into a ProtocolHandler.
   net::URLRequestJobManager* job_manager =
       net::URLRequestJobManager::GetInstance();
-  job_manager->RegisterProtocolFactory(chrome::kContentScheme,
-      &AndroidProtocolAdapter::Factory);
+  job_manager->RegisterProtocolFactory(android_webview::kContentScheme,
+      &AndroidProtocolHandler::Factory);
 
   // Register a file: scheme interceptor for application assets.
   context_getter->GetNetworkTaskRunner()->PostTask(
@@ -162,12 +155,14 @@ static void SetResourceContextForTesting(JNIEnv* env, jclass /*clazz*/,
 
 static jstring GetAndroidAssetPath(JNIEnv* env, jclass /*clazz*/) {
   // OK to release, JNI binding.
-  return ConvertUTF8ToJavaString(env, chrome::kAndroidAssetPath).Release();
+  return ConvertUTF8ToJavaString(
+      env, android_webview::kAndroidAssetPath).Release();
 }
 
 static jstring GetAndroidResourcePath(JNIEnv* env, jclass /*clazz*/) {
   // OK to release, JNI binding.
-  return ConvertUTF8ToJavaString(env, chrome::kAndroidResourcePath).Release();
+  return ConvertUTF8ToJavaString(
+      env, android_webview::kAndroidResourcePath).Release();
 }
 
 static ScopedJavaLocalRef<jobject> GetResourceContext(JNIEnv* env) {
@@ -198,7 +193,7 @@ AndroidStreamReaderURLRequestJobDelegateImpl::OpenInputStream(
   // Open the input stream.
   ScopedJavaLocalRef<jstring> url =
       ConvertUTF8ToJavaString(env, request->url().spec());
-  ScopedJavaLocalRef<jobject> stream = Java_AndroidProtocolAdapter_open(
+  ScopedJavaLocalRef<jobject> stream = Java_AndroidProtocolHandler_open(
       env,
       GetResourceContext(env).obj(),
       url.obj());
@@ -228,7 +223,7 @@ bool AndroidStreamReaderURLRequestJobDelegateImpl::GetMimeType(
   ScopedJavaLocalRef<jstring> url =
       ConvertUTF8ToJavaString(env, request->url().spec());
   ScopedJavaLocalRef<jstring> returned_type =
-      Java_AndroidProtocolAdapter_getMimeType(env,
+      Java_AndroidProtocolHandler_getMimeType(env,
                                               GetResourceContext(env).obj(),
                                               stream, url.obj());
   if (ClearException(env) || returned_type.is_null())
@@ -250,10 +245,10 @@ bool AndroidStreamReaderURLRequestJobDelegateImpl::GetCharset(
 AssetFileProtocolInterceptor::AssetFileProtocolInterceptor()
     : asset_prefix_(std::string(chrome::kFileScheme) +
                     std::string(content::kStandardSchemeSeparator) +
-                    chrome::kAndroidAssetPath),
+                    android_webview::kAndroidAssetPath),
       resource_prefix_(std::string(chrome::kFileScheme) +
                        std::string(content::kStandardSchemeSeparator) +
-                       chrome::kAndroidResourcePath) {
+                       android_webview::kAndroidResourcePath) {
 }
 
 AssetFileProtocolInterceptor::~AssetFileProtocolInterceptor() {

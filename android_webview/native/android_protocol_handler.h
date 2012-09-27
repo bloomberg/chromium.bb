@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_ANDROID_PROTOCOL_ADAPTER_H_
-#define CHROME_BROWSER_ANDROID_ANDROID_PROTOCOL_ADAPTER_H_
+#ifndef ANDROID_WEBVIEW_NATIVE_ANDROID_PROTOCOL_HANDLER_H_
+#define ANDROID_WEBVIEW_NATIVE_ANDROID_PROTOCOL_HANDLER_H_
 
-#include <jni.h>
-
+#include "base/android/jni_android.h"
 #include "net/url_request/url_request.h"
 
 namespace net {
@@ -26,16 +25,18 @@ class URLRequestContextGetter;
 //    http://developer.android.com/reference/android/webkit/
 //      WebSettings.html#setAllowFileAccess(boolean)
 //
-class AndroidProtocolAdapter {
+class AndroidProtocolHandler {
  public:
   static net::URLRequest::ProtocolFactory Factory;
 
   // Register handlers for all supported Android protocol schemes.
   static void RegisterProtocols(
-      JNIEnv* env, net::URLRequestContextGetter* context_getter);
+      net::URLRequestContextGetter* context_getter);
 
  private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(AndroidProtocolAdapter);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(AndroidProtocolHandler);
 };
 
-#endif  // CHROME_BROWSER_ANDROID_ANDROID_PROTOCOL_ADAPTER_H_
+bool RegisterAndroidProtocolHandler(JNIEnv* env);
+
+#endif  // ANDROID_WEBVIEW_NATIVE_ANDROID_PROTOCOL_HANDLER_H_
