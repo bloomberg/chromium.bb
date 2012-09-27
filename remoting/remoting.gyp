@@ -8,6 +8,7 @@
     # duplicated from chrome.gyp
     'chromium_code': 1,
 
+    'remoting_host_linux_clipboard%': 1,
     'remoting_multi_process%': 0,
 
     # The version is composed from major & minor versions specific to remoting
@@ -205,6 +206,11 @@
       '..',  # Root of Chrome checkout
     ],
     'conditions': [
+      ['remoting_host_linux_clipboard != 0', {
+        'defines': [
+          'REMOTING_HOST_LINUX_CLIPBOARD',
+        ],
+      }],
       ['remoting_multi_process != 0', {
         'defines': [
           'REMOTING_MULTI_PROCESS',

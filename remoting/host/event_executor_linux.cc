@@ -98,11 +98,13 @@ EventExecutorLinux::EventExecutorLinux(
       latest_mouse_position_(SkIPoint::Make(-1, -1)),
       display_(XOpenDisplay(NULL)),
       root_window_(BadValue) {
+#if defined(REMOTING_HOST_LINUX_CLIPBOARD)
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&EventExecutorLinux::InitClipboard, base::Unretained(this)));
   }
+#endif  // REMOTING_HOST_LINUX_CLIPBOARD
 }
 
 EventExecutorLinux::~EventExecutorLinux() {
@@ -131,6 +133,7 @@ bool EventExecutorLinux::Init() {
 }
 
 void EventExecutorLinux::InjectClipboardEvent(const ClipboardEvent& event) {
+#if defined(REMOTING_HOST_LINUX_CLIPBOARD)
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(
         FROM_HERE,
@@ -140,6 +143,7 @@ void EventExecutorLinux::InjectClipboardEvent(const ClipboardEvent& event) {
   }
 
   clipboard_->InjectClipboardEvent(event);
+#endif  // REMOTING_HOST_LINUX_CLIPBOARD
 }
 
 void EventExecutorLinux::InjectKeyEvent(const KeyEvent& event) {
@@ -391,7 +395,9 @@ void EventExecutorLinux::Start(
   }
 
   InitMouseButtonMap();
+#if defined(REMOTING_HOST_LINUX_CLIPBOARD)
   clipboard_->Start(client_clipboard.Pass());
+#endif  // REMOTING_HOST_LINUX_CLIPBOARD
 }
 
 void EventExecutorLinux::StopAndDelete() {
