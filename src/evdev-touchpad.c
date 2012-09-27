@@ -477,9 +477,23 @@ touchpad_update_state(struct touchpad_dispatch *touchpad, uint32_t time)
 
 		filter_motion(touchpad, &dx, &dy, time);
 
-		touchpad->device->rel.dx = wl_fixed_from_double(dx);
-		touchpad->device->rel.dy = wl_fixed_from_double(dy);
-		touchpad->device->pending_events |= EVDEV_RELATIVE_MOTION;
+		if (touchpad->finger_state == TOUCHPAD_FINGERS_ONE) {
+			touchpad->device->rel.dx = wl_fixed_from_double(dx);
+			touchpad->device->rel.dy = wl_fixed_from_double(dy);
+			touchpad->device->pending_events |=
+				EVDEV_RELATIVE_MOTION;
+		} else if (touchpad->finger_state == TOUCHPAD_FINGERS_TWO) {
+			if (dx != 0.0)
+				notify_axis(touchpad->device->seat,
+					    time,
+					    WL_POINTER_AXIS_HORIZONTAL_SCROLL,
+					    wl_fixed_from_double(dx));
+			if (dy != 0.0)
+				notify_axis(touchpad->device->seat,
+					    time,
+					    WL_POINTER_AXIS_VERTICAL_SCROLL,
+					    wl_fixed_from_double(dy));
+		}
 	}
 
 	if (!(touchpad->state & TOUCHPAD_STATE_MOVE) &&
@@ -579,19 +593,22 @@ process_key(struct touchpad_dispatch *touchpad,
 		touchpad->reset = 1;
 		break;
 	case BTN_TOOL_FINGER:
-		touchpad->finger_state &= ~TOUCHPAD_FINGERS_ONE;
 		if (e->value)
 			touchpad->finger_state |= TOUCHPAD_FINGERS_ONE;
+		else
+			touchpad->finger_state &= ~TOUCHPAD_FINGERS_ONE;
 		break;
 	case BTN_TOOL_DOUBLETAP:
-		touchpad->finger_state &= ~TOUCHPAD_FINGERS_TWO;
 		if (e->value)
 			touchpad->finger_state |= TOUCHPAD_FINGERS_TWO;
+		else
+			touchpad->finger_state &= ~TOUCHPAD_FINGERS_TWO;
 		break;
 	case BTN_TOOL_TRIPLETAP:
-		touchpad->finger_state &= ~TOUCHPAD_FINGERS_THREE;
 		if (e->value)
 			touchpad->finger_state |= TOUCHPAD_FINGERS_THREE;
+		else
+			touchpad->finger_state &= ~TOUCHPAD_FINGERS_THREE;
 		break;
 	}
 }
