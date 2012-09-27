@@ -703,8 +703,7 @@ cr.define('ntp', function() {
             Math.round((windowHeight - HEIGHT_FOR_TWO_ROWS) / 2);
       }
 
-      var cardSliderFrame = $('card-slider-frame');
-      cardSliderFrame.style.bottom = paddingBottom + 'px';
+      $('card-slider-frame').style.bottom = paddingBottom + 'px';
 
       // Width logic
 
