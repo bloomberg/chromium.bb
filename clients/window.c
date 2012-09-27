@@ -2284,7 +2284,6 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
 	enum wl_keyboard_key_state state = state_w;
 	const xkb_keysym_t *syms;
 	xkb_keysym_t sym;
-	xkb_mod_mask_t mask;
 	struct itimerspec its;
 
 	input->display->serial = serial;
@@ -2293,17 +2292,6 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
 		return;
 
 	num_syms = xkb_key_get_syms(input->xkb.state, code, &syms);
-
-	mask = xkb_state_serialize_mods(input->xkb.state,
-					XKB_STATE_DEPRESSED |
-					XKB_STATE_LATCHED);
-	input->modifiers = 0;
-	if (mask & input->xkb.control_mask)
-		input->modifiers |= MOD_CONTROL_MASK;
-	if (mask & input->xkb.alt_mask)
-		input->modifiers |= MOD_ALT_MASK;
-	if (mask & input->xkb.shift_mask)
-		input->modifiers |= MOD_SHIFT_MASK;
 
 	sym = XKB_KEY_NoSymbol;
 	if (num_syms == 1)
@@ -2356,9 +2344,20 @@ keyboard_handle_modifiers(void *data, struct wl_keyboard *keyboard,
 			  uint32_t group)
 {
 	struct input *input = data;
+	xkb_mod_mask_t mask;
 
 	xkb_state_update_mask(input->xkb.state, mods_depressed, mods_latched,
 			      mods_locked, 0, 0, group);
+	mask = xkb_state_serialize_mods(input->xkb.state,
+					XKB_STATE_DEPRESSED |
+					XKB_STATE_LATCHED);
+	input->modifiers = 0;
+	if (mask & input->xkb.control_mask)
+		input->modifiers |= MOD_CONTROL_MASK;
+	if (mask & input->xkb.alt_mask)
+		input->modifiers |= MOD_ALT_MASK;
+	if (mask & input->xkb.shift_mask)
+		input->modifiers |= MOD_SHIFT_MASK;
 }
 
 static const struct wl_keyboard_listener keyboard_listener = {
