@@ -7,7 +7,9 @@
       {{{description}}}
     </dd>{{/description}}
     {{?properties}}
-    <dd><dl>{{#properties}}{{^additional_properties}}{{+partials.property}}{{/}}{{/}}</dl></dd>
+    <dd><dl>{{#properties}}{{^additional_properties}}
+      {{+partials.parameter_full}}
+    {{/}}{{/}}</dl></dd>
     {{/properties}}
     {{?functions}}
     <a name={{type.name}}-methods></a>
