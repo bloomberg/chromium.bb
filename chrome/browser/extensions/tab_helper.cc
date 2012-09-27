@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/tab_helper.h"
 
+#include "chrome/browser/extensions/activity_log.h"
 #include "chrome/browser/extensions/app_notify_channel_ui.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -54,6 +55,19 @@ namespace extensions {
 
 int TabHelper::kUserDataKey;
 
+TabHelper::ContentScriptObserver::ContentScriptObserver(TabHelper* tab_helper)
+    : tab_helper_(tab_helper) {
+  tab_helper_->AddContentScriptObserver(this);
+}
+
+TabHelper::ContentScriptObserver::ContentScriptObserver() : tab_helper_(NULL) {
+}
+
+TabHelper::ContentScriptObserver::~ContentScriptObserver() {
+  if (tab_helper_)
+    tab_helper_->RemoveContentScriptObserver(this);
+}
+
 TabHelper::TabHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       extension_app_(NULL),
@@ -72,18 +86,24 @@ TabHelper::TabHelper(content::WebContents* web_contents)
       Profile::FromBrowserContext(web_contents->GetBrowserContext())));
   if (switch_utils::AreScriptBadgesEnabled()) {
     location_bar_controller_.reset(
-        new ScriptBadgeController(web_contents, &script_executor_));
+        new ScriptBadgeController(web_contents, &script_executor_, this));
   } else {
     location_bar_controller_.reset(
         new PageActionController(web_contents));
   }
+
+  // If more classes need to listen to global content script activity, then
+  // a separate routing class with an observer interface should be written.
+  AddContentScriptObserver(ActivityLog::GetInstance());
+
   registrar_.Add(this,
                  content::NOTIFICATION_LOAD_STOP,
                  content::Source<NavigationController>(
-                    &web_contents->GetController()));
+                     &web_contents->GetController()));
 }
 
 TabHelper::~TabHelper() {
+  RemoveContentScriptObserver(ActivityLog::GetInstance());
 }
 
 void TabHelper::CreateApplicationShortcuts() {
@@ -185,6 +205,8 @@ bool TabHelper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_GetAppInstallState,
                         OnGetAppInstallState);
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_Request, OnRequest)
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_ContentScriptsExecuting,
+                        OnContentScriptsExecuting)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -365,6 +387,17 @@ void TabHelper::AppNotifyChannelSetupComplete(
 void TabHelper::OnRequest(const ExtensionHostMsg_Request_Params& request) {
   extension_function_dispatcher_.Dispatch(request,
                                           web_contents()->GetRenderViewHost());
+}
+
+void TabHelper::OnContentScriptsExecuting(
+    const ContentScriptObserver::ExecutingScriptsMap& executing_scripts_map,
+    int32 on_page_id,
+    const GURL& on_url) {
+  FOR_EACH_OBSERVER(ContentScriptObserver, content_script_observers_,
+                    OnContentScriptsExecuting(web_contents(),
+                                              executing_scripts_map,
+                                              on_page_id,
+                                              on_url));
 }
 
 const Extension* TabHelper::GetExtension(const std::string& extension_app_id) {

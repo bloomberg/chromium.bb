@@ -7,31 +7,35 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/memory/singleton.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/synchronization/lock.h"
+#include "chrome/browser/extensions/tab_helper.h"
 
 namespace extensions {
 class Extension;
 
 // A utility for tracing interesting activity for each extension.
-class ActivityLog {
+class ActivityLog : public TabHelper::ContentScriptObserver {
  public:
   enum Activity {
-    ACTIVITY_EXTENSION_API_CALL,  // Extension API invocation is called.
-    ACTIVITY_EXTENSION_API_BLOCK  // Extension API invocation is blocked.
+    ACTIVITY_EXTENSION_API_CALL,   // Extension API invocation is called.
+    ACTIVITY_EXTENSION_API_BLOCK,  // Extension API invocation is blocked.
+    ACTIVITY_CONTENT_SCRIPT        // Content script is executing.
   };
 
   // Observers can listen for activity events.
   class Observer {
    public:
-    virtual void OnExtensionActivity(const Extension* extension,
-                                     Activity activity,
-                                     const std::string& msg) = 0;
+    virtual void OnExtensionActivity(
+        const Extension* extension,
+        Activity activity,
+        const std::vector<std::string>& messages) = 0;
   };
 
-  ~ActivityLog();
+  virtual ~ActivityLog();
   static ActivityLog* GetInstance();
 
   // Add/remove observer.
@@ -45,11 +49,21 @@ class ActivityLog {
   // Log |activity| for |extension|.
   void Log(const Extension* extension,
            Activity activity,
-           const std::string& msg) const;
+           const std::string& message) const;
+  void Log(const Extension* extension,
+           Activity activity,
+           const std::vector<std::string>& messages) const;
 
  private:
   ActivityLog();
   friend struct DefaultSingletonTraits<ActivityLog>;
+
+  // TabHelper::ContentScriptObserver implementation.
+  virtual void OnContentScriptsExecuting(
+      const content::WebContents* web_contents,
+      const ExecutingScriptsMap& extension_ids,
+      int32 page_id,
+      const GURL& on_url) OVERRIDE;
 
   static const char* ActivityToString(Activity activity);
 

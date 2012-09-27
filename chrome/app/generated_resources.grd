@@ -5278,6 +5278,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_EXTENSION_ACTIVITY_API_BLOCK" desc="Text for the label next to an activity message that represents a blocked call to the extension API.">
         Blocked API Call
       </message>
+      <message name="IDS_EXTENSION_ACTIVITY_CONTENT_SCRIPT" desc="Text for the label next to an activity message that represents a content script injection.">
+        Content Script
+      </message>
 
       <!-- chrome://extension-info bubble -->
       <message name="IDS_EXTENSION_SCRIPT_POPUP_IS_RUNNING" desc="The label in the extension info bubble that indicates the extension is running scripts on this page">

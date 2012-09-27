@@ -31,7 +31,6 @@ namespace extensions {
 class Extension;
 class LocationBarController;
 class ScriptBadgeController;
-class ScriptExecutor;
 
 // Per-tab extension helper. Also handles non-extension apps.
 class TabHelper : public content::WebContentsObserver,
@@ -50,7 +49,40 @@ class TabHelper : public content::WebContentsObserver,
     UPDATE_SHORTCUT   // Update icon for app shortcut.
   };
 
+  // Observer base class for classes listening for content script messages
+  // from the renderer.
+  class ContentScriptObserver {
+   public:
+    // Map of extensions IDs to the executing script paths.
+    typedef std::map<std::string, std::set<std::string> > ExecutingScriptsMap;
+
+    // Automatically observes and unobserves |tab_helper| on construction
+    // and destruction. |tab_helper| must outlive |this|.
+    explicit ContentScriptObserver(TabHelper* tab_helper);
+    ContentScriptObserver();
+
+    virtual void OnContentScriptsExecuting(
+        const content::WebContents* web_contents,
+        const ExecutingScriptsMap& executing_scripts_map,
+        int32 on_page_id,
+        const GURL& on_url) = 0;
+
+   protected:
+    virtual ~ContentScriptObserver();
+
+   private:
+    TabHelper* tab_helper_;
+  };
+
   virtual ~TabHelper();
+
+  void AddContentScriptObserver(ContentScriptObserver* observer) {
+    content_script_observers_.AddObserver(observer);
+  }
+
+  void RemoveContentScriptObserver(ContentScriptObserver* observer) {
+    content_script_observers_.RemoveObserver(observer);
+  }
 
   void CreateApplicationShortcuts();
   bool CanCreateApplicationShortcuts() const;
@@ -147,6 +179,10 @@ class TabHelper : public content::WebContentsObserver,
                             int return_route_id,
                             int callback_id);
   void OnRequest(const ExtensionHostMsg_Request_Params& params);
+  void OnContentScriptsExecuting(
+      const ContentScriptObserver::ExecutingScriptsMap& extension_ids,
+      int32 page_id,
+      const GURL& on_url);
 
   // App extensions related methods:
 
@@ -186,9 +222,9 @@ class TabHelper : public content::WebContentsObserver,
 
   // Data for app extensions ---------------------------------------------------
 
-  // Our observers. Declare at top so that it will outlive all other members,
-  // since they might add themselves as observers.
-  ObserverList<Observer> observers_;
+  // Our content script observers. Declare at top so that it will outlive all
+  // other members, since they might add themselves as observers.
+  ObserverList<ContentScriptObserver> content_script_observers_;
 
   // If non-null this tab is an app tab and this is the extension the tab was
   // created for.

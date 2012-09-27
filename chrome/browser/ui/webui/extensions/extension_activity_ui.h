@@ -22,9 +22,10 @@ class ExtensionActivityUI : public content::WebUIController,
   void HandleRequestExtensionData(const base::ListValue* args);
 
   // ActivityLog::Observer implementation.
-  virtual void OnExtensionActivity(const extensions::Extension* extension,
-                                   extensions::ActivityLog::Activity activity,
-                                   const std::string& msg) OVERRIDE;
+  virtual void OnExtensionActivity(
+      const extensions::Extension* extension,
+      extensions::ActivityLog::Activity activity,
+      const std::vector<std::string>& messages) OVERRIDE;
 
  private:
   const extensions::Extension* extension_;

@@ -25,6 +25,7 @@ cr.define('extension_activity', function() {
   function handleExtensionActivity(result) {
     var template = $('template-collection');
 
+    // Clone the activity item template.
     var item =
         template.querySelector('.extension-activity-item').cloneNode(true);
     item.querySelector('.extension-activity-time').textContent =
@@ -32,8 +33,15 @@ cr.define('extension_activity', function() {
     item.querySelector('.extension-activity-label').textContent =
         template.querySelector('.extension-activity-label-' + result.activity)
             .textContent;
-    item.querySelector('.extension-activity-message').textContent =
-        result.message;
+
+    // Clone the message node and then delete the empty template.
+    var msgNode = item.querySelector('.extension-activity-message');
+    for (var i = 0; i < result.messages.length; ++i) {
+      var newNode = msgNode.cloneNode(true);
+      newNode.textContent = result.messages[i];
+      item.appendChild(newNode);
+    }
+    item.removeChild(msgNode);
 
     $('extension-activity-list').appendChild(item);
   }

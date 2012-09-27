@@ -33,6 +33,8 @@ ExtensionActivityUI::ExtensionActivityUI(content::WebUI* web_ui)
                              IDS_EXTENSION_ACTIVITY_API_CALL);
   source->AddLocalizedString("extensionActivityApiBlock",
                              IDS_EXTENSION_ACTIVITY_API_BLOCK);
+  source->AddLocalizedString("extensionActivityContentScript",
+                             IDS_EXTENSION_ACTIVITY_CONTENT_SCRIPT);
   source->set_use_json_js_format_v2();
   source->set_json_path("strings.js");
 
@@ -94,10 +96,14 @@ void ExtensionActivityUI::HandleRequestExtensionData(
 void ExtensionActivityUI::OnExtensionActivity(
       const extensions::Extension* extension,
       extensions::ActivityLog::Activity activity,
-      const std::string& msg) {
+      const std::vector<std::string>& messages) {
+  scoped_ptr<ListValue> messages_list(new ListValue());
+  messages_list->AppendStrings(messages);
+
   DictionaryValue result;
   result.SetInteger("activity", activity);
-  result.SetString("message", msg);
+  result.Set("messages", messages_list.release());
+
   web_ui()->CallJavascriptFunction("extension_activity.handleExtensionActivity",
                                    result);
 }

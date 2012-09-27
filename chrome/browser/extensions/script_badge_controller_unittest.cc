@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tab_contents/test_tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_builder.h"
@@ -41,6 +42,16 @@ class ScriptBadgeControllerTest : public TabContentsTestHarness {
         file_thread_(BrowserThread::FILE, MessageLoop::current()),
         current_channel_(chrome::VersionInfo::CHANNEL_DEV) {}
 
+  static void SetUpTestCase() {
+    old_command_line_ = *CommandLine::ForCurrentProcess();
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnableScriptBadges);
+  }
+
+  static void TearDownTestCase() {
+    *CommandLine::ForCurrentProcess() = old_command_line_;
+  }
+
   virtual void SetUp() OVERRIDE {
     // Note that this sets a PageActionController into the
     // extensions::TabHelper's location_bar_controller field.  Do
@@ -57,9 +68,9 @@ class ScriptBadgeControllerTest : public TabContentsTestHarness {
     extension_service_ = extension_system->CreateExtensionService(
         &command_line, FilePath(), false);
 
-    script_executor_.reset(new ScriptExecutor(web_contents()));
-    script_badge_controller_.reset(new ScriptBadgeController(
-        web_contents(), script_executor_.get()));
+    TabHelper::CreateForWebContents(web_contents());
+    script_badge_controller_ = static_cast<ScriptBadgeController*>(
+        TabHelper::FromWebContents(web_contents())->location_bar_controller());
   }
 
  protected:
@@ -80,14 +91,17 @@ class ScriptBadgeControllerTest : public TabContentsTestHarness {
   }
 
   ExtensionService* extension_service_;
-  scoped_ptr<ScriptExecutor> script_executor_;
-  scoped_ptr<ScriptBadgeController> script_badge_controller_;
+  ScriptBadgeController* script_badge_controller_;
 
  private:
+  static CommandLine old_command_line_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
   Feature::ScopedCurrentChannel current_channel_;
 };
+
+CommandLine ScriptBadgeControllerTest::old_command_line_(
+    CommandLine::NO_PROGRAM);
 
 struct CountingNotificationObserver : public content::NotificationObserver {
   CountingNotificationObserver() : events(0) {}

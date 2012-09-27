@@ -11,6 +11,7 @@ body {
 }
 
 .extension-activity-time,
-.extension-activity-label {
+.extension-activity-label,
+.extension-activity-message {
   -webkit-padding-end: 10px;
 }

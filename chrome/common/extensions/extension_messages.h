@@ -115,6 +115,9 @@ IPC_STRUCT_TRAITS_END()
 // Substitution map for l10n messages.
 typedef std::map<std::string, std::string> SubstitutionMap;
 
+// Map of extensions IDs to the executing script paths.
+typedef std::map<std::string, std::set<std::string> > ExecutingScriptsMap;
+
 struct ExtensionMsg_Loaded_Params {
   ExtensionMsg_Loaded_Params();
   ~ExtensionMsg_Loaded_Params();
@@ -499,7 +502,7 @@ IPC_MESSAGE_ROUTED5(ExtensionHostMsg_ExecuteCodeFinished,
 // frame (e.g. if executing in an iframe this is the page ID of the parent,
 // unless the parent is an iframe... etc).
 IPC_MESSAGE_ROUTED3(ExtensionHostMsg_ContentScriptsExecuting,
-                    std::set<std::string> /* extensions that have scripts */,
+                    ExecutingScriptsMap,
                     int32 /* page_id of the _topmost_ frame */,
                     GURL /* url of the _topmost_ frame */)
 

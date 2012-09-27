@@ -262,7 +262,7 @@ void UserScriptSlave::InjectScripts(WebFrame* frame,
   int num_css = 0;
   int num_scripts = 0;
 
-  std::set<std::string> extensions_executing_scripts;
+  ExecutingScriptsMap extensions_executing_scripts;
 
   for (size_t i = 0; i < scripts_.size(); ++i) {
     std::vector<WebScriptSource> sources;
@@ -332,7 +332,11 @@ void UserScriptSlave::InjectScripts(WebFrame* frame,
           EXTENSION_GROUP_CONTENT_SCRIPTS);
       UMA_HISTOGRAM_TIMES("Extensions.InjectScriptTime", exec_timer.Elapsed());
 
-      extensions_executing_scripts.insert(extension->id());
+      for (std::vector<WebScriptSource>::const_iterator iter = sources.begin();
+           iter != sources.end(); ++iter) {
+        extensions_executing_scripts[extension->id()].insert(
+            GURL(iter->url).path());
+      }
     }
   }
 

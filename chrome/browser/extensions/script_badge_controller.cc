@@ -30,8 +30,10 @@
 namespace extensions {
 
 ScriptBadgeController::ScriptBadgeController(content::WebContents* web_contents,
-                                             ScriptExecutor* script_executor)
+                                             ScriptExecutor* script_executor,
+                                             TabHelper* tab_helper)
     : ScriptExecutor::Observer(script_executor),
+      TabHelper::ContentScriptObserver(tab_helper),
       content::WebContentsObserver(web_contents) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
@@ -136,6 +138,48 @@ void ScriptBadgeController::OnExecuteScriptFinished(
   }
 }
 
+namespace {
+std::string JoinExtensionIDs(const ExecutingScriptsMap& ids) {
+  std::vector<std::string> as_vector;
+  for (ExecutingScriptsMap::const_iterator iter = ids.begin();
+       iter != ids.end(); ++iter) {
+    as_vector.push_back(iter->first);
+  }
+  return "[" + JoinString(as_vector, ',') + "]";
+}
+}  // namespace
+
+void ScriptBadgeController::OnContentScriptsExecuting(
+    const content::WebContents* web_contents,
+    const ExecutingScriptsMap& extension_ids,
+    int32 on_page_id,
+    const GURL& on_url) {
+  int32 current_page_id = GetPageID();
+  if (on_page_id != current_page_id)
+    return;
+
+  if (current_page_id < 0) {
+    // Tracking down http://crbug.com/138323.
+    std::string message = base::StringPrintf(
+        "Expected a page ID of %d but there was no navigation entry. "
+        "Extension IDs are %s.",
+        on_page_id,
+        JoinExtensionIDs(extension_ids).c_str());
+    char buf[1024];
+    base::snprintf(buf, arraysize(buf), "%s", message.c_str());
+    LOG(ERROR) << message;
+    return;
+  }
+
+  bool changed = false;
+  for (ExecutingScriptsMap::const_iterator it = extension_ids.begin();
+       it != extension_ids.end(); ++it) {
+    changed |= MarkExtensionExecuting(it->first);
+  }
+  if (changed)
+    NotifyChange();
+}
+
 ExtensionService* ScriptBadgeController::GetExtensionService() {
   TabContents* tab_contents = TabContents::FromWebContents(web_contents());
   return extensions::ExtensionSystem::Get(
@@ -173,53 +217,6 @@ void ScriptBadgeController::Observe(
   const Extension* extension =
       content::Details<UnloadedExtensionInfo>(details)->extension;
   if (EraseExtension(extension))
-    NotifyChange();
-}
-
-bool ScriptBadgeController::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(ScriptBadgeController, message)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_ContentScriptsExecuting,
-                        OnContentScriptsExecuting)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
-namespace {
-std::string JoinExtensionIDs(const std::set<std::string>& ids) {
-  std::vector<std::string> as_vector(ids.begin(), ids.end());
-  return "[" + JoinString(as_vector, ',') + "]";
-}
-}  // namespace
-
-void ScriptBadgeController::OnContentScriptsExecuting(
-    const std::set<std::string>& extension_ids,
-    int32 on_page_id,
-    const GURL& on_url) {
-  int32 current_page_id = GetPageID();
-  if (on_page_id != current_page_id)
-    return;
-
-  if (current_page_id < 0) {
-    // Tracking down http://crbug.com/138323.
-    std::string message = base::StringPrintf(
-        "Expected a page ID of %d but there was no navigation entry. "
-        "Extension IDs are %s.",
-        on_page_id,
-        JoinExtensionIDs(extension_ids).c_str());
-    char buf[1024];
-    base::snprintf(buf, arraysize(buf), "%s", message.c_str());
-    LOG(ERROR) << message;
-    return;
-  }
-
-  bool changed = false;
-  for (std::set<std::string>::const_iterator it = extension_ids.begin();
-       it != extension_ids.end(); ++it) {
-    changed |= MarkExtensionExecuting(*it);
-  }
-  if (changed)
     NotifyChange();
 }
 
