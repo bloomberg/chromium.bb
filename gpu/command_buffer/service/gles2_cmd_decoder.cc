@@ -3285,7 +3285,6 @@ error::Error GLES2DecoderImpl::DoCommand(
     unsigned int arg_count,
     const void* cmd_data) {
   error::Error result = error::kNoError;
-  base::TimeTicks begin_time(base::TimeTicks::HighResNow());
   if (log_commands()) {
     // TODO(notme): Change this to a LOG/VLOG that works in release. Tried
     // LOG(INFO), tried VLOG(1), no luck.
@@ -3330,8 +3329,6 @@ error::Error GLES2DecoderImpl::DoCommand(
       result = current_decoder_error_;
       current_decoder_error_ = error::kNoError;
   }
-  total_processing_commands_time_ +=
-      base::TimeTicks::HighResNow() - begin_time;
   return result;
 }
 
