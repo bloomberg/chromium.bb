@@ -75,6 +75,13 @@ class SafeBrowsingURLRequestContext;
 
 namespace {
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+void ObserveKeychainEvents() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  net::CertDatabase::GetInstance()->SetMessageLoopForKeychainEvents();
+}
+#endif
+
 // Custom URLRequestContext used by requests which aren't associated with a
 // particular profile. We need to use a subclass of URLRequestContext in order
 // to provide the correct User-Agent.
@@ -525,6 +532,14 @@ void IOThread::Init() {
       ConstructProxyScriptFetcherContext(globals_, net_log_));
 
   sdch_manager_ = new net::SdchManager();
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  // Start observing Keychain events. This needs to be done on the UI thread,
+  // as Keychain services requires a CFRunLoop.
+  BrowserThread::PostTask(BrowserThread::UI,
+                          FROM_HERE,
+                          base::Bind(&ObserveKeychainEvents));
+#endif
 
   // InitSystemRequestContext turns right around and posts a task back
   // to the IO thread, so we can't let it run until we know the IO
