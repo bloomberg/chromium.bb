@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
+#include <stdbool.h>
 #include <linux/input.h>
 
 #include "filter.h"
@@ -33,6 +34,9 @@
 #define DEFAULT_MIN_ACCEL_FACTOR 0.16
 #define DEFAULT_MAX_ACCEL_FACTOR 1.0
 #define DEFAULT_HYSTERESIS_MARGIN_DENOMINATOR 700.0
+
+#define DEFAULT_TOUCHPAD_SINGLE_TAP_BUTTON BTN_LEFT
+#define DEFAULT_TOUCHPAD_SINGLE_TAP_TIMEOUT 100
 
 enum touchpad_model {
 	TOUCHPAD_MODEL_UNKNOWN = 0,
@@ -83,6 +87,21 @@ enum touchpad_fingers_state {
 	TOUCHPAD_FINGERS_THREE = (1 << 2)
 };
 
+enum fsm_event {
+	FSM_EVENT_TOUCH,
+	FSM_EVENT_RELEASE,
+	FSM_EVENT_MOTION,
+	FSM_EVENT_TIMEOUT
+};
+
+enum fsm_state {
+	FSM_IDLE,
+	FSM_TOUCH,
+	FSM_TAP,
+	FSM_TAP_2,
+	FSM_DRAG
+};
+
 struct touchpad_dispatch {
 	struct evdev_dispatch base;
 	struct evdev_device *device;
@@ -100,6 +119,12 @@ struct touchpad_dispatch {
 	unsigned int event_mask_filter;
 
 	int reset;
+
+	struct {
+		struct wl_array events;
+		enum fsm_state state;
+		struct wl_event_source *timer_source;
+	} fsm;
 
 	struct {
 		int32_t x;
@@ -246,6 +271,147 @@ filter_motion(struct touchpad_dispatch *touchpad,
 }
 
 static void
+notify_button_pressed(struct touchpad_dispatch *touchpad, uint32_t time)
+{
+	notify_button(touchpad->device->seat, time,
+		      DEFAULT_TOUCHPAD_SINGLE_TAP_BUTTON,
+		      WL_POINTER_BUTTON_STATE_PRESSED);
+}
+
+static void
+notify_button_released(struct touchpad_dispatch *touchpad, uint32_t time)
+{
+	notify_button(touchpad->device->seat, time,
+		      DEFAULT_TOUCHPAD_SINGLE_TAP_BUTTON,
+		      WL_POINTER_BUTTON_STATE_RELEASED);
+}
+
+static void
+notify_tap(struct touchpad_dispatch *touchpad, uint32_t time)
+{
+	notify_button_pressed(touchpad, time);
+	notify_button_released(touchpad, time);
+}
+
+static void
+process_fsm_events(struct touchpad_dispatch *touchpad, uint32_t time)
+{
+	uint32_t timeout = UINT32_MAX;
+	enum fsm_event *pevent;
+	enum fsm_event event;
+
+	if (touchpad->fsm.events.size == 0)
+		return;
+
+	wl_array_for_each(pevent, &touchpad->fsm.events) {
+		event = *pevent;
+		timeout = 0;
+
+		switch (touchpad->fsm.state) {
+		case FSM_IDLE:
+			switch (event) {
+			case FSM_EVENT_TOUCH:
+				touchpad->fsm.state = FSM_TOUCH;
+				break;
+			default:
+				break;
+			}
+			break;
+		case FSM_TOUCH:
+			switch (event) {
+			case FSM_EVENT_RELEASE:
+				timeout = DEFAULT_TOUCHPAD_SINGLE_TAP_TIMEOUT;
+				touchpad->fsm.state = FSM_TAP;
+				break;
+			default:
+				touchpad->fsm.state = FSM_IDLE;
+				break;
+			}
+			break;
+		case FSM_TAP:
+			switch (event) {
+			case FSM_EVENT_TIMEOUT:
+				notify_tap(touchpad, time);
+				touchpad->fsm.state = FSM_IDLE;
+				break;
+			case FSM_EVENT_TOUCH:
+				notify_button_pressed(touchpad, time);
+				touchpad->fsm.state = FSM_TAP_2;
+				break;
+			default:
+				touchpad->fsm.state = FSM_IDLE;
+				break;
+			}
+			break;
+		case FSM_TAP_2:
+			switch (event) {
+			case FSM_EVENT_MOTION:
+				touchpad->fsm.state = FSM_DRAG;
+				break;
+			case FSM_EVENT_RELEASE:
+				notify_button_released(touchpad, time);
+				notify_tap(touchpad, time);
+				touchpad->fsm.state = FSM_IDLE;
+				break;
+			default:
+				touchpad->fsm.state = FSM_IDLE;
+				break;
+			}
+			break;
+		case FSM_DRAG:
+			switch (event) {
+			case FSM_EVENT_RELEASE:
+				notify_button_released(touchpad, time);
+				touchpad->fsm.state = FSM_IDLE;
+				break;
+			default:
+				touchpad->fsm.state = FSM_IDLE;
+				break;
+			}
+			break;
+		default:
+			weston_log("evdev-touchpad: Unknown state %d",
+				   touchpad->fsm.state);
+			touchpad->fsm.state = FSM_IDLE;
+			break;
+		}
+	}
+
+	if (timeout != UINT32_MAX)
+		wl_event_source_timer_update(touchpad->fsm.timer_source,
+					     timeout);
+
+	wl_array_release(&touchpad->fsm.events);
+	wl_array_init(&touchpad->fsm.events);
+}
+
+static void
+push_fsm_event(struct touchpad_dispatch *touchpad,
+	       enum fsm_event event)
+{
+	enum fsm_event *pevent;
+
+	pevent = wl_array_add(&touchpad->fsm.events, sizeof event);
+	if (pevent)
+		*pevent = event;
+	else
+		touchpad->fsm.state = FSM_IDLE;
+}
+
+static int
+fsm_timout_handler(void *data)
+{
+	struct touchpad_dispatch *touchpad = data;
+
+	if (touchpad->fsm.events.size == 0) {
+		push_fsm_event(touchpad, FSM_EVENT_TIMEOUT);
+		process_fsm_events(touchpad, weston_compositor_get_time());
+	}
+
+	return 1;
+}
+
+static void
 touchpad_update_state(struct touchpad_dispatch *touchpad, uint32_t time)
 {
 	int motion_index;
@@ -261,6 +427,8 @@ touchpad_update_state(struct touchpad_dispatch *touchpad, uint32_t time)
 			TOUCHPAD_EVENT_ABSOLUTE_X | TOUCHPAD_EVENT_ABSOLUTE_Y;
 
 		touchpad->last_finger_state = touchpad->finger_state;
+
+		process_fsm_events(touchpad, time);
 
 		return;
 	}
@@ -317,13 +485,18 @@ touchpad_update_state(struct touchpad_dispatch *touchpad, uint32_t time)
 	if (!(touchpad->state & TOUCHPAD_STATE_MOVE) &&
 	    ((int)dx || (int)dy)) {
 		touchpad->state |= TOUCHPAD_STATE_MOVE;
+		push_fsm_event(touchpad, FSM_EVENT_MOTION);
 	}
+
+	process_fsm_events(touchpad, time);
 }
 
 static void
 on_touch(struct touchpad_dispatch *touchpad)
 {
 	touchpad->state |= TOUCHPAD_STATE_TOUCH;
+
+	push_fsm_event(touchpad, FSM_EVENT_TOUCH);
 }
 
 static void
@@ -332,6 +505,8 @@ on_release(struct touchpad_dispatch *touchpad)
 
 	touchpad->reset = 1;
 	touchpad->state &= ~(TOUCHPAD_STATE_MOVE | TOUCHPAD_STATE_TOUCH);
+
+	push_fsm_event(touchpad, FSM_EVENT_RELEASE);
 }
 
 static inline void
@@ -453,6 +628,7 @@ touchpad_destroy(struct evdev_dispatch *dispatch)
 		(struct touchpad_dispatch *) dispatch;
 
 	touchpad->filter->interface->destroy(touchpad->filter);
+	wl_event_source_remove(touchpad->fsm.timer_source);
 	free(dispatch);
 }
 
@@ -466,6 +642,7 @@ touchpad_init(struct touchpad_dispatch *touchpad,
 	      struct evdev_device *device)
 {
 	struct weston_motion_filter *accel;
+	struct wl_event_loop *loop;
 
 	struct input_absinfo absinfo;
 	unsigned long abs_bits[NBITS(ABS_MAX)];
@@ -523,6 +700,17 @@ touchpad_init(struct touchpad_dispatch *touchpad,
 	touchpad->state = TOUCHPAD_STATE_NONE;
 	touchpad->last_finger_state = 0;
 	touchpad->finger_state = 0;
+
+	wl_array_init(&touchpad->fsm.events);
+	touchpad->fsm.state = FSM_IDLE;
+
+	loop = wl_display_get_event_loop(device->seat->compositor->wl_display);
+	touchpad->fsm.timer_source =
+		wl_event_loop_add_timer(loop, fsm_timout_handler, touchpad);
+	if (touchpad->fsm.timer_source == NULL) {
+		accel->interface->destroy(accel);
+		return -1;
+	}
 
 	return 0;
 }
