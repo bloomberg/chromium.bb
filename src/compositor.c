@@ -2737,6 +2737,7 @@ weston_compositor_init(struct weston_compositor *ec,
 	ec->wl_display = display;
 	wl_signal_init(&ec->destroy_signal);
 	wl_signal_init(&ec->activate_signal);
+	wl_signal_init(&ec->kill_signal);
 	wl_signal_init(&ec->lock_signal);
 	wl_signal_init(&ec->unlock_signal);
 	wl_signal_init(&ec->show_input_panel_signal);

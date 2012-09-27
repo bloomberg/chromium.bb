@@ -294,6 +294,7 @@ struct weston_compositor {
 	struct weston_shell_interface shell_interface;
 
 	struct wl_signal activate_signal;
+	struct wl_signal kill_signal;
 	struct wl_signal lock_signal;
 	struct wl_signal unlock_signal;
 

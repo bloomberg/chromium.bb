@@ -3505,11 +3505,15 @@ force_kill_binding(struct wl_seat *seat, uint32_t time, uint32_t key,
 {
 	struct wl_surface *focus_surface;
 	struct wl_client *client;
+	struct desktop_shell *shell = data;
+	struct weston_compositor *compositor = shell->compositor;
 	pid_t pid;
 
 	focus_surface = seat->keyboard->focus;
 	if (!focus_surface)
 		return;
+
+	wl_signal_emit(&compositor->kill_signal, focus_surface);
 
 	client = focus_surface->resource.client;
 	wl_client_get_credentials(client, &pid, NULL, NULL);
