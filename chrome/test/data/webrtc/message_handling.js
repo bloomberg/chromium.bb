@@ -138,32 +138,38 @@ function isCallActive() {
 }
 
 /**
- * Toggles the remote streams' enabled state on the peer connection, given that
- * a call is active. Returns ok-toggled-to-[true/false] on success.
+ * Toggles the remote audio stream's enabled state on the peer connection, given
+ * that a call is active. Returns ok-[typeToToggle]-toggled-to-[true/false]
+ * on success.
+ *
+ * @param selectAudioOrVideoTrack: A function that takes a remote stream as
+ *     argument and returns a track (e.g. either the video or audio track).
+ * @param typeToToggle: Either "audio" or "video" depending on what the selector
+ *     function selects.
  */
-function toggleRemoteStream() {
+function toggleRemoteStream(selectAudioOrVideoTrack, typeToToggle) {
   if (gPeerConnection == null)
     failTest('Tried to toggle remote stream, but no call is up.');
   if (gPeerConnection.remoteStreams.length == 0)
     failTest('Tried to toggle remote stream, but not receiving any stream.');
 
-  var enabled = toggle_(gPeerConnection.remoteStreams[0]);
-  returnToTest('ok-toggled-to-' + enabled);
+  var track = selectAudioOrVideoTrack(gPeerConnection.remoteStreams[0]);
+  toggle_(track, 'remote', typeToToggle);
 }
 
 /**
- * Toggles the local streams' enabled state on the peer connection, given that
- * a call is active. Returns ok-toggled-to-[true/false] on success.
+ * See documentation on toggleRemoteStream (this function is the same except
+ * we are looking at local streams).
  */
-function toggleLocalStream() {
+function toggleLocalStream(selectAudioOrVideoTrack, typeToToggle) {
   if (gPeerConnection == null)
     failTest('Tried to toggle local stream, but no call is up.');
   if (gPeerConnection.localStreams.length == 0)
     failTest('Tried to toggle local stream, but there is no local' +
-        ' stream in the call (must send local stream first).');
+             ' stream in the call (must send local stream first).');
 
-  var enabled = toggle_(gPeerConnection.localStreams[0]);
-  returnToTest('ok-toggled-to-' + enabled);
+  var track = selectAudioOrVideoTrack(gPeerConnection.localStreams[0]);
+  toggle_(track, 'local', typeToToggle);
 }
 
 /**
@@ -225,11 +231,13 @@ function isDisconnected() {
 // Internals.
 
 /** @private */
-function toggle_(stream) {
-  stream.videoTracks[0].enabled = !stream.videoTracks[0].enabled;
-  stream.audioTracks[0].enabled = !stream.audioTracks[0].enabled;
+function toggle_(track, localOrRemote, audioOrVideo) {
+  if (!track)
+    failTest('Tried to toggle ' + localOrRemote + ' ' + audioOrVideo +
+             ' stream, but has no such stream.');
 
-  return stream.videoTracks[0].enabled;
+  track.enabled = !track.enabled;
+  returnToTest('ok-' + audioOrVideo + '-toggled-to-' + track.enabled);
 }
 
 /** @private */
