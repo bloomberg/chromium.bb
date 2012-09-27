@@ -16,6 +16,10 @@ namespace {
 
 static const char kPPPPrintingInterface[] = PPP_PRINTING_DEV_INTERFACE;
 
+template <> const char* interface_name<PPB_Printing_Dev_0_7>() {
+  return PPB_PRINTING_DEV_INTERFACE_0_7;
+}
+
 template <> const char* interface_name<PPB_Printing_Dev_0_6>() {
   return PPB_PRINTING_DEV_INTERFACE_0_6;
 }
@@ -76,9 +80,14 @@ const PPP_Printing_Dev ppp_printing = {
 }  // namespace
 
 Printing_Dev::Printing_Dev(Instance* instance)
-      : associated_instance_(instance) {
+    : associated_instance_(instance) {
   Module::Get()->AddPluginInterface(kPPPPrintingInterface, &ppp_printing);
-  instance->AddPerInstanceObject(kPPPPrintingInterface, this);
+  instance->AddPerInstanceObject(
+      kPPPPrintingInterface, this);
+  if (has_interface<PPB_Printing_Dev_0_7>()) {
+    PassRefFromConstructor(get_interface<PPB_Printing_Dev_0_7>()->Create(
+        associated_instance_.pp_instance()));
+  }
 }
 
 Printing_Dev::~Printing_Dev() {
@@ -88,16 +97,23 @@ Printing_Dev::~Printing_Dev() {
 
 // static
 bool Printing_Dev::IsAvailable() {
-  return has_interface<PPB_Printing_Dev_0_6>();
+  return has_interface<PPB_Printing_Dev_0_7>() ||
+      has_interface<PPB_Printing_Dev_0_6>();
+
 }
 
-bool Printing_Dev::GetDefaultPrintSettings(
-    PP_PrintSettings_Dev* print_settings) const {
-  if (!has_interface<PPB_Printing_Dev_0_6>())
-    return false;
-  return PP_ToBool(
-      get_interface<PPB_Printing_Dev_0_6>()->GetDefaultPrintSettings(
-          associated_instance_.pp_instance(), print_settings));
+void Printing_Dev::GetDefaultPrintSettings(
+    const CompletionCallbackWithOutput<PP_PrintSettings_Dev>& callback) const {
+  if (has_interface<PPB_Printing_Dev_0_7>()) {
+    get_interface<PPB_Printing_Dev_0_7>()->GetDefaultPrintSettings(
+        pp_resource(), callback.output(), callback.pp_completion_callback());
+  } else if (has_interface<PPB_Printing_Dev_0_6>()) {
+    bool success = PP_ToBool(get_interface<PPB_Printing_Dev_0_6>()->
+        GetDefaultPrintSettings(associated_instance_.pp_instance(),
+                                callback.output()));
+    Module::Get()->core()->CallOnMainThread(0, callback,
+                                            success ? PP_OK : PP_ERROR_FAILED);
+  }
 }
 
 }  // namespace pp

@@ -34,7 +34,7 @@ int32_t PrintingResource::GetDefaultPrintSettings(
   if (TrackedCallback::IsPending(callback_))
     return PP_ERROR_INPROGRESS;
 
-  if (!sent_create_to_renderer())
+  if (!sent_create_to_browser())
     SendCreateToBrowser(PpapiHostMsg_Printing_Create());
 
   DCHECK(!print_settings_);

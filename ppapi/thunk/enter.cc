@@ -62,7 +62,8 @@ EnterBase::~EnterBase() {
   // callback_ is cleared any time it is run, scheduled to be run, or once we
   // know it will be completed asynchronously. So by this point it should be
   // NULL.
-  DCHECK(!callback_);
+  DCHECK(!callback_) << "|callback_| is not NULL. Did you forget to call "
+      "|EnterBase::SetResult| in the interface's thunk?";
 }
 
 int32_t EnterBase::SetResult(int32_t result) {

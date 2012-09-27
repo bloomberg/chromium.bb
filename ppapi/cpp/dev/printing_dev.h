@@ -6,6 +6,7 @@
 #define PPAPI_CPP_DEV_PRINTING_DEV_H_
 
 #include "ppapi/c/dev/ppp_printing_dev.h"
+#include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/resource.h"
 
@@ -15,7 +16,7 @@ class Instance;
 
 // You would typically use this either via inheritance on your instance or
 // by composition: see find_dev.h for an example.
-class Printing_Dev {
+class Printing_Dev : public Resource {
  public:
   // The instance parameter must outlive this class.
   explicit Printing_Dev(Instance* instance);
@@ -35,9 +36,11 @@ class Printing_Dev {
   // interface.
   static bool IsAvailable();
 
-  // Outputs the default print settings for the default printer into
-  // |print_settings|. Returns false on error.
-  bool GetDefaultPrintSettings(PP_PrintSettings_Dev* print_settings) const;
+  // Get the default print settings and store them in the output of |callback|.
+  // This method always runs asynchronously and the callback will always be
+  // triggered.
+  void GetDefaultPrintSettings(
+      const CompletionCallbackWithOutput<PP_PrintSettings_Dev>& callback) const;
 
  private:
   InstanceHandle associated_instance_;

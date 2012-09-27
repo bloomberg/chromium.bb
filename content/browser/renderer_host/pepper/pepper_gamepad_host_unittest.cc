@@ -135,7 +135,7 @@ TEST_F(PepperGamepadHostTest, WaitForReply) {
 
   PP_Instance pp_instance = 12345;
   PP_Resource pp_resource = 67890;
-  PepperGamepadHost gamepad_host(gamepad_service(), GetPpapiHost(),
+  PepperGamepadHost gamepad_host(gamepad_service(), GetBrowserPpapiHost(),
                                  pp_instance, pp_resource);
 
   // Synthesize a request for gamepad data.

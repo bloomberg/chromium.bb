@@ -6,6 +6,8 @@
 
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
 #include "content/browser/renderer_host/pepper/pepper_gamepad_host.h"
+#include "content/browser/renderer_host/pepper/pepper_print_settings_manager.h"
+#include "content/browser/renderer_host/pepper/pepper_printing_host.h"
 #include "ppapi/host/resource_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
 
@@ -37,6 +39,13 @@ scoped_ptr<ResourceHost> ContentBrowserPepperHostFactory::CreateResourceHost(
     case PpapiHostMsg_Gamepad_Create::ID:
       return scoped_ptr<ResourceHost>(new PepperGamepadHost(
           host_, instance, params.pp_resource()));
+    case PpapiHostMsg_Printing_Create::ID: {
+       scoped_ptr<PepperPrintSettingsManager> manager(
+           new PepperPrintSettingsManagerImpl());
+       return scoped_ptr<ResourceHost>(new PepperPrintingHost(
+           host_->GetPpapiHost(), instance,
+           params.pp_resource(), manager.Pass()));
+    }
   }
   return scoped_ptr<ResourceHost>();
 }

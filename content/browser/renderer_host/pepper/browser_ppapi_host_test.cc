@@ -20,7 +20,7 @@ BrowserPpapiHostTest::BrowserPpapiHostTest()
 BrowserPpapiHostTest::~BrowserPpapiHostTest() {
 }
 
-BrowserPpapiHost* BrowserPpapiHostTest::GetPpapiHost() {
+BrowserPpapiHost* BrowserPpapiHostTest::GetBrowserPpapiHost() {
   return ppapi_host_;
 }
 

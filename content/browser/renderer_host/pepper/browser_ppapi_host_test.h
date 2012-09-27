@@ -22,7 +22,7 @@ class BrowserPpapiHostTest {
   virtual ~BrowserPpapiHostTest();
 
   ppapi::proxy::ResourceMessageTestSink& sink() { return sink_; }
-  BrowserPpapiHost* GetPpapiHost();
+  BrowserPpapiHost* GetBrowserPpapiHost();
 
  private:
   ppapi::proxy::ResourceMessageTestSink sink_;

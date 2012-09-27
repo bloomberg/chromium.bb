@@ -379,6 +379,8 @@
       'tests/test_paint_aggregator.h',
       'tests/test_post_message.cc',
       'tests/test_post_message.h',
+      'tests/test_printing.cc',
+      'tests/test_printing.h',
       'tests/test_scrollbar.cc',
       'tests/test_scrollbar.h',
       'tests/test_tcp_server_socket_private.cc',
