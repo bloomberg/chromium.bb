@@ -987,7 +987,10 @@
 
     <event name="axis">
       <description summary="axis event">
-	Scroll and other axis notifications.
+	Scroll and other axis notifications.  The value parameter
+	is the length of a vector along an axis in a coordinate space
+	identical to those of motion events, representing the relative
+	movement along an axis.
       </description>
 
       <arg name="time" type="uint"/>
