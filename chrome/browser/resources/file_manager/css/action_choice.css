@@ -2,6 +2,11 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
+input:focus,
+button:focus {
+  outline-color: rgb(77, 144, 254);
+}
+
 .action-choice {
   -webkit-box-align: center;
   -webkit-box-orient: vertical;
