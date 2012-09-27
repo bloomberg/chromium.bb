@@ -1981,6 +1981,15 @@ FileManager.prototype = {
    * TODO(olege): I believe we need a separate PreviewPanel controller class.
    */
   FileManager.prototype.summarizeSelection_ = function() {
+    if (this.selectionUpdateTimer_) {
+      clearTimeout(this.selectionUpdateTimer_);
+      this.selectionUpdateTimer_ = null;
+      // The selection is changing quicker than we can update the UI.
+      // Clear the preview thumbnails and hide the action picker.
+      removeChildren(this.previewThumbnails_);
+      this.taskItems_.hidden = true;
+    }
+
     var selection = this.selection = {
       entries: [],
       urls: [],
@@ -2001,6 +2010,56 @@ FileManager.prototype = {
     }
 
     this.previewSummary_.textContent = str('COMPUTING_SELECTION');
+
+    // Synchronously compute what we can.
+    for (var i = 0; i < selection.indexes.length; i++) {
+      var entry = this.directoryModel_.getFileList().item(selection.indexes[i]);
+      if (!entry)
+        continue;
+
+      selection.entries.push(entry);
+      selection.urls.push(entry.toURL());
+
+      if (selection.iconType == null) {
+        selection.iconType = FileType.getIcon(entry);
+      } else if (selection.iconType != 'unknown') {
+        var iconType = FileType.getIcon(entry);
+        if (selection.iconType != iconType)
+          selection.iconType = 'unknown';
+      }
+
+      if (entry.isFile) {
+        selection.fileCount += 1;
+        selection.showBytes |= !FileType.isHosted(entry);
+      } else {
+        selection.directoryCount += 1;
+      }
+      selection.totalCount++;
+    }
+
+    // The rest of the selection properties are computed via (sometimes lengthy)
+    // asynchronous calls. We initiate these calls after a timeout. If the
+    // selection is changing quickly we only do this once when it slows down.
+    this.selectionUpdateTimer_ = setTimeout(function() {
+      this.selectionUpdateTimer_ = null;
+      this.updateUIForSelection(selection);
+    }.bind(this), 200);
+  };
+
+  FileManager.prototype.updateUIForSelection = function(selection) {
+    // Update the UI.
+    this.updatePreviewPanelVisibility_();
+    this.updateSearchBreadcrumbs_();
+    this.updateContextMenuActionItems(null, false);
+
+    var commands = this.dialogDom_.querySelectorAll('command');
+    for (var i = 0; i < commands.length; i++)
+      commands[i].canExecuteChange();
+
+    // Inform tests it's OK to click buttons now.
+    chrome.test.sendMessage('selection-change-complete');
+
+    // Create thumbnails.
     var thumbnails = [];
 
     var pendingFiles = [];
@@ -2040,13 +2099,8 @@ FileManager.prototype = {
         selection.tasks.executeDefault();
     }
 
-    for (var i = 0; i < selection.indexes.length; i++) {
-      var entry = this.directoryModel_.getFileList().item(selection.indexes[i]);
-      if (!entry)
-        continue;
-
-      selection.entries.push(entry);
-      selection.urls.push(entry.toURL());
+    for (var i = 0; i < selection.entries.length; i++) {
+      var entry = selection.entries[i];
 
       if (thumbnailCount < MAX_PREVIEW_THUMBNAIL_COUNT) {
         var box = this.document_.createElement('div');
@@ -2076,32 +2130,11 @@ FileManager.prototype = {
 
         thumbnails.push(box);
       }
-
-      if (selection.iconType == null) {
-        selection.iconType = FileType.getIcon(entry);
-      } else if (selection.iconType != 'unknown') {
-        var iconType = FileType.getIcon(entry);
-        if (selection.iconType != iconType)
-          selection.iconType = 'unknown';
-      }
-
-      if (entry.isFile) {
-        selection.fileCount += 1;
-        selection.showBytes |= !FileType.isHosted(entry);
-      } else {
-        selection.directoryCount += 1;
-      }
-      selection.totalCount++;
     }
 
-    // Now this.selection is complete. Update buttons.
-    this.updatePreviewPanelVisibility_();
-    this.updateSearchBreadcrumbs_();
     forcedShowTimeout = setTimeout(showThumbnails,
         FileManager.THUMBNAIL_SHOW_DELAY);
     onThumbnailLoaded();
-
-    this.updateContextMenuActionItems(null, false);
 
     function getTasksAndFinish() {
       if (self.dialogType_ == FileManager.DialogType.FULL_PAGE &&
@@ -2619,6 +2652,8 @@ FileManager.prototype = {
   FileManager.prototype.onSelectionChanged_ = function(event) {
     this.summarizeSelection_();
 
+    // Update the most visible parts of the UI immediately.
+    // The rest will be updated after a timeout.
     if (this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE) {
       // If this is a save-as dialog, copy the selected file into the filename
       // input text box.
@@ -2631,23 +2666,15 @@ FileManager.prototype = {
       }
     }
 
-    var commands = this.dialogDom_.querySelectorAll('command');
-    for (var i = 0; i < commands.length; i++)
-      commands[i].canExecuteChange();
-
     this.updateOkButton_();
 
-    setTimeout(this.onSelectionChangeComplete_.bind(this, event), 0);
+    this.updateSelectionCheckboxes_(event);
   };
 
   /**
-   * Handle selection change related tasks that won't run properly during
-   * the actual selection change event.
+   * Update the selection checkboxes.
    */
-  FileManager.prototype.onSelectionChangeComplete_ = function(event) {
-    // Inform tests it's OK to click buttons now.
-    chrome.test.sendMessage('selection-change-complete');
-
+  FileManager.prototype.updateSelectionCheckboxes_ = function(event) {
     if (!this.showCheckboxes_)
       return;
 
@@ -2667,16 +2694,13 @@ FileManager.prototype = {
       }
     }
 
-    if (this.selection.totalCount > 0) {
-      // If more than one file is selected, make sure all checkboxes are lit
-      // up.
-      for (var i = 0; i < this.selection.entries.length; i++) {
-        var selectedIndex = this.selection.indexes[i];
-        var listItem = this.currentList_.getListItemByIndex(selectedIndex);
-        if (listItem)
-          listItem.querySelector('input[type="checkbox"]').checked = true;
-      }
+    for (var i = 0; i < this.selection.entries.length; i++) {
+      var selectedIndex = this.selection.indexes[i];
+      var listItem = this.currentList_.getListItemByIndex(selectedIndex);
+      if (listItem)
+        listItem.querySelector('input[type="checkbox"]').checked = true;
     }
+
     var selectAllCheckbox =
         this.document_.getElementById('select-all-checkbox');
     if (selectAllCheckbox)
