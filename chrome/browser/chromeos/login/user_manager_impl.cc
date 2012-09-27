@@ -339,6 +339,7 @@ void UserManagerImpl::GuestUserLoggedIn() {
   is_current_user_ephemeral_ = true;
   WallpaperManager::Get()->SetInitialUserWallpaper(kGuestUser, false);
   logged_in_user_ = CreateUser(kGuestUser, /* is_ephemeral= */ true);
+  logged_in_user_->SetStubImage(User::kInvalidImageIndex);
   NotifyOnLogin();
 }
 
