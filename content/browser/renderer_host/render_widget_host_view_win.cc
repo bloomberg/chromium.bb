@@ -2246,7 +2246,7 @@ LRESULT RenderWidgetHostViewWin::OnTouchEvent(UINT message, WPARAM wparam,
         scoped_ptr<ui::GestureRecognizer::Gestures> gestures;
         gestures.reset(gesture_recognizer_->ProcessTouchEventForGesture(
             TouchEventFromWebTouchPoint(touch_event.touches[i], timestamp),
-            ui::TOUCH_STATUS_UNKNOWN, this));
+            ui::ER_UNHANDLED, this));
         ProcessGestures(gestures.get());
       }
     }

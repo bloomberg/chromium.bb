@@ -39,10 +39,10 @@ ui::EventResult TestEventFilter::OnScrollEvent(ui::ScrollEvent* event) {
   return ui::ER_UNHANDLED;
 }
 
-ui::TouchStatus TestEventFilter::OnTouchEvent(ui::TouchEvent* event) {
+ui::EventResult TestEventFilter::OnTouchEvent(ui::TouchEvent* event) {
   ++touch_event_count_;
   // TODO(sadrul): !
-  return ui::TOUCH_STATUS_UNKNOWN;
+  return ui::ER_UNHANDLED;
 }
 
 ui::EventResult TestEventFilter::OnGestureEvent(ui::GestureEvent* event) {

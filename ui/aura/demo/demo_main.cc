@@ -77,8 +77,8 @@ class DemoWindowDelegate : public aura::WindowDelegate {
   virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
     return ui::ER_HANDLED;
   }
-  virtual ui::TouchStatus OnTouchEvent(ui::TouchEvent* event) OVERRIDE {
-    return ui::TOUCH_STATUS_END;
+  virtual ui::EventResult OnTouchEvent(ui::TouchEvent* event) OVERRIDE {
+    return ui::ER_UNHANDLED;
   }
   virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
     return ui::ER_UNHANDLED;

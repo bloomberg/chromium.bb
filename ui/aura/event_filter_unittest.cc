@@ -67,10 +67,10 @@ class TestEventFilterWindowDelegate : public test::TestWindowDelegate {
     return mouse_event_handling_result_;
   }
 
-  virtual ui::TouchStatus OnTouchEvent(ui::TouchEvent* event) OVERRIDE {
+  virtual ui::EventResult OnTouchEvent(ui::TouchEvent* event) OVERRIDE {
     ++touch_event_count_;
     // TODO(sadrul): !
-    return ui::TOUCH_STATUS_UNKNOWN;
+    return ui::ER_UNHANDLED;
   }
 
   virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE {

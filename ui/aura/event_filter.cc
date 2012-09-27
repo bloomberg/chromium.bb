@@ -41,8 +41,10 @@ ui::EventResult EventFilter::OnScrollEvent(ui::ScrollEvent* event) {
   return ui::ER_UNHANDLED;
 }
 
-ui::TouchStatus EventFilter::OnTouchEvent(ui::TouchEvent* event) {
-  return PreHandleTouchEvent(static_cast<Window*>(event->target()), event);
+ui::EventResult EventFilter::OnTouchEvent(ui::TouchEvent* event) {
+  ui::TouchStatus status = PreHandleTouchEvent(
+      static_cast<Window*>(event->target()), event);
+  return ui::EventResultFromTouchStatus(status);
 }
 
 ui::EventResult EventFilter::OnGestureEvent(ui::GestureEvent* event) {

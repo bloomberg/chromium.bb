@@ -436,8 +436,9 @@ ui::EventResult DesktopNativeWidgetAura::OnMouseEvent(ui::MouseEvent* event) {
       ui::ER_HANDLED : ui::ER_UNHANDLED;
 }
 
-ui::TouchStatus DesktopNativeWidgetAura::OnTouchEvent(ui::TouchEvent* event) {
-  return native_widget_delegate_->OnTouchEvent(*event);
+ui::EventResult DesktopNativeWidgetAura::OnTouchEvent(ui::TouchEvent* event) {
+  ui::TouchStatus status = native_widget_delegate_->OnTouchEvent(*event);
+  return ui::EventResultFromTouchStatus(status);
 }
 
 ui::EventResult DesktopNativeWidgetAura::OnGestureEvent(

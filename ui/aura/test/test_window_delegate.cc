@@ -105,8 +105,8 @@ ui::EventResult TestWindowDelegate::OnMouseEvent(ui::MouseEvent* event) {
   return ui::ER_UNHANDLED;
 }
 
-ui::TouchStatus TestWindowDelegate::OnTouchEvent(ui::TouchEvent* event) {
-  return ui::TOUCH_STATUS_UNKNOWN;
+ui::EventResult TestWindowDelegate::OnTouchEvent(ui::TouchEvent* event) {
+  return ui::ER_UNHANDLED;
 }
 
 ui::EventResult TestWindowDelegate::OnGestureEvent(

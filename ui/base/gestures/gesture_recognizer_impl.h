@@ -53,12 +53,12 @@ class UI_EXPORT GestureRecognizerImpl : public GestureRecognizer {
   // called must take ownership of the returned gestures and free them when they
   // are not needed anymore.
   Gestures* AdvanceTouchQueueByOne(GestureConsumer* consumer,
-                                   ui::TouchStatus status);
+                                   ui::EventResult result);
 
   // Overridden from GestureRecognizer
   virtual Gestures* ProcessTouchEventForGesture(
       const TouchEvent& event,
-      ui::TouchStatus status,
+      ui::EventResult result,
       GestureConsumer* target) OVERRIDE;
   virtual void QueueTouchEventForGesture(GestureConsumer* consumer,
                                          const TouchEvent& event) OVERRIDE;

@@ -594,8 +594,8 @@ ui::EventResult WebContentsViewAura::OnMouseEvent(ui::MouseEvent* event) {
   return ui::ER_UNHANDLED;
 }
 
-ui::TouchStatus WebContentsViewAura::OnTouchEvent(ui::TouchEvent* event) {
-  return ui::TOUCH_STATUS_UNKNOWN;
+ui::EventResult WebContentsViewAura::OnTouchEvent(ui::TouchEvent* event) {
+  return ui::ER_UNHANDLED;
 }
 
 ui::EventResult WebContentsViewAura::OnGestureEvent(

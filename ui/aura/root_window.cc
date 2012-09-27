@@ -661,55 +661,12 @@ bool RootWindow::ProcessKeyEvent(Window* target, ui::KeyEvent* event) {
   return false;
 }
 
-ui::TouchStatus RootWindow::ProcessTouchEvent(Window* target,
+ui::EventResult RootWindow::ProcessTouchEvent(Window* target,
                                               ui::TouchEvent* event) {
-  if (ProcessEvent(NULL, event) != ui::ER_UNHANDLED)
-    return ui::TOUCH_STATUS_CONTINUE;
-
-  if (!target->IsVisible())
-    return ui::TOUCH_STATUS_UNKNOWN;
-
-  ui::Event::DispatcherApi dispatch_helper(event);
-  dispatch_helper.set_target(target);
-
-  // It is necessary to dispatch the event to the event-handlers on env first.
-  // TODO(sad): Fix touch-event handling so it can use the same
-  // event-dispatching code used for other events.
-  ui::EventTarget::DispatcherApi dispatch_target_helper(Env::GetInstance());
-  const ui::EventHandlerList& pre_target =
-      dispatch_target_helper.pre_target_list();
-  for (ui::EventHandlerList::const_iterator iter = pre_target.begin();
-      iter != pre_target.end(); ++iter) {
-    ui::TouchStatus status = (*iter)->OnTouchEvent(event);
-    if (status != ui::TOUCH_STATUS_UNKNOWN)
-      return status;
-  }
-
-  EventFilters filters;
-  if (target == this)
-    GetEventFiltersToNotify(target, &filters);
-  else
-    GetEventFiltersToNotify(target->parent(), &filters);
-
-  // |target| can be deleted by any of the handlers below.
-  WindowTracker tracker;
-  tracker.Add(target);
-
-  for (EventFilters::const_reverse_iterator it = filters.rbegin(),
-           rend = filters.rend();
-       it != rend; ++it) {
-    ui::TouchStatus status = (*it)->PreHandleTouchEvent(target, event);
-    if (status != ui::TOUCH_STATUS_UNKNOWN)
-      return status;
-  }
-
-  if (tracker.Contains(target) && target->delegate()) {
-    ui::TouchStatus status = target->delegate()->OnTouchEvent(event);
-    if (status != ui::TOUCH_STATUS_UNKNOWN)
-      return status;
-  }
-
-  return ui::TOUCH_STATUS_UNKNOWN;
+  if (!target)
+    target = this;
+  AutoReset<Window*> reset(&event_dispatch_target_, target);
+  return static_cast<ui::EventResult>(ProcessEvent(target, event));
 }
 
 ui::EventResult RootWindow::ProcessGestureEvent(Window* target,
@@ -917,7 +874,7 @@ bool RootWindow::OnHostTouchEvent(ui::TouchEvent* event) {
   transform.ConcatScale(scale, scale);
   event->UpdateForRootTransform(transform);
   bool handled = false;
-  ui::TouchStatus status = ui::TOUCH_STATUS_UNKNOWN;
+  ui::EventResult result = ui::ER_UNHANDLED;
   Window* target = client::GetCaptureWindow(this);
   if (!target) {
     target = ConsumerToWindow(
@@ -931,8 +888,8 @@ bool RootWindow::OnHostTouchEvent(ui::TouchEvent* event) {
   if (!target && !bounds().Contains(event->location())) {
     // If the initial touch is outside the root window, target the root.
     target = this;
-    status = ProcessTouchEvent(target, event);
-    CHECK_EQ(ui::TOUCH_STATUS_UNKNOWN, status);
+    result = ProcessTouchEvent(target, event);
+    CHECK_EQ(ui::ER_UNHANDLED, result);
   } else {
     // We only come here when the first contact was within the root window.
     if (!target) {
@@ -943,11 +900,10 @@ bool RootWindow::OnHostTouchEvent(ui::TouchEvent* event) {
 
     ui::TouchEvent translated_event(
         *event, static_cast<Window*>(this), target);
-    status = ProcessTouchEvent(target, &translated_event);
-    handled = status != ui::TOUCH_STATUS_UNKNOWN;
+    result = ProcessTouchEvent(target, &translated_event);
+    handled = result != ui::ER_UNHANDLED;
 
-    if (status == ui::TOUCH_STATUS_QUEUED ||
-        status == ui::TOUCH_STATUS_QUEUED_END) {
+    if (result & ui::ER_ASYNC) {
       gesture_recognizer_->QueueTouchEventForGesture(target, *event);
       return true;
     }
@@ -956,7 +912,7 @@ bool RootWindow::OnHostTouchEvent(ui::TouchEvent* event) {
   // Get the list of GestureEvents from GestureRecognizer.
   scoped_ptr<ui::GestureRecognizer::Gestures> gestures;
   gestures.reset(gesture_recognizer_->ProcessTouchEventForGesture(
-      *event, status, target));
+      *event, result, target));
 
   return ProcessGestures(gestures.get()) ? true : handled;
 }

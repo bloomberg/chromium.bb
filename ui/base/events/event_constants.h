@@ -98,12 +98,14 @@ enum MouseEventFlags {
 
 // Result of dispatching an event.
 enum EventResult {
-  ER_UNHANDLED = 0,  // The event hasn't been handled. The event can be
-                     // propagated to other handlers.
-  ER_HANDLED,        // The event has already been handled, but it can still be
-                     // propagated to other handlers.
-  ER_CONSUMED,       // The event has been handled, and it should not be
-                     // propagated to other handlers.
+  ER_UNHANDLED = 0,       // The event hasn't been handled. The event can be
+                          // propagated to other handlers.
+  ER_HANDLED   = 1 << 0,  // The event has already been handled, but it can
+                          // still be propagated to other handlers.
+  ER_CONSUMED  = 1 << 1,  // The event has been handled, and it should not be
+                          // propagated to other handlers.
+  ER_ASYNC     = 1 << 2,  // The event will be processed asynchronously. The
+                          // event can still be propagated to other handlers.
 };
 
 // Phase of the event dispatch.
@@ -122,9 +124,6 @@ enum TouchStatus {
   TOUCH_STATUS_CONTINUE,     // The touch event is part of a previously
                              // started touch sequence.
   TOUCH_STATUS_END,          // The touch event ended the touch sequence.
-  TOUCH_STATUS_SYNTH_MOUSE,  // The touch event was not processed, but a
-                             // synthetic mouse event generated from the
-                             // unused touch event was handled.
   TOUCH_STATUS_QUEUED,       // The touch event has not been processed yet, but
                              // may be processed asynchronously later. This also
                              // places a lock on touch-events (i.e. all
@@ -134,6 +133,9 @@ enum TouchStatus {
                              // subsequent touch-events can be sent to any
                              // handler.
 };
+
+// Returns an equivalent EventResult from a TouchStatus.
+UI_EXPORT EventResult EventResultFromTouchStatus(TouchStatus status);
 
 // Updates the list of devices for cached properties.
 UI_EXPORT void UpdateDeviceList();

@@ -32,7 +32,7 @@ class UI_EXPORT EventHandler {
 
   virtual EventResult OnScrollEvent(ScrollEvent* event) = 0;
 
-  virtual TouchStatus OnTouchEvent(TouchEvent* event) = 0;
+  virtual EventResult OnTouchEvent(TouchEvent* event) = 0;
 
   virtual EventResult OnGestureEvent(GestureEvent* event) = 0;
 };

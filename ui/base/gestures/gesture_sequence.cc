@@ -30,7 +30,7 @@ enum TouchState {
   TS_UNKNOWN,
 };
 
-// ui::TouchStatus is mapped to TouchStatusInternal to simply indicate whether a
+// ui::EventResult is mapped to TouchStatusInternal to simply indicate whether a
 // processed touch-event should affect gesture-recognition or not.
 enum TouchStatusInternal {
   TSI_NOT_PROCESSED,  // The touch-event should take-part into
@@ -307,11 +307,10 @@ GestureSequence::~GestureSequence() {
 
 GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
     const TouchEvent& event,
-    ui::TouchStatus status) {
+    EventResult result) {
   StopLongPressTimerIfRequired(event);
   last_touch_location_ = event.location();
-  if (status == ui::TOUCH_STATUS_QUEUED ||
-      status == ui::TOUCH_STATUS_QUEUED_END)
+  if (result & ER_ASYNC)
     return NULL;
 
   // Set a limit on the number of simultaneous touches in a gesture.
@@ -351,7 +350,8 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
   if (event.type() == ui::ET_TOUCH_PRESSED)
     AppendBeginGestureEvent(point, gestures.get());
 
-  TouchStatusInternal status_internal = (status == ui::TOUCH_STATUS_UNKNOWN) ?
+  CHECK_NE(ER_ASYNC, result);
+  TouchStatusInternal status_internal = (result == ER_UNHANDLED) ?
       TSI_NOT_PROCESSED : TSI_PROCESSED;
 
   EdgeStateSignatureType signature = Signature(state_, point_id,
@@ -577,7 +577,7 @@ bool GestureSequence::IsSecondTouchDownCloseEnoughForTwoFingerTap() {
   gfx::Point p1 = GetPointByPointId(0)->last_touch_position();
   gfx::Point p2 = GetPointByPointId(1)->last_touch_position();
   double max_distance =
-      ui::GestureConfiguration::max_distance_for_two_finger_tap_in_pixels();
+      GestureConfiguration::max_distance_for_two_finger_tap_in_pixels();
   double distance = (p1.x() - p2.x()) * (p1.x() - p2.x()) +
       (p1.y() - p2.y()) * (p1.y() - p2.y());
   if (distance < max_distance * max_distance)

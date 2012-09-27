@@ -875,9 +875,10 @@ ui::EventResult NativeWidgetAura::OnMouseEvent(ui::MouseEvent* event) {
   return delegate_->OnMouseEvent(*event) ? ui::ER_HANDLED : ui::ER_UNHANDLED;
 }
 
-ui::TouchStatus NativeWidgetAura::OnTouchEvent(ui::TouchEvent* event) {
+ui::EventResult NativeWidgetAura::OnTouchEvent(ui::TouchEvent* event) {
   DCHECK(window_->IsVisible());
-  return delegate_->OnTouchEvent(*event);
+  ui::TouchStatus status = delegate_->OnTouchEvent(*event);
+  return ui::EventResultFromTouchStatus(status);
 }
 
 ui::EventResult NativeWidgetAura::OnGestureEvent(ui::GestureEvent* event) {

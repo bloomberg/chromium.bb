@@ -32,11 +32,7 @@ EventResult EventDispatcher::DispatchEventToSingleHandler(EventHandler* handler,
 
 EventResult EventDispatcher::DispatchEventToSingleHandler(EventHandler* handler,
                                                           TouchEvent* event) {
-  // TODO(sad): This needs fixing (especially for the QUEUED_ status).
-  TouchStatus status = handler->OnTouchEvent(event);
-  return status == ui::TOUCH_STATUS_UNKNOWN ? ER_UNHANDLED :
-         status == ui::TOUCH_STATUS_QUEUED_END ? ER_CONSUMED :
-                                                 ER_HANDLED;
+  return handler->OnTouchEvent(event);
 }
 
 EventResult EventDispatcher::DispatchEventToSingleHandler(EventHandler* handler,

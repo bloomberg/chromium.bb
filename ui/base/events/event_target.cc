@@ -84,10 +84,10 @@ EventResult EventTarget::OnScrollEvent(ScrollEvent* event) {
   return target_handler_ ? target_handler_->OnScrollEvent(event) : ER_UNHANDLED;
 }
 
-TouchStatus EventTarget::OnTouchEvent(TouchEvent* event) {
+EventResult EventTarget::OnTouchEvent(TouchEvent* event) {
   CHECK_EQ(this, event->target());
   return target_handler_ ? target_handler_->OnTouchEvent(event) :
-                           TOUCH_STATUS_UNKNOWN;
+                           ER_UNHANDLED;
 }
 
 EventResult EventTarget::OnGestureEvent(GestureEvent* event) {

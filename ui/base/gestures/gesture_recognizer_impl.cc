@@ -56,18 +56,18 @@ class MirroredTouchEvent : public TouchEvent {
 
 class QueuedTouchEvent : public MirroredTouchEvent {
  public:
-  QueuedTouchEvent(const TouchEvent* real, TouchStatus status)
+  QueuedTouchEvent(const TouchEvent* real, EventResult result)
       : MirroredTouchEvent(real),
-        status_(status) {
+        result_(result) {
   }
 
   virtual ~QueuedTouchEvent() {
   }
 
-  TouchStatus status() const { return status_; }
+  EventResult result() const { return result_; }
 
  private:
-  TouchStatus status_;
+  EventResult result_;
 
   DISALLOW_COPY_AND_ASSIGN(QueuedTouchEvent);
 };
@@ -258,41 +258,41 @@ void GestureRecognizerImpl::SetupTargets(const TouchEvent& event,
 
 GestureSequence::Gestures* GestureRecognizerImpl::AdvanceTouchQueueByOne(
     GestureConsumer* consumer,
-    ui::TouchStatus status) {
+    ui::EventResult result) {
   CHECK(event_queue_[consumer]);
   CHECK(!event_queue_[consumer]->empty());
 
   ScopedPop pop(event_queue_[consumer]);
   TouchEvent* event = event_queue_[consumer]->front();
   GestureSequence* sequence = GetGestureSequenceForConsumer(consumer);
-  if (status != ui::TOUCH_STATUS_UNKNOWN &&
-      event->type() == ui::ET_TOUCH_RELEASED) {
+  if (result != ER_UNHANDLED &&
+      event->type() == ET_TOUCH_RELEASED) {
     // A touch release was was processed (e.g. preventDefault()ed by a
     // web-page), but we still need to process a touch cancel.
     CancelledTouchEvent cancelled(event);
     return sequence->ProcessTouchEventForGesture(cancelled,
-                                                 ui::TOUCH_STATUS_UNKNOWN);
+                                                 ER_UNHANDLED);
   }
-  return sequence->ProcessTouchEventForGesture(*event, status);
+  return sequence->ProcessTouchEventForGesture(*event, result);
 }
 
 GestureSequence::Gestures* GestureRecognizerImpl::ProcessTouchEventForGesture(
     const TouchEvent& event,
-    ui::TouchStatus status,
+    ui::EventResult result,
     GestureConsumer* target) {
   if (event_queue_[target] && event_queue_[target]->size() > 0) {
     // There are some queued touch-events for this target. Processing |event|
     // before those queued events will result in unexpected gestures. So
     // postpone the processing of the events until the queued events have been
     // processed.
-    event_queue_[target]->push(new QueuedTouchEvent(&event, status));
+    event_queue_[target]->push(new QueuedTouchEvent(&event, result));
     return NULL;
   }
 
   SetupTargets(event, target);
 
   GestureSequence* gesture_sequence = GetGestureSequenceForConsumer(target);
-  return gesture_sequence->ProcessTouchEventForGesture(event, status);
+  return gesture_sequence->ProcessTouchEventForGesture(event, result);
 }
 
 void GestureRecognizerImpl::QueueTouchEventForGesture(GestureConsumer* consumer,
@@ -300,7 +300,7 @@ void GestureRecognizerImpl::QueueTouchEventForGesture(GestureConsumer* consumer,
   if (!event_queue_[consumer])
     event_queue_[consumer] = new std::queue<TouchEvent*>();
   event_queue_[consumer]->push(
-      new QueuedTouchEvent(&event, TOUCH_STATUS_QUEUED));
+      new QueuedTouchEvent(&event, ER_ASYNC));
 
   SetupTargets(event, consumer);
 }
@@ -314,18 +314,18 @@ GestureSequence::Gestures* GestureRecognizerImpl::AdvanceTouchQueue(
   }
 
   scoped_ptr<GestureSequence::Gestures> gestures(
-      AdvanceTouchQueueByOne(consumer, processed ? TOUCH_STATUS_CONTINUE :
-                                                   TOUCH_STATUS_UNKNOWN));
+      AdvanceTouchQueueByOne(consumer, processed ? ER_HANDLED :
+                                                   ER_UNHANDLED));
 
   // Are there any queued touch-events that should be auto-dequeued?
   while (!event_queue_[consumer]->empty()) {
     QueuedTouchEvent* event =
       static_cast<QueuedTouchEvent*>(event_queue_[consumer]->front());
-    if (event->status() == TOUCH_STATUS_QUEUED)
+    if (event->result() == ER_ASYNC)
       break;
 
     scoped_ptr<GestureSequence::Gestures> current_gestures(
-        AdvanceTouchQueueByOne(consumer, event->status()));
+        AdvanceTouchQueueByOne(consumer, event->result()));
     if (current_gestures.get()) {
       if (!gestures.get()) {
         gestures.reset(current_gestures.release());

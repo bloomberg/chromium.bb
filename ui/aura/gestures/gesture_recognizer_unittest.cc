@@ -287,11 +287,8 @@ class QueueTouchEventDelegate : public GestureEventConsumeDelegate {
   }
   virtual ~QueueTouchEventDelegate() {}
 
-  virtual ui::TouchStatus OnTouchEvent(ui::TouchEvent* event) OVERRIDE {
-    if (!queue_events_)
-      return ui::TOUCH_STATUS_UNKNOWN;
-    return event->type() == ui::ET_TOUCH_RELEASED ?
-        ui::TOUCH_STATUS_QUEUED_END : ui::TOUCH_STATUS_QUEUED;
+  virtual ui::EventResult OnTouchEvent(ui::TouchEvent* event) OVERRIDE {
+    return queue_events_ ? ui::ER_ASYNC : ui::ER_UNHANDLED;
   }
 
   void ReceivedAck() {
@@ -2556,9 +2553,9 @@ class ConsumesTouchMovesDelegate : public GestureEventConsumeDelegate {
   void set_consume_touch_move(bool consume) { consume_touch_move_ = consume; }
 
  private:
-  virtual ui::TouchStatus OnTouchEvent(ui::TouchEvent* touch) OVERRIDE {
+  virtual ui::EventResult OnTouchEvent(ui::TouchEvent* touch) OVERRIDE {
     if (consume_touch_move_ && touch->type() == ui::ET_TOUCH_MOVED)
-      return ui::TOUCH_STATUS_CONTINUE;
+      return ui::ER_HANDLED;
     return GestureEventConsumeDelegate::OnTouchEvent(touch);
   }
 

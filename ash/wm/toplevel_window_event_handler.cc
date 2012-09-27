@@ -147,9 +147,9 @@ ui::EventResult ToplevelWindowEventHandler::OnScrollEvent(
   return ui::ER_UNHANDLED;
 }
 
-ui::TouchStatus ToplevelWindowEventHandler::OnTouchEvent(
+ui::EventResult ToplevelWindowEventHandler::OnTouchEvent(
     ui::TouchEvent* event) {
-  return ui::TOUCH_STATUS_UNKNOWN;
+  return ui::ER_UNHANDLED;
 }
 
 ui::EventResult ToplevelWindowEventHandler::OnGestureEvent(

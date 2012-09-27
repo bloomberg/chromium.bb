@@ -29,7 +29,7 @@ class UI_EXPORT GestureRecognizer {
   // TouchEvent.
   // Caller would be responsible for freeing up Gestures.
   virtual Gestures* ProcessTouchEventForGesture(const TouchEvent& event,
-                                                ui::TouchStatus status,
+                                                ui::EventResult result,
                                                 GestureConsumer* consumer) = 0;
 
   // Touch-events can be queued to be played back at a later time. The queues

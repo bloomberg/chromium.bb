@@ -91,9 +91,9 @@ class TestEventHandler : public EventHandler {
     return event_result_;
   }
 
-  virtual TouchStatus OnTouchEvent(TouchEvent* event) OVERRIDE {
+  virtual EventResult OnTouchEvent(TouchEvent* event) OVERRIDE {
     ReceivedEvent(event);
-    return ui::TOUCH_STATUS_UNKNOWN;
+    return event_result_;
   }
 
   virtual EventResult OnGestureEvent(GestureEvent* event) OVERRIDE {

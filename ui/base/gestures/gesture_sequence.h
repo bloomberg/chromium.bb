@@ -46,7 +46,7 @@ class UI_EXPORT GestureSequence {
   // TouchEvent.
   // Caller would be responsible for freeing up Gestures.
   virtual Gestures* ProcessTouchEventForGesture(const TouchEvent& event,
-                                                ui::TouchStatus status);
+                                                EventResult status);
   const GesturePoint* points() const { return points_; }
   int point_count() const { return point_count_; }
 

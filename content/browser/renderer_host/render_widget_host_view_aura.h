@@ -187,7 +187,7 @@ class RenderWidgetHostViewAura
   // Overridden from ui::EventHandler:
   virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
   virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
-  virtual ui::TouchStatus OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
+  virtual ui::EventResult OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
   virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
   // Overridden from aura::client::ActivationDelegate:

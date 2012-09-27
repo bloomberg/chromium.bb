@@ -129,19 +129,16 @@ ui::EventResult CompoundEventFilter::FilterMouseEvent(ui::MouseEvent* event) {
   return static_cast<ui::EventResult>(result);
 }
 
-ui::TouchStatus CompoundEventFilter::FilterTouchEvent(
-    Window* target,
-    ui::TouchEvent* event) {
-  ui::TouchStatus status = ui::TOUCH_STATUS_UNKNOWN;
+ui::EventResult CompoundEventFilter::FilterTouchEvent(ui::TouchEvent* event) {
+  int result = ui::ER_UNHANDLED;
   if (filters_.might_have_observers()) {
     ObserverListBase<EventFilter>::Iterator it(filters_);
     EventFilter* filter;
-    while (status == ui::TOUCH_STATUS_UNKNOWN &&
-        (filter = it.GetNext()) != NULL) {
-      status = filter->OnTouchEvent(event);
+    while (!(result & ui::ER_CONSUMED) && (filter = it.GetNext()) != NULL) {
+      result |= filter->OnTouchEvent(event);
     }
   }
-  return status;
+  return static_cast<ui::EventResult>(result);
 }
 
 void CompoundEventFilter::SetCursorVisibilityOnEvent(aura::Window* target,
@@ -161,22 +158,6 @@ void CompoundEventFilter::SetCursorVisibilityOnEvent(aura::Window* target,
       }
     }
   }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// CompoundEventFilter, EventFilter implementation:
-
-ui::TouchStatus CompoundEventFilter::PreHandleTouchEvent(
-    Window* target,
-    ui::TouchEvent* event) {
-  // TODO(sad): Move the implementation into OnTouchEvent once touch-events are
-  // hooked up to go through EventDispatcher.
-  ui::TouchStatus status = FilterTouchEvent(target, event);
-  if (status == ui::TOUCH_STATUS_UNKNOWN &&
-      event->type() == ui::ET_TOUCH_PRESSED) {
-    SetCursorVisibilityOnEvent(target, event, false);
-  }
-  return status;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -229,8 +210,14 @@ ui::EventResult CompoundEventFilter::OnScrollEvent(ui::ScrollEvent* event) {
   return ui::ER_UNHANDLED;
 }
 
-ui::TouchStatus CompoundEventFilter::OnTouchEvent(ui::TouchEvent* event) {
-  return EventFilter::OnTouchEvent(event);
+ui::EventResult CompoundEventFilter::OnTouchEvent(ui::TouchEvent* event) {
+  ui::EventResult result = FilterTouchEvent(event);
+  if (result == ui::ER_UNHANDLED &&
+      event->type() == ui::ET_TOUCH_PRESSED) {
+    SetCursorVisibilityOnEvent(
+        static_cast<aura::Window*>(event->target()), event, false);
+  }
+  return result;
 }
 
 ui::EventResult CompoundEventFilter::OnGestureEvent(ui::GestureEvent* event) {

@@ -171,9 +171,9 @@ class CaptureWindowDelegateImpl : public TestWindowDelegate {
     mouse_event_count_++;
     return ui::ER_UNHANDLED;
   }
-  virtual ui::TouchStatus OnTouchEvent(ui::TouchEvent* event) OVERRIDE {
+  virtual ui::EventResult OnTouchEvent(ui::TouchEvent* event) OVERRIDE {
     touch_event_count_++;
-    return ui::TOUCH_STATUS_UNKNOWN;
+    return ui::ER_UNHANDLED;
   }
   virtual ui::EventResult OnGestureEvent(
       ui::GestureEvent* event) OVERRIDE {
