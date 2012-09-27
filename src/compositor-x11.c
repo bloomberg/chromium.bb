@@ -50,6 +50,8 @@
 #include "compositor.h"
 #include "../shared/config-parser.h"
 
+#define DEFAULT_AXIS_STEP_DISTANCE wl_fixed_from_int(10)
+
 static char *output_name;
 static char *output_mode;
 static char *output_transform;
@@ -660,32 +662,34 @@ x11_compositor_deliver_button_event(struct x11_compositor *c,
 		button = BTN_RIGHT;
 		break;
 	case 4:
+		/* Axis are measured in pixels, but the xcb events are discrete
+		 * steps. Therefore move the axis by some pixels every step. */
 		if (state)
 			notify_axis(&c->core_seat,
-				      weston_compositor_get_time(),
-				      WL_POINTER_AXIS_VERTICAL_SCROLL,
-				      wl_fixed_from_int(1));
+				    weston_compositor_get_time(),
+				    WL_POINTER_AXIS_VERTICAL_SCROLL,
+				    -DEFAULT_AXIS_STEP_DISTANCE);
 		return;
 	case 5:
 		if (state)
 			notify_axis(&c->core_seat,
-				      weston_compositor_get_time(),
-				      WL_POINTER_AXIS_VERTICAL_SCROLL,
-				      wl_fixed_from_int(-1));
+				    weston_compositor_get_time(),
+				    WL_POINTER_AXIS_VERTICAL_SCROLL,
+				    DEFAULT_AXIS_STEP_DISTANCE);
 		return;
 	case 6:
 		if (state)
 			notify_axis(&c->core_seat,
-				      weston_compositor_get_time(),
-				      WL_POINTER_AXIS_HORIZONTAL_SCROLL,
-				      wl_fixed_from_int(1));
+				    weston_compositor_get_time(),
+				    WL_POINTER_AXIS_HORIZONTAL_SCROLL,
+				    -DEFAULT_AXIS_STEP_DISTANCE);
 		return;
 	case 7:
 		if (state)
 			notify_axis(&c->core_seat,
-				      weston_compositor_get_time(),
-				      WL_POINTER_AXIS_HORIZONTAL_SCROLL,
-				      wl_fixed_from_int(-1));
+				    weston_compositor_get_time(),
+				    WL_POINTER_AXIS_HORIZONTAL_SCROLL,
+				    DEFAULT_AXIS_STEP_DISTANCE);
 		return;
 	}
 
