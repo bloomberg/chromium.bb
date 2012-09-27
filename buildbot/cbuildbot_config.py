@@ -629,6 +629,7 @@ chromium_pfq_info = chromium_pfq.derive(
   important=False,
   manifest_version=False,
   vm_tests=constants.SMOKE_SUITE_TEST_TYPE,
+  upload_hw_test_artifacts=False,
 )
 
 # TODO(petermayo): We may want to update the -chrome-pfq-i... as above.
