@@ -3506,15 +3506,18 @@ force_kill_binding(struct wl_seat *seat, uint32_t time, uint32_t key,
 	struct wl_surface *focus_surface;
 	struct wl_client *client;
 	pid_t pid;
-	uid_t uid;
-	gid_t gid;
 
 	focus_surface = seat->keyboard->focus;
 	if (!focus_surface)
 		return;
 
 	client = focus_surface->resource.client;
-	wl_client_get_credentials(client, &pid, &uid, &gid);
+	wl_client_get_credentials(client, &pid, NULL, NULL);
+
+	/* Skip clients that we launched ourselves (the credentials of
+	 * the socketpair is ours) */
+	if (pid == getpid())
+		return;
 
 	kill(pid, SIGKILL);
 }
