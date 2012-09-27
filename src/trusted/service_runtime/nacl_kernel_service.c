@@ -100,15 +100,18 @@ static void NaClKernelServiceInitializationCompleteRpc(
 
 int NaClKernelServiceCreateProcess(
     struct NaClKernelService   *self,
-    struct NaClDesc            **out_sock_addr) {
+    struct NaClDesc            **out_sock_addr,
+    struct NaClDesc            **out_app_addr) {
   struct NaClApp  *nap;
   NaClSrpcError   rpc_result;
   int             status = 0;
 
   NaClLog(4,
           ("NaClKernelServiceCreateProcess(0x%08"NACL_PRIxPTR
-           ", 0x%08"NACL_PRIxPTR"\n"),
-          (uintptr_t) self, (uintptr_t) out_sock_addr);
+           ", 0x%08"NACL_PRIxPTR", 0x%08"NACL_PRIxPTR"\n"),
+          (uintptr_t) self,
+          (uintptr_t) out_sock_addr,
+          (uintptr_t) out_app_addr);
 
   nap = self->nap;
   NaClXMutexLock(&nap->mu);
@@ -116,14 +119,16 @@ int NaClKernelServiceCreateProcess(
       nap->reverse_channel_initialization_state) {
     rpc_result = NaClSrpcInvokeBySignature(&nap->reverse_channel,
                                            NACL_REVERSE_CONTROL_CREATE_PROCESS,
-                                           &status, out_sock_addr);
+                                           &status,
+                                           out_sock_addr,
+                                           out_app_addr);
     if (NACL_SRPC_RESULT_OK != rpc_result) {
       NaClLog(LOG_FATAL,
               "NaClKernelServiceCreateProcess: RPC failed, result %d\n",
               rpc_result);
     }
   } else {
-    NaClLog(3, "NaClKernelServiceCreateProcess: no reverse channel"
+    NaClLog(4, "NaClKernelServiceCreateProcess: no reverse channel"
             ", no plugin to talk to.\n");
     status = -NACL_ABI_EAGAIN;
   }
@@ -140,19 +145,24 @@ static void NaClKernelServiceCreateProcessRpc(
   struct NaClKernelService  *nksp =
     (struct NaClKernelService *) rpc->channel->server_instance_data;
   int                       status;
-  struct NaClDesc           *desc;
+  struct NaClDesc           *sock_addr;
+  struct NaClDesc           *app_addr;
   UNREFERENCED_PARAMETER(in_args);
 
   NaClLog(4, "NaClKernelServiceCreateProcessRpc: creating process\n");
   status = (*NACL_VTBL(NaClKernelService, nksp)->CreateProcess)(
-      nksp, &desc);
+      nksp, &sock_addr, &app_addr);
   out_args[0]->u.ival = status;
   out_args[1]->u.hval = (0 == status)
-      ? desc
+      ? sock_addr
       : (struct NaClDesc *) NaClDescInvalidMake();
-  NaClLog(3, "NaClKernelServiceCreateProcessRpc: status %d\n", status);
-  NaClLog(3, "NaClKernelServiceCreateProcessRpc: desc 0x08%"NACL_PRIxPTR"\n",
-          (uintptr_t) desc);
+  out_args[2]->u.hval = (0 == status)
+      ? app_addr
+      : (struct NaClDesc *) NaClDescInvalidMake();
+  NaClLog(4,
+          ("NaClKernelServiceCreateProcessRpc: status %d, sock_addr"
+           " 0x08%"NACL_PRIxPTR", app_addr 0x%08"NACL_PRIxPTR"\n"),
+          status, (uintptr_t) sock_addr, (uintptr_t) app_addr);
   rpc->result = NACL_SRPC_RESULT_OK;
   (*done_cls->Run)(done_cls);
 }

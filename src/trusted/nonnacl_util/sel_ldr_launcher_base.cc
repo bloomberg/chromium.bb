@@ -26,6 +26,21 @@ SelLdrLauncherBase::~SelLdrLauncherBase() {
   }
 }
 
+bool SelLdrLauncherBase::ConnectBootstrapSocket() {
+  CHECK(factory_ == NULL);
+  factory_.reset(new DescWrapperFactory);
+  CHECK(channel_ != kInvalidHandle);
+  bootstrap_socket_.reset(factory_->MakeImcSock(channel_));
+  if (bootstrap_socket_ == NULL) {
+    return false;
+  }
+  // bootstrap_socket_ now has ownership of channel_, so we get rid of
+  // our "reference" to it.
+  channel_ = kInvalidHandle;
+
+  return true;
+}
+
 bool SelLdrLauncherBase::RetrieveSockAddr() {
   DescWrapper::MsgHeader   header;
   DescWrapper::MsgIoVec    iovec[1];
@@ -60,18 +75,11 @@ bool SelLdrLauncherBase::RetrieveSockAddr() {
 
 bool SelLdrLauncherBase::SetupCommand(NaClSrpcChannel* command) {
   // Get the bootstrap socket.
-  CHECK(factory_ == NULL);
-  factory_.reset(new DescWrapperFactory);
-  CHECK(channel_ != kInvalidHandle);
-  bootstrap_socket_.reset(factory_->MakeImcSock(channel_));
-  if (bootstrap_socket_ == NULL) {
-    NaClLog(4, ("SelLdrLauncher::SetupCommand: "
-                "getting bootstrap socket failed\n"));
+  if (!ConnectBootstrapSocket()) {
+    NaClLog(4, "SelLdrLauncher::SetupCommand: "
+            "getting bootstrap socket failed\n");
     return false;
   }
-  // bootstrap_socket_ now has ownership of channel_, so we get rid of
-  // our "reference" to it.
-  channel_ = kInvalidHandle;
   // Get the socket address from the descriptor.
   if (!RetrieveSockAddr()) {
     NaClLog(0, "SelLdrLauncher::SetupCommand: "

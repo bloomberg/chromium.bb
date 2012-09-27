@@ -55,15 +55,16 @@ int NaClReverseServiceCtor(struct NaClReverseService    *self,
     NaClLog(4, "NaClReverseServiceCtor: NaClSimpleRevServiceCtor failed\n");
     goto done;
   }
+  NACL_VTBL(NaClRefCount, self) = (struct NaClRefCountVtbl *)
+      &kNaClReverseServiceVtbl;
   if (!NaClMutexCtor(&self->mu)) {
     NaClLog(4, "NaClMutexCtor failed\n");
-    goto abort_mu;
+    goto mutex_ctor_fail;
   }
   if (!NaClCondVarCtor(&self->cv)) {
     NaClLog(4, "NaClCondVar failed\n");
+    goto condvar_ctor_fail;
   }
-  NACL_VTBL(NaClRefCount, self) = (struct NaClRefCountVtbl *)
-      &kNaClReverseServiceVtbl;
   /* success return path */
   self->iface = (struct NaClReverseInterface *) NaClRefCountRef(
       (struct NaClRefCount *) iface);
@@ -73,7 +74,9 @@ int NaClReverseServiceCtor(struct NaClReverseService    *self,
   goto done;
 
   /* cleanup unwind */
- abort_mu:  /* mutex ctor failed */
+ condvar_ctor_fail:
+  NaClMutexDtor(&self->mu);
+ mutex_ctor_fail:
   (*NACL_VTBL(NaClRefCount, self)->Dtor)((struct NaClRefCount *) self);
  done:
   return retval;
@@ -217,16 +220,20 @@ static void NaClReverseServiceCreateProcessRpc(
   struct NaClReverseService *nrsp =
     (struct NaClReverseService *) rpc->channel->server_instance_data;
   struct NaClDesc           *sock_addr;
+  struct NaClDesc           *app_addr;
   int                       status;
   UNREFERENCED_PARAMETER(in_args);
 
   NaClLog(4, "Entered CreateProcess: 0x%08"NACL_PRIxPTR"\n",
           (uintptr_t) nrsp);
   status = (*NACL_VTBL(NaClReverseInterface, nrsp->iface)->
-            CreateProcess)(nrsp->iface, &sock_addr);
+            CreateProcess)(nrsp->iface, &sock_addr, &app_addr);
   out_args[0]->u.ival = status;
   out_args[1]->u.hval = (0 == status)
       ? sock_addr
+      : (struct NaClDesc *) NaClDescInvalidMake();
+  out_args[2]->u.hval = (0 == status)
+      ? app_addr
       : (struct NaClDesc *) NaClDescInvalidMake();
   NaClLog(4, "Leaving CreateProcess\n");
   rpc->result = NACL_SRPC_RESULT_OK;
@@ -710,11 +717,14 @@ void NaClReverseInterfaceDoPostMessage(
 
 int NaClReverseInterfaceCreateProcess(
     struct NaClReverseInterface   *self,
-    struct NaClDesc               **out_sock_addr) {
+    struct NaClDesc               **out_sock_addr,
+    struct NaClDesc               **out_app_addr) {
   NaClLog(3,
           ("NaClReverseInterfaceCreateProcess(0x%08"NACL_PRIxPTR
-           ", 0x%08"NACL_PRIxPTR")\n"),
-          (uintptr_t) self, (uintptr_t) out_sock_addr);
+           ", 0x%08"NACL_PRIxPTR", 0x%08"NACL_PRIxPTR")\n"),
+          (uintptr_t) self,
+          (uintptr_t) out_sock_addr,
+          (uintptr_t) out_app_addr);
   return -NACL_ABI_EAGAIN;
 }
 

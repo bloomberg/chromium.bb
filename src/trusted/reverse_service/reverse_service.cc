@@ -150,7 +150,8 @@ void DoPostMessage(NaClReverseInterface* self,
 }
 
 int CreateProcess(NaClReverseInterface* self,
-                  NaClDesc** out_sock_addr) {
+                  NaClDesc** out_sock_addr,
+                  NaClDesc** out_app_addr) {
   ReverseInterfaceWrapper* wrapper =
       reinterpret_cast<ReverseInterfaceWrapper*>(self);
   if (NULL == wrapper->iface) {
@@ -160,8 +161,10 @@ int CreateProcess(NaClReverseInterface* self,
 
   int status;
   nacl::DescWrapper* sock_addr;
-  if ((status = wrapper->iface->CreateProcess(&sock_addr)) != 0) {
-    *out_sock_addr = sock_addr->desc();
+  nacl::DescWrapper* app_addr;
+  if (0 == (status = wrapper->iface->CreateProcess(&sock_addr, &app_addr))) {
+    *out_sock_addr = NaClDescRef(sock_addr->desc());
+    *out_app_addr = NaClDescRef(app_addr->desc());
   }
   return status;
 }

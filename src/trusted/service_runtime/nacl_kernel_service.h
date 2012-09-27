@@ -45,7 +45,8 @@ struct NaClKernelServiceVtbl {
    */
   int                           (*CreateProcess)(
       struct NaClKernelService *self,
-      struct NaClDesc          **out_sock_addr);
+      struct NaClDesc          **out_sock_addr,
+      struct NaClDesc          **out_app_addr);
 };
 
 extern struct NaClKernelServiceVtbl const kNaClKernelServiceVtbl;

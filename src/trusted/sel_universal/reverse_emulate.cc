@@ -46,8 +46,10 @@ class ReverseEmulate : public nacl::ReverseInterface {
   // Send a string as a PostMessage to the browser.
   virtual void DoPostMessage(nacl::string message);
 
-  // Create new service runtime process and return its socket address.
-  virtual int CreateProcess(nacl::DescWrapper** out_sock_addr);
+  // Create new service runtime process and return secure command
+  // channel and untrusted application channel socket addresses.
+  virtual int CreateProcess(nacl::DescWrapper** out_sock_addr,
+                            nacl::DescWrapper** out_app_addr);
 
   // Request quota for a write to a file.
   virtual int64_t RequestQuotaForWrite(nacl::string file_id,
@@ -70,6 +72,17 @@ typedef std::map<nacl::string, string> KeyToFileMap;
 KeyToFileMap g_key_to_file;
 
 nacl::scoped_ptr_refcount<nacl::ReverseService> g_reverse_service;
+
+typedef std::map<nacl::Handle, nacl::SelLdrLauncherStandalone*>
+  HandleToLauncherMap;
+
+/*
+ * TODO(phosek): Rather than using global ctor, SelLdrLauncher shall inherit
+ * from RefCountBase class and we shall use nacl::scoped_ptr_refcount to
+ * automatically manage the reference and dispose it once it's no longer
+ * being used (http://code.google.com/p/nativeclient/issues/detail?id=3050).
+ */
+HandleToLauncherMap g_handle_to_launcher;
 
 }  // end namespace
 
@@ -214,24 +227,35 @@ void ReverseEmulate::DoPostMessage(nacl::string message) {
   NaClLog(1, "ReverseEmulate::DoPostMessage (message=%s)\n", message.c_str());
 }
 
-int ReverseEmulate::CreateProcess(nacl::DescWrapper** out_sock_addr) {
+int ReverseEmulate::CreateProcess(nacl::DescWrapper** out_sock_addr,
+                                  nacl::DescWrapper** out_app_addr) {
   NaClLog(1, "ReverseEmulate::CreateProcess)\n");
   vector<nacl::string> command_prefix;
   vector<nacl::string> sel_ldr_argv;
   vector<nacl::string> app_argv;
 
-  nacl::SelLdrLauncherStandalone launcher;
-  if (!launcher.StartViaCommandLine(command_prefix, sel_ldr_argv, app_argv)) {
+  nacl::SelLdrLauncherStandalone* launcher =
+    new nacl::SelLdrLauncherStandalone();
+  if (!launcher->StartViaCommandLine(command_prefix, sel_ldr_argv, app_argv)) {
     NaClLog(LOG_FATAL,
             "ReverseEmulate::CreateProcess: failed to launch sel_ldr\n");
   }
+  g_handle_to_launcher[launcher->child_process()] = launcher;
 
-  if (!launcher.RetrieveSockAddr()) {
+  if (!launcher->ConnectBootstrapSocket()) {
+    NaClLog(LOG_ERROR,
+            "ReverseEmulate::CreateProcess:"
+            " failed to connect boostrap socket\n");
+    return -NACL_ABI_EAGAIN;
+  }
+
+  if (!launcher->RetrieveSockAddr()) {
     NaClLog(LOG_ERROR,
             "ReverseEmulate::CreateProcess: failed to obtain socket addr\n");
     return -NACL_ABI_EAGAIN;
   }
-  *out_sock_addr = launcher.secure_socket_addr();
+  *out_sock_addr = launcher->socket_addr();
+  *out_app_addr = launcher->socket_addr();
 
   return 0;
 }

@@ -82,6 +82,9 @@ class SelLdrLauncherBase {
   // After starting the sel_ldr process.
   /////////////////////////////////////////////////////////////////////////////
 
+  // Connects bootstrap socket.
+  bool ConnectBootstrapSocket();
+
   // Retrieves the socket address.
   bool RetrieveSockAddr();
 
@@ -166,6 +169,9 @@ class SelLdrLauncherStandalone : public SelLdrLauncherBase {
   bool StartViaCommandLine(const std::vector<nacl::string>& prefix,
                            const std::vector<nacl::string>& sel_ldr_argv,
                            const std::vector<nacl::string>& application_argv);
+
+  // Returns the child process handle.
+  Handle child_process() const { return child_process_; }
 
  private:
   // Builds a command line out of the prepopulated args.

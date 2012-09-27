@@ -67,11 +67,15 @@ class ReverseInterface : public RefCountBase {
   // appropriately.
   virtual void DoPostMessage(nacl::string message) = 0;
 
-  // Create new service runtime process and return its socket address.
-  // Returns 0 if successful or negative ABI error value otherwise.
+  // Create new service runtime process and return secure command
+  // channel and untrusted application channel socket addresses. Returns
+  // 0 if successful or negative ABI error value otherwise (see
+  // service_runtime/include/sys/errno.h).
   // TODO(phosek): remove the stub interface once the plugin provides one.
-  virtual int CreateProcess(nacl::DescWrapper** out_sock_addr) {
+  virtual int CreateProcess(nacl::DescWrapper** out_sock_addr,
+                            nacl::DescWrapper** out_app_addr) {
     UNREFERENCED_PARAMETER(out_sock_addr);
+    UNREFERENCED_PARAMETER(out_app_addr);
     return -NACL_ABI_EAGAIN;
   }
 
