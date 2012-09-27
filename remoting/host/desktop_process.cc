@@ -16,7 +16,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "remoting/host/branding.h"
-#include "remoting/host/constants.h"
+#include "remoting/host/host_exit_codes.h"
 #include "remoting/host/usage_stats_consent.h"
 
 #if defined(OS_MACOSX)

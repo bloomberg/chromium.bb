@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/stringprintf.h"
 #include "base/win/registry.h"
-#include "remoting/host/constants.h"
+#include "remoting/host/win/omaha.h"
 
 namespace {
 
@@ -42,7 +42,7 @@ LONG ReadUsageStatsValue(const wchar_t* state_key, DWORD* usagestats_out) {
 namespace remoting {
 
 bool GetUsageStatsConsent(bool* allowed, bool* set_by_policy) {
-  // TODO(alexeypa): report whether the consent is set by pollicy once
+  // TODO(alexeypa): report whether the consent is set by policy once
   // supported.
   *set_by_policy = false;
 
