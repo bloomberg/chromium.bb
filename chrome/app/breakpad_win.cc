@@ -118,16 +118,16 @@ extern "C" void __declspec(dllexport) __cdecl DumpProcessWithoutCrash() {
   }
 }
 
+// We disable optimizations for DumpForHangDebuggingThread() and
+// DumpProcessWithoutCrashThread() since it is important to be able to
+// distinguish these in crash reports (if optimizations are left on, they will
+// get folded together).
+MSVC_DISABLE_OPTIMIZE()
+MSVC_PUSH_DISABLE_WARNING(4748)
+
 DWORD WINAPI DumpProcessWithoutCrashThread(void*) {
   DumpProcessWithoutCrash();
   return 0;
-}
-
-// Injects a thread into a remote process to dump state when there is no crash.
-extern "C" HANDLE __declspec(dllexport) __cdecl
-InjectDumpProcessWithoutCrash(HANDLE process) {
-  return CreateRemoteThread(process, NULL, 0, DumpProcessWithoutCrashThread,
-                            0, 0, NULL);
 }
 
 // The following two functions do exactly the same thing as the two above. But
@@ -138,6 +138,16 @@ InjectDumpProcessWithoutCrash(HANDLE process) {
 DWORD WINAPI DumpForHangDebuggingThread(void*) {
   DumpProcessWithoutCrash();
   return 0;
+}
+
+MSVC_POP_WARNING()
+MSVC_ENABLE_OPTIMIZE()
+
+// Injects a thread into a remote process to dump state when there is no crash.
+extern "C" HANDLE __declspec(dllexport) __cdecl
+InjectDumpProcessWithoutCrash(HANDLE process) {
+  return CreateRemoteThread(process, NULL, 0, DumpProcessWithoutCrashThread,
+                            0, 0, NULL);
 }
 
 extern "C" HANDLE __declspec(dllexport) __cdecl
