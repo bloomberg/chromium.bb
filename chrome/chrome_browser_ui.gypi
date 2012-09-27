@@ -823,7 +823,6 @@
         'browser/ui/gtk/browser_actions_toolbar_gtk.h',
         'browser/ui/gtk/browser_titlebar.cc',
         'browser/ui/gtk/browser_titlebar.h',
-        'browser/ui/gtk/browser_titlebar_base.h',
         'browser/ui/gtk/browser_toolbar_gtk.cc',
         'browser/ui/gtk/browser_toolbar_gtk.h',
         'browser/ui/gtk/browser_window_gtk.cc',

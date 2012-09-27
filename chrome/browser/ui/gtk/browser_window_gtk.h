@@ -27,7 +27,7 @@
 
 class BookmarkBarGtk;
 class Browser;
-class BrowserTitlebarBase;
+class BrowserTitlebar;
 class BrowserToolbarGtk;
 class DownloadShelfGtk;
 class ExtensionKeybindingRegistryGtk;
@@ -65,9 +65,8 @@ class BrowserWindowGtk
   explicit BrowserWindowGtk(Browser* browser);
   virtual ~BrowserWindowGtk();
 
-  // Separating initialization from constructor allows invocation of virtual
-  // functions during initialization.
-  virtual void Init();
+  // Separating initialization from constructor.
+  void Init();
 
   // Overridden from BrowserWindow:
   virtual void Show() OVERRIDE;
@@ -247,7 +246,7 @@ class BrowserWindowGtk
 
   GtkWindow* window() const { return window_; }
 
-  BrowserTitlebarBase* titlebar() const { return titlebar_.get(); }
+  BrowserTitlebar* titlebar() const { return titlebar_.get(); }
 
   GtkWidget* titlebar_widget() const;
 
@@ -272,47 +271,25 @@ class BrowserWindowGtk
  protected:
   virtual void DestroyBrowser() OVERRIDE;
 
-  // Returns an instance of |BrowserTitlebarBase| to be used for this window.
-  virtual BrowserTitlebarBase* CreateBrowserTitlebar();
-
   // Checks to see if the mouse pointer at |x|, |y| is over the border of the
   // custom frame (a spot that should trigger a window resize). Returns true if
   // it should and sets |edge|.
-  virtual bool GetWindowEdge(int x, int y, GdkWindowEdge* edge);
+  bool GetWindowEdge(int x, int y, GdkWindowEdge* edge);
 
   // Returns the window shape for the window with |width| and |height|.
   // The caller is responsible for destroying the region if non-null region is
   // returned.
-  virtual GdkRegion* GetWindowShape(int width, int height) const;
-
-  // Draws the frame, including background, border and drop shadow.
-  virtual void DrawFrame(GtkWidget* widget, GdkEventExpose* event);
-
-  virtual bool HandleTitleBarLeftMousePress(GdkEventButton* event);
-
-  // Returns true if handled.
-  virtual bool HandleWindowEdgeLeftMousePress(GtkWindow* window,
-                                              GdkWindowEdge edge,
-                                              GdkEventButton* event);
+  GdkRegion* GetWindowShape(int width, int height) const;
 
   // Save the window position in the prefs.
-  virtual void SaveWindowPosition();
+  void SaveWindowPosition();
 
   // Sets the default size for the window and the way the user is allowed to
   // resize it.
-  virtual void SetGeometryHints();
+  void SetGeometryHints();
 
   // Returns |true| if we should use the custom frame.
-  virtual bool UseCustomFrame() const;
-
-  // Called when the window size changed.
-  virtual void OnSizeChanged(int width, int height);
-
-  // 'focus-in-event' handler.
-  virtual void HandleFocusIn(GtkWidget* widget, GdkEventFocus* event);
-
-  // Returns the size of the window frame around the client content area.
-  gfx::Size GetNonClientFrameSize() const;
+  bool UseCustomFrame() const;
 
   // Invalidate window to force repaint.
   void InvalidateWindow();
@@ -493,7 +470,7 @@ class BrowserWindowGtk
   scoped_ptr<GlobalMenuBar> global_menu_bar_;
 
   // The container for the titlebar + tab strip.
-  scoped_ptr<BrowserTitlebarBase> titlebar_;
+  scoped_ptr<BrowserTitlebar> titlebar_;
 
   // The object that manages all of the widgets in the toolbar.
   scoped_ptr<BrowserToolbarGtk> toolbar_;

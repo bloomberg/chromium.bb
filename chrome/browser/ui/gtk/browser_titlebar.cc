@@ -1031,18 +1031,6 @@ bool BrowserTitlebar::IsOffTheRecord() {
   return browser_window_->browser()->profile()->IsOffTheRecord();
 }
 
-GtkWidget* BrowserTitlebar::widget() const {
-  return container_;
-}
-
-void BrowserTitlebar::set_window(GtkWindow* window) {
-  window_ = window;
-}
-
-AvatarMenuButtonGtk* BrowserTitlebar::avatar_button() const {
-  return avatar_button_.get();
-}
-
 BrowserTitlebar::ContextMenuModel::ContextMenuModel(
     ui::SimpleMenuModel::Delegate* delegate)
     : SimpleMenuModel(delegate) {

@@ -15,7 +15,6 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/api/prefs/pref_member.h"
-#include "chrome/browser/ui/gtk/browser_titlebar_base.h"
 #include "chrome/browser/ui/gtk/titlebar_throb_animation.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -34,8 +33,7 @@ namespace content {
 class WebContents;
 }
 
-class BrowserTitlebar : public BrowserTitlebarBase,
-                        public content::NotificationObserver,
+class BrowserTitlebar : public content::NotificationObserver,
                         public ui::ActiveWindowWatcherXObserver,
                         public ui::SimpleMenuModel::Delegate {
  public:
@@ -46,18 +44,39 @@ class BrowserTitlebar : public BrowserTitlebarBase,
   BrowserTitlebar(BrowserWindowGtk* browser_window, GtkWindow* window);
   virtual ~BrowserTitlebar();
 
+  // Updates the title and icon when in app or popup mode (no tabstrip).
+  void UpdateTitleAndIcon();
+
+  GtkWidget* widget() {
+    return container_;
+  }
+
+  void set_window(GtkWindow* window) { window_ = window; }
+
+  // Build the titlebar, the space above the tab strip, and (maybe) the min,
+  // max, close buttons. |container_| is the gtk container that we put the
+  // widget into.
+  void Init();
+
   // Builds the buttons based on the metacity |button_string|.
   void BuildButtons(const std::string& button_string);
 
-  // Overriden from BrowserTitlebarBase.
-  virtual void Init() OVERRIDE;
-  virtual void UpdateTitleAndIcon() OVERRIDE;
-  virtual void UpdateCustomFrame(bool use_custom_frame) OVERRIDE;
-  virtual void UpdateThrobber(content::WebContents* web_contents) OVERRIDE;
-  virtual void ShowContextMenu(GdkEventButton* event) OVERRIDE;
-  virtual GtkWidget* widget() const OVERRIDE;
-  virtual void set_window(GtkWindow* window) OVERRIDE;
-  virtual AvatarMenuButtonGtk* avatar_button() const OVERRIDE;
+  // Update the appearance of the title bar based on whether we're showing a
+  // custom frame or not. If |use_custom_frame| is true, we show an extra
+  // tall titlebar and the min/max/close buttons.
+  void UpdateCustomFrame(bool use_custom_frame);
+
+  // Called by the browser asking us to update the loading throbber.
+  // |web_contents| is the tab that is associated with the window throbber.
+  // |web_contents| can be null.
+  void UpdateThrobber(content::WebContents* web_contents);
+
+  // On Windows, right clicking in the titlebar background brings up the system
+  // menu. There's no such thing on linux, so we just show the menu items we
+  // add to the menu.
+  void ShowContextMenu(GdkEventButton* event);
+
+  AvatarMenuButtonGtk* avatar_button() { return avatar_button_.get(); }
 
  private:
   class ContextMenuModel : public ui::SimpleMenuModel {
