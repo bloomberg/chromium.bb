@@ -84,6 +84,40 @@
       'includes': [ '../build/jni_generator.gypi' ],
     },
     {
+      # chromium_testshell creates a .jar as a side effect. Any java targets
+      # that need that .jar in their classpath should depend on this target,
+      # chromium_testshell_java.
+      'target_name': 'chromium_testshell_java',
+      'type': 'none',
+      'dependencies': [
+        '../media/media.gyp:media_java',
+        'chrome.gyp:chrome_java',
+        'chromium_testshell',
+      ],
+      'export_dependent_settings': [
+        '../media/media.gyp:media_java',
+        'chrome.gyp:chrome_java',
+      ],
+      'outputs': [
+        '<(PRODUCT_DIR)/lib.java/chromium_chromium_testshell.jar',
+      ],
+      'direct_dependent_settings': {
+        'variables': {
+          'input_jars_paths': ['<(PRODUCT_DIR)/lib.java/chromium_chromium_testshell.jar'],
+        },
+      },
+      # Add an action with the appropriate output. This allows the generated
+      # buildfiles to determine which target the output corresponds to.
+      'actions': [
+        {
+          'action_name': 'fake_generate_jar',
+          'inputs': [],
+          'outputs': ['<(PRODUCT_DIR)/lib.java/chromium_chromium_testshell.jar'],
+          'action': [],
+        },
+      ],
+    },
+    {
       'target_name': 'chrome_android_core',
       'type': 'static_library',
       'dependencies': [
@@ -130,4 +164,3 @@
     },
   ],
 }
-

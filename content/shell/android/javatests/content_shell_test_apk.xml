@@ -27,16 +27,12 @@
       check-exists="false"/>
   <property name="generate.test.jar" value="true"/>
 
-  <property-location name="contentshell.classes.dir"
-      location="${PRODUCT_DIR}/content_shell/classes"/>
-
   <path id="javac.custom.sourcepath">
     <pathelement location="../../../public/android/javatests/src"/>
   </path>
 	
   <path id="out.dex.jar.input.ref">
     <filelist files="${INPUT_JARS_PATHS}"/>
-    <pathelement location="${contentshell.classes.dir}"/>
   </path>
 
   <!-- Classpath for javac -->

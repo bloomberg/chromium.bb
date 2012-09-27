@@ -27,12 +27,8 @@
       check-exists="false"/>
   <property name="generate.test.jar" value="true"/>
 
-  <property-location name="chromium_testshell.classes.dir"
-      location="${PRODUCT_DIR}/chromium_testshell/classes"/>
-
   <path id="out.dex.jar.input.ref">
     <filelist files="${INPUT_JARS_PATHS}"/>
-    <pathelement location="${chromium_testshell.classes.dir}"/>
   </path>
 
   <path id="javac.custom.sourcepath">

@@ -4783,7 +4783,7 @@
             '../base/base.gyp:base',
             '../base/base.gyp:base_java_test_support',
             'chrome_java',
-            'chromium_testshell',
+            'chromium_testshell_java',
             '../tools/android/forwarder/forwarder.gyp:forwarder',
           ],
           'variables': {

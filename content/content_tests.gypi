@@ -889,7 +889,7 @@
           'dependencies': [
             'content_java',
             'content_java_test_support',
-            'content_shell_apk',
+            'content_shell_java',
             '../base/base.gyp:base_java',
             '../base/base.gyp:base_java_test_support',
             '../media/media.gyp:media_java',
