@@ -58,6 +58,11 @@
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_test_crash.h"
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
 
+#if NACL_WINDOWS
+#include "native_client/src/trusted/service_runtime/win/debug_exception_handler.h"
+#include "native_client/src/shared/platform/win/xlate_system_error.h"
+#endif
+
 
 struct NaClDescQuotaInterface;
 
@@ -1341,6 +1346,7 @@ int32_t NaClCommonSysMmapIntern(struct NaClApp        *nap,
   /* [0, length) */
   if (length > 0) {
     enum NaClVmmapEntryType vmmap_type;
+    int max_prot;
 
     if (NULL == ndp) {
       NaClLog(4,
@@ -1395,10 +1401,17 @@ int32_t NaClCommonSysMmapIntern(struct NaClApp        *nap,
     vmmap_type = (NULL == ndp || NACL_ABI_PROT_NONE == prot) ?
                  NACL_VMMAP_ENTRY_ANONYMOUS :
                  NACL_VMMAP_ENTRY_MAPPED;
+    /*
+     * TODO(phosek): we're recording potentially wrong info here, we shall add
+     * attribute bits to NaClDesc about open flags and use that info instead.
+     */
+    max_prot = (NULL != ndp && (flags & NACL_ABI_MAP_SHARED)) ?
+               prot : NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE;
     NaClVmmapAddWithOverwrite(&nap->mem_map,
                               NaClSysToUser(nap, sysaddr) >> NACL_PAGESHIFT,
                               length >> NACL_PAGESHIFT,
                               NaClProtMap(prot),
+                              NaClProtMap(max_prot),
                               vmmap_type);
   } else {
     map_result = sysaddr;
@@ -1680,6 +1693,160 @@ cleanup:
     NaClXMutexUnlock(&nap->mu);
   }
   return retval;
+}
+
+#if NACL_WINDOWS
+static int32_t MprotectInternal(struct NaClApp *nap,
+                                uintptr_t sysaddr, size_t length, int prot) {
+  uintptr_t addr;
+  uintptr_t endaddr = sysaddr + length;
+  DWORD     protect;
+  DWORD     old_protect;
+
+  protect = 0;
+  switch (prot) {
+    case NACL_ABI_PROT_NONE:
+      protect = PAGE_NOACCESS;
+      break;
+    case NACL_ABI_PROT_READ:
+      protect |= PAGE_READONLY;
+      break;
+    case NACL_ABI_PROT_WRITE:
+      protect |= PAGE_READWRITE;
+      break;
+    case NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE:
+      protect |= PAGE_READWRITE;
+      break;
+  }
+  /*
+   * VirtualProtect region cannot span allocations, all addresses must be
+   * in one region of memory returned from VirtualAlloc or VirtualAllocEx.
+   */
+  for (addr = sysaddr; addr < endaddr; addr += NACL_MAP_PAGESIZE) {
+    struct NaClVmmapEntry const *entry;
+
+    entry = NaClVmmapFindPage(&nap->mem_map,
+                              NaClSysToUser(nap, addr) >> NACL_PAGESHIFT);
+    if (NULL == entry) {
+      continue;
+    }
+    NaClLog(3, "MprotectInternal: addr 0x%08x, vmmap_type 0x%x\n",
+            addr, (int) entry->vmmap_type);
+    /* Change the page protection */
+    if (!VirtualProtect((void *) addr,
+                        NACL_MAP_PAGESIZE,
+                        protect,
+                        &old_protect)) {
+      int error = GetLastError();
+      NaClLog(LOG_FATAL, "MprotectInternal: "
+              "failed to change the memory protection with VirtualProtect()"
+              " addr 0x%08x, error %d (0x%x)\n",
+              addr, error, error);
+      return -NaClXlateSystemError(error);
+    }
+  }
+
+  return 0;
+}
+#else
+static int32_t MprotectInternal(struct NaClApp *nap,
+                                uintptr_t sysaddr, size_t length, int prot) {
+  int host_prot = NaClProtMap(prot);
+  UNREFERENCED_PARAMETER(nap);
+
+  /* Change the memory protection. */
+  if (0 != mprotect((void *) sysaddr, length, host_prot)) {
+    NaClLog(LOG_FATAL, "MprotectInternal: "
+            "mprotect on anonymous memory failed, errno = %d\n", errno);
+    return -NaClXlateErrno(errno);
+  }
+
+  return 0;
+}
+#endif
+
+int32_t NaClCommonSysMprotectInternal(struct NaClApp  *nap,
+                                      uint32_t        start,
+                                      size_t          length,
+                                      int             prot) {
+  int32_t     retval = -NACL_ABI_EINVAL;
+  uintptr_t   sysaddr;
+  int         holding_app_lock = 0;
+
+  if (!NaClIsAllocPageMultiple((uintptr_t) start)) {
+    NaClLog(4, "mprotect: start addr not allocation multiple\n");
+    retval = -NACL_ABI_EINVAL;
+    goto cleanup;
+  }
+  length = NaClRoundAllocPage(length);
+  sysaddr = NaClUserToSysAddrRange(nap, (uintptr_t) start, length);
+  if (kNaClBadAddress == sysaddr) {
+    NaClLog(4, "mprotect: region not user addresses\n");
+    retval = -NACL_ABI_EFAULT;
+    goto cleanup;
+  }
+  if (0 != (~(NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE) & prot)) {
+    NaClLog(4, "mprotect: prot has other bits than PROT_{READ|WRITE}\n");
+    retval = -NACL_ABI_EACCES;
+    goto cleanup;
+  }
+  if (!NaClVmmapCheckExistingMapping(
+           &nap->mem_map, NaClSysToUser(nap, sysaddr) >> NACL_PAGESHIFT,
+           length >> NACL_PAGESHIFT, prot)) {
+    NaClLog(4, "mprotect: no such region\n");
+    retval = -NACL_ABI_EACCES;
+    goto cleanup;
+  }
+
+  NaClXMutexLock(&nap->mu);
+
+  holding_app_lock = 1;
+
+  /*
+   * User should be unable to change protection of any executable pages.
+   */
+  if (NaClSysCommonAddrRangeContainsExecutablePages_mu(nap,
+                                                       (uintptr_t) start,
+                                                       length)) {
+    NaClLog(2, "NaClSysMprotect: region contains executable pages\n");
+    retval = -NACL_ABI_EACCES;
+    goto cleanup;
+  }
+
+  NaClVmIoPendingCheck_mu(nap,
+                          (uint32_t) (uintptr_t) start,
+                          (uint32_t) ((uintptr_t) start + length - 1));
+
+  retval = MprotectInternal(nap, sysaddr, length, prot);
+  if (retval == 0 &&
+      !NaClVmmapChangeProt(&nap->mem_map,
+                           NaClSysToUser(nap, sysaddr) >> NACL_PAGESHIFT,
+                           length >> NACL_PAGESHIFT,
+                           prot)) {
+    retval = -NACL_ABI_EACCES;
+  }
+cleanup:
+  if (holding_app_lock) {
+    NaClXMutexUnlock(&nap->mu);
+  }
+  return retval;
+}
+
+int32_t NaClSysMprotect(struct NaClAppThread  *natp,
+                        uint32_t              start,
+                        size_t                length,
+                        int                   prot) {
+  struct NaClApp  *nap = natp->nap;
+
+  NaClLog(3, "Entered NaClSysMprotect(0x%08"NACL_PRIxPTR", "
+          "0x%08"NACL_PRIxPTR", 0x%"NACL_PRIxS", 0x%x)\n",
+          (uintptr_t) natp, (uintptr_t) start, length, prot);
+
+  if (!NaClAclBypassChecks) {
+    return -NACL_ABI_EACCES;
+  }
+
+  return NaClCommonSysMprotectInternal(nap, start, length, prot);
 }
 
 int32_t NaClCommonSysImc_MakeBoundSock(struct NaClAppThread *natp,

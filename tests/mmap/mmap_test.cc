@@ -79,6 +79,37 @@ static void assert_addr_is_unreadable(volatile char *addr) {
   assert(rc == 0);
 }
 
+static void assert_addr_is_unwritable(volatile char *addr, char value) {
+  /*
+   * TODO(mseaborn): It would be better to use Valgrind annotations to
+   * turn off the memory access checks temporarily.
+   */
+  if (getenv("RUNNING_ON_VALGRIND") != NULL) {
+    fprintf(stderr, "Skipping assert_addr_is_unwritable() under Valgrind\n");
+    return;
+  }
+  if (getenv("RUNNING_ON_ASAN") != NULL) {
+    fprintf(stderr, "Skipping assert_addr_is_unwritable() under ASan\n");
+    return;
+  }
+
+  int rc = NACL_SYSCALL(exception_handler)(exception_handler, NULL);
+  assert(rc == 0);
+  if (!setjmp(g_jmp_buf)) {
+    *addr = value;
+    /* If we reach here, the assertion failed. */
+    fprintf(stderr, "Address %p was writable, %i was written\n",
+            addr, value);
+    exit(1);
+  }
+  /*
+   * Clean up: Unregister the exception handler so that we do not
+   * accidentally return through g_jmp_buf if an exception occurs.
+   */
+  rc = NACL_SYSCALL(exception_handler)(NULL, NULL);
+  assert(rc == 0);
+}
+
 
 /*
  * function test*()
@@ -223,6 +254,81 @@ bool test_munmap() {
 }
 
 /*
+ *   Verify that mprotect() changes the virtual address protection.
+ */
+
+bool test_mprotect() {
+  printf("test_mprotect\n");
+  /*
+   * Note that, on Windows, NaCl's mprotect() has different code paths
+   * for anonymous and file-backed mappings.  This test case only
+   * covers the anonymous case.
+   */
+  size_t map_size = 0x20000;
+  char *addr = (char *) mmap(NULL, map_size, PROT_READ | PROT_WRITE,
+                             MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+  assert(addr != MAP_FAILED);
+  printf("mmap done\n");
+  /*
+   * Change the protection to make the page unreadable. TODO(phosek): use
+   * the mprotect() wrapper function once mprotect() is added to the IRT.
+   */
+  int rc = NACL_SYSCALL(mprotect)(addr, map_size, PROT_NONE);
+  assert(rc == 0);
+  assert_addr_is_unreadable(addr);
+  assert_addr_is_unreadable(addr + 0x1000);
+  assert_addr_is_unreadable(addr + 0x10000);
+  /* Change the protection to make the page accessible again. */
+  rc = NACL_SYSCALL(mprotect)(addr, map_size, PROT_READ | PROT_WRITE);
+  assert(rc == 0);
+  addr[0] = '5';
+  /* Change the protection to make the page read-only. */
+  rc = NACL_SYSCALL(mprotect)(addr, map_size, PROT_READ);
+  assert(rc == 0);
+  assert_addr_is_unwritable(addr, '9');
+  assert('5' == addr[0]);
+  printf("mprotect good\n");
+  /* We can still munmap() the memory. */
+  rc = munmap(addr, map_size);
+  assert(rc == 0);
+  return true;
+}
+
+/*
+ *   Verify that mprotect() fails when changing protection of unmapped
+ *   memory region.
+ */
+
+bool test_mprotect_unmapped_memory() {
+  printf("test_mprotect_unmapped_memory\n");
+  /*
+   * Note that, on Windows, NaCl's mprotect() has different code paths
+   * for anonymous and file-backed mappings.  This test case only
+   * covers the anonymous case.
+   */
+  size_t map_size = 0x20000;
+  char *addr = (char *) mmap(NULL, map_size, PROT_READ | PROT_WRITE,
+                             MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+  assert(addr != MAP_FAILED);
+  printf("mmap done\n");
+  /* Unmap the mapped memory region. */
+  int rc = munmap(addr, map_size);
+  assert(rc == 0);
+  printf("munmap done\n");
+  /*
+   * Change the protection to make the page unreadable. TODO(phosek): use
+   * the mprotect() wrapper function once mprotect() is added to the IRT.
+   */
+  rc = NACL_SYSCALL(mprotect)(addr, map_size, PROT_NONE);
+  if (-EACCES == rc) {
+    printf("mprotect good (failed as expected)\n");
+    return true;
+  }
+  return false;
+}
+
+
+/*
  *   Verify that the last page in a file can be mmapped when the file's
  *   size is not a multiple of the page size.
  *   Tests for http://code.google.com/p/nativeclient/issues/detail?id=836
@@ -308,6 +414,8 @@ bool testSuite() {
   ret &= test4();
 
   ret &= test_munmap();
+  ret &= test_mprotect();
+  ret &= test_mprotect_unmapped_memory();
   ret &= test_mmap_end_of_file();
 
   return ret;

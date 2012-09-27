@@ -119,6 +119,7 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
                0,
                NACL_SYSCALL_START_ADDR >> NACL_PAGESHIFT,
                PROT_NONE,
+               PROT_NONE,
                NACL_VMMAP_ENTRY_ANONYMOUS);
 
   start_addr = nap->mem_start + NACL_SYSCALL_START_ADDR;
@@ -149,6 +150,7 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
                NaClSysToUser(nap, start_addr) >> NACL_PAGESHIFT,
                region_size >> NACL_PAGESHIFT,
                PROT_READ | PROT_EXEC,
+               PROT_READ | PROT_EXEC,
                NACL_VMMAP_ENTRY_ANONYMOUS);
 
   start_addr = NaClUserToSys(nap, nap->dynamic_text_start);
@@ -171,6 +173,7 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
     NaClVmmapAdd(&nap->mem_map,
                  NaClSysToUser(nap, start_addr) >> NACL_PAGESHIFT,
                  region_size >> NACL_PAGESHIFT,
+                 PROT_READ | PROT_EXEC,
                  PROT_READ | PROT_EXEC,
                  NACL_VMMAP_ENTRY_MAPPED);
   }
@@ -213,6 +216,7 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
                  NaClSysToUser(nap, start_addr) >> NACL_PAGESHIFT,
                  region_size >> NACL_PAGESHIFT,
                  PROT_READ,
+                 PROT_READ,
                  NACL_VMMAP_ENTRY_ANONYMOUS);
   }
 
@@ -246,6 +250,7 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
                  NaClSysToUser(nap, start_addr) >> NACL_PAGESHIFT,
                  region_size >> NACL_PAGESHIFT,
                  PROT_READ | PROT_WRITE,
+                 PROT_READ | PROT_WRITE,
                  NACL_VMMAP_ENTRY_ANONYMOUS);
   }
 
@@ -276,6 +281,7 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
   NaClVmmapAdd(&nap->mem_map,
                NaClSysToUser(nap, start_addr) >> NACL_PAGESHIFT,
                nap->stack_size >> NACL_PAGESHIFT,
+               PROT_READ | PROT_WRITE,
                PROT_READ | PROT_WRITE,
                NACL_VMMAP_ENTRY_ANONYMOUS);
   return LOAD_OK;

@@ -39,6 +39,8 @@
 
 #define NACL_sys_getdents               23
 
+#define NACL_sys_mprotect               24
+
 #define NACL_sys_exit                   30
 #define NACL_sys_getpid                 31
 #define NACL_sys_sched_yield            32

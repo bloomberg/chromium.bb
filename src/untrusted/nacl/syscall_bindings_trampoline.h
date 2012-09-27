@@ -108,6 +108,8 @@ typedef void *(*TYPE_nacl_mmap) (void *start,
 
 typedef int (*TYPE_nacl_munmap) (void *start, size_t length);
 
+typedef int (*TYPE_nacl_mprotect) (void *start, size_t length, int prot);
+
 /* ============================================================ */
 /* threads */
 /* ============================================================ */

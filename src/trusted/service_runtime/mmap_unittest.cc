@@ -260,4 +260,139 @@ TEST_F(MmapTest, TestUnmapAnonymousMemoryMapping) {
 
   NaClAddrSpaceFree(&app);
 }
+
+// Test that changing a protection of a shared memory mapping is reflected
+// by the underlying OS memory mapping.
+TEST_F(MmapTest, TestProtectShmMapping) {
+  struct NaClApp app;
+  ASSERT_EQ(NaClAppCtor(&app), 1);
+  ASSERT_EQ(NaClAllocAddrSpace(&app), LOAD_OK);
+
+  // sel_mem.c does not like having an empty memory map, so create a
+  // dummy entry that we do not later remove.
+  // TODO(mseaborn): Clean up so that this is not necessary.
+  MapShmFd(&app, 0x400000, 0x10000);
+
+  uintptr_t addr = 0x200000;
+  size_t size = 0x100000;
+  MapShmFd(&app, addr, size);
+
+  uintptr_t sysaddr = NaClUserToSys(&app, addr);
+#if NACL_WINDOWS
+  CheckMapping(sysaddr, size, MEM_COMMIT, PAGE_READWRITE, MEM_MAPPED);
+#elif NACL_LINUX
+  CheckMapping(sysaddr, size, PROT_READ | PROT_WRITE, MAP_SHARED);
+#elif NACL_OSX
+  CheckMapping(sysaddr, size, VM_PROT_READ | VM_PROT_WRITE, SM_SHARED);
+#else
+# error Unsupported platform
+#endif
+
+  ASSERT_EQ(0, NaClCommonSysMprotectInternal(
+                   &app, (uint32_t) addr, size, NACL_ABI_PROT_NONE));
+
+#if NACL_WINDOWS
+  CheckMapping(sysaddr, size, MEM_COMMIT, PAGE_NOACCESS, MEM_MAPPED);
+#elif NACL_LINUX
+  CheckMapping(sysaddr, size, PROT_NONE, MAP_SHARED);
+#elif NACL_OSX
+  CheckMapping(sysaddr, size, VM_PROT_NONE, SM_SHARED);
+#else
+# error Unsupported platform
+#endif
+
+  NaClAddrSpaceFree(&app);
+}
+
+// Test that changing a protection of a file mapping is reflected
+// by the underlying OS memory mapping.
+TEST_F(MmapTest, TestProtectFileMapping) {
+  struct NaClApp app;
+  ASSERT_EQ(NaClAppCtor(&app), 1);
+  ASSERT_EQ(NaClAllocAddrSpace(&app), LOAD_OK);
+
+  // sel_mem.c does not like having an empty memory map, so create a
+  // dummy entry that we do not later remove.
+  // TODO(mseaborn): Clean up so that this is not necessary.
+  MapShmFd(&app, 0x400000, 0x10000);
+
+  uintptr_t addr = 0x200000;
+  size_t size = 0x100000;
+  MapFileFd(&app, addr, size);
+
+  uintptr_t sysaddr = NaClUserToSys(&app, addr);
+#if NACL_WINDOWS
+  CheckMapping(sysaddr, size, MEM_COMMIT, PAGE_WRITECOPY, MEM_MAPPED);
+#elif NACL_LINUX
+  CheckMapping(sysaddr, size, PROT_READ | PROT_WRITE, MAP_SHARED);
+#elif NACL_OSX
+  CheckMapping(sysaddr, size, VM_PROT_READ | VM_PROT_WRITE, SM_PRIVATE);
+#else
+# error Unsupported platform
+#endif
+
+  ASSERT_EQ(0, NaClCommonSysMprotectInternal(
+                   &app, (uint32_t) addr, size, NACL_ABI_PROT_NONE));
+
+#if NACL_WINDOWS
+  CheckMapping(sysaddr, size, MEM_COMMIT, PAGE_NOACCESS, MEM_MAPPED);
+#elif NACL_LINUX
+  CheckMapping(sysaddr, size, PROT_NONE, MAP_SHARED);
+#elif NACL_OSX
+  CheckMapping(sysaddr, size, VM_PROT_NONE, SM_PRIVATE);
+#else
+# error Unsupported platform
+#endif
+
+  NaClAddrSpaceFree(&app);
+}
+
+// Test that changing a protection of a anonymous memory mapping is
+// reflected by the underlying OS memory mapping.
+TEST_F(MmapTest, TestProtectAnonymousMemory) {
+  struct NaClApp app;
+  ASSERT_EQ(NaClAppCtor(&app), 1);
+  ASSERT_EQ(NaClAllocAddrSpace(&app), LOAD_OK);
+
+  // sel_mem.c does not like having an empty memory map, so create a
+  // dummy entry that we do not later remove.
+  // TODO(mseaborn): Clean up so that this is not necessary.
+  MapShmFd(&app, 0x400000, 0x10000);
+
+  // Create an anonymous memory mapping.
+  uintptr_t addr = 0x200000;
+  size_t size = 0x100000;
+  uintptr_t mapping_addr = (uint32_t) NaClCommonSysMmapIntern(
+      &app, (void *) addr, size,
+      NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
+      NACL_ABI_MAP_FIXED | NACL_ABI_MAP_PRIVATE | NACL_ABI_MAP_ANONYMOUS,
+      -1, 0);
+  ASSERT_EQ(mapping_addr, addr);
+
+  uintptr_t sysaddr = NaClUserToSys(&app, addr);
+#if NACL_WINDOWS
+  CheckMapping(sysaddr, size, MEM_COMMIT, PAGE_READWRITE, MEM_PRIVATE);
+#elif NACL_LINUX
+  CheckMapping(sysaddr, size, PROT_READ | PROT_WRITE, MAP_PRIVATE);
+#elif NACL_OSX
+  CheckMapping(sysaddr, size, VM_PROT_READ | VM_PROT_WRITE, SM_EMPTY);
+#else
+# error Unsupported platform
+#endif
+
+  ASSERT_EQ(0, NaClCommonSysMprotectInternal(
+                   &app, (uint32_t) addr, size, NACL_ABI_PROT_NONE));
+
+#if NACL_WINDOWS
+  CheckMapping(sysaddr, size, MEM_COMMIT, PAGE_NOACCESS, MEM_PRIVATE);
+#elif NACL_LINUX
+  CheckMapping(sysaddr, size, PROT_NONE, MAP_PRIVATE);
+#elif NACL_OSX
+  CheckMapping(sysaddr, size, VM_PROT_NONE, SM_EMPTY);
+#else
+# error Unsupported platform
+#endif
+
+  NaClAddrSpaceFree(&app);
+}
 #endif

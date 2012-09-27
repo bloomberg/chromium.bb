@@ -36,6 +36,7 @@ TEST_F(SelMemTest, AddTest) {
                  start_page_num*i,
                  i,
                  PROT_READ | PROT_EXEC,
+                 PROT_READ | PROT_EXEC,
                  NACL_VMMAP_ENTRY_ANONYMOUS);
     EXPECT_EQ(i, static_cast<int>(mem_map.nvalid));
     EXPECT_EQ(5, static_cast<int>(mem_map.size));
@@ -45,6 +46,7 @@ TEST_F(SelMemTest, AddTest) {
   NaClVmmapAdd(&mem_map,
                start_page_num,
                2,
+               PROT_READ,
                PROT_READ,
                NACL_VMMAP_ENTRY_ANONYMOUS);
   EXPECT_EQ(6, static_cast<int>(mem_map.nvalid));
@@ -63,6 +65,7 @@ TEST_F(SelMemTest, UpdateTest) {
                             32,
                             12,
                             PROT_READ | PROT_EXEC,
+                            PROT_READ | PROT_EXEC,
                             NACL_VMMAP_ENTRY_ANONYMOUS);
   EXPECT_EQ(1, static_cast<int>(mem_map.nvalid));
 
@@ -70,6 +73,7 @@ TEST_F(SelMemTest, UpdateTest) {
   NaClVmmapAddWithOverwrite(&mem_map,
                             64,
                             10,
+                            PROT_READ,
                             PROT_READ,
                             NACL_VMMAP_ENTRY_ANONYMOUS);
   // vmmap is [32, 44], [64, 74]
@@ -80,6 +84,7 @@ TEST_F(SelMemTest, UpdateTest) {
                             42,
                             24,
                             PROT_READ,
+                            PROT_READ,
                             NACL_VMMAP_ENTRY_ANONYMOUS);
   // vmmap is [32, 41], [42, 66], [67, 74]
   EXPECT_EQ(3, static_cast<int>(mem_map.nvalid));
@@ -89,6 +94,7 @@ TEST_F(SelMemTest, UpdateTest) {
                             36,
                             2,
                             PROT_READ | PROT_EXEC,
+                            PROT_READ | PROT_EXEC,
                             NACL_VMMAP_ENTRY_ANONYMOUS);
   // vmmap is [32, 35], [34, 36], [37, 41], [42, 66], [67, 74]
   EXPECT_EQ(5, static_cast<int>(mem_map.nvalid));
@@ -97,6 +103,7 @@ TEST_F(SelMemTest, UpdateTest) {
   NaClVmmapAddWithOverwrite(&mem_map,
                             32,
                             6,
+                            PROT_READ | PROT_EXEC,
                             PROT_READ | PROT_EXEC,
                             NACL_VMMAP_ENTRY_ANONYMOUS);
   // vmmap is [32, 36], [37, 41], [42, 66], [67, 74]
@@ -129,6 +136,7 @@ TEST_F(SelMemTest, FindPageTest) {
     NaClVmmapAdd(&mem_map,
                  start_page_num*i,
                  2*i,
+                 PROT_READ | PROT_EXEC,
                  PROT_READ | PROT_EXEC,
                  NACL_VMMAP_ENTRY_ANONYMOUS);
     EXPECT_EQ(i, static_cast<int>(mem_map.nvalid));
@@ -166,6 +174,7 @@ TEST_F(SelMemTest, FindSpaceTest) {
                32,
                10,
                PROT_READ | PROT_EXEC,
+               PROT_READ | PROT_EXEC,
                NACL_VMMAP_ENTRY_ANONYMOUS);
   EXPECT_EQ(1, static_cast<int>(mem_map.nvalid));
   // one entry only
@@ -175,6 +184,7 @@ TEST_F(SelMemTest, FindSpaceTest) {
   NaClVmmapAdd(&mem_map,
                64,
                10,
+               PROT_READ | PROT_EXEC,
                PROT_READ | PROT_EXEC,
                NACL_VMMAP_ENTRY_ANONYMOUS);
   EXPECT_EQ(2U, mem_map.nvalid);
@@ -189,6 +199,7 @@ TEST_F(SelMemTest, FindSpaceTest) {
   NaClVmmapAdd(&mem_map,
                96,
                10,
+               PROT_READ | PROT_EXEC,
                PROT_READ | PROT_EXEC,
                NACL_VMMAP_ENTRY_ANONYMOUS);
   EXPECT_EQ(3U, mem_map.nvalid);

@@ -24,6 +24,9 @@ extern void *mmap(void *start, size_t length, int prot, int flags,
 /** Description of munmap. More details... */
 extern int munmap(void *start, size_t length);
 
+/** Description of mprotect. More details... */
+extern int mprotect(void *start, size_t length, int prot);
+
 #ifdef __cplusplus
 }
 #endif

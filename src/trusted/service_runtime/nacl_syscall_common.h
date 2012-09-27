@@ -133,6 +133,16 @@ int32_t NaClSysMmap(struct NaClAppThread  *natp,
                     int                   d,
                     nacl_abi_off_t        *offp);
 
+int32_t NaClCommonSysMprotectInternal(struct NaClApp  *nap,
+                                      uint32_t        start,
+                                      size_t          length,
+                                      int             prot);
+
+int32_t NaClSysMprotect(struct NaClAppThread  *natp,
+                        uint32_t              start,
+                        size_t                length,
+                        int                   prot);
+
 int32_t NaClSysMunmap(struct NaClAppThread  *natp,
                       void                  *start,
                       size_t                length);

@@ -176,6 +176,19 @@ extern int munmap(void *start, size_t length);
 #endif
 /**
  *  @posix
+ *  Set protection of memory mapping.
+ *  @param start The start address of the region for which the protection is to
+ *  be changed.
+ *  @param length The length of the region to be changed.
+ *  @param prot The protection.
+ *  @return On success, mprotect returns zero. On failure, it returns -1 and
+ *  sets errno appropriately.
+ */
+#ifndef __GLIBC__
+extern int mprotect(void *start, size_t length, int prot);
+#endif
+/**
+ *  @posix
  *  Terminates the program, returning a specified exit status.
  *  @param status The status to be returned.
  *  @return Exit does not return.

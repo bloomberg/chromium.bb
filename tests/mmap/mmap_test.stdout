@@ -10,5 +10,12 @@ mmap okay
 test4
 mmap gave an error as expected
 test_munmap
+test_mprotect
+mmap done
+mprotect good
+test_mprotect_unmapped_memory
+mmap done
+munmap done
+mprotect good (failed as expected)
 test_mmap_end_of_file
 All tests PASSED

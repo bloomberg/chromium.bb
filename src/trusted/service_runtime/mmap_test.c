@@ -77,6 +77,7 @@ int main(int argc, char **argv) {
   uint32_t initial_addr;
   uint32_t addr;
   struct NaClVmmap *mem_map;
+  struct NaClVmmapEntry *ent;
   char *nacl_verbosity = getenv("NACLVERBOSITY");
 
   NaClHandleBootstrapArgs(&argc, &argv);
@@ -279,6 +280,107 @@ int main(int argc, char **argv) {
   ASSERT_EQ(mem_map->vmentry[6]->npages,
             4 * NACL_PAGES_PER_MAP);
 
+
+  /* Change the memory protection of previously allocated range */
+  errcode = NaClCommonSysMprotectInternal(nap, (initial_addr
+                                                + 1 * NACL_MAP_PAGESIZE),
+                                          5 * NACL_MAP_PAGESIZE,
+                                          NACL_ABI_PROT_READ);
+  ASSERT_EQ(errcode, 0);
+  /*
+   * The mappings have changed to become:
+   * 0. --  Zero page
+   * 1. rx  Static code segment
+   * 2. r   Read-only data segment
+   * 3. rw  Writable data segment
+   * 4. rw  mmap()'d anonymous, 1 pages (previous)
+   * 5. r   mmap()'d anonymous, 1 pages (new)
+   * 6. r   mmap()'d anonymous, 3 pages (new)
+   * 7. r   mmap()'d anonymous, 1 pages (new)
+   * 8. rw  mmap()'d anonymous, 3 pages (previous)
+   * 9. rw  Stack
+   */
+
+  NaClVmmapMakeSorted(mem_map);
+  ASSERT_EQ(mem_map->nvalid, 10);
+  CheckLowerMappings(mem_map);
+
+  ASSERT_EQ(mem_map->vmentry[4]->npages,
+            1 * NACL_PAGES_PER_MAP);
+  ASSERT_EQ(mem_map->vmentry[4]->prot,
+            NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE);
+
+  ASSERT_EQ(mem_map->vmentry[5]->npages,
+            1 * NACL_PAGES_PER_MAP);
+  ASSERT_EQ(mem_map->vmentry[5]->prot,
+            NACL_ABI_PROT_READ);
+
+  ASSERT_EQ(mem_map->vmentry[6]->npages,
+            3 * NACL_PAGES_PER_MAP);
+  ASSERT_EQ(mem_map->vmentry[6]->prot,
+            NACL_ABI_PROT_READ);
+
+  ASSERT_EQ(mem_map->vmentry[7]->npages,
+            1 * NACL_PAGES_PER_MAP);
+  ASSERT_EQ(mem_map->vmentry[7]->prot,
+            NACL_ABI_PROT_READ);
+
+  ASSERT_EQ(mem_map->vmentry[8]->npages,
+            3 * NACL_PAGES_PER_MAP);
+  ASSERT_EQ(mem_map->vmentry[8]->prot,
+            NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE);
+
+
+  /* Change the memory protection of previously allocated range */
+  errcode = NaClCommonSysMprotectInternal(nap, (initial_addr
+                                                + 2 * NACL_MAP_PAGESIZE),
+                                          3 * NACL_MAP_PAGESIZE,
+                                          NACL_ABI_PROT_NONE);
+  ASSERT_EQ(errcode, 0);
+  /*
+   * The mappings have changed to become:
+   * 0. --  Zero page
+   * 1. rx  Static code segment
+   * 2. r   Read-only data segment
+   * 3. rw  Writable data segment
+   * 4. rw  mmap()'d anonymous, 1 pages (previous)
+   * 5. r   mmap()'d anonymous, 1 pages (previous)
+   * 6. --  mmap()'d anonymous, 3 pages (new)
+   * 7. r   mmap()'d anonymous, 1 pages (previous)
+   * 8. rw  mmap()'d anonymous, 3 pages (previous)
+   * 9. rw  Stack
+   */
+
+  NaClVmmapMakeSorted(mem_map);
+  ASSERT_EQ(mem_map->nvalid, 10);
+  CheckLowerMappings(mem_map);
+
+  ASSERT_EQ(mem_map->vmentry[4]->npages,
+            1 * NACL_PAGES_PER_MAP);
+  ASSERT_EQ(mem_map->vmentry[4]->prot,
+            NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE);
+
+  ASSERT_EQ(mem_map->vmentry[5]->npages,
+            1 * NACL_PAGES_PER_MAP);
+  ASSERT_EQ(mem_map->vmentry[5]->prot,
+            NACL_ABI_PROT_READ);
+
+  ASSERT_EQ(mem_map->vmentry[6]->npages,
+            3 * NACL_PAGES_PER_MAP);
+  ASSERT_EQ(mem_map->vmentry[6]->prot,
+            NACL_ABI_PROT_NONE);
+
+  ASSERT_EQ(mem_map->vmentry[7]->npages,
+            1 * NACL_PAGES_PER_MAP);
+  ASSERT_EQ(mem_map->vmentry[7]->prot,
+            NACL_ABI_PROT_READ);
+
+  ASSERT_EQ(mem_map->vmentry[8]->npages,
+            3 * NACL_PAGES_PER_MAP);
+  ASSERT_EQ(mem_map->vmentry[8]->prot,
+            NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE);
+
+
   /*
    * Undo effects of previous mmaps
    */
@@ -319,6 +421,41 @@ int main(int argc, char **argv) {
 
   errcode = NaClSysMunmap(natp, (void *) (uintptr_t) initial_addr, 0);
   ASSERT_EQ(errcode, -NACL_ABI_EINVAL);
+
+  /* Check changing the memory protection of neighbouring mmaps */
+  addr = NaClCommonSysMmapIntern(nap, 0, NACL_MAP_PAGESIZE,
+                                 NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
+                                 NACL_ABI_MAP_ANONYMOUS | NACL_ABI_MAP_PRIVATE,
+                                 -1, 0);
+  printf("addr=0x%"NACL_PRIx32"\n", addr);
+  initial_addr = addr;
+  addr = NaClCommonSysMmapIntern(nap, (void *) (uintptr_t) (initial_addr +
+                                                            NACL_MAP_PAGESIZE),
+                                 NACL_MAP_PAGESIZE,
+                                 NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
+                                 NACL_ABI_MAP_ANONYMOUS | NACL_ABI_MAP_PRIVATE
+                                 | NACL_ABI_MAP_FIXED,
+                                 -1, 0);
+  printf("addr=0x%"NACL_PRIx32"\n", addr);
+  ASSERT_EQ(addr, initial_addr + NACL_MAP_PAGESIZE);
+
+  errcode = NaClCommonSysMprotectInternal(nap, initial_addr,
+                                          2 * NACL_MAP_PAGESIZE,
+                                          NACL_ABI_PROT_READ);
+  ASSERT_EQ(errcode, 0);
+
+  /* Undo effects of previous mmaps */
+  errcode = NaClSysMunmap(natp, (void *) (uintptr_t) initial_addr,
+                          2 * NACL_MAP_PAGESIZE);
+  ASSERT_EQ(errcode, 0);
+
+  /* Check that we cannot make the read-only data segment writable */
+  ent = mem_map->vmentry[2];
+  errcode = NaClCommonSysMprotectInternal(nap, (uint32_t) (ent->page_num <<
+                                                           NACL_PAGESHIFT),
+                                          ent->npages * NACL_MAP_PAGESIZE,
+                                          NACL_ABI_PROT_WRITE);
+  ASSERT_EQ(errcode, -NACL_ABI_EACCES);
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64
   CheckForGuardRegion(nap->mem_start - ((size_t) 40 << 30), (size_t) 40 << 30);

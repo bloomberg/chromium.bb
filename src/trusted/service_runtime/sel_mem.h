@@ -48,6 +48,7 @@ struct NaClVmmapEntry {
   uintptr_t               page_num;   /* base virtual addr >> NACL_PAGESHIFT */
   size_t                  npages;     /* number of pages */
   int                     prot;       /* mprotect attribute */
+  int                     max_prot;   /* maximum protection */
   enum NaClVmmapEntryType vmmap_type; /* memory entry type */
   int                     removed;    /* flag set in NaClVmmapUpdate */
 };
@@ -87,6 +88,7 @@ void  NaClVmmapAdd(struct NaClVmmap         *self,
                    uintptr_t                page_num,
                    size_t                   npages,
                    int                      prot,
+                   int                      max_prot,
                    enum NaClVmmapEntryType  vmmap_type);
 
 /*
@@ -97,6 +99,7 @@ void  NaClVmmapAddWithOverwrite(struct NaClVmmap          *self,
                                 uintptr_t                 page_num,
                                 size_t                    npages,
                                 int                       prot,
+                                int                       max_prot,
                                 enum NaClVmmapEntryType   vmmap_type);
 
 /*
@@ -107,6 +110,23 @@ void  NaClVmmapRemove(struct NaClVmmap          *self,
                       uintptr_t                 page_num,
                       size_t                    npages,
                       enum NaClVmmapEntryType   vmmap_type);
+
+/*
+ * NaClVmmapChangeProt updates the protection bits for the specified region.
+ */
+int NaClVmmapChangeProt(struct NaClVmmap  *self,
+                        uintptr_t         page_num,
+                        size_t            npages,
+                        int               prot);
+
+/*
+ * NaClVmmapCheckMapping checks whether there is an existing mapping with
+ * maximum protection equivalent or higher to the given one.
+ */
+int NaClVmmapCheckExistingMapping(struct NaClVmmap  *self,
+                                  uintptr_t         page_num,
+                                  size_t            npages,
+                                  int               prot);
 
 /*
  * NaClVmmapFindPage and NaClVmmapFindPageIter only works if pnum is
