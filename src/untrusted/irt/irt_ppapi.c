@@ -30,14 +30,6 @@ const void *PPP_GetInterface(const char *interface_name) {
   return g_pp_functions.PPP_GetInterface(interface_name);
 }
 
-/*
- * This overrides the definition in ppapi_proxy/plugin_threading.cc.
- * TODO(mseaborn): Remove this when PPAPI is only supported via the IRT.
- * See http://code.google.com/p/nativeclient/issues/detail?id=1691
- */
-void PpapiPluginRegisterDefaultThreadCreator() {
-}
-
 const struct nacl_irt_ppapihook nacl_irt_ppapihook = {
   irt_ppapi_start,
   PpapiPluginRegisterThreadCreator,
