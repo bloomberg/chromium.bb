@@ -1430,6 +1430,23 @@ void RenderWidgetHostViewMac::ShowDefinitionForSelection() {
   NSAttributedString* attr_string =
       [cocoa_view_ attributedSubstringForProposedRange:selection_range
                                            actualRange:nil];
+
+  // The PDF plugin does not support getting the attributed string. Until it
+  // does, use NSPerformService(), which opens Dictionary.app.
+  // http://crbug.com/152438
+  // TODO(asvitkine): This should be removed after the above support is added.
+  if (!attr_string) {
+    if (selected_text_.empty())
+      return;
+    NSString* text = base::SysUTF8ToNSString(selected_text_);
+    NSPasteboard* pasteboard = [NSPasteboard pasteboardWithUniqueName];
+    NSArray* types = [NSArray arrayWithObject:NSStringPboardType];
+    [pasteboard declareTypes:types owner:nil];
+    if ([pasteboard setString:text forType:NSStringPboardType])
+      NSPerformService(@"Look Up in Dictionary", pasteboard);
+    return;
+  }
+
   NSRect rect = [cocoa_view_ firstViewRectForCharacterRange:selection_range
                                                 actualRange:nil];
 

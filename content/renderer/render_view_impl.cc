@@ -2187,6 +2187,22 @@ void RenderViewImpl::showContextMenu(
 
   content::ContextMenuParams params(data);
 
+  // Plugins, e.g. PDF, don't currently update the render view when their
+  // selected text changes, but the context menu params do contain the updated
+  // selection. If that's the case, update the render view's state just prior
+  // to showing the context menu.
+  // TODO(asvitkine): http://crbug.com/152432
+  if (params.selection_text != selection_text_) {
+    selection_text_ = params.selection_text;
+    // TODO(asvitkine): Text offset and range is not available in this case.
+    selection_text_offset_ = 0;
+    selection_range_ = ui::Range(0, selection_text_.length());
+    Send(new ViewHostMsg_SelectionChanged(routing_id_,
+                                          selection_text_,
+                                          selection_text_offset_,
+                                          selection_range_));
+  }
+
   // frame is NULL if invoked by BlockedPlugin.
   if (frame)
     params.frame_id = frame->identifier();
