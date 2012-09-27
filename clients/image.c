@@ -24,6 +24,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 #include <fcntl.h>
 #include <libgen.h>
@@ -31,6 +32,8 @@
 #include <math.h>
 #include <time.h>
 #include <cairo.h>
+#include <assert.h>
+#include <linux/input.h>
 
 #include <wayland-client.h>
 
@@ -45,7 +48,58 @@ struct image {
 	cairo_surface_t *image;
 	int fullscreen;
 	int *image_counter;
+	int32_t width, height;
+
+	struct {
+		double x;
+		double y;
+	} pointer;
+	bool button_pressed;
+
+	bool initialized;
+	cairo_matrix_t matrix;
 };
+
+static double
+get_scale(struct image *image)
+{
+	assert(image->matrix.xy == 0.0 &&
+	       image->matrix.yx == 0.0 &&
+	       image->matrix.xx == image->matrix.yy);
+	return image->matrix.xx;
+}
+
+static void
+center_view(struct image *image)
+{
+	struct rectangle allocation;
+	double scale = get_scale(image);
+
+	widget_get_allocation(image->widget, &allocation);
+	image->matrix.x0 = (allocation.width - image->width * scale) / 2;
+	image->matrix.y0 = (allocation.height - image->height * scale) / 2;
+}
+
+static void
+clamp_view(struct image *image)
+{
+	struct rectangle allocation;
+	double scale = get_scale(image);
+	double sw, sh;
+
+	sw = image->width * scale;
+	sh = image->height * scale;
+	widget_get_allocation(image->widget, &allocation);
+
+	if (image->matrix.x0 > 0.0)
+		image->matrix.x0 = 0.0;
+	if (image->matrix.y0 > 0.0)
+		image->matrix.y0 = 0.0;
+	if (sw + image->matrix.x0 < allocation.width)
+		image->matrix.x0 = allocation.width - sw;
+	if (sh + image->matrix.y0 < allocation.height)
+		image->matrix.y0 = allocation.height - sh;
+}
 
 static void
 redraw_handler(struct widget *widget, void *data)
@@ -55,8 +109,8 @@ redraw_handler(struct widget *widget, void *data)
 	cairo_t *cr;
 	cairo_surface_t *surface;
 	double width, height, doc_aspect, window_aspect, scale;
-
-	widget_get_allocation(image->widget, &allocation);
+	cairo_matrix_t matrix;
+	cairo_matrix_t translate;
 
 	surface = window_get_surface(image->window);
 	cr = cairo_create(surface);
@@ -71,18 +125,29 @@ redraw_handler(struct widget *widget, void *data)
 	cairo_set_source_rgba(cr, 0, 0, 0, 1);
 	cairo_paint(cr);
 
-	width = cairo_image_surface_get_width(image->image);
-	height = cairo_image_surface_get_height(image->image);
-	doc_aspect = width / height;
-	window_aspect = (double) allocation.width / allocation.height;
-	if (doc_aspect < window_aspect)
-		scale = allocation.height / height;
-	else
-		scale = allocation.width / width;
-	cairo_scale(cr, scale, scale);
-	cairo_translate(cr,
-			(allocation.width - width * scale) / 2 / scale,
-			(allocation.height - height * scale) / 2 / scale);
+	if (!image->initialized) {
+		image->initialized = true;
+		width = cairo_image_surface_get_width(image->image);
+		height = cairo_image_surface_get_height(image->image);
+
+		doc_aspect = width / height;
+		window_aspect = (double) allocation.width / allocation.height;
+		if (doc_aspect < window_aspect)
+			scale = allocation.height / height;
+		else
+			scale = allocation.width / width;
+
+		image->width = width;
+		image->height = height;
+		cairo_matrix_init_scale(&image->matrix, scale, scale);
+
+		center_view(image);
+	}
+
+	matrix = image->matrix;
+	cairo_matrix_init_translate(&translate, allocation.x, allocation.y);
+	cairo_matrix_multiply(&matrix, &matrix, &translate);
+	cairo_set_matrix(cr, &matrix);
 
 	cairo_set_source_surface(cr, image->image, 0, 0);
 	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
@@ -102,6 +167,140 @@ keyboard_focus_handler(struct window *window,
 	struct image *image = data;
 
 	window_schedule_redraw(image->window);
+}
+
+static int
+enter_handler(struct widget *widget,
+	      struct input *input,
+	      float x, float y, void *data)
+{
+	struct image *image = data;
+	struct rectangle allocation;
+
+	widget_get_allocation(image->widget, &allocation);
+	x -= allocation.x;
+	y -= allocation.y;
+
+	image->pointer.x = x;
+	image->pointer.y = y;
+
+	return 1;
+}
+
+static bool
+image_is_smaller(struct image *image)
+{
+	double scale;
+	struct rectangle allocation;
+
+	scale = get_scale(image);
+	widget_get_allocation(image->widget, &allocation);
+
+	return scale * image->width < allocation.width;
+}
+
+static void
+move_viewport(struct image *image, double dx, double dy)
+{
+	double scale = get_scale(image);
+
+	if (!image->initialized)
+		return;
+
+	cairo_matrix_translate(&image->matrix, -dx/scale, -dy/scale);
+
+	if (image_is_smaller(image))
+		center_view(image);
+	else
+		clamp_view(image);
+
+	window_schedule_redraw(image->window);
+}
+
+static int
+motion_handler(struct widget *widget,
+	       struct input *input, uint32_t time,
+	       float x, float y, void *data)
+{
+	struct image *image = data;
+	struct rectangle allocation;
+
+	widget_get_allocation(image->widget, &allocation);
+	x -= allocation.x;
+	y -= allocation.y;
+
+	if (image->button_pressed)
+		move_viewport(image, image->pointer.x - x,
+			      image->pointer.y - y);
+
+	image->pointer.x = x;
+	image->pointer.y = y;
+
+	return image->button_pressed ? CURSOR_DRAGGING : CURSOR_LEFT_PTR;
+}
+
+static void
+button_handler(struct widget *widget,
+	       struct input *input, uint32_t time,
+	       uint32_t button,
+	       enum wl_pointer_button_state state,
+	       void *data)
+{
+	struct image *image = data;
+	bool was_pressed;
+
+	if (button == BTN_LEFT) {
+		was_pressed = image->button_pressed;
+		image->button_pressed =
+			state == WL_POINTER_BUTTON_STATE_PRESSED;
+
+		if (!image->button_pressed && was_pressed)
+			input_set_pointer_image(input, CURSOR_LEFT_PTR);
+	}
+}
+
+static void
+zoom(struct image *image, double scale)
+{
+	double x = image->pointer.x;
+	double y = image->pointer.y;
+	cairo_matrix_t scale_matrix;
+
+	if (!image->initialized)
+		return;
+
+	if (get_scale(image) * scale > 20.0 ||
+	    get_scale(image) * scale < 0.02)
+		return;
+
+	cairo_matrix_init_identity(&scale_matrix);
+	cairo_matrix_translate(&scale_matrix, x, y);
+	cairo_matrix_scale(&scale_matrix, scale, scale);
+	cairo_matrix_translate(&scale_matrix, -x, -y);
+
+	cairo_matrix_multiply(&image->matrix, &image->matrix, &scale_matrix);
+	if (image_is_smaller(image))
+		center_view(image);
+}
+
+static void
+axis_handler(struct widget *widget, struct input *input, uint32_t time,
+	     uint32_t axis, wl_fixed_t value, void *data)
+{
+	struct image *image = data;
+
+	if (axis == WL_POINTER_AXIS_VERTICAL_SCROLL &&
+	    input_get_modifiers(input) == MOD_CONTROL_MASK) {
+		/* set zoom level to 2% per 10 axis units */
+		zoom(image, (1.0 - wl_fixed_to_double(value) / 500.0));
+
+		window_schedule_redraw(image->window);
+	} else if (input_get_modifiers(input) == 0) {
+		if (axis == WL_POINTER_AXIS_VERTICAL_SCROLL)
+			move_viewport(image, 0, wl_fixed_to_double(value));
+		else if (axis == WL_POINTER_AXIS_HORIZONTAL_SCROLL)
+			move_viewport(image, wl_fixed_to_double(value), 0);
+	}
 }
 
 static void
@@ -160,6 +359,7 @@ image_create(struct display *display, const char *filename,
 	image->display = display;
 	image->image_counter = image_counter;
 	*image_counter += 1;
+	image->initialized = false;
 
 	window_set_user_data(image->window, image);
 	widget_set_redraw_handler(image->widget, redraw_handler);
@@ -168,6 +368,10 @@ image_create(struct display *display, const char *filename,
 	window_set_fullscreen_handler(image->window, fullscreen_handler);
 	window_set_close_handler(image->window, close_handler);
 
+	widget_set_enter_handler(image->widget, enter_handler);
+	widget_set_motion_handler(image->widget, motion_handler);
+	widget_set_button_handler(image->widget, button_handler);
+	widget_set_axis_handler(image->widget, axis_handler);
 	widget_schedule_resize(image->widget, 500, 400);
 
 	return image;
