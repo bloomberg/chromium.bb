@@ -19,7 +19,6 @@ class WebContents;
 class PDFTabHelper : public content::WebContentsObserver,
                      public WebContentsUserData<PDFTabHelper>  {
  public:
-  static int kUserDataKey;
 
   explicit PDFTabHelper(content::WebContents* web_contents);
   virtual ~PDFTabHelper();

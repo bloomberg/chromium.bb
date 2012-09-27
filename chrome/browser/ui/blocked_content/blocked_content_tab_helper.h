@@ -62,7 +62,6 @@ class BlockedContentTabHelper
 
  private:
   explicit BlockedContentTabHelper(content::WebContents* web_contents);
-  static int kUserDataKey;
   friend class WebContentsUserData<BlockedContentTabHelper>;
 
   // Called when the blocked popup notification is shown or hidden.

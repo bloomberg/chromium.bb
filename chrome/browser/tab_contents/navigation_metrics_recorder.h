@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_TAB_CONTENTS_NAVIGATION_METRICS_RECORDER_H_
 #define CHROME_BROWSER_TAB_CONTENTS_NAVIGATION_METRICS_RECORDER_H_
 
-#include "chrome/browser/tab_contents/web_contents_user_data.h"
+#include "chrome/browser/common/web_contents_user_data.h"
 #include "content/public/browser/web_contents_observer.h"
 
 class NavigationMetricsRecorder
@@ -16,7 +16,6 @@ class NavigationMetricsRecorder
 
  private:
   explicit NavigationMetricsRecorder(content::WebContents* web_contents);
-  static int kUserDataKey;
   friend class WebContentsUserData<NavigationMetricsRecorder>;
 
   // content::WebContentsObserver overrides:

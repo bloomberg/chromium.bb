@@ -25,7 +25,6 @@ class MetroPinTabHelper : public content::WebContentsObserver,
 
  private:
   explicit MetroPinTabHelper(content::WebContents* tab_contents);
-  static int kUserDataKey;
   friend class WebContentsUserData<MetroPinTabHelper>;
 
   // Queries the metro driver about the pinned state of the current URL.

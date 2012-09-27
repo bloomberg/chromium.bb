@@ -97,7 +97,6 @@ class WebNavigationTabObserver
 
  private:
   explicit WebNavigationTabObserver(content::WebContents* web_contents);
-  static int kUserDataKey;
   friend class WebContentsUserData<WebNavigationTabObserver>;
 
   // True if the transition and target url correspond to a reference fragment

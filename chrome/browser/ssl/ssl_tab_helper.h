@@ -59,7 +59,6 @@ class SSLTabHelper : public WebContentsUserData<SSLTabHelper> {
 
  private:
   explicit SSLTabHelper(content::WebContents* contents);
-  static int kUserDataKey;
   friend class WebContentsUserData<SSLTabHelper>;
 
   content::WebContents* web_contents_;

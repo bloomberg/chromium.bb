@@ -21,7 +21,6 @@ class SnapshotTabHelper : public content::WebContentsObserver,
 
  private:
   explicit SnapshotTabHelper(content::WebContents* web_contents);
-  static int kUserDataKey;
   friend class WebContentsUserData<SnapshotTabHelper>;
 
   // content::WebContentsObserver overrides:

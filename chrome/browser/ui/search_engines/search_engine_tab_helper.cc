@@ -23,7 +23,7 @@ using content::NavigationController;
 using content::NavigationEntry;
 using content::WebContents;
 
-int SearchEngineTabHelper::kUserDataKey;
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(SearchEngineTabHelper)
 
 namespace {
 

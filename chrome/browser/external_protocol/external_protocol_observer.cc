@@ -8,7 +8,7 @@
 
 using content::WebContents;
 
-int ExternalProtocolObserver::kUserDataKey;
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(ExternalProtocolObserver)
 
 ExternalProtocolObserver::ExternalProtocolObserver(WebContents* web_contents)
     : content::WebContentsObserver(web_contents) {

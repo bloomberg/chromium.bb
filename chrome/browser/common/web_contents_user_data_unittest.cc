@@ -11,15 +11,12 @@
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace {
-
 class WebContentsAttachedClass1
     : public WebContentsUserData<WebContentsAttachedClass1> {
  public:
   virtual ~WebContentsAttachedClass1() {}
  private:
   explicit WebContentsAttachedClass1(content::WebContents* contents) {}
-  static int kUserDataKey;
   friend class WebContentsUserData<WebContentsAttachedClass1>;
 };
 
@@ -29,14 +26,11 @@ class WebContentsAttachedClass2
   virtual ~WebContentsAttachedClass2() {}
  private:
   explicit WebContentsAttachedClass2(content::WebContents* contents) {}
-  static int kUserDataKey;
   friend class WebContentsUserData<WebContentsAttachedClass2>;
 };
 
-int WebContentsAttachedClass1::kUserDataKey;
-int WebContentsAttachedClass2::kUserDataKey;
-
-}  // namespace
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(WebContentsAttachedClass1)
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(WebContentsAttachedClass2)
 
 typedef ChromeRenderViewHostTestHarness WebContentsUserDataTest;
 

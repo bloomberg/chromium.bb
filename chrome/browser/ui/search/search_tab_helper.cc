@@ -16,7 +16,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 
-int chrome::search::SearchTabHelper::kUserDataKey;
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(chrome::search::SearchTabHelper)
 
 namespace {
 

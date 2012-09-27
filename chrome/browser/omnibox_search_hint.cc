@@ -42,7 +42,7 @@
 using content::NavigationController;
 using content::NavigationEntry;
 
-int OmniboxSearchHint::kUserDataKey;
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(OmniboxSearchHint)
 
 // The URLs of search engines for which we want to trigger the infobar.
 const char* const kSearchEngineURLs[] = {
