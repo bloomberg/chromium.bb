@@ -247,10 +247,6 @@
         # font rendering in high DPI mode.
         # See https://codereview.appspot.com/6495089/
         'SK_SUPPORT_HINTING_SCALE_FACTOR',
-
-        # Temporarily keep old int-srcrect behavior, until we determine if
-        # the few failures are a bug or not.
-        'SK_SUPPORT_INT_SRCRECT_DRAWBITMAPRECT',
       ],
       'sources!': [
         '../third_party/skia/include/core/SkTypes.h',
