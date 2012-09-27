@@ -874,7 +874,6 @@
           'test/data/extensions/api_test/management/test/',
           'test/data/extensions/api_test/media_galleries/',
           'test/data/extensions/api_test/media_galleries_private/',
-          'test/data/extensions/api_test/native_messaging/',
           'test/data/extensions/api_test/notifications/',
           'test/data/extensions/api_test/override/history/',
           'test/data/extensions/api_test/override/newtab/',
