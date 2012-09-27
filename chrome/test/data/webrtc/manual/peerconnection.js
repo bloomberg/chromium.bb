@@ -88,6 +88,7 @@ function clearLog() {
 window.onload = function() {
   replaceReturnCallback(print_);
   replaceDebugCallback(debug_);
+  doNotAutoAddLocalStreamWhenCalled();
 }
 
 window.onunload = function() {

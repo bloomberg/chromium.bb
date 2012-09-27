@@ -50,6 +50,12 @@ var gServerUrl = null;
 var gRemotePeerId = null;
 
 /**
+ * Whether or not to auto-respond by adding our local stream when we are called.
+ * @private
+ */
+var gAutoAddLocalToPeerConnectionStreamWhenCalled = true;
+
+/**
  * We need a STUN server for some API calls.
  * @private
  */
@@ -190,6 +196,13 @@ function hangUp() {
  */
 function acceptIncomingCallsAgain() {
   gAcceptsIncomingCalls = true;
+}
+
+/**
+ * Do not auto-add the local stream when called.
+ */
+function doNotAutoAddLocalStreamWhenCalled() {
+  gAutoAddLocalToPeerConnectionStreamWhenCalled = false;
 }
 
 /**
@@ -378,7 +391,8 @@ function handlePeerMessage_(peerId, message) {
     debug('We are being called: answer...');
 
     gPeerConnection = createPeerConnection(STUN_SERVER);
-    if (obtainGetUserMediaResult() == 'ok-got-stream') {
+    if (gAutoAddLocalToPeerConnectionStreamWhenCalled &&
+        obtainGetUserMediaResult() == 'ok-got-stream') {
       debug('We have a local stream, so hook it up automatically.');
       addLocalStreamToPeerConnection(gPeerConnection);
     }
