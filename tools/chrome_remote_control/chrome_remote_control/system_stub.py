@@ -30,7 +30,7 @@ class Override(object):
       setattr(self, module_name, stubs[module_name]())
       setattr(base_module, module_name, getattr(self, module_name))
 
-    if hasattr(self, 'os') and hasattr(self, 'sys'):
+    if self.os and self.sys:
       self.os.path.sys = self.sys
 
   def __del__(self):
