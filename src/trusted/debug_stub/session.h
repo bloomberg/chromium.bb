@@ -66,11 +66,7 @@ class Session {
   virtual bool Connected();
 
  protected:
-  // Wait until data is available or timeout is reached.
-  // Returns true if data is available, false if timeout is reached.
-  virtual bool WaitForData();
   virtual bool GetChar(char *ch);
-  virtual bool SendStream(const char *str);
 
  private:
   Session(const Session&);

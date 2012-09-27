@@ -4,10 +4,14 @@
  * found in the LICENSE file.
  */
 
+#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include <algorithm>
 #include <string>
 
+#include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/include/portability_sockets.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/debug_stub/platform.h"
@@ -23,32 +27,35 @@ typedef int socklen_t;
 
 class Transport : public ITransport {
  public:
-  Transport() {
+  Transport()
+    : buf_(new char[kBufSize]),
+      pos_(0),
+      size_(0) {
     handle_ = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
   }
 
-  explicit Transport(NaClSocketHandle s) {
-    handle_ = s;
+  explicit Transport(NaClSocketHandle s)
+    : buf_(new char[kBufSize]),
+      pos_(0),
+      size_(0),
+      handle_(s) {
   }
 
   ~Transport() {
     if (handle_ != NACL_INVALID_SOCKET) NaClCloseSocket(handle_);
   }
 
-  // Read from this transport, return a negative value if there is an error
-  // otherwise return the number of bytes actually read.
-  virtual int32_t Read(void *ptr, int32_t len) {
-    return ::recv(handle_, reinterpret_cast<char *>(ptr), len, 0);
-  }
+  // Read from this transport, return true on success.
+  virtual bool Read(void *ptr, int32_t len);
 
-  // Write to this transport, return a negative value if there is an error
-  // otherwise return the number of bytes actually written.
-  virtual int32_t Write(const void *ptr, int32_t len) {
-    return ::send(handle_, reinterpret_cast<const char *>(ptr), len, 0);
-  }
+  // Write to this transport, return true on success.
+  virtual bool Write(const void *ptr, int32_t len);
 
   // Return true if data becomes availible or false after ms milliseconds.
   virtual bool ReadWaitWithTimeout(uint32_t ms = 0) {
+    if (pos_ < size_) {
+      return true;
+    }
     fd_set fds;
 
     FD_ZERO(&fds);
@@ -82,8 +89,65 @@ class Transport : public ITransport {
   }
 
  protected:
+  // Copy buffered data to *dst up to len bytes and update dst and len.
+  void CopyFromBuffer(char **dst, int32_t *len);
+
+  static const int kBufSize = 4096;
+  nacl::scoped_array<char> buf_;
+  int32_t pos_;
+  int32_t size_;
   NaClSocketHandle handle_;
 };
+
+void Transport::CopyFromBuffer(char **dst, int32_t *len) {
+  int32_t copy_bytes = std::min(*len, size_ - pos_);
+  memcpy(*dst, buf_.get() + pos_, copy_bytes);
+  pos_ += copy_bytes;
+  *len -= copy_bytes;
+  *dst += copy_bytes;
+}
+
+bool Transport::Read(void *ptr, int32_t len) {
+  char *dst = static_cast<char *>(ptr);
+  if (pos_ < size_) {
+    CopyFromBuffer(&dst, &len);
+  }
+  while (len > 0) {
+    int result = ::recv(handle_, buf_.get(), kBufSize, 0);
+    if (result > 0) {
+      pos_ = 0;
+      size_ = result;
+      CopyFromBuffer(&dst, &len);
+      continue;
+    }
+    if (result == 0) {
+      return false;
+    }
+    if (NaClSocketGetLastError() != EINTR) {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool Transport::Write(const void *ptr, int32_t len) {
+  const char *src = static_cast<const char *>(ptr);
+  while (len > 0) {
+    int result = ::send(handle_, src, len, 0);
+    if (result > 0) {
+      src += result;
+      len -= result;
+      continue;
+    }
+    if (result == 0) {
+      return false;
+    }
+    if (NaClSocketGetLastError() != EINTR) {
+      return false;
+    }
+  }
+  return true;
+}
 
 // Convert string in the form of [addr][:port] where addr is a
 // IPv4 address or host name, and port is a 16b tcp/udp port.

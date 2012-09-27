@@ -21,9 +21,6 @@
 using port::IPlatform;
 using port::ITransport;
 
-// Use a timeout of 1 second
-int const kSessionTimeoutMs = 1000;
-
 namespace gdb_rsp {
 
 Session::Session(ITransport *transport)
@@ -52,22 +49,12 @@ bool Session::IsDataAvailable() {
   return io_->ReadWaitWithTimeout(0);
 }
 
-bool Session::WaitForData() {
-  return io_->ReadWaitWithTimeout(kSessionTimeoutMs);
-}
-
 bool Session::Connected() {
   return connected_;
 }
 
 bool Session::GetChar(char *ch) {
-  // Attempt to select this IO for reading.
-  if (WaitForData() == false) return false;
-
-  int32_t len = io_->Read(ch, 1);
-
-  // If data is "availible" but we can't read, it must be closed.
-  if (len < 1) {
+  if (!io_->Read(ch, 1)) {
     io_->Disconnect();
     connected_ = false;
     return false;
@@ -142,31 +129,9 @@ bool Session::SendPacketOnly(Packet *pkt) {
   IntToNibble(run_xsum & 0xF, &ch);
   outstr << ch;
 
-  return SendStream(outstr.str().data());
+  return io_->Write(outstr.str().data(),
+                    static_cast<int32_t>(outstr.str().length()));
 }
-
-bool Session::SendStream(const char *out) {
-  int32_t len = static_cast<int32_t>(strlen(out));
-  int32_t sent = 0;
-
-  while (sent < len) {
-    const char *cur = &out[sent];
-    int32_t tx = io_->Write(cur, len - sent);
-
-    if (tx <= 0) {
-      NaClLog(LOG_WARNING, "Send of %d bytes : '%s' failed.\n", len, out);
-      io_->Disconnect();
-      connected_ = false;
-      return false;
-    }
-
-    sent += tx;
-  }
-
-  if (GetFlags() & DEBUG_SEND) NaClLog(LOG_INFO, "TX %s\n", out);
-  return true;
-}
-
 
 // Attempt to receive a packet
 bool Session::GetPacket(Packet *pkt) {
@@ -183,9 +148,6 @@ bool Session::GetPacket(Packet *pkt) {
  retry:
   has_seq = 1;
   offs    = 0;
-
-  // If nothing is waiting, return NONE
-  if (!WaitForData()) return false;
 
   // Clear the stream
   pkt->Clear();
@@ -260,7 +222,7 @@ bool Session::GetPacket(Packet *pkt) {
 
   // If the XSUMs don't match, signal bad packet
   if (fin_xsum == run_xsum) {
-    char out[4] = { '+', 0, 0, 0};
+    char out[3] = { '+', 0, 0 };
     int32_t seq;
 
     // If we have a sequence number
@@ -268,11 +230,12 @@ bool Session::GetPacket(Packet *pkt) {
       // Respond with Sequence number
       IntToNibble(seq >> 4, &out[1]);
       IntToNibble(seq & 0xF, &out[2]);
+      return io_->Write(out, 3);
     }
-    return SendStream(out);
+    return io_->Write(out, 1);
   } else {
     // Resend a bad XSUM and look for retransmit
-    SendStream("-");
+    io_->Write("-", 1);
 
     NaClLog(LOG_INFO, "RX Bad XSUM, retry\n");
     goto retry;

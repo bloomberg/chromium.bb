@@ -25,7 +25,7 @@ typedef SOCKET NaClSocketHandle;
 
 # define NaClCloseSocket closesocket
 # define NACL_INVALID_SOCKET INVALID_SOCKET
-
+# define NaClSocketGetLastError() WSAGetLastError()
 #else
 
 # include <arpa/inet.h>
@@ -37,6 +37,7 @@ typedef int NaClSocketHandle;
 
 # define NaClCloseSocket close
 # define NACL_INVALID_SOCKET (-1)
+# define NaClSocketGetLastError() errno
 
 #endif
 

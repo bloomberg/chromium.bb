@@ -36,16 +36,16 @@ class SharedVector {
 // when polled, but fails on TX/RX.
 class DCSocketTransport : public port::ITransport {
  public:
-  virtual int32_t Read(void *ptr, int32_t len) {
+  virtual bool Read(void *ptr, int32_t len) {
     (void) ptr;
     (void) len;
-    return -1;
+    return false;
   }
 
-  virtual int32_t Write(const void *ptr, int32_t len) {
+  virtual bool Write(const void *ptr, int32_t len) {
     (void) ptr;
     (void) len;
-    return -1;
+    return false;
   }
 
   virtual bool ReadWaitWithTimeout(uint32_t ms) {
@@ -72,27 +72,27 @@ class GoldenTransport : public port::ITransport {
     disconnected_ = false;
   }
 
-  virtual int32_t Read(void *ptr, int32_t len) {
-    if (disconnected_) return -1;
+  virtual bool Read(void *ptr, int32_t len) {
+    if (disconnected_) return false;
     memcpy(ptr, &rx_[rxCnt_], len);
     rxCnt_ += len;
     if (static_cast<int>(strlen(rx_)) < rxCnt_) {
       printf("End of RX\n");
       errs_++;
     }
-    return len;
+    return true;
   }
 
   //  Read from this link, return a negative value if there is an error
-  virtual int32_t Write(const void *ptr, int32_t len) {
+  virtual bool Write(const void *ptr, int32_t len) {
     const char *str = reinterpret_cast<const char *>(ptr);
-    if (disconnected_) return -1;
+    if (disconnected_) return false;
     if (strncmp(str, &tx_[txCnt_], len) != 0) {
       printf("TX mismatch in %s vs %s.\n", str, &tx_[txCnt_]);
       errs_++;
     }
     txCnt_ += len;
-    return len;
+    return true;
   }
 
   virtual bool ReadWaitWithTimeout(uint32_t ms) {
@@ -135,29 +135,32 @@ class TestTransport : public port::ITransport {
     disconnected_ = false;
   }
 
-  virtual int32_t Read(void *ptr, int32_t len) {
-    if (disconnected_) return -1;
+  virtual bool Read(void *ptr, int32_t len) {
+    if (disconnected_) return false;
     DataAvail();
 
     int max = rvector_->wr - rvector_->rd;
-    if (max > len)
+    if (max > len) {
       max = len;
+    } else {
+      return false;
+    }
 
     if (max > 0) {
       char *src = &rvector_->data[rvector_->rd];
       memcpy(ptr, src, max);
     }
     rvector_->rd += max;
-    return max;
+    return true;
   }
 
-  virtual int32_t Write(const void *ptr, int32_t len) {
-    if (disconnected_) return -1;
+  virtual bool Write(const void *ptr, int32_t len) {
+    if (disconnected_) return false;
 
     wvector_->data.resize(wvector_->wr + len);
     memcpy(&wvector_->data[wvector_->wr], ptr, len);
     wvector_->wr += len;
-    return len;
+    return true;
   }
 
   virtual bool ReadWaitWithTimeout(uint32_t ms) {

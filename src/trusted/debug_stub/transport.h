@@ -20,13 +20,11 @@ class ITransport {
  public:
   virtual ~ITransport() {}  // Allow to delete using base pointer
 
-  // Read from this transport, return a negative value if there is an error
-  // otherwise return the number of bytes actually read.
-  virtual int32_t Read(void *ptr, int32_t len) = 0;
+  // Read from this transport, return true on success.
+  virtual bool Read(void *ptr, int32_t len) = 0;
 
-  // Write to this transport, return a negative value if there is an error
-  // otherwise return the number of bytes actually written.
-  virtual int32_t Write(const void *ptr, int32_t len)  = 0;
+  // Write to this transport, return true on success.
+  virtual bool Write(const void *ptr, int32_t len)  = 0;
 
   // Return true once read will not block or false after ms milliseconds.
   virtual bool ReadWaitWithTimeout(uint32_t ms) = 0;
