@@ -812,10 +812,19 @@ if env.Bit('validator_ragel') and env.Bit('target_x86'):
   env.AddNodeToTestSuite(node, ['medium_tests', 'validator_tests'],
                          'run_dfa_validator_hello_world_test')
 
-node = env.CommandSelLdrTestNacl(
-    'unaligned_data.out',
-    env.File(os.path.join(arch_testdata_dir, 'unaligned_data.nexe')))
+unaligned_data_nexe = env.File(os.path.join(arch_testdata_dir,
+                                            'unaligned_data.nexe'))
+
+node = env.CommandSelLdrTestNacl('unaligned_data.out', unaligned_data_nexe)
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_unaligned_data_test')
+
+node = env.CommandSelLdrTestNacl(
+    'unaligned_data_irt.out',
+    unaligned_data_nexe,
+    sel_ldr_flags=['-B', env.File(os.path.join(arch_testdata_dir,
+                                               'unaligned_data_irt.nexe'))]
+    )
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_unaligned_data_irt_test')
 
 # ----------------------------------------------------------
 # Integration Tests With Canned x86 Binaries

@@ -654,6 +654,10 @@ NaClErrorCode NaClElfImageLoadDynamically(struct NaClElfImage *image,
   int segnum;
   for (segnum = 0; segnum < image->ehdr.e_phnum; ++segnum) {
     const Elf_Phdr *php = &image->phdrs[segnum];
+    Elf_Addr vaddr = php->p_vaddr & ~(NACL_MAP_PAGESIZE - 1);
+    Elf_Off offset = php->p_offset & ~(NACL_MAP_PAGESIZE - 1);
+    Elf_Off filesz = php->p_offset + php->p_filesz - offset;
+    Elf_Off memsz = php->p_offset + php->p_memsz - offset;
     int32_t result;
 
     /*
@@ -675,8 +679,7 @@ NaClErrorCode NaClElfImageLoadDynamically(struct NaClElfImage *image,
      * GioMemoryFileSnapshot and NaClGioShm use a seek position that
      * is local and not shared between processes.
      */
-    if ((*gfile->vtbl->Seek)(gfile, (off_t) php->p_offset,
-                             SEEK_SET) == (off_t) -1) {
+    if ((*gfile->vtbl->Seek)(gfile, (off_t) offset, SEEK_SET) == (off_t) -1) {
       NaClLog(1, "NaClElfImageLoadDynamically: seek failed\n");
       return LOAD_READ_ERROR;
     }
@@ -689,20 +692,19 @@ NaClErrorCode NaClElfImageLoadDynamically(struct NaClElfImage *image,
        * the file in memory or mmapped.
        * TODO(mseaborn): Reduce the amount of copying here.
        */
-      char *code_copy = malloc(php->p_filesz);
+      char *code_copy = malloc(filesz);
       if (NULL == code_copy) {
         NaClLog(1, "NaClElfImageLoadDynamically: malloc failed\n");
         return LOAD_NO_MEMORY;
       }
-      if ((Elf_Word) (*gfile->vtbl->Read)(gfile, code_copy, php->p_filesz)
-          != php->p_filesz) {
+      if ((Elf_Word) (*gfile->vtbl->Read)(gfile, code_copy, filesz) != filesz) {
         free(code_copy);
         NaClLog(1, "NaClElfImageLoadDynamically: "
                 "failed to read code segment\n");
         return LOAD_READ_ERROR;
       }
-      result = NaClTextDyncodeCreate(nap, (uint32_t) php->p_vaddr,
-                                     code_copy, (uint32_t) php->p_filesz);
+      result = NaClTextDyncodeCreate(nap, (uint32_t) vaddr,
+                                     code_copy, (uint32_t) filesz);
       free(code_copy);
       if (0 != result) {
         NaClLog(1, "NaClElfImageLoadDynamically: "
@@ -711,8 +713,8 @@ NaClErrorCode NaClElfImageLoadDynamically(struct NaClElfImage *image,
       }
     } else {
       /* Load data segment. */
-      void *paddr = (void *) NaClUserToSys(nap, php->p_vaddr);
-      size_t mapping_size = NaClRoundAllocPage(php->p_memsz);
+      void *paddr = (void *) NaClUserToSys(nap, vaddr);
+      size_t mapping_size = NaClRoundAllocPage(memsz);
       /*
        * Note that we do not used NACL_ABI_MAP_FIXED because we do not
        * want to silently overwrite any existing mappings, such as the
@@ -722,16 +724,15 @@ NaClErrorCode NaClElfImageLoadDynamically(struct NaClElfImage *image,
        * instead.)
        */
       result = NaClCommonSysMmapIntern(
-          nap, (void *) (uintptr_t) php->p_vaddr, mapping_size,
+          nap, (void *) (uintptr_t) vaddr, mapping_size,
           NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
           NACL_ABI_MAP_ANONYMOUS | NACL_ABI_MAP_PRIVATE,
           -1, 0);
-      if ((int32_t) php->p_vaddr != result) {
+      if ((int32_t) vaddr != result) {
         NaClLog(1, "NaClElfImageLoadDynamically: failed to map data segment\n");
         return LOAD_UNLOADABLE;
       }
-      if ((Elf_Word) (*gfile->vtbl->Read)(gfile, paddr, php->p_filesz)
-          != php->p_filesz) {
+      if ((Elf_Word) (*gfile->vtbl->Read)(gfile, paddr, filesz) != filesz) {
         NaClLog(1, "NaClElfImageLoadDynamically: "
                 "failed to read data segment\n");
         return LOAD_READ_ERROR;
@@ -753,7 +754,7 @@ NaClErrorCode NaClElfImageLoadDynamically(struct NaClElfImage *image,
         }
 
         NaClVmmapAddWithOverwrite(&nap->mem_map,
-                                  php->p_vaddr >> NACL_PAGESHIFT,
+                                  vaddr >> NACL_PAGESHIFT,
                                   mapping_size >> NACL_PAGESHIFT,
                                   PROT_READ,
                                   PROT_READ,
