@@ -74,8 +74,8 @@ class SearchViewController
   // Stacks the overlay at the top.
   void StackAtTop();
 
-  // Invoked when the instant preview is ready to be shown.
-  void InstantReady();
+  // Called when the Instant preview is about to be made the active tab.
+  void WillCommitInstant();
 
   // chrome::search::SearchModelObserver overrides:
   virtual void ModeChanged(const chrome::search::Mode& old_mode,

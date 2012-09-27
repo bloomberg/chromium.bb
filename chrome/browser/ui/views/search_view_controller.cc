@@ -289,7 +289,10 @@ void SearchViewController::StackAtTop() {
   location_bar_container_->StackAtTop();
 }
 
-void SearchViewController::InstantReady() {
+void SearchViewController::WillCommitInstant() {
+  // When Instant is committed, it will shuffle the views, so undo any of our
+  // own view-shuffling first. http://crbug.com/152450
+  DestroyViews();
 }
 
 void SearchViewController::ModeChanged(const chrome::search::Mode& old_mode,

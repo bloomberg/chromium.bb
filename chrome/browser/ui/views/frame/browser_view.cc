@@ -1361,10 +1361,6 @@ void BrowserView::ShowInstant(TabContents* preview,
   contents_->SetPreview(preview_container_, preview->web_contents(),
                         height, units);
   preview_container_->SetWebContents(preview->web_contents());
-#if defined(USE_AURA)
-  if (search_view_controller_.get())
-    search_view_controller_->InstantReady();
-#endif
   RestackLocationBarContainer();
 }
 
@@ -1468,6 +1464,10 @@ void BrowserView::TabReplacedAt(TabStripModel* tab_strip_model,
     return;
 
   if (contents_->preview_web_contents() == new_contents->web_contents()) {
+#if defined(USE_AURA)
+    if (search_view_controller_.get())
+      search_view_controller_->WillCommitInstant();
+#endif
     // If 'preview' is becoming active, swap the 'active' and 'preview' and
     // delete what was the active.
     contents_->MakePreviewContentsActiveContents();
