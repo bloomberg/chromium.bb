@@ -121,8 +121,12 @@ void UsbDevice::TransferComplete(PlatformUsbTransferHandle handle) {
   // buffer before invoking the callback provided with the transfer with it.
   scoped_refptr<net::IOBuffer> buffer = transfer->buffer;
   if (transfer->control_transfer) {
+    // If the payload is zero bytes long, pad out the allocated buffer size to
+    // one byte so that an IOBuffer of that size can be allocated.
+    const int payload_size = handle->actual_length - LIBUSB_CONTROL_SETUP_SIZE;
+    const int buffer_size = std::max(1, payload_size);
     scoped_refptr<net::IOBuffer> resized_buffer = new net::IOBuffer(
-        handle->actual_length - LIBUSB_CONTROL_SETUP_SIZE);
+        buffer_size);
     memcpy(resized_buffer->data(), buffer->data() + LIBUSB_CONTROL_SETUP_SIZE,
            handle->actual_length - LIBUSB_CONTROL_SETUP_SIZE);
     buffer = resized_buffer;
