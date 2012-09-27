@@ -443,12 +443,7 @@ void ProfileImplIOData::LazyInitializeInternal(
   main_context->set_chrome_url_data_manager_backend(
       chrome_url_data_manager_backend());
 
-  // Create a media request context based on the main context, but using a
-  // media cache.
-  media_request_context_.reset(InitializeMediaRequestContext(main_context, ""));
-
   main_job_factory_.reset(new net::URLRequestJobFactoryImpl);
-  media_request_job_factory_.reset(new net::URLRequestJobFactoryImpl);
   extensions_job_factory_.reset(new net::URLRequestJobFactoryImpl);
 
   SetUpJobFactory(main_job_factory_.get(),
@@ -456,11 +451,6 @@ void ProfileImplIOData::LazyInitializeInternal(
                   network_delegate(),
                   main_context->ftp_transaction_factory(),
                   main_context->ftp_auth_cache());
-  SetUpJobFactory(media_request_job_factory_.get(),
-                  scoped_ptr<net::URLRequestJobFactoryImpl::Interceptor>(NULL),
-                  network_delegate(),
-                  media_request_context_->ftp_transaction_factory(),
-                  media_request_context_->ftp_auth_cache());
   // TODO(shalev): The extensions_job_factory has a NULL NetworkDelegate.
   // Without a network_delegate, this protocol handler will never
   // handle file: requests, but as a side effect it makes
@@ -474,8 +464,11 @@ void ProfileImplIOData::LazyInitializeInternal(
                   extensions_context->ftp_auth_cache());
 
   main_context->set_job_factory(main_job_factory_.get());
-  media_request_context_->set_job_factory(media_request_job_factory_.get());
   extensions_context->set_job_factory(extensions_job_factory_.get());
+
+  // Create a media request context based on the main context, but using a
+  // media cache.  It shares the same job factory as the main context.
+  media_request_context_.reset(InitializeMediaRequestContext(main_context, ""));
 
   lazy_params_.reset();
 }
