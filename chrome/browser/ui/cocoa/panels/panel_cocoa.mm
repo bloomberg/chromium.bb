@@ -185,8 +185,7 @@ void PanelCocoa::DrawAttention(bool draw_attention) {
   if ((panel_->attention_mode() & Panel::USE_SYSTEM_ATTENTION) != 0) {
     if (draw_attention) {
       DCHECK(!attention_request_id_);
-      attention_request_id_ =
-          [NSApp requestUserAttention:NSInformationalRequest];
+      attention_request_id_ = [NSApp requestUserAttention:NSCriticalRequest];
     } else {
       [NSApp cancelUserAttentionRequest:attention_request_id_];
       attention_request_id_ = 0;
