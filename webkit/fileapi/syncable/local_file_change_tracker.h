@@ -42,7 +42,7 @@ class FILEAPI_EXPORT LocalFileChangeTracker
   // (So that we can make sure DB operations are done before actual update
   // happens)
   LocalFileChangeTracker(LocalFileSyncStatus* sync_status,
-                         const FilePath& profile_path,
+                         const FilePath& base_path,
                          base::SequencedTaskRunner* file_task_runner);
   virtual ~LocalFileChangeTracker();
 

@@ -23,7 +23,7 @@ namespace fileapi {
 // object must be destructed on file_task_runner.
 class LocalFileChangeTracker::TrackerDB {
  public:
-  explicit TrackerDB(const FilePath& profile_path);
+  explicit TrackerDB(const FilePath& base_path);
 
   bool MarkDirty(const std::string& url);
   bool ClearDirty(const std::string& url);
@@ -47,7 +47,7 @@ class LocalFileChangeTracker::TrackerDB {
   void HandleError(const tracked_objects::Location& from_here,
                    const leveldb::Status& status);
 
-  const FilePath profile_path_;
+  const FilePath base_path_;
   scoped_ptr<leveldb::DB> db_;
   bool db_disabled_;
 
@@ -58,11 +58,11 @@ class LocalFileChangeTracker::TrackerDB {
 
 LocalFileChangeTracker::LocalFileChangeTracker(
     LocalFileSyncStatus* sync_status,
-    const FilePath& profile_path,
+    const FilePath& base_path,
     base::SequencedTaskRunner* file_task_runner)
     : sync_status_(sync_status),
       file_task_runner_(file_task_runner),
-      tracker_db_(new TrackerDB(profile_path)) {}
+      tracker_db_(new TrackerDB(base_path)) {}
 
 LocalFileChangeTracker::~LocalFileChangeTracker() {
   if (tracker_db_.get())
@@ -179,15 +179,15 @@ bool LocalFileChangeTracker::DeserializeExternalFileSystemURL(
 
 // TrackerDB -------------------------------------------------------------------
 
-LocalFileChangeTracker::TrackerDB::TrackerDB(const FilePath& profile_path)
-  : profile_path_(profile_path),
+LocalFileChangeTracker::TrackerDB::TrackerDB(const FilePath& base_path)
+  : base_path_(base_path),
     db_disabled_(false) {}
 
 bool LocalFileChangeTracker::TrackerDB::Init(RecoveryOption recovery_option) {
   if (db_.get())
     return true;
 
-  std::string path = FilePathToString(profile_path_.Append(kDatabaseName));
+  std::string path = FilePathToString(base_path_.Append(kDatabaseName));
   leveldb::Options options;
   options.create_if_missing = true;
   leveldb::DB* db;
