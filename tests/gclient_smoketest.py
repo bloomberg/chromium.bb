@@ -940,18 +940,19 @@ class GClientSmokeGIT(GClientSmokeBase):
     self.assertEquals(3, len(out))
 
     # Revert implies --force implies running hooks without looking at pattern
-    # matching.
-    results = self.gclient(['revert', '--deps', 'mac', '--jobs', '1'])
-    out = results[0].splitlines(False)
-    # TODO(maruel): http://crosbug.com/3583 It just runs the hooks right now.
-    self.assertEquals(13, len(out))
-    self.checkString('', results[1])
-    self.assertEquals(0, results[2])
+    # matching. For each expected path, 'git reset' and 'git clean' are run, so
+    # there should be two results for each. The last two results should reflect
+    # writing git_hooked1 and git_hooked2.
+    expected4 = ('running', self.root_dir)
+    out = self.parseGclient(['revert', '--deps', 'mac', '--jobs', '1'],
+                            [expected1, expected1,
+                             expected2, expected2,
+                             expected3, expected3,
+                             expected4, expected4])
+    self.assertEquals(8, len(out))
     tree = self.mangle_git_tree(('repo_1@2', 'src'),
                                 ('repo_2@1', 'src/repo2'),
                                 ('repo_3@2', 'src/repo2/repo_renamed'))
-    # TODO(maruel): http://crosbug.com/3583 This file should have been removed.
-    tree[join('src', 'repo2', 'hi')] = 'Hey!'
     tree['src/git_hooked1'] = 'git_hooked1'
     tree['src/git_hooked2'] = 'git_hooked2'
     self.assertTree(tree)

@@ -540,6 +540,7 @@ class GitWrapper(SCMWrapper):
 
     files = self._Capture(['diff', deps_revision, '--name-only']).split()
     self._Run(['reset', '--hard', deps_revision], options)
+    self._Run(['clean', '-f', '-d'], options)
     file_list.extend([os.path.join(self.checkout_path, f) for f in files])
 
   def revinfo(self, options, args, file_list):
