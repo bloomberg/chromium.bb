@@ -265,6 +265,31 @@ history::URLDatabase* HistoryService::InMemoryDatabase() {
   return NULL;
 }
 
+bool HistoryService::GetTypedCountForURL(const GURL& url, int* typed_count) {
+  history::URLRow url_row;
+  if (!GetRowForURL(url, &url_row))
+    return false;
+  *typed_count = url_row.typed_count();
+  return true;
+}
+
+bool HistoryService::GetLastVisitTimeForURL(const GURL& url,
+                                            base::Time* last_visit) {
+  history::URLRow url_row;
+  if (!GetRowForURL(url, &url_row))
+    return false;
+  *last_visit = url_row.last_visit();
+  return true;
+}
+
+bool HistoryService::GetVisitCountForURL(const GURL& url, int* visit_count) {
+  history::URLRow url_row;
+  if (!GetRowForURL(url, &url_row))
+    return false;
+  *visit_count = url_row.visit_count();
+  return true;
+}
+
 void HistoryService::ShutdownOnUIThread() {
   // It's possible that bookmarks haven't loaded and history is waiting for
   // bookmarks to complete loading. In such a situation history can't shutdown
@@ -921,6 +946,11 @@ void HistoryService::OnDBLoaded(int backend_id) {
     if (ts)
       ts->HistoryLoaded();
   }
+}
+
+bool HistoryService::GetRowForURL(const GURL& url, history::URLRow* url_row) {
+  history::URLDatabase* db = InMemoryDatabase();
+  return db && (db->GetRowForURL(url, url_row) != 0);
 }
 
 void HistoryService::StartTopSitesMigration(int backend_id) {

@@ -155,6 +155,19 @@ class HistoryService : public CancelableRequestProvider,
   // TODO(brettw) this should return the InMemoryHistoryBackend.
   history::URLDatabase* InMemoryDatabase();
 
+  // Following functions get URL information from in-memory database.
+  // They return false if database is not available (e.g. not loaded yet) or the
+  // URL does not exist.
+
+  // Reads the number of times the user has typed the given URL.
+  bool GetTypedCountForURL(const GURL& url, int* typed_count);
+
+  // Reads the last visit time for the given URL.
+  bool GetLastVisitTimeForURL(const GURL& url, base::Time* last_visit);
+
+  // Reads the number of times this URL has been visited.
+  bool GetVisitCountForURL(const GURL& url, int* visit_count);
+
   // Return the quick history index.
   history::InMemoryURLIndex* InMemoryIndex() const {
     return in_memory_url_index_.get();
@@ -671,6 +684,11 @@ class HistoryService : public CancelableRequestProvider,
   // Notification from the backend that it has finished loading. Sends
   // notification (NOTIFY_HISTORY_LOADED) and sets backend_loaded_ to true.
   void OnDBLoaded(int backend_id);
+
+  // Helper function for getting URL information.
+  // Reads a URLRow from in-memory database. Returns false if database is not
+  // available or the URL does not exist.
+  bool GetRowForURL(const GURL& url, history::URLRow* url_row);
 
   // Favicon -------------------------------------------------------------------
 
