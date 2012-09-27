@@ -130,6 +130,7 @@ struct I18nContentToMessage {
     IDS_KEYBOARD_OVERLAY_FOCUS_PREVIOUS_PANE },
   { "keyboardOverlayFocusStatusIcon", IDS_KEYBOARD_OVERLAY_FOCUS_STATUS_ICON },
   { "keyboardOverlayFocusToolbar", IDS_KEYBOARD_OVERLAY_FOCUS_TOOLBAR },
+  { "keyboardOverlayFullscreen", IDS_ACCNAME_FULLSCREEN },
   { "keyboardOverlayGoBack", IDS_KEYBOARD_OVERLAY_GO_BACK },
   { "keyboardOverlayGoForward", IDS_KEYBOARD_OVERLAY_GO_FORWARD },
   { "keyboardOverlayHelp", IDS_KEYBOARD_OVERLAY_HELP },
