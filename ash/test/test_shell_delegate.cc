@@ -136,5 +136,12 @@ string16 TestShellDelegate::GetTimeRemainingString(base::TimeDelta delta) {
   return string16();
 }
 
+void TestShellDelegate::SaveScreenMagnifierScale(double scale) {
+}
+
+double TestShellDelegate::GetSavedScreenMagnifierScale() {
+  return std::numeric_limits<double>::min();
+}
+
 }  // namespace test
 }  // namespace ash

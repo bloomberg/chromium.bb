@@ -157,6 +157,13 @@ class ASH_EXPORT ShellDelegate {
   // "13 Minuten übrig".
   // Used, for example, to display the remaining battery life.
   virtual string16 GetTimeRemainingString(base::TimeDelta delta) = 0;
+
+  // Saves the zoom scale of the full screen magnifier.
+  virtual void SaveScreenMagnifierScale(double scale) = 0;
+
+  // Gets a saved value of the zoom scale of full screen magnifier. If a value
+  // is not saved, return a negative value.
+  virtual double GetSavedScreenMagnifierScale() = 0;
 };
 
 }  // namespace ash

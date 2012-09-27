@@ -5,6 +5,7 @@
 #include "ash/magnifier/magnification_controller.h"
 
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ui/aura/event_filter.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/shared/compound_event_filter.h"
@@ -65,6 +66,10 @@ class MagnificationControllerImpl : virtual public MagnificationController,
   // the position are changed to redraw the window.
   bool Redraw(const gfx::Point& position, float scale, bool animate);
   bool RedrawDIP(const gfx::Point& position, float scale, bool animate);
+
+  // Redraw with the given zoom scale keeping the mouse cursor location. In
+  // other words, zoom (or unzoom) centering around the cursor.
+  void RedrawKeepingMousePosition(float scale, bool animate);
 
   // Ensures that the given point, rect or last mouse location is inside
   // magnification window. If not, the controller moves the window to contain
@@ -131,12 +136,21 @@ MagnificationControllerImpl::MagnificationControllerImpl()
     : root_window_(ash::Shell::GetPrimaryRootWindow()),
       is_on_zooming_(false),
       is_enabled_(false),
-      scale_(kNonMagnifiedScale) {
+      scale_(std::numeric_limits<double>::min()) {
   Shell::GetInstance()->AddEnvEventFilter(this);
 }
 
 MagnificationControllerImpl::~MagnificationControllerImpl() {
   Shell::GetInstance()->RemoveEnvEventFilter(this);
+}
+
+void MagnificationControllerImpl::RedrawKeepingMousePosition(
+    float scale, bool animate) {
+  gfx::Point mouse_in_root = root_window_->GetLastMouseLocationInRoot();
+  const gfx::Point origin =
+      gfx::Point(mouse_in_root.x() * (1.0f - 1.0f / scale),
+                 mouse_in_root.y() * (1.0f - 1.0f / scale));
+  Redraw(origin, scale, animate);
 }
 
 bool MagnificationControllerImpl::Redraw(const gfx::Point& position,
@@ -333,6 +347,8 @@ void MagnificationControllerImpl::ValidateScale(float* scale) {
   // |kMinMagnifiedScaleThreshold|;
   if (*scale > kMaxMagnifiedScaleThreshold)
     *scale = kMaxMagnifiedScale;
+
+  DCHECK(kNonMagnifiedScale <= *scale && *scale <= kMaxMagnifiedScale);
 }
 
 void MagnificationControllerImpl::OnImplicitAnimationsCompleted() {
@@ -347,9 +363,9 @@ void MagnificationControllerImpl::SwitchTargetRootWindow(
 
   float scale = GetScale();
 
-  SetScale(1.0f, true);
+  RedrawKeepingMousePosition(1.0f, true);
   root_window_ = new_root_window;
-  SetScale(scale, true);
+  RedrawKeepingMousePosition(scale, true);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -360,12 +376,8 @@ void MagnificationControllerImpl::SetScale(float scale, bool animate) {
     return;
 
   ValidateScale(&scale);
-
-  gfx::Point mouse_in_root = root_window_->GetLastMouseLocationInRoot();
-  const gfx::Point origin =
-      gfx::Point(mouse_in_root.x() * (1.0f - 1.0f / scale),
-                 mouse_in_root.y() * (1.0f - 1.0f / scale));
-  Redraw(origin, scale, animate);
+  ash::Shell::GetInstance()->delegate()->SaveScreenMagnifierScale(scale);
+  RedrawKeepingMousePosition(scale, animate);
 }
 
 void MagnificationControllerImpl::MoveWindow(int x, int y, bool animate) {
@@ -403,10 +415,13 @@ void MagnificationControllerImpl::EnsurePointIsVisible(
 
 void MagnificationControllerImpl::SetEnabled(bool enabled) {
   if (enabled) {
+    scale_ =
+        ash::Shell::GetInstance()->delegate()->GetSavedScreenMagnifierScale();
+    ValidateScale(&scale_);
+    RedrawKeepingMousePosition(scale_, true);
     is_enabled_ = enabled;
-    SetScale(kInitialMagnifiedScale, true);
   } else {
-    SetScale(kNonMagnifiedScale, true);
+    RedrawKeepingMousePosition(kNonMagnifiedScale, true);
     is_enabled_ = enabled;
   }
 }

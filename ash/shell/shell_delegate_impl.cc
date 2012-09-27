@@ -151,5 +151,12 @@ string16 ShellDelegateImpl::GetTimeRemainingString(base::TimeDelta delta) {
   return string16();
 }
 
+void ShellDelegateImpl::SaveScreenMagnifierScale(double scale) {
+}
+
+double ShellDelegateImpl::GetSavedScreenMagnifierScale() {
+  return std::numeric_limits<double>::min();
+}
+
 }  // namespace shell
 }  // namespace ash

@@ -102,6 +102,11 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
                                false,
                                PrefService::UNSYNCABLE_PREF);
   }
+  if (prefs->FindPreference(prefs::kScreenMagnifierScale) == NULL) {
+    prefs->RegisterDoublePref(prefs::kScreenMagnifierScale,
+                              std::numeric_limits<double>::min(),
+                              PrefService::UNSYNCABLE_PREF);
+  }
   if (prefs->FindPreference(prefs::kVirtualKeyboardEnabled) == NULL) {
     prefs->RegisterBooleanPref(prefs::kVirtualKeyboardEnabled,
                                false,

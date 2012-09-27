@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/extensions/api/terminal/terminal_extension_helper.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
@@ -27,6 +28,7 @@
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_service.h"
@@ -407,6 +409,22 @@ void ChromeShellDelegate::HandleMediaPrevTrack() {
 
 string16 ChromeShellDelegate::GetTimeRemainingString(base::TimeDelta delta) {
   return TimeFormat::TimeRemaining(delta);
+}
+
+void ChromeShellDelegate::SaveScreenMagnifierScale(double scale) {
+#if defined(OS_CHROMEOS)
+  Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
+  profile->GetPrefs()->SetDouble(prefs::kScreenMagnifierScale, scale);
+#endif
+}
+
+double ChromeShellDelegate::GetSavedScreenMagnifierScale() {
+#if defined(OS_CHROMEOS)
+  Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
+  if (profile->GetPrefs()->HasPrefPath(prefs::kScreenMagnifierScale))
+    return profile->GetPrefs()->GetDouble(prefs::kScreenMagnifierScale);
+#endif
+  return std::numeric_limits<double>::min();
 }
 
 void ChromeShellDelegate::Observe(int type,
