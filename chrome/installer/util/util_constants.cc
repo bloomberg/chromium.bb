@@ -79,6 +79,9 @@ const char kDoNotRemoveSharedItems[] = "do-not-remove-shared-items";
 // Enable logging at the error level. This is the default behavior.
 const char kEnableLogging[] = "enable-logging";
 
+// Ensures that Google Update is present at the current level of installation.
+const char kEnsureGoogleUpdatePresent[] = "ensure-google-update-present";
+
 // If present, setup will uninstall chrome without asking for any
 // confirmation from user.
 const char kForceUninstall[] = "force-uninstall";

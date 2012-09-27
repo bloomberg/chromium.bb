@@ -214,6 +214,7 @@ void FakeProductState::AddQuickEnableApplicationHostCommand(
                                        channel_modifiers));
   cmd_line.AppendSwitch(installer::switches::kMultiInstall);
   cmd_line.AppendSwitch(installer::switches::kChromeAppHost);
+  cmd_line.AppendSwitch(installer::switches::kEnsureGoogleUpdatePresent);
   AppCommand app_cmd(cmd_line.GetCommandLineString());
   app_cmd.set_sends_pings(true);
   app_cmd.set_is_web_accessible(true);

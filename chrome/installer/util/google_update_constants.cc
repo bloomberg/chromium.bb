@@ -10,6 +10,8 @@ const wchar_t kChromeUpgradeCode[] = L"{8A69D345-D564-463C-AFF1-A69D9E530F96}";
 const wchar_t kGoogleUpdateUpgradeCode[] =
     L"{430FD4D0-B729-4F61-AA34-91526481799D}";
 
+const wchar_t kGoogleUpdateSetupExe[] = L"GoogleUpdateSetup.exe";
+
 const wchar_t kRegPathClients[] = L"Software\\Google\\Update\\Clients";
 const wchar_t kRegPathClientState[] = L"Software\\Google\\Update\\ClientState";
 const wchar_t kRegPathClientStateMedium[] =
@@ -46,6 +48,7 @@ const wchar_t kRegNameField[] = L"name";
 const wchar_t kRegOemInstallField[] = L"oeminstall";
 const wchar_t kRegOldVersionField[] = L"opv";
 const wchar_t kRegOopcrashesField[] = L"oopcrashes";
+const wchar_t kRegPathField[] = L"path";
 const wchar_t kRegRLZBrandField[] = L"brand";
 const wchar_t kRegRLZReactivationBrandField[] = L"reactivationbrand";
 const wchar_t kRegReferralField[] = L"referral";

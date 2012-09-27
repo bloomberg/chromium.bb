@@ -76,7 +76,8 @@ InstallerState::InstallerState()
       state_type_(BrowserDistribution::CHROME_BROWSER),
       root_key_(NULL),
       msi_(false),
-      verbose_logging_(false) {
+      verbose_logging_(false),
+      ensure_google_update_present_(false) {
 }
 
 InstallerState::InstallerState(Level level)
@@ -87,7 +88,8 @@ InstallerState::InstallerState(Level level)
       state_type_(BrowserDistribution::CHROME_BROWSER),
       root_key_(NULL),
       msi_(false),
-      verbose_logging_(false) {
+      verbose_logging_(false),
+      ensure_google_update_present_(false) {
   // Use set_level() so that root_key_ is updated properly.
   set_level(level);
 }
@@ -109,6 +111,9 @@ void InstallerState::Initialize(const CommandLine& command_line,
 
   if (!prefs.GetBool(master_preferences::kMsi, &msi_))
     msi_ = false;
+
+  ensure_google_update_present_ =
+      command_line.HasSwitch(installer::switches::kEnsureGoogleUpdatePresent);
 
   const bool is_uninstall = command_line.HasSwitch(switches::kUninstall);
 

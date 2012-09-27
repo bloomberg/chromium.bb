@@ -55,6 +55,8 @@
           'installer/util/google_update_constants.h',
           'installer/util/google_update_settings.cc',
           'installer/util/google_update_settings.h',
+          'installer/util/google_update_util.cc',
+          'installer/util/google_update_util.h',
           'installer/util/helper.cc',
           'installer/util/helper.h',
           'installer/util/install_util.cc',

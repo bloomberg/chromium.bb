@@ -1547,6 +1547,7 @@ void AddQuickEnableApplicationHostWorkItems(
   CommandLine cmd_line(CommandLine::NO_PROGRAM);
   cmd_line.AppendSwitch(switches::kMultiInstall);
   cmd_line.AppendSwitch(switches::kChromeAppHost);
+  cmd_line.AppendSwitch(switches::kEnsureGoogleUpdatePresent);
 
   // For system-level binaries there is no way to keep the command state in sync
   // with the installation/uninstallation of the Application Host (which is

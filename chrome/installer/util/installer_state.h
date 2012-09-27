@@ -111,6 +111,12 @@ class InstallerState {
   // TODO(grt): Eradicate the bool in favor of the enum.
   bool is_multi_install() const;
 
+  // A convenient method returning the presence of the
+  // --ensure-google-update-present switch.
+  bool ensure_google_update_present() const {
+    return ensure_google_update_present_;
+  }
+
   // The full path to the place where the operand resides.
   const FilePath& target_path() const { return target_path_; }
 
@@ -233,6 +239,7 @@ class InstallerState {
 #endif
   bool msi_;
   bool verbose_logging_;
+  bool ensure_google_update_present_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InstallerState);

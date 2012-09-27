@@ -125,7 +125,7 @@ void InstallationValidator::ChromeAppHostRules::AddUninstallSwitchExpectations(
     SwitchExpectations* expectations) const {
   DCHECK(!system_install);
 
-  // --chrome-app-host must be present.
+  // --app-host must be present.
   expectations->push_back(std::make_pair(std::string(switches::kChromeAppHost),
                                          true));
   // --chrome must not be present.
@@ -332,12 +332,14 @@ void InstallationValidator::ValidateQuickEnableApplicationHostCommand(
 
   SwitchExpectations expected;
 
-  expected.push_back(
-      std::make_pair(std::string(switches::kChromeAppHost), true));
-  expected.push_back(std::make_pair(std::string(switches::kSystemLevel),
-                                    false));
-  expected.push_back(std::make_pair(std::string(switches::kMultiInstall),
-                                    true));
+  expected.push_back(std::make_pair(
+      std::string(switches::kChromeAppHost), true));
+  expected.push_back(std::make_pair(
+      std::string(switches::kSystemLevel), false));
+  expected.push_back(std::make_pair(
+      std::string(switches::kMultiInstall), true));
+  expected.push_back(std::make_pair(
+      std::string(switches::kEnsureGoogleUpdatePresent), true));
 
   ValidateCommandExpectations(ctx,
                               the_command,
