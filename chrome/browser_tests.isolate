@@ -1838,7 +1838,6 @@
           'test/data/page_cycler/cached_data_dir/Safe Browsing Cookies-journal',
         ],
         'isolate_dependency_touched': [
-          '<(PRODUCT_DIR)/First Run',
           'test/data/download-test3.gif',
           'test/data/empty.html',
           'test/data/extensions/api_test/window_update/focus/blank.html',
