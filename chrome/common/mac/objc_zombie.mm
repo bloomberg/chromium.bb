@@ -6,12 +6,7 @@
 
 #include <AvailabilityMacros.h>
 
-#include <dlfcn.h>
 #include <execinfo.h>
-#include <mach-o/dyld.h>
-#include <mach-o/nlist.h>
-
-#import <objc/objc-class.h>
 #import <objc/runtime.h>
 
 #include <algorithm>
@@ -20,12 +15,11 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/mac/crash_logging.h"
-#include "base/mac/mac_util.h"
-#include "base/metrics/histogram.h"
 #include "base/synchronization/lock.h"
 #import "chrome/common/mac/objc_method_swizzle.h"
 
-#if MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_6
+
+#if !defined(OS_IOS) && (MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_6)
 // Apparently objc/runtime.h doesn't define this with the 10.6 SDK yet.
 // The docs say it exists since 10.6 however.
 OBJC_EXPORT void *objc_destructInstance(id obj);
@@ -36,7 +30,13 @@ OBJC_EXPORT void *objc_destructInstance(id obj);
 // inherited methods (|NSObject| is like a category magnet!).
 // Without the __attribute__, clang's -Wobjc-root-class warns on the missing
 // superclass.
+//
+//  The version of clang that ships with Xcode 4.5 does not include this
+//  warning, so it is disabled on iOS.  This may change in future Xcode
+//  releases.
+#if !defined(OS_IOS)
 __attribute__((objc_root_class))
+#endif
 @interface CrZombie  {
   Class isa;
 }
@@ -92,17 +92,6 @@ typedef struct {
 } ZombieRecord;
 
 ZombieRecord* g_zombies = NULL;
-
-const char* LookupObjcRuntimePath() {
-  const void* addr = reinterpret_cast<void*>(&object_getClass);
-  Dl_info info;
-
-  // |dladdr()| doesn't document how long |info| will stay valid...
-  if (dladdr(addr, &info))
-    return info.dli_fname;
-
-  return NULL;
-}
 
 // Replacement |-dealloc| which turns objects into zombies and places
 // them into |g_zombies| to be freed later.
