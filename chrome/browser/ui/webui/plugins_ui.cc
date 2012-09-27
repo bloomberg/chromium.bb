@@ -78,6 +78,8 @@ ChromeWebUIDataSource* CreatePluginsUIHTMLSource() {
                              IDS_PLUGINS_DISABLED_BY_POLICY_PLUGIN);
   source->AddLocalizedString("pluginEnabledByPolicy",
                              IDS_PLUGINS_ENABLED_BY_POLICY_PLUGIN);
+  source->AddLocalizedString("pluginGroupManagedByPolicy",
+                             IDS_PLUGINS_GROUP_MANAGED_BY_POLICY);
   source->AddLocalizedString("pluginDownload", IDS_PLUGINS_DOWNLOAD);
   source->AddLocalizedString("pluginName", IDS_PLUGINS_NAME);
   source->AddLocalizedString("pluginVersion", IDS_PLUGINS_VERSION);
@@ -356,6 +358,7 @@ void PluginsDOMHandler::PluginsLoaded(
     bool group_enabled = false;
     bool all_plugins_enabled_by_policy = true;
     bool all_plugins_disabled_by_policy = true;
+    bool all_plugins_managed_by_policy = true;
     const WebPluginInfo* active_plugin = NULL;
     for (size_t j = 0; j < group_plugins.size(); ++j) {
       const WebPluginInfo& group_plugin = *group_plugins[j];
@@ -397,9 +400,21 @@ void PluginsDOMHandler::PluginsLoaded(
           plugin_prefs->PolicyStatusForPlugin(group_plugin.name);
       PluginPrefs::PolicyStatus group_status =
           plugin_prefs->PolicyStatusForPlugin(group_name);
-      if (plugin_status == PluginPrefs::POLICY_ENABLED ||
-          group_status == PluginPrefs::POLICY_ENABLED) {
+
+      PluginPrefs::PolicyStatus plugin_status_by_version =
+          plugin_prefs->PolicyStatusForPluginByVersion(group_plugin.name,
+                                                       group_plugin.version);
+      PluginPrefs::PolicyStatus group_status_by_version =
+          plugin_prefs->PolicyStatusForPluginByVersion(group_name,
+                                                       group_plugin.version);
+      if (plugin_status_by_version == PluginPrefs::POLICY_DISABLED ||
+          group_status_by_version == PluginPrefs::POLICY_DISABLED) {
+        all_plugins_enabled_by_policy = false;
+        enabled_mode = "disabledByPolicy";
+      } else if (plugin_status == PluginPrefs::POLICY_ENABLED ||
+                 group_status == PluginPrefs::POLICY_ENABLED) {
         enabled_mode = "enabledByPolicy";
+        all_plugins_disabled_by_policy = false;
       } else {
         all_plugins_enabled_by_policy = false;
         if (plugin_status == PluginPrefs::POLICY_DISABLED ||
@@ -407,6 +422,7 @@ void PluginsDOMHandler::PluginsLoaded(
           enabled_mode = "disabledByPolicy";
         } else {
           all_plugins_disabled_by_policy = false;
+          all_plugins_managed_by_policy = false;
           if (plugin_enabled) {
             enabled_mode = "enabledByUser";
           } else {
@@ -438,6 +454,8 @@ void PluginsDOMHandler::PluginsLoaded(
       enabled_mode = "enabledByPolicy";
     } else if (all_plugins_disabled_by_policy) {
       enabled_mode = "disabledByPolicy";
+    } else if (all_plugins_managed_by_policy) {
+      enabled_mode = "managedByPolicy";
     } else if (group_enabled) {
       enabled_mode = "enabledByUser";
     } else {

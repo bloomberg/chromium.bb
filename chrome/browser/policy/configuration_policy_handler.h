@@ -399,6 +399,22 @@ class RestoreOnStartupPolicyHandler : public TypeCheckingPolicyHandler {
   DISALLOW_COPY_AND_ASSIGN(RestoreOnStartupPolicyHandler);
 };
 
+// Handles DisabledPluginsByVersion policy.
+class DisabledPluginsByVersionPolicyHandler : public TypeCheckingPolicyHandler {
+ public:
+  DisabledPluginsByVersionPolicyHandler();
+  virtual ~DisabledPluginsByVersionPolicyHandler();
+
+  // ConfigurationPolicyHandler methods:
+  virtual bool CheckPolicySettings(const PolicyMap& policies,
+                                   PolicyErrorMap* errors) OVERRIDE;
+  virtual void ApplyPolicySettings(const PolicyMap& policies,
+                                   PrefValueMap* prefs) OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DisabledPluginsByVersionPolicyHandler);
+};
+
 }  // namespace policy
 
 #endif  // CHROME_BROWSER_POLICY_CONFIGURATION_POLICY_HANDLER_H_

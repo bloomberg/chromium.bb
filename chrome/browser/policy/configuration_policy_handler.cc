@@ -12,7 +12,9 @@
 #include "base/stl_util.h"
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
+#include "base/string_split.h"
 #include "base/string_util.h"
+#include "base/version.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/policy_error_map.h"
@@ -1272,6 +1274,84 @@ bool RestoreOnStartupPolicyHandler::CheckPolicySettings(
     }
   }
   return true;
+}
+
+// DisabledPluginsByVersionPolicyHandler implementation -----------------------
+
+DisabledPluginsByVersionPolicyHandler::DisabledPluginsByVersionPolicyHandler()
+    : TypeCheckingPolicyHandler(key::kDisabledPluginsByVersion,
+                                Value::TYPE_LIST) {
+}
+
+DisabledPluginsByVersionPolicyHandler::
+~DisabledPluginsByVersionPolicyHandler() {
+}
+
+bool DisabledPluginsByVersionPolicyHandler::CheckPolicySettings(
+    const PolicyMap& policies,
+    PolicyErrorMap* errors) {
+  const base::Value* value = NULL;
+  if (!CheckAndGetValue(policies, errors, &value))
+    return false;
+
+  if (!value)
+    return true;
+
+  const base::ListValue* list_value = NULL;
+  if (!value->GetAsList(&list_value))
+    return false;
+
+  for (base::ListValue::const_iterator entry(list_value->begin());
+       entry != list_value->end(); ++entry) {
+    string16 plugin_version;
+    if (!(*entry)->GetAsString(&plugin_version)) {
+      errors->AddError(policy_name(),
+                       entry - list_value->begin(),
+                       IDS_POLICY_TYPE_ERROR,
+                       ValueTypeToString(base::Value::TYPE_STRING));
+      return false;
+    }
+
+    std::vector<string16> splitted_plugin_version;
+    base::SplitString(plugin_version, L':', &splitted_plugin_version);
+    if (splitted_plugin_version.size() != 2 ||
+        splitted_plugin_version[0].empty() ||
+        splitted_plugin_version[1].empty()) {
+      errors->AddError(policy_name(),
+                       entry - list_value->begin(),
+                       IDS_POLICY_VALUE_FORMAT_ERROR);
+      return false;
+    }
+
+    std::vector<string16> splitted_versions;
+    base::SplitString(splitted_plugin_version[1], L',', &splitted_versions);
+    if (splitted_versions.size() == 0) {
+      errors->AddError(policy_name(),
+                       entry - list_value->begin(),
+                       IDS_POLICY_VALUE_FORMAT_ERROR);
+      return false;
+    }
+
+    for (size_t i = 0; i < splitted_versions.size(); ++i) {
+      if (!IsStringASCII(splitted_versions[i]) ||
+          !Version::IsValidWildcardString(UTF16ToASCII(splitted_versions[i]))) {
+        errors->AddError(policy_name(),
+                         entry - list_value->begin(),
+                         IDS_POLICY_VALUE_FORMAT_ERROR);
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
+void DisabledPluginsByVersionPolicyHandler::ApplyPolicySettings(
+    const PolicyMap& policies,
+    PrefValueMap* prefs) {
+  const Value* value = policies.GetValue(policy_name());
+  if (value)
+    prefs->SetValue(prefs::kPluginsDisabledPluginsByVersion, value->DeepCopy());
 }
 
 }  // namespace policy

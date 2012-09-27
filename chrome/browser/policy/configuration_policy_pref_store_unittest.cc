@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 #include <string>
+#include <vector>
 
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "base/string_util.h"
 #include "chrome/browser/policy/configuration_policy_handler.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
@@ -1075,6 +1077,124 @@ TEST_F(ConfigurationPolicyPrefStoreOthersTest, JavascriptEnabledOverridden) {
   EXPECT_EQ(PrefStore::READ_OK,
             store_->GetValue(prefs::kManagedDefaultJavaScriptSetting, &value));
   EXPECT_TRUE(base::FundamentalValue(CONTENT_SETTING_ALLOW).Equals(value));
+}
+
+// Test case for disabled plugins by version policy settings.
+class ConfigurationPolicyPrefStoreDisabledPluginsByVersionTest
+    : public ConfigurationPolicyPrefStoreTest {
+ protected:
+  ConfigurationPolicyPrefStoreDisabledPluginsByVersionTest()
+      : policy_name_(key::kDisabledPluginsByVersion),
+        pref_name_(prefs::kPluginsDisabledPluginsByVersion) {
+  }
+
+  void AssertOk(const std::vector<std::string>& policy_values) {
+    base::ListValue plugin_list;
+    plugin_list.AppendStrings(policy_values);
+    PolicyMap policy;
+    policy.Set(policy_name_, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, plugin_list.DeepCopy());
+    provider_.UpdateChromePolicy(policy);
+
+    const base::Value* value = NULL;
+    EXPECT_EQ(PrefStore::READ_OK, store_->GetValue(pref_name_, &value))
+        << "Policy values: '" << JoinString(policy_values, ", ")
+        << "' are expected to be correct.";
+    ASSERT_TRUE(value);
+    EXPECT_TRUE(plugin_list.Equals(value));
+  }
+
+  void AssertNoValue(const std::vector<std::string>& policy_values) {
+    base::ListValue plugin_list;
+    plugin_list.AppendStrings(policy_values);
+
+    PolicyMap policy;
+    policy.Set(policy_name_, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, plugin_list.DeepCopy());
+    provider_.UpdateChromePolicy(policy);
+
+    EXPECT_EQ(PrefStore::READ_NO_VALUE, store_->GetValue(pref_name_, NULL))
+        << "At least one policy value of: '" << JoinString(policy_values, ", ")
+        << "' is expected to be invalid.";
+  }
+
+ private:
+  std::string policy_name_;
+  std::string pref_name_;
+};
+
+TEST_F(ConfigurationPolicyPrefStoreDisabledPluginsByVersionTest, PrefSetRight) {
+  // Different wildcards in plugin name.
+  std::vector<std::string> policy_values;
+  policy_values.push_back(".F?lash*:11");
+  AssertOk(policy_values);
+
+  // Multiple version components.
+  policy_values.clear();
+  policy_values.push_back("*Google*:11.2.1.*");
+  AssertOk(policy_values);
+
+  // No wildcards.
+  policy_values.clear();
+  policy_values.push_back("Other:11.3.3");
+  AssertOk(policy_values);
+
+  // Multiple versions in the version list.
+  policy_values.clear();
+  policy_values.push_back("OnceMore:11.*,9.1.*,1.1.1,1.1.2.*");
+  AssertOk(policy_values);
+
+  // Plug-in name component can have comma.
+  policy_values.clear();
+  policy_values.push_back("PluginName,RestOfName:11.1");
+  AssertOk(policy_values);
+
+  // Multiple list elements.
+  policy_values.clear();
+  policy_values.push_back(".F?lash*:11.*");
+  policy_values.push_back("*Google*:11.2.1.*");
+  policy_values.push_back("Other:11.3.3");
+  policy_values.push_back("OnceMore:11.*,9.1.*,1.1.1,1.1.2.*");
+  policy_values.push_back("PluginName,RestOfName:11.1");
+  AssertOk(policy_values);
+}
+
+TEST_F(ConfigurationPolicyPrefStoreDisabledPluginsByVersionTest, PrefNotSet) {
+  std::vector<std::string> policy_values;
+  policy_values.push_back("Incorrect");
+  AssertNoValue(policy_values);
+
+  policy_values.clear();
+  policy_values.push_back("InvalidVersionList:11.1#,12.2");
+  AssertNoValue(policy_values);
+
+  policy_values.clear();
+  policy_values.push_back("IncorrectVersionWildcard:11.*.1");
+  AssertNoValue(policy_values);
+
+  policy_values.clear();
+  policy_values.push_back("NoVersionList:");
+  AssertNoValue(policy_values);
+
+  // No plugin name.
+  policy_values.clear();
+  policy_values.push_back(":11.1");
+  AssertNoValue(policy_values);
+
+  policy_values.clear();
+  policy_values.push_back("Plugin:11.1:Invalid");
+  AssertNoValue(policy_values);
+
+  policy_values.clear();
+  policy_values.push_back("EmptyVersionList:,,,,");
+  AssertNoValue(policy_values);
+
+  // Any invalid element of the list stops setting the preference.
+  policy_values.clear();
+  policy_values.push_back("valid1:11.*");
+  policy_values.push_back("valid2:11.2.1.*");
+  policy_values.push_back("Invalid:");
+  AssertNoValue(policy_values);
 }
 
 }  // namespace policy

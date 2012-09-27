@@ -38,6 +38,8 @@ class PluginList;
 class PluginPrefs : public RefcountedProfileKeyedService,
                     public content::NotificationObserver {
  public:
+  typedef std::map<string16, std::vector<string16> > PluginVersionsMap;
+
   enum PolicyStatus {
     NO_POLICY = 0,  // Neither enabled or disabled by policy.
     POLICY_ENABLED,
@@ -77,6 +79,9 @@ class PluginPrefs : public RefcountedProfileKeyedService,
   // Returns whether there is a policy enabling or disabling plug-ins of the
   // given name.
   PolicyStatus PolicyStatusForPlugin(const string16& name) const;
+  PolicyStatus PolicyStatusForPluginByVersion(
+      const string16& name,
+      const string16& version_str) const;
 
   // Returns whether the plugin is enabled or not.
   bool IsPluginEnabled(const webkit::WebPluginInfo& plugin) const;
@@ -123,7 +128,8 @@ class PluginPrefs : public RefcountedProfileKeyedService,
   void SetPolicyEnforcedPluginPatterns(
       const std::set<string16>& disabled_patterns,
       const std::set<string16>& disabled_exception_patterns,
-      const std::set<string16>& enabled_patterns);
+      const std::set<string16>& enabled_patterns,
+      const PluginVersionsMap& disabled_by_version_patterns);
 
   // Returns the plugin list to use, either the singleton or the override.
   webkit::npapi::PluginList* GetPluginList() const;
@@ -153,6 +159,9 @@ class PluginPrefs : public RefcountedProfileKeyedService,
   static void ListValueToStringSet(const base::ListValue* src,
                                    std::set<string16>* dest);
 
+  static void ListValueToPluginVersionsMap(const base::ListValue* src,
+                                           PluginVersionsMap* dest);
+
   // Checks if |name| matches any of the patterns in |pattern_set|.
   static bool IsStringMatchedInSet(const string16& name,
                                    const std::set<string16>& pattern_set);
@@ -166,6 +175,7 @@ class PluginPrefs : public RefcountedProfileKeyedService,
   std::set<string16> policy_disabled_plugin_patterns_;
   std::set<string16> policy_disabled_plugin_exception_patterns_;
   std::set<string16> policy_enabled_plugin_patterns_;
+  PluginVersionsMap policy_disabled_plugins_by_version_;
 
   // Weak pointer, owns us. Only used as a notification source.
   Profile* profile_;

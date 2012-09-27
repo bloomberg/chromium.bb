@@ -233,6 +233,13 @@
     "os": ["win", "linux", "mac", "chromeos"]
   },
 
+  "DisabledPluginsByVersion": {
+    "pref": "plugins.plugins_disabled_by_version",
+    "test_policy": { "DisabledPluginsByVersion": ["*Flash*:11.*"] },
+    "settings_pages": [],
+    "os": ["win", "linux", "mac", "chromeos"]
+  },
+
   "DisablePluginFinder": {
     "pref": "plugins.disable_plugin_finder",
     "test_policy": { "DisablePluginFinder": true },

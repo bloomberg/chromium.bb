@@ -5325,6 +5325,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PLUGINS_ENABLED_BY_POLICY_PLUGIN" desc="Text that signifies that the plug-in is currently enabled by enterprise policy.">
         (Enabled by enterprise policy)
       </message>
+      <message name="IDS_PLUGINS_GROUP_MANAGED_BY_POLICY" desc="Text that signifies that the plug-in group is currently managed by enterprise policy.">
+        (Managed by enterprise policy)
+      </message>
       <message name="IDS_PLUGINS_VERSION" desc="The label in front of a plug-in version number.">
         Version:
       </message>

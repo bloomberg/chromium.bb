@@ -19,6 +19,7 @@
 #include "base/test/test_file_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "base/version.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/browser_process.h"
@@ -92,6 +93,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "webkit/plugins/npapi/plugin_utils.h"
 #include "webkit/plugins/webplugininfo.h"
 
 #if defined(OS_CHROMEOS)
@@ -703,6 +705,16 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DisabledPlugins) {
   // The user shouldn't be able to enable it.
   EXPECT_FALSE(SetPluginEnabled(plugin_prefs, flash, true));
   EXPECT_FALSE(plugin_prefs->IsPluginEnabled(*flash));
+
+  // Now remove the policy.
+  policies.Erase(key::kDisabledPlugins);
+  provider_.UpdateChromePolicy(policies);
+  EXPECT_TRUE(plugin_prefs->IsPluginEnabled(*flash));
+  // The user should be able to disable/enable it again.
+  EXPECT_TRUE(SetPluginEnabled(plugin_prefs, flash, false));
+  EXPECT_FALSE(plugin_prefs->IsPluginEnabled(*flash));
+  EXPECT_TRUE(SetPluginEnabled(plugin_prefs, flash, true));
+  EXPECT_TRUE(plugin_prefs->IsPluginEnabled(*flash));
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, DisabledPluginsExceptions) {
@@ -744,6 +756,14 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DisabledPluginsExceptions) {
   EXPECT_FALSE(plugin_prefs->IsPluginEnabled(*flash));
   EXPECT_TRUE(SetPluginEnabled(plugin_prefs, flash, true));
   EXPECT_TRUE(plugin_prefs->IsPluginEnabled(*flash));
+
+  // Now remove the exception for flash.
+  policies.Erase(key::kDisabledPluginsExceptions);
+  provider_.UpdateChromePolicy(policies);
+  // It should be disabled and the user shouldn't be able to enable it again.
+  EXPECT_FALSE(plugin_prefs->IsPluginEnabled(*flash));
+  EXPECT_FALSE(SetPluginEnabled(plugin_prefs, flash, true));
+  EXPECT_FALSE(plugin_prefs->IsPluginEnabled(*flash));
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, EnabledPlugins) {
@@ -775,6 +795,82 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, EnabledPlugins) {
                POLICY_SCOPE_USER, plugin_list.DeepCopy());
   provider_.UpdateChromePolicy(policies);
   EXPECT_TRUE(plugin_prefs->IsPluginEnabled(*flash));
+
+  // Now remove the plugin from the whitelist.
+  policies.Erase(key::kEnabledPlugins);
+  provider_.UpdateChromePolicy(policies);
+  // The blacklisting should take effect.
+  EXPECT_FALSE(plugin_prefs->IsPluginEnabled(*flash));
+  // The user can't enable the plugin.
+  EXPECT_FALSE(SetPluginEnabled(plugin_prefs, flash, true));
+
+  // Remove it from the blacklist.
+  policies.Erase(key::kDisabledPlugins);
+  provider_.UpdateChromePolicy(policies);
+
+  // It should revert to the user's preferences automatically.
+  EXPECT_FALSE(plugin_prefs->IsPluginEnabled(*flash));
+  // The user can enable it.
+  EXPECT_TRUE(SetPluginEnabled(plugin_prefs, flash, true));
+  EXPECT_TRUE(plugin_prefs->IsPluginEnabled(*flash));
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, DisabledPluginsByVersion) {
+  std::vector<webkit::WebPluginInfo> plugins;
+  GetPluginList(&plugins);
+  const webkit::WebPluginInfo* flash = GetFlashPlugin(plugins);
+  if (!flash)
+    return;
+  PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(browser()->profile());
+  EXPECT_TRUE(plugin_prefs->IsPluginEnabled(*flash));
+
+  Version flash_version;
+  webkit::npapi::CreateVersionFromString(flash->version, &flash_version);
+  base::ListValue plugin_version_list;
+  plugin_version_list.Append(
+      base::Value::CreateStringValue("*Flash*:" + flash_version.GetString()));
+  PolicyMap policies;
+  policies.Set(key::kDisabledPluginsByVersion, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, plugin_version_list.DeepCopy());
+  provider_.UpdateChromePolicy(policies);
+  // The version blacklisting should take effect.
+  EXPECT_FALSE(plugin_prefs->IsPluginEnabled(*flash));
+  // The user can't enable the plugin.
+  EXPECT_FALSE(SetPluginEnabled(plugin_prefs, flash, true));
+
+  // Set an EnablePlugin policy for flash.
+  base::ListValue enabled_plugins;
+  enabled_plugins.Append(base::Value::CreateStringValue("*Flash*"));
+  policies.Set(key::kEnabledPlugins, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, enabled_plugins.DeepCopy());
+  provider_.UpdateChromePolicy(policies);
+  // Disabling by version is still holding, the plugin is disabled and
+  // the user can't enable it.
+  EXPECT_FALSE(plugin_prefs->IsPluginEnabled(*flash));
+  EXPECT_FALSE(SetPluginEnabled(plugin_prefs, flash, true));
+
+  // Set a DisabledPluginsException policy.
+  base::ListValue disabled_exception_plugins;
+  disabled_exception_plugins.Append(base::Value::CreateStringValue("*Flash*"));
+  policies.Set(key::kDisabledPluginsExceptions, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, disabled_exception_plugins.DeepCopy());
+  provider_.UpdateChromePolicy(policies);
+  // Disabling by version is still holding, the plugin is disabled and
+  // the user can't enable it.
+  EXPECT_FALSE(plugin_prefs->IsPluginEnabled(*flash));
+  EXPECT_FALSE(SetPluginEnabled(plugin_prefs, flash, true));
+
+  // Now, remove all policies.
+  policies.Erase(key::kDisabledPluginsByVersion);
+  policies.Erase(key::kEnabledPlugins);
+  policies.Erase(key::kDisabledPluginsExceptions);
+  provider_.UpdateChromePolicy(policies);
+
+  // It should revert to the user's preferences automatically.
+  EXPECT_TRUE(plugin_prefs->IsPluginEnabled(*flash));
+  // The user can disable it.
+  EXPECT_TRUE(SetPluginEnabled(plugin_prefs, flash, false));
+  EXPECT_FALSE(plugin_prefs->IsPluginEnabled(*flash));
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, AlwaysAuthorizePlugins) {

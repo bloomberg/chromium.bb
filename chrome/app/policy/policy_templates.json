@@ -112,7 +112,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 160
+#   For your editing convenience: highest ID currently used: 161
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -743,6 +743,27 @@
 
       Setting this option to disabled or leave it not set the plugin finder will be active.''',
       'label': '''Disable plugin finder''',
+    },
+    {
+      'name': 'DisabledPluginsByVersion',
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'supported_on': ['chrome.*:23-', 'chrome_os:0.23-'],
+      'features': {'dynamic_refresh': True},
+      'example_value': [ '*Flash:9.1.*,11.*', '*Google:1.0,3.2.3.*'],
+      'id': 161,
+      'caption': '''Specify a list of plugins and specific versions of each plugin that are disabled.''',
+      'desc': '''Specifies a list of plugins and specific versions of each of them that are disabled in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
+
+      Each element of the list has the format PLUGIN_PATTERN:VERSION_PATTERN_LIST. PLUGIN_PATTERN is a pattern that matches the name of a plugin, wildcard characters '*' and '?' can be used to match sequences of arbitrary characters. '*' matches an arbitrary number of characters while '?' specifies an optional single character, i.e. matches zero or one characters. The escape character is '\\', so to match actual '*', '?', or '\\' characters, you can put a '\\' in front of them. PLUGIN_PATTERN can't have the character ':'.
+
+      VERSION_PATTERN_LIST is a comma separated list of version patterns. Each version pattern consists of multiple integer components separated by dots (e.g. 1.2.4) except for the last component that can take the wildcard character '*' as well. Specifying the wildcard character '*' in the last version component indicates that the version component up to (but not including) the wildcard will only be used in version comparision.
+
+      If you enable this setting, the specified plugins with matching versions are never used in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. These plugin versions are marked as disabled in about:plugins and users cannot enable them. Note that this policy overrides EnabledPlugins and DisabledPluginsExceptions. If this policy is left not set or a version is not listed in VERSION_PATTERN_LIST, the user can use the plugin or the specific plugin version installed on the system except for hard-coded incompatible, outdated or dangerous plugins.''',
+      'label': '''List of specific plugin versions that are disabled''',
     },
     {
       'name': 'SyncDisabled',
