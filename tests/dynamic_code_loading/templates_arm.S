@@ -142,9 +142,9 @@ template_func_illegal_call_target:
         mov r0, #MARKER_NEW & 0xff
         orr r0, #MARKER_NEW & 0xff00
         bic lr, lr, #SANDBOX_MASK
-        bx  lr
+0:      bx  lr
         and r1, r1, #42
-        bl  template_func_illegal_call_target - 41
+        bl  0b
 template_func_illegal_call_target_end:
 
         .global template_func_illegal_constant_replacement
