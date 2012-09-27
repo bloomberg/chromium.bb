@@ -26,6 +26,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/screen.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/scrollbar/native_scroll_bar.h"
 #include "ui/views/widget/root_view.h"
@@ -34,8 +35,6 @@
 #if defined(USE_ASH)
 #include "ash/wm/property_util.h"
 #endif
-
-using views::Widget;
 
 // The alpha and color of the bubble's shadow.
 static const SkColor kShadowColor = SkColorSetARGB(30, 0, 0, 0);
@@ -346,9 +345,8 @@ void StatusBubbleViews::StatusView::SetStyle(BubbleStyle style) {
 void StatusBubbleViews::StatusView::OnPaint(gfx::Canvas* canvas) {
   SkPaint paint;
   paint.setStyle(SkPaint::kFill_Style);
-  paint.setFlags(SkPaint::kAntiAlias_Flag);
-  SkColor toolbar_color =
-      theme_service_->GetColor(ThemeService::COLOR_TOOLBAR);
+  paint.setAntiAlias(true);
+  SkColor toolbar_color = theme_service_->GetColor(ThemeService::COLOR_TOOLBAR);
   paint.setColor(toolbar_color);
 
   gfx::Rect popup_bounds = popup_->GetWindowBoundsInScreen();
@@ -413,14 +411,11 @@ void StatusBubbleViews::StatusView::OnPaint(gfx::Canvas* canvas) {
   // Draw the bubble's shadow.
   int width = popup_bounds.width();
   int height = popup_bounds.height();
-  SkRect rect;
-  rect.set(0, 0,
-           SkIntToScalar(width),
-           SkIntToScalar(height));
+  SkRect rect(gfx::RectToSkRect(gfx::Rect(popup_bounds.size())));
   SkPath shadow_path;
   shadow_path.addRoundRect(rect, rad, SkPath::kCW_Direction);
   SkPaint shadow_paint;
-  shadow_paint.setFlags(SkPaint::kAntiAlias_Flag);
+  shadow_paint.setAntiAlias(true);
   shadow_paint.setColor(kShadowColor);
   canvas->DrawPath(shadow_path, shadow_paint);
 
@@ -568,13 +563,13 @@ StatusBubbleViews::~StatusBubbleViews() {
 
 void StatusBubbleViews::Init() {
   if (!popup_.get()) {
-    popup_.reset(new Widget);
+    popup_.reset(new views::Widget);
     views::Widget* frame = base_view_->GetWidget();
     if (!view_)
       view_ = new StatusView(this, popup_.get(), frame->GetThemeProvider());
     if (!expand_view_.get())
       expand_view_.reset(new StatusViewExpander(this, view_));
-    Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
+    views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
     params.transparent = true;
     params.accept_events = false;
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
