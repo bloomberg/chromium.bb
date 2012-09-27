@@ -278,10 +278,9 @@ void PerformanceMonitor::AddEventOnBackgroundThread(scoped_ptr<Event> event) {
   database_->AddEvent(*event.get());
 }
 
-void PerformanceMonitor::AddMetricOnBackgroundThread(MetricType type,
-                                                     const std::string& value) {
+void PerformanceMonitor::AddMetricOnBackgroundThread(Metric metric) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
-  database_->AddMetric(type, value);
+  database_->AddMetric(metric);
 }
 
 void PerformanceMonitor::NotifyInitialized() {
@@ -312,7 +311,9 @@ void PerformanceMonitor::GatherCPUUsageOnBackgroundThread() {
       cpu_usage += iter->second->GetCPUUsage();
     }
 
-    database_->AddMetric(METRIC_CPU_USAGE, base::DoubleToString(cpu_usage));
+    database_->AddMetric(Metric(METRIC_CPU_USAGE,
+                                base::Time::Now(),
+                                cpu_usage));
   }
 }
 
@@ -331,10 +332,12 @@ void PerformanceMonitor::GatherMemoryUsageOnBackgroundThread() {
     }
   }
 
-  database_->AddMetric(METRIC_PRIVATE_MEMORY_USAGE,
-                       base::Uint64ToString(private_memory_sum));
-  database_->AddMetric(METRIC_SHARED_MEMORY_USAGE,
-                       base::Uint64ToString(shared_memory_sum));
+  database_->AddMetric(Metric(METRIC_PRIVATE_MEMORY_USAGE,
+                              base::Time::Now(),
+                              static_cast<double>(private_memory_sum)));
+  database_->AddMetric(Metric(METRIC_SHARED_MEMORY_USAGE,
+                              base::Time::Now(),
+                              static_cast<double>(shared_memory_sum)));
 }
 
 void PerformanceMonitor::UpdateMetricsMapOnBackgroundThread() {
@@ -432,8 +435,10 @@ void PerformanceMonitor::InsertIOData(
     PerformanceDataForIOThread performance_data_for_io_thread) {
   CHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
   database_->AddMetric(
-      METRIC_NETWORK_BYTES_READ,
-      base::Uint64ToString(performance_data_for_io_thread.network_bytes_read));
+      Metric(METRIC_NETWORK_BYTES_READ,
+             base::Time::Now(),
+             static_cast<double>(
+                 performance_data_for_io_thread.network_bytes_read)));
 }
 
 void PerformanceMonitor::BytesReadOnIOThread(const net::URLRequest& request,
@@ -521,8 +526,10 @@ void PerformanceMonitor::Observe(int type,
           base::Bind(
               &PerformanceMonitor::AddMetricOnBackgroundThread,
               base::Unretained(this),
-              METRIC_PAGE_LOAD_TIME,
-              base::Int64ToString(load_details->load_time.ToInternalValue())));
+              Metric(METRIC_PAGE_LOAD_TIME,
+                     base::Time::Now(),
+                     static_cast<double>(
+                         load_details->load_time.ToInternalValue()))));
       break;
     }
     default: {

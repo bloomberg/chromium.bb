@@ -325,7 +325,8 @@ void DoGetMetric(DictionaryValue* results,
       results,
       metric_type,
       db->GetMaxStatsForActivityAndMetric(metric_type),
-      AggregateMetric(metric_vector.get(),
+      AggregateMetric(metric_type,
+                      metric_vector.get(),
                       start,
                       resolution).get());
 }

@@ -23,6 +23,7 @@ double GetConversionFactor(UnitDetails from, UnitDetails to);
 // |start| and data points are omitted if there are no points to resample.
 // Returns a pointer to a new MetricVector, or NULL if |metrics| is empty.
 scoped_ptr<Database::MetricVector> AggregateMetric(
+    MetricType type,
     const Database::MetricVector* metrics,
     const base::Time& start,
     const base::TimeDelta& resolution);

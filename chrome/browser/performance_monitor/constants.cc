@@ -6,19 +6,12 @@
 
 namespace performance_monitor {
 
-// TODO(chebert): i18n on all constants.
-
 // The error message displayed when a metric's details are not found.
 const char kMetricNotFoundError[] = "Metric details not found.";
 
 // Any metric that is not associated with a specific activity will use this as
 // its activity.
 const char kProcessChromeAggregate[] = "chrome_aggregate";
-
-// The default interval at which PerformanceMonitor performs its timed
-// collections; this can be overridden by using the kPerformanceMonitorGathering
-// switch with an associated (positive integer) value.
-const int kDefaultGatherIntervalInSeconds = 120;
 
 // Tokens to retrieve state values from the database.
 
