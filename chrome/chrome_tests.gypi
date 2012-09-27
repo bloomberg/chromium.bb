@@ -1818,6 +1818,7 @@
         'browser/ui/cocoa/omnibox/omnibox_view_mac_unittest.mm',
         'browser/ui/cocoa/one_click_signin_bubble_controller_unittest.mm',
         'browser/ui/cocoa/page_info_bubble_controller_unittest.mm',
+        'browser/ui/cocoa/panels/panel_cocoa_unittest.mm',
         'browser/ui/cocoa/profile_menu_controller_unittest.mm',
         'browser/ui/cocoa/run_loop_testing_unittest.mm',
         'browser/ui/cocoa/status_bubble_mac_unittest.mm',
@@ -1878,7 +1879,6 @@
         'browser/ui/omnibox/omnibox_edit_unittest.cc',
         'browser/ui/omnibox/omnibox_view_unittest.cc',
         'browser/ui/panels/display_settings_provider_win_unittest.cc',
-        'browser/ui/panels/panel_cocoa_unittest.mm',
         'browser/ui/panels/panel_mouse_watcher_unittest.cc',
         'browser/ui/search_engines/keyword_editor_controller_unittest.cc',
         'browser/ui/search/search_delegate_unittest.cc',
@@ -3047,7 +3047,6 @@
         'browser/ui/gtk/view_id_util_browsertest.cc',
         'browser/ui/intents/web_intent_picker_controller_browsertest.cc',
         'browser/ui/login/login_prompt_browsertest.cc',
-        'browser/ui/panels/panel_view_browsertest.cc',
         'browser/ui/prefs/prefs_tab_helper_browsertest.cc',
         'browser/ui/startup/startup_browser_creator_browsertest.cc',
         'browser/ui/tab_modal_confirm_dialog_browsertest.cc',
@@ -3058,6 +3057,7 @@
         'browser/ui/views/constrained_window_views_browsertest.cc',
         'browser/ui/views/frame/app_non_client_frame_view_aura_browsertest.cc',
         'browser/ui/views/frame/browser_view_browsertest.cc',
+        'browser/ui/views/panels/panel_view_browsertest.cc',
         'browser/ui/views/search_view_controller_browsertest.cc',
         'browser/ui/views/select_file_dialog_extension_browsertest.cc',
         'browser/ui/views/toolbar_view_browsertest.cc',
@@ -3247,7 +3247,7 @@
             'browser/printing/cloud_print/test/cloud_print_proxy_process_browsertest.cc',
             'browser/service/service_process_control_browsertest.cc',
             # chromeos does not use cross-platform panels
-            'browser/ui/panels/panel_view_browsertest.cc',
+            'browser/ui/views/panels/panel_view_browsertest.cc',
           ],
           'dependencies': [
             '../dbus/dbus.gyp:dbus_test_support',
@@ -3425,7 +3425,6 @@
             ['exclude', '^browser/ui/views/'],
             ['exclude', '^../ui/views/'],
             ['exclude', '^browser/extensions/extension_input_apitest.cc'],
-            ['exclude', '^browser/ui/panels/panel_view_browsertest.cc'],
           ],
         }],
         ['target_arch!="arm"', {

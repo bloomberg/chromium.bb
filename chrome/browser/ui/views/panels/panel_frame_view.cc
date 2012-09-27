@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/panels/panel_frame_view.h"
+#include "chrome/browser/ui/views/panels/panel_frame_view.h"
 
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_constants.h"
-#include "chrome/browser/ui/panels/panel_view.h"
+#include "chrome/browser/ui/views/panels/panel_view.h"
 #include "chrome/browser/ui/views/tab_icon_view.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"

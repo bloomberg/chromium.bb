@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/panels/panel_cocoa.h"
+#include "chrome/browser/ui/cocoa/panels/panel_cocoa.h"
 
 #include "base/logging.h"
 #import "chrome/browser/ui/cocoa/chrome_event_processing_window.h"
+#import "chrome/browser/ui/cocoa/panels/panel_titlebar_view_cocoa.h"
+#import "chrome/browser/ui/cocoa/panels/panel_utils_cocoa.h"
+#import "chrome/browser/ui/cocoa/panels/panel_window_controller_cocoa.h"
 #include "chrome/browser/ui/panels/panel.h"
-#import "chrome/browser/ui/panels/panel_titlebar_view_cocoa.h"
-#import "chrome/browser/ui/panels/panel_utils_cocoa.h"
-#import "chrome/browser/ui/panels/panel_window_controller_cocoa.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 
 using content::NativeWebKeyboardEvent;

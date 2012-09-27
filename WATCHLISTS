@@ -280,7 +280,10 @@
                   '|chrome/browser/ui/.*/omnibox/'
     },
     'panels': {
-      'filepath': 'chrome/browser/ui/panels/',
+      'filepath': 'chrome/browser/ui/panels'\
+                  '|chrome/browser/ui/cocoa/panels'\
+                  '|chrome/browser/ui/gtk/panels'\
+                  '|chrome/browser/ui/views/panels'
     },
     'pepper_api': {
       'filepath': 'ppapi/c/',

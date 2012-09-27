@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_PANELS_PANEL_FRAME_VIEW_H_
-#define CHROME_BROWSER_UI_PANELS_PANEL_FRAME_VIEW_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_PANELS_PANEL_FRAME_VIEW_H_
+#define CHROME_BROWSER_UI_VIEWS_PANELS_PANEL_FRAME_VIEW_H_
 
 #include "chrome/browser/ui/views/tab_icon_view_model.h"
 #include "ui/views/controls/button/button.h"
@@ -114,4 +114,4 @@ class PanelFrameView : public views::NonClientFrameView,
   DISALLOW_COPY_AND_ASSIGN(PanelFrameView);
 };
 
-#endif  // CHROME_BROWSER_UI_PANELS_PANEL_FRAME_VIEW_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_PANELS_PANEL_FRAME_VIEW_H_

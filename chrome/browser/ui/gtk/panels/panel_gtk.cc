@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/panels/panel_gtk.h"
+#include "chrome/browser/ui/gtk/panels/panel_gtk.h"
 
 #include <gdk/gdk.h>
 #include <gdk/gdkkeysyms.h>
@@ -19,10 +19,10 @@
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/gtk_window_util.h"
+#include "chrome/browser/ui/gtk/panels/panel_titlebar_gtk.h"
+#include "chrome/browser/ui/gtk/panels/panel_drag_gtk.h"
 #include "chrome/browser/ui/panels/panel.h"
-#include "chrome/browser/ui/panels/panel_titlebar_gtk.h"
 #include "chrome/browser/ui/panels/panel_constants.h"
-#include "chrome/browser/ui/panels/panel_drag_gtk.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_notification_types.h"

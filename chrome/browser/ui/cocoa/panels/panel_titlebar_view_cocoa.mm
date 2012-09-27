@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/panels/panel_titlebar_view_cocoa.h"
+#import "chrome/browser/ui/cocoa/panels/panel_titlebar_view_cocoa.h"
 
 #import <Cocoa/Cocoa.h>
 
@@ -11,10 +11,10 @@
 #include "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/hover_image_button.h"
 #import "chrome/browser/ui/cocoa/nsview_additions.h"
+#import "chrome/browser/ui/cocoa/panels/panel_window_controller_cocoa.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/tracking_area.h"
 #import "chrome/browser/ui/panels/panel_constants.h"
-#import "chrome/browser/ui/panels/panel_window_controller_cocoa.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #import "third_party/GTM/AppKit/GTMNSBezierPath+RoundRect.h"

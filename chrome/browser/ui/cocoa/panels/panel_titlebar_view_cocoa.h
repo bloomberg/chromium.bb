@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_PANELS_PANEL_TITLEBAR_VIEW_COCOA_H_
-#define CHROME_BROWSER_UI_PANELS_PANEL_TITLEBAR_VIEW_COCOA_H_
+#ifndef CHROME_BROWSER_UI_COCOA_PANELS_PANEL_TITLEBAR_VIEW_COCOA_H_
+#define CHROME_BROWSER_UI_COCOA_PANELS_PANEL_TITLEBAR_VIEW_COCOA_H_
 
 #import <Cocoa/Cocoa.h>
 
+#import "chrome/browser/ui/cocoa/panels/mouse_drag_controller.h"
 #import "chrome/browser/ui/cocoa/tracking_area.h"
-#import "chrome/browser/ui/panels/mouse_drag_controller.h"
 
 @class CrTrackingArea;
 @class HoverImageButton;
@@ -131,4 +131,4 @@
 
 @end  // @interface PanelTitlebarViewCocoa(TestingAPI)
 
-#endif  // CHROME_BROWSER_UI_PANELS_PANEL_TITLEBAR_VIEW_COCOA_H_
+#endif  // CHROME_BROWSER_UI_COCOA_PANELS_PANEL_TITLEBAR_VIEW_COCOA_H_

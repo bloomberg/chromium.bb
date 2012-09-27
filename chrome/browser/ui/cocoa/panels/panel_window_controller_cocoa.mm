@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/panels/panel_window_controller_cocoa.h"
+#include "chrome/browser/ui/cocoa/panels/panel_window_controller_cocoa.h"
 
 #import <Cocoa/Cocoa.h>
 
@@ -21,17 +21,17 @@
 #import "chrome/browser/ui/cocoa/browser_window_utils.h"
 #import "chrome/browser/ui/cocoa/event_utils.h"
 #import "chrome/browser/ui/cocoa/menu_controller.h"
+#import "chrome/browser/ui/cocoa/panels/mouse_drag_controller.h"
+#import "chrome/browser/ui/cocoa/panels/panel_cocoa.h"
+#import "chrome/browser/ui/cocoa/panels/panel_titlebar_view_cocoa.h"
+#import "chrome/browser/ui/cocoa/panels/panel_utils_cocoa.h"
 #import "chrome/browser/ui/cocoa/tab_contents/favicon_util_mac.h"
 #import "chrome/browser/ui/cocoa/tab_contents/tab_contents_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/throbber_view.h"
-#import "chrome/browser/ui/panels/mouse_drag_controller.h"
 #include "chrome/browser/ui/panels/panel_bounds_animation.h"
-#include "chrome/browser/ui/panels/panel_cocoa.h"
 #include "chrome/browser/ui/panels/panel_constants.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel_strip.h"
-#import "chrome/browser/ui/panels/panel_titlebar_view_cocoa.h"
-#import "chrome/browser/ui/panels/panel_utils_cocoa.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/encoding_menu_controller.h"
 #include "content/public/browser/render_widget_host_view.h"

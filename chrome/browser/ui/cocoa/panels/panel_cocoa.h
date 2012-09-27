@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_PANELS_PANEL_COCOA_H_
-#define CHROME_BROWSER_UI_PANELS_PANEL_COCOA_H_
+#ifndef CHROME_BROWSER_UI_COCOA_PANELS_PANEL_COCOA_H_
+#define CHROME_BROWSER_UI_COCOA_PANELS_PANEL_COCOA_H_
 
 #import <Foundation/Foundation.h>
 #include "base/memory/scoped_ptr.h"
@@ -100,4 +100,4 @@ class PanelCocoa : public NativePanel {
   DISALLOW_COPY_AND_ASSIGN(PanelCocoa);
 };
 
-#endif  // CHROME_BROWSER_UI_PANELS_PANEL_COCOA_H_
+#endif  // CHROME_BROWSER_UI_COCOA_PANELS_PANEL_COCOA_H_

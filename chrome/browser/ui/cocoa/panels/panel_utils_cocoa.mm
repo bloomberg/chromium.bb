@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/panels/panel_utils_cocoa.h"
+#import "chrome/browser/ui/cocoa/panels/panel_utils_cocoa.h"
 
 namespace cocoa_utils {
 
