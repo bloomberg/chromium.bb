@@ -1349,6 +1349,8 @@
         'host/it2me_host_user_interface.h',
         'host/json_host_config.cc',
         'host/json_host_config.h',
+        'host/linux/x_server_clipboard.cc',
+        'host/linux/x_server_clipboard.h',
         'host/local_input_monitor.h',
         'host/local_input_monitor_linux.cc',
         'host/local_input_monitor_mac.mm',

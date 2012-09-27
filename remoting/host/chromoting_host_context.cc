@@ -40,14 +40,12 @@ void ChromotingHostContext::ReleaseTaskRunners() {
 
 bool ChromotingHostContext::Start() {
   // Start all the threads.
+  base::Thread::Options io_thread_options(MessageLoop::TYPE_IO, 0);
   bool started = capture_thread_.Start() && encode_thread_.Start() &&
-      audio_thread_.StartWithOptions(base::Thread::Options(
-          MessageLoop::TYPE_IO, 0)) &&
-      network_thread_.StartWithOptions(base::Thread::Options(
-          MessageLoop::TYPE_IO, 0)) &&
-      desktop_thread_.Start() &&
-      file_thread_.StartWithOptions(
-          base::Thread::Options(MessageLoop::TYPE_IO, 0));
+      audio_thread_.StartWithOptions(io_thread_options) &&
+      network_thread_.StartWithOptions(io_thread_options) &&
+      desktop_thread_.StartWithOptions(io_thread_options) &&
+      file_thread_.StartWithOptions(io_thread_options);
   if (!started)
     return false;
 

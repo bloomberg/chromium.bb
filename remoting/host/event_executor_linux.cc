@@ -16,6 +16,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
+#include "remoting/host/clipboard.h"
 #include "remoting/proto/internal.pb.h"
 #include "third_party/skia/include/core/SkPoint.h"
 
@@ -59,6 +60,8 @@ class EventExecutorLinux : public EventExecutor {
   // Left, Right, Middle, VScroll Up/Down, HScroll Left/Right.
   static const int kNumPointerButtons = 7;
 
+  void InitClipboard();
+
   // |mode| is one of the AutoRepeatModeOn, AutoRepeatModeOff,
   // AutoRepeatModeDefault constants defined by the XChangeKeyboardControl()
   // API.
@@ -83,6 +86,9 @@ class EventExecutorLinux : public EventExecutor {
   int test_error_base_;
 
   int pointer_button_map_[kNumPointerButtons];
+
+  scoped_ptr<Clipboard> clipboard_;
+
   DISALLOW_COPY_AND_ASSIGN(EventExecutorLinux);
 };
 
@@ -92,6 +98,11 @@ EventExecutorLinux::EventExecutorLinux(
       latest_mouse_position_(SkIPoint::Make(-1, -1)),
       display_(XOpenDisplay(NULL)),
       root_window_(BadValue) {
+  if (!task_runner_->BelongsToCurrentThread()) {
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&EventExecutorLinux::InitClipboard, base::Unretained(this)));
+  }
 }
 
 EventExecutorLinux::~EventExecutorLinux() {
@@ -120,7 +131,15 @@ bool EventExecutorLinux::Init() {
 }
 
 void EventExecutorLinux::InjectClipboardEvent(const ClipboardEvent& event) {
-  // TODO(simonmorris): Implement clipboard injection.
+  if (!task_runner_->BelongsToCurrentThread()) {
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&EventExecutorLinux::InjectClipboardEvent,
+                   base::Unretained(this), event));
+    return;
+  }
+
+  clipboard_->InjectClipboardEvent(event);
 }
 
 void EventExecutorLinux::InjectKeyEvent(const KeyEvent& event) {
@@ -168,6 +187,11 @@ void EventExecutorLinux::InjectKeyEvent(const KeyEvent& event) {
 
   XTestFakeKeyEvent(display_, keycode, event.pressed(), CurrentTime);
   XFlush(display_);
+}
+
+void EventExecutorLinux::InitClipboard() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  clipboard_ = Clipboard::Create();
 }
 
 void EventExecutorLinux::SetAutoRepeatForKey(int keycode, int mode) {
@@ -365,8 +389,9 @@ void EventExecutorLinux::Start(
                    base::Passed(&client_clipboard)));
     return;
   }
+
   InitMouseButtonMap();
-  return;
+  clipboard_->Start(client_clipboard.Pass());
 }
 
 void EventExecutorLinux::StopAndDelete() {
