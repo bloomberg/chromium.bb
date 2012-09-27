@@ -1338,18 +1338,21 @@ FileManager.prototype = {
         if (foundLeaf) {
           // TODO(kaznacheev): use |makeFIlesystemUrl| instead of
           // self.selection.
-          var tasks = new FileTasks(self, [self.selection.urls[0]],
+          var urls = [self.selection.urls[0]];
+          var tasks = new FileTasks(self, urls,
               null /* mime types */, self.params_);
           // There are 3 ways we can get here:
           // 1. Invoked from file_manager_util::ViewFile. This can only
           //    happen for 'gallery' and 'mount-archive' actions.
           // 2. Reloading a Gallery page. Must be an image or a video file.
           // 3. A user manually entered a URL pointing to a file.
+          // We call the appropriate methods of FileTasks directly as we do
+          // not need any of the preparations that |execute| method does.
           if (FileType.isImageOrVideo(path)) {
-            tasks.execute(util.getExtensionId() + '|gallery');
+            tasks.openGallery(urls);
           } else if (FileType.getMediaType(path) == 'archive') {
             self.show_();
-            tasks.execute(util.getExtensionId() + '|mount-archive');
+            tasks.mountArchives_(urls);
           } else {
             self.show_();
           }
