@@ -73,14 +73,14 @@ void ExtensionInfoBarGtk::OnImageLoaded(const gfx::Image& image,
 
   // TODO(erg): IDR_EXTENSIONS_SECTION should have an IDR_INFOBAR_EXTENSIONS
   // icon of the correct size with real subpixel shading and such.
-  const SkBitmap* icon = NULL;
+  const gfx::ImageSkia* icon = NULL;
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   if (image.IsEmpty())
-    icon = rb.GetBitmapNamed(IDR_EXTENSIONS_SECTION);
+    icon = rb.GetImageSkiaNamed(IDR_EXTENSIONS_SECTION);
   else
-    icon = image.ToSkBitmap();
+    icon = image.ToImageSkia();
 
-  SkBitmap* drop_image = rb.GetBitmapNamed(IDR_APP_DROPARROW);
+  gfx::ImageSkia* drop_image = rb.GetImageSkiaNamed(IDR_APP_DROPARROW);
 
   int image_size = extension_misc::EXTENSION_ICON_BITTY;
   // The margin between the extension icon and the drop-down arrow bitmap.
