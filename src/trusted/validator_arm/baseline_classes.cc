@@ -137,6 +137,16 @@ RegisterList Unary1RegisterImmediateOp::defs(const Instruction i) const {
   return RegisterList(d.reg(i)).Add(conditions.conds_if_updated(i));
 }
 
+// Unary1RegisterImmediateOpDynCodeReplace
+Instruction Unary1RegisterImmediateOpDynCodeReplace::
+dynamic_code_replacement_sentinel(Instruction i) const {
+  if (!kDynCodeReplaceFrozenRegs.Contains(d.reg(i))) {
+    imm4.set_value(&i, 0);
+    imm12.set_value(&i, 0);
+  }
+  return i;
+}
+
 // Binary2RegisterBitRangeMsbGeLsb
 SafetyLevel Binary2RegisterBitRangeMsbGeLsb::safety(Instruction i) const {
   return (d.reg(i).Equals(kRegisterPc) ||
@@ -185,6 +195,15 @@ RegisterList Binary2RegisterImmediateOp::defs(Instruction i) const {
 bool MaskedBinary2RegisterImmediateOp::clears_bits(
     Instruction i, uint32_t mask) const {
   return (imm.get_modified_immediate(i) & mask) == mask;
+}
+
+// Binary2RegisterImmediateOpDynCodeReplace
+Instruction Binary2RegisterImmediateOpDynCodeReplace::
+dynamic_code_replacement_sentinel(Instruction i) const {
+  if (!kDynCodeReplaceFrozenRegs.Contains(d.reg(i))) {
+    imm.set_value(&i, 0);
+  }
+  return i;
 }
 
 // BinaryRegisterImmediateTest::

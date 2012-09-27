@@ -92,12 +92,12 @@ bool UnsafeCondDecoderTesterCase1
 
 // Neutral case:
 // inst(25)=1 & inst(24:20)=10000
-//    = Unary1RegisterImmediateOp {'constraints': ,
+//    = Unary1RegisterImmediateOpDynCodeReplace {'constraints': ,
 //     'safety': ['inst(15:12)=1111 => UNPREDICTABLE']}
 //
 // Representaive case:
 // op(25)=1 & op1(24:20)=10000
-//    = Unary1RegisterImmediateOp {constraints: ,
+//    = Unary1RegisterImmediateOpDynCodeReplace {constraints: ,
 //     safety: [Rd(15:12)=1111 => UNPREDICTABLE]}
 class Unary1RegisterImmediateOpTesterCase2
     : public Unary1RegisterImmediateOpTester {
@@ -136,12 +136,12 @@ bool Unary1RegisterImmediateOpTesterCase2
 
 // Neutral case:
 // inst(25)=1 & inst(24:20)=10100
-//    = Unary1RegisterImmediateOp {'constraints': ,
+//    = Unary1RegisterImmediateOpDynCodeReplace {'constraints': ,
 //     'safety': ['inst(15:12)=1111 => UNPREDICTABLE']}
 //
 // Representaive case:
 // op(25)=1 & op1(24:20)=10100
-//    = Unary1RegisterImmediateOp {constraints: ,
+//    = Unary1RegisterImmediateOpDynCodeReplace {constraints: ,
 //     safety: [Rd(15:12)=1111 => UNPREDICTABLE]}
 class Unary1RegisterImmediateOpTesterCase3
     : public Unary1RegisterImmediateOpTester {
@@ -221,41 +221,41 @@ class ForbiddenCondDecoderTester_Case1
 
 // Neutral case:
 // inst(25)=1 & inst(24:20)=10000
-//    = Unary1RegisterImmediateOp {'constraints': ,
-//     'rule': 'Mov_Rule_96_A2_P194',
+//    = Unary1RegisterImmediateOpDynCodeReplace {'constraints': ,
+//     'rule': 'Movw_Rule_96_A2_P194',
 //     'safety': ['inst(15:12)=1111 => UNPREDICTABLE']}
 //
 // Representative case:
 // op(25)=1 & op1(24:20)=10000
-//    = Unary1RegisterImmediateOp {constraints: ,
-//     rule: Mov_Rule_96_A2_P194,
+//    = Unary1RegisterImmediateOpDynCodeReplace {constraints: ,
+//     rule: Movw_Rule_96_A2_P194,
 //     safety: [Rd(15:12)=1111 => UNPREDICTABLE]}
-class Unary1RegisterImmediateOpTester_Case2
+class Unary1RegisterImmediateOpDynCodeReplaceTester_Case2
     : public Unary1RegisterImmediateOpTesterCase2 {
  public:
-  Unary1RegisterImmediateOpTester_Case2()
+  Unary1RegisterImmediateOpDynCodeReplaceTester_Case2()
     : Unary1RegisterImmediateOpTesterCase2(
-      state_.Unary1RegisterImmediateOp_Mov_Rule_96_A2_P194_instance_)
+      state_.Unary1RegisterImmediateOpDynCodeReplace_Movw_Rule_96_A2_P194_instance_)
   {}
 };
 
 // Neutral case:
 // inst(25)=1 & inst(24:20)=10100
-//    = Unary1RegisterImmediateOp {'constraints': ,
-//     'rule': 'Mov_Rule_99_A1_P200',
+//    = Unary1RegisterImmediateOpDynCodeReplace {'constraints': ,
+//     'rule': 'Movt_Rule_99_A1_P200',
 //     'safety': ['inst(15:12)=1111 => UNPREDICTABLE']}
 //
 // Representative case:
 // op(25)=1 & op1(24:20)=10100
-//    = Unary1RegisterImmediateOp {constraints: ,
-//     rule: Mov_Rule_99_A1_P200,
+//    = Unary1RegisterImmediateOpDynCodeReplace {constraints: ,
+//     rule: Movt_Rule_99_A1_P200,
 //     safety: [Rd(15:12)=1111 => UNPREDICTABLE]}
-class Unary1RegisterImmediateOpTester_Case3
+class Unary1RegisterImmediateOpDynCodeReplaceTester_Case3
     : public Unary1RegisterImmediateOpTesterCase3 {
  public:
-  Unary1RegisterImmediateOpTester_Case3()
+  Unary1RegisterImmediateOpDynCodeReplaceTester_Case3()
     : Unary1RegisterImmediateOpTesterCase3(
-      state_.Unary1RegisterImmediateOp_Mov_Rule_99_A1_P200_instance_)
+      state_.Unary1RegisterImmediateOpDynCodeReplace_Movt_Rule_99_A1_P200_instance_)
   {}
 };
 
@@ -308,44 +308,40 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(25)=1 & inst(24:20)=10000
-//    = Unary1RegisterImmediateOp => Defs12To15 {'constraints': ,
-//     'pattern': 'cccc00110000iiiiddddIIIIIIIIIIII',
-//     'rule': 'Mov_Rule_96_A2_P194',
+//    = Unary1RegisterImmediateOpDynCodeReplace => Unary1RegisterImmediateOpDynCodeReplace {'constraints': ,
+//     'pattern': 'cccc00110000iiiiddddiiiiiiiiiiii',
+//     'rule': 'Movw_Rule_96_A2_P194',
 //     'safety': ['inst(15:12)=1111 => UNPREDICTABLE']}
 //
-// Representative case:
+// Representaive case:
 // op(25)=1 & op1(24:20)=10000
-//    = Unary1RegisterImmediateOp => Defs12To15 {constraints: ,
-//     pattern: cccc00110000iiiiddddIIIIIIIIIIII,
-//     rule: Mov_Rule_96_A2_P194,
+//    = Unary1RegisterImmediateOpDynCodeReplace => Unary1RegisterImmediateOpDynCodeReplace {constraints: ,
+//     pattern: cccc00110000iiiiddddiiiiiiiiiiii,
+//     rule: Movw_Rule_96_A2_P194,
 //     safety: [Rd(15:12)=1111 => UNPREDICTABLE]}
 TEST_F(Arm32DecoderStateTests,
-       Unary1RegisterImmediateOpTester_Case2_TestCase2) {
-  Unary1RegisterImmediateOpTester_Case2 baseline_tester;
-  NamedDefs12To15_Mov_Rule_96_A2_P194 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc00110000iiiiddddIIIIIIIIIIII");
+       Unary1RegisterImmediateOpDynCodeReplaceTester_Case2_TestCase2) {
+  Unary1RegisterImmediateOpDynCodeReplaceTester_Case2 tester;
+  tester.Test("cccc00110000iiiiddddiiiiiiiiiiii");
 }
 
 // Neutral case:
 // inst(25)=1 & inst(24:20)=10100
-//    = Unary1RegisterImmediateOp => Defs12To15 {'constraints': ,
-//     'pattern': 'cccc00110100iiiiddddIIIIIIIIIIII',
-//     'rule': 'Mov_Rule_99_A1_P200',
+//    = Unary1RegisterImmediateOpDynCodeReplace => Unary1RegisterImmediateOpDynCodeReplace {'constraints': ,
+//     'pattern': 'cccc00110100iiiiddddiiiiiiiiiiii',
+//     'rule': 'Movt_Rule_99_A1_P200',
 //     'safety': ['inst(15:12)=1111 => UNPREDICTABLE']}
 //
-// Representative case:
+// Representaive case:
 // op(25)=1 & op1(24:20)=10100
-//    = Unary1RegisterImmediateOp => Defs12To15 {constraints: ,
-//     pattern: cccc00110100iiiiddddIIIIIIIIIIII,
-//     rule: Mov_Rule_99_A1_P200,
+//    = Unary1RegisterImmediateOpDynCodeReplace => Unary1RegisterImmediateOpDynCodeReplace {constraints: ,
+//     pattern: cccc00110100iiiiddddiiiiiiiiiiii,
+//     rule: Movt_Rule_99_A1_P200,
 //     safety: [Rd(15:12)=1111 => UNPREDICTABLE]}
 TEST_F(Arm32DecoderStateTests,
-       Unary1RegisterImmediateOpTester_Case3_TestCase3) {
-  Unary1RegisterImmediateOpTester_Case3 baseline_tester;
-  NamedDefs12To15_Mov_Rule_99_A1_P200 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc00110100iiiiddddIIIIIIIIIIII");
+       Unary1RegisterImmediateOpDynCodeReplaceTester_Case3_TestCase3) {
+  Unary1RegisterImmediateOpDynCodeReplaceTester_Case3 tester;
+  tester.Test("cccc00110100iiiiddddiiiiiiiiiiii");
 }
 
 }  // namespace nacl_arm_test

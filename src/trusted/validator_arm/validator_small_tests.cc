@@ -26,8 +26,75 @@ using nacl_val_arm_test::kDataRegionSize;
 using nacl_val_arm_test::kAbiReadOnlyRegisters;
 using nacl_val_arm_test::kAbiDataAddrRegisters;
 using nacl_val_arm_test::arm_inst;
+using nacl_arm_dec::Instruction;
+using nacl_arm_dec::ClassDecoder;
 
 namespace {
+
+// Holds instruction and message to print if there is an issue when it
+// is tested.
+struct AnnotatedInstruction {
+  arm_inst inst;
+  const char *about;
+};
+
+arm_inst ChangeInstCond(Instruction inst, Instruction::Condition cond) {
+  return ValidatorTests::ChangeCond(inst.Bits(), cond);
+}
+
+// Tests if a list of instructions generate the same dynamic code
+// replacement sentinel.
+void test_if_dynamic_code_replacement_sentinels_match(
+    const ValidatorTests* tester,
+    const AnnotatedInstruction* insts,
+    size_t num_insts,
+    arm_inst expected_sentinel) {
+  const Instruction expected_inst(expected_sentinel);
+
+  // Try each instruction.
+  for (size_t i = 0; i < num_insts; i++) {
+    Instruction test_inst(insts[i].inst);
+
+    // Try each possible condition (conditions shouldn't affect this virtual).
+    for (Instruction::Condition cond = Instruction::EQ;
+         cond < Instruction::UNCONDITIONAL;
+         cond = Instruction::Next(cond)) {
+      Instruction test(ChangeInstCond(test_inst, cond));
+      Instruction expected(ChangeInstCond(expected_inst, cond));
+
+      const ClassDecoder& decoder = tester->decode(test);
+      Instruction sentinel(decoder.dynamic_code_replacement_sentinel(test));
+      EXPECT_TRUE(expected.Equals(sentinel)) <<
+        std::hex << test.Bits() << "->" <<
+          std::hex << sentinel.Bits() << " != " <<
+          std::hex << expected.Bits() << ": " << insts[i].about;
+    }
+  }
+}
+
+// Tests if a list of instructions generate the same dynamic code replacement
+// sentinel.
+void test_if_dynamic_code_replacement_sentinels_unchanged(
+    const ValidatorTests* tester,
+    const AnnotatedInstruction* insts,
+    size_t num_insts) {
+  // Try each instruction.
+  for (size_t i = 0; i < num_insts; i++) {
+    Instruction test_inst(insts[i].inst);
+
+    // Try each possible condition (conditions shouldn't affect this virtual).
+    for (Instruction::Condition cond = Instruction::EQ;
+         cond < Instruction::UNCONDITIONAL;
+         cond = Instruction::Next(cond)) {
+      Instruction test(ChangeInstCond(test_inst, cond));
+      const ClassDecoder& decoder = tester->decode(test);
+      Instruction sentinel(decoder.dynamic_code_replacement_sentinel(test));
+      EXPECT_TRUE(test.Equals(sentinel)) <<
+          std::hex << test.Bits() << "->" <<
+          std::hex << sentinel.Bits() << ": " << insts[i].about;
+    }
+  }
+}
 
 /*
  * Primitive tests checking various constructor properties.  Any of these
@@ -119,10 +186,6 @@ TEST_F(ValidatorTests, DirectBranchTargetCalculation) {
 //  1. The high nibble is 0, to allow tests to write an arbitrary predicate.
 //  2. They address memory only through r1.
 //  3. They do not do anything dumb, like try to alter SP or PC.
-struct AnnotatedInstruction {
-  arm_inst inst;
-  const char *about;
-};
 static const AnnotatedInstruction examples_of_safe_stores[] = {
   // Single-register stores
   { 0x05810000, "str r0, [r1]: simple no-displacement store" },
@@ -240,7 +303,6 @@ TEST_F(ValidatorTests, SafeUnconditionalMaskedStores) {
   }
 }
 */
-
 TEST_F(ValidatorTests, SafeConditionalStores) {
   // Produces many examples of conditional stores using the safe store table
   // (above) and the list of possible conditional guards (below).
@@ -273,7 +335,6 @@ TEST_F(ValidatorTests, SafeConditionalStores) {
     }
   }
 }
-
 
 TEST_F(ValidatorTests, InvalidMasksOnSafeStores) {
   static const AnnotatedInstruction examples_of_invalid_masks[] = {
@@ -600,6 +661,178 @@ TEST_F(ValidatorTests, BfcLdrInstMaskWrongPlaceTest) {
                          NACL_ARRAY_SIZE(bfc_inst),
                          kDefaultBaseAddr,
                          "Bfc Ldr instruction mask wrong place test");
+}
+
+// Test effects of virtual dynamic_code_replacement_sentinel on the movw
+// instruction.
+TEST_F(ValidatorTests, DynamicCodeReplacementSentinelMovw) {
+  // Test cases where the sentinel changes for movw.
+  const AnnotatedInstruction inst[] = {
+    {0xe30a3aaa, "movw    r3, #43690      ; 0xaaaa"},
+    {0xe3053555, "movw    r3, #21845      ; 0x5555"},
+  };
+
+  // Test cases where the sentinel doesn't change for movw.
+  test_if_dynamic_code_replacement_sentinels_match(
+      static_cast<const ValidatorTests*>(this),
+      inst, NACL_ARRAY_SIZE(inst), 0xe3003000);
+  const AnnotatedInstruction unchanged[] = {
+    // If already the sentinel, nothing changes.
+    {0xe3003000, "movw    r3, #0          ; 0x0000"},
+    // Note: These instructions may not validate for other reasons,
+    // but we are only testing the virtual
+    // dynamic_code_replacement_sentinel, and that it doesn't
+    // apply changes when the register is in {r9, sp, lr, pc}.
+    {0xe3059555, "movw    r9, #21845      ; 0x5555"},
+    {0xe305d555, "movw    sp, #21845      ; 0x5555"},
+    {0xe305e555, "movw    lr, #21845      ; 0x5555"},
+    {0xe305f555, "movw    pc, #21845      ; 0x5555"},
+  };
+  test_if_dynamic_code_replacement_sentinels_unchanged(
+      static_cast<const ValidatorTests*>(this),
+      unchanged, NACL_ARRAY_SIZE(unchanged));
+}
+
+// Test effects of virtual dynamic_code_replacement_sentinel on the movt
+// instruction.
+TEST_F(ValidatorTests, DynamicCodeReplacementSentinelMovt) {
+  // Test cases where the sentinel changes for movt.
+  const AnnotatedInstruction inst[] = {
+    {0xe34a5aaa, "movt    r5, #43690      ; 0xaaaa"},
+    {0xe3455555, "movt    r5, #21845      ; 0x5555"},
+  };
+  test_if_dynamic_code_replacement_sentinels_match(
+      static_cast<const ValidatorTests*>(this),
+      inst, NACL_ARRAY_SIZE(inst), 0xe3405000);
+
+  // Test cases where the sentinel doesn't change for movt.
+  const AnnotatedInstruction unchanged[] = {
+    // If already the sentinel, nothing changes.
+    {0xe3405000, "movt    r5, #0          ; 0x0000"},
+    // Note: These instructions may not validate for other reasons,
+    // but we are only testing the virtual
+    // dynamic_code_replacement_sentinel, and that it doesn't
+    // apply changes when the register is in {r9, sp, lr, pc}.
+    {0xe3459555, "movt    r9, #21845      ; 0x5555"},
+    {0xe345d555, "movt    sp, #21845      ; 0x5555"},
+    {0xe345e555, "movt    lr, #21845      ; 0x5555"},
+    {0xe345f555, "movt    pc, #21845      ; 0x5555"},
+  };
+  test_if_dynamic_code_replacement_sentinels_unchanged(
+      static_cast<const ValidatorTests*>(this),
+      unchanged, NACL_ARRAY_SIZE(unchanged));
+}
+
+// Test effects of virtual dynamic_code_replacement_sentinel on the orr
+// instruction.
+TEST_F(ValidatorTests, DynamicCodeReplacementSentinelOrr) {
+  // Test cases where the sentinel changes for orr.
+  const AnnotatedInstruction orr[] = {
+    {0xe38454aa, "orr     r5, r4, #-1442840576    ; 0xaa000000"},
+    {0xe38458aa, "orr     r5, r4, #11141120       ; 0xaa0000"},
+    {0xe3845caa, "orr     r5, r4, #43520  ; 0xaa00"},
+    {0xe38450aa, "orr     r5, r4, #170    ; 0xaa"},
+    {0xe3845455, "orr     r5, r4, #1426063360     ; 0x55000000"},
+    {0xe3845855, "orr     r5, r4, #5570560        ; 0x550000"},
+    {0xe3845c55, "orr     r5, r4, #21760  ; 0x5500"},
+    {0xe3845055, "orr     r5, r4, #85     ; 0x55"},
+  };
+  test_if_dynamic_code_replacement_sentinels_match(
+      static_cast<const ValidatorTests*>(this),
+      orr, NACL_ARRAY_SIZE(orr), 0xe3845000);
+  const AnnotatedInstruction orrs[] = {
+    {0xe39454aa, "orrs    r5, r4, #-1442840576    ; 0xaa000000"},
+    {0xe39458aa, "orrs    r5, r4, #11141120       ; 0xaa0000"},
+    {0xe3945caa, "orrs    r5, r4, #43520  ; 0xaa00"},
+    {0xe39450aa, "orrs    r5, r4, #170    ; 0xaa"},
+    {0xe3945455, "orrs    r5, r4, #1426063360     ; 0x55000000"},
+    {0xe3945855, "orrs    r5, r4, #5570560        ; 0x550000"},
+    {0xe3945c55, "orrs    r5, r4, #21760  ; 0x5500"},
+    {0xe3945055, "orrs    r5, r4, #85     ; 0x55"},
+  };
+  test_if_dynamic_code_replacement_sentinels_match(
+      static_cast<const ValidatorTests*>(this),
+      orrs, NACL_ARRAY_SIZE(orrs), 0xe3945000);
+
+  // Test cases where the sentinel doesn't change for orr.
+  const AnnotatedInstruction unchanged[] = {
+    // Note: These instructions may not validate for other reasons,
+    // but we are only testing the virtual
+    // dynamic_code_replacement_sentinel, and that it doesn't
+    // apply changes when the register is in {r9, sp, lr, pc}.
+    {0xe3849055, "orr     r9, r4, #85     ; 0x55"},
+    {0xe384d055, "orr     sp, r4, #85     ; 0x55"},
+    {0xe384e055, "orr     lr, r4, #85     ; 0x55"},
+    {0xe384f055, "orr     pc, r4, #85     ; 0x55"},
+    {0xe3949055, "orrs    r9, r4, #85     ; 0x55"},
+    {0xe394d055, "orrs    sp, r4, #85     ; 0x55"},
+    {0xe394e055, "orrs    lr, r4, #85     ; 0x55"},
+    {0xe394f055, "orrs    pc, r4, #85     ; 0x55"},
+  };
+  test_if_dynamic_code_replacement_sentinels_unchanged(
+      static_cast<const ValidatorTests*>(this),
+      unchanged, NACL_ARRAY_SIZE(unchanged));
+}
+
+// Test effects of virtual dynamic_code_replacement_sentinel on the mvn
+// instruction.
+TEST_F(ValidatorTests, DynamicCodeReplacementSentinelMvn) {
+  // Test cases where the sentinel changes for mvn.
+  const AnnotatedInstruction mvn[] = {
+    {0xe3e064aa, "mvn     r6, #-1442840576        ; 0xaa000000"},
+    {0xe3e068aa, "mvn     r6, #11141120   ; 0xaa0000"},
+    {0xe3e06caa, "mvn     r6, #43520      ; 0xaa00"},
+    {0xe3e060aa, "mvn     r6, #170        ; 0xaa"},
+    {0xe3e06455, "mvn     r6, #1426063360 ; 0x55000000"},
+    {0xe3e06855, "mvn     r6, #5570560    ; 0x550000"},
+    {0xe3e06c55, "mvn     r6, #21760      ; 0x5500"},
+    {0xe3e06055, "mvn     r6, #85 ; 0x55"},
+  };
+  test_if_dynamic_code_replacement_sentinels_match(
+      static_cast<const ValidatorTests*>(this),
+      mvn, NACL_ARRAY_SIZE(mvn), 0xe3e06000);
+  const AnnotatedInstruction mvns[] = {
+    {0xe3f064aa, "mvns    r6, #-1442840576        ; 0xaa000000"},
+    {0xe3f068aa, "mvns    r6, #11141120   ; 0xaa0000"},
+    {0xe3f06caa, "mvns    r6, #43520      ; 0xaa00"},
+    {0xe3f060aa, "mvns    r6, #170        ; 0xaa"},
+    {0xe3f06455, "mvns    r6, #1426063360 ; 0x55000000"},
+    {0xe3f06855, "mvns    r6, #5570560    ; 0x550000"},
+    {0xe3f06c55, "mvns    r6, #21760      ; 0x5500"},
+    {0xe3f06055, "mvns    r6, #85 ; 0x55"},
+  };
+  test_if_dynamic_code_replacement_sentinels_match(
+      static_cast<const ValidatorTests*>(this),
+      mvns, NACL_ARRAY_SIZE(mvns), 0xe3f06000);
+
+  // Test cases where the sentinel doesn't change for orr.
+  const AnnotatedInstruction unchanged[] = {
+    // Note: These instructions may not validate for other reasons,
+    // but we are only testing the virtual
+    // dynamic_code_replacement_sentinel, and that it doesn't
+    // apply changes when the register is in {r9, sp, lr, pc}.
+    {0xe3e09055, "mvn     r9, #85 ; 0x55"},
+    {0xe3e0d055, "mvn     sp, #85 ; 0x55"},
+    {0xe3e0e055, "mvn     lr, #85 ; 0x55"},
+    {0xe3e0f055, "mvn     pc, #85 ; 0x55"},
+    {0xe3f09055, "mvns    r9, #85 ; 0x55"},
+    {0xe3f0d055, "mvns    sp, #85 ; 0x55"},
+    {0xe3f0e055, "mvns    lr, #85 ; 0x55"},
+    {0xe3f0f055, "mvns    pc, #85 ; 0x55"},
+  };
+  test_if_dynamic_code_replacement_sentinels_unchanged(
+      static_cast<const ValidatorTests*>(this),
+      unchanged, NACL_ARRAY_SIZE(unchanged));
+}
+
+// Test other instructions for which dynamic code replacement can't be applied.
+TEST_F(ValidatorTests, DynamicCodeReplacementSentinelOther) {
+  test_if_dynamic_code_replacement_sentinels_unchanged(
+      static_cast<const ValidatorTests*>(this),
+      examples_of_safe_stores, NACL_ARRAY_SIZE(examples_of_safe_stores));
+  test_if_dynamic_code_replacement_sentinels_unchanged(
+      static_cast<const ValidatorTests*>(this),
+      examples_of_safe_masks, NACL_ARRAY_SIZE(examples_of_safe_masks));
 }
 
 struct AlwaysDominatesTestInfo {

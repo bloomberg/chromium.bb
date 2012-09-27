@@ -247,6 +247,9 @@ class Imm12Bits0To11Interface {
   static uint32_t value(const Instruction& i) {
     return i.Bits(11, 0);
   }
+  static void set_value(Instruction* i, uint32_t value) {
+    i->SetBits(11, 0, value);
+  }
   static uint32_t get_modified_immediate(Instruction i);
 
  private:
@@ -365,6 +368,9 @@ class Imm4Bits16To19Interface {
  public:
   static uint32_t value(const Instruction& i) {
     return i.Bits(19, 16);
+  }
+  static void set_value(Instruction* i, uint32_t value) {
+    i->SetBits(19, 16, value);
   }
 
  private:
@@ -637,6 +643,27 @@ class ClassDecoder {
   virtual bool sets_Z_if_bits_clear(Instruction i,
                                     Register r,
                                     uint32_t mask) const;
+
+  // Returns the sentinel version of the instruction for dynamic code
+  // replacement. In dynamic code replacement, only certain immediate
+  // constants for specialized instructions may be modified by a dynamic
+  // code replacement. For such instructions, this method returns the
+  // instruction with the immediate constant normalized to zero. For
+  // all other instructions, this method returns a copy of the instruction.
+  //
+  // This result is used by method ValidateSegmentPair in validator.cc to
+  // verify that only such constant changes are allowed.
+  //
+  // Note: This method should not be defined if any of the following
+  // virtuals are overridden by the decoder class, since they make assumptions
+  // about the literal constants within them:
+  //     offset_is_immediate
+  //     is_relative_branch
+  //     branch_target_offset
+  //     is_literal_pool_head
+  //     clears_bits
+  //     sets_Z_if_bits_clear
+  virtual Instruction dynamic_code_replacement_sentinel(Instruction i) const;
 
  protected:
   ClassDecoder() {}

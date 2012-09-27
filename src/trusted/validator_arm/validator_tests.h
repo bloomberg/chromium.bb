@@ -175,6 +175,17 @@ class ProblemSpy : public ProblemReporter {
 
 // Coordinates the fixture objects used by test cases below.
 class ValidatorTests : public ::testing::Test {
+ public:
+  // Utility method to decode an instruction.
+  const nacl_arm_dec::ClassDecoder& decode(
+      nacl_arm_dec::Instruction inst) const;
+
+  // Returns the given instruction, after modifying the instruction condition
+  // to the given value.
+  static arm_inst ChangeCond(arm_inst inst, Instruction::Condition c) {
+    return (inst & 0x0fffffff) | (static_cast<arm_inst>(c) << 28);
+  }
+
  protected:
   ValidatorTests()
       : _validator(kBytesPerBundle,
@@ -224,12 +235,6 @@ class ValidatorTests : public ::testing::Test {
   void all_cond_values_fail(const arm_inst prototype,
                             uint32_t base_addr,
                             const string &msg);
-
-  // Returns the given instruction, after modifying the instruction condition
-  // to the given value.
-  static arm_inst ChangeCond(arm_inst inst, Instruction::Condition c) {
-    return (inst & 0x0fffffff) | (static_cast<arm_inst>(c) << 28);
-  }
 
   // Returns the given instruction, after modifying its S bit (bit 20) to
   // the given value.

@@ -360,6 +360,18 @@ class Unary1RegisterImmediateOp : public ClassDecoder {
   NACL_DISALLOW_COPY_AND_ASSIGN(Unary1RegisterImmediateOp);
 };
 
+// Special case of Unary1RegisterImmediateOp, where dynamic code replacement
+// can replace the immediate value.
+class Unary1RegisterImmediateOpDynCodeReplace
+    : public Unary1RegisterImmediateOp {
+ public:
+  Unary1RegisterImmediateOpDynCodeReplace() {}
+  Instruction dynamic_code_replacement_sentinel(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Unary1RegisterImmediateOpDynCodeReplace);
+};
+
 // Models a 2-register binary operation with two immediate values
 // defining a bit range.
 // Op<c> Rd, Rn, #<lsb>, #width
@@ -477,6 +489,18 @@ class MaskedBinary2RegisterImmediateOp : public Binary2RegisterImmediateOp {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(MaskedBinary2RegisterImmediateOp);
+};
+
+// Special case of Binary2RegisterImmediateOp, where dynamic code replacement
+// can replace the immediate value.
+class Binary2RegisterImmediateOpDynCodeReplace
+    : public Binary2RegisterImmediateOp {
+ public:
+  Binary2RegisterImmediateOpDynCodeReplace() {}
+  Instruction dynamic_code_replacement_sentinel(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Binary2RegisterImmediateOpDynCodeReplace);
 };
 
 // Models a Register to immediate test of the form:

@@ -268,11 +268,11 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_data_processing_and_misc
 
   if ((inst.Bits() & 0x02000000) == 0x02000000 /* op(25)=1 */ &&
       (inst.Bits() & 0x01F00000) == 0x01000000 /* op1(24:20)=10000 */)
-    return Unary1RegisterImmediateOp_Mov_Rule_96_A2_P194_instance_;
+    return Unary1RegisterImmediateOpDynCodeReplace_Movw_Rule_96_A2_P194_instance_;
 
   if ((inst.Bits() & 0x02000000) == 0x02000000 /* op(25)=1 */ &&
       (inst.Bits() & 0x01F00000) == 0x01400000 /* op1(24:20)=10100 */)
-    return Unary1RegisterImmediateOp_Mov_Rule_99_A1_P200_instance_;
+    return Unary1RegisterImmediateOpDynCodeReplace_Movt_Rule_99_A1_P200_instance_;
 
   if ((inst.Bits() & 0x02000000) == 0x02000000 /* op(25)=1 */ &&
       (inst.Bits() & 0x01B00000) == 0x01200000 /* op1(24:20)=10x10 */)
@@ -345,18 +345,18 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_data_processing_immediat
     return Binary2RegisterImmediateOp_RSC_immediate_A1_instance_;
 
   if ((inst.Bits() & 0x01E00000) == 0x01800000 /* op(24:20)=1100x */)
-    return Binary2RegisterImmediateOp_ORR_immediate_A1_instance_;
+    return Binary2RegisterImmediateOpDynCodeReplace_ORR_immediate_A1_instance_;
 
   if ((inst.Bits() & 0x01E00000) == 0x01A00000 /* op(24:20)=1101x */ &&
       (inst.Bits() & 0x000F0000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */)
-    return Unary1RegisterImmediateOp_MOV_immediate_A1_instance_;
+    return Unary1RegisterImmediateOpDynCodeReplace_MOV_immediate_A1_instance_;
 
   if ((inst.Bits() & 0x01E00000) == 0x01C00000 /* op(24:20)=1110x */)
     return MaskedBinary2RegisterImmediateOp_BIC_immediate_A1_instance_;
 
   if ((inst.Bits() & 0x01E00000) == 0x01E00000 /* op(24:20)=1111x */ &&
       (inst.Bits() & 0x000F0000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */)
-    return Unary1RegisterImmediateOp_MVN_immediate_A1_instance_;
+    return Unary1RegisterImmediateOpDynCodeReplace_MVN_immediate_A1_instance_;
 
   // Catch any attempt to fall through...
   return not_implemented_;

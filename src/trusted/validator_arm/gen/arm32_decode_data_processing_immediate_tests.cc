@@ -596,12 +596,12 @@ bool Binary2RegisterImmediateOpTesterCase13
 
 // Neutral case:
 // inst(24:20)=1100x
-//    = Binary2RegisterImmediateOp {'constraints': & not (inst(15:12)=1111 && inst(20)=1) ,
+//    = Binary2RegisterImmediateOpDynCodeReplace {'constraints': & not (inst(15:12)=1111 && inst(20)=1) ,
 //     'safety': ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // op(24:20)=1100x
-//    = Binary2RegisterImmediateOp {constraints: & not (Rd(15:12)=1111 && S(20)=1) ,
+//    = Binary2RegisterImmediateOpDynCodeReplace {constraints: & not (Rd(15:12)=1111 && S(20)=1) ,
 //     safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Binary2RegisterImmediateOpTesterCase14
     : public Binary2RegisterImmediateOpTester {
@@ -643,12 +643,12 @@ bool Binary2RegisterImmediateOpTesterCase14
 
 // Neutral case:
 // inst(24:20)=1101x & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary1RegisterImmediateOp {'constraints': ,
+//    = Unary1RegisterImmediateOpDynCodeReplace {'constraints': ,
 //     'safety': ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // op(24:20)=1101x & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary1RegisterImmediateOp {constraints: ,
+//    = Unary1RegisterImmediateOpDynCodeReplace {constraints: ,
 //     safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Unary1RegisterImmediateOpTesterCase15
     : public Unary1RegisterImmediateOpTester {
@@ -732,12 +732,12 @@ bool Binary2RegisterImmediateOpTesterCase16
 
 // Neutral case:
 // inst(24:20)=1111x & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary1RegisterImmediateOp {'constraints': ,
+//    = Unary1RegisterImmediateOpDynCodeReplace {'constraints': ,
 //     'safety': ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // op(24:20)=1111x & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary1RegisterImmediateOp {constraints: ,
+//    = Unary1RegisterImmediateOpDynCodeReplace {constraints: ,
 //     safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Unary1RegisterImmediateOpTesterCase17
     : public Unary1RegisterImmediateOpTester {
@@ -1054,41 +1054,41 @@ class Binary2RegisterImmediateOpTester_Case13
 
 // Neutral case:
 // inst(24:20)=1100x
-//    = Binary2RegisterImmediateOp {'constraints': & not (inst(15:12)=1111 && inst(20)=1) ,
+//    = Binary2RegisterImmediateOpDynCodeReplace {'constraints': & not (inst(15:12)=1111 && inst(20)=1) ,
 //     'rule': 'ORR_immediate_A1',
 //     'safety': ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op(24:20)=1100x
-//    = Binary2RegisterImmediateOp {constraints: & not (Rd(15:12)=1111 && S(20)=1) ,
+//    = Binary2RegisterImmediateOpDynCodeReplace {constraints: & not (Rd(15:12)=1111 && S(20)=1) ,
 //     rule: ORR_immediate_A1,
 //     safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
-class Binary2RegisterImmediateOpTester_Case14
+class Binary2RegisterImmediateOpDynCodeReplaceTester_Case14
     : public Binary2RegisterImmediateOpTesterCase14 {
  public:
-  Binary2RegisterImmediateOpTester_Case14()
+  Binary2RegisterImmediateOpDynCodeReplaceTester_Case14()
     : Binary2RegisterImmediateOpTesterCase14(
-      state_.Binary2RegisterImmediateOp_ORR_immediate_A1_instance_)
+      state_.Binary2RegisterImmediateOpDynCodeReplace_ORR_immediate_A1_instance_)
   {}
 };
 
 // Neutral case:
 // inst(24:20)=1101x & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary1RegisterImmediateOp {'constraints': ,
+//    = Unary1RegisterImmediateOpDynCodeReplace {'constraints': ,
 //     'rule': 'MOV_immediate_A1',
 //     'safety': ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op(24:20)=1101x & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary1RegisterImmediateOp {constraints: ,
+//    = Unary1RegisterImmediateOpDynCodeReplace {constraints: ,
 //     rule: MOV_immediate_A1,
 //     safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
-class Unary1RegisterImmediateOpTester_Case15
+class Unary1RegisterImmediateOpDynCodeReplaceTester_Case15
     : public Unary1RegisterImmediateOpTesterCase15 {
  public:
-  Unary1RegisterImmediateOpTester_Case15()
+  Unary1RegisterImmediateOpDynCodeReplaceTester_Case15()
     : Unary1RegisterImmediateOpTesterCase15(
-      state_.Unary1RegisterImmediateOp_MOV_immediate_A1_instance_)
+      state_.Unary1RegisterImmediateOpDynCodeReplace_MOV_immediate_A1_instance_)
   {}
 };
 
@@ -1114,21 +1114,21 @@ class MaskedBinary2RegisterImmediateOpTester_Case16
 
 // Neutral case:
 // inst(24:20)=1111x & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary1RegisterImmediateOp {'constraints': ,
+//    = Unary1RegisterImmediateOpDynCodeReplace {'constraints': ,
 //     'rule': 'MVN_immediate_A1',
 //     'safety': ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op(24:20)=1111x & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary1RegisterImmediateOp {constraints: ,
+//    = Unary1RegisterImmediateOpDynCodeReplace {constraints: ,
 //     rule: MVN_immediate_A1,
 //     safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
-class Unary1RegisterImmediateOpTester_Case17
+class Unary1RegisterImmediateOpDynCodeReplaceTester_Case17
     : public Unary1RegisterImmediateOpTesterCase17 {
  public:
-  Unary1RegisterImmediateOpTester_Case17()
+  Unary1RegisterImmediateOpDynCodeReplaceTester_Case17()
     : Unary1RegisterImmediateOpTesterCase17(
-      state_.Unary1RegisterImmediateOp_MVN_immediate_A1_instance_)
+      state_.Unary1RegisterImmediateOpDynCodeReplace_MVN_immediate_A1_instance_)
   {}
 };
 
@@ -1429,44 +1429,40 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=1100x
-//    = Binary2RegisterImmediateOp => Defs12To15 {'constraints': & not (inst(15:12)=1111 && inst(20)=1) ,
+//    = Binary2RegisterImmediateOpDynCodeReplace => Binary2RegisterImmediateOpDynCodeReplace {'constraints': & not (inst(15:12)=1111 && inst(20)=1) ,
 //     'pattern': 'cccc0011100snnnnddddiiiiiiiiiiii',
 //     'rule': 'ORR_immediate_A1',
 //     'safety': ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
-// Representative case:
+// Representaive case:
 // op(24:20)=1100x
-//    = Binary2RegisterImmediateOp => Defs12To15 {constraints: & not (Rd(15:12)=1111 && S(20)=1) ,
+//    = Binary2RegisterImmediateOpDynCodeReplace => Binary2RegisterImmediateOpDynCodeReplace {constraints: & not (Rd(15:12)=1111 && S(20)=1) ,
 //     pattern: cccc0011100snnnnddddiiiiiiiiiiii,
 //     rule: ORR_immediate_A1,
 //     safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
-       Binary2RegisterImmediateOpTester_Case14_TestCase14) {
-  Binary2RegisterImmediateOpTester_Case14 baseline_tester;
-  NamedDefs12To15_ORR_immediate_A1 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc0011100snnnnddddiiiiiiiiiiii");
+       Binary2RegisterImmediateOpDynCodeReplaceTester_Case14_TestCase14) {
+  Binary2RegisterImmediateOpDynCodeReplaceTester_Case14 tester;
+  tester.Test("cccc0011100snnnnddddiiiiiiiiiiii");
 }
 
 // Neutral case:
 // inst(24:20)=1101x & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary1RegisterImmediateOp => Defs12To15 {'constraints': ,
+//    = Unary1RegisterImmediateOpDynCodeReplace => Unary1RegisterImmediateOpDynCodeReplace {'constraints': ,
 //     'pattern': 'cccc0011101s0000ddddiiiiiiiiiiii',
 //     'rule': 'MOV_immediate_A1',
 //     'safety': ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
-// Representative case:
+// Representaive case:
 // op(24:20)=1101x & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary1RegisterImmediateOp => Defs12To15 {constraints: ,
+//    = Unary1RegisterImmediateOpDynCodeReplace => Unary1RegisterImmediateOpDynCodeReplace {constraints: ,
 //     pattern: cccc0011101s0000ddddiiiiiiiiiiii,
 //     rule: MOV_immediate_A1,
 //     safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
-       Unary1RegisterImmediateOpTester_Case15_TestCase15) {
-  Unary1RegisterImmediateOpTester_Case15 baseline_tester;
-  NamedDefs12To15_MOV_immediate_A1 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc0011101s0000ddddiiiiiiiiiiii");
+       Unary1RegisterImmediateOpDynCodeReplaceTester_Case15_TestCase15) {
+  Unary1RegisterImmediateOpDynCodeReplaceTester_Case15 tester;
+  tester.Test("cccc0011101s0000ddddiiiiiiiiiiii");
 }
 
 // Neutral case:
@@ -1492,23 +1488,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=1111x & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary1RegisterImmediateOp => Defs12To15 {'constraints': ,
+//    = Unary1RegisterImmediateOpDynCodeReplace => Unary1RegisterImmediateOpDynCodeReplace {'constraints': ,
 //     'pattern': 'cccc0011111s0000ddddiiiiiiiiiiii',
 //     'rule': 'MVN_immediate_A1',
 //     'safety': ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
-// Representative case:
+// Representaive case:
 // op(24:20)=1111x & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary1RegisterImmediateOp => Defs12To15 {constraints: ,
+//    = Unary1RegisterImmediateOpDynCodeReplace => Unary1RegisterImmediateOpDynCodeReplace {constraints: ,
 //     pattern: cccc0011111s0000ddddiiiiiiiiiiii,
 //     rule: MVN_immediate_A1,
 //     safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
-       Unary1RegisterImmediateOpTester_Case17_TestCase17) {
-  Unary1RegisterImmediateOpTester_Case17 baseline_tester;
-  NamedDefs12To15_MVN_immediate_A1 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc0011111s0000ddddiiiiiiiiiiii");
+       Unary1RegisterImmediateOpDynCodeReplaceTester_Case17_TestCase17) {
+  Unary1RegisterImmediateOpDynCodeReplaceTester_Case17 tester;
+  tester.Test("cccc0011111s0000ddddiiiiiiiiiiii");
 }
 
 }  // namespace nacl_arm_test

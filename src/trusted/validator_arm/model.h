@@ -78,6 +78,10 @@ class Register {
   typedef uint32_t Mask;
 
   // TODO(jfb) Need different numbers for aarch64.
+  static const Number kTp = 9;   // Thread local pointer.
+  static const Number kSp = 13;  // Stack pointer.
+  static const Number kLr = 14;  // Link register.
+  static const Number kPc = 15;  // Program counter.
   static const Number kNumberConditions = 16;
   static const Number kNumberCondsDontCare = 17;
   static const Number kNumberNone = 32;  // Out of GPR and FPR range.
@@ -120,9 +124,10 @@ static const Register kConditions(Register::kNumberConditions);
 
 // Registers with special meaning in our model:
 // TODO(jfb) This is different in aarch64.
-static const Register kRegisterPc(15);
-static const Register kRegisterLink(14);
-static const Register kRegisterStack(13);
+static const Register kRegisterPc(Register::kPc);
+static const Register kRegisterLink(Register::kLr);
+static const Register kRegisterStack(Register::kSp);
+static const Register kRegisterThread(Register::kTp);
 
 // For most class decoders, we don't care what the instruction does, other
 // than if it is safe, and what general purpose registers are changed.
@@ -232,6 +237,12 @@ static const RegisterList kRegisterListEverything(-1);
 // that the actual class decoder is not tracking conditions.
 static const RegisterList kCondsDontCare((1 << Register::kNumberConditions) |
                                          (1 << Register::kNumberCondsDontCare));
+// A special register list to communicate registers that can't be changed
+
+// when doing dynamic code replacement.
+static const RegisterList kDynCodeReplaceFrozenRegs(
+    1 << Register::kPc | 1 << Register::kLr | 1 << Register::kSp |
+    1 << Register::kTp);
 
 // The number of bits in an ARM instruction.
 static const int kArm32InstSize = 32;
@@ -241,7 +252,6 @@ static const int kThumbWordSize = 16;
 
 // BKPT #0x7777 is used as literal pool head.
 static const uint32_t kLiteralPoolHeadInstruction = 0xE1277777;
-
 
 // Models an instruction, either a 32-bit ARM instruction of unspecified type,
 // or one word (16-bit) and two word (32-bit) THUMB instructions.
@@ -456,6 +466,11 @@ class Instruction {
   // to the corresponding value.
   void Word2SetBit(int index, bool value) {
     SetBit(index + kThumbWordSize, value);
+  }
+
+  // Returns true if this and the given instruction are equal.
+  bool Equals(const Instruction& inst) const {
+    return bits_ == inst.bits_;
   }
 
   // Copies insn into this.

@@ -13,6 +13,7 @@ namespace nacl_arm_dec {
 
 
 Arm32DecoderState::Arm32DecoderState() : DecoderState()
+  , Binary2RegisterImmediateOpDynCodeReplace_instance_()
   , Branch_instance_()
   , Breakpoint_instance_()
   , BxBlx_instance_()
@@ -64,6 +65,7 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , StoreVectorRegisterList_instance_()
   , TestIfAddressMasked_instance_()
   , Unary1RegisterBitRangeMsbGeLsb_instance_()
+  , Unary1RegisterImmediateOpDynCodeReplace_instance_()
   , Unary1RegisterSet_instance_()
   , Unary1RegisterUse_instance_()
   , Undefined_instance_()
@@ -285,7 +287,7 @@ const ClassDecoder& Arm32DecoderState::decode_data_processing_and_miscellaneous_
 
   if ((inst.Bits() & 0x02000000) == 0x02000000 /* op(25)=1 */ &&
       (inst.Bits() & 0x01B00000) == 0x01000000 /* op1(24:20)=10x00 */) {
-    return Defs12To15_instance_;
+    return Unary1RegisterImmediateOpDynCodeReplace_instance_;
   }
 
   if ((inst.Bits() & 0x02000000) == 0x02000000 /* op(25)=1 */ &&
@@ -324,7 +326,7 @@ const ClassDecoder& Arm32DecoderState::decode_data_processing_immediate(
   }
 
   if ((inst.Bits() & 0x01E00000) == 0x01800000 /* op(24:20)=1100x */) {
-    return Defs12To15_instance_;
+    return Binary2RegisterImmediateOpDynCodeReplace_instance_;
   }
 
   if ((inst.Bits() & 0x01E00000) == 0x01C00000 /* op(24:20)=1110x */) {
@@ -333,7 +335,7 @@ const ClassDecoder& Arm32DecoderState::decode_data_processing_immediate(
 
   if ((inst.Bits() & 0x01A00000) == 0x01A00000 /* op(24:20)=11x1x */ &&
       (inst.Bits() & 0x000F0000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */) {
-    return Defs12To15_instance_;
+    return Unary1RegisterImmediateOpDynCodeReplace_instance_;
   }
 
   if ((inst.Bits() & 0x01000000) == 0x00000000 /* op(24:20)=0xxxx */) {

@@ -577,68 +577,14 @@ bool SfiValidator::validate(const vector<CodeSegment>& segments,
   return complete_success;
 }
 
-static inline bool TypeMatch(Instruction insn1,
-                             Instruction insn2,
-                             uint32_t mask) {
-  return (insn1.Bits() & mask) == (insn2.Bits() & mask);
-}
-
-static inline bool IsMov1ImmNotSpecial(Instruction insn, uint32_t* mask) {
-  // See A8.8.102.
-  // Encoding A1.
-  // cond insn    S 0    Rd   imm12
-  // 1111 1111 1111 1111 1111 0000 0000 0000
-  // Binary constants is GCC extension, which we frown upon.
-  *mask = 0xfffff000;
-  return (insn.Bits(27, 21) == 0x1d /* 0b0011101 */) &&
-         (insn.Bits(19, 16) == 0x0 /* 0b0000 */) &&
-         (insn.Bits(15, 12) < 13);
-}
-
-static inline bool IsMov2ImmNotSpecial(Instruction insn, uint32_t* mask) {
-  // See A8.8.102.
-  // Encoding A2 (for ARM starting ARMv6T2), allowing 16-bit immediates.
-  // cond insn      imm4 Rd   imm12
-  // 1111 1111 1111 0000 1111 0000 0000 0000
-  *mask = 0xfff0f000;
-  return (insn.Bits(27, 20) == 0x30 /* 0b00110000 */) &&
-         (insn.Bits(15, 12) < 13);
-}
-
-static inline bool IsMovtImmNotSpecial(Instruction insn, uint32_t* mask) {
-  // See A8.8.106.
-  // Encoding A1, ARMv6T2, ARMv7, allowing 16 bit immediates.
-  // cond insn      imm4 Rd   imm12
-  // 1111 1111 1111 0000 1111 0000 0000 0000
-  *mask = 0xfff0f000;
-  return (insn.Bits(27, 20) == 0x34 /* 0b00110100 */) &&
-         (insn.Bits(15, 12) < 13);
-}
-
-static inline bool IsMvnImmNotSpecial(Instruction insn, uint32_t* mask) {
-  // See A8.8.115.
-  // Encoding A1.  ARMv4, ARMv5T, ARMv6, ARMv7.
-  // cond  insn   S 0    Rd   imm12
-  // 1111 1111 1111 1111 1111 0000 0000 0000
-  *mask = 0xfffff000;
-  return (insn.Bits(27, 21) == 0x1f /* 0b0011111 */) &&
-         (insn.Bits(19, 16) == 0x0  /* 0b0000 */) &&
-         (insn.Bits(15, 12) < 13);
-}
-
-static inline bool IsOrrImmNotSpecial(Instruction insn, uint32_t* mask) {
-  // See A8.8.122.
-  // Encoding A1.  ARMv4, ARMv5T, ARMv6, ARMv7.
-  // cond insn    S Rn   Rd   imm12
-  // 1111 1111 1111 1111 1111 0000 0000 0000
-  *mask = 0xfffff000;
-  return (insn.Bits(27, 21) == 0x1c /* 0b0011100 */) &&
-         (insn.Bits(15, 12) < 13);
-}
-
 bool SfiValidator::ValidateSegmentPair(const CodeSegment& old_code,
                                        const CodeSegment& new_code,
                                        ProblemSink* out) {
+  // This code verifies that the new code is just like the old code,
+  // except a few (acceptable) literal constants have been replaced
+  // in the new code segment. Hence, checking of safety etc. is not
+  // necessary. We assume that this was done on the old code, and
+  // does not need to be done again.
   if (ConstructionFailed(out))
     return false;
 
@@ -651,31 +597,30 @@ bool SfiValidator::ValidateSegmentPair(const CodeSegment& old_code,
   for (uintptr_t va = old_code.begin_addr();
        va != old_code.end_addr();
        va += nacl_arm_dec::kArm32InstSize / 8) {
-      Instruction old_insn = old_code[va];
-      Instruction new_insn = new_code[va];
-      if (new_insn.Bits() == old_insn.Bits())
-          continue;
-      // We allow replacement of immediates in following instructions:
-      //  MOV rX, imm; MVN rX, imm; MOVT rX, imm; ORR rX, imm.
-      // (and rX is not allowed to be SP, LR, PC).
-      // They are needed to allow modification of immediate constants,
-      // which is important for updating inline caches in JIT compilers,
-      // like one used in V8.
-      // And register shall not be PC.
-      // TODO(olonho): shall we allow MOV => MVN and vice versa
-      // replacement?
-      uint32_t mask = 0;
-      bool is_safe = false;
-      if (IsMov1ImmNotSpecial(new_insn, &mask) ||
-          IsMov2ImmNotSpecial(new_insn, &mask) ||
-          IsMovtImmNotSpecial(new_insn, &mask) ||
-          IsMvnImmNotSpecial(new_insn, &mask)  ||
-          IsOrrImmNotSpecial(new_insn, &mask)   )
-        is_safe = TypeMatch(old_insn, new_insn, mask);
-      if (!is_safe) {
-        out->ReportProblem(va, kProblemUnsafe);
-        return false;
-      }
+    // First see if the instruction has changed in the new version.
+    // If not, there is nothing to check, and we can skip to the next
+    // instruction.
+    Instruction old_insn = old_code[va];
+    Instruction new_insn = new_code[va];
+    if (new_insn.Equals(old_insn))
+      continue;
+
+    // Decode instructions and get corresponding decoders.
+    const ClassDecoder& old_decoder = decode_state_.decode(old_insn);
+    const ClassDecoder& new_decoder = decode_state_.decode(new_insn);
+
+    // Convert the instructions into their sentinel form (i.e.
+    // convert immediate values to zero if applicable).
+    Instruction old_sentinel(
+        old_decoder.dynamic_code_replacement_sentinel(old_insn));
+    Instruction new_sentinel(
+        new_decoder.dynamic_code_replacement_sentinel(new_insn));
+
+    // Report problem if the sentinels differ, and reject the replacement.
+    if (!new_sentinel.Equals(old_sentinel)) {
+      out->ReportProblem(va, kProblemUnsafe);
+      return false;
+    }
   }
   return true;
 }

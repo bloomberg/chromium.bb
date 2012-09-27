@@ -145,6 +145,12 @@ class SfiValidator {
     return data_address_registers_;
   }
 
+  // Utility function that applies the decoder of the validator.
+  const nacl_arm_dec::ClassDecoder& decode(
+      nacl_arm_dec::Instruction inst) const {
+    return decode_state_.decode(inst);
+  }
+
   // Returns the Bundle containing a given address.
   const Bundle bundle_for_address(uint32_t) const;
 

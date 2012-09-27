@@ -108,6 +108,10 @@
 # clear_bits: True implies that the masked bits are cleared.
 #       (defaults to false). Corresponds to virtual clear_bits.
 # defs: The set of registers defined. (missing implies {}).
+# dynamic_code_replace_immediates: The set of immediate fields that
+#      should be zeroed out, when generating the dynamic code
+#      replacement sentinel. Corresponds to virtual
+#      dynamic_code_replacement_sentinel.
 # imm_defs: The set of registers that are set through
 #       immediate indexed addressing writeback, where the
 #       immediate value is "small". (missing implies {}).
@@ -151,6 +155,7 @@
 # #############################################################
 
 class BreakPointAndConstantPoolHead : Immediate16Use
+class Binary2RegisterImmediateOpDynCodeReplace : Binary2RegisterImmediateOp
 class Binary3RegisterImmedShiftedOpRegsNotPc : Binary3RegisterImmedShiftedOp
 class Deprecated : UnsafeCondDecoder
 class ForbiddenCondDecoder : UnsafeCondDecoder
@@ -175,6 +180,7 @@ class Store2RegisterImm8Op : LoadStore2RegisterImm8Op
 class Store2RegisterImm12Op : LoadStore2RegisterImm12Op
 class Store3RegisterImm5Op : LoadStore3RegisterImm5Op
 class Store3RegisterOp : LoadStore3RegisterOp
+class Unary1RegisterImmediateOpDynCodeReplace : Unary1RegisterImmediateOp
 class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 class UndefinedCondDecoder : UnsafeCondDecoder
 class UnpredictableUncondDecoder : UnsafeUncondDecoder
@@ -212,23 +218,25 @@ class UnpredictableUncondDecoder : UnsafeUncondDecoder
                               pattern := cccc0000xx1xxxxxxxxxxxxx11x1xxxx;
                               rule := extra_load_store_instructions_unpriviledged;
 | 1      ~10xx0     -        ->data_processing_immediate
-| "      10000      -        = Unary1RegisterImmediateOp => Defs12To15
+| "      10000      -        = Unary1RegisterImmediateOpDynCodeReplace
                                { cond(31:28), S(20), imm4(19:16),
                                  Rd(15:12), imm12(11:0) }
                                imm := imm4:imm12;
                                safety := Rd=1111 => UNPREDICTABLE;
                                defs := { Rd , NZCV if S else None };
-                               pattern := cccc00110000iiiiddddIIIIIIIIIIII;
-                               rule := Mov_Rule_96_A2_P194;
+                               pattern := cccc00110000iiiiddddiiiiiiiiiiii;
+                               rule := Movw_Rule_96_A2_P194;
+                               dynamic_code_replace_immediates := {imm4, imm12};
                                arch := v6T2;
-| "      10100      -        = Unary1RegisterImmediateOp => Defs12To15
+| "      10100      -        = Unary1RegisterImmediateOpDynCodeReplace
                                { cond(31:28), S(20), imm4(19:16),
                                  Rd(15:12), imm12(11:0) }
                                imm := imm4:imm12;
                                safety := Rd=1111 => UNPREDICTABLE;
                                defs := { Rd , NZCV if S else None };
-                               pattern := cccc00110100iiiiddddIIIIIIIIIIII;
-                               rule := Mov_Rule_99_A1_P200;
+                               pattern := cccc00110100iiiiddddiiiiiiiiiiii;
+                               rule := Movt_Rule_99_A1_P200;
+                               dynamic_code_replace_immediates := {imm4, imm12};
                                arch := v6T2;
 | "      10x10      -        ->msr_immediate_and_hints
 +--
@@ -408,6 +416,14 @@ class UnpredictableUncondDecoder : UnsafeUncondDecoder
              Rd=1111 => FORBIDDEN_OPERANDS;  # NaCl
    uses := {Rn};
    clears_bits := true;
+*B2R_DCR Binary2RegisterImmediateOpDynCodeReplace
+   { cond(31:28), S(20), Rn(19:16), Rd(15:12), imm12(11:0) }
+   setflags := S=1; imm32 := ARMExpandImm_C(imm12);
+   defs := {Rd, NZCV if setflags else None};   
+   safety := (Rd=1111 & S=1) => DECODER_ERROR &  # ARM
+             Rd=1111 => FORBIDDEN_OPERANDS;  # NaCl
+   uses := {Rn};
+   dynamic_code_replace_immediates := {imm12};
 *B2R_ADDSUB Binary2RegisterImmediateOp => Defs12To15
    # Note: This is a variant of *B2R instructions, that is used
    # to define add and subtract, and have additional decoding error
@@ -446,6 +462,13 @@ class UnpredictableUncondDecoder : UnsafeUncondDecoder
    defs := {Rd, NZCV if setflags else None};
    safety := (Rd=1111 & S=1) => DECODER_ERROR &  # ARM
              Rd=1111 => FORBIDDEN_OPERANDS;  # NaCl
+*U1R_S_DCR Unary1RegisterImmediateOpDynCodeReplace
+   { cond(31:28), S(20), Rd(15:12), imm12(11:0) }
+   setflags := S=1; imm32 := ARMExpandImm(imm12);
+   defs := {Rd, NZCV if setflags else None};
+   safety := (Rd=1111 & S=1) => DECODER_ERROR &  # ARM
+             Rd=1111 => FORBIDDEN_OPERANDS;  # NaCl
+   dynamic_code_replace_immediates := {imm12};
 +--
 | op(24:20) Rn(19:16)
 | 0000x      -        = *B2R pattern := cccc0010000snnnnddddiiiiiiiiiiii;
@@ -478,14 +501,14 @@ class UnpredictableUncondDecoder : UnsafeUncondDecoder
                         rule := CMP_immediate_A1;
 | 10111      -        = *TEST pattern := cccc00110111nnnn0000iiiiiiiiiiii;
                         rule := CMN_immediate_A1;
-| 1100x      -        = *B2R pattern := cccc0011100snnnnddddiiiiiiiiiiii
-                                      & not (Rd=1111 & S=1);
+| 1100x      -        = *B2R_DCR pattern := cccc0011100snnnnddddiiiiiiiiiiii
+                                            & not (Rd=1111 & S=1);
                         rule := ORR_immediate_A1;
-| 1101x      -        = *U1R_S pattern := cccc0011101s0000ddddiiiiiiiiiiii;
+| 1101x      -        = *U1R_S_DCR pattern := cccc0011101s0000ddddiiiiiiiiiiii;
                         rule := MOV_immediate_A1;
 | 1110x      -        = *B2R_MASK pattern := cccc0011110snnnnddddiiiiiiiiiiii;
                         rule := BIC_immediate_A1;
-| 1111x      -        = *U1R_S pattern := cccc0011111s0000ddddiiiiiiiiiiii;
+| 1111x      -        = *U1R_S_DCR pattern := cccc0011111s0000ddddiiiiiiiiiiii;
                         rule := MVN_immediate_A1;
 +--
 

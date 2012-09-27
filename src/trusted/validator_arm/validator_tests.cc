@@ -2,7 +2,6 @@
 
 namespace nacl_val_arm_test {
 
-
 void ProblemRecord::Init(const ValidatorProblemUserData user_data) {
   for (size_t i = 0; i < nacl_arm_val::kValidatorProblemUserDataSize; ++i) {
     user_data_[i] = user_data[i];
@@ -69,6 +68,10 @@ void ProblemSpy::ReportProblemInternal(uint32_t vaddr,
   problems_.push_back(prob);
 }
 
+const nacl_arm_dec::ClassDecoder& ValidatorTests::decode(
+    nacl_arm_dec::Instruction inst) const {
+  return _validator.decode(inst);
+}
 
 bool ValidatorTests::validate(const arm_inst *pattern,
                               size_t inst_count,
@@ -192,6 +195,5 @@ void ValidatorTests::all_cond_values_fail(const arm_inst prototype,
         << "Passes on cond " << cond << ": " << msg;
   }
 }
-
 
 }  // namespace nacl_val_arm_test

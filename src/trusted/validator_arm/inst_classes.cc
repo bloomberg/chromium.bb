@@ -114,6 +114,11 @@ bool ClassDecoder::sets_Z_if_bits_clear(Instruction i,
   return false;
 }
 
+Instruction ClassDecoder::
+dynamic_code_replacement_sentinel(Instruction i) const {
+  return i;
+}
+
 // UnsafeClassDecoder
 SafetyLevel UnsafeClassDecoder::safety(Instruction i) const {
   UNREFERENCED_PARAMETER(i);
