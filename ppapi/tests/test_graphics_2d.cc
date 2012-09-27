@@ -35,6 +35,12 @@ void FlushCallbackQuitMessageLoop(void* data, int32_t result) {
 
 }  // namespace
 
+TestGraphics2D::TestGraphics2D(TestingInstance* instance)
+  : TestCase(instance),
+    is_view_changed_(false),
+    post_quit_on_view_changed_(false) {
+}
+
 bool TestGraphics2D::Init() {
   graphics_2d_interface_ = static_cast<const PPB_Graphics2D*>(
       pp::Module::Get()->GetBrowserInterface(PPB_GRAPHICS_2D_INTERFACE));
@@ -54,6 +60,7 @@ void TestGraphics2D::RunTests(const std::string& filter) {
   RUN_TEST_FORCEASYNC_AND_NOT(Scroll, filter);
   RUN_TEST_FORCEASYNC_AND_NOT(Replace, filter);
   RUN_TEST_FORCEASYNC_AND_NOT(Flush, filter);
+  RUN_TEST_FORCEASYNC_AND_NOT(FlushOffscreenUpdate, filter);
   RUN_TEST(Dev, filter);
   RUN_TEST(ReplaceContentsCaching, filter);
 }
@@ -645,6 +652,86 @@ std::string TestGraphics2D::TestFlush() {
         return "Second flush succeeded before callback ran.";
     }
   }
+
+  PASS();
+}
+
+void TestGraphics2D::DidChangeView(const pp::View& view) {
+  if (post_quit_on_view_changed_) {
+    post_quit_on_view_changed_ = false;
+    is_view_changed_ = true;
+    testing_interface_->QuitMessageLoop(instance_->pp_instance());
+  }
+}
+
+void TestGraphics2D::ResetViewChangedState() {
+  is_view_changed_ = false;
+}
+
+bool TestGraphics2D::WaitUntilViewChanged() {
+  // Run a nested message loop. It will exit either on ViewChanged or if the
+  // timeout happens.
+
+  // If view changed before we have chance to run message loop, return directly.
+  if (is_view_changed_)
+    return true;
+
+  post_quit_on_view_changed_ = true;
+  testing_interface_->RunMessageLoop(instance_->pp_instance());
+  post_quit_on_view_changed_ = false;
+
+  return is_view_changed_;
+}
+
+std::string TestGraphics2D::TestFlushOffscreenUpdate() {
+  // Tests that callback of offscreen updates should be delayed.
+  const PP_Time kFlushDelaySec = 1. / 30;  // 30 fps
+  const int w = 80, h = 80;
+  pp::Graphics2D dc(instance_, pp::Size(w, h), true);
+  if (dc.is_null())
+    return "Failure creating a boring device";
+  if (!instance_->BindGraphics(dc))
+    return "Failure to bind the boring device.";
+
+  // Squeeze from top until bottom half of plugin is out of screen.
+  ResetViewChangedState();
+  instance_->EvalScript(
+      "var big = document.createElement('div');"
+      "var offset = "
+      "    window.innerHeight - plugin.offsetTop - plugin.offsetHeight / 2;"
+      "big.setAttribute('id', 'big-div');"
+      "big.setAttribute('style', 'height: ' + offset + '; width: 100%;');"
+      "document.body.insertBefore(big, document.body.firstChild);");
+  if (!WaitUntilViewChanged())
+    return "View didn't change as expected";
+
+  // Allocate a red image chunk
+  pp::ImageData chunk(instance_, PP_IMAGEDATAFORMAT_RGBA_PREMUL,
+                      pp::Size(w/8, h/8), true);
+  if (chunk.is_null())
+    return "Failure to allocate image";
+  const uint32_t kRed = 0xff0000ff;
+  FillRectInImage(&chunk, pp::Rect(chunk.size()), kRed);
+
+  // Paint a invisable chunk, expecting Flush to invoke callback slowly.
+  dc.PaintImageData(chunk, pp::Point(0, h*0.75));
+
+  PP_Time begin = pp::Module::Get()->core()->GetTime();
+  if (!FlushAndWaitForDone(&dc))
+    return "Couldn't flush an invisible paint";
+  PP_Time actual_time_elapsed = pp::Module::Get()->core()->GetTime() - begin;
+  // Expect actual_time_elapsed >= kFlushDelaySec, but loose a bit to avoid
+  // precision issue.
+  if (actual_time_elapsed < kFlushDelaySec * 0.9)
+    return "Offscreen painting should be delayed";
+
+  // Remove the padding on the top since test cases here isn't independent.
+  instance_->EvalScript(
+      "var big = document.getElementById('big-div');"
+      "big.parentNode.removeChild(big);");
+  ResetViewChangedState();
+  if (!WaitUntilViewChanged())
+    return "View didn't change as expected";
 
   PASS();
 }

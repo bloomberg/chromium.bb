@@ -10,6 +10,7 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/time.h"
 #include "skia/ext/platform_canvas.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_rect.h"
@@ -42,6 +43,8 @@ namespace webkit {
 namespace ppapi {
 
 namespace {
+
+const int64 kOffscreenCallbackDelayMs = 1000 / 30;  // 30 fps
 
 // Converts a rect inside an image of the given dimensions. The rect may be
 // NULL to indicate it should be the entire image. If the rect is outside of
@@ -332,7 +335,8 @@ int32_t PPB_Graphics2D_Impl::Flush(scoped_refptr<TrackedCallback> callback,
     return PP_ERROR_INPROGRESS;
 
   bool done_replace_contents = false;
-  bool nothing_visible = true;
+  bool no_update_visible = true;
+  bool is_plugin_visible = true;
   for (size_t i = 0; i < queued_operations_.size(); i++) {
     QueuedOperation& operation = queued_operations_[i];
     gfx::Rect op_rect;
@@ -375,12 +379,14 @@ int32_t PPB_Graphics2D_Impl::Flush(scoped_refptr<TrackedCallback> callback,
         operation.type = QueuedOperation::PAINT;
       }
 
-      // Set |nothing_visible| to false if the change overlaps the visible area.
-      gfx::Rect visible_changed_rect =
-          PP_ToGfxRect(bound_instance_->view_data().clip_rect).
-          Intersect(op_rect);
+      gfx::Rect clip = PP_ToGfxRect(bound_instance_->view_data().clip_rect);
+      is_plugin_visible = !clip.IsEmpty();
+
+      // Set |no_update_visible| to false if the change overlaps the visible
+      // area.
+      gfx::Rect visible_changed_rect = clip.Intersect(op_rect);
       if (!visible_changed_rect.IsEmpty())
-        nothing_visible = false;
+        no_update_visible = false;
 
       // Notify the plugin of the entire change (op_rect), even if it is
       // partially or completely off-screen.
@@ -394,13 +400,18 @@ int32_t PPB_Graphics2D_Impl::Flush(scoped_refptr<TrackedCallback> callback,
   }
   queued_operations_.clear();
 
-  if (nothing_visible) {
+  if (!bound_instance_) {
+    // As promised in the API, we always schedule callback when unbound.
+    ScheduleOffscreenCallback(FlushCallbackData(callback));
+  } else if (no_update_visible && is_plugin_visible &&
+             bound_instance_->view_data().is_page_visible) {
     // There's nothing visible to invalidate so just schedule the callback to
     // execute in the next round of the message loop.
     ScheduleOffscreenCallback(FlushCallbackData(callback));
   } else {
     unpainted_flush_callback_.Set(callback);
   }
+
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -730,11 +741,12 @@ void PPB_Graphics2D_Impl::ScheduleOffscreenCallback(
     const FlushCallbackData& callback) {
   DCHECK(!HasPendingFlush());
   offscreen_flush_pending_ = true;
-  MessageLoop::current()->PostTask(
+  MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&PPB_Graphics2D_Impl::ExecuteOffscreenCallback,
                  weak_ptr_factory_.GetWeakPtr(),
-                 callback));
+                 callback),
+      base::TimeDelta::FromMilliseconds(kOffscreenCallbackDelayMs));
 }
 
 void PPB_Graphics2D_Impl::ExecuteOffscreenCallback(FlushCallbackData data) {

@@ -21,9 +21,10 @@ class Rect;
 
 class TestGraphics2D : public TestCase {
  public:
-  explicit TestGraphics2D(TestingInstance* instance) : TestCase(instance) {}
+  explicit TestGraphics2D(TestingInstance* instance);
 
   // TestCase implementation.
+  virtual void DidChangeView(const pp::View& view);
   virtual bool Init();
   virtual void RunTests(const std::string& filter);
 
@@ -78,6 +79,14 @@ class TestGraphics2D : public TestCase {
   PP_Resource ReplaceContentsAndReturnID(pp::Graphics2D* dc,
                                          const pp::Size& size);
 
+  // Resets the internal state of view change.
+  void ResetViewChangedState();
+
+  // Waits until we get a view change event. Note that it's possible to receive
+  // an unexpected event, thus post_quit_on_view_changed_ is introduced so that
+  // DidChangeView can check whether the event is from here.
+  bool WaitUntilViewChanged();
+
   std::string TestInvalidResource();
   std::string TestInvalidSize();
   std::string TestHumongous();
@@ -87,12 +96,22 @@ class TestGraphics2D : public TestCase {
   std::string TestScroll();
   std::string TestReplace();
   std::string TestFlush();
+  std::string TestFlushOffscreenUpdate();
   std::string TestDev();
   std::string TestReplaceContentsCaching();
 
   // Used by the tests that access the C API directly.
   const PPB_Graphics2D* graphics_2d_interface_;
   const PPB_ImageData* image_data_interface_;
+
+  // Used to indicate that DidChangeView has happened, in order to make plugin
+  // and ui synchronous.
+  bool is_view_changed_;
+
+  // Set to true to request that the next invocation of DidChangeView should
+  // post a quit to the message loop. DidChangeView will also reset the flag so
+  // this will only happen once.
+  bool post_quit_on_view_changed_;
 };
 
 #endif  // PPAPI_TESTS_TEST_GRAPHICS_2D_H_
