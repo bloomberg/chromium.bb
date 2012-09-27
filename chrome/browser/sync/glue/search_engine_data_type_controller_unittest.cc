@@ -108,7 +108,13 @@ class SyncSearchEngineDataTypeControllerTest : public testing::Test {
   ModelLoadCallbackMock model_load_callback_;
 };
 
-TEST_F(SyncSearchEngineDataTypeControllerTest, StartURLServiceReady) {
+#if defined(OS_ANDROID)
+// Crashes on Android http://crbug.com/152599
+#define MAYBE_StartURLServiceReady DISABLED_StartURLServiceReady
+#else
+#define MAYBE_StartURLServiceReady StartURLServiceReady
+#endif
+TEST_F(SyncSearchEngineDataTypeControllerTest, MAYBE_StartURLServiceReady) {
   SetStartExpectations();
   // We want to start ready.
   PreloadTemplateURLService();
