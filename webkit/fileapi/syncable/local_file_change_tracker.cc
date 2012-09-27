@@ -82,13 +82,13 @@ void LocalFileChangeTracker::OnEndUpdate(const FileSystemURL& url) {
 }
 
 void LocalFileChangeTracker::OnCreateFile(const FileSystemURL& url) {
-  RecordChange(url, FileChange(FileChange::FILE_CHANGE_ADD,
+  RecordChange(url, FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
                                FileChange::FILE_TYPE_FILE));
 }
 
 void LocalFileChangeTracker::OnCreateFileFrom(const FileSystemURL& url,
                                               const FileSystemURL& src) {
-  RecordChange(url, FileChange(FileChange::FILE_CHANGE_ADD,
+  RecordChange(url, FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
                                FileChange::FILE_TYPE_FILE));
 }
 
@@ -98,12 +98,12 @@ void LocalFileChangeTracker::OnRemoveFile(const FileSystemURL& url) {
 }
 
 void LocalFileChangeTracker::OnModifyFile(const FileSystemURL& url) {
-  RecordChange(url, FileChange(FileChange::FILE_CHANGE_UPDATE,
+  RecordChange(url, FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
                                FileChange::FILE_TYPE_FILE));
 }
 
 void LocalFileChangeTracker::OnCreateDirectory(const FileSystemURL& url) {
-  RecordChange(url, FileChange(FileChange::FILE_CHANGE_ADD,
+  RecordChange(url, FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
                                FileChange::FILE_TYPE_DIRECTORY));
 }
 

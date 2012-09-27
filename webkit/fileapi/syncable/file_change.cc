@@ -15,22 +15,16 @@ FileChange::FileChange(
     ChangeType change,
     FileType file_type)
     : change_(change),
-      file_type_(file_type) {
-  // There's no update change for directories.
-  DCHECK(change != FILE_CHANGE_UPDATE || file_type != FILE_TYPE_DIRECTORY);
-}
+      file_type_(file_type) {}
 
 std::string FileChange::DebugString() const {
   const char* change_string = NULL;
   switch (change()) {
-    case FILE_CHANGE_ADD:
-      change_string = "ADD";
+    case FILE_CHANGE_ADD_OR_UPDATE:
+      change_string = "ADD_OR_UPDATE";
       break;
     case FILE_CHANGE_DELETE:
       change_string = "DELETE";
-      break;
-    case FILE_CHANGE_UPDATE:
-      change_string = "UPDATE";
       break;
   }
   const char* type_string = NULL;
@@ -63,29 +57,14 @@ void FileChangeList::Update(const FileChange& new_change) {
   if (last.change() == new_change.change())
     return;
 
-  // Change transitions:
-  //  ADD    + DELETE -> revert [A]
-  //  ADD    + UPDATE -> ADD [B]
-  //  DELETE + ADD    -> ADD
-  //  DELETE + UPDATE -> invalid [C]
-  //  UPDATE + ADD    -> invalid [C]
-  //  UPDATE + DELETE -> DELETE
-
-  // [A]: ADD + DELETE -> revert
-  if (last.IsAdd() && new_change.IsDelete()) {
+  // ADD + DELETE on directory -> revert
+  if (!last.IsFile() && last.IsAddOrUpdate() && new_change.IsDelete()) {
     list_.pop_back();
     return;
   }
 
-  // [B]: ADD + UPDATE -> ADD
-  if (last.IsAdd() && new_change.IsUpdate())
-    return;
-
-  // [C]: invalid cases.
-  DCHECK(!(last.IsDelete() && new_change.IsUpdate()));
-  DCHECK(!(last.IsUpdate() && new_change.IsAdd()));
-
-  // All others.
+  // DELETE + ADD/UPDATE -> ADD/UPDATE
+  // ADD/UPDATE + DELETE -> DELETE
   last = new_change;
 }
 

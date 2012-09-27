@@ -12,8 +12,8 @@ namespace fileapi {
 
 namespace {
 
-FileChange AddFile() {
-  return FileChange(FileChange::FILE_CHANGE_ADD,
+FileChange AddOrUpdateFile() {
+  return FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
                     FileChange::FILE_TYPE_FILE);
 }
 
@@ -22,13 +22,8 @@ FileChange DeleteFile() {
                     FileChange::FILE_TYPE_FILE);
 }
 
-FileChange UpdateFile() {
-  return FileChange(FileChange::FILE_CHANGE_UPDATE,
-                    FileChange::FILE_TYPE_FILE);
-}
-
 FileChange AddDirectory() {
-  return FileChange(FileChange::FILE_CHANGE_ADD,
+  return FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
                     FileChange::FILE_TYPE_DIRECTORY);
 }
 
@@ -47,7 +42,7 @@ void CreateList(FileChangeList* list, const FileChange (&inputs)[INPUT_SIZE]) {
 template <size_t EXPECTED_SIZE>
 void VerifyList(const FileChangeList& list,
                 const FileChange (&expected)[EXPECTED_SIZE]) {
-  SCOPED_TRACE(testing::Message() << list.DebugString());
+  SCOPED_TRACE(testing::Message() << "actual:" << list.DebugString());
   ASSERT_EQ(EXPECTED_SIZE, list.size());
   for (size_t i = 0; i < list.size(); ++i) {
     SCOPED_TRACE(testing::Message() << i << ": "
@@ -61,44 +56,33 @@ void VerifyList(const FileChangeList& list,
 
 TEST(FileChangeListTest, UpdateSimple) {
   FileChangeList list;
-  const FileChange kInput1[] = { AddFile() };
-  const FileChange kExpected1[] = { AddFile() };
+  const FileChange kInput1[] = { AddOrUpdateFile() };
+  const FileChange kExpected1[] = { AddOrUpdateFile() };
   CreateList(&list, kInput1);
   VerifyList(list, kExpected1);
 
-  // Add + Delete -> empty.
-  const FileChange kInput2[] = { AddFile(), DeleteFile() };
+  // AddOrUpdate + Delete -> Delete.
+  const FileChange kInput2[] = { AddOrUpdateFile(), DeleteFile() };
+  const FileChange kExpected2[] = { DeleteFile() };
   CreateList(&list, kInput2);
-  ASSERT_TRUE(list.empty());
+  VerifyList(list, kExpected2);
 
   // Add + Delete -> empty (directory).
   const FileChange kInput3[] = { AddDirectory(), DeleteDirectory() };
   CreateList(&list, kInput3);
   ASSERT_TRUE(list.empty());
 
-  // Add + Update -> Add.
-  const FileChange kInput4[] = { AddFile(), UpdateFile() };
-  const FileChange kExpected4[] = { AddFile() };
+  // Delete + AddOrUpdate -> AddOrUpdate.
+  const FileChange kInput4[] = { DeleteFile(), AddOrUpdateFile() };
+  const FileChange kExpected4[] = { AddOrUpdateFile() };
   CreateList(&list, kInput4);
   VerifyList(list, kExpected4);
 
-  // Delete + Add -> Add.
-  const FileChange kInput5[] = { DeleteFile(), AddFile() };
-  const FileChange kExpected5[] = { AddFile() };
+  // Delete + Add -> Add (directory).
+  const FileChange kInput5[] = { DeleteDirectory(), AddDirectory() };
+  const FileChange kExpected5[] = { AddDirectory() };
   CreateList(&list, kInput5);
   VerifyList(list, kExpected5);
-
-  // Delete + Add -> Add (directory).
-  const FileChange kInput6[] = { DeleteDirectory(), AddDirectory() };
-  const FileChange kExpected6[] = { AddDirectory() };
-  CreateList(&list, kInput6);
-  VerifyList(list, kExpected6);
-
-  // Update + Delete -> Delete.
-  const FileChange kInput7[] = { UpdateFile(), DeleteFile() };
-  const FileChange kExpected7[] = { DeleteFile() };
-  CreateList(&list, kInput7);
-  VerifyList(list, kExpected7);
 }
 
 TEST(FileChangeListTest, UpdateCombined) {
@@ -106,38 +90,50 @@ TEST(FileChangeListTest, UpdateCombined) {
 
   // Longer ones.
   const FileChange kInput1[] = {
-    AddFile(),
-    UpdateFile(),
-    UpdateFile(),
-    UpdateFile(),
+    AddOrUpdateFile(),
+    AddOrUpdateFile(),
+    AddOrUpdateFile(),
+    AddOrUpdateFile(),
     DeleteFile(),
     AddDirectory(),
   };
-  const FileChange kExpected1[] = { AddDirectory() };
+  const FileChange kExpected1[] = { DeleteFile(), AddDirectory() };
   CreateList(&list, kInput1);
   VerifyList(list, kExpected1);
 
   const FileChange kInput2[] = {
-    AddFile(),
+    AddOrUpdateFile(),
     DeleteFile(),
-    AddFile(),
-    UpdateFile(),
-    UpdateFile(),
+    AddOrUpdateFile(),
+    AddOrUpdateFile(),
+    AddOrUpdateFile(),
   };
-  const FileChange kExpected2[] = { AddFile() };
+  const FileChange kExpected2[] = { AddOrUpdateFile() };
   CreateList(&list, kInput2);
   VerifyList(list, kExpected2);
 
   const FileChange kInput3[] = {
     AddDirectory(),
     DeleteDirectory(),
-    AddFile(),
-    UpdateFile(),
-    UpdateFile(),
+    AddOrUpdateFile(),
+    AddOrUpdateFile(),
+    AddOrUpdateFile(),
   };
-  const FileChange kExpected3[] = { AddFile() };
+  const FileChange kExpected3[] = { AddOrUpdateFile() };
   CreateList(&list, kInput3);
   VerifyList(list, kExpected3);
+
+  const FileChange kInput4[] = {
+    AddDirectory(),
+    DeleteDirectory(),
+    AddOrUpdateFile(),
+    DeleteFile(),
+    AddOrUpdateFile(),
+    DeleteFile(),
+  };
+  const FileChange kExpected4[] = { DeleteFile() };
+  CreateList(&list, kInput4);
+  VerifyList(list, kExpected4);
 }
 
 }  // namespace fileapi

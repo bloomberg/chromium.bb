@@ -16,9 +16,8 @@ namespace fileapi {
 class FILEAPI_EXPORT FileChange {
  public:
   enum ChangeType {
-    FILE_CHANGE_ADD,
+    FILE_CHANGE_ADD_OR_UPDATE,
     FILE_CHANGE_DELETE,
-    FILE_CHANGE_UPDATE,
   };
 
   enum FileType {
@@ -28,9 +27,8 @@ class FILEAPI_EXPORT FileChange {
 
   FileChange(ChangeType change, FileType file_type);
 
-  bool IsAdd() const { return change_ == FILE_CHANGE_ADD; }
+  bool IsAddOrUpdate() const { return change_ == FILE_CHANGE_ADD_OR_UPDATE; }
   bool IsDelete() const { return change_ == FILE_CHANGE_DELETE; }
-  bool IsUpdate() const { return change_ == FILE_CHANGE_UPDATE; }
 
   bool IsFile() const { return file_type_ == FILE_TYPE_FILE; }
 
