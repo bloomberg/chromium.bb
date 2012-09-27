@@ -2215,6 +2215,19 @@ void RenderViewImpl::showContextMenu(
   if (params.src_url.spec().size() > content::kMaxURLChars)
     params.src_url = GURL();
   context_menu_node_ = data.node;
+
+#if defined(OS_ANDROID)
+  gfx::Rect start_rect;
+  gfx::Rect end_rect;
+  GetSelectionBounds(&start_rect, &end_rect);
+  gfx::Point start_point(start_rect.x(),
+                         start_rect.bottom());
+  gfx::Point end_point(end_rect.right(),
+                       end_rect.bottom());
+  params.selection_start = GetScrollOffset().Add(start_point);
+  params.selection_end = GetScrollOffset().Add(end_point);
+#endif
+
   Send(new ViewHostMsg_ContextMenu(routing_id_, params));
 }
 

@@ -16,6 +16,10 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
 #include "webkit/glue/webmenuitem.h"
 
+#if defined(OS_ANDROID)
+#include "ui/gfx/point.h"
+#endif
+
 namespace content {
 
 struct CONTENT_EXPORT CustomContextMenuContext {
@@ -133,6 +137,14 @@ struct CONTENT_EXPORT ContextMenuParams {
 
   CustomContextMenuContext custom_context;
   std::vector<WebMenuItem> custom_items;
+
+#if defined(OS_ANDROID)
+  // Points representing the coordinates in the document space of the start and
+  // end of the selection, if there is one.
+  gfx::Point selection_start;
+  gfx::Point selection_end;
+#endif
+
 };
 
 }  // namespace content
