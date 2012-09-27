@@ -125,14 +125,13 @@ html[dir=rtl] #user-image-preview {
 
 .user-image-stream-area .spinner {
   display: none;
-  left: 14px;
+  height: 44px;
+  left: 50%;
+  margin-left: -22px;
+  margin-top: -22px;
   position: absolute;
-  top: 14px;
-}
-
-html[dir=rtl] .user-image-stream-area .spinner {
-  left: auto;
-  right: 14px;
+  top: 50%;
+  width: 44px;
 }
 
 .camera.live:not(.online) .user-image-stream-area .spinner {
