@@ -42,6 +42,7 @@ void ExecuteCommandLines(chromeos::SystemLogsResponse* response) {
   commands.push_back(std::make_pair("xrandr", command));
 
   command = CommandLine(FilePath("/opt/google/touchpad/tpcontrol"));
+  command.AppendArg("status");
   commands.push_back(std::make_pair("hack-33025-touchpad", command));
 
   command = CommandLine(FilePath("/opt/google/touchpad/generate_userfeedback"));
