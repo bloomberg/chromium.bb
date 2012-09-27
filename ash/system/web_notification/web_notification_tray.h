@@ -7,9 +7,9 @@
 
 #include "ash/ash_export.h"
 #include "ash/system/tray/tray_background_view.h"
+#include "ash/system/tray/tray_views.h"
 #include "ash/system/user/login_status.h"
 #include "base/gtest_prod_util.h"
-#include "ui/aura/event_filter.h"
 
 namespace aura {
 class LocatedEvent;
@@ -27,6 +27,12 @@ namespace ash {
 
 namespace internal {
 class StatusAreaWidget;
+}
+
+namespace message_center {
+class MessageCenterBubble;
+class PopupBubble;
+class WebNotificationBubble;
 class WebNotificationButtonView;
 class WebNotificationList;
 class WebNotificationMenuModel;
@@ -131,13 +137,13 @@ class ASH_EXPORT WebNotificationTray : public internal::TrayBackgroundView,
   static const size_t kMaxVisiblePopupNotifications;
 
  private:
-  class Bubble;
-  class MessageCenterBubble;
-  class PopupBubble;
-  friend class internal::WebNotificationButtonView;
-  friend class internal::WebNotificationMenuModel;
-  friend class internal::WebNotificationList;
-  friend class internal::WebNotificationView;
+  friend class message_center::MessageCenterBubble;
+  friend class message_center::PopupBubble;
+  friend class message_center::WebNotificationBubble;
+  friend class message_center::WebNotificationButtonView;
+  friend class message_center::WebNotificationList;
+  friend class message_center::WebNotificationMenuModel;
+  friend class message_center::WebNotificationView;
   FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayTest, WebNotifications);
   FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayTest, WebNotificationPopupBubble);
   FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayTest,
@@ -182,7 +188,7 @@ class ASH_EXPORT WebNotificationTray : public internal::TrayBackgroundView,
   void UpdateTrayAndBubble();
 
   // Hides the specified bubble (called when |bubble| is closed from Views).
-  void HideBubble(Bubble* bubble);
+  void HideBubble(message_center::WebNotificationBubble* bubble);
 
   // Testing accessors.
   size_t GetNotificationCountForTest() const;
@@ -191,17 +197,19 @@ class ASH_EXPORT WebNotificationTray : public internal::TrayBackgroundView,
   size_t GetMessageCenterNotificationCountForTest() const;
   size_t GetPopupNotificationCountForTest() const;
 
-  internal::WebNotificationList* notification_list() {
+  message_center::WebNotificationList* notification_list() {
     return notification_list_.get();
   }
-  MessageCenterBubble* message_center_bubble() const {
+  message_center::MessageCenterBubble* message_center_bubble() const {
     return message_center_bubble_.get();
   }
-  PopupBubble* popup_bubble() const { return popup_bubble_.get(); }
+  message_center::PopupBubble* popup_bubble() const {
+    return popup_bubble_.get();
+  }
 
-  scoped_ptr<internal::WebNotificationList> notification_list_;
-  scoped_ptr<MessageCenterBubble> message_center_bubble_;
-  scoped_ptr<PopupBubble> popup_bubble_;
+  scoped_ptr<message_center::WebNotificationList> notification_list_;
+  scoped_ptr<message_center::MessageCenterBubble> message_center_bubble_;
+  scoped_ptr<message_center::PopupBubble> popup_bubble_;
   views::ImageButton* button_;
   Delegate* delegate_;
   bool show_message_center_on_unlock_;
