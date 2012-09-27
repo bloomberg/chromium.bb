@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_SEARCH_SEARCH_TAB_HELPER_H_
 
 #include "base/basictypes.h"
-#include "chrome/browser/tab_contents/web_contents_user_data.h"
+#include "chrome/browser/common/web_contents_user_data.h"
 #include "chrome/browser/ui/search/search_model.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"

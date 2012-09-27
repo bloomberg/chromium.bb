@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/tab_contents/web_contents_user_data.h"
+#include "chrome/browser/common/web_contents_user_data.h"
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"

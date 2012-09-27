@@ -14,8 +14,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/time.h"
+#include "chrome/browser/common/web_contents_user_data.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
-#include "chrome/browser/tab_contents/web_contents_user_data.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "net/base/network_delegate.h"
 

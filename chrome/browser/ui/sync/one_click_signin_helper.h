@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "chrome/browser/tab_contents/web_contents_user_data.h"
+#include "chrome/browser/common/web_contents_user_data.h"
 #include "content/public/browser/web_contents_observer.h"
 
 namespace content {

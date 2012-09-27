@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_PRINTING_PRINT_PREVIEW_MESSAGE_HANDLER_H_
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/tab_contents/web_contents_user_data.h"
+#include "chrome/browser/common/web_contents_user_data.h"
 #include "content/public/browser/web_contents_observer.h"
 
 class PrintPreviewUI;

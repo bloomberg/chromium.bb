@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_PDF_PDF_TAB_HELPER_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/tab_contents/web_contents_user_data.h"
+#include "chrome/browser/common/web_contents_user_data.h"
 #include "content/public/browser/web_contents_observer.h"
 
 class OpenPDFInReaderPromptDelegate;

@@ -12,10 +12,10 @@
 #include <set>
 
 #include "base/compiler_specific.h"
+#include "chrome/browser/common/web_contents_user_data.h"
 #include "chrome/browser/extensions/api/web_navigation/frame_navigation_state.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/tab_contents/web_contents_user_data.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/notification_observer.h"

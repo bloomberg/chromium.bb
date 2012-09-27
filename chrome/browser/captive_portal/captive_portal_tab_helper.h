@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/captive_portal/captive_portal_service.h"
-#include "chrome/browser/tab_contents/web_contents_user_data.h"
+#include "chrome/browser/common/web_contents_user_data.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
