@@ -11,6 +11,7 @@ See more information at
 http://dev.chromium.org/developers/testing/isolated-testing
 """
 
+import binascii
 import copy
 import hashlib
 import logging
@@ -348,6 +349,60 @@ class UploadRemote(run_test_from_archive.Remote):
     return upload_file
 
 
+def url_open(url, data=None, max_retries=MAX_UPLOAD_ATTEMPTS):
+  """Opens the given url with the given data, repeating up to max_retries
+  times if it encounters an error.
+
+  Arguments:
+    url: The url to open.
+    data: The data to send to the url.
+    max_retries: The maximum number of times to try connecting to the url.
+
+  Returns:
+    The response from the url, or it raises an exception it it failed to get
+    a response.
+  """
+  for _ in range(max_retries):
+    try:
+      response = urllib2.urlopen(url, data=data)
+    except urllib2.URLError as e:
+      logging.warning('Unable to connect to %s, error msg: %s', url, e)
+      time.sleep(1)
+
+  # If we get no response from the server after max_retries, assume it
+  # is down and raise an exception
+  if response is None:
+    raise run_test_from_archive.MappingError('Unable to connect to server, %s, '
+                                             'to see which files are presents' %
+                                             url)
+
+  return response
+
+
+def update_files_to_upload(query_url, queries, files_to_upload):
+  """Queries the server to see which files from this batch already exist there.
+
+  Arguments:
+    queries: The hash files to potential upload to the server.
+    files_to_upload: Any new files that need to be upload are added to
+                     this list.
+  """
+  body = ''.join(
+      (binascii.unhexlify(meta_data['sha-1']) for (_, meta_data) in queries))
+  response = url_open(query_url, data=body).read()
+  if len(queries) != len(response):
+    raise run_test_from_archive.MappingError(
+        'Got an incorrect number of responses from the server. Expected %d, '
+        'but got %d' % (len(queries), len(response)))
+
+  for i in range(len(response)):
+    if response[i] == chr(0):
+      files_to_upload.append(queries[i])
+    else:
+      logging.debug('Hash for %s already exists on the server, no need '
+                    'to upload again', queries[i][0])
+
+
 def upload_sha1_tree(base_url, indir, infiles):
   """Uploads the given tree to the given url.
 
@@ -366,26 +421,23 @@ def upload_sha1_tree(base_url, indir, infiles):
   base_url = base_url.rstrip('/')
   contains_hash_url = base_url + '/content/contains'
   to_upload = []
+  next_queries = []
   for relfile, metadata in infiles.iteritems():
     if 'link' in metadata:
       # Skip links when uploading.
       continue
 
-    try:
-      response = urllib2.urlopen(contains_hash_url + '?' + urllib.urlencode(
-          {'hash_key': metadata['sha-1']}))
-      if response.read() == 'True':
-        logging.debug('Hash key, %s, already exists on the server, no need to '
-                      'upload again', metadata['sha-1'])
-        continue
-    except urllib2.URLError:
-      # If we encounter any error checking if the file is already on the server,
-      # assume it isn't present.
-      pass
-    to_upload.append((relfile, metadata))
+    next_queries.append((relfile, metadata))
+    if len(next_queries) == 1000:
+      update_files_to_upload(contains_hash_url, next_queries, to_upload)
+      next_queries = []
+
+  if next_queries:
+    update_files_to_upload(contains_hash_url, next_queries, to_upload)
+
 
   # Upload the required files.
-  remote_uploader = run_test_from_archive.Remote(base_url)
+  remote_uploader = UploadRemote(base_url)
   for relfile, metadata in to_upload:
     # TODO(csharp): Fix crbug.com/150823 and enable the touched logic again.
     # if metadata.get('touched_only') == True:
@@ -396,6 +448,7 @@ def upload_sha1_tree(base_url, indir, infiles):
     remote_uploader.add_item(run_test_from_archive.Remote.MED,
                              hash_data,
                              metadata['sha-1'])
+  remote_uploader.join()
 
   exception = remote_uploader.next_exception()
   if exception:
