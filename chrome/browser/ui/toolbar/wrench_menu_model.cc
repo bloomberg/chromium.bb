@@ -70,6 +70,10 @@
 #include "chrome/browser/enumerate_modules_model_win.h"
 #endif
 
+#if defined(USE_ASH)
+#include "ash/shell.h"
+#endif
+
 using content::HostZoomMap;
 using content::UserMetricsAction;
 using content::WebContents;
@@ -496,6 +500,15 @@ void WrenchMenuModel::Build() {
 #endif
 
 #endif  // else of defined(OS_WIN)
+
+#if defined(USE_ASH)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableAsh)) {
+    if (!ash::Shell::HasInstance())
+      AddItemWithStringId(IDC_TOGGLE_ASH_DESKTOP, IDS_OPEN_ASH_DESKTOP);
+    else
+      AddItemWithStringId(IDC_TOGGLE_ASH_DESKTOP, IDS_CLOSE_ASH_DESKTOP);
+  }
+#endif
 
   bookmark_sub_menu_model_.reset(new BookmarkSubMenuModel(this, browser_));
   AddSubMenuWithStringId(IDC_BOOKMARKS_MENU, IDS_BOOKMARKS_MENU,

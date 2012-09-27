@@ -1554,6 +1554,11 @@ const char kDisableTCVA[]                    = "disable-tcva";
 extern const char kOpenAsh[]                 = "open-ash";
 #endif
 
+#if defined(USE_ASH)
+// Enables the wrench menu items to open/close the Ash desktop.
+const char kEnableAsh[]                     = "enable-ash";
+#endif
+
 #ifndef NDEBUG
 // Enables overriding the path of file manager extension.
 const char kFileManagerExtensionPath[]      = "filemgr-ext-path";

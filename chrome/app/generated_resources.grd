@@ -17855,6 +17855,12 @@ Battery full
       <message name="IDS_GTALK_SCREEN_SHARE_DIALOG_TITLE" desc="Title of the dialog box asking user's permission to share their screen">
         Google Talk Screen Sharing Request
       </message>
+      <message name="IDS_OPEN_ASH_DESKTOP" desc="The text label of the Open Ash desktop menu item">
+        Open Ash desktop
+      </message>
+      <message name="IDS_CLOSE_ASH_DESKTOP" desc="The text label of the Close Ash desktop menu item">
+        Close Ash desktop
+      </message>
     </if>
 
     <!-- Panel windows -->

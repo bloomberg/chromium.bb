@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/ash/ash_util.h"
 
 #include "ash/shell.h"
+#include "chrome/browser/ui/ash/ash_init.h"
 #include "ui/aura/root_window.h"
 
 namespace chrome {
@@ -32,6 +33,13 @@ bool IsNativeViewInAsh(gfx::NativeView native_view) {
 
 bool IsNativeWindowInAsh(gfx::NativeWindow native_window) {
   return IsNativeViewInAsh(native_window);
+}
+
+void ToggleAshDesktop() {
+  if (!ash::Shell::HasInstance())
+    OpenAsh();
+  else
+    CloseAsh();
 }
 
 }  // namespace chrome

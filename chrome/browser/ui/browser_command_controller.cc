@@ -44,6 +44,10 @@
 #include "base/win/metro.h"
 #endif
 
+#if defined(USE_ASH)
+#include "chrome/browser/ui/ash/ash_util.h"
+#endif
+
 using content::WebContents;
 using content::NavigationEntry;
 using content::NavigationController;
@@ -399,6 +403,12 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_FULLSCREEN:
       chrome::ToggleFullscreenMode(browser_);
       break;
+
+#if defined(USE_ASH)
+    case IDC_TOGGLE_ASH_DESKTOP:
+      chrome::ToggleAshDesktop();
+      break;
+#endif
 
 #if defined(OS_WIN)
     // Windows 8 specific commands.
@@ -780,6 +790,9 @@ void BrowserCommandController::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_RESTORE_TAB, false);
   command_updater_.UpdateCommandEnabled(IDC_EXIT, true);
   command_updater_.UpdateCommandEnabled(IDC_DEBUG_FRAME_TOGGLE, true);
+#if defined(USE_ASH)
+  command_updater_.UpdateCommandEnabled(IDC_TOGGLE_ASH_DESKTOP, true);
+#endif
 
   // Page-related commands
   command_updater_.UpdateCommandEnabled(IDC_EMAIL_PAGE_LOCATION, true);

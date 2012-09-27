@@ -68,6 +68,7 @@
 #define IDC_METRO_SNAP_DISABLE          34041
 #define IDC_WIN8_DESKTOP_RESTART        34042
 #define IDC_WIN8_METRO_RESTART          34043
+#define IDC_TOGGLE_ASH_DESKTOP          34044
 
 // Page-related commands
 #define IDC_BOOKMARK_PAGE               35000
