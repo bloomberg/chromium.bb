@@ -11,6 +11,7 @@
 
 #include <limits.h>
 
+#include "base/debug/alias.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "CCProxy.h"
@@ -319,7 +320,14 @@ const CCResourceProvider::Resource* CCResourceProvider::lockForRead(ResourceId i
 {
     ASSERT(CCProxy::isImplThread());
     ResourceMap::iterator it = m_resources.find(id);
-    CHECK(it != m_resources.end());
+    if (it == m_resources.end()) {
+        int commitsSinceLastEviction = m_commitsSinceLastEviction;
+        int commitsSinceLastContextLost = m_commitsSinceLastContextLost;
+        base::debug::Alias(&commitsSinceLastEviction);
+        base::debug::Alias(&commitsSinceLastContextLost);
+        CHECK(it != m_resources.end());
+    }
+
 #if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
     Resource* resource = &it->value;
 #else
@@ -700,6 +708,25 @@ void CCResourceProvider::trimMailboxDeque()
     }
     while (m_mailboxes.size() > maxMailboxCount)
         m_mailboxes.removeFirst();
+}
+
+int CCResourceProvider::m_commitsSinceLastEviction = 1000;
+int CCResourceProvider::m_commitsSinceLastContextLost = 1000;
+
+void CCResourceProvider::debugNotifyEviction()
+{
+    m_commitsSinceLastEviction = 0;
+}
+
+void CCResourceProvider::debugNotifyContextLost()
+{
+    m_commitsSinceLastContextLost = 0;
+}
+
+void CCResourceProvider::debugIncrementCommitCount()
+{
+    m_commitsSinceLastEviction = std::min(m_commitsSinceLastEviction + 1, 1000);
+    m_commitsSinceLastContextLost = std::min(m_commitsSinceLastContextLost + 1, 1000);
 }
 
 }

@@ -146,6 +146,11 @@ public:
     // Only for testing
     size_t mailboxCount() const { return m_mailboxes.size(); }
 
+    // Temporary functions for debugging crashes in issue 151428 in canary
+    static void debugNotifyEviction();
+    static void debugNotifyContextLost();
+    static void debugIncrementCommitCount();
+
     // The following lock classes are part of the CCResourceProvider API and are
     // needed to read and write the resource contents. The user must ensure
     // that they only use GL locks on GL resources, etc, and this is enforced
@@ -263,6 +268,10 @@ private:
     OwnPtr<TextureUploader> m_textureUploader;
     OwnPtr<AcceleratedTextureCopier> m_textureCopier;
     int m_maxTextureSize;
+
+    static int m_commitsSinceLastEviction;
+    static int m_commitsSinceLastContextLost;
+
 };
 
 }

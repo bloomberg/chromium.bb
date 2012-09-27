@@ -353,6 +353,9 @@ void CCThreadProxy::postAnimationEventsToMainThreadOnImplThread(PassOwnPtr<CCAni
 void CCThreadProxy::releaseContentsTexturesOnImplThread()
 {
     ASSERT(isImplThread());
+
+    CCResourceProvider::debugNotifyEviction();
+
     m_layerTreeHost->reduceContentsTexturesMemoryOnImplThread(0, m_layerTreeHostImpl->resourceProvider());
     // Make sure that we get a new commit before drawing again.
     m_resetContentsTexturesPurgedAfterCommitOnImplThread = false;
@@ -660,6 +663,8 @@ void CCThreadProxy::scheduledActionCommit()
 
     m_layerTreeHostImpl->commitComplete();
 
+    CCResourceProvider::debugIncrementCommitCount();
+
     m_nextFrameIsNewlyCommittedFrameOnImplThread = true;
 
     m_commitCompletionEventOnImplThread->signal();
@@ -923,6 +928,7 @@ void CCThreadProxy::recreateContextOnImplThread(CCCompletionEvent* completion, C
 {
     TRACE_EVENT0("cc", "CCThreadProxy::recreateContextOnImplThread");
     ASSERT(isImplThread());
+    CCResourceProvider::debugNotifyContextLost();
     m_layerTreeHost->deleteContentsTexturesOnImplThread(m_layerTreeHostImpl->resourceProvider());
     *recreateSucceeded = m_layerTreeHostImpl->initializeRenderer(adoptPtr(contextPtr));
     if (*recreateSucceeded) {
