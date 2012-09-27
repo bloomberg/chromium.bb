@@ -1866,9 +1866,10 @@ shell_map_popup(struct shell_surface *shsurf)
 	}
 	wl_list_insert(es->geometry.transformation_list.prev,
 		       &shsurf->popup.parent_transform.link);
-	weston_surface_set_position(es, shsurf->popup.x, shsurf->popup.y);
 
 	shsurf->popup.initial_up = 0;
+	weston_surface_set_position(es, shsurf->popup.x, shsurf->popup.y);
+	weston_surface_update_transform(es);
 
 	/* We don't require the grab to still be active, but if another
 	 * grab has started in the meantime, we end the popup now. */
@@ -2367,7 +2368,7 @@ static void
 surface_opacity_binding(struct wl_seat *seat, uint32_t time, uint32_t axis,
 			wl_fixed_t value, void *data)
 {
-	float step = 0.05;
+	float step = 0.005;
 	struct shell_surface *shsurf;
 	struct weston_surface *surface =
 		(struct weston_surface *) seat->pointer->focus;
@@ -2379,7 +2380,7 @@ surface_opacity_binding(struct wl_seat *seat, uint32_t time, uint32_t axis,
 	if (!shsurf)
 		return;
 
-	surface->alpha += wl_fixed_to_double(value) * step;
+	surface->alpha -= wl_fixed_to_double(value) * step;
 
 	if (surface->alpha > 1.0)
 		surface->alpha = 1.0;
@@ -2409,8 +2410,9 @@ do_zoom(struct wl_seat *seat, uint32_t time, uint32_t key, uint32_t axis,
 			else if (key == KEY_PAGEDOWN)
 				increment = -output->zoom.increment;
 			else if (axis == WL_POINTER_AXIS_VERTICAL_SCROLL)
+				/* For every pixel zoom 20th of a step */
 				increment = output->zoom.increment *
-					    wl_fixed_to_double(value);
+					    -wl_fixed_to_double(value) / 20.0;
 			else
 				increment = 0;
 
