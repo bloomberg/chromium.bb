@@ -4039,7 +4039,7 @@ static void configureRenderPassTestData(const char* testScript, RenderPassRemova
                 static_cast<CCTestRenderPass*>(renderPass.get())->appendQuad(quad.PassAs<CCDrawQuad>());
             }
         }
-        testData.renderPasses.insert(0, renderPass.get());
+        testData.renderPasses.insert(testData.renderPasses.begin(), renderPass.get());
         testData.renderPassesById.add(renderPassId, renderPass.Pass());
         if (*currentChar)
             currentChar++;

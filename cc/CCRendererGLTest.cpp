@@ -64,7 +64,7 @@ public:
         m_rootLayer->createRenderSurface();
         CCRenderPass::Id renderPassId = m_rootLayer->renderSurface()->renderPassId();
         scoped_ptr<CCRenderPass> rootRenderPass = CCRenderPass::create(renderPassId, IntRect(), WebTransformationMatrix());
-        m_renderPassesInDrawOrder.append(rootRenderPass.get());
+        m_renderPassesInDrawOrder.push_back(rootRenderPass.get());
         m_renderPasses.set(renderPassId, rootRenderPass.Pass());
     }
 
@@ -80,7 +80,7 @@ public:
     // Methods added for test.
     int setFullRootLayerDamageCount() const { return m_setFullRootLayerDamageCount; }
 
-    CCRenderPass* rootRenderPass() { return m_renderPassesInDrawOrder.last(); }
+    CCRenderPass* rootRenderPass() { return m_renderPassesInDrawOrder.back(); }
     const CCRenderPassList& renderPassesInDrawOrder() const { return m_renderPassesInDrawOrder; }
     const CCRenderPassIdHashMap& renderPasses() const { return m_renderPasses; }
 

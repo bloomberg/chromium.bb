@@ -84,7 +84,7 @@ TEST_F(CCRendererSoftwareTest, solidColorQuad)
 
     CCRenderPassList list;
     CCRenderPassIdHashMap hashmap;
-    list.append(rootRenderPass.get());
+    list.push_back(rootRenderPass.get());
     hashmap.add(rootRenderPassId, rootRenderPass.Pass());
     renderer()->drawFrame(list, hashmap);
 
@@ -136,7 +136,7 @@ TEST_F(CCRendererSoftwareTest, tileQuad)
 
     CCRenderPassList list;
     CCRenderPassIdHashMap hashmap;
-    list.append(rootRenderPass.get());
+    list.push_back(rootRenderPass.get());
     hashmap.add(rootRenderPassId, rootRenderPass.Pass());
     renderer()->drawFrame(list, hashmap);
 

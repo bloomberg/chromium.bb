@@ -30,6 +30,7 @@
 #include "CCSingleThreadProxy.h"
 #include "TraceEvent.h"
 #include <wtf/CurrentTime.h>
+#include <algorithm>
 
 using WebKit::WebTransformationMatrix;
 
@@ -252,13 +253,13 @@ void CCLayerTreeHostImpl::calculateRenderSurfaceLayerList(CCLayerList& renderSur
 void CCLayerTreeHostImpl::FrameData::appendRenderPass(scoped_ptr<CCRenderPass> renderPass)
 {
     CCRenderPass* pass = renderPass.get();
-    renderPasses.append(pass);
+    renderPasses.push_back(pass);
     renderPassesById.set(pass->id(), renderPass.Pass());
 }
 
 bool CCLayerTreeHostImpl::calculateRenderPasses(FrameData& frame)
 {
-    ASSERT(frame.renderPasses.isEmpty());
+    ASSERT(!frame.renderPasses.size());
 
     calculateRenderSurfaceLayerList(*frame.renderSurfaceLayerList);
 
@@ -343,8 +344,8 @@ bool CCLayerTreeHostImpl::calculateRenderPasses(FrameData& frame)
 #endif
 
     if (!m_hasTransparentBackground) {
-        frame.renderPasses.last()->setHasTransparentBackground(false);
-        frame.renderPasses.last()->appendQuadsToFillScreen(m_rootLayerImpl.get(), m_backgroundColor, occlusionTracker);
+        frame.renderPasses.back()->setHasTransparentBackground(false);
+        frame.renderPasses.back()->appendQuadsToFillScreen(m_rootLayerImpl.get(), m_backgroundColor, occlusionTracker);
     }
 
     if (drawFrame)
@@ -413,14 +414,15 @@ static inline CCRenderPass* findRenderPassById(CCRenderPass::Id renderPassId, co
 static void removeRenderPassesRecursive(CCRenderPass::Id removeRenderPassId, CCLayerTreeHostImpl::FrameData& frame)
 {
     CCRenderPass* removeRenderPass = findRenderPassById(removeRenderPassId, frame);
-    size_t removeIndex = frame.renderPasses.find(removeRenderPass);
+    CCRenderPassList& renderPasses = frame.renderPasses;
+    CCRenderPassList::iterator toRemove = std::find(renderPasses.begin(), renderPasses.end(), removeRenderPass);
 
     // The pass was already removed by another quad - probably the original, and we are the replica.
-    if (removeIndex == notFound)
+    if (toRemove == renderPasses.end())
         return;
 
-    const CCRenderPass* removedPass = frame.renderPasses[removeIndex];
-    frame.renderPasses.remove(removeIndex);
+    const CCRenderPass* removedPass = *toRemove;
+    frame.renderPasses.erase(toRemove);
 
     // Now follow up for all RenderPass quads and remove their RenderPasses recursively.
     const CCQuadList& quadList = removedPass->quadList();
@@ -443,14 +445,15 @@ bool CCLayerTreeHostImpl::CullRenderPassesWithCachedTextures::shouldRemoveRender
 bool CCLayerTreeHostImpl::CullRenderPassesWithNoQuads::shouldRemoveRenderPass(const CCRenderPassDrawQuad& quad, const FrameData& frame) const
 {
     const CCRenderPass* renderPass = findRenderPassById(quad.renderPassId(), frame);
-    size_t passIndex = frame.renderPasses.find(renderPass);
+    const CCRenderPassList& renderPasses = frame.renderPasses;
+    CCRenderPassList::const_iterator foundPass = std::find(renderPasses.begin(), renderPasses.end(), renderPass);
 
-    bool renderPassAlreadyRemoved = passIndex == notFound;
+    bool renderPassAlreadyRemoved = foundPass == renderPasses.end();
     if (renderPassAlreadyRemoved)
         return false;
 
     // If any quad or RenderPass draws into this RenderPass, then keep it.
-    const CCQuadList& quadList = frame.renderPasses[passIndex]->quadList();
+    const CCQuadList& quadList = (*foundPass)->quadList();
     for (CCQuadList::constBackToFrontIterator quadListIterator = quadList.backToFrontBegin(); quadListIterator != quadList.backToFrontEnd(); ++quadListIterator) {
         CCDrawQuad* currentQuad = *quadListIterator;
 
@@ -458,7 +461,8 @@ bool CCLayerTreeHostImpl::CullRenderPassesWithNoQuads::shouldRemoveRenderPass(co
             return false;
 
         const CCRenderPass* contributingPass = findRenderPassById(CCRenderPassDrawQuad::materialCast(currentQuad)->renderPassId(), frame);
-        if (frame.renderPasses.contains(contributingPass))
+        CCRenderPassList::const_iterator foundContributingPass = std::find(renderPasses.begin(), renderPasses.end(), contributingPass);
+        if (foundContributingPass != renderPasses.end())
             return false;
     }
     return true;
@@ -547,7 +551,7 @@ void CCLayerTreeHostImpl::drawLayers(const FrameData& frame)
 {
     TRACE_EVENT0("cc", "CCLayerTreeHostImpl::drawLayers");
     ASSERT(canDraw());
-    ASSERT(!frame.renderPasses.isEmpty());
+    ASSERT(frame.renderPasses.size());
 
     // FIXME: use the frame begin time from the overall compositor scheduler.
     // This value is currently inaccessible because it is up in Chromium's

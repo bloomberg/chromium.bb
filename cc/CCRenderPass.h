@@ -15,7 +15,7 @@
 #include "cc/scoped_ptr_vector.h"
 #include <public/WebFilterOperations.h>
 #include <public/WebTransformationMatrix.h>
-#include <wtf/Vector.h>
+#include <vector>
 
 namespace cc {
 
@@ -128,7 +128,7 @@ struct hash<cc::CCRenderPass::Id> {
 }
 
 namespace cc {
-typedef Vector<CCRenderPass*> CCRenderPassList;
+typedef std::vector<CCRenderPass*> CCRenderPassList;
 typedef ScopedPtrHashMap<CCRenderPass::Id, CCRenderPass> CCRenderPassIdHashMap;
 } // namespace cc
 

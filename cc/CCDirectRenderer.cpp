@@ -152,7 +152,7 @@ void CCDirectRenderer::decideRenderPassAllocationsForFrame(const CCRenderPassLis
 
 void CCDirectRenderer::drawFrame(const CCRenderPassList& renderPassesInDrawOrder, const CCRenderPassIdHashMap& renderPassesById)
 {
-    const CCRenderPass* rootRenderPass = renderPassesInDrawOrder.last();
+    const CCRenderPass* rootRenderPass = renderPassesInDrawOrder.back();
     ASSERT(rootRenderPass);
 
     DrawingFrame frame;
