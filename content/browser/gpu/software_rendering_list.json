@@ -69,7 +69,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "3.2",
+  "version": "3.3",
   "entries": [
     {
       "id": 1,
@@ -704,6 +704,56 @@
       },
       "blacklist": [
         "all"
+      ]
+    },
+    {
+      "id": 51,
+      "description": "NVIDIA drivers 6.14.11.9621 is buggy on Windows XP.",
+      "cr_bugs": [152096],
+      "os": {
+        "type": "win",
+        "version": {
+          "op": "=",
+          "number": "5"
+        }
+      },
+      "vendor_id": "0x10de",
+      "driver_version": {
+        "op": "=",
+        "number": "6.14.11.9621"
+      },
+      "blacklist": [
+        "all"
+      ]
+    },
+    {
+      "id": 52,
+      "description": "NVIDIA drivers 6.14.11.8267 is buggy on Windows XP.",
+      "cr_bugs": [152096],
+      "os": {
+        "type": "win",
+        "version": {
+          "op": "=",
+          "number": "5"
+        }
+      },
+      "vendor_id": "0x10de",
+      "driver_version": {
+        "op": "=",
+        "number": "6.14.11.8267"
+      },
+      "blacklist": [
+        "all"
+      ]
+    },
+    {
+      "id": 53,
+      "description": "The Intel GMA500 is too slow for Stage3D.",
+      "cr_bugs": [152096],
+      "vendor_id": "0x8086",
+      "device_id": ["0x8108", "0x8109"],
+      "blacklist": [
+        "flash_stage3d"
       ]
     }
   ]
