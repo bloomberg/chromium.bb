@@ -1284,10 +1284,10 @@ int CCLayerTreeHostImpl::sourceAnimationFrameNumber() const
     return fpsCounter()->currentFrameNumber();
 }
 
-void CCLayerTreeHostImpl::renderingStats(CCRenderingStats& stats) const
+void CCLayerTreeHostImpl::renderingStats(CCRenderingStats* stats) const
 {
-    stats.numFramesSentToScreen = fpsCounter()->currentFrameNumber();
-    stats.droppedFrameCount = fpsCounter()->droppedFrameCount();
+    stats->numFramesSentToScreen = fpsCounter()->currentFrameNumber();
+    stats->droppedFrameCount = fpsCounter()->droppedFrameCount();
 }
 
 void CCLayerTreeHostImpl::animateScrollbars(double monotonicTime)

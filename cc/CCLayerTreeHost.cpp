@@ -346,10 +346,10 @@ void CCLayerTreeHost::finishAllRendering()
     m_proxy->finishAllRendering();
 }
 
-void CCLayerTreeHost::renderingStats(CCRenderingStats& stats) const
+void CCLayerTreeHost::renderingStats(CCRenderingStats* stats) const
 {
-    stats = m_renderingStats;
-    m_proxy->implSideRenderingStats(stats);
+    *stats = m_renderingStats;
+    m_proxy->renderingStats(stats);
 }
 
 const RendererCapabilities& CCLayerTreeHost::rendererCapabilities() const

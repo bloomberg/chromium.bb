@@ -11,6 +11,7 @@
 #include "CCProxy.h"
 #include "CCScheduler.h"
 #include "CCTextureUpdateController.h"
+#include <base/time.h>
 #include <wtf/OwnPtr.h>
 
 namespace cc {
@@ -39,7 +40,7 @@ public:
     virtual void setVisible(bool) OVERRIDE;
     virtual bool initializeRenderer() OVERRIDE;
     virtual bool recreateContext() OVERRIDE;
-    virtual void implSideRenderingStats(CCRenderingStats&) OVERRIDE;
+    virtual void renderingStats(CCRenderingStats*) OVERRIDE;
     virtual const RendererCapabilities& rendererCapabilities() const OVERRIDE;
     virtual void loseContext() OVERRIDE;
     virtual void setNeedsAnimate() OVERRIDE;
@@ -121,7 +122,7 @@ private:
     void setFullRootLayerDamageOnImplThread();
     void acquireLayerTexturesForMainThreadOnImplThread(CCCompletionEvent*);
     void recreateContextOnImplThread(CCCompletionEvent*, CCGraphicsContext*, bool* recreateSucceeded, RendererCapabilities*);
-    void implSideRenderingStatsOnImplThread(CCCompletionEvent*, CCRenderingStats*);
+    void renderingStatsOnImplThread(CCCompletionEvent*, CCRenderingStats*);
     CCScheduledActionDrawAndSwapResult scheduledActionDrawAndSwapInternal(bool forcedDraw);
     void forceSerializeOnSwapBuffersOnImplThread(CCCompletionEvent*);
     void setNeedsForcedCommitOnImplThread();
@@ -173,6 +174,9 @@ private:
     bool m_nextFrameIsNewlyCommittedFrameOnImplThread;
 
     bool m_renderVSyncEnabled;
+
+    base::TimeDelta m_totalCommitTime;
+    size_t m_totalCommitCount;
 };
 
 }

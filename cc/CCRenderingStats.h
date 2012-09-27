@@ -14,6 +14,8 @@ struct CCRenderingStats {
     int droppedFrameCount;
     double totalPaintTimeInSeconds;
     double totalRasterizeTimeInSeconds;
+    double totalCommitTimeInSeconds;
+    size_t totalCommitCount;
 
     CCRenderingStats()
         : numAnimationFrames(0)
@@ -21,6 +23,8 @@ struct CCRenderingStats {
         , droppedFrameCount(0)
         , totalPaintTimeInSeconds(0)
         , totalRasterizeTimeInSeconds(0)
+        , totalCommitTimeInSeconds(0)
+        , totalCommitCount(0)
     {
     }
 };

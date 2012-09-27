@@ -137,6 +137,7 @@ class GpuBenchmarkingWrapper : public v8::Extension {
   }
 
   static v8::Handle<v8::Value> GetRenderingStats(const v8::Arguments& args) {
+
     WebFrame* web_frame = WebFrame::frameForEnteredContext();
     if (!web_frame)
       return v8::Undefined();
@@ -154,7 +155,6 @@ class GpuBenchmarkingWrapper : public v8::Extension {
 
     content::GpuRenderingStats gpu_stats;
     render_view_impl->GetGpuRenderingStats(&gpu_stats);
-
     v8::Handle<v8::Object> stats_object = v8::Object::New();
     stats_object->Set(v8::String::New("numAnimationFrames"),
                       v8::Integer::New(stats.numAnimationFrames));
@@ -166,6 +166,11 @@ class GpuBenchmarkingWrapper : public v8::Extension {
                       v8::Number::New(stats.totalPaintTimeInSeconds));
     stats_object->Set(v8::String::New("totalRasterizeTimeInSeconds"),
                       v8::Number::New(stats.totalRasterizeTimeInSeconds));
+    stats_object->Set(v8::String::New("totalCommitTimeInSeconds"),
+                      v8::Number::New(stats.totalCommitTimeInSeconds));
+    stats_object->Set(v8::String::New("totalCommitCount"),
+                      v8::Integer::New(stats.totalCommitCount));
+
     stats_object->Set(v8::String::New("globalTextureUploadCount"),
                       v8::Number::New(gpu_stats.global_texture_upload_count));
     stats_object->Set(

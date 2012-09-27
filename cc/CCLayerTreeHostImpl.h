@@ -170,7 +170,7 @@ public:
 
     void setNeedsRedraw();
 
-    void renderingStats(CCRenderingStats&) const;
+    void renderingStats(CCRenderingStats*) const;
 
     CCFrameRateCounter* fpsCounter() const { return m_fpsCounter.get(); }
     CCDebugRectHistory* debugRectHistory() const { return m_debugRectHistory.get(); }

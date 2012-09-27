@@ -54,6 +54,7 @@ CCThreadProxy::CCThreadProxy(CCLayerTreeHost* layerTreeHost)
     , m_resetContentsTexturesPurgedAfterCommitOnImplThread(false)
     , m_nextFrameIsNewlyCommittedFrameOnImplThread(false)
     , m_renderVSyncEnabled(layerTreeHost->settings().renderVSyncEnabled)
+    , m_totalCommitCount(0)
 {
     TRACE_EVENT0("cc", "CCThreadProxy::CCThreadProxy");
     ASSERT(isMainThread());
@@ -241,15 +242,18 @@ bool CCThreadProxy::recreateContext()
     return recreateSucceeded;
 }
 
-void CCThreadProxy::implSideRenderingStats(CCRenderingStats& stats)
+void CCThreadProxy::renderingStats(CCRenderingStats* stats)
 {
     ASSERT(isMainThread());
 
     DebugScopedSetMainThreadBlocked mainThreadBlocked;
     CCCompletionEvent completion;
-    CCProxy::implThread()->postTask(createCCThreadTask(this, &CCThreadProxy::implSideRenderingStatsOnImplThread,
+    CCProxy::implThread()->postTask(createCCThreadTask(this, &CCThreadProxy::renderingStatsOnImplThread,
                                                        &completion,
-                                                       &stats));
+                                                       stats));
+    stats->totalCommitTimeInSeconds = m_totalCommitTime.InSecondsF();
+    stats->totalCommitCount = m_totalCommitCount;
+
     completion.wait();
 }
 
@@ -559,11 +563,17 @@ void CCThreadProxy::beginFrame()
     // coordinated by the CCScheduler.
     {
         TRACE_EVENT0("cc", "commit");
+
         DebugScopedSetMainThreadBlocked mainThreadBlocked;
 
+        base::TimeTicks startTime = base::TimeTicks::HighResNow();
         CCCompletionEvent completion;
         CCProxy::implThread()->postTask(createCCThreadTask(this, &CCThreadProxy::beginFrameCompleteOnImplThread, &completion, queue.release()));
         completion.wait();
+        base::TimeTicks endTime = base::TimeTicks::HighResNow();
+
+        m_totalCommitTime += endTime - startTime;
+        m_totalCommitCount++;
     }
 
     m_layerTreeHost->commitComplete();
@@ -922,10 +932,10 @@ void CCThreadProxy::recreateContextOnImplThread(CCCompletionEvent* completion, C
     completion->signal();
 }
 
-void CCThreadProxy::implSideRenderingStatsOnImplThread(CCCompletionEvent* completion, CCRenderingStats* stats)
+void CCThreadProxy::renderingStatsOnImplThread(CCCompletionEvent* completion, CCRenderingStats* stats)
 {
     ASSERT(isImplThread());
-    m_layerTreeHostImpl->renderingStats(*stats);
+    m_layerTreeHostImpl->renderingStats(stats);
     completion->signal();
 }
 

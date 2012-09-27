@@ -133,7 +133,7 @@ public:
 
     int commitNumber() const { return m_commitNumber; }
 
-    void renderingStats(CCRenderingStats&) const;
+    void renderingStats(CCRenderingStats*) const;
 
     const RendererCapabilities& rendererCapabilities() const;
 

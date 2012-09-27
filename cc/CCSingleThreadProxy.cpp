@@ -28,6 +28,7 @@ CCSingleThreadProxy::CCSingleThreadProxy(CCLayerTreeHost* layerTreeHost)
     , m_contextLost(false)
     , m_rendererInitialized(false)
     , m_nextFrameIsNewlyCommittedFrame(false)
+    , m_totalCommitCount(0)
 {
     TRACE_EVENT0("cc", "CCSingleThreadProxy::CCSingleThreadProxy");
     ASSERT(CCProxy::isMainThread());
@@ -150,8 +151,10 @@ bool CCSingleThreadProxy::recreateContext()
     return initialized;
 }
 
-void CCSingleThreadProxy::implSideRenderingStats(CCRenderingStats& stats)
+void CCSingleThreadProxy::renderingStats(CCRenderingStats* stats)
 {
+    stats->totalCommitTimeInSeconds = m_totalCommitTime.InSecondsF();
+    stats->totalCommitCount = m_totalCommitCount;
     m_layerTreeHostImpl->renderingStats(stats);
 }
 
@@ -183,6 +186,7 @@ void CCSingleThreadProxy::doCommit(PassOwnPtr<CCTextureUpdateQueue> queue)
         DebugScopedSetMainThreadBlocked mainThreadBlocked;
         DebugScopedSetImplThread impl;
 
+        base::TimeTicks startTime = base::TimeTicks::HighResNow();
         m_layerTreeHostImpl->beginCommit();
 
         m_layerTreeHost->beginCommitOnImplThread(m_layerTreeHostImpl.get());
@@ -206,6 +210,10 @@ void CCSingleThreadProxy::doCommit(PassOwnPtr<CCTextureUpdateQueue> queue)
         OwnPtr<CCScrollAndScaleSet> scrollInfo = m_layerTreeHostImpl->processScrollDeltas();
         ASSERT(!scrollInfo->scrolls.size());
 #endif
+
+        base::TimeTicks endTime = base::TimeTicks::HighResNow();
+        m_totalCommitTime += endTime - startTime;
+        m_totalCommitCount++;
     }
     m_layerTreeHost->commitComplete();
     m_nextFrameIsNewlyCommittedFrame = true;
