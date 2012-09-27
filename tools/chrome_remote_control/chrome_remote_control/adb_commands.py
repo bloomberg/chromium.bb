@@ -16,28 +16,27 @@ sys.path.append(
         os.path.join(os.path.dirname(__file__),
                      '../../../build/android')))
 try:
-  from pylib import ( # pylint: disable=F0401
-    android_commands as real_android_commands)
+  from pylib import android_commands # pylint: disable=F0401
   from pylib import forwarder # pylint: disable=F0401
   from pylib import valgrind_tools # pylint: disable=F0401
 except Exception:
   real_android_commands = None
 
 def IsAndroidSupported():
-  return real_android_commands != None
+  return android_commands != None
 
 def GetAttachedDevices():
   """Returns a list of attached, online android devices.
 
   If a preferred device has been set with ANDROID_SERIAL, it will be first in
   the returned list."""
-  return real_android_commands.GetAttachedDevices()
+  return android_commands.GetAttachedDevices()
 
-class ADBCommands(object):
+class AdbCommands(object):
   """A thin wrapper around ADB"""
 
   def __init__(self, device):
-    self._adb = real_android_commands.AndroidCommands(device)
+    self._adb = android_commands.AndroidCommands(device)
 
   def Adb(self):
     return self._adb

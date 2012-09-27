@@ -3,13 +3,13 @@
 # found in the LICENSE file.
 """Finds android browsers that can be controlled by chrome_remote_control."""
 
-import os as real_os
-import subprocess as real_subprocess
+import os
 import logging
 import re
+import subprocess
 
+from chrome_remote_control import adb_commands
 from chrome_remote_control import android_browser_backend
-import chrome_remote_control.adb_commands as real_adb_commands
 from chrome_remote_control import browser
 from chrome_remote_control import possible_browser
 
@@ -54,16 +54,14 @@ class PossibleAndroidBrowser(possible_browser.PossibleBrowser):
         self._options, *self._args)
     return browser.Browser(backend)
 
-def FindAllAvailableBrowsers(options,
-                             subprocess=real_subprocess,
-                             adb_commands=real_adb_commands):
+def FindAllAvailableBrowsers(options):
   """Finds all the desktop browsers available on this machine."""
   if not adb_commands.IsAndroidSupported():
     return []
 
   # See if adb even works.
   try:
-    with open(real_os.devnull, 'w') as devnull:
+    with open(os.devnull, 'w') as devnull:
       proc = subprocess.Popen(['adb', 'devices'],
                               stdout=subprocess.PIPE,
                               stderr=subprocess.PIPE,
@@ -97,7 +95,7 @@ def FindAllAvailableBrowsers(options,
 
   device = devices[0]
 
-  adb = adb_commands.ADBCommands(device=device)
+  adb = adb_commands.AdbCommands(device=device)
 
   # See if adb is root
   if not adb.IsRootEnabled():

@@ -6,83 +6,41 @@ import unittest
 
 from chrome_remote_control import android_browser_finder
 from chrome_remote_control import browser_options
-from chrome_remote_control.system_stub import PopenStub
-from chrome_remote_control.system_stub import SubprocessModuleStub
-
-# adb not even found
-# android_browser_finder not returning
-class ADBCommandsStub(object):
-  def __init__(self, module, device):
-    self._module = module
-    self._device = device
-    self.is_root_enabled = True
-
-  def RunShellCommand(self, args):
-    if isinstance(args, basestring):
-      import shlex
-      args = shlex.split(args)
-    handler = self._module.shell_command_handlers[args[0]]
-    return handler(args)
-
-  def IsRootEnabled(self):
-    return self.is_root_enabled
-
-class ADBCommandsModuleStub(object):
-  def __init__(self):
-    self.attached_devices = []
-    self.shell_command_handlers = {}
-
-    def ADBCommandsStubConstructor(device=None):
-      return ADBCommandsStub(self, device)
-    self.ADBCommands = ADBCommandsStubConstructor
-
-  def IsAndroidSupported(self): # pylint: disable=R0201
-    return True
-
-  def GetAttachedDevices(self):
-    return self.attached_devices
-
-  def HasForwarder(self, adb): # pylint: disable=W0613,R0201
-    return True
+from chrome_remote_control import system_stub
 
 class AndroidBrowserFinderTest(unittest.TestCase):
+  def setUp(self):
+    self._stubs = system_stub.Override(android_browser_finder,
+                                       ['adb_commands', 'subprocess'])
+
+  def tearDown(self):
+    self._stubs.Restore()
+
   def test_no_adb(self):
     options = browser_options.BrowserOptions()
 
-    subprocess_stub = SubprocessModuleStub()
-    def NoADB(*args, **kargs): # pylint: disable=W0613
+    def NoAdb(*args, **kargs): # pylint: disable=W0613
       raise OSError('not found')
-    subprocess_stub.Popen_hook = NoADB
-    browsers = android_browser_finder.FindAllAvailableBrowsers(
-        options, subprocess_stub)
+    self._stubs.subprocess.Popen = NoAdb
+    browsers = android_browser_finder.FindAllAvailableBrowsers(options)
     self.assertEquals(0, len(browsers))
 
   def test_adb_no_devices(self):
     options = browser_options.BrowserOptions()
 
-    subprocess_stub = SubprocessModuleStub()
-    popen_stub = PopenStub(('', ''))
-    subprocess_stub.Popen_result = popen_stub
-
-    adb_commands_module_stub = ADBCommandsModuleStub()
-    browsers = android_browser_finder.FindAllAvailableBrowsers(
-        options, subprocess_stub, adb_commands_module_stub)
+    browsers = android_browser_finder.FindAllAvailableBrowsers(options)
     self.assertEquals(0, len(browsers))
 
 
   def test_adb_permissions_error(self):
     options = browser_options.BrowserOptions()
 
-    subprocess_stub = SubprocessModuleStub()
-    popen_stub = PopenStub((
+    self._stubs.subprocess.Popen.communicate_result = (
         """List of devices attached
 ????????????\tno permissions""",
         """* daemon not running. starting it now on port 5037 *
 * daemon started successfully *
-"""))
-    subprocess_stub.Popen_result = popen_stub
-
-    adb_commands_module_stub = ADBCommandsModuleStub()
+""")
 
     warnings = []
     class TempFilter(logging.Filter):
@@ -95,8 +53,7 @@ class AndroidBrowserFinderTest(unittest.TestCase):
       logger = logging.getLogger()
       logger.addFilter(temp_filter)
 
-      browsers = android_browser_finder.FindAllAvailableBrowsers(
-          options, subprocess_stub, adb_commands_module_stub)
+      browsers = android_browser_finder.FindAllAvailableBrowsers(options)
     finally:
       logger.removeFilter(temp_filter)
     self.assertEquals(3, len(warnings))
@@ -106,11 +63,7 @@ class AndroidBrowserFinderTest(unittest.TestCase):
   def test_adb_two_devices(self):
     options = browser_options.BrowserOptions()
 
-    subprocess_stub = SubprocessModuleStub()
-    popen_stub = PopenStub(('', ''))
-    subprocess_stub.Popen_result = popen_stub
-    adb_commands_module_stub = ADBCommandsModuleStub()
-    adb_commands_module_stub.attached_devices = ['015d14fec128220c',
+    self._stubs.adb_commands.attached_devices = ['015d14fec128220c',
                                                  '015d14fec128220d']
 
     warnings = []
@@ -124,8 +77,7 @@ class AndroidBrowserFinderTest(unittest.TestCase):
       logger = logging.getLogger()
       logger.addFilter(temp_filter)
 
-      browsers = android_browser_finder.FindAllAvailableBrowsers(
-          options, subprocess_stub, adb_commands_module_stub)
+      browsers = android_browser_finder.FindAllAvailableBrowsers(options)
     finally:
       logger.removeFilter(temp_filter)
     self.assertEquals(1, len(warnings))
@@ -134,11 +86,7 @@ class AndroidBrowserFinderTest(unittest.TestCase):
   def test_adb_one_device(self):
     options = browser_options.BrowserOptions()
 
-    subprocess_stub = SubprocessModuleStub()
-    popen_stub = PopenStub(('', ''))
-    subprocess_stub.Popen_result = popen_stub
-    adb_commands_module_stub = ADBCommandsModuleStub()
-    adb_commands_module_stub.attached_devices = ['015d14fec128220c']
+    self._stubs.adb_commands.attached_devices = ['015d14fec128220c']
 
     def OnPM(args):
       assert args[0] == 'pm'
@@ -147,8 +95,7 @@ class AndroidBrowserFinderTest(unittest.TestCase):
       return ['package:org.chromium.content_shell',
               'package.com.google.android.setupwizard']
 
-    adb_commands_module_stub.shell_command_handlers['pm'] = OnPM
+    self._stubs.adb_commands.shell_command_handlers['pm'] = OnPM
 
-    browsers = android_browser_finder.FindAllAvailableBrowsers(
-        options, subprocess_stub, adb_commands_module_stub)
+    browsers = android_browser_finder.FindAllAvailableBrowsers(options)
     self.assertEquals(1, len(browsers))

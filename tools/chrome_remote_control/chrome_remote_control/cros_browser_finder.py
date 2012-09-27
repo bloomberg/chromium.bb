@@ -8,8 +8,7 @@ import logging
 from chrome_remote_control import browser
 from chrome_remote_control import possible_browser
 from chrome_remote_control import cros_browser_backend
-from chrome_remote_control import (
-  cros_interface as real_cros_interface)
+from chrome_remote_control import cros_interface
 
 ALL_BROWSER_TYPES = ','.join([
     'cros-chrome',
@@ -30,8 +29,7 @@ class PossibleCrOSBrowser(possible_browser.PossibleBrowser):
         self.browser_type, self._options, *self._args)
     return browser.Browser(backend)
 
-def FindAllAvailableBrowsers(options,
-                             cros_interface = real_cros_interface):
+def FindAllAvailableBrowsers(options):
   """Finds all the desktop browsers available on this machine."""
   if options.cros_remote == None:
     logging.debug('No --remote specified, will not probe for CrOS.')

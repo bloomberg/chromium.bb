@@ -4,9 +4,9 @@
 """Finds desktop browsers that can be controlled by chrome_remote_control."""
 
 import logging
-import os as real_os
-import sys as real_sys
-import subprocess as real_subprocess
+import os
+import subprocess
+import sys
 
 from chrome_remote_control import browser
 from chrome_remote_control import desktop_browser_backend
@@ -37,10 +37,7 @@ class PossibleDesktopBrowser(possible_browser.PossibleBrowser):
         self._options, self._local_executable, self._is_content_shell)
     return browser.Browser(backend)
 
-def FindAllAvailableBrowsers(options,
-                             os = real_os,
-                             sys = real_sys,
-                             subprocess = real_subprocess):
+def FindAllAvailableBrowsers(options):
   """Finds all the desktop browsers available on this machine."""
   browsers = []
 
@@ -107,7 +104,7 @@ def FindAllAvailableBrowsers(options,
     # Look for a google-chrome instance.
     found = False
     try:
-      with open(real_os.devnull, 'w') as devnull:
+      with open(os.devnull, 'w') as devnull:
         found = subprocess.call(['google-chrome', '--version'],
                                 stdout=devnull, stderr=devnull) == 0
     except OSError:

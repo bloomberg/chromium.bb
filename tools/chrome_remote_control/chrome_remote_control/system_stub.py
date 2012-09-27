@@ -5,37 +5,103 @@
 
 This test allows one to test code that itself uses os, sys, and subprocess.
 """
-import os as real_os
-import subprocess as real_subprocess
 
-class SysModuleStub(object):
+import os
+import shlex
+import sys as real_sys
+
+class Override(object):
+  def __init__(self, base_module, module_list):
+    stubs = {'adb_commands': AdbCommandsModuleStub,
+             'os': OsModuleStub,
+             'subprocess': SubprocessModuleStub,
+             'sys': SysModuleStub,
+    }
+    self.adb_commands = None
+    self.os = None
+    self.subprocess = None
+    self.sys = None
+
+    self._base_module = base_module
+    self._overrides = {}
+
+    for module_name in module_list:
+      self._overrides[module_name] = getattr(base_module, module_name)
+      setattr(self, module_name, stubs[module_name]())
+      setattr(base_module, module_name, getattr(self, module_name))
+
+    if hasattr(self, 'os') and hasattr(self, 'sys'):
+      self.os.path.sys = self.sys
+
+  def __del__(self):
+    assert not len(self._overrides)
+
+  def Restore(self):
+    for module_name, original_module in self._overrides.iteritems():
+      setattr(self._base_module, module_name, original_module)
+    self._overrides = {}
+
+class AdbCommandsModuleStub(object):
+# adb not even found
+# android_browser_finder not returning
+  class AdbCommandsStub(object):
+    def __init__(self, module, device):
+      self._module = module
+      self._device = device
+      self.is_root_enabled = True
+
+    def RunShellCommand(self, args):
+      if isinstance(args, basestring):
+        args = shlex.split(args)
+      handler = self._module.shell_command_handlers[args[0]]
+      return handler(args)
+
+    def IsRootEnabled(self):
+      return self.is_root_enabled
+
   def __init__(self):
-    self.platform = ''
+    self.attached_devices = []
+    self.shell_command_handlers = {}
 
-class OSPathModuleStub(object):
-  def __init__(self, os_module_stub):
-    self._os_module_stub = os_module_stub
+    def AdbCommandsStubConstructor(device=None):
+      return AdbCommandsModuleStub.AdbCommandsStub(self, device)
+    self.AdbCommands = AdbCommandsStubConstructor
 
-  def exists(self, path):
-    return path in self._os_module_stub.files
+  @staticmethod
+  def IsAndroidSupported():
+    return True
 
-  def join(self, *args):
-    if self._os_module_stub.sys.platform.startswith('win'):
-      tmp = real_os.path.join(*args)
-      return tmp.replace('/', '\\')
-    else:
-      return real_os.path.join(*args)
+  def GetAttachedDevices(self):
+    return self.attached_devices
 
-  def dirname(self, filename): # pylint: disable=R0201
-    return real_os.path.dirname(filename)
+  @staticmethod
+  def HasForwarder(_):
+    return True
 
-class OSModuleStub(object):
-  def __init__(self, sys):
-    self.sys = sys
-    self.path = OSPathModuleStub(self)
-    self.files = []
+class OsModuleStub(object):
+  class OsPathModuleStub(object):
+    def __init__(self, sys_module):
+      self.sys = sys_module
+      self.files = []
+
+    def exists(self, path):
+      return path in self.files
+
+    def join(self, *args):
+      if self.sys.platform.startswith('win'):
+        tmp = os.path.join(*args)
+        return tmp.replace('/', '\\')
+      else:
+        return os.path.join(*args)
+
+    def dirname(self, filename): # pylint: disable=R0201
+      return os.path.dirname(filename)
+
+  def __init__(self, sys_module=real_sys):
+    self.path = OsModuleStub.OsPathModuleStub(sys_module)
     self.display = ':0'
     self.local_app_data = None
+    self.devnull = os.devnull
 
   def getenv(self, name):
     if name == 'DISPLAY':
@@ -44,22 +110,24 @@ class OSModuleStub(object):
       return self.local_app_data
     raise Exception('Unsupported getenv')
 
-class PopenStub(object):
-  def __init__(self, communicate_result):
-    self.communicate_result = communicate_result
-
-  def communicate(self):
-    return self.communicate_result
-
 class SubprocessModuleStub(object):
-  def __init__(self):
-    self.Popen_hook = None
-    self.Popen_result = None
-    self.PIPE = real_subprocess.PIPE
+  class PopenStub(object):
+    def __init__(self):
+      self.communicate_result = ('', '')
 
-  def Popen(self, *args, **kwargs):
-    assert self.Popen_hook or self.Popen_result
-    if self.Popen_hook:
-      return self.Popen_hook(*args, **kwargs)
-    else:
-      return self.Popen_result
+    def __call__(self, args, **kwargs):
+      return self
+
+    def communicate(self):
+      return self.communicate_result
+
+  def __init__(self):
+    self.Popen = SubprocessModuleStub.PopenStub()
+    self.PIPE = None
+
+  def call(self, *args, **kwargs):
+    raise NotImplementedError()
+
+class SysModuleStub(object):
+  def __init__(self):
+    self.platform = ''
