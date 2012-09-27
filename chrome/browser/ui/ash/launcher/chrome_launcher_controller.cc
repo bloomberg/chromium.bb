@@ -747,6 +747,7 @@ Profile* ChromeLauncherController::GetProfileForNewWindows() {
 void ChromeLauncherController::LauncherItemClosed(ash::LauncherID id) {
   IDToItemControllerMap::iterator iter = id_to_item_controller_map_.find(id);
   DCHECK(iter != id_to_item_controller_map_.end());
+  app_icon_loader_->ClearImage(iter->second->app_id());
   iter->second->OnRemoved();
   id_to_item_controller_map_.erase(iter);
   model_->RemoveItemAt(model_->ItemIndexByID(id));
