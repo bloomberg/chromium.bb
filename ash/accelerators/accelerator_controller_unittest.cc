@@ -713,9 +713,16 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   // Brightness
   const ui::Accelerator f6(ui::VKEY_F6, ui::EF_NONE);
   const ui::Accelerator f7(ui::VKEY_F7, ui::EF_NONE);
-  // TODO(oshima): Temporarily removed the tests for
-  // no internal display case. Add this back when
-  // re-enabling extended desktop. crbug.com/152003
+  {
+    EXPECT_FALSE(GetController()->Process(f6));
+    EXPECT_FALSE(GetController()->Process(f7));
+    DummyBrightnessControlDelegate* delegate =
+        new DummyBrightnessControlDelegate(true);
+    GetController()->SetBrightnessControlDelegate(
+        scoped_ptr<BrightnessControlDelegate>(delegate).Pass());
+    EXPECT_FALSE(GetController()->Process(f6));
+    EXPECT_FALSE(GetController()->Process(f7));
+  }
   // Enable internal display.
   EnableInternalDisplay();
   {
