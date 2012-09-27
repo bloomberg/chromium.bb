@@ -1012,8 +1012,7 @@ bool ChromeRenderViewObserver::CaptureFrameThumbnail(WebView* view,
       S16CPU new_width = static_cast<S16CPU>(src_bmp.height() * dest_aspect);
       S16CPU x_offset = (src_bmp_width - new_width) / 2;
       src_rect.set(x_offset, 0, new_width + x_offset, src_bmp.height());
-      score->good_clipping =
-          (src_aspect >= ThumbnailScore::kTooWideAspectRatio) ? false : true;
+      score->good_clipping = (src_aspect < ThumbnailScore::kTooWideAspectRatio);
     } else {
       src_rect.set(0, 0, src_bmp_width,
                    static_cast<S16CPU>(src_bmp_width / dest_aspect));

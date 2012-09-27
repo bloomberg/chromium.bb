@@ -275,7 +275,7 @@ TEST(Convolver, SIMDVerification) {
         resize_start = base::TimeTicks::Now();
         BGRAConvolve2D(static_cast<const uint8*>(source.getPixels()),
                        static_cast<int>(source.rowBytes()),
-                       alpha ? true : false, x_filter, y_filter,
+                       (alpha != 0), x_filter, y_filter,
                        static_cast<int>(result_c.rowBytes()), r1, false);
         delta_c = base::TimeTicks::Now() - resize_start;
 
@@ -283,7 +283,7 @@ TEST(Convolver, SIMDVerification) {
         // Convolve using SSE2 code
         BGRAConvolve2D(static_cast<const uint8*>(source.getPixels()),
                        static_cast<int>(source.rowBytes()),
-                       alpha ? true : false, x_filter, y_filter,
+                       (alpha != 0), x_filter, y_filter,
                        static_cast<int>(result_sse.rowBytes()), r2, true);
         delta_sse = base::TimeTicks::Now() - resize_start;
 

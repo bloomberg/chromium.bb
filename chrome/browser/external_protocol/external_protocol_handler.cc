@@ -233,8 +233,7 @@ void ExternalProtocolHandler::SetBlockState(const std::string& scheme,
     if (state == UNKNOWN) {
       update_excluded_schemas->Remove(scheme, NULL);
     } else {
-      update_excluded_schemas->SetBoolean(scheme,
-                                          state == BLOCK ? true : false);
+      update_excluded_schemas->SetBoolean(scheme, (state == BLOCK));
     }
   }
 }

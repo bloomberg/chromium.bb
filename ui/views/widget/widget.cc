@@ -1104,7 +1104,7 @@ bool Widget::OnMouseEvent(const ui::MouseEvent& event) {
         native_widget_->ReleaseCapture();
       }
       GetRootView()->OnMouseReleased(event);
-      return (event.flags() & ui::EF_IS_NON_CLIENT) ? false : true;
+      return ((event.flags() & ui::EF_IS_NON_CLIENT) == 0);
     case ui::ET_MOUSE_MOVED:
     case ui::ET_MOUSE_DRAGGED:
       if (native_widget_->HasCapture() && is_mouse_button_pressed_) {

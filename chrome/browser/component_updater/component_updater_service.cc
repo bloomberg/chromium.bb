@@ -98,7 +98,7 @@ static std::string HexStringToID(const std::string& hexstr) {
 // decent chance of being unique among the registered components. It also has
 // the nice property that can be trivially computed by hand.
 static int CrxIdtoUMAId(const std::string& id) {
-  CHECK(id.size() > 2);
+  CHECK_GT(id.size(), 2U);
   return id[0] + id[1] + id[2] - ('a' * 3);
 }
 
@@ -618,7 +618,7 @@ void CrxUpdateService::ParseManifest(const std::string& xml) {
 void CrxUpdateService::OnParseUpdateManifestSucceeded(
     const UpdateManifest::Results& results) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  int update_pending = 0;
+  size_t update_pending = 0;
   std::vector<UpdateManifest::Result>::const_iterator it;
   for (it = results.list.begin(); it != results.list.end(); ++it) {
     CrxUpdateItem* crx = FindUpdateItemById(it->extension_id);
@@ -665,7 +665,7 @@ void CrxUpdateService::OnParseUpdateManifestSucceeded(
   ChangeItemStatus(CrxUpdateItem::kChecking, CrxUpdateItem::kUpToDate);
 
   // If there are updates pending we do a short wait.
-  ScheduleNextRun(update_pending ? true : false);
+  ScheduleNextRun(update_pending > 0);
 }
 
 void CrxUpdateService::OnParseUpdateManifestFailed(

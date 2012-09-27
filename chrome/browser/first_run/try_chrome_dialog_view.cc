@@ -200,7 +200,7 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
 
   // Decide if the don't bug me is a button or a radio button.
   bool dont_bug_me_button =
-      experiment.flags & BrowserDistribution::kDontBugMeAsButton ? true : false;
+      ((experiment.flags & BrowserDistribution::kDontBugMeAsButton) != 0);
 
   // Optional third and fourth row views.
   if (!dont_bug_me_button) {

@@ -90,7 +90,7 @@ class MockRenderThread : public RenderThread {
   }
 
   bool has_widget() const {
-    return widget_ ? true : false;
+    return (widget_ != NULL);
   }
 
   void set_new_window_routing_id(int32 id) {

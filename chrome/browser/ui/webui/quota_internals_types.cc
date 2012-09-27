@@ -87,7 +87,7 @@ base::Value* PerOriginStorageInfo::NewValue() const {
   dict->SetString("type", StorageTypeToString(type_));
   dict->SetString("host", host_);
   if (in_use_ >= 0)
-    dict->SetBoolean("inUse", in_use_ ? true : false);
+    dict->SetBoolean("inUse", (in_use_ > 0));
   if (used_count_ >= 0)
     dict->SetInteger("usedCount", used_count_);
   if (!last_access_time_.is_null())

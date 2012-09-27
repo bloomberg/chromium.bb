@@ -323,7 +323,7 @@ void Canvas::DrawStringWithShadows(const string16& text,
     }
   } else {
     ui::Range range = StripAcceleratorChars(flags, &adjusted_text);
-    bool elide_text = (flags & NO_ELLIPSIS) ? false : true;
+    bool elide_text = ((flags & NO_ELLIPSIS) == 0);
 
 #if defined(OS_LINUX)
     // On Linux, eliding really means fading the end of the string. But only

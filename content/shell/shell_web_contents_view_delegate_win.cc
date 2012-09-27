@@ -117,8 +117,7 @@ void ShellWebContentsViewDelegate::ShowContextMenu(
   }
 
   if (params_.is_editable) {
-    bool cut_enabled =
-        (params_.edit_flags & WebContextMenuData::CanCut) ? true : false;
+    bool cut_enabled = ((params_.edit_flags & WebContextMenuData::CanCut) != 0);
     MakeContextMenuItem(sub_menu,
                         index++,
                         L"Cut",
@@ -126,7 +125,7 @@ void ShellWebContentsViewDelegate::ShowContextMenu(
                         cut_enabled);
 
     bool copy_enabled =
-        (params_.edit_flags & WebContextMenuData::CanCopy) ? true : false;
+        ((params_.edit_flags & WebContextMenuData::CanCopy) != 0);
     MakeContextMenuItem(sub_menu,
                         index++,
                         L"Copy",
@@ -134,14 +133,14 @@ void ShellWebContentsViewDelegate::ShowContextMenu(
                         copy_enabled);
 
     bool paste_enabled =
-        (params_.edit_flags & WebContextMenuData::CanPaste) ? true : false;
+        ((params_.edit_flags & WebContextMenuData::CanPaste) != 0);
     MakeContextMenuItem(sub_menu,
                         index++,
                         L"Paste",
                         ShellContextMenuItemPasteId,
                         paste_enabled);
     bool delete_enabled =
-        (params_.edit_flags & WebContextMenuData::CanDelete) ? true : false;
+        ((params_.edit_flags & WebContextMenuData::CanDelete) != 0);
     MakeContextMenuItem(sub_menu,
                         index++,
                         L"Delete",
@@ -170,7 +169,7 @@ void ShellWebContentsViewDelegate::ShowContextMenu(
   NOTIMPLEMENTED();
 #else
   gfx::Point screen_point(params.x, params.y);
-  POINT point = screen_point.ToPOINT();;
+  POINT point = screen_point.ToPOINT();
   ClientToScreen(web_contents_->GetView()->GetNativeView(), &point);
 
   int selection =
@@ -187,7 +186,7 @@ void ShellWebContentsViewDelegate::ShowContextMenu(
 }
 
 void ShellWebContentsViewDelegate::MenuItemSelected(int selection) {
-  switch(selection) {
+  switch (selection) {
     case ShellContextMenuItemCutId:
       web_contents_->GetRenderViewHost()->Cut();
       break;

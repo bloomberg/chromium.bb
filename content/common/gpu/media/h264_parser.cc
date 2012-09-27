@@ -120,7 +120,7 @@ void H264Parser::Reset() {
 
 void H264Parser::SetStream(const uint8* stream, off_t stream_size) {
   DCHECK(stream);
-  DCHECK(stream_size > 0);
+  DCHECK_GT(stream_size, 0);
 
   stream_ = stream;
   bytes_left_ = stream_size;
@@ -281,9 +281,10 @@ H264Parser::Result H264Parser::AdvanceToNextNALU(H264NALU *nalu) {
   READ_BITS_OR_RETURN(2, &nalu->nal_ref_idc);
   READ_BITS_OR_RETURN(5, &nalu->nal_unit_type);
 
-  DVLOG(4) << "NALU type: " << (int)nalu->nal_unit_type
-           << " at: " << (void*)nalu->data << " size: " << nalu->size
-           << " ref: " << (int)nalu->nal_ref_idc;
+  DVLOG(4) << "NALU type: " << static_cast<int>(nalu->nal_unit_type)
+           << " at: " << reinterpret_cast<const void*>(nalu->data)
+           << " size: " << nalu->size
+           << " ref: " << static_cast<int>(nalu->nal_ref_idc);
 
   return kOk;
 }
@@ -310,7 +311,7 @@ static const int kDefault8x8Inter[kH264ScalingList8x8Length] = {
 static inline void DefaultScalingList4x4(
     int i,
     int scaling_list4x4[][kH264ScalingList4x4Length]) {
-  DCHECK(i < 6);
+  DCHECK_LT(i, 6);
 
   if (i < 3)
     memcpy(scaling_list4x4[i], kDefault4x4Intra, sizeof(kDefault4x4Intra));
@@ -321,7 +322,7 @@ static inline void DefaultScalingList4x4(
 static inline void DefaultScalingList8x8(
     int i,
     int scaling_list8x8[][kH264ScalingList8x8Length]) {
-  DCHECK(i < 6);
+  DCHECK_LT(i, 6);
 
   if (i % 2 == 0)
     memcpy(scaling_list8x8[i], kDefault8x8Intra, sizeof(kDefault8x8Intra));
@@ -564,7 +565,6 @@ static void FillDefaultSeqScalingLists(H264SPS* sps) {
   for (int i = 0; i < 6; ++i)
     for (int j = 0; j < kH264ScalingList8x8Length; ++j)
       sps->scaling_list8x8[i][j] = 16;
-
 }
 
 H264Parser::Result H264Parser::ParseSPS(int* sps_id) {
@@ -951,7 +951,7 @@ H264Parser::Result H264Parser::ParseSliceHeader(const H264NALU& nalu,
 
   memset(shdr, 0, sizeof(*shdr));
 
-  shdr->idr_pic_flag = ((nalu.nal_unit_type == 5) ? true : false);
+  shdr->idr_pic_flag = (nalu.nal_unit_type == 5);
   shdr->nal_ref_idc = nalu.nal_ref_idc;
   shdr->nalu_data = nalu.data;
   shdr->nalu_size = nalu.size;

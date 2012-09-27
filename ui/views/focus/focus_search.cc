@@ -51,7 +51,7 @@ View* FocusSearch::FindNextFocusableView(View* starting_view,
   if (!reverse) {
     v = FindNextFocusableViewImpl(starting_view, check_starting_view,
                                   true,
-                                  (direction == DOWN) ? true : false,
+                                  (direction == DOWN),
                                   starting_view_group,
                                   focus_traversable,
                                   focus_traversable_view);

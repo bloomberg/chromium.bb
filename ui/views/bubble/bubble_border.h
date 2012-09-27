@@ -96,7 +96,7 @@ class VIEWS_EXPORT BubbleBorder : public Border {
   }
 
   static bool has_arrow(ArrowLocation loc) {
-    return loc >= NONE ? false : true;
+    return loc < NONE;
   }
 
   static bool is_arrow_on_left(ArrowLocation loc) {

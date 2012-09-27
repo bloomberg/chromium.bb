@@ -63,7 +63,7 @@ class CMainFrame
 
   virtual BOOL OnIdle() {
     BOOL bEnable = !m_view.bmp_.IsNull();
-    BOOL bMovieOpen = media::Movie::GetInstance()->IsOpen() ? true : false;
+    BOOL bMovieOpen = media::Movie::GetInstance()->IsOpen();
 
     float current_position = media::Movie::GetInstance()->GetPosition();
     float duration = media::Movie::GetInstance()->GetDuration();

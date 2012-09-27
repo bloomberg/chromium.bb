@@ -137,7 +137,7 @@ bool ImeInput::SetInputLanguage() {
   // while composing a text.
   HKL keyboard_layout = ::GetKeyboardLayout(0);
   input_language_id_ = reinterpret_cast<LANGID>(keyboard_layout);
-  ime_status_ = (::ImmIsIME(keyboard_layout) == TRUE) ? true : false;
+  ime_status_ = (::ImmIsIME(keyboard_layout) == TRUE);
   return ime_status_;
 }
 

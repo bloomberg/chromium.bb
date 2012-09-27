@@ -127,7 +127,7 @@ class PluginModule : public pp::Module {
   }
 
   virtual bool Init() {
-    return glInitializePPAPI(get_browser_interface()) == GL_TRUE ? true : false;
+    return (glInitializePPAPI(get_browser_interface()) == GL_TRUE);
   }
 
   virtual pp::Instance* CreateInstance(PP_Instance instance) {
@@ -145,4 +145,3 @@ Module* CreateModule() {
 }
 
 }  // namespace pp
-
