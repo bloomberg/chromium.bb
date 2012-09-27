@@ -132,9 +132,6 @@ class MockVideoCaptureManager
     video_capture_device_->DeAllocate();
   }
 
-  void Error(const media::VideoCaptureSessionId& capture_session_id) OVERRIDE {
-  }
-
   int video_session_id_;
   media::VideoCaptureDevice::Name device_name_;
   scoped_ptr<media::VideoCaptureDevice> video_capture_device_;

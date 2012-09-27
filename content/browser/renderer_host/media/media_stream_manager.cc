@@ -651,31 +651,18 @@ void MediaStreamManager::Error(MediaStreamType stream_type,
         continue;
       }
       // We've found the failing device. Find the error case:
-      if (it->second.state[stream_type] == DeviceRequest::STATE_DONE) {
-        // 1. Already opened -> signal device failure and close device.
-        //    Use device_idx to signal which of the devices encountered an
-        //    error.
-        if (content::IsAudioMediaType(stream_type)) {
-          it->second.requester->AudioDeviceFailed(it->first, audio_device_idx);
-        } else if (content::IsVideoMediaType(stream_type)) {
-          it->second.requester->VideoDeviceFailed(it->first, video_device_idx);
-        } else {
-          NOTREACHED();
-          return;
-        }
-        GetDeviceManager(stream_type)->Close(capture_session_id);
-        // We don't erase the devices here so that we can update the UI
-        // properly in StopGeneratedStream().
-        it->second.state[stream_type] = DeviceRequest::STATE_ERROR;
-      } else {
+      // An error should only be reported to the MediaStreamManager if
+      // the request has not been fulfilled yet.
+      DCHECK(it->second.state[stream_type] != DeviceRequest::STATE_DONE);
+      if (it->second.state[stream_type] != DeviceRequest::STATE_DONE) {
         // Request is not done, devices are not opened in this case.
         if (devices.size() <= 1) {
-          // 2. Device not opened and no other devices for this request ->
+          // 1. Device not opened and no other devices for this request ->
           //    signal stream error and remove the request.
           it->second.requester->StreamGenerationFailed(it->first);
           requests_.erase(it);
         } else {
-          // 3. Not opened but other devices exists for this request -> remove
+          // 2. Not opened but other devices exists for this request -> remove
           //    device from list, but don't signal an error.
           devices.erase(device_it);  // NOTE: This invalidates device_it!
         }

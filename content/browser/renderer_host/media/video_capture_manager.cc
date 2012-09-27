@@ -116,14 +116,6 @@ void VideoCaptureManager::Stop(
                  stopped_cb));
 }
 
-void VideoCaptureManager::Error(
-    const media::VideoCaptureSessionId& capture_session_id) {
-  device_loop_->PostTask(
-      FROM_HERE,
-      base::Bind(&VideoCaptureManager::PostOnError, this, capture_session_id,
-                 kDeviceNotAvailable));
-}
-
 void VideoCaptureManager::UseFakeDevice() {
   use_fake_device_ = true;
 }

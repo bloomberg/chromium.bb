@@ -63,10 +63,6 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   virtual void Stop(const media::VideoCaptureSessionId& capture_session_id,
             base::Closure stopped_cb);
 
-  // A capture device error has occurred for |capture_session_id|. The device
-  // won't stream any more captured frames.
-  virtual void Error(const media::VideoCaptureSessionId& capture_session_id);
-
   // Used by unit test to make sure a fake device is used instead of a real
   // video capture device. Due to timing requirements, the function must be
   // called before EnumerateDevices and Open.

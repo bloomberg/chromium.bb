@@ -18,6 +18,7 @@
 #include "content/test/test_content_client.h"
 #include "ipc/ipc_message_macros.h"
 #include "media/audio/audio_manager.h"
+#include "media/video/capture/fake_video_capture_device.h"
 #include "net/url_request/url_request_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -342,33 +343,16 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateThreeStreams) {
   EXPECT_EQ(host_->NumberOfStreams(), 0u);
 }
 
-TEST_F(MediaStreamDispatcherHostTest, FailDevice) {
+TEST_F(MediaStreamDispatcherHostTest, FailOpenVideoDevice) {
   StreamOptions options(false, true);
 
   EXPECT_CALL(*host_, GetMediaObserver())
       .WillRepeatedly(Return(media_observer_.get()));
-  EXPECT_CALL(*host_, OnStreamGenerated(kRenderId, kPageRequestId, 0, 1));
+  media::FakeVideoCaptureDevice::SetFailNextCreate();
+  media_stream_manager_->UseFakeDevice();
   host_->OnGenerateStream(kPageRequestId, options);
-  EXPECT_CALL(*media_observer_.get(), OnCaptureDevicesOpened(_, _, _));
+  EXPECT_CALL(*host_, OnStreamGenerationFailed(kRenderId, kPageRequestId));
   WaitForResult();
-  std::string label =  host_->label_;
-
-  EXPECT_EQ(host_->audio_devices_.size(), 0u);
-  EXPECT_EQ(host_->video_devices_.size(), 1u);
-  EXPECT_EQ(host_->NumberOfStreams(), 1u);
-
-  EXPECT_CALL(*host_, OnVideoDeviceFailed(kRenderId, 0));
-  int session_id = host_->video_devices_[0].session_id;
-  media_stream_manager_->video_capture_manager()->Error(session_id);
-  WaitForResult();
-  EXPECT_EQ(host_->video_devices_.size(), 0u);
-  EXPECT_EQ(host_->NumberOfStreams(), 1u);
-
-  // TODO(perkj): test audio device failure?
-
-  EXPECT_CALL(*media_observer_.get(), OnCaptureDevicesClosed(_, _, _));
-  host_->OnStopGeneratedStream(label);
-  EXPECT_EQ(host_->NumberOfStreams(), 0u);
 }
 
 TEST_F(MediaStreamDispatcherHostTest, CancelPendingStreamsOnChannelClosing) {
