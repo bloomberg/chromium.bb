@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/auto_reset.h"
 #include "base/json/json_reader.h"
 #include "base/scoped_temp_dir.h"
 #include "base/values.h"
@@ -49,12 +50,31 @@ bool ListMatches(base::ListValue* left_list, const std::string& right_json) {
 class MockDownloadsDOMHandler : public DownloadsDOMHandler {
  public:
   explicit MockDownloadsDOMHandler(content::DownloadManager* dlm)
-    : DownloadsDOMHandler(dlm) {
+    : DownloadsDOMHandler(dlm),
+      waiting_list_(false),
+      waiting_updated_(false) {
   }
   virtual ~MockDownloadsDOMHandler() {}
 
   base::ListValue* downloads_list() { return downloads_list_.get(); }
   base::ListValue* download_updated() { return download_updated_.get(); }
+
+  void WaitForDownloadsList() {
+    if (downloads_list_.get())
+      return;
+    AutoReset<bool> reset_waiting(&waiting_list_, true);
+    content::RunMessageLoop();
+  }
+
+  void WaitForDownloadUpdated() {
+    if (download_updated_.get())
+      return;
+    AutoReset<bool> reset_waiting(&waiting_updated_, true);
+    content::RunMessageLoop();
+  }
+
+  void reset_downloads_list() { downloads_list_.reset(); }
+  void reset_download_updated() { download_updated_.reset(); }
 
  protected:
   virtual content::WebContents* GetWebUIWebContents() {
@@ -63,17 +83,26 @@ class MockDownloadsDOMHandler : public DownloadsDOMHandler {
 
   virtual void CallDownloadsList(const base::ListValue& downloads) {
     downloads_list_.reset(downloads.DeepCopy());
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE, MessageLoop::QuitClosure());
+    if (waiting_list_) {
+      content::BrowserThread::PostTask(
+          content::BrowserThread::UI, FROM_HERE, MessageLoop::QuitClosure());
+    }
   }
 
   virtual void CallDownloadUpdated(const base::ListValue& download) {
     download_updated_.reset(download.DeepCopy());
+    if (waiting_updated_) {
+      content::BrowserThread::PostTask(
+          content::BrowserThread::UI, FROM_HERE, MessageLoop::QuitClosure());
+    }
   }
 
  private:
   scoped_ptr<base::ListValue> downloads_list_;
   scoped_ptr<base::ListValue> download_updated_;
+  bool waiting_list_;
+  bool waiting_updated_;
+
   DISALLOW_COPY_AND_ASSIGN(MockDownloadsDOMHandler);
 };
 
@@ -127,10 +156,9 @@ IN_PROC_BROWSER_TEST_F(DownloadsDOMHandlerTest,
   std::vector<content::DownloadPersistentStoreInfo> entries(
       population_entries, population_entries + arraysize(population_entries));
   download_manager()->OnPersistentStoreQueryComplete(&entries);
-  content::RunMessageLoop();
 
+  mddh.WaitForDownloadsList();
   ASSERT_EQ(1, static_cast<int>(mddh.downloads_list()->GetSize()));
-  ASSERT_EQ(1, static_cast<int>(mddh.download_updated()->GetSize()));
   EXPECT_TRUE(ListMatches(
       mddh.downloads_list(),
       "[{\"file_externally_removed\": false,"
@@ -140,13 +168,17 @@ IN_PROC_BROWSER_TEST_F(DownloadsDOMHandlerTest,
       "  \"since_string\": \"Today\","
       "  \"state\": \"COMPLETE\","
       "  \"total\": 128}]"));
+
+  mddh.WaitForDownloadUpdated();
+  ASSERT_EQ(1, static_cast<int>(mddh.download_updated()->GetSize()));
   EXPECT_TRUE(ListMatches(
       mddh.download_updated(),
       "[{\"file_externally_removed\": true,"
       "  \"id\": 0}]"));
 
+  mddh.reset_downloads_list();
   mddh.HandleClearAll(NULL);
-  content::RunMessageLoop();
+  mddh.WaitForDownloadsList();
   EXPECT_EQ(0, static_cast<int>(mddh.downloads_list()->GetSize()));
 }
 
