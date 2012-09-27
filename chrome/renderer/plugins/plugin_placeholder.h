@@ -15,9 +15,6 @@
 struct ChromeViewHostMsg_GetPluginInfo_Status;
 
 namespace webkit {
-namespace npapi {
-class PluginGroup;
-}
 struct WebPluginInfo;
 }
 

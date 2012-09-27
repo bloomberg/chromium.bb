@@ -98,8 +98,7 @@ class GViewRequestInterceptorTest : public testing::Test {
   GViewRequestInterceptorTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
         file_thread_(BrowserThread::FILE, &message_loop_),
-        io_thread_(BrowserThread::IO, &message_loop_),
-        plugin_list_(NULL, 0) {}
+        io_thread_(BrowserThread::IO, &message_loop_) {}
 
   virtual void SetUp() {
     net::URLRequestContext* request_context =

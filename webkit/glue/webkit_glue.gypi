@@ -119,8 +119,6 @@
         '../plugins/npapi/gtk_plugin_container_manager.h',
         '../plugins/npapi/plugin_constants_win.cc',
         '../plugins/npapi/plugin_constants_win.h',
-        '../plugins/npapi/plugin_group.cc',
-        '../plugins/npapi/plugin_group.h',
         '../plugins/npapi/plugin_host.cc',
         '../plugins/npapi/plugin_host.h',
         '../plugins/npapi/plugin_instance.cc',

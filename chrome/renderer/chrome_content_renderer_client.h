@@ -40,9 +40,6 @@ class PhishingClassifierFilter;
 
 namespace webkit {
 struct WebPluginInfo;
-namespace npapi {
-class PluginGroup;
-}
 }
 
 namespace chrome {

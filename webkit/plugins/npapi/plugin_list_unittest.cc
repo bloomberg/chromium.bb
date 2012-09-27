@@ -33,20 +33,14 @@ bool Contains(const std::vector<WebPluginInfo>& list,
 
 FilePath::CharType kFooPath[] = FILE_PATH_LITERAL("/plugins/foo.plugin");
 FilePath::CharType kBarPath[] = FILE_PATH_LITERAL("/plugins/bar.plugin");
-const char* kFooIdentifier = "foo";
-const char* kFooGroupName = "Foo";
 const char* kFooName = "Foo Plugin";
-const PluginGroupDefinition kPluginDefinitions[] = {
-  { kFooIdentifier, kFooGroupName, kFooName },
-};
 
 }  // namespace
 
 class PluginListTest : public testing::Test {
  public:
   PluginListTest()
-      : plugin_list_(kPluginDefinitions, arraysize(kPluginDefinitions)),
-        foo_plugin_(ASCIIToUTF16(kFooName),
+      : foo_plugin_(ASCIIToUTF16(kFooName),
                     FilePath(kFooPath),
                     ASCIIToUTF16("1.2.3"),
                     ASCIIToUTF16("foo")),
@@ -59,10 +53,6 @@ class PluginListTest : public testing::Test {
   virtual void SetUp() {
     plugin_list_.AddPluginToLoad(bar_plugin_);
     plugin_list_.AddPluginToLoad(foo_plugin_);
-  }
-
-  PluginGroup* AddToPluginGroups(const WebPluginInfo& plugin) {
-    return plugin_list_.AddToPluginGroups(plugin, &plugin_list_.plugin_groups_);
   }
 
  protected:
@@ -79,22 +69,6 @@ TEST_F(PluginListTest, GetPlugins) {
   EXPECT_TRUE(Contains(plugins, bar_plugin_));
 }
 
-TEST_F(PluginListTest, GetPluginGroup) {
-  PluginGroup* foo_group = AddToPluginGroups(foo_plugin_);
-  EXPECT_EQ(ASCIIToUTF16(kFooGroupName), foo_group->GetGroupName());
-
-  scoped_ptr<PluginGroup> foo_group_copy(
-      plugin_list_.GetPluginGroup(foo_plugin_));
-  EXPECT_EQ(ASCIIToUTF16(kFooGroupName), foo_group_copy->GetGroupName());
-}
-
-TEST_F(PluginListTest, EmptyGroup) {
-  std::vector<PluginGroup> groups;
-  plugin_list_.GetPluginGroups(false, &groups);
-  for (size_t i = 0; i < groups.size(); ++i)
-    EXPECT_GE(1U, groups[i].web_plugin_infos().size());
-}
-
 TEST_F(PluginListTest, BadPluginDescription) {
   WebPluginInfo plugin_3043(
       string16(), FilePath(FILE_PATH_LITERAL("/myplugin.3.0.43")),
@@ -107,18 +81,6 @@ TEST_F(PluginListTest, BadPluginDescription) {
   std::vector<WebPluginInfo> plugins;
   plugin_list_.GetPlugins(&plugins);
   ASSERT_TRUE(Contains(plugins, plugin_3043));
-}
-
-TEST_F(PluginListTest, HardcodedGroups) {
-  std::vector<PluginGroup> groups;
-  plugin_list_.GetPluginGroups(true, &groups);
-  ASSERT_EQ(2u, groups.size());
-  EXPECT_EQ(1u, groups[0].web_plugin_infos().size());
-  EXPECT_TRUE(groups[0].ContainsPlugin(FilePath(kBarPath)));
-  EXPECT_EQ("bar.plugin", groups[0].identifier());
-  EXPECT_EQ(1u, groups[1].web_plugin_infos().size());
-  EXPECT_TRUE(groups[1].ContainsPlugin(FilePath(kFooPath)));
-  EXPECT_EQ(kFooIdentifier, groups[1].identifier());
 }
 
 }  // namespace npapi

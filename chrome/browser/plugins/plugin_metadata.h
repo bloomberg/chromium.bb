@@ -24,6 +24,16 @@ class PluginMetadata {
     SECURITY_STATUS_REQUIRES_AUTHORIZATION,
   };
 
+  // Used by about:plugins to disable Reader plugin when internal PDF viewer is
+  // enabled.
+  static const char kAdobeReaderGroupName[];
+  static const char kJavaGroupName[];
+  static const char kQuickTimeGroupName[];
+  static const char kShockwaveGroupName[];
+  static const char kRealPlayerGroupName[];
+  static const char kSilverlightGroupName[];
+  static const char kWindowsMediaPlayerGroupName[];
+
   PluginMetadata(const std::string& identifier,
                  const string16& name,
                  bool url_for_display,

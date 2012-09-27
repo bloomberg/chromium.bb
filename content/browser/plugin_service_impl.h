@@ -52,7 +52,6 @@ struct PepperPluginInfo;
 
 namespace webkit {
 namespace npapi {
-class PluginGroup;
 class PluginList;
 }
 }
@@ -96,8 +95,6 @@ class CONTENT_EXPORT PluginServiceImpl
                                    webkit::WebPluginInfo* info) OVERRIDE;
   virtual string16 GetPluginDisplayNameByPath(const FilePath& path) OVERRIDE;
   virtual void GetPlugins(const GetPluginsCallback& callback) OVERRIDE;
-  virtual void GetPluginGroups(
-      const GetPluginGroupsCallback& callback) OVERRIDE;
   virtual content::PepperPluginInfo* GetRegisteredPpapiPluginInfo(
       const FilePath& plugin_path) OVERRIDE;
   virtual void SetFilter(content::PluginServiceFilter* filter) OVERRIDE;
@@ -111,7 +108,6 @@ class CONTENT_EXPORT PluginServiceImpl
   virtual void UnregisterInternalPlugin(const FilePath& path) OVERRIDE;
   virtual void RegisterInternalPlugin(
       const webkit::WebPluginInfo& info, bool add_at_beginning) OVERRIDE;
-  virtual string16 GetPluginGroupName(const std::string& plugin_name) OVERRIDE;
   virtual webkit::npapi::PluginList* GetPluginList() OVERRIDE;
   virtual void SetPluginListForTesting(
       webkit::npapi::PluginList* plugin_list) OVERRIDE;

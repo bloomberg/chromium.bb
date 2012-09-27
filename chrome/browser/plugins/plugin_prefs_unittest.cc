@@ -214,7 +214,7 @@ TEST_F(PluginPrefsTest, UnifiedPepperFlashState) {
 
   MessageLoop message_loop;
   content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
-  webkit::npapi::MockPluginList plugin_list(NULL, 0);
+  webkit::npapi::MockPluginList plugin_list;
   PluginService::GetInstance()->SetPluginListForTesting(&plugin_list);
   PluginService::GetInstance()->Init();
   plugin_prefs_->SetPluginListForTesting(&plugin_list);

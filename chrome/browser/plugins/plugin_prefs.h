@@ -27,7 +27,6 @@ class ListValue;
 namespace webkit {
 struct WebPluginInfo;
 namespace npapi {
-class PluginGroup;
 class PluginList;
 }
 }

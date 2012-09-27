@@ -13,22 +13,15 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/file_path.h"
+#include "base/lazy_instance.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/synchronization/lock.h"
 #include "third_party/npapi/bindings/nphostapi.h"
-#include "webkit/plugins/npapi/plugin_group.h"
 #include "webkit/plugins/webkit_plugins_export.h"
 #include "webkit/plugins/webplugininfo.h"
 
 class GURL;
-
-namespace base {
-
-template <typename T>
-struct DefaultLazyInstanceTraits;
-
-}  // namespace base
 
 namespace webkit {
 namespace npapi {
@@ -55,6 +48,10 @@ struct PluginEntryPoints {
 // This object is thread safe.
 class WEBKIT_PLUGINS_EXPORT PluginList {
  public:
+  // Custom traits that performs platform-dependent initialization
+  // when the instance is created.
+  struct CustomLazyInstanceTraits;
+
   // Gets the one instance of the PluginList.
   static PluginList* Singleton();
 
@@ -148,30 +145,6 @@ class WEBKIT_PLUGINS_EXPORT PluginList {
                           std::vector<webkit::WebPluginInfo>* info,
                           std::vector<std::string>* actual_mime_types);
 
-  // TODO(ibraaaa): DELETE. http://crbug.com/124396
-  // Populates the given vector with all available plugin groups. If
-  // |load_if_necessary| is true, this will potentially load the plugin list
-  // synchronously.
-  void GetPluginGroups(bool load_if_necessary,
-                       std::vector<PluginGroup>* plugin_groups);
-
-  // TODO(ibraaaa): DELETE. http://crbug.com/124396
-  // Returns a copy of the PluginGroup corresponding to the given WebPluginInfo.
-  // The caller takes ownership of the returned PluginGroup.
-  PluginGroup* GetPluginGroup(const webkit::WebPluginInfo& web_plugin_info);
-
-  // TODO(ibraaaa): DELETE. http://crbug.com/124396
-  // Returns the name of the PluginGroup with the given identifier.
-  // If no such group exists, an empty string is returned.
-  string16 GetPluginGroupName(const std::string& identifier);
-
-  // TODO(ibraaaa): DELETE. http://crbug.com/124396
-  // Load a specific plugin with full path. Return true iff loading the plug-in
-  // was successful.
-  bool LoadPlugin(const FilePath& filename,
-                  ScopedVector<PluginGroup>* plugin_groups,
-                  webkit::WebPluginInfo* plugin_info);
-
   // Load a specific plugin with full path. Return true iff loading the plug-in
   // was successful.
   bool LoadPluginIntoPluginList(const FilePath& filename,
@@ -184,11 +157,7 @@ class WEBKIT_PLUGINS_EXPORT PluginList {
   // Computes a list of all plugins to potentially load from all sources.
   void GetPluginPathsToLoad(std::vector<FilePath>* plugin_paths);
 
-  // TODO(ibraaaa): DELETE. http://crbug.com/124396
-  // Returns the list of hardcoded plug-in groups for testing.
-  const std::vector<PluginGroup*>& GetHardcodedPluginGroups() const;
-
-  // Clears the internal list of PluginGroups and copies them from the vector.
+  // Clears the internal list of Plugins and copies them from the vector.
   void SetPlugins(const std::vector<webkit::WebPluginInfo>& plugins);
 
   void set_will_load_plugins_callback(const base::Closure& callback);
@@ -196,16 +165,9 @@ class WEBKIT_PLUGINS_EXPORT PluginList {
   virtual ~PluginList();
 
  protected:
-  // TODO(ibraaaa): DELETE and add a different one. http://crbug.com/124396
-  // This constructor is used in unit tests to override the platform-dependent
-  // real-world plugin group definitions with custom ones.
-  PluginList(const PluginGroupDefinition* definitions, size_t num_definitions);
-
-  // TODO(ibraaaa): DELETE. http://crbug.com/124396
-  // Adds the given WebPluginInfo to its corresponding group, creating it if
-  // necessary, and returns the group.
-  PluginGroup* AddToPluginGroups(const webkit::WebPluginInfo& web_plugin_info,
-                                 ScopedVector<PluginGroup>* plugin_groups);
+  // Constructors are private for singletons but we expose this one
+  // for subclasses for test purposes.
+  PluginList();
 
  private:
   enum LoadingState {
@@ -221,27 +183,6 @@ class WEBKIT_PLUGINS_EXPORT PluginList {
 
   friend class PluginListTest;
   friend struct base::DefaultLazyInstanceTraits<PluginList>;
-  FRIEND_TEST_ALL_PREFIXES(PluginGroupTest, PluginGroupDefinition);
-
-  // Constructors are private for singletons.
-  PluginList();
-
-  // TODO(ibraaaa): DELETE. http://crbug.com/124396
-  // Creates PluginGroups for the hardcoded group definitions, and stores them
-  // in |hardcoded_plugin_groups_|.
-  void AddHardcodedPluginGroups(const PluginGroupDefinition* group_definitions,
-                                size_t num_group_definitions);
-
-  // TODO(ibraaaa): DELETE. http://crbug.com/124396
-  // Creates a new PluginGroup either from a hardcoded group definition, or from
-  // the plug-in information.
-  // Caller takes ownership of the returned PluginGroup.
-  PluginGroup* CreatePluginGroup(
-      const webkit::WebPluginInfo& web_plugin_info) const;
-
-  // Implements all IO dependent operations of the LoadPlugins method so that
-  // test classes can mock these out.
-  virtual void LoadPluginsInternal(ScopedVector<PluginGroup>* plugin_groups);
 
   // Implements all IO dependent operations of the LoadPlugins method so that
   // test classes can mock these out.
@@ -254,13 +195,6 @@ class WEBKIT_PLUGINS_EXPORT PluginList {
   // Walks a directory and produces a list of all the plugins to potentially
   // load in that directory.
   void GetPluginsInDir(const FilePath& path, std::vector<FilePath>* plugins);
-
-  // TODO(ibraaaa): DELETE. http://crbug.com/124396
-  // Returns true if we should load the given plugin, or false otherwise.
-  // |plugins| is the list of plugins we have crawled in the current plugin
-  // loading run.
-  bool ShouldLoadPlugin(const webkit::WebPluginInfo& info,
-                        ScopedVector<PluginGroup>* plugins);
 
   // Returns true if we should load the given plugin, or false otherwise.
   // |plugins| is the list of plugins we have crawled in the current plugin
@@ -324,14 +258,6 @@ class WEBKIT_PLUGINS_EXPORT PluginList {
 
   // Holds information about internal plugins.
   std::vector<InternalPlugin> internal_plugins_;
-
-  // TODO(ibraaaa): DELETE. http://crbug.com/124396
-  // Holds the currently available plugin groups.
-  ScopedVector<PluginGroup> plugin_groups_;
-
-  // Holds the hardcoded definitions of well-known plug-ins.
-  // This should only be modified during construction of the PluginList.
-  ScopedVector<PluginGroup> hardcoded_plugin_groups_;
 
   // A list holding all plug-ins.
   std::vector<webkit::WebPluginInfo> plugins_list_;

@@ -7,9 +7,7 @@
 namespace webkit {
 namespace npapi {
 
-MockPluginList::MockPluginList(const PluginGroupDefinition* group_definitions,
-                               size_t num_group_definitions) :
-    PluginList(group_definitions, num_group_definitions) {
+MockPluginList::MockPluginList() {
 }
 
 MockPluginList::~MockPluginList() {
@@ -27,13 +25,6 @@ bool MockPluginList::GetPluginsNoRefresh(
       std::vector<webkit::WebPluginInfo>* plugins) {
   GetPlugins(plugins);
   return true;
-}
-
-// TODO(ibraaaa): DELETE. http://crbug.com/124396
-void MockPluginList::LoadPluginsInternal(
-    ScopedVector<PluginGroup>* plugin_groups) {
-  for (size_t i = 0; i < plugins_to_load_.size(); ++i)
-    AddToPluginGroups(plugins_to_load_[i], plugin_groups);
 }
 
 void MockPluginList::LoadPluginsIntoPluginListInternal(

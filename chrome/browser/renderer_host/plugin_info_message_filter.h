@@ -28,9 +28,6 @@ class ResourceContext;
 
 namespace webkit {
 struct WebPluginInfo;
-namespace npapi {
-class PluginGroup;
-}
 }
 
 // This class filters out incoming IPC messages requesting plug-in information.

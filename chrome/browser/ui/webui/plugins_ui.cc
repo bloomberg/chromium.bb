@@ -44,7 +44,6 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "webkit/plugins/npapi/plugin_group.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/webui/chromeos/ui_account_tweaks.h"
@@ -53,7 +52,6 @@
 using content::PluginService;
 using content::WebContents;
 using content::WebUIMessageHandler;
-using webkit::npapi::PluginGroup;
 using webkit::WebPluginInfo;
 
 namespace {
@@ -251,7 +249,7 @@ void PluginsDOMHandler::HandleEnablePluginMessage(const ListValue* args) {
     if (enable) {
       // See http://crbug.com/50105 for background.
       string16 adobereader = ASCIIToUTF16(
-          PluginGroup::kAdobeReaderGroupName);
+          PluginMetadata::kAdobeReaderGroupName);
       string16 internalpdf =
           ASCIIToUTF16(chrome::ChromeContentClient::kPDFPluginName);
       if (group_name == adobereader)

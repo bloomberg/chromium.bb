@@ -63,8 +63,7 @@ class PluginInfoMessageFilterTest : public ::testing::Test {
   PluginInfoMessageFilterTest() :
       foo_plugin_path_(FILE_PATH_LITERAL("/path/to/foo")),
       bar_plugin_path_(FILE_PATH_LITERAL("/path/to/bar")),
-      file_thread_(content::BrowserThread::FILE, &message_loop_),
-      plugin_list_(NULL, 0) {
+      file_thread_(content::BrowserThread::FILE, &message_loop_) {
   }
 
   virtual void SetUp() OVERRIDE {

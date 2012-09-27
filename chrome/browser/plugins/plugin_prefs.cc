@@ -32,7 +32,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_service.h"
-#include "webkit/plugins/npapi/plugin_group.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/npapi/plugin_utils.h"
 #include "webkit/plugins/webplugininfo.h"
@@ -616,7 +615,7 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
   if (force_enable_internal_pdf || internal_pdf_enabled) {
     // See http://crbug.com/50105 for background.
     plugin_group_state_[ASCIIToUTF16(
-        webkit::npapi::PluginGroup::kAdobeReaderGroupName)] = false;
+        PluginMetadata::kAdobeReaderGroupName)] = false;
   }
 
   if (force_enable_internal_pdf || force_enable_nacl) {

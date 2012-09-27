@@ -31,7 +31,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
 #include "webkit/plugins/npapi/plugin_constants_win.h"
-#include "webkit/plugins/npapi/plugin_group.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/webplugininfo.h"
 
@@ -44,16 +43,6 @@ using content::PluginService;
 using content::PluginServiceFilter;
 
 namespace {
-
-// A callback for GetPlugins() that then gets the freshly loaded plugin groups
-// and runs the callback for GetPluginGroups().
-static void GetPluginsForGroupsCallback(
-    const PluginService::GetPluginGroupsCallback& callback,
-    const std::vector<webkit::WebPluginInfo>& plugins) {
-  std::vector<webkit::npapi::PluginGroup> groups;
-  webkit::npapi::PluginList::Singleton()->GetPluginGroups(false, &groups);
-  callback.Run(groups);
-}
 
 // Callback set on the PluginList to assert that plugin loading happens on the
 // correct thread.
@@ -538,11 +527,6 @@ void PluginServiceImpl::GetPlugins(const GetPluginsCallback& callback) {
 #endif
 }
 
-void PluginServiceImpl::GetPluginGroups(
-    const GetPluginGroupsCallback& callback) {
-  GetPlugins(base::Bind(&GetPluginsForGroupsCallback, callback));
-}
-
 #if defined(OS_WIN)
 void PluginServiceImpl::GetPluginsInternal(
      base::MessageLoopProxy* target_loop,
@@ -714,10 +698,6 @@ void PluginServiceImpl::RegisterInternalPlugin(
     const webkit::WebPluginInfo& info,
     bool add_at_beginning) {
   plugin_list_->RegisterInternalPlugin(info, add_at_beginning);
-}
-
-string16 PluginServiceImpl::GetPluginGroupName(const std::string& plugin_name) {
-  return plugin_list_->GetPluginGroupName(plugin_name);
 }
 
 webkit::npapi::PluginList* PluginServiceImpl::GetPluginList() {

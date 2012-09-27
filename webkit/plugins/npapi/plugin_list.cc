@@ -22,9 +22,12 @@
 
 namespace {
 
+using webkit::npapi::PluginList;
+typedef PluginList::CustomLazyInstanceTraits CustomLazyInstanceTraits;
+
 const char kApplicationOctetStream[] = "application/octet-stream";
 
-base::LazyInstance<webkit::npapi::PluginList> g_singleton =
+base::LazyInstance<PluginList, CustomLazyInstanceTraits> g_singleton =
     LAZY_INSTANCE_INITIALIZER;
 
 bool AllowMimeTypeMismatch(const std::string& orig_mime_type,
@@ -53,86 +56,15 @@ bool AllowMimeTypeMismatch(const std::string& orig_mime_type,
 namespace webkit {
 namespace npapi {
 
-// TODO(ibraaaa): DELETE all hardcoded definitions. http://crbug.com/124396
-// Note: If you change the plug-in definitions here, also update
-// chrome/browser/resources/plugins_*.json correspondingly!
-// In particular, the identifier needs to be kept in sync.
-
-// Try and share the group definition for plug-ins that are
-// very consistent across OS'es.
-#define kFlashDefinition { \
-    "adobe-flash-player", "Adobe Flash Player", "Shockwave Flash" }
-
-#define kShockwaveDefinition { \
-    "adobe-shockwave", PluginGroup::kShockwaveGroupName, \
-    "Shockwave for Director" }
-
-#define kSilverlightDefinition { \
-    "silverlight", PluginGroup::kSilverlightGroupName, "Silverlight" }
-
-#define kChromePdfDefinition { \
-    "google-chrome-pdf", "Chrome PDF Viewer", "Chrome PDF Viewer" }
-
-#define kGoogleTalkDefinition { \
-    "google-talk", "Google Talk", "Google Talk" }
-
-#if defined(OS_MACOSX)
-// Plugin Groups for Mac.
-
-static const PluginGroupDefinition kGroupDefinitions[] = {
-  kFlashDefinition,
-  { "apple-quicktime", PluginGroup::kQuickTimeGroupName, "QuickTime Plug-in" },
-  { "java-runtime-environment", PluginGroup::kJavaGroupName, "Java" },
-  kSilverlightDefinition,
-  { "flip4mac", "Flip4Mac", "Flip4Mac" },
-  { "divx-player", "DivX Web Player", "DivX Plus Web Player" },
-  { "realplayer", PluginGroup::kRealPlayerGroupName, "RealPlayer" },
-  kShockwaveDefinition,
-  kChromePdfDefinition,
-  kGoogleTalkDefinition,
+struct PluginList::CustomLazyInstanceTraits
+    : base::DefaultLazyInstanceTraits<PluginList> {
+  static PluginList* New(void* instance) {
+    PluginList* plugin_list =
+        base::DefaultLazyInstanceTraits<PluginList>::New(instance);
+    plugin_list->PlatformInit();
+    return plugin_list;
+  }
 };
-
-#elif defined(OS_WIN)
-// TODO(panayiotis): We should group "RealJukebox NS Plugin" with the rest of
-// the RealPlayer files.
-
-static const PluginGroupDefinition kGroupDefinitions[] = {
-  kFlashDefinition,
-  { "apple-quicktime", PluginGroup::kQuickTimeGroupName, "QuickTime Plug-in" },
-  { "java-runtime-environment", PluginGroup::kJavaGroupName, "Java" },
-  { "adobe-reader", PluginGroup::kAdobeReaderGroupName, "Adobe Acrobat" },
-  kSilverlightDefinition,
-  kShockwaveDefinition,
-  { "divx-player", "DivX Web Player", "DivX Web Player" },
-  { "realplayer", PluginGroup::kRealPlayerGroupName, "RealPlayer" },
-  { "windows-media-player", PluginGroup::kWindowsMediaPlayerGroupName,
-    "Windows Media Player" },
-  { "microsoft-office", "Microsoft Office", "Microsoft Office" },
-  { "nvidia-3d", "NVIDIA 3D", "NVIDIA 3D" },
-  kChromePdfDefinition,
-  kGoogleTalkDefinition,
-};
-
-#elif defined(OS_CHROMEOS)
-// ChromeOS generally has (autoupdated) system plug-ins and no user-installable
-// plug-ins, so we just use these definitions for grouping.
-static const PluginGroupDefinition kGroupDefinitions[] = {
-  kFlashDefinition,
-  kChromePdfDefinition,
-};
-
-#else  // Most importantly, covers desktop Linux.
-
-static const PluginGroupDefinition kGroupDefinitions[] = {
-  // Flash on Linux is significant because there isn't yet a built-in Flash
-  // plug-in on the Linux 64-bit version of Chrome.
-  kFlashDefinition,
-  { "java-runtime-environment", PluginGroup::kJavaGroupName, "Java" },
-  { "redhat-icetea-java", "IcedTea", "IcedTea" },
-  kChromePdfDefinition,
-  kGoogleTalkDefinition,
-};
-#endif
 
 // static
 PluginList* PluginList::Singleton() {
@@ -291,53 +223,6 @@ PluginList::PluginList()
       dont_load_new_wmp_(false),
 #endif
       loading_state_(LOADING_STATE_NEEDS_REFRESH) {
-  PlatformInit();
-  AddHardcodedPluginGroups(kGroupDefinitions,
-                           ARRAYSIZE_UNSAFE(kGroupDefinitions));
-}
-
-// TODO(ibraaaa): DELETE and add a different one. http://crbug.com/124396
-PluginList::PluginList(const PluginGroupDefinition* definitions,
-                       size_t num_definitions)
-    :
-#if defined(OS_WIN)
-      dont_load_new_wmp_(false),
-#endif
-      loading_state_(LOADING_STATE_NEEDS_REFRESH) {
-  // Don't do platform-dependent initialization in unit tests.
-  AddHardcodedPluginGroups(definitions, num_definitions);
-}
-
-// TODO(ibraaaa): DELETE. http://crbug.com/124396
-PluginGroup* PluginList::CreatePluginGroup(
-      const webkit::WebPluginInfo& web_plugin_info) const {
-  for (size_t i = 0; i < hardcoded_plugin_groups_.size(); ++i) {
-    const PluginGroup* group = hardcoded_plugin_groups_[i];
-    if (group->Match(web_plugin_info))
-      return new PluginGroup(*group);
-  }
-  return PluginGroup::FromWebPluginInfo(web_plugin_info);
-}
-
-// TODO(ibraaaa): DELETE. http://crbug.com/124396
-void PluginList::LoadPluginsInternal(ScopedVector<PluginGroup>* plugin_groups) {
-  base::Closure will_load_callback;
-  {
-    base::AutoLock lock(lock_);
-    will_load_callback = will_load_plugins_callback_;
-  }
-  if (!will_load_callback.is_null())
-    will_load_callback.Run();
-
-  std::vector<FilePath> plugin_paths;
-  GetPluginPathsToLoad(&plugin_paths);
-
-  for (std::vector<FilePath>::const_iterator it = plugin_paths.begin();
-       it != plugin_paths.end();
-       ++it) {
-    WebPluginInfo plugin_info;
-    LoadPlugin(*it, plugin_groups, &plugin_info);
-  }
 }
 
 void PluginList::LoadPluginsIntoPluginListInternal(
@@ -370,53 +255,17 @@ void PluginList::LoadPlugins() {
     loading_state_ = LOADING_STATE_REFRESHING;
   }
 
-  ScopedVector<PluginGroup> new_plugin_groups;  // TODO(ibraaaa): DELETE
-  // Do the actual loading of the plugins.
-  LoadPluginsInternal(&new_plugin_groups);  // TODO(ibraaaa): DELETE
-
   std::vector<webkit::WebPluginInfo> new_plugins;
   // Do the actual loading of the plugins.
   LoadPluginsIntoPluginListInternal(&new_plugins);
 
   base::AutoLock lock(lock_);
-  plugin_groups_.swap(new_plugin_groups);  // TODO(ibraaaa): DELETE
   plugins_list_.swap(new_plugins);
 
   // If we haven't been invalidated in the mean time, mark the plug-in list as
   // up-to-date.
   if (loading_state_ != LOADING_STATE_NEEDS_REFRESH)
     loading_state_ = LOADING_STATE_UP_TO_DATE;
-}
-
-// TODO(ibraaaa): DELETE. http://crbug.com/124396
-bool PluginList::LoadPlugin(const FilePath& path,
-                            ScopedVector<PluginGroup>* plugin_groups,
-                            WebPluginInfo* plugin_info) {
-  LOG_IF(ERROR, PluginList::DebugPluginLoading())
-      << "Loading plugin " << path.value();
-  const PluginEntryPoints* entry_points;
-
-  if (!ReadPluginInfo(path, plugin_info, &entry_points))
-    return false;
-
-  if (!ShouldLoadPlugin(*plugin_info, plugin_groups))
-    return false;
-
-#if defined(OS_WIN) && !defined(NDEBUG)
-  if (path.BaseName().value() != L"npspy.dll")  // Make an exception for NPSPY
-#endif
-  {
-    for (size_t i = 0; i < plugin_info->mime_types.size(); ++i) {
-      // TODO: don't load global handlers for now.
-      // WebKit hands to the Plugin before it tries
-      // to handle mimeTypes on its own.
-      const std::string &mime_type = plugin_info->mime_types[i].mime_type;
-      if (mime_type == "*")
-        return false;
-    }
-  }
-  AddToPluginGroups(*plugin_info, plugin_groups);
-  return true;
 }
 
 bool PluginList::LoadPluginIntoPluginList(
@@ -484,24 +333,11 @@ void PluginList::GetPluginPathsToLoad(std::vector<FilePath>* plugin_paths) {
 #endif
 }
 
-// TODO(ibraaaa): DELETE. http://crbug.com/124396
-const std::vector<PluginGroup*>& PluginList::GetHardcodedPluginGroups() const {
-  return hardcoded_plugin_groups_.get();
-}
-
 void PluginList::SetPlugins(const std::vector<webkit::WebPluginInfo>& plugins) {
   base::AutoLock lock(lock_);
 
   DCHECK_NE(LOADING_STATE_REFRESHING, loading_state_);
   loading_state_ = LOADING_STATE_UP_TO_DATE;
-
-  // TODO(ibraaaa): DELETE
-  plugin_groups_.clear();
-  for (std::vector<webkit::WebPluginInfo>::const_iterator it = plugins.begin();
-       it != plugins.end();
-       ++it) {
-    AddToPluginGroups(*it, &plugin_groups_);
-  } // END OF DELETE
 
   plugins_list_.clear();
   plugins_list_.insert(plugins_list_.end(), plugins.begin(), plugins.end());
@@ -577,91 +413,6 @@ void PluginList::GetPluginInfoArray(
       }
     }
   }
-}
-
-// TODO(ibraaaa): DELETE. http://crbug.com/124396
-void PluginList::GetPluginGroups(
-    bool load_if_necessary,
-    std::vector<PluginGroup>* plugin_groups) {
-  if (load_if_necessary)
-    LoadPlugins();
-  base::AutoLock lock(lock_);
-  plugin_groups->clear();
-  for (size_t i = 0; i < plugin_groups_.size(); ++i) {
-    // In some unit tests we can get confronted with empty groups but in real
-    // world code this if should never be false here.
-    if (!plugin_groups_[i]->IsEmpty())
-      plugin_groups->push_back(*plugin_groups_[i]);
-  }
-}
-
-// TODO(ibraaaa): DELETE. http://crbug.com/124396
-PluginGroup* PluginList::GetPluginGroup(
-    const webkit::WebPluginInfo& web_plugin_info) {
-  base::AutoLock lock(lock_);
-  for (size_t i = 0; i < plugin_groups_.size(); ++i) {
-    const std::vector<webkit::WebPluginInfo>& plugins =
-        plugin_groups_[i]->web_plugin_infos();
-    for (size_t j = 0; j < plugins.size(); ++j) {
-      if (plugins[j].path == web_plugin_info.path) {
-        return new PluginGroup(*plugin_groups_[i]);
-      }
-    }
-  }
-  PluginGroup* group = CreatePluginGroup(web_plugin_info);
-  group->AddPlugin(web_plugin_info);
-  return group;
-}
-
-// TODO(ibraaaa): DELETE. http://crbug.com/124396
-string16 PluginList::GetPluginGroupName(const std::string& identifier) {
-  for (size_t i = 0; i < plugin_groups_.size(); ++i) {
-    if (plugin_groups_[i]->identifier() == identifier)
-      return plugin_groups_[i]->GetGroupName();
-  }
-  return string16();
-}
-
-// TODO(ibraaaa): DELETE. http://crbug.com/124396
-void PluginList::AddHardcodedPluginGroups(
-    const PluginGroupDefinition* group_definitions,
-    size_t num_group_definitions) {
-  for (size_t i = 0; i < num_group_definitions; ++i) {
-    hardcoded_plugin_groups_.push_back(
-        PluginGroup::FromPluginGroupDefinition(group_definitions[i]));
-  }
-}
-
-// TODO(ibraaaa): DELETE. http://crbug.com/124396
-PluginGroup* PluginList::AddToPluginGroups(
-    const webkit::WebPluginInfo& web_plugin_info,
-    ScopedVector<PluginGroup>* plugin_groups) {
-  PluginGroup* group = NULL;
-  for (size_t i = 0; i < plugin_groups->size(); ++i) {
-    if ((*plugin_groups)[i]->Match(web_plugin_info)) {
-      group = (*plugin_groups)[i];
-      break;
-    }
-  }
-  if (!group) {
-    group = CreatePluginGroup(web_plugin_info);
-    std::string identifier = group->identifier();
-    // If the identifier is not unique, use the full path. This means that we
-    // probably won't be able to search for this group by identifier, but at
-    // least it's going to be in the set of plugin groups, and if there
-    // is already a plug-in with the same filename, it's probably going to
-    // handle the same MIME types (and it has a higher priority), so this one
-    // is not going to run anyway.
-    for (size_t i = 0; i < plugin_groups->size(); ++i) {
-      if ((*plugin_groups)[i]->identifier() == identifier) {
-        group->set_identifier(PluginGroup::GetLongIdentifier(web_plugin_info));
-        break;
-      }
-    }
-    plugin_groups->push_back(group);
-  }
-  group->AddPlugin(web_plugin_info);
-  return group;
 }
 
 bool PluginList::SupportsType(const webkit::WebPluginInfo& plugin,

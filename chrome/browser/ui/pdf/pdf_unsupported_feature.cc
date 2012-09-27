@@ -39,7 +39,6 @@
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
-#include "webkit/plugins/npapi/plugin_group.h"
 
 #if defined(OS_WIN)
 #include "base/win/metro.h"
@@ -51,7 +50,6 @@ using content::PluginService;
 using content::Referrer;
 using content::UserMetricsAction;
 using content::WebContents;
-using webkit::npapi::PluginGroup;
 using webkit::WebPluginInfo;
 
 namespace {
@@ -133,7 +131,7 @@ void PDFEnableAdobeReaderInfoBarDelegate::OnYes() {
   content::RecordAction(UserMetricsAction("PDF_EnableReaderInfoBarOK"));
   PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(profile_);
   plugin_prefs->EnablePluginGroup(
-      true, ASCIIToUTF16(webkit::npapi::PluginGroup::kAdobeReaderGroupName));
+      true, ASCIIToUTF16(PluginMetadata::kAdobeReaderGroupName));
   plugin_prefs->EnablePluginGroup(
       false, ASCIIToUTF16(chrome::ChromeContentClient::kPDFPluginName));
 }

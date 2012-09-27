@@ -4370,7 +4370,7 @@ TEST(ExtensionServiceTestSimple, Enabledness) {
   scoped_ptr<CommandLine> command_line;
   FilePath install_dir = profile->GetPath()
       .AppendASCII(ExtensionService::kInstallDirectoryName);
-  webkit::npapi::MockPluginList plugin_list(NULL, 0);
+  webkit::npapi::MockPluginList plugin_list;
   PluginService::GetInstance()->SetPluginListForTesting(&plugin_list);
 
   // By default, we are enabled.

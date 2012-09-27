@@ -11,9 +11,6 @@ class PluginFinder;
 
 namespace webkit {
 struct WebPluginInfo;
-namespace npapi {
-class PluginGroup;
-}
 }
 
 namespace extensions {

@@ -14,8 +14,7 @@ namespace npapi {
 // to use |lock_| (but it doesn't hurt either).
 class MockPluginList : public PluginList {
  public:
-  MockPluginList(const PluginGroupDefinition* group_definitions,
-                 size_t num_group_definitions);
+  MockPluginList();
   virtual ~MockPluginList();
 
   void AddPluginToLoad(const WebPluginInfo& plugin);
@@ -29,10 +28,6 @@ class MockPluginList : public PluginList {
   std::vector<WebPluginInfo> plugins_to_load_;
 
   // PluginList methods:
-
-  // TODO(ibraaaa): DELETE. http://crbug.com/124396
-  virtual void LoadPluginsInternal(
-      ScopedVector<PluginGroup>* plugin_groups) OVERRIDE;
 
   virtual void LoadPluginsIntoPluginListInternal(
         std::vector<webkit::WebPluginInfo>* plugins) OVERRIDE;

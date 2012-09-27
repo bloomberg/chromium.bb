@@ -26,7 +26,6 @@
 #include "chrome/common/extensions/api/content_settings.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "content/public/browser/plugin_service.h"
-#include "webkit/plugins/npapi/plugin_group.h"
 
 using content::BrowserThread;
 using content::PluginService;

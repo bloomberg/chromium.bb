@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -14,12 +15,10 @@
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_context.h"
-#include "webkit/plugins/npapi/plugin_group.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 
 using content::BrowserThread;
 using content::PluginService;
-using webkit::npapi::PluginGroup;
 
 // static
 ChromePluginServiceFilter* ChromePluginServiceFilter::GetInstance() {
@@ -88,7 +87,6 @@ bool ChromePluginServiceFilter::ShouldUsePlugin(
       bool use = overridden_plugins_[i].plugin.path == plugin->path;
       if (use)
         *plugin = overridden_plugins_[i].plugin;
-
       return use;
     }
   }

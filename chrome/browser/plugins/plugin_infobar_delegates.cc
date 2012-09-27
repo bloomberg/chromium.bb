@@ -9,6 +9,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
@@ -20,7 +21,6 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "webkit/plugins/npapi/plugin_group.h"
 
 #if defined(OS_WIN)
 #include <shellapi.h>
@@ -84,19 +84,19 @@ UnauthorizedPluginInfoBarDelegate::UnauthorizedPluginInfoBarDelegate(
       content_settings_(content_settings) {
   content::RecordAction(UserMetricsAction("BlockedPluginInfobar.Shown"));
   std::string name = UTF16ToUTF8(utf16_name);
-  if (name == webkit::npapi::PluginGroup::kJavaGroupName)
+  if (name == PluginMetadata::kJavaGroupName)
     content::RecordAction(
         UserMetricsAction("BlockedPluginInfobar.Shown.Java"));
-  else if (name == webkit::npapi::PluginGroup::kQuickTimeGroupName)
+  else if (name == PluginMetadata::kQuickTimeGroupName)
     content::RecordAction(
         UserMetricsAction("BlockedPluginInfobar.Shown.QuickTime"));
-  else if (name == webkit::npapi::PluginGroup::kShockwaveGroupName)
+  else if (name == PluginMetadata::kShockwaveGroupName)
     content::RecordAction(
         UserMetricsAction("BlockedPluginInfobar.Shown.Shockwave"));
-  else if (name == webkit::npapi::PluginGroup::kRealPlayerGroupName)
+  else if (name == PluginMetadata::kRealPlayerGroupName)
     content::RecordAction(
         UserMetricsAction("BlockedPluginInfobar.Shown.RealPlayer"));
-  else if (name == webkit::npapi::PluginGroup::kWindowsMediaPlayerGroupName)
+  else if (name == PluginMetadata::kWindowsMediaPlayerGroupName)
     content::RecordAction(
         UserMetricsAction("BlockedPluginInfobar.Shown.WindowsMediaPlayer"));
 }
@@ -184,22 +184,22 @@ OutdatedPluginInfoBarDelegate::OutdatedPluginInfoBarDelegate(
       message_(message) {
   content::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Shown"));
   std::string name = UTF16ToUTF8(installer->name());
-  if (name == webkit::npapi::PluginGroup::kJavaGroupName)
+  if (name == PluginMetadata::kJavaGroupName)
     content::RecordAction(
         UserMetricsAction("OutdatedPluginInfobar.Shown.Java"));
-  else if (name == webkit::npapi::PluginGroup::kQuickTimeGroupName)
+  else if (name == PluginMetadata::kQuickTimeGroupName)
     content::RecordAction(
         UserMetricsAction("OutdatedPluginInfobar.Shown.QuickTime"));
-  else if (name == webkit::npapi::PluginGroup::kShockwaveGroupName)
+  else if (name == PluginMetadata::kShockwaveGroupName)
     content::RecordAction(
         UserMetricsAction("OutdatedPluginInfobar.Shown.Shockwave"));
-  else if (name == webkit::npapi::PluginGroup::kRealPlayerGroupName)
+  else if (name == PluginMetadata::kRealPlayerGroupName)
     content::RecordAction(
         UserMetricsAction("OutdatedPluginInfobar.Shown.RealPlayer"));
-  else if (name == webkit::npapi::PluginGroup::kSilverlightGroupName)
+  else if (name == PluginMetadata::kSilverlightGroupName)
     content::RecordAction(
         UserMetricsAction("OutdatedPluginInfobar.Shown.Silverlight"));
-  else if (name == webkit::npapi::PluginGroup::kAdobeReaderGroupName)
+  else if (name == PluginMetadata::kAdobeReaderGroupName)
     content::RecordAction(
         UserMetricsAction("OutdatedPluginInfobar.Shown.Reader"));
 }

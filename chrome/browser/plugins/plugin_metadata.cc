@@ -8,6 +8,16 @@
 #include "webkit/plugins/npapi/plugin_utils.h"
 #include "webkit/plugins/webplugininfo.h"
 
+// static
+const char PluginMetadata::kAdobeReaderGroupName[] = "Adobe Reader";
+const char PluginMetadata::kJavaGroupName[] = "Java(TM)";
+const char PluginMetadata::kQuickTimeGroupName[] = "QuickTime Player";
+const char PluginMetadata::kShockwaveGroupName[] = "Adobe Shockwave Player";
+const char PluginMetadata::kRealPlayerGroupName[] = "RealPlayer";
+const char PluginMetadata::kSilverlightGroupName[] = "Silverlight";
+const char PluginMetadata::kWindowsMediaPlayerGroupName[] =
+    "Windows Media Player";
+
 PluginMetadata::PluginMetadata(const std::string& identifier,
                                const string16& name,
                                bool url_for_display,

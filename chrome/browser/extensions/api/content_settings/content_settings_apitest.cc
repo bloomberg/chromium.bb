@@ -105,7 +105,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
   const char* kFooName = "Foo Plugin";
   const char* kBarName = "Bar Plugin";
 
-  webkit::npapi::MockPluginList plugin_list(NULL, 0);
+  webkit::npapi::MockPluginList plugin_list;
   plugin_list.AddPluginToLoad(
       webkit::WebPluginInfo(ASCIIToUTF16(kFooName),
                             FilePath(kFooPath),
