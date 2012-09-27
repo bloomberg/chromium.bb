@@ -2660,6 +2660,7 @@
         'app/breakpad_field_trial_win.cc',
         'app/breakpad_win.cc',
         'app/breakpad_unittest_win.cc',
+        'app/crash_analysis_win.cc',
         'app/hard_error_handler_win.cc',
         'app/run_all_unittests.cc'
       ],
