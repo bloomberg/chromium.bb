@@ -156,6 +156,7 @@ Widget::InitParams::InitParams()
       parent(NULL),
       parent_widget(NULL),
       native_widget(NULL),
+      desktop_root_window_host(NULL),
       top_level(false),
       layer_type(ui::LAYER_TEXTURED) {
 }
@@ -180,6 +181,7 @@ Widget::InitParams::InitParams(Type type)
       parent(NULL),
       parent_widget(NULL),
       native_widget(NULL),
+      desktop_root_window_host(NULL),
       top_level(false),
       layer_type(ui::LAYER_TEXTURED) {
 }

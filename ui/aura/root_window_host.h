@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/message_loop.h"
+#include "ui/aura/aura_export.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -25,7 +26,7 @@ class RootWindowHostDelegate;
 // RootWindowHost bridges between a native window and the embedded RootWindow.
 // It provides the accelerated widget and maps events from the native os to
 // aura.
-class RootWindowHost {
+class AURA_EXPORT RootWindowHost {
  public:
   virtual ~RootWindowHost() {}
 

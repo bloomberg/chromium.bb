@@ -6,6 +6,7 @@
 #define UI_VIEWS_WIDGET_DESKTOP_ROOT_WINDOW_HOST_H_
 
 #include "ui/base/ui_base_types.h"
+#include "ui/views/views_export.h"
 #include "ui/views/widget/widget.h"
 
 namespace aura {
@@ -24,7 +25,7 @@ class InputMethodDelegate;
 class NativeWidgetDelegate;
 }
 
-class DesktopRootWindowHost {
+class VIEWS_EXPORT DesktopRootWindowHost {
  public:
   virtual ~DesktopRootWindowHost() {}
 

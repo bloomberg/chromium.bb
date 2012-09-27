@@ -53,6 +53,7 @@ enum TouchStatus;
 namespace views {
 
 class DefaultThemeProvider;
+class DesktopRootWindowHost;
 class InputMethod;
 class NativeWidget;
 class NonClientFrameView;
@@ -181,6 +182,11 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     // When set, this value is used as the Widget's NativeWidget implementation.
     // The Widget will not construct a default one. Default is NULL.
     NativeWidget* native_widget;
+    // Aura-only. Provides a DesktopRootWindowHost implementation to use instead
+    // of the default one.
+    // TODO(beng): Figure out if there's a better way to expose this, e.g. get
+    // rid of NW subclasses and do this all via message handling.
+    DesktopRootWindowHost* desktop_root_window_host;
     bool top_level;
     // Only used by NativeWidgetAura. Specifies the type of layer for the
     // aura::Window. Default is LAYER_TEXTURED.

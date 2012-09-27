@@ -39,6 +39,8 @@ class DesktopBrowserFrameAura : public views::ContextMenuController,
                                       const gfx::Point& p) OVERRIDE;
 
   // Overridden from views::NativeWidgetAura:
+  virtual void InitNativeWidget(
+      const views::Widget::InitParams& params) OVERRIDE;
   virtual void OnWindowDestroying() OVERRIDE;
   virtual void OnWindowTargetVisibilityChanged(bool visible) OVERRIDE;
 
@@ -56,6 +58,7 @@ class DesktopBrowserFrameAura : public views::ContextMenuController,
 
   // The BrowserView is our ClientView. This is a pointer to it.
   BrowserView* browser_view_;
+  BrowserFrame* browser_frame_;
 
   scoped_ptr<WindowPropertyWatcher> window_property_watcher_;
 

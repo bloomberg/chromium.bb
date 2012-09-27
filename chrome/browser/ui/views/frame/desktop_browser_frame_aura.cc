@@ -24,6 +24,10 @@
 #include "ash/wm/property_util.h"
 #endif
 
+#if defined(OS_WIN)
+#include "chrome/browser/ui/views/frame/browser_desktop_root_window_host_win.h"
+#endif
+
 using aura::Window;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -78,6 +82,7 @@ DesktopBrowserFrameAura::DesktopBrowserFrameAura(
     BrowserView* browser_view)
     : views::DesktopNativeWidgetAura(browser_frame),
       browser_view_(browser_view),
+      browser_frame_(browser_frame),
       window_property_watcher_(new WindowPropertyWatcher(this, browser_frame)) {
   GetNativeWindow()->SetName("BrowserFrameAura");
   GetNativeWindow()->AddObserver(window_property_watcher_.get());
@@ -132,6 +137,19 @@ void DesktopBrowserFrameAura::ShowContextMenuForView(views::View* source,
 
 ///////////////////////////////////////////////////////////////////////////////
 // DesktopBrowserFrameAura, views::DestkopNativeWidgetAura overrides:
+
+void DesktopBrowserFrameAura::InitNativeWidget(
+    const views::Widget::InitParams& params) {
+  views::Widget::InitParams modified_params = params;
+#if defined(OS_WIN)
+  modified_params.desktop_root_window_host =
+      new BrowserDesktopRootWindowHostWin(browser_frame_,
+                                          params.bounds,
+                                          browser_view_,
+                                          browser_frame_);
+#endif
+  DesktopNativeWidgetAura::InitNativeWidget(modified_params);
+}
 
 void DesktopBrowserFrameAura::OnWindowDestroying() {
   // Window is destroyed before our destructor is called, so clean up our

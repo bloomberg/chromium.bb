@@ -520,6 +520,8 @@ void DesktopRootWindowHostWin::HandleCreate() {
   // TODO(beng): moar
   NOTIMPLEMENTED();
 
+  native_widget_delegate_->OnNativeWidgetCreated();
+
   // 1. Window property association
   // 2. MouseWheel.
   // 3. Drop target.
@@ -678,6 +680,10 @@ Widget* DesktopRootWindowHostWin::GetWidget() {
 
 const Widget* DesktopRootWindowHostWin::GetWidget() const {
   return native_widget_delegate_->AsWidget();
+}
+
+HWND DesktopRootWindowHostWin::GetHWND() {
+  return message_handler_->hwnd();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

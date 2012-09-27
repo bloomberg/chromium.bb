@@ -1419,6 +1419,8 @@
         'browser/ui/views/frame/contents_container.h',
         'browser/ui/views/frame/desktop_browser_frame_aura.cc',
         'browser/ui/views/frame/desktop_browser_frame_aura.h',
+        'browser/ui/views/frame/browser_desktop_root_window_host_win.cc',
+        'browser/ui/views/frame/browser_desktop_root_window_host_win.h',
         'browser/ui/views/frame/glass_browser_frame_view.cc',
         'browser/ui/views/frame/glass_browser_frame_view.h',
         'browser/ui/views/frame/native_browser_frame.h',
