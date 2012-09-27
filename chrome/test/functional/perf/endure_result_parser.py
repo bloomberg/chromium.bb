@@ -218,6 +218,107 @@ def OutputEventData(revision, event_dict, dest_dir):
   WriteToDataFile(new_line, existing_lines, revision, data_file)
 
 
+def UpdatePerfDataFromFetchedContent(revision, content, webapp_name, test_name):
+  """Update perf data from fetched stdio data.
+
+  Args:
+    revision: The string revision number associated with the new perf entry.
+    content: Fetched stdio data.
+    webapp_name: A name of the webapp.
+    test_name: A name of the test.
+  """
+  perf_data_raw = []
+
+  def AppendRawPerfData(graph_name, description, value, units, units_x,
+                        webapp_name, test_name, is_stacked=False):
+    perf_data_raw.append({
+      'graph_name': graph_name,
+      'description': description,
+      'value': value,
+      'units': units,
+      'units_x': units_x,
+      'webapp_name': webapp_name,
+      'test_name': test_name,
+      'stack': is_stacked,
+    })
+
+  # First scan for short-running perf test results.
+  for match in re.findall(
+      r'RESULT ([^:]+): ([^=]+)= ([-\d\.]+) (\S+)', content):
+    AppendRawPerfData(match[0], match[1], eval(match[2]), match[3], None,
+                      webapp_name, webapp_name)
+
+  # Next scan for long-running perf test results.
+  for match in re.findall(
+      r'RESULT ([^:]+): ([^=]+)= (\[[^\]]+\]) (\S+) (\S+)', content):
+    # TODO(dmikurube): Change the condition to use stacked graph when we
+    # determine how to specify it.
+    AppendRawPerfData(match[0], match[1], eval(match[2]), match[3], match[4],
+                      webapp_name, test_name, match[0].endswith('-DMP'))
+
+  # Next scan for events in the test results.
+  for match in re.findall(
+      r'RESULT _EVENT_: ([^=]+)= (\[[^\]]+\])', content):
+    AppendRawPerfData('_EVENT_', match[0], eval(match[1]), None, None,
+                      webapp_name, test_name)
+
+  # For each graph_name/description pair that refers to a long-running test
+  # result or an event, concatenate all the results together (assume results
+  # in the input file are in the correct order).  For short-running test
+  # results, keep just one if more than one is specified.
+  perf_data = {}  # Maps a graph-line key to a perf data dictionary.
+  for data in perf_data_raw:
+    key_graph = data['graph_name']
+    key_description = data['description']
+    if not key_graph in perf_data:
+      perf_data[key_graph] = {
+        'graph_name': data['graph_name'],
+        'value': {},
+        'units': data['units'],
+        'units_x': data['units_x'],
+        'webapp_name': data['webapp_name'],
+        'test_name': data['test_name'],
+      }
+    perf_data[key_graph]['stack'] = data['stack']
+    if 'stack_order' not in perf_data[key_graph]:
+      perf_data[key_graph]['stack_order'] = []
+    if (data['stack'] and
+        data['description'] not in perf_data[key_graph]['stack_order']):
+      perf_data[key_graph]['stack_order'].append(data['description'])
+
+    if data['graph_name'] != '_EVENT_' and not data['units_x']:
+      # Short-running test result.
+      perf_data[key_graph]['value'][key_description] = data['value']
+    else:
+      # Long-running test result or event.
+      if key_description in perf_data[key_graph]['value']:
+        perf_data[key_graph]['value'][key_description] += data['value']
+      else:
+        perf_data[key_graph]['value'][key_description] = data['value']
+
+  # Finally, for each graph-line in |perf_data|, update the associated local
+  # graph data files if necessary.
+  for perf_data_key in perf_data:
+    perf_data_dict = perf_data[perf_data_key]
+
+    dest_dir = os.path.join(LOCAL_GRAPH_DIR, perf_data_dict['webapp_name'])
+    if not os.path.exists(dest_dir):
+      os.mkdir(dest_dir)  # Webapp name directory.
+      os.chmod(dest_dir, 0755)
+    dest_dir = os.path.join(dest_dir, perf_data_dict['test_name'])
+
+    SetupBaseGraphDirIfNeeded(perf_data_dict['webapp_name'],
+                              perf_data_dict['test_name'], dest_dir)
+    if perf_data_dict['graph_name'] == '_EVENT_':
+      OutputEventData(revision, perf_data_dict['value'], dest_dir)
+    else:
+      OutputPerfData(revision, perf_data_dict['graph_name'],
+                     perf_data_dict['value'],
+                     perf_data_dict['units'], perf_data_dict['units_x'],
+                     dest_dir,
+                     perf_data_dict['stack'], perf_data_dict['stack_order'])
+
+
 def UpdatePerfDataForSlaveAndBuild(slave_info, build_num):
   """Process updated perf data for a particular slave and build number.
 
@@ -305,100 +406,9 @@ def UpdatePerfDataForSlaveAndBuild(slave_info, build_num):
       if fp:
         fp.close()
 
-    perf_data_raw = []
-
-    def AppendRawPerfData(graph_name, description, value, units, units_x,
-                          webapp_name, test_name, is_stacked=False):
-      perf_data_raw.append({
-        'graph_name': graph_name,
-        'description': description,
-        'value': value,
-        'units': units,
-        'units_x': units_x,
-        'webapp_name': webapp_name,
-        'test_name': test_name,
-        'stack': is_stacked,
-      })
-
-    # First scan for short-running perf test results.
-    for match in re.findall(
-        r'RESULT ([^:]+): ([^=]+)= ([-\d\.]+) (\S+)', url_contents):
-      AppendRawPerfData(match[0], match[1], eval(match[2]), match[3], None,
-                        stdio_url_data['webapp_name'],
-                        stdio_url_data['webapp_name'])
-
-    # Next scan for long-running perf test results.
-    for match in re.findall(
-        r'RESULT ([^:]+): ([^=]+)= (\[[^\]]+\]) (\S+) (\S+)', url_contents):
-      # TODO(dmikurube): Change the condition to use stacked graph when we
-      # determine how to specify it.
-      AppendRawPerfData(match[0], match[1], eval(match[2]), match[3], match[4],
-                        stdio_url_data['webapp_name'],
-                        stdio_url_data['test_name'],
-                        match[0].endswith('-DMP'))
-
-    # Next scan for events in the test results.
-    for match in re.findall(
-        r'RESULT _EVENT_: ([^=]+)= (\[[^\]]+\])', url_contents):
-      AppendRawPerfData('_EVENT_', match[0], eval(match[1]), None, None,
-                        stdio_url_data['webapp_name'],
-                        stdio_url_data['test_name'])
-
-    # For each graph_name/description pair that refers to a long-running test
-    # result or an event, concatenate all the results together (assume results
-    # in the input file are in the correct order).  For short-running test
-    # results, keep just one if more than one is specified.
-    perf_data = {}  # Maps a graph-line key to a perf data dictionary.
-    for data in perf_data_raw:
-      key_graph = data['graph_name']
-      key_description = data['description']
-      if not key_graph in perf_data:
-        perf_data[key_graph] = {
-          'graph_name': data['graph_name'],
-          'value': {},
-          'units': data['units'],
-          'units_x': data['units_x'],
-          'webapp_name': data['webapp_name'],
-          'test_name': data['test_name'],
-        }
-      perf_data[key_graph]['stack'] = data['stack']
-      if 'stack_order' not in perf_data[key_graph]:
-        perf_data[key_graph]['stack_order'] = []
-      if (data['stack'] and
-          data['description'] not in perf_data[key_graph]['stack_order']):
-        perf_data[key_graph]['stack_order'].append(data['description'])
-
-      if data['graph_name'] != '_EVENT_' and not data['units_x']:
-        # Short-running test result.
-        perf_data[key_graph]['value'][key_description] = data['value']
-      else:
-        # Long-running test result or event.
-        if key_description in perf_data[key_graph]['value']:
-          perf_data[key_graph]['value'][key_description] += data['value']
-        else:
-          perf_data[key_graph]['value'][key_description] = data['value']
-
-    # Finally, for each graph-line in |perf_data|, update the associated local
-    # graph data files if necessary.
-    for perf_data_key in perf_data:
-      perf_data_dict = perf_data[perf_data_key]
-
-      dest_dir = os.path.join(LOCAL_GRAPH_DIR, perf_data_dict['webapp_name'])
-      if not os.path.exists(dest_dir):
-        os.mkdir(dest_dir)  # Webapp name directory.
-        os.chmod(dest_dir, 0755)
-      dest_dir = os.path.join(dest_dir, perf_data_dict['test_name'])
-
-      SetupBaseGraphDirIfNeeded(perf_data_dict['webapp_name'],
-                                perf_data_dict['test_name'], dest_dir)
-      if perf_data_dict['graph_name'] == '_EVENT_':
-        OutputEventData(revision, perf_data_dict['value'], dest_dir)
-      else:
-        OutputPerfData(revision, perf_data_dict['graph_name'],
-                       perf_data_dict['value'],
-                       perf_data_dict['units'], perf_data_dict['units_x'],
-                       dest_dir,
-                       perf_data_dict['stack'], perf_data_dict['stack_order'])
+    UpdatePerfDataFromFetchedContent(revision, url_contents,
+                                     stdio_url_data['webapp_name'],
+                                     stdio_url_data['test_name'])
 
   return True
 
@@ -605,16 +615,23 @@ def main():
   parser.add_option(
       '-v', '--verbose', action='store_true', default=False,
       help='Use verbose logging.')
+  parser.add_option(
+      '-s', '--stdin', action='store_true', default=False,
+      help='Input from stdin instead of slaves for testing this script.')
   options, _ = parser.parse_args(sys.argv)
 
   logging_level = logging.DEBUG if options.verbose else logging.INFO
   logging.basicConfig(level=logging_level,
                       format='[%(asctime)s] %(levelname)s: %(message)s')
 
-  success = UpdatePerfDataFiles()
-  if not success:
-    logging.error('Failed to update perf data files.')
-    sys.exit(0)
+  if options.stdin:
+    content = sys.stdin.read()
+    UpdatePerfDataFromFetchedContent('12345', content, 'webapp', 'test')
+  else:
+    success = UpdatePerfDataFiles()
+    if not success:
+      logging.error('Failed to update perf data files.')
+      sys.exit(0)
 
   GenerateIndexPage()
   logging.debug('All done!')
