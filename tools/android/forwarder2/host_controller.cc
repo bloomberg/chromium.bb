@@ -68,9 +68,7 @@ bool HostController::Connect() {
     return false;
   }
   // Send the command to the device start listening to the "device_forward_port"
-  bool send_command_success = SendCommand(
-      command::LISTEN, device_port_, &adb_control_socket_);
-  CHECK(send_command_success);
+  SendCommand(command::LISTEN, device_port_, &adb_control_socket_);
   int device_port_allocated;
   command::Type command;
   if (!ReadCommand(&adb_control_socket_, &device_port_allocated, &command) ||
