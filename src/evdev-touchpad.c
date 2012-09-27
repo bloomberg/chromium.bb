@@ -42,11 +42,13 @@ enum touchpad_model {
 	TOUCHPAD_MODEL_ELANTECH
 };
 
-#define TOUCHPAD_EVENT_NONE		0
-#define TOUCHPAD_EVENT_ABSOLUTE_ANY	(1 << 0)
-#define TOUCHPAD_EVENT_ABSOLUTE_X	(1 << 1)
-#define TOUCHPAD_EVENT_ABSOLUTE_Y	(1 << 2)
-#define TOUCHPAD_EVENT_REPORT		(1 << 3)
+enum touchpad_event {
+	TOUCHPAD_EVENT_NONE	    = 0,
+	TOUCHPAD_EVENT_ABSOLUTE_ANY = (1 << 0),
+	TOUCHPAD_EVENT_ABSOLUTE_X   = (1 << 1),
+	TOUCHPAD_EVENT_ABSOLUTE_Y   = (1 << 2),
+	TOUCHPAD_EVENT_REPORT	    = (1 << 3)
+};
 
 struct touchpad_model_spec {
 	short vendor;
@@ -63,9 +65,9 @@ static struct touchpad_model_spec touchpad_spec_table[] = {
 };
 
 enum touchpad_state {
-	TOUCHPAD_STATE_NONE = 0,
-	TOUCHPAD_STATE_TOUCH,
-	TOUCHPAD_STATE_PRESS
+	TOUCHPAD_STATE_NONE  = 0,
+	TOUCHPAD_STATE_TOUCH = (1 << 0),
+	TOUCHPAD_STATE_MOVE  = (1 << 1)
 };
 
 #define TOUCHPAD_HISTORY_LENGTH 4
@@ -86,7 +88,7 @@ struct touchpad_dispatch {
 	struct evdev_device *device;
 
 	enum touchpad_model model;
-	enum touchpad_state state;
+	unsigned int state;
 	int finger_state;
 	int last_finger_state;
 
@@ -108,7 +110,6 @@ struct touchpad_dispatch {
 	struct {
 		int32_t touch_low;
 		int32_t touch_high;
-		int32_t press;
 	} pressure;
 
 	struct {
@@ -122,7 +123,7 @@ struct touchpad_dispatch {
 	int motion_index;
 	unsigned int motion_count;
 
-	struct wl_list motion_filters;
+	struct weston_motion_filter *filter;
 };
 
 static enum touchpad_model
@@ -163,8 +164,6 @@ configure_touchpad_pressure(struct touchpad_dispatch *touchpad,
 		touchpad->pressure.touch_high =
 			pressure_min + range * (30.0/256.0);
 	}
-
-	touchpad->pressure.press = pressure_min + range;
 }
 
 static double
@@ -186,65 +185,6 @@ touchpad_profile(struct weston_motion_filter *filter,
 		accel_factor = touchpad->min_accel_factor;
 
 	return accel_factor;
-}
-
-static void
-configure_touchpad(struct touchpad_dispatch *touchpad,
-		   struct evdev_device *device)
-{
-	struct weston_motion_filter *accel;
-
-	struct input_absinfo absinfo;
-	unsigned long abs_bits[NBITS(ABS_MAX)];
-
-	double width;
-	double height;
-	double diagonal;
-
-	/* Detect model */
-	touchpad->model = get_touchpad_model(device);
-
-	/* Configure pressure */
-	ioctl(device->fd, EVIOCGBIT(EV_ABS, sizeof(abs_bits)), abs_bits);
-	if (TEST_BIT(abs_bits, ABS_PRESSURE)) {
-		ioctl(device->fd, EVIOCGABS(ABS_PRESSURE), &absinfo);
-		configure_touchpad_pressure(touchpad,
-					    absinfo.minimum,
-					    absinfo.maximum);
-	}
-
-	/* Configure acceleration factor */
-	width = abs(device->abs.max_x - device->abs.min_x);
-	height = abs(device->abs.max_y - device->abs.min_y);
-	diagonal = sqrt(width*width + height*height);
-
-	touchpad->constant_accel_factor =
-		DEFAULT_CONSTANT_ACCEL_NUMERATOR / diagonal;
-
-	touchpad->min_accel_factor = DEFAULT_MIN_ACCEL_FACTOR;
-	touchpad->max_accel_factor = DEFAULT_MAX_ACCEL_FACTOR;
-
-	touchpad->hysteresis.margin_x =
-	       	diagonal / DEFAULT_HYSTERESIS_MARGIN_DENOMINATOR;
-	touchpad->hysteresis.margin_y =
-	       	diagonal / DEFAULT_HYSTERESIS_MARGIN_DENOMINATOR;
-	touchpad->hysteresis.center_x = 0;
-	touchpad->hysteresis.center_y = 0;
-
-	/* Configure acceleration profile */
-	accel = create_pointer_accelator_filter(touchpad_profile);
-	wl_list_insert(&touchpad->motion_filters, &accel->link);
-
-	/* Setup initial state */
-	touchpad->reset = 1;
-
-	memset(touchpad->motion_history, 0, sizeof touchpad->motion_history);
-	touchpad->motion_index = 0;
-	touchpad->motion_count = 0;
-
-	touchpad->state = TOUCHPAD_STATE_NONE;
-	touchpad->last_finger_state = 0;
-	touchpad->finger_state = 0;
 }
 
 static inline struct touchpad_motion *
@@ -294,14 +234,12 @@ static void
 filter_motion(struct touchpad_dispatch *touchpad,
 	      double *dx, double *dy, uint32_t time)
 {
-	struct weston_motion_filter *filter;
 	struct weston_motion_params motion;
 
 	motion.dx = *dx;
 	motion.dy = *dy;
 
-	wl_list_for_each(filter, &touchpad->motion_filters, link)
-		weston_filter_dispatch(filter, &motion, touchpad, time);
+	weston_filter_dispatch(touchpad->filter, &motion, touchpad, time);
 
 	*dx = motion.dx;
 	*dy = motion.dy;
@@ -312,7 +250,7 @@ touchpad_update_state(struct touchpad_dispatch *touchpad, uint32_t time)
 {
 	int motion_index;
 	int center_x, center_y;
-	double dx, dy;
+	double dx = 0.0, dy = 0.0;
 
 	if (touchpad->reset ||
 	    touchpad->last_finger_state != touchpad->finger_state) {
@@ -349,8 +287,7 @@ touchpad_update_state(struct touchpad_dispatch *touchpad, uint32_t time)
 		center_y = hysteresis(touchpad->hw_abs.y,
 				      touchpad->hysteresis.center_y,
 				      touchpad->hysteresis.margin_y);
-	}
-	else {
+	} else {
 		center_x = touchpad->hw_abs.x;
 		center_y = touchpad->hw_abs.y;
 	}
@@ -376,6 +313,25 @@ touchpad_update_state(struct touchpad_dispatch *touchpad, uint32_t time)
 		touchpad->device->rel.dy = wl_fixed_from_double(dy);
 		touchpad->device->pending_events |= EVDEV_RELATIVE_MOTION;
 	}
+
+	if (!(touchpad->state & TOUCHPAD_STATE_MOVE) &&
+	    ((int)dx || (int)dy)) {
+		touchpad->state |= TOUCHPAD_STATE_MOVE;
+	}
+}
+
+static void
+on_touch(struct touchpad_dispatch *touchpad)
+{
+	touchpad->state |= TOUCHPAD_STATE_TOUCH;
+}
+
+static void
+on_release(struct touchpad_dispatch *touchpad)
+{
+
+	touchpad->reset = 1;
+	touchpad->state &= ~(TOUCHPAD_STATE_MOVE | TOUCHPAD_STATE_TOUCH);
 }
 
 static inline void
@@ -385,27 +341,23 @@ process_absolute(struct touchpad_dispatch *touchpad,
 {
 	switch (e->code) {
 	case ABS_PRESSURE:
-		if (e->value > touchpad->pressure.press)
-			touchpad->state = TOUCHPAD_STATE_PRESS;
-		else if (e->value > touchpad->pressure.touch_high)
-			touchpad->state = TOUCHPAD_STATE_TOUCH;
-		else if (e->value < touchpad->pressure.touch_low) {
-			if (touchpad->state > TOUCHPAD_STATE_NONE)
-				touchpad->reset = 1;
-
-			touchpad->state = TOUCHPAD_STATE_NONE;
-		}
+		if (e->value > touchpad->pressure.touch_high &&
+		    !(touchpad->state & TOUCHPAD_STATE_TOUCH))
+			on_touch(touchpad);
+		else if (e->value < touchpad->pressure.touch_low &&
+			 touchpad->state & TOUCHPAD_STATE_TOUCH)
+			on_release(touchpad);
 
 		break;
 	case ABS_X:
-		if (touchpad->state >= TOUCHPAD_STATE_TOUCH) {
+		if (touchpad->state & TOUCHPAD_STATE_TOUCH) {
 			touchpad->hw_abs.x = e->value;
 			touchpad->event_mask |= TOUCHPAD_EVENT_ABSOLUTE_ANY;
 			touchpad->event_mask |= TOUCHPAD_EVENT_ABSOLUTE_X;
 		}
 		break;
 	case ABS_Y:
-		if (touchpad->state >= TOUCHPAD_STATE_TOUCH) {
+		if (touchpad->state & TOUCHPAD_STATE_TOUCH) {
 			touchpad->hw_abs.y = e->value;
 			touchpad->event_mask |= TOUCHPAD_EVENT_ABSOLUTE_ANY;
 			touchpad->event_mask |= TOUCHPAD_EVENT_ABSOLUTE_Y;
@@ -423,15 +375,10 @@ process_key(struct touchpad_dispatch *touchpad,
 	switch (e->code) {
 	case BTN_TOUCH:
 		if (!touchpad->has_pressure) {
-			if (!e->value) {
-				touchpad->state = TOUCHPAD_STATE_NONE;
-				touchpad->reset = 1;
-			} else {
-				touchpad->state =
-					e->value ?
-					TOUCHPAD_STATE_TOUCH :
-					TOUCHPAD_STATE_NONE;
-			}
+			if (e->value && !(touchpad->state & TOUCHPAD_STATE_TOUCH))
+				on_touch(touchpad);
+			else if (!e->value)
+				on_release(touchpad);
 		}
 		break;
 	case BTN_LEFT:
@@ -504,12 +451,8 @@ touchpad_destroy(struct evdev_dispatch *dispatch)
 {
 	struct touchpad_dispatch *touchpad =
 		(struct touchpad_dispatch *) dispatch;
-	struct weston_motion_filter *filter;
-	struct weston_motion_filter *next;
 
-	wl_list_for_each_safe(filter, next, &touchpad->motion_filters, link)
-		filter->interface->destroy(filter);
-
+	touchpad->filter->interface->destroy(touchpad->filter);
 	free(dispatch);
 }
 
@@ -517,6 +460,72 @@ struct evdev_dispatch_interface touchpad_interface = {
 	touchpad_process,
 	touchpad_destroy
 };
+
+static int
+touchpad_init(struct touchpad_dispatch *touchpad,
+	      struct evdev_device *device)
+{
+	struct weston_motion_filter *accel;
+
+	struct input_absinfo absinfo;
+	unsigned long abs_bits[NBITS(ABS_MAX)];
+
+	double width;
+	double height;
+	double diagonal;
+
+	touchpad->base.interface = &touchpad_interface;
+	touchpad->device = device;
+
+	/* Detect model */
+	touchpad->model = get_touchpad_model(device);
+
+	/* Configure pressure */
+	ioctl(device->fd, EVIOCGBIT(EV_ABS, sizeof(abs_bits)), abs_bits);
+	if (TEST_BIT(abs_bits, ABS_PRESSURE)) {
+		ioctl(device->fd, EVIOCGABS(ABS_PRESSURE), &absinfo);
+		configure_touchpad_pressure(touchpad,
+					    absinfo.minimum,
+					    absinfo.maximum);
+	}
+
+	/* Configure acceleration factor */
+	width = abs(device->abs.max_x - device->abs.min_x);
+	height = abs(device->abs.max_y - device->abs.min_y);
+	diagonal = sqrt(width*width + height*height);
+
+	touchpad->constant_accel_factor =
+		DEFAULT_CONSTANT_ACCEL_NUMERATOR / diagonal;
+
+	touchpad->min_accel_factor = DEFAULT_MIN_ACCEL_FACTOR;
+	touchpad->max_accel_factor = DEFAULT_MAX_ACCEL_FACTOR;
+
+	touchpad->hysteresis.margin_x =
+		diagonal / DEFAULT_HYSTERESIS_MARGIN_DENOMINATOR;
+	touchpad->hysteresis.margin_y =
+		diagonal / DEFAULT_HYSTERESIS_MARGIN_DENOMINATOR;
+	touchpad->hysteresis.center_x = 0;
+	touchpad->hysteresis.center_y = 0;
+
+	/* Configure acceleration profile */
+	accel = create_pointer_accelator_filter(touchpad_profile);
+	if (accel == NULL)
+		return -1;
+	touchpad->filter = accel;
+
+	/* Setup initial state */
+	touchpad->reset = 1;
+
+	memset(touchpad->motion_history, 0, sizeof touchpad->motion_history);
+	touchpad->motion_index = 0;
+	touchpad->motion_count = 0;
+
+	touchpad->state = TOUCHPAD_STATE_NONE;
+	touchpad->last_finger_state = 0;
+	touchpad->finger_state = 0;
+
+	return 0;
+}
 
 struct evdev_dispatch *
 evdev_touchpad_create(struct evdev_device *device)
@@ -527,12 +536,10 @@ evdev_touchpad_create(struct evdev_device *device)
 	if (touchpad == NULL)
 		return NULL;
 
-	touchpad->base.interface = &touchpad_interface;
-
-	touchpad->device = device;
-	wl_list_init(&touchpad->motion_filters);
-
-	configure_touchpad(touchpad, device);
+	if (touchpad_init(touchpad, device) != 0) {
+		free(touchpad);
+		return NULL;
+	}
 
 	return &touchpad->base;
 }
