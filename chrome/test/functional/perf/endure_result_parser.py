@@ -112,7 +112,8 @@ def WriteToDataFile(new_line, existing_lines, revision, data_file):
   os.chmod(data_file, 0755)
 
 
-def OutputPerfData(revision, graph_name, values, units, units_x, dest_dir):
+def OutputPerfData(revision, graph_name, values, units, units_x, dest_dir,
+                   is_stacked=False, stack_order=[]):
   """Outputs perf data to a local text file to be graphed.
 
   Args:
@@ -125,6 +126,10 @@ def OutputPerfData(revision, graph_name, values, units, units_x, dest_dir):
     units_x: The string description for the x-axis units on the graph.  Should
         be set to None if the results are not for long-running graphs.
     dest_dir: The name of the destination directory to which to write.
+    is_stacked: True to draw a "stacked" graph.  First-come values are
+        stacked at bottom by default.
+    stack_order: A list that contains key strings in the order to stack values
+        in the graph.
   """
   # Update graphs.dat, which contains metadata associated with each graph.
   existing_graphs = []
@@ -173,6 +178,9 @@ def OutputPerfData(revision, graph_name, values, units, units_x, dest_dir):
     'traces': new_traces,
     'rev': revision
   }
+  if is_stacked:
+    new_line['stack'] = True
+    new_line['stack_order'] = stack_order
 
   WriteToDataFile(new_line, existing_lines, revision, data_file)
 
@@ -300,7 +308,7 @@ def UpdatePerfDataForSlaveAndBuild(slave_info, build_num):
     perf_data_raw = []
 
     def AppendRawPerfData(graph_name, description, value, units, units_x,
-                          webapp_name, test_name):
+                          webapp_name, test_name, is_stacked=False):
       perf_data_raw.append({
         'graph_name': graph_name,
         'description': description,
@@ -309,6 +317,7 @@ def UpdatePerfDataForSlaveAndBuild(slave_info, build_num):
         'units_x': units_x,
         'webapp_name': webapp_name,
         'test_name': test_name,
+        'stack': is_stacked,
       })
 
     # First scan for short-running perf test results.
@@ -321,9 +330,12 @@ def UpdatePerfDataForSlaveAndBuild(slave_info, build_num):
     # Next scan for long-running perf test results.
     for match in re.findall(
         r'RESULT ([^:]+): ([^=]+)= (\[[^\]]+\]) (\S+) (\S+)', url_contents):
+      # TODO(dmikurube): Change the condition to use stacked graph when we
+      # determine how to specify it.
       AppendRawPerfData(match[0], match[1], eval(match[2]), match[3], match[4],
                         stdio_url_data['webapp_name'],
-                        stdio_url_data['test_name'])
+                        stdio_url_data['test_name'],
+                        match[0].endswith('-DMP'))
 
     # Next scan for events in the test results.
     for match in re.findall(
@@ -349,6 +361,13 @@ def UpdatePerfDataForSlaveAndBuild(slave_info, build_num):
           'webapp_name': data['webapp_name'],
           'test_name': data['test_name'],
         }
+      perf_data[key_graph]['stack'] = data['stack']
+      if 'stack_order' not in perf_data[key_graph]:
+        perf_data[key_graph]['stack_order'] = []
+      if (data['stack'] and
+          data['description'] not in perf_data[key_graph]['stack_order']):
+        perf_data[key_graph]['stack_order'].append(data['description'])
+
       if data['graph_name'] != '_EVENT_' and not data['units_x']:
         # Short-running test result.
         perf_data[key_graph]['value'][key_description] = data['value']
@@ -378,7 +397,8 @@ def UpdatePerfDataForSlaveAndBuild(slave_info, build_num):
         OutputPerfData(revision, perf_data_dict['graph_name'],
                        perf_data_dict['value'],
                        perf_data_dict['units'], perf_data_dict['units_x'],
-                       dest_dir)
+                       dest_dir,
+                       perf_data_dict['stack'], perf_data_dict['stack_order'])
 
   return True
 
