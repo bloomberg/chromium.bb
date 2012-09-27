@@ -81,14 +81,8 @@ class TopMostFinder : public BaseWindowFinder {
       return false;
     }
 
-    gfx::Rect rect;
-    if (ui::GetWindowRect(window, &rect) && rect.Contains(screen_loc_)) {
-      // At this point we haven't found our target window, so this window is
-      // higher in the z-order than the target window.  If this window contains
-      // the point, then we can stop the search now because this window is
-      // obscuring the target window at this point.
+    if (ui::WindowContainsPoint(window, screen_loc_))
       return true;
-    }
 
     return false;
   }
@@ -149,8 +143,7 @@ class LocalProcessWindowFinder : public BaseWindowFinder {
     if (!ui::IsWindowVisible(window))
       return false;
 
-    gfx::Rect rect;
-    if (ui::GetWindowRect(window, &rect) && rect.Contains(screen_loc_)) {
+    if (ui::WindowContainsPoint(window, screen_loc_)) {
       result_ = window;
       return true;
     }

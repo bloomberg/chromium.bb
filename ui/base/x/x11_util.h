@@ -145,6 +145,9 @@ UI_EXPORT bool IsWindowVisible(XID window);
 // Returns the bounds of |window|.
 UI_EXPORT bool GetWindowRect(XID window, gfx::Rect* rect);
 
+// Returns true if |window| contains the point |screen_loc|.
+UI_EXPORT bool WindowContainsPoint(XID window, gfx::Point screen_loc);
+
 // Return true if |window| has any property with |property_name|.
 UI_EXPORT bool PropertyExists(XID window, const std::string& property_name);
 

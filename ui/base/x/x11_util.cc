@@ -19,6 +19,7 @@
 
 #include <X11/extensions/Xrandr.h>
 #include <X11/extensions/randr.h>
+#include <X11/extensions/shape.h>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -310,17 +311,19 @@ class XButtonMap {
 };
 
 bool IsRandRAvailable() {
-  static bool is_randr_available = false;
-  static bool is_randr_availability_cached = false;
-  if (is_randr_availability_cached)
-    return is_randr_available;
-
   int randr_version_major = 0;
   int randr_version_minor = 0;
-  is_randr_available = XRRQueryVersion(
+  static bool is_randr_available = XRRQueryVersion(
       GetXDisplay(), &randr_version_major, &randr_version_minor);
-  is_randr_availability_cached = true;
   return is_randr_available;
+}
+
+bool IsShapeAvailable() {
+  int dummy;
+  static bool is_shape_available =
+    XShapeQueryExtension(ui::GetXDisplay(), &dummy, &dummy);
+  return is_shape_available;
+
 }
 
 }  // namespace
@@ -611,6 +614,45 @@ bool GetWindowRect(XID window, gfx::Rect* rect) {
   *rect = gfx::Rect(x, y, width, height);
   return true;
 }
+
+
+bool WindowContainsPoint(XID window, gfx::Point screen_loc) {
+  gfx::Rect window_rect;
+  if (!GetWindowRect(window, &window_rect))
+    return false;
+
+  if (!window_rect.Contains(screen_loc))
+    return false;
+
+  if (!IsShapeAvailable())
+    return true;
+
+  // According to http://www.x.org/releases/X11R7.6/doc/libXext/shapelib.html,
+  // if an X display supports the shape extension the bounds of a window are
+  // defined as the intersection of the window bounds and the interior
+  // rectangles. This means to determine if a point is inside a window for the
+  // purpose of input handling we have to check the rectangles in the ShapeInput
+  // list.
+  int dummy;
+  int input_rects_size = 0;
+  XRectangle* input_rects = XShapeGetRectangles(
+      ui::GetXDisplay(), window, ShapeInput, &input_rects_size, &dummy);
+  if (!input_rects)
+    return true;
+  bool is_in_input_rects = false;
+  for (int i = 0; i < input_rects_size; ++i) {
+    gfx::Rect input_rect =
+        gfx::Rect(input_rects[i].x, input_rects[i].y,
+                  input_rects[i].width, input_rects[i].height);
+    if (input_rect.Contains(screen_loc)) {
+      is_in_input_rects = true;
+      break;
+    }
+  }
+  XFree(input_rects);
+  return is_in_input_rects;
+}
+
 
 bool PropertyExists(XID window, const std::string& property_name) {
   Atom type = None;
