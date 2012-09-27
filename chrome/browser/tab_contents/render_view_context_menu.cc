@@ -672,7 +672,8 @@ void RenderViewContextMenu::AppendPlatformAppItems() {
 
   // Add dev tools for unpacked extensions.
   if (platform_app->location() == Extension::LOAD) {
-    menu_model_.AddItemWithStringId(IDC_RELOAD, IDS_CONTENT_CONTEXT_RELOAD);
+    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_RELOAD_PACKAGED_APP,
+                                    IDS_CONTENT_CONTEXT_RELOAD_PACKAGED_APP);
     AppendDeveloperItems();
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_INSPECTBACKGROUNDPAGE,
                                     IDS_CONTENT_CONTEXT_INSPECTBACKGROUNDPAGE);
@@ -1148,6 +1149,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
 
     case IDC_CONTENT_CONTEXT_INSPECTELEMENT:
     case IDC_CONTENT_CONTEXT_INSPECTBACKGROUNDPAGE:
+    case IDC_CONTENT_CONTEXT_RELOAD_PACKAGED_APP:
       return IsDevCommandEnabled(id);
 
     case IDC_CONTENT_CONTEXT_VIEWPAGEINFO:
@@ -1667,6 +1669,16 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       // context of an external context menu.
       source_web_contents_->GetController().Reload(!external_);
       break;
+
+    case IDC_CONTENT_CONTEXT_RELOAD_PACKAGED_APP: {
+      const Extension* platform_app = GetExtension();
+      DCHECK(platform_app);
+      DCHECK(platform_app->is_platform_app());
+
+      extensions::ExtensionSystem::Get(profile_)->extension_service()->
+          ReloadExtension(platform_app->id());
+      break;
+    }
 
     case IDC_PRINT:
       if (params_.media_type == WebContextMenuData::MediaTypeNone) {

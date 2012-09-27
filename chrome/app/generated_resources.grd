@@ -519,6 +519,9 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         <message name="IDS_CONTENT_CONTEXT_RELOAD" desc="The name of the Reload command in the content area context menu">
           Re&amp;load
         </message>
+        <message name="IDS_CONTENT_CONTEXT_RELOAD_PACKAGED_APP" desc="The name of the Reload Packaged App command in the packaged app content area context menu">
+          Re&amp;load app
+        </message>
         <message name="IDS_CONTENT_CONTEXT_TRANSLATE" desc="The name of the Translate command in the content area context menu">
           &amp;Translate to <ph name="LANGUAGE">$1<ex>English</ex></ph>
         </message>
@@ -727,6 +730,9 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         </message>
         <message name="IDS_CONTENT_CONTEXT_RELOAD" desc="In Title Case: The name of the Reload command in the content area context menu">
           Re&amp;load
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_RELOAD_PACKAGED_APP" desc="The name of the Reload Packaged App command in the packaged app content area context menu">
+          Re&amp;load App
         </message>
         <message name="IDS_CONTENT_CONTEXT_TRANSLATE" desc="In Title Case: The name of the Translate command in the content area context menu">
           &amp;Translate to <ph name="LANGUAGE">$1<ex>English</ex></ph>
