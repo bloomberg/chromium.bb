@@ -51,7 +51,7 @@ _SVN_PATH = os.path.sep + '.svn'
 MAX_UPLOAD_ATTEMPTS = 5
 
 # The minimum size of files to upload directly to the blobstore.
-MIN_SIZE_FOR_DIRECT_BLOBSTORE = 1024 * 1024 * 30
+MIN_SIZE_FOR_DIRECT_BLOBSTORE = 20 * 8
 
 
 class ExecutionError(Exception):
