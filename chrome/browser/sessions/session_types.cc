@@ -57,9 +57,8 @@ TabNavigation TabNavigation::FromSyncData(
     const sync_pb::TabNavigation& sync_data) {
   TabNavigation navigation;
   navigation.index_ = index;
-  if (sync_data.has_unique_id()) {
+  if (sync_data.has_unique_id())
     navigation.unique_id_ = sync_data.unique_id();
-  }
   if (sync_data.has_referrer()) {
     navigation.referrer_ =
         content::Referrer(GURL(sync_data.referrer()),
@@ -71,68 +70,77 @@ TabNavigation TabNavigation::FromSyncData(
     navigation.title_ = UTF8ToUTF16(sync_data.title());
   if (sync_data.has_state())
     navigation.content_state_ = sync_data.state();
-  navigation.transition_type_ = content::PAGE_TRANSITION_LINK;
-  if (sync_data.has_page_transition() ||
-      sync_data.has_navigation_qualifier()) {
+
+  uint32 transition = 0;
+  if (sync_data.has_page_transition()) {
     switch (sync_data.page_transition()) {
       case sync_pb::SyncEnums_PageTransition_LINK:
-        navigation.transition_type_ = content::PAGE_TRANSITION_LINK;
+        transition = content::PAGE_TRANSITION_LINK;
         break;
       case sync_pb::SyncEnums_PageTransition_TYPED:
-        navigation.transition_type_ = content::PAGE_TRANSITION_TYPED;
+        transition = content::PAGE_TRANSITION_TYPED;
         break;
       case sync_pb::SyncEnums_PageTransition_AUTO_BOOKMARK:
-        navigation.transition_type_ = content::PAGE_TRANSITION_AUTO_BOOKMARK;
+        transition = content::PAGE_TRANSITION_AUTO_BOOKMARK;
         break;
       case sync_pb::SyncEnums_PageTransition_AUTO_SUBFRAME:
-        navigation.transition_type_ = content::PAGE_TRANSITION_AUTO_SUBFRAME;
+        transition = content::PAGE_TRANSITION_AUTO_SUBFRAME;
         break;
       case sync_pb::SyncEnums_PageTransition_MANUAL_SUBFRAME:
-        navigation.transition_type_ = content::PAGE_TRANSITION_MANUAL_SUBFRAME;
+        transition = content::PAGE_TRANSITION_MANUAL_SUBFRAME;
         break;
       case sync_pb::SyncEnums_PageTransition_GENERATED:
-        navigation.transition_type_ = content::PAGE_TRANSITION_GENERATED;
+        transition = content::PAGE_TRANSITION_GENERATED;
         break;
       case sync_pb::SyncEnums_PageTransition_AUTO_TOPLEVEL:
-        navigation.transition_type_ = content::PAGE_TRANSITION_AUTO_TOPLEVEL;
+        transition = content::PAGE_TRANSITION_AUTO_TOPLEVEL;
         break;
       case sync_pb::SyncEnums_PageTransition_FORM_SUBMIT:
-        navigation.transition_type_ = content::PAGE_TRANSITION_FORM_SUBMIT;
+        transition = content::PAGE_TRANSITION_FORM_SUBMIT;
         break;
       case sync_pb::SyncEnums_PageTransition_RELOAD:
-        navigation.transition_type_ = content::PAGE_TRANSITION_RELOAD;
+        transition = content::PAGE_TRANSITION_RELOAD;
         break;
       case sync_pb::SyncEnums_PageTransition_KEYWORD:
-        navigation.transition_type_ = content::PAGE_TRANSITION_KEYWORD;
+        transition = content::PAGE_TRANSITION_KEYWORD;
         break;
       case sync_pb::SyncEnums_PageTransition_KEYWORD_GENERATED:
-        navigation.transition_type_ =
+        transition =
             content::PAGE_TRANSITION_KEYWORD_GENERATED;
         break;
-      case sync_pb::SyncEnums_PageTransition_CHAIN_START:
-        navigation.transition_type_ = content::PAGE_TRANSITION_CHAIN_START;
-        break;
-      case sync_pb::SyncEnums_PageTransition_CHAIN_END:
-        navigation.transition_type_ = content::PAGE_TRANSITION_CHAIN_END;
-        break;
       default:
-        switch (sync_data.navigation_qualifier()) {
-          case sync_pb::SyncEnums_PageTransitionQualifier_CLIENT_REDIRECT:
-            navigation.transition_type_ =
-                content::PAGE_TRANSITION_CLIENT_REDIRECT;
-            break;
-            case sync_pb::SyncEnums_PageTransitionQualifier_SERVER_REDIRECT:
-            navigation.transition_type_ =
-                content::PAGE_TRANSITION_SERVER_REDIRECT;
-              break;
-            default:
-            navigation.transition_type_ = content::PAGE_TRANSITION_TYPED;
-        }
+        transition = content::PAGE_TRANSITION_LINK;
+        break;
     }
   }
-  if (sync_data.has_timestamp()) {
-    navigation.timestamp_ = syncer::ProtoTimeToTime(sync_data.timestamp());
+
+  if  (sync_data.has_redirect_type()) {
+    switch (sync_data.redirect_type()) {
+      case sync_pb::SyncEnums_PageTransitionRedirectType_CLIENT_REDIRECT:
+        transition |= content::PAGE_TRANSITION_CLIENT_REDIRECT;
+        break;
+      case sync_pb::SyncEnums_PageTransitionRedirectType_SERVER_REDIRECT:
+        transition |= content::PAGE_TRANSITION_SERVER_REDIRECT;
+        break;
+    }
   }
+  if (sync_data.navigation_forward_back())
+      transition |= content::PAGE_TRANSITION_FORWARD_BACK;
+  if (sync_data.navigation_from_address_bar())
+      transition |= content::PAGE_TRANSITION_FROM_ADDRESS_BAR;
+  if (sync_data.navigation_home_page())
+      transition |= content::PAGE_TRANSITION_HOME_PAGE;
+  if (sync_data.navigation_chain_start())
+      transition |= content::PAGE_TRANSITION_CHAIN_START;
+  if (sync_data.navigation_chain_end())
+      transition |= content::PAGE_TRANSITION_CHAIN_END;
+
+  navigation.transition_type_ =
+      static_cast<content::PageTransition>(transition);
+
+  if (sync_data.has_timestamp())
+    navigation.timestamp_ = syncer::ProtoTimeToTime(sync_data.timestamp());
+
   return navigation;
 }
 
@@ -334,7 +342,12 @@ sync_pb::TabNavigation TabNavigation::ToSyncData() const {
   // FIXME(zea): Support referrer policy?
   sync_data.set_referrer(referrer_.url.spec());
   sync_data.set_title(UTF16ToUTF8(title_));
-  switch (transition_type_) {
+
+  // Page transition core.
+  COMPILE_ASSERT(content::PAGE_TRANSITION_LAST_CORE ==
+                 content::PAGE_TRANSITION_KEYWORD_GENERATED,
+                 PageTransitionCoreBounds);
+  switch (PageTransitionStripQualifier(transition_type_)) {
     case content::PAGE_TRANSITION_LINK:
       sync_data.set_page_transition(
           sync_pb::SyncEnums_PageTransition_LINK);
@@ -379,28 +392,34 @@ sync_pb::TabNavigation TabNavigation::ToSyncData() const {
       sync_data.set_page_transition(
         sync_pb::SyncEnums_PageTransition_KEYWORD_GENERATED);
       break;
-    case content::PAGE_TRANSITION_CHAIN_START:
-      sync_data.set_page_transition(
-        sync_pb::SyncEnums_PageTransition_CHAIN_START);
-      break;
-    case content::PAGE_TRANSITION_CHAIN_END:
-      sync_data.set_page_transition(
-        sync_pb::SyncEnums_PageTransition_CHAIN_END);
-      break;
-    case content::PAGE_TRANSITION_CLIENT_REDIRECT:
-      sync_data.set_navigation_qualifier(
-        sync_pb::SyncEnums_PageTransitionQualifier_CLIENT_REDIRECT);
-      break;
-    case content::PAGE_TRANSITION_SERVER_REDIRECT:
-      sync_data.set_navigation_qualifier(
-        sync_pb::SyncEnums_PageTransitionQualifier_SERVER_REDIRECT);
-      break;
     default:
-      sync_data.set_page_transition(
-        sync_pb::SyncEnums_PageTransition_TYPED);
+      NOTREACHED();
   }
+
+  // Page transition qualifiers.
+  if (PageTransitionIsRedirect(transition_type_)) {
+    if (transition_type_ & content::PAGE_TRANSITION_CLIENT_REDIRECT) {
+      sync_data.set_redirect_type(
+        sync_pb::SyncEnums_PageTransitionRedirectType_CLIENT_REDIRECT);
+    } else if (transition_type_ & content::PAGE_TRANSITION_SERVER_REDIRECT) {
+      sync_data.set_redirect_type(
+        sync_pb::SyncEnums_PageTransitionRedirectType_SERVER_REDIRECT);
+    }
+  }
+  sync_data.set_navigation_forward_back(
+      (transition_type_ & content::PAGE_TRANSITION_FORWARD_BACK) != 0);
+  sync_data.set_navigation_from_address_bar(
+      (transition_type_ & content::PAGE_TRANSITION_FROM_ADDRESS_BAR) != 0);
+  sync_data.set_navigation_home_page(
+      (transition_type_ & content::PAGE_TRANSITION_HOME_PAGE) != 0);
+  sync_data.set_navigation_chain_start(
+      (transition_type_ & content::PAGE_TRANSITION_CHAIN_START) != 0);
+  sync_data.set_navigation_chain_end(
+      (transition_type_ & content::PAGE_TRANSITION_CHAIN_END) != 0);
+
   sync_data.set_unique_id(unique_id_);
   sync_data.set_timestamp(syncer::TimeToProtoTime(timestamp_));
+
   return sync_data;
 }
 

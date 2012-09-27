@@ -48,12 +48,16 @@ message SyncEnums {
     RELOAD = 8;
     KEYWORD = 9;
     KEYWORD_GENERATED = 10;
-    CHAIN_START = 12;
-    CHAIN_END = 13;
+    // The below two were mistakenly added but never properly used. They are
+    // actually transition qualifiers, and are set independently of other
+    // qualifiers and of the main transitions. See session_specifics.proto for
+    // the list of synced transition qualifiers.
+    // CHAIN_START = 12;     Deprecated.
+    // CHAIN_END = 13;       Deprecated.
   }
 
-  // These qualifiers further define the transition.
-  enum PageTransitionQualifier {
+  // Types of redirects that triggered a transition.
+  enum PageTransitionRedirectType {
     CLIENT_REDIRECT = 1;
     SERVER_REDIRECT = 2;
   }

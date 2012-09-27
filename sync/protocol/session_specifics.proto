@@ -21,7 +21,7 @@ message SessionSpecifics {
   optional string session_tag = 1;
   optional SessionHeader header = 2;
   optional SessionTab tab = 3;
-  
+
   // The local tab id used by sync. Unique across all nodes for that client.
   optional int32 tab_node_id = 4 [default = -1];
 }
@@ -105,12 +105,24 @@ message TabNavigation {
   // state of the page. This includes form entries and scroll position for each
   // frame.
   optional string state = 5;
+  // The core transition type.
   optional SyncEnums.PageTransition page_transition = 6 [default = TYPED];
-  optional SyncEnums.PageTransitionQualifier navigation_qualifier = 7;
+  // If this transition was triggered by a redirect, the redirect type.
+  optional SyncEnums.PageTransitionRedirectType redirect_type = 7;
   // The unique navigation id (within this client).
   optional int32 unique_id = 8;
   // Timestamp for when this navigation last occurred (in client time).
   // If the user goes back/foward in history the timestamp may refresh.
   optional int64 timestamp = 9;
+  // User used the Forward or Back button to navigate among browsing history.
+  optional bool navigation_forward_back = 10;
+  // User used the address bar to trigger this navigation.
+  optional bool navigation_from_address_bar = 11;
+  // User is navigating to the home page.
+  optional bool navigation_home_page = 12;
+  // The beginning of a navigation chain.
+  optional bool navigation_chain_start = 13;
+  // The last transition in a redirect chain.
+  optional bool navigation_chain_end = 14;
 }
 

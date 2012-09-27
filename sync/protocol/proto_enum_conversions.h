@@ -24,9 +24,9 @@ const char* GetBrowserTypeString(
 const char* GetPageTransitionString(
     sync_pb::SyncEnums::PageTransition page_transition);
 
-const char* GetPageTransitionQualifierString(
-    sync_pb::SyncEnums::PageTransitionQualifier
-        page_transition_qualifier);
+const char* GetPageTransitionRedirectTypeString(
+    sync_pb::SyncEnums::PageTransitionRedirectType
+        redirect_type);
 
 const char* GetUpdatesSourceString(
     sync_pb::GetUpdatesCallerInfo::GetUpdatesSource updates_source);

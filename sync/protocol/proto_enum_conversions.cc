@@ -35,7 +35,7 @@ const char* GetBrowserTypeString(
 const char* GetPageTransitionString(
     sync_pb::SyncEnums::PageTransition page_transition) {
   ASSERT_ENUM_BOUNDS(sync_pb::SyncEnums, PageTransition,
-                     LINK, CHAIN_END);
+                     LINK, KEYWORD_GENERATED);
   switch (page_transition) {
     ENUM_CASE(sync_pb::SyncEnums, LINK);
     ENUM_CASE(sync_pb::SyncEnums, TYPED);
@@ -48,17 +48,15 @@ const char* GetPageTransitionString(
     ENUM_CASE(sync_pb::SyncEnums, RELOAD);
     ENUM_CASE(sync_pb::SyncEnums, KEYWORD);
     ENUM_CASE(sync_pb::SyncEnums, KEYWORD_GENERATED);
-    ENUM_CASE(sync_pb::SyncEnums, CHAIN_START);
-    ENUM_CASE(sync_pb::SyncEnums, CHAIN_END);
   }
   NOTREACHED();
   return "";
 }
 
-const char* GetPageTransitionQualifierString(
-    sync_pb::SyncEnums::PageTransitionQualifier
+const char* GetPageTransitionRedirectTypeString(
+    sync_pb::SyncEnums::PageTransitionRedirectType
         page_transition_qualifier) {
-  ASSERT_ENUM_BOUNDS(sync_pb::SyncEnums, PageTransitionQualifier,
+  ASSERT_ENUM_BOUNDS(sync_pb::SyncEnums, PageTransitionRedirectType,
                      CLIENT_REDIRECT, SERVER_REDIRECT);
   switch (page_transition_qualifier) {
     ENUM_CASE(sync_pb::SyncEnums, CLIENT_REDIRECT);

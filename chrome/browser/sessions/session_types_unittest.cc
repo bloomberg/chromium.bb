@@ -34,7 +34,10 @@ const GURL kVirtualURL("http://www.virtual-url.com");
 const string16 kTitle = ASCIIToUTF16("title");
 const std::string kContentState = "content state";
 const content::PageTransition kTransitionType =
-    content::PAGE_TRANSITION_AUTO_SUBFRAME;
+    static_cast<content::PageTransition>(
+        content::PAGE_TRANSITION_AUTO_SUBFRAME |
+        content::PAGE_TRANSITION_HOME_PAGE |
+        content::PAGE_TRANSITION_CLIENT_REDIRECT);
 const bool kHasPostData = true;
 const int64 kPostID = 100;
 const GURL kOriginalRequestURL("http://www.original-request.com");
@@ -70,6 +73,8 @@ sync_pb::TabNavigation MakeSyncDataForTest() {
       sync_pb::SyncEnums_PageTransition_AUTO_SUBFRAME);
   sync_data.set_unique_id(kUniqueID);
   sync_data.set_timestamp(syncer::TimeToProtoTime(kTimestamp));
+  sync_data.set_redirect_type(sync_pb::SyncEnums::CLIENT_REDIRECT);
+  sync_data.set_navigation_home_page(true);
   return sync_data;
 }
 
@@ -239,9 +244,42 @@ TEST(TabNavigationTest, ToSyncData) {
   EXPECT_TRUE(sync_data.state().empty());
   EXPECT_EQ(sync_pb::SyncEnums_PageTransition_AUTO_SUBFRAME,
             sync_data.page_transition());
-  EXPECT_FALSE(sync_data.has_navigation_qualifier());
+  EXPECT_TRUE(sync_data.has_redirect_type());
   EXPECT_EQ(navigation_entry->GetUniqueID(), sync_data.unique_id());
   EXPECT_EQ(syncer::TimeToProtoTime(kTimestamp), sync_data.timestamp());
+}
+
+// Ensure all transition types and qualifiers are converted to/from the sync
+// TabNavigation representation properly.
+TEST(TabNavigationTest, TransitionTypes) {
+  scoped_ptr<content::NavigationEntry> navigation_entry(
+      MakeNavigationEntryForTest());
+  for (uint32 core_type = content::PAGE_TRANSITION_LINK;
+       core_type != content::PAGE_TRANSITION_LAST_CORE; ++core_type) {
+    // Because qualifier is a uint32, left shifting will eventually overflow
+    // and hit zero again. SERVER_REDIRECT, as the last qualifier and also
+    // in place of the sign bit, is therefore the last transition before
+    // breaking.
+    for (uint32 qualifier = content::PAGE_TRANSITION_FORWARD_BACK;
+         qualifier != 0; qualifier <<= 1) {
+      if (qualifier == 0x08000000)
+        continue;  // 0x08000000 is not a valid qualifier.
+      content::PageTransition transition =
+          static_cast<content::PageTransition>(core_type | qualifier);
+
+      navigation_entry->SetTransitionType(transition);
+      const TabNavigation& navigation =
+          TabNavigation::FromNavigationEntry(
+              kIndex, *navigation_entry, kTimestamp);
+      const sync_pb::TabNavigation& sync_data = navigation.ToSyncData();
+      const TabNavigation& constructed_nav =
+          TabNavigation::FromSyncData(kIndex, sync_data);
+      const content::PageTransition constructed_transition =
+          SessionTypesTestHelper::GetTransitionType(constructed_nav);
+
+      EXPECT_EQ(transition, constructed_transition);
+    }
+  }
 }
 
 // Create a typical SessionTab protocol buffer and set an existing

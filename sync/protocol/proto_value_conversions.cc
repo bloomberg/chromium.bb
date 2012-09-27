@@ -162,9 +162,14 @@ DictionaryValue* TabNavigationToValue(
   SET_STR(title);
   SET_STR(state);
   SET_ENUM(page_transition, GetPageTransitionString);
-  SET_ENUM(navigation_qualifier, GetPageTransitionQualifierString);
+  SET_ENUM(redirect_type, GetPageTransitionRedirectTypeString);
   SET_INT32(unique_id);
   SET_INT64(timestamp);
+  SET_BOOL(navigation_forward_back);
+  SET_BOOL(navigation_from_address_bar),
+  SET_BOOL(navigation_home_page);
+  SET_BOOL(navigation_chain_start);
+  SET_BOOL(navigation_chain_end);
   return value;
 }
 
