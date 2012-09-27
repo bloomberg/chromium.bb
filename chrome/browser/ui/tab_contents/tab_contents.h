@@ -33,7 +33,6 @@ class HistoryTabHelper;
 class InfoBarControllerContentsCreator;
 class InfoBarTabHelper;
 class InstantLoader;
-class NavigationMetricsRecorder;
 class OffscreenTabContentsCreator;
 class PanelHost;
 class PasswordManager;
@@ -250,7 +249,6 @@ class TabContents : public content::WebContentsObserver {
   // (These provide no API for callers; objects that need to exist 1:1 with tabs
   // and silently do their thing live here.)
 
-  scoped_ptr<NavigationMetricsRecorder> navigation_metrics_recorder_;
   scoped_ptr<safe_browsing::SafeBrowsingTabObserver>
       safe_browsing_tab_observer_;
 

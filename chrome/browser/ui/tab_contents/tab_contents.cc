@@ -140,6 +140,7 @@ TabContents::TabContents(WebContents* contents)
   HungPluginTabHelper::CreateForWebContents(contents);
   infobar_tab_helper_.reset(new InfoBarTabHelper(contents));
   MetroPinTabHelper::CreateForWebContents(contents);
+  NavigationMetricsRecorder::CreateForWebContents(contents);
   password_manager_delegate_.reset(new PasswordManagerDelegateImpl(this));
   password_manager_.reset(
       new PasswordManager(contents, password_manager_delegate_.get()));
@@ -171,7 +172,6 @@ TabContents::TabContents(WebContents* contents)
   WebIntentPickerController::CreateForWebContents(contents);
 #endif
 
-  navigation_metrics_recorder_.reset(new NavigationMetricsRecorder(contents));
   safe_browsing_tab_observer_.reset(
       new safe_browsing::SafeBrowsingTabObserver(this));
 
