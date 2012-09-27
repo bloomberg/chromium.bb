@@ -11,6 +11,9 @@ import sys
 import test_format
 
 
+FIELDS_TO_IGNORE = set(['rdfa_output'])
+
+
 def AssertEquals(actual, expected):
   if actual != expected:
     raise AssertionError('\nEXPECTED:\n"""\n%s"""\n\nACTUAL:\n"""\n%s"""'
@@ -105,10 +108,10 @@ def Test(options, test_filename):
   RunCommandOnHex('vdis', ncdis + ['--validator_decoder'])
 
   ncval = [options.ncval, '--hex_text=-', '--max_errors=-1']
-  if options.bits == '32':
+  if options.bits == 32:
     for ext, ncval_options in GetX8632Combinations():
       RunCommandOnHex(ext, ncval + ncval_options)
-  elif options.bits == '64':
+  elif options.bits == 64:
     for ext, ncval_options in GetX8664Combinations():
       RunCommandOnHex(ext, ncval + ncval_options)
 
@@ -116,7 +119,7 @@ def Test(options, test_filename):
   else:
     raise AssertionError('Unknown architecture: %r' % options.bits)
 
-  unhandled = set(info.keys()).difference(handled_fields)
+  unhandled = set(info.keys()) - set(handled_fields) - FIELDS_TO_IGNORE
   if unhandled:
     raise AssertionError('Unhandled fields: %r' % sorted(unhandled))
 
@@ -133,14 +136,15 @@ def main(args):
   parser.add_option('--ncdis', default='ncdis',
                     help='Path to the ncdis disassembler executable')
   parser.add_option('--bits',
+                    type=int,
                     help='The subarchitecture to run tests against: 32 or 64')
   parser.add_option('--update',
                     default=False,
                     action='store_true',
                     help='Regenerate golden fields instead of testing')
-  options, args = parser.parse_args()
-  if options.bits is None:
-    parser.error('--bits argument missing')
+  options, args = parser.parse_args(args)
+  if options.bits not in [32, 64]:
+    parser.error('specify --bits 32 or --bits 64')
   if len(args) == 0:
     parser.error('No test files specified')
   processed = 0

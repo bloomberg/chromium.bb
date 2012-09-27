@@ -249,16 +249,36 @@ assert bits in ['32', '64']
 
 tests_mask = '${MAIN_DIR}/src/trusted/validator_x86/testdata/%s/*.test' % bits
 
-testdata_tests = env.AutoDepsCommand(
-    'x86_validator_testdata_tests.out',
+old_testdata_tests = env.AutoDepsCommand(
+    'x86_old_validator_testdata_tests.out',
     ['${PYTHON}',
-     env.File('testscripts/run_tests.py'),
+     env.File('testscripts/run_old_validator_tests.py'),
      '--ncval', ncval,
      '--ncdis', ncdis,
      '--bits', bits,
      tests_mask])
 
 env.AddNodeToTestSuite(
-    testdata_tests,
+    old_testdata_tests,
     STANDARD_TESTS,
-    node_name='run_x86_validator_testdata_tests')
+    node_name='run_x86_old_validator_testdata_tests')
+
+rdfaval = '$STAGING_DIR/validator_test$PROGSUFFIX'
+
+rdfa_testdata_tests = env.AutoDepsCommand(
+    'x86_rdfa_validator_testdata_tests.out',
+    ['${PYTHON}',
+     env.File('testscripts/run_rdfa_validator_tests.py'),
+     '--rdfaval', env.File(rdfaval),
+     '--bits', bits,
+     tests_mask])
+
+env.AddNodeToTestSuite(
+    rdfa_testdata_tests,
+    STANDARD_TESTS,
+    node_name='run_x86_rdfa_validator_testdata_tests')
+
+# Don't want these tests run in parallel. Normally they only read
+# *.test files, so it's fine, but what if somebody added --update
+# option in order to regenerate golden sections?
+SideEffect(tests_mask, [old_testdata_tests, rdfa_testdata_tests])

@@ -15,3 +15,7 @@
 @vdis:
    0:	67 66 89 07         	mov *NaClIllegal*, %eax
    4:	67 66 89 46 00      	mov *NaClIllegal*, %eax
+@rdfa_output:
+  0: [0] DFA error in validator
+  4: [1] DFA error in validator
+  return code: 1

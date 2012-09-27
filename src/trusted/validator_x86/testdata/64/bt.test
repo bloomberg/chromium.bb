@@ -118,3 +118,11 @@
   000000000000002b: 0f ba 34 24 01                               [P] dontcare [%rsp] (su), 0x1 (u)
   0000000000000030: 0f ba 2c 24 01                               [P] dontcare [%rsp] (su), 0x1 (u)
   0000000000000035: 0f ba 3c 24 01                               [P] dontcare [%rsp] (su), 0x1 (u)
+@rdfa_output:
+  0: [0] DFA error in validator
+  4: [1] DFA error in validator
+  8: [2] DFA error in validator
+  c: [3] improper memory address - bad base
+  10: [3] improper memory address - bad base
+  14: [3] improper memory address - bad base
+  return code: 1
