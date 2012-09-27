@@ -34,7 +34,7 @@ cross-origin XMLHttpRequests to fetch these resources,
 and then serve them via <code>blob:</code> URLs.
 </p>
 
-<h3>Manifest requirement</h3>
+<h3 id="manifest">Manifest requirement</h3>
 
 <p>
 To be able to do cross-origin XMLHttpRequests, you'll need to add a permission
@@ -48,7 +48,7 @@ for the remote URL's host:
   ]
 </pre>
 
-<h3>Cross-origin XMLHttpRequest</h3>
+<h3 id="cross-origin">Cross-origin XMLHttpRequest</h3>
 
 <p>
 Fetch the remote URL into the app and serve its contents as a <code>blob:</code>
@@ -90,7 +90,7 @@ privileges. Further, since its storage (cookies, etc.) is isolated from the app,
 there is no way for the web content to access any of the app's data.
 </p>
 
-<h3>Add browser element</h3>
+<h3 id="browser_element">Add browser element</h3>
 
 <p>
 Your <code>browser</code> element must include the URL to the source content
@@ -99,7 +99,7 @@ and specify its dimensions.
 
 <pre>&lt;browser src="http://news.google.com/" width="640" height="480">&lt;/browser></pre>
 
-<h3>Update properties</h3>
+<h3 id="properties">Update properties</h3>
 
 <p>
 To dynamically change the <code>src</code>, <code>width</code> and
@@ -136,7 +136,7 @@ go this route to be exempt from CSP,
 but you won't be able to use the cool new stuff.
 </p>
 
-<h3>Use inline scripts in sandbox</h3>
+<h3 id="inline_scripts">Use inline scripts in sandbox</h3>
 
 <p>
 Here's a sample sandboxed page
@@ -155,7 +155,7 @@ which uses an inline script and <code>eval()</code>:
 &lt;/html>
 </pre>
 
-<h3>Include sandbox in manifest</h3>
+<h3 id="include_sandbox">Include sandbox in manifest</h3>
 
 <p>
 You need to include the <code>sandbox</code> field in the manifest
@@ -168,7 +168,7 @@ and list the app pages to be served in a sandbox:
 }
 </pre>
 
-<h3>Opening a sandboxed page in a window</h3>
+<h3 id="opening_sandbox">Opening a sandboxed page in a window</h3>
 
 <p>
 Just like any other app pages,
@@ -196,7 +196,7 @@ chrome.app.runtime.onLaunched.addListener(function() {
 });
 </pre>
 
-<h3>Embedding a sandboxed page in an app page</h3>
+<h3 id="embedding_sandbox">Embedding a sandboxed page in an app page</h3>
 
 <p>Sandboxed pages can also be embedded within another app page
   using an <code>iframe</code>:</p>
@@ -223,7 +223,7 @@ you need to post a message from the sender page/window,
 and listen for messages on the receiving page/window.
 </p>
 
-<h3>Post message</h3>
+<h3 id="post_message">Post message</h3>
 
 <p>
 You can use <code>postMessage</code> to communicate
@@ -263,7 +263,7 @@ To find out more,
 see <a href="https://developer.mozilla.org/en/DOM/window.postMessage">window.postMessage</a>.
 </p>
 
-<h3>Listen for message</h3>
+<h3 id="listen_message">Listen for message</h3>
 
 <p>
 Here's a sample message receiver

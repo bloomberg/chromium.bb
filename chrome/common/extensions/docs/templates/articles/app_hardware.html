@@ -29,7 +29,7 @@ and <a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/blue
 You can use the USB API to send messages to any connected device.
 </p>
 
-<h3>Manifest requirement</h3>
+<h3 id="manifest">Manifest requirement</h3>
 
 <p>
 You must add the "usb" permission
@@ -44,7 +44,7 @@ to the manifest file:
 ]
 </pre>
 
-<h3>Finding a device</h3>
+<h3 id="finding_device">Finding a device</h3>
 
 <p>
 Every device in a USB bus is identified
@@ -116,7 +116,7 @@ var onUsbEvent = function(event) {
 chrome.experimental.usb.findDevice(vendorId, productId, {"onEvent": onUsbEvent}, onDeviceFound);
 </pre>
 
-<h3>USB transfers and receiving data from a device</h3>
+<h3 id="usb_transfers">USB transfers and receiving data from a device</h3>
 
 <p>
 USB protocol defines four types of transfers:
@@ -171,7 +171,7 @@ var onUsbEvent = function(event) {
 chrome.experimental.usb.findDevice( vendorId, productId, {"onEvent": onUsbEvent}, onDeviceFound);
 </pre>
 
-<h3>Sending data - control transfers</h3>
+<h3 id="control_transfers">Sending data - control transfers</h3>
 
 <p>
 Control transfers are generally used to send configuration
@@ -272,17 +272,17 @@ Example:
 <pre>
 var transferInfo = {
    "requestType": "vendor",
-   "recipient": "device", 
-   "direction": "out", 
+   "recipient": "device",
+   "direction": "out",
    "request":  0x31,
-   "value": 120, 
+   "value": 120,
    "index": 0,
    "data": [4, 8, 15, 16, 23, 42]
  };
 chrome.experimental.usb.controlTransfer(deviceObj, transferInfo, optionalCallback);
 </pre>
 
-<h3>Sending data - isochronous transfers</h3>
+<h3 id="isochronous_transfers">Sending data - isochronous transfers</h3>
 
 <p>
 Isochronous transfers are commonly used for streams of data.
@@ -358,7 +358,7 @@ Example:
 
 <pre>
 var transferInfo = {
-   "direction": "in", 
+   "direction": "in",
    "endpoint": 1,
    "length": 2560
  };
@@ -370,7 +370,7 @@ var isoTransferInfo = {
 chrome.experimental.usb.isochronousTransfer(deviceObj, isoTransferInfo, optionalCallback);
 </pre>
 
-<h3>Sending data - bulk transfers</h3>
+<h3 id="bulk_transfers">Sending data - bulk transfers</h3>
 
 <p>
 Bulk transfer is a USB transfer type commonly used
@@ -445,13 +445,13 @@ Example:
 
 <pre>
 var transferInfo = {
-   "direction": "out", 
+   "direction": "out",
    "endpoint": 1,
    "data": [4, 8, 15, 16, 23, 42]
  };
 </pre>
 
-<h3>Sending data - interrupt transfers</h3>
+<h3 id="interrupt_transfers">Sending data - interrupt transfers</h3>
 
 <p>
 Interrupt transfers are used to send important notifications.
@@ -535,7 +535,7 @@ var transferInfo = {
 chrome.experimental.usb.interruptTransfer(deviceObj, transferInfo, optionalCallback);
 </pre>
 
-<h3>Caveats</h3>
+<h3 id="caveats">Caveats</h3>
 
 <p>
 On Linux,
@@ -562,7 +562,7 @@ You can use the serial API to read
 and write from a serial device.
 </p>
 
-<h3>Manifest requirement</h3>
+<h3 id="requirement">Manifest requirement</h3>
 
 <p>
 The "serial" permission is not yet required;
@@ -573,7 +573,7 @@ The "serial" permission is not yet required;
 "permissions": ["experimental"]
 </pre>
 
-<h3>Listing available serial ports</h3>
+<h3 id="listing">Listing available serial ports</h3>
 
 <p>
 To get a list of available serial ports,
@@ -589,7 +589,7 @@ var onGetPorts = function(ports) {
 chrome.experimental.serial.getPorts(onGetPorts);
 </pre>
 
-<h3>Opening a serial device</h3>
+<h3 id="opening">Opening a serial device</h3>
 
 <p>
 Here's how to open a serial device:
@@ -605,7 +605,7 @@ var onOpen = function(connectionInfo) {
 chrome.experimental.serial.open("/dev/ttyS01", onOpen);
 </pre>
 
-<h3>Closing a serial device</h3>
+<h3 id="closing">Closing a serial device</h3>
 
 <p>
 Here's how to close a serial device:
@@ -618,7 +618,7 @@ var onClose = function(result) {
 chrome.experimental.serial.close(conId, onClose);
 </pre>
 
-<h3>Reading from a serial device</h3>
+<h3 id="reading">Reading from a serial device</h3>
 
 <p>
 The serial API reads from the serial port and
@@ -656,7 +656,7 @@ var onCharRead=function(readInfo) {
   };
 </pre>
 
-<h3>Writing to a serial device</h3>
+<h3 id="writing">Writing to a serial device</h3>
 
 <p>
 The writing routine is simpler than the reading,
@@ -681,7 +681,7 @@ var str2ab=function(str) {
 }
 </pre>
 
-<h3>Flushing a serial device buffer</h3>
+<h3 id="flushing">Flushing a serial device buffer</h3>
 
 <p>
 You can flush your serial device buffer by issuing the flush command on the API:

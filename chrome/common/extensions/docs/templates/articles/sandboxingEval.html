@@ -33,7 +33,7 @@
   applies equally to applications.
 </p>
 
-<h2>Why sandbox?</h2>
+<h2 id="why_sandbox">Why sandbox?</h2>
 
 <p>
   <code>eval</code> is dangerous inside an extension because the code it
@@ -56,7 +56,7 @@
   to safely include <code>eval</code>-driven code in our extension's workflow.
 </p>
 
-<h2>Creating and using a sandbox.</h2>
+<h2 id="creating_and_using">Creating and using a sandbox.</h2>
 
 <p>
   If you'd like to dive straight into code, please grab the
@@ -68,7 +68,7 @@
   sample together here.
 </p>
 
-<h3>List files in manifest</h3>
+<h3 id="list_files">List files in manifest</h3>
 
 <p>
   Each file that ought to be run inside a sandbox must be listed in the
@@ -86,7 +86,7 @@
   ...
 }</pre>
 
-<h3>Load the sandboxed file</h3>
+<h3 id="load_file">Load the sandboxed file</h3>
 
 <p>
   In order to do something interesting with the sandboxed file, we need to load
@@ -121,7 +121,7 @@
   are not.
 </p>
 
-<h3>Do something dangerous</h3>
+<h3 id="do_something">Do something dangerous</h3>
 
 <p>
   When <code>sandbox.html</code> is loaded, it loads the Handlebars library, and
@@ -146,7 +146,7 @@
   a compiled template in <code>templates[‘hello']</code>.
 </p>
 
-<h3>Pass the result back</h3>
+<h3 id="pass_result">Pass the result back</h3>
 
 <p>
   We'll make this template available for use by setting up a message listener

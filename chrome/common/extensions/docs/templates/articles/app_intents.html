@@ -198,7 +198,7 @@ window.navigator.webkitStartActivity(intent, function(data) {
    that something has gone wrong.
 </p>
 
-<h3>Client</h3>
+<h3 id="client">Client</h3>
 
 <pre>
 var intent = new WebKitIntent("http://webintents.org/edit", "image/png", "dataUri://");
@@ -209,7 +209,7 @@ var onError = function() {};
 window.navigator.webkitStartActivity(intent, onSuccess, onError);
 </pre>
 
-<h3>Service</h3>
+<h3 id="service">Service</h3>
 <pre>
 chrome.app.runtime.onLaunched(function(intent) {
   // App Launched

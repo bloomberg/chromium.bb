@@ -59,7 +59,7 @@ MVC is composed of three components:
      height="303"
      alt="model-view-controller">
 
-<h3>Model</h3>
+<h3 id="model">Model</h3>
 
 <p>
 Model is where the application’s data objects are stored.
@@ -85,7 +85,7 @@ When a new todo item is created,
 it is stored in an instance of the model.
 </p>
 
-<h3>View</h3>
+<h3 id="view">View</h3>
 
 <p>
 View is what's presented to the users and how users interact with the app.
@@ -100,7 +100,7 @@ Users can also enter a new todo item through some input format;
 however, the view doesn’t know how to update the model because that’s the controller’s job.
 </p>
 
-<h3>Controller</h3>
+<h3 id="controller">Controller</h3>
 
 <p>
 The controller is the decision maker and the glue between the model and view.
@@ -164,7 +164,7 @@ choose the frameworks with MVC and persistence patterns
 that feel natural to you and fit you application needs.
 </p>
 
-<h3>Model does its own persistence - ActiveRecord pattern</h3>
+<h3 id="model_persistence">Model does its own persistence - ActiveRecord pattern</h3>
 
 <p>
 Popular in both server&ndash;side frameworks like Ruby on Rails,
@@ -220,7 +220,7 @@ Cons:
 		each view wanting to save to different places.</li>
 </ul>
 
-<h3>Controller does persistence</h3>
+<h3 id="controller_persistence">Controller does persistence</h3>
 
 <p>
 In this pattern, the controller holds a reference
@@ -247,7 +247,7 @@ Cons:
 	<li>Code can be more complex to maintain.</li>
 </ul>
 
-<h3>AppController does persistence</h3>
+<h3 id="app_controller">AppController does persistence</h3>
 
 <p>
 In some patterns, there is a supervising controller responsible
@@ -287,7 +287,7 @@ Cons:
 	<li>Each ‘Page/Screen’ of the app now requires a lot of boilerplate to write or update: Model, View, Controller, AppController.</li>
 </ul>
 
-<h3>Recommended MVC frameworks</h3>
+<h3 id="recommended">Recommended MVC frameworks</h3>
 
 <p>
 MVC is crucial to designing Chrome packaged apps.
@@ -306,7 +306,7 @@ for writing secure and scalable Chrome packaged apps:
 
 <h2 id="resources">Useful resources</h2>
 
-<h3>Online</h3>
+<h3 id="online">Online</h3>
 
 <ul>
 	<li><a href="http://www.html5rocks.com/">HTML5Rocks.com</a></li>
@@ -315,7 +315,7 @@ for writing secure and scalable Chrome packaged apps:
 	<li><a href="http://addyosmani.github.com/todomvc/">TodoMVC</a></li>
 </ul>
 
-<h3>Books</h3>
+<h3 id="books">Books</h3>
 
 <ul>
 	<li><a href="http://www.amazon.com/JavaScript-Web-Applications-Alex-MacCaw/dp/144930351X">JavaScript Web Applications</a>

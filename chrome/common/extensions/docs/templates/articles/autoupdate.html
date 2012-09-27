@@ -10,14 +10,14 @@ You should also read <a href="hosting.html">Hosting</a> and
 <a href="packaging.html">Packaging</a>.</p>
 
 
-<h2>Overview</h2>
+<h2 id="overview">Overview</h2>
 <ul><li>An extension manifest may contain an "update_url" field, pointing to a location for doing update checks.</li>
 <li>The content returned by an update check is an <em>update manifest</em> XML document listing the latest version of an extension.</li></ul>
 
 <p>Every few hours, the browser checks whether any installed extensions have an update URL. For each one, it makes a request to that URL looking for an update manifest XML file. If the update manifest mentions a version of an extension that is more recent than what's installed, the browser downloads and installs the new version. As with manual updates, the new <code>.crx</code> file must be signed with the same private key as the currently installed version.</p>
 
 
-<h2>Update URL</h2>
+<h2 id="update_url">Update URL</h2>
 <p>If you're hosting your own extension, you need to add the "update_url" field to your <a href="manifest.html"><code>manifest.json</code></a> file,
 like this:</p>
 
@@ -29,7 +29,7 @@ like this:</p>
 }
 </pre>
 
-<h2>Update manifest</h2>
+<h2 id="update_manifest">Update manifest</h2>
 <p>The update manifest returned by the server should be an XML document that looks like this (highlights indicate parts you should modify):</p>
 
 <pre>
@@ -73,7 +73,7 @@ Used by the client to determine whether it should download the <code>.crx</code>
 <p>The update manifest XML file may contain information about multiple extensions by including multiple &lt;app&gt; elements.</p>
 
 
-<h2>Testing</h2>
+<h2 id="testing">Testing</h2>
 <p>The default update check frequency is several hours,
 but you can force an update using the Extensions page's
 <b>Update extensions now</b> button.
@@ -87,7 +87,7 @@ chrome.exe <b>--extensions-update-frequency=45</b></pre>
 <p>Note that this affects checks for all installed extensions, so consider the bandwidth and server load implications of this. You may want to temporarily uninstall all but the one extension you are testing with, and should not run with this option turned on during normal browser usage.</p>
 
 
-<h2>Advanced usage: request parameters</h2>
+<h2 id="request_parameters">Advanced usage: request parameters</h2>
 <p>The basic autoupdate mechanism is designed to make the server-side work as easy as just dropping a static XML file onto any plain web server such as Apache, and updating that XML file as you release new versions of your extensions.</p>
 <p>More advanced developers may wish to take advantage of the fact that we add on parameters to the request for the update manifest to indicate the extension ID and version. Then they can use the same update URL for all of their extensions, pointing to a URL running dynamic server-side code instead of a static XML file.</p>
 <p>The format of the request parameters is:</p>
@@ -136,7 +136,7 @@ a single POST request might be issued
 with the request parameters in the POST body.
 </p>
 
-<h2>Advanced usage: minimum browser version</h2>
+<h2 id="minimum_browser_version">Advanced usage: minimum browser version</h2>
 <p>As we add more APIs to the extensions system, it's possible you will want to release an updated version of an extension that will work only with newer versions of the browser. While Google Chrome itself is autoupdated, it can take a few days before the majority of the user base has updated to any given new release. To ensure that a given extension update will apply only to Google Chrome versions at or higher than a specific version, you add the "prodversionmin" attribute to the &lt;app&gt; element in your update manifest. For example:</p>
 
 <pre>&lt;?xml version='1.0' encoding='UTF-8'?&gt;

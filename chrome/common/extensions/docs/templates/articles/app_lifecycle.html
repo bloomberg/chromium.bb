@@ -49,7 +49,7 @@ with none of its own UI and is responsible
 for creating the windows for all other app pages.
 </p>
 
-<h3>Create event page</h3>
+<h3 id="create_event_page">Create event page</h3>
 
 <p>
 To create the event page,
@@ -80,7 +80,7 @@ chrome.app.runtime.onLaunched.addListener(function() {
 });
 </pre>
 
-<h3>Create windows</h3>
+<h3 id="create_windows">Create windows</h3>
 
 <p>
 An event page may create one or more windows at its discretion.
@@ -127,7 +127,7 @@ chrome.app.runtime.onLaunched.addListener(function() {
 });
 </pre>
 
-<h3>Including Launch Data</h3>
+<h3 id="launch_data">Including Launch Data</h3>
 
 <p>
 Depending on how your app is launched,
@@ -159,7 +159,7 @@ to store local settings and the
 before the event page is unloaded.
 </p>
 
-<h3>Storing local settings</h3>
+<h3 id="local_settings">Storing local settings</h3>
 
 <p>
 <code>chrome.runtime.onInstalled()</code>
@@ -179,7 +179,7 @@ chrome.runtime.onInstalled.addListener(function() {
 });
 </pre>
 
-<h3>Preventing data loss</h3>
+<h3 id="preventing_loss">Preventing data loss</h3>
 
 <p>
 Users can uninstall your app at any time.
@@ -202,7 +202,7 @@ user data can be automatically synced
 with Chrome sync.
 </p>
 
-<h3>Clean-up before app closes</h3>
+<h3 id="clean-up">Clean-up before app closes</h3>
 
 <p>
 The app runtime sends the <code>onSuspend()</code>

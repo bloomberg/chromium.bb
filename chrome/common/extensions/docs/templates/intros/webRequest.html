@@ -219,7 +219,7 @@ if explicitly requested.</p>
 <p>Several implementation details can be important to understand when developing
 an extension that uses the web request API:</p>
 
-<h3>Conflict resolution</h3>
+<h3 id="conflict_resolution">Conflict resolution</h3>
 <p>In the current implementation of the web request API, a request is considered
 as cancelled if at least one extension instructs to cancel the request. If
 an extension cancels a request, all extensions are notified by an
@@ -229,7 +229,7 @@ modify the request, the most recently installed extension wins and all others
 are ignored. An extension is not notified if its instruction to modify or
 redirect has been ignored.</p>
 
-<h3>Caching</h3>
+<h3 id="caching">Caching</h3>
 <p>
 Chrome employs two caches &mdash; an on-disk cache and a very fast in-memory
 cache.  The lifetime of an in-memory cache is attached to the lifetime of a
@@ -243,7 +243,7 @@ it often; flushing the cache is a very expensive operation. You don't need to
 call <code>handlerBehaviorChanged()</code> after registering or unregistering an
 event listener.</p>
 
-<h3>Timestamps</h3>
+<h3 id="timestamps">Timestamps</h3>
 <p>
 The <code>timestamp</code> property of web request events is only guaranteed to
 be <i>internally</i> consistent. Comparing one event to another event will give
