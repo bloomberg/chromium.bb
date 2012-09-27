@@ -381,9 +381,10 @@ cr.define('options', function() {
 
     /**
      * Handles image selection change.
+     * @param {Event} e Selection change Event.
      * @private
      */
-    handleImageSelected_: function() {
+    handleImageSelected_: function(e) {
       var imageGrid = $('user-image-grid');
       var url = imageGrid.selectedItemUrl;
       // Ignore selection change caused by program itself and selection of one
