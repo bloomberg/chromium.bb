@@ -28,8 +28,8 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
+#include "remoting/host/constants.h"
 #include "remoting/host/chromoting_messages.h"
-#include "remoting/host/host_exit_codes.h"
 #include "remoting/host/win/launch_process_with_token.h"
 #include "remoting/host/win/wts_console_monitor.h"
 
