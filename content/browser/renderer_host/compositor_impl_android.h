@@ -33,6 +33,8 @@ class CompositorImpl : public Compositor,
   virtual void SetRootLayer(WebKit::WebLayer* root) OVERRIDE;
   virtual void SetWindowSurface(ANativeWindow* window) OVERRIDE;
   virtual void SetWindowBounds(const gfx::Size& size) OVERRIDE;
+  virtual bool CompositeAndReadback(
+      void *pixels, const gfx::Rect& rect) OVERRIDE;
   virtual void OnSurfaceUpdated(
       const SurfacePresentedCallback& callback) OVERRIDE;
 

@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
 namespace WebKit {
@@ -35,6 +36,11 @@ class Compositor {
 
   // Set the output surface handle which the compositor renders into.
   virtual void SetWindowSurface(ANativeWindow* window) = 0;
+
+  // Attempts to composite and read back the result into the provided buffer.
+  // The buffer must be at least window width * height * 4 (RGBA) bytes large.
+  // The buffer is not modified if false is returned.
+  virtual bool CompositeAndReadback(void *pixels, const gfx::Rect& rect) = 0;
 
   // Callback to be run after the frame has been drawn. It passes back
   // a synchronization point identifier.

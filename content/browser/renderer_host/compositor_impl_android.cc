@@ -148,6 +148,13 @@ void CompositorImpl::SetWindowBounds(const gfx::Size& size) {
   root_layer_->setBounds(size);
 }
 
+bool CompositorImpl::CompositeAndReadback(void *pixels, const gfx::Rect& rect) {
+  if (host_.get())
+    return host_->compositeAndReadback(pixels, rect);
+  else
+    return false;
+}
+
 void CompositorImpl::updateAnimations(double frameBeginTime) {
 }
 
