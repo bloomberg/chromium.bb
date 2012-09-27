@@ -56,7 +56,8 @@ using webkit::WebPluginInfo;
 
 namespace {
 
-static const char kReaderUpdateUrl[] =
+static const char kAdobeReaderIdentifier[] = "adobe-reader";
+static const char kAdobeReaderUpdateUrl[] =
     "http://www.adobe.com/go/getreader_chrome";
 
 // The info bar delegate used to ask the user if they want to use Adobe Reader
@@ -144,7 +145,7 @@ void PDFEnableAdobeReaderInfoBarDelegate::OnNo() {
 // Launch the url to get the latest Adbobe Reader installer.
 void OpenReaderUpdateURL(WebContents* tab) {
   OpenURLParams params(
-      GURL(kReaderUpdateUrl), Referrer(), NEW_FOREGROUND_TAB,
+      GURL(kAdobeReaderUpdateUrl), Referrer(), NEW_FOREGROUND_TAB,
       content::PAGE_TRANSITION_LINK, false);
   tab->OpenURL(params);
 }
@@ -157,7 +158,7 @@ void OpenUsingReader(TabContents* tab,
       tab->web_contents()->GetRenderProcessHost()->GetID(),
       tab->web_contents()->GetRenderViewHost()->GetRoutingID(),
       tab->web_contents()->GetURL(),
-      ASCIIToUTF16(PluginGroup::kAdobeReaderGroupName));
+      reader_plugin);
   tab->web_contents()->GetRenderViewHost()->ReloadFrame();
 
   if (delegate)
@@ -226,6 +227,8 @@ class PDFUnsupportedFeatureInterstitial
     } else if (command == "2") {
       content::RecordAction(
           UserMetricsAction("PDF_ReaderInterstitialIgnore"));
+      // Pretend that the plug-in is up-to-date so that we don't block it.
+      reader_webplugininfo_.version = ASCIIToUTF16("11.0.0.0");
       OpenUsingReader(tab_contents_, reader_webplugininfo_, NULL);
     } else {
       NOTREACHED();
@@ -374,23 +377,23 @@ void GotPluginsCallback(int process_id,
   if (!tab)
     return;
 
-  string16 reader_group_name(ASCIIToUTF16(PluginGroup::kAdobeReaderGroupName));
-  // If the Reader plugin is disabled by policy, don't prompt them.
-  PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(tab->profile());
-  if (plugin_prefs->PolicyStatusForPlugin(reader_group_name) ==
-      PluginPrefs::POLICY_DISABLED) {
-    return;
-  }
-
   const webkit::WebPluginInfo* reader = NULL;
   PluginFinder* plugin_finder = PluginFinder::GetInstance();
   for (size_t i = 0; i < plugins.size(); ++i) {
     PluginMetadata* plugin_metadata =
         plugin_finder->GetPluginMetadata(plugins[i]);
-    if (reader_group_name == plugin_metadata->name()) {
-      DCHECK(!reader);
-      reader = &plugins[i];
+    if (plugin_metadata->identifier() != kAdobeReaderIdentifier)
+      continue;
+
+    DCHECK(!reader);
+    reader = &plugins[i];
+    // If the Reader plugin is disabled by policy, don't prompt them.
+    PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(tab->profile());
+    if (plugin_prefs->PolicyStatusForPlugin(plugin_metadata->name()) ==
+        PluginPrefs::POLICY_DISABLED) {
+      return;
     }
+    break;
   }
 
   scoped_ptr<OpenPDFInReaderPromptDelegate> prompt(

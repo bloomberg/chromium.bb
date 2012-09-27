@@ -10,6 +10,7 @@
 
 #include "base/auto_reset.h"
 #include "base/command_line.h"
+#include "base/path_service.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_plugin_service_filter.h"
@@ -27,6 +28,7 @@
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/navigation_controller.h"
@@ -55,11 +57,13 @@ namespace {
 
 void EnableInternalPDFPluginForTab(TabContents* preview_tab) {
   // Always enable the internal PDF plugin for the print preview page.
+  webkit::WebPluginInfo pdf_plugin;
+  PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf_plugin.path);
+
   ChromePluginServiceFilter::GetInstance()->OverridePluginForTab(
         preview_tab->web_contents()->GetRenderProcessHost()->GetID(),
         preview_tab->web_contents()->GetRenderViewHost()->GetRoutingID(),
-        GURL(),
-        ASCIIToUTF16(chrome::ChromeContentClient::kPDFPluginName));
+        GURL(), pdf_plugin);
 }
 
 // WebDialogDelegate that specifies what the print preview dialog

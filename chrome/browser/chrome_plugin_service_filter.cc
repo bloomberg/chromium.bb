@@ -44,12 +44,12 @@ void ChromePluginServiceFilter::OverridePluginForTab(
     int render_process_id,
     int render_view_id,
     const GURL& url,
-    const string16& plugin_name) {
+    const webkit::WebPluginInfo& plugin) {
   OverriddenPlugin overridden_plugin;
   overridden_plugin.render_process_id = render_process_id;
   overridden_plugin.render_view_id = render_view_id;
   overridden_plugin.url = url;
-  overridden_plugin.plugin_name = plugin_name;
+  overridden_plugin.plugin = plugin;
   base::AutoLock auto_lock(lock_);
   overridden_plugins_.push_back(overridden_plugin);
 }
@@ -85,13 +85,10 @@ bool ChromePluginServiceFilter::ShouldUsePlugin(
         (overridden_plugins_[i].url == url ||
          overridden_plugins_[i].url.is_empty())) {
 
-      bool use = overridden_plugins_[i].plugin_name == plugin->name;
-      if (use &&
-          plugin->name == ASCIIToUTF16(PluginGroup::kAdobeReaderGroupName)) {
-        // If the caller is forcing the Adobe Reader plugin, then don't show the
-        // blocked plugin UI if it's vulnerable.
-        plugin->version = ASCIIToUTF16("11.0.0.0");
-      }
+      bool use = overridden_plugins_[i].plugin.path == plugin->path;
+      if (use)
+        *plugin = overridden_plugins_[i].plugin;
+
       return use;
     }
   }

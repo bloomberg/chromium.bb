@@ -17,6 +17,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/plugin_service_filter.h"
 #include "googleurl/src/gurl.h"
+#include "webkit/plugins/webplugininfo.h"
 
 class PluginPrefs;
 class Profile;
@@ -38,7 +39,7 @@ class ChromePluginServiceFilter : public content::PluginServiceFilter,
   void OverridePluginForTab(int render_process_id,
                             int render_view_id,
                             const GURL& url,
-                            const string16& plugin_name);
+                            const webkit::WebPluginInfo& plugin);
 
   // Restricts the given plugin to the given profile and origin of the given
   // URL.
@@ -65,7 +66,7 @@ class ChromePluginServiceFilter : public content::PluginServiceFilter,
     int render_process_id;
     int render_view_id;
     GURL url;  // If empty, the override applies to all urls in render_view.
-    string16 plugin_name;
+    webkit::WebPluginInfo plugin;
   };
 
   ChromePluginServiceFilter();
