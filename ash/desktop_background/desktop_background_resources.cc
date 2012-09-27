@@ -470,6 +470,7 @@ const WallpaperInfo& GetWallpaperInfo(int index) {
 
 const WallpaperViewInfo& GetWallpaperViewInfo(int index,
                                               WallpaperResolution resolution) {
+  DCHECK(index >= 0 && index < kDefaultWallpaperCount);
   if (resolution == SMALL)
     return kDefaultWallpapers[index].small_wallpaper;
   else

@@ -869,6 +869,13 @@ void WallpaperManager::GetUserWallpaperProperties(const std::string& email,
       *last_modification_date = base::Time::FromInternalValue(val);
     }
   }
+
+  // Index maybe invalid when update from official build to unofficial build.
+  // Revert to default in that case.
+  if (*type == User::DEFAULT &&
+      (*index < 0 || *index >= ash::GetWallpaperCount())) {
+    *index = ash::GetDefaultWallpaperIndex();
+  }
 }
 
 void WallpaperManager::GenerateUserWallpaperThumbnail(
@@ -927,12 +934,8 @@ void WallpaperManager::MigrateBuiltInWallpaper(const std::string& email) {
         desktop_background_controller()->GetAppropriateResolution();
     if (user_wallpapers->GetDictionaryWithoutPathExpansion(email,
             &wallpaper_properties)) {
-      type = User::UNKNOWN;
-      index = ash::GetInvalidWallpaperIndex();
-      int temp;
-      wallpaper_properties->GetInteger(kWallpaperTypeNodeName, &temp);
-      type = static_cast<User::WallpaperType>(temp);
-      wallpaper_properties->GetInteger(kWallpaperIndexNodeName, &index);
+      base::Time date;
+      GetUserWallpaperProperties(email, &type, &index, &date);
 
       FilePath wallpaper_dir;
       CHECK(PathService::Get(chrome::DIR_CHROMEOS_WALLPAPERS, &wallpaper_dir));
