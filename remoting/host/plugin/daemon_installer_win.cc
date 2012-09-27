@@ -23,7 +23,7 @@
 #include "base/win/windows_version.h"
 #include "google_update/google_update_idl.h"
 #include "remoting/base/dispatch_win.h"
-#include "remoting/host/constants.h"
+#include "remoting/host/win/omaha.h"
 
 using base::win::ScopedBstr;
 using base::win::ScopedComPtr;
