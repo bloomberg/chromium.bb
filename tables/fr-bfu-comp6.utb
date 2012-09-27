@@ -32,6 +32,8 @@ space \x000c 0
 space \x000D 0          # cr
 space \x00A0 a          # no-break space
 
+# override zero
+digit 0 3456
 include digits6DotsPlusDot6.uti
 include latinLetterDef6Dots.uti
 
