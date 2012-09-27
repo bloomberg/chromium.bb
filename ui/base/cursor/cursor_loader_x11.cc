@@ -84,6 +84,8 @@ int CursorShapeFromNative(gfx::NativeCursor native_cursor) {
       return XC_left_ptr;
     case ui::kCursorPointer:
       return XC_left_ptr;
+    case ui::kCursorMove:
+      return XC_fleur;
     case ui::kCursorCross:
       return XC_crosshair;
     case ui::kCursorHand:
@@ -127,7 +129,7 @@ int CursorShapeFromNative(gfx::NativeCursor native_cursor) {
       NOTREACHED();
       return XC_left_ptr;
   }
-  NOTREACHED();
+  NOTREACHED() << "Case not handled for " << native_cursor.native_type();
   return XC_left_ptr;
 }
 
