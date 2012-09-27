@@ -5,6 +5,7 @@
 #ifndef CCTextureUpdateController_h
 #define CCTextureUpdateController_h
 
+#include "base/time.h"
 #include "CCTextureUpdateQueue.h"
 #include "CCTimer.h"
 #include <wtf/Noncopyable.h>
@@ -36,15 +37,15 @@ public:
     // Discard uploads to textures that were evicted on the impl thread.
     void discardUploadsToEvictedResources();
 
-    void performMoreUpdates(double monotonicTimeLimit);
+    void performMoreUpdates(base::TimeTicks timeLimit);
     void finalize();
 
     // CCTimerClient implementation.
     virtual void onTimerFired() OVERRIDE;
 
     // Virtual for testing.
-    virtual double monotonicTimeNow() const;
-    virtual double updateMoreTexturesTime() const;
+    virtual base::TimeTicks now() const;
+    virtual base::TimeDelta updateMoreTexturesTime() const;
     virtual size_t updateMoreTexturesSize() const;
 
 protected:
@@ -62,7 +63,7 @@ protected:
     bool m_contentsTexturesPurged;
     CCResourceProvider* m_resourceProvider;
     TextureUploader* m_uploader;
-    double m_monotonicTimeLimit;
+    base::TimeTicks m_timeLimit;
     size_t m_textureUpdatesPerTick;
     bool m_firstUpdateAttempt;
 };

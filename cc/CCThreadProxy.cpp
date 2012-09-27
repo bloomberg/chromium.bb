@@ -636,8 +636,7 @@ void CCThreadProxy::scheduledActionUpdateMoreResources(base::TimeTicks timeLimit
 {
     TRACE_EVENT0("cc", "CCThreadProxy::scheduledActionUpdateMoreResources");
     ASSERT(m_currentTextureUpdateControllerOnImplThread);
-    double monotonicTimeLimit = timeLimit.ToInternalValue() / static_cast<double>(base::Time::kMicrosecondsPerSecond);
-    m_currentTextureUpdateControllerOnImplThread->performMoreUpdates(monotonicTimeLimit);
+    m_currentTextureUpdateControllerOnImplThread->performMoreUpdates(timeLimit);
 }
 
 void CCThreadProxy::scheduledActionCommit()

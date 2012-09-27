@@ -49,7 +49,6 @@ CCTextureUpdateController::CCTextureUpdateController(CCTextureUpdateControllerCl
     , m_queue(queue)
     , m_resourceProvider(resourceProvider)
     , m_uploader(uploader)
-    , m_monotonicTimeLimit(0)
     , m_textureUpdatesPerTick(maxFullUpdatesPerTick(uploader))
     , m_firstUpdateAttempt(true)
 {
@@ -60,10 +59,10 @@ CCTextureUpdateController::~CCTextureUpdateController()
 }
 
 void CCTextureUpdateController::performMoreUpdates(
-    double monotonicTimeLimit)
+    base::TimeTicks timeLimit)
 {
-    ASSERT(monotonicTimeLimit >= m_monotonicTimeLimit);
-    m_monotonicTimeLimit = monotonicTimeLimit;
+    ASSERT(timeLimit >= m_timeLimit);
+    m_timeLimit = timeLimit;
 
     // Update already in progress.
     if (m_timer->isActive())
@@ -131,14 +130,14 @@ void CCTextureUpdateController::onTimerFired()
         m_client->readyToFinalizeTextureUpdates();
 }
 
-double CCTextureUpdateController::monotonicTimeNow() const
+base::TimeTicks CCTextureUpdateController::now() const
 {
-    return monotonicallyIncreasingTime();
+    return base::TimeTicks::Now();
 }
 
-double CCTextureUpdateController::updateMoreTexturesTime() const
+base::TimeDelta CCTextureUpdateController::updateMoreTexturesTime() const
 {
-    return textureUpdateTickRate;
+    return base::TimeDelta::FromMilliseconds(textureUpdateTickRate * 1000);
 }
 
 size_t CCTextureUpdateController::updateMoreTexturesSize() const
@@ -159,7 +158,8 @@ bool CCTextureUpdateController::updateMoreTexturesIfEnoughTimeRemaining()
     if (!m_queue->fullUploadSize())
         return false;
 
-    bool hasTimeRemaining = monotonicTimeNow() < m_monotonicTimeLimit - updateMoreTexturesTime();
+    bool hasTimeRemaining = this->now() <
+        m_timeLimit - updateMoreTexturesTime();
     if (hasTimeRemaining)
         updateMoreTexturesNow();
 
@@ -171,7 +171,8 @@ void CCTextureUpdateController::updateMoreTexturesNow()
     size_t uploads = std::min(
         m_queue->fullUploadSize(), updateMoreTexturesSize());
     m_timer->startOneShot(
-        updateMoreTexturesTime() / updateMoreTexturesSize() * uploads);
+        updateMoreTexturesTime().InSecondsF() / updateMoreTexturesSize() *
+        uploads);
 
     if (!uploads)
         return;

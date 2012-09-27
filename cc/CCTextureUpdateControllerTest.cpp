@@ -381,29 +381,27 @@ public:
         return adoptPtr(new FakeCCTextureUpdateController(client, thread, queue, resourceProvider, uploader));
     }
 
-    void setMonotonicTimeNow(double time) { m_monotonicTimeNow = time; }
-    virtual double monotonicTimeNow() const OVERRIDE { return m_monotonicTimeNow; }
-    void setUpdateMoreTexturesTime(double time) { m_updateMoreTexturesTime = time; }
-    virtual double updateMoreTexturesTime() const OVERRIDE { return m_updateMoreTexturesTime; }
+    void setNow(base::TimeTicks time) { m_now = time; }
+    virtual base::TimeTicks now() const OVERRIDE { return m_now; }
+    void setUpdateMoreTexturesTime(base::TimeDelta time) { m_updateMoreTexturesTime = time; }
+    virtual base::TimeDelta updateMoreTexturesTime() const OVERRIDE { return m_updateMoreTexturesTime; }
     void setUpdateMoreTexturesSize(size_t size) { m_updateMoreTexturesSize = size; }
     virtual size_t updateMoreTexturesSize() const OVERRIDE { return m_updateMoreTexturesSize; }
 
 protected:
     FakeCCTextureUpdateController(cc::CCTextureUpdateControllerClient* client, cc::CCThread* thread, PassOwnPtr<CCTextureUpdateQueue> queue, CCResourceProvider* resourceProvider, TextureUploader* uploader)
         : cc::CCTextureUpdateController(client, thread, queue, resourceProvider, uploader)
-        , m_monotonicTimeNow(0)
-        , m_updateMoreTexturesTime(0)
         , m_updateMoreTexturesSize(0) { }
 
-    double m_monotonicTimeNow;
-    double m_updateMoreTexturesTime;
+    base::TimeTicks m_now;
+    base::TimeDelta m_updateMoreTexturesTime;
     size_t m_updateMoreTexturesSize;
 };
 
 static void runPendingTask(FakeCCThread* thread, FakeCCTextureUpdateController* controller)
 {
     EXPECT_TRUE(thread->hasPendingTask());
-    controller->setMonotonicTimeNow(controller->monotonicTimeNow() + thread->pendingDelayMs() / 1000.0);
+    controller->setNow(controller->now() + base::TimeDelta::FromMilliseconds(thread->pendingDelayMs()));
     thread->runPendingTask();
 }
 
@@ -419,31 +417,36 @@ TEST_F(CCTextureUpdateControllerTest, UpdateMoreTextures)
     DebugScopedSetImplThread implThread;
     OwnPtr<FakeCCTextureUpdateController> controller(FakeCCTextureUpdateController::create(&client, &thread, m_queue.release(), m_resourceProvider.get(), &m_uploader));
 
-    controller->setMonotonicTimeNow(0);
-    controller->setUpdateMoreTexturesTime(0.1);
+    controller->setNow(
+        controller->now() + base::TimeDelta::FromMilliseconds(1));
+    controller->setUpdateMoreTexturesTime(
+        base::TimeDelta::FromMilliseconds(100));
     controller->setUpdateMoreTexturesSize(1);
     // Not enough time for any updates.
-    controller->performMoreUpdates(0.09);
+    controller->performMoreUpdates(
+        controller->now() + base::TimeDelta::FromMilliseconds(90));
     EXPECT_FALSE(thread.hasPendingTask());
     EXPECT_EQ(0, m_numBeginUploads);
     EXPECT_EQ(0, m_numEndUploads);
 
-    controller->setMonotonicTimeNow(0);
-    controller->setUpdateMoreTexturesTime(0.1);
+    controller->setUpdateMoreTexturesTime(
+        base::TimeDelta::FromMilliseconds(100));
     controller->setUpdateMoreTexturesSize(1);
     // Only enough time for 1 update.
-    controller->performMoreUpdates(0.12);
+    controller->performMoreUpdates(
+        controller->now() + base::TimeDelta::FromMilliseconds(120));
     runPendingTask(&thread, controller.get());
     EXPECT_FALSE(thread.hasPendingTask());
     EXPECT_EQ(1, m_numBeginUploads);
     EXPECT_EQ(1, m_numEndUploads);
     EXPECT_EQ(1, m_numTotalUploads);
 
-    controller->setMonotonicTimeNow(0);
-    controller->setUpdateMoreTexturesTime(0.1);
+    controller->setUpdateMoreTexturesTime(
+        base::TimeDelta::FromMilliseconds(100));
     controller->setUpdateMoreTexturesSize(1);
     // Enough time for 2 updates.
-    controller->performMoreUpdates(0.22);
+    controller->performMoreUpdates(
+        controller->now() + base::TimeDelta::FromMilliseconds(220));
     runPendingTask(&thread, controller.get());
     runPendingTask(&thread, controller.get());
     EXPECT_FALSE(thread.hasPendingTask());
@@ -465,11 +468,14 @@ TEST_F(CCTextureUpdateControllerTest, NoMoreUpdates)
     DebugScopedSetImplThread implThread;
     OwnPtr<FakeCCTextureUpdateController> controller(FakeCCTextureUpdateController::create(&client, &thread, m_queue.release(), m_resourceProvider.get(), &m_uploader));
 
-    controller->setMonotonicTimeNow(0);
-    controller->setUpdateMoreTexturesTime(0.1);
+    controller->setNow(
+        controller->now() + base::TimeDelta::FromMilliseconds(1));
+    controller->setUpdateMoreTexturesTime(
+        base::TimeDelta::FromMilliseconds(100));
     controller->setUpdateMoreTexturesSize(1);
     // Enough time for 3 updates but only 2 necessary.
-    controller->performMoreUpdates(0.31);
+    controller->performMoreUpdates(
+        controller->now() + base::TimeDelta::FromMilliseconds(310));
     runPendingTask(&thread, controller.get());
     runPendingTask(&thread, controller.get());
     EXPECT_FALSE(thread.hasPendingTask());
@@ -478,11 +484,12 @@ TEST_F(CCTextureUpdateControllerTest, NoMoreUpdates)
     EXPECT_EQ(2, m_numEndUploads);
     EXPECT_EQ(2, m_numTotalUploads);
 
-    controller->setMonotonicTimeNow(0);
-    controller->setUpdateMoreTexturesTime(0.1);
+    controller->setUpdateMoreTexturesTime(
+        base::TimeDelta::FromMilliseconds(100));
     controller->setUpdateMoreTexturesSize(1);
     // Enough time for updates but no more updates left.
-    controller->performMoreUpdates(0.31);
+    controller->performMoreUpdates(
+        controller->now() + base::TimeDelta::FromMilliseconds(310));
     // 0-delay task used to call readyToFinalizeTextureUpdates().
     runPendingTask(&thread, controller.get());
     EXPECT_FALSE(thread.hasPendingTask());
@@ -504,8 +511,10 @@ TEST_F(CCTextureUpdateControllerTest, UpdatesCompleteInFiniteTime)
     DebugScopedSetImplThread implThread;
     OwnPtr<FakeCCTextureUpdateController> controller(FakeCCTextureUpdateController::create(&client, &thread, m_queue.release(), m_resourceProvider.get(), &m_uploader));
 
-    controller->setMonotonicTimeNow(0);
-    controller->setUpdateMoreTexturesTime(0.5);
+    controller->setNow(
+        controller->now() + base::TimeDelta::FromMilliseconds(1));
+    controller->setUpdateMoreTexturesTime(
+        base::TimeDelta::FromMilliseconds(500));
     controller->setUpdateMoreTexturesSize(1);
 
     for (int i = 0; i < 100; i++) {
@@ -513,7 +522,8 @@ TEST_F(CCTextureUpdateControllerTest, UpdatesCompleteInFiniteTime)
             break;
 
         // Not enough time for any updates.
-        controller->performMoreUpdates(0.4);
+        controller->performMoreUpdates(
+            controller->now() + base::TimeDelta::FromMilliseconds(400));
 
         if (thread.hasPendingTask())
             runPendingTask(&thread, controller.get());
