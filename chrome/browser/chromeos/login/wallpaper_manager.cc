@@ -270,12 +270,8 @@ void WallpaperManager::InitializeWallpaper() {
     WizardController::SetZeroDelays();
 
   // Zero delays is also set in autotests.
-  if (WizardController::IsZeroDelayEnabled()) {
-    // Ensure tests have some sort of wallpaper.
-    ash::Shell::GetInstance()->desktop_background_controller()->
-        CreateEmptyWallpaper();
+  if (WizardController::IsZeroDelayEnabled())
     return;
-  }
 
   bool disable_new_oobe = CommandLine::ForCurrentProcess()->
       HasSwitch(switches::kDisableNewOobe);
