@@ -24,7 +24,7 @@ int ContentMainDelegate::RunProcess(
   return -1;
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) && !defined(OS_IOS)
 
 bool ContentMainDelegate::ProcessRegistersWithSystemProcess(
     const std::string& process_type) {
@@ -40,7 +40,7 @@ bool ContentMainDelegate::DelaySandboxInitialization(
   return false;
 }
 
-#elif defined(OS_POSIX) && !defined(OS_ANDROID)
+#elif defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_IOS)
 
 ZygoteForkDelegate* ContentMainDelegate::ZygoteStarting() {
   return NULL;
