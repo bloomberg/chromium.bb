@@ -3992,7 +3992,7 @@ display_run(struct display *display)
 		wl_display_flush(display->display);
 
 		while (!wl_list_empty(&display->deferred_list)) {
-			task = container_of(display->deferred_list.next,
+			task = container_of(display->deferred_list.prev,
 					    struct task, link);
 			wl_list_remove(&task->link);
 			task->run(task, 0);
