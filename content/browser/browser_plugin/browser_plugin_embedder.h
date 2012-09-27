@@ -64,7 +64,6 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver,
   // Navigates in a guest (new or existing).
   void NavigateGuest(RenderViewHost* render_view_host,
                      int instance_id,
-                     int64 frame_id,
                      const std::string& src,
                      const gfx::Size& size);
   void Stop(int instance_id);
@@ -117,9 +116,7 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver,
   // in BrowserPlugin.
   BrowserPluginGuest* GetGuestByInstanceID(int instance_id) const;
   // Adds a new guest web_contents to the embedder (overridable in test).
-  virtual void AddGuest(int instance_id,
-                        WebContents* guest_web_contents,
-                        int64 frame_id);
+  virtual void AddGuest(int instance_id, WebContents* guest_web_contents);
   void DestroyGuestByInstanceID(int instance_id);
   void DestroyGuests();
 

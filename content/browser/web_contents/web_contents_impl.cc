@@ -2369,7 +2369,6 @@ void WebContentsImpl::OnPpapiBrokerPermissionResult(int request_id,
 }
 
 void WebContentsImpl::OnBrowserPluginNavigateGuest(int instance_id,
-                                                   int64 frame_id,
                                                    const std::string& src,
                                                    const gfx::Size& size) {
   // This is the first 'navigate' to a browser plugin, before WebContents has/is
@@ -2386,7 +2385,6 @@ void WebContentsImpl::OnBrowserPluginNavigateGuest(int instance_id,
       content::BrowserPluginEmbedder::Create(this, GetRenderViewHost()));
   browser_plugin_embedder_->NavigateGuest(GetRenderViewHost(),
                                           instance_id,
-                                          frame_id,
                                           src,
                                           size);
 }

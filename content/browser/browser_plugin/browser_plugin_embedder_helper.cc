@@ -129,11 +129,9 @@ void BrowserPluginEmbedderHelper::OnHandleInputEvent(
 }
 
 void BrowserPluginEmbedderHelper::OnNavigateGuest(int instance_id,
-                                                  int64 frame_id,
                                                   const std::string& src,
                                                   const gfx::Size& size) {
-  embedder_->NavigateGuest(render_view_host(), instance_id, frame_id, src,
-                           size);
+  embedder_->NavigateGuest(render_view_host(), instance_id, src, size);
 }
 
 void BrowserPluginEmbedderHelper::OnUpdateRectACK(int instance_id,

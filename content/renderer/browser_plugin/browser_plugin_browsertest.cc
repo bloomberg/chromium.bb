@@ -139,13 +139,11 @@ TEST_F(BrowserPluginTest, SrcAttribute) {
     ASSERT_TRUE(msg);
 
     int instance_id;
-    long long frame_id;
     std::string src;
     gfx::Size size;
     BrowserPluginHostMsg_NavigateGuest::Read(
         msg,
         &instance_id,
-        &frame_id,
         &src,
         &size);
     EXPECT_EQ("foo", src);
@@ -163,13 +161,11 @@ TEST_F(BrowserPluginTest, SrcAttribute) {
     ASSERT_TRUE(msg);
 
     int instance_id;
-    long long frame_id;
     std::string src;
     gfx::Size size;
     BrowserPluginHostMsg_NavigateGuest::Read(
         msg,
         &instance_id,
-        &frame_id,
         &src,
         &size);
     EXPECT_EQ("bar", src);
@@ -436,13 +432,11 @@ TEST_F(BrowserPluginTest, ImmutableAttributesAfterNavigation) {
     ASSERT_TRUE(msg);
 
     int instance_id;
-    long long frame_id;
     std::string src;
     gfx::Size size;
     BrowserPluginHostMsg_NavigateGuest::Read(
         msg,
         &instance_id,
-        &frame_id,
         &src,
         &size);
     EXPECT_STREQ("bar", src.c_str());

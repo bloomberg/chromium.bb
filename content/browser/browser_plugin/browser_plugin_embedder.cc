@@ -70,8 +70,7 @@ BrowserPluginGuest* BrowserPluginEmbedder::GetGuestByInstanceID(
 }
 
 void BrowserPluginEmbedder::AddGuest(int instance_id,
-                                     WebContents* guest_web_contents,
-                                     int64 frame_id) {
+                                     WebContents* guest_web_contents) {
   DCHECK(guest_web_contents_by_instance_id_.find(instance_id) ==
          guest_web_contents_by_instance_id_.end());
   guest_web_contents_by_instance_id_[instance_id] = guest_web_contents;
@@ -79,7 +78,6 @@ void BrowserPluginEmbedder::AddGuest(int instance_id,
 
 void BrowserPluginEmbedder::NavigateGuest(RenderViewHost* render_view_host,
                                           int instance_id,
-                                          int64 frame_id,
                                           const std::string& src,
                                           const gfx::Size& size) {
   BrowserPluginGuest* guest = GetGuestByInstanceID(instance_id);
@@ -99,7 +97,7 @@ void BrowserPluginEmbedder::NavigateGuest(RenderViewHost* render_view_host,
 
     guest_web_contents->GetMutableRendererPrefs()->
         throttle_input_events = false;
-    AddGuest(instance_id, guest_web_contents, frame_id);
+    AddGuest(instance_id, guest_web_contents);
     guest_web_contents->SetDelegate(guest);
   } else {
     guest_web_contents =

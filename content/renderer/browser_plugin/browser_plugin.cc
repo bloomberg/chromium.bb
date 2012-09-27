@@ -62,7 +62,6 @@ BrowserPlugin::BrowserPlugin(
       guest_crashed_(false),
       resize_pending_(false),
       navigate_src_sent_(false),
-      parent_frame_(frame->identifier()),
       process_id_(-1),
       persist_storage_(false) {
   BrowserPluginManager::Get()->AddBrowserPlugin(instance_id, this);
@@ -103,7 +102,6 @@ void BrowserPlugin::SetSrcAttribute(const std::string& src) {
         new BrowserPluginHostMsg_NavigateGuest(
             render_view_->GetRoutingID(),
             instance_id_,
-            parent_frame_,
             src,
             gfx::Size(width(), height())));
     // Record that we sent a NavigateGuest message to embedder. Once we send

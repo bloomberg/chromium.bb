@@ -154,7 +154,6 @@ class CONTENT_EXPORT BrowserPlugin :
   bool resize_pending_;
   // True if we have ever sent a NavigateGuest message to the embedder.
   bool navigate_src_sent_;
-  int64 parent_frame_;
   std::string src_;
   int process_id_;
   std::string storage_partition_id_;

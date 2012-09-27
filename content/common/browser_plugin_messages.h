@@ -63,9 +63,8 @@ IPC_MESSAGE_ROUTED3(BrowserPluginHostMsg_UpdateRect_ACK,
 // that WebContents. If not, it will create the WebContents, associate it with
 // the BrowserPlugin's browser-side BrowserPluginHost as a guest, and navigate
 // it to the requested URL.
-IPC_MESSAGE_ROUTED4(BrowserPluginHostMsg_NavigateGuest,
+IPC_MESSAGE_ROUTED3(BrowserPluginHostMsg_NavigateGuest,
                     int /* instance_id*/,
-                    int64 /* frame_id */,
                     std::string /* src */,
                     gfx::Size /* size */)
 
