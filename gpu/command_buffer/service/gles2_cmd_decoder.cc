@@ -534,6 +534,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   virtual uint32 GetTextureUploadCount() OVERRIDE;
   virtual base::TimeDelta GetTotalTextureUploadTime() OVERRIDE;
   virtual base::TimeDelta GetTotalProcessingCommandsTime() OVERRIDE;
+  virtual void AddProcessingCommandsTime(base::TimeDelta) OVERRIDE;
 
   // Restores the current state to the user's settings.
   void RestoreCurrentFramebufferBindings();
@@ -2904,6 +2905,10 @@ base::TimeDelta GLES2DecoderImpl::GetTotalTextureUploadTime() {
 
 base::TimeDelta GLES2DecoderImpl::GetTotalProcessingCommandsTime() {
   return total_processing_commands_time_;
+}
+
+void GLES2DecoderImpl::AddProcessingCommandsTime(base::TimeDelta time) {
+  total_processing_commands_time_ += time;
 }
 
 void GLES2DecoderImpl::Destroy(bool have_context) {

@@ -181,6 +181,7 @@ class GPU_EXPORT GLES2Decoder : public CommonDecoder {
   virtual uint32 GetTextureUploadCount() = 0;
   virtual base::TimeDelta GetTotalTextureUploadTime() = 0;
   virtual base::TimeDelta GetTotalProcessingCommandsTime() = 0;
+  virtual void AddProcessingCommandsTime(base::TimeDelta) = 0;
 
   static bool IsAngle();
 
