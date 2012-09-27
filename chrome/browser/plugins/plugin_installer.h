@@ -34,7 +34,7 @@ class PluginInstaller : public content::DownloadItem::Observer {
     INSTALLER_STATE_DOWNLOADING,
   };
 
-  explicit PluginInstaller(PluginMetadata* plugin);
+  PluginInstaller();
   virtual ~PluginInstaller();
 
   virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;
@@ -46,32 +46,20 @@ class PluginInstaller : public content::DownloadItem::Observer {
   void AddWeakObserver(WeakPluginInstallerObserver* observer);
   void RemoveWeakObserver(WeakPluginInstallerObserver* observer);
 
-  // Unique identifier for the plug-in.
-  const std::string& identifier() const { return plugin_->identifier(); }
-
-  // Human-readable name of the plug-in.
-  const string16& name() const { return plugin_->name(); }
-
-  // If |url_for_display| is false, |plugin_url| is the URL of the download page
-  // for the plug-in, which should be opened in a new tab. If it is true,
-  // |plugin_url| is the URL of the plug-in installer binary, which can be
-  // directly downloaded.
-  bool url_for_display() const { return plugin_->url_for_display(); }
-  const GURL& plugin_url() const { return plugin_->plugin_url(); }
-
-  // URL to open when the user clicks on the "Problems installing?" link.
-  const GURL& help_url() const { return plugin_->help_url(); }
-
   InstallerState state() const { return state_; }
 
   // Opens the download URL in a new tab. This method should only be called if
   // |url_for_display| returns true.
-  void OpenDownloadURL(content::WebContents* web_contents);
+  void OpenDownloadURL(bool url_for_display,
+                       const GURL& plugin_url,
+                       content::WebContents* web_contents);
 
   // Starts downloading the download URL and opens the downloaded file
   // when finished. This method should only be called if |url_for_display|
   // returns false.
-  void StartInstalling(TabContents* tab_contents);
+  void StartInstalling(bool url_for_display,
+                       const GURL& plugin_url,
+                       TabContents* tab_contents);
 
  private:
   void DownloadStarted(scoped_refptr<content::DownloadManager> dlm,
@@ -79,9 +67,6 @@ class PluginInstaller : public content::DownloadItem::Observer {
                        net::Error error);
   void DownloadError(const std::string& msg);
   void DownloadCancelled();
-
-  // Can't be NULL. It is owned by PluginFinder.
-  PluginMetadata* plugin_;
 
   InstallerState state_;
   ObserverList<PluginInstallerObserver> observers_;

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/pdf/pdf_unsupported_feature.h"
 
 #include "base/bind.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/version.h"
@@ -292,8 +293,8 @@ PDFUnsupportedFeaturePromptDelegate::PDFUnsupportedFeaturePromptDelegate(
   reader_webplugininfo_ = *reader;
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
-  PluginMetadata* plugin_metadata =
-      plugin_finder->GetPluginMetadata(reader_webplugininfo_);
+  scoped_ptr<PluginMetadata> plugin_metadata(
+      plugin_finder->GetPluginMetadata(reader_webplugininfo_));
 
   reader_vulnerable_ = plugin_metadata->GetSecurityStatus(*reader) !=
                        PluginMetadata::SECURITY_STATUS_UP_TO_DATE;
@@ -378,8 +379,8 @@ void GotPluginsCallback(int process_id,
   const webkit::WebPluginInfo* reader = NULL;
   PluginFinder* plugin_finder = PluginFinder::GetInstance();
   for (size_t i = 0; i < plugins.size(); ++i) {
-    PluginMetadata* plugin_metadata =
-        plugin_finder->GetPluginMetadata(plugins[i]);
+    scoped_ptr<PluginMetadata> plugin_metadata(
+        plugin_finder->GetPluginMetadata(plugins[i]));
     if (plugin_metadata->identifier() != kAdobeReaderIdentifier)
       continue;
 

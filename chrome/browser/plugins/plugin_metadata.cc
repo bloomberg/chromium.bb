@@ -93,3 +93,14 @@ bool PluginMetadata::VersionComparator::operator() (const Version& lhs,
   // Keep versions ordered by newest (biggest) first.
   return lhs.CompareTo(rhs) > 0;
 }
+
+scoped_ptr<PluginMetadata> PluginMetadata::Clone() const {
+  PluginMetadata* copy = new PluginMetadata(identifier_,
+                                            name_,
+                                            url_for_display_,
+                                            plugin_url_,
+                                            help_url_,
+                                            group_name_matcher_);
+  copy->versions_ = versions_;
+  return make_scoped_ptr(copy);
+}
