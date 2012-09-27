@@ -52,53 +52,6 @@ class TraceTestCases(unittest.TestCase):
     if self.temp_file:
       os.remove(self.temp_file)
 
-  def _gen_results(self, test_case):
-    return {
-      u'processes': 1,
-      u'returncode': 0,
-      u'results': {
-        u'root': {
-          u'children': [],
-          u'command': [
-            self.executable,
-            TARGET_PATH,
-            u'--gtest_filter=%s' % test_case,
-          ],
-          u'executable': self.real_executable,
-          u'files': [
-            {
-              u'path': os.path.join(u'tests', 'gtest_fake',
-                                    'gtest_fake_base.py'),
-              u'size': os.stat(TARGET_UTIL_PATH).st_size,
-            },
-            {
-              u'path': os.path.join(u'tests', 'gtest_fake',
-                                    'gtest_fake_fail.py'),
-              u'size': os.stat(TARGET_PATH).st_size,
-            },
-          ],
-          u'initial_cwd': self.initial_cwd,
-        },
-      },
-      u'valid': True,
-      u'variables': {
-        u'isolate_dependency_tracked': [
-          u'<(PRODUCT_DIR)/gtest_fake/gtest_fake_base.py',
-          u'<(PRODUCT_DIR)/gtest_fake/gtest_fake_fail.py',
-        ],
-      },
-    }
-
-  def _strip_result(self, result):
-    """Strips mutable information from a flattened test case Results."""
-    self.assertTrue(result.pop('duration') > 0.)
-    self.assertTrue(len(result.pop('output')) > 10)
-    def strip_pid(proc):
-      self.assertTrue(proc.pop('pid') > 100)
-      for child in proc['children']:
-        strip_pid(child)
-    strip_pid(result['results']['root'])
-
   def test_simple(self):
     file_handle, self.temp_file = tempfile.mkstemp(
         prefix='trace_test_cases_test')
@@ -111,12 +64,10 @@ class TraceTestCases(unittest.TestCase):
         '--jobs', '4',
         '--timeout', '0',
         '--out', self.temp_file,
-        '--root-dir', ROOT_DIR,
-        '--variable', 'PRODUCT_DIR', 'tests',
-        TARGET_PATH,
     ]
     if VERBOSE:
       cmd.extend(['-v'] * 3)
+    cmd.append(TARGET_PATH)
     logging.debug(' '.join(cmd))
     proc = subprocess.Popen(
         cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -128,11 +79,8 @@ class TraceTestCases(unittest.TestCase):
       r'\[2/4\]   \d\.\d\ds .+',
       r'\[3/4\]   \d\.\d\ds .+',
       r'\[4/4\]   \d\.\d\ds .+',
-      r'\d+\.\ds Done post-processing logs\. Parsing logs\.',
-      r'\d+\.\ds Done parsing logs\.',
-      r'\d+\.\ds Done stripping root\.',
-      r'\d+\.\ds Done flattening\.',
     ]
+    self.assertEquals(len(expected_out_re), len(lines), lines)
     for index in range(len(expected_out_re)):
       self.assertTrue(
           re.match('^%s$' % expected_out_re[index], lines[index]),
@@ -142,23 +90,31 @@ class TraceTestCases(unittest.TestCase):
     if sys.platform != 'win32' and not VERBOSE:
       self.assertEquals('', err)
 
-    expected_json = {}
+    with open(self.temp_file, 'r') as f:
+      content = f.read()
+      try:
+        result = json.loads(content)
+      except:
+        print repr(content)
+        raise
+
     test_cases = (
       'Baz.Fail',
       'Foo.Bar1',
       'Foo.Bar2',
       'Foo.Bar3',
     )
-    for test_case in test_cases:
-      expected_json[unicode(test_case)] = self._gen_results(test_case)
-    expected_json['Baz.Fail']['returncode'] = 1
-    with open(self.temp_file, 'r') as f:
-      result = json.load(f)
-
-    # Trim off 'duration' and 'output', they don't have a constant value.
-    for value in result.itervalues():
-      self._strip_result(value)
-    self.assertEquals(expected_json, result)
+    self.assertEquals(dict, result.__class__)
+    self.assertEquals(['traces'], result.keys())
+    for index, trace in enumerate(
+        sorted(result['traces'], key=lambda x: x['trace'])):
+      self.assertEquals(test_cases[index], trace['trace'])
+      self.assertEquals(
+          [u'cmd', u'cwd', u'output', u'pid', u'trace'], sorted(trace))
+      self.assertEquals(
+          [sys.executable, TARGET_PATH, '--gtest_filter=%s' % trace['trace']],
+          trace['cmd'])
+      self.assertEquals(int, trace['pid'].__class__)
 
 
 if __name__ == '__main__':

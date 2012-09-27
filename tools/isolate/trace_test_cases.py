@@ -15,7 +15,6 @@ import os
 import sys
 import time
 
-import isolate  # TODO(maruel): Remove references to isolate.
 import run_test_cases
 import trace_inputs
 
@@ -65,137 +64,37 @@ class Tracer(object):
     return out
 
 
-def trace_test_cases(
-    cmd, root_dir, cwd_dir, variables, test_cases, jobs, output_file):
+def trace_test_cases(cmd, cwd_dir, test_cases, jobs, logname):
   """Traces test cases one by one."""
-  assert not os.path.isabs(cwd_dir)
-  assert os.path.isabs(root_dir) and os.path.isdir(root_dir)
+  assert os.path.isabs(cwd_dir) and os.path.isdir(cwd_dir)
 
   if not test_cases:
     return 0
 
   # Resolve any symlink.
-  root_dir = os.path.realpath(root_dir)
-  full_cwd_dir = os.path.normpath(os.path.join(root_dir, cwd_dir))
-  assert os.path.isdir(full_cwd_dir)
-  logname = output_file + '.logs'
+  cwd_dir = os.path.realpath(cwd_dir)
+  assert os.path.isdir(cwd_dir)
 
   progress = run_test_cases.Progress(len(test_cases))
   with run_test_cases.ThreadPool(jobs or multiprocessing.cpu_count()) as pool:
     api = trace_inputs.get_api()
     api.clean_trace(logname)
     with api.get_tracer(logname) as tracer:
-      function = Tracer(tracer, cmd, full_cwd_dir, progress).map
+      function = Tracer(tracer, cmd, cwd_dir, progress).map
       for test_case in test_cases:
         pool.add_task(function, test_case)
 
-      values = pool.join(progress, 0.1)
-
-  print ''
-  print '%.1fs Done post-processing logs. Parsing logs.' % (
-      time.time() - progress.start)
-  results = api.parse_log(logname, isolate.default_blacklist)
-  print '%.1fs Done parsing logs.' % (
-      time.time() - progress.start)
-
-  # Strips to root_dir.
-  results_processed = {}
-  for item in results:
-    if 'results' in item:
-      item = item.copy()
-      item['results'] = item['results'].strip_root(root_dir)
-      results_processed[item['trace']] = item
-    else:
-      print >> sys.stderr, 'Got exception while tracing %s: %s' % (
-          item['trace'], item['exception'])
-  print '%.1fs Done stripping root.' % (
-      time.time() - progress.start)
-
-  # Flatten.
-  flattened = {}
-  for item_list in values:
-    for item in item_list:
-      if item['valid']:
-        test_case = item['test_case']
-        tracename = test_case.replace('/', '-')
-        flattened[test_case] = results_processed[tracename].copy()
-        item_results = flattened[test_case]['results']
-        tracked, touched = isolate.split_touched(item_results.existent)
-        flattened[test_case].update({
-            'processes': len(list(item_results.process.all)),
-            'results': item_results.flatten(),
-            'duration': item['duration'],
-            'returncode': item['returncode'],
-            'valid': item['valid'],
-            'variables':
-              isolate.generate_simplified(
-                  tracked,
-                  [],
-                  touched,
-                  root_dir,
-                  variables,
-                  cwd_dir),
-          })
-        del flattened[test_case]['trace']
-  print '%.1fs Done flattening.' % (
-      time.time() - progress.start)
-
-  # Make it dense if there is more than 20 results.
-  trace_inputs.write_json(
-      output_file,
-      flattened,
-      False)
-
-  # Also write the .isolate file.
-  # First, get all the files from all results. Use a map to remove dupes.
-  files = {}
-  for item in results_processed.itervalues():
-    files.update((f.full_path, f) for f in item['results'].existent)
-  # Convert back to a list, discard the keys.
-  files = files.values()
-  tracked, touched = isolate.split_touched(files)
-  value = isolate.generate_isolate(
-      tracked,
-      [],
-      touched,
-      root_dir,
-      variables,
-      cwd_dir)
-  with open('%s.isolate' % output_file, 'wb') as f:
-    isolate.pretty_print(value, f)
+      pool.join(progress, 0.1)
+  print('')
   return 0
 
 
 def main():
   """CLI frontend to validate arguments."""
-  default_variables = [('OS', isolate.get_flavor())]
-  if sys.platform in ('win32', 'cygwin'):
-    default_variables.append(('EXECUTABLE_SUFFIX', '.exe'))
-  else:
-    default_variables.append(('EXECUTABLE_SUFFIX', ''))
   parser = run_test_cases.OptionParserTestCases(
       usage='%prog <options> [gtest]',
       description=sys.modules['__main__'].__doc__)
   parser.format_description = lambda *_: parser.description
-  parser.add_option(
-      '-c', '--cwd',
-      default='',
-      help='Signal to start the process from this relative directory. When '
-           'specified, outputs the inputs files in a way compatible for '
-           'gyp processing. Should be set to the relative path containing the '
-           'gyp file, e.g. \'chrome\' or \'net\'')
-  parser.add_option(
-      '-V', '--variable',
-      nargs=2,
-      action='append',
-      default=default_variables,
-      dest='variables',
-      metavar='FOO BAR',
-      help='Variables to process in the .isolate file, default: %default')
-  parser.add_option(
-      '--root-dir',
-      default=ROOT_DIR,
-      help='Root directory to base everything off. Default: %default')
   parser.add_option(
       '-o', '--out',
       help='output file, defaults to <executable>.test_cases')
@@ -207,14 +106,6 @@ def main():
         'like xvfb, start this script from *inside* xvfb, it\'ll be much faster'
         '.')
 
-  options.root_dir = os.path.abspath(options.root_dir)
-  if not os.path.isdir(options.root_dir):
-    parser.error('--root-dir "%s" must exist' % options.root_dir)
-  if not os.path.isdir(os.path.join(options.root_dir, options.cwd)):
-    parser.error(
-        '--cwd "%s" must be an existing directory relative to %s' %
-          (options.cwd, options.root_dir))
-
   cmd = run_test_cases.fix_python_path(args)
 
   if not options.out:
@@ -225,9 +116,7 @@ def main():
   # Then run them.
   return trace_test_cases(
       cmd,
-      options.root_dir,
-      options.cwd,
-      dict(options.variables),
+      os.getcwd(),
       test_cases,
       options.jobs,
       # TODO(maruel): options.timeout,
