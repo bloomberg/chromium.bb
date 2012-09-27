@@ -378,23 +378,24 @@ def setup_gtest_env():
   return env
 
 
-def gtest_list_tests(executable):
+def gtest_list_tests(cmd):
   """List all the test cases for a google test.
 
   See more info at http://code.google.com/p/googletest/.
   """
-  cmd = [executable, '--gtest_list_tests']
-  cmd = fix_python_path(cmd)
+  cmd = cmd[:]
+  cmd.append('--gtest_list_tests')
   env = setup_gtest_env()
   try:
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                          env=env)
   except OSError, e:
-    raise Failure('Failed to run %s\n%s' % (executable, str(e)))
+    raise Failure('Failed to run %s\n%s' % (' '.join(cmd), str(e)))
   out, err = p.communicate()
   if p.returncode:
-    raise Failure('Failed to run %s\nstdout:\n%s\nstderr:\n%s' %
-                  (executable, out, err), p.returncode)
+    raise Failure(
+        'Failed to run %s\nstdout:\n%s\nstderr:\n%s' %
+          (' '.join(cmd), out, err), p.returncode)
   # pylint: disable=E1103
   if err and not err.startswith('Xlib:  extension "RANDR" missing on display '):
     logging.error('Unexpected spew in gtest_list_tests:\n%s\n%s', err, cmd)
@@ -466,9 +467,9 @@ def parse_gtest_cases(out):
   return sorted(tests)
 
 
-def list_test_cases(executable, index, shards, disabled, fails, flaky):
+def list_test_cases(cmd, index, shards, disabled, fails, flaky):
   """Returns the list of test cases according to the specified criterias."""
-  tests = parse_gtest_cases(gtest_list_tests(executable))
+  tests = parse_gtest_cases(gtest_list_tests(cmd))
   if shards:
     tests = filter_shards(tests, index, shards)
   return filter_bad_tests(tests, disabled, fails, flaky)
@@ -553,10 +554,9 @@ class RunAll(object):
 
 
 class Runner(object):
-  def __init__(
-      self, executable, cwd_dir, timeout, progress, retry_count, decider):
+  def __init__(self, cmd, cwd_dir, timeout, progress, retry_count, decider):
     # Constants
-    self.executable = executable
+    self.cmd = cmd[:]
     self.cwd_dir = cwd_dir
     self.timeout = timeout
     self.progress = progress
@@ -568,8 +568,8 @@ class Runner(object):
 
   def map(self, test_case):
     """Traces a single test case and returns its output."""
-    cmd = [self.executable, '--gtest_filter=%s' % test_case]
-    cmd = fix_python_path(cmd)
+    cmd = self.cmd[:]
+    cmd.append('--gtest_filter=%s' % test_case)
     out = []
     for retry in range(self.retry_count):
       if self.decider.should_stop():
@@ -618,13 +618,13 @@ class Runner(object):
     return out
 
 
-def get_test_cases(executable, whitelist, blacklist, index, shards):
+def get_test_cases(cmd, whitelist, blacklist, index, shards):
   """Returns the filtered list of test cases.
 
   This is done synchronously.
   """
   try:
-    tests = list_test_cases(executable, index, shards, False, False, False)
+    tests = list_test_cases(cmd, index, shards, False, False, False)
   except Failure, e:
     print e.args[0]
     return None
@@ -642,8 +642,7 @@ def get_test_cases(executable, whitelist, blacklist, index, shards):
     tests = [
       t for t in tests if any(fnmatch.fnmatch(t, s) for s in whitelist)
     ]
-  logging.info(
-      'Found %d test cases in %s' % (len(tests), os.path.basename(executable)))
+  logging.info('Found %d test cases in %s' % (len(tests), ' '.join(cmd)))
   return tests
 
 
@@ -655,7 +654,7 @@ def LogResults(result_file, results):
     json.dump(results, f, sort_keys=True, indent=2)
 
 
-def run_test_cases(executable, test_cases, jobs, timeout, run_all, result_file):
+def run_test_cases(cmd, test_cases, jobs, timeout, run_all, result_file):
   """Traces test cases one by one."""
   if not test_cases:
     return 0
@@ -667,8 +666,7 @@ def run_test_cases(executable, test_cases, jobs, timeout, run_all, result_file):
     # If 10% of test cases fail, just too bad.
     decider = RunSome(len(test_cases), retries, 2, 0.1)
   with ThreadPool(jobs) as pool:
-    function = Runner(
-        executable, os.getcwd(), timeout, progress, retries, decider).map
+    function = Runner(cmd, os.getcwd(), timeout, progress, retries, decider).map
     for test_case in test_cases:
       pool.add_task(function, test_case)
     results = pool.join(progress, 0.1)
@@ -813,14 +811,14 @@ class OptionParserWithTestShardingAndFiltering(OptionParserWithTestSharding):
     return options, args
 
   @staticmethod
-  def process_gtest_options(executable, options):
+  def process_gtest_options(cmd, options):
     """Grabs the test cases."""
     if options.test_case_file:
       with open(options.test_case_file, 'r') as f:
         return sorted(filter(None, f.read().splitlines()))
     else:
       return get_test_cases(
-          executable,
+          cmd,
           options.whitelist,
           options.blacklist,
           options.index,
@@ -862,22 +860,14 @@ def main(argv):
       help='Override the default name of the generated .run_test_cases file')
   options, args = parser.parse_args(argv)
 
-  if len(args) != 1:
+  if not args:
     parser.error(
         'Please provide the executable line to run, if you need fancy things '
         'like xvfb, start this script from *inside* xvfb, it\'ll be much faster'
         '.')
 
-  executable = args[0]
-  if not os.path.isabs(executable):
-    executable = os.path.abspath(executable)
-  if sys.platform in ('cygwin', 'win32'):
-    if not os.path.splitext(executable)[1]:
-      executable += '.exe'
-  if not os.path.isfile(executable):
-    parser.error('"%s" doesn\'t exist.' % executable)
-
-  test_cases = parser.process_gtest_options(executable, options)
+  cmd = fix_python_path(args)
+  test_cases = parser.process_gtest_options(cmd, options)
   if not test_cases:
     # If test_cases is None then there was a problem generating the tests to
     # run, so this should be considered a failure.
@@ -889,10 +879,10 @@ def main(argv):
     if options.result:
       result_file = options.result
     else:
-      result_file = '%s.run_test_cases' % executable
+      result_file = '%s.run_test_cases' % args[-1]
 
   return run_test_cases(
-      executable,
+      cmd,
       test_cases,
       options.jobs,
       options.timeout,

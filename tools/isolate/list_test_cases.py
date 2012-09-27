@@ -30,12 +30,13 @@ def main():
       action='store_true',
       help='Include FLAKY_ tests')
   options, args = parser.parse_args()
-  if len(args) != 1:
+  if not args:
     parser.error('Please provide the executable to run')
 
+  cmd = run_test_cases.fix_python_path(args)
   try:
     tests = run_test_cases.list_test_cases(
-        args[0],
+        cmd,
         options.index,
         options.shards,
         options.disabled,

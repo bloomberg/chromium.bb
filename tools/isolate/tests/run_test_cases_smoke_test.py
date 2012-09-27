@@ -142,7 +142,9 @@ class TraceTestCases(unittest.TestCase):
         'gtest_fake_error.py', ['--no-dump'])
 
     expected_out_re = [
-        'Failed to run .+gtest_fake_error.py',
+        'Failed to run %s %s --gtest_list_tests' % (
+          sys.executable,
+          os.path.join(ROOT_DIR, 'tests', 'gtest_fake', 'gtest_fake_error.py')),
         'stdout:',
         '',
         'stderr:',

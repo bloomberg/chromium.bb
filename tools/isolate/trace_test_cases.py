@@ -24,17 +24,17 @@ ROOT_DIR = os.path.dirname(os.path.dirname(BASE_DIR))
 
 
 class Tracer(object):
-  def __init__(self, tracer, executable, cwd_dir, progress):
+  def __init__(self, tracer, cmd, cwd_dir, progress):
     # Constants
     self.tracer = tracer
-    self.executable = executable
+    self.cmd = cmd[:]
     self.cwd_dir = cwd_dir
     self.progress = progress
 
   def map(self, test_case):
     """Traces a single test case and returns its output."""
-    cmd = [self.executable, '--gtest_filter=%s' % test_case]
-    cmd = run_test_cases.fix_python_path(cmd)
+    cmd = self.cmd[:]
+    cmd.append('--gtest_filter=%s' % test_case)
     tracename = test_case.replace('/', '-')
 
     out = []
@@ -66,11 +66,10 @@ class Tracer(object):
 
 
 def trace_test_cases(
-    executable, root_dir, cwd_dir, variables, test_cases, jobs, output_file):
+    cmd, root_dir, cwd_dir, variables, test_cases, jobs, output_file):
   """Traces test cases one by one."""
   assert not os.path.isabs(cwd_dir)
   assert os.path.isabs(root_dir) and os.path.isdir(root_dir)
-  assert os.path.isfile(executable) and os.path.isabs(executable)
 
   if not test_cases:
     return 0
@@ -86,7 +85,7 @@ def trace_test_cases(
     api = trace_inputs.get_api()
     api.clean_trace(logname)
     with api.get_tracer(logname) as tracer:
-      function = Tracer(tracer, executable, full_cwd_dir, progress).map
+      function = Tracer(tracer, cmd, full_cwd_dir, progress).map
       for test_case in test_cases:
         pool.add_task(function, test_case)
 
@@ -202,7 +201,7 @@ def main():
       help='output file, defaults to <executable>.test_cases')
   options, args = parser.parse_args()
 
-  if len(args) != 1:
+  if not args:
     parser.error(
         'Please provide the executable line to run, if you need fancy things '
         'like xvfb, start this script from *inside* xvfb, it\'ll be much faster'
@@ -216,20 +215,16 @@ def main():
         '--cwd "%s" must be an existing directory relative to %s' %
           (options.cwd, options.root_dir))
 
-  executable = args[0]
-  if not os.path.isabs(executable):
-    executable = os.path.abspath(os.path.join(options.root_dir, executable))
-  if not os.path.isfile(executable):
-    parser.error('"%s" doesn\'t exist.' % executable)
+  cmd = run_test_cases.fix_python_path(args)
 
   if not options.out:
-    options.out = '%s.test_cases' % executable
+    options.out = '%s.test_cases' % cmd[-1]
 
-  test_cases = parser.process_gtest_options(executable, options)
+  test_cases = parser.process_gtest_options(cmd, options)
 
   # Then run them.
   return trace_test_cases(
-      executable,
+      cmd,
       options.root_dir,
       options.cwd,
       dict(options.variables),
