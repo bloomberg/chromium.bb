@@ -197,7 +197,7 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
   if (download_util::kSmallProgressIconSize > box_height_)
     box_y_ = (download_util::kSmallProgressIconSize - box_height_) / 2;
   else
-    box_y_ = kVerticalPadding;
+    box_y_ = 0;
 
   body_hover_animation_.reset(new ui::SlideAnimation(this));
   drop_hover_animation_.reset(new ui::SlideAnimation(this));
