@@ -1004,8 +1004,16 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 }
 
 // Test passing the empty query to search().
+// Crashes on ChromeOS only.  http://crbug.com/152429
+#if defined(OS_CHROMEOS)
+#define MAYBE_DownloadExtensionTest_SearchEmptyQuery \
+    DISABLED_DownloadExtensionTest_SearchEmptyQuery
+#else
+#define MAYBE_DownloadExtensionTest_SearchEmptyQuery \
+    DownloadExtensionTest_SearchEmptyQuery
+#endif
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
-    DownloadExtensionTest_SearchEmptyQuery) {
+    MAYBE_DownloadExtensionTest_SearchEmptyQuery) {
   ScopedCancellingItem item(CreateSlowTestDownload());
   ASSERT_TRUE(item.get());
 
@@ -1185,8 +1193,16 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 }
 
 // Test the |limit| option for search().
+// Crashes on ChromeOS only.  http://crbug.com/152429
+#if defined(OS_CHROMEOS)
+#define MAYBE_DownloadExtensionTest_SearchLimit \
+    DISABLED_DownloadExtensionTest_SearchLimit
+#else
+#define MAYBE_DownloadExtensionTest_SearchLimit \
+    DownloadExtensionTest_SearchLimit
+#endif
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
-    DownloadExtensionTest_SearchLimit) {
+    MAYBE_DownloadExtensionTest_SearchLimit) {
   DownloadManager::DownloadVector items;
   CreateSlowTestDownloads(2, &items);
   ScopedItemVectorCanceller delete_items(&items);
