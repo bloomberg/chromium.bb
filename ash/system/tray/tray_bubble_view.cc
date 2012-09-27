@@ -71,7 +71,7 @@ void DrawBlurredShadowAroundView(gfx::Canvas* canvas,
   paint.setStrokeWidth(SkIntToScalar(3));
   paint.setImageFilter(new SkBlurImageFilter(
       SkIntToScalar(3), SkIntToScalar(3)))->unref();
-  canvas->sk_canvas()->drawPath(path, paint);
+  canvas->DrawPath(path, paint);
 }
 
 class TrayBubbleBorder : public views::BubbleBorder {
