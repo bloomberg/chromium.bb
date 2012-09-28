@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/login_utils.h"
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
@@ -22,18 +23,23 @@
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/cloud_policy_data_store.h"
+#include "chrome/browser/policy/policy_service.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chromeos/cryptohome/mock_async_method_caller.h"
+#include "chromeos/dbus/mock_cryptohome_client.h"
 #include "chromeos/dbus/mock_dbus_thread_manager.h"
 #include "chromeos/dbus/mock_session_manager_client.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_utils.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -81,6 +87,12 @@ const char kDMPolicyRequest[] =
     "http://server/device_management?request=policy";
 
 const char kDMToken[] = "1234";
+
+// Used to mark |flag|, indicating that RefreshPolicies() has executed its
+// callback.
+void SetFlag(bool* flag) {
+  *flag = true;
+}
 
 ACTION_P(MockSessionManagerClientRetrievePolicyCallback, policy) {
   arg0.Run(*policy);
@@ -200,6 +212,9 @@ class LoginUtilsTest : public testing::Test,
                               Return(true)));
     test_api->SetCryptohomeLibrary(cryptohome_, true);
 
+    EXPECT_CALL(*mock_dbus_thread_manager_.mock_cryptohome_client(),
+                IsMounted(_));
+
     browser_process_->SetProfileManager(
         new ProfileManagerWithoutInit(scoped_temp_dir_.path()));
     connector_ = browser_process_->browser_policy_connector();
@@ -303,8 +318,12 @@ class LoginUtilsTest : public testing::Test,
                                  username,
                                  "password");
 
+    const bool kPendingRequests = false;
+    const bool kUsingOAuth = true;
+    const bool kHasCookies = true;
     LoginUtils::Get()->PrepareProfile(username, std::string(), "password",
-                                      false, true, false, this);
+                                      kPendingRequests, kUsingOAuth,
+                                      kHasCookies, this);
     device_settings_test_helper.Flush();
     RunAllPending();
   }
@@ -428,6 +447,59 @@ TEST_F(LoginUtilsTest, EnterpriseLoginDoesntBlockForNormalUser) {
   EXPECT_EQ(kUsernameOtherDomain, user_manager->GetLoggedInUser().email());
 }
 
+TEST_F(LoginUtilsTest, OAuth1TokenFetchFailureUnblocksRefreshPolicies) {
+  // 0. Check that a user is not logged in yet.
+  UserManager* user_manager = UserManager::Get();
+  ASSERT_TRUE(!user_manager->IsUserLoggedIn());
+  EXPECT_FALSE(connector_->IsEnterpriseManaged());
+  EXPECT_FALSE(prepared_profile_);
+
+  // 1. Fake sign-in.
+  // The profile will be created without waiting for a policy.
+  content::WindowedNotificationObserver profile_creation_observer(
+      chrome::NOTIFICATION_PROFILE_CREATED,
+      content::NotificationService::AllSources());
+  PrepareProfile(kUsername);
+  // Wait until the profile is fully initialized. This makes sure the async
+  // prefs init has finished, and the OnProfileCreated() callback has been
+  // invoked.
+  profile_creation_observer.Wait();
+  EXPECT_TRUE(prepared_profile_);
+  ASSERT_TRUE(user_manager->IsUserLoggedIn());
+  EXPECT_EQ(kUsername, user_manager->GetLoggedInUser().email());
+
+  // 2. Get the pending oauth1 access token fetcher.
+  net::TestURLFetcher* fetcher =
+      PrepareOAuthFetcher(GaiaUrls::GetInstance()->get_oauth_token_url());
+  ASSERT_TRUE(fetcher);
+
+  // 3. Issuing a RefreshPolicies() now blocks waiting for the oauth token.
+  bool refresh_policies_completed = false;
+  browser_process_->policy_service()->RefreshPolicies(
+      base::Bind(SetFlag, &refresh_policies_completed));
+  RunAllPending();
+  ASSERT_FALSE(refresh_policies_completed);
+
+  // 4. Now make the fetcher fail. RefreshPolicies() should unblock.
+  // The OAuth1TokenFetcher retries up to 5 times with a 3 second delay;
+  // just invoke the callback directly to avoid waiting for that.
+  // The |mock_fetcher| is passed instead of the original because the original
+  // is deleted by the GaiaOAuthFetcher after the first callback.
+  net::URLFetcherDelegate* delegate = fetcher->delegate();
+  ASSERT_TRUE(delegate);
+  net::TestURLFetcher mock_fetcher(fetcher->id(),
+                                   fetcher->GetOriginalURL(),
+                                   delegate);
+  mock_fetcher.set_status(net::URLRequestStatus());
+  mock_fetcher.set_response_code(404);
+  for (int i = 0; i < 6; ++i) {
+    ASSERT_FALSE(refresh_policies_completed);
+    delegate->OnURLFetchComplete(&mock_fetcher);
+    RunAllPending();
+  }
+  EXPECT_TRUE(refresh_policies_completed);
+}
+
 TEST_P(LoginUtilsBlockingLoginTest, EnterpriseLoginBlocksForEnterpriseUser) {
   UserManager* user_manager = UserManager::Get();
   ASSERT_TRUE(!user_manager->IsUserLoggedIn());
@@ -461,6 +533,7 @@ TEST_P(LoginUtilsBlockingLoginTest, EnterpriseLoginBlocksForEnterpriseUser) {
 
     // Fake OAuth token retrieval:
     fetcher = PrepareOAuthFetcher(gaia_urls->get_oauth_token_url());
+    ASSERT_TRUE(fetcher);
     net::ResponseCookies cookies;
     cookies.push_back(kOAuthTokenCookie);
     fetcher->set_cookies(cookies);
@@ -469,12 +542,14 @@ TEST_P(LoginUtilsBlockingLoginTest, EnterpriseLoginBlocksForEnterpriseUser) {
 
     // Fake OAuth access token retrieval:
     fetcher = PrepareOAuthFetcher(gaia_urls->oauth_get_access_token_url());
+    ASSERT_TRUE(fetcher);
     fetcher->SetResponseString(kOAuthGetAccessTokenData);
     fetcher->delegate()->OnURLFetchComplete(fetcher);
     if (steps < 3) break;
 
     // Fake OAuth service token retrieval:
     fetcher = PrepareOAuthFetcher(gaia_urls->oauth_wrap_bridge_url());
+    ASSERT_TRUE(fetcher);
     fetcher->SetResponseString(kOAuthServiceTokenData);
     fetcher->delegate()->OnURLFetchComplete(fetcher);
 
@@ -484,6 +559,7 @@ TEST_P(LoginUtilsBlockingLoginTest, EnterpriseLoginBlocksForEnterpriseUser) {
     if (steps < 4) break;
 
     fetcher = PrepareDMRegisterFetcher();
+    ASSERT_TRUE(fetcher);
     fetcher->delegate()->OnURLFetchComplete(fetcher);
     // The policy fetch job has now been scheduled, run it:
     RunAllPending();
@@ -493,6 +569,7 @@ TEST_P(LoginUtilsBlockingLoginTest, EnterpriseLoginBlocksForEnterpriseUser) {
     EXPECT_FALSE(prepared_profile_);
 
     fetcher = PrepareDMPolicyFetcher();
+    ASSERT_TRUE(fetcher);
     fetcher->delegate()->OnURLFetchComplete(fetcher);
   } while (0);
 
@@ -502,7 +579,7 @@ TEST_P(LoginUtilsBlockingLoginTest, EnterpriseLoginBlocksForEnterpriseUser) {
 
     // Make the current fetcher fail.
     net::TestURLFetcher* fetcher = test_url_fetcher_factory_.GetFetcherByID(0);
-    EXPECT_TRUE(fetcher);
+    ASSERT_TRUE(fetcher);
     EXPECT_TRUE(fetcher->delegate());
     fetcher->set_url(fetcher->GetOriginalURL());
     fetcher->set_response_code(500);

@@ -1157,6 +1157,8 @@ void LoginUtilsImpl::OnOAuth1AccessTokenAvailable(const std::string& token,
 void LoginUtilsImpl::OnOAuth1AccessTokenFetchFailed() {
   // TODO(kochi): Show failure notification UI here?
   LOG(ERROR) << "Failed to fetch OAuth1 access token.";
+  g_browser_process->browser_policy_connector()->RegisterForUserPolicy(
+      EmptyString());
 }
 
 void LoginUtilsImpl::OnOAuthVerificationSucceeded(
