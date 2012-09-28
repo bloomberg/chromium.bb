@@ -319,6 +319,19 @@ static const struct wl_surface_listener surface_listener = {
 	surface_leave
 };
 
+send_button_state(int fd, struct display *display)
+{
+	char buf[64];
+	int len;
+
+	wl_display_flush(display->display);
+
+	len = snprintf(buf, sizeof buf, "%u\n", display->input->button_mask);
+	assert(write(fd, buf, len) == len);
+
+	wl_display_roundtrip(display->display);
+}
+
 static void
 send_state(int fd, struct display* display)
 {
@@ -408,6 +421,8 @@ int main(int argc, char *argv[])
 			create_surface(fd, display);
 		} else if (strncmp(buf, "send-state\n", ret) == 0) {
 			send_state(fd, display);
+		} else if (strncmp(buf, "send-button-state\n", ret) == 0) {
+			send_button_state(fd, display);
 		} else {
 			fprintf(stderr, "test-client: unknown command %.*s\n",
 				ret, buf);
