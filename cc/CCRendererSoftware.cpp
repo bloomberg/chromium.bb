@@ -63,7 +63,6 @@ CCRendererSoftware::CCRendererSoftware(CCRendererClient* client, CCResourceProvi
     : CCDirectRenderer(client, resourceProvider)
     , m_visible(true)
     , m_outputDevice(outputDevice)
-    , m_skRootCanvas(0)
     , m_skCurrentCanvas(0)
 {
     m_resourceProvider->setDefaultResourceType(CCResourceProvider::Bitmap);
@@ -92,14 +91,14 @@ void CCRendererSoftware::viewportChanged()
 
 void CCRendererSoftware::beginDrawingFrame(DrawingFrame& frame)
 {
-    m_skRootCanvas.setBitmapDevice(m_outputDevice->lock(true)->getSkBitmap());
+    m_skRootCanvas = adoptPtr(new SkCanvas(m_outputDevice->lock(true)->getSkBitmap()));
 }
 
 void CCRendererSoftware::finishDrawingFrame(DrawingFrame& frame)
 {
     m_currentFramebufferLock.clear();
     m_skCurrentCanvas = 0;
-    m_skRootCanvas.setDevice(0);
+    m_skRootCanvas.clear();
     m_outputDevice->unlock();
 }
 
@@ -115,7 +114,7 @@ void CCRendererSoftware::finish()
 void CCRendererSoftware::bindFramebufferToOutputSurface(DrawingFrame& frame)
 {
     m_currentFramebufferLock.clear();
-    m_skCurrentCanvas = &m_skRootCanvas;
+    m_skCurrentCanvas = m_skRootCanvas.get();
 }
 
 bool CCRendererSoftware::bindFramebufferToTexture(DrawingFrame& frame, const CCScopedTexture* texture, const IntRect& framebufferRect)

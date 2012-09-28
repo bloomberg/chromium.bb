@@ -453,7 +453,7 @@ CCResourceProvider::ScopedWriteLockSoftware::ScopedWriteLockSoftware(CCResourceP
     , m_resourceId(resourceId)
 {
     CCResourceProvider::populateSkBitmapWithResource(&m_skBitmap, resourceProvider->lockForWrite(resourceId));
-    m_skCanvas.setBitmapDevice(m_skBitmap);
+    m_skCanvas = adoptPtr(new SkCanvas(m_skBitmap));
 }
 
 CCResourceProvider::ScopedWriteLockSoftware::~ScopedWriteLockSoftware()

@@ -206,13 +206,13 @@ public:
         ScopedWriteLockSoftware(CCResourceProvider*, CCResourceProvider::ResourceId);
         ~ScopedWriteLockSoftware();
 
-        SkCanvas* skCanvas() { return &m_skCanvas; }
+        SkCanvas* skCanvas() { return m_skCanvas.get(); }
 
     private:
         CCResourceProvider* m_resourceProvider;
         CCResourceProvider::ResourceId m_resourceId;
         SkBitmap m_skBitmap;
-        SkCanvas m_skCanvas;
+        OwnPtr<SkCanvas> m_skCanvas;
     };
 
 private:

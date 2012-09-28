@@ -63,7 +63,7 @@ private:
     bool m_visible;
 
     WebKit::WebCompositorSoftwareOutputDevice* m_outputDevice;
-    SkCanvas m_skRootCanvas;
+    OwnPtr<SkCanvas> m_skRootCanvas;
     SkCanvas* m_skCurrentCanvas;
     SkPaint m_skCurrentPaint;
     OwnPtr<CCResourceProvider::ScopedWriteLockSoftware> m_currentFramebufferLock;

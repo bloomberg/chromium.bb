@@ -155,7 +155,7 @@ class ImageDataNaClBackend : public PPB_ImageData_Impl::Backend {
   scoped_ptr<base::SharedMemory> shared_memory_;
   // skia_bitmap_ is backed by shared_memory_.
   SkBitmap skia_bitmap_;
-  SkCanvas skia_canvas_;
+  scoped_ptr<SkCanvas> skia_canvas_;
   uint32 map_count_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageDataNaClBackend);

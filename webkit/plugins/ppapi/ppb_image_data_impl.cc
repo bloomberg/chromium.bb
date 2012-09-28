@@ -243,7 +243,7 @@ void* ImageDataNaClBackend::Map() {
     skia_bitmap_.setPixels(shared_memory_->memory());
     // Our platform bitmaps are set to opaque by default, which we don't want.
     skia_bitmap_.setIsOpaque(false);
-    skia_canvas_.setBitmapDevice(skia_bitmap_);
+    skia_canvas_.reset(new SkCanvas(skia_bitmap_));
     return skia_bitmap_.getAddr32(0, 0);
   }
   return shared_memory_->memory();
@@ -274,7 +274,7 @@ skia::PlatformCanvas* ImageDataNaClBackend::GetPlatformCanvas() {
 SkCanvas* ImageDataNaClBackend::GetCanvas() {
   if (!IsMapped())
     return NULL;
-  return &skia_canvas_;
+  return skia_canvas_.get();
 }
 
 const SkBitmap* ImageDataNaClBackend::GetMappedBitmap() const {
