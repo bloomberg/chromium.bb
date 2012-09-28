@@ -47,7 +47,9 @@ public:
     void didFinishFrame();
     void didAbortAllPendingFrames();
     void setMaxFramesPending(int); // 0 for unlimited.
-    base::TimeTicks nextTickTimeIfActivated();
+
+    // This returns null for unthrottled frame-rate.
+    base::TimeTicks nextTickTime();
 
     void setTimebaseAndInterval(base::TimeTicks timebase, base::TimeDelta interval);
     void setSwapBuffersCompleteSupported(bool);

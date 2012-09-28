@@ -54,16 +54,15 @@ public:
         return CCScheduledActionDrawAndSwapResult(true, m_swapWillHappenIfDrawHappens);
     }
 
-    virtual void scheduledActionUpdateMoreResources(base::TimeTicks) OVERRIDE { m_actions.push_back("scheduledActionUpdateMoreResources"); }
     virtual void scheduledActionCommit() OVERRIDE { m_actions.push_back("scheduledActionCommit"); }
     virtual void scheduledActionBeginContextRecreation() OVERRIDE { m_actions.push_back("scheduledActionBeginContextRecreation"); }
     virtual void scheduledActionAcquireLayerTexturesForMainThread() OVERRIDE { m_actions.push_back("scheduledActionAcquireLayerTexturesForMainThread"); }
+    virtual void didAnticipatedDrawTimeChange(base::TimeTicks) OVERRIDE { }
 
     void setDrawWillHappen(bool drawWillHappen) { m_drawWillHappen = drawWillHappen; }
     void setSwapWillHappenIfDrawHappens(bool swapWillHappenIfDrawHappens) { m_swapWillHappenIfDrawHappens = swapWillHappenIfDrawHappens; }
 
 protected:
-    bool m_hasMoreResourceUpdates;
     bool m_drawWillHappen;
     bool m_swapWillHappenIfDrawHappens;
     int m_numDraws;
@@ -86,9 +85,8 @@ TEST(CCSchedulerTest, RequestCommit)
     EXPECT_FALSE(timeSource->active());
     client.reset();
 
-    // Since, hasResourceUpdates is false,
     // beginFrameComplete should commit
-    scheduler->beginFrameComplete(false);
+    scheduler->beginFrameComplete();
     EXPECT_EQ(1, client.numActions());
     EXPECT_STREQ("scheduledActionCommit", client.action(0));
     EXPECT_TRUE(timeSource->active());
@@ -123,9 +121,9 @@ TEST(CCSchedulerTest, RequestCommitAfterBeginFrame)
     // Now setNeedsCommit again. Calling here means we need a second frame.
     scheduler->setNeedsCommit();
 
-    // Since, hasResourceUpdates is false, and another commit is
-    // needed, beginFrameComplete should commit, then begin another frame.
-    scheduler->beginFrameComplete(false);
+    // Since, another commit is needed, beginFrameComplete should commit,
+    // then begin another frame.
+    scheduler->beginFrameComplete();
     EXPECT_EQ(1, client.numActions());
     EXPECT_STREQ("scheduledActionCommit", client.action(0));
     client.reset();
@@ -159,7 +157,7 @@ TEST(CCSchedulerTest, TextureAcquisitionCollision)
     EXPECT_FALSE(timeSource->active());
 
     // Trigger the commit
-    scheduler->beginFrameComplete(false);
+    scheduler->beginFrameComplete();
     EXPECT_TRUE(timeSource->active());
     client.reset();
 
@@ -188,7 +186,7 @@ TEST(CCSchedulerTest, VisibilitySwitchWithTextureAcquisition)
     scheduler->setCanDraw(true);
 
     scheduler->setNeedsCommit();
-    scheduler->beginFrameComplete(false);
+    scheduler->beginFrameComplete();
     scheduler->setMainThreadNeedsLayerTextures();
     client.reset();
     // Verify that pending texture acquisition fires when visibility
@@ -229,9 +227,9 @@ public:
         return CCScheduledActionDrawAndSwapResult(true, true);
     }
 
-    virtual void scheduledActionUpdateMoreResources(base::TimeTicks) OVERRIDE { }
     virtual void scheduledActionCommit() OVERRIDE { }
     virtual void scheduledActionBeginContextRecreation() OVERRIDE { }
+    virtual void didAnticipatedDrawTimeChange(base::TimeTicks) OVERRIDE { }
 
 protected:
     CCScheduler* m_scheduler;
@@ -331,9 +329,9 @@ public:
         return CCScheduledActionDrawAndSwapResult(true, true);
     }
 
-    virtual void scheduledActionUpdateMoreResources(base::TimeTicks) OVERRIDE { }
     virtual void scheduledActionCommit() OVERRIDE { }
     virtual void scheduledActionBeginContextRecreation() OVERRIDE { }
+    virtual void didAnticipatedDrawTimeChange(base::TimeTicks) OVERRIDE { }
 
 protected:
     CCScheduler* m_scheduler;
@@ -360,7 +358,7 @@ TEST(CCSchedulerTest, RequestCommitInsideDraw)
     EXPECT_FALSE(timeSource->active());
     EXPECT_EQ(1, client.numDraws());
     EXPECT_TRUE(scheduler->commitPending());
-    scheduler->beginFrameComplete(false);
+    scheduler->beginFrameComplete();
 
     timeSource->tick();
     EXPECT_EQ(2, client.numDraws());

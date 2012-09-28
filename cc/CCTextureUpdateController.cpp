@@ -61,7 +61,6 @@ CCTextureUpdateController::~CCTextureUpdateController()
 void CCTextureUpdateController::performMoreUpdates(
     base::TimeTicks timeLimit)
 {
-    ASSERT(timeLimit >= m_timeLimit);
     m_timeLimit = timeLimit;
 
     // Update already in progress.
@@ -158,8 +157,8 @@ bool CCTextureUpdateController::updateMoreTexturesIfEnoughTimeRemaining()
     if (!m_queue->fullUploadSize())
         return false;
 
-    bool hasTimeRemaining = this->now() <
-        m_timeLimit - updateMoreTexturesTime();
+    bool hasTimeRemaining = m_timeLimit.is_null() ||
+        this->now() < m_timeLimit - updateMoreTexturesTime();
     if (hasTimeRemaining)
         updateMoreTexturesNow();
 

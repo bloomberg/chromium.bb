@@ -62,7 +62,7 @@ base::TimeTicks FakeCCTimeSource::lastTickTime()
     return base::TimeTicks();
 }
 
-base::TimeTicks FakeCCTimeSource::nextTickTimeIfActivated()
+base::TimeTicks FakeCCTimeSource::nextTickTime()
 {
     return base::TimeTicks();
 }

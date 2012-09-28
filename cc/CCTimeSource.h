@@ -33,7 +33,7 @@ public:
     virtual bool active() const = 0;
     virtual void setTimebaseAndInterval(base::TimeTicks timebase, base::TimeDelta interval) = 0;
     virtual base::TimeTicks lastTickTime() = 0;
-    virtual base::TimeTicks nextTickTimeIfActivated() = 0;
+    virtual base::TimeTicks nextTickTime() = 0;
 };
 
 }

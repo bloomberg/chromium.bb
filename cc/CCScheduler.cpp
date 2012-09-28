@@ -14,12 +14,11 @@ namespace cc {
 CCScheduler::CCScheduler(CCSchedulerClient* client, PassOwnPtr<CCFrameRateController> frameRateController)
     : m_client(client)
     , m_frameRateController(frameRateController)
-    , m_updateResourcesCompletePending(false)
     , m_insideProcessScheduledActions(false)
 {
     ASSERT(m_client);
     m_frameRateController->setClient(this);
-    m_frameRateController->setActive(m_stateMachine.vsyncCallbackNeeded());
+    ASSERT(!m_stateMachine.vsyncCallbackNeeded());
 }
 
 CCScheduler::~CCScheduler()
@@ -75,10 +74,10 @@ void CCScheduler::setMainThreadNeedsLayerTextures()
     processScheduledActions();
 }
 
-void CCScheduler::beginFrameComplete(bool hasResourceUpdates)
+void CCScheduler::beginFrameComplete()
 {
     TRACE_EVENT0("cc", "CCScheduler::beginFrameComplete");
-    m_stateMachine.beginFrameComplete(hasResourceUpdates);
+    m_stateMachine.beginFrameComplete();
     processScheduledActions();
 }
 
@@ -125,24 +124,17 @@ void CCScheduler::setTimebaseAndInterval(base::TimeTicks timebase, base::TimeDel
     m_frameRateController->setTimebaseAndInterval(timebase, interval);
 }
 
+base::TimeTicks CCScheduler::anticipatedDrawTime()
+{
+    return m_frameRateController->nextTickTime();
+}
+
 void CCScheduler::vsyncTick()
 {
     TRACE_EVENT0("cc", "CCScheduler::vsyncTick");
     m_stateMachine.didEnterVSync();
     processScheduledActions();
     m_stateMachine.didLeaveVSync();
-
-    // Allow resource updates until next vsync tick.
-    if (m_updateResourcesCompletePending)
-        m_client->scheduledActionUpdateMoreResources(m_frameRateController->nextTickTimeIfActivated());
-}
-
-void CCScheduler::updateResourcesComplete()
-{
-    TRACE_EVENT0("cc", "CCScheduler::updateResourcesComplete");
-    m_stateMachine.updateResourcesComplete();
-    m_updateResourcesCompletePending = false;
-    processScheduledActions();
 }
 
 void CCScheduler::processScheduledActions()
@@ -164,11 +156,6 @@ void CCScheduler::processScheduledActions()
             break;
         case CCSchedulerStateMachine::ACTION_BEGIN_FRAME:
             m_client->scheduledActionBeginFrame();
-            break;
-        case CCSchedulerStateMachine::ACTION_BEGIN_UPDATE_RESOURCES:
-            ASSERT(!m_updateResourcesCompletePending);
-            m_client->scheduledActionUpdateMoreResources(m_frameRateController->nextTickTimeIfActivated());
-            m_updateResourcesCompletePending = true;
             break;
         case CCSchedulerStateMachine::ACTION_COMMIT:
             m_client->scheduledActionCommit();
@@ -197,6 +184,7 @@ void CCScheduler::processScheduledActions()
 
     // Activate or deactivate the frame rate controller.
     m_frameRateController->setActive(m_stateMachine.vsyncCallbackNeeded());
+    m_client->didAnticipatedDrawTimeChange(m_frameRateController->nextTickTime());
 }
 
 }

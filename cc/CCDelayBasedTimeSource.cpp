@@ -85,9 +85,9 @@ base::TimeTicks CCDelayBasedTimeSource::lastTickTime()
     return m_lastTickTime;
 }
 
-base::TimeTicks CCDelayBasedTimeSource::nextTickTimeIfActivated()
+base::TimeTicks CCDelayBasedTimeSource::nextTickTime()
 {
-    return active() ? m_currentParameters.tickTarget : nextTickTarget(now());
+    return active() ? m_currentParameters.tickTarget : base::TimeTicks();
 }
 
 void CCDelayBasedTimeSource::onTimerFired()

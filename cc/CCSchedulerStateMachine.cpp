@@ -22,7 +22,6 @@ CCSchedulerStateMachine::CCSchedulerStateMachine()
     , m_needsCommit(false)
     , m_needsForcedCommit(false)
     , m_mainThreadNeedsLayerTextures(false)
-    , m_updateResourcesCompletePending(false)
     , m_insideVSync(false)
     , m_visible(false)
     , m_canBeginFrame(false)
@@ -47,7 +46,6 @@ std::string CCSchedulerStateMachine::toString()
     base::StringAppendF(&str, "m_needsCommit = %d; ", m_needsCommit);
     base::StringAppendF(&str, "m_needsForcedCommit = %d; ", m_needsForcedCommit);
     base::StringAppendF(&str, "m_mainThreadNeedsLayerTextures = %d; ", m_mainThreadNeedsLayerTextures);
-    base::StringAppendF(&str, "m_updateResourcesCompletePending = %d; ", m_updateResourcesCompletePending);
     base::StringAppendF(&str, "m_insideVSync = %d; ", m_insideVSync);
     base::StringAppendF(&str, "m_visible = %d; ", m_visible);
     base::StringAppendF(&str, "m_canBeginFrame = %d; ", m_canBeginFrame);
@@ -140,13 +138,6 @@ CCSchedulerStateMachine::Action CCSchedulerStateMachine::nextAction() const
             return m_needsForcedRedraw ? ACTION_DRAW_FORCED : ACTION_DRAW_IF_POSSIBLE;
         return ACTION_NONE;
 
-    case COMMIT_STATE_UPDATING_RESOURCES:
-        if (shouldDraw())
-            return m_needsForcedRedraw ? ACTION_DRAW_FORCED : ACTION_DRAW_IF_POSSIBLE;
-        if (!m_updateResourcesCompletePending)
-            return ACTION_BEGIN_UPDATE_RESOURCES;
-        return ACTION_NONE;
-
     case COMMIT_STATE_READY_TO_COMMIT:
         return ACTION_COMMIT;
 
@@ -175,11 +166,6 @@ void CCSchedulerStateMachine::updateState(Action action)
         m_commitState = COMMIT_STATE_FRAME_IN_PROGRESS;
         m_needsCommit = false;
         m_needsForcedCommit = false;
-        return;
-
-    case ACTION_BEGIN_UPDATE_RESOURCES:
-        ASSERT(m_commitState == COMMIT_STATE_UPDATING_RESOURCES);
-        m_updateResourcesCompletePending = true;
         return;
 
     case ACTION_COMMIT:
@@ -233,10 +219,6 @@ void CCSchedulerStateMachine::setMainThreadNeedsLayerTextures()
 
 bool CCSchedulerStateMachine::vsyncCallbackNeeded() const
 {
-    // To prevent live-lock, we must always tick when updating resources.
-    if (m_updateResourcesCompletePending || m_commitState == COMMIT_STATE_UPDATING_RESOURCES)
-        return true;
-
     // If we can't draw, don't tick until we are notified that we can draw again.
     if (!m_canDraw)
         return false;
@@ -300,13 +282,10 @@ void CCSchedulerStateMachine::setNeedsForcedCommit()
     m_needsForcedCommit = true;
 }
 
-void CCSchedulerStateMachine::beginFrameComplete(bool hasResourceUpdates)
+void CCSchedulerStateMachine::beginFrameComplete()
 {
     ASSERT(m_commitState == COMMIT_STATE_FRAME_IN_PROGRESS);
-    if (hasResourceUpdates)
-        m_commitState = COMMIT_STATE_UPDATING_RESOURCES;
-    else
-        m_commitState = COMMIT_STATE_READY_TO_COMMIT;
+    m_commitState = COMMIT_STATE_READY_TO_COMMIT;
 }
 
 void CCSchedulerStateMachine::beginFrameAborted()
@@ -314,14 +293,6 @@ void CCSchedulerStateMachine::beginFrameAborted()
     ASSERT(m_commitState == COMMIT_STATE_FRAME_IN_PROGRESS);
     m_commitState = COMMIT_STATE_IDLE;
     setNeedsCommit();
-}
-
-void CCSchedulerStateMachine::updateResourcesComplete()
-{
-    ASSERT(m_commitState == COMMIT_STATE_UPDATING_RESOURCES);
-    ASSERT(m_updateResourcesCompletePending);
-    m_updateResourcesCompletePending = false;
-    m_commitState = COMMIT_STATE_READY_TO_COMMIT;
 }
 
 void CCSchedulerStateMachine::didLoseContext()

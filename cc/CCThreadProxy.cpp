@@ -615,11 +615,11 @@ void CCThreadProxy::beginFrameCompleteOnImplThread(CCCompletionEvent* completion
             m_resetContentsTexturesPurgedAfterCommitOnImplThread = true;
     }
 
-    bool hasResourceUpdates = !!queue->fullUploadSize();
     m_currentTextureUpdateControllerOnImplThread = CCTextureUpdateController::create(this, CCProxy::implThread(), queue, m_layerTreeHostImpl->resourceProvider(), m_layerTreeHostImpl->resourceProvider()->textureUploader());
-    m_commitCompletionEventOnImplThread = completion;
+    m_currentTextureUpdateControllerOnImplThread->performMoreUpdates(
+        m_schedulerOnImplThread->anticipatedDrawTime());
 
-    m_schedulerOnImplThread->beginFrameComplete(hasResourceUpdates);
+    m_commitCompletionEventOnImplThread = completion;
 }
 
 void CCThreadProxy::beginFrameAbortedOnImplThread()
@@ -630,13 +630,6 @@ void CCThreadProxy::beginFrameAbortedOnImplThread()
     ASSERT(m_schedulerOnImplThread->commitPending());
 
     m_schedulerOnImplThread->beginFrameAborted();
-}
-
-void CCThreadProxy::scheduledActionUpdateMoreResources(base::TimeTicks timeLimit)
-{
-    TRACE_EVENT0("cc", "CCThreadProxy::scheduledActionUpdateMoreResources");
-    ASSERT(m_currentTextureUpdateControllerOnImplThread);
-    m_currentTextureUpdateControllerOnImplThread->performMoreUpdates(timeLimit);
 }
 
 void CCThreadProxy::scheduledActionCommit()
@@ -787,10 +780,18 @@ CCScheduledActionDrawAndSwapResult CCThreadProxy::scheduledActionDrawAndSwapForc
     return scheduledActionDrawAndSwapInternal(true);
 }
 
+void CCThreadProxy::didAnticipatedDrawTimeChange(base::TimeTicks time)
+{
+    if (!m_currentTextureUpdateControllerOnImplThread)
+        return;
+
+    m_currentTextureUpdateControllerOnImplThread->performMoreUpdates(time);
+}
+
 void CCThreadProxy::readyToFinalizeTextureUpdates()
 {
     ASSERT(isImplThread());
-    m_schedulerOnImplThread->updateResourcesComplete();
+    m_schedulerOnImplThread->beginFrameComplete();
 }
 
 void CCThreadProxy::didCommitAndDrawFrame()

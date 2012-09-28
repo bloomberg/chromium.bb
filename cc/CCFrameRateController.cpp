@@ -151,12 +151,12 @@ void CCFrameRateController::didAbortAllPendingFrames()
     m_numFramesPending = 0;
 }
 
-base::TimeTicks CCFrameRateController::nextTickTimeIfActivated()
+base::TimeTicks CCFrameRateController::nextTickTime()
 {
     if (m_isTimeSourceThrottling)
-        return m_timeSource->nextTickTimeIfActivated();
+        return m_timeSource->nextTickTime();
 
-    return base::TimeTicks::Now();
+    return base::TimeTicks();
 }
 
 }

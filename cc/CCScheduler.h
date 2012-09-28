@@ -35,10 +35,10 @@ public:
     virtual void scheduledActionBeginFrame() = 0;
     virtual CCScheduledActionDrawAndSwapResult scheduledActionDrawAndSwapIfPossible() = 0;
     virtual CCScheduledActionDrawAndSwapResult scheduledActionDrawAndSwapForced() = 0;
-    virtual void scheduledActionUpdateMoreResources(base::TimeTicks timeLimit) = 0;
     virtual void scheduledActionCommit() = 0;
     virtual void scheduledActionBeginContextRecreation() = 0;
     virtual void scheduledActionAcquireLayerTexturesForMainThread() = 0;
+    virtual void didAnticipatedDrawTimeChange(base::TimeTicks) = 0;
 
 protected:
     virtual ~CCSchedulerClient() { }
@@ -71,7 +71,7 @@ public:
     // Like setNeedsRedraw(), but ensures the draw will definitely happen even if we are not visible.
     void setNeedsForcedRedraw();
 
-    void beginFrameComplete(bool hasResourceUpdates);
+    void beginFrameComplete();
     void beginFrameAborted();
 
     void setMaxFramesPending(int);
@@ -86,10 +86,10 @@ public:
 
     void setTimebaseAndInterval(base::TimeTicks timebase, base::TimeDelta interval);
 
+    base::TimeTicks anticipatedDrawTime();
+
     // CCFrameRateControllerClient implementation
     virtual void vsyncTick() OVERRIDE;
-
-    void updateResourcesComplete();
 
 private:
     CCScheduler(CCSchedulerClient*, PassOwnPtr<CCFrameRateController>);
@@ -99,7 +99,6 @@ private:
     CCSchedulerClient* m_client;
     OwnPtr<CCFrameRateController> m_frameRateController;
     CCSchedulerStateMachine m_stateMachine;
-    bool m_updateResourcesCompletePending;
     bool m_insideProcessScheduledActions;
 };
 

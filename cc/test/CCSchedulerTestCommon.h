@@ -83,7 +83,7 @@ public:
     virtual bool active() const OVERRIDE;
     virtual void setTimebaseAndInterval(base::TimeTicks timebase, base::TimeDelta interval) OVERRIDE { }
     virtual base::TimeTicks lastTickTime() OVERRIDE;
-    virtual base::TimeTicks nextTickTimeIfActivated() OVERRIDE;
+    virtual base::TimeTicks nextTickTime() OVERRIDE;
 
     void tick()
     {

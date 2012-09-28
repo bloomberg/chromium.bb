@@ -27,7 +27,6 @@ public:
     enum CommitState {
         COMMIT_STATE_IDLE,
         COMMIT_STATE_FRAME_IN_PROGRESS,
-        COMMIT_STATE_UPDATING_RESOURCES,
         COMMIT_STATE_READY_TO_COMMIT,
         COMMIT_STATE_WAITING_FOR_FIRST_DRAW,
     };
@@ -54,7 +53,6 @@ public:
     enum Action {
         ACTION_NONE,
         ACTION_BEGIN_FRAME,
-        ACTION_BEGIN_UPDATE_RESOURCES,
         ACTION_COMMIT,
         ACTION_DRAW_IF_POSSIBLE,
         ACTION_DRAW_FORCED,
@@ -97,17 +95,12 @@ public:
     void setNeedsForcedCommit();
 
     // Call this only in response to receiving an ACTION_BEGIN_FRAME
-    // from nextState. Indicates that all painting is complete and that
-    // updating of compositor resources can begin.
-    void beginFrameComplete(bool hasResourceUpdates);
+    // from nextState. Indicates that all painting is complete.
+    void beginFrameComplete();
 
     // Call this only in response to receiving an ACTION_BEGIN_FRAME
     // from nextState if the client rejects the beginFrame message.
     void beginFrameAborted();
-
-    // Call this only in response to receiving an ACTION_BEGIN_UPDATE_RESOURCES
-    // from nextState. Indicates that all resource updates completed.
-    void updateResourcesComplete();
 
     // Request exclusive access to the textures that back single buffered
     // layers on behalf of the main thread. Upon acqusition,
@@ -151,7 +144,6 @@ protected:
     bool m_needsCommit;
     bool m_needsForcedCommit;
     bool m_mainThreadNeedsLayerTextures;
-    bool m_updateResourcesCompletePending;
     bool m_insideVSync;
     bool m_visible;
     bool m_canBeginFrame;

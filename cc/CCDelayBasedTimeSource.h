@@ -29,9 +29,10 @@ public:
     virtual void setActive(bool) OVERRIDE;
     virtual bool active() const OVERRIDE;
 
-    // Get the last and next tick times.
+    // Get the last and next tick times. nextTimeTime() returns null when
+    // inactive.
     virtual base::TimeTicks lastTickTime() OVERRIDE;
-    virtual base::TimeTicks nextTickTimeIfActivated() OVERRIDE;
+    virtual base::TimeTicks nextTickTime() OVERRIDE;
 
     // CCTimerClient implementation.
     virtual void onTimerFired() OVERRIDE;
