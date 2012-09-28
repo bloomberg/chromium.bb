@@ -6184,10 +6184,22 @@
    fun:_ZN7WebCore21RenderLayerCompositor13updateBackingEPNS_11RenderLayerENS0_24CompositingChangeRepaintE
 }
 {
-   bug_152445
+   bug_152445_a
    Memcheck:Leak
    fun:_Znw*
    ...
    fun:_ZN7fileapi22LocalFileChangeTrackerC1EPNS_19LocalFileSyncStatusERK8FilePathPN4base19SequencedTaskRunnerE
    fun:_ZN7fileapi26LocalFileChangeTrackerTest5SetUpEv
+}
+{
+   bug_152445_b
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN7fileapi22LocalFileChangeTracker9TrackerDB4InitENS1_14RecoveryOptionE
+   fun:_ZN7fileapi22LocalFileChangeTracker9TrackerDB9MarkDirtyERKSs
+   fun:_ZN7fileapi22LocalFileChangeTracker19MarkDirtyOnDatabaseERKNS_13FileSystemURLE
+   fun:_ZN7fileapi22LocalFileChangeTracker12RecordChangeERKNS_13FileSystemURLERKNS_10FileChangeE
+   fun:_ZN7fileapi22LocalFileChangeTracker17OnCreateDirectoryERKNS_13FileSystemURLE
+   fun:_ZN7fileapi42LocalFileChangeTrackerTest_GetChanges_Test8TestBodyEv
 }
