@@ -73,6 +73,12 @@ class InstantLoader : public content::NotificationObserver {
   // is a repeat count, negative for moving up, positive for moving down.
   void OnUpOrDownKeyPressed(int count);
 
+  // Tells the preview page that the searchbox has been focused.
+  void OnAutocompleteGotFocus();
+
+  // Tells the preview page that the searchbox has lost focus.
+  void OnAutocompleteLostFocus();
+
   // Called by the history tab helper with the information that it would have
   // added to the history service had this web contents not been used for
   // Instant.

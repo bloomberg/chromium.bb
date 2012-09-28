@@ -396,10 +396,13 @@ TabContents* InstantController::ReleasePreviewContents(InstantCommitType type) {
 void InstantController::OnAutocompleteLostFocus(
     gfx::NativeView view_gaining_focus) {
   DCHECK(!is_showing_ || GetPreviewContents());
+  is_omnibox_focused_ = false;
 
   // If there is no preview, nothing to do.
   if (!GetPreviewContents())
     return;
+
+  loader_->OnAutocompleteLostFocus();
 
   // If the preview is not showing, only need to check for loader staleness.
   if (!is_showing_) {
@@ -477,6 +480,9 @@ void InstantController::OnAutocompleteLostFocus(
 }
 
 void InstantController::OnAutocompleteGotFocus() {
+  is_omnibox_focused_ = true;
+  if (GetPreviewContents())
+    loader_->OnAutocompleteGotFocus();
   CreateDefaultLoader();
 }
 
@@ -613,7 +619,8 @@ InstantController::InstantController(InstantControllerDelegate* delegate,
       last_transition_type_(content::PAGE_TRANSITION_LINK),
       last_match_was_search_(false),
       is_showing_(false),
-      loader_processed_last_update_(false) {
+      loader_processed_last_update_(false),
+      is_omnibox_focused_(false) {
 }
 
 void InstantController::ResetLoader(const std::string& instant_url,
@@ -625,6 +632,11 @@ void InstantController::ResetLoader(const std::string& instant_url,
     DCHECK(!loader_.get());
     loader_.reset(new InstantLoader(this, instant_url, active_tab));
     loader_->Init();
+    // Ensure the searchbox API has the correct focus state.
+    if (is_omnibox_focused_)
+      loader_->OnAutocompleteGotFocus();
+    else
+      loader_->OnAutocompleteLostFocus();
     AddPreviewUsageForHistogram(mode_, PREVIEW_CREATED);
 
     // Reset the loader timer.

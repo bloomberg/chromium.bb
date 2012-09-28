@@ -119,6 +119,24 @@ static const char kDispatchUpOrDownKeyPressEventScript[] =
     "  true;"
     "}";
 
+static const char kDispatchFocusEventScript[] =
+    "if (window.chrome &&"
+    "    window.chrome.searchBox &&"
+    "    window.chrome.searchBox.onfocus &&"
+    "    typeof window.chrome.searchBox.onfocus == 'function') {"
+    "  window.chrome.searchBox.onfocus();"
+    "  true;"
+    "}";
+
+static const char kDispatchBlurEventScript[] =
+    "if (window.chrome &&"
+    "    window.chrome.searchBox &&"
+    "    window.chrome.searchBox.onblur &&"
+    "    typeof window.chrome.searchBox.onblur == 'function') {"
+    "  window.chrome.searchBox.onblur();"
+    "  true;"
+    "}";
+
 // ----------------------------------------------------------------------------
 
 class SearchBoxExtensionWrapper : public v8::Extension {
@@ -164,6 +182,9 @@ class SearchBoxExtensionWrapper : public v8::Extension {
   // Gets the autocomplete results from search box.
   static v8::Handle<v8::Value> GetAutocompleteResults(
       const v8::Arguments& args);
+
+  // Gets whether the search box is focused.
+  static v8::Handle<v8::Value> GetIsFocused(const v8::Arguments& args);
 
   // Navigates the window to a URL represented by either a URL string or a
   // restricted ID.
@@ -218,6 +239,8 @@ v8::Handle<v8::FunctionTemplate> SearchBoxExtensionWrapper::GetNativeFunction(
     return v8::FunctionTemplate::New(GetHeight);
   } else if (name->Equals(v8::String::New("GetAutocompleteResults"))) {
     return v8::FunctionTemplate::New(GetAutocompleteResults);
+  } else if (name->Equals(v8::String::New("GetIsFocused"))) {
+    return v8::FunctionTemplate::New(GetIsFocused);
   } else if (name->Equals(v8::String::New("NavigateContentWindow"))) {
     return v8::FunctionTemplate::New(NavigateContentWindow);
   } else if (name->Equals(v8::String::New("SetSuggestions"))) {
@@ -342,6 +365,14 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetAutocompleteResults(
   }
 
   return results_array;
+}
+
+// static
+v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetIsFocused(
+    const v8::Arguments& args) {
+  content::RenderView* render_view = GetRenderView();
+  if (!render_view) return v8::Undefined();
+  return v8::Boolean::New(SearchBox::Get(render_view)->is_focused());
 }
 
 // static
@@ -595,6 +626,16 @@ void SearchBoxExtension::DispatchUpOrDownKeyPress(WebKit::WebFrame* frame,
   Dispatch(frame, WebKit::WebString::fromUTF8(
       base::StringPrintf(kDispatchUpOrDownKeyPressEventScript, abs(count),
                          count < 0 ? ui::VKEY_UP : ui::VKEY_DOWN)));
+}
+
+// static
+void SearchBoxExtension::DispatchFocus(WebKit::WebFrame* frame) {
+  Dispatch(frame, kDispatchFocusEventScript);
+}
+
+// static
+void SearchBoxExtension::DispatchBlur(WebKit::WebFrame* frame) {
+  Dispatch(frame, kDispatchBlurEventScript);
 }
 
 // static

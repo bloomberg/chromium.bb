@@ -34,6 +34,7 @@ class SearchBox : public content::RenderViewObserver,
   // Sends ViewHostMsg_SetInstantPreviewHeight to the browser.
   void SetInstantPreviewHeight(int height, InstantSizeUnits units);
 
+  bool is_focused() const { return is_focused_; }
   const string16& query() const { return query_; }
   bool verbatim() const { return verbatim_; }
   size_t selection_start() const { return selection_start_; }
@@ -61,6 +62,8 @@ class SearchBox : public content::RenderViewObserver,
   void OnAutocompleteResults(
       const std::vector<InstantAutocompleteResult>& results);
   void OnUpOrDownKeyPressed(int count);
+  void OnFocus();
+  void OnBlur();
 
   // Sets the searchbox values to their initial value.
   void Reset();
@@ -74,6 +77,7 @@ class SearchBox : public content::RenderViewObserver,
   std::vector<InstantAutocompleteResult> autocomplete_results_;
   size_t last_results_base_;
   std::vector<InstantAutocompleteResult> last_autocomplete_results_;
+  bool is_focused_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchBox);
 };

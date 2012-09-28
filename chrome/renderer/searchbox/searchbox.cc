@@ -15,7 +15,9 @@ SearchBox::SearchBox(content::RenderView* render_view)
       verbatim_(false),
       selection_start_(0),
       selection_end_(0),
-      results_base_(0) {
+      results_base_(0),
+      last_results_base_(0),
+      is_focused_(false) {
 }
 
 SearchBox::~SearchBox() {
@@ -87,6 +89,8 @@ bool SearchBox::OnMessageReceived(const IPC::Message& message) {
                         OnAutocompleteResults)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxUpOrDownKeyPressed,
                         OnUpOrDownKeyPressed)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxFocus, OnFocus)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxBlur, OnBlur)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -162,6 +166,22 @@ void SearchBox::OnUpOrDownKeyPressed(int count) {
   }
 }
 
+void SearchBox::OnFocus() {
+  is_focused_ = true;
+  if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
+    extensions_v8::SearchBoxExtension::DispatchFocus(
+        render_view()->GetWebView()->mainFrame());
+  }
+}
+
+void SearchBox::OnBlur() {
+  is_focused_ = false;
+  if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
+    extensions_v8::SearchBoxExtension::DispatchBlur(
+        render_view()->GetWebView()->mainFrame());
+  }
+}
+
 void SearchBox::Reset() {
   query_.clear();
   verbatim_ = false;
@@ -169,4 +189,5 @@ void SearchBox::Reset() {
   results_base_ = 0;
   rect_ = gfx::Rect();
   autocomplete_results_.clear();
+  is_focused_ = false;
 }

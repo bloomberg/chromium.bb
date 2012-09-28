@@ -355,6 +355,18 @@ void InstantLoader::OnUpOrDownKeyPressed(int count) {
                                                           count));
 }
 
+void InstantLoader::OnAutocompleteGotFocus() {
+  content::RenderViewHost* rvh =
+      preview_contents_->web_contents()->GetRenderViewHost();
+  rvh->Send(new ChromeViewMsg_SearchBoxFocus(rvh->GetRoutingID()));
+}
+
+void InstantLoader::OnAutocompleteLostFocus() {
+  content::RenderViewHost* rvh =
+      preview_contents_->web_contents()->GetRenderViewHost();
+  rvh->Send(new ChromeViewMsg_SearchBoxBlur(rvh->GetRoutingID()));
+}
+
 void InstantLoader::DidNavigate(
     const history::HistoryAddPageArgs& add_page_args) {
   last_navigation_ = add_page_args;

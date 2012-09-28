@@ -264,6 +264,9 @@ class InstantController : public InstantLoaderDelegate {
   // thus indicating that the page is ready to be shown.
   bool loader_processed_last_update_;
 
+  // True if the omnibox is focused, false otherwise.
+  bool is_omnibox_focused_;
+
   // Current omnibox bounds.
   gfx::Rect omnibox_bounds_;
 

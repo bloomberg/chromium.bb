@@ -314,6 +314,10 @@ IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxAutocompleteResults,
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxUpOrDownKeyPressed,
                     int /* count */)
 
+IPC_MESSAGE_ROUTED0(ChromeViewMsg_SearchBoxFocus)
+
+IPC_MESSAGE_ROUTED0(ChromeViewMsg_SearchBoxBlur)
+
 // Toggles visual muting of the render view area. This is on when a constrained
 // window is showing.
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetVisuallyDeemphasized,
