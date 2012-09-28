@@ -354,7 +354,8 @@ bool AutofillManager::OnMessageReceived(const IPC::Message& message) {
 bool AutofillManager::OnFormSubmitted(const FormData& form,
                                       const TimeTicks& timestamp) {
   // Let AutoComplete know as well.
-  tab_contents_->autocomplete_history_manager()->OnFormSubmitted(form);
+  AutocompleteHistoryManager::FromWebContents(tab_contents_->web_contents())->
+      OnFormSubmitted(form);
 
   if (!IsAutofillEnabled())
     return false;
@@ -556,7 +557,7 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
   // Add the results from AutoComplete.  They come back asynchronously, so we
   // hand off what we generated and they will send the results back to the
   // renderer.
-  tab_contents_->autocomplete_history_manager()->
+  AutocompleteHistoryManager::FromWebContents(tab_contents_->web_contents())->
       OnGetAutocompleteSuggestions(
           query_id, field.name, field.value, values, labels, icons, unique_ids);
 }

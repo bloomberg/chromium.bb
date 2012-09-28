@@ -638,7 +638,7 @@ class AutofillManagerTest : public TabContentsTestHarness {
   }
 
   void AutocompleteSuggestionsReturned(const std::vector<string16>& result) {
-    tab_contents()->autocomplete_history_manager()->
+    AutocompleteHistoryManager::FromWebContents(web_contents())->
         SendSuggestions(&result);
   }
 
@@ -686,7 +686,8 @@ class AutofillManagerTest : public TabContentsTestHarness {
     if (unique_ids)
       *unique_ids = autofill_param.e;
 
-    tab_contents()->autocomplete_history_manager()->CancelPendingQuery();
+    AutocompleteHistoryManager::FromWebContents(web_contents())->
+        CancelPendingQuery();
     process()->sink().ClearMessages();
     return true;
   }
@@ -3134,7 +3135,7 @@ TEST_F(AutofillManagerTest, TestTabContentsWithExternalDelegate) {
   EXPECT_TRUE(autofill_manager->external_delegate());
 
   AutocompleteHistoryManager* autocomplete_history_manager =
-      tab_contents()->autocomplete_history_manager();
+      AutocompleteHistoryManager::FromWebContents(web_contents());
   EXPECT_TRUE(autocomplete_history_manager->external_delegate());
 }
 

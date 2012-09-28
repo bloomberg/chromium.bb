@@ -11,6 +11,7 @@
 #include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/api/webdata/autofill_web_data_service.h"
 #include "chrome/browser/api/webdata/web_data_service_consumer.h"
+#include "chrome/browser/common/web_contents_user_data.h"
 #include "content/public/browser/web_contents_observer.h"
 
 namespace content {
@@ -28,10 +29,11 @@ class AutofillExternalDelegate;
 // Per-tab Autocomplete history manager. Handles receiving form data
 // from the renderer and the storing and retrieving of form data
 // through WebDataServiceBase.
-class AutocompleteHistoryManager : public content::WebContentsObserver,
-                                   public WebDataServiceConsumer {
+class AutocompleteHistoryManager
+    : public content::WebContentsObserver,
+      public WebDataServiceConsumer,
+      public WebContentsUserData<AutocompleteHistoryManager> {
  public:
-  explicit AutocompleteHistoryManager(content::WebContents* web_contents);
   virtual ~AutocompleteHistoryManager();
 
   // content::WebContentsObserver implementation.
@@ -81,6 +83,9 @@ class AutocompleteHistoryManager : public content::WebContentsObserver,
   }
 
  private:
+  explicit AutocompleteHistoryManager(content::WebContents* web_contents);
+  friend class WebContentsUserData<AutocompleteHistoryManager>;
+
   content::BrowserContext* browser_context_;
   scoped_ptr<AutofillWebDataService> autofill_data_;
 

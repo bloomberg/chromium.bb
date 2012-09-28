@@ -114,7 +114,7 @@ TabContents::TabContents(WebContents* contents)
   SessionTabHelper::CreateForWebContents(contents);
 
   AlternateErrorPageTabObserver::CreateForWebContents(contents);
-  autocomplete_history_manager_.reset(new AutocompleteHistoryManager(contents));
+  AutocompleteHistoryManager::CreateForWebContents(contents);
   autofill_delegate_.reset(new TabAutofillManagerDelegate(this));
   autofill_manager_ = new AutofillManager(autofill_delegate_.get(), this);
   if (CommandLine::ForCurrentProcess()->HasSwitch(
@@ -122,7 +122,7 @@ TabContents::TabContents(WebContents* contents)
     autofill_external_delegate_.reset(
         AutofillExternalDelegate::Create(this, autofill_manager_.get()));
     autofill_manager_->SetExternalDelegate(autofill_external_delegate_.get());
-    autocomplete_history_manager_->SetExternalDelegate(
+    AutocompleteHistoryManager::FromWebContents(contents)->SetExternalDelegate(
         autofill_external_delegate_.get());
   }
   BlockedContentTabHelper::CreateForWebContents(contents);

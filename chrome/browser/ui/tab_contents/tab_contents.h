@@ -12,7 +12,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/web_contents_observer.h"
 
-class AutocompleteHistoryManager;
 class AutofillExternalDelegate;
 class AutofillManager;
 class BasePanelBrowserTest;
@@ -152,10 +151,6 @@ class TabContents : public content::WebContentsObserver {
 
   // Tab Helpers ---------------------------------------------------------------
 
-  AutocompleteHistoryManager* autocomplete_history_manager() {
-    return autocomplete_history_manager_.get();
-  }
-
   AutofillManager* autofill_manager() { return autofill_manager_.get(); }
 
   ConstrainedWindowTabHelper* constrained_window_tab_helper() {
@@ -202,7 +197,6 @@ class TabContents : public content::WebContentsObserver {
   // (These provide API for callers and have a getter function listed in the
   // "Tab Helpers" section in the member functions area, above.)
 
-  scoped_ptr<AutocompleteHistoryManager> autocomplete_history_manager_;
   scoped_refptr<AutofillManager> autofill_manager_;
   scoped_ptr<TabAutofillManagerDelegate> autofill_delegate_;
   scoped_ptr<AutofillExternalDelegate> autofill_external_delegate_;
