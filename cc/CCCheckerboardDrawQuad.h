@@ -7,6 +7,7 @@
 
 #include "CCDrawQuad.h"
 #include "base/memory/scoped_ptr.h"
+#include "SkColor.h"
 
 namespace cc {
 
@@ -14,11 +15,15 @@ namespace cc {
 
 class CCCheckerboardDrawQuad : public CCDrawQuad {
 public:
-    static scoped_ptr<CCCheckerboardDrawQuad> create(const CCSharedQuadState*, const IntRect&);
+    static scoped_ptr<CCCheckerboardDrawQuad> create(const CCSharedQuadState*, const IntRect&, SkColor);
+
+    SkColor color() const { return m_color; };
 
     static const CCCheckerboardDrawQuad* materialCast(const CCDrawQuad*);
 private:
-    CCCheckerboardDrawQuad(const CCSharedQuadState*, const IntRect&);
+    CCCheckerboardDrawQuad(const CCSharedQuadState*, const IntRect&, SkColor);
+
+    SkColor m_color;
 };
 
 #pragma pack(pop)

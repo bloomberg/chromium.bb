@@ -161,8 +161,10 @@ void compareDrawQuad(CCDrawQuad* quad, CCDrawQuad* copy, CCSharedQuadState* copy
 
 TEST(CCDrawQuadTest, copyCheckerboardDrawQuad)
 {
+    SkColor color = 0xfabb0011;
     CREATE_SHARED_STATE();
-    CREATE_QUAD_0(CCCheckerboardDrawQuad);
+    CREATE_QUAD_1(CCCheckerboardDrawQuad, color);
+    EXPECT_EQ(color, copyQuad->color());
 }
 
 TEST(CCDrawQuadTest, copyDebugBorderDrawQuad)

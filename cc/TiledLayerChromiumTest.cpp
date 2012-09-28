@@ -181,8 +181,8 @@ TEST_F(TiledLayerChromiumTest, pushDirtyTiles)
     updateAndPush(layer.get(), layerImpl.get());
 
     // We should have both tiles on the impl side.
-    EXPECT_TRUE(layerImpl->hasTileAt(0, 0));
-    EXPECT_TRUE(layerImpl->hasTileAt(0, 1));
+    EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(0, 0));
+    EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(0, 1));
 
     // Invalidates both tiles, but then only update one of them.
     layer->setBounds(IntSize(100, 200));
@@ -191,8 +191,8 @@ TEST_F(TiledLayerChromiumTest, pushDirtyTiles)
     updateAndPush(layer.get(), layerImpl.get());
 
     // We should only have the first tile since the other tile was invalidated but not painted.
-    EXPECT_TRUE(layerImpl->hasTileAt(0, 0));
-    EXPECT_FALSE(layerImpl->hasTileAt(0, 1));
+    EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(0, 0));
+    EXPECT_FALSE(layerImpl->hasResourceIdForTileAt(0, 1));
 }
 
 TEST_F(TiledLayerChromiumTest, pushOccludedDirtyTiles)
@@ -213,8 +213,8 @@ TEST_F(TiledLayerChromiumTest, pushOccludedDirtyTiles)
     EXPECT_EQ(0, occluded.overdrawMetrics().tilesCulledForUpload());
 
     // We should have both tiles on the impl side.
-    EXPECT_TRUE(layerImpl->hasTileAt(0, 0));
-    EXPECT_TRUE(layerImpl->hasTileAt(0, 1));
+    EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(0, 0));
+    EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(0, 1));
 
     // Invalidates part of the top tile...
     layer->invalidateContentRect(IntRect(0, 0, 50, 50));
@@ -227,8 +227,8 @@ TEST_F(TiledLayerChromiumTest, pushOccludedDirtyTiles)
     EXPECT_EQ(0, occluded.overdrawMetrics().tilesCulledForUpload());
 
     // We should still have both tiles, as part of the top tile is still unoccluded.
-    EXPECT_TRUE(layerImpl->hasTileAt(0, 0));
-    EXPECT_TRUE(layerImpl->hasTileAt(0, 1));
+    EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(0, 0));
+    EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(0, 1));
 }
 
 TEST_F(TiledLayerChromiumTest, pushDeletedTiles)
@@ -243,8 +243,8 @@ TEST_F(TiledLayerChromiumTest, pushDeletedTiles)
     updateAndPush(layer.get(), layerImpl.get());
 
     // We should have both tiles on the impl side.
-    EXPECT_TRUE(layerImpl->hasTileAt(0, 0));
-    EXPECT_TRUE(layerImpl->hasTileAt(0, 1));
+    EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(0, 0));
+    EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(0, 1));
 
     m_textureManager->clearPriorities();
     textureManagerClearAllMemory(m_textureManager.get(), m_resourceProvider.get());
@@ -254,16 +254,16 @@ TEST_F(TiledLayerChromiumTest, pushDeletedTiles)
     layerPushPropertiesTo(layer.get(), layerImpl.get());
 
     // We should now have no textures on the impl thread.
-    EXPECT_FALSE(layerImpl->hasTileAt(0, 0));
-    EXPECT_FALSE(layerImpl->hasTileAt(0, 1));
+    EXPECT_FALSE(layerImpl->hasResourceIdForTileAt(0, 0));
+    EXPECT_FALSE(layerImpl->hasResourceIdForTileAt(0, 1));
 
     // This should recreate and update one of the deleted textures.
     layer->setVisibleContentRect(IntRect(0, 0, 100, 100));
     updateAndPush(layer.get(), layerImpl.get());
 
     // We should have one tiles on the impl side.
-    EXPECT_TRUE(layerImpl->hasTileAt(0, 0));
-    EXPECT_FALSE(layerImpl->hasTileAt(0, 1));
+    EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(0, 0));
+    EXPECT_FALSE(layerImpl->hasResourceIdForTileAt(0, 1));
 }
 
 TEST_F(TiledLayerChromiumTest, pushIdlePaintTiles)
@@ -281,7 +281,7 @@ TEST_F(TiledLayerChromiumTest, pushIdlePaintTiles)
     EXPECT_TRUE(needsUpdate);
 
     // We should have one tile on the impl side.
-    EXPECT_TRUE(layerImpl->hasTileAt(2, 2));
+    EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(2, 2));
 
     // For the next four updates, we should detect we still need idle painting.
     for (int i = 0; i < 4; i++) {
@@ -293,7 +293,7 @@ TEST_F(TiledLayerChromiumTest, pushIdlePaintTiles)
     IntRect idlePaintTiles(1, 1, 3, 3);
     for (int i = 0; i < 5; i++) {
         for (int j = 0; j < 5; j++)
-            EXPECT_EQ(layerImpl->hasTileAt(i, j), idlePaintTiles.contains(i, j));
+            EXPECT_EQ(layerImpl->hasResourceIdForTileAt(i, j), idlePaintTiles.contains(i, j));
     }
 
     // We should always finish painting eventually.
@@ -342,18 +342,18 @@ TEST_F(TiledLayerChromiumTest, pushTilesAfterIdlePaintFailed)
     }
 
     // Sanity check, we should have textures for the big layer.
-    EXPECT_TRUE(layerImpl1->hasTextureIdForTileAt(0, 0));
-    EXPECT_TRUE(layerImpl1->hasTextureIdForTileAt(0, 23));
+    EXPECT_TRUE(layerImpl1->hasResourceIdForTileAt(0, 0));
+    EXPECT_TRUE(layerImpl1->hasResourceIdForTileAt(0, 23));
 
     // We should only have the first two tiles from layer2 since
     // it failed to idle update the last tile.
-    EXPECT_TRUE(layerImpl2->hasTileAt(0, 0));
-    EXPECT_TRUE(layerImpl2->hasTextureIdForTileAt(0, 0));
-    EXPECT_TRUE(layerImpl2->hasTileAt(0, 1));
-    EXPECT_TRUE(layerImpl2->hasTextureIdForTileAt(0, 1));
+    EXPECT_TRUE(layerImpl2->hasResourceIdForTileAt(0, 0));
+    EXPECT_TRUE(layerImpl2->hasResourceIdForTileAt(0, 0));
+    EXPECT_TRUE(layerImpl2->hasResourceIdForTileAt(0, 1));
+    EXPECT_TRUE(layerImpl2->hasResourceIdForTileAt(0, 1));
     
     EXPECT_FALSE(needsUpdate);
-    EXPECT_FALSE(layerImpl2->hasTileAt(0, 2));
+    EXPECT_FALSE(layerImpl2->hasResourceIdForTileAt(0, 2));
 }
 
 TEST_F(TiledLayerChromiumTest, pushIdlePaintedOccludedTiles)
@@ -371,7 +371,7 @@ TEST_F(TiledLayerChromiumTest, pushIdlePaintedOccludedTiles)
     updateAndPush(layer.get(), layerImpl.get());
 
     // We should have the prepainted tile on the impl side, but culled it during paint.
-    EXPECT_TRUE(layerImpl->hasTileAt(0, 0));
+    EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(0, 0));
     EXPECT_EQ(1, occluded.overdrawMetrics().tilesCulledForUpload());
 }
 
@@ -389,8 +389,8 @@ TEST_F(TiledLayerChromiumTest, pushTilesMarkedDirtyDuringPaint)
     updateAndPush(layer.get(), layerImpl.get());
 
     // We should have both tiles on the impl side.
-    EXPECT_TRUE(layerImpl->hasTileAt(0, 0));
-    EXPECT_TRUE(layerImpl->hasTileAt(0, 1));
+    EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(0, 0));
+    EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(0, 1));
 }
 
 TEST_F(TiledLayerChromiumTest, pushTilesLayerMarkedDirtyDuringPaintOnNextLayer)
@@ -410,10 +410,10 @@ TEST_F(TiledLayerChromiumTest, pushTilesLayerMarkedDirtyDuringPaintOnNextLayer)
                   layer2.get(), layer2Impl.get());
 
     // We should have both tiles on the impl side for all layers.
-    EXPECT_TRUE(layer1Impl->hasTileAt(0, 0));
-    EXPECT_TRUE(layer1Impl->hasTileAt(0, 1));
-    EXPECT_TRUE(layer2Impl->hasTileAt(0, 0));
-    EXPECT_TRUE(layer2Impl->hasTileAt(0, 1));
+    EXPECT_TRUE(layer1Impl->hasResourceIdForTileAt(0, 0));
+    EXPECT_TRUE(layer1Impl->hasResourceIdForTileAt(0, 1));
+    EXPECT_TRUE(layer2Impl->hasResourceIdForTileAt(0, 0));
+    EXPECT_TRUE(layer2Impl->hasResourceIdForTileAt(0, 1));
 }
 
 TEST_F(TiledLayerChromiumTest, pushTilesLayerMarkedDirtyDuringPaintOnPreviousLayer)
@@ -432,10 +432,10 @@ TEST_F(TiledLayerChromiumTest, pushTilesLayerMarkedDirtyDuringPaintOnPreviousLay
                   layer2.get(), layer2Impl.get());
 
     // We should have both tiles on the impl side for all layers.
-    EXPECT_TRUE(layer1Impl->hasTileAt(0, 0));
-    EXPECT_TRUE(layer1Impl->hasTileAt(0, 1));
-    EXPECT_TRUE(layer2Impl->hasTileAt(0, 0));
-    EXPECT_TRUE(layer2Impl->hasTileAt(0, 1));
+    EXPECT_TRUE(layer1Impl->hasResourceIdForTileAt(0, 0));
+    EXPECT_TRUE(layer1Impl->hasResourceIdForTileAt(0, 1));
+    EXPECT_TRUE(layer2Impl->hasResourceIdForTileAt(0, 0));
+    EXPECT_TRUE(layer2Impl->hasResourceIdForTileAt(0, 1));
 }
 
 TEST_F(TiledLayerChromiumTest, paintSmallAnimatedLayersImmediately)
@@ -489,12 +489,12 @@ TEST_F(TiledLayerChromiumTest, paintSmallAnimatedLayersImmediately)
         if (!runOutOfMemory[i]) {
             for (int i = 0; i < 4; ++i) {
                 for (int j = 0; j < 4; ++j)
-                    EXPECT_TRUE(layerImpl->hasTileAt(i, j));
+                    EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(i, j));
             }
         } else {
             for (int i = 0; i < 8; ++i) {
                 for (int j = 0; j < 4; ++j)
-                    EXPECT_EQ(layerImpl->hasTileAt(i, j), i < 4);
+                    EXPECT_EQ(layerImpl->hasResourceIdForTileAt(i, j), i < 4);
             }
         }
     }
@@ -521,7 +521,7 @@ TEST_F(TiledLayerChromiumTest, idlePaintOutOfMemory)
     EXPECT_FALSE(needsUpdate);
 
     // We should have one tile on the impl side.
-    EXPECT_TRUE(layerImpl->hasTileAt(1, 1));
+    EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(1, 1));
 }
 
 TEST_F(TiledLayerChromiumTest, idlePaintZeroSizedLayer)
@@ -547,7 +547,7 @@ TEST_F(TiledLayerChromiumTest, idlePaintZeroSizedLayer)
         EXPECT_FALSE(needsUpdate);
 
         // Empty layers don't have tiles.
-        EXPECT_FALSE(layerImpl->hasTileAt(0, 0));
+        EXPECT_FALSE(layerImpl->hasResourceIdForTileAt(0, 0));
     }
 }
 
@@ -577,7 +577,7 @@ TEST_F(TiledLayerChromiumTest, idlePaintNonVisibleLayers)
         // We should never signal idle paint, as we painted the entire layer
         // or the layer was not visible.
         EXPECT_FALSE(needsUpdate);
-        EXPECT_EQ(layerImpl->hasTileAt(0, 0), haveTile[i]);
+        EXPECT_EQ(layerImpl->hasResourceIdForTileAt(0, 0), haveTile[i]);
     }
 }
 
@@ -592,8 +592,8 @@ TEST_F(TiledLayerChromiumTest, invalidateFromPrepare)
     updateAndPush(layer.get(), layerImpl.get());
 
     // We should have both tiles on the impl side.
-    EXPECT_TRUE(layerImpl->hasTileAt(0, 0));
-    EXPECT_TRUE(layerImpl->hasTileAt(0, 1));
+    EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(0, 0));
+    EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(0, 1));
 
     layer->fakeLayerTextureUpdater()->clearPrepareCount();
     // Invoke update again. As the layer is valid update shouldn't be invoked on
@@ -673,10 +673,10 @@ TEST_F(TiledLayerChromiumTest, verifyInvalidationWhenContentsScaleChanges)
     layer->update(*m_queue.get(), 0, m_stats);
     updateTextures();
     layerPushPropertiesTo(layer.get(), layerImpl.get());
-    EXPECT_TRUE(layerImpl->hasTileAt(0, 0));
-    EXPECT_FALSE(layerImpl->hasTileAt(0, 1));
-    EXPECT_FALSE(layerImpl->hasTileAt(1, 0));
-    EXPECT_FALSE(layerImpl->hasTileAt(1, 1));
+    EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(0, 0));
+    EXPECT_FALSE(layerImpl->hasResourceIdForTileAt(0, 1));
+    EXPECT_FALSE(layerImpl->hasResourceIdForTileAt(1, 0));
+    EXPECT_FALSE(layerImpl->hasResourceIdForTileAt(1, 1));
 
     // Change the contents scale and verify that the content rectangle requiring painting
     // is not scaled.
@@ -690,10 +690,10 @@ TEST_F(TiledLayerChromiumTest, verifyInvalidationWhenContentsScaleChanges)
     layer->update(*m_queue.get(), 0, m_stats);
     updateTextures();
     layerPushPropertiesTo(layer.get(), layerImpl.get());
-    EXPECT_TRUE(layerImpl->hasTileAt(0, 0));
-    EXPECT_TRUE(layerImpl->hasTileAt(0, 1));
-    EXPECT_TRUE(layerImpl->hasTileAt(1, 0));
-    EXPECT_TRUE(layerImpl->hasTileAt(1, 1));
+    EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(0, 0));
+    EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(0, 1));
+    EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(1, 0));
+    EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(1, 1));
 
     // Invalidate the entire layer again, but do not paint. All tiles should be gone now from the
     // impl side.
@@ -702,10 +702,10 @@ TEST_F(TiledLayerChromiumTest, verifyInvalidationWhenContentsScaleChanges)
     m_textureManager->prioritizeTextures();
 
     layerPushPropertiesTo(layer.get(), layerImpl.get());
-    EXPECT_FALSE(layerImpl->hasTileAt(0, 0));
-    EXPECT_FALSE(layerImpl->hasTileAt(0, 1));
-    EXPECT_FALSE(layerImpl->hasTileAt(1, 0));
-    EXPECT_FALSE(layerImpl->hasTileAt(1, 1));
+    EXPECT_FALSE(layerImpl->hasResourceIdForTileAt(0, 0));
+    EXPECT_FALSE(layerImpl->hasResourceIdForTileAt(0, 1));
+    EXPECT_FALSE(layerImpl->hasResourceIdForTileAt(1, 0));
+    EXPECT_FALSE(layerImpl->hasResourceIdForTileAt(1, 1));
 }
 
 TEST_F(TiledLayerChromiumTest, skipsDrawGetsReset)
@@ -1375,9 +1375,9 @@ TEST_F(TiledLayerChromiumTest, dontAllocateContentsWhenTargetSurfaceCantBeAlloca
 
         for (unsigned i = 0; i < 3; ++i) {
             for (unsigned j = 0; j < 2; ++j)
-                EXPECT_TRUE(rootImpl->hasTextureIdForTileAt(i, j));
-            EXPECT_TRUE(childImpl->hasTextureIdForTileAt(i, 0));
-            EXPECT_TRUE(child2Impl->hasTextureIdForTileAt(i, 0));
+                EXPECT_TRUE(rootImpl->hasResourceIdForTileAt(i, j));
+            EXPECT_TRUE(childImpl->hasResourceIdForTileAt(i, 0));
+            EXPECT_TRUE(child2Impl->hasResourceIdForTileAt(i, 0));
         }
     }
     ccLayerTreeHost->commitComplete();
@@ -1410,9 +1410,9 @@ TEST_F(TiledLayerChromiumTest, dontAllocateContentsWhenTargetSurfaceCantBeAlloca
 
         for (unsigned i = 0; i < 3; ++i) {
             for (unsigned j = 0; j < 2; ++j)
-                EXPECT_TRUE(rootImpl->hasTextureIdForTileAt(i, j));
-            EXPECT_FALSE(childImpl->hasTextureIdForTileAt(i, 0));
-            EXPECT_FALSE(child2Impl->hasTextureIdForTileAt(i, 0));
+                EXPECT_TRUE(rootImpl->hasResourceIdForTileAt(i, j));
+            EXPECT_FALSE(childImpl->hasResourceIdForTileAt(i, 0));
+            EXPECT_FALSE(child2Impl->hasResourceIdForTileAt(i, 0));
         }
     }
     ccLayerTreeHost->commitComplete();
@@ -1446,9 +1446,9 @@ TEST_F(TiledLayerChromiumTest, dontAllocateContentsWhenTargetSurfaceCantBeAlloca
 
         for (unsigned i = 0; i < 3; ++i) {
             for (unsigned j = 0; j < 2; ++j)
-                EXPECT_FALSE(rootImpl->hasTextureIdForTileAt(i, j));
-            EXPECT_FALSE(childImpl->hasTextureIdForTileAt(i, 0));
-            EXPECT_FALSE(child2Impl->hasTextureIdForTileAt(i, 0));
+                EXPECT_FALSE(rootImpl->hasResourceIdForTileAt(i, j));
+            EXPECT_FALSE(childImpl->hasResourceIdForTileAt(i, 0));
+            EXPECT_FALSE(child2Impl->hasResourceIdForTileAt(i, 0));
         }
     }
     ccLayerTreeHost->commitComplete();

@@ -846,15 +846,17 @@ void FragmentShaderCheckerboard::init(WebGraphicsContext3D* context, unsigned pr
         "alpha",
         "texTransform",
         "frequency",
+        "color",
     };
-    int locations[3];
+    int locations[4];
 
     getProgramUniformLocations(context, program, shaderUniforms, WTF_ARRAY_LENGTH(shaderUniforms), WTF_ARRAY_LENGTH(locations), locations, usingBindUniform, baseUniformIndex);
 
     m_alphaLocation = locations[0];
     m_texTransformLocation = locations[1];
     m_frequencyLocation = locations[2];
-    ASSERT(m_alphaLocation != -1 && m_texTransformLocation != -1 && m_frequencyLocation != -1);
+    m_colorLocation = locations[3];
+    ASSERT(m_alphaLocation != -1 && m_texTransformLocation != -1 && m_frequencyLocation != -1 && m_colorLocation != -1);
 }
 
 std::string FragmentShaderCheckerboard::getShaderString() const
@@ -868,10 +870,11 @@ std::string FragmentShaderCheckerboard::getShaderString() const
         uniform float alpha;
         uniform float frequency;
         uniform vec4 texTransform;
+        uniform vec4 color;
         void main()
         {
             vec4 color1 = vec4(1.0, 1.0, 1.0, 1.0);
-            vec4 color2 = vec4(0.945, 0.945, 0.945, 1.0);
+            vec4 color2 = color;
             vec2 texCoord = clamp(v_texCoord, 0.0, 1.0) * texTransform.zw + texTransform.xy;
             vec2 coord = mod(floor(texCoord * frequency * 2.0), 2.0);
             float picker = abs(coord.x - coord.y);

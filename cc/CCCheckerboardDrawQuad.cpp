@@ -8,13 +8,14 @@
 
 namespace cc {
 
-scoped_ptr<CCCheckerboardDrawQuad> CCCheckerboardDrawQuad::create(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect)
+scoped_ptr<CCCheckerboardDrawQuad> CCCheckerboardDrawQuad::create(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, SkColor color)
 {
-    return scoped_ptr<CCCheckerboardDrawQuad>(new CCCheckerboardDrawQuad(sharedQuadState, quadRect));
+    return scoped_ptr<CCCheckerboardDrawQuad>(new CCCheckerboardDrawQuad(sharedQuadState, quadRect, color));
 }
 
-CCCheckerboardDrawQuad::CCCheckerboardDrawQuad(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect)
+CCCheckerboardDrawQuad::CCCheckerboardDrawQuad(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, SkColor color)
     : CCDrawQuad(sharedQuadState, CCDrawQuad::Checkerboard, quadRect)
+    , m_color(color)
 {
 }
 

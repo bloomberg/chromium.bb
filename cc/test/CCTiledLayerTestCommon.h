@@ -81,7 +81,7 @@ public:
     virtual ~FakeCCTiledLayerImpl();
 
     using cc::CCTiledLayerImpl::hasTileAt;
-    using cc::CCTiledLayerImpl::hasTextureIdForTileAt;
+    using cc::CCTiledLayerImpl::hasResourceIdForTileAt;
 };
 
 class FakeTiledLayerChromium : public cc::TiledLayerChromium {

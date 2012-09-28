@@ -30,6 +30,7 @@ public:
     void setSkipsDraw(bool skipsDraw) { m_skipsDraw = skipsDraw; }
     void setTilingData(const CCLayerTilingData& tiler);
     void pushTileProperties(int, int, CCResourceProvider::ResourceId, const IntRect& opaqueRect);
+    void pushInvalidTile(int, int);
 
     void setContentsSwizzled(bool contentsSwizzled) { m_contentsSwizzled = contentsSwizzled; }
     bool contentsSwizzled() const { return m_contentsSwizzled; }
@@ -41,7 +42,7 @@ protected:
     explicit CCTiledLayerImpl(int id);
     // Exposed for testing.
     bool hasTileAt(int, int) const;
-    bool hasTextureIdForTileAt(int, int) const;
+    bool hasResourceIdForTileAt(int, int) const;
 
 private:
 
