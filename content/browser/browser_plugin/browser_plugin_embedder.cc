@@ -95,8 +95,17 @@ void BrowserPluginEmbedder::NavigateGuest(RenderViewHost* render_view_host,
     guest->set_embedder_render_process_host(
         render_view_host->GetProcess());
 
-    guest_web_contents->GetMutableRendererPrefs()->
-        throttle_input_events = false;
+    RendererPreferences* guest_renderer_prefs =
+        guest_web_contents->GetMutableRendererPrefs();
+    // Copy renderer preferences (and nothing else) from the embedder's
+    // TabContents to the guest.
+    //
+    // For GTK and Aura this is necessary to get proper renderer configuration
+    // values for caret blinking interval, colors related to selection and
+    // focus.
+    *guest_renderer_prefs = *web_contents()->GetMutableRendererPrefs();
+
+    guest_renderer_prefs->throttle_input_events = false;
     AddGuest(instance_id, guest_web_contents);
     guest_web_contents->SetDelegate(guest);
   } else {
