@@ -8,7 +8,6 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/property_util.h"
-#include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/logging.h"  // DCHECK
@@ -476,8 +475,7 @@ void FramePainter::LayoutHeader(views::NonClientFrameView* view,
                                 bool shorter_layout) {
   // The new assets only make sense if the window is actually maximized.
   if (internal::WorkspaceController::IsWorkspace2Enabled() &&
-      shorter_layout && frame_->IsMaximized() &&
-      GetTrackedByWorkspace(frame_->GetNativeWindow())) {
+      shorter_layout && frame_->IsMaximized()) {
     SetButtonImages(close_button_,
                     IDR_AURA_WINDOW_MAXIMIZED_CLOSE2,
                     IDR_AURA_WINDOW_MAXIMIZED_CLOSE2_H,
@@ -539,13 +537,6 @@ void FramePainter::LayoutHeader(views::NonClientFrameView* view,
 void FramePainter::OnWindowPropertyChanged(aura::Window* window,
                                            const void* key,
                                            intptr_t old) {
-  if (key == internal::kWindowTrackedByWorkspaceKey &&
-      GetTrackedByWorkspace(window)) {
-    // When 'kWindowTrackedByWorkspaceKey' changes we're going to paint the
-    // header differently. Schedule a paint to ensure everything is updated
-    // correctly.
-    frame_->non_client_view()->SchedulePaint();
-  }
   if (key != aura::client::kShowStateKey)
     return;
 
@@ -636,11 +627,9 @@ int FramePainter::GetHeaderOpacity(HeaderMode header_mode,
   if (theme_frame_overlay)
     return kFullyOpaque;
 
-  // Maximized windows with workspace2 are totally transparent, except those not
-  // tracked by workspace code (which are used for tab dragging).
+  // Maximized windows with workspace2 are totally transparent.
   if (frame_->IsMaximized() &&
-      internal::WorkspaceController::IsWorkspace2Enabled() &&
-      GetTrackedByWorkspace(frame_->GetNativeWindow()))
+      internal::WorkspaceController::IsWorkspace2Enabled())
     return 0;
 
   // Single browser window is very transparent.

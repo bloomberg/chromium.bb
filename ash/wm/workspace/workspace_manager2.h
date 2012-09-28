@@ -155,8 +155,6 @@ class ASH_EXPORT WorkspaceManager2
                                          aura::Window* child,
                                          ui::WindowShowState last_show_state,
                                          ui::Layer* old_layer);
-  void OnTrackedByWorkspaceChanged(Workspace2* workspace,
-                                   aura::Window* window);
 
   aura::Window* contents_view_;
 
