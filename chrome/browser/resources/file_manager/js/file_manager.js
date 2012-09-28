@@ -1630,7 +1630,9 @@ FileManager.prototype = {
       li.appendChild(eject);
     }
 
-    if (rootType != RootType.GDATA) {
+    // To enable photo import dialog, set this context menu for Downloads and
+    // remove 'hidden' attribute on import-photos command.
+    if (rootType != RootType.GDATA && rootType != RootType.DOWNLOADS) {
       cr.ui.contextMenuHandler.setContextMenu(li, this.rootsContextMenu_);
     }
 

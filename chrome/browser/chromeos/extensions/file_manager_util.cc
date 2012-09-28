@@ -499,6 +499,10 @@ Browser* GetBrowserForUrl(GURL target_url) {
 }
 
 void ViewRemovableDrive(const FilePath& path) {
+  OpenFileBrowser(path, REUSE_ANY_FILE_MANAGER, "mountTriggered");
+}
+
+void OpenActionChoiceDialog(const FilePath& path) {
   const int kDialogWidth = 410;
   // TODO(dgozman): remove 50, which is a title height once popup window
   // will have no title.
