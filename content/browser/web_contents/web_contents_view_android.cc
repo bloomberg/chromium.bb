@@ -83,8 +83,9 @@ gfx::NativeWindow WebContentsViewAndroid::GetTopLevelNativeWindow() const {
 }
 
 void WebContentsViewAndroid::GetContainerBounds(gfx::Rect* out) const {
-  if (content_view_core_)
-    *out = content_view_core_->GetBounds();
+  RenderWidgetHostView* rwhv = web_contents_->GetRenderWidgetHostView();
+  if (rwhv)
+    *out = rwhv->GetViewBounds();
 }
 
 void WebContentsViewAndroid::SetPageTitle(const string16& title) {
@@ -153,10 +154,16 @@ void WebContentsViewAndroid::CloseTabAfterEventTracking() {
 }
 
 gfx::Rect WebContentsViewAndroid::GetViewBounds() const {
-  if (content_view_core_)
-    return content_view_core_->GetBounds();
+  RenderWidgetHostView* rwhv = web_contents_->GetRenderWidgetHostView();
+  if (rwhv)
+    return rwhv->GetViewBounds();
   else
     return gfx::Rect();
+}
+
+void WebContentsViewAndroid::ConfirmTouchEvent(bool handled) {
+  if (content_view_core_)
+    content_view_core_->ConfirmTouchEvent(handled);
 }
 
 void WebContentsViewAndroid::ShowContextMenu(

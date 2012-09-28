@@ -11,6 +11,7 @@
 #include "base/process.h"
 #include "content/browser/renderer_host/ime_adapter_android.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebExternalTextureLayer.h"
 #include "ui/gfx/size.h"
 
@@ -18,6 +19,11 @@ struct ViewHostMsg_TextInputState_Params;
 
 struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params;
 struct GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params;
+
+namespace WebKit {
+class WebTouchEvent;
+class WebMouseEvent;
+}
 
 namespace content {
 class ContentViewCoreImpl;
@@ -105,12 +111,21 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
   virtual void UnlockMouse() OVERRIDE;
   virtual void StartContentIntent(const GURL& content_url) OVERRIDE;
   virtual void DidSetNeedTouchEvents(bool need_touch_events) OVERRIDE;
+  virtual void SetCachedBackgroundColor(SkColor color) OVERRIDE;
+  virtual void SetCachedPageScaleFactorLimits(float minimum_scale,
+                                              float maximum_scale) OVERRIDE;
+  virtual void UpdateFrameInfo(const gfx::Point& scroll_offset,
+                               float page_scale_factor,
+                               const gfx::Size& content_size) OVERRIDE;
 
+  // Non-virtual methods
   void SetContentViewCore(ContentViewCoreImpl* content_view_core);
-
+  SkColor GetCachedBackgroundColor() const;
   void SendKeyEvent(const NativeWebKeyboardEvent& event);
-  void TouchEvent(const WebKit::WebTouchEvent& event);
-  void GestureEvent(const WebKit::WebGestureEvent& event);
+  void SendTouchEvent(const WebKit::WebTouchEvent& event);
+  void SendMouseEvent(const WebKit::WebMouseEvent& event);
+  void SendMouseWheelEvent(const WebKit::WebMouseWheelEvent& event);
+  void SendGestureEvent(const WebKit::WebGestureEvent& event);
 
   int GetNativeImeAdapter();
 
@@ -132,6 +147,9 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
   gfx::Size requested_size_;
 
   ImeAdapterAndroid ime_adapter_android_;
+
+  // Body background color of the underlying document.
+  SkColor cached_background_color_;
 
   // The texture layer for this view when using browser-side compositing.
   scoped_ptr<WebKit::WebExternalTextureLayer> texture_layer_;

@@ -147,6 +147,7 @@ class CONTENT_EXPORT RenderWidgetHostView {
 
 #if defined(OS_ANDROID)
   virtual void StartContentIntent(const GURL& content_url) = 0;
+  virtual void SetCachedBackgroundColor(SkColor color) = 0;
 #endif
 
   // Subclasses should override this method to do what is appropriate to set

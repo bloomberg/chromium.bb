@@ -223,6 +223,11 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView {
 #endif
 
 #if defined(OS_ANDROID)
+  virtual void SetCachedPageScaleFactorLimits(float minimum_scale,
+                                              float maximum_scale) = 0;
+  virtual void UpdateFrameInfo(const gfx::Point& scroll_offset,
+                               float page_scale_factor,
+                               const gfx::Size& content_size) = 0;
   virtual void DidSetNeedTouchEvents(bool need_touch_events) = 0;
 #endif
 

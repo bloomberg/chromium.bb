@@ -170,14 +170,7 @@ gfx::Rect RenderWidgetHostViewAndroid::GetViewBounds() const {
   if (!bounds.IsEmpty())
     return gfx::Rect(bounds);
 
-  if (content_view_core_) {
-    return content_view_core_->GetBounds();
-  } else {
-    // The ContentViewCore has not been created yet. This only happens when
-    // renderer asks for creating new window, for example,
-    // javascript window.open().
-    return gfx::Rect(0, 0, 0, 0);
-  }
+  return gfx::Rect(requested_size_);
 }
 
 void RenderWidgetHostViewAndroid::UpdateCursor(const WebCursor& cursor) {
@@ -383,13 +376,26 @@ void RenderWidgetHostViewAndroid::SendKeyEvent(
     host_->ForwardKeyboardEvent(event);
 }
 
-void RenderWidgetHostViewAndroid::TouchEvent(
+void RenderWidgetHostViewAndroid::SendTouchEvent(
     const WebKit::WebTouchEvent& event) {
   if (host_)
     host_->ForwardTouchEvent(event);
 }
 
-void RenderWidgetHostViewAndroid::GestureEvent(
+
+void RenderWidgetHostViewAndroid::SendMouseEvent(
+    const WebKit::WebMouseEvent& event) {
+  if (host_)
+    host_->ForwardMouseEvent(event);
+}
+
+void RenderWidgetHostViewAndroid::SendMouseWheelEvent(
+    const WebKit::WebMouseWheelEvent& event) {
+  if (host_)
+    host_->ForwardWheelEvent(event);
+}
+
+void RenderWidgetHostViewAndroid::SendGestureEvent(
     const WebKit::WebGestureEvent& event) {
   if (host_)
     host_->ForwardGestureEvent(event);
@@ -399,6 +405,35 @@ void RenderWidgetHostViewAndroid::SelectRange(const gfx::Point& start,
                                               const gfx::Point& end) {
   if (host_)
     host_->SelectRange(start, end);
+}
+
+
+void RenderWidgetHostViewAndroid::SetCachedBackgroundColor(SkColor color) {
+  cached_background_color_ = color;
+}
+
+SkColor RenderWidgetHostViewAndroid::GetCachedBackgroundColor() const {
+  return cached_background_color_;
+}
+
+void RenderWidgetHostViewAndroid::SetCachedPageScaleFactorLimits(
+    float minimum_scale,
+    float maximum_scale) {
+  if (content_view_core_)
+    content_view_core_->UpdatePageScaleLimits(minimum_scale, maximum_scale);
+}
+
+void RenderWidgetHostViewAndroid::UpdateFrameInfo(
+    const gfx::Point& scroll_offset,
+    float page_scale_factor,
+    const gfx::Size& content_size) {
+  if (content_view_core_) {
+    content_view_core_->UpdateContentSize(content_size.width(),
+                                          content_size.height());
+    content_view_core_->UpdateScrollOffsetAndPageScaleFactor(scroll_offset.x(),
+                                                             scroll_offset.y(),
+                                                             page_scale_factor);
+  }
 }
 
 void RenderWidgetHostViewAndroid::SetContentViewCore(
