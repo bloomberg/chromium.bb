@@ -42,7 +42,6 @@ class Profile;
 class ShellWindow;
 class TabAutofillManagerDelegate;
 class TabContentsTestHarness;
-class TabSpecificContentSettings;
 class TabStripModel;
 class TabStripModelContentsCreator;
 class ThumbnailGenerator;
@@ -185,10 +184,6 @@ class TabContents : public content::WebContentsObserver {
     return synced_tab_delegate_.get();
   }
 
-  TabSpecificContentSettings* content_settings() {
-    return content_settings_.get();
-  }
-
   // NOTE: This returns NULL unless in-browser thumbnail generation is enabled.
   ThumbnailGenerator* thumbnail_generator() {
     return thumbnail_generator_.get();
@@ -237,10 +232,6 @@ class TabContents : public content::WebContentsObserver {
   scoped_ptr<prerender::PrerenderTabHelper> prerender_tab_helper_;
 
   scoped_ptr<browser_sync::SyncedTabDelegate> synced_tab_delegate_;
-
-  // The TabSpecificContentSettings object is used to query the blocked content
-  // state by various UI elements.
-  scoped_ptr<TabSpecificContentSettings> content_settings_;
 
   scoped_ptr<ThumbnailGenerator> thumbnail_generator_;
   scoped_ptr<TranslateTabHelper> translate_tab_helper_;

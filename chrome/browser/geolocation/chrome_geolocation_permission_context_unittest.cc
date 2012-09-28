@@ -223,7 +223,7 @@ void GeolocationPermissionContextTests::CheckTabContentsState(
     const GURL& requesting_frame,
     ContentSetting expected_content_setting) {
   TabSpecificContentSettings* content_settings =
-      tab_contents()->content_settings();
+      TabSpecificContentSettings::FromWebContents(web_contents());
   const GeolocationSettingsState::StateMap& state_map =
       content_settings->geolocation_settings_state().state_map();
   EXPECT_EQ(1U, state_map.count(requesting_frame.GetOrigin()));

@@ -129,7 +129,6 @@ TabContents::TabContents(WebContents* contents)
   BookmarkTabHelper::CreateForWebContents(contents);
   chrome_browser_net::LoadTimeStatsTabHelper::CreateForWebContents(contents);
   constrained_window_tab_helper_.reset(new ConstrainedWindowTabHelper(this));
-  content_settings_.reset(new TabSpecificContentSettings(contents));
   CoreTabHelper::CreateForWebContents(contents);
   extensions::TabHelper::CreateForWebContents(contents);
   extensions::WebNavigationTabObserver::CreateForWebContents(contents);
@@ -153,6 +152,7 @@ TabContents::TabContents(WebContents* contents)
   SnapshotTabHelper::CreateForWebContents(contents);
   SSLTabHelper::CreateForWebContents(contents);
   synced_tab_delegate_.reset(new TabContentsSyncedTabDelegate(this));
+  TabSpecificContentSettings::CreateForWebContents(contents);
   translate_tab_helper_.reset(new TranslateTabHelper(contents));
   ZoomController::CreateForWebContents(contents);
 

@@ -195,7 +195,7 @@ CollectedCookiesViews::CollectedCookiesViews(TabContents* tab_contents)
       infobar_(NULL),
       status_changed_(false) {
   TabSpecificContentSettings* content_settings =
-      tab_contents->content_settings();
+      TabSpecificContentSettings::FromWebContents(tab_contents->web_contents());
   registrar_.Add(this, chrome::NOTIFICATION_COLLECTED_COOKIES_SHOWN,
                  content::Source<TabSpecificContentSettings>(content_settings));
   window_ = new ConstrainedWindowViews(tab_contents, this);
@@ -335,7 +335,8 @@ void CollectedCookiesViews::Init() {
 
 views::View* CollectedCookiesViews::CreateAllowedPane() {
   TabSpecificContentSettings* content_settings =
-      tab_contents_->content_settings();
+      TabSpecificContentSettings::FromWebContents(
+          tab_contents_->web_contents());
 
   // Create the controls that go into the pane.
   allowed_label_ = new views::Label(l10n_util::GetStringUTF16(
@@ -387,7 +388,8 @@ views::View* CollectedCookiesViews::CreateAllowedPane() {
 
 views::View* CollectedCookiesViews::CreateBlockedPane() {
   TabSpecificContentSettings* content_settings =
-      tab_contents_->content_settings();
+      TabSpecificContentSettings::FromWebContents(
+          tab_contents_->web_contents());
 
   PrefService* prefs = tab_contents_->profile()->GetPrefs();
 

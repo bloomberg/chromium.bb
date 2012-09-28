@@ -31,7 +31,8 @@ class ContentSettingImageModelTest : public TabContentsTestHarness {
 
 TEST_F(ContentSettingImageModelTest, UpdateFromWebContents) {
   TabSpecificContentSettings* content_settings =
-      tab_contents()->content_settings();
+      TabSpecificContentSettings::FromWebContents(
+          tab_contents()->web_contents());
   scoped_ptr<ContentSettingImageModel> content_setting_image_model(
      ContentSettingImageModel::CreateContentSettingImageModel(
          CONTENT_SETTINGS_TYPE_IMAGES));
@@ -56,7 +57,8 @@ TEST_F(ContentSettingImageModelTest, RPHUpdateFromWebContents) {
   EXPECT_FALSE(content_setting_image_model->is_visible());
 
   TabSpecificContentSettings* content_settings =
-      tab_contents()->content_settings();
+      TabSpecificContentSettings::FromWebContents(
+          tab_contents()->web_contents());
   content_settings->set_pending_protocol_handler(
       ProtocolHandler::CreateProtocolHandler(
           "mailto", GURL("http://www.google.com/"), ASCIIToUTF16("Handler")));
@@ -66,7 +68,8 @@ TEST_F(ContentSettingImageModelTest, RPHUpdateFromWebContents) {
 
 TEST_F(ContentSettingImageModelTest, CookieAccessed) {
   TabSpecificContentSettings* content_settings =
-      tab_contents()->content_settings();
+      TabSpecificContentSettings::FromWebContents(
+          tab_contents()->web_contents());
   profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_COOKIES, CONTENT_SETTING_BLOCK);
   scoped_ptr<ContentSettingImageModel> content_setting_image_model(

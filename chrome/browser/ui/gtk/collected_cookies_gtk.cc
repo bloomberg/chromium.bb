@@ -110,9 +110,10 @@ CollectedCookiesGtk::CollectedCookiesGtk(GtkWindow* parent,
                                          TabContents* tab_contents)
     : tab_contents_(tab_contents),
       status_changed_(false) {
+  TabSpecificContentSettings* content_settings =
+      TabSpecificContentSettings::FromWebContents(tab_contents->web_contents());
   registrar_.Add(this, chrome::NOTIFICATION_COLLECTED_COOKIES_SHOWN,
-                 content::Source<TabSpecificContentSettings>(
-                     tab_contents->content_settings()));
+                 content::Source<TabSpecificContentSettings>(content_settings));
 
   Init();
 }
@@ -211,7 +212,8 @@ GtkWidget* CollectedCookiesGtk::CreateAllowedPane() {
   gtk_box_pack_start(GTK_BOX(cookie_list_vbox), scroll_window, TRUE, TRUE, 0);
 
   TabSpecificContentSettings* content_settings =
-      tab_contents_->content_settings();
+      TabSpecificContentSettings::FromWebContents(
+          tab_contents_->web_contents());
 
   const LocalSharedObjectsContainer& allowed_data =
       content_settings->allowed_local_shared_objects();
@@ -291,7 +293,8 @@ GtkWidget* CollectedCookiesGtk::CreateBlockedPane() {
   gtk_box_pack_start(GTK_BOX(cookie_list_vbox), scroll_window, TRUE, TRUE, 0);
 
   TabSpecificContentSettings* content_settings =
-      tab_contents_->content_settings();
+      TabSpecificContentSettings::FromWebContents(
+          tab_contents_->web_contents());
 
   const LocalSharedObjectsContainer& blocked_data =
       content_settings->blocked_local_shared_objects();

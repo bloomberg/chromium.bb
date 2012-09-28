@@ -1169,9 +1169,10 @@ void DomOperationObserver::Observe(
     DCHECK_EQ(chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED, type);
     WebContents* web_contents = content::Source<WebContents>(source).ptr();
     if (web_contents) {
-      TabContents* tab_contents = TabContents::FromWebContents(web_contents);
-      if (tab_contents && tab_contents->content_settings() &&
-          tab_contents->content_settings()->IsContentBlocked(
+      TabSpecificContentSettings* tab_content_settings =
+          TabSpecificContentSettings::FromWebContents(web_contents);
+      if (tab_content_settings &&
+          tab_content_settings->IsContentBlocked(
               CONTENT_SETTINGS_TYPE_JAVASCRIPT))
         OnJavascriptBlocked();
     }

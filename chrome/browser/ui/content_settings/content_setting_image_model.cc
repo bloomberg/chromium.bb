@@ -108,7 +108,7 @@ void ContentSettingBlockedImageModel::UpdateFromWebContents(
   // accessed icon.
   TabContents* tab_contents = TabContents::FromWebContents(web_contents);
   TabSpecificContentSettings* content_settings =
-      tab_contents->content_settings();
+      TabSpecificContentSettings::FromWebContents(web_contents);
   if (!content_settings->IsContentBlocked(get_content_settings_type())) {
     if (!content_settings->IsContentAccessed(get_content_settings_type()) ||
         (tab_contents->profile()->GetHostContentSettingsMap()->
@@ -143,7 +143,7 @@ void ContentSettingGeolocationImageModel::UpdateFromWebContents(
   if (!web_contents)
     return;
   TabSpecificContentSettings* content_settings =
-      TabContents::FromWebContents(web_contents)->content_settings();
+      TabSpecificContentSettings::FromWebContents(web_contents);
   const GeolocationSettingsState& settings_state = content_settings->
       geolocation_settings_state();
   if (settings_state.state_map().empty())
@@ -176,7 +176,7 @@ void ContentSettingRPHImageModel::UpdateFromWebContents(
     return;
 
   TabSpecificContentSettings* content_settings =
-      TabContents::FromWebContents(web_contents)->content_settings();
+      TabSpecificContentSettings::FromWebContents(web_contents);
   if (content_settings->pending_protocol_handler().IsEmpty())
     return;
 

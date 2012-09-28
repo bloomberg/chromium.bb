@@ -109,7 +109,7 @@ CollectedCookiesMac::CollectedCookiesMac(NSWindow* parent,
             initWithCollectedCookiesMac:this] autorelease],
         @selector(sheetDidEnd:returnCode:contextInfo:)) {
   TabSpecificContentSettings* content_settings =
-      tab_contents->content_settings();
+      TabSpecificContentSettings::FromWebContents(tab_contents->web_contents());
   registrar_.Add(this, chrome::NOTIFICATION_COLLECTED_COOKIES_SHOWN,
                  content::Source<TabSpecificContentSettings>(content_settings));
 
@@ -381,7 +381,8 @@ void CollectedCookiesMac::OnSheetDidEnd(NSWindow* sheet) {
 // the |cocoaAllowedTreeModel_| and |cocoaBlockedTreeModel_|.
 - (void)loadTreeModelFromTabContents {
   TabSpecificContentSettings* content_settings =
-      tab_contents_->content_settings();
+      TabSpecificContentSettings::FromWebContents(
+          tab_contents_->web_contents());
 
   const LocalSharedObjectsContainer& allowed_data =
       content_settings->allowed_local_shared_objects();

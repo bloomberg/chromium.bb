@@ -71,7 +71,8 @@ class ContentSettingBubbleModelTest : public TabContentsTestHarness {
 
 TEST_F(ContentSettingBubbleModelTest, ImageRadios) {
   TabSpecificContentSettings* content_settings =
-      tab_contents()->content_settings();
+      TabSpecificContentSettings::FromWebContents(
+          tab_contents()->web_contents());
   content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES,
                                      std::string());
 
@@ -89,7 +90,8 @@ TEST_F(ContentSettingBubbleModelTest, ImageRadios) {
 
 TEST_F(ContentSettingBubbleModelTest, Cookies) {
   TabSpecificContentSettings* content_settings =
-      tab_contents()->content_settings();
+      TabSpecificContentSettings::FromWebContents(
+          tab_contents()->web_contents());
   content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES,
                                      std::string());
 
@@ -107,7 +109,8 @@ TEST_F(ContentSettingBubbleModelTest, Cookies) {
 
 TEST_F(ContentSettingBubbleModelTest, Plugins) {
   TabSpecificContentSettings* content_settings =
-      tab_contents()->content_settings();
+      TabSpecificContentSettings::FromWebContents(
+          tab_contents()->web_contents());
   content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_PLUGINS,
                                      std::string());
 
@@ -150,7 +153,8 @@ TEST_F(ContentSettingBubbleModelTest, MultiplePlugins) {
                           CONTENT_SETTING_ASK);
 
   TabSpecificContentSettings* content_settings =
-      tab_contents()->content_settings();
+      TabSpecificContentSettings::FromWebContents(
+          tab_contents()->web_contents());
   content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_PLUGINS,
                                      fooPlugin);
   content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_PLUGINS,
@@ -198,7 +202,8 @@ TEST_F(ContentSettingBubbleModelTest, Geolocation) {
 
   NavigateAndCommit(page_url);
   TabSpecificContentSettings* content_settings =
-      tab_contents()->content_settings();
+      TabSpecificContentSettings::FromWebContents(
+          tab_contents()->web_contents());
 
   // One permitted frame, but not in the content map: requires reload.
   content_settings->OnGeolocationPermissionSet(frame1_url, true);
@@ -246,7 +251,8 @@ TEST_F(ContentSettingBubbleModelTest, RegisterProtocolHandler) {
   const GURL page_url("http://toplevel.example/");
   NavigateAndCommit(page_url);
   TabSpecificContentSettings* content_settings =
-      tab_contents()->content_settings();
+      TabSpecificContentSettings::FromWebContents(
+          tab_contents()->web_contents());
   content_settings->set_pending_protocol_handler(
       ProtocolHandler::CreateProtocolHandler("mailto",
           GURL("http://www.toplevel.example/"), ASCIIToUTF16("Handler")));
@@ -302,7 +308,8 @@ TEST_F(ContentSettingBubbleModelTest, RPHAllow) {
   const GURL page_url("http://toplevel.example/");
   NavigateAndCommit(page_url);
   TabSpecificContentSettings* content_settings =
-      tab_contents()->content_settings();
+      TabSpecificContentSettings::FromWebContents(
+          tab_contents()->web_contents());
   ProtocolHandler test_handler = ProtocolHandler::CreateProtocolHandler(
       "mailto", GURL("http://www.toplevel.example/"),
       ASCIIToUTF16("Handler"));

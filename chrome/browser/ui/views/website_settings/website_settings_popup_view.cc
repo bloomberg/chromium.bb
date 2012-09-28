@@ -343,8 +343,10 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
   this->Show();
   SizeToContents();
 
+  TabSpecificContentSettings* content_settings =
+      TabSpecificContentSettings::FromWebContents(tab_contents->web_contents());
   presenter_.reset(new WebsiteSettings(this, profile,
-                                       tab_contents->content_settings(),
+                                       content_settings,
                                        tab_contents->infobar_tab_helper(),
                                        url,
                                        ssl,

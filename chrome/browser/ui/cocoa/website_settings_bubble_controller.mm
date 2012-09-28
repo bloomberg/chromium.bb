@@ -1156,7 +1156,8 @@ void WebsiteSettingsUIBridge::Show(gfx::NativeWindow parent,
     WebsiteSettings* presenter = new WebsiteSettings(
         bridge,
         profile,
-        tab_contents->content_settings(),
+        TabSpecificContentSettings::FromWebContents(
+            tab_contents->web_contents()),
         tab_contents->infobar_tab_helper(),
         url,
         ssl,

@@ -416,7 +416,8 @@ void InstantLoader::SetupPreviewContents() {
       SetAllContentsBlocked(true);
   preview_contents_->constrained_window_tab_helper()->
       set_delegate(new_delegate);
-  preview_contents_->content_settings()->SetPopupsBlocked(true);
+  TabSpecificContentSettings::FromWebContents(new_contents)->
+      SetPopupsBlocked(true);
   CoreTabHelper::FromWebContents(new_contents)->set_delegate(new_delegate);
   if (ThumbnailGenerator* tg = preview_contents_->thumbnail_generator())
     tg->set_enabled(false);
@@ -442,7 +443,8 @@ void InstantLoader::CleanupPreviewContents() {
   BlockedContentTabHelper::FromWebContents(old_contents)->
       SetAllContentsBlocked(false);
   preview_contents_->constrained_window_tab_helper()->set_delegate(NULL);
-  preview_contents_->content_settings()->SetPopupsBlocked(false);
+  TabSpecificContentSettings::FromWebContents(old_contents)->
+      SetPopupsBlocked(false);
   CoreTabHelper::FromWebContents(old_contents)->set_delegate(NULL);
   if (ThumbnailGenerator* tg = preview_contents_->thumbnail_generator())
     tg->set_enabled(true);

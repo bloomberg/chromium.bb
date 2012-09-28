@@ -233,12 +233,12 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest, RedirectLoopCookies) {
 
   ui_test_utils::NavigateToURL(browser(), test_url);
 
-  TabContents* tab_contents = chrome::GetActiveTabContents(browser());
+  content::WebContents* web_contents = chrome::GetActiveWebContents(browser());
   ASSERT_EQ(UTF8ToUTF16(test_url.spec() + " failed to load"),
-            tab_contents->web_contents()->GetTitle());
+            web_contents->GetTitle());
 
-  EXPECT_TRUE(tab_contents->content_settings()->IsContentBlocked(
-      CONTENT_SETTINGS_TYPE_COOKIES));
+  EXPECT_TRUE(TabSpecificContentSettings::FromWebContents(web_contents)->
+      IsContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES));
 }
 
 IN_PROC_BROWSER_TEST_F(ContentSettingsTest, ContentSettingsBlockDataURLs) {
@@ -249,11 +249,11 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest, ContentSettingsBlockDataURLs) {
 
   ui_test_utils::NavigateToURL(browser(), url);
 
-  TabContents* tab_contents = chrome::GetActiveTabContents(browser());
-  ASSERT_EQ(UTF8ToUTF16("Data URL"), tab_contents->web_contents()->GetTitle());
+  content::WebContents* web_contents = chrome::GetActiveWebContents(browser());
+  ASSERT_EQ(UTF8ToUTF16("Data URL"), web_contents->GetTitle());
 
-  EXPECT_TRUE(tab_contents->content_settings()->IsContentBlocked(
-      CONTENT_SETTINGS_TYPE_JAVASCRIPT));
+  EXPECT_TRUE(TabSpecificContentSettings::FromWebContents(web_contents)->
+      IsContentBlocked(CONTENT_SETTINGS_TYPE_JAVASCRIPT));
 }
 
 // Tests that if redirect across origins occurs, the new process still gets the
@@ -274,10 +274,10 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest, RedirectCrossOrigin) {
 
   ui_test_utils::NavigateToURL(browser(), test_url);
 
-  TabContents* tab_contents = chrome::GetActiveTabContents(browser());
+  content::WebContents* web_contents = chrome::GetActiveWebContents(browser());
 
-  EXPECT_TRUE(tab_contents->content_settings()->IsContentBlocked(
-      CONTENT_SETTINGS_TYPE_COOKIES));
+  EXPECT_TRUE(TabSpecificContentSettings::FromWebContents(web_contents)->
+      IsContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES));
 }
 
 #if !defined(USE_AURA)  // No NPAPI plugins with Aura.

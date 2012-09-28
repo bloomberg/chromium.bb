@@ -199,7 +199,7 @@ bool ContentSettingDecoration::UpdateFromWebContents(
 
     // Check if the animation has already run.
     TabSpecificContentSettings* content_settings =
-        TabContents::FromWebContents(web_contents)->content_settings();
+        TabSpecificContentSettings::FromWebContents(web_contents);
     ContentSettingsType content_type =
         content_setting_image_model_->get_content_settings_type();
     bool ran_animation = content_settings->IsBlockageIndicated(content_type);

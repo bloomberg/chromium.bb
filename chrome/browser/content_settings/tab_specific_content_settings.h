@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "chrome/browser/common/web_contents_user_data.h"
 #include "chrome/browser/content_settings/local_shared_objects_container.h"
 #include "chrome/browser/geolocation/geolocation_settings_state.h"
 #include "chrome/common/content_settings.h"
@@ -33,8 +34,10 @@ namespace net {
 class CookieOptions;
 }
 
-class TabSpecificContentSettings : public content::WebContentsObserver,
-                                   public content::NotificationObserver {
+class TabSpecificContentSettings
+    : public content::WebContentsObserver,
+      public content::NotificationObserver,
+      public WebContentsUserData<TabSpecificContentSettings> {
  public:
   // Classes that want to be notified about site data events must implement
   // this abstract class and add themselves as observer to the
@@ -61,8 +64,6 @@ class TabSpecificContentSettings : public content::WebContentsObserver,
 
     DISALLOW_COPY_AND_ASSIGN(SiteDataObserver);
   };
-
-  explicit TabSpecificContentSettings(content::WebContents* tab);
 
   virtual ~TabSpecificContentSettings();
 
@@ -279,6 +280,9 @@ class TabSpecificContentSettings : public content::WebContentsObserver,
   void RemoveSiteDataObserver(SiteDataObserver* observer);
 
  private:
+  explicit TabSpecificContentSettings(content::WebContents* tab);
+  friend class WebContentsUserData<TabSpecificContentSettings>;
+
   void AddBlockedResource(ContentSettingsType content_type,
                           const std::string& resource_identifier);
 

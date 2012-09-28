@@ -245,7 +245,7 @@ void ContentSettingImageViewGtk::Update(
     return;
 
   TabSpecificContentSettings* content_settings =
-      tab_contents->content_settings();
+      TabSpecificContentSettings::FromWebContents(tab_contents->web_contents());
   if (!content_settings || content_settings->IsBlockageIndicated(
       content_setting_image_model_->get_content_settings_type()))
     return;

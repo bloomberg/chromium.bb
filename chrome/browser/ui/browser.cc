@@ -877,15 +877,15 @@ void Browser::RegisterProtocolHandlerHelper(WebContents* web_contents,
 
   ProtocolHandlerRegistry* registry =
       tab_contents->profile()->GetProtocolHandlerRegistry();
-  TabSpecificContentSettings* content_settings =
-      tab_contents->content_settings();
+  TabSpecificContentSettings* tab_content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents);
 
   if (registry->SilentlyHandleRegisterHandlerRequest(handler))
     return;
 
   if (!user_gesture && window) {
-    content_settings->set_pending_protocol_handler(handler);
-    content_settings->set_previous_protocol_handler(
+    tab_content_settings->set_pending_protocol_handler(handler);
+    tab_content_settings->set_previous_protocol_handler(
         registry->GetHandlerFor(handler.protocol()));
     window->GetLocationBar()->UpdateContentSettingsIcons();
     return;
@@ -894,7 +894,7 @@ void Browser::RegisterProtocolHandlerHelper(WebContents* web_contents,
   // Make sure content-setting icon is turned off in case the page does
   // ungestured and gestured RPH calls.
   if (window) {
-    content_settings->ClearPendingProtocolHandler();
+    tab_content_settings->ClearPendingProtocolHandler();
     window->GetLocationBar()->UpdateContentSettingsIcons();
   }
 

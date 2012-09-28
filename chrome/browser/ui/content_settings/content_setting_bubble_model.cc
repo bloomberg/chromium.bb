@@ -72,7 +72,9 @@ ContentSettingTitleAndLinkModel::ContentSettingTitleAndLinkModel(
 }
 
 void ContentSettingTitleAndLinkModel::SetBlockedResources() {
-  TabSpecificContentSettings* settings = tab_contents()->content_settings();
+  TabSpecificContentSettings* settings =
+      TabSpecificContentSettings::FromWebContents(
+          tab_contents()->web_contents());
   const std::set<std::string>& resources = settings->BlockedResourcesForType(
       content_type());
   for (std::set<std::string>::const_iterator it = resources.begin();
@@ -101,9 +103,11 @@ void ContentSettingTitleAndLinkModel::SetTitle() {
   };
   const ContentSettingsTypeIdEntry *title_ids = kBlockedTitleIDs;
   size_t num_title_ids = arraysize(kBlockedTitleIDs);
-  if (tab_contents() && tab_contents()->content_settings()->
-      IsContentAccessed(content_type()) &&
-      !tab_contents()->content_settings()->IsContentBlocked(content_type())) {
+  if (tab_contents() &&
+      TabSpecificContentSettings::FromWebContents(
+          tab_contents()->web_contents())->IsContentAccessed(content_type()) &&
+      !TabSpecificContentSettings::FromWebContents(
+          tab_contents()->web_contents())->IsContentBlocked(content_type())) {
     title_ids = kAccessedTitleIDs;
     num_title_ids = arraysize(kAccessedTitleIDs);
   } else if (!bubble_content().resource_identifiers.empty()) {
@@ -389,7 +393,8 @@ void ContentSettingCookiesBubbleModel::OnCustomLinkClicked() {
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_COLLECTED_COOKIES_SHOWN,
       content::Source<TabSpecificContentSettings>(
-          tab_contents()->content_settings()),
+          TabSpecificContentSettings::FromWebContents(
+              tab_contents()->web_contents())),
       content::NotificationService::NoDetails());
   delegate()->ShowCollectedCookiesDialog(tab_contents());
 }
@@ -415,8 +420,10 @@ ContentSettingPluginBubbleModel::ContentSettingPluginBubbleModel(
     : ContentSettingSingleRadioGroup(
           delegate, tab_contents, profile, content_type) {
   DCHECK_EQ(content_type, CONTENT_SETTINGS_TYPE_PLUGINS);
-  set_custom_link_enabled(tab_contents && tab_contents->content_settings()->
-      load_plugins_link_enabled());
+  set_custom_link_enabled(tab_contents &&
+                          TabSpecificContentSettings::FromWebContents(
+                              tab_contents->web_contents())->
+                                  load_plugins_link_enabled());
 }
 
 void ContentSettingPluginBubbleModel::OnCustomLinkClicked() {
@@ -428,7 +435,8 @@ void ContentSettingPluginBubbleModel::OnCustomLinkClicked() {
   host->Send(new ChromeViewMsg_LoadBlockedPlugins(host->GetRoutingID(),
                                                   std::string()));
   set_custom_link_enabled(false);
-  tab_contents()->content_settings()->set_load_plugins_link_enabled(false);
+  TabSpecificContentSettings::FromWebContents(tab_contents()->web_contents())->
+      set_load_plugins_link_enabled(false);
 }
 
 class ContentSettingPopupBubbleModel : public ContentSettingSingleRadioGroup {
@@ -524,7 +532,8 @@ void ContentSettingDomainListBubbleModel::MaybeAddDomainList(
 
 void ContentSettingDomainListBubbleModel::SetDomainsAndCustomLink() {
   TabSpecificContentSettings* content_settings =
-      tab_contents()->content_settings();
+      TabSpecificContentSettings::FromWebContents(
+          tab_contents()->web_contents());
   const GeolocationSettingsState& settings =
       content_settings->geolocation_settings_state();
   GeolocationSettingsState::FormattedHostsPerState formatted_hosts_per_state;
@@ -556,7 +565,8 @@ void ContentSettingDomainListBubbleModel::OnCustomLinkClicked() {
   // origins currently on the page.
   const GURL& embedder_url = tab_contents()->web_contents()->GetURL();
   TabSpecificContentSettings* content_settings =
-      tab_contents()->content_settings();
+      TabSpecificContentSettings::FromWebContents(
+          tab_contents()->web_contents());
   const GeolocationSettingsState::StateMap& state_map =
       content_settings->geolocation_settings_state().state_map();
   HostContentSettingsMap* settings_map =
@@ -623,7 +633,7 @@ ContentSettingRPHBubbleModel::ContentSettingRPHBubbleModel(
   DCHECK_EQ(CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS, content_type);
 
   TabSpecificContentSettings* content_settings =
-      tab_contents->content_settings();
+      TabSpecificContentSettings::FromWebContents(tab_contents->web_contents());
   pending_handler_ = content_settings->pending_protocol_handler();
   previous_handler_ = content_settings->previous_protocol_handler();
 
@@ -698,7 +708,8 @@ void ContentSettingRPHBubbleModel::OnRadioClicked(int radio_index) {
 void ContentSettingRPHBubbleModel::OnDoneClicked() {
   // The user has one chance to deal with the RPH content setting UI,
   // then we remove it.
-  tab_contents()->content_settings()->ClearPendingProtocolHandler();
+  TabSpecificContentSettings::FromWebContents(tab_contents()->web_contents())->
+      ClearPendingProtocolHandler();
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
       content::Source<WebContents>(tab_contents()->web_contents()),
@@ -711,21 +722,21 @@ void ContentSettingRPHBubbleModel::RegisterProtocolHandler() {
   registry_->RemoveIgnoredHandler(pending_handler_);
 
   registry_->OnAcceptRegisterProtocolHandler(pending_handler_);
-  tab_contents()->content_settings()->set_pending_protocol_handler_setting(
-      CONTENT_SETTING_ALLOW);
+  TabSpecificContentSettings::FromWebContents(tab_contents()->web_contents())->
+      set_pending_protocol_handler_setting(CONTENT_SETTING_ALLOW);
 }
 
 void ContentSettingRPHBubbleModel::UnregisterProtocolHandler() {
   registry_->OnDenyRegisterProtocolHandler(pending_handler_);
-  tab_contents()->content_settings()->set_pending_protocol_handler_setting(
-      CONTENT_SETTING_BLOCK);
+  TabSpecificContentSettings::FromWebContents(tab_contents()->web_contents())->
+      set_pending_protocol_handler_setting(CONTENT_SETTING_BLOCK);
   ClearOrSetPreviousHandler();
 }
 
 void ContentSettingRPHBubbleModel::IgnoreProtocolHandler() {
   registry_->OnIgnoreRegisterProtocolHandler(pending_handler_);
-  tab_contents()->content_settings()->set_pending_protocol_handler_setting(
-      CONTENT_SETTING_DEFAULT);
+  TabSpecificContentSettings::FromWebContents(tab_contents()->web_contents())->
+      set_pending_protocol_handler_setting(CONTENT_SETTING_DEFAULT);
   ClearOrSetPreviousHandler();
 }
 

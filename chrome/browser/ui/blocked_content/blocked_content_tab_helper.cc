@@ -53,8 +53,8 @@ void BlockedContentTabHelper::DidNavigateMainFrame(
 void BlockedContentTabHelper::PopupNotificationVisibilityChanged(
     bool visible) {
   if (!web_contents()->IsBeingDestroyed()) {
-    TabContents* tab_contents = TabContents::FromWebContents(web_contents());
-    tab_contents->content_settings()->SetPopupsBlocked(visible);
+    TabSpecificContentSettings::FromWebContents(web_contents())->
+        SetPopupsBlocked(visible);
   }
 }
 
@@ -132,9 +132,8 @@ void BlockedContentTabHelper::AddPopup(content::WebContents* new_contents,
                                       disposition,
                                       initial_pos,
                                       true);  // user_gesture
-    TabContents* tab_contents = TabContents::FromWebContents(web_contents());
-    tab_contents->content_settings()->OnContentBlocked(
-          CONTENT_SETTINGS_TYPE_POPUPS, std::string());
+    TabSpecificContentSettings::FromWebContents(web_contents())->
+        OnContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS, std::string());
   }
 }
 
