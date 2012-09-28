@@ -644,6 +644,15 @@ class ClassDecoder {
                                     Register r,
                                     uint32_t mask) const;
 
+  // Returns true only if the given thread register (r9) is used in one of
+  // the following forms:
+  //    ldr Rn, [r9]     ; load use thread pointer.
+  //    ldr Rn, [r9, #4] ; load IRT thread pointer.
+  // That is, accesses one of the two legal thread pointers.
+  //
+  // The default virtual returns false.
+  virtual bool is_load_thread_address_pointer(Instruction i) const;
+
   // Returns the sentinel version of the instruction for dynamic code
   // replacement. In dynamic code replacement, only certain immediate
   // constants for specialized instructions may be modified by a dynamic

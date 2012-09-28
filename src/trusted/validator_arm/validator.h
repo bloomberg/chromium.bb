@@ -62,7 +62,7 @@ class Bundle {
 //   data_region_bits - number of bytes in the data region, starting at address
 //       0 and including the code region.  Must be a power of two.
 //   read_only_registers - registers that untrusted code must not alter (but may
-//       read).  This currently applies to r9, where we store some thread state.
+//       read). This currently applies to r9, where we store some thread state.
 //   data_address_registers - registers that must contain a valid data-region
 //       address at all times.  This currently applies to the stack pointer, but
 //       could be extended to include a frame pointer for C-like languages.
@@ -335,6 +335,10 @@ class DecodedInstruction {
 
   nacl_arm_dec::RegisterList immediate_addressing_defs() const {
     return decoder_->immediate_addressing_defs(inst_);
+  }
+
+  bool is_load_thread_address_pointer() const {
+    return decoder_->is_load_thread_address_pointer(inst_);
   }
 
   // Some convenience methods, defined in terms of ClassDecoder:

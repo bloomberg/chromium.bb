@@ -831,8 +831,8 @@ class InstructionBarrier_Isb_Rule_49_A1_P102
     : public InstructionBarrier {
 };
 
-class Load2RegisterImm12Op_Ldr_Rule_58_A1_P120
-    : public Load2RegisterImm12Op {
+class LdrImmediateOp_Ldr_Rule_58_A1_P120
+    : public LdrImmediateOp {
 };
 
 class Load2RegisterImm12Op_Ldr_Rule_59_A1_P122
@@ -2081,10 +2081,6 @@ class Forbidden_Wfi_Rule_412_A1_P810
 
 class Forbidden_extra_load_store_instructions_unpriviledged
     : public Forbidden {
-};
-
-class LoadBasedImmedMemory_Ldr_Rule_58_A1_P120
-    : public LoadBasedImmedMemory {
 };
 
 class LoadBasedImmedMemory_Ldr_Rule_59_A1_P122
@@ -4774,16 +4770,16 @@ class NamedInstructionBarrier_Isb_Rule_49_A1_P102
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedInstructionBarrier_Isb_Rule_49_A1_P102);
 };
 
-class NamedLoad2RegisterImm12Op_Ldr_Rule_58_A1_P120
+class NamedLdrImmediateOp_Ldr_Rule_58_A1_P120
     : public NamedClassDecoder {
  public:
-  NamedLoad2RegisterImm12Op_Ldr_Rule_58_A1_P120()
-    : NamedClassDecoder(decoder_, "Load2RegisterImm12Op Ldr_Rule_58_A1_P120")
+  NamedLdrImmediateOp_Ldr_Rule_58_A1_P120()
+    : NamedClassDecoder(decoder_, "LdrImmediateOp Ldr_Rule_58_A1_P120")
   {}
 
  private:
-  nacl_arm_dec::Load2RegisterImm12Op_Ldr_Rule_58_A1_P120 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoad2RegisterImm12Op_Ldr_Rule_58_A1_P120);
+  nacl_arm_dec::LdrImmediateOp_Ldr_Rule_58_A1_P120 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLdrImmediateOp_Ldr_Rule_58_A1_P120);
 };
 
 class NamedLoad2RegisterImm12Op_Ldr_Rule_59_A1_P122
@@ -8528,18 +8524,6 @@ class NamedForbidden_extra_load_store_instructions_unpriviledged
  private:
   nacl_arm_dec::Forbidden_extra_load_store_instructions_unpriviledged decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedForbidden_extra_load_store_instructions_unpriviledged);
-};
-
-class NamedLoadBasedImmedMemory_Ldr_Rule_58_A1_P120
-    : public NamedClassDecoder {
- public:
-  NamedLoadBasedImmedMemory_Ldr_Rule_58_A1_P120()
-    : NamedClassDecoder(decoder_, "LoadBasedImmedMemory Ldr_Rule_58_A1_P120")
-  {}
-
- private:
-  nacl_arm_dec::LoadBasedImmedMemory_Ldr_Rule_58_A1_P120 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadBasedImmedMemory_Ldr_Rule_58_A1_P120);
 };
 
 class NamedLoadBasedImmedMemory_Ldr_Rule_59_A1_P122

@@ -560,6 +560,23 @@ bool Load2RegisterImm12Op::is_literal_load(Instruction i) const {
   return base_address_register(i).Equals(kRegisterPc);
 }
 
+// LdrImmediateOp:
+// Test if of the form:
+//    ldr Rn, [thread_reg]     ; load use thread pointer.
+//    ldr Rn, [thread_reg, #4] ; load IRT thread pointer.
+bool LdrImmediateOp::is_load_thread_address_pointer(Instruction i) const {
+  // Must be based on thread register (r9).
+  if (n.number(i) != Register::kTp) return false;
+
+  // The instruction must be a load+offset instruction.
+  if (indexing.IsPostIndexing(i) || writes.IsDefined(i) ||
+      direction.IsAdd(i)) return false;
+
+  // The immediate value must be in { 0 , 4 }.
+  uint32_t imm_value = imm12.value(i);
+  return imm_value == 0 || imm_value == 4;
+}
+
 // Store2RegisterImm12Op
 RegisterList Store2RegisterImm12Op::defs(Instruction i) const {
   return immediate_addressing_defs(i);

@@ -36,6 +36,7 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , DuplicateToAdvSIMDRegisters_instance_()
   , Forbidden_instance_()
   , InstructionBarrier_instance_()
+  , LdrImmediateOp_instance_()
   , LoadBasedImmedMemory_instance_()
   , LoadBasedImmedMemoryDouble_instance_()
   , LoadBasedMemory_instance_()
@@ -611,7 +612,7 @@ const ClassDecoder& Arm32DecoderState::decode_load_store_word_and_unsigned_byte(
       (inst.Bits() & 0x00500000) == 0x00100000 /* op1(24:20)=xx0x1 */ &&
       (inst.Bits() & 0x000F0000) != 0x000F0000 /* Rn(19:16)=~1111 */ &&
       (inst.Bits() & 0x01700000) != 0x00300000 /* op1_repeated(24:20)=~0x011 */) {
-    return LoadBasedImmedMemory_instance_;
+    return LdrImmediateOp_instance_;
   }
 
   if ((inst.Bits() & 0x02000000) == 0x00000000 /* A(25)=0 */ &&

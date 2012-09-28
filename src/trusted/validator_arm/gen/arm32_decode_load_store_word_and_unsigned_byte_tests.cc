@@ -152,18 +152,16 @@ bool UnsafeCondDecoderTesterCase3
 
 // Neutral case:
 // inst(25)=0 & inst(24:20)=xx0x1 & inst(19:16)=~1111 & inst(24:20)=~0x011
-//    = Load2RegisterImm12Op {'constraints': ,
-//     'safety': ["'NotRnIsPc'"]}
+//    = LdrImmediateOp {'constraints': }
 //
 // Representaive case:
 // A(25)=0 & op1(24:20)=xx0x1 & Rn(19:16)=~1111 & op1_repeated(24:20)=~0x011
-//    = Load2RegisterImm12Op {constraints: ,
-//     safety: ['NotRnIsPc']}
+//    = LdrImmediateOp {constraints: }
 class LoadStore2RegisterImm12OpTesterCase4
-    : public LoadStore2RegisterImm12OpTesterNotRnIsPc {
+    : public LoadStore2RegisterImm12OpTester {
  public:
   LoadStore2RegisterImm12OpTesterCase4(const NamedClassDecoder& decoder)
-    : LoadStore2RegisterImm12OpTesterNotRnIsPc(decoder) {}
+    : LoadStore2RegisterImm12OpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
@@ -181,7 +179,7 @@ bool LoadStore2RegisterImm12OpTesterCase4
   if ((inst.Bits() & 0x01700000) == 0x00300000 /* op1_repeated(24:20)=0x011 */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return LoadStore2RegisterImm12OpTesterNotRnIsPc::
+  return LoadStore2RegisterImm12OpTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -659,21 +657,19 @@ class ForbiddenCondDecoderTester_Case3
 
 // Neutral case:
 // inst(25)=0 & inst(24:20)=xx0x1 & inst(19:16)=~1111 & inst(24:20)=~0x011
-//    = Load2RegisterImm12Op {'constraints': ,
-//     'rule': 'Ldr_Rule_58_A1_P120',
-//     'safety': ["'NotRnIsPc'"]}
+//    = LdrImmediateOp {'constraints': ,
+//     'rule': 'Ldr_Rule_58_A1_P120'}
 //
 // Representative case:
 // A(25)=0 & op1(24:20)=xx0x1 & Rn(19:16)=~1111 & op1_repeated(24:20)=~0x011
-//    = Load2RegisterImm12Op {constraints: ,
-//     rule: Ldr_Rule_58_A1_P120,
-//     safety: ['NotRnIsPc']}
-class Load2RegisterImm12OpTester_Case4
+//    = LdrImmediateOp {constraints: ,
+//     rule: Ldr_Rule_58_A1_P120}
+class LdrImmediateOpTester_Case4
     : public LoadStore2RegisterImm12OpTesterCase4 {
  public:
-  Load2RegisterImm12OpTester_Case4()
+  LdrImmediateOpTester_Case4()
     : LoadStore2RegisterImm12OpTesterCase4(
-      state_.Load2RegisterImm12Op_Ldr_Rule_58_A1_P120_instance_)
+      state_.LdrImmediateOp_Ldr_Rule_58_A1_P120_instance_)
   {}
 };
 
@@ -982,23 +978,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(25)=0 & inst(24:20)=xx0x1 & inst(19:16)=~1111 & inst(24:20)=~0x011
-//    = Load2RegisterImm12Op => LoadBasedImmedMemory {'constraints': ,
+//    = LdrImmediateOp => LdrImmediateOp {'constraints': ,
 //     'pattern': 'cccc010pu0w1nnnnttttiiiiiiiiiiii',
-//     'rule': 'Ldr_Rule_58_A1_P120',
-//     'safety': ["'NotRnIsPc'"]}
+//     'rule': 'Ldr_Rule_58_A1_P120'}
 //
-// Representative case:
+// Representaive case:
 // A(25)=0 & op1(24:20)=xx0x1 & Rn(19:16)=~1111 & op1_repeated(24:20)=~0x011
-//    = Load2RegisterImm12Op => LoadBasedImmedMemory {constraints: ,
+//    = LdrImmediateOp => LdrImmediateOp {constraints: ,
 //     pattern: cccc010pu0w1nnnnttttiiiiiiiiiiii,
-//     rule: Ldr_Rule_58_A1_P120,
-//     safety: ['NotRnIsPc']}
+//     rule: Ldr_Rule_58_A1_P120}
 TEST_F(Arm32DecoderStateTests,
-       Load2RegisterImm12OpTester_Case4_TestCase4) {
-  Load2RegisterImm12OpTester_Case4 baseline_tester;
-  NamedLoadBasedImmedMemory_Ldr_Rule_58_A1_P120 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc010pu0w1nnnnttttiiiiiiiiiiii");
+       LdrImmediateOpTester_Case4_TestCase4) {
+  LdrImmediateOpTester_Case4 tester;
+  tester.Test("cccc010pu0w1nnnnttttiiiiiiiiiiii");
 }
 
 // Neutral case:

@@ -970,6 +970,18 @@ class Load2RegisterImm12Op : public LoadStore2RegisterImm12Op {
   NACL_DISALLOW_COPY_AND_ASSIGN(Load2RegisterImm12Op);
 };
 
+// Extends class Load2RegisterImm12Op to define virtual
+// is_load_thread_address_pointer, assuming it is the
+// instruction LDR (immedate).
+class LdrImmediateOp : public Load2RegisterImm12Op {
+ public:
+  LdrImmediateOp() {}
+  virtual bool is_load_thread_address_pointer(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(LdrImmediateOp);
+};
+
 // Defines the virtuals for a store immediate instruction.
 // Note: See class LoadStore2RegisterImm12Op for more information
 // on how PUSH (i.e. when Rn=Sp && U=0 && W=1 && Imm12=4) is handled.

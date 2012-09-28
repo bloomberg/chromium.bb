@@ -791,7 +791,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_load_store_word_and_unsi
       (inst.Bits() & 0x00500000) == 0x00100000 /* op1(24:20)=xx0x1 */ &&
       (inst.Bits() & 0x000F0000) != 0x000F0000 /* Rn(19:16)=~1111 */ &&
       (inst.Bits() & 0x01700000) != 0x00300000 /* op1_repeated(24:20)=~0x011 */)
-    return Load2RegisterImm12Op_Ldr_Rule_58_A1_P120_instance_;
+    return LdrImmediateOp_Ldr_Rule_58_A1_P120_instance_;
 
   if ((inst.Bits() & 0x02000000) == 0x00000000 /* A(25)=0 */ &&
       (inst.Bits() & 0x00500000) == 0x00100000 /* op1(24:20)=xx0x1 */ &&

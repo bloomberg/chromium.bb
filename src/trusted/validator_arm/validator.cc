@@ -273,6 +273,16 @@ static void check_loadstore_mask(
     return;
   }
 
+  // The following checks if this represents a thread address pointer access,
+  // which means the instruction must be one of the following forms:
+  //    ldr Rn, [r9]     ; load use thread pointer.
+  //    ldr Rn, [r9, #4] ; load IRT thread pointer.
+  if (second.is_load_thread_address_pointer()) {
+    match_data->match_ = PATTERN_SAFE;
+    match_data->is_single_instruction_pattern_ = true;
+    return;
+  }
+
   if (first.defines(second.base_address_register())
       && first.clears_bits(sfi.data_address_mask())
       && first.always_dominates(second)) {

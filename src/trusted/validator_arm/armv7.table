@@ -160,6 +160,7 @@ class Binary3RegisterImmedShiftedOpRegsNotPc : Binary3RegisterImmedShiftedOp
 class Deprecated : UnsafeCondDecoder
 class ForbiddenCondDecoder : UnsafeCondDecoder
 class ForbiddenUncondDecoder : UnsafeUncondDecoder
+class LdrImmediateOp : Load2RegisterImm12Op
 class LoadRegisterList : LoadStoreRegisterList
 class LoadStoreVectorRegister : LoadStoreVectorOp
 class LoadVectorRegister : LoadStoreVectorRegister
@@ -869,10 +870,9 @@ class UnpredictableUncondDecoder : UnsafeUncondDecoder
                                        Strt_Rule_A2
                                        cccc0110u010nnnnttttiiiiitt0mmmm
 | 0     xx0x1      -    ~1111      ~0x011
-                                   = Load2RegisterImm12Op
-                                   => LoadBasedImmedMemory
+                                   = LdrImmediateOp
                                    Ldr_Rule_58_A1_P120
-                                   cccc010pu0w1nnnnttttiiiiiiiiiiii NotRnIsPc
+                                   cccc010pu0w1nnnnttttiiiiiiiiiiii
 | "     xx0x1      "    1111       ~0x011
                                    = Load2RegisterImm12Op
                                    => LoadBasedImmedMemory
