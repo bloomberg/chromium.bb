@@ -942,7 +942,7 @@ TEST_F(ShelfLayoutManagerTest, BubbleEnlargesShelfMouseHitArea) {
     }
     // Move the pointer over the edge of the shelf.
     generator.MoveMouseTo(center.x(),
-                          shelf->status()->GetWindowBoundsInScreen().y() - 5);
+                          shelf->status()->GetWindowBoundsInScreen().y() - 7);
     shelf->UpdateVisibilityState();
     if (i) {
       EXPECT_TRUE(shelf->IsVisible());
