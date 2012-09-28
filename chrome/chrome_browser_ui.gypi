@@ -2251,6 +2251,8 @@
           ],
         }, { # else: use_aura==0
           'sources/': [
+            ['exclude', '^browser/ui/views/frame/browser_desktop_root_window_host_win.cc'],
+            ['exclude', '^browser/ui/views/frame/browser_desktop_root_window_host_win.h'],
             ['exclude', '^browser/ui/views/search_view_controller.cc'],
             ['exclude', '^browser/ui/views/search_view_controller.h'],
             ['exclude', '^browser/ui/webui/task_manager/'],
