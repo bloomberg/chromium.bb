@@ -517,7 +517,7 @@ TEST_F(TabRestoreServiceTest, ManyWindowsInSessionService) {
   EXPECT_TRUE(url1_ == window->tabs[0].navigations[0].virtual_url());
 }
 
-// Makes sure we restore timestamps correctly.
+// Makes sure we restore the time stamp correctly.
 TEST_F(TabRestoreServiceTest, TimestampSurvivesRestore) {
   base::Time tab_timestamp(base::Time::FromInternalValue(123456789));
 
@@ -530,20 +530,10 @@ TEST_F(TabRestoreServiceTest, TimestampSurvivesRestore) {
   ASSERT_EQ(1U, service_->entries().size());
 
   // Make sure the entry matches.
-  std::vector<TabNavigation> old_navigations;
-  {
-    // |entry|/|tab| doesn't survive after RecreateService().
-    TabRestoreService::Entry* entry = service_->entries().front();
-    ASSERT_EQ(TabRestoreService::TAB, entry->type);
-    Tab* tab = static_cast<Tab*>(entry);
-    tab->timestamp = tab_timestamp;
-    old_navigations = tab->navigations;
-  }
-
-  ASSERT_EQ(3U, old_navigations.size());
-  EXPECT_FALSE(old_navigations[0].timestamp().is_null());
-  EXPECT_FALSE(old_navigations[1].timestamp().is_null());
-  EXPECT_FALSE(old_navigations[2].timestamp().is_null());
+  TabRestoreService::Entry* entry = service_->entries().front();
+  ASSERT_EQ(TabRestoreService::TAB, entry->type);
+  Tab* tab = static_cast<Tab*>(entry);
+  tab->timestamp = tab_timestamp;
 
   // Set this, otherwise previous session won't be loaded.
   profile()->set_last_session_exited_cleanly(false);
@@ -560,13 +550,6 @@ TEST_F(TabRestoreServiceTest, TimestampSurvivesRestore) {
       static_cast<Tab*>(restored_entry);
   EXPECT_EQ(tab_timestamp.ToInternalValue(),
             restored_tab->timestamp.ToInternalValue());
-  ASSERT_EQ(3U, restored_tab->navigations.size());
-  EXPECT_EQ(old_navigations[0].timestamp(),
-            restored_tab->navigations[0].timestamp());
-  EXPECT_EQ(old_navigations[1].timestamp(),
-            restored_tab->navigations[1].timestamp());
-  EXPECT_EQ(old_navigations[2].timestamp(),
-            restored_tab->navigations[2].timestamp());
 }
 
 TEST_F(TabRestoreServiceTest, PruneEntries) {

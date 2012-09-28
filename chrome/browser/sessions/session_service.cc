@@ -634,7 +634,8 @@ void SessionService::Observe(int type,
       content::Details<content::EntryChangedDetails> changed(details);
       const TabNavigation navigation =
           TabNavigation::FromNavigationEntry(
-              changed->index, *changed->changed_entry);
+              changed->index, *changed->changed_entry,
+              base::Time::Now());
       UpdateTabNavigation(session_tab_helper->window_id(),
                           session_tab_helper->session_id(),
                           navigation);
@@ -659,7 +660,8 @@ void SessionService::Observe(int type,
           TabNavigation::FromNavigationEntry(
               current_entry_index,
               *web_contents->GetController().GetEntryAtIndex(
-                  current_entry_index));
+                  current_entry_index),
+              base::Time::Now());
       UpdateTabNavigation(
           session_tab_helper->window_id(),
           session_tab_helper->session_id(),
@@ -1303,7 +1305,7 @@ void SessionService::BuildCommandsForTab(
     DCHECK(entry);
     if (ShouldTrackEntry(entry->GetVirtualURL())) {
       const TabNavigation navigation =
-          TabNavigation::FromNavigationEntry(i, *entry);
+          TabNavigation::FromNavigationEntry(i, *entry, base::Time::Now());
       commands->push_back(
           CreateUpdateTabNavigationCommand(
               kCommandUpdateTabNavigation, session_id.id(), navigation));

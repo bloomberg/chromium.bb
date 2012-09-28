@@ -43,17 +43,20 @@ class TabNavigation {
   TabNavigation();
   ~TabNavigation();
 
-  // Construct a TabNavigation for a particular index from the given
-  // NavigationEntry.
+  // Construct a TabNavigation for a particular index from a
+  // NavigationEntry with the given timestamp.
+  //
+  // TODO(akalin): Add a timestamp field to
+  // navigation::NavigationEntry and use that instead of passing a
+  // separate timestamp.
   static TabNavigation FromNavigationEntry(
       int index,
-      const content::NavigationEntry& entry);
+      const content::NavigationEntry& entry,
+      base::Time timestamp);
 
   // Construct a TabNavigation for a particular index from a sync
   // protocol buffer.  Note that the sync protocol buffer doesn't
-  // contain all TabNavigation fields.  Also, the timestamp of the
-  // returned TabNavigation is nulled out, as we assume that the
-  // protocol buffer is from a foreign session.
+  // contain all TabNavigation fields.
   static TabNavigation FromSyncData(
       int index,
       const sync_pb::TabNavigation& sync_data);
@@ -116,6 +119,10 @@ class TabNavigation {
   int64 post_id_;
   GURL original_request_url_;
   bool is_overriding_user_agent_;
+
+  // Timestamp when the navigation occurred.
+  //
+  // TODO(akalin): Add a timestamp field to NavigationEntry.
   base::Time timestamp_;
 };
 
