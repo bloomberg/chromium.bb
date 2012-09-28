@@ -8,16 +8,25 @@
 #define NATIVE_CLIENT_SRC_INCLUDE_PORTABILITY_BITS_H_ 1
 
 /*
- * Portable bit functions.
- *
- * Not all platforms offer fast intrinsics for these functions, and some
- * compilers require checking CPUID at runtime before using the intrinsic.
- *
- * We instead use portable and reasonably-fast implementations, while
- * avoiding implementations with large lookup tables.
- *
- * When adding functions, also add tests in:
- *   tests/unittests/trusted/bits/bits_test.cc
+  Portable builtin bit function overloads.
+
+  The datatypes used in these overloads don't follow the coding convention:
+  the goal is to dispatch user code to the appropriate intrinsic, and the
+  intrinsics don't use uint*_t types. This means that this code could match
+  the compiler- and target-specific mapping of stdint.h, or it could simply
+  rely on overload resolution and let the compiler do this lookup (arguably
+  less error-prone).
+
+  The overall goal is to provide uint{8,16,32,64}_t, overloads to all the
+  bit functions while dispatching to the most appropriate compiler intrinsic.
+
+  See:
+    - http://msdn.microsoft.com/en-us/library/bb385231.aspx
+    - http://gcc.gnu.org/onlinedocs/gcc/Other-Builtins.html
+
+  TODO(jfb) Add other bit functions like clz/ctz.
+
+  TODO(jfb) Fix this header.
  */
 
 #include <stdint.h>
@@ -26,77 +35,43 @@
 
 namespace nacl {
 
-// Only the specialized templates should be instantiated, getting
-// a linker error with these functions means an unsupported type was used.
+template<typename T> INLINE int PopCount(T /* v */) {
+  // Only the specialized templates should be instantiated, getting
+  // a compilation error here means an unsupported type was used.
+  NACL_COMPILE_TIME_ASSERT(0);
+  return 0;
+}
 
-template<typename T> INLINE int PopCount(T /* v */);
-template<typename T> INLINE T BitReverse(T /* v */);
-template<typename T> INLINE int CountTrailingZeroes(T /* v */);
-template<typename T> INLINE int CountLeadingZeroes(T /* v */);
+#if NACL_WINDOWS
+// See above file comment for explanation on datatype style guide violation.
+template<> INLINE int PopCount<unsigned short>(unsigned short v) {
+  return __popcnt16(v);
+}
+template<> INLINE int PopCount<unsigned int>(unsigned int v) {
+  return __popcnt(v);
+}
+template<> INLINE int PopCount<unsigned __int64>(unsigned __int64 v) {
+  return __popcnt64(v);
+}
+#else
+// See above file comment for explanation on datatype style guide violation.
+template<> INLINE int PopCount<unsigned short>(unsigned short v) {
+  return __builtin_popcount(v);
+}
+template<> INLINE int PopCount<unsigned>(unsigned v) {
+  return __builtin_popcount(v);
+}
+template<> INLINE int PopCount<unsigned long>(unsigned long v) {
+  return __builtin_popcountl(v);
+}
+template<> INLINE int PopCount<unsigned long long>(unsigned long long v) {
+  return __builtin_popcountll(v);
+}
+#endif
 
-// Implementations for the above templates.
-
+// There is no compiler-specific overload for this one, forward to uint16_t.
 template<> INLINE int PopCount<uint8_t>(uint8_t v) {
-  // Small table lookup.
-  static const uint8_t tbl[32] = {
-    0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4,
-    1, 2, 2, 3, 2, 3, 3, 4, 2, 3, 3, 4, 3, 4, 4, 5
-  };
-  return tbl[v & 0xf] + tbl[v >> 4];
-}
-template<> INLINE int PopCount<uint16_t>(uint16_t v) {
-  return PopCount<uint8_t>(v & 0xff) + PopCount<uint8_t>(v >> 8);
-}
-template<> INLINE int PopCount<uint32_t>(uint32_t v) {
-  // See Stanford bithacks, counting bits set in parallel, "best method":
-  // http://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetParallel
-  v = v - ((v >> 1) & 0x55555555);
-  v = (v & 0x33333333) + ((v >> 2) & 0x33333333);
-  return (((v + (v >> 4)) & 0xF0F0F0F) * 0x1010101) >> 24;
-}
-template<> INLINE int PopCount<uint64_t>(uint64_t v) {
-  return PopCount<uint32_t>((uint32_t)v) + PopCount<uint32_t>(v >> 32);
-}
-
-template<> INLINE uint32_t BitReverse<uint32_t>(uint32_t v) {
-  // See Hacker's Delight, first edition, figure 7-1.
-  v = ((v & 0x55555555) << 1) | ((v >> 1) & 0x55555555);
-  v = ((v & 0x33333333) << 2) | ((v >> 2) & 0x33333333);
-  v = ((v & 0x0F0F0F0F) << 4) | ((v >> 4) & 0x0F0F0F0F);
-  v = (v << 24) | ((v & 0xFF00) << 8) |
-      ((v >> 8) & 0xFF00) | (v >> 24);
-  return v;
-}
-
-template<> INLINE int CountTrailingZeroes<uint32_t>(uint32_t v) {
-  // See Stanford bithacks, count the consecutive zero bits (trailing) on the
-  // right with multiply and lookup:
-  // http://graphics.stanford.edu/~seander/bithacks.html#ZerosOnRightMultLookup
-  static const uint8_t tbl[32] = {
-    0,   1, 28,  2, 29, 14, 24, 3, 30, 22, 20, 15, 25, 17,  4, 8,
-    31, 27, 13, 23, 21, 19, 16, 7, 26, 12, 18,  6, 11,  5, 10, 9
-  };
-  return v ?
-      tbl[((uint32_t)((v & -v) * 0x077CB531U)) >> 27] :
-      -1;
-}
-
-template<> INLINE int CountLeadingZeroes<uint32_t>(uint32_t v) {
-  // See Stanford bithacks, find the log base 2 of an N-bit integer in
-  // O(lg(N)) operations with multiply and lookup:
-  // http://graphics.stanford.edu/~seander/bithacks.html#IntegerLogDeBruijn
-  static const uint8_t tbl[32] = {
-    31, 22, 30, 21, 18, 10, 29,  2, 20, 17, 15, 13, 9,  6, 28, 1,
-    23, 19, 11,  3, 16, 14,  7, 24, 12,  4,  8, 25, 5, 26, 27, 0
-  };
-  v = v | (v >>  1);
-  v = v | (v >>  2);
-  v = v | (v >>  4);
-  v = v | (v >>  8);
-  v = v | (v >> 16);
-  return v ?
-      tbl[((uint32_t)(v * 0x07C4ACDDU)) >> 27] :
-      -1;
+  return nacl::PopCount<uint16_t>(v);
 }
 
 }  // namespace nacl
