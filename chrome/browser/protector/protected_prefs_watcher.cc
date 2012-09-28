@@ -202,7 +202,7 @@ void ProtectedPrefsWatcher::EnsurePrefsMigration() {
 bool ProtectedPrefsWatcher::UpdateCachedPrefs() {
   // ExtensionService may not yet have been initialized, so using static method
   // exposed for this purpose.
-  ExtensionPrefs::ExtensionIds extension_ids =
+  extensions::ExtensionIdList extension_ids =
       ExtensionPrefs::GetExtensionsFrom(profile_->GetPrefs());
   if (extension_ids == cached_extension_ids_)
     return false;
@@ -229,7 +229,7 @@ void ProtectedPrefsWatcher::InitBackup() {
   ListPrefUpdate extension_ids_update(prefs, kBackupExtensionsIDs);
   base::ListValue* extension_ids = extension_ids_update.Get();
   extension_ids->Clear();
-  for (ExtensionPrefs::ExtensionIds::const_iterator it =
+  for (extensions::ExtensionIdList::const_iterator it =
            cached_extension_ids_.begin();
        it != cached_extension_ids_.end(); ++it) {
     extension_ids->Append(base::Value::CreateStringValue(*it));
@@ -290,7 +290,7 @@ bool ProtectedPrefsWatcher::UpdateBackupEntry(const std::string& path) {
     ListPrefUpdate extension_ids_update(prefs, kBackupExtensionsIDs);
     base::ListValue* extension_ids = extension_ids_update.Get();
     extension_ids->Clear();
-    for (ExtensionPrefs::ExtensionIds::const_iterator it =
+    for (extensions::ExtensionIdList::const_iterator it =
              cached_extension_ids_.begin();
          it != cached_extension_ids_.end(); ++it) {
       extension_ids->Append(base::Value::CreateStringValue(*it));

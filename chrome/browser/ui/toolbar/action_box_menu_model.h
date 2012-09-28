@@ -13,15 +13,19 @@
 
 class Browser;
 
-// A menu model that builds the contents of the action box menu. This model
-// should be built on demand since its content reflects the state of the browser
-// at creation time.
-class ActionBoxMenuModel : public ui::SimpleMenuModel,
-                           public ui::SimpleMenuModel::Delegate,
-                           public content::NotificationObserver {
+// A menu model that builds the contents of the action box menu. Effectively,
+// a ui::SimpleMenuModel with methods specifically for dealing with extension
+// content.
+//
+// This model should be built on demand since its content reflects the state of
+// the browser at creation time.
+class ActionBoxMenuModel : public ui::SimpleMenuModel {
  public:
-  explicit ActionBoxMenuModel(Browser* browser);
+  ActionBoxMenuModel(Browser* browser, ui::SimpleMenuModel::Delegate* delegate);
   virtual ~ActionBoxMenuModel();
+
+  // Adds an extension to the model with a given command ID.
+  void AddExtension(const extensions::Extension& extension, int command_id);
 
   // Returns true if item associated with an extension.
   bool IsItemExtension(int index);
@@ -30,27 +34,18 @@ class ActionBoxMenuModel : public ui::SimpleMenuModel,
   // or NULL if it is not an extension item.
   const extensions::Extension* GetExtensionAt(int index);
 
-  // Overridden from ui::SimpleMenuModel::Delegate:
-  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
-  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
-  virtual bool GetAcceleratorForCommandId(
-      int command_id,
-      ui::Accelerator* accelerator) OVERRIDE;
-  virtual void ExecuteCommand(int command_id) OVERRIDE;
+  // Calls ExecuteCommand on the delegate.
+  void ExecuteCommand(int command_id);
 
  private:
-  const extensions::ExtensionList& GetActionBoxMenuItems();
-
-  typedef std::map<int, std::string> IdToEntensionIdMap;
-
-  // Overridden from content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // Gets the index of the first extension. This may be equal to the number of
+  // total items in the model if there are no extensions installed.
+  int GetFirstExtensionIndex();
 
   Browser* browser_;
 
-  IdToEntensionIdMap id_to_extension_id_map_;
+  // The list of extensions added to the menu, in order, if any.
+  extensions::ExtensionIdList extension_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(ActionBoxMenuModel);
 };

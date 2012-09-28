@@ -21,29 +21,22 @@
 #include "ui/base/native_theme/native_theme_win.h"
 #endif
 
-////////////////////////////////////////////////////////////////////////////////
-// ActionBoxMenu
-
-ActionBoxMenu::ActionBoxMenu(Browser* browser, ActionBoxMenuModel* model)
-    : browser_(browser),
-      root_(NULL),
-      model_(model) {
+// static
+scoped_ptr<ActionBoxMenu> ActionBoxMenu::Create(
+    Browser* browser,
+    scoped_ptr<ActionBoxMenuModel> model) {
+  scoped_ptr<ActionBoxMenu> menu(new ActionBoxMenu(browser, model.Pass()));
+  menu->PopulateMenu();
+  return menu.Pass();
 }
 
 ActionBoxMenu::~ActionBoxMenu() {
 }
 
-void ActionBoxMenu::Init() {
-  DCHECK(!root_);
-  root_ = new views::MenuItemView(this);
-  root_->set_has_icons(true);
-  PopulateMenu();
-}
-
 void ActionBoxMenu::RunMenu(views::MenuButton* menu_button,
                             gfx::Point menu_offset) {
   views::View::ConvertPointToScreen(menu_button, &menu_offset);
-  menu_runner_.reset(new views::MenuRunner(root_));
+
   // Ignore the result since we don't need to handle a deleted menu specially.
   ignore_result(
       menu_runner_->RunMenuAt(menu_button->GetWidget(),
@@ -51,6 +44,15 @@ void ActionBoxMenu::RunMenu(views::MenuButton* menu_button,
                               gfx::Rect(menu_offset, menu_button->size()),
                               views::MenuItemView::TOPRIGHT,
                               views::MenuRunner::HAS_MNEMONICS));
+}
+
+ActionBoxMenu::ActionBoxMenu(Browser* browser,
+                             scoped_ptr<ActionBoxMenuModel> model)
+    : browser_(browser),
+      model_(model.Pass()) {
+  views::MenuItemView* menu = new views::MenuItemView(this);
+  menu->set_has_icons(true);
+  menu_runner_.reset(new views::MenuRunner(menu));
 }
 
 void ActionBoxMenu::ExecuteCommand(int id) {
@@ -122,16 +124,12 @@ bool ActionBoxMenu::CanStartDragForView(views::View* sender,
   return false;
 }
 
-void ActionBoxMenu::Observe(int type,
-                            const content::NotificationSource& source,
-                            const content::NotificationDetails& details) {
-}
-
 void ActionBoxMenu::PopulateMenu() {
   for (int model_index = 0; model_index < model_->GetItemCount();
        ++model_index) {
-    views::MenuItemView* menu_item = root_->AppendMenuItemFromModel(
-        model_, model_index, model_->GetCommandIdAt(model_index));
+    views::MenuItemView* menu_item =
+        menu_runner_->GetMenu()->AppendMenuItemFromModel(
+            model_.get(), model_index, model_->GetCommandIdAt(model_index));
     if (model_->GetTypeAt(model_index) == ui::MenuModel::TYPE_COMMAND) {
       if (model_->IsItemExtension(model_index)) {
         menu_item->SetMargins(0, 0);

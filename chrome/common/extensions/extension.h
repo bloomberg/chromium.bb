@@ -1179,6 +1179,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
 typedef std::vector< scoped_refptr<const Extension> > ExtensionList;
 typedef std::set<std::string> ExtensionIdSet;
+typedef std::vector<std::string> ExtensionIdList;
 
 // Let gtest print InstallWarnings.
 void PrintTo(const Extension::InstallWarning&, ::std::ostream* os);

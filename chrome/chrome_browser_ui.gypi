@@ -1232,6 +1232,8 @@
         'browser/ui/tabs/tab_strip_model_order_controller.h',
         'browser/ui/tabs/tab_strip_selection_model.cc',
         'browser/ui/tabs/tab_strip_selection_model.h',
+        'browser/ui/toolbar/action_box_button_controller.cc',
+        'browser/ui/toolbar/action_box_button_controller.h',
         'browser/ui/toolbar/action_box_menu_model.cc',
         'browser/ui/toolbar/action_box_menu_model.h',
         'browser/ui/toolbar/back_forward_menu_model.cc',

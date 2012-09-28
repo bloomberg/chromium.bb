@@ -10,9 +10,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/ui/views/browser_action_view.h"
-#include "content/public/browser/notification_observer.h"
 #include "ui/views/controls/menu/menu_delegate.h"
 
+class ActionBoxButtonController;
 class ActionBoxMenuModel;
 
 namespace views {
@@ -25,18 +25,21 @@ class View;
 
 // ActionBoxMenu adapts the ActionBoxMenuModel to view's menu related classes.
 class ActionBoxMenu : public views::MenuDelegate,
-                      public BrowserActionView::Delegate,
-                      public content::NotificationObserver {
+                      public BrowserActionView::Delegate {
  public:
-  ActionBoxMenu(Browser* browser, ActionBoxMenuModel* model);
-  virtual ~ActionBoxMenu();
+  // Constructs and initializes an ActionBoxMenu.
+  static scoped_ptr<ActionBoxMenu> Create(
+      Browser* browser,
+      scoped_ptr<ActionBoxMenuModel> model);
 
-  void Init();
+  virtual ~ActionBoxMenu();
 
   // Shows the menu relative to the specified button.
   void RunMenu(views::MenuButton* menu_button, gfx::Point menu_offset);
 
  private:
+  ActionBoxMenu(Browser* browser, scoped_ptr<ActionBoxMenuModel> model);
+
   // Overridden from views::MenuDelegate:
   virtual void ExecuteCommand(int id) OVERRIDE;
   virtual views::Border* CreateMenuBorder() OVERRIDE;
@@ -59,23 +62,15 @@ class ActionBoxMenu : public views::MenuDelegate,
                                    const gfx::Point& press_pt,
                                    const gfx::Point& p) OVERRIDE;
 
-  // NotificationObserver overrides:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
   // Populates |root_| with all the child menu items from the |model_|.
   void PopulateMenu();
 
   Browser* browser_;
 
-  // The views menu. Owned by |menu_runner_|.
-  views::MenuItemView* root_;
-
   scoped_ptr<views::MenuRunner> menu_runner_;
 
   // The model that tracks the order of the toolbar icons.
-  ActionBoxMenuModel* model_;
+  scoped_ptr<ActionBoxMenuModel> model_;
 
   DISALLOW_COPY_AND_ASSIGN(ActionBoxMenu);
 };

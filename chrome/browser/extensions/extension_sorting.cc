@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/extensions/extension.h"
 #include "content/public/browser/notification_service.h"
 
 using extensions::ExtensionPrefs;
@@ -58,7 +59,7 @@ void ExtensionSorting::SetExtensionService(
 }
 
 void ExtensionSorting::Initialize(
-    const ExtensionPrefs::ExtensionIds& extension_ids) {
+    const extensions::ExtensionIdList& extension_ids) {
   InitializePageOrdinalMap(extension_ids);
 
   MigrateAppIndex(extension_ids);
@@ -79,7 +80,7 @@ void ExtensionSorting::CreateOrdinalsIfNecessary(size_t minimum_size) {
 }
 
 void ExtensionSorting::MigrateAppIndex(
-    const ExtensionPrefs::ExtensionIds& extension_ids) {
+    const extensions::ExtensionIdList& extension_ids) {
   if (extension_ids.empty())
     return;
 
@@ -89,7 +90,7 @@ void ExtensionSorting::MigrateAppIndex(
   typedef std::map<syncer::StringOrdinal, std::map<int, const std::string*>,
                    syncer::StringOrdinal::LessThanFn> AppPositionToIdMapping;
   AppPositionToIdMapping app_launches_to_convert;
-  for (ExtensionPrefs::ExtensionIds::const_iterator ext_id =
+  for (extensions::ExtensionIdList::const_iterator ext_id =
            extension_ids.begin(); ext_id != extension_ids.end(); ++ext_id) {
     int old_page_index = 0;
     syncer::StringOrdinal page = GetPageOrdinal(*ext_id);
@@ -465,8 +466,8 @@ syncer::StringOrdinal ExtensionSorting::GetMinOrMaxAppLaunchOrdinalsOnPage(
 }
 
 void ExtensionSorting::InitializePageOrdinalMap(
-    const ExtensionPrefs::ExtensionIds& extension_ids) {
-  for (ExtensionPrefs::ExtensionIds::const_iterator ext_it =
+    const extensions::ExtensionIdList& extension_ids) {
+  for (extensions::ExtensionIdList::const_iterator ext_it =
            extension_ids.begin(); ext_it != extension_ids.end(); ++ext_it) {
     AddOrdinalMapping(*ext_it,
                       GetPageOrdinal(*ext_it),

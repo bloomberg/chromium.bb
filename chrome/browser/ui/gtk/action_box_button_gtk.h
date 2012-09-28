@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
+#include "chrome/browser/ui/toolbar/action_box_button_controller.h"
 #include "ui/base/gtk/gtk_signal.h"
 
 class ActionBoxMenuModel;
@@ -18,7 +19,8 @@ typedef struct _GtkWidget GtkWidget;
 
 // This class displays the action box button with an associated menu. This is
 // where extension actions and the bookmark star live.
-class ActionBoxButtonGtk : public MenuGtk::Delegate {
+class ActionBoxButtonGtk : public MenuGtk::Delegate,
+                           public ActionBoxButtonController::Delegate {
  public:
   explicit ActionBoxButtonGtk(Browser* browser);
   virtual ~ActionBoxButtonGtk();
@@ -29,9 +31,14 @@ class ActionBoxButtonGtk : public MenuGtk::Delegate {
   GtkWidget* widget();
 
  private:
+  // ActionBoxButtonController::Delegate implementation.
+  virtual void ShowMenu(scoped_ptr<ActionBoxMenuModel> model) OVERRIDE;
+
   // Show the action box menu.
   CHROMEGTK_CALLBACK_1(ActionBoxButtonGtk, gboolean, OnButtonPress,
                        GdkEventButton*);
+
+  ActionBoxButtonController controller_;
 
   scoped_ptr<CustomDrawButton> button_;
 

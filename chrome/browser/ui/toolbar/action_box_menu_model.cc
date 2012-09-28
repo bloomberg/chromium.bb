@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/toolbar/action_box_menu_model.h"
 
+#include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_to_mobile_service.h"
@@ -22,21 +23,12 @@
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
-namespace {
-
-// Extensions get command IDs that are beyond the maximal valid extension ID
-// (0xDFFF) so that they are not confused with actual commands that appear in
-// the menu. For more details see: chrome/app/chrome_command_ids.h
-//
-const int kFirstExtensionCommandId = 0xE000;
-
-}  // namespace
-
 ////////////////////////////////////////////////////////////////////////////////
 // ActionBoxMenuModel
 
-ActionBoxMenuModel::ActionBoxMenuModel(Browser* browser)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(ui::SimpleMenuModel(this)),
+ActionBoxMenuModel::ActionBoxMenuModel(Browser* browser,
+                                       ui::SimpleMenuModel::Delegate* delegate)
+    : ui::SimpleMenuModel(delegate),
       browser_(browser) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   if (!browser_->profile()->IsOffTheRecord() &&
@@ -61,72 +53,44 @@ ActionBoxMenuModel::ActionBoxMenuModel(Browser* browser)
   AddItemWithStringId(IDC_SHARE_PAGE, IDS_SHARE_PAGE);
   SetIcon(GetIndexOfCommandId(IDC_SHARE_PAGE),
           rb.GetNativeImageNamed(IDR_SHARE));
-
-  // Adds extensions to the model.
-  int command_id = kFirstExtensionCommandId;
-  const extensions::ExtensionList& action_box_items = GetActionBoxMenuItems();
-  if (!action_box_items.empty()) {
-    AddSeparator(ui::NORMAL_SEPARATOR);
-    for (size_t i = 0; i < action_box_items.size(); ++i) {
-      const extensions::Extension* extension = action_box_items[i];
-      AddItem(command_id, UTF8ToUTF16(extension->name()));
-      id_to_extension_id_map_[command_id++] = extension->id();
-    }
-  }
 }
 
 ActionBoxMenuModel::~ActionBoxMenuModel() {
-  // Ensures parent destructor does not use a partially destroyed delegate.
-  set_delegate(NULL);
+}
+
+void ActionBoxMenuModel::AddExtension(const extensions::Extension& extension,
+                                      int command_id) {
+  if (extension_ids_.empty())
+    AddSeparator(ui::NORMAL_SEPARATOR);
+  extension_ids_.push_back(extension.id());
+  AddItem(command_id, UTF8ToUTF16(extension.name()));
 }
 
 bool ActionBoxMenuModel::IsItemExtension(int index) {
-  return GetCommandIdAt(index) >= kFirstExtensionCommandId;
+  // The extensions are always at the end of the model.
+  CHECK(index < GetItemCount());
+  return index >= GetFirstExtensionIndex();
 }
 
 const extensions::Extension* ActionBoxMenuModel::GetExtensionAt(int index) {
   if (!IsItemExtension(index))
     return NULL;
 
-  // ExtensionList is mutable, so need to get up-to-date extension.
-  int command_id = GetCommandIdAt(index);
-  IdToEntensionIdMap::const_iterator it =
-      id_to_extension_id_map_.find(command_id);
-  if (it == id_to_extension_id_map_.end())
-    return NULL;
+  int index_in_extension_ids = index - GetFirstExtensionIndex();
+  CHECK_GE(index_in_extension_ids, 0);
+  CHECK_LT(index_in_extension_ids, static_cast<int>(extension_ids_.size()));
+
   ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(browser_->profile())->
           extension_service();
-  return extension_service->GetExtensionById(it->second, false);
-}
-
-bool ActionBoxMenuModel::IsCommandIdChecked(int command_id) const {
-  return false;
-}
-
-bool ActionBoxMenuModel::IsCommandIdEnabled(int command_id) const {
-  return true;
-}
-
-bool ActionBoxMenuModel::GetAcceleratorForCommandId(
-    int command_id,
-    ui::Accelerator* accelerator) {
-  return false;
+  return extension_service->extensions()->GetByID(
+      extension_ids_[index_in_extension_ids]);
 }
 
 void ActionBoxMenuModel::ExecuteCommand(int command_id) {
-  if (command_id < kFirstExtensionCommandId)
-    chrome::ExecuteCommand(browser_, command_id);
+  delegate()->ExecuteCommand(command_id);
 }
 
-const extensions::ExtensionList& ActionBoxMenuModel::GetActionBoxMenuItems() {
-  ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(browser_->profile())->
-          extension_service();
-  return extension_service->toolbar_model()->action_box_menu_items();
-}
-
-void ActionBoxMenuModel::Observe(int type,
-                                 const content::NotificationSource& source,
-                                 const content::NotificationDetails& details) {
+int ActionBoxMenuModel::GetFirstExtensionIndex() {
+  return GetItemCount() - extension_ids_.size();
 }

@@ -7,8 +7,8 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
 #include "chrome/browser/ui/cocoa/location_bar/image_decoration.h"
+#include "chrome/browser/ui/toolbar/action_box_button_controller.h"
 
 class Browser;
 class LocationBarViewMac;
@@ -16,7 +16,8 @@ class LocationBarViewMac;
 // Note: this file is under development (see crbug.com/138118).
 
 // Plus icon on the right side of the location bar.
-class PlusDecoration : public ImageDecoration {
+class PlusDecoration : public ImageDecoration,
+                       public ActionBoxButtonController::Delegate {
  public:
   PlusDecoration(LocationBarViewMac* owner, Browser* browser);
   virtual ~PlusDecoration();
@@ -31,13 +32,15 @@ class PlusDecoration : public ImageDecoration {
   virtual NSString* GetToolTip() OVERRIDE;
 
  private:
+  // Implement |ActionBoxButtonController::Delegate|.
+  virtual void ShowMenu(scoped_ptr<ActionBoxMenuModel> model) OVERRIDE;
+
   // Owner of the decoration, used to obtain the menu.
   LocationBarViewMac* owner_;
 
   Browser* browser_;
 
-  // The string to show for a tooltip.
-  scoped_nsobject<NSString> tooltip_;
+  ActionBoxButtonController controller_;
 
   DISALLOW_COPY_AND_ASSIGN(PlusDecoration);
 };

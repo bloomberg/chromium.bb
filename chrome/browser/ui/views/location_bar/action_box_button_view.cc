@@ -27,12 +27,12 @@ const SkColor kPushedBorderColor = SkColorSetRGB(191, 191, 191);
 
 }  // namespace
 
-
 ActionBoxButtonView::ActionBoxButtonView(Browser* browser,
                                          const gfx::Point& menu_offset)
     : views::MenuButton(NULL, string16(), this, false),
       browser_(browser),
-      menu_offset_(menu_offset) {
+      menu_offset_(menu_offset),
+      ALLOW_THIS_IN_INITIALIZER_LIST(controller_(browser, this)) {
   set_id(VIEW_ID_ACTION_BOX_BUTTON);
   SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_ACTION_BOX_BUTTON));
   SetIcon(*ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
@@ -75,8 +75,10 @@ void ActionBoxButtonView::GetAccessibleState(ui::AccessibleViewState* state) {
 
 void ActionBoxButtonView::OnMenuButtonClicked(View* source,
                                               const gfx::Point& point) {
-  ActionBoxMenuModel model(browser_);
-  ActionBoxMenu action_box_menu(browser_, &model);
-  action_box_menu.Init();
-  action_box_menu.RunMenu(this, menu_offset_);
+  controller_.OnButtonClicked();
+}
+
+void ActionBoxButtonView::ShowMenu(scoped_ptr<ActionBoxMenuModel> menu_model) {
+  menu_ = ActionBoxMenu::Create(browser_, menu_model.Pass());
+  menu_->RunMenu(this, menu_offset_);
 }

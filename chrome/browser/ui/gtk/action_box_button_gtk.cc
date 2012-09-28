@@ -14,7 +14,8 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-ActionBoxButtonGtk::ActionBoxButtonGtk(Browser* browser) : browser_(browser) {
+ActionBoxButtonGtk::ActionBoxButtonGtk(Browser* browser)
+    : controller_(browser, this) {
   button_.reset(new CustomDrawButton(
       IDR_ACTION_BOX_BUTTON,
       IDR_ACTION_BOX_BUTTON_PRESSED,
@@ -40,14 +41,22 @@ GtkWidget* ActionBoxButtonGtk::widget() {
   return button_->widget();
 }
 
+void ActionBoxButtonGtk::ShowMenu(scoped_ptr<ActionBoxMenuModel> model) {
+  model_ = model.Pass();
+  menu_.reset(new MenuGtk(this, model_.get()));
+  menu_->PopupForWidget(
+      button_->widget(),
+      // The mouse button. This is 1 because currently it can only be generated
+      // from a mouse click, but if ShowMenu can be called in other situations
+      // (e.g. other mouse buttons, or without any click at all) then it will
+      // need to be that button or 0.
+      1,
+      gtk_get_current_event_time());
+}
+
 gboolean ActionBoxButtonGtk::OnButtonPress(GtkWidget* widget,
                                            GdkEventButton* event) {
-  if (event->button != 1)
-    return FALSE;
-
-  model_.reset(new ActionBoxMenuModel(browser_));
-  menu_.reset(new MenuGtk(this, model_.get()));
-  menu_->PopupForWidget(button_->widget(), event->button, event->time);
-
+  if (event->button == 1)
+    controller_.OnButtonClicked();
   return FALSE;
 }
