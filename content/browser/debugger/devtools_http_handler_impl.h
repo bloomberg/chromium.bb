@@ -17,6 +17,10 @@
 #include "content/public/browser/devtools_http_handler_delegate.h"
 #include "net/server/http_server.h"
 
+namespace base {
+class Thread;
+}
+
 namespace net {
 class StreamListenSocketFactory;
 class URLRequestContextGetter;
@@ -88,6 +92,9 @@ class DevToolsHttpHandlerImpl
   // Returns the front end url without the host at the beginning.
   std::string GetFrontendURLInternal(const std::string rvh_id,
                                      const std::string& host);
+
+  // The thread used by the devtools handler to run server socket.
+  scoped_ptr<base::Thread> thread_;
 
   std::string overridden_frontend_url_;
   scoped_ptr<const net::StreamListenSocketFactory> socket_factory_;
