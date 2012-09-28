@@ -383,15 +383,4 @@ bool Channel::Send(Message* message) {
   return channel_impl_->Send(message);
 }
 
-// static
-std::string Channel::GenerateVerifiedChannelID(const std::string& prefix) {
-  // A random name is sufficient validation on posix systems, so we don't need
-  // an additional shared secret.
-  std::string id = prefix;
-  if (!id.empty())
-    id.append(".");
-
-  return id.append(GenerateUniqueRandomChannelID());
-}
-
 }  // namespace IPC

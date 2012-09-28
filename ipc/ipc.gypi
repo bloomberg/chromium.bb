@@ -66,6 +66,7 @@
         'target_conditions': [
           ['>(nacl_untrusted_build)==1', {
             'sources!': [
+              'ipc_channel.cc',
               'ipc_channel_posix.cc',
             ],
           }],

@@ -179,6 +179,7 @@ class IPC_EXPORT Channel : public Sender {
   // ID. Even if true, the server may have already accepted a connection.
   static bool IsNamedServerInitialized(const std::string& channel_id);
 
+#if !defined(OS_NACL)
   // Generates a channel ID that's non-predictable and unique.
   static std::string GenerateUniqueRandomChannelID();
 
@@ -187,6 +188,7 @@ class IPC_EXPORT Channel : public Sender {
   // require additional this is simply calls GenerateUniqueRandomChannelID().
   // For portability the prefix should not include the \ character.
   static std::string GenerateVerifiedChannelID(const std::string& prefix);
+#endif
 
 #if defined(OS_LINUX)
   // Sandboxed processes live in a PID namespace, so when sending the IPC hello
