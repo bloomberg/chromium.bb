@@ -242,7 +242,9 @@ CompositingIOSurfaceMac* CompositingIOSurfaceMac::Create() {
   ret = CVDisplayLinkSetCurrentCGDisplayFromOpenGLContext(display_link,
                                                           cglContext,
                                                           cglPixelFormat);
-  if (ret != kCVReturnSuccess) {
+  // This can fail with kCVReturnInvalidDisplay on mirrored displays, so
+  // ignore that failure and continue. http://crbug.com/152525
+  if (ret != kCVReturnSuccess && ret != kCVReturnInvalidDisplay) {
     CVDisplayLinkRelease(display_link);
     LOG(ERROR) << "CVDisplayLinkSetCurrentCGDisplayFromOpenGLContext failed: "
                << ret;
