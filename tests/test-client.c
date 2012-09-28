@@ -35,6 +35,7 @@ struct display {
 	struct wl_compositor *compositor;
 	struct input *input;
 	struct output *output;
+	struct surface *surface;
 };
 
 struct input {
@@ -68,6 +69,8 @@ pointer_handle_enter(void *data, struct wl_pointer *pointer,
 	input->pointer_focus = wl_surface_get_user_data(surface);
 	input->x = wl_fixed_to_double(x);
 	input->y = wl_fixed_to_double(y);
+	fprintf(stderr, "test-client: got pointer enter %f %f, surface %p\n",
+		input->x, input->y, surface);
 }
 
 static void
@@ -77,6 +80,9 @@ pointer_handle_leave(void *data, struct wl_pointer *pointer,
 	struct input *input = data;
 
 	input->pointer_focus = NULL;
+	
+	fprintf(stderr, "test-client: got pointer leave, surface %p\n",
+		surface);
 }
 
 static void
@@ -87,6 +93,9 @@ pointer_handle_motion(void *data, struct wl_pointer *pointer,
 
 	input->x = wl_fixed_to_double(x);
 	input->y = wl_fixed_to_double(y);
+	
+	fprintf(stderr, "test-client: got pointer motion %f %f\n",
+		input->x, input->y);
 }
 
 static void
@@ -103,12 +112,15 @@ pointer_handle_button(void *data, struct wl_pointer *pointer,
 		input->button_mask |= bit;
 	else
 		input->button_mask &= ~bit;
+	fprintf(stderr, "test-client: got pointer button %u %u\n",
+		button, state_w);
 }
 
 static void
 pointer_handle_axis(void *data, struct wl_pointer *pointer,
 		    uint32_t time, uint32_t axis, wl_fixed_t value)
 {
+	fprintf(stderr, "test-client: got pointer axis %u %d\n", axis, value);
 }
 
 static void
@@ -116,6 +128,7 @@ keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
 		       uint32_t format, int fd, uint32_t size)
 {
 	close(fd);
+	fprintf(stderr, "test-client: got keyboard keymap\n");
 }
 
 static void
@@ -126,6 +139,8 @@ keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
 	struct input *input = data;
 
 	input->keyboard_focus = wl_surface_get_user_data(surface);
+	fprintf(stderr, "test-client: got keyboard enter, surface %p\n",
+		surface);
 }
 
 static void
@@ -135,6 +150,8 @@ keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
 	struct input *input = data;
 
 	input->keyboard_focus = NULL;
+	fprintf(stderr, "test-client: got keyboard leave, surface %p\n",
+		surface);
 }
 
 static void
@@ -142,6 +159,7 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
 		    uint32_t serial, uint32_t time, uint32_t key,
 		    uint32_t state)
 {
+	fprintf(stderr, "test-client: got keyboard key %u %u\n", key, state);
 }
 
 static void
@@ -150,6 +168,7 @@ keyboard_handle_modifiers(void *data, struct wl_keyboard *keyboard,
 			  uint32_t mods_latched, uint32_t mods_locked,
 			  uint32_t group)
 {
+	fprintf(stderr, "test-client: got keyboard modifier\n");
 }
 
 static const struct wl_pointer_listener pointer_listener = {
@@ -266,7 +285,8 @@ handle_global(struct wl_display *_display, uint32_t id,
 				       &output_listener, output);
 		display->output = output;
 
-		fprintf(stderr, "created output global %p\n", display->output);
+		fprintf(stderr, "test-client: created output global %p\n",
+			display->output);
 	}
 }
 
@@ -278,7 +298,8 @@ surface_enter(void *data,
 
 	surface->output = wl_output_get_user_data(output);
 
-	fprintf(stderr, "got surface enter, output %p\n", surface->output);
+	fprintf(stderr, "test-client: got surface enter, output %p\n",
+		surface->output);
 }
 
 static void
@@ -288,12 +309,42 @@ surface_leave(void *data,
 	struct surface *surface = data;
 
 	surface->output = NULL;
+
+	fprintf(stderr, "test-client: got surface leave, output %p\n",
+		wl_output_get_user_data(output));
 }
 
 static const struct wl_surface_listener surface_listener = {
 	surface_enter,
 	surface_leave
 };
+
+static void
+send_state(int fd, struct display* display)
+{
+	char buf[64];
+	int len;
+	int visible = display->surface->output != NULL;
+	wl_fixed_t x = wl_fixed_from_int(-1);
+	wl_fixed_t y = wl_fixed_from_int(-1);
+
+	if (display->input->pointer_focus == display->surface) {
+		x = wl_fixed_from_double(display->input->x);
+		y = wl_fixed_from_double(display->input->y);
+	}
+
+	if (visible) {
+		/* FIXME: this fails on multi-display setup */
+		/* assert(display->surface->output == display->output); */
+	}
+
+	wl_display_flush(display->display);
+
+	len = snprintf(buf, sizeof buf, "%d %d %d\n", x, y, visible);
+	assert(write(fd, buf, len) == len);
+
+	wl_display_roundtrip(display->display);
+}
 
 static void
 create_surface(int fd, struct display *display)
@@ -304,8 +355,10 @@ create_surface(int fd, struct display *display)
 
 	surface = malloc(sizeof *surface);
 	assert(surface);
+	display->surface = surface;
 	surface->surface = wl_compositor_create_surface(display->compositor);
 	wl_surface_add_listener(surface->surface, &surface_listener, surface);
+
 	wl_display_flush(display->display);
 
 	len = snprintf(buf, sizeof buf, "surface %d\n",
@@ -313,12 +366,8 @@ create_surface(int fd, struct display *display)
 	assert(write(fd, buf, len) == len);
 
 	poll(NULL, 0, 100); /* Wait for next frame where we'll get events. */
-	wl_display_roundtrip(display->display);
 
-	assert(surface->output == display->output);
-	assert(display->input->pointer_focus == surface);
-	assert(display->input->x == 50);
-	assert(display->input->y == 50);
+	wl_display_roundtrip(display->display);
 }
 
 int main(int argc, char *argv[])
@@ -346,7 +395,8 @@ int main(int argc, char *argv[])
 	while (1) {
 		ret = read(fd, buf, sizeof buf);
 		if (ret == -1) {
-			fprintf(stderr, "read error: fd %d, %m\n", fd);
+			fprintf(stderr, "test-client: read error: fd %d, %m\n",
+				fd);
 			return -1;
 		}
 
@@ -356,8 +406,11 @@ int main(int argc, char *argv[])
 			return 0;
 		} else if (strncmp(buf, "create-surface\n", ret) == 0) {
 			create_surface(fd, display);
+		} else if (strncmp(buf, "send-state\n", ret) == 0) {
+			send_state(fd, display);
 		} else {
-			fprintf(stderr, "unknown command %.*s\n", ret, buf);
+			fprintf(stderr, "test-client: unknown command %.*s\n",
+				ret, buf);
 			return -1;
 		}
 	}

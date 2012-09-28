@@ -40,7 +40,7 @@ test_client_cleanup(struct weston_process *proc, int status)
 	struct test_client *client =
 		container_of(proc, struct test_client, proc);
 
-	fprintf(stderr, "test client exited, status %d\n", status);
+	fprintf(stderr, "server: test client exited, status %d\n", status);
 
 	client->status = status;
 	client->done = 1;
@@ -60,7 +60,7 @@ test_client_data(int fd, uint32_t mask, void *data)
 
 	len = read(client->fd, client->buf, sizeof client->buf);
 	assert(len >= 0);
-	fprintf(stderr, "got %.*s from client\n", len - 1, client->buf);
+	fprintf(stderr, "server: got %.*s from client\n", len - 1, client->buf);
 	assert(client->buf[len - 1] == '\n');
 	client->buf[len - 1] = '\0';
 
@@ -88,7 +88,7 @@ test_client_launch(struct weston_compositor *compositor, const char *file_name)
 	snprintf(buf, sizeof buf, "%d", client_fd);
 	setenv("TEST_SOCKET", buf, 1);
 	snprintf(buf, sizeof buf, "%s/%s", getenv("abs_builddir"), file_name);
-	fprintf(stderr, "launching %s\n", buf);
+	fprintf(stderr, "server: launching %s\n", buf);
 
 	client->terminate = 0;
 	client->compositor = compositor;
@@ -116,6 +116,8 @@ test_client_send(struct test_client *client, const char *fmt, ...)
 	va_start(ap, fmt);
 	len = vsnprintf(buf, sizeof buf, fmt, ap);
 	va_end(ap);
+
+	fprintf(stderr, "server: sending %s", buf);
 
 	assert(write(client->fd, buf, len) == len);
 }
