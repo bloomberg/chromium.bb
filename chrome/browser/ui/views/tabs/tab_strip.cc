@@ -1625,6 +1625,7 @@ void TabStrip::DoLayout() {
     newtab_button_->SetImageAlignment(views::ImageButton::ALIGN_LEFT,
                                       views::ImageButton::ALIGN_TOP);
   }
+  bounds_animator_.StopAnimatingView(newtab_button_);
   newtab_button_->SetBoundsRect(newtab_button_bounds_);
 }
 
