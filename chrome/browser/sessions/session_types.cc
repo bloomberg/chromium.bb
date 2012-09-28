@@ -34,8 +34,7 @@ TabNavigation::~TabNavigation() {}
 // static
 TabNavigation TabNavigation::FromNavigationEntry(
     int index,
-    const NavigationEntry& entry,
-    base::Time timestamp) {
+    const NavigationEntry& entry) {
   TabNavigation navigation;
   navigation.index_ = index;
   navigation.unique_id_ = entry.GetUniqueID();
@@ -48,7 +47,7 @@ TabNavigation TabNavigation::FromNavigationEntry(
   navigation.post_id_ = entry.GetPostID();
   navigation.original_request_url_ = entry.GetOriginalRequestURL();
   navigation.is_overriding_user_agent_ = entry.GetIsOverridingUserAgent();
-  navigation.timestamp_ = timestamp;
+  navigation.timestamp_ = entry.GetTimestamp();
   return navigation;
 }
 
@@ -57,19 +56,13 @@ TabNavigation TabNavigation::FromSyncData(
     const sync_pb::TabNavigation& sync_data) {
   TabNavigation navigation;
   navigation.index_ = index;
-  if (sync_data.has_unique_id())
-    navigation.unique_id_ = sync_data.unique_id();
-  if (sync_data.has_referrer()) {
-    navigation.referrer_ =
-        content::Referrer(GURL(sync_data.referrer()),
-                          WebKit::WebReferrerPolicyDefault);
-  }
-  if (sync_data.has_virtual_url())
-    navigation.virtual_url_ = GURL(sync_data.virtual_url());
-  if (sync_data.has_title())
-    navigation.title_ = UTF8ToUTF16(sync_data.title());
-  if (sync_data.has_state())
-    navigation.content_state_ = sync_data.state();
+  navigation.unique_id_ = sync_data.unique_id();
+  navigation.referrer_ =
+      content::Referrer(GURL(sync_data.referrer()),
+                        WebKit::WebReferrerPolicyDefault);
+  navigation.virtual_url_ = GURL(sync_data.virtual_url());
+  navigation.title_ = UTF8ToUTF16(sync_data.title());
+  navigation.content_state_ = sync_data.state();
 
   uint32 transition = 0;
   if (sync_data.has_page_transition()) {
@@ -138,8 +131,7 @@ TabNavigation TabNavigation::FromSyncData(
   navigation.transition_type_ =
       static_cast<content::PageTransition>(transition);
 
-  if (sync_data.has_timestamp())
-    navigation.timestamp_ = syncer::ProtoTimeToTime(sync_data.timestamp());
+  navigation.timestamp_ = base::Time();
 
   return navigation;
 }
@@ -208,6 +200,7 @@ enum TypeMask {
 // referrer_
 // original_request_url_
 // is_overriding_user_agent_
+// timestamp_
 
 void TabNavigation::WriteToPickle(Pickle* pickle) const {
   pickle->WriteInt(index_);
@@ -251,8 +244,7 @@ void TabNavigation::WriteToPickle(Pickle* pickle) const {
       original_request_url_.is_valid() ?
       original_request_url_.spec() : std::string());
   pickle->WriteBool(is_overriding_user_agent_);
-
-  // TODO(akalin): Persist timestamp.
+  pickle->WriteInt64(timestamp_.ToInternalValue());
 }
 
 bool TabNavigation::ReadFromPickle(PickleIterator* iterator) {
@@ -299,9 +291,15 @@ bool TabNavigation::ReadFromPickle(PickleIterator* iterator) {
     // Default to not overriding the user agent if we don't have info.
     if (!iterator->ReadBool(&is_overriding_user_agent_))
       is_overriding_user_agent_ = false;
+
+    int64 timestamp_internal_value = 0;
+    if (iterator->ReadInt64(&timestamp_internal_value)) {
+      timestamp_ = base::Time::FromInternalValue(timestamp_internal_value);
+    } else {
+      timestamp_ = base::Time();
+    }
   }
 
-  // TODO(akalin): Restore timestamp when it is persisted.
   return true;
 }
 
@@ -327,9 +325,7 @@ scoped_ptr<NavigationEntry> TabNavigation::ToNavigationEntry(
   entry->SetPostID(post_id_);
   entry->SetOriginalRequestURL(original_request_url_);
   entry->SetIsOverridingUserAgent(is_overriding_user_agent_);
-
-  // TODO(akalin): Set |entry|'s timestamp once NavigationEntry has a
-  // field for it.
+  entry->SetTimestamp(timestamp_);
 
   return entry.Pass();
 }
@@ -418,6 +414,8 @@ sync_pb::TabNavigation TabNavigation::ToSyncData() const {
       (transition_type_ & content::PAGE_TRANSITION_CHAIN_END) != 0);
 
   sync_data.set_unique_id(unique_id_);
+  // TODO(akalin): Don't lose resolution, i.e. define a new timestamp
+  // field with microsecond resolution and use that.
   sync_data.set_timestamp(syncer::TimeToProtoTime(timestamp_));
 
   return sync_data;

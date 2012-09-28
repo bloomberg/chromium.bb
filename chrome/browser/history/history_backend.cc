@@ -431,6 +431,8 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
   // added in order. However, we don't want to disallow pages from recording
   // times earlier than our last_recorded_time_, because someone might set
   // their machine's clock back.
+  //
+  // TODO(akalin): Put this logic in NavigationController.
   if (last_requested_time_ == request.time) {
     last_recorded_time_ = last_recorded_time_ + TimeDelta::FromMicroseconds(1);
   } else {

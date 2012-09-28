@@ -62,15 +62,13 @@ class SyncSessionModelAssociatorTest : public testing::Test {
     return SessionModelAssociator::GetCurrentVirtualURL(tab_delegate);
   }
 
-  static void UpdateSessionTabFromDelegate(
+  static void SetSessionTabFromDelegate(
       const SyncedTabDelegate& tab_delegate,
       base::Time mtime,
-      base::Time default_navigation_timestamp,
       SessionTab* session_tab) {
-    SessionModelAssociator::UpdateSessionTabFromDelegate(
+    SessionModelAssociator::SetSessionTabFromDelegate(
         tab_delegate,
         mtime,
-        default_navigation_timestamp,
         session_tab);
   }
 
@@ -549,26 +547,27 @@ const base::Time kTime1 = base::Time::FromInternalValue(100);
 const base::Time kTime2 = base::Time::FromInternalValue(105);
 const base::Time kTime3 = base::Time::FromInternalValue(110);
 const base::Time kTime4 = base::Time::FromInternalValue(120);
-const base::Time kTime5 = base::Time::FromInternalValue(150);
-const base::Time kTime6 = base::Time::FromInternalValue(200);
-const base::Time kTime7 = base::Time::FromInternalValue(500);
-const base::Time kTime8 = base::Time::FromInternalValue(1000);
+const base::Time kTime5 = base::Time::FromInternalValue(130);
 
-// Ensure new tabs have the current timestamp set for the current
-// navigation, while other navigations have null timestamps.
-TEST_F(SyncSessionModelAssociatorTest, UpdateNewTab) {
+// Populate the mock tab delegate with some data and navigation
+// entries and make sure that setting a SessionTab from it preserves
+// those entries (and clobbers any existing data).
+TEST_F(SyncSessionModelAssociatorTest, SetSessionTabFromDelegate) {
   // Create a tab with three valid entries.
   NiceMock<SyncedTabDelegateMock> tab_mock;
   EXPECT_CALL(tab_mock, GetSessionId()).WillRepeatedly(Return(0));
   scoped_ptr<content::NavigationEntry> entry1(
       content::NavigationEntry::Create());
   entry1->SetVirtualURL(GURL("http://www.google.com"));
+  entry1->SetTimestamp(kTime1);
   scoped_ptr<content::NavigationEntry> entry2(
       content::NavigationEntry::Create());
   entry2->SetVirtualURL(GURL("http://www.noodle.com"));
+  entry2->SetTimestamp(kTime2);
   scoped_ptr<content::NavigationEntry> entry3(
       content::NavigationEntry::Create());
   entry3->SetVirtualURL(GURL("http://www.doodle.com"));
+  entry3->SetTimestamp(kTime3);
   EXPECT_CALL(tab_mock, GetCurrentEntryIndex()).WillRepeatedly(Return(2));
   EXPECT_CALL(tab_mock, GetEntryAtIndex(0)).WillRepeatedly(
       Return(entry1.get()));
@@ -580,7 +579,19 @@ TEST_F(SyncSessionModelAssociatorTest, UpdateNewTab) {
   EXPECT_CALL(tab_mock, GetPendingEntryIndex()).WillRepeatedly(Return(-1));
 
   SessionTab session_tab;
-  UpdateSessionTabFromDelegate(tab_mock, kTime1, kTime2, &session_tab);
+  session_tab.window_id.set_id(1);
+  session_tab.tab_id.set_id(1);
+  session_tab.tab_visual_index = 1;
+  session_tab.current_navigation_index = 1;
+  session_tab.pinned = true;
+  session_tab.extension_app_id = "app id";
+  session_tab.user_agent_override = "override";
+  session_tab.timestamp = kTime5;
+  session_tab.navigations.push_back(
+      SessionTypesTestHelper::CreateNavigation(
+          "http://www.example.com", "Example"));
+  session_tab.session_storage_persistent_id = "persistent id";
+  SetSessionTabFromDelegate(tab_mock, kTime4, &session_tab);
 
   EXPECT_EQ(0, session_tab.window_id.id());
   EXPECT_EQ(0, session_tab.tab_id.id());
@@ -589,7 +600,7 @@ TEST_F(SyncSessionModelAssociatorTest, UpdateNewTab) {
   EXPECT_FALSE(session_tab.pinned);
   EXPECT_TRUE(session_tab.extension_app_id.empty());
   EXPECT_TRUE(session_tab.user_agent_override.empty());
-  EXPECT_EQ(kTime1, session_tab.timestamp);
+  EXPECT_EQ(kTime4, session_tab.timestamp);
   ASSERT_EQ(3u, session_tab.navigations.size());
   EXPECT_EQ(entry1->GetVirtualURL(),
             session_tab.navigations[0].virtual_url());
@@ -597,195 +608,10 @@ TEST_F(SyncSessionModelAssociatorTest, UpdateNewTab) {
             session_tab.navigations[1].virtual_url());
   EXPECT_EQ(entry3->GetVirtualURL(),
             session_tab.navigations[2].virtual_url());
-  EXPECT_EQ(2, session_tab.current_navigation_index);
-  EXPECT_TRUE(session_tab.navigations[0].timestamp().is_null());
-  EXPECT_TRUE(session_tab.navigations[1].timestamp().is_null());
-  EXPECT_EQ(kTime2, session_tab.navigations[2].timestamp());
+  EXPECT_EQ(kTime1, session_tab.navigations[0].timestamp());
+  EXPECT_EQ(kTime2, session_tab.navigations[1].timestamp());
+  EXPECT_EQ(kTime3, session_tab.navigations[2].timestamp());
   EXPECT_TRUE(session_tab.session_storage_persistent_id.empty());
-}
-
-// Ensure we preserve old timestamps when the entries don't change.
-TEST_F(SyncSessionModelAssociatorTest, UpdateExistingTab) {
-  // Create a tab with three valid entries.
-  NiceMock<SyncedTabDelegateMock> tab_mock;
-  EXPECT_CALL(tab_mock, GetSessionId()).WillRepeatedly(Return(0));
-  scoped_ptr<content::NavigationEntry> entry1(
-      content::NavigationEntry::Create());
-  entry1->SetVirtualURL(GURL("http://www.google.com"));
-  scoped_ptr<content::NavigationEntry> entry2(
-      content::NavigationEntry::Create());
-  entry2->SetVirtualURL(GURL("http://www.noodle.com"));
-  scoped_ptr<content::NavigationEntry> entry3(
-      content::NavigationEntry::Create());
-  entry3->SetVirtualURL(GURL("http://www.doodle.com"));
-  EXPECT_CALL(tab_mock, GetCurrentEntryIndex()).WillRepeatedly(Return(2));
-  EXPECT_CALL(tab_mock, GetEntryAtIndex(0)).WillRepeatedly(
-      Return(entry1.get()));
-  EXPECT_CALL(tab_mock, GetEntryAtIndex(1)).WillRepeatedly(
-      Return(entry2.get()));
-  EXPECT_CALL(tab_mock, GetEntryAtIndex(2)).WillRepeatedly(
-      Return(entry3.get()));
-  EXPECT_CALL(tab_mock, GetEntryCount()).WillRepeatedly(Return(3));
-  EXPECT_CALL(tab_mock, GetPendingEntryIndex()).WillRepeatedly(Return(-1));
-  EXPECT_CALL(tab_mock, IsPinned()).WillRepeatedly(Return(true));
-
-  // The initial UpdateSessionTabFromDelegate call builds the session_tab.
-  SessionTab session_tab;
-  UpdateSessionTabFromDelegate(tab_mock, kTime1, kTime2, &session_tab);
-
-  // Tweak the timestamps a bit.
-  ASSERT_EQ(3u, session_tab.navigations.size());
-  SessionTypesTestHelper::SetTimestamp(&session_tab.navigations[0], kTime3);
-  SessionTypesTestHelper::SetTimestamp(&session_tab.navigations[1], kTime4);
-  SessionTypesTestHelper::SetTimestamp(&session_tab.navigations[2], kTime5);
-
-  // Now re-associate with the same data.
-  UpdateSessionTabFromDelegate(tab_mock, kTime3, kTime4, &session_tab);
-
-  EXPECT_TRUE(session_tab.pinned);
-  EXPECT_EQ(kTime3, session_tab.timestamp);
-  EXPECT_EQ(entry1->GetVirtualURL(),
-            session_tab.navigations[0].virtual_url());
-  EXPECT_EQ(entry2->GetVirtualURL(),
-            session_tab.navigations[1].virtual_url());
-  EXPECT_EQ(entry3->GetVirtualURL(),
-            session_tab.navigations[2].virtual_url());
-  EXPECT_EQ(2, session_tab.current_navigation_index);
-  EXPECT_EQ(kTime3, session_tab.navigations[0].timestamp());
-  EXPECT_EQ(kTime4, session_tab.navigations[1].timestamp());
-  EXPECT_EQ(kTime5, session_tab.navigations[2].timestamp());
-}
-
-// Ensure we add a fresh timestamp for new entries appended to the end.
-TEST_F(SyncSessionModelAssociatorTest, UpdateAppendedTab) {
-  // Create a tab with three valid entries.
-  NiceMock<SyncedTabDelegateMock> tab_mock;
-  EXPECT_CALL(tab_mock, GetSessionId()).WillRepeatedly(Return(0));
-  scoped_ptr<content::NavigationEntry> entry1(
-      content::NavigationEntry::Create());
-  entry1->SetVirtualURL(GURL("http://www.google.com"));
-  scoped_ptr<content::NavigationEntry> entry2(
-      content::NavigationEntry::Create());
-  entry2->SetVirtualURL(GURL("http://www.noodle.com"));
-  scoped_ptr<content::NavigationEntry> entry3(
-      content::NavigationEntry::Create());
-  entry3->SetVirtualURL(GURL("http://www.doodle.com"));
-  EXPECT_CALL(tab_mock, GetCurrentEntryIndex()).WillRepeatedly(Return(2));
-  EXPECT_CALL(tab_mock, GetEntryAtIndex(0)).WillRepeatedly(
-      Return(entry1.get()));
-  EXPECT_CALL(tab_mock, GetEntryAtIndex(1)).WillRepeatedly(
-      Return(entry2.get()));
-  EXPECT_CALL(tab_mock, GetEntryAtIndex(2)).WillRepeatedly(
-      Return(entry3.get()));
-  EXPECT_CALL(tab_mock, GetEntryCount()).WillRepeatedly(Return(3));
-  EXPECT_CALL(tab_mock, GetPendingEntryIndex()).WillRepeatedly(Return(-1));
-
-  // The initial UpdateSessionTabFromDelegate call builds the session_tab.
-  SessionTab session_tab;
-  UpdateSessionTabFromDelegate(tab_mock, kTime1, kTime2, &session_tab);
-
-  // Add a new entry and change the current navigation index.
-  scoped_ptr<content::NavigationEntry> entry4(
-      content::NavigationEntry::Create());
-  entry4->SetVirtualURL(GURL("http://www.poodle.com"));
-  EXPECT_CALL(tab_mock, GetEntryAtIndex(3)).WillRepeatedly(
-      Return(entry4.get()));
-  EXPECT_CALL(tab_mock, GetEntryCount()).WillRepeatedly(Return(4));
-  EXPECT_CALL(tab_mock, GetCurrentEntryIndex()).WillRepeatedly(Return(3));
-
-  // Now re-associate with the new version.
-  UpdateSessionTabFromDelegate(tab_mock, kTime3, kTime4, &session_tab);
-
-  ASSERT_EQ(4u, session_tab.navigations.size());
-  EXPECT_EQ(entry1->GetVirtualURL(),
-            session_tab.navigations[0].virtual_url());
-  EXPECT_EQ(entry2->GetVirtualURL(),
-            session_tab.navigations[1].virtual_url());
-  EXPECT_EQ(entry3->GetVirtualURL(),
-            session_tab.navigations[2].virtual_url());
-  EXPECT_EQ(entry4->GetVirtualURL(),
-            session_tab.navigations[3].virtual_url());
-  EXPECT_EQ(3, session_tab.current_navigation_index);
-  EXPECT_TRUE(session_tab.navigations[0].timestamp().is_null());
-  EXPECT_TRUE(session_tab.navigations[1].timestamp().is_null());
-  EXPECT_EQ(kTime2, session_tab.navigations[2].timestamp());
-  EXPECT_EQ(kTime4, session_tab.navigations[3].timestamp());
-}
-
-// We shouldn't get confused when old/new entries from the previous tab have
-// been pruned in the new tab. Timestamps for old entries we move back to in the
-// navigation stack should be refreshed.
-TEST_F(SyncSessionModelAssociatorTest, UpdatePrunedTab) {
-  // Create a tab with four valid entries.
-  NiceMock<SyncedTabDelegateMock> tab_mock;
-  EXPECT_CALL(tab_mock, GetSessionId()).WillRepeatedly(Return(0));
-  scoped_ptr<content::NavigationEntry> entry1(
-      content::NavigationEntry::Create());
-  entry1->SetVirtualURL(GURL("http://www.google.com"));
-  scoped_ptr<content::NavigationEntry> entry2(
-      content::NavigationEntry::Create());
-  entry2->SetVirtualURL(GURL("http://www.noodle.com"));
-  scoped_ptr<content::NavigationEntry> entry3(
-      content::NavigationEntry::Create());
-  entry3->SetVirtualURL(GURL("http://www.doodle.com"));
-  scoped_ptr<content::NavigationEntry> entry4(
-      content::NavigationEntry::Create());
-  entry4->SetVirtualURL(GURL("http://www.poodle.com"));
-  EXPECT_CALL(tab_mock, GetCurrentEntryIndex()).WillRepeatedly(Return(3));
-  EXPECT_CALL(tab_mock, GetEntryAtIndex(0)).WillRepeatedly(
-      Return(entry1.get()));
-  EXPECT_CALL(tab_mock, GetEntryAtIndex(1)).WillRepeatedly(
-      Return(entry2.get()));
-  EXPECT_CALL(tab_mock, GetEntryAtIndex(2)).WillRepeatedly(
-      Return(entry3.get()));
-  EXPECT_CALL(tab_mock, GetEntryAtIndex(3)).WillRepeatedly(
-      Return(entry4.get()));
-  EXPECT_CALL(tab_mock, GetEntryCount()).WillRepeatedly(Return(4));
-  EXPECT_CALL(tab_mock, GetPendingEntryIndex()).WillRepeatedly(Return(-1));
-
-  // The initial UpdateSessionTabFromDelegate call builds the session_tab.
-  SessionTab session_tab;
-  UpdateSessionTabFromDelegate(tab_mock, kTime1, kTime2, &session_tab);
-
-  // Reset new tab to have the oldest entry pruned, the current navigation
-  // set to entry3, and a new entry added in place of entry4.
-  testing::Mock::VerifyAndClearExpectations(&tab_mock);
-  EXPECT_CALL(tab_mock, GetCurrentEntryIndex()).WillRepeatedly(Return(1));
-  EXPECT_CALL(tab_mock, GetEntryAtIndex(0)).WillRepeatedly(
-      Return(entry2.get()));
-  EXPECT_CALL(tab_mock, GetEntryAtIndex(1)).WillRepeatedly(
-      Return(entry3.get()));
-  scoped_ptr<content::NavigationEntry> entry5(
-      content::NavigationEntry::Create());
-  entry5->SetVirtualURL(GURL("http://www.noogle.com"));
-  EXPECT_CALL(tab_mock, GetEntryAtIndex(2)).WillRepeatedly(
-      Return(entry5.get()));
-  EXPECT_CALL(tab_mock, GetEntryCount()).WillRepeatedly(Return(3));
-  EXPECT_CALL(tab_mock, GetPendingEntryIndex()).WillRepeatedly(Return(-1));
-
-  // Tweak the timestamps a bit.
-  ASSERT_EQ(4u, session_tab.navigations.size());
-  SessionTypesTestHelper::SetTimestamp(&session_tab.navigations[0], kTime3);
-  SessionTypesTestHelper::SetTimestamp(&session_tab.navigations[1], kTime4);
-  SessionTypesTestHelper::SetTimestamp(&session_tab.navigations[2], kTime5);
-  SessionTypesTestHelper::SetTimestamp(&session_tab.navigations[3], kTime6);
-
-  // Now re-associate with the new version.
-  UpdateSessionTabFromDelegate(tab_mock, kTime7, kTime8, &session_tab);
-
-  // Only entry2's and entry3's timestamps should be preserved. The new
-  // entry should have a new timestamp.
-  ASSERT_EQ(3u, session_tab.navigations.size());
-  EXPECT_EQ(entry2->GetVirtualURL(),
-            session_tab.navigations[0].virtual_url());
-  EXPECT_EQ(entry3->GetVirtualURL(),
-            session_tab.navigations[1].virtual_url());
-  EXPECT_EQ(entry5->GetVirtualURL(),
-            session_tab.navigations[2].virtual_url());
-  EXPECT_EQ(1, session_tab.current_navigation_index);
-  EXPECT_EQ(kTime4, session_tab.navigations[0].timestamp());
-  EXPECT_EQ(kTime5, session_tab.navigations[1].timestamp());
-  EXPECT_EQ(kTime8, session_tab.navigations[2].timestamp());
 }
 
 }  // namespace

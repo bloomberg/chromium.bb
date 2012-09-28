@@ -530,7 +530,7 @@ void TabRestoreService::PopulateTab(Tab* tab,
     NavigationEntry* entry = (i == pending_index) ?
         controller->GetPendingEntry() : controller->GetEntryAtIndex(i);
     tab->navigations[i] =
-        TabNavigation::FromNavigationEntry(i, *entry, base::Time::Now());
+        TabNavigation::FromNavigationEntry(i, *entry);
   }
   tab->timestamp = TimeNow();
   tab->current_navigation_index = controller->GetCurrentEntryIndex();
