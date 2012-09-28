@@ -45,6 +45,15 @@ const ActionMapping* FindActionMapping(const string16& action) {
 
 }  // namespace
 
+const char kActionEdit[] = "http://webintents.org/edit";
+const char kActionPick[] = "http://webintents.org/pick";
+const char kActionSave[] = "http://webintents.org/save";
+const char kActionShare[] = "http://webintents.org/share";
+const char kActionSubscribe[] = "http://webintents.org/subscribe";
+const char kActionView[] = "http://webintents.org/view";
+const char kQuickOfficeViewerServiceURL[] =
+    "chrome-extension://gbkeegbaiigmenfmjfclcdgdpimamgkj/views/appViewer.html";
+
 void RegisterUserPrefs(PrefService* user_prefs) {
   user_prefs->RegisterBooleanPref(prefs::kWebIntentsEnabled, true,
                                   PrefService::SYNCABLE_PREF);

@@ -28,11 +28,6 @@ namespace {
 // TODO(hshi): Temporary workaround for http://crbug.com/134197.
 // If no user-set default service is found, use built-in QuickOffice Viewer as
 // default for MS office files. Remove this once full defaults is in place.
-const char kViewActionURL[] = "http://webintents.org/view";
-
-const char kQuickOfficeViewerServiceURL[] =
-  "chrome-extension://gbkeegbaiigmenfmjfclcdgdpimamgkj/views/appViewer.html";
-
 const char* kQuickOfficeViewerMimeType[] = {
   "application/msword",
   "application/vnd.ms-powerpoint",
@@ -309,9 +304,9 @@ void WebIntentsRegistry::OnWebIntentsDefaultsResultReceived(
     for (size_t i = 0; i < sizeof(kQuickOfficeViewerMimeType) / sizeof(char*);
          ++i) {
       DefaultWebIntentService qoviewer_service;
-      qoviewer_service.action = ASCIIToUTF16(kViewActionURL);
+      qoviewer_service.action = ASCIIToUTF16(web_intents::kActionView);
       qoviewer_service.type = ASCIIToUTF16(kQuickOfficeViewerMimeType[i]);
-      qoviewer_service.service_url = kQuickOfficeViewerServiceURL;
+      qoviewer_service.service_url = web_intents::kQuickOfficeViewerServiceURL;
       if (WebIntentsTypesMatch(qoviewer_service.type, params.type_)) {
         default_service = qoviewer_service;
         break;

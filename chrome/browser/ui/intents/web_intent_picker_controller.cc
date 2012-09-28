@@ -679,8 +679,19 @@ void WebIntentPickerController::RegistryCallsCompleted() {
   pending_registry_calls_count_--;
   if (pending_registry_calls_count_ != 0) return;
 
+  // TODO(groby): Temporary workaround for http://crbug.com/152590
+  // (Also related to http://crbug.com/134197.)
+  // If QuickOffice viewer is a pre-registered default (no digest available) and
+  // no other service is found, use built-in QuickOffice Viewer as default.
+  // Remove once defaults support pre-registration.
+  const GURL kQuickOfficeURL(web_intents::kQuickOfficeViewerServiceURL);
+  bool shouldFireQuickoffice =
+      (picker_model_->default_service_url() == kQuickOfficeURL) &&
+      (picker_model_->GetInstalledServiceCount() == 1);
+
   if (picker_model_->default_service_url().is_valid() &&
-      picker_model_->default_service_hash() == DigestServices()) {
+      (picker_model_->default_service_hash() == DigestServices() ||
+       shouldFireQuickoffice)) {
     // If there's a default service, dispatch to it immediately
     // without showing the picker.
     const WebIntentPickerModel::InstalledService* default_service =

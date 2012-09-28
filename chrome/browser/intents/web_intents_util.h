@@ -25,12 +25,15 @@ enum ActionId {
 
 // "Recognized" action strings. These are basically the
 // actions we're reporting via UMA.
-const char kActionEdit[] = "http://webintents.org/edit";
-const char kActionPick[] = "http://webintents.org/pick";
-const char kActionSave[] = "http://webintents.org/save";
-const char kActionShare[] = "http://webintents.org/share";
-const char kActionSubscribe[] = "http://webintents.org/subscribe";
-const char kActionView[] = "http://webintents.org/view";
+extern const char kActionEdit[];
+extern const char kActionPick[];
+extern const char kActionSave[];
+extern const char kActionShare[];
+extern const char kActionSubscribe[];
+extern const char kActionView[];
+
+// URL for QuickOffice viewer.
+extern const char kQuickOfficeViewerServiceURL[];
 
 // Registers the preferences related to Web Intents.
 void RegisterUserPrefs(PrefService* user_prefs);
