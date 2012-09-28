@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/cpu.h"
 #include "base/message_loop.h"
 #include "base/stl_util.h"
 #include "media/base/decoder_buffer.h"
@@ -138,6 +139,22 @@ void GpuVideoDecoder::Initialize(const scoped_refptr<DemuxerStream>& stream,
                 << config.AsHumanReadableString();
     status_cb.Run(PIPELINE_ERROR_DECODE);
     return;
+  }
+
+  // Only non-Windows, Ivy Bridge+ platforms can support more than 1920x1080.
+  if (config.coded_size().width() > 1920 ||
+      config.coded_size().height() > 1080) {
+    base::CPU cpu;
+    bool hw_large_video_support =
+        cpu.vendor_name() == "GenuineIntel" && cpu.model() >= 58;
+    bool os_large_video_support = true;
+#if defined(OS_WINDOWS)
+    os_large_video_support = false;
+#endif
+    if (!(os_large_video_support && hw_large_video_support)) {
+      status_cb.Run(DECODER_ERROR_NOT_SUPPORTED);
+      return;
+    }
   }
 
   VideoDecodeAccelerator* vda =
