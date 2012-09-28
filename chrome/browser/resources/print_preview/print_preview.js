@@ -665,6 +665,7 @@ cr.define('print_preview', function() {
           return;
           // </if>
           // <if expr="not pp_ifdef('toolkit_views')">
+          // Dummy comment to absorb previous line's comment symbol.
           this.close_();
           // </if>
         }
