@@ -305,7 +305,7 @@ void NavigationControllerImpl::ReloadInternal(bool check_for_repost,
     if (site_instance &&
         site_instance->HasWrongProcessForURL(entry->GetURL())) {
       // Create a navigation entry that resembles the current one, but do not
-      // copy page id, site instance, and content state.
+      // copy page id, site instance, content state, or timestamp.
       NavigationEntryImpl* nav_entry = NavigationEntryImpl::FromNavigationEntry(
           CreateNavigationEntry(
               entry->GetURL(), entry->GetReferrer(), entry->GetTransitionType(),
@@ -739,11 +739,25 @@ bool NavigationControllerImpl::RendererDidNavigate(
       NOTREACHED();
   }
 
+  // At this point, we know that the navigation has just completed, so
+  // record the time.
+  //
+  // TODO(akalin): Use "sane time" as described in
+  // http://www.chromium.org/developers/design-documents/sane-time .
+  //
+  // TODO(akalin): Make sure (to at least a high probability) that the
+  // generated timestamp is unique.  (Move the uniquifying logic from
+  // history_backend.cc.)
+  const base::Time timestamp = base::Time::Now();
+  DVLOG(1) << "Navigation finished at timestamp "
+           << timestamp.ToInternalValue();
+
   // All committed entries should have nonempty content state so WebKit doesn't
   // get confused when we go back to them (see the function for details).
   DCHECK(!params.content_state.empty());
   NavigationEntryImpl* active_entry =
       NavigationEntryImpl::FromNavigationEntry(GetActiveEntry());
+  active_entry->SetTimestamp(timestamp);
   active_entry->SetContentState(params.content_state);
   // No longer needed since content state will hold the post data if any.
   active_entry->SetBrowserInitiatedPostData(NULL);

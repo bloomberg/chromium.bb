@@ -4,6 +4,7 @@
 
 #include "base/string16.h"
 #include "base/string_util.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/navigation_entry_impl.h"
@@ -198,6 +199,14 @@ TEST_F(NavigationEntryTest, NavigationEntryAccessors) {
   entry2_->SetBrowserInitiatedPostData(post_data.get());
   EXPECT_EQ(post_data->front(),
       entry2_->GetBrowserInitiatedPostData()->front());
+}
+
+// Test timestamps.
+TEST_F(NavigationEntryTest, NavigationEntryTimestamps) {
+  EXPECT_EQ(base::Time(), entry1_->GetTimestamp());
+  const base::Time now = base::Time::Now();
+  entry1_->SetTimestamp(now);
+  EXPECT_EQ(now, entry1_->GetTimestamp());
 }
 
 }  // namespace content

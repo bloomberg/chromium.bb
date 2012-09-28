@@ -7,6 +7,7 @@
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 //  These are only used for commented out tests.  If someone wants to enable
 //  them, they should be moved to chrome first.
@@ -101,6 +102,8 @@ TEST_F(NavigationControllerTest, Defaults) {
   NavigationControllerImpl& controller = controller_impl();
 
   EXPECT_FALSE(controller.GetPendingEntry());
+  EXPECT_FALSE(controller.GetActiveEntry());
+  EXPECT_FALSE(controller.GetVisibleEntry());
   EXPECT_FALSE(controller.GetLastCommittedEntry());
   EXPECT_EQ(controller.GetPendingEntryIndex(), -1);
   EXPECT_EQ(controller.GetLastCommittedEntryIndex(), -1);
@@ -128,10 +131,15 @@ TEST_F(NavigationControllerTest, LoadURL) {
   EXPECT_EQ(controller.GetLastCommittedEntryIndex(), -1);
   EXPECT_EQ(controller.GetPendingEntryIndex(), -1);
   EXPECT_FALSE(controller.GetLastCommittedEntry());
-  EXPECT_TRUE(controller.GetPendingEntry());
+  ASSERT_TRUE(controller.GetPendingEntry());
+  EXPECT_EQ(controller.GetPendingEntry(), controller.GetActiveEntry());
+  EXPECT_EQ(controller.GetPendingEntry(), controller.GetVisibleEntry());
   EXPECT_FALSE(controller.CanGoBack());
   EXPECT_FALSE(controller.CanGoForward());
   EXPECT_EQ(contents()->GetMaxPageID(), -1);
+
+  // The timestamp should not have been set yet.
+  EXPECT_TRUE(controller.GetPendingEntry()->GetTimestamp().is_null());
 
   // We should have gotten no notifications from the preceeding checks.
   EXPECT_EQ(0U, notifications.size());
@@ -146,9 +154,14 @@ TEST_F(NavigationControllerTest, LoadURL) {
   EXPECT_EQ(controller.GetPendingEntryIndex(), -1);
   EXPECT_TRUE(controller.GetLastCommittedEntry());
   EXPECT_FALSE(controller.GetPendingEntry());
+  ASSERT_TRUE(controller.GetActiveEntry());
+  EXPECT_EQ(controller.GetActiveEntry(), controller.GetVisibleEntry());
   EXPECT_FALSE(controller.CanGoBack());
   EXPECT_FALSE(controller.CanGoForward());
   EXPECT_EQ(contents()->GetMaxPageID(), 0);
+
+  // The timestamp should have been set.
+  EXPECT_FALSE(controller.GetActiveEntry()->GetTimestamp().is_null());
 
   // Load another...
   controller.LoadURL(
@@ -159,11 +172,15 @@ TEST_F(NavigationControllerTest, LoadURL) {
   EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 0);
   EXPECT_EQ(controller.GetPendingEntryIndex(), -1);
   EXPECT_TRUE(controller.GetLastCommittedEntry());
-  EXPECT_TRUE(controller.GetPendingEntry());
+  ASSERT_TRUE(controller.GetPendingEntry());
+  EXPECT_EQ(controller.GetPendingEntry(), controller.GetActiveEntry());
+  EXPECT_EQ(controller.GetPendingEntry(), controller.GetVisibleEntry());
   // TODO(darin): maybe this should really be true?
   EXPECT_FALSE(controller.CanGoBack());
   EXPECT_FALSE(controller.CanGoForward());
   EXPECT_EQ(contents()->GetMaxPageID(), 0);
+
+  EXPECT_TRUE(controller.GetPendingEntry()->GetTimestamp().is_null());
 
   // Simulate the beforeunload ack for the cross-site transition, and then the
   // commit.
@@ -179,9 +196,13 @@ TEST_F(NavigationControllerTest, LoadURL) {
   EXPECT_EQ(controller.GetPendingEntryIndex(), -1);
   EXPECT_TRUE(controller.GetLastCommittedEntry());
   EXPECT_FALSE(controller.GetPendingEntry());
+  ASSERT_TRUE(controller.GetActiveEntry());
+  EXPECT_EQ(controller.GetActiveEntry(), controller.GetVisibleEntry());
   EXPECT_TRUE(controller.CanGoBack());
   EXPECT_FALSE(controller.CanGoForward());
   EXPECT_EQ(contents()->GetMaxPageID(), 1);
+
+  EXPECT_FALSE(controller.GetActiveEntry()->GetTimestamp().is_null());
 }
 
 void CheckNavigationEntryMatchLoadParams(
@@ -227,6 +248,10 @@ TEST_F(NavigationControllerTest, LoadURLWithParams) {
   NavigationEntryImpl* entry =
       NavigationEntryImpl::FromNavigationEntry(
           controller.GetPendingEntry());
+
+  // The timestamp should not have been set yet.
+  ASSERT_TRUE(entry);
+  EXPECT_TRUE(entry->GetTimestamp().is_null());
 
   CheckNavigationEntryMatchLoadParams(load_params, entry);
 }
@@ -293,6 +318,10 @@ TEST_F(NavigationControllerTest, LoadURL_SamePage) {
   EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
 
+  ASSERT_TRUE(controller.GetActiveEntry());
+  const base::Time timestamp = controller.GetActiveEntry()->GetTimestamp();
+  EXPECT_FALSE(timestamp.is_null());
+
   controller.LoadURL(
       url1, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   EXPECT_EQ(0U, notifications.size());
@@ -306,8 +335,15 @@ TEST_F(NavigationControllerTest, LoadURL_SamePage) {
   EXPECT_EQ(controller.GetPendingEntryIndex(), -1);
   EXPECT_TRUE(controller.GetLastCommittedEntry());
   EXPECT_FALSE(controller.GetPendingEntry());
+  ASSERT_TRUE(controller.GetActiveEntry());
   EXPECT_FALSE(controller.CanGoBack());
   EXPECT_FALSE(controller.CanGoForward());
+
+  // The timestamp should have been updated.
+  //
+  // TODO(akalin): Change this EXPECT_GE (and other similar ones) to
+  // EXPECT_GT once we guarantee that timestamps are unique.
+  EXPECT_GE(controller.GetActiveEntry()->GetTimestamp(), timestamp);
 }
 
 // Tests loading a URL but discarding it before the load commits.
@@ -326,6 +362,10 @@ TEST_F(NavigationControllerTest, LoadURL_Discarded) {
   EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
 
+  ASSERT_TRUE(controller.GetActiveEntry());
+  const base::Time timestamp = controller.GetActiveEntry()->GetTimestamp();
+  EXPECT_FALSE(timestamp.is_null());
+
   controller.LoadURL(
       url2, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   controller.DiscardNonCommittedEntries();
@@ -337,8 +377,12 @@ TEST_F(NavigationControllerTest, LoadURL_Discarded) {
   EXPECT_EQ(controller.GetPendingEntryIndex(), -1);
   EXPECT_TRUE(controller.GetLastCommittedEntry());
   EXPECT_FALSE(controller.GetPendingEntry());
+  ASSERT_TRUE(controller.GetActiveEntry());
   EXPECT_FALSE(controller.CanGoBack());
   EXPECT_FALSE(controller.CanGoForward());
+
+  // Timestamp should not have changed.
+  EXPECT_EQ(timestamp, controller.GetActiveEntry()->GetTimestamp());
 }
 
 // Tests navigations that come in unrequested. This happens when the user
@@ -671,9 +715,13 @@ TEST_F(NavigationControllerTest, Reload) {
   test_rvh()->SendNavigate(0, url1);
   EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
+  ASSERT_TRUE(controller.GetActiveEntry());
   controller.GetActiveEntry()->SetTitle(ASCIIToUTF16("Title"));
   controller.Reload(true);
   EXPECT_EQ(0U, notifications.size());
+
+  const base::Time timestamp = controller.GetActiveEntry()->GetTimestamp();
+  EXPECT_FALSE(timestamp.is_null());
 
   // The reload is pending.
   EXPECT_EQ(controller.GetEntryCount(), 1);
@@ -700,6 +748,10 @@ TEST_F(NavigationControllerTest, Reload) {
   EXPECT_FALSE(controller.GetPendingEntry());
   EXPECT_FALSE(controller.CanGoBack());
   EXPECT_FALSE(controller.CanGoForward());
+
+  // The timestamp should have been updated.
+  ASSERT_TRUE(controller.GetActiveEntry());
+  EXPECT_GE(controller.GetActiveEntry()->GetTimestamp(), timestamp);
 }
 
 // Tests what happens when a reload navigation produces a new page.
@@ -838,6 +890,11 @@ TEST_F(NavigationControllerTest, Back) {
   EXPECT_FALSE(controller.CanGoBack());
   EXPECT_TRUE(controller.CanGoForward());
 
+  // Timestamp for entry 1 should be on or after that of entry 0.
+  EXPECT_FALSE(controller.GetEntryAtIndex(0)->GetTimestamp().is_null());
+  EXPECT_GE(controller.GetEntryAtIndex(1)->GetTimestamp(),
+            controller.GetEntryAtIndex(0)->GetTimestamp());
+
   test_rvh()->SendNavigate(0, url2);
   EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
@@ -850,6 +907,11 @@ TEST_F(NavigationControllerTest, Back) {
   EXPECT_FALSE(controller.GetPendingEntry());
   EXPECT_FALSE(controller.CanGoBack());
   EXPECT_TRUE(controller.CanGoForward());
+
+  // Timestamp for entry 0 should be on or after that of entry 1
+  // (since we went back to it).
+  EXPECT_GE(controller.GetEntryAtIndex(0)->GetTimestamp(),
+            controller.GetEntryAtIndex(1)->GetTimestamp());
 }
 
 // Tests what happens when a back navigation produces a new page.
@@ -1017,6 +1079,12 @@ TEST_F(NavigationControllerTest, Forward) {
   EXPECT_TRUE(controller.CanGoBack());
   EXPECT_FALSE(controller.CanGoForward());
 
+  // Timestamp for entry 0 should be on or after that of entry 1
+  // (since we went back to it).
+  EXPECT_FALSE(controller.GetEntryAtIndex(0)->GetTimestamp().is_null());
+  EXPECT_GE(controller.GetEntryAtIndex(0)->GetTimestamp(),
+            controller.GetEntryAtIndex(1)->GetTimestamp());
+
   test_rvh()->SendNavigate(1, url2);
   EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
@@ -1029,6 +1097,11 @@ TEST_F(NavigationControllerTest, Forward) {
   EXPECT_FALSE(controller.GetPendingEntry());
   EXPECT_TRUE(controller.CanGoBack());
   EXPECT_FALSE(controller.CanGoForward());
+
+  // Timestamp for entry 1 should be on or after that of entry 0
+  // (since we went forward to it).
+  EXPECT_GE(controller.GetEntryAtIndex(1)->GetTimestamp(),
+            controller.GetEntryAtIndex(0)->GetTimestamp());
 }
 
 // Tests what happens when a forward navigation produces a new page.
@@ -1744,6 +1817,8 @@ TEST_F(NavigationControllerTest, RestoreNavigate) {
   entry->SetPageID(0);
   entry->SetTitle(ASCIIToUTF16("Title"));
   entry->SetContentState("state");
+  const base::Time timestamp = base::Time::Now();
+  entry->SetTimestamp(timestamp);
   entries.push_back(entry);
   scoped_ptr<WebContentsImpl> our_contents(
       WebContentsImpl::Create(browser_context(), NULL, MSG_ROUTING_NONE,
@@ -1754,6 +1829,7 @@ TEST_F(NavigationControllerTest, RestoreNavigate) {
 
   // Before navigating to the restored entry, it should have a restore_type
   // and no SiteInstance.
+  ASSERT_EQ(1, our_controller.GetEntryCount());
   EXPECT_EQ(NavigationEntryImpl::RESTORE_LAST_SESSION,
             NavigationEntryImpl::FromNavigationEntry(
                 our_controller.GetEntryAtIndex(0))->restore_type());
@@ -1772,6 +1848,9 @@ TEST_F(NavigationControllerTest, RestoreNavigate) {
                 (our_controller.GetEntryAtIndex(0))->restore_type());
   EXPECT_TRUE(NavigationEntryImpl::FromNavigationEntry(
       our_controller.GetEntryAtIndex(0))->site_instance());
+
+  // Timestamp should remain the same before the navigation finishes.
+  EXPECT_EQ(timestamp, our_controller.GetEntryAtIndex(0)->GetTimestamp());
 
   // Say we navigated to that entry.
   ViewHostMsg_FrameNavigate_Params params;
@@ -1798,6 +1877,9 @@ TEST_F(NavigationControllerTest, RestoreNavigate) {
   EXPECT_EQ(NavigationEntryImpl::RESTORE_NONE,
             NavigationEntryImpl::FromNavigationEntry(
                 our_controller.GetEntryAtIndex(0))->restore_type());
+
+  // Timestamp should have been updated.
+  EXPECT_GE(our_controller.GetEntryAtIndex(0)->GetTimestamp(), timestamp);
 }
 
 // Tests that we can still navigate to a restored entry after a different
