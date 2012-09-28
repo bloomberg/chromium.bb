@@ -45,7 +45,6 @@ class TabContentsTestHarness;
 class TabStripModel;
 class TabStripModelContentsCreator;
 class ThumbnailGenerator;
-class TranslateTabHelper;
 class TranslationInfoBarTestContentsCreator;
 class WebDialogGtk;
 class WebDialogWindowControllerTabContentsCreator;
@@ -185,10 +184,6 @@ class TabContents : public content::WebContentsObserver {
     return thumbnail_generator_.get();
   }
 
-  TranslateTabHelper* translate_tab_helper() {
-    return translate_tab_helper_.get();
-  }
-
   // Overrides -----------------------------------------------------------------
 
   // content::WebContentsObserver overrides:
@@ -230,7 +225,6 @@ class TabContents : public content::WebContentsObserver {
   scoped_ptr<browser_sync::SyncedTabDelegate> synced_tab_delegate_;
 
   scoped_ptr<ThumbnailGenerator> thumbnail_generator_;
-  scoped_ptr<TranslateTabHelper> translate_tab_helper_;
 
   // WebContents (MUST BE LAST) ------------------------------------------------
 

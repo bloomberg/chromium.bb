@@ -1825,16 +1825,17 @@ bool DetectTabLanguageFunction::RunImpl() {
 
   AddRef();  // Balanced in GotLanguage()
 
-  TranslateTabHelper* helper = contents->translate_tab_helper();
-  if (!helper->language_state().original_language().empty()) {
+  TranslateTabHelper* translate_tab_helper =
+      TranslateTabHelper::FromWebContents(contents->web_contents());
+  if (!translate_tab_helper->language_state().original_language().empty()) {
     // Delay the callback invocation until after the current JS call has
     // returned.
     MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
         &DetectTabLanguageFunction::GotLanguage, this,
-        helper->language_state().original_language()));
+        translate_tab_helper->language_state().original_language()));
     return true;
   }
-  // The tab contents does not know its language yet.  Let's  wait until it
+  // The tab contents does not know its language yet.  Let's wait until it
   // receives it, or until the tab is closed/navigates to some other page.
   registrar_.Add(this, chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
                  content::Source<WebContents>(contents->web_contents()));

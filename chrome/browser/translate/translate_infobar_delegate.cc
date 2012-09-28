@@ -102,9 +102,9 @@ void TranslateInfoBarDelegate::TranslationDeclined() {
   // translations when getting a LANGUAGE_DETERMINED from the page, which
   // happens when a load stops. That could happen multiple times, including
   // after the user already declined the translation.)
-  TranslateTabHelper* helper = TabContents::FromWebContents(
-      owner()->GetWebContents())->translate_tab_helper();
-  helper->language_state().set_translation_declined(true);
+  TranslateTabHelper* translate_tab_helper =
+      TranslateTabHelper::FromWebContents(owner()->GetWebContents());
+  translate_tab_helper->language_state().set_translation_declined(true);
 }
 
 bool TranslateInfoBarDelegate::IsLanguageBlacklisted() {

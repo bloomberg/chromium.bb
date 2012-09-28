@@ -5,18 +5,22 @@
 #ifndef CHROME_BROWSER_TRANSLATE_TRANSLATE_TAB_HELPER_H_
 #define CHROME_BROWSER_TRANSLATE_TRANSLATE_TAB_HELPER_H_
 
+#include "chrome/browser/common/web_contents_user_data.h"
 #include "chrome/browser/tab_contents/language_state.h"
 #include "chrome/common/translate_errors.h"
 #include "content/public/browser/web_contents_observer.h"
 
-class TranslateTabHelper : public content::WebContentsObserver {
+class TranslateTabHelper : public content::WebContentsObserver,
+                           public WebContentsUserData<TranslateTabHelper> {
  public:
-  explicit TranslateTabHelper(content::WebContents* web_contents);
   virtual ~TranslateTabHelper();
 
   LanguageState& language_state() { return language_state_; }
 
  private:
+  explicit TranslateTabHelper(content::WebContents* web_contents);
+  friend class WebContentsUserData<TranslateTabHelper>;
+
   // content::WebContentsObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void DidNavigateAnyFrame(

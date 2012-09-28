@@ -154,7 +154,7 @@ TabContents::TabContents(WebContents* contents)
   SSLTabHelper::CreateForWebContents(contents);
   synced_tab_delegate_.reset(new TabContentsSyncedTabDelegate(this));
   TabSpecificContentSettings::CreateForWebContents(contents);
-  translate_tab_helper_.reset(new TranslateTabHelper(contents));
+  TranslateTabHelper::CreateForWebContents(contents);
   ZoomController::CreateForWebContents(contents);
 
 #if defined(ENABLE_AUTOMATION)

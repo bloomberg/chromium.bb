@@ -1498,8 +1498,8 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, PRE_TranslateSessionRestore) {
   SessionStartupPref::SetStartupPref(browser()->profile(), pref);
 
   WebContents* current_web_contents = chrome::GetActiveWebContents(browser());
-  TabContents* current_tab_contents = chrome::GetActiveTabContents(browser());
-  TranslateTabHelper* helper = current_tab_contents->translate_tab_helper();
+  TranslateTabHelper* translate_tab_helper =
+      TranslateTabHelper::FromWebContents(current_web_contents);
   content::Source<WebContents> source(current_web_contents);
 
   ui_test_utils::WindowedNotificationObserverWithDetails<std::string>
@@ -1514,7 +1514,7 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, PRE_TranslateSessionRestore) {
   EXPECT_TRUE(fr_language_detected_signal.GetDetailsFor(
         source.map_key(), &lang));
   EXPECT_EQ("fr", lang);
-  EXPECT_EQ("fr", helper->language_state().original_language());
+  EXPECT_EQ("fr", translate_tab_helper->language_state().original_language());
 }
 
 IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, TranslateSessionRestore) {

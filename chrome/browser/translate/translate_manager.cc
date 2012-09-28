@@ -330,14 +330,13 @@ void TranslateManager::Observe(int type,
         return;
       }
 
-      TabContents* tab_contents =
-          TabContents::FromWebContents(controller->GetWebContents());
-      if (!tab_contents || !tab_contents->translate_tab_helper())
+      TranslateTabHelper* translate_tab_helper =
+          TranslateTabHelper::FromWebContents(controller->GetWebContents());
+      if (!translate_tab_helper)
         return;
 
-      TranslateTabHelper* helper = tab_contents->translate_tab_helper();
       if (!load_details->is_main_frame &&
-          helper->language_state().translation_declined()) {
+          translate_tab_helper->language_state().translation_declined()) {
         // Some sites (such as Google map) may trigger sub-frame navigations
         // when the user interacts with the page.  We don't want to show a new
         // infobar if the user already dismissed one in that case.
@@ -350,7 +349,7 @@ void TranslateManager::Observe(int type,
       // When doing a page reload, TAB_LANGUAGE_DETERMINED is not sent,
       // so the translation needs to be explicitly initiated, but only when the
       // page is translatable.
-      if (!helper->language_state().page_translatable())
+      if (!translate_tab_helper->language_state().page_translatable())
         return;
       // Note that we delay it as the TranslateManager gets this notification
       // before the WebContents and the WebContents processing might remove the
@@ -361,21 +360,20 @@ void TranslateManager::Observe(int type,
               &TranslateManager::InitiateTranslationPosted,
               weak_method_factory_.GetWeakPtr(),
               controller->GetWebContents()->GetRenderProcessHost()->GetID(),
-              controller->GetWebContents()->
-                  GetRenderViewHost()->GetRoutingID(),
-              helper->language_state().original_language()));
+              controller->GetWebContents()->GetRenderViewHost()->GetRoutingID(),
+              translate_tab_helper->language_state().original_language()));
       break;
     }
     case chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED: {
       WebContents* tab = content::Source<WebContents>(source).ptr();
       // We may get this notifications multiple times.  Make sure to translate
       // only once.
-      TabContents* tab_contents = TabContents::FromWebContents(tab);
-      if (!tab_contents || !tab_contents->translate_tab_helper())
+      TranslateTabHelper* translate_tab_helper =
+          TranslateTabHelper::FromWebContents(tab);
+      if (!translate_tab_helper)
         return;
 
-      LanguageState& language_state =
-          tab_contents->translate_tab_helper()->language_state();
+      LanguageState& language_state = translate_tab_helper->language_state();
       if (language_state.page_translatable() &&
           !language_state.translation_pending() &&
           !language_state.translation_declined() &&
@@ -589,18 +587,20 @@ void TranslateManager::InitiateTranslation(WebContents* web_contents,
     }
   }
 
-  TabContents* tab_contents = TabContents::FromWebContents(web_contents);
-  if (!tab_contents || !tab_contents->translate_tab_helper())
+  TranslateTabHelper* translate_tab_helper =
+      TranslateTabHelper::FromWebContents(web_contents);
+  if (!translate_tab_helper)
     return;
 
-  TranslateTabHelper* helper = tab_contents->translate_tab_helper();
-  std::string auto_translate_to = helper->language_state().AutoTranslateTo();
+  std::string auto_translate_to =
+      translate_tab_helper->language_state().AutoTranslateTo();
   if (!auto_translate_to.empty()) {
     // This page was navigated through a click from a translated page.
     TranslatePage(web_contents, language_code, auto_translate_to);
     return;
   }
 
+  TabContents* tab_contents = TabContents::FromWebContents(web_contents);
   InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
   // Prompts the user if he/she wants the page translated.
   infobar_helper->AddInfoBar(
@@ -617,9 +617,9 @@ void TranslateManager::InitiateTranslationPosted(
   if (!web_contents)
     return;
 
-  TranslateTabHelper* helper =
-      TabContents::FromWebContents(web_contents)->translate_tab_helper();
-  if (helper->language_state().translation_pending())
+  TranslateTabHelper* translate_tab_helper =
+      TranslateTabHelper::FromWebContents(web_contents);
+  if (translate_tab_helper->language_state().translation_pending())
     return;
 
   InitiateTranslation(web_contents, GetLanguageCode(page_lang));
@@ -667,10 +667,10 @@ void TranslateManager::RevertTranslation(WebContents* web_contents) {
   web_contents->GetRenderViewHost()->Send(new ChromeViewMsg_RevertTranslation(
       web_contents->GetRenderViewHost()->GetRoutingID(), entry->GetPageID()));
 
-  TranslateTabHelper* helper =
-      TabContents::FromWebContents(web_contents)->translate_tab_helper();
-  helper->language_state().set_current_language(
-      helper->language_state().original_language());
+  TranslateTabHelper* translate_tab_helper =
+      TranslateTabHelper::FromWebContents(web_contents);
+  translate_tab_helper->language_state().set_current_language(
+      translate_tab_helper->language_state().original_language());
 }
 
 void TranslateManager::ReportLanguageDetectionError(WebContents* web_contents) {
@@ -690,9 +690,10 @@ void TranslateManager::ReportLanguageDetectionError(WebContents* web_contents) {
   report_error_url_str += net::EscapeUrlEncodedData(page_url.spec(), true);
   report_error_url_str += "&sl=";
 
-  TranslateTabHelper* helper =
-      TabContents::FromWebContents(web_contents)->translate_tab_helper();
-  report_error_url_str += helper->language_state().original_language();
+  TranslateTabHelper* translate_tab_helper =
+      TranslateTabHelper::FromWebContents(web_contents);
+  report_error_url_str +=
+      translate_tab_helper->language_state().original_language();
   report_error_url_str += "&hl=";
   report_error_url_str +=
       GetLanguageCode(g_browser_process->GetApplicationLocale());
@@ -713,12 +714,12 @@ void TranslateManager::DoTranslatePage(WebContents* web_contents,
     return;
   }
 
-  TabContents* tab_contents = TabContents::FromWebContents(web_contents);
-  if (!tab_contents || !tab_contents->translate_tab_helper())
+  TranslateTabHelper* translate_tab_helper =
+      TranslateTabHelper::FromWebContents(web_contents);
+  if (!translate_tab_helper)
     return;
 
-  tab_contents->translate_tab_helper()->
-      language_state().set_translation_pending(true);
+  translate_tab_helper->language_state().set_translation_pending(true);
   web_contents->GetRenderViewHost()->Send(new ChromeViewMsg_TranslatePage(
       web_contents->GetRenderViewHost()->GetRoutingID(), entry->GetPageID(),
       translate_script, source_lang, target_lang));

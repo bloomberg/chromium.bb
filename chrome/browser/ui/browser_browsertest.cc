@@ -868,19 +868,19 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, PageLanguageDetection) {
                 content::PAGE_TRANSITION_TYPED);
 
   WebContents* current_web_contents = chrome::GetActiveWebContents(browser());
-  TabContents* current_tab_contents = chrome::GetActiveTabContents(browser());
-  TranslateTabHelper* helper = current_tab_contents->translate_tab_helper();
+  TranslateTabHelper* translate_tab_helper =
+      TranslateTabHelper::FromWebContents(current_web_contents);
   content::Source<WebContents> source(current_web_contents);
 
   ui_test_utils::WindowedNotificationObserverWithDetails<std::string>
       en_language_detected_signal(chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
                                   source);
-  EXPECT_EQ("", helper->language_state().original_language());
+  EXPECT_EQ("", translate_tab_helper->language_state().original_language());
   en_language_detected_signal.Wait();
   EXPECT_TRUE(en_language_detected_signal.GetDetailsFor(
         source.map_key(), &lang));
   EXPECT_EQ("en", lang);
-  EXPECT_EQ("en", helper->language_state().original_language());
+  EXPECT_EQ("en", translate_tab_helper->language_state().original_language());
 
   // Now navigate to a page in French.
   ui_test_utils::WindowedNotificationObserverWithDetails<std::string>
@@ -893,7 +893,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, PageLanguageDetection) {
   EXPECT_TRUE(fr_language_detected_signal.GetDetailsFor(
         source.map_key(), &lang));
   EXPECT_EQ("fr", lang);
-  EXPECT_EQ("fr", helper->language_state().original_language());
+  EXPECT_EQ("fr", translate_tab_helper->language_state().original_language());
 }
 
 // Chromeos defaults to restoring the last session, so this test isn't
