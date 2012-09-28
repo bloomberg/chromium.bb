@@ -57,6 +57,10 @@ class CONTENT_EXPORT BrowserPlugin :
   // element.
   void AdvanceFocus(bool reverse);
 
+  // Informs the BrowserPlugin that the guest has started/stopped accepting
+  // touch events.
+  void SetAcceptTouchEvents(bool accept);
+
   // Indicates whether there are any Javascript listeners attached to a
   // provided event_name.
   bool HasListeners(const std::string& event_name);

@@ -73,6 +73,11 @@ void BrowserPluginGuest::RendererUnresponsive(WebContents* source) {
   base::KillProcess(process_handle, RESULT_CODE_HUNG, false);
 }
 
+void BrowserPluginGuest::SetIsAcceptingTouchEvents(bool accept) {
+  SendMessageToEmbedder(
+      new BrowserPluginMsg_ShouldAcceptTouchEvents(instance_id(), accept));
+}
+
 WebContents* BrowserPluginGuest::GetWebContents() {
   return web_contents();
 }

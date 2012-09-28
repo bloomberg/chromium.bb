@@ -119,6 +119,10 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsDelegate,
   // embedder) instead of default view/widget host.
   void HandleInputEventAck(RenderViewHost* render_view_host, bool handled);
 
+  // The guest needs to notify the plugin in the embedder to start (or stop)
+  // accepting touch events.
+  void SetIsAcceptingTouchEvents(bool accept);
+
   // Exposes the protected web_contents() from WebContentsObserver.
   WebContents* GetWebContents();
 

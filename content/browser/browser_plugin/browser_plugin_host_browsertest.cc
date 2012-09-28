@@ -15,6 +15,7 @@
 #include "content/common/view_messages.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_view_host_observer.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/shell.h"
@@ -40,6 +41,19 @@ const char* kHTMLForGuestInfiniteLoop =
     "  setTimeout(function () {while (true) {} }, 0);"
     "}"
     "</script></head><body></body></html>";
+const char kHTMLForGuestTouchHandler[] =
+    "data:text/html,<html><body><div id=\"touch\">With touch</div></body>"
+    "<script type=\"text/javascript\">"
+    "function handler() {}"
+    "function InstallTouchHandler() { "
+    "  document.getElementById(\"touch\").addEventListener(\"touchstart\", "
+    "     handler);"
+    "}"
+    "function UninstallTouchHandler() { "
+    "  document.getElementById(\"touch\").removeEventListener(\"touchstart\", "
+    "     handler);"
+    "}"
+    "</script></html>";
 
 // Test factory for creating test instances of BrowserPluginEmbedder and
 // BrowserPluginGuest.
@@ -124,6 +138,48 @@ class TestShortHangTimeoutGuestFactory : public TestBrowserPluginHostFactory {
   friend struct DefaultSingletonTraits<TestShortHangTimeoutGuestFactory>;
 
   DISALLOW_COPY_AND_ASSIGN(TestShortHangTimeoutGuestFactory);
+};
+
+// A transparent observer that can be used to verify that a RenderViewHost
+// received a specific message.
+class RenderViewHostMessageObserver : public RenderViewHostObserver {
+ public:
+  RenderViewHostMessageObserver(RenderViewHost* host,
+                                uint32 message_id)
+      : RenderViewHostObserver(host),
+        message_id_(message_id),
+        message_received_(false) {
+  }
+
+  virtual ~RenderViewHostMessageObserver() {}
+
+  void WaitUntilMessageReceived() {
+    if (message_received_)
+      return;
+    message_loop_runner_ = new MessageLoopRunner();
+    message_loop_runner_->Run();
+  }
+
+  void ResetState() {
+    message_received_ = false;
+  }
+
+  // IPC::Listener implementation.
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
+    if (message.type() == message_id_) {
+      message_received_ = true;
+      if (message_loop_runner_)
+        message_loop_runner_->Quit();
+    }
+    return false;
+  }
+
+ private:
+  scoped_refptr<MessageLoopRunner> message_loop_runner_;
+  uint32 message_id_;
+  bool message_received_;
+
+  DISALLOW_COPY_AND_ASSIGN(RenderViewHostMessageObserver);
 };
 
 class BrowserPluginHostTest : public ContentBrowserTest {
@@ -567,6 +623,66 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, StopGuest) {
   rvh->ExecuteJavascriptAndGetValue(string16(), ASCIIToUTF16(
       "document.getElementById('plugin').stop()"));
   test_guest->WaitForStop();
+}
+
+// Verifies that installing/uninstalling touch-event handlers in the guest
+// plugin correctly updates the touch-event handling state in the embedder.
+IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, AcceptTouchEvents) {
+  ASSERT_TRUE(test_server()->Start());
+  GURL test_url(test_server()->GetURL(
+      "files/browser_plugin_embedder.html"));
+  NavigateToURL(shell(), test_url);
+
+  WebContentsImpl* embedder_web_contents = static_cast<WebContentsImpl*>(
+      shell()->web_contents());
+  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
+      embedder_web_contents->GetRenderViewHost());
+
+  rvh->ExecuteJavascriptAndGetValue(string16(), ASCIIToUTF16(
+      StringPrintf("SetSrc('%s');", kHTMLForGuestTouchHandler)));
+
+  // Wait to make sure embedder is created/attached to WebContents.
+  TestBrowserPluginHostFactory::GetInstance()->WaitForEmbedderCreation();
+
+  TestBrowserPluginEmbedder* test_embedder =
+      static_cast<TestBrowserPluginEmbedder*>(
+          embedder_web_contents->GetBrowserPluginEmbedder());
+  ASSERT_TRUE(test_embedder);
+  test_embedder->WaitForGuestAdded();
+
+  // Verify that we have exactly one guest.
+  const BrowserPluginEmbedder::ContainerInstanceMap& instance_map =
+      test_embedder->guest_web_contents_for_testing();
+  EXPECT_EQ(1u, instance_map.size());
+
+  WebContentsImpl* test_guest_web_contents = static_cast<WebContentsImpl*>(
+      instance_map.begin()->second);
+  TestBrowserPluginGuest* test_guest = static_cast<TestBrowserPluginGuest*>(
+      test_guest_web_contents->GetBrowserPluginGuest());
+
+  // Wait for the guest to send an UpdateRectMsg, which means the guest is
+  // ready.
+  test_guest->WaitForUpdateRectMsg();
+
+  // The embedder should not have any touch event handlers at this point.
+  EXPECT_FALSE(rvh->has_touch_handler());
+
+  // Install the touch handler in the guest. This should cause the embedder to
+  // start listening for touch events too.
+  RenderViewHostMessageObserver observer(rvh,
+      ViewHostMsg_HasTouchEventHandlers::ID);
+  test_guest_web_contents->GetRenderViewHost()->ExecuteJavascriptAndGetValue(
+      string16(), ASCIIToUTF16("InstallTouchHandler();"));
+  observer.WaitUntilMessageReceived();
+  EXPECT_TRUE(rvh->has_touch_handler());
+
+  // Uninstalling the touch-handler in guest should cause the embedder to stop
+  // listening for touch events.
+  observer.ResetState();
+  test_guest_web_contents->GetRenderViewHost()->ExecuteJavascriptAndGetValue(
+      string16(), ASCIIToUTF16("UninstallTouchHandler();"));
+  observer.WaitUntilMessageReceived();
+  EXPECT_FALSE(rvh->has_touch_handler());
 }
 
 }  // namespace content

@@ -159,6 +159,12 @@ IPC_MESSAGE_CONTROL2(BrowserPluginMsg_AdvanceFocus,
                      int /* instance_id */,
                      bool /* reverse */)
 
+// When the guest starts/stops listening to touch events, it needs to notify the
+// plugin in the embedder about it.
+IPC_MESSAGE_CONTROL2(BrowserPluginMsg_ShouldAcceptTouchEvents,
+                     int /* instance_id */,
+                     bool /* accept */)
+
 // The guest has damage it wants to convey to the embedder so that it can
 // update its backing store.
 IPC_MESSAGE_CONTROL3(BrowserPluginMsg_UpdateRect,

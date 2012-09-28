@@ -47,6 +47,7 @@ class BrowserPluginGuestHelper : public RenderViewHostObserver {
                              bool processed);
   void OnTakeFocus(bool reverse);
   void OnShowWidget(int route_id, const gfx::Rect& initial_pos);
+  void OnMsgHasTouchEventHandlers(bool has_handlers);
   void OnSetCursor(const WebCursor& cursor);
 
   BrowserPluginGuest* guest_;

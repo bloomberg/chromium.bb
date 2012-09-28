@@ -29,6 +29,8 @@ bool BrowserPluginGuestHelper::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ViewHostMsg_HandleInputEvent_ACK, OnHandleInputEventAck)
     IPC_MESSAGE_HANDLER(ViewHostMsg_TakeFocus, OnTakeFocus)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowWidget, OnShowWidget)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_HasTouchEventHandlers,
+                        OnMsgHasTouchEventHandlers)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetCursor, OnSetCursor)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -53,6 +55,10 @@ void BrowserPluginGuestHelper::OnTakeFocus(bool reverse) {
 void BrowserPluginGuestHelper::OnShowWidget(int route_id,
                                             const gfx::Rect& initial_pos) {
   guest_->ShowWidget(render_view_host(), route_id, initial_pos);
+}
+
+void BrowserPluginGuestHelper::OnMsgHasTouchEventHandlers(bool has_handlers) {
+  guest_->SetIsAcceptingTouchEvents(has_handlers);
 }
 
 void BrowserPluginGuestHelper::OnSetCursor(const WebCursor& cursor) {

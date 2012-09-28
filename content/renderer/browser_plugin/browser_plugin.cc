@@ -309,6 +309,11 @@ void BrowserPlugin::AdvanceFocus(bool reverse) {
     render_view_->GetWebView()->advanceFocus(reverse);
 }
 
+void BrowserPlugin::SetAcceptTouchEvents(bool accept) {
+  if (container())
+    container()->setIsAcceptingTouchEvents(accept);
+}
+
 bool BrowserPlugin::HasListeners(const std::string& event_name) {
   return event_listener_map_.find(event_name) != event_listener_map_.end();
 }
