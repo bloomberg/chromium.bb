@@ -323,6 +323,7 @@ TEST_F(RenderTextTest, StyleRangesAdjust) {
 void TestVisualCursorMotionInObscuredField(RenderText* render_text,
                                            const string16& text,
                                            bool select) {
+  ASSERT_TRUE(render_text->obscured());
   render_text->SetText(text);
   int len = text.length();
   render_text->MoveCursor(LINE_BREAK, CURSOR_RIGHT, select);
@@ -347,49 +348,70 @@ void TestVisualCursorMotionInObscuredField(RenderText* render_text,
   EXPECT_EQ(SelectionModel(0, CURSOR_BACKWARD), render_text->selection_model());
 }
 
-TEST_F(RenderTextTest, PasswordCensorship) {
+TEST_F(RenderTextTest, ObscuredText) {
   const string16 seuss = ASCIIToUTF16("hop on pop");
   const string16 no_seuss = ASCIIToUTF16("**********");
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
 
-  // GetObscuredText returns asterisks when the obscured bit is set.
+  // GetLayoutText() returns asterisks when the obscured bit is set.
   render_text->SetText(seuss);
   render_text->SetObscured(true);
   EXPECT_EQ(seuss, render_text->text());
-  EXPECT_EQ(no_seuss, render_text->GetDisplayText());
+  EXPECT_EQ(no_seuss, render_text->GetLayoutText());
   render_text->SetObscured(false);
   EXPECT_EQ(seuss, render_text->text());
-  EXPECT_EQ(seuss, render_text->GetDisplayText());
+  EXPECT_EQ(seuss, render_text->GetLayoutText());
 
-// TODO(benrg): No Windows implementation yet.
-#if !defined(OS_WIN)
   render_text->SetObscured(true);
 
   // Surrogate pairs are counted as one code point.
   const char16 invalid_surrogates[] = {0xDC00, 0xD800, 0};
   render_text->SetText(invalid_surrogates);
-  EXPECT_EQ(ASCIIToUTF16("**"), render_text->GetDisplayText());
+  EXPECT_EQ(ASCIIToUTF16("**"), render_text->GetLayoutText());
   const char16 valid_surrogates[] = {0xD800, 0xDC00, 0};
   render_text->SetText(valid_surrogates);
-  EXPECT_EQ(ASCIIToUTF16("*"), render_text->GetDisplayText());
+  EXPECT_EQ(ASCIIToUTF16("*"), render_text->GetLayoutText());
   EXPECT_EQ(0U, render_text->cursor_position());
   render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, false);
   EXPECT_EQ(2U, render_text->cursor_position());
 
-  // Cursoring is independent of the underlying characters when the text is
-  // obscured.
+  // Test index conversion and cursor validity with a valid surrogate pair.
+  EXPECT_EQ(0U, render_text->TextIndexToLayoutIndex(0U));
+  EXPECT_EQ(1U, render_text->TextIndexToLayoutIndex(1U));
+  EXPECT_EQ(1U, render_text->TextIndexToLayoutIndex(2U));
+  EXPECT_EQ(0U, render_text->LayoutIndexToTextIndex(0U));
+  EXPECT_EQ(2U, render_text->LayoutIndexToTextIndex(1U));
+  EXPECT_TRUE(render_text->IsCursorablePosition(0U));
+  EXPECT_FALSE(render_text->IsCursorablePosition(1U));
+  EXPECT_TRUE(render_text->IsCursorablePosition(2U));
+
+  // FindCursorPosition() should not return positions between a surrogate pair.
+  render_text->SetDisplayRect(Rect(0, 0, 20, 20));
+  EXPECT_EQ(render_text->FindCursorPosition(Point(0, 0)).caret_pos(), 0U);
+  EXPECT_EQ(render_text->FindCursorPosition(Point(20, 0)).caret_pos(), 2U);
+  for (int x = -1; x <= 20; ++x) {
+    SelectionModel selection = render_text->FindCursorPosition(Point(x, 0));
+    EXPECT_TRUE(selection.caret_pos() == 0U || selection.caret_pos() == 2U);
+  }
+
+  // GetGlyphBounds() should yield the entire string bounds for text index 0.
+  int height = 0;
+  ui::Range bounds;
+  render_text->GetGlyphBounds(0U, &bounds, &height);
+  EXPECT_EQ(render_text->GetStringSize().width(),
+            static_cast<int>(bounds.length()));
+
+  // Cursoring is independent of underlying characters when text is obscured.
   const wchar_t* const texts[] = {
-    L"hop on pop",           // word boundaries
-    L"ab \x5D0\x5D1" L"12",  // bidi embedding level of 2
-    L"\x5D0\x5D1" L"12",     // RTL paragraph direction on Linux
-    L"\x5D0\x5D1"            // pure RTL
+    kWeak, kLtr, kLtrRtl, kLtrRtlLtr, kRtl, kRtlLtr, kRtlLtrRtl,
+    L"hop on pop",                             // Check LTR word boundaries.
+    L"\x05d0\x05d1 \x05d0\x05d2 \x05d1\x05d2", // Check RTL word boundaries.
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(texts); ++i) {
+  for (size_t i = 0; i < arraysize(texts); ++i) {
     string16 text = WideToUTF16(texts[i]);
     TestVisualCursorMotionInObscuredField(render_text.get(), text, false);
     TestVisualCursorMotionInObscuredField(render_text.get(), text, true);
   }
-#endif  // !defined(OS_WIN)
 }
 
 TEST_F(RenderTextTest, GetTextDirection) {

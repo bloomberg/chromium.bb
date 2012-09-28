@@ -181,7 +181,7 @@ SelectionModel RenderTextLinux::AdjacentCharSelectionModel(
 SelectionModel RenderTextLinux::AdjacentWordSelectionModel(
     const SelectionModel& selection,
     VisualCursorDirection direction) {
-  if (is_obscured())
+  if (obscured())
     return EdgeSelectionModel(direction);
 
   base::i18n::BreakIterator iter(text(), base::i18n::BreakIterator::BREAK_WORD);
@@ -223,7 +223,7 @@ void RenderTextLinux::GetGlyphBounds(size_t index,
   *height = PANGO_PIXELS(pos.height);
 }
 
-std::vector<Rect> RenderTextLinux::GetSubstringBounds(ui::Range range) {
+std::vector<Rect> RenderTextLinux::GetSubstringBounds(const ui::Range& range) {
   DCHECK_LE(range.GetMax(), text().length());
 
   if (range.is_empty())
@@ -233,6 +233,20 @@ std::vector<Rect> RenderTextLinux::GetSubstringBounds(ui::Range range) {
   if (range == selection())
     return GetSelectionBounds();
   return CalculateSubstringBounds(range);
+}
+
+size_t RenderTextLinux::TextIndexToLayoutIndex(size_t index) const {
+  DCHECK(layout_);
+  const ptrdiff_t offset = ui::UTF16IndexToOffset(text(), 0, index);
+  const char* layout_pointer = g_utf8_offset_to_pointer(layout_text_, offset);
+  return (layout_pointer - layout_text_);
+}
+
+size_t RenderTextLinux::LayoutIndexToTextIndex(size_t index) const {
+  DCHECK(layout_);
+  const char* layout_pointer = layout_text_ + index;
+  const long offset = g_utf8_pointer_to_offset(layout_text_, layout_pointer);
+  return ui::UTF16OffsetToIndex(text(), 0, offset);
 }
 
 bool RenderTextLinux::IsCursorablePosition(size_t position) {
@@ -281,7 +295,7 @@ void RenderTextLinux::EnsureLayout() {
     cairo_surface_destroy(surface);
 
     SetupPangoLayoutWithFontDescription(layout_,
-                                        GetDisplayText(),
+                                        GetLayoutText(),
                                         font_list().GetFontDescriptionString(),
                                         0,
                                         GetTextDirection(),
@@ -488,24 +502,6 @@ SelectionModel RenderTextLinux::LastSelectionModelInsideRun(
   size_t caret = IndexOfAdjacentGrapheme(
       LayoutIndexToTextIndex(item->offset + item->length), CURSOR_BACKWARD);
   return SelectionModel(caret, CURSOR_FORWARD);
-}
-
-size_t RenderTextLinux::TextIndexToLayoutIndex(size_t text_index) const {
-  // If the text is obscured then |layout_text_| is not the same as |text()|,
-  // but whether or not the text is obscured, the character (code point) offset
-  // in |layout_text_| is the same as that in |text()|.
-  DCHECK(layout_);
-  ptrdiff_t offset = ui::UTF16IndexToOffset(text(), 0, text_index);
-  const char* layout_pointer = g_utf8_offset_to_pointer(layout_text_, offset);
-  return (layout_pointer - layout_text_);
-}
-
-size_t RenderTextLinux::LayoutIndexToTextIndex(size_t layout_index) const {
-  // See |TextIndexToLayoutIndex()|.
-  DCHECK(layout_);
-  const char* layout_pointer = layout_text_ + layout_index;
-  long offset = g_utf8_pointer_to_offset(layout_text_, layout_pointer);
-  return ui::UTF16OffsetToIndex(text(), 0, offset);
 }
 
 std::vector<Rect> RenderTextLinux::CalculateSubstringBounds(ui::Range range) {

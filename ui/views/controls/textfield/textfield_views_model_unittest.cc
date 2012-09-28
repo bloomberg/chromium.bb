@@ -487,18 +487,11 @@ TEST_F(TextfieldViewsModelTest, SetText) {
   EXPECT_EQ(0U, model.GetCursorPosition());
 }
 
-#if defined(USE_AURA) && defined(OS_LINUX)
-#define MAYBE_Clipboard DISABLED_Clipboard  // http://crbug.com/97845
-#else
-#define MAYBE_Clipboard Clipboard
-#endif
-TEST_F(TextfieldViewsModelTest, MAYBE_Clipboard) {
-  ui::Clipboard* clipboard
-      = ui::Clipboard::GetForCurrentThread();
-  string16 initial_clipboard_text = ASCIIToUTF16("initial text");
-  ui::ScopedClipboardWriter(
-      clipboard,
-      ui::Clipboard::BUFFER_STANDARD).WriteText(initial_clipboard_text);
+TEST_F(TextfieldViewsModelTest, Clipboard) {
+  ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
+  const string16 initial_clipboard_text = ASCIIToUTF16("initial text");
+  ui::ScopedClipboardWriter(clipboard, ui::Clipboard::BUFFER_STANDARD).
+      WriteText(initial_clipboard_text);
 
   string16 clipboard_text;
   TextfieldViewsModel model(NULL);
@@ -547,33 +540,22 @@ TEST_F(TextfieldViewsModelTest, MAYBE_Clipboard) {
   EXPECT_EQ(6U, model.GetCursorPosition());
 
   // Copy with non-empty selection.
-  model.Append(ASCIIToUTF16("HELLO WORLD"));
   model.SelectAll(false);
-  model.Copy();
+  EXPECT_TRUE(model.Copy());
   clipboard->ReadText(ui::Clipboard::BUFFER_STANDARD, &clipboard_text);
-  EXPECT_STR_EQ("HELLO HELLO WORLD", clipboard_text);
-  EXPECT_STR_EQ("HELLO HELLO WORLD", model.GetText());
-  EXPECT_EQ(17U, model.GetCursorPosition());
+  EXPECT_STR_EQ("HELLO ", clipboard_text);
+  EXPECT_STR_EQ("HELLO ", model.GetText());
+  EXPECT_EQ(6U, model.GetCursorPosition());
 
-  // Test for paste.
-  model.ClearSelection();
+  // Test that paste works regardless of the obscured bit.
   model.MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_RIGHT, false);
-  model.MoveCursor(gfx::WORD_BREAK, gfx::CURSOR_LEFT, true);
   EXPECT_TRUE(model.Paste());
-  clipboard->ReadText(ui::Clipboard::BUFFER_STANDARD, &clipboard_text);
-  EXPECT_STR_EQ("HELLO HELLO WORLD", clipboard_text);
-  EXPECT_STR_EQ("HELLO HELLO HELLO HELLO WORLD", model.GetText());
-  EXPECT_EQ(29U, model.GetCursorPosition());
-
-  // Paste ignores the obscured bit.
+  EXPECT_STR_EQ("HELLO HELLO ", model.GetText());
+  EXPECT_EQ(12U, model.GetCursorPosition());
   model.render_text()->SetObscured(true);
-  model.MoveCursor(gfx::WORD_BREAK, gfx::CURSOR_LEFT, true);
-  ui::ScopedClipboardWriter(
-      clipboard,
-      ui::Clipboard::BUFFER_STANDARD).WriteText(initial_clipboard_text);
   EXPECT_TRUE(model.Paste());
-  clipboard->ReadText(ui::Clipboard::BUFFER_STANDARD, &clipboard_text);
-  EXPECT_STR_EQ("HELLO HELLO HELLO HELLO initial text", model.GetText());
+  EXPECT_STR_EQ("HELLO HELLO HELLO ", model.GetText());
+  EXPECT_EQ(18U, model.GetCursorPosition());
 }
 
 static void SelectWordTestVerifier(const TextfieldViewsModel& model,

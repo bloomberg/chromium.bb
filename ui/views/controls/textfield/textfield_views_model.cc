@@ -508,7 +508,7 @@ bool TextfieldViewsModel::Redo() {
 }
 
 bool TextfieldViewsModel::Cut() {
-  if (!HasCompositionText() && HasSelection() && !render_text_->is_obscured()) {
+  if (!HasCompositionText() && HasSelection() && !render_text_->obscured()) {
     ui::ScopedClipboardWriter(
         ui::Clipboard::GetForCurrentThread(),
         ui::Clipboard::BUFFER_STANDARD).WriteText(GetSelectedText());
@@ -526,7 +526,7 @@ bool TextfieldViewsModel::Cut() {
 }
 
 bool TextfieldViewsModel::Copy() {
-  if (!HasCompositionText() && HasSelection() && !render_text_->is_obscured()) {
+  if (!HasCompositionText() && HasSelection() && !render_text_->obscured()) {
     ui::ScopedClipboardWriter(
         ui::Clipboard::GetForCurrentThread(),
         ui::Clipboard::BUFFER_STANDARD).WriteText(GetSelectedText());

@@ -74,9 +74,19 @@ void RenderTextMac::GetGlyphBounds(size_t index,
   // TODO(asvitkine): Implement this. http://crbug.com/131618
 }
 
-std::vector<Rect> RenderTextMac::GetSubstringBounds(ui::Range range) {
+std::vector<Rect> RenderTextMac::GetSubstringBounds(const ui::Range& range) {
   // TODO(asvitkine): Implement this. http://crbug.com/131618
   return std::vector<Rect>();
+}
+
+size_t RenderTextMac::TextIndexToLayoutIndex(size_t index) const {
+  // TODO(asvitkine): Implement this. http://crbug.com/131618
+  return index;
+}
+
+size_t RenderTextMac::LayoutIndexToTextIndex(size_t index) const {
+  // TODO(asvitkine): Implement this. http://crbug.com/131618
+  return index;
 }
 
 bool RenderTextMac::IsCursorablePosition(size_t position) {

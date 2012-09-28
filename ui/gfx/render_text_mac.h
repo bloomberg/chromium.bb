@@ -42,7 +42,9 @@ class RenderTextMac : public RenderText {
   virtual void GetGlyphBounds(size_t index,
                               ui::Range* xspan,
                               int* height) OVERRIDE;
-  virtual std::vector<Rect> GetSubstringBounds(ui::Range range) OVERRIDE;
+  virtual std::vector<Rect> GetSubstringBounds(const ui::Range& range) OVERRIDE;
+  virtual size_t TextIndexToLayoutIndex(size_t index) const OVERRIDE;
+  virtual size_t LayoutIndexToTextIndex(size_t index) const OVERRIDE;
   virtual bool IsCursorablePosition(size_t position) OVERRIDE;
   virtual void ResetLayout() OVERRIDE;
   virtual void EnsureLayout() OVERRIDE;

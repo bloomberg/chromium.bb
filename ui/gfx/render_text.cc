@@ -399,6 +399,7 @@ void RenderText::SetText(const string16& text) {
   if (directionality_mode_ == DIRECTIONALITY_FROM_TEXT)
     text_direction_ = base::i18n::UNKNOWN_DIRECTION;
 
+  UpdateObscuredText();
   ResetLayout();
 }
 
@@ -444,6 +445,7 @@ void RenderText::SetObscured(bool obscured) {
   if (obscured != obscured_) {
     obscured_ = obscured;
     cached_bounds_and_offset_valid_ = false;
+    UpdateObscuredText();
     ResetLayout();
   }
 }
@@ -619,7 +621,7 @@ base::i18n::TextDirection RenderText::GetTextDirection() {
         // Derive the direction from the display text, which differs from text()
         // in the case of obscured (password) textfields.
         text_direction_ =
-            base::i18n::GetFirstStrongCharacterDirection(GetDisplayText());
+            base::i18n::GetFirstStrongCharacterDirection(GetLayoutText());
         break;
       case DIRECTIONALITY_FROM_UI:
         text_direction_ = base::i18n::IsRTL() ? base::i18n::RIGHT_TO_LEFT :
@@ -795,12 +797,8 @@ void RenderText::SetSelectionModel(const SelectionModel& model) {
   cached_bounds_and_offset_valid_ = false;
 }
 
-string16 RenderText::GetDisplayText() const {
-  if (!obscured_)
-    return text_;
-  size_t obscured_text_length =
-      static_cast<size_t>(ui::UTF16IndexToOffset(text_, 0, text_.length()));
-  return string16(obscured_text_length, kPasswordReplacementChar);
+const string16& RenderText::GetLayoutText() const {
+  return obscured() ? obscured_text_ : text();
 }
 
 void RenderText::ApplyCompositionAndSelectionStyles(
@@ -950,6 +948,16 @@ void RenderText::MoveCursorTo(size_t position, bool select) {
     SetSelectionModel(SelectionModel(
         ui::Range(select ? selection().start() : cursor, cursor),
         (cursor == 0) ? CURSOR_FORWARD : CURSOR_BACKWARD));
+}
+
+void RenderText::UpdateObscuredText() {
+  if (!obscured_)
+    return;
+
+  const size_t obscured_text_length =
+      static_cast<size_t>(ui::UTF16IndexToOffset(text_, 0, text_.length()));
+  if (obscured_text_.length() != obscured_text_length)
+    obscured_text_.resize(obscured_text_length, kPasswordReplacementChar);
 }
 
 void RenderText::UpdateCachedBoundsAndOffset() {
