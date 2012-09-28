@@ -42,7 +42,7 @@ const char kWebSQLKey[] = "webSQL";
 
 // Option Keys.
 const char kExtensionsKey[] = "extension";
-const char kOriginTypesKey[] = "originType";
+const char kOriginTypesKey[] = "originTypes";
 const char kProtectedWebKey[] = "protectedWeb";
 const char kSinceKey[] = "since";
 const char kUnprotectedWebKey[] = "unprotectedWeb";

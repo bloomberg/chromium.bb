@@ -94,7 +94,7 @@ class ExtensionBrowsingDataTest : public InProcessBrowserTest,
     SCOPED_TRACE(protectedStr);
     EXPECT_EQ(NULL, RunFunctionAndReturnSingleResult(
         function.get(),
-        "[{\"originType\": " + protectedStr + "}, {\"cookies\": true}]",
+        "[{\"originTypes\": " + protectedStr + "}, {\"cookies\": true}]",
         browser()));
     EXPECT_EQ(expected_mask, GetOriginSetMask());
   }
