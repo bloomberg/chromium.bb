@@ -477,10 +477,6 @@ const char kEnableBenchmarking[]            = "enable-benchmarking";
 // Enables the bundled PPAPI version of Flash.
 const char kEnableBundledPpapiFlash[]       = "enable-bundled-ppapi-flash";
 
-// Enables the new ClientOAuth signin flow for connecting a profile a Google
-// account.  When disabled, Chrome will use the ClientLogin flow instead.
-const char kEnableClientOAuthSignin[]       = "enable-client-oauth-signin";
-
 // Enables the new cloud policy stack.
 const char kEnableCloudPolicyService[]      = "enable-cloud-policy-service";
 

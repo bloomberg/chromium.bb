@@ -185,11 +185,6 @@ bool AreUserNamesEqual(const string16& user1, const string16& user2) {
   return NormalizeUserName(user1) == NormalizeUserName(user2);
 }
 
-bool IsClientOAuthEnabled() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableClientOAuthSignin);
-}
-
 }  // namespace
 
 SyncSetupHandler::SyncSetupHandler(ProfileManager* profile_manager)
@@ -551,9 +546,9 @@ void SyncSetupHandler::DisplayGaiaLoginWithErrorMessage(
   // then we don't want to show username and password fields if ClientOAuth is
   // being used, since those fields are ignored by the endpoint on challenges.
   if (error == GoogleServiceAuthError::TWO_FACTOR)
-    args.SetBoolean("askForOtp", IsClientOAuthEnabled());
+    args.SetBoolean("askForOtp", false);
   else if (error == GoogleServiceAuthError::CAPTCHA_REQUIRED)
-    args.SetBoolean("hideEmailAndPassword", IsClientOAuthEnabled());
+    args.SetBoolean("hideEmailAndPassword", false);
 
   args.SetBoolean("editableUser", editable_user);
   if (!local_error_message.empty())
@@ -677,15 +672,6 @@ void SyncSetupHandler::HandleSubmitAuth(const ListValue* args) {
   DCHECK(!otp.empty() || !captcha.empty() || !password.empty() ||
          !access_code.empty());
 
-  if (IsClientOAuthEnabled()) {
-    // Last error is two-factor implies otp should not be empty.
-    DCHECK((last_signin_error_.state() != GoogleServiceAuthError::TWO_FACTOR) ||
-        !otp.empty());
-    // Last error is captcha-required implies captcha should not be empty.
-    DCHECK((last_signin_error_.state() !=
-        GoogleServiceAuthError::CAPTCHA_REQUIRED) || !captcha.empty());
-  }
-
   const std::string& solution = captcha.empty() ?
       (otp.empty() ? EmptyString() : otp) : captcha;
   TryLogin(username, password, solution, access_code);
@@ -707,19 +693,12 @@ void SyncSetupHandler::TryLogin(const std::string& username,
   last_signin_error_ = GoogleServiceAuthError::None();
 
   SigninManager* signin = GetSignin();
-  if (IsClientOAuthEnabled()) {
-    if (!solution.empty()) {
-      signin->ProvideOAuthChallengeResponse(current_error.state(),
-                                            current_error.token(), solution);
-      return;
-    }
-  } else {
-    // If we're just being called to provide an ASP, then pass it to the
-    // SigninManager and wait for the next step.
-    if (!access_code.empty()) {
-      signin->ProvideSecondFactorAccessCode(access_code);
-      return;
-    }
+
+  // If we're just being called to provide an ASP, then pass it to the
+  // SigninManager and wait for the next step.
+  if (!access_code.empty()) {
+    signin->ProvideSecondFactorAccessCode(access_code);
+    return;
   }
 
   // The user has submitted credentials, which indicates they don't want to
@@ -728,12 +707,8 @@ void SyncSetupHandler::TryLogin(const std::string& username,
   GetSyncService()->UnsuppressAndStart();
 
   // Kick off a sign-in through the signin manager.
-  if (IsClientOAuthEnabled()) {
-    signin->StartSignInWithOAuth(username, password);
-  } else {
-    signin->StartSignIn(username, password, current_error.captcha().token,
-                        solution);
-  }
+  signin->StartSignIn(username, password, current_error.captcha().token,
+                      solution);
 }
 
 void SyncSetupHandler::GaiaCredentialsValid() {
