@@ -267,6 +267,7 @@ WebContents* ChromeDownloadManagerDelegate::
 
 bool ChromeDownloadManagerDelegate::ShouldOpenFileBasedOnExtension(
     const FilePath& path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   FilePath::StringType extension = path.Extension();
   if (extension.empty())
     return false;
@@ -279,20 +280,22 @@ bool ChromeDownloadManagerDelegate::ShouldOpenFileBasedOnExtension(
 
 // static
 void ChromeDownloadManagerDelegate::DisableSafeBrowsing(DownloadItem* item) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 #if defined(ENABLE_SAFE_BROWSING)
   SafeBrowsingState* state = static_cast<SafeBrowsingState*>(
       item->GetUserData(&safe_browsing_id));
-  DCHECK(!state);
-  if (!state)
+  if (!state) {
     state = new SafeBrowsingState();
+    item->SetUserData(&safe_browsing_id, state);
+  }
   state->SetVerdict(DownloadProtectionService::SAFE);
-  item->SetUserData(&safe_browsing_id, state);
 #endif
 }
 
 bool ChromeDownloadManagerDelegate::IsDownloadReadyForCompletion(
     DownloadItem* item,
     const base::Closure& internal_complete_callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 #if defined(ENABLE_SAFE_BROWSING)
   SafeBrowsingState* state = static_cast<SafeBrowsingState*>(
       item->GetUserData(&safe_browsing_id));
