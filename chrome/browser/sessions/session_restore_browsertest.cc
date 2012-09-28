@@ -4,7 +4,6 @@
 
 #include "base/command_line.h"
 #include "base/file_path.h"
-#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/defaults.h"
@@ -39,7 +38,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/test/test_navigation_observer.h"
-#include "sync/protocol/session_specifics.pb.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -90,6 +88,16 @@ class SessionRestoreTest : public InProcessBrowserTest {
         FilePath().AppendASCII("bot3.html"));
 
     return InProcessBrowserTest::SetUpUserDataDirectory();
+  }
+
+  // Verifies that the given NavigationController has exactly two entries that
+  // correspond to the given URLs.
+  void VerifyNavigationEntries(
+      content::NavigationController& controller, GURL url1, GURL url2) {
+    ASSERT_EQ(2, controller.GetEntryCount());
+    EXPECT_EQ(1, controller.GetCurrentEntryIndex());
+    EXPECT_EQ(url1, controller.GetEntryAtIndex(0)->GetURL());
+    EXPECT_EQ(url2, controller.GetEntryAtIndex(1)->GetURL());
   }
 
   void CloseBrowserSynchronously(Browser* browser) {
@@ -291,7 +299,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreIndividualTabFromWindow) {
   browser()->window()->Close();
 
   // Expect a window with three tabs.
-  ASSERT_EQ(1U, service->entries().size());
+  EXPECT_EQ(1U, service->entries().size());
   ASSERT_EQ(TabRestoreService::WINDOW, service->entries().front()->type);
   const TabRestoreService::Window* window =
       static_cast<TabRestoreService::Window*>(service->entries().front());
@@ -299,34 +307,21 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreIndividualTabFromWindow) {
 
   // Find the SessionID for entry2. Since the session service was destroyed,
   // there is no guarantee that the SessionID for the tab has remained the same.
-  base::Time timestamp;
-  for (std::vector<TabRestoreService::Tab>::const_iterator it =
-           window->tabs.begin(); it != window->tabs.end(); ++it) {
+  std::vector<TabRestoreService::Tab>::const_iterator it = window->tabs.begin();
+  for ( ; it != window->tabs.end(); ++it) {
     const TabRestoreService::Tab& tab = *it;
     // If this tab held url2, then restore this single tab.
     if (tab.navigations[0].virtual_url() == url2) {
-      timestamp = tab.navigations[0].timestamp();
       service->RestoreEntryById(NULL, tab.id, UNKNOWN);
       break;
     }
   }
-  EXPECT_FALSE(timestamp.is_null());
 
-  // Make sure that the restored tab is removed from the service.
-  ASSERT_EQ(1U, service->entries().size());
+  // Make sure that the Window got updated.
+  EXPECT_EQ(1U, service->entries().size());
   ASSERT_EQ(TabRestoreService::WINDOW, service->entries().front()->type);
   window = static_cast<TabRestoreService::Window*>(service->entries().front());
   EXPECT_EQ(2U, window->tabs.size());
-
-  // Make sure that the restored tab was restored with the correct
-  // timestamp.
-  const content::WebContents* contents =
-      chrome::GetActiveWebContents(browser());
-  ASSERT_TRUE(contents);
-  const content::NavigationEntry* entry =
-      contents->GetController().GetActiveEntry();
-  ASSERT_TRUE(entry);
-  EXPECT_EQ(timestamp, entry->GetTimestamp());
 }
 
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, WindowWithOneTab) {
@@ -392,24 +387,6 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, IncognitotoNonIncognito) {
 }
 #endif  // !OS_CHROMEOS
 
-namespace {
-
-// Verifies that the given NavigationController has exactly two
-// entries that correspond to the given URLs and that all but the last
-// entry have null timestamps.
-void VerifyNavigationEntries(
-    const content::NavigationController& controller,
-    GURL url1, GURL url2) {
-  ASSERT_EQ(2, controller.GetEntryCount());
-  EXPECT_EQ(1, controller.GetCurrentEntryIndex());
-  EXPECT_EQ(url1, controller.GetEntryAtIndex(0)->GetURL());
-  EXPECT_EQ(url2, controller.GetEntryAtIndex(1)->GetURL());
-  EXPECT_TRUE(controller.GetEntryAtIndex(0)->GetTimestamp().is_null());
-  EXPECT_FALSE(controller.GetEntryAtIndex(1)->GetTimestamp().is_null());
-}
-
-}  // namespace
-
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignTab) {
   GURL url1("http://google.com");
   GURL url2("http://google2.com");
@@ -419,18 +396,14 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignTab) {
       SessionTypesTestHelper::CreateNavigation(url2.spec(), "two");
 
   // Set up the restore data.
-  sync_pb::SessionTab sync_data;
-  sync_data.set_tab_visual_index(0);
-  sync_data.set_current_navigation_index(1);
-  sync_data.set_pinned(false);
-  sync_data.add_navigation()->CopyFrom(nav1.ToSyncData());
-  sync_data.add_navigation()->CopyFrom(nav2.ToSyncData());
-
   SessionTab tab;
-  tab.SetFromSyncData(sync_data, base::Time::Now());
-  ASSERT_EQ(2U, tab.navigations.size());
-  EXPECT_TRUE(tab.navigations[0].timestamp().is_null());
-  EXPECT_TRUE(tab.navigations[1].timestamp().is_null());
+  tab.tab_visual_index = 0;
+  tab.current_navigation_index = 1;
+  tab.pinned = false;
+  tab.navigations.push_back(nav1);
+  tab.navigations.push_back(nav2);
+  tab.user_agent_override = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/535.19"
+      " (KHTML, like Gecko) Chrome/18.0.1025.45 Safari/535.19";
 
   ASSERT_EQ(1, browser()->tab_count());
 
@@ -446,7 +419,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignTab) {
   ASSERT_EQ(1, browser()->tab_count());
   content::WebContents* web_contents = chrome::GetWebContentsAt(browser(), 0);
   VerifyNavigationEntries(web_contents->GetController(), url1, url2);
-  ASSERT_TRUE(web_contents->GetUserAgentOverride().empty());
+  ASSERT_EQ(tab.user_agent_override, web_contents->GetUserAgentOverride());
 
   // Restore in a new tab.
   {
@@ -461,25 +434,18 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignTab) {
   ASSERT_EQ(0, browser()->active_index());
   web_contents = chrome::GetWebContentsAt(browser(), 1);
   VerifyNavigationEntries(web_contents->GetController(), url1, url2);
-  ASSERT_TRUE(web_contents->GetUserAgentOverride().empty());
+  ASSERT_EQ(tab.user_agent_override, web_contents->GetUserAgentOverride());
 
   // Restore in a new window.
-  Browser* new_browser = NULL;
-  {
-    ui_test_utils::BrowserAddedObserver browser_observer;
-    content::WindowedNotificationObserver observer(
-        content::NOTIFICATION_LOAD_STOP,
-        content::NotificationService::AllSources());
-    SessionRestore::RestoreForeignSessionTab(
-        chrome::GetActiveWebContents(browser()), tab, NEW_WINDOW);
-    new_browser = browser_observer.WaitForSingleNewBrowser();
-    observer.Wait();
-  }
+  ui_test_utils::BrowserAddedObserver browser_observer;
+  SessionRestore::RestoreForeignSessionTab(
+      chrome::GetActiveWebContents(browser()), tab, NEW_WINDOW);
+  Browser* new_browser = browser_observer.WaitForSingleNewBrowser();
 
   ASSERT_EQ(1, new_browser->tab_count());
   web_contents = chrome::GetWebContentsAt(new_browser, 0);
   VerifyNavigationEntries(web_contents->GetController(), url1, url2);
-  ASSERT_TRUE(web_contents->GetUserAgentOverride().empty());
+  ASSERT_EQ(tab.user_agent_override, web_contents->GetUserAgentOverride());
 }
 
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignSession) {
@@ -497,25 +463,19 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignSession) {
   std::vector<const SessionWindow*> session;
   SessionWindow window;
   SessionTab tab1;
-  {
-    sync_pb::SessionTab sync_data;
-    sync_data.set_tab_visual_index(0);
-    sync_data.set_current_navigation_index(0);
-    sync_data.set_pinned(true);
-    sync_data.add_navigation()->CopyFrom(nav1.ToSyncData());
-    tab1.SetFromSyncData(sync_data, base::Time::Now());
-  }
+  tab1.tab_visual_index = 0;
+  tab1.current_navigation_index = 0;
+  tab1.pinned = true;
+  tab1.navigations.push_back(nav1);
+  tab1.user_agent_override = "user_agent_override";
   window.tabs.push_back(&tab1);
 
   SessionTab tab2;
-  {
-    sync_pb::SessionTab sync_data;
-    sync_data.set_tab_visual_index(1);
-    sync_data.set_current_navigation_index(0);
-    sync_data.set_pinned(false);
-    sync_data.add_navigation()->CopyFrom(nav2.ToSyncData());
-    tab2.SetFromSyncData(sync_data, base::Time::Now());
-  }
+  tab2.tab_visual_index = 1;
+  tab2.current_navigation_index = 0;
+  tab2.pinned = false;
+  tab2.navigations.push_back(nav2);
+  tab2.user_agent_override = "user_agent_override_2";
   window.tabs.push_back(&tab2);
 
   session.push_back(static_cast<const SessionWindow*>(&window));
@@ -535,17 +495,19 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignSession) {
   ASSERT_EQ(url2, web_contents_2->GetURL());
 
   // Check user agent override state.
-  ASSERT_TRUE(web_contents_1->GetUserAgentOverride().empty());
-  ASSERT_TRUE(web_contents_2->GetUserAgentOverride().empty());
+  ASSERT_EQ(tab1.user_agent_override, web_contents_1->GetUserAgentOverride());
+  ASSERT_EQ(tab2.user_agent_override, web_contents_2->GetUserAgentOverride());
 
   content::NavigationEntry* entry =
       web_contents_1->GetController().GetActiveEntry();
   ASSERT_TRUE(entry);
-  ASSERT_FALSE(entry->GetIsOverridingUserAgent());
+  ASSERT_EQ(SessionTypesTestHelper::GetIsOverridingUserAgent(nav1),
+            entry->GetIsOverridingUserAgent());
 
   entry = web_contents_2->GetController().GetActiveEntry();
   ASSERT_TRUE(entry);
-  ASSERT_FALSE(entry->GetIsOverridingUserAgent());
+  ASSERT_EQ(SessionTypesTestHelper::GetIsOverridingUserAgent(nav2),
+            entry->GetIsOverridingUserAgent());
 
   // The SessionWindow destructor deletes the tabs, so we have to clear them
   // here to avoid a crash.

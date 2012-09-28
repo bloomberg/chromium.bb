@@ -9,7 +9,6 @@
 
 #include "base/memory/ref_counted_memory.h"
 #include "base/string16.h"
-#include "base/time.h"
 #include "content/common/content_export.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/page_type.h"
@@ -164,19 +163,6 @@ class NavigationEntry {
   // Store whether or not we're overriding the user agent.
   virtual void SetIsOverridingUserAgent(bool override) = 0;
   virtual bool GetIsOverridingUserAgent() const = 0;
-
-  // The time at which the last known local navigation has
-  // completed. (A navigation can be completed more than once if the
-  // page is reloaded.)
-  //
-  // If GetTimestamp() returns a null time, that means that either:
-  //
-  //   - this navigation hasn't completed yet;
-  //   - this navigation was restored and for some reason the
-  //     timestamp wasn't available;
-  //   - or this navigation was copied from a foreign session.
-  virtual void SetTimestamp(base::Time timestamp) = 0;
-  virtual base::Time GetTimestamp() const = 0;
 };
 
 }  // namespace content

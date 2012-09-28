@@ -419,10 +419,15 @@ class SessionModelAssociator
   // if no page is found to be referring to the favicon anymore.
   void DecrementAndCleanFaviconForURL(const std::string& page_url);
 
-  // Set |session_tab| from |tab_delegate| and |mtime|.
-  static void SetSessionTabFromDelegate(
+  // Helper method to update the given session tab from the given
+  // delegate (preserving old timestamps as necessary).
+  //
+  // TODO(akalin): Remove |default_navigation_timestamp| once we have
+  // a timestamp in NavigationEntry.
+  static void UpdateSessionTabFromDelegate(
       const SyncedTabDelegate& tab_delegate,
       base::Time mtime,
+      base::Time default_navigation_timestamp,
       SessionTab* session_tab);
 
   // Load the favicon for the tab specified by |tab_link|. Will cancel any
