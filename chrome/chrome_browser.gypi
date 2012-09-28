@@ -1089,6 +1089,8 @@
         'browser/net/sdch_dictionary_fetcher.h',
         'browser/net/service_providers_win.cc',
         'browser/net/service_providers_win.h',
+        'browser/net/spdyproxy/http_auth_handler_spdyproxy.cc',
+        'browser/net/spdyproxy/http_auth_handler_spdyproxy.h',
         'browser/net/sqlite_persistent_cookie_store.cc',
         'browser/net/sqlite_persistent_cookie_store.h',
         'browser/net/sqlite_server_bound_cert_store.cc',

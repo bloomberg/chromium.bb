@@ -1415,6 +1415,7 @@
         'browser/net/predictor_unittest.cc',
         'browser/net/pref_proxy_config_tracker_impl_unittest.cc',
         'browser/net/quoted_printable_unittest.cc',
+        'browser/net/spdyproxy/http_auth_handler_spdyproxy_unittest.cc',
         'browser/net/sqlite_persistent_cookie_store_unittest.cc',
         'browser/net/sqlite_server_bound_cert_store_unittest.cc',
         'browser/net/ssl_config_service_manager_pref_unittest.cc',

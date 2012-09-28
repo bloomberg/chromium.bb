@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram.h"
 #include "base/threading/platform_thread.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_form_manager.h"
 #include "chrome/browser/password_manager/password_manager_delegate.h"
@@ -24,6 +25,8 @@ using webkit::forms::PasswordForm;
 using webkit::forms::PasswordFormMap;
 
 namespace {
+
+const char kSpdyProxyRealm[] = "/SpdyProxy";
 
 // This routine is called when PasswordManagers are constructed.
 //
@@ -212,6 +215,11 @@ void PasswordManager::OnPasswordFormsParsed(
 
   for (std::vector<PasswordForm>::const_iterator iter = forms.begin();
        iter != forms.end(); ++iter) {
+    // Don't involve the password manager if this form corresponds to
+    // SpdyProxy authentication, as indicated by the realm.
+    if (EndsWith(iter->signon_realm, kSpdyProxyRealm, true))
+      continue;
+
     bool ssl_valid = iter->origin.SchemeIsSecure() && !had_ssl_error;
     PasswordFormManager* manager =
         new PasswordFormManager(delegate_->GetProfile(),

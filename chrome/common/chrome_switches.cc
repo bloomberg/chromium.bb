@@ -1205,6 +1205,9 @@ const char kSimulateUpgrade[]               = "simulate-upgrade";
 // ClientSocketReusePolicy.
 const char kSocketReusePolicy[]             = "socket-reuse-policy";
 
+// Origin for which SpdyProxy authentication is supported.
+const char kSpdyProxyOrigin[]               = "spdy-proxy-origin";
+
 // Speculative resource prefetching.
 const char kSpeculativeResourcePrefetching[] =
     "speculative-resource-prefetching";

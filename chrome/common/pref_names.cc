@@ -1761,17 +1761,25 @@ const char kAuthSchemes[] = "auth.schemes";
 // Kerberos SPN.
 const char kDisableAuthNegotiateCnameLookup[] =
     "auth.disable_negotiate_cname_lookup";
+
 // Boolean that specifies whether to include the port in a generated Kerberos
 // SPN.
 const char kEnableAuthNegotiatePort[] = "auth.enable_negotiate_port";
+
 // Whitelist containing servers for which Integrated Authentication is enabled.
 const char kAuthServerWhitelist[] = "auth.server_whitelist";
+
 // Whitelist containing servers Chrome is allowed to do Kerberos delegation
 // with.
 const char kAuthNegotiateDelegateWhitelist[] =
     "auth.negotiate_delegate_whitelist";
+
 // String that specifies the name of a custom GSSAPI library to load.
 const char kGSSAPILibraryName[] = "auth.gssapi_library_name";
+
+// String that specifies the origin allowed to use SpdyProxy
+// authentication, if any.
+const char kSpdyProxyOrigin[] = "auth.spdyproxy.origin";
 
 // Boolean that specifies whether to allow basic auth prompting on cross-
 // domain sub-content requests.

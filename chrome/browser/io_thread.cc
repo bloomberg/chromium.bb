@@ -31,6 +31,7 @@
 #include "chrome/browser/net/pref_proxy_config_tracker.h"
 #include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/net/sdch_dictionary_fetcher.h"
+#include "chrome/browser/net/spdyproxy/http_auth_handler_spdyproxy.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -450,6 +451,10 @@ void IOThread::Init() {
   globals_->cert_verifier.reset(net::CertVerifier::CreateDefault());
   globals_->transport_security_state.reset(new net::TransportSecurityState());
   globals_->ssl_config_service = GetSSLConfigService();
+  if (command_line.HasSwitch(switches::kSpdyProxyOrigin)) {
+    spdyproxy_origin_ =
+        command_line.GetSwitchValueASCII(switches::kSpdyProxyOrigin);
+  }
   globals_->http_auth_handler_factory.reset(CreateDefaultAuthHandlerFactory(
       globals_->host_resolver.get()));
   globals_->http_server_properties.reset(new net::HttpServerPropertiesImpl);
@@ -591,13 +596,15 @@ void IOThread::CleanUp() {
 // static
 void IOThread::RegisterPrefs(PrefService* local_state) {
   local_state->RegisterStringPref(prefs::kAuthSchemes,
-                                  "basic,digest,ntlm,negotiate");
+                                  "basic,digest,ntlm,negotiate,"
+                                  "spdyproxy");
   local_state->RegisterBooleanPref(prefs::kDisableAuthNegotiateCnameLookup,
                                    false);
   local_state->RegisterBooleanPref(prefs::kEnableAuthNegotiatePort, false);
   local_state->RegisterStringPref(prefs::kAuthServerWhitelist, "");
   local_state->RegisterStringPref(prefs::kAuthNegotiateDelegateWhitelist, "");
   local_state->RegisterStringPref(prefs::kGSSAPILibraryName, "");
+  local_state->RegisterStringPref(prefs::kSpdyProxyOrigin, "");
   local_state->RegisterBooleanPref(prefs::kEnableReferrers, true);
 }
 
@@ -619,13 +626,26 @@ net::HttpAuthHandlerFactory* IOThread::CreateDefaultAuthHandlerFactory(
   std::vector<std::string> supported_schemes;
   base::SplitString(auth_schemes_, ',', &supported_schemes);
 
-  return net::HttpAuthHandlerRegistryFactory::Create(
-      supported_schemes,
-      globals_->url_security_manager.get(),
-      resolver,
-      gssapi_library_name_,
-      negotiate_disable_cname_lookup_,
-      negotiate_enable_port_);
+  scoped_ptr<net::HttpAuthHandlerRegistryFactory> registry_factory(
+      net::HttpAuthHandlerRegistryFactory::Create(
+          supported_schemes, globals_->url_security_manager.get(),
+          resolver, gssapi_library_name_, negotiate_disable_cname_lookup_,
+          negotiate_enable_port_));
+
+  if (!spdyproxy_origin_.empty()) {
+    GURL origin_url(spdyproxy_origin_);
+    if (origin_url.is_valid()) {
+      registry_factory->RegisterSchemeFactory(
+          "spdyproxy",
+          new spdyproxy::HttpAuthHandlerSpdyProxy::Factory(origin_url));
+    } else {
+      LOG(WARNING) << "Skipping creation of SpdyProxy auth handler since "
+                   << "authorized origin is invalid: "
+                   << spdyproxy_origin_;
+    }
+  }
+
+  return registry_factory.release();
 }
 
 void IOThread::ClearHostCache() {
