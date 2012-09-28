@@ -118,6 +118,9 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
   // Reserved actions. See accelerator_table.h for details.
   std::set<int> reserved_actions_;
 
+  // If toggling maximized is suppressed until the key release event.
+  bool toggle_maximized_suppressed_;
+
   DISALLOW_COPY_AND_ASSIGN(AcceleratorController);
 };
 

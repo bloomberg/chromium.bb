@@ -44,7 +44,8 @@ const AcceleratorData kAcceleratorData[] = {
   { true, ui::VKEY_BRIGHTNESS_UP, ui::EF_NONE, BRIGHTNESS_UP },
   { true, ui::VKEY_KBD_BRIGHTNESS_DOWN, ui::EF_NONE, KEYBOARD_BRIGHTNESS_DOWN },
   { true, ui::VKEY_KBD_BRIGHTNESS_UP, ui::EF_NONE, KEYBOARD_BRIGHTNESS_UP },
-  { true, ui::VKEY_F4, ui::EF_NONE, TOGGLE_MAXIMIZED },
+  { true, ui::VKEY_F4, ui::EF_NONE, TOGGLE_MAXIMIZED_PRESSED },
+  { false, ui::VKEY_F4, ui::EF_NONE, TOGGLE_MAXIMIZED_RELEASED },
   { true, ui::VKEY_F4, ui::EF_CONTROL_DOWN, CYCLE_DISPLAY_MODE },
   { true, ui::VKEY_F4, ui::EF_ALT_DOWN, SWAP_PRIMARY_DISPLAY },
   { true, ui::VKEY_L, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, LOCK_SCREEN },
@@ -130,7 +131,8 @@ const AcceleratorData kAcceleratorData[] = {
   { true, ui::VKEY_OEM_4, ui::EF_ALT_DOWN, WINDOW_SNAP_LEFT },
   { true, ui::VKEY_OEM_6, ui::EF_ALT_DOWN, WINDOW_SNAP_RIGHT },
   { true, ui::VKEY_OEM_MINUS, ui::EF_ALT_DOWN, WINDOW_MINIMIZE },
-  { true, ui::VKEY_OEM_PLUS, ui::EF_ALT_DOWN, TOGGLE_MAXIMIZED },
+  { true, ui::VKEY_OEM_PLUS, ui::EF_ALT_DOWN, TOGGLE_MAXIMIZED_PRESSED },
+  { false, ui::VKEY_OEM_PLUS, ui::EF_ALT_DOWN, TOGGLE_MAXIMIZED_RELEASED},
   { true, ui::VKEY_OEM_PLUS, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
     WINDOW_POSITION_CENTER },
   { true, ui::VKEY_F2, ui::EF_CONTROL_DOWN, FOCUS_NEXT_PANE },
@@ -178,7 +180,8 @@ const AcceleratorAction kReservedActions[] = {
 #if defined(OS_CHROMEOS)
   POWER_PRESSED,
   POWER_RELEASED,
-  TOGGLE_MAXIMIZED,
+  TOGGLE_MAXIMIZED_PRESSED,
+  TOGGLE_MAXIMIZED_RELEASED,
 #endif
 };
 
