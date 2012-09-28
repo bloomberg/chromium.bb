@@ -14,14 +14,19 @@ import os
 import sys
 SYS_PATH = sys.path[:]
 try:
-  sys.path.insert(0, '.')
-  sys.path.insert(0, os.path.join(os.getcwd().split(os.sep + 'src')[0],
-                                  'src',
-                                  'chrome',
-                                  'common',
-                                  'extensions',
-                                  'docs',
-                                  'server2'))
+  SERVER2_PATH = os.path.join('chrome',
+                              'common',
+                              'extensions',
+                              'docs',
+                              'server2')
+  if os.sep + 'src' in os.getcwd():
+    # Is 'src' is in the path, we can find the server2/ directory from there.
+    sys.path.insert(0, os.path.join(os.getcwd().rsplit(os.sep + 'src', 1)[0],
+                                    'src',
+                                    SERVER2_PATH))
+  else:
+    # Otherwise, we have to guess we're in the server2/ directory.
+    sys.path.insert(0, '.')
   import build_server
   build_server.main()
 finally:
