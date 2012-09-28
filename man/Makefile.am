@@ -1,11 +1,47 @@
-libmandir = $(LIB_MAN_DIR)
-libman_PRE = drmAvailable.man \
-	drmHandleEvent.man \
-	drmModeGetResources.man
-libman_DATA = $(libman_PRE:man=@LIB_MAN_SUFFIX@)
-EXTRA_DIST = $(libman_PRE)
-CLEANFILES = $(libman_DATA)
-SUFFIXES = .$(LIB_MAN_SUFFIX) .man
+#
+# This generates man-pages out of the Docbook XML files. Simply add your files
+# to the $MANPAGES array. If aliases are created, please add them to the
+# MANPAGES_ALIASES array so they get installed correctly.
+#
 
-.man.$(LIB_MAN_SUFFIX):
-	$(AM_V_GEN)$(SED) $(MAN_SUBSTS) < $< > $@
+MANPAGES = \
+	drmAvailable.3 \
+	drmHandleEvent.3 \
+	drmModeGetResources.3
+MANPAGES_ALIASES =
+
+XML_FILES = \
+	${patsubst %.1,%.xml,${patsubst %.3,%.xml,${patsubst %.5,%.xml,${patsubs %.7,%.xml,$(MANPAGES)}}}}
+CLEANFILES =
+EXTRA_DIST =
+man_MANS =
+
+if HAVE_XSLTPROC
+
+CLEANFILES += $(MANPAGES) $(MANPAGES_ALIASES)
+EXTRA_DIST += $(MANPAGES) $(MANPAGES_ALIASES) $(XML_FILES)
+man_MANS += $(MANPAGES) $(MANPAGES_ALIASES)
+
+XSLTPROC_FLAGS = \
+	--stringparam man.authors.section.enabled 0 \
+	--stringparam man.copyright.section.enabled 0 \
+	--stringparam funcsynopsis.style ansi \
+	--stringparam man.output.quietly 1
+
+XSLTPROC_PROCESS_MAN = \
+	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && \
+	$(XSLTPROC) -o $@ $(XSLTPROC_FLAGS) http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl $<
+
+%.1: %.xml
+	$(XSLTPROC_PROCESS_MAN)
+
+%.3: %.xml
+	$(XSLTPROC_PROCESS_MAN)
+
+%.5: %.xml
+	$(XSLTPROC_PROCESS_MAN)
+
+%.7: %.xml
+	$(XSLTPROC_PROCESS_MAN)
+
+endif # HAVE_XSLTPROC
