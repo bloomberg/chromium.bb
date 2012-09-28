@@ -19,6 +19,8 @@ DEFINE_OWNED_WINDOW_PROPERTY_KEY(ComponentWrapper, kComponentWrapper, NULL);
 
 DesktopBackgroundWidgetController::DesktopBackgroundWidgetController(
     views::Widget* widget) : widget_(widget) {
+  DCHECK(widget_);
+  widget_->AddObserver(this);
 }
 
 DesktopBackgroundWidgetController::DesktopBackgroundWidgetController(
@@ -28,13 +30,15 @@ DesktopBackgroundWidgetController::DesktopBackgroundWidgetController(
 
 DesktopBackgroundWidgetController::~DesktopBackgroundWidgetController() {
   if (widget_) {
+    widget_->RemoveObserver(this);
     widget_->CloseNow();
     widget_ = NULL;
   } else if (layer_.get())
     layer_.reset(NULL);
 }
 
-void DesktopBackgroundWidgetController::CleanupWidget() {
+void DesktopBackgroundWidgetController::OnWidgetClosing(views::Widget* widget) {
+  widget_->RemoveObserver(this);
   widget_ = NULL;
 }
 

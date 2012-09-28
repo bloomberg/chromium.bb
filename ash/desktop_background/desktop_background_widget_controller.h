@@ -9,6 +9,7 @@
 #include "ui/aura/window_property.h"
 #include "ui/compositor/layer.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_observer.h"
 
 namespace ash {
 namespace internal {
@@ -20,16 +21,16 @@ namespace internal {
 // DesktopBackgroundWidgetController is moved to a secondary property
 // (kComponentWrapper). When the animation completes the old
 // DesktopBackgroundWidgetController is destroyed.
-class DesktopBackgroundWidgetController {
+class DesktopBackgroundWidgetController : public views::WidgetObserver {
  public:
   // Create
   explicit DesktopBackgroundWidgetController(views::Widget* widget);
   explicit DesktopBackgroundWidgetController(ui::Layer* layer);
 
-  ~DesktopBackgroundWidgetController();
+  virtual ~DesktopBackgroundWidgetController();
 
-  // Drop widget reference. widget is not owned.
-  void CleanupWidget();
+  // Overridden from views::WidgetObserver.
+  virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
 
   // Set bounds of component that draws background.
   void SetBounds(gfx::Rect bounds);
