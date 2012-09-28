@@ -25,11 +25,14 @@ body {
 }
 
 /* Close button */
+
+/* We actually want (left,top) to be (0,0) but for some weird reason
+  this triggers :hover style on page reload which is ugly. */
 .gallery > .close {
   cursor: pointer;
+  left: 1px;
   position: absolute;
-  right: 5px;
-  top: 5px;
+  top: 1px;
   z-index: 200;
 }
 
@@ -38,13 +41,13 @@ body {
    overlaps it) */
 .gallery > .close div {
   background-image: -webkit-image-set(
-    url('../images/gallery/close_x.png') 1x,
-    url('../images/gallery/2x/close_x.png') 2x);
+    url('../images/gallery/back_to_files.png') 1x,
+    url('../images/gallery/2x/back_to_files.png') 2x);
   background-position: center center;
   background-repeat: no-repeat;
-  height: 20px;
+  height: 40px;
   opacity: 0;
-  width: 20px;
+  width: 64px;
 }
 
 .gallery[tools] > .close div {
@@ -52,8 +55,7 @@ body {
 }
 
 .gallery[tools] > .close div:hover {
-  background-color: rgba(81, 81, 81, 1);
-  opacity: 0.7;
+  opacity: 1;
 }
 
 /* Image container and canvas elements */
