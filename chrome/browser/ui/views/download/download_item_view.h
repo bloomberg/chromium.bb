@@ -214,6 +214,11 @@ class DownloadItemView : public views::ButtonListener,
   // Update the location of the drop down button.
   void UpdateDropDownButtonPosition();
 
+  // Show/Hide/Reset |animation| based on the state transition specified by
+  // |from| and |to|.
+  void AnimateStateTransition(State from, State to,
+                              ui::SlideAnimation* animation);
+
   // The different images used for the background.
   BodyImageSet normal_body_image_set_;
   BodyImageSet hot_body_image_set_;

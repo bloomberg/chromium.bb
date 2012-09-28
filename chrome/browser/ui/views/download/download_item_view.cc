@@ -447,9 +447,8 @@ void DownloadItemView::OnMouseCaptureLost() {
     // Starting a drag results in a MouseCaptureLost.
     dragging_ = false;
     starting_drag_ = false;
-  } else {
-    SetState(NORMAL, NORMAL);
   }
+  SetState(NORMAL, NORMAL);
 }
 
 void DownloadItemView::OnMouseMoved(const ui::MouseEvent& event) {
@@ -459,15 +458,6 @@ void DownloadItemView::OnMouseMoved(const ui::MouseEvent& event) {
 
   bool on_body = !InDropDownButtonXCoordinateRange(event.x());
   SetState(on_body ? HOT : NORMAL, on_body ? NORMAL : HOT);
-  if (on_body) {
-    if (!IsShowingWarningDialog())
-      body_hover_animation_->Show();
-    drop_hover_animation_->Hide();
-  } else {
-    if (!IsShowingWarningDialog())
-      body_hover_animation_->Hide();
-    drop_hover_animation_->Show();
-  }
 }
 
 void DownloadItemView::OnMouseExited(const ui::MouseEvent& event) {
@@ -476,9 +466,6 @@ void DownloadItemView::OnMouseExited(const ui::MouseEvent& event) {
     return;
 
   SetState(NORMAL, drop_down_pressed_ ? PUSHED : NORMAL);
-  if (!IsShowingWarningDialog())
-    body_hover_animation_->Hide();
-  drop_hover_animation_->Hide();
 }
 
 bool DownloadItemView::OnKeyPressed(const ui::KeyEvent& event) {
@@ -1001,10 +988,10 @@ void DownloadItemView::PaintImages(gfx::Canvas* canvas,
                        x, y, width, bottom_image->height(), false);
 }
 
-void DownloadItemView::SetState(State body_state, State drop_down_state) {
+void DownloadItemView::SetState(State new_body_state, State new_drop_state) {
   // If we are showing a warning dialog, we don't change body state.
   if (IsShowingWarningDialog()) {
-    body_state = NORMAL;
+    new_body_state = NORMAL;
 
     // Current body_state_ should always be NORMAL for warning dialogs.
     DCHECK(body_state_ == NORMAL);
@@ -1012,11 +999,15 @@ void DownloadItemView::SetState(State body_state, State drop_down_state) {
     DCHECK(mode_ != DANGEROUS_MODE);
   }
   // Avoid extra SchedulePaint()s if the state is going to be the same.
-  if (body_state_ == body_state && drop_down_state_ == drop_down_state)
+  if (body_state_ == new_body_state && drop_down_state_ == new_drop_state)
     return;
 
-  body_state_ = body_state;
-  drop_down_state_ = drop_down_state;
+  AnimateStateTransition(body_state_, new_body_state,
+                         body_hover_animation_.get());
+  AnimateStateTransition(drop_down_state_, new_drop_state,
+                         drop_hover_animation_.get());
+  body_state_ = new_body_state;
+  drop_down_state_ = new_drop_state;
   SchedulePaint();
 }
 
@@ -1231,5 +1222,16 @@ void DownloadItemView::UpdateDropDownButtonPosition() {
     drop_down_x_left_ =
       size.width() - normal_drop_down_image_set_.top->width();
     drop_down_x_right_ = size.width();
+  }
+}
+
+void DownloadItemView::AnimateStateTransition(State from, State to,
+                                              ui::SlideAnimation* animation) {
+  if (from == NORMAL && to == HOT) {
+    animation->Show();
+  } else if (from == HOT && to == NORMAL) {
+    animation->Hide();
+  } else if (from != to) {
+    animation->Reset((to == HOT) ? 1.0 : 0.0);
   }
 }
