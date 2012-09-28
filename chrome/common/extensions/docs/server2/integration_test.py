@@ -162,5 +162,4 @@ if __name__ == '__main__':
       print(test)
       print(failure)
     exit(1)
-  print('All integration tests passed!')
   exit(0)
