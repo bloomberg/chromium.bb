@@ -51,11 +51,6 @@ class ProfileSyncComponentsFactoryImpl : public ProfileSyncComponentsFactory {
       ProfileSyncService* profile_sync_service,
       PasswordStore* password_store,
       browser_sync::DataTypeErrorHandler* error_handler) OVERRIDE;
-#if defined(ENABLE_THEMES)
-  virtual SyncComponents CreateThemeSyncComponents(
-      ProfileSyncService* profile_sync_service,
-      browser_sync::DataTypeErrorHandler* error_handler) OVERRIDE;
-#endif
   virtual SyncComponents CreateTypedUrlSyncComponents(
       ProfileSyncService* profile_sync_service,
       history::HistoryBackend* history_backend,

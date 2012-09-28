@@ -13,6 +13,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/browser_theme_pack.h"
+#include "chrome/browser/themes/theme_syncable_service.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
@@ -235,6 +236,8 @@ void ThemeService::Init(Profile* profile) {
                  content::Source<Profile>(profile_));
 
   LoadThemePrefs();
+
+  theme_syncable_service_.reset(new ThemeSyncableService(profile_, this));
 }
 
 const gfx::Image* ThemeService::GetImageNamed(int id) const {
@@ -658,6 +661,11 @@ void ThemeService::NotifyThemeChanged() {
 #if defined(OS_MACOSX)
   NotifyPlatformThemeChanged();
 #endif  // OS_MACOSX
+
+  // Notify sync that theme has changed.
+  if (theme_syncable_service_.get()) {
+    theme_syncable_service_->OnThemeChange();
+  }
 }
 
 #if defined(OS_WIN) || defined(USE_AURA)
@@ -715,4 +723,8 @@ void ThemeService::OnInfobarDestroyed() {
 
   if (number_of_infobars_ == 0)
     RemoveUnusedThemes();
+}
+
+ThemeSyncableService* ThemeService::GetThemeSyncableService() const {
+  return theme_syncable_service_.get();
 }

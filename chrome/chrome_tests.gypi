@@ -1648,8 +1648,6 @@
         'browser/sync/glue/sync_backend_host_unittest.cc',
         'browser/sync/glue/sync_backend_registrar_unittest.cc',
         'browser/sync/glue/synced_session_tracker_unittest.cc',
-        'browser/sync/glue/theme_data_type_controller_unittest.cc',
-        'browser/sync/glue/theme_util_unittest.cc',
         'browser/sync/glue/typed_url_model_associator_unittest.cc',
         'browser/sync/glue/ui_data_type_controller_unittest.cc',
         'browser/sync/glue/ui_model_worker_unittest.cc',
@@ -1688,6 +1686,7 @@
         'browser/task_profiler/task_profiler_data_serializer_unittest.cc',
         'browser/themes/browser_theme_pack_unittest.cc',
         'browser/themes/theme_service_unittest.cc',
+        'browser/themes/theme_syncable_service_unittest.cc',
         'browser/ui/ash/event_rewriter_unittest.cc',
         'browser/ui/ash/ime_controller_chromeos_unittest.cc',
         'browser/ui/ash/launcher/browser_launcher_item_controller_unittest.cc',
@@ -2581,8 +2580,6 @@
         }],  # OS == android
         ['enable_themes==0', {
           'sources!': [
-            'browser/sync/glue/theme_data_type_controller_unittest.cc',
-            'browser/sync/glue/theme_util_unittest.cc',
             'browser/ui/webui/theme_source_unittest.cc',
           ],
           'sources/': [

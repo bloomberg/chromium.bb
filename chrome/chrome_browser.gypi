@@ -1889,14 +1889,8 @@
         'browser/sync/glue/synced_window_delegate.h',
         'browser/sync/glue/synced_window_delegate_android.h',
         'browser/sync/glue/synced_window_delegate_android.cc',
-        'browser/sync/glue/theme_change_processor.cc',
-        'browser/sync/glue/theme_change_processor.h',
         'browser/sync/glue/theme_data_type_controller.cc',
         'browser/sync/glue/theme_data_type_controller.h',
-        'browser/sync/glue/theme_model_associator.cc',
-        'browser/sync/glue/theme_model_associator.h',
-        'browser/sync/glue/theme_util.cc',
-        'browser/sync/glue/theme_util.h',
         'browser/sync/glue/typed_url_change_processor.cc',
         'browser/sync/glue/typed_url_change_processor.h',
         'browser/sync/glue/typed_url_data_type_controller.cc',
@@ -1999,6 +1993,8 @@
         'browser/themes/theme_service.h',
         'browser/themes/theme_service_gtk.cc',
         'browser/themes/theme_service_mac.mm',
+        'browser/themes/theme_syncable_service.cc',        
+        'browser/themes/theme_syncable_service.h',
         'browser/toolkit_extra_parts.h',
         'browser/translate/options_menu_model.cc',
         'browser/translate/options_menu_model.h',
@@ -2448,9 +2444,7 @@
         }],
         ['enable_themes==0', {
           'sources!': [
-            'browser/sync/glue/theme_change_processor.cc',
             'browser/sync/glue/theme_data_type_controller.cc',
-            'browser/sync/glue/theme_util.cc',
           ],
           'sources/': [
             ['exclude', '^browser/themes/'],

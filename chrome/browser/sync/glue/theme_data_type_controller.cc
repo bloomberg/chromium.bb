@@ -4,10 +4,7 @@
 
 #include "chrome/browser/sync/glue/theme_data_type_controller.h"
 
-#include "base/metrics/histogram.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/profile_sync_components_factory.h"
 
 namespace browser_sync {
 
@@ -15,13 +12,10 @@ ThemeDataTypeController::ThemeDataTypeController(
     ProfileSyncComponentsFactory* profile_sync_factory,
     Profile* profile,
     ProfileSyncService* sync_service)
-    : FrontendDataTypeController(profile_sync_factory,
-                                 profile,
-                                 sync_service) {
-}
-
-syncer::ModelType ThemeDataTypeController::type() const {
-  return syncer::THEMES;
+    : UIDataTypeController(syncer::THEMES,
+                           profile_sync_factory,
+                           profile,
+                           sync_service) {
 }
 
 ThemeDataTypeController::~ThemeDataTypeController() {}
@@ -29,14 +23,6 @@ ThemeDataTypeController::~ThemeDataTypeController() {}
 bool ThemeDataTypeController::StartModels() {
   extensions::ExtensionSystem::Get(profile_)->InitForRegularProfile(true);
   return true;
-}
-
-void ThemeDataTypeController::CreateSyncComponents() {
-  ProfileSyncComponentsFactory::SyncComponents sync_components =
-      profile_sync_factory_->CreateThemeSyncComponents(sync_service_,
-                                                       this);
-  set_model_associator(sync_components.model_associator);
-  set_change_processor(sync_components.change_processor);
 }
 
 }  // namespace browser_sync
