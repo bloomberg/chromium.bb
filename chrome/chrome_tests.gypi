@@ -1057,7 +1057,6 @@
         'browser/background/background_contents_service_unittest.cc',
         'browser/background/background_mode_manager_unittest.cc',
         'browser/bookmarks/bookmark_codec_unittest.cc',
-        'browser/bookmarks/bookmark_context_menu_controller_unittest.cc',
         'browser/bookmarks/bookmark_expanded_state_tracker_unittest.cc',
         'browser/bookmarks/bookmark_extension_helpers_unittest.cc',
         'browser/bookmarks/bookmark_html_writer_unittest.cc',
@@ -1695,6 +1694,7 @@
         'browser/ui/ash/launcher/chrome_launcher_controller_unittest.cc',
         'browser/ui/ash/window_positioner_unittest.cc',
         'browser/ui/auto_login_prompter_unittest.cc',
+        'browser/ui/bookmarks/bookmark_context_menu_controller_unittest.cc',
         'browser/ui/browser_unittest.cc',
         'browser/ui/chrome_select_file_policy_unittest.cc',
         # It is safe to list */cocoa/* files in the "common" file list
@@ -2503,7 +2503,6 @@
             # ContentProvider.
             'browser/bookmarks/bookmark_html_writer_unittest.cc',
 
-            'browser/bookmarks/bookmark_context_menu_controller_unittest.cc',
             'browser/shell_integration_unittest.cc',
 
             # No service process (which also requires multiprocess lock).
@@ -2526,6 +2525,7 @@
             'browser/sync/profile_sync_service_session_unittest.cc',
             'browser/sync/sync_global_error_unittest.cc',
             'browser/sync/sync_setup_wizard_unittest.cc',
+            'browser/ui/bookmarks/bookmark_context_menu_controller_unittest.cc',
             'browser/ui/browser_unittest.cc',
             'browser/ui/search/search_delegate_unittest.cc',
             'browser/ui/search/toolbar_search_animator_unittest.cc',

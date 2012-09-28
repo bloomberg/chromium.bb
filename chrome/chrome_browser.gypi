@@ -348,8 +348,6 @@
         'browser/bookmarks/base_bookmark_model_observer.h',
         'browser/bookmarks/bookmark_codec.cc',
         'browser/bookmarks/bookmark_codec.h',
-        'browser/bookmarks/bookmark_context_menu_controller.cc',
-        'browser/bookmarks/bookmark_context_menu_controller.h',
         'browser/bookmarks/bookmark_drop_info.cc',
         'browser/bookmarks/bookmark_drop_info.h',
         'browser/bookmarks/bookmark_editor.cc',
@@ -2492,7 +2490,6 @@
             'browser/web_resource/notification_promo_mobile_ntp.h',
           ],
           'sources!': [
-            'browser/bookmarks/bookmark_context_menu_controller.cc',
             # Bookmark export/import are handled via the BookmarkColumns
             # ContentProvider.
             'browser/bookmarks/bookmark_html_writer.cc',
