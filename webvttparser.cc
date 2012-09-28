@@ -21,212 +21,13 @@ enum {
   kCR = '\x0D'
 };
 
-Reader::Reader() {
-}
-
 Reader::~Reader() {
 }
 
-Parser::Parser(Reader* r) : reader_(r), unget_(-1) {
+LineReader::~LineReader() {
 }
 
-int Parser::Init() {
-  int e = ParseBOM();
-
-  if (e < 0)  // error
-    return e;
-
-  if (e > 0)  // EOF
-    return -1;
-
-  // Parse "WEBVTT".  We read from the stream one character at-a-time, in
-  // order to defend against non-WebVTT streams (e.g. binary files) that don't
-  // happen to comprise lines of text demarcated with line terminators.
-
-  const char kId[] = "WEBVTT";
-
-  for (const char* p = kId; *p; ++p) {
-    char c;
-    e = GetChar(&c);
-
-    if (e < 0)  // error
-      return e;
-
-    if (e > 0)  // EOF
-      return -1;
-
-    if (c != *p)
-      return -1;
-  }
-
-  string line;
-
-  e = ParseLine(&line);
-
-  if (e < 0)  // error
-    return e;
-
-  if (e > 0)  // EOF
-    return 0;  // weird but valid
-
-  if (!line.empty()) {
-    // Parse optional characters that follow "WEBVTT"
-
-    const char c = line[0];
-
-    if (c != kSPACE && c != kTAB)
-      return -1;
-  }
-
-  // The WebVTT spec requires that the "WEBVTT" line
-  // be followed by an empty line (to separate it from
-  // first cue).
-
-  e = ParseLine(&line);
-
-  if (e < 0)  // error
-    return e;
-
-  if (e > 0)  // EOF
-    return 0;  // weird but we allow it
-
-  if (!line.empty())
-    return -1;
-
-  return 0;  // success
-}
-
-int Parser::Parse(Cue* cue) {
-  if (cue == NULL)
-    return -1;
-
-  // Parse first non-blank line
-
-  string line;
-  int e;
-
-  for (;;) {
-    e = ParseLine(&line);
-
-    if (e)  // EOF is OK here
-      return e;
-
-    if (!line.empty())
-      break;
-  }
-
-  // A WebVTT cue comprises an optional cue identifier line followed
-  // by a (non-optional) timings line.  You determine whether you have
-  // a timings line by scanning for the arrow token, the lexeme of which
-  // may not appear in the cue identifier line.
-
-  const char kArrow[] = "-->";
-  string::size_type arrow_pos = line.find(kArrow);
-
-  if (arrow_pos != string::npos) {
-    // We found a timings line, which implies that we don't have a cue
-    // identifier.
-
-    cue->identifier.clear();
-  } else {
-    // We did not find a timings line, so we assume that we have a cue
-    // identifier line, and then try again to find the cue timings on
-    // the next line.
-
-    cue->identifier.swap(line);
-
-    e = ParseLine(&line);
-
-    if (e < 0)  // error
-      return e;
-
-    if (e > 0)  // EOF
-      return -1;
-
-    arrow_pos = line.find(kArrow);
-
-    if (arrow_pos == string::npos)  // not a timings line
-      return -1;
-  }
-
-  e = ParseTimingsLine(&line,
-                       arrow_pos,
-                       &cue->start_time,
-                       &cue->stop_time,
-                       &cue->settings);
-
-  if (e)  // error
-    return e;
-
-  // The cue payload comprises all the non-empty
-  // lines that follow the timings line.
-
-  Cue::payload_t& p = cue->payload;
-  p.clear();
-
-  for (;;) {
-    e = ParseLine(&line);
-
-    if (e < 0)  // error
-      return e;
-
-    if (line.empty())
-      break;
-
-    p.push_back(line);
-  }
-
-  if (p.empty())
-    return -1;
-
-  return 0;  // success
-}
-
-int Parser::GetChar(char* c) {
-  if (unget_ >= 0) {
-    *c = static_cast<char>(unget_);
-    unget_ = -1;
-    return 0;
-  }
-
-  return reader_->GetChar(c);
-}
-
-void Parser::UngetChar(char c) {
-  unget_ = static_cast<unsigned char>(c);
-}
-
-int Parser::ParseBOM() {
-  // Explanation of UTF-8 BOM:
-  // http://en.wikipedia.org/wiki/Byte_order_mark
-
-  static const char BOM[] = "\xEF\xBB\xBF";  // UTF-8 BOM
-
-  for (int i = 0; i < 3; ++i) {
-    char c;
-    int e = GetChar(&c);
-
-    if (e < 0)  // error
-      return e;
-
-    if (e > 0)  // EOF
-      return 1;
-
-    if (c != BOM[i]) {
-      if (i == 0) {  // we don't have a BOM
-        UngetChar(c);
-        return 0;  // success
-      }
-
-      // We started a BOM, so we must finish the BOM.
-      return -1;  // error
-    }
-  }
-
-  return 0;  // success
-}
-
-int Parser::ParseLine(string* line_ptr) {
+int LineReader::GetLine(string* line_ptr) {
   if (line_ptr == NULL)
     return -1;
 
@@ -297,6 +98,208 @@ int Parser::ParseLine(string* line_ptr) {
     UngetChar(c);
 
   return 0;
+}
+
+Parser::Parser(Reader* r) : reader_(r), unget_(-1) {
+}
+
+Parser::~Parser() {
+}
+
+int Parser::Init() {
+  int e = ParseBOM();
+
+  if (e < 0)  // error
+    return e;
+
+  if (e > 0)  // EOF
+    return -1;
+
+  // Parse "WEBVTT".  We read from the stream one character at-a-time, in
+  // order to defend against non-WebVTT streams (e.g. binary files) that don't
+  // happen to comprise lines of text demarcated with line terminators.
+
+  const char kId[] = "WEBVTT";
+
+  for (const char* p = kId; *p; ++p) {
+    char c;
+    e = GetChar(&c);
+
+    if (e < 0)  // error
+      return e;
+
+    if (e > 0)  // EOF
+      return -1;
+
+    if (c != *p)
+      return -1;
+  }
+
+  string line;
+
+  e = GetLine(&line);
+
+  if (e < 0)  // error
+    return e;
+
+  if (e > 0)  // EOF
+    return 0;  // weird but valid
+
+  if (!line.empty()) {
+    // Parse optional characters that follow "WEBVTT"
+
+    const char c = line[0];
+
+    if (c != kSPACE && c != kTAB)
+      return -1;
+  }
+
+  // The WebVTT spec requires that the "WEBVTT" line
+  // be followed by an empty line (to separate it from
+  // first cue).
+
+  e = GetLine(&line);
+
+  if (e < 0)  // error
+    return e;
+
+  if (e > 0)  // EOF
+    return 0;  // weird but we allow it
+
+  if (!line.empty())
+    return -1;
+
+  return 0;  // success
+}
+
+int Parser::Parse(Cue* cue) {
+  if (cue == NULL)
+    return -1;
+
+  // Parse first non-blank line
+
+  string line;
+  int e;
+
+  for (;;) {
+    e = GetLine(&line);
+
+    if (e)  // EOF is OK here
+      return e;
+
+    if (!line.empty())
+      break;
+  }
+
+  // A WebVTT cue comprises an optional cue identifier line followed
+  // by a (non-optional) timings line.  You determine whether you have
+  // a timings line by scanning for the arrow token, the lexeme of which
+  // may not appear in the cue identifier line.
+
+  const char kArrow[] = "-->";
+  string::size_type arrow_pos = line.find(kArrow);
+
+  if (arrow_pos != string::npos) {
+    // We found a timings line, which implies that we don't have a cue
+    // identifier.
+
+    cue->identifier.clear();
+  } else {
+    // We did not find a timings line, so we assume that we have a cue
+    // identifier line, and then try again to find the cue timings on
+    // the next line.
+
+    cue->identifier.swap(line);
+
+    e = GetLine(&line);
+
+    if (e < 0)  // error
+      return e;
+
+    if (e > 0)  // EOF
+      return -1;
+
+    arrow_pos = line.find(kArrow);
+
+    if (arrow_pos == string::npos)  // not a timings line
+      return -1;
+  }
+
+  e = ParseTimingsLine(&line,
+                       arrow_pos,
+                       &cue->start_time,
+                       &cue->stop_time,
+                       &cue->settings);
+
+  if (e)  // error
+    return e;
+
+  // The cue payload comprises all the non-empty
+  // lines that follow the timings line.
+
+  Cue::payload_t& p = cue->payload;
+  p.clear();
+
+  for (;;) {
+    e = GetLine(&line);
+
+    if (e < 0)  // error
+      return e;
+
+    if (line.empty())
+      break;
+
+    p.push_back(line);
+  }
+
+  if (p.empty())
+    return -1;
+
+  return 0;  // success
+}
+
+int Parser::GetChar(char* c) {
+  if (unget_ >= 0) {
+    *c = static_cast<char>(unget_);
+    unget_ = -1;
+    return 0;
+  }
+
+  return reader_->GetChar(c);
+}
+
+void Parser::UngetChar(char c) {
+  unget_ = static_cast<unsigned char>(c);
+}
+
+int Parser::ParseBOM() {
+  // Explanation of UTF-8 BOM:
+  // http://en.wikipedia.org/wiki/Byte_order_mark
+
+  static const char BOM[] = "\xEF\xBB\xBF";  // UTF-8 BOM
+
+  for (int i = 0; i < 3; ++i) {
+    char c;
+    int e = GetChar(&c);
+
+    if (e < 0)  // error
+      return e;
+
+    if (e > 0)  // EOF
+      return 1;
+
+    if (c != BOM[i]) {
+      if (i == 0) {  // we don't have a BOM
+        UngetChar(c);
+        return 0;  // success
+      }
+
+      // We started a BOM, so we must finish the BOM.
+      return -1;  // error
+    }
+  }
+
+  return 0;  // success
 }
 
 int Parser::ParseTimingsLine(

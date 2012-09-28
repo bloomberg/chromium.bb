@@ -19,12 +19,24 @@ class Reader {
   // Fetch a character from the stream. Return
   // negative if error, positive if end-of-stream,
   // and 0 if a character is available.
-  //
   virtual int GetChar(char* c) = 0;
 
  protected:
-  Reader();
   virtual ~Reader();
+};
+
+class LineReader : protected Reader {
+ public:
+  // Consume a line of text from the stream, stripping off
+  // the line terminator characters.  Returns negative if error,
+  // 0 on success, and positive at end-of-stream.
+  int GetLine(std::string* line);
+
+ protected:
+  virtual ~LineReader();
+
+  // Puts a character back into the stream.
+  virtual void UngetChar(char c) = 0;
 };
 
 // As measured in thousandths of a second,
@@ -72,9 +84,10 @@ struct Cue {
   payload_t payload;
 };
 
-class Parser {
+class Parser : private LineReader {
  public:
   explicit Parser(Reader* r);
+  virtual ~Parser();
 
   // Pre-parse enough of the stream to determine whether
   // this is really a WEBVTT file. Returns 0 on success,
@@ -88,21 +101,15 @@ class Parser {
 
  private:
   // Returns the next character in the stream, using the look-back character
-  // if present.
-  int GetChar(char* c);
+  // if present (as per Reader::GetChar).
+  virtual int GetChar(char* c);
 
-  // Puts a character back into the stream.
-  void UngetChar(char c);
+  // Puts a character back into the stream (as per LineReader::UngetChar).
+  virtual void UngetChar(char c);
 
   // Check for presence of a UTF-8 BOM in the stream.  Returns
   // negative if error, 0 on success, and positive at end-of-stream.
   int ParseBOM();
-
-  // Consume a line of text from the stream, stripping off
-  // the line terminator characters.  Returns negative if error,
-  // 0 on success, and positive at end-of-stream.
-  //
-  int ParseLine(std::string* line);
 
   // Parse the distinguished "cue timings" line, which includes the start
   // and stop times and settings.  Argument |line| contains the complete
