@@ -7,7 +7,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
@@ -20,6 +19,8 @@
 #include "chrome/browser/safe_browsing/client_side_detection_host.h"
 #endif
 
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(safe_browsing::SafeBrowsingTabObserver)
+
 namespace safe_browsing {
 
 #if !defined(ENABLE_SAFE_BROWSING)
@@ -30,9 +31,11 @@ class ClientSideDetectionHost { };
 #endif
 
 SafeBrowsingTabObserver::SafeBrowsingTabObserver(
-    TabContents* tab_contents) : tab_contents_(tab_contents) {
+    content::WebContents* web_contents) : web_contents_(web_contents) {
 #if defined(ENABLE_SAFE_BROWSING)
-  PrefService* prefs = tab_contents_->profile()->GetPrefs();
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  PrefService* prefs = profile->GetPrefs();
   if (prefs) {
     pref_change_registrar_.Init(prefs);
     pref_change_registrar_.Add(prefs::kSafeBrowsingEnabled, this);
@@ -40,7 +43,7 @@ SafeBrowsingTabObserver::SafeBrowsingTabObserver(
     if (prefs->GetBoolean(prefs::kSafeBrowsingEnabled) &&
         g_browser_process->safe_browsing_detection_service()) {
       safebrowsing_detection_host_.reset(
-          ClientSideDetectionHost::Create(tab_contents_->web_contents()));
+          ClientSideDetectionHost::Create(web_contents));
     }
   }
 #endif
@@ -58,9 +61,11 @@ void SafeBrowsingTabObserver::Observe(
     const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_PREF_CHANGED: {
+      Profile* profile =
+          Profile::FromBrowserContext(web_contents_->GetBrowserContext());
       std::string* pref_name = content::Details<std::string>(details).ptr();
       DCHECK(content::Source<PrefService>(source).ptr() ==
-             tab_contents_->profile()->GetPrefs());
+             profile->GetPrefs());
       if (*pref_name == prefs::kSafeBrowsingEnabled) {
         UpdateSafebrowsingDetectionHost();
       } else {
@@ -78,20 +83,21 @@ void SafeBrowsingTabObserver::Observe(
 
 void SafeBrowsingTabObserver::UpdateSafebrowsingDetectionHost() {
 #if defined(ENABLE_SAFE_BROWSING)
-  PrefService* prefs = tab_contents_->profile()->GetPrefs();
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
+  PrefService* prefs = profile->GetPrefs();
   bool safe_browsing = prefs->GetBoolean(prefs::kSafeBrowsingEnabled);
   if (safe_browsing &&
       g_browser_process->safe_browsing_detection_service()) {
     if (!safebrowsing_detection_host_.get()) {
       safebrowsing_detection_host_.reset(
-          ClientSideDetectionHost::Create(tab_contents_->web_contents()));
+          ClientSideDetectionHost::Create(web_contents_));
     }
   } else {
     safebrowsing_detection_host_.reset();
   }
 
-  content::RenderViewHost* rvh =
-      tab_contents_->web_contents()->GetRenderViewHost();
+  content::RenderViewHost* rvh = web_contents_->GetRenderViewHost();
   rvh->Send(new ChromeViewMsg_SetClientSidePhishingDetection(
       rvh->GetRoutingID(), safe_browsing));
 #endif

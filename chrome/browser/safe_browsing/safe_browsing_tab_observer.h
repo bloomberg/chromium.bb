@@ -7,21 +7,28 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/api/prefs/pref_change_registrar.h"
+#include "chrome/browser/common/web_contents_user_data.h"
 #include "content/public/browser/notification_observer.h"
 
-class TabContents;
+namespace content {
+class WebContents;
+}
 
 namespace safe_browsing {
 
 class ClientSideDetectionHost;
 
 // Per-tab class to handle safe-browsing functionality.
-class SafeBrowsingTabObserver : public content::NotificationObserver {
+class SafeBrowsingTabObserver
+    : public content::NotificationObserver,
+      public WebContentsUserData<SafeBrowsingTabObserver> {
  public:
-  explicit SafeBrowsingTabObserver(TabContents* tab_contents);
   virtual ~SafeBrowsingTabObserver();
 
  private:
+  explicit SafeBrowsingTabObserver(content::WebContents* web_contents);
+  friend class WebContentsUserData<SafeBrowsingTabObserver>;
+
   // content::NotificationObserver overrides:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -36,8 +43,8 @@ class SafeBrowsingTabObserver : public content::NotificationObserver {
   // Handles IPCs.
   scoped_ptr<ClientSideDetectionHost> safebrowsing_detection_host_;
 
-  // Our owning TabContents.
-  TabContents* tab_contents_;
+  // Our owning WebContents.
+  content::WebContents* web_contents_;
 
   PrefChangeRegistrar pref_change_registrar_;
 

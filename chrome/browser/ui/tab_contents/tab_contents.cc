@@ -147,6 +147,7 @@ TabContents::TabContents(WebContents* contents)
   PluginObserver::CreateForWebContents(contents);
   prefs_tab_helper_.reset(new PrefsTabHelper(contents));
   prerender_tab_helper_.reset(new prerender::PrerenderTabHelper(this));
+  safe_browsing::SafeBrowsingTabObserver::CreateForWebContents(contents);
   SearchEngineTabHelper::CreateForWebContents(contents);
   chrome::search::SearchTabHelper::CreateForWebContents(contents);
   SnapshotTabHelper::CreateForWebContents(contents);
@@ -171,9 +172,6 @@ TabContents::TabContents(WebContents* contents)
   SadTabHelper::CreateForWebContents(contents);
   WebIntentPickerController::CreateForWebContents(contents);
 #endif
-
-  safe_browsing_tab_observer_.reset(
-      new safe_browsing::SafeBrowsingTabObserver(this));
 
 #if defined(ENABLE_PRINTING)
   printing::PrintPreviewMessageHandler::CreateForWebContents(contents);

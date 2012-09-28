@@ -72,10 +72,6 @@ class PrerenderContents;
 class PrerenderTabHelper;
 }
 
-namespace safe_browsing {
-class SafeBrowsingTabObserver;
-}
-
 // Wraps WebContents and all of its supporting objects in order to control
 // their ownership and lifetime.
 //
@@ -235,13 +231,6 @@ class TabContents : public content::WebContentsObserver {
 
   scoped_ptr<ThumbnailGenerator> thumbnail_generator_;
   scoped_ptr<TranslateTabHelper> translate_tab_helper_;
-
-  // Per-tab observers ---------------------------------------------------------
-  // (These provide no API for callers; objects that need to exist 1:1 with tabs
-  // and silently do their thing live here.)
-
-  scoped_ptr<safe_browsing::SafeBrowsingTabObserver>
-      safe_browsing_tab_observer_;
 
   // WebContents (MUST BE LAST) ------------------------------------------------
 
