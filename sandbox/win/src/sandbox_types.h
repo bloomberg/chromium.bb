@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,7 +57,8 @@ enum TerminationCodes {
   SBOX_FATAL_FLUSHANDLES = 7008,     // Failed to flush registry handles.
   SBOX_FATAL_CACHEDISABLE = 7009,    // Failed to forbid HCKU caching.
   SBOX_FATAL_CLOSEHANDLES = 7010,    // Failed to close pending handles.
-  SBOX_FATAL_MITIGATION = 7011       // Could not set the mitigation policy.
+  SBOX_FATAL_MITIGATION = 7011,      // Could not set the mitigation policy.
+  SBOX_FATAL_LAST
 };
 
 class BrokerServices;
