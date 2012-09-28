@@ -8247,6 +8247,10 @@ long long BlockGroup::GetNextTimeCode() const
     return m_next;
 }
 
+long long BlockGroup::GetDurationTimeCode() const
+{
+    return m_duration;
+}
 
 Block::Block(long long start, long long size_) :
     m_start(start),

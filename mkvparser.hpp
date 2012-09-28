@@ -187,7 +187,7 @@ public:
 
     long long GetPrevTimeCode() const;  //relative to block's time
     long long GetNextTimeCode() const;  //as above
-    long long GetDuration() const;
+    long long GetDurationTimeCode() const;
 
 private:
     Block m_block;
