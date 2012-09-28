@@ -27,6 +27,11 @@
 #include "chrome/browser/ui/webui/theme_source.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "base/android/build_info.h"
+#include "chrome/browser/ui/android/android_about_app_info.h"
+#endif
+
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/webui/version_handler_chromeos.h"
 #endif
@@ -39,7 +44,6 @@ ChromeWebUIDataSource* CreateVersionUIDataSource(Profile* profile) {
 
   // Localized and data strings.
   html_source->AddLocalizedString("title", IDS_ABOUT_VERSION_TITLE);
-  html_source->AddLocalizedString("name", IDS_PRODUCT_NAME);
   chrome::VersionInfo version_info;
   html_source->AddString("version", version_info.Version());
   {
@@ -52,17 +56,29 @@ ChromeWebUIDataSource* CreateVersionUIDataSource(Profile* profile) {
   html_source->AddLocalizedString("os_name", IDS_ABOUT_VERSION_OS);
   html_source->AddLocalizedString("platform", IDS_PLATFORM_LABEL);
   html_source->AddString("os_type", version_info.OSType());
-  html_source->AddString("os_version", std::string());
   html_source->AddString("webkit_version", webkit_glue::GetWebKitVersion());
   html_source->AddString("js_engine", "V8");
   html_source->AddString("js_version", v8::V8::GetVersion());
 
-#if !defined(OS_ANDROID)
+#if defined(OS_ANDROID)
+  html_source->AddLocalizedString("application_label",
+                                  IDS_ABOUT_VERSION_APPLICATION);
+  html_source->AddString("os_version", AndroidAboutAppInfo::GetOsInfo());
+  base::android::BuildInfo* android_build_info =
+      base::android::BuildInfo::GetInstance();
+  html_source->AddString("application_name",
+                         android_build_info->package_label());
+  html_source->AddString("application_version",
+                         android_build_info->package_version_name());
+#else
+  html_source->AddLocalizedString("application_label", IDS_PRODUCT_NAME);
+  html_source->AddString("os_version", std::string());
   html_source->AddString("flash_plugin", "Flash");
   // Note that the Flash version is retrieve asynchronously and returned in
   // VersionHandler::OnGotPlugins. The area is initially blank.
   html_source->AddString("flash_version", std::string());
-#endif
+#endif  // defined(OS_ANDROID)
+
   html_source->AddLocalizedString("company", IDS_ABOUT_VERSION_COMPANY_NAME);
   html_source->AddLocalizedString("copyright", IDS_ABOUT_VERSION_COPYRIGHT);
   html_source->AddString("cl", version_info.LastChange());
