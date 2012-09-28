@@ -95,6 +95,21 @@ class HistoryFunctionWithCallback : public HistoryFunction {
   void SendResponseToCallback();
 };
 
+class GetMostVisitedHistoryFunction : public HistoryFunctionWithCallback {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.history.getMostVisited");
+
+ protected:
+  virtual ~GetMostVisitedHistoryFunction() {}
+
+  // HistoryFunctionWithCallback:
+  virtual bool RunAsyncImpl() OVERRIDE;
+
+  // Callback for the history function to provide results.
+  void QueryComplete(CancelableRequestProvider::Handle handle,
+                     const history::FilteredURLList& data);
+};
+
 class GetVisitsHistoryFunction : public HistoryFunctionWithCallback {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("history.getVisits");

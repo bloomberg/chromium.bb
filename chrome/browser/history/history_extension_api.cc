@@ -18,17 +18,22 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_types.h"
+#include "chrome/browser/history/visit_filter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/extensions/api/experimental_history.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 
+using extensions::api::experimental_history::MostVisitedItem;
 using extensions::api::history::HistoryItem;
 using extensions::api::history::VisitItem;
 
 namespace AddUrl = extensions::api::history::AddUrl;
 namespace DeleteUrl = extensions::api::history::DeleteUrl;
 namespace DeleteRange = extensions::api::history::DeleteRange;
+namespace GetMostVisited =
+    extensions::api::experimental_history::GetMostVisited;
 namespace GetVisits = extensions::api::history::GetVisits;
 namespace OnVisited = extensions::api::history::OnVisited;
 namespace OnVisitRemoved = extensions::api::history::OnVisitRemoved;
@@ -236,6 +241,46 @@ void HistoryFunctionWithCallback::SendAsyncResponse() {
 void HistoryFunctionWithCallback::SendResponseToCallback() {
   SendResponse(true);
   Release();  // Balanced in RunImpl().
+}
+
+bool GetMostVisitedHistoryFunction::RunAsyncImpl() {
+  scoped_ptr<GetMostVisited::Params> params =
+      GetMostVisited::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  history::VisitFilter filter;
+  if (params->details.filter_time.get())
+    filter.SetFilterTime(GetTime(*params->details.filter_time));
+  if (params->details.filter_width.get()) {
+    filter.SetFilterWidth(base::TimeDelta::FromMilliseconds(
+        static_cast<int64>(*params->details.filter_width)));
+  }
+  if (params->details.day_of_the_week.get())
+    filter.SetDayOfTheWeekFilter(*params->details.day_of_the_week);
+  int max_results = 100;
+  if (params->details.max_results.get())
+    max_results = *params->details.max_results;
+  HistoryService* hs =
+      HistoryServiceFactory::GetForProfile(profile(), Profile::EXPLICIT_ACCESS);
+  hs->QueryFilteredURLs(max_results, filter, false, &cancelable_consumer_,
+      base::Bind(&GetMostVisitedHistoryFunction::QueryComplete,
+                 base::Unretained(this)));
+  return true;
+}
+
+void GetMostVisitedHistoryFunction::QueryComplete(
+    CancelableRequestProvider::Handle handle,
+    const history::FilteredURLList& data) {
+  std::vector<linked_ptr<MostVisitedItem> > results;
+  results.reserve(data.size());
+  for (size_t i = 0; i < data.size(); i++) {
+    linked_ptr<MostVisitedItem> item(new MostVisitedItem);
+    item->url = data[i].url.spec();
+    item->title = UTF16ToUTF8(data[i].title);
+    results.push_back(item);
+  }
+  results_ = GetMostVisited::Results::Create(results);
+  SendAsyncResponse();
 }
 
 bool GetVisitsHistoryFunction::RunAsyncImpl() {

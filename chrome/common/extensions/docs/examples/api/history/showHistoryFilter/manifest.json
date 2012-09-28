@@ -1,0 +1,11 @@
+{
+  "name": "Time filter for History",
+  "version": "1.1",
+  "description": "Reads your history, and shows top pages you visited in the time +/-1 hour in the last two months",
+  "permissions": ["experimental"],
+  "browser_action": {
+    "default_popup": "historyFilterUrls.html",
+    "default_icon": "clock.png"
+  },
+  "manifest_version": 2
+}

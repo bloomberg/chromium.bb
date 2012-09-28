@@ -376,6 +376,8 @@ void ExtensionAPI::InitDefaultConfiguration() {
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_ACCESSIBILITY));
   RegisterSchema("experimental.app", ReadFromResource(
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_APP));
+  RegisterSchema("experimental.history", ReadFromResource(
+      IDR_EXTENSION_API_JSON_EXPERIMENTAL_HISTORY));
   RegisterSchema("experimental.infobars", ReadFromResource(
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_INFOBARS));
   RegisterSchema("experimental.input.virtualKeyboard", ReadFromResource(

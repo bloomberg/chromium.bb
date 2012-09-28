@@ -196,6 +196,7 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<DeleteAllHistoryFunction>();
   RegisterFunction<DeleteRangeHistoryFunction>();
   RegisterFunction<DeleteUrlHistoryFunction>();
+  RegisterFunction<GetMostVisitedHistoryFunction>();
   RegisterFunction<GetVisitsHistoryFunction>();
   RegisterFunction<SearchHistoryFunction>();
 
