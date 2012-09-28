@@ -100,12 +100,10 @@ class URLIndexPrivateData
       const std::string& languages,
       const std::set<std::string>& scheme_whitelist);
 
-  // Writes |private_data| as a cache file to |file_path| and returns success
-  // via |succeeded|.
-  static void WritePrivateDataToCacheFileTask(
+  // Writes |private_data| as a cache file to |file_path| and returns success.
+  static bool WritePrivateDataToCacheFileTask(
       scoped_refptr<URLIndexPrivateData> private_data,
-      const FilePath& file_path,
-      scoped_refptr<RefCountedBool> succeeded);
+      const FilePath& file_path);
 
   // Creates a copy of ourself.
   scoped_refptr<URLIndexPrivateData> Duplicate() const;

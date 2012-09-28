@@ -297,13 +297,12 @@ scoped_refptr<URLIndexPrivateData> URLIndexPrivateData::RebuildFromHistory(
 }
 
 // static
-void URLIndexPrivateData::WritePrivateDataToCacheFileTask(
+bool URLIndexPrivateData::WritePrivateDataToCacheFileTask(
     scoped_refptr<URLIndexPrivateData> private_data,
-    const FilePath& file_path,
-    scoped_refptr<RefCountedBool> succeeded) {
+    const FilePath& file_path) {
   DCHECK(private_data.get());
   DCHECK(!file_path.empty());
-  succeeded->set_value(private_data->SaveToFile(file_path));
+  return private_data->SaveToFile(file_path);
 }
 
 scoped_refptr<URLIndexPrivateData> URLIndexPrivateData::Duplicate() const {

@@ -46,10 +46,6 @@ void InitializeSchemeWhitelist(std::set<std::string>* whitelist) {
   whitelist->insert(std::string(chrome::kMailToScheme));
 }
 
-// RefCountedBool --------------------------------------------------------------
-
-RefCountedBool::~RefCountedBool() {}
-
 // Restore/SaveCacheObserver ---------------------------------------------------
 
 InMemoryURLIndex::RestoreCacheObserver::~RestoreCacheObserver() {}
@@ -143,9 +139,7 @@ void InMemoryURLIndex::ShutDown() {
   FilePath path;
   if (!GetCacheFilePath(&path))
     return;
-  scoped_refptr<RefCountedBool> succeeded(new RefCountedBool(false));
-  URLIndexPrivateData::WritePrivateDataToCacheFileTask(
-      private_data_, path, succeeded);
+  URLIndexPrivateData::WritePrivateDataToCacheFileTask(private_data_, path);
   needs_to_be_cached_ = false;
 }
 
@@ -322,12 +316,11 @@ void InMemoryURLIndex::PostSaveToCacheFileTask() {
     // completion closure below.
     scoped_refptr<URLIndexPrivateData> private_data_copy =
         private_data_->Duplicate();
-    scoped_refptr<RefCountedBool> succeeded(new RefCountedBool(false));
-    content::BrowserThread::PostTaskAndReply(
+    content::BrowserThread::PostTaskAndReplyWithResult<bool>(
         content::BrowserThread::FILE, FROM_HERE,
         base::Bind(&URLIndexPrivateData::WritePrivateDataToCacheFileTask,
-                   private_data_copy, path, succeeded),
-        base::Bind(&InMemoryURLIndex::OnCacheSaveDone, AsWeakPtr(), succeeded));
+                   private_data_copy, path),
+        base::Bind(&InMemoryURLIndex::OnCacheSaveDone, AsWeakPtr()));
   } else {
     // If there is no data in our index then delete any existing cache file.
     content::BrowserThread::PostBlockingPoolTask(
@@ -336,10 +329,9 @@ void InMemoryURLIndex::PostSaveToCacheFileTask() {
   }
 }
 
-void InMemoryURLIndex::OnCacheSaveDone(
-    scoped_refptr<RefCountedBool> succeeded) {
+void InMemoryURLIndex::OnCacheSaveDone(bool succeeded) {
   if (save_cache_observer_)
-    save_cache_observer_->OnCacheSaveFinished(succeeded->value());
+    save_cache_observer_->OnCacheSaveFinished(succeeded);
 }
 
 }  // namespace history

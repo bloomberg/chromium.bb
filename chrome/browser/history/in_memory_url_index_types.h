@@ -142,24 +142,6 @@ struct RowWordStarts {
 };
 typedef std::map<HistoryID, RowWordStarts> WordStartsMap;
 
-// A RefCountedThreadSafe class that manages a bool used for passing around
-// success when saving the persistent data for the InMemoryURLIndex in a cache.
-class RefCountedBool : public base::RefCountedThreadSafe<RefCountedBool> {
- public:
-  explicit RefCountedBool(bool value) : value_(value) {}
-
-  bool value() const { return value_; }
-  void set_value(bool value) { value_ = value; }
-
- private:
-  friend class base::RefCountedThreadSafe<RefCountedBool>;
-  virtual ~RefCountedBool();
-
-  bool value_;
-
-  DISALLOW_COPY_AND_ASSIGN(RefCountedBool);
-};
-
 }  // namespace history
 
 #endif  // CHROME_BROWSER_HISTORY_IN_MEMORY_URL_INDEX_TYPES_H_

@@ -225,7 +225,7 @@ class InMemoryURLIndex : public content::NotificationObserver,
 
   // Notifies the observer, if any, of the success of the private data caching.
   // |succeeded| is true on a successful save.
-  void OnCacheSaveDone(scoped_refptr<RefCountedBool> succeeded);
+  void OnCacheSaveDone(bool succeeded);
 
   // Handles notifications of history changes.
   virtual void Observe(int notification_type,
