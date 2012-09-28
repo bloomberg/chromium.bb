@@ -1546,12 +1546,16 @@ void TabDragController::EndDragImpl(EndDragType type) {
   move_stacked_timer_.Stop();
 
   if (is_dragging_window_) {
+    // SetTrackedByWorkspace() may call us back (by way of the window bounds
+    // changing). Set |waiting_for_run_loop_to_exit_| here so that if that
+    // happens we ignore it.
+    waiting_for_run_loop_to_exit_ = true;
+
     if (type == NORMAL || (type == TAB_DESTROYED && drag_data_.size() > 1))
       SetTrackedByWorkspace(GetAttachedBrowserWidget()->GetNativeView(), true);
 
     // End the nested drag loop.
     GetAttachedBrowserWidget()->EndMoveLoop();
-    waiting_for_run_loop_to_exit_ = true;
   }
 
   // Hide the current dock controllers.
@@ -1953,6 +1957,9 @@ Browser* TabDragController::CreateBrowserForDrag(
   create_params.initial_bounds = new_bounds;
   Browser* browser = new Browser(create_params);
   SetTrackedByWorkspace(browser->window()->GetNativeWindow(), false);
+  // If the window is created maximized then the bounds we supplied are ignored.
+  // We need to reset them again so they are honored.
+  browser->window()->SetBounds(new_bounds);
   return browser;
 }
 

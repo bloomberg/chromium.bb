@@ -843,6 +843,60 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
 
 #if defined(USE_ASH)
 
+namespace {
+
+void DragInMaximizedWindowStep2(DetachToBrowserTabDragControllerTest* test,
+                                Browser* browser,
+                                TabStrip* tab_strip) {
+  // There should be another browser.
+  ASSERT_EQ(2u, BrowserList::size());
+  Browser* new_browser = *(++BrowserList::begin());
+  EXPECT_NE(browser, new_browser);
+  ASSERT_TRUE(new_browser->window()->IsActive());
+  TabStrip* tab_strip2 = GetTabStripForBrowser(new_browser);
+
+  ASSERT_TRUE(tab_strip2->IsDragSessionActive());
+  ASSERT_FALSE(tab_strip->IsDragSessionActive());
+
+  // Both windows should be visible.
+  EXPECT_TRUE(tab_strip->GetWidget()->IsVisible());
+  EXPECT_TRUE(tab_strip2->GetWidget()->IsVisible());
+
+  // Stops dragging.
+  ASSERT_TRUE(test->ReleaseInput());
+}
+
+}  // namespace
+
+// Creates a browser with two tabs, maximizes it, drags the tab out.
+IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
+                       DragInMaximizedWindow) {
+  AddTabAndResetBrowser(browser());
+  browser()->window()->Maximize();
+
+  TabStrip* tab_strip = GetTabStripForBrowser(browser());
+
+  // Move to the first tab and drag it enough so that it detaches.
+  gfx::Point tab_0_center(
+      GetCenterInScreenCoordinates(tab_strip->tab_at(0)));
+  ASSERT_TRUE(PressInput(tab_0_center));
+  ASSERT_TRUE(DragInputToNotifyWhenDone(
+      tab_0_center.x(), tab_0_center.y() + GetDetachY(tab_strip),
+      base::Bind(&DragInMaximizedWindowStep2, this, browser(), tab_strip)));
+  QuitWhenNotDragging();
+
+  ASSERT_FALSE(TabDragController::IsActive());
+
+  // Should be two browsers.
+  ASSERT_EQ(2u, BrowserList::size());
+  Browser* new_browser = *(++BrowserList::begin());
+  ASSERT_TRUE(new_browser->window()->IsActive());
+
+  // Only the new browser should be visible.
+  EXPECT_FALSE(browser()->window()->GetNativeWindow()->IsVisible());
+  EXPECT_TRUE(new_browser->window()->GetNativeWindow()->IsVisible());
+}
+
 // Subclass of DetachToBrowserInSeparateDisplayTabDragControllerTest that
 // creates multiple displays.
 class DetachToBrowserInSeparateDisplayTabDragControllerTest

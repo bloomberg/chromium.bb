@@ -98,7 +98,8 @@ void ToplevelWindowEventHandler::ScopedWindowResizer::OnWindowDestroying(
 
 ToplevelWindowEventHandler::ToplevelWindowEventHandler(aura::Window* owner)
     : in_move_loop_(false),
-      move_cancelled_(false) {
+      move_cancelled_(false),
+      in_gesture_resize_(false) {
   aura::client::SetWindowMoveClient(owner, this);
   Shell::GetInstance()->display_controller()->AddObserver(this);
   owner->AddPreTargetHandler(this);
