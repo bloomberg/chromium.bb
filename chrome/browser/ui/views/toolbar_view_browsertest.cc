@@ -88,7 +88,14 @@ void ToolbarViewTest::RunToolbarCycleFocusTest(Browser* browser) {
     EXPECT_EQ(ids[i], reverse_ids[count - 2 - i]);
 }
 
-IN_PROC_BROWSER_TEST_F(ToolbarViewTest, ToolbarCycleFocus) {
+#if defined(OS_WIN)
+// http://crbug.com/152938 Flaky on win.
+#define MAYBE_ToolbarCycleFocus DISABLED_ToolbarCycleFocus
+#else
+#define MAYBE_ToolbarCycleFocus ToolbarCycleFocus
+#endif
+
+IN_PROC_BROWSER_TEST_F(ToolbarViewTest, MAYBE_ToolbarCycleFocus) {
   RunToolbarCycleFocusTest(browser());
 }
 
