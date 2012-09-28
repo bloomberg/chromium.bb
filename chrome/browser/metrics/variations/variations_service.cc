@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/proto/trials_seed.pb.h"
@@ -24,6 +25,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/network_change_notifier.h"
 #include "net/http/http_response_headers.h"
+#include "net/http/http_util.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 
@@ -203,6 +205,11 @@ void VariationsService::OnURLFetchComplete(const net::URLFetcher* source) {
     DVLOG(1) << "Variations server request failed.";
     return;
   }
+
+  // Log the response code.
+  UMA_HISTOGRAM_CUSTOM_ENUMERATION("Variations.SeedFetchResponseCode",
+      net::HttpUtil::MapStatusCodeForHistogram(request->GetResponseCode()),
+      net::HttpUtil::GetStatusCodesForHistogram());
 
   if (request->GetResponseCode() != 200) {
     DVLOG(1) << "Variations server request returned non-200 response code: "
