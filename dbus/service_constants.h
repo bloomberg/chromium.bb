@@ -1040,6 +1040,7 @@ enum FormatErrorType {
   FORMAT_ERROR_UNSUPPORTED_FILESYSTEM = 5,
   FORMAT_ERROR_FORMAT_PROGRAM_NOT_FOUND = 6,
   FORMAT_ERROR_FORMAT_PROGRAM_FAILED = 7,
+  FORMAT_ERROR_DEVICE_NOT_ALLOWED = 8,
 };
 
 // TODO(benchan): After both Chrome and cros-disks use these enum values,
