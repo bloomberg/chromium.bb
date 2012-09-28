@@ -52,14 +52,8 @@ TEST_F(ValidatorTests, WholeA32InstructionSpaceTesting) {
   EXPECT_NE(data_address_mask, 0u);  // There should be some mask.
   EXPECT_EQ(nacl::PopCount(~data_address_mask + 1) , 1);  // Power of 2.
   const uint32_t data_address_mask_msb = 31;  // Implied by the above.
-  // TODO(jfb) Use a portable LSB here, instead of a silly loop.
-  uint32_t min_data_address_mask_lsb = 32;
-  for (int i = 0; i < 32; ++i) {
-    if (data_address_mask & (1 << i)) {
-      min_data_address_mask_lsb = i;
-      break;
-    }
-  }
+  const uint32_t min_data_address_mask_lsb =
+      nacl::CountTrailingZeroes(data_address_mask);
 
   const nacl_arm_dec::Arm32DecoderState decode_state;
   uint32_t i = 0;
