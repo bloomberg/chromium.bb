@@ -1,4 +1,6 @@
-TESTS = surface-test.la client-test.la event-test.la text-test.la
+TESTS = surface-test.la client-test.la	\
+	event-test.la text-test.la	\
+	surface-global-test.la
 
 TESTS_ENVIRONMENT = $(SHELL) $(top_srcdir)/tests/weston-test
 
@@ -15,6 +17,7 @@ AM_LDFLAGS = -module -avoid-version -rpath $(libdir)
 
 test_runner_src = test-runner.c test-runner.h
 
+surface_global_test_la_SOURCES = surface-global-test.c $(test_runner_src)
 surface_test_la_SOURCES = surface-test.c $(test_runner_src)
 client_test_la_SOURCES = client-test.c $(test_runner_src)
 event_test_la_SOURCES = event-test.c $(test_runner_src)
