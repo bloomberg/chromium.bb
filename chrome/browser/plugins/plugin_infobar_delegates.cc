@@ -155,38 +155,35 @@ bool UnauthorizedPluginInfoBarDelegate::LinkClicked(
 
 InfoBarDelegate* OutdatedPluginInfoBarDelegate::Create(
     content::WebContents* web_contents,
-    PluginInstaller* installer,
-    scoped_ptr<PluginMetadata> plugin_metadata) {
+    PluginInstaller* installer) {
   string16 message;
   switch (installer->state()) {
     case PluginInstaller::INSTALLER_STATE_IDLE:
       message = l10n_util::GetStringFUTF16(IDS_PLUGIN_OUTDATED_PROMPT,
-                                           plugin_metadata->name());
+                                           installer->name());
       break;
     case PluginInstaller::INSTALLER_STATE_DOWNLOADING:
       message = l10n_util::GetStringFUTF16(IDS_PLUGIN_DOWNLOADING,
-                                           plugin_metadata->name());
+                                           installer->name());
       break;
   }
   return new OutdatedPluginInfoBarDelegate(
-      web_contents, installer, plugin_metadata.Pass(), message);
+      web_contents, installer, message);
 }
 
 OutdatedPluginInfoBarDelegate::OutdatedPluginInfoBarDelegate(
     content::WebContents* web_contents,
     PluginInstaller* installer,
-    scoped_ptr<PluginMetadata> plugin_metadata,
     const string16& message)
     : PluginInfoBarDelegate(
           InfoBarService::FromTabContents(
               TabContents::FromWebContents(web_contents)),
-          plugin_metadata->name(),
-          plugin_metadata->identifier()),
+          installer->name(),
+          installer->identifier()),
       WeakPluginInstallerObserver(installer),
-      plugin_metadata_(plugin_metadata.Pass()),
       message_(message) {
   content::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Shown"));
-  std::string name = UTF16ToUTF8(plugin_metadata_->name());
+  std::string name = UTF16ToUTF8(installer->name());
   if (name == PluginMetadata::kJavaGroupName)
     content::RecordAction(
         UserMetricsAction("OutdatedPluginInfobar.Shown.Java"));
@@ -233,14 +230,10 @@ bool OutdatedPluginInfoBarDelegate::Accept() {
   }
 
   content::WebContents* web_contents = owner()->GetWebContents();
-  if (plugin_metadata_->url_for_display()) {
-    installer()->OpenDownloadURL(plugin_metadata_->url_for_display(),
-                                 plugin_metadata_->plugin_url(),
-                                 web_contents);
+  if (installer()->url_for_display()) {
+    installer()->OpenDownloadURL(web_contents);
   } else {
     installer()->StartInstalling(
-        plugin_metadata_->url_for_display(),
-        plugin_metadata_->plugin_url(),
         TabContents::FromWebContents(web_contents));
   }
   return false;
@@ -267,23 +260,23 @@ bool OutdatedPluginInfoBarDelegate::LinkClicked(
 
 void OutdatedPluginInfoBarDelegate::DownloadStarted() {
   ReplaceWithInfoBar(l10n_util::GetStringFUTF16(IDS_PLUGIN_DOWNLOADING,
-                                                plugin_metadata_->name()));
+                                                installer()->name()));
 }
 
 void OutdatedPluginInfoBarDelegate::DownloadError(const std::string& message) {
   ReplaceWithInfoBar(
       l10n_util::GetStringFUTF16(IDS_PLUGIN_DOWNLOAD_ERROR_SHORT,
-                                 plugin_metadata_->name()));
+                                 installer()->name()));
 }
 
 void OutdatedPluginInfoBarDelegate::DownloadCancelled() {
   ReplaceWithInfoBar(l10n_util::GetStringFUTF16(IDS_PLUGIN_DOWNLOAD_CANCELLED,
-                                                plugin_metadata_->name()));
+                                                installer()->name()));
 }
 
 void OutdatedPluginInfoBarDelegate::DownloadFinished() {
   ReplaceWithInfoBar(l10n_util::GetStringFUTF16(IDS_PLUGIN_UPDATING,
-                                                plugin_metadata_->name()));
+                                                installer()->name()));
 }
 
 void OutdatedPluginInfoBarDelegate::OnlyWeakObserversLeft() {
@@ -301,8 +294,7 @@ void OutdatedPluginInfoBarDelegate::ReplaceWithInfoBar(
   if (!owner())
     return;
   InfoBarDelegate* delegate = new PluginInstallerInfoBarDelegate(
-      owner(), installer(), plugin_metadata_->Clone(),
-      base::Closure(), false, message);
+      owner(), installer(), base::Closure(), false, message);
   owner()->ReplaceInfoBar(this, delegate);
 }
 
@@ -311,13 +303,11 @@ void OutdatedPluginInfoBarDelegate::ReplaceWithInfoBar(
 PluginInstallerInfoBarDelegate::PluginInstallerInfoBarDelegate(
     InfoBarService* infobar_service,
     PluginInstaller* installer,
-    scoped_ptr<PluginMetadata> plugin_metadata,
     const base::Closure& callback,
     bool new_install,
     const string16& message)
     : ConfirmInfoBarDelegate(infobar_service),
       WeakPluginInstallerObserver(installer),
-      plugin_metadata_(plugin_metadata.Pass()),
       callback_(callback),
       new_install_(new_install),
       message_(message) {
@@ -329,22 +319,20 @@ PluginInstallerInfoBarDelegate::~PluginInstallerInfoBarDelegate() {
 InfoBarDelegate* PluginInstallerInfoBarDelegate::Create(
     InfoBarService* infobar_service,
     PluginInstaller* installer,
-    scoped_ptr<PluginMetadata> plugin_metadata,
     const base::Closure& callback) {
   string16 message;
+  const string16& plugin_name = installer->name();
   switch (installer->state()) {
     case PluginInstaller::INSTALLER_STATE_IDLE:
       message = l10n_util::GetStringFUTF16(
-          IDS_PLUGININSTALLER_INSTALLPLUGIN_PROMPT, plugin_metadata->name());
+          IDS_PLUGININSTALLER_INSTALLPLUGIN_PROMPT, plugin_name);
       break;
     case PluginInstaller::INSTALLER_STATE_DOWNLOADING:
-      message = l10n_util::GetStringFUTF16(IDS_PLUGIN_DOWNLOADING,
-                                           plugin_metadata->name());
+      message = l10n_util::GetStringFUTF16(IDS_PLUGIN_DOWNLOADING, plugin_name);
       break;
   }
   return new PluginInstallerInfoBarDelegate(
-      infobar_service, installer, plugin_metadata.Pass(),
-      callback, true, message);
+      infobar_service, installer, callback, true, message);
 }
 
 gfx::Image* PluginInstallerInfoBarDelegate::GetIcon() const {
@@ -379,7 +367,7 @@ string16 PluginInstallerInfoBarDelegate::GetLinkText() const {
 
 bool PluginInstallerInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
-  GURL url(plugin_metadata_->help_url());
+  GURL url(installer()->help_url());
   if (url.is_empty()) {
     url = google_util::AppendGoogleLocaleParam(GURL(
       "https://www.google.com/support/chrome/bin/answer.py?answer=142064"));
@@ -395,24 +383,24 @@ bool PluginInstallerInfoBarDelegate::LinkClicked(
 
 void PluginInstallerInfoBarDelegate::DownloadStarted() {
   ReplaceWithInfoBar(l10n_util::GetStringFUTF16(IDS_PLUGIN_DOWNLOADING,
-                                                plugin_metadata_->name()));
+                                                installer()->name()));
 }
 
 void PluginInstallerInfoBarDelegate::DownloadCancelled() {
   ReplaceWithInfoBar(l10n_util::GetStringFUTF16(IDS_PLUGIN_DOWNLOAD_CANCELLED,
-                                                plugin_metadata_->name()));
+                                                installer()->name()));
 }
 
 void PluginInstallerInfoBarDelegate::DownloadError(const std::string& message) {
   ReplaceWithInfoBar(
       l10n_util::GetStringFUTF16(IDS_PLUGIN_DOWNLOAD_ERROR_SHORT,
-                                 plugin_metadata_->name()));
+                                 installer()->name()));
 }
 
 void PluginInstallerInfoBarDelegate::DownloadFinished() {
   ReplaceWithInfoBar(l10n_util::GetStringFUTF16(
       new_install_ ? IDS_PLUGIN_INSTALLING : IDS_PLUGIN_UPDATING,
-          plugin_metadata_->name()));
+      installer()->name()));
 }
 
 void PluginInstallerInfoBarDelegate::OnlyWeakObserversLeft() {
@@ -430,8 +418,7 @@ void PluginInstallerInfoBarDelegate::ReplaceWithInfoBar(
   if (!owner())
     return;
   InfoBarDelegate* delegate = new PluginInstallerInfoBarDelegate(
-      owner(), installer(), plugin_metadata_->Clone(),
-      base::Closure(), new_install_, message);
+      owner(), installer(), base::Closure(), new_install_, message);
   owner()->ReplaceInfoBar(this, delegate);
 }
 

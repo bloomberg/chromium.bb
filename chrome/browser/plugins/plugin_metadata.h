@@ -7,7 +7,6 @@
 
 #include <map>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/version.h"
 #include "googleurl/src/gurl.h"
@@ -74,8 +73,6 @@ class PluginMetadata {
   // considered out-of-date, etc.)
   SecurityStatus GetSecurityStatus(const webkit::WebPluginInfo& plugin) const;
 
-  scoped_ptr<PluginMetadata> Clone() const;
-
  private:
   struct VersionComparator {
     bool operator() (const Version& lhs, const Version& rhs) const;
@@ -88,8 +85,6 @@ class PluginMetadata {
   GURL plugin_url_;
   GURL help_url_;
   std::map<Version, SecurityStatus, VersionComparator> versions_;
-
-  DISALLOW_COPY_AND_ASSIGN(PluginMetadata);
 };
 
 #endif  // CHROME_BROWSER_PLUGINS_PLUGIN_METADATA_H_

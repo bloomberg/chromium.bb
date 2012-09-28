@@ -16,8 +16,6 @@
 class GURL;
 class InfoBarDelegate;
 class PluginFinder;
-class PluginMetadata;
-class TabContents;
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
 class PluginInstaller;
@@ -45,8 +43,7 @@ class PluginObserver : public content::WebContentsObserver,
   class PluginPlaceholderHost;
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
-  void InstallMissingPlugin(PluginInstaller* installer,
-                            PluginMetadata* plugin_metadata);
+  void InstallMissingPlugin(PluginInstaller* installer);
 #endif
 
   // Message handlers:

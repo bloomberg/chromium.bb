@@ -15,7 +15,6 @@
 
 class InfoBarService;
 class HostContentSettingsMap;
-class PluginMetadata;
 
 namespace content {
 class WebContents;
@@ -81,13 +80,11 @@ class OutdatedPluginInfoBarDelegate : public PluginInfoBarDelegate,
                                       public WeakPluginInstallerObserver {
  public:
   static InfoBarDelegate* Create(content::WebContents* web_contents,
-                                 PluginInstaller* installer,
-                                 scoped_ptr<PluginMetadata> metadata);
+                                 PluginInstaller* installer);
 
  private:
   OutdatedPluginInfoBarDelegate(content::WebContents* web_contents,
                                 PluginInstaller* installer,
-                                scoped_ptr<PluginMetadata> metadata,
                                 const string16& message);
   virtual ~OutdatedPluginInfoBarDelegate();
 
@@ -113,8 +110,6 @@ class OutdatedPluginInfoBarDelegate : public PluginInfoBarDelegate,
   // not have any buttons (and not call the callback).
   void ReplaceWithInfoBar(const string16& message);
 
-  scoped_ptr<PluginMetadata> plugin_metadata_;
-
   string16 message_;
 
   DISALLOW_COPY_AND_ASSIGN(OutdatedPluginInfoBarDelegate);
@@ -131,7 +126,6 @@ class PluginInstallerInfoBarDelegate : public ConfirmInfoBarDelegate,
   // installation state.
   static InfoBarDelegate* Create(InfoBarService* infobar_service,
                                  PluginInstaller* installer,
-                                 scoped_ptr<PluginMetadata> plugin_metadata,
                                  const base::Closure& callback);
 
  private:
@@ -139,7 +133,6 @@ class PluginInstallerInfoBarDelegate : public ConfirmInfoBarDelegate,
 
   PluginInstallerInfoBarDelegate(InfoBarService* infobar_service,
                                  PluginInstaller* installer,
-                                 scoped_ptr<PluginMetadata> plugin_metadata,
                                  const base::Closure& callback,
                                  bool new_install,
                                  const string16& message);
@@ -166,8 +159,6 @@ class PluginInstallerInfoBarDelegate : public ConfirmInfoBarDelegate,
   // Replaces this infobar with one showing |message|. The new infobar will
   // not have any buttons (and not call the callback).
   void ReplaceWithInfoBar(const string16& message);
-
-  scoped_ptr<PluginMetadata> plugin_metadata_;
 
   base::Closure callback_;
 

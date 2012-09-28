@@ -66,8 +66,10 @@ void BeginDownload(
 
 }  // namespace
 
-PluginInstaller::PluginInstaller()
-    : state_(INSTALLER_STATE_IDLE) {
+PluginInstaller::PluginInstaller(PluginMetadata* plugin)
+    : plugin_(plugin),
+      state_(INSTALLER_STATE_IDLE) {
+  DCHECK(plugin_);
 }
 
 PluginInstaller::~PluginInstaller() {
@@ -129,11 +131,9 @@ void PluginInstaller::RemoveWeakObserver(
   weak_observers_.RemoveObserver(observer);
 }
 
-void PluginInstaller::StartInstalling(bool url_for_display,
-                                      const GURL& plugin_url,
-                                      TabContents* tab_contents) {
+void PluginInstaller::StartInstalling(TabContents* tab_contents) {
   DCHECK_EQ(INSTALLER_STATE_IDLE, state_);
-  DCHECK(url_for_display);
+  DCHECK(!plugin_->url_for_display());
   state_ = INSTALLER_STATE_DOWNLOADING;
   FOR_EACH_OBSERVER(PluginInstallerObserver, observers_, DownloadStarted());
   content::WebContents* web_contents = tab_contents->web_contents();
@@ -144,7 +144,7 @@ void PluginInstaller::StartInstalling(bool url_for_display,
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&BeginDownload,
-                 plugin_url,
+                 plugin_->plugin_url(),
                  tab_contents->profile()->GetResourceContext(),
                  web_contents->GetRenderProcessHost()->GetID(),
                  web_contents->GetRenderViewHost()->GetRoutingID(),
@@ -174,13 +174,11 @@ void PluginInstaller::DownloadStarted(
   download_item->AddObserver(this);
 }
 
-void PluginInstaller::OpenDownloadURL(bool url_for_display,
-                                      const GURL& plugin_url,
-                                      content::WebContents* web_contents) {
+void PluginInstaller::OpenDownloadURL(content::WebContents* web_contents) {
   DCHECK_EQ(INSTALLER_STATE_IDLE, state_);
-  DCHECK(url_for_display);
+  DCHECK(plugin_->url_for_display());
   web_contents->OpenURL(content::OpenURLParams(
-      plugin_url,
+      plugin_->plugin_url(),
       content::Referrer(web_contents->GetURL(),
                         WebKit::WebReferrerPolicyDefault),
       NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_TYPED, false));

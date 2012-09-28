@@ -4,7 +4,6 @@
 
 #include "chrome/browser/pepper_broker_observer.h"
 
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
@@ -102,8 +101,8 @@ string16 PepperBrokerInfoBarDelegate::GetMessageText() const {
   webkit::WebPluginInfo plugin;
   bool success = plugin_service->GetPluginInfoByPath(plugin_path_, &plugin);
   DCHECK(success);
-  scoped_ptr<PluginMetadata> plugin_metadata(
-      PluginFinder::GetInstance()->GetPluginMetadata(plugin));
+  PluginMetadata* plugin_metadata =
+      PluginFinder::GetInstance()->GetPluginMetadata(plugin);
   return l10n_util::GetStringFUTF16(IDS_PEPPER_BROKER_MESSAGE,
                                     plugin_metadata->name(),
                                     net::FormatUrl(url_.GetOrigin(),
