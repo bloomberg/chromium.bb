@@ -8,12 +8,12 @@
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "chrome/common/chrome_switches.h"
+#include "win8/delegate_execute/delegate_execute_util.h"
 
 namespace delegate_execute {
 
 DelegateExecuteOperation::DelegateExecuteOperation()
-    : operation_type_(DELEGATE_EXECUTE),
-      relaunch_flags_("") {
+    : operation_type_(DELEGATE_EXECUTE) {
 }
 
 DelegateExecuteOperation::~DelegateExecuteOperation() {
@@ -30,10 +30,14 @@ bool DelegateExecuteOperation::Init(const CommandLine* cmd_line) {
   if (mutex_.empty())
     return false;
   // Add the mode forcing flags, if any.
+  const char* the_switch = NULL;
+
   if (cmd_line->HasSwitch(switches::kForceDesktop))
-    relaunch_flags_ = switches::kForceDesktop;
+    the_switch = switches::kForceDesktop;
   else if (cmd_line->HasSwitch(switches::kForceImmersive))
-    relaunch_flags_ = switches::kForceImmersive;
+    the_switch = switches::kForceImmersive;
+
+  relaunch_flags_ = ParametersFromSwitch(the_switch);
 
   operation_type_ = RELAUNCH_CHROME;
   return true;

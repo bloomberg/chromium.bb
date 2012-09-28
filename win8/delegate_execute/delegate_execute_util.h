@@ -1,0 +1,30 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef WIN8_DELEGATE_EXECUTE_DELEGATE_EXECUTE_UTIL_H_
+#define WIN8_DELEGATE_EXECUTE_DELEGATE_EXECUTE_UTIL_H_
+
+#include "base/command_line.h"
+#include "base/string16.h"
+
+class FilePath;
+
+namespace delegate_execute {
+
+// Returns a CommandLine with an empty program parsed from |params|.
+CommandLine CommandLineFromParameters(const wchar_t* params);
+
+// Returns a CommandLine to launch |chrome_exe| with all switches and arguments
+// from |params| plus an optional |argument|.
+CommandLine MakeChromeCommandLine(const FilePath& chrome_exe,
+                                  const CommandLine& params,
+                                  const string16& argument);
+
+// Returns a properly quoted command-line string less the program (argv[0])
+// containing |switch|.
+string16 ParametersFromSwitch(const char* a_switch);
+
+}  // namespace delegate_execute
+
+#endif  // WIN8_DELEGATE_EXECUTE_DELEGATE_EXECUTE_UTIL_H_

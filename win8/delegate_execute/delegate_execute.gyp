@@ -8,6 +8,13 @@
   'includes': [
     '../../build/win_precompile.gypi',
   ],
+  'target_defaults': {
+    'defines': [
+      # This define is required to pull in the new Win8 interfaces from system
+      # headers like ShObjIdl.h
+      'NTDDI_VERSION=0x06020000',
+    ],
+  },
   'targets': [
     {
       'target_name': 'delegate_execute',
@@ -29,18 +36,29 @@
         'delegate_execute.rgs',
         'delegate_execute_operation.cc',
         'delegate_execute_operation.h',
+        'delegate_execute_util.cc',
+        'delegate_execute_util.h',
         'resource.h',
-      ],
-      'defines': [
-        # This define is required to pull in the new Win8 interfaces from
-        # system headers like ShObjIdl.h
-        'NTDDI_VERSION=0x06020000',
       ],
       'msvs_settings': {
         'VCLinkerTool': {
           'SubSystem': '2',  # Set /SUBSYSTEM:WINDOWS
         },
       },
+    },
+    {
+      'target_name': 'delegate_execute_unittests',
+      'type': 'executable',
+      'dependencies': [
+        '../../base/base.gyp:base',
+        '../../base/base.gyp:run_all_unittests',
+        '../../testing/gtest.gyp:gtest',
+      ],
+      'sources': [
+        'delegate_execute_util.cc',
+        'delegate_execute_util.h',
+        'delegate_execute_util_unittest.cc',
+      ],
     },
   ],
 }

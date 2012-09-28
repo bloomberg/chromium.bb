@@ -10,6 +10,7 @@
 
 #include <string>
 
+#include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/process_util.h"
 #include "win8/delegate_execute/resource.h"       // main symbols
@@ -91,7 +92,7 @@ class ATL_NO_VTABLE DECLSPEC_UUID("A2DF06F9-A21A-44A8-8A99-8B9C84F29160")
   EC_HOST_UI_MODE GetLaunchMode();
 
   CComPtr<IShellItemArray> item_array_;
-  string16 parameters_;
+  CommandLine parameters_;
   FilePath chrome_exe_;
   STARTUPINFO start_info_;
   string16 verb_;

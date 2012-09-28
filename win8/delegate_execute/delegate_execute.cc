@@ -13,7 +13,6 @@
 #include "base/file_util.h"
 #include "base/process_util.h"
 #include "base/string16.h"
-#include "base/utf_string_conversions.h"
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/common/chrome_switches.h"
@@ -89,12 +88,12 @@ int RelaunchChrome(const DelegateExecuteOperation& operation) {
 
   base::win::ScopedCOMInitializer com_initializer;
 
-  string16 flags(ASCIIToWide(operation.relaunch_flags()));
+  string16 relaunch_flags(operation.relaunch_flags());
   SHELLEXECUTEINFO sei = { sizeof(sei) };
   sei.fMask = SEE_MASK_FLAG_LOG_USAGE;
   sei.nShow = SW_SHOWNORMAL;
   sei.lpFile = operation.shortcut().value().c_str();
-  sei.lpParameters = flags.c_str();
+  sei.lpParameters = relaunch_flags.c_str();
 
   AtlTrace(L"Relaunching Chrome via shortcut [%ls]\n", sei.lpFile);
 

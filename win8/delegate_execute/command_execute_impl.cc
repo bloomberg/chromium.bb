@@ -13,12 +13,14 @@
 #include "base/win/registry.h"
 #include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_handle.h"
+#include "base/win/scoped_process_information.h"
 #include "base/win/win_util.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/util_constants.h"
 #include "win8/delegate_execute/chrome_util.h"
+#include "win8/delegate_execute/delegate_execute_util.h"
 
 // CommandExecuteImpl is resposible for activating chrome in Windows 8. The
 // flow is complicated and this tries to highlight the important events.
@@ -76,8 +78,9 @@
 // a slow way to start chrome.
 //
 CommandExecuteImpl::CommandExecuteImpl()
-    : integrity_level_(base::INTEGRITY_UNKNOWN),
+    : parameters_(CommandLine::NO_PROGRAM),
       launch_scheme_(INTERNET_SCHEME_DEFAULT),
+      integrity_level_(base::INTEGRITY_UNKNOWN),
       chrome_mode_(ECHUIM_SYSTEM_LAUNCHER) {
   memset(&start_info_, 0, sizeof(start_info_));
   start_info_.cb = sizeof(start_info_);
@@ -94,9 +97,7 @@ STDMETHODIMP CommandExecuteImpl::SetKeyState(DWORD key_state) {
 
 STDMETHODIMP CommandExecuteImpl::SetParameters(LPCWSTR params) {
   AtlTrace("In %hs [%S]\n", __FUNCTION__, params);
-  if (params) {
-    parameters_ = params;
-  }
+  parameters_ = delegate_execute::CommandLineFromParameters(params);
   return S_OK;
 }
 
@@ -352,32 +353,21 @@ HRESULT CommandExecuteImpl::LaunchDesktopChrome() {
       break;
   }
 
-  string16 command_line = L"\"";
-  command_line += chrome_exe_.value();
-  command_line += L"\"";
-
-  if (!parameters_.empty()) {
-    AtlTrace("Adding parameters %ls to command line\n", parameters_.c_str());
-    command_line += L" ";
-    command_line += parameters_.c_str();
-  }
-
-  if (!display_name.empty()) {
-    command_line += L" -- ";
-    command_line += display_name;
-  }
+  CommandLine chrome(
+      delegate_execute::MakeChromeCommandLine(chrome_exe_, parameters_,
+                                              display_name));
+  string16 command_line(chrome.GetCommandLineString());
 
   AtlTrace("Formatted command line is %ls\n", command_line.c_str());
 
-  PROCESS_INFORMATION proc_info = {0};
-  BOOL ret = CreateProcess(NULL, const_cast<LPWSTR>(command_line.c_str()),
+  base::win::ScopedProcessInformation proc_info;
+  BOOL ret = CreateProcess(chrome_exe_.value().c_str(),
+                           const_cast<LPWSTR>(command_line.c_str()),
                            NULL, NULL, FALSE, 0, NULL, NULL, &start_info_,
-                           &proc_info);
+                           proc_info.Receive());
   if (ret) {
-    AtlTrace("Process id is %d\n", proc_info.dwProcessId);
-    AllowSetForegroundWindow(proc_info.dwProcessId);
-    CloseHandle(proc_info.hProcess);
-    CloseHandle(proc_info.hThread);
+    AtlTrace("Process id is %d\n", proc_info.process_id());
+    AllowSetForegroundWindow(proc_info.process_id());
   } else {
     AtlTrace("Process launch failed, error %d\n", ::GetLastError());
   }
@@ -402,14 +392,14 @@ EC_HOST_UI_MODE CommandExecuteImpl::GetLaunchMode() {
     return launch_mode;
   }
 
-  if (parameters_ == ASCIIToWide(switches::kForceImmersive)) {
+  if (parameters_.HasSwitch(switches::kForceImmersive)) {
     launch_mode = ECHUIM_IMMERSIVE;
     launch_mode_determined = true;
-    parameters_.clear();
-  } else if (parameters_ == ASCIIToWide(switches::kForceDesktop)) {
+    parameters_ = CommandLine(CommandLine::NO_PROGRAM);
+  } else if (parameters_.HasSwitch(switches::kForceDesktop)) {
     launch_mode = ECHUIM_DESKTOP;
     launch_mode_determined = true;
-    parameters_.clear();
+    parameters_ = CommandLine(CommandLine::NO_PROGRAM);
   }
 
   base::win::RegKey reg_key;
