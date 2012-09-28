@@ -1245,6 +1245,24 @@ public class ContentViewCore implements MotionEventDelegate {
         }
     }
 
+    public boolean getUseDesktopUserAgent() {
+        if (mNativeContentViewCore != 0) {
+            return nativeGetUseDesktopUserAgent(mNativeContentViewCore);
+        }
+        return false;
+    }
+
+    /**
+     * Set whether or not we're using a desktop user agent for the currently loaded page.
+     * @param override If true, use a desktop user agent.  Use a mobile one otherwise.
+     * @param reloadOnChange Reload the page if the UA has changed.
+     */
+    public void setUseDesktopUserAgent(boolean override, boolean reloadOnChange) {
+        if (mNativeContentViewCore != 0) {
+            nativeSetUseDesktopUserAgent(mNativeContentViewCore, override, reloadOnChange);
+        }
+    }
+
     /**
      * @return Whether the native ContentView has crashed.
      */
@@ -1726,6 +1744,10 @@ public class ContentViewCore implements MotionEventDelegate {
 
     private native void nativeOnShow(int nativeContentViewCoreImpl);
     private native void nativeOnHide(int nativeContentViewCoreImpl);
+
+    private native void nativeSetUseDesktopUserAgent(int nativeContentViewCoreImpl,
+            boolean enabled, boolean reloadOnChange);
+    private native boolean nativeGetUseDesktopUserAgent(int nativeContentViewCoreImpl);
 
     private native void nativeAddJavascriptInterface(int nativeContentViewCoreImpl, Object object,
                                                      String name, boolean requireAnnotation);

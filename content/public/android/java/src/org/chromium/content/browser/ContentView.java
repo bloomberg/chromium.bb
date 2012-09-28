@@ -310,15 +310,19 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
 
     /**
      * Start pinch zoom. You must call {@link #pinchEnd} to stop.
+     *
+     * @VisibleForTesting
      */
-    void pinchBegin(long timeMs, int x, int y) {
+    public void pinchBegin(long timeMs, int x, int y) {
         mContentViewCore.getContentViewGestureHandler().pinchBegin(timeMs, x, y);
     }
 
     /**
      * Stop pinch zoom.
+     *
+     * @VisibleForTesting
      */
-    void pinchEnd(long timeMs) {
+    public void pinchEnd(long timeMs) {
         mContentViewCore.getContentViewGestureHandler().pinchEnd(timeMs);
     }
 
@@ -337,8 +341,10 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
      *            coordinate.
      * @param anchorY The magnification anchor (Y) in the current view
      *            coordinate.
+     *
+     * @VisibleForTesting
      */
-    void pinchBy(long timeMs, int anchorX, int anchorY, float delta) {
+    public void pinchBy(long timeMs, int anchorX, int anchorY, float delta) {
         mContentViewCore.getContentViewGestureHandler().pinchBy(timeMs, anchorX, anchorY, delta);
     }
 
@@ -495,6 +501,19 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
     // Called by DownloadController.
     ContentViewDownloadDelegate getDownloadDelegate() {
         return mContentViewCore.getDownloadDelegate();
+    }
+
+    public boolean getUseDesktopUserAgent() {
+        return mContentViewCore.getUseDesktopUserAgent();
+    }
+
+    /**
+     * Set whether or not we're using a desktop user agent for the currently loaded page.
+     * @param override If true, use a desktop user agent.  Use a mobile one otherwise.
+     * @param reloadOnChange Reload the page if the UA has changed.
+     */
+    public void setUseDesktopUserAgent(boolean override, boolean reloadOnChange) {
+        mContentViewCore.setUseDesktopUserAgent(override, reloadOnChange);
     }
 
     /**

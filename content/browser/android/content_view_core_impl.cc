@@ -19,11 +19,11 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "content/browser/web_contents/navigation_controller_impl.h"
+#include "content/browser/web_contents/navigation_entry_impl.h"
 #include "content/browser/web_contents/web_contents_view_android.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/interstitial_page.h"
-#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -768,6 +768,12 @@ jint ContentViewCoreImpl::EvaluateJavaScript(JNIEnv* env,
                                                        script_utf16);
 }
 
+bool ContentViewCoreImpl::GetUseDesktopUserAgent(
+    JNIEnv* env, jobject obj) {
+  NavigationEntry* entry = web_contents_->GetController().GetActiveEntry();
+  return entry && entry->GetIsOverridingUserAgent();
+}
+
 void ContentViewCoreImpl::ImeUpdateAdapter(int native_ime_adapter,
                                            int text_input_type,
                                            const std::string& text,
@@ -790,6 +796,31 @@ void ContentViewCoreImpl::ImeUpdateAdapter(int native_ime_adapter,
                                         show_ime_if_needed);
 }
 
+void ContentViewCoreImpl::SetUseDesktopUserAgent(
+    JNIEnv* env,
+    jobject obj,
+    jboolean enabled,
+    jboolean reload_on_state_change) {
+  if (GetUseDesktopUserAgent(env, obj) == enabled)
+    return;
+
+  // Make sure the navigation entry actually exists.
+  NavigationEntry* entry = web_contents_->GetController().GetActiveEntry();
+  if (!entry)
+    return;
+
+  // Set the flag in the NavigationEntry.
+  entry->SetIsOverridingUserAgent(enabled);
+
+  // Send the override to the renderer.
+  if (reload_on_state_change) {
+    // Reloading the page will send the override down as part of the
+    // navigation IPC message.
+    NavigationControllerImpl& controller =
+        static_cast<NavigationControllerImpl&>(web_contents_->GetController());
+    controller.ReloadOriginalRequestURL(false);
+  }
+}
 
 // This is called for each ContentView.
 jint Init(JNIEnv* env, jobject obj,

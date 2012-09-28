@@ -79,17 +79,17 @@ class ContentViewCoreImpl : public ContentViewCore,
                           jlong time_ms,
                           jint type,
                           jobjectArray pts);
-  virtual jboolean SendMouseMoveEvent(JNIEnv* env,
-                                      jobject obj,
-                                      jlong time_ms,
-                                      jint x,
-                                      jint y);
-  virtual jboolean SendMouseWheelEvent(JNIEnv* env,
-                                       jobject obj,
-                                       jlong time_ms,
-                                       jint x,
-                                       jint y,
-                                       jfloat vertical_axis);
+  jboolean SendMouseMoveEvent(JNIEnv* env,
+                              jobject obj,
+                              jlong time_ms,
+                              jint x,
+                              jint y);
+  jboolean SendMouseWheelEvent(JNIEnv* env,
+                               jobject obj,
+                               jlong time_ms,
+                               jint x,
+                               jint y,
+                               jfloat vertical_axis);
   void ScrollBegin(JNIEnv* env, jobject obj, jlong time_ms, jint x, jint y);
   void ScrollEnd(JNIEnv* env, jobject obj, jlong time_ms);
   void ScrollBy(JNIEnv* env, jobject obj, jlong time_ms, jint x, jint y,
@@ -142,10 +142,15 @@ class ContentViewCoreImpl : public ContentViewCore,
   int GetNativeImeAdapter(JNIEnv* env, jobject obj);
   void SetFocus(JNIEnv* env, jobject obj, jboolean focused);
 
-  virtual jint GetBackgroundColor(JNIEnv* env, jobject obj);
-  virtual void SetBackgroundColor(JNIEnv* env, jobject obj, jint color);
+  jint GetBackgroundColor(JNIEnv* env, jobject obj);
+  void SetBackgroundColor(JNIEnv* env, jobject obj, jint color);
   void OnShow(JNIEnv* env, jobject obj);
   void OnHide(JNIEnv* env, jobject obj);
+  void SetUseDesktopUserAgent(JNIEnv* env,
+                              jobject /* obj */,
+                              jboolean state,
+                              jboolean reload_on_state_change);
+  bool GetUseDesktopUserAgent(JNIEnv* env, jobject /* obj */);
   void Show();
   void Hide();
   void AddJavascriptInterface(JNIEnv* env,
