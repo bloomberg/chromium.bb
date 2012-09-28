@@ -51,4 +51,16 @@ IN_PROC_BROWSER_TEST_F(ChromeContentBrowserClientBrowserTest,
   EXPECT_EQ(url_short, entry->GetVirtualURL());
 }
 
+IN_PROC_BROWSER_TEST_F(ChromeContentBrowserClientBrowserTest,
+                       UberURLHandler_AboutPage) {
+  const GURL url(std::string("chrome://chrome/"));
+
+  ui_test_utils::NavigateToURL(browser(), url);
+  NavigationEntry* entry = GetLastCommittedEntry();
+
+  ASSERT_TRUE(entry != NULL);
+  EXPECT_EQ(url, entry->GetURL());
+  EXPECT_EQ(url, entry->GetVirtualURL());
+}
+
 }  // namespace content

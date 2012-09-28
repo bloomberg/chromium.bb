@@ -191,10 +191,14 @@ GURL AddUberHost(const GURL& url) {
   return ReplaceURLHostAndPath(url, uber_host, new_path);
 }
 
-// If url->host() is "chrome", changes the url from "foo://chrome/bar/" to
-// "foo://bar/" and returns true. Otherwise returns false.
+// If url->host() is "chrome" and url->path() has characters other than the
+// first slash, changes the url from "foo://chrome/bar/" to "foo://bar/" and
+// returns true. Otherwise returns false.
 bool RemoveUberHost(GURL* url) {
   if (url->host() != chrome::kChromeUIUberHost)
+    return false;
+
+  if (url->path().empty() || url->path() == "/")
     return false;
 
   const std::string old_path = url->path();
@@ -203,7 +207,7 @@ bool RemoveUberHost(GURL* url) {
   std::string new_host;
   std::string new_path;
   if (separator == std::string::npos) {
-    new_host = old_path.empty() ? old_path : old_path.substr(1);
+    new_host = old_path.substr(1);
   } else {
     new_host = old_path.substr(1, separator - 1);
     new_path = old_path.substr(separator);
