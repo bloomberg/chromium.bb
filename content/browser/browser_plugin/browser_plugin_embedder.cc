@@ -222,6 +222,12 @@ void BrowserPluginEmbedder::PluginDestroyed(int instance_id) {
   DestroyGuestByInstanceID(instance_id);
 }
 
+void BrowserPluginEmbedder::Go(int instance_id, int relative_index) {
+  BrowserPluginGuest* guest = GetGuestByInstanceID(instance_id);
+  if (guest)
+    guest->Go(relative_index);
+}
+
 void BrowserPluginEmbedder::Stop(int instance_id) {
   BrowserPluginGuest* guest = GetGuestByInstanceID(instance_id);
   if (guest)

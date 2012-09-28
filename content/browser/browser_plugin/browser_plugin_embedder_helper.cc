@@ -43,6 +43,7 @@ bool BrowserPluginEmbedderHelper::OnMessageReceived(
                            &handled))
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_PluginDestroyed,
                         OnPluginDestroyed);
+    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_Go, OnGo)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_Stop, OnStop)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_Reload, OnReload)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -146,6 +147,10 @@ void BrowserPluginEmbedderHelper::OnSetFocus(int instance_id, bool focused) {
 
 void BrowserPluginEmbedderHelper::OnPluginDestroyed(int instance_id) {
   embedder_->PluginDestroyed(instance_id);
+}
+
+void BrowserPluginEmbedderHelper::OnGo(int instance_id, int relative_index) {
+  embedder_->Go(instance_id, relative_index);
 }
 
 void BrowserPluginEmbedderHelper::OnStop(int instance_id) {

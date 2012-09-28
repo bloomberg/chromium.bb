@@ -67,6 +67,10 @@ bool BrowserPluginGuest::ViewTakeFocus(bool reverse) {
   return true;
 }
 
+void BrowserPluginGuest::Go(int relative_index) {
+  web_contents()->GetController().GoToOffset(relative_index);
+}
+
 void BrowserPluginGuest::RendererUnresponsive(WebContents* source) {
   base::ProcessHandle process_handle =
       web_contents()->GetRenderProcessHost()->GetHandle();

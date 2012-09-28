@@ -70,6 +70,15 @@ class CONTENT_EXPORT BrowserPlugin :
   // Remove a custom event listener from this BrowserPlugin instance.
   bool RemoveEventListener(const std::string& event_name,
                         v8::Local<v8::Function> function);
+  // Tells the BrowserPlugin to tell the guest to navigate to the previous
+  // navigation entry in the navigation history.
+  void Back();
+  // Tells the BrowserPlugin to tell the guest to navigate to the next
+  // navigation entry in the navigation history.
+  void Forward();
+  // Tells the BrowserPlugin to tell the guest to navigate to a position
+  // relative to the current index in its navigation history.
+  void Go(int relativeIndex);
 
   // A request from Javascript has been made to stop the loading of the page.
   void Stop();

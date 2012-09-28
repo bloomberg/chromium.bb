@@ -60,6 +60,7 @@ class BrowserPluginEmbedderHelper : public RenderViewHostObserver {
   void OnHandleInputEvent(const IPC::SyncMessage& message, bool* handled);
   void OnSetFocus(int instance_id, bool focused);
   void OnPluginDestroyed(int instance_id);
+  void OnGo(int instance_id, int relative_index);
   void OnStop(int instance_id);
   void OnReload(int instance_id);
 

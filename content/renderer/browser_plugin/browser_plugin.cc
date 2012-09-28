@@ -200,6 +200,31 @@ void BrowserPlugin::RemoveEventListeners() {
   event_listener_map_.clear();
 }
 
+void BrowserPlugin::Back() {
+  if (!navigate_src_sent_)
+    return;
+  BrowserPluginManager::Get()->Send(
+      new BrowserPluginHostMsg_Go(render_view_->GetRoutingID(),
+                                  instance_id_, -1));
+}
+
+void BrowserPlugin::Forward() {
+  if (!navigate_src_sent_)
+    return;
+  BrowserPluginManager::Get()->Send(
+      new BrowserPluginHostMsg_Go(render_view_->GetRoutingID(),
+                                  instance_id_, 1));
+}
+
+void BrowserPlugin::Go(int relative_index) {
+  if (!navigate_src_sent_)
+    return;
+  BrowserPluginManager::Get()->Send(
+      new BrowserPluginHostMsg_Go(render_view_->GetRoutingID(),
+                                  instance_id_,
+                                  relative_index));
+}
+
 void BrowserPlugin::Stop() {
   if (!navigate_src_sent_)
     return;

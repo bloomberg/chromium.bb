@@ -66,6 +66,7 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver,
                      int instance_id,
                      const std::string& src,
                      const gfx::Size& size);
+  void Go(int instance_id, int relative_index);
   void Stop(int instance_id);
   void Reload(int instance_id);
 

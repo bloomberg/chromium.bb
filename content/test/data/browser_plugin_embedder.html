@@ -1,12 +1,24 @@
 <script type="text/javascript">
 function SetSrc(src) {
-  plugin = document.getElementById('plugin');
+  var plugin = document.getElementById('plugin');
   plugin.src = src;
 }
 function SetSize(w, h) {
-  plugin = document.getElementById('plugin');
+  var plugin = document.getElementById('plugin');
   plugin.width = w;
   plugin.height = h;
+}
+function Back() {
+  var plugin = document.getElementById('plugin');
+  plugin.back();
+}
+function Forward() {
+  var plugin = document.getElementById('plugin');
+  plugin.forward();
+}
+function Go(relativeIndex) {
+  var plugin = document.getElementById('plugin');
+  plugin.go(relativeIndex);
 }
 </script>
 

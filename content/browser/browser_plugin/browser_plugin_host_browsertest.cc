@@ -31,7 +31,7 @@ using content::BrowserPluginEmbedder;
 using content::BrowserPluginGuest;
 using content::BrowserPluginHostFactory;
 
-namespace content {
+namespace {
 
 const char* kHTMLForGuest =
     "data:text/html,<html><body>hello world</body></html>";
@@ -54,6 +54,19 @@ const char kHTMLForGuestTouchHandler[] =
     "     handler);"
     "}"
     "</script></html>";
+const char* kHTMLForGuestWithTitle =
+    "data:text/html,"
+    "<html><head><title>%s</title></head>"
+    "<body>hello world</body>"
+    "</html>";
+
+std::string GetHTMLForGuestWithTitle(const std::string& title) {
+  return StringPrintf(kHTMLForGuestWithTitle, title.c_str());
+}
+
+}  // namespace
+
+namespace content {
 
 // Test factory for creating test instances of BrowserPluginEmbedder and
 // BrowserPluginGuest.
@@ -684,5 +697,105 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, AcceptTouchEvents) {
   observer.WaitUntilMessageReceived();
   EXPECT_FALSE(rvh->has_touch_handler());
 }
+
+IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, Renavigate) {
+  ASSERT_TRUE(test_server()->Start());
+  GURL test_url(test_server()->GetURL(
+      "files/browser_plugin_embedder.html"));
+  NavigateToURL(shell(), test_url);
+
+  WebContentsImpl* embedder_web_contents = static_cast<WebContentsImpl*>(
+      shell()->web_contents());
+  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
+      embedder_web_contents->GetRenderViewHost());
+
+  rvh->ExecuteJavascriptAndGetValue(string16(), ASCIIToUTF16(
+      StringPrintf("SetSrc('%s');", GetHTMLForGuestWithTitle("P1").c_str())));
+
+  // Wait to make sure embedder is created/attached to WebContents.
+  TestBrowserPluginHostFactory::GetInstance()->WaitForEmbedderCreation();
+
+  TestBrowserPluginEmbedder* test_embedder =
+      static_cast<TestBrowserPluginEmbedder*>(
+          embedder_web_contents->GetBrowserPluginEmbedder());
+  ASSERT_TRUE(test_embedder);
+  test_embedder->WaitForGuestAdded();
+
+  // Verify that we have exactly one guest.
+  const BrowserPluginEmbedder::ContainerInstanceMap& instance_map =
+      test_embedder->guest_web_contents_for_testing();
+  EXPECT_EQ(1u, instance_map.size());
+
+  WebContentsImpl* test_guest_web_contents = static_cast<WebContentsImpl*>(
+      instance_map.begin()->second);
+  TestBrowserPluginGuest* test_guest = static_cast<TestBrowserPluginGuest*>(
+      test_guest_web_contents->GetBrowserPluginGuest());
+
+  // Wait for the guest to send an UpdateRectMsg, meaning it is ready.
+  test_guest->WaitForUpdateRectMsg();
+
+  // Navigate to P2 and verify that the navigation occurred.
+  {
+    const string16 expected_title = ASCIIToUTF16("P2");
+    content::TitleWatcher title_watcher(test_guest_web_contents,
+                                        expected_title);
+
+    rvh->ExecuteJavascriptAndGetValue(string16(), ASCIIToUTF16(
+        StringPrintf("SetSrc('%s');", GetHTMLForGuestWithTitle("P2").c_str())));
+
+    string16 actual_title = title_watcher.WaitAndGetTitle();
+    EXPECT_EQ(expected_title, actual_title);
+  }
+
+  // Navigate to P3 and verify that the navigation occurred.
+  {
+    const string16 expected_title = ASCIIToUTF16("P3");
+    content::TitleWatcher title_watcher(test_guest_web_contents,
+                                        expected_title);
+
+    rvh->ExecuteJavascriptAndGetValue(string16(), ASCIIToUTF16(
+        StringPrintf("SetSrc('%s');", GetHTMLForGuestWithTitle("P3").c_str())));
+
+    string16 actual_title = title_watcher.WaitAndGetTitle();
+    EXPECT_EQ(expected_title, actual_title);
+  }
+
+  // Go back and verify that we're back at P2.
+  {
+    const string16 expected_title = ASCIIToUTF16("P2");
+    content::TitleWatcher title_watcher(test_guest_web_contents,
+                                        expected_title);
+
+    rvh->ExecuteJavascriptAndGetValue(string16(), ASCIIToUTF16("Back();"));
+
+    string16 actual_title = title_watcher.WaitAndGetTitle();
+    EXPECT_EQ(expected_title, actual_title);
+  }
+
+  // Go forward and verify that we're back at P3.
+  {
+    const string16 expected_title = ASCIIToUTF16("P3");
+    content::TitleWatcher title_watcher(test_guest_web_contents,
+                                        expected_title);
+
+    rvh->ExecuteJavascriptAndGetValue(string16(), ASCIIToUTF16("Forward();"));
+
+    string16 actual_title = title_watcher.WaitAndGetTitle();
+    EXPECT_EQ(expected_title, actual_title);
+  }
+
+  // Go back two entries and verify that we're back at P1.
+  {
+    const string16 expected_title = ASCIIToUTF16("P1");
+    content::TitleWatcher title_watcher(test_guest_web_contents,
+                                        expected_title);
+
+    rvh->ExecuteJavascriptAndGetValue(string16(), ASCIIToUTF16("Go(-2);"));
+
+    string16 actual_title = title_watcher.WaitAndGetTitle();
+    EXPECT_EQ(expected_title, actual_title);
+  }
+}
+
 
 }  // namespace content

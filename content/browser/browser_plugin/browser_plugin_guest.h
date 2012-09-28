@@ -128,6 +128,9 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsDelegate,
 
   // Overridden in tests.
   virtual bool ViewTakeFocus(bool reverse);
+  // If possible, navigate the guest to |relative_index| entries away from the
+  // current navigation entry.
+  virtual void Go(int relative_index);
   // Overridden in tests.
   virtual void SetFocus(bool focused);
   // Reload the guest.
