@@ -58,7 +58,10 @@ theme_create(void);
 void
 theme_destroy(struct theme *t);
 
-#define THEME_FRAME_ACTIVE 1
+enum {
+	THEME_FRAME_ACTIVE = 1,
+	THEME_FRAME_MAXIMIZED,
+};
 
 void
 theme_render_frame(struct theme *t, 
@@ -82,6 +85,6 @@ enum theme_location {
 };
 
 enum theme_location
-theme_get_location(struct theme *t, int x, int y, int width, int height);
+theme_get_location(struct theme *t, int x, int y, int width, int height, int flags);
 
 #endif

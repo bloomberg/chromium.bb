@@ -1382,9 +1382,37 @@ frame_resize_handler(struct widget *widget,
 	struct theme *t = display->theme;
 	int x_l, x_r, y, w, h;
 	int decoration_width, decoration_height;
-	int opaque_margin;
+	int opaque_margin, shadow_margin;
 
-	if (widget->window->type != TYPE_FULLSCREEN) {
+	switch (widget->window->type) {
+	case TYPE_FULLSCREEN:
+		decoration_width = 0;
+		decoration_height = 0;
+
+		allocation.x = 0;
+		allocation.y = 0;
+		allocation.width = width;
+		allocation.height = height;
+		opaque_margin = 0;
+
+		wl_list_for_each(button, &frame->buttons_list, link)
+			button->widget->opaque = 1;
+		break;
+	case TYPE_MAXIMIZED:
+		decoration_width = t->width * 2;
+		decoration_height = t->width + t->titlebar_height;
+
+		allocation.x = t->width;
+		allocation.y = t->titlebar_height;
+		allocation.width = width - decoration_width;
+		allocation.height = height - decoration_height;
+
+		opaque_margin = 0;
+
+		wl_list_for_each(button, &frame->buttons_list, link)
+			button->widget->opaque = 0;
+		break;
+	default:
 		decoration_width = (t->width + t->margin) * 2;
 		decoration_height = t->width +
 			t->titlebar_height + t->margin * 2;
@@ -1398,18 +1426,7 @@ frame_resize_handler(struct widget *widget,
 
 		wl_list_for_each(button, &frame->buttons_list, link)
 			button->widget->opaque = 0;
-	} else {
-		decoration_width = 0;
-		decoration_height = 0;
-
-		allocation.x = 0;
-		allocation.y = 0;
-		allocation.width = width;
-		allocation.height = height;
-		opaque_margin = 0;
-
-		wl_list_for_each(button, &frame->buttons_list, link)
-			button->widget->opaque = 1;
+		break;
 	}
 
 	widget_set_allocation(child, allocation.x, allocation.y,
@@ -1424,13 +1441,15 @@ frame_resize_handler(struct widget *widget,
 	width = child->allocation.width + decoration_width;
 	height = child->allocation.height + decoration_height;
 
+	shadow_margin = widget->window->type == TYPE_MAXIMIZED ? 0 : t->margin;
+
 	if (widget->window->type != TYPE_FULLSCREEN) {
 		widget->window->input_region =
 			wl_compositor_create_region(display->compositor);
 		wl_region_add(widget->window->input_region,
-			      t->margin, t->margin,
-			      width - 2 * t->margin,
-			      height - 2 * t->margin);
+			      shadow_margin, shadow_margin,
+			      width - 2 * shadow_margin,
+			      height - 2 * shadow_margin);
 	}
 
 	widget_set_allocation(widget, 0, 0, width, height);
@@ -1445,9 +1464,9 @@ frame_resize_handler(struct widget *widget,
 	}
 
 	/* frame internal buttons */
-	x_r = frame->widget->allocation.width - t->width - t->margin;
-	x_l = t->width + t->margin;
-	y = t->width + t->margin;
+	x_r = frame->widget->allocation.width - t->width - shadow_margin;
+	x_l = t->width + shadow_margin;
+	y = t->width + shadow_margin;
 	wl_list_for_each(button, &frame->buttons_list, link) {
 		const int button_padding = 4;
 		w = cairo_image_surface_get_width(button->icon);
@@ -1674,6 +1693,8 @@ frame_redraw_handler(struct widget *widget, void *data)
 
 	if (window->focus_count)
 		flags |= THEME_FRAME_ACTIVE;
+	if (window->type == TYPE_MAXIMIZED)
+		flags |= THEME_FRAME_MAXIMIZED;
 	theme_render_frame(t, cr, widget->allocation.width,
 			   widget->allocation.height, window->title, flags);
 
@@ -1684,11 +1705,14 @@ static int
 frame_get_pointer_image_for_location(struct frame *frame, struct input *input)
 {
 	struct theme *t = frame->widget->window->display->theme;
+	struct window *window = frame->widget->window;
 	int location;
 
 	location = theme_get_location(t, input->sx, input->sy,
 				      frame->widget->allocation.width,
-				      frame->widget->allocation.height);
+				      frame->widget->allocation.height,
+				      window->type == TYPE_MAXIMIZED ?
+				      THEME_FRAME_MAXIMIZED : 0);
 
 	switch (location) {
 	case THEME_LOCATION_RESIZING_TOP:
@@ -1795,7 +1819,9 @@ frame_button_handler(struct widget *widget,
 
 	location = theme_get_location(display->theme, input->sx, input->sy,
 				      frame->widget->allocation.width,
-				      frame->widget->allocation.height);
+				      frame->widget->allocation.height,
+				      window->type == TYPE_MAXIMIZED ?
+				      THEME_FRAME_MAXIMIZED : 0);
 
 	if (window->display->shell && button == BTN_LEFT &&
 	    state == WL_POINTER_BUTTON_STATE_PRESSED) {
@@ -1885,11 +1911,12 @@ frame_set_child_size(struct widget *widget, int child_width, int child_height)
 	struct theme *t = display->theme;
 	int decoration_width, decoration_height;
 	int width, height;
+	int margin = widget->window->type == TYPE_MAXIMIZED ? 0 : t->margin;
 
 	if (widget->window->type != TYPE_FULLSCREEN) {
-		decoration_width = (t->width + t->margin) * 2;
+		decoration_width = (t->width + margin) * 2;
 		decoration_height = t->width +
-			t->titlebar_height + t->margin * 2;
+			t->titlebar_height + margin * 2;
 
 		width = child_width + decoration_width;
 		height = child_height + decoration_height;

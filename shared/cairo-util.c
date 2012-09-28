@@ -373,23 +373,28 @@ theme_destroy(struct theme *t)
 }
 
 void
-theme_render_frame(struct theme *t, 
+theme_render_frame(struct theme *t,
 		   cairo_t *cr, int width, int height,
 		   const char *title, uint32_t flags)
 {
 	cairo_text_extents_t extents;
 	cairo_font_extents_t font_extents;
 	cairo_surface_t *source;
-	int x, y;
+	int x, y, margin;
 
 	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 	cairo_set_source_rgba(cr, 0, 0, 0, 0);
 	cairo_paint(cr);
 
-	cairo_set_source_rgba(cr, 0, 0, 0, 0.45);
-	tile_mask(cr, t->shadow,
-		  2, 2, width + 8, height + 8,
-		  64, 64);
+	if (flags & THEME_FRAME_MAXIMIZED)
+		margin = 0;
+	else {
+		cairo_set_source_rgba(cr, 0, 0, 0, 0.45);
+		tile_mask(cr, t->shadow,
+			  2, 2, width + 8, height + 8,
+			  64, 64);
+		margin = t->margin;
+	}
 
 	if (flags & THEME_FRAME_ACTIVE)
 		source = t->active_frame;
@@ -397,12 +402,12 @@ theme_render_frame(struct theme *t,
 		source = t->inactive_frame;
 
 	tile_source(cr, source,
-		    t->margin, t->margin,
-		    width - t->margin * 2, height - t->margin * 2,
+		    margin, margin,
+		    width - margin * 2, height - margin * 2,
 		    t->width, t->titlebar_height);
 
-	cairo_rectangle (cr, t->margin + t->width, t->margin,
-			 width - (t->margin + t->width) * 2,
+	cairo_rectangle (cr, margin + t->width, margin,
+			 width - (margin + t->width) * 2,
 			 t->titlebar_height - t->width);
 	cairo_clip(cr);
 
@@ -414,7 +419,7 @@ theme_render_frame(struct theme *t,
 	cairo_text_extents(cr, title, &extents);
 	cairo_font_extents (cr, &font_extents);
 	x = (width - extents.width) / 2;
-	y = t->margin +
+	y = margin +
 		(t->titlebar_height -
 		 font_extents.ascent - font_extents.descent) / 2 +
 		font_extents.ascent;
@@ -434,29 +439,33 @@ theme_render_frame(struct theme *t,
 }
 
 enum theme_location
-theme_get_location(struct theme *t, int x, int y, int width, int height)
+theme_get_location(struct theme *t, int x, int y,
+				int width, int height, int flags)
 {
 	int vlocation, hlocation, location;
 	const int grip_size = 8;
+	int margin;
 
-	if (x < t->margin)
+	margin = (flags & THEME_FRAME_MAXIMIZED) ? 0 : t->margin;
+
+	if (x < margin)
 		hlocation = THEME_LOCATION_EXTERIOR;
-	else if (t->margin <= x && x < t->margin + grip_size)
+	else if (margin <= x && x < margin + grip_size)
 		hlocation = THEME_LOCATION_RESIZING_LEFT;
-	else if (x < width - t->margin - grip_size)
+	else if (x < width - margin - grip_size)
 		hlocation = THEME_LOCATION_INTERIOR;
-	else if (x < width - t->margin)
+	else if (x < width - margin)
 		hlocation = THEME_LOCATION_RESIZING_RIGHT;
 	else
 		hlocation = THEME_LOCATION_EXTERIOR;
 
-	if (y < t->margin)
+	if (y < margin)
 		vlocation = THEME_LOCATION_EXTERIOR;
-	else if (t->margin <= y && y < t->margin + grip_size)
+	else if (margin <= y && y < margin + grip_size)
 		vlocation = THEME_LOCATION_RESIZING_TOP;
-	else if (y < height - t->margin - grip_size)
+	else if (y < height - margin - grip_size)
 		vlocation = THEME_LOCATION_INTERIOR;
-	else if (y < height - t->margin)
+	else if (y < height - margin)
 		vlocation = THEME_LOCATION_RESIZING_BOTTOM;
 	else
 		vlocation = THEME_LOCATION_EXTERIOR;
@@ -465,7 +474,7 @@ theme_get_location(struct theme *t, int x, int y, int width, int height)
 	if (location & THEME_LOCATION_EXTERIOR)
 		location = THEME_LOCATION_EXTERIOR;
 	if (location == THEME_LOCATION_INTERIOR &&
-	    y < t->margin + t->titlebar_height)
+	    y < margin + t->titlebar_height)
 		location = THEME_LOCATION_TITLEBAR;
 	else if (location == THEME_LOCATION_INTERIOR)
 		location = THEME_LOCATION_CLIENT_AREA;

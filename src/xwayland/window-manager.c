@@ -1034,7 +1034,7 @@ weston_wm_destroy_cursors(struct weston_wm *wm)
 static int
 get_cursor_for_location(struct theme *t, int width, int height, int x, int y)
 {
-	int location = theme_get_location(t, x, y, width, height);
+	int location = theme_get_location(t, x, y, width, height, 0);
 
 	switch (location) {
 		case THEME_LOCATION_RESIZING_TOP:
@@ -1101,7 +1101,7 @@ weston_wm_handle_button(struct weston_wm *wm, xcb_generic_event_t *event)
 		location = theme_get_location(t,
 					      button->event_x,
 					      button->event_y,
-					      width, height);
+					      width, height, 0);
 
 		switch (location) {
 		case THEME_LOCATION_TITLEBAR:
