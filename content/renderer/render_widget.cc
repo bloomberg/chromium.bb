@@ -36,6 +36,7 @@
 #include "third_party/skia/include/core/SkShader.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/point.h"
+#include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gl/gl_switches.h"
@@ -971,7 +972,8 @@ void RenderWidget::DoDeferredUpdate() {
     pending_update_params_->scale_factor = dib_scale_factor;
   } else if (!is_accelerated_compositing_active_) {
     // Compute a buffer for painting and cache it.
-    gfx::Rect pixel_bounds = bounds.Scale(device_scale_factor_);
+    gfx::Rect pixel_bounds =
+        gfx::ToEnclosingRect(bounds.Scale(device_scale_factor_));
     scoped_ptr<skia::PlatformCanvas> canvas(
         RenderProcess::current()->GetDrawingCanvas(&current_paint_buf_,
                                                    pixel_bounds));

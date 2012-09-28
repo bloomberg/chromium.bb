@@ -36,10 +36,6 @@ RectF::RectF(const gfx::PointF& origin, const gfx::SizeF& size)
 
 RectF::~RectF() {}
 
-Rect RectF::ToRect() const {
-  return Rect(origin().ToPoint(), size().ToSize());
-}
-
 std::string RectF::ToString() const {
   return base::StringPrintf("%s %s",
                             origin().ToString().c_str(),

@@ -41,8 +41,8 @@ class UI_EXPORT SizeBase {
                  static_cast<Type>(height_ * y_scale));
   }
 
-  void set_width(Type width);
-  void set_height(Type height);
+  void set_width(Type width) { width_ = width; }
+  void set_height(Type height) { height_ = height; }
 
   bool operator==(const Class& s) const {
     return width_ == s.width_ && height_ == s.height_;
@@ -53,15 +53,24 @@ class UI_EXPORT SizeBase {
   }
 
   bool IsEmpty() const {
-    // Size doesn't allow negative dimensions, so testing for 0 is enough.
-    return (width_ == 0) || (height_ == 0);
+    return (width_ <= 0) || (height_ <= 0);
+  }
+
+  void ClampToNonNegative() {
+    if (width_ < 0)
+      width_ = 0;
+    if (height_ < 0)
+      height_ = 0;
   }
 
  protected:
-  SizeBase(Type width, Type height);
+  SizeBase(Type width, Type height)
+      : width_(width),
+        height_(height) {}
+
   // Destructor is intentionally made non virtual and protected.
   // Do not make this public.
-  ~SizeBase();
+  ~SizeBase() {}
 
  private:
   Type width_;

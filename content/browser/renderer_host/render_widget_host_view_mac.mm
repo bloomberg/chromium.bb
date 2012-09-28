@@ -50,6 +50,7 @@
 #import "ui/base/cocoa/underlay_opengl_hosting_window.h"
 #include "ui/base/layout.h"
 #include "ui/gfx/point.h"
+#include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 #include "ui/surface/io_surface_support_mac.h"
 #include "webkit/plugins/npapi/webplugin.h"
@@ -850,7 +851,8 @@ void RenderWidgetHostViewMac::CopyFromCompositingSurface(
   gfx::Rect src_gl_subrect = src_subrect;
   src_gl_subrect.set_y(GetViewBounds().height() - src_subrect.bottom());
 
-  gfx::Rect src_pixel_gl_subrect = src_gl_subrect.Scale(scale);
+  gfx::Rect src_pixel_gl_subrect =
+      gfx::ToEnclosingRect(src_gl_subrect.Scale(scale));
   compositing_iosurface_->CopyTo(
       src_pixel_gl_subrect,
       dst_pixel_size,

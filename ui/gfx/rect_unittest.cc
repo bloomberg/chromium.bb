@@ -5,7 +5,10 @@
 #include "base/basictypes.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
+
+#include <limits>
 
 namespace ui {
 
@@ -342,6 +345,158 @@ TEST(RectTest, SkRectToRect) {
   gfx::Rect src(10, 20, 30, 40);
   SkRect skrect = gfx::RectToSkRect(src);
   EXPECT_EQ(src, gfx::SkRectToRect(skrect));
+}
+
+// Similar to EXPECT_FLOAT_EQ, but lets NaN equal NaN
+#define EXPECT_FLOAT_AND_NAN_EQ(a, b) \
+  { if (a == a || b == b) { EXPECT_FLOAT_EQ(a, b); } }
+
+
+TEST(RectTest, ScaleRect) {
+  static const struct Test {
+    int x1;  // source
+    int y1;
+    int w1;
+    int h1;
+    float scale;
+    float x2;  // target
+    float y2;
+    float w2;
+    float h2;
+  } tests[] = {
+    { 3, 3, 3, 3,
+      1.5f,
+      4.5f, 4.5f, 4.5f, 4.5f },
+    { 3, 3, 3, 3,
+      0.0f,
+      0.0f, 0.0f, 0.0f, 0.0f },
+    { 3, 3, 3, 3,
+      std::numeric_limits<float>::quiet_NaN(),
+      std::numeric_limits<float>::quiet_NaN(),
+      std::numeric_limits<float>::quiet_NaN(),
+      std::numeric_limits<float>::quiet_NaN(),
+      std::numeric_limits<float>::quiet_NaN() },
+    { 3, 3, 3, 3,
+      std::numeric_limits<float>::max(),
+      std::numeric_limits<float>::max(),
+      std::numeric_limits<float>::max(),
+      std::numeric_limits<float>::max(),
+      std::numeric_limits<float>::max() },
+    { 3, 3, 3, 3,
+      -1.0f,
+      -3.0f, -3.0f, 0.0f, 0.0f }
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+    gfx::Rect r1(tests[i].x1, tests[i].y1, tests[i].w1, tests[i].h1);
+    gfx::RectF r2(tests[i].x2, tests[i].y2, tests[i].w2, tests[i].h2);
+
+    gfx::RectF scaled = r1.Scale(tests[i].scale);
+    EXPECT_FLOAT_AND_NAN_EQ(r2.x(), scaled.x());
+    EXPECT_FLOAT_AND_NAN_EQ(r2.y(), scaled.y());
+    EXPECT_FLOAT_AND_NAN_EQ(r2.width(), scaled.width());
+    EXPECT_FLOAT_AND_NAN_EQ(r2.height(), scaled.height());
+  }
+}
+
+TEST(RectTest, ToEnclosedRect) {
+  static const struct Test {
+    float x1; // source
+    float y1;
+    float w1;
+    float h1;
+    int x2; // target
+    int y2;
+    int w2;
+    int h2;
+  } tests [] = {
+    { 0.0f, 0.0f, 0.0f, 0.0f,
+      0, 0, 0, 0 },
+    { -1.5f, -1.5f, 3.0f, 3.0f,
+      -1, -1, 2, 2 },
+    { -1.5f, -1.5f, 3.5f, 3.5f,
+      -1, -1, 3, 3 },
+    { std::numeric_limits<float>::max(),
+      std::numeric_limits<float>::max(),
+      2.0f, 2.0f,
+      std::numeric_limits<int>::max(),
+      std::numeric_limits<int>::max(),
+      0, 0 },
+    { 0.0f, 0.0f,
+      std::numeric_limits<float>::max(),
+      std::numeric_limits<float>::max(),
+      0, 0,
+      std::numeric_limits<int>::max(),
+      std::numeric_limits<int>::max() },
+    { 20000.5f, 20000.5f, 0.5f, 0.5f,
+      20001, 20001, 0, 0 },
+    { std::numeric_limits<float>::quiet_NaN(),
+      std::numeric_limits<float>::quiet_NaN(),
+      std::numeric_limits<float>::quiet_NaN(),
+      std::numeric_limits<float>::quiet_NaN(),
+      0, 0, 0, 0 }
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+    gfx::RectF r1(tests[i].x1, tests[i].y1, tests[i].w1, tests[i].h1);
+    gfx::Rect r2(tests[i].x2, tests[i].y2, tests[i].w2, tests[i].h2);
+
+    gfx::Rect enclosed = ToEnclosedRect(r1);
+    EXPECT_FLOAT_AND_NAN_EQ(r2.x(), enclosed.x());
+    EXPECT_FLOAT_AND_NAN_EQ(r2.y(), enclosed.y());
+    EXPECT_FLOAT_AND_NAN_EQ(r2.width(), enclosed.width());
+    EXPECT_FLOAT_AND_NAN_EQ(r2.height(), enclosed.height());
+  }
+}
+
+TEST(RectTest, ToEnclosingRect) {
+  static const struct Test {
+    float x1; // source
+    float y1;
+    float w1;
+    float h1;
+    int x2; // target
+    int y2;
+    int w2;
+    int h2;
+  } tests [] = {
+    { 0.0f, 0.0f, 0.0f, 0.0f,
+      0, 0, 0, 0 },
+    { -1.5f, -1.5f, 3.0f, 3.0f,
+      -2, -2, 4, 4 },
+    { -1.5f, -1.5f, 3.5f, 3.5f,
+      -2, -2, 4, 4 },
+    { std::numeric_limits<float>::max(),
+      std::numeric_limits<float>::max(),
+      2.0f, 2.0f,
+      std::numeric_limits<int>::max(),
+      std::numeric_limits<int>::max(),
+      0, 0 },
+    { 0.0f, 0.0f,
+      std::numeric_limits<float>::max(),
+      std::numeric_limits<float>::max(),
+      0, 0,
+      std::numeric_limits<int>::max(),
+      std::numeric_limits<int>::max() },
+    { 20000.5f, 20000.5f, 0.5f, 0.5f,
+      20000, 20000, 1, 1 },
+    { std::numeric_limits<float>::quiet_NaN(),
+      std::numeric_limits<float>::quiet_NaN(),
+      std::numeric_limits<float>::quiet_NaN(),
+      std::numeric_limits<float>::quiet_NaN(),
+      0, 0, 0, 0 }
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+    gfx::RectF r1(tests[i].x1, tests[i].y1, tests[i].w1, tests[i].h1);
+    gfx::Rect r2(tests[i].x2, tests[i].y2, tests[i].w2, tests[i].h2);
+
+    gfx::Rect enclosed = ToEnclosingRect(r1);
+    EXPECT_FLOAT_AND_NAN_EQ(r2.x(), enclosed.x());
+    EXPECT_FLOAT_AND_NAN_EQ(r2.y(), enclosed.y());
+    EXPECT_FLOAT_AND_NAN_EQ(r2.width(), enclosed.width());
+    EXPECT_FLOAT_AND_NAN_EQ(r2.height(), enclosed.height());
+  }
 }
 
 #if defined(OS_WIN)

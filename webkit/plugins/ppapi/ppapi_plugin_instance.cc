@@ -66,6 +66,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/base/range/range.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
+#include "ui/gfx/rect_conversions.h"
 #include "webkit/plugins/plugin_constants.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/event_conversion.h"
@@ -1016,7 +1017,7 @@ bool PluginInstance::GetBitmapForOptimizedPluginPaint(
       0, 0, image_data->width(), image_data->height());
   float scale = GetBoundGraphics2D()->GetScale();
   gfx::Rect plugin_backing_store_rect =
-    pixel_plugin_backing_store_rect.Scale(scale);
+    gfx::ToEnclosingRect(pixel_plugin_backing_store_rect.Scale(scale));
 
   gfx::Rect clip_page = PP_ToGfxRect(view_data_.clip_rect);
   gfx::Rect plugin_paint_rect = plugin_backing_store_rect.Intersect(clip_page);

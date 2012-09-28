@@ -6,6 +6,7 @@
 
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/rect_conversions.h"
 #include "ui/surface/transport_dib.h"
 
 namespace content {
@@ -35,7 +36,8 @@ void BrowserPluginBackingStore::PaintToBackingStore(
   if (bitmap_rect.IsEmpty())
     return;
 
-  gfx::Rect pixel_bitmap_rect = bitmap_rect.Scale(scale_factor_);
+  gfx::Rect pixel_bitmap_rect =
+      gfx::ToEnclosingRect(bitmap_rect.Scale(scale_factor_));
 
   const int width = pixel_bitmap_rect.width();
   const int height = pixel_bitmap_rect.height();
@@ -54,7 +56,8 @@ void BrowserPluginBackingStore::PaintToBackingStore(
   sk_bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
   sk_bitmap.setPixels(dib->memory());
   for (size_t i = 0; i < copy_rects.size(); i++) {
-    const gfx::Rect& pixel_copy_rect = copy_rects[i].Scale(scale_factor_);
+    const gfx::Rect& pixel_copy_rect =
+        gfx::ToEnclosingRect(copy_rects[i].Scale(scale_factor_));
     int x = pixel_copy_rect.x() - pixel_bitmap_rect.x();
     int y = pixel_copy_rect.y() - pixel_bitmap_rect.y();
     SkIRect srcrect = SkIRect::MakeXYWH(x, y,
@@ -75,7 +78,7 @@ void BrowserPluginBackingStore::ScrollBackingStore(
     int dy,
     const gfx::Rect& clip_rect,
     const gfx::Size& view_size) {
-  gfx::Rect pixel_rect = clip_rect.Scale(scale_factor_);
+  gfx::Rect pixel_rect = gfx::ToEnclosingRect(clip_rect.Scale(scale_factor_));
   int pixel_dx = dx * scale_factor_;
   int pixel_dy = dy * scale_factor_;
 

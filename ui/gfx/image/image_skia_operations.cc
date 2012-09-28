@@ -17,6 +17,7 @@
 #include "ui/gfx/image/image_skia_source.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/gfx/skia_util.h"
@@ -286,8 +287,9 @@ class ExtractSubsetImageSource: public gfx::ImageSkiaSource {
   // gfx::ImageSkiaSource overrides:
   virtual ImageSkiaRep GetImageForScale(ui::ScaleFactor scale_factor) OVERRIDE {
     ImageSkiaRep image_rep = image_.GetRepresentation(scale_factor);
-    SkIRect subset_bounds_in_pixel = RectToSkIRect(subset_bounds_.Scale(
-        ui::GetScaleFactorScale(image_rep.scale_factor())));
+    SkIRect subset_bounds_in_pixel = RectToSkIRect(
+        ToEnclosingRect(subset_bounds_.Scale(
+            ui::GetScaleFactorScale(image_rep.scale_factor()))));
     SkBitmap dst;
     bool success = image_rep.sk_bitmap().extractSubset(&dst,
                                                        subset_bounds_in_pixel);

@@ -65,16 +65,6 @@ class UI_EXPORT RectBase {
     Offset(point.x(), point.y());
   }
 
-  /// Scales the rectangle by |scale|.
-  Class Scale(float scale) const WARN_UNUSED_RESULT {
-    return Scale(scale, scale);
-  }
-
-  Class Scale(float x_scale, float y_scale) const WARN_UNUSED_RESULT {
-    return Class(origin_.Scale(x_scale, y_scale),
-                 size_.Scale(x_scale, y_scale));
-  }
-
   InsetsClass InsetsFrom(const Class& inner) const {
     return InsetsClass(inner.y() - y(),
                        inner.x() - x(),
