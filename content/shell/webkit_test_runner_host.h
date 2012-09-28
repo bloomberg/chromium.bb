@@ -126,8 +126,6 @@ class WebKitTestController : public base::NonThreadSafe,
 
   Shell* main_window_;
 
-  bool pumping_messages_;
-  bool renderer_crashed_;
   bool enable_pixel_dumping_;
   std::string expected_pixel_hash_;
 

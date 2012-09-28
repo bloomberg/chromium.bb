@@ -123,17 +123,6 @@ WebKitTestController::WebKitTestController() {
   CHECK(!instance_);
   instance_ = this;
   printer_.reset(new WebKitTestResultPrinter(&std::cout, &std::cerr));
-
-  content::ShellBrowserContext* browser_context =
-      static_cast<content::ShellContentBrowserClient*>(
-          content::GetContentClient()->browser())->browser_context();
-  main_window_ = content::Shell::CreateNewWindow(
-      browser_context,
-      GURL("about:blank"),
-      NULL,
-      MSG_ROUTING_NONE,
-      NULL);
-  Observe(main_window_->web_contents());
   ResetAfterLayoutTest();
 }
 
@@ -150,13 +139,20 @@ bool WebKitTestController::PrepareForLayoutTest(
     bool enable_pixel_dumping,
     const std::string& expected_pixel_hash) {
   DCHECK(CalledOnValidThread());
-  if (!main_window_)
-    return false;
   enable_pixel_dumping_ = enable_pixel_dumping;
   expected_pixel_hash_ = expected_pixel_hash;
   printer_->reset();
   printer_->PrintTextHeader();
-  main_window_->LoadURL(test_url);
+  content::ShellBrowserContext* browser_context =
+      static_cast<content::ShellContentBrowserClient*>(
+          content::GetContentClient()->browser())->browser_context();
+  main_window_ = content::Shell::CreateNewWindow(
+      browser_context,
+      test_url,
+      NULL,
+      MSG_ROUTING_NONE,
+      NULL);
+  Observe(main_window_->web_contents());
   return true;
 }
 
@@ -164,7 +160,6 @@ bool WebKitTestController::ResetAfterLayoutTest() {
   DCHECK(CalledOnValidThread());
   printer_->PrintTextFooter();
   printer_->PrintImageFooter();
-  pumping_messages_ = false;
   enable_pixel_dumping_ = false;
   expected_pixel_hash_.clear();
   captured_dump_ = false;
@@ -174,20 +169,12 @@ bool WebKitTestController::ResetAfterLayoutTest() {
   should_stay_on_page_after_handling_before_unload_ = false;
   wait_until_done_ = false;
   watchdog_.Cancel();
-  if (!main_window_)
-    return false;
-  if (main_window_->web_contents()->GetController().GetEntryCount() > 0) {
-    // Reset the WebContents for the next test.
-    // TODO(jochen): Reset it more thoroughly.
-    main_window_->web_contents()->GetController().GoToIndex(0);
+  if (main_window_) {
+    Observe(NULL);
+    main_window_ = NULL;
   }
-  renderer_crashed_ = false;
-  // Wait for the main_window_ to finish loading.
-  pumping_messages_ = true;
-  base::RunLoop run_loop;
-  run_loop.Run();
-  pumping_messages_ = false;
-  return !renderer_crashed_;
+  Shell::CloseAllWindows();
+  return true;
 }
 
 void WebKitTestController::RendererUnresponsive() {
@@ -240,7 +227,6 @@ void WebKitTestController::PluginCrashed(const FilePath& plugin_path) {
 }
 
 void WebKitTestController::RenderViewGone(base::TerminationStatus status) {
-  renderer_crashed_ = true;
   printer_->AddErrorMessage("#CRASHED - renderer");
 }
 
@@ -275,10 +261,6 @@ void WebKitTestController::TimeoutHandler() {
 }
 
 void WebKitTestController::OnDidFinishLoad() {
-  if (pumping_messages_) {
-    MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
-    return;
-  }
   if (wait_until_done_)
     return;
   CaptureDump();
