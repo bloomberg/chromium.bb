@@ -17,6 +17,8 @@ OptionsWebUITest.prototype = {
    */
   browsePreload: 'chrome://settings-frame',
 
+  isAsync: true,
+
   /**
    * Register a mock handler to ensure expectations are met and options pages
    * behave correctly.
@@ -65,6 +67,7 @@ TEST_F('OptionsWebUITest', 'MAYBE_testSetBooleanPrefTriggers', function() {
   // Cause the handler to be called.
   showHomeButton.click();
   showHomeButton.blur();
+  testDone();
 });
 
 // Not meant to run on ChromeOS at this time.
@@ -81,6 +84,7 @@ TEST_F('OptionsWebUITest', 'DISABLED_testRefreshStaysOnCurrentPage',
 
   assertEquals('chrome://settings-frame/searchEngines', document.location.href);
   assertFalse($('search-engine-manager-page').hidden);
+  testDone();
 });
 
 /**
@@ -103,4 +107,126 @@ TEST_F('OptionsWebUITest', 'testDefaultZoomFactor', function() {
   defaultZoomFactor.selectedIndex = defaultZoomFactor.options.length - 1;
   var event = { target: defaultZoomFactor };
   if (defaultZoomFactor.onchange) defaultZoomFactor.onchange(event);
+  testDone();
+});
+
+// If |confirmInterstitial| is true, the OK button of the Do Not Track
+// interstitial is pressed, otherwise the abort button is pressed.
+OptionsWebUITest.prototype.testDoNotTrackInterstitial =
+    function(confirmInterstitial) {
+  var buttonToClick = confirmInterstitial ? $('do-not-track-confirm-ok')
+                                          : $('do-not-track-confirm-cancel');
+  var dntCheckbox = $('do-not-track-enabled');
+  var dntOverlay = DoNotTrackConfirmOverlay.getInstance();
+  assertFalse(dntCheckbox.checked);
+
+  var visibleChangeCounter = 0;
+  var visibleChangeHandler = function() {
+    ++visibleChangeCounter;
+    switch (visibleChangeCounter) {
+      case 1:
+        window.setTimeout(function() {
+          assertTrue(dntOverlay.visible);
+          buttonToClick.click();
+        }, 0);
+        break;
+      case 2:
+        window.setTimeout(function() {
+          assertFalse(dntOverlay.visible);
+          assertEquals(confirmInterstitial, dntCheckbox.checked);
+          DoNotTrackConfirmOverlay.getInstance().removeEventListener(
+              visibleChangeHandler);
+          testDone();
+        }, 0);
+        break;
+      default:
+        assertTrue(false);
+    }
+  }
+  DoNotTrackConfirmOverlay.getInstance().addEventListener('visibleChange',
+      visibleChangeHandler);
+
+  if (confirmInterstitial) {
+    this.mockHandler.expects(once()).setBooleanPref(
+        ["enable_do_not_track", true]);
+  } else {
+    // The mock handler complains if setBooleanPref is called even though
+    // it should not be.
+  }
+
+  dntCheckbox.click();
+}
+
+TEST_F('OptionsWebUITest', 'EnableDoNotTrackAndConfirmInterstitial',
+       function() {
+  this.testDoNotTrackInterstitial(true);
+});
+
+TEST_F('OptionsWebUITest', 'EnableDoNotTrackAndCancelInterstitial',
+       function() {
+  this.testDoNotTrackInterstitial(false);
+});
+
+// Mock4JS action that calls the function |fun| when a mock method is called.
+function CallFunctionAction(fun) {
+  this._fun = fun;
+}
+
+CallFunctionAction.prototype = {
+  invoke: function() {
+    this._fun();
+  },
+  describe: function() {
+    return "calls the passed function";
+  }
+}
+
+// Check that the "Do not Track" preference can be correctly disabled.
+// In order to do that, we need to enable it first.
+TEST_F('OptionsWebUITest', 'EnableAndDisableDoNotTrack', function() {
+  var dntCheckbox = $('do-not-track-enabled');
+  var dntOverlay = DoNotTrackConfirmOverlay.getInstance();
+  assertFalse(dntCheckbox.checked);
+
+  var visibleChangeCounter = 0;
+  var visibleChangeHandler = function() {
+    ++visibleChangeCounter;
+    switch (visibleChangeCounter) {
+      case 1:
+        window.setTimeout(function() {
+          assertTrue(dntOverlay.visible);
+          $('do-not-track-confirm-ok').click();
+        }, 0);
+        break;
+      case 2:
+        window.setTimeout(function() {
+          assertFalse(dntOverlay.visible);
+          assertTrue(dntCheckbox.checked);
+          DoNotTrackConfirmOverlay.getInstance().removeEventListener(
+              visibleChangeHandler);
+          dntCheckbox.click();
+        }, 0);
+        break;
+      default:
+        assertNotReached();
+    }
+  }
+  DoNotTrackConfirmOverlay.getInstance().addEventListener('visibleChange',
+      visibleChangeHandler);
+
+  this.mockHandler.expects(once()).setBooleanPref(
+      eq(["enable_do_not_track", true]));
+
+  var verifyCorrectEndState = function() {
+    window.setTimeout(function() {
+      assertFalse(dntOverlay.visible);
+      assertFalse(dntCheckbox.checked);
+      testDone();
+    }, 0)
+  }
+  this.mockHandler.expects(once()).setBooleanPref(
+      eq(["enable_do_not_track", false, 'Options_DoNotTrackCheckbox'])).will(
+          new CallFunctionAction(verifyCorrectEndState));
+
+  dntCheckbox.click();
 });
