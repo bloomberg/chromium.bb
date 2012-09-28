@@ -24,6 +24,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
+#include "net/http/http_util.h"
 
 #if defined(OS_WIN)
 #include "chrome/installer/util/google_update_settings.h"
@@ -55,9 +56,13 @@ bool IsBrandOrganic(const std::string& brand) {
   return brand.empty() || google_util::IsOrganic(brand);
 }
 
-void RecordProductEvents(bool first_run, bool google_default_search,
-                         bool google_default_homepage, bool already_ran,
-                         bool omnibox_used, bool homepage_used) {
+void RecordProductEvents(bool first_run,
+                         bool is_google_default_search,
+                         bool is_google_homepage,
+                         bool is_google_in_startpages,
+                         bool already_ran,
+                         bool omnibox_used,
+                         bool homepage_used) {
   // Record the installation of chrome. We call this all the time but the rlz
   // lib should ignore all but the first one.
   rlz_lib::RecordProductEvent(rlz_lib::CHROME,
@@ -77,7 +82,7 @@ void RecordProductEvents(bool first_run, bool google_default_search,
     }
 
     // Record if google is the initial search provider and/or home page.
-    if ((first_run || omnibox_rlz[0] == 0) && google_default_search) {
+    if ((first_run || omnibox_rlz[0] == 0) && is_google_default_search) {
       rlz_lib::RecordProductEvent(rlz_lib::CHROME,
                                   RLZTracker::CHROME_OMNIBOX,
                                   rlz_lib::SET_TO_GOOGLE);
@@ -89,7 +94,8 @@ void RecordProductEvents(bool first_run, bool google_default_search,
       homepage_rlz[0] = 0;
     }
 
-    if ((first_run || homepage_rlz[0] == 0) && google_default_homepage) {
+    if ((first_run || homepage_rlz[0] == 0) &&
+        (is_google_homepage || is_google_in_startpages)) {
       rlz_lib::RecordProductEvent(rlz_lib::CHROME,
                                   RLZTracker::CHROME_HOME_PAGE,
                                   rlz_lib::SET_TO_GOOGLE);
@@ -106,7 +112,7 @@ void RecordProductEvents(bool first_run, bool google_default_search,
 
   // Record first user interaction with the home page. We call this all the
   // time but the rlz lib should ingore all but the first one.
-  if (homepage_used) {
+  if (homepage_used || is_google_in_startpages) {
     rlz_lib::RecordProductEvent(rlz_lib::CHROME,
                                 RLZTracker::CHROME_HOME_PAGE,
                                 rlz_lib::FIRST_SEARCH);
@@ -154,8 +160,9 @@ RLZTracker* RLZTracker::GetInstance() {
 RLZTracker::RLZTracker()
     : first_run_(false),
       send_ping_immediately_(false),
-      google_default_search_(false),
-      google_default_homepage_(false),
+      is_google_default_search_(false),
+      is_google_homepage_(false),
+      is_google_in_startpages_(false),
       already_ran_(false),
       omnibox_used_(false),
       homepage_used_(false) {
@@ -164,18 +171,24 @@ RLZTracker::RLZTracker()
 RLZTracker::~RLZTracker() {
 }
 
-bool RLZTracker::InitRlzDelayed(bool first_run, int delay,
-                                bool google_default_search,
-                                bool google_default_homepage) {
-  return GetInstance()->Init(first_run, delay, google_default_search,
-                             google_default_homepage);
+bool RLZTracker::InitRlzDelayed(bool first_run,
+                                int delay,
+                                bool is_google_default_search,
+                                bool is_google_homepage,
+                                bool is_google_in_startpages) {
+  return GetInstance()->Init(first_run, delay, is_google_default_search,
+                             is_google_homepage, is_google_in_startpages);
 }
 
-bool RLZTracker::Init(bool first_run, int delay, bool google_default_search,
-                      bool google_default_homepage) {
+bool RLZTracker::Init(bool first_run,
+                      int delay,
+                      bool is_google_default_search,
+                      bool is_google_homepage,
+                      bool is_google_in_startpages) {
   first_run_ = first_run;
-  google_default_search_ = google_default_search;
-  google_default_homepage_ = google_default_homepage;
+  is_google_default_search_ = is_google_default_search;
+  is_google_homepage_ = is_google_homepage;
+  is_google_in_startpages_ = is_google_in_startpages;
 
   // A negative delay means that a financial ping should be sent immediately
   // after a first search is recorded, without waiting for the next restart
@@ -238,9 +251,9 @@ void RLZTracker::DelayedInit() {
   // means a chromium install. This is ok.
   std::string brand;
   if (google_util::GetBrand(&brand) && !IsBrandOrganic(brand)) {
-    RecordProductEvents(first_run_, google_default_search_,
-                        google_default_homepage_, already_ran_,
-                        omnibox_used_, homepage_used_);
+    RecordProductEvents(first_run_, is_google_default_search_,
+                        is_google_homepage_, is_google_in_startpages_,
+                        already_ran_, omnibox_used_, homepage_used_);
     schedule_ping = true;
   }
 
@@ -250,9 +263,9 @@ void RLZTracker::DelayedInit() {
   if (google_util::GetReactivationBrand(&reactivation_brand) &&
       !IsBrandOrganic(reactivation_brand)) {
     rlz_lib::SupplementaryBranding branding(reactivation_brand.c_str());
-    RecordProductEvents(first_run_, google_default_search_,
-                        google_default_homepage_, already_ran_,
-                        omnibox_used_, homepage_used_);
+    RecordProductEvents(first_run_, is_google_default_search_,
+                        is_google_homepage_, is_google_in_startpages_,
+                        already_ran_, omnibox_used_, homepage_used_);
     schedule_ping = true;
   }
 
@@ -372,6 +385,20 @@ bool RLZTracker::RecordProductEvent(rlz_lib::Product product,
   }
 
   return ret;
+}
+
+// static
+std::string RLZTracker::GetAccessPointHttpHeader(rlz_lib::AccessPoint point) {
+  std::string extra_headers;
+  string16 rlz_string;
+  RLZTracker::GetAccessPointRlz(point, &rlz_string);
+  if (!rlz_string.empty()) {
+    net::HttpUtil::AppendHeaderIfMissing("X-Rlz-String",
+                                         UTF16ToUTF8(rlz_string),
+                                         &extra_headers);
+  }
+
+  return extra_headers;
 }
 
 // GetAccessPointRlz() caches RLZ strings for all access points. If we had

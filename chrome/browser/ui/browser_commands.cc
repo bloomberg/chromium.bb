@@ -20,6 +20,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
@@ -27,6 +28,7 @@
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/rlz/rlz.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_delegate.h"
@@ -342,12 +344,28 @@ bool CanReload(const Browser* browser) {
 
 void Home(Browser* browser, WindowOpenDisposition disposition) {
   content::RecordAction(UserMetricsAction("Home"));
-  browser->OpenURL(OpenURLParams(
+
+  std::string extra_headers;
+#if defined(ENABLE_RLZ)
+  // If the home page is a Google home page, add the RLZ header to the request.
+  PrefService* pref_service = browser->profile()->GetPrefs();
+  if (pref_service) {
+    std::string home_page = pref_service->GetString(prefs::kHomePage);
+    if (google_util::IsGoogleHomePageUrl(home_page)) {
+      extra_headers = RLZTracker::GetAccessPointHttpHeader(
+          rlz_lib::CHROME_HOME_PAGE);
+    }
+  }
+#endif
+
+  OpenURLParams params(
       browser->profile()->GetHomePage(), Referrer(), disposition,
       content::PageTransitionFromInt(
           content::PAGE_TRANSITION_AUTO_BOOKMARK |
           content::PAGE_TRANSITION_HOME_PAGE),
-      false));
+      false);
+  params.extra_headers = extra_headers;
+  browser->OpenURL(params);
 }
 
 void OpenCurrentURL(Browser* browser) {

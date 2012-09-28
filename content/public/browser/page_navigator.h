@@ -40,6 +40,11 @@ struct CONTENT_EXPORT OpenURLParams {
   GURL url;
   Referrer referrer;
 
+  // Extra headers to add to the request for this page.  Headers are
+  // represented as "<name>: <value>" and separated by \r\n.  The entire string
+  // is terminated by \r\n.  May be empty if no extra headers are needed.
+  std::string extra_headers;
+
   // The source frame id or -1 to indicate the main frame.
   int64 source_frame_id;
 

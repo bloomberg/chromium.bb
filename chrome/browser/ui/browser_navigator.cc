@@ -13,13 +13,11 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/google/google_url_tracker.h"
-#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/rlz/rlz.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -39,7 +37,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "net/http/http_util.h"
 
 using content::GlobalRequestID;
 using content::WebContents;
@@ -220,12 +217,11 @@ Profile* GetSourceProfile(chrome::NavigateParams* params) {
 
 void LoadURLInContents(WebContents* target_contents,
                        const GURL& url,
-                       chrome::NavigateParams* params,
-                       const std::string& extra_headers) {
+                       chrome::NavigateParams* params) {
   content::NavigationController::LoadURLParams load_url_params(url);
   load_url_params.referrer = params->referrer;
   load_url_params.transition_type = params->transition;
-  load_url_params.extra_headers = extra_headers;
+  load_url_params.extra_headers = params->extra_headers;
 
   if (params->transferred_global_request_id != GlobalRequestID()) {
     load_url_params.is_renderer_initiated = params->is_renderer_initiated;
@@ -288,35 +284,6 @@ class ScopedTargetContentsOwner {
   scoped_ptr<TabContents> target_contents_owner_;
   DISALLOW_COPY_AND_ASSIGN(ScopedTargetContentsOwner);
 };
-
-void InitializeExtraHeaders(chrome::NavigateParams* params,
-                            Profile* profile,
-                            std::string* extra_headers) {
-#if defined(ENABLE_RLZ)
-  // If this is a home page navigation, check to see if the home page is
-  // set to Google and add RLZ HTTP headers to the request.  This is only
-  // done if Google was the original home page, and not changed afterwards by
-  // the user.
-  if (profile &&
-      (params->transition & content::PAGE_TRANSITION_HOME_PAGE) != 0) {
-    PrefService* pref_service = profile->GetPrefs();
-    if (pref_service) {
-      if (!pref_service->GetBoolean(prefs::kHomePageChanged)) {
-        std::string homepage = pref_service->GetString(prefs::kHomePage);
-        if (google_util::IsGoogleHomePageUrl(homepage)) {
-          string16 rlz_string;
-          RLZTracker::GetAccessPointRlz(rlz_lib::CHROME_HOME_PAGE, &rlz_string);
-          if (!rlz_string.empty()) {
-            net::HttpUtil::AppendHeaderIfMissing("X-Rlz-String",
-                                                 UTF16ToUTF8(rlz_string),
-                                                 extra_headers);
-          }
-        }
-      }
-    }
-  }
-#endif
-}
 
 // If a prerendered page exists for |url|, replace the page at |target_contents|
 // with it.
@@ -456,8 +423,6 @@ void Navigate(NavigateParams* params) {
       base_transition == content::PAGE_TRANSITION_RELOAD ||
       base_transition == content::PAGE_TRANSITION_KEYWORD;
 
-  std::string extra_headers;
-
   // Check if this is a singleton tab that already exists
   int singleton_index = chrome::GetIndexOfSingletonTab(params);
 
@@ -508,9 +473,6 @@ void Navigate(NavigateParams* params) {
     if (user_initiated)
       params->target_contents->web_contents()->UserGestureDone();
 
-    InitializeExtraHeaders(params, params->target_contents->profile(),
-                           &extra_headers);
-
     if (SwapInPrerender(params->target_contents, url))
       return;
 
@@ -520,8 +482,7 @@ void Navigate(NavigateParams* params) {
       // Perform the actual navigation, tracking whether it came from the
       // renderer.
 
-      LoadURLInContents(params->target_contents->web_contents(),
-                        url, params, extra_headers);
+      LoadURLInContents(params->target_contents->web_contents(), url, params);
     }
   } else {
     // |target_contents| was specified non-NULL, and so we assume it has already
@@ -569,9 +530,7 @@ void Navigate(NavigateParams* params) {
       target->GetController().Reload(true);
     } else if (params->path_behavior == NavigateParams::IGNORE_AND_NAVIGATE &&
         target->GetURL() != params->url) {
-      TabContents* target_tab = TabContents::FromWebContents(target);
-      InitializeExtraHeaders(params, target_tab->profile(), &extra_headers);
-      LoadURLInContents(target, params->url, params, extra_headers);
+      LoadURLInContents(target, params->url, params);
     }
 
     // If the singleton tab isn't already selected, select it.

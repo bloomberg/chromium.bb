@@ -56,6 +56,11 @@ struct NavigateParams {
   GURL url;
   content::Referrer referrer;
 
+  // Extra headers to add to the request for this page.  Headers are
+  // represented as "<name>: <value>" and separated by \r\n.  The entire string
+  // is terminated by \r\n.  May be empty if no extra headers are needed.
+  std::string extra_headers;
+
   // [in]  A TabContents to be navigated or inserted into the target
   //       Browser's tabstrip. If NULL, |url| or the homepage will be used
   //       instead. When non-NULL, Navigate() assumes it has already been

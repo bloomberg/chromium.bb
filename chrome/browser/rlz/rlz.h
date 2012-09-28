@@ -37,9 +37,11 @@ class RLZTracker : public content::NotificationObserver {
   // registers some events when 'first-run' is true.
   //
   // If the chrome brand is organic (no partners) then the pings don't occur.
-  static bool InitRlzDelayed(bool first_run, int delay,
-                             bool google_default_search,
-                             bool google_default_homepage);
+  static bool InitRlzDelayed(bool first_run,
+                             int delay,
+                             bool is_google_default_search,
+                             bool is_google_homepage,
+                             bool is_google_in_startpages);
 
   // Records an RLZ event. Some events can be access point independent.
   // Returns false it the event could not be recorded. Requires write access
@@ -52,7 +54,14 @@ class RLZTracker : public content::NotificationObserver {
   static const rlz_lib::AccessPoint CHROME_OMNIBOX;
   static const rlz_lib::AccessPoint CHROME_HOME_PAGE;
 
-  // Get the RLZ value of the access point.
+  // Gets the HTTP header value that can be added to requests from the
+  // specific access point.  The string returned is of the form:
+  //
+  //    "X-Rlz-String: <access-point-rlz>\r\n"
+  //
+  static std::string GetAccessPointHttpHeader(rlz_lib::AccessPoint point);
+
+  // Gets the RLZ value of the access point.
   // Returns false if the rlz string could not be obtained. In some cases
   // an empty string can be returned which is not an error.
   static bool GetAccessPointRlz(rlz_lib::AccessPoint point, string16* rlz);
@@ -94,8 +103,11 @@ class RLZTracker : public content::NotificationObserver {
   friend class base::RefCountedThreadSafe<RLZTracker>;
 
   // Implementation called from InitRlzDelayed() static method.
-  bool Init(bool first_run, int delay, bool google_default_search,
-            bool google_default_homepage);
+  bool Init(bool first_run,
+            int delay,
+            bool google_default_search,
+            bool google_default_homepage,
+            bool is_google_in_startpages);
 
   // Implementation called from RecordProductEvent() static method.
   bool GetAccessPointRlzImpl(rlz_lib::AccessPoint point, string16* rlz);
@@ -127,8 +139,9 @@ class RLZTracker : public content::NotificationObserver {
   // Configuation data for RLZ tracker. Set by call to Init().
   bool first_run_;
   bool send_ping_immediately_;
-  bool google_default_search_;
-  bool google_default_homepage_;
+  bool is_google_default_search_;
+  bool is_google_homepage_;
+  bool is_google_in_startpages_;
 
   // Unique sequence token so that tasks posted by RLZTracker are executed
   // sequentially in the blocking pool.

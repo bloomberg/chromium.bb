@@ -367,7 +367,7 @@ TEST_F(RlzLibTest, RecordProductEvent) {
 }
 
 TEST_F(RlzLibTest, QuickStopAfterStart) {
-  RLZTracker::InitRlzDelayed(true, 20, true, true);
+  RLZTracker::InitRlzDelayed(true, 20, true, true, true);
 
   // Omnibox events.
   ExpectEventRecorded(kC1I, false);
@@ -383,7 +383,7 @@ TEST_F(RlzLibTest, QuickStopAfterStart) {
 }
 
 TEST_F(RlzLibTest, DelayedInitOnly) {
-  RLZTracker::InitRlzDelayed(true, 20, true, true);
+  RLZTracker::InitRlzDelayed(true, 20, true, true, false);
   InvokeDelayedInit();
 
   // Omnibox events.
@@ -399,8 +399,25 @@ TEST_F(RlzLibTest, DelayedInitOnly) {
   ExpectRlzPingSent(true);
 }
 
+TEST_F(RlzLibTest, DelayedInitOnlyGoogleAsStartup) {
+  RLZTracker::InitRlzDelayed(true, 20, false, false, true);
+  InvokeDelayedInit();
+
+  // Omnibox events.
+  ExpectEventRecorded(kC1I, true);
+  ExpectEventRecorded(kC1S, false);
+  ExpectEventRecorded(kC1F, false);
+
+  // Home page events.
+  ExpectEventRecorded(kC2I, true);
+  ExpectEventRecorded(kC2S, true);
+  ExpectEventRecorded(kC2F, true);
+
+  ExpectRlzPingSent(true);
+}
+
 TEST_F(RlzLibTest, DelayedInitOnlyNoFirstRunNoRlzStrings) {
-  RLZTracker::InitRlzDelayed(false, 20, true, true);
+  RLZTracker::InitRlzDelayed(false, 20, true, true, false);
   InvokeDelayedInit();
 
   // Omnibox events.
@@ -412,6 +429,23 @@ TEST_F(RlzLibTest, DelayedInitOnlyNoFirstRunNoRlzStrings) {
   ExpectEventRecorded(kC2I, true);
   ExpectEventRecorded(kC2S, true);
   ExpectEventRecorded(kC2F, false);
+
+  ExpectRlzPingSent(true);
+}
+
+TEST_F(RlzLibTest, DelayedInitOnlyNoFirstRunNoRlzStringsGoogleAsStartup) {
+  RLZTracker::InitRlzDelayed(false, 20, false, false, true);
+  InvokeDelayedInit();
+
+  // Omnibox events.
+  ExpectEventRecorded(kC1I, true);
+  ExpectEventRecorded(kC1S, false);
+  ExpectEventRecorded(kC1F, false);
+
+  // Home page events.
+  ExpectEventRecorded(kC2I, true);
+  ExpectEventRecorded(kC2S, true);
+  ExpectEventRecorded(kC2F, true);
 
   ExpectRlzPingSent(true);
 }
@@ -422,7 +456,7 @@ TEST_F(RlzLibTest, DelayedInitOnlyNoFirstRun) {
   rlz_lib::SetAccessPointRlz(RLZTracker::CHROME_OMNIBOX, kOmniboxRlzString);
   rlz_lib::SetAccessPointRlz(RLZTracker::CHROME_HOME_PAGE, kHomepageRlzString);
 
-  RLZTracker::InitRlzDelayed(false, 20, true, true);
+  RLZTracker::InitRlzDelayed(false, 20, true, true, true);
   InvokeDelayedInit();
 
   // Omnibox events.
@@ -433,13 +467,13 @@ TEST_F(RlzLibTest, DelayedInitOnlyNoFirstRun) {
   // Home page events.
   ExpectEventRecorded(kC2I, true);
   ExpectEventRecorded(kC2S, false);
-  ExpectEventRecorded(kC2F, false);
+  ExpectEventRecorded(kC2F, true);
 
   ExpectRlzPingSent(true);
 }
 
-TEST_F(RlzLibTest, DelayedInitOnlyNoGoogleDefaultSearchOrHomepage) {
-  RLZTracker::InitRlzDelayed(true, 20, false, false);
+TEST_F(RlzLibTest, DelayedInitOnlyNoGoogleDefaultSearchOrHomepageOrStartup) {
+  RLZTracker::InitRlzDelayed(true, 20, false, false, false);
   InvokeDelayedInit();
 
   // Omnibox events.
@@ -456,7 +490,7 @@ TEST_F(RlzLibTest, DelayedInitOnlyNoGoogleDefaultSearchOrHomepage) {
 }
 
 TEST_F(RlzLibTest, OmniboxUsageOnly) {
-  RLZTracker::InitRlzDelayed(true, 20, true, true);
+  RLZTracker::InitRlzDelayed(true, 20, true, true, false);
   SimulateOmniboxUsage();
 
   // Omnibox events.
@@ -473,7 +507,7 @@ TEST_F(RlzLibTest, OmniboxUsageOnly) {
 }
 
 TEST_F(RlzLibTest, HomepageUsageOnly) {
-  RLZTracker::InitRlzDelayed(true, 20, true, true);
+  RLZTracker::InitRlzDelayed(true, 20, true, true, false);
   SimulateHomepageUsage();
 
   // Omnibox events.
@@ -490,7 +524,7 @@ TEST_F(RlzLibTest, HomepageUsageOnly) {
 }
 
 TEST_F(RlzLibTest, UsageBeforeDelayedInit) {
-  RLZTracker::InitRlzDelayed(true, 20, true, true);
+  RLZTracker::InitRlzDelayed(true, 20, true, true, false);
   SimulateOmniboxUsage();
   SimulateHomepageUsage();
   InvokeDelayedInit();
@@ -509,7 +543,7 @@ TEST_F(RlzLibTest, UsageBeforeDelayedInit) {
 }
 
 TEST_F(RlzLibTest, OmniboxUsageAfterDelayedInit) {
-  RLZTracker::InitRlzDelayed(true, 20, true, true);
+  RLZTracker::InitRlzDelayed(true, 20, true, true, false);
   InvokeDelayedInit();
   SimulateOmniboxUsage();
   SimulateHomepageUsage();
@@ -528,7 +562,7 @@ TEST_F(RlzLibTest, OmniboxUsageAfterDelayedInit) {
 }
 
 TEST_F(RlzLibTest, OmniboxUsageSendsPingWhenDelayNegative) {
-  RLZTracker::InitRlzDelayed(true, -20, true, true);
+  RLZTracker::InitRlzDelayed(true, -20, true, true, false);
   SimulateOmniboxUsage();
 
   // Omnibox events.
@@ -545,7 +579,24 @@ TEST_F(RlzLibTest, OmniboxUsageSendsPingWhenDelayNegative) {
 }
 
 TEST_F(RlzLibTest, HomepageUsageDoesNotSendPingWhenDelayNegative) {
-  RLZTracker::InitRlzDelayed(true, -20, true, true);
+  RLZTracker::InitRlzDelayed(true, -20, true, true, false);
+  SimulateHomepageUsage();
+
+  // Omnibox events.
+  ExpectEventRecorded(kC1I, false);
+  ExpectEventRecorded(kC1S, false);
+  ExpectEventRecorded(kC1F, false);
+
+  // Home page events.
+  ExpectEventRecorded(kC2I, false);
+  ExpectEventRecorded(kC2S, false);
+  ExpectEventRecorded(kC2F, true);
+
+  ExpectRlzPingSent(false);
+}
+
+TEST_F(RlzLibTest, StartupUsageDoesNotSendPingWhenDelayNegative) {
+  RLZTracker::InitRlzDelayed(true, -20, true, false, true);
   SimulateHomepageUsage();
 
   // Omnibox events.
@@ -627,7 +678,7 @@ TEST_F(RlzLibTest, PingUpdatesRlzCache) {
 
   // Perform ping.
   tracker_.set_assume_not_ui_thread(true);
-  RLZTracker::InitRlzDelayed(true, 20, true, true);
+  RLZTracker::InitRlzDelayed(true, 20, true, true, false);
   InvokeDelayedInit();
   ExpectRlzPingSent(true);
 
@@ -658,7 +709,7 @@ TEST_F(RlzLibTest, ObserveHandlesBadArgs) {
 TEST_F(RlzLibTest, ReactivationNonOrganicNonOrganic) {
   SetReactivationBrand("REAC");
 
-  RLZTracker::InitRlzDelayed(true, 20, true, true);
+  RLZTracker::InitRlzDelayed(true, 20, true, true, false);
   InvokeDelayedInit();
 
   ExpectRlzPingSent(true);
@@ -669,7 +720,7 @@ TEST_F(RlzLibTest, ReactivationOrganicNonOrganic) {
   SetMainBrand("GGLS");
   SetReactivationBrand("REAC");
 
-  RLZTracker::InitRlzDelayed(true, 20, true, true);
+  RLZTracker::InitRlzDelayed(true, 20, true, true, false);
   InvokeDelayedInit();
 
   ExpectRlzPingSent(false);
@@ -680,7 +731,7 @@ TEST_F(RlzLibTest, ReactivationNonOrganicOrganic) {
   SetMainBrand("TEST");
   SetReactivationBrand("GGLS");
 
-  RLZTracker::InitRlzDelayed(true, 20, true, true);
+  RLZTracker::InitRlzDelayed(true, 20, true, true, false);
   InvokeDelayedInit();
 
   ExpectRlzPingSent(true);
@@ -691,7 +742,7 @@ TEST_F(RlzLibTest, ReactivationOrganicOrganic) {
   SetMainBrand("GGLS");
   SetReactivationBrand("GGRS");
 
-  RLZTracker::InitRlzDelayed(true, 20, true, true);
+  RLZTracker::InitRlzDelayed(true, 20, true, true, false);
   InvokeDelayedInit();
 
   ExpectRlzPingSent(false);

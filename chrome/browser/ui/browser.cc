@@ -1281,6 +1281,7 @@ WebContents* Browser::OpenURLFromTab(WebContents* source,
   nav_params.source_contents = chrome::GetTabContentsAt(this,
       tab_strip_model_->GetIndexOfWebContents(source));
   nav_params.referrer = params.referrer;
+  nav_params.extra_headers = params.extra_headers;
   nav_params.disposition = params.disposition;
   nav_params.tabstrip_add_types = TabStripModel::ADD_NONE;
   nav_params.window_action = chrome::NavigateParams::SHOW_WINDOW;

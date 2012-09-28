@@ -468,6 +468,10 @@ bool HasImportSwitch(const CommandLine& command_line) {
           command_line.HasSwitch(switches::kImportFromFile));
 }
 
+bool IsGoogleUrl(const GURL& url) {
+  return google_util::IsGoogleHomePageUrl(url.possibly_invalid_spec());
+}
+
 }  // namespace
 
 namespace chrome_browser {
@@ -1211,23 +1215,34 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // Init the RLZ library. This just binds the dll and schedules a task on the
   // file thread to be run sometime later. If this is the first run we record
   // the installation event.
-  bool google_search_default = false;
+  bool is_google_default_search = false;
   TemplateURLService* template_url_service =
       TemplateURLServiceFactory::GetForProfile(profile_);
   if (template_url_service) {
     const TemplateURL* url_template =
         template_url_service->GetDefaultSearchProvider();
-    google_search_default =
+    is_google_default_search =
         url_template && url_template->url_ref().HasGoogleBaseURLs();
   }
 
   PrefService* pref_service = profile_->GetPrefs();
-  bool google_search_homepage = pref_service &&
+  bool is_google_homepage = pref_service &&
       google_util::IsGoogleHomePageUrl(
           pref_service->GetString(prefs::kHomePage));
 
+  bool is_google_in_startpages = false;
+  SessionStartupPref session_startup_prefs =
+      StartupBrowserCreator::GetSessionStartupPref(parsed_command_line(),
+                                                   profile_);
+  if (session_startup_prefs.type == SessionStartupPref::URLS) {
+    is_google_in_startpages = std::count_if(session_startup_prefs.urls.begin(),
+                                            session_startup_prefs.urls.end(),
+                                            IsGoogleUrl) > 0;
+  }
+
   RLZTracker::InitRlzDelayed(is_first_run_, master_prefs_->ping_delay,
-                             google_search_default, google_search_homepage);
+                             is_google_default_search, is_google_homepage,
+                             is_google_in_startpages);
 
   // Prime the RLZ cache for the home page access point so that its avaiable
   // for the startup page if needed (i.e., when the startup page is set to
