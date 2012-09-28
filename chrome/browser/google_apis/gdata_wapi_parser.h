@@ -401,6 +401,9 @@ class DocumentEntry : public FeedEntry {
   // Document entry published time.
   base::Time published_time() const { return published_time_; }
 
+  // Document entry last viewed time.
+  base::Time last_viewed_time() const { return last_viewed_time_; }
+
   // List of document feed labels.
   const std::vector<string16>& labels() const { return labels_; }
 
@@ -499,6 +502,8 @@ class DocumentEntry : public FeedEntry {
   DriveEntryKind kind_;
   string16 title_;
   base::Time published_time_;
+  // Last viewed value may be unreliable. See: crbug.com/152628.
+  base::Time last_viewed_time_;
   std::vector<string16> labels_;
   Content content_;
   ScopedVector<FeedLink> feed_links_;

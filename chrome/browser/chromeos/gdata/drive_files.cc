@@ -45,10 +45,11 @@ void DriveEntry::InitFromDocumentEntry(const DocumentEntry& doc) {
   // SetBaseNameFromTitle() must be called after |title_| is set.
   SetBaseNameFromTitle();
 
-  // TODO(satorux): The last modified and the last accessed time shouldn't
-  // be treated as the same thing: crbug.com/148434
   file_info_.last_modified = doc.updated_time();
-  file_info_.last_accessed = doc.updated_time();
+  // If doc.last_viewed_time().is_null() then, we will pass 0 to the
+  // protocol buffer. Moreover, this value may be unreliable.
+  // See: crbug.com/152628.
+  file_info_.last_accessed = doc.last_viewed_time();
   file_info_.creation_time = doc.published_time();
 
   resource_id_ = doc.resource_id();

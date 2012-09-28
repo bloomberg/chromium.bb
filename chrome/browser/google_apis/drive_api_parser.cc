@@ -89,6 +89,7 @@ const char kTitle[] = "title";
 const char kMimeType[] = "mimeType";
 const char kCreatedDate[] = "createdDate";
 const char kModifiedByMeDate[] = "modifiedByMeDate";
+const char kLastViewedByMeDate[] = "lastViewedByMeDate";
 const char kDownloadUrl[] = "downloadUrl";
 const char kFileExtension[] = "fileExtension";
 const char kMd5Checksum[] = "md5Checksum";
@@ -415,6 +416,10 @@ void FileResource::RegisterJSONConverter(
   converter->RegisterCustomField<base::Time>(
       kModifiedByMeDate,
       &FileResource::modified_by_me_date_,
+      &gdata::util::GetTimeFromString);
+  converter->RegisterCustomField<base::Time>(
+      kLastViewedByMeDate,
+      &FileResource::last_viewed_by_me_date_,
       &gdata::util::GetTimeFromString);
   converter->RegisterCustomField<GURL>(kDownloadUrl,
                                        &FileResource::download_url_,

@@ -51,8 +51,8 @@ TEST(DocumentEntryConversionTest, ConvertDocumentEntryToDriveEntryProto_File) {
   const base::Time expected_time = base::Time::FromUTCExploded(exploded);
   EXPECT_EQ(expected_time.ToInternalValue(),
             entry_proto.file_info().last_modified());
-  EXPECT_EQ(expected_time.ToInternalValue(),
-            entry_proto.file_info().last_accessed());
+  // Last accessed value equal to 0 means that the file has never been viewed.
+  EXPECT_EQ(0, entry_proto.file_info().last_accessed());
   EXPECT_EQ(expected_time.ToInternalValue(),
             entry_proto.file_info().creation_time());
 
@@ -121,9 +121,21 @@ TEST(DocumentEntryConversionTest,
   const base::Time expected_creation_time =
       base::Time::FromUTCExploded(exploded);
 
+  // 2011-12-13T02:12:18.527Z
+  exploded.year = 2011;
+  exploded.month = 12;
+  exploded.day_of_month = 13;
+  exploded.day_of_week = 2;  // Tuesday
+  exploded.hour = 2;
+  exploded.minute = 12;
+  exploded.second = 18;
+  exploded.millisecond = 527;
+  const base::Time expected_last_accessed_time =
+      base::Time::FromUTCExploded(exploded);
+
   EXPECT_EQ(expected_last_modified_time.ToInternalValue(),
             entry_proto.file_info().last_modified());
-  EXPECT_EQ(expected_last_modified_time.ToInternalValue(),
+  EXPECT_EQ(expected_last_accessed_time.ToInternalValue(),
             entry_proto.file_info().last_accessed());
   EXPECT_EQ(expected_creation_time.ToInternalValue(),
             entry_proto.file_info().creation_time());
@@ -191,9 +203,21 @@ TEST(DocumentEntryConversionTest,
   const base::Time expected_creation_time =
       base::Time::FromUTCExploded(exploded);
 
+  // 2011-11-02T04:37:38.469Z
+  exploded.year = 2011;
+  exploded.month = 11;
+  exploded.day_of_month = 2;
+  exploded.day_of_week = 2;  // Tuesday
+  exploded.hour = 4;
+  exploded.minute = 37;
+  exploded.second = 38;
+  exploded.millisecond = 469;
+  const base::Time expected_last_accessed_time =
+      base::Time::FromUTCExploded(exploded);
+
   EXPECT_EQ(expected_last_modified_time.ToInternalValue(),
             entry_proto.file_info().last_modified());
-  EXPECT_EQ(expected_last_modified_time.ToInternalValue(),
+  EXPECT_EQ(expected_last_accessed_time.ToInternalValue(),
             entry_proto.file_info().last_accessed());
   EXPECT_EQ(expected_creation_time.ToInternalValue(),
             entry_proto.file_info().creation_time());
@@ -252,9 +276,21 @@ TEST(DocumentEntryConversionTest,
   const base::Time expected_creation_time =
       base::Time::FromUTCExploded(exploded);
 
+  // 2012-04-10T22:50:55.797Z
+  exploded.year = 2012;
+  exploded.month = 04;
+  exploded.day_of_month = 10;
+  exploded.day_of_week = 2;  // Tuesday
+  exploded.hour = 22;
+  exploded.minute = 50;
+  exploded.second = 55;
+  exploded.millisecond = 797;
+  const base::Time expected_last_accessed_time =
+      base::Time::FromUTCExploded(exploded);
+
   EXPECT_EQ(expected_last_modified_time.ToInternalValue(),
             entry_proto.file_info().last_modified());
-  EXPECT_EQ(expected_last_modified_time.ToInternalValue(),
+  EXPECT_EQ(expected_last_accessed_time.ToInternalValue(),
             entry_proto.file_info().last_accessed());
   EXPECT_EQ(expected_creation_time.ToInternalValue(),
             entry_proto.file_info().creation_time());

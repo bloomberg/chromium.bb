@@ -44,10 +44,10 @@ DriveEntryProto ConvertDocumentEntryToDriveEntryProto(
 
   PlatformFileInfoProto* file_info = entry_proto.mutable_file_info();
 
-  // TODO(satorux): The last modified and the last accessed time shouldn't
-  // be treated as the same thing: crbug.com/148434
   file_info->set_last_modified(doc.updated_time().ToInternalValue());
-  file_info->set_last_accessed(doc.updated_time().ToInternalValue());
+  // If the file has never been viewed (last_viewed_time().is_null() == true),
+  // then we will set the last_accessed field in the protocol buffer to 0.
+  file_info->set_last_accessed(doc.last_viewed_time().ToInternalValue());
   file_info->set_creation_time(doc.published_time().ToInternalValue());
 
   if (doc.is_file() || doc.is_hosted_document()) {

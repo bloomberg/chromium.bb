@@ -388,6 +388,11 @@ class FileResource {
   // Returns modification time by the user.
   const base::Time& modified_by_me_date() const { return modified_by_me_date_; }
 
+  // Returns last access time by the user.
+  const base::Time& last_viewed_by_me_date() const {
+    return last_viewed_by_me_date_;
+  }
+
   // Returns the short-lived download URL for the file.  This field exists
   // only when the file content is stored in Drive.
   const GURL& download_url() const { return download_url_; }
@@ -436,6 +441,7 @@ class FileResource {
   FileLabels labels_;
   base::Time created_date_;
   base::Time modified_by_me_date_;
+  base::Time last_viewed_by_me_date_;
   GURL download_url_;
   std::string file_extension_;
   std::string md5_checksum_;

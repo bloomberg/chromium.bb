@@ -51,6 +51,7 @@ const char kFeedLinkNode[] = "feedLink";
 const char kFilenameNode[] = "filename";
 const char kIDNode[] = "id";
 const char kLastModifiedByNode[] = "lastModifiedBy";
+const char kLastViewedNode[] = "lastViewed";
 const char kLinkNode[] = "link";
 const char kMd5ChecksumNode[] = "md5Checksum";
 const char kModifiedByMeDateNode[] = "modifiedByMeDate";
@@ -97,6 +98,7 @@ const char kInstalledAppSupportsCreateField[] =
 const char kItemsPerPageField[] = "openSearch$itemsPerPage.$t";
 const char kLabelField[] = "label";
 const char kLargestChangestampField[] = "docs$largestChangestamp.value";
+const char kLastViewedField[] = "gd$lastViewed.$t";
 const char kLinkField[] = "link";
 const char kMD5Field[] = "docs$md5Checksum.$t";
 const char kNameField[] = "name.$t";
@@ -614,6 +616,9 @@ void DocumentEntry::RegisterJSONConverter(
   converter->RegisterCustomField<base::Time>(
       kPublishedField, &DocumentEntry::published_time_,
       &gdata::util::GetTimeFromString);
+  converter->RegisterCustomField<base::Time>(
+      kLastViewedField, &DocumentEntry::last_viewed_time_,
+      &gdata::util::GetTimeFromString);
   converter->RegisterRepeatedMessage(
       kFeedLinkField, &DocumentEntry::feed_links_);
   converter->RegisterNestedField(kContentField, &DocumentEntry::content_);
@@ -840,6 +845,11 @@ DocumentEntry* DocumentEntry::CreateFromXml(XmlReader* xml_reader) {
       if (xml_reader->ReadElementContent(&size))
         base::StringToInt64(size, &entry->file_size_);
       skip_read = true;
+    } else if (xml_reader->NodeName() == kLastViewedNode) {
+      std::string time;
+      if (xml_reader->ReadElementContent(&time))
+        gdata::util::GetTimeFromString(time, &entry->last_viewed_time_);
+      skip_read = true;
     } else {
       DVLOG(1) << "Unknown node " << xml_reader->NodeName();
     }
@@ -911,6 +921,7 @@ DocumentEntry* DocumentEntry::CreateFromFileResource(const FileResource& file) {
   }
   // entry->categories_
   entry->updated_time_ = file.modified_by_me_date();
+  entry->last_viewed_time_ = file.last_viewed_by_me_date();
 
   entry->FillRemainingFields();
   return entry.release();
