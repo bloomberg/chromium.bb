@@ -69,7 +69,7 @@ class ShellWindowGtk : public NativeShellWindow,
   const extensions::Extension* extension() const {
     return shell_window_->extension();
   }
-  virtual void UpdateDraggableRegions(
+  virtual void UpdateLegacyDraggableRegions(
       const std::vector<extensions::DraggableRegion>& regions) OVERRIDE;
 
   virtual ~ShellWindowGtk();

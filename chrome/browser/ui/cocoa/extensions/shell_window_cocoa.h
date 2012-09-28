@@ -93,7 +93,7 @@ class ShellWindowCocoa : public NativeShellWindow {
   virtual bool IsFullscreenOrPending() const OVERRIDE;
   virtual void UpdateWindowIcon() OVERRIDE;
   virtual void UpdateWindowTitle() OVERRIDE;
-  virtual void UpdateDraggableRegions(
+  virtual void UpdateLegacyDraggableRegions(
       const std::vector<extensions::DraggableRegion>& regions) OVERRIDE;
   virtual void HandleKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) OVERRIDE;

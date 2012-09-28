@@ -10,9 +10,15 @@
 namespace extensions {
 
 struct DraggableRegion {
-  std::string label;
+  bool draggable;
   gfx::Rect bounds;
+
+  // TODO(jianli): to be removed after WebKit patch that changes the draggable
+  // region syntax is landed.
+  std::string label;
   gfx::Rect clip;
+
+  DraggableRegion();
 };
 
 }  // namespace extensions

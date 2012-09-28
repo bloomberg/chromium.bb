@@ -261,9 +261,17 @@ void ExtensionHelper::DraggableRegionsChanged(WebKit::WebFrame* frame) {
   std::vector<extensions::DraggableRegion> regions;
   for (size_t i = 0; i < webregions.size(); ++i) {
     extensions::DraggableRegion region;
-    region.label = UTF16ToASCII(webregions[i].label);
     region.bounds = webregions[i].bounds;
+
+    // TODO(jianli): to be uncommented after WebKit patch that changes the
+    // draggable region syntax is landed.
+    // region.draggable = webregions[i].draggable;
+
+    // TODO(jianli): to be removed after WebKit patch that changes the draggable
+    // region syntax is landed.
+    region.label = UTF16ToASCII(webregions[i].label);
     region.clip = webregions[i].clip;
+
     regions.push_back(region);
   }
   Send(new ExtensionHostMsg_UpdateDraggableRegions(routing_id(), regions));

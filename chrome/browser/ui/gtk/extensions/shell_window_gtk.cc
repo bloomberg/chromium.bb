@@ -347,7 +347,7 @@ void ShellWindowGtk::HandleKeyboardEvent(
   // No-op.
 }
 
-void ShellWindowGtk::UpdateDraggableRegions(
+void ShellWindowGtk::UpdateLegacyDraggableRegions(
     const std::vector<extensions::DraggableRegion>& regions) {
   // Draggable region is not supported for non-frameless window.
   if (!frameless_)

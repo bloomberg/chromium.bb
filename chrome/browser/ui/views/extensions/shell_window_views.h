@@ -110,6 +110,8 @@ class ShellWindowViews : public NativeShellWindow,
   virtual void UpdateWindowTitle() OVERRIDE;
   virtual void UpdateDraggableRegions(
       const std::vector<extensions::DraggableRegion>& regions) OVERRIDE;
+  virtual void UpdateLegacyDraggableRegions(
+      const std::vector<extensions::DraggableRegion>& regions) OVERRIDE;
   virtual void HandleKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
 

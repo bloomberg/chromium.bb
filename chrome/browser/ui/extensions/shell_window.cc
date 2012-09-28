@@ -314,7 +314,24 @@ bool ShellWindow::OnMessageReceived(const IPC::Message& message) {
 
 void ShellWindow::UpdateDraggableRegions(
     const std::vector<extensions::DraggableRegion>& regions) {
-  native_window_->UpdateDraggableRegions(regions);
+  // Decide if we want to treat it as old syntax by checking labels.
+  // TODO(jianli): to be removed after WebKit patch that changes the draggable
+  // region syntax is landed.
+  bool new_syntax = true;
+  for (std::vector<extensions::DraggableRegion>::const_iterator iter =
+           regions.begin();
+       iter != regions.end(); ++iter) {
+    const extensions::DraggableRegion& region = *iter;
+    if (!region.label.empty() || !region.clip.IsEmpty()) {
+      new_syntax = false;
+      break;
+    }
+  }
+
+  if (new_syntax)
+    native_window_->UpdateDraggableRegions(regions);
+  else
+    native_window_->UpdateLegacyDraggableRegions(regions);
 }
 
 void ShellWindow::OnImageLoaded(const gfx::Image& image,

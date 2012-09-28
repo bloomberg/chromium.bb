@@ -21,6 +21,12 @@ class NativeShellWindow : public BaseWindow {
   virtual void UpdateDraggableRegions(
       const std::vector<extensions::DraggableRegion>& regions) {}
 
+  // Called when the draggable regions with the old syntax are changed.
+  // TODO(jianli): to be removed after WebKit patch that changes the draggable
+  // region syntax is landed.
+  virtual void UpdateLegacyDraggableRegions(
+      const std::vector<extensions::DraggableRegion>& regions) {}
+
   virtual void SetFullscreen(bool fullscreen) = 0;
   virtual bool IsFullscreenOrPending() const = 0;
 

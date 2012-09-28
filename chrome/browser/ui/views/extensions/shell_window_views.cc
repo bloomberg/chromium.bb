@@ -627,6 +627,32 @@ void ShellWindowViews::UpdateDraggableRegions(
 
   SkRegion* draggable_region = new SkRegion;
 
+  // By default, the whole window is non-draggable. We need to explicitly
+  // include those draggable regions.
+  for (std::vector<extensions::DraggableRegion>::const_iterator iter =
+           regions.begin();
+       iter != regions.end(); ++iter) {
+    const extensions::DraggableRegion& region = *iter;
+    draggable_region->op(
+        region.bounds.x(),
+        region.bounds.y(),
+        region.bounds.right(),
+        region.bounds.bottom(),
+        region.draggable ? SkRegion::kUnion_Op : SkRegion::kDifference_Op);
+  }
+
+  draggable_region_.reset(draggable_region);
+  OnViewWasResized();
+}
+
+void ShellWindowViews::UpdateLegacyDraggableRegions(
+    const std::vector<extensions::DraggableRegion>& regions) {
+  // Draggable region is not supported for non-frameless window.
+  if (!frameless_)
+    return;
+
+  SkRegion* draggable_region = new SkRegion;
+
   // By default, the whole window is draggable.
   gfx::Rect bounds = GetBounds();
   draggable_region->op(0, 0, bounds.right(), bounds.bottom(),

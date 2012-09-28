@@ -424,7 +424,7 @@ void ShellWindowCocoa::UpdateWindowTitle() {
   [window() setTitle:base::SysUTF16ToNSString(title)];
 }
 
-void ShellWindowCocoa::UpdateDraggableRegions(
+void ShellWindowCocoa::UpdateLegacyDraggableRegions(
     const std::vector<extensions::DraggableRegion>& regions) {
   // Draggable region is not supported for non-frameless window.
   if (has_frame_)

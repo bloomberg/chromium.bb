@@ -117,6 +117,7 @@
         'common/extensions/command.h',
         'common/extensions/csp_validator.cc',
         'common/extensions/csp_validator.h',
+        'common/extensions/draggable_region.cc',
         'common/extensions/draggable_region.h',
         'common/extensions/event_filter.cc',
         'common/extensions/event_filter.h',
