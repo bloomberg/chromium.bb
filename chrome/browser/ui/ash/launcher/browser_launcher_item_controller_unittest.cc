@@ -6,7 +6,6 @@
 
 #include <map>
 #include <string>
-#include <vector>
 
 #include "ash/launcher/launcher_model.h"
 #include "base/memory/scoped_ptr.h"
@@ -220,7 +219,6 @@ class BrowserLauncherItemControllerTest
 
  private:
   content::TestBrowserThread browser_thread_;
-  std::vector<State*> states;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserLauncherItemControllerTest);
 };
