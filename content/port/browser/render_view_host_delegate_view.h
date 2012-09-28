@@ -67,6 +67,12 @@ class CONTENT_EXPORT RenderViewHostDelegateView {
   // retrieved by doing a Shift-Tab.
   virtual void TakeFocus(bool reverse) {}
 
+#if defined(OS_ANDROID)
+  // Called when an unhandled touch event is sent back from the renderer.
+  // TODO(joth): This should be pure virtual.
+  virtual void ConfirmTouchEvent(bool handled) {}
+#endif
+
  protected:
   virtual ~RenderViewHostDelegateView() {}
 };
