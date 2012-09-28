@@ -112,6 +112,73 @@ TEST_F(NavigationControllerTest, Defaults) {
   EXPECT_FALSE(controller.CanGoForward());
 }
 
+TEST_F(NavigationControllerTest, GoToOffset) {
+  NavigationControllerImpl& controller = controller_impl();
+  TestNotificationTracker notifications;
+  RegisterForAllNavNotifications(&notifications, &controller);
+
+  const int kNumUrls = 5;
+  std::vector<GURL> urls(kNumUrls);
+  for (int i = 0; i < kNumUrls; ++i) {
+    urls[i] = GURL(base::StringPrintf("http://www.a.com/%d", i));
+  }
+
+  test_rvh()->SendNavigate(0, urls[0]);
+  EXPECT_TRUE(notifications.Check1AndReset(
+      content::NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(urls[0], controller.GetActiveEntry()->GetVirtualURL());
+  EXPECT_FALSE(controller.CanGoBack());
+  EXPECT_FALSE(controller.CanGoForward());
+  EXPECT_FALSE(controller.CanGoToOffset(1));
+
+  for (int i = 1; i <= 4; ++i) {
+    test_rvh()->SendNavigate(i, urls[i]);
+    EXPECT_TRUE(notifications.Check1AndReset(
+        content::NOTIFICATION_NAV_ENTRY_COMMITTED));
+    EXPECT_EQ(urls[i], controller.GetActiveEntry()->GetVirtualURL());
+    EXPECT_TRUE(controller.CanGoToOffset(-i));
+    EXPECT_FALSE(controller.CanGoToOffset(-(i + 1)));
+    EXPECT_FALSE(controller.CanGoToOffset(1));
+  }
+
+  // We have loaded 5 pages, and are currently at the last-loaded page.
+  int url_index = 4;
+
+  enum Tests {
+    GO_TO_MIDDLE_PAGE = -2,
+    GO_FORWARDS = 1,
+    GO_BACKWARDS = -1,
+    GO_TO_BEGINNING = -2,
+    GO_TO_END = 4,
+    NUM_TESTS = 5,
+  };
+
+  const int test_offsets[NUM_TESTS] = {
+    GO_TO_MIDDLE_PAGE,
+    GO_FORWARDS,
+    GO_BACKWARDS,
+    GO_TO_BEGINNING,
+    GO_TO_END
+  };
+
+  for (int test = 0; test < NUM_TESTS; ++test) {
+    int offset = test_offsets[test];
+    controller.GoToOffset(offset);
+    url_index += offset;
+    // Check that the GoToOffset will land on the expected page.
+    EXPECT_EQ(urls[url_index], controller.GetPendingEntry()->GetVirtualURL());
+    test_rvh()->SendNavigate(url_index, urls[url_index]);
+    EXPECT_TRUE(notifications.Check1AndReset(
+        content::NOTIFICATION_NAV_ENTRY_COMMITTED));
+    // Check that we can go to any valid offset into the history.
+    for (size_t j = 0; j < urls.size(); ++j)
+      EXPECT_TRUE(controller.CanGoToOffset(j - url_index));
+    // Check that we can't go beyond the beginning or end of the history.
+    EXPECT_FALSE(controller.CanGoToOffset(-(url_index + 1)));
+    EXPECT_FALSE(controller.CanGoToOffset(urls.size() - url_index));
+  }
+}
+
 TEST_F(NavigationControllerTest, LoadURL) {
   NavigationControllerImpl& controller = controller_impl();
   TestNotificationTracker notifications;
