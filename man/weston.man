@@ -80,6 +80,12 @@ environment variable
 .BR DISPLAY .
 When the first X client connects, Weston launches a special X server as a
 Wayland client to handle the X client and all future X clients.
+
+It has also its own X window manager where cursor themes and sizes can be
+chosen using
+.BR XCURSOR_PATH
+and
+.BR XCURSOR_SIZE " environment variables. See " ENVIRONMENT .
 .
 .\" ***************************************************************
 .SH OPTIONS
@@ -201,7 +207,18 @@ This allows launching Weston as a nested server.
 .TP
 .B WESTON_LAUNCHER_SOCK
 .TP
+.B XCURSOR_PATH
+Set the list of paths to look for cursors in. It changes both
+libwayland-cursor and libXcursor, so it affects both Wayland and X11 based
+clients. See
+.B xcursor
+(3).
+.TP
 .B XCURSOR_SIZE
+This variable can be set for choosing an specific size of cursor. Affect
+Wayland and X11 clients. See
+.B xcursor
+(3).
 .TP
 .B XDG_CONFIG_HOME
 .TP
