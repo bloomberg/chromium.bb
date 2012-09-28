@@ -29,7 +29,8 @@ def Main(argv):
   [prog, munger, infile, outfile] = argv
   tmpfile = outfile + '.tmp'
   shutil.copy(infile, tmpfile)
-  subprocess.check_call([munger, tmpfile])
+  segment_num = '2'
+  subprocess.check_call([munger, tmpfile, segment_num])
   shutil.move(tmpfile, outfile)
   return 0
 
