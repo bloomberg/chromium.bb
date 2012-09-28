@@ -40,8 +40,8 @@ void P2PSocketClient::Init(
 void P2PSocketClient::DoInit(P2PSocketType type,
                              const net::IPEndPoint& local_address,
                              const net::IPEndPoint& remote_address) {
-  DCHECK(ipc_message_loop_->BelongsToCurrentThread());
   DCHECK_EQ(state_, STATE_UNINITIALIZED);
+  DCHECK(delegate_);
   state_ = STATE_OPENING;
   socket_id_ = dispatcher_->RegisterClient(this);
   dispatcher_->SendP2PMessage(new P2PHostMsg_CreateSocket(
