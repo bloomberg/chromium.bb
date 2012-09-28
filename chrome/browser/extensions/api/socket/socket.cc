@@ -14,6 +14,8 @@
 
 namespace extensions {
 
+const char kSocketTypeNotSupported[] = "Socket type does not support this API";
+
 Socket::Socket(const std::string& owner_extension_id,
                ApiResourceEventNotifier* event_notifier)
     : ApiResource(owner_extension_id, event_notifier),
@@ -85,6 +87,16 @@ bool Socket::SetKeepAlive(bool enable, int delay) {
 
 bool Socket::SetNoDelay(bool no_delay) {
   return false;
+}
+
+int Socket::Listen(const std::string& address, int port, int backlog,
+                   std::string* error_msg) {
+  *error_msg = kSocketTypeNotSupported;
+  return net::ERR_FAILED;
+}
+
+void Socket::Accept(const AcceptCompletionCallback& callback) {
+  callback.Run(net::ERR_FAILED, NULL);
 }
 
 // static

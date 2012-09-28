@@ -164,3 +164,28 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketTCPExtension) {
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
+
+IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketTCPServerExtension) {
+  ResultCatcher catcher;
+  catcher.RestrictToProfile(browser()->profile());
+  ExtensionTestMessageListener listener("info_please", true);
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("socket/api")));
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+  listener.Reply(
+      base::StringPrintf("tcp_server:%s:%d", kHostname.c_str(), kPort));
+
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
+IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketExperimentalPermissionTest) {
+  ResultCatcher catcher;
+  catcher.RestrictToProfile(browser()->profile());
+
+  ExtensionTestMessageListener listener("ready", true);
+
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("socket/experimental")));
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+  listener.Reply("go");
+
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+}

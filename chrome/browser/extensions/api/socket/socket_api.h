@@ -12,6 +12,7 @@
 #include "chrome/common/extensions/api/socket.h"
 #include "net/base/address_list.h"
 #include "net/base/host_resolver.h"
+#include "net/socket/tcp_client_socket.h"
 
 #include <string>
 
@@ -162,6 +163,41 @@ class SocketBindFunction : public SocketAsyncApiFunction {
   int socket_id_;
   std::string address_;
   int port_;
+};
+
+class SocketListenFunction : public SocketAsyncApiFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME("socket.listen");
+
+  SocketListenFunction();
+
+ protected:
+  virtual ~SocketListenFunction();
+
+  // AsyncApiFunction:
+  virtual bool Prepare() OVERRIDE;
+  virtual void Work() OVERRIDE;
+
+ private:
+  scoped_ptr<api::socket::Listen::Params> params_;
+};
+
+class SocketAcceptFunction : public SocketAsyncApiFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME("socket.accept");
+
+  SocketAcceptFunction();
+
+ protected:
+  virtual ~SocketAcceptFunction();
+
+  // AsyncApiFunction:
+  virtual bool Prepare() OVERRIDE;
+  virtual void AsyncWorkStart() OVERRIDE;
+
+ private:
+  void OnAccept(int result_code, net::TCPClientSocket *socket);
+  scoped_ptr<api::socket::Accept::Params> params_;
 };
 
 class SocketReadFunction : public SocketAsyncApiFunction {

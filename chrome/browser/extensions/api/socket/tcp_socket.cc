@@ -14,17 +14,31 @@
 
 namespace extensions {
 
+const char kTCPSocketTypeInvalidError[] =
+    "Cannot call both connect and listen on the same socket.";
+const char kSocketListenError[] = "Could not listen on the specified port.";
+
 TCPSocket::TCPSocket(const std::string& owner_extension_id,
                      ApiResourceEventNotifier* event_notifier)
-    : Socket(owner_extension_id, event_notifier) {
+    : Socket(owner_extension_id, event_notifier),
+      socket_mode_(UNKNOWN) {
 }
 
-// For testing.
 TCPSocket::TCPSocket(net::TCPClientSocket* tcp_client_socket,
                      const std::string& owner_extension_id,
-                     ApiResourceEventNotifier* event_notifier)
+                     ApiResourceEventNotifier* event_notifier,
+                     bool is_connected)
     : Socket(owner_extension_id, event_notifier),
-      socket_(tcp_client_socket) {
+      socket_(tcp_client_socket),
+      socket_mode_(CLIENT) {
+  this->is_connected_ = is_connected;
+}
+
+TCPSocket::TCPSocket(net::TCPServerSocket* tcp_server_socket,
+                     const std::string& owner_extension_id)
+    : Socket(owner_extension_id, NULL),
+      server_socket_(tcp_server_socket),
+      socket_mode_(SERVER) {
 }
 
 // static
@@ -35,10 +49,15 @@ TCPSocket* TCPSocket::CreateSocketForTesting(
   return new TCPSocket(tcp_client_socket, owner_extension_id, event_notifier);
 }
 
+// static
+TCPSocket* TCPSocket::CreateServerSocketForTesting(
+    net::TCPServerSocket* tcp_server_socket,
+    const std::string& owner_extension_id) {
+  return new TCPSocket(tcp_server_socket, owner_extension_id);
+}
+
 TCPSocket::~TCPSocket() {
-  if (is_connected_) {
-    Disconnect();
-  }
+  Disconnect();
 }
 
 void TCPSocket::Connect(const std::string& address,
@@ -46,10 +65,12 @@ void TCPSocket::Connect(const std::string& address,
                         const CompletionCallback& callback) {
   DCHECK(!callback.is_null());
 
-  if (!connect_callback_.is_null()) {
+  if (socket_mode_ == SERVER || !connect_callback_.is_null()) {
     callback.Run(net::ERR_CONNECTION_FAILED);
     return;
   }
+  DCHECK(!server_socket_.get());
+  socket_mode_ = CLIENT;
   connect_callback_ = callback;
 
   int result = net::ERR_CONNECTION_FAILED;
@@ -65,6 +86,7 @@ void TCPSocket::Connect(const std::string& address,
 
     socket_.reset(new net::TCPClientSocket(address_list, NULL,
                                            net::NetLog::Source()));
+
     connect_callback_ = callback;
     result = socket_->Connect(base::Bind(
         &TCPSocket::OnConnectComplete, base::Unretained(this)));
@@ -76,17 +98,23 @@ void TCPSocket::Connect(const std::string& address,
 
 void TCPSocket::Disconnect() {
   is_connected_ = false;
-  socket_->Disconnect();
+  if (socket_.get())
+    socket_->Disconnect();
+  server_socket_.reset(NULL);
 }
 
 int TCPSocket::Bind(const std::string& address, int port) {
-  // TODO(penghuang): Supports bind for tcp?
   return net::ERR_FAILED;
 }
 
 void TCPSocket::Read(int count,
                      const ReadCompletionCallback& callback) {
   DCHECK(!callback.is_null());
+
+  if (socket_mode_ != CLIENT) {
+    callback.Run(net::ERR_FAILED, NULL);
+    return;
+  }
 
   if (!read_callback_.is_null()) {
     callback.Run(net::ERR_IO_PENDING, NULL);
@@ -143,6 +171,54 @@ bool TCPSocket::SetNoDelay(bool no_delay) {
   return socket_->SetNoDelay(no_delay);
 }
 
+int TCPSocket::Listen(const std::string& address, int port, int backlog,
+                      std::string* error_msg) {
+  if (socket_mode_ == CLIENT) {
+    *error_msg = kTCPSocketTypeInvalidError;
+    return net::ERR_NOT_IMPLEMENTED;
+  }
+  DCHECK(!socket_.get());
+  socket_mode_ = SERVER;
+
+  scoped_ptr<net::IPEndPoint> bind_address(new net::IPEndPoint());
+  if (!StringAndPortToIPEndPoint(address, port, bind_address.get()))
+    return net::ERR_INVALID_ARGUMENT;
+
+  if (!server_socket_.get()) {
+    server_socket_.reset(new net::TCPServerSocket(NULL,
+                                                  net::NetLog::Source()));
+    server_socket_->AllowAddressReuse();
+  }
+  int result = server_socket_->Listen(*bind_address, backlog);
+  if (result)
+    *error_msg = kSocketListenError;
+  return result;
+}
+
+void TCPSocket::Accept(const AcceptCompletionCallback &callback) {
+  if (socket_mode_ != SERVER || !server_socket_.get()) {
+    callback.Run(net::ERR_FAILED, NULL);
+    return;
+  }
+
+  // Limits to only 1 blocked accept call.
+  if (!accept_callback_.is_null()) {
+    callback.Run(net::ERR_FAILED, NULL);
+    return;
+  }
+
+  int result = server_socket_->Accept(&accept_socket_, base::Bind(
+      &TCPSocket::OnAccept, base::Unretained(this)));
+  if (result == net::ERR_IO_PENDING) {
+    accept_callback_ = callback;
+  } else if (result == net::OK) {
+    accept_callback_ = callback;
+    this->OnAccept(result);
+  } else {
+    callback.Run(result, NULL);
+  }
+}
+
 bool TCPSocket::GetPeerAddress(net::IPEndPoint* address) {
   if (!socket_.get())
     return false;
@@ -150,9 +226,13 @@ bool TCPSocket::GetPeerAddress(net::IPEndPoint* address) {
 }
 
 bool TCPSocket::GetLocalAddress(net::IPEndPoint* address) {
-  if (!socket_.get())
+  if (socket_.get()) {
+    return !socket_->GetLocalAddress(address);
+  } else if (server_socket_.get()) {
+    return !server_socket_->GetLocalAddress(address);
+  } else {
     return false;
-  return !socket_->GetLocalAddress(address);
+  }
 }
 
 Socket::SocketType TCPSocket::GetSocketType() const {
@@ -162,7 +242,9 @@ Socket::SocketType TCPSocket::GetSocketType() const {
 int TCPSocket::WriteImpl(net::IOBuffer* io_buffer,
                          int io_buffer_size,
                          const net::CompletionCallback& callback) {
-  if (!socket_.get() || !socket_->IsConnected())
+  if (socket_mode_ != CLIENT)
+    return net::ERR_FAILED;
+  else if (!socket_.get() || !socket_->IsConnected())
     return net::ERR_SOCKET_NOT_CONNECTED;
   else
     return socket_->Write(io_buffer, io_buffer_size, callback);
@@ -181,6 +263,17 @@ void TCPSocket::OnReadComplete(scoped_refptr<net::IOBuffer> io_buffer,
   DCHECK(!read_callback_.is_null());
   read_callback_.Run(result, io_buffer);
   read_callback_.Reset();
+}
+
+void TCPSocket::OnAccept(int result) {
+  DCHECK(!accept_callback_.is_null());
+  if (result == net::OK && accept_socket_.get()) {
+    accept_callback_.Run(
+        result, static_cast<net::TCPClientSocket*>(accept_socket_.release()));
+  } else {
+    accept_callback_.Run(result, NULL);
+  }
+  accept_callback_.Reset();
 }
 
 }  // namespace extensions

@@ -15,6 +15,7 @@
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
+#include "net/socket/tcp_client_socket.h"
 
 namespace net {
 class AddressList;
@@ -30,6 +31,8 @@ typedef base::Callback<void(int, scoped_refptr<net::IOBuffer> io_buffer)>
 typedef base::Callback<
   void(int, scoped_refptr<net::IOBuffer> io_buffer, const std::string&, int)>
       RecvFromCompletionCallback;
+typedef base::Callback<
+  void(int, net::TCPClientSocket*)> AcceptCompletionCallback;
 
 // A Socket wraps a low-level socket and includes housekeeping information that
 // we need to manage it in the context of an extension.
@@ -68,6 +71,9 @@ class Socket : public ApiResource {
 
   virtual bool SetKeepAlive(bool enable, int delay);
   virtual bool SetNoDelay(bool no_delay);
+  virtual int Listen(const std::string& address, int port, int backlog,
+                     std::string* error_msg);
+  virtual void Accept(const AcceptCompletionCallback &callback);
 
   bool IsConnected();
 

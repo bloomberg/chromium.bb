@@ -185,14 +185,68 @@ var testSending = function() {
   socket.create(protocol, {}, onCreate);
 };
 
+// Tests listening on a socket and sending/receiving from accepted sockets.
+var testSocketListening = function() {
+  var tmpSocketId = 0;
+
+  function onServerSocketAccept(acceptInfo) {
+    chrome.test.assertEq(0, acceptInfo.resultCode);
+    var acceptedSocketId = acceptInfo.socketId;
+    socket.read(acceptedSocketId, function(readInfo) {
+      arrayBuffer2String(readInfo.data, function(s) {
+        var match = !!s.match(request);
+        chrome.test.assertTrue(match, "Received data does not match.");
+        succeeded = true;
+        chrome.test.succeed();
+      });
+    });
+  }
+
+  function onListen(result) {
+    chrome.test.assertEq(0, result, "Listen failed.");
+    socket.accept(socketId, onServerSocketAccept);
+
+    // Trying to schedule a second accept callback should fail.
+    socket.accept(socketId, function(acceptInfo) {
+      chrome.test.assertEq(-2, acceptInfo.resultCode);
+    });
+
+    // Create a new socket to connect to the TCP server.
+    socket.create('tcp', {}, function(socketInfo) {
+      tmpSocketId = socketInfo.socketId;
+      socket.connect(tmpSocketId, address, port,
+        function(result) {
+          chrome.test.assertEq(0, result, "Connect failed");
+
+          // Write.
+          string2ArrayBuffer(request, function(buf) {
+            socket.write(tmpSocketId, buf, function() {});
+          });
+        });
+    });
+  }
+
+  function onServerSocketCreate(socketInfo) {
+    socketId = socketInfo.socketId;
+    socket.listen(socketId, address, port, onListen);
+  }
+
+  socket.create('tcp', {}, onServerSocketCreate);
+};
+
 var onMessageReply = function(message) {
   var parts = message.split(":");
-  protocol = parts[0];
+  test_type = parts[0];
   address = parts[1];
   port = parseInt(parts[2]);
   console.log("Running tests, protocol " + protocol + ", echo server " +
               address + ":" + port);
-  chrome.test.runTests([ testSocketCreation, testSending ]);
+  if (test_type == 'tcp_server') {
+    chrome.test.runTests([ testSocketListening ]);
+  } else {
+    protocol = test_type;
+    chrome.test.runTests([ testSocketCreation, testSending ]);
+  }
 };
 
 // Find out which protocol we're supposed to test, and which echo server we

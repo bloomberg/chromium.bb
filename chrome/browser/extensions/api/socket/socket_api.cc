@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/socket/socket_api.h"
 
 #include "base/bind.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/permissions/socket_permission.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/dns/host_resolver_wrapper.h"
@@ -32,8 +33,12 @@ const char kSocketIdKey[] = "socketId";
 const char kSocketNotFoundError[] = "Socket not found";
 const char kSocketTypeInvalidError[] = "Socket type is not supported";
 const char kDnsLookupFailedError[] = "DNS resolution failed";
-const char kPermissionError[] = "Caller does not have permission";
+const char kPermissionError[] = "App does not have permission";
+const char kExperimentalPermissionError[] =
+    "App does not have permission for experimental API";
 const char kNetworkListError[] = "Network lookup failed or unsupported";
+const char kTCPSocketBindError[] =
+    "TCP socket does not support bind. For TCP server please use listen.";
 
 SocketAsyncApiFunction::SocketAsyncApiFunction()
     : manager_(NULL) {
@@ -270,10 +275,99 @@ void SocketBindFunction::Work() {
       SetResult(Value::CreateIntegerValue(result));
       return;
     }
+  } else if (socket->GetSocketType() == Socket::TYPE_TCP) {
+    error_ = kTCPSocketBindError;
+    SetResult(Value::CreateIntegerValue(result));
+    return;
   }
 
   result = socket->Bind(address_, port_);
   SetResult(Value::CreateIntegerValue(result));
+}
+
+SocketListenFunction::SocketListenFunction()
+    : params_(NULL) {
+}
+
+SocketListenFunction::~SocketListenFunction() {}
+
+bool SocketListenFunction::Prepare() {
+  if (!GetExtension()->HasAPIPermission(APIPermission::kExperimental)) {
+    error_ = kExperimentalPermissionError;
+    return false;
+  }
+
+  params_ = api::socket::Listen::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params_.get());
+  return true;
+}
+
+void SocketListenFunction::Work() {
+  int result = -1;
+
+  Socket* socket = GetSocket(params_->socket_id);
+  if (socket) {
+    SocketPermission::CheckParam param(
+        SocketPermissionData::TCP_LISTEN, params_->address, params_->port);
+    if (!GetExtension()->CheckAPIPermissionWithParam(APIPermission::kSocket,
+          &param)) {
+      error_ = kPermissionError;
+      SetResult(Value::CreateIntegerValue(result));
+      return;
+    }
+
+    result = socket->Listen(
+        params_->address,
+        params_->port,
+        params_->backlog.get() ? *params_->backlog.get() : 5,
+        &error_);
+  } else {
+    error_ = kSocketNotFoundError;
+  }
+
+  SetResult(Value::CreateIntegerValue(result));
+}
+
+SocketAcceptFunction::SocketAcceptFunction()
+  : params_(NULL) {
+}
+
+SocketAcceptFunction::~SocketAcceptFunction() {}
+
+bool SocketAcceptFunction::Prepare() {
+  if (!GetExtension()->HasAPIPermission(APIPermission::kExperimental)) {
+    error_ = kExperimentalPermissionError;
+    return false;
+  }
+
+  params_ = api::socket::Accept::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params_.get());
+  return true;
+}
+
+void SocketAcceptFunction::AsyncWorkStart() {
+  Socket* socket = GetSocket(params_->socket_id);
+  if (socket) {
+    socket->Accept(base::Bind(&SocketAcceptFunction::OnAccept, this));
+  } else {
+    error_ = kSocketNotFoundError;
+    OnAccept(-1, NULL);
+  }
+}
+
+void SocketAcceptFunction::OnAccept(int result_code,
+                                    net::TCPClientSocket *socket) {
+  DictionaryValue* result = new DictionaryValue();
+  result->SetInteger(kResultCodeKey, result_code);
+  if (socket) {
+    // TODO(justinlin): This socket won't have an event notifier, but it's not
+    // used for anything right now.
+    Socket *client_socket = new TCPSocket(socket, extension_id(), NULL, true);
+    result->SetInteger(kSocketIdKey, manager_->Add(client_socket));
+  }
+  SetResult(result);
+
+  AsyncWorkCompleted();
 }
 
 SocketReadFunction::SocketReadFunction()

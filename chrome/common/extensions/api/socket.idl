@@ -23,6 +23,16 @@ namespace socket {
 
   callback BindCallback = void (long result);
 
+  callback ListenCallback = void (long result);
+
+  dictionary AcceptInfo {
+    long resultCode;
+    // The id of the accepted socket.
+    long? socketId;
+  };
+
+  callback AcceptCallback = void (AcceptInfo acceptInfo);
+
   dictionary ReadInfo {
     // The resultCode returned from the underlying read() call.
     long resultCode;
@@ -186,6 +196,32 @@ namespace socket {
                        DOMString address,
                        long port,
                        SendToCallback callback);
+
+    // This method is experimental and requires experimental API permission.
+    // This method applies to TCP sockets only.
+    // Listens for connections on the specified port and address. This
+    // effectively makes this a server socket, and client socket
+    // functions (connect, read, write) can no longer be used on this socket.
+    // |socketId| : The socketId.
+    // |address| : The address of the local machine.
+    // |port| : The port of the local machine.
+    // |backlog| : Length of the socket's listen queue.
+    static void listen(long socketId,
+                       DOMString address,
+                       long port,
+                       optional long backlog,
+                       ListenCallback callback);
+
+    // This method is experimental and requires experimental API permission.
+    // This method applies to TCP sockets only.
+    // Registers a callback function to be called when a connection is
+    // accepted on this listening server socket. Listen must be called first.
+    // If there is already an active accept callback, this callback will be
+    // invoked immediately with an error as the resultCode.
+    // |socketId| : The socketId.
+    // |callback| : The callback is invoked when a new socket is accepted.
+    static void accept(long socketId,
+                       AcceptCallback callback);
 
     // Enables or disables the keep-alive functionality for a TCP connection.
     // |socketId| : The socketId.

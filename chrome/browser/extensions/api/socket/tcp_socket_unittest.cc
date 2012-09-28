@@ -12,6 +12,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/rand_callback.h"
 #include "net/socket/tcp_client_socket.h"
+#include "net/socket/tcp_server_socket.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::_;
@@ -41,9 +42,22 @@ class MockTCPSocket : public net::TCPClientSocket {
   DISALLOW_COPY_AND_ASSIGN(MockTCPSocket);
 };
 
+class MockTCPServerSocket : public net::TCPServerSocket {
+ public:
+  explicit MockTCPServerSocket()
+      : net::TCPServerSocket(NULL, net::NetLog::Source()) {
+  }
+  MOCK_METHOD2(Listen, int(const net::IPEndPoint& address, int backlog));
+  MOCK_METHOD2(Accept, int(scoped_ptr<net::StreamSocket>* socket,
+                            const net::CompletionCallback& callback));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockTCPServerSocket);
+};
+
 class MockApiResourceEventNotifier : public ApiResourceEventNotifier {
  public:
-  MockApiResourceEventNotifier(const std::string& owner_extension_id)
+  explicit MockApiResourceEventNotifier(const std::string& owner_extension_id)
       : ApiResourceEventNotifier(NULL, NULL,
                                  owner_extension_id,
                                  0, GURL()) {}
@@ -62,6 +76,7 @@ class CompleteHandler {
   MOCK_METHOD1(OnComplete, void(int result_code));
   MOCK_METHOD2(OnReadComplete, void(int result_code,
       scoped_refptr<net::IOBuffer> io_buffer));
+  MOCK_METHOD2(OnAccept, void(int, net::TCPClientSocket*));
  private:
   DISALLOW_COPY_AND_ASSIGN(CompleteHandler);
 };
@@ -225,6 +240,23 @@ TEST(SocketTest, TestTCPSocketSetKeepAlive) {
   EXPECT_FALSE(result);
   EXPECT_FALSE(enable);
   EXPECT_EQ(0, delay);
+}
+
+TEST(SocketTest, TestTCPServerSocketListenAccept) {
+  MockTCPServerSocket* tcp_server_socket = new MockTCPServerSocket();
+  CompleteHandler handler;
+
+  scoped_ptr<TCPSocket> socket(TCPSocket::CreateServerSocketForTesting(
+      tcp_server_socket, FAKE_ID));
+
+  EXPECT_CALL(*tcp_server_socket, Accept(_, _)).Times(1);
+  EXPECT_CALL(*tcp_server_socket, Listen(_, _)).Times(1);
+  EXPECT_CALL(handler, OnAccept(_, _));
+
+  std::string err_msg;
+  EXPECT_EQ(net::OK, socket->Listen("127.0.0.1", 9999, 10, &err_msg));
+  socket->Accept(base::Bind(&CompleteHandler::OnAccept,
+        base::Unretained(&handler)));
 }
 
 }  // namespace extensions
