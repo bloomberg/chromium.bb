@@ -146,10 +146,13 @@ public:
     // Only for testing
     size_t mailboxCount() const { return m_mailboxes.size(); }
 
-    // Temporary functions for debugging crashes in issue 151428 in canary
+    // Temporary functions for debugging crashes in issue 151428 in canary.
+    // Do not use these!
     static void debugNotifyEviction();
     static void debugNotifyContextLost();
     static void debugIncrementCommitCount();
+    static void debugNotifyPtmClearAllMemoryCount();
+    static void debugNotifyPtmReduceMemoryOnImplThread();
 
     // The following lock classes are part of the CCResourceProvider API and are
     // needed to read and write the resource contents. The user must ensure
@@ -269,9 +272,17 @@ private:
     OwnPtr<AcceleratedTextureCopier> m_textureCopier;
     int m_maxTextureSize;
 
-    static int m_commitsSinceLastEviction;
-    static int m_commitsSinceLastContextLost;
-
+    // Temporary variables for debugging crashes in issue 151428 in canary.
+    // Do not use these!
+    static int64 m_commitCount;
+    static int64 m_commitCountAtLastEviction;
+    static int64 m_commitCountAtLastContextLost;
+    static int64 m_evictionCount;
+    static int64 m_contextLostCount;
+    static int64 m_commitCountAtLastPtmClearAllMemoryCount;
+    static int64 m_commitCountAtLastPtmReduceMemoryOnImplThread;
+    static int64 m_resourceProviderCreatedCount;
+    static int64 m_resourceProviderDestroyedCount;
 };
 
 }

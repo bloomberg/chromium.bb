@@ -113,6 +113,7 @@ PassOwnPtr<CCResourceProvider> CCResourceProvider::create(CCGraphicsContext* con
     OwnPtr<CCResourceProvider> resourceProvider(adoptPtr(new CCResourceProvider(context)));
     if (!resourceProvider->initialize())
         return nullptr;
+    m_resourceProviderCreatedCount++;
     return resourceProvider.release();
 }
 
@@ -121,6 +122,7 @@ CCResourceProvider::~CCResourceProvider()
     WebGraphicsContext3D* context3d = m_context->context3D();
     if (!context3d || !context3d->makeContextCurrent())
         return;
+    m_resourceProviderDestroyedCount++;
     m_textureUploader.clear();
     m_textureCopier.clear();
 }
@@ -321,10 +323,26 @@ const CCResourceProvider::Resource* CCResourceProvider::lockForRead(ResourceId i
     ASSERT(CCProxy::isImplThread());
     ResourceMap::iterator it = m_resources.find(id);
     if (it == m_resources.end()) {
-        int commitsSinceLastEviction = m_commitsSinceLastEviction;
-        int commitsSinceLastContextLost = m_commitsSinceLastContextLost;
-        base::debug::Alias(&commitsSinceLastEviction);
-        base::debug::Alias(&commitsSinceLastContextLost);
+        int resourceCount = m_resources.size();
+        int64 commitCount = m_commitCount;
+        int64 commitCountAtLastEviction = m_commitCountAtLastEviction;
+        int64 commitCountAtLastContextLost = m_commitCountAtLastContextLost;
+        int64 evictionCount = m_evictionCount;
+        int64 contextLostCount = m_contextLostCount;
+        int64 commitCountAtLastPtmClearAllMemoryCount = m_commitCountAtLastPtmClearAllMemoryCount;
+        int64 commitCountAtLastPtmReduceMemoryOnImplThread = m_commitCountAtLastPtmReduceMemoryOnImplThread;
+        int64 resourceProviderCreatedCount = m_resourceProviderCreatedCount;
+        int64 resourceProviderDestroyedCount = m_resourceProviderDestroyedCount;
+        base::debug::Alias(&resourceCount);
+        base::debug::Alias(&commitCount);
+        base::debug::Alias(&commitCountAtLastEviction);
+        base::debug::Alias(&commitCountAtLastContextLost);
+        base::debug::Alias(&evictionCount);
+        base::debug::Alias(&contextLostCount);
+        base::debug::Alias(&commitCountAtLastPtmClearAllMemoryCount);
+        base::debug::Alias(&commitCountAtLastPtmReduceMemoryOnImplThread);
+        base::debug::Alias(&resourceProviderCreatedCount);
+        base::debug::Alias(&resourceProviderDestroyedCount);
         CHECK(it != m_resources.end());
     }
 
@@ -710,23 +728,41 @@ void CCResourceProvider::trimMailboxDeque()
         m_mailboxes.removeFirst();
 }
 
-int CCResourceProvider::m_commitsSinceLastEviction = 1000;
-int CCResourceProvider::m_commitsSinceLastContextLost = 1000;
+int64 CCResourceProvider::m_commitCount = 0;
+int64 CCResourceProvider::m_commitCountAtLastEviction = -1;
+int64 CCResourceProvider::m_commitCountAtLastContextLost = -1;
+int64 CCResourceProvider::m_evictionCount = 0;
+int64 CCResourceProvider::m_contextLostCount = 0;
+int64 CCResourceProvider::m_commitCountAtLastPtmClearAllMemoryCount = -1;
+int64 CCResourceProvider::m_commitCountAtLastPtmReduceMemoryOnImplThread = -1;
+int64 CCResourceProvider::m_resourceProviderCreatedCount = 0;
+int64 CCResourceProvider::m_resourceProviderDestroyedCount = 0;
 
 void CCResourceProvider::debugNotifyEviction()
 {
-    m_commitsSinceLastEviction = 0;
+    m_commitCountAtLastEviction = m_commitCount;
+    m_evictionCount++;
 }
 
 void CCResourceProvider::debugNotifyContextLost()
 {
-    m_commitsSinceLastContextLost = 0;
+    m_commitCountAtLastContextLost = m_commitCount;
+    m_contextLostCount++;
 }
 
 void CCResourceProvider::debugIncrementCommitCount()
 {
-    m_commitsSinceLastEviction = std::min(m_commitsSinceLastEviction + 1, 1000);
-    m_commitsSinceLastContextLost = std::min(m_commitsSinceLastContextLost + 1, 1000);
+    m_commitCount++;
+}
+
+void CCResourceProvider::debugNotifyPtmClearAllMemoryCount()
+{
+    m_commitCountAtLastPtmClearAllMemoryCount = m_commitCount;
+}
+
+void CCResourceProvider::debugNotifyPtmReduceMemoryOnImplThread()
+{
+    m_commitCountAtLastPtmReduceMemoryOnImplThread = m_commitCount;
 }
 
 }
