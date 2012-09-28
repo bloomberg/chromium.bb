@@ -58,6 +58,7 @@
     -webkit-linear-gradient(top, rgb(77, 144, 254), rgb(71, 135, 237));
   border-color: rgb(48, 121, 237);
   color: white;
+  text-decoration: none;
 }
 
 .gdata-welcome-button.gdata-welcome-start:hover {
@@ -111,7 +112,7 @@
 }
 
 .gdrive-welcome.header .gdrive-welcome-text {
-  margin-bottom: 10px;
+  margin-bottom: 6px;
 }
 
 .gdrive-welcome.header .gdrive-welcome-dismiss {

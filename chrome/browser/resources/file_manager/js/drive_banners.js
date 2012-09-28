@@ -514,7 +514,7 @@ FileListBannerController.prototype.checkPromoAvailable_ = function() {
   r.onreadystatechange = function() {
     if (r.readyState != 4)
       return;
-    this.newWelcome_ = r.status != 404;
+    this.newWelcome_ = r.status == 200;
     if (this.promoCallbacks_) {
       for (var i = 0; i < this.promoCallbacks_.length; i++)
         this.promoCallbacks_[i]();
