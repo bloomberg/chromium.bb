@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_HISTORY_HISTORY_TAB_HELPER_H_
 
 #include "base/memory/ref_counted.h"
+#include "base/time.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -37,7 +38,8 @@ class HistoryTabHelper : public content::WebContentsObserver,
   // history.
   history::HistoryAddPageArgs CreateHistoryAddPageArgs(
       const GURL& virtual_url,
-      const content::LoadCommittedDetails& details,
+      base::Time timestamp,
+      bool did_replace_entry,
       const content::FrameNavigateParams& params);
 
  private:

@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/win_util.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -452,12 +453,11 @@ WebContents* ExternalTabContainerWin::OpenURLFromTab(
         nav_params.page_id = -1;
         nav_params.transition = content::PAGE_TRANSITION_LINK;
 
-        content::LoadCommittedDetails details;
-        details.did_replace_entry = false;
-
         const history::HistoryAddPageArgs& add_page_args =
             tab_contents_->history_tab_helper()->
-                CreateHistoryAddPageArgs(params.url, details, nav_params);
+                CreateHistoryAddPageArgs(
+                    params.url, base::Time::Now(),
+                    false /* did_replace_entry */, nav_params);
         tab_contents_->history_tab_helper()->
             UpdateHistoryForNavigation(add_page_args);
 

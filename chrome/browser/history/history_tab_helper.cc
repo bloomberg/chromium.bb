@@ -58,15 +58,13 @@ void HistoryTabHelper::UpdateHistoryPageTitle(const NavigationEntry& entry) {
 history::HistoryAddPageArgs
 HistoryTabHelper::CreateHistoryAddPageArgs(
     const GURL& virtual_url,
-    const content::LoadCommittedDetails& details,
+    base::Time timestamp,
+    bool did_replace_entry,
     const content::FrameNavigateParams& params) {
-  // TODO(akalin): Use the timestamp from details.entry when it
-  // becomes available.
-  const base::Time time = base::Time::Now();
   history::HistoryAddPageArgs add_page_args(
-          params.url, time, web_contents(), params.page_id,
-          params.referrer.url, params.redirects, params.transition,
-          history::SOURCE_BROWSED, details.did_replace_entry);
+      params.url, timestamp, web_contents(), params.page_id,
+      params.referrer.url, params.redirects, params.transition,
+      history::SOURCE_BROWSED, did_replace_entry);
   if (content::PageTransitionIsMainFrame(params.transition) &&
       virtual_url != params.url) {
     // Hack on the "virtual" URL so that it will appear in history. For some
@@ -113,7 +111,9 @@ void HistoryTabHelper::DidNavigateAnyFrame(
   // about: URL to the history db and keep the data: URL hidden. This is what
   // the WebContents' URL getter does.
   const history::HistoryAddPageArgs& add_page_args =
-      CreateHistoryAddPageArgs(web_contents()->GetURL(), details, params);
+      CreateHistoryAddPageArgs(
+          web_contents()->GetURL(), details.entry->GetTimestamp(),
+          details.did_replace_entry, params);
 
   prerender::PrerenderManager* prerender_manager =
       prerender::PrerenderManagerFactory::GetForProfile(
