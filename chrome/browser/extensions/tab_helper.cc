@@ -45,8 +45,6 @@ using content::NavigationEntry;
 using content::RenderViewHost;
 using content::WebContents;
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(extensions::TabHelper)
-
 namespace {
 
 const char kPermissionError[] = "permission_error";
@@ -54,6 +52,8 @@ const char kPermissionError[] = "permission_error";
 }  // namespace
 
 namespace extensions {
+
+int TabHelper::kUserDataKey;
 
 TabHelper::ContentScriptObserver::ContentScriptObserver(TabHelper* tab_helper)
     : tab_helper_(tab_helper) {

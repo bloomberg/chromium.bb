@@ -16,7 +16,7 @@
 using content::RenderViewHost;
 using content::WebContents;
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(AlternateErrorPageTabObserver)
+int AlternateErrorPageTabObserver::kUserDataKey;
 
 AlternateErrorPageTabObserver::AlternateErrorPageTabObserver(
     WebContents* web_contents)

@@ -104,6 +104,7 @@ class CaptivePortalTabHelper
   friend class CaptivePortalTabHelperTest;
 
   friend class WebContentsUserData<CaptivePortalTabHelper>;
+  static int kUserDataKey;
   explicit CaptivePortalTabHelper(content::WebContents* web_contents);
 
   // Called by Observe in response to the corresponding event.

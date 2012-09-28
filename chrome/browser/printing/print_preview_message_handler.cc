@@ -28,7 +28,7 @@
 using content::BrowserThread;
 using content::WebContents;
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(printing::PrintPreviewMessageHandler)
+int printing::PrintPreviewMessageHandler::kUserDataKey;
 
 namespace {
 

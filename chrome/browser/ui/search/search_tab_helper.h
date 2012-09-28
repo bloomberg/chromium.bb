@@ -60,6 +60,7 @@ class SearchTabHelper : public content::WebContentsObserver,
 
  private:
   explicit SearchTabHelper(content::WebContents* web_contents);
+  static int kUserDataKey;
   friend class WebContentsUserData<SearchTabHelper>;
 
   // Enum of the load states for the NTP.

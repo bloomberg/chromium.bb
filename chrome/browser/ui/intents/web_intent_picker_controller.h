@@ -120,6 +120,7 @@ class WebIntentPickerController
 
  private:
   explicit WebIntentPickerController(content::WebContents* web_contents);
+  static int kUserDataKey;
   friend class WebContentsUserData<WebIntentPickerController>;
 
   friend class WebIntentPickerControllerTest;

@@ -12,7 +12,7 @@
 #include "base/win/metro.h"
 #endif
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(MetroPinTabHelper)
+int MetroPinTabHelper::kUserDataKey;
 
 MetroPinTabHelper::MetroPinTabHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),

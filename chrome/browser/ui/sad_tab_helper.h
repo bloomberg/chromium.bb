@@ -43,6 +43,7 @@ class SadTabHelper : public content::WebContentsObserver,
 
  private:
   explicit SadTabHelper(content::WebContents* web_contents);
+  static int kUserDataKey;
   friend class WebContentsUserData<SadTabHelper>;
 
   // Platform specific function to get an instance of the sad tab page.

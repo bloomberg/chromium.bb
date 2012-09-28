@@ -145,6 +145,7 @@ class TabHelper : public content::WebContentsObserver,
 
  private:
   explicit TabHelper(content::WebContents* web_contents);
+  static int kUserDataKey;
   friend class WebContentsUserData<TabHelper>;
 
   // content::WebContentsObserver overrides.

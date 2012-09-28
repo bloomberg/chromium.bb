@@ -31,8 +31,6 @@
 namespace GetFrame = extensions::api::web_navigation::GetFrame;
 namespace GetAllFrames = extensions::api::web_navigation::GetAllFrames;
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(extensions::WebNavigationTabObserver)
-
 namespace extensions {
 
 namespace helpers = web_navigation_api_helpers;
@@ -254,6 +252,8 @@ void WebNavigationEventRouter::TabDestroyed(content::WebContents* tab) {
 }
 
 // WebNavigationTabObserver ------------------------------------------
+
+int WebNavigationTabObserver::kUserDataKey;
 
 WebNavigationTabObserver::WebNavigationTabObserver(
     content::WebContents* web_contents)

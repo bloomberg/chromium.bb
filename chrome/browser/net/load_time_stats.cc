@@ -23,8 +23,6 @@ using content::RenderViewHost;
 using content::ResourceRequestInfo;
 using std::string;
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(chrome_browser_net::LoadTimeStatsTabHelper)
-
 namespace {
 
 bool GetRenderView(const net::URLRequest& request,
@@ -255,6 +253,8 @@ class LoadTimeStats::URLRequestStats {
   RequestStatus status_;
   base::TimeDelta status_times_[REQUEST_STATUS_MAX];
 };
+
+int LoadTimeStatsTabHelper::kUserDataKey;
 
 LoadTimeStatsTabHelper::LoadTimeStatsTabHelper(
     content::WebContents* web_contents)

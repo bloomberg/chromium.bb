@@ -57,7 +57,7 @@
 
 using extensions::WebstoreInstaller;
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(WebIntentPickerController)
+int WebIntentPickerController::kUserDataKey;
 
 namespace {
 

@@ -137,6 +137,7 @@ class LoadTimeStatsTabHelper
 
  private:
   explicit LoadTimeStatsTabHelper(content::WebContents* web_contents);
+  static int kUserDataKey;
   friend class WebContentsUserData<LoadTimeStatsTabHelper>;
 
   // Calls into LoadTimeStats to notify that a reportable event has occurred

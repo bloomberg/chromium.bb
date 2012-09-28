@@ -32,6 +32,7 @@ class SearchEngineTabHelper
 
  private:
   explicit SearchEngineTabHelper(content::WebContents* web_contents);
+  static int kUserDataKey;
   friend class WebContentsUserData<SearchEngineTabHelper>;
 
   // Handles when a page specifies an OSDD (OpenSearch Description Document).

@@ -15,6 +15,7 @@ class PepperBrokerObserver : public content::WebContentsObserver,
 
  private:
   explicit PepperBrokerObserver(content::WebContents* web_contents);
+  static int kUserDataKey;
   friend class WebContentsUserData<PepperBrokerObserver>;
 
   virtual bool RequestPpapiBrokerPermission(

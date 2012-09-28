@@ -23,7 +23,7 @@
 
 using content::NavigationEntry;
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(BlockedContentTabHelper)
+int BlockedContentTabHelper::kUserDataKey;
 
 BlockedContentTabHelper::BlockedContentTabHelper(
     content::WebContents* web_contents)

@@ -14,7 +14,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(SessionTabHelper)
+int SessionTabHelper::kUserDataKey;
 
 SessionTabHelper::SessionTabHelper(content::WebContents* contents)
     : content::WebContentsObserver(contents) {

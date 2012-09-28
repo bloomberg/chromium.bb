@@ -181,7 +181,7 @@ void SSLTabHelper::SSLAddCertData::Observe(
 
 // SSLTabHelper ----------------------------------------------------------------
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(SSLTabHelper)
+int SSLTabHelper::kUserDataKey;
 
 SSLTabHelper::SSLTabHelper(content::WebContents* contents)
     : web_contents_(contents) {

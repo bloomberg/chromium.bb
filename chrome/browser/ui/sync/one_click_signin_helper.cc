@@ -48,7 +48,7 @@
 #include "webkit/forms/password_form.h"
 #include "webkit/forms/password_form_dom_manager.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(OneClickSigninHelper)
+int OneClickSigninHelper::kUserDataKey;
 
 namespace {
 

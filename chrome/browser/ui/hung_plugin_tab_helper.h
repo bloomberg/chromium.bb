@@ -51,6 +51,7 @@ class HungPluginTabHelper : public content::WebContentsObserver,
 
  private:
   explicit HungPluginTabHelper(content::WebContents* contents);
+  static int kUserDataKey;
   friend class WebContentsUserData<HungPluginTabHelper>;
 
   class InfoBarDelegate;

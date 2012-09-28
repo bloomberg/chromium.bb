@@ -47,6 +47,7 @@ class OmniboxSearchHint : public content::NotificationObserver,
 
  private:
   explicit OmniboxSearchHint(content::WebContents* web_contents);
+  static int kUserDataKey;
   friend class WebContentsUserData<OmniboxSearchHint>;
 
   void ShowInfoBar();

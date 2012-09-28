@@ -66,6 +66,7 @@ class BookmarkTabHelper : public content::NotificationObserver,
 
  private:
   explicit BookmarkTabHelper(content::WebContents* web_contents);
+  static int kUserDataKey;
   friend class WebContentsUserData<BookmarkTabHelper>;
 
   // Updates the starred state from the bookmark bar model. If the state has

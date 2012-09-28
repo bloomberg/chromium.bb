@@ -45,7 +45,7 @@
 using base::TimeDelta;
 using content::BrowserThread;
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(printing::PrintViewManager)
+int printing::PrintViewManager::kUserDataKey;
 
 namespace {
 

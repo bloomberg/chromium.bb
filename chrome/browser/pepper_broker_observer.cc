@@ -31,7 +31,7 @@ using content::OpenURLParams;
 using content::Referrer;
 using content::WebContents;
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(PepperBrokerObserver)
+int PepperBrokerObserver::kUserDataKey;
 
 namespace {
 

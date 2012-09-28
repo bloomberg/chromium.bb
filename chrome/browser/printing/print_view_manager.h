@@ -100,6 +100,7 @@ class PrintViewManager : public content::NotificationObserver,
 
  private:
   explicit PrintViewManager(content::WebContents* web_contents);
+  static int kUserDataKey;
   friend class WebContentsUserData<PrintViewManager>;
 
   enum PrintPreviewState {
