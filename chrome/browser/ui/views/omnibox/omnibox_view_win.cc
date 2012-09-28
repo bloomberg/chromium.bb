@@ -526,15 +526,17 @@ OmniboxViewWin::OmniboxViewWin(OmniboxEditController* controller,
 
   SetBackgroundColor(background_color_);
 
-  // By default RichEdit has a drop target. Revoke it so that we can install our
-  // own. Revoke takes care of deleting the existing one.
-  RevokeDragDrop(m_hWnd);
-
-  // Register our drop target. RichEdit appears to invoke RevokeDropTarget when
-  // done so that we don't have to explicitly.
   if (!popup_window_mode_) {
-    scoped_refptr<EditDropTarget> drop_target = new EditDropTarget(this);
-    RegisterDragDrop(m_hWnd, drop_target.get());
+    // Non-read-only edit controls have a drop target.  Revoke it so that we can
+    // install our own.  Revoking automatically deletes the existing one.
+    HRESULT hr = RevokeDragDrop(m_hWnd);
+    DCHECK_EQ(S_OK, hr);
+
+    // Register our drop target.  The scoped_refptr here will delete the drop
+    // target if it fails to register itself correctly on |m_hWnd|.  Otherwise,
+    // the edit control will invoke RevokeDragDrop when it's being destroyed, so
+    // we don't have to do so.
+    scoped_refptr<EditDropTarget> drop_target(new EditDropTarget(this));
   }
 }
 
