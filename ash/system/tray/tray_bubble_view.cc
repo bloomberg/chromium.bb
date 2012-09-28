@@ -378,7 +378,7 @@ void TrayBubbleView::Init() {
 gfx::Rect TrayBubbleView::GetAnchorRect() {
   gfx::Rect rect;
 
-  if (anchor_widget()->IsVisible()) {
+  if (anchor_widget() && anchor_widget()->IsVisible()) {
     rect = anchor_widget()->GetWindowBoundsInScreen();
     if (params_.anchor_type == ANCHOR_TYPE_TRAY) {
       if (params_.shelf_alignment == SHELF_ALIGNMENT_BOTTOM) {
