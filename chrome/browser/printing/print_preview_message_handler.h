@@ -35,7 +35,6 @@ class PrintPreviewMessageHandler
 
  private:
   explicit PrintPreviewMessageHandler(content::WebContents* web_contents);
-  static int kUserDataKey;
   friend class WebContentsUserData<PrintPreviewMessageHandler>;
 
   // Gets the print preview tab associated with the WebContents being observed.

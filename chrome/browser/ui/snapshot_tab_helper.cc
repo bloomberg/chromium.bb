@@ -11,7 +11,7 @@
 
 using content::WebContents;
 
-int SnapshotTabHelper::kUserDataKey;
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(SnapshotTabHelper)
 
 SnapshotTabHelper::SnapshotTabHelper(WebContents* web_contents)
     : content::WebContentsObserver(web_contents) {

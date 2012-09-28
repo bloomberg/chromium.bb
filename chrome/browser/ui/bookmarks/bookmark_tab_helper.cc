@@ -16,7 +16,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 
-int BookmarkTabHelper::kUserDataKey;
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(BookmarkTabHelper)
 
 namespace {
 

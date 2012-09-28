@@ -50,7 +50,6 @@ class OneClickSigninHelper : public content::WebContentsObserver,
 
  private:
   explicit OneClickSigninHelper(content::WebContents* web_contents);
-  static int kUserDataKey;
   friend class WebContentsUserData<OneClickSigninHelper>;
 
   // The portion of ShowInfoBarIfPossible() that needs to run on the UI thread.

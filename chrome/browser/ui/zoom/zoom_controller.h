@@ -38,7 +38,6 @@ class ZoomController : public content::NotificationObserver,
 
  private:
   explicit ZoomController(content::WebContents* web_contents);
-  static int kUserDataKey;
   friend class WebContentsUserData<ZoomController>;
 
   // content::WebContentsObserver overrides:

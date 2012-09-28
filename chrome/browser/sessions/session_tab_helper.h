@@ -31,7 +31,6 @@ class SessionTabHelper : public content::WebContentsObserver,
 
  private:
   explicit SessionTabHelper(content::WebContents* contents);
-  static int kUserDataKey;
   friend class WebContentsUserData<SessionTabHelper>;
 
   // Unique identifier of the tab for session restore. This id is only unique

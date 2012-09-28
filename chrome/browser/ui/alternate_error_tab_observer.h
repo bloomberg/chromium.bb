@@ -26,7 +26,6 @@ class AlternateErrorPageTabObserver
 
  private:
   explicit AlternateErrorPageTabObserver(content::WebContents* web_contents);
-  static int kUserDataKey;
   friend class WebContentsUserData<AlternateErrorPageTabObserver>;
 
   // content::WebContentsObserver overrides:

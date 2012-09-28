@@ -37,7 +37,6 @@ class PluginObserver : public content::WebContentsObserver,
 
  private:
   explicit PluginObserver(content::WebContents* web_contents);
-  static int kUserDataKey;
   friend class WebContentsUserData<PluginObserver>;
 
   class PluginPlaceholderHost;

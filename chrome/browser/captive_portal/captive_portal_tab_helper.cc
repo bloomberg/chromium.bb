@@ -25,9 +25,9 @@
 #include "net/base/net_errors.h"
 #include "net/base/ssl_info.h"
 
-namespace captive_portal {
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(captive_portal::CaptivePortalTabHelper)
 
-int CaptivePortalTabHelper::kUserDataKey;
+namespace captive_portal {
 
 CaptivePortalTabHelper::CaptivePortalTabHelper(
     content::WebContents* web_contents)
