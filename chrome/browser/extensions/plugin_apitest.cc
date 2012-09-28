@@ -22,8 +22,8 @@ using content::NavigationController;
 using content::WebContents;
 using extensions::Extension;
 
-#if defined(OS_WIN) && !defined(NDEBUG)
-// http://crbug.com/123851 : test flakily fails on win debug.
+#if defined(OS_WIN)
+// http://crbug.com/123851 : test flakily fails on win.
 #define MAYBE_PluginLoadUnload DISABLED_PluginLoadUnload
 #else
 #define MAYBE_PluginLoadUnload PluginLoadUnload
