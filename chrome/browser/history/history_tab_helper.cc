@@ -32,6 +32,8 @@
 using content::NavigationEntry;
 using content::WebContents;
 
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(HistoryTabHelper)
+
 HistoryTabHelper::HistoryTabHelper(WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       received_page_title_(false) {

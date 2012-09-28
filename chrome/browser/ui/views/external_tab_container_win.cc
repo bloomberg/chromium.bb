@@ -453,13 +453,13 @@ WebContents* ExternalTabContainerWin::OpenURLFromTab(
         nav_params.page_id = -1;
         nav_params.transition = content::PAGE_TRANSITION_LINK;
 
+        HistoryTabHelper* history_tab_helper =
+            HistoryTabHelper::FromWebContents(tab_contents_->web_contents());
         const history::HistoryAddPageArgs& add_page_args =
-            tab_contents_->history_tab_helper()->
-                CreateHistoryAddPageArgs(
-                    params.url, base::Time::Now(),
-                    false /* did_replace_entry */, nav_params);
-        tab_contents_->history_tab_helper()->
-            UpdateHistoryForNavigation(add_page_args);
+            history_tab_helper->CreateHistoryAddPageArgs(
+                params.url, base::Time::Now(),
+                false /* did_replace_entry */, nav_params);
+        history_tab_helper->UpdateHistoryForNavigation(add_page_args);
 
         return tab_contents_->web_contents();
       }

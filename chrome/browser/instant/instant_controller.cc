@@ -354,10 +354,12 @@ TabContents* InstantController::ReleasePreviewContents(InstantCommitType type) {
     DCHECK_EQ(last_navigation.url, entry->GetURL());
 
     // Add the page to history.
-    preview->history_tab_helper()->UpdateHistoryForNavigation(last_navigation);
+    HistoryTabHelper* history_tab_helper =
+        HistoryTabHelper::FromWebContents(preview->web_contents());
+    history_tab_helper->UpdateHistoryForNavigation(last_navigation);
 
     // Update the page title.
-    preview->history_tab_helper()->UpdateHistoryPageTitle(*entry);
+    history_tab_helper->UpdateHistoryPageTitle(*entry);
 
     // Update the favicon.
     FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(

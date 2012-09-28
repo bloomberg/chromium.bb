@@ -684,8 +684,10 @@ void PrerenderContents::DidNavigate(
 }
 
 void PrerenderContents::CommitHistory(TabContents* tab) {
+  HistoryTabHelper* history_tab_helper =
+    HistoryTabHelper::FromWebContents(tab->web_contents());
   for (size_t i = 0; i < add_page_vector_.size(); ++i)
-    tab->history_tab_helper()->UpdateHistoryForNavigation(add_page_vector_[i]);
+    history_tab_helper->UpdateHistoryForNavigation(add_page_vector_[i]);
 }
 
 Value* PrerenderContents::GetAsValue() const {

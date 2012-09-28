@@ -7,6 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/time.h"
+#include "chrome/browser/common/web_contents_user_data.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -20,9 +21,9 @@ struct HistoryAddPageArgs;
 }
 
 class HistoryTabHelper : public content::WebContentsObserver,
-                         public content::NotificationObserver {
+                         public content::NotificationObserver,
+                         public WebContentsUserData<HistoryTabHelper> {
  public:
-  explicit HistoryTabHelper(content::WebContents* web_contents);
   virtual ~HistoryTabHelper();
 
   // Updates history with the specified navigation. This is called by
@@ -43,6 +44,9 @@ class HistoryTabHelper : public content::WebContentsObserver,
       const content::FrameNavigateParams& params);
 
  private:
+  explicit HistoryTabHelper(content::WebContents* web_contents);
+  friend class WebContentsUserData<HistoryTabHelper>;
+
   // content::WebContentsObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void DidNavigateMainFrame(

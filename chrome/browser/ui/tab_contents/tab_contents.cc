@@ -135,7 +135,7 @@ TabContents::TabContents(WebContents* contents)
   ExternalProtocolObserver::CreateForWebContents(contents);
   favicon_tab_helper_.reset(new FaviconTabHelper(contents));
   find_tab_helper_.reset(new FindTabHelper(contents));
-  history_tab_helper_.reset(new HistoryTabHelper(contents));
+  HistoryTabHelper::CreateForWebContents(contents);
   HungPluginTabHelper::CreateForWebContents(contents);
   infobar_tab_helper_.reset(new InfoBarTabHelper(contents));
   MetroPinTabHelper::CreateForWebContents(contents);
