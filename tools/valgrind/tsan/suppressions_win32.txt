@@ -177,9 +177,9 @@
   fun:media::FFmpegAudioDecoder::DoDecodeBuffer
 }
 {
-  bug_144928
+  bug_144928_a
   ThreadSanitizer:Race
-  fun:google_breakpad::CrashGenerationServer::HandleConnectionRequest
+  fun:google_breakpad::CrashGenerationServer::Handle*
   fun:google_breakpad::CrashGenerationServer::OnPipeConnected
   fun:RtlSetTimer
   fun:RtlSetTimer
@@ -192,20 +192,6 @@
 }
 {
   bug_144928_b
-  ThreadSanitizer:Race
-  fun:google_breakpad::CrashGenerationServer::HandleConnectingState
-  fun:google_breakpad::CrashGenerationServer::OnPipeConnected
-  fun:RtlSetTimer
-  fun:RtlSetTimer
-  fun:TpReleaseTimer
-  fun:TpReleaseTimer
-  fun:RtlMultiByteToUnicodeSize
-  fun:TpCallbackMayRunLong
-  fun:TpCallbackMayRunLong
-  fun:BaseThreadInitThunk
-}
-{
-  bug_144928_c
   ThreadSanitizer:Race
   fun:google_breakpad::CrashGenerationServer::~CrashGenerationServer
   fun:google_breakpad::CrashGenerationServer::`scalar deleting destructor'
