@@ -5817,11 +5817,7 @@
    fun:_ZN10extensions16SettingsFrontendC1ERK13scoped_refptrINS_22SettingsStorageFactoryEEP7Profile
    fun:_ZN10extensions16SettingsFrontend6CreateEP7Profile
    fun:_ZN16ExtensionServiceC1EP7ProfilePK11CommandLineRK8FilePathPN10extensions14ExtensionPrefsEbb
-   fun:_ZN10extensions19ExtensionSystemImpl6Shared4InitEb
-   fun:_ZN10extensions19ExtensionSystemImpl21InitForRegularProfileEb
-   fun:_ZN14ProfileManager22DoFinalInitForServicesEP7Profileb
-   fun:_ZN14ProfileManager11DoFinalInitEP7Profileb
-   fun:_ZN14ProfileManager10AddProfileEP7Profile
+   fun:_ZN10extensions*
 }
 {
    bug_145708
