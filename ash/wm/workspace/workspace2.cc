@@ -63,8 +63,7 @@ bool Workspace2::ShouldMoveToPending() const {
   bool has_visible_non_maximized_window = false;
   for (size_t i = 0; i < window_->children().size(); ++i) {
     aura::Window* child(window_->children()[i]);
-    if (!GetTrackedByWorkspace(child) || !child->TargetVisibility() ||
-        wm::IsWindowMinimized(child))
+    if (!child->TargetVisibility() || wm::IsWindowMinimized(child))
       continue;
     if (WorkspaceManager2::IsMaximized(child))
       return false;
@@ -79,9 +78,8 @@ int Workspace2::GetNumMaximizedWindows() const {
   int count = 0;
   for (size_t i = 0; i < window_->children().size(); ++i) {
     aura::Window* child = window_->children()[i];
-    if (GetTrackedByWorkspace(child) &&
-        (WorkspaceManager2::IsMaximized(child) ||
-         WorkspaceManager2::WillRestoreMaximized(child))) {
+    if (WorkspaceManager2::IsMaximized(child) ||
+        WorkspaceManager2::WillRestoreMaximized(child)) {
       if (++count == 2)
         return count;
     }

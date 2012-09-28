@@ -1037,46 +1037,5 @@ TEST_F(WorkspaceManager2Test, TransientParent) {
   EXPECT_EQ(w2->parent(), w1->parent());
 }
 
-// Verifies changing TrackedByWorkspace works.
-TEST_F(WorkspaceManager2Test, TrackedByWorkspace) {
-  // Create a window maximized.
-  scoped_ptr<Window> w1(CreateTestWindow());
-  w1->Show();
-  wm::ActivateWindow(w1.get());
-  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
-  EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
-  EXPECT_TRUE(w1->IsVisible());
-
-  // Create a second window maximized and mark it not tracked by workspace
-  // manager.
-  scoped_ptr<Window> w2(CreateTestWindowUnparented());
-  w2->SetBounds(gfx::Rect(1, 6, 25, 30));
-  w2->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
-  w2->SetParent(NULL);
-  w2->Show();
-  SetTrackedByWorkspace(w2.get(), false);
-  wm::ActivateWindow(w2.get());
-
-  // Activating |w2| should force it to have the same parent as |w1|.
-  EXPECT_EQ(w1->parent(), w2->parent());
-  EXPECT_TRUE(wm::IsActiveWindow(w2.get()));
-  EXPECT_TRUE(w1->IsVisible());
-  EXPECT_TRUE(w2->IsVisible());
-
-  // Because |w2| isn't tracked we should be able to set the bounds of it.
-  gfx::Rect bounds(w2->bounds());
-  bounds.Offset(4, 5);
-  w2->SetBounds(bounds);
-  EXPECT_EQ(bounds.ToString(), w2->bounds().ToString());
-
-  // Transition it to tracked by worskpace. It should end up in its own
-  // workspace.
-  SetTrackedByWorkspace(w2.get(), true);
-  EXPECT_TRUE(wm::IsActiveWindow(w2.get()));
-  EXPECT_FALSE(w1->IsVisible());
-  EXPECT_TRUE(w2->IsVisible());
-  EXPECT_NE(w1->parent(), w2->parent());
-}
-
 }  // namespace internal
 }  // namespace ash

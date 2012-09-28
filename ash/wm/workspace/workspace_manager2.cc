@@ -199,28 +199,16 @@ void WorkspaceManager2::SetActiveWorkspaceByWindow(Window* window) {
     return;
 
   if (workspace != active_workspace_) {
-    // A window is being made active. In the following cases we reparent to
-    // the active desktop:
-    // . The window is not tracked by workspace code. This is used for tab
-    //   dragging. Since tab dragging needs to happen in the active workspace we
-    //   have to reparent the window (otherwise the window you dragged the tab
-    //   out of would disappear since the workspace changed). Since this case is
-    //   only transiently used (property reset on input release) we don't worry
-    //   about window state. In fact we can't consider window state here as we
-    //   have to allow dragging of a maximized window to work in this case.
-    // . The window persists across all workspaces. For example, the task
-    //   manager is in the desktop worskpace and the current workspace is
-    //   maximized. If we swapped to the desktop you would lose context. Instead
-    //   we reparent.  The exception to this is if the window is maximized (it
-    //   needs its own workspace then) or we're in the process of maximizing. If
-    //   we're in the process of maximizing the window needs its own workspace.
-    if (!GetTrackedByWorkspace(window) ||
-        (GetPersistsAcrossAllWorkspaces(window) && !IsMaximized(window) &&
-         !(wm::IsWindowMinimized(window) && WillRestoreMaximized(window)))) {
+    // If the window persists across all workspaces, move it to the current
+    // workspace.
+    // A popup which was first maximized, is minimized and getts restored has
+    // to go through the SetActiveWorkspace since it persists across workspaces
+    // and is not (yet) maximized (see crbug.com/151698).
+    if (GetPersistsAcrossAllWorkspaces(window) && !IsMaximized(window) &&
+        !(wm::IsWindowMinimized(window) && WillRestoreMaximized(window)))
       ReparentWindow(window, active_workspace_->window(), NULL);
-    } else {
+    else
       SetActiveWorkspace(workspace, ANIMATE_OLD_AND_NEW);
-    }
   }
 }
 
@@ -233,9 +221,6 @@ Window* WorkspaceManager2::GetParentForNewWindow(Window* window) {
       return workspace->window();
     // Fall through to normal logic.
   }
-
-  if (!GetTrackedByWorkspace(window))
-    return active_workspace_->window();
 
   if (IsMaximized(window)) {
     // Wait for the window to be made active before showing the workspace.
@@ -590,28 +575,6 @@ void WorkspaceManager2::OnWorkspaceWindowShowStateChanged(
     }
   }
   UpdateShelfVisibility();
-}
-
-void WorkspaceManager2::OnTrackedByWorkspaceChanged(Workspace2* workspace,
-                                                    aura::Window* window) {
-  Workspace2* new_workspace = NULL;
-  if (IsMaximized(window)) {
-    new_workspace = CreateWorkspace(true);
-    pending_workspaces_.insert(new_workspace);
-  } else if (workspace->is_maximized()) {
-    new_workspace = desktop_workspace();
-  } else {
-    return;
-  }
-  // If the window is active we need to make sure the destination Workspace
-  // window is showing. Otherwise the window will be parented to a hidden window
-  // and lose activation.
-  const bool is_active = wm::IsActiveWindow(window);
-  if (is_active)
-    new_workspace->window()->Show();
-  ReparentWindow(window, new_workspace->window(), NULL);
-  if (is_active)
-    SetActiveWorkspace(new_workspace, ANIMATE_OLD_AND_NEW);
 }
 
 }  // namespace internal
