@@ -103,6 +103,20 @@ static void GetNativeIceServers(
   }
 }
 
+static void GetNativeMediaConstraints(
+    const WebKit::WebVector<WebKit::WebMediaConstraint>& constraints,
+    webrtc::MediaConstraintsInterface::Constraints* native_constraints) {
+  DCHECK(native_constraints);
+  for (size_t i = 0; i < constraints.size(); ++i) {
+    webrtc::MediaConstraintsInterface::Constraint new_constraint;
+    new_constraint.key = constraints[i].m_name.utf8();
+    new_constraint.value = constraints[i].m_value.utf8();
+    DVLOG(3) << "MediaStreamConstraints:" << new_constraint.key
+             << " : " <<  new_constraint.value;
+    native_constraints->push_back(new_constraint);
+  }
+}
+
 // Class mapping responses from calls to libjingle CreateOffer/Answer and
 // the WebKit::WebRTCSessionDescriptionRequest.
 class CreateSessionDescriptionRequest
@@ -149,20 +163,21 @@ class SetSessionDescriptionRequest
   WebKit::WebRTCVoidRequest webkit_request_;
 };
 
-// TODO(perkj): Implement MediaConstraints when WebKit have done so.
 class RTCMediaConstraints : public webrtc::MediaConstraintsInterface {
  public:
   explicit RTCMediaConstraints(
       const WebKit::WebMediaConstraints& constraints) {
+    WebKit::WebVector<WebKit::WebMediaConstraint> mandatory;
+    constraints.getMandatoryConstraints(mandatory);
+    GetNativeMediaConstraints(mandatory, &mandatory_);
+    WebKit::WebVector<WebKit::WebMediaConstraint> optional;
+    constraints.getOptionalConstraints(optional);
+    GetNativeMediaConstraints(optional, &optional_);
   }
   virtual const Constraints& GetMandatory() const OVERRIDE {
-    // TODO(perkj): Implement.
-    NOTIMPLEMENTED();
     return mandatory_;
   }
   virtual const Constraints& GetOptional() const OVERRIDE {
-    // TODO(perkj): Implement.
-    NOTIMPLEMENTED();
     return optional_;
   }
   ~RTCMediaConstraints() {}
