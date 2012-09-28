@@ -7,6 +7,11 @@
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
+
+#if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
+#endif  // OS_MACOSX
+
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
@@ -225,6 +230,32 @@ GpuBlacklist::OsType GpuBlacklist::OsInfo::StringToOsType(
   return kOsUnknown;
 }
 
+GpuBlacklist::MachineModelInfo::MachineModelInfo(
+    const std::string& name_op,
+    const std::string& name_value,
+    const std::string& version_op,
+    const std::string& version_string,
+    const std::string& version_string2) {
+  name_info_.reset(new StringInfo(name_op, name_value));
+  version_info_.reset(
+      new VersionInfo(version_op, "", version_string, version_string2));
+}
+
+GpuBlacklist::MachineModelInfo::~MachineModelInfo() {}
+
+bool GpuBlacklist::MachineModelInfo::Contains(
+    const std::string& name, const Version& version) const {
+  if (!IsValid())
+    return false;
+  if (!name_info_->Contains(name))
+    return false;
+  return version_info_->Contains(version);
+}
+
+bool GpuBlacklist::MachineModelInfo::IsValid() const {
+  return name_info_->IsValid() && version_info_->IsValid();
+}
+
 GpuBlacklist::StringInfo::StringInfo(const std::string& string_op,
                                      const std::string& string_value) {
   op_ = StringToOp(string_op);
@@ -307,6 +338,46 @@ bool GpuBlacklist::FloatInfo::Contains(float value) const {
 }
 
 bool GpuBlacklist::FloatInfo::IsValid() const {
+  return op_ != kUnknown;
+}
+
+GpuBlacklist::IntInfo::IntInfo(const std::string& int_op,
+                               const std::string& int_value,
+                               const std::string& int_value2)
+    : op_(kUnknown),
+      value_(0),
+      value2_(0) {
+  if (!base::StringToInt(int_value, &value_)) {
+    op_ = kUnknown;
+    return;
+  }
+  op_ = StringToNumericOp(int_op);
+  if (op_ == kBetween &&
+      !base::StringToInt(int_value2, &value2_))
+    op_ = kUnknown;
+}
+
+bool GpuBlacklist::IntInfo::Contains(int value) const {
+  if (op_ == kUnknown)
+    return false;
+  if (op_ == kAny)
+    return true;
+  if (op_ == kEQ)
+    return (value == value_);
+  if (op_ == kLT)
+    return (value < value_);
+  if (op_ == kLE)
+    return (value <= value_);
+  if (op_ == kGT)
+    return (value > value_);
+  if (op_ == kGE)
+    return (value >= value_);
+  DCHECK(op_ == kBetween);
+  return ((value_ <= value && value <= value2_) ||
+          (value2_ <= value && value <= value_));
+}
+
+bool GpuBlacklist::IntInfo::IsValid() const {
   return op_ != kUnknown;
 }
 
@@ -552,6 +623,48 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
     dictionary_entry_count++;
   }
 
+  const DictionaryValue* machine_model_value = NULL;
+  if (value->GetDictionary("machine_model", &machine_model_value)) {
+    std::string name_op;
+    std::string name_value;
+    const DictionaryValue* name = NULL;
+    if (machine_model_value->GetDictionary("name", &name)) {
+      name->GetString("op", &name_op);
+      name->GetString("value", &name_value);
+    }
+
+    std::string version_op = "any";
+    std::string version_string;
+    std::string version_string2;
+    const DictionaryValue* version_value = NULL;
+    if (machine_model_value->GetDictionary("version", &version_value)) {
+      version_value->GetString("op", &version_op);
+      version_value->GetString("number", &version_string);
+      version_value->GetString("number2", &version_string2);
+    }
+    if (!entry->SetMachineModelInfo(
+            name_op, name_value, version_op, version_string, version_string2)) {
+      LOG(WARNING) << "Malformed machine_model entry " << entry->id();
+      return NULL;
+    }
+    dictionary_entry_count++;
+  }
+
+  const DictionaryValue* gpu_count_value = NULL;
+  if (value->GetDictionary("gpu_count", &gpu_count_value)) {
+    std::string op;
+    std::string int_value;
+    std::string int_value2;
+    gpu_count_value->GetString("op", &op);
+    gpu_count_value->GetString("value", &int_value);
+    gpu_count_value->GetString("value2", &int_value2);
+    if (!entry->SetGpuCountInfo(op, int_value, int_value2)) {
+      LOG(WARNING) << "Malformed gpu_count entry " << entry->id();
+      return NULL;
+    }
+    dictionary_entry_count++;
+  }
+
   if (top_level) {
     const ListValue* blacklist_value = NULL;
     if (value->GetList("blacklist", &blacklist_value)) {
@@ -760,6 +873,26 @@ bool GpuBlacklist::GpuBlacklistEntry::SetPerfOverallInfo(
   return perf_overall_info_->IsValid();
 }
 
+bool GpuBlacklist::GpuBlacklistEntry::SetMachineModelInfo(
+    const std::string& name_op,
+    const std::string& name_value,
+    const std::string& version_op,
+    const std::string& version_string,
+    const std::string& version_string2) {
+  machine_model_info_.reset(new MachineModelInfo(
+      name_op, name_value, version_op, version_string, version_string2));
+  return machine_model_info_->IsValid();
+}
+
+bool GpuBlacklist::GpuBlacklistEntry::SetGpuCountInfo(
+    const std::string& op,
+    const std::string& int_string,
+    const std::string& int_string2) {
+  gpu_count_info_.reset(
+      new IntInfo(op, int_string, int_string2));
+  return gpu_count_info_->IsValid();
+}
+
 bool GpuBlacklist::GpuBlacklistEntry::SetBlacklistedFeatures(
     const std::vector<std::string>& blacklisted_features) {
   size_t size = blacklisted_features.size();
@@ -831,6 +964,7 @@ GpuBlacklist::GpuBlacklistEntry::StringToMultiGpuCategory(
 
 bool GpuBlacklist::GpuBlacklistEntry::Contains(
     OsType os_type, const Version& os_version,
+    const std::string& machine_model_name, const Version& machine_model_version,
     const content::GPUInfo& gpu_info) const {
   DCHECK(os_type != kOsAny);
   if (os_info_.get() != NULL && !os_info_->Contains(os_type, os_version))
@@ -908,8 +1042,15 @@ bool GpuBlacklist::GpuBlacklistEntry::Contains(
       (gpu_info.performance_stats.overall == 0.0 ||
        !perf_overall_info_->Contains(gpu_info.performance_stats.overall)))
     return false;
+  if (machine_model_info_.get() != NULL &&
+      !machine_model_info_->Contains(machine_model_name, machine_model_version))
+    return false;
+  if (gpu_count_info_.get() != NULL &&
+      !gpu_count_info_->Contains(gpu_info.secondary_gpus.size() + 1))
+    return false;
   for (size_t i = 0; i < exceptions_.size(); ++i) {
-    if (exceptions_[i]->Contains(os_type, os_version, gpu_info))
+    if (exceptions_[i]->Contains(os_type, os_version, machine_model_name,
+                                 machine_model_version, gpu_info))
       return false;
   }
   return true;
@@ -1051,8 +1192,10 @@ GpuBlacklist::Decision GpuBlacklist::MakeBlacklistDecision(
   }
   DCHECK(os_version != NULL);
 
+  CollectCurrentMachineModelInfo();
   for (size_t i = 0; i < blacklist_.size(); ++i) {
-    if (blacklist_[i]->Contains(os, *os_version, gpu_info)) {
+    if (blacklist_[i]->Contains(os, *os_version, current_machine_model_name_,
+                                *current_machine_model_version_, gpu_info)) {
       if (!blacklist_[i]->disabled()) {
         type |= blacklist_[i]->GetGpuFeatureType();
         if (blacklist_[i]->GetGpuSwitchingOption() !=
@@ -1168,6 +1311,27 @@ GpuBlacklist::IsEntrySupportedByCurrentBrowserVersion(
     return kUnsupported;
   }
   return kSupported;
+}
+
+void GpuBlacklist::CollectCurrentMachineModelInfo() {
+  if (!current_machine_model_name_.empty())
+    return;
+  std::string model_name;
+  int32 model_major = 0, model_minor = 0;
+#if defined(OS_MACOSX)
+  base::mac::ParseModelIdentifier(base::mac::GetModelIdentifier(),
+                                  &model_name, &model_major, &model_minor);
+#endif  // OS_MACOSX
+  current_machine_model_name_ = model_name;
+  std::string model_version =
+      base::IntToString(model_major) + "." + base::IntToString(model_minor);
+  current_machine_model_version_.reset(new Version(model_version));
+}
+
+void GpuBlacklist::SetCurrentMachineModelInfoForTesting(
+    const std::string& model_name, const std::string& model_version) {
+  current_machine_model_name_ = model_name;
+  current_machine_model_version_.reset(new Version(model_version));
 }
 
 // static

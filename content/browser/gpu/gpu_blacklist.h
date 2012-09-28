@@ -99,6 +99,7 @@ class CONTENT_EXPORT GpuBlacklist {
   FRIEND_TEST_ALL_PREFIXES(GpuBlacklistTest, UnknownField);
   FRIEND_TEST_ALL_PREFIXES(GpuBlacklistTest, UnknownExceptionField);
   FRIEND_TEST_ALL_PREFIXES(GpuBlacklistTest, UnknownFeature);
+  FRIEND_TEST_ALL_PREFIXES(GpuBlacklistTest, DualGpuModel);
 
   enum BrowserVersionSupport {
     kSupported,
@@ -218,6 +219,44 @@ class CONTENT_EXPORT GpuBlacklist {
     float value2_;
   };
 
+  class IntInfo {
+   public:
+    IntInfo(const std::string& int_op,
+            const std::string& int_value,
+            const std::string& int_value2);
+
+    // Determines if a given int is included in the IntInfo.
+    bool Contains(int value) const;
+
+    // Determines if the IntInfo contains valid information.
+    bool IsValid() const;
+
+   private:
+    NumericOp op_;
+    int value_;
+    int value2_;
+  };
+
+  class MachineModelInfo {
+   public:
+    MachineModelInfo(const std::string& name_op,
+                     const std::string& name_value,
+                     const std::string& version_op,
+                     const std::string& version_string,
+                     const std::string& version_string2);
+    ~MachineModelInfo();
+
+    // Determines if a given name/version is included in the MachineModelInfo.
+    bool Contains(const std::string& name, const Version& version) const;
+
+    // Determines if the MachineModelInfo contains valid information.
+    bool IsValid() const;
+
+   private:
+    scoped_ptr<StringInfo> name_info_;
+    scoped_ptr<VersionInfo> version_info_;
+  };
+
   class GpuBlacklistEntry;
   typedef scoped_refptr<GpuBlacklistEntry> ScopedGpuBlacklistEntry;
 
@@ -228,9 +267,12 @@ class CONTENT_EXPORT GpuBlacklist {
     static ScopedGpuBlacklistEntry GetGpuBlacklistEntryFromValue(
         const base::DictionaryValue* value, bool top_level);
 
-    // Determines if a given os/gc/driver is included in the Entry set.
+    // Determines if a given os/gc/machine_model/driver is included in the
+    // Entry set.
     bool Contains(OsType os_type,
                   const Version& os_version,
+                  const std::string& machine_model_name,
+                  const Version& machine_model_version,
                   const content::GPUInfo& gpu_info) const;
 
     // Returns the OsType.
@@ -330,6 +372,16 @@ class CONTENT_EXPORT GpuBlacklist {
                             const std::string& float_string,
                             const std::string& float_string2);
 
+    bool SetMachineModelInfo(const std::string& name_op,
+                             const std::string& name_value,
+                             const std::string& version_op,
+                             const std::string& version_string,
+                             const std::string& version_string2);
+
+    bool SetGpuCountInfo(const std::string& op,
+                         const std::string& int_string,
+                         const std::string& int_string2);
+
     bool SetBlacklistedFeatures(
         const std::vector<std::string>& blacklisted_features);
 
@@ -360,6 +412,8 @@ class CONTENT_EXPORT GpuBlacklist {
     scoped_ptr<FloatInfo> perf_graphics_info_;
     scoped_ptr<FloatInfo> perf_gaming_info_;
     scoped_ptr<FloatInfo> perf_overall_info_;
+    scoped_ptr<MachineModelInfo> machine_model_info_;
+    scoped_ptr<IntInfo> gpu_count_info_;
     Decision decision_;
     std::vector<ScopedGpuBlacklistEntry> exceptions_;
     bool contains_unknown_fields_;
@@ -388,6 +442,12 @@ class CONTENT_EXPORT GpuBlacklist {
 
   static NumericOp StringToNumericOp(const std::string& op);
 
+  // Collect the current machine model info if it's not already available.
+  void CollectCurrentMachineModelInfo();
+
+  void SetCurrentMachineModelInfoForTesting(const std::string& name,
+                                            const std::string& version);
+
   scoped_ptr<Version> version_;
   std::vector<ScopedGpuBlacklistEntry> blacklist_;
 
@@ -401,6 +461,9 @@ class CONTENT_EXPORT GpuBlacklist {
   uint32 max_entry_id_;
 
   bool contains_unknown_fields_;
+
+  std::string current_machine_model_name_;
+  scoped_ptr<Version> current_machine_model_version_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuBlacklist);
 };
