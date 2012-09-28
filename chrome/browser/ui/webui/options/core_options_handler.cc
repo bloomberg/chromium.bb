@@ -136,6 +136,7 @@ void CoreOptionsHandler::Observe(int type,
 
 void CoreOptionsHandler::RegisterMessages() {
   registrar_.Init(Profile::FromWebUI(web_ui())->GetPrefs());
+  local_state_registrar_.Init(g_browser_process->local_state());
 
   web_ui()->RegisterMessageCallback("coreOptionsInitialize",
       base::Bind(&CoreOptionsHandler::HandleInitialize,
@@ -178,24 +179,27 @@ void CoreOptionsHandler::HandleInitialize(const ListValue* args) {
 }
 
 base::Value* CoreOptionsHandler::FetchPref(const std::string& pref_name) {
-  PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
-
-  const PrefService::Preference* pref =
-      pref_service->FindPreference(pref_name.c_str());
-  if (!pref)
-    return base::Value::CreateNullValue();
-
-  return CreateValueForPref(pref, NULL);
+  return CreateValueForPref(pref_name, std::string());
 }
 
 void CoreOptionsHandler::ObservePref(const std::string& pref_name) {
-  registrar_.Add(pref_name.c_str(), this);
+  if (g_browser_process->local_state()->FindPreference(pref_name.c_str()))
+    local_state_registrar_.Add(pref_name.c_str(), this);
+  else
+    registrar_.Add(pref_name.c_str(), this);
+}
+
+void CoreOptionsHandler::StopObservingPref(const std::string& pref_name) {
+  if (g_browser_process->local_state()->FindPreference(pref_name.c_str()))
+    local_state_registrar_.Remove(pref_name.c_str(), this);
+  else
+    registrar_.Remove(pref_name.c_str(), this);
 }
 
 void CoreOptionsHandler::SetPref(const std::string& pref_name,
                                  const base::Value* value,
                                  const std::string& metric) {
-  PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
+  PrefService* pref_service = FindServiceForPref(pref_name);
 
   switch (value->GetType()) {
     case base::Value::TYPE_BOOLEAN:
@@ -215,7 +219,7 @@ void CoreOptionsHandler::SetPref(const std::string& pref_name,
 
 void CoreOptionsHandler::ClearPref(const std::string& pref_name,
                                    const std::string& metric) {
-  PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
+  PrefService* pref_service = FindServiceForPref(pref_name);
   pref_service->ClearPref(pref_name.c_str());
 
   if (!metric.empty())
@@ -240,16 +244,8 @@ void CoreOptionsHandler::ProcessUserMetric(const base::Value* value,
 void CoreOptionsHandler::NotifyPrefChanged(
     const std::string& pref_name,
     const std::string& controlling_pref_name) {
-  const PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
-  const PrefService::Preference* pref =
-      pref_service->FindPreference(pref_name.c_str());
-  if (!pref)
-    return;
-  const PrefService::Preference* controlling_pref =
-      !controlling_pref_name.empty() ?
-          pref_service->FindPreference(controlling_pref_name.c_str()) : NULL;
-
-  scoped_ptr<base::Value> value(CreateValueForPref(pref, controlling_pref));
+  scoped_ptr<base::Value> value(
+      CreateValueForPref(pref_name, controlling_pref_name));
   DispatchPrefChangeNotification(pref_name, value.Pass());
 }
 
@@ -264,26 +260,35 @@ void CoreOptionsHandler::DispatchPrefChangeNotification(
   result_value.Append(value.release());
   for (PreferenceCallbackMap::const_iterator iter = range.first;
        iter != range.second; ++iter) {
-    const std::wstring& callback_function = iter->second;
-    web_ui()->CallJavascriptFunction(WideToASCII(callback_function),
-                                     result_value);
+    const std::string& callback_function = iter->second;
+    web_ui()->CallJavascriptFunction(callback_function, result_value);
   }
 }
 
-DictionaryValue* CoreOptionsHandler::CreateValueForPref(
-    const PrefService::Preference* pref,
-    const PrefService::Preference* controlling_pref) {
+base::Value* CoreOptionsHandler::CreateValueForPref(
+    const std::string& pref_name,
+    const std::string& controlling_pref_name) {
+  const PrefService* pref_service = FindServiceForPref(pref_name.c_str());
+  const PrefService::Preference* pref =
+      pref_service->FindPreference(pref_name.c_str());
+  if (!pref) {
+    NOTREACHED();
+    return base::Value::CreateNullValue();
+  }
+  const PrefService::Preference* controlling_pref =
+      pref_service->FindPreference(controlling_pref_name.c_str());
+  if (!controlling_pref)
+    controlling_pref = pref;
+
   DictionaryValue* dict = new DictionaryValue;
   dict->Set("value", pref->GetValue()->DeepCopy());
-  if (!controlling_pref)  // No controlling pref is managing actual pref.
-    controlling_pref = pref;  // This means pref is controlling itself.
-  if (controlling_pref->IsManaged()) {
+  if (controlling_pref->IsManaged())
     dict->SetString("controlledBy", "policy");
-  } else if (controlling_pref->IsExtensionControlled()) {
+  else if (controlling_pref->IsExtensionControlled())
     dict->SetString("controlledBy", "extension");
-  } else if (controlling_pref->IsRecommended()) {
+  else if (controlling_pref->IsRecommended())
     dict->SetString("controlledBy", "recommended");
-  }
+
   const base::Value* recommended_value =
       controlling_pref->GetRecommendedValue();
   if (recommended_value)
@@ -292,8 +297,11 @@ DictionaryValue* CoreOptionsHandler::CreateValueForPref(
   return dict;
 }
 
-void CoreOptionsHandler::StopObservingPref(const std::string& path) {
-  registrar_.Remove(path.c_str(), this);
+PrefService* CoreOptionsHandler::FindServiceForPref(
+    const std::string& pref_name) {
+  return g_browser_process->local_state()->FindPreference(pref_name.c_str()) ?
+      g_browser_process->local_state() :
+      Profile::FromWebUI(web_ui())->GetPrefs();
 }
 
 void CoreOptionsHandler::HandleFetchPrefs(const ListValue* args) {
@@ -337,7 +345,7 @@ void CoreOptionsHandler::HandleObservePrefs(const ListValue* args) {
   DCHECK_GE(static_cast<int>(args->GetSize()), 2);
 
   // Get preference change callback function name.
-  string16 callback_func_name;
+  std::string callback_func_name;
   if (!args->GetString(0, &callback_func_name))
     return;
 
@@ -357,8 +365,7 @@ void CoreOptionsHandler::HandleObservePrefs(const ListValue* args) {
       ObservePref(pref_name);
 
     pref_callback_map_.insert(
-        PreferenceCallbackMap::value_type(pref_name,
-                                          UTF16ToWideHack(callback_func_name)));
+        PreferenceCallbackMap::value_type(pref_name, callback_func_name));
   }
 }
 

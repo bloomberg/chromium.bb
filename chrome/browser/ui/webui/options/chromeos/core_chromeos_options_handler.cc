@@ -124,19 +124,9 @@ base::Value* CoreChromeOSOptionsHandler::FetchPref(
     return value;
   }
   if (!CrosSettings::IsCrosSettings(pref_name)) {
-    // Specially handle kUseSharedProxies because kProxy controls it to
-    // determine if it's managed by policy/extension.
-    if (pref_name == prefs::kUseSharedProxies) {
-      PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
-      const PrefService::Preference* pref =
-          pref_service->FindPreference(prefs::kUseSharedProxies);
-      if (!pref)
-        return base::Value::CreateNullValue();
-      const PrefService::Preference* controlling_pref =
-          pref_service->FindPreference(prefs::kProxy);
-      return CreateValueForPref(pref, controlling_pref);
-    }
-    return ::options::CoreOptionsHandler::FetchPref(pref_name);
+    std::string controlling_pref =
+        pref_name == prefs::kUseSharedProxies ? prefs::kProxy : std::string();
+    return CreateValueForPref(pref_name, controlling_pref);
   }
 
   const base::Value* pref_value = CrosSettings::Get()->GetPref(pref_name);
@@ -144,6 +134,7 @@ base::Value* CoreChromeOSOptionsHandler::FetchPref(
     return base::Value::CreateNullValue();
 
   // Decorate pref value as CoreOptionsHandler::CreateValueForPref() does.
+  // TODO(estade): seems that this should replicate CreateValueForPref less.
   DictionaryValue* dict = new DictionaryValue;
   if (pref_name == kAccountsPrefUsers)
     dict->Set("value", CreateUsersWhitelist(pref_value));

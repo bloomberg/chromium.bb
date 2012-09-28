@@ -175,11 +175,6 @@ class BrowserOptionsHandler
   // one item, the zoom factor as a numeric value.
   void HandleDefaultZoomFactor(const ListValue* args);
 
-  // Callback for the "Check for server certificate revocation" checkbox. This
-  // is called if the user toggles the "Check for server certificate revocation"
-  // checkbox.
-  void HandleCheckRevocationCheckbox(const ListValue* args);
-
   // Callback for the "Use SSL 3.0" checkbox. This is called if the user toggles
   // the "Use SSL 3.0" checkbox.
   void HandleUseSSL3Checkbox(const ListValue* args);
@@ -245,15 +240,6 @@ class BrowserOptionsHandler
   void PerformFactoryResetRestart(const base::ListValue* args);
 #endif
 
-#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
-  // Sets up the checked state for the "Continue running background apps..."
-  // checkbox.
-  void SetupBackgroundModeSettings();
-
-  // Callback for the "Continue running background apps..." checkbox.
-  void HandleBackgroundModeCheckbox(const ListValue* args);
-#endif
-
   // Setup the checked state for the metrics reporting checkbox.
   void SetupMetricsReportingCheckbox();
 
@@ -274,9 +260,6 @@ class BrowserOptionsHandler
 
   // Setup the proxy settings section UI.
   void SetupProxySettingsSection();
-
-  // Setup the checked state for SSL related checkboxes.
-  void SetupSSLConfigSettings();
 
 #if defined(OS_CHROMEOS)
   // Setup the accessibility features for ChromeOS.
@@ -310,13 +293,6 @@ class BrowserOptionsHandler
   BooleanPrefMember cloud_print_connector_enabled_;
   bool cloud_print_connector_ui_enabled_;
   scoped_ptr<CloudPrintSetupHandler> cloud_print_setup_handler_;
-#endif
-
-  // SSLConfigService prefs.
-  BooleanPrefMember rev_checking_enabled_;
-
-#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
-  BooleanPrefMember background_mode_enabled_;
 #endif
 
   StringPrefMember auto_open_files_;

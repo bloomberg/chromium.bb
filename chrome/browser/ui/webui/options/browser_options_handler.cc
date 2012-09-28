@@ -523,16 +523,6 @@ void BrowserOptionsHandler::RegisterMessages() {
       base::Bind(&BrowserOptionsHandler::ShowNetworkProxySettings,
                  base::Unretained(this)));
 #endif
-  web_ui()->RegisterMessageCallback(
-      "checkRevocationCheckboxAction",
-      base::Bind(&BrowserOptionsHandler::HandleCheckRevocationCheckbox,
-                 base::Unretained(this)));
-#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
-  web_ui()->RegisterMessageCallback(
-      "backgroundModeAction",
-      base::Bind(&BrowserOptionsHandler::HandleBackgroundModeCheckbox,
-                 base::Unretained(this)));
-#endif
 #if defined(OS_CHROMEOS)
   web_ui()->RegisterMessageCallback(
       "openWallpaperManager",
@@ -618,14 +608,6 @@ void BrowserOptionsHandler::InitializeHandler() {
                                       this);
 #endif
 
-  rev_checking_enabled_.Init(prefs::kCertRevocationCheckingEnabled,
-                             g_browser_process->local_state(), this);
-
-#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
-  background_mode_enabled_.Init(prefs::kBackgroundModeEnabled,
-                                g_browser_process->local_state(), this);
-#endif
-
   auto_open_files_.Init(prefs::kDownloadExtensionsToOpen, prefs, this);
   default_font_size_.Init(prefs::kWebKitDefaultFontSize, prefs, this);
   default_zoom_level_.Init(prefs::kDefaultZoomLevel, prefs, this);
@@ -648,7 +630,6 @@ void BrowserOptionsHandler::InitializePage() {
   SetupPageZoomSelector();
   SetupAutoOpenFileTypes();
   SetupProxySettingsSection();
-  SetupSSLConfigSettings();
 #if !defined(OS_CHROMEOS)
   if (cloud_print_connector_ui_enabled_) {
     SetupCloudPrintConnectorSection();
@@ -666,9 +647,6 @@ void BrowserOptionsHandler::InitializePage() {
         "BrowserOptions.enableFactoryResetSection");
   }
 
-#endif
-#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
-  SetupBackgroundModeSettings();
 #endif
 }
 
@@ -901,10 +879,6 @@ void BrowserOptionsHandler::Observe(
       SetupFontSizeSelector();
     } else if (*pref_name == prefs::kDefaultZoomLevel) {
       SetupPageZoomSelector();
-#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
-    } else if (*pref_name == prefs::kBackgroundModeEnabled) {
-      SetupBackgroundModeSettings();
-#endif
     } else {
       NOTREACHED();
     }
@@ -1174,53 +1148,6 @@ void BrowserOptionsHandler::HandleDefaultZoomFactor(const ListValue* args) {
         WebKit::WebView::zoomFactorToZoomLevel(zoom_factor));
   }
 }
-
-void BrowserOptionsHandler::HandleCheckRevocationCheckbox(
-    const ListValue* args) {
-  std::string checked_str = UTF16ToUTF8(ExtractStringValue(args));
-  bool enabled = checked_str == "true";
-  content::RecordAction(
-      enabled ?
-          UserMetricsAction("Options_CheckCertRevocation_Enable") :
-          UserMetricsAction("Options_CheckCertRevocation_Disable"));
-  rev_checking_enabled_.SetValue(enabled);
-}
-
-#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
-void BrowserOptionsHandler::HandleBackgroundModeCheckbox(
-    const ListValue* args) {
-  std::string checked_str = UTF16ToUTF8(ExtractStringValue(args));
-  bool enabled = checked_str == "true";
-  content::RecordAction(
-      enabled ?
-          UserMetricsAction("Options_BackgroundMode_Enable") :
-          UserMetricsAction("Options_BackgroundMode_Disable"));
-  background_mode_enabled_.SetValue(enabled);
-}
-
-void BrowserOptionsHandler::SetupBackgroundModeSettings() {
-    base::FundamentalValue checked(background_mode_enabled_.GetValue());
-    PrefService* service = g_browser_process->local_state();
-    DCHECK(service);
-    const PrefService::Preference* pref =
-        service->FindPreference(prefs::kBackgroundModeEnabled);
-    DCHECK(pref);
-    base::FundamentalValue disabled(!pref->IsUserModifiable());
-    std::string controlled_by_str;
-    if (pref->IsManaged())
-      controlled_by_str = "policy";
-    else if (pref->IsExtensionControlled())
-      controlled_by_str = "extension";
-    else if (pref->IsRecommended())
-      controlled_by_str = "recommended";
-    base::StringValue controlled_by(controlled_by_str);
-    web_ui()->CallJavascriptFunction(
-        "BrowserOptions.setBackgroundModeCheckboxState",
-        checked,
-        disabled,
-        controlled_by);
-}
-#endif
 
 #if !defined(OS_CHROMEOS)
 void BrowserOptionsHandler::ShowNetworkProxySettings(const ListValue* args) {
@@ -1504,13 +1431,6 @@ void BrowserOptionsHandler::SetupProxySettingsSection() {
   web_ui()->CallJavascriptFunction(
       "BrowserOptions.setupProxySettingsSection", disabled, label);
 #endif  // !defined(OS_CHROMEOS)
-}
-
-void BrowserOptionsHandler::SetupSSLConfigSettings() {
-  base::FundamentalValue checked(rev_checking_enabled_.GetValue());
-  base::FundamentalValue disabled(rev_checking_enabled_.IsManaged());
-  web_ui()->CallJavascriptFunction(
-      "BrowserOptions.setCheckRevocationCheckboxState", checked, disabled);
 }
 
 }  // namespace options

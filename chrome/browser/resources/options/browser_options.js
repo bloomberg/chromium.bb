@@ -407,10 +407,6 @@ cr.define('options', function() {
                       ['Options_ManageSSLCertificates']);
         };
       }
-      $('sslCheckRevocation').onclick = function(event) {
-        chrome.send('checkRevocationCheckboxAction',
-            [String($('sslCheckRevocation').checked)]);
-      };
 
       // Cloud Print section.
       // 'cloudPrintProxyEnabled' is true for Chrome branded builds on
@@ -456,17 +452,6 @@ cr.define('options', function() {
           OptionsPage.navigateToPage('display');
           chrome.send('coreOptionsUserMetricsAction',
                       ['Options_Display']);
-        };
-      }
-
-      // Background mode section.
-      if ($('backgroundModeCheckbox')) {
-        cr.defineProperty($('backgroundModeCheckbox'),
-            'controlledBy',
-            cr.PropertyKind.ATTR);
-        $('backgroundModeCheckbox').onclick = function(event) {
-          chrome.send('backgroundModeAction',
-              [String($('backgroundModeCheckbox').checked)]);
         };
       }
 
@@ -1123,27 +1108,6 @@ cr.define('options', function() {
     },
 
     /**
-     * Set the checked state for the sslCheckRevocation checkbox.
-     * @private
-     */
-    setCheckRevocationCheckboxState_: function(checked, disabled) {
-      $('sslCheckRevocation').checked = checked;
-      $('sslCheckRevocation').disabled = disabled;
-    },
-
-    /**
-     * Set the checked state for the backgroundModeCheckbox element.
-     * @private
-     */
-    setBackgroundModeCheckboxState_: function(
-        checked, disabled, controlled_by) {
-      $('backgroundModeCheckbox').checked = checked;
-      $('backgroundModeCheckbox').disabled = disabled;
-      $('backgroundModeCheckbox').controlledBy = controlled_by;
-      OptionsPage.updateManagedBannerVisibility();
-    },
-
-    /**
      * Set the Cloud Print proxy UI to enabled, disabled, or processing.
      * @private
      */
@@ -1330,9 +1294,7 @@ cr.define('options', function() {
     'removeBluetoothDevice',
     'removeCloudPrintConnectorSection',
     'setAutoOpenFileTypesDisplayed',
-    'setBackgroundModeCheckboxState',
     'setBluetoothState',
-    'setCheckRevocationCheckboxState',
     'setFontSize',
     'setGtkThemeButtonEnabled',
     'setHighContrastCheckboxState',
