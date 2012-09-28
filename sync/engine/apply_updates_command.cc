@@ -66,11 +66,10 @@ SyncerError ApplyUpdatesCommand::ModelChangingExecuteImpl(
       &trans, server_type_restriction, &handles);
 
   UpdateApplicator applicator(
-      session->context()->resolver(),
       dir->GetCryptographer(&trans),
-      handles.begin(), handles.end(), session->routing_info(),
+      session->routing_info(),
       session->status_controller().group_restriction());
-  while (applicator.AttemptOneApplication(&trans)) {}
+  applicator.AttemptApplications(&trans, handles);
   applicator.SaveProgressIntoSessionState(
       session->mutable_status_controller()->mutable_conflict_progress(),
       session->mutable_status_controller()->mutable_update_progress());

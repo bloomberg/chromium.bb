@@ -18,86 +18,85 @@ using std::vector;
 
 namespace syncer {
 
-UpdateApplicator::UpdateApplicator(ConflictResolver* resolver,
-                                   Cryptographer* cryptographer,
-                                   const UpdateIterator& begin,
-                                   const UpdateIterator& end,
+using syncable::ID;
+
+UpdateApplicator::UpdateApplicator(Cryptographer* cryptographer,
                                    const ModelSafeRoutingInfo& routes,
                                    ModelSafeGroup group_filter)
-    : resolver_(resolver),
-      cryptographer_(cryptographer),
-      begin_(begin),
-      end_(end),
-      pointer_(begin),
+    : cryptographer_(cryptographer),
       group_filter_(group_filter),
-      progress_(false),
       routing_info_(routes),
-      application_results_(end - begin) {
-  size_t item_count = end - begin;
-  DVLOG(1) << "UpdateApplicator created for " << item_count << " items.";
+      application_results_() {
 }
 
 UpdateApplicator::~UpdateApplicator() {
 }
 
-// Returns true if there's more to do.
-bool UpdateApplicator::AttemptOneApplication(
-    syncable::WriteTransaction* trans) {
-  // If there are no updates left to consider, we're done.
-  if (end_ == begin_)
-    return false;
-  if (pointer_ == end_) {
-    if (!progress_)
-      return false;
+// Attempt to apply all updates, using multiple passes if necessary.
+//
+// Some updates must be applied in order.  For example, children must be created
+// after their parent folder is created.  This function runs an O(n^2) algorithm
+// that will keep trying until there is nothing left to apply, or it stops
+// making progress, which would indicate that the hierarchy is invalid.
+//
+// The update applicator also has to deal with simple conflicts, which occur
+// when an item is modified on both the server and the local model, and
+// encryption conflicts.  There's not much we can do about them here, so we
+// don't bother re-processing them on subsequent passes.
+void UpdateApplicator::AttemptApplications(
+    syncable::WriteTransaction* trans,
+    const std::vector<int64>& handles) {
+  std::vector<int64> to_apply = handles;
+  DVLOG(1) << "UpdateApplicator running over " << to_apply.size() << " items.";
+  while (!to_apply.empty()) {
+    std::vector<int64> to_reapply;
 
-    DVLOG(1) << "UpdateApplicator doing additional pass.";
-    pointer_ = begin_;
-    progress_ = false;
+    for (UpdateIterator i = to_apply.begin(); i != to_apply.end(); ++i) {
+      syncable::Entry read_entry(trans, syncable::GET_BY_HANDLE, *i);
+      if (SkipUpdate(read_entry)) {
+        continue;
+      }
 
-    // Clear the tracked failures to avoid double-counting.
-    application_results_.ClearConflicts();
+      syncable::MutableEntry entry(trans, syncable::GET_BY_HANDLE, *i);
+      UpdateAttemptResponse result = AttemptToUpdateEntry(
+          trans, &entry, cryptographer_);
+
+      switch (result) {
+        case SUCCESS:
+          application_results_.AddSuccess(entry.Get(ID));
+          break;
+        case CONFLICT_SIMPLE:
+          application_results_.AddSimpleConflict(entry.Get(ID));
+          break;
+        case CONFLICT_ENCRYPTION:
+          application_results_.AddEncryptionConflict(entry.Get(ID));
+          break;
+        case CONFLICT_HIERARCHY:
+          application_results_.AddHierarchyConflict(entry.Get(ID));
+          // The decision to classify these as hierarchy conflcits is tentative.
+          // If we make any progress this round, we'll clear the hierarchy
+          // conflict count and attempt to reapply these updates.
+          to_reapply.push_back(*i);
+          break;
+        default:
+          NOTREACHED();
+          break;
+      }
+    }
+
+    if (to_reapply.size() == to_apply.size()) {
+      // We made no progress.  Must be stubborn hierarchy conflicts.
+      // Break out early, leaving some updates unapplied.
+      break;
+    }
+
+    // We made some progress, so prepare for what might be another iteration.
+    // If everything went well, to_reapply will be empty and we'll break out on
+    // the while condition.
+    application_results_.ClearHierarchyConflicts();
+    to_apply.swap(to_reapply);
+    to_reapply.clear();
   }
-
-  syncable::Entry read_only(trans, syncable::GET_BY_HANDLE, *pointer_);
-  if (SkipUpdate(read_only)) {
-    Advance();
-    return true;
-  }
-
-  syncable::MutableEntry entry(trans, syncable::GET_BY_HANDLE, *pointer_);
-  UpdateAttemptResponse updateResponse = AttemptToUpdateEntry(
-      trans, &entry, resolver_, cryptographer_);
-  switch (updateResponse) {
-    case SUCCESS:
-      Advance();
-      progress_ = true;
-      application_results_.AddSuccess(entry.Get(syncable::ID));
-      break;
-    case CONFLICT_SIMPLE:
-      pointer_++;
-      application_results_.AddSimpleConflict(entry.Get(syncable::ID));
-      break;
-    case CONFLICT_ENCRYPTION:
-      pointer_++;
-      application_results_.AddEncryptionConflict(entry.Get(syncable::ID));
-      break;
-    case CONFLICT_HIERARCHY:
-      pointer_++;
-      application_results_.AddHierarchyConflict(entry.Get(syncable::ID));
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
-  DVLOG(1) << "Apply Status for " << entry.Get(syncable::META_HANDLE)
-           << " is " << updateResponse;
-
-  return true;
-}
-
-void UpdateApplicator::Advance() {
-  --end_;
-  *pointer_ = *end_;
 }
 
 bool UpdateApplicator::SkipUpdate(const syncable::Entry& entry) {
@@ -119,46 +118,38 @@ bool UpdateApplicator::SkipUpdate(const syncable::Entry& entry) {
   return false;
 }
 
-bool UpdateApplicator::AllUpdatesApplied() const {
-  return application_results_.no_conflicts() && begin_ == end_;
-}
-
 void UpdateApplicator::SaveProgressIntoSessionState(
     sessions::ConflictProgress* conflict_progress,
     sessions::UpdateProgress* update_progress) {
-  DCHECK(begin_ == end_ || ((pointer_ == end_) && !progress_))
-      << "SaveProgress called before updates exhausted.";
-
   application_results_.SaveProgress(conflict_progress, update_progress);
 }
 
-UpdateApplicator::ResultTracker::ResultTracker(size_t num_results) {
-  successful_ids_.reserve(num_results);
+UpdateApplicator::ResultTracker::ResultTracker() {
 }
 
 UpdateApplicator::ResultTracker::~ResultTracker() {
 }
 
 void UpdateApplicator::ResultTracker::AddSimpleConflict(syncable::Id id) {
-  conflicting_ids_.push_back(id);
+  conflicting_ids_.insert(id);
 }
 
 void UpdateApplicator::ResultTracker::AddEncryptionConflict(syncable::Id id) {
-  encryption_conflict_ids_.push_back(id);
+  encryption_conflict_ids_.insert(id);
 }
 
 void UpdateApplicator::ResultTracker::AddHierarchyConflict(syncable::Id id) {
-  hierarchy_conflict_ids_.push_back(id);
+  hierarchy_conflict_ids_.insert(id);
 }
 
 void UpdateApplicator::ResultTracker::AddSuccess(syncable::Id id) {
-  successful_ids_.push_back(id);
+  successful_ids_.insert(id);
 }
 
 void UpdateApplicator::ResultTracker::SaveProgress(
     sessions::ConflictProgress* conflict_progress,
     sessions::UpdateProgress* update_progress) {
-  vector<syncable::Id>::const_iterator i;
+  std::set<syncable::Id>::const_iterator i;
   for (i = conflicting_ids_.begin(); i != conflicting_ids_.end(); ++i) {
     conflict_progress->AddSimpleConflictingItemById(*i);
     update_progress->AddAppliedUpdate(CONFLICT_SIMPLE, *i);
@@ -179,9 +170,7 @@ void UpdateApplicator::ResultTracker::SaveProgress(
   }
 }
 
-void UpdateApplicator::ResultTracker::ClearConflicts() {
-  conflicting_ids_.clear();
-  encryption_conflict_ids_.clear();
+void UpdateApplicator::ResultTracker::ClearHierarchyConflicts() {
   hierarchy_conflict_ids_.clear();
 }
 

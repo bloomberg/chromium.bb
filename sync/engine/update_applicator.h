@@ -37,18 +37,14 @@ class UpdateApplicator {
  public:
   typedef std::vector<int64>::iterator UpdateIterator;
 
-  UpdateApplicator(ConflictResolver* resolver,
-                   Cryptographer* cryptographer,
-                   const UpdateIterator& begin,
-                   const UpdateIterator& end,
+  UpdateApplicator(Cryptographer* cryptographer,
                    const ModelSafeRoutingInfo& routes,
                    ModelSafeGroup group_filter);
   ~UpdateApplicator();
 
-  // returns true if there's more we can do.
-  bool AttemptOneApplication(syncable::WriteTransaction* trans);
-  // return true if we've applied all updates.
-  bool AllUpdatesApplied() const;
+  // Attempt to apply the specified updates.
+  void AttemptApplications(syncable::WriteTransaction* trans,
+                           const std::vector<int64>& handles);
 
   // This class does not automatically save its progress into the
   // SyncSession -- to get that to happen, call this method after update
@@ -62,7 +58,7 @@ class UpdateApplicator {
   // Track the status of all applications.
   class ResultTracker {
    public:
-     explicit ResultTracker(size_t num_results);
+     explicit ResultTracker();
      virtual ~ResultTracker();
      void AddSimpleConflict(syncable::Id);
      void AddEncryptionConflict(syncable::Id);
@@ -70,35 +66,25 @@ class UpdateApplicator {
      void AddSuccess(syncable::Id);
      void SaveProgress(sessions::ConflictProgress* conflict_progress,
                        sessions::UpdateProgress* update_progress);
-     void ClearConflicts();
+     void ClearHierarchyConflicts();
 
      // Returns true iff conflicting_ids_ is empty. Does not check
      // encryption_conflict_ids_.
      bool no_conflicts() const;
    private:
-    std::vector<syncable::Id> conflicting_ids_;
-    std::vector<syncable::Id> successful_ids_;
-    std::vector<syncable::Id> encryption_conflict_ids_;
-    std::vector<syncable::Id> hierarchy_conflict_ids_;
+    std::set<syncable::Id> conflicting_ids_;
+    std::set<syncable::Id> successful_ids_;
+    std::set<syncable::Id> encryption_conflict_ids_;
+    std::set<syncable::Id> hierarchy_conflict_ids_;
   };
 
   // If true, AttemptOneApplication will skip over |entry| and return true.
   bool SkipUpdate(const syncable::Entry& entry);
 
-  // Adjusts the UpdateIterator members to move ahead by one update.
-  void Advance();
-
-  // Used to resolve conflicts when trying to apply updates.
-  ConflictResolver* const resolver_;
-
   // Used to decrypt sensitive sync nodes.
   Cryptographer* cryptographer_;
 
-  UpdateIterator const begin_;
-  UpdateIterator end_;
-  UpdateIterator pointer_;
   ModelSafeGroup group_filter_;
-  bool progress_;
 
   const ModelSafeRoutingInfo routing_info_;
 

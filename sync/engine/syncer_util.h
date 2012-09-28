@@ -41,7 +41,6 @@ syncable::Id FindLocalIdToUpdate(
 UpdateAttemptResponse AttemptToUpdateEntry(
     syncable::WriteTransaction* const trans,
     syncable::MutableEntry* const entry,
-    ConflictResolver* resolver,
     Cryptographer* cryptographer);
 
 // Pass in name to avoid redundant UTF8 conversion.

@@ -184,7 +184,6 @@ syncable::Id FindLocalIdToUpdate(
 UpdateAttemptResponse AttemptToUpdateEntry(
     syncable::WriteTransaction* const trans,
     syncable::MutableEntry* const entry,
-    ConflictResolver* resolver,
     Cryptographer* cryptographer) {
   CHECK(entry->good());
   if (!entry->Get(IS_UNAPPLIED_UPDATE))
