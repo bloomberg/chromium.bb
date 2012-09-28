@@ -129,6 +129,10 @@ void WorkspaceLayoutManager2::OnChildWindowVisibilityChanged(Window* child,
 void WorkspaceLayoutManager2::SetChildBounds(
     Window* child,
     const gfx::Rect& requested_bounds) {
+  if (!GetTrackedByWorkspace(child)) {
+    SetChildBoundsDirect(child, requested_bounds);
+    return;
+  }
   gfx::Rect child_bounds(requested_bounds);
   // Some windows rely on this to set their initial bounds.
   if (!SetMaximizedOrFullscreenBounds(child))
@@ -211,6 +215,11 @@ void WorkspaceLayoutManager2::OnWindowPropertyChanged(Window* window,
       SetRestoreBoundsInScreen(window, restore);
   }
 
+  if (key == internal::kWindowTrackedByWorkspaceKey &&
+      GetTrackedByWorkspace(window)) {
+    workspace_manager()->OnTrackedByWorkspaceChanged(workspace_, window);
+  }
+
   if (key == aura::client::kAlwaysOnTopKey &&
       window->GetProperty(aura::client::kAlwaysOnTopKey)) {
     internal::AlwaysOnTopController* controller =
@@ -274,7 +283,8 @@ void WorkspaceLayoutManager2::AdjustWindowSizesForScreenChange(
 void WorkspaceLayoutManager2::AdjustWindowSizeForScreenChange(
     Window* window,
     AdjustWindowReason reason) {
-  if (!SetMaximizedOrFullscreenBounds(window)) {
+  if (GetTrackedByWorkspace(window) &&
+      !SetMaximizedOrFullscreenBounds(window)) {
     if (reason == ADJUST_WINDOW_SCREEN_SIZE_CHANGED) {
       // The work area may be smaller than the full screen.  Put as much of the
       // window as possible within the display area.
@@ -339,6 +349,9 @@ void WorkspaceLayoutManager2::UpdateBoundsFromShowState(Window* window) {
 
 bool WorkspaceLayoutManager2::SetMaximizedOrFullscreenBounds(
     aura::Window* window) {
+  if (!GetTrackedByWorkspace(window))
+    return false;
+
   // During animations there is a transform installed on the workspace
   // windows. For this reason this code uses the parent so that the transform is
   // ignored.
