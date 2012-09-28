@@ -19,13 +19,16 @@
 namespace chromeos {
 namespace mtp {
 
+using testing::_;
+
 namespace {
 
 // Sample mtp device storage information.
 const char kStorageLabel[] = "Camera V1.0";
 const char kStorageLocation[] = "/usb:2,2,88888";
-const char kStorageName[] = "usb:2,2,88888";
 const char kStorageUniqueId[] = "VendorModelSerial:COM:MOD2012:283";
+const char kStorageWithInvalidInfo[] = "usb:2,3,11111";
+const char kStorageWithValidInfo[] = "usb:2,2,88888";
 
 // Returns the mtp device id given the |unique_id|.
 std::string GetMtpDeviceId(const std::string& unique_id) {
@@ -39,10 +42,11 @@ void GetStorageInfo(const std::string& storage_name,
                     std::string* id,
                     string16* label,
                     std::string* location) {
-  if (storage_name != kStorageName) {
-    NOTREACHED();
-    return;
-  }
+  if (storage_name == kStorageWithInvalidInfo)
+    return;  // Do not set any storage details.
+
+  DCHECK(storage_name == kStorageWithValidInfo);
+
   if (id)
     *id = GetMtpDeviceId(kStorageUniqueId);
   if (label)
@@ -120,13 +124,28 @@ TEST_F(MediaTransferProtocolDeviceObserverCrosTest, BasicAttachDetach) {
       .InSequence(mock_sequence);
 
   // Attach a mtp storage.
-  MtpStorageAttached(kStorageName);
+  MtpStorageAttached(kStorageWithValidInfo);
 
   EXPECT_CALL(observer(), OnRemovableStorageDetached(device_id))
       .InSequence(mock_sequence);
 
   // Detach the attached storage.
-  MtpStorageDetached(kStorageName);
+  MtpStorageDetached(kStorageWithValidInfo);
+}
+
+// When a mtp storage device with invalid storage label and id is
+// attached/detached, there should not be any device attach/detach
+// notifications.
+TEST_F(MediaTransferProtocolDeviceObserverCrosTest, StorageWithInvalidInfo) {
+  EXPECT_CALL(observer(), OnRemovableStorageAttached(_, _, _)).Times(0);
+
+  // Attach the mtp storage with invalid storage info.
+  MtpStorageAttached(kStorageWithInvalidInfo);
+
+  EXPECT_CALL(observer(), OnRemovableStorageDetached(_)).Times(0);
+
+  // Detach the attached storage.
+  MtpStorageDetached(kStorageWithInvalidInfo);
 }
 
 }  // namespace mtp
