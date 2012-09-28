@@ -129,6 +129,9 @@ bool Session::SendPacketOnly(Packet *pkt) {
   IntToNibble(run_xsum & 0xF, &ch);
   outstr << ch;
 
+  if (GetFlags() & DEBUG_SEND) {
+    NaClLog(LOG_INFO, "TX %s\n", outstr.str().c_str());
+  }
   return io_->Write(outstr.str().data(),
                     static_cast<int32_t>(outstr.str().length()));
 }
