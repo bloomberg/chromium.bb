@@ -7,10 +7,6 @@
 
 #include <string>
 
-namespace gfx {
-class ImageSkia;
-}
-
 class Profile;
 
 // Interface to allow the view delegate to call out to whatever is controlling
@@ -33,9 +29,6 @@ class AppListController {
   virtual void ActivateApp(Profile* profile,
                            const std::string& extension_id,
                            int event_flags) = 0;
-
-  // Get the window icon to show, if any.
-  virtual gfx::ImageSkia GetWindowAppIcon() = 0;
 };
 
 namespace app_list_controller {

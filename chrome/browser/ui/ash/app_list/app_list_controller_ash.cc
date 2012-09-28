@@ -39,8 +39,3 @@ void AppListControllerAsh::ActivateApp(Profile* profile,
   ChromeLauncherController::instance()->OpenAppID(extension_id,
                                                   event_flags);
 }
-
-gfx::ImageSkia AppListControllerAsh::GetWindowAppIcon() {
-  // This is not set for the ash port.
-  return gfx::ImageSkia();
-}

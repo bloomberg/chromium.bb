@@ -53,7 +53,6 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
 
   // Overridden from views::WidgetDelegateView:
   virtual views::View* GetInitiallyFocusedView() OVERRIDE;
-  virtual gfx::ImageSkia GetWindowAppIcon() OVERRIDE;
   virtual bool HasHitTestMask() const OVERRIDE;
   virtual void GetHitTestMask(gfx::Path* mask) const OVERRIDE;
 

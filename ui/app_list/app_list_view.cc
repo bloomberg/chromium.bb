@@ -143,13 +143,6 @@ views::View* AppListView::GetInitiallyFocusedView() {
   return search_box_view_->search_box();
 }
 
-gfx::ImageSkia AppListView::GetWindowAppIcon() {
-  if (delegate_.get())
-    return delegate_->GetWindowAppIcon();
-
-  return gfx::ImageSkia();
-}
-
 bool AppListView::HasHitTestMask() const {
   return true;
 }

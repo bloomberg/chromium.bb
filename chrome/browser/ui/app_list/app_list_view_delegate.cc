@@ -68,7 +68,3 @@ void AppListViewDelegate::InvokeSearchResultAction(
 void AppListViewDelegate::Close()  {
   controller_->CloseView();
 }
-
-gfx::ImageSkia AppListViewDelegate::GetWindowAppIcon() {
-  return controller_->GetWindowAppIcon();
-}
