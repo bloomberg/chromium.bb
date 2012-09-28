@@ -504,6 +504,7 @@ if not env.Bit('coverage_enabled') or not env.Bit('windows'):
 
   node = gtest_env.CommandTest(
       'gtest_output.xml.out',
+      size='large', # This test suite is fairly slow on Windows XP.
       command=[unit_tests_exe, '--gtest_output=xml:${TARGET}'])
   gtest_env.AddNodeToTestSuite(node, ['small_tests'],
       'run_service_runtime_tests')
