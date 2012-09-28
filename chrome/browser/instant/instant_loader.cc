@@ -36,7 +36,7 @@ class InstantLoaderUserData : public base::SupportsUserData::Data {
 
  private:
   InstantLoader* loader_;
-  DISALLOW_COPY_AND_ASSIGN(InstantLoaderUserData);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(InstantLoaderUserData);
 };
 
 }
@@ -106,7 +106,7 @@ class InstantLoader::WebContentsDelegateImpl
   // True if the mouse or a touch pointer is down from an activate.
   bool is_pointer_down_from_activate_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebContentsDelegateImpl);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(WebContentsDelegateImpl);
 };
 
 InstantLoader::WebContentsDelegateImpl::WebContentsDelegateImpl(
@@ -212,12 +212,8 @@ bool InstantLoader::WebContentsDelegateImpl::OnMessageReceived(
 void InstantLoader::WebContentsDelegateImpl::OnSetSuggestions(
     int page_id,
     const std::vector<InstantSuggestion>& suggestions) {
-  DCHECK(loader_->preview_contents() &&
-         loader_->preview_contents_->web_contents());
-  // TODO(sreeram): Remove this 'if' bandaid once bug 141875 is confirmed fixed.
-  if (!loader_->preview_contents() ||
-      !loader_->preview_contents_->web_contents())
-    return;
+  DCHECK(loader_->preview_contents());
+  DCHECK(loader_->preview_contents_->web_contents());
   content::NavigationEntry* entry = loader_->preview_contents_->web_contents()->
                                         GetController().GetActiveEntry();
   if (entry && page_id == entry->GetPageID()) {
@@ -229,12 +225,8 @@ void InstantLoader::WebContentsDelegateImpl::OnSetSuggestions(
 void InstantLoader::WebContentsDelegateImpl::OnInstantSupportDetermined(
     int page_id,
     bool result) {
-  DCHECK(loader_->preview_contents() &&
-         loader_->preview_contents_->web_contents());
-  // TODO(sreeram): Remove this 'if' bandaid once bug 141875 is confirmed fixed.
-  if (!loader_->preview_contents() ||
-      !loader_->preview_contents_->web_contents())
-    return;
+  DCHECK(loader_->preview_contents());
+  DCHECK(loader_->preview_contents_->web_contents());
   content::NavigationEntry* entry = loader_->preview_contents_->web_contents()->
                                         GetController().GetActiveEntry();
   if (entry && page_id == entry->GetPageID())
@@ -245,12 +237,8 @@ void InstantLoader::WebContentsDelegateImpl::OnSetInstantPreviewHeight(
     int page_id,
     int height,
     InstantSizeUnits units) {
-  DCHECK(loader_->preview_contents() &&
-         loader_->preview_contents_->web_contents());
-  // TODO(sreeram): Remove this 'if' bandaid once bug 141875 is confirmed fixed.
-  if (!loader_->preview_contents() ||
-      !loader_->preview_contents_->web_contents())
-    return;
+  DCHECK(loader_->preview_contents());
+  DCHECK(loader_->preview_contents_->web_contents());
   content::NavigationEntry* entry = loader_->preview_contents_->web_contents()->
                                         GetController().GetActiveEntry();
   if (entry && page_id == entry->GetPageID()) {
@@ -461,7 +449,7 @@ void InstantLoader::CleanupPreviewContents() {
 
 void InstantLoader::ReplacePreviewContents(content::WebContents* old_contents,
                                            content::WebContents* new_contents) {
-  DCHECK(old_contents == preview_contents_->web_contents());
+  DCHECK_EQ(old_contents, preview_contents_->web_contents());
   CleanupPreviewContents();
   // We release here without deleting so that the caller still has the
   // responsibility for deleting the TabContents.

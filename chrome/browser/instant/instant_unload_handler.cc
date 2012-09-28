@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/message_loop.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "content/public/browser/render_view_host.h"
@@ -26,22 +27,11 @@ class InstantUnloadHandler::WebContentsDelegateImpl
     tab_contents->web_contents()->SetDelegate(this);
   }
 
-  ~WebContentsDelegateImpl() {
-  }
-
-  // Releases ownership of the TabContents to the caller.
-  TabContents* ReleaseTab() {
-    TabContents* tab = tab_contents_.release();
-    tab->web_contents()->SetDelegate(NULL);
-    return tab;
-  }
-
-  // See description above field.
-  int index() const { return index_; }
-
   // content::WebContentsDelegate overrides:
   virtual void WillRunBeforeUnloadConfirm() OVERRIDE {
-    handler_->Activate(this);
+    TabContents* tab = tab_contents_.release();
+    tab->web_contents()->SetDelegate(NULL);
+    handler_->Activate(this, tab, index_);
   }
 
   virtual bool ShouldSuppressDialogs() OVERRIDE {
@@ -60,7 +50,7 @@ class InstantUnloadHandler::WebContentsDelegateImpl
   // it at this index.
   const int index_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebContentsDelegateImpl);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(WebContentsDelegateImpl);
 };
 
 InstantUnloadHandler::InstantUnloadHandler(Browser* browser)
@@ -84,18 +74,15 @@ void InstantUnloadHandler::RunUnloadListenersOrDestroy(TabContents* tab,
       new WebContentsDelegateImpl(this, tab, index);
   delegates_.push_back(delegate);
 
-  // TODO: Decide if we really want false here; false is used for tab closes,
-  // and is needed so that the tab correctly closes but it doesn't really match
-  // what's logically happening.
   tab->web_contents()->GetRenderViewHost()->FirePageBeforeUnload(false);
 }
 
-void InstantUnloadHandler::Activate(WebContentsDelegateImpl* delegate) {
-  // Take ownership of the TabContents from the delegate.
-  TabContents* tab = delegate->ReleaseTab();
+void InstantUnloadHandler::Activate(WebContentsDelegateImpl* delegate,
+                                    TabContents* tab,
+                                    int index) {
   chrome::NavigateParams params(browser_, tab);
   params.disposition = NEW_FOREGROUND_TAB;
-  params.tabstrip_index = delegate->index();
+  params.tabstrip_index = index;
 
   // Remove (and delete) the delegate.
   Destroy(delegate);
@@ -108,5 +95,9 @@ void InstantUnloadHandler::Destroy(WebContentsDelegateImpl* delegate) {
   ScopedVector<WebContentsDelegateImpl>::iterator i =
       std::find(delegates_.begin(), delegates_.end(), delegate);
   DCHECK(i != delegates_.end());
-  delegates_.erase(i);
+
+  // The delegate's method is a caller on the stack, so schedule the deletion
+  // for later.
+  delegates_.weak_erase(i);
+  MessageLoop::current()->DeleteSoon(FROM_HERE, delegate);
 }

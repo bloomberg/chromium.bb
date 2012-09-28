@@ -79,7 +79,7 @@ class SearchBox : public content::RenderViewObserver,
   std::vector<InstantAutocompleteResult> last_autocomplete_results_;
   bool is_focused_;
 
-  DISALLOW_COPY_AND_ASSIGN(SearchBox);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(SearchBox);
 };
 
 #endif  // CHROME_RENDERER_SEARCHBOX_SEARCHBOX_H_

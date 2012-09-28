@@ -321,7 +321,6 @@ void InstantController::Hide() {
 }
 
 bool InstantController::IsCurrent() const {
-  DCHECK(IsOutOfDate() || GetPreviewContents());
   return !IsOutOfDate() && GetPreviewContents() &&
          loader_->supports_instant() && last_match_was_search_;
 }
@@ -395,7 +394,6 @@ TabContents* InstantController::ReleasePreviewContents(InstantCommitType type) {
 
 void InstantController::OnAutocompleteLostFocus(
     gfx::NativeView view_gaining_focus) {
-  DCHECK(!is_showing_ || GetPreviewContents());
   is_omnibox_focused_ = false;
 
   // If there is no preview, nothing to do.
@@ -493,7 +491,6 @@ bool InstantController::commit_on_pointer_release() const {
 void InstantController::SetSuggestions(
     InstantLoader* loader,
     const std::vector<InstantSuggestion>& suggestions) {
-  DCHECK_EQ(loader_.get(), loader);
   if (loader_ != loader || IsOutOfDate() || mode_ == SILENT || mode_ == HIDDEN)
     return;
 
@@ -543,8 +540,6 @@ void InstantController::SetSuggestions(
 }
 
 void InstantController::CommitInstantLoader(InstantLoader* loader) {
-  DCHECK_EQ(loader_.get(), loader);
-  DCHECK(is_showing_ && !IsOutOfDate()) << is_showing_;
   if (loader_ != loader || !is_showing_ || IsOutOfDate())
     return;
 
@@ -554,7 +549,6 @@ void InstantController::CommitInstantLoader(InstantLoader* loader) {
 void InstantController::SetInstantPreviewHeight(InstantLoader* loader,
                                                 int height,
                                                 InstantSizeUnits units) {
-  DCHECK_EQ(loader_.get(), loader);
   // TODO(samarth): we need to relax the IsOutOfDate() check to support cases
   // where we may want to show the overlay even if the overlay does not reflect
   // what the user has typed (e.g. doodle).
@@ -565,13 +559,11 @@ void InstantController::SetInstantPreviewHeight(InstantLoader* loader,
 }
 
 void InstantController::InstantLoaderPreviewLoaded(InstantLoader* loader) {
-  DCHECK_EQ(loader_.get(), loader);
   AddPreviewUsageForHistogram(mode_, PREVIEW_LOADED);
 }
 
 void InstantController::InstantSupportDetermined(InstantLoader* loader,
                                                  bool supports_instant) {
-  DCHECK_EQ(loader_.get(), loader);
   if (supports_instant) {
     blacklisted_urls_.erase(loader->instant_url());
   } else {
@@ -594,14 +586,11 @@ void InstantController::InstantSupportDetermined(InstantLoader* loader,
 }
 
 void InstantController::SwappedTabContents(InstantLoader* loader) {
-  DCHECK_EQ(loader_.get(), loader);
   if (loader_ == loader && is_showing_)
     delegate_->ShowInstant(100, INSTANT_SIZE_PERCENT);
 }
 
 void InstantController::InstantLoaderContentsFocused(InstantLoader* loader) {
-  DCHECK_EQ(loader_.get(), loader);
-  DCHECK(is_showing_ && !IsOutOfDate()) << is_showing_;
 #if defined(USE_AURA)
   // On aura the omnibox only receives a focus lost if we initiate the focus
   // change. This does that.
@@ -629,7 +618,6 @@ void InstantController::ResetLoader(const std::string& instant_url,
     DeleteLoader();
 
   if (!GetPreviewContents()) {
-    DCHECK(!loader_.get());
     loader_.reset(new InstantLoader(this, instant_url, active_tab));
     loader_->Init();
     // Ensure the searchbox API has the correct focus state.

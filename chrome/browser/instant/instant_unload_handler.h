@@ -29,9 +29,10 @@ class InstantUnloadHandler {
  private:
   class WebContentsDelegateImpl;
 
-  // Invoked if the tab is to be shown. This happens if the before unload
-  // listener returns a string.
-  void Activate(WebContentsDelegateImpl* delegate);
+  // Invoked if the tab is to be shown, at |index| on the tab strip. This
+  // happens if the before unload listener returns a string. Takes ownership of
+  // |delegate| and |tab|.
+  void Activate(WebContentsDelegateImpl* delegate, TabContents* tab, int index);
 
   // Destroys the old tab. This is invoked if script tries to close the page.
   void Destroy(WebContentsDelegateImpl* delegate);
@@ -42,7 +43,7 @@ class InstantUnloadHandler {
 
   ScopedVector<WebContentsDelegateImpl> delegates_;
 
-  DISALLOW_COPY_AND_ASSIGN(InstantUnloadHandler);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(InstantUnloadHandler);
 };
 
 #endif  // CHROME_BROWSER_INSTANT_INSTANT_UNLOAD_HANDLER_H_

@@ -28,7 +28,8 @@ namespace chrome {
 // BrowserInstantController, public:
 
 BrowserInstantController::BrowserInstantController(Browser* browser)
-    : browser_(browser) {
+    : browser_(browser),
+      instant_unload_handler_(new InstantUnloadHandler(browser)) {
   profile_pref_registrar_.Init(browser_->profile()->GetPrefs());
   profile_pref_registrar_.Add(prefs::kInstantEnabled, this);
   ResetInstant();
@@ -37,6 +38,7 @@ BrowserInstantController::BrowserInstantController(Browser* browser)
 
 BrowserInstantController::~BrowserInstantController() {
   browser_->tab_strip_model()->RemoveObserver(this);
+  delete instant_unload_handler_;
 }
 
 bool BrowserInstantController::OpenInstant(WindowOpenDisposition disposition) {
@@ -153,8 +155,6 @@ void BrowserInstantController::ResetInstant() {
       !browser_shutdown::ShuttingDownWithoutClosingBrowsers() &&
       browser_->is_type_tabbed() ?
           InstantController::CreateInstant(browser_->profile(), this) : NULL);
-  instant_unload_handler_.reset(instant() ?
-      new InstantUnloadHandler(browser_) : NULL);
 }
 
 }  // namespace chrome

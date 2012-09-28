@@ -39,7 +39,7 @@ class SearchBoxExtension {
   static void DispatchBlur(WebKit::WebFrame* frame);
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(SearchBoxExtension);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(SearchBoxExtension);
 };
 
 }  // namespace extensions_v8

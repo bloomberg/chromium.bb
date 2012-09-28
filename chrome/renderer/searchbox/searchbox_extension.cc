@@ -211,7 +211,7 @@ class SearchBoxExtensionWrapper : public v8::Extension {
   static v8::Handle<v8::Value> SetPreviewHeight(const v8::Arguments& args);
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(SearchBoxExtensionWrapper);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(SearchBoxExtensionWrapper);
 };
 
 SearchBoxExtensionWrapper::SearchBoxExtensionWrapper(
@@ -263,8 +263,6 @@ v8::Handle<v8::FunctionTemplate> SearchBoxExtensionWrapper::GetNativeFunction(
 // static
 content::RenderView* SearchBoxExtensionWrapper::GetRenderView() {
   WebKit::WebFrame* webframe = WebKit::WebFrame::frameForEnteredContext();
-  DCHECK(webframe) << "There should be an active frame since we just got "
-                      "a native function called.";
   if (!webframe) return NULL;
 
   WebKit::WebView* webview = webframe->view();
@@ -590,7 +588,6 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::SetPreviewHeight(
 
 // static
 void Dispatch(WebKit::WebFrame* frame, const WebKit::WebString& script) {
-  DCHECK(frame) << "Dispatch requires frame";
   if (!frame) return;
   frame->executeScript(WebKit::WebScriptSource(script));
 }
@@ -640,7 +637,6 @@ void SearchBoxExtension::DispatchBlur(WebKit::WebFrame* frame) {
 
 // static
 bool SearchBoxExtension::PageSupportsInstant(WebKit::WebFrame* frame) {
-  DCHECK(frame) << "PageSupportsInstant requires frame";
   if (!frame) return false;
 
   v8::Handle<v8::Value> v = frame->executeScriptAndReturnValue(

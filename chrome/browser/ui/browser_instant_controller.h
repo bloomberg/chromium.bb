@@ -74,11 +74,11 @@ class BrowserInstantController : public InstantControllerDelegate,
   Browser* browser_;
 
   scoped_ptr<InstantController> instant_;
-  scoped_ptr<InstantUnloadHandler> instant_unload_handler_;
+  InstantUnloadHandler* const instant_unload_handler_;
 
   PrefChangeRegistrar profile_pref_registrar_;
 
-  DISALLOW_COPY_AND_ASSIGN(BrowserInstantController);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(BrowserInstantController);
 };
 
 }  // namespace chrome

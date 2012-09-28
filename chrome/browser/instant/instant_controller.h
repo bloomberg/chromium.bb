@@ -292,7 +292,7 @@ class InstantController : public InstantLoaderDelegate {
   // up in autocomplete history matches.
   GURL url_for_history_;
 
-  DISALLOW_COPY_AND_ASSIGN(InstantController);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(InstantController);
 };
 
 #endif  // CHROME_BROWSER_INSTANT_INSTANT_CONTROLLER_H_

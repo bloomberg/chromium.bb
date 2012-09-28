@@ -149,7 +149,7 @@ class InstantLoader : public content::NotificationObserver {
   // See comments on the getter above.
   history::HistoryAddPageArgs last_navigation_;
 
-  DISALLOW_COPY_AND_ASSIGN(InstantLoader);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(InstantLoader);
 };
 
 #endif  // CHROME_BROWSER_INSTANT_INSTANT_LOADER_H_
