@@ -7,10 +7,14 @@
 MANPAGES = \
 	drm.7 \
 	drm-kms.7 \
+	drm-memory.7 \
 	drmAvailable.3 \
 	drmHandleEvent.3 \
 	drmModeGetResources.3
-MANPAGES_ALIASES =
+MANPAGES_ALIASES = \
+	drm-mm.7 \
+	drm-gem.7 \
+	drm-ttm.7
 
 XML_FILES = \
 	${patsubst %.1,%.xml,${patsubst %.3,%.xml,${patsubst %.5,%.xml,${patsubs %.7,%.xml,$(MANPAGES)}}}}
@@ -32,7 +36,8 @@ XSLTPROC_FLAGS = \
 
 XSLTPROC_PROCESS_MAN = \
 	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && \
-	$(XSLTPROC) -o $@ $(XSLTPROC_FLAGS) http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl $<
+	$(XSLTPROC) -o $@ $(XSLTPROC_FLAGS) http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl $< && \
+	$(SED) -i -e 's/^\.so \(.*\)\.\(.\)$$/\.so man\2\/\1\.\2/' $(MANPAGES_ALIASES)
 
 %.1: %.xml
 	$(XSLTPROC_PROCESS_MAN)
