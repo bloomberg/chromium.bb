@@ -43,6 +43,8 @@ LocationBarDecorationView::LocationBarDecorationView(
       visible_text_size_(0),
       force_draw_text_(false),
       background_painter_(background_images) {
+  SetLayoutManager(new views::BoxLayout(
+      views::BoxLayout::kHorizontal, 0, 0, 0));
   icon_->SetHorizontalAlignment(views::ImageView::LEADING);
   AddChildView(icon_);
   TouchableLocationBarView::Init(this);
@@ -85,7 +87,8 @@ ui::EventResult LocationBarDecorationView::OnGestureEvent(
 
 void LocationBarDecorationView::AnimationEnded(const ui::Animation* animation) {
   if (!pause_animation_ && !force_draw_text_) {
-    SetLayoutManager(NULL);
+    SetLayoutManager(new views::BoxLayout(
+        views::BoxLayout::kHorizontal, 0, 0, 0));
     RemoveChildView(text_label_);  // will also delete the view.
     text_label_ = NULL;
     SchedulePaint();

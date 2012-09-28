@@ -13,7 +13,6 @@
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/events/event.h"
 #include "ui/gfx/font.h"
-#include "ui/views/controls/image_view.h"
 #include "ui/views/painter.h"
 #include "ui/views/view.h"
 
