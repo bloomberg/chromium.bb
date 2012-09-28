@@ -12,13 +12,25 @@ namespace ash {
 
 HighContrastController::HighContrastController()
     : enabled_(false) {
-  root_window_ = ash::Shell::GetPrimaryRootWindow();
 }
 
 void HighContrastController::SetEnabled(bool enabled) {
   enabled_ = enabled;
 
-  root_window_->layer()->SetLayerInverted(enabled_);
+  // Update all active displays.
+  Shell::RootWindowList root_window_list = Shell::GetAllRootWindows();
+  for (Shell::RootWindowList::iterator it = root_window_list.begin();
+      it != root_window_list.end(); it++) {
+    UpdateDisplay(*it);
+  }
+}
+
+void HighContrastController::OnRootWindowAdded(aura::RootWindow* root_window) {
+  UpdateDisplay(root_window);
+}
+
+void HighContrastController::UpdateDisplay(aura::RootWindow* root_window) {
+  root_window->layer()->SetLayerInverted(enabled_);
 }
 
 }  // namespace ash

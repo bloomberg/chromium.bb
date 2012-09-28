@@ -20,11 +20,17 @@ class ASH_EXPORT HighContrastController {
 
   ~HighContrastController() {}
 
+  // Set high contrast mode and update all available displays.
   void SetEnabled(bool enabled);
 
- private:
-  aura::RootWindow* root_window_;
+  // Update high contrast mode on the just added display.
+  void OnRootWindowAdded(aura::RootWindow* root_window);
 
+ private:
+  // Update high contrast mode on the passed display.
+  void UpdateDisplay(aura::RootWindow* root_window);
+
+  // Indicates if the high contrast mode is enabled or disabled.
   bool enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(HighContrastController);
