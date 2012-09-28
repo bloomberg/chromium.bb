@@ -1917,6 +1917,7 @@ def MakeBaseTrustedEnv():
       'tests/unittests/shared/imc/build.scons',
       'tests/unittests/shared/platform/build.scons',
       'tests/unittests/trusted/asan/build.scons',
+      'tests/unittests/trusted/bits/build.scons',
       'tests/unittests/trusted/platform_qualify/build.scons',
       'tests/unittests/trusted/service_runtime/build.scons'
   ])
