@@ -321,6 +321,12 @@ def SetUpArgumentBits(env):
   BitFromArgument(env, 'validator_ragel', default=False,
     desc='Use the R-DFA validator instead of the original validators.')
 
+  # TODO(shcherbina): add support for other golden-based tests, not only
+  # run_x86_*_validator_testdata_tests.
+  BitFromArgument(env, 'regenerate_golden', default=False,
+    desc='When running golden-based tests, instead of comparing results '
+         'save actual output as golden data.')
+
   BitFromArgument(env, 'x86_64_zero_based_sandbox', default=False,
     desc='Use the zero-address-based x86-64 sandbox model instead of '
       'the r15-based model.')
