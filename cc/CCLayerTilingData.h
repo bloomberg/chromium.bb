@@ -8,6 +8,7 @@
 
 #if USE(ACCELERATED_COMPOSITING)
 
+#include "base/basictypes.h"
 #include "IntRect.h"
 #include "Region.h"
 #include "TilingData.h"
@@ -43,7 +44,6 @@ public:
     const CCLayerTilingData& operator=(const CCLayerTilingData&);
 
     class Tile {
-        WTF_MAKE_NONCOPYABLE(Tile);
     public:
         Tile() : m_i(-1), m_j(-1) { }
         virtual ~Tile() { }
@@ -58,6 +58,7 @@ public:
         int m_i;
         int m_j;
         IntRect m_opaqueRect;
+        DISALLOW_COPY_AND_ASSIGN(Tile);
     };
     // Default hash key traits for integers disallow 0 and -1 as a key, so
     // use a custom hash trait which disallows -1 and -2 instead.

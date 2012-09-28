@@ -7,6 +7,7 @@
 
 #if USE(ACCELERATED_COMPOSITING)
 
+#include "base/basictypes.h"
 #include "IntRect.h"
 #include "SkBitmap.h"
 #include <string>
@@ -25,7 +26,6 @@ class IntSize;
 
 // This class provides basic ability to draw text onto the heads-up display.
 class CCFontAtlas {
-    WTF_MAKE_NONCOPYABLE(CCFontAtlas);
 public:
     static PassOwnPtr<CCFontAtlas> create(SkBitmap bitmap, IntRect asciiToRectTable[128], int fontHeight)
     {
@@ -56,6 +56,8 @@ private:
     IntRect m_asciiToRectTable[128];
 
     int m_fontHeight;
+
+    DISALLOW_COPY_AND_ASSIGN(CCFontAtlas);
 };
 
 } // namespace cc

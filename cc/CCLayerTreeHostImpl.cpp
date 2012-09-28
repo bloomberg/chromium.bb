@@ -6,6 +6,7 @@
 
 #include "CCLayerTreeHostImpl.h"
 
+#include "base/basictypes.h"
 #include "CCAppendQuadsData.h"
 #include "CCDamageTracker.h"
 #include "CCDebugRectHistory.h"
@@ -51,7 +52,6 @@ void didVisibilityChange(cc::CCLayerTreeHostImpl* id, bool visible)
 namespace cc {
 
 class CCLayerTreeHostImplTimeSourceAdapter : public CCTimeSourceClient {
-    WTF_MAKE_NONCOPYABLE(CCLayerTreeHostImplTimeSourceAdapter);
 public:
     static PassOwnPtr<CCLayerTreeHostImplTimeSourceAdapter> create(CCLayerTreeHostImpl* layerTreeHostImpl, PassRefPtr<CCDelayBasedTimeSource> timeSource)
     {
@@ -89,6 +89,8 @@ private:
 
     CCLayerTreeHostImpl* m_layerTreeHostImpl;
     RefPtr<CCDelayBasedTimeSource> m_timeSource;
+
+    DISALLOW_COPY_AND_ASSIGN(CCLayerTreeHostImplTimeSourceAdapter);
 };
 
 CCLayerTreeHostImpl::FrameData::FrameData()

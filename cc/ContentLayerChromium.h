@@ -8,6 +8,7 @@
 
 #if USE(ACCELERATED_COMPOSITING)
 
+#include "base/basictypes.h"
 #include "LayerPainterChromium.h"
 #include "TiledLayerChromium.h"
 
@@ -21,7 +22,6 @@ class IntRect;
 class LayerTextureUpdater;
 
 class ContentLayerPainter : public LayerPainterChromium {
-    WTF_MAKE_NONCOPYABLE(ContentLayerPainter);
 public:
     static PassOwnPtr<ContentLayerPainter> create(ContentLayerChromiumClient*);
 
@@ -31,6 +31,8 @@ private:
     explicit ContentLayerPainter(ContentLayerChromiumClient*);
 
     ContentLayerChromiumClient* m_client;
+
+    DISALLOW_COPY_AND_ASSIGN(ContentLayerPainter);
 };
 
 // A layer that renders its contents into an SkCanvas.

@@ -6,7 +6,8 @@
 #define CCSchedulerStateMachine_h
 
 #include <string>
-#include <wtf/Noncopyable.h>
+
+#include "base/basictypes.h"
 
 namespace cc {
 
@@ -151,6 +152,8 @@ protected:
     bool m_drawIfPossibleFailed;
     TextureState m_textureState;
     ContextState m_contextState;
+
+    DISALLOW_COPY_AND_ASSIGN(CCSchedulerStateMachine);
 };
 
 }

@@ -5,6 +5,8 @@
 #ifndef CCLayerTreeHostImpl_h
 #define CCLayerTreeHostImpl_h
 
+#include "base/basictypes.h"
+#include "base/time.h"
 #include "CCAnimationEvents.h"
 #include "CCInputHandler.h"
 #include "CCLayerSorter.h"
@@ -12,7 +14,6 @@
 #include "CCRenderPassSink.h"
 #include "CCRenderer.h"
 #include "SkColor.h"
-#include "base/time.h"
 #include <public/WebCompositorOutputSurfaceClient.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/RefPtr.h>
@@ -48,7 +49,6 @@ public:
 class CCLayerTreeHostImpl : public CCInputHandlerClient,
                             public CCRendererClient,
                             public WebKit::WebCompositorOutputSurfaceClient {
-    WTF_MAKE_NONCOPYABLE(CCLayerTreeHostImpl);
     typedef Vector<CCLayerImpl*> CCLayerList;
 
 public:
@@ -293,6 +293,8 @@ private:
 
     OwnPtr<CCFrameRateCounter> m_fpsCounter;
     OwnPtr<CCDebugRectHistory> m_debugRectHistory;
+
+    DISALLOW_COPY_AND_ASSIGN(CCLayerTreeHostImpl);
 };
 
 };

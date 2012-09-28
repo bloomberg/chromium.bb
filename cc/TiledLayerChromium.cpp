@@ -6,6 +6,7 @@
 
 #if USE(ACCELERATED_COMPOSITING)
 
+#include "base/basictypes.h"
 #include "TiledLayerChromium.h"
 
 #include "CCLayerImpl.h"
@@ -24,7 +25,6 @@ using WebKit::WebTransformationMatrix;
 namespace cc {
 
 class UpdatableTile : public CCLayerTilingData::Tile {
-    WTF_MAKE_NONCOPYABLE(UpdatableTile);
 public:
     static PassOwnPtr<UpdatableTile> create(PassOwnPtr<LayerTextureUpdater::Texture> texture)
     {
@@ -75,6 +75,8 @@ private:
     }
 
     OwnPtr<LayerTextureUpdater::Texture> m_texture;
+
+    DISALLOW_COPY_AND_ASSIGN(UpdatableTile);
 };
 
 TiledLayerChromium::TiledLayerChromium()

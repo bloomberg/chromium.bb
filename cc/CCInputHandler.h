@@ -5,7 +5,7 @@
 #ifndef CCInputHandler_h
 #define CCInputHandler_h
 
-#include <wtf/Noncopyable.h>
+#include "base/basictypes.h"
 #include <wtf/PassOwnPtr.h>
 
 namespace cc {
@@ -22,7 +22,6 @@ class IntSize;
 // The CCInputHandler is constructed with a CCInputHandlerClient, which is the
 // interface by which the handler can manipulate the LayerTree.
 class CCInputHandlerClient {
-    WTF_MAKE_NONCOPYABLE(CCInputHandlerClient);
 public:
     enum ScrollStatus { ScrollOnMainThread, ScrollStarted, ScrollIgnored };
     enum ScrollInputType { Gesture, Wheel };
@@ -60,10 +59,12 @@ public:
 protected:
     CCInputHandlerClient() { }
     virtual ~CCInputHandlerClient() { }
+
+private:
+    DISALLOW_COPY_AND_ASSIGN(CCInputHandlerClient);
 };
 
 class CCInputHandler {
-    WTF_MAKE_NONCOPYABLE(CCInputHandler);
 public:
     virtual ~CCInputHandler() { }
 
@@ -72,6 +73,9 @@ public:
 
 protected:
     CCInputHandler() { }
+
+private:
+    DISALLOW_COPY_AND_ASSIGN(CCInputHandler);
 };
 
 }

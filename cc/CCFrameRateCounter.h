@@ -7,7 +7,7 @@
 
 #if USE(ACCELERATED_COMPOSITING)
 
-#include <wtf/Noncopyable.h>
+#include "base/basictypes.h"
 #include <wtf/PassOwnPtr.h>
 
 namespace cc {
@@ -15,7 +15,6 @@ namespace cc {
 // This class maintains a history of timestamps, and provides functionality to
 // intelligently compute average frames per second (and standard deviation).
 class CCFrameRateCounter {
-    WTF_MAKE_NONCOPYABLE(CCFrameRateCounter);
 public:
     static PassOwnPtr<CCFrameRateCounter> create()
     {
@@ -62,6 +61,8 @@ private:
     double m_timeStampHistory[kTimeStampHistorySize];
 
     int m_droppedFrameCount;
+
+    DISALLOW_COPY_AND_ASSIGN(CCFrameRateCounter);
 };
 
 } // namespace cc

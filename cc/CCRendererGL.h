@@ -8,6 +8,7 @@
 
 #if USE(ACCELERATED_COMPOSITING)
 
+#include "base/basictypes.h"
 #include "CCCheckerboardDrawQuad.h"
 #include "CCDebugBorderDrawQuad.h"
 #include "CCDirectRenderer.h"
@@ -37,7 +38,6 @@ class CCRendererGL : public CCDirectRenderer,
                      public WebKit::WebGraphicsContext3D::WebGraphicsSwapBuffersCompleteCallbackCHROMIUM,
                      public WebKit::WebGraphicsContext3D::WebGraphicsMemoryAllocationChangedCallbackCHROMIUM ,
                      public WebKit::WebGraphicsContext3D::WebGraphicsContextLostCallback {
-    WTF_MAKE_NONCOPYABLE(CCRendererGL);
 public:
     static PassOwnPtr<CCRendererGL> create(CCRendererClient*, CCResourceProvider*);
 
@@ -216,6 +216,8 @@ private:
     bool m_visible;
 
     OwnPtr<CCResourceProvider::ScopedWriteLockGL> m_currentFramebufferLock;
+
+    DISALLOW_COPY_AND_ASSIGN(CCRendererGL);
 };
 
 

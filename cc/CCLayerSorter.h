@@ -5,12 +5,12 @@
 #ifndef CCLayerSorter_h
 #define CCLayerSorter_h
 
+#include "base/basictypes.h"
 #include "CCLayerImpl.h"
 #include "FloatPoint3D.h"
 #include "FloatQuad.h"
 #include "FloatRect.h"
 #include <wtf/HashMap.h>
-#include <wtf/Noncopyable.h>
 #include <wtf/Vector.h>
 
 namespace WebKit {
@@ -20,7 +20,6 @@ class WebTransformationMatrix;
 namespace cc {
 
 class CCLayerSorter {
-    WTF_MAKE_NONCOPYABLE(CCLayerSorter);
 public:
     CCLayerSorter();
     ~CCLayerSorter();
@@ -84,6 +83,8 @@ private:
     void createGraphNodes(LayerList::iterator first, LayerList::iterator last);
     void createGraphEdges();
     void removeEdgeFromList(GraphEdge*, Vector<GraphEdge*>&);
+
+    DISALLOW_COPY_AND_ASSIGN(CCLayerSorter);
 };
 
 }

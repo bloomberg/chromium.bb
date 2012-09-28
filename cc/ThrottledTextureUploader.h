@@ -7,6 +7,7 @@
 
 #include "TextureUploader.h"
 
+#include "base/basictypes.h"
 #include <deque>
 #include <wtf/Deque.h>
 
@@ -17,7 +18,6 @@ class WebGraphicsContext3D;
 namespace cc {
 
 class ThrottledTextureUploader : public TextureUploader {
-    WTF_MAKE_NONCOPYABLE(ThrottledTextureUploader);
 public:
     static PassOwnPtr<ThrottledTextureUploader> create(WebKit::WebGraphicsContext3D* context)
     {
@@ -70,6 +70,8 @@ private:
     Deque<OwnPtr<Query> > m_availableQueries;
     std::deque<double> m_texturesPerSecondHistory;
     double m_texturesUploaded;
+
+    DISALLOW_COPY_AND_ASSIGN(ThrottledTextureUploader);
 };
 
 }

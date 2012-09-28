@@ -5,14 +5,15 @@
 #ifndef CCRenderPass_h
 #define CCRenderPass_h
 
+#include "base/basictypes.h"
+#include "cc/hash_pair.h"
+#include "cc/scoped_ptr_hash_map.h"
+#include "cc/scoped_ptr_vector.h"
 #include "CCDrawQuad.h"
 #include "CCOcclusionTracker.h"
 #include "CCSharedQuadState.h"
 #include "FloatRect.h"
 #include "SkColor.h"
-#include "cc/hash_pair.h"
-#include "cc/scoped_ptr_hash_map.h"
-#include "cc/scoped_ptr_vector.h"
 #include <public/WebFilterOperations.h>
 #include <public/WebTransformationMatrix.h>
 #include <vector>
@@ -39,7 +40,6 @@ public:
 typedef ScopedPtrVector<CCSharedQuadState> CCSharedQuadStateList;
 
 class CCRenderPass {
-    WTF_MAKE_NONCOPYABLE(CCRenderPass);
 public:
     ~CCRenderPass();
 
@@ -105,6 +105,8 @@ protected:
     bool m_hasOcclusionFromOutsideTargetSurface;
     WebKit::WebFilterOperations m_filters;
     WebKit::WebFilterOperations m_backgroundFilters;
+
+    DISALLOW_COPY_AND_ASSIGN(CCRenderPass);
 };
 
 } // namespace cc

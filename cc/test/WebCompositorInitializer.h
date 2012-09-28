@@ -5,9 +5,9 @@
 #ifndef WebCompositorInitializer_h
 #define WebCompositorInitializer_h
 
+#include "base/basictypes.h"
 #include <public/Platform.h>
 #include <public/WebCompositorSupport.h>
-#include <wtf/Noncopyable.h>
 
 namespace WebKit {
 class WebThread;
@@ -16,7 +16,6 @@ class WebThread;
 namespace WebKitTests {
 
 class WebCompositorInitializer {
-    WTF_MAKE_NONCOPYABLE(WebCompositorInitializer);
 public:
     explicit WebCompositorInitializer(WebKit::WebThread* thread)
     {
@@ -27,6 +26,9 @@ public:
     {
         WebKit::Platform::current()->compositorSupport()->shutdown();
     }
+
+private:
+    DISALLOW_COPY_AND_ASSIGN(WebCompositorInitializer);
 };
 
 }

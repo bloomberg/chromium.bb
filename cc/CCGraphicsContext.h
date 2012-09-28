@@ -7,15 +7,12 @@
 
 #include <public/WebCompositorOutputSurface.h>
 #include <public/WebGraphicsContext3D.h>
-#include <wtf/Noncopyable.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
 
 namespace cc {
 
 // FIXME: rename fully to CCOutputSurface.
 typedef WebKit::WebCompositorOutputSurface CCGraphicsContext;
 
-}
+}  // namespace cc
 
-#endif // CCGraphicsContext_h
+#endif  // CCGraphicsContext_h

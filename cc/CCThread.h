@@ -5,9 +5,9 @@
 #ifndef CCThread_h
 #define CCThread_h
 
+#include "base/basictypes.h"
 #include "base/threading/platform_thread.h"
 #include <wtf/PassOwnPtr.h>
-#include <wtf/Noncopyable.h>
 
 namespace cc {
 
@@ -18,7 +18,6 @@ public:
     virtual ~CCThread() { }
 
     class Task {
-        WTF_MAKE_NONCOPYABLE(Task);
     public:
         virtual ~Task() { }
         virtual void performTask() = 0;
@@ -26,6 +25,8 @@ public:
     protected:
         Task(void* instance) : m_instance(instance) { }
         void* m_instance;
+    private:
+        DISALLOW_COPY_AND_ASSIGN(Task);
     };
 
     // Executes the task on context's thread asynchronously.

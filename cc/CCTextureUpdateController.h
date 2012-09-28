@@ -5,10 +5,10 @@
 #ifndef CCTextureUpdateController_h
 #define CCTextureUpdateController_h
 
+#include "base/basictypes.h"
 #include "base/time.h"
 #include "CCTextureUpdateQueue.h"
 #include "CCTimer.h"
-#include <wtf/Noncopyable.h>
 #include <wtf/OwnPtr.h>
 
 namespace cc {
@@ -24,7 +24,6 @@ protected:
 };
 
 class CCTextureUpdateController : public CCTimerClient {
-    WTF_MAKE_NONCOPYABLE(CCTextureUpdateController);
 public:
     static PassOwnPtr<CCTextureUpdateController> create(CCTextureUpdateControllerClient* client, CCThread* thread, PassOwnPtr<CCTextureUpdateQueue> queue, CCResourceProvider* resourceProvider, TextureUploader* uploader)
     {
@@ -66,6 +65,9 @@ protected:
     base::TimeTicks m_timeLimit;
     size_t m_textureUpdatesPerTick;
     bool m_firstUpdateAttempt;
+
+private:
+    DISALLOW_COPY_AND_ASSIGN(CCTextureUpdateController);
 };
 
 }

@@ -5,6 +5,7 @@
 #ifndef CCPrioritizedTexture_h
 #define CCPrioritizedTexture_h
 
+#include "base/basictypes.h"
 #include "CCPriorityCalculator.h"
 #include "CCResourceProvider.h"
 #include "CCTexture.h"
@@ -17,7 +18,6 @@ namespace cc {
 class CCPrioritizedTextureManager;
 
 class CCPrioritizedTexture {
-    WTF_MAKE_NONCOPYABLE(CCPrioritizedTexture);
 public:
     static PassOwnPtr<CCPrioritizedTexture> create(CCPrioritizedTextureManager* manager, IntSize size, GC3Denum format)
     {
@@ -85,7 +85,6 @@ private:
     friend class CCPrioritizedTextureTest;
 
     class Backing : public CCTexture {
-        WTF_MAKE_NONCOPYABLE(Backing);
     public:
         Backing(unsigned id, CCResourceProvider*, IntSize, GC3Denum format);
         ~Backing();
@@ -109,6 +108,8 @@ private:
 #ifndef NDEBUG
         CCResourceProvider* m_resourceProvider;
 #endif
+
+        DISALLOW_COPY_AND_ASSIGN(Backing);
     };
 
     CCPrioritizedTexture(CCPrioritizedTextureManager*, IntSize, GC3Denum format);
@@ -131,8 +132,10 @@ private:
 
     Backing* m_backing;
     CCPrioritizedTextureManager* m_manager;
+
+    DISALLOW_COPY_AND_ASSIGN(CCPrioritizedTexture);
 };
 
-} // namespace cc
+}  // namespace cc
 
 #endif

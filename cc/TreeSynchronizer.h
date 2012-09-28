@@ -5,8 +5,8 @@
 #ifndef TreeSynchronizer_h
 #define TreeSynchronizer_h
 
+#include "base/basictypes.h"
 #include <wtf/HashMap.h>
-#include <wtf/Noncopyable.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 
@@ -17,7 +17,6 @@ class CCLayerTreeHostImpl;
 class LayerChromium;
 
 class TreeSynchronizer {
-WTF_MAKE_NONCOPYABLE(TreeSynchronizer);
 public:
     // Accepts a LayerChromium tree and returns a reference to a CCLayerImpl tree that duplicates the structure
     // of the LayerChromium tree, reusing the CCLayerImpls in the tree provided by oldCCLayerImplRoot if possible.
@@ -34,6 +33,8 @@ private:
     static void collectExistingCCLayerImplRecursive(OwnPtrCCLayerImplMap& oldLayers, PassOwnPtr<CCLayerImpl>);
     static PassOwnPtr<CCLayerImpl> synchronizeTreeRecursive(RawPtrCCLayerImplMap& newLayers, OwnPtrCCLayerImplMap& oldLayers, LayerChromium*, CCLayerTreeHostImpl*);
     static void updateScrollbarLayerPointersRecursive(const RawPtrCCLayerImplMap& newLayers, LayerChromium*);
+
+    DISALLOW_COPY_AND_ASSIGN(TreeSynchronizer);
 };
 
 } // namespace cc

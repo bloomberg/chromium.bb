@@ -5,10 +5,10 @@
 #ifndef CCScheduler_h
 #define CCScheduler_h
 
+#include "base/basictypes.h"
+#include "base/time.h"
 #include "CCFrameRateController.h"
 #include "CCSchedulerStateMachine.h"
-#include "base/time.h"
-#include <wtf/Noncopyable.h>
 #include <wtf/PassOwnPtr.h>
 
 namespace cc {
@@ -45,7 +45,6 @@ protected:
 };
 
 class CCScheduler : CCFrameRateControllerClient {
-    WTF_MAKE_NONCOPYABLE(CCScheduler);
 public:
     static PassOwnPtr<CCScheduler> create(CCSchedulerClient* client, PassOwnPtr<CCFrameRateController> frameRateController)
     {
@@ -100,6 +99,8 @@ private:
     OwnPtr<CCFrameRateController> m_frameRateController;
     CCSchedulerStateMachine m_stateMachine;
     bool m_insideProcessScheduledActions;
+
+    DISALLOW_COPY_AND_ASSIGN(CCScheduler);
 };
 
 }

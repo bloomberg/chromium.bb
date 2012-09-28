@@ -8,6 +8,7 @@
 
 #include "ScrollbarLayerChromium.h"
 
+#include "base/basictypes.h"
 #include "BitmapCanvasLayerTextureUpdater.h"
 #include "CCLayerTreeHost.h"
 #include "CCScrollbarLayerImpl.h"
@@ -75,7 +76,6 @@ ScrollbarLayerChromium* ScrollbarLayerChromium::toScrollbarLayerChromium()
 }
 
 class ScrollbarBackgroundPainter : public LayerPainterChromium {
-    WTF_MAKE_NONCOPYABLE(ScrollbarBackgroundPainter);
 public:
     static PassOwnPtr<ScrollbarBackgroundPainter> create(WebKit::WebScrollbar* scrollbar, WebKit::WebScrollbarThemePainter painter, WebKit::WebScrollbarThemeGeometry* geometry, WebKit::WebScrollbar::ScrollbarPart trackPart)
     {
@@ -129,6 +129,8 @@ private:
     WebKit::WebScrollbarThemePainter m_painter;
     WebKit::WebScrollbarThemeGeometry* m_geometry;
     WebKit::WebScrollbar::ScrollbarPart m_trackPart;
+
+    DISALLOW_COPY_AND_ASSIGN(ScrollbarBackgroundPainter);
 };
 
 bool ScrollbarLayerChromium::needsContentsScale() const
@@ -142,7 +144,6 @@ IntSize ScrollbarLayerChromium::contentBounds() const
 }
 
 class ScrollbarThumbPainter : public LayerPainterChromium {
-    WTF_MAKE_NONCOPYABLE(ScrollbarThumbPainter);
 public:
     static PassOwnPtr<ScrollbarThumbPainter> create(WebKit::WebScrollbar* scrollbar, WebKit::WebScrollbarThemePainter painter, WebKit::WebScrollbarThemeGeometry* geometry)
     {
@@ -171,6 +172,8 @@ private:
     WebKit::WebScrollbar* m_scrollbar;
     WebKit::WebScrollbarThemePainter m_painter;
     WebKit::WebScrollbarThemeGeometry* m_geometry;
+
+    DISALLOW_COPY_AND_ASSIGN(ScrollbarThumbPainter);
 };
 
 void ScrollbarLayerChromium::setLayerTreeHost(CCLayerTreeHost* host)

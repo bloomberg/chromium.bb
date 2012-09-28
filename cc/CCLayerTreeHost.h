@@ -5,6 +5,8 @@
 #ifndef CCLayerTreeHost_h
 #define CCLayerTreeHost_h
 
+#include "base/basictypes.h"
+#include "cc/own_ptr_vector.h"
 #include "CCAnimationEvents.h"
 #include "CCGraphicsContext.h"
 #include "CCLayerTreeHostClient.h"
@@ -16,7 +18,6 @@
 #include "IntRect.h"
 #include "RateLimiter.h"
 #include "SkColor.h"
-#include "cc/own_ptr_vector.h"
 #include <limits>
 #include <wtf/HashMap.h>
 #include <wtf/OwnPtr.h>
@@ -77,7 +78,6 @@ struct RendererCapabilities {
 };
 
 class CCLayerTreeHost : public RateLimiterClient {
-    WTF_MAKE_NONCOPYABLE(CCLayerTreeHost);
 public:
     static PassOwnPtr<CCLayerTreeHost> create(CCLayerTreeHostClient*, const CCLayerTreeSettings&);
     virtual ~CCLayerTreeHost();
@@ -276,6 +276,8 @@ private:
     size_t m_partialTextureUpdateRequests;
 
     static bool s_needsFilterContext;
+
+    DISALLOW_COPY_AND_ASSIGN(CCLayerTreeHost);
 };
 
 }

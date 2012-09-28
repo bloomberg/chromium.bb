@@ -5,9 +5,9 @@
 #ifndef CCProxy_h
 #define CCProxy_h
 
+#include "base/basictypes.h"
 #include "IntRect.h"
 #include <public/WebCompositorOutputSurface.h>
-#include <wtf/Noncopyable.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/PassRefPtr.h>
 
@@ -20,7 +20,6 @@ struct RendererCapabilities;
 // Abstract class responsible for proxying commands from the main-thread side of
 // the compositor over to the compositor implementation.
 class CCProxy {
-    WTF_MAKE_NONCOPYABLE(CCProxy);
 public:
     static void setMainThread(CCThread*);
     static CCThread* mainThread();
@@ -101,6 +100,9 @@ protected:
     CCProxy();
     friend class DebugScopedSetImplThread;
     friend class DebugScopedSetMainThreadBlocked;
+
+private:
+    DISALLOW_COPY_AND_ASSIGN(CCProxy);
 };
 
 class DebugScopedSetMainThreadBlocked {

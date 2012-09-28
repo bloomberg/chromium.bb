@@ -7,9 +7,9 @@
 
 #if USE(ACCELERATED_COMPOSITING)
 
+#include "base/basictypes.h"
 #include "FloatRect.h"
 #include "IntRect.h"
-#include <wtf/Noncopyable.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/Vector.h>
 
@@ -52,7 +52,6 @@ struct CCDebugRect {
 // for debugging purposes. The overhead of collecting rects is performed only if
 // the appropriate CCLayerTreeSettings are enabled.
 class CCDebugRectHistory {
-    WTF_MAKE_NONCOPYABLE(CCDebugRectHistory);
 public:
     static PassOwnPtr<CCDebugRectHistory> create()
     {
@@ -76,6 +75,8 @@ private:
     void saveOccludingRects(const Vector<IntRect>& occludingScreenSpaceRects);
 
     Vector<CCDebugRect> m_debugRects;
+
+    DISALLOW_COPY_AND_ASSIGN(CCDebugRectHistory);
 };
 
 } // namespace cc

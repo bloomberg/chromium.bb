@@ -5,6 +5,7 @@
 #ifndef CCOcclusionTracker_h
 #define CCOcclusionTracker_h
 
+#include "base/basictypes.h"
 #include "CCLayerIterator.h"
 #include "FloatQuad.h"
 #include "Region.h"
@@ -23,7 +24,6 @@ class RenderSurfaceChromium;
 // Finally, once finished with the layer, occlusion behind the layer should be marked by calling markOccludedBehindLayer().
 template<typename LayerType, typename RenderSurfaceType>
 class CCOcclusionTrackerBase {
-    WTF_MAKE_NONCOPYABLE(CCOcclusionTrackerBase);
 public:
     CCOcclusionTrackerBase(IntRect rootTargetRect, bool recordMetricsForFrame);
 
@@ -94,6 +94,8 @@ private:
 
     // This is used for visualizing the occlusion tracking process.
     Vector<IntRect>* m_occludingScreenSpaceRects;
+
+    DISALLOW_COPY_AND_ASSIGN(CCOcclusionTrackerBase);
 };
 
 typedef CCOcclusionTrackerBase<LayerChromium, RenderSurfaceChromium> CCOcclusionTracker;

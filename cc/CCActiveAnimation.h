@@ -5,7 +5,7 @@
 #ifndef CCActiveAnimation_h
 #define CCActiveAnimation_h
 
-#include <wtf/Noncopyable.h>
+#include "base/basictypes.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 
@@ -17,7 +17,6 @@ class CCAnimationCurve;
 // Specifically, the affected property, the run state (paused, finished, etc.),
 // loop count, last pause time, and the total time spent paused.
 class CCActiveAnimation {
-    WTF_MAKE_NONCOPYABLE(CCActiveAnimation);
 public:
     // Animations begin in one of the 'waiting' states. Animations waiting for the next tick
     // will start the next time the controller animates. Animations waiting for target
@@ -154,6 +153,8 @@ private:
     // that ultimately controls the values of the animating layer and so we will refer
     // to it as the 'controlling instance'.
     bool m_isControllingInstance;
+
+    DISALLOW_COPY_AND_ASSIGN(CCActiveAnimation);
 };
 
 } // namespace cc

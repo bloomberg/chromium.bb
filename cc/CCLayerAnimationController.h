@@ -7,9 +7,9 @@
 
 #include "CCAnimationEvents.h"
 
+#include "base/basictypes.h"
 #include "cc/own_ptr_vector.h"
 #include <wtf/HashSet.h>
-#include <wtf/Noncopyable.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 
@@ -35,7 +35,6 @@ public:
 };
 
 class CCLayerAnimationController {
-    WTF_MAKE_NONCOPYABLE(CCLayerAnimationController);
 public:
     static PassOwnPtr<CCLayerAnimationController> create(CCLayerAnimationControllerClient*);
 
@@ -105,6 +104,8 @@ private:
 
     CCLayerAnimationControllerClient* m_client;
     OwnPtrVector<CCActiveAnimation> m_activeAnimations;
+
+    DISALLOW_COPY_AND_ASSIGN(CCLayerAnimationController);
 };
 
 } // namespace cc

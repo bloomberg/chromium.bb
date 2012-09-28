@@ -8,6 +8,7 @@
 
 #include "CCTiledLayerImpl.h"
 
+#include "base/basictypes.h"
 #include "base/stringprintf.h"
 #include "CCAppendQuadsData.h"
 #include "CCCheckerboardDrawQuad.h"
@@ -46,7 +47,6 @@ static const int debugTileInvalidatedCheckerboardColorGreen = 200;
 static const int debugTileInvalidatedCheckerboardColorBlue = 245;
 
 class DrawableTile : public CCLayerTilingData::Tile {
-    WTF_MAKE_NONCOPYABLE(DrawableTile);
 public:
     static PassOwnPtr<DrawableTile> create() { return adoptPtr(new DrawableTile()); }
 
@@ -57,6 +57,8 @@ private:
     DrawableTile() : m_resourceId(0) { }
 
     CCResourceProvider::ResourceId m_resourceId;
+
+    DISALLOW_COPY_AND_ASSIGN(DrawableTile);
 };
 
 CCTiledLayerImpl::CCTiledLayerImpl(int id)

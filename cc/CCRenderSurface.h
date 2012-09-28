@@ -2,18 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 #ifndef CCRenderSurface_h
 #define CCRenderSurface_h
 
 #if USE(ACCELERATED_COMPOSITING)
 
+#include "base/basictypes.h"
 #include "CCRenderPass.h"
 #include "CCSharedQuadState.h"
 #include "FloatRect.h"
 #include "IntRect.h"
 #include <public/WebTransformationMatrix.h>
-#include <wtf/Noncopyable.h>
 
 namespace cc {
 
@@ -26,7 +25,6 @@ class CCLayerImpl;
 struct CCAppendQuadsData;
 
 class CCRenderSurface {
-    WTF_MAKE_NONCOPYABLE(CCRenderSurface);
 public:
     explicit CCRenderSurface(CCLayerImpl*);
     virtual ~CCRenderSurface();
@@ -123,6 +121,8 @@ private:
     int m_currentLayerIndexHistory;
 
     friend struct CCLayerIteratorActions;
+
+    DISALLOW_COPY_AND_ASSIGN(CCRenderSurface);
 };
 
 }

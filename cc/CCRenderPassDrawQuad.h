@@ -5,16 +5,16 @@
 #ifndef CCRenderPassDrawQuad_h
 #define CCRenderPassDrawQuad_h
 
+#include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "CCDrawQuad.h"
 #include "CCRenderPass.h"
 #include "CCResourceProvider.h"
 #include "IntRect.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace cc {
 
 class CCRenderPassDrawQuad : public CCDrawQuad {
-    WTF_MAKE_NONCOPYABLE(CCRenderPassDrawQuad);
 public:
     static scoped_ptr<CCRenderPassDrawQuad> create(const CCSharedQuadState*, const IntRect&, CCRenderPass::Id renderPassId, bool isReplica, CCResourceProvider::ResourceId maskResourceId, const IntRect& contentsChangedSinceLastFrame, float maskTexCoordScaleX, float maskTexCoordScaleY, float maskTexCoordOffsetX, float maskTexCoordOffsetY);
 
@@ -42,6 +42,8 @@ private:
     float m_maskTexCoordScaleY;
     float m_maskTexCoordOffsetX;
     float m_maskTexCoordOffsetY;
+
+    DISALLOW_COPY_AND_ASSIGN(CCRenderPassDrawQuad);
 };
 
 }

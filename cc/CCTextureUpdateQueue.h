@@ -5,15 +5,14 @@
 #ifndef CCTextureUpdateQueue_h
 #define CCTextureUpdateQueue_h
 
+#include "base/basictypes.h"
 #include "TextureCopier.h"
 #include "TextureUploader.h"
 #include <wtf/Deque.h>
-#include <wtf/Noncopyable.h>
 
 namespace cc {
 
 class CCTextureUpdateQueue {
-    WTF_MAKE_NONCOPYABLE(CCTextureUpdateQueue);
 public:
     CCTextureUpdateQueue();
     virtual ~CCTextureUpdateQueue();
@@ -39,6 +38,8 @@ private:
     Deque<TextureUploader::Parameters> m_fullEntries;
     Deque<TextureUploader::Parameters> m_partialEntries;
     Deque<TextureCopier::Parameters> m_copyEntries;
+
+    DISALLOW_COPY_AND_ASSIGN(CCTextureUpdateQueue);
 };
 
 }

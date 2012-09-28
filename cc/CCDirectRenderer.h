@@ -5,6 +5,7 @@
 #ifndef CCDirectRenderer_h
 #define CCDirectRenderer_h
 
+#include "base/basictypes.h"
 #include "CCRenderer.h"
 #include "CCResourceProvider.h"
 #include "CCScopedTexture.h"
@@ -17,7 +18,6 @@ class CCResourceProvider;
 // renderer implementations.  "Direct" refers to the fact that it does not
 // delegate rendering to another compositor.
 class CCDirectRenderer : public CCRenderer {
-    WTF_MAKE_NONCOPYABLE(CCDirectRenderer);
 public:
     virtual ~CCDirectRenderer();
 
@@ -48,7 +48,6 @@ protected:
     };
 
     class CachedTexture : public CCScopedTexture {
-        WTF_MAKE_NONCOPYABLE(CachedTexture);
     public:
         static scoped_ptr<CachedTexture> create(CCResourceProvider* resourceProvider) { return scoped_ptr<CachedTexture>(new CachedTexture(resourceProvider)); }
         virtual ~CachedTexture() { }
@@ -65,6 +64,8 @@ protected:
 
     private:
         bool m_isComplete;
+
+        DISALLOW_COPY_AND_ASSIGN(CachedTexture);
     };
 
     static FloatRect quadVertexRect();
@@ -92,6 +93,9 @@ protected:
 
     ScopedPtrHashMap<CCRenderPass::Id, CachedTexture> m_renderPassTextures;
     CCResourceProvider* m_resourceProvider;
+
+private:
+    DISALLOW_COPY_AND_ASSIGN(CCDirectRenderer);
 };
 
 }

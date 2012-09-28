@@ -5,11 +5,11 @@
 #ifndef CCRenderer_h
 #define CCRenderer_h
 
+#include "base/basictypes.h"
 #include "CCLayerTreeHost.h"
 #include "CCRenderPass.h"
 #include "FloatQuad.h"
 #include "IntRect.h"
-#include <wtf/Noncopyable.h>
 #include <wtf/PassRefPtr.h>
 
 namespace cc {
@@ -30,7 +30,6 @@ protected:
 };
 
 class CCRenderer {
-    WTF_MAKE_NONCOPYABLE(CCRenderer);
 public:
     // This enum defines the various resource pools for the CCResourceProvider
     // where textures get allocated.
@@ -76,6 +75,8 @@ protected:
     }
 
     CCRendererClient* m_client;
+
+    DISALLOW_COPY_AND_ASSIGN(CCRenderer);
 };
 
 }

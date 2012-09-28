@@ -5,6 +5,7 @@
 #ifndef CCPrioritizedTextureManager_h
 #define CCPrioritizedTextureManager_h
 
+#include "base/basictypes.h"
 #include "CCPrioritizedTexture.h"
 #include "CCPriorityCalculator.h"
 #include "CCTexture.h"
@@ -21,7 +22,6 @@ class CCPrioritizedTexture;
 class CCPriorityCalculator;
 
 class CCPrioritizedTextureManager {
-    WTF_MAKE_NONCOPYABLE(CCPrioritizedTextureManager);
 public:
     static PassOwnPtr<CCPrioritizedTextureManager> create(size_t maxMemoryLimitBytes, int maxTextureSize, int pool)
     {
@@ -139,8 +139,10 @@ private:
     // Set by the main thread when it adjust priorities in such a way that
     // the m_backings array's view of priorities is now out of date.
     bool m_needsUpdateBackingsPrioritites;
+
+    DISALLOW_COPY_AND_ASSIGN(CCPrioritizedTextureManager);
 };
 
-} // cc
+}  // namespace cc
 
 #endif

@@ -5,6 +5,7 @@
 #ifndef CCScopedTexture_h
 #define CCScopedTexture_h
 
+#include "base/basictypes.h"
 #include "CCTexture.h"
 
 #if !ASSERT_DISABLED
@@ -14,7 +15,6 @@
 namespace cc {
 
 class CCScopedTexture : protected CCTexture {
-    WTF_MAKE_NONCOPYABLE(CCScopedTexture);
 public:
     static PassOwnPtr<CCScopedTexture> create(CCResourceProvider* resourceProvider) { return adoptPtr(new CCScopedTexture(resourceProvider)); }
     virtual ~CCScopedTexture();
@@ -37,6 +37,8 @@ private:
 #if !ASSERT_DISABLED
     base::PlatformThreadId m_allocateThreadIdentifier;
 #endif
+
+    DISALLOW_COPY_AND_ASSIGN(CCScopedTexture);
 };
 
 }

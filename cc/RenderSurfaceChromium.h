@@ -8,17 +8,16 @@
 
 #if USE(ACCELERATED_COMPOSITING)
 
+#include "base/basictypes.h"
 #include "FloatRect.h"
 #include "IntRect.h"
 #include <public/WebTransformationMatrix.h>
-#include <wtf/Noncopyable.h>
 
 namespace cc {
 
 class LayerChromium;
 
 class RenderSurfaceChromium {
-    WTF_MAKE_NONCOPYABLE(RenderSurfaceChromium);
 public:
     explicit RenderSurfaceChromium(LayerChromium*);
     ~RenderSurfaceChromium();
@@ -67,6 +66,8 @@ public:
     const RenderSurfaceChromium* nearestAncestorThatMovesPixels() const { return m_nearestAncestorThatMovesPixels; }
 
 private:
+    friend struct CCLayerIteratorActions;
+
     LayerChromium* m_owningLayer;
 
     // Uses this surface's space.
@@ -93,7 +94,8 @@ private:
     // For CCLayerIteratorActions
     int m_targetRenderSurfaceLayerIndexHistory;
     int m_currentLayerIndexHistory;
-    friend struct CCLayerIteratorActions;
+
+    DISALLOW_COPY_AND_ASSIGN(RenderSurfaceChromium);
 };
 
 }
