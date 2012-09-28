@@ -707,7 +707,9 @@ DirectoryModel.prototype.onRootChange_ = function(entry, event) {
  * @param {string} path New current directory path or new root.
  */
 DirectoryModel.prototype.changeRoot = function(path) {
-  if (this.getCurrentRootPath() == path)
+  if ((!DirectoryModel.isMountableRoot(path) ||
+       this.volumeManager_.isMounted(path)) &&
+      this.getCurrentRootPath() == path)
     return;
   if (this.currentDirByRoot_[path]) {
     this.resolveDirectory(
@@ -1120,6 +1122,27 @@ DirectoryModel.prototype.onMountChanged_ = function() {
 DirectoryModel.isSystemDirectory = function(path) {
   path = path.replace(/\/+$/, '');
   return path === RootDirectory.REMOVABLE || path === RootDirectory.ARCHIVE;
+};
+
+/**
+ * Check if the root of the given path is mountable or not.
+ *
+ * @param {string} path Path.
+ * @return {boolean} Return true, if the given path is under mountable root.
+ *     Otherwise, return false.
+ */
+DirectoryModel.isMountableRoot = function(path) {
+  var rootType = PathUtil.getRootType(path);
+  switch (rootType) {
+    case RootType.DOWNLOADS:
+      return false;
+    case RootType.ARCHIVE:
+    case RootType.REMOVABLE:
+    case RootType.GDATA:
+      return true;
+    default:
+      throw new Error('Unknown root type!');
+  }
 };
 
 /**
