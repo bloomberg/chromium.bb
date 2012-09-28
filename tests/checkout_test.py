@@ -307,7 +307,7 @@ class SvnCheckout(SvnBaseTest):
   def testException(self):
     self._check_exception(
         self._get_co(None),
-        'While running patch -p1 --forward --force;\n'
+        'While running patch -p1 --forward --force --no-backup-if-mismatch;\n'
         'patching file chrome/file.cc\n'
         'Hunk #1 FAILED at 3.\n'
         '1 out of 1 hunk FAILED -- saving rejects to file '
@@ -513,7 +513,7 @@ class ReadOnlyCheckout(SvnBaseTest):
   def testException(self):
     self._check_exception(
         self._get_co(None),
-        'While running patch -p1 --forward --force;\n'
+        'While running patch -p1 --forward --force --no-backup-if-mismatch;\n'
         'patching file chrome/file.cc\n'
         'Hunk #1 FAILED at 3.\n'
         '1 out of 1 hunk FAILED -- saving rejects to file '

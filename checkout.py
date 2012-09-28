@@ -343,7 +343,13 @@ class SvnCheckout(CheckoutBase, SvnMixIn):
               self._check_output_svn(
                   ['copy', p.source_filename, p.filename])
             if p.diff_hunks:
-              cmd = ['patch', '-p%s' % p.patchlevel, '--forward', '--force']
+              cmd = [
+                'patch',
+                '-p%s' % p.patchlevel,
+                '--forward',
+                '--force',
+                '--no-backup-if-mismatch',
+              ]
               stdout += subprocess2.check_output(
                   cmd, stdin=p.get(False), cwd=self.project_path)
             elif p.is_new and not os.path.exists(filepath):
