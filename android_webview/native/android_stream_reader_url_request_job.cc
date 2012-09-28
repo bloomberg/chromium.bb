@@ -28,7 +28,7 @@ using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
 using JNI_InputStream::Java_InputStream_available;
 using JNI_InputStream::Java_InputStream_skip;
-using JNI_InputStream::Java_InputStream_read;
+using JNI_InputStream::Java_InputStream_readI_AB_I_I;
 
 
 namespace {
@@ -149,7 +149,7 @@ bool AndroidStreamReaderURLRequestJob::ReadRawData(net::IOBuffer* dest,
     int read_size = std::min(dest_size, kBufferSize);
     // TODO(skyostil): Make this non-blocking
     int32_t byte_count =
-        Java_InputStream_read(env, stream_.obj(), buffer, 0, read_size);
+        Java_InputStream_readI_AB_I_I(env, stream_.obj(), buffer, 0, read_size);
     if (byte_count <= 0) {
       // net::URLRequestJob will call NotifyDone for us after the end of the
       // file is reached.

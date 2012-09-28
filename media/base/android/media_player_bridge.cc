@@ -11,6 +11,7 @@
 #include "base/stringprintf.h"
 #include "base/message_loop_proxy.h"
 #include "jni/MediaPlayerBridge_jni.h"
+#include "jni/MediaPlayer_jni.h"
 #include "media/base/android/cookie_getter.h"
 #include "media/base/android/media_player_bridge_manager.h"
 
@@ -90,15 +91,7 @@ void MediaPlayerBridge::InitializePlayer() {
   JNIEnv* env = AttachCurrentThread();
   CHECK(env);
 
-  j_media_player_class_.Reset(GetClass(env, "android/media/MediaPlayer"));
-
-  jmethodID constructor = GetMethodID(env,
-                                      j_media_player_class_,
-                                      "<init>",
-                                      "()V");
-  ScopedJavaLocalRef<jobject> tmp(
-      env, env->NewObject(j_media_player_class_.obj(), constructor));
-  j_media_player_.Reset(tmp);
+  j_media_player_.Reset(JNI_MediaPlayer::Java_MediaPlayer_Constructor(env));
 
   jobject j_context = base::android::GetApplicationContext();
   DCHECK(j_context);
@@ -113,12 +106,8 @@ void MediaPlayerBridge::SetVideoSurface(jobject surface) {
   JNIEnv* env = AttachCurrentThread();
   CHECK(env);
 
-  jmethodID method = GetMethodID(env,
-                                 j_media_player_class_,
-                                 "setSurface",
-                                 "(Landroid/view/Surface;)V");
-  env->CallVoidMethod(j_media_player_.obj(), method, surface);
-  CheckException(env);
+  JNI_MediaPlayer::Java_MediaPlayer_setSurface(
+      env, j_media_player_.obj(), surface);
 }
 
 void MediaPlayerBridge::Prepare() {
@@ -153,7 +142,8 @@ void MediaPlayerBridge::GetCookiesCallback(const std::string& cookies) {
       j_cookies.obj(), hide_url_log_)) {
     if (manager_)
       manager_->RequestMediaResources(this);
-    CallVoidMethod("prepareAsync");
+    JNI_MediaPlayer::Java_MediaPlayer_prepareAsync(
+        env, j_media_player_.obj());
   } else {
     media_error_cb_.Run(player_id_, MEDIA_ERROR_UNKNOWN);
   }
@@ -189,25 +179,25 @@ bool MediaPlayerBridge::IsPlaying() {
 
   JNIEnv* env = AttachCurrentThread();
   CHECK(env);
-
-  jmethodID method = GetMethodID(env, j_media_player_class_, "isPlaying",
-                                 "()Z");
-  jboolean result = env->CallBooleanMethod(j_media_player_.obj(), method);
-  CheckException(env);
-
+  jboolean result = JNI_MediaPlayer::Java_MediaPlayer_isPlaying(
+      env, j_media_player_.obj());
   return result;
 }
 
 int MediaPlayerBridge::GetVideoWidth() {
   if (!prepared_)
     return width_;
-  return CallIntMethod("getVideoWidth");
+  JNIEnv* env = AttachCurrentThread();
+  return JNI_MediaPlayer::Java_MediaPlayer_getVideoWidth(
+      env, j_media_player_.obj());
 }
 
 int MediaPlayerBridge::GetVideoHeight() {
   if (!prepared_)
     return height_;
-  return CallIntMethod("getVideoHeight");
+  JNIEnv* env = AttachCurrentThread();
+  return JNI_MediaPlayer::Java_MediaPlayer_getVideoHeight(
+      env, j_media_player_.obj());
 }
 
 void MediaPlayerBridge::SeekTo(base::TimeDelta time) {
@@ -223,13 +213,19 @@ void MediaPlayerBridge::SeekTo(base::TimeDelta time) {
 base::TimeDelta MediaPlayerBridge::GetCurrentTime() {
   if (!prepared_)
     return pending_seek_;
-  return base::TimeDelta::FromMilliseconds(CallIntMethod("getCurrentPosition"));
+  JNIEnv* env = AttachCurrentThread();
+  return base::TimeDelta::FromMilliseconds(
+      JNI_MediaPlayer::Java_MediaPlayer_getCurrentPosition(
+          env, j_media_player_.obj()));
 }
 
 base::TimeDelta MediaPlayerBridge::GetDuration() {
   if (!prepared_)
     return duration_;
-  return base::TimeDelta::FromMilliseconds(CallIntMethod("getDuration"));
+  JNIEnv* env = AttachCurrentThread();
+  return base::TimeDelta::FromMilliseconds(
+      JNI_MediaPlayer::Java_MediaPlayer_getDuration(
+          env, j_media_player_.obj()));
 }
 
 void MediaPlayerBridge::Release() {
@@ -244,7 +240,9 @@ void MediaPlayerBridge::Release() {
   prepared_ = false;
   pending_play_ = false;
   SetVideoSurface(NULL);
-  CallVoidMethod("release");
+
+  JNIEnv* env = AttachCurrentThread();
+  JNI_MediaPlayer::Java_MediaPlayer_release(env, j_media_player_.obj());
   j_media_player_.Reset();
 }
 
@@ -254,15 +252,8 @@ void MediaPlayerBridge::SetVolume(float left_volume, float right_volume) {
 
   JNIEnv* env = AttachCurrentThread();
   CHECK(env);
-
-  jmethodID method = GetMethodID(env,
-                                 j_media_player_class_,
-                                 "setVolume",
-                                 "(FF)V");
-  DCHECK(method);
-  env->CallVoidMethod(j_media_player_.obj(), method,
-                      left_volume, right_volume);
-  CheckException(env);
+  JNI_MediaPlayer::Java_MediaPlayer_setVolume(
+      env, j_media_player_.obj(), left_volume, right_volume);
 }
 
 void MediaPlayerBridge::DoTimeUpdate() {
@@ -326,19 +317,22 @@ void MediaPlayerBridge::GetMetadata() {
   JNIEnv* env = AttachCurrentThread();
   CHECK(env);
 
-  jmethodID method = GetMethodID(env,
-                                 j_media_player_class_,
-                                 "getMetadata",
-                                 "(ZZ)Landroid/media/Metadata;");
-  ScopedJavaLocalRef<jobject> j_metadata(env,
-      env->CallObjectMethod(j_media_player_.obj(),
-      method, JNI_FALSE, JNI_FALSE));
+  ScopedJavaLocalRef<jclass> media_player_class(
+      GetClass(env, "android/media/MediaPlayer"));
+  jmethodID method = GetMethodID(
+      env, media_player_class, "getMetadata",
+      "(ZZ)Landroid/media/Metadata;");
+  ScopedJavaLocalRef<jobject> j_metadata(
+      env, env->CallObjectMethod(
+          j_media_player_.obj(), method, JNI_FALSE, JNI_FALSE));
   CheckException(env);
   if (j_metadata.is_null())
     return;
 
-  ScopedJavaLocalRef<jclass> cls(GetClass(env, "android/media/Metadata"));
-  jmethodID get_boolean = GetMethodID(env, cls, "getBoolean", "(I)Z");
+  ScopedJavaLocalRef<jclass> metadata_class(
+      GetClass(env, "android/media/Metadata"));
+  jmethodID get_boolean = GetMethodID(
+      env, metadata_class, "getBoolean", "(I)Z");
   can_pause_ = env->CallBooleanMethod(j_metadata.obj(),
                                       get_boolean,
                                       kPauseAvailable);
@@ -354,7 +348,8 @@ void MediaPlayerBridge::GetMetadata() {
 }
 
 void MediaPlayerBridge::StartInternal() {
-  CallVoidMethod("start");
+  JNIEnv* env = AttachCurrentThread();
+  JNI_MediaPlayer::Java_MediaPlayer_start(env, j_media_player_.obj());
   if (!time_update_timer_.IsRunning()) {
     time_update_timer_.Start(
         FROM_HERE,
@@ -364,7 +359,8 @@ void MediaPlayerBridge::StartInternal() {
 }
 
 void MediaPlayerBridge::PauseInternal() {
-  CallVoidMethod("pause");
+  JNIEnv* env = AttachCurrentThread();
+  JNI_MediaPlayer::Java_MediaPlayer_pause(env, j_media_player_.obj());
   time_update_timer_.Stop();
 }
 
@@ -372,46 +368,16 @@ void MediaPlayerBridge::SeekInternal(base::TimeDelta time) {
   JNIEnv* env = AttachCurrentThread();
   CHECK(env);
 
-  jmethodID method = GetMethodID(env, j_media_player_class_, "seekTo", "(I)V");
-  DCHECK(method);
   int time_msec = static_cast<int>(time.InMilliseconds());
-  DCHECK_EQ(time.InMilliseconds(), static_cast<int64>(time_msec));
-  env->CallVoidMethod(j_media_player_.obj(),
-                      method,
-                      time_msec);
-  CheckException(env);
-}
-
-// ---- JNI Helpers for repeated call patterns. ----
-
-void MediaPlayerBridge::CallVoidMethod(std::string method_name) {
-  JNIEnv* env = AttachCurrentThread();
-  CHECK(env);
-
-  jmethodID method = GetMethodID(env,
-                                 j_media_player_class_,
-                                 method_name.c_str(),
-                                 "()V");
-  env->CallVoidMethod(j_media_player_.obj(), method);
-  CheckException(env);
-}
-
-int MediaPlayerBridge::CallIntMethod(std::string method_name) {
-  JNIEnv* env = AttachCurrentThread();
-  CHECK(env);
-
-  jmethodID method = GetMethodID(env,
-                                 j_media_player_class_,
-                                 method_name.c_str(),
-                                 "()I");
-  jint j_result = env->CallIntMethod(j_media_player_.obj(), method);
-  CheckException(env);
-  return j_result;
+  JNI_MediaPlayer::Java_MediaPlayer_seekTo(
+      env, j_media_player_.obj(), time_msec);
 }
 
 bool MediaPlayerBridge::RegisterMediaPlayerBridge(JNIEnv* env) {
   bool ret = RegisterNativesImpl(env);
   DCHECK(g_MediaPlayerBridge_clazz);
+  if (ret)
+    ret = JNI_MediaPlayer::RegisterNativesImpl(env);
   return ret;
 }
 

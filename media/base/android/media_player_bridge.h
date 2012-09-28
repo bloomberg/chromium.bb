@@ -142,9 +142,6 @@ class MediaPlayerBridge {
   bool prepared() { return prepared_; }
 
  private:
-  void CallVoidMethod(std::string method_name);
-  int CallIntMethod(std::string method_name);
-
   // Create the actual android media player.
   void InitializePlayer();
 
@@ -207,8 +204,7 @@ class MediaPlayerBridge {
   // Object for retrieving cookies for this media player.
   scoped_ptr<CookieGetter> cookie_getter_;
 
-  // Java MediaPlayer class and instance.
-  base::android::ScopedJavaGlobalRef<jclass> j_media_player_class_;
+  // Java MediaPlayer instance.
   base::android::ScopedJavaGlobalRef<jobject> j_media_player_;
 
   base::RepeatingTimer<MediaPlayerBridge> time_update_timer_;
