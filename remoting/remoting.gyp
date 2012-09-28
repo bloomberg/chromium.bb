@@ -191,11 +191,11 @@
       '<(DEPTH)/chrome/installer/mac/pkg-dmg',
     ],
     'remoting_host_installer_win_roots': [
-      'host/win/',
+      'host/installer/win/',
     ],
     'remoting_host_installer_win_files': [
-      'host/win/chromoting.wxs',
-      'host/win/parameters.json',
+      'host/installer/win/chromoting.wxs',
+      'host/installer/win/parameters.json',
     ],
   },
 
@@ -523,7 +523,7 @@
           ],
         },  # end of target 'remoting_elevated_controller'
         {
-          'target_name': 'remoting_host_controller',
+          'target_name': 'remoting_controller',
           'type': 'executable',
           'variables': { 'enable_wexit_time_destructors': 1, },
           'defines' : [
@@ -578,9 +578,9 @@
               'SubSystem': '2',
             },
           },
-        },  # end of target 'remoting_host_controller'
+        },  # end of target 'remoting_controller'
         {
-          'target_name': 'remoting_service',
+          'target_name': 'remoting_daemon',
           'type': 'executable',
           'variables': { 'enable_wexit_time_destructors': 1, },
           'dependencies': [
@@ -632,7 +632,7 @@
               'SubSystem': '2',
             },
           },
-        },  # end of target 'remoting_service'
+        },  # end of target 'remoting_daemon'
 
         # Generates the version information resources for the Windows binaries.
         # The .RC files are generated from the "version.rc.version" template and
@@ -748,8 +748,8 @@
           'target_name': 'remoting_me2me_host_archive',
           'type': 'none',
           'dependencies': [
-            'remoting_host_controller',
-            'remoting_service',
+            'remoting_controller',
+            'remoting_daemon',
             'remoting_me2me_host',
           ],
           'sources': [
@@ -765,16 +765,16 @@
             'VERSION=<(version_full)',
           ],
           'generated_files': [
-            '<(PRODUCT_DIR)/remoting_host_controller.exe',
-            '<(PRODUCT_DIR)/remoting_me2me_host.exe',
-            '<(PRODUCT_DIR)/remoting_service.exe',
+            '<(PRODUCT_DIR)/remoting_controller.exe',
+            '<(PRODUCT_DIR)/remoting_daemon.exe',
+            '<(PRODUCT_DIR)/remoting_host.exe',
             '<(sas_dll_path)/sas.dll',
             'resources/chromoting.ico',
           ],
           'generated_files_dst': [
-            'files/remoting_host_controller.exe',
-            'files/remoting_me2me_host.exe',
-            'files/remoting_service.exe',
+            'files/remoting_controller.exe',
+            'files/remoting_daemon.exe',
+            'files/remoting_host.exe',
             'files/sas.dll',
             'files/chromoting.ico',
           ],
@@ -1595,6 +1595,7 @@
           ],
         }],
         ['OS=="win"', {
+          'product_name': 'remoting_host',
           'dependencies': [
             'remoting_version_resources',
           ],
@@ -1625,6 +1626,9 @@
                   ],
                 }],
               ],
+              'ImportLibrary': '$(OutDir)\\lib\\remoting_host_exe.lib',
+              'OutputFile': '$(OutDir)\\remoting_host.exe',
+              'ProgramDatabaseFile': '$(OutDir)\\remoting_host.pdb',
               # 2 == /SUBSYSTEM:WINDOWS
               'SubSystem': '2',
             },

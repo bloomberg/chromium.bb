@@ -44,10 +44,10 @@ const int kMaxLaunchDelaySeconds = 60;
 const int kMinLaunchDelaySeconds = 1;
 
 const FilePath::CharType kMe2meHostBinaryName[] =
-    FILE_PATH_LITERAL("remoting_me2me_host.exe");
+    FILE_PATH_LITERAL("remoting_host.exe");
 
-const FilePath::CharType kMe2meServiceBinaryName[] =
-    FILE_PATH_LITERAL("remoting_service.exe");
+const FilePath::CharType kDaemonBinaryName[] =
+    FILE_PATH_LITERAL("remoting_daemon.exe");
 
 // The command line switch specifying the name of the daemon IPC endpoint.
 const char kDaemonIpcSwitchName[] = "daemon-pipe";
@@ -330,11 +330,11 @@ bool ElevatedProcessLauncher::DoLaunchProcess(
     LOG(ERROR) << "Failed to get the executable file name.";
     return false;
   }
-  FilePath service_binary = dir_path.Append(kMe2meServiceBinaryName);
+  FilePath daemon_binary = dir_path.Append(kDaemonBinaryName);
 
   // Create the command line passing the name of the IPC channel to use and
   // copying known switches from the caller's command line.
-  CommandLine command_line(service_binary);
+  CommandLine command_line(daemon_binary);
   command_line.AppendSwitchPath(kElevateSwitchName, binary_path_);
   command_line.AppendSwitchNative(kDaemonIpcSwitchName,
                                   UTF8ToWide(channel_name));
@@ -348,7 +348,7 @@ bool ElevatedProcessLauncher::DoLaunchProcess(
   // handle so that we get notified when the process terminates.
   ScopedHandle worker_process;
   ScopedHandle worker_thread;
-  if (!LaunchProcessWithToken(service_binary,
+  if (!LaunchProcessWithToken(daemon_binary,
                               command_line.GetCommandLineString(),
                               user_token_,
                               CREATE_SUSPENDED,

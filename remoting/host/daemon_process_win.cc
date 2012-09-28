@@ -29,7 +29,7 @@ const int kMaxLaunchDelaySeconds = 60;
 const int kMinLaunchDelaySeconds = 1;
 
 const FilePath::CharType kMe2meHostBinaryName[] =
-    FILE_PATH_LITERAL("remoting_me2me_host.exe");
+    FILE_PATH_LITERAL("remoting_host.exe");
 
 // The IPC channel name is passed to the networking process in the command line.
 const char kDaemonPipeSwitchName[] = "daemon-pipe";

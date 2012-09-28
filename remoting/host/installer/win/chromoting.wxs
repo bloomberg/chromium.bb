@@ -24,7 +24,7 @@
   <?define UpgradeCode = "2b21f767-e157-4fa6-963c-55834c1433a6" ?>
 
   <?define ControllerAppid = "{4ff35d5e-d226-4550-9248-03e7779e67de}" ?>
-  <?define ControllerBinary = "remoting_host_controller.exe" ?>
+  <?define ControllerBinary = "remoting_controller.exe" ?>
   <?define ControllerClass = "ElevatedController Class" ?>
   <?define ControllerProgid =
     "ChromotingElevatedController.ElevatedController" ?>
@@ -141,10 +141,10 @@
       <?endif?>
 
       <Component Id="remoting_daemon" Guid="*">
-        <File Id="remoting_service.exe"
+        <File Id="remoting_daemon.exe"
               DiskId="1"
               KeyPath="yes"
-              Name="remoting_service.exe"
+              Name="remoting_daemon.exe"
               Vital="yes"/>
 
         <ServiceInstall Id="install_service"
@@ -167,16 +167,16 @@
       </Component>
 
       <Component Id="remoting_host" Guid="*">
-        <File Id="remoting_me2me_host.exe"
+        <File Id="remoting_host.exe"
               DiskId="1"
-              Name="remoting_me2me_host.exe"
+              Name="remoting_host.exe"
               Vital="yes"/>
         <util:EventSource xmlns:util="http://schemas.microsoft.com/wix/UtilExtension"
                           Name="$(var.EventSourceName)"
                           Log="Application"
                           CategoryCount="1"
-                          CategoryMessageFile="[#remoting_me2me_host.exe]"
-                          EventMessageFile="[#remoting_me2me_host.exe]"
+                          CategoryMessageFile="[#remoting_host.exe]"
+                          EventMessageFile="[#remoting_host.exe]"
                           SupportsErrors="yes"
                           SupportsInformationals="yes"/>
 
@@ -185,7 +185,7 @@
                                 IgnoreFailure="yes"
                                 Name="$(var.FirewallName)"
                                 Profile="all"
-                                Program="[#remoting_me2me_host.exe]"
+                                Program="[#remoting_host.exe]"
                                 Scope="any" />
       </Component>
 
@@ -386,10 +386,10 @@
 
     <CustomAction Id="set_service_display_name"
                   Property="chromoting_service_display_name"
-                  Value="@[binaries]remoting_service.exe,-101" />
+                  Value="@[binaries]remoting_daemon.exe,-101" />
     <CustomAction Id="set_service_description"
                   Property="chromoting_service_description"
-                  Value="@[binaries]remoting_service.exe,-102" />
+                  Value="@[binaries]remoting_daemon.exe,-102" />
 
     <!-- XP does not support MUI strings in the service name and description, so
          we fall back to plain strings on XP. -->
