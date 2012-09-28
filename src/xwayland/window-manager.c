@@ -206,6 +206,9 @@ xcb_cursor_library_load_cursor(struct weston_wm *wm, const char *file)
 		size = 32;
 
 	images = XcursorLibraryLoadImages (file, NULL, size);
+	if (!images)
+		return -1;
+
 	cursor = xcb_cursor_images_load_cursor (wm, images);
 	XcursorImagesDestroy (images);
 
