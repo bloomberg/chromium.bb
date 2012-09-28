@@ -109,6 +109,14 @@ void GetArrowLocationAndUpdateAnchor(const gfx::Rect& work_area,
                                      int min_space_y,
                                      views::BubbleBorder::ArrowLocation* arrow,
                                      gfx::Point* anchor) {
+  // First ensure anchor is within the work area.
+  if (!work_area.Contains(*anchor)) {
+    anchor->set_x(std::max(anchor->x(), work_area.x()));
+    anchor->set_x(std::min(anchor->x(), work_area.right()));
+    anchor->set_y(std::max(anchor->y(), work_area.y()));
+    anchor->set_y(std::min(anchor->y(), work_area.bottom()));
+  }
+
   // Prefer the bottom as it is the most natural position.
   if (anchor->y() - work_area.y() >= min_space_y) {
     *arrow = views::BubbleBorder::BOTTOM_LEFT;
@@ -144,8 +152,6 @@ void UpdateArrowPositionAndAnchorPoint(app_list::AppListView* view) {
   int min_space_x = preferred.width() + kAnchorOffset + kPadding + kArrowSize;
   int min_space_y = preferred.height() + kAnchorOffset + kPadding + kArrowSize;
 
-  // TODO(benwells): Make sure the app list does not appear underneath
-  // the task bar.
   gfx::Point anchor = view->anchor_point();
   gfx::Display display = gfx::Screen::GetDisplayNearestPoint(anchor);
   const gfx::Rect& display_rect = display.work_area();
