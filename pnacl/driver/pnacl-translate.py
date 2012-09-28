@@ -113,7 +113,7 @@ EXTRA_ENV = {
 
   # LLC flags which set the target and output type.
   # These are handled separately by libLTO.
-  'LLC_FLAGS_TARGET' : '-mcpu=${LLC_MCPU_%ARCH%} ' +
+  'LLC_FLAGS_TARGET' : '-mcpu=${LLC_MCPU} ' +
                        '-mtriple=${TRIPLE} ' +
                        '-filetype=${filetype}',
   # Additional non-default flags go here.
@@ -160,11 +160,12 @@ EXTRA_ENV = {
                '${LLC_FLAGS_EXTRA} ' +
                '${FAST_TRANSLATION ? ${LLC_FLAGS_FAST} : ${LLC_FLAGS_SLOW}}',
 
-  'LLC_MARCH'       : '${LLC_MARCH_%ARCH%}',
-  'LLC_MARCH_ARM'   : 'arm',
-  'LLC_MARCH_X8632' : 'x86',
-  'LLC_MARCH_X8664' : 'x86-64',
-
+  # CPU that is representative of baseline feature requirements for NaCl
+  # and/or chrome.  We may want to make this more like "-mtune"
+  # by specifying both "-mcpu=X" and "-mattr=+feat1,-feat2,...".
+  # Note: this may be different from the in-browser translator, which may
+  # do auto feature detection based on CPUID, but constrained by what is
+  # accepted by NaCl validators.
   'LLC_MCPU'        : '${LLC_MCPU_%ARCH%}',
   'LLC_MCPU_ARM'    : 'cortex-a8',
   'LLC_MCPU_X8632'  : 'pentium4',
@@ -194,6 +195,8 @@ TranslatorPatterns = [
   ( '(-fdata-sections)',     "env.append('LLC_FLAGS_EXTRA', $0)"),
   ( '(-ffunction-sections)', "env.append('LLC_FLAGS_EXTRA', $0)"),
   ( '(--gc-sections)',       "env.append('LD_FLAGS', $0)"),
+  ( '(-mattr=.*)', "env.append('LLC_FLAGS_EXTRA', $0)"),
+  ( '-mcpu=(.*)', "env.set('LLC_MCPU', $0)"),
 
   # This adds arch specific flags to the llc invocation aimed at
   # improving translation speed at the expense of code quality.
@@ -574,9 +577,13 @@ PNaCl bitcode to native code translator.
 
 Usage: pnacl-translate [options] -arch <arch> <input> -o <output>
 
-  <input>            Input file (bitcode).
-  -arch <arch>       Translate to <arch> (i686, x86_64, armv7)
-  -o <output>        Output file.
+  <input>                 Input file (bitcode).
+  -arch <arch>            Translate to <arch> (i686, x86-64, armv7).
+                          Note: <arch> is a generic arch specifier.  This
+                          generates code assuming certain baseline CPU features,
+                          required by NaCl or Chrome. For finer control of
+                          tuning and features, see -mattr, and -mcpu.
+  -o <output>             Output file.
 
   The output file type depends on the input file type:
      Portable object (.po)         -> NaCl ELF object (.o)
@@ -584,7 +591,10 @@ Usage: pnacl-translate [options] -arch <arch> <input> -o <output>
      Portable executable (.pexe)   -> NaCl ELF executable (.nexe)
 
 ADVANCED OPTIONS:
-  -S                 Generate native assembly only.
-  -c                 Generate native object file only.
-  --pnacl-sb         Use the translator which runs inside the NaCl sandbox.
+  -mattr=<+feat1,-feat2>  Toggle specific cpu features on and off.
+  -mcpu=<cpu-name>        Target a specific cpu type.  Tunes code as well as
+                          turns cpu features on and off.
+  -S                      Generate native assembly only.
+  -c                      Generate native object file only.
+  --pnacl-sb              Use the translator which runs inside the NaCl sandbox.
 """
