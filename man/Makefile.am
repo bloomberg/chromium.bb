@@ -5,6 +5,7 @@
 #
 
 MANPAGES = \
+	drm.7 \
 	drmAvailable.3 \
 	drmHandleEvent.3 \
 	drmModeGetResources.3
