@@ -1139,23 +1139,23 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, Javascript) {
                POLICY_SCOPE_USER, base::Value::CreateBooleanValue(false));
   provider_.UpdateChromePolicy(policies);
   // Reload the page.
-  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kAboutBlankURL));
   EXPECT_FALSE(IsJavascriptEnabled(contents));
   // Developer tools still work when javascript is disabled.
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_DEV_TOOLS));
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_DEV_TOOLS_CONSOLE));
   // Javascript is always enabled for the internal pages.
-  ui_test_utils::NavigateToURL(browser(), GURL("chrome://settings"));
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIAboutURL));
   EXPECT_TRUE(IsJavascriptEnabled(contents));
 
   // The javascript content setting policy overrides the javascript policy.
-  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kAboutBlankURL));
   EXPECT_FALSE(IsJavascriptEnabled(contents));
   policies.Set(key::kDefaultJavaScriptSetting, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER,
                base::Value::CreateIntegerValue(CONTENT_SETTING_ALLOW));
   provider_.UpdateChromePolicy(policies);
-  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kAboutBlankURL));
   EXPECT_TRUE(IsJavascriptEnabled(contents));
 }
 
