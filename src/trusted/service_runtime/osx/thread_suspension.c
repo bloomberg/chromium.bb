@@ -59,7 +59,7 @@ void NaClUntrustedThreadSuspend(struct NaClAppThread *natp,
     result = thread_suspend(thread_port);
     if (result != KERN_SUCCESS) {
       NaClLog(LOG_FATAL, "NaClUntrustedThreadSuspend: "
-              "thread_suspend() call failed\n");
+              "thread_suspend() call failed: error %d\n", (int) result);
     }
 
     if (save_registers) {
@@ -76,7 +76,7 @@ void NaClUntrustedThreadSuspend(struct NaClAppThread *natp,
                                 &size);
       if (result != KERN_SUCCESS) {
         NaClLog(LOG_FATAL, "NaClUntrustedThreadSuspend: "
-                "thread_get_state() call failed\n");
+                "thread_get_state() call failed: error %d\n", (int) result);
       }
     }
   }
@@ -89,9 +89,10 @@ void NaClUntrustedThreadSuspend(struct NaClAppThread *natp,
 void NaClUntrustedThreadResume(struct NaClAppThread *natp) {
   if (natp->suspend_state == NACL_APP_THREAD_UNTRUSTED) {
     mach_port_t thread_port = pthread_mach_thread_np(natp->thread.tid);
-    if (thread_resume(thread_port) != 0) {
+    kern_return_t result = thread_resume(thread_port);
+    if (result != KERN_SUCCESS) {
       NaClLog(LOG_FATAL, "NaClUntrustedThreadResume: "
-              "thread_resume() call failed\n");
+              "thread_resume() call failed: error %d\n", (int) result);
     }
   }
   NaClXMutexUnlock(&natp->suspend_mu);
@@ -170,12 +171,13 @@ void NaClAppThreadSetSuspendedRegistersInternal(
                             (void *) &context_copy, size);
   if (result != KERN_SUCCESS) {
     NaClLog(LOG_FATAL, "NaClAppThreadSetSuspendedRegistersInternal: "
-            "thread_set_state() call failed\n");
+            "thread_set_state() call failed: error %d\n", result);
   }
 }
 
 int NaClAppThreadUnblockIfFaulted(struct NaClAppThread *natp, int *signal) {
   mach_port_t thread_port;
+  kern_return_t result;
   if (natp->fault_signal == 0) {
     return 0;
   }
@@ -188,9 +190,10 @@ int NaClAppThreadUnblockIfFaulted(struct NaClAppThread *natp, int *signal) {
    * call.
    */
   thread_port = pthread_mach_thread_np(natp->thread.tid);
-  if (thread_resume(thread_port) != KERN_SUCCESS) {
+  result = thread_resume(thread_port);
+  if (result != KERN_SUCCESS) {
     NaClLog(LOG_FATAL, "NaClAppThreadUnblockIfFaulted: "
-            "thread_resume() call failed\n");
+            "thread_resume() call failed: error %d\n", (int) result);
   }
   return 1;
 }
