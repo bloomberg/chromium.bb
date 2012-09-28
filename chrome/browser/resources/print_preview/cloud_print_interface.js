@@ -47,6 +47,7 @@ cr.define('cloudprint', function() {
   /**
    * Content type header value for a URL encoded HTTP request.
    * @type {string}
+   * @const
    * @private
    */
   CloudPrintInterface.URL_ENCODED_CONTENT_TYPE_ =
@@ -56,6 +57,7 @@ cr.define('cloudprint', function() {
    * Multi-part POST request boundary used in communication with Google
    * Cloud Print.
    * @type {string}
+   * @const
    * @private
    */
   CloudPrintInterface.MULTIPART_BOUNDARY_ =
@@ -64,11 +66,20 @@ cr.define('cloudprint', function() {
   /**
    * Content type header value for a multipart HTTP request.
    * @type {string}
+   * @const
    * @private
    */
   CloudPrintInterface.MULTIPART_CONTENT_TYPE_ =
       'multipart/form-data; boundary=' +
       CloudPrintInterface.MULTIPART_BOUNDARY_;
+
+  /**
+   * Regex that extracts Chrome's version from the user-agent string.
+   * @type {!RegExp}
+   * @const
+   * @private
+   */
+  CloudPrintInterface.VERSION_REGEXP_ = /.*Chrome\/([\d\.]+)/i;
 
   /**
    * Enumeration of JSON response fields from Google Cloud Print API.
@@ -88,12 +99,13 @@ cr.define('cloudprint', function() {
      *     printers.
      */
     search: function(isRecent) {
-      var params = {};
+      var params = [
+        new HttpParam('connection_status', 'ALL'),
+        new HttpParam('client', 'chrome')
+      ];
       if (isRecent) {
-        params['q'] = '^recent';
+        params.push(new HttpParam('q', '^recent'));
       }
-      params['connection_status'] = 'ALL';
-      params['client'] = 'chrome';
       this.sendRequest_('GET', 'search', params,
                         this.onSearchDone_.bind(this, isRecent));
     },
@@ -107,13 +119,23 @@ cr.define('cloudprint', function() {
      * @param {string} data Base64 encoded data of the document.
      */
     submit: function(destination, printTicketStore, data) {
-      var params = {
-        'printerid': destination.id,
-        'contentType': 'dataUrl',
-        'title': printTicketStore.getDocumentTitle(),
-        'capabilities': this.createPrintTicket_(destination, printTicketStore),
-        'content': 'data:application/pdf;base64,' + data,
-      };
+      var result =
+          CloudPrintInterface.VERSION_REGEXP_.exec(navigator.userAgent);
+      var chromeVersion = 'unknown';
+      if (result && result.length == 2) {
+        chromeVersion = result[1];
+      }
+      var params = [
+        new HttpParam('printerid', destination.id),
+        new HttpParam('contentType', 'dataUrl'),
+        new HttpParam('title', printTicketStore.getDocumentTitle()),
+        new HttpParam('capabilities',
+                      this.createPrintTicket_(destination, printTicketStore)),
+        new HttpParam('content', 'data:application/pdf;base64,' + data),
+        new HttpParam('tag',
+                      '__google__chrome_version=' + chromeVersion),
+        new HttpParam('tag', '__google__os=' + navigator.platform)
+      ];
       this.sendRequest_('POST', 'submit', params,
                         this.onSubmitDone_.bind(this));
     },
@@ -123,7 +145,7 @@ cr.define('cloudprint', function() {
      * @param {string} printerId ID of the printer to lookup.
      */
     printer: function(printerId) {
-      var params = {'printerid': printerId};
+      var params = [new HttpParam('printerid', printerId)];
       this.sendRequest_('GET', 'printer', params,
                         this.onPrinterDone_.bind(this, printerId));
     },
@@ -137,10 +159,10 @@ cr.define('cloudprint', function() {
      *     terms-of-service.
      */
     updatePrinterTosAcceptance: function(printerId, isAccepted) {
-      var params = {
-        'printerid': printerId,
-        'is_tos_accepted': isAccepted
-      };
+      var params = [
+        new HttpParam('printerid', printerId),
+        new HttpParam('is_tos_accepted', isAccepted)
+      ];
       this.sendRequest_('POST', 'update', params,
                         this.onUpdatePrinterTosAcceptanceDone_.bind(this));
     },
@@ -215,7 +237,8 @@ cr.define('cloudprint', function() {
      * Sends a request to the Google Cloud Print API.
      * @param {string} method HTTP method of the request.
      * @param {string} action Google Cloud Print action to perform.
-     * @param {Object} params HTTP parameters to include in the request.
+     * @param {Array.<!HttpParam>} params HTTP parameters to include in the
+     *     request.
      * @param {function(number, Object)} callback Callback to invoke when
      *     request completes.
      */
@@ -229,17 +252,16 @@ cr.define('cloudprint', function() {
 
       if (params) {
         if (method == 'GET') {
-          for (var paramName in params) {
-            url += '&' + paramName + '=' +
-                encodeURIComponent(params[paramName]);
-          }
-        } else {
-          body = '--' + CloudPrintInterface.MULTIPART_BOUNDARY_ + '\r\n';
-          for (var paramName in params) {
-            body += 'Content-Disposition: form-data; name=\"' + paramName +
-                '\"\r\n\r\n' + params[paramName] + '\r\n--' +
+          url = params.reduce(function(partialUrl, param) {
+            return partialUrl + '&' + param.name + '=' +
+                encodeURIComponent(param.value);
+          }, url);
+        } else if (method == 'POST') {
+          body = params.reduce(function(partialBody, param) {
+            return partialBody + 'Content-Disposition: form-data; name=\"' +
+                param.name + '\"\r\n\r\n' + param.value + '\r\n--' +
                 CloudPrintInterface.MULTIPART_BOUNDARY_ + '\r\n';
-          }
+          }, '--' + CloudPrintInterface.MULTIPART_BOUNDARY_ + '\r\n');
         }
       }
 
@@ -396,6 +418,26 @@ cr.define('cloudprint', function() {
         this.dispatchEvent(errorEvent);
       }
     }
+  };
+
+  /**
+   * Data structure that represents an HTTP parameter.
+   * @param {string} name Name of the parameter.
+   * @param {string} value Value of the parameter.
+   * @constructor
+   */
+  function HttpParam(name, value) {
+    /**
+     * Name of the parameter.
+     * @type {string}
+     */
+    this.name = name;
+
+    /**
+     * Name of the value.
+     * @type {string}
+     */
+    this.value = value;
   };
 
   // Export
