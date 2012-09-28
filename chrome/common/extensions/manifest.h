@@ -45,8 +45,10 @@ class Manifest {
 
   bool is_theme() const { return type_ == Extension::TYPE_THEME; }
   bool is_platform_app() const { return type_ == Extension::TYPE_PLATFORM_APP; }
-  bool is_packaged_app() const { return type_ == Extension::TYPE_PACKAGED_APP; }
   bool is_hosted_app() const { return type_ == Extension::TYPE_HOSTED_APP; }
+  bool is_legacy_packaged_app() const {
+    return type_ == Extension::TYPE_LEGACY_PACKAGED_APP;
+  }
 
   // These access the wrapped manifest value, returning false when the property
   // does not exist or if the manifest type can't access it.

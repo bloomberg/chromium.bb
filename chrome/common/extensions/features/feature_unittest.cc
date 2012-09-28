@@ -39,7 +39,7 @@ TEST_F(ExtensionFeatureTest, IsAvailableNullCase) {
     { "random-extension", Extension::TYPE_UNKNOWN,
       Feature::UNSPECIFIED_LOCATION, Feature::UNSPECIFIED_PLATFORM, -1,
       Feature::IS_AVAILABLE },
-    { "", Extension::TYPE_PACKAGED_APP,
+    { "", Extension::TYPE_LEGACY_PACKAGED_APP,
       Feature::UNSPECIFIED_LOCATION, Feature::UNSPECIFIED_PLATFORM, -1,
       Feature::IS_AVAILABLE },
     { "", Extension::TYPE_UNKNOWN,
@@ -87,23 +87,24 @@ TEST_F(ExtensionFeatureTest, Whitelist) {
       "", Extension::TYPE_UNKNOWN, Feature::UNSPECIFIED_LOCATION, -1,
       Feature::UNSPECIFIED_PLATFORM).result());
 
-  feature.extension_types()->insert(Extension::TYPE_PACKAGED_APP);
+  feature.extension_types()->insert(Extension::TYPE_LEGACY_PACKAGED_APP);
   EXPECT_EQ(Feature::NOT_FOUND_IN_WHITELIST, feature.IsAvailableToManifest(
-      "baz", Extension::TYPE_PACKAGED_APP, Feature::UNSPECIFIED_LOCATION, -1,
+      "baz", Extension::TYPE_LEGACY_PACKAGED_APP,
+      Feature::UNSPECIFIED_LOCATION, -1,
       Feature::UNSPECIFIED_PLATFORM).result());
 }
 
 TEST_F(ExtensionFeatureTest, PackageType) {
   Feature feature;
   feature.extension_types()->insert(Extension::TYPE_EXTENSION);
-  feature.extension_types()->insert(Extension::TYPE_PACKAGED_APP);
+  feature.extension_types()->insert(Extension::TYPE_LEGACY_PACKAGED_APP);
 
   EXPECT_EQ(Feature::IS_AVAILABLE, feature.IsAvailableToManifest(
       "", Extension::TYPE_EXTENSION, Feature::UNSPECIFIED_LOCATION, -1,
       Feature::UNSPECIFIED_PLATFORM).result());
   EXPECT_EQ(Feature::IS_AVAILABLE, feature.IsAvailableToManifest(
-      "", Extension::TYPE_PACKAGED_APP, Feature::UNSPECIFIED_LOCATION, -1,
-      Feature::UNSPECIFIED_PLATFORM).result());
+      "", Extension::TYPE_LEGACY_PACKAGED_APP, Feature::UNSPECIFIED_LOCATION,
+      -1, Feature::UNSPECIFIED_PLATFORM).result());
 
   EXPECT_EQ(Feature::INVALID_TYPE, feature.IsAvailableToManifest(
       "", Extension::TYPE_UNKNOWN, Feature::UNSPECIFIED_LOCATION, -1,
@@ -116,7 +117,7 @@ TEST_F(ExtensionFeatureTest, PackageType) {
 TEST_F(ExtensionFeatureTest, Context) {
   Feature feature;
   feature.contexts()->insert(Feature::BLESSED_EXTENSION_CONTEXT);
-  feature.extension_types()->insert(Extension::TYPE_PACKAGED_APP);
+  feature.extension_types()->insert(Extension::TYPE_LEGACY_PACKAGED_APP);
   feature.set_platform(Feature::CHROMEOS_PLATFORM);
   feature.set_min_manifest_version(21);
   feature.set_max_manifest_version(25);
@@ -145,7 +146,7 @@ TEST_F(ExtensionFeatureTest, Context) {
       extension.get(), Feature::BLESSED_EXTENSION_CONTEXT,
       Feature::CHROMEOS_PLATFORM).result());
   feature.extension_types()->clear();
-  feature.extension_types()->insert(Extension::TYPE_PACKAGED_APP);
+  feature.extension_types()->insert(Extension::TYPE_LEGACY_PACKAGED_APP);
 
   feature.contexts()->clear();
   feature.contexts()->insert(Feature::UNBLESSED_EXTENSION_CONTEXT);
@@ -284,7 +285,8 @@ TEST_F(ExtensionFeatureTest, ParsePackageTypes) {
   EXPECT_EQ(5u, feature->extension_types()->size());
   EXPECT_TRUE(feature->extension_types()->count(Extension::TYPE_EXTENSION));
   EXPECT_TRUE(feature->extension_types()->count(Extension::TYPE_THEME));
-  EXPECT_TRUE(feature->extension_types()->count(Extension::TYPE_PACKAGED_APP));
+  EXPECT_TRUE(feature->extension_types()->count(
+      Extension::TYPE_LEGACY_PACKAGED_APP));
   EXPECT_TRUE(feature->extension_types()->count(Extension::TYPE_HOSTED_APP));
   EXPECT_TRUE(feature->extension_types()->count(Extension::TYPE_PLATFORM_APP));
 

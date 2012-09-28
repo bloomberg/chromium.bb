@@ -117,7 +117,7 @@ TEST(ExtensionFromWebApp, Basic) {
 
   EXPECT_TRUE(extension->is_app());
   EXPECT_TRUE(extension->is_hosted_app());
-  EXPECT_FALSE(extension->is_packaged_app());
+  EXPECT_FALSE(extension->is_legacy_packaged_app());
 
   EXPECT_EQ("lJqm1+jncOHClAuwif1QxNJKfeV9Fbl9IBZx7FkNwkA=",
             extension->public_key());
@@ -160,7 +160,7 @@ TEST(ExtensionFromWebApp, Minimal) {
 
   EXPECT_TRUE(extension->is_app());
   EXPECT_TRUE(extension->is_hosted_app());
-  EXPECT_FALSE(extension->is_packaged_app());
+  EXPECT_FALSE(extension->is_legacy_packaged_app());
 
   EXPECT_EQ("lJqm1+jncOHClAuwif1QxNJKfeV9Fbl9IBZx7FkNwkA=",
             extension->public_key());

@@ -74,7 +74,7 @@ void MockExtensionService::AddExtensionWithIdAndPermissions(
     case Extension::TYPE_EXTENSION:
       break;
 
-    case Extension::TYPE_PACKAGED_APP: {
+    case Extension::TYPE_LEGACY_PACKAGED_APP: {
       DictionaryValue* app = new DictionaryValue();
       DictionaryValue* app_launch = new DictionaryValue();
       app_launch->SetString("local_path", "fake.html");

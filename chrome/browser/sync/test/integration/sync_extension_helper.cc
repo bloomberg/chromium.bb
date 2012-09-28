@@ -277,7 +277,7 @@ scoped_refptr<Extension> CreateExtension(
       source.Set(extension_manifest_keys::kTheme, new DictionaryValue());
       break;
     case Extension::TYPE_HOSTED_APP:
-    case Extension::TYPE_PACKAGED_APP:
+    case Extension::TYPE_LEGACY_PACKAGED_APP:
       source.Set(extension_manifest_keys::kApp, new DictionaryValue());
       source.SetString(extension_manifest_keys::kLaunchWebURL,
                        "http://www.example.com");

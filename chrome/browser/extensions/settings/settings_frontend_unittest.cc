@@ -140,7 +140,7 @@ TEST_F(ExtensionSettingsFrontendTest, SettingsPreservedAcrossReconstruction) {
 TEST_F(ExtensionSettingsFrontendTest, SettingsClearedOnUninstall) {
   const std::string id = "ext";
   profile_->GetMockExtensionService()->AddExtensionWithId(
-      id, Extension::TYPE_PACKAGED_APP);
+      id, Extension::TYPE_LEGACY_PACKAGED_APP);
 
   ValueStore* storage = util::GetStorage(id, frontend_.get());
 

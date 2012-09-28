@@ -21,7 +21,8 @@ struct Mappings {
   Mappings() {
     extension_types["extension"] = Extension::TYPE_EXTENSION;
     extension_types["theme"] = Extension::TYPE_THEME;
-    extension_types["packaged_app"] = Extension::TYPE_PACKAGED_APP;
+    extension_types["packaged_app"]
+        = Extension::TYPE_LEGACY_PACKAGED_APP;
     extension_types["hosted_app"] = Extension::TYPE_HOSTED_APP;
     extension_types["platform_app"] = Extension::TYPE_PLATFORM_APP;
 
@@ -145,7 +146,7 @@ std::string GetDisplayTypeName(Extension::Type type) {
       return "extension";
     case Extension::TYPE_HOSTED_APP:
       return "hosted app";
-    case Extension::TYPE_PACKAGED_APP:
+    case Extension::TYPE_LEGACY_PACKAGED_APP:
       return "legacy packaged app";
     case Extension::TYPE_PLATFORM_APP:
       return "packaged app";

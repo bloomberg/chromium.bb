@@ -104,7 +104,7 @@ void ChromeRenderViewHostObserver::InitRenderViewForExtensions() {
   // Some extensions use chrome:// URLs.
   Extension::Type type = extension->GetType();
   if (type == Extension::TYPE_EXTENSION ||
-      type == Extension::TYPE_PACKAGED_APP) {
+      type == Extension::TYPE_LEGACY_PACKAGED_APP) {
     ChildProcessSecurityPolicy::GetInstance()->GrantScheme(
         process->GetID(), chrome::kChromeUIScheme);
 
@@ -119,7 +119,7 @@ void ChromeRenderViewHostObserver::InitRenderViewForExtensions() {
     case Extension::TYPE_EXTENSION:
     case Extension::TYPE_USER_SCRIPT:
     case Extension::TYPE_HOSTED_APP:
-    case Extension::TYPE_PACKAGED_APP:
+    case Extension::TYPE_LEGACY_PACKAGED_APP:
     case Extension::TYPE_PLATFORM_APP:
       // Always send a Loaded message before ActivateExtension so that
       // ExtensionDispatcher knows what Extension is active, not just its ID.

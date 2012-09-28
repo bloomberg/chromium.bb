@@ -18,7 +18,7 @@ TEST(SimpleFeatureProvider, ManifestFeatures) {
   EXPECT_EQ(5u, feature->extension_types()->size());
   EXPECT_EQ(1u, feature->extension_types()->count(Extension::TYPE_EXTENSION));
   EXPECT_EQ(1u,
-            feature->extension_types()->count(Extension::TYPE_PACKAGED_APP));
+      feature->extension_types()->count(Extension::TYPE_LEGACY_PACKAGED_APP));
   EXPECT_EQ(1u,
             feature->extension_types()->count(Extension::TYPE_PLATFORM_APP));
   EXPECT_EQ(1u, feature->extension_types()->count(Extension::TYPE_HOSTED_APP));
@@ -57,7 +57,7 @@ TEST(SimpleFeatureProvider, PermissionFeatures) {
   EXPECT_EQ(3u, feature->extension_types()->size());
   EXPECT_EQ(1u, feature->extension_types()->count(Extension::TYPE_EXTENSION));
   EXPECT_EQ(1u,
-            feature->extension_types()->count(Extension::TYPE_PACKAGED_APP));
+      feature->extension_types()->count(Extension::TYPE_LEGACY_PACKAGED_APP));
   EXPECT_EQ(1u,
             feature->extension_types()->count(Extension::TYPE_PLATFORM_APP));
 

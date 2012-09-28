@@ -33,7 +33,7 @@ Manifest::Manifest(Extension::Location location,
     } else if (value_->Get(keys::kPlatformAppBackground, NULL)) {
       type_ = Extension::TYPE_PLATFORM_APP;
     } else {
-      type_ = Extension::TYPE_PACKAGED_APP;
+      type_ = Extension::TYPE_LEGACY_PACKAGED_APP;
     }
   } else {
     type_ = Extension::TYPE_EXTENSION;

@@ -31,8 +31,8 @@ class ManifestTest : public testing::Test {
     EXPECT_EQ(type == Extension::TYPE_THEME, manifest->is_theme());
     EXPECT_EQ(type == Extension::TYPE_PLATFORM_APP,
               manifest->is_platform_app());
-    EXPECT_EQ(type == Extension::TYPE_PACKAGED_APP,
-              manifest->is_packaged_app());
+    EXPECT_EQ(type == Extension::TYPE_LEGACY_PACKAGED_APP,
+              manifest->is_legacy_packaged_app());
     EXPECT_EQ(type == Extension::TYPE_HOSTED_APP, manifest->is_hosted_app());
   }
 
@@ -138,7 +138,7 @@ TEST_F(ManifestTest, ExtensionTypes) {
   // Packaged app.
   MutateManifest(
       &manifest, keys::kApp, new DictionaryValue());
-  AssertType(manifest.get(), Extension::TYPE_PACKAGED_APP);
+  AssertType(manifest.get(), Extension::TYPE_LEGACY_PACKAGED_APP);
 
   // Platform app.
   MutateManifest(

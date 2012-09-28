@@ -102,7 +102,7 @@ scoped_ptr<management::ExtensionInfo> CreateExtensionInfo(
       UserMayModifySettings(&extension, NULL);
   info->is_app = extension.is_app();
   if (info->is_app) {
-    if (extension.is_packaged_app())
+    if (extension.is_legacy_packaged_app())
       info->type = ExtensionInfo::TYPE_LEGACY_PACKAGED_APP;
     else if (extension.is_hosted_app())
       info->type = ExtensionInfo::TYPE_HOSTED_APP;

@@ -236,7 +236,7 @@ bool ExtensionDownloader::AddExtensionData(const std::string& id,
       ++url_stats_.extension_count;
       break;
     case Extension::TYPE_HOSTED_APP:
-    case Extension::TYPE_PACKAGED_APP:
+    case Extension::TYPE_LEGACY_PACKAGED_APP:
       ++url_stats_.app_count;
       break;
     case Extension::TYPE_UNKNOWN:

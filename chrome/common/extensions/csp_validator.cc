@@ -61,7 +61,7 @@ bool HasOnlySecureTokens(StringTokenizer& tokenizer, Extension::Type type) {
 
     // crbug.com/146487
     if (type == Extension::TYPE_EXTENSION ||
-        type == Extension::TYPE_PACKAGED_APP) {
+        type == Extension::TYPE_LEGACY_PACKAGED_APP) {
       if (source == "'unsafe-eval'")
         continue;
     }

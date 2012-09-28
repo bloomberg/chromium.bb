@@ -1704,7 +1704,7 @@ bool ChromeContentBrowserClient::AllowPepperSocketAPI(
   if (allowed_list == "*") {
     // The wildcard allows socket API only for packaged and platform apps.
     return extension &&
-        (extension->GetType() == Extension::TYPE_PACKAGED_APP ||
+        (extension->GetType() == Extension::TYPE_LEGACY_PACKAGED_APP ||
          extension->GetType() == Extension::TYPE_PLATFORM_APP);
   } else if (!allowed_list.empty()) {
     StringTokenizer t(allowed_list, ",");

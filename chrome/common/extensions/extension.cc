@@ -543,8 +543,8 @@ bool Extension::is_hosted_app() const {
   return manifest()->is_hosted_app();
 }
 
-bool Extension::is_packaged_app() const {
-  return manifest()->is_packaged_app();
+bool Extension::is_legacy_packaged_app() const {
+  return manifest()->is_legacy_packaged_app();
 }
 
 bool Extension::is_theme() const {
@@ -1225,7 +1225,7 @@ bool Extension::LoadLaunchURL(string16* error) {
     }
 
     launch_web_url_ = launch_url;
-  } else if (is_packaged_app() || is_hosted_app()) {
+  } else if (is_legacy_packaged_app() || is_hosted_app()) {
     *error = ASCIIToUTF16(errors::kLaunchURLRequired);
     return false;
   }
@@ -2002,7 +2002,7 @@ bool Extension::LoadWebIntentAction(const std::string& action_name,
   if (href.empty()) {
     if (is_hosted_app()) {
       href = launch_web_url();
-    } else if (is_packaged_app()) {
+    } else if (is_legacy_packaged_app()) {
       href = launch_local_path();
     }
   }
@@ -2628,7 +2628,7 @@ bool Extension::LoadChromeURLOverrides(string16* error) {
     chrome_url_overrides_[page] = GetResourceURL(val);
 
     // For component extensions, add override URL to extent patterns.
-    if (is_packaged_app() && location() == COMPONENT) {
+    if (is_legacy_packaged_app() && location() == COMPONENT) {
       URLPattern pattern(URLPattern::SCHEME_CHROMEUI);
       std::string url = base::StringPrintf(kOverrideExtentUrlPatternFormat,
                                            page.c_str());
@@ -3803,7 +3803,7 @@ Extension::SyncType Extension::GetSyncType() const {
         return SYNC_TYPE_NONE;
 
     case Extension::TYPE_HOSTED_APP:
-    case Extension::TYPE_PACKAGED_APP:
+    case Extension::TYPE_LEGACY_PACKAGED_APP:
         return SYNC_TYPE_APP;
 
     default:
