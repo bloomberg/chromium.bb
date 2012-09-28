@@ -46,13 +46,8 @@ ChromeWebUIDataSource* CreateVersionUIDataSource(Profile* profile) {
   html_source->AddLocalizedString("title", IDS_ABOUT_VERSION_TITLE);
   chrome::VersionInfo version_info;
   html_source->AddString("version", version_info.Version());
-  {
-    // http://crbug.com/79458: Need to evaluate the use of getting the version
-    // string on this thread.
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
-    html_source->AddString("version_modifier",
-                           chrome::VersionInfo::GetVersionStringModifier());
-  }
+  html_source->AddString("version_modifier",
+                         chrome::VersionInfo::GetVersionStringModifier());
   html_source->AddLocalizedString("os_name", IDS_ABOUT_VERSION_OS);
   html_source->AddLocalizedString("platform", IDS_PLATFORM_LABEL);
   html_source->AddString("os_type", version_info.OSType());
