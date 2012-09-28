@@ -46,7 +46,7 @@ uint32_t Session::GetFlags() {
 }
 
 bool Session::IsDataAvailable() {
-  return io_->ReadWaitWithTimeout(0);
+  return io_->IsDataAvailable();
 }
 
 bool Session::Connected() {

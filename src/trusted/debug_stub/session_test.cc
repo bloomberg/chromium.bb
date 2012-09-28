@@ -48,13 +48,11 @@ class DCSocketTransport : public port::ITransport {
     return false;
   }
 
-  virtual bool ReadWaitWithTimeout(uint32_t ms) {
-    (void) ms;
+  virtual bool IsDataAvailable() {
     return true;
   }
 
   virtual void Disconnect() {}
-  virtual bool DataAvail() { return true; }
 };
 
 
@@ -95,22 +93,14 @@ class GoldenTransport : public port::ITransport {
     return true;
   }
 
-  virtual bool ReadWaitWithTimeout(uint32_t ms) {
+  virtual bool IsDataAvailable() {
     if (disconnected_) return true;
 
-    for (int loop = 0; loop < 8; loop++) {
-      if (DataAvail()) return true;
-      port::IPlatform::Relinquish(ms >> 3);
-    }
-    return false;
+    return rxCnt_ < static_cast<int>(strlen(rx_));
   }
 
   virtual void Disconnect() {
     disconnected_ = true;
-  }
-
-  virtual bool DataAvail() {
-     return rxCnt_ < static_cast<int>(strlen(rx_));
   }
 
   int errs() { return errs_; }
@@ -137,7 +127,6 @@ class TestTransport : public port::ITransport {
 
   virtual bool Read(void *ptr, int32_t len) {
     if (disconnected_) return false;
-    DataAvail();
 
     int max = rvector_->wr - rvector_->rd;
     if (max > len) {
@@ -163,23 +152,14 @@ class TestTransport : public port::ITransport {
     return true;
   }
 
-  virtual bool ReadWaitWithTimeout(uint32_t ms) {
+  virtual bool IsDataAvailable() {
     if (disconnected_) return true;
 
-    for (int loop = 0; loop < 8; loop++) {
-      if (DataAvail()) return true;
-      port::IPlatform::Relinquish(ms >> 3);
-    }
-    return false;
+    return rvector_->rd < rvector_->wr;
   }
 
   virtual void Disconnect() {
     disconnected_ = true;
-  }
-
-  //  Return true if vec->data is availible (
-  virtual bool DataAvail() {
-     return (rvector_->rd < rvector_->wr);
   }
 
  protected:

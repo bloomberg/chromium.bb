@@ -51,8 +51,8 @@ class Transport : public ITransport {
   // Write to this transport, return true on success.
   virtual bool Write(const void *ptr, int32_t len);
 
-  // Return true if data becomes availible or false after ms milliseconds.
-  virtual bool ReadWaitWithTimeout(uint32_t ms = 0) {
+  // Return true if there is data to read.
+  virtual bool IsDataAvailable() {
     if (pos_ < size_) {
       return true;
     }
@@ -63,14 +63,14 @@ class Transport : public ITransport {
 
     // We want a "non-blocking" check
     struct timeval timeout;
-    timeout.tv_sec = ms / 1000;
-    timeout.tv_usec = (ms % 1000) * 1000;
+    timeout.tv_sec = 0;
+    timeout.tv_usec = 0;
 
     // Check if this file handle can select on read
     int cnt = select(static_cast<int>(handle_) + 1, &fds, 0, 0, &timeout);
 
     // If we are ready, or if there is an error.  We return true
-    // on error, to "timeout" and let the next IO request fail.
+    // on error, to let the next IO request fail.
     if (cnt != 0) return true;
 
     return false;
