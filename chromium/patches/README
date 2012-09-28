@@ -1,4 +1,4 @@
-Current Status as of Aug 2, 2012
+Current Status as of Sep 28, 2012
 
 
 Upstream cherry-picks:
@@ -12,6 +12,8 @@ a9511ce dsputil: make add_hfyu_left_prediction_sse4() support unaligned src.
 fd73a17 oggdec: simplify start time calculation code.
 6b063c8 oggdec: check stream index before using it in ogg_get_length()
 7274a3f mov: dont clip timestamps at 0
+0575772 avformat: Identify anonymous AVIO typedef structs.
+94041fe mpegaudiodec: prevent out-of-bounds stack write in exponent table.
 
 
 Current patches:
