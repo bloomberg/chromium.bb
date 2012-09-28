@@ -497,6 +497,10 @@ void Shell::Init() {
 
   if (initially_hide_cursor_)
     cursor_manager_.ShowCursor(false);
+
+  // Cursor might have been hidden by somethign other than chrome.
+  // Let the first mouse event show the cursor.
+  env_filter_->set_cursor_hidden_by_filter(true);
 }
 
 void Shell::AddEnvEventFilter(aura::EventFilter* filter) {

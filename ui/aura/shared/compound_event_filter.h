@@ -40,6 +40,12 @@ class AURA_EXPORT CompoundEventFilter : public EventFilter {
   // Returns the cursor for the specified component.
   static gfx::NativeCursor CursorForWindowComponent(int window_component);
 
+  // Used to allow a mouse event to show the cursor even when
+  // the cursor is hidden by |CursorClient::ShowCursor(false)|.
+  void set_cursor_hidden_by_filter(bool cursor_hidden_by_filter) {
+    cursor_hidden_by_filter_ = cursor_hidden_by_filter;
+  }
+
   // Adds/removes additional event filters. This does not take ownership of
   // the EventFilter.
   // NOTE: EventFilters are deprecated. Use env::AddPreTargetEventHandler etc.
