@@ -133,6 +133,8 @@ def MakeEnv(use_opts, use_frames):
   #       for stack_frame.cc and eh_return.c and other solutions
   #       aren't pretty either.
   new_env.Append(CPPDEFINES=['TARGET_FULLARCH=${TARGET_FULLARCH}'])
+  # TODO(mseaborn): Fix this test to build OK with -Wundef.
+  new_env.FilterOut(CCFLAGS=['-Wundef'])
   new_env.FilterOut(CFLAGS=['-pedantic'])
   new_env.FilterOut(CCFLAGS=['-pedantic'])
   if use_frames:

@@ -168,7 +168,7 @@ brk_sane:
         call write_char
         addl $8, %esp
 
-#if EXPECTED_RODATA != 0
+#if defined(EXPECTED_RODATA)
         pushl $12
         pushl $ro_str
         pushl $1
@@ -219,7 +219,7 @@ ro_sane:
 #endif
 end_of_text:
 
-#if EXPECTED_RODATA != 0
+#if defined(EXPECTED_RODATA)
         .section .rodata
 ro_str: .ascii "Hello world\n"
         /*      123456789012 */

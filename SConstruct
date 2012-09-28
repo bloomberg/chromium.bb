@@ -2599,6 +2599,15 @@ nacl_env.Append(
         ['DYNAMIC_ANNOTATIONS_PREFIX', 'NACL_' ],
         ],
     )
+# TODO(mseaborn): Enable -Wundef for PNaCl too.  It currently does not
+# work with PNaCl because PNaCl's driver script adds -DNACL_LINUX=1,
+# which conflicts with the definition below.
+if not nacl_env.Bit('bitcode'):
+  nacl_env.Append(CCFLAGS=['-Wundef'])
+  nacl_env.Append(CPPDEFINES=[['NACL_WINDOWS', '0'],
+                              ['NACL_OSX', '0'],
+                              ['NACL_LINUX', '0'],
+                              ['NACL_ANDROID', '0']])
 
 def FixWindowsAssembler(env):
   if env.Bit('host_windows'):

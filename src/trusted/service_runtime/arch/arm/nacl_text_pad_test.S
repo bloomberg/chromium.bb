@@ -174,7 +174,7 @@ _start:
         nop
         bl write_char
 
-#if EXPECTED_RODATA != 0
+#if defined(EXPECTED_RODATA)
         mov r2, #12
         movw r1, :lower16:(ro_str)
         movt r1, :upper16:(ro_str)
@@ -232,7 +232,7 @@ _start:
 
 end_of_text:
 
-#if EXPECTED_RODATA != 0
+#if defined(EXPECTED_RODATA)
         .section .rodata
 ro_str: .ascii "Hello world\n"
         /*      123456789012 */

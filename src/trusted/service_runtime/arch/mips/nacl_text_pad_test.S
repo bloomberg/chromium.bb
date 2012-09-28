@@ -171,7 +171,7 @@ _start:
         jal   write_char
         nop
 
-#if EXPECTED_RODATA != 0
+#if defined(EXPECTED_RODATA)
         addu  $a2, $zero, 12
         lui   $a1, %hi(ro_str)
         addiu $a1, $a1, %lo(ro_str)
@@ -245,7 +245,7 @@ _start:
 
 end_of_text:
 
-#if EXPECTED_RODATA != 0
+#if defined(EXPECTED_RODATA)
         .section .rodata
 ro_str: .ascii "Hello world\n"
 #endif

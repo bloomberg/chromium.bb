@@ -153,7 +153,7 @@ brk_sane:
         movq $1, %rdi
         call write_char
 
-#if EXPECTED_RODATA != 0
+#if defined(EXPECTED_RODATA)
         movq $12, %rdx
         movq $ro_str, %rsi
         movq $1, %rdi
@@ -201,7 +201,7 @@ ro_sane:
 #endif
 end_of_text:
 
-#if EXPECTED_RODATA != 0
+#if defined(EXPECTED_RODATA)
         .section .rodata
 ro_str: .ascii "Hello world\n"
         /*      123456789012 */
