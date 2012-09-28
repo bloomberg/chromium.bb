@@ -13,6 +13,9 @@
 
 void CallMe(void (*func)(int), int);
 
+int runtime_zero;
+void i_am_not_a_leaf(void) {
+}
 
 /*
  * Calling through several layers of functions, varying arguments to yield
@@ -21,6 +24,14 @@ void CallMe(void (*func)(int), int);
 
 void layer5(int x, int y) {
   *(volatile int *) x = y;
+
+  /*
+   * This ensures that this is not compiled as a leaf function.
+   * On ARM, a leaf function lays out the frame differently enough
+   * that the simple-minded frame-chasing logic will fall over.
+   */
+  if (runtime_zero)
+    i_am_not_a_leaf();
 }
 
 void layer4(int x) {

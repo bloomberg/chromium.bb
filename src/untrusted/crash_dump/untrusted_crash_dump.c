@@ -114,9 +114,37 @@ static void PrintSegments(FILE *core) {
 
 #endif  /* __GLIBC__ */
 
-uintptr_t SafeRead(uintptr_t a) {
+static uintptr_t SafeRead(uintptr_t a) {
   /* TODO(bradnelson): use exception handling to recover from reads. */
   return *(uintptr_t*)a;
+}
+
+static uintptr_t FrameLocPC(uintptr_t fp) {
+#if defined(__arm__)
+  return fp;
+#elif defined(__x86_64__)
+  return fp + 8;
+#else
+  return fp + 4;
+#endif
+}
+
+static uintptr_t FrameLocNext(uintptr_t fp) {
+#if defined(__arm__)
+  return fp - 4;
+#else
+  return fp;
+#endif
+}
+
+static uintptr_t FrameLocArgs(uintptr_t fp) {
+#if defined(__arm__)
+  return fp + 4;
+#elif defined(__x86_64__)
+  return fp + 8;
+#else
+  return fp + 16;
+#endif
 }
 
 static void StackWalk(FILE *core, struct NaClExceptionContext *context) {
@@ -129,7 +157,7 @@ static void StackWalk(FILE *core, struct NaClExceptionContext *context) {
 
   fprintf(core, "\"frames\": [\n");
   for (;;) {
-    next = SafeRead(frame_ptr);
+    next = SafeRead(FrameLocNext(frame_ptr));
     if (next <= frame_ptr || next == 0) {
       break;
     }
@@ -142,11 +170,7 @@ static void StackWalk(FILE *core, struct NaClExceptionContext *context) {
     fprintf(core, "\"frame_ptr\": %"NACL_PRIuPTR",\n", frame_ptr);
     fprintf(core, "\"prog_ctr\": %"NACL_PRIuPTR",\n", prog_ctr);
     fprintf(core, "\"data\": [\n");
-#if defined(__x86_64__)
-    args_start = frame_ptr + 8;
-#else
-    args_start = frame_ptr + 16;
-#endif
+    args_start = FrameLocArgs(frame_ptr);
     for (i = args_start; i < next; i += 4) {
       if (i != args_start) {
         fprintf(core, ",");
@@ -156,11 +180,7 @@ static void StackWalk(FILE *core, struct NaClExceptionContext *context) {
     fprintf(core, "]\n");
     fprintf(core, "}\n");
 
-#if defined(__x86_64__)
-    prog_ctr = SafeRead(frame_ptr + 8);
-#else
-    prog_ctr = SafeRead(frame_ptr + 4);
-#endif
+    prog_ctr = SafeRead(FrameLocPC(frame_ptr));
     frame_ptr = next;
   }
 
