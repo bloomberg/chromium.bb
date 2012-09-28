@@ -250,13 +250,6 @@ void WebContentsViewMac::RestoreFocus() {
   focus_tracker_.reset(nil);
 }
 
-bool WebContentsViewMac::IsDoingDrag() const {
-  return false;
-}
-
-void WebContentsViewMac::CancelDragAndCloseTab() {
-}
-
 WebDropData* WebContentsViewMac::GetDropData() const {
   return [cocoa_view_ dropData];
 }
@@ -515,6 +508,7 @@ void WebContentsViewMac::CloseTab() {
 
 - (void)clearWebContentsView {
   webContentsView_ = NULL;
+  [dragSource_ clearWebContentsView];
 }
 
 - (void)closeTabAfterEvent {

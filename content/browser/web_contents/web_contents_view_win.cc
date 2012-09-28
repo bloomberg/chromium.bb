@@ -99,7 +99,6 @@ WebContentsViewWin::WebContentsViewWin(WebContentsImpl* web_contents,
     : web_contents_(web_contents),
       view_(NULL),
       delegate_(delegate),
-      close_tab_after_drag_ends_(false),
       hwnd_message_filter_(new PositionChangedMessageFilter) {
 }
 
@@ -233,19 +232,6 @@ void WebContentsViewWin::RestoreFocus() {
     delegate_->RestoreFocus();
 }
 
-bool WebContentsViewWin::IsDoingDrag() const {
-  return drag_handler_.get() != NULL;
-}
-
-void WebContentsViewWin::CancelDragAndCloseTab() {
-  DCHECK(IsDoingDrag());
-  // We can't close the tab while we're in the drag and
-  // |drag_handler_->CancelDrag()| is async.  Instead, set a flag to cancel
-  // the drag and when the drag nested message loop ends, close the tab.
-  drag_handler_->CancelDrag();
-  close_tab_after_drag_ends_ = true;
-}
-
 WebDropData* WebContentsViewWin::GetDropData() const {
   return drag_dest_->current_drop_data();
 }
@@ -312,10 +298,6 @@ void WebContentsViewWin::TakeFocus(bool reverse) {
 
 void WebContentsViewWin::EndDragging() {
   drag_handler_ = NULL;
-  if (close_tab_after_drag_ends_) {
-    close_tab_timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(0),
-                           this, &WebContentsViewWin::CloseTab);
-  }
   web_contents_->SystemDragEnded();
 }
 
@@ -336,6 +318,10 @@ LRESULT WebContentsViewWin::OnDestroy(
   if (drag_dest_.get()) {
     RevokeDragDrop(GetNativeView());
     drag_dest_ = NULL;
+  }
+  if (drag_handler_.get()) {
+    drag_handler_->CancelDrag();
+    drag_handler_ = NULL;
   }
   return 0;
 }

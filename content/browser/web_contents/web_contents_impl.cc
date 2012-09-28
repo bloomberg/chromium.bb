@@ -2814,21 +2814,11 @@ void WebContentsImpl::Close(RenderViewHost* rvh) {
   // mouse-down and mouse-up in text selection or a button click.
   // Defer the close until after tracking is complete, so that we
   // don't free objects out from under the UI.
-  // TODO(shess): This could probably be integrated with the
-  // IsDoingDrag() test below.  Punting for now because I need more
-  // research to understand how this impacts platforms other than Mac.
   // TODO(shess): This could get more fine-grained.  For instance,
   // closing a tab in another window while selecting text in the
   // current window's Omnibox should be just fine.
   if (GetView()->IsEventTracking()) {
     GetView()->CloseTabAfterEventTracking();
-    return;
-  }
-
-  // If we close the tab while we're in the middle of a drag, we'll crash.
-  // Instead, cancel the drag and close it as soon as the drag ends.
-  if (GetView()->IsDoingDrag()) {
-    GetView()->CancelDragAndCloseTab();
     return;
   }
 

@@ -58,6 +58,9 @@ struct WebDropData;
             pasteboard:(NSPasteboard*)pboard
      dragOperationMask:(NSDragOperation)dragOperationMask;
 
+// Call when the web contents is gone.
+- (void)clearWebContentsView;
+
 // Returns a mask of the allowed drag operations.
 - (NSDragOperation)draggingSourceOperationMaskForLocal:(BOOL)isLocal;
 

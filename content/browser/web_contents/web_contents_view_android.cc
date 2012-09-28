@@ -130,15 +130,6 @@ void WebContentsViewAndroid::RestoreFocus() {
   NOTIMPLEMENTED();
 }
 
-bool WebContentsViewAndroid::IsDoingDrag() const {
-  NOTIMPLEMENTED();
-  return false;
-}
-
-void WebContentsViewAndroid::CancelDragAndCloseTab() {
-  NOTIMPLEMENTED();
-}
-
 WebDropData* WebContentsViewAndroid::GetDropData() const {
   NOTIMPLEMENTED();
   return NULL;

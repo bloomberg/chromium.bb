@@ -9,6 +9,10 @@
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/web_contents/interstitial_page_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_source.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -46,11 +50,15 @@ namespace {
 
 // Listens to all mouse drag events during a drag and drop and sends them to
 // the renderer.
-class WebDragSourceAura : public MessageLoopForUI::Observer {
+class WebDragSourceAura : public MessageLoopForUI::Observer,
+                          public content::NotificationObserver {
  public:
-  explicit WebDragSourceAura(WebContentsImpl* contents)
-      : contents_(contents) {
+  WebDragSourceAura(aura::Window* window, WebContentsImpl* contents)
+      : window_(window),
+        contents_(contents) {
     MessageLoopForUI::current()->AddObserver(this);
+    registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
+                   content::Source<content::WebContents>(contents));
   }
 
   virtual ~WebDragSourceAura() {
@@ -63,6 +71,8 @@ class WebDragSourceAura : public MessageLoopForUI::Observer {
     return base::EVENT_CONTINUE;
   }
   virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE {
+    if (!contents_)
+      return;
     ui::EventType type = ui::EventTypeFromNative(event);
     content::RenderViewHost* rvh = NULL;
     switch (type) {
@@ -85,9 +95,28 @@ class WebDragSourceAura : public MessageLoopForUI::Observer {
     }
   }
 
+  virtual void Observe(int type,
+      const content::NotificationSource& source,
+      const content::NotificationDetails& details) OVERRIDE {
+    if (type != content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED)
+      return;
+
+    // Cancel the drag if it is still in progress.
+    aura::client::DragDropClient* dnd_client =
+        aura::client::GetDragDropClient(window_->GetRootWindow());
+    if (dnd_client && dnd_client->IsDragDropInProgress())
+      dnd_client->DragCancel();
+
+    window_ = NULL;
+    contents_ = NULL;
+  }
+
+  aura::Window* window() const { return window_; }
 
  private:
+  aura::Window* window_;
   WebContentsImpl* contents_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDragSourceAura);
 };
@@ -213,7 +242,6 @@ WebContentsViewAura::WebContentsViewAura(
       view_(NULL),
       delegate_(delegate),
       current_drag_op_(WebKit::WebDragOperationNone),
-      close_tab_after_drag_ends_(false),
       drag_dest_delegate_(NULL),
       current_rvh_for_drag_(NULL) {
 }
@@ -370,25 +398,6 @@ void WebContentsViewAura::RestoreFocus() {
     delegate_->RestoreFocus();
 }
 
-bool WebContentsViewAura::IsDoingDrag() const {
-  aura::RootWindow* root_window = GetNativeView()->GetRootWindow();
-  if (aura::client::GetDragDropClient(root_window))
-    return aura::client::GetDragDropClient(root_window)->IsDragDropInProgress();
-  return false;
-}
-
-void WebContentsViewAura::CancelDragAndCloseTab() {
-  DCHECK(IsDoingDrag());
-  // We can't close the tab while we're in the drag and
-  // |drag_handler_->CancelDrag()| is async.  Instead, set a flag to cancel
-  // the drag and when the drag nested message loop ends, close the tab.
-  aura::RootWindow* root_window = GetNativeView()->GetRootWindow();
-  if (aura::client::GetDragDropClient(root_window))
-    aura::client::GetDragDropClient(root_window)->DragCancel();
-
-  close_tab_after_drag_ends_ = true;
-}
-
 WebDropData* WebContentsViewAura::GetDropData() const {
   return NULL;
 }
@@ -443,7 +452,7 @@ void WebContentsViewAura::StartDragging(
   ui::OSExchangeData data(provider);  // takes ownership of |provider|.
 
   scoped_ptr<WebDragSourceAura> drag_source(
-      new WebDragSourceAura(web_contents_));
+      new WebDragSourceAura(GetNativeView(), web_contents_));
 
   // We need to enable recursive tasks on the message loop so we can get
   // updates while in the system DoDragDrop loop.
@@ -458,6 +467,14 @@ void WebContentsViewAura::StartDragging(
     result_op = aura::client::GetDragDropClient(root_window)->StartDragAndDrop(
         data, root_window, location, ConvertFromWeb(operations));
   }
+
+  // Bail out immediately if the contents view window is gone. Note that it is
+  // not safe to access any class members after system drag-and-drop returns
+  // since the class instance might be gone. The local variable |drag_source|
+  // is still valid and we can check its window property that is set to NULL
+  // when the contents are gone.
+  if (!drag_source->window())
+    return;
 
   EndDrag(ConvertToWeb(result_op));
   web_contents_->GetRenderViewHost()->DragSourceSystemDragEnded();

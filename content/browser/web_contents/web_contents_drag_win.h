@@ -67,7 +67,11 @@ class CONTENT_EXPORT WebContentsDragWin
                                   ui::OSExchangeData* data);
   void PrepareDragForUrl(const WebDropData& drop_data,
                          ui::OSExchangeData* data);
-  void DoDragging(const WebDropData& drop_data,
+  // Returns false if the source window becomes invalid when the drag ends.
+  // This could happen when the window gets destroyed when the drag is still in
+  // progress. No further processing should be done beyond this return point
+  // because the instance has been destroyed.
+  bool DoDragging(const WebDropData& drop_data,
                   WebKit::WebDragOperationsMask ops,
                   const GURL& page_url,
                   const std::string& page_encoding,

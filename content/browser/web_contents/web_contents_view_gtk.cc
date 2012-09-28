@@ -242,13 +242,6 @@ void WebContentsViewGtk::RestoreFocus() {
     SetInitialFocus();
 }
 
-bool WebContentsViewGtk::IsDoingDrag() const {
-  return false;
-}
-
-void WebContentsViewGtk::CancelDragAndCloseTab() {
-}
-
 WebDropData* WebContentsViewGtk::GetDropData() const {
   return drag_dest_->current_drop_data();
 }

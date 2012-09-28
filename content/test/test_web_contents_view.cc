@@ -90,13 +90,6 @@ void TestWebContentsView::StoreFocus() {
 void TestWebContentsView::RestoreFocus() {
 }
 
-bool TestWebContentsView::IsDoingDrag() const {
-  return false;
-}
-
-void TestWebContentsView::CancelDragAndCloseTab() {
-}
-
 WebDropData* TestWebContentsView::GetDropData() const {
   return NULL;
 }

@@ -135,6 +135,11 @@ void PromiseWriterHelper(const WebDropData& drop_data,
   return self;
 }
 
+- (void)clearWebContentsView {
+  contents_ = nil;
+  contentsView_ = nil;
+}
+
 - (NSDragOperation)draggingSourceOperationMaskForLocal:(BOOL)isLocal {
   return dragOperationMask_;
 }
@@ -268,6 +273,8 @@ void PromiseWriterHelper(const WebDropData& drop_data,
 
 - (void)endDragAt:(NSPoint)screenPoint
         operation:(NSDragOperation)operation {
+  if (!contents_)
+    return;
   contents_->SystemDragEnded();
 
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
@@ -299,6 +306,8 @@ void PromiseWriterHelper(const WebDropData& drop_data,
 }
 
 - (void)moveDragTo:(NSPoint)screenPoint {
+  if (!contents_)
+    return;
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
       contents_->GetRenderViewHost());
   if (rvh) {

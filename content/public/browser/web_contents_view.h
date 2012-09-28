@@ -98,12 +98,6 @@ class CONTENT_EXPORT WebContentsView {
   // invoked, SetInitialFocus is invoked.
   virtual void RestoreFocus() = 0;
 
-  // If we try to close the tab while a drag is in progress, we crash.  These
-  // methods allow the WebContents to determine if a drag is in progress and
-  // postpone the tab closing.
-  virtual bool IsDoingDrag() const = 0;
-  virtual void CancelDragAndCloseTab() = 0;
-
   // Returns the current drop data, if any.
   virtual WebDropData* GetDropData() const = 0;
 

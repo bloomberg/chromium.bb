@@ -71,8 +71,6 @@ class CONTENT_EXPORT WebContentsViewWin
   virtual void SetInitialFocus() OVERRIDE;
   virtual void StoreFocus() OVERRIDE;
   virtual void RestoreFocus() OVERRIDE;
-  virtual bool IsDoingDrag() const OVERRIDE;
-  virtual void CancelDragAndCloseTab() OVERRIDE;
   virtual WebDropData* GetDropData() const OVERRIDE;
   virtual bool IsEventTracking() const OVERRIDE;
   virtual void CloseTabAfterEventTracking() OVERRIDE;
@@ -139,13 +137,6 @@ class CONTENT_EXPORT WebContentsViewWin
 
   // Used to handle the drag-and-drop.
   scoped_refptr<WebContentsDragWin> drag_handler_;
-
-  // Set to true if we want to close the tab after the system drag operation
-  // has finished.
-  bool close_tab_after_drag_ends_;
-
-  // Used to close the tab after the stack has unwound.
-  base::OneShotTimer<WebContentsViewWin> close_tab_timer_;
 
   scoped_ptr<ui::HWNDMessageFilter> hwnd_message_filter_;
 
