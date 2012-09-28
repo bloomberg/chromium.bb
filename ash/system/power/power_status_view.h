@@ -39,6 +39,7 @@ class PowerStatusView : public views::View {
   void Update();
   void UpdateTextForDefaultView();
   void UpdateTextForNotificationView();
+  int GetRoundedBatteryPercentage() const;
 
   // Overridden from views::View.
   virtual void ChildPreferredSizeChanged(views::View* child) OVERRIDE;

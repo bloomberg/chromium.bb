@@ -30,6 +30,8 @@ const int kPaddingVertical = 10;
 const int kLabelMinWidth = 120;
 // Padding between battery status text and battery icon on default view.
 const int kPaddingBetweenBatteryStatusAndIcon = 3;
+// Minimum battery percentage rendered in UI.
+const int kMinBatteryPercent = 1;
 }  // namespace
 
 PowerStatusView::PowerStatusView(ViewType view_type,
@@ -115,8 +117,7 @@ void PowerStatusView::UpdateTextForDefaultView() {
   } else {
     string16 battery_percentage = l10n_util::GetStringFUTF16(
         IDS_ASH_STATUS_TRAY_BATTERY_PERCENT_ONLY,
-        base::IntToString16(
-            static_cast<int>(supply_status_.battery_percentage)));
+        base::IntToString16(GetRoundedBatteryPercentage()));
     string16 battery_time = string16();
     int hour = 0;
     int min = 0;
@@ -166,8 +167,7 @@ void PowerStatusView::UpdateTextForNotificationView() {
       status_label_->SetText(
           l10n_util::GetStringFUTF16(
               IDS_ASH_STATUS_TRAY_BATTERY_PERCENT,
-              base::IntToString16(
-                  static_cast<int>(supply_status_.battery_percentage))));
+              base::IntToString16(GetRoundedBatteryPercentage())));
     }
   }
 
@@ -197,6 +197,12 @@ void PowerStatusView::UpdateTextForNotificationView() {
   } else {
     time_label_->SetText(string16());
   }
+}
+
+int PowerStatusView::GetRoundedBatteryPercentage() const {
+  DCHECK(supply_status_.battery_percentage >= 0.0f);
+  return std::max(kMinBatteryPercent,
+      static_cast<int>(supply_status_.battery_percentage));
 }
 
 void PowerStatusView::UpdateIcon() {
