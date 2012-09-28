@@ -23,7 +23,7 @@ class CONTENT_EXPORT SiteInstanceImpl : public content::SiteInstance,
   virtual int32 GetId() OVERRIDE;
   virtual bool HasProcess() const OVERRIDE;
   virtual  content::RenderProcessHost* GetProcess() OVERRIDE;
-  virtual const GURL& GetSite() const OVERRIDE;
+  virtual const GURL& GetSiteURL() const OVERRIDE;
   virtual SiteInstance* GetRelatedSiteInstance(const GURL& url) OVERRIDE;
   virtual bool IsRelatedSiteInstance(const SiteInstance* instance) OVERRIDE;
   virtual content::BrowserContext* GetBrowserContext() const OVERRIDE;

@@ -1873,7 +1873,7 @@ TEST_F(NavigationControllerTest, RestoreNavigate) {
   EXPECT_EQ(url,
             NavigationEntryImpl::FromNavigationEntry(
                 our_controller.GetLastCommittedEntry())->site_instance()->
-                    GetSite());
+                    GetSiteURL());
   EXPECT_EQ(NavigationEntryImpl::RESTORE_NONE,
             NavigationEntryImpl::FromNavigationEntry(
                 our_controller.GetEntryAtIndex(0))->restore_type());
@@ -1957,7 +1957,7 @@ TEST_F(NavigationControllerTest, RestoreNavigateAfterFailure) {
   EXPECT_EQ(url,
             NavigationEntryImpl::FromNavigationEntry(
                 our_controller.GetLastCommittedEntry())->site_instance()->
-                    GetSite());
+                    GetSiteURL());
   EXPECT_EQ(NavigationEntryImpl::RESTORE_NONE,
             NavigationEntryImpl::FromNavigationEntry(
                 our_controller.GetEntryAtIndex(0))->restore_type());

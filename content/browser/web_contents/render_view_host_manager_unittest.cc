@@ -687,7 +687,7 @@ TEST_F(RenderViewHostManagerTest, WebUI) {
   // get loaded in between.
   EXPECT_TRUE(static_cast<SiteInstanceImpl*>(host->GetSiteInstance())->
       HasSite());
-  EXPECT_EQ(kUrl, host->GetSiteInstance()->GetSite());
+  EXPECT_EQ(kUrl, host->GetSiteInstance()->GetSiteURL());
 
   // The Web UI is committed immediately because the RenderViewHost has not been
   // used yet. UpdateRendererStateForNavigate() took the short cut path.

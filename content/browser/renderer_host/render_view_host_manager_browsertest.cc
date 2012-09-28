@@ -1094,7 +1094,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, LeakingRenderViewHosts) {
       GetRenderViewHost();
   SiteInstance* blank_site_instance = blank_rvh->GetSiteInstance();
   EXPECT_EQ(shell()->web_contents()->GetURL(), GURL::EmptyGURL());
-  EXPECT_EQ(blank_site_instance->GetSite(), GURL::EmptyGURL());
+  EXPECT_EQ(blank_site_instance->GetSiteURL(), GURL::EmptyGURL());
   rvh_observers.AddObserverToRVH(blank_rvh);
 
   // Now navigate to the view-source URL and ensure we got a different

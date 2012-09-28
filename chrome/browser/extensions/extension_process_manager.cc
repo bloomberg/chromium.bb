@@ -57,7 +57,7 @@ std::string GetExtensionID(RenderViewHost* render_view_host) {
   if (!render_view_host->GetSiteInstance())
     return "";
 
-  return render_view_host->GetSiteInstance()->GetSite().host();
+  return render_view_host->GetSiteInstance()->GetSiteURL().host();
 }
 
 // Incognito profiles use this process manager. It is mostly a shim that decides

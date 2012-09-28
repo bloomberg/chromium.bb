@@ -349,10 +349,10 @@ TEST_F(SiteInstanceTest, SetSite) {
   scoped_refptr<SiteInstanceImpl> instance(static_cast<SiteInstanceImpl*>(
       SiteInstance::Create(NULL)));
   EXPECT_FALSE(instance->HasSite());
-  EXPECT_TRUE(instance->GetSite().is_empty());
+  EXPECT_TRUE(instance->GetSiteURL().is_empty());
 
   instance->SetSite(GURL("http://www.google.com/index.html"));
-  EXPECT_EQ(GURL("http://google.com"), instance->GetSite());
+  EXPECT_EQ(GURL("http://google.com"), instance->GetSiteURL());
 
   EXPECT_TRUE(instance->HasSite());
 
@@ -662,7 +662,7 @@ TEST_F(SiteInstanceTest, HasWrongProcessForURL) {
       SiteInstance::Create(browser_context.get())));
 
   EXPECT_FALSE(instance->HasSite());
-  EXPECT_TRUE(instance->GetSite().is_empty());
+  EXPECT_TRUE(instance->GetSiteURL().is_empty());
 
   instance->SetSite(GURL("http://evernote.com/"));
   EXPECT_TRUE(instance->HasSite());

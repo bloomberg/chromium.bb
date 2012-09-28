@@ -731,7 +731,7 @@ void ChromeContentBrowserClient::SiteInstanceGotProcess(
 
   const Extension* extension =
       service->extensions()->GetExtensionOrAppByURL(ExtensionURLInfo(
-          site_instance->GetSite()));
+          site_instance->GetSiteURL()));
   if (!extension)
     return;
 
@@ -760,7 +760,7 @@ void ChromeContentBrowserClient::SiteInstanceDeleting(
 
   const Extension* extension =
       service->extensions()->GetExtensionOrAppByURL(
-          ExtensionURLInfo(site_instance->GetSite()));
+          ExtensionURLInfo(site_instance->GetSiteURL()));
   if (!extension)
     return;
 
@@ -1577,7 +1577,7 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
   ExtensionService* service = profile->GetExtensionService();
   if (service) {
     const Extension* extension = service->extensions()->GetByID(
-        rvh->GetSiteInstance()->GetSite().host());
+        rvh->GetSiteInstance()->GetSiteURL().host());
     extension_webkit_preferences::SetPreferences(
         extension, view_type, web_prefs);
   }

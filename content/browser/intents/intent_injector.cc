@@ -58,7 +58,7 @@ void IntentInjector::SetIntent(
       base::Bind(&IntentInjector::OnSendReturnMessage,
                  weak_factory_.GetWeakPtr()));
   source_intent_.reset(new webkit_glue::WebIntentData(intent));
-  initial_url_ = web_contents()->GetPendingSiteInstance()->GetSite();
+  initial_url_ = web_contents()->GetPendingSiteInstance()->GetSiteURL();
 }
 
 void IntentInjector::Abandon() {
@@ -78,7 +78,7 @@ void IntentInjector::RenderViewCreated(RenderViewHost* render_view_host) {
   // Only deliver the intent to the renderer if it has the same origin
   // as the initial delivery target.
   if (initial_url_.GetOrigin() !=
-      render_view_host->GetSiteInstance()->GetSite().GetOrigin()) {
+      render_view_host->GetSiteInstance()->GetSiteURL().GetOrigin()) {
     return;
   }
 

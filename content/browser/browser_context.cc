@@ -116,7 +116,8 @@ StoragePartition* BrowserContext::GetStoragePartition(
   // this conditional and require that |site_instance| is non-NULL.
   if (site_instance) {
     partition_id = GetContentClient()->browser()->
-        GetStoragePartitionIdForSite(browser_context, site_instance->GetSite());
+        GetStoragePartitionIdForSite(browser_context,
+                                     site_instance->GetSiteURL());
   }
 
   return GetStoragePartitionByPartitionId(browser_context, partition_id);

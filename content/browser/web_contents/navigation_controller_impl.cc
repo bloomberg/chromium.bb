@@ -1303,7 +1303,7 @@ NavigationControllerImpl::GetSessionStorageNamespace(
     // this if statement so |instance| must not be NULL.
     partition_id =
         GetContentClient()->browser()->GetStoragePartitionIdForSite(
-            browser_context_, instance->GetSite());
+            browser_context_, instance->GetSiteURL());
   }
 
   SessionStorageNamespaceMap::const_iterator it =

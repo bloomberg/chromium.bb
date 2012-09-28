@@ -180,7 +180,7 @@ void SiteInstanceImpl::SetSite(const GURL& url) {
   }
 }
 
-const GURL& SiteInstanceImpl::GetSite() const {
+const GURL& SiteInstanceImpl::GetSiteURL() const {
   return site_;
 }
 

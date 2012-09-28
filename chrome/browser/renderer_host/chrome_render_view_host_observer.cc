@@ -142,7 +142,7 @@ const Extension* ChromeRenderViewHostObserver::GetExtension() {
   // (excluding bookmark apps) will have a chrome-extension:// URL for their
   // site, so we can ignore that wrinkle here.
   SiteInstance* site_instance = render_view_host()->GetSiteInstance();
-  const GURL& site = site_instance->GetSite();
+  const GURL& site = site_instance->GetSiteURL();
 
   if (!site.SchemeIs(chrome::kExtensionScheme))
     return NULL;

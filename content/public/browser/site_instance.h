@@ -68,7 +68,7 @@ class CONTENT_EXPORT SiteInstance : public base::RefCounted<SiteInstance> {
 
   // Get the web site that this SiteInstance is rendering pages for.
   // This includes the scheme and registered domain, but not the port.
-  virtual const GURL& GetSite() const = 0;
+  virtual const GURL& GetSiteURL() const = 0;
 
   // Gets a SiteInstance for the given URL that shares the current
   // BrowsingInstance, creating a new SiteInstance if necessary.  This ensures

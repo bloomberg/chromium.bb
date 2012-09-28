@@ -85,7 +85,7 @@ void BrowserPluginHost::NavigateGuestFromEmbedder(
           static_cast<WebContentsImpl*>(guest_observer->web_contents()): NULL;
   GURL url(src);
   if (!guest_observer) {
-    std::string host = render_view_host->GetSiteInstance()->GetSite().host();
+    std::string host = render_view_host->GetSiteInstance()->GetSiteURL().host();
     GURL guest_url(
         base::StringPrintf("%s://%s", chrome::kGuestScheme, host.c_str()));
     // The SiteInstance of a given guest is based on the fact that it's a guest

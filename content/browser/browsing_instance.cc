@@ -48,7 +48,7 @@ void BrowsingInstance::RegisterSiteInstance(SiteInstance* site_instance) {
   DCHECK(static_cast<SiteInstanceImpl*>(site_instance)->
          browsing_instance_ == this);
   DCHECK(static_cast<SiteInstanceImpl*>(site_instance)->HasSite());
-  std::string site = site_instance->GetSite().possibly_invalid_spec();
+  std::string site = site_instance->GetSiteURL().possibly_invalid_spec();
 
   // Only register if we don't have a SiteInstance for this site already.
   // It's possible to have two SiteInstances point to the same site if two
@@ -66,7 +66,7 @@ void BrowsingInstance::UnregisterSiteInstance(SiteInstance* site_instance) {
   DCHECK(static_cast<SiteInstanceImpl*>(site_instance)->
          browsing_instance_ == this);
   DCHECK(static_cast<SiteInstanceImpl*>(site_instance)->HasSite());
-  std::string site = site_instance->GetSite().possibly_invalid_spec();
+  std::string site = site_instance->GetSiteURL().possibly_invalid_spec();
 
   // Only unregister the SiteInstance if it is the same one that is registered
   // for the site.  (It might have been an unregistered SiteInstance.  See the

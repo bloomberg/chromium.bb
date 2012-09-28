@@ -1309,7 +1309,7 @@ void WebContentsImpl::CreateNewWindow(
   const std::string& partition_id =
       content::GetContentClient()->browser()->
           GetStoragePartitionIdForSite(GetBrowserContext(),
-                                       site_instance->GetSite());
+                                       site_instance->GetSiteURL());
   content::StoragePartition* partition =
       BrowserContext::GetStoragePartition(GetBrowserContext(),
                                           site_instance);

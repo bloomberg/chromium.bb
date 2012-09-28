@@ -85,7 +85,7 @@ void BrowserPluginEmbedder::NavigateGuest(RenderViewHost* render_view_host,
   GURL url(src);
   if (!guest) {
     const std::string& host =
-        render_view_host->GetSiteInstance()->GetSite().host();
+        render_view_host->GetSiteInstance()->GetSiteURL().host();
     guest_web_contents = WebContentsImpl::CreateGuest(
         web_contents()->GetBrowserContext(),
         host,
