@@ -6191,6 +6191,7 @@
    bug_152445
    Memcheck:Leak
    fun:_Znw*
+   ...
    fun:_ZN7fileapi22LocalFileChangeTrackerC1EPNS_19LocalFileSyncStatusERK8FilePathPN4base19SequencedTaskRunnerE
    fun:_ZN7fileapi26LocalFileChangeTrackerTest5SetUpEv
 }
