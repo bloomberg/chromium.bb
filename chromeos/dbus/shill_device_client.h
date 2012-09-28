@@ -81,7 +81,8 @@ class CHROMEOS_EXPORT ShillDeviceClient {
   virtual void SetProperty(const dbus::ObjectPath& device_path,
                            const std::string& name,
                            const base::Value& value,
-                           const VoidDBusMethodCallback& callback) = 0;
+                           const base::Closure& callback,
+                           const ErrorCallback& error_callback) = 0;
 
   // Calls ClearProperty method.
   // |callback| is called after the method call finishes.

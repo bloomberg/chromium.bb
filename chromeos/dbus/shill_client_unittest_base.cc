@@ -226,16 +226,30 @@ void ShillClientUnittestBase::ExpectObjectPathResult(
 }
 
 // static
-void ShillClientUnittestBase::ExpectDictionaryValueResult(
+void ShillClientUnittestBase::ExpectObjectPathResultWithoutStatus(
+    const dbus::ObjectPath& expected_result,
+    const dbus::ObjectPath& result) {
+  EXPECT_EQ(expected_result, result);
+}
+
+// static
+void ShillClientUnittestBase::ExpectDictionaryValueResultWithoutStatus(
     const base::DictionaryValue* expected_result,
-    DBusMethodCallStatus call_status,
     const base::DictionaryValue& result) {
-  EXPECT_EQ(DBUS_METHOD_CALL_SUCCESS, call_status);
   std::string expected_result_string;
   base::JSONWriter::Write(expected_result, &expected_result_string);
   std::string result_string;
   base::JSONWriter::Write(&result, &result_string);
   EXPECT_EQ(expected_result_string, result_string);
+}
+
+// static
+void ShillClientUnittestBase::ExpectDictionaryValueResult(
+    const base::DictionaryValue* expected_result,
+    DBusMethodCallStatus call_status,
+    const base::DictionaryValue& result) {
+  EXPECT_EQ(DBUS_METHOD_CALL_SUCCESS, call_status);
+  ExpectDictionaryValueResultWithoutStatus(expected_result, result);
 }
 
 void ShillClientUnittestBase::OnConnectToSignal(

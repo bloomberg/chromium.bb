@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/cros/cros_network_functions.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_tokenizer.h"
 #include "base/stringprintf.h"
@@ -21,6 +22,8 @@
 #include "chromeos/dbus/shill_service_client.h"
 #include "dbus/object_path.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+
+using base::DoNothing;
 
 namespace chromeos {
 
@@ -209,7 +212,11 @@ class DataPlanUpdateWatcher : public CrosNetworkWatcher {
 };
 
 // Does nothing. Used as a callback.
-void DoNothing(DBusMethodCallStatus call_status) {}
+void DoNothingWithCallStatus(DBusMethodCallStatus call_status) {}
+
+// Ignores errors.
+void IgnoreErrors(const std::string& error_name,
+                  const std::string& error_message) {}
 
 // A callback used to implement CrosRequest*Properties functions.
 void RunCallbackWithDictionaryValue(const NetworkPropertiesCallback& callback,
@@ -219,17 +226,32 @@ void RunCallbackWithDictionaryValue(const NetworkPropertiesCallback& callback,
   callback.Run(path, call_status == DBUS_METHOD_CALL_SUCCESS ? &value : NULL);
 }
 
+// A callback used to implement CrosRequest*Properties functions.
+void RunCallbackWithDictionaryValueNoStatus(
+    const NetworkPropertiesCallback& callback,
+    const std::string& path,
+    const base::DictionaryValue& value) {
+  callback.Run(path, &value);
+}
+
+// A callback used to implement the error callback for CrosRequest*Properties
+// functions.
+void RunCallbackWithDictionaryValueError(
+    const NetworkPropertiesCallback& callback,
+    const std::string& path,
+    const std::string& error_name,
+    const std::string& error_message) {
+  callback.Run(path, NULL);
+}
+
 // Used as a callback for ShillManagerClient::GetService
 void OnGetService(const NetworkPropertiesCallback& callback,
-                  DBusMethodCallStatus call_status,
                   const dbus::ObjectPath& service_path) {
-  if (call_status == DBUS_METHOD_CALL_SUCCESS) {
-    VLOG(1) << "OnGetServiceService: " << service_path.value();
-    DBusThreadManager::Get()->GetShillServiceClient()->GetProperties(
-        service_path, base::Bind(&RunCallbackWithDictionaryValue,
-                                 callback,
-                                 service_path.value()));
-  }
+  VLOG(1) << "OnGetServiceService: " << service_path.value();
+  DBusThreadManager::Get()->GetShillServiceClient()->GetProperties(
+      service_path, base::Bind(&RunCallbackWithDictionaryValue,
+                               callback,
+                               service_path.value()));
 }
 
 // A callback used to call a NetworkOperationCallback on error.
@@ -345,20 +367,23 @@ void CrosSetNetworkServiceProperty(const std::string& service_path,
                                    const base::Value& value) {
   DBusThreadManager::Get()->GetShillServiceClient()->SetProperty(
       dbus::ObjectPath(service_path), property, value,
-      base::Bind(&DoNothing));
+      base::Bind(&DoNothing),
+      base::Bind(&IgnoreErrors));
 }
 
 void CrosClearNetworkServiceProperty(const std::string& service_path,
                                      const std::string& property) {
   DBusThreadManager::Get()->GetShillServiceClient()->ClearProperty(
-      dbus::ObjectPath(service_path), property, base::Bind(&DoNothing));
+      dbus::ObjectPath(service_path), property, base::Bind(&DoNothing),
+      base::Bind(&IgnoreErrors));
 }
 
 void CrosSetNetworkDeviceProperty(const std::string& device_path,
                                   const std::string& property,
                                   const base::Value& value) {
   DBusThreadManager::Get()->GetShillDeviceClient()->SetProperty(
-      dbus::ObjectPath(device_path), property, value, base::Bind(&DoNothing));
+      dbus::ObjectPath(device_path), property, value, base::Bind(&DoNothing),
+      base::Bind(&IgnoreErrors));
 }
 
 void CrosSetNetworkIPConfigProperty(const std::string& ipconfig_path,
@@ -366,19 +391,23 @@ void CrosSetNetworkIPConfigProperty(const std::string& ipconfig_path,
                                     const base::Value& value) {
   DBusThreadManager::Get()->GetShillIPConfigClient()->SetProperty(
       dbus::ObjectPath(ipconfig_path), property, value,
-      base::Bind(&DoNothing));
+      base::Bind(&DoNothingWithCallStatus));
 }
 
 void CrosSetNetworkManagerProperty(const std::string& property,
                                    const base::Value& value) {
   DBusThreadManager::Get()->GetShillManagerClient()->SetProperty(
-      property, value, base::Bind(&DoNothing));
+      property, value, base::Bind(&DoNothing),
+      base::Bind(&IgnoreErrors));
 }
 
 void CrosDeleteServiceFromProfile(const std::string& profile_path,
                                   const std::string& service_path) {
   DBusThreadManager::Get()->GetShillProfileClient()->DeleteEntry(
-      dbus::ObjectPath(profile_path), service_path, base::Bind(&DoNothing));
+      dbus::ObjectPath(profile_path),
+      service_path,
+      base::Bind(&DoNothing),
+      base::Bind(&IgnoreErrors));
 }
 
 void CrosRequestCellularDataPlanUpdate(const std::string& modem_service_path) {
@@ -452,7 +481,9 @@ void CrosRequestNetworkProfileProperties(
     const NetworkPropertiesCallback& callback) {
   DBusThreadManager::Get()->GetShillProfileClient()->GetProperties(
       dbus::ObjectPath(profile_path),
-      base::Bind(&RunCallbackWithDictionaryValue, callback, profile_path));
+      base::Bind(&RunCallbackWithDictionaryValueNoStatus,
+                 callback, profile_path),
+      base::Bind(&RunCallbackWithDictionaryValueError, callback, profile_path));
 }
 
 void CrosRequestNetworkProfileEntryProperties(
@@ -462,7 +493,10 @@ void CrosRequestNetworkProfileEntryProperties(
   DBusThreadManager::Get()->GetShillProfileClient()->GetEntry(
       dbus::ObjectPath(profile_path),
       profile_entry_path,
-      base::Bind(&RunCallbackWithDictionaryValue,
+      base::Bind(&RunCallbackWithDictionaryValueNoStatus,
+                 callback,
+                 profile_entry_path),
+      base::Bind(&RunCallbackWithDictionaryValueError,
                  callback,
                  profile_entry_path));
 }
@@ -488,7 +522,8 @@ void CrosRequestHiddenWifiNetworkProperties(
   // |properties| and return a new or existing service to OnGetService().
   // OnGetService will then call GetProperties which will then call callback.
   DBusThreadManager::Get()->GetShillManagerClient()->GetService(
-      properties, base::Bind(&OnGetService, callback));
+      properties, base::Bind(&OnGetService, callback),
+      base::Bind(&IgnoreErrors));
 }
 
 void CrosRequestVirtualNetworkProperties(
@@ -518,32 +553,38 @@ void CrosRequestVirtualNetworkProperties(
   // |properties| and pass a new or existing service to OnGetService().
   // OnGetService will then call GetProperties which will then call callback.
   DBusThreadManager::Get()->GetShillManagerClient()->GetService(
-      properties, base::Bind(&OnGetService, callback));
+      properties, base::Bind(&OnGetService, callback),
+      base::Bind(&IgnoreErrors));
 }
 
 void CrosRequestNetworkServiceDisconnect(const std::string& service_path) {
   DBusThreadManager::Get()->GetShillServiceClient()->Disconnect(
-      dbus::ObjectPath(service_path), base::Bind(&DoNothing));
+      dbus::ObjectPath(service_path), base::Bind(&DoNothing),
+      base::Bind(&IgnoreErrors));
 }
 
 void CrosRequestRemoveNetworkService(const std::string& service_path) {
   DBusThreadManager::Get()->GetShillServiceClient()->Remove(
-      dbus::ObjectPath(service_path), base::Bind(&DoNothing));
+      dbus::ObjectPath(service_path), base::Bind(&DoNothing),
+      base::Bind(&IgnoreErrors));
 }
 
 void CrosRequestNetworkScan(const std::string& network_type) {
   DBusThreadManager::Get()->GetShillManagerClient()->RequestScan(
-      network_type, base::Bind(&DoNothing));
+      network_type, base::Bind(&DoNothing),
+      base::Bind(&IgnoreErrors));
 }
 
 void CrosRequestNetworkDeviceEnable(const std::string& network_type,
                                     bool enable) {
   if (enable) {
     DBusThreadManager::Get()->GetShillManagerClient()->EnableTechnology(
-        network_type, base::Bind(&DoNothing));
+        network_type, base::Bind(&DoNothing),
+        base::Bind(&IgnoreErrors));
   } else {
     DBusThreadManager::Get()->GetShillManagerClient()->DisableTechnology(
-        network_type, base::Bind(&DoNothing));
+        network_type, base::Bind(&DoNothing),
+        base::Bind(&IgnoreErrors));
   }
 }
 
@@ -592,7 +633,7 @@ void CrosRequestChangePin(const std::string& device_path,
 
 void CrosProposeScan(const std::string& device_path) {
   DBusThreadManager::Get()->GetShillDeviceClient()->ProposeScan(
-      dbus::ObjectPath(device_path), base::Bind(&DoNothing));
+      dbus::ObjectPath(device_path), base::Bind(&DoNothingWithCallStatus));
 }
 
 void CrosRequestCellularRegister(const std::string& device_path,
@@ -608,7 +649,8 @@ void CrosRequestCellularRegister(const std::string& device_path,
 bool CrosSetOfflineMode(bool offline) {
   base::FundamentalValue value(offline);
   DBusThreadManager::Get()->GetShillManagerClient()->SetProperty(
-      flimflam::kOfflineModeProperty, value, base::Bind(&DoNothing));
+      flimflam::kOfflineModeProperty, value, base::Bind(&DoNothing),
+      base::Bind(&IgnoreErrors));
   return true;
 }
 
@@ -696,7 +738,7 @@ bool CrosRemoveIPConfig(const std::string& ipconfig_path) {
 void CrosRequestIPConfigRefresh(const std::string& ipconfig_path) {
   DBusThreadManager::Get()->GetShillIPConfigClient()->Refresh(
       dbus::ObjectPath(ipconfig_path),
-      base::Bind(&DoNothing));
+      base::Bind(&DoNothingWithCallStatus));
 }
 
 bool CrosGetWifiAccessPoints(WifiAccessPointVector* result) {
@@ -787,7 +829,8 @@ bool CrosGetWifiAccessPoints(WifiAccessPointVector* result) {
 
 void CrosConfigureService(const base::DictionaryValue& properties) {
   DBusThreadManager::Get()->GetShillManagerClient()->ConfigureService(
-      properties, base::Bind(&DoNothing));
+      properties, base::Bind(&DoNothing),
+      base::Bind(&IgnoreErrors));
 }
 
 std::string CrosPrefixLengthToNetmask(int32 prefix_length) {

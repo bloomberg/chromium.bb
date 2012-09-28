@@ -140,9 +140,19 @@ class ShillClientUnittestBase : public testing::Test {
                                      const dbus::ObjectPath& result);
 
   // Checks the result and expects the call status to be SUCCESS.
+  static void ExpectObjectPathResultWithoutStatus(
+      const dbus::ObjectPath& expected_result,
+      const dbus::ObjectPath& result);
+
+  // Checks the result and expects the call status to be SUCCESS.
   static void ExpectDictionaryValueResult(
       const base::DictionaryValue* expected_result,
       DBusMethodCallStatus call_status,
+      const base::DictionaryValue& result);
+
+  // Expects the |expected_result| to match the |result|.
+  static void ExpectDictionaryValueResultWithoutStatus(
+      const base::DictionaryValue* expected_result,
       const base::DictionaryValue& result);
 
   // A message loop to emulate asynchronous behavior.

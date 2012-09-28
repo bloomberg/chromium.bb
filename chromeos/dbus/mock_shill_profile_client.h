@@ -26,14 +26,19 @@ class MockShillProfileClient : public ShillProfileClient {
   MOCK_METHOD2(RemovePropertyChangedObserver,
                void(const dbus::ObjectPath& profile_path,
                     ShillPropertyChangedObserver* observer));
-  MOCK_METHOD2(GetProperties, void(const dbus::ObjectPath& profile_path,
-                                   const DictionaryValueCallback& callback));
-  MOCK_METHOD3(GetEntry, void(const dbus::ObjectPath& profile_path,
-                              const std::string& entry_path,
-                              const DictionaryValueCallback& callback));
-  MOCK_METHOD3(DeleteEntry, void(const dbus::ObjectPath& profile_path,
+  MOCK_METHOD3(GetProperties, void(
+      const dbus::ObjectPath& profile_path,
+      const DictionaryValueCallbackWithoutStatus& callback,
+      const ErrorCallback& error_callback));
+  MOCK_METHOD4(GetEntry, void(
+      const dbus::ObjectPath& profile_path,
+      const std::string& entry_path,
+      const DictionaryValueCallbackWithoutStatus& callback,
+      const ErrorCallback& error_callback));
+  MOCK_METHOD4(DeleteEntry, void(const dbus::ObjectPath& profile_path,
                                  const std::string& entry_path,
-                                 const VoidDBusMethodCallback& callback));
+                                 const base::Closure& callback,
+                                 const ErrorCallback& error_callback));
 };
 
 }  // namespace chromeos

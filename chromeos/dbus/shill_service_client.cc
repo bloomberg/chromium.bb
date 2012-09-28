@@ -75,23 +75,29 @@ class ShillServiceClientImpl : public ShillServiceClient {
   virtual void SetProperty(const dbus::ObjectPath& service_path,
                            const std::string& name,
                            const base::Value& value,
-                           const VoidDBusMethodCallback& callback) OVERRIDE {
+                           const base::Closure& callback,
+                           const ErrorCallback& error_callback) OVERRIDE {
     dbus::MethodCall method_call(flimflam::kFlimflamServiceInterface,
                                  flimflam::kSetPropertyFunction);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(name);
     ShillClientHelper::AppendValueDataAsVariant(&writer, value);
-    GetHelper(service_path)->CallVoidMethod(&method_call, callback);
+    GetHelper(service_path)->CallVoidMethodWithErrorCallback(&method_call,
+                                                             callback,
+                                                             error_callback);
   }
 
   virtual void ClearProperty(const dbus::ObjectPath& service_path,
                              const std::string& name,
-                             const VoidDBusMethodCallback& callback) OVERRIDE {
+                             const base::Closure& callback,
+                             const ErrorCallback& error_callback) OVERRIDE {
     dbus::MethodCall method_call(flimflam::kFlimflamServiceInterface,
                                  flimflam::kClearPropertyFunction);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(name);
-    GetHelper(service_path)->CallVoidMethod(&method_call, callback);
+    GetHelper(service_path)->CallVoidMethodWithErrorCallback(&method_call,
+                                                             callback,
+                                                             error_callback);
   }
 
   virtual void Connect(const dbus::ObjectPath& service_path,
@@ -104,28 +110,37 @@ class ShillServiceClientImpl : public ShillServiceClient {
   }
 
   virtual void Disconnect(const dbus::ObjectPath& service_path,
-                          const VoidDBusMethodCallback& callback) OVERRIDE {
+                          const base::Closure& callback,
+                          const ErrorCallback& error_callback) OVERRIDE {
     dbus::MethodCall method_call(flimflam::kFlimflamServiceInterface,
                                  flimflam::kDisconnectFunction);
-    GetHelper(service_path)->CallVoidMethod(&method_call, callback);
+    GetHelper(service_path)->CallVoidMethodWithErrorCallback(&method_call,
+                                                             callback,
+                                                             error_callback);
   }
 
   virtual void Remove(const dbus::ObjectPath& service_path,
-                      const VoidDBusMethodCallback& callback) OVERRIDE {
+                      const base::Closure& callback,
+                      const ErrorCallback& error_callback) OVERRIDE {
     dbus::MethodCall method_call(flimflam::kFlimflamServiceInterface,
                                  flimflam::kRemoveServiceFunction);
-    GetHelper(service_path)->CallVoidMethod(&method_call, callback);
+    GetHelper(service_path)->CallVoidMethodWithErrorCallback(&method_call,
+                                                             callback,
+                                                             error_callback);
   }
 
   virtual void ActivateCellularModem(
       const dbus::ObjectPath& service_path,
       const std::string& carrier,
-      const VoidDBusMethodCallback& callback) OVERRIDE {
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) OVERRIDE {
     dbus::MethodCall method_call(flimflam::kFlimflamServiceInterface,
                                  flimflam::kActivateCellularModemFunction);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(carrier);
-    GetHelper(service_path)->CallVoidMethod(&method_call, callback);
+    GetHelper(service_path)->CallVoidMethodWithErrorCallback(&method_call,
+                                                             callback,
+                                                             error_callback);
   }
 
   virtual bool CallActivateCellularModemAndBlock(
@@ -192,14 +207,16 @@ class ShillServiceClientStubImpl : public ShillServiceClient {
   virtual void SetProperty(const dbus::ObjectPath& service_path,
                            const std::string& name,
                            const base::Value& value,
-                           const VoidDBusMethodCallback& callback) OVERRIDE {
-    PostSuccessVoidCallback(callback);
+                           const base::Closure& callback,
+                           const ErrorCallback& error_callback) OVERRIDE {
+    MessageLoop::current()->PostTask(FROM_HERE, callback);
   }
 
   virtual void ClearProperty(const dbus::ObjectPath& service_path,
                              const std::string& name,
-                             const VoidDBusMethodCallback& callback) OVERRIDE {
-    PostSuccessVoidCallback(callback);
+                             const base::Closure& callback,
+                             const ErrorCallback& error_callback) OVERRIDE {
+    MessageLoop::current()->PostTask(FROM_HERE, callback);
   }
 
   virtual void Connect(const dbus::ObjectPath& service_path,
@@ -209,20 +226,23 @@ class ShillServiceClientStubImpl : public ShillServiceClient {
   }
 
   virtual void Disconnect(const dbus::ObjectPath& service_path,
-                          const VoidDBusMethodCallback& callback) OVERRIDE {
-    PostSuccessVoidCallback(callback);
+                          const base::Closure& callback,
+                          const ErrorCallback& error_callback) OVERRIDE {
+    MessageLoop::current()->PostTask(FROM_HERE, callback);
   }
 
   virtual void Remove(const dbus::ObjectPath& service_path,
-                      const VoidDBusMethodCallback& callback) OVERRIDE {
-    PostSuccessVoidCallback(callback);
+                      const base::Closure& callback,
+                      const ErrorCallback& error_callback) OVERRIDE {
+    MessageLoop::current()->PostTask(FROM_HERE, callback);
   }
 
   virtual void ActivateCellularModem(
       const dbus::ObjectPath& service_path,
       const std::string& carrier,
-      const VoidDBusMethodCallback& callback) OVERRIDE {
-    PostSuccessVoidCallback(callback);
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) OVERRIDE {
+    MessageLoop::current()->PostTask(FROM_HERE, callback);
   }
 
   virtual bool CallActivateCellularModemAndBlock(
@@ -235,13 +255,6 @@ class ShillServiceClientStubImpl : public ShillServiceClient {
   void PassEmptyDictionaryValue(const DictionaryValueCallback& callback) const {
     base::DictionaryValue dictionary;
     callback.Run(DBUS_METHOD_CALL_SUCCESS, dictionary);
-  }
-
-  // Posts a task to run a void callback with success status code.
-  void PostSuccessVoidCallback(const VoidDBusMethodCallback& callback) {
-    MessageLoop::current()->PostTask(FROM_HERE,
-                                     base::Bind(callback,
-                                                DBUS_METHOD_CALL_SUCCESS));
   }
 
   // Note: This should remain the last member so it'll be destroyed and

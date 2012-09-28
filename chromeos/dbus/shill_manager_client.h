@@ -30,6 +30,7 @@ class CHROMEOS_EXPORT ShillManagerClient {
  public:
   typedef ShillClientHelper::PropertyChangedHandler PropertyChangedHandler;
   typedef ShillClientHelper::DictionaryValueCallback DictionaryValueCallback;
+  typedef ShillClientHelper::ErrorCallback ErrorCallback;
 
   virtual ~ShillManagerClient();
 
@@ -62,32 +63,38 @@ class CHROMEOS_EXPORT ShillManagerClient {
   // |callback| is called after the method call succeeds.
   virtual void SetProperty(const std::string& name,
                            const base::Value& value,
-                           const VoidDBusMethodCallback& callback) = 0;
+                           const base::Closure& callback,
+                           const ErrorCallback& error_callback) = 0;
 
   // Calls RequestScan method.
   // |callback| is called after the method call succeeds.
   virtual void RequestScan(const std::string& type,
-                           const VoidDBusMethodCallback& callback) = 0;
+                           const base::Closure& callback,
+                           const ErrorCallback& error_callback) = 0;
 
   // Calls EnableTechnology method.
   // |callback| is called after the method call succeeds.
   virtual void EnableTechnology(const std::string& type,
-                                const VoidDBusMethodCallback& callback) = 0;
+                                const base::Closure& callback,
+                                const ErrorCallback& error_callback) = 0;
 
   // Calls DisableTechnology method.
   // |callback| is called after the method call succeeds.
   virtual void DisableTechnology(const std::string& type,
-                                 const VoidDBusMethodCallback& callback) = 0;
+                                 const base::Closure& callback,
+                                 const ErrorCallback& error_callback) = 0;
 
   // Calls ConfigureService method.
   // |callback| is called after the method call succeeds.
   virtual void ConfigureService(const base::DictionaryValue& properties,
-                                const VoidDBusMethodCallback& callback) = 0;
+                                const base::Closure& callback,
+                                const ErrorCallback& error_callback) = 0;
 
   // Calls GetService method.
   // |callback| is called after the method call succeeds.
   virtual void GetService(const base::DictionaryValue& properties,
-                          const ObjectPathDBusMethodCallback& callback) = 0;
+                          const ObjectPathCallback& callback,
+                          const ErrorCallback& error_callback) = 0;
 
  protected:
   // Create() should be used instead.

@@ -30,10 +30,11 @@ class MockShillDeviceClient : public ShillDeviceClient {
                base::DictionaryValue*(const dbus::ObjectPath& device_path));
   MOCK_METHOD2(ProposeScan, void(const dbus::ObjectPath& device_path,
                                  const VoidDBusMethodCallback& callback));
-  MOCK_METHOD4(SetProperty, void(const dbus::ObjectPath& device_path,
+  MOCK_METHOD5(SetProperty, void(const dbus::ObjectPath& device_path,
                                  const std::string& name,
                                  const base::Value& value,
-                                 const VoidDBusMethodCallback& callback));
+                                 const base::Closure& callback,
+                                 const ErrorCallback& error_callback));
   MOCK_METHOD3(ClearProperty, void(const dbus::ObjectPath& device_path,
                                    const std::string& name,
                                    const VoidDBusMethodCallback& callback));

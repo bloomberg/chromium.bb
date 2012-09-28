@@ -37,7 +37,9 @@ class ShillPropertyChangedObserver;
 class CHROMEOS_EXPORT ShillProfileClient {
  public:
   typedef ShillClientHelper::PropertyChangedHandler PropertyChangedHandler;
-  typedef ShillClientHelper::DictionaryValueCallback DictionaryValueCallback;
+  typedef ShillClientHelper::DictionaryValueCallbackWithoutStatus
+      DictionaryValueCallbackWithoutStatus;
+  typedef ShillClientHelper::ErrorCallback ErrorCallback;
 
   virtual ~ShillProfileClient();
 
@@ -58,20 +60,24 @@ class CHROMEOS_EXPORT ShillProfileClient {
 
   // Calls GetProperties method.
   // |callback| is called after the method call succeeds.
-  virtual void GetProperties(const dbus::ObjectPath& profile_path,
-                             const DictionaryValueCallback& callback) = 0;
+  virtual void GetProperties(
+      const dbus::ObjectPath& profile_path,
+      const DictionaryValueCallbackWithoutStatus& callback,
+      const ErrorCallback& error_callback) = 0;
 
   // Calls GetEntry method.
   // |callback| is called after the method call succeeds.
   virtual void GetEntry(const dbus::ObjectPath& profile_path,
                         const std::string& entry_path,
-                        const DictionaryValueCallback& callback) = 0;
+                        const DictionaryValueCallbackWithoutStatus& callback,
+                        const ErrorCallback& error_callback) = 0;
 
   // Calls DeleteEntry method.
   // |callback| is called after the method call succeeds.
   virtual void DeleteEntry(const dbus::ObjectPath& profile_path,
                            const std::string& entry_path,
-                           const VoidDBusMethodCallback& callback) = 0;
+                           const base::Closure& callback,
+                           const ErrorCallback& error_callback) = 0;
 
  protected:
   // Create() should be used instead.

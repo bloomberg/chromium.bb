@@ -221,9 +221,15 @@ TEST_F(ShillManagerClientTest, SetProperty) {
                                   &value),
                        response.get());
   // Call method.
+  MockClosure mock_closure;
+  MockErrorCallback mock_error_callback;
   client_->SetProperty(flimflam::kCheckPortalListProperty,
                        value,
-                       base::Bind(&ExpectNoResultValue));
+                       mock_closure.GetCallback(),
+                       mock_error_callback.GetCallback());
+  EXPECT_CALL(mock_closure, Run()).Times(1);
+  EXPECT_CALL(mock_error_callback, Run(_, _)).Times(0);
+
   // Run the message loop.
   message_loop_.RunAllPending();
 }
@@ -236,7 +242,14 @@ TEST_F(ShillManagerClientTest, RequestScan) {
                        base::Bind(&ExpectStringArgument, flimflam::kTypeWifi),
                        response.get());
   // Call method.
-  client_->RequestScan(flimflam::kTypeWifi, base::Bind(&ExpectNoResultValue));
+  MockClosure mock_closure;
+  MockErrorCallback mock_error_callback;
+  client_->RequestScan(flimflam::kTypeWifi,
+                       mock_closure.GetCallback(),
+                       mock_error_callback.GetCallback());
+  EXPECT_CALL(mock_closure, Run()).Times(1);
+  EXPECT_CALL(mock_error_callback, Run(_, _)).Times(0);
+
   // Run the message loop.
   message_loop_.RunAllPending();
 }
@@ -249,8 +262,14 @@ TEST_F(ShillManagerClientTest, EnableTechnology) {
                        base::Bind(&ExpectStringArgument, flimflam::kTypeWifi),
                        response.get());
   // Call method.
+  MockClosure mock_closure;
+  MockErrorCallback mock_error_callback;
   client_->EnableTechnology(flimflam::kTypeWifi,
-                            base::Bind(&ExpectNoResultValue));
+                            mock_closure.GetCallback(),
+                            mock_error_callback.GetCallback());
+  EXPECT_CALL(mock_closure, Run()).Times(1);
+  EXPECT_CALL(mock_error_callback, Run(_, _)).Times(0);
+
   // Run the message loop.
   message_loop_.RunAllPending();
 }
@@ -263,8 +282,14 @@ TEST_F(ShillManagerClientTest, DisableTechnology) {
                        base::Bind(&ExpectStringArgument, flimflam::kTypeWifi),
                        response.get());
   // Call method.
+  MockClosure mock_closure;
+  MockErrorCallback mock_error_callback;
   client_->DisableTechnology(flimflam::kTypeWifi,
-                             base::Bind(&ExpectNoResultValue));
+                             mock_closure.GetCallback(),
+                             mock_error_callback.GetCallback());
+  EXPECT_CALL(mock_closure, Run()).Times(1);
+  EXPECT_CALL(mock_error_callback, Run(_, _)).Times(0);
+
   // Run the message loop.
   message_loop_.RunAllPending();
 }
@@ -279,7 +304,14 @@ TEST_F(ShillManagerClientTest, ConfigureService) {
                        base::Bind(&ExpectDictionaryValueArgument, arg.get()),
                        response.get());
   // Call method.
-  client_->ConfigureService(*arg, base::Bind(&ExpectNoResultValue));
+  MockClosure mock_closure;
+  MockErrorCallback mock_error_callback;
+  client_->ConfigureService(*arg,
+                            mock_closure.GetCallback(),
+                            mock_error_callback.GetCallback());
+  EXPECT_CALL(mock_closure, Run()).Times(1);
+  EXPECT_CALL(mock_error_callback, Run(_, _)).Times(0);
+
   // Run the message loop.
   message_loop_.RunAllPending();
 }
@@ -297,7 +329,13 @@ TEST_F(ShillManagerClientTest, GetService) {
                        base::Bind(&ExpectDictionaryValueArgument, arg.get()),
                        response.get());
   // Call method.
-  client_->GetService(*arg, base::Bind(&ExpectObjectPathResult, object_path));
+  MockErrorCallback mock_error_callback;
+  client_->GetService(*arg,
+                      base::Bind(&ExpectObjectPathResultWithoutStatus,
+                                 object_path),
+                      mock_error_callback.GetCallback());
+  EXPECT_CALL(mock_error_callback, Run(_, _)).Times(0);
+
   // Run the message loop.
   message_loop_.RunAllPending();
 }

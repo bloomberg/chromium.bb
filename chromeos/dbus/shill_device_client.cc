@@ -67,13 +67,16 @@ class ShillDeviceClientImpl : public ShillDeviceClient {
   virtual void SetProperty(const dbus::ObjectPath& device_path,
                            const std::string& name,
                            const base::Value& value,
-                           const VoidDBusMethodCallback& callback) OVERRIDE {
+                           const base::Closure& callback,
+                           const ErrorCallback& error_callback) OVERRIDE {
     dbus::MethodCall method_call(flimflam::kFlimflamDeviceInterface,
                                  flimflam::kSetPropertyFunction);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(name);
     ShillClientHelper::AppendValueDataAsVariant(&writer, value);
-    GetHelper(device_path)->CallVoidMethod(&method_call, callback);
+    GetHelper(device_path)->CallVoidMethodWithErrorCallback(&method_call,
+                                                            callback,
+                                                            error_callback);
   }
 
   virtual void ClearProperty(const dbus::ObjectPath& device_path,
@@ -281,14 +284,20 @@ class ShillDeviceClientStubImpl : public ShillDeviceClient {
   virtual void SetProperty(const dbus::ObjectPath& device_path,
                            const std::string& name,
                            const base::Value& value,
-                           const VoidDBusMethodCallback& callback) OVERRIDE {
+                           const base::Closure& callback,
+                           const ErrorCallback& error_callback) OVERRIDE {
     base::DictionaryValue* device_properties = NULL;
     if (!stub_devices_.GetDictionary(device_path.value(), &device_properties)) {
-      PostVoidCallback(callback, DBUS_METHOD_CALL_FAILURE);
+      std::string error_name("org.chromium.flimflam.Error.Failure");
+      std::string error_message("Failed");
+      MessageLoop::current()->PostTask(FROM_HERE,
+                                       base::Bind(error_callback,
+                                                  error_name,
+                                                  error_message));
       return;
     }
     device_properties->Set(name, value.DeepCopy());
-    PostVoidCallback(callback, DBUS_METHOD_CALL_SUCCESS);
+    MessageLoop::current()->PostTask(FROM_HERE, callback);
   }
 
   virtual void ClearProperty(const dbus::ObjectPath& device_path,

@@ -79,6 +79,12 @@ class ShillClientHelper {
   void CallObjectPathMethod(dbus::MethodCall* method_call,
                             const ObjectPathDBusMethodCallback& callback);
 
+  // Calls a method with an object path result where there is an error callback.
+  void CallObjectPathMethodWithErrorCallback(
+      dbus::MethodCall* method_call,
+      const ObjectPathCallback& callback,
+      const ErrorCallback& error_callback);
+
   // Calls a method with a dictionary value result.
   void CallDictionaryValueMethod(dbus::MethodCall* method_call,
                                  const DictionaryValueCallback& callback);
@@ -127,6 +133,12 @@ class ShillClientHelper {
   // Handles responses for methods with ObjectPath results.
   void OnObjectPathMethod(const ObjectPathDBusMethodCallback& callback,
                           dbus::Response* response);
+
+  // Handles responses for methods with ObjectPath results.
+  void OnObjectPathMethodWithoutStatus(
+      const ObjectPathCallback& callback,
+      const ErrorCallback& error_callback,
+      dbus::Response* response);
 
   // Handles responses for methods with DictionaryValue results.
   void OnDictionaryValueMethod(const DictionaryValueCallback& callback,

@@ -116,8 +116,13 @@ TEST_F(ShillProfileClientTest, GetProperties) {
                        base::Bind(&ExpectNoArgument),
                        response.get());
   // Call method.
+  MockErrorCallback error_callback;
   client_->GetProperties(dbus::ObjectPath(kDefaultProfilePath),
-                         base::Bind(&ExpectDictionaryValueResult, &value));
+                         base::Bind(&ExpectDictionaryValueResultWithoutStatus,
+                                    &value),
+                         error_callback.GetCallback());
+  EXPECT_CALL(error_callback, Run(_, _)).Times(0);
+
   // Run the message loop.
   message_loop_.RunAllPending();
 }
@@ -145,9 +150,13 @@ TEST_F(ShillProfileClientTest, GetEntry) {
                        base::Bind(&ExpectStringArgument, kExampleEntryPath),
                        response.get());
   // Call method.
+  MockErrorCallback error_callback;
   client_->GetEntry(dbus::ObjectPath(kDefaultProfilePath),
                     kExampleEntryPath,
-                    base::Bind(&ExpectDictionaryValueResult, &value));
+                    base::Bind(&ExpectDictionaryValueResultWithoutStatus,
+                               &value),
+                    error_callback.GetCallback());
+  EXPECT_CALL(error_callback, Run(_, _)).Times(0);
   // Run the message loop.
   message_loop_.RunAllPending();
 }
@@ -165,9 +174,15 @@ TEST_F(ShillProfileClientTest, DeleteEntry) {
                        base::Bind(&ExpectStringArgument, kExampleEntryPath),
                        response.get());
   // Call method.
+  MockClosure mock_closure;
+  MockErrorCallback mock_error_callback;
   client_->DeleteEntry(dbus::ObjectPath(kDefaultProfilePath),
                        kExampleEntryPath,
-                       base::Bind(&ExpectNoResultValue));
+                       mock_closure.GetCallback(),
+                       mock_error_callback.GetCallback());
+  EXPECT_CALL(mock_closure, Run()).Times(1);
+  EXPECT_CALL(mock_error_callback, Run(_, _)).Times(0);
+
   // Run the message loop.
   message_loop_.RunAllPending();
 }

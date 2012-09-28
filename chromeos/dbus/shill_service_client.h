@@ -66,13 +66,15 @@ class CHROMEOS_EXPORT ShillServiceClient {
   virtual void SetProperty(const dbus::ObjectPath& service_path,
                            const std::string& name,
                            const base::Value& value,
-                           const VoidDBusMethodCallback& callback) = 0;
+                           const base::Closure& callback,
+                           const ErrorCallback& error_callback) = 0;
 
   // Calls ClearProperty method.
   // |callback| is called after the method call succeeds.
   virtual void ClearProperty(const dbus::ObjectPath& service_path,
                              const std::string& name,
-                             const VoidDBusMethodCallback& callback) = 0;
+                             const base::Closure& callback,
+                             const ErrorCallback& error_callback) = 0;
 
   // Calls Connect method.
   // |callback| is called after the method call succeeds.
@@ -83,19 +85,22 @@ class CHROMEOS_EXPORT ShillServiceClient {
   // Calls Disconnect method.
   // |callback| is called after the method call succeeds.
   virtual void Disconnect(const dbus::ObjectPath& service_path,
-                          const VoidDBusMethodCallback& callback) = 0;
+                          const base::Closure& callback,
+                          const ErrorCallback& error_callback) = 0;
 
   // Calls Remove method.
   // |callback| is called after the method call succeeds.
   virtual void Remove(const dbus::ObjectPath& service_path,
-                      const VoidDBusMethodCallback& callback) = 0;
+                      const base::Closure& callback,
+                      const ErrorCallback& error_callback) = 0;
 
   // Calls ActivateCellularModem method.
   // |callback| is called after the method call succeeds.
   virtual void ActivateCellularModem(
       const dbus::ObjectPath& service_path,
       const std::string& carrier,
-      const VoidDBusMethodCallback& callback) = 0;
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) = 0;
 
   // DEPRECATED DO NOT USE: Calls ActivateCellularModem method and blocks until
   // the method call finishes.

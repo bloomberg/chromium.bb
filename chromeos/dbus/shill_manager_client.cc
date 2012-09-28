@@ -84,63 +84,81 @@ class ShillManagerClientImpl : public ShillManagerClient {
 
   virtual void SetProperty(const std::string& name,
                            const base::Value& value,
-                           const VoidDBusMethodCallback& callback) OVERRIDE {
+                           const base::Closure& callback,
+                           const ErrorCallback& error_callback) OVERRIDE {
     dbus::MethodCall method_call(flimflam::kFlimflamManagerInterface,
                                  flimflam::kSetPropertyFunction);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(name);
     ShillClientHelper::AppendValueDataAsVariant(&writer, value);
-    helper_.CallVoidMethod(&method_call, callback);
+    helper_.CallVoidMethodWithErrorCallback(&method_call,
+                                            callback,
+                                            error_callback);
   }
 
   virtual void RequestScan(const std::string& type,
-                           const VoidDBusMethodCallback& callback) OVERRIDE {
+                           const base::Closure& callback,
+                           const ErrorCallback& error_callback) OVERRIDE {
     dbus::MethodCall method_call(flimflam::kFlimflamManagerInterface,
                                  flimflam::kRequestScanFunction);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(type);
-    helper_.CallVoidMethod(&method_call, callback);
+    helper_.CallVoidMethodWithErrorCallback(&method_call,
+                                            callback,
+                                            error_callback);
   }
 
   virtual void EnableTechnology(
       const std::string& type,
-      const VoidDBusMethodCallback& callback) OVERRIDE {
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) OVERRIDE {
     dbus::MethodCall method_call(flimflam::kFlimflamManagerInterface,
                                  flimflam::kEnableTechnologyFunction);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(type);
-    helper_.CallVoidMethod(&method_call, callback);
+    helper_.CallVoidMethodWithErrorCallback(&method_call,
+                                            callback,
+                                            error_callback);
   }
 
   virtual void DisableTechnology(
       const std::string& type,
-      const VoidDBusMethodCallback& callback) OVERRIDE {
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) OVERRIDE {
     dbus::MethodCall method_call(flimflam::kFlimflamManagerInterface,
                                  flimflam::kDisableTechnologyFunction);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(type);
-    helper_.CallVoidMethod(&method_call, callback);
+    helper_.CallVoidMethodWithErrorCallback(&method_call,
+                                            callback,
+                                            error_callback);
   }
 
   virtual void ConfigureService(
       const base::DictionaryValue& properties,
-      const VoidDBusMethodCallback& callback) OVERRIDE {
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) OVERRIDE {
     DCHECK(AreServicePropertiesValid(properties));
     dbus::MethodCall method_call(flimflam::kFlimflamManagerInterface,
                                  flimflam::kConfigureServiceFunction);
     dbus::MessageWriter writer(&method_call);
     AppendServicePropertiesDictionary(&writer, properties);
-    helper_.CallVoidMethod(&method_call, callback);
+    helper_.CallVoidMethodWithErrorCallback(&method_call,
+                                            callback,
+                                            error_callback);
   }
 
   virtual void GetService(
       const base::DictionaryValue& properties,
-      const ObjectPathDBusMethodCallback& callback) OVERRIDE {
+      const ObjectPathCallback& callback,
+      const ErrorCallback& error_callback) OVERRIDE {
     dbus::MethodCall method_call(flimflam::kFlimflamManagerInterface,
                                  flimflam::kGetServiceFunction);
     dbus::MessageWriter writer(&method_call);
     AppendServicePropertiesDictionary(&writer, properties);
-    helper_.CallObjectPathMethod(&method_call, callback);
+    helper_.CallObjectPathMethodWithErrorCallback(&method_call,
+                                                  callback,
+                                                  error_callback);
   }
 
  private:
@@ -191,55 +209,50 @@ class ShillManagerClientStubImpl : public ShillManagerClient {
   // ShillManagerClient override.
   virtual void SetProperty(const std::string& name,
                            const base::Value& value,
-                           const VoidDBusMethodCallback& callback) OVERRIDE {
+                           const base::Closure& callback,
+                           const ErrorCallback& error_callback) OVERRIDE {
     stub_properties_.Set(name, value.DeepCopy());
-    MessageLoop::current()->PostTask(FROM_HERE,
-                                     base::Bind(callback,
-                                                DBUS_METHOD_CALL_SUCCESS));
+    MessageLoop::current()->PostTask(FROM_HERE, callback);
   }
 
   // ShillManagerClient override.
   virtual void RequestScan(const std::string& type,
-                           const VoidDBusMethodCallback& callback) OVERRIDE {
-    MessageLoop::current()->PostTask(FROM_HERE,
-                                     base::Bind(callback,
-                                                DBUS_METHOD_CALL_SUCCESS));
+                           const base::Closure& callback,
+                           const ErrorCallback& error_callback) OVERRIDE {
+    MessageLoop::current()->PostTask(FROM_HERE, callback);
   }
 
   // ShillManagerClient override.
   virtual void EnableTechnology(
       const std::string& type,
-      const VoidDBusMethodCallback& callback) OVERRIDE {
-    MessageLoop::current()->PostTask(FROM_HERE,
-                                     base::Bind(callback,
-                                                DBUS_METHOD_CALL_SUCCESS));
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) OVERRIDE {
+    MessageLoop::current()->PostTask(FROM_HERE, callback);
   }
 
   // ShillManagerClient override.
   virtual void DisableTechnology(
       const std::string& type,
-      const VoidDBusMethodCallback& callback) OVERRIDE {
-    MessageLoop::current()->PostTask(FROM_HERE,
-                                     base::Bind(callback,
-                                                DBUS_METHOD_CALL_SUCCESS));
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) OVERRIDE {
+    MessageLoop::current()->PostTask(FROM_HERE, callback);
   }
 
   // ShillManagerClient override.
   virtual void ConfigureService(
       const base::DictionaryValue& properties,
-      const VoidDBusMethodCallback& callback) OVERRIDE {
-    MessageLoop::current()->PostTask(FROM_HERE,
-                                     base::Bind(callback,
-                                                DBUS_METHOD_CALL_SUCCESS));
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) OVERRIDE {
+    MessageLoop::current()->PostTask(FROM_HERE, callback);
   }
 
   // ShillManagerClient override.
   virtual void GetService(
       const base::DictionaryValue& properties,
-      const ObjectPathDBusMethodCallback& callback) OVERRIDE {
+      const ObjectPathCallback& callback,
+      const ErrorCallback& error_callback) OVERRIDE {
     MessageLoop::current()->PostTask(FROM_HERE,
                                      base::Bind(callback,
-                                                DBUS_METHOD_CALL_SUCCESS,
                                                 dbus::ObjectPath()));
   }
 
