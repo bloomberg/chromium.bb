@@ -57,8 +57,8 @@ class TraceTestCases(unittest.TestCase):
       self.assertTrue(
           re.match('^%s$' % expected_out_re[index], line),
           (index, expected_out_re[index], repr(line)))
-    self.assertEquals([], lines)
-    self.assertEquals('', err)
+    self.assertEqual([], lines)
+    self.assertEqual('', err)
 
   def _check_results_file(self, expected_file_contents_entries):
     self.assertTrue(os.path.exists(self.filename))
@@ -75,7 +75,7 @@ class TraceTestCases(unittest.TestCase):
     out, err, return_code = RunTest(
         'gtest_fake_pass.py', ['--result', self.filename])
 
-    self.assertEquals(0, return_code)
+    self.assertEqual(0, return_code)
 
     expected_out_re = [
       r'\[\d/\d\]   \d\.\d\ds .+',
@@ -100,7 +100,7 @@ class TraceTestCases(unittest.TestCase):
     out, err, return_code = RunTest(
         'gtest_fake_fail.py', ['--result', self.filename])
 
-    self.assertEquals(1, return_code)
+    self.assertEqual(1, return_code)
 
     expected_out_re = [
       r'\[\d/\d\]   \d\.\d\ds .+',
@@ -153,6 +153,17 @@ class TraceTestCases(unittest.TestCase):
 
     self.assertEqual(1, return_code)
     self._check_results(expected_out_re, out, err)
+
+  def test_gtest_list_tests(self):
+    out, err, return_code = RunTest(
+        'gtest_fake_fail.py', ['--gtest_list_tests'])
+
+    expected_out = (
+      'Foo.\n  Bar1\n  Bar2\n  Bar3\nBaz.\n  Fail\n'
+      '  YOU HAVE 2 tests with ignored failures (FAILS prefix)\n\n')
+    self.assertEqual(0, return_code)
+    self.assertEqual(expected_out, out)
+    self.assertEqual('', err)
 
 
 if __name__ == '__main__':

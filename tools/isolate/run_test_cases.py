@@ -858,6 +858,11 @@ def main(argv):
       '--result',
       default=os.environ.get('RUN_TEST_CASES_RESULT_FILE', ''),
       help='Override the default name of the generated .run_test_cases file')
+  parser.add_option(
+      '--gtest_list_tests',
+      action='store_true',
+      help='List all the test cases unformatted. Keeps compatibility with the '
+           'executable itself.')
   options, args = parser.parse_args(argv)
 
   if not args:
@@ -867,6 +872,11 @@ def main(argv):
         '.')
 
   cmd = fix_python_path(args)
+
+  if options.gtest_list_tests:
+    # Special case, return the output of the target unmodified.
+    return subprocess.call(args + ['--gtest_list_tests'])
+
   test_cases = parser.process_gtest_options(cmd, options)
   if not test_cases:
     # If test_cases is None then there was a problem generating the tests to
