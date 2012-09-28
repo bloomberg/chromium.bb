@@ -76,8 +76,7 @@ BrowserLauncherItemController* BrowserLauncherItemController::Create(
 
   Type type;
   std::string app_id;
-  if (browser->type() == Browser::TYPE_TABBED ||
-      browser->type() == Browser::TYPE_POPUP) {
+  if (browser->is_type_tabbed() || browser->is_type_popup()) {
     type = TYPE_TABBED;
   } else if (browser->is_app()) {
     if (browser->is_type_panel()) {

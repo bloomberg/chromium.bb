@@ -127,7 +127,7 @@ bool WindowSizer::GetBoundsOverrideAsh(const gfx::Rect& specified_bounds,
   if (!GetSavedWindowBounds(bounds_in_screen))
     GetDefaultWindowBounds(bounds_in_screen);
 
-  if (browser_ != NULL && browser_->type() == Browser::TYPE_TABBED) {
+  if (browser_ && browser_->is_type_tabbed()) {
     gfx::Rect work_area =
         monitor_info_provider_->GetMonitorWorkAreaMatching(*bounds_in_screen);
     // This is a window / app. See if there is no window and try to place it.
