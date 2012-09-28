@@ -44,7 +44,8 @@
           },
           "pageUrl": {
             "type": "string",
-            "description": "The URL of the page where the menu item was clicked."
+            "optional": true,
+            "description": "The URL of the page where the menu item was clicked. This property is not set if the click occured in a context where there is no current page, such as in a launcher context menu."
           },
           "frameUrl": {
             "type": "string",
@@ -115,11 +116,11 @@
                 "type": "array",
                 "items": {
                   "type": "string",
-                  "enum": ["all", "page", "frame", "selection", "link", "editable", "image", "video", "audio"]
+                  "enum": ["all", "page", "frame", "selection", "link", "editable", "image", "video", "audio", "launcher"]
                 },
                 "minItems": 1,
                 "optional": true,
-                "description": "List of contexts this menu item will appear in. Defaults to ['page'] if not specified."
+                "description": "List of contexts this menu item will appear in. Defaults to ['page'] if not specified. Specifying ['all'] is equivalent to the combination of all other contexts except for 'launcher'. The 'launcher' context is only supported by apps and is used to add menu items to the context menu that appears when clicking on the app icon in the launcher/taskbar/dock/etc. Different platforms might put limitations on what is actually supported in a launcher context menu."
               },
               "onclick": {
                 "type": "function",
@@ -209,7 +210,7 @@
                 "type": "array",
                 "items": {
                   "type": "string",
-                  "enum": ["all", "page", "frame", "selection", "link", "editable", "image", "video", "audio"]
+                  "enum": ["all", "page", "frame", "selection", "link", "editable", "image", "video", "audio", "launcher"]
                 },
                 "minItems": 1,
                 "optional": true

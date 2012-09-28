@@ -71,6 +71,7 @@ class MenuItem {
     VIDEO = 64,
     AUDIO = 128,
     FRAME = 256,
+    LAUNCHER = 512
   };
 
   // An item can be only one of these types.

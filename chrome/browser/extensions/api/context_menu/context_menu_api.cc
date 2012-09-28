@@ -34,6 +34,8 @@ const char kParentsMustBeNormalError[] =
     "Parent items must have type \"normal\"";
 const char kTitleNeededError[] =
     "All menu items except for separators must have a title";
+const char kLauncherNotAllowedError[] =
+    "Only packaged apps are allowed to use 'launcher' context";
 
 std::string GetIDString(const extensions::MenuItem::Id& id) {
   if (id.uid == 0)
@@ -74,6 +76,9 @@ extensions::MenuItem::ContextList GetContexts(
         break;
       case PropertyWithEnumT::CONTEXTS_ELEMENT_FRAME:
         contexts.Add(extensions::MenuItem::FRAME);
+        break;
+      case PropertyWithEnumT::CONTEXTS_ELEMENT_LAUNCHER:
+        contexts.Add(extensions::MenuItem::LAUNCHER);
         break;
       case PropertyWithEnumT::CONTEXTS_ELEMENT_NONE:
         NOTREACHED();
@@ -186,6 +191,12 @@ bool CreateContextMenuFunction::RunImpl() {
     contexts = GetContexts(params->create_properties);
   else
     contexts.Add(MenuItem::PAGE);
+
+  if (contexts.Contains(MenuItem::LAUNCHER) &&
+      !GetExtension()->is_platform_app()) {
+    error_ = kLauncherNotAllowedError;
+    return false;
+  }
 
   MenuItem::Type type = GetType(params->create_properties);
 
@@ -303,6 +314,13 @@ bool UpdateContextMenuFunction::RunImpl() {
   MenuItem::ContextList contexts;
   if (params->update_properties.contexts.get()) {
     contexts = GetContexts(params->update_properties);
+
+    if (contexts.Contains(MenuItem::LAUNCHER) &&
+        !GetExtension()->is_platform_app()) {
+      error_ = kLauncherNotAllowedError;
+      return false;
+    }
+
     if (contexts != item->contexts())
       item->set_contexts(contexts);
   }
