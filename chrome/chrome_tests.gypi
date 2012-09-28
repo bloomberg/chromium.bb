@@ -4789,7 +4789,7 @@
             'apk_name': 'ChromiumTestShellTest',
             'java_in_dir': './android/testshell/javatests',
             'resource_dir': '../res',
-            'additional_input_paths': ['<!@(find android/javatests/src -name "*.java")', ],
+            'additional_src_dirs': ['android/javatests/src'],
           },
           'includes': [ '../build/java_apk.gypi' ],
         },

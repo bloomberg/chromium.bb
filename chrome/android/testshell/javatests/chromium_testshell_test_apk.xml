@@ -27,12 +27,13 @@
       check-exists="false"/>
   <property name="generate.test.jar" value="true"/>
 
-  <path id="out.dex.jar.input.ref">
-    <filelist files="${INPUT_JARS_PATHS}"/>
+  <path id="javac.custom.sourcepath">
+    <filelist files="${ADDITIONAL_SRC_DIRS}"/>
+    <filelist files="${GENERATED_SRC_DIRS}"/>
   </path>
 
-  <path id="javac.custom.sourcepath">
-    <pathelement location="../../javatests/src" />
+  <path id="out.dex.jar.input.ref">
+    <filelist files="${INPUT_JARS_PATHS}"/>
   </path>
 
   <!-- Classpath for javac -->

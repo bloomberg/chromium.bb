@@ -904,7 +904,7 @@
             'apk_name': 'ContentShellTest',
             'java_in_dir': '../content/shell/android/javatests',
             'resource_dir': '../res',
-            'additional_input_paths': ['<!@(find ../content/public/android/javatests/src -name "*.java")',],
+            'additional_src_dirs': ['../content/public/android/javatests/'],
           },
           'includes': [ '../build/java_apk.gypi' ],
         },

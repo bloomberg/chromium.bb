@@ -33,6 +33,11 @@
       location="${apks.dir}/${ant.project.name}-debug.apk"
       check-exists="false"/>
 
+  <path id="javac.srcdirs.additional">
+    <filelist files="${ADDITIONAL_SRC_DIRS}"/>
+    <filelist files="${GENERATED_SRC_DIRS}"/>
+  </path>
+
   <path id="out.dex.jar.input.ref">
     <filelist files="${INPUT_JARS_PATHS}"/>
   </path>
