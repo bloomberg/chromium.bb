@@ -24,9 +24,9 @@ EXTRA_ENV = {
   # Determine if we should build nexes compatible with the IRT
   'USE_IRT' : '1',
 
-  # Use the IRT shim by default on x86-64. This can be disabled with an
-  # explicit flag (--noirtshim) or via -nostdlib.
-  'USE_IRT_SHIM'  : '${ARCH==X8664 && !SHARED ? 1 : 0}',
+  # Use the IRT shim by default. This can be disabled with an explicit
+  # flag (--noirtshim) or via -nostdlib.
+  'USE_IRT_SHIM'  : '${!SHARED ? 1 : 0}',
   # Experimental mode exploring newlib as a shared library
   'NEWLIB_SHARED_EXPERIMENT': '0',
 
@@ -445,8 +445,7 @@ def RequiresNonStandardLDCommandline(inputs, infile):
     return ('NOSTDLIB', True)
   if not env.getbool('USE_IRT'):
     return ('USE_IRT false when normally true', True)
-  if (driver_tools.GetArch(required=True) == 'X8664' and
-      not env.getbool('SHARED') and
+  if (not env.getbool('SHARED') and
       not env.getbool('USE_IRT_SHIM')):
     return ('USE_IRT_SHIM false when normally true', True)
   return (None, False)
