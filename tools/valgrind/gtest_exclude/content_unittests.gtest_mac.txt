@@ -9,3 +9,6 @@ WebRTCAudioDeviceTest.FullDuplexAudioWithAGC
 WebDragDestTest.URL
 WebDragDestTest.Data
 WebDragSourceMacTest.DragInvalidlyEscapedBookmarklet
+
+# Fail, see http://crbug.com/153007
+MacSandboxTest.ClipboardAccess
