@@ -46,7 +46,8 @@ def FindBuildFiles():
 
 
 def Load(build_files, format, default_variables={},
-         includes=[], depth='.', params=None, check=False, circular_check=True):
+         includes=[], depth='.', params=None, check=False,
+         circular_check=True, parallel=False):
   """
   Loads one or more specified build files.
   default_variables and includes will be copied before use.
@@ -124,7 +125,8 @@ def Load(build_files, format, default_variables={},
 
   # Process the input specific to this generator.
   result = gyp.input.Load(build_files, default_variables, includes[:],
-                          depth, generator_input_info, check, circular_check)
+                          depth, generator_input_info, check, circular_check,
+                          parallel)
   return [generator] + result
 
 def NameValueListToDict(name_value_list):
@@ -311,6 +313,9 @@ def gyp_main(args):
                     help='do not read options from environment variables')
   parser.add_option('--check', dest='check', action='store_true',
                     help='check format of gyp files')
+  parser.add_option('--parallel', action='store_true',
+                    env_name='GYP_PARALLEL',
+                    help='Use multiprocessing for speed (experimental)')
   parser.add_option('--toplevel-dir', dest='toplevel_dir', action='store',
                     default=None, metavar='DIR', type='path',
                     help='directory to use as the root of the source tree')
@@ -369,6 +374,9 @@ def gyp_main(args):
     g_o = os.environ.get('GYP_GENERATOR_OUTPUT')
     if g_o:
       options.generator_output = g_o
+
+  if not options.parallel and options.use_environment:
+    options.parallel = bool(os.environ.get('GYP_PARALLEL'))
 
   for mode in options.debug:
     gyp.debug[mode] = 1
@@ -487,7 +495,8 @@ def gyp_main(args):
                                                  cmdline_default_variables,
                                                  includes, options.depth,
                                                  params, options.check,
-                                                 options.circular_check)
+                                                 options.circular_check,
+                                                 options.parallel)
 
     # TODO(mark): Pass |data| for now because the generator needs a list of
     # build files that came in.  In the future, maybe it should just accept

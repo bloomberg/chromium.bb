@@ -12,12 +12,15 @@ from compiler.ast import Stmt
 import compiler
 import copy
 import gyp.common
+import multiprocessing
 import optparse
 import os.path
 import re
 import shlex
 import subprocess
 import sys
+import threading
+import time
 from gyp.common import GypError
 
 
@@ -330,7 +333,7 @@ def ProcessToolsetsInDict(data):
 # a build file that contains targets and is expected to provide a targets dict
 # that contains the targets...
 def LoadTargetBuildFile(build_file_path, data, aux_data, variables, includes,
-                        depth, check):
+                        depth, check, load_dependencies):
   # If depth is set, predefine the DEPTH variable to be a relative path from
   # this build file's directory to the directory identified by depth.
   if depth:
@@ -349,7 +352,7 @@ def LoadTargetBuildFile(build_file_path, data, aux_data, variables, includes,
 
   if build_file_path in data['target_build_files']:
     # Already loaded.
-    return
+    return False
   data['target_build_files'].add(build_file_path)
 
   gyp.DebugOutput(gyp.DEBUG_INCLUDES,
@@ -419,22 +422,158 @@ def LoadTargetBuildFile(build_file_path, data, aux_data, variables, includes,
   # in other words, you can't put a "dependencies" section inside a "post"
   # conditional within a target.
 
+  dependencies = []
   if 'targets' in build_file_data:
     for target_dict in build_file_data['targets']:
       if 'dependencies' not in target_dict:
         continue
       for dependency in target_dict['dependencies']:
-        other_build_file = \
-            gyp.common.ResolveTarget(build_file_path, dependency, None)[0]
-        try:
-          LoadTargetBuildFile(other_build_file, data, aux_data, variables,
-                              includes, depth, check)
-        except Exception, e:
-          gyp.common.ExceptionAppend(
-            e, 'while loading dependencies of %s' % build_file_path)
-          raise
+        dependencies.append(
+            gyp.common.ResolveTarget(build_file_path, dependency, None)[0])
 
-  return data
+  if load_dependencies:
+    for dependency in dependencies:
+      try:
+        LoadTargetBuildFile(dependency, data, aux_data, variables,
+                            includes, depth, check, load_dependencies)
+      except Exception, e:
+        gyp.common.ExceptionAppend(
+          e, 'while loading dependencies of %s' % build_file_path)
+        raise
+  else:
+    return (build_file_path, dependencies)
+
+
+def CallLoadTargetBuildFile(global_flags,
+                            build_file_path, data,
+                            aux_data, variables,
+                            includes, depth, check):
+  """Wrapper around LoadTargetBuildFile for parallel processing.
+
+     This wrapper is used when LoadTargetBuildFile is executed in
+     a worker process.
+  """
+
+  # Apply globals so that the worker process behaves the same.
+  for key, value in global_flags.iteritems():
+    globals()[key] = value
+
+  # Save the keys so we can return data that changed.
+  data_keys = set(data)
+  aux_data_keys = set(aux_data)
+
+  result = LoadTargetBuildFile(build_file_path, data,
+                               aux_data, variables,
+                               includes, depth, check, False)
+  if not result:
+    return result
+
+  (build_file_path, dependencies) = result
+
+  data_out = {}
+  for key in data:
+    if key == 'target_build_files':
+      continue
+    if key not in data_keys:
+      data_out[key] = data[key]
+  aux_data_out = {}
+  for key in aux_data:
+    if key not in aux_data_keys:
+      aux_data_out[key] = aux_data[key]
+
+  # This gets serialized and sent back to the main process via a pipe.
+  # It's handled in LoadTargetBuildFileCallback.
+  return (build_file_path,
+          data_out,
+          aux_data_out,
+          dependencies)
+
+
+class ParallelState(object):
+  """Class to keep track of state when processing input files in parallel.
+
+  If build files are loaded in parallel, use this to keep track of
+  state during farming out and processing parallel jobs. It's stored
+  in a global so that the callback function can have access to it.
+  """
+
+  def __init__(self):
+    # The multiprocessing pool.
+    self.pool = None
+    # The condition variable used to protect this object and notify
+    # the main loop when there might be more data to process.
+    self.condition = None
+    # The "data" dict that was passed to LoadTargetBuildFileParallel
+    self.data = None
+    # The "aux_data" dict that was passed to LoadTargetBuildFileParallel
+    self.aux_data = None
+    # The number of parallel calls outstanding; decremented when a response
+    # was received.
+    self.pending = 0
+    # The set of all build files that have been scheduled, so we don't
+    # schedule the same one twice.
+    self.scheduled = set()
+    # A list of dependency build file paths that haven't been scheduled yet.
+    self.dependencies = []
+
+  def LoadTargetBuildFileCallback(self, result):
+    """Handle the results of running LoadTargetBuildFile in another process.
+    """
+    (build_file_path0, data0, aux_data0, dependencies0) = result
+    self.condition.acquire()
+    self.data['target_build_files'].add(build_file_path0)
+    for key in data0:
+      self.data[key] = data0[key]
+    for key in aux_data0:
+      self.aux_data[key] = aux_data0[key]
+    for new_dependency in dependencies0:
+      if new_dependency not in self.scheduled:
+        self.scheduled.add(new_dependency)
+        self.dependencies.append(new_dependency)
+    self.pending -= 1
+    self.condition.notify()
+    self.condition.release()
+
+
+def LoadTargetBuildFileParallel(build_file_path, data, aux_data,
+                                variables, includes, depth, check):
+  global parallel_state
+  parallel_state = ParallelState()
+  parallel_state.condition = threading.Condition()
+  parallel_state.dependencies = [build_file_path]
+  parallel_state.scheduled = set([build_file_path])
+  parallel_state.pending = 0
+  parallel_state.data = data
+  parallel_state.aux_data = aux_data
+
+  parallel_state.condition.acquire()
+  while parallel_state.dependencies or parallel_state.pending:
+    if not parallel_state.dependencies:
+      parallel_state.condition.wait()
+      continue
+
+    dependency = parallel_state.dependencies.pop()
+
+    parallel_state.pending += 1
+    data_in = {}
+    data_in['target_build_files'] = data['target_build_files']
+    aux_data_in = {}
+    global_flags = {
+      'path_sections': globals()['path_sections'],
+      'non_configuration_keys': globals()['non_configuration_keys'],
+      'absolute_build_file_paths': globals()['absolute_build_file_paths'],
+      'multiple_toolsets': globals()['multiple_toolsets']}
+
+    if not parallel_state.pool:
+      parallel_state.pool = multiprocessing.Pool(8)
+    parallel_state.pool.apply_async(
+        CallLoadTargetBuildFile,
+        args = (global_flags, dependency,
+                data_in, aux_data_in,
+                variables, includes, depth, check),
+        callback = parallel_state.LoadTargetBuildFileCallback)
+
+  parallel_state.condition.release()
 
 
 # Look for the bracket that matches the first bracket seen in a
@@ -2335,7 +2474,7 @@ def VerifyNoCollidingTargets(targets):
 
 
 def Load(build_files, variables, includes, depth, generator_input_info, check,
-         circular_check):
+         circular_check, parallel):
   # Set up path_sections and non_configuration_keys with the default data plus
   # the generator-specifc data.
   global path_sections
@@ -2376,8 +2515,13 @@ def Load(build_files, variables, includes, depth, generator_input_info, check,
     # used as keys to the data dict and for references between input files.
     build_file = os.path.normpath(build_file)
     try:
-      LoadTargetBuildFile(build_file, data, aux_data, variables, includes,
-                          depth, check)
+      if parallel:
+        print >>sys.stderr, 'Using parallel processing (experimental).'
+        LoadTargetBuildFileParallel(build_file, data, aux_data,
+                                    variables, includes, depth, check)
+      else:
+        LoadTargetBuildFile(build_file, data, aux_data,
+                            variables, includes, depth, check, True)
     except Exception, e:
       gyp.common.ExceptionAppend(e, 'while trying to load %s' % build_file)
       raise
