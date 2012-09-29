@@ -50,7 +50,6 @@ struct ChromeCFAllocatorLeopards {
     CFAllocatorContext _context;
 };
 
-// TODO(avi): verify that this is accurate for 10.8 upon source release; http://crbug.com/117476
 struct ChromeCFAllocatorLions {
     ChromeCFRuntimeBase _base;
 #if DEPLOYMENT_TARGET_MACOSX || DEPLOYMENT_TARGET_EMBEDDED
