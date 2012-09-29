@@ -1017,29 +1017,6 @@
     },  # end of target 'remoting_host_event_logger'
 
     {
-      'target_name': 'remoting_host_setup_base',
-      'type': 'static_library',
-      'variables': { 'enable_wexit_time_destructors': 1, },
-      'dependencies': [
-        '../base/base.gyp:base',
-        'remoting_host',
-      ],
-      'sources': [
-        'host/setup/daemon_controller.h',
-        'host/setup/daemon_controller_linux.cc',
-        'host/setup/daemon_controller_mac.cc',
-        'host/setup/daemon_controller_win.cc',
-      ],
-      'conditions': [
-        ['OS=="win"', {
-          'dependencies': [
-            'remoting_elevated_controller',
-          ],
-        }],
-      ],
-    },  # end of target 'remoting_breakpad'
-
-    {
       'target_name': 'remoting_host_plugin',
       'type': 'loadable_module',
       'variables': { 'enable_wexit_time_destructors': 1, },
@@ -1048,7 +1025,6 @@
       'dependencies': [
         'remoting_base',
         'remoting_host',
-        'remoting_host_setup_base',
         'remoting_host_event_logger',
         'remoting_jingle_glue',
         '../net/net.gyp:net',
@@ -1059,6 +1035,10 @@
         'host/branding.cc',
         'host/branding.h',
         'host/host_ui_resource.h',
+        'host/plugin/daemon_controller.h',
+        'host/plugin/daemon_controller_linux.cc',
+        'host/plugin/daemon_controller_mac.cc',
+        'host/plugin/daemon_controller_win.cc',
         'host/plugin/daemon_installer_win.cc',
         'host/plugin/daemon_installer_win.h',
         'host/plugin/host_log_handler.cc',

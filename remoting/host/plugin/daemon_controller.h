@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_SETUP_DAEMON_CONTROLLER_H_
-#define REMOTING_HOST_SETUP_DAEMON_CONTROLLER_H_
+#ifndef REMOTING_HOST_DAEMON_CONTROLLER_H_
+#define REMOTING_HOST_DAEMON_CONTROLLER_H_
 
 #include <string>
 
@@ -148,4 +148,4 @@ class DaemonController {
 
 }  // namespace remoting
 
-#endif  // REMOTING_HOST_SETUP_DAEMON_CONTROLLER_H_
+#endif  // REMOTING_HOST_DAEMON_CONTROLLER_H_

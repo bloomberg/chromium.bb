@@ -27,6 +27,7 @@
 #include "remoting/host/it2me_host_user_interface.h"
 #include "remoting/host/network_settings.h"
 #include "remoting/host/pin_hash.h"
+#include "remoting/host/plugin/daemon_controller.h"
 #include "remoting/host/plugin/host_log_handler.h"
 #include "remoting/host/policy_hack/policy_watcher.h"
 #include "remoting/host/register_support_host_request.h"
