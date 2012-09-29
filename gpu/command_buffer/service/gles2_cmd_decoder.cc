@@ -2451,6 +2451,8 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
         feature_info_->feature_flags().oes_standard_derivatives ? 1 : 0;
     resources.ARB_texture_rectangle =
         feature_info_->feature_flags().arb_texture_rectangle ? 1 : 0;
+    resources.OES_EGL_image_external =
+        feature_info_->feature_flags().oes_egl_image_external ? 1 : 0;
   }
 
   ShShaderSpec shader_spec = force_webgl_glsl_validation_ ||
