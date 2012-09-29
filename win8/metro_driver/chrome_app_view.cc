@@ -218,16 +218,28 @@ void SetFrameWindowInternal(HWND hwnd) {
     ::ShowWindow(current_top_frame, SW_HIDE);
   }
 
+  // Visible frame windows always need to be at the head of the list.
+  // Check if the window being shown already exists in our global list.
+  // If no then add it at the head of the list.
+  // If yes, retrieve the osk window scrolled state, remove the window from the
+  // list and readd it at the head.
   std::list<std::pair<HWND, bool> >::iterator index =
       std::find_if(globals.host_windows.begin(), globals.host_windows.end(),
               [hwnd](std::pair<HWND, bool>& item) {
     return (item.first == hwnd);
   });
 
-  if (index == globals.host_windows.end()) {
-    globals.host_windows.push_front(std::make_pair(hwnd, false));
-    AdjustFrameWindowStyleForMetro(hwnd);
+  bool window_scrolled_state = false;
+  bool new_window = (index == globals.host_windows.end());
+  if (!new_window) {
+    window_scrolled_state = index->second;
+    globals.host_windows.erase(index);
   }
+
+  globals.host_windows.push_front(std::make_pair(hwnd, window_scrolled_state));
+
+  if (new_window)
+    AdjustFrameWindowStyleForMetro(hwnd);
 }
 
 void CloseFrameWindowInternal(HWND hwnd) {
