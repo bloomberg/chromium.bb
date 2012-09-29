@@ -21,9 +21,6 @@ class ActionBoxButtonView : public views::MenuButton,
   ActionBoxButtonView(Browser* browser, const gfx::Point& menu_offset);
   virtual ~ActionBoxButtonView();
 
-  SkColor GetBackgroundColor();
-  SkColor GetBorderColor();
-
  private:
   // Overridden from views::CustomButton:
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;

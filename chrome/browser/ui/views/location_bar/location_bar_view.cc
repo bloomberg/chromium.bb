@@ -740,9 +740,8 @@ void LocationBarView::Layout() {
                     location_icon_width + kItemEditPadding);
   }
 
-  int action_box_button_width = location_height;
   if (action_box_button_view_)
-    entry_width -= action_box_button_width + GetItemPadding();
+    entry_width -= action_box_button_view_->width() + GetItemPadding();
   if (star_view_ && star_view_->visible())
     entry_width -= star_view_->GetPreferredSize().width() + GetItemPadding();
   if (open_pdf_in_reader_view_ && open_pdf_in_reader_view_->visible()) {
@@ -815,10 +814,8 @@ void LocationBarView::Layout() {
   // Lay out items to the right of the edit field.
   int offset = width() - kEdgeThickness;
   if (action_box_button_view_) {
-    offset -= action_box_button_width;
-    action_box_button_view_->SetBounds(offset, location_y,
-                                       action_box_button_width,
-                                       location_height);
+    offset -= action_box_button_view_->width();
+    action_box_button_view_->SetPosition(gfx::Point(offset, location_y));
     offset -= GetItemPadding();
   } else {
     offset -= GetEdgeItemPadding();
@@ -1007,8 +1004,6 @@ void LocationBarView::OnPaint(gfx::Canvas* canvas) {
     // the omnibox.
     bounds.Inset(kNormalHorizontalEdgeThickness, 0);
     canvas->DrawRoundRect(bounds, kBorderCornerRadius, paint);
-    if (action_box_button_view_)
-      PaintActionBoxBackground(canvas, bounds);
     PaintPageActionBackgrounds(canvas);
   } else {
     canvas->FillRect(bounds, color);
@@ -1298,31 +1293,6 @@ void LocationBarView::ShowFirstRunBubbleInternal() {
   Browser* browser = GetBrowserFromDelegate(delegate_);
   FirstRunBubble::ShowBubble(browser, location_icon_view_);
 #endif
-}
-
-void LocationBarView::PaintActionBoxBackground(gfx::Canvas* canvas,
-                                               const gfx::Rect& content_rect) {
-  // Draw action box background here so we can fill it up to the right hand
-  // location bar border without any gap.
-  gfx::Rect bounds(content_rect);
-  // Fill button rectangle.
-  int action_box_button_x = action_box_button_view_->bounds().x();
-  bounds.Inset(action_box_button_x - bounds.x(), 0, 0, 0);
-  SkPaint paint;
-  paint.setStyle(SkPaint::kFill_Style);
-  paint.setAntiAlias(true);
-  paint.setColor(action_box_button_view_->GetBackgroundColor());
-  canvas->DrawRoundRect(bounds, kBorderCornerRadius, paint);
-
-  // Draw over left curved corners.
-  bounds.set_width(kBorderCornerRadius);
-  canvas->DrawRect(bounds, paint);
-
-  // Draw left border.
-  gfx::Point line_end(bounds.origin());
-  line_end.Offset(0, bounds.height());
-  canvas->DrawLine(bounds.origin(), line_end,
-                   action_box_button_view_->GetBorderColor());
 }
 
 void LocationBarView::PaintPageActionBackgrounds(gfx::Canvas* canvas) {

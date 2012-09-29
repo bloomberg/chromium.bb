@@ -433,10 +433,6 @@ class LocationBarView : public LocationBar,
   // Helper to show the first run info bubble.
   void ShowFirstRunBubbleInternal();
 
-  // Draw the background and the left border.
-  void PaintActionBoxBackground(gfx::Canvas* canvas,
-                                const gfx::Rect& content_rect);
-
   // Draw backgrounds and borders for page actions.  Must be called
   // after layout, so the |page_action_views_| have their bounds.
   void PaintPageActionBackgrounds(gfx::Canvas* canvas);
