@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_COMMON_WEB_CONTENTS_USER_DATA_H_
 #define CHROME_BROWSER_COMMON_WEB_CONTENTS_USER_DATA_H_
 
+#include "base/logging.h"
 #include "base/supports_user_data.h"
 #include "content/public/browser/web_contents.h"
 
@@ -30,6 +31,7 @@ class WebContentsUserData : public base::SupportsUserData::Data {
   // Creates an object of type T, and attaches it to the specified WebContents.
   // If an instance is already attached, does nothing.
   static void CreateForWebContents(content::WebContents* contents) {
+    DCHECK(contents);
     if (!FromWebContents(contents))
       contents->SetUserData(&kLocatorKey, new T(contents));
   }
@@ -38,9 +40,11 @@ class WebContentsUserData : public base::SupportsUserData::Data {
   // WebContents (via CreateForWebContents above) and returns it. If no instance
   // of the type was attached, returns NULL.
   static T* FromWebContents(content::WebContents* contents) {
+    DCHECK(contents);
     return static_cast<T*>(contents->GetUserData(&kLocatorKey));
   }
   static const T* FromWebContents(const content::WebContents* contents) {
+    DCHECK(contents);
     return static_cast<const T*>(contents->GetUserData(&kLocatorKey));
   }
 
