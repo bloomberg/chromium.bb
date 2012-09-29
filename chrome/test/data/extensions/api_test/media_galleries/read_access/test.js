@@ -4,27 +4,55 @@
 
 var mediaGalleries = chrome.mediaGalleries;
 
+var galleries;
+var testResults = [];
+
+function checkFinished() {
+  if (testResults.length != galleries.length)
+    return;
+  var success = true;
+  for (var i = 0; i < testResults.length; i++) {
+    if (testResults[i]) {
+      success = false;
+    }
+  }
+  if (success) {
+    chrome.test.succeed();
+    return;
+  }
+  chrome.test.fail(testResults);
+}
+
+var mediaFileSystemsDirectoryEntryCallback = function(entries) {
+  testResults.push("");
+  checkFinished();
+}
+
 var mediaFileSystemsDirectoryErrorCallback = function(err) {
-  chrome.test.fail("Couldn't read from directory: " + err);
+  testResults.push("Couldn't read from directory: " + err);
+  checkFinished();
 };
 
-var mediaFileSystemsListCallback = function(results) {
-  // There should be "Music", "Pictures", and "Videos" directories on all
-  // desktop platforms.
-  var expectedFileSystems = 3;
-  // But not on Android and ChromeOS.
-  if (/Android/.test(navigator.userAgent) || /CrOS/.test(navigator.userAgent))
-    expectedFileSystems = 0;
-  chrome.test.assertEq(expectedFileSystems, results.length);
-  if (expectedFileSystems) {
-    var dir_reader = results[0].root.createReader();
-    dir_reader.readEntries(chrome.test.callbackPass(),
-                           mediaFileSystemsDirectoryErrorCallback);
+function testGalleries(expectedFileSystems) {
+  chrome.test.assertEq(expectedFileSystems, galleries.length);
+  if (expectedFileSystems == 0) {
+    chrome.test.succeed();
+    return;
+  }
+
+  for (var i = 0; i < galleries.length; i++) {
+    var dirReader = galleries[i].root.createReader();
+    dirReader.readEntries(mediaFileSystemsDirectoryEntryCallback,
+                          mediaFileSystemsDirectoryErrorCallback);
   }
 };
 
+var mediaFileSystemsListCallback = function(results) {
+  galleries = results;
+};
+
 chrome.test.runTests([
-  function getGalleries() {
+  function mediaGalleriesReadAccess() {
     mediaGalleries.getMediaFileSystems(
         chrome.test.callbackPass(mediaFileSystemsListCallback));
   },

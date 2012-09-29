@@ -9,7 +9,7 @@ var mediaFileSystemsListCallback = function(results) {
 };
 
 chrome.test.runTests([
-  function getGalleries() {
+  function mediaGalleriesNoGalleries() {
     mediaGalleries.getMediaFileSystems(
         chrome.test.callbackPass(mediaFileSystemsListCallback));
   },
