@@ -929,15 +929,15 @@ void Browser::FindReplyHelper(WebContents* web_contents,
                               const gfx::Rect& selection_rect,
                               int active_match_ordinal,
                               bool final_update) {
-  TabContents* tab_contents = TabContents::FromWebContents(web_contents);
-  if (!tab_contents || !tab_contents->find_tab_helper())
+  FindTabHelper* find_tab_helper = FindTabHelper::FromWebContents(web_contents);
+  if (!find_tab_helper)
     return;
 
-  tab_contents->find_tab_helper()->HandleFindReply(request_id,
-                                                   number_of_matches,
-                                                   selection_rect,
-                                                   active_match_ordinal,
-                                                   final_update);
+  find_tab_helper->HandleFindReply(request_id,
+                                   number_of_matches,
+                                   selection_rect,
+                                   active_match_ordinal,
+                                   final_update);
 }
 
 // static

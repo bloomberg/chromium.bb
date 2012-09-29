@@ -20,14 +20,6 @@ using content::BrowserThread;
 using content::WebContents;
 using content::WebContentsTester;
 
-// TODO(avi): Kill this when TabContents goes away.
-class FindBackendTestContentsCreator {
- public:
-  static TabContents* CreateTabContents(content::WebContents* contents) {
-    return TabContents::Factory::CreateTabContents(contents);
-  }
-};
-
 class FindBackendTest : public TabContentsTestHarness {
  public:
   FindBackendTest()
@@ -50,22 +42,23 @@ string16 FindPrepopulateText(WebContents* contents) {
 // This test takes two WebContents objects, searches in both of them and
 // tests the internal state for find_text and find_prepopulate_text.
 TEST_F(FindBackendTest, InternalState) {
-  FindTabHelper* find_tab_helper = tab_contents()->find_tab_helper();
+  FindTabHelper* find_tab_helper =
+      FindTabHelper::FromWebContents(tab_contents()->web_contents());
   // Initial state for the WebContents is blank strings.
   EXPECT_EQ(string16(), FindPrepopulateText(contents()));
   EXPECT_EQ(string16(), find_tab_helper->find_text());
 
   // Get another WebContents object ready.
-  WebContents* contents2 =
-      WebContentsTester::CreateTestWebContents(profile(), NULL);
-  scoped_ptr<TabContents> tab_contents(
-      FindBackendTestContentsCreator::CreateTabContents(contents2));
-  FindTabHelper* find_tab_helper2 = tab_contents->find_tab_helper();
+  scoped_ptr<WebContents> contents2(
+      WebContentsTester::CreateTestWebContents(profile(), NULL));
+  FindTabHelper::CreateForWebContents(contents2.get());
+  FindTabHelper* find_tab_helper2 =
+      FindTabHelper::FromWebContents(contents2.get());
 
   // No search has still been issued, strings should be blank.
   EXPECT_EQ(string16(), FindPrepopulateText(contents()));
   EXPECT_EQ(string16(), find_tab_helper->find_text());
-  EXPECT_EQ(string16(), FindPrepopulateText(contents2));
+  EXPECT_EQ(string16(), FindPrepopulateText(contents2.get()));
   EXPECT_EQ(string16(), find_tab_helper2->find_text());
 
   string16 search_term1 = ASCIIToUTF16(" I had a 401K    ");
@@ -80,7 +73,7 @@ TEST_F(FindBackendTest, InternalState) {
   // should not.
   EXPECT_EQ(search_term1, FindPrepopulateText(contents()));
   EXPECT_EQ(search_term1, find_tab_helper->find_text());
-  EXPECT_EQ(search_term1, FindPrepopulateText(contents2));
+  EXPECT_EQ(search_term1, FindPrepopulateText(contents2.get()));
   EXPECT_EQ(string16(), find_tab_helper2->find_text());
 
   // Now search in the other WebContents, searching forwards but not case
@@ -91,7 +84,7 @@ TEST_F(FindBackendTest, InternalState) {
   // find_text should not.
   EXPECT_EQ(search_term2, FindPrepopulateText(contents()));
   EXPECT_EQ(search_term1, find_tab_helper->find_text());
-  EXPECT_EQ(search_term2, FindPrepopulateText(contents2));
+  EXPECT_EQ(search_term2, FindPrepopulateText(contents2.get()));
   EXPECT_EQ(search_term2, find_tab_helper2->find_text());
 
   // Search again in the first WebContents, searching forwards but not case
@@ -102,6 +95,6 @@ TEST_F(FindBackendTest, InternalState) {
   // find_text should not.
   EXPECT_EQ(search_term3, FindPrepopulateText(contents()));
   EXPECT_EQ(search_term3, find_tab_helper->find_text());
-  EXPECT_EQ(search_term3, FindPrepopulateText(contents2));
+  EXPECT_EQ(search_term3, FindPrepopulateText(contents2.get()));
   EXPECT_EQ(search_term2, find_tab_helper2->find_text());
 }

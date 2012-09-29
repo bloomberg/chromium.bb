@@ -39,7 +39,8 @@ FindBarController::~FindBarController() {
 }
 
 void FindBarController::Show() {
-  FindTabHelper* find_tab_helper = tab_contents_->find_tab_helper();
+  FindTabHelper* find_tab_helper =
+      FindTabHelper::FromWebContents(tab_contents_->web_contents());
 
   // Only show the animation if we're not already showing a find bar for the
   // selected WebContents.
@@ -59,7 +60,8 @@ void FindBarController::EndFindSession(SelectionAction selection_action,
   // |tab_contents_| can be NULL for a number of reasons, for example when the
   // tab is closing. We must guard against that case. See issue 8030.
   if (tab_contents_) {
-    FindTabHelper* find_tab_helper = tab_contents_->find_tab_helper();
+    FindTabHelper* find_tab_helper =
+        FindTabHelper::FromWebContents(tab_contents_->web_contents());
 
     // When we hide the window, we need to notify the renderer that we are done
     // for now, so that we can abort the scoping effort and clear all the
@@ -81,11 +83,15 @@ void FindBarController::ChangeTabContents(TabContents* contents) {
   }
 
   tab_contents_ = contents;
+  FindTabHelper* find_tab_helper =
+      tab_contents_ ? FindTabHelper::FromWebContents(
+                          tab_contents_->web_contents())
+                    : NULL;
 
-  // Hide any visible find window from the previous tab if NULL |tab_contents|
+  // Hide any visible find window from the previous tab if a NULL tab contents
   // is passed in or if the find UI is not active in the new tab.
   if (find_bar_->IsFindBarVisible() &&
-      (!tab_contents_ || !tab_contents_->find_tab_helper()->find_ui_active())) {
+      (!find_tab_helper || !find_tab_helper->find_ui_active())) {
     find_bar_->Hide(false);
   }
 
@@ -103,7 +109,7 @@ void FindBarController::ChangeTabContents(TabContents* contents) {
 
   MaybeSetPrepopulateText();
 
-  if (tab_contents_->find_tab_helper()->find_ui_active()) {
+  if (find_tab_helper && find_tab_helper->find_ui_active()) {
     // A tab with a visible find bar just got selected and we need to show the
     // find bar but without animation since it was already animated into its
     // visible state. We also want to reset the window location so that
@@ -121,7 +127,8 @@ void FindBarController::ChangeTabContents(TabContents* contents) {
 void FindBarController::Observe(int type,
                                 const content::NotificationSource& source,
                                 const content::NotificationDetails& details) {
-  FindTabHelper* find_tab_helper = tab_contents_->find_tab_helper();
+  FindTabHelper* find_tab_helper =
+      FindTabHelper::FromWebContents(tab_contents_->web_contents());
   if (type == chrome::NOTIFICATION_FIND_RESULT_AVAILABLE) {
     // Don't update for notifications from TabContentses other than the one we
     // are actively tracking.
@@ -205,7 +212,8 @@ gfx::Rect FindBarController::GetLocationForFindbarView(
 }
 
 void FindBarController::UpdateFindBarForCurrentResult() {
-  FindTabHelper* find_tab_helper = tab_contents_->find_tab_helper();
+  FindTabHelper* find_tab_helper =
+      FindTabHelper::FromWebContents(tab_contents_->web_contents());
   const FindNotificationDetails& find_result = find_tab_helper->find_result();
 
   // Avoid bug 894389: When a new search starts (and finds something) it reports
@@ -231,7 +239,8 @@ void FindBarController::MaybeSetPrepopulateText() {
   // Find out what we should show in the find text box. Usually, this will be
   // the last search in this tab, but if no search has been issued in this tab
   // we use the last search string (from any tab).
-  FindTabHelper* find_tab_helper = tab_contents_->find_tab_helper();
+  FindTabHelper* find_tab_helper =
+      FindTabHelper::FromWebContents(tab_contents_->web_contents());
   string16 find_string = find_tab_helper->find_text();
   if (find_string.empty())
     find_string = find_tab_helper->previous_find_text();

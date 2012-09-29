@@ -101,8 +101,9 @@ class FindInPageNotificationObserver : public content::NotificationObserver {
       : parent_tab_(parent_tab),
         active_match_ordinal_(-1),
         number_of_matches_(0) {
-    current_find_request_id_ =
-        parent_tab->find_tab_helper()->current_find_request_id();
+    FindTabHelper* find_tab_helper =
+        FindTabHelper::FromWebContents(parent_tab->web_contents());
+    current_find_request_id_ = find_tab_helper->current_find_request_id();
     registrar_.Add(this, chrome::NOTIFICATION_FIND_RESULT_AVAILABLE,
                    content::Source<WebContents>(parent_tab_->web_contents()));
     message_loop_runner_ = new content::MessageLoopRunner;
@@ -377,8 +378,9 @@ AppModalDialog* WaitForAppModalDialog() {
 int FindInPage(TabContents* tab_contents, const string16& search_string,
                bool forward, bool match_case, int* ordinal,
                gfx::Rect* selection_rect) {
-  tab_contents->
-      find_tab_helper()->StartFinding(search_string, forward, match_case);
+  FindTabHelper* find_tab_helper =
+      FindTabHelper::FromWebContents(tab_contents->web_contents());
+  find_tab_helper->StartFinding(search_string, forward, match_case);
   FindInPageNotificationObserver observer(tab_contents);
   if (ordinal)
     *ordinal = observer.active_match_ordinal();

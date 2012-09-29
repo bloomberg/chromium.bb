@@ -6,11 +6,10 @@
 
 #include "base/android/jni_android.h"
 #include "chrome/browser/file_select_helper.h"
+#include "chrome/browser/ui/app_modal_dialogs/javascript_dialog_creator.h"
 #include "chrome/browser/ui/find_bar/find_match_rects_details.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
-#include "chrome/browser/ui/app_modal_dialogs/javascript_dialog_creator.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -121,12 +120,12 @@ void ChromeWebContentsDelegateAndroid::FindReply(
         content::Source<WebContents>(web_contents));
   }
 
-  TabContents* tab_contents = TabContents::FromWebContents(web_contents);
-  tab_contents->find_tab_helper()->HandleFindReply(request_id,
-                                                   number_of_matches,
-                                                   selection_rect,
-                                                   active_match_ordinal,
-                                                   final_update);
+  FindTabHelper* find_tab_helper = FindTabHelper::FromWebContents(web_contents);
+  find_tab_helper->HandleFindReply(request_id,
+                                   number_of_matches,
+                                   selection_rect,
+                                   active_match_ordinal,
+                                   final_update);
 }
 
 void ChromeWebContentsDelegateAndroid::OnFindResultAvailable(

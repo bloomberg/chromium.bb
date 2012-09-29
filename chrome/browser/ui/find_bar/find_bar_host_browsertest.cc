@@ -483,6 +483,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageEndState) {
 
   TabContents* tab_contents = chrome::GetActiveTabContents(browser());
   ASSERT_TRUE(NULL != tab_contents);
+  FindTabHelper* find_tab_helper =
+      FindTabHelper::FromWebContents(tab_contents->web_contents());
 
   // Verify that nothing has focus.
   std::string result;
@@ -496,8 +498,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageEndState) {
   EXPECT_EQ(1, ordinal);
 
   // End the find session, which should set focus to the link.
-  tab_contents->
-      find_tab_helper()->StopFinding(FindBarController::kKeepSelectionOnPage);
+  find_tab_helper->StopFinding(FindBarController::kKeepSelectionOnPage);
 
   // Verify that the link is focused.
   ASSERT_TRUE(FocusedOnPage(tab_contents->web_contents(), &result));
@@ -516,8 +517,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageEndState) {
       &result));
 
   // End the find session.
-  tab_contents->
-      find_tab_helper()->StopFinding(FindBarController::kKeepSelectionOnPage);
+  find_tab_helper->StopFinding(FindBarController::kKeepSelectionOnPage);
 
   // Verify that link2 is not focused.
   ASSERT_TRUE(FocusedOnPage(tab_contents->web_contents(), &result));
@@ -571,6 +571,9 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   // Search for a text that exists within a link on the page.
   TabContents* tab = chrome::GetActiveTabContents(browser());
   ASSERT_TRUE(NULL != tab);
+  FindTabHelper* find_tab_helper =
+      FindTabHelper::FromWebContents(tab->web_contents());
+
   int ordinal = 0;
   EXPECT_EQ(4, FindInPageWchar(tab,
                                L"google",
@@ -593,7 +596,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   EXPECT_EQ(3, ordinal);
 
   // End the find session.
-  tab->find_tab_helper()->StopFinding(FindBarController::kKeepSelectionOnPage);
+  find_tab_helper->StopFinding(FindBarController::kKeepSelectionOnPage);
 }
 
 // This tests that we start searching after selected text.
@@ -1124,7 +1127,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, StayActive) {
   // backspace, but that's been proven flaky in the past, so we go straight to
   // tab_contents.
   FindTabHelper* find_tab_helper =
-      chrome::GetActiveTabContents(browser())->find_tab_helper();
+      FindTabHelper::FromWebContents(chrome::GetActiveWebContents(browser()));
   // Stop the (non-existing) find operation, and clear the selection (which
   // signals the UI is still active).
   find_tab_helper->StopFinding(FindBarController::kClearSelectionOnPage);
@@ -1195,7 +1198,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PreferPreviousSearch) {
   // Simulate F3.
   ui_test_utils::FindInPage(tab1, string16(), kFwd, kIgnoreCase, &ordinal,
                             NULL);
-  EXPECT_EQ(tab1->find_tab_helper()->find_text(), WideToUTF16(L"text"));
+  EXPECT_EQ(FindTabHelper::FromWebContents(tab1->web_contents())->find_text(),
+            WideToUTF16(L"text"));
 }
 
 // This tests that whenever you close and reopen the Find bar, it should show
@@ -1412,6 +1416,9 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, ActivateLinkNavigatesPage) {
   ui_test_utils::NavigateToURL(browser(), url);
 
   TabContents* tab = chrome::GetActiveTabContents(browser());
+  FindTabHelper* find_tab_helper =
+      FindTabHelper::FromWebContents(tab->web_contents());
+
   int ordinal = 0;
   FindInPageWchar(tab, L"link", kFwd, kIgnoreCase, &ordinal);
   EXPECT_EQ(ordinal, 1);
@@ -1421,8 +1428,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, ActivateLinkNavigatesPage) {
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
           &tab->web_contents()->GetController()));
-  tab->find_tab_helper()->StopFinding(
-      FindBarController::kActivateSelectionOnPage);
+  find_tab_helper->StopFinding(FindBarController::kActivateSelectionOnPage);
   observer.Wait();
 }
 

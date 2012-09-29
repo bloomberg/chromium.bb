@@ -796,10 +796,10 @@ void FindInPage(Browser* browser, bool find_next, bool forward_direction) {
     // We always want to search for the contents of the find pasteboard on OS X.
     find_text = GetFindPboardText();
 #endif
-    GetActiveTabContents(browser)->
-        find_tab_helper()->StartFinding(find_text,
-                                        forward_direction,
-                                        false);  // Not case sensitive.
+    FindTabHelper::FromWebContents(GetActiveWebContents(browser))->
+        StartFinding(find_text,
+                     forward_direction,
+                     false);  // Not case sensitive.
   }
 }
 

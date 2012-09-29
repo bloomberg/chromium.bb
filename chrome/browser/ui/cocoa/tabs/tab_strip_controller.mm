@@ -1276,7 +1276,9 @@ private:
     newContents->web_contents()->WasShown();
     newContents->web_contents()->GetView()->RestoreFocus();
 
-    if (newContents->find_tab_helper()->find_ui_active())
+    FindTabHelper* findTabHelper =
+        FindTabHelper::FromWebContents(newContents->web_contents());
+    if (findTabHelper->find_ui_active())
       browser_->GetFindBarController()->find_bar()->SetFocusAndSelection();
   }
 }

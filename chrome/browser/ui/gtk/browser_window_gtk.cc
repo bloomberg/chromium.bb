@@ -1252,7 +1252,9 @@ void BrowserWindowGtk::ActiveTabChanged(TabContents* old_contents,
   // we are the active browser before calling RestoreFocus().
   if (!browser_->tab_strip_model()->closing_all()) {
     new_contents->web_contents()->GetView()->RestoreFocus();
-    if (new_contents->find_tab_helper()->find_ui_active())
+    FindTabHelper* find_tab_helper =
+        FindTabHelper::FromWebContents(new_contents->web_contents());
+    if (find_tab_helper->find_ui_active())
       browser_->GetFindBarController()->find_bar()->SetFocusAndSelection();
   }
 

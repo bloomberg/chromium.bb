@@ -117,11 +117,14 @@ void FindBarHost::MoveWindowIfNecessary(const gfx::Rect& selection_rect,
   // We only move the window if one is active for the current WebContents. If we
   // don't check this, then SetWidgetPosition below will end up making the Find
   // Bar visible.
-  if (!find_bar_controller_->tab_contents() ||
-      !find_bar_controller_->
-          tab_contents()->find_tab_helper()->find_ui_active()) {
+  TabContents* tab_contents = find_bar_controller_->tab_contents();
+  if (!tab_contents)
     return;
-  }
+
+  FindTabHelper* find_tab_helper =
+      FindTabHelper::FromWebContents(tab_contents->web_contents());
+  if (!find_tab_helper || !find_tab_helper->find_ui_active())
+    return;
 
   gfx::Rect new_pos = GetDialogPosition(selection_rect);
   SetDialogPosition(new_pos, no_redraw);

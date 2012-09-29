@@ -362,10 +362,12 @@ void FindBarView::ButtonPressed(
     case FIND_PREVIOUS_TAG:
     case FIND_NEXT_TAG:
       if (!find_text_->text().empty()) {
-        find_bar_host()->GetFindBarController()->tab_contents()->
-            find_tab_helper()->StartFinding(find_text_->text(),
-                                            sender->tag() == FIND_NEXT_TAG,
-                                            false);  // Not case sensitive.
+        FindTabHelper* find_tab_helper = FindTabHelper::FromWebContents(
+            find_bar_host()->GetFindBarController()->
+                tab_contents()->web_contents());
+        find_tab_helper->StartFinding(find_text_->text(),
+                                      sender->tag() == FIND_NEXT_TAG,
+                                      false);  // Not case sensitive.
       }
       if (event.IsMouseEvent()) {
         // If mouse event, we move the focus back to the text-field, so that the
@@ -399,8 +401,8 @@ void FindBarView::ContentsChanged(views::Textfield* sender,
   // can lead to crashes, as exposed by automation testing in issue 8048.
   if (!controller->tab_contents())
     return;
-  FindTabHelper* find_tab_helper =
-      controller->tab_contents()->find_tab_helper();
+  FindTabHelper* find_tab_helper = FindTabHelper::FromWebContents(
+      controller->tab_contents()->web_contents());
 
   // When the user changes something in the text box we check the contents and
   // if the textbox contains something we set it as the new search string and
@@ -439,8 +441,8 @@ bool FindBarView::HandleKeyEvent(views::Textfield* sender,
     string16 find_string = find_text_->text();
     if (!find_string.empty()) {
       FindBarController* controller = find_bar_host()->GetFindBarController();
-      FindTabHelper* find_tab_helper =
-          controller->tab_contents()->find_tab_helper();
+      FindTabHelper* find_tab_helper = FindTabHelper::FromWebContents(
+          controller->tab_contents()->web_contents());
       // Search forwards for enter, backwards for shift-enter.
       find_tab_helper->StartFinding(find_string,
                                     !key_event.IsShiftDown(),
