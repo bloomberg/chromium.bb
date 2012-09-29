@@ -613,8 +613,7 @@ bool ExtensionService::UpdateExtension(const std::string& id,
   int creation_flags = Extension::NO_FLAGS;
   if ((extension && extension->from_webstore()) ||
       (extension && extension->UpdatesFromGallery()) ||
-      (!extension && pending_extension_info->is_from_sync() &&
-       extension_urls::IsWebstoreUpdateUrl(
+      (!extension && extension_urls::IsWebstoreUpdateUrl(
            pending_extension_info->update_url()))) {
     creation_flags |= Extension::FROM_WEBSTORE;
   }
