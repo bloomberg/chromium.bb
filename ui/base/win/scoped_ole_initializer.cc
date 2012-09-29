@@ -4,19 +4,33 @@
 
 #include "ui/base/win/scoped_ole_initializer.h"
 
-#include <ole2.h>
-
 #include "base/logging.h"
 
 namespace ui {
 
-ScopedOleInitializer::ScopedOleInitializer() {
-  HRESULT result = OleInitialize(NULL);
-  DCHECK(SUCCEEDED(result));
+ScopedOleInitializer::ScopedOleInitializer()
+    :
+#ifndef NDEBUG
+      // Using the windows API directly to avoid dependency on platform_thread.
+      thread_id_(GetCurrentThreadId()),
+#endif
+      hr_(OleInitialize(NULL)) {
+#ifndef NDEBUG
+  if (hr_ == S_FALSE) {
+    LOG(ERROR) << "Multiple OleInitialize() calls for thread " << thread_id_;
+  } else {
+    DCHECK_NE(OLE_E_WRONGCOMPOBJ, hr_) << "Incompatible DLLs on machine";
+    DCHECK_NE(RPC_E_CHANGED_MODE, hr_) << "Invalid COM thread model change";
+  }
+#endif
 }
 
 ScopedOleInitializer::~ScopedOleInitializer() {
-  OleUninitialize();
+#ifndef NDEBUG
+  DCHECK_EQ(thread_id_, GetCurrentThreadId());
+#endif
+  if (SUCCEEDED(hr_))
+    OleUninitialize();
 }
 
 }  // namespace ui
