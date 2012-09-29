@@ -5963,17 +5963,6 @@
    fun:_ZN7WebCore15GraphicsContext4clipERKNS_7IntRectE
 }
 {
-   bug_148640
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN7content21RenderProcessHostImplC1EPNS_14BrowserContextEPNS_20StoragePartitionImplEb
-   fun:_ZN16SiteInstanceImpl10GetProcessEv
-   fun:_ZN7content18RenderViewHostImplC1EPNS_12SiteInstanceEPNS_22RenderViewHostDelegateEPNS_24RenderWidgetHostDelegateEibPNS_23SessionStorageNamespaceE
-   fun:_ZN20InterstitialPageImpl20CreateRenderViewHostEv
-   fun:_ZN20InterstitialPageImpl4ShowEv
-   fun:_ZN14captive_portal28MockInterstitialPageDelegateC1EPN7content11WebContentsE
-}
-{
    bug_149734a
    Memcheck:Leak
    fun:malloc
