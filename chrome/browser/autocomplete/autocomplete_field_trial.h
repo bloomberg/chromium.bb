@@ -69,12 +69,24 @@ class AutocompleteFieldTrial {
   // For the HistoryURL provider disable culling redirects field trial.
 
   // Returns whether the user is in any group for this field trial.
-  // (Should always be true unless initialization went wrong..)
+  // (Should always be true unless initialization went wrong.)
   static bool InHUPCullRedirectsFieldTrial();
 
   // Returns whether we should disable culling of redirects in
   // HistoryURL provider.
   static bool InHUPCullRedirectsFieldTrialExperimentGroup();
+
+  // ---------------------------------------------------------
+  // For the HistoryURL provider disable creating a shorter match
+  // field trial.
+
+  // Returns whether the user is in any group for this field trial.
+  // (Should always be true unless initialization went wrong.)
+  static bool InHUPCreateShorterMatchFieldTrial();
+
+  // Returns whether we should disable creating a shorter match in
+  // HistoryURL provider.
+  static bool InHUPCreateShorterMatchFieldTrialExperimentGroup();
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(AutocompleteFieldTrial);

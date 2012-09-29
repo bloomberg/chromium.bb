@@ -146,6 +146,7 @@ class HistoryURLProvider : public HistoryProvider {
           AutocompleteProvider::TYPE_HISTORY_URL),
       params_(NULL),
       cull_redirects_(true),
+      create_shorter_match_(true),
       languages_(languages) {}
 #endif
 
@@ -287,6 +288,12 @@ class HistoryURLProvider : public HistoryProvider {
   // URLs that are likely duplicates (http://google.com <->
   // https://www.google.com/, etc.) will do a good enough job.
   bool cull_redirects_;
+
+  // Used in PromoteOrCreateShorterSuggestion().  If true, we may create
+  // shorter suggestions even when they haven't been visited before:
+  // if the user visited http://example.com/asdf once, we'll suggest
+  // http://example.com/ even if they've never been to it.
+  bool create_shorter_match_;
 
   // Only used by unittests; if non-empty, overrides accept-languages in the
   // profile's pref system.
