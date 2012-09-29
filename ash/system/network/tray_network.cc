@@ -862,6 +862,9 @@ views::View* TrayNetwork::CreateDefaultView(user::LoginStatus status) {
 
 views::View* TrayNetwork::CreateDetailedView(user::LoginStatus status) {
   CHECK(detailed_ == NULL);
+  // Clear any notifications when showing the detailed view.
+  messages_->messages().clear();
+  HideNotificationView();
   if (request_wifi_view_) {
     SystemTrayDelegate* delegate = Shell::GetInstance()->tray_delegate();
     // The Wi-Fi state is not toggled yet at this point.
@@ -929,8 +932,7 @@ void TrayNetwork::SetNetworkMessage(NetworkTrayDelegate* delegate,
 void TrayNetwork::ClearNetworkMessage(MessageType message_type) {
   messages_->messages().erase(message_type);
   if (messages_->messages().empty()) {
-    if (notification_)
-      HideNotificationView();
+    HideNotificationView();
     return;
   }
   if (notification_)

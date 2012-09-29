@@ -265,14 +265,18 @@ void SystemTray::DestroyBubble() {
   detailed_item_ = NULL;
 }
 
+void SystemTray::DestroyNotificationBubble() {
+  notification_bubble_.reset();
+  status_area_widget()->SetHideWebNotifications(false);
+}
+
 void SystemTray::RemoveBubble(SystemTrayBubble* bubble) {
   if (bubble == bubble_.get()) {
     DestroyBubble();
     UpdateNotificationBubble();  // State changed, re-create notifications.
     Shell::GetInstance()->shelf()->UpdateAutoHideState();
   } else if (bubble == notification_bubble_) {
-    notification_bubble_.reset();
-    status_area_widget()->SetHideWebNotifications(false);
+    DestroyNotificationBubble();
   } else {
     NOTREACHED();
   }
@@ -358,8 +362,7 @@ void SystemTray::UpdateNotificationBubble() {
   if (notification_items_.empty() ||
       (bubble_.get() &&
        bubble_->bubble_type() == SystemTrayBubble::BUBBLE_TYPE_DEFAULT)) {
-    notification_bubble_.reset();
-    status_area_widget()->SetHideWebNotifications(false);
+    DestroyNotificationBubble();
     return;
   }
   if (bubble_.get() &&
@@ -371,6 +374,10 @@ void SystemTray::UpdateNotificationBubble() {
          iter != notification_items_.end(); ++ iter) {
       if (*iter != detailed_item_)
         items.push_back(*iter);
+    }
+    if (items.empty()) {
+      DestroyNotificationBubble();
+      return;
     }
     notification_bubble_.reset(new SystemTrayBubble(
         this, items, SystemTrayBubble::BUBBLE_TYPE_NOTIFICATION));
@@ -394,6 +401,11 @@ void SystemTray::UpdateNotificationBubble() {
   user::LoginStatus login_status =
       Shell::GetInstance()->tray_delegate()->GetUserLoginStatus();
   notification_bubble_->InitView(anchor, init_params, login_status);
+  if (notification_bubble_->bubble_view()->child_count() == 0) {
+    // It is possible that none of the items generated actual notifications.
+    DestroyNotificationBubble();
+    return;
+  }
   if (hide_notifications_)
     notification_bubble_->SetVisible(false);
   else

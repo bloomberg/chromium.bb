@@ -167,6 +167,9 @@ class ASH_EXPORT SystemTray : public internal::TrayBackgroundView {
   // Resets |bubble_| and clears any related state.
   void DestroyBubble();
 
+  // Resets |notification_bubble_| and clears any related state.
+  void DestroyNotificationBubble();
+
   // Called when the widget associated with |bubble| closes. |bubble| should
   // always == |bubble_|. This triggers destroying |bubble_| and hiding the
   // launcher if necessary.
