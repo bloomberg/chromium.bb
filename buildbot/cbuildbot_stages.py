@@ -1121,6 +1121,28 @@ class ChromeTestStage(BoardSpecificBuilderStage):
     self._archive_stage.TestResultsReady(None)
 
 
+class SignerTestStage(BoardSpecificBuilderStage):
+  """Run signer related tests."""
+
+  option_name = 'tests'
+  config_name = 'signer_tests'
+
+  # If the signer tests take longer than 30 minutes, abort. They usually take
+  # five minutes to run.
+  SIGNER_TEST_TIMEOUT = 1800
+
+  def __init__(self, options, build_config, board, archive_stage):
+    super(SignerTestStage, self).__init__(options, build_config, board)
+    self._archive_stage = archive_stage
+
+  def _PerformStage(self):
+    if not self._archive_stage.WaitForRecoveryImage():
+      raise Exception('Missing recovery image.')
+    with cros_build_lib.SubCommandTimeout(self.SIGNER_TEST_TIMEOUT):
+      commands.RunSignerTests(self._build_root,
+                              self._current_board)
+
+
 class UnitTestStage(BoardSpecificBuilderStage):
   """Run unit tests."""
 
@@ -1324,6 +1346,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
     # Queues that are populated during the Archive stage.
     self._breakpad_symbols_queue = multiprocessing.Queue()
     self._hw_test_uploads_status_queue = multiprocessing.Queue()
+    self._recovery_image_status_queue = multiprocessing.Queue()
 
     # Queues that are populated by other stages.
     self._version_queue = multiprocessing.Queue()
@@ -1362,7 +1385,6 @@ class ArchiveStage(BoardSpecificBuilderStage):
     """
     self._full_autotest_tarball_queue.put(full_autotest_tarball)
 
-
   def TestResultsReady(self, test_results):
     """Tell Archive Stage that test results are ready.
 
@@ -1390,12 +1412,25 @@ class ArchiveStage(BoardSpecificBuilderStage):
 
     Returns:
       True if artifacts uploaded successfully.
-      False otherswise.
+      False otherwise.
     """
     cros_build_lib.Info('Waiting for uploads...')
     status = self._hw_test_uploads_status_queue.get()
     # Put the status back so other HWTestStage instances don't starve.
     self._hw_test_uploads_status_queue.put(status)
+    return status
+
+  def WaitForRecoveryImage(self):
+    """Wait until artifacts needed by SignerTest stage are created.
+
+    Returns:
+      True if artifacts created successfully.
+      False otherwise.
+    """
+    cros_build_lib.Info('Waiting for recovery image...')
+    status = self._recovery_image_status_queue.get()
+    # Put the status back so other SignerTestStage instances don't starve.
+    self._recovery_image_status_queue.put(status)
     return status
 
   def _BreakpadSymbolsGenerated(self, success):
@@ -1710,6 +1745,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
       # image generation out of the archive stage.
       if 'base' in config['images']:
         commands.BuildRecoveryImage(buildroot, board, image_dir, extra_env)
+        self._recovery_image_status_queue.put(True)
 
       if config['images']:
         background.RunParallelSteps([BuildAndArchiveFactoryImages,
@@ -1816,6 +1852,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
     # Tell the HWTestStage not to wait for artifacts to be uploaded
     # in case ArchiveStage throws an exception.
     self._hw_test_uploads_status_queue.put(False)
+    self._recovery_image_status_queue.put(False)
     return super(ArchiveStage, self)._HandleStageException(exception)
 
 

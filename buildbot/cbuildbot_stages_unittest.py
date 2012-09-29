@@ -1499,5 +1499,27 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
     self._verifyRunResults(expectedResults)
 
 
+class BoardSpecificBuilderStageTest(cros_test_lib.TestCase):
+
+  def testCheckOptions(self):
+    """Makes sure options/config settings are setup correctly."""
+
+    parser = cbuildbot._CreateParser()
+    (options, _) = parser.parse_args([])
+
+    for attr in dir(stages):
+      obj = eval('stages.' + attr)
+      if not hasattr(obj, '__base__'):
+        continue
+      if not obj.__base__ is stages.BoardSpecificBuilderStage:
+        continue
+      if obj.option_name:
+        self.assertTrue(getattr(options, obj.option_name))
+      if obj.config_name:
+        if not obj.config_name in config._settings:
+          self.fail(('cbuildbot_stages.%s.config_name "%s" is missing from '
+                     'cbuildbot_config._settings') % (attr, obj.config_name))
+
+
 if __name__ == '__main__':
   cros_test_lib.main()

@@ -359,6 +359,11 @@ def BuildVMImageForTesting(buildroot, board, extra_env=None):
   _RunBuildScript(buildroot, cmd, extra_env=extra_env, enter_chroot=True)
 
 
+def RunSignerTests(buildroot, board):
+  cmd = ['./security_test_image', '--board=%s' % board]
+  _RunBuildScript(buildroot, cmd, enter_chroot=True)
+
+
 def RunUnitTests(buildroot, board, full, nowithdebug):
   cmd = ['cros_run_unit_tests', '--board=%s' % board]
 

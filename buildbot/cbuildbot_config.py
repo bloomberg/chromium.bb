@@ -198,6 +198,9 @@ _settings = dict(
 # chrome_tests -- Runs chrome testing binaries in a vm.
   chrome_tests=False,
 
+# signer_tests -- Runs the tests that the signer would run.
+  signer_tests=False,
+
 # unittests -- Runs unittests for packages.
   unittests=True,
 
@@ -902,6 +905,7 @@ _release = full.derive(official, internal,
   git_sync=False,
   vm_tests=constants.FULL_AU_TEST_TYPE,
   upload_hw_test_artifacts=True,
+  signer_tests=True,
   trybot_list=True,
   description="Release Builds (canary) (internal)",
 )
