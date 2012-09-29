@@ -355,6 +355,7 @@ Action taken is the following:
 
         sdk_cache = os.path.join(options.cache_dir, 'sdks')
         distfiles_cache = os.path.join(options.cache_dir, 'distfiles')
+        osutils.SafeMakedirs(options.cache_dir)
 
         for target in (sdk_cache, distfiles_cache):
           src = os.path.join(SRC_ROOT, os.path.basename(target))
