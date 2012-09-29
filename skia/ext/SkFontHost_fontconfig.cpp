@@ -31,6 +31,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include "base/compiler_specific.h"
 #include "third_party/skia/src/ports/SkFontDescriptor.h"
 #include "SkFontHost.h"
 #include "SkStream.h"
@@ -109,7 +110,7 @@ public:
         : SkTypeface(style, id)
     { }
 
-    ~FontConfigTypeface()
+    virtual ~FontConfigTypeface()
     {
         const uint32_t id = uniqueID();
         if (IsRemoteFont(UniqueIdToFileFaceId(id))) {
@@ -280,17 +281,17 @@ class SkFileDescriptorStream : public SkStream {
         length_ = st.st_size;
     }
 
-    ~SkFileDescriptorStream() {
+    virtual ~SkFileDescriptorStream() {
         munmap(const_cast<uint8_t*>(memory_), length_);
     }
 
-    virtual bool rewind() {
+    virtual bool rewind() OVERRIDE {
         offset_ = 0;
         return true;
     }
 
     // SkStream implementation.
-    virtual size_t read(void* buffer, size_t size) {
+    virtual size_t read(void* buffer, size_t size) OVERRIDE {
         if (!buffer && !size) {
             // This is request for the length of the stream.
             return length_;
@@ -306,7 +307,7 @@ class SkFileDescriptorStream : public SkStream {
         return size;
     }
 
-    virtual const void* getMemoryBase() {
+    virtual const void* getMemoryBase() OVERRIDE {
         return memory_;
     }
 
