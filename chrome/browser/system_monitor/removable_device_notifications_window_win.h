@@ -78,6 +78,9 @@ class RemovableDeviceNotificationsWindowWin
 
   void AddNewDevice(const FilePath& device_path);
 
+  void AddExistingDevicesOnFileThread(
+      GetAttachedDevicesFunc get_attached_devices_func);
+
   void CheckDeviceTypeOnFileThread(const std::string& unique_id,
                                    const FilePath::StringType& device_name,
                                    const FilePath& device);

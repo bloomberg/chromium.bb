@@ -108,6 +108,7 @@ class RemovableDeviceNotificationsWindowWinTest : public testing::Test {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
     window_ = new TestRemovableDeviceNotificationsWindowWin;
     window_->InitWithTestData();
+    message_loop_.RunAllPending();
     system_monitor_.AddDevicesChangedObserver(&observer_);
   }
 

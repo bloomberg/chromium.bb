@@ -279,14 +279,9 @@ void RemovableDeviceNotificationsWindowWin::DoInit(
                          instance_, 0);
   SetWindowLongPtr(window_, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
 
-  // Disable detection of attached devices during start up (except for tests)
-  // to track down http://crbug.com/150608  Revert if it turns out not to be
-  // the problem.
-  if (get_attached_devices_func != GetAttachedDevices) {
-    std::vector<FilePath> removable_devices = get_attached_devices_func();
-    for (size_t i = 0; i < removable_devices.size(); i++)
-      AddNewDevice(removable_devices[i]);
-  }
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, base::Bind(
+      &RemovableDeviceNotificationsWindowWin::AddExistingDevicesOnFileThread,
+      this, get_attached_devices_func));
 }
 
 void RemovableDeviceNotificationsWindowWin::AddNewDevice(
@@ -308,6 +303,14 @@ void RemovableDeviceNotificationsWindowWin::AddNewDevice(
       base::Bind(
           &RemovableDeviceNotificationsWindowWin::CheckDeviceTypeOnFileThread,
           this, unique_id, device_name, device_path));
+}
+
+void RemovableDeviceNotificationsWindowWin::AddExistingDevicesOnFileThread(
+    GetAttachedDevicesFunc get_attached_devices_func) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  std::vector<FilePath> removable_devices = get_attached_devices_func();
+  for (size_t i = 0; i < removable_devices.size(); i++)
+    AddNewDevice(removable_devices[i]);
 }
 
 void RemovableDeviceNotificationsWindowWin::CheckDeviceTypeOnFileThread(
