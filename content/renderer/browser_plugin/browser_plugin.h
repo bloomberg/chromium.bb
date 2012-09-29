@@ -16,6 +16,7 @@
 #include "content/renderer/browser_plugin/browser_plugin_bindings.h"
 #include "content/renderer/render_view_impl.h"
 
+struct BrowserPluginHostMsg_ResizeGuest_Params;
 struct BrowserPluginMsg_UpdateRect_Params;
 
 namespace content {
@@ -150,9 +151,17 @@ class CONTENT_EXPORT BrowserPlugin :
   // and sets them appropriately.
   void ParseAttributes(const WebKit::WebPluginParams& params);
 
+  // Returns the pending resize guest param if there is one. Returns a param
+  // with invalid transport dib otherwise.
+  BrowserPluginHostMsg_ResizeGuest_Params* GetPendingResizeParams();
+
   // Cleanup event listener state to free v8 resources when a BrowserPlugin
   // is destroyed.
   void RemoveEventListeners();
+  // Creates and maps transport dib. Overridden in tests.
+  virtual TransportDIB* CreateTransportDIB(const size_t size);
+  // Frees up the damage buffer. Overridden in tests.
+  virtual void FreeDamageBuffer();
 
   int instance_id_;
   RenderViewImpl* render_view_;
@@ -165,6 +174,7 @@ class CONTENT_EXPORT BrowserPlugin :
   SkBitmap* sad_guest_;
   bool guest_crashed_;
   bool resize_pending_;
+  scoped_ptr<BrowserPluginHostMsg_ResizeGuest_Params> pending_resize_params_;
   // True if we have ever sent a NavigateGuest message to the embedder.
   bool navigate_src_sent_;
   std::string src_;

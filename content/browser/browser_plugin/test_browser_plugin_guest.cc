@@ -5,14 +5,10 @@
 #include "content/browser/browser_plugin/test_browser_plugin_guest.h"
 
 #include "base/test/test_timeouts.h"
-#include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/browser_plugin_messages.h"
-#include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_types.h"
-#include "content/public/test/test_utils.h"
-#include "ui/gfx/size.h"
 
 namespace content {
 
@@ -24,15 +20,15 @@ TestBrowserPluginGuest::TestBrowserPluginGuest(
     RenderViewHost* render_view_host)
     : BrowserPluginGuest(instance_id, web_contents, render_view_host),
       update_rect_count_(0),
+      damage_buffer_call_count_(0),
       crash_observed_(false),
       focus_observed_(false),
       advance_focus_observed_(false),
       was_hidden_observed_(false),
       stop_observed_(false),
       reload_observed_(false),
-      waiting_for_update_rect_msg_with_size_(false),
-      last_update_rect_width_(-1),
-      last_update_rect_height_(-1) {
+      waiting_for_damage_buffer_with_size_(false),
+      last_damage_buffer_size_(gfx::Size()) {
   // Listen to visibility changes so that a test can wait for these changes.
   registrar_.Add(this,
                  NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
@@ -62,31 +58,9 @@ void TestBrowserPluginGuest::Observe(int type,
 
 void TestBrowserPluginGuest::SendMessageToEmbedder(IPC::Message* msg) {
   if (msg->type() == BrowserPluginMsg_UpdateRect::ID) {
-    PickleIterator iter(*msg);
-
-    int instance_id;
-    int message_id;
-    BrowserPluginMsg_UpdateRect_Params update_rect_params;
-
-    if (!IPC::ReadParam(msg, &iter, &instance_id) ||
-        !IPC::ReadParam(msg, &iter, &message_id) ||
-        !IPC::ReadParam(msg, &iter, &update_rect_params)) {
-      NOTREACHED() <<
-          "Cannot read BrowserPluginMsg_UpdateRect params from ipc message";
-    }
-    last_update_rect_width_ = update_rect_params.view_size.width();
-    last_update_rect_height_ = update_rect_params.view_size.height();
     update_rect_count_++;
-    if (waiting_for_update_rect_msg_with_size_ &&
-        expected_width_ == last_update_rect_width_ &&
-        expected_height_ == last_update_rect_height_) {
-      waiting_for_update_rect_msg_with_size_ = false;
-      if (send_message_loop_runner_)
-        send_message_loop_runner_->Quit();
-    } else if (!waiting_for_update_rect_msg_with_size_) {
-      if (send_message_loop_runner_)
-        send_message_loop_runner_->Quit();
-    }
+    if (send_message_loop_runner_)
+      send_message_loop_runner_->Quit();
   }
   BrowserPluginGuest::SendMessageToEmbedder(msg);
 }
@@ -103,20 +77,15 @@ void TestBrowserPluginGuest::ResetUpdateRectCount() {
   update_rect_count_ = 0;
 }
 
-void TestBrowserPluginGuest::WaitForUpdateRectMsgWithSize(int width,
-                                                          int height) {
-  if (update_rect_count_ > 0 &&
-      last_update_rect_width_ == width &&
-      last_update_rect_height_ == height) {
-    // We already saw this message.
+void TestBrowserPluginGuest::WaitForDamageBufferWithSize(
+    const gfx::Size& size) {
+  if (damage_buffer_call_count_ > 0 && last_damage_buffer_size_ == size)
     return;
-  }
-  waiting_for_update_rect_msg_with_size_ = true;
-  expected_width_ = width;
-  expected_height_ = height;
 
-  send_message_loop_runner_ = new MessageLoopRunner();
-  send_message_loop_runner_->Run();
+  expected_damage_buffer_size_ = size;
+  waiting_for_damage_buffer_with_size_ = true;
+  damage_buffer_message_loop_runner_ = new MessageLoopRunner();
+  damage_buffer_message_loop_runner_->Run();
 }
 
 void TestBrowserPluginGuest::RenderViewGone(base::TerminationStatus status) {
@@ -182,7 +151,6 @@ void TestBrowserPluginGuest::WaitForStop() {
   stop_observed_ = false;
 }
 
-
 void TestBrowserPluginGuest::SetFocus(bool focused) {
   focus_observed_ = true;
   if (focus_message_loop_runner_)
@@ -209,6 +177,32 @@ void TestBrowserPluginGuest::Stop() {
   if (stop_message_loop_runner_)
     stop_message_loop_runner_->Quit();
   BrowserPluginGuest::Stop();
+}
+
+void TestBrowserPluginGuest::SetDamageBuffer(
+    TransportDIB* damage_buffer,
+#if defined(OS_WIN)
+    int damage_buffer_size,
+#endif
+    const gfx::Size& damage_view_size,
+    float scale_factor) {
+  ++damage_buffer_call_count_;
+  last_damage_buffer_size_ = damage_view_size;
+
+  if (waiting_for_damage_buffer_with_size_ &&
+      expected_damage_buffer_size_ == damage_view_size &&
+      damage_buffer_message_loop_runner_) {
+    damage_buffer_message_loop_runner_->Quit();
+    waiting_for_damage_buffer_with_size_ = false;
+  }
+
+  BrowserPluginGuest::SetDamageBuffer(
+      damage_buffer,
+#if defined(OS_WIN)
+      damage_buffer_size,
+#endif
+      damage_view_size,
+      scale_factor);
 }
 
 }  // namespace content

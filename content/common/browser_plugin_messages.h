@@ -64,28 +64,15 @@ IPC_MESSAGE_ROUTED3(BrowserPluginHostMsg_UpdateRect_ACK,
                     int /* message_id */,
                     gfx::Size /* repaint_view_size */)
 
-// A BrowserPlugin sends this to the browser process when it wants to navigate
-// to a given src URL. If a guest WebContents already exists, it will navigate
-// that WebContents. If not, it will create the WebContents, associate it with
-// the BrowserPlugin's browser-side BrowserPluginHost as a guest, and navigate
-// it to the requested URL.
-IPC_MESSAGE_ROUTED3(BrowserPluginHostMsg_NavigateGuest,
-                    int /* instance_id*/,
-                    std::string /* src */,
-                    gfx::Size /* size */)
-
-// When a BrowserPlugin has been removed from the embedder's DOM, it informs
-// the browser process to cleanup the guest.
-IPC_MESSAGE_ROUTED1(BrowserPluginHostMsg_PluginDestroyed,
-                    int /* instance_id */)
-
-// -----------------------------------------------------------------------------
-// These messages are from the guest renderer to the browser process
-
 IPC_STRUCT_BEGIN(BrowserPluginHostMsg_ResizeGuest_Params)
-  // A handle to the new buffer to use to transport damage to the
-  // embedder renderer process.
+  // An identifier to the new buffer to use to transport damage to the embedder
+  // renderer process.
   IPC_STRUCT_MEMBER(TransportDIB::Id, damage_buffer_id)
+#if defined(OS_MACOSX)
+  // On OSX, a handle to the new buffer is used to map the transport dib since
+  // we don't let browser manage the dib.
+  IPC_STRUCT_MEMBER(TransportDIB::Handle, damage_buffer_handle)
+#endif
 #if defined(OS_WIN)
   // The size of the damage buffer because this information is not available
   // on Windows.
@@ -101,6 +88,24 @@ IPC_STRUCT_BEGIN(BrowserPluginHostMsg_ResizeGuest_Params)
   // Indicates the scale factor of the embedder WebView.
   IPC_STRUCT_MEMBER(float, scale_factor)
 IPC_STRUCT_END()
+
+// A BrowserPlugin sends this to BrowserPluginEmbedder (browser process) when it
+// wants to navigate to a given src URL. If a guest WebContents already exists,
+// it will navigate that WebContents. If not, it will create the WebContents,
+// associate it with the BrowserPluginGuest, and navigate it to the requested
+// URL.
+IPC_MESSAGE_ROUTED3(BrowserPluginHostMsg_NavigateGuest,
+                    int /* instance_id*/,
+                    std::string /* src */,
+                    BrowserPluginHostMsg_ResizeGuest_Params /* resize_params */)
+
+// When a BrowserPlugin has been removed from the embedder's DOM, it informs
+// the browser process to cleanup the guest.
+IPC_MESSAGE_ROUTED1(BrowserPluginHostMsg_PluginDestroyed,
+                    int /* instance_id */)
+
+// -----------------------------------------------------------------------------
+// These messages are from the guest renderer to the browser process
 
 // A embedder sends this message to the browser when it wants
 // to resize a guest plugin container so that the guest is relaid out

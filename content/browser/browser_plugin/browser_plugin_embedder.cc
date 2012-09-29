@@ -14,6 +14,7 @@
 #include "content/browser/browser_plugin/browser_plugin_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/browser_plugin_messages.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -76,10 +77,11 @@ void BrowserPluginEmbedder::AddGuest(int instance_id,
   guest_web_contents_by_instance_id_[instance_id] = guest_web_contents;
 }
 
-void BrowserPluginEmbedder::NavigateGuest(RenderViewHost* render_view_host,
-                                          int instance_id,
-                                          const std::string& src,
-                                          const gfx::Size& size) {
+void BrowserPluginEmbedder::NavigateGuest(
+    RenderViewHost* render_view_host,
+    int instance_id,
+    const std::string& src,
+    const BrowserPluginHostMsg_ResizeGuest_Params& resize_params) {
   BrowserPluginGuest* guest = GetGuestByInstanceID(instance_id);
   WebContentsImpl* guest_web_contents = NULL;
   GURL url(src);
@@ -125,8 +127,8 @@ void BrowserPluginEmbedder::NavigateGuest(RenderViewHost* render_view_host,
                                                 std::string());
   }
 
-  if (!size.IsEmpty())
-    guest_web_contents->GetView()->SizeContents(size);
+  // Resize the guest if the resize parameter was set from the renderer.
+  ResizeGuest(render_view_host, instance_id, resize_params);
 }
 
 void BrowserPluginEmbedder::UpdateRectACK(int instance_id,
@@ -137,28 +139,63 @@ void BrowserPluginEmbedder::UpdateRectACK(int instance_id,
     guest->UpdateRectACK(message_id, size);
 }
 
-void BrowserPluginEmbedder::ResizeGuest(int instance_id,
-                                        TransportDIB* damage_buffer,
-#if defined(OS_WIN)
-                                        int damage_buffer_size,
-#endif
-                                        int width,
-                                        int height,
-                                        bool resize_pending,
-                                        float scale_factor) {
+void BrowserPluginEmbedder::ResizeGuest(
+    RenderViewHost* render_view_host,
+    int instance_id,
+    const BrowserPluginHostMsg_ResizeGuest_Params& params) {
   BrowserPluginGuest* guest = GetGuestByInstanceID(instance_id);
   if (!guest)
     return;
   WebContentsImpl* guest_web_contents =
       static_cast<WebContentsImpl*>(guest->GetWebContents());
+
+  if (!TransportDIB::is_valid_id(params.damage_buffer_id)) {
+    // Invalid transport dib, so just resize the WebContents.
+    if (params.width && params.height) {
+      guest_web_contents->GetView()->SizeContents(gfx::Size(params.width,
+                                                            params.height));
+    }
+    return;
+  }
+
+  TransportDIB* damage_buffer = GetDamageBuffer(render_view_host, params);
   guest->SetDamageBuffer(damage_buffer,
 #if defined(OS_WIN)
-                         damage_buffer_size,
+                         params.damage_buffer_size,
 #endif
-                         gfx::Size(width, height),
-                         scale_factor);
-  if (!resize_pending)
-    guest_web_contents->GetView()->SizeContents(gfx::Size(width, height));
+                         gfx::Size(params.width, params.height),
+                         params.scale_factor);
+  if (!params.resize_pending) {
+    guest_web_contents->GetView()->SizeContents(gfx::Size(params.width,
+                                                          params.height));
+  }
+}
+
+TransportDIB* BrowserPluginEmbedder::GetDamageBuffer(
+    RenderViewHost* render_view_host,
+    const BrowserPluginHostMsg_ResizeGuest_Params& params) {
+  TransportDIB* damage_buffer = NULL;
+#if defined(OS_WIN)
+  // On Windows we need to duplicate the handle from the remote process.
+  HANDLE section;
+  DuplicateHandle(render_view_host->GetProcess()->GetHandle(),
+                  params.damage_buffer_id.handle,
+                  GetCurrentProcess(),
+                  &section,
+                  STANDARD_RIGHTS_REQUIRED | FILE_MAP_READ | FILE_MAP_WRITE,
+                  FALSE,
+                  0);
+  damage_buffer = TransportDIB::Map(section);
+#elif defined(OS_MACOSX)
+  // On OSX, we need the handle to map the transport dib.
+  damage_buffer = TransportDIB::Map(params.damage_buffer_handle);
+#elif defined(OS_ANDROID)
+  damage_buffer = TransportDIB::Map(params.damage_buffer_id);
+#elif defined(OS_POSIX)
+  damage_buffer = TransportDIB::Map(params.damage_buffer_id.shmkey);
+#endif  // defined(OS_POSIX)
+  DCHECK(damage_buffer);
+  return damage_buffer;
 }
 
 void BrowserPluginEmbedder::SetFocus(int instance_id,

@@ -140,12 +140,12 @@ TEST_F(BrowserPluginTest, SrcAttribute) {
 
     int instance_id;
     std::string src;
-    gfx::Size size;
+    BrowserPluginHostMsg_ResizeGuest_Params resize_params;
     BrowserPluginHostMsg_NavigateGuest::Read(
         msg,
         &instance_id,
         &src,
-        &size);
+        &resize_params);
     EXPECT_EQ("foo", src);
   }
 
@@ -162,12 +162,12 @@ TEST_F(BrowserPluginTest, SrcAttribute) {
 
     int instance_id;
     std::string src;
-    gfx::Size size;
+    BrowserPluginHostMsg_ResizeGuest_Params resize_params;
     BrowserPluginHostMsg_NavigateGuest::Read(
         msg,
         &instance_id,
         &src,
-        &size);
+        &resize_params);
     EXPECT_EQ("bar", src);
     std::string src_value =
         ExecuteScriptAndReturnString(
@@ -433,12 +433,12 @@ TEST_F(BrowserPluginTest, ImmutableAttributesAfterNavigation) {
 
     int instance_id;
     std::string src;
-    gfx::Size size;
+    BrowserPluginHostMsg_ResizeGuest_Params resize_params;
     BrowserPluginHostMsg_NavigateGuest::Read(
         msg,
         &instance_id,
         &src,
-        &size);
+        &resize_params);
     EXPECT_STREQ("bar", src.c_str());
   }
 

@@ -26,9 +26,10 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "ui/surface/transport_dib.h"
 
-class TransportDIB;
 class WebContentsImpl;
+struct BrowserPluginHostMsg_ResizeGuest_Params;
 
 namespace WebKit {
 class WebInputEvent;
@@ -62,10 +63,16 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver,
                                        RenderViewHost* render_view_host);
 
   // Navigates in a guest (new or existing).
-  void NavigateGuest(RenderViewHost* render_view_host,
-                     int instance_id,
-                     const std::string& src,
-                     const gfx::Size& size);
+  void NavigateGuest(
+      RenderViewHost* render_view_host,
+      int instance_id,
+      const std::string& src,
+      const BrowserPluginHostMsg_ResizeGuest_Params& resize_params);
+
+  void ResizeGuest(RenderViewHost* render_view_host,
+                   int instance_id,
+                   const BrowserPluginHostMsg_ResizeGuest_Params& params);
+
   void Go(int instance_id, int relative_index);
   void Stop(int instance_id);
   void Reload(int instance_id);
@@ -83,15 +90,6 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver,
   // Routes update rect ack message to the appropriate guest.
   void UpdateRectACK(int instance_id, int message_id, const gfx::Size& size);
   void SetFocus(int instance_id, bool focused);
-  void ResizeGuest(int instance_id,
-                   TransportDIB* damage_buffer,
-#if defined(OS_WIN)
-                   int damage_buffer_size,
-#endif
-                   int width,
-                   int height,
-                   bool resize_pending,
-                   float scale_factor);
   // Handles input events sent from the BrowserPlugin (embedder's renderer
   // process) by passing them to appropriate guest's input handler.
   void HandleInputEvent(int instance_id,
@@ -120,6 +118,11 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver,
   virtual void AddGuest(int instance_id, WebContents* guest_web_contents);
   void DestroyGuestByInstanceID(int instance_id);
   void DestroyGuests();
+
+  // Returns the transport DIB associated with the dib in resize |params|.
+  TransportDIB* GetDamageBuffer(
+      RenderViewHost* render_view_host,
+      const BrowserPluginHostMsg_ResizeGuest_Params& params);
 
   // Called when visiblity of web_contents changes, so the embedder will
   // show/hide its guest.

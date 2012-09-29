@@ -37,6 +37,7 @@ class InterstitialPageImpl;
 class SavePackage;
 class SessionStorageNamespaceImpl;
 class WebContentsImpl;
+struct BrowserPluginHostMsg_ResizeGuest_Params;
 struct ViewMsg_PostMessage_Params;
 
 namespace content {
@@ -570,9 +571,10 @@ class CONTENT_EXPORT WebContentsImpl
   void OnRequestPpapiBrokerPermission(int request_id,
                                       const GURL& url,
                                       const FilePath& plugin_path);
-  void OnBrowserPluginNavigateGuest(int instance_id,
-                                    const std::string& src,
-                                    const gfx::Size& size);
+  void OnBrowserPluginNavigateGuest(
+      int instance_id,
+      const std::string& src,
+      const BrowserPluginHostMsg_ResizeGuest_Params& resize_params);
 
   // Changes the IsLoading state and notifies delegate as needed
   // |details| is used to provide details on the load that just finished

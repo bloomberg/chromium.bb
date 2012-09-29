@@ -303,10 +303,9 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, NavigateAfterResize) {
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
       embedder_web_contents->GetRenderViewHost());
 
-  int nxt_width = 100;
-  int nxt_height = 200;
+  const gfx::Size nxt_size = gfx::Size(100, 200);
   rvh->ExecuteJavascriptAndGetValue(string16(), ASCIIToUTF16(
-      StringPrintf("SetSize(%d, %d);", nxt_width, nxt_height)));
+      StringPrintf("SetSize(%d, %d);", nxt_size.width(), nxt_size.height())));
 
   rvh->ExecuteJavascriptAndGetValue(string16(), ASCIIToUTF16(
       StringPrintf("SetSrc('%s');", kHTMLForGuest)));
@@ -330,10 +329,9 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, NavigateAfterResize) {
   TestBrowserPluginGuest* test_guest = static_cast<TestBrowserPluginGuest*>(
       test_guest_web_contents->GetBrowserPluginGuest());
 
-
-  // Wait for the guest to send an UpdateRectMsg, the dimensions should be
-  // 100 x 200.
-  test_guest->WaitForUpdateRectMsgWithSize(nxt_width, nxt_height);
+  // Wait for the guest to receive a damage buffer of size 100x200.
+  // This means the guest will be painted properly at that size.
+  test_guest->WaitForDamageBufferWithSize(nxt_size);
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, AdvanceFocus) {

@@ -54,39 +54,7 @@ bool BrowserPluginEmbedderHelper::OnMessageReceived(
 void BrowserPluginEmbedderHelper::OnResizeGuest(
     int instance_id,
     const BrowserPluginHostMsg_ResizeGuest_Params& params) {
-  TransportDIB* damage_buffer = NULL;
-#if defined(OS_WIN)
-  // On Windows we need to duplicate the handle from the remote process.
-  HANDLE section;
-  DuplicateHandle(render_view_host()->GetProcess()->GetHandle(),
-                  params.damage_buffer_id.handle,
-                  GetCurrentProcess(),
-                  &section,
-                  STANDARD_RIGHTS_REQUIRED | FILE_MAP_READ | FILE_MAP_WRITE,
-                  FALSE, 0);
-  damage_buffer = TransportDIB::Map(section);
-#elif defined(OS_MACOSX)
-  // On OSX, the browser allocates all DIBs and keeps a file descriptor around
-  // for each.
-  damage_buffer = render_view_host()->GetProcess()->
-      GetTransportDIB(params.damage_buffer_id);
-#elif defined(OS_ANDROID)
-  damage_buffer = TransportDIB::Map(params.damage_buffer_id);
-#elif defined(OS_POSIX)
-  damage_buffer = TransportDIB::Map(params.damage_buffer_id.shmkey);
-#endif  // defined(OS_POSIX)
-  DCHECK(damage_buffer);
-  // TODO(fsamuel): Schedule this later so that we don't stall the embedder for
-  // too long.
-  embedder_->ResizeGuest(instance_id,
-                         damage_buffer,
-#if defined(OS_WIN)
-                         params.damage_buffer_size,
-#endif
-                         params.width,
-                         params.height,
-                         params.resize_pending,
-                         params.scale_factor);
+  embedder_->ResizeGuest(render_view_host(), instance_id, params);
 }
 
 void BrowserPluginEmbedderHelper::OnHandleInputEvent(
@@ -129,10 +97,14 @@ void BrowserPluginEmbedderHelper::OnHandleInputEvent(
                               reply_message);
 }
 
-void BrowserPluginEmbedderHelper::OnNavigateGuest(int instance_id,
-                                                  const std::string& src,
-                                                  const gfx::Size& size) {
-  embedder_->NavigateGuest(render_view_host(), instance_id, src, size);
+void BrowserPluginEmbedderHelper::OnNavigateGuest(
+    int instance_id,
+    const std::string& src,
+    const BrowserPluginHostMsg_ResizeGuest_Params& resize_params) {
+  embedder_->NavigateGuest(render_view_host(),
+                           instance_id,
+                           src,
+                           resize_params);
 }
 
 void BrowserPluginEmbedderHelper::OnUpdateRectACK(int instance_id,

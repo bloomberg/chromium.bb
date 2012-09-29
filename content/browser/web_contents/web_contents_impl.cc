@@ -2368,9 +2368,10 @@ void WebContentsImpl::OnPpapiBrokerPermissionResult(int request_id,
                                                     result));
 }
 
-void WebContentsImpl::OnBrowserPluginNavigateGuest(int instance_id,
-                                                   const std::string& src,
-                                                   const gfx::Size& size) {
+void WebContentsImpl::OnBrowserPluginNavigateGuest(
+    int instance_id,
+    const std::string& src,
+    const BrowserPluginHostMsg_ResizeGuest_Params& resize_params) {
   // This is the first 'navigate' to a browser plugin, before WebContents has/is
   // an 'Embedder'; subsequent navigate messages for this WebContents will
   // be handled by the BrowserPluginEmbedderHelper of the embedder itself (this
@@ -2386,7 +2387,7 @@ void WebContentsImpl::OnBrowserPluginNavigateGuest(int instance_id,
   browser_plugin_embedder_->NavigateGuest(GetRenderViewHost(),
                                           instance_id,
                                           src,
-                                          size);
+                                          resize_params);
 }
 
 // Notifies the RenderWidgetHost instance about the fact that the page is

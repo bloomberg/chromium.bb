@@ -93,13 +93,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsDelegate,
   // WebContentsDelegate implementation.
   virtual void RendererUnresponsive(WebContents* source) OVERRIDE;
 
-  void SetDamageBuffer(TransportDIB* damage_buffer,
-#if defined(OS_WIN)
-                       int damage_buffer_size,
-#endif
-                       const gfx::Size& damage_view_size,
-                       float scale_factor);
-
   void UpdateRect(RenderViewHost* render_view_host,
                   const ViewHostMsg_UpdateRect_Params& params);
   void UpdateRectACK(int message_id, const gfx::Size& size);
@@ -137,6 +130,13 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsDelegate,
   virtual void Reload();
   // Stop loading the guest.
   virtual void Stop();
+  // Overridden in tests.
+  virtual void SetDamageBuffer(TransportDIB* damage_buffer,
+#if defined(OS_WIN)
+                               int damage_buffer_size,
+#endif
+                               const gfx::Size& damage_view_size,
+                               float scale_factor);
 
  private:
   friend class TestBrowserPluginGuest;
