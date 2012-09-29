@@ -911,7 +911,7 @@ static int eg_surface_best(struct radeon_surface_manager *surf_man,
      * fmask buffer has different optimal value figure them out once we
      * use it.
      */
-    if (surf->flags & (RADEON_SURF_ZBUFFER | RADEON_SURF_SBUFFER)) {
+    if (surf->flags & RADEON_SURF_SBUFFER) {
         /* assume 1 bytes for stencil, we optimize for stencil as stencil
          * and depth shares surface values
          */
