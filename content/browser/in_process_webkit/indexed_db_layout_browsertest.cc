@@ -111,7 +111,8 @@ IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, ComplexTests) {
   RunLayoutTests(kComplexTests);
 }
 
-IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, IndexTests) {
+// TODO(dgrogan): times out flakily. http://crbug.com/153064
+IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, DISABLED_IndexTests) {
   RunLayoutTests(kIndexTests);
 }
 
