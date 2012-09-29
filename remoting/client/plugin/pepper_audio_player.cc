@@ -95,6 +95,7 @@ void PepperAudioPlayer::ProcessAudioPacket(scoped_ptr<AudioPacket> packet) {
       base::AutoLock auto_lock(lock_);
       STLDeleteElements(&queued_packets_);
       queued_samples_ = 0;
+      bytes_consumed_ = 0;
     }
 
     bool success = ResetAudioPlayer(packet->sampling_rate());
@@ -110,6 +111,7 @@ void PepperAudioPlayer::ProcessAudioPacket(scoped_ptr<AudioPacket> packet) {
       base::Time::kMillisecondsPerSecond) {
     STLDeleteElements(&queued_packets_);
     queued_samples_ = 0;
+    bytes_consumed_ = 0;
   }
 
   queued_samples_ += packet->data(0).size() / (kChannels * kSampleSizeBytes);
