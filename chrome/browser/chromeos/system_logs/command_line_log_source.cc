@@ -24,8 +24,12 @@ void ExecuteCommandLines(chromeos::SystemLogsResponse* response) {
   // it more easier to modify and understand.
   std::vector<std::pair<std::string, CommandLine> > commands;
 
-  // Needed to initialize an empty command, but the constructor was private
-  CommandLine command(FilePath("/usr/bin/cras_test_client"));
+  CommandLine command(FilePath("/usr/bin/amixer"));
+  command.AppendArg("-c0");
+  command.AppendArg("contents");
+  commands.push_back(std::make_pair("alsa controls", command));
+
+  command = CommandLine((FilePath("/usr/bin/cras_test_client")));
   command.AppendArg("--dump_server_info");
   commands.push_back(std::make_pair("cras", command));
 
