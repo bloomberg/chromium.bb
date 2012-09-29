@@ -5,6 +5,8 @@
 #include "webkit/dom_storage/dom_storage_cached_area.h"
 
 #include "base/basictypes.h"
+#include "base/time.h"
+#include "base/metrics/histogram.h"
 #include "webkit/dom_storage/dom_storage_map.h"
 #include "webkit/dom_storage/dom_storage_proxy.h"
 
@@ -147,10 +149,13 @@ void DomStorageCachedArea::Prime(int connection_id) {
   // Ignore all mutations until OnLoadComplete time.
   ignore_all_mutations_ = true;
   ValuesMap values;
+  base::TimeTicks before = base::TimeTicks::Now();
   proxy_->LoadArea(
       connection_id, &values,
       base::Bind(&DomStorageCachedArea::OnLoadComplete,
                  weak_factory_.GetWeakPtr()));
+  UMA_HISTOGRAM_TIMES("LocalStorage.TimeToPrimeLocalStorage",
+                      base::TimeTicks::Now() - before);
   map_ = new DomStorageMap(dom_storage::kPerAreaQuota);
   map_->SwapValues(&values);
 }
