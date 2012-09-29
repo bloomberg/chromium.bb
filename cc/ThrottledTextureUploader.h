@@ -23,13 +23,9 @@ public:
     {
         return adoptPtr(new ThrottledTextureUploader(context));
     }
-    static PassOwnPtr<ThrottledTextureUploader> create(WebKit::WebGraphicsContext3D* context, size_t pendingUploadLimit)
-    {
-        return adoptPtr(new ThrottledTextureUploader(context, pendingUploadLimit));
-    }
     virtual ~ThrottledTextureUploader();
 
-    virtual bool isBusy() OVERRIDE;
+    virtual size_t numPendingUploads() OVERRIDE;
     virtual double estimatedTexturesPerSecond() OVERRIDE;
     virtual void beginUploads() OVERRIDE;
     virtual void endUploads() OVERRIDE;
@@ -43,11 +39,11 @@ private:
         virtual ~Query();
 
         void begin();
-        void end(double texturesUploaded);
+        void end(size_t texturesUploaded);
         bool isPending();
         void wait();
         unsigned value();
-        double texturesUploaded();
+        size_t texturesUploaded();
 
     private:
         explicit Query(WebKit::WebGraphicsContext3D*);
@@ -56,20 +52,19 @@ private:
         unsigned m_queryId;
         unsigned m_value;
         bool m_hasValue;
-        double m_texturesUploaded;
+        size_t m_texturesUploaded;
     };
 
     ThrottledTextureUploader(WebKit::WebGraphicsContext3D*);
-    ThrottledTextureUploader(WebKit::WebGraphicsContext3D*, size_t pendingUploadLimit);
 
     void processQueries();
 
     WebKit::WebGraphicsContext3D* m_context;
-    size_t m_maxPendingQueries;
     Deque<OwnPtr<Query> > m_pendingQueries;
     Deque<OwnPtr<Query> > m_availableQueries;
     std::deque<double> m_texturesPerSecondHistory;
-    double m_texturesUploaded;
+    size_t m_texturesUploaded;
+    size_t m_numPendingTextureUploads;
 
     DISALLOW_COPY_AND_ASSIGN(ThrottledTextureUploader);
 };

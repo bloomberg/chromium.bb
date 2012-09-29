@@ -19,7 +19,7 @@ public:
 
     virtual ~TextureUploader() { }
 
-    virtual bool isBusy() = 0;
+    virtual size_t numPendingUploads() = 0;
 
     // Returns our throughput on the GPU process
     virtual double estimatedTexturesPerSecond() = 0;

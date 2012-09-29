@@ -43,30 +43,47 @@ private:
     unsigned m_resultAvailable;
 };
 
-TEST(ThrottledTextureUploaderTest, IsBusy)
+class FakeTexture : public cc::LayerTextureUpdater::Texture {
+public:
+  FakeTexture() : LayerTextureUpdater::Texture(
+      PassOwnPtr<cc::CCPrioritizedTexture>()) { }
+
+    virtual void updateRect(cc::CCResourceProvider* , const cc::IntRect&, const cc::IntSize&) OVERRIDE { }
+};
+
+
+TEST(ThrottledTextureUploaderTest, NumPendingUploads)
 {
     OwnPtr<FakeWebGraphicsContext3DWithQueryTesting> fakeContext(adoptPtr(new FakeWebGraphicsContext3DWithQueryTesting));
-    OwnPtr<ThrottledTextureUploader> uploader = ThrottledTextureUploader::create(fakeContext.get(), 2);
+    OwnPtr<ThrottledTextureUploader> uploader = ThrottledTextureUploader::create(fakeContext.get());
+    OwnPtr<FakeTexture> texture = adoptPtr(new FakeTexture);
+    TextureUploader::Parameters upload;
+    upload.texture = texture.get();
+    upload.sourceRect = IntRect();
+    upload.destOffset = IntSize();
 
     fakeContext->setResultAvailable(0);
-    EXPECT_FALSE(uploader->isBusy());
+    EXPECT_EQ(0, uploader->numPendingUploads());
     uploader->beginUploads();
+    uploader->uploadTexture(NULL, upload);
     uploader->endUploads();
-    EXPECT_FALSE(uploader->isBusy());
+    EXPECT_EQ(1, uploader->numPendingUploads());
     uploader->beginUploads();
+    uploader->uploadTexture(NULL, upload);
     uploader->endUploads();
-    EXPECT_TRUE(uploader->isBusy());
+    EXPECT_EQ(2, uploader->numPendingUploads());
 
     fakeContext->setResultAvailable(1);
-    EXPECT_FALSE(uploader->isBusy());
+    EXPECT_EQ(0, uploader->numPendingUploads());
     uploader->beginUploads();
+    uploader->uploadTexture(NULL, upload);
     uploader->endUploads();
-    EXPECT_FALSE(uploader->isBusy());
+    EXPECT_EQ(0, uploader->numPendingUploads());
     uploader->beginUploads();
+    uploader->uploadTexture(NULL, upload);
+    uploader->uploadTexture(NULL, upload);
     uploader->endUploads();
-    EXPECT_FALSE(uploader->isBusy());
-    uploader->beginUploads();
-    uploader->endUploads();
+    EXPECT_EQ(0, uploader->numPendingUploads());
 }
 
 } // namespace

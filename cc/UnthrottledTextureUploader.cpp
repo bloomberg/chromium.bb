@@ -8,9 +8,9 @@
 
 namespace cc {
 
-bool UnthrottledTextureUploader::isBusy()
+size_t UnthrottledTextureUploader::numPendingUploads()
 {
-    return false;
+    return 0;
 }
 
 double UnthrottledTextureUploader::estimatedTexturesPerSecond()

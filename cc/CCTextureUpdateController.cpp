@@ -27,6 +27,9 @@ static const double uploaderBusyTickRate = 0.001;
 // Flush interval when performing texture uploads.
 static const int textureUploadFlushPeriod = 4;
 
+// Number of pending update intervals to allow.
+static const size_t maxPendingUpdateIntervals = 2;
+
 } // anonymous namespace
 
 namespace cc {
@@ -144,12 +147,17 @@ size_t CCTextureUpdateController::updateMoreTexturesSize() const
     return m_textureUpdatesPerTick;
 }
 
+size_t CCTextureUpdateController::maxPendingUpdates() const
+{
+    return updateMoreTexturesSize() * maxPendingUpdateIntervals;
+}
+
 bool CCTextureUpdateController::updateMoreTexturesIfEnoughTimeRemaining()
 {
-    // Uploader might be busy when we're too aggressive in our upload time
-    // estimate. We use a different timeout here to prevent unnecessary
-    // amounts of idle time.
-    if (m_uploader->isBusy()) {
+    // Pending uploads will increase when we're too aggressive in our upload
+    // time estimate. We use a different timeout here to prevent unnecessary
+    // amounts of idle time when pending uploads have reached the max.
+    if (m_uploader->numPendingUploads() >= maxPendingUpdates()) {
         m_timer->startOneShot(uploaderBusyTickRate);
         return true;
     }
