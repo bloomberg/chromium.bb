@@ -121,10 +121,10 @@ extern "C" void __declspec(dllexport) __cdecl DumpProcessWithoutCrash() {
   }
 }
 
-// We disable optimizations for DumpForHangDebuggingThread() and
-// DumpProcessWithoutCrashThread() since it is important to be able to
-// distinguish these in crash reports (if optimizations are left on, they will
-// get folded together).
+// We need to prevent ICF from folding DumpForHangDebuggingThread() and
+// DumpProcessWithoutCrashThread() together, since that makes them
+// indistinguishable in crash dumps. We do this by making the function
+// bodies unique, and prevent optimization from shuffling things around.
 MSVC_DISABLE_OPTIMIZE()
 MSVC_PUSH_DISABLE_WARNING(4748)
 
@@ -140,6 +140,7 @@ DWORD WINAPI DumpProcessWithoutCrashThread(void*) {
 // of pepper/renderer processes is reduced.
 DWORD WINAPI DumpForHangDebuggingThread(void*) {
   DumpProcessWithoutCrash();
+  LOG(INFO) << "dumped for hang debugging";
   return 0;
 }
 
