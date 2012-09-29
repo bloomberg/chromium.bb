@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/file_util.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
@@ -116,7 +117,7 @@ class ImageLoadingTracker::ImageLoader
   explicit ImageLoader(ImageLoadingTracker* tracker)
       : tracker_(tracker) {
     CHECK(BrowserThread::GetCurrentThreadIdentifier(&callback_thread_id_));
-    DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::FILE));
+    DCHECK(!BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
   }
 
   // Lets this class know that the tracker is no longer interested in the
@@ -128,13 +129,13 @@ class ImageLoadingTracker::ImageLoader
   // Instructs the loader to load a task on the File thread.
   void LoadImage(const ImageRepresentation& image_info, int id) {
     DCHECK(BrowserThread::CurrentlyOn(callback_thread_id_));
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        base::Bind(&ImageLoader::LoadOnFileThread, this, image_info, id));
+    BrowserThread::PostBlockingPoolTask(
+        FROM_HERE,
+        base::Bind(&ImageLoader::LoadOnBlockingPool, this, image_info, id));
   }
 
-  void LoadOnFileThread(const ImageRepresentation& image_info, int id) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  void LoadOnBlockingPool(const ImageRepresentation& image_info, int id) {
+    DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
 
     // Read the file from disk.
     std::string file_contents;
@@ -172,17 +173,17 @@ class ImageLoadingTracker::ImageLoader
                     int id,
                     int resource_id) {
     DCHECK(BrowserThread::CurrentlyOn(callback_thread_id_));
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        base::Bind(&ImageLoader::LoadResourceOnFileThread, this, image_info,
+    BrowserThread::PostBlockingPoolTask(
+        FROM_HERE,
+        base::Bind(&ImageLoader::LoadResourceOnBlockingPool, this, image_info,
                    id, resource_id));
   }
 
-  void LoadResourceOnFileThread(const ImageRepresentation& image_info,
-                                int id,
-                                int resource_id) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-    // TODO(xiyuan): Clean up to use SkBitmap here and in LoadOnFileThread.
+  void LoadResourceOnBlockingPool(const ImageRepresentation& image_info,
+                                  int id,
+                                  int resource_id) {
+    DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
+    // TODO(xiyuan): Clean up to use SkBitmap here and in LoadOnBlockingPool.
     scoped_ptr<SkBitmap> bitmap(new SkBitmap);
     *bitmap = ResourceBundle::GetSharedInstance().GetImageNamed(
         resource_id).AsBitmap();
@@ -193,7 +194,7 @@ class ImageLoadingTracker::ImageLoader
 
   void ReportBack(const SkBitmap* bitmap, const ImageRepresentation& image_info,
                   const gfx::Size& original_size, int id) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+    DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
 
     BrowserThread::PostTask(
         callback_thread_id_, FROM_HERE,
