@@ -354,9 +354,11 @@ void BrowserFrameWin::Activate() {
   // The Activate code path is typically called when a new browser window is
   // being activated. In metro we need to ensure that the window currently
   // being displayed is hidden and the new window being activated becomes
-  // visible. This is achieved by calling Show.
+  // visible. This is achieved by calling AdjustFrameForImmersiveMode()
+  // followed by ShowWindow().
   if (base::win::IsMetroProcess()) {
-    Show();
+    AdjustFrameForImmersiveMode();
+    ::ShowWindow(browser_frame_->GetNativeWindow(), SW_SHOWNORMAL);
   } else {
     views::NativeWidgetWin::Activate();
   }
