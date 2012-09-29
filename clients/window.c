@@ -238,6 +238,7 @@ struct output {
 	struct wl_output *output;
 	struct rectangle allocation;
 	struct wl_list link;
+	int transform;
 
 	display_output_handler_t destroy_handler;
 	void *user_data;
@@ -3454,6 +3455,7 @@ display_handle_geometry(void *data,
 
 	output->allocation.x = x;
 	output->allocation.y = y;
+	output->transform = transform;
 }
 
 static void
@@ -3546,9 +3548,22 @@ output_set_destroy_handler(struct output *output,
 }
 
 void
-output_get_allocation(struct output *output, struct rectangle *allocation)
+output_get_allocation(struct output *output, struct rectangle *base)
 {
-	*allocation = output->allocation;
+	struct rectangle allocation = output->allocation;
+
+	switch (output->transform) {
+	case WL_OUTPUT_TRANSFORM_90:
+	case WL_OUTPUT_TRANSFORM_270:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
+	        /* Swap width and height */
+	        allocation.width = output->allocation.height;
+	        allocation.height = output->allocation.width;
+	        break;
+	}
+
+	*base = allocation;
 }
 
 struct wl_output *
