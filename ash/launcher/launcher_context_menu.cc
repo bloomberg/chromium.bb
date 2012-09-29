@@ -37,7 +37,7 @@ ShelfAutoHideBehavior LauncherContextMenu::GetToggledAutoHideBehavior() {
 
 // static
 int LauncherContextMenu::GetAutoHideResourceStringId() {
-  return IDS_AURA_LAUNCHER_CONTEXT_MENU_AUTO_HIDE_NOT_MAXIMIZED;
+  return IDS_AURA_LAUNCHER_CONTEXT_MENU_AUTO_HIDE;
 }
 
 bool LauncherContextMenu::IsCommandIdChecked(int command_id) const {
