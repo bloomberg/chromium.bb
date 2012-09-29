@@ -667,7 +667,7 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 
 	/*
 	 * Calculate the source & dest rects properly based on actual
-	 * postion (note the caller has called weston_surface_update_transform()
+	 * position (note the caller has called weston_surface_update_transform()
 	 * for us already).
 	 */
 	pixman_region32_init(&dest_rect);

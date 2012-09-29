@@ -97,7 +97,7 @@
       <description summary="pre-edit">
         Notify when a new composing text (pre-edit) should be set around the
         current cursor position. Any previously set composing text should
-        be removed. It also sets the cursor positon (as byte index) relative
+        be removed. It also sets the cursor position (as byte index) relative
         to the start of the composing text.
       </description>
       <arg name="text" type="string"/>

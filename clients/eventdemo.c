@@ -210,7 +210,7 @@ key_handler(struct window *window, struct input *input, uint32_t time,
  * \brief CALLBACK function, Wayland informs about button event
  * \param widget widget
  * \param input input device that caused the button event
- * \param time time the event happend
+ * \param time time the event happened
  * \param button button
  * \param state pressed or released
  * \param data user data associated to the window
@@ -259,7 +259,7 @@ axis_handler(struct widget *widget, struct input *input, uint32_t time,
  * \brief CALLBACK function, Waylands informs about pointer motion
  * \param widget widget
  * \param input input device that caused the motion event
- * \param time time the event happend
+ * \param time time the event happened
  * \param x absolute x position
  * \param y absolute y position
  * \param sx x position relative to the window
