@@ -1,0 +1,33 @@
+# -*- python -*-
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+
+non_exit_nexe = env.ComponentProgram('non_exit', 'non_exit.c',
+                                     EXTRA_LIBS=['${NONIRT_LIBS}'])
+
+node = env.SelUniversalTest(
+    'hard_shutdown_test.out',
+    non_exit_nexe,
+    sel_universal_flags=['--uses_reverse_service',
+                         '--no_app_channel',
+                         '--command_file',
+                         env.File('hard_shutdown_test.stdin')],
+    )
+env.AddNodeToTestSuite(node,
+                       ['small_tests'],
+                       'run_hard_shutdown_test')
+
+node = env.SelUniversalTest(
+    'force_shutdown_test.out',
+    non_exit_nexe,
+    sel_universal_flags=['--uses_reverse_service',
+                         '--no_app_channel',
+                         '--command_file',
+                         env.File('hard_shutdown_test.stdin')],
+    )
+env.AddNodeToTestSuite(node,
+                       ['small_tests'],
+                       'run_force_shutdown_test')

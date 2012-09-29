@@ -17,13 +17,6 @@
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
 
-int NaClSecureThreadIfFactoryFn(
-    void                        *factory_data,
-    NaClThreadIfStartFunction   fn_ptr,
-    void                        *thread_data,
-    size_t                      thread_stack_size,
-    struct NaClThreadInterface  **out_new_thread);
-
 int NaClSecureServiceCtor(struct NaClSecureService          *self,
                           struct NaClSrpcHandlerDesc const  *srpc_handlers,
                           struct NaClApp                    *nap,
@@ -37,7 +30,7 @@ int NaClSecureServiceCtor(struct NaClSecureService          *self,
           !NaClSimpleServiceWithSocketCtor(
               &self->base,
               srpc_handlers,
-              NaClSecureThreadIfFactoryFn,
+              NaClThreadInterfaceThreadFactory,
               (void *) self,
               service_port,
               sock_addr))) {
@@ -48,7 +41,7 @@ int NaClSecureServiceCtor(struct NaClSecureService          *self,
     goto failure_mutex_ctor;
   }
   self->nap = nap;
-  self->thread_count = 0;
+  self->conn_count = 0;
   NACL_VTBL(NaClRefCount, self) =
       (struct NaClRefCountVtbl *) &kNaClSecureServiceVtbl;
   return 1;
@@ -62,9 +55,9 @@ int NaClSecureServiceCtor(struct NaClSecureService          *self,
 void NaClSecureServiceDtor(struct NaClRefCount *vself) {
   struct NaClSecureService *self = (struct NaClSecureService *) vself;
 
-  if (0 != self->thread_count) {
+  if (0 != self->conn_count) {
     NaClLog(LOG_FATAL,
-            "SecureService dtor when thread count is nonzero\n");
+            "SecureService dtor when connection count is nonzero\n");
   }
   NaClMutexDtor(&self->mu);
 
@@ -85,11 +78,11 @@ int NaClSecureServiceConnectionFactory(
       vself, conn, (void *) self->nap, out);
 }
 
-static void NaClSecureServiceThreadCountIncr(
+static void NaClSecureServiceConnectionCountIncr(
     struct NaClSecureService *self) {
   NaClLog(5, "NaClSecureServiceThreadCountIncr\n");
   NaClXMutexLock(&self->mu);
-  if (0 == ++self->thread_count) {
+  if (0 == ++self->conn_count) {
     NaClLog(LOG_FATAL,
             "NaClSecureServiceThreadCountIncr: "
             "thread count overflow!\n");
@@ -97,145 +90,57 @@ static void NaClSecureServiceThreadCountIncr(
   NaClXMutexUnlock(&self->mu);
 }
 
-static void NaClSecureServiceThreadCountDecr(
+static void NaClSecureServiceConnectionCountDecr(
     struct NaClSecureService *self) {
   NaClLog(5, "NaClSecureServiceThreadCountDecr\n");
   NaClXMutexLock(&self->mu);
-  if (0 == self->thread_count) {
+  if (0 == self->conn_count) {
     NaClLog(LOG_FATAL,
             "NaClSecureServiceThreadCountDecr: "
             "decrementing thread count when count is zero\n");
   }
-  if (0 == --self->thread_count) {
-    NaClLog(4, "NaClSecureServiceThread: channel closed, exiting.\n");
+  if (0 == --self->conn_count) {
+    NaClLog(4, "NaClSecureServiceThread: all channels closed, exiting.\n");
     NaClExit(0);
   }
   NaClXMutexUnlock(&self->mu);
 }
 
-struct NaClSecureThreadInterface {
-  struct NaClThreadInterface  base NACL_IS_REFCOUNT_SUBCLASS;
-  struct NaClSecureService    *secure_service;
-};
+int NaClSecureServiceAcceptConnection(
+    struct NaClSimpleService            *vself,
+    struct NaClSimpleServiceConnection  **vconn) {
+  struct NaClSecureService *self =
+    (struct NaClSecureService *) vself;
+  int status;
 
-extern struct NaClThreadInterfaceVtbl
-  const kNaClSecureThreadInterfaceVtbl; /* fwd */
-
-int NaClReverseThreadIfCtor_protected(
-    struct NaClSecureThreadInterface   *self,
-    void                               *factory_data,
-    NaClThreadIfStartFunction          fn_ptr,
-    void                               *thread_data,
-    size_t                             thread_stack_size) {
-  struct NaClSecureService *service = (struct NaClSecureService *) factory_data;
-
-  NaClLog(3, "Entered NaClSecureThreadIfCtor_protected\n");
-  if (!NaClThreadInterfaceCtor_protected(
-          (struct NaClThreadInterface *) self,
-          NaClSecureThreadIfFactoryFn,
-          NaClRefCountRef((struct NaClRefCount *) service),
-          fn_ptr,
-          thread_data,
-          thread_stack_size)) {
-    NaClLog(4, "NaClThreadInterfaceCtor_protected failed\n");
-    NaClRefCountUnref((struct NaClRefCount *) service);
-    return 0;
+  NaClLog(4, "NaClSecureServiceAcceptConnection\n");
+  status = (*kNaClSimpleServiceVtbl.AcceptConnection)(vself, vconn);
+  if (0 == status) {
+    NaClSecureServiceConnectionCountIncr(self);
   }
-
-  self->secure_service = service;
-  NaClSecureServiceThreadCountIncr(service);
-
-  NACL_VTBL(NaClRefCount, self) =
-      (struct NaClRefCountVtbl *) &kNaClSecureThreadInterfaceVtbl;
-
-  NaClLog(3, "Leaving NaClSecureThreadIfCtor_protected\n");
-  return 1;
+  NaClLog(4, "Leaving NaClSecureServiceAcceptConnection, status %d.\n", status);
+  return status;
 }
 
-int NaClSecureThreadIfFactoryFn(
-    void                        *factory_data,
-    NaClThreadIfStartFunction   fn_ptr,
-    void                        *thread_data,
-    size_t                      thread_stack_size,
-    struct NaClThreadInterface  **out_new_thread) {
-  struct NaClSecureThreadInterface *new_thread;
-  int                              retval = 0; /* fail */
+void NaClSecureServiceRpcHandler(struct NaClSimpleService           *vself,
+                                 struct NaClSimpleServiceConnection *vconn) {
+  struct NaClSecureService *self =
+    (struct NaClSecureService *) vself;
 
-  NaClLog(3, "Entered NaClSecureThreadIfFactoryFn\n");
-  new_thread = (struct NaClSecureThreadInterface *)
-      malloc(sizeof *new_thread);
-  if (NULL == new_thread) {
-    goto cleanup;
-  }
-
-  if (!(retval =
-        NaClReverseThreadIfCtor_protected(new_thread,
-                                          factory_data,
-                                          fn_ptr,
-                                          thread_data,
-                                          thread_stack_size))) {
-    goto cleanup;
-  }
-
-  *out_new_thread = (struct NaClThreadInterface *) new_thread;
-  new_thread = NULL;
-
- cleanup:
-  free(new_thread);
-  NaClLog(3,
-          "Leaving NaClSecureThreadIfFactoryFn, rv %d\n",
-          retval);
-  return retval;
+  NaClLog(4, "NaClSecureChannelThread started\n");
+  (*kNaClSimpleServiceVtbl.RpcHandler)(vself, vconn);
+  NaClLog(4, "NaClSecureChannelThread closed.\n");
+  NaClSecureServiceConnectionCountDecr(self);
 }
-
-void NaClSecureThreadIfDtor(struct NaClRefCount *vself) {
-  struct NaClSecureThreadInterface *self =
-      (struct NaClSecureThreadInterface *) vself;
-
-  NaClRefCountUnref((struct NaClRefCount *) self->secure_service);
-  self->secure_service = NULL;
-  NACL_VTBL(NaClRefCount, self) = &kNaClRefCountVtbl;
-  (*NACL_VTBL(NaClRefCount, self)->Dtor)(vself);
-}
-
-void NaClSecureThreadIfLaunchCallback(struct NaClThreadInterface *self) {
-  NaClLog(4,
-          ("NaClSecureThreadIfLaunchCallback: thread 0x%"NACL_PRIxPTR
-           " is launching\n"),
-          (uintptr_t) self);
-}
-
-void NaClSecureThreadIfExit(struct NaClThreadInterface   *vself,
-                             void                         *exit_code) {
-  struct NaClSecureThreadInterface *self =
-      (struct NaClSecureThreadInterface *) vself;
-  NaClLog(4,
-          ("NaClSecureThreadIfExit: thread 0x%"NACL_PRIxPTR
-           " is exiting\n"),
-          (uintptr_t) vself);
-
-  NaClSecureServiceThreadCountDecr(self->secure_service);
-  NaClRefCountUnref((struct NaClRefCount *) self);
-  NaClThreadExit((int)(uintptr_t) exit_code);
-}
-
-struct NaClThreadInterfaceVtbl const kNaClSecureThreadInterfaceVtbl = {
-  {
-    NaClSecureThreadIfDtor,
-  },
-  NaClThreadInterfaceStartThread,
-  NaClSecureThreadIfLaunchCallback,
-  NaClSecureThreadIfExit,
-};
 
 struct NaClSimpleServiceVtbl const kNaClSecureServiceVtbl = {
   {
     NaClSecureServiceDtor,
   },
   NaClSecureServiceConnectionFactory,
-  NaClSimpleServiceAcceptConnection,
+  NaClSecureServiceAcceptConnection,
   NaClSimpleServiceAcceptAndSpawnHandler,
-  NaClSimpleServiceRpcHandler,
+  NaClSecureServiceRpcHandler,
 };
 
 struct NaClSecureRevClientConnHandler {

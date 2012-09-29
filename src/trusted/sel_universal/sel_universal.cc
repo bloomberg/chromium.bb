@@ -182,6 +182,24 @@ static nacl::string ProcessArguments(int argc,
 }
 
 
+static bool HandlerHardShutdown(NaClCommandLoop* ncl,
+                               const vector<string>& args) {
+  UNREFERENCED_PARAMETER(ncl);
+  UNREFERENCED_PARAMETER(args);
+  NaClSrpcInvokeBySignature(&command_channel, "hard_shutdown::");
+  return true;
+}
+
+
+static bool HandlerForceShutdown(NaClCommandLoop* ncl,
+                                const vector<string>& args) {
+  UNREFERENCED_PARAMETER(ncl);
+  UNREFERENCED_PARAMETER(args);
+  NaClSrpcDtor(&command_channel);
+  return true;
+}
+
+
 int raii_main(int argc, char* argv[]) {
   // Get the arguments to sed_ldr and the nexe module
   vector<nacl::string> sel_ldr_argv;
@@ -300,6 +318,10 @@ int raii_main(int argc, char* argv[]) {
   loop.AddHandler("reverse_service_dump_manifest_mappings",
                   HandlerReverseEmuDumpManifestMappings);
   loop.AddHandler("stream_file", HandlerPnaclFileStream);
+  loop.AddHandler("wait_for_exit", HandlerWaitForExit);
+
+  loop.AddHandler("hard_shutdown", HandlerHardShutdown);
+  loop.AddHandler("force_shutdown", HandlerForceShutdown);
 
   NaClLog(1, "populating initial vars\n");
   for (map<string, string>::iterator it = initial_vars.begin();

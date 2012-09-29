@@ -26,9 +26,9 @@ struct NaClSecureService {
 
   struct NaClMutex            mu;
   /*
-   * |mu| protects the thread count access.
+   * |mu| protects the connection count access.
    */
-  uint32_t                    thread_count;
+  uint32_t                    conn_count;
 };
 
 int NaClSecureServiceCtor(

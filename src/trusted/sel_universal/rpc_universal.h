@@ -60,6 +60,8 @@ class NaClCommandLoop {
                                      const vector<string>& args);
   static bool HandleEcho(NaClCommandLoop* ncl,
                          const vector<string>& args);
+  static bool HandleShutdown(NaClCommandLoop* nacl,
+                             const vector<string>& args);
 
   int desc_count_;
   NaClSrpcService* service_;

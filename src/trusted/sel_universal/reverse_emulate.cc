@@ -12,6 +12,8 @@
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/shared/platform/nacl_sync.h"
+#include "native_client/src/shared/platform/nacl_threads.h"
 #include "native_client/src/shared/platform/scoped_ptr_refcount.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
@@ -84,6 +86,16 @@ typedef std::map<nacl::Handle, nacl::SelLdrLauncherStandalone*>
  */
 HandleToLauncherMap g_handle_to_launcher;
 
+/*
+ * TODO(phosek): These variables should be instance variables of Reverse
+ * Emulate. However, we cannot make them such at the moment because they're
+ * also being used by command handlers. This will require more significant
+ * redesign/refactoring.
+ */
+int g_exited;
+NaClMutex g_exit_mu;
+NaClCondVar g_exit_cv;
+
 }  // end namespace
 
 
@@ -107,6 +119,10 @@ bool ReverseEmulateInit(NaClSrpcChannel* command_channel,
   }
   // The implementation of the ReverseInterface is our emulator class.
   nacl::scoped_ptr<ReverseEmulate> reverse_interface(new ReverseEmulate());
+  // Construct locks guarding exit status.
+  NaClXMutexCtor(&g_exit_mu);
+  NaClXCondVarCtor(&g_exit_cv);
+  g_exited = false;
   // Create an instance of ReverseService, which connects to the socket
   // address and exports the services from our emulator.
   g_reverse_service.reset(new nacl::ReverseService(conn_cap.get(),
@@ -130,6 +146,8 @@ void ReverseEmulateFini() {
   CHECK(g_reverse_service != NULL);
   g_reverse_service->WaitForServiceThreadsToExit();
   g_reverse_service.reset(NULL);
+  NaClMutexDtor(&g_exit_mu);
+  NaClCondVarDtor(&g_exit_cv);
 }
 
 bool HandlerReverseEmuAddManifestMapping(NaClCommandLoop* ncl,
@@ -159,6 +177,20 @@ bool HandlerReverseEmuDumpManifestMappings(NaClCommandLoop* ncl,
        ++i) {
     printf("'%s': '%s'\n", i->first.c_str(), i->second.c_str());
   }
+  return true;
+}
+
+bool HandlerWaitForExit(NaClCommandLoop* ncl,
+                        const std::vector<string>& args) {
+  UNREFERENCED_PARAMETER(ncl);
+  UNREFERENCED_PARAMETER(args);
+
+  NaClXMutexLock(&g_exit_mu);
+  while (!g_exited) {
+    NaClXCondVarWait(&g_exit_cv, &g_exit_mu);
+  }
+  NaClXMutexUnlock(&g_exit_mu);
+
   return true;
 }
 
@@ -216,11 +248,19 @@ bool ReverseEmulate::CloseManifestEntry(int32_t desc) {
 
 void ReverseEmulate::ReportCrash() {
   NaClLog(1, "ReverseEmulate::ReportCrash\n");
+  NaClXMutexLock(&g_exit_mu);
+  g_exited = true;
+  NaClXCondVarBroadcast(&g_exit_cv);
+  NaClXMutexUnlock(&g_exit_mu);
 }
 
 void ReverseEmulate::ReportExitStatus(int exit_status) {
   NaClLog(1, "ReverseEmulate::ReportExitStatus (exit_status=%d)\n",
           exit_status);
+  NaClXMutexLock(&g_exit_mu);
+  g_exited = true;
+  NaClXCondVarBroadcast(&g_exit_cv);
+  NaClXMutexUnlock(&g_exit_mu);
 }
 
 void ReverseEmulate::DoPostMessage(nacl::string message) {

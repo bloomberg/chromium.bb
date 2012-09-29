@@ -43,4 +43,7 @@ bool HandlerReverseEmuDumpManifestMappings(
     NaClCommandLoop* ncl,
     const std::vector<std::string>& args);
 
+bool HandlerWaitForExit(NaClCommandLoop* ncl,
+                        const std::vector<std::string>& args);
+
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_SEL_UNIVERSAL_REVERSE_EMULATE_H_ */
