@@ -144,7 +144,8 @@ void PaginationModel::EndScroll(bool cancel) {
 }
 
 bool PaginationModel::IsRevertingCurrentTransition() const {
-  return transition_animation_.get() && transition_animation_->IsClosing();
+  // Use !IsShowing() so that we return true at the end of hide animation.
+  return transition_animation_.get() && !transition_animation_->IsShowing();
 }
 
 void PaginationModel::AddObserver(PaginationModelObserver* observer) {
