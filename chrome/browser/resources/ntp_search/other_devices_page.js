@@ -9,8 +9,8 @@
 cr.define('ntp', function() {
   'use strict';
 
-  var Tile = ntp.Tile2;
-  var TilePage = ntp.TilePage2;
+  var Tile = ntp.Tile;
+  var TilePage = ntp.TilePage;
 
   /**
    * Creates a new OtherDevice object for tiling.

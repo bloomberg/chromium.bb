@@ -927,13 +927,13 @@ cr.define('ntp', function() {
       notificationContainer.hidden = true;
   }
 
-  function setRecentlyClosedTabs(data) {
-    newTabView.recentlyClosedPage.setData(data);
+  function setRecentlyClosedTabs(dataList) {
+    newTabView.recentlyClosedPage.setDataList(dataList);
     cr.dispatchSimpleEvent(document, 'sectionready', true, true);
   }
 
-  function setMostVisitedPages(data, hasBlacklistedUrls) {
-    newTabView.mostVisitedPage.setData(data);
+  function setMostVisitedPages(dataList, hasBlacklistedUrls) {
+    newTabView.mostVisitedPage.setDataList(dataList);
     cr.dispatchSimpleEvent(document, 'sectionready', true, true);
   }
 

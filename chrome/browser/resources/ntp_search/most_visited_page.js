@@ -56,14 +56,14 @@ cr.define('ntp', function() {
      * Update the appearance of this tile according to |data|.
      * @param {Object} data A dictionary of relevant data for the page.
      */
-    updateForData: function(data) {
+    setData: function(data) {
       if (this.classList.contains('blacklisted') && data) {
         // Animate appearance of new tile.
         this.classList.add('new-tile-contents');
       }
       this.classList.remove('blacklisted');
 
-      Thumbnail.prototype.updateForData.apply(this, arguments);
+      Thumbnail.prototype.setData.apply(this, arguments);
     },
 
     /**
@@ -124,7 +124,7 @@ cr.define('ntp', function() {
       var self = this;
       var doUndo = function() {
         chrome.send('removeURLsFromMostVisitedBlacklist', [data.url]);
-        self.updateForData(data);
+        self.setData(data);
       };
 
       var undo = {
@@ -157,7 +157,7 @@ cr.define('ntp', function() {
   /**
    * Creates a new MostVisitedPage object.
    * @constructor
-   * @extends {TilePage}
+   * @extends {ThumbnailPage}
    */
   function MostVisitedPage() {
     var el = new ThumbnailPage();
@@ -170,7 +170,7 @@ cr.define('ntp', function() {
   MostVisitedPage.prototype = {
     __proto__: ThumbnailPage.prototype,
 
-    ThumbnailClass: MostVisited,
+    TileClass: MostVisited,
 
     /**
      * Initializes a MostVisitedPage.
@@ -205,15 +205,10 @@ cr.define('ntp', function() {
         chrome.send('mostVisitedSelected');
     },
 
-    /**
-     * Sets the data that will be used to create Thumbnails.
-     * TODO(pedrosimonetti): Move data handling related code to TilePage. Make
-     * sure the new logic works with Apps without requiring duplicating code.
-     * @param {Array} data The array of data.
-     */
-    setData: function(data) {
+    /** @inheritDoc */
+    setDataList: function(dataList) {
       var startTime = Date.now();
-      ThumbnailPage.prototype.setData.apply(this, arguments);
+      ThumbnailPage.prototype.setDataList.apply(this, arguments);
       logEvent('mostVisited.layout: ' + (Date.now() - startTime));
     },
   };

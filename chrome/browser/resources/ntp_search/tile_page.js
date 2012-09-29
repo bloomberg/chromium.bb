@@ -125,13 +125,40 @@ cr.define('ntp', function() {
   };
 
   Tile.prototype = {
+    // Tile data object.
+    data_: null,
+
     /**
      * Initializes a Tile.
      * @param {Object} config TilePage configuration object.
      */
     initialize: function(config) {
-      this.className = 'tile';
+      this.classList.add('tile');
+      this.reset();
     },
+
+    /**
+     * Resets the tile DOM.
+     */
+    reset: function() {
+      console.error('Tile.reset() is a virtual method and is not supposed to ' +
+          'be called');
+    },
+
+    /**
+     * Update the appearance of this tile according to |data|.
+     * @param {Object} data A dictionary of relevant data for the page.
+     */
+    setData: function(data) {
+      // TODO(pedrosimonetti): Remove data.filler usage everywhere.
+      if (!data || data.filler) {
+        if (this.data_)
+          this.reset();
+        return;
+      }
+
+      this.data_ = data;
+    }
   };
 
   var TileGetters = {
@@ -151,6 +178,14 @@ cr.define('ntp', function() {
       assert(this.tileCell);
       return this.tileCell.index;
     },
+
+    /**
+     * Tile data object.
+     * @type {Object}
+     */
+    'data': function() {
+      return this.data_;
+    }
   };
 
   //----------------------------------------------------------------------------
@@ -253,6 +288,13 @@ cr.define('ntp', function() {
 
   TilePage.prototype = {
     __proto__: HTMLDivElement.prototype,
+
+    /**
+     * Reference to the Tile subclass that will be used to create the tiles.
+     * @constructor
+     * @extends {Tile}
+     */
+    TileClass: Tile,
 
     // The config object should be defined by each TilePage subclass.
     config_: {
@@ -450,6 +492,8 @@ cr.define('ntp', function() {
     animatingColCount_: 0,
     // The index of the topmost row visible.
     pageOffset_: 0,
+    // Data object representing the tiles.
+    dataList_: null,
 
     /**
      * Appends a tile to the end of the tile grid.
@@ -473,6 +517,70 @@ cr.define('ntp', function() {
     addTileAt: function(tile, index) {
       this.tiles_.splice(index, 0, tile);
       this.fireAddedEvent(tile, index);
+    },
+
+    /**
+     * Create blank tiles.
+     * @private
+     * @param {number} count The number of Tiles to be created.
+     */
+    createTiles_: function(count) {
+      var Class = this.TileClass;
+      var config = this.config_;
+      count = Math.min(count, config.maxTileCount);
+      for (var i = 0; i < count; i++) {
+        this.appendTile(new Class(config));
+      }
+    },
+
+    /**
+     * Update the tiles after a change to |dataList_|.
+     */
+    updateTiles_: function() {
+      var maxTileCount = this.config_.maxTileCount;
+      var dataList = this.dataList_;
+      var tiles = this.tiles;
+      for (var i = 0; i < maxTileCount; i++) {
+        var data = dataList[i];
+        var tile = tiles[i];
+
+        // TODO(pedrosimonetti): What do we do when there's no tile here?
+        if (!tile)
+          return;
+
+        if (i >= dataList.length)
+          tile.reset();
+        else
+          tile.setData(data);
+      }
+    },
+
+    /**
+     * Sets the dataList that will be used to create Tiles. This method will
+     * create/remove necessary/unnecessary tiles, render the grid when the
+     * number of tiles has changed, and finally will call |updateTiles_| which
+     * will in turn render the individual tiles.
+     * @param {Array} dataList The array of data.
+     */
+    setDataList: function(dataList) {
+      var maxTileCount = this.config_.maxTileCount;
+      this.dataList_ = dataList.slice(0, maxTileCount);
+
+      var dataListLength = this.dataList_.length;
+      var tileCount = this.tileCount;
+      // Create or remove tiles if necessary.
+      if (tileCount < dataListLength) {
+        this.createTiles_(dataListLength - tileCount);
+      } else if (tileCount > dataListLength) {
+        // TODO(jeremycho): Consider rewriting removeTile to be compatible with
+        // pages other than Apps and calling it here.
+        for (var i = 0; i < tileCount - dataListLength; i++)
+          this.tiles_.pop();
+      }
+
+      if (dataListLength != tileCount)
+        this.renderGrid_();
+      this.updateTiles_();
     },
 
     // internal helpers
@@ -915,7 +1023,7 @@ cr.define('ntp', function() {
   };
 
   return {
-    Tile2: Tile,
-    TilePage2: TilePage,
+    Tile: Tile,
+    TilePage: TilePage,
   };
 });

@@ -126,7 +126,7 @@ cr.define('ntp', function() {
   RecentlyClosedPage.prototype = {
     __proto__: ThumbnailPage.prototype,
 
-    ThumbnailClass: RecentlyClosed,
+    TileClass: RecentlyClosed,
 
     /**
      * Initializes a RecentlyClosed Thumbnail.
@@ -138,16 +138,16 @@ cr.define('ntp', function() {
     },
 
     /**
-     * Sets the data that will be used to create Thumbnails.
-     * @param {Array} data The array of data.
+     * Sets the dataList that will be used to create Thumbnails.
+     * @param {Array} dataList The array of data.
      */
-    setData: function(data) {
+    setDataList: function(dataList) {
       var startTime = Date.now();
-      ThumbnailPage.prototype.setData.apply(this, arguments);
+      ThumbnailPage.prototype.setDataList.apply(this, arguments);
 
       // Only show the dot if we have recently closed tabs to display.
       var dot = this.navigationDot;
-      if (this.data_.length == 0) {
+      if (this.dataList_.length == 0) {
         dot.hidden = true;
         // If the last tab has been removed (by a user click) and we're still on
         // the Recently Closed page, fall back to the first page in the dot
