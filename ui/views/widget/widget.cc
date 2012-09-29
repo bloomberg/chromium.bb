@@ -1187,12 +1187,12 @@ const std::vector<ui::Layer*>& Widget::GetRootLayers() {
 }
 
 bool Widget::HasHitTestMask() const {
-  return widget_delegate_->HasHitTestMask();
+  return widget_delegate_->WidgetHasHitTestMask();
 }
 
 void Widget::GetHitTestMask(gfx::Path* mask) const {
   DCHECK(mask);
-  widget_delegate_->GetHitTestMask(mask);
+  widget_delegate_->GetWidgetHitTestMask(mask);
 }
 
 Widget* Widget::AsWidget() {

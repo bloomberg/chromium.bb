@@ -143,11 +143,11 @@ views::View* AppListView::GetInitiallyFocusedView() {
   return search_box_view_->search_box();
 }
 
-bool AppListView::HasHitTestMask() const {
+bool AppListView::WidgetHasHitTestMask() const {
   return true;
 }
 
-void AppListView::GetHitTestMask(gfx::Path* mask) const {
+void AppListView::GetWidgetHitTestMask(gfx::Path* mask) const {
   DCHECK(mask);
   mask->addRect(gfx::RectToSkRect(
       GetBubbleFrameView()->GetContentsBounds()));

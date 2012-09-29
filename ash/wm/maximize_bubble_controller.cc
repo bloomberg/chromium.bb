@@ -226,8 +226,8 @@ class MaximizeBubbleController::Bubble : public views::BubbleDelegateView,
   virtual bool CanActivate() const OVERRIDE { return false; }
 
   // Overridden from views::WidgetDelegateView.
-  virtual bool HasHitTestMask() const OVERRIDE;
-  virtual void GetHitTestMask(gfx::Path* mask) const OVERRIDE;
+  virtual bool WidgetHasHitTestMask() const OVERRIDE;
+  virtual void GetWidgetHitTestMask(gfx::Path* mask) const OVERRIDE;
 
   // Implementation of MouseWatcherListener.
   virtual void MouseMovedOutOfHost();
@@ -473,11 +473,12 @@ void MaximizeBubbleController::Bubble::AnimationProgressed(
   bubble_widget_->GetNativeWindow()->SetBounds(rect);
 }
 
-bool MaximizeBubbleController::Bubble::HasHitTestMask() const {
+bool MaximizeBubbleController::Bubble::WidgetHasHitTestMask() const {
   return bubble_border_ != NULL;
 }
 
-void MaximizeBubbleController::Bubble::GetHitTestMask(gfx::Path* mask) const {
+void MaximizeBubbleController::Bubble::GetWidgetHitTestMask(
+    gfx::Path* mask) const {
   DCHECK(mask);
   DCHECK(bubble_border_);
   bubble_border_->GetMask(mask);
