@@ -40,6 +40,8 @@ void Shell::PlatformSetAddressBarURL(const GURL& url) {
 }
 
 void Shell::PlatformSetIsLoading(bool loading) {
+  JNIEnv* env = AttachCurrentThread();
+  Java_Shell_setIsLoading(env, java_object_.obj(), loading);
 }
 
 void Shell::PlatformCreateWindow(int width, int height) {

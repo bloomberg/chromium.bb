@@ -51,6 +51,8 @@ public class Shell extends LinearLayout {
     private View mSurfaceView;
     private NativeWindow mWindow;
 
+    private boolean mLoading = false;
+
     /**
      * Constructor for inflating via XML.
      */
@@ -74,6 +76,13 @@ public class Shell extends LinearLayout {
      */
     public void setWindow(NativeWindow window) {
         mWindow = window;
+    }
+
+    /**
+     * @return Whether or not the Shell is loading content.
+     */
+    public boolean isLoading() {
+        return mLoading;
     }
 
     @Override
@@ -172,6 +181,12 @@ public class Shell extends LinearLayout {
         removeCallbacks(mClearProgressRunnable);
         mProgressDrawable.setLevel((int) (10000.0 * progress));
         if (progress == 1.0) postDelayed(mClearProgressRunnable, COMPLETED_PROGRESS_TIMEOUT_MS);
+    }
+
+    @SuppressWarnings("unused")
+    @CalledByNative
+    private void setIsLoading(boolean loading) {
+        mLoading = loading;
     }
 
     /**

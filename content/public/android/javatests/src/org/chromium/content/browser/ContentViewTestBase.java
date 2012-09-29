@@ -34,6 +34,9 @@ public class ContentViewTestBase extends ContentShellTestBase {
         // This starts the activity, so must be called on the test thread.
         final ContentShellActivity activity = launchContentShellWithUrl(
                 "data:text/html;utf-8,<html><head></head><body>test</body></html>");
+
+        waitForActiveShellToBeDoneLoading();
+
         // On the UI thread, load an empty page and wait for it to finish
         // loading so that the Java object is injected.
         try {
@@ -46,9 +49,9 @@ public class ContentViewTestBase extends ContentShellTestBase {
                             new TestCallbackHelperContainer(contentView);
                 }
             });
-            TestCallbackHelperContainer.OnPageFinishedHelper onPageFinishedHelper =
-                    mTestCallbackHelperContainer.getOnPageFinishedHelper();
-            onPageFinishedHelper.waitForCallback(0);
+
+            loadDataSync(activity.getActiveContentView(),
+                    "<!DOCTYPE html><title></title>", "text/html", false);
         } catch (Throwable e) {
             throw new RuntimeException(
                     "Failed to set up ContentView: " + Log.getStackTraceString(e));
