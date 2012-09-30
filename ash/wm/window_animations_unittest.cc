@@ -226,11 +226,11 @@ TEST_F(WindowAnimationsTest, GetCrossFadeDuration) {
             GetCrossFadeDuration(screen, almost_screen).InMilliseconds());
 
   // Large changes are slow.
-  gfx::Rect small(10, 10, 100, 500);  // 10% of screen area
+  gfx::Rect ten_percent(10, 10, 100, 500);  // 10% of screen area
   EXPECT_EQ(kMinimum + kRange * 9 / 10,
-            GetCrossFadeDuration(small, screen).InMilliseconds());
+            GetCrossFadeDuration(ten_percent, screen).InMilliseconds());
   EXPECT_EQ(kMinimum + kRange * 9 / 10,
-            GetCrossFadeDuration(screen, small).InMilliseconds());
+            GetCrossFadeDuration(screen, ten_percent).InMilliseconds());
 
   // Medium changes take medium time.
   gfx::Rect half_screen(10, 10, 500, 250);
