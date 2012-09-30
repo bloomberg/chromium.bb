@@ -25,7 +25,6 @@ class CustomDrawButton;
 class FindBarController;
 class GtkThemeService;
 class NineBox;
-class SlideAnimatorGtk;
 
 typedef struct _GtkFloatingContainer GtkFloatingContainer;
 

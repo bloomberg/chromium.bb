@@ -26,7 +26,6 @@ class Browser;
 class CustomDrawButton;
 class DownloadItemGtk;
 class GtkThemeService;
-class SlideAnimatorGtk;
 
 namespace content {
 class PageNavigator;
