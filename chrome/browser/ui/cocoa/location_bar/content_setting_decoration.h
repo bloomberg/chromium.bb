@@ -51,9 +51,8 @@ class ContentSettingDecoration : public ImageDecoration {
 
   void SetToolTip(NSString* tooltip);
 
-  // Returns an attributed string with the animated text. Caller is responsible
-  // for releasing.
-  NSAttributedString* CreateAnimatedText();
+  // Returns an attributed string with the animated text.
+  scoped_nsobject<NSAttributedString> CreateAnimatedText();
 
   // Measure the width of the animated text.
   CGFloat MeasureTextWidth();

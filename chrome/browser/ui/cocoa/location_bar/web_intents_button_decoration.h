@@ -40,9 +40,8 @@ class WebIntentsButtonDecoration : public BubbleDecoration {
  private:
   friend class WebIntentsButtonDecorationTest;
 
-  // Returns an attributed string with the animated text. Caller is responsible
-  // for releasing.
-  NSAttributedString* CreateAnimatedText();
+  // Returns an attributed string with the animated text.
+  scoped_nsobject<NSAttributedString> CreateAnimatedText();
 
   // Measure the width of the animated text.
   CGFloat MeasureTextWidth();

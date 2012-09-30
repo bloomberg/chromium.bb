@@ -178,6 +178,8 @@ class LocationBarViewMac : public LocationBar,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  Browser* browser() const { return browser_; }
+
  private:
   // Posts |notification| to the default notification center.
   void PostNotification(NSString* notification);

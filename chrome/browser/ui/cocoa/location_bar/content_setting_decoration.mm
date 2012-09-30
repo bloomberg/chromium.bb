@@ -123,7 +123,7 @@ enum AnimationState {
 }
 
 - (void)dealloc {
-  [self stopAnimation];
+  DCHECK(!timer_);
   [super dealloc];
 }
 
@@ -211,12 +211,12 @@ bool ContentSettingDecoration::UpdateFromWebContents(
       // cached so it is not allowed to change during the animation.
       animation_.reset(
           [[ContentSettingAnimationState alloc] initWithOwner:this]);
-      animated_text_.reset(CreateAnimatedText());
+      animated_text_ = CreateAnimatedText();
       text_width_ = MeasureTextWidth();
     } else if (!has_animated_text) {
       // Decoration no longer has animation, stop it (ok to always do this).
       [animation_ stopAnimation];
-      animation_.reset(nil);
+      animation_.reset();
     }
   } else {
     // Decoration no longer visible, stop/clear animation.
@@ -230,18 +230,16 @@ CGFloat ContentSettingDecoration::MeasureTextWidth() {
   return [animated_text_ size].width;
 }
 
-// Returns an attributed string with the animated text. Caller is responsible
-// for releasing.
-NSAttributedString* ContentSettingDecoration::CreateAnimatedText() {
+scoped_nsobject<NSAttributedString>
+    ContentSettingDecoration::CreateAnimatedText() {
   NSString* text =
       l10n_util::GetNSString(
           content_setting_image_model_->explanatory_string_id());
   NSDictionary* attributes =
       [NSDictionary dictionaryWithObject:[NSFont labelFontOfSize:14]
                                   forKey:NSFontAttributeName];
-  NSAttributedString* attr_string =
-      [[NSAttributedString alloc] initWithString:text attributes:attributes];
-  return attr_string;
+  return scoped_nsobject<NSAttributedString>(
+      [[NSAttributedString alloc] initWithString:text attributes:attributes]);
 }
 
 NSPoint ContentSettingDecoration::GetBubblePointInFrame(NSRect frame) {
@@ -263,8 +261,8 @@ bool ContentSettingDecoration::AcceptsMousePress() {
 
 bool ContentSettingDecoration::OnMousePressed(NSRect frame) {
   // Get host. This should be shared on linux/win/osx medium-term.
-  Browser* browser = browser::GetLastActiveBrowser();
-  TabContents* tabContents = chrome::GetActiveTabContents(browser);
+  Browser* browser = owner_->browser();
+  TabContents* tabContents = owner_->GetTabContents();
   if (!tabContents)
     return true;
 
