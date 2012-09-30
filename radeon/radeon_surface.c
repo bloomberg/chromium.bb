@@ -797,7 +797,6 @@ static int eg_surface_init(struct radeon_surface_manager *surf_man,
     }
 
     surf->stencil_offset = 0;
-    surf->stencil_tile_split = 0;
 
     /* check tiling mode */
     switch (mode) {
@@ -1059,7 +1058,6 @@ static int si_surface_init(struct radeon_surface_manager *surf_man,
     }
 
     surf->stencil_offset = 0;
-    surf->stencil_tile_split = 0;
 
     /* check tiling mode */
     switch (mode) {
