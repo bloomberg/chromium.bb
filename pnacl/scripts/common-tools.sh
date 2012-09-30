@@ -92,6 +92,7 @@ readonly SO_DIR
 BUILD_ARCH_X8632=false
 BUILD_ARCH_X8664=false
 BUILD_ARCH_ARM=false
+BUILD_ARCH_MIPS=false
 if [ "${BUILD_ARCH}" == "x86_32" ] ||
    [ "${BUILD_ARCH}" == "i386" ] ||
    [ "${BUILD_ARCH}" == "i686" ] ; then
@@ -101,6 +102,9 @@ elif [ "${BUILD_ARCH}" == "x86_64" ] ; then
   BUILD_ARCH_X8664=true
 elif [ "${BUILD_ARCH}" == "armv7l" ] ; then
   BUILD_ARCH_ARM=true
+elif [ "${BUILD_ARCH}" == "mips32" ] ||
+     [ "${BUILD_ARCH}" == "mips" ] ; then
+  BUILD_ARCH_MIPS=true
 else
   echo "Unknown build arch '${BUILD_ARCH}'"
   exit -1
@@ -108,12 +112,15 @@ fi
 readonly BUILD_ARCH
 readonly BUILD_ARCH_X8632
 readonly BUILD_ARCH_X8664
+readonly BUILD_ARCH_ARM
+readonly BUILD_ARCH_MIPS
 
 
 HOST_ARCH=${HOST_ARCH:-${BUILD_ARCH}}
 HOST_ARCH_X8632=false
 HOST_ARCH_X8664=false
 HOST_ARCH_ARM=false
+HOST_ARCH_MIPS=false
 if [ "${HOST_ARCH}" == "x86_32" ] ||
    [ "${HOST_ARCH}" == "i386" ] ||
    [ "${HOST_ARCH}" == "i686" ] ; then
@@ -123,6 +130,9 @@ elif [ "${HOST_ARCH}" == "x86_64" ] ; then
   HOST_ARCH_X8664=true
 elif [ "${HOST_ARCH}" == "armv7l" ] ; then
   HOST_ARCH_ARM=true
+elif [ "${HOST_ARCH}" == "mips32" ] ||
+     [ "${HOST_ARCH}" == "mips" ] ; then
+  HOST_ARCH_MIPS=true
 else
   echo "Unknown host arch '${HOST_ARCH}'"
   exit -1
@@ -131,6 +141,7 @@ readonly HOST_ARCH
 readonly HOST_ARCH_X8632
 readonly HOST_ARCH_X8664
 readonly HOST_ARCH_ARM
+readonly HOST_ARCH_MIPS
 
 if [ "${BUILD_ARCH}" != "${HOST_ARCH}" ]; then
   if ! { ${BUILD_ARCH_X8664} && ${HOST_ARCH_X8632}; }; then

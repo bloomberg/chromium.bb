@@ -43,10 +43,12 @@ SetLogDirectory "${PNACL_ROOT}/build/log"
 readonly PNACL_CONCURRENCY=${PNACL_CONCURRENCY:-8}
 PNACL_PRUNE=${PNACL_PRUNE:-false}
 PNACL_BUILD_ARM=true
+PNACL_BUILD_MIPS=${PNACL_BUILD_MIPS:-false}
 
 if ${BUILD_PLATFORM_MAC} || ${BUILD_PLATFORM_WIN}; then
   # We don't yet support building ARM tools for mac or windows.
   PNACL_BUILD_ARM=false
+  PNACL_BUILD_MIPS=false
 fi
 
 readonly SB_JIT=${SB_JIT:-false}
@@ -144,6 +146,7 @@ readonly INSTALL_LIB_NATIVE="${INSTALL_ROOT}/lib-"
 readonly INSTALL_LIB_ARM="${INSTALL_LIB_NATIVE}arm"
 readonly INSTALL_LIB_X8632="${INSTALL_LIB_NATIVE}x86-32"
 readonly INSTALL_LIB_X8664="${INSTALL_LIB_NATIVE}x86-64"
+readonly INSTALL_LIB_MIPS32="${INSTALL_LIB_NATIVE}mips32"
 
 # PNaCl client-translators (sandboxed) binary locations
 readonly INSTALL_TRANSLATOR="${TOOLCHAIN_ROOT}/pnacl_translator"
@@ -1780,6 +1783,26 @@ misc-tools() {
     spopd
   else
     StepBanner "MISC-TOOLS" "Skipping arm sel_ldr (No trusted arm toolchain)"
+  fi
+
+  # TODO(petarj): It would be nice to build MIPS sel_ldr on builbots later.
+  if [ "${PNACL_BUILD_MIPS}" == "true" ] ; then
+    StepBanner "MISC-TOOLS" "Building sel_ldr (mips32)"
+    spushd "${NACL_ROOT}"
+    RunWithLog mips32_sel_ldr \
+      ./scons MODE=opt-host \
+      platform=mips32 \
+      naclsdk_validate=0 \
+      sysinfo=0 \
+      sel_ldr
+    rm -rf  "${INSTALL_ROOT}/tools-mips32"
+    mkdir "${INSTALL_ROOT}/tools-mips32"
+    local sconsdir="scons-out/opt-${SCONS_BUILD_PLATFORM}-mips32"
+    cp "${sconsdir}/obj/src/trusted/service_runtime/sel_ldr" \
+       "${INSTALL_ROOT}/tools-mips32"
+    spopd
+  else
+    StepBanner "MISC-TOOLS" "Skipping mips sel_ldr (No trusted mips toolchain)"
   fi
 
   if ${BUILD_PLATFORM_LINUX} ; then
