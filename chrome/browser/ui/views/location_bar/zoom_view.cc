@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/views/location_bar/zoom_view.h"
 
+#include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/browser/ui/view_ids.h"
-#include "chrome/browser/ui/views/browser_dialogs.h"
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
 #include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "grit/generated_resources.h"

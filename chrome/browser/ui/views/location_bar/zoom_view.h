@@ -6,16 +6,12 @@
 #define CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_ZOOM_VIEW_H_
 
 #include "base/basictypes.h"
-#include "chrome/browser/ui/toolbar/toolbar_model.h"
+#include "base/compiler_specific.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/location_bar/touchable_location_bar_view.h"
 #include "ui/views/controls/image_view.h"
 
-namespace views {
-class KeyEvent;
-class MouseEvent;
-}
-
+class ToolbarModel;
 class ZoomController;
 
 // View for the zoom icon in the Omnibox.
