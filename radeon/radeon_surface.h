@@ -54,6 +54,7 @@
 #define RADEON_SURF_SCANOUT                     (1 << 16)
 #define RADEON_SURF_ZBUFFER                     (1 << 17)
 #define RADEON_SURF_SBUFFER                     (1 << 18)
+#define RADEON_SURF_HAS_SBUFFER_MIPTREE         (1 << 19)
 
 #define RADEON_SURF_GET(v, field)   (((v) >> RADEON_SURF_ ## field ## _SHIFT) & RADEON_SURF_ ## field ## _MASK)
 #define RADEON_SURF_SET(v, field)   (((v) & RADEON_SURF_ ## field ## _MASK) << RADEON_SURF_ ## field ## _SHIFT)
@@ -102,6 +103,7 @@ struct radeon_surface {
     uint32_t                    stencil_tile_split;
     uint64_t                    stencil_offset;
     struct radeon_surface_level level[RADEON_SURF_MAX_LEVEL];
+    struct radeon_surface_level stencil_level[RADEON_SURF_MAX_LEVEL];
 };
 
 struct radeon_surface_manager *radeon_surface_manager_new(int fd);
