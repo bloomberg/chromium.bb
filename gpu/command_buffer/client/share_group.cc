@@ -66,11 +66,11 @@ class IdHandler : public IdHandlerInterface {
 // An id handler that require Gen before Bind.
 class StrictIdHandler : public IdHandler {
  public:
-  StrictIdHandler() { }
-  virtual ~StrictIdHandler() { }
+  StrictIdHandler() {}
+  virtual ~StrictIdHandler() {}
 
   // Overridden from IdHandler.
-  virtual bool MarkAsUsedForBind(GLuint id) {
+  virtual bool MarkAsUsedForBind(GLuint id) OVERRIDE {
     GPU_DCHECK(id == 0 || id_allocator_.InUse(id));
     return IdHandler::MarkAsUsedForBind(id);
   }
@@ -122,21 +122,23 @@ class SharedIdHandler : public IdHandlerInterface {
       : id_namespace_(id_namespace) {
   }
 
-  virtual ~SharedIdHandler() { }
+  virtual ~SharedIdHandler() {}
 
   // Overridden from IdHandlerInterface.
-  virtual void Destroy(GLES2Implementation* /* gl_impl */) {
+  virtual void Destroy(GLES2Implementation* /* gl_impl */) OVERRIDE {
   }
 
-  virtual void MakeIds(
-      GLES2Implementation* gl_impl,
-      GLuint id_offset, GLsizei n, GLuint* ids) {
+  virtual void MakeIds(GLES2Implementation* gl_impl,
+                       GLuint id_offset,
+                       GLsizei n,
+                       GLuint* ids) OVERRIDE {
     gl_impl->GenSharedIdsCHROMIUM(id_namespace_, id_offset, n, ids);
   }
 
-  virtual bool FreeIds(
-      GLES2Implementation* gl_impl,
-      GLsizei n, const GLuint* ids, DeleteFn delete_fn) {
+  virtual bool FreeIds(GLES2Implementation* gl_impl,
+                       GLsizei n,
+                       const GLuint* ids,
+                       DeleteFn delete_fn) OVERRIDE {
     gl_impl->DeleteSharedIdsCHROMIUM(id_namespace_, n, ids);
     (gl_impl->*delete_fn)(n, ids);
     // We need to ensure that the delete call is evaluated on the service side
@@ -145,7 +147,7 @@ class SharedIdHandler : public IdHandlerInterface {
     return true;
   }
 
-  virtual bool MarkAsUsedForBind(GLuint id) {
+  virtual bool MarkAsUsedForBind(GLuint id) OVERRIDE {
     // This has no meaning for shared resources.
     return true;
   }
@@ -162,28 +164,31 @@ class ThreadSafeIdHandlerWrapper : public IdHandlerInterface {
   virtual ~ThreadSafeIdHandlerWrapper() { }
 
   // Overridden from IdHandlerInterface.
-  virtual void Destroy(GLES2Implementation* gl_impl) {
+  virtual void Destroy(GLES2Implementation* gl_impl) OVERRIDE {
     AutoLock auto_lock(lock_);
     id_handler_->Destroy(gl_impl);
   }
 
   // Overridden from IdHandlerInterface.
-  virtual void MakeIds(
-      GLES2Implementation* gl_impl, GLuint id_offset, GLsizei n, GLuint* ids) {
+  virtual void MakeIds(GLES2Implementation* gl_impl,
+                       GLuint id_offset,
+                       GLsizei n,
+                       GLuint* ids) OVERRIDE {
     AutoLock auto_lock(lock_);
     id_handler_->MakeIds(gl_impl, id_offset, n, ids);
   }
 
   // Overridden from IdHandlerInterface.
-  virtual bool FreeIds(
-      GLES2Implementation* gl_impl, GLsizei n, const GLuint* ids,
-      DeleteFn delete_fn) {
+  virtual bool FreeIds(GLES2Implementation* gl_impl,
+                       GLsizei n,
+                       const GLuint* ids,
+                       DeleteFn delete_fn) OVERRIDE {
     AutoLock auto_lock(lock_);
     return id_handler_->FreeIds(gl_impl, n, ids, delete_fn);
   }
 
   // Overridden from IdHandlerInterface.
-  virtual bool MarkAsUsedForBind(GLuint id) {
+  virtual bool MarkAsUsedForBind(GLuint id) OVERRIDE {
     AutoLock auto_lock(lock_);
     return id_handler_->MarkAsUsedForBind(id);
   }

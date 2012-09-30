@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <map>
+
+#include "base/compiler_specific.h"
 #include "../client/program_info_manager.h"
 #include "../client/atomicops.h"
 #include "../client/gles2_implementation.h"
 #include "../common/gles2_cmd_utils.h"
-
-#include <map>
 
 namespace gpu {
 namespace gles2 {
@@ -17,28 +18,40 @@ class NonCachedProgramInfoManager : public ProgramInfoManager {
   NonCachedProgramInfoManager();
   virtual ~NonCachedProgramInfoManager();
 
-  virtual void CreateInfo(GLuint program);
+  virtual void CreateInfo(GLuint program) OVERRIDE;
 
-  virtual void DeleteInfo(GLuint program);
+  virtual void DeleteInfo(GLuint program) OVERRIDE;
 
-  virtual bool GetProgramiv(
-      GLES2Implementation* gl, GLuint program, GLenum pname, GLint* params);
+  virtual bool GetProgramiv(GLES2Implementation* gl,
+                            GLuint program,
+                            GLenum pname,
+                            GLint* params) OVERRIDE;
 
-  virtual GLint GetAttribLocation(
-      GLES2Implementation* gl, GLuint program, const char* name);
+  virtual GLint GetAttribLocation(GLES2Implementation* gl,
+                                  GLuint program,
+                                  const char* name) OVERRIDE;
 
-  virtual GLint GetUniformLocation(
-      GLES2Implementation* gl, GLuint program, const char* name);
+  virtual GLint GetUniformLocation(GLES2Implementation* gl,
+                                   GLuint program,
+                                   const char* name) OVERRIDE;
 
-  virtual bool GetActiveAttrib(
-      GLES2Implementation* gl,
-      GLuint program, GLuint index, GLsizei bufsize, GLsizei* length,
-      GLint* size, GLenum* type, char* name);
+  virtual bool GetActiveAttrib(GLES2Implementation* gl,
+                               GLuint program,
+                               GLuint index,
+                               GLsizei bufsize,
+                               GLsizei* length,
+                               GLint* size,
+                               GLenum* type,
+                               char* name) OVERRIDE;
 
-  virtual bool GetActiveUniform(
-      GLES2Implementation* gl,
-      GLuint program, GLuint index, GLsizei bufsize, GLsizei* length,
-      GLint* size, GLenum* type, char* name);
+  virtual bool GetActiveUniform(GLES2Implementation* gl,
+                                GLuint program,
+                                GLuint index,
+                                GLsizei bufsize,
+                                GLsizei* length,
+                                GLint* size,
+                                GLenum* type,
+                                char* name) OVERRIDE;
 
 };
 
@@ -93,29 +106,40 @@ class CachedProgramInfoManager : public ProgramInfoManager {
   CachedProgramInfoManager();
   virtual ~CachedProgramInfoManager();
 
-  virtual void CreateInfo(GLuint program);
+  virtual void CreateInfo(GLuint program) OVERRIDE;
 
-  virtual void DeleteInfo(GLuint program);
+  virtual void DeleteInfo(GLuint program) OVERRIDE;
 
-  virtual bool GetProgramiv(
-      GLES2Implementation* gl,
-      GLuint program, GLenum pname, GLint* params);
+  virtual bool GetProgramiv(GLES2Implementation* gl,
+                            GLuint program,
+                            GLenum pname,
+                            GLint* params) OVERRIDE;
 
-  virtual GLint GetAttribLocation(
-      GLES2Implementation* gl, GLuint program, const char* name);
+  virtual GLint GetAttribLocation(GLES2Implementation* gl,
+                                  GLuint program,
+                                  const char* name) OVERRIDE;
 
-  virtual GLint GetUniformLocation(
-      GLES2Implementation* gl, GLuint program, const char* name);
+  virtual GLint GetUniformLocation(GLES2Implementation* gl,
+                                   GLuint program,
+                                   const char* name) OVERRIDE;
 
-  virtual bool GetActiveAttrib(
-      GLES2Implementation* gl,
-      GLuint program, GLuint index, GLsizei bufsize, GLsizei* length,
-      GLint* size, GLenum* type, char* name);
+  virtual bool GetActiveAttrib(GLES2Implementation* gl,
+                               GLuint program,
+                               GLuint index,
+                               GLsizei bufsize,
+                               GLsizei* length,
+                               GLint* size,
+                               GLenum* type,
+                               char* name) OVERRIDE;
 
-  virtual bool GetActiveUniform(
-      GLES2Implementation* gl,
-      GLuint program, GLuint index, GLsizei bufsize, GLsizei* length,
-      GLint* size, GLenum* type, char* name);
+  virtual bool GetActiveUniform(GLES2Implementation* gl,
+                                GLuint program,
+                                GLuint index,
+                                GLsizei bufsize,
+                                GLsizei* length,
+                                GLint* size,
+                                GLenum* type,
+                                char* name) OVERRIDE;
 
  private:
   class ProgramInfo {

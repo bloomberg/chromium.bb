@@ -480,15 +480,15 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   static const int kMaxLogMessages = 256;
 
   explicit GLES2DecoderImpl(ContextGroup* group);
-  ~GLES2DecoderImpl();
+  virtual ~GLES2DecoderImpl();
 
   // Overridden from AsyncAPIInterface.
   virtual Error DoCommand(unsigned int command,
                           unsigned int arg_count,
-                          const void* args);
+                          const void* args) OVERRIDE;
 
   // Overridden from AsyncAPIInterface.
-  virtual const char* GetCommandName(unsigned int command_id) const;
+  virtual const char* GetCommandName(unsigned int command_id) const OVERRIDE;
 
   // Overridden from GLES2Decoder.
   virtual bool Initialize(const scoped_refptr<gfx::GLSurface>& surface,
@@ -497,37 +497,41 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
                           const gfx::Size& size,
                           const DisallowedFeatures& disallowed_features,
                           const char* allowed_extensions,
-                          const std::vector<int32>& attribs);
-  virtual void Destroy(bool have_context);
+                          const std::vector<int32>& attribs) OVERRIDE;
+  virtual void Destroy(bool have_context) OVERRIDE;
   virtual void SetSurface(
       const scoped_refptr<gfx::GLSurface>& surface) OVERRIDE;
   virtual bool SetParent(GLES2Decoder* parent_decoder,
-                         uint32 parent_texture_id);
-  virtual bool ResizeOffscreenFrameBuffer(const gfx::Size& size);
+                         uint32 parent_texture_id) OVERRIDE;
+  virtual bool ResizeOffscreenFrameBuffer(const gfx::Size& size) OVERRIDE;
   void UpdateParentTextureInfo();
-  virtual bool MakeCurrent();
-  virtual void ReleaseCurrent();
-  virtual GLES2Util* GetGLES2Util() { return &util_; }
-  virtual gfx::GLContext* GetGLContext() { return context_.get(); }
-  virtual ContextGroup* GetContextGroup() { return group_.get(); }
-  virtual QueryManager* GetQueryManager() { return query_manager_.get(); }
-  virtual VertexArrayManager* GetVertexArrayManager() {
+  virtual bool MakeCurrent() OVERRIDE;
+  virtual void ReleaseCurrent() OVERRIDE;
+  virtual GLES2Util* GetGLES2Util() OVERRIDE { return &util_; }
+  virtual gfx::GLContext* GetGLContext() OVERRIDE { return context_.get(); }
+  virtual ContextGroup* GetContextGroup() OVERRIDE { return group_.get(); }
+  virtual QueryManager* GetQueryManager() OVERRIDE {
+    return query_manager_.get();
+  }
+  virtual VertexArrayManager* GetVertexArrayManager() OVERRIDE {
     return vertex_array_manager_.get();
   }
-  virtual bool ProcessPendingQueries();
+  virtual bool ProcessPendingQueries() OVERRIDE;
 
-  virtual void SetGLError(
-      GLenum error, const char* function_name, const char* msg);
-  virtual void SetGLErrorInvalidEnum(
-      const char* function_name, GLenum value, const char* label);
+  virtual void SetGLError(GLenum error,
+                          const char* function_name,
+                          const char* msg);
+  virtual void SetGLErrorInvalidEnum(const char* function_name,
+                                     GLenum value,
+                                     const char* label);
   virtual void SetResizeCallback(
-      const base::Callback<void(gfx::Size)>& callback);
+      const base::Callback<void(gfx::Size)>& callback) OVERRIDE;
 
-  virtual void SetMsgCallback(const MsgCallback& callback);
+  virtual void SetMsgCallback(const MsgCallback& callback) OVERRIDE;
 
-  virtual void SetStreamTextureManager(StreamTextureManager* manager);
+  virtual void SetStreamTextureManager(StreamTextureManager* manager) OVERRIDE;
   virtual bool GetServiceTextureId(uint32 client_texture_id,
-                                   uint32* service_texture_id);
+                                   uint32* service_texture_id) OVERRIDE;
 
   virtual uint32 GetGLError() OVERRIDE;
 
@@ -553,7 +557,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   bool BoundFramebufferHasDepthAttachment();
   bool BoundFramebufferHasStencilAttachment();
 
-  virtual error::ContextLostReason GetContextLostReason();
+  virtual error::ContextLostReason GetContextLostReason() OVERRIDE;
 
  private:
   friend class ScopedGLErrorSuppressor;
@@ -955,16 +959,15 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
       GLenum target, FramebufferManager::FramebufferInfo* info);
 
   // overridden from GLES2Decoder
-  virtual bool ClearLevel(
-      unsigned service_id,
-      unsigned bind_target,
-      unsigned target,
-      int level,
-      unsigned format,
-      unsigned type,
-      int width,
-      int height,
-      bool is_texture_immutable);
+  virtual bool ClearLevel(unsigned service_id,
+                          unsigned bind_target,
+                          unsigned target,
+                          int level,
+                          unsigned format,
+                          unsigned type,
+                          int width,
+                          int height,
+                          bool is_texture_immutable) OVERRIDE;
 
   // Restore all GL state that affects clearing.
   void RestoreClearState();
