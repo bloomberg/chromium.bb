@@ -550,11 +550,22 @@ tc-tests-all() {
   scons-stage-noirt "arm"    "${scons_flags}" "${SCONS_TC_TESTS}"
   scons-stage-noirt "arm"    "${scons_flags} -j1" "large_tests"
 
+  # small set of sbtc tests
+  scons-stage-noirt "x86-32" "${scons_flags} use_sandboxed_translator=1" \
+    "toolchain_tests"
+  scons-stage-noirt "x86-64" "${scons_flags} use_sandboxed_translator=1" \
+    "toolchain_tests"
+  # smaller set of sbtc tests for ARM because qemu is flaky.
+  scons-stage-noirt "arm"    "${scons_flags} use_sandboxed_translator=1" \
+    "run_hello_world_test run_eh_catch_many_opt_noframe_test"
+
   # glibc
-  scons-stage-noirt "x86-32" "${scons_flags} --nacl_glibc pnacl_generate_pexe=0" \
-              "${SCONS_TC_TESTS}"
-  scons-stage-noirt "x86-64" "${scons_flags} --nacl_glibc pnacl_generate_pexe=0" \
-              "${SCONS_TC_TESTS}"
+  scons-stage-noirt "x86-32" \
+    "${scons_flags} --nacl_glibc pnacl_generate_pexe=0" \
+    "${SCONS_TC_TESTS}"
+  scons-stage-noirt "x86-64" \
+    "${scons_flags} --nacl_glibc pnacl_generate_pexe=0" \
+    "${SCONS_TC_TESTS}"
 }
 
 tc-tests-fast() {
