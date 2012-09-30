@@ -25,11 +25,11 @@
 #define WESTON_MATRIX_H
 
 struct weston_matrix {
-	GLfloat d[16];
+	float d[16];
 };
 
 struct weston_vector {
-	GLfloat f[4];
+	float f[4];
 };
 
 void
@@ -37,10 +37,10 @@ weston_matrix_init(struct weston_matrix *matrix);
 void
 weston_matrix_multiply(struct weston_matrix *m, const struct weston_matrix *n);
 void
-weston_matrix_scale(struct weston_matrix *matrix, GLfloat x, GLfloat y, GLfloat z);
+weston_matrix_scale(struct weston_matrix *matrix, float x, float y, float z);
 void
 weston_matrix_translate(struct weston_matrix *matrix,
-			GLfloat x, GLfloat y, GLfloat z);
+			float x, float y, float z);
 void
 weston_matrix_transform(struct weston_matrix *matrix, struct weston_vector *v);
 
@@ -55,7 +55,7 @@ int
 matrix_invert(double *A, unsigned *p, const struct weston_matrix *matrix);
 
 void
-inverse_transform(const double *LU, const unsigned *p, GLfloat *v);
+inverse_transform(const double *LU, const unsigned *p, float *v);
 
 #else
 #  define MATRIX_TEST_EXPORT static

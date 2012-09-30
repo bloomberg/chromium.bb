@@ -53,7 +53,7 @@ WL_EXPORT void
 weston_matrix_multiply(struct weston_matrix *m, const struct weston_matrix *n)
 {
 	struct weston_matrix tmp;
-	const GLfloat *row, *column;
+	const float *row, *column;
 	div_t d;
 	int i, j;
 
@@ -69,7 +69,7 @@ weston_matrix_multiply(struct weston_matrix *m, const struct weston_matrix *n)
 }
 
 WL_EXPORT void
-weston_matrix_translate(struct weston_matrix *matrix, GLfloat x, GLfloat y, GLfloat z)
+weston_matrix_translate(struct weston_matrix *matrix, float x, float y, float z)
 {
 	struct weston_matrix translate = {
 		{ 1, 0, 0, 0,  0, 1, 0, 0,  0, 0, 1, 0,  x, y, z, 1 }
@@ -79,7 +79,7 @@ weston_matrix_translate(struct weston_matrix *matrix, GLfloat x, GLfloat y, GLfl
 }
 
 WL_EXPORT void
-weston_matrix_scale(struct weston_matrix *matrix, GLfloat x, GLfloat y, GLfloat z)
+weston_matrix_scale(struct weston_matrix *matrix, float x, float y,float z)
 {
 	struct weston_matrix scale = {
 		{ x, 0, 0, 0,  0, y, 0, 0,  0, 0, z, 0,  0, 0, 0, 1 }
@@ -180,7 +180,7 @@ matrix_invert(double *A, unsigned *p, const struct weston_matrix *matrix)
 }
 
 MATRIX_TEST_EXPORT inline void
-inverse_transform(const double *LU, const unsigned *p, GLfloat *v)
+inverse_transform(const double *LU, const unsigned *p, float *v)
 {
 	/* Solve A * x = v, when we have P * A = L * U.
 	 * P * A * x = P * v  =>  L * U * x = P * v

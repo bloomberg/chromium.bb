@@ -220,8 +220,8 @@ struct rotate_grab {
 	struct shell_grab base;
 	struct weston_matrix rotation;
 	struct {
-		GLfloat x;
-		GLfloat y;
+		float x;
+		float y;
 	} center;
 };
 
@@ -1613,7 +1613,7 @@ black_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy);
 static struct weston_surface *
 create_black_surface(struct weston_compositor *ec,
 		     struct weston_surface *fs_surface,
-		     GLfloat x, GLfloat y, int w, int h)
+		     float x, float y, int w, int h)
 {
 	struct weston_surface *surface = NULL;
 
@@ -2458,7 +2458,7 @@ rotate_grab_motion(struct wl_pointer_grab *grab,
 	struct wl_pointer *pointer = grab->pointer;
 	struct shell_surface *shsurf = rotate->base.shsurf;
 	struct weston_surface *surface;
-	GLfloat cx, cy, dx, dy, cposx, cposy, dposx, dposy, r;
+	float cx, cy, dx, dy, cposx, cposy, dposx, dposy, r;
 
 	if (!shsurf)
 		return;
@@ -2552,8 +2552,8 @@ rotate_binding(struct wl_seat *seat, uint32_t time, uint32_t button,
 		(struct weston_surface *) seat->pointer->focus;
 	struct shell_surface *surface;
 	struct rotate_grab *rotate;
-	GLfloat dx, dy;
-	GLfloat r;
+	float dx, dy;
+	float r;
 
 	if (base_surface == NULL)
 		return;
@@ -2790,8 +2790,8 @@ hide_input_panels(struct wl_listener *listener, void *data)
 static void
 center_on_output(struct weston_surface *surface, struct weston_output *output)
 {
-	GLfloat x = (output->width - surface->buffer->width) / 2;
-	GLfloat y = (output->height - surface->buffer->height) / 2;
+	float x = (output->width - surface->buffer->width) / 2;
+	float y = (output->height - surface->buffer->height) / 2;
 
 	weston_surface_configure(surface, output->x + x, output->y + y,
 				 surface->buffer->width,
@@ -2958,7 +2958,7 @@ map(struct desktop_shell *shell, struct weston_surface *surface,
 
 static void
 configure(struct desktop_shell *shell, struct weston_surface *surface,
-	  GLfloat x, GLfloat y, int32_t width, int32_t height)
+	  float x, float y, int32_t width, int32_t height)
 {
 	enum shell_surface_type surface_type = SHELL_SURFACE_NONE;
 	struct shell_surface *shsurf;
@@ -3017,8 +3017,8 @@ shell_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy)
 	} else if (type_changed || sx != 0 || sy != 0 ||
 		   es->geometry.width != es->buffer->width ||
 		   es->geometry.height != es->buffer->height) {
-		GLfloat from_x, from_y;
-		GLfloat to_x, to_y;
+		float from_x, from_y;
+		float to_x, to_y;
 
 		weston_surface_to_global_float(es, 0, 0, &from_x, &from_y);
 		weston_surface_to_global_float(es, sx, sy, &to_x, &to_y);
@@ -3191,8 +3191,8 @@ static void
 input_panel_configure(struct weston_surface *surface, int32_t sx, int32_t sy)
 {
 	struct weston_mode *mode = surface->output->current;
-	GLfloat x = (mode->width - surface->buffer->width) / 2;
-	GLfloat y = mode->height - surface->buffer->height;
+	float x = (mode->width - surface->buffer->width) / 2;
+	float y = mode->height - surface->buffer->height;
 
 	/* Don't map the input panel here, wait for
 	 * show_input_panels signal. */

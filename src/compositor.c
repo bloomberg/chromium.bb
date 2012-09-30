@@ -267,7 +267,7 @@ weston_surface_create(struct weston_compositor *compositor)
 
 WL_EXPORT void
 weston_surface_set_color(struct weston_surface *surface,
-		 GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha)
+		 float red, float green, float blue, float alpha)
 {
 	surface->color[0] = red;
 	surface->color[1] = green;
@@ -278,7 +278,7 @@ weston_surface_set_color(struct weston_surface *surface,
 
 WL_EXPORT void
 weston_surface_to_global_float(struct weston_surface *surface,
-			       GLfloat sx, GLfloat sy, GLfloat *x, GLfloat *y)
+			       float sx, float sy, float *x, float *y)
 {
 	if (surface->transform.enabled) {
 		struct weston_vector v = { { sx, sy, 0.0f, 1.0f } };
@@ -409,15 +409,15 @@ surface_compute_bbox(struct weston_surface *surface, int32_t sx, int32_t sy,
 		     int32_t width, int32_t height,
 		     pixman_region32_t *bbox)
 {
-	GLfloat min_x = HUGE_VALF,  min_y = HUGE_VALF;
-	GLfloat max_x = -HUGE_VALF, max_y = -HUGE_VALF;
+	float min_x = HUGE_VALF,  min_y = HUGE_VALF;
+	float max_x = -HUGE_VALF, max_y = -HUGE_VALF;
 	int32_t s[4][2] = {
 		{ sx,         sy },
 		{ sx,         sy + height },
 		{ sx + width, sy },
 		{ sx + width, sy + height }
 	};
-	GLfloat int_x, int_y;
+	float int_x, int_y;
 	int i;
 
 	if (width == 0 || height == 0) {
@@ -427,7 +427,7 @@ surface_compute_bbox(struct weston_surface *surface, int32_t sx, int32_t sy,
 	}
 
 	for (i = 0; i < 4; ++i) {
-		GLfloat x, y;
+		float x, y;
 		weston_surface_to_global_float(surface,
 					       s[i][0], s[i][1], &x, &y);
 		if (x < min_x)
@@ -541,7 +541,7 @@ weston_surface_to_global_fixed(struct weston_surface *surface,
 			       wl_fixed_t sx, wl_fixed_t sy,
 			       wl_fixed_t *x, wl_fixed_t *y)
 {
-	GLfloat xf, yf;
+	float xf, yf;
 
 	weston_surface_to_global_float(surface,
 	                               wl_fixed_to_double(sx),
@@ -553,7 +553,7 @@ weston_surface_to_global_fixed(struct weston_surface *surface,
 
 WL_EXPORT void
 weston_surface_from_global_float(struct weston_surface *surface,
-				 GLfloat x, GLfloat y, GLfloat *sx, GLfloat *sy)
+				 float x, float y, float *sx, float *sy)
 {
 	if (surface->transform.enabled) {
 		struct weston_vector v = { { x, y, 0.0f, 1.0f } };
@@ -582,7 +582,7 @@ weston_surface_from_global_fixed(struct weston_surface *surface,
 			         wl_fixed_t x, wl_fixed_t y,
 			         wl_fixed_t *sx, wl_fixed_t *sy)
 {
-	GLfloat sxf, syf;
+	float sxf, syf;
 
 	weston_surface_from_global_float(surface,
 					 wl_fixed_to_double(x),
@@ -596,7 +596,7 @@ WL_EXPORT void
 weston_surface_from_global(struct weston_surface *surface,
 			   int32_t x, int32_t y, int32_t *sx, int32_t *sy)
 {
-	GLfloat sxf, syf;
+	float sxf, syf;
 
 	weston_surface_from_global_float(surface, x, y, &sxf, &syf);
 	*sx = floorf(sxf);
@@ -625,7 +625,7 @@ weston_surface_damage(struct weston_surface *surface)
 
 WL_EXPORT void
 weston_surface_configure(struct weston_surface *surface,
-			 GLfloat x, GLfloat y, int width, int height)
+			 float x, float y, int width, int height)
 {
 	surface->geometry.x = x;
 	surface->geometry.y = y;
@@ -636,7 +636,7 @@ weston_surface_configure(struct weston_surface *surface,
 
 WL_EXPORT void
 weston_surface_set_position(struct weston_surface *surface,
-			    GLfloat x, GLfloat y)
+			    float x, float y)
 {
 	surface->geometry.x = x;
 	surface->geometry.y = y;

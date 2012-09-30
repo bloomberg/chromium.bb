@@ -410,7 +410,7 @@ struct weston_surface {
 	struct wl_list layer_link;
 	struct weston_shader *shader;
 	GLfloat color[4];
-	GLfloat alpha;
+	float alpha;
 	struct weston_plane *plane;
 
 	/* Surface geometry state, mutable.
@@ -418,7 +418,7 @@ struct weston_surface {
 	 * That includes the transformations referenced from the list.
 	 */
 	struct {
-		GLfloat x, y; /* surface translation on display */
+		float x, y; /* surface translation on display */
 		int32_t width, height;
 
 		/* struct weston_transform */
@@ -489,11 +489,11 @@ weston_surface_to_global_fixed(struct weston_surface *surface,
 			       wl_fixed_t *x, wl_fixed_t *y);
 void
 weston_surface_to_global_float(struct weston_surface *surface,
-			       GLfloat sx, GLfloat sy, GLfloat *x, GLfloat *y);
+			       float sx, float sy, float *x, float *y);
 
 void
 weston_surface_from_global_float(struct weston_surface *surface,
-				 GLfloat x, GLfloat y, GLfloat *sx, GLfloat *sy);
+				 float x, float y, float *sx, float *sy);
 void
 weston_surface_from_global(struct weston_surface *surface,
 			   int32_t x, int32_t y, int32_t *sx, int32_t *sy);
@@ -635,14 +635,14 @@ weston_surface_create(struct weston_compositor *compositor);
 
 void
 weston_surface_configure(struct weston_surface *surface,
-			 GLfloat x, GLfloat y, int width, int height);
+			 float x, float y, int width, int height);
 
 void
 weston_surface_restack(struct weston_surface *surface, struct wl_list *below);
 
 void
 weston_surface_set_position(struct weston_surface *surface,
-			    GLfloat x, GLfloat y);
+			    float x, float y);
 
 int
 weston_surface_is_mapped(struct weston_surface *surface);
@@ -775,19 +775,19 @@ struct weston_surface_animation;
 typedef	void (*weston_surface_animation_done_func_t)(struct weston_surface_animation *animation, void *data);
 
 struct weston_surface_animation *
-weston_zoom_run(struct weston_surface *surface, GLfloat start, GLfloat stop,
+weston_zoom_run(struct weston_surface *surface, float start, float stop,
 		weston_surface_animation_done_func_t done, void *data);
 
 struct weston_surface_animation *
 weston_fade_run(struct weston_surface *surface,
 		weston_surface_animation_done_func_t done, void *data);
 struct weston_surface_animation *
-weston_slide_run(struct weston_surface *surface, GLfloat start, GLfloat stop,
+weston_slide_run(struct weston_surface *surface, float start, float stop,
 		 weston_surface_animation_done_func_t done, void *data);
 
 void
 weston_surface_set_color(struct weston_surface *surface,
-			 GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha);
+			 float red, float green, float blue, float alpha);
 
 void
 weston_surface_destroy(struct weston_surface *surface);
