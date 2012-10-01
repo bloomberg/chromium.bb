@@ -24,6 +24,8 @@ namespace {
 base::PlatformFileError NetErrorToPlatformFileError(int error) {
 // TODO(kinuko): Move this static method to more convenient place.
   switch (error) {
+    case net::OK:
+      return base::PLATFORM_FILE_OK;
     case net::ERR_FILE_NO_SPACE:
       return base::PLATFORM_FILE_ERROR_NO_SPACE;
     case net::ERR_FILE_NOT_FOUND:
@@ -187,7 +189,10 @@ void FileWriterDelegate::OnError(base::PlatformFileError error) {
     request_->Cancel();
   }
 
-  write_callback_.Run(error, 0, GetCompletionStatusOnError());
+  if (writing_started_)
+    FlushForCompletion(error, 0, ERROR_WRITE_STARTED);
+  else
+    write_callback_.Run(error, 0, ERROR_WRITE_NOT_STARTED);
 }
 
 void FileWriterDelegate::OnProgress(int bytes_written, bool done) {
@@ -201,8 +206,13 @@ void FileWriterDelegate::OnProgress(int bytes_written, bool done) {
     last_progress_event_time_ = currentTime;
     bytes_written_backlog_ = 0;
 
-    WriteProgressStatus status = done ? SUCCESS_COMPLETED : SUCCESS_IO_PENDING;
-    write_callback_.Run(base::PLATFORM_FILE_OK, bytes_written, status);
+    if (done) {
+      FlushForCompletion(base::PLATFORM_FILE_OK, bytes_written,
+                         SUCCESS_COMPLETED);
+    } else {
+      write_callback_.Run(base::PLATFORM_FILE_OK, bytes_written,
+                          SUCCESS_IO_PENDING);
+    }
     return;
   }
   bytes_written_backlog_ += bytes_written;
@@ -211,6 +221,31 @@ void FileWriterDelegate::OnProgress(int bytes_written, bool done) {
 void FileWriterDelegate::OnWriteCancelled(int status) {
   write_callback_.Run(base::PLATFORM_FILE_ERROR_ABORT, 0,
                       GetCompletionStatusOnError());
+}
+
+void FileWriterDelegate::FlushForCompletion(
+    base::PlatformFileError error,
+    int bytes_written,
+    WriteProgressStatus progress_status) {
+  int flush_error = file_stream_writer_->Flush(
+      base::Bind(&FileWriterDelegate::OnFlushed,
+                 weak_factory_.GetWeakPtr(),
+                 error, bytes_written, progress_status));
+  if (flush_error != net::ERR_IO_PENDING)
+    OnFlushed(error, bytes_written, progress_status, flush_error);
+}
+
+void FileWriterDelegate::OnFlushed(base::PlatformFileError error,
+                                   int bytes_written,
+                                   WriteProgressStatus progress_status,
+                                   int flush_error) {
+  if (error == base::PLATFORM_FILE_OK && flush_error != net::OK) {
+    // If the Flush introduced an error, overwrite the status.
+    // Otherwise, keep the original error status.
+    error = NetErrorToPlatformFileError(flush_error);
+    progress_status = GetCompletionStatusOnError();
+  }
+  write_callback_.Run(error, bytes_written, progress_status);
 }
 
 }  // namespace fileapi

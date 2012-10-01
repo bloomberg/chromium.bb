@@ -30,10 +30,11 @@ class FILEAPI_EXPORT_PRIVATE LocalFileStreamWriter : public FileStreamWriter {
   LocalFileStreamWriter(const FilePath& file_path, int64 initial_offset);
   virtual ~LocalFileStreamWriter();
 
-  // FileStreamWriteroverrides.
+  // FileStreamWriter overrides.
   virtual int Write(net::IOBuffer* buf, int buf_len,
                     const net::CompletionCallback& callback) OVERRIDE;
   virtual int Cancel(const net::CompletionCallback& callback) OVERRIDE;
+  virtual int Flush(const net::CompletionCallback& callback) OVERRIDE;
 
  private:
   // Opens |file_path_| and if it succeeds, proceeds to InitiateSeek().
@@ -60,6 +61,10 @@ class FILEAPI_EXPORT_PRIVATE LocalFileStreamWriter : public FileStreamWriter {
   int InitiateWrite(net::IOBuffer* buf, int buf_len,
                     const net::CompletionCallback& callback);
   void DidWrite(const net::CompletionCallback& callback, int result);
+
+  // Flushes asynchronously to the file.
+  int InitiateFlush(const net::CompletionCallback& callback);
+  void DidFlush(const net::CompletionCallback& callback, int result);
 
   // Stops the in-flight operation and calls |cancel_callback_| if it has been
   // set by Cancel() for the current operation.

@@ -527,7 +527,7 @@ void BaseFile::Close() {
 #if defined(OS_CHROMEOS)
     // Currently we don't really care about the return value, since if it fails
     // theres not much we can do.  But we might in the future.
-    file_stream_->Flush();
+    file_stream_->FlushSync();
 #endif
     file_stream_->CloseSync();
     ClearStream(net::OK);

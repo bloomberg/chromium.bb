@@ -587,7 +587,37 @@ int FileStreamWin::WriteSync(
   return rv;
 }
 
-int FileStreamWin::Flush() {
+int FileStreamWin::Flush(const CompletionCallback& callback) {
+  if (!IsOpen())
+    return ERR_UNEXPECTED;
+
+  // Make sure we're async and we have no other in-flight async operations.
+  DCHECK(open_flags_ & base::PLATFORM_FILE_ASYNC);
+  DCHECK(open_flags_ & base::PLATFORM_FILE_WRITE);
+  DCHECK(!weak_ptr_factory_.HasWeakPtrs());
+  DCHECK(!on_io_complete_.get());
+
+  on_io_complete_.reset(new base::WaitableEvent(
+      false  /* manual_reset */, false  /* initially_signaled */));
+
+  int* result = new int(OK);
+  const bool posted = base::WorkerPool::PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&InvokeAndSignal,
+                 // Unretained should be fine as we wait for a signal on
+                 // on_io_complete_ at the destructor.
+                 base::Bind(&FileStreamWin::FlushFile, base::Unretained(this),
+                            result),
+                 on_io_complete_.get()),
+      base::Bind(&FileStreamWin::OnFlushed,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback, base::Owned(result)),
+      true /* task is slow */);
+  DCHECK(posted);
+  return ERR_IO_PENDING;
+}
+
+int FileStreamWin::FlushSync() {
   base::ThreadRestrictions::AssertIOAllowed();
 
   if (!IsOpen())
@@ -692,6 +722,17 @@ void FileStreamWin::SeekFile(Whence whence, int64 offset, int64* result) {
   *result = res.QuadPart;
 }
 
+void FileStreamWin::FlushFile(int* result) {
+  if (FlushFileBuffers(file_)) {
+    *result = OK;
+  } else {
+    *result = RecordAndMapError(GetLastError(),
+                                FILE_ERROR_SOURCE_FLUSH,
+                                record_uma_,
+                                bound_net_log_);
+  }
+}
+
 void FileStreamWin::OnOpened(const CompletionCallback& callback, int* result) {
   if (*result == OK) {
     async_context_.reset(new AsyncContext(bound_net_log_));
@@ -709,6 +750,12 @@ void FileStreamWin::OnOpened(const CompletionCallback& callback, int* result) {
 void FileStreamWin::OnSeeked(
     const Int64CompletionCallback& callback,
     int64* result) {
+  // Reset this before Run() as Run() may issue a new async operation.
+  ResetOnIOComplete();
+  callback.Run(*result);
+}
+
+void FileStreamWin::OnFlushed(const CompletionCallback& callback, int* result) {
   // Reset this before Run() as Run() may issue a new async operation.
   ResetOnIOComplete();
   callback.Run(*result);

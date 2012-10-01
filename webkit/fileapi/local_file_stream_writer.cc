@@ -64,6 +64,21 @@ int LocalFileStreamWriter::Cancel(const net::CompletionCallback& callback) {
   return net::ERR_IO_PENDING;
 }
 
+int LocalFileStreamWriter::Flush(const net::CompletionCallback& callback) {
+  DCHECK(!has_pending_operation_);
+  DCHECK(cancel_callback_.is_null());
+
+  // Write() is not called yet, so there's nothing to flush.
+  if (!stream_impl_.get())
+    return net::OK;
+
+  has_pending_operation_ = true;
+  int result = InitiateFlush(callback);
+  if (result != net::ERR_IO_PENDING)
+    has_pending_operation_ = false;
+  return result;
+}
+
 int LocalFileStreamWriter::InitiateOpen(
     const net::CompletionCallback& error_callback,
     const base::Closure& main_operation) {
@@ -170,6 +185,26 @@ int LocalFileStreamWriter::InitiateWrite(
 }
 
 void LocalFileStreamWriter::DidWrite(const net::CompletionCallback& callback,
+                                     int result) {
+  DCHECK(has_pending_operation_);
+
+  if (CancelIfRequested())
+    return;
+  has_pending_operation_ = false;
+  callback.Run(result);
+}
+
+int LocalFileStreamWriter::InitiateFlush(
+    const net::CompletionCallback& callback) {
+  DCHECK(has_pending_operation_);
+  DCHECK(stream_impl_.get());
+
+  return stream_impl_->Flush(base::Bind(&LocalFileStreamWriter::DidFlush,
+                                        weak_factory_.GetWeakPtr(),
+                                        callback));
+}
+
+void LocalFileStreamWriter::DidFlush(const net::CompletionCallback& callback,
                                      int result) {
   DCHECK(has_pending_operation_);
 

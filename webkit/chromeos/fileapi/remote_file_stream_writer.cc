@@ -104,6 +104,12 @@ int RemoteFileStreamWriter::Cancel(const net::CompletionCallback& callback) {
   return net::ERR_UNEXPECTED;
 }
 
+int RemoteFileStreamWriter::Flush(const net::CompletionCallback& callback) {
+  // For remote file writer, Flush() is a no-op. Synchronization to the remote
+  // server is not done until the file is closed.
+  return net::OK;
+}
+
 void RemoteFileStreamWriter::InvokePendingCancelCallback(int result) {
   net::CompletionCallback callback = pending_cancel_callback_;
   pending_cancel_callback_.Reset();

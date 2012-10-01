@@ -34,6 +34,7 @@ class FILEAPI_EXPORT_PRIVATE SandboxFileStreamWriter : public FileStreamWriter {
   virtual int Write(net::IOBuffer* buf, int buf_len,
                     const net::CompletionCallback& callback) OVERRIDE;
   virtual int Cancel(const net::CompletionCallback& callback) OVERRIDE;
+  virtual int Flush(const net::CompletionCallback& callback) OVERRIDE;
 
   // Used only by tests.
   void set_default_quota(int64 quota) {

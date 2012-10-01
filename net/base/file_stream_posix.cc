@@ -231,6 +231,16 @@ int FlushFile(base::PlatformFile file,
   return res;
 }
 
+// Flushes a file using FlushFile() and signals the completion.
+void FlushFileAndSignal(base::PlatformFile file,
+                        int* result,
+                        bool record_uma,
+                        base::WaitableEvent* on_io_complete,
+                        const net::BoundNetLog& bound_net_log) {
+  *result = FlushFile(file, record_uma, bound_net_log);
+  on_io_complete->Signal();
+}
+
 // Called when Read(), Write() or Seek() is completed.
 // |result| contains the result or a network error code.
 template <typename R>
@@ -588,7 +598,32 @@ int64 FileStreamPosix::Truncate(int64 bytes) {
                            bound_net_log_);
 }
 
-int FileStreamPosix::Flush() {
+int FileStreamPosix::Flush(const CompletionCallback& callback) {
+  if (!IsOpen())
+    return ERR_UNEXPECTED;
+
+  // Make sure we're async and we have no other in-flight async operations.
+  DCHECK(open_flags_ & base::PLATFORM_FILE_ASYNC);
+  DCHECK(!weak_ptr_factory_.HasWeakPtrs());
+  DCHECK(!on_io_complete_.get());
+
+  on_io_complete_.reset(new base::WaitableEvent(
+      false  /* manual_reset */, false  /* initially_signaled */));
+
+  int* result = new int(OK);
+  const bool posted = base::WorkerPool::PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&FlushFileAndSignal, file_, result,
+                 record_uma_, on_io_complete_.get(), bound_net_log_),
+      base::Bind(&OnIOComplete<int>,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback, base::Owned(result)),
+      true /* task is slow */);
+  DCHECK(posted);
+  return ERR_IO_PENDING;
+}
+
+int FileStreamPosix::FlushSync() {
   if (!IsOpen())
     return ERR_UNEXPECTED;
 

@@ -42,6 +42,7 @@ class RemoteFileStreamWriter : public fileapi::FileStreamWriter {
   virtual int Write(net::IOBuffer* buf, int buf_len,
                     const net::CompletionCallback& callback) OVERRIDE;
   virtual int Cancel(const net::CompletionCallback& callback) OVERRIDE;
+  virtual int Flush(const net::CompletionCallback& callback) OVERRIDE;
 
  private:
   // Callback function to do the continuation of the work of the first Write()

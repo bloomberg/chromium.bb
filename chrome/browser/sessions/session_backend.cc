@@ -343,7 +343,7 @@ bool SessionBackend::AppendCommandsToFile(net::FileStream* file,
       }
     }
   }
-  file->Flush();
+  file->FlushSync();
   return true;
 }
 

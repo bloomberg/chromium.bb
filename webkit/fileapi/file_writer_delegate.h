@@ -77,6 +77,13 @@ class FILEAPI_EXPORT_PRIVATE FileWriterDelegate
   void OnError(base::PlatformFileError error);
   void OnProgress(int bytes_read, bool done);
   void OnWriteCancelled(int status);
+  void FlushForCompletion(base::PlatformFileError error,
+                          int bytes_written,
+                          WriteProgressStatus progress_status);
+  void OnFlushed(base::PlatformFileError error,
+                 int bytes_written,
+                 WriteProgressStatus progress_status,
+                 int flush_error);
 
   FileSystemQuotaUtil* quota_util() const;
   WriteProgressStatus GetCompletionStatusOnError() const;

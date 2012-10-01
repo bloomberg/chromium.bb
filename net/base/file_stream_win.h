@@ -49,7 +49,8 @@ class NET_EXPORT FileStreamWin {
   int Write(IOBuffer* buf, int buf_len, const CompletionCallback& callback);
   int WriteSync(const char* buf, int buf_len);
   int64 Truncate(int64 bytes);
-  int Flush();
+  int Flush(const CompletionCallback& callback);
+  int FlushSync();
   void EnableErrorStatistics();
   void SetBoundNetLogSource(const net::BoundNetLog& owner_bound_net_log);
   base::PlatformFile GetPlatformFileForTesting();
@@ -60,6 +61,9 @@ class NET_EXPORT FileStreamWin {
   // A helper method for Seek.
   void SeekFile(Whence whence, int64 offset, int64* result);
 
+  // A helper method for Flush.
+  void FlushFile(int* result);
+
   // Called when the file_ is opened asynchronously. |result| contains the
   // result as a network error code.
   void OnOpened(const CompletionCallback& callback, int* result);
@@ -69,6 +73,9 @@ class NET_EXPORT FileStreamWin {
 
   // Called when the file_ is seeked asynchronously.
   void OnSeeked(const Int64CompletionCallback& callback, int64* result);
+
+  // Called when the file_ is flushed asynchronously.
+  void OnFlushed(const CompletionCallback& callback, int* result);
 
   // Resets on_io_complete_ and WeakPtr's.
   // Called in OnOpened, OnClosed and OnSeeked.

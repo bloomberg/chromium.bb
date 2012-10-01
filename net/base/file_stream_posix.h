@@ -48,7 +48,8 @@ class NET_EXPORT FileStreamPosix {
   int Write(IOBuffer* buf, int buf_len, const CompletionCallback& callback);
   int WriteSync(const char* buf, int buf_len);
   int64 Truncate(int64 bytes);
-  int Flush();
+  int Flush(const CompletionCallback& callback);
+  int FlushSync();
   void EnableErrorStatistics();
   void SetBoundNetLogSource(
       const net::BoundNetLog& owner_bound_net_log);

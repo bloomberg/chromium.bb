@@ -55,6 +55,16 @@ class FILEAPI_EXPORT_PRIVATE FileStreamWriter {
   // operation is dismissed immediately when Cancel() is called, and thus
   // will never be called.
   virtual int Cancel(const net::CompletionCallback& callback) = 0;
+
+  // Flushes the data written so far.
+  //
+  // If the flush finished synchronously, it return net::OK. If the flush could
+  // not be performed, it returns an error code. Otherwise, net::ERR_IO_PENDING
+  // is returned, and the callback will be run on the thread where Flush() was
+  // called when the flush has completed.
+  //
+  // It is invalid to call Flush while there is an in-flight async operation.
+  virtual int Flush(const net::CompletionCallback& callback) = 0;
 };
 
 }  // namespace fileapi
