@@ -103,13 +103,14 @@ class Builder(object):
     if arch == 'pnacl' and toolname == 'glibc':
       ErrOut('pnacl glibc not yet supported.')
 
-    if self.is_pnacl_toolchain:
-      self.toolname = '%s_x86_pnacl' % (self.osname)
-    else:
-      self.toolname = '%s_x86_%s' % (self.osname, toolname)
-
     if toolname not in ['newlib', 'glibc']:
       ErrOut('Toolchain of type %s not supported.' % toolname)
+
+    if self.is_pnacl_toolchain:
+      tooldir = '%s_x86_pnacl' % (self.osname)
+    else:
+      tooldir = '%s_x86_%s' % (self.osname, toolname)
+
 
     self.root_path = options.root
     self.nacl_path = os.path.join(self.root_path, 'native_client')
@@ -118,18 +119,8 @@ class Builder(object):
     self.outdir = options.objdir
 
     # Set the toolchain directories
-    self.toolchain = os.path.join(options.toolpath, self.toolname)
+    self.toolchain = os.path.join(options.toolpath, tooldir)
     self.toolbin = os.path.join(self.toolchain, tool_subdir, 'bin')
-
-    if self.is_pnacl_toolchain:
-      self.toollib = os.path.join(self.toolchain, tool_subdir,'lib')
-      self.toolinc = os.path.join(self.toolchain, tool_subdir, 'sysroot',
-                                  'include')
-    else:
-      self.toollib = os.path.join(self.toolchain,
-                                  tool_subdir,
-                                  'lib' + self.subarch)
-      self.toolinc = os.path.join(self.toolchain, tool_subdir, 'include')
 
     self.inc_paths = ArgToList(options.incdirs)
     self.lib_paths = ArgToList(options.libdirs)
@@ -216,8 +207,6 @@ class Builder(object):
   def BuildLinkOptions(self, options):
     """Generates link options, called once by __init__."""
     options = ArgToList(options)
-    if self.toolname in ['glibc', 'newlib'] and self.mainarch == 'x86':
-      options += ['-B' + self.toollib]
     if self.outtype == 'nso':
       options += ['-Wl,-rpath-link,' + name for name in self.lib_paths]
       options += ['-shared']
