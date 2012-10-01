@@ -58,6 +58,8 @@ def FindChrome(src_dir, options):
   chrome_locations = [
       'build/%s/chrome.exe' % mode,
       'chrome/%s/chrome.exe' % mode,
+      # Windows Chromium ninja builder
+      'out/%s/chrome.exe' % mode,
       'out/%s/chrome' % mode,
       # Mac Chromium make builder
       'out/%s/Chromium.app/Contents/MacOS/Chromium' % mode,
