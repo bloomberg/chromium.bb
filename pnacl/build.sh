@@ -251,7 +251,7 @@ SBTC_BUILD_WITH_PNACL="armv7 i686 x86_64"
 # Current milestones in each repo
 
 readonly BINUTILS_REV=95a4e0cd6450
-readonly GOLD_REV=5d1c8d6e094d
+readonly GOLD_REV=7950ff8c12d1
 
 # Repositories
 readonly REPO_BINUTILS="nacl-llvm-branches.binutils"
