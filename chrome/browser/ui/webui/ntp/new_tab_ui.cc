@@ -299,8 +299,9 @@ bool NewTabUI::ShouldShowApps() {
 
 // static
 bool NewTabUI::IsDiscoveryInNTPEnabled() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableDiscoveryInNewTabPage);
+  // TODO(beaudoin): The flag was removed during a clean-up pass. We leave that
+  // here to easily enable it back when we will explore this option again.
+  return false;
 }
 
 // static

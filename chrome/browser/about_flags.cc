@@ -653,13 +653,6 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableSuggestionsTabPage)
   },
-  {
-    "enable-discovery-ntp",
-    IDS_FLAGS_ENABLE_NTP_DISCOVERY_NAME,
-    IDS_FLAGS_ENABLE_NTP_DISCOVERY_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableDiscoveryInNewTabPage)
-  },
 #if defined(GOOGLE_CHROME_BUILD)
   {
     "disable-asynchronous-spellchecking",
