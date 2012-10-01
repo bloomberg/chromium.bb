@@ -173,47 +173,83 @@ TEST_F(TouchTabStripLayoutTest, InitialLayout) {
   }
 }
 
-// Assertions around dragging the active tab to the right.
-TEST_F(TouchTabStripLayoutTest, DragActiveTab) {
-  struct TestData {
-    struct CommonTestData common_data;
-    const int delta;
-  } test_data[] = {
-    { { 0, 300, 100, -10, 2, 0, 4, "", "0 90 180 192 194 196 198 200" }, 1000 },
-    { { 0, 120, 100, -10, 2, 0, 3, "", "0 3 10 12 14 16 18 20" }, 13 },
-    { { 0, 200, 100, -10, 2, 0, 0, "", "0 85 92 94 96 98 100 100" }, -5 },
-    { { 0, 300, 100, -10, 2, 0, 4, "", "0 2 4 18 108 196 198 200" }, 100 },
-    { { 0, 300, 100, -10, 2, 0, 5, "", "0 2 4 6 8 21 111 200" }, 1 },
-    { { 0, 120, 100, -10, 2, 0, 3, "", "0 8 10 12 14 16 18 20" }, 95 },
-    { { 0, 300, 100, -10, 2, 0, 5, "", "0 90 180 192 194 196 198 200" }, 1000 },
-    { { 0, 300, 100, -10, 2, 0, 4, "", "0 2 4 7 97 187 198 200" }, 89 },
-    { { 0, 300, 100, -10, 2, 0, 4, "", "0 2 4 6 96 186 198 200" }, 88 },
-    { { 0, 300, 100, -10, 2, 0, 4, "", "0 2 4 8 98 188 198 200" }, 90 },
-    { { 0, 300, 100, -10, 2, 0, 6, "", "0 2 4 6 8 70 160 200" }, 50 },
-  };
-
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
-    CreateLayout(test_data[i].common_data);
-    layout_->DragActiveTab(test_data[i].delta);
-    EXPECT_EQ(test_data[i].common_data.expected_bounds,BoundsString()) <<
-        " at " << i;
-  }
-}
-
 // Assertions for dragging from an existing configuration.
 TEST_F(TouchTabStripLayoutTest, DragActiveTabExisting) {
   struct TestData {
     struct CommonTestData common_data;
     const int delta;
   } test_data[] = {
-    { { 0, 643, 160, -27, 6, 0, 2, "0 84 217 350 483", "0 84 217 350 483" },
-      -11 },
-    { { 0, 685, 160, -27, 6, 0, 3, "0 6 12 18 151 284 417 519 525",
-        "0 6 12 18 150 283 416 519 525" },
-      -1 },
-    { { 0, 120, 100, -10, 2, 0, 3, "0 3 10 12 14 16 18 20",
-        "0 4 10 12 14 16 18 20" },
+    //
+    // The following set of tests create 6 tabs, the first two are pinned and
+    // the 2nd tab is selected.
+    //
+    // 1 pixel to the right, should push only mini-tabs and first non-mini-tab.
+    { { 10, 240, 100, -10, 2, 2, 1, "0 5 10 100 138 140",
+        "1 6 11 101 138 140" }, 1 },
+    // Push enough to collapse the 4th tab.
+    { { 10, 240, 100, -10, 2, 2, 1, "0 5 10 100 138 140",
+        "36 41 46 136 138 140" }, 36 },
+    // 1 past collapsing the 4th.
+    { { 10, 240, 100, -10, 2, 2, 1, "0 5 10 100 138 140",
+        "37 42 47 136 138 140" }, 37 },
+    // Collapse the third.
+    { { 10, 240, 100, -10, 2, 2, 1, "0 5 10 100 138 140",
+        "124 129 134 136 138 140" }, 124 },
+    // One past collapsing the third.
+    { { 10, 240, 100, -10, 2, 2, 1, "0 5 10 100 138 140",
+        "124 129 134 136 138 140" }, 125 },
+
+    //
+    // The following set of tests create 6 tabs, the first two are pinned and
+    // the 5th is selected.
+    //
+    // 1 pixel to the right, should expose part of a tab.
+    { { 10, 240, 100, -10, 2, 2, 4, "0 5 10 90 130 140", "0 5 10 90 131 140" },
       1 },
+    // Push the tab as far to the right as it'll go.
+    { { 10, 240, 100, -10, 2, 2, 4, "0 5 10 90 130 140", "0 5 10 90 138 140" },
+      8 },
+    // One past as far to the right as it'll go. Should expose more of the tab
+    // before it.
+    { { 10, 240, 100, -10, 2, 2, 4, "0 5 10 90 130 140", "0 5 10 91 138 140" },
+      9 },
+    // Enough so that the pinned tabs start pulling in.
+    { { 10, 240, 100, -10, 2, 2, 4, "0 5 10 90 130 140", "1 6 11 101 138 140" },
+      19 },
+    // One more than last.
+    { { 10, 240, 100, -10, 2, 2, 4, "0 5 10 90 130 140", "2 7 12 102 138 140" },
+      20 },
+    // Enough to collapse the fourth as small it can get.
+    { { 10, 240, 100, -10, 2, 2, 4, "0 5 10 90 130 140",
+        "36 41 46 136 138 140" }, 54 },
+    // Enough to collapse the third as small it can get.
+    { { 10, 240, 100, -10, 2, 2, 4, "0 5 10 90 130 140",
+        "124 129 134 136 138 140" }, 142 },
+    // One more than last, shouldn't change anything.
+    { { 10, 240, 100, -10, 2, 2, 4, "0 5 10 90 130 140",
+        "124 129 134 136 138 140" }, 143 },
+
+    //
+    // The following set of tests create 3 tabs with the second selected.
+    //
+    // Drags in 2, pulling the rightmost tab along.
+    { { 0, 240, 100, -10, 2, 0, 1, "0 90 140", "2 92 140" }, 2 },
+    // Drags the rightmost tab as far to right as possible.
+    { { 0, 240, 100, -10, 2, 0, 1, "0 90 140", "48 138 140" }, 48 },
+    // Drags so much that the left most tabs pulls in.
+    { { 0, 240, 100, -10, 2, 0, 1, "0 90 140", "135 138 140" }, 135 },
+    // Drags so far that no more tabs pull in.
+    { { 0, 240, 100, -10, 2, 0, 1, "0 90 140", "136 138 140" }, 200 },
+    // Drags to the left most position before the right tabs start pulling in.
+    { { 0, 240, 100, -10, 2, 0, 1, "0 90 140", "0 50 140" }, -40 },
+    // Drags 1 beyond the left most position, which should pull in the right
+    // tab slightly.
+    { { 0, 240, 100, -10, 2, 0, 1, "0 90 140", "0 49 139" }, -41 },
+    // Drags to the left as far as the tab goes.
+    { { 0, 240, 100, -10, 2, 0, 1, "0 90 140", "0 2 92" }, -88 },
+    // Drags one past as far to the left as the tab goes. Should keep pulling
+    // in the rightmost tab.
+    { { 0, 240, 100, -10, 2, 0, 1, "0 90 140", "0 2 91" }, -89 },
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
@@ -221,6 +257,31 @@ TEST_F(TouchTabStripLayoutTest, DragActiveTabExisting) {
     layout_->DragActiveTab(test_data[i].delta);
     EXPECT_EQ(test_data[i].common_data.expected_bounds, BoundsString()) <<
         " at " << i;
+  }
+}
+
+// Assertions for SizeToFit().
+TEST_F(TouchTabStripLayoutTest, SizeToFit) {
+  struct CommonTestData test_data[] = {
+    // Dragged to the right.
+    { 10, 240, 100, -10, 2, 2, 1, "0 5 10 100 138 140", "1 6 11 101 138 140"},
+    { 10, 240, 100, -10, 2, 2, 1, "0 5 10 100 138 140",
+      "124 129 134 136 138 140" },
+
+    // Dragged to the left.
+    { 0, 240, 100, -10, 2, 0, 1, "0 50 140", "0 49 139" },
+
+    // Dragged to the left.
+    { 0, 240, 100, -10, 2, 0, 1, "0 49 89 140", "0 49 89 139" },
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
+    CreateLayout(test_data[i]);
+    SetBoundsFromString(test_data[i].expected_bounds);
+    layout_->SizeToFit();
+    // NOTE: because of the way the code is structured this asserts on
+    // |start_bound|, not |expected_bounds|.
+    EXPECT_EQ(test_data[i].start_bounds, BoundsString()) << " at " << i;
   }
 }
 

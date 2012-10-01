@@ -104,6 +104,7 @@ class TabDragController : public content::WebContentsDelegate,
 
   // Sets the move behavior. Has no effect if started_drag() is true.
   void SetMoveBehavior(MoveBehavior behavior);
+  MoveBehavior move_behavior() const { return move_behavior_; }
 
   // See description above fields for details on these.
   bool active() const { return active_; }

@@ -52,6 +52,10 @@ class TouchTabStripLayout {
   // Drags the active tab.
   void DragActiveTab(int delta);
 
+  // Makes sure the tabs fill the available width. Used after a drag operation
+  // completes.
+  void SizeToFit();
+
   // Adds a new tab at the specified index. |add_types| is a bitmask of
   // kAddType*. |start_x| is the new x-coordinate non-mini tabs start at.
   void AddTab(int index, int add_types, int start_x);
@@ -124,6 +128,14 @@ class TouchTabStripLayout {
   void LayoutUsingCurrentAfter(int index);
   void LayoutUsingCurrentBefore(int index);
 
+  void PushTabsAfter(int index, int delta);
+  void PushTabsBefore(int index, int delta);
+
+  // Does a layout for drag. Similar to LayoutUsingCurrentXXX() but does not
+  // contrain. Used when dragging the active tab.
+  void LayoutForDragAfter(int index);
+  void LayoutForDragBefore(int index);
+
   // Used when the tabs are stacked at one side. The remaining tabs are stacked
   // against the |active_index()|. |delta| is the amount of space to resize the
   // the tabs by.
@@ -145,14 +157,13 @@ class TouchTabStripLayout {
   // assuming all the tabs before |index| are stacked.
   int GetMinX(int index) const;
 
-  // Returns the max x-coordinage for the speficifed index. This is calculated
+  // Returns the max x-coordinate for the speficifed index. This is calculated
   // assuming all the tabs after |index| are stacked.
   int GetMaxX(int index) const;
 
-  // Returns the max x-coordinate for the tab at |index|. This is relative
-  // to the |active_index()| and is only useful when the active tab is pushed
-  // against the right side.
-  int GetMaxXCompressed(int index) const;
+  // Used when dragging to get the min/max coodinate.
+  int GetMinDragX(int index) const;
+  int GetMaxDragX(int index) const;
 
   // Returns the min x-coordinate for the tab at |index|. This is relative
   // to the |active_index()| and is only useful when the active tab is pushed
@@ -215,8 +226,15 @@ class TouchTabStripLayout {
   // Number of mini-tabs.
   int mini_tab_count_;
 
+  // Distance from the last mini-tab to the first non-mini-tab.
+  int mini_tab_to_non_mini_tab_;
+
   // Index of the active tab.
   int active_index_;
+
+  // X-coordinate of the first tab. This is either |x_| if there are no
+  // mini-tabs, or the x-coordinate of the first mini-tab.
+  int first_tab_x_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchTabStripLayout);
 };
