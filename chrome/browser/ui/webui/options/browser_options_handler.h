@@ -161,10 +161,6 @@ class BrowserOptionsHandler
   // remove all auto-open file-type settings.
   void HandleAutoOpenButton(const ListValue* args);
 
-  // Callback for the "metricsReportingCheckboxAction" message. This is called
-  // if the user toggles the metrics reporting checkbox.
-  void HandleMetricsReportingCheckbox(const ListValue* args);
-
   // Callback for the "defaultFontSizeAction" message. This is called if the
   // user changes the default font size. |args| is an array that contains
   // one item, the font size as a numeric value.
@@ -240,9 +236,6 @@ class BrowserOptionsHandler
   void PerformFactoryResetRestart(const base::ListValue* args);
 #endif
 
-  // Setup the checked state for the metrics reporting checkbox.
-  void SetupMetricsReportingCheckbox();
-
   // Setup the visibility for the metrics reporting setting.
   void SetupMetricsReportingSettingVisibility();
 
@@ -288,7 +281,6 @@ class BrowserOptionsHandler
   scoped_refptr<ui::SelectFileDialog> select_folder_dialog_;
 
 #if !defined(OS_CHROMEOS)
-  BooleanPrefMember enable_metrics_recording_;
   StringPrefMember cloud_print_connector_email_;
   BooleanPrefMember cloud_print_connector_enabled_;
   bool cloud_print_connector_ui_enabled_;

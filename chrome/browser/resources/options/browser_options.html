@@ -255,7 +255,8 @@
               pref="cros.metrics.reportingEnabled" type="checkbox">
 </if>
 <if expr="not pp_ifdef('chromeos')">
-          <input id="metricsReportingEnabled" type="checkbox">
+          <input id="metricsReportingEnabled"
+              pref="user_experience_metrics.reporting_enabled" type="checkbox">
 </if>
           <span i18n-content="enableLogging"></span>
         </label>

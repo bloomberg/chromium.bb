@@ -15,6 +15,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/options/options_util.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -33,6 +34,22 @@ using content::UserMetricsAction;
 
 namespace options {
 
+namespace {
+
+// Only allow changes to the metrics reporting checkbox if we were succesfully
+// able to change the service.
+bool AllowMetricsReportingChange(const base::Value* to_value) {
+  bool enable;
+  if (!to_value->GetAsBoolean(&enable)) {
+    NOTREACHED();
+    return false;
+  }
+
+  return enable == OptionsUtil::ResolveMetricsReportingEnabled(enable);
+}
+
+}  // namespace
+
 CoreOptionsHandler::CoreOptionsHandler()
     : handlers_host_(NULL) {
 }
@@ -41,6 +58,9 @@ CoreOptionsHandler::~CoreOptionsHandler() {}
 
 void CoreOptionsHandler::InitializeHandler() {
   plugin_status_pref_setter_.Init(Profile::FromWebUI(web_ui()), this);
+
+  pref_change_filters_[prefs::kMetricsReportingEnabled] =
+      base::Bind(&AllowMetricsReportingChange);
 }
 
 void CoreOptionsHandler::InitializePage() {
@@ -200,6 +220,18 @@ void CoreOptionsHandler::SetPref(const std::string& pref_name,
                                  const base::Value* value,
                                  const std::string& metric) {
   PrefService* pref_service = FindServiceForPref(pref_name);
+  PrefChangeFilterMap::iterator iter = pref_change_filters_.find(pref_name);
+  if (iter != pref_change_filters_.end()) {
+    // Also check if the pref is user modifiable (don't even try to run the
+    // filter function if the user is not allowed to change the pref).
+    const PrefService::Preference* pref =
+        pref_service->FindPreference(pref_name.c_str());
+    if ((pref && !pref->IsUserModifiable()) || !iter->second.Run(value)) {
+      // Reject the change; remind the page of the true value.
+      NotifyPrefChanged(pref_name, std::string());
+      return;
+    }
+  }
 
   switch (value->GetType()) {
     case base::Value::TYPE_BOOLEAN:

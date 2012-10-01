@@ -46,7 +46,6 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
-#include "chrome/browser/ui/options/options_util.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
@@ -491,12 +490,6 @@ void BrowserOptionsHandler::RegisterMessages() {
       "defaultZoomFactorAction",
       base::Bind(&BrowserOptionsHandler::HandleDefaultZoomFactor,
                  base::Unretained(this)));
-#if !defined(OS_CHROMEOS)
-  web_ui()->RegisterMessageCallback(
-      "metricsReportingCheckboxAction",
-      base::Bind(&BrowserOptionsHandler::HandleMetricsReportingCheckbox,
-                 base::Unretained(this)));
-#endif
 #if !defined(USE_NSS) && !defined(USE_OPENSSL)
   web_ui()->RegisterMessageCallback(
       "showManageSSLCertificates",
@@ -601,8 +594,6 @@ void BrowserOptionsHandler::InitializeHandler() {
 #endif
 
 #if !defined(OS_CHROMEOS)
-  enable_metrics_recording_.Init(prefs::kMetricsReportingEnabled,
-                                 g_browser_process->local_state(), this);
   cloud_print_connector_email_.Init(prefs::kCloudPrintEmail, prefs, this);
   cloud_print_connector_enabled_.Init(prefs::kCloudPrintProxyEnabled, prefs,
                                       this);
@@ -623,7 +614,6 @@ void BrowserOptionsHandler::InitializePage() {
   OnStateChanged();
   UpdateDefaultBrowserState();
 
-  SetupMetricsReportingCheckbox();
   SetupMetricsReportingSettingVisibility();
   SetupPasswordGenerationSettingVisibility();
   SetupFontSizeSelector();
@@ -1116,21 +1106,6 @@ void BrowserOptionsHandler::HandleAutoOpenButton(const ListValue* args) {
     DownloadPrefs::FromDownloadManager(manager)->ResetAutoOpen();
 }
 
-void BrowserOptionsHandler::HandleMetricsReportingCheckbox(
-    const ListValue* args) {
-#if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)
-  std::string checked_str = UTF16ToUTF8(ExtractStringValue(args));
-  bool enabled = checked_str == "true";
-  content::RecordAction(
-      enabled ?
-          UserMetricsAction("Options_MetricsReportingCheckbox_Enable") :
-          UserMetricsAction("Options_MetricsReportingCheckbox_Disable"));
-  bool is_enabled = OptionsUtil::ResolveMetricsReportingEnabled(enabled);
-  enable_metrics_recording_.SetValue(is_enabled);
-  SetupMetricsReportingCheckbox();
-#endif
-}
-
 void BrowserOptionsHandler::HandleDefaultFontSize(const ListValue* args) {
   int font_size;
   if (ExtractIntegerValue(args, &font_size)) {
@@ -1323,15 +1298,6 @@ void BrowserOptionsHandler::SetupAccessibilityFeatures() {
       virtual_keyboard_enabled);
 }
 #endif
-
-void BrowserOptionsHandler::SetupMetricsReportingCheckbox() {
-#if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)
-  base::FundamentalValue checked(enable_metrics_recording_.GetValue());
-  base::FundamentalValue disabled(enable_metrics_recording_.IsManaged());
-  web_ui()->CallJavascriptFunction(
-      "BrowserOptions.setMetricsReportingCheckboxState", checked, disabled);
-#endif
-}
 
 void BrowserOptionsHandler::SetupMetricsReportingSettingVisibility() {
 #if defined(GOOGLE_CHROME_BUILD) && defined(OS_CHROMEOS)
