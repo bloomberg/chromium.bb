@@ -113,20 +113,20 @@ bool RedirectToFileResourceHandler::OnReadCompleted(int request_id,
   DCHECK(buf_write_pending_);
   buf_write_pending_ = false;
 
-  if (buf_->capacity() == bytes_read) {
-    // The network layer has saturated our buffer. Next time, we should give it
-    // a bigger buffer for it to fill, to minimize the number of round trips we
-    // do with the renderer process.
-    next_buffer_size_ = std::min(next_buffer_size_ * 2, kMaxReadBufSize);
-  }
-
   // We use the buffer's offset field to record the end of the buffer.
   int new_offset = buf_->offset() + bytes_read;
   DCHECK(new_offset <= buf_->capacity());
   buf_->set_offset(new_offset);
 
-  if (BufIsFull())
+  if (BufIsFull()) {
     did_defer_ = *defer = true;
+
+    if (buf_->capacity() == bytes_read) {
+      // The network layer has saturated our buffer in one read. Next time, we
+      // should give it a bigger buffer for it to fill.
+      next_buffer_size_ = std::min(next_buffer_size_ * 2, kMaxReadBufSize);
+    }
+  }
 
   return WriteMore();
 }
