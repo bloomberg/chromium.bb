@@ -52,8 +52,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/webdata/web_data_service.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -69,8 +67,7 @@ class URLRequestContextGetter;
 // from the UI thread.
 class TokenService : public GaiaAuthConsumer,
                      public ProfileKeyedService,
-                     public WebDataServiceConsumer,
-                     public content::NotificationObserver {
+                     public WebDataServiceConsumer {
  public:
    TokenService();
    virtual ~TokenService();
@@ -122,6 +119,10 @@ class TokenService : public GaiaAuthConsumer,
 
   // Used to determine whether Initialize() has been called.
   bool Initialized() const { return !source_.empty(); }
+
+  // Add a token not supported by a fetcher.
+  void AddAuthTokenManually(const std::string& service,
+                            const std::string& auth_token);
 
   // Update ClientLogin credentials in the token service.
   // Afterwards you can StartFetchingTokens.
@@ -196,11 +197,6 @@ class TokenService : public GaiaAuthConsumer,
       WebDataService::Handle h,
       const WDTypedResult* result) OVERRIDE;
 
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
  private:
 
   // Gets the list of all service names for which tokens will be retrieved.
@@ -256,8 +252,6 @@ class TokenService : public GaiaAuthConsumer,
 
   // Map from service to token.
   std::map<std::string, std::string> token_map_;
-
-  content::NotificationRegistrar registrar_;
 
   friend class TokenServiceTest;
   FRIEND_TEST_ALL_PREFIXES(TokenServiceTest, LoadTokensIntoMemoryBasic);

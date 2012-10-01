@@ -88,7 +88,9 @@ IN_PROC_BROWSER_TEST_F(PushMessagingApiTest, ReceivesPush) {
   ASSERT_TRUE(pss);
 
   // Construct a sync id for the object "U/<extension-id>/1".
-  std::string id = "U/" + extension->id() + "/1";
+  std::string id = "U/";
+  id += extension->id();
+  id += "/1";
 
   invalidation::ObjectId object_id(kSourceId, id);
 

@@ -78,6 +78,9 @@ class PushMessagingGetChannelIdFunction
   void ReportResult(const std::string& gaia_id,
                     const std::string& error_message);
 
+  void BuildAndSendResult(const std::string& gaia_id,
+                          const std::string& error_message);
+
   // ObfuscatedGiaiaIdFetcher::Delegate implementation.
   virtual void OnObfuscatedGaiaIdFetchSuccess(const std::string& gaia_id)
       OVERRIDE;

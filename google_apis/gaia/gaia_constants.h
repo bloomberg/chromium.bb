@@ -34,6 +34,9 @@ extern const char kGaiaOAuthDuration[];
 extern const char kGaiaOAuth2LoginRefreshToken[];
 extern const char kGaiaOAuth2LoginAccessToken[];
 
+// Used to construct a channel ID for push messaging.
+extern const char kObfuscatedGaiaId[];
+
 // Used to build ClientOAuth requests.  These are the names of keys used in
 // the json dictionaries that are sent in the protocol.
 extern const char kClientOAuthEmailKey[];

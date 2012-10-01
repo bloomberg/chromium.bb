@@ -24,6 +24,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/token_service.h"
+#include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/sync/glue/bridged_invalidator.h"
 #include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/chrome_encryptor.h"
@@ -1491,10 +1492,10 @@ void SyncBackendHost::NotifyPassphraseAccepted() {
 void SyncBackendHost::NotifyUpdatedToken(const std::string& token) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   TokenAvailableDetails details(GaiaConstants::kSyncService, token);
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_TOKEN_UPDATED,
-      content::Source<Profile>(profile_),
-      content::Details<const TokenAvailableDetails>(&details));
+
+  TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
+  CHECK(token_service);
+  token_service->AddAuthTokenManually(details.service(), details.token());
 }
 
 void SyncBackendHost::NotifyEncryptedTypesChanged(

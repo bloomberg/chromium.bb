@@ -86,11 +86,28 @@ void TokenService::Initialize(const char* const source,
     token_map_[service] = token;
     SaveAuthTokenToDB(service, token);
   }
-
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_TOKEN_UPDATED,
-                 content::Source<Profile>(profile));
 }
+
+// TODO(petewil) We should refactor the token_service so it does not both
+// store tokens and fetch them.  Move the key-value storage out of
+// token_service, and leave the token fetching in token_service.
+
+void TokenService::AddAuthTokenManually(const std::string& service,
+                                        const std::string& auth_token) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  VLOG(1) << "Got an authorization token for " << service;
+  token_map_[service] = auth_token;
+  FireTokenAvailableNotification(service, auth_token);
+  SaveAuthTokenToDB(service, auth_token);
+  // If we got ClientLogin token for "lso" service, then start fetching OAuth2
+  // login scoped token pair.
+  if (service == GaiaConstants::kLSOService) {
+    int index = GetServiceIndex(service);
+    CHECK_GE(index, 0);
+    fetchers_[index]->StartLsoForOAuthLoginTokenExchange(auth_token);
+  }
+}
+
 
 void TokenService::ResetCredentialsInMemory() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -134,7 +151,6 @@ void TokenService::UpdateCredentialsWithOAuth2(
   // yet by any code.
   NOTREACHED();
 }
-
 
 void TokenService::LoadTokensFromDB() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -274,18 +290,7 @@ void TokenService::IssueAuthTokenForTest(const std::string& service,
 
 void TokenService::OnIssueAuthTokenSuccess(const std::string& service,
                                            const std::string& auth_token) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  VLOG(1) << "Got an authorization token for " << service;
-  token_map_[service] = auth_token;
-  FireTokenAvailableNotification(service, auth_token);
-  SaveAuthTokenToDB(service, auth_token);
-  // If we got ClientLogin token for "lso" service, then start fetching OAuth2
-  // login scoped token pair.
-  if (service == GaiaConstants::kLSOService) {
-    int index = GetServiceIndex(service);
-    CHECK_GE(index, 0);
-    fetchers_[index]->StartLsoForOAuthLoginTokenExchange(auth_token);
-  }
+  AddAuthTokenManually(service, auth_token);
 }
 
 void TokenService::OnIssueAuthTokenFailure(const std::string& service,
@@ -360,6 +365,10 @@ void TokenService::LoadTokensIntoMemory(
       GaiaConstants::kGaiaOAuth2LoginRefreshToken);
   LoadSingleTokenIntoMemory(db_tokens, in_memory_tokens,
       GaiaConstants::kGaiaOAuth2LoginAccessToken);
+  // TODO(petewil): Remove next line when we refactor key-value
+  // storage out of token_service.
+  LoadSingleTokenIntoMemory(db_tokens, in_memory_tokens,
+      GaiaConstants::kObfuscatedGaiaId);
 
   if (credentials_.lsid.empty() && credentials_.sid.empty()) {
     // Look for GAIA SID and LSID tokens.  If we have both, and the current
@@ -403,13 +412,4 @@ void TokenService::LoadSingleTokenIntoMemory(
       // Failures are only for network errors.
     }
   }
-}
-
-void TokenService::Observe(int type,
-                           const content::NotificationSource& source,
-                           const content::NotificationDetails& details) {
-  DCHECK_EQ(type, chrome::NOTIFICATION_TOKEN_UPDATED);
-  TokenAvailableDetails* tok_details =
-      content::Details<TokenAvailableDetails>(details).ptr();
-  OnIssueAuthTokenSuccess(tok_details->service(), tok_details->token());
 }
