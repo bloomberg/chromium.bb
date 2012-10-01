@@ -77,7 +77,10 @@ GpuMemoryManager::GpuMemoryManager(GpuMemoryManagerClient* client,
           max_surfaces_with_frontbuffer_soft_limit),
       bytes_available_gpu_memory_(0),
       bytes_allocated_current_(0),
-      bytes_allocated_historical_max_(0) {
+      bytes_allocated_historical_max_(0),
+      window_count_has_been_received_(false),
+      window_count_(0)
+{
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kForceGpuMemAvailableMb)) {
     base::StringToSizeT(
@@ -181,6 +184,15 @@ void GpuMemoryManager::GetVideoMemoryUsageStats(
       base::GetCurrentProcId()].video_memory = bytes_allocated_current_;
   video_memory_usage_stats.process_map[
       base::GetCurrentProcId()].has_duplicates = true;
+}
+
+void GpuMemoryManager::SetWindowCount(uint32 window_count) {
+  bool should_schedule_manage = !window_count_has_been_received_ ||
+                                (window_count != window_count_);
+  window_count_has_been_received_ = true;
+  window_count_ = window_count;
+  if (should_schedule_manage)
+    ScheduleManage(true);
 }
 
 // The current Manage algorithm simply classifies contexts (stubs) into
@@ -297,12 +309,21 @@ void GpuMemoryManager::Manage() {
 #endif
   size_t stubs_with_surface_foreground_allocation = GetMinimumTabAllocation() +
                                                     bonus_allocation;
+
+  // If we have received a window count message, then override the stub-based
+  // scheme with a per-window scheme
+  if (window_count_has_been_received_) {
+    stubs_with_surface_foreground_allocation = std::max(
+       stubs_with_surface_foreground_allocation,
+       GetAvailableGpuMemory()/std::max(window_count_, 1u));
+  }
+
+  // Limit the memory per stub to its maximum allowed level.
   if (stubs_with_surface_foreground_allocation >= GetMaximumTabAllocation())
     stubs_with_surface_foreground_allocation = GetMaximumTabAllocation();
 
-  stub_memory_stats_for_last_manage_.clear();
-
   // Now give out allocations to everyone.
+  stub_memory_stats_for_last_manage_.clear();
   AssignMemoryAllocations(
       &stub_memory_stats_for_last_manage_,
       stubs_with_surface_foreground,

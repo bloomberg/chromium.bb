@@ -244,6 +244,11 @@ IPC_MESSAGE_CONTROL0(GpuMsg_CollectGraphicsInfo)
 // Tells the GPU process to report video_memory information for the task manager
 IPC_MESSAGE_CONTROL0(GpuMsg_GetVideoMemoryUsageStats)
 
+// Tells the GPU process' memory manager how many visible windows there are, so
+// it can partition memory amongst them.
+IPC_MESSAGE_CONTROL1(GpuMsg_SetVideoMemoryWindowCount,
+                     uint32 /* window_count */)
+
 // Tells the GPU process that the browser process has finished resizing the
 // view.
 IPC_MESSAGE_ROUTED0(AcceleratedSurfaceMsg_ResizeViewACK)

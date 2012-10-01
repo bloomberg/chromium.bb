@@ -53,6 +53,8 @@ class GpuChildThread : public ChildThread {
   void OnInitialize();
   void OnCollectGraphicsInfo();
   void OnGetVideoMemoryUsageStats();
+  void OnSetVideoMemoryWindowCount(uint32 window_count);
+
   void OnClean();
   void OnCrash();
   void OnHang();

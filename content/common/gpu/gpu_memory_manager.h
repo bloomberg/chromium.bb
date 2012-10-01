@@ -69,6 +69,7 @@ class CONTENT_EXPORT GpuMemoryManager :
   // Retrieve GPU Resource consumption statistics for the task manager
   void GetVideoMemoryUsageStats(
       content::GPUVideoMemoryUsageStats& video_memory_usage_stats) const;
+  void SetWindowCount(uint32 count);
 
   // Add and remove structures to track context groups' memory consumption
   void AddTrackingGroup(GpuMemoryTrackingGroup* tracking_group);
@@ -140,6 +141,12 @@ class CONTENT_EXPORT GpuMemoryManager :
   // The current total memory usage, and historical maximum memory usage
   size_t bytes_allocated_current_;
   size_t bytes_allocated_historical_max_;
+
+  // The number of browser windows that exist. If we ever receive a
+  // GpuMsg_SetVideoMemoryWindowCount, then we use this to compute memory
+  // budgets, instead of doing more complicated stub-based calculations.
+  bool window_count_has_been_received_;
+  uint32 window_count_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuMemoryManager);
 };
