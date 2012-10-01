@@ -34,8 +34,8 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
     kUninitialized,   // un-initialized.
     kNormal,          // normal playing state.
     kResetting,       // upon received Reset(), before ResetDone()
-    kEosDrain,        // upon input EOS received.
     kStopped,         // upon output EOS received.
+    kFlushing,        // upon flush request received.
   };
 
   // Does not take ownership of |client| which must outlive |*this|.
@@ -106,9 +106,6 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
   // slots.
   void ProcessPendingSamples();
 
-  // Clears local state maintained by the decoder.
-  void ClearState();
-
   // Helper function to notify the accelerator client about the error.
   void StopOnError(media::VideoDecodeAccelerator::Error error);
 
@@ -134,6 +131,16 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
 
   // Notifies the client about the availability of a picture.
   void NotifyPictureReady(const media::Picture& picture);
+
+  // Sends pending input buffer processed acks to the client if we don't have
+  // output samples waiting to be processed.
+  void NotifyInputBuffersDropped();
+
+  // Decodes pending input buffers.
+  void DecodePendingInputBuffers();
+
+  // Helper for handling the Flush operation.
+  void FlushInternal();
 
   // To expose client callbacks from VideoDecodeAccelerator.
   media::VideoDecodeAccelerator::Client* client_;
@@ -162,11 +169,11 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
 
   // Contains information about a decoded sample.
   struct PendingSampleInfo {
-    PendingSampleInfo(int32 buffer_id, IDirect3DSurface9* surface);
+    PendingSampleInfo(int32 buffer_id, IMFSample* sample);
     ~PendingSampleInfo();
 
     int32 input_buffer_id;
-    base::win::ScopedComPtr<IDirect3DSurface9> dest_surface;
+    base::win::ScopedComPtr<IMFSample> output_sample;
   };
 
   typedef std::list<PendingSampleInfo> PendingOutputSamples;
@@ -201,6 +208,10 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
   // 1. All required decoder dlls were successfully loaded.
   // 2. The device manager initialization completed.
   static bool pre_sandbox_init_done_;
+
+  // List of input samples waiting to be processed.
+  typedef std::list<media::BitstreamBuffer> PendingInputs;
+  PendingInputs pending_input_buffers_;
 
   // Callback to set the correct gl context.
   base::Callback<bool(void)> make_context_current_;
