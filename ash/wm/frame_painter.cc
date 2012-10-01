@@ -19,6 +19,7 @@
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/hit_test.h"
@@ -196,6 +197,10 @@ void FramePainter::Init(views::Widget* frame,
   // itself in OnWindowDestroying() below, or in the destructor if we go away
   // before the window.
   window_->AddObserver(this);
+
+  // If there is already a solo window in the same root, this initialization
+  // should turn off its solo-mode.
+  UpdateSoloWindowFramePainter(NULL);
 }
 
 gfx::Rect FramePainter::GetBoundsForClientView(
@@ -561,10 +566,9 @@ void FramePainter::OnWindowPropertyChanged(aura::Window* window,
 
 void FramePainter::OnWindowVisibilityChanged(aura::Window* window,
                                              bool visible) {
-  // Hiding a window may trigger the solo window appearance in a different
-  // window.
-  if (!visible && UseSoloWindowHeader())
-    SchedulePaintForSoloWindow();
+  // Window visibility change may trigger the change of window solo-ness in a
+  // different window.
+  UpdateSoloWindowFramePainter(visible ? NULL : window_);
 }
 
 void FramePainter::OnWindowDestroying(aura::Window* destroying) {
@@ -572,15 +576,15 @@ void FramePainter::OnWindowDestroying(aura::Window* destroying) {
   // Must be removed here and not in the destructor, as the aura::Window is
   // already destroyed when our destructor runs.
   window_->RemoveObserver(this);
-  window_ = NULL;
 
   // For purposes of painting and solo window computation, we're done.
   instances_->erase(this);
 
   // If we have two or more windows open and we close this one, we might trigger
   // the solo window appearance for another window.
-  if (UseSoloWindowHeader())
-    SchedulePaintForSoloWindow();
+  UpdateSoloWindowFramePainter(window_);
+
+  window_ = NULL;
 }
 
 void FramePainter::OnWindowBoundsChanged(aura::Window* window,
@@ -593,6 +597,19 @@ void FramePainter::OnWindowBoundsChanged(aura::Window* window,
        (old_bounds.y() != 0 && new_bounds.y() == 0))) {
     SchedulePaintForHeader();
   }
+}
+
+void FramePainter::OnWindowAddedToRootWindow(aura::Window* window) {
+  // Needs to trigger the window appearance change if the window moves across
+  // root windows and a solo window is already in the new root.
+  UpdateSoloWindowFramePainter(NULL);
+}
+
+void FramePainter::OnWindowRemovingFromRootWindow(aura::Window* window) {
+  // Needs to trigger the window appearance change if the window moves across
+  // root windows and only one window is left in the previous root.  Because
+  // |window| is not yet moved, |window| has to be ignored.
+  UpdateSoloWindowFramePainter(window);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -687,41 +704,63 @@ int FramePainter::AdjustFrameHitCodeForMaximizedModes(int hit_code) {
   return hit_code;
 }
 
-// static
 bool FramePainter::UseSoloWindowHeader() {
-  if (!instances_)
-    return false;  // Return value shouldn't matter.
+  aura::RootWindow* root = window_->GetRootWindow();
+  if (!root)
+    return false;
 
-  aura::Window* window = NULL;
+  return (root->GetProperty(internal::kSoloWindowFramePainterKey) == this);
+}
+
+FramePainter* FramePainter::GetSoloPainterInRoot(
+    aura::Window* ignorable_window) {
+  DCHECK(instances_);
+
+  aura::RootWindow* root_window = window_->GetRootWindow();
+  FramePainter* painter = NULL;
   for (std::set<FramePainter*>::const_iterator it = instances_->begin();
        it != instances_->end();
        ++it) {
+    if (ignorable_window == (*it)->window_)
+      continue;
+
+    if (root_window != (*it)->window_->GetRootWindow())
+      continue;
+
     // The window needs to be a 'normal window'. To exclude constrained windows
     // the existence of a layout manager gets additionally tested.
     if (IsVisibleNormalWindow((*it)->window_) &&
         (!(*it)->window_->GetProperty(ash::kConstrainedWindowKey))) {
-      if (window)
-        return false;
-      window = (*it)->window_;
+      if (internal::WorkspaceController::IsWorkspace2Enabled() &&
+          wm::IsWindowMaximized((*it)->window_)) {
+        return NULL;
+      }
+      if (painter)
+        return NULL;
+
+      painter = (*it);
     }
   }
-  // We don't use the translucent background when a window is maximized with
-  // workspace2 as otherwise the system background shows through the header.
-  return window && (!internal::WorkspaceController::IsWorkspace2Enabled() ||
-                    !wm::IsWindowMaximized(window));
+
+  return painter;
 }
 
-// static
-void FramePainter::SchedulePaintForSoloWindow() {
-  if (!instances_)
+void FramePainter::UpdateSoloWindowFramePainter(
+    aura::Window* ignorable_window) {
+  aura::RootWindow* root = window_->GetRootWindow();
+  if (!root)
     return;
 
-  for (std::set<FramePainter*>::const_iterator it = instances_->begin();
-       it != instances_->end();
-       ++it) {
-    FramePainter* painter = *it;
-    if (IsVisibleNormalWindow(painter->window_))
-      painter->frame_->non_client_view()->SchedulePaint();
+  FramePainter* old_solo_painter = root->GetProperty(
+      internal::kSoloWindowFramePainterKey);
+  FramePainter* new_solo_painter = GetSoloPainterInRoot(ignorable_window);
+  if (old_solo_painter != new_solo_painter) {
+    if (old_solo_painter)
+      old_solo_painter->frame_->non_client_view()->SchedulePaint();
+    window_->GetRootWindow()->SetProperty(
+        internal::kSoloWindowFramePainterKey, new_solo_painter);
+    if (new_solo_painter)
+      new_solo_painter->frame_->non_client_view()->SchedulePaint();
   }
 }
 

@@ -126,6 +126,8 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
   virtual void OnWindowBoundsChanged(aura::Window* window,
                                      const gfx::Rect& old_bounds,
                                      const gfx::Rect& new_bounds) OVERRIDE;
+  virtual void OnWindowAddedToRootWindow(aura::Window* window) OVERRIDE;
+  virtual void OnWindowRemovingFromRootWindow(aura::Window* window) OVERRIDE;
 
   // Overridden from ui::AnimationDelegate
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
@@ -133,6 +135,7 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
  private:
   FRIEND_TEST_ALL_PREFIXES(FramePainterTest, Basics);
   FRIEND_TEST_ALL_PREFIXES(FramePainterTest, UseSoloWindowHeader);
+  FRIEND_TEST_ALL_PREFIXES(FramePainterTest, UseSoloWindowHeaderMultiDisplay);
   FRIEND_TEST_ALL_PREFIXES(FramePainterTest, GetHeaderOpacity);
 
   // Sets the images for a button base on IDs from the |frame_| theme provider.
@@ -152,15 +155,22 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
   // Adjust frame operations for left / right maximized modes.
   int AdjustFrameHitCodeForMaximizedModes(int hit_code);
 
-  // Returns true if there is exactly one visible, normal-type window using
-  // a header painted by this class, in which case we should paint a transparent
+  // Returns true if |window_| is exactly one visible, normal-type window in
+  // |window_->GetRootWindow()|, in which case we should paint a transparent
   // window header.
-  static bool UseSoloWindowHeader();
+  bool UseSoloWindowHeader();
 
-  // Schedules a paint for the window header of the solo window.  Invoke this
-  // when another window is hidden or destroyed to force the transparency of
-  // the now-solo window to update.
-  static void SchedulePaintForSoloWindow();
+  // Returns the frame painter for the solo window in the root window which
+  // |window_| belongs to. Returns NULL in case there is no such window, for
+  // example more than two indows or there's a fullscreen window.  It ignores
+  // |ignorable_window| to check the solo-ness of the window.  Pass NULL if
+  // there's no ignorable window.
+  FramePainter* GetSoloPainterInRoot(aura::Window* ignorable_window);
+
+  // Updates the current solo window frame painter. This calculates the new solo
+  // window frame painter (ignoring |ignorable_window|) and if they differ
+  // schedules paints as necessary.
+  void UpdateSoloWindowFramePainter(aura::Window* ignorable_window);
 
   // Schedules a paint for the header. Used when transitioning from no header to
   // a header (or other way around).

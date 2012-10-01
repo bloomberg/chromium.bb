@@ -16,6 +16,7 @@ class UIControlsAura;
 }
 
 namespace ash {
+class FramePainter;
 namespace internal {
 class AlwaysOnTopController;
 class RootWindowController;
@@ -49,6 +50,11 @@ extern const aura::WindowProperty<RootWindowController*>* const
 // A property key describing the drop shadow that should be displayed under the
 // window.  If unset, no shadow is displayed.
 extern const aura::WindowProperty<ShadowType>* const kShadowTypeKey;
+
+// A property key to remember the frame painter for the solo-window in the root
+// window. It is only available for root windows.
+extern const aura::WindowProperty<ash::FramePainter*>* const
+    kSoloWindowFramePainterKey;
 
 // If this is set to true, the window stays in the same root window
 // even if the bounds outside of its root window is set.
