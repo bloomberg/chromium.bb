@@ -169,10 +169,26 @@ void GetContainers(int container_mask, aura::Window::Windows* containers) {
         root_window,
         internal::kShellWindowId_DesktopBackgroundContainer));
   }
-  if (container_mask & PowerButtonController::NON_LOCK_SCREEN_CONTAINERS) {
+  if (container_mask & PowerButtonController::LAUNCHER) {
     containers->push_back(Shell::GetContainer(
         root_window,
-        internal::kShellWindowId_NonLockScreenContainersContainer));
+        internal::kShellWindowId_LauncherContainer));
+  }
+  if (container_mask & PowerButtonController::NON_LOCK_SCREEN_CONTAINERS) {
+    // TODO(antrim): Figure out a way to eliminate a need to exclude launcher
+    // in such way.
+    aura::Window* non_lock_screen_containers = Shell::GetContainer(
+        root_window,
+        internal::kShellWindowId_NonLockScreenContainersContainer);
+    aura::Window::Windows children = non_lock_screen_containers->children();
+
+    for (aura::Window::Windows::const_iterator it = children.begin();
+         it != children.end(); ++it) {
+      aura::Window* window = *it;
+      if (window->id() == internal::kShellWindowId_LauncherContainer)
+        continue;
+      containers->push_back(window);
+    }
   }
   if (container_mask & PowerButtonController::LOCK_SCREEN_BACKGROUND) {
     containers->push_back(Shell::GetContainer(
@@ -283,6 +299,7 @@ gfx::Rect PowerButtonController::TestApi::GetBlackLayerBounds() const {
 // static
 int PowerButtonController::GetAllContainersMask() {
   return PowerButtonController::DESKTOP_BACKGROUND |
+         PowerButtonController::LAUNCHER |
          PowerButtonController::NON_LOCK_SCREEN_CONTAINERS |
          GetAllLockScreenContainersMask();
 }
@@ -353,7 +370,7 @@ void PowerButtonController::OnLockStateChanged(bool locked) {
           this, &PowerButtonController::OnLockToShutdownTimeout);
     }
   } else {
-    StartAnimation(DESKTOP_BACKGROUND | NON_LOCK_SCREEN_CONTAINERS,
+    StartAnimation(DESKTOP_BACKGROUND | LAUNCHER | NON_LOCK_SCREEN_CONTAINERS,
                    ANIMATION_RESTORE);
     HideBlackLayer();
   }
@@ -371,6 +388,8 @@ void PowerButtonController::OnStartingLock() {
   // the wrench menu, we won't have already shown the black background
   // as part of the slow-close animation.
   ShowBlackLayer();
+
+  StartAnimation(LAUNCHER, ANIMATION_HIDE);
 
   StartAnimation(NON_LOCK_SCREEN_CONTAINERS, ANIMATION_FAST_CLOSE);
 
@@ -510,7 +529,7 @@ void PowerButtonController::OnLockTimeout() {
 void PowerButtonController::OnLockFailTimeout() {
   DCHECK_NE(login_status_, user::LOGGED_IN_LOCKED);
   LOG(ERROR) << "Screen lock request timed out";
-  StartAnimation(NON_LOCK_SCREEN_CONTAINERS, ANIMATION_RESTORE);
+  StartAnimation(LAUNCHER | NON_LOCK_SCREEN_CONTAINERS, ANIMATION_RESTORE);
   HideBlackLayer();
 }
 
@@ -560,7 +579,7 @@ void PowerButtonController::StartShutdownAnimationAndRequestShutdown() {
     // Hide the other containers before starting the animation.
     // ANIMATION_FAST_CLOSE will make the screen locker windows partially
     // transparent, and we don't want the other windows to show through.
-    StartAnimation(NON_LOCK_SCREEN_CONTAINERS, ANIMATION_HIDE);
+    StartAnimation(LAUNCHER | NON_LOCK_SCREEN_CONTAINERS, ANIMATION_HIDE);
     StartAnimation(GetAllLockScreenContainersMask(), ANIMATION_FAST_CLOSE);
   } else {
     StartAnimation(GetAllContainersMask(), ANIMATION_FAST_CLOSE);

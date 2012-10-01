@@ -58,22 +58,24 @@ class ASH_EXPORT PowerButtonController : public aura::RootWindowObserver,
   enum Container {
     DESKTOP_BACKGROUND = 1 << 0,
 
+    LAUNCHER = 1 << 1,
+
     // All user session related containers including system background but
-    // not including desktop background (wallpaper).
-    NON_LOCK_SCREEN_CONTAINERS = 1 << 1,
+    // not including desktop background (wallpaper) and launcher.
+    NON_LOCK_SCREEN_CONTAINERS = 1 << 2,
 
     // Desktop wallpaper is moved to this layer when screen is locked.
     // This layer is excluded from lock animation so that wallpaper stays as is,
     // user session windows are hidden and lock UI is shown on top of it.
     // This layer is included in shutdown animation.
-    LOCK_SCREEN_BACKGROUND = 1 << 2,
+    LOCK_SCREEN_BACKGROUND = 1 << 3,
 
     // Lock screen and lock screen modal containers.
-    LOCK_SCREEN_CONTAINERS = 1 << 3,
+    LOCK_SCREEN_CONTAINERS = 1 << 4,
 
     // Multiple system layers belong here like status, menu, tooltip
     // and overlay layers.
-    LOCK_SCREEN_RELATED_CONTAINERS = 1 << 4,
+    LOCK_SCREEN_RELATED_CONTAINERS = 1 << 5,
   };
 
   // Helper class used by tests to access internal state.

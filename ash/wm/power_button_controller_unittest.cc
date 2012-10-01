@@ -95,6 +95,10 @@ TEST_F(PowerButtonControllerTest, LegacyLockAndShutDown) {
   controller_->OnStartingLock();
   EXPECT_TRUE(
       test_api_->ContainersAreAnimated(
+          PowerButtonController::LAUNCHER,
+          PowerButtonController::ANIMATION_HIDE));
+  EXPECT_TRUE(
+      test_api_->ContainersAreAnimated(
           PowerButtonController::NON_LOCK_SCREEN_CONTAINERS,
           PowerButtonController::ANIMATION_FAST_CLOSE));
   EXPECT_TRUE(
@@ -199,7 +203,8 @@ TEST_F(PowerButtonControllerTest, ShutdownWhenNotLoggedIn) {
   EXPECT_EQ(0, delegate_->num_shutdown_requests());
   EXPECT_TRUE(
       test_api_->ContainersAreAnimated(
-          PowerButtonController::NON_LOCK_SCREEN_CONTAINERS,
+          PowerButtonController::LAUNCHER |
+              PowerButtonController::NON_LOCK_SCREEN_CONTAINERS,
           PowerButtonController::ANIMATION_HIDE));
   EXPECT_TRUE(
       test_api_->ContainersAreAnimated(
@@ -266,6 +271,10 @@ TEST_F(PowerButtonControllerTest, LockAndUnlock) {
   controller_->OnStartingLock();
   EXPECT_TRUE(
       test_api_->ContainersAreAnimated(
+          PowerButtonController::LAUNCHER,
+          PowerButtonController::ANIMATION_HIDE));
+  EXPECT_TRUE(
+      test_api_->ContainersAreAnimated(
           PowerButtonController::NON_LOCK_SCREEN_CONTAINERS,
           PowerButtonController::ANIMATION_FAST_CLOSE));
   EXPECT_TRUE(
@@ -292,6 +301,7 @@ TEST_F(PowerButtonControllerTest, LockAndUnlock) {
   EXPECT_TRUE(
       test_api_->ContainersAreAnimated(
           PowerButtonController::DESKTOP_BACKGROUND |
+          PowerButtonController::LAUNCHER |
           PowerButtonController::NON_LOCK_SCREEN_CONTAINERS,
           PowerButtonController::ANIMATION_RESTORE));
   EXPECT_FALSE(test_api_->BlackLayerIsVisible());
@@ -344,6 +354,8 @@ TEST_F(PowerButtonControllerTest, LockFail) {
   EXPECT_TRUE(test_api_->lock_timer_is_running());
   EXPECT_TRUE(
       test_api_->ContainersAreAnimated(
+          PowerButtonController::DESKTOP_BACKGROUND |
+          PowerButtonController::LAUNCHER |
           PowerButtonController::NON_LOCK_SCREEN_CONTAINERS,
           PowerButtonController::ANIMATION_RESTORE));
   EXPECT_TRUE(test_api_->BlackLayerIsVisible());
