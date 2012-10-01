@@ -116,20 +116,31 @@ void UsbDevice::TransferComplete(PlatformUsbTransferHandle handle) {
   DCHECK(ContainsKey(transfers_, handle)) << "Missing transfer completed";
   Transfer* const transfer = &transfers_[handle];
 
+  DCHECK(handle->actual_length >= 0) << "Negative actual length received";
+  size_t actual_length =
+      static_cast<size_t>(std::max(handle->actual_length, 0));
+
+  DCHECK(transfer->length >= actual_length) <<
+      "data too big for our buffer (libusb failure?)";
+
   // If the transfer is a control transfer we do not expose the control transfer
-  // setup header to the caller, this logic strips off the header from the
-  // buffer before invoking the callback provided with the transfer with it.
+  // setup header to the caller, this logic strips off the header (if present)
+  // before invoking the callback provided with the transfer with it.
   scoped_refptr<net::IOBuffer> buffer = transfer->buffer;
-  if (transfer->control_transfer) {
-    // If the payload is zero bytes long, pad out the allocated buffer size to
-    // one byte so that an IOBuffer of that size can be allocated.
-    const int payload_size = handle->actual_length - LIBUSB_CONTROL_SETUP_SIZE;
-    const int buffer_size = std::max(1, payload_size);
-    scoped_refptr<net::IOBuffer> resized_buffer = new net::IOBuffer(
-        buffer_size);
-    memcpy(resized_buffer->data(), buffer->data() + LIBUSB_CONTROL_SETUP_SIZE,
-           handle->actual_length - LIBUSB_CONTROL_SETUP_SIZE);
-    buffer = resized_buffer;
+  if (transfer->control_transfer && actual_length > 0) {
+    CHECK(transfer->length >= LIBUSB_CONTROL_SETUP_SIZE) <<
+        "buffer was not correctly set: too small for the control header";
+
+    if (transfer->length >= actual_length &&
+        actual_length >= LIBUSB_CONTROL_SETUP_SIZE) {
+      // If the payload is zero bytes long, pad out the allocated buffer size to
+      // one byte so that an IOBuffer of that size can be allocated.
+      scoped_refptr<net::IOBuffer> resized_buffer = new net::IOBuffer(
+          std::max(actual_length, static_cast<size_t>(1)));
+      memcpy(resized_buffer->data(), buffer->data() + LIBUSB_CONTROL_SETUP_SIZE,
+          actual_length);
+      buffer = resized_buffer;
+    }
   }
 
   transfer->callback.Run(ConvertTransferStatus(handle->status), buffer,
