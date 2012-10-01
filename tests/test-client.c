@@ -46,6 +46,7 @@ struct input {
 	uint32_t button_mask;
 	struct surface *pointer_focus;
 	struct surface *keyboard_focus;
+	uint32_t last_key, last_key_state;
 };
 
 struct output {
@@ -159,6 +160,11 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
 		    uint32_t serial, uint32_t time, uint32_t key,
 		    uint32_t state)
 {
+	struct input *input = data;
+
+	input->last_key = key;
+	input->last_key_state = state;
+
 	fprintf(stderr, "test-client: got keyboard key %u %u\n", key, state);
 }
 
@@ -319,6 +325,27 @@ static const struct wl_surface_listener surface_listener = {
 	surface_leave
 };
 
+static void
+send_keyboard_state(int fd, struct display *display)
+{
+	char buf[64];
+	int len;
+	int focus = display->input->keyboard_focus != NULL;
+
+	if (focus) {
+		assert(display->input->keyboard_focus == display->surface);
+	}
+
+	wl_display_flush(display->display);
+
+	len = snprintf(buf, sizeof buf, "%u %u %d\n", display->input->last_key,
+		       display->input->last_key_state, focus);
+	assert(write(fd, buf, len) == len);
+
+	wl_display_roundtrip(display->display);
+}
+
+static void
 send_button_state(int fd, struct display *display)
 {
 	char buf[64];
@@ -341,7 +368,8 @@ send_state(int fd, struct display* display)
 	wl_fixed_t x = wl_fixed_from_int(-1);
 	wl_fixed_t y = wl_fixed_from_int(-1);
 
-	if (display->input->pointer_focus == display->surface) {
+	if (display->input->pointer_focus != NULL) {
+		assert(display->input->pointer_focus == display->surface);
 		x = wl_fixed_from_double(display->input->x);
 		y = wl_fixed_from_double(display->input->y);
 	}
@@ -423,6 +451,8 @@ int main(int argc, char *argv[])
 			send_state(fd, display);
 		} else if (strncmp(buf, "send-button-state\n", ret) == 0) {
 			send_button_state(fd, display);
+		} else if (strncmp(buf, "send-keyboard-state\n", ret) == 0) {
+			send_keyboard_state(fd, display);
 		} else {
 			fprintf(stderr, "test-client: unknown command %.*s\n",
 				ret, buf);
