@@ -5,16 +5,31 @@
 #include "android_webview/browser/renderer_host/aw_resource_dispatcher_host_delegate.h"
 
 #include "android_webview/browser/aw_login_delegate.h"
+#include "android_webview/browser/aw_contents_io_thread_client.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/resource_dispatcher_host_login_delegate.h"
 #include "content/public/browser/resource_throttle.h"
+#include "content/public/common/url_constants.h"
+#include "net/base/load_flags.h"
+#include "net/url_request/url_request.h"
 
 namespace {
 
 base::LazyInstance<android_webview::AwResourceDispatcherHostDelegate>
     g_webview_resource_dispatcher_host_delegate = LAZY_INSTANCE_INITIALIZER;
+
+// Will unconditionally cancel this resource request.
+class CancelResourceThrottle : public content::ResourceThrottle {
+ public:
+  virtual void WillStartRequest(bool* defer) OVERRIDE;
+};
+
+void CancelResourceThrottle::WillStartRequest(bool* defer) {
+  controller()->Cancel();
+}
 
 }  // namespace
 
@@ -42,6 +57,26 @@ void AwResourceDispatcherHostDelegate::RequestBeginning(
     int route_id,
     bool is_continuation_of_transferred_request,
     ScopedVector<content::ResourceThrottle>* throttles) {
+
+  // Part of Implemention of WebSettings.blockNetworkLoads.
+  scoped_ptr<AwContentsIoThreadClient> io_client =
+      AwContentsIoThreadClient::FromID(child_id, route_id);
+  DCHECK(io_client.get());
+
+  if (io_client->ShouldBlockNetworkLoads()) {
+    // Need to cancel ftp since it does not support net::LOAD_ONLY_FROM_CACHE
+    // flag, so must cancel the request if network load is blocked.
+    if (request->url().SchemeIs(chrome::kFtpScheme)) {
+      throttles->push_back(new CancelResourceThrottle);
+    } else {
+      int load_flags = request->load_flags();
+      load_flags &= ~(net::LOAD_BYPASS_CACHE &
+                      net::LOAD_VALIDATE_CACHE &
+                      net::LOAD_PREFERRING_CACHE);
+      load_flags |= net::LOAD_ONLY_FROM_CACHE;
+      request->set_load_flags(load_flags);
+    }
+  }
 }
 
 bool AwResourceDispatcherHostDelegate::AcceptAuthRequest(

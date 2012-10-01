@@ -8,7 +8,7 @@
 #include "android_webview/native/aw_browser_dependency_factory.h"
 #include "android_webview/native/aw_contents_container.h"
 #include "android_webview/native/aw_web_contents_delegate.h"
-#include "android_webview/native/aw_contents_io_thread_client.h"
+#include "android_webview/native/aw_contents_io_thread_client_impl.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
@@ -209,7 +209,7 @@ void AwContents::onReceivedHttpAuthRequest(
 void AwContents::SetIoThreadClient(JNIEnv* env, jobject obj, jobject client) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   content::WebContents* web_contents = contents_container_->GetWebContents();
-  AwContentsIoThreadClient::Associate(
+  AwContentsIoThreadClientImpl::Associate(
       web_contents, ScopedJavaLocalRef<jobject>(env, client));
 }
 

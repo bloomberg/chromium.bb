@@ -8,7 +8,7 @@
 #include "android_webview/native/android_stream_reader_url_request_job.h"
 #include "android_webview/native/android_web_view_util.h"
 #include "android_webview/native/aw_contents.h"
-#include "android_webview/native/aw_contents_io_thread_client.h"
+#include "android_webview/native/aw_contents_io_thread_client_impl.h"
 #include "android_webview/native/aw_http_auth_handler.h"
 #include "android_webview/native/cookie_manager.h"
 #include "android_webview/native/js_result_handler.h"
@@ -24,7 +24,7 @@ static base::android::RegistrationMethod kWebViewRegisteredMethods[] = {
       RegisterAndroidStreamReaderUrlRequestJob },
   { "AndroidWebViewUtil", RegisterAndroidWebViewUtil },
   { "AwContents", RegisterAwContents },
-  { "AwContentsIoThreadClient", RegisterAwContentsIoThreadClient},
+  { "AwContentsIoThreadClientImpl", RegisterAwContentsIoThreadClientImpl},
   { "AwHttpAuthHandler", RegisterAwHttpAuthHandler },
   { "CookieManager", RegisterCookieManager },
   { "JsResultHandler", RegisterJsResultHandler },

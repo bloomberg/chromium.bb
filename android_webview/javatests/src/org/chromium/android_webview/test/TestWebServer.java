@@ -82,6 +82,7 @@ public class TestWebServer {
     }
 
     private Map<String, Response> mResponseMap = new HashMap<String, Response>();
+    private Map<String, Integer> mResponseCountMap = new HashMap<String, Integer>();
 
     /**
      * Create and start a local HTTP server instance.
@@ -155,6 +156,7 @@ public class TestWebServer {
             String requestPath, String responseString,
             List<Pair<String, String>> responseHeaders) {
         mResponseMap.put(requestPath, new Response(responseString.getBytes(), responseHeaders));
+        mResponseCountMap.put(requestPath, new Integer(0));
         return mServerUri + requestPath;
     }
 
@@ -176,7 +178,14 @@ public class TestWebServer {
         mResponseMap.put(requestPath,
                 new Response(Base64.decode(base64EncodedResponse, Base64.DEFAULT),
                 responseHeaders));
+        mResponseCountMap.put(requestPath, Integer.valueOf(0));
         return mServerUri + requestPath;
+    }
+
+    public int getRequestCount(String requestPath) {
+        Integer count = mResponseCountMap.get(requestPath);
+        if (count == null) throw new IllegalArgumentException("Path not set: " + requestPath);
+        return count.intValue();
     }
 
     private URLConnection openConnection(URL url)
@@ -258,6 +267,8 @@ public class TestWebServer {
             for (Pair<String, String> header : response.mResponseHeaders) {
                 httpResponse.addHeader(header.first, header.second);
             }
+            mResponseCountMap.put(path, Integer.valueOf(
+                    mResponseCountMap.get(path).intValue() + 1));
         }
         StatusLine sl = httpResponse.getStatusLine();
         Log.i(TAG, sl.getStatusCode() + "(" + sl.getReasonPhrase() + ")");

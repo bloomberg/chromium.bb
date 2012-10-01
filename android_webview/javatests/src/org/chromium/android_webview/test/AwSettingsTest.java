@@ -10,6 +10,8 @@ import android.test.suitebuilder.annotation.SmallTest;
 import android.util.Pair;
 
 import org.chromium.android_webview.AndroidProtocolHandler;
+import org.chromium.android_webview.AwContents;
+import org.chromium.android_webview.AwSettings;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.TestFileUtil;
 import org.chromium.base.test.util.UrlUtils;
@@ -1492,7 +1494,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
             imageHeaders.add(Pair.create("Content-Type", "image/png"));
             final String imagePath = "/image.png";
             webServer.setResponseBase64(
-                imagePath, generator.getImageSourceNoAdvance(), imageHeaders);
+                    imagePath, generator.getImageSourceNoAdvance(), imageHeaders);
 
             final String pagePath = "/html_image.html";
             final String httpUrlImageHtml = generator.getPageTemplateSource(imagePath);
@@ -1501,7 +1503,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
             settings.setImagesEnabled(false);
             loadUrlSync(contentView, contentClient.getOnPageFinishedHelper(), httpImageUrl);
             assertEquals(ImagePageGenerator.IMAGE_NOT_LOADED_STRING,
-                         getTitleOnUiThread(contentView));
+                    getTitleOnUiThread(contentView));
 
             settings.setImagesEnabled(true);
             assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
@@ -1734,5 +1736,62 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
      */
     private void resetResourceContext() {
         AndroidProtocolHandler.setResourceContextForTesting(null);
+    }
+
+    @SmallTest
+    @Feature({"Android-WebView", "Preferences"})
+    public void testBlockNetworkLoadsWithHttpResources() throws Throwable {
+        final TestAwContentsClient contentClient = new TestAwContentsClient();
+        final AwTestContainerView testContainer =
+                createAwTestContainerViewOnMainSync(false, contentClient);
+        final ContentViewCore contentView = testContainer.getContentViewCore();
+        final ContentSettings contentSettings = getContentSettingsOnUiThread(contentView);
+        final AwSettings awSettings = getAwSettingsOnUiThread(testContainer.getAwContents());
+        contentSettings.setJavaScriptEnabled(true);
+        ImagePageGenerator generator = new ImagePageGenerator(0, false);
+
+        TestWebServer webServer = null;
+        String fileName = null;
+        try {
+            // Set up http image.
+            webServer = new TestWebServer(false);
+            List<Pair<String, String>> imageHeaders = new ArrayList<Pair<String, String>>();
+            imageHeaders.add(Pair.create("Content-Type", "image/png"));
+            imageHeaders.add(Pair.create("Cache-Control", "no-store"));
+            final String httpPath = "/image.png";
+            final String imageUrl = webServer.setResponseBase64(
+                    httpPath, generator.getImageSourceNoAdvance(), imageHeaders);
+
+            // Set up file html that loads http iframe.
+            String pageHtml ="<img src='" + imageUrl + "' " +
+                      "onload=\"document.title='img_onload_fired';\" " +
+                      "onerror=\"document.title='img_onerror_fired';\" />";
+            Context context = getInstrumentation().getTargetContext();
+            fileName = context.getCacheDir() + "/block_network_loads_test.html";
+            TestFileUtil.deleteFile(fileName);  // Remove leftover file if any.
+            TestFileUtil.createNewHtmlFile(fileName, "unset", pageHtml);
+
+            // Actual test. Note that image may have been cached before test started.
+            // Blocking should trigger onerror handler.
+            awSettings.setBlockNetworkLoads(true);
+            loadUrlSync(
+                contentView,
+                contentClient.getOnPageFinishedHelper(),
+                "file:///" + fileName);
+            assertEquals(0, webServer.getRequestCount(httpPath));
+            assertEquals("img_onerror_fired", getTitleOnUiThread(contentView));
+
+            // Unblock should load normally.
+            awSettings.setBlockNetworkLoads(false);
+            loadUrlSync(
+                contentView,
+                contentClient.getOnPageFinishedHelper(),
+                "file:///" + fileName);
+            assertEquals(1, webServer.getRequestCount(httpPath));
+            assertEquals("img_onload_fired", getTitleOnUiThread(contentView));
+        } finally {
+            if (fileName != null) TestFileUtil.deleteFile(fileName);
+            if (webServer != null) webServer.shutdown();
+        }
     }
 }

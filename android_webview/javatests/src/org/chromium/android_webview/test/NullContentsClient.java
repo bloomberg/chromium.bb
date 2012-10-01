@@ -10,6 +10,7 @@ import android.webkit.ConsoleMessage;
 
 import org.chromium.android_webview.AwContentsClient;
 import org.chromium.android_webview.AwHttpAuthHandler;
+import org.chromium.android_webview.InterceptedRequestData;
 import org.chromium.android_webview.JsPromptResultReceiver;
 import org.chromium.android_webview.JsResultReceiver;
 
@@ -29,6 +30,11 @@ class NullContentsClient extends AwContentsClient {
 
     @Override
     public void onProgressChanged(int progress) {
+    }
+
+    @Override
+    public InterceptedRequestData shouldInterceptRequest(String url) {
+        return null;
     }
 
     @Override

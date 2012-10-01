@@ -145,6 +145,8 @@ public abstract class AwContentsClient extends ContentViewClient {
 
     public abstract void onProgressChanged(int progress);
 
+    public abstract InterceptedRequestData shouldInterceptRequest(String url);
+
     public abstract boolean shouldOverrideUrlLoading(String url);
 
     public abstract void onUnhandledKeyEvent(KeyEvent event);

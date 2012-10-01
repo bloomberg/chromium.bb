@@ -12,6 +12,7 @@ import junit.framework.Assert;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsClient;
+import org.chromium.android_webview.AwSettings;
 import org.chromium.content.browser.ContentSettings;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewCore;
@@ -199,6 +200,16 @@ public class AndroidWebViewTestBase
             @Override
             public ContentSettings call() throws Exception {
                 return contentViewCore.getContentSettings();
+            }
+        });
+    }
+
+    protected AwSettings getAwSettingsOnUiThread(
+            final AwContents awContents) throws Throwable {
+        return runTestOnUiThreadAndGetResult(new Callable<AwSettings>() {
+            @Override
+            public AwSettings call() throws Exception {
+                return awContents.getSettings();
             }
         });
     }

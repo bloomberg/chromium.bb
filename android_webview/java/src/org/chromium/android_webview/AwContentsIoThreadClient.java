@@ -18,5 +18,9 @@ import org.chromium.base.JNINamespace;
 public interface AwContentsIoThreadClient {
     // Called on the IO thread.
     @CalledByNative
-    InterceptedRequestData shouldInterceptRequest(String url);
+    public InterceptedRequestData shouldInterceptRequest(String url);
+
+    // Called on the IO thread.
+    @CalledByNative
+    public boolean shouldBlockNetworkLoads();
 }

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "android_webview/native/aw_contents_io_thread_client.h"
+#include "android_webview/native/aw_contents_io_thread_client_impl.h"
 
 #include <map>
 #include <utility>
@@ -54,18 +54,18 @@ class RvhToIoThreadClientMap {
   void Erase(pair<int, int> rvh_id);
 
  private:
-  static LazyInstance<RvhToIoThreadClientMap> s_instance_;
+  static LazyInstance<RvhToIoThreadClientMap> g_instance_;
   base::Lock map_lock_;
   RenderViewHostToWeakDelegateMapType rvh_to_weak_delegate_map_;
 };
 
 // static
-LazyInstance<RvhToIoThreadClientMap> RvhToIoThreadClientMap::s_instance_ =
+LazyInstance<RvhToIoThreadClientMap> RvhToIoThreadClientMap::g_instance_ =
     LAZY_INSTANCE_INITIALIZER;
 
 // static
 RvhToIoThreadClientMap* RvhToIoThreadClientMap::GetInstance() {
-  return s_instance_.Pointer();
+  return g_instance_.Pointer();
 }
 
 void RvhToIoThreadClientMap::Insert(pair<int, int> rvh_id,
@@ -142,10 +142,23 @@ void ClientMapEntryUpdater::WebContentsDestroyed(WebContents* web_contents) {
 
 } // namespace
 
-// AwContentsIoThreadClient ---------------------------------------------------
+// AwContentsIoThreadClientImpl -----------------------------------------------
 
 // static
-void AwContentsIoThreadClient::Associate(
+scoped_ptr<AwContentsIoThreadClient>
+AwContentsIoThreadClient::FromID(int render_process_id, int render_view_id) {
+  pair<int, int> rvh_id(render_process_id, render_view_id);
+  ScopedJavaLocalRef<jobject> java_delegate =
+      RvhToIoThreadClientMap::GetInstance()->Get(rvh_id);
+  if (java_delegate.is_null())
+    return scoped_ptr<AwContentsIoThreadClient>();
+
+  return scoped_ptr<AwContentsIoThreadClient>(
+      new AwContentsIoThreadClientImpl(java_delegate));
+}
+
+// static
+void AwContentsIoThreadClientImpl::Associate(
     WebContents* web_contents,
     const JavaRef<jobject>& jclient) {
   JNIEnv* env = AttachCurrentThread();
@@ -153,39 +166,13 @@ void AwContentsIoThreadClient::Associate(
   new ClientMapEntryUpdater(env, web_contents, jclient.obj());
 }
 
-// static
-AwContentsIoThreadClient
-AwContentsIoThreadClient::FromID(int render_process_id, int render_view_id) {
-  pair<int, int> rvh_id(render_process_id, render_view_id);
-  ScopedJavaLocalRef<jobject> java_delegate =
-      RvhToIoThreadClientMap::GetInstance()->Get(rvh_id);
-  if (java_delegate.is_null())
-    return AwContentsIoThreadClient();
-
-  return AwContentsIoThreadClient(java_delegate);
-}
-
-AwContentsIoThreadClient::AwContentsIoThreadClient() {
-}
-
-AwContentsIoThreadClient::AwContentsIoThreadClient(const JavaRef<jobject>& obj)
-    : java_object_(obj) {
-}
-
-AwContentsIoThreadClient::AwContentsIoThreadClient(
-    const AwContentsIoThreadClient& orig)
-    : java_object_(orig.java_object_) {
-}
-
-void AwContentsIoThreadClient::operator=(const AwContentsIoThreadClient& rhs) {
-  java_object_.Reset(rhs.java_object_);
-}
-
-AwContentsIoThreadClient::~AwContentsIoThreadClient() {
+AwContentsIoThreadClientImpl::AwContentsIoThreadClientImpl(
+    const JavaRef<jobject>& obj)
+  : java_object_(obj) {
 }
 
 scoped_ptr<InterceptedRequestData>
-AwContentsIoThreadClient::ShouldInterceptRequest(
+AwContentsIoThreadClientImpl::ShouldInterceptRequest(
     const net::URLRequest* request) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (java_object_.is_null())
@@ -203,7 +190,17 @@ AwContentsIoThreadClient::ShouldInterceptRequest(
       new InterceptedRequestData(ret));
 }
 
-bool RegisterAwContentsIoThreadClient(JNIEnv* env) {
+bool AwContentsIoThreadClientImpl::ShouldBlockNetworkLoads() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (java_object_.is_null())
+    return false;
+
+  JNIEnv* env = AttachCurrentThread();
+  return Java_AwContentsIoThreadClient_shouldBlockNetworkLoads(
+      env, java_object_.obj());
+}
+
+bool RegisterAwContentsIoThreadClientImpl(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 

@@ -41,6 +41,8 @@ public class AwContents {
     private ContentViewCore mContentViewCore;
     private AwContentsClient mContentsClient;
     private AwContentsIoThreadClient mIoThreadClient;
+    // This can be accessed on any thread after construction. See AwContentsIoThreadClient.
+    private final AwSettings mSettings;
 
     private static final class DestroyRunnable implements Runnable {
         private int mNativeAwContents;
@@ -55,8 +57,18 @@ public class AwContents {
 
     private CleanupReference mCleanupReference;
 
-    private AwContents(ContentViewCore contentViewCore,
-            AwWebContentsDelegate webContentsDelegate) {
+    private class IoThreadClientImpl implements AwContentsIoThreadClient {
+        // Called on the IO thread.
+        @Override
+        public InterceptedRequestData shouldInterceptRequest(String url) {
+            return AwContents.this.mContentsClient.shouldInterceptRequest(url);
+        }
+
+        // Called on the IO thread.
+        @Override
+        public boolean shouldBlockNetworkLoads() {
+            return AwContents.this.mSettings.getBlockNetworkLoads();
+        }
     }
 
     /**
@@ -69,24 +81,32 @@ public class AwContents {
      * @param isAccessFromFileURLsGrantedByDefault passed to ContentViewCore.initialize.
      */
     public AwContents(ViewGroup containerView,
-        ContentViewCore.InternalAccessDelegate internalAccessAdapter,
-        ContentViewCore contentViewCore, AwContentsClient contentsClient,
-        NativeWindow nativeWindow, boolean privateBrowsing,
-        boolean isAccessFromFileURLsGrantedByDefault) {
-      mNativeAwContents = nativeInit(contentsClient.getWebContentsDelegate(), privateBrowsing);
-      mContentViewCore = contentViewCore;
-      mContentsClient = contentsClient;
-      mCleanupReference = new CleanupReference(this, new DestroyRunnable(mNativeAwContents));
+            ContentViewCore.InternalAccessDelegate internalAccessAdapter,
+            ContentViewCore contentViewCore, AwContentsClient contentsClient,
+            NativeWindow nativeWindow, boolean privateBrowsing,
+            boolean isAccessFromFileURLsGrantedByDefault) {
+        mNativeAwContents = nativeInit(contentsClient.getWebContentsDelegate(), privateBrowsing);
+        mContentViewCore = contentViewCore;
+        mContentsClient = contentsClient;
+        mCleanupReference = new CleanupReference(this, new DestroyRunnable(mNativeAwContents));
 
-      mContentViewCore.initialize(containerView, internalAccessAdapter,
-              nativeGetWebContents(mNativeAwContents), nativeWindow,
-              isAccessFromFileURLsGrantedByDefault);
-      mContentViewCore.setContentViewClient(contentsClient);
-      mContentsClient.installWebContentsObserver(mContentViewCore);
+        mContentViewCore.initialize(containerView, internalAccessAdapter,
+                nativeGetWebContents(mNativeAwContents), nativeWindow,
+                isAccessFromFileURLsGrantedByDefault);
+        mContentViewCore.setContentViewClient(contentsClient);
+        mContentsClient.installWebContentsObserver(mContentViewCore);
+
+        mSettings = new AwSettings(mContentViewCore.getContext());
+        setIoThreadClient(new IoThreadClientImpl());
     }
 
     public ContentViewCore getContentViewCore() {
         return mContentViewCore;
+    }
+
+    // Can be called from any thread.
+    public AwSettings getSettings() {
+        return mSettings;
     }
 
     public void setIoThreadClient(AwContentsIoThreadClient ioThreadClient) {
