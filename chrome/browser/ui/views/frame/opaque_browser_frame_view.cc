@@ -1013,12 +1013,14 @@ void OpaqueBrowserFrameView::LayoutTitleBar() {
       window_icon_->SetBoundsRect(icon_bounds);
 
     window_title_->SetVisible(delegate->ShouldShowWindowTitle());
-    window_title_->SetText(delegate->GetWindowTitle());
-    const int title_x = delegate->ShouldShowWindowIcon() ?
-        icon_bounds.right() + kIconTitleSpacing : icon_bounds.x();
-    window_title_->SetBounds(title_x, icon_bounds.y(),
-        std::max(0, minimize_button_->x() - kTitleLogoSpacing - title_x),
-        icon_bounds.height());
+    if (delegate->ShouldShowWindowTitle()) {
+      window_title_->SetText(delegate->GetWindowTitle());
+      const int title_x = delegate->ShouldShowWindowIcon() ?
+          icon_bounds.right() + kIconTitleSpacing : icon_bounds.x();
+      window_title_->SetBounds(title_x, icon_bounds.y(),
+          std::max(0, minimize_button_->x() - kTitleLogoSpacing - title_x),
+          icon_bounds.height());
+    }
   }
 }
 
