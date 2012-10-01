@@ -39,9 +39,7 @@ class CONTENT_EXPORT BrowserProcessSubThread : public BrowserThreadImpl {
   void IOThreadPreCleanUp();
 
   // Each specialized thread has its own notification service.
-  // Note: We don't use scoped_ptr because the destructor runs on the wrong
-  // thread.
-  NotificationService* notification_service_;
+  scoped_ptr<NotificationService> notification_service_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserProcessSubThread);
 };

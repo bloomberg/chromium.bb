@@ -19,8 +19,7 @@
 namespace content {
 
 BrowserProcessSubThread::BrowserProcessSubThread(BrowserThread::ID identifier)
-    : BrowserThreadImpl(identifier),
-      notification_service_(NULL) {
+    : BrowserThreadImpl(identifier) {
 }
 
 BrowserProcessSubThread::~BrowserProcessSubThread() {
@@ -33,7 +32,7 @@ void BrowserProcessSubThread::Init() {
   CoInitialize(NULL);
 #endif
 
-  notification_service_ = new NotificationServiceImpl;
+  notification_service_.reset(new NotificationServiceImpl());
 
   BrowserThreadImpl::Init();
 
@@ -52,8 +51,7 @@ void BrowserProcessSubThread::CleanUp() {
 
   BrowserThreadImpl::CleanUp();
 
-  delete notification_service_;
-  notification_service_ = NULL;
+  notification_service_.reset();
 
 #if defined(OS_WIN)
   // Closes the COM library on the current thread. CoInitialize must

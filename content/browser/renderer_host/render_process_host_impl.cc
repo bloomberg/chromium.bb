@@ -138,8 +138,7 @@ class RendererMainThread : public base::Thread {
  public:
   explicit RendererMainThread(const std::string& channel_id)
       : base::Thread("Chrome_InProcRendererThread"),
-        channel_id_(channel_id),
-        render_process_(NULL) {
+        channel_id_(channel_id) {
   }
 
   ~RendererMainThread() {
@@ -152,12 +151,12 @@ class RendererMainThread : public base::Thread {
     CoInitialize(NULL);
 #endif
 
-    render_process_ = new RenderProcessImpl();
+    render_process_.reset(new RenderProcessImpl());
     new RenderThreadImpl(channel_id_);
   }
 
   virtual void CleanUp() {
-    delete render_process_;
+    render_process_.reset();
 
 #if defined(OS_WIN)
     CoUninitialize();
@@ -176,8 +175,7 @@ class RendererMainThread : public base::Thread {
 
  private:
   std::string channel_id_;
-  // Deleted in CleanUp() on the renderer thread, so don't use a smart pointer.
-  RenderProcess* render_process_;
+  scoped_ptr<RenderProcess> render_process_;
 };
 
 namespace {
