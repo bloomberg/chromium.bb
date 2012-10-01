@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "content/public/app/android_library_loader_hooks.h"
 #include "content/public/app/content_main.h"
+#include "content/public/browser/android/compositor.h"
 #include "content/public/common/content_switches.h"
 
 // This is called by the VM when the shared library is first loaded.
@@ -25,6 +26,13 @@ JNI_EXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
   CommandLine::Init(0, NULL);
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableWebViewSynchronousAPIs);
+
+  // TODO: The next two lines are temporarily required for the renderer
+  // initialization to not crash.
+  // See BUG 152904.
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kSingleProcess);
+  content::Compositor::Initialize();
 
   content::SetContentMainDelegate(new android_webview::AwMainDelegate());
 
