@@ -320,12 +320,8 @@ void DownloadManagerImpl::Shutdown() {
   // and all in progress downloads have been cancelled.  We can now delete
   // anything left.
 
-  // We delete the downloads before clearing the active_downloads_ map
-  // so that downloads in the COMPLETING_INTERNAL state (which will have
-  // ignored the Cancel() above) will still show up in active_downloads_
-  // in order to satisfy the invariants enforced in AssertStateConsistent().
-  STLDeleteValues(&downloads_);
   active_downloads_.clear();
+  STLDeleteValues(&downloads_);
   downloads_.clear();
 
   // We'll have nothing more to report to the observers after this point.

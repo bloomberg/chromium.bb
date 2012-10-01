@@ -471,6 +471,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelAtFinalRename) {
 // release.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelAtRelease) {
   // Setup new factory.
+  // Setup new factory.
   DownloadFileWithDelayFactory* file_factory =
       new DownloadFileWithDelayFactory();
   GetDownloadFileManager()->SetFileFactoryForTesting(
@@ -522,68 +523,6 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelAtRelease) {
   callbacks[0].Run();
   callbacks.clear();
   EXPECT_EQ(DownloadItem::COMPLETE, items[0]->GetState());
-}
-
-// Try to shutdown just after we release the download file, by delaying
-// release.
-IN_PROC_BROWSER_TEST_F(DownloadContentTest, ShutdownAtRelease) {
-  // Setup new factory.
-  DownloadFileWithDelayFactory* file_factory =
-      new DownloadFileWithDelayFactory();
-  GetDownloadFileManager()->SetFileFactoryForTesting(
-      scoped_ptr<content::DownloadFileFactory>(file_factory).Pass());
-
-  // Create a download
-  FilePath file(FILE_PATH_LITERAL("download-test.lib"));
-  NavigateToURL(shell(), URLRequestMockHTTPJob::GetMockUrl(file));
-
-  // Wait until the first (intermediate file) rename and execute the callback.
-  file_factory->WaitForSomeCallback();
-  std::vector<base::Closure> callbacks;
-  file_factory->GetAllDetachCallbacks(&callbacks);
-  ASSERT_TRUE(callbacks.empty());
-  file_factory->GetAllRenameCallbacks(&callbacks);
-  ASSERT_EQ(1u, callbacks.size());
-  callbacks[0].Run();
-  callbacks.clear();
-
-  // Wait until the second (final) rename callback is posted.
-  file_factory->WaitForSomeCallback();
-  file_factory->GetAllDetachCallbacks(&callbacks);
-  ASSERT_TRUE(callbacks.empty());
-  file_factory->GetAllRenameCallbacks(&callbacks);
-  ASSERT_EQ(1u, callbacks.size());
-
-  // Call it.
-  callbacks[0].Run();
-  callbacks.clear();
-
-  // Confirm download isn't complete yet.
-  std::vector<DownloadItem*> items;
-  DownloadManagerForShell(shell())->GetAllDownloads(&items);
-  EXPECT_EQ(DownloadItem::IN_PROGRESS, items[0]->GetState());
-
-  // Cancel the download; confirm cancel fails anyway.
-  ASSERT_EQ(1u, items.size());
-  items[0]->Cancel(true);
-  EXPECT_EQ(DownloadItem::IN_PROGRESS, items[0]->GetState());
-  RunAllPendingInMessageLoop();
-  EXPECT_EQ(DownloadItem::IN_PROGRESS, items[0]->GetState());
-
-  // Get the detach callback that should have been produced by the above.
-  file_factory->WaitForSomeCallback();
-  file_factory->GetAllRenameCallbacks(&callbacks);
-  ASSERT_TRUE(callbacks.empty());
-  file_factory->GetAllDetachCallbacks(&callbacks);
-  ASSERT_EQ(1u, callbacks.size());
-
-  // Shutdown the download manager.  Can't get at any downloads after this,
-  // so this is basically just checking for crashes.
-  DownloadManagerForShell(shell())->Shutdown();
-
-  // Run the detach callback; shouldn't cause any problems.
-  callbacks[0].Run();
-  callbacks.clear();
 }
 
 }  // namespace content
