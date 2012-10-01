@@ -223,6 +223,9 @@ void AppNonClientFrameViewAura::ResetWindowControls() {
 void AppNonClientFrameViewAura::UpdateWindowIcon() {
 }
 
+void AppNonClientFrameViewAura::UpdateWindowTitle() {
+}
+
 gfx::Rect AppNonClientFrameViewAura::GetBoundsForTabStrip(
     views::View* tabstrip) const {
   return gfx::Rect();

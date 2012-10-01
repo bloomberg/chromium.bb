@@ -63,6 +63,7 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView,
                              gfx::Path* window_mask) OVERRIDE;
   virtual void ResetWindowControls() OVERRIDE;
   virtual void UpdateWindowIcon() OVERRIDE;
+  virtual void UpdateWindowTitle() OVERRIDE;
 
   // views::View overrides:
   virtual gfx::Size GetPreferredSize() OVERRIDE;

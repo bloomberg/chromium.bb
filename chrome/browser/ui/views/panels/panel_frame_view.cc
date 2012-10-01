@@ -231,7 +231,7 @@ void PanelFrameView::Init() {
 }
 
 void PanelFrameView::UpdateTitle() {
-  title_label_->SetText(panel_view_->panel()->GetWindowTitle());
+  UpdateWindowTitle();
 }
 
 void PanelFrameView::UpdateIcon() {
@@ -338,6 +338,10 @@ void PanelFrameView::ResetWindowControls() {
 
 void PanelFrameView::UpdateWindowIcon() {
   title_icon_->SchedulePaint();
+}
+
+void PanelFrameView::UpdateWindowTitle() {
+  title_label_->SetText(panel_view_->panel()->GetWindowTitle());
 }
 
 gfx::Size PanelFrameView::GetPreferredSize() {

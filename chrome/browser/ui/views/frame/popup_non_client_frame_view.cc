@@ -38,6 +38,9 @@ void PopupNonClientFrameView::ResetWindowControls() {
 void PopupNonClientFrameView::UpdateWindowIcon() {
 }
 
+void PopupNonClientFrameView::UpdateWindowTitle() {
+}
+
 gfx::Rect PopupNonClientFrameView::GetBoundsForTabStrip(
     views::View* tabstrip) const {
   return gfx::Rect(0, 0, width(), tabstrip->GetPreferredSize().height());

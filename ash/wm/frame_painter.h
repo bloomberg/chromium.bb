@@ -112,6 +112,10 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
   // not always.
   void LayoutHeader(views::NonClientFrameView* view, bool shorter_layout);
 
+  // Schedule a re-paint of the entire title.
+  void SchedulePaintForTitle(views::NonClientFrameView* view,
+                             const gfx::Font& title_font);
+
   // aura::WindowObserver overrides:
   virtual void OnWindowPropertyChanged(aura::Window* window,
                                        const void* key,
@@ -161,6 +165,11 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
   // Schedules a paint for the header. Used when transitioning from no header to
   // a header (or other way around).
   void SchedulePaintForHeader();
+
+  // Get the bounds for the title. The provided |view| and |title_font| are
+  // used to determine the correct dimensions.
+  gfx::Rect GetTitleBounds(views::NonClientFrameView* view,
+                           const gfx::Font& title_font);
 
   static std::set<FramePainter*>* instances_;
 

@@ -451,16 +451,7 @@ void FramePainter::PaintTitleBar(views::NonClientFrameView* view,
   // The window icon is painted by its own views::View.
   views::WidgetDelegate* delegate = frame_->widget_delegate();
   if (delegate && delegate->ShouldShowWindowTitle()) {
-    int title_x = GetTitleOffsetX();
-    // Center the text in the middle of the caption - this way it adapts
-    // automatically to the caption height (which is given by the owner).
-    int title_y =
-        (view->GetBoundsForClientView().y() - title_font.GetHeight()) / 2;
-    gfx::Rect title_bounds(
-        title_x,
-        std::max(0, title_y),
-        std::max(0, size_button_->x() - kTitleLogoSpacing - title_x),
-        title_font.GetHeight());
+    gfx::Rect title_bounds = GetTitleBounds(view, title_font);
     canvas->DrawStringInt(delegate->GetWindowTitle(),
                           title_font,
                           kTitleTextColor,
@@ -531,6 +522,12 @@ void FramePainter::LayoutHeader(views::NonClientFrameView* view,
   if (window_icon_)
     window_icon_->SetBoundsRect(
         gfx::Rect(kIconOffsetX, kIconOffsetY, kIconSize, kIconSize));
+}
+
+void FramePainter::SchedulePaintForTitle(views::NonClientFrameView* view,
+                                         const gfx::Font& title_font) {
+  frame_->non_client_view()->SchedulePaintInRect(
+      GetTitleBounds(view, title_font));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -734,6 +731,20 @@ void FramePainter::SchedulePaintForHeader() {
   frame_->non_client_view()->SchedulePaintInRect(
       gfx::Rect(0, 0, frame_->non_client_view()->width(),
                 std::max(top_left_height, top_right_height)));
+}
+
+gfx::Rect FramePainter::GetTitleBounds(views::NonClientFrameView* view,
+                                       const gfx::Font& title_font) {
+  int title_x = GetTitleOffsetX();
+  // Center the text in the middle of the caption - this way it adapts
+  // automatically to the caption height (which is given by the owner).
+  int title_y =
+      (view->GetBoundsForClientView().y() - title_font.GetHeight()) / 2;
+  return gfx::Rect(
+      title_x,
+      std::max(0, title_y),
+      std::max(0, size_button_->x() - kTitleLogoSpacing - title_x),
+      title_font.GetHeight());
 }
 
 }  // namespace ash

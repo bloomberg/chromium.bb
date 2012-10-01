@@ -261,6 +261,11 @@ void BrowserNonClientFrameViewAsh::UpdateWindowIcon() {
     window_icon_->SchedulePaint();
 }
 
+void BrowserNonClientFrameViewAsh::UpdateWindowTitle() {
+  if (!frame()->IsFullscreen())
+    frame_painter_->SchedulePaintForTitle(this, BrowserFrame::GetTitleFont());
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // views::View overrides:
 

@@ -58,6 +58,10 @@ void NativeFrameView::UpdateWindowIcon() {
   // Nothing to do.
 }
 
+void NativeFrameView::UpdateWindowTitle() {
+  // Nothing to do.
+}
+
 gfx::Size NativeFrameView::GetPreferredSize() {
   return frame_->client_view()->GetPreferredSize();
 }

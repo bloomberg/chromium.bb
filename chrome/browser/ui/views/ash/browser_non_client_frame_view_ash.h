@@ -50,6 +50,7 @@ class BrowserNonClientFrameViewAsh
                              gfx::Path* window_mask) OVERRIDE;
   virtual void ResetWindowControls() OVERRIDE;
   virtual void UpdateWindowIcon() OVERRIDE;
+  virtual void UpdateWindowTitle() OVERRIDE;
 
   // views::View overrides:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;

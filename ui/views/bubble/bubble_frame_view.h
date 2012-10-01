@@ -32,6 +32,7 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView {
                              gfx::Path* window_mask) OVERRIDE {}
   virtual void ResetWindowControls() OVERRIDE {}
   virtual void UpdateWindowIcon() OVERRIDE {}
+  virtual void UpdateWindowTitle() OVERRIDE {}
 
   // View overrides:
   virtual gfx::Size GetPreferredSize() OVERRIDE;

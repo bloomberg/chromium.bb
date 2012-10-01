@@ -35,9 +35,10 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
       const gfx::Rect& client_bounds) const OVERRIDE;
   virtual int NonClientHitTest(const gfx::Point& point) OVERRIDE;
   virtual void GetWindowMask(const gfx::Size& size, gfx::Path* window_mask)
-      OVERRIDE { }
-  virtual void ResetWindowControls() OVERRIDE { }
-  virtual void UpdateWindowIcon() OVERRIDE { }
+      OVERRIDE {}
+  virtual void ResetWindowControls() OVERRIDE {}
+  virtual void UpdateWindowIcon() OVERRIDE {}
+  virtual void UpdateWindowTitle() OVERRIDE {}
 
  protected:
   // Overridden from views::View:

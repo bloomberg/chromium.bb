@@ -28,6 +28,7 @@ class ConstrainedWindowFrameSimple : public views::NonClientFrameView {
                              gfx::Path* window_mask) OVERRIDE {}
   virtual void ResetWindowControls() OVERRIDE {}
   virtual void UpdateWindowIcon() OVERRIDE {}
+  virtual void UpdateWindowTitle() OVERRIDE {}
 
   DISALLOW_COPY_AND_ASSIGN(ConstrainedWindowFrameSimple);
 };

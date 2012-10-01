@@ -105,6 +105,10 @@ void CustomFrameViewAsh::UpdateWindowIcon() {
     window_icon_->SchedulePaint();
 }
 
+void CustomFrameViewAsh::UpdateWindowTitle() {
+  frame_painter_->SchedulePaintForTitle(this, GetTitleFont());
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // CustomFrameViewAsh, views::View overrides:
 

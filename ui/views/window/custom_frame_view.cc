@@ -211,6 +211,10 @@ void CustomFrameView::UpdateWindowIcon() {
     window_icon_->SchedulePaint();
 }
 
+void CustomFrameView::UpdateWindowTitle() {
+  SchedulePaintInRect(title_bounds_);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // CustomFrameView, View overrides:
 

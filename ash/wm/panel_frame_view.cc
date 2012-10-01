@@ -53,6 +53,10 @@ void PanelFrameView::UpdateWindowIcon() {
   NOTIMPLEMENTED();
 }
 
+void PanelFrameView::UpdateWindowTitle() {
+  NOTIMPLEMENTED();
+}
+
 void PanelFrameView::GetWindowMask(const gfx::Size&, gfx::Path*) {
   // Nothing.
 }

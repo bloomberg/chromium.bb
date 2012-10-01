@@ -736,10 +736,6 @@ void Widget::UpdateWindowTitle() {
   if (!non_client_view_)
     return;
 
-  // If the non-client view is rendering its own title, it'll need to relayout
-  // now.
-  non_client_view_->Layout();
-
   // Update the native frame's text. We do this regardless of whether or not
   // the native frame is being used, since this also updates the taskbar, etc.
   string16 window_title;
@@ -750,6 +746,11 @@ void Widget::UpdateWindowTitle() {
   }
   base::i18n::AdjustStringForLocaleDirection(&window_title);
   native_widget_->SetWindowTitle(window_title);
+  non_client_view_->UpdateWindowTitle();
+
+  // If the non-client view is rendering its own title, it'll need to relayout
+  // now and to get a paint update later on.
+  non_client_view_->Layout();
 }
 
 void Widget::UpdateWindowIcon() {

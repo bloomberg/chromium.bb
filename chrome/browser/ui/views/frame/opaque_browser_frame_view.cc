@@ -390,6 +390,11 @@ void OpaqueBrowserFrameView::UpdateWindowIcon() {
   window_icon_->SchedulePaint();
 }
 
+void OpaqueBrowserFrameView::UpdateWindowTitle() {
+  if (!frame()->IsFullscreen())
+    window_title_->SchedulePaint();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // OpaqueBrowserFrameView, views::View overrides:
 

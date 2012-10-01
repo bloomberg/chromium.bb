@@ -25,6 +25,7 @@ class VIEWS_EXPORT NativeFrameView : public NonClientFrameView {
                              gfx::Path* window_mask) OVERRIDE;
   virtual void ResetWindowControls() OVERRIDE;
   virtual void UpdateWindowIcon() OVERRIDE;
+  virtual void UpdateWindowTitle() OVERRIDE;
 
   // View overrides:
 

@@ -96,6 +96,10 @@ void NonClientView::UpdateWindowIcon() {
   frame_view_->UpdateWindowIcon();
 }
 
+void NonClientView::UpdateWindowTitle() {
+  frame_view_->UpdateWindowTitle();
+}
+
 void NonClientView::LayoutFrameView() {
   // First layout the NonClientFrameView, which determines the size of the
   // ClientView...

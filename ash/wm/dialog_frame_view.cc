@@ -120,6 +120,10 @@ void DialogFrameView::UpdateWindowIcon() {
   // Nothing to do.
 }
 
+void DialogFrameView::UpdateWindowTitle() {
+  // Nothing to do.
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // DialogFrameView, views::View overrides:
 
