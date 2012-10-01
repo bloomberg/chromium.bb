@@ -143,6 +143,10 @@ bool WillHandleBrowserAboutURL(GURL* url,
   } else if (host == chrome::kChromeUISettingsHost) {
     host = chrome::kChromeUIUberHost;
     path = chrome::kChromeUISettingsHost + url->path();
+  // Redirect chrome://help
+  } else if (host == chrome::kChromeUIHelpHost) {
+    host = chrome::kChromeUIUberHost;
+    path = chrome::kChromeUIHelpHost + url->path();
   }
   GURL::Replacements replacements;
   replacements.SetHostStr(host);
