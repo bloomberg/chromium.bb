@@ -76,6 +76,9 @@ bool IsBlacklistedBySha1sumAndQuirks(const FilePath& path) {
     // Flash 11.2.202.236, 32-bit - http://crbug.com/140086
     { 17406436, "1e07eac912faf9426c52a288c76c3b6238f90b6b",
       PLUGIN_QUIRK_MISSING_SSE2_CHECK },
+    // Flash 11.2.202.238, 32-bit - http://crbug.com/140086
+    { 17410532, "e9401097e97c8443a7d9156be62184ffe1addd5c",
+      PLUGIN_QUIRK_MISSING_SSE2_CHECK },
   };
 
   int64 size;
