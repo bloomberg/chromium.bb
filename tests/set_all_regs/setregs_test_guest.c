@@ -26,58 +26,7 @@ struct NaClSignalContext g_regs_req;
 REGS_SAVER_FUNC(SaveRegistersAndCheck, CheckSavedRegisters);
 
 void CheckSavedRegisters(struct NaClSignalContext *regs) {
-#define CHECK_REG(reg_name) ASSERT_EQ(regs->reg_name, g_regs_req.reg_name)
-
-#if defined(__i386__)
-  CHECK_REG(eax);
-  CHECK_REG(ecx);
-  CHECK_REG(edx);
-  CHECK_REG(ebx);
-  CHECK_REG(stack_ptr);
-  CHECK_REG(ebp);
-  CHECK_REG(esi);
-  CHECK_REG(edi);
-  CHECK_REG(flags);
-#elif defined(__x86_64__)
-  CHECK_REG(rax);
-  CHECK_REG(rbx);
-  CHECK_REG(rcx);
-  CHECK_REG(rdx);
-  CHECK_REG(rsi);
-  CHECK_REG(rdi);
-  CHECK_REG(rbp);
-  CHECK_REG(stack_ptr);
-  CHECK_REG(r8);
-  CHECK_REG(r9);
-  CHECK_REG(r10);
-  CHECK_REG(r11);
-  CHECK_REG(r12);
-  CHECK_REG(r13);
-  CHECK_REG(r14);
-  CHECK_REG(r15);
-  CHECK_REG(flags);
-#elif defined(__arm__)
-  CHECK_REG(r0);
-  CHECK_REG(r1);
-  CHECK_REG(r2);
-  CHECK_REG(r3);
-  CHECK_REG(r4);
-  CHECK_REG(r5);
-  CHECK_REG(r6);
-  CHECK_REG(r7);
-  CHECK_REG(r8);
-  CHECK_REG(r9);
-  CHECK_REG(r10);
-  CHECK_REG(r11);
-  CHECK_REG(r12);
-  CHECK_REG(stack_ptr);
-  CHECK_REG(lr);
-#else
-# error Unsupported architecture
-#endif
-
-#undef CHECK_REG
-
+  RegsAssertEqual(regs, &g_regs_req);
   longjmp(g_jmp_buf, 1);
 }
 
@@ -98,6 +47,8 @@ int main() {
 
 #if defined(__i386__) || defined(__x86_64__)
   g_regs_req.flags = 0;
+#elif defined(__arm__)
+  g_regs_req.cpsr = 0;
 #endif
 
   TestSettingRegisters();
@@ -109,6 +60,16 @@ int main() {
     fprintf(stderr, "testing flags bit %i...\n", kX86FlagBits[index]);
     g_regs_req.flags = 1 << kX86FlagBits[index];
     TestSettingRegisters();
+  }
+#elif defined(__arm__)
+  /* Test setting each ARM CPSR flag in turn. */
+  int bitshift;
+  for (bitshift = 0; bitshift < 32; bitshift++) {
+    if ((REGS_ARM_USER_CPSR_FLAGS_MASK & (1 << bitshift)) != 0) {
+      fprintf(stderr, "testing CPSR bit %i...\n", bitshift);
+      g_regs_req.cpsr = 1 << bitshift;
+      TestSettingRegisters();
+    }
   }
 #endif
 

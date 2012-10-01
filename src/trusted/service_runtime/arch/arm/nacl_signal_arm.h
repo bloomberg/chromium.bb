@@ -37,6 +37,7 @@ struct NaClSignalContext {
   uint32_t stack_ptr;
   uint32_t lr;
   uint32_t prog_ctr;
+  uint32_t cpsr;
 };
 
 

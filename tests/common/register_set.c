@@ -109,6 +109,8 @@ void RegsAssertEqual(const struct NaClSignalContext *actual,
   CHECK_REG(stack_ptr);
   CHECK_REG(lr);
   CHECK_REG(prog_ctr);
+  ASSERT_EQ(actual->cpsr & REGS_ARM_USER_CPSR_FLAGS_MASK,
+            expected->cpsr & REGS_ARM_USER_CPSR_FLAGS_MASK);
 #else
 # error Unsupported architecture
 #endif
@@ -140,6 +142,7 @@ void RegsUnsetNonCalleeSavedRegisters(struct NaClSignalContext *regs) {
   regs->r3 = 0;
   regs->r12 = 0;
   regs->lr = 0;
+  regs->cpsr = 0;
 #else
 # error Unsupported architecture
 #endif

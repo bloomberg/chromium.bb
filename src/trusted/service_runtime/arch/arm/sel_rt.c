@@ -87,4 +87,5 @@ void NaClThreadContextToSignalContext(const struct NaClThreadContext *th_ctx,
   sig_ctx->stack_ptr = th_ctx->stack_ptr;
   sig_ctx->lr        = 0;
   sig_ctx->prog_ctr  = th_ctx->new_prog_ctr;
+  sig_ctx->cpsr      = 0;
 }

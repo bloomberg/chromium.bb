@@ -38,6 +38,7 @@ void NaClSignalContextFromHandler(struct NaClSignalContext *sigCtx,
   sigCtx->r11 = mctx->arm_fp;
   sigCtx->r12 = mctx->arm_ip;
   sigCtx->lr = mctx->arm_lr;
+  sigCtx->cpsr = mctx->arm_cpsr;
 }
 
 
@@ -67,4 +68,5 @@ void NaClSignalContextToHandler(void *rawCtx,
   mctx->arm_fp = sigCtx->r11;
   mctx->arm_ip = sigCtx->r12;
   mctx->arm_lr = sigCtx->lr;
+  mctx->arm_cpsr = sigCtx->cpsr;
 }

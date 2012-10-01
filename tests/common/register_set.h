@@ -80,6 +80,10 @@
         ".p2align 4\n" \
         "mov sp, %0\n" \
         "bic sp, sp, #0xc0000000\n" \
+        /* Set CPSR (flags) register, a.k.a. ASPR for user mode */ \
+        "ldr r0, [sp, #0x40]\n" \
+        "msr apsr_nzcvqg, r0\n" \
+        /* Set general purpose registers */ \
         "ldr r0, [sp, #0x00]\n" \
         "ldr r1, [sp, #0x04]\n" \
         "ldr r2, [sp, #0x08]\n" \
@@ -136,6 +140,21 @@ extern const uint8_t kX86FlagBits[5];
 /* Reset flags to RESET_X86_FLAGS_VALUE without modifying any registers. */
 #define RESET_X86_FLAGS "testl $0, %%eax\n"
 #define RESET_X86_FLAGS_VALUE ((1 << 2) | (1 << 6))
+
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
+
+/*
+ * These are the only ARM CSPR bits that user code and untrusted code
+ * can read and modify, excluding the IT bits which are for Thumb-2
+ * (for If-Then-Else instructions).
+ */
+# define REGS_ARM_USER_CPSR_FLAGS_MASK \
+    ((1<<31) | /* N */ \
+     (1<<30) | /* Z */ \
+     (1<<29) | /* C */ \
+     (1<<28) | /* V */ \
+     (1<<27) | /* Q */ \
+     (1<<19) | (1<<18) | (1<<17) | (1<<16) /* GE bits */)
 
 #endif
 
@@ -231,16 +250,20 @@ extern const uint8_t kX86FlagBits[5];
     __asm__( \
         ".pushsection .text, \"ax\", %progbits\n" \
         #def_func ":\n" \
+        "push {r0}\n"  /* Leave space for cpsr */ \
         "push {r0}\n"  /* Leave space for prog_ctr */ \
         "push {r14}\n" \
-        "add r14, sp, #8\n" \
+        "add r14, sp, #0xc\n" \
         "push {r0-r12, r14}\n"  /* Push most of "struct NaClSignalContext" */ \
         /* Now save a correct prog_ctr value */ \
         "adr r0, " #def_func "\n" \
         "str r0, [sp, #0x3c]\n" \
+        /* Save CPSR (flags) register, a.k.a. APSR for user mode */ \
+        "mrs r0, apsr\n" \
+        "str r0, [sp, #0x40]\n" \
         /* Set argument to callee_func() */ \
         "mov r0, sp\n" \
-        "bl " #callee_func "\n" \
+        "b " #callee_func "\n" \
         ".popsection\n")
 
 #else

@@ -18,4 +18,8 @@
  *                        struct NaClSignalContext *regs);
  */
 DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSwitchAllRegs):
+        /* Restore CPSR (flags) register, a.k.a. ASPR for user mode */
+        ldr r0, [r1, #0x40]
+        msr apsr_nzcvqg, r0
+
         ldmia r1, {r0-pc}
