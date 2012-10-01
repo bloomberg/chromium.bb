@@ -740,8 +740,8 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
     IPC_MESSAGE_HANDLER(ViewHostMsg_WebUISend, OnWebUISend)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RequestPpapiBrokerPermission,
                         OnRequestPpapiBrokerPermission)
-    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_NavigateGuest,
-                        OnBrowserPluginNavigateGuest)
+    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_CreateGuest,
+                        OnBrowserPluginCreateGuest)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
   message_source_ = NULL;
@@ -2368,22 +2368,30 @@ void WebContentsImpl::OnPpapiBrokerPermissionResult(int request_id,
                                                     result));
 }
 
-void WebContentsImpl::OnBrowserPluginNavigateGuest(
+void WebContentsImpl::OnBrowserPluginCreateGuest(
     int instance_id,
-    const std::string& src,
-    const BrowserPluginHostMsg_ResizeGuest_Params& resize_params) {
-  // This is the first 'navigate' to a browser plugin, before WebContents has/is
-  // an 'Embedder'; subsequent navigate messages for this WebContents will
-  // be handled by the BrowserPluginEmbedderHelper of the embedder itself (this
-  // also means any message from browser plugin renderer prior to NavigateGuest
-  // which is not NavigateGuest will be ignored). Therefore
-  // |browser_plugin_embedder_| should not be set.
+    const std::string& storage_partition_id,
+    bool persist_storage) {
+  // This creates a BrowserPluginEmbedder, which handles all the BrowserPlugin
+  // specific messages for this WebContents (through its
+  // BrowserPluginEmbedderHelper). This means that any message from browser
+  // plugin renderer prior to CreateGuest will be ignored.
   // For more info, see comment above classes BrowserPluginEmbedder and
   // BrowserPluginGuest.
   CHECK(!browser_plugin_embedder_.get());
 
   browser_plugin_embedder_.reset(
       content::BrowserPluginEmbedder::Create(this, GetRenderViewHost()));
+  browser_plugin_embedder_->CreateGuest(GetRenderViewHost(),
+                                        instance_id,
+                                        storage_partition_id,
+                                        persist_storage);
+}
+
+void WebContentsImpl::OnBrowserPluginNavigateGuest(
+    int instance_id,
+    const std::string& src,
+    const BrowserPluginHostMsg_ResizeGuest_Params& resize_params) {
   browser_plugin_embedder_->NavigateGuest(GetRenderViewHost(),
                                           instance_id,
                                           src,

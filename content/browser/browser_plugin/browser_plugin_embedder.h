@@ -62,6 +62,12 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver,
   static BrowserPluginEmbedder* Create(WebContentsImpl* web_contents,
                                        RenderViewHost* render_view_host);
 
+  // Creates a new guest.
+  void CreateGuest(RenderViewHost* render_view_host,
+                   int instance_id,
+                   std::string storage_partition_id,
+                   bool persist_storage);
+
   // Navigates in a guest (new or existing).
   void NavigateGuest(
       RenderViewHost* render_view_host,

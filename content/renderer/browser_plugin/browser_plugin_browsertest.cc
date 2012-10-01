@@ -133,6 +133,12 @@ TEST_F(BrowserPluginTest, SrcAttribute) {
   // Verify that we're reporting the correct URL to navigate to based on the
   // src attribute.
   {
+    // Ensure we get a CreateGuest on the initial navigation.
+    const IPC::Message* create_msg =
+    browser_plugin_manager()->sink().GetUniqueMessageMatching(
+        BrowserPluginHostMsg_CreateGuest::ID);
+    ASSERT_TRUE(create_msg);
+
     const IPC::Message* msg =
     browser_plugin_manager()->sink().GetUniqueMessageMatching(
         BrowserPluginHostMsg_NavigateGuest::ID);
@@ -155,6 +161,12 @@ TEST_F(BrowserPluginTest, SrcAttribute) {
   // Verify that the src attribute is updated as well.
   ExecuteJavaScript("document.getElementById('browserplugin').src = 'bar'");
   {
+    // Verify that we do not get a CreateGuest on subsequent navigations.
+    const IPC::Message* create_msg =
+    browser_plugin_manager()->sink().GetUniqueMessageMatching(
+        BrowserPluginHostMsg_CreateGuest::ID);
+    ASSERT_FALSE(create_msg);
+
     const IPC::Message* msg =
       browser_plugin_manager()->sink().GetUniqueMessageMatching(
           BrowserPluginHostMsg_NavigateGuest::ID);
@@ -426,6 +438,22 @@ TEST_F(BrowserPluginTest, ImmutableAttributesAfterNavigation) {
 
   ExecuteJavaScript("document.getElementById('browserplugin').src = 'bar'");
   {
+    const IPC::Message* create_msg =
+    browser_plugin_manager()->sink().GetUniqueMessageMatching(
+        BrowserPluginHostMsg_CreateGuest::ID);
+    ASSERT_TRUE(create_msg);
+
+    int create_instance_id;
+    std::string storage_partition;
+    bool persist_storage = true;
+    BrowserPluginHostMsg_CreateGuest::Read(
+        create_msg,
+        &create_instance_id,
+        &storage_partition,
+        &persist_storage);
+    EXPECT_STREQ("storage", storage_partition.c_str());
+    EXPECT_FALSE(persist_storage);
+
     const IPC::Message* msg =
         browser_plugin_manager()->sink().GetUniqueMessageMatching(
             BrowserPluginHostMsg_NavigateGuest::ID);
@@ -440,6 +468,7 @@ TEST_F(BrowserPluginTest, ImmutableAttributesAfterNavigation) {
         &src,
         &resize_params);
     EXPECT_STREQ("bar", src.c_str());
+    EXPECT_EQ(create_instance_id, instance_id);
   }
 
   // Setting the partition should throw an exception and the value should not

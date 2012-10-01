@@ -77,43 +77,49 @@ void BrowserPluginEmbedder::AddGuest(int instance_id,
   guest_web_contents_by_instance_id_[instance_id] = guest_web_contents;
 }
 
+void BrowserPluginEmbedder::CreateGuest(RenderViewHost* render_view_host,
+                                        int instance_id,
+                                        std::string storage_partition_id,
+                                        bool persist_storage) {
+  WebContentsImpl* guest_web_contents = NULL;
+  BrowserPluginGuest* guest = GetGuestByInstanceID(instance_id);
+  CHECK(!guest);
+
+  const std::string& host =
+      render_view_host->GetSiteInstance()->GetSiteURL().host();
+  guest_web_contents = WebContentsImpl::CreateGuest(
+      web_contents()->GetBrowserContext(),
+      host,
+      instance_id);
+
+  guest = guest_web_contents->GetBrowserPluginGuest();
+  guest->set_embedder_render_process_host(render_view_host->GetProcess());
+
+  RendererPreferences* guest_renderer_prefs =
+      guest_web_contents->GetMutableRendererPrefs();
+  // Copy renderer preferences (and nothing else) from the embedder's
+  // TabContents to the guest.
+  //
+  // For GTK and Aura this is necessary to get proper renderer configuration
+  // values for caret blinking interval, colors related to selection and
+  // focus.
+  *guest_renderer_prefs = *web_contents()->GetMutableRendererPrefs();
+
+  guest_renderer_prefs->throttle_input_events = false;
+  AddGuest(instance_id, guest_web_contents);
+  guest_web_contents->SetDelegate(guest);
+}
+
 void BrowserPluginEmbedder::NavigateGuest(
     RenderViewHost* render_view_host,
     int instance_id,
     const std::string& src,
     const BrowserPluginHostMsg_ResizeGuest_Params& resize_params) {
   BrowserPluginGuest* guest = GetGuestByInstanceID(instance_id);
-  WebContentsImpl* guest_web_contents = NULL;
+  CHECK(guest);
   GURL url(src);
-  if (!guest) {
-    const std::string& host =
-        render_view_host->GetSiteInstance()->GetSiteURL().host();
-    guest_web_contents = WebContentsImpl::CreateGuest(
-        web_contents()->GetBrowserContext(),
-        host,
-        instance_id);
-
-    guest = guest_web_contents->GetBrowserPluginGuest();
-    guest->set_embedder_render_process_host(
-        render_view_host->GetProcess());
-
-    RendererPreferences* guest_renderer_prefs =
-        guest_web_contents->GetMutableRendererPrefs();
-    // Copy renderer preferences (and nothing else) from the embedder's
-    // TabContents to the guest.
-    //
-    // For GTK and Aura this is necessary to get proper renderer configuration
-    // values for caret blinking interval, colors related to selection and
-    // focus.
-    *guest_renderer_prefs = *web_contents()->GetMutableRendererPrefs();
-
-    guest_renderer_prefs->throttle_input_events = false;
-    AddGuest(instance_id, guest_web_contents);
-    guest_web_contents->SetDelegate(guest);
-  } else {
-    guest_web_contents =
-        static_cast<WebContentsImpl*>(guest->GetWebContents());
-  }
+  WebContentsImpl* guest_web_contents =
+      static_cast<WebContentsImpl*>(guest->GetWebContents());
 
   // We ignore loading empty urls in web_contents.
   // If a guest sets empty src attribute after it has navigated to some

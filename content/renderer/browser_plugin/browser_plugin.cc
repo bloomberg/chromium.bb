@@ -94,10 +94,24 @@ std::string BrowserPlugin::GetSrcAttribute() const {
 void BrowserPlugin::SetSrcAttribute(const std::string& src) {
   if (src == src_ && !guest_crashed_)
     return;
-  if (!src.empty() || navigate_src_sent_) {
+
+  // If we haven't created the guest yet, do so now, if |src| is not empty and
+  // we will navigate it right after creation. If |src| is empty, we can delay
+  // the creation until we acutally need it.
+  if (!navigate_src_sent_ && !src.empty()) {
+    BrowserPluginManager::Get()->Send(
+        new BrowserPluginHostMsg_CreateGuest(
+            render_view_->GetRoutingID(),
+            instance_id_,
+            storage_partition_id_,
+            persist_storage_));
+  }
+
+  if (navigate_src_sent_ || !src.empty()) {
     scoped_ptr<BrowserPluginHostMsg_ResizeGuest_Params> params(
         GetPendingResizeParams());
     DCHECK(!params->resize_pending);
+
     BrowserPluginManager::Get()->Send(
         new BrowserPluginHostMsg_NavigateGuest(
             render_view_->GetRoutingID(),

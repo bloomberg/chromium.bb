@@ -571,6 +571,9 @@ class CONTENT_EXPORT WebContentsImpl
   void OnRequestPpapiBrokerPermission(int request_id,
                                       const GURL& url,
                                       const FilePath& plugin_path);
+  void OnBrowserPluginCreateGuest(int instance_id,
+                                  const std::string& storage_partition_id,
+                                  bool persist_storage);
   void OnBrowserPluginNavigateGuest(
       int instance_id,
       const std::string& src,

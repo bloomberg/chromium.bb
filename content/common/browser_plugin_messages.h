@@ -28,6 +28,14 @@
 // -----------------------------------------------------------------------------
 // These messages are from the embedder to the browser process.
 
+// This message is sent to the browser process to create the browser plugin
+// embedder and helper. It is sent once prior to sending the first
+// BrowserPluginHostMsg_NavigateGuest message.
+IPC_MESSAGE_ROUTED3(BrowserPluginHostMsg_CreateGuest,
+                    int /* instance_id */,
+                    std::string /* storage_partition_id */,
+                    bool /* persist_storage */)
+
 // Tells the guest to navigate to an entry |relative_index| away from the
 // current navigation entry.
 IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_Go,
