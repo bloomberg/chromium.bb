@@ -31,6 +31,9 @@ class AutofillPopupViewViews : public views::WidgetDelegateView,
   // views:Views implementation.
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
+  // KeyboardListener implementation.
+  virtual bool HandleKeyPressEvent(ui::KeyEvent* event) OVERRIDE;
+
   // AutofillPopupView implementation.
   virtual void ShowInternal() OVERRIDE;
   virtual void HideInternal() OVERRIDE;

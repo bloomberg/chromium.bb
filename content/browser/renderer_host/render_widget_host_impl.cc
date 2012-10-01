@@ -47,6 +47,7 @@
 #if defined(OS_WIN)
 #include "third_party/WebKit/Source/WebKit/chromium/public/win/WebScreenInfoFactory.h"
 #endif
+#include "ui/base/events/event.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/skbitmap_operations.h"
 #include "webkit/glue/webcursor.h"
@@ -1066,6 +1067,21 @@ bool RenderWidgetHostImpl::KeyPressListenersHandleEvent(GdkEventKey* event) {
   return false;
 }
 #endif  // defined(TOOLKIT_GTK)
+
+#if defined(TOOLKIT_VIEWS)
+bool RenderWidgetHostImpl::KeyPressListenersHandleEvent(ui::KeyEvent* event) {
+  if (event->type() != ui::ET_KEY_PRESSED)
+    return false;
+
+  for (std::list<KeyboardListener*>::iterator it = keyboard_listeners_.begin();
+       it != keyboard_listeners_.end(); ++it) {
+    if ((*it)->HandleKeyPressEvent(event))
+      return true;
+  }
+
+  return false;
+}
+#endif  // defined(TOOLKIT_VIEWS)
 
 void RenderWidgetHostImpl::AddKeyboardListener(KeyboardListener* listener) {
   keyboard_listeners_.push_back(listener);

@@ -36,6 +36,7 @@ class TimeTicks;
 }
 
 namespace ui {
+class KeyEvent;
 class Range;
 }
 
@@ -245,6 +246,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // widgets that don't have focus to still handle key presses.
   bool KeyPressListenersHandleEvent(GdkEventKey* event);
 #endif  // defined(TOOLKIT_GTK)
+
+#if defined(TOOLKIT_VIEWS)
+  bool KeyPressListenersHandleEvent(ui::KeyEvent* event);
+#endif  // defined(TOOLKIT_VIEWS)
 
   void CancelUpdateTextDirection();
 

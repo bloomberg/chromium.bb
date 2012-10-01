@@ -33,6 +33,10 @@ void AutofillPopupViewViews::OnPaint(gfx::Canvas* canvas) {
   canvas->DrawColor(kPopupBackground);
 }
 
+bool AutofillPopupViewViews::HandleKeyPressEvent(ui::KeyEvent* event) {
+  return false;
+}
+
 void AutofillPopupViewViews::ShowInternal() {
   if (!GetWidget()) {
     // The widget is destroyed by the corresponding NativeWidget, so we use
