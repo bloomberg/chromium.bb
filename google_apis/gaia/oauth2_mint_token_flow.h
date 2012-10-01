@@ -103,10 +103,6 @@ class OAuth2MintTokenFlow : public OAuth2ApiCallFlow {
                       const Parameters& parameters);
   virtual ~OAuth2MintTokenFlow();
 
-  // Starts the flow, and deletes |this| when done. Useful when the caller
-  // does not care about the response (|delegate_| is NULL).
-  void FireAndForget();
-
  protected:
   // Implementation of template methods in OAuth2ApiCallFlow.
   virtual GURL CreateApiCallUrl() OVERRIDE;
@@ -139,12 +135,8 @@ class OAuth2MintTokenFlow : public OAuth2ApiCallFlow {
   static bool ParseMintTokenResponse(
       const base::DictionaryValue* dict, std::string* access_token);
 
-  net::URLRequestContextGetter* context_;
   Delegate* delegate_;
   Parameters parameters_;
-  // If true, |this| owns itself and will delete itself after reporting
-  // success or failure.
-  bool delete_when_done_;
   base::WeakPtrFactory<OAuth2MintTokenFlow> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(OAuth2MintTokenFlow);

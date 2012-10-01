@@ -18,6 +18,8 @@
 #include "chrome/common/extensions/api/permissions.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "google_apis/gaia/oauth2_mint_token_flow.h"
@@ -33,7 +35,59 @@ namespace {
 const char kOnAdded[] = "permissions.onAdded";
 const char kOnRemoved[] = "permissions.onRemoved";
 
-}
+// An object to link the lifetime of an OAuth2MintTokenFlow to a Profile.
+// The flow should not outlive the profile because the request context will
+// become invalid.
+class OAuth2GrantRecorder : public OAuth2MintTokenFlow::Delegate,
+                            public content::NotificationObserver {
+ public:
+  OAuth2GrantRecorder(Profile* profile, const Extension* extension)
+    : ALLOW_THIS_IN_INITIALIZER_LIST(flow_(
+          profile->GetRequestContext(),
+          this,
+          OAuth2MintTokenFlow::Parameters(
+              TokenServiceFactory::GetForProfile(profile)->
+                  GetOAuth2LoginRefreshToken(),
+              extension->id(),
+              extension->oauth2_info().client_id,
+              extension->oauth2_info().scopes,
+              OAuth2MintTokenFlow::MODE_RECORD_GRANT))) {
+    notification_registrar_.Add(this,
+                                chrome::NOTIFICATION_PROFILE_DESTROYED,
+                                content::Source<Profile>(profile));
+
+    flow_.Start();
+  }
+
+  // content::NotificationObserver:
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) OVERRIDE {
+    DCHECK_EQ(type, chrome::NOTIFICATION_PROFILE_DESTROYED);
+    delete this;
+  }
+
+  // OAuth2MintTokenFlow::Delegate:
+  virtual void OnMintTokenSuccess(const std::string& access_token) OVERRIDE {
+    delete this;
+  }
+  virtual void OnIssueAdviceSuccess(
+      const IssueAdviceInfo& issue_advice) OVERRIDE {
+    delete this;
+  }
+  virtual void OnMintTokenFailure(
+      const GoogleServiceAuthError& error) OVERRIDE {
+    delete this;
+  }
+
+ private:
+  virtual ~OAuth2GrantRecorder() {}
+
+  OAuth2MintTokenFlow flow_;
+  content::NotificationRegistrar notification_registrar_;
+};
+
+}  // namespace
 
 PermissionsUpdater::PermissionsUpdater(Profile* profile)
     : profile_(profile) {}
@@ -85,7 +139,7 @@ void PermissionsUpdater::GrantActivePermissions(const Extension* extension,
     return;
 
   if (record_oauth2_grant)
-    RecordOAuth2Grant(extension);
+    new OAuth2GrantRecorder(profile_, extension);
 
   GetExtensionPrefs()->AddGrantedPermissions(extension->id(),
                                              extension->GetActivePermissions());
@@ -95,19 +149,6 @@ void PermissionsUpdater::UpdateActivePermissions(
     const Extension* extension, const PermissionSet* permissions) {
   GetExtensionPrefs()->SetActivePermissions(extension->id(), permissions);
   extension->SetActivePermissions(permissions);
-}
-
-void PermissionsUpdater::RecordOAuth2Grant(const Extension* extension) {
-  TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
-  OAuth2MintTokenFlow* flow = new OAuth2MintTokenFlow(
-      profile_->GetRequestContext(), NULL, OAuth2MintTokenFlow::Parameters(
-          token_service->GetOAuth2LoginRefreshToken(),
-          extension->id(),
-          extension->oauth2_info().client_id,
-          extension->oauth2_info().scopes,
-          OAuth2MintTokenFlow::MODE_RECORD_GRANT));
-  // |flow| will delete itself.
-  flow->FireAndForget();
 }
 
 void PermissionsUpdater::DispatchEvent(

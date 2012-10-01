@@ -54,9 +54,6 @@ class PermissionsUpdater {
     REMOVED,
   };
 
-  // Records the oauth2 grant for the scopes specified in |permissions|.
-  void RecordOAuth2Grant(const Extension* extension);
-
   // Dispatches specified event to the extension.
   void DispatchEvent(const std::string& extension_id,
                      const char* event_name,

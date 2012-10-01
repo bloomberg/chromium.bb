@@ -96,23 +96,14 @@ OAuth2MintTokenFlow::OAuth2MintTokenFlow(
     : OAuth2ApiCallFlow(
           context, parameters.login_refresh_token,
           "", std::vector<std::string>()),
-      context_(context),
       delegate_(delegate),
       parameters_(parameters),
-      delete_when_done_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
 }
 
 OAuth2MintTokenFlow::~OAuth2MintTokenFlow() { }
 
-void OAuth2MintTokenFlow::FireAndForget() {
-  delete_when_done_ = true;
-  Start();
-}
-
 void OAuth2MintTokenFlow::ReportSuccess(const std::string& access_token) {
-  scoped_ptr<OAuth2MintTokenFlow> will_delete(delete_when_done_ ? this : NULL);
-
   if (delegate_)
     delegate_->OnMintTokenSuccess(access_token);
 
@@ -121,8 +112,6 @@ void OAuth2MintTokenFlow::ReportSuccess(const std::string& access_token) {
 
 void OAuth2MintTokenFlow::ReportIssueAdviceSuccess(
     const IssueAdviceInfo& issue_advice) {
-  scoped_ptr<OAuth2MintTokenFlow> will_delete(delete_when_done_ ? this : NULL);
-
   if (delegate_)
     delegate_->OnIssueAdviceSuccess(issue_advice);
 
@@ -131,8 +120,6 @@ void OAuth2MintTokenFlow::ReportIssueAdviceSuccess(
 
 void OAuth2MintTokenFlow::ReportFailure(
     const GoogleServiceAuthError& error) {
-  scoped_ptr<OAuth2MintTokenFlow> will_delete(delete_when_done_ ? this : NULL);
-
   if (delegate_)
     delegate_->OnMintTokenFailure(error);
 
