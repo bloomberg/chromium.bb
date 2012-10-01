@@ -239,29 +239,29 @@ HRESULT XPSModule::CloseProvider(HPTPROVIDER provider) {
 }
 
 ScopedXPSInitializer::ScopedXPSInitializer() : initialized_(false) {
-  if (XPSModule::Init()) {
-    // Calls to XPS APIs typically require the XPS provider to be opened with
-    // PTOpenProvider. PTOpenProvider calls CoInitializeEx with
-    // COINIT_MULTITHREADED. We have seen certain buggy HP printer driver DLLs
-    // that call CoInitializeEx with COINIT_APARTMENTTHREADED in the context of
-    // PTGetPrintCapabilities. This call fails but the printer driver calls
-    // CoUninitialize anyway. This results in the apartment being torn down too
-    // early and the msxml DLL being unloaded which in turn causes code in
-    // unidrvui.dll to have a dangling pointer to an XML document which causes a
-    // crash. To protect ourselves from such drivers we make sure we always have
-    // an extra CoInitialize (calls to CoInitialize/CoUninitialize are
-    // refcounted).
-    HRESULT coinit_ret = CoInitializeEx(NULL, COINIT_MULTITHREADED);
-    // If this succeeded we are done because the PTOpenProvider call will
-    // provide the extra refcount on the apartment. If it failed because someone
-    // already called CoInitializeEx with COINIT_APARTMENTTHREADED, we try
-    // the other model to provide the additional refcount (since we don't know
-    // which model buggy printer drivers will use).
-    if (coinit_ret == RPC_E_CHANGED_MODE)
-      coinit_ret = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
-    DCHECK(SUCCEEDED(coinit_ret));
-    initialized_ = true;
-  }
+  if (!XPSModule::Init())
+    return;
+  // Calls to XPS APIs typically require the XPS provider to be opened with
+  // PTOpenProvider. PTOpenProvider calls CoInitializeEx with
+  // COINIT_MULTITHREADED. We have seen certain buggy HP printer driver DLLs
+  // that call CoInitializeEx with COINIT_APARTMENTTHREADED in the context of
+  // PTGetPrintCapabilities. This call fails but the printer driver calls
+  // CoUninitialize anyway. This results in the apartment being torn down too
+  // early and the msxml DLL being unloaded which in turn causes code in
+  // unidrvui.dll to have a dangling pointer to an XML document which causes a
+  // crash. To protect ourselves from such drivers we make sure we always have
+  // an extra CoInitialize (calls to CoInitialize/CoUninitialize are
+  // refcounted).
+  HRESULT hr = CoInitializeEx(NULL, COINIT_MULTITHREADED);
+  // If this succeeded we are done because the PTOpenProvider call will provide
+  // the extra refcount on the apartment. If it failed because someone already
+  // called CoInitializeEx with COINIT_APARTMENTTHREADED, we try the other model
+  // to provide the additional refcount (since we don't know which model buggy
+  // printer drivers will use).
+  if (!SUCCEEDED(hr))
+    hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
+  DCHECK(SUCCEEDED(hr));
+  initialized_ = true;
 }
 
 ScopedXPSInitializer::~ScopedXPSInitializer() {

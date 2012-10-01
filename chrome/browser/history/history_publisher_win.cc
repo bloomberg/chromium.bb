@@ -20,36 +20,22 @@
 
 namespace {
 
-// Instantiates a IChromeHistoryIndexer COM object. Takes a COM class id
-// in |name| and returns the object in |indexer|. Returns false if the
-// operation fails.
-bool CoCreateIndexerFromName(const wchar_t* name,
-                             IChromeHistoryIndexer** indexer) {
-  CLSID clsid;
-  HRESULT hr = CLSIDFromString(const_cast<wchar_t*>(name), &clsid);
-  if (FAILED(hr))
-    return false;
-  hr = CoCreateInstance(clsid, NULL, CLSCTX_INPROC,
-                        __uuidof(IChromeHistoryIndexer),
-                        reinterpret_cast<void**>(indexer));
-  if (FAILED(hr))
-    return false;
-  return true;
-}
-
 // Instantiates the registered indexers from the registry |root| + |path| key
 // and adds them to the |indexers| list.
-void AddRegisteredIndexers(HKEY root, const wchar_t* path,
+void AddRegisteredIndexers(
+    HKEY root,
+    const wchar_t* path,
     std::vector< base::win::ScopedComPtr<IChromeHistoryIndexer> >* indexers) {
-  IChromeHistoryIndexer* indexer;
-  base::win::RegistryKeyIterator r_iter(root, path);
-  while (r_iter.Valid()) {
-    if (CoCreateIndexerFromName(r_iter.Name(), &indexer)) {
-      indexers->push_back(
-          base::win::ScopedComPtr<IChromeHistoryIndexer>(indexer));
-      indexer->Release();
+  for (base::win::RegistryKeyIterator r_iter(root, path); r_iter.Valid();
+       ++r_iter) {
+    CLSID clsid;
+    if (FAILED(CLSIDFromString(const_cast<wchar_t*>(r_iter.Name()), &clsid)))
+      continue;
+    base::win::ScopedComPtr<IChromeHistoryIndexer> indexer;
+    if (SUCCEEDED(indexer.CreateInstance(clsid, NULL, CLSCTX_INPROC))) {
+      indexers->push_back(indexer);
+      indexer.Release();
     }
-    ++r_iter;
   }
 }
 

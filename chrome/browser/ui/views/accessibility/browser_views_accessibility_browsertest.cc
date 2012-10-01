@@ -31,82 +31,87 @@ VARIANT id_self = {VT_I4, CHILDID_SELF};
 
 class BrowserViewsAccessibilityTest : public InProcessBrowserTest {
  public:
-  BrowserViewsAccessibilityTest() {
-    ui::win::CreateATLModuleIfNeeded();
-    ::CoInitialize(NULL);
-  }
+  BrowserViewsAccessibilityTest();
+  virtual ~BrowserViewsAccessibilityTest();
 
-  ~BrowserViewsAccessibilityTest() {
-    ::CoUninitialize();
-  }
+  // Retrieves an instance of BrowserWindowTesting.
+  BrowserWindowTesting* GetBrowserWindowTesting();
 
-  // Retrieves an instance of BrowserWindowTesting
-  BrowserWindowTesting* GetBrowserWindowTesting() {
-    BrowserWindow* browser_window = browser()->window();
-
-    if (!browser_window)
-      return NULL;
-
-    return browser_window->GetBrowserWindowTesting();
-  }
-
-  // Retrieve an instance of BrowserView
-  BrowserView* GetBrowserView() {
-    return BrowserView::GetBrowserViewForBrowser(browser());
-  }
+  // Retrieve an instance of BrowserView.
+  BrowserView* GetBrowserView();
 
   // Retrieves and initializes an instance of ToolbarView.
-  ToolbarView* GetToolbarView() {
-    BrowserWindowTesting* browser_window_testing = GetBrowserWindowTesting();
-
-    if (!browser_window_testing)
-      return NULL;
-
-    return browser_window_testing->GetToolbarView();
-  }
+  ToolbarView* GetToolbarView();
 
   // Retrieves and initializes an instance of BookmarkBarView.
-  BookmarkBarView* GetBookmarkBarView() {
-    BrowserWindowTesting* browser_window_testing = GetBrowserWindowTesting();
-
-    if (!browser_window_testing)
-      return NULL;
-
-    return browser_window_testing->GetBookmarkBarView();
-  }
+  BookmarkBarView* GetBookmarkBarView();
 
   // Retrieves and verifies the accessibility object for the given View.
-  void TestViewAccessibilityObject(views::View* view, std::wstring name,
-                                   int32 role) {
-    ASSERT_TRUE(NULL != view);
-
-    TestAccessibilityInfo(view->GetNativeViewAccessible(), name, role);
-  }
-
+  void TestViewAccessibilityObject(views::View* view,
+                                   std::wstring name,
+                                   int32 role);
 
   // Verifies MSAA Name and Role properties of the given IAccessible.
-  void TestAccessibilityInfo(IAccessible* acc_obj, std::wstring name,
-                             int32 role) {
-    // Verify MSAA Name property.
-    BSTR acc_name;
-
-    HRESULT hr = acc_obj->get_accName(id_self, &acc_name);
-    ASSERT_EQ(S_OK, hr);
-    EXPECT_STREQ(acc_name, name.c_str());
-
-    // Verify MSAA Role property.
-    VARIANT acc_role;
-    ::VariantInit(&acc_role);
-
-    hr = acc_obj->get_accRole(id_self, &acc_role);
-    ASSERT_EQ(S_OK, hr);
-    EXPECT_EQ(VT_I4, acc_role.vt);
-    EXPECT_EQ(role, acc_role.lVal);
-
-    ::VariantClear(&acc_role);
-    ::SysFreeString(acc_name);
-  }
+  void TestAccessibilityInfo(IAccessible* acc_obj,
+                             std::wstring name,
+                             int32 role);
 };
+
+BrowserViewsAccessibilityTest::BrowserViewsAccessibilityTest() {
+  ui::win::CreateATLModuleIfNeeded();
+  ::CoInitialize(NULL);
+}
+
+BrowserViewsAccessibilityTest::~BrowserViewsAccessibilityTest() {
+  ::CoUninitialize();
+}
+
+BrowserWindowTesting* BrowserViewsAccessibilityTest::GetBrowserWindowTesting() {
+  BrowserWindow* browser_window = browser()->window();
+  return browser_window ? browser_window->GetBrowserWindowTesting() : NULL;
+}
+
+BrowserView* BrowserViewsAccessibilityTest::GetBrowserView() {
+  return BrowserView::GetBrowserViewForBrowser(browser());
+}
+
+ToolbarView* BrowserViewsAccessibilityTest::GetToolbarView() {
+  BrowserWindowTesting* browser_window_testing = GetBrowserWindowTesting();
+  return browser_window_testing ?
+      browser_window_testing->GetToolbarView() : NULL;
+}
+
+BookmarkBarView* BrowserViewsAccessibilityTest::GetBookmarkBarView() {
+  BrowserWindowTesting* browser_window_testing = GetBrowserWindowTesting();
+  return browser_window_testing ?
+      browser_window_testing->GetBookmarkBarView() : NULL;
+}
+
+void BrowserViewsAccessibilityTest::TestViewAccessibilityObject(
+    views::View* view,
+    std::wstring name,
+    int32 role) {
+  ASSERT_TRUE(view != NULL);
+  TestAccessibilityInfo(view->GetNativeViewAccessible(), name, role);
+}
+
+void BrowserViewsAccessibilityTest::TestAccessibilityInfo(IAccessible* acc_obj,
+                                                          std::wstring name,
+                                                          int32 role) {
+  // Verify MSAA Name property.
+  BSTR acc_name;
+  ASSERT_EQ(S_OK, acc_obj->get_accName(id_self, &acc_name));
+  EXPECT_STREQ(name.c_str(), acc_name);
+  ::SysFreeString(acc_name);
+
+  // Verify MSAA Role property.
+  VARIANT acc_role;
+  ::VariantInit(&acc_role);
+  ASSERT_EQ(S_OK, acc_obj->get_accRole(id_self, &acc_role));
+  EXPECT_EQ(VT_I4, acc_role.vt);
+  EXPECT_EQ(role, acc_role.lVal);
+  ::VariantClear(&acc_role);
+}
 
 // Retrieve accessibility object for main window and verify accessibility info.
 IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,

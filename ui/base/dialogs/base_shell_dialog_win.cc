@@ -19,7 +19,6 @@ class ShellDialogThread : public base::Thread {
 
  protected:
    void Init();
-
    void CleanUp();
 
  private:

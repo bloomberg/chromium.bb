@@ -21,13 +21,9 @@ const wchar_t kUpdateCommandFlag[] = L"--update-cmd";
 // exit code, or kLaunchFailureExitCode if an error occurs in the waiting.
 DWORD WaitForProcessExitCode(HANDLE handle) {
   DWORD exit_code = 0;
-
-  DWORD wait_result = ::WaitForSingleObject(handle, INFINITE);
-
-  if (wait_result == WAIT_OBJECT_0 && ::GetExitCodeProcess(handle, &exit_code))
-    return exit_code;
-
-  return kLaunchFailureExitCode;
+  return ((::WaitForSingleObject(handle, INFINITE) == WAIT_OBJECT_0) &&
+          ::GetExitCodeProcess(handle, &exit_code)) ?
+      exit_code : kLaunchFailureExitCode;
 }
 
 }  // namespace
