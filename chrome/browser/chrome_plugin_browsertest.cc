@@ -2,8 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <vector>
+
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/utf_string_conversions.h"
@@ -24,6 +29,45 @@
 #include "webkit/plugins/webplugininfo.h"
 
 using content::BrowserThread;
+
+namespace {
+
+class CallbackBarrier : public base::RefCountedThreadSafe<CallbackBarrier> {
+ public:
+  explicit CallbackBarrier(const base::Closure& target_callback)
+      : target_callback_(target_callback),
+        outstanding_callbacks_(0),
+        did_enable_(true) {
+  }
+
+  base::Callback<void(bool)> CreateCallback() {
+    outstanding_callbacks_++;
+    return base::Bind(&CallbackBarrier::MayRunTargetCallback, this);
+  }
+
+ private:
+  friend class base::RefCountedThreadSafe<CallbackBarrier>;
+
+  ~CallbackBarrier() {
+    EXPECT_TRUE(target_callback_.is_null());
+  }
+
+  void MayRunTargetCallback(bool did_enable) {
+    EXPECT_GT(outstanding_callbacks_, 0);
+    did_enable_ = did_enable_ && did_enable;
+    if (--outstanding_callbacks_ == 0) {
+      EXPECT_TRUE(did_enable_);
+      target_callback_.Run();
+      target_callback_.Reset();
+    }
+  }
+
+  base::Closure target_callback_;
+  int outstanding_callbacks_;
+  bool did_enable_;
+};
+
+}  // namespace
 
 class ChromePluginTest : public InProcessBrowserTest {
  protected:
@@ -58,14 +102,14 @@ class ChromePluginTest : public InProcessBrowserTest {
     runner->Run();
   }
 
-  static FilePath GetFlashPath() {
+  static void GetFlashPath(std::vector<FilePath>* paths) {
+    paths->clear();
     std::vector<webkit::WebPluginInfo> plugins = GetPlugins();
     for (std::vector<webkit::WebPluginInfo>::const_iterator it =
-           plugins.begin(); it != plugins.end(); ++it) {
+             plugins.begin(); it != plugins.end(); ++it) {
       if (it->name == ASCIIToUTF16(kFlashPluginName))
-        return it->path;
+        paths->push_back(it->path);
     }
-    return FilePath();
   }
 
   static std::vector<webkit::WebPluginInfo> GetPlugins() {
@@ -79,14 +123,20 @@ class ChromePluginTest : public InProcessBrowserTest {
   }
 
   static void EnableFlash(bool enable, Profile* profile) {
-    FilePath flash_path = GetFlashPath();
-    ASSERT_FALSE(flash_path.empty());
+    std::vector<FilePath> paths;
+    GetFlashPath(&paths);
+    ASSERT_FALSE(paths.empty());
 
     PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(profile);
     scoped_refptr<content::MessageLoopRunner> runner =
         new content::MessageLoopRunner;
-    plugin_prefs->EnablePlugin(enable, flash_path,
-                               base::Bind(&AssertPluginEnabled, runner));
+    scoped_refptr<CallbackBarrier> callback_barrier(
+        new CallbackBarrier(runner->QuitClosure()));
+    for (std::vector<FilePath>::iterator iter = paths.begin();
+         iter != paths.end(); ++iter) {
+      plugin_prefs->EnablePlugin(enable, *iter,
+                                 callback_barrier->CreateCallback());
+    }
     runner->Run();
   }
 
@@ -134,13 +184,6 @@ class ChromePluginTest : public InProcessBrowserTest {
     }
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, quit_task);
   }
-
-  static void AssertPluginEnabled(
-      scoped_refptr<content::MessageLoopRunner> runner,
-      bool did_enable) {
-    ASSERT_TRUE(did_enable);
-    runner->Quit();
-  }
 };
 
 // Tests a bunch of basic scenarios with Flash.
@@ -153,7 +196,9 @@ class ChromePluginTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(ChromePluginTest, MAYBE_Flash) {
   // Official builds always have bundled Flash.
 #if !defined(OFFICIAL_BUILD)
-  if (GetFlashPath().empty()) {
+  std::vector<FilePath> flash_paths;
+  GetFlashPath(&flash_paths);
+  if (flash_paths.empty()) {
     LOG(INFO) << "Test not running because couldn't find Flash.";
     return;
   }
