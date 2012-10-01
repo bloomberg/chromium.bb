@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "ppapi/c/private/ppp_flash_browser_operations.h"
 #include "ppapi/shared_impl/ppp_flash_browser_operations_shared.h"
 
@@ -113,8 +114,10 @@ class PepperFlashSettingsManager {
 
   void EnsureCoreExists();
 
-  // Notified by |core_| when an error occurs.
-  void OnError();
+  // Notifies us that an error occurred in |core|.
+  void OnError(Core* core);
+
+  base::WeakPtrFactory<PepperFlashSettingsManager> weak_ptr_factory_;
 
   // |client_| is not owned by this object and must outlive it.
   Client* client_;

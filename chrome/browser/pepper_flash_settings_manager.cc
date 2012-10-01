@@ -33,11 +33,13 @@ class PepperFlashSettingsManager::Core
     : public IPC::Listener,
       public base::RefCountedThreadSafe<Core, BrowserThread::DeleteOnIOThread> {
  public:
-  Core(PepperFlashSettingsManager* manager,
+  Core(base::WeakPtr<PepperFlashSettingsManager> manager,
        content::BrowserContext* browser_context);
 
   void Initialize();
-  // Stops sending notifications to |manager_| and sets it to NULL.
+
+  // Notifies the core that it has been detached. Afterwards, no method should
+  // be called any more.
   void Detach();
 
   void DeauthorizeContentLicenses(uint32 request_id);
@@ -74,6 +76,13 @@ class PepperFlashSettingsManager::Core
     SET_SITE_PERMISSION,
     GET_SITES_WITH_DATA,
     CLEAR_SITE_DATA,
+  };
+
+  enum State {
+    STATE_UNINITIALIZED = 0,
+    STATE_INITIALIZED,
+    STATE_ERROR,
+    STATE_DETACHED,
   };
 
   struct PendingRequest {
@@ -164,7 +173,7 @@ class PepperFlashSettingsManager::Core
   void OnClearSiteDataResult(uint32 request_id, bool success);
 
   // Used only on the UI thread.
-  PepperFlashSettingsManager* manager_;
+  base::WeakPtr<PepperFlashSettingsManager> manager_;
 
   // Used only on the I/O thread.
   FilePath plugin_data_path_;
@@ -174,10 +183,7 @@ class PepperFlashSettingsManager::Core
   scoped_ptr<IPC::Channel> channel_;
 
   // Used only on the I/O thread.
-  bool initialized_;
-  // Whether Detach() has been called on the UI thread. When it is true, further
-  // work is not necessary. Used only on the I/O thread.
-  bool detached_;
+  State state_;
 
   // Requests that need to be sent once the channel to the broker process is
   // established. Used only on the I/O thread.
@@ -196,11 +202,11 @@ class PepperFlashSettingsManager::Core
   scoped_refptr<PluginPrefs> plugin_prefs_;
 };
 
-PepperFlashSettingsManager::Core::Core(PepperFlashSettingsManager* manager,
-                                       content::BrowserContext* browser_context)
+PepperFlashSettingsManager::Core::Core(
+    base::WeakPtr<PepperFlashSettingsManager> manager,
+    content::BrowserContext* browser_context)
     : manager_(manager),
-      initialized_(false),
-      detached_(false),
+      state_(STATE_UNINITIALIZED),
       browser_context_path_(browser_context->GetPath()),
       plugin_prefs_(PluginPrefs::GetForProfile(
           Profile::FromBrowserContext(browser_context))) {
@@ -220,9 +226,8 @@ void PepperFlashSettingsManager::Core::Initialize() {
 void PepperFlashSettingsManager::Core::Detach() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  manager_ = NULL;
-  // This call guarantees that one ref is retained until |detached_| is set to
-  // true. This is important. Otherwise, if the ref count drops to zero on the
+  // This call guarantees that one ref is retained until we get to the DETACHED
+  // state. This is important. Otherwise, if the ref count drops to zero on the
   // UI thread (which posts a task to delete this object on the I/O thread)
   // while the I/O thread doesn't know about it, methods on the I/O thread might
   // increase the ref count again and cause double deletion.
@@ -265,9 +270,9 @@ void PepperFlashSettingsManager::Core::SetDefaultPermission(
 }
 
 void PepperFlashSettingsManager::Core::SetSitePermission(
-  uint32 request_id,
-  PP_Flash_BrowserOperations_SettingType setting_type,
-  const ppapi::FlashSiteSettings& sites) {
+    uint32 request_id,
+    PP_Flash_BrowserOperations_SettingType setting_type,
+    const ppapi::FlashSiteSettings& sites) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   BrowserThread::PostTask(
@@ -319,7 +324,7 @@ bool PepperFlashSettingsManager::Core::OnMessageReceived(
 
 void PepperFlashSettingsManager::Core::OnChannelError() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (detached_)
+  if (state_ == STATE_DETACHED)
     return;
 
   NotifyErrorFromIOThread();
@@ -329,10 +334,10 @@ void PepperFlashSettingsManager::Core::ConnectToChannel(
     bool success,
     const IPC::ChannelHandle& handle) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (detached_)
+  if (state_ == STATE_DETACHED)
     return;
 
-  DCHECK(!initialized_);
+  DCHECK(state_ == STATE_UNINITIALIZED);
   DCHECK(!channel_.get());
 
   if (!success) {
@@ -348,7 +353,7 @@ void PepperFlashSettingsManager::Core::ConnectToChannel(
     return;
   }
 
-  initialized_ = true;
+  state_ = STATE_INITIALIZED;
 
   std::vector<PendingRequest> temp_pending_requests;
   temp_pending_requests.swap(pending_requests_);
@@ -386,10 +391,7 @@ void PepperFlashSettingsManager::Core::ConnectToChannel(
 
 void PepperFlashSettingsManager::Core::InitializeOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(!initialized_);
-
-  if (detached_)
-    return;
+  DCHECK_EQ(STATE_UNINITIALIZED, state_);
 
   webkit::WebPluginInfo plugin_info;
   if (!PepperFlashSettingsManager::IsPepperFlashInUse(plugin_prefs_.get(),
@@ -415,10 +417,9 @@ void PepperFlashSettingsManager::Core::InitializeOnIOThread() {
 void PepperFlashSettingsManager::Core::DeauthorizeContentLicensesOnIOThread(
     uint32 request_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (detached_)
-    return;
+  DCHECK_NE(STATE_DETACHED, state_);
 
-  if (!initialized_) {
+  if (state_ == STATE_UNINITIALIZED) {
     PendingRequest request;
     request.id = request_id;
     request.type = DEAUTHORIZE_CONTENT_LICENSES;
@@ -428,6 +429,11 @@ void PepperFlashSettingsManager::Core::DeauthorizeContentLicensesOnIOThread(
 
   pending_responses_.insert(
       std::make_pair(request_id, DEAUTHORIZE_CONTENT_LICENSES));
+  if (state_ == STATE_ERROR) {
+    NotifyErrorFromIOThread();
+    return;
+  }
+
   IPC::Message* msg =
       new PpapiMsg_DeauthorizeContentLicenses(request_id, plugin_data_path_);
   if (!channel_->Send(msg)) {
@@ -442,10 +448,9 @@ void PepperFlashSettingsManager::Core::GetPermissionSettingsOnIOThread(
     uint32 request_id,
     PP_Flash_BrowserOperations_SettingType setting_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (detached_)
-    return;
+  DCHECK_NE(STATE_DETACHED, state_);
 
-  if (!initialized_) {
+  if (state_ == STATE_UNINITIALIZED) {
     PendingRequest request;
     request.id = request_id;
     request.type = GET_PERMISSION_SETTINGS;
@@ -456,6 +461,11 @@ void PepperFlashSettingsManager::Core::GetPermissionSettingsOnIOThread(
 
   pending_responses_.insert(
       std::make_pair(request_id, GET_PERMISSION_SETTINGS));
+  if (state_ == STATE_ERROR) {
+    NotifyErrorFromIOThread();
+    return;
+  }
+
   IPC::Message* msg = new PpapiMsg_GetPermissionSettings(
       request_id, plugin_data_path_, setting_type);
   if (!channel_->Send(msg)) {
@@ -472,10 +482,9 @@ void PepperFlashSettingsManager::Core::SetDefaultPermissionOnIOThread(
     PP_Flash_BrowserOperations_Permission permission,
     bool clear_site_specific) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (detached_)
-    return;
+  DCHECK_NE(STATE_DETACHED, state_);
 
-  if (!initialized_) {
+  if (state_ == STATE_UNINITIALIZED) {
     PendingRequest request;
     request.id = request_id;
     request.type = SET_DEFAULT_PERMISSION;
@@ -487,6 +496,11 @@ void PepperFlashSettingsManager::Core::SetDefaultPermissionOnIOThread(
   }
 
   pending_responses_.insert(std::make_pair(request_id, SET_DEFAULT_PERMISSION));
+  if (state_ == STATE_ERROR) {
+    NotifyErrorFromIOThread();
+    return;
+  }
+
   IPC::Message* msg = new PpapiMsg_SetDefaultPermission(
       request_id, plugin_data_path_, setting_type, permission,
       clear_site_specific);
@@ -503,10 +517,9 @@ void PepperFlashSettingsManager::Core::SetSitePermissionOnIOThread(
     PP_Flash_BrowserOperations_SettingType setting_type,
     const ppapi::FlashSiteSettings& sites) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (detached_)
-    return;
+  DCHECK_NE(STATE_DETACHED, state_);
 
-  if (!initialized_) {
+  if (state_ == STATE_UNINITIALIZED) {
     pending_requests_.push_back(PendingRequest());
     PendingRequest& request = pending_requests_.back();
     request.id = request_id;
@@ -517,6 +530,11 @@ void PepperFlashSettingsManager::Core::SetSitePermissionOnIOThread(
   }
 
   pending_responses_.insert(std::make_pair(request_id, SET_SITE_PERMISSION));
+  if (state_ == STATE_ERROR) {
+    NotifyErrorFromIOThread();
+    return;
+  }
+
   IPC::Message* msg = new PpapiMsg_SetSitePermission(
       request_id, plugin_data_path_, setting_type, sites);
   if (!channel_->Send(msg)) {
@@ -530,10 +548,9 @@ void PepperFlashSettingsManager::Core::SetSitePermissionOnIOThread(
 void PepperFlashSettingsManager::Core::GetSitesWithDataOnIOThread(
     uint32 request_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (detached_)
-    return;
+  DCHECK_NE(STATE_DETACHED, state_);
 
-  if (!initialized_) {
+  if (state_ == STATE_UNINITIALIZED) {
     pending_requests_.push_back(PendingRequest());
     PendingRequest& request = pending_requests_.back();
     request.id = request_id;
@@ -542,6 +559,11 @@ void PepperFlashSettingsManager::Core::GetSitesWithDataOnIOThread(
   }
 
   pending_responses_.insert(std::make_pair(request_id, GET_SITES_WITH_DATA));
+  if (state_ == STATE_ERROR) {
+    NotifyErrorFromIOThread();
+    return;
+  }
+
   IPC::Message* msg = new PpapiMsg_GetSitesWithData(
       request_id, plugin_data_path_);
   if (!channel_->Send(msg)) {
@@ -558,10 +580,9 @@ void PepperFlashSettingsManager::Core::ClearSiteDataOnIOThread(
     uint64 flags,
     uint64 max_age) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (detached_)
-    return;
+  DCHECK_NE(STATE_DETACHED, state_);
 
-  if (!initialized_) {
+  if (state_ == STATE_UNINITIALIZED) {
     pending_requests_.push_back(PendingRequest());
     PendingRequest& request = pending_requests_.back();
     request.id = request_id;
@@ -573,6 +594,11 @@ void PepperFlashSettingsManager::Core::ClearSiteDataOnIOThread(
   }
 
   pending_responses_.insert(std::make_pair(request_id, CLEAR_SITE_DATA));
+  if (state_ == STATE_ERROR) {
+    NotifyErrorFromIOThread();
+    return;
+  }
+
   IPC::Message* msg = new PpapiMsg_ClearSiteData(
       request_id, plugin_data_path_, site, flags, max_age);
   if (!channel_->Send(msg)) {
@@ -584,14 +610,15 @@ void PepperFlashSettingsManager::Core::ClearSiteDataOnIOThread(
 }
 
 void PepperFlashSettingsManager::Core::DetachOnIOThread() {
-  detached_ = true;
+  state_ = STATE_DETACHED;
 }
 
 void PepperFlashSettingsManager::Core::NotifyErrorFromIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (detached_)
+  if (state_ == STATE_DETACHED)
     return;
 
+  state_ = STATE_ERROR;
   std::vector<std::pair<uint32, RequestType> > notifications;
   for (std::vector<PendingRequest>::iterator iter = pending_requests_.begin();
        iter != pending_requests_.end(); ++iter) {
@@ -613,7 +640,7 @@ PepperFlashSettingsManager::Core::NotifyDeauthorizeContentLicensesCompleted(
     bool success) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (manager_) {
+  if (manager_.get()) {
     manager_->client_->OnDeauthorizeContentLicensesCompleted(
         request_id, success);
   }
@@ -626,7 +653,7 @@ void PepperFlashSettingsManager::Core::NotifyGetPermissionSettingsCompleted(
     const ppapi::FlashSiteSettings& sites) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (manager_) {
+  if (manager_.get()) {
     manager_->client_->OnGetPermissionSettingsCompleted(
         request_id, success, default_permission, sites);
   }
@@ -637,7 +664,7 @@ void PepperFlashSettingsManager::Core::NotifySetDefaultPermissionCompleted(
     bool success) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (manager_) {
+  if (manager_.get()) {
     manager_->client_->OnSetDefaultPermissionCompleted(
         request_id, success);
   }
@@ -648,7 +675,7 @@ void PepperFlashSettingsManager::Core::NotifySetSitePermissionCompleted(
     bool success) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (manager_) {
+  if (manager_.get()) {
     manager_->client_->OnSetSitePermissionCompleted(
         request_id, success);
   }
@@ -659,7 +686,7 @@ void PepperFlashSettingsManager::Core::NotifyGetSitesWithDataCompleted(
     const std::vector<std::string>& sites) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (manager_) {
+  if (manager_.get()) {
     manager_->client_->OnGetSitesWithDataCompleted(
         request_id, sites);
   }
@@ -670,7 +697,7 @@ void PepperFlashSettingsManager::Core::NotifyClearSiteDataCompleted(
     bool success) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (manager_)
+  if (manager_.get())
     manager_->client_->OnClearSiteDataCompleted(request_id, success);
 }
 
@@ -681,9 +708,9 @@ void PepperFlashSettingsManager::Core::NotifyError(
   scoped_refptr<Core> protector(this);
   for (std::vector<std::pair<uint32, RequestType> >::const_iterator iter =
       notifications.begin(); iter != notifications.end(); ++iter) {
-    // Check |manager_| for each iteration in case Detach() happens in one of
+    // Check |manager_| for each iteration in case it is destroyed in one of
     // the callbacks.
-    if (!manager_)
+    if (!manager_.get())
       return;
 
     switch (iter->second) {
@@ -716,15 +743,15 @@ void PepperFlashSettingsManager::Core::NotifyError(
     }
   }
 
-  if (manager_)
-    manager_->OnError();
+  if (manager_.get())
+    manager_->OnError(this);
 }
 
 void PepperFlashSettingsManager::Core::OnDeauthorizeContentLicensesResult(
     uint32 request_id,
     bool success) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (detached_)
+  if (state_ == STATE_DETACHED)
     return;
 
   DLOG_IF(ERROR, !success) << "DeauthorizeContentLicenses returned error";
@@ -749,7 +776,7 @@ void PepperFlashSettingsManager::Core::OnGetPermissionSettingsResult(
     PP_Flash_BrowserOperations_Permission default_permission,
     const ppapi::FlashSiteSettings& sites) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (detached_)
+  if (state_ == STATE_DETACHED)
     return;
 
   DLOG_IF(ERROR, !success) << "GetPermissionSettings returned error";
@@ -772,7 +799,7 @@ void PepperFlashSettingsManager::Core::OnSetDefaultPermissionResult(
     uint32 request_id,
     bool success) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (detached_)
+  if (state_ == STATE_DETACHED)
     return;
 
   DLOG_IF(ERROR, !success) << "SetDefaultPermission returned error";
@@ -795,7 +822,7 @@ void PepperFlashSettingsManager::Core::OnSetSitePermissionResult(
     uint32 request_id,
     bool success) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (detached_)
+  if (state_ == STATE_DETACHED)
     return;
 
   DLOG_IF(ERROR, !success) << "SetSitePermission returned error";
@@ -818,7 +845,7 @@ void PepperFlashSettingsManager::Core::OnGetSitesWithDataResult(
     uint32 request_id,
     const std::vector<std::string>& sites) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (detached_)
+  if (state_ == STATE_DETACHED)
     return;
 
   std::map<uint32, RequestType>::iterator iter =
@@ -839,7 +866,7 @@ void PepperFlashSettingsManager::Core::OnClearSiteDataResult(
     uint32 request_id,
     bool success) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (detached_)
+  if (state_ == STATE_DETACHED)
     return;
 
   DLOG_IF(ERROR, !success) << "ClearSiteData returned error";
@@ -861,7 +888,8 @@ void PepperFlashSettingsManager::Core::OnClearSiteDataResult(
 PepperFlashSettingsManager::PepperFlashSettingsManager(
     Client* client,
     content::BrowserContext* browser_context)
-    : client_(client),
+    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
+      client_(client),
       browser_context_(browser_context),
       next_request_id_(1) {
   DCHECK(client);
@@ -977,17 +1005,16 @@ uint32 PepperFlashSettingsManager::GetNextRequestId() {
 
 void PepperFlashSettingsManager::EnsureCoreExists() {
   if (!core_.get()) {
-    core_ = new Core(this, browser_context_);
+    core_ = new Core(weak_ptr_factory_.GetWeakPtr(), browser_context_);
     core_->Initialize();
   }
 }
 
-void PepperFlashSettingsManager::OnError() {
-  if (core_.get()) {
-    core_->Detach();
-    core_ = NULL;
-  } else {
-    NOTREACHED();
-  }
-}
+void PepperFlashSettingsManager::OnError(Core* core) {
+  DCHECK(core);
+  if (core != core_.get())
+    return;
 
+  core_->Detach();
+  core_ = NULL;
+}
