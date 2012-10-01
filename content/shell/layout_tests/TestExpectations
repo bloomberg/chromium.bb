@@ -2,4 +2,5 @@
 #
 # See  http://trac.webkit.org/wiki/TestExpectations for more information on this file.
 
-crbug.com/153248 accessibility/canvas-fallback-content-2.html [ Crash ]
+# Crash in WebCore::RenderTextControlSingleLine::layout
+crbug.com/153282 fast/dom/shadow/input-with-validation.html [ Crash ]
