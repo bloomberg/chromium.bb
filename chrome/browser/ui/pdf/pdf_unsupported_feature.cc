@@ -387,8 +387,9 @@ void GotPluginsCallback(int process_id,
     reader = &plugins[i];
     // If the Reader plugin is disabled by policy, don't prompt them.
     PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(tab->profile());
-    if (plugin_prefs->PolicyStatusForPlugin(plugin_metadata->name()) ==
-        PluginPrefs::POLICY_DISABLED) {
+    if (plugin_prefs->PolicyStatusForPlugin(
+        plugin_metadata->name(), reader->version) ==
+            PluginPrefs::POLICY_DISABLED) {
       return;
     }
     break;

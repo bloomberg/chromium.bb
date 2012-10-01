@@ -395,22 +395,13 @@ void PluginsDOMHandler::PluginsLoaded(
 
       std::string enabled_mode;
       PluginPrefs::PolicyStatus plugin_status =
-          plugin_prefs->PolicyStatusForPlugin(group_plugin.name);
+          plugin_prefs->PolicyStatusForPlugin(group_plugin.name,
+                                              group_plugin.version);
       PluginPrefs::PolicyStatus group_status =
-          plugin_prefs->PolicyStatusForPlugin(group_name);
+          plugin_prefs->PolicyStatusForPlugin(group_name, group_plugin.version);
 
-      PluginPrefs::PolicyStatus plugin_status_by_version =
-          plugin_prefs->PolicyStatusForPluginByVersion(group_plugin.name,
-                                                       group_plugin.version);
-      PluginPrefs::PolicyStatus group_status_by_version =
-          plugin_prefs->PolicyStatusForPluginByVersion(group_name,
-                                                       group_plugin.version);
-      if (plugin_status_by_version == PluginPrefs::POLICY_DISABLED ||
-          group_status_by_version == PluginPrefs::POLICY_DISABLED) {
-        all_plugins_enabled_by_policy = false;
-        enabled_mode = "disabledByPolicy";
-      } else if (plugin_status == PluginPrefs::POLICY_ENABLED ||
-                 group_status == PluginPrefs::POLICY_ENABLED) {
+      if (plugin_status == PluginPrefs::POLICY_ENABLED ||
+          group_status == PluginPrefs::POLICY_ENABLED) {
         enabled_mode = "enabledByPolicy";
         all_plugins_disabled_by_policy = false;
       } else {

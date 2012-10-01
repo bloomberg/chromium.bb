@@ -149,20 +149,14 @@ void PluginPrefs::EnablePlugin(
   bool can_enable = true;
   if (PluginService::GetInstance()->GetPluginInfoByPath(path, &plugin)) {
     PluginMetadata* plugin_metadata = finder->GetPluginMetadata(plugin);
-    PolicyStatus plugin_status = PolicyStatusForPlugin(plugin.name);
-    PolicyStatus group_status = PolicyStatusForPlugin(plugin_metadata->name());
+    PolicyStatus plugin_status =
+        PolicyStatusForPlugin(plugin.name, plugin.version);
+    PolicyStatus group_status =
+        PolicyStatusForPlugin(plugin_metadata->name(), plugin.version);
 
-    PolicyStatus plugin_status_by_version =
-        PolicyStatusForPluginByVersion(plugin.name, plugin.version);
-    PolicyStatus group_status_by_version =
-        PolicyStatusForPluginByVersion(plugin_metadata->name(), plugin.version);
     if (enabled) {
-      if (plugin_status == POLICY_DISABLED ||
-          group_status == POLICY_DISABLED ||
-          plugin_status_by_version == POLICY_DISABLED||
-          group_status_by_version == POLICY_DISABLED) {
+      if (plugin_status == POLICY_DISABLED || group_status == POLICY_DISABLED)
         can_enable = false;
-      }
     } else {
       if (plugin_status == POLICY_ENABLED || group_status == POLICY_ENABLED)
         can_enable = false;
@@ -230,8 +224,12 @@ void PluginPrefs::EnablePluginInternal(
 }
 
 PluginPrefs::PolicyStatus PluginPrefs::PolicyStatusForPlugin(
-    const string16& name) const {
+    const string16& name,  const string16& version) const {
   base::AutoLock auto_lock(lock_);
+  if (!version.empty() &&
+      PolicyStatusForPluginByVersion(name, version) == POLICY_DISABLED) {
+    return POLICY_DISABLED;
+  }
   if (IsStringMatchedInSet(name, policy_enabled_plugin_patterns_)) {
     return POLICY_ENABLED;
   } else if (IsStringMatchedInSet(name, policy_disabled_plugin_patterns_) &&
@@ -270,19 +268,11 @@ bool PluginPrefs::IsPluginEnabled(const webkit::WebPluginInfo& plugin) const {
   PluginFinder* finder = PluginFinder::GetInstance();
   string16 group_name = finder->GetPluginMetadata(plugin)->name();
 
-  // Check if the specific version of this plug-in is disabled by policy.
-  PolicyStatus plugin_status_by_version =
-      PolicyStatusForPluginByVersion(plugin.name, plugin.version);
-  PolicyStatus group_status_by_version =
-      PolicyStatusForPluginByVersion(group_name, plugin.version);
-  if (plugin_status_by_version == POLICY_DISABLED ||
-      group_status_by_version == POLICY_DISABLED) {
-    return false;
-  }
+  PolicyStatus plugin_status =
+      PolicyStatusForPlugin(plugin.name, plugin.version);
+  PolicyStatus group_status = PolicyStatusForPlugin(group_name, plugin.version);
 
   // Check if the plug-in or its group is enabled by policy.
-  PolicyStatus plugin_status = PolicyStatusForPlugin(plugin.name);
-  PolicyStatus group_status = PolicyStatusForPlugin(group_name);
   if (plugin_status == POLICY_ENABLED || group_status == POLICY_ENABLED)
     return true;
 

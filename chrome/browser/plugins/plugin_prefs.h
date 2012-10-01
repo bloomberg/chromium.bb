@@ -76,11 +76,9 @@ class PluginPrefs : public RefcountedProfileKeyedService,
                     const base::Callback<void(bool)>& callback);
 
   // Returns whether there is a policy enabling or disabling plug-ins of the
-  // given name.
-  PolicyStatus PolicyStatusForPlugin(const string16& name) const;
-  PolicyStatus PolicyStatusForPluginByVersion(
-      const string16& name,
-      const string16& version_str) const;
+  // given name and/or version.
+  PolicyStatus PolicyStatusForPlugin(const string16& name,
+                                     const string16& version) const;
 
   // Returns whether the plugin is enabled or not.
   bool IsPluginEnabled(const webkit::WebPluginInfo& plugin) const;
@@ -164,6 +162,11 @@ class PluginPrefs : public RefcountedProfileKeyedService,
   // Checks if |name| matches any of the patterns in |pattern_set|.
   static bool IsStringMatchedInSet(const string16& name,
                                    const std::set<string16>& pattern_set);
+
+  // Checks if the plug-in is in DisabledByPluginVersions policy.
+  PolicyStatus PolicyStatusForPluginByVersion(
+      const string16& name,
+      const string16& version_str) const;
 
   // Guards access to the following data structures.
   mutable base::Lock lock_;
