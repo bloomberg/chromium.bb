@@ -2411,13 +2411,13 @@ def MakeLinuxEnv():
 
   if linux_env.Bit('build_x86_32'):
     linux_env.Prepend(
-        CCFLAGS = ['-m32', ],
-        LINKFLAGS = ['-m32', '-L/usr/lib32', ],
+        CCFLAGS = ['-m32'],
+        LINKFLAGS = ['-m32'],
         )
   elif linux_env.Bit('build_x86_64'):
     linux_env.Prepend(
-        CCFLAGS = ['-m64', ],
-        LINKFLAGS = ['-m64', '-L/usr/lib64', ],
+        CCFLAGS = ['-m64'],
+        LINKFLAGS = ['-m64'],
         )
   elif linux_env.Bit('build_arm'):
     SetupLinuxEnvArm(linux_env)
