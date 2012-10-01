@@ -273,7 +273,6 @@ class AutofillMetricsTest : public TabContentsTestHarness {
   content::TestBrowserThread file_thread_;
 
   scoped_refptr<TestAutofillManager> autofill_manager_;
-  scoped_ptr<TabAutofillManagerDelegate> manager_delegate_;
   TestPersonalDataManager personal_data_;
 
  private:
@@ -299,10 +298,11 @@ void AutofillMetricsTest::SetUp() {
       profile, NULL);
 
   TabContentsTestHarness::SetUp();
-  manager_delegate_.reset(new TabAutofillManagerDelegate(tab_contents()));
-  autofill_manager_ = new TestAutofillManager(manager_delegate_.get(),
-                                              tab_contents(),
-                                              &personal_data_);
+  TabAutofillManagerDelegate::CreateForWebContents(web_contents());
+  autofill_manager_ = new TestAutofillManager(
+      TabAutofillManagerDelegate::FromWebContents(web_contents()),
+      tab_contents(),
+      &personal_data_);
 
   file_thread_.Start();
 }

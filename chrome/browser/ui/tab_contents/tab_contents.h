@@ -36,7 +36,6 @@ class PasswordManagerDelegate;
 class PrefsTabHelper;
 class Profile;
 class ShellWindow;
-class TabAutofillManagerDelegate;
 class TabContentsTestHarness;
 class TabStripModel;
 class TabStripModelContentsCreator;
@@ -194,7 +193,6 @@ class TabContents : public content::WebContentsObserver {
   // "Tab Helpers" section in the member functions area, above.)
 
   scoped_refptr<AutofillManager> autofill_manager_;
-  scoped_ptr<TabAutofillManagerDelegate> autofill_delegate_;
   scoped_ptr<AutofillExternalDelegate> autofill_external_delegate_;
   scoped_ptr<ConstrainedWindowTabHelper> constrained_window_tab_helper_;
   scoped_ptr<FaviconTabHelper> favicon_tab_helper_;

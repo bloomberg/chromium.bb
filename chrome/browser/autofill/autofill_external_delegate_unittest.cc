@@ -90,9 +90,10 @@ class AutofillExternalDelegateUnitTest : public TabContentsTestHarness {
 
   virtual void SetUp() OVERRIDE {
     TabContentsTestHarness::SetUp();
-    manager_delegate_.reset(new TabAutofillManagerDelegate(tab_contents()));
-    autofill_manager_ = new MockAutofillManager(manager_delegate_.get(),
-                                                tab_contents());
+    TabAutofillManagerDelegate::CreateForWebContents(web_contents());
+    autofill_manager_ = new MockAutofillManager(
+        TabAutofillManagerDelegate::FromWebContents(web_contents()),
+        tab_contents());
     external_delegate_.reset(new MockAutofillExternalDelegate(
         tab_contents(),
         autofill_manager_));
@@ -115,7 +116,6 @@ class AutofillExternalDelegateUnitTest : public TabContentsTestHarness {
     external_delegate_->OnQuery(query_id, form, field, bounds, false);
   }
 
-  scoped_ptr<TabAutofillManagerDelegate> manager_delegate_;
   scoped_refptr<MockAutofillManager> autofill_manager_;
   scoped_ptr<MockAutofillExternalDelegate> external_delegate_;
 

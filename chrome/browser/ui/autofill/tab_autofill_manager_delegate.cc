@@ -21,45 +21,52 @@
 #include "ui/gfx/rect.h"
 #include "webkit/forms/password_form.h"
 
-TabAutofillManagerDelegate::TabAutofillManagerDelegate(TabContents* tab)
-    : tab_(tab) {
-  DCHECK(tab_);
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(TabAutofillManagerDelegate)
+
+TabAutofillManagerDelegate::TabAutofillManagerDelegate(
+    content::WebContents* web_contents)
+    : web_contents_(web_contents) {
+  DCHECK(web_contents);
 }
 
 content::BrowserContext* TabAutofillManagerDelegate::GetBrowserContext() const {
-  return tab_->profile();
+  return web_contents_->GetBrowserContext();
 }
 
 content::BrowserContext*
 TabAutofillManagerDelegate::GetOriginalBrowserContext() const {
-  return tab_->profile()->GetOriginalProfile();
+  return GetOriginalProfile();
 }
 
 Profile* TabAutofillManagerDelegate::GetOriginalProfile() const {
-  return tab_->profile()->GetOriginalProfile();
+  return Profile::FromBrowserContext(web_contents_->GetBrowserContext())->
+      GetOriginalProfile();
 }
 
 InfoBarService* TabAutofillManagerDelegate::GetInfoBarService() {
-  return tab_->infobar_tab_helper();
+  return TabContents::FromWebContents(web_contents_)->infobar_tab_helper();
 }
 
 PrefServiceBase* TabAutofillManagerDelegate::GetPrefs() {
-  return tab_->profile()->GetPrefs();
+  return Profile::FromBrowserContext(web_contents_->GetBrowserContext())->
+      GetPrefs();
 }
 
 ProfileSyncServiceBase* TabAutofillManagerDelegate::GetProfileSyncService() {
-  return ProfileSyncServiceFactory::GetForProfile(tab_->profile());
+  return ProfileSyncServiceFactory::GetForProfile(
+      Profile::FromBrowserContext(web_contents_->GetBrowserContext()));
 }
 
 bool TabAutofillManagerDelegate::IsSavingPasswordsEnabled() const {
-  return tab_->password_manager()->IsSavingEnabled();
+  return TabContents::FromWebContents(web_contents_)->password_manager()->
+      IsSavingEnabled();
 }
 
 void TabAutofillManagerDelegate::ShowAutofillSettings() {
 #if defined(OS_ANDROID)
   NOTIMPLEMENTED();
 #else
-  Browser* browser = browser::FindBrowserWithWebContents(tab_->web_contents());
+  Browser* browser = browser::FindBrowserWithWebContents(web_contents_);
   if (browser)
     chrome::ShowSettingsSubPage(browser, chrome::kAutofillSubPage);
 #endif  // #if defined(OS_ANDROID)
@@ -72,7 +79,7 @@ void TabAutofillManagerDelegate::ShowPasswordGenerationBubble(
 #if defined(OS_ANDROID)
   NOTIMPLEMENTED();
 #else
-  Browser* browser = browser::FindBrowserWithWebContents(tab_->web_contents());
+  Browser* browser = browser::FindBrowserWithWebContents(web_contents_);
   browser->window()->ShowPasswordGenerationBubble(bounds, form, generator);
 #endif  // #if defined(OS_ANDROID)
 }
