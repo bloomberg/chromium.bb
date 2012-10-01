@@ -102,6 +102,7 @@ class CheckoutBase(object):
     self.post_processors = post_processors
     assert self.root_dir
     assert self.project_path
+    assert os.path.isabs(self.project_path)
 
   def get_settings(self, key):
     return get_code_review_setting(self.project_path, key)

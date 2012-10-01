@@ -91,7 +91,7 @@ def main():
         obj = rietveld.Rietveld(options.server, options.email, options.password)
       except rietveld.upload.ClientLoginError, e:
         if sys.stdout.closed:
-          print >> sys.stderr, 'Accessing the issue requires login.'
+          print('Accessing the issue requires proper credentials.')
           return 1
     print('Accessing the issue requires login.')
     obj = rietveld.Rietveld(options.server, None, None)
@@ -105,7 +105,7 @@ def main():
   try:
     patchset = obj.get_patch(options.issue, options.patchset)
   except urllib2.HTTPError, e:
-    print >> sys.stderr, (
+    print(
         'Failed to fetch the patch for issue %d, patchset %d.\n'
         'Try visiting %s/%d') % (
             options.issue, options.patchset,
@@ -113,13 +113,14 @@ def main():
     return 1
   for patch in patchset.patches:
     print(patch)
-  scm_type = scm.determine_scm(options.root_dir)
+  full_dir = os.path.abspath(options.root_dir)
+  scm_type = scm.determine_scm(full_dir)
   if scm_type == 'svn':
-    scm_obj = checkout.SvnCheckout(options.root_dir, None, None, None, None)
+    scm_obj = checkout.SvnCheckout(full_dir, None, None, None, None)
   elif scm_type == 'git':
-    scm_obj = checkout.GitCheckoutBase(options.root_dir, None, None)
+    scm_obj = checkout.GitCheckoutBase(full_dir, None, None)
   elif scm_type == None:
-    scm_obj = checkout.RawCheckout(options.root_dir, None, None)
+    scm_obj = checkout.RawCheckout(full_dir, None, None)
   else:
     parser.error('Couldn\'t determine the scm')
 
@@ -136,11 +137,13 @@ def main():
   try:
     scm_obj.apply_patch(patchset, verbose=True)
   except checkout.PatchApplicationFailed, e:
-    print >> sys.stderr, str(e)
+    print(str(e))
+    print('CWD=%s' % os.getcwd())
+    print('Checkout path=%s' % scm_obj.project_path)
     return 1
 
   if 'DEPS' in map(os.path.basename, patchset.filenames):
-    gclient_root = gclient_utils.FindGclientRoot(options.root_dir)
+    gclient_root = gclient_utils.FindGclientRoot(full_dir)
     if gclient_root and scm_type:
       print(
           'A DEPS file was updated inside a gclient checkout, running gclient '
