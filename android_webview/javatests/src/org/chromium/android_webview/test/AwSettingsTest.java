@@ -9,6 +9,7 @@ import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.util.Pair;
 
+import org.chromium.android_webview.AndroidProtocolHandler;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.TestFileUtil;
 import org.chromium.base.test.util.UrlUtils;
@@ -31,6 +32,7 @@ import java.util.List;
  * application.
  */
 public class AwSettingsTest extends AndroidWebViewTestBase {
+    private static final long TEST_TIMEOUT = 20000L;
     private static final int CHECK_INTERVAL = 100;
 
     private static final boolean ENABLED = true;
@@ -299,6 +301,93 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
             return "<html><body onload=\"document.title = " +
                     "getComputedStyle(document.body).getPropertyValue('font-size');\">"
                     + "</body></html>";
+        }
+    }
+
+    // The purpose of the generator is to provide a sequence of distinct images
+    // to avoid caching side-effects.  As we don't need too many images, I've
+    // found it easier to hardcode image samples. It is possible to generate
+    // images on the fly, but it will require hooking up additional packages.
+    class ImagePageGenerator {
+        public static final String IMAGE_LOADED_STRING = "1";
+        public static final String IMAGE_NOT_LOADED_STRING = "0";
+        private final String[] COLORS = {
+            "AAAAIAAc3j0Ss", "AQABIAEayS9b0", "AgACIAIQ8BmAc", "AwADIAMW5wvJE",
+            "BAAEIAQZNWRTI", "BQAFIAUfInYaQ", "BgAGIAYVG0DB4", "BwAHIAcTDFKIg",
+            "CAAIIAgXCI+Rk", "CQAJIAkRH53Y8", "CgAKIAobJqsDU", "CwALIAsdMblKM",
+            "DAAMIAwS49bQA", "DQANIA0U9MSZY", "DgAOIA4ezfJCw", "DwAPIA8Y2uALo",
+            "D+AQAA/9vaUwc", "D/AQEBANNhzkw" };
+        private final String IMAGE_PREFIX = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAAAAAA" +
+                "6fptVAAAAAXNSR0IArs4c6QAAAA1JREFUCB0BAgD9/w";
+        private final String IMAGE_SUFFIX = "AAAAASUVORK5CYII=";
+        private int mIndex;
+        private boolean mAdvance;
+
+        ImagePageGenerator(int startIndex, boolean advance) {
+            mIndex = startIndex;
+            mAdvance = advance;
+        }
+
+        String getImageSourceNoAdvance() {
+            return IMAGE_PREFIX + COLORS[mIndex] + IMAGE_SUFFIX;
+        }
+
+        String getPageTemplateSource(String imageSrc) {
+            return "<html><head>" +
+                    "<script>function updateTitle(){" +
+                    "document.title=document.getElementById('img').naturalHeight}</script></head>" +
+                    "<body onload='updateTitle();'>" +
+                    "<img id='img' onload='updateTitle();' " +
+                    "src='" + imageSrc + "'></body></html>";
+        }
+
+        String getPageSource() {
+            String result =
+                    getPageTemplateSource("data:image/png;base64," + getImageSourceNoAdvance());
+            if (mAdvance)
+                mIndex += 2;
+            return result;
+        }
+    }
+
+    class AwSettingsLoadImagesAutomaticallyTestHelper extends AwSettingsTestHelper<Boolean> {
+        private ImagePageGenerator mGenerator;
+
+        AwSettingsLoadImagesAutomaticallyTestHelper(
+                ContentViewCore contentViewCore,
+                TestAwContentsClient contentViewClient,
+                ImagePageGenerator generator) throws Throwable {
+            super(contentViewCore, contentViewClient, true);
+            mGenerator = generator;
+        }
+
+        @Override
+        protected Boolean getAlteredValue() {
+            return DISABLED;
+        }
+
+        @Override
+        protected Boolean getInitialValue() {
+            return ENABLED;
+        }
+
+        @Override
+        protected Boolean getCurrentValue() {
+            return mContentSettings.getLoadsImagesAutomatically();
+        }
+
+        @Override
+        protected void setCurrentValue(Boolean value) {
+            mContentSettings.setLoadsImagesAutomatically(value);
+        }
+
+        @Override
+        protected void doEnsureSettingHasValue(Boolean value) throws Throwable {
+            loadDataSync(mGenerator.getPageSource());
+            assertEquals(value == ENABLED ?
+                         ImagePageGenerator.IMAGE_LOADED_STRING :
+                         ImagePageGenerator.IMAGE_NOT_LOADED_STRING,
+                         getTitleOnUiThread());
         }
     }
 
@@ -830,6 +919,143 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
             new AwSettingsDefaultFontSizeTestHelper(views.getView1(), views.getClient1()));
     }
 
+    // The test verifies that disabling images loading by setting
+    // setLoadsImagesAutomatically to false doesn't prevent images already
+    // contained in the memory cache to be displayed.  The cache is shared among
+    // all views, so the image can be put there by another view.
+    @Feature({"Android-WebView", "Preferences"})
+    @SmallTest
+    public void testLoadsImagesAutomaticallyWithCachedImage() throws Throwable {
+        ViewPair views = createViews(NORMAL_VIEW, NORMAL_VIEW);
+        ContentSettings settings0 = getContentSettingsOnUiThread(views.getView0());
+        settings0.setJavaScriptEnabled(true);
+        ContentSettings settings1 = getContentSettingsOnUiThread(views.getView1());
+        settings1.setJavaScriptEnabled(true);
+        ImagePageGenerator generator = new ImagePageGenerator(0, false);
+
+        // First disable images loading and verify it.
+        settings0.setLoadsImagesAutomatically(false);
+        settings1.setLoadsImagesAutomatically(false);
+        loadDataSync(views.getView0(),
+                     views.getClient0().getOnPageFinishedHelper(),
+                     generator.getPageSource(),
+                     "text/html", false);
+        loadDataSync(views.getView1(),
+                     views.getClient1().getOnPageFinishedHelper(),
+                     generator.getPageSource(),
+                     "text/html", false);
+        assertEquals(ImagePageGenerator.IMAGE_NOT_LOADED_STRING,
+                getTitleOnUiThread(views.getView0()));
+        assertEquals(ImagePageGenerator.IMAGE_NOT_LOADED_STRING,
+                getTitleOnUiThread(views.getView1()));
+
+        // Now enable images loading only for view 0.
+        settings0.setLoadsImagesAutomatically(true);
+        loadDataSync(views.getView0(),
+                     views.getClient0().getOnPageFinishedHelper(),
+                     generator.getPageSource(),
+                     "text/html", false);
+        loadDataSync(views.getView1(),
+                     views.getClient1().getOnPageFinishedHelper(),
+                     generator.getPageSource(),
+                     "text/html", false);
+
+        // Once the image has been cached by contentView0, it is available to contentView1.
+        assertEquals(ImagePageGenerator.IMAGE_LOADED_STRING, getTitleOnUiThread(views.getView0()));
+        assertEquals(ImagePageGenerator.IMAGE_LOADED_STRING, getTitleOnUiThread(views.getView1()));
+        ImagePageGenerator generator1 = new ImagePageGenerator(1, false);
+
+        // This is a new image. view 1 can't load it.
+        loadDataSync(views.getView1(),
+                     views.getClient1().getOnPageFinishedHelper(),
+                     generator1.getPageSource(),
+                     "text/html", false);
+        assertEquals(ImagePageGenerator.IMAGE_NOT_LOADED_STRING,
+                     getTitleOnUiThread(views.getView1()));
+        loadDataSync(views.getView0(),
+                     views.getClient0().getOnPageFinishedHelper(),
+                     generator1.getPageSource(),
+                     "text/html", false);
+        loadDataSync(views.getView1(),
+                     views.getClient1().getOnPageFinishedHelper(),
+                     generator1.getPageSource(),
+                     "text/html", false);
+
+        // Once the image has been cached by contentViewCore0, it is available to contentViewCore1.
+        assertEquals(ImagePageGenerator.IMAGE_LOADED_STRING, getTitleOnUiThread(views.getView0()));
+        assertEquals(ImagePageGenerator.IMAGE_LOADED_STRING, getTitleOnUiThread(views.getView1()));
+    }
+
+    // The test verifies that after changing the LoadsImagesAutomatically
+    // setting value from false to true previously skipped images are
+    // automatically loaded.
+    @SmallTest
+    @Feature({"Android-WebView", "Preferences"})
+    public void testLoadsImagesAutomaticallyNoPageReload() throws Throwable {
+        final TestAwContentsClient contentClient = new TestAwContentsClient();
+        final ContentViewCore contentView =
+                createAwTestContainerViewOnMainSync(false, contentClient).getContentViewCore();
+        CallbackHelper onPageFinishedHelper = contentClient.getOnPageFinishedHelper();
+        ContentSettings settings = getContentSettingsOnUiThread(contentView);
+        settings.setJavaScriptEnabled(true);
+        ImagePageGenerator generator = new ImagePageGenerator(0, false);
+        settings.setLoadsImagesAutomatically(false);
+        loadDataSync(contentView,
+                     contentClient.getOnPageFinishedHelper(),
+                     generator.getPageSource(),
+                     "text/html", false);
+        assertEquals(ImagePageGenerator.IMAGE_NOT_LOADED_STRING,
+                getTitleOnUiThread(contentView));
+        settings.setLoadsImagesAutomatically(true);
+        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                try {
+                    return !ImagePageGenerator.IMAGE_NOT_LOADED_STRING.equals(
+                            getTitleOnUiThread(contentView));
+                } catch (Throwable t) {
+                    t.printStackTrace();
+                    fail("Failed to getTitleOnUiThread: " + t.toString());
+                    return false;
+                }
+            }
+        }, TEST_TIMEOUT, CHECK_INTERVAL));
+        assertEquals(ImagePageGenerator.IMAGE_LOADED_STRING, getTitleOnUiThread(contentView));
+    }
+
+    @SmallTest
+    @Feature({"Android-WebView", "Preferences"})
+    public void testLoadsImagesAutomaticallyNormal() throws Throwable {
+        ViewPair views = createViews(NORMAL_VIEW, NORMAL_VIEW);
+        runPerViewSettingsTest(
+            new AwSettingsLoadImagesAutomaticallyTestHelper(
+                views.getView0(), views.getClient0(), new ImagePageGenerator(0, true)),
+            new AwSettingsLoadImagesAutomaticallyTestHelper(
+                views.getView1(), views.getClient1(), new ImagePageGenerator(1, true)));
+    }
+
+    @SmallTest
+    @Feature({"Android-WebView", "Preferences"})
+    public void testLoadsImagesAutomaticallyIncognito() throws Throwable {
+        ViewPair views = createViews(INCOGNITO_VIEW, INCOGNITO_VIEW);
+        runPerViewSettingsTest(
+            new AwSettingsLoadImagesAutomaticallyTestHelper(
+                views.getView0(), views.getClient0(), new ImagePageGenerator(0, true)),
+            new AwSettingsLoadImagesAutomaticallyTestHelper(
+                views.getView1(), views.getClient1(), new ImagePageGenerator(1, true)));
+    }
+
+    @SmallTest
+    @Feature({"Android-WebView", "Preferences"})
+    public void testLoadsImagesAutomaticallyBoth() throws Throwable {
+        ViewPair views = createViews(NORMAL_VIEW, INCOGNITO_VIEW);
+        runPerViewSettingsTest(
+            new AwSettingsLoadImagesAutomaticallyTestHelper(
+                views.getView0(), views.getClient0(), new ImagePageGenerator(0, true)),
+            new AwSettingsLoadImagesAutomaticallyTestHelper(
+                views.getView1(), views.getClient1(), new ImagePageGenerator(1, true)));
+    }
+
     @SmallTest
     @Feature({"Android-WebView", "Preferences"})
     public void testDefaultTextEncodingNormal() throws Throwable {
@@ -1230,6 +1456,160 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         doTestContentUrlFromFile(true);
     }
 
+    @SmallTest
+    @Feature({"Android-WebView", "Preferences"})
+    public void testBlockNetworkImagesDoesNotBlockDataUrlImage() throws Throwable {
+        final TestAwContentsClient contentClient = new TestAwContentsClient();
+        final ContentViewCore contentView =
+                createAwTestContainerViewOnMainSync(false, contentClient).getContentViewCore();
+        final ContentSettings settings = getContentSettingsOnUiThread(contentView);
+        ImagePageGenerator generator = new ImagePageGenerator(0, false);
+
+        settings.setJavaScriptEnabled(true);
+        settings.setImagesEnabled(false);
+        loadDataSync(contentView,
+                     contentClient.getOnPageFinishedHelper(),
+                     generator.getPageSource(),
+                     "text/html",
+                     false);
+        assertEquals(ImagePageGenerator.IMAGE_LOADED_STRING, getTitleOnUiThread(contentView));
+    }
+
+    @SmallTest
+    @Feature({"Android-WebView", "Preferences"})
+    public void testBlockNetworkImagesBlocksNetworkImageAndReloadInPlace() throws Throwable {
+        final TestAwContentsClient contentClient = new TestAwContentsClient();
+        final ContentViewCore contentView =
+                createAwTestContainerViewOnMainSync(false, contentClient).getContentViewCore();
+        final ContentSettings settings = getContentSettingsOnUiThread(contentView);
+        settings.setJavaScriptEnabled(true);
+        ImagePageGenerator generator = new ImagePageGenerator(0, false);
+
+        TestWebServer webServer = null;
+        try {
+            webServer = new TestWebServer(false);
+            List<Pair<String, String>> imageHeaders = new ArrayList<Pair<String, String>>();
+            imageHeaders.add(Pair.create("Content-Type", "image/png"));
+            final String imagePath = "/image.png";
+            webServer.setResponseBase64(
+                imagePath, generator.getImageSourceNoAdvance(), imageHeaders);
+
+            final String pagePath = "/html_image.html";
+            final String httpUrlImageHtml = generator.getPageTemplateSource(imagePath);
+            final String httpImageUrl = webServer.setResponse(pagePath, httpUrlImageHtml, null);
+
+            settings.setImagesEnabled(false);
+            loadUrlSync(contentView, contentClient.getOnPageFinishedHelper(), httpImageUrl);
+            assertEquals(ImagePageGenerator.IMAGE_NOT_LOADED_STRING,
+                         getTitleOnUiThread(contentView));
+
+            settings.setImagesEnabled(true);
+            assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+                @Override
+                public boolean isSatisfied() {
+                    try {
+                        return ImagePageGenerator.IMAGE_NOT_LOADED_STRING.equals(
+                            getTitleOnUiThread(contentView));
+                    } catch (Throwable t) {
+                        t.printStackTrace();
+                        fail("Failed to getTitleOnUIThread: " + t.toString());
+                        return false;
+                    }
+                }
+            }, WAIT_TIMEOUT_SECONDS * 1000, CHECK_INTERVAL));
+        } finally {
+            if (webServer != null) webServer.shutdown();
+        }
+    }
+
+    // Test an assert URL (file:///android_asset/)
+    @SmallTest
+    @Feature({"Android-WebView", "Navigation"})
+    public void testAssetUrl() throws Throwable {
+        // Note: this text needs to be kept in sync with the contents of the html file referenced
+        // below.
+        final String expectedTitle = "Asset File";
+        final TestAwContentsClient contentClient = new TestAwContentsClient();
+        final ContentViewCore contentView =
+                createAwTestContainerViewOnMainSync(false, contentClient).getContentViewCore();
+        try {
+            useTestResourceContext();
+            loadUrlSync(contentView,
+                        contentClient.getOnPageFinishedHelper(),
+                        "file:///android_asset/asset_file.html");
+            assertEquals(expectedTitle, getTitleOnUiThread(contentView));
+        } finally {
+            resetResourceContext();
+        }
+    }
+
+    // Test a resource URL (file:///android_res/).
+    @SmallTest
+    @Feature({"Android-WebView", "Navigation"})
+    public void testResourceUrl() throws Throwable {
+        // Note: this text needs to be kept in sync with the contents of the html file referenced
+        // below.
+        final String expectedTitle = "Resource File";
+        final TestAwContentsClient contentClient = new TestAwContentsClient();
+        final ContentViewCore contentView =
+                createAwTestContainerViewOnMainSync(false, contentClient).getContentViewCore();
+        try {
+            useTestResourceContext();
+            loadUrlSync(contentView,
+                        contentClient.getOnPageFinishedHelper(),
+                        "file:///android_res/raw/resource_file.html");
+            assertEquals(expectedTitle, getTitleOnUiThread(contentView));
+        } finally {
+            resetResourceContext();
+        }
+    }
+
+    // Test that the file URL access toggle does not affect asset URLs.
+    @SmallTest
+    @Feature({"Android-WebView", "Navigation"})
+    public void testFileUrlAccessToggleDoesNotBlockAssetUrls() throws Throwable {
+        // Note: this text needs to be kept in sync with the contents of the html file referenced
+        // below.
+        final String expectedTitle = "Asset File";
+        final TestAwContentsClient contentClient = new TestAwContentsClient();
+        final ContentViewCore contentView =
+                createAwTestContainerViewOnMainSync(false, contentClient).getContentViewCore();
+        final ContentSettings settings = getContentSettingsOnUiThread(contentView);
+        try {
+            useTestResourceContext();
+            settings.setAllowFileAccess(false);
+            loadUrlSync(contentView,
+                        contentClient.getOnPageFinishedHelper(),
+                        "file:///android_asset/asset_file.html");
+            assertEquals(expectedTitle, getTitleOnUiThread(contentView));
+        } finally {
+            resetResourceContext();
+        }
+    }
+
+    // Test that the file URL access toggle does not affect resource URLs.
+    @SmallTest
+    @Feature({"Android-WebView", "Navigation"})
+    public void testFileUrlAccessToggleDoesNotBlockResourceUrls() throws Throwable {
+        // Note: this text needs to be kept in sync with the contents of the html file referenced
+        // below.
+        final String expectedTitle = "Resource File";
+        final TestAwContentsClient contentClient = new TestAwContentsClient();
+        final ContentViewCore contentView =
+                createAwTestContainerViewOnMainSync(false, contentClient).getContentViewCore();
+        final ContentSettings settings = getContentSettingsOnUiThread(contentView);
+        try {
+            useTestResourceContext();
+            settings.setAllowFileAccess(false);
+            loadUrlSync(contentView,
+                        contentClient.getOnPageFinishedHelper(),
+                        "file:///android_res/raw/resource_file.html");
+            assertEquals(expectedTitle, getTitleOnUiThread(contentView));
+        } finally {
+            resetResourceContext();
+        }
+    }
+
     class ViewPair {
         private final ContentViewCore view0;
         private final TestAwContentsClient client0;
@@ -1341,83 +1721,18 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         return TestContentProvider.createContentUrl(target);
     }
 
-    private final String IMAGE_DATA = "iVBORw0KGgoAAA" +
-        "ANSUhEUgAAAAEAAAABCAAAAAA6fptVAAAAAXNSR0IArs4c6QAAAA1JREFUCB0BAgD9/wAAAAIAAc3j" +
-        "0SsAAAAASUVORK5CYII=";
-
-    private final String DATA_URL_IMAGE_HTML = "<html>" +
-        "<head><script>function updateTitle(){" +
-        "document.title=document.getElementById('img').naturalHeight;}</script></head>" +
-        "<body onload='updateTitle()'>" +
-        "<img id='img' onload='updateTitle()' src='data:image/png;base64," + IMAGE_DATA +
-        "'></body></html>";
-
-    @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
-    public void testBlockNetworkImagesDoesNotBlockDataUrlImage() throws Throwable {
-        final TestAwContentsClient contentClient = new TestAwContentsClient();
-        final ContentViewCore contentView =
-                createAwTestContainerViewOnMainSync(false, contentClient).getContentViewCore();
-        final ContentSettings settings = getContentSettingsOnUiThread(contentView);
-
-        settings.setJavaScriptEnabled(true);
-
-        settings.setImagesEnabled(false);
-        loadDataSync(contentView,
-                     contentClient.getOnPageFinishedHelper(),
-                     DATA_URL_IMAGE_HTML,
-                     "text/html",
-                     false);
-        assertEquals("1", getTitleOnUiThread(contentView));
+    /**
+     * Configure the browser to load resources from the test harness instead of the browser
+     * application.
+     */
+    private void useTestResourceContext() {
+        AndroidProtocolHandler.setResourceContextForTesting(getInstrumentation().getContext());
     }
 
-    @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
-    public void testBlockNetworkImagesBlocksNetworkImageAndReloadInPlace() throws Throwable {
-        final TestAwContentsClient contentClient = new TestAwContentsClient();
-        final ContentViewCore contentView =
-                createAwTestContainerViewOnMainSync(false, contentClient).getContentViewCore();
-        final ContentSettings settings = getContentSettingsOnUiThread(contentView);
-        settings.setJavaScriptEnabled(true);
-
-        TestWebServer webServer = null;
-        try {
-            webServer = new TestWebServer(false);
-            List<Pair<String, String>> imageHeaders = new ArrayList<Pair<String, String>>();
-            imageHeaders.add(Pair.create("Content-Type", "image/png"));
-            final String imagePath = "/image.png";
-            webServer.setResponseBase64(imagePath, IMAGE_DATA, imageHeaders);
-
-            final String pagePath = "/html_image.html";
-            final String httpUrlImageHtml = "<html>" +
-                "<head><script>" +
-                "function updateTitle(){" +
-                "document.title=document.getElementById('img').naturalHeight;}" +
-                "</script></head>" +
-                "<body onload='updateTitle()'>" +
-                "<img id='img' onload='updateTitle()' src='" + imagePath +
-                "'></body></html>";
-            final String httpImageUrl = webServer.setResponse(pagePath, httpUrlImageHtml, null);
-
-            settings.setImagesEnabled(false);
-            loadUrlSync(contentView, contentClient.getOnPageFinishedHelper(), httpImageUrl);
-            assertEquals("0", getTitleOnUiThread(contentView));
-
-            settings.setImagesEnabled(true);
-            assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
-                @Override
-                public boolean isSatisfied() {
-                    try {
-                        return "0".equals(getTitleOnUiThread(contentView));
-                    } catch (Throwable t) {
-                        t.printStackTrace();
-                        fail("Failed to getTitleOnUIThread: " + t.toString());
-                        return false;
-                    }
-                }
-            }, WAIT_TIMEOUT_SECONDS * 1000, CHECK_INTERVAL));
-        } finally {
-            if (webServer != null) webServer.shutdown();
-        }
+    /**
+     * Configure the browser to load resources from the browser application.
+     */
+    private void resetResourceContext() {
+        AndroidProtocolHandler.setResourceContextForTesting(null);
     }
 }
