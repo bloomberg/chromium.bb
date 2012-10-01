@@ -58,7 +58,6 @@ struct wl_connection {
 	int fd;
 	void *data;
 	wl_connection_update_func_t update;
-	struct wl_closure receive_closure, send_closure;
 	int write_signalled;
 };
 
