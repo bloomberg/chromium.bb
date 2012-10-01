@@ -255,7 +255,6 @@ void CCPrioritizedTextureManager::clearAllMemory(CCResourceProvider* resourcePro
 {
     ASSERT(CCProxy::isImplThread() && CCProxy::isMainThreadBlocked());
     ASSERT(resourceProvider);
-    CCResourceProvider::debugNotifyPtmClearAllMemoryCount();
     evictBackingsToReduceMemory(0, DoNotRespectManagerPriorityCutoff, resourceProvider);
     deleteEvictedBackings();
 }
@@ -264,7 +263,6 @@ void CCPrioritizedTextureManager::reduceMemoryOnImplThread(size_t limitBytes, CC
 {
     ASSERT(CCProxy::isImplThread());
     ASSERT(resourceProvider);
-    CCResourceProvider::debugNotifyPtmReduceMemoryOnImplThread();
     evictBackingsToReduceMemory(limitBytes, DoNotRespectManagerPriorityCutoff, resourceProvider);
 }
 

@@ -26,6 +26,17 @@
 
 using WebKit::WebGraphicsContext3D;
 
+namespace {
+    // Temporary variables for debugging crashes in issue 151428 in canary.
+    // Do not use these!
+    const int g_debugMaxResourcesTracked = 16;
+    bool g_debugOutOfCommitFlow = false;
+    int64 g_debugResDestroyedCount = 0;
+    int64 g_debugResDestroyedCountOutOfCommitFlow = 0;
+    cc::CCResourceProvider::ResourceId g_debugResDestroyed[g_debugMaxResourcesTracked] = { 0 };
+    cc::CCResourceProvider::ResourceId g_debugResDestroyedOutOfCommitFlow[g_debugMaxResourcesTracked] = { 0 };
+}
+
 namespace cc {
 
 static GC3Denum textureToStorageFormat(GC3Denum textureFormat)
@@ -113,7 +124,6 @@ PassOwnPtr<CCResourceProvider> CCResourceProvider::create(CCGraphicsContext* con
     OwnPtr<CCResourceProvider> resourceProvider(adoptPtr(new CCResourceProvider(context)));
     if (!resourceProvider->initialize())
         return nullptr;
-    m_resourceProviderCreatedCount++;
     return resourceProvider.release();
 }
 
@@ -122,7 +132,6 @@ CCResourceProvider::~CCResourceProvider()
     WebGraphicsContext3D* context3d = m_context->context3D();
     if (!context3d || !context3d->makeContextCurrent())
         return;
-    m_resourceProviderDestroyedCount++;
     m_textureUploader.clear();
     m_textureCopier.clear();
 }
@@ -230,6 +239,10 @@ void CCResourceProvider::deleteResource(ResourceId id)
     if (resource->pixels)
         delete resource->pixels;
 
+    g_debugResDestroyed[(g_debugResDestroyedCount++) % g_debugMaxResourcesTracked] = id;
+    if (g_debugOutOfCommitFlow)
+        g_debugResDestroyedOutOfCommitFlow[(g_debugResDestroyedCountOutOfCommitFlow++) % g_debugMaxResourcesTracked] = id;
+
     m_resources.remove(it);
 }
 
@@ -324,25 +337,28 @@ const CCResourceProvider::Resource* CCResourceProvider::lockForRead(ResourceId i
     ResourceMap::iterator it = m_resources.find(id);
     if (it == m_resources.end()) {
         int resourceCount = m_resources.size();
-        int64 commitCount = m_commitCount;
-        int64 commitCountAtLastEviction = m_commitCountAtLastEviction;
-        int64 commitCountAtLastContextLost = m_commitCountAtLastContextLost;
-        int64 evictionCount = m_evictionCount;
-        int64 contextLostCount = m_contextLostCount;
-        int64 commitCountAtLastPtmClearAllMemoryCount = m_commitCountAtLastPtmClearAllMemoryCount;
-        int64 commitCountAtLastPtmReduceMemoryOnImplThread = m_commitCountAtLastPtmReduceMemoryOnImplThread;
-        int64 resourceProviderCreatedCount = m_resourceProviderCreatedCount;
-        int64 resourceProviderDestroyedCount = m_resourceProviderDestroyedCount;
+        int64 resDestroyedCount = g_debugResDestroyedCount;
+        int64 resDestroyedCountOutOfCommitFlow = g_debugResDestroyedCountOutOfCommitFlow;
+        ResourceId resDestroyed[g_debugMaxResourcesTracked];
+        ResourceId resDestroyedOutOfCommitFlow[g_debugMaxResourcesTracked];
+        for (int64 i = 0; i < g_debugMaxResourcesTracked; ++i) {
+            resDestroyed[i] = g_debugResDestroyed[i];
+            resDestroyedOutOfCommitFlow[i] = g_debugResDestroyedOutOfCommitFlow[i];
+        }
+        ResourceId resToDestroy = id;
+        ResourceId resLastDestroyedOutOfCommitFlow = g_debugResDestroyedOutOfCommitFlow[
+            (g_debugResDestroyedCountOutOfCommitFlow + g_debugMaxResourcesTracked - 1) %
+                g_debugMaxResourcesTracked];
+
         base::debug::Alias(&resourceCount);
-        base::debug::Alias(&commitCount);
-        base::debug::Alias(&commitCountAtLastEviction);
-        base::debug::Alias(&commitCountAtLastContextLost);
-        base::debug::Alias(&evictionCount);
-        base::debug::Alias(&contextLostCount);
-        base::debug::Alias(&commitCountAtLastPtmClearAllMemoryCount);
-        base::debug::Alias(&commitCountAtLastPtmReduceMemoryOnImplThread);
-        base::debug::Alias(&resourceProviderCreatedCount);
-        base::debug::Alias(&resourceProviderDestroyedCount);
+        base::debug::Alias(&resDestroyedCount);
+        base::debug::Alias(&resDestroyedCountOutOfCommitFlow);
+        for (int64 i = 0; i < g_debugMaxResourcesTracked; ++i) {
+            base::debug::Alias(&resDestroyed[i]);
+            base::debug::Alias(&resDestroyedOutOfCommitFlow[i]);
+        }
+        base::debug::Alias(&resToDestroy);
+        base::debug::Alias(&resLastDestroyedOutOfCommitFlow);
         CHECK(it != m_resources.end());
     }
 
@@ -728,41 +744,14 @@ void CCResourceProvider::trimMailboxDeque()
         m_mailboxes.removeFirst();
 }
 
-int64 CCResourceProvider::m_commitCount = 0;
-int64 CCResourceProvider::m_commitCountAtLastEviction = -1;
-int64 CCResourceProvider::m_commitCountAtLastContextLost = -1;
-int64 CCResourceProvider::m_evictionCount = 0;
-int64 CCResourceProvider::m_contextLostCount = 0;
-int64 CCResourceProvider::m_commitCountAtLastPtmClearAllMemoryCount = -1;
-int64 CCResourceProvider::m_commitCountAtLastPtmReduceMemoryOnImplThread = -1;
-int64 CCResourceProvider::m_resourceProviderCreatedCount = 0;
-int64 CCResourceProvider::m_resourceProviderDestroyedCount = 0;
-
-void CCResourceProvider::debugNotifyEviction()
+void CCResourceProvider::debugNotifyEnterOutOfCommitFlowZone()
 {
-    m_commitCountAtLastEviction = m_commitCount;
-    m_evictionCount++;
+    g_debugOutOfCommitFlow = true;
 }
 
-void CCResourceProvider::debugNotifyContextLost()
+void CCResourceProvider::debugNotifyLeaveOutOfCommitFlowZone()
 {
-    m_commitCountAtLastContextLost = m_commitCount;
-    m_contextLostCount++;
-}
-
-void CCResourceProvider::debugIncrementCommitCount()
-{
-    m_commitCount++;
-}
-
-void CCResourceProvider::debugNotifyPtmClearAllMemoryCount()
-{
-    m_commitCountAtLastPtmClearAllMemoryCount = m_commitCount;
-}
-
-void CCResourceProvider::debugNotifyPtmReduceMemoryOnImplThread()
-{
-    m_commitCountAtLastPtmReduceMemoryOnImplThread = m_commitCount;
+    g_debugOutOfCommitFlow = false;
 }
 
 }
