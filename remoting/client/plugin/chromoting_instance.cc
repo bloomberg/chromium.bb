@@ -189,17 +189,17 @@ ChromotingInstance::~ChromotingInstance() {
   view_.reset();
 
   if (client_.get()) {
-    base::WaitableEvent done_event(true, false);
-    client_->Stop(base::Bind(&base::WaitableEvent::Signal,
-                             base::Unretained(&done_event)));
-    done_event.Wait();
+    client_->Stop(base::Bind(&PluginThreadTaskRunner::Quit,
+                  plugin_task_runner_));
+  } else {
+    plugin_task_runner_->Quit();
   }
+
+  // Ensure that nothing touches the plugin thread delegate after this point.
+  plugin_task_runner_->DetachAndRunShutdownLoop();
 
   // Stopping the context shuts down all chromoting threads.
   context_.Stop();
-
-  // Ensure that nothing touches the plugin thread delegate after this point.
-  plugin_task_runner_->Detach();
 }
 
 bool ChromotingInstance::Init(uint32_t argc,
