@@ -581,7 +581,7 @@ LIB_DICT = {
   'win': ['x86_32']
 }
 
-def BuildStepCopyExamples(pepperdir, toolchains, build_experimental):
+def BuildStepCopyExamples(pepperdir, toolchains, build_experimental, clobber):
   buildbot_common.BuildStep('Copy examples')
 
   if not os.path.exists(os.path.join(pepperdir, 'tools')):
@@ -590,11 +590,13 @@ def BuildStepCopyExamples(pepperdir, toolchains, build_experimental):
     buildbot_common.ErrorExit('Examples depend on missing toolchains.')
 
   exampledir = os.path.join(pepperdir, 'examples')
-  buildbot_common.RemoveDir(exampledir)
+  if clobber:
+    buildbot_common.RemoveDir(exampledir)
   buildbot_common.MakeDir(exampledir)
 
   libdir = os.path.join(pepperdir, 'lib')
-  buildbot_common.RemoveDir(libdir)
+  if clobber:
+    buildbot_common.RemoveDir(libdir)
   buildbot_common.MakeDir(libdir)
 
   plat = getos.GetPlatform()
@@ -610,7 +612,8 @@ def BuildStepCopyExamples(pepperdir, toolchains, build_experimental):
 
 
   srcdir = os.path.join(pepperdir, 'src')
-  buildbot_common.RemoveDir(srcdir)
+  if clobber:
+    buildbot_common.RemoveDir(srcdir)
   buildbot_common.MakeDir(srcdir)
 
 
@@ -781,11 +784,12 @@ TEST_LIBRARY_LIST = [
   'gtest_ppapi',
 ]
 
-def BuildStepCopyTests(pepperdir, toolchains, build_experimental):
+def BuildStepCopyTests(pepperdir, toolchains, build_experimental, clobber):
   buildbot_common.BuildStep('Copy Tests')
 
   testingdir = os.path.join(pepperdir, 'testing')
-  buildbot_common.RemoveDir(testingdir)
+  if clobber:
+    buildbot_common.RemoveDir(testingdir)
   buildbot_common.MakeDir(testingdir)
 
   args = ['--dstroot=%s' % pepperdir, '--master']
@@ -875,6 +879,9 @@ def main(args):
   parser = optparse.OptionParser()
   parser.add_option('--examples', help='Only build the examples.',
       action='store_true', dest='only_examples', default=False)
+  parser.add_option('--clobber-examples',
+      help='Don\'t examples directory before copying new files',
+      action='store_true', dest='clobber_examples', default=False)
   parser.add_option('--update', help='Only build the updater.',
       action='store_true', dest='only_updater', default=False)
   parser.add_option('--test-examples',
@@ -924,10 +931,12 @@ def main(args):
   print 'Building PEPPER %s at %s' % (pepper_ver, clnumber)
 
   if options.only_examples:
-    BuildStepCopyExamples(pepperdir, toolchains, options.build_experimental)
+    BuildStepCopyExamples(pepperdir, toolchains, options.build_experimental,
+                          options.clobber_examples)
     BuildStepBuildLibraries(pepperdir, platform, 'src')
     BuildStepBuildExamples(pepperdir, platform)
-    BuildStepCopyTests(pepperdir, toolchains, options.build_experimental)
+    BuildStepCopyTests(pepperdir, toolchains, options.build_experimental,
+                       options.clobber_examples)
     BuildStepBuildTests(pepperdir, platform)
     if options.test_examples:
       BuildStepRunPyautoTests(pepperdir, platform, pepper_ver)
@@ -944,7 +953,8 @@ def main(args):
     BuildStepBuildToolchains(pepperdir, platform, arch, pepper_ver, toolchains)
     InstallHeaders(os.path.join(pepperdir, 'include'), None, 'libs')
     BuildStepCopyBuildHelpers(pepperdir, platform)
-    BuildStepCopyExamples(pepperdir, toolchains, options.build_experimental)
+    BuildStepCopyExamples(pepperdir, toolchains, options.build_experimental,
+                          True)
 
     # Ship with libraries prebuilt, so run that first.
     BuildStepBuildLibraries(pepperdir, platform, 'src')
@@ -957,7 +967,8 @@ def main(args):
       # the examples and test from this directory instead of the original.
       pepperdir = BuildStepTestUpdater(platform, pepper_ver, clnumber, tarfile)
       BuildStepBuildExamples(pepperdir, platform)
-      BuildStepCopyTests(pepperdir, toolchains, options.build_experimental)
+      BuildStepCopyTests(pepperdir, toolchains, options.build_experimental,
+                         True)
       BuildStepBuildTests(pepperdir, platform)
       if options.test_examples:
         BuildStepRunPyautoTests(pepperdir, platform, pepper_ver)

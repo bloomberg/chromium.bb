@@ -417,6 +417,10 @@ def FindAndCopyFiles(src_files, root, search_dirs, dst_dir):
       ErrorMsgFunc('Failed to find: ' + src_name)
       return None
     dst_file = os.path.join(dst_dir, src_name)
+    if os.path.exists(dst_file):
+      if os.stat(src_file).st_mtime <= os.stat(dst_file).st_mtime:
+        print 'Skipping "%s", destination "%s" is newer.' % (src_file, dst_file)
+        continue
     buildbot_common.CopyFile(src_file, dst_file)
 
 
