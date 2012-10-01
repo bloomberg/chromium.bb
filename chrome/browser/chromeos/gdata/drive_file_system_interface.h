@@ -82,7 +82,7 @@ class DriveFileSystemInterface {
     virtual void OnDirectoryChanged(const FilePath& directory_path) {}
 
     // Triggered when the file system is initially loaded.
-    virtual void OnInitialLoadFinished() {}
+    virtual void OnInitialLoadFinished(DriveFileError error) {}
 
     // Triggered when a document feed is fetched. |num_accumulated_entries|
     // tells the number of entries fetched so far.

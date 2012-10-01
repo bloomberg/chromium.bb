@@ -103,21 +103,22 @@ void OnAddUploadFileCompleted(
 class InitialLoadObserver : public DriveFileSystemInterface::Observer {
  public:
   InitialLoadObserver(DriveFileSystemInterface* file_system,
-                      const base::Closure& callback)
+                      const FileOperationCallback& callback)
       : file_system_(file_system), callback_(callback) {
+    DCHECK(!callback.is_null());
     file_system_->AddObserver(this);
   }
 
-  virtual void OnInitialLoadFinished() OVERRIDE {
-    if (!callback_.is_null())
-      base::MessageLoopProxy::current()->PostTask(FROM_HERE, callback_);
+  virtual void OnInitialLoadFinished(DriveFileError error) OVERRIDE {
+    base::MessageLoopProxy::current()->PostTask(FROM_HERE,
+        base::Bind(callback_, error));
     file_system_->RemoveObserver(this);
     base::MessageLoopProxy::current()->DeleteSoon(FROM_HERE, this);
   }
 
  private:
-  DriveFileSystemInterface* file_system_;
-  base::Closure callback_;
+  DriveFileSystemInterface* const file_system_;
+  const FileOperationCallback callback_;
 };
 
 // The class to wait for the drive service to be ready to start operation.
@@ -617,7 +618,7 @@ void DriveFileSystem::LoadFeedIfNeeded(const FileOperationCallback& callback) {
     // already started, add an observer to execute the remaining task after
     // the end of the initialization.
     // The observer deletes itself after OnInitialLoadFinished() gets called.
-    new InitialLoadObserver(this, base::Bind(callback, DRIVE_FILE_OK));
+    new InitialLoadObserver(this, callback);
     return;
   } else if (resource_metadata_->origin() == UNINITIALIZED) {
     // Load root feed from this disk cache. Upon completion, kick off server
@@ -2612,9 +2613,12 @@ void DriveFileSystem::NotifyInitialLoadFinishedAndRun(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
+  if (error != DRIVE_FILE_OK)
+    resource_metadata_->set_origin(UNINITIALIZED);
+
   // Notify the observers that root directory has been initialized.
   FOR_EACH_OBSERVER(DriveFileSystemInterface::Observer, observers_,
-                    OnInitialLoadFinished());
+                    OnInitialLoadFinished(error));
 
   callback.Run(error);
 }

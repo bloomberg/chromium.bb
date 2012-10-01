@@ -42,7 +42,7 @@ StaleCacheFilesRemover::~StaleCacheFilesRemover() {
   file_system_->RemoveObserver(this);
 }
 
-void StaleCacheFilesRemover::OnInitialLoadFinished() {
+void StaleCacheFilesRemover::OnInitialLoadFinished(DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   const FilePath root_path = FilePath(gdata::kDriveRootDirectory);
