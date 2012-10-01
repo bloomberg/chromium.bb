@@ -41,16 +41,16 @@ class SystemHistogram : public base::Histogram {
                           int minimum,
                           int maximum,
                           size_t bucket_count) {
-    return base::Histogram::InspectConstructionArguments(
-        name, &minimum, &maximum, &bucket_count);
-  }
-  static bool CheckLinearValues(const std::string& name, int maximum) {
-    if (!CheckValues(name, 1, maximum, maximum + 1))
+    if (!base::Histogram::InspectConstructionArguments(
+        name, &minimum, &maximum, &bucket_count))
       return false;
     Histogram* histogram = base::StatisticsRecorder::FindHistogram(name);
     if (!histogram)
       return true;
-    return histogram->HasConstructionArguments(1, maximum, maximum + 1);
+    return histogram->HasConstructionArguments(minimum, maximum, bucket_count);
+  }
+  static bool CheckLinearValues(const std::string& name, int maximum) {
+    return CheckValues(name, 1, maximum, maximum + 1);
   }
 };
 
