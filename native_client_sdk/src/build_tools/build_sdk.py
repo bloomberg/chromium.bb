@@ -456,13 +456,28 @@ def GypNinjaBuild_X86_Chrome(rel_out_dir):
   GypNinjaBuild('ia32', gyp_py, gyp_file, 'ppapi_lib', out_dir)
 
 
+def GypNinjaBuild_Pnacl(rel_out_dir):
+  # TODO(binji): This will build the pnacl_irt_shim twice; once as part of the
+  # Chromium build, and once here. When we move more of the SDK build process
+  # to gyp, we can remove this.
+  gyp_py = os.path.join(SRC_DIR, 'build', 'gyp_chromium')
+
+  out_dir = MakeNinjaRelPath(rel_out_dir)
+  gyp_file = os.path.join(SRC_DIR, 'ppapi', 'native_client', 'src', 'untrusted',
+                          'pnacl_irt_shim', 'pnacl_irt_shim.gyp')
+  targets = ['pnacl_irt_shim']
+  GypNinjaBuild('ia32', gyp_py, gyp_file, targets, out_dir)
+
+
 def GypNinjaBuild(arch, gyp_py_script, gyp_file, targets, out_dir):
   gyp_env = copy.copy(os.environ)
   gyp_env['GYP_GENERATORS'] = 'ninja'
   gyp_env['GYP_DEFINES'] = 'target_arch=%s' % (arch,)
   gyp_generator_flags = ['-G', 'output_dir=%s' % (out_dir,)]
+  gyp_depth = '--depth=.'
   buildbot_common.Run(
-      [sys.executable, gyp_py_script, gyp_file] + gyp_generator_flags,
+      [sys.executable, gyp_py_script, gyp_file, gyp_depth] + \
+          gyp_generator_flags,
       cwd=SRC_DIR,
       env=gyp_env)
   NinjaBuild(targets, out_dir)
@@ -507,12 +522,8 @@ def BuildStepBuildToolchains(pepperdir, platform, arch, pepper_ver, toolchains):
           cwd=NACL_DIR, shell=(platform=='win'))
 
       # Fill in the latest native pnacl shim library from the chrome build.
-      if platform == 'win':
-        # The windows nacl buildbots still use devenv to build, which uses
-        # 'src/build' as its output directory.
-        release_build_dir = os.path.join(SRC_DIR, 'build', 'Release')
-      else:
-        release_build_dir = os.path.join(OUT_DIR, 'Release')
+      GypNinjaBuild_Pnacl('gypbuild')
+      release_build_dir = os.path.join(OUT_DIR, 'gypbuild', 'Release')
 
       buildbot_common.CopyFile(
           os.path.join(release_build_dir, 'libpnacl_irt_shim.a'),
@@ -862,8 +873,6 @@ def BuildStepArchiveSDKTools():
 
 def main(args):
   parser = optparse.OptionParser()
-  parser.add_option('--pnacl', help='Enable pnacl build.',
-      action='store_true', dest='pnacl', default=False)
   parser.add_option('--examples', help='Only build the examples.',
       action='store_true', dest='only_examples', default=False)
   parser.add_option('--update', help='Only build the updater.',
@@ -891,25 +900,12 @@ def main(args):
 
   generate_make.use_gyp = options.gyp
 
-  builder_name = os.getenv('BUILDBOT_BUILDERNAME','')
-  if builder_name.find('pnacl') >= 0 and builder_name.find('sdk') >= 0:
-    options.pnacl = True
-
-  # TODO(binji) There is currently a hack in download_nacl_toolchains.py that
-  # won't download pnacl toolchains unless the BUILDBOT_BUILDERNAME has "pnacl"
-  # and "sdk" in it. Set that here, if not already set...
-  if options.pnacl and not os.getenv('BUILDBOT_BUILDERNAME'):
-    os.environ['BUILDBOT_BUILDERNAME'] = 'pnacl-sdk'
-
   # TODO(binji) for now, only test examples on non-trybots. Trybots don't build
   # pyauto Chrome.
   if buildbot_common.IsSDKBuilder():
     options.test_examples = True
 
-  if options.pnacl:
-    toolchains = ['pnacl']
-  else:
-    toolchains = ['newlib', 'glibc', 'host']
+  toolchains = ['newlib', 'glibc', 'pnacl', 'host']
   print 'Building: ' + ' '.join(toolchains)
 
   if options.archive and (options.only_examples or options.skip_tar):
@@ -921,8 +917,6 @@ def main(args):
   pepperdir_old = os.path.join(SRC_DIR, 'out', 'pepper_' + pepper_old)
   clnumber = build_utils.ChromeRevision()
   tarname = 'naclsdk_' + platform + '.tar.bz2'
-  if 'pnacl' in toolchains:
-    tarname = 'p' + tarname
   tarfile = os.path.join(SERVER_DIR, tarname)
 
   if options.release:
