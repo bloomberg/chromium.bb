@@ -5,7 +5,6 @@
 #ifndef CCTimer_h
 #define CCTimer_h
 
-
 namespace cc {
 
 class CCThread;

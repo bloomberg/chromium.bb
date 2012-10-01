@@ -6,6 +6,7 @@
 
 #include "CCTimer.h"
 
+#include "base/compiler_specific.h"
 #include "CCThread.h"
 
 namespace cc {
@@ -18,7 +19,7 @@ public:
     {
     }
 
-    ~CCTimerTask()
+    virtual ~CCTimerTask()
     {
         if (!m_timer)
             return;
@@ -27,7 +28,7 @@ public:
         m_timer->stop();
     }
 
-    void performTask()
+    virtual void performTask() OVERRIDE
     {
         if (!m_timer)
             return;
