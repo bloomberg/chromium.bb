@@ -9,10 +9,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/browser_process_sub_thread.h"
 
-#if defined(OS_WIN)
-#include "ui/base/win/scoped_ole_initializer.h"
-#endif
-
 class BrowserOnlineStateObserver;
 class CommandLine;
 class HighResolutionTimerManager;
@@ -139,10 +135,6 @@ class BrowserMainLoop {
   scoped_ptr<BrowserProcessSubThread> process_launcher_thread_;
   scoped_ptr<BrowserProcessSubThread> cache_thread_;
   scoped_ptr<BrowserProcessSubThread> io_thread_;
-
-#if defined(OS_WIN)
-  ui::ScopedOleInitializer ole_initializer_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(BrowserMainLoop);
 };

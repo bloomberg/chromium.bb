@@ -20,7 +20,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/metro.h"
-#include "base/win/scoped_com_initializer.h"
+#include "ui/base/win/scoped_ole_initializer.h"
 #include "ui/base/win/tsf_bridge.h"
 #endif
 
@@ -94,7 +94,7 @@ class BrowserMainRunnerImpl : public content::BrowserMainRunner {
     // Make this call before going multithreaded, or spawning any subprocesses.
     base::allocator::SetupSubprocessAllocator();
 #endif
-    com_initializer_.reset(new base::win::ScopedCOMInitializer);
+    ole_initializer_.reset(new ui::ScopedOleInitializer);
     if (base::win::IsTsfAwareRequired())
       ui::TsfBridge::Initialize();
 #endif  // OS_WIN
@@ -134,7 +134,7 @@ class BrowserMainRunnerImpl : public content::BrowserMainRunner {
 #if defined(OS_WIN)
     if (base::win::IsTsfAwareRequired())
       ui::TsfBridge::GetInstance()->Shutdown();
-    com_initializer_.reset(NULL);
+    ole_initializer_.reset(NULL);
 #endif
 
     main_loop_.reset(NULL);
@@ -157,7 +157,7 @@ class BrowserMainRunnerImpl : public content::BrowserMainRunner {
   scoped_ptr<NotificationServiceImpl> notification_service_;
   scoped_ptr<content::BrowserMainLoop> main_loop_;
 #if defined(OS_WIN)
-  scoped_ptr<base::win::ScopedCOMInitializer> com_initializer_;
+  scoped_ptr<ui::ScopedOleInitializer> ole_initializer_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(BrowserMainRunnerImpl);
