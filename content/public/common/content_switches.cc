@@ -660,13 +660,6 @@ const char kMediaPlayerInRenderProcess[]    = "media-player-in-render-process";
 // Set when Chromium should use a mobile user agent.
 const char kUseMobileUserAgent[] = "use-mobile-user-agent";
 
-// Omnibus flag setting an Android graphics mode.  May be:
-//   "basic" (untiled software path)
-//   "compositor" (hardware-accelerated compositing),
-const char kGraphicsMode[]                  = "graphics-mode";
-const char kGraphicsModeValueBasic[]        = "basic";
-const char kGraphicsModeValueCompositor[]   = "compositor";
-
 // The telephony region (ISO country code) to use in phone number detection.
 const char kNetworkCountryIso[] = "network-country-iso";
 

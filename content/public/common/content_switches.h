@@ -210,10 +210,6 @@ extern const char kMediaPlayerInRenderProcess[];
 extern const char kDisableMediaHistoryLogging[];
 extern const char kNetworkCountryIso[];
 extern const char kUseMobileUserAgent[];
-extern const char kGraphicsMode[];
-// Not actual flags, just values: for example, --graphics-mode=compositor
-extern const char kGraphicsModeValueBasic[];
-extern const char kGraphicsModeValueCompositor[];
 extern const char kEnableWebViewSynchronousAPIs[];
 #endif
 

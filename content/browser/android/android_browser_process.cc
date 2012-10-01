@@ -17,10 +17,8 @@ namespace content {
 
 static void SetCommandLineFlags(JNIEnv*env,
                                 jclass clazz,
-                                jint max_render_process_count,
-                                jstring plugin_descriptor) {
-  std::string plugin_str = ConvertJavaStringToUTF8(env, plugin_descriptor);
-  SetContentCommandLineFlags(max_render_process_count, plugin_str);
+                                jint max_render_process_count) {
+  SetContentCommandLineFlags(max_render_process_count);
 }
 
 static jboolean IsOfficialBuild(JNIEnv* env, jclass clazz) {

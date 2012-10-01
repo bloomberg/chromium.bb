@@ -131,18 +131,14 @@ public class AndroidBrowserProcess {
         // Now we really need to have the resources ready.
         resourceExtractor.waitForCompletion();
 
-        nativeSetCommandLineFlags(maxRenderers, getPlugins(context));
+        nativeSetCommandLineFlags(maxRenderers);
         ContentMain.initApplicationContext(appContext);
         ContentMain.start();
         return true;
     }
 
-    private static String getPlugins(final Context context) {
-        return "";
-    }
-
     private static native void nativeSetCommandLineFlags(
-        int maxRenderProcesses, String plugin_descriptor);
+        int maxRenderProcesses);
 
     // Is this an official build of Chrome?  Only native code knows
     // for sure.  Official build knowledge is needed very early in
