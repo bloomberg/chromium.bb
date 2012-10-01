@@ -10,7 +10,6 @@
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 
-using namespace cc;
 using namespace WebCore;
 using namespace WebKit;
 

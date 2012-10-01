@@ -8,29 +8,26 @@
 #include "CCDrawQuad.h"
 
 #include <gtest/gtest.h>
-#include <wtf/Vector.h>
-
-using namespace cc;
 
 namespace CCLayerTestCommon {
 
 // Align with expected and actual output
 const char* quadString = "    Quad: ";
 
-void verifyQuadsExactlyCoverRect(const CCQuadList& quads, const IntRect& rect)
-{
-    Region remaining(rect);
+void verifyQuadsExactlyCoverRect(const cc::CCQuadList& quads,
+                                 const cc::IntRect& rect) {
+    cc::Region remaining(rect);
 
     for (size_t i = 0; i < quads.size(); ++i) {
-        CCDrawQuad* quad = quads[i];
-        IntRect quadRect = quad->quadRect();
+        cc::CCDrawQuad* quad = quads[i];
+        cc::IntRect quadRect = quad->quadRect();
 
         EXPECT_TRUE(rect.contains(quadRect)) << quadString << i;
         EXPECT_TRUE(remaining.contains(quadRect)) << quadString << i;
-        remaining.subtract(Region(quadRect));
+        remaining.subtract(cc::Region(quadRect));
     }
 
     EXPECT_TRUE(remaining.isEmpty());
 }
 
-} // namespace
+}  // namespace CCLayerTestCommon
