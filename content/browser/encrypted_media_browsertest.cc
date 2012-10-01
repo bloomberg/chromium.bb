@@ -91,10 +91,18 @@ class EncryptedMediaTest
   }
 };
 
+// Fails on Linux/ChromeOS with ASan.  http://crbug.com/153231
+#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(ADDRESS_SANITIZER)
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, DISABLED_BasicPlayback) {
+  const string16 kExpected = ASCIIToUTF16("ENDED");
+  ASSERT_NO_FATAL_FAILURE(PlayMedia(GetParam(), kExpected));
+}
+#else
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, BasicPlayback) {
   const string16 kExpected = ASCIIToUTF16("ENDED");
   ASSERT_NO_FATAL_FAILURE(PlayMedia(GetParam(), kExpected));
 }
+#endif
 
 IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, InvalidKeySystem) {
   const string16 kExpected = ASCIIToUTF16(
