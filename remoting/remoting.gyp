@@ -308,10 +308,6 @@
             'remoting_host_uninstaller',
             'remoting_me2me_host',
           ],
-          'sources': [
-            'host/installer/build-installer-archive.py',
-            '<@(remoting_host_installer_mac_files)',
-          ],
           'variables': {
             'host_name': '<!(python <(version_py_path) -f <(branding_path) -t "@HOST_PLUGIN_FILE_NAME@")',
             'host_service_name': '<!(python <(version_py_path) -f <(branding_path) -t "@DAEMON_FILE_NAME@")',
@@ -752,31 +748,15 @@
             'remoting_daemon',
             'remoting_me2me_host',
           ],
-          'sources': [
-            '<(sas_dll_path)/sas.dll',
-            '<@(remoting_host_installer_win_files)',
-            'host/installer/build-installer-archive.py',
-            'resources/chromoting.ico',
-          ],
-          'defs': [
-            'BRANDING=<(branding)',
-            'CONTROLLER_CLSID={<(daemon_controller_clsid)}',
-            'REMOTING_MULTI_PROCESS=<(remoting_multi_process)',
-            'VERSION=<(version_full)',
-          ],
-          'generated_files': [
+          'compiled_inputs': [
             '<(PRODUCT_DIR)/remoting_controller.exe',
             '<(PRODUCT_DIR)/remoting_daemon.exe',
             '<(PRODUCT_DIR)/remoting_host.exe',
-            '<(sas_dll_path)/sas.dll',
-            'resources/chromoting.ico',
           ],
-          'generated_files_dst': [
+          'compiled_inputs_dst': [
             'files/remoting_controller.exe',
             'files/remoting_daemon.exe',
             'files/remoting_host.exe',
-            'files/sas.dll',
-            'files/chromoting.ico',
           ],
           'conditions': [
             ['buildtype == "Official"', {
@@ -792,13 +772,29 @@
               'dependencies': [
                 'remoting_desktop',
               ],
-              'generated_files': [
+              'compiled_inputs': [
                 '<(PRODUCT_DIR)/remoting_desktop.exe',
               ],
-              'generated_files_dst': [
+              'compiled_inputs_dst': [
                 'files/remoting_desktop.exe',
               ],
             }],
+          ],
+          'defs': [
+            'BRANDING=<(branding)',
+            'CONTROLLER_CLSID={<(daemon_controller_clsid)}',
+            'REMOTING_MULTI_PROCESS=<(remoting_multi_process)',
+            'VERSION=<(version_full)',
+          ],
+          'generated_files': [
+            '<@(_compiled_inputs)',
+            '<(sas_dll_path)/sas.dll',
+            'resources/chromoting.ico',
+          ],
+          'generated_files_dst': [
+            '<@(_compiled_inputs_dst)',
+            'files/sas.dll',
+            'files/chromoting.ico',
           ],
           'zip_path': '<(PRODUCT_DIR)/remoting-me2me-host-<(OS).zip',
           'outputs': [
@@ -812,6 +808,7 @@
                 '<@(remoting_host_installer_win_files)',
               ],
               'inputs': [
+                '<@(_compiled_inputs)',
                 '<(sas_dll_path)/sas.dll',
                 '<@(_source_files)',
                 'host/installer/build-installer-archive.py',
