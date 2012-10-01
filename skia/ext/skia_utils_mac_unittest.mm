@@ -113,6 +113,7 @@ void SkiaUtilsMacTest::TestSkBitmap(const SkBitmap& bitmap, bool isred) {
   EXPECT_GT(SkColorGetA(color), 245u);
 }
 
+// setBitmapDevice has been deprecated/removed. Is this test still useful?
 void SkiaUtilsMacTest::RunBitLockerTest(BitLockerTest test) {
   const unsigned width = 2;
   const unsigned height = 2;
@@ -123,11 +124,9 @@ void SkiaUtilsMacTest::RunBitLockerTest(BitLockerTest test) {
   memcpy(bits, original, sizeof(original));
   SkBitmap bitmap;
   bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
-  if (!(test & TestNoBits)) {
-    bitmap.setPixels(bits);
-  }
-  SkCanvas canvas;
-  canvas.setBitmapDevice(bitmap);
+  bitmap.setPixels(bits);
+
+  SkCanvas canvas(bitmap);
   if (test & TestTranslate)
     canvas.translate(width / 2, 0);
   if (test & TestClip) {
@@ -142,8 +141,6 @@ void SkiaUtilsMacTest::RunBitLockerTest(BitLockerTest test) {
     CGRect cgRect = {{0, 0}, {width, height}};
     CGContextFillRect(cgContext, cgRect);
     if (test & TestNoBits) {
-      bitmap.setPixels(bits);
-      canvas.setBitmapDevice(bitmap);
       if (test & TestClip) {
         SkRect clipRect = {0, height / 2, width, height};
         canvas.clipRect(clipRect);
