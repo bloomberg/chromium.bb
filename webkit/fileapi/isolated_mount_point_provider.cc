@@ -35,14 +35,6 @@
 
 namespace fileapi {
 
-namespace {
-
-IsolatedContext* isolated_context() {
-  return IsolatedContext::GetInstance();
-}
-
-}  // namespace
-
 IsolatedMountPointProvider::IsolatedMountPointProvider(
     const FilePath& profile_path)
     : profile_path_(profile_path),

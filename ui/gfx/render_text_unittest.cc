@@ -38,6 +38,7 @@ bool IndexInRange(const ui::Range& range, size_t index) {
   return index >= range.start() && index < range.end();
 }
 
+#if !defined(OS_MACOSX)
 // A test utility function to set the application default text direction.
 void SetRTL(bool rtl) {
   // Override the current locale/direction.
@@ -48,6 +49,7 @@ void SetRTL(bool rtl) {
 #endif
   EXPECT_EQ(rtl, base::i18n::IsRTL());
 }
+#endif
 
 }  // namespace
 

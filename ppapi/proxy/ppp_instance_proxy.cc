@@ -28,17 +28,6 @@ namespace proxy {
 
 namespace {
 
-void GetFullscreenStates(PP_Instance instance,
-                         HostDispatcher* dispatcher,
-                         PP_Bool* fullscreen,
-                         PP_Bool* flash_fullscreen) {
-  const PPB_Fullscreen* fullscreen_interface =
-      static_cast<const PPB_Fullscreen*>(
-          dispatcher->local_get_interface()(PPB_FULLSCREEN_INTERFACE));
-  DCHECK(fullscreen_interface);
-  *fullscreen = fullscreen_interface->IsFullscreen(instance);
-}
-
 PP_Bool IsFlashFullscreen(PP_Instance instance,
                           HostDispatcher* dispatcher) {
   const PPB_FlashFullscreen* flash_fullscreen_interface =

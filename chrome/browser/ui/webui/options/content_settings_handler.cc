@@ -159,15 +159,6 @@ DictionaryValue* GetNotificationExceptionForPage(
   return exception;
 }
 
-// Returns true whenever the hosted |app|'s extent enjoys protected storage
-// under the current |profile|.
-// Must have the AppFilter signature.
-bool HasProtectedStorage(const extensions::Extension& app, Profile* profile) {
-  ExtensionSpecialStoragePolicy* policy =
-      profile->GetExtensionSpecialStoragePolicy();
-  return policy->NeedsProtection(&app);
-}
-
 // Returns true whenever the |extension| is hosted and has |permission|.
 // Must have the AppFilter signature.
 template <APIPermission::ID permission>

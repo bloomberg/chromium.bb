@@ -15,6 +15,9 @@
 
 namespace gdata {
 namespace util {
+#if defined(OS_CHROMEOS)
+// TODO(yoshiki): Find platform independent way to get/set local timezone.
+// (http://crbug.com/147524).
 namespace {
 
 std::string FormatTime(const base::Time& time) {
@@ -23,9 +26,6 @@ std::string FormatTime(const base::Time& time) {
 
 }  // namespace
 
-// TODO(yoshiki): Find platform independent way to get/set local timezone.
-// (http://crbug.com/147524).
-#if defined(OS_CHROMEOS)
 TEST(GDataUtilTest, GetTimeFromStringLocalTimezone) {
   // Creates time object GMT.
   base::Time::Exploded exploded = {2012, 7, 0, 14, 1, 3, 21, 151};

@@ -468,9 +468,11 @@ bool HasImportSwitch(const CommandLine& command_line) {
           command_line.HasSwitch(switches::kImportFromFile));
 }
 
+#if defined(ENABLE_RLZ)
 bool IsGoogleUrl(const GURL& url) {
   return google_util::IsGoogleHomePageUrl(url.possibly_invalid_spec());
 }
+#endif
 
 }  // namespace
 

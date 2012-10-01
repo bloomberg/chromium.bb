@@ -52,18 +52,6 @@ void WriteStringToPickle(Pickle& pickle, int* bytes_written, int max_bytes,
   }
 }
 
-// string16 version of WriteStringToPickle.
-void WriteString16ToPickle(Pickle& pickle, int* bytes_written, int max_bytes,
-                           const string16& str) {
-  int num_bytes = str.size() * sizeof(char16);
-  if (*bytes_written + num_bytes < max_bytes) {
-    *bytes_written += num_bytes;
-    pickle.WriteString16(str);
-  } else {
-    pickle.WriteString16(string16());
-  }
-}
-
 }  // namespace
 
 // Delay between when a command is received, and when we save it to the

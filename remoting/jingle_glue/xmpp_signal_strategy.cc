@@ -21,8 +21,6 @@
 #include "third_party/libjingle/source/talk/xmpp/prexmppauth.h"
 #include "third_party/libjingle/source/talk/xmpp/saslcookiemechanism.h"
 
-namespace {
-
 const char kDefaultResourceName[] = "chromoting";
 
 // Use 58 seconds keep-alive interval, in case routers terminate
@@ -33,12 +31,6 @@ const int kKeepAliveIntervalSeconds = 50;
 // of XMPP messages are smaller than 4kB.
 const size_t kReadBufferSize = 4096;
 const size_t kWriteBufferSize = 4096;
-
-void DisconnectXmppClient(buzz::XmppClient* client) {
-  client->Disconnect();
-}
-
-}  // namespace
 
 namespace remoting {
 

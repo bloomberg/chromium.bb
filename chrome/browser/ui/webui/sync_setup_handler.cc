@@ -166,15 +166,6 @@ bool GetConfiguration(const std::string& json, SyncConfigInfo* config) {
   return true;
 }
 
-bool GetPassphrase(const std::string& json, std::string* passphrase) {
-  scoped_ptr<Value> parsed_value(base::JSONReader::Read(json));
-  if (!parsed_value.get() || !parsed_value->IsType(Value::TYPE_DICTIONARY))
-    return false;
-
-  DictionaryValue* result = static_cast<DictionaryValue*>(parsed_value.get());
-  return result->GetString("passphrase", passphrase);
-}
-
 string16 NormalizeUserName(const string16& user) {
   if (user.find_first_of(ASCIIToUTF16("@")) != string16::npos)
     return user;

@@ -194,12 +194,6 @@ class TestingValueStoreFactory : public SettingsStorageFactory {
   std::map<std::string, TestingValueStore*> created_;
 };
 
-void AssignSettingsService(syncer::SyncableService** dst,
-                           const SettingsFrontend* frontend,
-                           syncer::ModelType type) {
-  *dst = frontend->GetBackendForSync(type);
-}
-
 }  // namespace
 
 class ExtensionSettingsSyncTest : public testing::Test {

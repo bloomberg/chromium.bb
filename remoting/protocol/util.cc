@@ -10,14 +10,6 @@
 #include "net/base/io_buffer.h"
 #include "third_party/libjingle/source/talk/base/byteorder.h"
 
-namespace {
-
-void DeleteMessage(google::protobuf::MessageLite* message) {
-  delete message;
-}
-
-}  // namespace
-
 namespace remoting {
 namespace protocol {
 

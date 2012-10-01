@@ -110,16 +110,6 @@ std::string StringFromNPVariant(const NPVariant& variant) {
   return std::string(np_string.UTF8Characters, np_string.UTF8Length);
 }
 
-string16 String16FromNPVariant(const NPVariant& variant) {
-  if (!NPVARIANT_IS_STRING(variant))
-    return string16();
-  const NPString& np_string = NPVARIANT_TO_STRING(variant);
-  string16 wstr;
-  if (!UTF8ToUTF16(np_string.UTF8Characters, np_string.UTF8Length, &wstr))
-    return string16();
-  return wstr;
-}
-
 bool StringToNPVariant(const std::string &in, NPVariant *variant) {
   size_t length = in.size();
   NPUTF8 *chars = static_cast<NPUTF8 *>(malloc(length));

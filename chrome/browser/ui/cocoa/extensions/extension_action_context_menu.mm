@@ -96,16 +96,6 @@ enum {
   kExtensionContextManage = 7,
 };
 
-int CurrentTabId() {
-  Browser* browser = browser::GetLastActiveBrowser();
-  if(!browser)
-    return -1;
-  WebContents* contents = chrome::GetActiveWebContents(browser);
-  if (!contents)
-    return -1;
-  return ExtensionTabUtil::GetTabId(contents);
-}
-
 }  // namespace
 
 - (id)initWithExtension:(const Extension*)extension

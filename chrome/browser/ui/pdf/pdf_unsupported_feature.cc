@@ -363,6 +363,7 @@ void PDFUnsupportedFeaturePromptDelegate::Cancel() {
                         UserMetricsAction("PDF_InstallReaderInfoBarCancel"));
 }
 
+#if defined(OS_WIN) && defined(ENABLE_PLUGIN_INSTALLATION)
 void GotPluginsCallback(int process_id,
                         int routing_id,
                         const std::vector<webkit::WebPluginInfo>& plugins) {
@@ -400,6 +401,7 @@ void GotPluginsCallback(int process_id,
   PDFTabHelper* pdf_tab_helper = PDFTabHelper::FromWebContents(web_contents);
   pdf_tab_helper->ShowOpenInReaderPrompt(prompt.Pass());
 }
+#endif  // defined(OS_WIN) && defined(ENABLE_PLUGIN_INSTALLATION)
 
 }  // namespace
 

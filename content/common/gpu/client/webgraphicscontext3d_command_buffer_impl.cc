@@ -44,11 +44,6 @@ static base::LazyInstance<std::set<WebGraphicsContext3DCommandBufferImpl*> >
 
 namespace {
 
-void ClearSharedContexts() {
-  base::AutoLock lock(g_all_shared_contexts_lock.Get());
-  g_all_shared_contexts.Pointer()->clear();
-}
-
 void ClearSharedContextsIfInShareSet(
     WebGraphicsContext3DCommandBufferImpl* context) {
   // If the given context isn't in the share set, that means that it

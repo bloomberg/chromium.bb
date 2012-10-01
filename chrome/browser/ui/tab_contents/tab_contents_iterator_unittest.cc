@@ -35,13 +35,6 @@ size_t CountAllTabs() {
   return count;
 }
 
-// Helper function to navigate to the print preview page.
-void NavigateToPrintUrl(TabContents* tab, int page_id) {
-  content::RenderViewHostTester::For(
-      tab->web_contents()->GetRenderViewHost())->SendNavigate(
-          page_id, GURL(chrome::kChromeUIPrintURL));
-}
-
 }  // namespace
 
 TEST_F(BrowserListTest, TabContentsIteratorVerifyCount) {
@@ -152,86 +145,6 @@ TEST_F(BrowserListTest, TabContentsIteratorVerifyBrowser) {
   chrome::CloseAllTabs(browser2.get());
   chrome::CloseAllTabs(browser3.get());
 }
-
-#if 0
-// TODO(thestig) Fix or remove this test. http://crbug.com/100309
-TEST_F(BrowserListTest, TabContentsIteratorBackgroundPrinting) {
-  // Make sure we have 1 window to start with.
-  EXPECT_EQ(1U, BrowserList::size());
-
-  // Create more browsers/windows.
-  scoped_ptr<Browser> browser2(
-      chrome::CreateBrowserWithTestWindowForProfile(profile()));
-  scoped_ptr<Browser> browser3(
-      chrome::CreateBrowserWithTestWindowForProfile(profile()));
-
-  EXPECT_EQ(0U, CountAllTabs());
-
-  // Add some tabs.
-  for (size_t i = 0; i < 3; ++i)
-    chrome::NewTab(browser2);
-  chrome::NewTab(browser3);
-
-  EXPECT_EQ(4U, CountAllTabs());
-
-  TestingBrowserProcess* browser_process =
-      static_cast<TestingBrowserProcess*>(g_browser_process);
-  printing::BackgroundPrintingManager* bg_print_manager =
-      browser_process->background_printing_manager();
-
-  // Grab a tab and give ownership to BackgroundPrintingManager.
-  TabContentsIterator tab_iterator;
-  TabContents* tab = *tab_iterator;
-  int page_id = 1;
-  NavigateToPrintUrl(tab, page_id++);
-
-  bg_print_manager->OwnPrintPreviewTab(tab);
-
-  EXPECT_EQ(4U, CountAllTabs());
-
-  // Close remaining tabs.
-  chrome::CloseAllTabs(browser2.get());
-  chrome::CloseAllTabs(browser3.get());
-
-  EXPECT_EQ(1U, CountAllTabs());
-
-  // Delete the last remaining tab.
-  delete tab;
-
-  EXPECT_EQ(0U, CountAllTabs());
-
-  // Add some tabs.
-  for (size_t i = 0; i < 3; ++i) {
-    chrome::NewTab(browser2.get());
-    chrome::NewTab(browser3.get());
-  }
-
-  EXPECT_EQ(6U, CountAllTabs());
-
-  // Tell BackgroundPrintingManager to take ownership of all tabs.
-  // Save the tabs in |owned_tabs| because manipulating tabs in the middle of
-  // TabContentsIterator is a bad idea.
-  std::vector<TabContents*> owned_tabs;
-  for (TabContentsIterator iterator; !iterator.done(); ++iterator) {
-    NavigateToPrintUrl(*iterator, page_id++);
-    owned_tabs.push_back(*iterator);
-  }
-  for (std::vector<TabContents*>::iterator it = owned_tabs.begin();
-       it != owned_tabs.end(); ++it) {
-    bg_print_manager->OwnPrintPreviewTab(*it);
-  }
-
-  EXPECT_EQ(6U, CountAllTabs());
-
-  // Delete all tabs to clean up.
-  for (std::vector<TabContents*>::iterator it = owned_tabs.begin();
-       it != owned_tabs.end(); ++it) {
-    delete *it;
-  }
-
-  EXPECT_EQ(0U, CountAllTabs());
-}
-#endif
 
 #if defined(OS_CHROMEOS)
 // Calling AttemptRestart on ChromeOS will exit the test.

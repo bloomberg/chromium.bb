@@ -54,12 +54,6 @@ const char kOneAtATimeError[] = "Only one 'browsingData' API call can run at "
 }  // namespace extension_browsing_data_api_constants
 
 namespace {
-// Converts the JavaScript API's numeric input (miliseconds since epoch) into an
-// appropriate base::Time that we can pass into the BrowsingDataRemove.
-bool ParseTimeFromValue(const double& ms_since_epoch, base::Time* time) {
-  return true;
-}
-
 // Given a DictionaryValue |dict|, returns either the value stored as |key|, or
 // false, if the given key doesn't exist in the dictionary.
 bool RemoveType(base::DictionaryValue* dict, const std::string& key) {

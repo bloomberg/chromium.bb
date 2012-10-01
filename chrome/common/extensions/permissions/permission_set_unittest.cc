@@ -25,9 +25,9 @@ namespace keys = extension_manifest_keys;
 namespace values = extension_manifest_values;
 namespace {
 
-static scoped_refptr<Extension> LoadManifest(const std::string& dir,
-                                             const std::string& test_file,
-                                             int extra_flags) {
+scoped_refptr<Extension> LoadManifest(const std::string& dir,
+                                      const std::string& test_file,
+                                      int extra_flags) {
   FilePath path;
   PathService::Get(chrome::DIR_TEST_DATA, &path);
   path = path.AppendASCII("extensions")
@@ -49,18 +49,9 @@ static scoped_refptr<Extension> LoadManifest(const std::string& dir,
   return extension;
 }
 
-static scoped_refptr<Extension> LoadManifest(const std::string& dir,
-                                             const std::string& test_file) {
+scoped_refptr<Extension> LoadManifest(const std::string& dir,
+                                      const std::string& test_file) {
   return LoadManifest(dir, test_file, Extension::NO_FLAGS);
-}
-
-void CompareLists(const std::vector<std::string>& expected,
-                  const std::vector<std::string>& actual) {
-  ASSERT_EQ(expected.size(), actual.size());
-
-  for (size_t i = 0; i < expected.size(); ++i) {
-    EXPECT_EQ(expected[i], actual[i]);
-  }
 }
 
 static void AddPattern(URLPatternSet* extent, const std::string& pattern) {
@@ -68,8 +59,8 @@ static void AddPattern(URLPatternSet* extent, const std::string& pattern) {
   extent->AddPattern(URLPattern(schemes, pattern));
 }
 
-static size_t IndexOf(const std::vector<string16>& warnings,
-                      const std::string& warning) {
+size_t IndexOf(const std::vector<string16>& warnings,
+               const std::string& warning) {
   for (size_t i = 0; i < warnings.size(); ++i) {
     if (warnings[i] == ASCIIToUTF16(warning))
       return i;
@@ -78,8 +69,8 @@ static size_t IndexOf(const std::vector<string16>& warnings,
   return warnings.size();
 }
 
-static bool Contains(const std::vector<string16>& warnings,
-                     const std::string& warning) {
+bool Contains(const std::vector<string16>& warnings,
+              const std::string& warning) {
   return IndexOf(warnings, warning) != warnings.size();
 }
 

@@ -150,29 +150,6 @@ int next_page_id_ = 1;
 // Used to write a platform neutral file:/// URL by taking the
 // filename and its directory. (e.g., converts
 // "file:///tmp/foo/bar.txt" to just "bar.txt").
-std::string DescriptionSuitableForTestResult(const std::string& url) {
-  if (url.empty() || std::string::npos == url.find("file://"))
-    return url;
-
-  size_t pos = url.rfind('/');
-  if (pos == std::string::npos || pos == 0)
-    return "ERROR:" + url;
-  pos = url.rfind('/', pos - 1);
-  if (pos == std::string::npos)
-    return "ERROR:" + url;
-
-  return url.substr(pos + 1);
-}
-
-// Adds a file called "DRTFakeFile" to |data_object|.  Use to fake dragging a
-// file.
-void AddDRTFakeFileToDataObject(WebDragData* drag_data) {
-  WebDragData::Item item;
-  item.storageType = WebDragData::Item::StorageTypeFilename;
-  item.filenameData = WebString::fromUTF8("DRTFakeFile");
-  drag_data->addItem(item);
-}
-
 // Get a debugging string from a WebNavigationType.
 const char* WebNavigationTypeToString(WebNavigationType type) {
   switch (type) {
@@ -199,46 +176,6 @@ std::string GetURLDescription(const GURL& url) {
   return url.possibly_invalid_spec();
 }
 
-std::string GetResponseDescription(const WebURLResponse& response) {
-  if (response.isNull())
-    return "(null)";
-
-  const std::string url = GURL(response.url()).possibly_invalid_spec();
-  return base::StringPrintf("<NSURLResponse %s, http status code %d>",
-                            DescriptionSuitableForTestResult(url).c_str(),
-                            response.httpStatusCode());
-}
-
-std::string GetErrorDescription(const WebURLError& error) {
-  std::string domain = UTF16ToASCII(error.domain);
-  int code = error.reason;
-
-  if (domain == net::kErrorDomain) {
-    domain = "NSURLErrorDomain";
-    switch (error.reason) {
-      case net::ERR_ABORTED:
-        code = -999;  // NSURLErrorCancelled
-        break;
-      case net::ERR_UNSAFE_PORT:
-        // Our unsafe port checking happens at the network stack level, but we
-        // make this translation here to match the behavior of stock WebKit.
-        domain = "WebKitErrorDomain";
-        code = 103;
-        break;
-      case net::ERR_ADDRESS_INVALID:
-      case net::ERR_ADDRESS_UNREACHABLE:
-      case net::ERR_NETWORK_ACCESS_DENIED:
-        code = -1004;  // NSURLErrorCannotConnectToHost
-        break;
-    }
-  } else {
-    DLOG(WARNING) << "Unknown error domain";
-  }
-
-  return base::StringPrintf("<NSError domain %s, code %d, failing URL \"%s\">",
-      domain.c_str(), code, error.unreachableURL.spec().data());
-}
-
 std::string GetNodeDescription(const WebNode& node, int exception) {
   if (exception)
     return "ERROR";
@@ -251,47 +188,6 @@ std::string GetNodeDescription(const WebNode& node, int exception) {
     str.append(GetNodeDescription(parent, 0));
   }
   return str;
-}
-
-std::string GetRangeDescription(const WebRange& range) {
-  if (range.isNull())
-    return "(null)";
-  int exception = 0;
-  std::string str = "range from ";
-  int offset = range.startOffset();
-  str.append(base::IntToString(offset));
-  str.append(" of ");
-  WebNode container = range.startContainer(exception);
-  str.append(GetNodeDescription(container, exception));
-  str.append(" to ");
-  offset = range.endOffset();
-  str.append(base::IntToString(offset));
-  str.append(" of ");
-  container = range.endContainer(exception);
-  str.append(GetNodeDescription(container, exception));
-  return str;
-}
-
-std::string GetEditingActionDescription(WebEditingAction action) {
-  switch (action) {
-    case WebKit::WebEditingActionTyped:
-      return "WebViewInsertActionTyped";
-    case WebKit::WebEditingActionPasted:
-      return "WebViewInsertActionPasted";
-    case WebKit::WebEditingActionDropped:
-      return "WebViewInsertActionDropped";
-  }
-  return "(UNKNOWN ACTION)";
-}
-
-std::string GetTextAffinityDescription(WebTextAffinity affinity) {
-  switch (affinity) {
-    case WebKit::WebTextAffinityUpstream:
-      return "NSSelectionAffinityUpstream";
-    case WebKit::WebTextAffinityDownstream:
-      return "NSSelectionAffinityDownstream";
-  }
-  return "(UNKNOWN AFFINITY)";
 }
 
 }  // namespace

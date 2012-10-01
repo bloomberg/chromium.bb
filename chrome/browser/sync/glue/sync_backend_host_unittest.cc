@@ -46,11 +46,7 @@ ACTION_P(Signal, event) {
   event->Signal();
 }
 
-void SignalEvent(base::WaitableEvent* event) {
-  event->Signal();
-}
-
-static void QuitMessageLoop() {
+void QuitMessageLoop() {
   MessageLoop::current()->Quit();
 }
 

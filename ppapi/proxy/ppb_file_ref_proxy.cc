@@ -165,14 +165,6 @@ int FileRef::SendCallback(scoped_refptr<TrackedCallback> callback) {
   return next_callback_id_++;
 }
 
-namespace {
-
-InterfaceProxy* CreateFileRefProxy(Dispatcher* dispatcher) {
-  return new PPB_FileRef_Proxy(dispatcher);
-}
-
-}  // namespace
-
 PPB_FileRef_Proxy::PPB_FileRef_Proxy(Dispatcher* dispatcher)
     : InterfaceProxy(dispatcher),
       callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {

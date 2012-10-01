@@ -46,16 +46,7 @@ namespace errors = extension_manifest_errors;
 
 namespace {
 
-void CompareLists(const std::vector<std::string>& expected,
-                  const std::vector<std::string>& actual) {
-  ASSERT_EQ(expected.size(), actual.size());
-
-  for (size_t i = 0; i < expected.size(); ++i) {
-    EXPECT_EQ(expected[i], actual[i]);
-  }
-}
-
-static scoped_refptr<Extension> LoadManifestUnchecked(
+scoped_refptr<Extension> LoadManifestUnchecked(
     const std::string& dir,
     const std::string& test_file,
     Extension::Location location,

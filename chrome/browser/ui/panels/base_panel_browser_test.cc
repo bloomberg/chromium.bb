@@ -178,11 +178,6 @@ void MockDisplaySettingsProviderImpl::SetDesktopBarThickness(
   OnAutoHidingDesktopBarChanged();
 }
 
-bool ExistsPanel(Panel* panel) {
-  std::vector<Panel*> panels = PanelManager::GetInstance()->panels();
-  return std::find(panels.begin(), panels.end(), panel) != panels.end();
-}
-
 }  // namespace
 
 const FilePath::CharType* BasePanelBrowserTest::kTestDir =

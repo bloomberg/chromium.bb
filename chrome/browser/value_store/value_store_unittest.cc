@@ -24,20 +24,6 @@ std::string GetJSON(const Value& value) {
   return json;
 }
 
-// Pretty-prints a set of strings.
-std::string ToString(const std::set<std::string>& strings) {
-  std::string string("{");
-  for (std::set<std::string>::const_iterator it = strings.begin();
-      it != strings.end(); ++it) {
-    if (it != strings.begin()) {
-      string.append(", ");
-    }
-    string.append(*it);
-  }
-  string.append("}");
-  return string;
-}
-
 }  // namespace
 
 // Compares two possibly NULL values for equality, filling |error| with an

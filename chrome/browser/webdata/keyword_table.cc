@@ -101,17 +101,6 @@ void BindURLToStatement(const TemplateURLData& data,
   s->BindString(starting_column + 15, data.sync_guid);
 }
 
-// Signs search provider id and returns its signature.
-std::string GetSearchProviderIDSignature(int64 id) {
-  return protector::SignSetting(base::Int64ToString(id));
-}
-
-// Checks if signature for search provider id is correct and returns the
-// result.
-bool IsSearchProviderIDValid(int64 id, const std::string& signature) {
-  return protector::IsSettingValid(base::Int64ToString(id), signature);
-}
-
 }  // anonymous namespace
 
 KeywordTable::KeywordTable(sql::Connection* db, sql::MetaTable* meta_table)

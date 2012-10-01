@@ -25,14 +25,6 @@ PP_Bool IsView(PP_Resource resource) {
   return enter.succeeded() ? PP_TRUE : PP_FALSE;
 }
 
-PP_Bool GetSize(PP_Resource resource, PP_Size* size) {
-  EnterView enter(resource, true);
-  if (enter.failed() || !size)
-    return PP_FALSE;
-  *size = enter.object()->GetData().rect.size;
-  return PP_TRUE;
-}
-
 PP_Bool GetRect(PP_Resource resource, PP_Rect* viewport) {
   EnterView enter(resource, true);
   if (enter.failed() || !viewport)
@@ -61,13 +53,6 @@ PP_Bool IsPageVisible(PP_Resource resource) {
   if (enter.failed())
     return PP_FALSE;
   return PP_FromBool(enter.object()->GetData().is_page_visible);
-}
-
-PP_Bool IsClipVisible(PP_Resource resource) {
-  EnterView enter(resource, true);
-  if (enter.failed())
-    return PP_FALSE;
-  return PP_FromBool(IsRectVisible(enter.object()->GetData().clip_rect));
 }
 
 PP_Bool GetClipRect(PP_Resource resource, PP_Rect* clip) {

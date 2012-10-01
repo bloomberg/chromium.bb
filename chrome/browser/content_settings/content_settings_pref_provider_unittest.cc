@@ -34,25 +34,6 @@
 using ::testing::_;
 using content::BrowserThread;
 
-namespace {
-
-void ExpectObsoleteGeolocationSetting(
-    const DictionaryValue& geo_settings_dictionary,
-    const GURL& primary_origin,
-    const GURL& secondary_origin,
-    ContentSetting expected_setting) {
-
-  const DictionaryValue* one_origin_settings;
-  ASSERT_TRUE(geo_settings_dictionary.GetDictionaryWithoutPathExpansion(
-      std::string(primary_origin.spec()), &one_origin_settings));
-  int setting_value;
-  ASSERT_TRUE(one_origin_settings->GetIntegerWithoutPathExpansion(
-      std::string(secondary_origin.spec()), &setting_value));
-  EXPECT_EQ(expected_setting, setting_value);
-}
-
-}  // namespace
-
 namespace content_settings {
 
 class DeadlockCheckerThread : public base::PlatformThread::Delegate {

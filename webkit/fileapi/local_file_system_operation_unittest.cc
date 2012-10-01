@@ -40,10 +40,6 @@ void AssertFileErrorEq(base::PlatformFileError expected,
   ASSERT_EQ(expected, actual);
 }
 
-FilePath ASCIIToFilePath(const std::string& str) {
-  return FilePath().AppendASCII(str);
-}
-
 }  // namespace (anonymous)
 
 // Test class for LocalFileSystemOperation.

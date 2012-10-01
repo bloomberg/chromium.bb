@@ -28,10 +28,6 @@ namespace extensions {
 
 class WebstorePrivateApi {
  public:
-  // Allows you to set the ProfileSyncService the function will use for
-  // testing purposes.
-  static void SetTestingProfileSyncService(ProfileSyncService* service);
-
   // Allows you to override the WebstoreInstaller delegate for testing.
   static void SetWebstoreInstallerDelegateForTesting(
       WebstoreInstaller::Delegate* delegate);

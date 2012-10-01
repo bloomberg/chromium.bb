@@ -50,16 +50,6 @@ static int GetTapDownDeferralTimeMs() {
                  switches::kTapDownDeferralTimeMs);
   return tap_down_deferral_time_window;
 }
-
-
-// TODO(rjkroege): Coalesce pinch updates.
-// Returns |true| if two gesture events should be coalesced.
-bool ShouldCoalesceGestureEvents(const WebKit::WebGestureEvent& last_event,
-                                 const WebKit::WebGestureEvent& new_event) {
-  return new_event.type == WebInputEvent::GestureScrollUpdate &&
-      last_event.type == new_event.type &&
-      last_event.modifiers == new_event.modifiers;
-}
 } // namespace
 
 GestureEventFilter::GestureEventFilter(RenderWidgetHostImpl* rwhv)

@@ -64,7 +64,6 @@
 #include "chrome/browser/platform_util.h"
 #endif
 
-using base::Time;
 using content::BrowserThread;
 
 namespace {
@@ -171,13 +170,6 @@ std::string GetNewTabBackgroundTilingCSS(
   theme_provider->GetDisplayProperty(
       ThemeService::NTP_BACKGROUND_TILING, &repeat_mode);
   return ThemeService::TilingToString(repeat_mode);
-}
-
-// Is the current time within a given date range?
-bool InDateRange(double begin, double end) {
-  Time start_time = Time::FromDoubleT(begin);
-  Time end_time = Time::FromDoubleT(end);
-  return start_time < Time::Now() && end_time > Time::Now();
 }
 
 }  // namespace

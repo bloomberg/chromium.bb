@@ -94,8 +94,6 @@ namespace {
 
 const char kTestChromeVersion[] = "test chrome version";
 
-void DoNothing() {}
-
 void ExpectInt64Value(int64 expected_value,
                       const DictionaryValue& value, const std::string& key) {
   std::string int64_str;

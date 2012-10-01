@@ -48,7 +48,9 @@
 
 namespace {
 void WarmUpSandbox(const content::GPUInfo&, bool);
+#if defined(OS_LINUX)
 void CollectGraphicsInfo(content::GPUInfo*);
+#endif
 }
 
 // Main function for starting the Gpu process.
@@ -227,6 +229,7 @@ int GpuMain(const content::MainFunctionParams& parameters) {
 
 namespace {
 
+#if defined(OS_LINUX)
 void CreateDummyGlContext() {
   scoped_refptr<gfx::GLSurface> surface(
       gfx::GLSurface::CreateOffscreenGLSurface(false, gfx::Size(1, 1)));
@@ -253,6 +256,7 @@ void CreateDummyGlContext() {
     VLOG(1)  << "gfx::GLContext::MakeCurrent failed";
   }
 }
+#endif
 
 void WarmUpSandbox(const content::GPUInfo& gpu_info,
                    bool should_initialize_gl_context) {
@@ -309,11 +313,13 @@ void WarmUpSandbox(const content::GPUInfo& gpu_info,
 #endif
 }
 
+#if defined(OS_LINUX)
 void CollectGraphicsInfo(content::GPUInfo* gpu_info) {
   if (!gpu_info_collector::CollectGraphicsInfo(gpu_info))
     VLOG(1) << "gpu_info_collector::CollectGraphicsInfo failed";
   content::GetContentClient()->SetGpuInfo(*gpu_info);
 }
+#endif
 
 }  // namespace.
 

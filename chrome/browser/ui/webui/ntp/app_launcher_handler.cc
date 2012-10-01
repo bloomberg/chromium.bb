@@ -13,9 +13,6 @@
 #include "base/i18n/rtl.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
-#include "base/string_number_conversions.h"
-#include "base/string_split.h"
-#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/app_notification.h"
@@ -51,9 +48,7 @@
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
-#include "ui/base/animation/animation.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/favicon_size.h"
 
 using application_launch::LaunchParams;
@@ -63,22 +58,8 @@ using extensions::CrxInstaller;
 using extensions::Extension;
 using extensions::ExtensionPrefs;
 
-namespace {
-
 const net::UnescapeRule::Type kUnescapeRules =
     net::UnescapeRule::NORMAL | net::UnescapeRule::URL_SPECIAL_CHARS;
-
-extension_misc::AppLaunchBucket ParseLaunchSource(
-    const std::string& launch_source) {
-  int bucket_num = extension_misc::APP_LAUNCH_BUCKET_INVALID;
-  base::StringToInt(launch_source, &bucket_num);
-  extension_misc::AppLaunchBucket bucket =
-      static_cast<extension_misc::AppLaunchBucket>(bucket_num);
-  CHECK(bucket < extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
-  return bucket;
-}
-
-}  // namespace
 
 AppLauncherHandler::AppInstallInfo::AppInstallInfo() {}
 

@@ -566,6 +566,7 @@ void ChromeURLDataManagerBackend::DataAvailable(RequestID request_id,
 
 namespace {
 
+#if defined(DEBUG_DEVTOOLS)
 bool IsSupportedDevToolsURL(const GURL& url, FilePath* path) {
   if (!url.SchemeIs(chrome::kChromeDevToolsScheme))
     return false;
@@ -606,6 +607,7 @@ bool IsSupportedDevToolsURL(const GURL& url, FilePath* path) {
   *path = inspector_dir.AppendASCII(relative_path);
   return true;
 }
+#endif  // defined(DEBUG_DEVTOOLS)
 
 class DevToolsJobFactory
     : public net::URLRequestJobFactory::ProtocolHandler {

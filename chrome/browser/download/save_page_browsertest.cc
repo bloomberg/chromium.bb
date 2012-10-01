@@ -53,21 +53,14 @@ using content::DownloadManager;
 using content::DownloadPersistentStoreInfo;
 using content::WebContents;
 
-namespace {
+const FilePath::CharType kTestDir[] = FILE_PATH_LITERAL("save_page");
 
-static const FilePath::CharType* kTestDir = FILE_PATH_LITERAL("save_page");
-
-static const char* kAppendedExtension =
+const char kAppendedExtension[] =
 #if defined(OS_WIN)
     ".htm";
 #else
     ".html";
 #endif
-
-void NullFunction() {
-}
-
-}  // namespace
 
 // Loosely based on logic in DownloadTestObserver.
 class DownloadItemCreatedObserver : public DownloadManager::Observer {

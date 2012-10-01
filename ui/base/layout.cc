@@ -30,6 +30,7 @@
 
 namespace {
 
+#if defined(OS_WIN) || defined(USE_ASH)
 // Helper function that determines whether we want to optimize the UI for touch.
 bool UseTouchOptimizedUI() {
   // If --touch-optimized-ui is specified and not set to "auto", then override
@@ -59,6 +60,7 @@ bool UseTouchOptimizedUI() {
   return false;
 #endif
 }
+#endif  // defined(OS_WIN) || defined(USE_ASH)
 
 const float kScaleFactorScales[] = {1.0f, 1.4f, 1.8f, 2.0f};
 COMPILE_ASSERT(ui::NUM_SCALE_FACTORS == arraysize(kScaleFactorScales),

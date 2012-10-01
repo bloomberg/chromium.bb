@@ -18,20 +18,8 @@
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
-#include "ui/gfx/image/image_skia.h"
 
 using extensions::Extension;
-
-namespace {
-
-gfx::Image CreateNonEmptyImage() {
-  SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, 16, 16);
-  bitmap.allocPixels();
-  return gfx::Image(bitmap);
-}
-
-}  // namespace
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PageAction) {
   ASSERT_TRUE(test_server()->Start());

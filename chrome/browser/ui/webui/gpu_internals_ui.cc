@@ -84,6 +84,7 @@ Value* NewStatusValue(const char* name, const char* status) {
   return value;
 }
 
+#if defined(OS_WIN)
 // Output DxDiagNode tree as nested array of {description,value} pairs
 ListValue* DxDiagNodeToList(const content::DxDiagNode& node) {
   ListValue* list = new ListValue();
@@ -103,6 +104,7 @@ ListValue* DxDiagNodeToList(const content::DxDiagNode& node) {
   }
   return list;
 }
+#endif
 
 std::string GPUDeviceToString(const content::GPUInfo::GPUDevice& gpu) {
   std::string vendor = base::StringPrintf("0x%04x", gpu.vendor_id);

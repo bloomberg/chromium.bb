@@ -42,10 +42,6 @@ bool IsExpected(const WebString& web_string, const char* expected) {
   return IsExpected(web_string.utf8(), expected);
 }
 
-bool IsNullOrEmpty(const WebString& web_string) {
-  return web_string.isNull() || web_string.isEmpty();
-}
-
 // The base class destructor is protected, so derive.
 class TestWebFrameClient : public WebFrameClient {
 };

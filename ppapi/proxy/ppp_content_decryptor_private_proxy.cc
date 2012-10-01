@@ -237,10 +237,6 @@ static const PPP_ContentDecryptor_Private content_decryptor_interface = {
   &DecryptAndDecode
 };
 
-InterfaceProxy* CreateContentDecryptorPPPProxy(Dispatcher* dispatcher) {
-  return new PPP_ContentDecryptor_Private_Proxy(dispatcher);
-}
-
 }  // namespace
 
 PPP_ContentDecryptor_Private_Proxy::PPP_ContentDecryptor_Private_Proxy(

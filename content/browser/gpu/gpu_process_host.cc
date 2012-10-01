@@ -125,6 +125,7 @@ void AcceleratedSurfaceBuffersSwappedCompletedForGPU(int host_id,
   }
 }
 
+#if defined(OS_WIN)
 // This sends a ViewMsg_SwapBuffers_ACK directly to the renderer process
 // (RenderWidget). This path is currently not used with the threaded compositor.
 void AcceleratedSurfaceBuffersSwappedCompletedForRenderer(
@@ -167,6 +168,7 @@ void AcceleratedSurfaceBuffersSwappedCompleted(int host_id,
   AcceleratedSurfaceBuffersSwappedCompletedForRenderer(surface_id, timebase,
                                                        interval);
 }
+#endif  // defined(OS_WIN)
 
 }  // anonymous namespace
 
@@ -663,7 +665,6 @@ void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
 #endif  // OS_MACOSX
 
 #if defined(OS_WIN)
-
 void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
     const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params) {
   TRACE_EVENT0("gpu", "GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped");
