@@ -129,15 +129,8 @@ class InstantController : public InstantLoaderDelegate {
   // we've processed the last Update() and we know the loader supports Instant.
   bool IsCurrent() const;
 
-  // Unconditionally commits the preview. Returns the TabContents that contains
-  // the committed preview.
-  TabContents* CommitCurrentPreview(InstantCommitType type);
-
-  // Releases the preview WebContents passing ownership to the caller. This is
-  // intended to be called when the preview WebContents is committed. This does
-  // not notify the delegate.
-  TabContents* ReleasePreviewContents(
-      InstantCommitType type) WARN_UNUSED_RESULT;
+  // Commits the preview. Calls CommitInstant() on the delegate.
+  void CommitCurrentPreview(InstantCommitType type);
 
   // The autocomplete edit that was initiating the current Instant session has
   // lost focus. Commit or discard the preview accordingly.

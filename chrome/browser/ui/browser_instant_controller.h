@@ -11,6 +11,7 @@
 #include "base/string16.h"
 #include "chrome/browser/api/prefs/pref_change_registrar.h"
 #include "chrome/browser/instant/instant_controller_delegate.h"
+#include "chrome/browser/instant/instant_unload_handler.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/common/instant_types.h"
 #include "content/public/browser/notification_observer.h"
@@ -19,7 +20,6 @@
 class Browser;
 class InstantController;
 class InstantTest;
-class InstantUnloadHandler;
 class TabContents;
 
 namespace content {
@@ -52,7 +52,7 @@ class BrowserInstantController : public InstantControllerDelegate,
   // Overridden from InstantControllerDelegate:
   virtual void ShowInstant(int height, InstantSizeUnits units) OVERRIDE;
   virtual void HideInstant() OVERRIDE;
-  virtual void CommitInstant(TabContents* preview) OVERRIDE;
+  virtual void CommitInstant(TabContents* preview, bool in_new_tab) OVERRIDE;
   virtual void SetSuggestedText(const string16& text,
                                 InstantCompleteBehavior behavior) OVERRIDE;
   virtual gfx::Rect GetInstantBounds() OVERRIDE;
@@ -74,7 +74,7 @@ class BrowserInstantController : public InstantControllerDelegate,
   Browser* browser_;
 
   scoped_ptr<InstantController> instant_;
-  InstantUnloadHandler* const instant_unload_handler_;
+  InstantUnloadHandler instant_unload_handler_;
 
   PrefChangeRegistrar profile_pref_registrar_;
 

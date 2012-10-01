@@ -325,22 +325,7 @@ bool InstantController::IsCurrent() const {
          loader_->supports_instant() && last_match_was_search_;
 }
 
-TabContents* InstantController::CommitCurrentPreview(InstantCommitType type) {
-  const TabContents* active_tab = delegate_->GetActiveTabContents();
-  TabContents* preview = ReleasePreviewContents(type);
-  AddSessionStorageHistogram(mode_, active_tab, preview);
-  preview->web_contents()->GetController().CopyStateFromAndPrune(
-      &active_tab->web_contents()->GetController());
-  delegate_->CommitInstant(preview);
-
-  // Try to create another loader immediately so that it is ready for the next
-  // user interaction.
-  CreateDefaultLoader();
-
-  return preview;
-}
-
-TabContents* InstantController::ReleasePreviewContents(InstantCommitType type) {
+void InstantController::CommitCurrentPreview(InstantCommitType type) {
   TabContents* preview = loader_->ReleasePreviewContents(type, last_full_text_);
 
   // If the preview page has navigated since the last Update(), we need to add
@@ -373,9 +358,8 @@ TabContents* InstantController::ReleasePreviewContents(InstantCommitType type) {
 
   // Add a fake history entry with a non-Instant search URL, so that search
   // terms extraction (for autocomplete history matches) works.
-  HistoryService* history = HistoryServiceFactory::GetForProfile(
-      preview->profile(), Profile::EXPLICIT_ACCESS);
-  if (history) {
+  if (HistoryService* history = HistoryServiceFactory::GetForProfile(
+          preview->profile(), Profile::EXPLICIT_ACCESS)) {
     history->AddPage(url_for_history_, base::Time::Now(), NULL, 0, GURL(),
                      history::RedirectList(), last_transition_type_,
                      history::SOURCE_BROWSED, false);
@@ -391,7 +375,26 @@ TabContents* InstantController::ReleasePreviewContents(InstantCommitType type) {
   // because it was just released to DeleteSoon().
   DeleteLoader();
 
-  return preview;
+  preview->web_contents()->GetController().PruneAllButActive();
+
+  if (type != INSTANT_COMMIT_PRESSED_ALT_ENTER) {
+    const TabContents* active_tab = delegate_->GetActiveTabContents();
+    AddSessionStorageHistogram(mode_, active_tab, preview);
+    preview->web_contents()->GetController().CopyStateFromAndPrune(
+        &active_tab->web_contents()->GetController());
+  }
+
+  // Delegate takes ownership of the preview.
+  delegate_->CommitInstant(preview, type == INSTANT_COMMIT_PRESSED_ALT_ENTER);
+
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_INSTANT_COMMITTED,
+      content::Source<TabContents>(preview),
+      content::NotificationService::NoDetails());
+
+  // Try to create another loader immediately so that it is ready for the next
+  // user interaction.
+  CreateDefaultLoader();
 }
 
 void InstantController::OnAutocompleteLostFocus(
@@ -580,11 +583,10 @@ void InstantController::InstantSupportDetermined(InstantLoader* loader,
     }
   }
 
-  content::Details<const bool> details(&supports_instant);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_INSTANT_SUPPORT_DETERMINED,
-      content::NotificationService::AllSources(),
-      details);
+      content::Source<InstantController>(this),
+      content::NotificationService::NoDetails());
 }
 
 void InstantController::SwappedTabContents(InstantLoader* loader) {
@@ -678,7 +680,6 @@ void InstantController::DeleteLoader() {
   last_user_text_.clear();
   last_verbatim_ = false;
   last_suggestion_ = InstantSuggestion();
-  last_transition_type_ = content::PAGE_TRANSITION_LINK;
   last_match_was_search_ = false;
   is_showing_ = false;
   loader_processed_last_update_ = false;

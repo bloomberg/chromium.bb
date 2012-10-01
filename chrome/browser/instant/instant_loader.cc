@@ -364,10 +364,10 @@ TabContents* InstantLoader::ReleasePreviewContents(InstantCommitType type,
                                                    const string16& text) {
   content::RenderViewHost* rvh =
       preview_contents_->web_contents()->GetRenderViewHost();
-  if (type == INSTANT_COMMIT_PRESSED_ENTER)
-    rvh->Send(new ChromeViewMsg_SearchBoxSubmit(rvh->GetRoutingID(), text));
-  else
+  if (type == INSTANT_COMMIT_FOCUS_LOST)
     rvh->Send(new ChromeViewMsg_SearchBoxCancel(rvh->GetRoutingID(), text));
+  else
+    rvh->Send(new ChromeViewMsg_SearchBoxSubmit(rvh->GetRoutingID(), text));
   CleanupPreviewContents();
   preview_contents_->web_contents()->RemoveUserData(&kUserDataKey);
   return preview_contents_.release();

@@ -233,8 +233,11 @@ bool OmniboxEditModel::CommitSuggestedText(bool skip_inline_autocomplete) {
 
 bool OmniboxEditModel::AcceptCurrentInstantPreview() {
   InstantController* instant = controller_->GetInstant();
-  return instant && instant->IsCurrent() &&
-         instant->CommitCurrentPreview(INSTANT_COMMIT_PRESSED_ENTER);
+  if (instant && instant->IsCurrent()) {
+    instant->CommitCurrentPreview(INSTANT_COMMIT_PRESSED_ENTER);
+    return true;
+  }
+  return false;
 }
 
 void OmniboxEditModel::OnChanged() {

@@ -10,6 +10,10 @@ enum InstantCommitType {
   // The commit is due to the user pressing Enter from the omnibox.
   INSTANT_COMMIT_PRESSED_ENTER,
 
+  // The commit is due to the user pressing Alt-Enter from the omnibox (which
+  // causes the preview to be committed on to a new tab).
+  INSTANT_COMMIT_PRESSED_ALT_ENTER,
+
   // The commit is due to the omnibox losing focus, usually due to the user
   // clicking on the preview.
   INSTANT_COMMIT_FOCUS_LOST,

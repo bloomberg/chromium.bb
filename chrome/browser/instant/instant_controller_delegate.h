@@ -28,9 +28,9 @@ class InstantControllerDelegate {
   // Hide any preview currently being shown.
   virtual void HideInstant() = 0;
 
-  // Commit the |preview| by merging it into the active tab. Delegate takes
-  // ownership of |preview|.
-  virtual void CommitInstant(TabContents* preview) = 0;
+  // Commit the |preview| by merging it into the active tab or adding it as a
+  // new tab, based on |in_new_tab|. Delegate takes ownership of |preview|.
+  virtual void CommitInstant(TabContents* preview, bool in_new_tab) = 0;
 
   // Autocomplete the Instant suggested |text| into the omnibox, using the
   // specified |behavior| (see instant_types.h for details).
