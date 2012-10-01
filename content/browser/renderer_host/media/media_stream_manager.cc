@@ -10,7 +10,6 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
-#include "base/win/scoped_com_initializer.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
 #include "content/browser/renderer_host/media/media_stream_device_settings.h"
 #include "content/browser/renderer_host/media/media_stream_requester.h"
@@ -20,6 +19,10 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/media_observer.h"
 #include "googleurl/src/gurl.h"
+
+#if defined(OS_WIN)
+#include "base/win/scoped_com_initializer.h"
+#endif
 
 using content::BrowserThread;
 
@@ -51,23 +54,22 @@ static bool Requested(const StreamOptions& options,
           options.video_type == stream_type);
 }
 
-DeviceThread::DeviceThread(const char* name)
-    : base::Thread(name) {
+#if defined(OS_WIN)
+DeviceThread::DeviceThread(const char* name) : base::Thread(name) {
 }
 
 DeviceThread::~DeviceThread() {
-  Stop();
 }
 
 void DeviceThread::Init() {
-  using base::win::ScopedCOMInitializer;
-  // Enter the multi-threaded apartment.
-  com_initializer_.reset(new ScopedCOMInitializer(ScopedCOMInitializer::kMTA));
+  com_initializer_.reset(new base::win::ScopedCOMInitializer(
+      base::win::ScopedCOMInitializer::kMTA));
 }
 
 void DeviceThread::CleanUp() {
   com_initializer_.reset();
 }
+#endif
 
 // TODO(xians): Merge DeviceRequest with MediaStreamRequest.
 struct MediaStreamManager::DeviceRequest {

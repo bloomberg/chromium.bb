@@ -23,7 +23,6 @@
 #include "base/threading/thread_local.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "base/win/scoped_com_initializer.h"
 #include "content/common/appcache/appcache_dispatcher.h"
 #include "content/common/child_histogram_message_filter.h"
 #include "content/common/child_process_messages.h"
@@ -97,15 +96,14 @@
 #include "v8/include/v8.h"
 #include "webkit/glue/webkit_glue.h"
 
-// TODO(port)
-#if !defined(OS_WIN)
-#include "base/memory/scoped_handle.h"
-#include "content/common/np_channel_base.h"
-#endif
-
 #if defined(OS_WIN)
 #include <windows.h>
 #include <objbase.h>
+#include "base/win/scoped_com_initializer.h"
+#else
+// TODO(port)
+#include "base/memory/scoped_handle.h"
+#include "content/common/np_channel_base.h"
 #endif
 
 #if defined(OS_POSIX)

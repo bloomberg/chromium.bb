@@ -23,12 +23,6 @@ class AudioRendererHost;
 class RenderThreadImpl;
 class WebRTCMockRenderProcess;
 
-namespace base {
-namespace win {
-class ScopedCOMInitializer;
-}
-}
-
 namespace content {
 class ContentRendererClient;
 class MockResourceContext;
@@ -51,6 +45,14 @@ class URLRequestContext;
 namespace webrtc {
 class VoENetwork;
 }
+
+#if defined(OS_WIN)
+namespace base {
+namespace win {
+class ScopedCOMInitializer;
+}
+}
+#endif
 
 // Scoped class for WebRTC interfaces.  Fetches the wrapped interface
 // in the constructor via WebRTC's GetInterface mechanism and then releases
@@ -179,8 +181,11 @@ class WebRTCAudioDeviceTest : public ::testing::Test, public IPC::Listener {
   scoped_ptr<content::TestBrowserThread> ui_thread_;
   // Initialized on our IO thread to satisfy BrowserThread::IO checks.
   scoped_ptr<content::TestBrowserThread> io_thread_;
-  // COM initialization on the IO thread for Windows.
+
+#if defined(OS_WIN)
+  // COM initialization on the IO thread.
   scoped_ptr<base::win::ScopedCOMInitializer> initialize_com_;
+#endif
 
   // These are initialized when we set up our IO thread.
   bool has_input_devices_;

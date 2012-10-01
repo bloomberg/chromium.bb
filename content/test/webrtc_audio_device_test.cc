@@ -11,7 +11,6 @@
 #include "base/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
-#include "base/win/scoped_com_initializer.h"
 #include "content/browser/renderer_host/media/audio_input_renderer_host.h"
 #include "content/browser/renderer_host/media/audio_renderer_host.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
@@ -37,7 +36,10 @@
 #include "third_party/webrtc/voice_engine/include/voe_file.h"
 #include "third_party/webrtc/voice_engine/include/voe_network.h"
 
-using base::win::ScopedCOMInitializer;
+#if defined(OS_WIN)
+#include "base/win/scoped_com_initializer.h"
+#endif
+
 using testing::_;
 using testing::InvokeWithoutArgs;
 using testing::Return;
@@ -196,9 +198,11 @@ void WebRTCAudioDeviceTest::SetAudioUtilCallback(AudioUtilInterface* callback) {
 }
 
 void WebRTCAudioDeviceTest::InitializeIOThread(const char* thread_name) {
+#if defined(OS_WIN)
   // We initialize COM (STA) on our IO thread as is done in Chrome.
   // See BrowserProcessSubThread::Init.
-  initialize_com_.reset(new ScopedCOMInitializer());
+  initialize_com_.reset(new base::win::ScopedCOMInitializer());
+#endif
 
   // Set the current thread as the IO thread.
   io_thread_.reset(new content::TestBrowserThread(content::BrowserThread::IO,
@@ -222,7 +226,10 @@ void WebRTCAudioDeviceTest::UninitializeIOThread() {
   resource_context_.reset();
 
   test_request_context_.reset();
+
+#if defined(OS_WIN)
   initialize_com_.reset();
+#endif
 }
 
 void WebRTCAudioDeviceTest::CreateChannel(const char* name) {

@@ -48,9 +48,12 @@ class WebMediaStreamCenterClient;
 namespace base {
 class MessageLoopProxy;
 class Thread;
+
+#if defined(OS_WIN)
 namespace win {
 class ScopedCOMInitializer;
 }
+#endif
 }
 
 namespace IPC {
@@ -340,8 +343,10 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
   // Used on multiple script execution context threads.
   scoped_ptr<WebDatabaseObserverImpl> web_database_observer_impl_;
 
-  // Initialize COM when using plugins outside the sandbox (Windows only).
+#if defined(OS_WIN)
+  // Initialize COM when using plugins outside the sandbox.
   scoped_ptr<base::win::ScopedCOMInitializer> initialize_com_;
+#endif
 
   // The count of RenderWidgets running through this thread.
   int widget_count_;

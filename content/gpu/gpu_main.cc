@@ -14,7 +14,6 @@
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "base/threading/platform_thread.h"
-#include "base/win/scoped_com_initializer.h"
 #include "build/build_config.h"
 #include "content/common/gpu/gpu_config.h"
 #include "content/gpu/gpu_child_thread.h"
@@ -30,6 +29,7 @@
 #include "ui/gl/gpu_switching_manager.h"
 
 #if defined(OS_WIN)
+#include "base/win/scoped_com_initializer.h"
 #include "content/common/gpu/media/dxva_video_decode_accelerator.h"
 #include "sandbox/win/src/sandbox.h"
 #elif defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
@@ -288,12 +288,12 @@ void WarmUpSandbox(const content::GPUInfo& gpu_info,
   }
 #endif
 
+#if defined(OS_WIN)
   {
     TRACE_EVENT0("gpu", "Initialize COM");
     base::win::ScopedCOMInitializer com_initializer;
   }
 
-#if defined(OS_WIN)
   {
     TRACE_EVENT0("gpu", "Preload setupapi.dll");
     // Preload this DLL because the sandbox prevents it from loading.

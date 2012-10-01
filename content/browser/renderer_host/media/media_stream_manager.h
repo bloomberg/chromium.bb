@@ -37,11 +37,13 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
 
+#if defined(OS_WIN)
 namespace base {
 namespace win {
 class ScopedCOMInitializer;
 }
 }
+#endif
 
 namespace media {
 class AudioManager;
@@ -54,7 +56,8 @@ class MediaStreamDeviceSettings;
 class MediaStreamRequester;
 class VideoCaptureManager;
 
-// Thread that enters MTA on windows, and is base::Thread on linux and mac.
+// Thread that enters MTA on Windows.
+#if defined(OS_WIN)
 class DeviceThread : public base::Thread {
  public:
   explicit DeviceThread(const char* name);
@@ -66,8 +69,12 @@ class DeviceThread : public base::Thread {
 
  private:
   scoped_ptr<base::win::ScopedCOMInitializer> com_initializer_;
+
   DISALLOW_COPY_AND_ASSIGN(DeviceThread);
 };
+#else
+typedef base::Thread DeviceThread;
+#endif
 
 // MediaStreamManager is used to generate and close new media devices, not to
 // start the media flow.
@@ -215,7 +222,7 @@ class CONTENT_EXPORT MediaStreamManager
   void StopMonitoring();
 
   // Device thread shared by VideoCaptureManager and AudioInputDeviceManager.
-  scoped_ptr<base::Thread> device_thread_;
+  scoped_ptr<DeviceThread> device_thread_;
 
   scoped_ptr<MediaStreamDeviceSettings> device_settings_;
 

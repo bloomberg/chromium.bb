@@ -6,8 +6,11 @@
 #define CONTENT_TEST_CONTENT_TEST_SUITE_H_
 
 #include "base/compiler_specific.h"
-#include "base/win/scoped_com_initializer.h"
 #include "content/public/test/content_test_suite_base.h"
+
+#if defined(OS_WIN)
+#include "base/win/scoped_com_initializer.h"
+#endif
 
 #if defined(USE_AURA)
 namespace aura {
@@ -30,7 +33,9 @@ class ContentTestSuite : public ContentTestSuiteBase {
   virtual ContentClient* CreateClientForInitialization() OVERRIDE;
 
  private:
+#if defined(OS_WIN)
   base::win::ScopedCOMInitializer com_initializer_;
+#endif
 
 #if defined(USE_AURA)
   scoped_ptr<aura::test::TestAuraInitializer> aura_initializer_;
