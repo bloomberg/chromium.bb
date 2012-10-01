@@ -650,8 +650,8 @@ void WebIntentPickerController::OnWebIntentServicesAvailableForExplicitIntent(
 
     AddServiceToModel(services[i]);
 
-    // BUG? This should a) not use (i)
-    InvokeService(picker_model_->GetInstalledServiceAt(i));
+    InvokeService(*(picker_model_->GetInstalledServiceWithURL(
+        services[i].service_url)));
     AsyncOperationFinished();
     return;
   }
