@@ -4,6 +4,7 @@
 
 #include "content/shell/shell_devtools_delegate.h"
 
+#include "base/bind.h"
 #include "base/stringprintf.h"
 #include "content/public/browser/android/devtools_auth.h"
 #include "content/public/browser/devtools_http_handler.h"
