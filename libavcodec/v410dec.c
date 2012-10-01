@@ -20,6 +20,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "libavutil/common.h"
 #include "libavutil/intreadwrite.h"
 #include "avcodec.h"
 
@@ -113,7 +114,7 @@ static av_cold int v410_decode_close(AVCodecContext *avctx)
 AVCodec ff_v410_decoder = {
     .name         = "v410",
     .type         = AVMEDIA_TYPE_VIDEO,
-    .id           = CODEC_ID_V410,
+    .id           = AV_CODEC_ID_V410,
     .init         = v410_decode_init,
     .decode       = v410_decode_frame,
     .close        = v410_decode_close,

@@ -11,7 +11,7 @@
  * FFmpeg is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with FFmpeg; if not, write to the Free Software
@@ -192,11 +192,11 @@ AVFilter avfilter_af_astreamsync = {
         { .name             = "in1",
           .type             = AVMEDIA_TYPE_AUDIO,
           .filter_samples   = filter_samples,
-          .min_perms        = AV_PERM_READ, },
+          .min_perms        = AV_PERM_READ | AV_PERM_PRESERVE, },
         { .name             = "in2",
           .type             = AVMEDIA_TYPE_AUDIO,
           .filter_samples   = filter_samples,
-          .min_perms        = AV_PERM_READ, },
+          .min_perms        = AV_PERM_READ | AV_PERM_PRESERVE, },
         { .name = NULL }
     },
     .outputs   = (const AVFilterPad[]) {

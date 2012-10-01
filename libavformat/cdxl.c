@@ -100,7 +100,7 @@ static int cdxl_read_packet(AVFormatContext *s, AVPacket *pkt)
 
             st->codec->codec_type    = AVMEDIA_TYPE_AUDIO;
             st->codec->codec_tag     = 0;
-            st->codec->codec_id      = CODEC_ID_PCM_S8;
+            st->codec->codec_id      = AV_CODEC_ID_PCM_S8;
             st->codec->channels      = cdxl->header[1] & 0x10 ? 2 : 1;
             st->codec->sample_rate   = cdxl->sample_rate;
             st->start_time           = 0;
@@ -123,7 +123,7 @@ static int cdxl_read_packet(AVFormatContext *s, AVPacket *pkt)
 
             st->codec->codec_type    = AVMEDIA_TYPE_VIDEO;
             st->codec->codec_tag     = 0;
-            st->codec->codec_id      = CODEC_ID_CDXL;
+            st->codec->codec_id      = AV_CODEC_ID_CDXL;
             st->codec->width         = width;
             st->codec->height        = height;
             st->start_time           = 0;
@@ -157,7 +157,7 @@ static int cdxl_read_packet(AVFormatContext *s, AVPacket *pkt)
 
 #define OFFSET(x) offsetof(CDXLDemuxContext, x)
 static const AVOption cdxl_options[] = {
-    { "sample_rate", "", OFFSET(sample_rate), AV_OPT_TYPE_INT,    { .dbl = 11025 }, 1, INT_MAX, AV_OPT_FLAG_DECODING_PARAM },
+    { "sample_rate", "", OFFSET(sample_rate), AV_OPT_TYPE_INT,    { .i64 = 11025 }, 1, INT_MAX, AV_OPT_FLAG_DECODING_PARAM },
     { "framerate",   "", OFFSET(framerate),   AV_OPT_TYPE_STRING, { .str = NULL },  0, 0,       AV_OPT_FLAG_DECODING_PARAM },
     { NULL },
 };
@@ -171,7 +171,7 @@ static const AVClass cdxl_demuxer_class = {
 
 AVInputFormat ff_cdxl_demuxer = {
     .name           = "cdxl",
-    .long_name      = NULL_IF_CONFIG_SMALL("Commodore CDXL video format"),
+    .long_name      = NULL_IF_CONFIG_SMALL("Commodore CDXL video"),
     .priv_data_size = sizeof(CDXLDemuxContext),
     .read_header    = cdxl_read_header,
     .read_packet    = cdxl_read_packet,

@@ -45,6 +45,8 @@
 #include "avcodec.h"
 #include "internal.h"
 #include "lcl.h"
+#include "libavutil/internal.h"
+#include "libavutil/mem.h"
 
 #include <zlib.h>
 
@@ -184,7 +186,7 @@ static av_cold int encode_end(AVCodecContext *avctx)
 AVCodec ff_zlib_encoder = {
     .name           = "zlib",
     .type           = AVMEDIA_TYPE_VIDEO,
-    .id             = CODEC_ID_ZLIB,
+    .id             = AV_CODEC_ID_ZLIB,
     .priv_data_size = sizeof(LclEncContext),
     .init           = encode_init,
     .encode2        = encode_frame,

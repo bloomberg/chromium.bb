@@ -24,6 +24,7 @@
 
 #include "libavutil/adler32.h"
 #include "libavutil/imgutils.h"
+#include "libavutil/internal.h"
 #include "libavutil/pixdesc.h"
 #include "libavutil/timestamp.h"
 #include "avfilter.h"
@@ -94,7 +95,7 @@ AVFilter avfilter_vf_showinfo = {
     .inputs    = (const AVFilterPad[]) {{ .name = "default",
                                           .type             = AVMEDIA_TYPE_VIDEO,
                                           .get_video_buffer = ff_null_get_video_buffer,
-                                          .start_frame      = ff_null_start_frame_keep_ref,
+                                          .start_frame      = ff_null_start_frame,
                                           .end_frame        = end_frame,
                                           .min_perms        = AV_PERM_READ, },
                                         { .name = NULL}},

@@ -19,6 +19,9 @@ fate-amv: CMD = framecrc -idct simple -i $(SAMPLES)/amv/MTV_high_res_320x240_sam
 FATE_VIDEO += fate-ansi
 fate-ansi: CMD = framecrc -chars_per_frame 44100 -i $(SAMPLES)/ansi/TRE-IOM5.ANS -pix_fmt rgb24
 
+FATE_VIDEO += fate-ansi256
+fate-ansi256: CMD = framecrc -chars_per_frame 44100 -i $(SAMPLES)/ansi/ansi256.ans -pix_fmt rgb24
+
 FATE_VIDEO += fate-armovie-escape124
 fate-armovie-escape124: CMD = framecrc -i $(SAMPLES)/rpl/ESCAPE.RPL -pix_fmt rgb24
 
@@ -46,7 +49,7 @@ fate-cdgraphics: CMD = framecrc -i $(SAMPLES)/cdgraphics/BrotherJohn.cdg -pix_fm
 FATE_VIDEO += fate-cljr
 fate-cljr: CMD = framecrc -i $(SAMPLES)/cljr/testcljr-partial.avi
 
-FATE_VIDEO += fate-corepng
+FATE_VIDEO-$(CONFIG_ZLIB) += fate-corepng
 fate-corepng: CMD = framecrc -i $(SAMPLES)/png1/corepng-partial.avi
 
 FATE_VIDEO += fate-creatureshock-avs
@@ -94,7 +97,7 @@ fate-dxa-feeble: CMD = framecrc -i $(SAMPLES)/dxa/meetsquid.dxa -t 2 -pix_fmt rg
 FATE_DXA += fate-dxa-scummvm
 fate-dxa-scummvm: CMD = framecrc -i $(SAMPLES)/dxa/scummvm.dxa -pix_fmt rgb24
 
-FATE_VIDEO += $(FATE_DXA)
+FATE_VIDEO-$(CONFIG_ZLIB) += $(FATE_DXA)
 fate-dxa: $(FATE_DXA)
 
 FATE_SAMPLES_PCM += fate-film-cvid
@@ -167,8 +170,14 @@ FATE_VIDEO += fate-mpeg2-field-enc
 fate-mpeg2-field-enc: CMD = framecrc -flags +bitexact -dct fastint -idct simple -i $(SAMPLES)/mpeg2/mpeg2_field_encoding.ts -an
 
 # FIXME dropped frames in this test because of coarse timebase
-FATE_VIDEO += fate-nuv
-fate-nuv: CMD = framecrc -idct simple -i $(SAMPLES)/nuv/Today.nuv -an
+FATE_NUV += fate-nuv-rtjpeg
+fate-nuv-rtjpeg: CMD = framecrc -idct simple -i $(SAMPLES)/nuv/Today.nuv -an
+
+FATE_NUV += fate-nuv-rtjpeg-fh
+fate-nuv-rtjpeg-fh: CMD = framecrc -idct simple -i $(SAMPLES)/nuv/rtjpeg_frameheader.nuv -an
+
+FATE_VIDEO += $(FATE_NUV)
+fate-nuv: $(FATE_NUV)
 
 FATE_VIDEO += fate-paf-video
 fate-paf-video: CMD = framecrc -i $(SAMPLES)/paf/hod1-partial.paf -pix_fmt rgb24 -an

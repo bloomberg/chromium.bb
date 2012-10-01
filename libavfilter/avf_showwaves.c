@@ -45,13 +45,14 @@ typedef struct {
 } ShowWavesContext;
 
 #define OFFSET(x) offsetof(ShowWavesContext, x)
+#define FLAGS AV_OPT_FLAG_FILTERING_PARAM|AV_OPT_FLAG_VIDEO_PARAM
 
 static const AVOption showwaves_options[] = {
-    { "rate", "set video rate", OFFSET(rate_str), AV_OPT_TYPE_STRING, {.str = NULL}, 0, 0 },
-    { "r",    "set video rate", OFFSET(rate_str), AV_OPT_TYPE_STRING, {.str = NULL}, 0, 0 },
-    { "size", "set video size", OFFSET(w), AV_OPT_TYPE_IMAGE_SIZE, {.str = "600x240"}, 0, 0 },
-    { "s",    "set video size", OFFSET(w), AV_OPT_TYPE_IMAGE_SIZE, {.str = "600x240"}, 0, 0 },
-    { "n",    "set how many samples to show in the same point", OFFSET(n), AV_OPT_TYPE_INT, {.dbl = 0}, 0, INT_MAX},
+    { "rate", "set video rate", OFFSET(rate_str), AV_OPT_TYPE_STRING, {.str = NULL}, 0, 0, FLAGS },
+    { "r",    "set video rate", OFFSET(rate_str), AV_OPT_TYPE_STRING, {.str = NULL}, 0, 0, FLAGS },
+    { "size", "set video size", OFFSET(w), AV_OPT_TYPE_IMAGE_SIZE, {.str = "600x240"}, 0, 0, FLAGS },
+    { "s",    "set video size", OFFSET(w), AV_OPT_TYPE_IMAGE_SIZE, {.str = "600x240"}, 0, 0, FLAGS },
+    { "n",    "set how many samples to show in the same point", OFFSET(n), AV_OPT_TYPE_INT, {.i64 = 0}, 0, INT_MAX, FLAGS },
     { NULL },
 };
 
@@ -66,10 +67,8 @@ static av_cold int init(AVFilterContext *ctx, const char *args)
     av_opt_set_defaults(showwaves);
     showwaves->buf_idx = 0;
 
-    if ((err = av_set_options_string(showwaves, args, "=", ":")) < 0) {
-        av_log(ctx, AV_LOG_ERROR, "Error parsing options string: '%s'\n", args);
+    if ((err = av_set_options_string(showwaves, args, "=", ":")) < 0)
         return err;
-    }
 
     return 0;
 }
@@ -254,4 +253,6 @@ AVFilter avfilter_avf_showwaves = {
         },
         { .name = NULL }
     },
+
+    .priv_class = &showwaves_class,
 };

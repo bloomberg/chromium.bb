@@ -18,6 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "libavutil/common.h"
 #include "libavutil/dict.h"
 // #include "libavutil/error.h"
 #include "libavutil/log.h"
@@ -48,9 +49,8 @@ int avresample_open(AVAudioResampleContext *avr)
     avr->resample_channels = FFMIN(avr->in_channels, avr->out_channels);
     avr->downmix_needed    = avr->in_channels  > avr->out_channels;
     avr->upmix_needed      = avr->out_channels > avr->in_channels ||
-                             avr->am->matrix                      ||
-                             (avr->out_channels == avr->in_channels &&
-                              avr->in_channel_layout != avr->out_channel_layout);
+                             (!avr->downmix_needed && (avr->am->matrix ||
+                              avr->in_channel_layout != avr->out_channel_layout));
     avr->mixing_needed     = avr->downmix_needed || avr->upmix_needed;
 
     /* set resampling parameters */
@@ -246,9 +246,10 @@ static int handle_buffered_output(AVAudioResampleContext *avr,
     return 0;
 }
 
-int avresample_convert(AVAudioResampleContext *avr, void **output,
-                       int out_plane_size, int out_samples, void **input,
-                       int in_plane_size, int in_samples)
+int attribute_align_arg avresample_convert(AVAudioResampleContext *avr,
+                                           void **output, int out_plane_size,
+                                           int out_samples, void **input,
+                                           int in_plane_size, int in_samples)
 {
     AudioData input_buffer;
     AudioData output_buffer;

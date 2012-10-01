@@ -17,15 +17,15 @@ $(SUBDIR)%-test.o: $(SUBDIR)%.c
 	$(COMPILE_C)
 
 $(SUBDIR)x86/%.o: $(SUBDIR)x86/%.asm
-	$(YASMDEP) $(YASMFLAGS) -I $(<D)/ -M -o $@ $< > $(@:.o=.d)
+	$(DEPYASM) $(YASMFLAGS) -I $(<D)/ -M -o $@ $< > $(@:.o=.d)
 	$(YASM) $(YASMFLAGS) -I $(<D)/ -o $@ $<
 
-$(OBJS) $(OBJS:.o=.s) $(SUBDIR)%.ho $(TESTOBJS): CPPFLAGS += -DHAVE_AV_CONFIG_H
+$(OBJS) $(OBJS:.o=.s) $(SUBDIR)%.h.o $(TESTOBJS): CPPFLAGS += -DHAVE_AV_CONFIG_H
 $(TESTOBJS): CPPFLAGS += -DTEST
 
 $(SUBDIR)$(LIBNAME): $(OBJS)
 	$(RM) $@
-	$(AR) rc $@ $^ $(EXTRAOBJS)
+	$(AR) $(ARFLAGS) $(AR_O) $^ $(EXTRAOBJS)
 	$(RANLIB) $@
 
 install-headers: install-lib$(NAME)-headers install-lib$(NAME)-pkgconfig
@@ -35,14 +35,14 @@ install-libs-$(CONFIG_SHARED): install-lib$(NAME)-shared
 
 define RULES
 $(EXAMPLES) $(TESTPROGS) $(TOOLS): %$(EXESUF): %.o
-	$$(LD) $(LDFLAGS) -o $$@ $$^ -l$(FULLNAME) $(FFEXTRALIBS) $$(ELIBS)
+	$$(LD) $(LDFLAGS) $$(LD_O) $$^ $(FULLNAME:%=$(LD_LIB)) $(FFEXTRALIBS) $$(ELIBS)
 
 $(SUBDIR)$(SLIBNAME): $(SUBDIR)$(SLIBNAME_WITH_MAJOR)
 	$(Q)cd ./$(SUBDIR) && $(LN_S) $(SLIBNAME_WITH_MAJOR) $(SLIBNAME)
 
 $(SUBDIR)$(SLIBNAME_WITH_MAJOR): $(OBJS) $(SUBDIR)lib$(NAME).ver
 	$(SLIB_CREATE_DEF_CMD)
-	$$(LD) $(SHFLAGS) $(LDFLAGS) -o $$@ $$(filter %.o,$$^) $(FFEXTRALIBS) $(EXTRAOBJS)
+	$$(LD) $(SHFLAGS) $(LDFLAGS) $$(LD_O) $$(filter %.o,$$^) $(FFEXTRALIBS) $(EXTRAOBJS)
 	$(SLIB_EXTRA_CMD)
 
 ifdef SUBDIR
@@ -82,12 +82,12 @@ uninstall-libs::
 	-$(RM) "$(SHLIBDIR)/$(SLIBNAME_WITH_MAJOR)" \
 	       "$(SHLIBDIR)/$(SLIBNAME)"            \
 	       "$(SHLIBDIR)/$(SLIBNAME_WITH_VERSION)"
-	-$(RM) $(SLIB_INSTALL_EXTRA_SHLIB:%="$(SHLIBDIR)"%)
-	-$(RM) $(SLIB_INSTALL_EXTRA_LIB:%="$(LIBDIR)"%)
+	-$(RM)  $(SLIB_INSTALL_EXTRA_SHLIB:%="$(SHLIBDIR)/%")
+	-$(RM)  $(SLIB_INSTALL_EXTRA_LIB:%="$(LIBDIR)/%")
 	-$(RM) "$(LIBDIR)/$(LIBNAME)"
 
 uninstall-headers::
-	$(RM) $(addprefix "$(INCINSTDIR)/",$(HEADERS)) $(addprefix "$(INCINSTDIR)/",$(BUILT_HEADERS))
+	$(RM) $(addprefix "$(INCINSTDIR)/",$(HEADERS) $(BUILT_HEADERS))
 	$(RM) "$(LIBDIR)/pkgconfig/lib$(NAME).pc"
 	-rmdir "$(INCINSTDIR)"
 endef

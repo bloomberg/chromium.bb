@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Michael Niedermayer (michaelni@gmx.at)
+ * Copyright (C) 2011-2012 Michael Niedermayer (michaelni@gmx.at)
  *
  * This file is part of libswresample
  *
@@ -22,6 +22,9 @@
 #define SWR_INTERNAL_H
 
 #include "swresample.h"
+#include "libavutil/audioconvert.h"
+
+#define SQRT3_2      1.22474487139158904909  /* sqrt(3/2) */
 
 typedef void (mix_1_1_func_type)(void *out, const void *in, void *coeffp, int index, int len);
 typedef void (mix_2_1_func_type)(void *out, const void *in1, const void *in2, void *coeffp, int index1, int index2, int len);
@@ -54,6 +57,7 @@ struct SwrContext {
     float clev;                                     ///< center mixing level
     float lfe_mix_level;                            ///< LFE mixing level
     float rematrix_volume;                          ///< rematrixing volume coefficient
+    enum AVMatrixEncoding matrix_encoding;          /**< matrixed stereo encoding */
     const int *channel_map;                         ///< channel index (or -1 if muted channel) map
     int used_ch_count;                              ///< number of used input channels (mapped channel count if channel_map, otherwise in.ch_count)
     enum SwrDitherType dither_method;
@@ -127,6 +131,10 @@ void swri_rematrix_init_x86(struct SwrContext *s);
 
 void swri_get_dither(SwrContext *s, void *dst, int len, unsigned seed, enum AVSampleFormat out_fmt, enum AVSampleFormat in_fmt);
 
+void swri_audio_convert_init_arm(struct AudioConvert *ac,
+                                 enum AVSampleFormat out_fmt,
+                                 enum AVSampleFormat in_fmt,
+                                 int channels);
 void swri_audio_convert_init_x86(struct AudioConvert *ac,
                                  enum AVSampleFormat out_fmt,
                                  enum AVSampleFormat in_fmt,

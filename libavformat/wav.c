@@ -202,7 +202,7 @@ static int wav_write_trailer(AVFormatContext *s)
 #define OFFSET(x) offsetof(WAVContext, x)
 #define ENC AV_OPT_FLAG_ENCODING_PARAM
 static const AVOption options[] = {
-    { "write_bext", "Write BEXT chunk.", OFFSET(write_bext), AV_OPT_TYPE_INT, { 0 }, 0, 1, ENC },
+    { "write_bext", "Write BEXT chunk.", OFFSET(write_bext), AV_OPT_TYPE_INT, { .i64 = 0 }, 0, 1, ENC },
     { NULL },
 };
 
@@ -215,12 +215,12 @@ static const AVClass wav_muxer_class = {
 
 AVOutputFormat ff_wav_muxer = {
     .name              = "wav",
-    .long_name         = NULL_IF_CONFIG_SMALL("WAV format"),
+    .long_name         = NULL_IF_CONFIG_SMALL("WAV / WAVE (Waveform Audio)"),
     .mime_type         = "audio/x-wav",
     .extensions        = "wav",
     .priv_data_size    = sizeof(WAVContext),
-    .audio_codec       = CODEC_ID_PCM_S16LE,
-    .video_codec       = CODEC_ID_NONE,
+    .audio_codec       = AV_CODEC_ID_PCM_S16LE,
+    .video_codec       = AV_CODEC_ID_NONE,
     .write_header      = wav_write_header,
     .write_packet      = wav_write_packet,
     .write_trailer     = wav_write_trailer,
@@ -276,6 +276,14 @@ static int wav_probe(AVProbeData *p)
     return 0;
 }
 
+static void handle_stream_probing(AVStream *st)
+{
+    if (st->codec->codec_id == AV_CODEC_ID_PCM_S16LE) {
+        st->request_probe = AVPROBE_SCORE_MAX/2;
+        st->probe_packets = FFMIN(st->probe_packets, 4);
+    }
+}
+
 static int wav_parse_fmt_tag(AVFormatContext *s, int64_t size, AVStream **st)
 {
     AVIOContext *pb = s->pb;
@@ -289,7 +297,9 @@ static int wav_parse_fmt_tag(AVFormatContext *s, int64_t size, AVStream **st)
     ret = ff_get_wav_header(pb, (*st)->codec, size);
     if (ret < 0)
         return ret;
-    (*st)->need_parsing = AVSTREAM_PARSE_FULL;
+    handle_stream_probing(*st);
+
+    (*st)->need_parsing = AVSTREAM_PARSE_FULL_RAW;
 
     avpriv_set_pts_info(*st, 64, 1, (*st)->codec->sample_rate);
 
@@ -496,7 +506,7 @@ static int wav_read_header(AVFormatContext *s)
             avio_r8(pb);
             vst->id = 1;
             vst->codec->codec_type = AVMEDIA_TYPE_VIDEO;
-            vst->codec->codec_id = CODEC_ID_MJPEG;
+            vst->codec->codec_id = AV_CODEC_ID_MJPEG;
             vst->codec->width  = avio_rl24(pb);
             vst->codec->height = avio_rl24(pb);
             size = avio_rl24(pb);
@@ -672,10 +682,10 @@ static int wav_read_seek(AVFormatContext *s,
 
     st = s->streams[0];
     switch (st->codec->codec_id) {
-    case CODEC_ID_MP2:
-    case CODEC_ID_MP3:
-    case CODEC_ID_AC3:
-    case CODEC_ID_DTS:
+    case AV_CODEC_ID_MP2:
+    case AV_CODEC_ID_MP3:
+    case AV_CODEC_ID_AC3:
+    case AV_CODEC_ID_DTS:
         /* use generic seeking with dynamically generated indexes */
         return -1;
     default:
@@ -687,7 +697,7 @@ static int wav_read_seek(AVFormatContext *s,
 #define OFFSET(x) offsetof(WAVContext, x)
 #define DEC AV_OPT_FLAG_DECODING_PARAM
 static const AVOption demux_options[] = {
-    { "ignore_length", "Ignore length", OFFSET(ignore_length), AV_OPT_TYPE_INT, { 0 }, 0, 1, DEC },
+    { "ignore_length", "Ignore length", OFFSET(ignore_length), AV_OPT_TYPE_INT, { .i64 = 0 }, 0, 1, DEC },
     { NULL },
 };
 
@@ -699,7 +709,7 @@ static const AVClass wav_demuxer_class = {
 };
 AVInputFormat ff_wav_demuxer = {
     .name           = "wav",
-    .long_name      = NULL_IF_CONFIG_SMALL("WAV format"),
+    .long_name      = NULL_IF_CONFIG_SMALL("WAV / WAVE (Waveform Audio)"),
     .priv_data_size = sizeof(WAVContext),
     .read_probe     = wav_probe,
     .read_header    = wav_read_header,
@@ -771,7 +781,8 @@ static int w64_read_header(AVFormatContext *s)
         return ret;
     avio_skip(pb, FFALIGN(size, INT64_C(8)) - size);
 
-    st->need_parsing = AVSTREAM_PARSE_FULL;
+    handle_stream_probing(st);
+    st->need_parsing = AVSTREAM_PARSE_FULL_RAW;
 
     avpriv_set_pts_info(st, 64, 1, st->codec->sample_rate);
 
@@ -788,7 +799,7 @@ static int w64_read_header(AVFormatContext *s)
 
 AVInputFormat ff_w64_demuxer = {
     .name           = "w64",
-    .long_name      = NULL_IF_CONFIG_SMALL("Sony Wave64 format"),
+    .long_name      = NULL_IF_CONFIG_SMALL("Sony Wave64"),
     .priv_data_size = sizeof(WAVContext),
     .read_probe     = w64_probe,
     .read_header    = w64_read_header,

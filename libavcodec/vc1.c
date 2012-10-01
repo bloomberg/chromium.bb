@@ -395,8 +395,6 @@ int ff_vc1_decode_sequence_header(AVCodecContext *avctx, VC1Context *v, GetBitCo
         v->res_rtm_flag = get_bits1(gb); //reserved
     }
     if (!v->res_rtm_flag) {
-//            av_log(avctx, AV_LOG_ERROR,
-//                   "0 for reserved RES_RTM_FLAG is forbidden\n");
         av_log(avctx, AV_LOG_ERROR,
                "Old WMV3 version detected, some frames may be decoded incorrectly\n");
         //return -1;
@@ -418,7 +416,6 @@ int ff_vc1_decode_sequence_header(AVCodecContext *avctx, VC1Context *v, GetBitCo
 
 static int decode_sequence_header_adv(VC1Context *v, GetBitContext *gb)
 {
-    int w, h;
     v->res_rtm_flag = 1;
     v->level = get_bits(gb, 3);
     if (v->level >= 5) {
@@ -437,9 +434,8 @@ static int decode_sequence_header_adv(VC1Context *v, GetBitContext *gb)
     v->bitrtq_postproc       = get_bits(gb, 5); //common
     v->postprocflag          = get_bits1(gb);   //common
 
-    w = (get_bits(gb, 12) + 1) << 1;
-    h = (get_bits(gb, 12) + 1) << 1;
-    avcodec_set_dimensions(v->s.avctx, w, h);
+    v->max_coded_width       = (get_bits(gb, 12) + 1) << 1;
+    v->max_coded_height      = (get_bits(gb, 12) + 1) << 1;
     v->broadcast             = get_bits1(gb);
     v->interlace             = get_bits1(gb);
     v->tfcntrflag            = get_bits1(gb);
@@ -505,9 +501,10 @@ static int decode_sequence_header_adv(VC1Context *v, GetBitContext *gb)
         }
 
         if (get_bits1(gb)) {
-            v->color_prim    = get_bits(gb, 8);
-            v->transfer_char = get_bits(gb, 8);
-            v->matrix_coef   = get_bits(gb, 8);
+            v->s.avctx->color_primaries = get_bits(gb, 8);
+            v->s.avctx->color_trc       = get_bits(gb, 8);
+            v->s.avctx->colorspace      = get_bits(gb, 8);
+            v->s.avctx->color_range     = AVCOL_RANGE_MPEG;
         }
     }
 
@@ -528,6 +525,7 @@ static int decode_sequence_header_adv(VC1Context *v, GetBitContext *gb)
 int ff_vc1_decode_entry_point(AVCodecContext *avctx, VC1Context *v, GetBitContext *gb)
 {
     int i;
+    int w,h;
 
     av_log(avctx, AV_LOG_DEBUG, "Entry point: %08X\n", show_bits_long(gb, 32));
     v->broken_link    = get_bits1(gb);
@@ -551,10 +549,13 @@ int ff_vc1_decode_entry_point(AVCodecContext *avctx, VC1Context *v, GetBitContex
     }
 
     if(get_bits1(gb)){
-        int w = (get_bits(gb, 12)+1)<<1;
-        int h = (get_bits(gb, 12)+1)<<1;
-        avcodec_set_dimensions(avctx, w, h);
+        w = (get_bits(gb, 12)+1)<<1;
+        h = (get_bits(gb, 12)+1)<<1;
+    } else {
+        w = v->max_coded_width;
+        h = v->max_coded_height;
     }
+    avcodec_set_dimensions(avctx, w, h);
     if (v->extended_mv)
         v->extended_dmv = get_bits1(gb);
     if ((v->range_mapy_flag = get_bits1(gb))) {
@@ -582,7 +583,14 @@ int ff_vc1_parse_frame_header(VC1Context *v, GetBitContext* gb)
 
     if (v->finterpflag)
         v->interpfrm = get_bits1(gb);
-    skip_bits(gb, 2); //framecnt unused
+    if (!v->s.avctx->codec)
+        return -1;
+    if (v->s.avctx->codec->id == AV_CODEC_ID_MSS2)
+        v->respic   =
+        v->rangered =
+        v->multires = get_bits(gb, 2) == 1;
+    else
+        skip_bits(gb, 2); //framecnt unused
     v->rangeredfrm = 0;
     if (v->rangered)
         v->rangeredfrm = get_bits1(gb);
@@ -653,8 +661,9 @@ int ff_vc1_parse_frame_header(VC1Context *v, GetBitContext* gb)
         v->x8_type = get_bits1(gb);
     } else
         v->x8_type = 0;
-//av_log(v->s.avctx, AV_LOG_INFO, "%c Frame: QP=[%i]%i (+%i/2) %i\n",
-//        (v->s.pict_type == AV_PICTURE_TYPE_P) ? 'P' : ((v->s.pict_type == AV_PICTURE_TYPE_I) ? 'I' : 'B'), pqindex, v->pq, v->halfpq, v->rangeredfrm);
+    av_dlog(v->s.avctx, "%c Frame: QP=[%i]%i (+%i/2) %i\n",
+            (v->s.pict_type == AV_PICTURE_TYPE_P) ? 'P' : ((v->s.pict_type == AV_PICTURE_TYPE_I) ? 'I' : 'B'),
+            pqindex, v->pq, v->halfpq, v->rangeredfrm);
 
     if (v->s.pict_type == AV_PICTURE_TYPE_I || v->s.pict_type == AV_PICTURE_TYPE_P)
         v->use_ic = 0;

@@ -21,7 +21,9 @@
 
 #include "avcodec.h"
 #include "ass.h"
+#include "libavutil/avassert.h"
 #include "libavutil/avstring.h"
+#include "libavutil/common.h"
 
 int ff_ass_subtitle_header(AVCodecContext *avctx,
                            const char *font, int font_size,
@@ -84,6 +86,7 @@ int ff_ass_add_rect(AVSubtitle *sub, const char *dialog,
             ts_to_string(s_end, sizeof(s_end), ts_start + duration);
         len = snprintf(header, sizeof(header), "Dialogue: 0,%s,%s,Default,",
                        s_start, s_end);
+        av_assert0(len < sizeof(header));
     }
 
     dlen = strcspn(dialog, "\n");

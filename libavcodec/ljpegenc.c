@@ -180,7 +180,6 @@ static int encode_picture_lossless(AVCodecContext *avctx, AVPacket *pkt,
                                 int pred;
 
                                 ptr = p->data[i] + (linesize * (v * mb_y + y)) + (h * mb_x + x); //FIXME optimize this crap
-//printf("%d %d %d %d %8X\n", mb_x, mb_y, x, y, ptr);
                                 PREDICT(pred, ptr[-linesize-1], ptr[-linesize], ptr[-1], predictor);
 
                                 if(i==0)
@@ -214,7 +213,7 @@ static int encode_picture_lossless(AVCodecContext *avctx, AVPacket *pkt,
 AVCodec ff_ljpeg_encoder = { //FIXME avoid MPV_* lossless JPEG should not need them
     .name           = "ljpeg",
     .type           = AVMEDIA_TYPE_VIDEO,
-    .id             = CODEC_ID_LJPEG,
+    .id             = AV_CODEC_ID_LJPEG,
     .priv_data_size = sizeof(MpegEncContext),
     .init           = ff_MPV_encode_init,
     .encode2        = encode_picture_lossless,

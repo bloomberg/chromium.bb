@@ -485,6 +485,7 @@ static av_cold int svq1_encode_init(AVCodecContext *avctx)
 
     s->avctx= avctx;
     s->m.avctx= avctx;
+    s->m.picture_structure = PICT_FRAME;
     s->m.me.temp      =
     s->m.me.scratchpad= av_mallocz((avctx->width+64)*2*16*2*sizeof(uint8_t));
     s->m.me.map       = av_mallocz(ME_MAP_SIZE*sizeof(uint32_t));
@@ -581,7 +582,7 @@ static av_cold int svq1_encode_end(AVCodecContext *avctx)
 AVCodec ff_svq1_encoder = {
     .name           = "svq1",
     .type           = AVMEDIA_TYPE_VIDEO,
-    .id             = CODEC_ID_SVQ1,
+    .id             = AV_CODEC_ID_SVQ1,
     .priv_data_size = sizeof(SVQ1Context),
     .init           = svq1_encode_init,
     .encode2        = svq1_encode_frame,

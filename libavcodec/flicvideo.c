@@ -539,7 +539,9 @@ static int flic_decode_frame_15_16BPP(AVCodecContext *avctx,
             /* For some reason, it seems that non-palettized flics do
              * include one of these chunks in their first frame.
              * Why I do not know, it seems rather extraneous. */
-/*            av_log(avctx, AV_LOG_ERROR, "Unexpected Palette chunk %d in non-paletised FLC\n",chunk_type);*/
+            av_dlog(avctx,
+                    "Unexpected Palette chunk %d in non-palettized FLC\n",
+                    chunk_type);
             bytestream2_skip(&g2, chunk_size - 6);
             break;
 
@@ -802,7 +804,7 @@ static av_cold int flic_decode_end(AVCodecContext *avctx)
 AVCodec ff_flic_decoder = {
     .name           = "flic",
     .type           = AVMEDIA_TYPE_VIDEO,
-    .id             = CODEC_ID_FLIC,
+    .id             = AV_CODEC_ID_FLIC,
     .priv_data_size = sizeof(FlicDecodeContext),
     .init           = flic_decode_init,
     .close          = flic_decode_end,

@@ -27,6 +27,7 @@
 
 #include "libavutil/audioconvert.h"
 #include "libavutil/avassert.h"
+#include "libavutil/common.h"
 #include "libavutil/opt.h"
 
 #include "audio.h"
@@ -75,13 +76,14 @@ typedef struct JoinBufferPriv {
 
 #define OFFSET(x) offsetof(JoinContext, x)
 #define A AV_OPT_FLAG_AUDIO_PARAM
+#define F AV_OPT_FLAG_FILTERING_PARAM
 static const AVOption join_options[] = {
-    { "inputs",         "Number of input streams.", OFFSET(inputs),             AV_OPT_TYPE_INT,    { 2 }, 1, INT_MAX,       A },
+    { "inputs",         "Number of input streams.", OFFSET(inputs),             AV_OPT_TYPE_INT,    { .i64 = 2 }, 1, INT_MAX,       A|F },
     { "channel_layout", "Channel layout of the "
-                        "output stream.",           OFFSET(channel_layout_str), AV_OPT_TYPE_STRING, {.str = "stereo"}, 0, 0, A },
+                        "output stream.",           OFFSET(channel_layout_str), AV_OPT_TYPE_STRING, {.str = "stereo"}, 0, 0, A|F },
     { "map",            "A comma-separated list of channels maps in the format "
                         "'input_stream.input_channel-output_channel.",
-                                                    OFFSET(map),                AV_OPT_TYPE_STRING,                 .flags = A },
+                                                    OFFSET(map),                AV_OPT_TYPE_STRING,                 .flags = A|F },
     { NULL },
 };
 
@@ -193,10 +195,8 @@ static int join_init(AVFilterContext *ctx, const char *args)
 
     s->class = &join_class;
     av_opt_set_defaults(s);
-    if ((ret = av_set_options_string(s, args, "=", ":")) < 0) {
-        av_log(ctx, AV_LOG_ERROR, "Error parsing options string '%s'.\n", args);
+    if ((ret = av_set_options_string(s, args, "=", ":")) < 0)
         return ret;
-    }
 
     if (!(s->channel_layout = av_get_channel_layout(s->channel_layout_str))) {
         av_log(ctx, AV_LOG_ERROR, "Error parsing channel layout '%s'.\n",
@@ -494,10 +494,11 @@ AVFilter avfilter_af_join = {
     .uninit         = join_uninit,
     .query_formats  = join_query_formats,
 
-    .inputs  = (const AVFilterPad[]){{ NULL }},
+    .inputs  = NULL,
     .outputs = (const AVFilterPad[]){{ .name          = "default",
                                        .type          = AVMEDIA_TYPE_AUDIO,
                                        .config_props  = join_config_output,
                                        .request_frame = join_request_frame, },
                                      { NULL }},
+    .priv_class = &join_class,
 };

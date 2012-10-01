@@ -231,12 +231,9 @@ static int smacker_decode_header_tree(SmackVContext *smk, GetBitContext *gb, int
         av_log(smk->avctx, AV_LOG_ERROR, "Skipping high bytes tree\n");
     }
 
-    escapes[0]  = get_bits(gb, 8);
-    escapes[0] |= get_bits(gb, 8) << 8;
-    escapes[1]  = get_bits(gb, 8);
-    escapes[1] |= get_bits(gb, 8) << 8;
-    escapes[2]  = get_bits(gb, 8);
-    escapes[2] |= get_bits(gb, 8) << 8;
+    escapes[0]  = get_bits(gb, 16);
+    escapes[1]  = get_bits(gb, 16);
+    escapes[2]  = get_bits(gb, 16);
 
     last[0] = last[1] = last[2] = -1;
 
@@ -762,7 +759,7 @@ static int smka_decode_frame(AVCodecContext *avctx, void *data,
 AVCodec ff_smacker_decoder = {
     .name           = "smackvid",
     .type           = AVMEDIA_TYPE_VIDEO,
-    .id             = CODEC_ID_SMACKVIDEO,
+    .id             = AV_CODEC_ID_SMACKVIDEO,
     .priv_data_size = sizeof(SmackVContext),
     .init           = decode_init,
     .close          = decode_end,
@@ -774,7 +771,7 @@ AVCodec ff_smacker_decoder = {
 AVCodec ff_smackaud_decoder = {
     .name           = "smackaud",
     .type           = AVMEDIA_TYPE_AUDIO,
-    .id             = CODEC_ID_SMACKAUDIO,
+    .id             = AV_CODEC_ID_SMACKAUDIO,
     .priv_data_size = sizeof(SmackerAudioContext),
     .init           = smka_decode_init,
     .decode         = smka_decode_frame,

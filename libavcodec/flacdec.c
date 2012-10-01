@@ -34,6 +34,7 @@
 #include <limits.h>
 
 #include "libavutil/audioconvert.h"
+#include "libavutil/avassert.h"
 #include "libavutil/crc.h"
 #include "avcodec.h"
 #include "internal.h"
@@ -43,9 +44,6 @@
 #include "flac.h"
 #include "flacdata.h"
 #include "flacdsp.h"
-
-#undef NDEBUG
-#include <assert.h>
 
 typedef struct FLACContext {
     FLACSTREAMINFO
@@ -141,7 +139,7 @@ static void allocate_buffers(FLACContext *s)
 {
     int i;
 
-    assert(s->max_blocksize);
+    av_assert0(s->max_blocksize);
 
     for (i = 0; i < s->channels; i++) {
         s->decoded[i] = av_malloc(sizeof(int32_t)*s->max_blocksize);
@@ -204,10 +202,11 @@ static int get_metadata_size(const uint8_t *buf, int buf_size)
     return buf_size - (buf_end - buf);
 }
 
-static int decode_residuals(FLACContext *s, int channel, int pred_order)
+static int decode_residuals(FLACContext *s, int32_t *decoded, int pred_order)
 {
     int i, tmp, partition, method_type, rice_order;
-    int sample = 0, samples;
+    int rice_bits, rice_esc;
+    int samples;
 
     method_type = get_bits(&s->gb, 2);
     if (method_type > 1) {
@@ -225,17 +224,20 @@ static int decode_residuals(FLACContext *s, int channel, int pred_order)
         return -1;
     }
 
-    sample=
+    rice_bits = 4 + method_type;
+    rice_esc  = (1 << rice_bits) - 1;
+
+    decoded += pred_order;
     i= pred_order;
     for (partition = 0; partition < (1 << rice_order); partition++) {
-        tmp = get_bits(&s->gb, method_type == 0 ? 4 : 5);
-        if (tmp == (method_type == 0 ? 15 : 31)) {
+        tmp = get_bits(&s->gb, rice_bits);
+        if (tmp == rice_esc) {
             tmp = get_bits(&s->gb, 5);
-            for (; i < samples; i++, sample++)
-                s->decoded[channel][sample] = get_sbits_long(&s->gb, tmp);
+            for (; i < samples; i++)
+                *decoded++ = get_sbits_long(&s->gb, tmp);
         } else {
-            for (; i < samples; i++, sample++) {
-                s->decoded[channel][sample] = get_sr_golomb_flac(&s->gb, tmp, INT_MAX, 0);
+            for (; i < samples; i++) {
+                *decoded++ = get_sr_golomb_flac(&s->gb, tmp, INT_MAX, 0);
             }
         }
         i= 0;
@@ -244,11 +246,10 @@ static int decode_residuals(FLACContext *s, int channel, int pred_order)
     return 0;
 }
 
-static int decode_subframe_fixed(FLACContext *s, int channel, int pred_order,
-                                 int bps)
+static int decode_subframe_fixed(FLACContext *s, int32_t *decoded,
+                                 int pred_order, int bps)
 {
     const int blocksize = s->blocksize;
-    int32_t *decoded = s->decoded[channel];
     int a, b, c, d, i;
 
     /* warm up samples */
@@ -256,7 +257,7 @@ static int decode_subframe_fixed(FLACContext *s, int channel, int pred_order,
         decoded[i] = get_sbits_long(&s->gb, bps);
     }
 
-    if (decode_residuals(s, channel, pred_order) < 0)
+    if (decode_residuals(s, decoded, pred_order) < 0)
         return -1;
 
     if (pred_order > 0)
@@ -295,13 +296,12 @@ static int decode_subframe_fixed(FLACContext *s, int channel, int pred_order,
     return 0;
 }
 
-static int decode_subframe_lpc(FLACContext *s, int channel, int pred_order,
+static int decode_subframe_lpc(FLACContext *s, int32_t *decoded, int pred_order,
                                int bps)
 {
     int i;
     int coeff_prec, qlevel;
     int coeffs[32];
-    int32_t *decoded = s->decoded[channel];
 
     /* warm up samples */
     for (i = 0; i < pred_order; i++) {
@@ -324,7 +324,7 @@ static int decode_subframe_lpc(FLACContext *s, int channel, int pred_order,
         coeffs[pred_order - i - 1] = get_sbits(&s->gb, coeff_prec);
     }
 
-    if (decode_residuals(s, channel, pred_order) < 0)
+    if (decode_residuals(s, decoded, pred_order) < 0)
         return -1;
 
     s->dsp.lpc(decoded, coeffs, pred_order, qlevel, s->blocksize);
@@ -334,6 +334,7 @@ static int decode_subframe_lpc(FLACContext *s, int channel, int pred_order,
 
 static inline int decode_subframe(FLACContext *s, int channel)
 {
+    int32_t *decoded = s->decoded[channel];
     int type, wasted = 0;
     int bps = s->bps;
     int i, tmp;
@@ -376,15 +377,15 @@ static inline int decode_subframe(FLACContext *s, int channel)
     if (type == 0) {
         tmp = get_sbits_long(&s->gb, bps);
         for (i = 0; i < s->blocksize; i++)
-            s->decoded[channel][i] = tmp;
+            decoded[i] = tmp;
     } else if (type == 1) {
         for (i = 0; i < s->blocksize; i++)
-            s->decoded[channel][i] = get_sbits_long(&s->gb, bps);
+            decoded[i] = get_sbits_long(&s->gb, bps);
     } else if ((type >= 8) && (type <= 12)) {
-        if (decode_subframe_fixed(s, channel, type & ~0x8, bps) < 0)
+        if (decode_subframe_fixed(s, decoded, type & ~0x8, bps) < 0)
             return -1;
     } else if (type >= 32) {
-        if (decode_subframe_lpc(s, channel, (type & ~0x20)+1, bps) < 0)
+        if (decode_subframe_lpc(s, decoded, (type & ~0x20)+1, bps) < 0)
             return -1;
     } else {
         av_log(s->avctx, AV_LOG_ERROR, "invalid coding type\n");
@@ -394,7 +395,7 @@ static inline int decode_subframe(FLACContext *s, int channel)
     if (wasted) {
         int i;
         for (i = 0; i < s->blocksize; i++)
-            s->decoded[channel][i] <<= wasted;
+            decoded[i] <<= wasted;
     }
 
     return 0;
@@ -561,7 +562,7 @@ static av_cold int flac_decode_close(AVCodecContext *avctx)
 AVCodec ff_flac_decoder = {
     .name           = "flac",
     .type           = AVMEDIA_TYPE_AUDIO,
-    .id             = CODEC_ID_FLAC,
+    .id             = AV_CODEC_ID_FLAC,
     .priv_data_size = sizeof(FLACContext),
     .init           = flac_decode_init,
     .close          = flac_decode_close,

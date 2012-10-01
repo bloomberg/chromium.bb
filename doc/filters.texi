@@ -79,7 +79,18 @@ display graph.png
 @end example
 
 can be used to create and display an image representing the graph
-described by the @var{GRAPH_DESCRIPTION} string.
+described by the @var{GRAPH_DESCRIPTION} string. Note that this string must be
+a complete self-contained graph, with its inputs and outputs explicitly defined.
+For example if your command line is of the form:
+@example
+ffmpeg -i infile -vf scale=640:360 outfile
+@end example
+your @var{GRAPH_DESCRIPTION} string will need to be of the form:
+@example
+nullsrc,scale=640:360,nullsink
+@end example
+you may also need to set the @var{nullsrc} parameters and add a @var{format}
+filter in order to simulate a specific input file.
 
 @c man end GRAPH2DOT
 
@@ -690,6 +701,46 @@ volume=-12dB
 @end example
 @end itemize
 
+@section volumedetect
+
+Detect the volume of the input video.
+
+The filter has no parameters. The input is not modified. Statistics about
+the volume will be printed in the log when the input stream end is reached.
+
+In particular it will show the mean volume (root mean square), maximum
+volume (on a per-sample basis), and the beginning of an histogram of the
+registered volume values (from the maximum value to a cumulated 1/1000 of
+the samples).
+
+All volumes are in decibels relative to the maximum PCM value.
+
+Here is an excerpt of the output:
+@example
+[Parsed_volumedetect_0 @ 0xa23120] mean_volume: -27 dB
+[Parsed_volumedetect_0 @ 0xa23120] max_volume: -4 dB
+[Parsed_volumedetect_0 @ 0xa23120] histogram_4db: 6
+[Parsed_volumedetect_0 @ 0xa23120] histogram_5db: 62
+[Parsed_volumedetect_0 @ 0xa23120] histogram_6db: 286
+[Parsed_volumedetect_0 @ 0xa23120] histogram_7db: 1042
+[Parsed_volumedetect_0 @ 0xa23120] histogram_8db: 2551
+[Parsed_volumedetect_0 @ 0xa23120] histogram_9db: 4609
+[Parsed_volumedetect_0 @ 0xa23120] histogram_10db: 8409
+@end example
+
+It means that:
+@itemize
+@item
+The mean square energy is approximately -27 dB, or 10^-2.7.
+@item
+The largest sample is at -4 dB, or more precisely between -4 dB and -5 dB.
+@item
+There are 6 samples at -4 dB, 62 at -5 dB, 286 at -6 dB, etc.
+@end itemize
+
+In other words, raising the volume by +4 dB does not cause any clipping,
+raising it by +5 dB causes clipping for 6 samples, etc.
+
 @section asyncts
 Synchronize audio data with timestamps by squeezing/stretching it and/or
 dropping samples/adding silence when needed.
@@ -698,14 +749,24 @@ The filter accepts the following named parameters:
 @table @option
 
 @item compensate
-Enable stretching/squeezing the data to make it match the timestamps.
+Enable stretching/squeezing the data to make it match the timestamps. Disabled
+by default. When disabled, time gaps are covered with silence.
 
 @item min_delta
 Minimum difference between timestamps and audio data (in seconds) to trigger
-adding/dropping samples.
+adding/dropping samples. Default value is 0.1. If you get non-perfect sync with
+this filter, try setting this parameter to 0.
 
 @item max_comp
-Maximum compensation in samples per second.
+Maximum compensation in samples per second. Relevant only with compensate=1.
+Default value 500.
+
+@item first_pts
+Assume the first pts should be this value.
+This allows for padding/trimming at the start of stream. By default, no
+assumption is made about the first frame's expected pts, so no padding or
+trimming is done. For example, this could be set to 0 to pad the beginning with
+silence if an audio stream starts after the video stream.
 
 @end table
 
@@ -958,11 +1019,6 @@ aevalsrc="0.1*sin(2*PI*(360-2.5/2)*t) : 0.1*sin(2*PI*(360+2.5/2)*t)"
 
 @end itemize
 
-@section amovie
-
-This is the same as @ref{src_movie} source, except it selects an audio
-stream by default.
-
 @section anullsrc
 
 Null audio source, return unprocessed audio frames. It is mainly useful
@@ -1030,6 +1086,67 @@ Channel layout of the audio data, in the form that can be accepted by
 @end table
 
 All the parameters need to be explicitly defined.
+
+@section flite
+
+Synthesize a voice utterance using the libflite library.
+
+To enable compilation of this filter you need to configure FFmpeg with
+@code{--enable-libflite}.
+
+Note that the flite library is not thread-safe.
+
+The source accepts parameters as a list of @var{key}=@var{value} pairs,
+separated by ":".
+
+The description of the accepted parameters follows.
+
+@table @option
+
+@item list_voices
+If set to 1, list the names of the available voices and exit
+immediately. Default value is 0.
+
+@item nb_samples, n
+Set the maximum number of samples per frame. Default value is 512.
+
+@item textfile
+Set the filename containing the text to speak.
+
+@item text
+Set the text to speak.
+
+@item voice, v
+Set the voice to use for the speech synthesis. Default value is
+@code{kal}. See also the @var{list_voices} option.
+@end table
+
+@subsection Examples
+
+@itemize
+@item
+Read from file @file{speech.txt}, and synthetize the text using the
+standard flite voice:
+@example
+flite=textfile=speech.txt
+@end example
+
+@item
+Read the specified text selecting the @code{slt} voice:
+@example
+flite=text='So fare thee well, poor devil of a Sub-Sub, whose commentator I am':voice=slt
+@end example
+
+@item
+Make @file{ffplay} speech the specified text, using @code{flite} and
+the @code{lavfi} device:
+@example
+ffplay -f lavfi flite='No more be grieved for which that thou hast done.'
+@end example
+@end itemize
+
+For more information about libflite, check:
+@url{http://www.speech.cs.cmu.edu/flite/}
 
 @c man end AUDIO SOURCES
 
@@ -1434,6 +1551,43 @@ the current optimal crop area. Defaults to 0.
 This can be useful when channel logos distort the video area. 0
 indicates never reset and return the largest area encountered during
 playback.
+@end table
+
+@section decimate
+
+This filter drops frames that do not differ greatly from the previous
+frame in order to reduce framerate.  The main use of this filter is
+for very-low-bitrate encoding (e.g. streaming over dialup modem), but
+it could in theory be used for fixing movies that were
+inverse-telecined incorrectly.
+
+It accepts the following parameters:
+@var{max}:@var{hi}:@var{lo}:@var{frac}.
+
+@table @option
+
+@item max
+Set the maximum number of consecutive frames which can be dropped (if
+positive), or the minimum interval between dropped frames (if
+negative). If the value is 0, the frame is dropped unregarding the
+number of previous sequentially dropped frames.
+
+Default value is 0.
+
+@item hi, lo, frac
+Set the dropping threshold values.
+
+Values for @var{hi} and @var{lo} are for 8x8 pixel blocks and
+represent actual pixel value differences, so a threshold of 64
+corresponds to 1 unit of difference for each pixel, or the same spread
+out differently over the block.
+
+A frame is a candidate for dropping if no 8x8 blocks differ by more
+than a threshold of @var{hi}, and if no more than @var{frac} blocks (1
+meaning the whole image) differ by more than a threshold of @var{lo}.
+
+Default value for @var{hi} is 64*12, default value for @var{lo} is
+64*5, and default value for @var{frac} is 0.33.
 @end table
 
 @section delogo
@@ -1866,6 +2020,33 @@ For more information about libfreetype, check:
 For more information about fontconfig, check:
 @url{http://freedesktop.org/software/fontconfig/fontconfig-user.html}.
 
+@section edgedetect
+
+Detect and draw edges. The filter uses the Canny Edge Detection algorithm.
+
+This filter accepts the following optional named parameters:
+
+@table @option
+@item low, high
+Set low and high threshold values used by the Canny thresholding
+algorithm.
+
+The high threshold selects the "strong" edge pixels, which are then
+connected through 8-connectivity with the "weak" edge pixels selected
+by the low threshold.
+
+@var{low} and @var{high} threshold values must be choosen in the range
+[0,1], and @var{low} should be lesser or equal to @var{high}.
+
+Default value for @var{low} is @code{20/255}, and default value for @var{high}
+is @code{50/255}.
+@end table
+
+Example:
+@example
+edgedetect=low=0.1:high=0.4
+@end example
+
 @section fade
 
 Apply fade-in/out effect to input video.
@@ -1993,6 +2174,13 @@ This filter accepts the following named parameters:
 Desired output framerate.
 
 @end table
+
+@section framestep
+
+Select one frame every N.
+
+This filter accepts in input a string representing a positive
+integer. Default argument is @code{1}.
 
 @anchor{frei0r}
 @section frei0r
@@ -2122,6 +2310,120 @@ a float number which specifies luma temporal strength, defaults to
 @item chroma_tmp
 a float number which specifies chroma temporal strength, defaults to
 @var{luma_tmp}*@var{chroma_spatial}/@var{luma_spatial}
+@end table
+
+@section hue
+
+Modify the hue and/or the saturation of the input.
+
+This filter accepts the following optional named options:
+
+@table @option
+@item h
+Specify the hue angle as a number of degrees. It accepts a float
+number or an expression, and defaults to 0.0.
+
+@item H
+Specify the hue angle as a number of degrees. It accepts a float
+number or an expression, and defaults to 0.0.
+
+@item s
+Specify the saturation in the [-10,10] range. It accepts a float number and
+defaults to 1.0.
+@end table
+
+The @var{h}, @var{H} and @var{s} parameters are expressions containing the
+following constants:
+
+@table @option
+@item n
+frame count of the input frame starting from 0
+
+@item pts
+presentation timestamp of the input frame expressed in time base units
+
+@item r
+frame rate of the input video, NAN if the input frame rate is unknown
+
+@item t
+timestamp expressed in seconds, NAN if the input timestamp is unknown
+
+@item tb
+time base of the input video
+@end table
+
+The options can also be set using the syntax: @var{hue}:@var{saturation}
+
+In this case @var{hue} is expressed in degrees.
+
+Some examples follow:
+@itemize
+@item
+Set the hue to 90 degrees and the saturation to 1.0:
+@example
+hue=h=90:s=1
+@end example
+
+@item
+Same command but expressing the hue in radians:
+@example
+hue=H=PI/2:s=1
+@end example
+
+@item
+Same command without named options, hue must be expressed in degrees:
+@example
+hue=90:1
+@end example
+
+@item
+Note that "h:s" syntax does not support expressions for the values of
+h and s, so the following example will issue an error:
+@example
+hue=PI/2:1
+@end example
+
+@item
+Rotate hue and make the saturation swing between 0
+and 2 over a period of 1 second:
+@example
+hue="H=2*PI*t: s=sin(2*PI*t)+1"
+@end example
+
+@item
+Apply a 3 seconds saturation fade-in effect starting at 0:
+@example
+hue="s=min(t/3\,1)"
+@end example
+
+The general fade-in expression can be written as:
+@example
+hue="s=min(0\, max((t-START)/DURATION\, 1))"
+@end example
+
+@item
+Apply a 3 seconds saturation fade-out effect starting at 5 seconds:
+@example
+hue="s=max(0\, min(1\, (8-t)/3))"
+@end example
+
+The general fade-out expression can be written as:
+@example
+hue="s=max(0\, min(1\, (START+DURATION-t)/DURATION))"
+@end example
+
+@end itemize
+
+@subsection Commands
+
+This filter supports the following command:
+@table @option
+@item reinit
+Modify the hue and/or the saturation of the input video.
+The command accepts the same named options and syntax than when calling the
+filter from the command-line.
+
+If a parameter is omitted, it is kept at its current value.
 @end table
 
 @section idet
@@ -2270,7 +2572,6 @@ the named filter.
 
 The list of the currently supported filters follows:
 @table @var
-@item decimate
 @item denoise3d
 @item detc
 @item dint
@@ -2282,12 +2583,10 @@ The list of the currently supported filters follows:
 @item field
 @item fil
 @item fixpts
-@item framestep
 @item fspp
 @item geq
 @item harddup
 @item hqdn3d
-@item hue
 @item il
 @item ilpack
 @item ivtc
@@ -2302,9 +2601,7 @@ The list of the currently supported filters follows:
 @item pullup
 @item qp
 @item rectangle
-@item rotate
 @item sab
-@item smartblur
 @item softpulldown
 @item softskip
 @item spp
@@ -2322,13 +2619,19 @@ of the corresponding MPlayer filters. For detailed instructions check
 the "VIDEO FILTERS" section in the MPlayer manual.
 
 Some examples follow:
+@itemize
+@item
+Adjust gamma, brightness, contrast:
 @example
-# adjust gamma, brightness, contrast
 mp=eq2=1.0:2:0.5
-
-# tweak hue and saturation
-mp=hue=100:-10
 @end example
+
+@item
+Add temporal noise to input video:
+@example
+mp=noise=20t
+@end example
+@end itemize
 
 See also mplayer(1), @url{http://www.mplayerhq.hu/}.
 
@@ -2608,36 +2911,59 @@ The default value of @var{color} is "black".
 
 @end table
 
-Some examples follow:
+@section Examples
 
+@itemize
+@item
+Add paddings with color "violet" to the input video. Output video
+size is 640x480, the top-left corner of the input video is placed at
+column 0, row 40:
 @example
-# Add paddings with color "violet" to the input video. Output video
-# size is 640x480, the top-left corner of the input video is placed at
-# column 0, row 40.
 pad=640:480:0:40:violet
+@end example
 
-# pad the input to get an output with dimensions increased bt 3/2,
-# and put the input video at the center of the padded area
+@item
+Pad the input to get an output with dimensions increased by 3/2,
+and put the input video at the center of the padded area:
+@example
 pad="3/2*iw:3/2*ih:(ow-iw)/2:(oh-ih)/2"
+@end example
 
-# pad the input to get a squared output with size equal to the maximum
-# value between the input width and height, and put the input video at
-# the center of the padded area
+@item
+Pad the input to get a squared output with size equal to the maximum
+value between the input width and height, and put the input video at
+the center of the padded area:
+@example
 pad="max(iw\,ih):ow:(ow-iw)/2:(oh-ih)/2"
+@end example
 
-# pad the input to get a final w/h ratio of 16:9
+@item
+Pad the input to get a final w/h ratio of 16:9:
+@example
 pad="ih*16/9:ih:(ow-iw)/2:(oh-ih)/2"
+@end example
 
-# for anamorphic video, in order to set the output display aspect ratio,
-# it is necessary to use sar in the expression, according to the relation:
-# (ih * X / ih) * sar = output_dar
-# X = output_dar / sar
+@item
+In case of anamorphic video, in order to set the output display aspect
+correctly, it is necessary to use @var{sar} in the expression,
+according to the relation:
+@example
+(ih * X / ih) * sar = output_dar
+X = output_dar / sar
+@end example
+
+Thus the previous example needs to be modified to:
+@example
 pad="ih*16/9/sar:ih:(ow-iw)/2:(oh-ih)/2"
+@end example
 
-# double output size and put the input video in the bottom-right
-# corner of the output padded area
+@item
+Double output size and put the input video in the bottom-right
+corner of the output padded area:
+@example
 pad="2*iw:2*ih:ow-iw:oh-ih"
 @end example
+@end itemize
 
 @section pixdesctest
 
@@ -2969,88 +3295,6 @@ Mark the frame as top-field-first.
 Mark the frame as progressive.
 @end table
 
-@section setpts
-
-Change the PTS (presentation timestamp) of the input video frames.
-
-Accept in input an expression evaluated through the eval API, which
-can contain the following constants:
-
-@table @option
-@item PTS
-the presentation timestamp in input
-
-@item N
-the count of the input frame, starting from 0.
-
-@item STARTPTS
-the PTS of the first video frame
-
-@item INTERLACED
-tell if the current frame is interlaced
-
-@item POS
-original position in the file of the frame, or undefined if undefined
-for the current frame
-
-@item PREV_INPTS
-previous input PTS
-
-@item PREV_OUTPTS
-previous output PTS
-
-@end table
-
-Some examples follow:
-
-@example
-# start counting PTS from zero
-setpts=PTS-STARTPTS
-
-# fast motion
-setpts=0.5*PTS
-
-# slow motion
-setpts=2.0*PTS
-
-# fixed rate 25 fps
-setpts=N/(25*TB)
-
-# fixed rate 25 fps with some jitter
-setpts='1/(25*TB) * (N + 0.05 * sin(N*2*PI/25))'
-@end example
-
-@section settb, asettb
-
-Set the timebase to use for the output frames timestamps.
-It is mainly useful for testing timebase configuration.
-
-It accepts in input an arithmetic expression representing a rational.
-The expression can contain the constants "AVTB" (the
-default timebase), "intb" (the input timebase) and "sr" (the sample rate,
-audio only).
-
-The default value for the input is "intb".
-
-Follow some examples.
-
-@example
-# set the timebase to 1/25
-settb=1/25
-
-# set the timebase to 1/10
-settb=0.1
-
-#set the timebase to 1001/1000
-settb=1+0.001
-
-#set the timebase to 2*intb
-settb=2*intb
-
-#set the default timebase value
-settb=AVTB
-@end example
-
 @section showinfo
 
 Show a line containing various information for each input video frame.
@@ -3124,6 +3368,35 @@ not specified it will use the default value of 16.
 
 Adding this in the beginning of filter chains should make filtering
 faster due to better use of the memory cache.
+
+@section smartblur
+
+Blur the input video without impacting the outlines.
+
+The filter accepts the following parameters:
+@var{luma_radius}:@var{luma_strength}:@var{luma_threshold}[:@var{chroma_radius}:@var{chroma_strength}:@var{chroma_threshold}]
+
+Parameters prefixed by @var{luma} indicate that they work on the
+luminance of the pixels whereas parameters prefixed by @var{chroma}
+refer to the chrominance of the pixels.
+
+If the chroma parameters are not set, the luma parameters are used for
+either the luminance and the chrominance of the pixels.
+
+@var{luma_radius} or @var{chroma_radius} must be a float number in the
+range [0.1,5.0] that specifies the variance of the gaussian filter
+used to blur the image (slower if larger).
+
+@var{luma_strength} or @var{chroma_strength} must be a float number in
+the range [-1.0,1.0] that configures the blurring. A value included in
+[0.0,1.0] will blur the image whereas a value included in [-1.0,0.0]
+will sharpen the image.
+
+@var{luma_threshold} or @var{chroma_threshold} must be an integer in
+the range [-30,30] that is used as a coefficient to determine whether
+a pixel should be blurred or not. A value of 0 will filter all the
+image, a value included in [0,30] will filter flat areas and a value
+included in [-30,0] will filter edges.
 
 @section split
 
@@ -3250,7 +3523,7 @@ It accepts a parameter representing an integer, which can assume the
 values:
 
 @table @samp
-@item 0
+@item 0, 4
 Rotate by 90 degrees counterclockwise and vertically flip (default), that is:
 @example
 L.R     L.l
@@ -3258,7 +3531,7 @@ L.R     L.l
 l.r     R.r
 @end example
 
-@item 1
+@item 1, 5
 Rotate by 90 degrees clockwise, that is:
 @example
 L.R     l.L
@@ -3266,7 +3539,7 @@ L.R     l.L
 l.r     r.R
 @end example
 
-@item 2
+@item 2, 6
 Rotate by 90 degrees counterclockwise, that is:
 @example
 L.R     R.r
@@ -3274,7 +3547,7 @@ L.R     R.r
 l.r     L.l
 @end example
 
-@item 3
+@item 3, 7
 Rotate by 90 degrees clockwise and vertically flip, that is:
 @example
 L.R     r.R
@@ -3282,6 +3555,9 @@ L.R     r.R
 l.r     l.L
 @end example
 @end table
+
+For values between 4-7 transposition is only done if the input video
+geometry is portrait and not landscape.
 
 @section unsharp
 
@@ -3569,124 +3845,78 @@ cellauto=p='@@@@ @@ @@@@':s=100x400:full=0:rule=18
 
 @end itemize
 
-@section color
+@section mandelbrot
 
-Provide an uniformly colored input.
+Generate a Mandelbrot set fractal, and progressively zoom towards the
+point specified with @var{start_x} and @var{start_y}.
 
-This source accepts list of options in the form of
-@var{key}=@var{value} pairs separated by ":".
-
-Alternatively, it accepts a string in the form
-@var{color}:@var{size}:@var{rate}, but this syntax is
-deprecated.
-
-Follows the description of the accepted parameters.
+This source accepts a list of options in the form of
+@var{key}=@var{value} pairs separated by ":". A description of the
+accepted options follows.
 
 @table @option
 
-@item color, c
-Specify the color of the source. It can be the name of a color (case
-insensitive match) or a 0xRRGGBB[AA] sequence, possibly followed by an
-alpha specifier. The default value is "black".
+@item end_pts
+Set the terminal pts value. Default value is 400.
 
-@item size, s
-Specify the size of the sourced video, it may be a string of the form
-@var{width}x@var{height}, or the name of a size abbreviation. The
-default value is "320x240".
+@item end_scale
+Set the terminal scale value.
+Must be a floating point value. Default value is 0.3.
+
+@item inner
+Set the inner coloring mode, that is the algorithm used to draw the
+Mandelbrot fractal internal region.
+
+It shall assume one of the following values:
+@table @option
+@item black
+Set black mode.
+@item convergence
+Show time until convergence.
+@item mincol
+Set color based on point closest to the origin of the iterations.
+@item period
+Set period mode.
+@end table
+
+Default value is @var{mincol}.
+
+@item bailout
+Set the bailout value. Default value is 10.0.
+
+@item maxiter
+Set the maximum of iterations performed by the rendering
+algorithm. Default value is 7189.
+
+@item outer
+Set outer coloring mode.
+It shall assume one of following values:
+@table @option
+@item iteration_count
+Set iteration cound mode.
+@item normalized_iteration_count
+set normalized iteration count mode.
+@end table
+Default value is @var{normalized_iteration_count}.
 
 @item rate, r
-Specify the frame rate of the sourced video, as the number of frames
-generated per second. It has to be a string in the format
-@var{frame_rate_num}/@var{frame_rate_den}, an integer number, a float
-number or a valid video frame rate abbreviation. The default value is
-"25".
+Set frame rate, expressed as number of frames per second. Default
+value is "25".
 
+@item size, s
+Set frame size. Default value is "640x480".
+
+@item start_scale
+Set the initial scale value. Default value is 3.0.
+
+@item start_x
+Set the initial x position. Must be a floating point value between
+-100 and 100. Default value is -0.743643887037158704752191506114774.
+
+@item start_y
+Set the initial y position. Must be a floating point value between
+-100 and 100. Default value is -0.131825904205311970493132056385139.
 @end table
-
-For example the following graph description will generate a red source
-with an opacity of 0.2, with size "qcif" and a frame rate of 10
-frames per second, which will be overlayed over the source connected
-to the pad with identifier "in".
-
-@example
-"color=c=red@@0.2:s=qcif:r=10 [color]; [in][color] overlay [out]"
-@end example
-
-@anchor{src_movie}
-@section movie
-
-Read audio and/or video stream(s) from a movie container.
-
-It accepts the syntax: @var{movie_name}[:@var{options}] where
-@var{movie_name} is the name of the resource to read (not necessarily
-a file but also a device or a stream accessed through some protocol),
-and @var{options} is an optional sequence of @var{key}=@var{value}
-pairs, separated by ":".
-
-The description of the accepted options follows.
-
-@table @option
-
-@item format_name, f
-Specifies the format assumed for the movie to read, and can be either
-the name of a container or an input device. If not specified the
-format is guessed from @var{movie_name} or by probing.
-
-@item seek_point, sp
-Specifies the seek point in seconds, the frames will be output
-starting from this seek point, the parameter is evaluated with
-@code{av_strtod} so the numerical value may be suffixed by an IS
-postfix. Default value is "0".
-
-@item streams, s
-Specifies the streams to read. Several streams can be specified, separated
-by "+". The source will then have as many outputs, in the same order. The
-syntax is explained in the @ref{Stream specifiers} chapter. Two special
-names, "dv" and "da" specify respectively the default (best suited) video
-and audio stream. Default is "dv", or "da" if the filter is called as
-"amovie".
-
-@item stream_index, si
-Specifies the index of the video stream to read. If the value is -1,
-the best suited video stream will be automatically selected. Default
-value is "-1". Deprecated. If the filter is called "amovie", it will select
-audio instead of video.
-
-@item loop
-Specifies how many times to read the stream in sequence.
-If the value is less than 1, the stream will be read again and again.
-Default value is "1".
-
-Note that when the movie is looped the source timestamps are not
-changed, so it will generate non monotonically increasing timestamps.
-@end table
-
-This filter allows to overlay a second video on top of main input of
-a filtergraph as shown in this graph:
-@example
-input -----------> deltapts0 --> overlay --> output
-                                    ^
-                                    |
-movie --> scale--> deltapts1 -------+
-@end example
-
-Some examples follow:
-@example
-# skip 3.2 seconds from the start of the avi file in.avi, and overlay it
-# on top of the input labelled as "in".
-movie=in.avi:seek_point=3.2, scale=180:-1, setpts=PTS-STARTPTS [movie];
-[in] setpts=PTS-STARTPTS, [movie] overlay=16:16 [out]
-
-# read from a video4linux2 device, and overlay it on top of the input
-# labelled as "in"
-movie=/dev/video0:f=video4linux2, scale=180:-1, setpts=PTS-STARTPTS [movie];
-[in] setpts=PTS-STARTPTS, [movie] overlay=16:16 [out]
-
-# read the first video stream and the audio stream with id 0x81 from
-# dvd.vob; the video is connected to the pad named "video" and the audio is
-# connected to the pad named "audio":
-movie=dvd.vob:s=v:0+#0x81 [video] [audio]
-@end example
 
 @section mptestsrc
 
@@ -3898,7 +4128,9 @@ ffplay -f lavfi life=s=300x200:mold=10:r=60:ratio=0.1:death_color=#C83232:life_c
 @end example
 @end itemize
 
-@section nullsrc, rgbtestsrc, testsrc
+@section color, nullsrc, rgbtestsrc, smptebars, testsrc
+
+The @code{color} source provides an uniformly colored input.
 
 The @code{nullsrc} source returns unprocessed video frames. It is
 mainly useful to be employed in analysis / debugging tools, or as the
@@ -3908,6 +4140,9 @@ The @code{rgbtestsrc} source generates an RGB test pattern useful for
 detecting RGB vs BGR issues. You should see a red, green and blue
 stripe from top to bottom.
 
+The @code{smptebars} source generates a color bars pattern, based on
+the SMPTE Engineering Guideline EG 1-1990.
+
 The @code{testsrc} source generates a test video pattern, showing a
 color pattern, a scrolling gradient and a timestamp. This is mainly
 intended for testing purposes.
@@ -3916,6 +4151,12 @@ These sources accept an optional sequence of @var{key}=@var{value} pairs,
 separated by ":". The description of the accepted options follows.
 
 @table @option
+
+@item color, c
+Specify the color of the source, only used in the @code{color}
+source. It can be the name of a color (case insensitive match) or a
+0xRRGGBB[AA] sequence, possibly followed by an alpha specifier. The
+default value is "black".
 
 @item size, s
 Specify the size of the sourced video, it may be a string of the form
@@ -3960,6 +4201,13 @@ testsrc=duration=5.3:size=qcif:rate=10
 will generate a video with a duration of 5.3 seconds, with size
 176x144 and a frame rate of 10 frames per second.
 
+The following graph description will generate a red source
+with an opacity of 0.2, with size "qcif" and a frame rate of 10
+frames per second.
+@example
+color=c=red@@0.2:s=qcif:r=10
+@end example
+
 If the input content is to be ignored, @code{nullsrc} can be used. The
 following command generates noise in the luminance plane by employing
 the @code{mp=geq} filter:
@@ -3999,6 +4247,284 @@ tools.
 @c man begin MULTIMEDIA FILTERS
 
 Below is a description of the currently available multimedia filters.
+
+@section asendcmd, sendcmd
+
+Send commands to filters in the filtergraph.
+
+These filters read commands to be sent to other filters in the
+filtergraph.
+
+@code{asendcmd} must be inserted between two audio filters,
+@code{sendcmd} must be inserted between two video filters, but apart
+from that they act the same way.
+
+The specification of commands can be provided in the filter arguments
+with the @var{commands} option, or in a file specified by the
+@var{filename} option.
+
+These filters accept the following options:
+@table @option
+@item commands, c
+Set the commands to be read and sent to the other filters.
+@item filename, f
+Set the filename of the commands to be read and sent to the other
+filters.
+@end table
+
+@subsection Commands syntax
+
+A commands description consists of a sequence of interval
+specifications, comprising a list of commands to be executed when a
+particular event related to that interval occurs. The occurring event
+is typically the current frame time entering or leaving a given time
+interval.
+
+An interval is specified by the following syntax:
+@example
+@var{START}[-@var{END}] @var{COMMANDS};
+@end example
+
+The time interval is specified by the @var{START} and @var{END} times.
+@var{END} is optional and defaults to the maximum time.
+
+The current frame time is considered within the specified interval if
+it is included in the interval [@var{START}, @var{END}), that is when
+the time is greater or equal to @var{START} and is lesser than
+@var{END}.
+
+@var{COMMANDS} consists of a sequence of one or more command
+specifications, separated by ",", relating to that interval.  The
+syntax of a command specification is given by:
+@example
+[@var{FLAGS}] @var{TARGET} @var{COMMAND} @var{ARG}
+@end example
+
+@var{FLAGS} is optional and specifies the type of events relating to
+the time interval which enable sending the specified command, and must
+be a non-null sequence of identifier flags separated by "+" or "|" and
+enclosed between "[" and "]".
+
+The following flags are recognized:
+@table @option
+@item enter
+The command is sent when the current frame timestamp enters the
+specified interval. In other words, the command is sent when the
+previous frame timestamp was not in the given interval, and the
+current is.
+
+@item leave
+The command is sent when the current frame timestamp leaves the
+specified interval. In other words, the command is sent when the
+previous frame timestamp was in the given interval, and the
+current is not.
+@end table
+
+If @var{FLAGS} is not specified, a default value of @code{[enter]} is
+assumed.
+
+@var{TARGET} specifies the target of the command, usually the name of
+the filter class or a specific filter instance name.
+
+@var{COMMAND} specifies the name of the command for the target filter.
+
+@var{ARG} is optional and specifies the optional list of argument for
+the given @var{COMMAND}.
+
+Between one interval specification and another, whitespaces, or
+sequences of characters starting with @code{#} until the end of line,
+are ignored and can be used to annotate comments.
+
+A simplified BNF description of the commands specification syntax
+follows:
+@example
+@var{COMMAND_FLAG}  ::= "enter" | "leave"
+@var{COMMAND_FLAGS} ::= @var{COMMAND_FLAG} [(+|"|")@var{COMMAND_FLAG}]
+@var{COMMAND}       ::= ["[" @var{COMMAND_FLAGS} "]"] @var{TARGET} @var{COMMAND} [@var{ARG}]
+@var{COMMANDS}      ::= @var{COMMAND} [,@var{COMMANDS}]
+@var{INTERVAL}      ::= @var{START}[-@var{END}] @var{COMMANDS}
+@var{INTERVALS}     ::= @var{INTERVAL}[;@var{INTERVALS}]
+@end example
+
+@subsection Examples
+
+@itemize
+@item
+Specify audio tempo change at second 4:
+@example
+asendcmd=c='4.0 atempo tempo 1.5',atempo
+@end example
+
+@item
+Specify a list of drawtext and hue commands in a file.
+@example
+# show text in the interval 5-10
+5.0-10.0 [enter] drawtext reinit 'fontfile=FreeSerif.ttf:text=hello world',
+         [leave] drawtext reinit 'fontfile=FreeSerif.ttf:text=';
+
+# desaturate the image in the interval 15-20
+15.0-20.0 [enter] hue reinit s=0,
+          [enter] drawtext reinit 'fontfile=FreeSerif.ttf:text=nocolor',
+          [leave] hue reinit s=1,
+          [leave] drawtext reinit 'fontfile=FreeSerif.ttf:text=color';
+
+# apply an exponential saturation fade-out effect, starting from time 25
+25 [enter] hue s=exp(t-25)
+@end example
+
+A filtergraph allowing to read and process the above command list
+stored in a file @file{test.cmd}, can be specified with:
+@example
+sendcmd=f=test.cmd,drawtext=fontfile=FreeSerif.ttf:text='',hue
+@end example
+@end itemize
+
+@section asetpts, setpts
+
+Change the PTS (presentation timestamp) of the input frames.
+
+@code{asetpts} works on audio frames, @code{setpts} on video frames.
+
+Accept in input an expression evaluated through the eval API, which
+can contain the following constants:
+
+@table @option
+@item FRAME_RATE
+frame rate, only defined for constant frame-rate video
+
+@item PTS
+the presentation timestamp in input
+
+@item N
+the count of the input frame, starting from 0.
+
+@item NB_CONSUMED_SAMPLES
+the number of consumed samples, not including the current frame (only
+audio)
+
+@item NB_SAMPLES
+the number of samples in the current frame (only audio)
+
+@item SAMPLE_RATE
+audio sample rate
+
+@item STARTPTS
+the PTS of the first frame
+
+@item STARTT
+the time in seconds of the first frame
+
+@item INTERLACED
+tell if the current frame is interlaced
+
+@item T
+the time in seconds of the current frame
+
+@item TB
+the time base
+
+@item POS
+original position in the file of the frame, or undefined if undefined
+for the current frame
+
+@item PREV_INPTS
+previous input PTS
+
+@item PREV_INT
+previous input time in seconds
+
+@item PREV_OUTPTS
+previous output PTS
+
+@item PREV_OUTT
+previous output time in seconds
+@end table
+
+@subsection Examples
+
+@itemize
+@item
+Start counting PTS from zero
+@example
+setpts=PTS-STARTPTS
+@end example
+
+@item
+Apply fast motion effect:
+@example
+setpts=0.5*PTS
+@end example
+
+@item
+Apply slow motion effect:
+@example
+setpts=2.0*PTS
+@end example
+
+@item
+Set fixed rate of 25 frames per second:
+@example
+setpts=N/(25*TB)
+@end example
+
+@item
+Set fixed rate 25 fps with some jitter:
+@example
+setpts='1/(25*TB) * (N + 0.05 * sin(N*2*PI/25))'
+@end example
+
+@item
+Apply an offset of 10 seconds to the input PTS:
+@example
+setpts=PTS+10/TB
+@end example
+@end itemize
+
+@section settb, asettb
+
+Set the timebase to use for the output frames timestamps.
+It is mainly useful for testing timebase configuration.
+
+It accepts in input an arithmetic expression representing a rational.
+The expression can contain the constants "AVTB" (the
+default timebase), "intb" (the input timebase) and "sr" (the sample rate,
+audio only).
+
+The default value for the input is "intb".
+
+@subsection Examples
+
+@itemize
+@item
+Set the timebase to 1/25:
+@example
+settb=1/25
+@end example
+
+@item
+Set the timebase to 1/10:
+@example
+settb=0.1
+@end example
+
+@item
+Set the timebase to 1001/1000:
+@example
+settb=1+0.001
+@end example
+
+@item
+Set the timebase to 2*intb:
+@example
+settb=2*intb
+@end example
+
+@item
+Set the default timebase value:
+@example
+settb=AVTB
+@end example
+@end itemize
 
 @section concat
 
@@ -4075,6 +4601,20 @@ do not have exactly the same duration in the first file.
 
 @end itemize
 
+@section showspectrum
+
+Convert input audio to a video output, representing the audio frequency
+spectrum.
+
+The filter accepts the following named parameters:
+@table @option
+@item size, s
+Specify the video size for the output. Default value is @code{640x480}.
+@end table
+
+The usage is very similar to the showwaves filter; see the examples in that
+section.
+
 @section showwaves
 
 Convert input audio to a video output, representing the samples waves.
@@ -4114,3 +4654,101 @@ aevalsrc=sin(1*2*PI*t)*sin(880*2*PI*t):cos(2*PI*200*t),asplit[out0],showwaves=r=
 @end itemize
 
 @c man end MULTIMEDIA FILTERS
+
+@chapter Multimedia Sources
+@c man begin MULTIMEDIA SOURCES
+
+Below is a description of the currently available multimedia sources.
+
+@section amovie
+
+This is the same as @ref{src_movie} source, except it selects an audio
+stream by default.
+
+@anchor{src_movie}
+@section movie
+
+Read audio and/or video stream(s) from a movie container.
+
+It accepts the syntax: @var{movie_name}[:@var{options}] where
+@var{movie_name} is the name of the resource to read (not necessarily
+a file but also a device or a stream accessed through some protocol),
+and @var{options} is an optional sequence of @var{key}=@var{value}
+pairs, separated by ":".
+
+The description of the accepted options follows.
+
+@table @option
+
+@item format_name, f
+Specifies the format assumed for the movie to read, and can be either
+the name of a container or an input device. If not specified the
+format is guessed from @var{movie_name} or by probing.
+
+@item seek_point, sp
+Specifies the seek point in seconds, the frames will be output
+starting from this seek point, the parameter is evaluated with
+@code{av_strtod} so the numerical value may be suffixed by an IS
+postfix. Default value is "0".
+
+@item streams, s
+Specifies the streams to read. Several streams can be specified, separated
+by "+". The source will then have as many outputs, in the same order. The
+syntax is explained in the @ref{Stream specifiers} chapter. Two special
+names, "dv" and "da" specify respectively the default (best suited) video
+and audio stream. Default is "dv", or "da" if the filter is called as
+"amovie".
+
+@item stream_index, si
+Specifies the index of the video stream to read. If the value is -1,
+the best suited video stream will be automatically selected. Default
+value is "-1". Deprecated. If the filter is called "amovie", it will select
+audio instead of video.
+
+@item loop
+Specifies how many times to read the stream in sequence.
+If the value is less than 1, the stream will be read again and again.
+Default value is "1".
+
+Note that when the movie is looped the source timestamps are not
+changed, so it will generate non monotonically increasing timestamps.
+@end table
+
+This filter allows to overlay a second video on top of main input of
+a filtergraph as shown in this graph:
+@example
+input -----------> deltapts0 --> overlay --> output
+                                    ^
+                                    |
+movie --> scale--> deltapts1 -------+
+@end example
+
+Some examples follow.
+
+@itemize
+@item
+Skip 3.2 seconds from the start of the avi file in.avi, and overlay it
+on top of the input labelled as "in":
+@example
+movie=in.avi:seek_point=3.2, scale=180:-1, setpts=PTS-STARTPTS [movie];
+[in] setpts=PTS-STARTPTS, [movie] overlay=16:16 [out]
+@end example
+
+@item
+Read from a video4linux2 device, and overlay it on top of the input
+labelled as "in":
+@example
+movie=/dev/video0:f=video4linux2, scale=180:-1, setpts=PTS-STARTPTS [movie];
+[in] setpts=PTS-STARTPTS, [movie] overlay=16:16 [out]
+@end example
+
+@item
+Read the first video stream and the audio stream with id 0x81 from
+dvd.vob; the video is connected to the pad named "video" and the audio is
+connected to the pad named "audio":
+@example
+movie=dvd.vob:s=v:0+#0x81 [video] [audio]
+@end example
+@end itemize
+
+@c man end MULTIMEDIA SOURCES

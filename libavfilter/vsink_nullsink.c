@@ -18,6 +18,7 @@
 
 #include "avfilter.h"
 #include "internal.h"
+#include "libavutil/internal.h"
 
 static int start_frame(AVFilterLink *link, AVFilterBufferRef *picref)
 {
@@ -44,5 +45,5 @@ AVFilter avfilter_vsink_nullsink = {
         },
         { .name = NULL},
     },
-    .outputs   = (const AVFilterPad[]) {{ .name = NULL }},
+    .outputs   = NULL,
 };

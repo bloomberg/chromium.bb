@@ -19,6 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "libavutil/avassert.h"
 #include "libavutil/base64.h"
 #include "libavutil/avstring.h"
 #include "libavutil/intreadwrite.h"
@@ -27,6 +28,7 @@
 #include "libavutil/random_seed.h"
 #include "libavutil/dict.h"
 #include "libavutil/opt.h"
+#include "libavutil/time.h"
 #include "avformat.h"
 #include "avio_internal.h"
 
@@ -45,6 +47,7 @@
 #include "rtpenc_chain.h"
 #include "url.h"
 #include "rtpenc.h"
+#include "mpegts.h"
 
 //#define DEBUG
 
@@ -62,29 +65,29 @@
 #define ENC AV_OPT_FLAG_ENCODING_PARAM
 
 #define RTSP_FLAG_OPTS(name, longname) \
-    { name, longname, OFFSET(rtsp_flags), AV_OPT_TYPE_FLAGS, {0}, INT_MIN, INT_MAX, DEC, "rtsp_flags" }, \
-    { "filter_src", "Only receive packets from the negotiated peer IP", 0, AV_OPT_TYPE_CONST, {RTSP_FLAG_FILTER_SRC}, 0, 0, DEC, "rtsp_flags" }, \
-    { "listen", "Wait for incoming connections", 0, AV_OPT_TYPE_CONST, {RTSP_FLAG_LISTEN}, 0, 0, DEC, "rtsp_flags" }
+    { name, longname, OFFSET(rtsp_flags), AV_OPT_TYPE_FLAGS, {.i64 = 0}, INT_MIN, INT_MAX, DEC, "rtsp_flags" }, \
+    { "filter_src", "Only receive packets from the negotiated peer IP", 0, AV_OPT_TYPE_CONST, {.i64 = RTSP_FLAG_FILTER_SRC}, 0, 0, DEC, "rtsp_flags" }, \
+    { "listen", "Wait for incoming connections", 0, AV_OPT_TYPE_CONST, {.i64 = RTSP_FLAG_LISTEN}, 0, 0, DEC, "rtsp_flags" }
 
 #define RTSP_MEDIATYPE_OPTS(name, longname) \
-    { name, longname, OFFSET(media_type_mask), AV_OPT_TYPE_FLAGS, { (1 << (AVMEDIA_TYPE_DATA+1)) - 1 }, INT_MIN, INT_MAX, DEC, "allowed_media_types" }, \
-    { "video", "Video", 0, AV_OPT_TYPE_CONST, {1 << AVMEDIA_TYPE_VIDEO}, 0, 0, DEC, "allowed_media_types" }, \
-    { "audio", "Audio", 0, AV_OPT_TYPE_CONST, {1 << AVMEDIA_TYPE_AUDIO}, 0, 0, DEC, "allowed_media_types" }, \
-    { "data", "Data", 0, AV_OPT_TYPE_CONST, {1 << AVMEDIA_TYPE_DATA}, 0, 0, DEC, "allowed_media_types" }
+    { name, longname, OFFSET(media_type_mask), AV_OPT_TYPE_FLAGS, { .i64 = (1 << (AVMEDIA_TYPE_DATA+1)) - 1 }, INT_MIN, INT_MAX, DEC, "allowed_media_types" }, \
+    { "video", "Video", 0, AV_OPT_TYPE_CONST, {.i64 = 1 << AVMEDIA_TYPE_VIDEO}, 0, 0, DEC, "allowed_media_types" }, \
+    { "audio", "Audio", 0, AV_OPT_TYPE_CONST, {.i64 = 1 << AVMEDIA_TYPE_AUDIO}, 0, 0, DEC, "allowed_media_types" }, \
+    { "data", "Data", 0, AV_OPT_TYPE_CONST, {.i64 = 1 << AVMEDIA_TYPE_DATA}, 0, 0, DEC, "allowed_media_types" }
 
 const AVOption ff_rtsp_options[] = {
-    { "initial_pause",  "Don't start playing the stream immediately", OFFSET(initial_pause), AV_OPT_TYPE_INT, {0}, 0, 1, DEC },
+    { "initial_pause",  "Don't start playing the stream immediately", OFFSET(initial_pause), AV_OPT_TYPE_INT, {.i64 = 0}, 0, 1, DEC },
     FF_RTP_FLAG_OPTS(RTSPState, rtp_muxer_flags),
-    { "rtsp_transport", "RTSP transport protocols", OFFSET(lower_transport_mask), AV_OPT_TYPE_FLAGS, {0}, INT_MIN, INT_MAX, DEC|ENC, "rtsp_transport" }, \
-    { "udp", "UDP", 0, AV_OPT_TYPE_CONST, {1 << RTSP_LOWER_TRANSPORT_UDP}, 0, 0, DEC|ENC, "rtsp_transport" }, \
-    { "tcp", "TCP", 0, AV_OPT_TYPE_CONST, {1 << RTSP_LOWER_TRANSPORT_TCP}, 0, 0, DEC|ENC, "rtsp_transport" }, \
-    { "udp_multicast", "UDP multicast", 0, AV_OPT_TYPE_CONST, {1 << RTSP_LOWER_TRANSPORT_UDP_MULTICAST}, 0, 0, DEC, "rtsp_transport" },
-    { "http", "HTTP tunneling", 0, AV_OPT_TYPE_CONST, {(1 << RTSP_LOWER_TRANSPORT_HTTP)}, 0, 0, DEC, "rtsp_transport" },
+    { "rtsp_transport", "RTSP transport protocols", OFFSET(lower_transport_mask), AV_OPT_TYPE_FLAGS, {.i64 = 0}, INT_MIN, INT_MAX, DEC|ENC, "rtsp_transport" }, \
+    { "udp", "UDP", 0, AV_OPT_TYPE_CONST, {.i64 = 1 << RTSP_LOWER_TRANSPORT_UDP}, 0, 0, DEC|ENC, "rtsp_transport" }, \
+    { "tcp", "TCP", 0, AV_OPT_TYPE_CONST, {.i64 = 1 << RTSP_LOWER_TRANSPORT_TCP}, 0, 0, DEC|ENC, "rtsp_transport" }, \
+    { "udp_multicast", "UDP multicast", 0, AV_OPT_TYPE_CONST, {.i64 = 1 << RTSP_LOWER_TRANSPORT_UDP_MULTICAST}, 0, 0, DEC, "rtsp_transport" },
+    { "http", "HTTP tunneling", 0, AV_OPT_TYPE_CONST, {.i64 = (1 << RTSP_LOWER_TRANSPORT_HTTP)}, 0, 0, DEC, "rtsp_transport" },
     RTSP_FLAG_OPTS("rtsp_flags", "RTSP flags"),
     RTSP_MEDIATYPE_OPTS("allowed_media_types", "Media types to accept from the server"),
-    { "min_port", "Minimum local UDP port", OFFSET(rtp_port_min), AV_OPT_TYPE_INT, {RTSP_RTP_PORT_MIN}, 0, 65535, DEC|ENC },
-    { "max_port", "Maximum local UDP port", OFFSET(rtp_port_max), AV_OPT_TYPE_INT, {RTSP_RTP_PORT_MAX}, 0, 65535, DEC|ENC },
-    { "timeout", "Maximum timeout (in seconds) to wait for incoming connections. -1 is infinite. Implies flag listen", OFFSET(initial_timeout), AV_OPT_TYPE_INT, {-1}, INT_MIN, INT_MAX, DEC },
+    { "min_port", "Minimum local UDP port", OFFSET(rtp_port_min), AV_OPT_TYPE_INT, {.i64 = RTSP_RTP_PORT_MIN}, 0, 65535, DEC|ENC },
+    { "max_port", "Maximum local UDP port", OFFSET(rtp_port_max), AV_OPT_TYPE_INT, {.i64 = RTSP_RTP_PORT_MAX}, 0, 65535, DEC|ENC },
+    { "timeout", "Maximum timeout (in seconds) to wait for incoming connections. -1 is infinite. Implies flag listen", OFFSET(initial_timeout), AV_OPT_TYPE_INT, {.i64 = -1}, INT_MIN, INT_MAX, DEC },
     { NULL },
 };
 
@@ -152,8 +155,6 @@ static void rtsp_parse_range_npt(const char *p, int64_t *start, int64_t *end)
         get_word_sep(buf, sizeof(buf), "-", &p);
         av_parse_time(end, buf, 1);
     }
-//    av_log(NULL, AV_LOG_DEBUG, "Range Start: %lld\n", *start);
-//    av_log(NULL, AV_LOG_DEBUG, "Range End: %lld\n", *end);
 }
 
 static int get_sockaddr(const char *buf, struct sockaddr_storage *sock)
@@ -206,7 +207,7 @@ static int sdp_parse_rtpmap(AVFormatContext *s,
         codec->codec_id = ff_rtp_codec_id(buf, codec->codec_type);
     }
 
-    if (codec->codec_id == CODEC_ID_NONE) {
+    if (codec->codec_id == AV_CODEC_ID_NONE) {
         RTPDynamicProtocolHandler *handler =
             ff_rtp_handler_find_by_name(buf, codec->codec_type);
         init_rtp_handler(handler, rtsp_st, codec);
@@ -369,7 +370,9 @@ static void sdp_parse_line(AVFormatContext *s, SDPParseState *s1,
         get_word(buf1, sizeof(buf1), &p); /* port */
         rtsp_st->sdp_port = atoi(buf1);
 
-        get_word(buf1, sizeof(buf1), &p); /* protocol (ignored) */
+        get_word(buf1, sizeof(buf1), &p); /* protocol */
+        if (!strcmp(buf1, "udp"))
+            rt->transport = RTSP_TRANSPORT_RAW;
 
         /* XXX: handle list of formats */
         get_word(buf1, sizeof(buf1), &p); /* format list */
@@ -377,6 +380,8 @@ static void sdp_parse_line(AVFormatContext *s, SDPParseState *s1,
 
         if (!strcmp(ff_rtp_enc_name(rtsp_st->sdp_payload_type), "MP2T")) {
             /* no corresponding stream */
+            if (rt->transport == RTSP_TRANSPORT_RAW && !rt->ts && CONFIG_RTPDEC)
+                rt->ts = ff_mpegts_parse_open(s);
         } else if (rt->server_type == RTSP_SERVER_WMS &&
                    codec_type == AVMEDIA_TYPE_DATA) {
             /* RTX stream, a stream that carries all the other actual
@@ -562,7 +567,7 @@ void ff_rtsp_undo_setup(AVFormatContext *s)
                 avformat_free_context(rtpctx);
             } else if (rt->transport == RTSP_TRANSPORT_RDT && CONFIG_RTPDEC)
                 ff_rdt_parse_close(rtsp_st->transport_priv);
-            else if (CONFIG_RTPDEC)
+            else if (rt->transport == RTSP_TRANSPORT_RTP && CONFIG_RTPDEC)
                 ff_rtp_parse_close(rtsp_st->transport_priv);
         }
         rtsp_st->transport_priv = NULL;
@@ -593,6 +598,8 @@ void ff_rtsp_close_streams(AVFormatContext *s)
     if (rt->asf_ctx) {
         avformat_close_input(&rt->asf_ctx);
     }
+    if (rt->ts && CONFIG_RTPDEC)
+        ff_mpegts_parse_close(rt->ts);
     av_free(rt->p);
     av_free(rt->recvbuf);
 }
@@ -609,13 +616,15 @@ int ff_rtsp_open_transport_ctx(AVFormatContext *s, RTSPStream *rtsp_st)
         s->ctx_flags |= AVFMTCTX_NOHEADER;
 
     if (s->oformat && CONFIG_RTSP_MUXER) {
-        int ret = ff_rtp_chain_mux_open(&rtsp_st->transport_priv, s, st,
+        int ret = ff_rtp_chain_mux_open((AVFormatContext **)&rtsp_st->transport_priv, s, st,
                                         rtsp_st->rtp_handle,
                                         RTSP_TCP_MAX_PACKET_SIZE);
         /* Ownership of rtp_handle is passed to the rtp mux context */
         rtsp_st->rtp_handle = NULL;
         if (ret < 0)
             return ret;
+    } else if (rt->transport == RTSP_TRANSPORT_RAW) {
+        return 0; // Don't need to open any parser here
     } else if (rt->transport == RTSP_TRANSPORT_RDT && CONFIG_RTPDEC)
         rtsp_st->transport_priv = ff_rdt_parse_open(s, st->index,
                                             rtsp_st->dynamic_protocol_context,
@@ -628,7 +637,7 @@ int ff_rtsp_open_transport_ctx(AVFormatContext *s, RTSPStream *rtsp_st)
 
     if (!rtsp_st->transport_priv) {
          return AVERROR(ENOMEM);
-    } else if (rt->transport != RTSP_TRANSPORT_RDT && CONFIG_RTPDEC) {
+    } else if (rt->transport == RTSP_TRANSPORT_RTP && CONFIG_RTPDEC) {
         if (rtsp_st->dynamic_handler) {
             ff_rtp_parse_set_dynamic_protocol(rtsp_st->transport_priv,
                                               rtsp_st->dynamic_protocol_context,
@@ -697,6 +706,15 @@ static void rtsp_parse_transport(RTSPMessageHeader *reply, const char *p)
             get_word_sep(lower_transport, sizeof(lower_transport), "/;,", &p);
             profile[0] = '\0';
             th->transport = RTSP_TRANSPORT_RDT;
+        } else if (!av_strcasecmp(transport_protocol, "raw")) {
+            get_word_sep(profile, sizeof(profile), "/;,", &p);
+            lower_transport[0] = '\0';
+            /* raw/raw/<protocol> */
+            if (*p == '/') {
+                get_word_sep(lower_transport, sizeof(lower_transport),
+                             ";,", &p);
+            }
+            th->transport = RTSP_TRANSPORT_RAW;
         }
         if (!av_strcasecmp(lower_transport, "TCP"))
             th->lower_transport = RTSP_LOWER_TRANSPORT_TCP;
@@ -1186,6 +1204,8 @@ int ff_rtsp_make_setup_request(AVFormatContext *s, const char *host, int port,
 
     if (rt->transport == RTSP_TRANSPORT_RDT)
         trans_pref = "x-pn-tng";
+    else if (rt->transport == RTSP_TRANSPORT_RAW)
+        trans_pref = "RAW/RAW";
     else
         trans_pref = "RTP/AVP";
 
@@ -1669,6 +1689,7 @@ static int udp_read_packet(AVFormatContext *s, RTSPStream **prtsp_st,
     int n, i, ret, tcp_fd, timeout_cnt = 0;
     int max_p = 0;
     struct pollfd *p = rt->p;
+    int *fds = NULL, fdsnum, fdsidx;
 
     for (;;) {
         if (ff_check_interrupt(&s->interrupt_callback))
@@ -1686,10 +1707,21 @@ static int udp_read_packet(AVFormatContext *s, RTSPStream **prtsp_st,
         for (i = 0; i < rt->nb_rtsp_streams; i++) {
             rtsp_st = rt->rtsp_streams[i];
             if (rtsp_st->rtp_handle) {
-                p[max_p].fd = ffurl_get_file_handle(rtsp_st->rtp_handle);
-                p[max_p++].events = POLLIN;
-                p[max_p].fd = ff_rtp_get_rtcp_file_handle(rtsp_st->rtp_handle);
-                p[max_p++].events = POLLIN;
+                if (ret = ffurl_get_multi_file_handle(rtsp_st->rtp_handle,
+                                                      &fds, &fdsnum)) {
+                    av_log(s, AV_LOG_ERROR, "Unable to recover rtp ports\n");
+                    return ret;
+                }
+                if (fdsnum != 2) {
+                    av_log(s, AV_LOG_ERROR,
+                           "Number of fds %d not supported\n", fdsnum);
+                    return AVERROR_INVALIDDATA;
+                }
+                for (fdsidx = 0; fdsidx < fdsnum; fdsidx++) {
+                    p[max_p].fd       = fds[fdsidx];
+                    p[max_p++].events = POLLIN;
+                }
+                av_free(fds);
             }
         }
         n = poll(p, max_p, POLL_TIMEOUT_MS);
@@ -1752,8 +1784,16 @@ int ff_rtsp_fetch_packet(AVFormatContext *s, AVPacket *pkt)
     if (rt->cur_transport_priv) {
         if (rt->transport == RTSP_TRANSPORT_RDT) {
             ret = ff_rdt_parse_packet(rt->cur_transport_priv, pkt, NULL, 0);
-        } else
+        } else if (rt->transport == RTSP_TRANSPORT_RTP) {
             ret = ff_rtp_parse_packet(rt->cur_transport_priv, pkt, NULL, 0);
+        } else if (rt->ts && CONFIG_RTPDEC) {
+            ret = ff_mpegts_parse_packet(rt->ts, pkt, rt->recvbuf + rt->recvbuf_pos, rt->recvbuf_len - rt->recvbuf_pos);
+            if (ret >= 0) {
+                rt->recvbuf_pos += ret;
+                ret = rt->recvbuf_pos < rt->recvbuf_len;
+            }
+        } else
+            av_assert0(0);
         if (ret == 0) {
             rt->cur_transport_priv = NULL;
             return 0;
@@ -1816,7 +1856,7 @@ int ff_rtsp_fetch_packet(AVFormatContext *s, AVPacket *pkt)
         return AVERROR_EOF;
     if (rt->transport == RTSP_TRANSPORT_RDT) {
         ret = ff_rdt_parse_packet(rtsp_st->transport_priv, pkt, &rt->recvbuf, len);
-    } else {
+    } else if (rt->transport == RTSP_TRANSPORT_RTP) {
         ret = ff_rtp_parse_packet(rtsp_st->transport_priv, pkt, &rt->recvbuf, len);
         if (ret < 0) {
             /* Either bad packet, or a RTCP packet. Check if the
@@ -1855,6 +1895,20 @@ int ff_rtsp_fetch_packet(AVFormatContext *s, AVPacket *pkt)
                     return AVERROR_EOF;
             }
         }
+    } else if (rt->ts && CONFIG_RTPDEC) {
+        ret = ff_mpegts_parse_packet(rt->ts, pkt, rt->recvbuf, len);
+        if (ret >= 0) {
+            if (ret < len) {
+                rt->recvbuf_len = len;
+                rt->recvbuf_pos = ret;
+                rt->cur_transport_priv = rt->ts;
+                return 1;
+            } else {
+                ret = 0;
+            }
+        }
+    } else {
+        return AVERROR_INVALIDDATA;
     }
 end:
     if (ret < 0)
@@ -2075,7 +2129,7 @@ static const AVClass rtp_demuxer_class = {
 
 AVInputFormat ff_rtp_demuxer = {
     .name           = "rtp",
-    .long_name      = NULL_IF_CONFIG_SMALL("RTP input format"),
+    .long_name      = NULL_IF_CONFIG_SMALL("RTP input"),
     .priv_data_size = sizeof(RTSPState),
     .read_probe     = rtp_probe,
     .read_header    = rtp_read_header,

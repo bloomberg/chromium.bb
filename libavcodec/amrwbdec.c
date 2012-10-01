@@ -24,12 +24,14 @@
  * AMR wideband decoder
  */
 
+#include "libavutil/common.h"
 #include "libavutil/lfg.h"
 
 #include "avcodec.h"
+#include "dsputil.h"
 #include "lsp.h"
-#include "celp_math.h"
 #include "celp_filters.h"
+#include "celp_math.h"
 #include "acelp_filters.h"
 #include "acelp_vectors.h"
 #include "acelp_pitch_delay.h"
@@ -132,7 +134,7 @@ static int decode_mime_header(AMRWBContext *ctx, const uint8_t *buf)
 {
     /* Decode frame header (1st octet) */
     ctx->fr_cur_mode  = buf[0] >> 3 & 0x0F;
-    ctx->fr_quality   = (buf[0] & 0x4) != 0x4;
+    ctx->fr_quality   = (buf[0] & 0x4) == 0x4;
 
     return 1;
 }
@@ -599,9 +601,11 @@ static float voice_factor(float *p_vector, float p_gain,
                           CELPMContext *ctx)
 {
     double p_ener = (double) ctx->dot_productf(p_vector, p_vector,
-                                             AMRWB_SFR_SIZE) * p_gain * p_gain;
+                                             AMRWB_SFR_SIZE) *
+                                             p_gain * p_gain;
     double f_ener = (double) ctx->dot_productf(f_vector, f_vector,
-                                             AMRWB_SFR_SIZE) * f_gain * f_gain;
+                                             AMRWB_SFR_SIZE) *
+                                             f_gain * f_gain;
 
     return (p_ener - f_ener) / (p_ener + f_ener);
 }
@@ -770,7 +774,7 @@ static void synthesis(AMRWBContext *ctx, float *lpc, float *excitation,
     if (ctx->pitch_gain[0] > 0.5 && ctx->fr_cur_mode <= MODE_8k85) {
         int i;
         float energy = ctx->celpm_ctx.dot_productf(excitation, excitation,
-                                       AMRWB_SFR_SIZE);
+                                                AMRWB_SFR_SIZE);
 
         // XXX: Weird part in both ref code and spec. A unknown parameter
         // {beta} seems to be identical to the current pitch gain
@@ -831,8 +835,8 @@ static void upsample_5_4(float *out, const float *in, int o_size, CELPMContext *
 
         for (k = 1; k < 5; k++) {
             out[i] = ctx->dot_productf(in0 + int_part,
-                                     upsample_fir[4 - frac_part],
-                                     UPS_MEM_SIZE);
+                                              upsample_fir[4 - frac_part],
+                                              UPS_MEM_SIZE);
             int_part++;
             frac_part--;
             i++;
@@ -1174,8 +1178,10 @@ static int amrwb_decode_frame(AVCodecContext *avctx, void *data,
 
         ctx->fixed_gain[0] =
             ff_amr_set_fixed_gain(fixed_gain_factor,
-                       ctx->celpm_ctx.dot_productf(ctx->fixed_vector, ctx->fixed_vector,
-                                       AMRWB_SFR_SIZE) / AMRWB_SFR_SIZE,
+                                  ctx->celpm_ctx.dot_productf(ctx->fixed_vector,
+                                                           ctx->fixed_vector,
+                                                           AMRWB_SFR_SIZE) /
+                                  AMRWB_SFR_SIZE,
                        ctx->prediction_error,
                        ENERGY_MEAN, energy_pred_fac);
 
@@ -1257,12 +1263,12 @@ static int amrwb_decode_frame(AVCodecContext *avctx, void *data,
 AVCodec ff_amrwb_decoder = {
     .name           = "amrwb",
     .type           = AVMEDIA_TYPE_AUDIO,
-    .id             = CODEC_ID_AMR_WB,
+    .id             = AV_CODEC_ID_AMR_WB,
     .priv_data_size = sizeof(AMRWBContext),
     .init           = amrwb_decode_init,
     .decode         = amrwb_decode_frame,
     .capabilities   = CODEC_CAP_DR1,
-    .long_name      = NULL_IF_CONFIG_SMALL("Adaptive Multi-Rate WideBand"),
+    .long_name      = NULL_IF_CONFIG_SMALL("AMR-WB (Adaptive Multi-Rate WideBand)"),
     .sample_fmts    = (const enum AVSampleFormat[]){ AV_SAMPLE_FMT_FLT,
                                                      AV_SAMPLE_FMT_NONE },
 };

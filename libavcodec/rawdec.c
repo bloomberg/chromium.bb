@@ -25,9 +25,9 @@
  */
 
 #include "avcodec.h"
-#include "imgconvert.h"
 #include "raw.h"
 #include "libavutil/avassert.h"
+#include "libavutil/common.h"
 #include "libavutil/intreadwrite.h"
 #include "libavutil/imgutils.h"
 #include "libavutil/opt.h"
@@ -43,7 +43,7 @@ typedef struct RawVideoContext {
 } RawVideoContext;
 
 static const AVOption options[]={
-{"top", "top field first", offsetof(RawVideoContext, tff), AV_OPT_TYPE_INT, {.dbl = -1}, -1, 1, AV_OPT_FLAG_DECODING_PARAM|AV_OPT_FLAG_VIDEO_PARAM},
+{"top", "top field first", offsetof(RawVideoContext, tff), AV_OPT_TYPE_INT, {.i64 = -1}, -1, 1, AV_OPT_FLAG_DECODING_PARAM|AV_OPT_FLAG_VIDEO_PARAM},
 {NULL}
 };
 
@@ -207,7 +207,7 @@ static int raw_decode(AVCodecContext *avctx,
         return res;
     if((avctx->pix_fmt==PIX_FMT_PAL8 && buf_size < context->length) ||
        (av_pix_fmt_descriptors[avctx->pix_fmt].flags & PIX_FMT_PSEUDOPAL)) {
-        frame->data[1]= context->palette;
+        frame->data[1]= (uint8_t*)context->palette;
     }
     if (avctx->pix_fmt == PIX_FMT_PAL8) {
         const uint8_t *pal = av_packet_get_side_data(avpkt, AV_PKT_DATA_PALETTE, NULL);
@@ -272,7 +272,7 @@ static av_cold int raw_close_decoder(AVCodecContext *avctx)
 AVCodec ff_rawvideo_decoder = {
     .name           = "rawvideo",
     .type           = AVMEDIA_TYPE_VIDEO,
-    .id             = CODEC_ID_RAWVIDEO,
+    .id             = AV_CODEC_ID_RAWVIDEO,
     .priv_data_size = sizeof(RawVideoContext),
     .init           = raw_init_decoder,
     .close          = raw_close_decoder,

@@ -27,6 +27,7 @@
 
 #include "avutil.h"
 #include "avstring.h"
+#include "common.h"
 #include "opt.h"
 #include "eval.h"
 #include "dict.h"
@@ -59,7 +60,8 @@ const AVOption *av_next_option(void *obj, const AVOption *last)
 const AVOption *av_opt_next(void *obj, const AVOption *last)
 {
     AVClass *class = *(AVClass**)obj;
-    if (!last && class->option[0].name) return class->option;
+    if (!last && class->option && class->option[0].name)
+        return class->option;
     if (last && last[1].name)           return ++last;
     return NULL;
 }
@@ -161,6 +163,12 @@ static int set_string(void *obj, const AVOption *o, const char *val, uint8_t **d
     return 0;
 }
 
+#define DEFAULT_NUMVAL(opt) ((opt->type == AV_OPT_TYPE_INT64 || \
+                              opt->type == AV_OPT_TYPE_CONST || \
+                              opt->type == AV_OPT_TYPE_FLAGS || \
+                              opt->type == AV_OPT_TYPE_INT) ? \
+                             opt->default_val.i64 : opt->default_val.dbl)
+
 static int set_string_number(void *obj, const AVOption *o, const char *val, void *dst)
 {
     int ret = 0, notfirst = 0;
@@ -181,8 +189,8 @@ static int set_string_number(void *obj, const AVOption *o, const char *val, void
         {
             const AVOption *o_named = av_opt_find(obj, buf, o->unit, 0, 0);
             if (o_named && o_named->type == AV_OPT_TYPE_CONST)
-                d = o_named->default_val.dbl;
-            else if (!strcmp(buf, "default")) d = o->default_val.dbl;
+                d = DEFAULT_NUMVAL(o_named);
+            else if (!strcmp(buf, "default")) d = DEFAULT_NUMVAL(o);
             else if (!strcmp(buf, "max"    )) d = o->max;
             else if (!strcmp(buf, "min"    )) d = o->min;
             else if (!strcmp(buf, "none"   )) d = 0;
@@ -233,7 +241,7 @@ int av_opt_set(void *obj, const char *name, const char *val, int search_flags)
     const AVOption *o = av_opt_find2(obj, name, NULL, 0, search_flags, &target_obj);
     if (!o || !target_obj)
         return AVERROR_OPTION_NOT_FOUND;
-    if (!val && o->type != AV_OPT_TYPE_STRING)
+    if (!val && (o->type != AV_OPT_TYPE_STRING && o->type != AV_OPT_TYPE_PIXEL_FMT && o->type != AV_OPT_TYPE_IMAGE_SIZE))
         return AVERROR(EINVAL);
 
     dst = ((uint8_t*)target_obj) + o->offset;
@@ -247,18 +255,26 @@ int av_opt_set(void *obj, const char *name, const char *val, int search_flags)
     case AV_OPT_TYPE_DOUBLE:
     case AV_OPT_TYPE_RATIONAL: return set_string_number(obj, o, val, dst);
     case AV_OPT_TYPE_IMAGE_SIZE:
+        if (!val || !strcmp(val, "none")) {
+            *(int *)dst = *((int *)dst + 1) = 0;
+            return 0;
+        }
         ret = av_parse_video_size(dst, ((int *)dst) + 1, val);
         if (ret < 0)
             av_log(obj, AV_LOG_ERROR, "Unable to parse option value \"%s\" as image size\n", val);
         return ret;
     case AV_OPT_TYPE_PIXEL_FMT:
-        ret = av_get_pix_fmt(val);
-        if (ret == PIX_FMT_NONE) {
-            char *tail;
-            ret = strtol(val, &tail, 0);
-            if (*tail || (unsigned)ret >= PIX_FMT_NB) {
-                av_log(obj, AV_LOG_ERROR, "Unable to parse option value \"%s\" as pixel format\n", val);
-                return AVERROR(EINVAL);
+        if (!val || !strcmp(val, "none"))
+            ret = PIX_FMT_NONE;
+        else {
+            ret = av_get_pix_fmt(val);
+            if (ret == PIX_FMT_NONE) {
+                char *tail;
+                ret = strtol(val, &tail, 0);
+                if (*tail || (unsigned)ret >= PIX_FMT_NB) {
+                    av_log(obj, AV_LOG_ERROR, "Unable to parse option value \"%s\" as pixel format\n", val);
+                    return AVERROR(EINVAL);
+                }
             }
         }
         *(enum PixelFormat *)dst = ret;
@@ -449,7 +465,7 @@ int av_opt_get(void *obj, const char *name, int search_flags, uint8_t **out_val)
         ret = snprintf(buf, sizeof(buf), "%dx%d", ((int *)dst)[0], ((int *)dst)[1]);
         break;
     case AV_OPT_TYPE_PIXEL_FMT:
-        ret = snprintf(buf, sizeof(buf), "%s", (char *)av_x_if_null(av_get_pix_fmt_name(*(enum PixelFormat *)dst), "?"));
+        ret = snprintf(buf, sizeof(buf), "%s", (char *)av_x_if_null(av_get_pix_fmt_name(*(enum PixelFormat *)dst), "none"));
         break;
     default:
         return AVERROR(EINVAL);
@@ -568,7 +584,7 @@ int av_opt_flag_is_set(void *obj, const char *field_name, const char *flag_name)
     if (!field || !flag || flag->type != AV_OPT_TYPE_CONST ||
         av_opt_get_int(obj, field_name, 0, &res) < 0)
         return 0;
-    return res & (int) flag->default_val.dbl;
+    return res & flag->default_val.i64;
 }
 
 static void opt_list(void *obj, void *av_log_obj, const char *unit,
@@ -633,6 +649,7 @@ static void opt_list(void *obj, void *av_log_obj, const char *unit,
         }
         av_log(av_log_obj, AV_LOG_INFO, "%c", (opt->flags & AV_OPT_FLAG_ENCODING_PARAM) ? 'E' : '.');
         av_log(av_log_obj, AV_LOG_INFO, "%c", (opt->flags & AV_OPT_FLAG_DECODING_PARAM) ? 'D' : '.');
+        av_log(av_log_obj, AV_LOG_INFO, "%c", (opt->flags & AV_OPT_FLAG_FILTERING_PARAM)? 'F' : '.');
         av_log(av_log_obj, AV_LOG_INFO, "%c", (opt->flags & AV_OPT_FLAG_VIDEO_PARAM   ) ? 'V' : '.');
         av_log(av_log_obj, AV_LOG_INFO, "%c", (opt->flags & AV_OPT_FLAG_AUDIO_PARAM   ) ? 'A' : '.');
         av_log(av_log_obj, AV_LOG_INFO, "%c", (opt->flags & AV_OPT_FLAG_SUBTITLE_PARAM) ? 'S' : '.');
@@ -678,16 +695,9 @@ void av_opt_set_defaults2(void *s, int mask, int flags)
                 /* Nothing to be done here */
             break;
             case AV_OPT_TYPE_FLAGS:
-            case AV_OPT_TYPE_INT: {
-                int val;
-                val = opt->default_val.dbl;
-                av_opt_set_int(s, opt->name, val, 0);
-            }
-            break;
+            case AV_OPT_TYPE_INT:
             case AV_OPT_TYPE_INT64:
-                if ((double)(opt->default_val.dbl+0.6) == opt->default_val.dbl)
-                    av_log(s, AV_LOG_DEBUG, "loss of precision in default of %s\n", opt->name);
-                av_opt_set_int(s, opt->name, opt->default_val.dbl, 0);
+                av_opt_set_int(s, opt->name, opt->default_val.i64, 0);
             break;
             case AV_OPT_TYPE_DOUBLE:
             case AV_OPT_TYPE_FLOAT: {
@@ -777,6 +787,94 @@ int av_set_options_string(void *ctx, const char *opts,
             opts++;
     }
 
+    return count;
+}
+
+#define WHITESPACES " \n\t"
+
+static int is_key_char(char c)
+{
+    return (unsigned)((c | 32) - 'a') < 26 ||
+           (unsigned)(c - '0') < 10 ||
+           c == '-' || c == '_' || c == '/' || c == '.';
+}
+
+/**
+ * Read a key from a string.
+ *
+ * The key consists of is_key_char characters and must be terminated by a
+ * character from the delim string; spaces are ignored. The key buffer must
+ * be 4 bytes larger than the longest acceptable key. If the key is too
+ * long, an ellipsis will be written at the end.
+ *
+ * @return  0 for success (even with ellipsis), <0 for failure
+ */
+static int get_key(const char **ropts, const char *delim, char *key, unsigned key_size)
+{
+    unsigned key_pos = 0;
+    const char *opts = *ropts;
+
+    opts += strspn(opts, WHITESPACES);
+    while (is_key_char(*opts)) {
+        key[key_pos++] = *opts;
+        if (key_pos == key_size)
+            key_pos--;
+        (opts)++;
+    }
+    opts += strspn(opts, WHITESPACES);
+    if (!*opts || !strchr(delim, *opts))
+        return AVERROR(EINVAL);
+    opts++;
+    key[key_pos++] = 0;
+    if (key_pos == key_size)
+        key[key_pos - 4] = key[key_pos - 3] = key[key_pos - 2] = '.';
+    *ropts = opts;
+    return 0;
+}
+
+int av_opt_set_from_string(void *ctx, const char *opts,
+                           const char *const *shorthand,
+                           const char *key_val_sep, const char *pairs_sep)
+{
+    int ret, count = 0;
+    const char *dummy_shorthand = NULL;
+    char key_buf[68], *value;
+    const char *key;
+
+    if (!opts)
+        return 0;
+    if (!shorthand)
+        shorthand = &dummy_shorthand;
+
+    while (*opts) {
+        if ((ret = get_key(&opts, key_val_sep, key_buf, sizeof(key_buf))) < 0) {
+            if (*shorthand) {
+                key = *(shorthand++);
+            } else {
+                av_log(ctx, AV_LOG_ERROR, "No option name near '%s'\n", opts);
+                return AVERROR(EINVAL);
+            }
+        } else {
+            key = key_buf;
+            while (*shorthand) /* discard all remaining shorthand */
+                shorthand++;
+        }
+
+        if (!(value = av_get_token(&opts, pairs_sep)))
+            return AVERROR(ENOMEM);
+        if (*opts && strchr(pairs_sep, *opts))
+            opts++;
+
+        av_log(ctx, AV_LOG_DEBUG, "Setting '%s' to value '%s'\n", key, value);
+        if ((ret = av_opt_set(ctx, key, value, 0)) < 0) {
+            if (ret == AVERROR_OPTION_NOT_FOUND)
+                av_log(ctx, AV_LOG_ERROR, "Option '%s' not found\n", key);
+            return ret;
+        }
+
+        av_free(value);
+        count++;
+    }
     return count;
 }
 
@@ -902,14 +1000,14 @@ typedef struct TestContext
 #define TEST_FLAG_MU   04
 
 static const AVOption test_options[]= {
-{"num",      "set num",        OFFSET(num),      AV_OPT_TYPE_INT,      {0},              0,        100                 },
-{"toggle",   "set toggle",     OFFSET(toggle),   AV_OPT_TYPE_INT,      {0},              0,        1                   },
-{"rational", "set rational",   OFFSET(rational), AV_OPT_TYPE_RATIONAL, {0},              0,        10                  },
+{"num",      "set num",        OFFSET(num),      AV_OPT_TYPE_INT,      {.i64 = 0},       0,        100                 },
+{"toggle",   "set toggle",     OFFSET(toggle),   AV_OPT_TYPE_INT,      {.i64 = 0},       0,        1                   },
+{"rational", "set rational",   OFFSET(rational), AV_OPT_TYPE_RATIONAL, {.dbl = 0},  0,        10                  },
 {"string",   "set string",     OFFSET(string),   AV_OPT_TYPE_STRING,   {0},              CHAR_MIN, CHAR_MAX            },
-{"flags",    "set flags",      OFFSET(flags),    AV_OPT_TYPE_FLAGS,    {0},              0,        INT_MAX, 0, "flags" },
-{"cool",     "set cool flag ", 0,                AV_OPT_TYPE_CONST,    {TEST_FLAG_COOL}, INT_MIN,  INT_MAX, 0, "flags" },
-{"lame",     "set lame flag ", 0,                AV_OPT_TYPE_CONST,    {TEST_FLAG_LAME}, INT_MIN,  INT_MAX, 0, "flags" },
-{"mu",       "set mu flag ",   0,                AV_OPT_TYPE_CONST,    {TEST_FLAG_MU},   INT_MIN,  INT_MAX, 0, "flags" },
+{"flags",    "set flags",      OFFSET(flags),    AV_OPT_TYPE_FLAGS,    {.i64 = 0},       0,        INT_MAX, 0, "flags" },
+{"cool",     "set cool flag ", 0,                AV_OPT_TYPE_CONST,    {.i64 = TEST_FLAG_COOL}, INT_MIN,  INT_MAX, 0, "flags" },
+{"lame",     "set lame flag ", 0,                AV_OPT_TYPE_CONST,    {.i64 = TEST_FLAG_LAME}, INT_MIN,  INT_MAX, 0, "flags" },
+{"mu",       "set mu flag ",   0,                AV_OPT_TYPE_CONST,    {.i64 = TEST_FLAG_MU},   INT_MIN,  INT_MAX, 0, "flags" },
 {"size",     "set size",       OFFSET(w),        AV_OPT_TYPE_IMAGE_SIZE,{0},             0,        0                   },
 {"pix_fmt",  "set pixfmt",     OFFSET(pix_fmt),  AV_OPT_TYPE_PIXEL_FMT,{0},              0,        0                   },
 {NULL},
@@ -970,6 +1068,37 @@ int main(void)
         for (i=0; i < FF_ARRAY_ELEMS(options); i++) {
             av_log(&test_ctx, AV_LOG_DEBUG, "Setting options string '%s'\n", options[i]);
             if (av_set_options_string(&test_ctx, options[i], "=", ":") < 0)
+                av_log(&test_ctx, AV_LOG_ERROR, "Error setting options string: '%s'\n", options[i]);
+            printf("\n");
+        }
+        av_freep(&test_ctx.string);
+    }
+
+    printf("\nTesting av_opt_set_from_string()\n");
+    {
+        TestContext test_ctx = { 0 };
+        const char *options[] = {
+            "",
+            "5",
+            "5:hello",
+            "5:hello:size=pal",
+            "5:size=pal:hello",
+            ":",
+            "=",
+            " 5 : hello : size = pal ",
+            "a_very_long_option_name_that_will_need_to_be_ellipsized_around_here=42"
+        };
+        const char *shorthand[] = { "num", "string", NULL };
+
+        test_ctx.class = &test_class;
+        av_opt_set_defaults(&test_ctx);
+        test_ctx.string = av_strdup("default");
+
+        av_log_set_level(AV_LOG_DEBUG);
+
+        for (i=0; i < FF_ARRAY_ELEMS(options); i++) {
+            av_log(&test_ctx, AV_LOG_DEBUG, "Setting options string '%s'\n", options[i]);
+            if (av_opt_set_from_string(&test_ctx, options[i], shorthand, "=", ":") < 0)
                 av_log(&test_ctx, AV_LOG_ERROR, "Error setting options string: '%s'\n", options[i]);
             printf("\n");
         }

@@ -18,11 +18,21 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "config.h"
+#if HAVE_UNISTD_H
 #include <unistd.h>             /* getopt */
+#endif
+#include <stdio.h>
+#include <string.h>
 
+#include "libavutil/mem.h"
 #include "libavutil/pixdesc.h"
 #include "libavutil/audioconvert.h"
 #include "libavfilter/avfiltergraph.h"
+
+#if !HAVE_GETOPT
+#include "compat/getopt.c"
+#endif
 
 static void usage(void)
 {
@@ -87,7 +97,7 @@ static void print_digraph(FILE *outfile, AVFilterGraph *graph)
                             link->sample_rate, buf,
                             link->time_base.num, link->time_base.den);
                 }
-                fprintf(outfile, "\n]");
+                fprintf(outfile, "\" ];\n");
             }
         }
     }

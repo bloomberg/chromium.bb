@@ -25,7 +25,11 @@
 
 /* #define DEBUG */
 
+#include <stdio.h>
+#include <string.h>
+
 #include "libavutil/imgutils.h"
+#include "libavutil/internal.h"
 #include "libavutil/pixdesc.h"
 #include "avfilter.h"
 #include "formats.h"
@@ -243,8 +247,7 @@ AVFilter avfilter_vf_fieldorder = {
                                               .get_video_buffer = get_video_buffer,
                                               .draw_slice       = draw_slice,
                                               .end_frame        = end_frame,
-                                              .min_perms        = AV_PERM_READ,
-                                              .rej_perms        = AV_PERM_REUSE2|AV_PERM_PRESERVE,},
+                                              .min_perms        = AV_PERM_READ | AV_PERM_PRESERVE },
                                             { .name = NULL}},
     .outputs       = (const AVFilterPad[]) {{ .name             = "default",
                                               .type             = AVMEDIA_TYPE_VIDEO, },

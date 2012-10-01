@@ -399,7 +399,6 @@ static int rv20_decode_picture_header(RVDecContext *rv)
 
     mb_pos = ff_h263_decode_mba(s);
 
-//av_log(s->avctx, AV_LOG_DEBUG, "%d\n", seq);
     seq |= s->time &~0x7FFF;
     if(seq - s->time >  0x4000) seq -= 0x8000;
     if(seq - s->time < -0x4000) seq += 0x8000;
@@ -418,11 +417,7 @@ static int rv20_decode_picture_header(RVDecContext *rv)
             ff_mpeg4_init_direct_mv(s);
         }
     }
-//    printf("%d %d %d %d %d\n", seq, (int)s->time, (int)s->last_non_b_time, s->pp_time, s->pb_time);
-/*for(i=0; i<32; i++){
-    av_log(s->avctx, AV_LOG_DEBUG, "%d", get_bits1(&s->gb));
-}
-av_log(s->avctx, AV_LOG_DEBUG, "\n");*/
+
     s->no_rounding= get_bits1(&s->gb);
 
     if(RV_GET_MINOR_VER(rv->sub_id) <= 1 && s->pict_type == AV_PICTURE_TYPE_B)
@@ -536,7 +531,7 @@ static int rv10_decode_packet(AVCodecContext *avctx,
 
     active_bits_size = buf_size * 8;
     init_get_bits(&s->gb, buf, FFMAX(buf_size, buf_size2) * 8);
-    if(s->codec_id ==CODEC_ID_RV10)
+    if(s->codec_id ==AV_CODEC_ID_RV10)
         mb_count = rv10_decode_picture_header(s);
     else
         mb_count = rv20_decode_picture_header(rv);
@@ -577,7 +572,7 @@ static int rv10_decode_packet(AVCodecContext *avctx,
     av_dlog(avctx, "qscale=%d\n", s->qscale);
 
     /* default quantization values */
-    if(s->codec_id== CODEC_ID_RV10){
+    if(s->codec_id== AV_CODEC_ID_RV10){
         if(s->mb_y==0) s->first_slice_line=1;
     }else{
         s->first_slice_line=1;
@@ -749,7 +744,7 @@ static int rv10_decode_frame(AVCodecContext *avctx,
 AVCodec ff_rv10_decoder = {
     .name           = "rv10",
     .type           = AVMEDIA_TYPE_VIDEO,
-    .id             = CODEC_ID_RV10,
+    .id             = AV_CODEC_ID_RV10,
     .priv_data_size = sizeof(RVDecContext),
     .init           = rv10_decode_init,
     .close          = rv10_decode_end,
@@ -763,7 +758,7 @@ AVCodec ff_rv10_decoder = {
 AVCodec ff_rv20_decoder = {
     .name           = "rv20",
     .type           = AVMEDIA_TYPE_VIDEO,
-    .id             = CODEC_ID_RV20,
+    .id             = AV_CODEC_ID_RV20,
     .priv_data_size = sizeof(RVDecContext),
     .init           = rv10_decode_init,
     .close          = rv10_decode_end,

@@ -836,7 +836,7 @@ static int decode_frame(AVCodecContext *avctx, void *data,
                                      cfrm->size + data_size + FF_INPUT_BUFFER_PADDING_SIZE);
         // explicit check needed as memcpy below might not catch a NULL
         if (!cfrm->data) {
-            av_log(f->avctx, AV_LOG_ERROR, "realloc falure");
+            av_log(f->avctx, AV_LOG_ERROR, "realloc falure\n");
             return -1;
         }
 
@@ -981,7 +981,7 @@ static av_cold int decode_end(AVCodecContext *avctx)
 AVCodec ff_fourxm_decoder = {
     .name           = "4xm",
     .type           = AVMEDIA_TYPE_VIDEO,
-    .id             = CODEC_ID_4XM,
+    .id             = AV_CODEC_ID_4XM,
     .priv_data_size = sizeof(FourXContext),
     .init           = decode_init,
     .close          = decode_end,

@@ -19,6 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "libavutil/common.h"
 #include "libavutil/pixdesc.h"
 #include "libavutil/rational.h"
 #include "libavutil/audioconvert.h"
@@ -155,7 +156,14 @@ void avfilter_link_free(AVFilterLink **link)
     if ((*link)->pool)
         ff_free_pool((*link)->pool);
 
+    avfilter_unref_bufferp(&(*link)->partial_buf);
+
     av_freep(link);
+}
+
+void avfilter_link_set_closed(AVFilterLink *link, int closed)
+{
+    link->closed = closed;
 }
 
 int avfilter_insert_filter(AVFilterLink *link, AVFilterContext *filt,
@@ -269,6 +277,8 @@ int avfilter_config_links(AVFilterContext *filter)
                         link->sample_rate = inlink->sample_rate;
                     if (!link->time_base.num && !link->time_base.den)
                         link->time_base = inlink->time_base;
+                    if (!link->channel_layout)
+                        link->channel_layout = inlink->channel_layout;
                 } else if (!link->sample_rate) {
                     av_log(link->src, AV_LOG_ERROR,
                            "Audio source filters must set their output link's "
@@ -324,6 +334,8 @@ int ff_request_frame(AVFilterLink *link)
     int ret = -1;
     FF_TPRINTF_START(NULL, request_frame); ff_tlog_link(NULL, link, 1);
 
+    if (link->closed)
+        return AVERROR_EOF;
     if (link->srcpad->request_frame)
         ret = link->srcpad->request_frame(link);
     else if (link->src->inputs[0])
@@ -334,6 +346,8 @@ int ff_request_frame(AVFilterLink *link)
         ff_filter_samples_framed(link, pbuf);
         return 0;
     }
+    if (ret == AVERROR_EOF)
+        link->closed = 1;
     return ret;
 }
 
@@ -422,6 +436,9 @@ static int pad_count(const AVFilterPad *pads)
 {
     int count;
 
+    if (!pads)
+        return 0;
+
     for(count = 0; pads->name; count ++) pads ++;
     return count;
 }
@@ -432,12 +449,47 @@ static const char *default_filter_name(void *filter_ctx)
     return ctx->name ? ctx->name : ctx->filter->name;
 }
 
+static void *filter_child_next(void *obj, void *prev)
+{
+    AVFilterContext *ctx = obj;
+    if (!prev && ctx->filter && ctx->filter->priv_class)
+        return ctx->priv;
+    return NULL;
+}
+
+static const AVClass *filter_child_class_next(const AVClass *prev)
+{
+    AVFilter **filter_ptr = NULL;
+
+    /* find the filter that corresponds to prev */
+    while (prev && *(filter_ptr = av_filter_next(filter_ptr)))
+        if ((*filter_ptr)->priv_class == prev)
+            break;
+
+    /* could not find filter corresponding to prev */
+    if (prev && !(*filter_ptr))
+        return NULL;
+
+    /* find next filter with specific options */
+    while (*(filter_ptr = av_filter_next(filter_ptr)))
+        if ((*filter_ptr)->priv_class)
+            return (*filter_ptr)->priv_class;
+    return NULL;
+}
+
 static const AVClass avfilter_class = {
     .class_name = "AVFilter",
     .item_name  = default_filter_name,
     .version    = LIBAVUTIL_VERSION_INT,
     .category   = AV_CLASS_CATEGORY_FILTER,
+    .child_next = filter_child_next,
+    .child_class_next = filter_child_class_next,
 };
+
+const AVClass *avfilter_get_class(void)
+{
+    return &avfilter_class;
+}
 
 int avfilter_open(AVFilterContext **filter_ctx, AVFilter *filter, const char *inst_name)
 {

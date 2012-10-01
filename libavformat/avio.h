@@ -171,6 +171,7 @@ int avio_check(const char *url, int flags);
  * @param opaque An opaque pointer to user-specific data.
  * @param read_packet  A function for refilling the buffer, may be NULL.
  * @param write_packet A function for writing the buffer contents, may be NULL.
+ *        The function may not change the input buffers content.
  * @param seek A function for seeking to specified byte position, may be NULL.
  *
  * @return Allocated AVIOContext or NULL on failure.
@@ -258,8 +259,13 @@ int url_feof(AVIOContext *s);
 /** @warning currently size is limited */
 int avio_printf(AVIOContext *s, const char *fmt, ...) av_printf_format(2, 3);
 
+/**
+ * Force flushing of buffered data to the output s.
+ *
+ * Force the buffered data to be immediately written to the output,
+ * without to wait to fill the internal buffer.
+ */
 void avio_flush(AVIOContext *s);
-
 
 /**
  * Read size bytes from AVIOContext into buf.
@@ -384,6 +390,9 @@ int avio_open2(AVIOContext **s, const char *url, int flags,
 /**
  * Close the resource accessed by the AVIOContext s and free it.
  * This function can only be used if s was opened by avio_open().
+ *
+ * The internal buffer is automatically flushed before closing the
+ * resource.
  *
  * @return 0 on success, an AVERROR < 0 on error.
  */

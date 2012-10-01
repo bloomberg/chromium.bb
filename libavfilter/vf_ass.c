@@ -51,16 +51,17 @@ typedef struct {
 } AssContext;
 
 #define OFFSET(x) offsetof(AssContext, x)
+#define FLAGS AV_OPT_FLAG_FILTERING_PARAM|AV_OPT_FLAG_VIDEO_PARAM
 
 static const AVOption ass_options[] = {
-    {"original_size",  "set the size of the original video (used to scale fonts)", OFFSET(original_w), AV_OPT_TYPE_IMAGE_SIZE, {.str = NULL},  CHAR_MIN, CHAR_MAX },
+    {"original_size",  "set the size of the original video (used to scale fonts)", OFFSET(original_w), AV_OPT_TYPE_IMAGE_SIZE, {.str = NULL},  CHAR_MIN, CHAR_MAX, FLAGS },
     {NULL},
 };
 
 AVFILTER_DEFINE_CLASS(ass);
 
 /* libass supports a log level ranging from 0 to 7 */
-int ass_libavfilter_log_level_map[] = {
+static const int ass_libavfilter_log_level_map[] = {
     AV_LOG_QUIET,               /* 0 */
     AV_LOG_PANIC,               /* 1 */
     AV_LOG_FATAL,               /* 2 */
@@ -94,10 +95,8 @@ static av_cold int init(AVFilterContext *ctx, const char *args)
         return AVERROR(EINVAL);
     }
 
-    if (*args++ == ':' && (ret = av_set_options_string(ass, args, "=", ":")) < 0) {
-        av_log(ctx, AV_LOG_ERROR, "Error parsing options string: '%s'\n", args);
+    if (*args++ == ':' && (ret = av_set_options_string(ass, args, "=", ":")) < 0)
         return ret;
-    }
 
     ass->library = ass_library_init();
     if (!ass->library) {
@@ -216,8 +215,7 @@ AVFilter avfilter_vf_ass = {
           .draw_slice       = null_draw_slice,
           .end_frame        = end_frame,
           .config_props     = config_input,
-          .min_perms        = AV_PERM_WRITE | AV_PERM_READ,
-          .rej_perms        = AV_PERM_PRESERVE },
+          .min_perms        = AV_PERM_WRITE | AV_PERM_READ },
         { .name = NULL}
     },
     .outputs = (const AVFilterPad[]) {
@@ -225,4 +223,5 @@ AVFilter avfilter_vf_ass = {
           .type             = AVMEDIA_TYPE_VIDEO, },
         { .name = NULL}
     },
+    .priv_class = &ass_class,
 };

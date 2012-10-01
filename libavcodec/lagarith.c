@@ -250,8 +250,8 @@ static void lag_pred_line(LagarithContext *l, uint8_t *buf,
 
     if (!line) {
         /* Left prediction only for first line */
-        L = l->dsp.add_hfyu_left_prediction(buf + 1, buf + 1,
-                                            width - 1, buf[0]);
+        L = l->dsp.add_hfyu_left_prediction(buf, buf,
+                                            width, 0);
     } else {
         /* Left pixel is actually prev_row[width] */
         L = buf[width - stride - 1];
@@ -277,11 +277,12 @@ static void lag_pred_line_yuy2(LagarithContext *l, uint8_t *buf,
     int L, TL;
 
     if (!line) {
-        if (is_luma) {
-            buf++;
-            width--;
-        }
-        l->dsp.add_hfyu_left_prediction(buf + 1, buf + 1, width - 1, buf[0]);
+        L= buf[0];
+        if (is_luma)
+            buf[0] = 0;
+        l->dsp.add_hfyu_left_prediction(buf, buf, width, 0);
+        if (is_luma)
+            buf[0] = L;
         return;
     }
     if (line == 1) {
@@ -294,14 +295,17 @@ static void lag_pred_line_yuy2(LagarithContext *l, uint8_t *buf,
             L += buf[i];
             buf[i] = L;
         }
-        buf   += HEAD;
-        width -= HEAD;
+        for (; i<width; i++) {
+            L     = mid_pred(L&0xFF, buf[i-stride], (L + buf[i-stride] - TL)&0xFF) + buf[i];
+            TL    = buf[i-stride];
+            buf[i]= L;
+        }
     } else {
         TL = buf[width - (2 * stride) - 1];
         L  = buf[width - stride - 1];
+        l->dsp.add_hfyu_median_prediction(buf, buf - stride, buf, width,
+                                        &L, &TL);
     }
-    l->dsp.add_hfyu_median_prediction(buf, buf - stride, buf, width,
-                                      &L, &TL);
 }
 
 static int lag_decode_line(LagarithContext *l, lag_rac *rac,
@@ -361,10 +365,11 @@ static int lag_decode_zero_run_line(LagarithContext *l, uint8_t *dst,
 output_zeros:
     if (l->zeros_rem) {
         count = FFMIN(l->zeros_rem, width - i);
-        if(end - dst < count) {
-            av_log(l->avctx, AV_LOG_ERROR, "too many zeros remaining\n");
+        if (end - dst < count) {
+            av_log(l->avctx, AV_LOG_ERROR, "Too many zeros remaining.\n");
             return AVERROR_INVALIDDATA;
         }
+
         memset(dst, 0, count);
         l->zeros_rem -= count;
         dst += count;
@@ -700,7 +705,7 @@ static av_cold int lag_decode_end(AVCodecContext *avctx)
 AVCodec ff_lagarith_decoder = {
     .name           = "lagarith",
     .type           = AVMEDIA_TYPE_VIDEO,
-    .id             = CODEC_ID_LAGARITH,
+    .id             = AV_CODEC_ID_LAGARITH,
     .priv_data_size = sizeof(LagarithContext),
     .init           = lag_decode_init,
     .close          = lag_decode_end,

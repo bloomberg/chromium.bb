@@ -20,7 +20,8 @@
 
 #include "libavutil/attributes.h"
 #include "libavutil/cpu.h"
-#include "libavutil/x86_cpu.h"
+#include "libavutil/mem.h"
+#include "libavutil/x86/asm.h"
 #include "libavfilter/gradfun.h"
 
 #if HAVE_INLINE_ASM
@@ -28,7 +29,7 @@
 DECLARE_ALIGNED(16, static const uint16_t, pw_7f)[8] = {0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F};
 DECLARE_ALIGNED(16, static const uint16_t, pw_ff)[8] = {0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
 
-#if HAVE_MMX2
+#if HAVE_MMXEXT_INLINE
 static void gradfun_filter_line_mmx2(uint8_t *dst, const uint8_t *src, const uint16_t *dc, int width, int thresh, const uint16_t *dithers)
 {
     intptr_t x;
@@ -76,7 +77,7 @@ static void gradfun_filter_line_mmx2(uint8_t *dst, const uint8_t *src, const uin
 }
 #endif
 
-#if HAVE_SSSE3
+#if HAVE_SSSE3_INLINE
 static void gradfun_filter_line_ssse3(uint8_t *dst, const uint8_t *src, const uint16_t *dc, int width, int thresh, const uint16_t *dithers)
 {
     intptr_t x;
@@ -121,9 +122,9 @@ static void gradfun_filter_line_ssse3(uint8_t *dst, const uint8_t *src, const ui
         :"memory"
     );
 }
-#endif // HAVE_SSSE3
+#endif /* HAVE_SSSE3_INLINE */
 
-#if HAVE_SSE
+#if HAVE_SSE2_INLINE
 static void gradfun_blur_line_sse2(uint16_t *dc, uint16_t *buf, const uint16_t *buf1, const uint8_t *src, int src_linesize, int width)
 {
 #define BLURV(load)\
@@ -164,7 +165,7 @@ static void gradfun_blur_line_sse2(uint16_t *dc, uint16_t *buf, const uint16_t *
         BLURV("movdqa");
     }
 }
-#endif // HAVE_SSE
+#endif /* HAVE_SSE2_INLINE */
 
 #endif /* HAVE_INLINE_ASM */
 
@@ -172,18 +173,16 @@ av_cold void ff_gradfun_init_x86(GradFunContext *gf)
 {
     int cpu_flags = av_get_cpu_flags();
 
-#if HAVE_INLINE_ASM
-#if HAVE_MMX2
-    if (cpu_flags & AV_CPU_FLAG_MMX2)
+#if HAVE_MMXEXT_INLINE
+    if (cpu_flags & AV_CPU_FLAG_MMXEXT)
         gf->filter_line = gradfun_filter_line_mmx2;
 #endif
-#if HAVE_SSSE3
+#if HAVE_SSSE3_INLINE
     if (cpu_flags & AV_CPU_FLAG_SSSE3)
         gf->filter_line = gradfun_filter_line_ssse3;
 #endif
-#if HAVE_SSE
+#if HAVE_SSE2_INLINE
     if (cpu_flags & AV_CPU_FLAG_SSE2)
         gf->blur_line = gradfun_blur_line_sse2;
 #endif
-#endif /* HAVE_INLINE_ASM */
 }

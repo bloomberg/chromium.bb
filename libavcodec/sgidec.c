@@ -49,12 +49,12 @@ static int expand_rle_row(SgiState *s, uint8_t *out_buf,
     unsigned char pixel, count;
     unsigned char *orig = out_buf;
 
-    while (1) {
+    while (out_buf < out_end) {
         if (bytestream2_get_bytes_left(&s->g) < 1)
             return AVERROR_INVALIDDATA;
         pixel = bytestream2_get_byteu(&s->g);
         if (!(count = (pixel & 0x7f))) {
-            return (out_buf - orig) / pixelstride;
+            break;
         }
 
         /* Check for buffer overflow. */
@@ -74,6 +74,7 @@ static int expand_rle_row(SgiState *s, uint8_t *out_buf,
             }
         }
     }
+    return (out_buf - orig) / pixelstride;
 }
 
 /**
@@ -101,7 +102,7 @@ static int read_rle_sgi(uint8_t *out_buf, SgiState *s)
             dest_row -= s->linesize;
             start_offset = bytestream2_get_be32(&g_table);
             bytestream2_seek(&s->g, start_offset, SEEK_SET);
-            if (expand_rle_row(s, dest_row + z, dest_row + FFABS(s->linesize),
+            if (expand_rle_row(s, dest_row + z, dest_row + s->width*s->depth,
                                s->depth) != s->width) {
                 return AVERROR_INVALIDDATA;
             }
@@ -261,7 +262,7 @@ static av_cold int sgi_end(AVCodecContext *avctx)
 AVCodec ff_sgi_decoder = {
     .name           = "sgi",
     .type           = AVMEDIA_TYPE_VIDEO,
-    .id             = CODEC_ID_SGI,
+    .id             = AV_CODEC_ID_SGI,
     .priv_data_size = sizeof(SgiState),
     .init           = sgi_init,
     .close          = sgi_end,

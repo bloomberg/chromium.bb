@@ -42,11 +42,12 @@ typedef struct {
 } SilenceDetectContext;
 
 #define OFFSET(x) offsetof(SilenceDetectContext, x)
+#define FLAGS AV_OPT_FLAG_FILTERING_PARAM|AV_OPT_FLAG_AUDIO_PARAM
 static const AVOption silencedetect_options[] = {
-    { "n",         "set noise tolerance",              OFFSET(noise_str), AV_OPT_TYPE_STRING, {.str="-60dB"}, CHAR_MIN, CHAR_MAX },
-    { "noise",     "set noise tolerance",              OFFSET(noise_str), AV_OPT_TYPE_STRING, {.str="-60dB"}, CHAR_MIN, CHAR_MAX },
-    { "d",         "set minimum duration in seconds",  OFFSET(duration),  AV_OPT_TYPE_INT,    {.dbl=2},    0, INT_MAX},
-    { "duration",  "set minimum duration in seconds",  OFFSET(duration),  AV_OPT_TYPE_INT,    {.dbl=2},    0, INT_MAX},
+    { "n",         "set noise tolerance",              OFFSET(noise_str), AV_OPT_TYPE_STRING, {.str="-60dB"}, CHAR_MIN, CHAR_MAX, FLAGS },
+    { "noise",     "set noise tolerance",              OFFSET(noise_str), AV_OPT_TYPE_STRING, {.str="-60dB"}, CHAR_MIN, CHAR_MAX, FLAGS },
+    { "d",         "set minimum duration in seconds",  OFFSET(duration),  AV_OPT_TYPE_INT,    {.i64=2},    0, INT_MAX, FLAGS },
+    { "duration",  "set minimum duration in seconds",  OFFSET(duration),  AV_OPT_TYPE_INT,    {.i64=2},    0, INT_MAX, FLAGS },
     { NULL },
 };
 
@@ -61,10 +62,8 @@ static av_cold int init(AVFilterContext *ctx, const char *args)
     silence->class = &silencedetect_class;
     av_opt_set_defaults(silence);
 
-    if ((ret = av_set_options_string(silence, args, "=", ":")) < 0) {
-        av_log(ctx, AV_LOG_ERROR, "Error parsing options string: '%s'\n", args);
+    if ((ret = av_set_options_string(silence, args, "=", ":")) < 0)
         return ret;
-    }
 
     silence->noise = strtod(silence->noise_str, &tail);
     if (!strcmp(tail, "dB")) {
@@ -167,4 +166,5 @@ AVFilter avfilter_af_silencedetect = {
           .type = AVMEDIA_TYPE_AUDIO, },
         { .name = NULL }
     },
+    .priv_class = &silencedetect_class,
 };

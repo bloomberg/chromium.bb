@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Michael Niedermayer (michaelni@gmx.at)
+ * Copyright (C) 2011-2012 Michael Niedermayer (michaelni@gmx.at)
  *
  * This file is part of libswresample
  *
@@ -29,13 +29,7 @@
 #include <inttypes.h>
 #include "libavutil/samplefmt.h"
 
-#define LIBSWRESAMPLE_VERSION_MAJOR 0
-#define LIBSWRESAMPLE_VERSION_MINOR 15
-#define LIBSWRESAMPLE_VERSION_MICRO 100
-
-#define LIBSWRESAMPLE_VERSION_INT  AV_VERSION_INT(LIBSWRESAMPLE_VERSION_MAJOR, \
-                                                  LIBSWRESAMPLE_VERSION_MINOR, \
-                                                  LIBSWRESAMPLE_VERSION_MICRO)
+#include "libswresample/version.h"
 
 #if LIBSWRESAMPLE_VERSION_MAJOR < 1
 #define SWR_CH_MAX 32   ///< Maximum number of channels

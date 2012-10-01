@@ -26,9 +26,15 @@
 
 #include <dlfcn.h>
 #include <frei0r.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include "config.h"
 #include "libavutil/avstring.h"
 #include "libavutil/imgutils.h"
+#include "libavutil/internal.h"
 #include "libavutil/mathematics.h"
+#include "libavutil/mem.h"
 #include "libavutil/parseutils.h"
 #include "avfilter.h"
 #include "formats.h"
@@ -250,7 +256,7 @@ static av_cold int frei0r_init(AVFilterContext *ctx,
         return AVERROR(EINVAL);
 
     if (f0r_init() < 0) {
-        av_log(ctx, AV_LOG_ERROR, "Could not init the frei0r module");
+        av_log(ctx, AV_LOG_ERROR, "Could not init the frei0r module\n");
         return AVERROR(EINVAL);
     }
 
@@ -310,7 +316,7 @@ static int config_input_props(AVFilterLink *inlink)
     Frei0rContext *frei0r = ctx->priv;
 
     if (!(frei0r->instance = frei0r->construct(inlink->w, inlink->h))) {
-        av_log(ctx, AV_LOG_ERROR, "Impossible to load frei0r instance");
+        av_log(ctx, AV_LOG_ERROR, "Impossible to load frei0r instance\n");
         return AVERROR(EINVAL);
     }
 
@@ -427,7 +433,7 @@ static int source_config_props(AVFilterLink *outlink)
     outlink->sample_aspect_ratio = (AVRational){1,1};
 
     if (!(frei0r->instance = frei0r->construct(outlink->w, outlink->h))) {
-        av_log(ctx, AV_LOG_ERROR, "Impossible to load frei0r instance");
+        av_log(ctx, AV_LOG_ERROR, "Impossible to load frei0r instance\n");
         return AVERROR(EINVAL);
     }
 
@@ -482,7 +488,7 @@ AVFilter avfilter_vsrc_frei0r_src = {
 
     .query_formats = query_formats,
 
-    .inputs    = (const AVFilterPad[]) {{ .name = NULL}},
+    .inputs    = NULL,
 
     .outputs   = (const AVFilterPad[]) {{ .name            = "default",
                                           .type            = AVMEDIA_TYPE_VIDEO,

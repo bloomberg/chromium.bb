@@ -60,20 +60,20 @@ av_cold int ff_mjpeg_encode_init(MpegEncContext *s)
     /* build all the huffman tables */
     ff_mjpeg_build_huffman_codes(m->huff_size_dc_luminance,
                                  m->huff_code_dc_luminance,
-                                 ff_mjpeg_bits_dc_luminance,
-                                 ff_mjpeg_val_dc);
+                                 avpriv_mjpeg_bits_dc_luminance,
+                                 avpriv_mjpeg_val_dc);
     ff_mjpeg_build_huffman_codes(m->huff_size_dc_chrominance,
                                  m->huff_code_dc_chrominance,
-                                 ff_mjpeg_bits_dc_chrominance,
-                                 ff_mjpeg_val_dc);
+                                 avpriv_mjpeg_bits_dc_chrominance,
+                                 avpriv_mjpeg_val_dc);
     ff_mjpeg_build_huffman_codes(m->huff_size_ac_luminance,
                                  m->huff_code_ac_luminance,
-                                 ff_mjpeg_bits_ac_luminance,
-                                 ff_mjpeg_val_ac_luminance);
+                                 avpriv_mjpeg_bits_ac_luminance,
+                                 avpriv_mjpeg_val_ac_luminance);
     ff_mjpeg_build_huffman_codes(m->huff_size_ac_chrominance,
                                  m->huff_code_ac_chrominance,
-                                 ff_mjpeg_bits_ac_chrominance,
-                                 ff_mjpeg_val_ac_chrominance);
+                                 avpriv_mjpeg_bits_ac_chrominance,
+                                 avpriv_mjpeg_val_ac_chrominance);
 
     s->mjpeg_ctx = m;
     return 0;
@@ -146,15 +146,15 @@ static void jpeg_table_header(MpegEncContext *s)
     ptr = put_bits_ptr(p);
     put_bits(p, 16, 0); /* patched later */
     size = 2;
-    size += put_huffman_table(s, 0, 0, ff_mjpeg_bits_dc_luminance,
-                              ff_mjpeg_val_dc);
-    size += put_huffman_table(s, 0, 1, ff_mjpeg_bits_dc_chrominance,
-                              ff_mjpeg_val_dc);
+    size += put_huffman_table(s, 0, 0, avpriv_mjpeg_bits_dc_luminance,
+                              avpriv_mjpeg_val_dc);
+    size += put_huffman_table(s, 0, 1, avpriv_mjpeg_bits_dc_chrominance,
+                              avpriv_mjpeg_val_dc);
 
-    size += put_huffman_table(s, 1, 0, ff_mjpeg_bits_ac_luminance,
-                              ff_mjpeg_val_ac_luminance);
-    size += put_huffman_table(s, 1, 1, ff_mjpeg_bits_ac_chrominance,
-                              ff_mjpeg_val_ac_chrominance);
+    size += put_huffman_table(s, 1, 0, avpriv_mjpeg_bits_ac_luminance,
+                              avpriv_mjpeg_val_ac_luminance);
+    size += put_huffman_table(s, 1, 1, avpriv_mjpeg_bits_ac_chrominance,
+                              avpriv_mjpeg_val_ac_chrominance);
     AV_WB16(ptr, size);
 }
 
@@ -169,7 +169,7 @@ static void jpeg_put_comments(MpegEncContext *s)
     /* JFIF header */
     put_marker(p, APP0);
     put_bits(p, 16, 16);
-    ff_put_string(p, "JFIF", 1); /* this puts the trailing zero-byte too */
+    avpriv_put_string(p, "JFIF", 1); /* this puts the trailing zero-byte too */
     put_bits(p, 16, 0x0102); /* v 1.02 */
     put_bits(p, 8, 0); /* units type: 0 - aspect ratio */
     put_bits(p, 16, s->avctx->sample_aspect_ratio.num);
@@ -184,7 +184,7 @@ static void jpeg_put_comments(MpegEncContext *s)
         flush_put_bits(p);
         ptr = put_bits_ptr(p);
         put_bits(p, 16, 0); /* patched later */
-        ff_put_string(p, LIBAVCODEC_IDENT, 1);
+        avpriv_put_string(p, LIBAVCODEC_IDENT, 1);
         size = strlen(LIBAVCODEC_IDENT)+3;
         AV_WB16(ptr, size);
     }
@@ -196,7 +196,7 @@ static void jpeg_put_comments(MpegEncContext *s)
         flush_put_bits(p);
         ptr = put_bits_ptr(p);
         put_bits(p, 16, 0); /* patched later */
-        ff_put_string(p, "CS=ITU601", 1);
+        avpriv_put_string(p, "CS=ITU601", 1);
         size = strlen("CS=ITU601")+3;
         AV_WB16(ptr, size);
     }
@@ -204,21 +204,21 @@ static void jpeg_put_comments(MpegEncContext *s)
 
 void ff_mjpeg_encode_picture_header(MpegEncContext *s)
 {
-    const int lossless= s->avctx->codec_id != CODEC_ID_MJPEG;
+    const int lossless= s->avctx->codec_id != AV_CODEC_ID_MJPEG;
     int i;
 
     put_marker(&s->pb, SOI);
 
     // hack for AMV mjpeg format
-    if(s->avctx->codec_id == CODEC_ID_AMV) goto end;
+    if(s->avctx->codec_id == AV_CODEC_ID_AMV) goto end;
 
     jpeg_put_comments(s);
 
     jpeg_table_header(s);
 
     switch(s->avctx->codec_id){
-    case CODEC_ID_MJPEG:  put_marker(&s->pb, SOF0 ); break;
-    case CODEC_ID_LJPEG:  put_marker(&s->pb, SOF3 ); break;
+    case AV_CODEC_ID_MJPEG:  put_marker(&s->pb, SOF0 ); break;
+    case AV_CODEC_ID_LJPEG:  put_marker(&s->pb, SOF3 ); break;
     default: av_assert0(0);
     }
 
@@ -282,8 +282,8 @@ void ff_mjpeg_encode_picture_header(MpegEncContext *s)
     put_bits(&s->pb, 8, lossless ? s->avctx->prediction_method+1 : 0); /* Ss (not used) */
 
     switch(s->avctx->codec_id){
-    case CODEC_ID_MJPEG:  put_bits(&s->pb, 8, 63); break; /* Se (not used) */
-    case CODEC_ID_LJPEG:  put_bits(&s->pb, 8,  0); break; /* not used */
+    case AV_CODEC_ID_MJPEG:  put_bits(&s->pb, 8, 63); break; /* Se (not used) */
+    case AV_CODEC_ID_LJPEG:  put_bits(&s->pb, 8,  0); break; /* not used */
     default: av_assert0(0);
     }
 
@@ -339,7 +339,6 @@ static void escape_FF(MpegEncContext *s, int start)
         int v= buf[i];
 
         if(v==0xFF){
-//printf("%d %d\n", i, ff_count);
             buf[i+ff_count]= 0;
             ff_count--;
         }
@@ -499,7 +498,7 @@ static int amv_encode_picture(AVCodecContext *avctx, AVPacket *pkt,
 AVCodec ff_mjpeg_encoder = {
     .name           = "mjpeg",
     .type           = AVMEDIA_TYPE_VIDEO,
-    .id             = CODEC_ID_MJPEG,
+    .id             = AV_CODEC_ID_MJPEG,
     .priv_data_size = sizeof(MpegEncContext),
     .init           = ff_MPV_encode_init,
     .encode2        = ff_MPV_encode_picture,
@@ -515,7 +514,7 @@ AVCodec ff_mjpeg_encoder = {
 AVCodec ff_amv_encoder = {
     .name           = "amv",
     .type           = AVMEDIA_TYPE_VIDEO,
-    .id             = CODEC_ID_AMV,
+    .id             = AV_CODEC_ID_AMV,
     .priv_data_size = sizeof(MpegEncContext),
     .init           = ff_MPV_encode_init,
     .encode2        = amv_encode_picture,

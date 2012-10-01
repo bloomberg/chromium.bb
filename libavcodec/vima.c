@@ -1,5 +1,5 @@
 /*
- * LucasArt VIMA decoder
+ * LucasArts VIMA decoder
  * Copyright (c) 2012 Paul B Mahol
  *
  * This file is part of FFmpeg.
@@ -141,10 +141,10 @@ static int decode_frame(AVCodecContext *avctx, void *data,
     int8_t         channel_hint[2];
     int            ret, chan, channels = 1;
 
-    init_get_bits(&gb, pkt->data, pkt->size * 8);
-
     if (pkt->size < 13)
         return AVERROR_INVALIDDATA;
+
+    init_get_bits(&gb, pkt->data, pkt->size * 8);
 
     samples = get_bits_long(&gb, 32);
     if (samples == 0xffffffff) {
@@ -227,7 +227,7 @@ static int decode_frame(AVCodecContext *avctx, void *data,
 AVCodec ff_vima_decoder = {
     .name           = "vima",
     .type           = AVMEDIA_TYPE_AUDIO,
-    .id             = CODEC_ID_VIMA,
+    .id             = AV_CODEC_ID_VIMA,
     .priv_data_size = sizeof(VimaContext),
     .init           = decode_init,
     .decode         = decode_frame,

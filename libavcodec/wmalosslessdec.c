@@ -23,6 +23,8 @@
  */
 
 #include "libavutil/attributes.h"
+#include "libavutil/avassert.h"
+
 #include "avcodec.h"
 #include "internal.h"
 #include "get_bits.h"
@@ -38,7 +40,7 @@
 #define MAX_ORDER             256
 
 #define WMALL_BLOCK_MIN_BITS    6                       ///< log2 of min block size
-#define WMALL_BLOCK_MAX_BITS   12                       ///< log2 of max block size
+#define WMALL_BLOCK_MAX_BITS   14                       ///< log2 of max block size
 #define WMALL_BLOCK_MAX_SIZE (1 << WMALL_BLOCK_MAX_BITS)    ///< maximum block size
 #define WMALL_BLOCK_SIZES    (WMALL_BLOCK_MAX_BITS - WMALL_BLOCK_MIN_BITS + 1) ///< possible block sizes
 
@@ -174,7 +176,7 @@ static av_cold int decode_init(AVCodecContext *avctx)
     WmallDecodeCtx *s  = avctx->priv_data;
     uint8_t *edata_ptr = avctx->extradata;
     unsigned int channel_mask;
-    int i, bits, log2_max_num_subframes, num_possible_block_sizes;
+    int i, bits, log2_max_num_subframes;
 
     s->avctx = avctx;
     init_put_bits(&s->pb, s->frame_data, MAX_FRAMESIZE);
@@ -213,12 +215,9 @@ static av_cold int decode_init(AVCodecContext *avctx)
     s->len_prefix  = s->decode_flags & 0x40;
 
     /* get frame len */
-    bits = ff_wma_get_frame_len_bits(avctx->sample_rate, 3, s->decode_flags);
-    if (bits > WMALL_BLOCK_MAX_BITS) {
-        av_log_missing_feature(avctx, "big-bits block sizes", 1);
-        return AVERROR_INVALIDDATA;
-    }
-    s->samples_per_frame = 1 << bits;
+    s->samples_per_frame = 1 << ff_wma_get_frame_len_bits(avctx->sample_rate,
+                                                          3, s->decode_flags);
+    av_assert0(s->samples_per_frame <= WMALL_BLOCK_MAX_SIZE);
 
     /* init previous block len */
     for (i = 0; i < avctx->channels; i++)
@@ -407,7 +406,8 @@ static void decode_ac_filter(WmallDecodeCtx *s)
     s->acfilter_scaling = get_bits(&s->gb, 4);
 
     for (i = 0; i < s->acfilter_order; i++)
-        s->acfilter_coeffs[i] = (s->acfilter_scaling ? get_bits(&s->gb, s->acfilter_scaling) : 0) + 1;
+        s->acfilter_coeffs[i] = (s->acfilter_scaling ?
+                                 get_bits(&s->gb, s->acfilter_scaling) : 0) + 1;
 }
 
 static void decode_mclms(WmallDecodeCtx *s)
@@ -1229,8 +1229,8 @@ static int decode_packet(AVCodecContext *avctx, void *data, int *got_frame_ptr,
             /* Reset number of saved bits so that the decoder does not start
              * to decode incomplete frames in the s->len_prefix == 0 case. */
             s->num_saved_bits = 0;
-            init_put_bits(&s->pb, s->frame_data, MAX_FRAMESIZE);
             s->packet_loss    = 0;
+            init_put_bits(&s->pb, s->frame_data, MAX_FRAMESIZE);
         }
 
     } else {
@@ -1279,17 +1279,17 @@ static void flush(AVCodecContext *avctx)
     s->packet_loss       = 1;
     s->packet_done       = 0;
     s->num_saved_bits    = 0;
-    init_put_bits(&s->pb, s->frame_data, MAX_FRAMESIZE);
     s->frame_offset      = 0;
     s->next_packet_start = 0;
     s->cdlms[0][0].order = 0;
     s->frame.nb_samples  = 0;
+    init_put_bits(&s->pb, s->frame_data, MAX_FRAMESIZE);
 }
 
 AVCodec ff_wmalossless_decoder = {
     .name           = "wmalossless",
     .type           = AVMEDIA_TYPE_AUDIO,
-    .id             = CODEC_ID_WMALOSSLESS,
+    .id             = AV_CODEC_ID_WMALOSSLESS,
     .priv_data_size = sizeof(WmallDecodeCtx),
     .init           = decode_init,
     .decode         = decode_packet,

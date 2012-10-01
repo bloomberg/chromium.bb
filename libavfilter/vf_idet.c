@@ -118,9 +118,6 @@ static void filter(AVFilterContext *ctx)
             delta          += idet->filter_line(cur-refs,  cur, cur+refs, w);
         }
     }
-#if HAVE_MMX
-    __asm__ volatile("emms \n\t" : : : "memory");
-#endif
 
     if      (alpha[0] / (float)alpha[1] > idet->interlace_threshold){
         type = TFF;
@@ -184,9 +181,9 @@ static int start_frame(AVFilterLink *link, AVFilterBufferRef *picref)
         return 0;
 
     if (!idet->prev)
-        idet->prev = avfilter_ref_buffer(idet->cur, AV_PERM_READ);
+        idet->prev = avfilter_ref_buffer(idet->cur, ~0);
 
-    return ff_start_frame(ctx->outputs[0], avfilter_ref_buffer(idet->cur, AV_PERM_READ));
+    return ff_start_frame(ctx->outputs[0], avfilter_ref_buffer(idet->cur, ~0));
 }
 
 static int end_frame(AVFilterLink *link)
@@ -327,11 +324,12 @@ AVFilter avfilter_vf_idet = {
                                           .start_frame      = start_frame,
                                           .draw_slice       = null_draw_slice,
                                           .end_frame        = end_frame,
-                                          .rej_perms        = AV_PERM_REUSE2, },
+                                          .min_perms        = AV_PERM_PRESERVE },
                                         { .name = NULL}},
 
     .outputs   = (const AVFilterPad[]) {{ .name       = "default",
                                           .type             = AVMEDIA_TYPE_VIDEO,
+                                          .rej_perms        = AV_PERM_WRITE,
                                           .poll_frame       = poll_frame,
                                           .request_frame    = request_frame, },
                                         { .name = NULL}},

@@ -27,6 +27,10 @@
  * Ported from MPlayer libmpcodecs/vf_blackframe.c.
  */
 
+#include <stdio.h>
+#include <inttypes.h>
+
+#include "libavutil/internal.h"
 #include "avfilter.h"
 #include "internal.h"
 #include "formats.h"
@@ -130,7 +134,7 @@ AVFilter avfilter_vf_blackframe = {
                                           .type             = AVMEDIA_TYPE_VIDEO,
                                           .draw_slice       = draw_slice,
                                           .get_video_buffer = ff_null_get_video_buffer,
-                                          .start_frame      = ff_null_start_frame_keep_ref,
+                                          .start_frame      = ff_null_start_frame,
                                           .end_frame        = end_frame, },
                                         { .name = NULL}},
 

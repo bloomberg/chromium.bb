@@ -68,19 +68,19 @@ static const AVOption mptestsrc_options[]= {
     { "duration", "set video duration", OFFSET(duration), AV_OPT_TYPE_STRING, {.str = NULL},      0, 0 },
     { "d",        "set video duration", OFFSET(duration), AV_OPT_TYPE_STRING, {.str = NULL},      0, 0 },
 
-    { "test", "set test to perform", OFFSET(test),  AV_OPT_TYPE_INT,   {.dbl=TEST_ALL}, 0, INT_MAX, 0, "test" },
-    { "t",    "set test to perform", OFFSET(test),  AV_OPT_TYPE_INT,   {.dbl=TEST_ALL}, 0, INT_MAX, 0, "test" },
-    { "dc_luma",     "", 0, AV_OPT_TYPE_CONST, {.dbl=TEST_DC_LUMA},     INT_MIN, INT_MAX, 0, "test" },
-    { "dc_chroma",   "", 0, AV_OPT_TYPE_CONST, {.dbl=TEST_DC_CHROMA},   INT_MIN, INT_MAX, 0, "test" },
-    { "freq_luma",   "", 0, AV_OPT_TYPE_CONST, {.dbl=TEST_FREQ_LUMA},   INT_MIN, INT_MAX, 0, "test" },
-    { "freq_chroma", "", 0, AV_OPT_TYPE_CONST, {.dbl=TEST_FREQ_CHROMA}, INT_MIN, INT_MAX, 0, "test" },
-    { "amp_luma",    "", 0, AV_OPT_TYPE_CONST, {.dbl=TEST_AMP_LUMA},    INT_MIN, INT_MAX, 0, "test" },
-    { "amp_chroma",  "", 0, AV_OPT_TYPE_CONST, {.dbl=TEST_AMP_CHROMA},  INT_MIN, INT_MAX, 0, "test" },
-    { "cbp",         "", 0, AV_OPT_TYPE_CONST, {.dbl=TEST_CBP},         INT_MIN, INT_MAX, 0, "test" },
-    { "mv",          "", 0, AV_OPT_TYPE_CONST, {.dbl=TEST_MV},          INT_MIN, INT_MAX, 0, "test" },
-    { "ring1",       "", 0, AV_OPT_TYPE_CONST, {.dbl=TEST_RING1},       INT_MIN, INT_MAX, 0, "test" },
-    { "ring2",       "", 0, AV_OPT_TYPE_CONST, {.dbl=TEST_RING2},       INT_MIN, INT_MAX, 0, "test" },
-    { "all",         "", 0, AV_OPT_TYPE_CONST, {.dbl=TEST_ALL},         INT_MIN, INT_MAX, 0, "test" },
+    { "test", "set test to perform", OFFSET(test),  AV_OPT_TYPE_INT,   {.i64=TEST_ALL}, 0, INT_MAX, 0, "test" },
+    { "t",    "set test to perform", OFFSET(test),  AV_OPT_TYPE_INT,   {.i64=TEST_ALL}, 0, INT_MAX, 0, "test" },
+    { "dc_luma",     "", 0, AV_OPT_TYPE_CONST, {.i64=TEST_DC_LUMA},     INT_MIN, INT_MAX, 0, "test" },
+    { "dc_chroma",   "", 0, AV_OPT_TYPE_CONST, {.i64=TEST_DC_CHROMA},   INT_MIN, INT_MAX, 0, "test" },
+    { "freq_luma",   "", 0, AV_OPT_TYPE_CONST, {.i64=TEST_FREQ_LUMA},   INT_MIN, INT_MAX, 0, "test" },
+    { "freq_chroma", "", 0, AV_OPT_TYPE_CONST, {.i64=TEST_FREQ_CHROMA}, INT_MIN, INT_MAX, 0, "test" },
+    { "amp_luma",    "", 0, AV_OPT_TYPE_CONST, {.i64=TEST_AMP_LUMA},    INT_MIN, INT_MAX, 0, "test" },
+    { "amp_chroma",  "", 0, AV_OPT_TYPE_CONST, {.i64=TEST_AMP_CHROMA},  INT_MIN, INT_MAX, 0, "test" },
+    { "cbp",         "", 0, AV_OPT_TYPE_CONST, {.i64=TEST_CBP},         INT_MIN, INT_MAX, 0, "test" },
+    { "mv",          "", 0, AV_OPT_TYPE_CONST, {.i64=TEST_MV},          INT_MIN, INT_MAX, 0, "test" },
+    { "ring1",       "", 0, AV_OPT_TYPE_CONST, {.i64=TEST_RING1},       INT_MIN, INT_MAX, 0, "test" },
+    { "ring2",       "", 0, AV_OPT_TYPE_CONST, {.i64=TEST_RING2},       INT_MIN, INT_MAX, 0, "test" },
+    { "all",         "", 0, AV_OPT_TYPE_CONST, {.i64=TEST_ALL},         INT_MIN, INT_MAX, 0, "test" },
 
     { NULL },
 };
@@ -266,10 +266,8 @@ static av_cold int init(AVFilterContext *ctx, const char *args)
     test->class = &mptestsrc_class;
     av_opt_set_defaults(test);
 
-    if ((ret = (av_set_options_string(test, args, "=", ":"))) < 0) {
-        av_log(ctx, AV_LOG_ERROR, "Error parsing options string: '%s'\n", args);
+    if ((ret = (av_set_options_string(test, args, "=", ":"))) < 0)
         return ret;
-    }
 
     if ((ret = av_parse_video_rate(&frame_rate_q, test->rate)) < 0) {
         av_log(ctx, AV_LOG_ERROR, "Invalid frame rate: '%s'\n", test->rate);

@@ -92,12 +92,10 @@ static int write_packet(AVFormatContext *s, AVPacket *pkt)
         avio_write(pb[0], pkt->data        , ysize);
         avio_write(pb[1], pkt->data + ysize, (pkt->size - ysize)/2);
         avio_write(pb[2], pkt->data + ysize +(pkt->size - ysize)/2, (pkt->size - ysize)/2);
-        avio_flush(pb[1]);
-        avio_flush(pb[2]);
         avio_close(pb[1]);
         avio_close(pb[2]);
     }else{
-        if(ff_guess_image2_codec(s->filename) == CODEC_ID_JPEG2000){
+        if(ff_guess_image2_codec(s->filename) == AV_CODEC_ID_JPEG2000){
             AVStream *st = s->streams[0];
             if(st->codec->extradata_size > 8 &&
                AV_RL32(st->codec->extradata+4) == MKTAG('j','p','2','h')){
@@ -136,8 +134,8 @@ static int write_packet(AVFormatContext *s, AVPacket *pkt)
 #define OFFSET(x) offsetof(VideoMuxData, x)
 #define ENC AV_OPT_FLAG_ENCODING_PARAM
 static const AVOption muxoptions[] = {
-    { "updatefirst",  "", OFFSET(updatefirst),  AV_OPT_TYPE_INT,    {.dbl = 0},    0, 1, ENC },
-    { "start_number", "first number in the sequence", OFFSET(img_number), AV_OPT_TYPE_INT, {.dbl = 1}, 1, INT_MAX, ENC },
+    { "updatefirst",  "", OFFSET(updatefirst),  AV_OPT_TYPE_INT,    {.i64 = 0},    0, 1, ENC },
+    { "start_number", "first number in the sequence", OFFSET(img_number), AV_OPT_TYPE_INT, {.i64 = 1}, 1, INT_MAX, ENC },
     { NULL },
 };
 
@@ -156,7 +154,7 @@ AVOutputFormat ff_image2_muxer = {
                       "ppm,sgi,tga,tif,tiff,jp2,j2c,xwd,sun,ras,rs,im1,im8,im24,"
                       "sunras,xbm",
     .priv_data_size = sizeof(VideoMuxData),
-    .video_codec    = CODEC_ID_MJPEG,
+    .video_codec    = AV_CODEC_ID_MJPEG,
     .write_header   = write_header,
     .write_packet   = write_packet,
     .flags          = AVFMT_NOTIMESTAMPS | AVFMT_NODIMENSIONS | AVFMT_NOFILE,
@@ -168,7 +166,7 @@ AVOutputFormat ff_image2pipe_muxer = {
     .name           = "image2pipe",
     .long_name      = NULL_IF_CONFIG_SMALL("piped image2 sequence"),
     .priv_data_size = sizeof(VideoMuxData),
-    .video_codec    = CODEC_ID_MJPEG,
+    .video_codec    = AV_CODEC_ID_MJPEG,
     .write_header   = write_header,
     .write_packet   = write_packet,
     .flags          = AVFMT_NOTIMESTAMPS | AVFMT_NODIMENSIONS

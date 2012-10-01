@@ -149,8 +149,8 @@ void FUNC(ff_emulated_edge_mc)(uint8_t *buf, const uint8_t *src, int linesize, i
     start_x= FFMAX(0, -src_x);
     end_y= FFMIN(block_h, h-src_y);
     end_x= FFMIN(block_w, w-src_x);
-    assert(start_y < end_y && block_h);
-    assert(start_x < end_x && block_w);
+    av_assert2(start_y < end_y && block_h);
+    av_assert2(start_x < end_x && block_w);
 
     w    = end_x - start_x;
     src += start_y*linesize + start_x*sizeof(pixel);
@@ -193,12 +193,12 @@ void FUNC(ff_emulated_edge_mc)(uint8_t *buf, const uint8_t *src, int linesize, i
 }
 
 #define DCTELEM_FUNCS(dctcoef, suffix)                                  \
-static void FUNCC(get_pixels ## suffix)(DCTELEM *restrict _block,       \
+static void FUNCC(get_pixels ## suffix)(DCTELEM *av_restrict _block,    \
                                         const uint8_t *_pixels,         \
                                         int line_size)                  \
 {                                                                       \
     const pixel *pixels = (const pixel *) _pixels;                      \
-    dctcoef *restrict block = (dctcoef *) _block;                       \
+    dctcoef *av_restrict block = (dctcoef *) _block;                    \
     int i;                                                              \
                                                                         \
     /* read the pixels */                                               \
@@ -216,12 +216,12 @@ static void FUNCC(get_pixels ## suffix)(DCTELEM *restrict _block,       \
     }                                                                   \
 }                                                                       \
                                                                         \
-static void FUNCC(add_pixels8 ## suffix)(uint8_t *restrict _pixels,     \
+static void FUNCC(add_pixels8 ## suffix)(uint8_t *av_restrict _pixels,  \
                                          DCTELEM *_block,               \
                                          int line_size)                 \
 {                                                                       \
     int i;                                                              \
-    pixel *restrict pixels = (pixel *restrict)_pixels;                  \
+    pixel *av_restrict pixels = (pixel *av_restrict)_pixels;            \
     dctcoef *block = (dctcoef*)_block;                                  \
     line_size /= sizeof(pixel);                                         \
                                                                         \
@@ -239,12 +239,12 @@ static void FUNCC(add_pixels8 ## suffix)(uint8_t *restrict _pixels,     \
     }                                                                   \
 }                                                                       \
                                                                         \
-static void FUNCC(add_pixels4 ## suffix)(uint8_t *restrict _pixels,     \
+static void FUNCC(add_pixels4 ## suffix)(uint8_t *av_restrict _pixels,  \
                                          DCTELEM *_block,               \
                                          int line_size)                 \
 {                                                                       \
     int i;                                                              \
-    pixel *restrict pixels = (pixel *restrict)_pixels;                  \
+    pixel *av_restrict pixels = (pixel *av_restrict)_pixels;            \
     dctcoef *block = (dctcoef*)_block;                                  \
     line_size /= sizeof(pixel);                                         \
                                                                         \
@@ -711,7 +711,7 @@ static void FUNCC(OPNAME ## h264_chroma_mc4)(uint8_t *p_dst/*align 8*/, uint8_t 
     int i;\
     stride >>= sizeof(pixel)-1;\
     \
-    assert(x<8 && y<8 && x>=0 && y>=0);\
+    av_assert2(x<8 && y<8 && x>=0 && y>=0);\
 \
     if(D){\
         for(i=0; i<h; i++){\
@@ -746,7 +746,7 @@ static void FUNCC(OPNAME ## h264_chroma_mc8)(uint8_t *p_dst/*align 8*/, uint8_t 
     int i;\
     stride >>= sizeof(pixel)-1;\
     \
-    assert(x<8 && y<8 && x>=0 && y>=0);\
+    av_assert2(x<8 && y<8 && x>=0 && y>=0);\
 \
     if(D){\
         for(i=0; i<h; i++){\

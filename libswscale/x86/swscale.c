@@ -25,7 +25,8 @@
 #include "libavutil/attributes.h"
 #include "libavutil/avassert.h"
 #include "libavutil/intreadwrite.h"
-#include "libavutil/x86_cpu.h"
+#include "libavutil/x86/asm.h"
+#include "libavutil/x86/cpu.h"
 #include "libavutil/cpu.h"
 #include "libavutil/pixdesc.h"
 
@@ -72,18 +73,18 @@ DECLARE_ALIGNED(8, const uint64_t, ff_w1111)        = 0x0001000100010001ULL;
 
 
 //MMX versions
-#if HAVE_MMX
+#if HAVE_MMX_INLINE
 #undef RENAME
-#define COMPILE_TEMPLATE_MMX2 0
+#define COMPILE_TEMPLATE_MMXEXT 0
 #define RENAME(a) a ## _MMX
 #include "swscale_template.c"
 #endif
 
 //MMX2 versions
-#if HAVE_MMX2
+#if HAVE_MMXEXT_INLINE
 #undef RENAME
-#undef COMPILE_TEMPLATE_MMX2
-#define COMPILE_TEMPLATE_MMX2 1
+#undef COMPILE_TEMPLATE_MMXEXT
+#define COMPILE_TEMPLATE_MMXEXT 1
 #define RENAME(a) a ## _MMX2
 #include "swscale_template.c"
 #endif
@@ -187,7 +188,7 @@ void updateMMXDitherTables(SwsContext *c, int dstY, int lumBufIndex, int chrBufI
                 *(const void**)&lumMmxFilter[4*i+0]= lumSrcPtr[i];
                 lumMmxFilter[4*i+2]=
                 lumMmxFilter[4*i+3]=
-                ((uint16_t)vLumFilter[dstY*vLumFilterSize + i])*0x10001;
+                ((uint16_t)vLumFilter[dstY*vLumFilterSize + i])*0x10001U;
                 if (CONFIG_SWSCALE_ALPHA && alpPixBuf) {
                     *(const void**)&alpMmxFilter[4*i+0]= alpSrcPtr[i];
                     alpMmxFilter[4*i+2]=
@@ -198,13 +199,13 @@ void updateMMXDitherTables(SwsContext *c, int dstY, int lumBufIndex, int chrBufI
                 *(const void**)&chrMmxFilter[4*i+0]= chrUSrcPtr[i];
                 chrMmxFilter[4*i+2]=
                 chrMmxFilter[4*i+3]=
-                ((uint16_t)vChrFilter[chrDstY*vChrFilterSize + i])*0x10001;
+                ((uint16_t)vChrFilter[chrDstY*vChrFilterSize + i])*0x10001U;
             }
         }
     }
 }
 
-#if HAVE_MMX2
+#if HAVE_MMXEXT
 static void yuv2yuvX_sse3(const int16_t *filter, int filterSize,
                            const int16_t **src, uint8_t *dest, int dstW,
                            const uint8_t *dither, int offset)
@@ -341,11 +342,14 @@ VSCALE_FUNCS(avx, avx);
 
 #define INPUT_Y_FUNC(fmt, opt) \
 extern void ff_ ## fmt ## ToY_  ## opt(uint8_t *dst, const uint8_t *src, \
+                                       const uint8_t *unused1, const uint8_t *unused2, \
                                        int w, uint32_t *unused)
 #define INPUT_UV_FUNC(fmt, opt) \
 extern void ff_ ## fmt ## ToUV_ ## opt(uint8_t *dstU, uint8_t *dstV, \
-                                       const uint8_t *src, const uint8_t *unused1, \
-                                       int w, uint32_t *unused2)
+                                       const uint8_t *unused0, \
+                                       const uint8_t *src1, \
+                                       const uint8_t *src2, \
+                                       int w, uint32_t *unused)
 #define INPUT_FUNC(fmt, opt) \
     INPUT_Y_FUNC(fmt, opt); \
     INPUT_UV_FUNC(fmt, opt)
@@ -375,8 +379,8 @@ av_cold void ff_sws_init_swScale_mmx(SwsContext *c)
 #if HAVE_INLINE_ASM
     if (cpu_flags & AV_CPU_FLAG_MMX)
         sws_init_swScale_MMX(c);
-#if HAVE_MMX2
-    if (cpu_flags & AV_CPU_FLAG_MMX2)
+#if HAVE_MMXEXT_INLINE
+    if (cpu_flags & AV_CPU_FLAG_MMXEXT)
         sws_init_swScale_MMX2(c);
     if (cpu_flags & AV_CPU_FLAG_SSE3){
         if(c->use_mmx_vfilter && !(c->flags & SWS_ACCURATE_RND))
@@ -385,7 +389,6 @@ av_cold void ff_sws_init_swScale_mmx(SwsContext *c)
 #endif
 #endif /* HAVE_INLINE_ASM */
 
-#if HAVE_YASM
 #define ASSIGN_SCALE_FUNC2(hscalefn, filtersize, opt1, opt2) do { \
     if (c->srcBpc == 8) { \
         hscalefn = c->dstBpc <= 14 ? ff_hscale8to15_ ## filtersize ## _ ## opt2 : \
@@ -436,10 +439,10 @@ switch(c->dstBpc){ \
                 c->chrToYV12 = ff_ ## x ## ToUV_ ## opt; \
             break
 #if ARCH_X86_32
-    if (cpu_flags & AV_CPU_FLAG_MMX) {
+    if (EXTERNAL_MMX(cpu_flags)) {
         ASSIGN_MMX_SCALE_FUNC(c->hyScale, c->hLumFilterSize, mmx, mmx);
         ASSIGN_MMX_SCALE_FUNC(c->hcScale, c->hChrFilterSize, mmx, mmx);
-        ASSIGN_VSCALE_FUNC(c->yuv2plane1, mmx, mmx2, cpu_flags & AV_CPU_FLAG_MMX2);
+        ASSIGN_VSCALE_FUNC(c->yuv2plane1, mmx, mmx2, cpu_flags & AV_CPU_FLAG_MMXEXT);
 
         switch (c->srcFormat) {
         case PIX_FMT_Y400A:
@@ -471,10 +474,10 @@ switch(c->dstBpc){ \
             break;
         }
     }
-    if (cpu_flags & AV_CPU_FLAG_MMX2) {
+    if (EXTERNAL_MMXEXT(cpu_flags)) {
         ASSIGN_VSCALEX_FUNC(c->yuv2planeX, mmx2, , 1);
     }
-#endif
+#endif /* ARCH_X86_32 */
 #define ASSIGN_SSE_SCALE_FUNC(hscalefn, filtersize, opt1, opt2) \
     switch (filtersize) { \
     case 4:  ASSIGN_SCALE_FUNC2(hscalefn, 4, opt1, opt2); break; \
@@ -483,7 +486,7 @@ switch(c->dstBpc){ \
              else                ASSIGN_SCALE_FUNC2(hscalefn, X8, opt1, opt2); \
              break; \
     }
-    if (cpu_flags & AV_CPU_FLAG_SSE2) {
+    if (EXTERNAL_SSE2(cpu_flags)) {
         ASSIGN_SSE_SCALE_FUNC(c->hyScale, c->hLumFilterSize, sse2, sse2);
         ASSIGN_SSE_SCALE_FUNC(c->hcScale, c->hChrFilterSize, sse2, sse2);
         ASSIGN_VSCALEX_FUNC(c->yuv2planeX, sse2, ,
@@ -520,7 +523,7 @@ switch(c->dstBpc){ \
             break;
         }
     }
-    if (cpu_flags & AV_CPU_FLAG_SSSE3) {
+    if (EXTERNAL_SSSE3(cpu_flags)) {
         ASSIGN_SSE_SCALE_FUNC(c->hyScale, c->hLumFilterSize, ssse3, ssse3);
         ASSIGN_SSE_SCALE_FUNC(c->hcScale, c->hChrFilterSize, ssse3, ssse3);
         switch (c->srcFormat) {
@@ -530,7 +533,7 @@ switch(c->dstBpc){ \
             break;
         }
     }
-    if (cpu_flags & AV_CPU_FLAG_SSE4) {
+    if (EXTERNAL_SSE4(cpu_flags)) {
         /* Xto15 don't need special sse4 functions */
         ASSIGN_SSE_SCALE_FUNC(c->hyScale, c->hLumFilterSize, sse4, ssse3);
         ASSIGN_SSE_SCALE_FUNC(c->hcScale, c->hChrFilterSize, sse4, ssse3);
@@ -541,7 +544,7 @@ switch(c->dstBpc){ \
             c->yuv2plane1 = ff_yuv2plane1_16_sse4;
     }
 
-    if (HAVE_AVX && cpu_flags & AV_CPU_FLAG_AVX) {
+    if (EXTERNAL_AVX(cpu_flags)) {
         ASSIGN_VSCALEX_FUNC(c->yuv2planeX, avx, ,
                             HAVE_ALIGNED_STACK || ARCH_X86_64);
         ASSIGN_VSCALE_FUNC(c->yuv2plane1, avx, avx, 1);
@@ -569,5 +572,4 @@ switch(c->dstBpc){ \
             break;
         }
     }
-#endif
 }

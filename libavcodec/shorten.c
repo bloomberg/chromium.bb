@@ -466,7 +466,7 @@ static int shorten_decode_frame(AVCodecContext *avctx, void *data,
 
     s->cur_chan = 0;
     while (s->cur_chan < s->channels) {
-        int cmd;
+        unsigned int cmd;
         int len;
 
         if (get_bits_left(&s->gb) < 3+FNSIZE) {
@@ -648,7 +648,7 @@ static av_cold int shorten_decode_close(AVCodecContext *avctx)
 AVCodec ff_shorten_decoder = {
     .name           = "shorten",
     .type           = AVMEDIA_TYPE_AUDIO,
-    .id             = CODEC_ID_SHORTEN,
+    .id             = AV_CODEC_ID_SHORTEN,
     .priv_data_size = sizeof(ShortenContext),
     .init           = shorten_decode_init,
     .close          = shorten_decode_close,

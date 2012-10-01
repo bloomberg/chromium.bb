@@ -21,29 +21,11 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
+#include "avassert.h"
 #include "bprint.h"
 #include "common.h"
 #include "error.h"
 #include "mem.h"
-
-#if defined(_WIN32)
-
-static int vsnprintf_fixed(char *s, size_t n, const char *format, va_list va)
-{
-    va_list va2;
-    int r;
-
-    va_copy(va2, va);
-    r = vsnprintf(s, n, format, va2);
-    va_end(va2);
-    if (r == -1)
-        r = _vscprintf(format, va);
-    return r;
-}
-
-#define vsnprintf vsnprintf_fixed
-
-#endif
 
 #define av_bprint_room(buf) ((buf)->size - FFMIN((buf)->len, (buf)->size))
 #define av_bprint_is_allocated(buf) ((buf)->str != (buf)->reserved_internal_buffer)
@@ -189,7 +171,10 @@ int av_bprint_finalize(AVBPrint *buf, char **ret_str)
 
 static void bprint_pascal(AVBPrint *b, unsigned size)
 {
-    unsigned p[size + 1], i, j;
+    unsigned i, j;
+    unsigned p[42];
+
+    av_assert0(size < FF_ARRAY_ELEMS(p));
 
     p[0] = 1;
     av_bprintf(b, "%8d\n", 1);

@@ -148,7 +148,7 @@ static int bintext_read_header(AVFormatContext *s)
     AVStream *st = init_stream(s);
     if (!st)
         return AVERROR(ENOMEM);
-    st->codec->codec_id    = CODEC_ID_BINTEXT;
+    st->codec->codec_id    = AV_CODEC_ID_BINTEXT;
 
     st->codec->extradata_size = 2;
     st->codec->extradata = av_malloc(st->codec->extradata_size + FF_INPUT_BUFFER_PADDING_SIZE);
@@ -169,7 +169,7 @@ static int bintext_read_header(AVFormatContext *s)
         avio_seek(pb, 0, SEEK_SET);
     }
     return 0;
-};
+}
 #endif /* CONFIG_BINTEXT_DEMUXER */
 
 #if CONFIG_XBIN_DEMUXER
@@ -206,7 +206,7 @@ static int xbin_read_header(AVFormatContext *s)
         st->codec->extradata_size += 48;
     if ((flags & BINTEXT_FONT))
         st->codec->extradata_size += fontheight * (flags & 0x10 ? 512 : 256);
-    st->codec->codec_id    = flags & 4 ? CODEC_ID_XBIN : CODEC_ID_BINTEXT;
+    st->codec->codec_id    = flags & 4 ? AV_CODEC_ID_XBIN : AV_CODEC_ID_BINTEXT;
 
     st->codec->extradata = av_malloc(st->codec->extradata_size + FF_INPUT_BUFFER_PADDING_SIZE);
     if (!st->codec->extradata)
@@ -239,7 +239,7 @@ static int adf_read_header(AVFormatContext *s)
     st = init_stream(s);
     if (!st)
         return AVERROR(ENOMEM);
-    st->codec->codec_id    = CODEC_ID_BINTEXT;
+    st->codec->codec_id    = AV_CODEC_ID_BINTEXT;
 
     st->codec->extradata_size = 2 + 48 + 4096;
     st->codec->extradata = av_malloc(st->codec->extradata_size + FF_INPUT_BUFFER_PADDING_SIZE);
@@ -296,7 +296,7 @@ static int idf_read_header(AVFormatContext *s)
     st = init_stream(s);
     if (!st)
         return AVERROR(ENOMEM);
-    st->codec->codec_id    = CODEC_ID_IDF;
+    st->codec->codec_id    = AV_CODEC_ID_IDF;
 
     st->codec->extradata_size = 2 + 48 + 4096;
     st->codec->extradata = av_malloc(st->codec->extradata_size + FF_INPUT_BUFFER_PADDING_SIZE);
@@ -345,7 +345,7 @@ static int read_packet(AVFormatContext *s,
 
 #define OFFSET(x) offsetof(BinDemuxContext, x)
 static const AVOption options[] = {
-    { "linespeed", "set simulated line speed (bytes per second)", OFFSET(chars_per_frame), AV_OPT_TYPE_INT, {.dbl = 6000}, 1, INT_MAX, AV_OPT_FLAG_DECODING_PARAM},
+    { "linespeed", "set simulated line speed (bytes per second)", OFFSET(chars_per_frame), AV_OPT_TYPE_INT, {.i64 = 6000}, 1, INT_MAX, AV_OPT_FLAG_DECODING_PARAM},
     { "video_size", "set video size, such as 640x480 or hd720.", OFFSET(video_size), AV_OPT_TYPE_STRING, {.str = NULL}, 0, 0, AV_OPT_FLAG_DECODING_PARAM },
     { "framerate", "set framerate (frames per second)", OFFSET(framerate), AV_OPT_TYPE_STRING, {.str = "25"}, 0, 0, AV_OPT_FLAG_DECODING_PARAM },
     { NULL },

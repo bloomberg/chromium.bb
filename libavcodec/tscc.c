@@ -79,12 +79,9 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *data_size, AVPac
     int zret; // Zlib return code
     int ret, len = buf_size;
 
-    if(c->pic.data[0])
-            avctx->release_buffer(avctx, &c->pic);
-
     c->pic.reference = 3;
     c->pic.buffer_hints = FF_BUFFER_HINTS_VALID;
-    if((ret = avctx->get_buffer(avctx, &c->pic)) < 0){
+    if((ret = avctx->reget_buffer(avctx, &c->pic)) < 0){
         av_log(avctx, AV_LOG_ERROR, "get_buffer() failed\n");
         return ret;
     }
@@ -206,7 +203,7 @@ static av_cold int decode_end(AVCodecContext *avctx)
 AVCodec ff_tscc_decoder = {
     .name           = "camtasia",
     .type           = AVMEDIA_TYPE_VIDEO,
-    .id             = CODEC_ID_TSCC,
+    .id             = AV_CODEC_ID_TSCC,
     .priv_data_size = sizeof(CamtasiaContext),
     .init           = decode_init,
     .close          = decode_end,

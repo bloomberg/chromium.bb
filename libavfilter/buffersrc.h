@@ -40,6 +40,11 @@ enum {
      */
     AV_BUFFERSRC_FLAG_NO_COPY = 2,
 
+    /**
+     * Immediately push the frame to the output.
+     */
+    AV_BUFFERSRC_FLAG_PUSH = 4,
+
 };
 
 /**
@@ -85,6 +90,6 @@ int av_buffersrc_buffer(AVFilterContext *s, AVFilterBufferRef *buf);
  * @warning frame data will be memcpy()ed, which may be a big performance
  *          hit. Use av_buffersrc_buffer() to avoid copying the data.
  */
-int av_buffersrc_write_frame(AVFilterContext *s, AVFrame *frame);
+int av_buffersrc_write_frame(AVFilterContext *s, const AVFrame *frame);
 
 #endif /* AVFILTER_BUFFERSRC_H */

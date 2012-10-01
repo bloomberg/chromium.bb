@@ -120,8 +120,11 @@ static int avisynth_read_header(AVFormatContext *s)
                   st = avformat_new_stream(s, NULL);
                   st->id = id;
                   st->codec->codec_type = AVMEDIA_TYPE_VIDEO;
-                  st->r_frame_rate.num = stream->info.dwRate;
-                  st->r_frame_rate.den = stream->info.dwScale;
+                  st->avg_frame_rate.num = stream->info.dwRate;
+                  st->avg_frame_rate.den = stream->info.dwScale;
+#if FF_API_R_FRAME_RATE
+                  st->r_frame_rate = st->avg_frame_rate;
+#endif
 
                   st->codec->width = imgfmt.bmiHeader.biWidth;
                   st->codec->height = imgfmt.bmiHeader.biHeight;
@@ -130,7 +133,7 @@ static int avisynth_read_header(AVFormatContext *s)
                   st->codec->bit_rate = (uint64_t)stream->info.dwSampleSize * (uint64_t)stream->info.dwRate * 8 / (uint64_t)stream->info.dwScale;
                   st->codec->codec_tag = imgfmt.bmiHeader.biCompression;
                   st->codec->codec_id = ff_codec_get_id(ff_codec_bmp_tags, imgfmt.bmiHeader.biCompression);
-                  if (st->codec->codec_id == CODEC_ID_RAWVIDEO && imgfmt.bmiHeader.biCompression== BI_RGB) {
+                  if (st->codec->codec_id == AV_CODEC_ID_RAWVIDEO && imgfmt.bmiHeader.biCompression== BI_RGB) {
                     st->codec->extradata = av_malloc(9 + FF_INPUT_BUFFER_PADDING_SIZE);
                     if (st->codec->extradata) {
                       st->codec->extradata_size = 9;

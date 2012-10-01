@@ -227,12 +227,12 @@ static int cinvideo_decode_frame(AVCodecContext *avctx,
         if (palette_colors_count > 256)
             return AVERROR_INVALIDDATA;
         for (i = 0; i < palette_colors_count; ++i) {
-            cin->palette[i] = 0xFF << 24 | bytestream_get_le24(&buf);
+            cin->palette[i] = 0xFFU << 24 | bytestream_get_le24(&buf);
             bitmap_frame_size -= 3;
         }
     } else {
         for (i = 0; i < palette_colors_count; ++i) {
-            cin->palette[buf[0]] = 0xFF << 24 | AV_RL24(buf+1);
+            cin->palette[buf[0]] = 0xFFU << 24 | AV_RL24(buf+1);
             buf += 4;
             bitmap_frame_size -= 4;
         }
@@ -381,7 +381,7 @@ static int cinaudio_decode_frame(AVCodecContext *avctx, void *data,
 AVCodec ff_dsicinvideo_decoder = {
     .name           = "dsicinvideo",
     .type           = AVMEDIA_TYPE_VIDEO,
-    .id             = CODEC_ID_DSICINVIDEO,
+    .id             = AV_CODEC_ID_DSICINVIDEO,
     .priv_data_size = sizeof(CinVideoContext),
     .init           = cinvideo_decode_init,
     .close          = cinvideo_decode_end,
@@ -393,7 +393,7 @@ AVCodec ff_dsicinvideo_decoder = {
 AVCodec ff_dsicinaudio_decoder = {
     .name           = "dsicinaudio",
     .type           = AVMEDIA_TYPE_AUDIO,
-    .id             = CODEC_ID_DSICINAUDIO,
+    .id             = AV_CODEC_ID_DSICINAUDIO,
     .priv_data_size = sizeof(CinAudioContext),
     .init           = cinaudio_decode_init,
     .decode         = cinaudio_decode_frame,

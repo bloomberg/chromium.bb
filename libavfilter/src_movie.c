@@ -70,21 +70,20 @@ typedef struct {
 } MovieContext;
 
 #define OFFSET(x) offsetof(MovieContext, x)
+#define F AV_OPT_FLAG_FILTERING_PARAM
 
 static const AVOption movie_options[]= {
-{"format_name",  "set format name",         OFFSET(format_name),  AV_OPT_TYPE_STRING, {.str =  0},  CHAR_MIN, CHAR_MAX },
-{"f",            "set format name",         OFFSET(format_name),  AV_OPT_TYPE_STRING, {.str =  0},  CHAR_MIN, CHAR_MAX },
-{"streams",      "set streams",             OFFSET(stream_specs), AV_OPT_TYPE_STRING, {.str =  0},  CHAR_MAX, CHAR_MAX },
-{"s",            "set streams",             OFFSET(stream_specs), AV_OPT_TYPE_STRING, {.str =  0},  CHAR_MAX, CHAR_MAX },
-{"si",           "set stream index",        OFFSET(stream_index), AV_OPT_TYPE_INT,    {.dbl = -1},  -1,       INT_MAX  },
-{"stream_index", "set stream index",        OFFSET(stream_index), AV_OPT_TYPE_INT,    {.dbl = -1},  -1,       INT_MAX  },
-{"seek_point",   "set seekpoint (seconds)", OFFSET(seek_point_d), AV_OPT_TYPE_DOUBLE, {.dbl =  0},  0,        (INT64_MAX-1) / 1000000 },
-{"sp",           "set seekpoint (seconds)", OFFSET(seek_point_d), AV_OPT_TYPE_DOUBLE, {.dbl =  0},  0,        (INT64_MAX-1) / 1000000 },
-{"loop",         "set loop count",          OFFSET(loop_count),   AV_OPT_TYPE_INT,    {.dbl =  1},  0,        INT_MAX  },
+{"format_name",  "set format name",         OFFSET(format_name),  AV_OPT_TYPE_STRING, {.str =  0},  CHAR_MIN, CHAR_MAX, F },
+{"f",            "set format name",         OFFSET(format_name),  AV_OPT_TYPE_STRING, {.str =  0},  CHAR_MIN, CHAR_MAX, F },
+{"streams",      "set streams",             OFFSET(stream_specs), AV_OPT_TYPE_STRING, {.str =  0},  CHAR_MAX, CHAR_MAX, F },
+{"s",            "set streams",             OFFSET(stream_specs), AV_OPT_TYPE_STRING, {.str =  0},  CHAR_MAX, CHAR_MAX, F },
+{"si",           "set stream index",        OFFSET(stream_index), AV_OPT_TYPE_INT,    {.i64 = -1},  -1,       INT_MAX, F },
+{"stream_index", "set stream index",        OFFSET(stream_index), AV_OPT_TYPE_INT,    {.i64 = -1},  -1,       INT_MAX, F },
+{"seek_point",   "set seekpoint (seconds)", OFFSET(seek_point_d), AV_OPT_TYPE_DOUBLE, {.dbl =  0},  0,        (INT64_MAX-1) / 1000000, F },
+{"sp",           "set seekpoint (seconds)", OFFSET(seek_point_d), AV_OPT_TYPE_DOUBLE, {.dbl =  0},  0,        (INT64_MAX-1) / 1000000, F },
+{"loop",         "set loop count",          OFFSET(loop_count),   AV_OPT_TYPE_INT,    {.i64 =  1},  0,        INT_MAX, F },
 {NULL},
 };
-
-AVFILTER_DEFINE_CLASS(movie);
 
 static int movie_config_output_props(AVFilterLink *outlink);
 static int movie_request_frame(AVFilterLink *outlink);
@@ -162,7 +161,30 @@ static int open_stream(void *log, MovieStream *st)
     return 0;
 }
 
-static av_cold int movie_init(AVFilterContext *ctx, const char *args)
+static int guess_channel_layout(MovieStream *st, int st_index, void *log_ctx)
+{
+    AVCodecContext *dec_ctx = st->st->codec;
+    char buf[256];
+    int64_t chl = av_get_default_channel_layout(dec_ctx->channels);
+
+    if (!chl) {
+        av_log(log_ctx, AV_LOG_ERROR,
+               "Channel layout is not set in stream %d, and could not "
+               "be guessed from the number of channels (%d)\n",
+               st_index, dec_ctx->channels);
+        return AVERROR(EINVAL);
+    }
+
+    av_get_channel_layout_string(buf, sizeof(buf), dec_ctx->channels, chl);
+    av_log(log_ctx, AV_LOG_WARNING,
+           "Channel layout is not set in output stream %d, "
+           "guessed channel layout is '%s'\n",
+           st_index, buf);
+    dec_ctx->channel_layout = chl;
+    return 0;
+}
+
+static av_cold int movie_common_init(AVFilterContext *ctx, const char *args, const AVClass *class)
 {
     MovieContext *movie = ctx->priv;
     AVInputFormat *iformat = NULL;
@@ -172,7 +194,7 @@ static av_cold int movie_init(AVFilterContext *ctx, const char *args)
     char name[16];
     AVStream *st;
 
-    movie->class = &movie_class;
+    movie->class = class;
     av_opt_set_defaults(movie);
 
     if (args)
@@ -182,10 +204,8 @@ static av_cold int movie_init(AVFilterContext *ctx, const char *args)
         return AVERROR(EINVAL);
     }
 
-    if (*args++ == ':' && (ret = av_set_options_string(movie, args, "=", ":")) < 0) {
-        av_log(ctx, AV_LOG_ERROR, "Error parsing options string: '%s'\n", args);
+    if (*args++ == ':' && (ret = av_set_options_string(movie, args, "=", ":")) < 0)
         return ret;
-    }
 
     movie->seek_point = movie->seek_point_d * 1000000 + 0.5;
 
@@ -282,6 +302,12 @@ static av_cold int movie_init(AVFilterContext *ctx, const char *args)
         ret = open_stream(ctx, &movie->st[i]);
         if (ret < 0)
             return ret;
+        if ( movie->st[i].st->codec->codec->type == AVMEDIA_TYPE_AUDIO &&
+            !movie->st[i].st->codec->channel_layout) {
+            ret = guess_channel_layout(&movie->st[i], i, ctx);
+            if (ret < 0)
+                return ret;
+        }
     }
 
     if (!(movie->frame = avcodec_alloc_frame()) ) {
@@ -310,7 +336,7 @@ static av_cold void movie_uninit(AVFilterContext *ctx)
     av_freep(&movie->file_name);
     av_freep(&movie->st);
     av_freep(&movie->out_index);
-    av_freep(&movie->frame);
+    avcodec_free_frame(&movie->frame);
     if (movie->format_ctx)
         avformat_close_input(&movie->format_ctx);
 }
@@ -337,8 +363,7 @@ static int movie_query_formats(AVFilterContext *ctx)
             ff_formats_ref(ff_make_format_list(list), &outlink->in_formats);
             list[0] = c->sample_rate;
             ff_formats_ref(ff_make_format_list(list), &outlink->in_samplerates);
-            list64[0] = c->channel_layout ? c->channel_layout :
-                        av_get_default_channel_layout(c->channels);
+            list64[0] = c->channel_layout;
             ff_channel_layouts_ref(avfilter_make_format64_list(list64),
                                    &outlink->in_channel_layouts);
             break;
@@ -446,6 +471,10 @@ static int rewind_file(AVFilterContext *ctx)
 /**
  * Try to push a frame to the requested output.
  *
+ * @param ctx     filter context
+ * @param out_id  number of output where a frame is wanted;
+ *                if the frame is read from file, used to set the return value;
+ *                if the codec is being flushed, flush the corresponding stream
  * @return  1 if a frame was pushed on the requested output,
  *          0 if another attempt is possible,
  *          <0 AVERROR code
@@ -472,6 +501,7 @@ static int movie_push_frame(AVFilterContext *ctx, unsigned out_id)
                 }
                 return AVERROR_EOF;
             }
+            pkt->stream_index = movie->st[out_id].st->index;
             /* packet is already ready for flushing */
         } else {
             ret = av_read_frame(movie->format_ctx, &movie->pkt0);
@@ -566,7 +596,14 @@ static int movie_request_frame(AVFilterLink *outlink)
 
 #if CONFIG_MOVIE_FILTER
 
-AVFilter avfilter_vsrc_movie = {
+AVFILTER_DEFINE_CLASS(movie);
+
+static av_cold int movie_init(AVFilterContext *ctx, const char *args)
+{
+    return movie_common_init(ctx, args, &movie_class);
+}
+
+AVFilter avfilter_avsrc_movie = {
     .name          = "movie",
     .description   = NULL_IF_CONFIG_SMALL("Read from a movie source."),
     .priv_size     = sizeof(MovieContext),
@@ -574,24 +611,34 @@ AVFilter avfilter_vsrc_movie = {
     .uninit        = movie_uninit,
     .query_formats = movie_query_formats,
 
-    .inputs    = (const AVFilterPad[]) {{ .name = NULL }},
+    .inputs    = NULL,
     .outputs   = (const AVFilterPad[]) {{ .name = NULL }},
+    .priv_class = &movie_class,
 };
 
 #endif  /* CONFIG_MOVIE_FILTER */
 
 #if CONFIG_AMOVIE_FILTER
 
-AVFilter avfilter_asrc_amovie = {
+#define amovie_options movie_options
+AVFILTER_DEFINE_CLASS(amovie);
+
+static av_cold int amovie_init(AVFilterContext *ctx, const char *args)
+{
+    return movie_common_init(ctx, args, &amovie_class);
+}
+
+AVFilter avfilter_avsrc_amovie = {
     .name          = "amovie",
     .description   = NULL_IF_CONFIG_SMALL("Read audio from a movie source."),
     .priv_size     = sizeof(MovieContext),
-    .init          = movie_init,
+    .init          = amovie_init,
     .uninit        = movie_uninit,
     .query_formats = movie_query_formats,
 
     .inputs    = (const AVFilterPad[]) {{ .name = NULL }},
     .outputs   = (const AVFilterPad[]) {{ .name = NULL }},
+    .priv_class = &amovie_class,
 };
 
 #endif /* CONFIG_AMOVIE_FILTER */

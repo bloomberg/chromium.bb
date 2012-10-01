@@ -16,6 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "common.h"
 #include "samplefmt.h"
 
 #include <stdio.h>
@@ -163,7 +164,7 @@ int av_samples_fill_arrays(uint8_t **audio_data, int *linesize,
     if (buf_size < 0)
         return buf_size;
 
-    audio_data[0] = buf;
+    audio_data[0] = (uint8_t *)buf;
     for (ch = 1; planar && ch < nb_channels; ch++)
         audio_data[ch] = audio_data[ch-1] + line_size;
 

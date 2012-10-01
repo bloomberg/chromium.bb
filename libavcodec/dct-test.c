@@ -57,7 +57,6 @@ void ff_bfin_fdct(DCTELEM *block);
 
 // ALTIVEC
 void ff_fdct_altivec(DCTELEM *block);
-//void ff_idct_altivec(DCTELEM *block);?? no routine
 
 // ARM
 void ff_j_rev_dct_arm(DCTELEM *data);
@@ -85,9 +84,9 @@ static const struct algo fdct_tab[] = {
     { "IJG-AAN-INT",    ff_fdct_ifast,         SCALE_PERM },
     { "IJG-LLM-INT",    ff_jpeg_fdct_islow_8,  NO_PERM    },
 
-#if HAVE_MMX
+#if HAVE_MMX_INLINE
     { "MMX",            ff_fdct_mmx,           NO_PERM,   AV_CPU_FLAG_MMX     },
-    { "MMX2",           ff_fdct_mmx2,          NO_PERM,   AV_CPU_FLAG_MMX2    },
+    { "MMXEXT",         ff_fdct_mmx2,          NO_PERM,   AV_CPU_FLAG_MMXEXT  },
     { "SSE2",           ff_fdct_sse2,          NO_PERM,   AV_CPU_FLAG_SSE2    },
 #endif
 
@@ -125,14 +124,14 @@ static const struct algo idct_tab[] = {
     { "INT",            ff_j_rev_dct,          MMX_PERM },
     { "SIMPLE-C",       ff_simple_idct_8,      NO_PERM  },
 
-#if HAVE_MMX
+#if HAVE_MMX_INLINE
 #if CONFIG_GPL
     { "LIBMPEG2-MMX",   ff_mmx_idct,           MMX_PERM,  AV_CPU_FLAG_MMX,  1 },
     { "LIBMPEG2-MMX2",  ff_mmxext_idct,        MMX_PERM,  AV_CPU_FLAG_MMX2, 1 },
 #endif
     { "SIMPLE-MMX",     ff_simple_idct_mmx,  MMX_SIMPLE_PERM, AV_CPU_FLAG_MMX },
     { "XVID-MMX",       ff_idct_xvid_mmx,      NO_PERM,   AV_CPU_FLAG_MMX,  1 },
-    { "XVID-MMX2",      ff_idct_xvid_mmx2,     NO_PERM,   AV_CPU_FLAG_MMX2, 1 },
+    { "XVID-MMXEXT",    ff_idct_xvid_mmx2,     NO_PERM,   AV_CPU_FLAG_MMXEXT, 1 },
     { "XVID-SSE2",      ff_idct_xvid_sse2,     SSE2_PERM, AV_CPU_FLAG_SSE2, 1 },
 #if ARCH_X86_64 && HAVE_YASM
     { "PR-SSE2",        ff_prores_idct_put_10_sse2_wrap,     TRANSPOSE_PERM, AV_CPU_FLAG_SSE2, 1 },
@@ -215,8 +214,10 @@ static void init_block(DCTELEM block[64], int test, int is_idct, AVLFG *prng, in
         break;
     case 1:
         j = av_lfg_get(prng) % 10 + 1;
-        for (i = 0; i < j; i++)
-            block[av_lfg_get(prng) % 64] = av_lfg_get(prng) % (2*vals) -vals;
+        for (i = 0; i < j; i++) {
+            int idx = av_lfg_get(prng) % 64;
+            block[idx] = av_lfg_get(prng) % (2*vals) -vals;
+        }
         break;
     case 2:
         block[ 0] = av_lfg_get(prng) % (16*vals) - (8*vals);

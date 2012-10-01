@@ -30,7 +30,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "libavutil/internal.h"
 #include "libavutil/intreadwrite.h"
+#include "libavutil/mem.h"
 #include "avcodec.h"
 
 
@@ -222,7 +224,7 @@ static av_cold int rl2_decode_end(AVCodecContext *avctx)
 AVCodec ff_rl2_decoder = {
     .name           = "rl2",
     .type           = AVMEDIA_TYPE_VIDEO,
-    .id             = CODEC_ID_RL2,
+    .id             = AV_CODEC_ID_RL2,
     .priv_data_size = sizeof(Rl2Context),
     .init           = rl2_decode_init,
     .close          = rl2_decode_end,

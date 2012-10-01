@@ -420,8 +420,6 @@ reload:
     ret = ffurl_read(v->input, buf, buf_size);
     if (ret > 0)
         return ret;
-    if (ret < 0 && ret != AVERROR_EOF)
-        return ret;
     ffurl_close(v->input);
     v->input = NULL;
     v->cur_seq_no++;
@@ -429,7 +427,7 @@ reload:
     c->end_of_segment = 1;
     c->cur_seq_no = v->cur_seq_no;
 
-    if (v->ctx && v->ctx->nb_streams) {
+    if (v->ctx && v->ctx->nb_streams && v->parent->nb_streams >= v->stream_offset + v->ctx->nb_streams) {
         v->needed = 0;
         for (i = v->stream_offset; i < v->stream_offset + v->ctx->nb_streams;
              i++) {
@@ -528,7 +526,12 @@ static int hls_read_header(AVFormatContext *s)
         ret = avformat_open_input(&v->ctx, v->segments[0]->url, in_fmt, NULL);
         if (ret < 0)
             goto fail;
+
         v->stream_offset = stream_offset;
+        v->ctx->ctx_flags &= ~AVFMTCTX_NOHEADER;
+        ret = avformat_find_stream_info(v->ctx, NULL);
+        if (ret < 0)
+            goto fail;
         snprintf(bitrate_str, sizeof(bitrate_str), "%d", v->bandwidth);
         /* Create new AVStreams for each stream in this variant */
         for (j = 0; j < v->ctx->nb_streams; j++) {
@@ -613,7 +616,7 @@ start:
                 AVStream *st;
                 ret = av_read_frame(var->ctx, &var->pkt);
                 if (ret < 0) {
-                    if (!url_feof(&var->pb))
+                    if (!url_feof(&var->pb) && ret != AVERROR_EOF)
                         return ret;
                     reset_packet(&var->pkt);
                     break;
@@ -643,9 +646,21 @@ start:
         }
         /* Check if this stream has the packet with the lowest dts */
         if (var->pkt.data) {
-            if (minvariant < 0 ||
-                var->pkt.dts < c->variants[minvariant]->pkt.dts)
+            if(minvariant < 0) {
                 minvariant = i;
+            } else {
+                struct variant *minvar = c->variants[minvariant];
+                int64_t dts    =    var->pkt.dts;
+                int64_t mindts = minvar->pkt.dts;
+                AVStream *st   =    var->ctx->streams[   var->pkt.stream_index];
+                AVStream *minst= minvar->ctx->streams[minvar->pkt.stream_index];
+
+                if(   st->start_time != AV_NOPTS_VALUE)    dts -=    st->start_time;
+                if(minst->start_time != AV_NOPTS_VALUE) mindts -= minst->start_time;
+
+                if (av_compare_ts(dts, st->time_base, mindts, minst->time_base) < 0)
+                    minvariant = i;
+            }
         }
     }
     if (c->end_of_segment) {
@@ -746,7 +761,7 @@ static int hls_probe(AVProbeData *p)
 
 AVInputFormat ff_hls_demuxer = {
     .name           = "hls,applehttp",
-    .long_name      = NULL_IF_CONFIG_SMALL("Apple HTTP Live Streaming format"),
+    .long_name      = NULL_IF_CONFIG_SMALL("Apple HTTP Live Streaming"),
     .priv_data_size = sizeof(HLSContext),
     .read_probe     = hls_probe,
     .read_header    = hls_read_header,

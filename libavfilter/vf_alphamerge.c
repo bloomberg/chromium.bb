@@ -168,7 +168,7 @@ static int request_frame(AVFilterLink *outlink)
 
     merge->frame_requested = 1;
     while (merge->frame_requested) {
-        in = ff_bufqueue_peek(&merge->queue_main, 0) ? 0 : 1;
+        in = ff_bufqueue_peek(&merge->queue_main, 0) ? 1 : 0;
         ret = ff_request_frame(ctx->inputs[in]);
         if (ret < 0)
             return ret;
@@ -192,15 +192,13 @@ AVFilter avfilter_vf_alphamerge = {
           .start_frame      = start_frame,
           .draw_slice       = draw_slice,
           .end_frame        = end_frame,
-          .min_perms        = AV_PERM_READ | AV_PERM_WRITE,
-          .rej_perms        = AV_PERM_REUSE2 | AV_PERM_PRESERVE },
+          .min_perms        = AV_PERM_READ | AV_PERM_WRITE | AV_PERM_PRESERVE },
         { .name             = "alpha",
           .type             = AVMEDIA_TYPE_VIDEO,
           .start_frame      = start_frame,
           .draw_slice       = draw_slice,
           .end_frame        = end_frame,
-          .min_perms        = AV_PERM_READ,
-          .rej_perms        = AV_PERM_REUSE2 },
+          .min_perms        = AV_PERM_READ | AV_PERM_PRESERVE },
         { .name = NULL }
     },
     .outputs   = (const AVFilterPad[]) {

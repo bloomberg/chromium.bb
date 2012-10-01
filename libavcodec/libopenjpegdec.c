@@ -27,9 +27,10 @@
 #define  OPJ_STATIC
 #include <openjpeg.h>
 
+#include "libavutil/common.h"
+#include "libavutil/intreadwrite.h"
 #include "libavutil/imgutils.h"
 #include "libavutil/pixfmt.h"
-#include "libavutil/intreadwrite.h"
 #include "libavutil/opt.h"
 #include "avcodec.h"
 #include "thread.h"
@@ -293,15 +294,12 @@ static int libopenjpeg_decode_frame(AVCodecContext *avctx,
 
     avcodec_set_dimensions(avctx, width, height);
 
-    if (avctx->pix_fmt != PIX_FMT_NONE) {
-        if (!libopenjpeg_matches_pix_fmt(image, avctx->pix_fmt)) {
+    if (avctx->pix_fmt != PIX_FMT_NONE)
+        if (!libopenjpeg_matches_pix_fmt(image, avctx->pix_fmt))
             avctx->pix_fmt = PIX_FMT_NONE;
-        }
-    }
 
-    if (avctx->pix_fmt == PIX_FMT_NONE) {
+    if (avctx->pix_fmt == PIX_FMT_NONE)
         avctx->pix_fmt = libopenjpeg_guess_pix_fmt(image);
-    }
 
     if (avctx->pix_fmt == PIX_FMT_NONE) {
         av_log(avctx, AV_LOG_ERROR, "Unable to determine pixel format\n");
@@ -331,9 +329,10 @@ static int libopenjpeg_decode_frame(AVCodecContext *avctx,
     }
 
     opj_image_destroy(image);
-    // Decode the codestream.
+    // Decode the codestream
     image = opj_decode_with_info(dec, stream, NULL);
     opj_cio_close(stream);
+
     if (!image) {
         av_log(avctx, AV_LOG_ERROR, "Error decoding codestream.\n");
         goto done;
@@ -397,7 +396,7 @@ static av_cold int libopenjpeg_decode_close(AVCodecContext *avctx)
 #define VD AV_OPT_FLAG_VIDEO_PARAM | AV_OPT_FLAG_DECODING_PARAM
 
 static const AVOption options[] = {
-    { "lowqual", "Limit the number of layers used for decoding",    OFFSET(lowqual), AV_OPT_TYPE_INT, { 0 }, 0, INT_MAX, VD },
+    { "lowqual", "Limit the number of layers used for decoding",    OFFSET(lowqual), AV_OPT_TYPE_INT, { .i64 = 0 }, 0, INT_MAX, VD },
     { NULL },
 };
 
@@ -411,13 +410,13 @@ static const AVClass class = {
 AVCodec ff_libopenjpeg_decoder = {
     .name             = "libopenjpeg",
     .type             = AVMEDIA_TYPE_VIDEO,
-    .id               = CODEC_ID_JPEG2000,
+    .id               = AV_CODEC_ID_JPEG2000,
     .priv_data_size   = sizeof(LibOpenJPEGContext),
     .init             = libopenjpeg_decode_init,
     .close            = libopenjpeg_decode_close,
     .decode           = libopenjpeg_decode_frame,
     .capabilities     = CODEC_CAP_DR1 | CODEC_CAP_FRAME_THREADS,
-    .max_lowres       = 5,
+    .max_lowres       = 31,
     .long_name        = NULL_IF_CONFIG_SMALL("OpenJPEG JPEG 2000"),
     .priv_class       = &class,
     .init_thread_copy = ONLY_IF_THREADS_ENABLED(libopenjpeg_decode_init_thread_copy),

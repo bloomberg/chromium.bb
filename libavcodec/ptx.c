@@ -19,6 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "libavutil/common.h"
 #include "libavutil/intreadwrite.h"
 #include "libavutil/imgutils.h"
 #include "avcodec.h"
@@ -113,7 +114,7 @@ static av_cold int ptx_end(AVCodecContext *avctx) {
 AVCodec ff_ptx_decoder = {
     .name           = "ptx",
     .type           = AVMEDIA_TYPE_VIDEO,
-    .id             = CODEC_ID_PTX,
+    .id             = AV_CODEC_ID_PTX,
     .priv_data_size = sizeof(PTXContext),
     .init           = ptx_init,
     .close          = ptx_end,

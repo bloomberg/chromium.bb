@@ -22,6 +22,7 @@
 #include <ilbc.h>
 
 #include "avcodec.h"
+#include "libavutil/common.h"
 #include "libavutil/opt.h"
 #include "internal.h"
 
@@ -45,7 +46,7 @@ typedef struct ILBCDecContext {
 } ILBCDecContext;
 
 static const AVOption ilbc_dec_options[] = {
-    { "enhance", "Enhance the decoded audio (adds delay)", offsetof(ILBCDecContext, enhance), AV_OPT_TYPE_INT, { 0 }, 0, 1, AV_OPT_FLAG_AUDIO_PARAM | AV_OPT_FLAG_DECODING_PARAM },
+    { "enhance", "Enhance the decoded audio (adds delay)", offsetof(ILBCDecContext, enhance), AV_OPT_TYPE_INT, { .i64 = 0 }, 0, 1, AV_OPT_FLAG_AUDIO_PARAM | AV_OPT_FLAG_DECODING_PARAM },
     { NULL }
 };
 
@@ -109,12 +110,12 @@ static int ilbc_decode_frame(AVCodecContext *avctx, void *data,
 AVCodec ff_libilbc_decoder = {
     .name           = "libilbc",
     .type           = AVMEDIA_TYPE_AUDIO,
-    .id             = CODEC_ID_ILBC,
+    .id             = AV_CODEC_ID_ILBC,
     .priv_data_size = sizeof(ILBCDecContext),
     .init           = ilbc_decode_init,
     .decode         = ilbc_decode_frame,
     .capabilities   = CODEC_CAP_DR1,
-    .long_name      = NULL_IF_CONFIG_SMALL("Internet Low Bitrate Codec (iLBC)"),
+    .long_name      = NULL_IF_CONFIG_SMALL("iLBC (Internet Low Bitrate Codec)"),
     .priv_class     = &ilbc_dec_class,
 };
 
@@ -125,7 +126,7 @@ typedef struct ILBCEncContext {
 } ILBCEncContext;
 
 static const AVOption ilbc_enc_options[] = {
-    { "mode", "iLBC mode (20 or 30 ms frames)", offsetof(ILBCEncContext, mode), AV_OPT_TYPE_INT, { 20 }, 20, 30, AV_OPT_FLAG_AUDIO_PARAM | AV_OPT_FLAG_ENCODING_PARAM },
+    { "mode", "iLBC mode (20 or 30 ms frames)", offsetof(ILBCEncContext, mode), AV_OPT_TYPE_INT, { .i64 = 20 }, 20, 30, AV_OPT_FLAG_AUDIO_PARAM | AV_OPT_FLAG_ENCODING_PARAM },
     { NULL }
 };
 
@@ -202,14 +203,14 @@ static const AVCodecDefault ilbc_encode_defaults[] = {
 AVCodec ff_libilbc_encoder = {
     .name           = "libilbc",
     .type           = AVMEDIA_TYPE_AUDIO,
-    .id             = CODEC_ID_ILBC,
+    .id             = AV_CODEC_ID_ILBC,
     .priv_data_size = sizeof(ILBCEncContext),
     .init           = ilbc_encode_init,
     .encode2        = ilbc_encode_frame,
     .close          = ilbc_encode_close,
     .sample_fmts    = (const enum AVSampleFormat[]){ AV_SAMPLE_FMT_S16,
                                                      AV_SAMPLE_FMT_NONE },
-    .long_name      = NULL_IF_CONFIG_SMALL("Internet Low Bitrate Codec (iLBC)"),
+    .long_name      = NULL_IF_CONFIG_SMALL("iLBC (Internet Low Bitrate Codec)"),
     .defaults       = ilbc_encode_defaults,
     .priv_class     = &ilbc_enc_class,
 };

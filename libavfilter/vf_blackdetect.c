@@ -48,13 +48,15 @@ typedef struct {
 } BlackDetectContext;
 
 #define OFFSET(x) offsetof(BlackDetectContext, x)
+#define FLAGS AV_OPT_FLAG_VIDEO_PARAM|AV_OPT_FLAG_FILTERING_PARAM
+
 static const AVOption blackdetect_options[] = {
-    { "d",                  "set minimum detected black duration in seconds", OFFSET(black_min_duration_time), AV_OPT_TYPE_DOUBLE, {.dbl=2}, 0, DBL_MAX},
-    { "black_min_duration", "set minimum detected black duration in seconds", OFFSET(black_min_duration_time), AV_OPT_TYPE_DOUBLE, {.dbl=2}, 0, DBL_MAX},
-    { "picture_black_ratio_th", "set the picture black ratio threshold", OFFSET(picture_black_ratio_th), AV_OPT_TYPE_DOUBLE, {.dbl=.98}, 0, 1},
-    { "pic_th",                 "set the picture black ratio threshold", OFFSET(picture_black_ratio_th), AV_OPT_TYPE_DOUBLE, {.dbl=.98}, 0, 1},
-    { "pixel_black_th", "set the pixel black threshold", OFFSET(pixel_black_th), AV_OPT_TYPE_DOUBLE, {.dbl=.10}, 0, 1},
-    { "pix_th",         "set the pixel black threshold", OFFSET(pixel_black_th), AV_OPT_TYPE_DOUBLE, {.dbl=.10}, 0, 1},
+    { "d",                  "set minimum detected black duration in seconds", OFFSET(black_min_duration_time), AV_OPT_TYPE_DOUBLE, {.dbl=2}, 0, DBL_MAX, FLAGS },
+    { "black_min_duration", "set minimum detected black duration in seconds", OFFSET(black_min_duration_time), AV_OPT_TYPE_DOUBLE, {.dbl=2}, 0, DBL_MAX, FLAGS },
+    { "picture_black_ratio_th", "set the picture black ratio threshold", OFFSET(picture_black_ratio_th), AV_OPT_TYPE_DOUBLE, {.dbl=.98}, 0, 1, FLAGS },
+    { "pic_th",                 "set the picture black ratio threshold", OFFSET(picture_black_ratio_th), AV_OPT_TYPE_DOUBLE, {.dbl=.98}, 0, 1, FLAGS },
+    { "pixel_black_th", "set the pixel black threshold", OFFSET(pixel_black_th), AV_OPT_TYPE_DOUBLE, {.dbl=.10}, 0, 1, FLAGS },
+    { "pix_th",         "set the pixel black threshold", OFFSET(pixel_black_th), AV_OPT_TYPE_DOUBLE, {.dbl=.10}, 0, 1, FLAGS },
     { NULL },
 };
 
@@ -88,10 +90,8 @@ static av_cold int init(AVFilterContext *ctx, const char *args)
     blackdetect->class = &blackdetect_class;
     av_opt_set_defaults(blackdetect);
 
-    if ((ret = av_set_options_string(blackdetect, args, "=", ":")) < 0) {
-        av_log(ctx, AV_LOG_ERROR, "Error parsing options string: '%s'\n", args);
+    if ((ret = av_set_options_string(blackdetect, args, "=", ":")) < 0)
         return ret;
-    }
 
     return 0;
 }
@@ -210,7 +210,7 @@ AVFilter avfilter_vf_blackdetect = {
           .config_props     = config_input,
           .draw_slice       = draw_slice,
           .get_video_buffer = ff_null_get_video_buffer,
-          .start_frame      = ff_null_start_frame_keep_ref,
+          .start_frame      = ff_null_start_frame,
           .end_frame        = end_frame, },
         { .name = NULL }
     },
@@ -221,4 +221,5 @@ AVFilter avfilter_vf_blackdetect = {
           .request_frame    = request_frame, },
         { .name = NULL }
     },
+    .priv_class = &blackdetect_class,
 };

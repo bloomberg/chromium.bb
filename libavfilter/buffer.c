@@ -22,6 +22,7 @@
 
 #include "libavutil/audioconvert.h"
 #include "libavutil/avassert.h"
+#include "libavutil/common.h"
 #include "libavutil/imgutils.h"
 #include "libavcodec/avcodec.h"
 
@@ -38,6 +39,15 @@ void ff_avfilter_default_free_buffer(AVFilterBuffer *ptr)
     av_free(ptr);
 }
 
+static void copy_video_props(AVFilterBufferRefVideoProps *dst, AVFilterBufferRefVideoProps *src) {
+    *dst = *src;
+    if (src->qp_table) {
+        int qsize = src->qp_table_size;
+        dst->qp_table = av_malloc(qsize);
+        memcpy(dst->qp_table, src->qp_table, qsize);
+    }
+}
+
 AVFilterBufferRef *avfilter_ref_buffer(AVFilterBufferRef *ref, int pmask)
 {
     AVFilterBufferRef *ret = av_malloc(sizeof(AVFilterBufferRef));
@@ -50,7 +60,7 @@ AVFilterBufferRef *avfilter_ref_buffer(AVFilterBufferRef *ref, int pmask)
             av_free(ret);
             return NULL;
         }
-        *ret->video = *ref->video;
+        copy_video_props(ret->video, ref->video);
         ret->extended_data = ret->data;
     } else if (ref->type == AVMEDIA_TYPE_AUDIO) {
         ret->audio = av_malloc(sizeof(AVFilterBufferRefAudioProps));
@@ -94,6 +104,7 @@ void ff_free_pool(AVFilterPool *pool)
             av_freep(&picref->buf);
 
             av_freep(&picref->audio);
+            av_assert0(!picref->video || !picref->video->qp_table);
             av_freep(&picref->video);
             av_freep(&pool->pic[i]);
             pool->count--;
@@ -114,6 +125,9 @@ static void store_in_pool(AVFilterBufferRef *ref)
 
     av_assert0(ref->buf->data[0]);
     av_assert0(pool->refcount>0);
+
+    if (ref->video)
+        av_freep(&ref->video->qp_table);
 
     if (pool->count == POOL_SIZE) {
         AVFilterBufferRef *ref1 = pool->pic[0];
@@ -154,6 +168,8 @@ void avfilter_unref_buffer(AVFilterBufferRef *ref)
     }
     if (ref->extended_data != ref->data)
         av_freep(&ref->extended_data);
+    if (ref->video)
+        av_freep(&ref->video->qp_table);
     av_freep(&ref->video);
     av_freep(&ref->audio);
     av_free(ref);
@@ -172,7 +188,12 @@ void avfilter_copy_buffer_ref_props(AVFilterBufferRef *dst, AVFilterBufferRef *s
     dst->pos             = src->pos;
 
     switch (src->type) {
-    case AVMEDIA_TYPE_VIDEO: *dst->video = *src->video; break;
+    case AVMEDIA_TYPE_VIDEO: {
+        if (dst->video->qp_table)
+            av_freep(&dst->video->qp_table);
+        copy_video_props(dst->video, src->video);
+        break;
+    }
     case AVMEDIA_TYPE_AUDIO: *dst->audio = *src->audio; break;
     default: break;
     }

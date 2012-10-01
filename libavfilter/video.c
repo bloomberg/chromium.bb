@@ -20,7 +20,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include <string.h>
+#include <stdio.h>
+
+#include "libavutil/avassert.h"
 #include "libavutil/imgutils.h"
+#include "libavutil/mem.h"
 
 #include "avfilter.h"
 #include "internal.h"
@@ -38,6 +43,10 @@ AVFilterBufferRef *ff_default_get_video_buffer(AVFilterLink *link, int perms, in
     int i;
     AVFilterBufferRef *picref = NULL;
     AVFilterPool *pool = link->pool;
+    int full_perms = AV_PERM_READ | AV_PERM_WRITE | AV_PERM_PRESERVE |
+                     AV_PERM_REUSE | AV_PERM_REUSE2 | AV_PERM_ALIGN;
+
+    av_assert1(!(perms & ~(full_perms | AV_PERM_NEG_LINESIZES)));
 
     if (pool) {
         for (i = 0; i < POOL_SIZE; i++) {
@@ -46,9 +55,10 @@ AVFilterBufferRef *ff_default_get_video_buffer(AVFilterLink *link, int perms, in
                 AVFilterBuffer *pic = picref->buf;
                 pool->pic[i] = NULL;
                 pool->count--;
+                av_assert0(!picref->video->qp_table);
                 picref->video->w = w;
                 picref->video->h = h;
-                picref->perms = perms | AV_PERM_READ;
+                picref->perms = full_perms;
                 picref->format = link->format;
                 pic->refcount = 1;
                 memcpy(picref->data,     pic->data,     sizeof(picref->data));
@@ -67,7 +77,7 @@ AVFilterBufferRef *ff_default_get_video_buffer(AVFilterLink *link, int perms, in
         return NULL;
 
     picref = avfilter_get_video_buffer_ref_from_arrays(data, linesize,
-                                                       perms, w, h, link->format);
+                                                       full_perms, w, h, link->format);
     if (!picref) {
         av_free(data[0]);
         return NULL;
@@ -157,6 +167,42 @@ int ff_null_start_frame(AVFilterLink *link, AVFilterBufferRef *picref)
     return ff_start_frame(link->dst->outputs[0], buf_out);
 }
 
+// for filters that support (but don't require) outpic==inpic
+int ff_inplace_start_frame(AVFilterLink *inlink, AVFilterBufferRef *inpicref)
+{
+    AVFilterLink *outlink = inlink->dst->outputs[0];
+    AVFilterBufferRef *outpicref = NULL, *for_next_filter;
+    int ret = 0;
+
+    if (inpicref->perms & AV_PERM_WRITE) {
+        outpicref = avfilter_ref_buffer(inpicref, ~0);
+        if (!outpicref)
+            return AVERROR(ENOMEM);
+    } else {
+        outpicref = ff_get_video_buffer(outlink, AV_PERM_WRITE, outlink->w, outlink->h);
+        if (!outpicref)
+            return AVERROR(ENOMEM);
+
+        avfilter_copy_buffer_ref_props(outpicref, inpicref);
+        outpicref->video->w = outlink->w;
+        outpicref->video->h = outlink->h;
+    }
+
+    for_next_filter = avfilter_ref_buffer(outpicref, ~0);
+    if (for_next_filter)
+        ret = ff_start_frame(outlink, for_next_filter);
+    else
+        ret = AVERROR(ENOMEM);
+
+    if (ret < 0) {
+        avfilter_unref_bufferp(&outpicref);
+        return ret;
+    }
+
+    outlink->out_buf = outpicref;
+    return 0;
+}
+
 static int default_start_frame(AVFilterLink *inlink, AVFilterBufferRef *picref)
 {
     AVFilterLink *outlink = NULL;
@@ -187,6 +233,7 @@ static void clear_link(AVFilterLink *link)
     avfilter_unref_bufferp(&link->cur_buf);
     avfilter_unref_bufferp(&link->src_buf);
     avfilter_unref_bufferp(&link->out_buf);
+    link->cur_buf_copy = NULL; /* we do not own the reference */
 }
 
 /* XXX: should we do the duplicating of the picture ref here, instead of
@@ -194,15 +241,29 @@ static void clear_link(AVFilterLink *link)
 int ff_start_frame(AVFilterLink *link, AVFilterBufferRef *picref)
 {
     int (*start_frame)(AVFilterLink *, AVFilterBufferRef *);
+    AVFilterPad *src = link->srcpad;
     AVFilterPad *dst = link->dstpad;
-    int ret, perms = picref->perms;
+    int ret, perms;
     AVFilterCommand *cmd= link->dst->command_queue;
     int64_t pts;
 
     FF_TPRINTF_START(NULL, start_frame); ff_tlog_link(NULL, link, 0); ff_tlog(NULL, " "); ff_tlog_ref(NULL, picref, 1);
 
+    av_assert1(picref->format                     == link->format);
+    av_assert1(picref->video->w                   == link->w);
+    av_assert1(picref->video->h                   == link->h);
+
+    if (link->closed) {
+        avfilter_unref_buffer(picref);
+        return AVERROR_EOF;
+    }
+
     if (!(start_frame = dst->start_frame))
         start_frame = default_start_frame;
+
+    av_assert1((picref->perms & src->min_perms) == src->min_perms);
+    picref->perms &= ~ src->rej_perms;
+    perms = picref->perms;
 
     if (picref->linesize[0] < 0)
         perms |= AV_PERM_NEG_LINESIZES;
@@ -229,6 +290,8 @@ int ff_start_frame(AVFilterLink *link, AVFilterBufferRef *picref)
     else
         link->cur_buf = picref;
 
+    link->cur_buf_copy = link->cur_buf;
+
     while(cmd && cmd->time <= picref->pts * av_q2d(link->time_base)){
         av_log(link->dst, AV_LOG_DEBUG,
                "Processing command time:%f command:%s arg:%s\n",
@@ -239,17 +302,15 @@ int ff_start_frame(AVFilterLink *link, AVFilterBufferRef *picref)
     }
     pts = link->cur_buf->pts;
     ret = start_frame(link, link->cur_buf);
-    ff_update_link_current_pts(link,link->cur_buf ?  link->cur_buf->pts : pts);
+    ff_update_link_current_pts(link, pts);
     if (ret < 0)
         clear_link(link);
+    else
+        /* incoming buffers must not be freed in start frame,
+           because they can still be in use by the automatic copy mechanism */
+        av_assert1(link->cur_buf_copy->buf->refcount > 0);
 
     return ret;
-}
-
-int ff_null_start_frame_keep_ref(AVFilterLink *inlink,
-                                                AVFilterBufferRef *picref)
-{
-    return ff_start_frame(inlink->dst->outputs[0], avfilter_ref_buffer(picref, ~0));
 }
 
 int ff_null_end_frame(AVFilterLink *link)
@@ -318,22 +379,22 @@ int ff_draw_slice(AVFilterLink *link, int y, int h, int slice_dir)
             if (link->src_buf->data[i]) {
                 src[i] = link->src_buf-> data[i] +
                     (y >> (i==1 || i==2 ? vsub : 0)) * link->src_buf-> linesize[i];
-                dst[i] = link->cur_buf->data[i] +
-                    (y >> (i==1 || i==2 ? vsub : 0)) * link->cur_buf->linesize[i];
+                dst[i] = link->cur_buf_copy->data[i] +
+                    (y >> (i==1 || i==2 ? vsub : 0)) * link->cur_buf_copy->linesize[i];
             } else
                 src[i] = dst[i] = NULL;
         }
 
         for (i = 0; i < 4; i++) {
             int planew =
-                av_image_get_linesize(link->format, link->cur_buf->video->w, i);
+                av_image_get_linesize(link->format, link->cur_buf_copy->video->w, i);
 
             if (!src[i]) continue;
 
             for (j = 0; j < h >> (i==1 || i==2 ? vsub : 0); j++) {
                 memcpy(dst[i], src[i], planew);
                 src[i] += link->src_buf->linesize[i];
-                dst[i] += link->cur_buf->linesize[i];
+                dst[i] += link->cur_buf_copy->linesize[i];
             }
         }
     }
@@ -343,11 +404,9 @@ int ff_draw_slice(AVFilterLink *link, int y, int h, int slice_dir)
     ret = draw_slice(link, y, h, slice_dir);
     if (ret < 0)
         clear_link(link);
+    else
+        /* incoming buffers must not be freed in start frame,
+           because they can still be in use by the automatic copy mechanism */
+        av_assert1(link->cur_buf_copy->buf->refcount > 0);
     return ret;
 }
-
-int avfilter_default_end_frame(AVFilterLink *inlink)
-{
-    return default_end_frame(inlink);
-}
-

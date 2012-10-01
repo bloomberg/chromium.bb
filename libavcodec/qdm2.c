@@ -1105,7 +1105,6 @@ static int process_subpacket_9 (QDM2Context *q, QDM2SubPNode *node)
  *
  * @param q         context
  * @param node      pointer to node with packet
- * @param length    packet length in bits
  */
 static void process_subpacket_10 (QDM2Context *q, QDM2SubPNode *node)
 {
@@ -1154,7 +1153,6 @@ static void process_subpacket_11 (QDM2Context *q, QDM2SubPNode *node)
  *
  * @param q         context
  * @param node      pointer to node with packet
- * @param length    packet length in bits
  */
 static void process_subpacket_12 (QDM2Context *q, QDM2SubPNode *node)
 {
@@ -1992,7 +1990,7 @@ AVCodec ff_qdm2_decoder =
 {
     .name           = "qdm2",
     .type           = AVMEDIA_TYPE_AUDIO,
-    .id             = CODEC_ID_QDM2,
+    .id             = AV_CODEC_ID_QDM2,
     .priv_data_size = sizeof(QDM2Context),
     .init           = qdm2_decode_init,
     .close          = qdm2_decode_close,

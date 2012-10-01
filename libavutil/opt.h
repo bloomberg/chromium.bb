@@ -64,7 +64,7 @@
  *
  * static const AVOption options[] = {
  *   { "test_int", "This is a test option of int type.", offsetof(test_struct, int_opt),
- *     AV_OPT_TYPE_INT, { -1 }, INT_MIN, INT_MAX },
+ *     AV_OPT_TYPE_INT, { .i64 = -1 }, INT_MIN, INT_MAX },
  *   { "test_str", "This is a test option of string type.", offsetof(test_struct, str_opt),
  *     AV_OPT_TYPE_STRING },
  *   { "test_bin", "This is a test option of binary type.", offsetof(test_struct, bin_opt),
@@ -123,7 +123,7 @@
  *      } child_struct;
  *      static const AVOption child_opts[] = {
  *          { "test_flags", "This is a test option of flags type.",
- *            offsetof(child_struct, flags_opt), AV_OPT_TYPE_FLAGS, { 0 }, INT_MIN, INT_MAX },
+ *            offsetof(child_struct, flags_opt), AV_OPT_TYPE_FLAGS, { .i64 = 0 }, INT_MIN, INT_MAX },
  *          { NULL },
  *      };
  *      static const AVClass child_class = {
@@ -170,8 +170,8 @@
  *      above, put the following into the child_opts array:
  *      @code
  *      { "test_flags", "This is a test option of flags type.",
- *        offsetof(child_struct, flags_opt), AV_OPT_TYPE_FLAGS, { 0 }, INT_MIN, INT_MAX, "test_unit" },
- *      { "flag1", "This is a flag with value 16", 0, AV_OPT_TYPE_CONST, { 16 }, 0, 0, "test_unit" },
+ *        offsetof(child_struct, flags_opt), AV_OPT_TYPE_FLAGS, { .i64 = 0 }, INT_MIN, INT_MAX, "test_unit" },
+ *      { "flag1", "This is a flag with value 16", 0, AV_OPT_TYPE_CONST, { .i64 = 16 }, 0, 0, "test_unit" },
  *      @endcode
  *
  * @section avoptions_use Using AVOptions
@@ -263,10 +263,10 @@ typedef struct AVOption {
      * the default value for scalar options
      */
     union {
+        int64_t i64;
         double dbl;
         const char *str;
         /* TODO those are unused now */
-        int64_t i64;
         AVRational q;
     } default_val;
     double min;                 ///< minimum valid value for the option
@@ -279,6 +279,7 @@ typedef struct AVOption {
 #define AV_OPT_FLAG_AUDIO_PARAM     8
 #define AV_OPT_FLAG_VIDEO_PARAM     16
 #define AV_OPT_FLAG_SUBTITLE_PARAM  32
+#define AV_OPT_FLAG_FILTERING_PARAM (1<<16) ///< a generic parameter which can be set by the user for filtering
 //FIXME think about enc-audio, ... style flags
 
     /**
@@ -392,6 +393,36 @@ void av_opt_set_defaults2(void *s, int mask, int flags);
 int av_set_options_string(void *ctx, const char *opts,
                           const char *key_val_sep, const char *pairs_sep);
 
+/**
+ * Parse the key-value pairs list in opts. For each key=value pair found,
+ * set the value of the corresponding option in ctx.
+ *
+ * @param ctx          the AVClass object to set options on
+ * @param opts         the options string, key-value pairs separated by a
+ *                     delimiter
+ * @param shorthand    a NULL-terminated array of options names for shorthand
+ *                     notation: if the first field in opts has no key part,
+ *                     the key is taken from the first element of shorthand;
+ *                     then again for the second, etc., until either opts is
+ *                     finished, shorthand is finished or a named option is
+ *                     found; after that, all options must be named
+ * @param key_val_sep  a 0-terminated list of characters used to separate
+ *                     key from value, for example '='
+ * @param pairs_sep    a 0-terminated list of characters used to separate
+ *                     two pairs from each other, for example ':' or ','
+ * @return  the number of successfully set key=value pairs, or a negative
+ *          value corresponding to an AVERROR code in case of error:
+ *          AVERROR(EINVAL) if opts cannot be parsed,
+ *          the error code issued by av_set_string3() if a key/value pair
+ *          cannot be set
+ *
+ * Options names must use only the following characters: a-z A-Z 0-9 - . / _
+ * Separators must use characters distinct from option names and from each
+ * other.
+ */
+int av_opt_set_from_string(void *ctx, const char *opts,
+                           const char *const *shorthand,
+                           const char *key_val_sep, const char *pairs_sep);
 /**
  * Free all string and binary options in obj.
  */

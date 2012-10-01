@@ -27,6 +27,7 @@
 
 #include "libavutil/audioconvert.h"
 #include "libavutil/avstring.h"
+#include "libavutil/common.h"
 #include "libavutil/mathematics.h"
 #include "libavutil/opt.h"
 #include "libavutil/samplefmt.h"
@@ -67,11 +68,12 @@ typedef struct ChannelMapContext {
 
 #define OFFSET(x) offsetof(ChannelMapContext, x)
 #define A AV_OPT_FLAG_AUDIO_PARAM
+#define F AV_OPT_FLAG_FILTERING_PARAM
 static const AVOption options[] = {
     { "map", "A comma-separated list of input channel numbers in output order.",
-          OFFSET(mapping_str),        AV_OPT_TYPE_STRING, .flags = A },
+          OFFSET(mapping_str),        AV_OPT_TYPE_STRING, .flags = A|F },
     { "channel_layout", "Output channel layout.",
-          OFFSET(channel_layout_str), AV_OPT_TYPE_STRING, .flags = A },
+          OFFSET(channel_layout_str), AV_OPT_TYPE_STRING, .flags = A|F },
     { NULL },
 };
 
@@ -138,10 +140,8 @@ static av_cold int channelmap_init(AVFilterContext *ctx, const char *args)
     s->class = &channelmap_class;
     av_opt_set_defaults(s);
 
-    if ((ret = av_set_options_string(s, args, "=", ":")) < 0) {
-        av_log(ctx, AV_LOG_ERROR, "Error parsing options string '%s'.\n", args);
+    if ((ret = av_set_options_string(s, args, "=", ":")) < 0)
         return ret;
-    }
 
     mapping = s->mapping_str;
 
@@ -394,10 +394,12 @@ AVFilter avfilter_af_channelmap = {
 
     .inputs        = (const AVFilterPad[]) {{ .name            = "default",
                                               .type            = AVMEDIA_TYPE_AUDIO,
+                                              .min_perms       = AV_PERM_READ | AV_PERM_WRITE,
                                               .filter_samples  = channelmap_filter_samples,
                                               .config_props    = channelmap_config_input },
                                             { .name = NULL }},
     .outputs       = (const AVFilterPad[]) {{ .name            = "default",
                                               .type            = AVMEDIA_TYPE_AUDIO },
                                             { .name = NULL }},
+    .priv_class = &channelmap_class,
 };

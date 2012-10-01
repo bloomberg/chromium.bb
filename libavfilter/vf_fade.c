@@ -26,6 +26,7 @@
  */
 
 #include "libavutil/avstring.h"
+#include "libavutil/common.h"
 #include "libavutil/eval.h"
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
@@ -59,15 +60,16 @@ typedef struct {
 } FadeContext;
 
 #define OFFSET(x) offsetof(FadeContext, x)
+#define FLAGS AV_OPT_FLAG_VIDEO_PARAM|AV_OPT_FLAG_FILTERING_PARAM
 
 static const AVOption fade_options[] = {
-    { "type",        "set the fade direction",                     OFFSET(type),        AV_OPT_TYPE_STRING, {.str = "in" }, CHAR_MIN, CHAR_MAX },
-    { "t",           "set the fade direction",                     OFFSET(type),        AV_OPT_TYPE_STRING, {.str = "in" }, CHAR_MIN, CHAR_MAX },
-    { "start_frame", "set expression of frame to start fading",    OFFSET(start_frame), AV_OPT_TYPE_INT, {.dbl = 0    }, 0, INT_MAX },
-    { "s",           "set expression of frame to start fading",    OFFSET(start_frame), AV_OPT_TYPE_INT, {.dbl = 0    }, 0, INT_MAX },
-    { "nb_frames",   "set expression for fade duration in frames", OFFSET(nb_frames),   AV_OPT_TYPE_INT, {.dbl = 25   }, 0, INT_MAX },
-    { "n",           "set expression for fade duration in frames", OFFSET(nb_frames),   AV_OPT_TYPE_INT, {.dbl = 25   }, 0, INT_MAX },
-    { "alpha",       "fade alpha if it is available on the input", OFFSET(alpha),       AV_OPT_TYPE_INT, {.dbl = 0    }, 0,       1 },
+    { "type",        "set the fade direction",                     OFFSET(type),        AV_OPT_TYPE_STRING, {.str = "in" }, CHAR_MIN, CHAR_MAX, FLAGS },
+    { "t",           "set the fade direction",                     OFFSET(type),        AV_OPT_TYPE_STRING, {.str = "in" }, CHAR_MIN, CHAR_MAX, FLAGS },
+    { "start_frame", "set expression of frame to start fading",    OFFSET(start_frame), AV_OPT_TYPE_INT, {.i64 = 0    }, 0, INT_MAX, FLAGS },
+    { "s",           "set expression of frame to start fading",    OFFSET(start_frame), AV_OPT_TYPE_INT, {.i64 = 0    }, 0, INT_MAX, FLAGS },
+    { "nb_frames",   "set expression for fade duration in frames", OFFSET(nb_frames),   AV_OPT_TYPE_INT, {.i64 = 25   }, 0, INT_MAX, FLAGS },
+    { "n",           "set expression for fade duration in frames", OFFSET(nb_frames),   AV_OPT_TYPE_INT, {.i64 = 25   }, 0, INT_MAX, FLAGS },
+    { "alpha",       "fade alpha if it is available on the input", OFFSET(alpha),       AV_OPT_TYPE_INT, {.i64 = 0    }, 0,       1, FLAGS },
     {NULL},
 };
 
@@ -289,10 +291,10 @@ AVFilter avfilter_vf_fade = {
                                           .start_frame      = ff_null_start_frame,
                                           .draw_slice      = draw_slice,
                                           .end_frame       = end_frame,
-                                          .min_perms       = AV_PERM_READ | AV_PERM_WRITE,
-                                          .rej_perms       = AV_PERM_PRESERVE, },
+                                          .min_perms       = AV_PERM_READ | AV_PERM_WRITE },
                                         { .name = NULL}},
     .outputs   = (const AVFilterPad[]) {{ .name            = "default",
                                           .type            = AVMEDIA_TYPE_VIDEO, },
                                         { .name = NULL}},
+    .priv_class = &fade_class,
 };

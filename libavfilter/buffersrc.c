@@ -32,6 +32,7 @@
 #include "avcodec.h"
 
 #include "libavutil/audioconvert.h"
+#include "libavutil/common.h"
 #include "libavutil/fifo.h"
 #include "libavutil/imgutils.h"
 #include "libavutil/opt.h"
@@ -93,7 +94,7 @@ int av_buffersrc_add_frame(AVFilterContext *buffer_src,
     return ret;
 }
 
-int av_buffersrc_write_frame(AVFilterContext *buffer_filter, AVFrame *frame)
+int av_buffersrc_write_frame(AVFilterContext *buffer_filter, const AVFrame *frame)
 {
     return av_buffersrc_add_frame(buffer_filter, frame, 0);
 }
@@ -147,6 +148,10 @@ int av_buffersrc_add_ref(AVFilterContext *s, AVFilterBufferRef *buf, int flags)
         c->warning_limit *= 10;
     }
 
+    if ((flags & AV_BUFFERSRC_FLAG_PUSH))
+        if ((ret = s->output_pads[0].request_frame(s->outputs[0])) < 0)
+            return ret;
+
     return 0;
 }
 
@@ -163,17 +168,17 @@ unsigned av_buffersrc_get_nb_failed_requests(AVFilterContext *buffer_src)
 }
 
 #define OFFSET(x) offsetof(BufferSourceContext, x)
-#define V AV_OPT_FLAG_VIDEO_PARAM
+#define FLAGS AV_OPT_FLAG_FILTERING_PARAM|AV_OPT_FLAG_VIDEO_PARAM
 static const AVOption buffer_options[] = {
-    { "time_base",      NULL, OFFSET(time_base),           AV_OPT_TYPE_RATIONAL,   { 0 }, 0, INT_MAX, V },
-    { "frame_rate",     NULL, OFFSET(frame_rate),          AV_OPT_TYPE_RATIONAL,   { 0 }, 0, INT_MAX, V },
-    { "video_size",     NULL, OFFSET(w),                   AV_OPT_TYPE_IMAGE_SIZE,           .flags = V },
-    { "pix_fmt",        NULL, OFFSET(pix_fmt),             AV_OPT_TYPE_PIXEL_FMT,            .flags = V },
-    { "pixel_aspect",   NULL, OFFSET(pixel_aspect),        AV_OPT_TYPE_RATIONAL,   { 0 }, 0, INT_MAX, V },
-    { "sws_param",      NULL, OFFSET(sws_param),           AV_OPT_TYPE_STRING,               .flags = V },
+    { "time_base",      NULL, OFFSET(time_base),           AV_OPT_TYPE_RATIONAL,   { .dbl = 0 }, 0, INT_MAX, FLAGS },
+    { "frame_rate",     NULL, OFFSET(frame_rate),          AV_OPT_TYPE_RATIONAL,   { .dbl = 0 }, 0, INT_MAX, FLAGS },
+    { "video_size",     NULL, OFFSET(w),                   AV_OPT_TYPE_IMAGE_SIZE, .flags = FLAGS },
+    { "pix_fmt",        NULL, OFFSET(pix_fmt),             AV_OPT_TYPE_PIXEL_FMT,  .flags = FLAGS },
+    { "pixel_aspect",   NULL, OFFSET(pixel_aspect),        AV_OPT_TYPE_RATIONAL,   { .dbl = 0 }, 0, INT_MAX, FLAGS },
+    { "sws_param",      NULL, OFFSET(sws_param),           AV_OPT_TYPE_STRING,     .flags = FLAGS },
     { NULL },
 };
-#undef V
+#undef FLAGS
 
 AVFILTER_DEFINE_CLASS(buffer);
 
@@ -194,10 +199,8 @@ static av_cold int init_video(AVFilterContext *ctx, const char *args)
     if (equal && (!colon || equal < colon)) {
         av_opt_set_defaults(c);
         ret = av_set_options_string(c, args, "=", ":");
-        if (ret < 0) {
-            av_log(ctx, AV_LOG_ERROR, "Error parsing options string: %s\n", args);
+        if (ret < 0)
             goto fail;
-        }
     } else {
     if ((n = sscanf(args, "%d:%d:%127[^:]:%d:%d:%d:%d:%255c", &c->w, &c->h, pix_fmt_str,
                     &c->time_base.num, &c->time_base.den,
@@ -234,12 +237,12 @@ fail:
     return ret;
 }
 
-#define A AV_OPT_FLAG_AUDIO_PARAM
+#define FLAGS AV_OPT_FLAG_FILTERING_PARAM|AV_OPT_FLAG_AUDIO_PARAM
 static const AVOption abuffer_options[] = {
-    { "time_base",      NULL, OFFSET(time_base),           AV_OPT_TYPE_RATIONAL, { 0 }, 0, INT_MAX, A },
-    { "sample_rate",    NULL, OFFSET(sample_rate),         AV_OPT_TYPE_INT,      { 0 }, 0, INT_MAX, A },
-    { "sample_fmt",     NULL, OFFSET(sample_fmt_str),      AV_OPT_TYPE_STRING,             .flags = A },
-    { "channel_layout", NULL, OFFSET(channel_layout_str),  AV_OPT_TYPE_STRING,             .flags = A },
+    { "time_base",      NULL, OFFSET(time_base),           AV_OPT_TYPE_RATIONAL, { .dbl = 0 }, 0, INT_MAX, FLAGS },
+    { "sample_rate",    NULL, OFFSET(sample_rate),         AV_OPT_TYPE_INT,      { .i64 = 0 }, 0, INT_MAX, FLAGS },
+    { "sample_fmt",     NULL, OFFSET(sample_fmt_str),      AV_OPT_TYPE_STRING, .flags = FLAGS },
+    { "channel_layout", NULL, OFFSET(channel_layout_str),  AV_OPT_TYPE_STRING, .flags = FLAGS },
     { NULL },
 };
 
@@ -253,10 +256,8 @@ static av_cold int init_audio(AVFilterContext *ctx, const char *args)
     s->class = &abuffer_class;
     av_opt_set_defaults(s);
 
-    if ((ret = av_set_options_string(s, args, "=", ":")) < 0) {
-        av_log(ctx, AV_LOG_ERROR, "Error parsing options string: '%s'\n", args);
+    if ((ret = av_set_options_string(s, args, "=", ":")) < 0)
         goto fail;
-    }
 
     s->sample_fmt = av_get_sample_fmt(s->sample_fmt_str);
     if (s->sample_fmt == AV_SAMPLE_FMT_NONE) {
@@ -408,13 +409,14 @@ AVFilter avfilter_vsrc_buffer = {
     .init      = init_video,
     .uninit    = uninit,
 
-    .inputs    = (const AVFilterPad[]) {{ .name = NULL }},
+    .inputs    = NULL,
     .outputs   = (const AVFilterPad[]) {{ .name            = "default",
                                           .type            = AVMEDIA_TYPE_VIDEO,
                                           .request_frame   = request_frame,
                                           .poll_frame      = poll_frame,
                                           .config_props    = config_props, },
                                         { .name = NULL}},
+    .priv_class = &buffer_class,
 };
 
 AVFilter avfilter_asrc_abuffer = {
@@ -426,11 +428,12 @@ AVFilter avfilter_asrc_abuffer = {
     .init      = init_audio,
     .uninit    = uninit,
 
-    .inputs    = (const AVFilterPad[]) {{ .name = NULL }},
+    .inputs    = NULL,
     .outputs   = (const AVFilterPad[]) {{ .name            = "default",
                                           .type            = AVMEDIA_TYPE_AUDIO,
                                           .request_frame   = request_frame,
                                           .poll_frame      = poll_frame,
                                           .config_props    = config_props, },
                                         { .name = NULL}},
+    .priv_class = &abuffer_class,
 };

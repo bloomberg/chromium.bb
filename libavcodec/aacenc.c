@@ -801,11 +801,11 @@ fail:
 
 #define AACENC_FLAGS AV_OPT_FLAG_ENCODING_PARAM | AV_OPT_FLAG_AUDIO_PARAM
 static const AVOption aacenc_options[] = {
-    {"stereo_mode", "Stereo coding method", offsetof(AACEncContext, options.stereo_mode), AV_OPT_TYPE_INT, {.dbl = 0}, -1, 1, AACENC_FLAGS, "stereo_mode"},
-        {"auto",     "Selected by the Encoder", 0, AV_OPT_TYPE_CONST, {.dbl = -1 }, INT_MIN, INT_MAX, AACENC_FLAGS, "stereo_mode"},
-        {"ms_off",   "Disable Mid/Side coding", 0, AV_OPT_TYPE_CONST, {.dbl =  0 }, INT_MIN, INT_MAX, AACENC_FLAGS, "stereo_mode"},
-        {"ms_force", "Force Mid/Side for the whole frame if possible", 0, AV_OPT_TYPE_CONST, {.dbl =  1 }, INT_MIN, INT_MAX, AACENC_FLAGS, "stereo_mode"},
-    {"aac_coder", "", offsetof(AACEncContext, options.aac_coder), AV_OPT_TYPE_INT, {.dbl = 2}, 0, AAC_CODER_NB-1, AACENC_FLAGS},
+    {"stereo_mode", "Stereo coding method", offsetof(AACEncContext, options.stereo_mode), AV_OPT_TYPE_INT, {.i64 = 0}, -1, 1, AACENC_FLAGS, "stereo_mode"},
+        {"auto",     "Selected by the Encoder", 0, AV_OPT_TYPE_CONST, {.i64 = -1 }, INT_MIN, INT_MAX, AACENC_FLAGS, "stereo_mode"},
+        {"ms_off",   "Disable Mid/Side coding", 0, AV_OPT_TYPE_CONST, {.i64 =  0 }, INT_MIN, INT_MAX, AACENC_FLAGS, "stereo_mode"},
+        {"ms_force", "Force Mid/Side for the whole frame if possible", 0, AV_OPT_TYPE_CONST, {.i64 =  1 }, INT_MIN, INT_MAX, AACENC_FLAGS, "stereo_mode"},
+    {"aac_coder", "", offsetof(AACEncContext, options.aac_coder), AV_OPT_TYPE_INT, {.i64 = 2}, 0, AAC_CODER_NB-1, AACENC_FLAGS},
     {NULL}
 };
 
@@ -819,7 +819,7 @@ static const AVClass aacenc_class = {
 AVCodec ff_aac_encoder = {
     .name           = "aac",
     .type           = AVMEDIA_TYPE_AUDIO,
-    .id             = CODEC_ID_AAC,
+    .id             = AV_CODEC_ID_AAC,
     .priv_data_size = sizeof(AACEncContext),
     .init           = aac_encode_init,
     .encode2        = aac_encode_frame,
@@ -829,6 +829,6 @@ AVCodec ff_aac_encoder = {
                       CODEC_CAP_EXPERIMENTAL,
     .sample_fmts    = (const enum AVSampleFormat[]){ AV_SAMPLE_FMT_FLT,
                                                      AV_SAMPLE_FMT_NONE },
-    .long_name      = NULL_IF_CONFIG_SMALL("Advanced Audio Coding"),
+    .long_name      = NULL_IF_CONFIG_SMALL("AAC (Advanced Audio Coding)"),
     .priv_class     = &aacenc_class,
 };

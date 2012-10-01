@@ -29,6 +29,7 @@
 
 #include "avfilter.h"
 #include "formats.h"
+#include "libavutil/common.h"
 #include "libavutil/eval.h"
 #include "libavutil/avstring.h"
 #include "libavutil/opt.h"
@@ -95,11 +96,12 @@ typedef struct {
 } OverlayContext;
 
 #define OFFSET(x) offsetof(OverlayContext, x)
+#define FLAGS AV_OPT_FLAG_VIDEO_PARAM|AV_OPT_FLAG_FILTERING_PARAM
 
 static const AVOption overlay_options[] = {
-    { "x", "set the x expression", OFFSET(x_expr), AV_OPT_TYPE_STRING, {.str = "0"}, CHAR_MIN, CHAR_MAX },
-    { "y", "set the y expression", OFFSET(y_expr), AV_OPT_TYPE_STRING, {.str = "0"}, CHAR_MIN, CHAR_MAX },
-    {"rgb", "force packed RGB in input and output", OFFSET(allow_packed_rgb), AV_OPT_TYPE_INT, {.dbl=0}, 0, 1 },
+    { "x", "set the x expression", OFFSET(x_expr), AV_OPT_TYPE_STRING, {.str = "0"}, CHAR_MIN, CHAR_MAX, FLAGS },
+    { "y", "set the y expression", OFFSET(y_expr), AV_OPT_TYPE_STRING, {.str = "0"}, CHAR_MIN, CHAR_MAX, FLAGS },
+    {"rgb", "force packed RGB in input and output", OFFSET(allow_packed_rgb), AV_OPT_TYPE_INT, {.i64=0}, 0, 1, FLAGS },
     {NULL},
 };
 
@@ -440,6 +442,7 @@ static int try_start_frame(AVFilterContext *ctx, AVFilterBufferRef *mainpic)
     OverlayContext *over = ctx->priv;
     AVFilterLink *outlink = ctx->outputs[0];
     AVFilterBufferRef *next_overpic, *outpicref;
+    int ret;
 
     /* Discard obsolete overlay frames: if there is a next frame with pts is
      * before the main frame, we can drop the current overlay. */
@@ -467,53 +470,66 @@ static int try_start_frame(AVFilterContext *ctx, AVFilterBufferRef *mainpic)
                 av_ts2str(over->overpicref->pts), av_ts2timestr(over->overpicref->pts, &outlink->time_base));
     av_dlog(ctx, "\n");
 
-    ff_start_frame(ctx->outputs[0], avfilter_ref_buffer(outpicref, ~0));
+    ret = ff_start_frame(ctx->outputs[0], avfilter_ref_buffer(outpicref, ~0));
     over->frame_requested = 0;
-    return 0;
+    return ret;
 }
 
 static int try_start_next_frame(AVFilterContext *ctx)
 {
     OverlayContext *over = ctx->priv;
     AVFilterBufferRef *next_mainpic = ff_bufqueue_peek(&over->queue_main, 0);
-    if (!next_mainpic || try_start_frame(ctx, next_mainpic) < 0)
+    int ret;
+
+    if (!next_mainpic)
         return AVERROR(EAGAIN);
+    if ((ret = try_start_frame(ctx, next_mainpic)) == AVERROR(EAGAIN))
+        return ret;
     avfilter_unref_buffer(ff_bufqueue_get(&over->queue_main));
-    return 0;
+    return ret;
 }
 
 static int try_push_frame(AVFilterContext *ctx)
 {
     OverlayContext *over = ctx->priv;
     AVFilterLink *outlink = ctx->outputs[0];
-    AVFilterBufferRef *outpicref = outlink->out_buf;
+    AVFilterBufferRef *outpicref;
+    int ret;
 
-    if (try_start_next_frame(ctx) < 0)
-        return AVERROR(EAGAIN);
+    if ((ret = try_start_next_frame(ctx)) < 0)
+        return ret;
     outpicref = outlink->out_buf;
     if (over->overpicref)
         blend_slice(ctx, outpicref, over->overpicref, over->x, over->y,
                     over->overpicref->video->w, over->overpicref->video->h,
                     0, outpicref->video->w, outpicref->video->h);
-    ff_draw_slice(outlink, 0, outpicref->video->h, +1);
-    ff_end_frame(outlink);
+    if ((ret = ff_draw_slice(outlink, 0, outpicref->video->h, +1)) < 0 ||
+        (ret = ff_end_frame(outlink)) < 0)
+        return ret;
     return 0;
 }
 
-static void flush_frames(AVFilterContext *ctx)
+static int flush_frames(AVFilterContext *ctx)
 {
-    while (!try_push_frame(ctx));
+    int ret;
+
+    while (!(ret = try_push_frame(ctx)));
+    return ret == AVERROR(EAGAIN) ? 0 : ret;
 }
 
 static int start_frame_main(AVFilterLink *inlink, AVFilterBufferRef *inpicref)
 {
     AVFilterContext *ctx = inlink->dst;
     OverlayContext *over = ctx->priv;
+    int ret;
 
-    flush_frames(ctx);
+    if ((ret = flush_frames(ctx)) < 0)
+        return ret;
     inpicref->pts = av_rescale_q(inpicref->pts, ctx->inputs[MAIN]->time_base,
                                  ctx->outputs[0]->time_base);
-    if (try_start_frame(ctx, inpicref) < 0) {
+    if ((ret = try_start_frame(ctx, inpicref)) < 0) {
+        if (ret != AVERROR(EAGAIN))
+            return ret;
         ff_bufqueue_add(ctx, &over->queue_main, inpicref);
         av_assert1(inpicref == inlink->cur_buf);
         inlink->cur_buf = NULL;
@@ -561,13 +577,17 @@ static int end_frame_over(AVFilterLink *inlink)
     AVFilterContext *ctx = inlink->dst;
     OverlayContext *over = ctx->priv;
     AVFilterBufferRef *inpicref = inlink->cur_buf;
+    int ret;
+
     inlink->cur_buf = NULL;
 
-    flush_frames(ctx);
+    if ((ret = flush_frames(ctx)) < 0)
+        return ret;
     inpicref->pts = av_rescale_q(inpicref->pts, ctx->inputs[OVERLAY]->time_base,
                                  ctx->outputs[0]->time_base);
     ff_bufqueue_add(ctx, &over->queue_over, inpicref);
-    return try_push_frame(ctx);
+    ret = try_push_frame(ctx);
+    return ret == AVERROR(EAGAIN) ? 0 : ret;
 }
 
 static int request_frame(AVFilterLink *outlink)
@@ -588,8 +608,8 @@ static int request_frame(AVFilterLink *outlink)
         /* EOF on main is reported immediately */
         if (ret == AVERROR_EOF && input == OVERLAY) {
             over->overlay_eof = 1;
-            if (!try_start_next_frame(ctx))
-                return 0;
+            if ((ret = try_start_next_frame(ctx)) != AVERROR(EAGAIN))
+                return ret;
             ret = 0; /* continue requesting frames on main */
         }
         if (ret < 0)
@@ -621,20 +641,20 @@ AVFilter avfilter_vf_overlay = {
                                           .start_frame     = start_frame_main,
                                           .draw_slice      = draw_slice_main,
                                           .end_frame       = end_frame_main,
-                                          .min_perms       = AV_PERM_READ,
-                                          .rej_perms       = AV_PERM_REUSE2|AV_PERM_PRESERVE, },
+                                          .min_perms       = AV_PERM_READ | AV_PERM_WRITE | AV_PERM_PRESERVE },
                                         { .name            = "overlay",
                                           .type            = AVMEDIA_TYPE_VIDEO,
                                           .config_props    = config_input_overlay,
                                           .start_frame     = start_frame_over,
                                           .draw_slice      = null_draw_slice,
                                           .end_frame       = end_frame_over,
-                                          .min_perms       = AV_PERM_READ,
-                                          .rej_perms       = AV_PERM_REUSE2, },
+                                          .min_perms       = AV_PERM_READ | AV_PERM_PRESERVE },
                                         { .name = NULL}},
     .outputs   = (const AVFilterPad[]) {{ .name            = "default",
                                           .type            = AVMEDIA_TYPE_VIDEO,
+                                          .rej_perms       = AV_PERM_WRITE,
                                           .config_props    = config_output,
                                           .request_frame   = request_frame, },
                                         { .name = NULL}},
+    .priv_class = &overlay_class,
 };

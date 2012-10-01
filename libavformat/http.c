@@ -32,8 +32,11 @@
 /* XXX: POST protocol is not completely implemented because ffmpeg uses
    only a subset of it. */
 
-/* used for protocol handling */
-#define BUFFER_SIZE 1024
+/* The IO buffer size is unrelated to the max URL size in itself, but needs
+ * to be large enough to fit the full request headers (including long
+ * path names).
+ */
+#define BUFFER_SIZE MAX_URL_SIZE
 #define MAX_REDIRECTS 8
 
 typedef struct {
@@ -64,10 +67,10 @@ typedef struct {
 #define E AV_OPT_FLAG_ENCODING_PARAM
 #define DEC AV_OPT_FLAG_DECODING_PARAM
 static const AVOption options[] = {
-{"chunked_post", "use chunked transfer-encoding for posts", OFFSET(chunked_post), AV_OPT_TYPE_INT, {.dbl = 1}, 0, 1, E },
+{"chunked_post", "use chunked transfer-encoding for posts", OFFSET(chunked_post), AV_OPT_TYPE_INT, {.i64 = 1}, 0, 1, E },
 {"headers", "custom HTTP headers, can override built in default headers", OFFSET(headers), AV_OPT_TYPE_STRING, { 0 }, 0, 0, D|E },
 {"user-agent", "override User-Agent header", OFFSET(user_agent), AV_OPT_TYPE_STRING, {.str = NULL}, 0, 0, DEC},
-{"multiple_requests", "use persistent connections", OFFSET(multiple_requests), AV_OPT_TYPE_INT, {.dbl = 0}, 0, 1, D|E },
+{"multiple_requests", "use persistent connections", OFFSET(multiple_requests), AV_OPT_TYPE_INT, {.i64 = 0}, 0, 1, D|E },
 {"post_data", "custom HTTP post data", OFFSET(post_data), AV_OPT_TYPE_BINARY, .flags = D|E },
 {NULL}
 };
@@ -101,8 +104,8 @@ static int http_open_cnx(URLContext *h)
     const char *path, *proxy_path, *lower_proto = "tcp", *local_path;
     char hostname[1024], hoststr[1024], proto[10];
     char auth[1024], proxyauth[1024] = "";
-    char path1[1024];
-    char buf[1024], urlbuf[1024];
+    char path1[MAX_URL_SIZE];
+    char buf[1024], urlbuf[MAX_URL_SIZE];
     int port, use_proxy, err, location_changed = 0, redirects = 0, attempts = 0;
     HTTPAuthType cur_auth_type, cur_proxy_auth_type;
     HTTPContext *s = h->priv_data;
@@ -352,7 +355,7 @@ static inline int has_header(const char *str, const char *header)
 static int http_read_header(URLContext *h, int *new_location)
 {
     HTTPContext *s = h->priv_data;
-    char line[1024];
+    char line[MAX_URL_SIZE];
     int err = 0;
 
     s->chunksize = -1;
@@ -380,7 +383,7 @@ static int http_connect(URLContext *h, const char *path, const char *local_path,
 {
     HTTPContext *s = h->priv_data;
     int post, err;
-    char headers[1024] = "";
+    char headers[4096] = "";
     char *authstr = NULL, *proxyauthstr = NULL;
     int64_t off = s->off;
     int len = 0;
@@ -411,6 +414,9 @@ static int http_connect(URLContext *h, const char *path, const char *local_path,
     if (!has_header(s->headers, "\r\nAccept: "))
         len += av_strlcpy(headers + len, "Accept: */*\r\n",
                           sizeof(headers) - len);
+    // Note: we send this on purpose even when s->off is 0,
+    // since it allows us to detect more reliably if a (non-conforming)
+    // server supports seeking by analysing the reply headers.
     if (!has_header(s->headers, "\r\nRange: ") && !post)
         len += av_strlcatf(headers + len, sizeof(headers) - len,
                            "Range: bytes=%"PRId64"-\r\n", s->off);

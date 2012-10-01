@@ -246,9 +246,6 @@ static void adjust_write_index(AVFormatContext *s)
         ffm->write_index += pos_max;
     }
 
-    //printf("Adjusted write index from %"PRId64" to %"PRId64": pts=%0.6f\n", orig_write_index, ffm->write_index, pts / 1000000.);
-    //printf("pts range %0.6f - %0.6f\n", get_dts(s, 0) / 1000000. , get_dts(s, ffm->file_size - 2 * FFM_PACKET_SIZE) / 1000000. );
-
  end:
     avio_seek(pb, ptr, SEEK_SET);
 }
@@ -528,7 +525,7 @@ static int ffm_probe(AVProbeData *p)
 
 AVInputFormat ff_ffm_demuxer = {
     .name           = "ffm",
-    .long_name      = NULL_IF_CONFIG_SMALL("FFM (FFserver live feed) format"),
+    .long_name      = NULL_IF_CONFIG_SMALL("FFM (FFserver live feed)"),
     .priv_data_size = sizeof(FFMContext),
     .read_probe     = ffm_probe,
     .read_header    = ffm_read_header,

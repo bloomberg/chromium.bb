@@ -44,6 +44,7 @@
 #include <math.h>
 
 #include "avcodec.h"
+#include "dsputil.h"
 #include "libavutil/common.h"
 #include "libavutil/avassert.h"
 #include "celp_math.h"
@@ -491,7 +492,7 @@ static void decode_8_pulses_31bits(const int16_t *fixed_index,
 static void decode_fixed_sparse(AMRFixed *fixed_sparse, const uint16_t *pulses,
                                 const enum Mode mode, const int subframe)
 {
-    av_assert1(MODE_4k75 <= mode && mode <= MODE_12k2);
+    av_assert1(MODE_4k75 <= (signed)mode && mode <= MODE_12k2);
 
     if (mode == MODE_12k2) {
         ff_decode_10_pulses_35bits(pulses, fixed_sparse, gray_decode, 5, 3);
@@ -798,7 +799,7 @@ static int synthesis(AMRContext *p, float *lpc,
     // emphasize pitch vector contribution
     if (p->pitch_gain[4] > 0.5 && !overflow) {
         float energy = p->celpm_ctx.dot_productf(excitation, excitation,
-                                       AMR_SUBFRAME_SIZE);
+                                                AMR_SUBFRAME_SIZE);
         float pitch_factor =
             p->pitch_gain[4] *
             (p->cur_frame_mode == MODE_12k2 ?
@@ -899,7 +900,7 @@ static void postfilter(AMRContext *p, float *lpc, float *buf_out)
     float *samples          = p->samples_in + LP_FILTER_ORDER; // Start of input
 
     float speech_gain       = p->celpm_ctx.dot_productf(samples, samples,
-                                              AMR_SUBFRAME_SIZE);
+                                                       AMR_SUBFRAME_SIZE);
 
     float pole_out[AMR_SUBFRAME_SIZE + LP_FILTER_ORDER];  // Output of pole filter
     const float *gamma_n, *gamma_d;                       // Formant filter factor table
@@ -1005,8 +1006,10 @@ static int amrnb_decode_frame(AVCodecContext *avctx, void *data,
 
         p->fixed_gain[4] =
             ff_amr_set_fixed_gain(fixed_gain_factor,
-                       p->celpm_ctx.dot_productf(p->fixed_vector, p->fixed_vector,
-                                       AMR_SUBFRAME_SIZE)/AMR_SUBFRAME_SIZE,
+                       p->celpm_ctx.dot_productf(p->fixed_vector,
+                                                           p->fixed_vector,
+                                                           AMR_SUBFRAME_SIZE) /
+                                  AMR_SUBFRAME_SIZE,
                        p->prediction_error,
                        energy_mean[p->cur_frame_mode], energy_pred_fac);
 
@@ -1075,12 +1078,12 @@ static int amrnb_decode_frame(AVCodecContext *avctx, void *data,
 AVCodec ff_amrnb_decoder = {
     .name           = "amrnb",
     .type           = AVMEDIA_TYPE_AUDIO,
-    .id             = CODEC_ID_AMR_NB,
+    .id             = AV_CODEC_ID_AMR_NB,
     .priv_data_size = sizeof(AMRContext),
     .init           = amrnb_decode_init,
     .decode         = amrnb_decode_frame,
     .capabilities   = CODEC_CAP_DR1,
-    .long_name      = NULL_IF_CONFIG_SMALL("Adaptive Multi-Rate NarrowBand"),
+    .long_name      = NULL_IF_CONFIG_SMALL("AMR-NB (Adaptive Multi-Rate NarrowBand)"),
     .sample_fmts    = (const enum AVSampleFormat[]){ AV_SAMPLE_FMT_FLT,
                                                      AV_SAMPLE_FMT_NONE },
 };

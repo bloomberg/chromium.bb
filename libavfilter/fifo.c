@@ -25,6 +25,7 @@
 
 #include "libavutil/avassert.h"
 #include "libavutil/audioconvert.h"
+#include "libavutil/common.h"
 #include "libavutil/mathematics.h"
 #include "libavutil/samplefmt.h"
 
@@ -281,7 +282,7 @@ AVFilter avfilter_vf_fifo = {
                                           .start_frame     = add_to_queue,
                                           .draw_slice      = draw_slice,
                                           .end_frame       = end_frame,
-                                          .rej_perms       = AV_PERM_REUSE2, },
+                                          .min_perms       = AV_PERM_PRESERVE, },
                                         { .name = NULL}},
     .outputs   = (const AVFilterPad[]) {{ .name            = "default",
                                           .type            = AVMEDIA_TYPE_VIDEO,
@@ -302,7 +303,7 @@ AVFilter avfilter_af_afifo = {
                                           .type             = AVMEDIA_TYPE_AUDIO,
                                           .get_audio_buffer = ff_null_get_audio_buffer,
                                           .filter_samples   = add_to_queue,
-                                          .rej_perms        = AV_PERM_REUSE2, },
+                                          .min_perms        = AV_PERM_PRESERVE, },
                                         { .name = NULL}},
     .outputs   = (const AVFilterPad[]) {{ .name             = "default",
                                           .type             = AVMEDIA_TYPE_AUDIO,

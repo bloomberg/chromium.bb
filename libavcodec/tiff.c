@@ -26,6 +26,7 @@
 
 #include "avcodec.h"
 #include "bytestream.h"
+#include "config.h"
 #if CONFIG_ZLIB
 #include <zlib.h>
 #endif
@@ -206,14 +207,17 @@ static char *doubles2str(double *dp, int count, const char *sep)
 {
     int i;
     char *ap, *ap0;
+    int component_len = 15 + strlen(sep);
     if (!sep) sep = ", ";
-    ap = av_malloc((15 + strlen(sep)) * count);
+    ap = av_malloc(component_len * count);
     if (!ap)
         return NULL;
     ap0   = ap;
     ap[0] = '\0';
     for (i = 0; i < count; i++) {
-        int l = snprintf(ap, 15 + strlen(sep), "%f%s", dp[i], sep);
+        unsigned l = snprintf(ap, component_len, "%f%s", dp[i], sep);
+        if(l >= component_len)
+            return NULL;
         ap += l;
     }
     ap0[strlen(ap0) - strlen(sep)] = '\0';
@@ -1004,6 +1008,8 @@ static int decode_frame(AVCodecContext *avctx,
         return -1;
     }
     s->le = le;
+    // TIFF_BPP is not a required tag and defaults to 1
+    s->bppcount = s->bpp = 1;
     s->invert = 0;
     s->compr = TIFF_RAW;
     s->fill_order = 0;
@@ -1171,7 +1177,7 @@ static av_cold int tiff_end(AVCodecContext *avctx)
 AVCodec ff_tiff_decoder = {
     .name           = "tiff",
     .type           = AVMEDIA_TYPE_VIDEO,
-    .id             = CODEC_ID_TIFF,
+    .id             = AV_CODEC_ID_TIFF,
     .priv_data_size = sizeof(TiffContext),
     .init           = tiff_init,
     .close          = tiff_end,

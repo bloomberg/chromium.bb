@@ -24,13 +24,16 @@
  * null audio source
  */
 
-#include "internal.h"
-#include "libavutil/audioconvert.h"
-#include "libavutil/opt.h"
+#include <inttypes.h>
+#include <stdio.h>
 
 #include "audio.h"
 #include "avfilter.h"
 #include "internal.h"
+
+#include "libavutil/audioconvert.h"
+#include "libavutil/internal.h"
+#include "libavutil/opt.h"
 
 typedef struct {
     const AVClass *class;
@@ -43,14 +46,15 @@ typedef struct {
 } ANullContext;
 
 #define OFFSET(x) offsetof(ANullContext, x)
+#define FLAGS AV_OPT_FLAG_AUDIO_PARAM|AV_OPT_FLAG_FILTERING_PARAM
 
 static const AVOption anullsrc_options[]= {
-    { "channel_layout", "set channel_layout", OFFSET(channel_layout_str), AV_OPT_TYPE_STRING, {.str = "stereo"}, 0, 0 },
-    { "cl",             "set channel_layout", OFFSET(channel_layout_str), AV_OPT_TYPE_STRING, {.str = "stereo"}, 0, 0 },
-    { "sample_rate",    "set sample rate",    OFFSET(sample_rate_str)   , AV_OPT_TYPE_STRING, {.str = "44100"}, 0, 0 },
-    { "r",              "set sample rate",    OFFSET(sample_rate_str)   , AV_OPT_TYPE_STRING, {.str = "44100"}, 0, 0 },
-    { "nb_samples",     "set the number of samples per requested frame", OFFSET(nb_samples), AV_OPT_TYPE_INT, {.dbl = 1024}, 0, INT_MAX },
-    { "n",              "set the number of samples per requested frame", OFFSET(nb_samples), AV_OPT_TYPE_INT, {.dbl = 1024}, 0, INT_MAX },
+    { "channel_layout", "set channel_layout", OFFSET(channel_layout_str), AV_OPT_TYPE_STRING, {.str = "stereo"}, 0, 0, FLAGS },
+    { "cl",             "set channel_layout", OFFSET(channel_layout_str), AV_OPT_TYPE_STRING, {.str = "stereo"}, 0, 0, FLAGS },
+    { "sample_rate",    "set sample rate",    OFFSET(sample_rate_str)   , AV_OPT_TYPE_STRING, {.str = "44100"}, 0, 0, FLAGS },
+    { "r",              "set sample rate",    OFFSET(sample_rate_str)   , AV_OPT_TYPE_STRING, {.str = "44100"}, 0, 0, FLAGS },
+    { "nb_samples",     "set the number of samples per requested frame", OFFSET(nb_samples), AV_OPT_TYPE_INT, {.i64 = 1024}, 0, INT_MAX, FLAGS },
+    { "n",              "set the number of samples per requested frame", OFFSET(nb_samples), AV_OPT_TYPE_INT, {.i64 = 1024}, 0, INT_MAX, FLAGS },
     { NULL },
 };
 
@@ -64,10 +68,8 @@ static int init(AVFilterContext *ctx, const char *args)
     null->class = &anullsrc_class;
     av_opt_set_defaults(null);
 
-    if ((ret = (av_set_options_string(null, args, "=", ":"))) < 0) {
-        av_log(ctx, AV_LOG_ERROR, "Error parsing options string: '%s'\n", args);
+    if ((ret = (av_set_options_string(null, args, "=", ":"))) < 0)
         return ret;
-    }
 
     if ((ret = ff_parse_sample_rate(&null->sample_rate,
                                      null->sample_rate_str, ctx)) < 0)
@@ -124,11 +126,12 @@ AVFilter avfilter_asrc_anullsrc = {
     .init        = init,
     .priv_size   = sizeof(ANullContext),
 
-    .inputs      = (const AVFilterPad[]) {{ .name = NULL}},
+    .inputs      = NULL,
 
     .outputs     = (const AVFilterPad[]) {{ .name = "default",
                                             .type = AVMEDIA_TYPE_AUDIO,
                                             .config_props = config_props,
                                             .request_frame = request_frame, },
                                           { .name = NULL}},
+    .priv_class = &anullsrc_class,
 };

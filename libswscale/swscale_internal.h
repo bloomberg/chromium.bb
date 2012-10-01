@@ -28,6 +28,7 @@
 #endif
 
 #include "libavutil/avutil.h"
+#include "libavutil/common.h"
 #include "libavutil/log.h"
 #include "libavutil/pixfmt.h"
 #include "libavutil/pixdesc.h"
@@ -690,8 +691,7 @@ const char *sws_format_name(enum PixelFormat format);
      (PIX_FMT_PLANAR | PIX_FMT_RGB)) == (PIX_FMT_PLANAR | PIX_FMT_RGB))
 
 #define usePal(x) ((av_pix_fmt_descriptors[x].flags & PIX_FMT_PAL)       || \
-                   (av_pix_fmt_descriptors[x].flags & PIX_FMT_PSEUDOPAL) || \
-                   (x) == PIX_FMT_Y400A)
+                   (av_pix_fmt_descriptors[x].flags & PIX_FMT_PSEUDOPAL))
 
 extern const uint64_t ff_dither4[2];
 extern const uint64_t ff_dither8[2];

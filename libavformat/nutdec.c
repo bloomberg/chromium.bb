@@ -77,8 +77,8 @@ static uint64_t get_fourcc(AVIOContext *bc)
 }
 
 #ifdef TRACE
-static inline uint64_t get_v_trace(AVIOContext *bc, char *file,
-                                   char *func, int line)
+static inline uint64_t get_v_trace(AVIOContext *bc, const char *file,
+                                   const char *func, int line)
 {
     uint64_t v = ffio_read_varlen(bc);
 
@@ -87,8 +87,8 @@ static inline uint64_t get_v_trace(AVIOContext *bc, char *file,
     return v;
 }
 
-static inline int64_t get_s_trace(AVIOContext *bc, char *file,
-                                  char *func, int line)
+static inline int64_t get_s_trace(AVIOContext *bc, const char *file,
+                                  const char *func, int line)
 {
     int64_t v = get_s(bc);
 
@@ -97,18 +97,18 @@ static inline int64_t get_s_trace(AVIOContext *bc, char *file,
     return v;
 }
 
-static inline uint64_t get_vb_trace(AVIOContext *bc, char *file,
+static inline uint64_t get_4cc_trace(AVIOContext *bc, char *file,
                                     char *func, int line)
 {
-    uint64_t v = get_vb(bc);
+    uint64_t v = get_fourcc(bc);
 
-    av_log(NULL, AV_LOG_DEBUG, "get_vb %5"PRId64" / %"PRIX64" in %s %s:%d\n",
+    av_log(NULL, AV_LOG_DEBUG, "get_fourcc %5"PRId64" / %"PRIX64" in %s %s:%d\n",
            v, v, file, func, line);
     return v;
 }
 #define ffio_read_varlen(bc) get_v_trace(bc,  __FILE__, __PRETTY_FUNCTION__, __LINE__)
 #define get_s(bc)            get_s_trace(bc,  __FILE__, __PRETTY_FUNCTION__, __LINE__)
-#define get_vb(bc)           get_vb_trace(bc, __FILE__, __PRETTY_FUNCTION__, __LINE__)
+#define get_fourcc(bc)       get_4cc_trace(bc, __FILE__, __PRETTY_FUNCTION__, __LINE__)
 #endif
 
 static int get_packetheader(NUTContext *nut, AVIOContext *bc,
@@ -380,7 +380,7 @@ static int decode_stream_header(NUTContext *nut)
         av_log(s, AV_LOG_ERROR, "unknown stream class (%d)\n", class);
         return -1;
     }
-    if (class < 3 && st->codec->codec_id == CODEC_ID_NONE)
+    if (class < 3 && st->codec->codec_id == AV_CODEC_ID_NONE)
         av_log(s, AV_LOG_ERROR,
                "Unknown codec tag '0x%04x' for stream number %d\n",
                (unsigned int) tmp, stream_id);
@@ -527,7 +527,8 @@ static int decode_syncpoint(NUTContext *nut, int64_t *ts, int64_t *back_ptr)
 {
     AVFormatContext *s = nut->avf;
     AVIOContext *bc    = s->pb;
-    int64_t end, tmp;
+    int64_t end;
+    uint64_t tmp;
 
     nut->last_syncpoint_pos = avio_tell(bc) - 8;
 
@@ -547,8 +548,8 @@ static int decode_syncpoint(NUTContext *nut, int64_t *ts, int64_t *back_ptr)
         return -1;
     }
 
-    *ts = tmp / s->nb_streams *
-          av_q2d(nut->time_base[tmp % s->nb_streams]) * AV_TIME_BASE;
+    *ts = tmp / nut->time_base_count *
+          av_q2d(nut->time_base[tmp % nut->time_base_count]) * AV_TIME_BASE;
     ff_nut_add_sp(nut, nut->last_syncpoint_pos, *back_ptr, *ts);
 
     return 0;
@@ -623,7 +624,7 @@ static int find_and_decode_index(NUTContext *nut)
                 int flag = x & 1;
                 x >>= 1;
                 if (n + x >= syncpoint_count + 1) {
-                    av_log(s, AV_LOG_ERROR, "index overflow A\n");
+                    av_log(s, AV_LOG_ERROR, "index overflow A %d + %"PRIu64" >= %d\n", n, x, syncpoint_count + 1);
                     goto fail;
                 }
                 while (x--)
@@ -951,6 +952,8 @@ static int read_seek(AVFormatContext *s, int stream_index,
     if (st->index_entries) {
         int index = av_index_search_timestamp(st, pts, flags);
         if (index < 0)
+            index = av_index_search_timestamp(st, pts, flags ^ AVSEEK_FLAG_BACKWARD);
+        if (index < 0)
             return -1;
 
         pos2 = st->index_entries[index].pos;
@@ -1014,7 +1017,7 @@ static int nut_read_close(AVFormatContext *s)
 
 AVInputFormat ff_nut_demuxer = {
     .name           = "nut",
-    .long_name      = NULL_IF_CONFIG_SMALL("NUT format"),
+    .long_name      = NULL_IF_CONFIG_SMALL("NUT"),
     .flags          = AVFMT_SEEK_TO_PTS,
     .priv_data_size = sizeof(NUTContext),
     .read_probe     = nut_probe,

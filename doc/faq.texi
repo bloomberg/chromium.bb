@@ -213,8 +213,56 @@ For ANY other help on Avisynth, please visit the
 
 @section How can I join video files?
 
-A few multimedia containers (MPEG-1, MPEG-2 PS, DV) allow to join video files by
-merely concatenating them.
+To "join" video files is quite ambiguous. The following list explains the
+different kinds of "joining" and points out how those are addressed in
+FFmpeg. To join video files may mean:
+
+@itemize
+
+@item
+To put them one after the other: this is called to @emph{concatenate} them
+(in short: concat) and is addressed
+@ref{How can I concatenate video files, in this very faq}.
+
+@item
+To put them together in the same file, to let the user choose between the
+different versions (example: different audio languages): this is called to
+@emph{multiplex} them together (in short: mux), and is done by simply
+invoking ffmpeg with several @option{-i} options.
+
+@item
+For audio, to put all channels together in a single stream (example: two
+mono streams into one stereo stream): this is sometimes called to
+@emph{merge} them, and can be done using the
+@url{http://ffmpeg.org/ffmpeg.html#amerge, @code{amerge}} filter.
+
+@item
+For audio, to play one on top of the other: this is called to @emph{mix}
+them, and can be done by first merging them into a single stream and then
+using the @url{http://ffmpeg.org/ffmpeg.html#pan, @code{pan}} filter to mix
+the channels at will.
+
+@item
+For video, to display both together, side by side or one on top of a part of
+the other; it can be done using the
+@url{http://ffmpeg.org/ffmpeg.html#overlay, @code{overlay}} video filter.
+
+@end itemize
+
+@anchor{How can I concatenate video files}
+@section How can I concatenate video files?
+
+There are several solutions, depending on the exact circumstances.
+
+@subsection Concatenating using filters
+
+FFmpeg has a @url{http://ffmpeg.org/ffmpeg.html#concat-1, @code{concat}}
+filter designed specifically for that, with examples in the documentation.
+
+@subsection Concatenating at the file level
+
+A few multimedia containers (MPEG-1, MPEG-2 PS, DV) allow to concatenate
+video by merely concatenating the files them.
 
 Hence you may concatenate your multimedia files by first transcoding them to
 these privileged formats, then using the humble @code{cat} command (or the
@@ -252,6 +300,8 @@ cat intermediate1.mpg intermediate2.mpg |\
 ffmpeg -f mpeg -i - -qscale:v 2 -c:v mpeg4 -acodec libmp3lame -q:a 4 output.avi
 @end example
 
+@subsection Concatenating using raw audio and video
+
 Similarly, the yuv4mpegpipe format, and the raw video, raw audio codecs also
 allow concatenation, and the transcoding step is almost lossless.
 When using multiple yuv4mpegpipe(s), the first line needs to be discarded
@@ -259,7 +309,8 @@ from all but the first stream. This can be accomplished by piping through
 @code{tail} as seen below. Note that when piping through @code{tail} you
 must use command grouping, @code{@{  ;@}}, to background properly.
 
-For example, let's say we want to join two FLV files into an output.flv file:
+For example, let's say we want to concatenate two FLV files into an
+output.flv file:
 
 @example
 mkfifo temp1.a
@@ -318,11 +369,34 @@ specifying the exact format.
 aconvert=s16:stereo:packed
 @end example
 
+@section Why does FFmpeg not see the subtitles in my VOB file?
+
+VOB and a few other formats do not have a global header that describes
+everything present in the file. Instead, applications are supposed to scan
+the file to see what it contains. Since VOB files are frequently large, only
+the beginning is scanned. If the subtitles happen only later in the file,
+they will not be initally detected.
+
+Some applications, including the @code{ffmpeg} command-line tool, can only
+work with streams that were detected during the initial scan; streams that
+are detected later are ignored.
+
+The size of the initial scan is controlled by two options: @code{probesize}
+(default ~5 Mo) and @code{analyzeduration} (default 5,000,000 µs = 5 s). For
+the subtitle stream to be detected, both values must be large enough.
+
 @chapter Development
 
 @section Are there examples illustrating how to use the FFmpeg libraries, particularly libavcodec and libavformat?
 
-Yes. Read the Developers Guide of the FFmpeg documentation. Alternatively,
+Yes. Check the @file{doc/examples} directory in the source
+repository, also available online at:
+@url{https://github.com/FFmpeg/FFmpeg/tree/master/doc/examples}.
+
+Examples are also installed by default, usually in
+@code{$PREFIX/share/ffmpeg/examples}.
+
+Also you may read the Developers Guide of the FFmpeg documentation. Alternatively,
 examine the source code for one of the many open source projects that
 already incorporate FFmpeg at (@url{projects.html}).
 
@@ -334,31 +408,8 @@ with @code{#ifdef}s related to the compiler.
 
 @section Is Microsoft Visual C++ supported?
 
-No. Microsoft Visual C++ is not compliant to the C99 standard and does
-not - among other things - support the inline assembly used in FFmpeg.
-If you wish to use MSVC++ for your
-project then you can link the MSVC++ code with libav* as long as
-you compile the latter with a working C compiler. For more information, see
-the @emph{Microsoft Visual C++ compatibility} section in the FFmpeg
-documentation.
-
-There have been efforts to make FFmpeg compatible with MSVC++ in the
-past. However, they have all been rejected as too intrusive, especially
-since MinGW does the job adequately. None of the core developers
-work with MSVC++ and thus this item is low priority. Should you find
-the silver bullet that solves this problem, feel free to shoot it at us.
-
-We strongly recommend you to move over from MSVC++ to MinGW tools.
-
-@section Can I use FFmpeg or libavcodec under Windows?
-
-Yes, but the Cygwin or MinGW tools @emph{must} be used to compile FFmpeg.
-Read the @emph{Windows} section in the FFmpeg documentation to find more
-information.
-
-To get help and instructions for building FFmpeg under Windows, check out
-the FFmpeg Windows Help Forum at
-@url{http://ffmpeg.arrozcru.org/}.
+Yes. Please see the @uref{platform.html, Microsoft Visual C++}
+section in the FFmpeg documentation.
 
 @section Can you add automake, libtool or autoconf support?
 

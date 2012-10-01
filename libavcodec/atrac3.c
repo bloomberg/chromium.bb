@@ -37,6 +37,7 @@
 #include <stdio.h>
 
 #include "libavutil/float_dsp.h"
+#include "libavutil/libm.h"
 #include "avcodec.h"
 #include "get_bits.h"
 #include "bytestream.h"
@@ -1020,10 +1021,10 @@ static av_cold int atrac3_decode_init(AVCodecContext *avctx)
 
     /* Generate gain tables. */
     for (i=0 ; i<16 ; i++)
-        gain_tab1[i] = powf (2.0, (4 - i));
+        gain_tab1[i] = exp2f (4 - i);
 
     for (i=-15 ; i<16 ; i++)
-        gain_tab2[i+15] = powf (2.0, i * -0.125);
+        gain_tab2[i+15] = exp2f (i * -0.125);
 
     /* init the joint-stereo decoding data */
     q->weighting_delay[0] = 0;
@@ -1068,7 +1069,7 @@ AVCodec ff_atrac3_decoder =
 {
     .name           = "atrac3",
     .type           = AVMEDIA_TYPE_AUDIO,
-    .id             = CODEC_ID_ATRAC3,
+    .id             = AV_CODEC_ID_ATRAC3,
     .priv_data_size = sizeof(ATRAC3Context),
     .init           = atrac3_decode_init,
     .close          = atrac3_decode_close,

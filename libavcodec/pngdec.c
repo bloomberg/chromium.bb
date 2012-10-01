@@ -37,6 +37,7 @@
 
 typedef struct PNGDecContext {
     PNGDSPContext dsp;
+    AVCodecContext *avctx;
 
     GetByteContext gb;
     AVFrame picture1, picture2;
@@ -371,6 +372,7 @@ static int png_decode_idat(PNGDecContext *s, int length)
     while (s->zstream.avail_in > 0) {
         ret = inflate(&s->zstream, Z_PARTIAL_FLUSH);
         if (ret != Z_OK && ret != Z_STREAM_END) {
+            av_log(s->avctx, AV_LOG_ERROR, "inflate returned %d\n", ret);
             return -1;
         }
         if (s->zstream.avail_out == 0) {
@@ -420,8 +422,10 @@ static int decode_frame(AVCodecContext *avctx,
     s->zstream.zfree = ff_png_zfree;
     s->zstream.opaque = NULL;
     ret = inflateInit(&s->zstream);
-    if (ret != Z_OK)
+    if (ret != Z_OK) {
+        av_log(avctx, AV_LOG_ERROR, "inflateInit returned %d\n", ret);
         return -1;
+    }
     for(;;) {
         if (bytestream2_get_bytes_left(&s->gb) <= 0) {
             av_log(avctx, AV_LOG_ERROR, "No bytes left\n");
@@ -723,6 +727,8 @@ static av_cold int png_dec_init(AVCodecContext *avctx)
 
     ff_pngdsp_init(&s->dsp);
 
+    s->avctx = avctx;
+
     return 0;
 }
 
@@ -741,7 +747,7 @@ static av_cold int png_dec_end(AVCodecContext *avctx)
 AVCodec ff_png_decoder = {
     .name           = "png",
     .type           = AVMEDIA_TYPE_VIDEO,
-    .id             = CODEC_ID_PNG,
+    .id             = AV_CODEC_ID_PNG,
     .priv_data_size = sizeof(PNGDecContext),
     .init           = png_dec_init,
     .close          = png_dec_end,

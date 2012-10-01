@@ -22,6 +22,7 @@
 
 #include "avcodec.h"
 #include "internal.h"
+#include "libavutil/common.h"
 
 static av_cold int xbm_encode_init(AVCodecContext *avctx)
 {
@@ -74,7 +75,7 @@ static av_cold int xbm_encode_close(AVCodecContext *avctx)
 AVCodec ff_xbm_encoder = {
     .name         = "xbm",
     .type         = AVMEDIA_TYPE_VIDEO,
-    .id           = CODEC_ID_XBM,
+    .id           = AV_CODEC_ID_XBM,
     .init         = xbm_encode_init,
     .encode2      = xbm_encode_frame,
     .close        = xbm_encode_close,

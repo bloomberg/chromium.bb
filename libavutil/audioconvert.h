@@ -62,6 +62,7 @@
 #define AV_CH_WIDE_RIGHT             0x0000000100000000ULL
 #define AV_CH_SURROUND_DIRECT_LEFT   0x0000000200000000ULL
 #define AV_CH_SURROUND_DIRECT_RIGHT  0x0000000400000000ULL
+#define AV_CH_LOW_FREQUENCY_2        0x0000000800000000ULL
 
 /** Channel mask value used for AVCodecContext.request_channel_layout
     to indicate that the user requests the channel order of the decoder output
@@ -179,6 +180,26 @@ uint64_t av_channel_layout_extract_channel(uint64_t channel_layout, int index);
  * @return channel name on success, NULL on error.
  */
 const char *av_get_channel_name(uint64_t channel);
+
+/**
+ * Get the description of a given channel.
+ *
+ * @param channel  a channel layout with a single channel
+ * @return  channel description on success, NULL on error
+ */
+const char *av_get_channel_description(uint64_t channel);
+
+/**
+ * Get the value and name of a standard channel layout.
+ *
+ * @param[in]  index   index in an internal list, starting at 0
+ * @param[out] layout  channel layout mask
+ * @param[out] name    name of the layout
+ * @return  0  if the layout exists,
+ *          <0 if index is beyond the limits
+ */
+int av_get_standard_channel_layout(unsigned index, uint64_t *layout,
+                                   const char **name);
 
 /**
  * @}

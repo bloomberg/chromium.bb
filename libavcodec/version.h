@@ -26,8 +26,10 @@
  * Libavcodec version macros.
  */
 
+#include "libavutil/avutil.h"
+
 #define LIBAVCODEC_VERSION_MAJOR 54
-#define LIBAVCODEC_VERSION_MINOR  44
+#define LIBAVCODEC_VERSION_MINOR 61
 #define LIBAVCODEC_VERSION_MICRO 100
 
 #define LIBAVCODEC_VERSION_INT  AV_VERSION_INT(LIBAVCODEC_VERSION_MAJOR, \
@@ -85,6 +87,12 @@
 #endif
 #ifndef FF_API_FIND_BEST_PIX_FMT
 #define FF_API_FIND_BEST_PIX_FMT (LIBAVCODEC_VERSION_MAJOR < 55)
+#endif
+#ifndef FF_API_CODEC_ID
+#define FF_API_CODEC_ID          (LIBAVCODEC_VERSION_MAJOR < 55)
+#endif
+#ifndef FF_API_VDA_ASYNC
+#define FF_API_VDA_ASYNC         (LIBAVCODEC_VERSION_MAJOR < 55)
 #endif
 
 #endif /* AVCODEC_VERSION_H */

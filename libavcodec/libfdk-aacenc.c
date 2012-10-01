@@ -25,6 +25,7 @@
 #include "audio_frame_queue.h"
 #include "internal.h"
 #include "libavutil/audioconvert.h"
+#include "libavutil/common.h"
 #include "libavutil/opt.h"
 
 typedef struct AACContext {
@@ -33,18 +34,24 @@ typedef struct AACContext {
     int afterburner;
     int eld_sbr;
     int signaling;
+    int latm;
+    int header_period;
+    int vbr;
 
     AudioFrameQueue afq;
 } AACContext;
 
 static const AVOption aac_enc_options[] = {
-    { "afterburner", "Afterburner (improved quality)", offsetof(AACContext, afterburner), AV_OPT_TYPE_INT, { 1 }, 0, 1, AV_OPT_FLAG_AUDIO_PARAM | AV_OPT_FLAG_ENCODING_PARAM },
-    { "eld_sbr", "Enable SBR for ELD (for SBR in other configurations, use the -profile parameter)", offsetof(AACContext, eld_sbr), AV_OPT_TYPE_INT, { 0 }, 0, 1, AV_OPT_FLAG_AUDIO_PARAM | AV_OPT_FLAG_ENCODING_PARAM },
-    { "signaling", "SBR/PS signaling style", offsetof(AACContext, signaling), AV_OPT_TYPE_INT, { -1 }, -1, 2, AV_OPT_FLAG_AUDIO_PARAM | AV_OPT_FLAG_ENCODING_PARAM, "signaling" },
-    { "default", "Choose signaling implicitly (explicit hierarchical by default, implicit if global header is disabled)", 0, AV_OPT_TYPE_CONST, { -1 }, 0, 0, AV_OPT_FLAG_AUDIO_PARAM | AV_OPT_FLAG_ENCODING_PARAM, "signaling" },
-    { "implicit", "Implicit backwards compatible signaling", 0, AV_OPT_TYPE_CONST, { 0 }, 0, 0, AV_OPT_FLAG_AUDIO_PARAM | AV_OPT_FLAG_ENCODING_PARAM, "signaling" },
-    { "explicit_sbr", "Explicit SBR, implicit PS signaling", 0, AV_OPT_TYPE_CONST, { 1 }, 0, 0, AV_OPT_FLAG_AUDIO_PARAM | AV_OPT_FLAG_ENCODING_PARAM, "signaling" },
-    { "explicit_hierarchical", "Explicit hierarchical signaling", 0, AV_OPT_TYPE_CONST, { 2 }, 0, 0, AV_OPT_FLAG_AUDIO_PARAM | AV_OPT_FLAG_ENCODING_PARAM, "signaling" },
+    { "afterburner", "Afterburner (improved quality)", offsetof(AACContext, afterburner), AV_OPT_TYPE_INT, { .i64 = 1 }, 0, 1, AV_OPT_FLAG_AUDIO_PARAM | AV_OPT_FLAG_ENCODING_PARAM },
+    { "eld_sbr", "Enable SBR for ELD (for SBR in other configurations, use the -profile parameter)", offsetof(AACContext, eld_sbr), AV_OPT_TYPE_INT, { .i64 = 0 }, 0, 1, AV_OPT_FLAG_AUDIO_PARAM | AV_OPT_FLAG_ENCODING_PARAM },
+    { "signaling", "SBR/PS signaling style", offsetof(AACContext, signaling), AV_OPT_TYPE_INT, { .i64 = -1 }, -1, 2, AV_OPT_FLAG_AUDIO_PARAM | AV_OPT_FLAG_ENCODING_PARAM, "signaling" },
+    { "default", "Choose signaling implicitly (explicit hierarchical by default, implicit if global header is disabled)", 0, AV_OPT_TYPE_CONST, { .i64 = -1 }, 0, 0, AV_OPT_FLAG_AUDIO_PARAM | AV_OPT_FLAG_ENCODING_PARAM, "signaling" },
+    { "implicit", "Implicit backwards compatible signaling", 0, AV_OPT_TYPE_CONST, { .i64 = 0 }, 0, 0, AV_OPT_FLAG_AUDIO_PARAM | AV_OPT_FLAG_ENCODING_PARAM, "signaling" },
+    { "explicit_sbr", "Explicit SBR, implicit PS signaling", 0, AV_OPT_TYPE_CONST, { .i64 = 1 }, 0, 0, AV_OPT_FLAG_AUDIO_PARAM | AV_OPT_FLAG_ENCODING_PARAM, "signaling" },
+    { "explicit_hierarchical", "Explicit hierarchical signaling", 0, AV_OPT_TYPE_CONST, { .i64 = 2 }, 0, 0, AV_OPT_FLAG_AUDIO_PARAM | AV_OPT_FLAG_ENCODING_PARAM, "signaling" },
+    { "latm", "Output LATM/LOAS encapsulated data", offsetof(AACContext, latm), AV_OPT_TYPE_INT, { .i64 = 0 }, 0, 1, AV_OPT_FLAG_AUDIO_PARAM | AV_OPT_FLAG_ENCODING_PARAM },
+    { "header_period", "StreamMuxConfig and PCE repetition period (in frames)", offsetof(AACContext, header_period), AV_OPT_TYPE_INT, { .i64 = 0 }, 0, 0xffff, AV_OPT_FLAG_AUDIO_PARAM | AV_OPT_FLAG_ENCODING_PARAM },
+    { "vbr", "VBR mode (1-5)", offsetof(AACContext, vbr), AV_OPT_TYPE_INT, { .i64 = 0 }, 0, 5, AV_OPT_FLAG_AUDIO_PARAM | AV_OPT_FLAG_ENCODING_PARAM },
     { NULL }
 };
 
@@ -168,13 +175,16 @@ static av_cold int aac_encode_init(AVCodecContext *avctx)
         goto error;
     }
 
-    if (avctx->flags & CODEC_FLAG_QSCALE) {
-        int mode = avctx->global_quality;
+    if (avctx->flags & CODEC_FLAG_QSCALE || s->vbr) {
+        int mode = s->vbr ? s->vbr : avctx->global_quality;
         if (mode <  1 || mode > 5) {
             av_log(avctx, AV_LOG_WARNING,
                    "VBR quality %d out of range, should be 1-5\n", mode);
             mode = av_clip(mode, 1, 5);
         }
+        av_log(avctx, AV_LOG_WARNING,
+               "Note, the VBR setting is unsupported and only works with "
+               "some parameter combinations\n");
         if ((err = aacEncoder_SetParam(s->handle, AACENC_BITRATEMODE,
                                        mode)) != AACENC_OK) {
             av_log(avctx, AV_LOG_ERROR, "Unable to set the VBR bitrate mode %d: %s\n",
@@ -204,10 +214,19 @@ static av_cold int aac_encode_init(AVCodecContext *avctx)
     /* Choose bitstream format - if global header is requested, use
      * raw access units, otherwise use ADTS. */
     if ((err = aacEncoder_SetParam(s->handle, AACENC_TRANSMUX,
-                                   avctx->flags & CODEC_FLAG_GLOBAL_HEADER ? 0 : 2)) != AACENC_OK) {
+                                   avctx->flags & CODEC_FLAG_GLOBAL_HEADER ? 0 : s->latm ? 10 : 2)) != AACENC_OK) {
         av_log(avctx, AV_LOG_ERROR, "Unable to set the transmux format: %s\n",
                aac_get_error(err));
         goto error;
+    }
+
+    if (s->latm && s->header_period) {
+        if ((err = aacEncoder_SetParam(s->handle, AACENC_HEADER_PERIOD,
+                                       s->header_period)) != AACENC_OK) {
+             av_log(avctx, AV_LOG_ERROR, "Unable to set header period: %s\n",
+                    aac_get_error(err));
+             goto error;
+        }
     }
 
     /* If no signaling mode is chosen, use explicit hierarchical signaling
@@ -377,20 +396,26 @@ static const uint64_t aac_channel_layout[] = {
     0,
 };
 
+static const int aac_sample_rates[] = {
+    96000, 88200, 64000, 48000, 44100, 32000,
+    24000, 22050, 16000, 12000, 11025, 8000, 0
+};
+
 AVCodec ff_libfdk_aac_encoder = {
-    .name            = "libfdk_aac",
-    .type            = AVMEDIA_TYPE_AUDIO,
-    .id              = CODEC_ID_AAC,
-    .priv_data_size  = sizeof(AACContext),
-    .init            = aac_encode_init,
-    .encode2         = aac_encode_frame,
-    .close           = aac_encode_close,
-    .capabilities    = CODEC_CAP_SMALL_LAST_FRAME | CODEC_CAP_DELAY,
-    .sample_fmts     = (const enum AVSampleFormat[]){ AV_SAMPLE_FMT_S16,
-                                                      AV_SAMPLE_FMT_NONE },
-    .long_name       = NULL_IF_CONFIG_SMALL("Fraunhofer FDK AAC"),
-    .priv_class      = &aac_enc_class,
-    .defaults        = aac_encode_defaults,
-    .profiles        = profiles,
-    .channel_layouts = aac_channel_layout,
+    .name                  = "libfdk_aac",
+    .type                  = AVMEDIA_TYPE_AUDIO,
+    .id                    = AV_CODEC_ID_AAC,
+    .priv_data_size        = sizeof(AACContext),
+    .init                  = aac_encode_init,
+    .encode2               = aac_encode_frame,
+    .close                 = aac_encode_close,
+    .capabilities          = CODEC_CAP_SMALL_LAST_FRAME | CODEC_CAP_DELAY,
+    .sample_fmts           = (const enum AVSampleFormat[]){ AV_SAMPLE_FMT_S16,
+                                                            AV_SAMPLE_FMT_NONE },
+    .long_name             = NULL_IF_CONFIG_SMALL("Fraunhofer FDK AAC"),
+    .priv_class            = &aac_enc_class,
+    .defaults              = aac_encode_defaults,
+    .profiles              = profiles,
+    .supported_samplerates = aac_sample_rates,
+    .channel_layouts       = aac_channel_layout,
 };

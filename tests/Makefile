@@ -15,9 +15,6 @@ ffservertest: ffserver$(EXESUF) tests/vsynth1/00.pgm tests/data/asynth1.sw
 
 OBJDIRS += tests/data tests/vsynth1
 
-# Required due to missing automatic dependency tracking for HOSTOBJS.
-tests/rotozoom.o tests/videogen.o: tests/utils.c
-
 tests/vsynth1/00.pgm: tests/videogen$(HOSTEXESUF) | tests/vsynth1
 	$(M)./$< 'tests/vsynth1/'
 
@@ -33,7 +30,15 @@ tests/data/vsynth1.yuv: tests/videogen$(HOSTEXESUF) | tests/data
 tests/data/vsynth2.yuv: tests/rotozoom$(HOSTEXESUF) | tests/data
 	$(M)$< $(SRC_PATH)/tests/lena.pnm $@
 
-tests/data/%.sw tests/data/asynth% tests/data/vsynth%.yuv tests/vsynth%/00.pgm: TAG = GEN
+tests/data/ffprobe-test.nut: ffmpeg$(EXESUF) | tests/data
+	$(M)./$< \
+        -f lavfi -i "aevalsrc=sin(400*PI*2*t)::d=0.125[out0]; testsrc=d=0.125[out1]; testsrc=s=100x100:d=0.125[out2]" \
+        -f ffmetadata -i $(SRC_PATH)/tests/test.ffmeta \
+        -flags +bitexact -map 0:0 -map 0:1 -map 0:2 -map_metadata 1 \
+        -vcodec rawvideo -acodec pcm_s16le \
+        -y $@ 2>/dev/null
+
+tests/data/%.sw tests/data/asynth% tests/data/vsynth%.yuv tests/vsynth%/00.pgm tests/data/%.nut: TAG = GEN
 
 include $(SRC_PATH)/tests/fate/acodec.mak
 include $(SRC_PATH)/tests/fate/vcodec.mak
@@ -41,6 +46,7 @@ include $(SRC_PATH)/tests/fate/vcodec.mak
 include $(SRC_PATH)/tests/fate/aac.mak
 include $(SRC_PATH)/tests/fate/ac3.mak
 include $(SRC_PATH)/tests/fate/adpcm.mak
+include $(SRC_PATH)/tests/fate/alac.mak
 include $(SRC_PATH)/tests/fate/als.mak
 include $(SRC_PATH)/tests/fate/amrnb.mak
 include $(SRC_PATH)/tests/fate/amrwb.mak
@@ -54,6 +60,7 @@ include $(SRC_PATH)/tests/fate/demux.mak
 include $(SRC_PATH)/tests/fate/dfa.mak
 include $(SRC_PATH)/tests/fate/dpcm.mak
 include $(SRC_PATH)/tests/fate/ea.mak
+include $(SRC_PATH)/tests/fate/ffprobe.mak
 include $(SRC_PATH)/tests/fate/filter.mak
 include $(SRC_PATH)/tests/fate/flac.mak
 include $(SRC_PATH)/tests/fate/fft.mak
@@ -97,16 +104,19 @@ FATE_AVCONV += $(FATE_LAVF)                                             \
 
 FATE_FFMPEG += $(FATE_FFMPEG-yes) $(FATE_AVCONV) $(FATE_AVCONV-yes)
 FATE-$(CONFIG_FFMPEG) += $(FATE_FFMPEG)
+FATE-$(CONFIG_FFPROBE) += $(FATE_FFPROBE)
 
 FATE-$(CONFIG_AVCODEC)  += $(FATE_LIBAVCODEC)
 
-FATE_SAMPLES-$(CONFIG_FFMPEG) += $(FATE_SAMPLES_AVCONV) $(FATE_SAMPLES_FFMPEG)
-FATE_SAMPLES += $(FATE_SAMPLES-yes)
+FATE_EXTERN-$(CONFIG_FFMPEG) += $(FATE_SAMPLES_AVCONV) $(FATE_SAMPLES_FFMPEG)
+FATE_EXTERN += $(FATE_EXTERN-yes)
 
 FATE += $(FATE-yes)
 FATE += $(FATE_LIBAVUTIL)
 
 $(FATE_FFMPEG) $(FATE_LAVF_FATE) $(FATE_SAMPLES_AVCONV) $(FATE_SAMPLES_FFMPEG): ffmpeg$(EXESUF)
+
+$(FATE_FFPROBE): ffprobe$(EXESUF)
 
 $(FATE_LAVF):  $(AREF) $(VREF)
 $(FATE_LAVFI): $(VREF) libavfilter/filtfmts-test$(EXESUF)
@@ -125,15 +135,15 @@ fate-seek:   $(FATE_SEEK)
 ifdef SAMPLES
 FATE += $(FATE_LAVF_FATE)
 FATE += $(FATE_FULL) $(FATE_FULL-yes)
-FATE += $(FATE_SAMPLES)
+FATE += $(FATE_EXTERN)
 fate-rsync:
-	rsync -vaLW --timeout=60 --contimeout=60 rsync://fate.ffmpeg.org/fate-suite/ $(SAMPLES)
+	rsync -vaLW --timeout=60 --contimeout=60 rsync://fate-suite.ffmpeg.org/fate-suite/ $(SAMPLES)
 else
 fate::
 	@echo "warning: only a subset of the fate tests will be run because SAMPLES is not specified"
 fate-rsync:
 	@echo "use 'make fate-rsync SAMPLES=/path/to/samples' to sync the fate suite"
-$(FATE_SAMPLES):
+$(FATE_EXTERN):
 	@echo "$@ requires external samples and SAMPLES not specified"; false
 endif
 

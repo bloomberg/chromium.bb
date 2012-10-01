@@ -363,11 +363,13 @@ progress information is always "progress".
 
 @item -stdin
 Enable interaction on standard input. On by default unless standard input is
-used as an input.
+used as an input. To explicitly disable interaction you need to specify
+@code{-nostdin}.
 
-Useful, for example, if ffmpeg is in the background process group. Roughly
-the same result can be achieved with @code{ffmpeg ... < /dev/null} but it
-requires a shell.
+Disabling interaction on standard input is useful, for example, if
+ffmpeg is in the background process group. Roughly the same result can
+be achieved with @code{ffmpeg ... < /dev/null} but it requires a
+shell.
 
 @item -debug_ts (@emph{global})
 Print timestamp information. It is off by default. This option is
@@ -474,7 +476,7 @@ Use same quantizer as source (implies VBR).
 Note that this is NOT SAME QUALITY. Do not use this option unless you know you
 need it.
 
-@item -pass @var{n}
+@item -pass[:@var{stream_specifier}] @var{n} (@emph{output,per-stream})
 Select the pass number (1 or 2). It is used to do two-pass
 video encoding. The statistics of the video are recorded in the first
 pass into a log file (see also the option -passlogfile),
@@ -487,7 +489,7 @@ ffmpeg -i foo.mov -c:v libxvid -pass 1 -an -f rawvideo -y NUL
 ffmpeg -i foo.mov -c:v libxvid -pass 1 -an -f rawvideo -y /dev/null
 @end example
 
-@item -passlogfile @var{prefix} (@emph{global})
+@item -passlogfile[:@var{stream_specifier}] @var{prefix} (@emph{output,per-stream})
 Set two-pass log file name prefix to @var{prefix}, the default file name
 prefix is ``ffmpeg2pass''. The complete file name will be
 @file{PREFIX-N.log}, where N is a number specific to the output
@@ -620,11 +622,23 @@ Disable subtitle recording.
 Deprecated, see -bsf
 @end table
 
-@section Audio/Video grab options
+@section Advanced Subtitle options:
 
 @table @option
-@item -isync (@emph{global})
-Synchronize read on input.
+
+@item -fix_sub_duration
+Fix subtitles durations. For each subtitle, wait for the next packet in the
+same stream and adjust the duration of the first to avoid overlap. This is
+necessary with some subtitles codecs, especially DVB subtitles, because the
+duration in the original packet is only a rough estimate and the end is
+actually marked by an empty subtitle frame. Failing to use this option when
+necessary can result in exaggerated durations or muxing failures due to
+non-monotonic timestamps.
+
+Note that this option will delay the output of all data until the next
+subtitle packet is decoded: it may increase memory consumption and latency a
+lot.
+
 @end table
 
 @section Advanced options
@@ -909,7 +923,7 @@ Try to make the choice automatically, in order to generate a sane output.
 
 Default value is -1.
 
-@item -shortest
+@item -shortest (@emph{output})
 Finish encoding when the shortest input stream ends.
 @item -dts_delta_threshold
 Timestamp discontinuity delta threshold.
@@ -965,6 +979,9 @@ the matching type.
 Output link labels are referred to with @option{-map}. Unlabeled outputs are
 added to the first output file.
 
+Note that with this option it is possible to use only lavfi sources without
+normal input files.
+
 For example, to overlay an image over video
 @example
 ffmpeg -i video.mkv -i image.png -filter_complex '[0:v][1:v]overlay[out]' -map
@@ -987,7 +1004,28 @@ graph will be added to the output file automatically, so we can simply write
 @example
 ffmpeg -i video.mkv -i image.png -filter_complex 'overlay' out.mkv
 @end example
+
+To generate 5 seconds of pure red video using lavfi @code{color} source:
+@example
+ffmpeg -filter_complex 'color=red' -t 5 out.mkv
+@end example
 @end table
+
+As a special exception, you can use a bitmap subtitle stream as input: it
+will be converted into a video with the same size as the largest video in
+the file, or 720×576 if no video is present. Note that this is an
+experimental and temporary solution. It will be removed once libavfilter has
+proper support for subtitles.
+
+For example, to hardcode subtitles on top of a DVB-T recording stored in
+MPEG-TS format, delaying the subtitles by 1 second:
+@example
+ffmpeg -i input.ts -filter_complex \
+  '[#0x2ef] setpts=PTS+1/TB [sub] ; [#0x2d0] [sub] overlay' \
+  -sn -map '#0x2dc' output.mkv
+@end example
+(0x2d0, 0x2dc and 0x2ef are the MPEG-TS PIDs of respectively the video,
+audio and subtitles streams; 0:0, 0:3 and 0:7 would have worked too)
 
 @section Preset files
 A preset file contains a sequence of @var{option}=@var{value} pairs,
@@ -1237,17 +1275,15 @@ composed of three digits padded with zeroes to express the sequence
 number. It is the same syntax supported by the C printf function, but
 only formats accepting a normal integer are suitable.
 
-When importing an image sequence, -i also supports expanding shell-like
-wildcard patterns (globbing) internally. To lower the chance of interfering
-with your actual file names and the shell's glob expansion, you are required
-to activate glob meta characters by prefixing them with a single @code{%}
-character, like in @code{foo-%*.jpeg}, @code{foo-%?%?%?.jpeg} or
-@code{foo-00%[234%]%*.jpeg}.
-If your filename actually contains a character sequence of a @code{%} character
-followed by a glob character, you must double the @code{%} character to escape
-it. Imagine your files begin with @code{%?-foo-}, then you could use a glob
-pattern like @code{%%?-foo-%*.jpeg}. For input patterns that could be both a
-printf or a glob pattern, ffmpeg will assume it is a glob pattern.
+When importing an image sequence, -i also supports expanding
+shell-like wildcard patterns (globbing) internally, by selecting the
+image2-specific @code{-pattern_type glob} option.
+
+For example, for creating a video from filenames matching the glob pattern
+@code{foo-*.jpeg}:
+@example
+ffmpeg -f image2 -pattern_type glob -i 'foo-*.jpeg' -r 12 -s WxH foo.avi
+@end example
 
 @item
 You can put many streams of the same type in the output:

@@ -344,11 +344,11 @@ static int mpeg_mux_init(AVFormatContext *ctx)
 
         switch(st->codec->codec_type) {
         case AVMEDIA_TYPE_AUDIO:
-            if        (st->codec->codec_id == CODEC_ID_AC3) {
+            if        (st->codec->codec_id == AV_CODEC_ID_AC3) {
                 stream->id = ac3_id++;
-            } else if (st->codec->codec_id == CODEC_ID_DTS) {
+            } else if (st->codec->codec_id == AV_CODEC_ID_DTS) {
                 stream->id = dts_id++;
-            } else if (st->codec->codec_id == CODEC_ID_PCM_S16BE) {
+            } else if (st->codec->codec_id == AV_CODEC_ID_PCM_S16BE) {
                 stream->id = lpcm_id++;
                 for(j = 0; j < 4; j++) {
                     if (lpcm_freq_tab[j] == st->codec->sample_rate)
@@ -1006,7 +1006,10 @@ retry:
     }
 
     if(timestamp_packet){
-//av_log(ctx, AV_LOG_DEBUG, "dts:%f pts:%f scr:%f stream:%d\n", timestamp_packet->dts/90000.0, timestamp_packet->pts/90000.0, scr/90000.0, best_i);
+        av_dlog(ctx, "dts:%f pts:%f scr:%f stream:%d\n",
+                timestamp_packet->dts / 90000.0,
+                timestamp_packet->pts / 90000.0,
+                scr / 90000.0, best_i);
         es_size= flush_packet(ctx, best_i, timestamp_packet->pts, timestamp_packet->dts, scr, trailer_size);
     }else{
         assert(av_fifo_size(stream->fifo) == trailer_size);
@@ -1065,7 +1068,9 @@ static int mpeg_mux_write_packet(AVFormatContext *ctx, AVPacket *pkt)
         dts += 2*preload;
     }
 
-//av_log(ctx, AV_LOG_DEBUG, "dts:%f pts:%f flags:%d stream:%d nopts:%d\n", dts/90000.0, pts/90000.0, pkt->flags, pkt->stream_index, pts != AV_NOPTS_VALUE);
+    av_dlog(ctx, "dts:%f pts:%f flags:%d stream:%d nopts:%d\n",
+            dts / 90000.0, pts / 90000.0, pkt->flags,
+            pkt->stream_index, pts != AV_NOPTS_VALUE);
     if (!stream->premux_packet)
         stream->next_packet = &stream->premux_packet;
     *stream->next_packet=
@@ -1130,8 +1135,8 @@ static int mpeg_mux_end(AVFormatContext *ctx)
 #define OFFSET(x) offsetof(MpegMuxContext, x)
 #define E AV_OPT_FLAG_ENCODING_PARAM
 static const AVOption options[] = {
-    { "muxrate", NULL, OFFSET(user_mux_rate), AV_OPT_TYPE_INT, {0}, 0, INT_MAX, E },
-    { "preload", "Initial demux-decode delay in microseconds.", OFFSET(preload),  AV_OPT_TYPE_INT, {500000}, 0, INT_MAX, E},
+    { "muxrate", NULL, OFFSET(user_mux_rate), AV_OPT_TYPE_INT, {.i64 = 0}, 0, INT_MAX, E },
+    { "preload", "Initial demux-decode delay in microseconds.", OFFSET(preload),  AV_OPT_TYPE_INT, {.i64 = 500000}, 0, INT_MAX, E},
     { NULL },
 };
 
@@ -1147,12 +1152,12 @@ static const AVClass flavor ## _class = {\
 MPEGENC_CLASS(mpeg)
 AVOutputFormat ff_mpeg1system_muxer = {
     .name              = "mpeg",
-    .long_name         = NULL_IF_CONFIG_SMALL("MPEG-1 System format"),
+    .long_name         = NULL_IF_CONFIG_SMALL("MPEG-1 Systems / MPEG program stream"),
     .mime_type         = "video/mpeg",
     .extensions        = "mpg,mpeg",
     .priv_data_size    = sizeof(MpegMuxContext),
-    .audio_codec       = CODEC_ID_MP2,
-    .video_codec       = CODEC_ID_MPEG1VIDEO,
+    .audio_codec       = AV_CODEC_ID_MP2,
+    .video_codec       = AV_CODEC_ID_MPEG1VIDEO,
     .write_header      = mpeg_mux_init,
     .write_packet      = mpeg_mux_write_packet,
     .write_trailer     = mpeg_mux_end,
@@ -1163,11 +1168,11 @@ AVOutputFormat ff_mpeg1system_muxer = {
 MPEGENC_CLASS(vcd)
 AVOutputFormat ff_mpeg1vcd_muxer = {
     .name              = "vcd",
-    .long_name         = NULL_IF_CONFIG_SMALL("MPEG-1 System format (VCD)"),
+    .long_name         = NULL_IF_CONFIG_SMALL("MPEG-1 Systems / MPEG program stream (VCD)"),
     .mime_type         = "video/mpeg",
     .priv_data_size    = sizeof(MpegMuxContext),
-    .audio_codec       = CODEC_ID_MP2,
-    .video_codec       = CODEC_ID_MPEG1VIDEO,
+    .audio_codec       = AV_CODEC_ID_MP2,
+    .video_codec       = AV_CODEC_ID_MPEG1VIDEO,
     .write_header      = mpeg_mux_init,
     .write_packet      = mpeg_mux_write_packet,
     .write_trailer     = mpeg_mux_end,
@@ -1178,12 +1183,12 @@ AVOutputFormat ff_mpeg1vcd_muxer = {
 MPEGENC_CLASS(vob)
 AVOutputFormat ff_mpeg2vob_muxer = {
     .name              = "vob",
-    .long_name         = NULL_IF_CONFIG_SMALL("MPEG-2 PS format (VOB)"),
+    .long_name         = NULL_IF_CONFIG_SMALL("MPEG-2 PS (VOB)"),
     .mime_type         = "video/mpeg",
     .extensions        = "vob",
     .priv_data_size    = sizeof(MpegMuxContext),
-    .audio_codec       = CODEC_ID_MP2,
-    .video_codec       = CODEC_ID_MPEG2VIDEO,
+    .audio_codec       = AV_CODEC_ID_MP2,
+    .video_codec       = AV_CODEC_ID_MPEG2VIDEO,
     .write_header      = mpeg_mux_init,
     .write_packet      = mpeg_mux_write_packet,
     .write_trailer     = mpeg_mux_end,
@@ -1196,12 +1201,12 @@ AVOutputFormat ff_mpeg2vob_muxer = {
 MPEGENC_CLASS(svcd)
 AVOutputFormat ff_mpeg2svcd_muxer = {
     .name              = "svcd",
-    .long_name         = NULL_IF_CONFIG_SMALL("MPEG-2 PS format (VOB)"),
+    .long_name         = NULL_IF_CONFIG_SMALL("MPEG-2 PS (SVCD)"),
     .mime_type         = "video/mpeg",
     .extensions        = "vob",
     .priv_data_size    = sizeof(MpegMuxContext),
-    .audio_codec       = CODEC_ID_MP2,
-    .video_codec       = CODEC_ID_MPEG2VIDEO,
+    .audio_codec       = AV_CODEC_ID_MP2,
+    .video_codec       = AV_CODEC_ID_MPEG2VIDEO,
     .write_header      = mpeg_mux_init,
     .write_packet      = mpeg_mux_write_packet,
     .write_trailer     = mpeg_mux_end,
@@ -1214,12 +1219,12 @@ AVOutputFormat ff_mpeg2svcd_muxer = {
 MPEGENC_CLASS(dvd)
 AVOutputFormat ff_mpeg2dvd_muxer = {
     .name              = "dvd",
-    .long_name         = NULL_IF_CONFIG_SMALL("MPEG-2 PS format (DVD VOB)"),
+    .long_name         = NULL_IF_CONFIG_SMALL("MPEG-2 PS (DVD VOB)"),
     .mime_type         = "video/mpeg",
     .extensions        = "dvd",
     .priv_data_size    = sizeof(MpegMuxContext),
-    .audio_codec       = CODEC_ID_MP2,
-    .video_codec       = CODEC_ID_MPEG2VIDEO,
+    .audio_codec       = AV_CODEC_ID_MP2,
+    .video_codec       = AV_CODEC_ID_MPEG2VIDEO,
     .write_header      = mpeg_mux_init,
     .write_packet      = mpeg_mux_write_packet,
     .write_trailer     = mpeg_mux_end,
