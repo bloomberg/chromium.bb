@@ -308,9 +308,9 @@ class SvnCheckout(SvnBaseTest):
     self._check_exception(
         self._get_co(None),
         'While running patch -p1 --forward --force --no-backup-if-mismatch;\n'
-        'patching file chrome/file.cc\n'
-        'Hunk #1 FAILED at 3.\n'
-        '1 out of 1 hunk FAILED -- saving rejects to file '
+        '  patching file chrome/file.cc\n'
+        '  Hunk #1 FAILED at 3.\n'
+        '  1 out of 1 hunk FAILED -- saving rejects to file '
         'chrome/file.cc.rej\n')
 
   def testSvnProps(self):
@@ -328,8 +328,8 @@ class SvnCheckout(SvnBaseTest):
           e.status,
           'While running svn propset svn:ignore foo chrome/file.cc '
           '--non-interactive;\n'
-          'patching file chrome/file.cc\n'
-          'svn: Cannot set \'svn:ignore\' on a file (\'chrome/file.cc\')\n')
+          '  patching file chrome/file.cc\n'
+          '  svn: Cannot set \'svn:ignore\' on a file (\'chrome/file.cc\')\n')
     co.prepare(None)
     svn_props = [('svn:eol-style', 'LF'), ('foo', 'bar')]
     co.apply_patch(
@@ -472,9 +472,10 @@ class RawCheckout(SvnBaseTest):
   def testException(self):
     self._check_exception(
         self._get_co(None),
-        'patching file chrome/file.cc\n'
-        'Hunk #1 FAILED at 3.\n'
-        '1 out of 1 hunk FAILED -- saving rejects to file '
+        'While running patch -u --binary -p1;\n'
+        '  patching file chrome/file.cc\n'
+        '  Hunk #1 FAILED at 3.\n'
+        '  1 out of 1 hunk FAILED -- saving rejects to file '
         'chrome/file.cc.rej\n')
 
   def testProcess(self):
@@ -514,9 +515,9 @@ class ReadOnlyCheckout(SvnBaseTest):
     self._check_exception(
         self._get_co(None),
         'While running patch -p1 --forward --force --no-backup-if-mismatch;\n'
-        'patching file chrome/file.cc\n'
-        'Hunk #1 FAILED at 3.\n'
-        '1 out of 1 hunk FAILED -- saving rejects to file '
+        '  patching file chrome/file.cc\n'
+        '  Hunk #1 FAILED at 3.\n'
+        '  1 out of 1 hunk FAILED -- saving rejects to file '
         'chrome/file.cc.rej\n')
 
   def testProcess(self):

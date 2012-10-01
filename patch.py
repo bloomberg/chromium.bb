@@ -100,6 +100,10 @@ class FilePatchBase(object):
       out += '%s->' % self.source_filename_utf8
     return out + self.filename_utf8
 
+  def dump(self):
+    """Dumps itself in a verbose way to help diagnosing."""
+    return str(self)
+
 
 class FilePatchDelete(FilePatchBase):
   """Deletes a file."""
@@ -122,6 +126,9 @@ class FilePatchBinary(FilePatchBase):
 
   def get(self):
     return self.data
+
+  def __str__(self):
+    return str(super(FilePatchBinary, self)) + ' %d bytes' % len(self.data)
 
 
 class Hunk(object):
@@ -490,6 +497,10 @@ class FilePatchDiff(FilePatchBase):
         self._fail('Crap after +++')
       # We're done.
       return
+
+  def dump(self):
+    """Dumps itself in a verbose way to help diagnosing."""
+    return str(self) + '\n' + self.get(True)
 
 
 class PatchSet(object):

@@ -47,6 +47,17 @@ def get_code_review_setting(path, key,
   return settings.get(key, None)
 
 
+def align_stdout(stdout):
+  """Returns the aligned output of multiple stdouts."""
+  output = ''
+  for item in stdout:
+    item = item.strip()
+    if not item:
+      continue
+    output += ''.join('  %s\n' % line for line in item.splitlines())
+  return output
+
+
 class PatchApplicationFailed(Exception):
   """Patch failed to be applied."""
   def __init__(self, p, status):
@@ -65,6 +76,7 @@ class PatchApplicationFailed(Exception):
       out.append('Failed to apply patch for %s:' % self.filename)
     if self.status:
       out.append(self.status)
+    out.append('Patch: %s' % self.patch.dump())
     return '\n'.join(out)
 
 
@@ -105,7 +117,7 @@ class CheckoutBase(object):
     """
     raise NotImplementedError()
 
-  def apply_patch(self, patches, post_processors=None):
+  def apply_patch(self, patches, post_processors=None, verbose=False):
     """Applies a patch and returns the list of modified files.
 
     This function should throw patch.UnsupportedPatchFormat or
@@ -139,26 +151,28 @@ class RawCheckout(CheckoutBase):
     """Stubbed out."""
     pass
 
-  def apply_patch(self, patches, post_processors=None):
+  def apply_patch(self, patches, post_processors=None, verbose=False):
     """Ignores svn properties."""
     post_processors = post_processors or self.post_processors or []
     for p in patches:
-      logging.debug('Applying %s' % p.filename)
+      stdout = []
       try:
-        stdout = ''
-        filename = os.path.join(self.project_path, p.filename)
+        filepath = os.path.join(self.project_path, p.filename)
         if p.is_delete:
-          os.remove(filename)
+          os.remove(filepath)
+          stdout.append('Deleted.')
         else:
           dirname = os.path.dirname(p.filename)
           full_dir = os.path.join(self.project_path, dirname)
           if dirname and not os.path.isdir(full_dir):
             os.makedirs(full_dir)
+            stdout.append('Created missing directory %s.' % dirname)
 
-          filepath = os.path.join(self.project_path, p.filename)
           if p.is_binary:
+            content = p.get()
             with open(filepath, 'wb') as f:
-              f.write(p.get())
+              f.write(content)
+            stdout.append('Added binary file %d bytes.' % len(content))
           else:
             if p.source_filename:
               if not p.is_new:
@@ -171,22 +185,35 @@ class RawCheckout(CheckoutBase):
                     p, 'File exist but was about to be overwriten')
               shutil.copy2(
                   os.path.join(self.project_path, p.source_filename), filepath)
+              stdout.append('Copied %s -> %s' % (p.source_filename, p.filename))
             if p.diff_hunks:
-              stdout = subprocess2.check_output(
-                  ['patch', '-u', '--binary', '-p%s' % p.patchlevel],
-                  stdin=p.get(False),
-                  stderr=subprocess2.STDOUT,
-                  cwd=self.project_path)
+              cmd = ['patch', '-u', '--binary', '-p%s' % p.patchlevel]
+              if verbose:
+                cmd.append('--verbose')
+              stdout.append(
+                  subprocess2.check_output(
+                      cmd,
+                      stdin=p.get(False),
+                      stderr=subprocess2.STDOUT,
+                      cwd=self.project_path))
             elif p.is_new and not os.path.exists(filepath):
               # There is only a header. Just create the file.
               open(filepath, 'w').close()
+              stdout.append('Created an empty file.')
         for post in post_processors:
           post(self, p)
+        if verbose:
+          print p.filename
+          print align_stdout(stdout)
       except OSError, e:
-        raise PatchApplicationFailed(p, '%s%s' % (stdout, e))
+        raise PatchApplicationFailed(p, '%s%s' % (align_stdout(stdout), e))
       except subprocess.CalledProcessError, e:
         raise PatchApplicationFailed(
-            p, '%s%s' % (stdout, getattr(e, 'stdout', None)))
+            p,
+            'While running %s;\n%s%s' % (
+              ' '.join(e.cmd),
+              align_stdout(stdout),
+              align_stdout([getattr(e, 'stdout', '')])))
 
   def commit(self, commit_message, user):
     """Stubbed out."""
@@ -299,18 +326,19 @@ class SvnCheckout(CheckoutBase, SvnMixIn):
           (self.project_name, self.project_path))
     return self._revert(revision)
 
-  def apply_patch(self, patches, post_processors=None):
+  def apply_patch(self, patches, post_processors=None, verbose=False):
     post_processors = post_processors or self.post_processors or []
     for p in patches:
-      logging.debug('Applying %s' % p.filename)
+      stdout = []
       try:
+        filepath = os.path.join(self.project_path, p.filename)
         # It is important to use credentials=False otherwise credentials could
         # leak in the error message. Credentials are not necessary here for the
         # following commands anyway.
-        stdout = ''
         if p.is_delete:
-          stdout += self._check_output_svn(
-              ['delete', p.filename, '--force'], credentials=False)
+          stdout.append(self._check_output_svn(
+              ['delete', p.filename, '--force'], credentials=False))
+          stdout.append('Deleted.')
         else:
           # svn add while creating directories otherwise svn add on the
           # contained files will silently fail.
@@ -323,13 +351,16 @@ class SvnCheckout(CheckoutBase, SvnMixIn):
             dirname = os.path.dirname(dirname)
           for dir_to_create in reversed(dirs_to_create):
             os.mkdir(os.path.join(self.project_path, dir_to_create))
-            stdout += self._check_output_svn(
-                ['add', dir_to_create, '--force'], credentials=False)
+            stdout.append(
+                self._check_output_svn(
+                  ['add', dir_to_create, '--force'], credentials=False))
+            stdout.append('Created missing directory %s.' % dir_to_create)
 
-          filepath = os.path.join(self.project_path, p.filename)
           if p.is_binary:
+            content = p.get()
             with open(filepath, 'wb') as f:
-              f.write(p.get())
+              f.write(content)
+            stdout.append('Added binary file %d bytes.' % len(content))
           else:
             if p.source_filename:
               if not p.is_new:
@@ -340,8 +371,10 @@ class SvnCheckout(CheckoutBase, SvnMixIn):
               if os.path.isfile(filepath):
                 raise PatchApplicationFailed(
                     p, 'File exist but was about to be overwriten')
-              self._check_output_svn(
-                  ['copy', p.source_filename, p.filename])
+              stdout.append(
+                  self._check_output_svn(
+                    ['copy', p.source_filename, p.filename]))
+              stdout.append('Copied %s -> %s' % (p.source_filename, p.filename))
             if p.diff_hunks:
               cmd = [
                 'patch',
@@ -350,24 +383,32 @@ class SvnCheckout(CheckoutBase, SvnMixIn):
                 '--force',
                 '--no-backup-if-mismatch',
               ]
-              stdout += subprocess2.check_output(
-                  cmd, stdin=p.get(False), cwd=self.project_path)
+              stdout.append(
+                  subprocess2.check_output(
+                    cmd, stdin=p.get(False), cwd=self.project_path))
             elif p.is_new and not os.path.exists(filepath):
               # There is only a header. Just create the file if it doesn't
               # exist.
               open(filepath, 'w').close()
+              stdout.append('Created an empty file.')
           if p.is_new and not p.source_filename:
             # Do not run it if p.source_filename is defined, since svn copy was
             # using above.
-            stdout += self._check_output_svn(
-                ['add', p.filename, '--force'], credentials=False)
+            stdout.append(
+                self._check_output_svn(
+                  ['add', p.filename, '--force'], credentials=False))
           for name, value in p.svn_properties:
             if value is None:
-              stdout += self._check_output_svn(
-                  ['propdel', '--quiet', name, p.filename], credentials=False)
+              stdout.append(
+                  self._check_output_svn(
+                    ['propdel', '--quiet', name, p.filename],
+                    credentials=False))
+              stdout.append('Property %s deleted.' % name)
             else:
-              stdout += self._check_output_svn(
-                  ['propset', name, value, p.filename], credentials=False)
+              stdout.append(
+                  self._check_output_svn(
+                    ['propset', name, value, p.filename], credentials=False))
+              stdout.append('Property %s=%s' % (name, value))
           for prop, values in self.svn_config.auto_props.iteritems():
             if fnmatch.fnmatch(p.filename, prop):
               for value in values.split(';'):
@@ -378,17 +419,24 @@ class SvnCheckout(CheckoutBase, SvnMixIn):
                 if params[1] == '*':
                   # Works around crbug.com/150960 on Windows.
                   params[1] = '.'
-                stdout += self._check_output_svn(
-                    ['propset'] + params + [p.filename], credentials=False)
+                stdout.append(
+                    self._check_output_svn(
+                      ['propset'] + params + [p.filename], credentials=False))
+                stdout.append('Property (auto) %s' % '='.join(params))
         for post in post_processors:
           post(self, p)
+        if verbose:
+          print p.filename
+          print align_stdout(stdout)
       except OSError, e:
-        raise PatchApplicationFailed(p, '%s%s' % (stdout, e))
+        raise PatchApplicationFailed(p, '%s%s' % (align_stdout(stdout), e))
       except subprocess.CalledProcessError, e:
         raise PatchApplicationFailed(
             p,
             'While running %s;\n%s%s' % (
-              ' '.join(e.cmd), stdout, getattr(e, 'stdout', '')))
+              ' '.join(e.cmd),
+              align_stdout(stdout),
+              align_stdout([getattr(e, 'stdout', '')])))
 
   def commit(self, commit_message, user):
     logging.info('Committing patch for %s' % user)
@@ -499,7 +547,7 @@ class GitCheckoutBase(CheckoutBase):
       if self.working_branch in branches:
         self._call_git(['branch', '-D', self.working_branch])
 
-  def apply_patch(self, patches, post_processors=None):
+  def apply_patch(self, patches, post_processors=None, verbose=False):
     """Applies a patch on 'working_branch' and switch to it.
 
     Also commits the changes on the local branch.
@@ -514,38 +562,47 @@ class GitCheckoutBase(CheckoutBase):
           ['checkout', '-b', self.working_branch,
             '%s/%s' % (self.remote, self.remote_branch), '--quiet'])
     for index, p in enumerate(patches):
-      logging.debug('Applying %s' % p.filename)
+      stdout = []
       try:
-        stdout = ''
+        filepath = os.path.join(self.project_path, p.filename)
         if p.is_delete:
-          if (not os.path.exists(p.filename) and
+          if (not os.path.exists(filepath) and
               any(p1.source_filename == p.filename for p1 in patches[0:index])):
-            # The file could already be deleted if a prior patch with file
-            # rename was already processed. To be sure, look at all the previous
-            # patches to see if they were a file rename.
+            # The file was already deleted if a prior patch with file rename
+            # was already processed because 'git apply' did it for us.
             pass
           else:
-            stdout += self._check_output_git(['rm', p.filename])
+            stdout.append(self._check_output_git(['rm', p.filename]))
+            stdout.append('Deleted.')
         else:
           dirname = os.path.dirname(p.filename)
           full_dir = os.path.join(self.project_path, dirname)
           if dirname and not os.path.isdir(full_dir):
             os.makedirs(full_dir)
+            stdout.append('Created missing directory %s.' % dirname)
           if p.is_binary:
-            with open(os.path.join(self.project_path, p.filename), 'wb') as f:
-              f.write(p.get())
-            stdout += self._check_output_git(['add', p.filename])
+            content = p.get()
+            with open(filepath, 'wb') as f:
+              f.write(content)
+            stdout.append('Added binary file %d bytes' % len(content))
+            cmd = ['add', p.filename]
+            if verbose:
+              cmd.append('--verbose')
+            stdout.append(self._check_output_git(cmd))
           else:
             # No need to do anything special with p.is_new or if not
             # p.diff_hunks. git apply manages all that already.
-            stdout += self._check_output_git(
-                ['apply', '--index', '-p%s' % p.patchlevel], stdin=p.get(True))
-          for name, _ in p.svn_properties:
+            cmd = ['apply', '--index', '-p%s' % p.patchlevel]
+            if verbose:
+              cmd.append('--verbose')
+            stdout.append(self._check_output_git(cmd, stdin=p.get(True)))
+          for name, value in p.svn_properties:
             # Ignore some known auto-props flags through .subversion/config,
             # bails out on the other ones.
             # TODO(maruel): Read ~/.subversion/config and detect the rules that
             # applies here to figure out if the property will be correctly
             # handled.
+            stdout.append('Property %s=%s' % (name, value))
             if not name in (
                 'svn:eol-style', 'svn:executable', 'svn:mime-type'):
               raise patch.UnsupportedPatchFormat(
@@ -554,14 +611,24 @@ class GitCheckoutBase(CheckoutBase):
                         name, p.filename))
         for post in post_processors:
           post(self, p)
+        if verbose:
+          print p.filename
+          print align_stdout(stdout)
       except OSError, e:
-        raise PatchApplicationFailed(p, '%s%s' % (stdout, e))
+        raise PatchApplicationFailed(p, '%s%s' % (align_stdout(stdout), e))
       except subprocess.CalledProcessError, e:
         raise PatchApplicationFailed(
-            p, '%s%s' % (stdout, getattr(e, 'stdout', None)))
+            p,
+            'While running %s;\n%s%s' % (
+              ' '.join(e.cmd),
+              align_stdout(stdout),
+              align_stdout([getattr(e, 'stdout', '')])))
     # Once all the patches are processed and added to the index, commit the
     # index.
-    self._check_call_git(['commit', '-m', 'Committed patch'])
+    cmd = ['commit', '-m', 'Committed patch']
+    if verbose:
+      cmd.append('--verbose')
+    self._check_call_git(cmd)
     # TODO(maruel): Weirdly enough they don't match, need to investigate.
     #found_files = self._check_output_git(
     #    ['diff', 'master', '--name-only']).splitlines(False)
@@ -643,9 +710,9 @@ class ReadOnlyCheckout(object):
   def get_settings(self, key):
     return self.checkout.get_settings(key)
 
-  def apply_patch(self, patches, post_processors=None):
+  def apply_patch(self, patches, post_processors=None, verbose=False):
     return self.checkout.apply_patch(
-        patches, post_processors or self.post_processors)
+        patches, post_processors or self.post_processors, verbose)
 
   def commit(self, message, user):  # pylint: disable=R0201
     logging.info('Would have committed for %s with message: %s' % (

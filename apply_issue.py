@@ -132,9 +132,9 @@ def main():
     #    chromium_commands.py?view=markup
     open('.buildbot-patched', 'w').close()
 
-  # Apply the patch.
+  print('\nApplying the patch.')
   try:
-    scm_obj.apply_patch(patchset)
+    scm_obj.apply_patch(patchset, verbose=True)
   except checkout.PatchApplicationFailed, e:
     print >> sys.stderr, str(e)
     return 1
