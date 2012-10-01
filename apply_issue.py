@@ -87,15 +87,21 @@ def main():
     pass
   if properties is None:
     if options.email is not None:
+      obj = rietveld.Rietveld(options.server, options.email, options.password)
       try:
-        obj = rietveld.Rietveld(options.server, options.email, options.password)
+        properties = obj.get_issue_properties(options.issue, False)
       except rietveld.upload.ClientLoginError, e:
         if sys.stdout.closed:
           print('Accessing the issue requires proper credentials.')
           return 1
-    print('Accessing the issue requires login.')
-    obj = rietveld.Rietveld(options.server, None, None)
-    properties = obj.get_issue_properties(options.issue, False)
+    else:
+      print('Accessing the issue requires login.')
+      obj = rietveld.Rietveld(options.server, None, None)
+      try:
+        properties = obj.get_issue_properties(options.issue, False)
+      except rietveld.upload.ClientLoginError, e:
+        print('Accessing the issue requires proper credentials.')
+        return 1
 
   if not options.patchset:
     options.patchset = properties['patchsets'][-1]
